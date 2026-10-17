@@ -35,7 +35,7 @@ const img = (n) => `<img src="${P}f${n}.jpg" alt="Foto ${n}" />`
 const testo =
   '<h3>Telefono</h3><p>346 329 2786</p><h3>Instagram</h3><p>officine.dellosport</p><h3>Facebook</h3><p>Officine dello Sport</p>' +
   '<h3>Indirizzo</h3><p>Via Sassi 26, Collegno</p><p>A pochi metri dalla metropolitana Fermi</p>' +
-  `${img(1)}<p><a class="pulsante" href="https://maps.example/x">Ottieni indicazioni</a></p>${img(2)}${img(3)}${img(4)}` +
+  `${img(1)}<p><a class="pulsante" href="https://maps.example/x">Ottieni indicazioni</a></p><p>A pochi metri dalla metropolitana Fermi</p>${img(2)}${img(3)}${img(4)}` +
   '<h2>Hai qualche domanda?</h2><p>Qui trovi le informazioni.</p>' + [1, 2, 3, 4, 5, 6].map((n) => `<h3>Domanda ${n}?</h3><p>Risposta ${n}</p>`).join('')
 const genera = (slug, t) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug, titolo: 'T', descrizione: 'd', testo: t }], menu: [], rinvii: [], ospitiImmagini: [P] })
 const html = genera('contatti', testo)['contatti/index.html']
@@ -104,6 +104,31 @@ console.log('\n4. Testata e piede come nel design')
   ok('telefono: testata 12px 16px 0, marchio alto 82px, voci a pillola chiara da 14px', [/padding:\s*12px var\(--margine\) 0/.test(m('.testata')), /height:\s*82px/.test(m('.logo img')), /background:\s*var\(--chiara\)/.test(m('.testata nav a')), /padding:\s*0 14px/.test(m('.testata nav a'))], [true, true, true, true])
   ok('telefono: la voce segnata resta gialla (più forte della chiara)', /background:\s*var\(--giallo\)/.test(m('.testata nav a[aria-current]')), true)
   ok('telefono: pulsante con 22px ai lati, piede con 24px di margine sotto e 24px di spazio dentro', [/padding:\s*0 22px/.test(m('.testata .pulsante')), /margin-bottom:\s*24px/.test(m('.piede')), /padding:\s*24px/.test(m('.piede'))], [true, true, true])
+}
+
+console.log('\n5. Quel che il design ha e il sito non aveva')
+{
+  const vuoto = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contattaci', slug: 'contatti', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy policy', slug: null, indirizzo: '/privacy/' }], rinvii: [] })
+  const c = vuoto['contatti/index.html']
+  const pie = (c.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
+  ok('la pagina Contatti ha il pulsante «Contattaci» e l’invito «Prova» in fondo', [/<a class="pulsante" href="\/contatti\/">Contattaci<\/a>/.test(c), /class="invito"/.test(c)], [true, true])
+  ok('il pulsante in testata è «Prova» più una coda che sul telefono sparisce', /<a class="pulsante piccolo" href="\/contatti\/">Prova<span class="estensione"> una settimana · 5 €<\/span><\/a>/.test(c), true)
+  ok('piede: il nome va a capo dopo «Officine», senza titoli né riga «©»', [/<p class="nome">Officine<br>dello Sport<\/p>/.test(pie), /<h2/.test(pie), /class="fine"/.test(pie)], [true, false, false])
+  ok('piede: le pagine del menu e quelle di legge sono due elenchi senza titolo', [/<nav class="piede-menu" aria-label="Pagine"><a href="\/">Home<\/a><a href="\/contatti\/"[^>]*>Contattaci<\/a><\/nav>/.test(pie), /<ul class="piede-legale"><li><a href="\/privacy\/">Privacy policy<\/a><\/li><\/ul>/.test(pie)], [true, true])
+  const mappa = (apertura.match(/<figure class="tessera foto larga mappa">([\s\S]*?)<\/figure>/) || [, ''])[1]
+  ok('la mappa ha segnaposto, targhetta con nome e indirizzo, e il credito OpenStreetMap', [/<span class="segnaposto" aria-hidden="true"><\/span>/.test(mappa), /<span class="targhetta">Officine dello Sport<span>Via Sassi 26, Collegno<\/span><\/span>/.test(mappa), /<span class="credito">© OpenStreetMap contributors<\/span>/.test(mappa)], [true, true, true])
+  ok('una sola mappa: le foto di dopo non l’hanno', conta(apertura, /mappa"/g), 1)
+  ok('accanto al pulsante delle indicazioni c’è la nota (in una pillola bianca)', /<p>A pochi metri dalla metropolitana Fermi<\/p>/.test(apertura.split('foto-fila')[0].split('Ottieni indicazioni')[1] ?? ''), true)
+  ok('mappa: segnaposto al centro (44px), targhetta a destra e in alto', [/left:\s*calc\(50% - 22px\)/.test(css('.mappa .segnaposto')), /top:\s*calc\(50% - 52px\)/.test(css('.mappa .targhetta')), /background:\s*var\(--giallo\)/.test(css('.mappa .segnaposto'))], [true, true, true])
+  ok('mappa: targhetta con nome da 30px e indirizzo Inter 16px; credito da 12px', [/font-size:\s*30px/.test(css('.mappa .targhetta')), /font-size:\s*16px/.test(css('.mappa .targhetta span')), /font-size:\s*12px/.test(css('.mappa .credito'))], [true, true, true])
+  ok('pillola: bianca, alta 56px, accanto al pulsante a 6px', [/background:\s*#fff/.test(css('.apertura>.tessere+.colonna p+p')), /min-height:\s*56px/.test(css('.apertura>.tessere+.colonna p+p')), /gap:\s*6px/.test(css('.apertura>.tessere+.colonna'))], [true, true, true])
+  ok('foto: ritagliate a 50% 55%, la terza a 50% 30%', [/object-position:\s*50% 55%/.test(css('.apertura .foto-fila img')), /object-position:\s*50% 30%/.test(css('.apertura .foto-fila figure:nth-child(3) img'))], [true, true])
+  const mob = CSS.slice(CSS.indexOf('@media (max-width:900px)'))
+  const m = (sel) => [...mob.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].filter((x) => x[1].trim() === sel).map((x) => x[2]).join(';')
+  ok('telefono: la nota dell’indirizzo, la pillola e la frase delle domande non si vedono', [/display:\s*none/.test(m('.recapiti p:not(:first-of-type)')), /display:\s*none/.test(m('.apertura>.tessere+.colonna p+p')), /display:\s*none/.test(m('.pagina-contatti .sezione:not(.apertura) .colonna'))], [true, true, true])
+  ok('telefono: mappa con targhetta in alto a sinistra (nome 26px), segnaposto da 40px, credito da 11px', [/left:\s*16px/.test(m('.mappa .targhetta')), /font-size:\s*26px/.test(m('.mappa .targhetta')), /width:\s*40px/.test(m('.mappa .segnaposto')), /font-size:\s*11px/.test(m('.mappa .credito'))], [true, true, true, true])
+  ok('telefono: il piede è a blocco; menu e legge in riga con « · »', [/display:\s*block/.test(m('.piede')), /display:\s*inline/.test(m('.piede-menu a')), /content:\s*" · "/.test(m('.piede-menu a+a::before')), /opacity:\s*\.85/.test(m('.piede-legale'))], [true, true, true, true])
+  ok('piede sul computer: social in riga con « · », colonne a 40px', [/content:\s*" · "/.test(css('.recapiti-piede li:last-child::before')), /gap:\s*40px/.test(css('.piede'))], [true, true])
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')

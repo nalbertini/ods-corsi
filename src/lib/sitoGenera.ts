@@ -56,7 +56,7 @@ export interface DatiSito {
 const TESTI = {
   nome: 'Officine dello Sport',
   prova: 'Prova',
-  provaTestata: 'Prova una settimana · 5 €',
+  provaCoda: 'una settimana · 5 €',
   contattaci: 'Contattaci',
   invito: 'Vieni a provare: ti aspettiamo in',
   altriLink: 'Altri link',
@@ -225,6 +225,20 @@ ${GRIGLIE_LUNGHE}
 .testata .pulsante{padding:0 26px}
 .piede{margin:0 var(--margine) 48px}
 .piede .nome{font-size:clamp(44px,3.9vw,56px)}
+.piede{gap:40px}
+.piede-menu a{display:block}
+.recapiti-piede li:nth-child(n+3){display:inline}
+.recapiti-piede li:last-child::before{content:" · "}
+.mappa{position:relative}
+.mappa .segnaposto{position:absolute;left:calc(50% - 22px);top:calc(50% - 22px);width:44px;height:44px;border-radius:50%;background:var(--giallo);border:6px solid var(--inchiostro)}
+.mappa .targhetta{position:absolute;left:calc(50% + 34px);top:calc(50% - 52px);padding:12px 16px;border-radius:6px;background:var(--inchiostro);color:#fff;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:30px;line-height:.95}
+.mappa .targhetta span{display:block;margin-top:6px;font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;text-transform:none;font-weight:500;font-size:16px;line-height:1.55}
+.mappa .credito{position:absolute;right:0;bottom:0;padding:3px 8px;background:#fff;color:var(--inchiostro);font-size:12px;line-height:1.55}
+.apertura>.tessere+.colonna{display:flex;gap:6px}
+.apertura>.tessere+.colonna>*{margin:0}
+.apertura>.tessere+.colonna p+p{display:inline-flex;align-items:center;min-height:56px;padding:0 20px;border-radius:6px;background:#fff;font-size:16px;font-weight:500}
+.apertura .foto-fila img{object-position:50% 55%}
+.apertura .foto-fila figure:nth-child(3) img{object-position:50% 30%}
 .pagina-contatti .pagina-hero{flex-wrap:nowrap;align-items:flex-end;padding-bottom:72px}
 .pagina-contatti .pagina-hero .intro{flex:1;flex-direction:row;align-items:flex-end;gap:56px;max-width:none}
 .pagina-contatti .pagina-hero .intro h1{flex:1;margin:0;overflow-wrap:break-word}
@@ -291,7 +305,21 @@ ${GRIGLIE_LUNGHE}
 .testata nav a{background:var(--chiara);padding:0 14px}
 .testata nav a[aria-current]{background:var(--giallo)}
 .testata .pulsante{padding:0 22px}
-.piede{margin-bottom:24px;padding:24px}
+.piede{display:block;margin-bottom:24px;padding:24px}
+.piede .nome{margin-bottom:14px}
+.piede-menu,.piede-legale{margin-top:12px}
+.piede-menu a{display:inline}
+.piede-menu a+a::before{content:" · "}
+.piede-legale{opacity:.85}
+.piede-legale li{display:inline}
+.piede-legale li+li::before{content:" · "}
+.testata .estensione{display:none}
+.recapiti p:not(:first-of-type){display:none}
+.apertura>.tessere+.colonna p+p{display:none}
+.mappa .segnaposto{left:calc(50% - 20px);top:calc(50% - 20px);width:40px;height:40px}
+.mappa .targhetta{left:16px;top:78px;padding:10px 14px;font-size:26px}
+.mappa .targhetta span{margin-top:4px;font-size:14px}
+.mappa .credito{padding:2px 6px;font-size:11px}
 .pagina-contatti h1{font-size:19.5vw}
 .pagina-contatti .pagina-hero{padding:20px var(--margine) 36px}
 .pagina-contatti .pagina-hero .intro{flex-direction:column;align-items:stretch;gap:20px}
@@ -309,7 +337,8 @@ ${GRIGLIE_LUNGHE}
 .apertura .foto-fila img{height:200px}
 .apertura .foto-fila figure:nth-child(3){display:none}
 .pagina-contatti .sezione:not(.apertura) h2{font-size:56px;line-height:.88}
-.pagina-contatti .sezione:not(.apertura) .colonna{font-size:18px}
+.pagina-contatti .sezione:not(.apertura) .colonna{display:none}
+.pagina-contatti .sezione:not(.apertura) h2{margin-bottom:20px}
 .pagina-contatti .sezione:not(.apertura) .tessera{gap:12px;padding:20px}
 .pagina-contatti .sezione:not(.apertura) .tessera h3{font-size:30px}
 .pagina-contatti .sezione:not(.apertura) .tessere{grid-auto-rows:minmax(160px,auto)}
@@ -366,13 +395,15 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
 
 function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
   const menu = lista(voci('menu', c), corrente)
-  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.provaTestata}</a>` : ''}</header>`
+  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.prova}<span class="estensione"> ${TESTI.provaCoda}</span></a>` : ''}</header>`
 }
 
 function piede(c: Contesto): string {
   const f = lista(voci('footer', c))
+  const m = voci('menu', c)
   const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
-  return `<footer class="piede"><p class="nome">${NOME}</p><div class="colonne">${f ? `<div><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}<div><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div></div><div class="fine"><span>© ${NOME}</span></div></footer>`
+  // Come nel design: il nome, poi tre colonne senza titolo (recapiti, pagine, legge).
+  return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><ul class="recapiti-piede">${recapiti}</ul>${m.length ? `<nav class="piede-menu" aria-label="Pagine">${m.map((x) => `<a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a>`).join('')}</nav>` : ''}${f ? `<ul class="piede-legale">${f}</ul>` : ''}</footer>`
 }
 
 function invito(conContatti: boolean): string {
@@ -394,8 +425,8 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const t = testata(c, conContatti, percorso(p.slug))
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
-    : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main${p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo, p.slug === 'contatti') : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
+    : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
+  const corpo = `${t}<main${p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo, p.slug === 'contatti') : `<div class="testo">${testo}</div>`) : ''}</main>${invito(conContatti)}${piede(c)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo })
 }
 

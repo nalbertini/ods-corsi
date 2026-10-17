@@ -15,6 +15,9 @@
  * Niente script: lo scorrimento di lato è solo CSS (`scroll-snap`).
  */
 
+import { CONTATTI } from './sito'
+
+const NOME = 'Officine dello Sport'
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
 /** I colori delle tessere, nell'ordine in cui ruotano; a ogni sezione si riparte da blu. */
@@ -180,7 +183,9 @@ function apertura(b: Blocco[], primo: number): string {
   }
   const testa = b.slice(0, primo).map((x) => x.html).join('')
   const resto = b.slice(fine)
-  return `${testa.trim() ? `<div class="testo">${testa}</div>` : ''}<section class="sezione apertura">${tessereDaSottotitoli(gruppi, true)}${resto.length ? corpoSenzaSottotitoli(resto, '') : ''}</section>`
+  // La prima foto dopo i recapiti è la mappa: il segnaposto, la targhetta e il credito sono fissi, come nel design.
+  const mappa = (x: string) => x.replace(/<figure class="tessera foto larga">([\s\S]*?)<\/figure>/, `<figure class="tessera foto larga mappa">$1<span class="segnaposto" aria-hidden="true"></span><span class="targhetta">${esc(NOME)}<span>${esc(CONTATTI.indirizzo)}</span></span><span class="credito">© OpenStreetMap contributors</span></figure>`)
+  return `${testa.trim() ? `<div class="testo">${testa}</div>` : ''}<section class="sezione apertura">${tessereDaSottotitoli(gruppi, true)}${resto.length ? mappa(corpoSenzaSottotitoli(resto, '')) : ''}</section>`
 }
 
 /** Un pezzo di sezione senza sottotitoli (o prima del primo): colonna, citazioni, foto, elenco a tessere. */

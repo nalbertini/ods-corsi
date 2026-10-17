@@ -240,7 +240,7 @@ console.log('\nTestata: logo intero, menu, pulsante «Prova»')
   const ritaglio = R.filter((r) => r.sel.some((x) => /logo/.test(x))).filter((r) => /overflow:\s*hidden|object-position|background-position|object-fit:\s*cover/.test(JSON.stringify(r.dich)) || /^-/.test(r.dich.left ?? '') || /^-/.test(r.dich.top ?? '') || /%/.test(r.dich.width ?? '') && /img/.test(r.sel.join()))
   ok('il logo non è ritagliato (niente overflow nascosto, spostamenti o larghezza oltre il 100%)', ritaglio.map((r) => r.sel.join()), [])
   ok('il menu è nella testata, senza icona a tre righe', [/<nav aria-label="Principale">/.test(t), /<button\b/.test(t), /burger|hamburger|menu-toggle/i.test(home)], [true, false, false])
-  ok('con la pagina contatti: pulsante «Prova una settimana · 5 €» verso /contatti/ in testata', /<a class="[^"]*\bpulsante\b[^"]*" href="\/contatti\/">Prova una settimana · 5 €<\/a>/.test(t), true)
+  ok('con la pagina contatti: pulsante «Prova una settimana · 5 €» verso /contatti/ in testata', /<a class="[^"]*\bpulsante\b[^"]*" href="\/contatti\/">Prova<span class="estensione"> una settimana · 5 €<\/span><\/a>/.test(t), true)
   ok('senza la pagina contatti: nessun pulsante «Prova» né link a /contatti/', c(senza, 'index.html') !== '' && !/\/contatti\//.test(c(senza, 'index.html')), true)
   const mob = blocco(CSS, '@media (max-width:900px)')
   const rm = mob ? regole(mob.dentro) : []
@@ -267,7 +267,7 @@ console.log('\nPiede e invito')
   const inv = (t) => (t.match(/<a class="invito"[\s\S]*?<\/a>/) || [''])[0]
   const j = c(con, 'judo/index.html')
   ok('l’invito in fondo: link a /contatti/ con «Prova», dopo il contenuto e prima del piede', [/href="\/contatti\/"/.test(inv(j)), />Prova</.test(inv(j)), j.indexOf('</main>') < j.indexOf('class="invito"'), j.indexOf('class="invito"') < j.indexOf('<footer')], [true, true, true, true])
-  ok('non c’è nella pagina contatti', inv(c(con, 'contatti/index.html')), '')
+  ok('c’è anche nella pagina contatti (il design la ha)', /href="\/contatti\/"/.test(inv(c(con, 'contatti/index.html'))), true)
   ok('non c’è se la pagina contatti non esiste', inv(c(senza, 'index.html')), '')
   ok('«Prova» dell’invito è grande', /clamp\(\s*\d{2,3}px|^\d{2,3}px/.test(dich(R, V, (x) => /^\.invito .*parola$/.test(x))['font-size'] ?? ''), true)
 }
