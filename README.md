@@ -163,9 +163,14 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   (`supabase/56-sito.sql`). Le pagine pubblicate diventano il sito vero con `npm run sito:genera`
   (`src/lib/sitoGenera.ts`, `scripts/genera-sito.mjs`): file statici senza codice né servizi esterni, con
   carattere e logo propri in `sito/risorse/`; il testo si ripulisce un'altra volta quando si genera, perché
-  è la pulizia di cui ci si fida. Il sito starà su www.officinedellosport.it (GitHub Pages) e l'app su
-  app.officinedellosport.it: la pubblicazione sul dominio, le immagini e i rinvii dai vecchi indirizzi
-  arrivano dopo.
+  è la pulizia di cui ci si fida. Il sito sta su www.officinedellosport.it con GitHub Pages, nel
+  repository `nalbertini/officinedellosport-sito` (file generati, non si toccano a mano): il workflow
+  `.github/workflows/sito.yml` lo rigenera ogni cinque minuti e a ogni cambio del generatore, e manda
+  nel repository del sito solo quello che è cambiato (`scripts/pubblica-sito.sh`), con una chiave di
+  scrittura che vale solo per quel repository (`SITO_DEPLOY_KEY`); `SUPABASE_URL` e `SUPABASE_ANON_KEY`
+  sono variabili del repository. Senza una Home pubblicata non c'è niente da pubblicare e il sito di
+  prima resta com'è. Il dominio e l'app su app.officinedellosport.it, le immagini e i rinvii dai vecchi
+  indirizzi arrivano dopo.
 - **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
   iscrive risponde alle domande dal telefono, **firma col dito** il modulo
   delle autorizzazioni (il PDF della palestra, compilato coi suoi dati da
@@ -424,6 +429,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
 | `npm run prova:sito` | Il pannello SITO, senza browser: la pulizia del testo con una lista di attacchi noti, gli indirizzi delle pagine, lo stato fra bozza e pubblicato, il controllo di menu e footer, e le stesse regole della modalità prova. |
 | `npm run prova:sito-genera` | Il sito generato e lo script che lo scrive: un file per pagina, mai codice né servizi esterni, titolo e voci sempre escapati anche se arrivano dall'API, indirizzi strani scartati, sitemap, robots, rinvii e 404, le stesse pagine due volte danno gli stessi file, e lo script non cancella mai una cartella che non è sua né tocca il sito di prima se qualcosa non va. |
+| `npm run prova:sito-pubblica` | La pubblicazione del sito, senza GitHub: un repository finto e il suo remoto. Il primo giro copia i file e fa un commit, lo stesso sito due volte non ne fa un altro, quello che sparisce dalle pagine sparisce dal sito, il dominio (`CNAME`) resta, e un sito vuoto, senza la home o in una cartella sbagliata non si pubblica mai. |
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. L'«Attività» di ogni giorno scelta da un elenco: nomi, rinomina, eliminazione, NON PIÙ IN USO, giorno e lezioni, l'istruttore che cambia la sua, il database senza `41-attivita.sql`. SALVA LE DATE che toglie le lezioni fuori dalle date dei corsi, tranne quelle con l'appello o una prova: la conferma prima, col conto, e l'avviso dopo, con corso e ora di quelle rimaste. |
 | `npm run prova:ruoli` | I ruoli del personale: le tre spunte (segreteria, amministrazione, istruttore) in tutte le combinazioni e il ruolo che ne esce, le aree, chi insegna, il nome del ruolo, un ruolo sconosciuto che non va in nessuna area, e chi può cosa (l'amministrazione solo ricevute, pagamenti, listino e contabilità). |
 | `npm run prova:certificati` | I certificati medici che restano nell'app: gli stati della scheda (nessuno, valido, in scadenza, scaduto con o senza file, valido senza file, file di prima), sotto i 6 anni che non manca, un file per persona che prende il posto del vecchio con la data, i rifiuti (tipo, 10 MB, data) che non cambiano niente, il file che se ne va 30 giorni dopo la scadenza o con la persona disattivata, il file che passa a chi resta unendo due schede e dalla richiesta accolta alla scheda, il link di dieci minuti e il database non aggiornato col Supabase finto; cosa dice la scheda in ogni stato e quando SALVA è pronto, una sola regola per «in regola» (sotto i 6 anni, anche il 29 febbraio) in DA FARE, ISCRITTI, statistiche e area iscritti, la data che viaggia con l'accoglimento e il rollback che dice di avvisare chi gestisce il database. |

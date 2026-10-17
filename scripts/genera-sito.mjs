@@ -18,6 +18,7 @@
 // `--da-file` legge le stesse risposte da un file json (`{ pagine, menu,
 // rinvii }`), senza rete: per provare il sito e per i test.
 // `SITO_DOMINIO` cambia il dominio (di norma https://www.officinedellosport.it).
+// Codici di uscita: 0 fatto; 2 la home non è ancora pubblicata (niente da pubblicare); 1 un guasto.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { cpSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs'
@@ -107,7 +108,11 @@ for (const nome of ['pagine', 'menu', 'rinvii']) {
   if (!Array.isArray(risposte[nome])) fine(`I dati non sono fatti come si aspetta il generatore: «${nome}» dovrebbe essere un elenco.`)
 }
 const dati = datiDaRisposte(dominio, risposte.pagine, risposte.menu, risposte.rinvii)
-if (!dati.pagine.some((p) => p.slug === 'home')) fine('La pagina iniziale (home) non è pubblicata: non genero un sito senza prima pagina.')
+if (!dati.pagine.some((p) => p.slug === 'home')) {
+  // Codice 2: «non c'è ancora niente da pubblicare». Chi pubblica il sito lo distingue da un guasto (codice 1).
+  console.error('✗ La pagina iniziale (home) non è pubblicata: non genero un sito senza prima pagina.')
+  process.exit(2)
+}
 
 let file
 try {
