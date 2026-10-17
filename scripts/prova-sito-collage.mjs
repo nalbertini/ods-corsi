@@ -46,6 +46,8 @@ const carica = async (file) => {
 const g = await carica('src/lib/sitoGenera.ts')
 const t = await carica('src/lib/sitoTesto.ts')
 
+// L'unico <script> ammesso è il blocco dei dati strutturati (ld+json): è JSON con ogni «<» escapato, e non può contenere altri tag.
+const senzaDati = (h) => h.replace(/<script type="application\/ld\+json">[^<]*<\/script>/g, '')
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
   const va = JSON.stringify(avuto) === JSON.stringify(voluto)
@@ -387,7 +389,7 @@ console.log('\n9. Contattaci e prezzo (R12)')
 console.log('\n10. Testo ostile esce ripulito')
 {
   const h = pag(`<script>alert(1)</script><p class="collage" onclick="x()">Ciao</p><img src="javascript:alert(1)" alt="j"><div class="tessera blu numero">falso</div><ul class="numeri"><li><strong onclick="y()">1</strong> a</li><li><strong>2</strong> b</li></ul>${SEZIONI}`)
-  ok('niente script, onclick o javascript:', [/<script/i.test(h), /\son[a-z]+\s*=/i.test(main(h)), /javascript:/i.test(h)], [false, false, false])
+  ok('niente script, onclick o javascript:', [/<script/i.test(senzaDati(h)), /\son[a-z]+\s*=/i.test(main(h)), /javascript:/i.test(h)], [false, false, false])
   ok('la classe «collage» della segreteria non sopravvive', /class="[^"]*\bcollage\b/.test(main(h)), false)
   ok('la classe «tessera numero» scritta a mano non crea tessere: solo le due vere', numeri(h).length, 2)
   ok('le due vere sono blu e giallo', numeri(h).map(colore), ['blu', 'giallo'])

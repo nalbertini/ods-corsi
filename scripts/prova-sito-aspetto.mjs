@@ -33,6 +33,8 @@ const carica = async (file) => {
 const g = await carica('src/lib/sitoGenera.ts')
 const s = await carica('src/lib/sito.ts')
 
+// L'unico <script> ammesso è il blocco dei dati strutturati (ld+json): è JSON con ogni «<» escapato, e non può contenere altri tag.
+const senzaDati = (h) => h.replace(/<script type="application\/ld\+json">[^<]*<\/script>/g, '')
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
   const va = JSON.stringify(avuto) === JSON.stringify(voluto)
@@ -148,7 +150,7 @@ console.log('\nCarattere: Big Shoulders Display e Inter, file del sito')
   ok('la licenza OFL di Big Shoulders e quella di Inter sono accanto ai file', [/Big Shoulders/i.test(ofl), /\bInter\b/.test(ofl), /SIL OPEN FONT LICENSE/i.test(ofl)], [true, true, true])
   ok('Bricolage Grotesque è uscito: né nel CSS né in sito/risorse', [/bricolage/i.test(CSS), risorse.filter((n) => /bricolage/i.test(n))], [false, []])
   ok('nessun indirizzo esterno nel CSS (niente fonts.googleapis.com, niente http)', /https?:\/\/|\/\/[a-z]/i.test(CSS.replace(/\/\*[\s\S]*?\*\//g, '')), false)
-  ok('nessun @import né <script', [/@import/i.test(home), /<script/i.test(home)], [false, false])
+  ok('nessun @import né <script', [/@import/i.test(home), /<script/i.test(senzaDati(home))], [false, false])
   const fam = (d) => d['font-family'] ?? ''
   const corpo = fam(dich(R, V, (x) => x === 'body'))
   ok('il testo è Inter, con ripiego Helvetica Neue e Arial', [/^"?inter"?\s*,/.test(corpo), /helvetica neue/.test(corpo), /\barial\b/.test(corpo)], [true, true, true])
