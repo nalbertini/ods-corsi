@@ -313,7 +313,7 @@ console.log('\nDopo le revisioni')
 ok('bozza uguale dopo la pulizia → non cambiata', prova(() => p.bozzaCambiata('<p>a<br>b</p>', t.pulisciTesto('<p>a<br>b</p>'))), false)
 ok('bozza con una parola in più → cambiata', prova(() => p.bozzaCambiata('<p>a b</p>', '<p>a</p>')), true)
 ok('bozza con codice che si toglie → non cambiata', prova(() => p.bozzaCambiata('<p>a</p><script>x</script>', '<p>a</p>')), false)
-// I due elenchi (qui e in 55-sito.sql) dei nomi che il sito tiene per sé.
+// I due elenchi (qui e in 56-sito.sql) dei nomi che il sito tiene per sé.
 for (const r of ['sitemap', 'robots']) ok(`riservato «${r}» → una frase`, frase(prova(() => p.controllaSlug(r, []))), true)
 ok('di legge: l\'indirizzo non si cambia', frase(prot({ diLegge: true }, 'indirizzo')), true)
 ok('normale: l\'indirizzo si cambia', prot({ diLegge: false }, 'indirizzo'), null)

@@ -6,7 +6,7 @@
 -- rifiuta; chi salva con una versione vecchia si sente dire che la pagina è
 -- cambiata; le pagine di legge non si nascondono né si cancellano; una pagina
 -- nel menu non si cancella; cambiare indirizzo lascia un rinvio.
--- Si lancia dopo finto-supabase.sql, i file dello schema e 55-sito.sql.
+-- Si lancia dopo finto-supabase.sql, i file dello schema e 56-sito.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -506,7 +506,7 @@ select atteso('né nei rinvii',
 
 \echo ''
 \echo '--- 13. rilanciato: le pagine di prima restano come sono ---'
-\ir ../55-sito.sql
+\ir ../56-sito.sql
 select atteso('le pagine sono le stesse', md5(coalesce((select string_agg(t::text, '' order by id) from sito_pagine t), '')), :'h_pagine');
 select atteso('il menu è lo stesso', md5(coalesce((select string_agg(t::text, '' order by id) from sito_menu t), '')), :'h_menu');
 select chi('');

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import AvvisoUscita from './components/AvvisoUscita'
 import './styles.css'
-import { registraAggiornamenti } from './lib/aggiornamento'
+import { registraAggiornamenti, ricaricaSePezzoMancante } from './lib/aggiornamento'
 import { avviaTema } from './lib/tema'
 import { vecchioIndirizzo } from './lib/aree'
 
@@ -15,6 +15,7 @@ if (verso) {
 } else {
   avviaTema()
 
+  ricaricaSePezzoMancante()
   window.addEventListener('load', registraAggiornamenti)
 
   createRoot(document.getElementById('root')!).render(

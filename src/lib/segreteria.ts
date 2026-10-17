@@ -325,9 +325,11 @@ export interface PersonaleSeg {
   nome: string
   cognome: string
   email?: string
-  ruolo: 'istruttore' | 'staff'
-  /** Di segreteria, e insegna anche: vedi `ruoli.ts`. */
+  ruolo: 'istruttore' | 'staff' | 'amministrazione'
+  /** Di segreteria o di amministrazione, e insegna anche: vedi `ruoli.ts`. */
   ancheIstruttore: boolean
+  /** Di segreteria, e cura anche i conti: vedi `ruoli.ts`. */
+  ancheAmministrazione: boolean
   attiva: boolean
   /** Ha già fatto l'accesso almeno una volta: il suo account è legato. */
   collegato: boolean
@@ -601,6 +603,10 @@ export interface DatiSegreteria {
   annullaRicevuta(id: string): Promise<void>
   /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
   pagamentiDiretti(personaId?: string): Promise<PagamentoDiretto[]>
+  /** Nome e cognome di chi ha pagato, e nient'altro: per chi segue i pagamenti senza vedere le persone (`55-amministrazione.sql`). */
+  nomiPersone(ids: string[]): Promise<Array<{ id: string; nome: string; cognome: string }>>
+  /** Chi ha pagato, cercato per nome: almeno tre lettere, al massimo otto, solo nome e cognome (`cerca_pagatori`). */
+  cercaPagatori(scritto: string): Promise<Array<{ id: string; nome: string; cognome: string }>>
   /** Registra un pagamento fatto a mano, senza ricevuta. */
   registraPagamentoDiretto(d: DatiPagamentoDiretto): Promise<PagamentoDiretto>
   /** Lo annulla: resta in elenco, segnato annullato. */
@@ -1204,6 +1210,36 @@ export function iscrittiDelCorso(persone: PersonaSeg[], corsoId: string, oggi: s
     })
   }
   return righe.sort((a, b) => a.persona.cognome.localeCompare(b.persona.cognome, 'it') || a.persona.nome.localeCompare(b.persona.nome, 'it'))
+}
+
+/** Non in regola come nella pagina ISCRITTI (`fuoriRegola`): certificato rosso o quota non pagata, IN PARTE compresa; il giallo del certificato no. */
+export const nonInRegola = (r: RigaIscrittoCorso) => r.certificato.tono === 'rosso' || r.quota.tono !== 'verde'
+
+/** Il corso a cui riporta «‹ CORSO» dalla scheda di una persona: quello di provenienza, se è ancora in calendario. */
+export const corsoDiProvenienza = (daCorso: string | undefined, corsi: { id: string; attivo: boolean }[]) =>
+  daCorso && corsi.some((c) => c.attivo && c.id === daCorso) ? daCorso : undefined
+
+/** Il chip NON IN REGOLA del tab ISCRITTI. */
+export const soloNonInRegola = (righe: RigaIscrittoCorso[]) => righe.filter(nonInRegola)
+
+/**
+ * La riga sopra l'elenco: il conto, poi cosa non va (certificato rosso, quota non pagata) o TUTTO IN REGOLA.
+ * Conta tutto il corso, qualunque ricerca o filtro. I posti si dicono solo a corso pieno o oltre: il resto è nel conto.
+ */
+export function riepilogoCorso(righe: RigaIscrittoCorso[], capienza?: number): { testo: string; tono: 'neutro' | 'giallo' | 'rosso' | 'verde' }[] {
+  const n = righe.length
+  const conto = contoCorso(n, capienza)
+  const voci: { testo: string; tono: 'neutro' | 'giallo' | 'rosso' | 'verde' }[] = capienza
+    ? [{ testo: conto.testo, tono: conto.tono }]
+    : [{ testo: n === 1 ? '1 ISCRITTO' : `${n} ISCRITTI`, tono: 'neutro' }]
+  if (capienza && n === capienza) voci.push({ testo: 'CORSO PIENO', tono: 'giallo' })
+  if (capienza && n > capienza) voci.push({ testo: `${n - capienza} IN PIÙ DEI POSTI`, tono: 'rosso' })
+  const senza = righe.filter((r) => r.certificato.tono === 'rosso').length
+  const pagare = righe.filter((r) => r.quota.tono !== 'verde').length
+  if (senza) voci.push({ testo: `${senza} SENZA CERTIFICATO`, tono: 'rosso' })
+  if (pagare) voci.push({ testo: `${pagare} DA PAGARE`, tono: 'rosso' })
+  if (!senza && !pagare) voci.push({ testo: 'TUTTO IN REGOLA', tono: 'verde' })
+  return voci
 }
 
 /** Il campo CERCA del tab ISCRITTI: come la ricerca delle persone (apostrofi, trattini, accenti e maiuscole non contano); vuoto = tutte. */

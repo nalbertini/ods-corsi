@@ -256,7 +256,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('52-presenze-finestra.sql', 'le presenze si toccano solo nelle lezioni di questi giorni',
     exists (select 1 from pg_trigger where tgname = 'presenze_a_finestra' and not tgisinternal)
     and exists (select 1 from dentro where nome = 'istruttore_dall_appello' and corpo like '%tablet_regole%')),
-  ('55-sito.sql', 'le pagine del sito, col menu e i rinvii, scritte dalla segreteria',
+  ('56-sito.sql', 'le pagine del sito, col menu e i rinvii, scritte dalla segreteria',
     to_regclass('public.sito_pagine') is not null
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'salva_bozza_sito')
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'sito_pagine_pubbliche')),
@@ -264,6 +264,14 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.pagamenti_diretti') is not null
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'registra_pagamento_diretto')
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'annulla_pagamento_diretto')),
+  ('55-amministrazione.sql', 'il ruolo amministrazione, per chi cura i conti',
+    exists (select 1 from pg_enum e where e.enumtypid = 'ruolo'::regtype and e.enumlabel = 'amministrazione')
+    and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'persone' and column_name = 'anche_amministrazione')
+    and exists (select 1 from dentro where nome = 'e_amministrazione')
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%e_amministrazione()%')
+    and exists (select 1 from dentro where nome = 'nomi_persone')
+    and exists (select 1 from dentro where nome = 'cerca_pagatori')
+    and to_regclass('public.ricerche_pagatori') is not null),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

@@ -1,7 +1,7 @@
 {
   "name": "ods-corsi",
   "private": true,
-  "version": "0.69.0",
+  "version": "0.70.1",
   "type": "module",
   "description": "Calendario dei corsi e registro delle presenze per Officine Dello Sport - Collegno",
   "scripts": {
@@ -17,6 +17,7 @@
     "prova:coda": "node scripts/prova-coda.mjs",
     "prova:tablet": "node scripts/prova-tablet.mjs",
     "prova:segreteria": "node scripts/prova-segreteria.mjs",
+    "prova:ruoli": "node scripts/prova-ruoli.mjs",
     "prova:certificati": "node scripts/prova-certificati.mjs",
     "prova:campi": "node scripts/prova-campi.mjs",
     "prova:richieste": "node scripts/prova-richieste.mjs",
@@ -48,6 +49,7 @@
     "prova:importa": "node scripts/prova-importa.mjs",
     "prova:colleghi": "node scripts/prova-colleghi.mjs",
     "prova:finestra": "node scripts/prova-finestra.mjs",
+    "prova:aggiornamento": "node scripts/prova-aggiornamento.mjs",
     "prova:vestiario": "node scripts/prova-vestiario.mjs",
     "prova:backup": "node scripts/prova-backup.mjs",
     "prova:tema": "node scripts/prova-tema.mjs",

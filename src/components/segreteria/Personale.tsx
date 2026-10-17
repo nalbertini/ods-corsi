@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import { personaCambiata } from '../../lib/segreteria'
-import { daRuoloScelto, nomeDelRuolo, ruoloScelto, type RuoloScelto } from '../../lib/ruoli'
+import { daSpunte, insegna, nomeDelRuolo, puo, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
@@ -9,14 +9,28 @@ import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
 
-/** Quello che ciascun ruolo può fare: è il riassunto delle policy di `02-policy.sql`. */
-const PERMESSI: Array<[string, string]> = [
-  ['Vedere il calendario e fare l’appello, anche da sostituto', 'SÌ'],
-  ['Aprire l’area istruttore del tablet col PIN', 'SÌ'],
-  ['Annullare o chiudere le lezioni dei suoi corsi', 'SÌ'],
-  ['Cambiare corsi, orari e sale', 'NO'],
-  ['Aggiungere e togliere iscritti', 'NO'],
-  ['Vedere il resoconto delle presenze e le impostazioni', 'NO'],
+/**
+ * Quello che ciascun ruolo può fare, riga per riga: le stesse regole delle policy
+ * del database (`puo` in `ruoli.ts`, provata contro `supabase/prova/amministrazione.sql`).
+ */
+const PERMESSI: Array<[string, Permesso]> = [
+  ['Vedere il calendario e fare l’appello', 'appello'],
+  ['Aggiungere e togliere iscritti, cambiare corsi e orari', 'corsi'],
+  ['Vedere schede, certificati e presenze delle persone', 'schede'],
+  ['Registrare e annullare pagamenti, annullare ricevute', 'pagamenti'],
+  ['Emettere ricevute (per l’amministrazione non ancora)', 'emettere-ricevute'],
+  ['Vedere PAGAMENTI e scaricare il CSV', 'pagina-pagamenti'],
+  ['Cambiare il listino', 'listino'],
+  ['Vedere le STATISTICHE (presenze e iscritti)', 'statistiche'],
+  ['Contabilità: movimenti, casse, rendiconto (quando ci sarà)', 'contabilita'],
+  ['Creare account, cambiare i ruoli, scaricare il backup', 'account'],
+]
+
+/** Le tre cose che si scelgono, col nome che hanno sui tasti. */
+const SPUNTE: Array<[Spunta, string]> = [
+  ['segreteria', 'SEGRETERIA'],
+  ['amministrazione', 'AMMINISTRAZIONE'],
+  ['istruttore', 'ISTRUTTORE'],
 ]
 
 /**
@@ -47,10 +61,11 @@ export function Personale({ d }: { d: DatiSegreteria }) {
     accesso: (p) => (!p.attiva ? 2 : p.collegato ? 0 : 1),
     pin: (p) => (p.haPin ? 0 : 1),
   })
-  // La segreteria può tutto: la sua colonna, tutta SÌ, non ha niente da ordinare.
-  const permessi = useOrdina<(typeof PERMESSI)[number], 'cosa' | 'istruttore'>({
+  const permessi = useOrdina<(typeof PERMESSI)[number], 'cosa' | 'istruttore' | 'segreteria' | 'amministrazione'>({
     cosa: ([cosa]) => cosa,
-    istruttore: ([, i]) => (i === 'SÌ' ? 0 : 1),
+    istruttore: ([, p]) => (puo({ ruolo: 'istruttore' }, p) ? 0 : 1),
+    segreteria: ([, p]) => (puo({ ruolo: 'staff' }, p) ? 0 : 1),
+    amministrazione: ([, p]) => (puo({ ruolo: 'amministrazione' }, p) ? 0 : 1),
   })
   const chiudi = () => {
     setNuovo(false)
@@ -132,7 +147,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
                   </button>
                 </span>
                 <span className="sg-una-riga" style={{ fontSize: 12, color: 'var(--dim)' }} title={p.corsi.join(', ')}>
-                  {p.corsi.join(', ') || (ruoloScelto(p) === 'staff' ? 'segreteria' : 'nessun corso')}
+                  {p.corsi.join(', ') || (insegna(p) ? 'nessun corso' : 'non insegna')}
                 </span>
               </span>
               <span role="cell" className="sg-una-riga" style={{ fontSize: 13, color: p.email ? 'var(--sec)' : 'var(--rosso-testo)' }} title={p.email ?? 'Senza email non può entrare'}>
@@ -154,23 +169,33 @@ export function Personale({ d }: { d: DatiSegreteria }) {
 
         <section aria-label="Cosa può fare ogni ruolo" className="sg-riquadro">
           <Riga titolo="COSA PUÒ FARE OGNI RUOLO" />
+          <div className="sg-permessi-scorre">
           <div role="table" className="sg-permessi">
             <div role="row" className="contents">
               {permessi.colonna('cosa', 'PERMESSO')}
               {permessi.colonna('istruttore', 'ISTRUTTORE')}
-              <span role="columnheader" className="sg-etichetta">SEGRETERIA</span>
+              {permessi.colonna('segreteria', 'SEGRETERIA')}
+              {permessi.colonna('amministrazione', 'AMMINISTRAZIONE')}
             </div>
-            {permessi.ordina(PERMESSI).map(([cosa, i]) => (
+            {permessi.ordina(PERMESSI).map(([cosa, perm]) => (
               <div key={cosa} role="row" className="contents">
                 <span role="cell" style={{ fontSize: 14, color: 'var(--sec)' }}>{cosa}</span>
-                <span role="cell" className="num" style={{ fontWeight: 700, color: i === 'SÌ' ? 'var(--text)' : 'var(--dim)' }}>{i}</span>
-                <span role="cell" className="num" style={{ fontWeight: 700 }}>SÌ</span>
+                {(['istruttore', 'staff', 'amministrazione'] as const).map((ruolo) => {
+                  const si = puo({ ruolo }, perm)
+                  return (
+                    <span key={ruolo} role="cell" className="num" style={{ fontWeight: 700, color: si ? 'var(--text)' : 'var(--dim)' }}>
+                      {si ? 'SÌ' : 'NO'}
+                    </span>
+                  )
+                })}
               </div>
             ))}
           </div>
+          </div>
           <span style={{ fontSize: 14, color: 'var(--sec)' }}>
-            Chi ha tutti e due i ruoli può quello che può la segreteria, gli si danno dei corsi come a un istruttore, e il
-            PIN sul tablet gli segna la presenza. All’accesso sceglie dove andare: in segreteria o al calendario.
+            Chi ha più ruoli può quello che può ciascuno. L’amministrazione non vede le schede: nei pagamenti vede il nome, non
+            il telefono né il codice fiscale; le ricevute nuove, per l’amministrazione, arrivano dopo. All’accesso chi ha più aree sceglie dove andare, e dal menu passa dall’una all’altra
+            senza uscire.
           </span>
         </section>
       </div>
@@ -191,27 +216,49 @@ function Accesso({ p }: { p: PersonaleSeg }) {
   )
 }
 
-/** Il ruolo, anche doppio: la segreteria che insegna anche. */
-function SceltaRuolo({ ruolo, onScegli }: { ruolo: RuoloScelto; onScegli: (r: RuoloScelto) => void }) {
+/**
+ * Il ruolo: tre spunte, anche più d'una (segreteria, amministrazione, istruttore).
+ * Ne serve almeno una: l'ultima accesa non si spegne.
+ */
+function SceltaRuolo({ spunte, onScegli }: { spunte: Spunta[]; onScegli: (s: Spunta[]) => void }) {
+  const tocca = (x: Spunta) => {
+    const nuove = spunte.includes(x) ? spunte.filter((y) => y !== x) : [...spunte, x]
+    if (nuove.length) onScegli(nuove)
+  }
   return (
-    <div role="radiogroup" aria-label="Ruolo" className="sg-due" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
-      {(
-        [
-          ['istruttore', 'ISTRUTTORE'],
-          ['staff', 'SEGRETERIA'],
-          ['entrambi', 'TUTTI E DUE'],
-        ] as const
-      ).map(([r, testo]) => (
-        <button key={r} type="button" role="radio" aria-checked={ruolo === r} className="sg-btn sg-scelta" onClick={() => onScegli(r)}>
-          {testo}
-        </button>
-      ))}
+    <div className="stack" style={{ gap: 8 }}>
+      <div role="group" aria-label="Ruolo" className="sg-spunte">
+        {SPUNTE.map(([x, testo]) => (
+          <button key={x} type="button" role="checkbox" aria-checked={spunte.includes(x)} className="sg-btn sg-scelta" onClick={() => tocca(x)}>
+            <span aria-hidden="true" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, border: '2px solid currentColor', fontStyle: 'normal' }}>
+              {spunte.includes(x) ? '✓' : ''}
+            </span>
+            {testo}
+          </button>
+        ))}
+      </div>
+      <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14, color: 'var(--sec)', lineHeight: 1.4 }}>
+        <li>
+          <b>Segreteria</b>: persone, corsi, presenze, ricevute e pagamenti.
+        </li>
+        <li>
+          <b>Amministrazione</b>: pagamenti e listino, senza le persone né i loro contatti.
+        </li>
+        <li>
+          <b>Istruttore</b>: calendario e appello, PIN del tablet.
+        </li>
+      </ul>
+      <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.4 }}>
+        {spunte.length > 1
+          ? 'Più aree, un solo accesso: dopo l’accesso si sceglie dove andare, e dal menu si passa dall’una all’altra senza uscire.'
+          : 'Se serve più di un ruolo, si accendono insieme: ne serve almeno uno.'}
+      </span>
     </div>
   )
 }
 
 /** Il modulo appena aperto: diverso da questo, c'è da perdere qualcosa. */
-const VUOTA = { nome: '', cognome: '', email: '', ruolo: 'istruttore' as RuoloScelto }
+const VUOTA = { nome: '', cognome: '', email: '', spunte: ['istruttore'] as Spunta[] }
 
 function Aggiungi({
   d,
@@ -230,7 +277,7 @@ function Aggiungi({
 }) {
   const [bozza, setBozza] = useState(VUOTA)
   const [invitaSubito, setInvitaSubito] = useState(true)
-  useBozza(!!(bozza.nome.trim() || bozza.cognome.trim() || bozza.email.trim()) || bozza.ruolo !== VUOTA.ruolo, `${bozza.nome.trim()} ${bozza.cognome.trim()}`.trim() || undefined)
+  useBozza(!!(bozza.nome.trim() || bozza.cognome.trim() || bozza.email.trim()) || !stesseSpunte(bozza.spunte, VUOTA.spunte), `${bozza.nome.trim()} ${bozza.cognome.trim()}`.trim() || undefined)
 
   const aggiungi = (e: FormEvent) => {
     e.preventDefault()
@@ -241,8 +288,11 @@ function Aggiungi({
     let guaio = false
     void fai(
       async () => {
-        const { ruolo, ancheIstruttore } = daRuoloScelto(chi.ruolo)
-        id = await d.salvaPersonale({ ...chi, ruolo, ...(ancheIstruttore ? { ancheIstruttore } : {}) })
+        const { spunte, ...resto } = chi
+        // `SceltaRuolo` non lascia spegnere l'ultima spunta: un ruolo c'è sempre.
+        const r = daSpunte(spunte) ?? { ruolo: 'istruttore' as const, ancheIstruttore: false, ancheAmministrazione: false }
+        // I segni dei ruoli doppi si scrivono solo se ci sono: un database senza le loro colonne salva lo stesso.
+        id = await d.salvaPersonale({ ...resto, ruolo: r.ruolo, ...(r.ancheIstruttore ? { ancheIstruttore: true } : {}), ...(r.ancheAmministrazione ? { ancheAmministrazione: true } : {}) })
         if (!invita) return
         // La persona è salvata comunque: un invito non partito si rimanda dalla sua scheda.
         try {
@@ -275,7 +325,7 @@ function Aggiungi({
         </Campo>
         <div className="stack" style={{ gap: 6, gridColumn: 'span 2' }}>
           <span className="sg-etichetta">RUOLO</span>
-          <SceltaRuolo ruolo={bozza.ruolo} onScegli={(ruolo) => setBozza({ ...bozza, ruolo })} />
+          <SceltaRuolo spunte={bozza.spunte} onScegli={(spunte) => setBozza({ ...bozza, spunte })} />
         </div>
       </div>
       <label className="row" style={{ gap: 8, fontSize: 14, color: 'var(--sec)', cursor: 'pointer' }}>
@@ -325,11 +375,25 @@ function Scheda({
   useBozza((!!modifica && personaCambiata(p, modifica)) || !!pin, `${p.nome} ${p.cognome}`.trim())
   // Il ruolo doppio si scrive solo se c'era o ci sarà: un database senza la
   // sua colonna salva lo stesso tutti gli altri (vedi `ruoloDaScrivere`).
-  const dati = { id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, ruolo: p.ruolo, ...(p.ancheIstruttore ? { ancheIstruttore: true } : {}) }
-  const cambiaRuolo = (r: RuoloScelto) => {
-    if (r === ruoloScelto(p)) return
-    const nuovo = daRuoloScelto(r)
-    const ruolo = nuovo.ancheIstruttore || p.ancheIstruttore ? nuovo : { ruolo: nuovo.ruolo }
+  const dati = {
+    id: p.id,
+    nome: p.nome,
+    cognome: p.cognome,
+    email: p.email,
+    ruolo: p.ruolo,
+    ...(p.ancheIstruttore ? { ancheIstruttore: true } : {}),
+    ...(p.ancheAmministrazione ? { ancheAmministrazione: true } : {}),
+  }
+  // PIN, kanji e ore sono di chi sta in sala o insegna: chi cura solo i conti non li ha.
+  const dellaSala = puo(p, 'pin')
+  const cambiaRuolo = (s: Spunta[]) => {
+    const nuovo = daSpunte(s)
+    if (!nuovo || stesseSpunte(s, spunteDi(p))) return
+    const ruolo = {
+      ruolo: nuovo.ruolo,
+      ...(nuovo.ancheIstruttore || p.ancheIstruttore ? { ancheIstruttore: nuovo.ancheIstruttore } : {}),
+      ...(nuovo.ancheAmministrazione || p.ancheAmministrazione ? { ancheAmministrazione: nuovo.ancheAmministrazione } : {}),
+    }
     void fai(() => d.salvaPersonale({ ...dati, ...ruolo }), 'Ruolo cambiato', onCambiato)
   }
 
@@ -403,7 +467,7 @@ function Scheda({
                   <span style={{ fontSize: 14, overflowWrap: 'anywhere', color: p.email ? 'var(--text)' : 'var(--rosso-testo)' }}>{p.email ?? 'nessuna email: non può entrare'}</span>
                 </Campo>
                 <Campo etichetta="CORSI">
-                  <span style={{ fontSize: 14, color: p.corsi.length ? 'var(--text)' : 'var(--dim)' }}>{p.corsi.join(', ') || (ruoloScelto(p) === 'staff' ? 'segreteria' : 'nessun corso')}</span>
+                  <span style={{ fontSize: 14, color: p.corsi.length ? 'var(--text)' : 'var(--dim)' }}>{p.corsi.join(', ') || (insegna(p) ? 'nessun corso' : 'non insegna')}</span>
                 </Campo>
               </div>
               <div className="row">
@@ -416,10 +480,10 @@ function Scheda({
 
           <div className="stack" style={{ gap: 8 }}>
             <Riga titolo="RUOLO" />
-            <SceltaRuolo ruolo={ruoloScelto(p)} onScegli={cambiaRuolo} />
+            <SceltaRuolo spunte={spunteDi(p)} onScegli={cambiaRuolo} />
           </div>
 
-          <SceltaKanji d={d} p={p} altri={altri} fai={fai} onCambiato={onCambiato} />
+          {dellaSala && <SceltaKanji d={d} p={p} altri={altri} fai={fai} onCambiato={onCambiato} />}
         </div>
 
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
@@ -445,55 +509,57 @@ function Scheda({
             )}
           </div>
 
-          <div className="stack" style={{ gap: 8 }}>
-            <Riga titolo="PIN TABLET">
-              <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: p.haPin ? 'var(--text)' : 'var(--dim)' }}>
-                {p.haPin ? 'IMPOSTATO' : 'NESSUNO'}
-              </span>
-            </Riga>
-            <span style={{ fontSize: 14, color: 'var(--sec)' }}>Quattro cifre, per l’AREA ISTRUTTORE del tablet di sala. Due persone non possono avere lo stesso PIN.</span>
-            {pin !== null ? (
-              <form
-                className="row"
-                style={{ gap: 8 }}
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  void fai(() => d.impostaPin(p.id, pin), 'PIN impostato', async () => {
-                    setPin(null)
-                    await onCambiato()
-                  })
-                }}
-              >
-                <input
-                  className="sg-campo num"
-                  style={{ width: 100 }}
-                  inputMode="numeric"
-                  pattern="\d{4}"
-                  maxLength={4}
-                  aria-label={`Nuovo PIN di ${p.nome}`}
-                  autoFocus
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                />
-                <button type="submit" className="num sg-chip sg-chip-pieno" disabled={pin.length !== 4}>
-                  OK
-                </button>
-                <button type="button" className="sg-link" onClick={() => setPin(null)}>
-                  lascia stare
-                </button>
-              </form>
-            ) : (
-              <div className="row">
-                <button type="button" className="num sg-chip" onClick={() => setPin('')}>
-                  {p.haPin ? 'CAMBIA IL PIN' : 'IMPOSTA IL PIN'}
-                </button>
-              </div>
-            )}
-          </div>
+          {dellaSala && (
+            <div className="stack" style={{ gap: 8 }}>
+              <Riga titolo="PIN TABLET">
+                <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: p.haPin ? 'var(--text)' : 'var(--dim)' }}>
+                  {p.haPin ? 'IMPOSTATO' : 'NESSUNO'}
+                </span>
+              </Riga>
+              <span style={{ fontSize: 14, color: 'var(--sec)' }}>Quattro cifre, per l’AREA ISTRUTTORE del tablet di sala. Due persone non possono avere lo stesso PIN.</span>
+              {pin !== null ? (
+                <form
+                  className="row"
+                  style={{ gap: 8 }}
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    void fai(() => d.impostaPin(p.id, pin), 'PIN impostato', async () => {
+                      setPin(null)
+                      await onCambiato()
+                    })
+                  }}
+                >
+                  <input
+                    className="sg-campo num"
+                    style={{ width: 100 }}
+                    inputMode="numeric"
+                    pattern="\d{4}"
+                    maxLength={4}
+                    aria-label={`Nuovo PIN di ${p.nome}`}
+                    autoFocus
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  />
+                  <button type="submit" className="num sg-chip sg-chip-pieno" disabled={pin.length !== 4}>
+                    OK
+                  </button>
+                  <button type="button" className="sg-link" onClick={() => setPin(null)}>
+                    lascia stare
+                  </button>
+                </form>
+              ) : (
+                <div className="row">
+                  <button type="button" className="num sg-chip" onClick={() => setPin('')}>
+                    {p.haPin ? 'CAMBIA IL PIN' : 'IMPOSTA IL PIN'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      <PresenzeDelMese d={d} p={p} />
+      {dellaSala && <PresenzeDelMese d={d} p={p} />}
 
       <div className="sg-scheda-piede">
         <button
@@ -507,7 +573,7 @@ function Scheda({
           {p.attiva ? 'TOGLI L’ACCESSO' : 'RIDAI L’ACCESSO'}
         </button>
         {/* Solo chi insegna, anche col ruolo doppio: a chi è solo di segreteria si toglie l'accesso. Se ha corsi, lezioni o presenze il database dice di no, e perché. */}
-        {ruoloScelto(p) !== 'staff' && (
+        {insegna(p) && (
           <button
             type="button"
             className="sg-btn sg-btn-linea"

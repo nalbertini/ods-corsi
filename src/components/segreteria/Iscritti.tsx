@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, fuoriRegola, confermaDisattiva, confermaUnione, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
+import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, fuoriRegola, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -87,6 +87,8 @@ function Bollino({ tono, children }: { tono: Tono; children: string }) {
 export function Iscritti({
   d,
   scelta,
+  daCorso,
+  onCorso,
   nuovo = false,
   onScelta,
   onNuovo,
@@ -98,6 +100,9 @@ export function Iscritti({
   d: DatiSegreteria
   /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
   scelta?: string
+  /** Il corso da cui si è aperta la scheda: «‹ CORSO» riporta lì, se è ancora in calendario. */
+  daCorso?: string
+  onCorso: (corsoId: string) => void
   /** Il modulo del nuovo iscritto: sta nell'indirizzo anche lui, così Indietro lo chiude. */
   nuovo?: boolean
   /** `push` è un passo per Indietro, `replace` corregge l'indirizzo di adesso. */
@@ -180,9 +185,19 @@ export function Iscritti({
     if (scelta || nuovo) onScelta(null, 'push')
   }
   // ← ISCRITTI con un iscritto nuovo o una ricevuta a metà: la stessa domanda del menu e di Indietro.
+  // Aperta da un corso ancora in calendario, il tasto riporta lì; se no (corso archiviato, indirizzo inventato) all'elenco.
+  const corsoDa = corsoDiProvenienza(daCorso, corsi.dato ?? [])
   const torna = async () => {
-    if (await lasciare()) chiudi()
+    if (!(await lasciare())) return
+    if (corsoDa) onCorso(corsoDa)
+    else chiudi()
   }
+  // Un `?corso=` che non porta a un corso in calendario si toglie dall'indirizzo, senza avviso: la persona c'è.
+  useEffect(() => {
+    if (!daCorso || !scelta || !corsi.dato || corsoDa) return
+    onScelta(scelta, 'replace')
+    // All'arrivo dei corsi e quando cambia il corso di provenienza (Avanti del browser).
+  }, [corsi.dato, daCorso])
 
   // Una scheda di qualcuno che non c'è più (un link vecchio, un'altra
   // finestra): si torna all'elenco e lo si dice. Solo quando l'elenco arriva:
@@ -214,7 +229,7 @@ export function Iscritti({
           </Bozza>
         </SchedaPiena>
       ) : persona ? (
-        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna="ISCRITTI" onTorna={torna}>
+        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna={corsoDa ? 'CORSO' : 'ISCRITTI'} onTorna={torna}>
           <Scheda
             d={d}
             p={persona}

@@ -6,6 +6,7 @@ Tutto quello che è stato pagato, di tutti, in un posto solo: i pagamenti delle
 ricevute e quelli registrati a mano senza ricevuta. Serve a rispondere a «ma
 Rossi ha pagato?» e a sapere chi richiamare. Si guarda e basta: un pagamento
 si registra o si annulla dalla [scheda della persona](iscritti.md#un-pagamento-e-la-sua-ricevuta).
+La stessa pagina la vede anche chi ha il ruolo di [amministrazione](../amministrazione/pagamenti.md), senza i contatti, e da lì registra e annulla i pagamenti senza aprire la scheda.
 
 ## I quattro numeri
 

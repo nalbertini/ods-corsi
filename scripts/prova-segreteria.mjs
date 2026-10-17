@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { cosaNonVaDiretto } from './src/lib/pagamenti'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export * as importaLib from './src/lib/importa'; export { carattereControllo } from './src/lib/codiceFiscale'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { dellaDisciplina } from './timer/src/lib/discipline'; export { tutteLeRighe } from './src/lib/tutteLeRighe'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { cosaNonVaDiretto } from './src/lib/pagamenti'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export * as importaLib from './src/lib/importa'; export { carattereControllo } from './src/lib/codiceFiscale'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daSpunte, nomeDelRuolo, spunteDi } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { dellaDisciplina } from './timer/src/lib/discipline'; export { tutteLeRighe } from './src/lib/tutteLeRighe'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -917,22 +917,69 @@ console.log('\nl\'invito per email')
 
 console.log('\nil ruolo doppio, segreteria e istruttore')
 {
-  const id = await s.salvaPersonale({ nome: 'Dora', cognome: 'Doppia', email: 'dora@esempio.it', ...m.daRuoloScelto('entrambi') })
+  const id = await s.salvaPersonale({ nome: 'Dora', cognome: 'Doppia', email: 'dora@esempio.it', ...m.daSpunte(['segreteria', 'istruttore']) })
   const dora = async () => (await s.personale()).find((p) => p.id === id)
-  ok('è segreteria e insegna', m.ruoloScelto(await dora()), 'entrambi')
+  ok('è segreteria e insegna', m.spunteDi(await dora()), ['segreteria', 'istruttore'])
   ok('le si dà un corso', (await s.istruttori()).some((i) => i.id === id), true)
   ok('entra in tutte e due le aree', m.areeDi(await dora()), ['segreteria', 'istruttori'])
   ok('e lo si dice', m.nomeDelRuolo(await dora()), 'Segreteria e istruttore')
   await s.salvaPersonale({ ...(await dora()), nome: 'Dorotea' })
-  ok('cambiando il nome resta doppia', m.ruoloScelto(await dora()), 'entrambi')
-  await s.salvaPersonale({ ...(await dora()), ...m.daRuoloScelto('staff') })
-  ok('solo segreteria', m.ruoloScelto(await dora()), 'staff')
+  ok('cambiando il nome resta doppia', m.spunteDi(await dora()), ['segreteria', 'istruttore'])
+  await s.salvaPersonale({ ...(await dora()), ...m.daSpunte(['segreteria']) })
+  ok('solo segreteria', m.spunteDi(await dora()), ['segreteria'])
   ok('non le si dà più un corso', (await s.istruttori()).some((i) => i.id === id), false)
   ok('entra solo in segreteria', m.areeDi(await dora()), ['segreteria'])
-  await s.salvaPersonale({ ...(await dora()), ...m.daRuoloScelto('entrambi') })
-  await s.salvaPersonale({ ...(await dora()), ...m.daRuoloScelto('istruttore') })
-  ok('istruttore e basta', [m.ruoloScelto(await dora()), (await dora()).ancheIstruttore], ['istruttore', false])
+  await s.salvaPersonale({ ...(await dora()), ...m.daSpunte(['segreteria', 'istruttore']) })
+  await s.salvaPersonale({ ...(await dora()), ...m.daSpunte(['istruttore']) })
+  ok('istruttore e basta', [m.spunteDi(await dora()), (await dora()).ancheIstruttore], [['istruttore'], false])
   ok('entra solo nel calendario', m.areeDi(await dora()), ['istruttori'])
+}
+
+console.log('\nil ruolo amministrazione')
+{
+  const id = await s.salvaPersonale({ nome: 'Ada', cognome: 'Conti', email: 'ada@esempio.it', ...m.daSpunte(['amministrazione']) })
+  const ada = async () => (await s.personale()).find((p) => p.id === id)
+  ok('è solo amministrazione', [m.spunteDi(await ada()), (await ada()).ruolo], [['amministrazione'], 'amministrazione'])
+  ok('entra nell\'area amministrazione e basta', m.areeDi(await ada()), ['amministrazione'])
+  ok('e lo si dice', m.nomeDelRuolo(await ada()), 'Amministrazione')
+  ok('non le si dà un corso', (await s.istruttori()).some((i) => i.id === id), false)
+  await s.salvaPersonale({ ...(await ada()), ...m.daSpunte(['segreteria', 'amministrazione']) })
+  ok('segreteria e amministrazione: due aree', m.areeDi(await ada()), ['segreteria', 'amministrazione'])
+  ok('e lo si dice per esteso', m.nomeDelRuolo(await ada()), 'Segreteria e amministrazione')
+  await s.salvaPersonale({ ...(await ada()), ...m.daSpunte(['amministrazione', 'istruttore']) })
+  ok('amministrazione e istruttore: le si dà un corso', (await s.istruttori()).some((i) => i.id === id), true)
+  ok('con due aree', m.areeDi(await ada()), ['amministrazione', 'istruttori'])
+  await s.salvaPersonale({ ...(await ada()), ...m.daSpunte(['segreteria', 'amministrazione', 'istruttore']) })
+  ok('tutte e tre le spunte tornano com\'erano', m.spunteDi(await ada()), ['segreteria', 'amministrazione', 'istruttore'])
+  ok('i nomi di chi ha pagato, e nient\'altro', await s.nomiPersone([id, 'non-c-e']), [{ id, nome: 'Ada', cognome: 'Conti' }])
+  const pia = await s.salvaPersonale({ nome: 'Pia', cognome: 'Pagatrice', email: 'pia.pagatrice@esempio.it', ...m.daSpunte(['istruttore']) })
+  ok('chi ha pagato si cerca per nome: solo id, nome e cognome', await s.cercaPagatori('pagatric'), [{ id: pia, nome: 'Pia', cognome: 'Pagatrice' }])
+  ok('anche col nome e senza maiuscole', (await s.cercaPagatori('PIA pagatric')).map((x) => x.id), [pia])
+  ok('due lettere non bastano', await s.cercaPagatori('pa'), [])
+  ok('al massimo otto', (await s.cercaPagatori('cos')).length <= 8, true)
+  ok('l\'account di prova dell\'amministrazione c\'è', (await s.personale()).some((p) => p.id === 'a-prova' && p.ruolo === 'amministrazione'), true)
+}
+
+console.log('\nil ruolo amministrazione sul database (client finto)')
+{
+  const chiamate = []
+  const finto = (risposta) => m.creaSegreteriaSupabase({ from: () => { throw new Error('non deve leggere tabelle') }, rpc: async (f, x) => (chiamate.push([f, x]), risposta(f)) })
+  const bianchi = [{ persona_id: 'p1', nome: 'Marco', cognome: 'Bianchi' }]
+  const db = finto(() => ({ data: bianchi, error: null }))
+  ok('cerca chi ha pagato con cerca_pagatori e rende id, nome, cognome', await db.cercaPagatori('bian'), [{ id: 'p1', nome: 'Marco', cognome: 'Bianchi' }])
+  ok('…col testo scritto, com\'è', chiamate, [['cerca_pagatori', { scritto: 'bian' }]])
+  chiamate.length = 0
+  const nomi = finto(() => ({ data: [{ id: 'p1', nome: 'Marco', cognome: 'Bianchi' }], error: null }))
+  await nomi.nomiPersone(Array.from({ length: 1200 }, (_, i) => `p${i % 1000}`))
+  ok('i nomi si chiedono mille alla volta al massimo, senza ripetizioni: 1000 id uguali due volte fanno 2 chiamate da 500', [chiamate.length, chiamate.map(([, x]) => x.ids.length)], [2, [500, 500]])
+  const vecchio = finto((f) => ({ data: null, error: { code: 'PGRST202', message: `Could not find the function public.${f}(scritto) in the schema cache` } }))
+  let guaio = ''
+  try { await vecchio.cercaPagatori('bian') } catch (e) { guaio = e.message }
+  const troppe = finto(() => ({ data: null, error: { code: '42501', message: 'troppe ricerche: riprova fra qualche minuto' } }))
+  let tetto = ''
+  try { await troppe.cercaPagatori('bian') } catch (e) { tetto = e.message }
+  ok('troppe ricerche: lo dice, non «serve la segreteria»', tetto, 'Hai fatto troppe ricerche: riprova fra qualche minuto')
+  ok('senza il file 55 la ricerca dice cosa lanciare', guaio, 'Il ruolo amministrazione non è ancora attivo sul database: va lanciato 55-amministrazione.sql')
 }
 
 console.log('\nil kanji degli istruttori')
@@ -1283,7 +1330,7 @@ console.log('\neliminare un istruttore')
   ok('se stessa no', await errore(() => s.eliminaIstruttore('s-prova')), "Non ci si elimina da soli: lo fa un'altra persona di segreteria")
   const bea = await s.salvaPersonale({ nome: 'Bea', cognome: 'Banco', email: 'bea@esempio.it', ruolo: 'staff' })
   ok('chi è solo di segreteria no', await errore(() => s.eliminaIstruttore(bea)), "Si eliminano solo gli istruttori: a Bea si toglie l'accesso")
-  const dario = await s.salvaPersonale({ nome: 'Dario', cognome: 'Doppio', email: 'dario@esempio.it', ...m.daRuoloScelto('entrambi') })
+  const dario = await s.salvaPersonale({ nome: 'Dario', cognome: 'Doppio', email: 'dario@esempio.it', ...m.daSpunte(['segreteria', 'istruttore']) })
   await s.eliminaIstruttore(dario)
   ok('la segreteria che insegna anche, senza corsi, sì', (await s.personale()).some((p) => p.id === dario), false)
   await s.iscrivi(altro, 'lotta-2')

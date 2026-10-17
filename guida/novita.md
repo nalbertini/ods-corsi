@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.70.1 — 17 ottobre 2026
+
+### Risolto
+
+- L'accesso non si blocca più con «Failed to fetch dynamically imported module» dopo un aggiornamento
+
+## 0.70.0 — 17 ottobre 2026
+
+### Novità
+
+- Nella scheda ISCRITTI di un corso il riepilogo, il filtro NON IN REGOLA e il tasto CORSO dalla scheda della persona
+
 ## 0.69.0 — 17 ottobre 2026
 
 ### Novità

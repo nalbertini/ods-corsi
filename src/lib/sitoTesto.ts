@@ -10,7 +10,7 @@ import sanitizeHtml from 'sanitize-html'
  * script compreso. Si pulisce due volte: quando la segreteria salva, e quando
  * il sito si genera (lì è quella di cui ci si fida, perché chi scrive
  * all'API salta il pannello). Il database ne rifiuta una versione più rozza:
- * `sito_testo_sicuro` in `supabase/55-sito.sql`.
+ * `sito_testo_sicuro` in `supabase/56-sito.sql`.
  */
 
 /** I link che la pagina ammette: assoluti sicuri, oppure interni che cominciano con una sola «/». */

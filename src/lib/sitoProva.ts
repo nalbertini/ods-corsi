@@ -2,7 +2,7 @@ import { controllaMenu, controllaSlug, MASSIMO_DESCRIZIONE, MASSIMO_TITOLO, pagi
 import { testoSicuro } from './sitoTesto'
 
 /**
- * Le regole di `supabase/55-sito.sql` rifatte in memoria, per la modalità
+ * Le regole di `supabase/56-sito.sql` rifatte in memoria, per la modalità
  * prova: le stesse frasi, gli stessi rifiuti. Ogni funzione prende lo stato e
  * ne dà uno nuovo (o lancia l'errore che darebbe il database), così si prova
  * senza browser.
@@ -30,7 +30,7 @@ const TESTO_NO = 'Il testo contiene cose che il sito non ammette (script, moduli
 let contatore = 0
 const nuovoId = () => `sp-${Date.now().toString(36)}-${++contatore}`
 
-/** Le pagine che il sito ha sempre, come dopo `55-sito.sql`, con qualche testo d'esempio. */
+/** Le pagine che il sito ha sempre, come dopo `56-sito.sql`, con qualche testo d'esempio. */
 export function sitoIniziale(): StatoSito {
   const pagina = (slug: string, titolo: string, o: Partial<PaginaSito> = {}): PaginaSito => ({
     id: `sp-${slug}`,

@@ -23,7 +23,7 @@ Google, e vale solo per i mockup.
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
 | `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag` (neutro, rosso, giallo e verde `fatto`: PUBBLICATA nel SITO), `.sg-segno-regola` |
-| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): PAGAMENTI in PERSONE, VESTIARIO e SITO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori |
+| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): PAGAMENTI in PERSONE, VESTIARIO e SITO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` è il menu di chi cura i conti (I CONTI: PAGAMENTI, LISTINO), senza ricerca né link da copiare |
 | `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
@@ -50,6 +50,7 @@ Google, e vale solo per i mockup.
 | `FiltroRicerca` | La riga sopra ISCRITTI, CORSI e RICHIESTE ONLINE aperti da «ALTRI N» della ricerca (`.sg-filtro-ricerca`): «Cercato «gio»: 17 trovati.» e il chip MOSTRA TUTTI |
 | `SchedeCorso` | `Scheda` di `Corsi.tsx`: le schede DATI \| ISCRITTI in cima alla scheda di un corso (`.schede` come IL MESE \| SEGNALATE); `acceso`, `conto` n/capienza sulla scheda ISCRITTI (`tonoConto` giallo a corso pieno, rosso oltre), `daSalvare` il puntino ● giallo su DATI, `daIscrivere` su ISCRITTI, `conIscritti` falso nel corso nuovo |
 | `RigaIscrittoCorso` | `IscrittiDelCorso` di `Corsi.tsx` (`.sg-riga-iscritto-corso`): una riga del tab ISCRITTI di un corso: cognome, nome, ISCRITTO DAL (data lunga), segno del certificato e della quota, sempre a parole (NO CERTIFICATO, DA PAGARE, quelle di `paroleInRegola`); sotto i 780px della scheda va su due righe; `stato="fuoco"` per la riga scelta |
+| `RiepilogoIscrittiCorso` | `RiepilogoCorso` di `Corsi.tsx` (da `riepilogoCorso`): la riga sopra la ricerca del tab ISCRITTI, `voci` «testo:tono» separate da «\|» (conto n/capienza, SENZA CERTIFICATO e DA PAGARE rossi, CORSO PIENO giallo, TUTTO IN REGOLA verde) |
 | `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`) |
 | `SchedaCertificato` | PROPOSTA «certificati online»: il blocco CERTIFICATO MEDICO della scheda iscritto (`Certificato` di `Iscritti.tsx`) col file online: titolo + bollino, frase di stato, riga del file con APRI, CARICA / SOSTITUISCI e TOGLI; `stato` nessuno, valido, in_scadenza, scaduto_con_file, scaduto_senza_file, valido_senza_file, file_vecchio; `gesto` apre file + VALIDO FINO AL + un solo SALVA; `telefono` mette i tasti in colonna |
 | `MenuIstruttori` | Il menu degli istruttori sullo schermo largo (`App.tsx`) |

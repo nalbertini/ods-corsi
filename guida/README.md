@@ -41,7 +41,7 @@ entra in tutte e due le parti: dopo l'accesso l'app chiede dove andare,
 
 ## Le parti
 
-L'app ha cinque indirizzi. Sono la stessa app, ma ognuno apre una parte
+L'app ha sei indirizzi. Sono la stessa app, ma ognuno apre una parte
 diversa. Le iscrizioni sono per chi non ha un account, e dalla pagina
 d'accesso ci si arriva senza entrare.
 
@@ -52,6 +52,7 @@ d'accesso ci si arriva senza entrare.
 | `iscrizioni/` | Chi vuole iscriversi | I passi, i costi, il modulo | [Iscrizioni](iscrizioni.md) |
 | `iscritti/` | Chi frequenta i corsi · per ora solo in prova | Le sue lezioni, le presenze, certificato, quota e ricevute | [Iscritti](iscritti.md) |
 | `segreteria/` | La reception | Corsi, iscritti, presenze, richieste | [Segreteria](segreteria/README.md) |
+| `amministrazione/` | Chi cura i conti | I pagamenti e il listino, senza le persone | [Amministrazione](amministrazione/README.md) |
 
 ## Cosa serve a voi, in pratica
 

@@ -6,7 +6,7 @@ import { Bollino } from '../ds'
 import { TastoTema } from '../TastoTema'
 import { Cursori } from '../Icons'
 import { Settimana } from './Settimana'
-import { Corsi } from './Corsi'
+import { Corsi, riapriSuIscritti } from './Corsi'
 import { Iscritti } from './Iscritti'
 import { Presenze } from './Presenze'
 import { Statistiche } from './Statistiche'
@@ -45,6 +45,8 @@ export type { Voce }
 export interface Destinazione {
   persona?: string
   corso?: string
+  /** Con `persona`: il corso da cui si apre la scheda, a cui riporta «‹ CORSO». */
+  daCorso?: string
   /** Una richiesta da aprire, scelta dalla ricerca. */
   richiesta?: string
   /** Cosa si è cercato e chi è uscito: la voce mostra solo quelli, finché non si dice MOSTRA TUTTI. */
@@ -172,6 +174,7 @@ export function Segreteria({
   prova,
   onEsci,
   onIstruttori,
+  onAmministrazione,
 }: {
   nome: string
   ruolo?: string
@@ -179,6 +182,8 @@ export function Segreteria({
   onEsci?: () => void
   /** Per chi è di segreteria e insegna anche: il passaggio al calendario, senza uscire. */
   onIstruttori?: () => void
+  /** Per chi è di segreteria e cura anche i conti: il passaggio all'amministrazione, senza uscire. */
+  onAmministrazione?: () => void
 }) {
   const [d, setD] = useState<DatiSegreteria | null>(null)
   // Dove si è sta nell'indirizzo (vedi `indirizzoSegreteria.ts`): si parte
@@ -478,6 +483,11 @@ export function Segreteria({
               ISTRUTTORI →
             </button>
           )}
+          {onAmministrazione && (
+            <button type="button" className="num sg-voce" onClick={onAmministrazione}>
+              AMMINISTRAZIONE →
+            </button>
+          )}
           <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
           <CopiaLink link={LINK_ORDINI} testo="COPIA LINK ORDINI" perche="Il link per ordinare il vestiario:" />
         </div>
@@ -557,6 +567,11 @@ export function Segreteria({
             ricerca={ricerca}
             onTogliRicerca={() => setRicerca(undefined)}
             scelta={posto.persona}
+            daCorso={posto.daCorso}
+            onCorso={(id) => {
+              riapriSuIscritti(id)
+              segna({ voce: 'corsi', corso: id }, 'push')
+            }}
             nuovo={posto.nuovo}
             onScelta={(id, passo) => segna({ voce: 'iscritti', ...(id && { persona: id }) }, passo)}
             onNuovo={() => segna({ voce: 'iscritti', nuovo: true }, 'push')}

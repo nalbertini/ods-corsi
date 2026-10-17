@@ -4,7 +4,7 @@ import { pulisciTesto } from './sitoTesto'
  * Le pagine del sito della palestra: indirizzo, stato fra bozza e pubblicato,
  * menu e footer. Le regole stanno qui e non nella schermata perché si provano
  * senza browser (`scripts/prova-sito.mjs`); le stesse le fa rispettare il
- * database (`supabase/55-sito.sql`).
+ * database (`supabase/56-sito.sql`).
  */
 
 // I limiti che Google mostra, non quelli del database (120 e 300): oltre si avvisa, e il titolo blocca PUBBLICA.
@@ -16,7 +16,7 @@ export const MASSIMO_DESCRIZIONE = 300
 const LIMITE_INDIRIZZO = 80
 
 /** Indirizzi che il sito usa per sé: una pagina nuova non li può prendere. */
-// Gli stessi di `supabase/55-sito.sql` (vincolo `slug` di `sito_pagine`).
+// Gli stessi di `supabase/56-sito.sql` (vincolo `slug` di `sito_pagine`).
 const RISERVATI = ['contact', 'contattaci', 'privacy', 'cookie', 'admin', 'api', 'app', 'sitemap', 'robots']
 
 export interface PaginaSito {
