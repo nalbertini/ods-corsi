@@ -282,7 +282,8 @@ console.log('\nPagine di legge: una colonna di testo')
 console.log('\nAngoli: 6px')
 {
   const raggi = R.flatMap((r) => (r.dich['border-radius'] ? [{ sel: r.sel.join(), v: risolvi(r.dich['border-radius'], V) }] : []))
-  ok('ogni border-radius è 6px (o 0, o un cerchio al 50%)', raggi.filter((x) => !['6px', '0', '50%'].includes(x.v)).map((x) => `${x.sel}: ${x.v}`), [])
+  // Le pillole d'età sono capsule (999px) come nel design; tutto il resto è 6px, 0 o un cerchio.
+  ok('ogni border-radius è 6px (o 0, o un cerchio al 50%; la pillola è una capsula)', raggi.filter((x) => !['6px', '0', '50%'].includes(x.v) && !(x.sel === '.pillola' && x.v === '999px')).map((x) => `${x.sel}: ${x.v}`), [])
   ok('pulsante, invito e immagini del testo hanno 6px', ['.pulsante', '.invito', '.testo img'].map((n) => dich(R, V, (x) => x === n)['border-radius']), ['6px', '6px', '6px'])
 }
 
