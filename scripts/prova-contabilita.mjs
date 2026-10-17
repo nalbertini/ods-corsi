@@ -445,8 +445,8 @@ const man = (id, tipo, data, importo, cassaId, extra = {}) => ({
 })
 // Una chiusura già fatta, della Cassa Contanti.
 const chiusa = (id, data, extra = {}) => ({ id, cassaId: 'c1', dal: '2026-09-01', data, previsto: 10000, contato: 9500, differenza: -500, chiusaDa: 'Ada Conti', chiusaIl: `${data}T18:00:00Z`, ...extra })
-const MSG_CHIUSO = 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)'
-const MSG_ANNULLA_CHIUSO = 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica di oggi'
+const MSG_CHIUSO = 'Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura'
+const MSG_ANNULLA_CHIUSO = 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica con una data dopo la chiusura'
 const MSG_SALDO_CHIUSA = 'La cassa ha una chiusura: annullala prima di cambiare il saldo iniziale'
 
 // Il dataset del previsto è lo STESSO di supabase/prova/chiusura-cassa.sql (sezione 2): se cambia là, cambia qui.

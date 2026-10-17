@@ -219,13 +219,13 @@ export const differenzaInParole = (differenza: number): string =>
 export const vociOfferte = (voci: VoceContabile[], tipo: 'entrata' | 'uscita'): VoceContabile[] =>
   voci.filter((v) => v.tipo === tipo && v.attiva && v.nome !== VOCE_DIFFERENZA).sort((x, y) => x.nome.localeCompare(y.nome, 'it'))
 
-const MSG_GIORNO_CHIUSO = 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)'
+const MSG_GIORNO_CHIUSO = 'Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura'
 
 /** Un movimento a mano di un giorno chiuso non si annulla: si annulla la chiusura, o si scrive una rettifica di oggi. */
 export function cosaNonVaAnnulloMovimento(riga: RigaMovimento, chiusure: ChiusuraCassa[]): string | null {
   if (riga.origine !== 'movimento') return null
   const casse = riga.cassaAId ? [riga.cassaId, riga.cassaAId] : [riga.cassaId]
-  return giornoChiuso(chiusure, casse, riga.data) ? 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica di oggi' : null
+  return giornoChiuso(chiusure, casse, riga.data) ? 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica con una data dopo la chiusura' : null
 }
 
 /** Si annulla solo l'ultima chiusura attiva della cassa. */

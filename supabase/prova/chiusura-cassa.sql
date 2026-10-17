@@ -280,25 +280,25 @@ select atteso('è l''unico movimento di differenza', (select count(*)::text from
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 select atteso('un movimento il 7 settembre no', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-09-07', 100, 'Donazioni', 'Cassa Contanti', 'Tardivo'))),
-  '22023 Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)');
+  '22023 Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura');
 select atteso('né il 3', esito(format('select registra_movimento(dati => %L::jsonb)', mov('uscita', '2026-09-03', 100, 'Affitto sala', 'Cassa Contanti', 'Tardivo'))),
-  '22023 Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)');
+  '22023 Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura');
 select atteso('prima dell''inizio della cassa vince il giorno chiuso? no: vince l''inizio', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-08-31', 100, 'Donazioni', 'Cassa Contanti', 'Tardivo'))),
   '22023 La data è prima dell’inizio della cassa');
 select atteso('una cassa che non c''è vince il giorno chiuso', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-09-07', 100, 'Donazioni', 'Non c''è', 'Tardivo'))), '22023 Scegli la cassa');
 select atteso('l''importo e la data vincono il giorno chiuso', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-09-07', 0, 'Donazioni', 'Cassa Contanti', 'Tardivo'))), '22023 L’importo deve essere più di zero');
 select atteso('il giorno chiuso viene prima della descrizione', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-09-07', 100, 'Donazioni', 'Cassa Contanti', '   '))),
-  '22023 Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)');
+  '22023 Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura');
 select atteso('il Conto Corrente non è chiuso: il 5 settembre si scrive', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-09-05', 100, 'Donazioni', 'Conto Corrente', 'Sul conto'))), 'ok');
 select atteso('l''8 settembre, sui contanti, si scrive', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-09-08', 100, 'Donazioni', 'Cassa Contanti', 'Dopo la chiusura'))), 'ok');
 select atteso('…e si annulla', esito(format('select annulla_movimento(id => %L)', id_mov('Dopo la chiusura'))), 'ok');
 -- I giroconti: basta che una delle due casse sia chiusa.
 select atteso('un giroconto dal conto ai contanti il 5 settembre no', esito(format('select registra_giroconto(dati => %L::jsonb)',
   jsonb_build_object('da', id_cassa('Conto Corrente'), 'a', id_cassa('Cassa Contanti'), 'data', '2026-09-05', 'importo', 100))),
-  '22023 Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)');
+  '22023 Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura');
 select atteso('né dai contanti al conto il 7', esito(format('select registra_giroconto(dati => %L::jsonb)',
   jsonb_build_object('da', id_cassa('Cassa Contanti'), 'a', id_cassa('Conto Corrente'), 'data', '2026-09-07', 'importo', 100))),
-  '22023 Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)');
+  '22023 Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura');
 select atteso('l''inizio della cassa vince il giorno chiuso', esito(format('select registra_giroconto(dati => %L::jsonb)',
   jsonb_build_object('da', id_cassa('Cassa Contanti'), 'a', id_cassa('Conto Corrente'), 'data', '2026-08-31', 'importo', 100))), '22023 La data è prima dell’inizio della cassa');
 select atteso('l''importo vince il giorno chiuso', esito(format('select registra_giroconto(dati => %L::jsonb)',
@@ -308,11 +308,11 @@ select atteso('l''8 settembre il giroconto va', esito(format('select registra_gi
 select atteso('…e si annulla', esito(format('select annulla_movimento(id => %L)', (select id from movimenti where nota = 'Dopo la chiusura' and tipo = 'giroconto'))), 'ok');
 -- L'«annulla» di un movimento di un giorno chiuso.
 select atteso('l''affitto del 4 settembre non si annulla', esito(format('select annulla_movimento(id => %L)', :'m_affitto')),
-  '22023 Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica di oggi');
+  '22023 Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica con una data dopo la chiusura');
 select atteso('né il giroconto del 5', esito(format('select annulla_movimento(id => %L)', :'m_giro')),
-  '22023 Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica di oggi');
+  '22023 Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica con una data dopo la chiusura');
 select atteso('né la differenza di cassa', esito(format('select annulla_movimento(id => %L)', (select movimento_id from chiusure_cassa where id = :'c1'))),
-  '22023 Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica di oggi');
+  '22023 Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica con una data dopo la chiusura');
 select atteso('il bonifico sul conto del 5 settembre sì', esito(format('select annulla_movimento(id => %L)', :'m_bonifico')), 'ok');
 -- Il testo si corregge anche in un giorno chiuso.
 select atteso('la descrizione di un movimento chiuso si corregge', esito(format('select correggi_testo_movimento(id => %L, descrizione => %L, nota => %L)', :'m_affitto', 'Affitto della sala di settembre', 'Pagato a mano')), 'ok');
@@ -388,7 +388,7 @@ select atteso('…neanche quella del 22', esito(format('select annulla_chiusura_
 select atteso('il 10 settembre è di nuovo aperto', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-09-10', 100, 'Donazioni', 'Cassa Contanti', 'Dopo l''annullo'))), 'ok');
 select atteso('…e si annulla', esito(format('select annulla_movimento(id => %L)', id_mov('Dopo l''annullo'))), 'ok');
 select atteso('il 7 è ancora chiuso', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-09-07', 100, 'Donazioni', 'Cassa Contanti', 'Ancora no'))),
-  '22023 Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)');
+  '22023 Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura');
 select atteso('si richiude il 20 (ora i conti tornano)', esito(format('select chiudi_cassa(dati => %L::jsonb)', chiusura('2026-09-20', 13888))), 'ok');
 reset role;
 select id_chiusura('2026-09-20') as c4 \gset
@@ -560,7 +560,7 @@ select atteso('…previsto_cassa ancora per nessuno', (select coalesce(string_ag
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 select atteso('…e le regole dei giorni chiusi valgono ancora', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-09-07', 100, 'Donazioni', 'Cassa Contanti', 'Tardivo'))),
-  '22023 Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)');
+  '22023 Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura');
 select atteso('…anche quella della differenza', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-09-10', 100, 'Differenza di cassa', 'Conto Corrente', 'A mano'))),
   '22023 La «Differenza di cassa» si scrive da sola chiudendo la cassa');
 select atteso('…e quella del saldo', esito(format('select imposta_saldo_cassa(id => %L, saldo => 10000, dal => %L)', id_cassa('Cassa Contanti'), '2026-09-01')),

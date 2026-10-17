@@ -31,6 +31,8 @@ export interface DatiFoglioChiusura {
   chiusura: ChiusuraCassa
   /** L'elenco unico dei movimenti: il foglio sceglie quelli del periodo. */
   righe: RigaMovimento[]
+  /** Dopo la chiusura è cambiato un incasso: l'elenco di adesso non torna più con le cifre salvate, e il foglio lo dice. */
+  nonPiuInRegola?: boolean
 }
 
 export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Array> {
@@ -89,6 +91,7 @@ export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Arra
     testo(p, `C.F. ${ente.codiceFiscale}${ente.partitaIva ? ` · P.IVA ${ente.partitaIva}` : ''}`, MARGINE, 83, { corpo: 9 })
     if (gruppi.length > 1) testo(p, `pag. ${n}/${gruppi.length}`, destra, 56, { corpo: 9, destra: true })
     linea(p, MARGINE, destra, 94, 0.75)
+    if (d.nonPiuInRegola) testo(p, 'ATTENZIONE: dopo la chiusura sono cambiati dei pagamenti in contanti: l’elenco non torna più con le cifre.', MARGINE, 106, { corpo: 8.5, f: grassetto, colore: rosso, largo: destra - MARGINE })
     if (k.annullataIl) p.drawText('ANNULLATA', { x: 150, y: y(520), size: 70, font: grassetto, color: rosso, opacity: 0.3, rotate: degrees(25) })
   }
 
@@ -146,7 +149,7 @@ export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Arra
     }
   })
 
-  pdf.setTitle(`Chiusura di cassa · ${d.cassa} · ${periodo}${k.annullataIl ? ' · ANNULLATA' : ''}`)
+  pdf.setTitle(`Chiusura di cassa · ${d.cassa} · ${periodo}${k.annullataIl ? ' · ANNULLATA' : ''}${d.nonPiuInRegola ? ' · NON PIÙ IN REGOLA' : ''}`)
   pdf.setAuthor(ente.nome)
   pdf.setCreationDate(new Date(k.chiusaIl))
   return pdf.save()

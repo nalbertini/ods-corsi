@@ -49,8 +49,8 @@ un'uscita: non entra nei totali, né nei totali per voce. Si annulla come un mov
 ### Rimborsi e errori in periodi passati
 
 Un rimborso a un iscritto è un'uscita, con una voce tua. Un errore trovato dopo si
-corregge annullando e rifacendo, oppure con un movimento di oggi con una voce
-«Rettifica» che crei tu.
+corregge annullando e rifacendo, oppure, se il giorno è già chiuso (vedi sotto), con un movimento
+con una data dopo la chiusura e una voce «Rettifica» che crei tu.
 
 ## Voci
 
@@ -90,9 +90,11 @@ Il Conto Corrente non si conta: si confronta con l'estratto della banca.
 
 **Dopo la chiusura quei giorni sono chiusi**: non si registrano né si annullano più movimenti con
 quella data, e il saldo iniziale della cassa non cambia. La descrizione e la nota si possono ancora
-correggere. Per correggere uno sbaglio di un giorno chiuso si scrive un movimento **di oggi** con
-una voce di rettifica (la crea chi cura i conti, in VOCI: per esempio «Rettifica»). Un versamento in banca fatto dopo la
-chiusura va datato oggi.
+correggere. Per correggere uno sbaglio di un giorno chiuso si scrive un movimento con una data
+**dopo la chiusura** e una voce di rettifica (la crea chi cura i conti, in VOCI: per esempio
+«Rettifica»). Se hai chiuso oggi, la prima data possibile è domani: se serve prima, si annulla la
+chiusura (solo l'ultima). Anche un versamento in banca fatto dopo la chiusura va datato dopo la
+chiusura.
 
 Sotto le casse c'è l'elenco delle **chiusure**: chi ha chiuso e quando, quanto si è contato, la
 differenza. **PDF** scarica il foglio da stampare e firmare (A4: l'associazione, il periodo, le cifre, i
@@ -102,7 +104,7 @@ stampato non vale più. Una chiusura non si cambia: si annulla e si rifà.
 
 Se dopo una chiusura qualcuno annulla una ricevuta o un pagamento in contanti di quei giorni,
 compare un avviso rosso «La chiusura del … non è più in regola»: il foglio già stampato non torna
-più coi conti, e la correzione è una rettifica di oggi.
+più coi conti, e la correzione è una rettifica con una data dopo la chiusura.
 
 ## Cosa non c'è
 

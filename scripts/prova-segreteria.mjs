@@ -3701,8 +3701,8 @@ await sezione('un movimento non si cancella e non si cambia: si annulla', async 
 // ---------------------------------------------------------------------------
 const D1 = '2026-09-21'
 const D2 = '2026-09-26'
-const MSG_CHIUSO = 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)'
-const MSG_ANNULLA_CHIUSO = 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica di oggi'
+const MSG_CHIUSO = 'Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura'
+const MSG_ANNULLA_CHIUSO = 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica con una data dopo la chiusura'
 const MSG_SALDO_CHIUSA = 'La cassa ha una chiusura: annullala prima di cambiare il saldo iniziale'
 const MSG_DIFFERENZA = 'La «Differenza di cassa» si scrive da sola chiudendo la cassa'
 // Il previsto della Cassa Contanti, contato a mano dall'archivio: saldo iniziale, movimenti non annullati e incassi in contanti.

@@ -183,7 +183,7 @@ begin
   select * into ca from casse where id = contabilita_id(dati, 'cassa_id', 'Scegli la cassa') for share;
   if not found then raise exception 'Scegli la cassa' using errcode = '22023'; end if;
   if ca.dal is not null and c.giorno < ca.dal then raise exception 'La data è prima dell’inizio della cassa' using errcode = '22023'; end if;
-  if cassa_giorno_chiuso(ca.id, c.giorno) then raise exception 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)' using errcode = '22023'; end if;
+  if cassa_giorno_chiuso(ca.id, c.giorno) then raise exception 'Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura' using errcode = '22023'; end if;
   if d = '' then raise exception 'Scrivi una descrizione' using errcode = '22023'; end if;
   if char_length(d) > 200 then raise exception 'La descrizione è troppo lunga: al massimo 200 caratteri' using errcode = '22023'; end if;
   insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, nota, creato_da)
@@ -210,7 +210,7 @@ begin
     raise exception 'La data è prima dell’inizio della cassa' using errcode = '22023';
   end if;
   if cassa_giorno_chiuso(da.id, c.giorno) or cassa_giorno_chiuso(a.id, c.giorno) then
-    raise exception 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)' using errcode = '22023';
+    raise exception 'Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura' using errcode = '22023';
   end if;
   insert into movimenti (tipo, data, importo, cassa_id, cassa_a_id, descrizione, nota, creato_da)
   values ('giroconto', c.giorno, c.importo, da.id, a.id, 'Giroconto da ' || da.nome || ' a ' || a.nome, c.nota, persona_corrente())
@@ -230,7 +230,7 @@ begin
   select * into m from movimenti x where x.id = annulla_movimento.id for update;
   if m.annullato_il is not null then raise exception 'Il movimento è già annullato' using errcode = 'P0002'; end if;
   if cassa_giorno_chiuso(m.cassa_id, m.data) or (m.cassa_a_id is not null and cassa_giorno_chiuso(m.cassa_a_id, m.data)) then
-    raise exception 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica di oggi' using errcode = '22023';
+    raise exception 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica con una data dopo la chiusura' using errcode = '22023';
   end if;
   update movimenti x set annullato_il = now(), annullato_da = persona_corrente() where x.id = m.id;
 end $$;

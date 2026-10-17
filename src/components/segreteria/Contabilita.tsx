@@ -35,6 +35,7 @@ import {
   type RigaMovimento,
   type VoceContabile,
   ultimaChiusura,
+  VOCE_DIFFERENZA,
   vociOfferte,
 } from '../../lib/contabilita'
 import { intervalloDi } from '../../lib/pagamenti'
@@ -104,7 +105,7 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
       {nonInRegola.map((k) => (
         <div key={k.id} role="alert" className="sg-riquadro" style={{ borderColor: 'var(--rosso-testo)' }}>
           <span className="sg-etichetta" style={{ color: 'var(--rosso-testo)' }}>LA CHIUSURA DEL {dataRicevuta(k.data)} NON È PIÙ IN REGOLA</span>
-          <span style={{ fontSize: 14 }}>Dopo la chiusura è cambiato un incasso in contanti di quei giorni. Il foglio già stampato resta com’era: scrivi una rettifica di oggi, o annulla la chiusura se è l’ultima.</span>
+          <span style={{ fontSize: 14 }}>Dopo la chiusura è cambiato un incasso in contanti di quei giorni. Il foglio già stampato resta com’era: scrivi una rettifica con una data dopo la chiusura, o annulla la chiusura se è l’ultima.</span>
           {scheda !== 'casse' && (
             <div>
               <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScheda('casse')}>
@@ -532,7 +533,7 @@ function Voci({ d, voci, righe, fai, onCambiato }: { d: DatiSegreteria; voci: Vo
         {colonna('uscita', 'VOCI DI USCITA')}
       </div>
       <span className="sg-sotto">
-        Ogni voce è solo di entrata o solo di uscita. Una voce usata non si cancella: si disattiva, resta sui movimenti vecchi e non si offre per i nuovi. Le due di sistema servono agli incassi degli iscritti e non si cambiano. Non c’è «Varie»: se la crei, non farci finire spese diverse.
+        Ogni voce è solo di entrata o solo di uscita. Una voce usata non si cancella: si disattiva, resta sui movimenti vecchi e non si offre per i nuovi. Quelle di sistema (gli incassi degli iscritti e la differenza della chiusura di cassa) non si cambiano. Non c’è «Varie»: se la crei, non farci finire spese diverse.
       </span>
     </div>
   )
@@ -553,7 +554,7 @@ function ColonnaVoci({ d, tipo, titolo, voci, usate, fai, onCambiato }: { d: Dat
             {v.diSistema && <span className="num sg-tag" style={{ marginLeft: 8 }}>SISTEMA</span>}
             {!v.attiva && <span className="num sg-tag" style={{ marginLeft: 8 }}>NON IN USO</span>}
           </span>
-          <span style={{ fontSize: 13, color: 'var(--dim)' }}>{v.diSistema ? 'incassi degli iscritti' : usate(v) ? `${usate(v)} ${usate(v) === 1 ? 'movimento' : 'movimenti'}` : 'mai usata'}</span>
+          <span style={{ fontSize: 13, color: 'var(--dim)' }}>{v.diSistema ? (v.nome === VOCE_DIFFERENZA ? 'scritta dalla chiusura di cassa' : 'incassi degli iscritti') : usate(v) ? `${usate(v)} ${usate(v) === 1 ? 'movimento' : 'movimenti'}` : 'mai usata'}</span>
           {!v.diSistema && (
             <button type="button" className="sg-link" style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '0 6px' }} onClick={() => void fai(() => d.attivaVoce(v.id, !v.attiva), v.attiva ? 'Voce disattivata' : 'Voce riattivata', onCambiato)}>
               {v.attiva ? 'DISATTIVA' : 'RIATTIVA'}
@@ -613,7 +614,7 @@ function Casse({ d, casse, chiusure, guaioChiusure, righe, fai, onCambiato }: { 
           <ChiudiCassa d={d} cassa={contanti} casse={casse} chiusure={chiusure} righe={righe} fai={fai} onFatto={() => { setChiudo(false); onCambiato(); window.setTimeout(() => chiusureRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 150) }} onRileggi={onCambiato} onChiudi={() => setChiudo(false)} />
         </InVista>
       )}
-      <div ref={chiusureRef} style={{ scrollMarginTop: 12 }}>{contanti && chiusure.length > 0 && <ElencoChiusure d={d} cassa={contanti} chiusure={chiusure} righe={righe} fai={fai} onCambiato={onCambiato} />}</div>
+      <div ref={chiusureRef} style={{ scrollMarginTop: 12 }}>{contanti && chiusure.length > 0 && <ElencoChiusure d={d} cassa={contanti} casse={casse} chiusure={chiusure} righe={righe} fai={fai} onCambiato={onCambiato} />}</div>
       <span className="sg-sotto">Il saldo iniziale cambia solo da qui e solo dall’amministrazione, e non dopo una chiusura. Il Conto Corrente non si conta: si confronta con l’estratto della banca.</span>
     </div>
   )
@@ -645,7 +646,7 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
   const chiudi = async () => {
     if (cent === null || differenza === null) return
     if (serveConfermaDifferenza(differenza)) {
-      const domanda = `Differenza di ${differenzaInParole(differenza)}, sopra i ${soldi(SOGLIA_DIFFERENZA)}. Scrivi nella nota perché. Chiudo la cassa fino al ${dataRicevuta(data)}?`
+      const domanda = `Differenza di ${differenzaInParole(differenza)}, sopra i ${soldi(SOGLIA_DIFFERENZA)}. ${nota.trim() ? '' : 'Scrivi nella nota perché. '}Chiudo la cassa fino al ${dataRicevuta(data)}?`
       if (!(await chiedi(domanda, 'SÌ, CHIUDI LA CASSA', { no: 'NO, CONTROLLO ANCORA' }))) return
     }
     // Se la risposta si perde ma la chiusura è stata scritta, rileggere l'elenco la mostra: il riprova non sembra un errore a vuoto.
@@ -670,7 +671,7 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
       </div>
       <div className="stack" style={{ gap: 0 }}>
         <span className="sg-etichetta">COSA C’È DENTRO · {dentro.length} {dentro.length === 1 ? 'MOVIMENTO' : 'MOVIMENTI'} IN CONTANTI</span>
-        {dentro.length === 0 && <span className="sg-sotto" style={{ paddingTop: 6 }}>Nessun movimento in contanti nel periodo: il previsto è quello della chiusura di prima.</span>}
+        {dentro.length === 0 && <span className="sg-sotto" style={{ paddingTop: 6 }}>Nessun movimento in contanti nel periodo{ultima ? ': il previsto è quello della chiusura di prima' : ''}.</span>}
         {(tutte ? dentro : dentro.slice(-RIGHE_VISTE)).map((r) => {
           const c = importoPerCassa(r, cassa.id)
           return (
@@ -683,7 +684,7 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
         })}
         {dentro.length > RIGHE_VISTE && (
           <button type="button" className="sg-link" style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start' }} onClick={() => setTutte(!tutte)}>
-            {tutte ? 'MOSTRA SOLO GLI ULTIMI' : `E ALTRI ${dentro.length - RIGHE_VISTE} MOVIMENTI · MOSTRA TUTTI`}
+            {tutte ? 'MOSTRA SOLO GLI ULTIMI' : `E ${dentro.length - RIGHE_VISTE === 1 ? 'UN ALTRO MOVIMENTO' : `ALTRI ${dentro.length - RIGHE_VISTE} MOVIMENTI`} · MOSTRA TUTTI`}
           </button>
         )}
       </div>
@@ -701,7 +702,7 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
         <textarea id="ch-nota" className="sg-campo" rows={2} maxLength={300} value={nota} onChange={(e) => setNota(e.target.value)} />
       </Campo>
       <span className="sg-sotto">
-        Se i conti non tornano, la differenza si scrive da sola nei conti come «Differenza di cassa» del {dataRicevuta(data)}, e a fine giorno «in cassa» è quanto hai contato. Fino a quel giorno non si registrano né si annullano più movimenti: per correggere si scrive un movimento di oggi con la voce «Rettifica».
+        Se i conti non tornano, la differenza si scrive da sola nei conti come «Differenza di cassa» del {dataRicevuta(data)}, e a fine giorno «in cassa» è quanto hai contato. Fino a quel giorno non si registrano né si annullano più movimenti: per correggere si scrive un movimento con una data dopo la chiusura e una voce di rettifica (da domani, se chiudi oggi).
       </span>
       {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
@@ -717,12 +718,12 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
 }
 
 /** Le chiusure della Cassa Contanti, dalla più recente: chi, quando, la differenza, il foglio PDF e (solo l'ultima) l'annullo. */
-function ElencoChiusure({ d, cassa, chiusure, righe, fai, onCambiato }: { d: DatiSegreteria; cassa: Cassa; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void }) {
+function ElencoChiusure({ d, cassa, casse, chiusure, righe, fai, onCambiato }: { d: DatiSegreteria; cassa: Cassa; casse: Cassa[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void }) {
   const dellaCassa = chiusure.filter((k) => k.cassaId === cassa.id).sort((x, y) => y.data.localeCompare(x.data) || y.chiusaIl.localeCompare(x.chiusaIl))
   const foglio = async (k: ChiusuraCassa) => {
     const ente = await d.enteRicevute()
     const { scaricaChiusuraCassa } = await import('../../lib/chiusuraCassaPdf')
-    await scaricaChiusuraCassa({ ente, cassa: cassa.nome, chiusura: k, righe }, `chiusura-cassa-${k.data}.pdf`)
+    await scaricaChiusuraCassa({ ente, cassa: cassa.nome, chiusura: k, righe, nonPiuInRegola: chiusuraNonPiuInRegola(k, casse, righe) }, `chiusura-cassa-${k.data}.pdf`)
   }
   const annulla = async (k: ChiusuraCassa) => {
     const domanda = `Annullare la chiusura del ${dataRicevuta(k.data)}? Si toglie anche la sua «Differenza di cassa» e i giorni tornano aperti. Il foglio PDF già stampato non vale più.`
