@@ -605,6 +605,7 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
         {campo('comune', 'COMUNE', 80)}
         {campo('codiceFiscale', 'CODICE FISCALE', 16)}
         {campo('partitaIva', 'PARTITA IVA · FACOLTATIVA', 11)}
+        {campo('rasd', 'NUMERO RASD · FACOLTATIVO', 20)}
       </div>
       <Campo id="en-dicitura" etichetta="DICITURA IN FONDO">
         <textarea id="en-dicitura" className="sg-campo" rows={3} maxLength={600} value={e?.dicitura ?? ''} disabled={!e} onChange={(x) => e && setB({ ...e, dicitura: x.target.value })} style={{ minHeight: 72, paddingTop: 8 }} />

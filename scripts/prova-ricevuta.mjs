@@ -46,7 +46,9 @@ ok('Milano no', m.provinciaDalCap('20121'), '')
 ok('il trimestre da ottobre', m.fineTrimestre('2026-10-01'), '2026-12-31')
 ok('il trimestre non va oltre la stagione', m.fineTrimestre('2027-05-10'), '2027-06-30')
 
-const pagato = (importo) => [{ data: '2026-09-01', importo, metodo: 'Bonifico' }]
+ok('la palestra parte col suo numero RASD', m.ENTE_PREDEFINITO.rasd, '95562500017')
+
+const pagato = (importo) =>[{ data: '2026-09-01', importo, metodo: 'Bonifico' }]
 const quella = {
   id: 'r1',
   anno: 2026,
