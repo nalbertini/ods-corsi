@@ -236,8 +236,8 @@ console.log('\n11. Dettagli visibili: firme, virgolette, invito, piede')
   ok('l’invito non ha la freccia', ha(base, '.invito .freccia', 'display:none'), true)
   const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy', slug: null, indirizzo: '/privacy/' }], rinvii: [] })['index.html'] ?? ''
   const piede = h.match(/<footer class="piede">[\s\S]*<\/footer>/)?.[0] ?? ''
-  ok('il piede ha tre colonne: recapiti, menu, altri link (come nel design)', (piede.match(/<ul>/g) ?? []).length, 3)
-  ok('il menu del piede ripete le voci del menu', /<li><a href="\/"[^>]*>Home<\/a><\/li>/.test(piede), true)
+  ok('il piede ha recapiti, menu e voci di legge, senza titoli (come nel design)', [/<ul class="recapiti-piede">/.test(piede), /<nav class="piede-menu"/.test(piede), /<h2/.test(piede)], [true, true, false])
+  ok('il menu del piede ripete le voci del menu', /<a href="\/"[^>]*>Home<\/a>/.test(piede), true)
   ok('il nome nel piede va a capo in due righe', ha(base, '.piede .nome', 'max-width:5.5em'), true)
   ok('i titoli delle colonne del piede restano per chi legge con lo schermo ma non si vedono', ha(base, '.piede h2', 'position:absolute'), true)
 }

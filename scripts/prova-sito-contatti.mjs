@@ -138,7 +138,7 @@ console.log('\n6. L’invito e il piede, misure del design')
   ok('piede: Inter 16px, interlinea 1.9, 40px dentro su tutti i lati', [/font-size:\s*16px/.test(css('.piede')), /line-height:\s*1\.9/.test(css('.piede')), /padding:\s*40px;|padding:\s*40px$/.test(css('.piede'))], [true, true, true])
   const mob = CSS.slice(CSS.indexOf('@media (max-width:900px)'))
   const m = (sel) => [...mob.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].filter((x) => x[1].trim() === sel).map((x) => x[2]).join(';')
-  ok('telefono invito: 48px sopra, alto almeno 260px, padding 22px, frase 17px, «Prova» 120px', [/margin-top:\s*48px/.test(m('.invito')), /min-height:\s*260px/.test(m('.invito')), /padding:\s*22px/.test(m('.invito')), /font-size:\s*17px/.test(m('.invito .frase')), /font-size:\s*120px/.test(m('.invito .parola'))], [true, true, true, true, true])
+  ok('telefono invito: 48px sopra, alto almeno 260px, padding 22px, frase 17px, «Prova» 120px', [/margin(-top)?:\s*48px/.test(m('.invito')), /min-height:\s*260px/.test(m('.invito')), /padding:\s*22px/.test(m('.invito')), /font-size:\s*17px/.test(m('.invito .frase')), /font-size:\s*120px/.test(m('.invito .parola'))], [true, true, true, true, true])
 }
 
 console.log('\n7. La mappa del sito')

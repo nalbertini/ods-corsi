@@ -497,14 +497,15 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
 
 function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
   const menu = lista(voci('menu', c), corrente)
-  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.provaTestata}</a>` : ''}</header>`
+  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.prova}<span class="estensione"> ${TESTI.provaCoda}</span></a>` : ''}</header>`
 }
 
 function piede(c: Contesto): string {
   const f = lista(voci('footer', c))
-  const m = lista(voci('menu', c))
+  const m = voci('menu', c)
   const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
-  return `<footer class="piede"><p class="nome">${NOME}</p><div class="colonne"><div><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div>${m ? `<div><h2>${TESTI.pagine}</h2><ul>${m}</ul></div>` : ''}${f ? `<div><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}</div><div class="fine"><span>© ${NOME}</span></div></footer>`
+  // Come nel design: il nome, poi tre colonne senza titolo (recapiti, pagine, legge).
+  return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><ul class="recapiti-piede">${recapiti}</ul>${m.length ? `<nav class="piede-menu" aria-label="Pagine">${m.map((x) => `<a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a>`).join('')}</nav>` : ''}${f ? `<ul class="piede-legale">${f}</ul>` : ''}</footer>`
 }
 
 function invito(conContatti: boolean): string {

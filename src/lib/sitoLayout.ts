@@ -188,7 +188,7 @@ const tessera = (colore: string, titolo: string, resto: string, prima = '') =>
 function tessereDaSottotitoli(gruppi: Array<{ titolo: string; corpo: Blocco[] }>, recapiti = false): string {
   const domande = gruppi.length > 0 && gruppi.every((g) => /\?\s*$/.test(testoSolo(g.titolo)))
   const html = gruppi.map((g, i) => {
-    const colore = domande ? 'chiara' : coloreDi(i, gruppi.length)
+    const colore = recapiti ? RECAPITI[i % RECAPITI.length] : domande ? 'chiara' : coloreDi(i, gruppi.length)
     const foto = g.corpo.map(immagine).filter((x): x is string => x !== null)
     const resto = g.corpo.filter((b) => immagine(b) === null).map((b) => b.html).join('')
     // Il valore di un recapito (il primo paragrafo) corto, come un numero di telefono, esce più grande.
