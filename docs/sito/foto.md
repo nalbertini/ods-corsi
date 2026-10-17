@@ -265,3 +265,7 @@ Orientamento: O orizzontale, V verticale. Testo alternativo scritto come in
 | 1033 | IMG_4605.jpg | gruppo/ambiente: Istruttori e allievi sul podio, cartellone Officine | O | media | Chi siamo: gruppo (squadra) | Lo staff e gli allievi posano sul podio sotto il cartellone della società | — | Foto da telefono. |
 | 1032 | IMG_4598.jpg | gruppo/ambiente: Gruppo di adulti sul podio | O | media | — | Un gruppo di adulti posa sul podio nella palestra | — | Doppione di 1033. |
 | 842 | IMG_0987.jpg | avviamento: Bambini in cerchio con l'istruttore, lontano | O | da scartare | — | — | **sì**: minori in primo piano | Soggetto troppo piccolo. |
+
+## Il fuoco delle foto
+
+Ogni foto del sito è ritagliata in riquadri di forme diverse. Perché non si taglino teste e mani, `src/lib/sitoFoto.ts` dice per ogni foto dove stanno le persone (`x% y%`). Una foto nuova, prima di metterla in una pagina: guardarla, aggiungere la riga in `FOCI_FOTO` (la prova `prova:sito-foto` ricorda il formato). Senza riga la foto resta col ritaglio del suo riquadro.
