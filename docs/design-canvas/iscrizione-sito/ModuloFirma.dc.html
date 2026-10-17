@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il tratto IL MODULO (le autorizzazioni per minori e la firma) nell'aspetto del sito. Scelte «Firmo qui / Ho il foglio firmato» e «Autorizzo / Non autorizzo» come segmenti pieni (inchiostro, testo bianco, ●). La tavola della firma: fondo bianco, bordo tratteggiato blu #14709f, raggio 6px, riga blu; vuota con FIRMA QUI COL DITO in #46606f (correzione: il #cfe6f4 del token era 1,29:1 sul bianco), poi firmata (la firma sullo schermo e' inchiostro, nel PDF e' blu). Il tasto CANCELLA LA FIRMA e' a linea con bordo blu. MANCA/CARICATO della foto del foglio firmato: vedi ModuloFile.
+
+Board di partenza (stessi campi, testi e ordine): iscrizione/ModuloFirma.dc.html. -->
+<!-- Il modulo di iscrizione, tratto IL MODULO (ModuloIscrizione.tsx, Casella, TavolaFirma.tsx): le autorizzazioni per minori, che firma il genitore. «Firmo qui» (la firma col dito) e' la scelta di default; le due caselle del foglio (tesseramento FIJLKAM e/o FIPE, foto e video del minore) restano senza scelta finche' non si tocca (qui scelte), per un minore si scrive dove e' nato il genitore (letto dal codice fiscale, tratteggiato), poi LA FIRMA DI col nome del genitore e il riquadro, qui gia' firmato. GUARDA IL MODULO apre il PDF compilato in un'altra scheda (non riprodotto). Non riprodotti: «Ho il foglio firmato» (sostituisce le caselle con la foto, vedi CaricaFile in ModuloFile), l'avviso «Firma e autorizzazioni vanno rifatte» e gli errori «Nel modulo: scegli…» / «Manca la firma sul modulo». -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1220px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" tema="sito" label="IL MODULO" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+  <span style="font-size: 14px; line-height: 1.4; color: #0d2a3d">Le autorizzazioni per minori, che firma il genitore: il tesseramento, le foto e la privacy. <span style="color: #0d2a3d; text-decoration: underline">Leggi il modulo</span>.</span>
+  <div style="display: flex; gap: 8px">
+  <div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Firmo qui" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div>
+  <div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Ho il foglio firmato" hint-size="50%,52px"></dc-import></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">IL TESSERAMENTO ALLA FIJLKAM E/O FIPE</span>
+  <span style="font-size: 15px; line-height: 1.4; color: #46606f">Per la stagione 2026/27.</span>
+  <div style="display: flex; gap: 8px">
+  <div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Autorizzo" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div>
+  <div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Non autorizzo" hint-size="50%,52px"></dc-import></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">LE FOTO E I VIDEO DEL MINORE</span>
+  <span style="font-size: 15px; line-height: 1.4; color: #46606f">Sui canali social della palestra e nei volantini e manifesti dei suoi eventi.</span>
+  <div style="display: flex; gap: 8px">
+  <div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Autorizzo" hint-size="50%,52px"></dc-import></div>
+  <div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Non autorizzo" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div>
+</div>
+</div>
+<dc-import name="Campo" tema="sito" tipo="sola-lettura" etichetta="DOVE È NATO IL GENITORE" valore="Torino (TO)" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" tema="sito" tipo="sola-lettura" etichetta="PROVINCIA · SIGLA" valore="TO" codice="{{ true }}" hint-size="100%,80px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 6px">
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">LA FIRMA DI <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 600; letter-spacing: 0; color: #0d2a3d">Marta Rossi</span></span>
+  <dc-import name="TavolaFirma" tema="sito" firmata="{{ true }}" hint-size="100%,170px"></dc-import>
+  <span style="font-size: 15px; line-height: 1.4; color: #46606f">I dati delle domande, le caselle scelte, la data e la firma si scrivono sul modulo, e la firma va in ogni riga dove serve.</span>
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+  <dc-import name="Bottone" tema="sito" label="CANCELLA LA FIRMA" variante="linea" alto="48px" corpo="20px" disabled="{{ false }}" hint-size="200px,48px"></dc-import>
+  <dc-import name="Bottone" tema="sito" label="GUARDA IL MODULO" variante="linea" alto="48px" corpo="20px" hint-size="200px,48px"></dc-import>
+</div>
+</div>
+</div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

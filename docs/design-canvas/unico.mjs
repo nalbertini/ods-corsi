@@ -57,6 +57,7 @@ const SEZIONI = [
   { id: 'sito-pannello', nome: 'Sito · pannello · proposta', cartella: 'sito-pannello' },
   { id: 'sito-pubblico', nome: 'Sito pubblico · proposta', cartella: 'sito-pubblico' },
   { id: 'sito-rebrand', nome: 'Sito pubblico · tre rebrand', cartella: 'sito-rebrand' },
+  { id: 'iscrizione-sito', nome: 'Modulo di iscrizione · aspetto del sito · proposta', cartella: 'iscrizione-sito' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')

@@ -195,6 +195,9 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   acceso da quando la palestra ha approvato l'informativa privacy
   (`informativa.html`, 2 ottobre 2026), che si legge in fondo alla
   pagina delle iscrizioni.
+- **L'aspetto del modulo di iscrizione** è quello del sito (tatami blu e giallo, Big Shoulders Display e
+  Inter), sempre chiaro anche col tema scuro; lo accende `src/lib/aspettoModulo.ts` finché il modulo è aperto
+  (`data-modulo` su `<html>`, colori in `styles.css`; `npm run prova:iscrizione-sito`).
 - **L'area degli iscritti**, il pilota: dal telefono, chi frequenta vede
   le prossime lezioni dei suoi corsi (con le annullate, i sostituti e i
   cambi di sala), le sue presenze degli ultimi trenta giorni, il certificato

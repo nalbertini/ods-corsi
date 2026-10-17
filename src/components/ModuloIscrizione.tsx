@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'rea
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
 import { anniScritti, certificatoDaPortare, chiFirma, controlla, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
+import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
 import { corsiPerEta, type CorsoPerEta, type CorsoRef } from '../lib/listino'
@@ -122,6 +123,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   // I campi già lasciati, e se si è già provato a mandare: prima, niente rosso.
   const [visti, setVisti] = useState<ReadonlySet<CampoModulo>>(new Set())
   const [provato, setProvato] = useState(false)
+
+  // Finché il modulo è aperto ha l'aspetto del sito, non quello del tema dell'app.
+  useEffect(() => apriAspettoModulo(), [])
 
   useEffect(() => {
     let vivo = true
