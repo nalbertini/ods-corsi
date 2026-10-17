@@ -415,6 +415,32 @@ export function controlla(d: DatiRichiesta, oggi = new Date()): string | null {
   return tutti[0]?.messaggio ?? ((d.note ?? '').trim().length > NOTE_NEL_DATABASE ? 'Un campo non va: un testo è troppo lungo' : null)
 }
 
+/**
+ * Il primo messaggio che blocca l'invio del modulo, nell'ordine: campi, firma,
+ * file obbligatori, privacy; `null` se si può mandare. Il riquadro in fondo lo
+ * ricalcola a ogni modifica, così non resta un avviso già sistemato.
+ */
+export function mancaPerInviare(
+  s: {
+    dati: DatiRichiesta
+    privacy: boolean
+    come: 'qui' | 'foto'
+    /** Esito del controllo della firma (`null` = firmato): conta solo se si firma qui. */
+    firma: string | null
+    file: Partial<Record<TipoFile, unknown>>
+    obbligatori: TipoFile[]
+  },
+  oggi = new Date(),
+): string | null {
+  const fileMancante = FILE.find((f) => s.obbligatori.includes(f.tipo) && !s.file[f.tipo] && !(f.tipo === 'modulo' && s.come === 'qui'))
+  return (
+    controlla(s.dati, oggi) ??
+    (s.come === 'qui' ? s.firma : null) ??
+    (fileMancante ? `Manca: ${fileMancante.etichetta.toLowerCase()}` : null) ??
+    (s.privacy ? null : "Serve la conferma di aver letto l'informativa privacy")
+  )
+}
+
 /** Cosa non va campo per campo, da scrivere sotto ognuno. */
 export function problemi(d: DatiRichiesta, oggi = new Date()): Partial<Record<CampoModulo, string>> {
   return Object.fromEntries(guai(d, oggi).map((x) => [x.campo, x.testo]))
