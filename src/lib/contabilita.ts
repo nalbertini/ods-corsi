@@ -183,6 +183,12 @@ export function previstoCassa(casse: Cassa[], righe: RigaMovimento[], cassaId: s
   return residui([cassa], righe.filter((r) => r.data <= giorno))[0].residuo
 }
 
+/** I movimenti di una cassa nel periodo di una chiusura (anche i giroconti da e verso), per giorno e poi per id: quelli che il foglio PDF elenca. */
+export const righeDelPeriodo = (righe: RigaMovimento[], chiusura: ChiusuraCassa, cassaId: string): RigaMovimento[] =>
+  righe
+    .filter((r) => !r.annullato && r.data >= chiusura.dal && r.data <= chiusura.data && (r.cassaId === cassaId || r.cassaAId === cassaId))
+    .sort((x, y) => x.data.localeCompare(y.data) || x.id.localeCompare(y.id))
+
 /** Dopo la chiusura qualche incasso è cambiato (una ricevuta annullata): il previsto di allora non torna più. */
 export function chiusuraNonPiuInRegola(chiusura: ChiusuraCassa, casse: Cassa[], righe: RigaMovimento[]): boolean {
   if (chiusura.annullataIl) return false
