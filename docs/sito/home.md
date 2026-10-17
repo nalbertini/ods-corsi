@@ -41,6 +41,7 @@ Il testo sta in [`home.html`](home.html): è quello che va incollato.
   le mette in basso, con l'iniziale come avatar.
 - Tolta la sezione «Vieni a trovarci»: la mappa e l'indirizzo stanno nella pagina Contatti e nel piede.
 - Quattro foto (judo, lotta, preparazione atletica, psicomotricità) sotto «Perché unirti a noi?»: sul sito sono una fascia alta.
+- Una foto sola subito sotto «Cosa dicono i nostri clienti», davanti alle citazioni: sul sito sta a sinistra, con le citazioni che scorrono a fianco.
 - Tutto il resto è identico al testo pubblicato.
 
 ## Da controllare prima di pubblicare
@@ -49,3 +50,6 @@ Il testo sta in [`home.html`](home.html): è quello che va incollato.
   gruppo era già nel testo di oggi).
 - «13 tecnici»: è il numero degli istruttori nel database. Se cambia, cambialo
   nell'elenco dei numeri e nella frase sotto il primo titolo.
+
+## Le schede dei corsi
+Ogni voce dell'elenco sotto «I nostri corsi» può avere, dopo il titolo col link: una foto (si vede solo sul telefono), una riga in grassetto (l'età) seguita da a capo e dal testo, e in fondo un corsivo con le etichette separate da « · » (Bambini · Adulti · Agonisti · Anziani), che sul sito diventano pastiglie con l'icona. La voce «1 settimana di prova: 5 €» può avere sotto, a capo, un corsivo: si vede solo sul telefono.

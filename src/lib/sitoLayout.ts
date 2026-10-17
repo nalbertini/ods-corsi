@@ -17,6 +17,20 @@ const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 
 /** I colori delle tessere, nell'ordine in cui ruotano; a ogni sezione si riparte da blu. */
 const ROTAZIONE = ['blu', 'giallo', 'inchiostro', 'chiara'] as const
+/** I colori del design per le griglie che il design disegna: i 9 corsi e i 4 valori. Le altre quantità ruotano. */
+const COLORI_DEL_DESIGN: Record<number, string[]> = {
+  4: ['giallo', 'blu', 'inchiostro', 'giallo'],
+  9: ['blu', 'giallo', 'inchiostro', 'giallo', 'inchiostro', 'blu', 'inchiostro', 'blu', 'giallo'],
+}
+const coloreDi = (k: number, n: number) => COLORI_DEL_DESIGN[n]?.[k] ?? ROTAZIONE[k % ROTAZIONE.length]
+/** Le icone delle etichette dei corsi (Phosphor, come nel design): il nome dell'etichetta → i tracciati dell'svg. */
+const ICONE: Record<string, string> = {
+  Bambini: '<path d="M92,140a12,12,0,1,1,12-12A12,12,0,0,1,92,140Zm72-24a12,12,0,1,0,12,12A12,12,0,0,0,164,116Zm-12.27,45.23a45,45,0,0,1-47.46,0,8,8,0,0,0-8.54,13.54,61,61,0,0,0,64.54,0,8,8,0,0,0-8.54-13.54ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.11,88.11,0,0,0-84.09-87.91C120.32,56.38,120,71.88,120,72a8,8,0,0,0,16,0,8,8,0,0,1,16,0,24,24,0,0,1-48,0c0-.73.13-14.3,8.46-30.63A88,88,0,1,0,216,128Z"/>',
+  Adulti: '<path d="M128,80A32,32,0,1,0,96,48,32,32,0,0,0,128,80Zm0-48a16,16,0,1,1-16,16A16,16,0,0,1,128,32ZM230.86,132.12a8,8,0,0,1-11,2.74c-.35-.21-35.11-20.59-83.88-22.67V149l62,69.73a8,8,0,1,1-12,10.62L128,164,70,229.31a8,8,0,1,1-12-10.62L120,149V112.18c-49,2.08-83.52,22.46-83.88,22.68a8,8,0,1,1-8.23-13.72C29.6,120.11,70.45,96,128,96s98.4,24.11,100.12,25.14A8,8,0,0,1,230.86,132.12Z"/>',
+  Agonisti: '<path d="M232,64H208V48a8,8,0,0,0-8-8H56a8,8,0,0,0-8,8V64H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8Zm144-8.9c0,35.52-29,64.64-64,64.9a64,64,0,0,1-64-64V56H192ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z"/>',
+  Anziani: '<path d="M128,80A32,32,0,1,0,96,48,32,32,0,0,0,128,80Zm0-48a16,16,0,1,1-16,16A16,16,0,0,1,128,32Zm96,72a8,8,0,0,1-8,8H136v26.72l51.15,21.93A8,8,0,0,1,192,168v48a8,8,0,0,1-16,0V173.28l-46.45-19.91L53.35,222a8,8,0,1,1-10.7-11.9L120,140.44V112H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,104Z"/>',
+}
+
 /** Le citazioni alternano questi due. */
 const CITAZIONI = ['blu', 'inchiostro'] as const
 
@@ -137,6 +151,30 @@ function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string }> | n
   })
 }
 
+/** Il paragrafo con le etichette di una scheda: «Bambini · Adulti» in pastiglie, con l'icona se la conosciamo. */
+function etichette(elenco: string): string {
+  const voci = elenco.split(/\s*·\s*/).map((x) => x.trim()).filter((x) => x && x.length <= 24 && !/[<>]/.test(x))
+  if (!voci.length) return ''
+  return `<p class="etichette">${voci.map((x) => `<span class="etichetta">${ICONE[x] ? `<svg width="20" height="20" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">${ICONE[x]}</svg>` : ''}${x}</span>`).join('')}</p>`
+}
+
+/**
+ * Il corpo di una scheda di un elenco: una foto dentro la voce va prima del titolo (si vede sul telefono), un corsivo
+ * in fondo («Bambini · Adulti») diventa le etichette, il resto è il testo.
+ */
+function corpoScheda(testo: string): { prima: string; corpo: string } {
+  const foto = /<img\b[^>]*>/i.exec(testo)?.[0]
+  let resto = foto ? testo.replace(foto, '') : testo
+  let tag = ''
+  const fine = /\s*<em>([^<]*)<\/em>\s*$/i.exec(resto)
+  if (fine) {
+    tag = etichette(fine[1])
+    if (tag) resto = resto.slice(0, fine.index)
+  }
+  resto = resto.trim()
+  return { prima: foto ? `<div class="corso-foto">${foto}</div>` : '', corpo: `${resto ? `<p>${resto}</p>` : ''}${tag}` }
+}
+
 const tessera = (colore: string, titolo: string, resto: string, prima = '') =>
   `<article class="tessera ${colore}">${prima}${titolo.trim() ? `<h3>${titolo}</h3>` : ''}${resto}</article>`
 
@@ -144,12 +182,17 @@ const tessera = (colore: string, titolo: string, resto: string, prima = '') =>
 function tessereDaSottotitoli(gruppi: Array<{ titolo: string; corpo: Blocco[] }>): string {
   const domande = gruppi.length > 0 && gruppi.every((g) => /\?\s*$/.test(testoSolo(g.titolo)))
   const html = gruppi.map((g, i) => {
-    const colore = domande ? 'chiara' : ROTAZIONE[i % ROTAZIONE.length]
+    const colore = domande ? 'chiara' : coloreDi(i, gruppi.length)
     const foto = g.corpo.map(immagine).filter((x): x is string => x !== null)
     const resto = g.corpo.filter((b) => immagine(b) === null).map((b) => b.html).join('')
     return tessera(colore, g.titolo, resto, foto.join(''))
   })
   return griglie(html)
+}
+
+/** Due o più citazioni di fila: scorrono di lato, alternando blu e inchiostro. */
+function citazioniScorrevoli(q: Blocco[], titolo: string): string {
+  return `<div class="citazioni" tabindex="0" role="region" aria-label="${esc(testoSolo(titolo) || 'Citazioni')}">${q.map((y, k) => citazione(y, CITAZIONI[k % CITAZIONI.length], false)).join('')}</div>`
 }
 
 /** Un pezzo di sezione senza sottotitoli (o prima del primo): colonna, citazioni, foto, elenco a tessere. */
@@ -169,13 +212,22 @@ function corpoSenzaSottotitoli(b: Blocco[], titolo: string): string {
       chiudiColonna()
       const q = b.slice(i, j)
       if (q.length === 1) fuori.push(griglia(1, citazione(q[0], 'blu', true)))
-      else fuori.push(`<div class="citazioni" tabindex="0" role="region" aria-label="${esc(testoSolo(titolo) || 'Citazioni')}">${q.map((y, k) => citazione(y, CITAZIONI[k % CITAZIONI.length], false)).join('')}</div>`)
+      else fuori.push(citazioniScorrevoli(q, titolo))
       i = j
       continue
     }
     if (immagine(x) !== null) {
       let j = i
       while (j < b.length && immagine(b[j]) !== null) j++
+      // Una foto sola davanti a due o più citazioni: la foto sta a sinistra e le citazioni scorrono a fianco (design).
+      if (j === i + 1 && b[j]?.tag === 'blockquote' && b[j + 1]?.tag === 'blockquote') {
+        let k = j
+        while (k < b.length && b[k].tag === 'blockquote') k++
+        chiudiColonna()
+        fuori.push(`<div class="citazioni-foto"><figure class="tessera foto">${immagine(x)}</figure>${citazioniScorrevoli(b.slice(j, k), titolo)}</div>`)
+        i = k
+        continue
+      }
       // Una foto in mezzo a un testo in colonna resta com'è: è tessera solo se apre o chiude la parte.
       if (i === 0 || j === b.length) {
         chiudiColonna()
@@ -197,7 +249,7 @@ function corpoSenzaSottotitoli(b: Blocco[], titolo: string): string {
     const voci = elenchi === 1 ? vociDiUnElenco(x) : null
     if (voci) {
       chiudiColonna()
-      fuori.push(griglie(voci.map((v, k) => tessera(ROTAZIONE[k % ROTAZIONE.length], v.titolo, v.testo ? `<p>${v.testo}</p>` : ''))))
+      fuori.push(griglie(voci.map((v, k) => { const c = corpoScheda(v.testo); return tessera(coloreDi(k, voci.length), v.titolo, c.corpo, c.prima) })))
       i++
       continue
     }
@@ -291,6 +343,9 @@ function tesseraPiena(voce: string, colore: string): string {
   const m = /^\s*<strong>([\s\S]*?)<\/strong>([\s\S]*)$/i.exec(voce)
   if (!m || !testoSolo(m[1])) return `<article class="tessera ${colore} nota"><span class="scritta">${voce.trim()}</span></article>`
   const resto = m[2].trim()
+  // «Titolo» a capo e un corsivo: la scritta sotto si vede solo sul telefono (design).
+  const sotto = /^<br\s*\/?>\s*<em>([\s\S]*)<\/em>$/i.exec(resto)
+  if (sotto) return `<article class="tessera ${colore} titolo"><strong class="titolo">${m[1]}</strong><span class="sotto">${sotto[1]}</span></article>`
   if (!resto) return `<article class="tessera ${colore} titolo"><strong class="titolo">${m[1]}</strong></article>`
   return `<article class="tessera ${colore} numero"><strong class="cifra">${m[1]}</strong> <span class="scritta">${resto}</span></article>`
 }

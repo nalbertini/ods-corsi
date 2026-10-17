@@ -60,6 +60,7 @@ const TESTI = {
   contattaci: 'Contattaci',
   invito: 'Vieni a provare: ti aspettiamo in',
   altriLink: 'Altri link',
+  pagine: 'Pagine',
   trovarci: 'Vieni a trovarci',
   contatti: '/contatti/',
 }
@@ -95,6 +96,8 @@ const GRIGLIE_LUNGHE = Array.from({ length: GRIGLIA_MASSIMA - 7 }, (_, i) => i +
  * sfondo (pulsante «Prova», invito) con l'inchiostro sopra; sul piede scuro serve solo come colore del focus;
  * il bianco sta solo sul blu e sull'inchiostro.
  *
+ * I titoli delle colonne del piede restano per chi legge con lo schermo (`.piede h2` è fuori vista): il design non li mostra.
+ *
  * Sul telefono ogni tessera della testata occupa una colonna e l'ultimo numero dispari due: le classi doppie
  * (`.tessere.tessere .tessera.tessera`) alzano la specificità sopra le regole `n-N` delle sezioni.
  */
@@ -110,21 +113,22 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .invito:focus-visible{outline-color:var(--inchiostro)}
 .piede a:focus-visible{outline-color:var(--giallo)}
 .logo{display:block;flex-shrink:0}
-.logo img{display:block;height:96px;width:auto;mix-blend-mode:multiply}
-.testata{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:14px var(--margine)}
+.logo img{display:block;width:112px;height:110px;mix-blend-mode:multiply}
+.testata{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:22px var(--margine)}
 .testata nav ul{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none;font-size:17px;font-weight:500}
 .testata nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:6px;text-decoration:none}
 .testata nav a:hover{background:var(--chiara)}
 .pulsante,.testo a.pulsante,.colonna a.pulsante{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 32px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:18px;font-weight:600;text-decoration:none}
-.pulsante.piccolo{min-height:48px;padding:0 24px;font-size:16px}
+.pulsante.piccolo{min-height:48px;padding:0 26px;font-size:16px}
+.intro .pulsante{min-height:60px;padding:0 34px}
 .testata .pulsante{background:var(--giallo);color:var(--inchiostro)}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
-h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height:.84;overflow-wrap:anywhere}
+h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height:.82;overflow-wrap:anywhere}
 .pagina-hero{padding:40px var(--margine) 96px;display:flex;flex-wrap:wrap;align-items:stretch;gap:28px 56px}
-.pagina-hero .intro{flex:1 1 440px;display:flex;flex-direction:column;gap:24px;max-width:min(980px,100%)}
+.pagina-hero .intro{flex:1 1 440px;display:flex;flex-direction:column;max-width:min(980px,100%)}
 .intro h1{margin-bottom:auto}
-.intro p{margin:0;font-size:clamp(18px,1.6vw,22px);line-height:1.45;max-width:34em}
+.intro p{margin:0 0 28px;font-size:clamp(18px,1.6vw,22px);line-height:1.45;max-width:520px}
 .pagina-testo{padding:40px var(--margine) 24px}
 .pagina-testo h1{font-size:clamp(48px,8vw,120px);max-width:14em}
 .testo{padding:24px var(--margine) 40px;max-width:calc(62ch + var(--margine) * 2)}
@@ -138,21 +142,22 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .testo blockquote{padding-left:18px;border-left:4px solid var(--blu);font-size:1.15em}
 .testo a,.colonna a{text-underline-offset:3px}
 .testo img,.colonna img{max-width:100%;height:auto;border-radius:6px}
-.invito{display:flex;flex-direction:column;justify-content:space-between;gap:20px;margin:96px 12px 6px;padding:28px var(--margine);min-height:clamp(240px,26vw,360px);border-radius:6px;background:var(--giallo);color:var(--inchiostro);text-decoration:none}
+.invito{display:flex;flex-direction:column;justify-content:space-between;gap:20px;margin:0 var(--margine) 6px;padding:36px 40px;min-height:300px;border-radius:6px;background:var(--giallo);color:var(--inchiostro);text-decoration:none}
 .invito .riga{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
-.invito .frase{max-width:min(520px,80%);font-size:clamp(16px,1.4vw,20px);line-height:1.35}
-.invito .freccia{font-size:clamp(32px,3.4vw,48px);line-height:1}
-.invito .parola{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(96px,16vw,230px);line-height:.8;letter-spacing:-.01em}
-.piede{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:32px;margin:0 12px 12px;padding:40px var(--margine) 24px;background:var(--inchiostro);color:#fff;border-radius:6px}
-.piede .nome{margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(44px,7vw,96px);line-height:.9}
-.piede .colonne{display:flex;flex-wrap:wrap;gap:32px clamp(32px,7vw,96px);font-size:16px;line-height:1.9}
-.piede h2{margin:0;font-family:inherit;text-transform:none;font-size:16px;font-weight:400;color:var(--chiara)}
+.invito .frase{max-width:min(520px,80%);font-size:22px;line-height:1.35}
+.invito .freccia{display:none}
+.invito .parola{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:170px;line-height:.8;letter-spacing:-.01em}
+.piede{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:32px;margin:0 var(--margine) 48px;padding:40px;background:var(--inchiostro);color:#fff;border-radius:6px}
+.piede .nome{max-width:5.5em;margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:56px;line-height:.9}
+.piede .colonne{display:contents;font-size:16px;line-height:1.9}
+.piede .colonne>div{font-size:16px;line-height:1.9}
+.piede h2{position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .piede ul{margin:0;padding:0;list-style:none}
 .piede a{text-decoration:none}
 .piede a:hover{text-decoration:underline}
 .piede .fine{flex-basis:100%;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;margin-top:0;font-size:14px;color:var(--chiara)}
 .sezione{padding:0 var(--margine) 96px}
-.sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 28px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.88;overflow-wrap:anywhere}
+.sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 28px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.85;overflow-wrap:anywhere}
 .testo + .sezione{padding-top:24px}
 .colonna{max-width:calc(62ch + var(--margine) * 2);padding-bottom:24px}
 .tessere{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
@@ -166,7 +171,20 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .tessera.blu{background:var(--blu);color:#fff}
 .tessera.giallo{background:var(--giallo);color:var(--inchiostro)}
 .tessera.inchiostro{background:var(--inchiostro);color:#fff}
-.tessera.chiara{background:var(--chiara);color:var(--inchiostro)}
+.tessera.chiara{background:var(--chiara);color:var(--inchiostro);padding:26px 28px;font-size:17px}
+.tessera.chiara h3{font-size:30px;line-height:.95}
+.tessera.tessera:has(h3 a) h3{font-size:46px;line-height:.95}
+.tessera.tessera:has(h3 a){justify-content:space-between;padding:22px 24px}
+.tessera h3 a{text-decoration:none}
+.tessera:has(h3 a) p{font-size:16px;line-height:1.4;max-width:300px}
+.tessera:has(h3 a) .etichette{max-width:none;margin-top:12px}
+.corso-foto{display:none}
+.etichette{display:flex;flex-wrap:wrap;gap:6px}
+.etichetta{display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:999px;background:var(--chiara);color:var(--inchiostro);font-size:14px;font-weight:600;line-height:1}
+.etichetta svg{display:block;flex-shrink:0}
+.sotto{display:none}
+.tessere.n-4 .tessera{padding:26px 30px}
+.tessere.n-4 h3{font-size:58px;line-height:.92}
 .tessera.blu a:focus-visible,.tessera.inchiostro a:focus-visible{outline-color:var(--giallo)}
 .tessera.giallo a:focus-visible,.tessera.chiara a:focus-visible{outline-color:var(--inchiostro)}
 .tessera.blu a.pulsante,.tessera.inchiostro a.pulsante{background:var(--giallo);color:var(--inchiostro);text-decoration:none}
@@ -176,17 +194,28 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .tessere.n-5 .tessera:nth-child(4),.tessere.n-5 .tessera:nth-child(5){grid-column:span 3}
 .tessere.n-7 .tessera:last-child{grid-column:span 6}
 ${GRIGLIE_LUNGHE}
-.tessera.citazione{font-size:clamp(20px,2vw,28px);line-height:1.3;font-weight:500;justify-content:space-between}
+.tessera.citazione{padding:36px 40px;font-size:26px;line-height:1.3;font-weight:500;justify-content:space-between}
 .tessera:has(>h3:only-child){justify-content:flex-end}
+.firma em{font-style:normal}
+.tessera.citazione>p:first-child::before{content:"«"}
+.tessera.citazione>p:first-child::after{content:"»"}
 .firma{display:flex;align-items:center;gap:14px;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(26px,2.4vw,34px);line-height:1}
+.citazioni-foto{display:flex;gap:6px;margin:0 calc(var(--margine) * -1) 0 0}
+.citazioni-foto figure{position:relative}
+.citazioni-foto figure img{position:absolute;inset:0;height:100%;aspect-ratio:auto}
+.citazioni-foto .citazioni{flex:1;min-width:0;margin:0}
 .citazioni{display:flex;gap:6px;margin:0 0 6px;overflow-x:auto;scroll-snap-type:x mandatory}
+.citazioni{scroll-marker-group:after}
+.citazioni::scroll-marker-group{display:flex;gap:8px;margin-top:14px;padding-right:var(--margine)}
+.citazioni .tessera::scroll-marker{content:"";width:14px;height:14px;border-radius:7px;background:var(--blu)}
+.citazioni .tessera::scroll-marker:target-current{width:40px;background:var(--inchiostro)}
 .citazioni:focus-visible{outline:3px solid var(--blu);outline-offset:3px}
 .citazioni .tessera{flex:0 0 min(560px,85%);scroll-snap-align:start}
-.foto{padding:0;overflow:hidden}
+.foto{position:relative;padding:0;overflow:hidden}
 .foto img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:0}
 .foto-fila{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .foto-fila.quattro{grid-template-columns:repeat(4,1fr)}
-.foto-fila.quattro img{aspect-ratio:3/5}
+.foto-fila.quattro img{aspect-ratio:auto;height:540px}
 .avatar{flex:none;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:var(--giallo);color:var(--inchiostro);font-size:28px;line-height:1}
 .due{grid-template-columns:repeat(2,1fr)}
 .foto-fila figure{grid-column:auto}
@@ -213,6 +242,15 @@ ${GRIGLIE_LUNGHE}
 .non-trovata p{max-width:34em}
 @media (min-width:901px){
 .sezione .tessera:not(.foto){min-height:clamp(190px,16vw,260px)}
+.sezione .tessere.n-4 .tessera:not(.foto){min-height:190px}
+.sezione .tessera.chiara:not(.foto){min-height:260px}
+.sezione .tessera.tessera:not(.foto):has(h3 a){min-height:340px}
+.testata nav ul{gap:36px}
+.testata nav a{padding:0}
+.testata nav a:hover{background:none;text-decoration:underline;text-underline-offset:4px}
+.pagina-hero>.collage{align-self:start}
+.citazioni-foto{min-height:560px}
+.citazioni-foto .foto{flex:0 0 640px}
 .pagina-hero .collage.pieno>.tessera:nth-child(1){grid-column:1 / span 3;grid-row:1 / span 4}
 .pagina-hero .collage.pieno>.tessera:nth-child(2){grid-column:4;grid-row:1 / span 2}
 .pagina-hero .collage.pieno>.tessera:nth-child(3){grid-column:5 / span 2;grid-row:1}
@@ -226,7 +264,7 @@ ${GRIGLIE_LUNGHE}
 .pagina-hero .collage.pieno>.tessera:nth-child(11){grid-column:1 / span 2;grid-row:5}
 .pagina-hero .collage.pieno>.tessera:nth-child(12){grid-column:3 / span 2;grid-row:6}
 .pagina-hero .collage.pieno>.tessera:nth-child(13){grid-column:5 / span 2;grid-row:6}
-.collage.pieno>figure img{height:100%;aspect-ratio:auto}
+.collage.pieno>figure img{position:absolute;inset:0;height:100%;aspect-ratio:auto}
 }
 @media (max-width:900px){
 .testata{flex-wrap:wrap;gap:8px 16px}
@@ -242,7 +280,68 @@ ${GRIGLIE_LUNGHE}
 .foto-fila,.foto-fila.quattro{grid-template-columns:repeat(2,1fr)}
 .foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
-.invito{margin-top:48px}
+.testata{padding:12px var(--margine) 0;gap:10px 16px}
+.logo img{width:84px;height:82px}
+.testata .pulsante{padding:0 22px;font-size:0}
+.testata .pulsante::before{content:"Prova";font-size:16px}
+.testata nav a{background:var(--chiara);padding:0 14px;font-size:16px}
+.testata nav a[aria-current]{background:var(--giallo)}
+h1{font-size:84px;line-height:.84}
+.pagina-hero{padding:20px var(--margine) 0;gap:36px 0}
+.intro h1{margin-bottom:20px}
+.intro p{font-size:18px;margin-bottom:22px}
+.intro .pulsante{min-height:52px;padding:0 26px;font-size:17px}
+.sezione{padding:48px var(--margine) 0}
+.sezione h2{font-size:64px;line-height:.88;margin-bottom:20px}
+.collage.pieno{grid-template-rows:none}
+.collage.pieno .tessera.numero{min-height:150px;padding:16px;justify-content:space-between;gap:12px}
+.collage.pieno .cifra{font-size:68px;line-height:.85}
+.collage.pieno .numero .scritta{font-size:16px;line-height:1.45}
+.collage.pieno .titolo{font-size:40px;line-height:.95}
+.collage.pieno>.tessera:nth-child(n+7){display:none}
+.collage.pieno>.tessera:nth-child(2){order:1}
+.collage.pieno>.tessera:nth-child(5){order:2}
+.collage.pieno>.tessera:nth-child(4){order:3}
+.collage.pieno>.tessera:nth-child(6){order:4;background:var(--chiara);color:var(--inchiostro)}
+.collage.pieno>.tessera:nth-child(1){order:5}
+.collage.pieno>.tessera:nth-child(3){order:6;grid-column:1 / span 2;min-height:140px;padding:20px;justify-content:space-between;gap:12px}
+.collage .foto.grande{height:300px}
+.collage.pieno>figure.grande img{height:100%;aspect-ratio:auto}
+.foto-fila.quattro img{height:220px;aspect-ratio:auto}
+.foto-fila.quattro .foto:nth-child(n+3){display:none}
+.tessere.n-4 .tessera{min-height:120px;padding:18px}
+.tessere.n-4 h3{font-size:40px;line-height:.95}
+.tessera.tessera:has(h3 a){min-height:200px;padding:20px;gap:12px}
+.tessera:has(h3 a) p{max-width:none;line-height:1.45}
+.tessera:has(h3 a) h3{display:flex;justify-content:space-between;align-items:flex-start}
+.tessera:has(h3 a) h3::after{content:"↗";font-size:36px;line-height:1}
+.corso-foto{display:block;height:150px;overflow:hidden;border-radius:6px}
+.corso-foto img{width:100%;height:100%;object-fit:cover;border-radius:0}
+.sotto{display:block;font-size:16px;line-height:1.45}
+.tessere.n-9 .tessera.tessera:nth-child(1){background:var(--giallo);color:var(--inchiostro)}
+.tessere.n-9 .tessera.tessera:nth-child(2){background:var(--blu);color:#fff}
+.tessere.n-9 .tessera.tessera:nth-child(3){background:var(--inchiostro);color:#fff}
+.tessere.n-9 .tessera.tessera:nth-child(4){background:var(--blu);color:#fff}
+.tessere.n-9 .tessera.tessera:nth-child(5){background:var(--inchiostro);color:#fff}
+.tessere.n-9 .tessera.tessera:nth-child(6){background:var(--giallo);color:var(--inchiostro)}
+.tessere.n-9 .tessera.tessera:nth-child(7){background:var(--inchiostro);color:#fff}
+.tessere.n-9 .tessera.tessera:nth-child(8){background:var(--giallo);color:var(--inchiostro)}
+.tessere.n-9 .tessera.tessera:nth-child(9){background:var(--blu);color:#fff}
+.tessera.tessera:has(h3 a) h3{font-size:38px}
+.tessera.chiara{min-height:160px;padding:20px;font-size:16px;line-height:1.45;justify-content:space-between;gap:12px}
+.tessere .tessera.chiara:nth-child(odd){background:var(--giallo)}
+.citazioni{margin:0 calc(var(--margine) * -1) 6px;padding:0 var(--margine);scroll-padding:0 var(--margine)}
+.citazioni .tessera{flex:0 0 300px}
+.tessera.citazione{min-height:300px;padding:22px;gap:20px;font-size:19px;line-height:1.35}
+.avatar{width:48px;height:48px;font-size:24px;background:var(--chiara)}
+.firma{gap:12px;font-size:28px;line-height:.95}
+.citazioni-foto{margin:0;display:block}
+.citazioni-foto .foto{display:none}
+.invito{margin:48px var(--margine) 6px;min-height:260px;padding:22px;gap:20px}
+.invito .frase{font-size:17px;line-height:1.35}
+.invito .parola{font-size:120px}
+.piede{margin:0 var(--margine) 24px;padding:24px;gap:14px}
+.piede .nome{font-size:44px}
 }
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
@@ -270,7 +369,8 @@ function voci(dove: 'menu' | 'footer', c: Contesto): Array<{ etichetta: string; 
 }
 
 const rel = (href: string) => (/^https?:/i.test(href) ? ' rel="noopener noreferrer"' : '')
-const lista = (v: Array<{ etichetta: string; href: string }>) => v.map((x) => `<li><a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a></li>`).join('')
+/** `corrente` è l'indirizzo della pagina aperta: la sua voce porta `aria-current` (sul telefono è la tessera gialla del menu). */
+const lista = (v: Array<{ etichetta: string; href: string }>, corrente = '') => v.map((x) => `<li><a href="${esc(x.href)}"${x.href === corrente ? ' aria-current="page"' : ''}${rel(x.href)}>${esc(x.etichetta)}</a></li>`).join('')
 
 /**
  * Il testo di una pagina, ripulito, con solo le immagini ammesse: quelle del sito
@@ -293,15 +393,16 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
   })
 }
 
-function testata(c: Contesto, conContatti: boolean): string {
-  const menu = lista(voci('menu', c))
+function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
+  const menu = lista(voci('menu', c), corrente)
   return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.provaTestata}</a>` : ''}</header>`
 }
 
 function piede(c: Contesto): string {
   const f = lista(voci('footer', c))
+  const m = lista(voci('menu', c))
   const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
-  return `<footer class="piede"><p class="nome">${NOME}</p><div class="colonne">${f ? `<div><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}<div><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div></div><div class="fine"><span>© ${NOME}</span></div></footer>`
+  return `<footer class="piede"><p class="nome">${NOME}</p><div class="colonne"><div><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div>${m ? `<div><h2>${TESTI.pagine}</h2><ul>${m}</ul></div>` : ''}${f ? `<div><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}</div><div class="fine"><span>© ${NOME}</span></div></footer>`
 }
 
 function invito(conContatti: boolean): string {
@@ -320,7 +421,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
   const testo = inTestata.resto
-  const t = testata(c, conContatti)
+  const t = testata(c, conContatti, percorso(p.slug))
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
     : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
