@@ -26,7 +26,7 @@ const RIGHE_PRIMA = 22
 const ORA = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit' })
 const GIORNO = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' })
 
-/** Con il segno di chi guarda la cassa: un'entrata e un versamento che arriva sono +, un'uscita e un versamento che parte sono −. */
+/** Con il segno di chi guarda la cassa (il meno è un trattino: il font standard non scrive il «−»). */
 const conSegno = (r: RigaMovimento, cassaId: string): number => (r.tipo === 'entrata' || (r.tipo === 'giroconto' && r.cassaAId === cassaId) ? r.importo : -r.importo)
 
 /** Cosa si scrive nella riga: senza nomi di iscritti. */
@@ -134,7 +134,7 @@ export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Arra
       testo(p, dataRicevuta(r.data), MARGINE, t, { corpo: 9 })
       testo(p, voceDi(r), MARGINE + 62, t, { corpo: 9, largo: destra - MARGINE - 150 })
       const c = conSegno(r, cassaId)
-      testo(p, `${c < 0 ? '− ' : '+ '}${euro(Math.abs(c))} €`, destra, t, { corpo: 9, destra: true })
+      testo(p, `${c < 0 ? '- ' : '+ '}${euro(Math.abs(c))} €`, destra, t, { corpo: 9, destra: true })
       t += RIGA
     }
     if (ultima) {
@@ -143,7 +143,7 @@ export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Arra
       testo(p, 'Entrate in contanti', MARGINE, t + 8, { corpo: 9 })
       testo(p, `+ ${euro(entrate)} €`, destra, t + 8, { corpo: 9, destra: true })
       testo(p, 'Uscite e versamenti', MARGINE, t + 23, { corpo: 9 })
-      testo(p, `− ${euro(uscite)} €`, destra, t + 23, { corpo: 9, destra: true })
+      testo(p, `- ${euro(uscite)} €`, destra, t + 23, { corpo: 9, destra: true })
       const firme = Math.max(t + 80, PAGINA.h - 120)
       const meta = (PAGINA.w - 2 * MARGINE - 40) / 2
       linea(p, MARGINE, MARGINE + meta, firme, 0.75)

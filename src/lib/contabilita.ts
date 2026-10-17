@@ -184,7 +184,7 @@ export function previstoCassa(casse: Cassa[], righe: RigaMovimento[], cassaId: s
 }
 
 /** I movimenti di una cassa nel periodo di una chiusura (anche i giroconti da e verso), per giorno e poi per id: quelli che il foglio PDF elenca. */
-export const righeDelPeriodo = (righe: RigaMovimento[], chiusura: ChiusuraCassa, cassaId: string): RigaMovimento[] =>
+export const righeDelPeriodo = (righe: RigaMovimento[], chiusura: Pick<ChiusuraCassa, 'dal' | 'data'>, cassaId: string): RigaMovimento[] =>
   righe
     .filter((r) => !r.annullato && r.data >= chiusura.dal && r.data <= chiusura.data && (r.cassaId === cassaId || r.cassaAId === cassaId))
     .sort((x, y) => x.data.localeCompare(y.data) || x.id.localeCompare(y.id))
