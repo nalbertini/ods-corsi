@@ -104,8 +104,9 @@ che si vede è ancora quello vecchio.
 Il sito nuovo ha sempre una **Home**: senza una Home pubblicata non si genera.
 Le pagine di legge (privacy, cookie, contributi pubblici) hanno l'impaginazione
 solo testo; le altre hanno in cima il titolo grande (in maiuscolo) e, sotto, la frase della
-**descrizione**. Il pulsante «Contattaci» e l'invito giallo «Prova» in fondo
-compaiono se esiste una pagina pubblicata con indirizzo `contatti`.
+**descrizione**. I pulsanti «Contattaci» e «Prova» in alto e l'invito giallo «Prova» in fondo
+compaiono se esiste una pagina pubblicata con indirizzo `contatti`. Solo la Home
+ripete «Contattaci» sotto la descrizione.
 
 **L'aspetto** è sempre lo stesso per tutte le pagine e non si cambia da qui: sfondo azzurro chiaro,
 titoli neri stretti in maiuscolo, pulsante «Prova» giallo in alto a destra, il logo intero in cima e, in

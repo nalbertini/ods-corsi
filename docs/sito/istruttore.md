@@ -21,8 +21,8 @@ In quest'ordine:
    in ognuno, «Gli altri istruttori» con `h3` e una foto per ognuno (la foto
    diventa un cerchio da 110px).
 
-Titolo e descrizione della pagina sono il nome grande e la frase a destra, col
-pulsante «Contattaci» sotto.
+Titolo e descrizione della pagina sono il nome grande e la frase a destra
+(«Contattaci» sta in testata, accanto a «Prova»).
 
 ## Altre regole di questa pagina
 

@@ -96,7 +96,7 @@ console.log('\n5. La testata senza collage: titolo a sinistra, descrizione e pul
   const h = pagina(tredici)
   ok('la testata ha la classe «solo»', /<section class="pagina-hero( interna)? solo">/.test(h), true)
   ok('la Home col collage non la ha', /pagina-hero solo/.test(pagina(`<img src="${P}a.jpg" alt="a"><img src="${P}b.jpg" alt="b"><h2>S</h2><p>t</p>`, 'home')), false)
-  ok('titolo, descrizione e pulsante sono nello stesso blocco «intro»', /<div class="intro"><h1>Gli istruttori<\/h1><p>d<\/p><div><a class="pulsante" href="\/contatti\/">Contattaci<\/a><\/div><\/div>/.test(h), true)
+  ok('titolo e descrizione sono nello stesso blocco «intro», senza pulsante («Contattaci» sta in alto)', /<div class="intro"><h1>Gli istruttori<\/h1><p>d<\/p><\/div>/.test(h), true)
   const intro = dentro(/^\s*\.pagina-hero\.solo \.intro\s*$/)
 }
 

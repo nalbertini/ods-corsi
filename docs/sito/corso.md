@@ -11,7 +11,7 @@ Una pagina è «di un corso» se il testo **prima del primo titolo grande (`h2`)
 2. un **elenco** di 2–6 voci che cominciano col grassetto (`**Per chi** Dai 7 anni…`): sono le tessere dei dati, quattro in riga sul computer, due per riga sul telefono;
 3. uno o più **sottotitoli (`h3`)** col loro testo: le tessere di presentazione (tre in riga sul computer, una sotto l'altra sul telefono).
 
-Il titolo della pagina e la descrizione sono la testata (titolo enorme a sinistra, descrizione e «Contattaci» a destra). Se la forma non è questa la pagina resta com'era.
+Il titolo della pagina e la descrizione sono la testata (titolo enorme a sinistra, descrizione a destra; «Contattaci» sta in testata). Se la forma non è questa la pagina resta com'era.
 
 Dopo la testata, ogni `h2` è una sezione:
 
