@@ -234,7 +234,7 @@ const perRiga = (posti) => {
   for (const p of posti) m.set(p.r, (m.get(p.r) ?? 0) + 1)
   return [...m.keys()].sort((a, b) => a - b).map((k) => m.get(k))
 }
-const aspetto = (m) => risolvi(vince(m.R, 'aspect-ratio', (s) => /\.foto\b.*\bimg\b/.test(s)) ?? '', m.css.V)
+const aspetto = (m) => risolvi(vince(m.R, 'aspect-ratio', (s) => /\.foto\b.*\bimg\b/.test(s) && !/quattro|citazioni/.test(s)) ?? '', m.css.V)
 
 // --- Casi ---------------------------------------------------------------------
 const img = (n, alt = `Foto ${n}`) => `<img src="/risorse/f${n}.webp" alt="${alt}">`

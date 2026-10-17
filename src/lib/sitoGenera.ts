@@ -119,9 +119,10 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .testata .pulsante{background:var(--giallo);color:var(--inchiostro)}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
-h1{margin:0;font-size:clamp(56px,9vw,150px);letter-spacing:-.01em;line-height:.84;overflow-wrap:anywhere}
-.pagina-hero{padding:24px var(--margine) 64px;display:flex;flex-wrap:wrap;align-items:flex-start;gap:28px 48px}
+h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height:.84;overflow-wrap:anywhere}
+.pagina-hero{padding:40px var(--margine) 96px;display:flex;flex-wrap:wrap;align-items:stretch;gap:28px 56px}
 .pagina-hero .intro{flex:1 1 440px;display:flex;flex-direction:column;gap:24px;max-width:min(980px,100%)}
+.intro h1{margin-bottom:auto}
 .intro p{margin:0;font-size:clamp(18px,1.6vw,22px);line-height:1.45;max-width:34em}
 .pagina-testo{padding:40px var(--margine) 24px}
 .pagina-testo h1{font-size:clamp(48px,8vw,120px);max-width:14em}
@@ -149,14 +150,14 @@ h1{margin:0;font-size:clamp(56px,9vw,150px);letter-spacing:-.01em;line-height:.8
 .piede a{text-decoration:none}
 .piede a:hover{text-decoration:underline}
 .piede .fine{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;margin-top:32px;font-size:14px;color:var(--chiara)}
-.sezione{padding:48px var(--margine) 0}
-.sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 24px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.88;overflow-wrap:anywhere}
+.sezione{padding:0 var(--margine) 96px}
+.sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 28px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.88;overflow-wrap:anywhere}
 .testo + .sezione{padding-top:24px}
 .colonna{max-width:calc(62ch + var(--margine) * 2);padding-bottom:24px}
 .tessere{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .tessera{grid-column:span 2;display:flex;flex-direction:column;gap:14px;margin:0;padding:24px;border-radius:6px;font-size:clamp(17px,1.2vw,19px);line-height:1.5}
 .tessera>*{margin:0}
-.tessera h3{margin:0;font-size:clamp(32px,3.6vw,52px);line-height:.95;overflow-wrap:anywhere}
+.tessera h3{margin:0;font-size:clamp(32px,4vw,58px);line-height:.95;overflow-wrap:anywhere}
 .tessera ul,.tessera ol{padding-left:1.3em}
 .tessera li+li{margin-top:6px}
 .tessera a{color:inherit;text-decoration:underline;text-underline-offset:3px}
@@ -175,18 +176,27 @@ h1{margin:0;font-size:clamp(56px,9vw,150px);letter-spacing:-.01em;line-height:.8
 .tessere.n-7 .tessera:last-child{grid-column:span 6}
 ${GRIGLIE_LUNGHE}
 .tessera.citazione{font-size:clamp(20px,2vw,28px);line-height:1.3;font-weight:500;justify-content:space-between}
-.firma{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(26px,2.4vw,34px);line-height:1}
+.tessera:has(>h3:only-child){justify-content:flex-end}
+.firma{display:flex;align-items:center;gap:14px;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(26px,2.4vw,34px);line-height:1}
 .citazioni{display:flex;gap:6px;margin:0 0 6px;overflow-x:auto;scroll-snap-type:x mandatory}
 .citazioni:focus-visible{outline:3px solid var(--blu);outline-offset:3px}
 .citazioni .tessera{flex:0 0 min(560px,85%);scroll-snap-align:start}
 .foto{padding:0;overflow:hidden}
 .foto img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:0}
+.foto-citazioni{display:grid;grid-template-columns:minmax(0,640px) minmax(0,1fr);gap:6px;height:clamp(400px,39vw,560px);margin:0 0 6px}
+.foto-citazioni .foto{grid-column:auto}
+.foto-citazioni .foto img{height:100%;aspect-ratio:auto;object-fit:cover}
+.foto-citazioni .citazioni{height:100%;margin:0}
+.foto-citazioni .citazione{padding:clamp(24px,2.8vw,40px)}
 .foto-fila{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.foto-fila.quattro{grid-template-columns:repeat(4,1fr)}
+.foto-fila.quattro img{aspect-ratio:3/5}
+.avatar{flex:none;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:var(--giallo);color:var(--inchiostro);font-size:28px;line-height:1}
 .due{grid-template-columns:repeat(2,1fr)}
 .foto-fila figure{grid-column:auto}
 .sezione>*+*{margin-top:6px}
-.pagina-hero>.collage,.pagina-hero>.tessere{flex:1.2 1 460px;max-width:680px;margin-top:0}
-.collage{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(110px,auto);gap:6px}
+.pagina-hero>.collage,.pagina-hero>.tessere{flex:0 1 640px;max-width:640px;margin-top:0}
+.collage{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(128px,auto);gap:6px}
 .collage .foto.grande{grid-column:1 / span 4;grid-row:1 / span 3}
 .collage .foto.grande img{flex:1;min-height:0;height:100%}
 .collage .numero{grid-column:span 2}
@@ -200,18 +210,25 @@ ${GRIGLIE_LUNGHE}
 .numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
 .non-trovata{padding:40px var(--margine) 96px}
 .non-trovata p{max-width:34em}
+@media (min-width:901px){
+.sezione .tessera:not(.foto){min-height:clamp(190px,16vw,260px)}
+}
 @media (max-width:900px){
 .testata{flex-wrap:wrap;gap:8px 16px}
 .tessere{grid-template-columns:1fr}
 .tessere .tessera{grid-column:auto}
 .pagina-hero{flex-direction:column;align-items:stretch}
-.pagina-hero>.collage,.pagina-hero>.tessere{flex:none;max-width:none}
+.pagina-hero .intro,.pagina-hero>.collage,.pagina-hero>.tessere{flex:none;max-width:none}
 .pagina-hero .tessere,.collage{grid-template-columns:repeat(2,1fr);grid-auto-rows:auto}
 .pagina-hero .tessere.tessere .tessera.tessera,.collage .numero{grid-column:auto}
 .pagina-hero .tessere.tessere .numero.ultima,.collage .numero.ultima{grid-column:span 2}
 .collage .foto.grande,.collage .foto.larga,.collage .foto.meta,.collage .foto.meta:nth-last-child(2),.collage .foto.meta:last-child{grid-column:1 / span 2;grid-row:auto;order:2}
 .collage .foto.grande img{aspect-ratio:3/2;height:auto;flex:none}
-.foto-fila{grid-template-columns:repeat(2,1fr)}
+.foto-citazioni{grid-template-columns:1fr;height:auto}
+.foto-citazioni .foto img{height:auto;aspect-ratio:3/2}
+.foto-citazioni .citazioni{height:auto}
+.foto-fila,.foto-fila.quattro{grid-template-columns:repeat(2,1fr)}
+.foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
 .invito{margin-top:48px}
 }
@@ -283,7 +300,7 @@ function invito(conContatti: boolean): string {
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : ''}<style>${CSS}</style></head><body>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : ''}<style>${CSS}</style></head><body>${o.corpo}</body></html>`
 }
 
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
