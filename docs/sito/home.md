@@ -41,6 +41,7 @@ Il testo sta in [`home.html`](home.html): è quello che va incollato.
 - Le firme delle citazioni stanno dentro la citazione, in corsivo: così il sito
   le mette in basso, con l'iniziale come avatar.
 - Tolta la sezione «Vieni a trovarci»: la mappa e l'indirizzo stanno nella pagina Contatti e nel piede.
+- Una foto di judo prima delle citazioni dei clienti: sul sito sta a sinistra del carosello.
 - Quattro foto (judo, lotta, preparazione atletica, psicomotricità) sotto «Perché unirti a noi?»: sul sito sono una fascia alta.
 - Tutto il resto è identico al testo pubblicato.
 
