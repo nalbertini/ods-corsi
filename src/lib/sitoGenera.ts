@@ -5,6 +5,7 @@ import { GRIGLIA_MASSIMA, collage, conFila, impagina, persona, ritratti, testata
 import { CSS_CORSI } from './sitoCorsi'
 import { CSS_INTERNE } from './sitoInterne'
 import { CONTATTI } from './sito'
+import { corsiDa, datiStrutturati } from './sitoDati'
 
 /**
  * Il sito pubblico: dalle pagine pubblicate nel pannello SITO ai file statici.
@@ -15,7 +16,7 @@ import { CONTATTI } from './sito'
  * Qui si pulisce il testo un'altra volta (`pulisciTesto`): è la pulizia di cui
  * ci si fida, perché chi scrive all'API salta il pannello e il filtro del
  * database è solo una difesa in più. Titolo, descrizione ed etichette si
- * scrivono sempre escapati. Il sito non ha codice (niente `<script>`) né
+ * scrivono sempre escapati. Il sito non ha codice (l'unico `<script>` è il blocco di dati strutturati di `sitoDati.ts`, che è JSON) né
  * richieste a servizi esterni: carattere e logo sono file suoi, in `/risorse/`
  * (la cartella `sito/risorse/`), e un'immagine nel testo entra solo se è del
  * sito o del contenitore delle immagini dichiarato (`ospitiImmagini`).
@@ -721,6 +722,8 @@ const CSS_CORSO = `
 interface Contesto {
   d: DatiSito
   slugs: Set<string>
+  /** Gli slug dei corsi: le pagine a cui rimanda la pagina «corsi». */
+  corsi: Set<string>
 }
 
 /** Un indirizzo di una voce: della pagina, o scritto dalla segreteria e valido; altrimenti niente. */
@@ -783,10 +786,10 @@ function invito(conContatti: boolean): string {
   return `<a class="invito" href="${TESTI.iscrizione}" rel="noopener noreferrer"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}. ${TESTI.settimana}</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
 }
 
-function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean }): string {
+function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : ''}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
 }
 
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
@@ -808,7 +811,8 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
       ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
       : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}${inTestata.html ? '' : ' solo'}"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${contattaci}</div>${inTestata.html}</section>`
   const corpo = `${t}<main${dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${invito(conContatti)}${piede(c)}`
-  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null })
+  const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: c.corsi.has(p.slug) })
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null, dati })
 }
 
 function nonTrovata(c: Contesto, conContatti: boolean): string {
@@ -841,7 +845,9 @@ function mappa(c: Contesto, pagine: PaginaGenerata[]): string {
 export function generaSito(d: DatiSito): Record<string, string> {
   if (!DOMINIO.test(d.dominio)) throw new Error('Il dominio del sito non va bene: deve essere come https://www.officinedellosport.it, senza «/» in fondo')
   const pagine = d.pagine.filter((p, i) => slugDiPagina(p.slug) && d.pagine.findIndex((x) => x.slug === p.slug) === i)
-  const c: Contesto = { d, slugs: new Set(pagine.map((p) => p.slug)) }
+  const slugs = new Set(pagine.map((p) => p.slug))
+  const corsi = corsiDa(testoDellaPagina(pagine.find((p) => p.slug === 'corsi')?.testo ?? '', d.ospitiImmagini ?? []), slugs, new Set(pagine.filter((p) => p.diLegge).map((p) => p.slug)))
+  const c: Contesto = { d, slugs, corsi }
   const conContatti = c.slugs.has('contatti')
   const file: Record<string, string> = {}
   for (const p of pagine) file[fileDi(p.slug)] = pagina(p, c, conContatti)
