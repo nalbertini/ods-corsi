@@ -26,6 +26,7 @@ import {
   primoMovimentoManuale,
   quanteUsate,
   residui,
+  rettificheMancanti,
   righeDelPeriodo,
   serveConfermaDifferenza,
   SOGLIA_DIFFERENZA,
@@ -122,7 +123,7 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
       {pronto && (
         <>
           <div hidden={scheda !== 'movimenti'}><Movimenti d={d} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
-          <div hidden={scheda !== 'voci'}><Voci d={d} voci={voci.dato ?? []} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
+          <div hidden={scheda !== 'voci'}><Voci d={d} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
           <div hidden={scheda !== 'casse'}><Casse d={d} casse={casse.dato ?? []} chiusure={dateChiusure} guaioChiusure={chiusure.guaio ?? undefined} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
         </>
       )}
@@ -524,13 +525,26 @@ function MovimentoAperto({ d, riga, chiusure, cassa, cassaA, fai, onChiudi, onFa
   )
 }
 
-function Voci({ d, voci, righe, fai, onCambiato }: { d: DatiSegreteria; voci: VoceContabile[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void }) {
+function Voci({ d, voci, chiusure, righe, fai, onCambiato }: { d: DatiSegreteria; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void }) {
   const usate = (v: VoceContabile) => quanteUsate(righe, v)
+  // Dopo una chiusura, per correggere un giorno chiuso serve una voce di rettifica: si crea in un tocco.
+  const mancano = chiusure.some((k) => !k.annullataIl) ? rettificheMancanti(voci) : []
   const colonna = (tipo: 'entrata' | 'uscita', titolo: string) => (
     <ColonnaVoci key={tipo} d={d} tipo={tipo} titolo={titolo} voci={voci} usate={usate} fai={fai} onCambiato={onCambiato} />
   )
   return (
     <div className="stack" style={{ gap: 18 }}>
+      {mancano.length > 0 && (
+        <section aria-label="Voce di rettifica" className="sg-riquadro">
+          <span className="sg-etichetta">PER CORREGGERE UN GIORNO CHIUSO</span>
+          <span style={{ fontSize: 15 }}>Dopo la chiusura della cassa uno sbaglio si corregge con un movimento che ha una voce di rettifica: ne manca una {mancano.length === 2 ? 'di entrata e una di uscita' : `di ${mancano[0] === 'entrata' ? 'entrata' : 'uscita'}`}.</span>
+          <div>
+            <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void fai(async () => { for (const tipo of mancano) await d.salvaVoce({ nome: 'Rettifica', tipo }) }, 'Voce «Rettifica» creata', onCambiato)}>
+              CREA LA VOCE «RETTIFICA»
+            </button>
+          </div>
+        </section>
+      )}
       <div className="row" style={{ gap: 28, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         {colonna('entrata', 'VOCI DI ENTRATA')}
         {colonna('uscita', 'VOCI DI USCITA')}

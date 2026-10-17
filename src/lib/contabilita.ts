@@ -228,6 +228,20 @@ export function cosaNonVaAnnulloMovimento(riga: RigaMovimento, chiusure: Chiusur
   return giornoChiuso(chiusure, casse, riga.data) ? 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica con una data dopo la chiusura' : null
 }
 
+/**
+ * Annullare un incasso in contanti di un giorno già chiuso lascia la chiusura «non più in regola»: l'avviso, da dire prima di farlo.
+ * Si chiude solo la Cassa Contanti, quindi vale l'ultima chiusura attiva, qualunque cassa sia.
+ */
+export function avvisoCassaChiusa(pagamenti: Array<{ data: string; metodo: string }>, chiusure: ChiusuraCassa[]): string | null {
+  const fino = chiusure.filter((k) => !k.annullataIl).map((k) => k.data).sort().at(-1)
+  if (!fino || !pagamenti.some((p) => p.data <= fino && cassaDelMetodo(p.metodo) === 'contanti')) return null
+  return `Attenzione: la cassa contanti è chiusa fino al ${dataRicevuta(fino)} e questo incasso in contanti è di quei giorni: la chiusura non sarà più in regola e dovrai scrivere una rettifica.`
+}
+
+/** Le voci «Rettifica» (entrata e uscita) che non ci sono ancora: servono a correggere un giorno chiuso. */
+export const rettificheMancanti = (voci: VoceContabile[]): Array<'entrata' | 'uscita'> =>
+  (['entrata', 'uscita'] as const).filter((tipo) => !voci.some((v) => v.tipo === tipo && v.nome.trim().toLowerCase() === 'rettifica'))
+
 /** Si annulla solo l'ultima chiusura attiva della cassa. */
 export function cosaNonVaAnnulloChiusura(id: string, chiusure: ChiusuraCassa[]): string | null {
   const k = chiusure.find((x) => x.id === id)
