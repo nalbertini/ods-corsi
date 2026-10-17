@@ -23,13 +23,19 @@ Dopo la testata, ogni `h2` è una sezione:
 | 2–3 foto di fila | fila di foto alte 516px (sul telefono: la prima a tutta larghezza, le altre due affiancate) |
 | un solo paragrafo, al massimo 160 caratteri | **banda blu** con il titolo enorme e la frase grande |
 
+## Regole che vengono dal design
+
+- Un `h2` **vuoto** apre una sezione senza titolo: serve per la fila di foto, che nel design non ha titolo. Vale per ogni pagina con titoli.
+- Foto di testata tagliata al 58% dall'alto; in una fila la prima al 30% e le altre al 55%.
+- Colori: giallo → blu → inchiostro; la quarta tessera è azzurra se ha testo, gialla se ha solo il titolo.
+- Un titolo di sezione oltre 30 caratteri è a 22px dalle tessere sul computer e a 48px (invece di 56) sul telefono.
+- Testata, invito «Prova» e piede hanno le misure del design solo nelle pagine di un corso (`body.pagina-corso`, nello stesso `<style>` a parte). Nel menu è segnata la voce con indirizzo `/corsi/`; il pulsante in testata sul telefono dice «Prova».
+- Il piede del corso ha tre colonne: recapiti, menu principale ripetuto, link legali (il menu «footer»); sul telefono menu e link legali sono due righe con «·».
+
 ## Cosa resta diverso dal design
 
-- La foto di testata e quelle di fila sono centrate (`object-position`): il testo non può dire dove tagliare.
-- Una fila di foto vuole il suo `h2`: il design ha la fila senza titolo, il testo non può esprimerlo.
-- La quarta tessera di una sezione è gialla, non azzurra («Oggi a Collegno» nel design).
-- Il titolo «Cosa può aspettarsi…» ha 56px sul telefono come gli altri (nel design 48px).
-- Sul telefono la terza tessera di presentazione ha l'altezza minima delle altre (220px, nel design 180px) e i testi sono quelli del sito, non le versioni accorciate del design.
-- Testata, invito «Prova» e piede hanno le misure del design solo nelle pagine di un corso (`body.pagina-corso`, nello stesso `<style>` a parte): le altre pagine non cambiano. Nel menu è segnata «I nostri corsi» (la voce con indirizzo `/corsi/`); il pulsante in testata sul telefono dice «Prova».
-- Il piede ha un blocco in meno: il design ha tre colonne dopo il nome (indirizzo, menu, link legali), il sito i recapiti e i link del menu «footer». La colonna col menu principale ripetuto non c'è; la riga «© Officine dello Sport» e i titoli delle colonne sono nascosti. Sul telefono il piede non ha le righe del menu e dei link legali.
-- Sul telefono il menu va a capo su due righe (le quattro voci non stanno in 375px; il design le mostra a 390px).
+Solo ciò che il testo di una pagina non può avere:
+
+- Il design del telefono usa testi accorciati («Dai 7 anni (nati dal 2019) agli adulti», «Lun, mer e ven…») e di conseguenza qualche altezza: la pagina ha un testo solo, uguale su computer e telefono, quindi le tessere crescono col testo intero.
+- «I nostri corsi» è segnato nel menu solo se esiste una voce con indirizzo `/corsi/`.
+- A 375px il titolo di un orario è a 31,5px (8,4vw) per non spezzare «principianti»; a 390px, la misura del design, arriva a 34px.
