@@ -246,6 +246,15 @@ ${GRIGLIE_LUNGHE}
 .ritratto .citazione{grid-column:auto;padding:36px;font-size:30px;line-height:1.25}
 .ritratto .firma{font-size:44px;line-height:.95}
 .ritratto .avatar{display:none}
+body:has(.persona) .testata{padding:22px var(--margine)}
+body:has(.persona) .logo img{height:110px}
+body:has(.persona) .testata nav ul{gap:10px}
+body:has(.persona) .testata .pulsante{padding:0 26px}
+.persona~.invito{margin:96px var(--margine) 6px;min-height:300px;padding:36px 40px}
+.persona~.invito .frase{max-width:520px;font-size:22px}
+.persona~.invito .parola{font-size:170px}
+.persona~.piede{margin:0 var(--margine) var(--margine);padding:40px}
+.persona~.piede .nome{font-size:56px}
 @media (min-width:901px){
 .sezione .tessera:not(.foto){min-height:clamp(190px,16vw,260px)}
 .pagina-hero .collage.pieno>.tessera:nth-child(1){grid-column:1 / span 3;grid-row:1 / span 4}
@@ -301,6 +310,14 @@ ${GRIGLIE_LUNGHE}
 .persona .sezione:not(.apertura) .tessera{padding:20px;font-size:15px}
 .persona .sezione:not(.apertura) h3{font-size:36px}
 .persona .sezione:not(.apertura) .tessere>article{min-height:320px}
+body:has(.persona) .testata{padding:12px var(--margine) 0}
+body:has(.persona) .logo img{height:82px}
+body:has(.persona) .testata nav a{background:var(--chiara)}
+.persona~.invito{margin:48px var(--margine) 6px;min-height:260px;padding:22px}
+.persona~.invito .frase{font-size:17px}
+.persona~.invito .parola{font-size:120px}
+.persona~.piede{margin:0 var(--margine) 24px;padding:24px}
+.persona~.piede .nome{font-size:44px}
 }
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')

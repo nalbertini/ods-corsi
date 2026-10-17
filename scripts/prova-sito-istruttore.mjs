@@ -109,5 +109,20 @@ console.log('\n5. Sul telefono')
   ok('il nome sulla foto non c’è (il nome è già nel titolo)', dentro(/\.ritratto figcaption\{[^}]*display:\s*none/), true)
 }
 
+console.log('\n6. Testata, invito e piede come nel design (solo nelle pagine di persona)')
+{
+  const T = tel()
+  const T1 = 'body:has(.persona)'
+  ok('testata alta 154px: 22px sopra e sotto, logo da 110px', [proprieta(`${T1} .testata`, 'padding'), px(proprieta(`${T1} .logo img`, 'height'))], ['22px var(--margine)', 110])
+  ok('le voci del menu stanno a 10px una dall’altra', proprieta(`${T1} .testata nav ul`, 'gap'), '10px')
+  ok('il pulsante «Prova» ha 26px ai lati', proprieta(`${T1} .testata .pulsante`, 'padding'), '0 26px')
+  ok('l’invito: 96px sopra, 6px sotto, ai lati come la pagina; alto 300px, margine interno 36px 40px', [proprieta('.persona~.invito', 'margin'), px(proprieta('.persona~.invito', 'min-height')), proprieta('.persona~.invito', 'padding')], ['96px var(--margine) 6px', 300, '36px 40px'])
+  ok('la frase dell’invito è di 22px, larga al massimo 520px; «Prova» è di 170px', [px(proprieta('.persona~.invito .frase', 'font-size')), px(proprieta('.persona~.invito .frase', 'max-width')), px(proprieta('.persona~.invito .parola', 'font-size'))], [22, 520, 170])
+  ok('il piede: ai lati e sotto come la pagina, 40px di margine interno, nome da 56px', [proprieta('.persona~.piede', 'margin'), proprieta('.persona~.piede', 'padding'), px(proprieta('.persona~.piede .nome', 'font-size'))], ['0 var(--margine) var(--margine)', '40px', 56])
+  ok('telefono: testata con 12px sopra e logo da 82px, voci su fondo chiaro', [new RegExp(`${T1.replace(/[()]/g, '\\$&')} \\.testata\\{[^}]*padding:\\s*12px var\\(--margine\\) 0`).test(T), /body:has\(\.persona\) \.logo img\{[^}]*height:\s*82px/.test(T), /body:has\(\.persona\) \.testata nav a\{[^}]*background:\s*var\(--chiara\)/.test(T)], [true, true, true])
+  ok('telefono: invito a 48px dal testo, margine interno 22px, frase 17px, «Prova» 120px, alto 260px', [/\.persona~\.invito\{[^}]*margin:\s*48px var\(--margine\) 6px/.test(T), /\.persona~\.invito\{[^}]*padding:\s*22px/.test(T), /\.persona~\.invito\{[^}]*min-height:\s*260px/.test(T), /\.persona~\.invito \.frase\{[^}]*font-size:\s*17px/.test(T), /\.persona~\.invito \.parola\{[^}]*font-size:\s*120px/.test(T)], [true, true, true, true, true])
+  ok('telefono: piede con margine interno 24px, 24px sotto e nome da 44px', [/\.persona~\.piede \.nome\{[^}]*font-size:\s*44px/.test(T), /\.persona~\.piede\{[^}]*padding:\s*24px/.test(T), /\.persona~\.piede\{[^}]*margin:\s*0 var\(--margine\) 24px/.test(T)], [true, true, true])
+}
+
 console.log(guai ? `\n${guai} da correggere` : '\nTutto a posto')
 process.exit(guai ? 1 : 0)
