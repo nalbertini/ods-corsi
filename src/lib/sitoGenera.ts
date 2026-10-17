@@ -97,6 +97,7 @@ const GRIGLIE_LUNGHE = Array.from({ length: GRIGLIA_MASSIMA - 7 }, (_, i) => i +
  * Sul telefono ogni tessera della testata occupa una colonna e l'ultimo numero dispari due: le classi doppie
  * (`.tessere.tessere .tessera.tessera`) alzano la specificità sopra le regole `n-N` delle sezioni.
  */
+// Le regole `.pagina-contatti`, `.recapiti` e `.apertura` sono la pagina Contatti (docs/sito/contatti.md).
 const CSS = `
 @font-face{font-family:"Big Shoulders Display";font-weight:800;font-display:swap;src:url(/risorse/big-shoulders-display-800.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Inter";font-weight:100 900;font-display:swap;src:url(/risorse/inter-variable.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
@@ -210,6 +211,30 @@ ${GRIGLIE_LUNGHE}
 .numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
 .non-trovata{padding:40px var(--margine) 96px}
 .non-trovata p{max-width:34em}
+.pagina-contatti h1{font-size:clamp(56px,13.9vw,200px)}
+.pagina-contatti .pagina-hero{flex-wrap:nowrap;align-items:flex-end;padding-bottom:72px}
+.pagina-contatti .pagina-hero .intro{flex:1;flex-direction:row;align-items:flex-end;gap:56px;max-width:none}
+.pagina-contatti .pagina-hero .intro h1{flex:1;margin:0;overflow-wrap:break-word}
+.pagina-contatti .pagina-hero .intro p{flex:0 0 520px;font-size:22px}
+.sezione.apertura{padding-bottom:96px}
+.apertura>.tessere+*{margin-top:96px}
+.recapiti{grid-template-columns:repeat(12,1fr);grid-auto-rows:minmax(300px,auto)}
+.recapiti .tessera{gap:0;padding:24px 26px}
+.recapiti h3{margin-bottom:auto;font-size:56px;line-height:.95}
+.recapiti p:first-of-type{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:36px;line-height:1}
+.recapiti .breve p:first-of-type{font-size:44px}
+.recapiti p:not(:first-of-type){margin-top:12px;font-size:17px;line-height:1.45}
+.apertura figure.larga img{height:520px}
+.apertura>.tessere+.colonna{position:relative;max-width:none;margin-top:-80px;padding:0 24px 24px}
+.apertura .colonna a.pulsante{background:var(--giallo);color:var(--inchiostro);padding:0 28px}
+.apertura>.foto-fila{margin-top:96px}
+.apertura .foto-fila img{height:536px}
+.pagina-contatti .sezione:not(.apertura) h2{line-height:.85}
+.pagina-contatti .sezione:not(.apertura) .colonna{padding-bottom:22px;font-size:22px}
+.pagina-contatti .sezione:not(.apertura) .tessera{justify-content:space-between;padding:26px 28px}
+.pagina-contatti .sezione:not(.apertura) .tessera h3{font-size:38px;line-height:.95}
+.pagina-contatti .sezione:not(.apertura) .tessere{grid-auto-rows:minmax(330px,auto)}
+.pagina-contatti .sezione:not(.apertura) .tessera:nth-child(odd){background:var(--giallo);color:var(--inchiostro)}
 @media (min-width:901px){
 .sezione .tessera:not(.foto){min-height:clamp(190px,16vw,260px)}
 }
@@ -231,6 +256,29 @@ ${GRIGLIE_LUNGHE}
 .foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
 .invito{margin-top:48px}
+}
+@media (max-width:900px){
+.pagina-contatti h1{font-size:19.5vw}
+.pagina-contatti .pagina-hero{padding:20px var(--margine) 36px}
+.pagina-contatti .pagina-hero .intro{flex-direction:column;align-items:stretch;gap:20px}
+.pagina-contatti .pagina-hero .intro p{flex:none;font-size:18px}
+.sezione.apertura{padding-bottom:48px}
+.apertura>.tessere+*,.apertura>.foto-fila{margin-top:48px}
+.recapiti{grid-template-columns:1fr;grid-auto-rows:minmax(130px,auto)}
+.tessere.n-4.recapiti>*{grid-column:1}
+.recapiti .tessera{gap:12px;padding:20px}
+.recapiti h3{font-size:38px}
+.recapiti p:first-of-type,.recapiti .breve p:first-of-type{font-size:32px}
+.apertura figure.larga img{height:380px}
+.apertura>.tessere+.colonna{padding:0 12px 28px}
+.apertura .colonna a.pulsante{min-height:52px;padding:0 26px;font-size:17px}
+.apertura .foto-fila img{height:200px}
+.apertura .foto-fila figure:nth-child(3){display:none}
+.pagina-contatti .sezione:not(.apertura) h2{font-size:56px;line-height:.88}
+.pagina-contatti .sezione:not(.apertura) .colonna{font-size:18px}
+.pagina-contatti .sezione:not(.apertura) .tessera{gap:12px;padding:20px}
+.pagina-contatti .sezione:not(.apertura) .tessera h3{font-size:30px}
+.pagina-contatti .sezione:not(.apertura) .tessere{grid-auto-rows:minmax(160px,auto)}
 }
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
@@ -312,7 +360,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
     : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
+  const corpo = `${t}<main${p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo, p.slug === 'contatti') : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo })
 }
 
