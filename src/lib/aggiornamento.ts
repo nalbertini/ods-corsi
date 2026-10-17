@@ -41,6 +41,35 @@ export function trattieniAggiornamento(si: boolean) {
   if (!si && inAttesa) ricarica()
 }
 
+const CHIAVE_PEZZO = 'ods-ricaricata-per-pezzo'
+
+/**
+ * Dopo una pubblicazione i file con l'impronta nel nome (`supabase-xxx.js`)
+ * cambiano: una pagina rimasta aperta, o servita dalla cache, chiede quelli
+ * vecchi e non li trova più. Ricaricare basta, una volta; se il guaio resta
+ * (rete assente, file davvero mancante) non si ricarica all'infinito.
+ */
+export function ricaricarePerPezzoMancante(ultima: string | null, ora: number): boolean {
+  const quando = Number(ultima)
+  return !Number.isFinite(quando) || ora - quando > 30_000
+}
+
+/**
+ * Vite lancia questo evento quando un pezzo caricato al bisogno non arriva.
+ * Lo si ascolta subito, non al `load`: il guaio può capitare prima.
+ */
+export function ricaricaSePezzoMancante() {
+  window.addEventListener('vite:preloadError', (e) => {
+    try {
+      if (!ricaricarePerPezzoMancante(sessionStorage.getItem(CHIAVE_PEZZO), Date.now())) return
+      sessionStorage.setItem(CHIAVE_PEZZO, String(Date.now()))
+    } catch {
+      return // senza sessionStorage non si può evitare il ciclo: meglio l'errore
+    }
+    e.preventDefault()
+    ricarica()
+  })
+}
 
 /** Registra il service worker e tiene d'occhio gli aggiornamenti. */
 export function registraAggiornamenti() {

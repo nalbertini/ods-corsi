@@ -47,6 +47,7 @@
     "prova:importa": "node scripts/prova-importa.mjs",
     "prova:colleghi": "node scripts/prova-colleghi.mjs",
     "prova:finestra": "node scripts/prova-finestra.mjs",
+    "prova:aggiornamento": "node scripts/prova-aggiornamento.mjs",
     "prova:vestiario": "node scripts/prova-vestiario.mjs",
     "prova:backup": "node scripts/prova-backup.mjs",
     "prova:tema": "node scripts/prova-tema.mjs",
