@@ -24,22 +24,17 @@ In quest'ordine:
 Titolo e descrizione della pagina sono il nome grande e la frase a destra, col
 pulsante «Contattaci» sotto.
 
+## Altre regole di questa pagina
+
+- Il nome sulla foto è l'`alt`; se scrivi «Nome — ruolo» (con il trattino lungo) il ruolo va sotto, piccolo.
+- Un titolo grande (`h2`) seguito solo da paragrafi (per esempio «Fuori dal tatami») è una tessera blu larga come la riga.
+- Nel menu in alto la voce «Chi siamo» (pagina `chi-siamo`) è evidenziata in giallo: gli istruttori sono parte di Chi siamo.
+- Testata, invito e piede hanno le misure del design solo nelle pagine di persona; il piede ha tre colonne
+  (recapiti, menu, altri link), senza la riga «©», e l'invito la frase lunga. Sul telefono il pulsante è «Prova».
+- I colori delle tessere sono quelli del design (4 e 3 in apertura, percorso, altri istruttori).
+
 ## Cosa resta diverso dal design
 
-- «Fuori dal tatami» nel design è una tessera blu larga quanto la riga; nel
-  sito, scritto come `h2` con un paragrafo, è un titolo grande col testo in colonna.
-  Una tessera larga a parte non si può esprimere col testo della segreteria.
-- Sotto il nome sulla foto il design ha il ruolo («Maestro di Judo V Dan»):
-  il testo non ha dove metterlo, e il ruolo sta già nella tessera «Ruolo».
-- I colori delle tessere seguono la rotazione di tutto il sito (blu, giallo,
-  inchiostro, chiaro, da blu in ogni gruppo), non quelli scelti a mano nel design.
 - Il cerchio «Foto» segnaposto degli altri istruttori diventa la loro foto vera.
 - Sul telefono il nome sulla foto non c'è (è già il titolo).
-- Testata, invito e piede (uguali per tutte le pagine) hanno le misure del design solo
-  nelle pagine di persona: 154px di testata col logo da 110px, invito alto 300px, piede
-  con 48px ai lati. Il piede ha ancora i titoli «Altri link» e «Vieni a trovarci» e la riga
-  «©», che nel design non ci sono; l'invito ha la freccia ↗ (è un link) e una frase più corta.
-- Le voci del menu restano alte 44px (nel design 39px) per il tocco; nessuna è evidenziata
-  come «Chi siamo» (il sito non sa a quale voce appartiene la pagina).
-- Sul telefono il pulsante di testata dice «Prova una settimana · 5 €» e va a capo sotto il
-  logo; nel design è «Prova», a fianco del logo.
+- I titoli di colonna del piede ci sono per chi legge con lo schermo, ma non si vedono.

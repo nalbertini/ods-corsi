@@ -253,16 +253,17 @@ export function persona(testoPulito: string): { html: string; resto: string } | 
   if (!foto || b[1]?.tag !== 'blockquote') return null
   const primoTitolo = b.findIndex((x) => x.tag === 'h2')
   const fine = primoTitolo < 0 ? b.length : primoTitolo
-  const nome = /\balt="([^"]*)"/i.exec(foto)?.[1] ?? ''
-  const ritratto = `<div class="ritratto"><figure class="tessera foto">${foto}${nome ? `<figcaption>${nome}</figcaption>` : ''}</figure>${citazione(b[1], 'blu', true)}</div>`
+  // L'`alt` è «Nome — ruolo»: il nome sta grande sulla foto e il ruolo, se c'è, sotto.
+  const [nome, ruolo] = (/\balt="([^"]*)"/i.exec(foto)?.[1] ?? '').split(/\s+[—–-]\s+/, 2)
+  const ritratto = `<div class="ritratto"><figure class="tessera foto">${foto}${nome ? `<figcaption><span class="nome">${nome}</span>${ruolo ? `<span class="ruolo">${ruolo}</span>` : ''}</figcaption>` : ''}</figure>${citazione(b[1], 'blu', true)}</div>`
   return { html: conFila(sezione('', b.slice(2, fine), ritratto)), resto: b.slice(fine).map((x) => x.html).join('') }
 }
 
 /**
- * Il testo di una pagina a tessere. Il chiamante lo usa solo per le pagine non di legge che hanno almeno un `h2`:
+ * Il testo di una pagina a tessere. Il chiamante lo usa solo per le pagine non di legge che hanno almeno un `h2` (`tessereSole`: pagine di persona):
  * senza titoli il testo resta una colonna, come prima. Quello che precede il primo `h2` è l'introduzione, in colonna.
  */
-export function impagina(testoPulito: string): string {
+export function impagina(testoPulito: string, tessereSole = false): string {
   const b = blocchi(testoPulito)
   const primo = b.findIndex((x) => x.tag === 'h2')
   if (primo < 0) return testoPulito.trim() ? `<div class="testo">${testoPulito}</div>` : ''
@@ -274,7 +275,10 @@ export function impagina(testoPulito: string): string {
     const titolo = contenuto(b[i])
     let j = i + 1
     while (j < b.length && b[j].tag !== 'h2') j++
-    fuori.push(sezione(titolo, b.slice(i + 1, j)))
+    const corpo = b.slice(i + 1, j)
+    // Nelle pagine di persona un titolo con soli paragrafi («Fuori dal tatami») è una tessera larga come la riga.
+    if (tessereSole && corpo.length && corpo.every((x) => x.tag === 'p')) fuori.push(`<section class="sezione solo">${griglia(1, `<article class="tessera blu"><h2>${titolo}</h2>${corpo.map((x) => x.html).join('')}</article>`)}</section>`)
+    else fuori.push(sezione(titolo, corpo))
     i = j
   }
   return fuori.join('')

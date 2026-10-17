@@ -33,8 +33,8 @@ const conta = (x, re) => (x.match(re) || []).length
 const li = (a) => `<ul>${a.map((x) => `<li>${x}</li>`).join('')}</ul>`
 const TESTO = `<img src="/r.svg" alt="Maurizio Innella"><blockquote><p>Lo sport è scuola.</p><p><em>Maurizio</em></p></blockquote>` +
   li(['<strong>Ruolo</strong> Presidente', '<strong>Corsi</strong> Judo', '<strong>Quando</strong> Lun e mer', '<strong>Titoli</strong> V Dan']) +
-  `<h3>Chi è</h3><p>Docente.</p><h3>Come ha iniziato</h3><p>Dal 1989.</p><h3>Come insegna</h3><p>Dal 2000.</p><h2>Il percorso</h2><h3>Scuola</h3><p>Sì.</p>`
-const dati = (slug, testo) => ({ dominio: 'https://officinedellosport.it', pagine: [{ slug, titolo: 'Maurizio Innella', descrizione: 'Maestro di Judo.', testo }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '<p>c</p>' }], menu: [], rinvii: [] })
+  `<h3>Chi è</h3><p>Docente.</p><h3>Come ha iniziato</h3><p>Dal 1989.</p><h3>Come insegna</h3><p>Dal 2000.</p><h2>Il percorso</h2><h3>Scuola</h3><p>Sì.</p><h2>Fuori dal tatami</h2><p>Assistente bagnanti con estensione MIP.</p>`
+const dati = (slug, testo) => ({ dominio: 'https://officinedellosport.it', pagine: [{ slug, titolo: 'Maurizio Innella', descrizione: 'Maestro di Judo.', testo }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '<p>c</p>' }, { slug: 'chi-siamo', titolo: 'Chi siamo', descrizione: '', testo: '<p>x</p>' }], menu: [['Home', '/'], ['Chi siamo', 'chi-siamo'], ['Contattaci', 'contatti']].map(([e, sl], i) => ({ dove: 'menu', ordine: i, etichetta: e, slug: sl === '/' ? null : sl, indirizzo: sl === '/' ? '/' : null })).concat([{ dove: 'footer', ordine: 9, etichetta: 'Privacy policy', slug: null, indirizzo: '/privacy/' }]), rinvii: [] })
 const file = (slug, testo, extra = {}) => g.generaSito({ ...dati(slug, testo), ...extra })
 const pagina = (testo, slug = 'maurizio') => file(slug, testo)[`${slug}/index.html`] ?? ''
 const h = pagina(TESTO)
@@ -72,7 +72,7 @@ console.log('\n3. Il ritratto: foto col nome e citazione blu')
 {
   const r = h.match(/<section class="sezione apertura">([\s\S]*?)<\/section>/)?.[1] ?? ''
   ok('la sezione di apertura non ha titolo grande', /<h2/.test(r), false)
-  ok('prima il ritratto: foto con il nome (l’alt) in didascalia, poi la citazione blu', /^<div class="ritratto"><figure class="tessera foto"><img alt="Maurizio Innella" src="\/r\.svg" \/><figcaption>Maurizio Innella<\/figcaption><\/figure><blockquote class="tessera citazione blu larga">/.test(r), true)
+  ok('prima il ritratto: foto con il nome (l’alt) in didascalia, poi la citazione blu', /^<div class="ritratto"><figure class="tessera foto"><img alt="Maurizio Innella" src="\/r\.svg" \/><figcaption><span class="nome">Maurizio Innella<\/span><\/figcaption><\/figure><blockquote class="tessera citazione blu larga">/.test(r), true)
   ok('poi le 4 tessere dell’elenco e le 3 dei sottotitoli', [conta(r, /<div class="tessere n-4 fila-4">/g), conta(r, /<div class="tessere n-3 fila-3">/g)], [1, 1])
   ok('la foto e la citazione non compaiono due volte', [conta(h, /<figure class="tessera foto"><img alt="Maurizio Innella"/g), conta(h, /<blockquote/g)], [1, 1])
   ok('il ritratto è alto 620px, con la citazione larga 560px', [px(proprieta('.ritratto', 'height')), proprieta('.ritratto', 'grid-template-columns')], [620, 'minmax(0,1fr) minmax(0,560px)'])
@@ -85,7 +85,7 @@ console.log('\n3. Il ritratto: foto col nome e citazione blu')
 console.log('\n4. Le tessere')
 {
   ok('le griglie dell’apertura hanno la classe fila-N (la prima da 4, la seconda da 3)', [conta(h, /<div class="tessere n-4 fila-4">/g), conta(h, /<div class="tessere n-3 fila-3">/g)], [1, 1])
-  ok('anche quella sotto un titolo grande (la tessera del percorso)', conta(h.split('<h2>Il percorso</h2>')[1] ?? '', /<div class="tessere n-\d fila-\d">/g), 1)
+  ok('anche quella sotto un titolo grande (la tessera del percorso e «Fuori dal tatami»)', conta(h.split('<h2>Il percorso</h2>')[1] ?? '', /<div class="tessere n-\d fila-\d">/g), 2)
   ok('una pagina che non è di persona non le ha', /<div class="tessere n-\d fila-/.test(pagina('<h2>A</h2><h3>x</h3><p>y</p>')), false)
   ok('le 4 tessere dell’apertura stanno su 4 colonne, alte 220px, titolo 52px, testo 18px', [proprieta('.persona .fila-4', 'grid-template-columns'), px(proprieta('.persona .apertura .fila-4>article', 'min-height')), px(proprieta('.persona .apertura .fila-4 h3', 'font-size')), px(proprieta('.persona .apertura .fila-4 .tessera', 'font-size'))], ['repeat(4,1fr)', 220, 52, 18])
   ok('e ognuna sta in una colonna (non span 3)', proprieta('.persona .tessere.fila-4>article', 'grid-column'), 'auto')
@@ -122,6 +122,45 @@ console.log('\n6. Testata, invito e piede come nel design (solo nelle pagine di 
   ok('telefono: testata con 12px sopra e logo da 82px, voci su fondo chiaro', [new RegExp(`${T1.replace(/[()]/g, '\\$&')} \\.testata\\{[^}]*padding:\\s*12px var\\(--margine\\) 0`).test(T), /body:has\(\.persona\) \.logo img\{[^}]*height:\s*82px/.test(T), /body:has\(\.persona\) \.testata nav a\{[^}]*background:\s*var\(--chiara\)/.test(T)], [true, true, true])
   ok('telefono: invito a 48px dal testo, margine interno 22px, frase 17px, «Prova» 120px, alto 260px', [/\.persona~\.invito\{[^}]*margin:\s*48px var\(--margine\) 6px/.test(T), /\.persona~\.invito\{[^}]*padding:\s*22px/.test(T), /\.persona~\.invito\{[^}]*min-height:\s*260px/.test(T), /\.persona~\.invito \.frase\{[^}]*font-size:\s*17px/.test(T), /\.persona~\.invito \.parola\{[^}]*font-size:\s*120px/.test(T)], [true, true, true, true, true])
   ok('telefono: piede con margine interno 24px, 24px sotto e nome da 44px', [/\.persona~\.piede \.nome\{[^}]*font-size:\s*44px/.test(T), /\.persona~\.piede\{[^}]*padding:\s*24px/.test(T), /\.persona~\.piede\{[^}]*margin:\s*0 var\(--margine\) 24px/.test(T)], [true, true, true])
+}
+
+console.log('\n7. Le differenze che restavano: menu, ruolo, «Fuori dal tatami», colori, piede')
+{
+  const T = tel()
+  ok('nel menu la voce «Chi siamo» è quella attiva (giallo)', [/<a class="attiva" href="\/chi-siamo\/">Chi siamo<\/a>/.test(h), proprieta('body:has(.persona) .testata nav a.attiva', 'background')], [true, 'var(--giallo)'])
+  ok('le altre pagine non hanno voci attive', /class="attiva"/.test(file('home', TESTO)['index.html']), false)
+  ok('le voci del menu: 9px sopra e sotto, 16px ai lati, interlinea normale (alte 39px come nel design)', [proprieta('body:has(.persona) .testata nav a', 'padding'), proprieta('body:has(.persona) .testata nav a', 'min-height'), proprieta('body:has(.persona) .testata nav a', 'line-height')], ['9px 16px', '0', 'normal'])
+  ok('le tessere non hanno spazio fisso tra titolo e testo (sul telefono 12px); l’invito neppure', [proprieta('.persona .tessera', 'gap'), /\.persona \.tessera\{[^}]*gap:\s*12px/.test(T), proprieta('.persona~.invito', 'gap')], ['0', true, '0'])
+  ok('sul telefono le voci tornano alte 44px', /body:has\(\.persona\) \.testata nav a\{[^}]*min-height:\s*44px/.test(T), true)
+  ok('il pulsante di testata si abbrevia in «Prova» sul telefono', [/<a class="pulsante piccolo" href="\/contatti\/">Prova<span class="esteso"> una settimana · 5 €<\/span><\/a>/.test(h), /body:has\(\.persona\) \.testata \.esteso\{[^}]*display:\s*none/.test(T)], [true, true])
+  ok('sul telefono il pulsante sta a fianco del logo: il menu va sotto e il pulsante è corto', [/\.testata nav\{[^}]*order:\s*3/.test(T), /\.testata\{[^}]*flex-wrap:\s*wrap/.test(T)], [true, true])
+  const ruolo = pagina(TESTO.replace('alt="Maurizio Innella"', 'alt="Maurizio Innella — Maestro di Judo V Dan"'))
+  ok('l’alt «Nome — ruolo»: il nome grande e il ruolo sotto, a 16px', [/<figcaption><span class="nome">Maurizio Innella<\/span><span class="ruolo">Maestro di Judo V Dan<\/span><\/figcaption>/.test(ruolo), px(proprieta('.ritratto figcaption .ruolo', 'font-size'))], [true, 16])
+  ok('la didascalia ha l’angolo in alto a destra a 6px', proprieta('.ritratto figcaption', 'border-top-right-radius'), '6px')
+  const f = h.match(/<section class="sezione solo">([\s\S]*?)<\/section>/)?.[1] ?? ''
+  ok('«Fuori dal tatami» (titolo e solo paragrafi) è una tessera blu larga come la riga', /^<div class="tessere n-1 fila-1"><article class="tessera blu"><h2>Fuori dal tatami<\/h2><p>Assistente bagnanti/.test(f), true)
+  ok('quella tessera: alta 160px, 28px di margine, titolo 44px, testo 18px', [px(proprieta('.persona .sezione.solo:not(.apertura) .tessere>article', 'min-height')), proprieta('.persona .sezione.solo:not(.apertura) .tessera', 'padding'), px(proprieta('.persona .sezione.solo h2', 'font-size')), px(proprieta('.persona .sezione.solo:not(.apertura) .tessera', 'font-size'))], [160, '28px', 44, 18])
+  ok('sta a 6px dalla sezione che precede (non a 96)', proprieta('.persona .sezione:has(+ .solo)', 'padding-bottom'), '6px')
+  ok('l’ultima sezione non aggiunge spazio: sotto ci sono già i 96px dell’invito', proprieta('.persona .sezione:last-child', 'padding-bottom'), '0')
+  ok('una sezione con titolo e un solo paragrafo, in una pagina non di persona, resta com’è', /sezione solo/.test(pagina('<h2>A</h2><p>b</p>')), false)
+  ok('il titolo grande delle sezioni ha interlinea .85', proprieta('.persona .sezione h2', 'line-height'), '.85')
+  ok('gli elenchi nelle tessere hanno il pallino davanti, senza rientro', [proprieta('.persona .tessera ul', 'list-style'), proprieta('.persona .tessera li::before', 'content')], ['none', '"• "'])
+  const c = (sel) => proprieta(sel, 'background')
+  ok('colori come nel design: 4 in riga giallo, blu, inchiostro, giallo', [1, 2, 3, 4].map((i) => c(`.persona .apertura .fila-4 .tessera:nth-child(${i})`)), ['var(--giallo)', 'var(--blu)', 'var(--inchiostro)', 'var(--giallo)'])
+  ok('le 3 sotto: chiara, giallo, blu', [1, 2, 3].map((i) => c(`.persona .apertura .fila-3 .tessera:nth-child(${i})`)), ['var(--chiara)', 'var(--giallo)', 'var(--blu)'])
+  ok('il percorso: inchiostro, giallo, chiara', [1, 2, 3].map((i) => c(`.persona .sezione:not(.apertura) .fila-3 .tessera:nth-child(${i})`)), ['var(--inchiostro)', 'var(--giallo)', 'var(--chiara)'])
+  ok('gli altri istruttori: giallo, blu, inchiostro, giallo', [1, 2, 3, 4].map((i) => c(`.persona .sezione:not(.apertura) .fila-4 .tessera:nth-child(${i})`)), ['var(--giallo)', 'var(--blu)', 'var(--inchiostro)', 'var(--giallo)'])
+  ok('il testo sulle tessere gialle e chiare è inchiostro, sulle altre bianco', [proprieta('.persona .apertura .fila-4 .tessera:nth-child(1)', 'color'), proprieta('.persona .apertura .fila-4 .tessera:nth-child(2)', 'color')], ['var(--inchiostro)', '#fff'])
+  ok('sul telefono le altezze del design: 260, 240, 220 e 420, 320, 340', [260, 240, 220].map((v, i) => new RegExp(`\\.persona \\.apertura \\.fila-3>article:nth-child\\(${i + 1}\\)\\{[^}]*min-height:\\s*${v}px`).test(T)).concat([420, 320, 340].map((v, i) => new RegExp(`\\.persona \\.sezione:not\\(\\.apertura\\) \\.fila-3>article:nth-child\\(${i + 1}\\)\\{[^}]*min-height:\\s*${v}px`).test(T))), [true, true, true, true, true, true])
+  const p = h.match(/<footer class="piede">([\s\S]*?)<\/footer>/)?.[1] ?? ''
+  ok('piede: il nome su due righe, tre colonne (recapiti, menu, altri link), niente riga «©»', [/^<p class="nome">Officine<br>dello Sport<\/p><div class="colonne">/.test(p), conta(p, /<ul>/g), /class="fine"/.test(p)], [true, 3, false])
+  ok('i recapiti: indirizzo, telefono e «Instagram · Facebook» sulla stessa riga', /<li>Instagram<\/li>|<li><a [^>]*>Instagram<\/a> · <a [^>]*>Facebook<\/a><\/li>/.test(p), true)
+  ok('nel piede il menu ha le stesse voci del menu in alto', /<ul><li><a href="\/">Home<\/a><\/li><li><a href="\/chi-siamo\/">Chi siamo<\/a><\/li><li><a href="\/contatti\/">Contattaci<\/a><\/li><\/ul>/.test(p), true)
+  ok('i titoli delle colonne ci sono per chi legge con lo schermo, ma non si vedono', [conta(p, /<h2 class="solo-lettori">/g), /position:\s*absolute/.test(regola('.solo-lettori'))], [3, true])
+  ok('piede su una riga: nome e tre colonne distribuiti (flex, space-between)', [proprieta('.persona~.piede', 'display'), proprieta('.persona~.piede', 'justify-content'), proprieta('.persona~.piede .colonne', 'display')], ['flex', 'space-between', 'contents'])
+  ok('sul telefono le colonne dei link vanno su una riga con « · »', [/\.persona~\.piede \.colonne>div~div li\{[^}]*display:\s*inline/.test(T), /\.persona~\.piede \.colonne>div~div li\+li::before\{[^}]*content:\s*" · "/.test(T)], [true, true])
+  const inv = h.match(/<a class="invito"[\s\S]*?<\/a>/)?.[0] ?? ''
+  ok('l’invito: la frase del design e niente freccia', [/Una settimana a 5 euro: provi tutte le discipline e scegli\./.test(inv), proprieta('.persona~.invito .freccia', 'display')], [true, 'none'])
 }
 
 console.log(guai ? `\n${guai} da correggere` : '\nTutto a posto')

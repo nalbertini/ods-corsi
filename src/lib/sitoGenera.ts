@@ -61,6 +61,8 @@ const TESTI = {
   invito: 'Vieni a provare: ti aspettiamo in',
   altriLink: 'Altri link',
   trovarci: 'Vieni a trovarci',
+  menu: 'Menu',
+  inpiu: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
   contatti: '/contatti/',
 }
 const NOME = TESTI.nome
@@ -98,6 +100,15 @@ const GRIGLIE_LUNGHE = Array.from({ length: GRIGLIA_MASSIMA - 7 }, (_, i) => i +
  * Sul telefono ogni tessera della testata occupa una colonna e l'ultimo numero dispari due: le classi doppie
  * (`.tessere.tessere .tessera.tessera`) alzano la specificità sopra le regole `n-N` delle sezioni.
  */
+/** I colori delle tessere di una pagina di persona, come nel design: per ogni gruppo, i colori nell'ordine. */
+const GRUPPI_PERSONA: Array<[string, string[]]> = [
+  ['.persona .apertura .fila-4', ['giallo', 'blu', 'inchiostro', 'giallo']],
+  ['.persona .apertura .fila-3', ['chiara', 'giallo', 'blu']],
+  ['.persona .sezione:not(.apertura) .fila-3', ['inchiostro', 'giallo', 'chiara']],
+  ['.persona .sezione:not(.apertura) .fila-4', ['giallo', 'blu', 'inchiostro', 'giallo']],
+]
+const TINTE_PERSONA = GRUPPI_PERSONA.flatMap(([sel, colori]) => colori.map((c, i) => `${sel} .tessera:nth-child(${i + 1}){background:var(--${c});color:${c === 'giallo' || c === 'chiara' ? 'var(--inchiostro)' : '#fff'}}`)).join('\n')
+
 const CSS = `
 @font-face{font-family:"Big Shoulders Display";font-weight:800;font-display:swap;src:url(/risorse/big-shoulders-display-800.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Inter";font-weight:100 900;font-display:swap;src:url(/risorse/inter-variable.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
@@ -221,7 +232,7 @@ ${GRIGLIE_LUNGHE}
 .persona-hero h1{flex:1;min-width:0;font-size:clamp(56px,10.5vw,150px);line-height:.82}
 .persona-hero .lato{flex:0 0 520px;display:flex;flex-direction:column;align-items:flex-start}
 .persona-hero .lato p{margin:0 0 28px;font-size:22px;line-height:1.45}
-.persona .tessera{justify-content:space-between;line-height:1.45}
+.persona .tessera{justify-content:space-between;gap:0;line-height:1.45}
 .persona .tessera li+li{margin-top:0}
 .persona article>img{width:110px;aspect-ratio:1;border-radius:50%;object-fit:cover}
 .persona .apertura .tessere .tessera{padding:30px;font-size:19px}
@@ -250,11 +261,30 @@ body:has(.persona) .testata{padding:22px var(--margine)}
 body:has(.persona) .logo img{height:110px}
 body:has(.persona) .testata nav ul{gap:10px}
 body:has(.persona) .testata .pulsante{padding:0 26px}
-.persona~.invito{margin:96px var(--margine) 6px;min-height:300px;padding:36px 40px}
+.persona~.invito{margin:96px var(--margine) 6px;min-height:300px;padding:36px 40px;gap:0}
 .persona~.invito .frase{max-width:520px;font-size:22px}
 .persona~.invito .parola{font-size:170px}
 .persona~.piede{margin:0 var(--margine) var(--margine);padding:40px}
 .persona~.piede .nome{font-size:56px}
+.solo-lettori{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+body:has(.persona) .testata nav a{padding:9px 16px;min-height:0;line-height:normal}
+body:has(.persona) .testata nav a.attiva{background:var(--giallo)}
+.persona .sezione h2{line-height:.85}
+.persona .sezione:last-child{padding-bottom:0}
+.persona .sezione:has(+ .solo){padding-bottom:6px}
+.persona .sezione.solo:not(.apertura) .tessera{padding:28px;font-size:18px}
+.persona .sezione.solo:not(.apertura) .tessere>article{min-height:160px}
+.persona .sezione.solo h2{margin:0;font-size:44px;line-height:.95}
+.persona .tessera ul{list-style:none;padding:0}
+.persona .tessera li::before{content:"• "}
+${TINTE_PERSONA}
+.ritratto figcaption{border-top-right-radius:6px}
+.ritratto figcaption span{display:block}
+.ritratto figcaption .ruolo{margin-top:6px;font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;text-transform:none;font-weight:400;font-size:16px;line-height:1.45}
+.persona~.invito .freccia{display:none}
+.persona~.piede{display:flex;justify-content:space-between;gap:40px}
+.persona~.piede .colonne{display:contents}
+.persona~.piede .colonne>div{font-size:16px;line-height:1.9}
 @media (min-width:901px){
 .sezione .tessera:not(.foto){min-height:clamp(190px,16vw,260px)}
 .pagina-hero .collage.pieno>.tessera:nth-child(1){grid-column:1 / span 3;grid-row:1 / span 4}
@@ -313,11 +343,34 @@ body:has(.persona) .testata .pulsante{padding:0 26px}
 body:has(.persona) .testata{padding:12px var(--margine) 0}
 body:has(.persona) .logo img{height:82px}
 body:has(.persona) .testata nav a{background:var(--chiara)}
-.persona~.invito{margin:48px var(--margine) 6px;min-height:260px;padding:22px}
+.persona~.invito{margin:48px var(--margine) 6px;min-height:260px;padding:22px;gap:20px}
 .persona~.invito .frase{font-size:17px}
 .persona~.invito .parola{font-size:120px}
 .persona~.piede{margin:0 var(--margine) 24px;padding:24px}
 .persona~.piede .nome{font-size:44px}
+body:has(.persona) .testata{gap:10px 16px}
+body:has(.persona) .testata nav ul{gap:6px}
+body:has(.persona) .testata nav a{min-height:44px;padding:0 14px;line-height:1.55}
+.persona .tessera{gap:12px}
+body:has(.persona) .testata .esteso{display:none}
+.persona .sezione{padding-bottom:48px}
+.persona .sezione h2{margin-bottom:20px;font-size:56px;line-height:.88}
+.persona .sezione.solo:not(.apertura) .tessera{padding:20px;font-size:15px}
+.persona .sezione.solo:not(.apertura) .tessere>article{min-height:200px}
+.persona .sezione.solo h2{margin:0;font-size:34px}
+.persona .apertura .fila-3>article:nth-child(1){min-height:260px}
+.persona .apertura .fila-3>article:nth-child(2){min-height:240px}
+.persona .apertura .fila-3>article:nth-child(3){min-height:220px}
+.persona .sezione:not(.apertura) .fila-3>article:nth-child(1){min-height:420px}
+.persona .sezione:not(.apertura) .fila-3>article:nth-child(2){min-height:320px}
+.persona .sezione:not(.apertura) .fila-3>article:nth-child(3){min-height:340px}
+.persona~.piede{display:block}
+.persona~.piede .nome{margin-bottom:14px}
+.persona~.piede .colonne{display:block}
+.persona~.piede .colonne>div~div{margin-top:12px}
+.persona~.piede .colonne>div~div li{display:inline}
+.persona~.piede .colonne>div~div li+li::before{content:" · "}
+.persona~.piede .colonne>div:last-child{opacity:.85}
 }
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
@@ -368,20 +421,30 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
   })
 }
 
-function testata(c: Contesto, conContatti: boolean): string {
-  const menu = lista(voci('menu', c))
-  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.provaTestata}</a>` : ''}</header>`
+/** Il menu in alto; nelle pagine di persona la voce «Chi siamo» è quella attiva (gli istruttori sono parte di Chi siamo). */
+function testata(c: Contesto, conContatti: boolean, dellaPersona = false): string {
+  const attiva = dellaPersona ? percorso('chi-siamo') : ''
+  const menu = voci('menu', c).map((x) => `<li><a${x.href === attiva ? ' class="attiva"' : ''} href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a></li>`).join('')
+  // Sul telefono nelle pagine di persona il pulsante è solo «Prova»: il resto sta in `.esteso`.
+  const prova = dellaPersona ? `${TESTI.prova}<span class="esteso"> ${TESTI.provaTestata.replace(/^Prova /, '')}</span>` : TESTI.provaTestata
+  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${prova}</a>` : ''}</header>`
 }
 
-function piede(c: Contesto): string {
+function piede(c: Contesto, dellaPersona = false): string {
   const f = lista(voci('footer', c))
+  if (dellaPersona) {
+    // Come nel design: il nome su due righe e tre colonne (recapiti, menu, altri link), senza la riga «©»; i titoli restano per chi legge con lo schermo.
+    const colonna = (titolo: string, ul: string) => (ul ? `<div><h2 class="solo-lettori">${titolo}</h2><ul>${ul}</ul></div>` : '')
+    const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a> · <a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
+    return `<footer class="piede"><p class="nome">${esc(NOME).replace(' dello', '<br>dello')}</p><div class="colonne">${colonna(TESTI.trovarci, recapiti)}${colonna(TESTI.menu, lista(voci('menu', c)))}${colonna(TESTI.altriLink, f)}</div></footer>`
+  }
   const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
   return `<footer class="piede"><p class="nome">${NOME}</p><div class="colonne">${f ? `<div><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}<div><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div></div><div class="fine"><span>© ${NOME}</span></div></footer>`
 }
 
-function invito(conContatti: boolean): string {
+function invito(conContatti: boolean, dellaPersona = false): string {
   if (!conContatti) return ''
-  return `<a class="invito" href="${TESTI.contatti}"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}.</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
+  return `<a class="invito" href="${TESTI.contatti}"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}.${dellaPersona ? ` ${TESTI.inpiu}` : ''}</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
 }
 
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean }): string {
@@ -397,14 +460,14 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   // Una pagina di persona (foto e citazione in apertura) ha la sua testata e il suo ritratto; vedi `persona` in sitoLayout.ts.
   const dellaPersona = p.slug !== 'home' && !p.diLegge ? persona(pulito) : null
   const testo = dellaPersona ? dellaPersona.resto : inTestata.resto
-  const t = testata(c, conContatti)
+  const t = testata(c, conContatti, !!dellaPersona)
   const contattaci = conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''
   const intro = dellaPersona
     ? `<section class="pagina-hero persona-hero"><h1>${esc(p.titolo)}</h1><div class="lato">${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${contattaci}</div></section>${dellaPersona.html}`
     : p.diLegge
       ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
       : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${contattaci}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main${dellaPersona ? ' class="persona"' : ''}>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo)) : impagina(testo)) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
+  const corpo = `${t}<main${dellaPersona ? ' class="persona"' : ''}>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, true)) : impagina(testo)) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti, !!dellaPersona) : ''}${piede(c, !!dellaPersona)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo })
 }
 
