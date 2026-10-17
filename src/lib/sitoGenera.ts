@@ -119,9 +119,10 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .testata .pulsante{background:var(--giallo);color:var(--inchiostro)}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
-h1{margin:0;font-size:clamp(56px,9vw,150px);letter-spacing:-.01em;line-height:.84;overflow-wrap:anywhere}
-.pagina-hero{padding:24px var(--margine) 64px;display:flex;flex-wrap:wrap;align-items:flex-start;gap:28px 48px}
+h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height:.84;overflow-wrap:anywhere}
+.pagina-hero{padding:40px var(--margine) 96px;display:flex;flex-wrap:wrap;align-items:stretch;gap:28px 56px}
 .pagina-hero .intro{flex:1 1 440px;display:flex;flex-direction:column;gap:24px;max-width:min(980px,100%)}
+.intro h1{margin-bottom:auto}
 .intro p{margin:0;font-size:clamp(18px,1.6vw,22px);line-height:1.45;max-width:34em}
 .pagina-testo{padding:40px var(--margine) 24px}
 .pagina-testo h1{font-size:clamp(48px,8vw,120px);max-width:14em}
@@ -149,8 +150,8 @@ h1{margin:0;font-size:clamp(56px,9vw,150px);letter-spacing:-.01em;line-height:.8
 .piede a{text-decoration:none}
 .piede a:hover{text-decoration:underline}
 .piede .fine{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;margin-top:32px;font-size:14px;color:var(--chiara)}
-.sezione{padding:48px var(--margine) 0}
-.sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 24px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.88;overflow-wrap:anywhere}
+.sezione{padding:0 var(--margine) 96px}
+.sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 28px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.88;overflow-wrap:anywhere}
 .testo + .sezione{padding-top:24px}
 .colonna{max-width:calc(62ch + var(--margine) * 2);padding-bottom:24px}
 .tessere{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
@@ -185,8 +186,8 @@ ${GRIGLIE_LUNGHE}
 .due{grid-template-columns:repeat(2,1fr)}
 .foto-fila figure{grid-column:auto}
 .sezione>*+*{margin-top:6px}
-.pagina-hero>.collage,.pagina-hero>.tessere{flex:1.2 1 460px;max-width:680px;margin-top:0}
-.collage{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(110px,auto);gap:6px}
+.pagina-hero>.collage,.pagina-hero>.tessere{flex:0 1 640px;max-width:640px;margin-top:0}
+.collage{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(128px,auto);gap:6px}
 .collage .foto.grande{grid-column:1 / span 4;grid-row:1 / span 3}
 .collage .foto.grande img{flex:1;min-height:0;height:100%}
 .collage .numero{grid-column:span 2}
@@ -200,12 +201,15 @@ ${GRIGLIE_LUNGHE}
 .numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
 .non-trovata{padding:40px var(--margine) 96px}
 .non-trovata p{max-width:34em}
+@media (min-width:901px){
+.sezione .tessera:not(.foto){min-height:clamp(190px,16vw,260px)}
+}
 @media (max-width:900px){
 .testata{flex-wrap:wrap;gap:8px 16px}
 .tessere{grid-template-columns:1fr}
 .tessere .tessera{grid-column:auto}
 .pagina-hero{flex-direction:column;align-items:stretch}
-.pagina-hero>.collage,.pagina-hero>.tessere{flex:none;max-width:none}
+.pagina-hero .intro,.pagina-hero>.collage,.pagina-hero>.tessere{flex:none;max-width:none}
 .pagina-hero .tessere,.collage{grid-template-columns:repeat(2,1fr);grid-auto-rows:auto}
 .pagina-hero .tessere.tessere .tessera.tessera,.collage .numero{grid-column:auto}
 .pagina-hero .tessere.tessere .numero.ultima,.collage .numero.ultima{grid-column:span 2}

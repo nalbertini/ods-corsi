@@ -27,7 +27,8 @@ Arti marziali e preparazione atletica a Collegno, per ogni età e livello: tecni
 ## Testo
 
 Prima del primo titolo grande: 3 foto e un elenco di 5 numeri. Il resto è il
-testo di oggi, con la frase sui numeri spostata sotto il primo titolo.
+testo di oggi, con la frase sui numeri spostata sotto il primo titolo e i
+nomi dei corsi in grassetto (così sul sito sono il titolo grande della tessera).
 
 Il testo sta in [`home.html`](home.html): è quello che va incollato.
 
