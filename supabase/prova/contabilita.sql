@@ -470,3 +470,19 @@ select atteso('…allora la data si sposta', esito(format('select imposta_saldo_
 select atteso('…e ora il conto non prende date più vecchie', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', (:'dopo'::date - 1)::text, 700, 'Donazioni', 'Conto Corrente', 'Troppo presto'))), '22023 La data è prima dell’inizio della cassa');
 select atteso('si toglie la data: il conto conta tutto', esito(format('select imposta_saldo_cassa(id => %L, saldo => 0, dal => null)', id_cassa('Conto Corrente'))), 'ok');
 reset role;
+
+\echo ''
+\echo '--- 11. il giorno è quello di Roma, e annulla/correggi/saldo si mettono in fila ---'
+-- Il fuso della sessione non deve contare: i due fusi più lontani hanno sempre date diverse,
+-- quindi con current_date al posto del giorno di Roma questa prova cade.
+set time zone 'Pacific/Kiritimati';
+select contabilita_oggi()::text as oggi_a_est \gset
+set time zone 'Pacific/Pago_Pago';
+select contabilita_oggi()::text as oggi_a_ovest \gset
+reset time zone;
+select atteso('«oggi» è lo stesso in ogni fuso', (:'oggi_a_est' = :'oggi_a_ovest')::text, 'true');
+select atteso('…ed è il giorno di Roma', :'oggi_a_est', ((now() at time zone 'Europe/Rome')::date)::text);
+-- Due sessioni insieme non si provano da qui: almeno il blocco della riga non deve sparire in silenzio.
+select atteso('annulla, correggi e saldo bloccano la riga (for update)', (select string_agg(proname, ', ' order by proname) from pg_proc
+  where pronamespace = 'public'::regnamespace and proname in ('annulla_movimento', 'correggi_testo_movimento', 'imposta_saldo_cassa') and prosrc ~* 'for update'),
+  'annulla_movimento, correggi_testo_movimento, imposta_saldo_cassa');
