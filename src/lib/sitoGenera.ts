@@ -260,6 +260,25 @@ ${GRIGLIE_LUNGHE}
  * tutto dentro `main.corso` e `.corso-testata`, così le altre pagine non cambiano e non lo portano.
  */
 const CSS_CORSO = `
+/* Testata, invito e piede come nel design: solo nelle pagine di un corso (body.pagina-corso). */
+.pagina-corso .testata{padding:22px var(--margine)}
+.pagina-corso .logo img{height:110px}
+.pagina-corso .testata nav ul{gap:10px}
+.pagina-corso .testata nav a{min-height:0;padding:9px 16px;line-height:1.2}
+.pagina-corso .testata nav [aria-current]{background:var(--giallo)}
+.pagina-corso .testata .pulsante{padding:0 26px}
+.pagina-corso .pulsante .corto{display:none}
+.pagina-corso .invito{min-height:300px;padding:36px 40px;margin:96px var(--margine) 6px}
+.pagina-corso .invito .frase{max-width:520px;font-size:22px}
+.pagina-corso .invito .parola{font-size:clamp(96px,11.8vw,170px)}
+.pagina-corso .invito .freccia{display:none}
+.pagina-corso .piede{margin:0 var(--margine) 48px;padding:40px;gap:40px}
+.pagina-corso .piede .nome{order:-2;max-width:5em;font-size:clamp(40px,3.89vw,56px)}
+.pagina-corso .piede h2,.pagina-corso .piede .fine{display:none}
+.pagina-corso .piede .colonne{display:contents}
+.pagina-corso .piede .colonne>div:last-child{order:-1}
+.pagina-corso .piede li:nth-last-child(-n+2){display:inline}
+.pagina-corso .piede li:last-child::before{content:" · "}
 /* La pagina di un corso (docs/sito/corso.md): tutto dentro main.corso, le altre pagine non cambiano. */
 .corso-testata{padding:0 var(--margine) 96px}
 .corso-testata>*+*{margin-top:6px}
@@ -293,6 +312,20 @@ const CSS_CORSO = `
 .corso .banda-int{display:flex;justify-content:space-between;align-items:flex-end;gap:48px;padding:48px;border-radius:6px;background:var(--blu);color:#fff}
 .corso .banda-int h2{max-width:560px;margin:0;font-size:clamp(56px,8.33vw,120px)}
 .corso .banda-int p{max-width:640px;font-size:clamp(20px,2.22vw,32px);line-height:1.25;font-weight:500}
+}
+@media (max-width:900px){
+.pagina-corso .testata{gap:0 16px;padding:12px var(--margine) 0}
+.pagina-corso .logo img{height:82px}
+.pagina-corso .testata nav{margin-top:10px;padding-bottom:0}
+.pagina-corso .testata nav a{min-height:44px;padding:0 14px;background:var(--chiara)}
+.pagina-corso .testata .pulsante{padding:0 22px}
+.pagina-corso .pulsante .lungo{display:none}
+.pagina-corso .pulsante .corto{display:inline}
+.pagina-corso .invito{min-height:260px;padding:22px;margin:48px var(--margine) 6px;gap:20px}
+.pagina-corso .invito .frase{max-width:none;font-size:17px}
+.pagina-corso .invito .parola{font-size:clamp(80px,32vw,120px)}
+.pagina-corso .piede{display:flex;flex-direction:column;gap:12px;margin:0 var(--margine) 24px;padding:24px}
+.pagina-corso .piede .nome{font-size:44px;margin-bottom:2px}
 }
 @media (max-width:900px){
 .corso .pagina-hero{padding:20px var(--margine) 36px}
@@ -355,7 +388,7 @@ function voci(dove: 'menu' | 'footer', c: Contesto): Array<{ etichetta: string; 
 }
 
 const rel = (href: string) => (/^https?:/i.test(href) ? ' rel="noopener noreferrer"' : '')
-const lista = (v: Array<{ etichetta: string; href: string }>) => v.map((x) => `<li><a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a></li>`).join('')
+const lista = (v: Array<{ etichetta: string; href: string }>, corrente?: string) => v.map((x) => `<li><a href="${esc(x.href)}"${rel(x.href)}${x.href === corrente ? ' aria-current="page"' : ''}>${esc(x.etichetta)}</a></li>`).join('')
 
 /**
  * Il testo di una pagina, ripulito, con solo le immagini ammesse: quelle del sito
@@ -378,9 +411,10 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
   })
 }
 
-function testata(c: Contesto, conContatti: boolean): string {
-  const menu = lista(voci('menu', c))
-  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.provaTestata}</a>` : ''}</header>`
+/** Nella pagina di un corso il menu segna «I nostri corsi» e il pulsante ha anche la scritta corta per il telefono. */
+function testata(c: Contesto, conContatti: boolean, corso = false): string {
+  const menu = lista(voci('menu', c), corso ? percorso('corsi') : undefined)
+  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${corso ? `<span class="lungo">${TESTI.provaTestata}</span><span class="corto">${TESTI.prova}</span>` : TESTI.provaTestata}</a>` : ''}</header>`
 }
 
 function piede(c: Contesto): string {
@@ -397,7 +431,7 @@ function invito(conContatti: boolean): string {
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}</head><body>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
 }
 
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
@@ -407,7 +441,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   // La pagina di un corso (foto, dati, presentazione prima del primo h2) ha la sua testata; le regole stanno in `main.corso`.
   const corso = p.slug !== 'home' && !p.diLegge ? testataCorso(pulito) : null
   const testo = corso ? corso.resto : inTestata.resto
-  const t = testata(c, conContatti)
+  const t = testata(c, conContatti, corso !== null)
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
     : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`

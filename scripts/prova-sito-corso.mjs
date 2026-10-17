@@ -29,7 +29,7 @@ const ok = (cosa, avuto, voluto) => {
   if (!va) guai++
 }
 const conta = (x, re) => (x.match(re) || []).length
-const pagina = (testo, slug = 'judo') => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug, titolo: 'Judo', descrizione: 'd', testo }], menu: [], rinvii: [] })[slug === 'home' ? 'index.html' : `${slug}/index.html`] ?? ''
+const pagina = (testo, slug = 'judo') => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug, titolo: 'Judo', descrizione: 'd', testo }, { slug: 'corsi', titolo: 'Corsi', descrizione: '', testo: '<p>c</p>' }, { slug: 'contatti', titolo: 'Contatti', descrizione: '', testo: '<p>c</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'I nostri corsi', slug: 'corsi', indirizzo: null }], rinvii: [] })[slug === 'home' ? 'index.html' : `${slug}/index.html`] ?? ''
 const main = (h) => h.match(/<main[^>]*>([\s\S]*)<\/main>/)?.[1] ?? ''
 const classi = (h) => h.match(/<main([^>]*)>/)?.[1] ?? ''
 const colori = (h) => [...h.matchAll(/<article class="tessera (\w+)/g)].map((m) => m[1])
@@ -100,6 +100,30 @@ console.log('\n6. Il CSS: misure del design a 1440px e a telefono')
   ok('titoli senza testo a 54px', tetto(dec('.corso .sezione .tessera:has(>h3:only-child) h3', 'font-size')[0]), 54)
   ok('foto di fila alte 516px', tetto(dec('.corso .foto-fila img', 'height')[0]), 516)
   ok('banda: titolo a 120px', tetto(dec('.corso .banda-int h2', 'font-size')[0]), 120)
+}
+
+console.log('\n7. Testata, invito e piede come nel design (solo pagine di corso)')
+{
+  const h = pagina(TESTA)
+  const altra = pagina('<p>x</p>')
+  ok('il body ha la classe «pagina-corso» solo nel corso', [/<body class="pagina-corso">/.test(h), /pagina-corso/.test(altra)], [true, false])
+  ok('il pulsante in testata ha la scritta lunga e quella corta (telefono)', /class="pulsante piccolo" href="\/contatti\/"><span class="lungo">Prova una settimana · 5 €<\/span><span class="corto">Prova<\/span><\/a>/.test(h), true)
+  ok('nel menu «I nostri corsi» è la pagina corrente', /<a href="\/corsi\/" aria-current="page">I nostri corsi<\/a>/.test(h) && !/<a href="\/"[^>]*aria-current/.test(h), true)
+  ok('fuori dai corsi il pulsante e il menu restano come prima', [/class="lungo"/.test(altra), /aria-current/.test(altra)], [false, false])
+  const CSS = [...h.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('').replace(/\/\*[\s\S]*?\*\//g, '')
+  const regole = [...CSS.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].map((m) => ({ s: m[1].trim(), d: m[2] }))
+  const dec = (sel, prop, n = 0) => regole.filter((r) => r.s.split(',').includes(sel)).map((r) => (r.d.match(new RegExp(`(?:^|;)${prop}:([^;]*)`)) || [])[1]).filter(Boolean)[n]
+  const px = (v) => Math.max(...[...(v ?? '').matchAll(/(\d+(?:\.\d+)?)px/g)].map((m) => Number(m[1])))
+  ok('testata: padding 22px, logo alto 110px', [dec('.pagina-corso .testata', 'padding'), px(dec('.pagina-corso .logo img', 'height'))], ['22px var(--margine)', 110])
+  ok('menu: voci a 10px una dall’altra, la corrente gialla', [dec('.pagina-corso .testata nav ul', 'gap'), dec('.pagina-corso .testata nav [aria-current]', 'background')], ['10px', 'var(--giallo)'])
+  ok('menu: voci alte come nel design (padding 9px 16px, interlinea 1.2)', [dec('.pagina-corso .testata nav a', 'padding'), dec('.pagina-corso .testata nav a', 'line-height')], ['9px 16px', '1.2'])
+  ok('pulsante in testata: padding 0 26px', dec('.pagina-corso .testata .pulsante', 'padding'), '0 26px')
+  ok('invito: alto 300px, padding 36px 40px, margini 96px e 6px', [px(dec('.pagina-corso .invito', 'min-height')), dec('.pagina-corso .invito', 'padding'), dec('.pagina-corso .invito', 'margin')], [300, '36px 40px', '96px var(--margine) 6px'])
+  ok('invito: frase a 22px, «Prova» a 170px, senza freccia', [px(dec('.pagina-corso .invito .frase', 'font-size')), px(dec('.pagina-corso .invito .parola', 'font-size')), dec('.pagina-corso .invito .freccia', 'display')], [22, 170, 'none'])
+  ok('piede: margini 0 e 48px, nome a 56px, senza titoli né riga finale', [dec('.pagina-corso .piede', 'margin'), px(dec('.pagina-corso .piede .nome', 'font-size')), dec('.pagina-corso .piede h2', 'display'), dec('.pagina-corso .piede .fine', 'display')], ['0 var(--margine) 48px', 56, 'none', 'none'])
+  ok('piede: padding 40px, colonne senza riquadro (i recapiti prima delle altre)', [dec('.pagina-corso .piede', 'padding'), dec('.pagina-corso .piede .colonne', 'display')], ['40px', 'contents'])
+  ok('telefono: logo 82px, menu a pillole chiare da 44px', [px(dec('.pagina-corso .logo img', 'height', 1)), dec('.pagina-corso .testata nav a', 'background')], [82, 'var(--chiara)'])
+  ok('telefono: invito alto 260px, «Prova» a 120px; piede con nome a 44px e padding 24px', [px(dec('.pagina-corso .invito', 'min-height', 1)), px(dec('.pagina-corso .invito .parola', 'font-size', 1)), px(dec('.pagina-corso .piede .nome', 'font-size', 1)), dec('.pagina-corso .piede', 'padding', 1)], [260, 120, 44, '24px'])
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')

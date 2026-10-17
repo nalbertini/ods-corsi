@@ -30,4 +30,6 @@ Dopo la testata, ogni `h2` è una sezione:
 - La quarta tessera di una sezione è gialla, non azzurra («Oggi a Collegno» nel design).
 - Il titolo «Cosa può aspettarsi…» ha 56px sul telefono come gli altri (nel design 48px).
 - Sul telefono la terza tessera di presentazione ha l'altezza minima delle altre (220px, nel design 180px) e i testi sono quelli del sito, non le versioni accorciate del design.
-- Testata (logo, menu), invito «Prova» e piede sono comuni a tutte le pagine: misure e confronto stanno con la Home.
+- Testata, invito «Prova» e piede hanno le misure del design solo nelle pagine di un corso (`body.pagina-corso`, nello stesso `<style>` a parte): le altre pagine non cambiano. Nel menu è segnata «I nostri corsi» (la voce con indirizzo `/corsi/`); il pulsante in testata sul telefono dice «Prova».
+- Il piede ha un blocco in meno: il design ha tre colonne dopo il nome (indirizzo, menu, link legali), il sito i recapiti e i link del menu «footer». La colonna col menu principale ripetuto non c'è; la riga «© Officine dello Sport» e i titoli delle colonne sono nascosti. Sul telefono il piede non ha le righe del menu e dei link legali.
+- Sul telefono il menu va a capo su due righe (le quattro voci non stanno in 375px; il design le mostra a 390px).
