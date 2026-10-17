@@ -287,6 +287,14 @@ console.log('\nAngoli: 6px')
   ok('pulsante, invito e immagini del testo hanno 6px', ['.pulsante', '.invito', '.testo img'].map((n) => dich(R, V, (x) => x === n)['border-radius']), ['6px', '6px', '6px'])
 }
 
+console.log('\nLarghezza')
+{
+  // Su uno schermo largo la pagina non si allarga senza fine: sta in una colonna centrata, e il fondo resta quello.
+  const b = dich(R, V, (x) => x === 'body')
+  ok('il body ha una larghezza massima', /^\d+px$/.test(b['max-width'] ?? ''), true)
+  ok('il body è centrato', b.margin, '0 auto')
+}
+
 console.log('\nDeterminismo')
 {
   const d = dati({ pagine: [pag('home'), pag('contatti'), pag('privacy', { diLegge: true })] })

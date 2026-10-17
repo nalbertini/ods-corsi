@@ -105,7 +105,7 @@ parte.
 | Vedere PAGAMENTI e scaricare il CSV | no | sì | sì |
 | Cambiare il listino | no | sì | sì |
 | Vedere le STATISTICHE (presenze e iscritti) | no | sì | no |
-| Contabilità: movimenti, casse, rendiconto (quando ci sarà) | no | no | sì |
+| Contabilità: movimenti, voci e casse | no | no | sì |
 | Creare account, cambiare i ruoli, scaricare il backup | no | sì | no |
 
 Chi ha più ruoli può quello che può ciascuno. Con **ISTRUTTORE** gli si danno
