@@ -157,6 +157,9 @@ export const quanteUsate = (righe: RigaMovimento[], voce: VoceContabile): number
 
 export const totaleResidui = (conti: Array<{ residuo: number }>): number => conti.reduce((s, c) => s + c.residuo, 0)
 
+/** Il giorno dopo, come `AAAA-MM-GG`. */
+export const giornoDopo = (giorno: string): string => new Date(new Date(`${giorno}T12:00:00Z`).getTime() + 86_400_000).toISOString().slice(0, 10)
+
 /** L'ultima chiusura attiva di una cassa: quella con la data più grande. */
 export function ultimaChiusura(chiusure: ChiusuraCassa[], cassaId: string): ChiusuraCassa | undefined {
   return chiusure.filter((k) => k.cassaId === cassaId && !k.annullataIl).sort((a, b) => b.data.localeCompare(a.data))[0]

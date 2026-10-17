@@ -1,7 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
-import type { Cassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
+import type { Cassa, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
@@ -630,6 +630,12 @@ export interface DatiSegreteria {
   annullaMovimento(id: string): Promise<void>
   /** Solo la descrizione e la nota si correggono sul posto. */
   correggiTestoMovimento(id: string, descrizione: string, nota?: string): Promise<void>
+  /** Le chiusure della Cassa Contanti, anche le annullate (`60-chiusura-cassa.sql`). */
+  chiusure(): Promise<ChiusuraCassa[]>
+  /** Chiude la Cassa Contanti fino a un giorno: il previsto lo calcola il database, la differenza si scrive da sé. Rende l'id. */
+  chiudiCassa(d: { cassaId: string; data: string; contato: number; nota?: string }): Promise<string>
+  /** Si annulla solo l'ultima chiusura, con il suo movimento di differenza. */
+  annullaChiusuraCassa(id: string): Promise<void>
   /** Registra un pagamento fatto a mano, senza ricevuta. */
   registraPagamentoDiretto(d: DatiPagamentoDiretto): Promise<PagamentoDiretto>
   /** Lo annulla: resta in elenco, segnato annullato. */
