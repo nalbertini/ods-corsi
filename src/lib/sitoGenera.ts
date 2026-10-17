@@ -58,7 +58,7 @@ export interface DatiSito {
  */
 const TESTI = {
   nome: 'Officine dello Sport',
-  immagineAlt: 'Officine dello Sport: il marchio con i cinque ingranaggi colorati, Via Sassi 26, Collegno',
+  immagineAlt: 'Officine dello Sport: il marchio con i cinque ingranaggi colorati',
   prova: 'Prova',
   provaCoda: 'una settimana · 5 €',
   contattaci: 'Contattaci',
@@ -799,7 +799,7 @@ function social(c: Contesto, titolo: string, descrizione: string): string {
     m('og:image', immagine),
     m('og:image:width', '1200'),
     m('og:image:height', '630'),
-    m('og:image:alt', TESTI.immagineAlt),
+    m('og:image:alt', `${TESTI.immagineAlt}, ${CONTATTI.indirizzo}`),
     m('twitter:card', 'summary_large_image'),
     m('twitter:title', titolo),
     ...(descrizione ? [m('twitter:description', descrizione)] : []),
