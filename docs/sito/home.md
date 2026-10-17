@@ -26,7 +26,7 @@ Arti marziali e preparazione atletica a Collegno, per ogni età e livello: tecni
 
 ## Testo
 
-Prima del primo titolo grande: 3 foto e un elenco di 5 numeri. Poi la fascia di quattro foto sotto «Perché unirti a noi?» (una per disciplina). Il resto è il
+Prima del primo titolo grande: 4 foto e un elenco di 9 voci (4 numeri, 3 titoli, 2 note: sul sito sono le 13 tessere della testata). Poi la fascia di quattro foto sotto «Perché unirti a noi?» (una per disciplina). Il resto è il
 testo di oggi, con la frase sui numeri spostata sotto il primo titolo e i
 nomi dei corsi in grassetto (così sul sito sono il titolo grande della tessera).
 
@@ -35,9 +35,8 @@ Il testo sta in [`home.html`](home.html): è quello che va incollato.
 ## Cosa cambia rispetto a oggi
 
 - Titolo e descrizione nuovi (il titolo lungo di oggi scende nel testo).
-- In cima 3 foto e 5 numeri: sul sito diventano il collage accanto al titolo.
-- Il primo titolo grande diventa «Il corso giusto, il gruppo giusto», con la foto
-  di gruppo che oggi sta lì spostata nel collage.
+- In cima 4 foto e 9 voci: sul sito diventano il collage a 13 tessere accanto al titolo (indirizzo, «Il corso giusto, il gruppo giusto» e motto compresi).
+- La sezione «Il corso giusto, il gruppo giusto» non c'è più: titolo e motto stanno nel collage, la frase sui numeri sotto la testata.
 - Le firme delle citazioni stanno dentro la citazione, in corsivo: così il sito
   le mette in basso, con l'iniziale come avatar.
 - Tolta la sezione «Vieni a trovarci»: la mappa e l'indirizzo stanno nella pagina Contatti e nel piede.
