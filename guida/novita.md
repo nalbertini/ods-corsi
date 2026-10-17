@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.85.2 — 17 ottobre 2026
+
+### Risolto
+
+- Il pulsante in testata del sito ha lo spazio tra «Prova» e «una settimana»
+
 ## 0.85.1 — 17 ottobre 2026
 
 ### Modificato

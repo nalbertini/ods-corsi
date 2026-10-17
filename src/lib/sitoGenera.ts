@@ -4,6 +4,7 @@ import { pulisciTesto } from './sitoTesto'
 import { GRIGLIA_MASSIMA, collage, conFila, impagina, persona, ritratti, testataCorso } from './sitoLayout'
 import { CSS_CORSI } from './sitoCorsi'
 import { CSS_INTERNE } from './sitoInterne'
+import { cssFoci } from './sitoFoto'
 import { CONTATTI } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
 
@@ -614,6 +615,7 @@ h1{font-size:84px;line-height:.84}
 }
 ${CSS_CORSI}
 ${CSS_INTERNE}
+${cssFoci()}
 .interna h1.medio{font-size:clamp(56px,12.2vw,175px)}
 .interna h1.lungo{font-size:clamp(56px,9.2vw,132px)}
 .interna h1.lunghissimo{font-size:clamp(44px,8.7vw,125px)}
