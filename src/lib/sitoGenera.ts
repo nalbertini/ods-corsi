@@ -2,6 +2,7 @@ import { urlImmagine } from './sitoImmagini'
 import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
 import { GRIGLIA_MASSIMA, collage, impagina } from './sitoLayout'
+import { CSS_CORSI } from './sitoCorsi'
 import { CONTATTI } from './sito'
 
 /**
@@ -232,6 +233,7 @@ ${GRIGLIE_LUNGHE}
 .testata nav{order:3;width:100%}
 .invito{margin-top:48px}
 }
+${CSS_CORSI}
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
 
@@ -312,7 +314,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
     : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
+  const corpo = `${t}<main>${intro}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? impagina(testo) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo })
 }
 

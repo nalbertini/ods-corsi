@@ -7,11 +7,16 @@
  *  - ogni `h2` apre una sezione col titolo grande;
  *  - ogni `h3` con quel che lo segue (fino al prossimo `h3` o `h2`) è una tessera,
  *    e le tessere di una sezione sono una griglia a filo;
+ *  - se tutti gli `h3` di una sezione hanno un link, le tessere sono corsi (colori sfalsati, foto in alto, fasce d'età
+ *    a pillole, freccia) e due foto in fondo sono la fascia sotto la griglia; il testo prima del primo `h2`, se è fatto
+ *    così, è una sezione senza titolo (docs/sito/corsi.md);
  *  - in una sezione senza `h3`, un `ul` corto è una fila di tessere, più
  *    citazioni di fila scorrono di lato, una foto sola o una fila di foto sono
  *    tessere foto; il resto sta in colonna, come prima.
  * Niente script: lo scorrimento di lato è solo CSS (`scroll-snap`).
  */
+
+import { FASCE } from './sitoCorsi'
 
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
@@ -145,8 +150,45 @@ function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string }> | n
 const tessera = (colore: string, titolo: string, resto: string, prima = '') =>
   `<article class="tessera ${colore}">${prima}${titolo.trim() ? `<h3>${titolo}</h3>` : ''}${resto}</article>`
 
+type Gruppo = { titolo: string; corpo: Blocco[] }
+
+/** Un corso è un `h3` che porta a una pagina: la sezione è un elenco di corsi se lo sono tutti. */
+const sonoCorsi = (gruppi: Gruppo[]) => gruppi.length > 0 && gruppi.every((g) => /<a\b[^>]*\bhref=/i.test(g.titolo))
+
+/** Giallo, blu, inchiostro, sfalsati di uno a ogni riga di tre: nessun colore uguale accanto o sotto a sé (design). */
+const COLORI_CORSI = ['giallo', 'blu', 'inchiostro'] as const
+
+/** Un `ul` di voci brevi in una tessera corso: le fasce d'età, con l'icona di quelle che la hanno. */
+function fasce(b: Blocco): string {
+  const voci = [...b.html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1])
+  const brevi = voci.length > 0 && voci.every((v) => !/</.test(v) && v.length <= 20)
+  if (b.tag !== 'ul' || !brevi) return b.html
+  return `<ul class="fasce">${voci.map((v) => `<li${FASCE.includes(v.trim().toLowerCase()) ? ` class="${v.trim().toLowerCase()}"` : ''}>${v}</li>`).join('')}</ul>`
+}
+
+/** Le tessere corso: foto, titolo con freccia, descrizione, fasce. Senza foto resta il vuoto della foto, perché le altre sono allineate. */
+function tessereCorsi(gruppi: Gruppo[]): string {
+  const html = gruppi.map((g, i) => {
+    const foto = g.corpo.map(immagine).filter((x): x is string => x !== null)
+    const resto = g.corpo.filter((b) => immagine(b) === null).map(fasce).join('')
+    const colore = COLORI_CORSI[(i % 3 + Math.floor(i / 3)) % 3]
+    return `<article class="tessera ${colore} corso${foto.length ? '' : ' senza-foto'}">${foto.join('')}<h3>${g.titolo}</h3>${resto}</article>`
+  })
+  return griglia(html.length, html.join('')).replace(/^<div class="tessere n-(\d+)"/, '<div class="tessere n-$1 corsi"')
+}
+
 /** Le tessere di una sezione con sottotitoli: una per `h3`, con quel che lo segue. */
-function tessereDaSottotitoli(gruppi: Array<{ titolo: string; corpo: Blocco[] }>): string {
+function tessereDaSottotitoli(gruppi: Gruppo[]): string {
+  if (sonoCorsi(gruppi)) {
+    // Due foto in fondo all'ultima tessera non sono sue: sono la fascia sotto la griglia.
+    const ultimo = gruppi[gruppi.length - 1]
+    let k = ultimo.corpo.length
+    while (k > 0 && immagine(ultimo.corpo[k - 1]) !== null) k--
+    const fine = ultimo.corpo.slice(k).map((x) => immagine(x) as string)
+    if (fine.length !== 2) return tessereCorsi(gruppi)
+    const senza = [...gruppi.slice(0, -1), { ...ultimo, corpo: ultimo.corpo.slice(0, k) }]
+    return `${tessereCorsi(senza)}<div class="foto-fila due fascia">${fine.map((y) => `<figure class="tessera foto">${y}</figure>`).join('')}</div>`
+  }
   const domande = gruppi.length > 0 && gruppi.every((g) => /\?\s*$/.test(testoSolo(g.titolo)))
   const html = gruppi.map((g, i) => {
     const colore = domande ? 'chiara' : ROTAZIONE[i % ROTAZIONE.length]
@@ -224,16 +266,23 @@ function corpoSenzaSottotitoli(b: Blocco[], titolo: string): string {
   return fuori.join('')
 }
 
-function sezione(titolo: string, corpo: Blocco[]): string {
-  const primo = corpo.findIndex((b) => b.tag === 'h3')
-  if (primo < 0) return `<section class="sezione"><h2>${titolo}</h2>${corpoSenzaSottotitoli(corpo, titolo)}</section>`
-  const prima = corpo.slice(0, primo)
-  const gruppi: Array<{ titolo: string; corpo: Blocco[] }> = []
-  for (const b of corpo.slice(primo)) {
+/** Le tessere di un pezzo di sezione che comincia con un `h3`: un gruppo per ogni `h3`, con quel che lo segue. */
+function gruppiDa(corpo: Blocco[]): Gruppo[] {
+  const gruppi: Gruppo[] = []
+  for (const b of corpo) {
     if (b.tag === 'h3') gruppi.push({ titolo: contenuto(b), corpo: [] })
     else gruppi[gruppi.length - 1].corpo.push(b)
   }
-  return `<section class="sezione"><h2>${titolo}</h2>${prima.length ? corpoSenzaSottotitoli(prima, titolo) : ''}${tessereDaSottotitoli(gruppi)}</section>`
+  return gruppi
+}
+
+/** Una sezione senza titolo (`titolo` null) non ha l'`h2`: succede solo per i corsi prima del primo `h2`. */
+function sezione(titolo: string | null, corpo: Blocco[]): string {
+  const primo = corpo.findIndex((b) => b.tag === 'h3')
+  const apre = titolo === null ? '<section class="sezione senza-titolo">' : `<section class="sezione"><h2>${titolo}</h2>`
+  if (primo < 0) return `${apre}${corpoSenzaSottotitoli(corpo, titolo ?? '')}</section>`
+  const prima = corpo.slice(0, primo)
+  return `${apre}${prima.length ? corpoSenzaSottotitoli(prima, titolo ?? '') : ''}${tessereDaSottotitoli(gruppiDa(corpo.slice(primo)))}</section>`
 }
 
 /**
@@ -243,6 +292,19 @@ function sezione(titolo: string, corpo: Blocco[]): string {
 export function impagina(testoPulito: string): string {
   const b = blocchi(testoPulito)
   const primo = b.findIndex((x) => x.tag === 'h2')
+  const testa = b.slice(0, primo < 0 ? b.length : primo)
+  const primoCorso = testa.findIndex((x) => x.tag === 'h3')
+  // I corsi prima del primo `h2` (o senza alcun `h2`) sono una sezione senza titolo: nel design la pagina non ha altro titolo che l'`h1`.
+  if (primoCorso >= 0 && sonoCorsi(gruppiDa(testa.slice(primoCorso)))) {
+    const fuori = [sezione(null, testa)]
+    for (let i = primo; primo >= 0 && i < b.length; ) {
+      let j = i + 1
+      while (j < b.length && b[j].tag !== 'h2') j++
+      fuori.push(sezione(contenuto(b[i]), b.slice(i + 1, j)))
+      i = j
+    }
+    return fuori.join('')
+  }
   if (primo < 0) return testoPulito.trim() ? `<div class="testo">${testoPulito}</div>` : ''
   const intro = b.slice(0, primo).map((x) => x.html).join('')
   const fuori: string[] = []
