@@ -714,5 +714,41 @@ console.log('\n26. una cassa senza giorno di partenza non si chiude, e un previs
   ok('un previsto oltre dieci milioni di euro no', prova(() => m.cosaNonVaPrevisto(1_000_000_001, 1_000_000_001)), NON_TORNA)
 }
 
+console.log('\n27. annullare un incasso in contanti di un giorno chiuso: l\'avviso prima di farlo')
+{
+  const k14 = chiusa('k14', '2026-09-14')
+  const avviso = (pagamenti, chiusure = [k14]) => prova(() => m.avvisoCassaChiusa(pagamenti, chiusure))
+  const ATTENZIONE = 'Attenzione: la cassa contanti è chiusa fino al 14/09/2026 e questo incasso in contanti è di quei giorni: la chiusura non sarà più in regola e dovrai scrivere una rettifica.'
+  ok('un incasso in contanti dentro i giorni chiusi avvisa', avviso([{ data: '2026-09-10', metodo: 'Contanti' }]), ATTENZIONE)
+  ok('…il giorno stesso della chiusura', avviso([{ data: '2026-09-14', metodo: 'Contanti' }]), ATTENZIONE)
+  ok('…senza badare a maiuscole e spazi del metodo', avviso([{ data: '2026-09-10', metodo: ' CONTANTI ' }]), ATTENZIONE)
+  ok('basta uno dei pagamenti di una ricevuta', avviso([{ data: '2026-09-20', metodo: 'Contanti' }, { data: '2026-09-02', metodo: 'Contanti' }]), ATTENZIONE)
+  ok('il giorno dopo la chiusura no', avviso([{ data: '2026-09-15', metodo: 'Contanti' }]), null)
+  ok('un pagamento con carta o bonifico non tocca la cassa', avviso([{ data: '2026-09-10', metodo: 'POS' }, { data: '2026-09-10', metodo: 'Bonifico' }]), null)
+  ok('senza chiusure niente', avviso([{ data: '2026-09-10', metodo: 'Contanti' }], []), null)
+  ok('una chiusura annullata non conta', avviso([{ data: '2026-09-10', metodo: 'Contanti' }], [{ ...k14, annullataIl: '2026-09-15T10:00:00Z' }]), null)
+  ok('con due chiusure vale l\'ultima', avviso([{ data: '2026-09-17', metodo: 'Contanti' }], [k14, chiusa('k20', '2026-09-20')]), ATTENZIONE.replace('14/09', '20/09'))
+  ok('senza pagamenti niente', avviso([]), null)
+}
+
+console.log('\n28. la voce di rettifica che manca')
+{
+  const con = (...nomi) => nomi.map(([nome, tipo]) => ({ id: `${nome}-${tipo}`, nome, tipo, diSistema: false, attiva: true }))
+  ok('senza «Rettifica» mancano entrata e uscita', prova(() => m.rettificheMancanti(con(['Affitto sala', 'uscita']))), ['entrata', 'uscita'])
+  ok('con quella di uscita manca l\'entrata', prova(() => m.rettificheMancanti(con(['Rettifica', 'uscita']))), ['entrata'])
+  ok('con tutte e due non manca niente', prova(() => m.rettificheMancanti(con(['Rettifica', 'uscita'], ['Rettifica', 'entrata']))), [])
+  ok('senza badare a maiuscole e spazi', prova(() => m.rettificheMancanti(con([' RETTIFICA ', 'uscita'], ['rettifica', 'entrata']))), [])
+  ok('«Rettifica» spenta si può riattivare: non manca', prova(() => m.rettificheMancanti([{ id: 'x', nome: 'Rettifica', tipo: 'uscita', diSistema: false, attiva: false }, ...con(['Rettifica', 'entrata'])])), [])
+  ok('un nome che la contiene non basta', prova(() => m.rettificheMancanti(con(['Rettifica cassa', 'uscita'], ['Rettifica cassa', 'entrata']))), ['entrata', 'uscita'])
+}
+
+console.log('\n29. il saldo salvato non è una bozza')
+{
+  ok('«100» e «100,00» sono lo stesso saldo di 10000 centesimi', prova(() => [m.saldoCambiato('100', 10000), m.saldoCambiato('100,00', 10000)]), [false, false])
+  ok('un saldo diverso è cambiato', prova(() => m.saldoCambiato('100,01', 10000)), true)
+  ok('uno zero scritto in vari modi non è cambiato', prova(() => [m.saldoCambiato('0', 0), m.saldoCambiato('0,00', 0)]), [false, false])
+  ok('un testo che non è un importo conta come cambiato (la bozza non si perde)', prova(() => [m.saldoCambiato('', 10000), m.saldoCambiato('abc', 10000)]), [true, true])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -441,6 +441,13 @@ export function mancaPerInviare(
   )
 }
 
+/**
+ * Un campo ancora com'era all'apertura (precompilato dal nucleo) si seleziona
+ * tutto al primo tocco: la prima lettera lo sostituisce invece di attaccarsi.
+ * Cambiato, o vuoto, no: il cursore va dove si tocca.
+ */
+export const daSelezionare = (valore: string, iniziale: string): boolean => valore.trim() !== '' && valore === iniziale
+
 /** Le due scelte del modulo firmato qui: «non autorizzo» è una risposta, il silenzio no. */
 export const sceltaMancante = (s: { tesseramento?: boolean; foto?: boolean }): 'tesseramento' | 'foto' | null =>
   s.tesseramento === undefined ? 'tesseramento' : s.foto === undefined ? 'foto' : null

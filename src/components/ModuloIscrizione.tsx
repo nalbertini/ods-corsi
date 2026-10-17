@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FocusEvent, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { anniScritti, certificatoDaPortare, aiutoScelta, chiFirma, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante } from '../lib/richieste'
+import { anniScritti, certificatoDaPortare, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { riduciFoto } from '../lib/foto'
@@ -204,6 +204,13 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const segna = (k: CampoModulo) => {
     const n = nota(k)
     return {
+      // Con un po' di ritardo: sul telefono il tocco mette il cursore dopo il fuoco e annullerebbe la selezione.
+      onFocus: (e: FocusEvent<HTMLInputElement>) => {
+        const campo = e.currentTarget
+        const iniziale = String(inizio[k] ?? '')
+        // Si riguarda il valore a tempo scaduto: se nel frattempo si è già scritto, non si cancella niente.
+        setTimeout(() => daSelezionare(campo.value, iniziale) && campo.select(), 0)
+      },
       onBlur: () => !visti.has(k) && setVisti(new Set(visti).add(k)),
       'aria-invalid': n?.guaio || undefined,
       'aria-describedby': n ? `${ID[k]}-nota` : undefined,
