@@ -129,6 +129,7 @@ il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA
   3:2: teste e piedi vicini ai bordi possono tagliarsi, scegli foto con spazio intorno. Per le foto con
   minori vale la regola di sempre: serve il permesso dei genitori, mai documenti.
 - **Quattro foto** di fila (all'inizio o in fondo a una sezione) sono una **fascia alta** a quattro colonne, ritagliata in verticale: scegli foto con la persona al centro. Con 5, 6 o 7 foto restano le file da tre.
+- **Una foto e due o più citazioni** (la foto per prima, subito sotto il titolo grande): sul computer la foto sta a sinistra e le citazioni scorrono a destra; sul telefono una sotto l'altra.
 - La **firma** di una citazione ha un cerchio giallo con le **iniziali** del nome (le prime due parole, prima di « - »: «Nicola A.» diventa NA, «Serena - Stud. di Medicina» diventa S).
 - Un sottotitolo **senza testo** sotto (i «valori») è una tessera col titolo grande in basso.
 - Una foto dentro una tessera con sottotitolo va **in cima alla tessera**, sopra il titolo, anche se l'hai scritta dopo.

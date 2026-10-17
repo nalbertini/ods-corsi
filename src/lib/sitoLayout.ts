@@ -103,6 +103,11 @@ function citazione(b: Blocco, colore: string, larga: boolean): string {
   return `<blockquote class="tessera citazione ${colore}${larga ? ' larga' : ''}">${corpo}</blockquote>`
 }
 
+/** Più citazioni di fila: un carosello che scorre di lato, con il nome della sezione per chi usa la tastiera. */
+function carosello(q: Blocco[], titolo: string): string {
+  return `<div class="citazioni" tabindex="0" role="region" aria-label="${esc(testoSolo(titolo) || 'Citazioni')}">${q.map((y, k) => citazione(y, CITAZIONI[k % CITAZIONI.length], false)).join('')}</div>`
+}
+
 /** Le griglie che hanno la loro classe `n-N` (e le loro regole di larghezza nel CSS del sito): da 1 a 16 tessere. */
 export const GRIGLIA_MASSIMA = 16
 
@@ -191,13 +196,24 @@ function corpoSenzaSottotitoli(b: Blocco[], titolo: string): string {
       chiudiColonna()
       const q = b.slice(i, j)
       if (q.length === 1) fuori.push(griglia(1, citazione(q[0], 'blu', true)))
-      else fuori.push(`<div class="citazioni" tabindex="0" role="region" aria-label="${esc(testoSolo(titolo) || 'Citazioni')}">${q.map((y, k) => citazione(y, CITAZIONI[k % CITAZIONI.length], false)).join('')}</div>`)
+      else fuori.push(carosello(q, titolo))
       i = j
       continue
     }
     if (immagine(x) !== null) {
       let j = i
       while (j < b.length && immagine(b[j]) !== null) j++
+      // Una sola foto in apertura seguita da almeno due citazioni: la foto a sinistra e il carosello a destra.
+      if (i === 0 && j === 1) {
+        let q = j
+        while (q < b.length && b[q].tag === 'blockquote') q++
+        if (q - j >= 2) {
+          chiudiColonna()
+          fuori.push(`<div class="foto-citazioni"><figure class="tessera foto">${immagine(x)}</figure>${carosello(b.slice(j, q), titolo)}</div>`)
+          i = q
+          continue
+        }
+      }
       // Una foto in mezzo a un testo in colonna resta com'è: è tessera solo se apre o chiude la parte.
       if (i === 0 || j === b.length) {
         chiudiColonna()

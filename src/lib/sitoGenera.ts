@@ -183,6 +183,11 @@ ${GRIGLIE_LUNGHE}
 .citazioni .tessera{flex:0 0 min(560px,85%);scroll-snap-align:start}
 .foto{padding:0;overflow:hidden}
 .foto img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:0}
+.foto-citazioni{display:grid;grid-template-columns:minmax(0,640px) minmax(0,1fr);gap:6px;height:clamp(400px,39vw,560px);margin:0 0 6px}
+.foto-citazioni .foto{grid-column:auto}
+.foto-citazioni .foto img{height:100%;aspect-ratio:auto;object-fit:cover}
+.foto-citazioni .citazioni{height:100%;margin:0}
+.foto-citazioni .citazione{padding:clamp(24px,2.8vw,40px)}
 .pillole{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:12px}
 .pillola{display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:999px;background:var(--chiara);color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;line-height:1}
 .pillola svg{display:block;flex:none;width:20px;height:20px}
@@ -223,6 +228,9 @@ ${GRIGLIE_LUNGHE}
 .pagina-hero .tessere.tessere .numero.ultima,.collage .numero.ultima{grid-column:span 2}
 .collage .foto.grande,.collage .foto.larga,.collage .foto.meta,.collage .foto.meta:nth-last-child(2),.collage .foto.meta:last-child{grid-column:1 / span 2;grid-row:auto;order:2}
 .collage .foto.grande img{aspect-ratio:3/2;height:auto;flex:none}
+.foto-citazioni{grid-template-columns:1fr;height:auto}
+.foto-citazioni .foto img{height:auto;aspect-ratio:3/2}
+.foto-citazioni .citazioni{height:auto}
 .foto-fila,.foto-fila.quattro{grid-template-columns:repeat(2,1fr)}
 .foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
