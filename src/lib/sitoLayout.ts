@@ -224,16 +224,38 @@ function corpoSenzaSottotitoli(b: Blocco[], titolo: string): string {
   return fuori.join('')
 }
 
-function sezione(titolo: string, corpo: Blocco[]): string {
+/** `apertura` è la sezione senza titolo grande che apre una pagina di persona: il ritratto, poi le tessere. */
+function sezione(titolo: string, corpo: Blocco[], ritratto = ''): string {
+  const apre = `<section class="sezione${titolo ? '' : ' apertura'}">${titolo ? `<h2>${titolo}</h2>` : ''}${ritratto}`
   const primo = corpo.findIndex((b) => b.tag === 'h3')
-  if (primo < 0) return `<section class="sezione"><h2>${titolo}</h2>${corpoSenzaSottotitoli(corpo, titolo)}</section>`
+  if (primo < 0) return `${apre}${corpoSenzaSottotitoli(corpo, titolo)}</section>`
   const prima = corpo.slice(0, primo)
   const gruppi: Array<{ titolo: string; corpo: Blocco[] }> = []
   for (const b of corpo.slice(primo)) {
     if (b.tag === 'h3') gruppi.push({ titolo: contenuto(b), corpo: [] })
     else gruppi[gruppi.length - 1].corpo.push(b)
   }
-  return `<section class="sezione"><h2>${titolo}</h2>${prima.length ? corpoSenzaSottotitoli(prima, titolo) : ''}${tessereDaSottotitoli(gruppi)}</section>`
+  return `${apre}${prima.length ? corpoSenzaSottotitoli(prima, titolo) : ''}${tessereDaSottotitoli(gruppi)}</section>`
+}
+
+/** Ogni griglia di una pagina di persona porta la sua classe fila-N: il CSS di quella pagina la usa per le misure del design. */
+export const conFila = (html: string): string => html.replace(/<div class="tessere n-(\d+)">/g, '<div class="tessere n-$1 fila-$1">')
+
+/**
+ * La pagina di una persona (un istruttore): il testo comincia con una foto e una citazione (design «Istruttore»).
+ * Foto e citazione sono il ritratto, il nome sulla foto è l'`alt`; quel che segue fino al primo `h2` (un elenco
+ * di 2–12 voci, poi i sottotitoli `h3`) sta nella stessa sezione senza titolo; il resto è la solita impaginazione.
+ * Senza foto e citazione in apertura il testo non è di persona: restituisce null.
+ */
+export function persona(testoPulito: string): { html: string; resto: string } | null {
+  const b = blocchi(testoPulito)
+  const foto = b[0] ? immagine(b[0]) : null
+  if (!foto || b[1]?.tag !== 'blockquote') return null
+  const primoTitolo = b.findIndex((x) => x.tag === 'h2')
+  const fine = primoTitolo < 0 ? b.length : primoTitolo
+  const nome = /\balt="([^"]*)"/i.exec(foto)?.[1] ?? ''
+  const ritratto = `<div class="ritratto"><figure class="tessera foto">${foto}${nome ? `<figcaption>${nome}</figcaption>` : ''}</figure>${citazione(b[1], 'blu', true)}</div>`
+  return { html: conFila(sezione('', b.slice(2, fine), ritratto)), resto: b.slice(fine).map((x) => x.html).join('') }
 }
 
 /**

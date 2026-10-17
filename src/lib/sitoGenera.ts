@@ -1,7 +1,7 @@
 import { urlImmagine } from './sitoImmagini'
 import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
-import { GRIGLIA_MASSIMA, collage, impagina } from './sitoLayout'
+import { GRIGLIA_MASSIMA, collage, conFila, impagina, persona } from './sitoLayout'
 import { CONTATTI } from './sito'
 
 /**
@@ -210,6 +210,36 @@ ${GRIGLIE_LUNGHE}
 .numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
 .non-trovata{padding:40px var(--margine) 96px}
 .non-trovata p{max-width:34em}
+/* Pagina di persona (un istruttore): persona() in sitoLayout.ts, misure di TatamiBlu-Istruttore.dc.html a 1440px. Le altezze stanno su «article» e le griglie hanno la classe fila-N: sono misure del design solo di questa pagina, non delle tessere di tutto il sito. */
+.persona-hero{padding:40px var(--margine) 72px;flex-wrap:nowrap;align-items:flex-end}
+.persona-hero h1{flex:1;min-width:0;font-size:clamp(56px,10.5vw,150px);line-height:.82}
+.persona-hero .lato{flex:0 0 520px;display:flex;flex-direction:column;align-items:flex-start}
+.persona-hero .lato p{margin:0 0 28px;font-size:22px;line-height:1.45}
+.persona .tessera{justify-content:space-between;line-height:1.45}
+.persona .tessera li+li{margin-top:0}
+.persona article>img{width:110px;aspect-ratio:1;border-radius:50%;object-fit:cover}
+.persona .apertura .tessere .tessera{padding:30px;font-size:19px}
+.persona .apertura .tessere h3{font-size:64px}
+.persona .apertura .fila-3>article{min-height:400px}
+.persona .fila-4{grid-template-columns:repeat(4,1fr)}
+.persona .tessere.fila-4>article{grid-column:auto}
+.persona .apertura .fila-4 .tessera{padding:24px 26px;font-size:18px}
+.persona .apertura .fila-4 h3{font-size:52px}
+.persona .apertura .fila-4>article{min-height:220px}
+.persona .apertura>.tessere+.tessere{margin-top:96px}
+.persona .sezione:not(.apertura) .tessera{padding:28px;font-size:16px}
+.persona .sezione:not(.apertura) h3{font-size:48px}
+.persona .sezione:not(.apertura) .tessere>article{min-height:520px}
+.persona .sezione:not(.apertura) .tessere>article:has(>img){min-height:250px}
+.persona .sezione:not(.apertura) .tessera:has(>img){padding:22px 24px}
+.persona .sezione:not(.apertura) .tessera:has(>img) h3{font-size:38px}
+.ritratto{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,560px);gap:6px;height:clamp(440px,44vw,620px)}
+.ritratto .foto{position:relative;grid-column:auto}
+.ritratto .foto img{width:100%;height:100%;object-fit:cover;object-position:50% 34%;border-radius:0}
+.ritratto figcaption{position:absolute;left:0;bottom:0;padding:18px 26px;background:var(--inchiostro);color:#fff;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:44px;line-height:.9}
+.ritratto .citazione{grid-column:auto;padding:36px;font-size:30px;line-height:1.25}
+.ritratto .firma{font-size:44px;line-height:.95}
+.ritratto .avatar{display:none}
 @media (min-width:901px){
 .sezione .tessera:not(.foto){min-height:clamp(190px,16vw,260px)}
 }
@@ -231,6 +261,26 @@ ${GRIGLIE_LUNGHE}
 .foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
 .invito{margin-top:48px}
+.persona-hero{gap:20px;padding:20px var(--margine) 36px}
+.persona-hero h1{font-size:70px;line-height:.84}
+.persona-hero .lato{flex:none}
+.persona-hero .lato p{margin-bottom:22px;font-size:18px}
+.ritratto{grid-template-columns:1fr;height:auto}
+.ritratto .foto{height:320px}
+.ritratto figcaption{display:none}
+.ritratto .citazione{min-height:200px;padding:22px;font-size:20px}
+.ritratto .firma{font-size:34px}
+.persona .fila-4{grid-template-columns:repeat(2,1fr)}
+.persona .apertura .tessere .tessera{padding:20px;font-size:16px}
+.persona .apertura .tessere h3{font-size:40px}
+.persona .apertura .fila-3>article{min-height:220px}
+.persona .apertura .fila-4 .tessera{padding:16px;font-size:15px}
+.persona .apertura .fila-4 h3{font-size:34px}
+.persona .apertura .fila-4>article{min-height:190px}
+.persona .apertura>.tessere+.tessere{margin-top:40px}
+.persona .sezione:not(.apertura) .tessera{padding:20px;font-size:15px}
+.persona .sezione:not(.apertura) h3{font-size:36px}
+.persona .sezione:not(.apertura) .tessere>article{min-height:320px}
 }
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
@@ -307,12 +357,17 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
-  const testo = inTestata.resto
+  // Una pagina di persona (foto e citazione in apertura) ha la sua testata e il suo ritratto; vedi `persona` in sitoLayout.ts.
+  const dellaPersona = p.slug !== 'home' && !p.diLegge ? persona(pulito) : null
+  const testo = dellaPersona ? dellaPersona.resto : inTestata.resto
   const t = testata(c, conContatti)
-  const intro = p.diLegge
-    ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
-    : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
+  const contattaci = conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''
+  const intro = dellaPersona
+    ? `<section class="pagina-hero persona-hero"><h1>${esc(p.titolo)}</h1><div class="lato">${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${contattaci}</div></section>${dellaPersona.html}`
+    : p.diLegge
+      ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
+      : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${contattaci}</div>${inTestata.html}</section>`
+  const corpo = `${t}<main${dellaPersona ? ' class="persona"' : ''}>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo)) : impagina(testo)) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo })
 }
 
