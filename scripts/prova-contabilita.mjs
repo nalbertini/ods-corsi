@@ -742,5 +742,13 @@ console.log('\n28. la voce di rettifica che manca')
   ok('un nome che la contiene non basta', prova(() => m.rettificheMancanti(con(['Rettifica cassa', 'uscita'], ['Rettifica cassa', 'entrata']))), ['entrata', 'uscita'])
 }
 
+console.log('\n29. il saldo salvato non è una bozza')
+{
+  ok('«100» e «100,00» sono lo stesso saldo di 10000 centesimi', prova(() => [m.saldoCambiato('100', 10000), m.saldoCambiato('100,00', 10000)]), [false, false])
+  ok('un saldo diverso è cambiato', prova(() => m.saldoCambiato('100,01', 10000)), true)
+  ok('uno zero scritto in vari modi non è cambiato', prova(() => [m.saldoCambiato('0', 0), m.saldoCambiato('0,00', 0)]), [false, false])
+  ok('un testo che non è un importo conta come cambiato (la bozza non si perde)', prova(() => [m.saldoCambiato('', 10000), m.saldoCambiato('abc', 10000)]), [true, true])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

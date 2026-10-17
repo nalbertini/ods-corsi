@@ -27,6 +27,7 @@ import {
   quanteUsate,
   residui,
   rettificheMancanti,
+  saldoCambiato,
   righeDelPeriodo,
   serveConfermaDifferenza,
   SOGLIA_DIFFERENZA,
@@ -782,8 +783,7 @@ function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiud
   const [saldo, setSaldo] = useState(euro(cassa.saldoIniziale))
   const [dal, setDal] = useState(cassa.dal ?? '')
   const cent = centesimi(saldo)
-  // Il saldo si confronta in centesimi: «100» e «100,00» sono lo stesso saldo, e salvato non è una bozza.
-  useBozza(cent !== cassa.saldoIniziale || dal !== (cassa.dal ?? ''), `Il saldo di ${cassa.nome}`)
+  useBozza(saldoCambiato(saldo, cassa.saldoIniziale) || dal !== (cassa.dal ?? ''), `Il saldo di ${cassa.nome}`)
   const guaio = cosaNonVaSaldoTesto(saldo, dal || null, { oggi: oggiARoma(), primoMovimento: primoMovimentoManuale(righe, cassa.id), chiusa: !!chiusura })
   return (
     <section aria-label={cassa.nome} className="sg-riquadro" style={{ flex: '1 1 340px', maxWidth: 520 }}>

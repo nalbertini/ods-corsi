@@ -418,6 +418,11 @@ export function cosaNonVaVoce(nome: string, tipo: string | undefined, voci: Voce
   return null
 }
 
+/** Il saldo scritto è diverso da quello salvato? «100» e «100,00» sono lo stesso saldo; un testo che non è un importo conta come cambiato, così la bozza non si perde. */
+export function saldoCambiato(testo: string, saldoIniziale: number): boolean {
+  return centesimi(testo) !== saldoIniziale
+}
+
 /** Il saldo come lo scrive chi lo imposta: `centesimi` scarta il «-», e il messaggio giusto è «negativo». */
 export function cosaNonVaSaldoTesto(testo: string, dal?: string | null, contesto?: { oggi: string; primoMovimento?: string; chiusa?: boolean }): string | null {
   const cent = centesimi(testo)
