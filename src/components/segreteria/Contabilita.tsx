@@ -105,6 +105,13 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
         <div key={k.id} role="alert" className="sg-riquadro" style={{ borderColor: 'var(--rosso-testo)' }}>
           <span className="sg-etichetta" style={{ color: 'var(--rosso-testo)' }}>LA CHIUSURA DEL {dataRicevuta(k.data)} NON È PIÙ IN REGOLA</span>
           <span style={{ fontSize: 14 }}>Dopo la chiusura è cambiato un incasso in contanti di quei giorni. Il foglio già stampato resta com’era: scrivi una rettifica di oggi, o annulla la chiusura se è l’ultima.</span>
+          {scheda !== 'casse' && (
+            <div>
+              <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScheda('casse')}>
+                VAI ALLE CASSE
+              </button>
+            </div>
+          )}
         </div>
       ))}
       {pronto && incassi.guaio && <Guaio testo={`Gli incassi degli iscritti non si leggono, e i residui non li contano. ${incassi.guaio}`} />}
@@ -123,6 +130,8 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
 }
 
 const soldi = (c: number) => `${euro(c)} €`
+/** Quante righe dei movimenti in contanti si vedono aprendo la chiusura: il resto si apre a richiesta. */
+const RIGHE_VISTE = 5
 const soldiConSegno = (c: number) => (c < 0 ? `− ${soldi(-c)}` : soldi(c))
 
 /** Un riquadro che si apre in fondo alla pagina (il tasto è lì) non si vede: all'apertura si porta in vista. */
@@ -579,6 +588,7 @@ function Casse({ d, casse, chiusure, guaioChiusure, righe, fai, onCambiato }: { 
   const conti = residui(casse, righe)
   const contanti = casse.find((c) => c.nome === NOME_CASSA_CONTANTI)
   const [chiudo, setChiudo] = useState(false)
+  const chiusureRef = useRef<HTMLDivElement>(null)
   return (
     <div className="stack" style={{ gap: 18 }}>
       <div className="row" style={{ gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
@@ -593,19 +603,27 @@ function Casse({ d, casse, chiusure, guaioChiusure, righe, fai, onCambiato }: { 
             fai={fai}
             onCambiato={onCambiato}
             onChiudi={c.id === contanti?.id && !guaioChiusure ? () => setChiudo(true) : undefined}
+            nonSiChiude={c.id === contanti?.id ? motivoNonSiChiude(c, ultimaChiusura(chiusure, c.id)) : undefined}
           />
         ))}
       </div>
       {guaioChiusure && <Guaio testo={guaioChiusure} />}
       {chiudo && contanti && (
         <InVista>
-          <ChiudiCassa d={d} cassa={contanti} casse={casse} chiusure={chiusure} righe={righe} fai={fai} onFatto={() => { setChiudo(false); onCambiato() }} onRileggi={onCambiato} onChiudi={() => setChiudo(false)} />
+          <ChiudiCassa d={d} cassa={contanti} casse={casse} chiusure={chiusure} righe={righe} fai={fai} onFatto={() => { setChiudo(false); onCambiato(); window.setTimeout(() => chiusureRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 150) }} onRileggi={onCambiato} onChiudi={() => setChiudo(false)} />
         </InVista>
       )}
-      {contanti && chiusure.length > 0 && <ElencoChiusure d={d} cassa={contanti} chiusure={chiusure} righe={righe} fai={fai} onCambiato={onCambiato} />}
+      <div ref={chiusureRef} style={{ scrollMarginTop: 12 }}>{contanti && chiusure.length > 0 && <ElencoChiusure d={d} cassa={contanti} chiusure={chiusure} righe={righe} fai={fai} onCambiato={onCambiato} />}</div>
       <span className="sg-sotto">Il saldo iniziale cambia solo da qui e solo dall’amministrazione, e non dopo una chiusura. Il Conto Corrente non si conta: si confronta con l’estratto della banca.</span>
     </div>
   )
+}
+
+/** Perché per ora non c'è niente da chiudere: manca il giorno di partenza, o è già chiusa fino a oggi. */
+const motivoNonSiChiude = (cassa: Cassa, ultima: ChiusuraCassa | undefined): string | undefined => {
+  if (!cassa.dal) return 'Prima imposta il saldo iniziale e il giorno di partenza, qui sotto.'
+  if (ultima && ultima.data >= oggiARoma()) return 'Già chiusa fino a oggi.'
+  return undefined
 }
 
 /** Chiudere la Cassa Contanti fino a un giorno: l'app dice quanto c'è «secondo i conti», si scrive quanto si è contato. */
@@ -616,6 +634,7 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
   const [data, setData] = useState(oggi)
   const [contati, setContati] = useState('')
   const [nota, setNota] = useState('')
+  const [tutte, setTutte] = useState(false)
   useBozza(contati !== '' || nota !== '', 'La chiusura di cassa')
   const previsto = previstoCassa(casse, righe, cassa.id, data)
   const dentro = righeDelPeriodo(righe, { dal, data }, cassa.id)
@@ -626,8 +645,8 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
   const chiudi = async () => {
     if (cent === null || differenza === null) return
     if (serveConfermaDifferenza(differenza)) {
-      const domanda = `La differenza è di ${differenzaInParole(differenza)}: è più di ${soldi(SOGLIA_DIFFERENZA)}. Se vuoi, scrivi nella nota perché. Chiudo la cassa fino al ${dataRicevuta(data)}?`
-      if (!(await chiedi(domanda, 'SÌ, CHIUDI LA CASSA', { no: 'NO, CONTROLLO ANCORA', pericolo: true }))) return
+      const domanda = `Differenza di ${differenzaInParole(differenza)}, sopra i ${soldi(SOGLIA_DIFFERENZA)}. Scrivi nella nota perché. Chiudo la cassa fino al ${dataRicevuta(data)}?`
+      if (!(await chiedi(domanda, 'SÌ, CHIUDI LA CASSA', { no: 'NO, CONTROLLO ANCORA' }))) return
     }
     // Se la risposta si perde ma la chiusura è stata scritta, rileggere l'elenco la mostra: il riprova non sembra un errore a vuoto.
     void fai(() => d.chiudiCassa({ cassaId: cassa.id, data, contato: cent, nota: nota.trim() || undefined }), 'Cassa chiusa', onFatto).then((fatto) => !fatto && onRileggi())
@@ -637,9 +656,12 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
       <span className="sg-etichetta">CHIUSURA DI CASSA</span>
       <span className="sg-riquadro-titolo ob">CASSA CONTANTI</span>
       <div className="sg-due sg-scheda-campi">
-        <Campo id="ch-data" etichetta="FINO AL" nota={{ testo: `Da ${dataRicevuta(dal)}, dopo l’ultima chiusura.`, guaio: false }}>
-          <input id="ch-data" className="sg-campo" type="date" value={data} min={dal} max={oggi} onChange={(e) => setData(e.target.value)} />
-        </Campo>
+        <div className="stack" style={{ gap: 6 }}>
+          <Campo id="ch-data" etichetta="FINO AL">
+            <input id="ch-data" className="sg-campo" type="date" value={data} min={dal} max={oggi} onChange={(e) => setData(e.target.value)} />
+          </Campo>
+          <span className="sg-sotto">{ultima ? `Da ${dataRicevuta(dal)}, dopo l’ultima chiusura.` : `Dall’inizio della cassa, il ${dataRicevuta(dal)}.`}</span>
+        </div>
         <div className="stack" style={{ gap: 4 }}>
           <span className="sg-etichetta">IN CASSA SECONDO I CONTI</span>
           <span className="num" style={{ fontSize: 40, fontWeight: 700 }}>{soldiConSegno(previsto)}</span>
@@ -649,20 +671,26 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
       <div className="stack" style={{ gap: 0 }}>
         <span className="sg-etichetta">COSA C’È DENTRO · {dentro.length} {dentro.length === 1 ? 'MOVIMENTO' : 'MOVIMENTI'} IN CONTANTI</span>
         {dentro.length === 0 && <span className="sg-sotto" style={{ paddingTop: 6 }}>Nessun movimento in contanti nel periodo: il previsto è quello della chiusura di prima.</span>}
-        {dentro.map((r) => {
+        {(tutte ? dentro : dentro.slice(-RIGHE_VISTE)).map((r) => {
           const c = importoPerCassa(r, cassa.id)
           return (
-            <div key={r.id} className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline' }}>
-              <span style={{ fontSize: 13, color: 'var(--sec)', width: 90, flexShrink: 0 }}>{dataRicevuta(r.data)}</span>
+            <div key={r.id} className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 13, color: 'var(--sec)', minWidth: 80, flexShrink: 0 }}>{dataRicevuta(r.data)}</span>
               <span style={{ fontSize: 15, flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>{descrizioneRiga(r)}</span>
               <span className="num" style={{ fontSize: 16, fontWeight: 700, color: c > 0 ? 'var(--verde-testo)' : undefined }}>{c < 0 ? '− ' : '+ '}{soldi(Math.abs(c))}</span>
             </div>
           )
         })}
+        {dentro.length > RIGHE_VISTE && (
+          <button type="button" className="sg-link" style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start' }} onClick={() => setTutte(!tutte)}>
+            {tutte ? 'MOSTRA SOLO GLI ULTIMI' : `E ALTRI ${dentro.length - RIGHE_VISTE} MOVIMENTI · MOSTRA TUTTI`}
+          </button>
+        )}
       </div>
-      <Campo id="ch-contati" etichetta="CONTANTI CONTATI" manca={contati === ''} nota={{ testo: 'Un solo totale, con i centesimi. Conta tutto quello che c’è nella cassa.', guaio: false }}>
+      <Campo id="ch-contati" etichetta="CONTANTI CONTATI" manca={contati === ''}>
         <input id="ch-contati" className="sg-campo" inputMode="decimal" style={{ fontSize: 28, fontWeight: 700 }} value={contati} onChange={(e) => setContati(e.target.value)} aria-invalid={(contati !== '' && cent === null) || undefined} />
       </Campo>
+      <span className="sg-sotto">Un solo totale, con i centesimi. Conta tutto quello che c’è nella cassa.</span>
       {differenza !== null && (
         <div className="row" style={{ gap: 16, alignItems: 'baseline' }}>
           <span className="sg-etichetta">DIFFERENZA</span>
@@ -705,13 +733,14 @@ function ElencoChiusure({ d, cassa, chiusure, righe, fai, onCambiato }: { d: Dat
     <section aria-label="Le chiusure" className="sg-riquadro">
       <span className="sg-etichetta">LE CHIUSURE</span>
       {dellaCassa.map((k) => (
-        <div key={k.id} className="row" style={{ gap: 14, padding: '10px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'center', flexWrap: 'wrap', opacity: k.annullataIl ? 0.6 : 1 }}>
-          <span style={{ fontSize: 15, fontWeight: 600, width: 190 }}>
+        <div key={k.id} className="row" style={{ gap: 14, padding: '10px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'center', flexWrap: 'wrap', color: k.annullataIl ? 'var(--dim)' : undefined }}>
+          <span style={{ fontSize: 15, fontWeight: 600, minWidth: 190, whiteSpace: 'nowrap' }}>
             {dataRicevuta(k.dal)} → {dataRicevuta(k.data)}
             {k.annullataIl && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>ANNULLATA</span>}
           </span>
           <span style={{ fontSize: 14, color: 'var(--sec)', flex: 1, minWidth: 220 }}>
             Contati {soldi(k.contato)} · {differenzaInParole(k.differenza)} · {k.chiusaDa ?? '—'}, {dataRicevuta(giornoRoma(k.chiusaIl))}
+            {k.annullataIl && ` · annullata${k.annullataDa ? ` da ${k.annullataDa}` : ''}`}
           </span>
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => foglio(k), 'Foglio PDF scaricato')}>
             PDF
@@ -728,7 +757,7 @@ function ElencoChiusure({ d, cassa, chiusure, righe, fai, onCambiato }: { d: Dat
   )
 }
 
-function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiudi }: { d: DatiSegreteria; cassa: Cassa; righe: RigaMovimento[]; chiusura?: ChiusuraCassa; conto?: { entrate: number; uscite: number; residuo: number }; fai: Fai; onCambiato: () => void; onChiudi?: () => void }) {
+function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiudi, nonSiChiude }: { d: DatiSegreteria; cassa: Cassa; righe: RigaMovimento[]; chiusura?: ChiusuraCassa; conto?: { entrate: number; uscite: number; residuo: number }; fai: Fai; onCambiato: () => void; onChiudi?: () => void; nonSiChiude?: string }) {
   const [saldo, setSaldo] = useState(euro(cassa.saldoIniziale))
   const [dal, setDal] = useState(cassa.dal ?? '')
   useBozza(saldo !== euro(cassa.saldoIniziale) || dal !== (cassa.dal ?? ''), `Il saldo di ${cassa.nome}`)
@@ -738,29 +767,31 @@ function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiud
     <section aria-label={cassa.nome} className="sg-riquadro" style={{ flex: '1 1 340px', maxWidth: 520 }}>
       <span className="sg-etichetta">CASSA</span>
       <span className="sg-riquadro-titolo ob">{cassa.nome.toUpperCase()}</span>
-      <div className="row" style={{ gap: 24, alignItems: 'baseline' }}>
+      <div className="row" style={{ gap: 8, columnGap: 24, alignItems: 'baseline', flexWrap: 'wrap' }}>
         <span className="sg-etichetta">{cassa.nome === NOME_CASSA_CONTANTI ? 'IN CASSA SECONDO I CONTI' : 'SUL CONTO'}</span>
-        <span className="num" style={{ fontSize: 40, fontWeight: 700 }}>{soldiConSegno(conto?.residuo ?? 0)}</span>
+        <span className="num" style={{ fontSize: 40, fontWeight: 700, whiteSpace: 'nowrap' }}>{soldiConSegno(conto?.residuo ?? 0)}</span>
       </div>
       <span className="sg-sotto">entrate {soldi(conto?.entrate ?? 0)} · uscite {soldi(conto?.uscite ?? 0)}</span>
       {chiusura && <span className="sg-sotto">Ultima chiusura: {dataRicevuta(chiusura.data)} · {chiusura.chiusaDa ?? '—'}</span>}
       {onChiudi && (
         <div>
-          <button type="button" className="sg-btn sg-btn-pieno" onClick={onChiudi}>
+          <button type="button" className="sg-btn sg-btn-pieno" disabled={!!nonSiChiude} onClick={onChiudi}>
             CHIUDI LA CASSA
           </button>
+          {nonSiChiude && <span className="sg-sotto" style={{ display: 'block', paddingTop: 6 }}>{nonSiChiude}</span>}
         </div>
       )}
       <div className="sg-due sg-scheda-campi">
         <Campo id={`saldo-${cassa.id}`} etichetta="SALDO INIZIALE">
-          <input id={`saldo-${cassa.id}`} className="sg-campo" inputMode="decimal" value={saldo} onChange={(e) => setSaldo(e.target.value)} aria-invalid={!!guaio || undefined} />
+          <input id={`saldo-${cassa.id}`} className="sg-campo" inputMode="decimal" value={saldo} onChange={(e) => setSaldo(e.target.value)} aria-invalid={(!!guaio && !chiusura) || undefined} disabled={!!chiusura} />
         </Campo>
         <Campo id={`dal-${cassa.id}`} etichetta="DAL">
-          <input id={`dal-${cassa.id}`} className="sg-campo" type="date" value={dal} onChange={(e) => setDal(e.target.value)} />
+          <input id={`dal-${cassa.id}`} className="sg-campo" type="date" value={dal} disabled={!!chiusura} onChange={(e) => setDal(e.target.value)} />
         </Campo>
       </div>
       <span className="sg-sotto">Da questa data si contano i movimenti: uno più vecchio non si registra. Residuo = saldo iniziale + entrate − uscite.</span>
-      {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
+      {guaio && !chiusura && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
+      {chiusura && <span className="sg-sotto">La cassa ha una chiusura: per cambiare il saldo iniziale annullala prima.</span>}
       <div>
         <button type="button" className="sg-btn sg-btn-linea" disabled={!!guaio || cent === null || !!chiusura} onClick={() => cent !== null && void fai(() => d.salvaSaldoCassa(cassa.id, cent, dal || undefined), 'Saldo iniziale salvato', onCambiato)}>
           SALVA IL SALDO INIZIALE
