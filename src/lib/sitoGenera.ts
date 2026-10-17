@@ -1,7 +1,7 @@
 import { urlImmagine } from './sitoImmagini'
 import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
-import { GRIGLIA_MASSIMA, collage, impagina } from './sitoLayout'
+import { GRIGLIA_MASSIMA, collage, impagina, ritratti } from './sitoLayout'
 import { CONTATTI } from './sito'
 
 /**
@@ -208,6 +208,27 @@ ${GRIGLIE_LUNGHE}
 .numero .cifra{font-family:var(--display);font-weight:800;font-size:clamp(40px,5vw,88px);line-height:.85;letter-spacing:-.01em;white-space:nowrap}
 .numero .scritta{font-size:16px;line-height:1.3}
 .numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
+.pagina-hero.solo{padding:40px var(--margine) 72px}
+.pagina-hero.solo .intro{display:grid;grid-template-columns:1fr 520px;gap:0 56px;align-items:end;max-width:none}
+.pagina-hero.solo h1{grid-row:1 / span 2;font-size:clamp(80px,13.9vw,200px);line-height:.82}
+.pagina-hero.solo .intro p{grid-column:2;margin-bottom:28px;max-width:none}
+.pagina-hero.solo .intro div{grid-column:2}
+.ritratti{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ritratti article{grid-column:auto}
+.ritratti-sezione .ritratti article.ritratto{position:relative;justify-content:space-between;gap:12px;padding:24px 26px;min-height:380px}
+.ritratto-foto{display:flex;align-items:center;justify-content:center;flex:none;width:140px;height:140px;border-radius:50%;overflow:hidden;font-family:var(--display);font-weight:800;font-size:64px;line-height:.9;text-transform:uppercase}
+.ritratto-foto img{width:100%;height:100%;object-fit:cover;object-position:50% 40%;border-radius:0}
+.ritratto.giallo .ritratto-foto,.ritratto.blu .ritratto-foto{background:var(--chiara);color:var(--inchiostro)}
+.ritratto.inchiostro .ritratto-foto{background:var(--blu);color:#fff}
+.ritratti h3{font-size:54px;line-height:.95}
+.ritratto-testo p{margin:10px 0 0;font-size:18px;line-height:1.45}
+.ritratto h3 a{text-decoration:none}
+.ritratto h3 a::after{content:"";position:absolute;inset:0}
+.ritratto:has(h3 a)::after{content:"↗" / "";position:absolute;top:24px;right:26px;font-family:var(--display);font-weight:800;font-size:44px;line-height:1}
+.ritratto h3 a:focus-visible{outline:none}
+.ritratto:has(a:focus-visible){outline:3px solid var(--inchiostro);outline-offset:3px}
+.ritratti-sezione:last-child{padding-bottom:0}
+.ritratti-sezione + .testo{padding:0 var(--margine);max-width:calc(900px + var(--margine) * 2);font-size:24px;line-height:1.4}
 .non-trovata{padding:40px var(--margine) 96px}
 .non-trovata p{max-width:34em}
 @media (min-width:901px){
@@ -231,6 +252,19 @@ ${GRIGLIE_LUNGHE}
 .foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
 .invito{margin-top:48px}
+.pagina-hero.solo{padding:20px var(--margine) 36px}
+.pagina-hero.solo .intro{grid-template-columns:1fr}
+.pagina-hero.solo h1{grid-row:auto;line-height:.84;margin-bottom:20px}
+.pagina-hero.solo .intro p,.pagina-hero.solo .intro div{grid-column:1}
+.pagina-hero.solo .intro p{margin-bottom:22px}
+.pagina-hero.solo .pulsante{min-height:52px;padding:0 26px;font-size:17px}
+.ritratti{grid-template-columns:repeat(2,1fr)}
+.ritratti-sezione .ritratti article.ritratto{padding:16px;min-height:230px}
+.ritratto-foto{width:84px;height:84px;font-size:40px}
+.ritratti h3{font-size:34px}
+.ritratto-testo p{margin-top:6px;font-size:14px}
+.ritratto:has(h3 a)::after{display:none}
+.ritratti-sezione + .testo{font-size:17px}
 }
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
@@ -307,12 +341,14 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
-  const testo = inTestata.resto
+  // Una pagina che comincia con più `h3` (e senza `h2`) è la griglia dei ritratti degli istruttori.
+  const tecnici = !p.diLegge && !/<h2[\s>]/i.test(inTestata.resto) ? ritratti(inTestata.resto) : null
+  const testo = tecnici ? tecnici.resto : inTestata.resto
   const t = testata(c, conContatti)
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
-    : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
+    : `<section class="pagina-hero${inTestata.html ? '' : ' solo'}"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
+  const corpo = `${t}<main>${intro}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo })
 }
 

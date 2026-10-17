@@ -258,6 +258,34 @@ export function impagina(testoPulito: string): string {
   return fuori.join('')
 }
 
+/** I colori dei ritratti: tre, sfalsati di uno a ogni riga di tre, così nella griglia del design non ce ne sono due uguali vicini. */
+const COLORI_RITRATTI = ['giallo', 'blu', 'inchiostro'] as const
+
+/**
+ * La pagina degli istruttori: un testo senza `h2` che comincia con un `h3` (e ne ha almeno due) è una griglia di
+ * ritratti. Ogni `h3` è il nome; la foto che lo segue (se c'è) va nel cerchio, senza foto il cerchio ha l'iniziale; il
+ * paragrafo dopo è il ruolo. Un link nel nome rende cliccabile la tessera. Quel che segue l'ultimo ritratto resta testo.
+ * Restituisce null se il testo non è fatto così.
+ */
+export function ritratti(testoPulito: string): { html: string; resto: string } | null {
+  const b = blocchi(testoPulito)
+  if (b[0]?.tag !== 'h3' || b.some((x) => x.tag === 'h2')) return null
+  const tessere: string[] = []
+  let i = 0
+  while (i < b.length && b[i].tag === 'h3') {
+    const nome = contenuto(b[i])
+    i++
+    const foto = i < b.length ? immagine(b[i]) : null
+    if (foto !== null) i++
+    const ruolo = i < b.length && b[i].tag === 'p' && immagine(b[i]) === null ? b[i++].html : ''
+    const cerchio = foto !== null ? `<span class="ritratto-foto">${foto}</span>` : `<span class="ritratto-foto" aria-hidden="true">${iniziali(nome).slice(0, 1)}</span>`
+    const colore = COLORI_RITRATTI[(tessere.length + Math.floor(tessere.length / 3)) % COLORI_RITRATTI.length]
+    tessere.push(`<article class="tessera ritratto ${colore}">${cerchio}<div class="ritratto-testo"><h3>${nome}</h3>${ruolo}</div></article>`)
+  }
+  if (tessere.length < 2) return null
+  return { html: `<section class="sezione ritratti-sezione"><div class="ritratti">${tessere.join('')}</div></section>`, resto: b.slice(i).map((x) => x.html).join('') }
+}
+
 /** Nel collage della Home: al massimo tre foto e sei numeri; il resto resta nel testo, com'era scritto. */
 const COLLAGE_FOTO = 3
 const NUMERI_MIN = 2
