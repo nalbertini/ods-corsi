@@ -142,7 +142,6 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .testata nav a:hover{background:var(--chiara)}
 .pulsante,.testo a.pulsante,.colonna a.pulsante{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 32px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:18px;font-weight:600;text-decoration:none}
 .pulsante.piccolo{min-height:48px;padding:0 26px;font-size:16px}
-.intro .pulsante{min-height:60px;padding:0 34px}
 .testata .pulsante{background:var(--giallo);color:var(--inchiostro)}
 .testata .estensione{margin-left:.3em}
 .testata .azioni{display:flex;gap:8px;align-items:center}
@@ -468,7 +467,6 @@ h1{font-size:84px;line-height:.84}
 .pagina-hero{padding:20px var(--margine) 0;gap:36px 0}
 .intro h1{margin-bottom:20px}
 .intro p{font-size:18px;margin-bottom:22px}
-.intro .pulsante{min-height:52px;padding:0 26px;font-size:17px}
 .sezione{padding:48px var(--margine) 0}
 .sezione h2{font-size:64px;line-height:.88;margin-bottom:20px}
 .collage.pieno{grid-template-rows:none}
@@ -848,13 +846,12 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const tecnici = !p.diLegge && !dellaPersona && !corso && !/<h2[\s>]/i.test(inTestata.resto) ? ritratti(inTestata.resto) : null
   const testo = dellaPersona ? dellaPersona.resto : corso ? corso.resto : tecnici ? tecnici.resto : inTestata.resto
   const t = testata(c, conContatti, dellaPersona ? percorso('chi-siamo') : corso ? percorso('corsi') : percorso(p.slug))
-  // Nelle altre pagine «Contattaci» sta già in testata: sotto titolo e frase lo ripete solo la Home.
-  const contattaci = conContatti && p.slug === 'home' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''
+  // «Contattaci» sta in testata, accanto a «Prova»: sotto titolo e frase non si ripete.
   const intro = dellaPersona
-    ? `<section class="pagina-hero persona-hero"><h1>${esc(p.titolo)}</h1><div class="lato">${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${contattaci}</div></section>${dellaPersona.html}`
+    ? `<section class="pagina-hero persona-hero"><h1>${esc(p.titolo)}</h1><div class="lato">${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div></section>${dellaPersona.html}`
     : p.diLegge
       ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
-      : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}${inTestata.html ? '' : ' solo'}"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${contattaci}</div>${inTestata.html}</section>`
+      : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}${inTestata.html ? '' : ' solo'}"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div>${inTestata.html}</section>`
   const corpo = `${t}<main${dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: c.corsi.has(p.slug) })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null, dati })
