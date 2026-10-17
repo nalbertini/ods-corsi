@@ -148,7 +148,7 @@ console.log('\n4. Il collage pieno della testata (design TatamiBlu)')
 console.log('\n6. Il pulsante in testata')
 {
   const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [], rinvii: [] })['index.html'] ?? ''
-  ok('in testata: «Prova una settimana · 5 €» verso /contatti/', /<header class="testata">[\s\S]*<a class="pulsante piccolo" href="\/contatti\/">Prova<span class="estensione"> una settimana · 5 €<\/span><\/a>/.test(h), true)
+  ok('in testata: «Prova una settimana · 5 €» verso il modulo di iscrizione', /<header class="testata">[\s\S]*<a class="pulsante piccolo" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/" rel="noopener noreferrer">Prova<span class="estensione"> una settimana · 5 €<\/span><\/a>/.test(h), true)
   ok('l’invito in fondo resta «Prova»', /class="parola">Prova</.test(h), true)
 }
 

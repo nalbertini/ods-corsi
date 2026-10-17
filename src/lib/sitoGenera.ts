@@ -68,6 +68,8 @@ const TESTI = {
   menu: 'Menu',
   inpiu: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
   contatti: '/contatti/',
+  // Il modulo sta nell'app (stesso indirizzo della guida), non nel sito: «Prova» porta a chi vuole iscriversi.
+  iscrizione: 'https://app.officinedellosport.it/iscrizioni/',
 }
 const NOME = TESTI.nome
 const DOMINIO = /^https?:\/\/[a-z0-9.-]+(:\d+)?$/i
@@ -803,7 +805,7 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
 
 function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
   const menu = lista(voci('menu', c), corrente)
-  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.prova}<span class="estensione"> ${TESTI.provaCoda}</span></a>` : ''}</header>`
+  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.prova}<span class="estensione"> ${TESTI.provaCoda}</span></a>` : ''}</header>`
 }
 
 function piede(c: Contesto): string {
@@ -816,7 +818,7 @@ function piede(c: Contesto): string {
 
 function invito(conContatti: boolean): string {
   if (!conContatti) return ''
-  return `<a class="invito" href="${TESTI.contatti}"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}. ${TESTI.settimana}</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
+  return `<a class="invito" href="${TESTI.iscrizione}" rel="noopener noreferrer"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}. ${TESTI.settimana}</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
 }
 
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean }): string {
