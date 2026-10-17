@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="status" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; font-variant-numeric: tabular-nums">
+  <sc-for list="{{voci}}" as="v" hint-placeholder-count="3">
+    <span style="display: inline-flex; gap: 10px; white-space: nowrap"><span style="color: {{c.dim}}; display: {{v.sepDisplay}}">·</span><span style="color: {{v.colore}}">{{v.testo}}</span></span>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"voci":{"editor":"text","default":"16/20:neutro|3 SENZA CERTIFICATO:rosso|4 DA PAGARE:rosso"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":640,"height":24}}'>
+// PROPOSTA «riepilogo degli iscritti di un corso» (RiepilogoCorso in Corsi.tsx, da `riepilogoCorso` di src/lib/segreteria.ts): una riga sopra
+// la ricerca del tab ISCRITTI. `voci` = «testo:tono» separate da «|»; il tono colora solo il testo (mai il colore da solo: la parola dice cosa).
+// Il conto n/capienza e' neutro (giallo «CORSO PIENO», rosso «1 IN PIU' DEI POSTI»); le voci a zero spariscono e, se nessuno ha guai, resta
+// «TUTTO IN REGOLA» verde. Stesso carattere dei conti accanto alla ricerca (.num, 13px 700 0.12em).
+const T = {
+  scuro: { dim: '#8c8c88', sec: '#c9c9c4', rosso: '#ff5a52', giallo: '#f4c31b', verde: '#16a54a' },
+  chiaro: { dim: '#656561', sec: '#3d3d3a', rosso: '#b81d1d', giallo: '#8f6a00', verde: '#0b7a33' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const voci = String(p.voci ?? '').split('|').filter(Boolean).map((x, i) => {
+      const [testo, tono = 'neutro'] = x.split(':');
+      const colore = tono === 'rosso' ? c.rosso : tono === 'giallo' ? c.giallo : tono === 'verde' ? c.verde : c.sec;
+      return { testo, colore, sepDisplay: i === 0 ? 'none' : 'inline' };
+    });
+    return { c, cond: COND, voci };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Iscritti del corso · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Main.dc.html",
+   "title": "Proposta · la scheda ISCRITTI di un corso",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Gli iscritti di un corso, in una scheda a parte"
+  }
+ ]
+}

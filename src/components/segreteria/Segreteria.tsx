@@ -6,7 +6,7 @@ import { Bollino } from '../ds'
 import { TastoTema } from '../TastoTema'
 import { Cursori } from '../Icons'
 import { Settimana } from './Settimana'
-import { Corsi } from './Corsi'
+import { Corsi, riapriSuIscritti } from './Corsi'
 import { Iscritti } from './Iscritti'
 import { Presenze } from './Presenze'
 import { Statistiche } from './Statistiche'
@@ -43,6 +43,8 @@ export type { Voce }
 export interface Destinazione {
   persona?: string
   corso?: string
+  /** Con `persona`: il corso da cui si apre la scheda, a cui riporta «‹ CORSO». */
+  daCorso?: string
   /** Una richiesta da aprire, scelta dalla ricerca. */
   richiesta?: string
   /** Cosa si è cercato e chi è uscito: la voce mostra solo quelli, finché non si dice MOSTRA TUTTI. */
@@ -551,6 +553,7 @@ export function Segreteria({
             onScelta={(id, passo) => segna({ voce: 'corsi', ...(id && { corso: id }) }, passo)}
             onNuovo={() => segna({ voce: 'corsi', nuovo: true }, 'push')}
             onConti={contiCambiati}
+            onVai={vai}
           />
         )}
         {d && voce === 'iscritti' && (
@@ -560,6 +563,11 @@ export function Segreteria({
             ricerca={ricerca}
             onTogliRicerca={() => setRicerca(undefined)}
             scelta={posto.persona}
+            daCorso={posto.daCorso}
+            onCorso={(id) => {
+              riapriSuIscritti(id)
+              segna({ voce: 'corsi', corso: id }, 'push')
+            }}
             nuovo={posto.nuovo}
             onScelta={(id, passo) => segna({ voce: 'iscritti', ...(id && { persona: id }) }, passo)}
             onNuovo={() => segna({ voce: 'iscritti', nuovo: true }, 'push')}

@@ -57,6 +57,9 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   iscritti (per nome, telefono o email), richieste online, corsi (anche per
   giorno) e istruttori, senza chiamare il database; «ALTRI N» apre la voce già
   filtrata (`src/lib/ricerca.ts`).
+- **Gli iscritti di un corso**: nella scheda di un corso, DATI e ISCRITTI; in ISCRITTI una
+  persona per riga con certificato e quota a parole, ricerca, ordinamento per colonna e un clic
+  che apre la sua scheda; Indietro ritrova ricerca e ordine (`src/lib/segreteria.ts`).
 - **L'email di contatto**: l'email di accesso resta di una sola persona; chi usa
   l'indirizzo di un altro (fratelli, un genitore, a volte un istruttore) ha una
   seconda, l'email di contatto, che può ripetersi e dove la palestra scrive alla

@@ -1164,6 +1164,98 @@ export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' |
   return [...(guai.length ? guai : [inRegola]), ...segno, ...fuori]
 }
 
+/** Una riga del tab ISCRITTI di un corso: chi è, da quando, e le parole di certificato e quota. */
+export interface RigaIscrittoCorso {
+  persona: PersonaSeg
+  /** Da quando è iscritta a questo corso (l'iscrizione in corso, non una vecchia già finita). */
+  dal: string
+  certificato: ParolaStato
+  quota: ParolaStato
+}
+
+/**
+ * Chi è iscritto oggi a un corso: attivo e con l'iscrizione in corso (gli
+ * archiviati e le iscrizioni finite o future restano fuori), per cognome e nome.
+ */
+export function iscrittiDelCorso(persone: PersonaSeg[], corsoId: string, oggi: string): RigaIscrittoCorso[] {
+  const righe: RigaIscrittoCorso[] = []
+  for (const persona of persone) {
+    const iscrizione = persona.attiva ? persona.iscrizioni.find((i) => i.corsoId === corsoId && inCorso(i, oggi)) : undefined
+    if (!iscrizione) continue
+    const cert = timbroCertificato(persona.certificato, oggi, persona.natoIl)
+    const quota = timbroQuota(pagamentoDi(persona, oggi))
+    righe.push({
+      persona,
+      dal: iscrizione.dal,
+      certificato: { tono: cert.tono, parola: cert.inElenco ?? cert.parola },
+      quota: { tono: quota.tono, parola: quota.inElenco ?? quota.parola },
+    })
+  }
+  return righe.sort((a, b) => a.persona.cognome.localeCompare(b.persona.cognome, 'it') || a.persona.nome.localeCompare(b.persona.nome, 'it'))
+}
+
+/** Non in regola come nella pagina ISCRITTI (`fuoriRegola`): certificato rosso o quota non pagata, IN PARTE compresa; il giallo del certificato no. */
+export const nonInRegola = (r: RigaIscrittoCorso) => r.certificato.tono === 'rosso' || r.quota.tono !== 'verde'
+
+/** Il corso a cui riporta «‹ CORSO» dalla scheda di una persona: quello di provenienza, se è ancora in calendario. */
+export const corsoDiProvenienza = (daCorso: string | undefined, corsi: { id: string; attivo: boolean }[]) =>
+  daCorso && corsi.some((c) => c.attivo && c.id === daCorso) ? daCorso : undefined
+
+/** Il chip NON IN REGOLA del tab ISCRITTI. */
+export const soloNonInRegola = (righe: RigaIscrittoCorso[]) => righe.filter(nonInRegola)
+
+/**
+ * La riga sopra l'elenco: il conto, poi cosa non va (certificato rosso, quota non pagata) o TUTTO IN REGOLA.
+ * Conta tutto il corso, qualunque ricerca o filtro. I posti si dicono solo a corso pieno o oltre: il resto è nel conto.
+ */
+export function riepilogoCorso(righe: RigaIscrittoCorso[], capienza?: number): { testo: string; tono: 'neutro' | 'giallo' | 'rosso' | 'verde' }[] {
+  const n = righe.length
+  const conto = contoCorso(n, capienza)
+  const voci: { testo: string; tono: 'neutro' | 'giallo' | 'rosso' | 'verde' }[] = capienza
+    ? [{ testo: conto.testo, tono: conto.tono }]
+    : [{ testo: n === 1 ? '1 ISCRITTO' : `${n} ISCRITTI`, tono: 'neutro' }]
+  if (capienza && n === capienza) voci.push({ testo: 'CORSO PIENO', tono: 'giallo' })
+  if (capienza && n > capienza) voci.push({ testo: `${n - capienza} IN PIÙ DEI POSTI`, tono: 'rosso' })
+  const senza = righe.filter((r) => r.certificato.tono === 'rosso').length
+  const pagare = righe.filter((r) => r.quota.tono !== 'verde').length
+  if (senza) voci.push({ testo: `${senza} SENZA CERTIFICATO`, tono: 'rosso' })
+  if (pagare) voci.push({ testo: `${pagare} DA PAGARE`, tono: 'rosso' })
+  if (!senza && !pagare) voci.push({ testo: 'TUTTO IN REGOLA', tono: 'verde' })
+  return voci
+}
+
+/** Il campo CERCA del tab ISCRITTI: come la ricerca delle persone (apostrofi, trattini, accenti e maiuscole non contano); vuoto = tutte. */
+export function cercaFraGliIscritti(righe: RigaIscrittoCorso[], scritto: string): RigaIscrittoCorso[] {
+  const parole = paroleCercate(scritto)
+  return parole.length ? righe.filter((r) => somiglia(r.persona, parole)) : righe
+}
+
+// Rosso in cima quando si ordina per certificato o per quota: chi ha il guaio si vede per primo.
+const rango = (t: Tono) => (t === 'rosso' ? 0 : t === 'giallo' ? 1 : 2)
+
+/** I valori su cui ordina un'intestazione del tab ISCRITTI (per `useOrdina`). */
+export const valoriIscrittoCorso = (r: RigaIscrittoCorso) => ({
+  cognome: r.persona.cognome,
+  nome: r.persona.nome,
+  dal: r.dal,
+  certificato: rango(r.certificato.tono),
+  quota: rango(r.quota.tono),
+})
+
+/** Il conto di un corso, «14/20»: giallo a corso pieno, rosso oltre la capienza; «—» finché le persone non sono lette (non «0»). */
+export function contoCorso(n: number | null, capienza?: number): { testo: string; tono: 'neutro' | 'giallo' | 'rosso' } {
+  if (n === null) return { testo: '—', tono: 'neutro' }
+  if (!capienza) return { testo: String(n), tono: 'neutro' }
+  return { testo: `${n}/${capienza}`, tono: n > capienza ? 'rosso' : n === capienza ? 'giallo' : 'neutro' }
+}
+
+/** La frase sotto l'elenco quando il corso è pieno o oltre: si può iscrivere lo stesso, ma si sa. */
+export function avvisoPosti(n: number | null, capienza?: number): string | null {
+  if (n === null || !capienza || n < capienza) return null
+  const come = n === capienza ? `Il corso è pieno (${capienza} posti)` : `Il corso ha ${n} iscritti su ${capienza} posti`
+  return `${come}: puoi iscrivere ancora, ma i posti sono finiti.`
+}
+
 /** Un giorno `AAAA-MM-GG` spostato di tanti giorni, senza passare dai fusi. */
 function spostaGiorno(g: string, giorni: number) {
   const [a, m, d] = g.split('-').map(Number)
