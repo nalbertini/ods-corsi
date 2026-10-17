@@ -124,7 +124,8 @@ andare indietro.
 ## Le ricevute
 
 **CHI FA LE RICEVUTE**: i dati dell'associazione che vanno in testa a ogni ricevuta: nome, indirizzo,
-CAP, comune, codice fiscale e, se c'è, la partita IVA; e la **DICITURA IN
+CAP, comune, codice fiscale e, se c'è, la partita IVA e il numero di iscrizione
+al RASD (il registro delle attività sportive dilettantistiche); e la **DICITURA IN
 FONDO**, quella dell'esenzione da IVA e bollo. Si parte con quelli di Asd Il
 Centro Judo. **SALVA** compare quando si cambia qualcosa, e vale per le
 ricevute che si fanno da lì in poi: quelle già fatte restano come erano. Le

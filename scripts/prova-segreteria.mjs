@@ -1733,6 +1733,15 @@ console.log('\nuna modifica non salvata: CHI FA LE RICEVUTE e il LISTINO chiedon
   ok('chi fa le ricevute, la partita IVA scritta: è una modifica', cambiato({ ...ente, partitaIva: '01234567890' }), true)
   ok('chi fa le ricevute, la partita IVA vuota dove non c’era: non è una modifica', cambiato({ ...ente, partitaIva: ' ' }), false)
   ok('chi fa le ricevute, la partita IVA tolta: è una modifica', m.enteCambiato?.({ ...ente, partitaIva: '01234567890' }, { ...ente, partitaIva: '' }), true)
+  ok('chi fa le ricevute, il numero RASD scritto: è una modifica', cambiato({ ...ente, rasd: '12345' }), true)
+  ok('chi fa le ricevute, il numero RASD vuoto dove non c’era: non è una modifica', cambiato({ ...ente, rasd: ' ' }), false)
+
+  // Il numero RASD è un dato dell'associazione, come la partita IVA: ha il suo campo in IMPOSTAZIONI.
+  const formEnte = readFileSync('src/components/segreteria/Ricevute.tsx', 'utf8')
+  ok('chi fa le ricevute: il form ha il campo del numero RASD', formEnte.includes("campo('rasd',"), true)
+  const prova = m.creaSegreteriaProva()
+  await prova.salvaEnteRicevute({ ...ente, rasd: '12345' })
+  ok('chi fa le ricevute: il numero RASD salvato si rilegge', (await prova.enteRicevute()).rasd, '12345')
 
   const voce = { corso: 'Judo', eta: '6-10', orari: ['lun 17:00'], prezzi: [{ saldo: 400, annuale: 480 }] }
   const listino = { quota: 30, saldoEntro: '2026-10-31', corsi: [voce, { ...voce, corso: 'Karate' }], offerte: [{ titolo: 'FAMIGLIA', testo: 'sconto' }] }
