@@ -277,6 +277,13 @@ console.log('\nPiede e invito')
   ok('«Prova» dell’invito è grande', /clamp\(\s*\d{2,3}px|^\d{2,3}px/.test(dich(R, V, (x) => /^\.invito .*parola$/.test(x))['font-size'] ?? ''), true)
 }
 
+console.log('\nPulsante «Contattaci» sotto titolo e frase: solo nella Home')
+{
+  const r = genera(dati({ pagine: [pag('home'), pag('judo'), pag('chi-siamo'), pag('contatti')] }))
+  const sotto = (t) => /<a class="pulsante" href="\/contatti\/">Contattaci<\/a>/.test(t.replace(testata(t), ''))
+  ok('la Home lo ha, Judo, Chi siamo e Contatti no (sta già in testata)', ['index.html', 'judo/index.html', 'chi-siamo/index.html', 'contatti/index.html'].map((f) => sotto(c(r, f))), [true, false, false, false])
+}
+
 console.log('\nPagine di legge: una colonna di testo')
 {
   const t = c(con, 'privacy/index.html')

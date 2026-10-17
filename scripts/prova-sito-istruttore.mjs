@@ -60,7 +60,7 @@ console.log('\n1. Quando una pagina è «di persona»')
 
 console.log('\n2. La testata: nome grande a sinistra, frase e pulsante a destra')
 {
-  ok('nella testata c’è l’h1 e la colonna «lato» con frase e pulsante', /<section class="pagina-hero persona-hero"><h1>Maurizio Innella<\/h1><div class="lato"><p>Maestro di Judo\.<\/p><div><a class="pulsante" href="\/contatti\/">Contattaci<\/a><\/div><\/div><\/section>/.test(h), true)
+  ok('nella testata c’è l’h1 e la colonna «lato» con la frase («Contattaci» sta in alto)', /<section class="pagina-hero persona-hero"><h1>Maurizio Innella<\/h1><div class="lato"><p>Maestro di Judo\.<\/p><\/div><\/section>/.test(h), true)
   ok('l’h1 è di 150px a 1440px', px(proprieta('.persona-hero h1', 'font-size')), 150)
   ok('interlinea .82 e il nome sta in basso a sinistra (flex:1, allineato in basso)', [proprieta('.persona-hero h1', 'line-height'), proprieta('.persona-hero h1', 'flex'), /align-items:\s*flex-end/.test(regola('.persona-hero'))], ['.82', '1', true])
   ok('la colonna di destra è larga 520px e non si stringe', px((proprieta('.persona-hero .lato', 'flex') || '').split(/\s+/)[2] ?? ''), 520)

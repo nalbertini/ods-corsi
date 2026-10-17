@@ -848,7 +848,8 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const tecnici = !p.diLegge && !dellaPersona && !corso && !/<h2[\s>]/i.test(inTestata.resto) ? ritratti(inTestata.resto) : null
   const testo = dellaPersona ? dellaPersona.resto : corso ? corso.resto : tecnici ? tecnici.resto : inTestata.resto
   const t = testata(c, conContatti, dellaPersona ? percorso('chi-siamo') : corso ? percorso('corsi') : percorso(p.slug))
-  const contattaci = conContatti ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''
+  // Nelle altre pagine «Contattaci» sta già in testata: sotto titolo e frase lo ripete solo la Home.
+  const contattaci = conContatti && p.slug === 'home' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''
   const intro = dellaPersona
     ? `<section class="pagina-hero persona-hero"><h1>${esc(p.titolo)}</h1><div class="lato">${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${contattaci}</div></section>${dellaPersona.html}`
     : p.diLegge
