@@ -1,0 +1,19 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Modulo di iscrizione · aspetto del sito"
+    }
+  ],
+  "artboards": [
+    { "file": "OggiProposta.dc.html", "title": "Oggi e Proposta · la cima del modulo", "x": 0, "y": 0, "w": 860, "h": 1560, "page": "page-1" },
+    { "file": "ColoriCaratteri.dc.html", "title": "Colori e caratteri · contrasti calcolati", "x": 980, "y": 0, "w": 1000, "h": 1900, "page": "page-1" },
+    { "file": "ModuloDati.dc.html", "title": "Modulo · dati (minorenne)", "x": 0, "y": 2060, "w": 390, "h": 1900, "page": "page-1" },
+    { "file": "ModuloCorsi.dc.html", "title": "Modulo · corsi e come paghi", "x": 510, "y": 2060, "w": 390, "h": 1000, "page": "page-1" },
+    { "file": "ModuloFile.dc.html", "title": "Modulo · file e invio (MANCA / CARICATO)", "x": 1020, "y": 2060, "w": 390, "h": 1400, "page": "page-1" },
+    { "file": "ModuloFirma.dc.html", "title": "Modulo · firma", "x": 1530, "y": 2060, "w": 390, "h": 1220, "page": "page-1" },
+    { "file": "ModuloErrori.dc.html", "title": "Modulo · errori", "x": 2040, "y": 2060, "w": 390, "h": 1500, "page": "page-1" }
+  ],
+  "annotations": [],
+  "launch": { "view": "canvas", "page": "page-1" }
+}
