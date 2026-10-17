@@ -96,9 +96,13 @@ che si vede è ancora quello vecchio.
 
 Il sito nuovo ha sempre una **Home**: senza una Home pubblicata non si genera.
 Le pagine di legge (privacy, cookie, contributi pubblici) hanno l'impaginazione
-solo testo; le altre hanno in cima il titolo grande e, sotto, la frase della
-**descrizione**. Il pulsante «Contattaci» e l'invito «Prova» in fondo
+solo testo; le altre hanno in cima il titolo grande (in maiuscolo) e, sotto, la frase della
+**descrizione**. Il pulsante «Contattaci» e l'invito giallo «Prova» in fondo
 compaiono se esiste una pagina pubblicata con indirizzo `contatti`.
+
+**L'aspetto** è sempre lo stesso per tutte le pagine, e non si cambia da qui: sfondo azzurro chiaro,
+titoli neri stretti, pulsante «Prova» giallo in alto a destra, il logo intero in cima e, in fondo, una
+tessera scura con i recapiti. Cambiano solo i testi che scrivi tu, che prendono da soli i colori e il carattere.
 
 Se compare «Il pannello del sito non è ancora attivo sul database», manca un
 aggiornamento del database: va chiesto a chi cura l'app.

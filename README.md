@@ -162,7 +162,8 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   restano sempre sul sito. Le scrive solo la segreteria; chi non ha l'accesso legge solo il pubblicato
   (`supabase/56-sito.sql`). Le pagine pubblicate diventano il sito vero con `npm run sito:genera`
   (`src/lib/sitoGenera.ts`, `scripts/genera-sito.mjs`): file statici senza codice né servizi esterni, con
-  carattere e logo propri in `sito/risorse/`; il testo si ripulisce un'altra volta quando si genera, perché
+  carattere (Big Shoulders Display e Inter, licenza OFL accanto) e logo propri in `sito/risorse/`, nell'aspetto «tatami blu e giallo»
+  (i colori e le regole sono in `docs/design-canvas/sito-rebrand/token-proposta.md`, A2); il testo si ripulisce un'altra volta quando si genera, perché
   è la pulizia di cui ci si fida. Il sito sta su www.officinedellosport.it con GitHub Pages, nel
   repository `nalbertini/officinedellosport-sito` (file generati, non si toccano a mano): il workflow
   `.github/workflows/sito.yml` lo rigenera ogni cinque minuti e a ogni cambio del generatore, e manda
@@ -432,6 +433,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 |---|---|
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
 | `npm run prova:sito` | Il pannello SITO, senza browser: la pulizia del testo con una lista di attacchi noti, gli indirizzi delle pagine, lo stato fra bozza e pubblicato, il controllo di menu e footer, e le stesse regole della modalità prova. |
+| `npm run prova:sito-aspetto` | L'aspetto del sito generato (A2, tatami blu e giallo): solo i colori del design e il bianco, Big Shoulders Display e Inter come file del sito con la licenza OFL, contrasto di almeno 4,5:1, focus e movimento, testata col logo intero, invito giallo e piede scuro, niente ingranaggio, angoli a 6px. |
 | `npm run prova:sito-genera` | Il sito generato e lo script che lo scrive: un file per pagina, mai codice né servizi esterni, titolo e voci sempre escapati anche se arrivano dall'API, indirizzi strani scartati, sitemap, robots, rinvii e 404, le stesse pagine due volte danno gli stessi file, e lo script non cancella mai una cartella che non è sua né tocca il sito di prima se qualcosa non va. |
 | `npm run prova:sito-pubblica` | La pubblicazione del sito, senza GitHub: un repository finto e il suo remoto. Il primo giro copia i file e fa un commit, lo stesso sito due volte non ne fa un altro, quello che sparisce dalle pagine sparisce dal sito, il dominio (`CNAME`) resta, e un sito vuoto, senza la home o in una cartella sbagliata non si pubblica mai. |
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. L'«Attività» di ogni giorno scelta da un elenco: nomi, rinomina, eliminazione, NON PIÙ IN USO, giorno e lezioni, l'istruttore che cambia la sua, il database senza `41-attivita.sql`. SALVA LE DATE che toglie le lezioni fuori dalle date dei corsi, tranne quelle con l'appello o una prova: la conferma prima, col conto, e l'avviso dopo, con corso e ora di quelle rimaste. |
