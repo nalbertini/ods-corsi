@@ -49,23 +49,24 @@ Dentro ISCRITTI c'è sempre il campo per cercare e filtrare l'elenco.
 
 A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
-**PERSONE** (ISCRITTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
+**PERSONE** (ISCRITTI, TESSERE, PAGAMENTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
 E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, VESTIARIO, ESERCIZI, SEGNALAZIONI). Le
 **IMPOSTAZIONI** sono il tasto coi due cursori in cima al menu. Ogni voce ha la
 sua guida:
 
 ## La striscia COSA MANCA
 
-In cima a ogni pagina, tranne **DA FARE**, ci sono quattro caselle con un numero grande:
+In cima a ogni pagina, tranne **DA FARE**, ci sono cinque caselle con un numero grande:
 **APPELLI NON FATTI** (lezioni degli ultimi 30 giorni senza appello), **CERTIFICATI
-SCADUTI** (scaduti o mancanti), **PAGAMENTI** (quote non in regola) e **RICHIESTE
+SCADUTI** (scaduti o mancanti), **PAGAMENTI** (quote non in regola), **TESSERE**
+(iscritti a un corso che chiede la tessera e non ne hanno una valida) e **RICHIESTE
 ONLINE** (da accogliere). Sono gli stessi numeri di [DA FARE](da-fare.md). Il segno
 sotto dice lo stato: rosso, qualcosa manca; giallo, c'è da accogliere; verde con **✓ 0**,
 a posto. Se il numero non si sa (la lettura non è riuscita) c'è «—», mai uno zero verde, e
 un tasto **RICONTA**; se una lettura fallisce dopo una riuscita resta l'ultimo numero,
 con scritto a che ora era. Toccando una casella si va alla pagina giusta, già filtrata.
 I conti si rileggono quando si segna un appello, si accoglie una richiesta o si cambia
-una scheda, e cambiando voce solo se l'ultima lettura ha più di due minuti. Sul telefono la
+una scheda, e cambiando voce solo se l'ultima lettura ha più di due minuti. Sotto i 1360 pixel di larghezza e sul telefono la
 striscia sta due caselle per riga e si nasconde quando c'è una scheda aperta. Chi non la vuole
 la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scelta resta su quel dispositivo.
 
@@ -75,6 +76,7 @@ la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scel
 | **SETTIMANA** | La griglia della settimana, gli appelli mancanti, annullare, sostituti, lezioni straordinarie | [Apri](settimana.md) |
 | **CORSI** | I corsi: sala, istruttori, posti, colore, giorni e orari | [Apri](corsi.md) |
 | **ISCRITTI** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |
+| **TESSERE** | Chi è iscritto senza la tessera che il corso chiede (FIJLKAM, FIPE…) e chi è tesserato senza un corso | [Apri](tessere.md) |
 | **PAGAMENTI** | Tutti i pagamenti, delle ricevute e fatti a mano: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV | [Apri](pagamenti.md) |
 | **RICHIESTE ONLINE** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
 | **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, chi c'era a ogni lezione, il CSV | [Apri](presenze.md) |

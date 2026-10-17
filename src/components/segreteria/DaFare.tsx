@@ -4,6 +4,7 @@ import { certificatoDaStampare, certificatoInArrivo, certificatoInScadenza } fro
 import { datiRichieste } from '../../lib/richieste'
 import { prezziMancanti, prezziMancantiInBreve } from '../../lib/listino'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
+import { contaTessere, conTessere, incrocioTessere } from '../../lib/tessere'
 import { appelliSenzaSegni, certificatiDaSistemare, contiDaRileggere, contiDellaStriscia, GIORNI_APPELLI, mantieniIPrecedenti, pagamentiNonInRegola, type ContiCosaManca } from '../../lib/cosaManca'
 import { dataLunga, Testa } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
@@ -24,13 +25,15 @@ export interface ContiDaFare {
   /** …e compie 6 anni entro un mese, senza certificato: da avvisare la famiglia. */
   arrivo: number | null
   pagare: number | null
+  /** Iscritti a un corso che chiede la tessera, senza una valida: come il filtro SENZA TESSERA di ISCRITTI. */
+  tessere: number | null
   certificatiDaStampare: number | null
   documentiDaStampare: number | null
   /** I corsi attivi a cui manca un prezzo nel listino, con cosa manca: nel modulo escono «prezzo da confermare». */
   listino: Array<{ nome: string; frase: string }> | null
   /** Contato tutto almeno una volta: da qui un `null` vuol dire che non si è riusciti, non che si aspetta. */
   contato: boolean
-  /** I quattro conti della striscia COSA MANCA, con l'ultimo numero buono se una lettura fallisce. */
+  /** I cinque conti della striscia COSA MANCA, con l'ultimo numero buono se una lettura fallisce. */
   striscia: ContiCosaManca
 }
 
@@ -43,10 +46,11 @@ const VUOTI: ContiDaFare = {
   scadenza: null,
   arrivo: null,
   pagare: null,
+  tessere: null,
   certificatiDaStampare: null,
   documentiDaStampare: null,
   listino: null,
-  striscia: { appelli: null, certificati: null, pagamenti: null, richieste: null, contato: false },
+  striscia: { appelli: null, certificati: null, pagamenti: null, tessere: null, richieste: null, contato: false },
 }
 
 const oppure = <T,>(p: Promise<T>): Promise<T | null> => p.then((x) => x, () => null)
@@ -84,14 +88,17 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
     )
     const richieste = datiRichieste().then(async (r) => ({ tutte: await r.richieste(), conDocumento: tutto ? await r.conDocumento() : null }))
     const persone = pesante ? d.persone() : Promise.resolve(null)
+    // Le tessere si leggono con le persone: senza `55-tessere.sql` (manca) il conto resta «non so».
+    const tessere = pesante ? Promise.all([d.tessere(), d.corsi()]) : Promise.resolve(null)
     const lezioni = pesante ? d.settimana(new Date(adesso - GIORNI_APPELLI * 24 * 60 * 60_000), new Date(adesso)) : Promise.resolve(null)
     const listino = tutto ? Promise.all([d.listino(), d.corsi()]).then(([l, corsi]) => prezziMancanti(l.listino, corsi, oggi)) : Promise.resolve(null)
-    void Promise.all([oppure(istruttori), oppure(richieste), oppure(persone), oppure(lezioni), d.segnalate ? oppure(d.segnalate()) : null, oppure(listino)]).then(
-      ([istr, ric, pers, lez, segn, list]) => {
+    void Promise.all([oppure(istruttori), oppure(richieste), oppure(persone), oppure(lezioni), d.segnalate ? oppure(d.segnalate()) : null, oppure(listino), oppure(tessere)]).then(
+      ([istr, ric, pers, lez, segn, list, tess]) => {
         if (!vivo) return
         const attive = pers?.filter((p) => p.attiva) ?? null
         const appelliMancanti = lez ? appelliSenzaSegni(lez, adesso) : null
         const richiesteNuove = ric ? ric.tutte.filter((x) => x.stato === 'nuova').length : null
+        const contoTessere = pers && tess && !tess[0].manca ? contaTessere(incrocioTessere(conTessere(pers, tess[0].elenco), tess[1], oggi)) : null
         const nuova = Date.now()
         // Pesante finita bene (tutte e due le letture): da qui i conti sono freschi.
         if (pesante && pers && lez) {
@@ -104,7 +111,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
           striscia: pesante
             ? mantieniIPrecedenti(
                 prima.striscia,
-                contiDellaStriscia({ persone: pers, lezioni: lez, richieste: richiesteNuove }, adesso, oggi),
+                contiDellaStriscia({ persone: pers, lezioni: lez, richieste: richiesteNuove, tessere: contoTessere }, adesso, oggi),
                 nuova,
               )
             : { ...prima.striscia, richieste: richiesteNuove ?? prima.striscia.richieste },
@@ -118,6 +125,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
           scadenza: pesante ? (attive ? attive.filter((p) => certificatoInScadenza(p, oggi)).length : null) : prima.scadenza,
           arrivo: pesante ? (attive ? attive.filter((p) => certificatoInArrivo(p, oggi)).length : null) : prima.arrivo,
           pagare: pesante ? (pers ? pagamentiNonInRegola(pers, oggi) : null) : prima.pagare,
+          tessere: pesante ? contoTessere : prima.tessere,
           certificatiDaStampare: pesante ? (pers ? pers.filter((p) => certificatoDaStampare(p.certificato)).length : null) : prima.certificatiDaStampare,
           documentiDaStampare: tutto ? (ric?.conDocumento ? ric.conDocumento.size : null) : prima.documentiDaStampare,
           listino: tutto ? list : prima.listino,

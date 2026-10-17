@@ -281,3 +281,37 @@ export function importaTessereProva(
   }
   return { esito: { nuove: daScrivere.length, gia_presenti: gia, non_abbinate, scritto: false }, daScrivere }
 }
+
+/** L'ente scritto da chi usa l'app: in maiuscolo, o niente se è vuoto. */
+export const enteDaDati = (ente?: string): string | undefined => ente?.trim().toUpperCase() || undefined
+
+/** L'errore di un database dove `55-tessere.sql` non è ancora passato (tabella, colonna o funzione che non ci sono). */
+export function mancaTessere(e: { code?: string; message?: string } | null | undefined): boolean {
+  return !!e && ['42703', '42P01', '42883', 'PGRST200', 'PGRST202', 'PGRST204', 'PGRST205'].includes(e.code ?? '') && /tessere|ente_tessera/.test(e.message ?? '')
+}
+
+/** Chi non ha la tessera che il suo corso chiede (manca o scaduta): quello che dice il filtro SENZA TESSERA e la casella TESSERE. */
+export const senzaTessera = (righe: RigaIncrocio[]) => righe.some((r) => r.esito === 'manca' || r.esito === 'scaduta')
+
+/**
+ * Le parole di IN REGOLA con quelle della tessera: se manca o è scaduta c'è
+ * il rosso, se scade presto il giallo, e «IN REGOLA» resta solo se tutto torna.
+ * Le righe sono quelle dell'incrocio della persona: senza corsi che la
+ * chiedono non c'è niente da dire.
+ */
+export function paroleConTessera<P extends { tono: string; parola: string }>(parole: P[], righe: RigaIncrocio[], oggi: string): Array<P | { tono: 'rosso' | 'giallo'; parola: string }> {
+  const nuove: Array<{ tono: 'rosso' | 'giallo'; parola: string }> = []
+  for (const r of righe) {
+    if (r.esito === 'non_iscritto') continue
+    const p = parolaTessera(r.esito, r.tesseraAl, oggi)
+    if (p && !nuove.some((x) => x.parola === p.parola)) nuove.push(p)
+  }
+  if (!nuove.length) return parole
+  return [...parole.filter((x) => x.parola !== 'IN REGOLA'), ...nuove]
+}
+
+/** Una tessera da sola, per le sue date: quella dello stato di una persona è `statoTessera`. */
+export function statoDiUna(t: Pick<TesseraSeg, 'al'>, oggi: string): 'scaduta' | 'in_scadenza' | 'valida' {
+  if (t.al < oggi) return 'scaduta'
+  return giorniTra(oggi, t.al) <= GIORNI_IN_SCADENZA ? 'in_scadenza' : 'valida'
+}

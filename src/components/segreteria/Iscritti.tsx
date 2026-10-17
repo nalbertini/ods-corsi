@@ -7,6 +7,8 @@ import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
+import { conTessere, incrocioTessere, paroleConTessera, senzaTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
+import { TessereDellaPersona } from './Tessere'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
@@ -118,6 +120,7 @@ export function Iscritti({
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
   const freq = useCarica(() => d.frequenze(), [d])
+  const tessere = useCarica(() => d.tessere(), [d])
   const indizi = useCarica(() => d.indiziDoppioni(), [d])
   const [cerca, setCerca] = useState('')
   const [corso, setCorso] = useState('')
@@ -128,6 +131,7 @@ export function Iscritti({
   const [arrivo, setArrivo] = useState(filtroIniziale === 'arrivo')
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [fuori, setFuori] = useState(filtroIniziale === 'fuori-regola')
+  const [noTessera, setNoTessera] = useState(filtroIniziale === 'senza-tessera')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [filePrima, setFilePrima] = useState(filtroIniziale === 'file-di-prima')
   const [doppi, setDoppi] = useState(false)
@@ -141,6 +145,12 @@ export function Iscritti({
   const tutti = [...(persone.dato ?? [])].sort(
     (a, b) => Number(b.attiva) - Number(a.attiva) || a.cognome.localeCompare(b.cognome, 'it') || a.nome.localeCompare(b.nome, 'it'),
   )
+  // Le tessere contano solo quando si sa: lette, e il database le ha (55-tessere.sql). Mai «senza tessera» per un elenco che non è arrivato.
+  const conTessereLette = !!tessere.dato && !tessere.dato.manca
+  const incroci = new Map<string, RigaIncrocio[]>()
+  if (conTessereLette)
+    for (const r of incrocioTessere(conTessere(tutti, tessere.dato!.elenco), corsi.dato ?? [], oggi)) incroci.set(r.personaId, [...(incroci.get(r.personaId) ?? []), r])
+  const tesseraDi = (p: PersonaSeg) => incroci.get(p.id) ?? []
   const nFilePrima = tutti.filter((p) => certificatoDaStampare(p.certificato)).length
   // Finiti tutti (cancellati da soli o tolti), il filtro si spegne da sé.
   const soloFilePrima = filePrima && nFilePrima > 0
@@ -158,7 +168,8 @@ export function Iscritti({
       (!scadenza || certificatoInScadenza(p, oggi)) &&
       (!arrivo || certificatoInArrivo(p, oggi)) &&
       (!pagare || daPagare(p, oggi)) &&
-      (!fuori || fuoriRegola(p, oggi)) &&
+      (!fuori || fuoriRegola(p, oggi) || (p.attiva && senzaTessera(tesseraDi(p)))) &&
+      (!noTessera || senzaTessera(tesseraDi(p))) &&
       (!senzaDocumento || !p.documento) &&
       (!soloFilePrima || certificatoDaStampare(p.certificato)),
   )
@@ -178,7 +189,7 @@ export function Iscritti({
   const inScadenza = attiveOra.filter((p) => certificatoInScadenza(p, oggi)).length
   const nonPagato = attiveOra.filter((p) => daPagare(p, oggi)).length
   const persona = nuovo ? null : (tutti.find((p) => p.id === scelta) ?? null)
-  const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica(), indizi.ricarica()])
+  const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica(), indizi.ricarica(), tessere.ricarica()])
 
   const chiudi = () => {
     setUnisciCon(null)
@@ -237,6 +248,7 @@ export function Iscritti({
             corsi={perId}
             attivi={attivi}
             f={freq.dato?.get(persona.id)}
+            tessere={conTessereLette ? tessere.dato!.elenco : undefined}
             fai={fai}
             onCambiato={() => {
               void ricarica()
@@ -304,6 +316,11 @@ export function Iscritti({
           <button type="button" className="num sg-chip" aria-pressed={fuori} onClick={() => setFuori(!fuori)}>
             NON IN REGOLA
           </button>
+          {conTessereLette && (
+            <button type="button" className="num sg-chip" aria-pressed={noTessera} onClick={() => setNoTessera(!noTessera)}>
+              SENZA TESSERA
+            </button>
+          )}
           <button type="button" className="num sg-chip" aria-pressed={senzaDocumento} onClick={() => setSenzaDocumento(!senzaDocumento)}>
             SENZA DOCUMENTO
           </button>
@@ -390,7 +407,7 @@ export function Iscritti({
                     {p.telefono ?? p.email ?? p.emailContatto ?? 'nessun contatto'}
                   </span>
                   <span role="cell" className="sg-in-regola">
-                    {paroleInRegola(p, oggi).map((b) => (
+                    {paroleConTessera(paroleInRegola(p, oggi), tesseraDi(p), oggi).map((b) => (
                       <Bollino key={b.parola} tono={b.tono}>{b.parola}</Bollino>
                     ))}
                   </span>
@@ -499,6 +516,7 @@ function Scheda({
   corsi,
   attivi,
   f,
+  tessere,
   fai,
   onCambiato,
   onApri,
@@ -513,6 +531,8 @@ function Scheda({
   corsi: Map<string, CorsoSeg>
   attivi: CorsoSeg[]
   f?: Frequenza
+  /** Le tessere di tutti; senza (il database non le ha ancora) la sezione non c'è. */
+  tessere?: TesseraSeg[]
   fai: Fai
   onCambiato: () => void
   /** Apre la scheda di un'altra persona: una del nucleo. */
@@ -632,6 +652,7 @@ function Scheda({
           <div id="sez-certificato">
             <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>
+          <TessereDellaPersona key={`t-${p.id}-${(tessere ?? []).length}`} d={d} p={p} tessere={tessere} corsi={corsi} oggi={chiaveGiorno(new Date())} fai={fai} onCambiato={onCambiato} />
           <div id="sez-documento">
             <Documento d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>

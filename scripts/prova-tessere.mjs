@@ -135,6 +135,20 @@ ok('senza tessera nessuna scheda è tolta dal conto per errore: Sara (corso senz
 ok('il conto per COSA MANCA: manca + scaduta, non l\'in scadenza né i non iscritti',
   m.contaTessere(m.incrocioTessere(persone, corsi, '2026-11-01')), 3)
 
+console.log('\nLa tessera dentro IN REGOLA')
+{
+  const V = [{ tono: 'verde', parola: 'IN REGOLA' }]
+  const R = (esito, tesseraAl) => ({ personaId: 'x', ente: 'FIJLKAM', esito, tesseraAl })
+  ok('niente corsi che la chiedono: le parole di prima', m.paroleConTessera(V, [], OGGI), V)
+  ok('manca: IN REGOLA se ne va, resta il rosso', m.paroleConTessera(V, [R('manca')], OGGI), [{ tono: 'rosso', parola: 'NO TESSERA' }])
+  ok('scaduta: rosso', m.paroleConTessera(V, [R('scaduta', '2025-12-31')], OGGI), [{ tono: 'rosso', parola: 'TESSERA SCADUTA' }])
+  ok('in scadenza: giallo, col mese', m.paroleConTessera(V, [R('in_scadenza', '2026-12-31')], '2026-11-10'), [{ tono: 'giallo', parola: 'TESSERA SCADE A DICEMBRE' }])
+  ok('con un altro guaio: resta anche quello', m.paroleConTessera([{ tono: 'rosso', parola: 'DA PAGARE' }], [R('manca')], OGGI), [{ tono: 'rosso', parola: 'DA PAGARE' }, { tono: 'rosso', parola: 'NO TESSERA' }])
+  ok('«non iscritto» non è un guaio della tabella ISCRITTI', m.paroleConTessera(V, [R('non_iscritto', '2026-12-31')], OGGI), V)
+  ok('due enti senza tessera: la parola una volta sola', m.paroleConTessera(V, [R('manca'), { ...R('manca'), ente: 'FIPE' }], OGGI).length, 1)
+  ok('SENZA TESSERA: manca e scaduta sì, in scadenza e non iscritto no', [R('manca'), R('scaduta'), R('in_scadenza'), R('non_iscritto')].map((r) => m.senzaTessera([r])), [true, true, false, false])
+}
+
 console.log('\nL\'import in prova: come `importa_tessere`')
 {
   // Lo stesso foglio e le stesse schede di supabase/prova/tessere.sql.

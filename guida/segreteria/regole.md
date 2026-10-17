@@ -14,7 +14,7 @@ FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista
 Le scelte che valgono solo per il computer (o il telefono) che si sta usando, non per la
 segreteria intera: restano su questo dispositivo, come il tema.
 
-- **LA STRISCIA COSA MANCA** — **MOSTRALA** (com'è all'inizio) o **NASCONDILA**: le quattro
+- **LA STRISCIA COSA MANCA** — **MOSTRALA** (com'è all'inizio) o **NASCONDILA**: le cinque
   caselle in cima alle pagine ([guida](README.md#la-striscia-cosa-manca)) spariscono da
   tutte le pagine. **DA FARE** ha sempre gli stessi conti, quindi non si perde niente: ci si
   torna quando si vuole. Per rimetterla basta **MOSTRALA**.
@@ -137,6 +137,10 @@ ricevute si fanno dalla scheda di un iscritto (vedi
 Corsi e iscritti dai fogli CSV, o gli iscritti dalle risposte del modulo Google,
 in tre passi: i fogli, il controllo, il database. Si può rifare quante volte si
 vuole, non duplica niente. Tutto è spiegato in [Importa da Excel](importa.md).
+
+## Tessere dal RASD
+
+Il foglio dei tesseramenti del RASD, salvato come CSV, si carica da qui e si abbina a chi ha già la scheda. Tutto è spiegato in [Tessere](tessere.md#caricare-il-foglio-del-rasd).
 
 ## Dati e privacy
 

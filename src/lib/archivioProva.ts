@@ -4,6 +4,7 @@ import type { Ruolo, StatoSessione } from './sala'
 import type { PagamentoDiretto } from './pagamenti'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
 import type { Anagrafica, FileSeg } from './segreteria'
+import type { TesseraSeg } from './tessere'
 
 /**
  * L'archivio della modalità prova: corsi, orari, persone e iscrizioni.
@@ -49,6 +50,8 @@ export interface CorsoProva {
   istruttori: string[]
   capienza?: number
   attivo: boolean
+  /** Quale tessera chiede (FIJLKAM, FIPE…); senza, nessuna. */
+  enteTessera?: string
   ricorrenze: RicorrenzaProva[]
 }
 
@@ -149,6 +152,8 @@ export interface Archivio {
   anagrafiche?: Record<string, Anagrafica & { cambiataIl?: string }>
   /** Chi è venuto a provare una lezione, come le righe di `prove` (21-prove.sql). */
   prove?: ProvaLezione[]
+  /** Le tessere (55-tessere.sql); un archivio salvato prima non le ha. */
+  tessere?: Array<TesseraSeg & { id: string; personaId: string }>
   /** Le coppie di schede segnate «non sono doppioni» (33-non-doppioni.sql), con la più piccola prima. */
   nonDoppioni?: [string, string][]
   /** Le presenze segnalate dagli iscritti, da accogliere o rifiutare (vedi `segnalate.ts`). */
@@ -329,6 +334,42 @@ function natoIlDa(anni: number, giorni: number): string {
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
 }
 
+/** Come la mappa di `55-tessere.sql`: Judo, Lotta, Aikido, MGA e Avviamento chiedono FIJLKAM, la sala Pesi FIPE, gli altri niente. */
+export function enteDelCorso(nome: string): string | undefined {
+  if (/^(judo|lotta|aikido|mga|avviamento)/i.test(nome)) return 'FIJLKAM'
+  if (/^(pesi|pesistica|preparazione atletica)/i.test(nome)) return 'FIPE'
+  return undefined
+}
+
+/**
+ * Le tessere di partenza: a chi è iscritto a un corso che la chiede, una tessera
+ * valida fino a fine anno a quasi tutti, una scaduta a qualcuno, nessuna a un
+ * altro, sempre uguali a ogni partenza (come `inRegolaDiProva`).
+ */
+function tessereDiProva(iscrizioni: IscrizioneProva[], corsi: Array<{ id: string; enteTessera?: string }>): NonNullable<Archivio['tessere']> {
+  const ente = new Map(corsi.map((c) => [c.id, c.enteTessera]))
+  const anno = Number(STAGIONE.dal.slice(0, 4))
+  const fatte = new Map<string, NonNullable<Archivio['tessere']>[number]>()
+  for (const i of iscrizioni) {
+    const e = ente.get(i.corsoId)
+    if (!e || fatte.has(`${i.personaId}|${e}`)) continue
+    const h = [...i.personaId].reduce((s, c) => (s * 31 + c.charCodeAt(0)) % 9973, 11) % 10
+    if (h === 0) continue
+    const vecchia = h === 1
+    fatte.set(`${i.personaId}|${e}`, {
+      id: `t-${i.personaId}-${e}`,
+      personaId: i.personaId,
+      ente: e,
+      tipo: h === 2 ? 'agonista' : 'praticante',
+      codice: `${anno - (vecchia ? 1 : 0)}-${String(1000 + h * 97 + i.personaId.length).slice(-4)}`,
+      dal: `${anno - (vecchia ? 1 : 0)}-09-01`,
+      al: `${anno - (vecchia ? 1 : 0)}-12-31`,
+      origine: 'rasd',
+    })
+  }
+  return [...fatte.values()]
+}
+
 function iniziale(): Archivio {
   const persone = new Map<string, PersonaProva>()
   for (const [id, nome] of Object.entries(ISTRUTTORI)) {
@@ -380,6 +421,7 @@ function iniziale(): Archivio {
       istruttori: c.istruttori.map((i) => `i-${i}`),
       capienza: c.capienza,
       attivo: true,
+      enteTessera: enteDelCorso(c.nome),
       ricorrenze: c.orari.map(([giorno, ora, durata]) => ({
         id: idRicorrenza(c.id, giorno, ora),
         giorno,
@@ -392,6 +434,7 @@ function iniziale(): Archivio {
     persone: [...persone.values()],
     iscrizioni,
     lezioni: {},
+    tessere: tessereDiProva(iscrizioni, CORSI.map((c) => ({ id: c.id, enteTessera: enteDelCorso(c.nome) }))),
   }
 }
 
@@ -400,7 +443,14 @@ function leggi(): Archivio {
     const g = localStorage.getItem(DOVE)
     const a = g ? (JSON.parse(g) as Archivio) : null
     // Un archivio di un'altra versione si butta: è una prova, non un registro.
-    if (a && a.versione === VERSIONE && Array.isArray(a.corsi) && Array.isArray(a.persone)) return a
+    if (a && a.versione === VERSIONE && Array.isArray(a.corsi) && Array.isArray(a.persone)) {
+      // Un archivio salvato prima delle tessere: la mappa dei corsi e le tessere di partenza, una volta sola.
+      if (!a.tessere) {
+        a.corsi = a.corsi.map((c) => ({ ...c, enteTessera: c.enteTessera ?? enteDelCorso(c.nome) }))
+        a.tessere = tessereDiProva(a.iscrizioni ?? [], a.corsi)
+      }
+      return a
+    }
   } catch {
     /* si riparte da capo */
   }

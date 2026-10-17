@@ -277,6 +277,8 @@ function Scheda({
   const sale = useCarica(() => d.sale(), [d])
   const istruttori = useCarica(() => d.istruttori(), [d])
   const attivita = useCarica(() => d.attivita(), [d])
+  // Il campo c'è solo se il database ha le tessere (55-tessere.sql): se no la colonna non esiste e non si scrive.
+  const tessereDelDb = useCarica(() => d.tessere(), [d])
   const [bozza, setBozza] = useState<DatiCorso>(() => ({
     id: corso?.id,
     nome: corso?.nome ?? '',
@@ -284,6 +286,7 @@ function Scheda({
     istruttori: corso?.istruttori.map((i) => i.id) ?? [],
     capienza: corso?.capienza,
     colore: corso?.colore ?? COLORI[0].hex,
+    enteTessera: corso?.enteTessera,
   }))
   // Un corso nuovo prende la prima sala, quando le sale arrivano.
   // Solo un corso nuovo: su uno che esiste senza sala SALVA si accenderebbe da solo.
@@ -463,6 +466,22 @@ function Scheda({
             onChange={(e) => setBozza({ ...bozza, capienza: e.target.value ? Number(e.target.value) : undefined })}
           />
         </Campo>
+        {tessereDelDb.dato && !tessereDelDb.dato.manca && (
+          <Campo id="k-tessera" etichetta="TESSERA RICHIESTA">
+            <input
+              id="k-tessera"
+              className="sg-campo"
+              maxLength={40}
+              placeholder="NESSUNA"
+              aria-describedby="k-tessera-nota"
+              value={bozza.enteTessera ?? ''}
+              onChange={(e) => setBozza({ ...bozza, enteTessera: e.target.value.toUpperCase() })}
+            />
+            <span id="k-tessera-nota" className="sg-sotto">
+              L’ente della tessera che chi si iscrive deve avere (FIJLKAM, FIPE…). Vuoto: il corso non la chiede.
+            </span>
+          </Campo>
+        )}
         <Campo etichetta={bozza.istruttori.length ? "ISTRUTTORI · anche più d'uno" : 'ISTRUTTORI · da assegnare'} largo manca={!bozza.istruttori.length}>
           <div className={bozza.istruttori.length ? 'row' : 'row sg-scelte-mancano'} style={{ flexWrap: 'wrap', gap: 6 }}>
             {(istruttori.dato ?? []).map((i) => {
