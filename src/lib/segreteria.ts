@@ -1,6 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
+import type { Cassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
@@ -613,6 +614,22 @@ export interface DatiSegreteria {
   nomiPersone(ids: string[]): Promise<Array<{ id: string; nome: string; cognome: string }>>
   /** Chi ha pagato, cercato per nome: almeno tre lettere, al massimo otto, solo nome e cognome (`cerca_pagatori`). */
   cercaPagatori(scritto: string): Promise<Array<{ id: string; nome: string; cognome: string }>>
+  /** Le casse con il loro saldo iniziale (`59-contabilita.sql`). Solo per l'amministrazione, come tutto quello che segue. */
+  casse(): Promise<Cassa[]>
+  voci(): Promise<VoceContabile[]>
+  /** I movimenti scritti a mano, anche gli annullati; gli incassi degli iscritti si ricavano da `ricevute` e `pagamentiDiretti`. */
+  movimenti(): Promise<MovimentoManuale[]>
+  salvaVoce(d: { nome: string; tipo: 'entrata' | 'uscita' }): Promise<string>
+  rinominaVoce(id: string, nome: string): Promise<void>
+  /** Una voce usata non si cancella: si disattiva e non si offre più per i movimenti nuovi. */
+  attivaVoce(id: string, attiva: boolean): Promise<void>
+  salvaSaldoCassa(id: string, saldo: number, dal?: string): Promise<void>
+  registraMovimento(d: Omit<DatiMovimento, 'tipo'> & { tipo: 'entrata' | 'uscita' }): Promise<string>
+  registraGiroconto(d: DatiGiroconto): Promise<string>
+  /** Un movimento non si modifica né si cancella: si annulla e si rifà. */
+  annullaMovimento(id: string): Promise<void>
+  /** Solo la descrizione e la nota si correggono sul posto. */
+  correggiTestoMovimento(id: string, descrizione: string, nota?: string): Promise<void>
   /** Registra un pagamento fatto a mano, senza ricevuta. */
   registraPagamentoDiretto(d: DatiPagamentoDiretto): Promise<PagamentoDiretto>
   /** Lo annulla: resta in elenco, segnato annullato. */

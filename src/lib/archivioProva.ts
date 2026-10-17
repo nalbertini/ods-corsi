@@ -2,6 +2,7 @@ import type { Segnalata } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 import type { StatoSito } from './sitoProva'
 import type { ImmagineSito } from './sitoImmagini'
+import type { Cassa, MovimentoManuale, VoceContabile } from './contabilita'
 import type { Ruolo, StatoSessione } from './sala'
 import type { PagamentoDiretto } from './pagamenti'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
@@ -147,6 +148,10 @@ export interface Archivio {
   ricevute?: Ricevuta[]
   /** I pagamenti fatti a mano, senza ricevuta (54-pagamenti-diretti.sql). */
   pagamentiDiretti?: PagamentoDiretto[]
+  /** La contabilità (59-contabilita.sql): le casse con i saldi iniziali, le voci, i movimenti a mano. Mancanti: quelle di partenza. */
+  casse?: Cassa[]
+  voci?: VoceContabile[]
+  movimenti?: MovimentoManuale[]
   /** I dati dell'associazione per le ricevute, se la segreteria li ha cambiati. */
   enteRicevute?: EnteRicevuta
   /** Nascita, residenza e genitore degli iscritti importati, per persona (18-anagrafiche.sql). */

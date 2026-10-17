@@ -1,0 +1,48 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Contabilità · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Movimenti.dc.html",
+   "title": "CONTABILITÀ · MOVIMENTI",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "NuovoMovimento.dc.html",
+   "title": "Nuovo movimento e giroconto",
+   "x": 1520,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Voci.dc.html",
+   "title": "CONTABILITÀ · VOCI",
+   "x": 0,
+   "y": 1760,
+   "page": "page-1"
+  },
+  {
+   "file": "Casse.dc.html",
+   "title": "CONTABILITÀ · CASSE",
+   "x": 1520,
+   "y": 1760,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Contabilità: movimenti, voci e casse (prima parte)"
+  }
+ ]
+}

@@ -1984,6 +1984,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto-corso > :nth-child(3) { order: 5; grid-column: 1 / -1; }
   .sg-riga-iscritto:not(.sg-lista-testa) > :nth-child(3)::before { content: 'Iscritto dal '; color: var(--dim); }
 }
+.sg-riga-movimento { display: grid; grid-template-columns: 100px minmax(0, 1.6fr) minmax(0, 1fr) 150px 130px; gap: 14px; align-items: center; }
+.sg-riga-movimento[data-spento='true'] { opacity: 0.55; }
 .sg-riga-pagamento-tab { display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; }
 .sg-riga-residuo { display: grid; grid-template-columns: minmax(0, 1.2fr) 100px 110px 110px 110px 160px; gap: 14px; align-items: center; }
 /* L'amministrazione non vede i contatti: una colonna in meno. */
@@ -2376,6 +2378,9 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto > :nth-child(2), .sg-riga-iscritto > :nth-child(3) { display: none; }
   /* Sul telefono: chi con sotto il resto, e l'importo. */
   .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-movimento { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-movimento > :not(:nth-child(2)):not(:last-child) { display: none; }
+  .sg-lista-testa.sg-riga-movimento { display: none; }
   .sg-riga-pagamento-tab > :not(:nth-child(2)):not(:last-child), .sg-riga-residuo > :not(:first-child):not(:nth-child(5)) { display: none; }
   .sg-sotto-nome { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
   .sg-pagamento { margin-left: 12px; }
