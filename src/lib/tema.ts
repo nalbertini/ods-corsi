@@ -52,8 +52,9 @@ const ascoltatori = new Set<(t: Tema) => void>()
 function applica() {
   const t = attuale()
   document.documentElement.dataset.tema = t
-  // La barra del browser e quella del telefono prendono il colore del fondo.
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', COLORE_BARRA[t])
+  // La barra del browser e quella del telefono prendono il colore del fondo,
+  // tranne nel modulo di iscrizione, che è sempre chiaro (`aspettoModulo.ts`).
+  if (!document.documentElement.dataset.modulo) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', COLORE_BARRA[t])
   ascoltatori.forEach((f) => f(t))
 }
 

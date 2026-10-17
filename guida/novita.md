@@ -10,6 +10,36 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.85.3 — 17 ottobre 2026
+
+### Risolto
+
+- Le foto del sito non tagliano più le teste
+
+## 0.85.2 — 17 ottobre 2026
+
+### Risolto
+
+- Il pulsante in testata del sito ha lo spazio tra «Prova» e «una settimana»
+
+## 0.85.1 — 17 ottobre 2026
+
+### Modificato
+
+- Il sito mostra l'anteprima giusta quando lo condividi e si presenta agli assistenti AI
+
+## 0.85.0 — 17 ottobre 2026
+
+### Novità
+
+- Il modulo di iscrizione ha l'aspetto del sito, in blu e giallo
+
+## 0.84.1 — 17 ottobre 2026
+
+### Modificato
+
+- Il sito pubblico dice a Google e agli assistenti AI chi siamo, dove e quali corsi
+
 ## 0.84.0 — 17 ottobre 2026
 
 ### Novità

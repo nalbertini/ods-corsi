@@ -31,6 +31,8 @@ const carica = async (file) => {
 const g = await carica('src/lib/sitoGenera.ts')
 const s = await carica('src/lib/sito.ts')
 
+// L'unico <script> ammesso è il blocco dei dati strutturati (ld+json): è JSON con ogni «<» escapato, e non può contenere altri tag.
+const senzaDati = (h) => h.replace(/<script type="application\/ld\+json">[^<]*<\/script>/g, '')
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
   const va = JSON.stringify(avuto) === JSON.stringify(voluto)
@@ -74,7 +76,7 @@ console.log('\nPercorsi: un file per pagina')
   ok('la home è index.html', esiste(r, 'index.html'), true)
   ok('le altre pagine sono <slug>/index.html', [esiste(r, 'judo/index.html'), esiste(r, 'orari/index.html')], [true, true])
   ok('ci sono 404.html, sitemap.xml e robots.txt', [esiste(r, '404.html'), esiste(r, 'sitemap.xml'), esiste(r, 'robots.txt')], [true, true, true])
-  ok('niente di più: 3 pagine + 3 file fissi', Object.keys(r).sort(), ['404.html', 'index.html', 'judo/index.html', 'orari/index.html', 'robots.txt', 'sitemap.xml'])
+  ok('niente di più: 3 pagine + 4 file fissi', Object.keys(r).sort(), ['404.html', 'index.html', 'judo/index.html', 'llms.txt', 'orari/index.html', 'robots.txt', 'sitemap.xml'])
 }
 {
   const cattivi = ['../x', 'a b', 'Admin', 'x/y', '', '..', '/x', 'a\\b', 'é', 'x.html']
@@ -83,7 +85,7 @@ console.log('\nPercorsi: un file per pagina')
   ok('la home resta anche con slug cattivi attorno', esiste(r, 'index.html'), true)
   const strani = Object.keys(r).filter((f) => f.startsWith('/') || f.includes('..') || /[^a-z0-9/\-.]/.test(f))
   ok('nessun percorso con «..», «/» iniziale o caratteri fuori [a-z0-9/-.]', Object.keys(r).length > 0 ? strani : 'nessun file', [])
-  ok('con soli slug cattivi non cade (resta 404, sitemap, robots)', Object.keys(genera(dati({ pagine: cattivi.map((x) => pag(x)), menu: [] }))).sort(), ['404.html', 'robots.txt', 'sitemap.xml'])
+  ok('con soli slug cattivi non cade (resta 404, llms.txt, sitemap, robots)', Object.keys(genera(dati({ pagine: cattivi.map((x) => pag(x)), menu: [] }))).sort(), ['404.html', 'llms.txt', 'robots.txt', 'sitemap.xml'])
 }
 
 // ---------------------------------------------------------------------------
@@ -94,7 +96,7 @@ console.log('\nTesto: ripulito anche qui')
   const f = c(r, 'judo/index.html')
   const area = f.slice(f.indexOf('Titolo judo'))
   ok('il file della pagina c’è', esiste(r, 'judo/index.html'), true)
-  ok('niente <script', esiste(r, 'judo/index.html') && !/<script/i.test(f), true)
+  ok('niente <script', esiste(r, 'judo/index.html') && !/<script/i.test(senzaDati(f)), true)
   ok('niente onerror', esiste(r, 'judo/index.html') && !/onerror/i.test(f), true)
   ok('niente javascript:', esiste(r, 'judo/index.html') && !/javascript:/i.test(f), true)
   ok('niente <iframe', esiste(r, 'judo/index.html') && !/<iframe/i.test(f), true)
@@ -113,7 +115,7 @@ console.log('\nTitolo, descrizione e menu: escapati')
   }))
   const f = c(r, 'judo/index.html')
   ok('il file c’è', esiste(r, 'judo/index.html'), true)
-  ok('nessun <script in tutto il file', esiste(r, 'judo/index.html') && !/<script/i.test(f), true)
+  ok('nessun <script in tutto il file', esiste(r, 'judo/index.html') && !/<script/i.test(senzaDati(f)), true)
   ok('<title> con il titolo escapato', f.includes('<title>&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;') , true)
   const meta = f.match(/<meta name="description" content="([^"]*)"/)
   ok('meta description: un solo attributo, il testo escapato', meta ? meta[1] : null, '&quot; onload=&quot;x')
@@ -133,7 +135,7 @@ console.log('\nSito statico: niente codice né servizi esterni')
   const r = genera(dati({ pagine: [pag('home'), lunga], menu: [voce('menu', 1, 'Mappa', null, 'https://maps.example/x')] }))
   const tutti = html(r)
   ok('ci sono file da guardare', tutti.length >= 3, true)
-  ok('nessun file con <script', tutti.filter((f) => /<script/i.test(r[f])), [])
+  ok('nessun file con <script', tutti.filter((f) => /<script/i.test(senzaDati(r[f]))), [])
   ok('nessun @import', tutti.filter((f) => /@import/i.test(r[f])), [])
   ok('nessun font di Google', tutti.filter((f) => /fonts\.(googleapis|gstatic)\.com/i.test(r[f])), [])
   const risorse = []
@@ -262,7 +264,7 @@ console.log('\nRinvii')
   ok('rinvio verso una pagina che non c’è: saltato', esiste(r, 'index.html') && !esiste(r, 'fantasma/index.html'), true)
   ok('rinvio con «da» uguale a una pagina: la pagina non è sostituita', c(r, 'orari/index.html').includes('Testo di orari') && !c(r, 'orari/index.html').includes('refresh'), true)
   ok('rinvio con «da» non valido: saltato', Object.keys(r).length === 0 ? -1 : Object.keys(r).filter((f) => f.includes('..') || f.includes('A B') || f.startsWith('/') || f === 'index.html/index.html').length, 0)
-  ok('file totali: 3 pagine, 2 rinvii, 3 fissi', Object.keys(r).length, 8)
+  ok('file totali: 3 pagine, 2 rinvii, 4 fissi', Object.keys(r).length, 9)
 }
 
 // ---------------------------------------------------------------------------
@@ -360,7 +362,7 @@ console.log('\nLo script scripts/genera-sito.mjs')
   const caratteri = [...readFileSync(join(uscita, 'index.html'), 'utf8').matchAll(/url\(\/risorse\/([^)]+\.woff2)\)/g)].map((m) => m[1])
   ok('i caratteri Big Shoulders Display e Inter sono copiati con il sito', [caratteri.length >= 2, caratteri.every((f) => existsSync(join(uscita, 'risorse', f))), caratteri.some((f) => /bricolage/i.test(f))], [true, true, false])
   ok('la pagina di legge ha il modello solo testo (la funzione pubblica non dice quali sono)', readFileSync(join(uscita, 'privacy/index.html'), 'utf8').includes('pagina-testo'), true)
-  ok('il testo scritto con uno script esce pulito', readFileSync(join(uscita, 'index.html'), 'utf8').includes('<script'), false)
+  ok('il testo scritto con uno script esce pulito', senzaDati(readFileSync(join(uscita, 'index.html'), 'utf8')).includes('<script'), false)
   ok('il dominio di norma è www', readFileSync(join(uscita, 'sitemap.xml'), 'utf8').includes('https://www.officinedellosport.it/'), true)
   const prima = readdirSync(uscita).sort().join()
   writeFileSync(dati, JSON.stringify({ pagine: [pagine[1]], menu: [], rinvii: [] }))

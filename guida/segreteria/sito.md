@@ -34,6 +34,8 @@ Toccando una pagina si apre per scriverla:
   **descrizione** (160) e l'**indirizzo della pagina**. Il numero sotto dice a
   quanto sei; diventa rosso se superi il limite. Cambiando l'indirizzo di una
   pagina pubblicata, il vecchio porta al nuovo.
+  Titolo e descrizione compaiono anche nell'anteprima di quando qualcuno
+  condivide la pagina (WhatsApp, Facebook, Instagram), con l'immagine del sito.
 - **SALVA BOZZA** salva senza cambiare il sito. **ANTEPRIMA** mostra com'è
   scritta; **TORNA A SCRIVERE** la richiude.
 - **PUBBLICA** salva la bozza, se serve, e la rende il testo del sito. Se

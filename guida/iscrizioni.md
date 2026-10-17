@@ -114,6 +114,8 @@ La richiesta **non è ancora un'iscrizione**: arriva in segreteria, in
 [RICHIESTE ONLINE](segreteria/richieste.md), dove qualcuno guarda i file e la
 accoglie.
 
+Il modulo ha l'aspetto del sito della palestra: sfondo chiaro, blu e giallo, anche se il telefono è in tema scuro. Il tasto del tema in alto c'è ancora: cambia il tema dell'app per quando si torna indietro, non il modulo.
+
 ## Il modulo a passi (solo in prova)
 
 È un modulo nuovo, che fa le stesse domande una schermata alla volta. Chi si iscrive fa sette passi (**DATI**, **CORSO**, **FIRMA**, **DOCUMENTI**, **FAMIGLIA**, **PAGAMENTO**, **INVIO**); per un figlio sono otto (**BAMBINO** al posto di DATI, e in più **CHI FIRMA**). In cima i passi sono raggruppati in tre tappe, **CHI**, **IL CORSO** e **PAGA E MANDA**, ognuna con un segmento per passo (verde quelli fatti, scuro quello di adesso) e il nome sotto, con ✓ quando è finita; sotto le tappe c'è il nome del passo. Per un altro adulto della famiglia il primo passo si chiama **DATI DI** e il suo nome. Nel passo del corso, sopra i tasti, c'è sempre il **TOTALE** da pagare, che cambia a ogni scelta: con più persone è quello di tutti, e lo dice (**TOTALE FAMIGLIA**). A PAGAMENTO il conto è nel passo. Prima

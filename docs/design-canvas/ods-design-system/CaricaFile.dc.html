@@ -9,23 +9,25 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <!-- Tema sito (modulo di iscrizione): Big Shoulders Display e Inter. In app saranno i file locali OFL di public/risorse (come nel sito pubblico, src/lib/sitoGenera.ts); qui, come per Saira e Barlow, il canvas li prende da Google Fonts. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: {{c.surface}}; border: 2px solid {{bordo}}; color: {{c.text}}">
+<div style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: {{c.surface}}; border: 2px solid {{bordo}}; border-radius: {{raggio}}; font-family: {{testoFam}}; color: {{c.text}}">
   <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 3px; min-width: 0">
-    <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{coloreEtichetta}}">{{etichetta}}</span>
+    <span style="font-family: {{cond}}; font-size: {{etichettaCorpo}}; font-weight: {{etichettaPeso}}; letter-spacing: {{etichettaSpazio}}; color: {{coloreEtichetta}}">{{etichetta}}</span>
     <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}; {{unaRiga}}">{{frase}}</span>
     <sc-if value="{{haErrore}}" hint-placeholder-val="{{ false }}">
       <span style="font-size: 14px; line-height: 1.4; color: {{c.rossoTesto}}">{{errore}}</span>
     </sc-if>
   </span>
-  <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 48px; padding: 0 16px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 16px; font-weight: 700; letter-spacing: 0.16em">{{tasto}}</span>
+  <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 48px; padding: 0 16px; border: 2px solid {{bordoTasto}}; border-radius: {{raggio}}; color: {{c.tasto}}; font-family: {{cond}}; font-style: {{inclina}}; font-size: {{tastoCorpo}}; font-weight: {{etichettaPeso}}; letter-spacing: {{tastoSpazio}}">{{tasto}}</span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"CARTA D IDENTITÀ"},"seManca":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":"Il fronte. Per un minore, quella del genitore."},"nome":{"editor":"text","default":""},"kb":{"editor":"text","default":"412"},"errore":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":100}}'>
+<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"CARTA D IDENTITÀ"},"seManca":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":"Il fronte. Per un minore, quella del genitore."},"nome":{"editor":"text","default":""},"kb":{"editor":"text","default":"412"},"errore":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":100}}'>
 // Riproduzione 1:1 di CaricaFile di src/components/ds.tsx (righe 207-245) con .modulo-file, .modulo-file-testo, .modulo-etichetta,
 // .passo-dettaglio, .una-riga e .modulo-scegli di src/styles.css (righe 633-636, 598, 585, 560). E' la riga di ogni file del modulo
 // di iscrizione (carta d'identita', certificato, ricevuta, foto del modulo firmato): una scheda `surface` con a sinistra l'etichetta
@@ -36,7 +38,15 @@
 const T = {
   scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
   chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+  // PROPOSTA «modulo di iscrizione nell'aspetto del sito» (A2): valori da docs/design-canvas/sito-rebrand/token-proposta.md e src/lib/sitoGenera.ts;
+  // rapporti di contrasto e correzioni in iscrizione-sito/token-proposta.md.
+  // `line` e' il filo della scheda (#cfe6f4); il tasto SCEGLI/CAMBIA e' un controllo e ha il bordo blu (`bordoTasto`, 4,96:1). `faint` non e' il #cfe6f4 del
+  // token (1,29:1 sul bianco): le parole d'invito si leggono, quindi prende l'inchiostro attenuato (6,64:1 sul bianco). Il file caricato: bordo verde #12913f
+  // (4,08:1 sul bianco), etichetta `verdeTesto` col ✓ davanti, nome e KB nella frase: il segno non e' solo il colore.
+  sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', bordoTasto: '#14709f', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', faint: '#46606f', tasto: '#0d2a3d', tratteggio: '#14709f', blu: '#14709f', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#0d2a3d', suRosso: '#ffffff' },
 };
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
 const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
@@ -44,6 +54,7 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
+    const sito = p.tema === 'sito';
 const nome = p.nome ?? '';
     const fatto = nome !== '';
     const seManca = p.seManca ?? '';
@@ -51,7 +62,10 @@ const nome = p.nome ?? '';
     const kb = Number(p.kb ?? 412) || 1;
     const etichetta = (p.etichetta ?? 'CARTA D IDENTITÀ') + (seManca ? ' · ' + seManca.split(' ').join('\u00a0') : '');
     return {
-      c, cond: COND,
+      c, cond: sito ? BIG : COND, testoFam: sito ? INTER : "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      raggio: sito ? '6px' : '0', bordoTasto: c.bordoTasto || c.line, inclina: sito ? 'normal' : 'oblique 9deg',
+      etichettaCorpo: sito ? '15px' : '12px', etichettaPeso: sito ? 800 : 700, etichettaSpazio: sito ? '0.08em' : '0.18em',
+      tastoCorpo: sito ? '20px' : '16px', tastoSpazio: sito ? '0.06em' : '0.16em',
       bordo: fatto ? c.verde : c.line,
       etichetta, coloreEtichetta: fatto ? c.verdeTesto : c.dim,
       frase: fatto ? nome + ' · ' + kb + ' KB' : (p.dettaglio ?? 'Il fronte. Per un minore, quella del genitore.'),
