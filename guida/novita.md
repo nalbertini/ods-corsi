@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.85.5 — 17 ottobre 2026
+
+### Modificato
+
+- Sul sito il pulsante «Contattaci» sotto il titolo resta solo nella Home
+
 ## 0.85.4 — 17 ottobre 2026
 
 ### Modificato
