@@ -10,6 +10,22 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.73.4 — 17 ottobre 2026
+
+### Modificato
+
+- Il grafo del progetto: Claude lo consulta prima di cercare nel codice
+
+## 0.73.3 — 17 ottobre 2026
+
+### Modificato
+
+- Il sito si pubblica da solo: ogni cinque minuti, dalle pagine pubblicate
+- Bump actions/setup-node from 5.0.0 to 7.1.0
+- Bump supabase/setup-cli from 1.7.3 to 3.0.1
+- Bump actions/checkout from 5.1.0 to 7.0.1
+- Bump actions/upload-artifact from 4.6.2 to 7.0.2
+
 ## 0.73.2 — 17 ottobre 2026
 
 ### Modificato
