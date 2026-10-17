@@ -284,7 +284,7 @@ console.log('\n4. Colori a rotazione, domande chiare, contrasto')
   ok('se un solo h3 non è una domanda, si ruota come al solito', tessere(sezioni(mista)[0] ?? '').map(colore), ['blu', 'giallo'])
   const css = cssDi(pagina(CONTA(4)))
   for (const c of ROTAZIONE) {
-    const d = unaDichiarazione(css.base, css.V, (x) => /\.tessera\b/.test(x) && dellaTinta(c, (y) => !/a\b|:focus|:hover|pulsante|\bh3\b/.test(y.replace(/\.[\w-]+/g, '')))(x))
+    const d = unaDichiarazione(css.base, css.V, (x) => /\.tessera\b/.test(x) && dellaTinta(c, (y) => !/pillola/.test(y) && !/a\b|:focus|:hover|pulsante|\bh3\b/.test(y.replace(/\.[\w-]+/g, '')))(x))
     ok(`.${c}: sfondo ${TINTE[c]} e testo ${SUL[c]}`, [sfondoDi(d), hex(d.color ?? '')], [TINTE[c], SUL[c]])
     ok(`.${c}: contrasto ≥ 4,5:1`, sfondoDi(d) && hex(d.color ?? '') ? contrasto(sfondoDi(d), hex(d.color)) >= 4.5 : 'coppia non trovata', true)
   }

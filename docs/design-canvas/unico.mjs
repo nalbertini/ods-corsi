@@ -26,6 +26,7 @@ const SEZIONI = [
   { id: 'importa-fogli', nome: 'Importa da Excel', cartella: 'import-fogli' },
   { id: 'email-contatto', nome: 'Email di contatto · proposta', cartella: 'email-contatto' },
   { id: 'ruolo-amministrazione', nome: 'Ruolo amministrazione · proposta', cartella: 'ruolo-amministrazione' },
+  { id: 'contabilita', nome: 'Contabilità · proposta', cartella: 'contabilita' },
   { id: 'timer-desktop', nome: 'Timer desktop · proposte', cartella: 'timer-desktop' },
   { id: 'timer-istruttori', nome: 'Timer nell\'app istruttori', cartella: 'timer-istruttori' },
   { id: 'timer-musica', nome: 'Musica nel timer istruttori', cartella: 'timer-musica' },
