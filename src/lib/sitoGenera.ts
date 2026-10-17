@@ -229,7 +229,11 @@ ${GRIGLIE_LUNGHE}
 .testata .pulsante{padding:0 26px}
 .piede{margin:0 var(--margine) 48px}
 .piede .nome{font-size:clamp(44px,3.9vw,56px)}
-.piede{gap:40px}
+.piede{gap:40px;padding:40px;font-size:16px;line-height:1.9}
+.invito{margin:96px var(--margine) 6px;height:300px;min-height:0;padding:36px 40px}
+.invito .frase{max-width:520px;font-size:22px;line-height:1.35}
+.invito .freccia{display:none}
+.invito .parola{font-size:170px;line-height:.8}
 .piede-menu a{display:block}
 .recapiti-piede li:nth-child(n+3){display:inline}
 .recapiti-piede li:last-child::before{content:" · "}
@@ -244,9 +248,10 @@ ${GRIGLIE_LUNGHE}
 .apertura .foto-fila img{object-position:50% 55%}
 .apertura .foto-fila figure:nth-child(3) img{object-position:50% 30%}
 .pagina-contatti .pagina-hero{flex-wrap:nowrap;align-items:flex-end;padding-bottom:72px}
-.pagina-contatti .pagina-hero .intro{flex:1;flex-direction:row;align-items:flex-end;gap:56px;max-width:none}
-.pagina-contatti .pagina-hero .intro h1{flex:1;margin:0;overflow-wrap:break-word}
-.pagina-contatti .pagina-hero .intro p{flex:0 0 520px;font-size:22px}
+.pagina-contatti .pagina-hero .intro{flex:1;display:grid;grid-template-columns:1fr 520px;column-gap:56px;row-gap:0;align-items:end;max-width:none}
+.pagina-contatti .pagina-hero .intro h1{grid-column:1;grid-row:1 / span 2;margin:0;overflow-wrap:break-word}
+.pagina-contatti .pagina-hero .intro p{grid-column:2;margin-bottom:28px;font-size:22px}
+.pagina-contatti .pagina-hero .intro>div{grid-column:2}
 .sezione.apertura{padding-bottom:96px}
 .apertura>.tessere+*{margin-top:96px}
 .recapiti{grid-template-columns:repeat(12,1fr);grid-auto-rows:minmax(300px,auto)}
@@ -315,6 +320,9 @@ ${GRIGLIE_LUNGHE}
 .piede-menu a{display:inline}
 .piede-menu a+a::before{content:" · "}
 .piede-legale{opacity:.85}
+.invito{margin:48px var(--margine) 6px;height:auto;min-height:260px;padding:22px}
+.invito .frase{font-size:17px}
+.invito .parola{font-size:120px}
 .piede-legale li{display:inline}
 .piede-legale li+li::before{content:" · "}
 .testata .estensione{display:none}
@@ -326,8 +334,11 @@ ${GRIGLIE_LUNGHE}
 .mappa .credito{padding:2px 6px;font-size:11px}
 .pagina-contatti h1{font-size:19.5vw}
 .pagina-contatti .pagina-hero{padding:20px var(--margine) 36px}
-.pagina-contatti .pagina-hero .intro{flex-direction:column;align-items:stretch;gap:20px}
-.pagina-contatti .pagina-hero .intro p{flex:none;font-size:18px}
+.pagina-contatti .pagina-hero .intro{grid-template-columns:1fr}
+.pagina-contatti .pagina-hero .intro h1{grid-row:auto;margin-bottom:20px}
+.pagina-contatti .pagina-hero .intro p{grid-column:1;margin-bottom:22px;font-size:18px}
+.pagina-contatti .pagina-hero .intro>div{grid-column:1}
+.pagina-contatti .pagina-hero .pulsante{min-height:52px;padding:0 26px;font-size:17px}
 .sezione.apertura{padding-bottom:48px}
 .apertura>.tessere+*,.apertura>.foto-fila{margin-top:48px}
 .recapiti{grid-template-columns:1fr;grid-auto-rows:minmax(130px,auto)}

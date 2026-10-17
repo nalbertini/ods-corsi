@@ -26,23 +26,32 @@ In ordine, tutto prima del primo titolo grande (`h2`):
 La regola vale solo per la pagina con indirizzo `contatti`: `impagina(testo,
 true)` in `src/lib/sitoLayout.ts`, `main.pagina-contatti` nel CSS.
 
+## La mappa
+
+`sito/risorse/mappa.webp` è la mappa di OpenStreetMap (zoom 17, 1344×520,
+centrata su Via Sassi 26, Collegno: 45.0785534, 7.5936698) ricomposta da 18
+tessere. Nel testo si usa come una foto: `<img src="/risorse/mappa.webp"
+alt="Mappa: Officine dello Sport, Via Sassi 26, Collegno">`. Segnaposto,
+targhetta e «© OpenStreetMap contributors» li mette il sito sopra la prima foto
+dopo i recapiti, quindi la mappa va sempre al centro dell'immagine.
+
+## Il paragrafo dopo il pulsante
+
+Il secondo paragrafo accanto a «Ottieni indicazioni» («A pochi metri dalla
+metropolitana Fermi») è la pillola bianca sulla mappa. Sul telefono, come nel
+design, non si vede (né quella né la nota dell'Indirizzo), e nemmeno la frase
+sotto «Hai qualche domanda?» e la terza foto.
+
 ## Cosa resta diverso dal design
 
-- **La mappa è una foto** (senza il segnaposto e la targhetta «Officine dello
-  Sport»): il sito non ha codice né richieste a servizi esterni, quindi niente
-  mappa viva. Il segnaposto si può disegnare sulla foto. L'indicazione
-  «© OpenStreetMap contributors» va scritta sulla foto se la mappa è di
-  OpenStreetMap.
-- **La seconda scritta sulla mappa** («A pochi metri dalla metropolitana
-  Fermi») sta nella tessera dell'Indirizzo, come nel design desktop.
-- **Il pulsante «Contattaci» e il blocco giallo «Prova» in fondo** non ci sono
-  nella pagina Contatti: già ci si trova (vedi `sitoGenera.ts`).
-- **Sul telefono** il design toglie la terza foto, la nota dell'indirizzo e la
-  frase sotto «Hai qualche domanda?»: la terza foto non si vede, il resto
-  resta.
-- **Testata e piede** sono quelli del sito intero, non di questa pagina.
+- Il pulsante in testata dice «Prova una settimana · 5 €» sul computer e
+  «Prova» sul telefono, come nel design.
+- Il testo delle risposte è uno solo: nel design del telefono due risposte sono
+  più corte. Si scrive il testo del computer.
+- Il sito centra le foto con `object-position` come nel design (50% 55%, la
+  terza 50% 30%).
 
 ## Da controllare prima di pubblicare
 
 - Le foto ritraggono minori: servono i permessi dei genitori.
-- La mappa: l'immagine da caricare non c'è ancora nella libreria.
+- La mappa: i dati sono di OpenStreetMap contributors (ODbL); il credito resta sulla mappa.

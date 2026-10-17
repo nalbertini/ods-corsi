@@ -63,9 +63,9 @@ console.log('\n1. I recapiti: tessere prima del primo titolo grande')
 console.log('\n2. Le misure del design a 1440px')
 {
   ok('titolo da 200px', /clamp\(56px,\s*13\.9vw,\s*200px\)/.test(css('.pagina-contatti h1')), true)
-  ok('titolo e testo affiancati, in basso, 56px di distanza', [/flex-wrap:\s*nowrap/.test(css('.pagina-contatti .pagina-hero')), /align-items:\s*flex-end/.test(css('.pagina-contatti .pagina-hero .intro')), /flex-direction:\s*row/.test(css('.pagina-contatti .pagina-hero .intro')), /gap:\s*56px/.test(css('.pagina-contatti .pagina-hero .intro'))], [true, true, true, true])
+  ok('titolo a sinistra, frase e pulsante in una colonna da 520px a destra, in basso, a 56px', [/display:\s*grid/.test(css('.pagina-contatti .pagina-hero .intro')), /grid-template-columns:\s*1fr 520px/.test(css('.pagina-contatti .pagina-hero .intro')), /column-gap:\s*56px/.test(css('.pagina-contatti .pagina-hero .intro')), /align-items:\s*end/.test(css('.pagina-contatti .pagina-hero .intro'))], [true, true, true, true])
   ok('il titolo non si spezza a lettere (come nel design, sporge di 14px nello spazio)', /overflow-wrap:\s*break-word/.test(css('.pagina-contatti .pagina-hero .intro h1')), true)
-  ok('il testo è largo 520px', /flex:\s*0 0 520px/.test(css('.pagina-contatti .pagina-hero .intro p')), true)
+  ok('la frase: 22px, 28px sopra il pulsante, nella colonna di destra', [/font-size:\s*22px/.test(css('.pagina-contatti .pagina-hero .intro p')), /margin-bottom:\s*28px/.test(css('.pagina-contatti .pagina-hero .intro p')), /grid-column:\s*2/.test(css('.pagina-contatti .pagina-hero .intro p')), /grid-column:\s*2/.test(css('.pagina-contatti .pagina-hero .intro>div'))], [true, true, true, true])
   ok('recapiti: titolo 56px, tessere alte 300px, padding 24px 26px', [/font-size:\s*56px/.test(css('.recapiti h3')), /minmax\(300px,\s*auto\)/.test(css('.recapiti')), /padding:\s*24px 26px/.test(css('.recapiti .tessera'))], [true, true, true])
   ok('quattro tessere per riga: 12 colonne, ognuna ne prende 3 (la regola n-4)', /repeat\(12,\s*1fr\)/.test(css('.recapiti')), true)
   ok('il valore è 36px, 44px se breve', [/font-size:\s*36px/.test(css('.recapiti p:first-of-type')), /font-size:\s*44px/.test(css('.recapiti .breve p:first-of-type'))], [true, true])
@@ -83,7 +83,7 @@ console.log('\n3. Il telefono (≤900px)')
   const m = (sel) => [...mob.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].filter((x) => x[1].trim() === sel).map((x) => x[2]).join(';')
   ok('sul telefono i recapiti in colonna', [/grid-template-columns:\s*1fr/.test(m('.recapiti')), /grid-column:\s*1/.test(m('.tessere.n-4.recapiti>*'))], [true, true])
   ok('titolo 19.5vw (76px a 390)', /font-size:\s*19\.5vw/.test(m('.pagina-contatti h1')), true)
-  ok('titolo e testo in colonna', /flex-direction:\s*column/.test(m('.pagina-contatti .pagina-hero .intro')), true)
+  ok('titolo, frase e pulsante in colonna; pulsante da 52px', [/grid-template-columns:\s*1fr/.test(m('.pagina-contatti .pagina-hero .intro')), /grid-column:\s*1/.test(m('.pagina-contatti .pagina-hero .intro p')), /min-height:\s*52px/.test(m('.pagina-contatti .pagina-hero .pulsante')), /font-size:\s*17px/.test(m('.pagina-contatti .pagina-hero .pulsante'))], [true, true, true, true])
   ok('recapiti: titolo 38px, valore 32px, alti 130px, padding 20px', [/font-size:\s*38px/.test(m('.recapiti h3')), /font-size:\s*32px/.test(m('.recapiti p:first-of-type,.recapiti .breve p:first-of-type')), /minmax\(130px,\s*auto\)/.test(m('.recapiti')), /padding:\s*20px/.test(m('.recapiti .tessera'))], [true, true, true, true])
   ok('mappa alta 380px, foto alte 200px e la terza non c’è', [/height:\s*380px/.test(m('.apertura figure.larga img')), /height:\s*200px/.test(m('.apertura .foto-fila img')), /display:\s*none/.test(m('.apertura .foto-fila figure:nth-child(3)'))], [true, true, true])
   ok('domande: titolo 30px, tessere alte 160px, padding 20px', [/font-size:\s*30px/.test(m('.pagina-contatti .sezione:not(.apertura) .tessera h3')), /minmax\(160px,\s*auto\)/.test(m('.pagina-contatti .sezione:not(.apertura) .tessere')), /padding:\s*20px/.test(m('.pagina-contatti .sezione:not(.apertura) .tessera'))], [true, true, true])
@@ -129,6 +129,22 @@ console.log('\n5. Quel che il design ha e il sito non aveva')
   ok('telefono: mappa con targhetta in alto a sinistra (nome 26px), segnaposto da 40px, credito da 11px', [/left:\s*16px/.test(m('.mappa .targhetta')), /font-size:\s*26px/.test(m('.mappa .targhetta')), /width:\s*40px/.test(m('.mappa .segnaposto')), /font-size:\s*11px/.test(m('.mappa .credito'))], [true, true, true, true])
   ok('telefono: il piede è a blocco; menu e legge in riga con « · »', [/display:\s*block/.test(m('.piede')), /display:\s*inline/.test(m('.piede-menu a')), /content:\s*" · "/.test(m('.piede-menu a+a::before')), /opacity:\s*\.85/.test(m('.piede-legale'))], [true, true, true, true])
   ok('piede sul computer: social in riga con « · », colonne a 40px', [/content:\s*" · "/.test(css('.recapiti-piede li:last-child::before')), /gap:\s*40px/.test(css('.piede'))], [true, true])
+}
+
+console.log('\n6. L’invito e il piede, misure del design')
+{
+  ok('invito: 96px sopra, 6px sotto, alto 300px, padding 36px 40px', [/margin:\s*96px var\(--margine\) 6px/.test(css('.invito')), /height:\s*300px/.test(css('.invito')), /padding:\s*36px 40px/.test(css('.invito'))], [true, true, true])
+  ok('invito: frase da 22px (520px al massimo), senza freccia, «Prova» da 170px', [/font-size:\s*22px/.test(css('.invito .frase')), /max-width:\s*520px/.test(css('.invito .frase')), /display:\s*none/.test(css('.invito .freccia')), /font-size:\s*170px/.test(css('.invito .parola')), /line-height:\s*\.8/.test(css('.invito .parola'))], [true, true, true, true, true])
+  ok('piede: Inter 16px, interlinea 1.9, 40px dentro su tutti i lati', [/font-size:\s*16px/.test(css('.piede')), /line-height:\s*1\.9/.test(css('.piede')), /padding:\s*40px;|padding:\s*40px$/.test(css('.piede'))], [true, true, true])
+  const mob = CSS.slice(CSS.indexOf('@media (max-width:900px)'))
+  const m = (sel) => [...mob.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].filter((x) => x[1].trim() === sel).map((x) => x[2]).join(';')
+  ok('telefono invito: 48px sopra, alto almeno 260px, padding 22px, frase 17px, «Prova» 120px', [/margin-top:\s*48px/.test(m('.invito')), /min-height:\s*260px/.test(m('.invito')), /padding:\s*22px/.test(m('.invito')), /font-size:\s*17px/.test(m('.invito .frase')), /font-size:\s*120px/.test(m('.invito .parola'))], [true, true, true, true, true])
+}
+
+console.log('\n7. La mappa del sito')
+{
+  const { existsSync, statSync } = await import('node:fs')
+  ok('sito/risorse/mappa.webp c’è ed è sotto i 200 KB', existsSync('sito/risorse/mappa.webp') && statSync('sito/risorse/mappa.webp').size < 200 * 1024, true)
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
