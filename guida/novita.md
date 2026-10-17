@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.85.6 — 17 ottobre 2026
+
+### Risolto
+
+- Sul telefono i corsi del sito non sono più attaccati, c'è spazio tra un riquadro e l'altro
+
 ## 0.85.5 — 17 ottobre 2026
 
 ### Modificato
