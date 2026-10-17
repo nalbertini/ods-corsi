@@ -52,6 +52,7 @@
     "prova:sito-chi-siamo": "node scripts/prova-sito-chi-siamo.mjs",
     "prova:sito-istruttore": "node scripts/prova-sito-istruttore.mjs",
     "prova:sito-istruttori": "node scripts/prova-sito-istruttori.mjs",
+    "prova:sito-foto": "node scripts/prova-sito-foto.mjs",
     "prova:sito-genera": "node scripts/prova-sito-genera.mjs",
     "prova:sito-dati": "node scripts/prova-sito-dati.mjs",
     "prova:sito-social": "node scripts/prova-sito-social.mjs",
