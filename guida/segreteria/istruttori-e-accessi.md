@@ -28,8 +28,9 @@ SENZA SALVARE**.
 
 - **MODIFICA** — nome, cognome ed email. Chi è già entrato non cambia email da
   qui: è quella con cui fa l'accesso.
-- **RUOLO** — **ISTRUTTORE**, **SEGRETERIA** o **TUTTI E DUE**: si cambia con
-  un tocco. **TUTTI E DUE** è per chi sta in segreteria e insegna anche.
+- **RUOLO** — tre spunte, **SEGRETERIA**, **AMMINISTRAZIONE** e **ISTRUTTORE**, anche
+  più d'una: si cambia con un tocco, e ne serve almeno una. **AMMINISTRAZIONE** è per chi cura i conti
+  (vedi sotto); con più spunte la persona ha più aree, un solo accesso.
 - **ACCESSO** — com'è messa. Se non è mai entrata, **MANDA L'INVITO** le manda
   un'altra mail (l'invito non arrivato, scaduto o non spuntato). Chi è già
   entrato e ha perso la password la chiede da sé, dalla porta, con **PASSWORD
@@ -38,13 +39,13 @@ SENZA SALVARE**.
 - **TOGLI L'ACCESSO** — la persona non entra più nell'app né nell'area
   istruttore del tablet; le presenze che ha segnato restano nel registro.
   **RIDAI L'ACCESSO** lo rimette.
-- **ELIMINA** — solo per chi insegna (**ISTRUTTORE** o **TUTTI E DUE**) e non ha mai insegnato, per esempio
+- **ELIMINA** — solo per chi insegna (con la spunta **ISTRUTTORE**) e non ha mai insegnato, per esempio
   aggiunto per sbaglio: dopo la conferma spariscono la scheda e l'account, e
   non si torna indietro. Chi ha ancora dei corsi va prima tolto dai corsi;
   chi ha già delle lezioni in calendario o delle presenze non si elimina, gli
   si toglie l'accesso, così le sue ore restano. Lo stesso per chi si allena
-  anche come allievo: iscrizioni, presenze e ricevute restano sue. Chi è solo
-  di **SEGRETERIA** non ha **ELIMINA**, e nessuno elimina se stesso.
+  anche come allievo: iscrizioni, presenze e ricevute restano sue. Chi non insegna
+  (solo **SEGRETERIA** o **AMMINISTRAZIONE**) non ha **ELIMINA**, e nessuno elimina se stesso.
 
 ## Il PIN del tablet
 
@@ -78,8 +79,8 @@ state guardando lo stesso conto.
 
 ## Aggiungere una persona
 
-**+ AGGIUNGI UNA PERSONA** → nome, cognome, email, ruolo (**ISTRUTTORE**,
-**SEGRETERIA** o **TUTTI E DUE**) → **AGGIUNGI**. Poi si apre la sua scheda.
+**+ AGGIUNGI UNA PERSONA** → nome, cognome, email, ruolo (le spunte
+**SEGRETERIA**, **AMMINISTRAZIONE**, **ISTRUTTORE**) → **AGGIUNGI**. Poi si apre la sua scheda.
 
 Con **Manda subito l'invito per email** spuntato (lo è già), alla persona
 arriva una mail con un link: lo apre, sceglie la sua password ed entra, nel
@@ -94,18 +95,30 @@ parte.
 
 ## Cosa può fare ogni ruolo
 
-| | Istruttore | Segreteria |
-|---|:-:|:-:|
-| Vedere il calendario e fare l'appello, anche da sostituto | sì | sì |
-| Aprire l'area istruttore del tablet col PIN | sì | sì |
-| Annullare o chiudere le lezioni dei suoi corsi | sì | sì |
-| Cambiare corsi, orari e sale | no | sì |
-| Aggiungere e togliere iscritti | no | sì |
-| Vedere il resoconto delle presenze e le impostazioni | no | sì |
+| | Istruttore | Segreteria | Amministrazione |
+|---|:-:|:-:|:-:|
+| Vedere il calendario e fare l'appello | sì | sì | no |
+| Aggiungere e togliere iscritti, cambiare corsi e orari | no | sì | no |
+| Vedere schede, certificati e presenze delle persone | no | sì | no |
+| Registrare e annullare pagamenti, annullare ricevute | no | sì | sì |
+| Emettere ricevute (per l'amministrazione non ancora) | no | sì | no |
+| Vedere PAGAMENTI e scaricare il CSV | no | sì | sì |
+| Cambiare il listino | no | sì | sì |
+| Vedere le STATISTICHE (presenze e iscritti) | no | sì | no |
+| Contabilità: movimenti, casse, rendiconto (quando ci sarà) | no | no | sì |
+| Creare account, cambiare i ruoli, scaricare il backup | no | sì | no |
 
-Chi ha **TUTTI E DUE** i ruoli può quello che può la segreteria, e in più
-insegna: gli si danno dei corsi come a un istruttore, il PIN sul tablet gli
-segna la presenza come a un istruttore, e nel calendario vede le sue lezioni.
-All'accesso sceglie se andare in segreteria o nel calendario, e poi passa
-dall'uno all'altra dal menu. Col database, il ruolo doppio c'è dopo aver
-rilanciato `supabase/01-schema.sql`.
+Chi ha più ruoli può quello che può ciascuno. Con **ISTRUTTORE** gli si danno
+dei corsi, il PIN sul tablet gli segna la presenza come a un istruttore, e nel
+calendario vede le sue lezioni. All'accesso chi ha più aree sceglie dove andare
+(**SEGRETERIA**, **AMMINISTRAZIONE**, **ISTRUTTORI**), e poi passa dall'una
+all'altra dal menu senza uscire.
+
+L'**amministrazione** è per chi cura i conti: ha la sua area, `amministrazione/`
+([la guida](../amministrazione/README.md)), e non vede le persone. Se insegna
+anche (spunta **ISTRUTTORE**) vede l'elenco delle persone come un istruttore. Nei pagamenti
+vede il nome, a cosa servono, come e quanto: non il telefono, l'email o il codice
+fiscale. Account, ruoli, PIN e backup restano alla segreteria. Col database, il
+ruolo c'è dopo aver lanciato `supabase/55-amministrazione.sql` (dopo `54`);
+finché non c'è, **AMMINISTRAZIONE** non si può scegliere e provarci dice di
+aggiornare il database.

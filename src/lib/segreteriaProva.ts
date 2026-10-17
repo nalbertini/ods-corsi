@@ -4,7 +4,7 @@ import { giorniConLezioni } from './calendarioSettimana'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
-import { insegna, type RuoloPersonale } from './ruoli'
+import { insegna, segniDi, type RuoloPersonale } from './ruoli'
 import { contattoDopoUnione, type IndiziDoppioni } from './doppioni'
 import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
@@ -22,7 +22,7 @@ import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
-import { cosaNonVaDiretto, type PagamentoDiretto } from './pagamenti'
+import { cosaNonVaDiretto, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 
 /**
@@ -42,8 +42,11 @@ const GIORNO = 24 * 60 * 60_000
  * dieci persone nello stesso millisecondo, e con lo stesso id diventavano una.
  */
 /** Il ruolo da salvare, come `ruoloDaScrivere` di `segreteriaSupabase.ts`: il ruolo doppio solo se c'è in `r`. */
-const ruoloDi = (r: RuoloPersonale) =>
-  r.ancheIstruttore === undefined ? { ruolo: r.ruolo } : { ruolo: r.ruolo, ancheIstruttore: r.ruolo === 'staff' && r.ancheIstruttore }
+const ruoloDi = (r: RuoloPersonale) => ({
+  ruolo: r.ruolo,
+  ...(r.ancheIstruttore === undefined ? {} : { ancheIstruttore: segniDi(r.ruolo, r.ancheIstruttore).ancheIstruttore }),
+  ...(r.ancheAmministrazione === undefined ? {} : { ancheAmministrazione: segniDi(r.ruolo, false, r.ancheAmministrazione).ancheAmministrazione }),
+})
 const unico = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
 
 /**
@@ -808,6 +811,16 @@ export function creaSegreteriaProva(): DatiSegreteria {
         .sort((x, y) => y.data.localeCompare(x.data) || y.creatoIl.localeCompare(x.creatoIl))
     },
 
+    async nomiPersone(ids) {
+      return a()
+        .persone.filter((p) => ids.includes(p.id))
+        .map(({ id, nome, cognome }) => ({ id, nome, cognome }))
+    },
+
+    async cercaPagatori(scritto) {
+      return trovaPagatori(a().persone, scritto)
+    },
+
     async registraPagamentoDiretto(dati) {
       // Prima la persona, poi il resto: come `registra_pagamento_diretto`.
       if (dati.personaId && !a().persone.some((x) => x.id === dati.personaId)) throw new Error('Questa scheda non c’è più')
@@ -977,8 +990,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
             nome: p.nome,
             cognome: p.cognome,
             email: p.email,
-            ruolo: p.ruolo as 'istruttore' | 'staff',
-            ancheIstruttore: p.ruolo === 'staff' && !!p.ancheIstruttore,
+            ruolo: p.ruolo as 'istruttore' | 'staff' | 'amministrazione',
+            ...segniDi(p.ruolo, p.ancheIstruttore, p.ancheAmministrazione),
             attiva: p.attiva,
             // In prova è entrata solo la segreteria di prova: gli altri aspettano l'invito.
             collegato: p.id === 's-prova',
@@ -1024,7 +1037,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async impostaPin(personaId, pin) {
       if (!/^\d{4}$/.test(pin)) throw new Error('il PIN è di quattro cifre')
       const p = persona(personaId)
-      if (p.ruolo === 'iscritto') throw new Error('il PIN è solo per istruttori e segreteria')
+      // Come `imposta_pin`: chi insegna, o la segreteria. L'amministrazione che non insegna non ha un tablet da aprire.
+      if (!(p.ruolo === 'staff' || insegna(p))) throw new Error('il PIN è solo per chi insegna o fa segreteria')
       const usati = { ...Object.fromEntries(Object.entries(PIN_PROVA).map(([k, v]) => [v.personaId, k])), ...a().pin }
       if (Object.entries(usati).some(([chi, x]) => chi !== personaId && x === pin)) throw new Error('questo PIN è già di un altro: scegline un altro')
       a().pin = { ...a().pin, [personaId]: pin }
@@ -1060,7 +1074,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const p = persona(personaId)
       // In prova è entrata la segreteria di prova.
       if (personaId === 's-prova') throw new Error("Non ci si elimina da soli: lo fa un'altra persona di segreteria")
-      if (p.ruolo !== 'istruttore' && !(p.ruolo === 'staff' && p.ancheIstruttore))
+      if (!insegna(p))
         throw new Error(`Si eliminano solo gli istruttori: a ${p.nome} si toglie l'accesso`)
       const nome = nomeDi(p)
       const tiene = a().corsi.filter((c) => c.attivo && c.istruttori.includes(personaId)).map((c) => c.nome).sort((x, y) => x.localeCompare(y, 'it'))

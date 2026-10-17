@@ -1706,6 +1706,8 @@ a.sg-btn { text-decoration: none; }
 }
 .sg-chip[aria-pressed='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 .sg-chip-pieno { background: var(--text); border-color: var(--text); color: var(--bg); }
+.sg-spunte { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.sg-spunte .sg-scelta > span { flex-shrink: 0; }
 .sg-scelta { border: 2px solid var(--line); color: var(--sec); min-height: 44px; font-size: 14px; }
 .sg-scelta[aria-checked='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 .sg-campo {
@@ -1971,6 +1973,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-riga-iscritto { display: grid; grid-template-columns: 1.2fr 1.4fr 1.3fr 150px 80px; gap: 14px; align-items: center; }
 .sg-riga-pagamento-tab { display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; }
 .sg-riga-residuo { display: grid; grid-template-columns: minmax(0, 1.2fr) 100px 110px 110px 110px 160px; gap: 14px; align-items: center; }
+/* L'amministrazione non vede i contatti: una colonna in meno. */
+.sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1.2fr) 100px 110px 110px 110px; }
 /* In regola o no: il certificato e il pagamento, in un bollino ciascuno. */
 .sg-in-regola { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 0; }
 .sg-segno-regola {
@@ -2231,11 +2235,11 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-personale { width: 100%; min-height: 60px; padding: 6px 14px; border-bottom: 1px solid var(--surface-2); text-align: left; }
 .sg-personale:hover { background: var(--surface); }
 .sg-personale[data-spento='true'] { opacity: 0.5; }
-.sg-permessi { display: grid; grid-template-columns: 1fr 110px 110px; gap: 8px 12px; align-items: center; }
-/* Sul telefono le colonne dei permessi prendono quanto serve, il resto va al testo. */
+.sg-permessi { display: grid; grid-template-columns: minmax(0, 1fr) 110px 110px 170px; gap: 8px 12px; align-items: center; }
+/* Sul telefono quattro colonne non entrano: la tabella scorre di lato e il testo del permesso resta leggibile. */
+.sg-permessi-scorre { overflow-x: auto; }
 @media (max-width: 560px) {
-  .sg-permessi { grid-template-columns: minmax(0, 1fr) auto auto; column-gap: 10px; }
-  .sg-permessi [role='columnheader'] { font-size: 10px; letter-spacing: 0.06em; }
+  .sg-permessi { min-width: 500px; grid-template-columns: 210px 90px 90px 110px; column-gap: 10px; }
 }
 /* Quello che si legge solo quando le intestazioni delle colonne sono nascoste. */
 .sg-solo-stretto { display: none; }
@@ -2358,7 +2362,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto { grid-template-columns: 1fr auto 70px; }
   .sg-riga-iscritto > :nth-child(2), .sg-riga-iscritto > :nth-child(3) { display: none; }
   /* Sul telefono: chi con sotto il resto, e l'importo. */
-  .sg-riga-pagamento-tab, .sg-riga-residuo { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
   .sg-riga-pagamento-tab > :not(:nth-child(2)):not(:last-child), .sg-riga-residuo > :not(:first-child):not(:nth-child(5)) { display: none; }
   .sg-sotto-nome { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
   .sg-pagamento { margin-left: 12px; }

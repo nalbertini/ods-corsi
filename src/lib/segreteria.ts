@@ -324,9 +324,11 @@ export interface PersonaleSeg {
   nome: string
   cognome: string
   email?: string
-  ruolo: 'istruttore' | 'staff'
-  /** Di segreteria, e insegna anche: vedi `ruoli.ts`. */
+  ruolo: 'istruttore' | 'staff' | 'amministrazione'
+  /** Di segreteria o di amministrazione, e insegna anche: vedi `ruoli.ts`. */
   ancheIstruttore: boolean
+  /** Di segreteria, e cura anche i conti: vedi `ruoli.ts`. */
+  ancheAmministrazione: boolean
   attiva: boolean
   /** Ha già fatto l'accesso almeno una volta: il suo account è legato. */
   collegato: boolean
@@ -583,6 +585,10 @@ export interface DatiSegreteria {
   annullaRicevuta(id: string): Promise<void>
   /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
   pagamentiDiretti(personaId?: string): Promise<PagamentoDiretto[]>
+  /** Nome e cognome di chi ha pagato, e nient'altro: per chi segue i pagamenti senza vedere le persone (`55-amministrazione.sql`). */
+  nomiPersone(ids: string[]): Promise<Array<{ id: string; nome: string; cognome: string }>>
+  /** Chi ha pagato, cercato per nome: almeno tre lettere, al massimo otto, solo nome e cognome (`cerca_pagatori`). */
+  cercaPagatori(scritto: string): Promise<Array<{ id: string; nome: string; cognome: string }>>
   /** Registra un pagamento fatto a mano, senza ricevuta. */
   registraPagamentoDiretto(d: DatiPagamentoDiretto): Promise<PagamentoDiretto>
   /** Lo annulla: resta in elenco, segnato annullato. */

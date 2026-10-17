@@ -1,5 +1,6 @@
 import { conti, dataRicevuta, euro, METODI, QUOTA, type Ricevuta } from './ricevute'
-import { piano } from './nomi'
+import { dataLunga } from './sala'
+import { paroleCercate, piano, somiglia } from './nomi'
 import { csv } from './vestiario'
 
 /**
@@ -43,6 +44,47 @@ export interface RigaPagamento {
   annullato: boolean
 }
 
+/** Quanti nomi escono cercando chi ha pagato: dice chi è, non scarica l'elenco (`cerca_pagatori`, `55-amministrazione.sql`). */
+export const MASSIMO_PAGATORI = 8
+
+/** Servono almeno tre lettere in una parola: come `somiglia` nel database. */
+export const bastaPerCercare = (scritto: string) => Math.max(0, ...paroleCercate(scritto).map((w) => w.length)) >= 3
+
+/**
+ * Chi ha pagato, cercato per nome: le stesse regole di `cerca_pagatori`. Serve a
+ * chi registra un pagamento senza vedere le persone: escono nome e cognome,
+ * mai un contatto, e servono almeno tre lettere. Oltre cento lettere il
+ * database non cerca, e nemmeno qui: un nome non è così lungo.
+ */
+export function trovaPagatori<T extends { id: string; nome: string; cognome: string; attiva: boolean }>(persone: T[], scritto: string): Array<{ id: string; nome: string; cognome: string }> {
+  if (scritto.length > 100 || !bastaPerCercare(scritto)) return []
+  const parole = paroleCercate(scritto)
+  return persone
+    .filter((p) => p.attiva && somiglia(p, parole))
+    .sort((a, b) => a.cognome.localeCompare(b.cognome, 'it') || a.nome.localeCompare(b.nome, 'it') || a.id.localeCompare(b.id))
+    .slice(0, MASSIMO_PAGATORI)
+    .map(({ id, nome, cognome }) => ({ id, nome, cognome }))
+}
+
+/**
+ * Cosa si annulla da una riga di PAGAMENTI: un pagamento di una ricevuta non si
+ * annulla da solo, si annulla la ricevuta intera; uno fatto a mano si annulla da
+ * solo; uno già annullato, o una riga senza niente da annullare, no.
+ */
+export function comeSiAnnulla(r: RigaPagamento): 'ricevuta' | 'pagamento' | null {
+  if (r.annullato) return null
+  if (r.ricevuta) return 'ricevuta'
+  return r.direttoId ? 'pagamento' : null
+}
+
+/** La domanda prima di annullare una ricevuta: la stessa nella scheda della persona e in PAGAMENTI. */
+export const domandaAnnullaRicevuta = (r: { numero: number; anno: number }) =>
+  `Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare.`
+
+/** La domanda prima di annullare un pagamento fatto a mano. */
+export const domandaAnnullaPagamento = (x: { importo: number; data: string }) =>
+  `Annullare il pagamento di ${euro(x.importo)} € del ${dataLunga(x.data)}? Resta in elenco, annullato, e non si conta più.`
+
 /** Minuscolo e senza accenti: «Zoë» e «zoe» sono la stessa parola. */
 const semplice = (t: string) => piano(t).trim()
 
@@ -66,6 +108,9 @@ export function cosaNonVaDiretto(d: DatiPagamentoDiretto): string | null {
   if ((d.nota ?? '').length > 300) return 'La nota è troppo lunga: al massimo 300 caratteri'
   return null
 }
+
+/** Il guaio è dell'importo? Se con un importo buono il rifiuto sparisce, sì: gli altri campi non si segnano a torto. */
+export const importoNonVa = (d: DatiPagamentoDiretto) => cosaNonVaDiretto(d) !== null && cosaNonVaDiretto({ ...d, importo: 100 }) === null
 
 const nomeIntestatario = (r: Ricevuta) => `${r.intestatario.cognome} ${r.intestatario.nome}`.trim()
 

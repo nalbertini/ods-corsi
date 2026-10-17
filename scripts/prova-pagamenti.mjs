@@ -282,5 +282,47 @@ console.log('\n9. il foglio per il commercialista')
   ok('un nome con accento e apostrofo resta intero', prova(() => m.csvPagamenti(m.righeDirette([diretto('d1', 'p-Bianchi', '2026-10-03', 100)], nomeDi)).split('\r\n')[1].split(';')[1]), "D'Amico Zoë")
 }
 
+console.log('\nchi ha pagato, cercato per nome (come cerca_pagatori)')
+{
+  const P = (id, nome, cognome, attiva = true) => ({ id, nome, cognome, attiva, telefono: '338 000 0000' })
+  const gente = [P('1', 'Marco', 'Bianchi'), P('2', 'Chiara', 'Bianchi'), P('3', 'Luca', 'Biancotto'), P('4', 'Bianca', 'Spenta', false), P('5', 'Zoë', "D'Amico")]
+  ok('per cognome, in ordine di cognome e nome', m.trovaPagatori(gente, 'bian').map((x) => x.id), ['2', '1', '3'])
+  ok('escono solo id, nome e cognome: mai un contatto', Object.keys(m.trovaPagatori(gente, 'bianchi')[0]), ['id', 'nome', 'cognome'])
+  ok('senza accenti, maiuscole e apostrofi', m.trovaPagatori(gente, 'ZOE damico').map((x) => x.id), ['5'])
+  ok('chi non è più attivo non esce', m.trovaPagatori(gente, 'spenta'), [])
+  ok('due lettere non bastano', m.trovaPagatori(gente, 'bi'), [])
+  ok('nemmeno spazi o niente', [m.trovaPagatori(gente, ''), m.trovaPagatori(gente, '   ')], [[], []])
+  const molti = Array.from({ length: 20 }, (_, i) => P(`m${i}`, `Nome${i}`, 'Rossi'))
+  ok('al massimo otto', m.trovaPagatori(molti, 'rossi').length, m.MASSIMO_PAGATORI)
+  ok('otto, come nel database', m.MASSIMO_PAGATORI, 8)
+  ok('un testo lunghissimo non rompe niente', m.trovaPagatori(gente, 'x'.repeat(5000)), [])
+}
+
+console.log('\nquale campo del pagamento a mano sbaglia')
+{
+  const buono = { personaId: 'p1', data: '2026-10-09', importo: 3000, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA' }
+  ok('tutto a posto: nessun campo sbaglia', m.importoNonVa(buono), false)
+  ok('importo a zero: sbaglia l\'importo', m.importoNonVa({ ...buono, importo: 0 }), true)
+  ok('importo troppo alto: sbaglia l\'importo', m.importoNonVa({ ...buono, importo: 20_000_000 }), true)
+  ok('voce vuota: l\'importo è giusto', m.importoNonVa({ ...buono, voce: '' }), false)
+  ok('data impossibile: l\'importo è giusto', m.importoNonVa({ ...buono, data: '2026-02-30' }), false)
+  ok('nota troppo lunga: l\'importo è giusto', m.importoNonVa({ ...buono, nota: 'x'.repeat(301) }), false)
+}
+
+console.log('\ncome si annulla un pagamento (per chi non apre la scheda)')
+{
+  const riga = (o) => ({ id: 'x', data: '2026-10-09', importo: 3000, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA', chi: 'Bianchi Marco', annullato: false, ...o })
+  const conRicevuta = riga({ ricevuta: { id: 'r1', anno: 2026, numero: 12 } })
+  const aMano = riga({ direttoId: 'd1' })
+  ok('un pagamento di una ricevuta: si annulla la ricevuta intera', m.comeSiAnnulla(conRicevuta), 'ricevuta')
+  ok('uno fatto a mano: si annulla da solo', m.comeSiAnnulla(aMano), 'pagamento')
+  ok('già annullato: niente da annullare', [m.comeSiAnnulla({ ...conRicevuta, annullato: true }), m.comeSiAnnulla({ ...aMano, annullato: true })], [null, null])
+  ok('una riga senza né ricevuta né pagamento a mano non si annulla', m.comeSiAnnulla(riga({})), null)
+  ok('la domanda sulla ricevuta dice cosa resta e cosa torna', m.domandaAnnullaRicevuta({ numero: 12, anno: 2026 }), 'Annullare la ricevuta 12/2026? Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare.')
+  ok('la domanda sul pagamento a mano dice importo e giorno', m.domandaAnnullaPagamento({ importo: 3000, data: '2026-10-09' }).startsWith('Annullare il pagamento di 30,00 € del '), true)
+  ok('si cerca solo con almeno tre lettere', [m.bastaPerCercare(''), m.bastaPerCercare('bi'), m.bastaPerCercare('bia'), m.bastaPerCercare('a b c')], [false, false, true, false])
+  ok('un testo oltre cento lettere non cerca, come nel database', m.trovaPagatori([{ id: '1', nome: 'Marco', cognome: 'Bianchi', attiva: true }], 'bianchi'.padEnd(101, 'x')), [])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
