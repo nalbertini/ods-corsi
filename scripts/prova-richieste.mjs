@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { anni, anniScritti, certificatoDaPortare, chiFirma, dataDaCf, controlla, domandaUscita, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { anni, anniScritti, certificatoDaPortare, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -563,6 +563,42 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     ok('elimina: se i file non vanno via, la riga resta (un file senza riga non lo ritrova nessuno)', [await errore(() => rotto.v.elimina('r-1')), rotto.reg.some((x) => x[0] === 'delete')], ['down', false])
     ok('elimina: senza permesso sulla riga', await errore(() => finto({ cancella: ERR('42501') }).v.elimina('r-1')), PERMESSO)
   }
+}
+
+console.log('\n11. il riquadro rosso in fondo: il primo messaggio che blocca, a ogni modifica')
+{
+  // Lo stato del modulo: `firma` è l'esito di «cosa manca per firmare» (null = firmato), `obbligatori` i file che
+  // servono. Il passo del riquadro è tutto qui: la schermata lo richiama a ogni modifica dopo il primo invio.
+  const REG = 'Serve accettare il Regolamento Sociale'
+  const PRIVACY = "Serve la conferma di aver letto l'informativa privacy"
+  const pronto = (cambi = {}) => ({ dati: adulto(), privacy: true, come: 'foto', firma: null, file: { modulo: {}, documento: {} }, obbligatori: ['modulo', 'documento'], ...cambi })
+  const manca = (cambi) => m.mancaPerInviare(pronto(cambi))
+  ok('tutto a posto: nessun messaggio', manca(), null)
+  ok('regolamento non accettato', manca({ dati: adulto({ regolamento: false }) }), REG)
+  ok('messa la spunta, il messaggio sparisce', manca({ dati: adulto({ regolamento: true }) }), null)
+  ok('tolta la spunta, torna', manca({ dati: adulto({ regolamento: false }) }), REG)
+  ok('privacy non confermata', manca({ privacy: false }), PRIVACY)
+  ok('messa la spunta alla privacy, sparisce', manca({ privacy: true }), null)
+  ok('campo obbligatorio mancante', manca({ dati: adulto({ cognome: '' }) }), 'Mancano: cognome')
+  ok('compilato il campo, sparisce', manca({ dati: adulto({ cognome: 'Rossi' }) }), null)
+  // Due blocchi insieme: sistemato il primo si vede il secondo, poi più niente.
+  const due = { dati: adulto({ regolamento: false }), privacy: false }
+  ok('due blocchi: prima il regolamento', manca(due), REG)
+  ok('sistemato il regolamento, resta la privacy', manca({ ...due, dati: adulto() }), PRIVACY)
+  ok('sistemata anche la privacy, nessuno', manca({ ...due, dati: adulto(), privacy: true }), null)
+  // L'ordine: campi, poi firma, poi file, poi privacy.
+  const tutti = { dati: adulto({ cognome: '' }), come: 'qui', firma: 'Manca la firma sul modulo', file: {}, privacy: false }
+  ok('ordine: prima i campi', manca(tutti), 'Mancano: cognome')
+  ok('ordine: poi la firma', manca({ ...tutti, dati: adulto() }), 'Manca la firma sul modulo')
+  ok('ordine: poi i file', manca({ ...tutti, dati: adulto(), firma: null }), 'Manca: carta d\'identità')
+  ok('ordine: infine la privacy', manca({ ...tutti, dati: adulto(), firma: null, file: { documento: {} } }), PRIVACY)
+  ok('con la firma qui il modulo non si chiede come file', manca({ come: 'qui', file: { documento: {} } }), null)
+  ok('con la foto la firma non conta', manca({ come: 'foto', firma: 'Manca la firma sul modulo' }), null)
+  ok('con la foto il modulo si chiede', manca({ file: { documento: {} } }), 'Manca: modulo firmato')
+  // Un minore senza genitore: i dati del genitore mancano, e spariscono se la data diventa quella di un maggiorenne.
+  const minoreSenza = adulto({ natoIl: '2017-03-01', codiceFiscale: 'RSSGLI17C41L219G' })
+  ok('minore senza dati del genitore', manca({ dati: minoreSenza }), 'Per un minore servono nome, cognome e codice fiscale del genitore')
+  ok('la data cambia a maggiorenne: il blocco sparisce', manca({ dati: adulto({ natoIl: '1996-01-01' }) }), null)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
