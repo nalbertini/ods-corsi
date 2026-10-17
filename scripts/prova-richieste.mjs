@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { anni, anniScritti, certificatoDaPortare, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { anni, anniScritti, certificatoDaPortare, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -599,6 +599,25 @@ console.log('\n11. il riquadro rosso in fondo: il primo messaggio che blocca, a 
   const minoreSenza = adulto({ natoIl: '2017-03-01', codiceFiscale: 'RSSGLI17C41L219G' })
   ok('minore senza dati del genitore', manca({ dati: minoreSenza }), 'Per un minore servono nome, cognome e codice fiscale del genitore')
   ok('la data cambia a maggiorenne: il blocco sparisce', manca({ dati: adulto({ natoIl: '1996-01-01' }) }), null)
+}
+
+console.log('\nLe scelte tesseramento e foto: obbligatorie, ma «non autorizzo» vale')
+{
+  ok('nessuna risposta: manca prima il tesseramento', m.sceltaMancante({}), 'tesseramento')
+  ok('dato il tesseramento, mancano le foto', m.sceltaMancante({ tesseramento: true }), 'foto')
+  ok('«non acconsento» al tesseramento è una risposta: mancano le foto', m.sceltaMancante({ tesseramento: false }), 'foto')
+  ok('date le foto e non il tesseramento, manca il tesseramento', m.sceltaMancante({ foto: true }), 'tesseramento')
+  ok('«non autorizzo» a tutte e due è una risposta: non manca niente', m.sceltaMancante({ tesseramento: false, foto: false }), null)
+  ok('autorizzo a tutte e due: non manca niente', m.sceltaMancante({ tesseramento: true, foto: true }), null)
+  ok('testi di ciò che manca', m.MANCA_SCELTA, {
+    tesseramento: 'Nel modulo: scegli se acconsenti al tesseramento alla FIJLKAM e/o FIPE',
+    foto: 'Nel modulo: scegli se autorizzi le foto',
+  })
+  ok('aiuto tesseramento, maggiorenne', m.aiutoScelta('tesseramento', false), 'Devi scegliere una delle due. Anche se non acconsenti, l\'iscrizione va avanti.')
+  ok('aiuto tesseramento, minore', m.aiutoScelta('tesseramento', true), 'Devi scegliere una delle due. Anche se non autorizzi, l\'iscrizione va avanti.')
+  ok('aiuto foto, maggiorenne', m.aiutoScelta('foto', false), 'Devi scegliere una delle due. Anche se non autorizzi, l\'iscrizione non cambia e non compari nelle foto.')
+  ok('la nota sotto la scelta non ha il «Nel modulo:»', [m.NOTA_SCELTA.tesseramento, m.NOTA_SCELTA.foto], ['Scegli una risposta per il tesseramento alla FIJLKAM e/o FIPE', 'Scegli una risposta per le foto'])
+  ok('aiuto foto, minore', m.aiutoScelta('foto', true), 'Devi scegliere una delle due. Anche se non autorizzi, l\'iscrizione non cambia e il minore non compare nelle foto.')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { anniScritti, certificatoDaPortare, chiFirma, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, mancaPerInviare, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
+import { anniScritti, certificatoDaPortare, aiutoScelta, chiFirma, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { riduciFoto } from '../lib/foto'
@@ -214,8 +214,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
 
   /** Cosa manca per fare il modulo firmato; `null` se si può. */
   const mancaPerFirmare = (): string | null => {
-    if (scelte.tesseramento === undefined) return 'Nel modulo: scegli se acconsenti al tesseramento alla FIJLKAM e/o FIPE'
-    if (scelte.foto === undefined) return 'Nel modulo: scegli se autorizzi le foto'
+    const manca = sceltaMancante(scelte)
+    if (manca) return MANCA_SCELTA[manca]
     if (minore && !natoAGenitore.trim()) return 'Nel modulo: manca dove è nato il genitore'
     if (!firmaVera(tratti)) return tratti.length ? 'La firma è troppo piccola: firma per bene nel riquadro' : 'Manca la firma sul modulo'
     return null
@@ -230,6 +230,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     file,
     obbligatori: daChiedere.filter((f) => f.obbligatorio).map((f) => f.tipo),
   })
+  /** Le note sotto le scelte: dopo un tentativo di mandare, o di guardare il modulo. */
+  const provatoFirma = provato || guaioFirma !== null
   const riquadro = provato ? blocco ?? guaio : null
 
   /** Il PDF del modulo, compilato coi dati di adesso e firmato. */
@@ -259,6 +261,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const guarda = async () => {
     const manca = mancaPerFirmare()
     setGuaioFirma(manca)
+    const mancata = sceltaMancante(scelte)
+    if (mancata) setTimeout(() => document.getElementById(`m-${mancata}`)?.focus(), 0)
     if (manca) return
     // La scheda si apre subito, al tocco: dopo un'attesa il telefono la bloccherebbe.
     const scheda = window.open('', '_blank')
@@ -297,6 +301,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     setProvato(true)
     const primo = (Object.keys(ID) as CampoModulo[]).find((k) => errori[k])
     if (primo) setTimeout(() => document.getElementById(ID[primo])?.focus(), 0)
+    // Se i campi sono a posto e manca una scelta del modulo, lo schermo va lì, non in fondo al riquadro.
+    const mancata = sceltaMancante(scelte)
+    if (!primo && come === 'qui' && mancata) setTimeout(() => document.getElementById(`m-${mancata}`)?.focus(), 0)
     if (blocco) return
     // Il modulo firmato si fa prima di mandare le risposte: se non viene, non
     // nasce una richiesta senza modulo.
@@ -573,6 +580,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             scelti={[come]}
             onScegli={(c) => setCome(c as 'qui' | 'foto')}
           />
+          <Dettaglio>Firmi qui col dito, oppure carichi la foto del foglio già firmato.</Dettaglio>
         </div>
         {come === 'foto' ? (
           <SceltaFile
@@ -590,20 +598,28 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             <Casella
               id="m-tesseramento"
               etichetta="IL TESSERAMENTO ALLA FIJLKAM E/O FIPE"
-              dettaglio={`Per la stagione ${STAGIONE}.`}
+              dettaglio={`Per la stagione ${STAGIONE}. ${aiutoScelta('tesseramento', minore)}`}
+              nota={provatoFirma && scelte.tesseramento === undefined ? NOTA_SCELTA.tesseramento : undefined}
               si={minore ? 'Autorizzo' : 'Acconsento'}
               no={minore ? 'Non autorizzo' : 'Non acconsento'}
               scelta={scelte.tesseramento}
-              onScegli={(x) => setScelte({ ...scelte, tesseramento: x })}
+              onScegli={(x) => {
+                setScelte({ ...scelte, tesseramento: x })
+                setGuaioFirma(null)
+              }}
             />
             <Casella
               id="m-foto"
               etichetta={minore ? 'LE FOTO E I VIDEO DEL MINORE' : 'LE FOTO SUI SOCIAL'}
-              dettaglio={minore ? 'Sui canali social della palestra e nei volantini e manifesti dei suoi eventi.' : 'Le foto che ti ritraggono, sui social della palestra.'}
+              dettaglio={`${minore ? 'Sui canali social della palestra e nei volantini e manifesti dei suoi eventi.' : 'Le foto che ti ritraggono, sui social della palestra.'} ${aiutoScelta('foto', minore)}`}
+              nota={provatoFirma && scelte.foto === undefined ? NOTA_SCELTA.foto : undefined}
               si="Autorizzo"
               no="Non autorizzo"
               scelta={scelte.foto}
-              onScegli={(x) => setScelte({ ...scelte, foto: x })}
+              onScegli={(x) => {
+                setScelte({ ...scelte, foto: x })
+                setGuaioFirma(null)
+              }}
             />
             {minore && (
               <>
@@ -765,11 +781,14 @@ export function Casella({
   si,
   no,
   scelta,
+  nota,
   onScegli,
 }: {
   id: string
   etichetta: string
   dettaglio: string
+  /** Cosa manca, se si è già provato a mandare. */
+  nota?: string
   si: string
   no: string
   scelta?: boolean
@@ -779,6 +798,7 @@ export function Casella({
     <div className="modulo-campo modulo-largo">
       <span className="modulo-etichetta">{etichetta}</span>
       <Dettaglio>{dettaglio}</Dettaglio>
+      {nota && <Dettaglio tono="guaio">{nota}</Dettaglio>}
       <SceltaCorsi
         id={id}
         etichetta={etichetta.toLowerCase()}

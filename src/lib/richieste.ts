@@ -441,6 +441,29 @@ export function mancaPerInviare(
   )
 }
 
+/** Le due scelte del modulo firmato qui: «non autorizzo» è una risposta, il silenzio no. */
+export const sceltaMancante = (s: { tesseramento?: boolean; foto?: boolean }): 'tesseramento' | 'foto' | null =>
+  s.tesseramento === undefined ? 'tesseramento' : s.foto === undefined ? 'foto' : null
+
+/** Cosa manca, nel riquadro in fondo e sotto la firma. */
+export const MANCA_SCELTA: Record<'tesseramento' | 'foto', string> = {
+  tesseramento: 'Nel modulo: scegli se acconsenti al tesseramento alla FIJLKAM e/o FIPE',
+  foto: 'Nel modulo: scegli se autorizzi le foto',
+}
+
+/** Cosa manca, sotto la scelta stessa: lì «Nel modulo» è inutile. */
+export const NOTA_SCELTA: Record<'tesseramento' | 'foto', string> = {
+  tesseramento: 'Scegli una risposta per il tesseramento alla FIJLKAM e/o FIPE',
+  foto: 'Scegli una risposta per le foto',
+}
+
+/** Sotto ogni scelta: che va fatta, e che dire no non ferma l'iscrizione. */
+export function aiutoScelta(quale: 'tesseramento' | 'foto', minore: boolean): string {
+  const scegli = 'Devi scegliere una delle due.'
+  if (quale === 'tesseramento') return `${scegli} Anche se non ${minore ? 'autorizzi' : 'acconsenti'}, l'iscrizione va avanti.`
+  return `${scegli} Anche se non autorizzi, l'iscrizione non cambia e ${minore ? 'il minore non compare' : 'non compari'} nelle foto.`
+}
+
 /** Cosa non va campo per campo, da scrivere sotto ognuno. */
 export function problemi(d: DatiRichiesta, oggi = new Date()): Partial<Record<CampoModulo, string>> {
   return Object.fromEntries(guai(d, oggi).map((x) => [x.campo, x.testo]))
