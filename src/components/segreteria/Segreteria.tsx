@@ -540,6 +540,7 @@ export function Segreteria({
             onScelta={(id, passo) => segna({ voce: 'corsi', ...(id && { corso: id }) }, passo)}
             onNuovo={() => segna({ voce: 'corsi', nuovo: true }, 'push')}
             onConti={contiCambiati}
+            onVai={vai}
           />
         )}
         {d && voce === 'iscritti' && (

@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="tablist" style="display: grid; grid-auto-flow: column; grid-auto-columns: minmax(150px, auto); gap: 4px; align-self: flex-start; width: fit-content">
+  <sc-for list="{{schede}}" as="x" hint-placeholder-count="2">
+    <span role="tab" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; background: {{x.sfondo}}; border: 2px solid {{x.bordo}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: {{x.colore}}">{{x.testo}}<span style="font-variant-numeric: tabular-nums; letter-spacing: 0.06em; color: {{x.coloreConto}}">{{x.conto}}</span><span style="color: {{c.gialloTesto}}; letter-spacing: 0">{{x.puntino}}</span></span>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"acceso":{"editor":"enum","options":["DATI","ISCRITTI"],"default":"DATI"},"conto":{"editor":"text","default":"14/20"},"tonoConto":{"editor":"enum","options":["neutro","giallo","rosso"],"default":"neutro"},"daSalvare":{"editor":"boolean","default":false},"daIscrivere":{"editor":"boolean","default":false},"conIscritti":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":420,"height":50}}'>
+// PROPOSTA «iscritti del corso»: le schede in cima alla scheda di un corso (Scheda di src/components/segreteria/Corsi.tsx),
+// con gli stessi .schede / .scheda / .sg-schede di Segreteria.tsx (IL MESE | SEGNALATE; src/styles.css righe 964-969 e 1622-1623):
+// alte 44px, bordo 2px, Saira 14px 700 0.18em, quella accesa con fondo `surface-2`, bordo e testo `text`.
+// Su ISCRITTI il conto n/capienza (Saira, cifre a larghezza fissa): `giallo` quando il corso e' pieno, `rosso` oltre la capienza.
+// daSalvare mette un puntino giallo sulla scheda DATI: modifiche ai dati, anche quando si guarda ISCRITTI; daIscrivere lo mette su ISCRITTI (qualcuno scelto in «Iscrivi qualcuno…» e non ancora iscritto).
+// conIscritti falso = corso nuovo: c'e' solo DATI.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const acceso = p.acceso || 'DATI';
+    const tono = { giallo: c.gialloTesto, rosso: c.rossoTesto }[p.tonoConto] || c.sec;
+    const nomi = truthy(p.conIscritti ?? true) ? ['DATI', 'ISCRITTI'] : ['DATI'];
+    const schede = nomi.map((testo) => ({
+      testo, conto: testo === 'ISCRITTI' ? (p.conto ?? '14/20') : '', coloreConto: tono,
+      puntino: (testo === 'DATI' && truthy(p.daSalvare)) || (testo === 'ISCRITTI' && truthy(p.daIscrivere)) ? '●' : '',
+      sfondo: testo === acceso ? c.surface2 : c.surface, bordo: testo === acceso ? c.text : c.line, colore: testo === acceso ? c.text : c.dim,
+    }));
+    return { c, schede };
+  }
+}
+</script>
+</body>
+</html>

@@ -1148,6 +1148,68 @@ export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' |
   return [...(guai.length ? guai : [inRegola]), ...segno, ...fuori]
 }
 
+/** Una riga del tab ISCRITTI di un corso: chi è, da quando, e le parole di certificato e quota. */
+export interface RigaIscrittoCorso {
+  persona: PersonaSeg
+  /** Da quando è iscritta a questo corso (l'iscrizione in corso, non una vecchia già finita). */
+  dal: string
+  certificato: ParolaStato
+  quota: ParolaStato
+}
+
+/**
+ * Chi è iscritto oggi a un corso: attivo e con l'iscrizione in corso (gli
+ * archiviati e le iscrizioni finite o future restano fuori), per cognome e nome.
+ */
+export function iscrittiDelCorso(persone: PersonaSeg[], corsoId: string, oggi: string): RigaIscrittoCorso[] {
+  const righe: RigaIscrittoCorso[] = []
+  for (const persona of persone) {
+    const iscrizione = persona.attiva ? persona.iscrizioni.find((i) => i.corsoId === corsoId && inCorso(i, oggi)) : undefined
+    if (!iscrizione) continue
+    const cert = timbroCertificato(persona.certificato, oggi, persona.natoIl)
+    const quota = timbroQuota(pagamentoDi(persona, oggi))
+    righe.push({
+      persona,
+      dal: iscrizione.dal,
+      certificato: { tono: cert.tono, parola: cert.inElenco ?? cert.parola },
+      quota: { tono: quota.tono, parola: quota.inElenco ?? quota.parola },
+    })
+  }
+  return righe.sort((a, b) => a.persona.cognome.localeCompare(b.persona.cognome, 'it') || a.persona.nome.localeCompare(b.persona.nome, 'it'))
+}
+
+/** Il campo CERCA del tab ISCRITTI: come la ricerca delle persone (apostrofi, trattini, accenti e maiuscole non contano); vuoto = tutte. */
+export function cercaFraGliIscritti(righe: RigaIscrittoCorso[], scritto: string): RigaIscrittoCorso[] {
+  const parole = paroleCercate(scritto)
+  return parole.length ? righe.filter((r) => somiglia(r.persona, parole)) : righe
+}
+
+// Rosso in cima quando si ordina per certificato o per quota: chi ha il guaio si vede per primo.
+const rango = (t: Tono) => (t === 'rosso' ? 0 : t === 'giallo' ? 1 : 2)
+
+/** I valori su cui ordina un'intestazione del tab ISCRITTI (per `useOrdina`). */
+export const valoriIscrittoCorso = (r: RigaIscrittoCorso) => ({
+  cognome: r.persona.cognome,
+  nome: r.persona.nome,
+  dal: r.dal,
+  certificato: rango(r.certificato.tono),
+  quota: rango(r.quota.tono),
+})
+
+/** Il conto di un corso, «14/20»: giallo a corso pieno, rosso oltre la capienza; «—» finché le persone non sono lette (non «0»). */
+export function contoCorso(n: number | null, capienza?: number): { testo: string; tono: 'neutro' | 'giallo' | 'rosso' } {
+  if (n === null) return { testo: '—', tono: 'neutro' }
+  if (!capienza) return { testo: String(n), tono: 'neutro' }
+  return { testo: `${n}/${capienza}`, tono: n > capienza ? 'rosso' : n === capienza ? 'giallo' : 'neutro' }
+}
+
+/** La frase sotto l'elenco quando il corso è pieno o oltre: si può iscrivere lo stesso, ma si sa. */
+export function avvisoPosti(n: number | null, capienza?: number): string | null {
+  if (n === null || !capienza || n < capienza) return null
+  const come = n === capienza ? `Il corso è pieno (${capienza} posti)` : `Il corso ha ${n} iscritti su ${capienza} posti`
+  return `${come}: puoi iscrivere ancora, ma i posti sono finiti.`
+}
+
 /** Un giorno `AAAA-MM-GG` spostato di tanti giorni, senza passare dai fusi. */
 function spostaGiorno(g: string, giorni: number) {
   const [a, m, d] = g.split('-').map(Number)
