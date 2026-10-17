@@ -23,7 +23,7 @@ Il testo sta in [`chi-siamo.html`](chi-siamo.html): è quello che va incollato. 
 
 ## Cosa cambia rispetto a oggi
 
-- La frase sotto il titolo diventa più corta (la seconda metà, «Arti marziali e preparazione atletica per ogni età e livello…», resta nella Home).
+- La frase sotto il titolo diventa più corta (oggi aggiunge «Arti marziali e preparazione atletica per ogni età e livello, tra crescita, disciplina e divertimento»).
 - «Nasciamo dal judo e oggi siamo un Associazione Sportiva che mette al centro la persona, ad ogni età» diventa la frase grande sulla foto: «Nasciamo dal judo, mettiamo al centro la persona».
 - In cima la foto del gruppo e i quattro numeri (300+ atleti, 13 tecnici, 8 attività, 35+ anni di sport), nuovi: oggi non ci sono.
 - Nuovo pannello «Gli istruttori» col pulsante «Conosci gli istruttori» (porta a `/istruttori/`) e la fascia di quattro foto.
