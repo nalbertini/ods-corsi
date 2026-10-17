@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.84.0 — 17 ottobre 2026
+
+### Novità
+
+- Il sito pubblico ha le pagine come nel design, con il collage in Home e i testi pronti
+
 ## 0.83.1 — 17 ottobre 2026
 
 ### Risolto
