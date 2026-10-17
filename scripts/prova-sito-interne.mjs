@@ -89,7 +89,7 @@ ok('telefono: padding 12px sopra e 0 sotto, logo alto 82px', [T('.testata', 'pad
 ok('telefono: voci su sfondo chiaro, 14px di padding, 16px; l’attuale gialla', [T('.testata nav a', 'background'), T('.testata nav a', 'padding'), T('.testata nav a', 'font-size'), T('.testata nav a[aria-current]', 'background')], ['var(--chiara)', '0 14px', '16px', 'var(--giallo)'])
 
 console.log('\n2. Testata della pagina (hero) delle pagine interne')
-ok('solo le pagine interne hanno la classe «interna», la Home no', [conta(h, /class="pagina-hero interna"/g), conta(pagina('home'), /class="pagina-hero interna"/g)], [1, 0])
+ok('solo le pagine interne hanno la classe «interna», la Home no', [conta(h, /class="pagina-hero interna( solo)?"/g), conta(pagina('home'), /class="pagina-hero interna/g)], [1, 0])
 ok('desktop: padding 40 e 72px sotto, titolo a sinistra e colonna da 520px a destra', [D('.pagina-hero.interna', 'padding'), D('.pagina-hero.interna', 'grid-template-columns'), D('.pagina-hero.interna', 'align-items')], ['40px var(--margine) 72px', '1fr 520px', 'end'])
 ok('titolo da 200px, interlinea .82', [D('.interna h1', 'font-size'), D('.interna h1', 'line-height')], ['200px', '.82'])
 ok('frase da 22px con 28px sotto', [D('.interna .intro p', 'font-size'), D('.interna .intro p', 'margin')], ['22px', '0 0 28px'])
