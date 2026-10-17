@@ -70,8 +70,39 @@ non può essere nel futuro, e non può essere dopo un movimento che hai già
 registrato: prima si annulla quel movimento, o si sceglie un giorno più vecchio.
 Il saldo iniziale lo cambia solo l'amministrazione, da qui.
 
-La chiusura della cassa, col contato e la differenza, e la stampa in PDF
-arrivano nella parte dopo.
+## Chiusura della cassa
+
+Ogni tanto (a fine settimana, per esempio) si conta il denaro nella **Cassa Contanti** e si
+controlla che torni. In **CASSE**, **CHIUDI LA CASSA**:
+
+1. Scegli **FINO AL** (di solito oggi). Il periodo parte dal giorno dopo l'ultima chiusura.
+2. L'app dice **IN CASSA SECONDO I CONTI**: il saldo iniziale, i contanti incassati dagli
+   iscritti, le entrate e le uscite scritte a mano, i versamenti in banca. Sotto, **COSA
+   C'È DENTRO**: l'elenco dei movimenti in contanti del periodo, per vedere da dove viene il numero.
+3. Scrivi i **CONTANTI CONTATI**, un solo totale. L'app dice la **DIFFERENZA**: «Tornano»,
+   «in più» o «in meno». Una nota facoltativa dice perché. Se la differenza è sopra 20,00 €,
+   chiede una conferma in più.
+4. **CHIUDI LA CASSA**. Se i conti non tornano, la differenza si scrive da sola nei conti, come
+   movimento «Differenza di cassa» di quel giorno (un'entrata se c'erano più soldi, un'uscita se meno),
+   così a fine giorno «in cassa» è quanto hai contato. Non si sceglie a mano in NUOVO MOVIMENTO.
+
+Il Conto Corrente non si conta: si confronta con l'estratto della banca.
+
+**Dopo la chiusura quei giorni sono chiusi**: non si registrano né si annullano più movimenti con
+quella data, e il saldo iniziale della cassa non cambia. La descrizione e la nota si possono ancora
+correggere. Per correggere uno sbaglio di un giorno chiuso si scrive un movimento **di oggi** con
+la voce «Rettifica» (la crea chi cura i conti, in VOCI). Un versamento in banca fatto dopo la
+chiusura va datato oggi.
+
+Sotto le casse c'è l'elenco delle **chiusure**: chi ha chiuso e quando, quanto si è contato, la
+differenza. **PDF** scarica il foglio da stampare e firmare (A4: l'associazione, il periodo, le cifre, i
+movimenti in contanti senza i nomi degli iscritti, due righe per le firme). **ANNULLA** c'è solo
+sull'ultima chiusura: toglie anche la sua «Differenza di cassa» e riapre i giorni; il foglio già
+stampato non vale più. Una chiusura non si cambia: si annulla e si rifà.
+
+Se dopo una chiusura qualcuno annulla una ricevuta o un pagamento in contanti di quei giorni,
+compare un avviso rosso «La chiusura del … non è più in regola»: il foglio già stampato non torna
+più coi conti, e la correzione è una rettifica di oggi.
 
 ## Cosa non c'è
 
@@ -81,5 +112,5 @@ arrivano nella parte dopo.
 - Il backup scaricato dalla segreteria contiene anche i conti, ma è cifrato: la
   password non è della segreteria.
 
-Se compare «Il database non è ancora aggiornato per la contabilità», manca un
-aggiornamento del database: va chiesto a chi cura l'app.
+Se compare «Il database non è ancora aggiornato per la contabilità» o «…per la chiusura
+della cassa», manca un aggiornamento del database: va chiesto a chi cura l'app.

@@ -157,7 +157,9 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   per l'amministrazione: i movimenti di entrata e uscita nelle due casse (Contanti e Conto Corrente) con
   il residuo di ciascuna, le voci della palestra, il saldo iniziale, il giroconto per il versamento in banca;
   gli incassi degli iscritti entrano da soli da ricevute e pagamenti, senza ricopiarli
-  (`supabase/59-contabilita.sql`, `src/lib/contabilita.ts`).
+  (`supabase/59-contabilita.sql`, `src/lib/contabilita.ts`). La **chiusura di cassa**: si conta la Cassa
+  Contanti, la differenza si scrive da sola nei conti, i giorni chiusi non si toccano più e il foglio si
+  stampa in PDF (`supabase/60-chiusura-cassa.sql`, `src/lib/chiusuraCassaPdf.ts`).
 - **Il sito della palestra** (voce SITO della segreteria): le pagine del sito, il menu in alto e il footer si
   scrivono nell'app, senza WordPress. Ogni pagina ha una **bozza**, che non cambia il sito, e un testo
   **pubblicato**, che cambia solo con PUBBLICA; il testo ricco passa da un editor che ammette solo titoli,
