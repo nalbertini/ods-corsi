@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.73.4 — 17 ottobre 2026
+
+### Modificato
+
+- Il grafo del progetto: Claude lo consulta prima di cercare nel codice
+
 ## 0.73.3 — 17 ottobre 2026
 
 ### Modificato
