@@ -140,6 +140,8 @@ il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA
   prima del primo titolo restano sotto la testata. Foto e numeri oltre il limite, o un elenco che non
   rispetta la regola, restano nel testo. Vale solo per la Home. La foto grande è più larga che alta: scegli
   foto con spazio sopra e ai lati, e senza minori riconoscibili senza il permesso dei genitori.
+- **Collage pieno** (Home): con **4 foto** e **un elenco di 9 voci** prima del primo titolo grande, la testata ha le 13 tessere del design. Le voci seguono l'ordine: i **numeri** (grassetto + scritta, come «**35+** anni di sport»), i **titoli** (solo grassetto, scritta grande), le **note** (niente grassetto, scritta piccola, per l'indirizzo e il motto). Con altre quantità resta il collage di prima.
+- Nelle **pagine di un corso**, di **Chi siamo**, di **Contatti**, degli **istruttori** (elenco e singola persona) e nell'elenco **I nostri corsi** le regole di scrittura sono nei testi pronti di `docs/sito/<pagina>.md`: ogni pagina ha il suo testo da incollare e le sue foto proposte in `docs/sito/foto.md`.
 - Il paragrafo scritto **dopo l'ultimo sottotitolo** finisce nell'ultima tessera: per chiudere la griglia e
   scrivere altro, apri un nuovo titolo grande.
 - Le pagine di legge e le pagine senza titoli grandi restano testo in colonna, come prima.
