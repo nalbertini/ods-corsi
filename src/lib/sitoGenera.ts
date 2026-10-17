@@ -61,6 +61,7 @@ const TESTI = {
   provaCoda: 'una settimana · 5 €',
   contattaci: 'Contattaci',
   invito: 'Vieni a provare: ti aspettiamo in',
+  settimana: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
   altriLink: 'Altri link',
   pagine: 'Pagine',
   trovarci: 'Vieni a trovarci',
@@ -159,6 +160,34 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .piede a{text-decoration:none}
 .piede a:hover{text-decoration:underline}
 .piede .fine{flex-basis:100%;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;margin-top:0;font-size:14px;color:var(--chiara)}
+.testata{padding:22px var(--margine)}
+.logo img{height:110px}
+.testata nav ul{gap:10px}
+.pulsante.piccolo{padding:0 26px}
+.testata nav a[aria-current]{background:var(--giallo)}
+.invito{margin:96px var(--margine) 6px;padding:36px 40px;min-height:300px}
+.invito .frase{max-width:520px;font-size:22px}
+.invito .freccia{display:none}
+.invito .parola{font-size:clamp(96px,11.8vw,170px)}
+.piede{margin:0 var(--margine) 48px}
+.invito{gap:0}
+.piede{gap:40px;padding:40px;font-size:16px;line-height:1.9}
+.piede .colonne{display:contents}
+.piede .nome{max-width:5.5em}
+.piede .recapiti li:nth-child(n+3){display:inline}
+.piede .recapiti li:nth-child(4)::before{content:" · ";white-space:pre}
+.piede h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.pannello>*:not(:has(.tondi)){justify-content:space-between}
+.pannello .tessera:has(.tondi){display:grid;grid-template-columns:1fr auto;align-items:center;gap:0 40px}
+.pannello .tessera:has(.tondi)>*{grid-column:1}
+.pannello .tessera:has(.tondi)>.tondi{grid-column:2;grid-row:1 / span 4}
+.pannello .tessera:has(.tondi) p{margin:20px 0 28px}
+.pannello .tessera:has(.tondi) p:last-child{margin:0}
+.tondi{display:flex;gap:10px}
+.tondi img{flex:none;width:132px;height:132px;max-width:none;border-radius:50%;object-fit:cover}
+.colonna:has(+.tessere){max-width:900px}
+.colonna:has(+.tessere) p{font-size:clamp(19px,1.67vw,24px);line-height:1.4}
+.colonna:has(+.tessere)+.tessere>*{padding:26px 30px;font-size:clamp(17px,1.32vw,19px)}
 .sezione{padding:0 var(--margine) 96px}
 .sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 28px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.85;overflow-wrap:anywhere}
 .testo + .sezione{padding-top:24px}
@@ -294,7 +323,26 @@ ${GRIGLIE_LUNGHE}
 .pagina-contatti .sezione:not(.apertura) .tessera h3{font-size:38px;line-height:.95}
 .pagina-contatti .sezione:not(.apertura) .tessere{grid-auto-rows:minmax(330px,auto)}
 .pagina-contatti .sezione:not(.apertura) .tessera:nth-child(odd){background:var(--giallo);color:var(--inchiostro)}
+.pagina-hero:has(>.intro:only-child) .intro{max-width:none;flex-basis:100%}
+.slogan.giallo{grid-column:auto;background:var(--giallo);color:var(--inchiostro);justify-content:flex-end;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(40px,5.3vw,76px);line-height:.9;padding:clamp(20px,2.5vw,36px)}
+.foto-citazioni.slogan{margin:0;grid-template-columns:minmax(0,1fr) minmax(0,clamp(300px,32vw,460px));height:clamp(300px,41.7vw,600px)}
+.ampie>*,.pannello>*{padding:clamp(20px,2.2vw,32px);justify-content:space-between;gap:12px;font-size:clamp(17px,1.46vw,21px);line-height:1.45}
+.ampie h3{font-size:clamp(44px,4.45vw,64px);line-height:.95}
+.pannello>*{padding:clamp(22px,3.3vw,48px);min-height:0;gap:20px;justify-content:flex-start}
+.pannello h3{font-size:clamp(66px,8.3vw,130px);line-height:.9}
+.pannello p{max-width:820px;font-size:clamp(17px,1.7vw,24px);line-height:1.4}
+.numeri{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:1fr}
+.numeri.numeri.numeri.numeri>*{grid-column:auto}
+.numeri>*{padding:clamp(16px,1.7vw,24px) clamp(16px,1.9vw,28px);gap:12px;justify-content:space-between}
+.numeri .cifra{font-size:clamp(70px,10.4vw,150px)}
+.numeri .scritta{font-size:clamp(16px,1.4vw,20px);line-height:1.45}
 @media (min-width:901px){
+.fascia.fascia .ampie>*:not(.foto){min-height:clamp(280px,27.8vw,400px)}
+.fascia.fascia .numeri>*:not(.foto){min-height:clamp(150px,17.4vw,250px)}
+.pagina-hero:has(>.intro:only-child){padding-bottom:72px}
+.pagina-hero:has(>.intro:only-child) .intro{display:grid;grid-template-columns:1fr minmax(0,520px);gap:0 56px;align-items:end}
+.pagina-hero:has(>.intro:only-child) .intro h1{grid-row:1 / span 2;font-size:clamp(56px,13.9vw,200px);margin:0}
+.pagina-hero:has(>.intro:only-child) .intro p{margin-bottom:28px;font-size:22px}
 .sezione .tessera:not(.foto){min-height:clamp(190px,16vw,260px)}
 .sezione .tessere.n-4 .tessera:not(.foto){min-height:190px}
 .sezione .tessera.chiara:not(.foto){min-height:260px}
@@ -395,6 +443,22 @@ h1{font-size:84px;line-height:.84}
 .invito .parola{font-size:120px}
 .piede{margin:0 var(--margine) 24px;padding:24px;gap:14px}
 .piede .nome{font-size:44px}
+.pannello .tessera:has(.tondi){display:flex;align-items:flex-start}
+.pannello .tessera:has(.tondi) p{margin:14px 0 0}
+.tondi{gap:8px;margin:18px 0}
+.tondi img{width:64px;height:64px}
+.colonna:has(+.tessere)+.tessere>*{padding:20px;font-size:16px;min-height:150px}
+.colonna:has(+.tessere)+.tessere h3{font-size:36px}
+.pagina-hero:has(>.intro:only-child) .intro h1{font-size:clamp(56px,21.5vw,200px)}
+.foto-citazioni.slogan{height:auto;grid-template-columns:1fr}
+.foto-citazioni.slogan .foto img{height:300px;aspect-ratio:auto}
+.slogan.giallo{min-height:200px}
+.pagina-hero:has(>.intro:only-child){padding:20px var(--margine) 36px}
+.fascia{padding-bottom:48px}
+.slogan.giallo{font-size:min(11.8vw,60px)}
+.fascia .foto-fila.quattro img{aspect-ratio:auto;height:200px}
+.numeri{grid-auto-flow:row;grid-template-columns:repeat(2,1fr)}
+.numeri>*{min-height:150px}
 }
 @media (max-width:900px){
 .testata{padding:12px var(--margine) 0}
@@ -630,7 +694,7 @@ function piede(c: Contesto): string {
 
 function invito(conContatti: boolean): string {
   if (!conContatti) return ''
-  return `<a class="invito" href="${TESTI.contatti}"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}.</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
+  return `<a class="invito" href="${TESTI.contatti}"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}. ${TESTI.settimana}</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
 }
 
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean }): string {

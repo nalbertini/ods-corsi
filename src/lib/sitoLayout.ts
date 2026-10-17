@@ -226,7 +226,7 @@ function tessereCorsi(gruppi: Gruppo[]): string {
 }
 
 /** Le tessere di una sezione con sottotitoli: una per `h3`, con quel che lo segue. */
-function tessereDaSottotitoli(gruppi: Gruppo[], corso = false, recapiti = false): string {
+function tessereDaSottotitoli(gruppi: Gruppo[], corso = false, recapiti = false, colori?: readonly string[]): string {
   if (sonoCorsi(gruppi)) {
     // Due foto in fondo all'ultima tessera non sono sue: sono la fascia sotto la griglia.
     const ultimo = gruppi[gruppi.length - 1]
@@ -244,7 +244,7 @@ function tessereDaSottotitoli(gruppi: Gruppo[], corso = false, recapiti = false)
   const palette = corso ? [...ROTAZIONE_CORSO, soloTitoli ? 'giallo' : 'chiara'] : ROTAZIONE
   const html = gruppi.map((g, i) => {
     if (orari) return tesseraOrario(i === gruppi.length - 1 ? 'giallo' : 'chiara', g.titolo, g.corpo)
-    const colore = recapiti ? RECAPITI[i % RECAPITI.length] : domande ? 'chiara' : corso ? palette[i % palette.length] : coloreDi(i, gruppi.length)
+    const colore = recapiti ? RECAPITI[i % RECAPITI.length] : domande ? 'chiara' : colori ? colori[i % colori.length] : corso ? palette[i % palette.length] : coloreDi(i, gruppi.length)
     const foto = g.corpo.map(immagine).filter((x): x is string => x !== null)
     const resto = g.corpo.filter((b) => immagine(b) === null).map((b) => b.html).join('')
     // Il valore di un recapito (il primo paragrafo) corto, come un numero di telefono, esce più grande.
@@ -370,7 +370,90 @@ function sezione(titolo: string | null, corpo: Blocco[], corso = false): string 
   const primo = corpo.findIndex((b) => b.tag === 'h3')
   if (primo < 0) return `${apre}${corpoSenzaSottotitoli(corpo, nome)}</section>`
   const prima = corpo.slice(0, primo)
-  return `${apre}${prima.length ? corpoSenzaSottotitoli(prima, nome) : ''}${tessereDaSottotitoli(gruppiDa(corpo.slice(primo)), corso)}</section>`
+  const gruppi = gruppiDa(corpo.slice(primo))
+  // Quattro tessere con una sola frase breve, dopo un paragrafo di apertura, sono i valori del design: giallo, blu, inchiostro, giallo.
+  const valori = prima.length > 0 && gruppi.length === 4 && gruppi.every((g) => g.corpo.length === 1 && g.corpo[0].tag === 'p' && testoSolo(g.corpo[0].html).length <= VALORE_VALORI)
+  return `${apre}${prima.length ? corpoSenzaSottotitoli(prima, nome) : ''}${tessereDaSottotitoli(gruppi, corso, false, valori ? COLORI_VALORI : undefined)}</section>`
+}
+
+/** Un `ul` fatto solo di foto (una per voce): dentro un pannello sono le foto tonde, come i volti degli istruttori. */
+function soloFoto(b: Blocco | undefined): boolean {
+  if (!b || b.tag !== 'ul') return false
+  const li = [...b.html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1].trim())
+  return li.length > 0 && li.every((x) => /^<img\b[^>]*>$/i.test(x))
+}
+const tondi = (b: Blocco) => `<div class="tondi">${[...b.html.matchAll(/<img\b[^>]*>/gi)].map((m) => m[0]).join('')}</div>`
+
+/** I colori dei pannelli (un `h3` solo con il suo testo) e delle coppie di tessere dell'introduzione, nell'ordine del design. */
+const PANNELLI = ['inchiostro', 'giallo'] as const
+const COPPIE = ['chiara', 'blu'] as const
+const COLORI_VALORI = ['giallo', 'blu', 'inchiostro', 'giallo'] as const
+const VALORE_VALORI = 80
+const NUMERI_INTRO = ['giallo', 'blu', 'inchiostro'] as const
+
+/**
+ * L'introduzione (il testo prima del primo `h2`) a fasce, come la pagina Chi siamo del design. Si legge in ordine:
+ *  - una foto sola e una citazione sola: la foto a sinistra e la frase grande, gialla, a destra;
+ *  - uno o più `h3` di fila, ognuno con i suoi paragrafi: una sola è un pannello a tutta riga, più sono tessere larghe;
+ *  - un `ul` di 2–6 voci con il grassetto iniziale: i numeri grandi;
+ *  - altre foto di fila: la fila di foto;
+ *  - il resto è testo in colonna.
+ * Senza `h3` né foto con citazione l'introduzione resta testo in colonna (restituisce null).
+ */
+function introduzione(b: Blocco[]): string | null {
+  // Si attiva con un `h3` o con foto + citazione: una foto e un elenco da soli restano testo in colonna, come prima.
+  if (!b.some((x, i) => x.tag === 'h3' || (immagine(x) !== null && b[i + 1]?.tag === 'blockquote'))) return null
+  const fuori: string[] = []
+  let testo: string[] = []
+  let pannelli = 0
+  const fascia = (h: string) => fuori.push(`<section class="sezione fascia">${h}</section>`)
+  const chiudiTesto = () => {
+    if (testo.length) fuori.push(`<div class="testo">${testo.join('')}</div>`)
+    testo = []
+  }
+  for (let i = 0; i < b.length; ) {
+    const x = b[i]
+    if (immagine(x) !== null) {
+      let j = i
+      while (j < b.length && immagine(b[j]) !== null) j++
+      chiudiTesto()
+      if (j - i === 1 && b[j]?.tag === 'blockquote' && b[j + 1]?.tag !== 'blockquote') {
+        fascia(`<div class="foto-citazioni slogan"><figure class="tessera foto">${immagine(x)}</figure><blockquote class="tessera slogan giallo">${contenuto(b[j])}</blockquote></div>`)
+        i = j + 1
+      } else {
+        fascia(corpoSenzaSottotitoli(b.slice(i, j), ''))
+        i = j
+      }
+      continue
+    }
+    if (x.tag === 'h3') {
+      const gruppi: Array<{ titolo: string; corpo: string }> = []
+      let j = i
+      while (b[j]?.tag === 'h3') {
+        let k = j + 1
+        while (b[k]?.tag === 'p' || soloFoto(b[k])) k++
+        gruppi.push({ titolo: contenuto(b[j]), corpo: b.slice(j + 1, k).map((y) => (y.tag === 'ul' ? tondi(y) : y.html)).join('') })
+        j = k
+      }
+      chiudiTesto()
+      const solo = gruppi.length === 1
+      const colore = (k: number) => (solo ? PANNELLI[pannelli++ % PANNELLI.length] : COPPIE[k % COPPIE.length])
+      fascia(`<div class="tessere n-${gruppi.length} ${solo ? 'pannello' : 'ampie'}">${gruppi.map((g, k) => tessera(colore(k), g.titolo, g.corpo)).join('')}</div>`)
+      i = j
+      continue
+    }
+    const numeri = numeriDiUnElenco(x)
+    if (numeri) {
+      chiudiTesto()
+      fascia(`<div class="tessere n-${numeri.length} numeri">${numeri.map((n, k) => `<article class="tessera ${NUMERI_INTRO[k % NUMERI_INTRO.length]} numero"><strong class="cifra">${n.cifra}</strong>${n.scritta ? ` <span class="scritta">${n.scritta}</span>` : ''}</article>`).join('')}</div>`)
+      i++
+      continue
+    }
+    testo.push(x.html)
+    i++
+  }
+  chiudiTesto()
+  return fuori.join('')
 }
 
 /**
@@ -400,7 +483,9 @@ export function impagina(testoPulito: string, corso = false, conRecapiti = false
   if (h3 >= 0) fuori.push(apertura(b.slice(0, primo), h3))
   else {
     const intro = b.slice(0, primo).map((x) => x.html).join('')
-    if (intro.trim()) fuori.push(`<div class="testo">${intro}</div>`)
+    const fasce = introduzione(b.slice(0, primo))
+    if (fasce !== null) fuori.push(fasce)
+    else if (intro.trim()) fuori.push(`<div class="testo">${intro}</div>`)
   }
   let i = primo
   while (i < b.length) {
