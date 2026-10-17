@@ -66,7 +66,9 @@ L'app non ti lascia salvare se una voce non va, e dice quale:
 ## Il sito vero
 
 Il sito nuovo, su `www.officinedellosport.it`, si genera dalle pagine
-**pubblicate**: quelle in bozza, nascoste o mai pubblicate non ci sono. Il
+**pubblicate** e si aggiorna da solo: dopo **PUBBLICA** ci vuole una decina
+di minuti perché compaia (non si preme niente). Quelle in bozza, nascoste o
+mai pubblicate non ci sono. Il
 passaggio dal sito di prima a quello nuovo, e le immagini, arrivano in un
 secondo momento: finché non è fatto, **PUBBLICA** prepara il testo ma il sito
 che si vede è ancora quello vecchio.

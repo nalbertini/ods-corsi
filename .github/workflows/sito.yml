@@ -1,0 +1,106 @@
+name: Sito
+
+# Il sito pubblico (www.officinedellosport.it) si rigenera dalle pagine pubblicate
+# nel pannello SITO e si manda nel repository del sito, che GitHub Pages serve.
+#
+# Gira ogni cinque minuti (il minimo di GitHub: spesso un po' di più), a mano
+# (Actions → Sito → Run workflow) e a ogni cambio del generatore. Dopo PUBBLICA,
+# nel pannello, il sito è aggiornato entro una decina di minuti. Se non è cambiato
+# niente, non fa commit e non sposta nulla.
+#
+# Senza la home pubblicata (codice 2 dello script) non c'è niente da pubblicare:
+# il giro finisce bene e il sito di prima resta com'è. Un guasto vero (database
+# che non risponde, dati strani) è invece un giro rosso.
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - sito/**
+      - src/lib/sito.ts
+      - src/lib/sitoGenera.ts
+      - src/lib/sitoPagine.ts
+      - src/lib/sitoTesto.ts
+      - scripts/genera-sito.mjs
+      - scripts/pubblica-sito.sh
+      - .github/workflows/sito.yml
+
+permissions:
+  contents: read
+
+# Una pubblicazione per volta: due giri insieme si pesterebbero sul repository del sito.
+concurrency:
+  group: sito
+  cancel-in-progress: false
+
+env:
+  SITO_DOMINIO: https://www.officinedellosport.it
+  # Il repository del sito e la sua chiave di scrittura (SITO_DEPLOY_KEY: la sola cosa che può fare).
+  REPOSITORY_SITO: nalbertini/officinedellosport-sito
+
+jobs:
+  pubblica:
+    name: Genera e pubblica il sito
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: main
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      # La chiave anon è pubblica per scelta (sta anche nell'app): legge solo le tre
+      # funzioni pubbliche, mai le bozze né le pagine nascoste.
+      - name: Genera il sito
+        id: genera
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+        run: |
+          set +e
+          node scripts/genera-sito.mjs dist-sito
+          codice=$?
+          set -e
+          if [ "$codice" = 2 ]; then
+            echo "niente=1" >> "$GITHUB_OUTPUT"
+            echo "::notice::Nessuna pagina Home pubblicata: non c'è ancora niente da pubblicare."
+            exit 0
+          fi
+          exit "$codice"
+
+      # Il dominio del sito e niente Jekyll: GitHub Pages serve i file così come sono.
+      - name: Dominio e file di servizio
+        if: steps.genera.outputs.niente != '1'
+        run: |
+          echo "${SITO_DOMINIO#https://}" > dist-sito/CNAME
+          touch dist-sito/.nojekyll
+
+      # Le chiavi di GitHub: si controlla l'impronta, invece di fidarsi di quello che risponde.
+      - name: Prepara la chiave di scrittura
+        if: steps.genera.outputs.niente != '1'
+        env:
+          CHIAVE: ${{ secrets.SITO_DEPLOY_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$CHIAVE" > ~/.ssh/sito
+          chmod 600 ~/.ssh/sito
+          ssh-keyscan -t ed25519 github.com > ~/.ssh/known_hosts 2>/dev/null
+          impronta=$(ssh-keygen -lf ~/.ssh/known_hosts | awk '{print $2}')
+          [ "$impronta" = "SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU" ] || { echo "::error::L'impronta di github.com non è quella attesa ($impronta)."; exit 1; }
+
+      - name: Pubblica nel repository del sito
+        if: steps.genera.outputs.niente != '1'
+        env:
+          GIT_SSH_COMMAND: ssh -i ~/.ssh/sito -o IdentitiesOnly=yes
+        run: |
+          git clone --depth 1 --branch main "git@github.com:${REPOSITORY_SITO}.git" repository-sito
+          bash scripts/pubblica-sito.sh dist-sito repository-sito
