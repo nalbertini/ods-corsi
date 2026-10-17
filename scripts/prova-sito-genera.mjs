@@ -76,7 +76,7 @@ console.log('\nPercorsi: un file per pagina')
   ok('la home è index.html', esiste(r, 'index.html'), true)
   ok('le altre pagine sono <slug>/index.html', [esiste(r, 'judo/index.html'), esiste(r, 'orari/index.html')], [true, true])
   ok('ci sono 404.html, sitemap.xml e robots.txt', [esiste(r, '404.html'), esiste(r, 'sitemap.xml'), esiste(r, 'robots.txt')], [true, true, true])
-  ok('niente di più: 3 pagine + 3 file fissi', Object.keys(r).sort(), ['404.html', 'index.html', 'judo/index.html', 'orari/index.html', 'robots.txt', 'sitemap.xml'])
+  ok('niente di più: 3 pagine + 4 file fissi', Object.keys(r).sort(), ['404.html', 'index.html', 'judo/index.html', 'llms.txt', 'orari/index.html', 'robots.txt', 'sitemap.xml'])
 }
 {
   const cattivi = ['../x', 'a b', 'Admin', 'x/y', '', '..', '/x', 'a\\b', 'é', 'x.html']
@@ -85,7 +85,7 @@ console.log('\nPercorsi: un file per pagina')
   ok('la home resta anche con slug cattivi attorno', esiste(r, 'index.html'), true)
   const strani = Object.keys(r).filter((f) => f.startsWith('/') || f.includes('..') || /[^a-z0-9/\-.]/.test(f))
   ok('nessun percorso con «..», «/» iniziale o caratteri fuori [a-z0-9/-.]', Object.keys(r).length > 0 ? strani : 'nessun file', [])
-  ok('con soli slug cattivi non cade (resta 404, sitemap, robots)', Object.keys(genera(dati({ pagine: cattivi.map((x) => pag(x)), menu: [] }))).sort(), ['404.html', 'robots.txt', 'sitemap.xml'])
+  ok('con soli slug cattivi non cade (resta 404, llms.txt, sitemap, robots)', Object.keys(genera(dati({ pagine: cattivi.map((x) => pag(x)), menu: [] }))).sort(), ['404.html', 'llms.txt', 'robots.txt', 'sitemap.xml'])
 }
 
 // ---------------------------------------------------------------------------
@@ -264,7 +264,7 @@ console.log('\nRinvii')
   ok('rinvio verso una pagina che non c’è: saltato', esiste(r, 'index.html') && !esiste(r, 'fantasma/index.html'), true)
   ok('rinvio con «da» uguale a una pagina: la pagina non è sostituita', c(r, 'orari/index.html').includes('Testo di orari') && !c(r, 'orari/index.html').includes('refresh'), true)
   ok('rinvio con «da» non valido: saltato', Object.keys(r).length === 0 ? -1 : Object.keys(r).filter((f) => f.includes('..') || f.includes('A B') || f.startsWith('/') || f === 'index.html/index.html').length, 0)
-  ok('file totali: 3 pagine, 2 rinvii, 3 fissi', Object.keys(r).length, 8)
+  ok('file totali: 3 pagine, 2 rinvii, 4 fissi', Object.keys(r).length, 9)
 }
 
 // ---------------------------------------------------------------------------

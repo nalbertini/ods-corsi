@@ -54,6 +54,7 @@
     "prova:sito-istruttori": "node scripts/prova-sito-istruttori.mjs",
     "prova:sito-genera": "node scripts/prova-sito-genera.mjs",
     "prova:sito-dati": "node scripts/prova-sito-dati.mjs",
+    "prova:sito-social": "node scripts/prova-sito-social.mjs",
     "prova:sito-pubblica": "node scripts/prova-sito-pubblica.mjs",
     "prova:indirizzi": "node scripts/prova-indirizzi.mjs",
     "prova:informativa": "node scripts/prova-informativa.mjs",
