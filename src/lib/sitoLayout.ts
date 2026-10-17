@@ -146,10 +146,10 @@ const tessera = (colore: string, titolo: string, resto: string, prima = '') =>
   `<article class="tessera ${colore}">${prima}${titolo.trim() ? `<h3>${titolo}</h3>` : ''}${resto}</article>`
 
 /** Le tessere di una sezione con sottotitoli: una per `h3`, con quel che lo segue. */
-function tessereDaSottotitoli(gruppi: Array<{ titolo: string; corpo: Blocco[] }>): string {
+function tessereDaSottotitoli(gruppi: Array<{ titolo: string; corpo: Blocco[] }>, colori: readonly string[] = ROTAZIONE): string {
   const domande = gruppi.length > 0 && gruppi.every((g) => /\?\s*$/.test(testoSolo(g.titolo)))
   const html = gruppi.map((g, i) => {
-    const colore = domande ? 'chiara' : ROTAZIONE[i % ROTAZIONE.length]
+    const colore = domande ? 'chiara' : colori[i % colori.length]
     const foto = g.corpo.map(immagine).filter((x): x is string => x !== null)
     const resto = g.corpo.filter((b) => immagine(b) === null).map((b) => b.html).join('')
     return tessera(colore, g.titolo, resto, foto.join(''))
@@ -233,12 +233,24 @@ function sezione(titolo: string, corpo: Blocco[]): string {
     if (b.tag === 'h3') gruppi.push({ titolo: contenuto(b), corpo: [] })
     else gruppi[gruppi.length - 1].corpo.push(b)
   }
-  return `<section class="sezione"><h2>${titolo}</h2>${prima.length ? corpoSenzaSottotitoli(prima, titolo) : ''}${tessereDaSottotitoli(gruppi)}</section>`
+  // Quattro tessere con una sola frase breve, dopo un paragrafo di apertura, sono i valori del design: giallo, blu, inchiostro, giallo.
+  const valori = prima.length > 0 && gruppi.length === 4 && gruppi.every((g) => g.corpo.length === 1 && g.corpo[0].tag === 'p' && testoSolo(g.corpo[0].html).length <= VALORE_BREVE)
+  return `<section class="sezione"><h2>${titolo}</h2>${prima.length ? corpoSenzaSottotitoli(prima, titolo) : ''}${tessereDaSottotitoli(gruppi, valori ? COLORI_VALORI : ROTAZIONE)}</section>`
 }
+
+/** Un `ul` fatto solo di foto (una per voce): dentro un pannello sono le foto tonde, come i volti degli istruttori. */
+function soloFoto(b: Blocco | undefined): boolean {
+  if (!b || b.tag !== 'ul') return false
+  const li = [...b.html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1].trim())
+  return li.length > 0 && li.every((x) => /^<img\b[^>]*>$/i.test(x))
+}
+const tondi = (b: Blocco) => `<div class="tondi">${[...b.html.matchAll(/<img\b[^>]*>/gi)].map((m) => m[0]).join('')}</div>`
 
 /** I colori dei pannelli (un `h3` solo con il suo testo) e delle coppie di tessere dell'introduzione, nell'ordine del design. */
 const PANNELLI = ['inchiostro', 'giallo'] as const
 const COPPIE = ['chiara', 'blu'] as const
+const COLORI_VALORI = ['giallo', 'blu', 'inchiostro', 'giallo'] as const
+const VALORE_BREVE = 80
 const NUMERI_INTRO = ['giallo', 'blu', 'inchiostro'] as const
 
 /**
@@ -281,8 +293,8 @@ function introduzione(b: Blocco[]): string | null {
       let j = i
       while (b[j]?.tag === 'h3') {
         let k = j + 1
-        while (b[k]?.tag === 'p') k++
-        gruppi.push({ titolo: contenuto(b[j]), corpo: b.slice(j + 1, k).map((y) => y.html).join('') })
+        while (b[k]?.tag === 'p' || soloFoto(b[k])) k++
+        gruppi.push({ titolo: contenuto(b[j]), corpo: b.slice(j + 1, k).map((y) => (y.tag === 'ul' ? tondi(y) : y.html)).join('') })
         j = k
       }
       chiudiTesto()

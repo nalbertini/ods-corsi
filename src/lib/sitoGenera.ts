@@ -61,6 +61,7 @@ const TESTI = {
   invito: 'Vieni a provare: ti aspettiamo in',
   settimana: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
   altriLink: 'Altri link',
+  informazioni: 'Informazioni legali',
   trovarci: 'Vieni a trovarci',
   contatti: '/contatti/',
 }
@@ -163,6 +164,20 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .invito .parola{font-size:clamp(96px,11.8vw,170px)}
 .piede{margin:0 var(--margine) 48px}
 .invito{gap:0}
+.piede{gap:40px;padding:40px;font-size:16px;line-height:1.9}
+.piede .colonne{display:contents}
+.piede .nome{max-width:5.5em}
+.piede .recapiti li:nth-child(n+3){display:inline}
+.piede .recapiti li:nth-child(4)::before{content:" · ";white-space:pre}
+.piede h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.pannello>*:not(:has(.tondi)){justify-content:space-between}
+.pannello .tessera:has(.tondi){display:grid;grid-template-columns:1fr auto;align-items:center;gap:0 40px}
+.pannello .tessera:has(.tondi)>*{grid-column:1}
+.pannello .tessera:has(.tondi)>.tondi{grid-column:2;grid-row:1 / span 4}
+.pannello .tessera:has(.tondi) p{margin:20px 0 28px}
+.pannello .tessera:has(.tondi) p:last-child{margin:0}
+.tondi{display:flex;gap:10px}
+.tondi img{flex:none;width:132px;height:132px;max-width:none;border-radius:50%;object-fit:cover}
 .colonna:has(+.tessere){max-width:900px}
 .colonna:has(+.tessere) p{font-size:clamp(19px,1.67vw,24px);line-height:1.4}
 .colonna:has(+.tessere)+.tessere>*{padding:26px 30px;font-size:clamp(17px,1.32vw,19px)}
@@ -293,7 +308,18 @@ ${GRIGLIE_LUNGHE}
 .invito .frase{font-size:17px}
 .invito .parola{font-size:clamp(96px,31vw,170px)}
 .piede{margin-bottom:24px}
-.testata .pulsante{padding:0 14px;font-size:15px}
+.testata .pulsante{padding:0 22px;font-size:0}
+.testata .pulsante::after{content:"Prova";font-size:16px}
+.piede{display:block;padding:24px}
+.piede .nome{margin-bottom:14px}
+.piede .altri,.piede .legale{margin-top:12px}
+.piede .altri ul,.piede .legale ul{display:flex;flex-wrap:wrap}
+.piede .altri li+li::before,.piede .legale li+li::before{content:" · ";white-space:pre}
+.piede .legale{opacity:.85}
+.pannello .tessera:has(.tondi){display:flex;align-items:flex-start}
+.pannello .tessera:has(.tondi) p{margin:14px 0 0}
+.tondi{gap:8px;margin:18px 0}
+.tondi img{width:64px;height:64px}
 .sezione h2{margin-bottom:20px}
 .colonna:has(+.tessere)+.tessere>*{padding:20px;font-size:16px;min-height:150px}
 .colonna:has(+.tessere)+.tessere h3{font-size:36px}
@@ -363,9 +389,14 @@ function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
 }
 
 function piede(c: Contesto): string {
-  const f = lista(voci('footer', c))
-  const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
-  return `<footer class="piede"><p class="nome">${NOME}</p><div class="colonne">${f ? `<div><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}<div><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div></div><div class="fine"><span>© ${NOME}</span></div></footer>`
+  // Le pagine di legge stanno in una colonna a parte, come nel design; gli altri link nella loro.
+  const tutte = voci('footer', c)
+  const legali = tutte.filter((x) => PAGINE_DI_LEGGE.some((s) => x.href === percorso(s)))
+  const altre = tutte.filter((x) => !legali.includes(x))
+  const social = `<li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
+  const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li>${social}`
+  const colonna = (classe: string, titolo: string, v: Array<{ etichetta: string; href: string }>) => (v.length ? `<div class="${classe}"><h2>${titolo}</h2><ul>${lista(v)}</ul></div>` : '')
+  return `<footer class="piede"><p class="nome">${NOME}</p><div class="colonne"><div class="recapiti"><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div>${colonna('altri', TESTI.altriLink, altre)}${colonna('legale', TESTI.informazioni, legali)}</div></footer>`
 }
 
 function invito(conContatti: boolean): string {

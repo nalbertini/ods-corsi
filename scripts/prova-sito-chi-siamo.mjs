@@ -98,9 +98,28 @@ console.log('\n8. Valori, invito e piede come nel design')
   ok('il paragrafo prima delle tessere è da 24px a 1440px, largo 900px al massimo', [/\.colonna:has\(\+\.tessere\) p\{font-size:clamp\(19px,1\.67vw,24px\);line-height:1\.4\}/.test(css), /\.colonna:has\(\+\.tessere\)\{max-width:900px\}/.test(css)], [true, true])
   ok('le tessere dopo quel paragrafo hanno 26px 30px dentro, sul telefono 20px e titolo da 36px', [/\.colonna:has\(\+\.tessere\)\+\.tessere>\*\{padding:26px 30px;/.test(css), /\.colonna:has\(\+\.tessere\)\+\.tessere>\*\{padding:20px;font-size:16px;min-height:150px\}/.test(css), /\.colonna:has\(\+\.tessere\)\+\.tessere h3\{font-size:36px\}/.test(css)], [true, true, true])
   ok('il titolo di sezione sul telefono: almeno 56px, 20px sotto', [/\.sezione h2\{[^}]*font-size:clamp\(56px,9vw,120px\)/.test(css), /\.sezione h2\{margin-bottom:20px\}/.test(css)], [true, true])
-  ok('sul telefono il pulsante della testata sta accanto al logo (padding stretto, 15px)', /\.testata \.pulsante\{padding:0 14px;font-size:15px\}/.test(css), true)
+  ok('sul telefono il pulsante della testata sta accanto al logo (come «Prova», 22px ai lati)', /\.testata \.pulsante\{padding:0 22px;font-size:0\}/.test(css), true)
   ok('l’invito non ha spazio tra frase e «Prova» oltre a quello che li separa', /\.invito\{gap:0\}/.test(css), true)
   ok('il nome nel piede è 56px a 1440px e 44px sul telefono', /\.piede \.nome\{[^}]*font-size:clamp\(44px,3\.9vw,56px\)/.test(css), true)
+}
+
+console.log('\n9. Cerchi degli istruttori, colori dei valori, piede e pulsante del telefono')
+{
+  const tondi = html(`<h3>Gli istruttori</h3><p>Tredici tecnici.</p><ul><li>${img(1)}</li><li>${img(2)}</li></ul><p><a class="pulsante" href="/istruttori/">Conosci</a></p><h2>S</h2><p>x</p>`)
+  ok('un elenco di sole foto dentro il pannello: i cerchi, prima del pulsante', [conta(tondi, /<div class="tondi"><img[^>]*><img[^>]*><\/div>/g), tondi.indexOf('class="tondi"') < tondi.indexOf('class="pulsante"'), conta(tondi, /<div class="tessere n-1 pannello">/g)], [1, true, 1])
+  const V = (n) => `<h3>V${n}</h3><p>Corto ${n}</p>`
+  const val = html(`<h2>Valori</h2><p>Lead</p>${[1, 2, 3, 4].map(V).join('')}`)
+  ok('quattro tessere corte dopo un paragrafo: giallo, blu, inchiostro, giallo', [...val.matchAll(/<article class="tessera (\w+)"><h3>V/g)].map((m) => m[1]), ['giallo', 'blu', 'inchiostro', 'giallo'])
+  const senza = html(`<h2>Valori</h2>${[1, 2, 3, 4].map(V).join('')}`)
+  ok('senza il paragrafo prima la rotazione di sempre', [...senza.matchAll(/<article class="tessera (\w+)"><h3>V/g)].map((m) => m[1]), ['blu', 'giallo', 'inchiostro', 'chiara'])
+  const piede = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'chi-siamo', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }, { slug: 'privacy', titolo: 'P', descrizione: '', testo: '', diLegge: true }], menu: [{ dove: 'footer', ordine: 1, etichetta: 'Chi siamo', slug: 'chi-siamo', indirizzo: null }, { dove: 'footer', ordine: 2, etichetta: 'Privacy policy', slug: 'privacy', indirizzo: null }], rinvii: [] })['chi-siamo/index.html'].match(/<footer[\s\S]*<\/footer>/)[0]
+  ok('il piede non ha la riga «©»', piede.includes('©'), false)
+  ok('Instagram e Facebook stanno su una riga sola', [/<li><a [^>]*>Instagram<\/a><\/li><li><a [^>]*>Facebook<\/a><\/li>/.test(piede), /\.piede \.recapiti li:nth-child\(n\+3\)\{display:inline\}/.test(html('<p>x</p>'))], [true, true])
+  ok('le pagine di legge stanno in una colonna a parte', [/<div class="altri">[\s\S]*Chi siamo[\s\S]*<\/div><div class="legale">[\s\S]*Privacy policy/.test(piede), conta(piede, /Privacy policy/g)], [true, 1])
+  const css = html('<p>x</p>').match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
+  ok('sul telefono il pulsante dice «Prova»', /\.testata \.pulsante::after\{content:"Prova";font-size:16px\}/.test(css), true)
+  ok('il pannello senza foto tonde (la missione) ha il titolo in alto e il testo in basso', /\.pannello>\*:not\(:has\(\.tondi\)\)\{justify-content:space-between\}/.test(css), true)
+  ok('il nome nel piede va a capo dopo «Officine»', /\.piede \.nome\{[^}]*max-width:5\.5em/.test(css), true)
 }
 
 console.log(guai ? `\n${guai} da sistemare` : '\nTutto bene')
