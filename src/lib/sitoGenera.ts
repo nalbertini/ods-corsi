@@ -304,7 +304,7 @@ ${GRIGLIE_LUNGHE}
 .ritratto-testo p{margin:10px 0 0;font-size:18px;line-height:1.45}
 .ritratto h3 a{text-decoration:none}
 .ritratto h3 a::after{content:"";position:absolute;inset:0}
-.ritratto:has(h3 a)::after{content:"↗" / "";position:absolute;top:24px;right:26px;font-family:var(--display);font-weight:800;font-size:44px;line-height:1}
+.ritratto:has(h3 a)::after{content:"↗\uFE0E" / "";position:absolute;top:24px;right:26px;font-family:var(--display);font-weight:800;font-size:44px;line-height:1}
 .ritratto h3 a:focus-visible{outline:none}
 .ritratto:has(a:focus-visible){outline:3px solid var(--inchiostro);outline-offset:3px}
 .ritratti-sezione:last-child{padding-bottom:0}
@@ -492,7 +492,7 @@ h1{font-size:84px;line-height:.84}
 .tessera.tessera:has(h3 a){min-height:200px;padding:20px;gap:12px}
 .tessera:has(h3 a) p{max-width:none;line-height:1.45}
 .tessera:has(h3 a) h3{display:flex;justify-content:space-between;align-items:flex-start}
-.tessera:has(h3 a) h3::after{content:"↗";font-size:36px;line-height:1}
+.tessera:has(h3 a) h3::after{content:"↗\uFE0E";font-size:36px;line-height:1}
 .sotto{display:block;font-size:16px;line-height:1.45}
 .tessere.n-9 .tessera.tessera:nth-child(1){background:var(--giallo);color:var(--inchiostro)}
 .tessere.n-9 .tessera.tessera:nth-child(2){background:var(--blu);color:#fff}
@@ -800,7 +800,7 @@ function piede(c: Contesto): string {
 
 function invito(conContatti: boolean): string {
   if (!conContatti) return ''
-  return `<a class="invito" href="${TESTI.iscrizione}" rel="noopener noreferrer"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}. ${TESTI.settimana}</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
+  return `<a class="invito" href="${TESTI.iscrizione}" rel="noopener noreferrer"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}. ${TESTI.settimana}</span><span class="freccia" aria-hidden="true">↗\uFE0E</span></span><span class="parola">${TESTI.prova}</span></a>`
 }
 
 /** Le anteprime di condivisione (Open Graph e Twitter). Il 404 non si condivide: non le ha. */

@@ -307,6 +307,14 @@ console.log('\nLarghezza')
   ok('il body è centrato', b.margin, '0 auto')
 }
 
+console.log('\nLa freccia ↗')
+{
+  // Senza U+FE0E (variante testo) Safari su iPhone disegna ↗ come emoji, un riquadro azzurro, invece della freccia nel colore del testo.
+  const tutto = Object.values(con).filter((x) => typeof x === 'string').join('\n')
+  ok('c’è almeno una freccia nel sito', tutto.includes('↗'), true)
+  ok('ogni freccia ↗ è testo, non emoji', conta(tutto, /↗(?!\uFE0E)/g), 0)
+}
+
 console.log('\nDeterminismo')
 {
   const d = dati({ pagine: [pag('home'), pag('contatti'), pag('privacy', { diLegge: true })] })

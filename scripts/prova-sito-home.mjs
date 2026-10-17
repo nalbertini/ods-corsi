@@ -258,7 +258,7 @@ console.log('\n12. Schede dei corsi, marchio ritagliato, puntini, pulsante breve
   const chip = [...(schede[1] ?? '').matchAll(/<span class="etichetta">(?:<svg[^>]*aria-hidden="true">[\s\S]*?<\/svg>)?([^<]*)<\/span>/g)].map((m) => m[1])
   ok('ogni etichetta nota ha la sua icona', ((schede[1] ?? '').match(/<svg/g) ?? []).length, 3)
   ok('sul desktop la foto del corso non si vede, sul telefono è alta 150px', [ha(base, '.corso-foto', 'display:none'), ha(mobile, '.corso-foto', 'height:150px')], [true, true])
-  ok('sul telefono il titolo ha la freccia ↗', /\.tessera:has\(h3 a\) h3::after\{content:"↗"/.test(mobile), true)
+  ok('sul telefono il titolo ha la freccia ↗', /\.tessera:has\(h3 a\) h3::after\{content:"↗\uFE0E"/.test(mobile), true)
   ok('colori dei corsi sul telefono: giallo, blu, inchiostro, blu, inchiostro, giallo, inchiostro, giallo, blu', [1, 2, 3, 4, 5, 6, 7, 8, 9].map((k) => /var\(--(giallo|blu|inchiostro)\)/.exec(regola(mobile, `.tessere.n-9 .tessera.tessera:nth-child(${k})`).replace(/.*?background:/, 'background:'))?.[1]), ['giallo', 'blu', 'inchiostro', 'blu', 'inchiostro', 'giallo', 'inchiostro', 'giallo', 'blu'])
   const tp = pagina(`<ul>${[1, 2].map((i) => `<li><strong>Cifra ${i}</strong> cose</li>`).join('')}<li><strong>Prova</strong><br><em>Provi tutto.</em></li></ul>`)
   ok('una voce «titolo + a capo + corsivo» ha la scritta sotto, nascosta sul desktop', [ha(base, '.sotto', 'display:none'), ha(mobile, '.sotto', 'display:block')], [true, true])

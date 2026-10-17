@@ -79,7 +79,7 @@ console.log('\n3. Il link nel nome rende la tessera cliccabile')
   ok('il link nel nome resta', /<h3><a href="\/istruttori\/maurizio\/">Maurizio<\/a><\/h3>/.test(h), true)
   ok('l’iniziale viene dal nome, non dal tag', ritratti(pagina(`<h3><a href="/a/">Diana</a></h3><p>x</p><h3>B</h3><p>y</p>`))[0].html.startsWith('<span class="ritratto-foto" aria-hidden="true">D</span>'), true)
   ok('la tessera col link è tutta cliccabile (il link si allarga con ::after)', /\.ritratto h3 a::after\{[^}]*position:\s*absolute[^}]*inset:\s*0/.test(CSS), true)
-  ok('la freccia ↗ c’è solo se c’è il link (:has) e non si legge', [/\.ritratto:has\(h3 a\)::after\{[^}]*content:\s*"↗"\s*\/\s*""/.test(CSS)], [true])
+  ok('la freccia ↗ c’è solo se c’è il link (:has) e non si legge', [/\.ritratto:has\(h3 a\)::after\{[^}]*content:\s*"↗\uFE0E"\s*\/\s*""/.test(CSS)], [true])
 }
 
 console.log('\n4. Quel che non è una pagina di ritratti resta com’era')
