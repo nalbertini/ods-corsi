@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { bastaPerCercare, comeSiAnnulla, domandaAnnullaPagamento, domandaAnnullaRicevuta, MASSIMO_PAGATORI, type RigaPagamento } from '../../lib/pagamenti'
+import { avvisoCassaChiusa } from '../../lib/contabilita'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { chiedi, messaggio, Riga, type useAvviso } from './comune'
 import { RegistraPagamento } from './Ricevute'
@@ -23,13 +24,16 @@ export function PagamentoAperto({ d, riga, fai, onChiudi, onFatto }: { d: DatiSe
   const annullaRicevuta = async () => {
     const r = riga.ricevuta
     if (!r) return
-    if (!(await chiedi(domandaAnnullaRicevuta(r), 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
+    // Dell'intera ricevuta si conosce qui solo questa riga; chi non vede le chiusure (la segreteria) non ha l'avviso.
+    const avviso = avvisoCassaChiusa([riga], await d.chiusure().catch(() => []))
+    if (!(await chiedi(`${domandaAnnullaRicevuta(r)}${avviso ? ` ${avviso}` : ''}`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
     void fai(() => d.annullaRicevuta(r.id), 'Ricevuta annullata', onFatto)
   }
   const annullaPagamento = async () => {
     const id = riga.direttoId
     if (!id) return
-    if (!(await chiedi(domandaAnnullaPagamento(riga), 'SÌ, ANNULLA IL PAGAMENTO', { no: 'NO, LASCIALO', pericolo: true }))) return
+    const avviso = avvisoCassaChiusa([riga], await d.chiusure().catch(() => []))
+    if (!(await chiedi(`${domandaAnnullaPagamento(riga)}${avviso ? ` ${avviso}` : ''}`, 'SÌ, ANNULLA IL PAGAMENTO', { no: 'NO, LASCIALO', pericolo: true }))) return
     void fai(() => d.annullaPagamentoDiretto(id), 'Pagamento annullato', onFatto)
   }
   const dettaglio: Array<[string, string]> = [

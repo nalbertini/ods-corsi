@@ -50,7 +50,7 @@ un'uscita: non entra nei totali, né nei totali per voce. Si annulla come un mov
 
 Un rimborso a un iscritto è un'uscita, con una voce tua. Un errore trovato dopo si
 corregge annullando e rifacendo, oppure, se il giorno è già chiuso (vedi sotto), con un movimento
-con una data dopo la chiusura e una voce «Rettifica» che crei tu.
+con una data dopo la chiusura e una voce «Rettifica» (in VOCI si crea con un tocco).
 
 ## Voci
 
@@ -91,8 +91,8 @@ Il Conto Corrente non si conta: si confronta con l'estratto della banca.
 **Dopo la chiusura quei giorni sono chiusi**: non si registrano né si annullano più movimenti con
 quella data, e il saldo iniziale della cassa non cambia. La descrizione e la nota si possono ancora
 correggere. Per correggere uno sbaglio di un giorno chiuso si scrive un movimento con una data
-**dopo la chiusura** e una voce di rettifica (la crea chi cura i conti, in VOCI: per esempio
-«Rettifica»). Se hai chiuso oggi, la prima data possibile è domani: se serve prima, si annulla la
+**dopo la chiusura** e una voce di rettifica (dopo la prima chiusura, in VOCI compare **CREA LA VOCE «RETTIFICA»**: un
+tocco, e c'è sia di entrata sia di uscita). Se hai chiuso oggi, la prima data possibile è domani: se serve prima, si annulla la
 chiusura (solo l'ultima). Anche un versamento in banca fatto dopo la chiusura va datato dopo la
 chiusura.
 
@@ -102,7 +102,8 @@ movimenti in contanti senza i nomi degli iscritti, due righe per le firme). **AN
 sull'ultima chiusura: toglie anche la sua «Differenza di cassa» e riapre i giorni; il foglio già
 stampato non vale più. Una chiusura non si cambia: si annulla e si rifà.
 
-Se dopo una chiusura qualcuno annulla una ricevuta o un pagamento in contanti di quei giorni,
+Se stai per annullare una ricevuta o un pagamento in contanti di un giorno già chiuso, la domanda di
+conferma te lo dice prima. Se dopo una chiusura qualcuno annulla una ricevuta o un pagamento in contanti di quei giorni,
 compare un avviso rosso «La chiusura del … non è più in regola»: il foglio già stampato non torna
 più coi conti, e la correzione è una rettifica con una data dopo la chiusura.
 
