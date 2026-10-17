@@ -11,7 +11,7 @@ web
 ODS Corsi è lo strumento interno di **Officine Dello Sport**, palestra di Collegno. Lo usano sei pubblici, ciascuno dal suo indirizzo:
 
 - **Segreteria** (`segreteria/`), l'utente primo: la reception, dal computer al banco, tra una telefonata e una persona davanti. Tiene in piedi la settimana delle lezioni, corsi, iscritti, certificati medici, pagamenti e ricevute, richieste online, presenze, statistiche, istruttori e impostazioni. Quando le esigenze si scontrano, vince la sua.
-- **Amministrazione** (`amministrazione/`): chi cura i conti, dal computer. Vede i pagamenti e il listino, non le persone: dei pagatori ha il nome, e niente contatti. Si può avere insieme alla segreteria e all'insegnamento.
+- **Amministrazione** (`amministrazione/`): chi cura i conti, dal computer. Vede la contabilità (movimenti, voci e casse), i pagamenti e il listino, non le persone: dei pagatori ha il nome, e niente contatti. Si può avere insieme alla segreteria e all'insegnamento.
 - **Istruttori** (`istruttori/`): dal telefono, in piedi, a lezione che parte. Guardano il calendario, fanno l'appello, aggiungono chi viene a provare, scelgono i timer.
 - **Tablet di sala** (`sala/`): appeso al muro di ogni sala, guardato da due metri. Chi arriva tocca il suo nome; l'istruttore col PIN apre l'appello completo e segna la sua presenza; parte il timer, suona la musica della sala.
 - **Chi vuole iscriversi** (`iscrizioni/`): dal telefono, senza accesso. Compila il modulo, firma col dito, carica la ricevuta.

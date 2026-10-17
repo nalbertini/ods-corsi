@@ -283,9 +283,17 @@ console.log('\nPagine di legge: una colonna di testo')
 console.log('\nAngoli: 6px')
 {
   const raggi = R.flatMap((r) => (r.dich['border-radius'] ? [{ sel: r.sel.join(), v: risolvi(r.dich['border-radius'], V) }] : []))
-  // Le fasce d'età della pagina Corsi sono pillole (999px) nel design TatamiBlu-Corsi: l'unica eccezione.
-  ok('ogni border-radius è 6px (o 0, o un cerchio al 50%, o le pillole delle fasce)', raggi.filter((x) => !['6px', '0', '50%'].includes(x.v) && !(x.sel === 'ul.fasce li' && x.v === '999px')).map((x) => `${x.sel}: ${x.v}`), [])
+  // Le pillole (999px) sono capsule come nel design: quelle d'età della Home (`.pillola`) e le fasce della pagina Corsi (`ul.fasce li`). Tutto il resto è 6px, 0 o un cerchio.
+  ok('ogni border-radius è 6px (o 0, o un cerchio al 50%; le pillole sono capsule)', raggi.filter((x) => !['6px', '0', '50%'].includes(x.v) && !(['.pillola', 'ul.fasce li'].includes(x.sel) && x.v === '999px')).map((x) => `${x.sel}: ${x.v}`), [])
   ok('pulsante, invito e immagini del testo hanno 6px', ['.pulsante', '.invito', '.testo img'].map((n) => dich(R, V, (x) => x === n)['border-radius']), ['6px', '6px', '6px'])
+}
+
+console.log('\nLarghezza')
+{
+  // Su uno schermo largo la pagina non si allarga senza fine: sta in una colonna centrata, e il fondo resta quello.
+  const b = dich(R, V, (x) => x === 'body')
+  ok('il body ha una larghezza massima', /^\d+px$/.test(b['max-width'] ?? ''), true)
+  ok('il body è centrato', b.margin, '0 auto')
 }
 
 console.log('\nDeterminismo')

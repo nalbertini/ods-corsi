@@ -147,8 +147,10 @@ const MANCANO_ALLEGATI = 'Gli allegati non sono ancora attivi sul database: va l
 const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `${p.nome} ${p.cognome}`.trim() : '')
 
 /** Le tabelle che arrivano dopo lo schema, col file che le crea. */
+const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   // Prima di `segnalazioni`, che le somiglia.
+  [/voci_contabili|relation "(public\.)?(casse|movimenti)"|table 'public\.(casse|movimenti)'/, MANCA_CONTABILITA],
   [/sito_pagine|sito_menu|sito_redirect|salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito/, MANCA_SITO],
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
   [/non_doppioni/, 'Segnare due schede «non sono doppioni» non è ancora attivo sul database: va lanciato 33-non-doppioni.sql'],
@@ -250,6 +252,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
     return new Error(MANCA_AMMINISTRAZIONE)
   // Le funzioni dell'amministrazione, che arrivano con lo stesso file.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /cerca_pagatori|nomi_persone/.test(e.message ?? '')) return new Error(MANCA_AMMINISTRAZIONE)
+  // Le funzioni della contabilità arrivano con 59-contabilita.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /salva_voce|rinomina_voce|imposta_voce_attiva|imposta_saldo_cassa|registra_movimento|registra_giroconto|annulla_movimento|correggi_testo_movimento/.test(e.message ?? '')) return new Error(MANCA_CONTABILITA)
+  if (e?.code === '42501' && /contabilità/.test(e.message ?? '')) return new Error('Non hai il permesso: la contabilità la cura l’amministrazione')
   // Il kanji arriva con 24-kanji.sql; due persone con lo stesso non si possono avere.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
   // Il file del certificato e la data insieme arrivano con 45-certificati-online.sql.
@@ -1064,6 +1069,76 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         fuori.push(...(ok(await db.rpc('nomi_persone', { ids: unici.slice(i, i + 500) })) as Array<{ id: string; nome: string; cognome: string }>))
       }
       return fuori
+    },
+
+    // Le righe arrivano senza tipo dall'API: la forma è quella di 59-contabilita.sql. Per nome, così le casse e le voci
+    // escono nello stesso ordine su ogni database (gli id sono a caso) e il giroconto parte sempre da Cassa Contanti.
+    async voci() {
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('voci_contabili').select('*').order('nome').order('id').range(prima, ultima))) as Array<{ id: string; nome: string; tipo: 'entrata' | 'uscita'; di_sistema: boolean; attiva: boolean }>
+      return righe.map((r) => ({ id: r.id, nome: r.nome, tipo: r.tipo, diSistema: r.di_sistema, attiva: r.attiva }))
+    },
+
+    async casse() {
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('casse').select('*').order('nome').order('id').range(prima, ultima))) as Array<{ id: string; nome: string; saldo_iniziale: number; dal: string | null }>
+      return righe.map((r) => ({ id: r.id, nome: r.nome, saldoIniziale: r.saldo_iniziale, ...(r.dal ? { dal: r.dal } : {}) }))
+    },
+
+    async movimenti() {
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('movimenti').select('*').order('id').range(prima, ultima))) as Array<{
+        id: string; tipo: 'entrata' | 'uscita' | 'giroconto'; data: string; importo: number; voce_id: string | null; cassa_id: string; cassa_a_id: string | null
+        descrizione: string; nota: string | null; creato_il: string; annullato_il: string | null
+      }>
+      return righe.map((r) => ({
+        id: r.id,
+        tipo: r.tipo,
+        data: r.data,
+        importo: r.importo,
+        ...(r.voce_id ? { voceId: r.voce_id } : {}),
+        cassaId: r.cassa_id,
+        ...(r.cassa_a_id ? { cassaAId: r.cassa_a_id } : {}),
+        descrizione: r.descrizione,
+        ...(r.nota ? { nota: r.nota } : {}),
+        creatoIl: r.creato_il,
+        ...(r.annullato_il ? { annullatoIl: r.annullato_il } : {}),
+      }))
+    },
+
+    async salvaVoce(d) {
+      return (ok(await db.rpc('salva_voce', { dati: { nome: d.nome.trim(), tipo: d.tipo } })) as { id: string }).id
+    },
+
+    async rinominaVoce(id, nome) {
+      ok(await db.rpc('rinomina_voce', { id, nome: nome.trim() }))
+    },
+
+    async attivaVoce(id, attiva) {
+      ok(await db.rpc('imposta_voce_attiva', { id, attiva }))
+    },
+
+    async salvaSaldoCassa(id, saldo, dal) {
+      ok(await db.rpc('imposta_saldo_cassa', { id, saldo, dal: dal ?? null }))
+    },
+
+    async registraMovimento(d) {
+      const riga = ok(
+        await db.rpc('registra_movimento', {
+          dati: { tipo: d.tipo, data: d.data, importo: d.importo, voce_id: d.voceId, cassa_id: d.cassaId, descrizione: d.descrizione.trim(), nota: d.nota?.trim() || null },
+        }),
+      ) as { id: string }
+      return riga.id
+    },
+
+    async registraGiroconto(d) {
+      const riga = ok(await db.rpc('registra_giroconto', { dati: { da: d.daCassaId, a: d.aCassaId, data: d.data, importo: d.importo, nota: d.nota?.trim() || null } })) as { id: string }
+      return riga.id
+    },
+
+    async annullaMovimento(id) {
+      ok(await db.rpc('annulla_movimento', { id }))
+    },
+
+    async correggiTestoMovimento(id, descrizione, nota) {
+      ok(await db.rpc('correggi_testo_movimento', { id, descrizione: descrizione.trim(), nota: nota?.trim() || null }))
     },
 
     async cercaPagatori(scritto) {
