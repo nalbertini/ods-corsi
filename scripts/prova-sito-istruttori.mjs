@@ -66,11 +66,11 @@ console.log('\n1. Un testo che comincia con un h3 è una griglia di ritratti')
   ok('il ritratto senza ruolo è solo nome e cerchio', ritratti(pagina('<h3>A</h3><p>x</p><h3>B</h3><h3>C</h3><p>z</p>')).map((x) => /<p>/.test(x.html)), [true, false, true])
 }
 
-console.log('\n2. I colori ruotano come nel design')
+console.log('\n2. I colori sono quelli del design')
 {
   const colori = ritratti(pagina(tredici)).map((x) => x.colore)
-  ok('le prime tre righe sono quelle del design (giallo, blu, inchiostro, sfalsati)', colori.slice(0, 9), ['giallo', 'blu', 'inchiostro', 'blu', 'inchiostro', 'giallo', 'inchiostro', 'giallo', 'blu'])
-  ok('mai due uguali nella stessa riga di tre', [0, 3, 6, 9].every((i) => new Set(colori.slice(i, i + 3)).size === colori.slice(i, i + 3).length), true)
+  ok('i tredici ritratti hanno i colori disegnati, uno per uno', colori, ['giallo', 'blu', 'inchiostro', 'blu', 'inchiostro', 'giallo', 'inchiostro', 'giallo', 'blu', 'blu', 'inchiostro', 'blu', 'inchiostro'])
+  ok('oltre i tredici la sequenza ricomincia', ritratti(pagina(tredici + R('Z', 'x'))).map((x) => x.colore)[13], 'giallo')
 }
 
 console.log('\n3. Il link nel nome rende la tessera cliccabile')
@@ -152,10 +152,29 @@ console.log('\n8. La cornice (testata, invito, piede) con le misure del design')
   ok('invito: allineato alla pagina (margine 96px sopra, 6 sotto), alto 300px, padding 36px 40px', [/margin:\s*96px var\(--margine\) 6px/.test(inv), px(/^\s*\.invito\s*$/, 'min-height'), /padding:\s*36px 40px/.test(inv)], [true, 300, true])
   ok('invito: frase 22px larga al massimo 520px, «Prova» 170px', [px(/^\s*\.invito \.frase\s*$/, 'font-size'), px(/^\s*\.invito \.frase\s*$/, 'max-width'), /clamp\(120px,\s*11\.8vw,\s*170px\)/.test(ri(/^\s*\.invito \.parola\s*$/))], [22, 520, true])
   ok('invito sul telefono: 22px di padding, alto 260px, frase 17px', [/\.invito\{[^}]*padding:\s*22px/.test(TELEFONO), /\.invito\{[^}]*min-height:\s*260px/.test(TELEFONO), /\.invito \.frase\{[^}]*font-size:\s*17px/.test(TELEFONO)], [true, true, true])
+  ok('invito: nessuno spazio fisso tra frase e «Prova» sul computer (misura 300px), 20px sul telefono', [px(/^\s*\.invito\s*$/, 'gap') || 0, /\.invito\{[^}]*gap:\s*20px/.test(TELEFONO)], [0, true])
   ok('invito: due scritte, senza freccia (il design non ce l’ha)', [/<a class="invito"[^>]*><span class="frase">/.test(h), /freccia/.test(h)], [true, false])
   const pie = ri(/^\s*\.piede\s*$/)
   ok('piede: allineato alla pagina (margine sotto 48px), padding 40px, nome 56px', [/margin:\s*0 var\(--margine\) 48px/.test(pie), /padding:\s*40px[;}]|padding:\s*40px$/.test(pie), /clamp\(44px,\s*3\.9vw,\s*56px\)/.test(ri(/^\s*\.piede \.nome\s*$/))], [true, true, true])
   ok('piede sul telefono: 24px di padding e di margine sotto', [/\.piede\{[^}]*margin-bottom:\s*24px/.test(TELEFONO), /\.piede\{[^}]*padding:\s*24px/.test(TELEFONO)], [true, true])
+}
+
+console.log('\n9. Le differenze che restavano: pulsante corto, invito, piede, testo sul telefono')
+{
+  const h = pagina(tredici)
+  ok('sul telefono il pulsante in testata si legge «Prova» (la scritta lunga resta per chi legge lo schermo)', [/\.testata \.pulsante\{[^}]*font-size:\s*0/.test(TELEFONO), /\.testata \.pulsante::before\{[^}]*content:\s*"Prova" \/ ""[^}]*font-size:\s*16px/.test(TELEFONO)], [true, true])
+  ok('l’invito dice anche della settimana a 5 euro, come nel design', />Vieni a provare: ti aspettiamo in Via Sassi 26, Collegno\. Una settimana a 5 euro: provi tutte le discipline e scegli\.<\/span>/.test(h), true)
+  const pie = (h.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
+  ok('piede: nome su due righe, poi i recapiti (4 voci), senza titoli né riga «©»', [/^<footer class="piede"><p class="nome">Officine<br>dello Sport<\/p><ul class="recapiti"><li>/.test(pie), conta(pie, /<li>/g), /<h2|class="fine"|©/.test(pie)], [true, 4, false])
+  ok('instagram e facebook stanno su una riga, divisi da «·» (li in linea, il separatore è CSS)', [/\.recapiti li:nth-child\(n\+3\)\{[^}]*display:\s*inline/.test(CSS), /\.recapiti li:nth-child\(4\)::before\{[^}]*content:\s*" · "/.test(CSS)], [true, true])
+  const voci = [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'istruttori', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy', slug: null, indirizzo: '/privacy/' }]
+  const conVoci = (g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'istruttori', titolo: 'T', descrizione: '', testo: '' }], menu: voci, rinvii: [] })['istruttori/index.html'].match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
+  ok('le pagine del menu e le voci di piede sono due colonne a parte, con il nome per chi legge lo schermo', [/<\/ul><nav aria-label="Pagine del sito"><ul class="unita"><li><a href="\/istruttori\/"[^>]*>Home<\/a><\/li><\/ul><\/nav><nav aria-label="Altri link"><ul class="unita legale"><li><a href="\/privacy\/">Privacy<\/a><\/li><\/ul><\/nav><\/footer>$/.test(conVoci)], [true])
+  const pi = dentro(/^\s*\.piede\s*$/)
+  ok('piede a 1440px: una riga che si apre, 40px tra le colonne, 16px su 1.9', [/display:\s*flex/.test(pi), /justify-content:\s*space-between/.test(pi), px(/^\s*\.piede\s*$/, 'gap'), /font-size:\s*16px/.test(pi), /line-height:\s*1\.9/.test(pi)], [true, true, 40, true, true])
+  ok('sul telefono il piede è in colonna: nome con 14px sotto, elenchi in linea separati da «·»', [/\.piede\{[^}]*display:\s*block/.test(TELEFONO), /\.piede \.nome\{[^}]*margin:\s*0 0 14px/.test(TELEFONO), /\.piede \.unita li\{[^}]*display:\s*inline/.test(TELEFONO), /\.piede \.unita li\+li::before\{[^}]*content:\s*" · "/.test(TELEFONO), /\.piede \.unita\{[^}]*margin-top:\s*12px/.test(TELEFONO), /\.piede \.legale\{[^}]*opacity:\s*\.85/.test(TELEFONO)], [true, true, true, true, true, true])
+  ok('sul telefono il testo sotto la griglia non c’è (il design telefono non lo ha)', /\.ritratti-sezione \+ \.testo\{[^}]*display:\s*none/.test(TELEFONO), true)
+  ok('e allora la griglia non lascia i 96px sotto: l’invito sta a 48px', /\.ritratti-sezione\{[^}]*padding-bottom:\s*0/.test(TELEFONO), true)
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')

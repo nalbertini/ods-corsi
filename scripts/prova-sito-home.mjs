@@ -189,7 +189,8 @@ console.log('\n6. Il piede è una scheda scura in riga')
   const r = (re) => [...CSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => re.test(m[1].trim())).map((m) => m[2]).join(';')
   ok('il piede ha il fondo scuro e gli angoli da 6px', [/background:\s*var\(--inchiostro\)/.test(r(/^\.piede$/)), /border-radius:\s*6px/.test(r(/^\.piede$/))], [true, true])
   ok('sul desktop il piede è una riga: nome, elenchi', [/display:\s*flex/.test(r(/^\.piede$/)), /justify-content:\s*space-between/.test(r(/^\.piede$/))], [true, true])
-  ok('la riga finale («©») va a capo, a tutta larghezza', /flex-basis:\s*100%/.test(r(/^\.piede \.fine$/)), true)
+  // Il design (Home e pagine interne) non ha la riga «©»: il piede è nome, recapiti e link, in riga.
+  ok('il piede non ha la riga finale «©»', /class="fine"|©/.test((pagina('<p>x</p>').match(/<footer[\s\S]*?<\/footer>/) || [''])[0]), false)
   ok('il nome nel piede non ha margine sotto', /margin:\s*0/.test(r(/^\.piede \.nome$/)), true)
 }
 

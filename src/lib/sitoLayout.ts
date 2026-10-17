@@ -258,8 +258,8 @@ export function impagina(testoPulito: string): string {
   return fuori.join('')
 }
 
-/** I colori dei ritratti: tre, sfalsati di uno a ogni riga di tre, così nella griglia del design non ce ne sono due uguali vicini. */
-const COLORI_RITRATTI = ['giallo', 'blu', 'inchiostro'] as const
+/** I colori dei ritratti, come nel design (tredici tessere disegnate a mano); oltre la tredicesima si riparte. */
+const COLORI_RITRATTI = ['giallo', 'blu', 'inchiostro', 'blu', 'inchiostro', 'giallo', 'inchiostro', 'giallo', 'blu', 'blu', 'inchiostro', 'blu', 'inchiostro'] as const
 
 /**
  * La pagina degli istruttori: un testo senza `h2` che comincia con un `h3` (e ne ha almeno due) è una griglia di
@@ -279,7 +279,7 @@ export function ritratti(testoPulito: string): { html: string; resto: string } |
     if (foto !== null) i++
     const ruolo = i < b.length && b[i].tag === 'p' && immagine(b[i]) === null ? b[i++].html : ''
     const cerchio = foto !== null ? `<span class="ritratto-foto">${foto}</span>` : `<span class="ritratto-foto" aria-hidden="true">${iniziali(nome).slice(0, 1)}</span>`
-    const colore = COLORI_RITRATTI[(tessere.length + Math.floor(tessere.length / 3)) % COLORI_RITRATTI.length]
+    const colore = COLORI_RITRATTI[tessere.length % COLORI_RITRATTI.length]
     tessere.push(`<article class="tessera ritratto ${colore}">${cerchio}<div class="ritratto-testo"><h3>${nome}</h3>${ruolo}</div></article>`)
   }
   if (tessere.length < 2) return null

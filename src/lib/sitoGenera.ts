@@ -59,8 +59,8 @@ const TESTI = {
   provaTestata: 'Prova una settimana · 5 €',
   contattaci: 'Contattaci',
   invito: 'Vieni a provare: ti aspettiamo in',
+  invitoSettimana: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
   altriLink: 'Altri link',
-  trovarci: 'Vieni a trovarci',
   contatti: '/contatti/',
 }
 const NOME = TESTI.nome
@@ -139,17 +139,16 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .testo blockquote{padding-left:18px;border-left:4px solid var(--blu);font-size:1.15em}
 .testo a,.colonna a{text-underline-offset:3px}
 .testo img,.colonna img{max-width:100%;height:auto;border-radius:6px}
-.invito{display:flex;flex-direction:column;justify-content:space-between;gap:20px;margin:96px var(--margine) 6px;padding:36px 40px;min-height:300px;border-radius:6px;background:var(--giallo);color:var(--inchiostro);text-decoration:none}
+.invito{display:flex;flex-direction:column;justify-content:space-between;gap:0;margin:96px var(--margine) 6px;padding:36px 40px;min-height:300px;border-radius:6px;background:var(--giallo);color:var(--inchiostro);text-decoration:none}
 .invito .frase{max-width:520px;font-size:22px;line-height:1.35}
 .invito .parola{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(120px,11.8vw,170px);line-height:.8;letter-spacing:-.01em}
-.piede{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:32px;margin:0 var(--margine) 48px;padding:40px;background:var(--inchiostro);color:#fff;border-radius:6px}
+.piede{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:40px;margin:0 var(--margine) 48px;padding:40px;background:var(--inchiostro);color:#fff;border-radius:6px;font-size:16px;line-height:1.9}
 .piede .nome{margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(44px,3.9vw,56px);line-height:.9}
-.piede .colonne{display:flex;flex-wrap:wrap;gap:32px clamp(32px,7vw,96px);font-size:16px;line-height:1.9}
-.piede h2{margin:0;font-family:inherit;text-transform:none;font-size:16px;font-weight:400;color:var(--chiara)}
 .piede ul{margin:0;padding:0;list-style:none}
 .piede a{text-decoration:none}
 .piede a:hover{text-decoration:underline}
-.piede .fine{flex-basis:100%;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;margin-top:0;font-size:14px;color:var(--chiara)}
+.recapiti li:nth-child(n+3){display:inline}
+.recapiti li:nth-child(4)::before{content:" · "}
 .sezione{padding:0 var(--margine) 96px}
 .sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 28px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.88;overflow-wrap:anywhere}
 .testo + .sezione{padding-top:24px}
@@ -274,9 +273,18 @@ ${GRIGLIE_LUNGHE}
 .foto-fila,.foto-fila.quattro{grid-template-columns:repeat(2,1fr)}
 .foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
-.invito{margin-top:48px;padding:22px;min-height:260px}
+.invito{margin-top:48px;padding:22px;min-height:260px;gap:20px}
 .invito .frase{font-size:17px}
-.piede{margin-bottom:24px;padding:24px}
+.piede{display:block;margin-bottom:24px;padding:24px}
+.piede .nome{margin:0 0 14px}
+.piede .unita{margin-top:12px}
+.piede .unita li{display:inline}
+.piede .unita li+li::before{content:" · "}
+.piede .legale{opacity:.85}
+.ritratti-sezione + .testo{display:none}
+.ritratti-sezione{padding-bottom:0}
+.testata .pulsante{font-size:0}
+.testata .pulsante::before{content:"Prova" / "";font-size:16px}
 .pagina-hero.solo{padding:20px var(--margine) 36px}
 .pagina-hero.solo .intro{grid-template-columns:1fr}
 .pagina-hero.solo h1{grid-row:auto;line-height:.84;margin-bottom:20px}
@@ -347,14 +355,15 @@ function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
 }
 
 function piede(c: Contesto): string {
-  const f = lista(voci('footer', c))
+  const pagine = lista(voci('menu', c))
+  const altri = lista(voci('footer', c))
   const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
-  return `<footer class="piede"><p class="nome">${NOME}</p><div class="colonne">${f ? `<div><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}<div><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div></div><div class="fine"><span>© ${NOME}</span></div></footer>`
+  return `<footer class="piede"><p class="nome">${esc(NOME).replace(' dello', '<br>dello')}</p><ul class="recapiti">${recapiti}</ul>${pagine ? `<nav aria-label="Pagine del sito"><ul class="unita">${pagine}</ul></nav>` : ''}${altri ? `<nav aria-label="${TESTI.altriLink}"><ul class="unita legale">${altri}</ul></nav>` : ''}</footer>`
 }
 
 function invito(conContatti: boolean): string {
   if (!conContatti) return ''
-  return `<a class="invito" href="${TESTI.contatti}"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}.</span><span class="parola">${TESTI.prova}</span></a>`
+  return `<a class="invito" href="${TESTI.contatti}"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}. ${TESTI.invitoSettimana}</span><span class="parola">${TESTI.prova}</span></a>`
 }
 
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean }): string {
