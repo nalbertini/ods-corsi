@@ -62,7 +62,12 @@ for (const f of ['Richieste', 'Corsi']) {
 }
 for (const f of ['Iscritti', 'Personale', 'Vestiario'])
   ok(`${f}: l'elenco resta visibile sotto la finestra`, /className="stack" style=\{\{ gap: 18 \}\} hidden=/.test(leggi(`src/components/segreteria/${f}.tsx`)), false)
-ok('Richieste: accolta o rifiutata la finestra si chiude (onConclusa)', /onConclusa/.test(leggi('src/components/segreteria/Richieste.tsx')), true)
+{
+  // Chiude solo a cosa riuscita: `fai` chiama il terzo argomento dopo un'operazione andata a buon fine, mai nel guaio.
+  const src = leggi('src/components/segreteria/Richieste.tsx')
+  ok('Richieste: accolta riuscita, la finestra si chiude (finito = rileggi + onConclusa, dato a fai)', [/const finito = \(\) => \{\s*rileggi\(\)\s*onConclusa\(\)\s*\}/.test(src), /riuscito,\s*finito,/.test(src)], [true, true])
+  ok('Richieste: rifiutata riuscita, la finestra si chiude', /'Richiesta rifiutata', \(\) => \{\s*onCambiato\(\)\s*onConclusa\(\)\s*\}/.test(src), true)
+}
 const richieste = leggi('src/components/segreteria/Richieste.tsx')
 ok('Richieste: la data del certificato scritta è una bozza (clic fuori e PRECEDENTE non la perdono)', /useBozza\(scadeCert/.test(richieste), true)
 ok('Richieste: ✕, Esc, PRECEDENTE e SUCCESSIVA chiedono prima (lasciare)', /if \(await lasciare\(\)\) setScelta\(id\)/.test(richieste) && /onTorna=\{\(\) => void apri\(null\)\}/.test(richieste) && /\(\) => void apri\(id\)/.test(richieste), true)
