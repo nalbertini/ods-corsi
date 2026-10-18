@@ -69,6 +69,7 @@ const SEZIONI = [
   { id: 'moduli-pdf', nome: 'Moduli PDF · carta (proposta)', cartella: 'moduli-pdf' },
   { id: 'sito-blocchi', nome: 'Sito · pagine a pezzi · proposta', cartella: 'sito-blocchi' },
   { id: 'sito-porta-ai-pezzi', nome: 'Sito · porta ai pezzi · proposta', cartella: 'sito-porta-ai-pezzi' },
+  { id: 'sito-pezzi-spazio', nome: 'Sito · pezzi, più spazio · proposta', cartella: 'sito-pezzi-spazio' },
 ]
 
 // Il canvas mostra al massimo 40 pagine: le sezioni vicine stanno sulla stessa pagina, una sotto l'altra, ognuna col suo titolo.
