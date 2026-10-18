@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.125.0 — 18 ottobre 2026
+
+### Novità
+
+- In ISCRITTI un filtro per chi ha già pagato nel vecchio programma, da segnare tutti insieme
+
+### Modificato
+
+- Preparate le skill di Matt Pocock per il lavoro con gli agenti
+
 ## 0.124.1 — 18 ottobre 2026
 
 ### Risolto
