@@ -179,10 +179,10 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
       </span>
 
       <ol className="sg-passi">
-        {['I FOGLI', 'IL CONTROLLO', 'NELL\'APP'].map((nome, i) => (
+        {['I fogli', 'Il controllo', 'Nell’app'].map((nome, i) => (
           <li key={nome} aria-current={passo === i + 1 ? 'step' : undefined} data-fatto={passo > i + 1}>
             <span className="num sg-passo-num">{i + 1}</span>
-            <span className="num" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.16em' }}>{nome}</span>
+            <span className="num" style={{ fontSize: 14, fontWeight: 700 }}>{nome}</span>
           </li>
         ))}
       </ol>
@@ -209,7 +209,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
                     </span>
                   )}
                   <label className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start', cursor: 'pointer' }}>
-                    {c ? 'CAMBIA FOGLIO' : 'SCEGLI IL FOGLIO'}
+                    {c ? 'Cambia foglio' : 'Scegli il foglio'}
                     <input type="file" accept=".csv,text/csv" className="vh" onChange={(e) => {
                         void carica(f.chiave, e.target.files?.[0])
                         // Così lo stesso file, corretto in Excel, si può rileggere.
@@ -240,7 +240,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
             disabled={(!fogli.corsi && !fogli.iscritti && !fogli.risposte) || (!!fogli.risposte && !nomeChiaro)}
             onClick={() => void controlla()}
           >
-            AVANTI: CONTROLLA
+            Avanti: controlla
           </button>
         </>
       )}
@@ -343,10 +343,10 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
             <span className="sg-sotto" role="note" style={{ color: backup.avviso ? 'var(--giallo-testo)' : undefined }}>{backup.testo}</span>
             <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
               <button type="button" className="sg-btn sg-btn-linea" disabled={!!aspetta} onClick={daCapo}>
-                CARICA DI NUOVO
+                Carica di nuovo
               </button>
               <button type="button" className="sg-btn sg-btn-rosso" disabled={!!aspetta || buone <= 0} onClick={() => void vai()}>
-                IMPORTA LE {buone} RIGHE BUONE
+                Importa le {buone} righe buone
               </button>
             </div>
           </div>
@@ -405,17 +405,17 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
           {(fatto.a.daSistemare.length > 0 || fatto.a.emailDiAltri.length > 0) && (
             <>
               <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => void copia(testoResoconto(fatto.a))}>
-                {copiato ? 'COPIATO' : 'COPIA L\'ELENCO'}
+                {copiato ? 'Copiato' : 'Copia l’elenco'}
               </button>
               <span role="status" className="vh">{copiato ? 'Elenco copiato' : ''}</span>
             </>
           )}
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
             <button type="button" className="sg-btn sg-btn-pieno" onClick={() => onVai('settimana')}>
-              VAI ALLA SETTIMANA
+              Vai alla settimana
             </button>
             <button type="button" className="sg-btn sg-btn-linea" onClick={daCapo}>
-              IMPORTA DI NUOVO
+              Importa di nuovo
             </button>
           </div>
         </div>

@@ -15,7 +15,7 @@ L'elenco unisce due cose:
 
 - gli **incassi degli iscritti**: le ricevute e i pagamenti a mano di
   [PAGAMENTI](pagamenti.md) entrano da soli, uno per pagamento, col segno
-  **INCASSO ISCRITTO**. Non si ricopiano e non si cambiano da qui: se una ricevuta
+  **Incasso iscritto**. Non si ricopiano e non si cambiano da qui: se una ricevuta
   o un pagamento si annulla, cambia da sé anche qui. Contanti vanno in Cassa
   Contanti, tutto il resto (bonifico, POS, Satispay, assegno) in Conto Corrente.
   Il «pagato fino al» non è un incasso e qui non compare;
@@ -24,13 +24,13 @@ L'elenco unisce due cose:
 
 Si cerca nella descrizione, si sceglie il periodo (il mese, il mese scorso, tutto
 l'anno, tutto), si filtra per **ENTRATE**, **USCITE**, **GIROCONTI** e per cassa.
-**RAGGRUPPA PER VOCE** dà i totali per voce; **ANNULLATI** mostra anche quelli
-annullati. **ESPORTA CSV** è un foglio per Excel e per il commercialista, senza gli
+**Raggruppa per voce** dà i totali per voce; **Annullati** mostra anche quelli
+annullati. **Esporta CSV** è un foglio per Excel e per il commercialista, senza gli
 annullati.
 
 ### Nuovo movimento
 
-**NUOVO MOVIMENTO**: entrata o uscita, data, importo, cassa, **voce** (solo quelle
+**Nuovo movimento**: entrata o uscita, data, importo, cassa, **voce** (solo quelle
 del tipo giusto, non quelle disattivate), descrizione e una nota se serve. Un solo
 importo, senza IVA. La data non è nel futuro e non è prima del giorno da cui parte
 la cassa. Niente dati personali che non servono, nella descrizione e nella nota.
@@ -42,7 +42,7 @@ cassa si annulla e si rifà.
 
 ### Giroconto
 
-**GIROCONTO** sposta soldi da una cassa all'altra, per esempio il versamento dei
+**Giroconto** sposta soldi da una cassa all'altra, per esempio il versamento dei
 contanti in banca: da Cassa Contanti a Conto Corrente. Non è un'entrata né
 un'uscita: non entra nei totali, né nei totali per voce. Si annulla come un movimento.
 
@@ -57,7 +57,7 @@ con una data dopo la chiusura e una voce «Rettifica» (in VOCI si crea con un t
 Le voci sono quelle che crei: ogni voce è **solo di entrata o solo di uscita**, con un
 nome diverso dalle altre dello stesso tipo. Una voce usata non si cancella: si
 **disattiva**, resta sui movimenti vecchi e non si offre per i nuovi; si **riattiva**
-quando serve. Le due voci **SISTEMA** («Quota associativa» e «Corsi e altri
+quando serve. Le due voci **Sistema** («Quota associativa» e «Corsi e altri
 pagamenti») servono agli incassi degli iscritti e non si cambiano. Non c'è una voce
 «Varie»: se la crei, non farci finire spese diverse, o non si capisce più dove vanno i soldi.
 
@@ -73,7 +73,7 @@ Il saldo iniziale lo cambia solo l'amministrazione, da qui.
 ## Chiusura della cassa
 
 Ogni tanto (a fine settimana, per esempio) si conta il denaro nella **Cassa Contanti** e si
-controlla che torni. In **CASSE**, **CHIUDI LA CASSA**:
+controlla che torni. In **CASSE**, **Chiudi la cassa**:
 
 1. Scegli **FINO AL** (di solito oggi). Il periodo parte dal giorno dopo l'ultima chiusura.
 2. L'app dice **IN CASSA SECONDO I CONTI**: il saldo iniziale, i contanti incassati dagli
@@ -82,7 +82,7 @@ controlla che torni. In **CASSE**, **CHIUDI LA CASSA**:
 3. Scrivi i **CONTANTI CONTATI**, un solo totale. L'app dice la **DIFFERENZA**: «Tornano»,
    «in più» o «in meno». Una nota facoltativa dice perché. Se la differenza è sopra 20,00 €,
    chiede una conferma in più.
-4. **CHIUDI LA CASSA**. Se i conti non tornano, la differenza si scrive da sola nei conti, come
+4. **Chiudi la cassa**. Se i conti non tornano, la differenza si scrive da sola nei conti, come
    movimento «Differenza di cassa» di quel giorno (un'entrata se c'erano più soldi, un'uscita se meno),
    così a fine giorno «in cassa» è quanto hai contato. Non si sceglie a mano in NUOVO MOVIMENTO.
 
@@ -98,7 +98,7 @@ chiusura.
 
 Sotto le casse c'è l'elenco delle **chiusure**: chi ha chiuso e quando, quanto si è contato, la
 differenza. **PDF** scarica il foglio da stampare e firmare (A4: l'associazione, il periodo, le cifre, i
-movimenti in contanti senza i nomi degli iscritti, due righe per le firme). **ANNULLA** c'è solo
+movimenti in contanti senza i nomi degli iscritti, due righe per le firme). **Annulla** c'è solo
 sull'ultima chiusura: toglie anche la sua «Differenza di cassa» e riapre i giorni; il foglio già
 stampato non vale più. Una chiusura non si cambia: si annulla e si rifà.
 

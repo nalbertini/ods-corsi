@@ -38,7 +38,7 @@ function CaricaImmagini({ d, dopo, tratteggiato }: { d: DatiSegreteria; dopo: (n
     <>
       <input ref={campo} type="file" accept={DISCO} multiple hidden aria-label="Scegli le immagini da caricare" onChange={(e) => void manda(e.target.files)} />
       <button type="button" className={tratteggiato ? 'sg-btn sg-btn-tratteggio' : 'sg-btn sg-btn-pieno'} disabled={lavora} onClick={() => campo.current?.click()}>
-        {lavora ? 'CARICO…' : tratteggiato ? '+ CARICA UN’IMMAGINE NUOVA' : 'CARICA UN’IMMAGINE'}
+        {lavora ? 'Carico…' : tratteggiato ? '+ Carica un’immagine nuova' : 'Carica un’immagine'}
       </button>
       {avviso}
     </>
@@ -72,10 +72,10 @@ export function Immagini({ d, pagine }: { d: DatiSegreteria; pagine: PaginaSito[
                 <img src={im.url} alt="" loading="lazy" />
                 <span className="sg-sotto">{usata.length ? `Usata in: ${usata.join(', ')}` : 'Non è usata in nessuna pagina'}</span>
                 {usata.length ? (
-                  <span className="sg-tag">IN USO: NON SI CANCELLA</span>
+                  <span className="sg-tag">In uso: non si cancella</span>
                 ) : (
                   <button type="button" className="sg-chip num" disabled={lavora} onClick={() => void fai(() => d.cancellaImmagineSito(im.nome), 'Immagine tolta', () => elenco.ricarica())}>
-                    TOGLI
+                    Togli
                   </button>
                 )}
               </li>
@@ -130,10 +130,10 @@ export function ScegliImmagine({ d, onScelta, onChiudi, perFoto = false }: { d: 
         </label>
         <div className="row" style={{ gap: 10, justifyContent: 'flex-end' }}>
           <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
-            LASCIA STARE
+            Lascia stare
           </button>
           <button type="button" className="sg-btn sg-btn-pieno" disabled={!scelta || !!no} title={!scelta ? 'Scegli prima un’immagine' : (no ?? undefined)} onClick={() => scelta && onScelta(scelta, pulito)}>
-            INSERISCI
+            Inserisci
           </button>
         </div>
       </div>

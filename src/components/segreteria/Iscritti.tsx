@@ -50,8 +50,8 @@ function CampiEmail({
   const campo = campoDelGuaio(guaio)
   const nota = (di: typeof campo, avviso: string): Nota => (campo === di ? { testo: guaio, guaio: true } : { testo: avviso, guaio: false })
   const campi = [
-    { id: `${prefisso}-email`, etichetta: 'EMAIL', valore: email, cambia: onEmail, di: 'email' as const, avviso: "Per entrare nell'app. Una sola persona per indirizzo." },
-    { id: `${prefisso}-contatto`, etichetta: 'EMAIL DI CONTATTO', valore: contatto, cambia: onContatto, di: 'emailContatto' as const, avviso: "Dove scriviamo o telefoniamo alla famiglia. Può essere lo stesso di altri. L'app non manda mai mail qui." },
+    { id: `${prefisso}-email`, etichetta: 'Email', valore: email, cambia: onEmail, di: 'email' as const, avviso: "Per entrare nell'app. Una sola persona per indirizzo." },
+    { id: `${prefisso}-contatto`, etichetta: 'Email di contatto', valore: contatto, cambia: onContatto, di: 'emailContatto' as const, avviso: "Dove scriviamo o telefoniamo alla famiglia. Può essere lo stesso di altri. L'app non manda mai mail qui." },
   ]
   return (
     <>
@@ -255,7 +255,7 @@ export function Iscritti({
   return (
     <>
       {nuovo ? (
-        <SchedaPiena etichetta="Nuovo iscritto" torna="ISCRITTI" onTorna={torna}>
+        <SchedaPiena etichetta="Nuovo iscritto" torna="Iscritti" onTorna={torna}>
           <Bozza>
           <Nuovo
             d={d}
@@ -272,7 +272,7 @@ export function Iscritti({
           </Bozza>
         </SchedaPiena>
       ) : persona ? (
-        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna={corsoDa ? 'CORSO' : 'ISCRITTI'} onTorna={torna}>
+        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna={corsoDa ? 'Corso' : 'Iscritti'} onTorna={torna}>
           <Scheda
             d={d}
             p={persona}
@@ -368,7 +368,7 @@ export function Iscritti({
                 const x = tutti.find((y) => y.id === id)
                 return x ? `${x.cognome} ${x.nome}` : ''
               }
-              if (!(await chiedi(`${nome(a)} e ${nome(b)} non sono la stessa persona? La coppia non compare più fra i possibili doppioni.`, 'SÌ, NON SONO DOPPIONI'))) return
+              if (!(await chiedi(`${nome(a)} e ${nome(b)} non sono la stessa persona? La coppia non compare più fra i possibili doppioni.`, 'Sì, non sono doppioni'))) return
               // Toccato per sbaglio ce se ne accorge subito: ANNULLA nell'avviso, senza aprire la scheda.
               void fai(
                 () => d.segnaNonDoppioni(a, b),
@@ -376,7 +376,7 @@ export function Iscritti({
                 async () => {
                   await indizi.ricarica()
                   avvisa('Segnati: non sono doppioni', false, {
-                    etichetta: 'ANNULLA',
+                    etichetta: 'Annulla',
                     fa: () => void fai(() => d.togliNonDoppioni(a, b), 'Tornati fra i possibili doppioni', () => indizi.ricarica()),
                   })
                 },
@@ -514,10 +514,10 @@ function Nuovo({
       </div>
       <div className="sg-scheda-piede">
         <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
-          LASCIA STARE
+          Lascia stare
         </button>
         <button type="button" className="sg-btn sg-btn-pieno grow" disabled={!b.nome.trim() || !b.cognome.trim()} onClick={salva}>
-          SALVA
+          Salva
         </button>
       </div>
     </>
@@ -702,7 +702,7 @@ function Scheda({
                       setTimeout(() => setTogliendo(false), 400)
                     }}
                   >
-                    TOGLI
+                    Togli
                   </button>
                 </div>
               ))}
@@ -731,12 +731,12 @@ function Scheda({
                       type="button"
                       className="num sg-chip"
                       onClick={async () => {
-                        if ((await chiedi(`${p.nome} smette di venire a ${c?.nome}? Da domani non è più nell'appello; il registro resta.`, 'TERMINA L’ISCRIZIONE'))) {
+                        if ((await chiedi(`${p.nome} smette di venire a ${c?.nome}? Da domani non è più nell'appello; il registro resta.`, 'Termina l’iscrizione'))) {
                           void fai(() => d.termina(p.id, i.corsoId), 'Iscrizione terminata', onCambiato)
                         }
                       }}
                     >
-                      TERMINA
+                      Termina
                     </button>
                   )}
                 </div>
@@ -765,7 +765,7 @@ function Scheda({
                   })
                 }
               >
-                ISCRIVI
+                Iscrivi
               </button>
             </div>
           </div>
@@ -802,7 +802,7 @@ function Scheda({
         {modifica ? (
           <>
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setModifica(null)}>
-              LASCIA STARE
+              Lascia stare
             </button>
             <button
               type="button"
@@ -824,7 +824,7 @@ function Scheda({
                 )
               }}
             >
-              SALVA
+              Salva
             </button>
           </>
         ) : (
@@ -833,20 +833,20 @@ function Scheda({
                 setGuaio('')
                 setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, emailContatto: p.emailContatto, telefono: p.telefono })
               }}>
-              MODIFICA
+              Modifica
             </button>
             <button
               type="button"
               className="sg-btn sg-btn-linea grow"
               onClick={async () => {
-                if (p.attiva && !(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'DISATTIVA LA SCHEDA'))) return
+                if (p.attiva && !(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'Disattiva la scheda'))) return
                 void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Scheda disattivata' : 'Scheda riattivata', onCambiato)
               }}
             >
-              {p.attiva ? 'DISATTIVA' : 'RIATTIVA'}
+              {p.attiva ? 'Disattiva' : 'Riattiva'}
             </button>
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setUnendo(true)}>
-              UNISCI…
+              Unisci…
             </button>
           </>
         )}
@@ -951,10 +951,10 @@ function CoppieDoppioni({
           <div style={{ borderTop: '2px solid var(--line)', paddingTop: 10 }}>{riga(b)}</div>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
             <button type="button" className="sg-btn sg-btn-pieno" onClick={() => onUnisci(a.id, b.id)}>
-              UNISCI…
+              Unisci…
             </button>
             <button type="button" className="sg-btn sg-btn-linea" onClick={() => onNonDoppioni(a.id, b.id)}>
-              NON SONO DOPPIONI
+              Non sono doppioni
             </button>
           </div>
         </div>
@@ -1050,11 +1050,11 @@ function UnisciDoppione({
             {colonna('SE NE VA', via)}
           </div>
           <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => setScambiate((v) => !v)}>
-            TIENI L’ALTRA
+            Tieni l’altra
           </button>
           {scambiati(resta, via) && (
             <span style={{ fontSize: 14 }}>
-              Nome e cognome sono scambiati. Se resta il nome sbagliato, TIENI L’ALTRA.
+              Nome e cognome sono scambiati. Se resta il nome sbagliato, «Tieni l’altra».
             </span>
           )}
           {campiDiversi(resta, via).map((c) => (
@@ -1081,7 +1081,7 @@ function UnisciDoppione({
 
       <div className="sg-scheda-piede">
         <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
-          LASCIA STARE
+          Lascia stare
         </button>
         <button
           type="button"
@@ -1092,11 +1092,11 @@ function UnisciDoppione({
             const persi = indirizziPersi(resta, via)
             // Niente sparisce in silenzio: l'indirizzo che non trova posto si dice prima.
             const perso = persi.length ? `\nDell'altra scheda si perde ${persi.join(', ')}: non c'è posto fra l'email e il contatto di chi resta.\nCopialo prima, se ti serve.` : ''
-            if (!(await chiedi(confermaUnione(nome(via), nome(resta), via.certificato, resta.certificato, perso), 'UNISCI', { pericolo: true }))) return
+            if (!(await chiedi(confermaUnione(nome(via), nome(resta), via.certificato, resta.certificato, perso), 'Unisci', { pericolo: true }))) return
             void fai(() => d.unisciPersone(resta.id, via.id), 'Schede unite', () => onUnite(resta.id))
           }}
         >
-          UNISCI
+          Unisci
         </button>
       </div>
     </div>
@@ -1154,17 +1154,17 @@ function NucleoFamiliare({
       {x.nucleo && (
         <>
           <button type="button" className="num sg-chip" onClick={() => void fai(() => d.rendiTitolare(x.id), `${x.nome} è titolare del nucleo`, onCambiato)}>
-            TITOLARE
+            Titolare
           </button>
           <button
             type="button"
             className="num sg-chip"
             onClick={async () => {
-              if ((await chiedi(`Togliere ${x.nome} ${x.cognome} dal nucleo? Resta iscritto, ma il titolare non lo vede più nella sua pagina.`, 'TOGLI DAL NUCLEO')))
+              if ((await chiedi(`Togliere ${x.nome} ${x.cognome} dal nucleo? Resta iscritto, ma il titolare non lo vede più nella sua pagina.`, 'Togli dal nucleo')))
                 void fai(() => d.togliDalNucleo(x.id), 'Tolto dal nucleo', onCambiato)
             }}
           >
-            TOGLI
+            Togli
           </button>
         </>
       )}
@@ -1174,7 +1174,7 @@ function NucleoFamiliare({
   return (
     <div className="stack" style={{ gap: 8 }}>
       <Riga titolo="NUCLEO FAMILIARE">
-        <span className="num sg-bollino">PROVA</span>
+        <span className="num sg-bollino">Prova</span>
       </Riga>
       {!p.nucleo && membri.length === 0 ? (
         <span className="sg-sotto">Non è in un nucleo. Aggiungi qualcuno qui sotto, e ne diventa titolare: vedrà nella sua pagina anche le persone del nucleo.</span>
@@ -1210,7 +1210,7 @@ function NucleoFamiliare({
               })
             }
           >
-            AGGIUNGI
+            Aggiungi
           </button>
         </div>
       )}
@@ -1256,7 +1256,7 @@ function DatiAnagrafici({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: Perso
         {an.dato?.di && <span style={{ fontSize: 12, color: 'var(--dim)' }}>{an.dato.di.da === 'modulo' ? 'dal modulo di iscrizione' : 'dall’import o dalla segreteria'}</span>}
         {an.dato && (
           <button type="button" className="num sg-chip" onClick={() => setModifica({ ...(an.dato?.di?.dati ?? {}) })}>
-            {an.dato.di ? 'MODIFICA' : 'AGGIUNGI'}
+            {an.dato.di ? 'Modifica' : 'Aggiungi'}
           </button>
         )}
       </Riga>
@@ -1283,16 +1283,16 @@ function DatiAnagrafici({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: Perso
 
 /** I campi della MODIFICA, nell'ordine in cui si scrivono. */
 const CAMPI_ANAGRAFICA: Array<{ k: keyof Anagrafica; etichetta: string; tipo?: 'date'; codice?: boolean; largo?: boolean; max: number }> = [
-  { k: 'natoIl', etichetta: 'NATO IL', tipo: 'date', max: 10 },
+  { k: 'natoIl', etichetta: 'Nato il', tipo: 'date', max: 10 },
   { k: 'natoA', etichetta: 'A', max: 80 },
-  { k: 'codiceFiscale', etichetta: 'CODICE FISCALE', codice: true, largo: true, max: 16 },
-  { k: 'indirizzo', etichetta: 'INDIRIZZO', largo: true, max: 160 },
+  { k: 'codiceFiscale', etichetta: 'Codice fiscale', codice: true, largo: true, max: 16 },
+  { k: 'indirizzo', etichetta: 'Indirizzo', largo: true, max: 160 },
   { k: 'cap', etichetta: 'CAP', max: 5 },
-  { k: 'comune', etichetta: 'COMUNE', max: 80 },
-  { k: 'genitoreNome', etichetta: 'NOME DEL GENITORE', max: 80 },
-  { k: 'genitoreCognome', etichetta: 'COGNOME DEL GENITORE', max: 80 },
-  { k: 'genitoreCodiceFiscale', etichetta: 'CODICE FISCALE DEL GENITORE', codice: true, largo: true, max: 16 },
-  { k: 'genitoreNato', etichetta: 'LUOGO E DATA DI NASCITA DEL GENITORE', largo: true, max: 120 },
+  { k: 'comune', etichetta: 'Comune', max: 80 },
+  { k: 'genitoreNome', etichetta: 'Nome del genitore', max: 80 },
+  { k: 'genitoreCognome', etichetta: 'Cognome del genitore', max: 80 },
+  { k: 'genitoreCodiceFiscale', etichetta: 'Codice fiscale del genitore', codice: true, largo: true, max: 16 },
+  { k: 'genitoreNato', etichetta: 'Luogo e data di nascita del genitore', largo: true, max: 120 },
 ]
 
 /**
@@ -1379,10 +1379,10 @@ function ModificaAnagrafica({
       <span className="sg-sotto">Un campo lasciato vuoto si cancella. Le ricevute già fatte restano com'erano; le nuove prendono questi.</span>
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
         <button type="button" className="sg-btn sg-btn-linea" onClick={onFatto}>
-          LASCIA STARE
+          Lascia stare
         </button>
         <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no} onClick={() => void fai(() => d.salvaAnagrafica(p.id, pulita, true), 'Dati anagrafici salvati', onFatto)}>
-          SALVA
+          Salva
         </button>
       </div>
     </div>
@@ -1439,7 +1439,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
               <span style={{ fontSize: 13, color: 'var(--dim)' }}>{c.caricatoIl ? `caricato il ${dataLunga(c.caricatoIl)}` : 'caricato prima della nuova gestione'}</span>
             </span>
             <button type="button" className="num sg-chip sg-chip-pieno" onClick={apri}>
-              APRI
+              Apri
             </button>
           </div>
           <span style={{ fontSize: 13, color: 'var(--dim)' }}>Lo vede solo la segreteria. Il link dura 10 minuti: se scade, basta riaprire con APRI.</span>
@@ -1463,7 +1463,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
                 {gesto.file ? gesto.file.name : c.conFile ? 'Resta quello che c’è' : 'Nessun file scelto'}
               </span>
               <button type="button" className="num sg-chip" onClick={() => sel.current?.click()}>
-                {gesto.file ? 'CAMBIA' : 'SCEGLI'}
+                {gesto.file ? 'Cambia' : 'Scegli'}
               </button>
               <input
                 ref={sel}
@@ -1489,7 +1489,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
           ))}
           <div className="row" style={{ gap: 8 }}>
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setGesto(null)}>
-              LASCIA STARE
+              Lascia stare
             </button>
             <button
               type="button"
@@ -1506,7 +1506,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
                 )
               }
             >
-              SALVA
+              Salva
             </button>
           </div>
         </div>
@@ -1522,11 +1522,11 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
               type="button"
               className="sg-btn sg-btn-linea"
               onClick={async () => {
-                if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file si cancella per sempre.' : ''} Senza certificato non entra in sala finché non se ne carica uno nuovo.`, 'TOGLI IL CERTIFICATO', { pericolo: true })))
+                if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file si cancella per sempre.' : ''} Senza certificato non entra in sala finché non se ne carica uno nuovo.`, 'Togli il certificato', { pericolo: true })))
                   void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
               }}
             >
-              TOGLI IL CERTIFICATO
+              Togli il certificato
             </button>
           )}
         </div>
@@ -1555,10 +1555,10 @@ function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
           className="num sg-chip"
           data-primo={p.documento ? undefined : true}
           onClick={() =>
-            void fai(() => d.salvaDocumento(p.id, !p.documento), p.documento ? 'Documento tolto: ora è DA PORTARE. Se era uno sbaglio, LA COPIA È IN SEGRETERIA lo rimette' : 'Documento segnato in segreteria', onCambiato)
+            void fai(() => d.salvaDocumento(p.id, !p.documento), p.documento ? 'Documento tolto: ora è «Da portare». Se era uno sbaglio, «La copia è in segreteria» lo rimette' : 'Documento segnato in segreteria', onCambiato)
           }
         >
-          {p.documento ? 'LA COPIA NON C’È PIÙ' : 'LA COPIA È IN SEGRETERIA'}
+          {p.documento ? 'La copia non c’è più' : 'La copia è in segreteria'}
         </button>
       </div>
     </div>
@@ -1607,7 +1607,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
     <div className="stack" style={{ gap: 8 }}>
       <Riga titolo="QUOTA">
         <Bollino tono={t.tono}>{t.parola}</Bollino>
-        {s.fonte === 'fuori_app' && <Bollino tono="spento">FUORI APP</Bollino>}
+        {s.fonte === 'fuori_app' && <Bollino tono="spento">Fuori app</Bollino>}
       </Riga>
       <span style={{ fontSize: 14, color: s.come === 'pagato' ? 'var(--sec)' : s.come === 'in_parte' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{detto}</span>
       {s.fonte === 'fuori_app' && s.nota && <span style={{ fontSize: 14, color: 'var(--sec)' }}>{s.nota}</span>}
@@ -1634,7 +1634,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
           </div>
           <div className="row" style={{ gap: 8 }}>
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setScrivi(false)}>
-              LASCIA STARE
+              Lascia stare
             </button>
             <button
               type="button"
@@ -1647,7 +1647,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
                 })
               }
             >
-              SEGNA PAGATA
+              Segna pagata
             </button>
           </div>
         </div>
@@ -1657,7 +1657,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
           className="sg-link"
           style={{ alignSelf: 'flex-start' }}
           onClick={async () => {
-            if ((await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'TOGLI L’ECCEZIONE')))
+            if ((await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'Togli l’eccezione')))
               void fai(() => d.salvaPagamento(p.id, { stato: 'da_pagare' }), 'Tolta: ora contano solo le ricevute', onCambiato)
           }}
         >
@@ -1666,7 +1666,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
       ) : (
         s.come !== 'pagato' && (
           <button type="button" className="num sg-chip" style={{ alignSelf: 'flex-start' }} onClick={() => setScrivi(true)}>
-            PAGATA SENZA RICEVUTA DELL’APP
+            Pagata senza ricevuta dell’app
           </button>
         )
       )}
