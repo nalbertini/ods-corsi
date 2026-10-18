@@ -6,17 +6,14 @@ import { cfNatoIl } from './codiceFiscale'
  * Il modulo delle autorizzazioni firmato dal telefono, senza stamparlo.
  *
  * Chi si iscrive sceglie nel modulo dell'app le stesse caselle del foglio (il
- * tesseramento, le foto) e firma col dito; qui si prende il PDF originale di
- * `public/moduli/`, ci si scrivono sopra i dati già dati nelle domande, le
- * crocette, la data e la firma, e ne esce il MODULO FIRMATO da caricare come
- * se fosse la foto del foglio. Il foglio resta quello della palestra: cambia
- * solo che è compilato.
+ * tesseramento, le foto) e firma col dito; qui si prende il PDF di
+ * `public/moduli/` (`fogliModuli.ts`), ci si scrivono sopra i dati già dati
+ * nelle domande, le crocette, la data e la firma, e ne esce il MODULO FIRMATO
+ * da caricare come se fosse la foto del foglio.
  *
- * Le posizioni sono in punti PDF, con l'origine in basso a sinistra, e vanno
- * sulle righe dei due moduli di oggi: se la palestra cambia un foglio, vanno
- * rimisurate (le righe e le caselle si trovano col testo del PDF) e
- * riguardate coi PDF che lascia `node scripts/prova-firma.mjs <cartella>`.
- * Il resto non cambia.
+ * Si scrive per NOME di campo, sul rettangolo che il campo ha nel foglio, e
+ * alla fine i campi si tolgono: il PDF che esce è fermo, uguale in ogni
+ * lettore del telefono. Se un foglio cambia aspetto non si rimisura niente.
  */
 
 export interface SceltaModulo {
@@ -35,66 +32,11 @@ export interface DatiFirma {
   genitoreProvincia?: string
   /** La firma, un PNG trasparente già ritagliato. */
   firma: Uint8Array
-  /** Il PDF originale, maggiorenni o minori secondo `minore`. */
+  /** Il foglio coi campi, maggiorenni o minori secondo `minore`. */
   originale: ArrayBuffer | Uint8Array
   quando?: Date
   /** La stagione, per «per l'anno». */
   stagione: string
-}
-
-/** Dove si scrive: `x` e la riga su cui poggia il testo, e fin dove si può andare. */
-interface Riga {
-  x: number
-  y: number
-  fino: number
-}
-
-/** Una casella da crociare: il suo centro. */
-type Casella = [number, number]
-
-/** Dove va una firma: l'angolo in basso a sinistra, larghezza e altezza massime. */
-interface Spazio {
-  x: number
-  y: number
-  w: number
-  h: number
-}
-
-const MAGGIORENNI = {
-  nome: { x: 128, y: 654.5, fino: 443 },
-  anno: { x: 142.5, y: 580, fino: 200 },
-  tesseramentoSi: [62.2, 628.2] as Casella,
-  tesseramentoNo: [62.2, 611.6] as Casella,
-  fotoSi: [62.2, 542.2] as Casella,
-  fotoNo: [62.2, 525.5] as Casella,
-  privacy: [81.45, 418.5] as Casella,
-  data: { x: 86, y: 330, fino: 163 },
-  firma: { x: 92, y: 277, w: 150, h: 40 },
-}
-
-const MINORI = {
-  genitore: { x: 202, y: 672.3, fino: 517 },
-  genitoreCf: { x: 82, y: 655.6, fino: 281 },
-  genitoreNatoA: { x: 320, y: 655.6, fino: 513 },
-  genitoreProvincia: { x: 520, y: 655.6, fino: 533 },
-  /** L'inizio di ognuno dei tre `___` di `___/___/___`. */
-  genitoreNatoIl: [64.6, 84.7, 104.8],
-  residenza: { x: 200, y: 639, fino: 399 },
-  cap: { x: 435, y: 639, fino: 486 },
-  via: { x: 80, y: 622.3, fino: 307 },
-  civico: { x: 324.5, y: 622.3, fino: 342 },
-  minore: { x: 59, y: 589, fino: 276 },
-  minoreNatoA: { x: 316, y: 589, fino: 460 },
-  minoreNatoIl: [471.2, 491.3, 511.4],
-  foto: [81.45, 531.1] as Casella,
-  /** «Firma del genitore/tutore 1»: il secondo genitore resta sul foglio, vuoto. */
-  firmaFoto: { x: 205, y: 313, w: 130, h: 24 },
-  tesseramento: [81.45, 274.75] as Casella,
-  anno: { x: 204, y: 243, fino: 240 },
-  firmaTesseramento: { x: 92, y: 220, w: 130, h: 24 },
-  privacy: [81.45, 188.8] as Casella,
-  data: { x: 86, y: 116, fino: 163 },
-  firma: { x: 202, y: 109, w: 145, h: 28 },
 }
 
 /** L'inchiostro: il blu di una penna, così si vede cosa è scritto e cosa è stampato. */
@@ -137,42 +79,51 @@ export function viaECivico(indirizzo: string): { via: string; civico: string } {
   return m && m[1] ? { via: m[1].replace(/,$/, ''), civico: m[2] } : { via: s, civico: '' }
 }
 
-/** Il nome della via senza «Via» davanti, che sul foglio è già stampato. */
-const senzaVia = (via: string) => via.replace(/^via\s+/i, '')
-
 export async function moduloFirmato(f: DatiFirma): Promise<Uint8Array> {
   const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib')
   const pdf = await PDFDocument.load(f.originale)
+  const form = pdf.getForm()
   const pagina = pdf.getPage(0)
   const font = await pdf.embedFont(StandardFonts.Helvetica)
   const penna = rgb(PENNA.r, PENNA.g, PENNA.b)
-
   const scrivibile = scrivibileCon(font)
 
-  const scrivi = (r: Riga, testo: string) => {
+  /** Dove sta un campo nel foglio: il suo rettangolo. */
+  const dove = (nome: string) => {
+    const campo = form.getFieldMaybe(nome)
+    const rettangolo = campo?.acroField.getWidgets()[0]?.getRectangle()
+    if (!rettangolo) throw new Error(`Il foglio non ha il campo «${nome}»: va rigenerato con npm run moduli:genera.`)
+    return rettangolo
+  }
+  const scrivi = (nome: string, testo: string) => {
+    const r = dove(nome)
     const t = scrivibile(testo.trim())
     if (!t) return
     let corpo = CORPO
-    while (corpo > 6 && font.widthOfTextAtSize(t, corpo) > r.fino - r.x) corpo -= 0.5
-    pagina.drawText(t, { x: r.x, y: r.y, size: corpo, font, color: penna })
+    while (corpo > 6 && font.widthOfTextAtSize(t, corpo) > r.width - 2) corpo -= 0.5
+    // Poggia sul filo: il campo ha il filo sul suo bordo basso.
+    pagina.drawText(t, { x: r.x + 1, y: r.y + 3.5, size: corpo, font, color: penna })
   }
-  const data = (inizi: number[], y: number, iso: string | null | undefined) => {
-    const [a, m, g] = (iso ?? '').split('-')
-    if (!a || !m || !g) return
-    ;[g, m, a].forEach((p, i) => pagina.drawText(p, { x: inizi[i] + (i === 2 ? 1.5 : 2.5), y, size: i === 2 ? 8 : CORPO, font, color: penna }))
-  }
-  const crocia = ([x, y]: Casella) => {
-    const l = 3.6
+  const crocia = (nome: string) => {
+    const r = dove(nome)
+    const x = r.x + r.width / 2
+    const y = r.y + r.height / 2
+    const l = Math.min(r.width, r.height) * 0.32
     pagina.drawLine({ start: { x: x - l, y: y - l }, end: { x: x + l, y: y + l }, thickness: 1.3, color: penna })
     pagina.drawLine({ start: { x: x - l, y: y + l }, end: { x: x + l, y: y - l }, thickness: 1.3, color: penna })
   }
   const png = await pdf.embedPng(f.firma)
-  const firma = (s: Spazio) => {
-    const scala = Math.min(s.w / png.width, s.h / png.height)
+  const firma = (nome: string) => {
+    const r = dove(nome)
+    const scala = Math.min(r.width / png.width, r.height / png.height)
     const w = png.width * scala
     const h = png.height * scala
-    // In basso, perché una firma poggia sulla riga; se è corta, un po' più in là dell'inizio.
-    pagina.drawImage(png, { x: s.x + Math.min(8, (s.w - w) / 2), y: s.y, width: w, height: h })
+    // In basso, perché una firma poggia sul filo; se è corta, un po' più in là dell'inizio.
+    pagina.drawImage(png, { x: r.x + Math.min(8, (r.width - w) / 2), y: r.y + 1, width: w, height: h })
+  }
+  const data = (nome: string, iso: string | null | undefined) => {
+    const [a, m, g] = (iso ?? '').split('-')
+    if (a && m && g) scrivi(nome, `${g}/${m}/${a}`)
   }
 
   const d = f.dati
@@ -181,51 +132,52 @@ export async function moduloFirmato(f: DatiFirma): Promise<Uint8Array> {
   const nome = (n?: string, c?: string) => `${(n ?? '').trim()} ${(c ?? '').trim()}`.trim()
 
   if (!f.minore) {
-    const P = MAGGIORENNI
-    scrivi(P.nome, nome(d.nome, d.cognome))
-    crocia(f.scelte.tesseramento ? P.tesseramentoSi : P.tesseramentoNo)
-    // «per l'anno 2_____»: il 2 è già stampato.
-    scrivi(P.anno, f.stagione.replace(/^2/, ''))
-    crocia(f.scelte.foto ? P.fotoSi : P.fotoNo)
-    crocia(P.privacy)
-    scrivi(P.data, oggi)
-    firma(P.firma)
+    scrivi('nome', nome(d.nome, d.cognome))
+    crocia(f.scelte.tesseramento ? 'tesseramentoSi' : 'tesseramentoNo')
+    scrivi('tesseramentoAnno', f.stagione)
+    crocia(f.scelte.foto ? 'fotoSi' : 'fotoNo')
+    crocia('privacy')
+    scrivi('data', oggi)
+    firma('firma')
   } else {
-    const P = MINORI
     const { via, civico } = viaECivico(d.indirizzo)
-    scrivi(P.genitore, nome(d.genitoreNome, d.genitoreCognome))
-    scrivi(P.genitoreCf, (d.genitoreCodiceFiscale ?? '').replace(/\s/g, '').toUpperCase())
-    scrivi(P.genitoreNatoA, f.genitoreNatoA ?? '')
-    scrivi(P.genitoreProvincia, (f.genitoreProvincia ?? '').toUpperCase())
-    data(P.genitoreNatoIl, P.residenza.y, cfNatoIl((d.genitoreCodiceFiscale ?? '').replace(/\s/g, '').toUpperCase(), quando))
-    scrivi(P.residenza, d.comune)
-    scrivi(P.cap, d.cap)
-    scrivi(P.via, senzaVia(via))
-    scrivi(P.civico, civico)
-    scrivi(P.minore, nome(d.nome, d.cognome))
-    scrivi(P.minoreNatoA, d.natoA)
-    data(P.minoreNatoIl, P.minore.y, d.natoIl)
+    const cf = (d.genitoreCodiceFiscale ?? '').replace(/\s/g, '').toUpperCase()
+    scrivi('genitore', nome(d.genitoreNome, d.genitoreCognome))
+    scrivi('genitoreCodiceFiscale', cf)
+    scrivi('genitoreNatoA', f.genitoreNatoA ?? '')
+    scrivi('genitoreProvincia', (f.genitoreProvincia ?? '').toUpperCase())
+    data('genitoreNatoIl', cfNatoIl(cf, quando))
+    scrivi('genitoreResidenza', d.comune)
+    scrivi('genitoreCap', d.cap)
+    scrivi('genitoreVia', via)
+    scrivi('genitoreCivico', civico)
+    scrivi('minore', nome(d.nome, d.cognome))
+    scrivi('minoreNatoA', d.natoA)
+    data('minoreNatoIl', d.natoIl)
     // Per un minore il foglio non ha il «non autorizza»: chi non autorizza
-    // non crocia e non firma, come sulla carta.
+    // non crocia e non firma, come sulla carta. Il secondo genitore resta vuoto.
     if (f.scelte.foto) {
-      crocia(P.foto)
-      firma(P.firmaFoto)
+      crocia('foto')
+      firma('firmaFoto')
     }
     if (f.scelte.tesseramento) {
-      crocia(P.tesseramento)
-      scrivi(P.anno, f.stagione)
-      firma(P.firmaTesseramento)
+      crocia('tesseramento')
+      scrivi('tesseramentoAnno', f.stagione)
+      firma('firmaTesseramento')
     }
-    crocia(P.privacy)
-    scrivi(P.data, oggi)
-    firma(P.firma)
+    crocia('privacy')
+    scrivi('data', oggi)
+    firma('firma')
   }
+
+  // I campi hanno fatto il loro lavoro: via, così il PDF è fermo e uguale ovunque.
+  for (const campo of form.getFields()) form.removeField(campo)
 
   // Sotto, in piccolo, per la segreteria: che è firmato dall'app, e quando.
   const ora = `${due(quando.getHours())}:${due(quando.getMinutes())}`
   pagina.drawText(scrivibile(`Compilato e firmato dal telefono, nel modulo di iscrizione online, il ${oggi} alle ${ora}.`), {
-    x: 56.7,
-    y: 82,
+    x: 40,
+    y: 86,
     size: 7,
     font,
     color: rgb(0.4, 0.4, 0.4),

@@ -78,7 +78,8 @@
     "prova:iscrizione-sito": "node scripts/prova-iscrizione-sito.mjs",
     "prova:sql": "bash scripts/prova-sql.sh",
     "prova:comune-cap": "node scripts/prova-comune-cap.mjs",
-    "prova:tessere": "node scripts/prova-tessere.mjs"
+    "prova:tessere": "node scripts/prova-tessere.mjs",
+    "prova:fogli-moduli": "node scripts/prova-fogli-moduli.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.1",
@@ -92,6 +93,7 @@
     "sanitize-html": "^2.18.1"
   },
   "devDependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/sanitize-html": "^2.16.2",

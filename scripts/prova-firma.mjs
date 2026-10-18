@@ -3,18 +3,23 @@
 //
 //   node scripts/prova-firma.mjs [cartella]
 //
-// Compila i due moduli di `public/moduli/` con una firma finta, come fa il
-// modulo di iscrizione, e controlla che ne esca un PDF di una pagina. Con una
+// Compila i due fogli di `generaFogli` (i PDF con i campi) con una firma
+// finta, come fa il modulo di iscrizione, e controlla che ne esca un PDF di
+// una pagina, senza più campi, coi dati sul foglio. Con una
 // cartella ci lascia i PDF, da aprire per guardare che dati, crocette e firme
 // stiano sulle righe: se la palestra cambia un foglio, si rimisura da lì.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { deflateSync } from 'node:zlib'
+import fontkit from '@pdf-lib/fontkit'
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export { moduloFirmato, viaECivico, dataDelFoglio } from './src/lib/firma'; export { PDFDocument } from 'pdf-lib'",
+    contents: "export { moduloFirmato, viaECivico, dataDelFoglio } from './src/lib/firma'; export { generaFogli } from './src/lib/fogliModuli'; export { PDFDocument, PDFName, PDFDict, PDFArray, decodePDFRawStream } from 'pdf-lib'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -27,6 +32,41 @@ const { outputFiles } = await build({
 })
 const m = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 const cartella = process.argv[2]
+
+if (spawnSync('pdfcraft-cli', ['--help']).error) {
+  console.log(process.env.CI ? '  ✗ pdfcraft-cli manca: in CI la prova non si salta' : '  - pdfcraft-cli non c’è: prova saltata')
+  process.exit(process.env.CI ? 1 : 0)
+}
+const tmp = mkdtempSync(join(tmpdir(), 'firma-'))
+let n = 0
+/** Il testo del PDF, su una riga sola. */
+const testo = (pdf) => {
+  const f = join(tmp, `${n++}.pdf`)
+  writeFileSync(f, pdf)
+  return execFileSync('pdfcraft-cli', ['text', f], { encoding: 'utf8' }).replace(/\s+/g, ' ')
+}
+/** Le immagini disegnate sulla prima pagina. */
+const immagini = (doc) => {
+  const xo = doc.getPage(0).node.Resources()?.lookup(m.PDFName.of('XObject'), m.PDFDict)
+  return xo ? xo.keys().filter((k) => String(xo.lookup(k).dict.get(m.PDFName.of('Subtype'))) === '/Image').length : 0
+}
+/** Quante immagini si disegnano sulla pagina (ogni firma, ogni logo): i `Do` del suo contenuto. */
+const disegni = (doc) => {
+  const c = doc.getPage(0).node.Contents()
+  const pezzi = c instanceof m.PDFArray ? c.asArray().map((r) => doc.context.lookup(r)) : [c]
+  return pezzi.reduce((tot, p) => tot + (Buffer.from(m.decodePDFRawStream(p).decode()).toString('latin1').match(/\/\S+\s+Do\b/g) ?? []).length, 0)
+}
+const leggi = (f) => new Uint8Array(readFileSync(f))
+const fogli = await m.generaFogli({
+  fontkit,
+  fonts: {
+      titolo: leggi('dati/moduli/fonts/big-shoulders-display-800.ttf'),
+      corpo: leggi('dati/moduli/fonts/inter-regular.ttf'),
+      corpoGrassetto: leggi('dati/moduli/fonts/inter-bold.ttf'),
+    },
+  loghi: { mascotte: leggi('dati/moduli/mascotte.png'), simbolo: leggi('dati/moduli/simbolo.png') },
+  oggi: '2026-09-27',
+})
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -96,11 +136,24 @@ const casi = [
   ['minori', 'minore-niente', true, { tesseramento: false, foto: false }, dati],
 ]
 for (const [foglio, nome, minore, scelte, d] of casi) {
-  const originale = readFileSync(`public/moduli/autorizzazioni-${foglio}.pdf`)
+  const originale = fogli[foglio]
   const pdf = await m.moduloFirmato({ dati: d, minore, scelte, genitoreNatoA: 'Pinerolo', genitoreProvincia: 'to', firma: firmaFinta(), originale, quando, stagione: '2026/27' })
   const letto = await m.PDFDocument.load(pdf)
-  ok(`${nome}: una pagina, della misura del foglio`, [letto.getPageCount(), ...Object.values(letto.getPage(0).getSize()).map(Math.round)], [1, 596, 842])
+  const t = testo(pdf)
+  ok(`${nome}: una pagina, della misura del foglio`, [letto.getPageCount(), ...Object.values(letto.getPage(0).getSize()).map(Math.round)], [1, 595, 842])
   ok(`${nome}: il titolo col nome`, letto.getTitle(), `Autorizzazioni ${d.nome} ${d.cognome}`)
+  ok(`${nome}: nessun campo da compilare`, letto.getForm().getFields().map((c) => c.getName()), [])
+  ok(`${nome}: la firma è un’immagine in più dei loghi`, immagini(letto) > immagini(await m.PDFDocument.load(originale)), true)
+  // Un minore firma accanto a ogni scelta fatta; il secondo genitore non firma mai; chi non sceglie niente firma solo in fondo.
+  const firme = !minore ? 1 : 1 + (scelte.foto ? 1 : 0) + (scelte.tesseramento ? 1 : 0)
+  ok(`${nome}: la firma sta dove deve, e il secondo genitore no`, disegni(letto), disegni(await m.PDFDocument.load(originale)) + firme)
+  // «Ł» può diventare «L» se il carattere manca al font.
+  const sulFoglio = [d.nome === 'Łucja' ? (t.includes('Łucja') ? 'Łucja' : 'Lucja') : d.nome, d.cognome, '27/09/2026']
+  // «Via» è già stampata sul foglio, e il minore non ha il codice fiscale.
+  if (minore) sulFoglio.push(d.genitoreCodiceFiscale, 'Roma', '12/B', d.cap, d.comune, d.natoA, '05/03/2014', '01/01/1980', 'Pinerolo', d.genitoreNome)
+  const piatto = t.replace(/[’‘]/g, "'")
+  ok(`${nome}: i dati dati si leggono sul foglio`, sulFoglio.filter((v) => !piatto.includes(v.replace(/[’‘]/g, "'"))), [])
+  ok(`${nome}: l’anno di stagione solo se si accetta il tesseramento`, t.includes('2026/27'), scelte.tesseramento)
   if (cartella) writeFileSync(`${cartella}/modulo-${nome}.pdf`, pdf)
 }
 
