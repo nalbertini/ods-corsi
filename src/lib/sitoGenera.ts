@@ -217,7 +217,6 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .colonne.c-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .colonne.c-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .colonne>.colonna{min-width:0;max-width:none;padding:0}
-@media (max-width:720px){.colonne.c-2,.colonne.c-3{grid-template-columns:minmax(0,1fr)}}
 .tessere{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .tessera{grid-column:span 2;display:flex;flex-direction:column;gap:14px;margin:0;padding:24px;border-radius:6px;font-size:clamp(17px,1.2vw,19px);line-height:1.5}
 .tessera>*{margin:0}
@@ -627,6 +626,7 @@ ${cssFoci()}
 .interna h1.lungo{font-size:clamp(56px,9.2vw,132px)}
 .interna h1.lunghissimo{font-size:clamp(44px,8.7vw,125px)}
 @media (max-width:900px){.interna h1.medio{font-size:76px}}
+@media (max-width:720px){.colonne.c-2,.colonne.c-3{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
 
