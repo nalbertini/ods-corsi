@@ -197,7 +197,7 @@ function Destra({ scheda, setScheda }: { scheda: Scheda; setScheda: (k: Scheda) 
       <div role="tablist" aria-label="Pannello della parte" className="schede sg-schede">
         {(['impostazioni', 'elenco'] as const).map((k) => (
           <button key={k} type="button" role="tab" aria-selected={scheda === k} data-on={scheda === k} className="scheda" onClick={() => setScheda(k)}>
-            {k === 'impostazioni' ? 'IMPOSTAZIONI' : 'ELENCO'}
+            {k === 'impostazioni' ? 'Impostazioni' : 'Elenco'}
           </button>
         ))}
       </div>
@@ -246,7 +246,7 @@ export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria;
         <div className="sito-pezzi-corpo">
           <Comandi onNuova={() => setScheda('impostazioni')} />
           <div className="sito-pezzi-colonne">
-            {/* Toccare una parte nella pagina porta alle sue impostazioni; dall'ELENCO si resta lì, per spostarla con SU e GIÙ. */}
+            {/* Toccare una parte nella pagina porta alle sue impostazioni; dall'elenco si resta lì, per spostarla con «Su» e «Giù». */}
             <div className="sito-pezzi-pagina" onClickCapture={() => setScheda('impostazioni')}><Puck.Preview /></div>
             <Destra scheda={scheda} setScheda={setScheda} />
           </div>
