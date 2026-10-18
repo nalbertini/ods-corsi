@@ -131,6 +131,9 @@ export function TessereDellaPersona({
               <input id="te-dal" className="sg-campo" type="date" value={b.dal} onChange={(e) => setB({ ...b, dal: e.target.value })} />
             </Campo>
           </div>
+          {(!b.ente.trim() || !b.codice.trim() || !b.dal) && (
+            <span className="sg-sotto">Per salvare servono l’ente, il numero della tessera e la data.</span>
+          )}
           <div className="row" style={{ gap: 8 }}>
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setScrivi(false)}>
               LASCIA STARE
