@@ -389,6 +389,8 @@
 :root[data-look='sito'] .sg-riquadro[data-fatto='true'] { box-shadow: inset 4px 0 0 var(--verde); }
 /* Il tasto principale è il giallo del marchio (uno per schermata); il tasto a linea e i filtri hanno il blu dei campi. */
 :root[data-look='sito'] .sg-btn-pieno { background: var(--giallo); color: var(--su-colore); }
+/* Un tasto spento resta un blocco grigio anche nel look del sito: se no sembra acceso e non risponde. */
+:root[data-look='sito'] .sg-btn:disabled { background: var(--surface-2); color: var(--dim); }
 :root[data-look='sito'] .sg-btn-linea,
 :root[data-look='sito'] .sg-btn-tratteggio,
 :root[data-look='sito'] .sg-chip,
@@ -2266,7 +2268,17 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto-corso > :nth-child(3) { order: 5; grid-column: 1 / -1; }
   .sg-riga-iscritto:not(.sg-lista-testa) > :nth-child(3)::before { content: 'Iscritto dal '; color: var(--dim); }
 }
-.sg-riga-movimento { display: grid; grid-template-columns: 44px 100px minmax(0, 1.6fr) minmax(0, 1fr) 150px 130px; gap: 14px; align-items: center; }
+.sg-riga-movimento { display: grid; grid-template-columns: 44px 100px minmax(0, 1.5fr) minmax(0, 1.1fr) minmax(0, 1fr) 150px 130px; gap: 14px; align-items: center; }
+/* La persona a cui lo storico è collegato (70-movimenti-persona.sql): il nome o lo stato, con un tag sotto. */
+.sg-persona-riga { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
+/* Scegliere fra due omonimi: una scheda per persona, con quel che le distingue. */
+.sg-scelta-persona { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 14px; border: 2px solid var(--line); cursor: pointer; }
+.sg-scelta-persona[data-scelta='true'] { border-color: var(--text); background: var(--surface-2); }
+:root[data-look='sito'] .sg-scelta-persona[data-scelta='true'] { border-color: var(--blu, var(--text)); }
+.sg-scelta-persona:focus-within { outline: 2px solid var(--text); outline-offset: 2px; }
+.sg-scelta-persona input { width: 24px; height: 24px; margin: 0; flex: none; accent-color: var(--text); cursor: pointer; }
+/* Lo storico del vecchio programma nella scheda di una persona: data, causale con voce e cassa, importo. */
+.sg-riga-storico { display: grid; grid-template-columns: 100px minmax(0, 1fr) 110px; gap: 12px; align-items: baseline; padding: 8px 12px; border-bottom: 1px solid var(--line-soft); background: var(--surface); }
 .sg-riga-movimento[data-spento='true'] { opacity: 0.55; }
 .sg-riga-movimento[data-scelta='true'] { background: var(--surface); box-shadow: inset 4px 0 0 var(--giallo); }
 /* La casella per scegliere una riga: 24px da vedere, 44px da toccare (il margine negativo non allarga la riga). */
@@ -2277,6 +2289,21 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 /* Sotto la descrizione: la causale dell'incasso; sul telefono, davanti, anche data, voce e cassa che lì non hanno la loro colonna. */
 .sg-sotto-movimento { display: flex; flex-direction: column; font-size: 13px; color: var(--sec); font-weight: 400; overflow-wrap: anywhere; }
 .sg-solo-telefono { display: none; }
+/* Sul tablet la tabella dei movimenti ha troppe colonne (con PERSONA sette): sotto i 1200px resta come sul telefono, con il resto sotto la descrizione. */
+@media (max-width: 1200px) {
+  .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; }
+  .sg-riga-movimento > :not(:first-child):not(:nth-child(3)):not(:last-child) { display: none; }
+  .sg-riga-movimento[data-senza-casella='true'] { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-movimento[data-senza-casella='true'] > :first-child { display: none; }
+  .sg-solo-telefono { display: inline; }
+  .sg-lista-testa.sg-riga-movimento { display: none; }
+}
+/* L'avviso dello storico nella scheda: giallo di avviso, bordo da 2px come gli altri riquadri. */
+.sg-avviso-storico { padding: 12px 14px; border: 2px solid var(--giallo-testo); background: var(--surface); font-size: 14px; line-height: 1.45; }
+@media (max-width: 600px) {
+  .sg-riga-storico { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-storico > :first-child { grid-column: 1 / -1; }
+}
 /* Una descrizione lunga senza spazi va a capo invece di uscire dallo schermo. */
 .sg-riga-movimento .sg-riga-apri, .sg-riquadro-titolo { overflow-wrap: anywhere; }
 .sg-riga-pagamento-tab { display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; }

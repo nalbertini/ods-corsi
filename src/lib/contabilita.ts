@@ -43,6 +43,10 @@ export interface MovimentoManuale {
   nota?: string
   creatoIl: string
   annullatoIl?: string
+  /** `prima-nota:N` per lo storico importato dal vecchio programma, vuoto per un movimento scritto qui. */
+  origineImport?: string
+  /** La persona a cui lo storico è collegato (`70-movimenti-persona.sql`): un'etichetta, non cambia i conti. */
+  personaId?: string
 }
 
 /** Una chiusura della Cassa Contanti: il periodo da `dal` a `data`, quel che c'era «secondo i conti» e quel che si è contato. */
@@ -79,6 +83,10 @@ export interface RigaMovimento {
   /** Solo dei movimenti a mano: serve a chi ne corregge il testo, per non perderla. */
   nota?: string
   annullato: boolean
+  /** Solo dei movimenti a mano: `prima-nota:N` se vengono dallo storico importato. */
+  origineImport?: string
+  /** Solo dei movimenti a mano: la persona collegata allo storico. */
+  personaId?: string
 }
 
 export const NOME_CASSA_CONTANTI = 'Cassa Contanti'
@@ -132,6 +140,8 @@ export function righeMovimenti(derivati: RigaMovimento[], manuali: MovimentoManu
       cassaAId: x.cassaAId,
       nota: x.nota,
       annullato: !!x.annullatoIl,
+      origineImport: x.origineImport,
+      personaId: x.personaId,
     }),
   )
   return [...derivati, ...mie].sort((a, b) => b.data.localeCompare(a.data) || a.id.localeCompare(b.id))

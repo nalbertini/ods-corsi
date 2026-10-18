@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    /* Valori copiati dall'elenco di cambia-voce/Elenco.dc.html (le righe di MOVIMENTI), con la colonna PERSONA in più. */
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; }
+    .riga { display: grid; grid-template-columns: 44px 90px minmax(0, 1.5fr) minmax(0, 1.1fr) minmax(0, 1fr) 110px; gap: 14px; align-items: center; min-height: 58px; padding: 6px 14px; border-bottom: 1px solid #242424; }
+    .riga.scelta { background: #1c1c1c; box-shadow: inset 4px 0 0 #f4c31b; }
+    .riga.annullata { opacity: 0.55; }
+    .data { font-size: 13px; color: #c9c9c4; }
+    .desc { font-size: 15px; font-weight: 600; }
+    .sotto { font-size: 12px; font-weight: 400; color: #8c8c88; }
+    .imp { font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: #16a54a; }
+    .cas { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: -10px; flex: none; }
+    .cas > span { width: 24px; height: 24px; border: 2px solid #8c8c88; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #121212; }
+    .cas.on > span { border-color: #f2f2f0; background: #f2f2f0; }
+    /* la persona: collegata (verde, col nome), da decidere (giallo), senza scheda (neutro) */
+    .pers { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+    .tag { align-self: flex-start; padding: 1px 6px; font-family: 'Saira Condensed', Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; border: 1px solid #333333; background: #242424; color: #c9c9c4; }
+    .tag.ok { border-color: #16a54a; color: #16a54a; background: transparent; }
+    .tag.giallo { border-color: #f4c31b; color: #f4c31b; background: transparent; }
+  </style>
+</helmet>
+<div style="display: flex; width: 1440px; min-height: 1240px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" area="amministrazione" attiva="CONTABILITÀ" numeri="" nome="Chiara Bianchi" ruolo="Amministrazione" altezza="1240px" hint-size="240px,1240px"></dc-import>
+  </div>
+  <main style="flex: 1; min-width: 0; padding: 28px 36px; display: flex; flex-direction: column; gap: 16px">
+    <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · MOVIMENTI, DI CHI È OGNI PAGAMENTO</span>
+    <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</span>
+    <div style="display: flex; gap: 10px"><dc-import name="Chip" label="MOVIMENTI" acceso="{{ true }}" hint-size="150px,44px"></dc-import><dc-import name="Chip" label="VOCI" hint-size="100px,44px"></dc-import><dc-import name="Chip" label="CASSE" hint-size="110px,44px"></dc-import></div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+      <div style="display: flex; align-items: center; width: 280px; height: 44px; padding: 0 12px; background: #121212; border: 2px solid #f2f2f0; font-size: 15px">rossi</div>
+      <dc-import name="Chip" label="TUTTO" acceso="{{ true }}" hint-size="100px,44px"></dc-import>
+      <dc-import name="Chip" label="ENTRATE" acceso="{{ true }}" hint-size="110px,44px"></dc-import><dc-import name="Chip" label="USCITE" hint-size="100px,44px"></dc-import>
+      <dc-import name="Chip" label="VOCE: TUTTE ▾" hint-size="170px,44px"></dc-import>
+      <span style="width: 2px; height: 28px; background: #333333"></span>
+      <span class="et">PERSONA</span>
+      <dc-import name="Chip" label="TUTTI" acceso="{{ true }}" hint-size="90px,44px"></dc-import>
+      <dc-import name="Chip" label="COLLEGATI" hint-size="130px,44px"></dc-import>
+      <dc-import name="Chip" label="DA DECIDERE · 75" hint-size="170px,44px"></dc-import>
+      <dc-import name="Chip" label="SENZA SCHEDA · 4.060" hint-size="210px,44px"></dc-import>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center">
+      <span style="font-size: 14px; color: #c9c9c4; flex: 1">Cercato «rossi», entrate: <b>9 trovati</b>, 2 scelti. Il filtro cambia, la scelta si svuota.</span>
+      <dc-import name="Bottone" label="COLLEGA I CASI SICURI" variante="pieno" contesto="segreteria" hint-size="250px,48px"></dc-import>
+      <dc-import name="Bottone" label="COLLEGAMENTI FATTI" variante="linea" contesto="segreteria" hint-size="230px,48px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column">
+      <div class="riga" role="row" style="min-height: 0; padding-bottom: 6px; border-bottom: 2px solid #2a2a2a"><span></span><span class="et">DATA</span><span class="et">DESCRIZIONE</span><span class="et">PERSONA</span><span class="et">VOCE</span><span class="et" style="text-align: right">IMPORTO</span></div>
+
+      <div class="riga scelta" role="row"><span class="cas on" role="checkbox" aria-checked="true"><span>✓</span></span><span class="data">28 set 2026</span><span class="desc">CLIENTE ROSSI GIULIA PER QUOTA ASSOCIATIVA<br><span class="sotto">dallo storico · Conto Corrente</span></span><span class="pers"><span class="tag giallo">2 SCHEDE CON QUESTO NOME</span><span class="sotto">scegli a mano</span></span><span style="font-size: 13px; color: #c9c9c4">Quota associativa</span><span class="imp">+ 30,00 €</span></div>
+
+      <div class="riga scelta" role="row"><span class="cas on" role="checkbox" aria-checked="true"><span>✓</span></span><span class="data">28 set 2026</span><span class="desc">CLIENTE ROSSI GIULIA PER ANNUALE JUDO KIDS<br><span class="sotto">dallo storico · Conto Corrente</span></span><span class="pers"><span class="tag giallo">2 SCHEDE CON QUESTO NOME</span><span class="sotto">scegli a mano</span></span><span style="font-size: 13px; color: #c9c9c4">Corsi e altri pagamenti</span><span class="imp">+ 310,00 €</span></div>
+
+      <div class="riga" role="row"><span class="cas" role="checkbox" aria-checked="false"><span></span></span><span class="data">11 set 2026</span><span class="desc">CLIENTE ROSSI MARCO PER QUOTA ASSOCIATIVA<br><span class="sotto">dallo storico · Cassa Contanti</span></span><span class="pers"><span style="font-weight: 600">Rossi Marco</span><span class="tag ok">COLLEGATO</span></span><span style="font-size: 13px; color: #c9c9c4">Quota associativa</span><span class="imp">+ 30,00 €</span></div>
+
+      <div class="riga" role="row"><span class="cas" role="checkbox" aria-checked="false"><span></span></span><span class="data">02 set 2025</span><span class="desc">CLIENTE ROSSI MARCO PER ANNUALE JUDO ADULTI<br><span class="sotto">dallo storico · Conto Corrente</span></span><span class="pers"><span style="font-weight: 600">Rossi Marco</span><span class="tag ok">COLLEGATO</span></span><span style="font-size: 13px; color: #c9c9c4">Corsi e altri pagamenti</span><span class="imp">+ 360,00 €</span></div>
+
+      <div class="riga" role="row"><span class="cas" role="checkbox" aria-checked="false"><span></span></span><span class="data">18 giu 2021</span><span class="desc">CLIENTE ROSSI ELENA PER QUOTA ASSOCIATIVA<br><span class="sotto">dallo storico · Cassa Contanti</span></span><span class="pers"><span class="tag">SENZA SCHEDA</span><span class="sotto">il nome resta nella causale</span></span><span style="font-size: 13px; color: #c9c9c4">Quota associativa</span><span class="imp">+ 25,00 €</span></div>
+
+      <div class="riga" role="row"><span></span><span class="data">27 feb 2026</span><span class="desc">Bianchi Luca<span class="tag" style="margin-left: 8px">INCASSO ISCRITTO</span><br><span class="sotto">ANNUALE JUDO KIDS · bonifico</span></span><span class="pers"><span class="sotto">già della persona: è un pagamento dell'app</span></span><span style="font-size: 13px; color: #c9c9c4">Corsi e altri pagamenti</span><span class="imp">+ 310,00 €</span></div>
+
+      <div class="riga annullata" role="row"><span></span><span class="data">20 feb 2019</span><span class="desc">CLIENTE ROSSI GIULIA PER QUOTA ASSOCIATIVA<span class="tag" style="margin-left: 8px">ANNULLATO</span><br><span class="sotto">annullato: rifatto</span></span><span class="pers"><span class="sotto">non si collega</span></span><span style="font-size: 13px; color: #c9c9c4">Quota associativa</span><span class="imp">+ 30,00 €</span></div>
+    </div>
+    <div style="position: sticky; bottom: 0; display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: #1c1c1c; border: 2px solid #f4c31b; margin-top: auto">
+      <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 24px; font-weight: 700">2 SCELTI</span>
+      <span style="font-size: 14px; color: #c9c9c4">entrate · + 340,00 €</span>
+      <div style="flex: 1"></div>
+      <dc-import name="Bottone" label="SVUOTA" variante="linea" contesto="segreteria" hint-size="120px,48px"></dc-import><dc-import name="Bottone" label="CAMBIA VOCE" variante="linea" contesto="segreteria" hint-size="180px,48px"></dc-import><dc-import name="Bottone" label="SCOLLEGA" variante="linea" contesto="segreteria" disabled="{{ true }}" hint-size="150px,48px"></dc-import><dc-import name="Bottone" label="COLLEGA A UNA PERSONA" variante="pieno" contesto="segreteria" hint-size="270px,48px"></dc-import>
+    </div>
+    <span style="font-size: 14px; color: #8c8c88; line-height: 1.4; max-width: 1000px">Il collegamento è solo un'etichetta: importo, data, cassa e voce non cambiano, anche nei giorni già chiusi. Hanno la casella solo le entrate dello storico su «Quota associativa» e «Corsi e altri pagamenti»: i pagamenti dell'app sono già della persona, e annullati, giroconti e movimenti scritti a mano non si collegano.</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

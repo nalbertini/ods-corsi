@@ -149,13 +149,17 @@ export function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, i
     const bottoni = pulsanti(link, iscrizione)
     return `<section class="sezione cta${foto ? '' : ' solo'}"><div class="cta-testo">${h2}${testi}${bottoni}</div>${foto ? `<figure class="cta-foto">${conCaricamento(foto, false)}</figure>` : ''}</section>`
   }
-  // Recensioni: citazioni seguite da «In breve» (un h3 con un elenco).
+  // Recensioni: citazioni seguite da «In breve» (un h3 con un elenco): tutte carte uguali, il titolo «In breve» non si mostra.
   const inBreve = primo >= 0 && dopoH3.length >= 2 && dopoH3[0].tag === 'h3' && dopoH3[1].tag === 'ul' ? dopoH3 : null
   // Una forma che non torna (un paragrafo o un elenco in più) cade in `sezione`: niente testo si perde.
   if (citazioni.length && inBreve && corpo.slice(0, primo).every((x) => x.tag === 'blockquote')) {
-    const voci = [...inBreve[1].html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1])
-    const breve = `<aside class="tessera in-breve giallo"><h3>${contenuto(inBreve[0])}</h3><ul>${voci.map((v) => `<li>${v}</li>`).join('')}</ul></aside>`
-    return `<section class="sezione">${h2}<div class="recensioni">${citazioni.map((x, k) => cartaCitazione(x, CITAZIONI[k % CITAZIONI.length], true)).join('')}${breve}</div></section>`
+    // Le voci di «In breve» («frase <em>nome</em>») sono recensioni come le altre: stessa carta, stessa firma.
+    const brevi = [...inBreve[1].html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => {
+      const [, frase, nome] = /^([\s\S]*?)\s*<em>([\s\S]*?)<\/em>\s*$/i.exec(m[1]) ?? [m[1], m[1], '']
+      return { tag: 'blockquote', html: `<blockquote><p>${frase}</p>${nome ? `<p><em>${nome}</em></p>` : ''}</blockquote>` }
+    })
+    const tutte = [...citazioni, ...brevi]
+    return `<section class="sezione">${h2}<div class="recensioni">${tutte.map((x, k) => cartaCitazione(x, CITAZIONI[k % CITAZIONI.length], true)).join('')}</div></section>`
   }
   // Citazioni: carte uguali, non un carosello.
   if (citazioni.length >= 2 && corpo.every((x) => x.tag === 'blockquote')) {

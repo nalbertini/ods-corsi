@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    /* La scheda iscritto, scheda QUOTA E PAGAMENTI (storico-pagamenti/Scheda.dc.html): il blocco storico sta in fondo, a parte. */
+    .avviso { padding: 12px 14px; border: 2px solid #f4c31b; font-size: 14px; line-height: 1.45; color: #f2f2f0; }
+    .storico { display: grid; grid-template-columns: 110px minmax(0, 1fr) 100px; gap: 12px; align-items: baseline; min-height: 48px; padding: 8px 12px; border-bottom: 1px solid #242424; background: #1c1c1c; }
+    .storico .d { font-size: 13px; color: #c9c9c4; }
+    .storico .t { font-size: 14px; font-weight: 600; }
+    .storico .s { font-size: 12px; font-weight: 400; color: #8c8c88; }
+    .storico .i { font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: #c9c9c4; }
+    .nota { font-size: 14px; color: #8c8c88; line-height: 1.4; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 48px; align-items: flex-start; width: 1480px; background: #121212; padding: 28px 36px 36px">
+<div style="display: flex; flex-direction: column; width: 560px; gap: 8px">
+  <span class="et" style="color: #8c8c88">OGGI · QUOTA E PAGAMENTI</span>
+  <dc-import name="Titoletto" label="PAGAMENTI" conto="2" hint-size="100%,50px"></dc-import>
+  <dc-import name="RigaPagamento" tipo="ricevuta" titolo="N. 12/2026 · 14 ottobre 2026" sotto="QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS · totale 80,00 €" importo="" tasti="PDF|ANNULLA RICEVUTA" hint-size="100%,64px"></dc-import>
+  <dc-import name="RigaPagamento" tipo="pagamento" titolo="14 ottobre 2026 · Contanti" sotto="QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS" importo="80,00 €" tasti="" hint-size="100%,48px"></dc-import>
+  <span class="nota" style="margin-top: 6px">Dei pagamenti prima del 14 ottobre 2026 qui non c’è niente, anche se Giulia è iscritta dal 2022: stanno solo in CONTABILITÀ → MOVIMENTI, con il nome nel testo.</span>
+</div>
+<div style="display: flex; flex-direction: column; width: 820px; gap: 8px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · QUOTA E PAGAMENTI, CON LO STORICO</span>
+  <dc-import name="Titoletto" label="PAGAMENTI" conto="2" hint-size="100%,50px"></dc-import>
+  <dc-import name="RigaPagamento" tipo="ricevuta" titolo="N. 12/2026 · 14 ottobre 2026" sotto="QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS · totale 80,00 €" importo="" tasti="PDF|ANNULLA RICEVUTA" hint-size="100%,64px"></dc-import>
+  <dc-import name="RigaPagamento" tipo="pagamento" titolo="14 ottobre 2026 · Contanti" sotto="QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS" importo="80,00 €" tasti="" hint-size="100%,48px"></dc-import>
+
+  <div style="margin-top: 14px"><dc-import name="Titoletto" label="DAL VECCHIO PROGRAMMA" conto="9" hint-size="100%,50px"></dc-import></div>
+  <div class="avviso"><b>È lo storico fino al 28 settembre 2026.</b> Non è nei pagamenti qui sopra e non conta per «quota pagata» né per «pagato fino al». Se Giulia ha pagato anche nell’app negli stessi giorni, lo stesso incasso può comparire in tutti e due.</div>
+  <div class="storico"><span class="d">28 set 2026</span><span class="t">Cliente Rossi Giulia per annuale judo kids<br><span class="s">ANNUALE JUDO KIDS · Conto Corrente</span></span><span class="i">310,00 €</span></div>
+  <div class="storico"><span class="d">28 set 2026</span><span class="t">Cliente Rossi Giulia per quota associativa<br><span class="s">QUOTA ASSOCIATIVA · Conto Corrente</span></span><span class="i">30,00 €</span></div>
+  <div class="storico"><span class="d">04 set 2025</span><span class="t">Cliente Rossi Giulia per annuale judo kids<br><span class="s">ANNUALE JUDO KIDS · Cassa Contanti</span></span><span class="i">290,00 €</span></div>
+  <div class="storico"><span class="d">04 set 2025</span><span class="t">Cliente Rossi Giulia per quota associativa<br><span class="s">QUOTA ASSOCIATIVA · Cassa Contanti</span></span><span class="i">30,00 €</span></div>
+  <div class="storico"><span class="d">02 set 2024</span><span class="t">Cliente Rossi Giulia per annuale judo kids<br><span class="s">ANNUALE JUDO KIDS · Conto Corrente</span></span><span class="i">290,00 €</span></div>
+  <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px"><dc-import name="Bottone" label="MOSTRA ALTRI 4" variante="linea" contesto="segreteria" hint-size="200px,48px"></dc-import><span class="nota">ne vedi 5 su 9 · versati in tutto 1.340,00 € dal 2022 al 28 set 2026 (solo storico)</span></div>
+  <span class="nota">Un blocco a parte, mai sommato ai pagamenti dell’app. Lo vede chi vede già questa scheda; chi collega e scollega è solo l’amministrazione, da MOVIMENTI. Se la scheda non ha storico collegato il blocco non compare.</span>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1480,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

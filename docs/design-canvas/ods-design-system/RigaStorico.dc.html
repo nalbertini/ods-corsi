@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: 100px minmax(0, 1fr) 110px; gap: 12px; align-items: baseline; padding: 8px 12px; border-bottom: 1px solid #242424; background: #1c1c1c; color: #f2f2f0">
+  <span style="font-size: 13px; color: #c9c9c4">{{data}}</span>
+  <span style="min-width: 0; overflow-wrap: anywhere; font-size: 14px; font-weight: 600">{{descrizione}}<span style="display: block; font-size: 13px; font-weight: 400; color: #c9c9c4">{{voceCassa}}</span></span>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right">{{importo}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"data":{"editor":"text","default":"03/09/2025"},"descrizione":{"editor":"text","default":"Cliente Fontana Edoardo per quota associativa"},"voceCassa":{"editor":"text","default":"Quota associativa · Conto Corrente"},"importo":{"editor":"text","default":"30,00 €"},"$preview":{"width":640,"height":56}}'>
+// Riproduzione di `.sg-riga-storico` (src/styles.css) e delle righe di `StoricoPersona` (CollegaPersona.tsx): una riga del blocco
+// «Dal vecchio programma» nella scheda di una persona. Data 13px `sec`, causale 14px 600 con voce e cassa sotto, importo Saira 16px 700 a destra.
+// Sotto i 600px la data passa a riga a sé e l'importo resta a destra. Non è un pagamento dell'app: non si somma ai suoi.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { data: p.data ?? '', descrizione: p.descrizione ?? '', voceCassa: p.voceCassa ?? '', importo: p.importo ?? '' };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    /* Stessi riquadri di cambia-voce/Riepilogo.dc.html (il riepilogo prima di scrivere e gli esiti). */
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; }
+    .prop { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b; }
+    .col { width: 680px; display: flex; flex-direction: column; gap: 10px; }
+    .box { display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333; }
+    .tit { font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em; }
+    .r { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline; }
+    .r > .et { width: 130px; flex-shrink: 0; }
+    .r > span:last-child { font-size: 15px; }
+    .nota { font-size: 14px; color: #c9c9c4; line-height: 1.4; }
+    .tasti { display: flex; gap: 10px; flex-wrap: wrap; }
+    .guaio { padding: 12px 14px; border: 2px solid #e4292a; font-size: 15px; line-height: 1.4; }
+    .cand { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border: 2px solid #333333; }
+    .cand.on { border-color: #f4c31b; background: #242424; }
+    .cand b { font-size: 16px; }
+    .cand span { font-size: 13px; color: #c9c9c4; }
+  </style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; gap: 32px; width: 1440px; padding: 28px 36px 36px; background: #121212; align-items: flex-start">
+
+<div class="col"><span class="prop">PROPOSTA · COLLEGA I CASI SICURI: IL RIEPILOGO, PRIMA DI SCRIVERE</span><section class="box"><span class="et">NIENTE SI SCRIVE FINCHÉ NON DICI SÌ</span><span class="tit">COLLEGA 1.771 MOVIMENTI A 159 PERSONE</span>
+  <div class="r"><span class="et">MOVIMENTI</span><span>1.771 entrate dello storico · + 251.212,29 € · dal 4 set 2019 al 28 set 2026</span></div>
+  <div class="r"><span class="et">COME</span><span>nome e cognome della causale uguali a quelli di <b>una sola</b> scheda, in qualunque ordine</span></div>
+  <div class="r"><span class="et">UN CAMPIONE</span><span>Verdi Anna → Anna Verdi · Neri Paolo → Paolo Neri · Gallo Sara → Sara Gallo · <a style="color: #f4c31b">VEDI TUTTI</a></span></div>
+  <div class="r"><span class="et">NON SI TOCCANO</span><span>75 con più schede dello stesso nome (<b>da decidere</b>) · 4.060 senza scheda · gli annullati</span></div>
+  <div class="r"><span class="et">CASSE E VOCI</span><span>non cambiano: saldi, bilancio e chiusure restano uguali</span></div>
+  <span class="nota">È solo un’etichetta. Vanno a pacchetti da 500, ognuno tutto o niente. Se rilanci, i già collegati restano come sono. Un movimento già collegato a un’altra persona non si sposta da qui.</span>
+  <div class="tasti"><dc-import name="Bottone" label="SÌ, COLLEGA I 1.771" variante="pieno" contesto="segreteria" hint-size="260px,48px"></dc-import><dc-import name="Bottone" label="NO, TORNA ALL’ELENCO" variante="linea" contesto="segreteria" hint-size="240px,48px"></dc-import></div></section></div>
+
+<div class="col"><span class="prop">PROPOSTA · A LAVORO FATTO</span><section class="box"><span class="et">FATTO</span><span class="tit">1.771 COLLEGATI, 0 ERANO GIÀ COSÌ</span>
+  <span class="nota">I totali non sono cambiati. Ogni collegamento resta scritto: chi, quando, a quale persona.</span>
+  <div class="tasti"><dc-import name="Bottone" label="VEDI I DA DECIDERE · 75" variante="pieno" contesto="segreteria" hint-size="260px,48px"></dc-import><dc-import name="Bottone" label="TOGLI QUESTO LOTTO" variante="pericolo" contesto="segreteria" hint-size="220px,48px"></dc-import><dc-import name="Bottone" label="TORNA ALL’ELENCO" variante="linea" contesto="segreteria" hint-size="220px,48px"></dc-import></div>
+  <span class="nota" style="color: #8c8c88">TOGLI QUESTO LOTTO scollega solo i 1.771 appena collegati, dopo un riepilogo uguale a questo. Quelli fatti a mano non si toccano.</span></section></div>
+
+<div class="col"><span class="prop">PROPOSTA · SE UN PACCHETTO SI FERMA</span><section class="box"><span class="et" style="color: #e4292a">NON È FINITO</span><span class="tit">COLLEGATI 1.000 SU 1.771</span>
+  <div class="guaio">Il movimento del 12/03/2021 (CLIENTE VERDI ANNA PER QUOTA ASSOCIATIVA) è stato annullato nel frattempo: non si collega. Quel pacchetto (da 1.001 a 1.500) non è cambiato; i primi 1.000 sì. Rifai il collegamento: quelli già fatti non si ripetono.</div>
+  <div class="tasti"><dc-import name="Bottone" label="RIFAI IL COLLEGAMENTO" variante="pieno" contesto="segreteria" hint-size="260px,48px"></dc-import><dc-import name="Bottone" label="TORNA ALL’ELENCO" variante="linea" contesto="segreteria" hint-size="220px,48px"></dc-import></div></section></div>
+
+<div class="col"><span class="prop">PROPOSTA · COLLEGA A UNA PERSONA, A MANO (UN OMONIMO)</span><section class="box"><span class="et">SCEGLI TU, L’APP NON INDOVINA</span><span class="tit">2 MOVIMENTI DI «ROSSI GIULIA»</span>
+  <span class="nota">+ 340,00 € in tutto, dal 28 set 2026. Due schede hanno questo nome:</span>
+  <div class="cand on"><b>Rossi Giulia · ● scelta</b><span>nata nel 2014 · JUDO KIDS · iscritta dal 2022</span></div>
+  <div class="cand"><b>Rossi Giulia</b><span>nata nel 1987 · AIKIDO · iscritta dal 2019</span></div>
+  <span class="nota">Cosa distingue le due schede sta nella scheda stessa: se non basta, lascia il movimento senza collegamento. Un movimento collegato a una persona si scollega quando vuoi.</span>
+  <div class="tasti"><dc-import name="Bottone" label="COLLEGA A GIULIA ROSSI (2014)" variante="pieno" contesto="segreteria" hint-size="330px,48px"></dc-import><dc-import name="Bottone" label="LASCIA SENZA" variante="linea" contesto="segreteria" hint-size="200px,48px"></dc-import></div></section></div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
