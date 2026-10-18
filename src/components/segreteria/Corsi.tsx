@@ -152,7 +152,7 @@ export function Corsi({
   return (
     <>
       {piena && (
-        <SchedaPiena key={nuovo ? 'nuovo' : corso!.id} etichetta={corso?.nome ?? 'Nuovo corso'} torna="CORSI" onTorna={chiudi} cornice={false}>
+        <SchedaPiena key={nuovo ? 'nuovo' : corso!.id} etichetta={corso?.nome ?? 'Nuovo corso'} torna="Corsi" onTorna={chiudi} cornice={false}>
           {scheda}
         </SchedaPiena>
       )}
@@ -160,7 +160,7 @@ export function Corsi({
       <div className="stack" style={{ gap: 18 }} hidden={piena}>
         <Testa titolo="CORSI" sotto="Un corso è cosa si fa; le ricorrenze dicono quando. Le lezioni si generano da quelle.">
           <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void apri(null, true)}>
-            + NUOVO CORSO
+            + Nuovo corso
           </button>
         </Testa>
 
@@ -223,7 +223,7 @@ export function Corsi({
                 <div key={c.id} className="sg-archiviato">
                   <span className="ob grow" style={{ fontSize: 16, fontWeight: 700 }}>{c.nome.toUpperCase()}</span>
                   <button type="button" className="num sg-chip" onClick={() => void fai(() => d.archiviaCorso(c.id, true), `${c.nome} di nuovo in calendario`, corsi.ricarica)}>
-                    RIPRISTINA
+                    Ripristina
                   </button>
                 </div>
               ))}
@@ -370,7 +370,7 @@ function Scheda({
             type="button"
             className="sg-btn sg-btn-linea"
             onClick={async () => {
-              if ((await chiedi(`Archiviare ${corso.nome}? Le lezioni future senza appello spariscono dal calendario; il registro resta.`, 'ARCHIVIA IL CORSO'))) {
+              if ((await chiedi(`Archiviare ${corso.nome}? Le lezioni future senza appello spariscono dal calendario; il registro resta.`, 'Archivia il corso'))) {
                 void fai(() => d.archiviaCorso(corso.id, false), `${corso.nome} archiviato`, () => {
                   onArchiviato()
                   onCambiato()
@@ -378,11 +378,11 @@ function Scheda({
               }
             }}
           >
-            ARCHIVIA
+            Archivia
           </button>
         ) : (
           <button type="button" className="sg-btn sg-btn-linea" onClick={onLasciaStare}>
-            LASCIA STARE
+            Lascia stare
           </button>
         )}
         <button
@@ -410,19 +410,19 @@ function Scheda({
             )
           }}
         >
-          SALVA
+          Salva
         </button>
       </div>
 
       {corso && (
         <div role="tablist" aria-label="Il corso" className="schede sg-schede">
           <button type="button" role="tab" aria-selected={scheda === 'dati'} className="scheda" data-on={scheda === 'dati'} onClick={() => setScheda('dati')}>
-            DATI
+            Dati
             {datiDaSalvare && <span aria-hidden="true" style={{ color: 'var(--giallo-testo)', marginLeft: 8 }}>●</span>}
             {datiDaSalvare && <span className="vh"> (modifiche non salvate)</span>}
           </button>
           <button type="button" role="tab" aria-selected={scheda === 'iscritti'} className="scheda" data-on={scheda === 'iscritti'} onClick={() => setScheda('iscritti')}>
-            ISCRITTI
+            Iscritti
             {!nonLetti && (
               <span className="num" style={{ marginLeft: 8, letterSpacing: '0.06em', color: colorePosti(conto.tono) }}>
                 {conto.testo}
@@ -574,7 +574,7 @@ function Scheda({
                 className="sg-togli"
                 aria-label={`Togli ${GIORNI_LUNGHI[r.giorno]} alle ${r.ora}`}
                 onClick={async () => {
-                  if ((await chiedi(`Togliere ${GIORNI_LUNGHI[r.giorno].toLowerCase()} alle ${r.ora}? Le lezioni future senza appello spariscono; quelle già fatte restano.`, 'TOGLI IL GIORNO'))) {
+                  if ((await chiedi(`Togliere ${GIORNI_LUNGHI[r.giorno].toLowerCase()} alle ${r.ora}? Le lezioni future senza appello spariscono; quelle già fatte restano.`, 'Togli il giorno'))) {
                     void fai(() => d.togliRicorrenza(r.id), 'Giorno tolto', onCambiato)
                   }
                 }}
@@ -619,7 +619,7 @@ function Scheda({
               )}
               <div className="grow" />
               <button type="button" className="num sg-chip" onClick={() => setRic(null)}>
-                LASCIA STARE
+                Lascia stare
               </button>
               <button
                 type="button"
@@ -630,7 +630,7 @@ function Scheda({
                   onCambiato()
                 })}
               >
-                AGGIUNGI
+                Aggiungi
               </button>
             </div>
           ) : (
@@ -639,7 +639,7 @@ function Scheda({
               className="sg-btn sg-btn-tratteggio"
               onClick={() => setRic(ricorrenzaIniziale(corso))}
             >
-              + AGGIUNGI UN GIORNO
+              + Aggiungi un giorno
             </button>
           )}
           <span style={{ fontSize: 13, color: 'var(--dim)' }}>
@@ -755,7 +755,7 @@ function IscrittiDelCorso({
               onChange={(e) => setCerca(e.target.value)}
             />
             <button type="button" className="num sg-chip" aria-pressed={fuori} onClick={() => setFuori(!fuori)}>
-              NON IN REGOLA
+              Non in regola
             </button>
             {filtrato && (
               <span className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em' }}>
@@ -818,7 +818,7 @@ function IscrittiDelCorso({
           ))}
         </select>
         <button type="button" className="num sg-chip sg-chip-pieno" disabled={!daIscrivere} onClick={onIscrivi}>
-          + ISCRIVI
+          + Iscrivi
         </button>
       </div>
     </div>

@@ -1,11 +1,15 @@
 import { urlImmagine } from './sitoImmagini'
 import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
-import { GRIGLIA_MASSIMA, collage, conFila, impagina, persona, ritratti, testataCorso } from './sitoLayout'
+import { GRIGLIA_MASSIMA, collage, conFila, impagina, persona, testataCorso } from './sitoLayout'
+import { elencoIstruttori, schedaScarna, type Cornice } from './sitoIstruttori'
 import { CSS_CORSI } from './sitoCorsi'
 import { CSS_INTERNE } from './sitoInterne'
 import { cssFoci, cssFociSchede } from './sitoFoto'
+import { eContattiNuova, contattiNuova } from './sitoContatti'
 import { eHomeNuova, homeNuova } from './sitoHome'
+import { corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
+import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
 import { CONTATTI } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
 
@@ -158,6 +162,56 @@ const CSS_TESTATA = `
 `.replace(/\n/g, '')
 
 /**
+ * La pagina del corso rivista (sitoCorso.ts), in aggiunta alle regole della Home (CSS_HOME): foto di apertura o fascia,
+ * dati, orario a tessere, «Cosa si fa» con la foto accanto. Tutto sotto `.corso-nuovo`: le altre pagine non cambiano.
+ * Le larghezze delle tessere dell'orario (6 colonne, nessun buco) vengono dalle regole `n-N` di sempre.
+ */
+const CSS_CORSO_NUOVO = `
+.corso-nuovo .corso-apertura{margin:48px var(--margine) 0;height:clamp(240px,43vw,619px);overflow:hidden;border-radius:6px}
+.corso-nuovo .corso-apertura img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 40%;border-radius:0}
+.corso-nuovo .corso-fascia{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px;margin:48px var(--margine) 0;padding:48px;list-style:none;border-radius:6px;background:var(--blu);color:#fff}
+.corso-nuovo .corso-fascia li{margin:0;padding-top:14px;border-top:3px solid #fff}
+.corso-nuovo .et{display:block;margin-bottom:8px;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.corso-nuovo .corso-fascia .val{display:block;font-family:var(--display);font-weight:800;font-size:clamp(40px,4.4vw,64px);line-height:.95;text-transform:uppercase}
+.corso-nuovo .tessere.dati{display:grid;gap:6px;margin:6px var(--margine) 0;grid-template-columns:repeat(4,minmax(0,1fr))}
+.corso-nuovo .tessere.dati.n-1{grid-template-columns:1fr}
+.corso-nuovo .tessere.dati.n-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.corso-nuovo .tessere.dati.n-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.corso-nuovo .tessere.dati>.tessera{grid-column:auto;min-height:150px;padding:24px 26px;justify-content:space-between;gap:12px}
+.corso-nuovo .dato .val{margin:0;font-size:20px;font-weight:600;line-height:1.35}
+.corso-nuovo .tessera.orario{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr;align-items:start;gap:0 12px;min-height:170px;padding:24px 26px;font-size:17px;line-height:1.45}
+.corso-nuovo .orario h3{font-size:clamp(28px,3.2vw,46px)}
+.corso-nuovo .orario .ora{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(26px,2.8vw,40px);line-height:1;text-transform:uppercase}
+.corso-nuovo .orario .dettagli{grid-column:1 / -1;align-self:end;display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 12px}
+.corso-nuovo .numero-perche{opacity:.6}
+.corso-nuovo .orario .dettagli p{margin:0}
+.corso-nuovo .cosa-griglia{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.corso-nuovo .cosa-si-fa.con-foto .cosa-griglia{grid-template-columns:minmax(0,1fr) 440px}
+.corso-nuovo .tessere.testi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0}
+.corso-nuovo .cosa-si-fa.con-foto .tessere.testi{grid-template-columns:minmax(0,1fr)}
+.corso-nuovo .tessere.testi>.tessera{grid-column:auto;min-height:220px;padding:32px;justify-content:flex-start;gap:12px;font-size:20px;line-height:1.45}
+.corso-nuovo .testi h3{font-size:clamp(36px,3.6vw,52px);line-height:.95}
+.corso-nuovo .corso-interna{margin:0;min-height:440px;overflow:hidden;border-radius:6px}
+.corso-nuovo .corso-interna img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;border-radius:0}
+.corso-nuovo .tessere.perche.n-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.corso-nuovo .tessere.perche.n-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.corso-nuovo .tessere.perche>.tessera{grid-column:auto}
+@media (max-width:900px){
+.corso-nuovo h1.medio{font-size:16vw}
+.corso-nuovo h1.lungo{font-size:13vw}
+.corso-nuovo h1.lunghissimo{font-size:11vw}
+.corso-nuovo .corso-apertura{margin-top:32px}
+.corso-nuovo .corso-fascia{grid-template-columns:1fr;gap:24px;margin-top:32px;padding:28px 24px}
+.corso-nuovo .tessere.dati,.corso-nuovo .tessere.dati.n-3,.corso-nuovo .tessere.dati.n-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.corso-nuovo .tessere.dati>.tessera{min-height:130px;padding:20px}
+.corso-nuovo .tessere.orari>.tessera{grid-column:1 / -1}
+.corso-nuovo .cosa-si-fa.con-foto .cosa-griglia,.corso-nuovo .tessere.testi{grid-template-columns:minmax(0,1fr)}
+.corso-nuovo .corso-interna{min-height:300px}
+.corso-nuovo .tessere.perche.n-3,.corso-nuovo .tessere.perche.n-4{grid-template-columns:minmax(0,1fr)}
+}
+`.replace(/\n/g, '')
+
+/**
  * Le regole della Home nuova (sitoHome.ts), e dei pezzi che le altre pagine potranno chiedere: pulsanti, schede, citazioni
  * con «Leggi tutto», recensioni, chiamata finale. Stanno sotto `main.passo-unico` (la pagina con un solo passo di
  * sezione: 96px sul computer, 64px sul telefono) e la testata e il piede, uguali in tutte le pagine; la Home di prima non ha il resto.
@@ -261,6 +315,53 @@ const CSS_HOME = `
 .cta.solo .cta-testo{border-radius:6px}
 .cta-foto{min-height:300px;border-radius:0 0 6px 6px}
 .passo-unico .cta h2{font-size:clamp(48px,6.11vw,88px)}
+}
+`.replace(/\n/g, '')
+
+/**
+ * Le regole della pagina Contatti nuova (sitoContatti.ts): vengono dopo quelle della Home, di cui usa pulsanti, titoli di sezione,
+ * passi numerati e domande (`main.passo-unico`). I recapiti riusano le misure di `.recapiti` della pagina di prima.
+ */
+const CSS_CONTATTI = `
+.contatti-nuova h1{font-size:clamp(92px,9.72vw,140px)}
+.contatti-nuova~.invito{height:auto;min-height:300px}
+.recapiti-sez{padding:48px var(--margine) 0}
+.recapiti-sez .recapiti{grid-auto-rows:minmax(270px,auto)}
+.recapiti .tessera{position:relative}
+.recapiti-sez .azione{margin-top:10px;padding-top:4px;border-top:2px solid currentColor}
+.recapiti-sez .azione a{display:flex;align-items:center;min-height:48px;font-size:17px;font-weight:600;text-decoration:none}
+.recapiti-sez .azione a::after{content:"";position:absolute;inset:0;border-radius:6px}
+.recapiti-sez .azione a:focus-visible{outline:none}
+.recapiti-sez .azione a:focus-visible::after{outline:3px solid currentColor;outline-offset:-6px}
+.contatti-nuova .arrivo{display:grid;grid-template-columns:780px 1fr;gap:6px;margin-top:40px}
+.contatti-nuova .arrivo>*{grid-column:auto}
+.arrivare .mappa{height:500px;margin:0;padding:0;overflow:hidden;display:block}
+.arrivare .mappa img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;border-radius:0}
+.mappa-azioni{position:absolute;left:16px;bottom:28px;display:flex;gap:8px}
+.mappa-azioni .pulsante{min-height:56px;padding:0 28px;font-size:18px}
+.arrivi{display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:6px}
+.sezione .arrivi .tessera.arrivo-riga:not(.foto){min-height:0}
+.arrivi .arrivo-riga{display:grid;grid-template-columns:48px minmax(0,1fr);gap:8px 16px;align-content:start;padding:24px}
+.arrivo-riga .sigla{grid-row:1 / span 2;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border:3px solid currentColor;border-radius:6px;font-family:var(--display);font-weight:800;font-size:36px;line-height:1}
+.arrivo-riga h3,.arrivo-riga p{grid-column:2}
+.arrivo-riga h3{font-size:clamp(30px,2.5vw,36px);line-height:.95}
+.arrivo-riga p{font-size:17px;line-height:1.45}
+.foto-contatti{display:grid;gap:6px;margin:96px var(--margine) 0}
+.foto-contatti.n-1{grid-template-columns:1fr}
+.foto-contatti.n-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.foto-contatti.n-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.foto-contatti figure{margin:0;height:360px;overflow:hidden;border-radius:6px}
+.foto-contatti img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 45%;border-radius:6px}
+@media (max-width:900px){
+.contatti-nuova h1{font-size:82px}
+.recapiti-sez{padding-top:32px}
+.recapiti-sez .recapiti{grid-auto-rows:minmax(215px,auto)}
+.contatti-nuova .arrivo{grid-template-columns:1fr;margin-top:24px}
+.arrivare .mappa{height:380px}
+.arrivi{grid-template-rows:none}
+.foto-contatti{margin-top:64px}
+.foto-contatti.n-2,.foto-contatti.n-3{grid-template-columns:1fr}
+.foto-contatti figure{height:220px}
 }
 `.replace(/\n/g, '')
 
@@ -427,20 +528,45 @@ ${GRIGLIE_LUNGHE}
 .numero .cifra{font-family:var(--display);font-weight:800;font-size:clamp(40px,5vw,88px);line-height:.85;letter-spacing:-.01em;white-space:nowrap}
 .numero .scritta{font-size:16px;line-height:1.3}
 .numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
-.ritratti{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ritratti{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .ritratti article{grid-column:auto}
-.ritratti-sezione .ritratti article.ritratto{position:relative;justify-content:space-between;gap:12px;padding:24px 26px;min-height:380px}
-.ritratto-foto{display:flex;align-items:center;justify-content:center;flex:none;width:140px;height:140px;border-radius:50%;overflow:hidden;font-family:var(--display);font-weight:800;font-size:64px;line-height:.9;text-transform:uppercase}
-.ritratto-foto img{width:100%;height:100%;object-fit:cover;object-position:50% 40%;border-radius:0}
-.ritratto.giallo .ritratto-foto,.ritratto.blu .ritratto-foto{background:var(--chiara);color:var(--inchiostro)}
-.ritratto.inchiostro .ritratto-foto{background:var(--blu);color:#fff}
-.ritratti h3{font-size:54px;line-height:.95}
-.ritratto-testo p{margin:10px 0 0;font-size:18px;line-height:1.45}
-.ritratto h3 a{text-decoration:none}
+.ritratti-sezione .ritratti article.ritratto{position:relative;display:flex;flex-direction:column;justify-content:flex-start;gap:14px;min-height:484px;padding:0 0 24px;overflow:hidden}
+.ritratto-foto{display:flex;align-items:center;justify-content:center;flex:none;width:100%;height:300px;overflow:hidden;background:var(--chiara);color:var(--inchiostro);font-family:var(--display);font-weight:800;font-size:140px;line-height:1;text-transform:uppercase}
+.ritratto-foto img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;border-radius:0}
+.ritratto-testo{display:flex;flex-direction:column;gap:14px;min-width:0;padding:0 24px}
+.ritratti h3{margin:0;font:inherit}
+.ritratto .nome{display:block;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:48px;line-height:.95}
+.ritratto .cognome{display:block;margin-top:4px;font-size:20px;font-weight:600;line-height:1.3}
+.ritratto .pillole{display:flex;flex-wrap:wrap;gap:6px}
+.ritratto .pillola{min-height:32px;padding:6px 12px}
+.ritratto h3 a{color:inherit;text-decoration:none}
 .ritratto h3 a::after{content:"";position:absolute;inset:0}
-.ritratto:has(h3 a)::after{content:"↗\uFE0E" / "";position:absolute;top:24px;right:26px;font-family:var(--display);font-weight:800;font-size:44px;line-height:1}
+.ritratto:has(h3 a)::after{content:"↗\uFE0E" / "";position:absolute;top:12px;right:12px;width:48px;height:48px;border-radius:50%;background:#fff;color:var(--inchiostro);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;line-height:1}
 .ritratto h3 a:focus-visible{outline:none}
 .ritratto:has(a:focus-visible){outline:3px solid var(--inchiostro);outline-offset:3px}
+.ritratti .ritratto-invito{display:flex;flex-direction:column;justify-content:center;gap:24px;padding:40px 48px;background:var(--inchiostro);color:#fff}
+.ritratto-invito.s2{grid-column:span 2}
+.ritratto-invito.s3{grid-column:span 3}
+.ritratto-invito .parola{margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:96px;line-height:.9}
+.ritratto-invito .frase{margin:0;max-width:560px;font-size:20px;line-height:1.5}
+.azioni{display:flex;flex-wrap:wrap;gap:12px}
+.azioni .pulsante{min-height:60px;padding:0 28px}
+.ritratto-invito .pulsante{text-decoration:none}
+.ritratto-invito .pulsante.primario{background:var(--giallo);color:var(--inchiostro)}
+.ritratto-invito .pulsante.secondario{background:#fff;border-color:#fff;color:var(--inchiostro)}
+.interna.elenco-tecnici h1{font-size:156px}
+.scheda-scarna .scheda-persona{padding:12px var(--margine) 0}
+.indietro{display:inline-flex;align-items:center;min-height:48px;color:inherit;font-size:17px;font-weight:600;text-decoration:none}
+.scheda-testata{display:grid;grid-template-columns:600px 1fr;gap:48px;align-items:stretch;margin-top:12px}
+.scheda-ritratto{height:520px;overflow:hidden;border-radius:6px}
+.scheda-ritratto img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.scheda-ritratto.senza-foto{display:flex;align-items:center;justify-content:center;background:var(--chiara);color:var(--inchiostro);font-family:var(--display);font-weight:800;font-size:260px;line-height:1;text-transform:uppercase}
+.scheda-nome{display:flex;flex-direction:column;justify-content:flex-end;gap:24px}
+.scheda-nome h1{margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:140px;line-height:.86;letter-spacing:-.01em}
+.scheda-nome h1 span{display:block}
+.scheda-nome .pulsante.primario{background:var(--giallo);color:var(--inchiostro)}
+.scheda-nome .pulsante.secondario{background:var(--inchiostro);color:#fff}
+.dati-persona{margin-top:48px;grid-template-columns:repeat(4,1fr)}
 .ritratti-sezione:last-child{padding-bottom:0}
 .ritratti-sezione + .testo{padding:0 var(--margine);max-width:calc(900px + var(--margine) * 2);font-size:24px;line-height:1.4}
 .non-trovata{padding:40px var(--margine) 96px}
@@ -683,12 +809,24 @@ h1{font-size:84px;line-height:.84}
 .persona .sezione:not(.apertura) .fila-3>article:nth-child(3){min-height:340px}
 .ritratti-sezione + .testo{display:none}
 .ritratti-sezione{padding-bottom:0}
-.ritratti{grid-template-columns:repeat(2,1fr)}
-.ritratti-sezione .ritratti article.ritratto{padding:16px;min-height:230px}
-.ritratto-foto{width:84px;height:84px;font-size:40px}
-.ritratti h3{font-size:34px}
-.ritratto-testo p{margin-top:6px;font-size:14px}
+.ritratti{grid-template-columns:1fr}
+.ritratti-sezione .ritratti article.ritratto{flex-direction:row;gap:0;min-height:136px;padding:0}
+.ritratto-foto{width:112px;height:auto;align-self:stretch;font-size:64px}
+.ritratto-testo{gap:6px;padding:14px 14px 12px 16px}
+.ritratto .nome{font-size:34px}
+.ritratto .cognome{font-size:16px}
 .ritratto:has(h3 a)::after{display:none}
+.ritratti .ritratto-invito{grid-column:auto;padding:24px}
+.ritratto-invito .parola{font-size:56px}
+.interna.elenco-tecnici h1{font-size:84px}
+.scheda-scarna .scheda-persona{padding-top:0}
+.scheda-testata{grid-template-columns:1fr;gap:16px}
+.scheda-ritratto{height:320px}
+.scheda-ritratto.senza-foto{font-size:140px}
+.scheda-nome h1{font-size:84px}
+.dati-persona{margin-top:24px;grid-template-columns:1fr}
+.scheda-nome .azioni,.ritratto-invito .azioni{flex-direction:column}
+.scheda-nome .pulsante,.ritratto-invito .pulsante{width:100%}
 .ritratti-sezione + .testo{font-size:17px}
 
 }
@@ -931,10 +1069,10 @@ function social(c: Contesto, titolo: string, descrizione: string): string {
   ].join('')
 }
 
-function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; dati?: string }): string {
+function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssContatti?: boolean; cssCorsoNuovo?: string; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
 }
 
 /**
@@ -946,26 +1084,37 @@ function classeTitolo(titolo: string): string {
   return peso >= 14 ? ' class="lunghissimo"' : peso >= 12 ? ' class="lungo"' : peso >= 10.3 ? ' class="medio"' : ''
 }
 
+/** Le pagine che non sono mai la pagina di un corso, anche se hanno i due pulsanti. */
+const PAGINE_NON_CORSO = new Set(['home', 'corsi', 'contatti', 'chi-siamo'])
+
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
+  if (!PAGINE_NON_CORSO.has(p.slug) && !p.diLegge && eCorsoNuovo(pulito, TESTI.iscrizione)) return paginaCorsoNuovo(p, c, conContatti, pulito)
   if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, conContatti, pulito)
+  if (p.slug === 'chi-siamo' && !p.diLegge && eChiSiamoNuova(pulito, TESTI.iscrizione)) return paginaChiSiamoNuova(p, c, conContatti, pulito)
+  if (p.slug === 'contatti' && !p.diLegge && eContattiNuova(pulito, TESTI.iscrizione)) return paginaContattiNuova(p, c, conContatti, pulito)
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
   // La pagina di un corso (foto, dati, presentazione prima del primo h2) ha la sua testata; le regole stanno in `main.corso`.
   // Una pagina di persona (foto e citazione in apertura) ha il suo ritratto; vedi `persona` in sitoLayout.ts. «Chi siamo» comincia allo stesso modo ma è la sua introduzione a fasce, non un ritratto.
   const dellaPersona = p.slug !== 'home' && p.slug !== 'chi-siamo' && !p.diLegge ? persona(pulito) : null
-  const corso = p.slug !== 'home' && !p.diLegge && !dellaPersona ? testataCorso(pulito) : null
-  // Una pagina che comincia con più `h3` (e senza `h2`) è la griglia dei ritratti degli istruttori.
-  const tecnici = !p.diLegge && !dellaPersona && !corso && !/<h2[\s>]/i.test(inTestata.resto) ? ritratti(inTestata.resto) : null
-  const testo = dellaPersona ? dellaPersona.resto : corso ? corso.resto : tecnici ? tecnici.resto : inTestata.resto
-  const t = testata(c, conContatti, dellaPersona ? percorso('chi-siamo') : corso ? percorso('corsi') : percorso(p.slug))
+  // La scheda scarna di un istruttore (nome, foto se c'è, corsi): sitoIstruttori.ts. Mai la Home, Chi siamo, un corso o una pagina di legge.
+  const cornice: Cornice = { slugs: c.slugs, iscrizione: TESTI.iscrizione, prova: TESTI.provaIntera, scrivici: TESTI.scrivici, contatti: conContatti ? TESTI.contatti : null, indirizzo: CONTATTI.indirizzo }
+  const scheda = p.slug !== 'home' && p.slug !== 'chi-siamo' && !p.diLegge && !dellaPersona && !c.corsi.has(p.slug) ? schedaScarna(pulito, p.titolo, cornice) : null
+  const corso = p.slug !== 'home' && !p.diLegge && !dellaPersona && !scheda ? testataCorso(pulito) : null
+  // Una pagina che comincia con più `h3` (e senza `h2`) è l'elenco dei tecnici degli istruttori.
+  const tecnici = !p.diLegge && !dellaPersona && !scheda && !corso && !/<h2[\s>]/i.test(inTestata.resto) ? elencoIstruttori(inTestata.resto, cornice) : null
+  const testo = scheda ? '' : dellaPersona ? dellaPersona.resto : corso ? corso.resto : tecnici ? tecnici.resto : inTestata.resto
+  const t = testata(c, conContatti, dellaPersona || scheda ? percorso('chi-siamo') : corso ? percorso('corsi') : percorso(p.slug))
   // «Contattaci» sta in testata, accanto a «Prova»: sotto titolo e frase non si ripete.
-  const intro = dellaPersona
+  const intro = scheda
+    ? `<section class="scheda-persona">${scheda}</section>`
+    : dellaPersona
     ? `<section class="pagina-hero persona-hero"><h1>${esc(p.titolo)}</h1><div class="lato">${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div></section>${dellaPersona.html}`
     : p.diLegge
       ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
-      : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}${inTestata.html ? '' : ' solo'}"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main${dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${invito(conContatti)}${piede(c)}`
+      : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}${inTestata.html ? '' : ' solo'}${tecnici ? ' elenco-tecnici' : ''}"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div>${inTestata.html}</section>`
+  const corpo = `${t}<main${scheda ? ' class="scheda-scarna"' : dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${tecnici?.conInvito ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: c.corsi.has(p.slug) })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null, dati })
 }
@@ -977,6 +1126,34 @@ function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, p
   const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati })
+}
+
+/** La pagina del corso rivista (sitoCorso.ts): come la Home nuova, con la foto di apertura o la fascia sotto il titolo. */
+function paginaCorsoNuovo(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+  const h = corsoNuovo(pulito, TESTI.iscrizione)
+  const hero = `<section class="pagina-hero con-pulsanti solo"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div></section>`
+  const corpo = `${testata(c, conContatti, percorso('corsi'))}<main class="passo-unico corso-nuovo" data-corso="${esc(p.slug)}">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: true })
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsoNuovo: cssFuochiCorso(p.slug), dati })
+}
+
+/** Contatti nuova (sitoContatti.ts): come la Home, testata, titolo con i due pulsanti, sezioni a passo unico; l'invito di sempre resta in fondo. */
+function paginaContattiNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+  const h = contattiNuova(pulito, TESTI.iscrizione, NOME, CONTATTI.indirizzo)
+  const hero = `<section class="pagina-hero con-pulsanti solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div></section>`
+  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="contatti-nuova passo-unico">${hero}${h.html}</main>${invito(conContatti)}${piede(c)}`
+  const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssContatti: true, dati })
+}
+
+/** La Chi siamo nuova (sitoChiSiamo.ts): le regole della Home più le sue, dopo. Senza la chiamata finale nel testo resta l'invito di sempre. */
+function paginaChiSiamoNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+  const h = chiSiamoNuova(pulito, TESTI.iscrizione)
+  const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div></section>`
+  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico chi-siamo-nuova">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
+  // Le regole della pagina vanno in coda al CSS della Home, senza toccare `documento` (condiviso con le altre pagine).
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati }).replace('</head>', () => `<style>${CSS_CHI_SIAMO}</style></head>`)
 }
 
 function nonTrovata(c: Contesto, conContatti: boolean): string {

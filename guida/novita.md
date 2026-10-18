@@ -10,6 +10,60 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.107.0 — 18 ottobre 2026
+
+### Novità
+
+- La pagina del corso con prova a 5 €, orario subito dopo i dati e foto a scelta
+
+## 0.106.0 — 18 ottobre 2026
+
+### Novità
+
+- La pagina Contatti ha i pulsanti per provare una settimana o scriverci su WhatsApp, e spiega come arrivare
+
+## 0.105.1 — 18 ottobre 2026
+
+### Modificato
+
+- Tutta la segreteria con i testi in parole
+
+## 0.105.0 — 18 ottobre 2026
+
+### Novità
+
+- La pagina Istruttori con l'elenco a tessere e la scheda di ogni istruttore
+
+## 0.104.0 — 18 ottobre 2026
+
+### Novità
+
+- La pagina Chi siamo con foto di gruppo, istruttori, fila dei corsi e i due pulsanti per provare
+
+## 0.103.0 — 18 ottobre 2026
+
+### Novità
+
+- Richieste, Corsi, Tessere, Listino e Pagamenti con i testi in parole
+
+## 0.102.0 — 18 ottobre 2026
+
+### Novità
+
+- Il menù della segreteria ha un'icona per ogni voce e un filetto fra i gruppi
+
+## 0.101.1 — 18 ottobre 2026
+
+### Risolto
+
+- Nella scheda iscritto i dati si distinguono dalle loro etichette
+
+## 0.101.0 — 18 ottobre 2026
+
+### Novità
+
+- Un solo menu per segreteria e amministrazione, con le voci di quello che puoi fare
+
 ## 0.100.0 — 18 ottobre 2026
 
 ### Novità

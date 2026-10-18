@@ -23,10 +23,10 @@ TABLET**.
 
 Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
 **ISTRUTTORI E ACCESSI** in alto torna all'elenco. Con una modifica, un PIN o
-un kanji scritti e non confermati chiede prima: **TORNA A FINIRE** o **ESCI
-SENZA SALVARE**.
+un kanji scritti e non confermati chiede prima: **Torna a finire** o **Esci
+senza salvare**.
 
-- **MODIFICA** — nome, cognome ed email. Chi è già entrato non cambia email da
+- **Modifica** — nome, cognome ed email. Chi è già entrato non cambia email da
   qui: è quella con cui fa l'accesso.
 - **RUOLO** — tre spunte, **SEGRETERIA**, **AMMINISTRAZIONE** e **ISTRUTTORE**, anche
   più d'una: si cambia con un tocco, e ne serve almeno una. **AMMINISTRAZIONE** è per chi cura i conti
@@ -39,19 +39,19 @@ SENZA SALVARE**.
 - **TOGLI L'ACCESSO** — la persona non entra più nell'app né nell'area
   istruttore del tablet; le presenze che ha segnato restano nel registro.
   **RIDAI L'ACCESSO** lo rimette.
-- **ELIMINA** — solo per chi insegna (con la spunta **ISTRUTTORE**) e non ha mai insegnato, per esempio
+- **Elimina** — solo per chi insegna (con la spunta **ISTRUTTORE**) e non ha mai insegnato, per esempio
   aggiunto per sbaglio: dopo la conferma spariscono la scheda e l'account, e
   non si torna indietro. Chi ha ancora dei corsi va prima tolto dai corsi;
   chi ha già delle lezioni in calendario o delle presenze non si elimina, gli
   si toglie l'accesso, così le sue ore restano. Lo stesso per chi si allena
   anche come allievo: iscrizioni, presenze e ricevute restano sue. Chi non insegna
-  (solo **SEGRETERIA** o **AMMINISTRAZIONE**) non ha **ELIMINA**, e nessuno elimina se stesso.
+  (solo **SEGRETERIA** o **AMMINISTRAZIONE**) non ha **Elimina**, e nessuno elimina se stesso.
 
 ## Il PIN del tablet
 
 Quattro cifre, per l'**AREA ISTRUTTORE** del [tablet di sala](../sala.md).
 
-Nella scheda, **IMPOSTA IL PIN** (o **CAMBIA IL PIN** se c'è già) → le quattro
+Nella scheda, **Imposta il PIN** (o **Cambia il PIN** se c'è già) → le quattro
 cifre → **OK**. Due persone non possono avere lo stesso PIN. Il PIN lo cambia
 solo la segreteria.
 
@@ -70,7 +70,7 @@ Contano solo le presenze **confermate** — dal PIN sul tablet, da sole o dalla
 [segreteria](presenze-istruttori.md). Se **DA CONFERMARE** è rosso, prima di
 chiudere il mese vanno decise in **PRESENZE ISTRUTTORI**.
 
-**SCARICA** dà il foglio Excel del mese: una riga per lezione, con data,
+**Scarica** dà il foglio Excel del mese: una riga per lezione, con data,
 orario, ore, corso e sala.
 
 Gli stessi tre numeri li vede l'istruttore dal telefono, in
@@ -79,8 +79,8 @@ state guardando lo stesso conto.
 
 ## Aggiungere una persona
 
-**+ AGGIUNGI UNA PERSONA** → nome, cognome, email, ruolo (le spunte
-**SEGRETERIA**, **AMMINISTRAZIONE**, **ISTRUTTORE**) → **AGGIUNGI**. Poi si apre la sua scheda.
+**+ Aggiungi una persona** → nome, cognome, email, ruolo (le spunte
+**SEGRETERIA**, **AMMINISTRAZIONE**, **ISTRUTTORE**) → **Aggiungi**. Poi si apre la sua scheda.
 
 Con **Manda subito l'invito per email** spuntato (lo è già), alla persona
 arriva una mail con un link: lo apre, sceglie la sua password ed entra, nel
@@ -110,12 +110,13 @@ parte.
 
 Chi ha più ruoli può quello che può ciascuno. Con **ISTRUTTORE** gli si danno
 dei corsi, il PIN sul tablet gli segna la presenza come a un istruttore, e nel
-calendario vede le sue lezioni. All'accesso chi ha più aree sceglie dove andare
-(**SEGRETERIA**, **AMMINISTRAZIONE**, **ISTRUTTORI**), e poi passa dall'una
-all'altra dal menu senza uscire.
+calendario vede le sue lezioni. All'accesso chi insegna anche sceglie dove andare
+(il menu o **ISTRUTTORI**), e poi passa dall'uno all'altro dal menu senza uscire.
+Segreteria e amministrazione sono due autorizzazioni: il menu è uno, con le voci di
+tutte le autorizzazioni che si hanno.
 
-L'**amministrazione** è per chi cura i conti: ha la sua area, `amministrazione/`
-([la guida](../amministrazione/README.md)), e non vede le persone. Se insegna
+L'**amministrazione** è per chi cura i conti: vede il gruppo **I CONTI** del menu
+([la guida](../amministrazione/README.md)), e senza la segreteria non vede le persone. Se insegna
 anche (spunta **ISTRUTTORE**) vede l'elenco delle persone come un istruttore. Nei pagamenti
 vede il nome, a cosa servono, come e quanto: non il telefono, l'email o il codice
 fiscale. Account, ruoli, PIN e backup restano alla segreteria. Col database, il

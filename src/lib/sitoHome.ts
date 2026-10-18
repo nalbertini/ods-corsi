@@ -11,18 +11,18 @@
 
 import { PILLOLE, blocchi, coloreDi, conCaricamento, contenuto, gruppiDa, griglia, immagine, iniziali, numeriDiUnElenco, sezione, sonoCorsi, testoSolo, type Blocco } from './sitoLayout'
 
-const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+export const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
 /** Stesso indirizzo anche scritto con http, con www o senza «/» in fondo: una svista della segreteria non deve lasciare la vecchia Home senza dirlo. */
-const eIscrizione = (href: string, iscrizione: string) => {
+export const eIscrizione = (href: string, iscrizione: string) => {
   const forma = (u: string) => u.trim().toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '')
   return forma(href) === forma(iscrizione)
 }
 
-interface Link { href: string; resto: string; testo: string }
+export interface Link { href: string; resto: string; testo: string }
 
 /** I link `a.pulsante` di un blocco `p` fatto solo di pulsanti (spazi a parte); altrimenti null. */
-function pulsantiDi(b: Blocco): Link[] | null {
+export function pulsantiDi(b: Blocco): Link[] | null {
   if (b.tag !== 'p') return null
   const dentro = contenuto(b)
   const a = [...dentro.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)]
@@ -32,14 +32,14 @@ function pulsantiDi(b: Blocco): Link[] | null {
 }
 
 /** Il pulsante di prova per primo (giallo), gli altri a linea: l'ordine con cui li ha scritti la segreteria non conta. */
-function pulsanti(l: Link[], iscrizione: string): string {
+export function pulsanti(l: Link[], iscrizione: string): string {
   const prova = l.filter((x) => eIscrizione(x.href, iscrizione))
   const altri = l.filter((x) => !eIscrizione(x.href, iscrizione))
   const a = (x: Link, classe: string, href: string) => `<a class="pulsante ${classe}" href="${esc(href)}"${/^https?:/i.test(href) ? ' rel="noopener noreferrer"' : ''}>${x.testo}</a>`
   return `<div class="pulsanti">${prova.slice(0, 1).map((x) => a(x, 'primario', iscrizione)).join('')}${[...prova.slice(1), ...altri].map((x) => a(x, 'secondario', x.href)).join('')}</div>`
 }
 
-const introduzione = (b: Blocco[]) => b.slice(0, Math.max(0, b.findIndex((x) => x.tag === 'h2') < 0 ? b.length : b.findIndex((x) => x.tag === 'h2')))
+export const introduzione = (b: Blocco[]) => b.slice(0, Math.max(0, b.findIndex((x) => x.tag === 'h2') < 0 ? b.length : b.findIndex((x) => x.tag === 'h2')))
 
 /** Vero se l'introduzione ha un pulsante verso il modulo online. */
 export function eHomeNuova(testoPulito: string, iscrizione: string): boolean {
@@ -106,7 +106,7 @@ const intro = (b: Blocco[]) => {
   return p ? `<div class="colonna">${p}</div>` : ''
 }
 
-function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, iscrizione: string): string {
+export function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, iscrizione: string): string {
   const h2 = `<h2>${titolo}</h2>`
   const primo = corpo.findIndex((x) => x.tag === 'h3')
   const citazioni = corpo.filter((x) => x.tag === 'blockquote')

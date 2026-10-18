@@ -12,7 +12,7 @@ import { STRETTO, useSchermo } from '../../lib/largo'
 import { chiedi, Campo, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
-const STATI: Record<StatoRichiesta, string> = { nuova: 'NUOVA', accolta: 'ACCOLTA', rifiutata: 'RIFIUTATA' }
+const STATI: Record<StatoRichiesta, string> = { nuova: 'Nuova', accolta: 'Accolta', rifiutata: 'Rifiutata' }
 /** Per ordinare per stato: prima quelle da guardare. */
 const ORDINE_STATI: Record<StatoRichiesta, number> = { nuova: 0, accolta: 1, rifiutata: 2 }
 const CON_ARTICOLO: Partial<Record<string, string>> = { modulo: 'il modulo firmato' }
@@ -123,7 +123,7 @@ export function Richieste({
   return (
     <>
       {piena && (
-        <SchedaPiena key={richiesta.id} etichetta={`Richiesta di ${richiesta.nome} ${richiesta.cognome}`} torna="RICHIESTE" onTorna={() => setScelta(null)}>
+        <SchedaPiena key={richiesta.id} etichetta={`Richiesta di ${richiesta.nome} ${richiesta.cognome}`} torna="Richieste" onTorna={() => setScelta(null)}>
           {scheda}
         </SchedaPiena>
       )}
@@ -136,11 +136,11 @@ export function Richieste({
         >
           {stampare > 0 && (
             <button type="button" className="num sg-chip" aria-pressed={soloStampare} onClick={() => setDaStampare(!soloStampare)}>
-              DA STAMPARE
+              Da stampare
             </button>
           )}
           <button type="button" className="num sg-chip" aria-pressed={tutte && !soloStampare} onClick={() => (setDaStampare(false), setTutte(!tutte))}>
-            ANCHE QUELLE GIÀ GESTITE
+            Anche quelle già gestite
           </button>
         </Testa>
         {ricerca && <FiltroRicerca ricerca={ricerca} onTogli={onTogliRicerca} />}
@@ -180,15 +180,15 @@ export function Richieste({
                     <button type="button" className="sg-riga-apri" aria-current={scelta === x.id ? 'true' : undefined}>
                       {x.cognome} {x.nome}
                     </button>
-                    {minorenne(x.natoIl) && <span className="num sg-tag">MINORE</span>}
-                    {x.nucleoDi && <span className="num sg-tag">NUCLEO</span>}
-                    {doc.has(x.id) && <span className="num sg-tag">DA STAMPARE</span>}
+                    {minorenne(x.natoIl) && <span className="num sg-tag">Minore</span>}
+                    {x.nucleoDi && <span className="num sg-tag">Nucleo</span>}
+                    {doc.has(x.id) && <span className="num sg-tag">Da stampare</span>}
                     {/* La si richiama: meglio saperlo prima di aprirla. */}
                     {voci && x.corsi.some((c) => {
                       const nome = nomi.get(c)
                       return !!nome && fuoriEta({ id: c, nome }, x.natoIl, voci)
                     }) && (
-                      <span className="num sg-tag" data-tipo="aspetta">FUORI ETÀ</span>
+                      <span className="num sg-tag" data-tipo="aspetta">Fuori età</span>
                     )}
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.corsi.map((c) => nomi.get(c) ?? '?').join(', ')}</span>
@@ -265,7 +265,7 @@ function Scheda({
   const inAttesa = file.dato === null && !file.guaio
   const accogli = async (op: () => Promise<string>, riuscito: string) => {
     const chi = `${x.nome} ${x.cognome}${minore ? ' (minorenne)' : ''}`
-    if (problemi.length && !(await chiedi(`Accogliere lo stesso la richiesta di ${chi}?\n\n${problemi.join('\n')}\n\nEntra in elenco iscritta ai suoi corsi, e non si torna indietro.`, 'ACCOGLI LO STESSO', { pericolo: true }))) return
+    if (problemi.length && !(await chiedi(`Accogliere lo stesso la richiesta di ${chi}?\n\n${problemi.join('\n')}\n\nEntra in elenco iscritta ai suoi corsi, e non si torna indietro.`, 'Accogli lo stesso', { pericolo: true }))) return
     // Accolta, il certificato è passato alla scheda: l'elenco dei file si rilegge, se no resterebbe a schermo.
     const rileggi = () => {
       void file.ricarica()
@@ -290,7 +290,7 @@ function Scheda({
 
   // Solo da accolta: così la scheda dell'iscritto segna che la copia è in segreteria.
   const stampato = async (personaId: string) => {
-    if (!(await chiedi(`${documenti.map((t) => ETICHETTA_FILE[t].toLowerCase()).join(', ')} di ${x.nome} ${x.cognome}: stampati e nella cartellina? Dall'app si cancellano per sempre.`, 'SÌ, CANCELLALI DALL’APP', { pericolo: true }))) return
+    if (!(await chiedi(`${documenti.map((t) => ETICHETTA_FILE[t].toLowerCase()).join(', ')} di ${x.nome} ${x.cognome}: stampati e nella cartellina? Dall'app si cancellano per sempre.`, 'Sì, cancellali dall’app', { pericolo: true }))) return
     void fai(
       async () => {
         for (const t of documenti) await r.eliminaFile(x.id, t)
@@ -386,9 +386,9 @@ function Scheda({
                 <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
                   <span style={{ fontSize: 15, fontWeight: 600 }}>Il certificato medico</span>
                 </span>
-                {/* In linea: il tasto pieno della pagina è ACCOGLI. */}
+                {/* In linea: il tasto pieno della pagina è «Accogli». */}
                 <a href={certificato.url} target="_blank" rel="noreferrer" className="num sg-chip">
-                  APRI
+                  Apri
                 </a>
               </div>
               <span className="sg-sotto">
@@ -400,18 +400,18 @@ function Scheda({
                 </Campo>
               </div>
               <span className="sg-sotto">
-                La data la scrivi tu, leggendo il foglio. Accogliendo, il file resta nella scheda dell’iscritto, in CERTIFICATO MEDICO: non va stampato né cancellato.
+                La data la scrivi tu, leggendo il foglio. Accogliendo, il file resta nella scheda dell’iscritto, in «Certificato medico»: non va stampato né cancellato.
               </span>
               <div className="row">
                 <button
                   type="button"
                   className="sg-btn sg-btn-linea"
                   onClick={async () => {
-                    if ((await chiedi(`Rifiutare il certificato di ${x.nome} ${x.cognome}? Il file si cancella per sempre: va rimandato, o portato in segreteria.`, 'RIFIUTA IL FILE', { pericolo: true })))
+                    if ((await chiedi(`Rifiutare il certificato di ${x.nome} ${x.cognome}? Il file si cancella per sempre: va rimandato, o portato in segreteria.`, 'Rifiuta il file', { pericolo: true })))
                       void fai(() => r.eliminaFile(x.id, 'certificato'), 'File rifiutato e cancellato', () => void file.ricarica())
                   }}
                 >
-                  RIFIUTA IL FILE
+                  Rifiuta il file
                 </button>
               </div>
             </div>
@@ -430,7 +430,7 @@ function Scheda({
               {x.personaId && (
                 <div className="row">
                   <button type="button" className="sg-btn sg-btn-rosso" onClick={() => stampato(x.personaId!)}>
-                    STAMPATO, CANCELLA
+                    Stampato, cancella
                   </button>
                 </div>
               )}
@@ -447,7 +447,7 @@ function Scheda({
         <>
           <Riga titolo={omonimi.length === 1 ? 'IN ELENCO C’È GIÀ' : `IN ELENCO CE NE SONO GIÀ ${omonimi.length}`} />
           <span className="sg-sotto">
-            Stesso nome e cognome. Se è {omonimi.length === 1 ? 'lui' : 'uno di loro'}, accogli la richiesta sulla sua scheda: se no ACCOGLI ne fa una nuova
+            Stesso nome e cognome. Se è {omonimi.length === 1 ? 'lui' : 'uno di loro'}, accogli la richiesta sulla sua scheda: se no «Accogli» ne fa una nuova
             quando email, telefono e codice fiscale non tornano.
           </span>
           <div className="stack" style={{ gap: 8 }}>
@@ -473,7 +473,7 @@ function Scheda({
                     disabled={inAttesa}
                     onClick={() => accogli(accoglila(p.id), `Accolta sulla scheda di ${p.nome} ${p.cognome}, iscritta ai suoi corsi`)}
                   >
-                    ACCOGLI SU QUESTA
+                    Accogli su questa
                   </button>
                 </div>
               )
@@ -506,38 +506,38 @@ function Scheda({
               disabled={inAttesa}
               onClick={() => accogli(accoglila(), 'Accolta: ora è in elenco e iscritta ai suoi corsi')}
             >
-              {problemi.length ? 'ACCOGLI LO STESSO' : 'ACCOGLI'}
+              {problemi.length ? 'Accogli lo stesso' : 'Accogli'}
             </button>
             <button
               type="button"
               className="sg-btn sg-btn-linea"
               onClick={async () => {
-                if ((await chiedi(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.`, 'RIFIUTA LA RICHIESTA', { pericolo: true })))
+                if ((await chiedi(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.`, 'Rifiuta la richiesta', { pericolo: true })))
                   void fai(() => r.rifiuta(x.id), 'Richiesta rifiutata', onCambiato)
               }}
             >
-              RIFIUTA
+              Rifiuta
             </button>
           </>
         )}
         {x.personaId && (
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => onApri(x.personaId!)}>
-            APRI LA SCHEDA
+            Apri la scheda
           </button>
         )}
       </div>
 
-      {/* Lontano da ACCOGLI e RIFIUTA: cancella i file per sempre e si usa di rado. */}
+      {/* Lontano da «Accogli» e «Rifiuta»: cancella i file per sempre e si usa di rado. */}
       <div className="row" style={{ justifyContent: 'flex-end', marginTop: 24 }}>
         <button
           type="button"
           className="sg-btn sg-btn-linea"
           onClick={async () => {
-            if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`, 'ELIMINA PER SEMPRE', { pericolo: true })))
+            if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`, 'Elimina per sempre', { pericolo: true })))
               void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)
           }}
         >
-          ELIMINA RICHIESTA E FILE
+          Elimina richiesta e file
         </button>
       </div>
     </>

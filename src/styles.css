@@ -318,7 +318,10 @@
 /* Inter è più larga di Saira: con la spaziatura di prima le voci lunghe andavano a capo. */
 :root[data-look='sito'] .sg-voce { letter-spacing: 0; min-height: 44px; border-radius: 6px; font-weight: 500; font-size: 15px; white-space: nowrap; }
 /* Nel menu di 240px una voce non va a capo col suo numero accanto: poco riempimento ai lati. */
-:root[data-look='sito'] #sg-menu .sg-voce { padding-left: 8px; padding-right: 4px; }
+/* Il letter-spacing di #sg-menu (sopra i 1000px) vince su quello del look e allargava Inter: con l'icona davanti le voci lunghe non ci stavano. */
+:root[data-look='sito'] #sg-menu .sg-voce { padding-left: 12px; padding-right: 4px; letter-spacing: 0;
+  /* Con l'icona davanti, «Presenze istruttori» e un numero a due cifre non ci stanno su una riga: va a capo invece di tagliarsi. */
+  white-space: normal; line-height: 1.25; }
 :root[data-look='sito'] #sg-menu .sg-voce .sg-tag { margin-left: 4px; padding: 1px 6px; }
 @media (min-width: 768px) {
   :root[data-look='sito'] .sg-menu { padding-left: 12px; padding-right: 12px; }
@@ -356,6 +359,8 @@
 :root[data-look='sito'] .sg-chip[aria-pressed='true']::before { content: '✓ '; }
 /* Nella tessera di una lezione i tag possono andare a capo e restano dentro la tessera. */
 :root[data-look='sito'] .sg-lezione .sg-tag { white-space: normal; max-width: 100%; overflow-wrap: anywhere; }
+:root[data-look='sito'] .sg-btn { letter-spacing: 0; font-size: 16px; font-weight: 600; }
+:root[data-look='sito'] .sg-chip { letter-spacing: 0; font-size: 15px; font-weight: 600; }
 :root[data-look='sito'] .sg-dafare-tasto { letter-spacing: 0; font-size: 16px; font-weight: 600; }
 /* Sotto i 1360px le caselle sono più strette: numero e riempimento più piccoli, perché anche con tre cifre il titolo non esca. */
 @media (max-width: 1360px) {
@@ -1881,6 +1886,11 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
    ISTRUTTORI con due cifre vuole 188 px. */
 @media (min-width: 1001px) { #sg-menu .sg-voce { letter-spacing: 0.1em; padding-right: 8px; } }
 .sg-voce:hover { color: var(--text); }
+/* L'icona davanti al testo. */
+.sg-voce { gap: 12px; }
+/* Un filetto fra un gruppo e l'altro: il solo titolo non bastava a far vedere dove finisce una sezione e comincia la successiva. */
+.sg-gruppi { gap: 14px; }
+.sg-gruppo + .sg-gruppo { padding-top: 14px; border-top: 1px solid var(--line-soft); }
 /* Il testo prende lo spazio, il numero sta a destra: una voce lunga che va a capo non lo lascia storto. */
 .sg-voce-testo { flex: 1; min-width: 0; }
 a.sg-voce { text-decoration: none; }
@@ -1929,6 +1939,8 @@ a.sg-voce { text-decoration: none; }
 .sg-titolo:focus { outline: none; }
 .sg-sotto { font-size: 14px; color: var(--dim); margin: 0; }
 .sg-etichetta { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim); }
+/* Il valore si legge più grande e più scuro dell'etichetta, che resta piccola e spenta. */
+.sg-valore { font-size: 16px; font-weight: 500; line-height: 1.3; }
 .sg-riga-titolo { display: flex; align-items: baseline; gap: 10px; }
 
 .sg-btn {
@@ -2984,22 +2996,24 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
   color: var(--text);
 }
 .sito-pezzi * { border-radius: 0; }
-.sito-pezzi > div { height: 720px; }
+/* Senza il pannello delle parti la pagina prende lo spazio: la cornice segue l'altezza dello schermo, mai sotto i 720px. */
+.sito-pezzi-corpo { display: flex; flex-direction: column; height: max(720px, calc(100vh - 220px)); }
+.sito-pezzi-colonne { display: grid; grid-template-columns: minmax(0, 1fr) 320px; flex: 1; min-height: 0; }
+.sito-pezzi-pagina { overflow: auto; padding: 16px; min-width: 0; }
+.sito-pezzi-destra { display: flex; flex-direction: column; gap: 14px; padding: 12px; border-left: 2px solid var(--line); overflow: auto; }
+.sito-pezzi-riga { display: flex; align-items: center; min-height: 48px; padding: 0 14px; border: 2px solid var(--line); background: var(--surface); color: var(--text); font-size: 15px; text-align: left; }
+.sito-pezzi-riga[data-on='true'] { border-color: var(--text); background: var(--surface-2); font-weight: 700; }
+.sito-pezzi-frase { margin: 0; padding: 18px; border: 2px dashed var(--line); color: var(--dim); font-size: 16px; line-height: 1.45; }
 /* I tasti sopra l'editor sono quelli della segreteria; da spenti restano leggibili. */
 .sito-pezzi .sg-chip { color: var(--text); border-color: var(--riga-campo); background: var(--surface); }
 .sito-pezzi .sg-chip:disabled { background: var(--surface-2); color: var(--dim); border-color: transparent; opacity: 1; }
 /* Una parte senza niente dentro si vede e ha l'altezza di un tocco. */
 .sito-pezzi-vuoto { display: flex; align-items: center; min-height: 44px; padding: 0 16px; border: 2px dashed var(--line); color: var(--dim); font-size: 15px; }
-/* Sotto i 1280px Puck non ha posto per tre pannelli: le parti si mettono coi tasti in alto, e l'anteprima resta larga. */
+/* Sotto i 1280px la pagina sta sopra e il pannello sotto, a tutta larghezza. */
 @media (max-width: 1279px) {
-  .sito-pezzi > div { height: auto; min-height: 640px; }
-  .sito-pezzi [class*='Sidebar--left'], .sito-pezzi [class*='PuckLayout-nav'] { display: none; }
-  /* Puck riserva una colonna a ogni pannello, anche a quelli nascosti: qui la pagina sta sopra e i campi sotto, a tutta larghezza. */
-  .sito-pezzi [class*='PuckLayout-inner'] { display: flex !important; flex-direction: column; height: auto; }
-  .sito-pezzi [class*='PuckCanvas_'] { min-height: 280px; width: 100%; }
-  .sito-pezzi [class*='PuckCanvas-inner'], .sito-pezzi [class*='PuckCanvas-root'] { height: auto !important; min-height: 240px; }
-  /* Puck chiude il pannello dei campi quando il suo contenitore è stretto: qui serve sempre, sotto la pagina. */
-  .sito-pezzi [class*='Sidebar--right'] { display: flex !important; flex-direction: column; width: 100% !important; max-width: none; min-height: 200px; }
+  .sito-pezzi-corpo { height: auto; min-height: 640px; }
+  .sito-pezzi-colonne { grid-template-columns: minmax(0, 1fr); }
+  .sito-pezzi-destra { border-left: 0; border-top: 2px solid var(--line); min-height: 200px; }
 }
 .sito-testo h2 { font-size: 28px; }
 .sito-testo h3 { font-size: 22px; }
@@ -3129,3 +3143,6 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 @media (max-width: 480px) {
   .sg-scheda-piede-fisso > .sg-btn { padding: 0 6px; letter-spacing: 0.08em; font-size: 14px; }
 }
+
+/* CONTABILITÀ: i totali delle casse vanno a capo sotto una certa larghezza, invece di tagliare gli importi a 40px. */
+.sg-numeri.sg-numeri-conti { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }

@@ -21,8 +21,8 @@ come voce della lista.
 
 L'elenco degli esercizi che i tablet propongono scrivendo un timer, e i nomi
 che la voce incisa sa dire. Finché non c'è, ogni tablet usa il suo: si parte
-da **PARTI DA QUELLO DI BASE** (un elenco per una palestra di judo) o da
-**PARTI DA ZERO**.
+da **Parti da quello di base** (un elenco per una palestra di judo) o da
+**Parti da zero**.
 
 Un esercizio si tocca per cambiargli nome o categoria, o per toglierlo.
 Una categoria sola per esercizio, o nessuna; **Tutte le categorie** nel filtro

@@ -164,7 +164,7 @@ function pilloleDiUnaVoce(x: string): { testo: string; pillole: string } {
   return { testo: m[1], pillole: `<span class="pillole">${html}</span>` }
 }
 
-function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string; pillole: string }> | null {
+export function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string; pillole: string }> | null {
   if (b.tag !== 'ul') return null
   const li = [...b.html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1])
   if (li.length < VOCI_MIN || li.length > VOCI_MAX) return null
@@ -188,12 +188,12 @@ const tessera = (colore: string, titolo: string, resto: string, prima = '') =>
   `<article class="tessera ${colore}">${prima}${titolo.trim() ? `<h3>${titolo}</h3>` : ''}${resto}</article>`
 
 /** Nella pagina di un corso i colori ripartono dal giallo e la quarta tessera torna al giallo (docs/sito/corso.md). */
-const ROTAZIONE_CORSO = ['giallo', 'blu', 'inchiostro'] as const
+export const ROTAZIONE_CORSO = ['giallo', 'blu', 'inchiostro'] as const
 
 /** Un orario: il primo paragrafo è solo un grassetto (l'ora), i paragrafi dopo sono i dettagli (giorni, età). */
 const ORA = /^<p[^>]*>\s*<strong>[\s\S]*<\/strong>\s*<\/p>$/i
-const inOrario = (corpo: Blocco[]) => corpo.length > 0 && ORA.test(corpo[0].html)
-function tesseraOrario(colore: string, titolo: string, corpo: Blocco[]): string {
+export const inOrario = (corpo: Blocco[]) => corpo.length > 0 && ORA.test(corpo[0].html)
+export function tesseraOrario(colore: string, titolo: string, corpo: Blocco[]): string {
   const dettagli = corpo.slice(1).map((b) => b.html).join('')
   return `<article class="tessera ${colore} orario"><h3>${titolo}</h3><p class="ora">${contenuto(corpo[0])}</p>${dettagli ? `<div class="dettagli">${dettagli}</div>` : ''}</article>`
 }
@@ -520,34 +520,6 @@ export function impagina(testoPulito: string, corso = false, conRecapiti = false
     i = j
   }
   return fuori.join('')
-}
-
-/** I colori dei ritratti, come nel design (tredici tessere disegnate a mano); oltre la tredicesima si riparte. */
-const COLORI_RITRATTI = ['giallo', 'blu', 'inchiostro', 'blu', 'inchiostro', 'giallo', 'inchiostro', 'giallo', 'blu', 'blu', 'inchiostro', 'blu', 'inchiostro'] as const
-
-/**
- * La pagina degli istruttori: un testo senza `h2` che comincia con un `h3` (e ne ha almeno due) è una griglia di
- * ritratti. Ogni `h3` è il nome; la foto che lo segue (se c'è) va nel cerchio, senza foto il cerchio ha l'iniziale; il
- * paragrafo dopo è il ruolo. Un link nel nome rende cliccabile la tessera. Quel che segue l'ultimo ritratto resta testo.
- * Restituisce null se il testo non è fatto così.
- */
-export function ritratti(testoPulito: string): { html: string; resto: string } | null {
-  const b = blocchi(testoPulito)
-  if (b[0]?.tag !== 'h3' || b.some((x) => x.tag === 'h2')) return null
-  const tessere: string[] = []
-  let i = 0
-  while (i < b.length && b[i].tag === 'h3') {
-    const nome = contenuto(b[i])
-    i++
-    const foto = i < b.length ? immagine(b[i]) : null
-    if (foto !== null) i++
-    const ruolo = i < b.length && b[i].tag === 'p' && immagine(b[i]) === null ? b[i++].html : ''
-    const cerchio = foto !== null ? `<span class="ritratto-foto">${foto}</span>` : `<span class="ritratto-foto" aria-hidden="true">${iniziali(nome).slice(0, 1)}</span>`
-    const colore = COLORI_RITRATTI[tessere.length % COLORI_RITRATTI.length]
-    tessere.push(`<article class="tessera ritratto ${colore}">${cerchio}<div class="ritratto-testo"><h3>${nome}</h3>${ruolo}</div></article>`)
-  }
-  if (tessere.length < 2) return null
-  return { html: `<section class="sezione ritratti-sezione"><div class="ritratti">${tessere.join('')}</div></section>`, resto: b.slice(i).map((x) => x.html).join('') }
 }
 
 /** Nel collage della Home: al massimo tre foto e sei numeri; il resto resta nel testo, com'era scritto. */

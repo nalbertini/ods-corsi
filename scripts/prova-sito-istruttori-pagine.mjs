@@ -81,7 +81,7 @@ console.log('\n2. Nessun recapito personale')
 console.log('\n3. Un file per ognuno dei 13 istruttori')
 {
   ok('i file ci sono (13 più il modello)', ISTRUTTORI.map(([s]) => existsSync(`${DIR}/${s}.md`)).concat(existsSync(`${DIR}/modello.md`)).every(Boolean), true)
-  ok('nessun file in più', readdirSync(DIR).filter((f) => f.endsWith('.md') && f !== 'README.md' && f !== 'modello.md').sort(), ISTRUTTORI.map(([s]) => `${s}.md`).sort())
+  ok('nessun file in più', readdirSync(DIR).filter((f) => f.endsWith('.md') && f !== 'README.md' && f !== 'modello.md' && f !== 'modello-scarno.md').sort(), ISTRUTTORI.map(([s]) => `${s}.md`).sort())
   for (const [slug, nome] of ISTRUTTORI) {
     const md = leggi(`${DIR}/${slug}.md`)
     ok(`${slug}: il titolo è «${nome}»`, campo(md, 'Titolo'), nome)
@@ -98,6 +98,20 @@ console.log('\n4. Il modello ha i titoli della pagina di Maurizio')
   const m = titoli(leggi(`${DIR}/maurizio-innella.md`)).filter((t) => !['Mare, montagna e paracadute'].includes(t))
   const mod = titoli(leggi(`${DIR}/modello.md`)).filter((t) => !['Mare, montagna e paracadute'].includes(t))
   ok('stessi h2 e h3 (tranne quelli personali)', mod.filter((t) => m.includes(t)), m)
+}
+
+console.log('\n5. I testi da incollare (elenco e scheda scarna) escono come nel design')
+{
+  const pag = (slug, titolo, testo) => ({ slug, titolo, descrizione: '', testo })
+  const elenco = leggi('docs/sito/istruttori.html').replace(/<!doctype[^>]*>|<meta[^>]*>|<title>[^<]*<\/title>/gi, '')
+  const scarna = testo(leggi(`${DIR}/modello-scarno.md`)).match(/<ul>[\s\S]*?<\/ul>/)?.[0] ?? ''
+  const sito = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [pag('istruttori', 'Gli istruttori', elenco), pag('fabio-berta', 'Fabio Berta', scarna), pag('maurizio-innella', 'Maurizio Innella', '<p>x</p>'), pag('contatti', 'Contatti', '')], menu: [], rinvii: [] })
+  const el = sito['istruttori/index.html']
+  ok('l’elenco ha 13 tessere e la tessera d’invito', [conta(el, /<article class="tessera ritratto /g), /ritratto-invito s3/.test(el)], [13, true])
+  ok('Maurizio e Fabio sono link (pagine pubblicate), nessun altro', [...el.matchAll(/<h3><a href="([^"]*)"/g)].map((m) => m[1]), ['/maurizio-innella/', '/fabio-berta/'])
+  ok('la scheda di Fabio è la scheda scarna con i suoi corsi', [/<h1><span>Fabio<\/span> <span>Berta<\/span><\/h1>/.test(sito['fabio-berta/index.html']), /<h2>Corsi<\/h2><p>Aikido<\/p>/.test(sito['fabio-berta/index.html'])], [true, true])
+  const senza = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [pag('istruttori', 'Gli istruttori', elenco)], menu: [], rinvii: [] })['istruttori/index.html']
+  ok('senza le pagine pubblicate, nessun nome è un link (niente 404)', conta(senza, /<h3><a /g), 0)
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')

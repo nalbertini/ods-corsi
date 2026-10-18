@@ -23,7 +23,7 @@ riempire ha l'etichetta rossa. Anche nella **SETTIMANA** una lezione senza
 istruttore o senza sala lo dice in rosso («istruttore?»).
 
 I corsi archiviati stanno in fondo: «N corsi archiviati · mostra», e
-**RIPRISTINA** li rimette in calendario.
+**Ripristina** li rimette in calendario.
 
 ## Nuovo corso, o cambiare un corso
 
@@ -40,16 +40,16 @@ I corsi archiviati stanno in fondo: «N corsi archiviati · mostra», e
 - **COLORE** — segue la disciplina (blu judo, rosso lotta, giallo pesi, verde
   motricità), così da lontano si capisce cos'è.
 
-**SALVA** per confermare, **LASCIA STARE** per non cambiare niente. Se hai
+**Salva** per confermare, **Lascia stare** per non cambiare niente. Se hai
 cambiato qualcosa e non l'hai salvato (anche un giorno nuovo a metà, o qualcuno
 scelto in «Iscrivi qualcuno…»), aprendo un altro corso l'app chiede prima:
-**TORNA A FINIRE** o **ESCI SENZA SALVARE**.
+**Torna a finire** o **Esci senza salvare**.
 
 ## Le ricorrenze (i giorni)
 
 Nella scheda, sotto **RICORRENZE**:
 
-- **AGGIUNGI UN GIORNO** → giorno, ora, minuti, sala → **AGGIUNGI**;
+- **+ Aggiungi un giorno** → giorno, ora, minuti, sala → **Aggiungi**;
 - la ✕ accanto a un giorno lo toglie (chiede conferma).
 
 Cambiare i giorni tocca **solo le lezioni future**: quelle con un appello
@@ -61,7 +61,7 @@ genera lezioni.
 Sotto ogni giorno, accanto alla sala, c'è **ATTIVITÀ**: cosa si fa quel giorno
 («Karate» il lunedì, «Open mat» il giovedì), scelta fra l'elenco di
 [Impostazioni](regole.md#le-attività). **Nessuna attività** è la scelta di
-partenza. Anche **AGGIUNGI UN GIORNO** la chiede.
+partenza. Anche **+ Aggiungi un giorno** la chiede.
 
 Vale **da oggi in poi**: le lezioni future la seguono da sole. Le lezioni già
 fatte e quelle con l'appello restano com'erano; anche quelle che hai cambiato a
@@ -109,7 +109,7 @@ posti `2 IN PIÙ DEI POSTI` (rosso); senza posti indicati, `16 ISCRITTI`.
 - **Cerca** per nome o cognome: maiuscole, accenti, apostrofi e trattini non
   contano («dangelo» trova D'Angelo). Se non trova nessuno lo dice. Con una
   ricerca accesa si legge quanti sono, «3 DI 22».
-- **NON IN REGOLA** mostra solo chi ha il certificato scaduto o mancante, o la
+- **Non in regola** mostra solo chi ha il certificato scaduto o mancante, o la
   quota da pagare (anche a metà): come il tasto della pagina Iscritti. Va
   insieme alla ricerca. Se non c'è nessuno, l'elenco dice «Tutti in regola.» e
   il tasto resta premuto: toccalo di nuovo per spegnerlo.
@@ -121,12 +121,12 @@ posti `2 IN PIÙ DEI POSTI` (rosso); senza posti indicati, `16 ISCRITTI`.
   avevi. Lo stesso fa **CORSO** in alto nella scheda della persona (se la
   apri da un altro posto, dice ISCRITTI e torna all'elenco). Se nel corso hai
   modifiche non salvate l'app chiede prima.
-- Il menu «Iscrivi qualcuno…» con **ISCRIVI** sta in questa
+- Il menu «Iscrivi qualcuno…» con **Iscrivi** sta in questa
   scheda. A corso pieno lo dice, ma si può iscrivere lo stesso.
 - Se l'app non riesce a leggere le persone lo dice, invece di mostrare zero
   iscritti.
 
 ## Archiviare
 
-**ARCHIVIA** toglie il corso dal calendario: le lezioni future senza appello
+**Archivia** toglie il corso dal calendario: le lezioni future senza appello
 spariscono, il registro resta. Si ripristina quando si vuole.

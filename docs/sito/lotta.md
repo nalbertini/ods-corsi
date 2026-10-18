@@ -1,42 +1,34 @@
-# Lotta: la pagina del corso come nel design
+# Lotta: la pagina del corso rivista
 
-Testo da incollare nel pannello SITO (PAGINE › Lotta, indirizzo `/lotta/`), per avere la pagina di un corso del design «tatami blu e giallo»
-(`TatamiBlu-Corso`, desktop, e `TatamiBluM-Corso`, telefono). Il design disegna il Judo; le altre discipline seguono la stessa forma
-(regole in `corso.md` del ramo `claude/sito-corso-83a32b`). Il testo di oggi è sul sito: ogni fatto vero è stato conservato.
+Testo da incollare nel pannello SITO (PAGINE › Lotta) per avere la pagina rivista: titolo con i due pulsanti, foto di apertura, dati, orario a tessere, «Cosa si fa» e «A chi è rivolto», «Cosa aspettarsi» numerato e chiusura «Una settimana per scegliere.».
+**Finché non si incolla il testo nuovo la pagina resta com'è oggi**: il sito riconosce quella nuova da un pulsante verso il modulo online prima del primo titolo grande. Il testo di prima è in [`lotta-precedente.html`](lotta-precedente.html). Regole in [`corso.md`](corso.md).
 
-Come si fa:
+## Prima di incollare: le foto
+
+Nella libreria IMMAGINI vanno caricate (le versioni sviluppate sono in `docs/proposte-home/corso/foto/approvate/`, non nel repository):
+
+| File | Ruolo |
+|---|---|
+| `lotta-A.jpg` | A |
+| `lotta-B.jpg` | B |
+| `lotta-C.jpg` | C |
+
+In `lotta.html` i nomi sono segnaposto (`DA-CARICARE-<file>.jpg`): dopo il caricamento si sostituiscono con i nomi veri prima di copiare. Il punto da tenere al centro lo sceglie il sito dal corso, non dal nome del file. Ruoli: A apertura (sotto il titolo), B accanto a «Cosa si fa», C nella chiusura.
+
+## Come si fa
 
 1. Apri **PAGINE › Lotta**.
-2. Nei campi a destra: **titolo** e **descrizione** qui sotto.
-3. Apri `docs/sito/lotta.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello clicca nel testo, cancella tutto e incolla (Cmd+V).
+2. Nel campo **descrizione** scrivi quella qui sotto; il titolo resta com'è.
+3. Apri `docs/sito/lotta.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello cancella **tutto** il testo vecchio e incolla (Cmd+V).
 4. **ANTEPRIMA** per controllare, poi **PUBBLICA**.
-
-## Titolo
-
-Lotta
 
 ## Descrizione
 
-Gioco, movimento e rispetto per crescere insieme.
-
-## Testo
-
-Il testo sta in [`lotta.html`](lotta.html): è quello che va incollato. Ordine, come vuole il sito per la pagina di un corso: foto grande, quattro tessere dei dati (Per chi, Quando, Dove, Per iniziare), tre tessere di presentazione, orario a tessere, cosa aspettarsi, «Perché sceglierlo» (banda blu, al massimo 160 caratteri).
-
-## Cosa cambia rispetto a oggi
-
-- Titolo e descrizione: come oggi.
-- In cima la foto grande e le quattro tessere dei dati: frasi prese dal testo di oggi e dal design (Dove, Per iniziare: via Sassi 26 e settimana di prova a 5 euro, già nelle domande frequenti).
-- «Cos’è il corso», «Cosa si fa durante le lezioni», «Per chi è pensato» diventano tre tessere sotto le tessere dei dati, non più titoli grandi.
-- L’orario di oggi, scritto in un solo paragrafo, diventa una tessera per gruppo: nome, ora, giorni, anni di nascita.
-- «Cosa può aspettarsi un genitore o un atleta»: i titoli di oggi, una tessera ciascuno, con una frase nuova sotto.
-- «Perché sceglierlo» diventa la banda blu.
-- Il resto è identico al testo pubblicato.
+Gioco, movimento e rispetto per crescere insieme, dalla prima prova alla gara.
 
 ## Da controllare prima di pubblicare
 
-- Le frasi sotto le tessere «Cosa può aspettarsi» sono nuove (lealtà, crescita insieme, fair play, divertimento, disciplina): le rilegga chi insegna, perché dicono come si lavora davvero.
-- «Dai 7 anni agli adulti»: l’età viene dalla tessera della Home e dei Corsi; il testo di oggi dà solo gli anni di nascita (Lotta 2: 2019-2017, Lotta 3: dal 2016). Confermare il minimo.
-- Il testo di oggi scrive «Lotta 3: lunedì e mercoledì 18:00-19:30; il martedì un allenamento di preparazione atletica e pesistica 18:00-19:00; il venerdì 18:00-19:00». Ho fatto tre tessere: confermare che il venerdì è un allenamento di lotta per i nati dal 2016 e che nessuna età sia più alta per il martedì.
-- Nessuna fila di foto: il sito la fa solo con 2 o 3 foto di fila, e di lotta ce n’è una sola oltre alla foto grande («Due atleti si sfidano in un incontro di lotta», già in libreria). FOTO DA SCEGLIERE: lotta, 1-2 foto per la fila.
-- Le foto ritraggono minori: servono i permessi dei genitori (quelle di gruppo e di lezione sono già pubbliche sul sito).
+- Domande aperte che toccano questa pagina (`docs/proposte-home/corso/testi/REPORT.md`): Q12.
+- Le frasi nuove o accorciate (descrizione, «Cosa si fa», titoli di «Cosa aspettarsi») le rilegga chi insegna: nei sorgenti prima/dopo, riga «Tolto», sta in `docs/proposte-home/corso/testi/REPORT.md`.
+- Non c'è la quota dopo la prova né il certificato medico: nessun testo di oggi li dice (Q3, Q4).
+- Le età sull'anno 2026 invecchiano ogni settembre (Q9).

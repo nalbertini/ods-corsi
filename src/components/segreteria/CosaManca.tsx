@@ -50,7 +50,7 @@ export function CosaManca({
       ))}
       {nonSo && (
         <button type="button" className="sg-btn sg-btn-linea sg-mancano-riconta" onClick={onRiprova}>
-          RICONTA
+          Riconta
         </button>
       )}
       <span role="status" className="vh">

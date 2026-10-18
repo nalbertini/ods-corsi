@@ -241,6 +241,7 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 - **Body** (Barlow 500, 17px, 1.4): nomi nell'appello, campi, testo dei moduli.
 - **Body small** (Barlow 400, 13–15px, 1.35–1.5): note, dettagli, frasi sotto i titoli, in `testo-spento`.
 - **Label** (Saira 700, 11–16px, 0.12–0.24em, maiuscolo): titoletti di sezione con la riga, etichette dei campi, bollini, fasi.
+- **Valore di un campo in sola lettura** (`.sg-valore`, scheda iscritto): Barlow 500 16px, `testo` (`testo-spento` se manca, con «—»). Sta sotto la sua etichetta, che è più piccola e spenta: i due non si confondono.
 
 ### Named Rules
 **La Regola dell'Obliquo.** L'obliquo 9° (`.ob`, `font-style: oblique 9deg`) è per i tasti e il marchio. Non per il testo corrente.

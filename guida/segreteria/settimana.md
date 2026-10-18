@@ -38,7 +38,7 @@ In alto:
 - sotto il titolo c'è scritto fino a che giorno è pronto il calendario, cioè
   fin dove ci sono le lezioni dell'orario (le straordinarie non contano).
   Il calendario si allunga da sé, anche quando si aggiunge un orario a un
-  corso; per allungarlo subito c'è **RIGENERA ADESSO** in
+  corso; per allungarlo subito c'è **Rigenera adesso** in
   [Impostazioni](regole.md#il-calendario), che non duplica niente e non tocca
   le lezioni che hanno già un appello.
 

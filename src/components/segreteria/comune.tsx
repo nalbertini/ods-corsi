@@ -90,7 +90,7 @@ export const scordaBozze = () => bozze.clear()
 export function lasciare(): Promise<boolean> {
   if (!bozzaAperta()) return Promise.resolve(true)
   const cosa = [...bozze.values()].filter(Boolean).pop()
-  return chiedi(`${cosa ? `${cosa}: modifiche` : 'Ci sono modifiche'} non salvate. Se esci si perdono.`, 'ESCI SENZA SALVARE', { no: 'TORNA A FINIRE', restare: true })
+  return chiedi(`${cosa ? `${cosa}: modifiche` : 'Ci sono modifiche'} non salvate. Se esci si perdono.`, 'Esci senza salvare', { no: 'Torna a finire', restare: true })
 }
 
 /** Un modulo che diventa bozza al primo tasto battuto o alla prima scelta. */
@@ -116,8 +116,8 @@ export interface Domanda {
 let mostra: ((d: Domanda) => void) | null = null
 
 /**
- * Chiede conferma prima di un'azione, col verbo sui tasti: «SÌ, ANNULLA LA
- * RICEVUTA» e «NO, LASCIA STARE», non OK e Annulla, che su «Annullare la
+ * Chiede conferma prima di un'azione, col verbo sui tasti: «Sì, annulla la
+ * RICEVUTA» e «No, lascia stare», non OK e Annulla, che su «Annullare la
  * ricevuta?» dicevano il contrario. Il fuoco parte dal no; ESC è no.
  * `pericolo`: quello che non si annulla, col tasto rosso. Serve `<Conferme />`
  * nella pagina (la segreteria lo mette); senza, si chiede al browser.
@@ -125,7 +125,7 @@ let mostra: ((d: Domanda) => void) | null = null
 export function chiedi(testo: string, si: string, o: { no?: string; pericolo?: boolean; restare?: boolean } = {}): Promise<boolean> {
   return new Promise((risposta) => {
     if (!mostra) return risposta(window.confirm(testo))
-    mostra({ testo, si, no: o.no ?? 'NO, LASCIA STARE', pericolo: !!o.pericolo, restare: !!o.restare, risposta })
+    mostra({ testo, si, no: o.no ?? 'No, lascia stare', pericolo: !!o.pericolo, restare: !!o.restare, risposta })
   })
 }
 
@@ -269,7 +269,7 @@ export function useAvviso() {
         </>
       ) : (
         <button type="button" className="sg-avviso-chiudi" onClick={() => setTesto(null)}>
-          CHIUDI
+          Chiudi
         </button>
       )}
     </div>
