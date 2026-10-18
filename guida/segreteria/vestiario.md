@@ -36,7 +36,7 @@ fornitore va solo quello che è **saldato**.
    sulla pagina solo con **SALVA**; quelle sostituite o tolte si cancellano,
    e la barra lo dice prima. **VEDI LA PAGINA** apre la pagina come la vede
    la famiglia, con quello che è salvato.
-6. **COPIA LINK ORDINI**, in fondo al menu, copia il link da mandare nel gruppo
+6. **Copia link ordini**, in fondo al menu, copia il link da mandare nel gruppo
    WhatsApp.
 
 Senza data o senza capi, la pagina degli ordini è chiusa.
