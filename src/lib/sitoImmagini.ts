@@ -41,6 +41,9 @@ export const controllaAlt = (alt: string, decorativa: boolean): string | null =>
  */
 export const pulisciAlt = (alt: string): string => alt.replace(/["<>]/g, '').replace(/\s+/g, ' ').trim()
 
+/** Il testo alternativo di una foto già nel testo: «solo decorativa» è vuoto di proposito, il resto si ripulisce come alla scelta. */
+export const altDellaFoto = (alt: string, decorativa: boolean): string => (decorativa ? '' : pulisciAlt(alt))
+
 const sorgentiDi = (html: string) => [...html.matchAll(/<img\b[^>]*?\bsrc="([^"]*)"/gi)].map((m) => m[1].replace(/&amp;/g, '&'))
 
 /** Gli indirizzi delle immagini di un testo, senza doppioni, nell'ordine in cui compaiono. */

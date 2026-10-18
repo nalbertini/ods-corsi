@@ -3,6 +3,7 @@ import { EditorContent, Node, useEditor, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import { indirizzoValido } from '../../lib/sitoPagine'
+import { altDellaFoto, controllaAlt } from '../../lib/sitoImmagini'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { ScegliImmagine } from './ImmaginiSito'
 
@@ -57,6 +58,60 @@ function Tasto({ nome, etichetta, acceso, onClick, larghezzaPiena }: { nome: str
   )
 }
 
+/**
+ * Con una foto scelta nel testo la barra dei tasti del testo non serve: dice che la foto è scelta e offre quel che si
+ * può fare (testo alternativo, solo decorativa, cambiare foto, toglierla). Si sposta trascinandola, come ogni blocco.
+ */
+function BarraFoto({ editor, d }: { editor: Editor; d: DatiSegreteria }) {
+  const attuale = editor.getAttributes('immagine') as { alt?: string }
+  const [alt, setAlt] = useState(attuale.alt ?? '')
+  const [decorativa, setDecorativa] = useState((attuale.alt ?? '') === '')
+  const [cambia, setCambia] = useState(false)
+  const guaio = controllaAlt(alt.trim(), decorativa)
+  // Il testo si dà alla pagina uscendo dal campo o con Invio; senza testo e non decorativa la foto resta com'era.
+  const dai = (testo: string, deco: boolean) => {
+    if (!controllaAlt(testo.trim(), deco)) editor.chain().updateAttributes('immagine', { alt: altDellaFoto(testo, deco) }).run()
+  }
+  return (
+    <div className="row sito-barra sito-barra-foto" role="toolbar" aria-label="Cosa puoi fare con la foto">
+      <span className="sg-etichetta">FOTO SCELTA</span>
+      <input
+        className="sg-campo grow"
+        aria-label="Testo alternativo: cosa si vede nella foto"
+        placeholder="Cosa si vede nella foto"
+        value={alt}
+        disabled={decorativa}
+        aria-invalid={guaio ? true : undefined}
+        onChange={(e) => setAlt(e.target.value)}
+        onBlur={() => dai(alt, decorativa)}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); dai(alt, decorativa) } }}
+      />
+      <label className="row" style={{ gap: 8, alignItems: 'center' }}>
+        <input type="checkbox" checked={decorativa} onChange={(e) => { setDecorativa(e.target.checked); if (e.target.checked) setAlt(''); dai(e.target.checked ? '' : alt, e.target.checked) }} />
+        <span>Solo decorativa</span>
+      </label>
+      <Tasto nome="Cambia foto" etichetta="CAMBIA FOTO" onClick={() => setCambia(true)} />
+      <button type="button" className="sg-btn sg-btn-linea sg-pericolo sito-tasto" onClick={() => editor.chain().focus().deleteSelection().run()}>
+        Togli la foto
+      </button>
+      {guaio && <span role="alert" className="modulo-nota" style={{ flexBasis: '100%' }}>{guaio}</span>}
+      {cambia && (
+        <ScegliImmagine
+          d={d}
+          perFoto
+          onChiudi={() => setCambia(false)}
+          onScelta={(url, nuovoAlt) => {
+            editor.chain().updateAttributes('immagine', { src: url, alt: nuovoAlt }).run()
+            setAlt(nuovoAlt)
+            setDecorativa(nuovoAlt === '')
+            setCambia(false)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
 export function Barra({ editor, d }: { editor: Editor; d: DatiSegreteria }) {
   const [immagine, setImmagine] = useState(false)
   const [link, setLink] = useState<{ indirizzo: string; pulsante: boolean; guaio?: string } | null>(null)
@@ -81,6 +136,9 @@ export function Barra({ editor, d }: { editor: Editor; d: DatiSegreteria }) {
     if (indirizzo) editor.chain().focus().extendMarkRange('link').setMark('link', { href: indirizzo, pulsante }).run()
     setLink(null)
   }
+
+  // Una foto scelta ha i suoi tasti; `key` rimette a zero i campi quando si sceglie un'altra foto.
+  if (editor.isActive('immagine')) return <BarraFoto key={editor.state.selection.from} editor={editor} d={d} />
 
   return (
     <div className="stack" style={{ gap: 8 }}>
