@@ -3,6 +3,9 @@
  * Le misure sono quelle del design a 1440px e a 375px; docs/sito/corsi.md dice come si scrive il testo.
  */
 
+import { blocchi, contenuto, gruppiDa, griglia, immagine, sonoCorsi, type Blocco } from './sitoLayout'
+import { eIscrizione, pulsantiDi, scheda, sezioneNuova } from './sitoHome'
+
 /** Le fasce d'età con la loro icona (Phosphor, 256×256): la voce dell'elenco che ne porta il nome prende l'icona. */
 const ICONE: Record<string, string> = {
   bambini: 'M92,140a12,12,0,1,1,12-12A12,12,0,0,1,92,140Zm72-24a12,12,0,1,0,12,12A12,12,0,0,0,164,116Zm-12.27,45.23a45,45,0,0,1-47.46,0,8,8,0,0,0-8.54,13.54,61,61,0,0,0,64.54,0,8,8,0,0,0-8.54-13.54ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.11,88.11,0,0,0-84.09-87.91C120.32,56.38,120,71.88,120,72a8,8,0,0,0,16,0,8,8,0,0,1,16,0,24,24,0,0,1-48,0c0-.73.13-14.3,8.46-30.63A88,88,0,1,0,216,128Z',
@@ -52,5 +55,51 @@ ${FASCE.map((f) => `.fasce .${f}{--icona:${maschera(ICONE[f])}}`).join('\n')}
 .corsi + .fascia{height:260px;margin-top:48px}
 .corsi + .fascia.due{grid-template-columns:1fr}
 .corsi + .fascia figure:nth-child(2){display:none}
+}
+`
+
+/**
+ * La pagina «I nostri corsi» rivista (docs/design-canvas/corsi-miglioramenti/): come la Home nuova, parte solo col testo nuovo.
+ * Si riconosce da un pulsante verso il modulo online in qualunque punto e da corsi tutti con link prima del primo `h2`;
+ * senza, la pagina resta quella di oggi (`impagina` + `CSS_CORSI`). Le schede e la chiamata finale sono quelle della Home.
+ */
+function parti(testoPulito: string) {
+  const b = blocchi(testoPulito)
+  const h2 = b.findIndex((x) => x.tag === 'h2')
+  const fine = h2 < 0 ? b.length : h2
+  const h3 = b.findIndex((x) => x.tag === 'h3')
+  return { b, h2, fine, h3, gruppi: h3 >= 0 && h3 < fine ? gruppiDa(b.slice(h3, fine)) : [] }
+}
+
+export function eCorsiNuova(testoPulito: string, iscrizione: string): boolean {
+  const { b, gruppi } = parti(testoPulito)
+  return sonoCorsi(gruppi) && b.some((x) => pulsantiDi(x)?.some((p) => eIscrizione(p.href, iscrizione)))
+}
+
+/** La foto di una scheda è l'immagine subito sotto il suo titolo: le altre (in coda, dopo le fasce) non sono sue e si scartano. */
+const sottoIlTitolo = (corpo: Blocco[]): Blocco[] => [...corpo.slice(0, 1).filter((x) => immagine(x) !== null), ...corpo.filter((x) => immagine(x) === null)]
+
+/** `frase` e `html` per la pagina: la frase sta nella testata sotto il titolo, `html` in `<main>` dopo la testata. */
+export function corsiNuova(testoPulito: string, iscrizione: string): { frase: string; html: string; chiamata: boolean } {
+  const { b, fine, h3, gruppi } = parti(testoPulito)
+  const prima = b.slice(0, h3).filter((x) => x.tag === 'p' && pulsantiDi(x) === null && immagine(x) === null)
+  const [frase, ...altri] = prima
+  const colonna = altri.length ? `<div class="colonna">${altri.map((x) => x.html).join('')}</div>` : ''
+  const schede = gruppi.map((g, k) => scheda({ titolo: g.titolo, corpo: sottoIlTitolo(g.corpo) }, k, gruppi.length)).join('')
+  const sezioni = [`<section class="sezione">${colonna}${griglia(gruppi.length, schede, ' schede')}</section>`]
+  const titoli = b.map((x, i) => (x.tag === 'h2' && i >= fine ? i : -1)).filter((i) => i >= 0)
+  titoli.forEach((i, k) => sezioni.push(sezioneNuova(contenuto(b[i]), b.slice(i + 1, titoli[k + 1] ?? b.length), k === titoli.length - 1, iscrizione)))
+  return { frase: frase ? contenuto(frase) : '', html: sezioni.join(''), chiamata: sezioni.some((s) => s.startsWith('<section class="sezione cta')) }
+}
+
+/** Sotto `main.passo-unico.pagina-corsi`: titolo da 120px su una riga (56px sul telefono), poi le regole della Home. */
+export const CSS_CORSI_NUOVA = `
+.passo-unico.pagina-corsi h1{font-size:120px;line-height:.9;margin:0 0 24px}
+.pagina-corsi .intro p{max-width:760px}
+.pagina-corsi .pagina-hero{padding-bottom:0}
+.pagina-corsi .sezione:first-of-type{padding-top:40px}
+@media (max-width:900px){
+.passo-unico.pagina-corsi h1{font-size:56px}
+.pagina-corsi .sezione:first-of-type{padding-top:32px}
 }
 `

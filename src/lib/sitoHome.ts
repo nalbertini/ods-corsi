@@ -14,7 +14,7 @@ import { PILLOLE, blocchi, coloreDi, conCaricamento, contenuto, gruppiDa, grigli
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
 /** Stesso indirizzo anche scritto con http, con www o senza «/» in fondo: una svista della segreteria non deve lasciare la vecchia Home senza dirlo. */
-const eIscrizione = (href: string, iscrizione: string) => {
+export const eIscrizione = (href: string, iscrizione: string) => {
   const forma = (u: string) => u.trim().toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '')
   return forma(href) === forma(iscrizione)
 }
@@ -22,7 +22,7 @@ const eIscrizione = (href: string, iscrizione: string) => {
 interface Link { href: string; resto: string; testo: string }
 
 /** I link `a.pulsante` di un blocco `p` fatto solo di pulsanti (spazi a parte); altrimenti null. */
-function pulsantiDi(b: Blocco): Link[] | null {
+export function pulsantiDi(b: Blocco): Link[] | null {
   if (b.tag !== 'p') return null
   const dentro = contenuto(b)
   const a = [...dentro.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)]
@@ -85,7 +85,7 @@ function fasceDi(corpo: Blocco[]): { nomi: string[]; resto: Blocco[] } {
   return nomi.length && nomi.every((x) => note.includes(x.toLowerCase())) ? { nomi, resto: corpo.slice(0, -1) } : { nomi: [], resto: corpo }
 }
 
-function scheda(g: { titolo: string; corpo: Blocco[] }, k: number, n: number): string {
+export function scheda(g: { titolo: string; corpo: Blocco[] }, k: number, n: number): string {
   const foto = g.corpo.map(immagine).find((x): x is string => x !== null)
   const { nomi, resto } = fasceDi(g.corpo.filter((x) => immagine(x) === null))
   const testi = resto.filter((x) => x.tag === 'p')
@@ -106,7 +106,7 @@ const intro = (b: Blocco[]) => {
   return p ? `<div class="colonna">${p}</div>` : ''
 }
 
-function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, iscrizione: string): string {
+export function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, iscrizione: string): string {
   const h2 = `<h2>${titolo}</h2>`
   const primo = corpo.findIndex((x) => x.tag === 'h3')
   const citazioni = corpo.filter((x) => x.tag === 'blockquote')
