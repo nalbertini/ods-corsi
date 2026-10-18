@@ -123,7 +123,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
     const nuovi = dividiInParti(pezzi)
     const no = cosaNonVaPezzi(nuovi)
     if (no) return avvisa(no, true)
-    if (!(await chiedi(`Dividere «${pagina.titolo}» in parti? Il testo non cambia: ogni titolo e ogni foto aprono una parte nuova. Non va online finché non pubblichi. Se non ti piace, TORNA ALLE PAGINE e non cambia niente.`, 'Dividi', { no: 'Lascia stare' }))) return
+    if (!(await chiedi(`Dividere «${pagina.titolo}» in parti? Il testo non cambia: ogni titolo e ogni foto aprono una parte nuova. Non va online finché non pubblichi. Se non ti piace, premi TUTTE LE PAGINE e scegli TORNA ALLE PAGINE: non cambia niente.`, 'Dividi', { no: 'Lascia stare' }))) return
     setPezzi(nuovi)
     setAppenaDivisa(true)
     setRimonta((k) => k + 1)

@@ -307,7 +307,7 @@ export function dividiInParti(p: PezziPagina): PezziPagina {
 export const divisibileInParti = (p: PezziPagina): boolean => dividiInParti(p).content.length > p.content.length
 
 /** Cosa dice la pagina subito dopo la divisione: quante parti ci sono e come tenerle o scartarle. */
-export const frasePartiNuove = (n: number): string => `Ora ci sono ${n} parti, nell'ELENCO. Il testo è lo stesso. Per tenerle premi SALVA BOZZA; per lasciare tutto com'era, TORNA ALLE PAGINE.`
+export const frasePartiNuove = (n: number): string => `Ora ci sono ${n} parti, nell'ELENCO. Il testo è lo stesso. Per tenerle premi SALVA BOZZA; per lasciare tutto com'era, premi TUTTE LE PAGINE e scegli TORNA ALLE PAGINE.`
 
 /** Il tasto «Porta ai pezzi»: solo per una pagina col vecchio editor (`null`; `undefined` = database senza il 62) e che non è di legge. */
 export const portabileAiPezzi = (p: { pezzi?: PezziPagina | null; diLegge: boolean }): boolean => p.pezzi === null && !p.diLegge

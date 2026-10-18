@@ -172,7 +172,9 @@ console.log('\nModalità prova: le stesse regole di salva_bozza_pezzi_sito')
   ok('una pagina nuova a pezzi porta i pezzi e il testo piatto', [nuova?.pezzi, nuova?.bozza], [P, z.pezziInHtml?.(P)])
   const senza = prova(() => sp.nuovaPagina(stato(), 'Vecchia', 'vecchia'))
   ok('una pagina nuova senza pezzi resta col vecchio editor (pezzi null)', senza.stato ? senza.stato.pagine.find((x) => x.id === senza.id)?.pezzi : senza, null)
-  ok('la pagina di oggi ha pezzi null', stato().pagine.every((x) => x.pezzi === null), true)
+  // Judo è l'unica pagina di prova già a pezzi: un solo TESTO lungo, per provare «Dividi in parti».
+  ok('le pagine di oggi hanno pezzi null, tranne Judo', stato().pagine.filter((x) => x.slug !== 'judo').every((x) => x.pezzi === null), true)
+  ok('Judo è a pezzi con un solo testo', stato().pagine.find((x) => x.slug === 'judo')?.pezzi?.content.map((c) => c.type), ['testo'])
   ok('pezzi non validi: la pagina nuova non si crea', String(prova(() => sp.nuovaPagina(stato(), 'X', 'x-y', { content: [{ type: 'boh', props: { id: 'a' } }] }))).startsWith('ERRORE'), true)
   const s0 = r.stato
   const salvata = prova(() => sp.salvaBozzaPezzi(s0, r.id, 1, { titolo: 'Prova', descrizione: '', pezzi: { content: [T('a', '<p>Nuovo</p>')] } }))
@@ -665,7 +667,7 @@ console.log('\nDividi in parti: una pagina già a pezzi con un solo testo lungo'
     ok(`9: dividere due volte è come dividere una (${cosa})`, [valido(dividi(p)), dividi(dividi(p))], [true, dividi(p)])
   }
 
-  ok('10: la frase dice quante parti, SALVA BOZZA e TORNA ALLE PAGINE', prova(() => { const f = z.frasePartiNuove(11); return ['11 parti', 'SALVA BOZZA', 'TORNA ALLE PAGINE'].every((x) => f.includes(x)) }), true)
+  ok('10: la frase dice quante parti, SALVA BOZZA e TORNA ALLE PAGINE', prova(() => { const f = z.frasePartiNuove(11); return ['11 parti', 'SALVA BOZZA', 'TUTTE LE PAGINE', 'TORNA ALLE PAGINE'].every((x) => f.includes(x)) }), true)
 
   const due = pagina(T('t1', lungo), K, T('t2', `<h2>X</h2><p>1</p>${IMG('e')}<p>2</p>`), FO)
   ok('11: due testi divisibili si dividono tutti e due', forma(dividi(due)), [
