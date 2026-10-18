@@ -23,7 +23,7 @@ Google, e vale solo per i mockup.
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
 | `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag` (neutro, rosso, giallo e verde `fatto`: PUBBLICATA nel SITO), `.sg-segno-regola` |
-| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): PAGAMENTI in PERSONE, VESTIARIO e SITO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` è il menu di chi cura i conti (I CONTI: CONTABILITÀ, PAGAMENTI, LISTINO), senza ricerca né link da copiare |
+| `Menu.dc.html` | Il menu unico (`.sg-menu`): le voci sono quelle delle autorizzazioni della persona (`autorizzazioni`: `segreteria`, `segreteria e amministrazione`, `amministrazione`), non di due aree. I cinque gruppi della segreteria (OGNI GIORNO, ISCRITTI E SOLDI, CORSI E ORARI, ISTRUTTORI, IL RESTO); con l'amministrazione in più I CONTI con CONTABILITÀ, e con solo l'amministrazione I CONTI e basta (CONTABILITÀ, PAGAMENTI, LISTINO), senza ricerca né link da copiare; VESTIARIO e SITO in IL RESTO, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` resta come alias di `autorizzazioni="amministrazione"` |
 | `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
@@ -277,6 +277,10 @@ campi, scelte, tasti e riquadri). Senza `tema="sito"` l'aspetto dei componenti �
 
 I valori e i rapporti di contrasto calcolati stanno in `../iscrizione-sito/token-proposta.md`; i board in
 `../iscrizione-sito/`. Il fuoco da tastiera (contorno 3px blu #14709f) non è riprodotto.
+
+## Il sito pubblico: Chi siamo
+
+COSTRUITA (`src/lib/sitoChiSiamo.ts`, testo da incollare in `docs/sito/chi-siamo.md`): usa i pezzi della home (`SitoTestata`, `SitoPulsante`, `SitoTessera`, `SitoPerche`, `SitoCta`, `SitoPiede`); slogan, due tessere, pannello con foto e fila di foto con didascalie sono `div` con gli stessi valori, senza componente (vedi `../chi-siamo-miglioramenti/`). Differenze del costruito: i titoli delle due tessere in cima sono `h2` (non `h3`, per non saltare un livello dopo l'`h1`); il pannello con foto è scuro il primo e giallo il secondo, per posizione e non per pulsante; il fuoco delle foto segue il riquadro (slogan, pannelli, quarta della fila), non il file.
 
 ## Il sito pubblico: i pezzi della home
 
