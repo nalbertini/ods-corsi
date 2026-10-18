@@ -106,6 +106,7 @@ titolo('aspetto')
   ok('sul computer vale la scelta: banco', m.aspetto.aspettoInUso('banco', false), 'banco')
   ok('sul computer vale la scelta: oggi', m.aspetto.aspettoInUso('oggi', false), 'oggi')
   ok('sul telefono banco diventa oggi', m.aspetto.aspettoInUso('banco', true), 'oggi')
+  ok('il Banco è della segreteria: chi cura solo i conti ha l\'aspetto di sempre', [m.aspetto.aspettoInUso('banco', false, false), m.aspetto.aspettoInUso('banco', false, true), m.aspetto.aspettoInUso('banco', false)], ['oggi', 'banco', 'banco'])
   ok('sul telefono oggi resta oggi', m.aspetto.aspettoInUso('oggi', true), 'oggi')
 }
 
@@ -129,8 +130,17 @@ titolo('luoghi del Banco')
   ok('OGGI', voci('oggi'), [['dafare', 'OGGI'], ['settimana', 'SETTIMANA'], ['presenze', 'PRESENZE']])
   ok('PERSONE', voci('persone'), [['iscritti', 'ISCRITTI'], ['tessere', 'TESSERE'], ['richieste', 'RICHIESTE ONLINE'], ['istruttori', 'ISTRUTTORI'], ['personale', 'ACCESSI']])
   ok('CORSI', voci('corsi'), [['corsi', 'CORSI'], ['esercizi', 'ESERCIZI']])
-  ok('SOLDI', voci('soldi'), [['pagamenti', 'PAGAMENTI'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
+  // PAGAMENTI resta il primo: è quel che si apre di più, e dal luogo si arriva lì.
+  ok('SOLDI', voci('soldi'), [['pagamenti', 'PAGAMENTI'], ['contabilita', 'CONTABILITÀ'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
   ok('PALESTRA', voci('palestra'), [['statistiche', 'STATISTICHE'], ['segnalazioni', 'SEGNALAZIONI'], ['sito', 'SITO'], ['regole', 'IMPOSTAZIONI']])
+
+  // Chi ha solo l'amministrazione vede solo i luoghi con le sue voci, e dentro solo quelle.
+  const nomi = (luoghi) => luoghi.map((l) => [l.id, l.voci.map((v) => v.voce)])
+  ok('con tutte le voci i luoghi sono quelli di sempre', nomi(m.luoghi.luoghiPer(VOCI)).map(([id]) => id), ['oggi', 'persone', 'corsi', 'soldi', 'palestra'])
+  ok('solo amministrazione: un luogo, SOLDI, con le tre voci dei conti', nomi(m.luoghi.luoghiPer(['contabilita', 'pagamenti', 'listino'])), [['soldi', ['pagamenti', 'contabilita', 'listino']]])
+  ok('solo segreteria: SOLDI senza CONTABILITÀ', nomi(m.luoghi.luoghiPer(VOCI.filter((v) => v !== 'contabilita'))).find(([id]) => id === 'soldi'), ['soldi', ['pagamenti', 'listino', 'vestiario']])
+  ok('nessuna voce, nessun luogo', m.luoghi.luoghiPer([]), [])
+  ok('i luoghi dati non cambiano', LUOGHI.length, 5)
 
   for (const v of VOCI) {
     if (v === 'segnalate') continue

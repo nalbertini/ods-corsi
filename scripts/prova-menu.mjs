@@ -3,8 +3,9 @@
 //
 //   node scripts/prova-menu.mjs
 //
-// src/lib/menuSegreteria.ts esporta GRUPPI_MENU, VOCI_AMMINISTRAZIONE e
-// TITOLO_AMMINISTRAZIONE; Segreteria.tsx e Amministrazione.tsx li importano.
+// src/lib/menuSegreteria.ts esporta GRUPPI_MENU (i cinque gruppi della segreteria) e `menuDi`, che
+// dà a ognuno le voci delle sue autorizzazioni; Segreteria.tsx lo importa. Amministrazione non è più
+// un'area a sé (vedi prova-ruoli.mjs): con l'amministrazione compare in più il gruppo «I conti».
 // ---------------------------------------------------------------------------
 import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
@@ -28,7 +29,6 @@ const c = existsSync('src/lib/menuSegreteria.ts')
 const m = c ? await impacchetta("export * from './src/lib/menuSegreteria'") : {}
 const mancante = 'src/lib/menuSegreteria.ts non esiste'
 const GRUPPI = m.GRUPPI_MENU ?? mancante
-const AMM = m.VOCI_AMMINISTRAZIONE ?? mancante
 
 console.log('\nI cinque gruppi')
 ok('titoli e voci, nell\'ordine', Array.isArray(GRUPPI) ? GRUPPI.map((g) => [g.titolo, g.voci]) : GRUPPI, [
@@ -53,17 +53,18 @@ ok('titoli dei gruppi e voci: iniziale maiuscola, non tutto maiuscolo',
   testi(GRUPPI).flatMap((g) => [g.titolo, ...g.voci.map(([, t]) => t)]).filter((t) => !maiuscola(t)),
   Array.isArray(GRUPPI) ? [] : ['mancano i gruppi'])
 
-console.log('\nIl menu dell\'amministrazione')
-ok('voci e ordine', AMM, [['contabilita', 'Contabilità'], ['pagamenti', 'Pagamenti'], ['listino', 'Listino']])
-ok('titolo del gruppo', m.TITOLO_AMMINISTRAZIONE ?? mancante, 'I conti')
+console.log('\nIl gruppo dei conti (con l\'amministrazione)')
+const chi = (ruolo, ancheAmministrazione = false) => ({ ruolo, ancheIstruttore: false, ancheAmministrazione })
+const gruppi = (c) => (m.menuDi ? m.menuDi(c).map((g) => [g.titolo, g.voci]) : mancante)
+ok('solo segreteria: i cinque gruppi, e basta', gruppi(chi('staff')), Array.isArray(GRUPPI) ? GRUPPI.map((g) => [g.titolo, g.voci]) : GRUPPI)
+ok('segreteria e amministrazione: «I conti» con Contabilità dopo «Iscritti e soldi»', Array.isArray(gruppi(chi('staff', true))) ? gruppi(chi('staff', true)).map(([t]) => t) : gruppi(chi('staff', true)), ['Ogni giorno', 'Iscritti e soldi', 'I conti', 'Corsi e orari', 'Istruttori', 'Il resto'])
+ok('solo amministrazione: «I conti» e basta, con Contabilità, Pagamenti e Listino', gruppi(chi('amministrazione')), [['I conti', [['contabilita', 'Contabilità'], ['pagamenti', 'Pagamenti'], ['listino', 'Listino']]]])
 
 console.log('\nIl piè del menu')
 const sg = readFileSync('src/components/segreteria/Segreteria.tsx', 'utf8')
-const am = readFileSync('src/components/segreteria/Amministrazione.tsx', 'utf8')
-ok('«Istruttori →» e «Amministrazione →» (non più in maiuscolo)', [/>\s*Istruttori →\s*</.test(sg), />\s*Amministrazione →\s*</.test(sg)], [true, true])
+ok('«Istruttori →» (non più in maiuscolo) e nessun passaggio verso l\'amministrazione: è un\'autorizzazione dello stesso menu', [/>\s*Istruttori →\s*</.test(sg), />\s*Amministrazione →\s*</.test(sg)], [true, false])
 ok('niente ISTRUTTORI → né AMMINISTRAZIONE → in Segreteria.tsx', /ISTRUTTORI →|AMMINISTRAZIONE →/.test(sg), false)
-ok('«Segreteria →» e «Istruttori →» nel menu dell\'amministrazione', [/>\s*Segreteria →\s*</.test(am), />\s*Istruttori →\s*</.test(am)], [true, true])
-ok('niente SEGRETERIA → né ISTRUTTORI → in Amministrazione.tsx', /SEGRETERIA →|ISTRUTTORI →/.test(am), false)
+ok('Amministrazione.tsx non c\'è più', existsSync('src/components/segreteria/Amministrazione.tsx'), false)
 ok('«Copia link iscrizioni» e «Copia link ordini»', [/testo="Copia link iscrizioni"/.test(sg), /testo="Copia link ordini"/.test(sg)], [true, true])
 ok('niente COPIA LINK in maiuscolo nei componenti', /testo="COPIA LINK/.test(sg), false)
 ok('«DATI DI PROVA» resta maiuscolo (è una sigla di stato)', />DATI DI PROVA</.test(sg), true)
@@ -85,7 +86,9 @@ if (prima !== null) {
     format: 'esm', write: false, logLevel: 'error',
   })
   const vecchio = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
-  ok('LUOGHI identico a quello di origin/main', ora.LUOGHI, vecchio.LUOGHI)
+  // L'unica differenza voluta: CONTABILITÀ in SOLDI (menu unico), che solo chi ha l'amministrazione vede (`luoghiPer`).
+  const senzaContabilita = ora.LUOGHI.map((l) => ({ ...l, voci: l.voci.filter((v) => v.voce !== 'contabilita') }))
+  ok('LUOGHI identico a quello di origin/main, tolta CONTABILITÀ', senzaContabilita, vecchio.LUOGHI)
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
