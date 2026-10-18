@@ -2284,6 +2284,11 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 /* La casella per scegliere una riga: 24px da vedere, 44px da toccare (il margine negativo non allarga la riga). */
 .sg-scelta-riga { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: -10px 0; }
 .sg-scelta-riga input { width: 24px; height: 24px; margin: 0; accent-color: var(--text); cursor: pointer; }
+/* «Pagato nel vecchio programma» (PagatoPrima.tsx): una persona su più righe (nome e quota, l'incasso, perché non ha la casella). */
+.sg-riga-prima { display: flex; flex-direction: column; gap: 6px; padding: 8px 14px; border-bottom: 1px solid var(--line-soft); cursor: default; }
+.sg-riga-prima .sg-riga-apri { display: flex; align-items: center; min-height: 44px; margin: -13px 0; text-align: left; }
+.sg-scelta-riga input:focus-visible { outline: 3px solid var(--blu, var(--text)); outline-offset: 3px; }
+.sg-riga-prima[data-scelta='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 /* Chi ha scelto delle righe: il conto e il tasto restano in vista in fondo allo schermo, mentre si scorre. */
 .sg-barra-scelta { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; background: var(--surface); border: 2px solid var(--giallo); }
 /* Sotto la descrizione: la causale dell'incasso; sul telefono, davanti, anche data, voce e cassa che lì non hanno la loro colonna. */

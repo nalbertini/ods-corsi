@@ -6,12 +6,12 @@
  */
 export type IdFiltro =
   | 'senza-email' | 'poco' | 'certificato' | 'scadenza' | 'arrivo' | 'pagare'
-  | 'fuori' | 'senza-tessera' | 'senza-documento' | 'file-di-prima' | 'doppioni'
+  | 'fuori' | 'senza-tessera' | 'senza-documento' | 'file-di-prima' | 'doppioni' | 'pagato-prima'
 
 /** Tutti i filtri, per sapere quali sono accesi anche se il loro chip adesso non c'è. */
 export const ID_FILTRI: IdFiltro[] = [
   'senza-email', 'poco', 'certificato', 'scadenza', 'arrivo', 'pagare',
-  'fuori', 'senza-tessera', 'senza-documento', 'file-di-prima', 'doppioni',
+  'fuori', 'senza-tessera', 'senza-documento', 'file-di-prima', 'doppioni', 'pagato-prima',
 ]
 
 export const FILTRI_VISIBILI: IdFiltro[] = ['certificato', 'pagare', 'fuori']
@@ -28,10 +28,11 @@ export const TESTI_FILTRI: Record<IdFiltro, string> = {
   'senza-documento': 'Senza documento',
   'file-di-prima': 'Non archiviato',
   doppioni: 'Possibili doppioni',
+  'pagato-prima': 'Pagato nel vecchio programma',
 }
 
-/** I filtri nascosti che ci sono adesso: tre compaiono solo se c'è qualcosa da filtrare. */
-export function altriFiltri(c: { conTessere: boolean; filePrima: number; doppioni: number }): IdFiltro[] {
+/** I filtri nascosti che ci sono adesso: quattro compaiono solo se c'è qualcosa da filtrare. */
+export function altriFiltri(c: { conTessere: boolean; filePrima: number; doppioni: number; conStorico: boolean }): IdFiltro[] {
   return [
     'senza-email',
     'poco',
@@ -39,6 +40,7 @@ export function altriFiltri(c: { conTessere: boolean; filePrima: number; doppion
     'arrivo',
     ...(c.conTessere ? (['senza-tessera'] as const) : []),
     'senza-documento',
+    ...(c.conStorico ? (['pagato-prima'] as const) : []),
     ...(c.filePrima > 0 ? (['file-di-prima'] as const) : []),
     ...(c.doppioni > 0 ? (['doppioni'] as const) : []),
   ]

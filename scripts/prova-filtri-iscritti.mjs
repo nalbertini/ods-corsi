@@ -34,11 +34,11 @@ console.log('\nI tre in vista')
 ok('certificato, pagare, fuori: in quest\'ordine', m.FILTRI_VISIBILI ?? mancante, ['certificato', 'pagare', 'fuori'])
 
 console.log('\nI testi')
-ok('un testo per ognuno degli 11 filtri', m.TESTI_FILTRI ?? mancante, {
+ok('un testo per ognuno dei 12 filtri', m.TESTI_FILTRI ?? mancante, {
   'senza-email': 'Solo senza email', poco: 'Vengono poco', certificato: 'Senza certificato valido',
   scadenza: 'Certificato in scadenza', arrivo: 'Compiono 6 anni', pagare: 'Da pagare', fuori: 'Non in regola',
   'senza-tessera': 'Senza tessera', 'senza-documento': 'Senza documento', 'file-di-prima': 'Non archiviato',
-  doppioni: 'Possibili doppioni',
+  doppioni: 'Possibili doppioni', 'pagato-prima': 'Pagato nel vecchio programma',
 })
 
 console.log('\nGli altri filtri, quelli presenti adesso')

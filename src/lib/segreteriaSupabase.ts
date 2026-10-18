@@ -22,6 +22,7 @@ import { oggiARoma } from './contabilita'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
+import { mancaPagatoPrima, type IncassoPrima } from './pagatoPrima'
 import { enteDaDati, fineAnno, mancaTessere, type EsitoImportTessere, type TesseraSeg } from './tessere'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
 import type { OrarioSito } from './sitoOrari'
@@ -785,6 +786,17 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async togliRicorrenza(ricorrenzaId) {
       ok(await db.rpc('chiudi_ricorrenza', { ricorrenza: ricorrenzaId }))
+    },
+
+    async pagatoPrima() {
+      const r = await db.rpc('incassi_vecchio_programma')
+      // Senza 71-pagato-vecchio-programma.sql: nessun incasso, e lo si dice (il filtro non si offre).
+      if (mancaPagatoPrima(r.error)) return { elenco: [], manca: true }
+      return {
+        elenco: (ok(r) as unknown as Array<{ persona_id: string | null; data: string; importo: number; voce: string }>).map(
+          (x): IncassoPrima => ({ personaId: x.persona_id, data: x.data, importo: x.importo, voce: x.voce }),
+        ),
+      }
     },
 
     async tessere() {

@@ -19,6 +19,8 @@ import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIG
 import { euro, QUOTA } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
 import { StoricoPersona } from './CollegaPersona'
+import { PagatoPrima } from './PagatoPrima'
+import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
@@ -125,6 +127,7 @@ export function Iscritti({
   const freq = useCarica(() => d.frequenze(), [d])
   const tessere = useCarica(() => d.tessere(), [d])
   const indizi = useCarica(() => d.indiziDoppioni(), [d])
+  const storico = useCarica(() => d.pagatoPrima(), [d])
   const [cerca, setCerca] = useState('')
   const [corso, setCorso] = useState('')
   const [soloSenzaEmail, setSoloSenzaEmail] = useState(false)
@@ -138,6 +141,7 @@ export function Iscritti({
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [filePrima, setFilePrima] = useState(filtroIniziale === 'file-di-prima')
   const [doppi, setDoppi] = useState(false)
+  const [pagatoPrima, setPagatoPrima] = useState(false)
   const [altriScelto, setAltriScelto] = useState(false)
   // Da una coppia di possibili doppioni: la scheda si apre con UNISCI già sull'altra.
   const [unisciCon, setUnisciCon] = useState<string | null>(null)
@@ -161,6 +165,10 @@ export function Iscritti({
   const coppie = indizi.dato ? coppieDoppioni(tutti, indizi.dato) : []
   // Unite o segnate tutte, il filtro si spegne da sé.
   const soloDoppi = doppi && coppie.length > 0
+  // Il filtro «Pagato nel vecchio programma» c'è solo se il database ha la lettura (71-…sql) e c'è qualcuno: mai «nessuno» per una lettura che non c'è.
+  const delVecchio = storico.dato && !storico.dato.manca ? pagatoNelVecchio(tutti, storico.dato.elenco, oggi) : null
+  const nelVecchio = delVecchio ? delVecchio.quota.length + delVecchio.daGuardare.length : 0
+  const soloPagatoPrima = pagatoPrima && nelVecchio > 0
   // Ogni filtro con il suo stato; l'elenco dei nascosti e quali sono accesi lo dice `filtriIscritti.ts`.
   const filtri: Record<IdFiltro, [boolean, (v: boolean) => void]> = {
     'senza-email': [soloSenzaEmail, setSoloSenzaEmail],
@@ -174,8 +182,9 @@ export function Iscritti({
     'senza-documento': [senzaDocumento, setSenzaDocumento],
     'file-di-prima': [soloFilePrima, setFilePrima],
     doppioni: [soloDoppi, setDoppi],
+    'pagato-prima': [soloPagatoPrima, setPagatoPrima],
   }
-  const altri = altriFiltri({ conTessere: conTessereLette, filePrima: nFilePrima, doppioni: coppie.length })
+  const altri = altriFiltri({ conTessere: conTessereLette, filePrima: nFilePrima, doppioni: coppie.length, conStorico: nelVecchio > 0 })
   const accesi = ID_FILTRI.filter((id) => filtri[id][0])
   const altriVisibili = altriAperti(accesi, altriScelto)
   // Il gruppo è aperto solo perché un filtro nascosto è acceso: finché lo è, non si chiude.
@@ -188,7 +197,7 @@ export function Iscritti({
   const chipFiltro = (id: IdFiltro) => (
     <button key={id} type="button" className="num sg-chip" aria-pressed={filtri[id][0]} onClick={() => filtri[id][1](!filtri[id][0])}>
       {TESTI_FILTRI[id]}
-      {id === 'doppioni' ? ` ${coppie.length}` : ''}
+      {id === 'doppioni' ? ` ${coppie.length}` : id === 'pagato-prima' ? ` ${nelVecchio}` : ''}
     </button>
   )
   const trovati = tutti.filter(
@@ -223,7 +232,7 @@ export function Iscritti({
   const inScadenza = attiveOra.filter((p) => certificatoInScadenza(p, oggi)).length
   const nonPagato = attiveOra.filter((p) => daPagare(p, oggi)).length
   const persona = nuovo ? null : (tutti.find((p) => p.id === scelta) ?? null)
-  const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica(), indizi.ricarica(), tessere.ricarica()])
+  const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica(), indizi.ricarica(), tessere.ricarica(), storico.ricarica()])
 
   const chiudi = () => {
     setUnisciCon(null)
@@ -354,8 +363,25 @@ export function Iscritti({
         </div>
 
         {persone.guaio && <Guaio testo={persone.guaio} />}
+        {storico.guaio && <Guaio testo={storico.guaio} />}
 
-        {soloDoppi && indizi.dato ? (
+        {soloPagatoPrima && delVecchio ? (
+          <PagatoPrima
+            d={d}
+            persone={tutti}
+            // Ricerca e corso scelti sopra valgono anche qui.
+            gruppi={soloQueste(delVecchio, new Set(trovati.map((p) => p.id)))}
+            onApri={(id) => {
+              setUnisciCon(null)
+              onScelta(id, 'push')
+            }}
+            onCambiato={() => {
+              void ricarica()
+              onConti?.()
+            }}
+            avvisa={avvisa}
+          />
+        ) : soloDoppi && indizi.dato ? (
           <CoppieDoppioni
             // Ricerca e filtri valgono anche qui: resta una coppia se una delle due passa.
             coppie={coppie.filter((c) => c.some((x) => trovati.includes(x)))}
