@@ -25,11 +25,17 @@
     <sc-if value="{{pieno}}" hint-placeholder-val="{{ true }}">
       <dc-import name="Bottone" label="CAMBIA VOCE" variante="pieno" contesto="segreteria" hint-size="170px,48px"></dc-import>
     </sc-if>
+    <sc-if value="{{collega}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Bottone" label="COLLEGA A UNA PERSONA" variante="linea" contesto="segreteria" hint-size="250px,48px"></dc-import>
+    </sc-if>
+    <sc-if value="{{scollega}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Bottone" label="SCOLLEGA" variante="linea" contesto="segreteria" hint-size="130px,48px"></dc-import>
+    </sc-if>
     <dc-import name="Bottone" label="DESELEZIONA" variante="linea" contesto="segreteria" hint-size="120px,48px"></dc-import>
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"titolo":{"editor":"text","default":"2 SCELTI"},"sotto":{"editor":"text","default":"uscite · − 396,40 €"},"misto":{"editor":"boolean","default":false},"soloPrima":{"editor":"text","default":"SOLO LE 4 ENTRATE"},"soloSeconda":{"editor":"text","default":"SOLO LE 2 USCITE"},"$preview":{"width":720,"height":80}}'>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"2 SCELTI"},"sotto":{"editor":"text","default":"uscite · − 396,40 €"},"misto":{"editor":"boolean","default":false},"collega":{"editor":"boolean","default":false},"scollega":{"editor":"boolean","default":false},"soloPrima":{"editor":"text","default":"SOLO LE 4 ENTRATE"},"soloSeconda":{"editor":"text","default":"SOLO LE 2 USCITE"},"$preview":{"width":720,"height":80}}'>
 // Riproduzione di `.sg-barra-scelta` (src/styles.css) e della barra «N scelti» di `Movimenti` (Contabilita.tsx): sticky in fondo
 // all'elenco, bordo 2px `giallo`, fondo `surface`, padding 12px 14px. Titolo Saira 22px 700 (oblique come `.ob`), la frase sotto
 // 14px `sec`, i tasti a destra. Con entrate e uscite scelte insieme CAMBIA VOCE non c'è: ci sono SOLO LE N ENTRATE / SOLO LE N USCITE.
@@ -37,7 +43,9 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const misto = p.misto === true || p.misto === 'true';
-    return { titolo: p.titolo ?? '2 SCELTI', sotto: misto ? 'Scegli solo entrate o solo uscite' : (p.sotto ?? ''), misto, pieno: !misto, soloPrima: p.soloPrima ?? '', soloSeconda: p.soloSeconda ?? '' };
+    const vero = (x) => x === true || x === 'true';
+    // COLLEGA A UNA PERSONA e SCOLLEGA (70-movimenti-persona.sql): ci sono solo con entrate dello storico scelte, dopo CAMBIA VOCE.
+    return { titolo: p.titolo ?? '2 SCELTI', sotto: misto ? 'Scegli solo entrate o solo uscite' : (p.sotto ?? ''), misto, pieno: !misto, collega: !misto && vero(p.collega), scollega: !misto && vero(p.scollega), soloPrima: p.soloPrima ?? '', soloSeconda: p.soloSeconda ?? '' };
   }
 }
 </script>

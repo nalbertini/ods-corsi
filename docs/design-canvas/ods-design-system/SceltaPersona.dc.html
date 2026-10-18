@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<label style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 14px; border: 2px solid {{bordo}}; background: {{fondo}}; cursor: pointer; color: #f2f2f0">
+  <span style="width: 24px; height: 24px; flex: none; border: 2px solid #f2f2f0; border-radius: 50%; display: flex; align-items: center; justify-content: center"><sc-if value="{{scelta}}" hint-placeholder-val="{{ true }}"><span style="width: 12px; height: 12px; border-radius: 50%; background: #f2f2f0"></span></sc-if></span>
+  <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+    <b style="font-size: 16px">{{nome}}</b>
+    <span style="font-size: 13px; color: #c9c9c4">{{dettagli}}</span>
+  </span>
+</label>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Nerini Sara"},"dettagli":{"editor":"text","default":"nascita 2010 · Judo kids · iscrizione dal 10 set 2024"},"scelta":{"editor":"boolean","default":false},"$preview":{"width":520,"height":64}}'>
+// Riproduzione di `SchedaCandidata` (CollegaPersona.tsx) e di `.sg-scelta-persona` (src/styles.css): una persona da scegliere fra due
+// omonimi, col cerchietto (24px da vedere, scheda alta 56px da toccare), cognome e nome in 16px 700 e sotto, 13px `sec`, quel
+// che le distingue. Scelta: bordo `text` 2px e fondo `surface-2` (il giallo è dell'avviso, non della scelta).
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const scelta = p.scelta === true || p.scelta === 'true';
+    return { nome: p.nome ?? '', dettagli: p.dettagli ?? '', scelta, bordo: scelta ? '#f2f2f0' : '#333333', fondo: scelta ? '#242424' : 'transparent' };
+  }
+}
+</script>
+</body>
+</html>

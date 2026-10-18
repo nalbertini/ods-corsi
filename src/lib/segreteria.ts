@@ -2,6 +2,7 @@ import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
 import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
+import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
@@ -664,6 +665,25 @@ export interface DatiSegreteria {
   cambiaVoceMovimenti(ids: string[], voceId: string): Promise<{ cambiati: number; giaCosi: number }>
   /** I cambi di voce di un movimento, dal più vecchio: chi, quando, la voce di prima e quella di dopo. */
   cambiVoceMovimento(id: string): Promise<CambioVoce[]>
+  /** Quanti movimenti dello storico si collegherebbero a una persona e quanti no, prima di scrivere (`70-movimenti-persona.sql`). */
+  riepilogoCollegamentiPersona(): Promise<RiepilogoCollegamenti>
+  /** Per ogni movimento che si può collegare e non lo è ancora: una scheda sola col nome (`sicuro`), due o più (`omonimi`), nessuna. */
+  esitiCollegamentiPersona(): Promise<Array<{ id: string; esito: EsitoCollegamento }>>
+  /**
+   * Un pacchetto del collegamento automatico: collega fino a `quanti` (al massimo 500) dei movimenti col nome di una sola scheda,
+   * tutti con lo stesso `lotto`; `restano` dice se serve un altro giro. Cambia solo l'etichetta, mai i conti.
+   */
+  collegaSicuriPersona(lotto: string, quanti?: number): Promise<{ collegati: number; restano: number }>
+  /** A mano: un lotto di movimenti (al massimo 500) a una persona, tutti o nessuno; un movimento già di un'altra persona passa a questa. */
+  collegaMovimentiPersona(ids: string[], persona: string): Promise<{ collegati: number; giaCosi: number }>
+  /** Toglie la persona a un lotto di movimenti (al massimo 500), tutti o nessuno. */
+  scollegaMovimentiPersona(ids: string[]): Promise<{ scollegati: number; giaSenza: number }>
+  /** Scollega i movimenti che quel lotto ha collegato e che hanno ancora quella persona; quelli cambiati a mano dopo non si toccano. */
+  togliLottoCollegamenti(lotto: string): Promise<{ tolti: number }>
+  /** Le persone col nome della causale di un movimento, con quel che le distingue: per scegliere a mano fra gli omonimi. */
+  candidatiPersonaMovimento(movimento: string): Promise<CandidatoPersona[]>
+  /** I movimenti collegati a una persona, non annullati, dal più recente: lo storico a parte della sua scheda. */
+  storicoPersona(persona: string): Promise<VoceStorico[]>
   /** Le chiusure della Cassa Contanti, anche le annullate (`60-chiusura-cassa.sql`). */
   chiusure(): Promise<ChiusuraCassa[]>
   /** Chiude la Cassa Contanti fino a un giorno: il previsto lo calcola il database, la differenza si scrive da sé. Rende l'id. */

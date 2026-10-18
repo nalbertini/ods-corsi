@@ -114,7 +114,10 @@ Sotto i timbri la scheda è divisa in quattro schede, e se ne vede una alla volt
 
 - **PERSONA** — i contatti, **STESSO CONTATTO DI**, **DATI ANAGRAFICI**, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
-- **QUOTA E PAGAMENTI** — la quota e i pagamenti, con **+ FAI LA RICEVUTA** e **+ REGISTRA UN PAGAMENTO**. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui.
+- **QUOTA E PAGAMENTI** — la quota e i pagamenti, con **+ FAI LA RICEVUTA** e **+ REGISTRA UN PAGAMENTO**. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. In fondo, se
+  l'amministrazione ha collegato alla persona dei pagamenti del vecchio programma, c'è il blocco **DAL VECCHIO
+  PROGRAMMA**: è lo storico, a parte. Non è nei pagamenti qui sopra e non conta per «quota pagata»: se la persona
+  ha pagato anche nell'app negli stessi giorni, lo stesso incasso può comparire in tutti e due.
 - **CORSI** — le iscrizioni e le ultime 12 lezioni.
 
 Se in **DOCUMENTI** o in **QUOTA E PAGAMENTI** c'è qualcosa da sistemare, la

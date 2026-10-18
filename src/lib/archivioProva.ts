@@ -159,6 +159,8 @@ export interface Archivio {
   chiusure?: ChiusuraCassa[]
   /** I cambi di voce dei movimenti (67-cambia-voce.sql), dal più vecchio. */
   cambiVoce?: Array<CambioVoce & { movimentoId: string }>
+  /** La traccia dei collegamenti dello storico alle persone (70-movimenti-persona.sql), dal più vecchio. */
+  collegamentiPersona?: Array<{ movimentoId: string; prima?: string; dopo?: string; lotto?: string; quando: string }>
   /** I dati dell'associazione per le ricevute, se la segreteria li ha cambiati. */
   enteRicevute?: EnteRicevuta
   /** Nascita, residenza e genitore degli iscritti importati, per persona (18-anagrafiche.sql). */

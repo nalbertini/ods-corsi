@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    .tel { width: 390px; min-height: 780px; display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #121212; border: 2px solid #2a2a2a; }
+    .mov { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-bottom: 1px solid #242424; }
+    .mov.scelta { background: #1c1c1c; box-shadow: inset 4px 0 0 #f4c31b; }
+    .mov .su { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: #c9c9c4; }
+    .mov .imp { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 16px; font-weight: 700; color: #16a54a; }
+    .mov .desc { font-size: 15px; font-weight: 600; }
+    .tag { align-self: flex-start; padding: 1px 6px; font-family: 'Saira Condensed', Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; border: 1px solid #333333; background: #242424; color: #c9c9c4; }
+    .tag.ok { border-color: #16a54a; color: #16a54a; background: transparent; }
+    .tag.giallo { border-color: #f4c31b; color: #f4c31b; background: transparent; }
+    .avviso { padding: 10px 12px; border: 2px solid #f4c31b; font-size: 13px; line-height: 1.45; }
+    .storico { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-bottom: 1px solid #242424; background: #1c1c1c; }
+    .storico .su { display: flex; justify-content: space-between; font-size: 13px; color: #c9c9c4; }
+    .storico b { font-size: 14px; }
+    .nota { font-size: 13px; color: #8c8c88; line-height: 1.4; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 40px; align-items: flex-start; width: 900px; padding: 28px 36px 36px; background: #121212">
+<div style="display: flex; flex-direction: column; gap: 8px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · MOVIMENTI SUL TELEFONO</span>
+  <div class="tel">
+    <dc-import name="BarraTelefono" luogo="CONTABILITÀ" hint-size="100%,56px"></dc-import>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap"><dc-import name="Chip" label="TUTTI" acceso="{{ true }}" hint-size="90px,44px"></dc-import><dc-import name="Chip" label="DA DECIDERE · 75" hint-size="170px,44px"></dc-import><dc-import name="Chip" label="SENZA SCHEDA" hint-size="150px,44px"></dc-import></div>
+    <div class="mov scelta"><div class="su"><span>28 set 2026 · Conto Corrente</span><span class="imp">+ 30,00 €</span></div><span class="desc">CLIENTE ROSSI GIULIA PER QUOTA ASSOCIATIVA</span><span class="tag giallo">2 SCHEDE CON QUESTO NOME</span></div>
+    <div class="mov"><div class="su"><span>11 set 2026 · Cassa Contanti</span><span class="imp">+ 30,00 €</span></div><span class="desc">CLIENTE ROSSI MARCO PER QUOTA ASSOCIATIVA</span><span class="tag ok">COLLEGATO · ROSSI MARCO</span></div>
+    <div class="mov"><div class="su"><span>18 giu 2021 · Cassa Contanti</span><span class="imp">+ 25,00 €</span></div><span class="desc">CLIENTE ROSSI ELENA PER QUOTA ASSOCIATIVA</span><span class="tag">SENZA SCHEDA</span></div>
+    <div style="display: flex; gap: 8px; padding: 10px; background: #1c1c1c; border: 2px solid #f4c31b; align-items: center"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 20px; font-weight: 700">1 SCELTO</span><div style="flex: 1"></div><dc-import name="Bottone" label="COLLEGA" variante="pieno" contesto="segreteria" hint-size="140px,48px"></dc-import></div>
+  </div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · LA SCHEDA SUL TELEFONO</span>
+  <div class="tel">
+    <dc-import name="BarraTelefono" luogo="ROSSI GIULIA" hint-size="100%,56px"></dc-import>
+    <dc-import name="Titoletto" label="DAL VECCHIO PROGRAMMA" conto="9" hint-size="100%,50px"></dc-import>
+    <div class="avviso"><b>È lo storico fino al 28 settembre 2026.</b> Non è nei pagamenti dell’app e non conta per «quota pagata». Lo stesso incasso può comparire in tutti e due.</div>
+    <div class="storico"><div class="su"><span>28 set 2026</span><b>310,00 €</b></div><span style="font-size: 14px">Cliente Rossi Giulia per annuale judo kids</span></div>
+    <div class="storico"><div class="su"><span>28 set 2026</span><b>30,00 €</b></div><span style="font-size: 14px">Cliente Rossi Giulia per quota associativa</span></div>
+    <div class="storico"><div class="su"><span>04 set 2025</span><b>290,00 €</b></div><span style="font-size: 14px">Cliente Rossi Giulia per annuale judo kids</span></div>
+    <dc-import name="Bottone" label="MOSTRA ALTRI 6" variante="linea" contesto="segreteria" hint-size="100%,48px"></dc-import>
+    <span class="nota">Un blocco a parte, mai sommato ai pagamenti dell’app.</span>
+  </div>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":900,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

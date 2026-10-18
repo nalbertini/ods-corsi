@@ -157,10 +157,12 @@ const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `
 const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
 const MANCA_CHIUSURA = 'Il database non è ancora aggiornato per la chiusura della cassa: va lanciato 60-chiusura-cassa.sql'
 const MANCA_CAMBIA_VOCE = 'Il database non è ancora aggiornato per cambiare la voce dei movimenti: va lanciato 67-cambia-voce.sql'
+const MANCA_MOVIMENTI_PERSONA = 'Il database non è ancora aggiornato per collegare i movimenti alle persone: va lanciato 70-movimenti-persona.sql'
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   // Prima di `segnalazioni`, che le somiglia.
   [/chiusure_cassa/, MANCA_CHIUSURA],
   [/cambi_voce/, MANCA_CAMBIA_VOCE],
+  [/collegamenti_persona/, MANCA_MOVIMENTI_PERSONA],
   [/voci_contabili|relation "(public\.)?(casse|movimenti)"|table 'public\.(casse|movimenti)'/, MANCA_CONTABILITA],
   [/sito_pagine|sito_menu|sito_redirect|salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito/, MANCA_SITO],
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
@@ -271,6 +273,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /chiudi_cassa|annulla_chiusura_cassa/.test(e.message ?? '')) return new Error(MANCA_CHIUSURA)
   // Cambiare la voce dei movimenti arriva con 67-cambia-voce.sql.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /cambia_voce_movimenti/.test(e.message ?? '')) return new Error(MANCA_CAMBIA_VOCE)
+  // Collegare lo storico alle persone arriva con 70-movimenti-persona.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /riepilogo_collegamenti_persona|esiti_collegamenti_persona|collega_sicuri_persona|collega_movimenti_persona|scollega_movimenti_persona|togli_lotto_collegamenti|candidati_persona_movimento|storico_persona/.test(e.message ?? '')) return new Error(MANCA_MOVIMENTI_PERSONA)
   if (e?.code === '42501' && /contabilità/.test(e.message ?? '')) return new Error('Non hai il permesso: la contabilità la cura l’amministrazione')
   // Il kanji arriva con 24-kanji.sql; due persone con lo stesso non si possono avere.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
@@ -1161,6 +1165,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const righe = ok(await tutteLeRighe((prima, ultima) => db.from('movimenti').select('*').order('id').range(prima, ultima))) as Array<{
         id: string; tipo: 'entrata' | 'uscita' | 'giroconto'; data: string; importo: number; voce_id: string | null; cassa_id: string; cassa_a_id: string | null
         descrizione: string; nota: string | null; creato_il: string; annullato_il: string | null
+        origine_import?: string | null; persona_id?: string | null
       }>
       return righe.map((r) => ({
         id: r.id,
@@ -1174,6 +1179,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         ...(r.nota ? { nota: r.nota } : {}),
         creatoIl: r.creato_il,
         ...(r.annullato_il ? { annullatoIl: r.annullato_il } : {}),
+        ...(r.origine_import ? { origineImport: r.origine_import } : {}),
+        ...(r.persona_id ? { personaId: r.persona_id } : {}),
       }))
     },
 
@@ -1235,6 +1242,58 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         return p ? `${p.nome} ${p.cognome}` : '—'
       }
       return righe.map((r) => ({ quando: r.cambiato_il, chi: chi(r.cambiato_da), prima: voce(r.voce_prima_id), dopo: voce(r.voce_dopo_id) }))
+    },
+
+    // Le risposte arrivano senza tipo dall'API: le forme sono quelle di 70-movimenti-persona.sql.
+    async riepilogoCollegamentiPersona() {
+      const r = ok(await db.rpc('riepilogo_collegamenti_persona')) as {
+        sicuri: { movimenti: number; persone: number; centesimi: number; dal: string | null; al: string | null }
+        da_decidere: { movimenti: number; centesimi: number }
+        senza_scheda: { movimenti: number; centesimi: number }
+        gia_collegati: number
+        campione: Array<{ causale: string; persona: string }>
+      }
+      return { sicuri: r.sicuri, daDecidere: r.da_decidere, senzaScheda: r.senza_scheda, giaCollegati: r.gia_collegati, campione: r.campione }
+    },
+
+    async esitiCollegamentiPersona() {
+      return (ok(await db.rpc('esiti_collegamenti_persona')) ?? []) as Array<{ id: string; esito: 'sicuro' | 'omonimi' | 'nessuna' }>
+    },
+
+    async collegaSicuriPersona(lotto, quanti) {
+      return ok(await db.rpc('collega_sicuri_persona', { lotto, quanti })) as { collegati: number; restano: number }
+    },
+
+    async collegaMovimentiPersona(ids, persona) {
+      const r = ok(await db.rpc('collega_movimenti_persona', { ids, persona })) as { collegati: number; gia_cosi: number }
+      return { collegati: r.collegati, giaCosi: r.gia_cosi }
+    },
+
+    async scollegaMovimentiPersona(ids) {
+      const r = ok(await db.rpc('scollega_movimenti_persona', { ids })) as { scollegati: number; gia_senza: number }
+      return { scollegati: r.scollegati, giaSenza: r.gia_senza }
+    },
+
+    async togliLottoCollegamenti(lotto) {
+      return ok(await db.rpc('togli_lotto_collegamenti', { lotto })) as { tolti: number }
+    },
+
+    async candidatiPersonaMovimento(movimento) {
+      const righe = (ok(await db.rpc('candidati_persona_movimento', { movimento })) ?? []) as Array<{
+        id: string; nome: string; cognome: string; anno_nascita: number | null; corsi: string[] | null; iscritto_dal: string | null
+      }>
+      return righe.map((r) => ({
+        id: r.id,
+        nome: r.nome,
+        cognome: r.cognome,
+        ...(r.anno_nascita ? { annoNascita: r.anno_nascita } : {}),
+        corsi: r.corsi ?? [],
+        ...(r.iscritto_dal ? { iscrittoDal: r.iscritto_dal } : {}),
+      }))
+    },
+
+    async storicoPersona(persona) {
+      return (ok(await db.rpc('storico_persona', { persona })) ?? []) as Array<{ id: string; data: string; descrizione: string; importo: number; voce: string; cassa: string }>
     },
 
     async chiusure() {
