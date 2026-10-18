@@ -129,8 +129,16 @@ titolo('luoghi del Banco')
   ok('OGGI', voci('oggi'), [['dafare', 'OGGI'], ['settimana', 'SETTIMANA'], ['presenze', 'PRESENZE']])
   ok('PERSONE', voci('persone'), [['iscritti', 'ISCRITTI'], ['tessere', 'TESSERE'], ['richieste', 'RICHIESTE ONLINE'], ['istruttori', 'ISTRUTTORI'], ['personale', 'ACCESSI']])
   ok('CORSI', voci('corsi'), [['corsi', 'CORSI'], ['esercizi', 'ESERCIZI']])
-  ok('SOLDI', voci('soldi'), [['pagamenti', 'PAGAMENTI'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
+  ok('SOLDI', voci('soldi'), [['contabilita', 'CONTABILITÀ'], ['pagamenti', 'PAGAMENTI'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
   ok('PALESTRA', voci('palestra'), [['statistiche', 'STATISTICHE'], ['segnalazioni', 'SEGNALAZIONI'], ['sito', 'SITO'], ['regole', 'IMPOSTAZIONI']])
+
+  // Chi ha solo l'amministrazione vede solo i luoghi con le sue voci, e dentro solo quelle.
+  const nomi = (luoghi) => luoghi.map((l) => [l.id, l.voci.map((v) => v.voce)])
+  ok('con tutte le voci i luoghi sono quelli di sempre', nomi(m.luoghi.luoghiPer(VOCI)).map(([id]) => id), ['oggi', 'persone', 'corsi', 'soldi', 'palestra'])
+  ok('solo amministrazione: un luogo, SOLDI, con le tre voci dei conti', nomi(m.luoghi.luoghiPer(['contabilita', 'pagamenti', 'listino'])), [['soldi', ['contabilita', 'pagamenti', 'listino']]])
+  ok('solo segreteria: SOLDI senza CONTABILITÀ', nomi(m.luoghi.luoghiPer(VOCI.filter((v) => v !== 'contabilita'))).find(([id]) => id === 'soldi'), ['soldi', ['pagamenti', 'listino', 'vestiario']])
+  ok('nessuna voce, nessun luogo', m.luoghi.luoghiPer([]), [])
+  ok('i luoghi dati non cambiano', LUOGHI.length, 5)
 
   for (const v of VOCI) {
     if (v === 'segnalate') continue

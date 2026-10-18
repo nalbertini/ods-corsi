@@ -10,7 +10,7 @@ import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export * from './src/lib/ruoli'",
+    contents: "export * from './src/lib/ruoli'; export * from './src/lib/menuSegreteria'; export { VOCI } from './src/lib/indirizzoSegreteria'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -34,15 +34,15 @@ const p = (ruolo, ancheIstruttore = false, ancheAmministrazione = false) => ({ r
 // Le sette combinazioni non vuote: spunte, come stanno in `persone`, aree, nome.
 const COMBINAZIONI = [
   { spunte: ['segreteria'], persona: p('staff'), aree: ['segreteria'], nome: 'Segreteria' },
-  { spunte: ['amministrazione'], persona: p('amministrazione'), aree: ['amministrazione'], nome: 'Amministrazione' },
+  { spunte: ['amministrazione'], persona: p('amministrazione'), aree: ['segreteria'], nome: 'Amministrazione' },
   { spunte: ['istruttore'], persona: p('istruttore'), aree: ['istruttori'], nome: 'Istruttore' },
-  { spunte: ['segreteria', 'amministrazione'], persona: p('staff', false, true), aree: ['segreteria', 'amministrazione'], nome: 'Segreteria e amministrazione' },
+  { spunte: ['segreteria', 'amministrazione'], persona: p('staff', false, true), aree: ['segreteria'], nome: 'Segreteria e amministrazione' },
   { spunte: ['segreteria', 'istruttore'], persona: p('staff', true), aree: ['segreteria', 'istruttori'], nome: 'Segreteria e istruttore' },
-  { spunte: ['amministrazione', 'istruttore'], persona: p('amministrazione', true), aree: ['amministrazione', 'istruttori'], nome: 'Amministrazione e istruttore' },
+  { spunte: ['amministrazione', 'istruttore'], persona: p('amministrazione', true), aree: ['segreteria', 'istruttori'], nome: 'Amministrazione e istruttore' },
   {
     spunte: ['segreteria', 'amministrazione', 'istruttore'],
     persona: p('staff', true, true),
-    aree: ['segreteria', 'amministrazione', 'istruttori'],
+    aree: ['segreteria', 'istruttori'],
     nome: 'Segreteria, amministrazione e istruttore',
   },
 ]
@@ -101,6 +101,55 @@ ok('solo istruttore: l\'appello e il PIN', sono(per('istruttore')), ['appello', 
 ok('segreteria e istruttore: come la segreteria', sono(per('segreteria+istruttore')), sono(per('segreteria')))
 ok('quel che è della segreteria all\'amministrazione non va', DELLA_SEGRETERIA.filter((x) => m.puo(per('amministrazione').persona, x)), [])
 ok('un ruolo sconosciuto non può niente', TUTTO.filter((x) => m.puo({ ruolo: 'contabile' }, x)), [])
+
+console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa')
+{
+  const chi = {
+    segreteria: p('staff'),
+    'segreteria + amministrazione': p('staff', false, true),
+    amministrazione: p('amministrazione'),
+    'amministrazione + istruttore': p('amministrazione', true),
+    'segreteria + istruttore': p('staff', true),
+    istruttore: p('istruttore'),
+    strano: { ruolo: 'contabile', ancheIstruttore: true, ancheAmministrazione: true },
+  }
+  const gruppi = (c) => m.menuDi(chi[c]).map((g) => [g.titolo, g.voci.map(([id]) => id)])
+  const DELLA_SEGRETERIA_NEL_MENU = [
+    ['OGNI GIORNO', ['dafare', 'settimana', 'richieste', 'presenze']],
+    ['PERSONE', ['iscritti', 'tessere', 'corsi']],
+    ['I CONTI', ['pagamenti', 'listino']],
+    ['ISTRUTTORI', ['istruttori', 'personale']],
+    ['LA PALESTRA', ['statistiche', 'vestiario', 'esercizi', 'segnalazioni', 'sito']],
+  ]
+  ok('solo segreteria: i gruppi di sempre, con PAGAMENTI e LISTINO in I CONTI', gruppi('segreteria'), DELLA_SEGRETERIA_NEL_MENU)
+  ok('segreteria e amministrazione: gli stessi, e CONTABILITÀ in testa a I CONTI', gruppi('segreteria + amministrazione'), DELLA_SEGRETERIA_NEL_MENU.map(([t, v]) => [t, t === 'I CONTI' ? ['contabilita', ...v] : v]))
+  ok('solo amministrazione: solo I CONTI, tre voci', gruppi('amministrazione'), [['I CONTI', ['contabilita', 'pagamenti', 'listino']]])
+  ok('insegnare non aggiunge voci a chi ha l\'amministrazione', gruppi('amministrazione + istruttore'), gruppi('amministrazione'))
+  ok('insegnare non aggiunge voci a chi ha la segreteria', gruppi('segreteria + istruttore'), gruppi('segreteria'))
+  ok('un istruttore non ha il menu', gruppi('istruttore'), [])
+  ok('un ruolo che l\'app non conosce nemmeno, anche col dato sporco', gruppi('strano'), [])
+  ok('LA PALESTRA è il gruppo secondario, sul telefono più piccolo', m.menuDi(chi.segreteria).filter((g) => g.secondario).map((g) => g.titolo), ['LA PALESTRA'])
+  ok('nessun gruppo è vuoto, per nessuno', Object.keys(chi).every((c) => m.menuDi(chi[c]).every((g) => g.voci.length > 0)), true)
+  ok('nessuna voce due volte', Object.keys(chi).every((c) => { const v = m.vociDelMenu(chi[c]); return v.length === new Set(v).size }), true)
+  ok('CONTABILITÀ solo a chi ha l\'amministrazione', Object.keys(chi).filter((c) => m.vociDelMenu(chi[c]).includes('contabilita')), ['segreteria + amministrazione', 'amministrazione', 'amministrazione + istruttore'])
+  ok('ogni voce del menu è una voce che l\'indirizzo conosce', Object.keys(chi).every((c) => m.vociDelMenu(chi[c]).every((v) => m.VOCI.includes(v))), true)
+  ok('la guida di ogni voce c\'è', m.vociDelMenu(chi['segreteria + amministrazione']).every((v) => /^(segreteria|amministrazione)\/[a-z-]+$/.test(m.guidaDellaVoce(v, chi['segreteria + amministrazione']))), true)
+  ok('CONTABILITÀ ha la guida dell\'amministrazione', m.guidaDellaVoce('contabilita', chi.amministrazione), 'amministrazione/contabilita')
+  ok('PAGAMENTI: la guida ridotta per chi ha solo l\'amministrazione, quella completa per la segreteria', [m.guidaDellaVoce('pagamenti', chi.amministrazione), m.guidaDellaVoce('pagamenti', chi['segreteria + amministrazione'])], ['amministrazione/pagamenti', 'segreteria/pagamenti'])
+  ok('PAGAMENTI ridotto (solo nomi) solo senza la segreteria', Object.keys(chi).filter((c) => m.pagamentiRidotti(chi[c])), ['amministrazione', 'amministrazione + istruttore', 'istruttore', 'strano'])
+  ok('dove si atterra: la prima voce del menu', Object.keys(chi).map((c) => m.primaVoce(chi[c])), ['dafare', 'dafare', 'contabilita', 'contabilita', 'dafare', undefined, undefined])
+  const consenti = (voce, c, prova = false) => m.postoConsentito({ voce }, chi[c], { prova })
+  ok('una voce che spetta resta com\'è', consenti('iscritti', 'segreteria'), { voce: 'iscritti' })
+  ok('CONTABILITÀ a chi non ha l\'amministrazione porta alla prima voce', consenti('contabilita', 'segreteria'), { voce: 'dafare' })
+  ok('chi ha solo l\'amministrazione che scrive #iscritti arriva a CONTABILITÀ', consenti('iscritti', 'amministrazione'), { voce: 'contabilita' })
+  ok('…e anche #regole (le impostazioni sono della segreteria)', consenti('regole', 'amministrazione'), { voce: 'contabilita' })
+  ok('la segreteria apre le impostazioni, che non sono nel menu', consenti('regole', 'segreteria'), { voce: 'regole' })
+  ok('le segnalate sono della segreteria, e solo in prova', [consenti('segnalate', 'segreteria', true).voce, consenti('segnalate', 'segreteria', false).voce], ['segnalate', 'dafare'])
+  ok('l\'id della scheda aperta resta, se la voce spetta', m.postoConsentito({ voce: 'iscritti', persona: 'p1' }, chi.segreteria, { prova: false }), { voce: 'iscritti', persona: 'p1' })
+  ok('e non resta se la voce non spetta', m.postoConsentito({ voce: 'iscritti', persona: 'p1' }, chi.amministrazione, { prova: false }), { voce: 'contabilita' })
+  ok('il titolo del posto: uno solo, non due sezioni', Object.keys(chi).map((c) => m.titoloDelMenu(chi[c])), ['SEGRETERIA', 'GESTIONE', 'AMMINISTRAZIONE', 'AMMINISTRAZIONE', 'SEGRETERIA', 'SEGRETERIA', 'SEGRETERIA'])
+  ok('la modalità prova non cambia le voci (stessa funzione)', JSON.stringify(m.menuDi(chi.segreteria)), JSON.stringify(m.menuDi({ ...chi.segreteria })))
+}
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

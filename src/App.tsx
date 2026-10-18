@@ -15,9 +15,8 @@ import { BarraMusicaTelefono, BarraNavigazione, MusicaMini, PaginaTimer, Strisci
 import { Conferme, chiedi } from './components/segreteria/comune'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
-import { Amministrazione } from './components/segreteria/Amministrazione'
-import { INDIRIZZI, useArea } from './lib/aree'
-import { account, altreAree, areeDi, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type Personale } from './lib/accesso'
+import { indirizzo, INDIRIZZI, useArea } from './lib/aree'
+import { account, altreAree, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
@@ -170,8 +169,7 @@ function PortaUnica() {
 function TutteLeAree() {
   const voci: [keyof typeof INDIRIZZI, string, string][] = [
     ['istruttori', 'ISTRUTTORI', 'Il calendario e l’appello.'],
-    ['segreteria', 'SEGRETERIA', 'Corsi, iscritti, presenze e richieste, dal computer della reception.'],
-    ['amministrazione', 'AMMINISTRAZIONE', 'I conti della palestra: i pagamenti e il listino.'],
+    ['segreteria', 'SEGRETERIA E CONTI', 'Corsi, iscritti, presenze e richieste, e per chi ha l’amministrazione i conti: pagamenti, listino e contabilità. Dal computer della reception.'],
     ['iscrizioni', 'ISCRIZIONI', 'Come ci si iscrive, i costi e il modulo: la pagina da mandare a chi vuole iscriversi.'],
     ['iscritti', 'ISCRITTI', 'La pagina di chi frequenta i corsi: le sue lezioni, le presenze, il certificato e le ricevute. Il pilota.'],
     ['sala', 'SALA', 'Il tablet appeso al muro della sala. Da qui il dispositivo resta un tablet.'],
@@ -516,37 +514,16 @@ function AreaGuida() {
 }
 
 /**
- * L'amministrazione, con la sua porta: entra solo chi ne ha il ruolo, anche
- * insieme alla segreteria. Vede i pagamenti e il listino, e non le persone.
+ * `amministrazione/` non è più un posto: segreteria e amministrazione sono due
+ * autorizzazioni di uno stesso menu, e c'è un indirizzo solo (`segreteria/`).
+ * Chi ha un segnalibro vecchio (anche con il cancelletto di una voce) ci
+ * arriva lo stesso: qui lo si rimanda, e il menu di chi è dentro sceglie le voci.
  */
 function AreaAmministrazione() {
-  const [chi, setChi] = useChi()
-
-  if (!serveAccesso) {
-    return <Amministrazione nome="Amministrazione di prova" prova onEsci={inProvaScelta ? () => scegliProva(false) : undefined} />
-  }
-
-  if (chi)
-    return (
-      <Amministrazione
-        nome={`${chi.nome} ${chi.cognome}`}
-        ruolo={nomeDelRuolo(chi)}
-        prova={false}
-        onEsci={() => void esci()}
-        onSegreteria={areeDi(chi).includes('segreteria') ? () => passaA('segreteria') : undefined}
-        onIstruttori={chi.ancheIstruttore ? () => passaA('istruttori') : undefined}
-      />
-    )
-
-  return (
-    <div className="app">
-      <Testata luogo="AMMINISTRAZIONE" />
-      <main className="scroll">
-        {chi === undefined && <UnAttimo />}
-        {chi === null && <Accesso onEntrato={setChi} />}
-      </main>
-    </div>
-  )
+  useEffect(() => {
+    window.location.replace(indirizzo(INDIRIZZI.segreteria) + window.location.hash)
+  }, [])
+  return <UnAttimo />
 }
 
 /**
@@ -560,6 +537,7 @@ function AreaSegreteria() {
     return (
       <Segreteria
         nome="Segreteria di prova"
+        chi={{ ruolo: 'staff', ancheAmministrazione: true }}
         prova
         onEsci={inProvaScelta ? () => scegliProva(false) : undefined}
       />
@@ -571,10 +549,10 @@ function AreaSegreteria() {
       <Segreteria
         nome={`${chi.nome} ${chi.cognome}`}
         ruolo={nomeDelRuolo(chi)}
+        chi={chi}
         prova={false}
         onEsci={() => void esci()}
         onIstruttori={chi.ancheIstruttore ? () => passaA('istruttori') : undefined}
-        onAmministrazione={chi.ancheAmministrazione ? () => passaA('amministrazione') : undefined}
       />
     )
 

@@ -15,6 +15,7 @@ import { PaginaTessere } from './Tessere'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
 import { Listino } from './Listino'
+import { Contabilita } from './Contabilita'
 import { LINK_ORDINI, Vestiario } from './Vestiario'
 import { datiVestiario } from '../../lib/vestiarioDati'
 import { numeriRaccolta } from '../../lib/vestiario'
@@ -43,6 +44,8 @@ import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 import { cambiaVoce, scorre } from '../../lib/scorri'
+import { guidaDellaVoce, menuDi, pagamentiRidotti, postoConsentito, primaVoce, titoloDelMenu, vociConsentite } from '../../lib/menuSegreteria'
+import { spunteDi } from '../../lib/ruoli'
 
 export type { Voce }
 
@@ -59,74 +62,6 @@ export interface Destinazione {
   lezione?: { id: string; inizio: string }
   /** Un filtro già acceso: chi ha il certificato da sistemare, chi deve pagare, chi ha un file di prima, cosa c'è da stampare. */
   filtro?: FiltroSegreteria
-}
-
-/**
- * Il menu in quattro gruppi, da quello che si apre ogni giorno a quello che
- * si tocca una volta a stagione: tredici voci in fila non si leggevano. Le
- * presenze segnalate sono una scheda di PRESENZE, non una voce.
- */
-const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]>; secondario?: boolean }> = [
-  {
-    titolo: 'OGNI GIORNO',
-    voci: [
-      ['dafare', 'DA FARE'],
-      ['settimana', 'SETTIMANA'],
-      ['richieste', 'RICHIESTE ONLINE'],
-      ['presenze', 'PRESENZE'],
-    ],
-  },
-  {
-    titolo: 'PERSONE',
-    voci: [
-      ['iscritti', 'ISCRITTI'],
-      ['tessere', 'TESSERE'],
-      ['pagamenti', 'PAGAMENTI'],
-      ['corsi', 'CORSI'],
-    ],
-  },
-  {
-    titolo: 'ISTRUTTORI',
-    voci: [
-      ['istruttori', 'PRESENZE ISTRUTTORI'],
-      ['personale', 'ISTRUTTORI E ACCESSI'],
-    ],
-  },
-  {
-    titolo: 'LA PALESTRA',
-    // Sul telefono più piccolo: sono cose da computer.
-    secondario: true,
-    voci: [
-      ['statistiche', 'STATISTICHE'],
-      ['listino', 'LISTINO'],
-      ['vestiario', 'VESTIARIO'],
-      ['esercizi', 'ESERCIZI'],
-      ['segnalazioni', 'SEGNALAZIONI'],
-      ['sito', 'SITO'],
-    ],
-  },
-]
-
-/** La pagina della guida per ogni voce del menu: il tasto GUIDA apre quella della voce aperta. */
-const GUIDE: Record<Voce, string> = {
-  dafare: 'segreteria/da-fare',
-  settimana: 'segreteria/settimana',
-  corsi: 'segreteria/corsi',
-  iscritti: 'segreteria/iscritti',
-  tessere: 'segreteria/tessere',
-  pagamenti: 'segreteria/pagamenti',
-  richieste: 'segreteria/richieste',
-  presenze: 'segreteria/presenze',
-  segnalate: 'segreteria/presenze-segnalate',
-  statistiche: 'segreteria/statistiche',
-  istruttori: 'segreteria/presenze-istruttori',
-  personale: 'segreteria/istruttori-e-accessi',
-  esercizi: 'segreteria/esercizi',
-  listino: 'segreteria/listino',
-  vestiario: 'segreteria/vestiario',
-  regole: 'segreteria/regole',
-  segnalazioni: 'segreteria/segnalazioni',
-  sito: 'segreteria/sito',
 }
 
 /** Scrive l'indirizzo della segreteria nella cronologia, senza ricaricare. */
@@ -178,24 +113,30 @@ function CopiaLink({ link, testo, perche }: { link: string; testo: string; perch
 export function Segreteria({
   nome,
   ruolo = 'Segreteria',
+  chi,
   prova,
   onEsci,
   onIstruttori,
-  onAmministrazione,
 }: {
   nome: string
   ruolo?: string
+  /** Le autorizzazioni di chi è dentro: il menu mostra le voci di tutte, in un posto solo. */
+  chi: { ruolo: string; ancheIstruttore?: boolean; ancheAmministrazione?: boolean }
   prova: boolean
   onEsci?: () => void
-  /** Per chi è di segreteria e insegna anche: il passaggio al calendario, senza uscire. */
+  /** Per chi insegna anche: il passaggio al calendario, senza uscire. */
   onIstruttori?: () => void
-  /** Per chi è di segreteria e cura anche i conti: il passaggio all'amministrazione, senza uscire. */
-  onAmministrazione?: () => void
 }) {
+  const gruppi = menuDi(chi)
+  const consentite = vociConsentite(chi, { prova })
+  // La segreteria legge le persone, le richieste e il resto; chi ha solo l'amministrazione vede i conti e basta.
+  const conSegreteria = spunteDi(chi).includes('segreteria')
+  const consenti = (p: Posto): Posto => postoConsentito(p, chi, { prova })
+  const etichetta = titoloDelMenu(chi)
   const [d, setD] = useState<DatiSegreteria | null>(null)
   // Dove si è sta nell'indirizzo (vedi `indirizzoSegreteria.ts`): si parte
   // da lì anche se i dati arrivano dopo, e Indietro/Avanti ci riportano.
-  const [posto, setPosto] = useState<Posto>(() => leggiIndirizzo(window.location.hash, { prova }) ?? { voce: 'dafare' })
+  const [posto, setPosto] = useState<Posto>(() => consenti(leggiIndirizzo(window.location.hash, { prova }) ?? { voce: primaVoce(chi) ?? 'dafare' }))
   const voce = posto.voce
   // Il filtro acceso da DA FARE resta fuori dall'indirizzo: è un punto di partenza, non un posto.
   const [filtro, setFiltro] = useState<Destinazione['filtro']>()
@@ -253,7 +194,10 @@ export function Segreteria({
     // Un indirizzo che non si capisce diventa quello giusto; quello degli altri si lascia stare.
     const correggi = () => {
       const h = indirizzoCorretto(window.location.hash, { prova })
-      if (h) scrivi(h, 'replace')
+      if (h) return scrivi(h, 'replace')
+      // Una voce che il menu non offre a questa persona (`#iscritti` a chi cura solo i conti) porta alla sua prima voce.
+      const letto = leggiIndirizzo(window.location.hash, { prova })
+      if (letto && window.location.hash.length > 1 && scriviIndirizzo(consenti(letto)) !== scriviIndirizzo(letto)) scrivi(scriviIndirizzo(consenti(letto)), 'replace')
     }
     correggi()
     // Mentre si chiede della bozza, un altro Indietro non fa una seconda domanda:
@@ -273,8 +217,9 @@ export function Segreteria({
         if (!lascia) return scrivi(scriviIndirizzo(ora.current), 'push')
       }
       // Durante la domanda si può essere andati ancora indietro: conta dove si è adesso.
-      const letto = dopoIndietro(ora.current, window.location.hash, { prova })
-      if (!letto) return correggi()
+      const dopo = dopoIndietro(ora.current, window.location.hash, { prova })
+      if (!dopo) return correggi()
+      const letto = consenti(dopo)
       if (letto.voce !== ora.current.voce) setFiltro(undefined)
       ora.current = letto
       setPosto(letto)
@@ -302,7 +247,8 @@ export function Segreteria({
   // Sul telefono Il Banco non c'è ancora: resta l'aspetto di sempre, anche se è scelto (vedi `aspettoInUso`).
   const [scelto] = useAspetto()
   const aspetto = aspettoInUso(scelto, telefono)
-  const banco = aspetto === 'banco'
+  // Il Banco è la segreteria al banco: chi cura solo i conti ha il menu di sempre.
+  const banco = conSegreteria && aspetto === 'banco'
   useEffect(() => {
     const corpo = document.getElementById('sg-contenuto')
     corpo?.toggleAttribute('inert', aperto && telefono)
@@ -320,7 +266,7 @@ export function Segreteria({
     setGiroStriscia((g) => g + 1)
   }
   const [strisciaVoluta] = useStrisciaVoluta()
-  const conti = useDaFare(d, voce === 'dafare', `${voce}-${giroConte}`, giroStriscia)
+  const conti = useDaFare(conSegreteria ? d : null, voce === 'dafare', `${voce}-${giroConte}`, giroStriscia)
   const richiesteNuove = conti.richieste ?? 0
   const daConfermare = conti.istruttori ?? 0
   const segnalateDaVedere = conti.segnalate ?? 0
@@ -344,7 +290,7 @@ export function Segreteria({
   // Le segnalazioni che aspettano una risposta: aperte, e l'ultimo a scrivere è un altro.
   const [daRispondere, setDaRispondere] = useState(0)
   useEffect(() => {
-    if (!d) return
+    if (!d || !conSegreteria) return
     let vivo = true
     d.segnalazioni().then(
       (l) => vivo && setDaRispondere(l.filter(tocca).length),
@@ -358,7 +304,7 @@ export function Segreteria({
   // sul tasto MENU del telefono: restano lì per settimane e coprirebbero il resto.
   const [daSaldare, setDaSaldare] = useState(0)
   useEffect(() => {
-    if (!d) return
+    if (!d || !conSegreteria) return
     let vivo = true
     datiVestiario()
       .then(async (v) => {
@@ -393,13 +339,13 @@ export function Segreteria({
 
   // In un'altra scheda: la segreteria resta dov'era, con quello che c'era aperto.
   const guida = (
-    <a className="icon-btn tasto-guida" href={indirizzoPagina(GUIDE[voce])} target="_blank" rel="noopener" title="La guida" aria-label="Apri la guida di questa voce">
+    <a className="icon-btn tasto-guida" href={indirizzoPagina(guidaDellaVoce(voce, chi))} target="_blank" rel="noopener" title="La guida" aria-label="Apri la guida di questa voce">
       ?
     </a>
   )
 
   // Il tasto IMPOSTAZIONI sta con ? e il tema, in cima, sul computer e sul telefono.
-  const impostazioni = (
+  const impostazioni = conSegreteria && (
     <button
       type="button"
       className="icon-btn"
@@ -424,6 +370,7 @@ export function Segreteria({
           prova={prova}
           nome={nome}
           ruolo={ruolo}
+          consentite={consentite}
           segni={{
             richieste: { n: richiesteNuove, detto: 'nuove' },
             istruttori: { n: daConfermare, detto: 'da confermare' },
@@ -431,7 +378,7 @@ export function Segreteria({
             segnalazioni: { n: daRispondere, detto: 'da rispondere' },
             vestiario: { n: daSaldare, detto: 'ordini da saldare' },
           }}
-          cerca={d && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
+          cerca={d && conSegreteria && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
           link={
             <>
               <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
@@ -450,7 +397,7 @@ export function Segreteria({
         <Logo width={36} />
         <span className="stack grow" style={{ gap: 2 }}>
           <span className="ob" style={{ fontSize: 18, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
-          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>SEGRETERIA</span>
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>{etichetta}</span>
         </span>
         {guida}
         <TastoTema />
@@ -471,12 +418,12 @@ export function Segreteria({
           )}
         </button>
       </header>
-      <nav className="sg-menu" id="sg-menu" aria-label="Segreteria" data-aperto={aperto}>
+      <nav className="sg-menu" id="sg-menu" aria-label="Menu" data-aperto={aperto}>
         <div className="row sg-marchio" style={{ gap: 10, padding: '0 8px' }}>
           <Logo width={46} />
           <span className="stack" style={{ gap: 2 }}>
             <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
-            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>SEGRETERIA</span>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>{etichetta}</span>
           </span>
         </div>
         {/* In cima, sempre in vista senza scorrere: in fondo, su uno schermo basso, si perdevano. Sul telefono stanno nella barra in cima. */}
@@ -487,9 +434,9 @@ export function Segreteria({
           {/* Fra DATI e DI uno spazio che non va a capo: in 56px si spezza solo prima di PROVA. */}
           {prova && <Bollino>DATI{'\u00a0'}DI PROVA</Bollino>}
         </div>
-        {d && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
+        {d && conSegreteria && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
         <div className="sg-gruppi">
-          {GRUPPI.map((g) => (
+          {gruppi.map((g) => (
             <div key={g.titolo} role="group" aria-label={g.titolo} className="sg-gruppo" data-secondario={g.secondario}>
               <span className="sg-gruppo-titolo" aria-hidden="true">
                 {g.titolo}
@@ -522,17 +469,16 @@ export function Segreteria({
               ISTRUTTORI →
             </button>
           )}
-          {onAmministrazione && (
-            <button type="button" className="num sg-voce" onClick={onAmministrazione}>
-              AMMINISTRAZIONE →
-            </button>
+          {conSegreteria && (
+            <>
+              <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
+              <CopiaLink link={LINK_ORDINI} testo="COPIA LINK ORDINI" perche="Il link per ordinare il vestiario:" />
+            </>
           )}
-          <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
-          <CopiaLink link={LINK_ORDINI} testo="COPIA LINK ORDINI" perche="Il link per ordinare il vestiario:" />
         </div>
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
-          <span style={{ fontSize: 12, color: 'var(--dim)' }}>{ruolo} · accesso completo</span>
+          <span style={{ fontSize: 12, color: 'var(--dim)' }}>{ruolo}{conSegreteria ? ' · accesso completo' : ''}</span>
           {prova && <span className="num sg-bollino">DATI DI PROVA</span>}
           {prova && (
             <button
@@ -582,7 +528,7 @@ export function Segreteria({
             </button>
           </div>
         )}
-        {d && strisciaVisibile(voce, telefono, !!(posto.persona || posto.corso || posto.nuovo || richiesta || posto.lezione), strisciaVoluta) && (
+        {d && conSegreteria && strisciaVisibile(voce, telefono, !!(posto.persona || posto.corso || posto.nuovo || richiesta || posto.lezione), strisciaVoluta) && (
           <CosaManca conti={conti.striscia} onVai={vai} onRiprova={contiCambiati} />
         )}
         {d && voce === 'dafare' && !banco && <DaFare conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
@@ -635,7 +581,8 @@ export function Segreteria({
         )}
         {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} />}
         {d && voce === 'tessere' && <PaginaTessere d={d} onVai={vai} />}
-        {d && voce === 'pagamenti' && <Pagamenti d={d} onVai={vai} />}
+        {d && voce === 'contabilita' && <Contabilita d={d} />}
+        {d && voce === 'pagamenti' && <Pagamenti d={d} onVai={conSegreteria ? vai : undefined} soloNomi={pagamentiRidotti(chi)} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}

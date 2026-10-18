@@ -1,4 +1,5 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
+import { descrizioneDelMenu, titoloDelMenu } from '../lib/menuSegreteria'
 import {
   accedi,
   account,
@@ -102,7 +103,7 @@ export function ChiSei({ chi, onEsci }: { chi: Personale; onEsci?: () => void })
       {areaDelPercorso() === 'istruttori' &&
         altreAree(chi, 'istruttori').map((a) => (
           <button key={a} type="button" className="chi-esci" onClick={() => passaA(a)}>
-            {AREE[a][0]}
+            {a === 'segreteria' ? titoloDelMenu(chi) : AREE[a][0]}
           </button>
         ))}
       <button type="button" className="chi-esci" onClick={onEsci}>
@@ -115,7 +116,8 @@ export function ChiSei({ chi, onEsci }: { chi: Personale; onEsci?: () => void })
 /** Cosa c'è in ogni area, per chi sceglie dove andare. */
 const AREE: Record<AreaDiAccount, [string, string]> = {
   segreteria: ['SEGRETERIA', 'Corsi, iscritti, presenze e richieste, dal computer della reception.'],
-  amministrazione: ['AMMINISTRAZIONE', 'I conti della palestra: i pagamenti e il listino.'],
+  // Non è più un'area: è un'autorizzazione di `segreteria` (vedi `menuSegreteria.ts`). Resta per i tipi.
+  amministrazione: ['AMMINISTRAZIONE', 'I conti della palestra: i pagamenti, il listino e la contabilità.'],
   istruttori: ['ISTRUTTORI', 'Il calendario delle tue lezioni e l’appello, i tuoi timer.'],
   sala: ['SALA', 'Il tablet appeso al muro della sala.'],
 }
@@ -138,8 +140,8 @@ export function SceltaArea({ persona, aree, onScelta }: { persona: Personale; ar
         </span>
         {aree.map((a) => (
           <button key={a} type="button" className="card stack scelta-area" style={{ textAlign: 'left' }} onClick={() => onScelta(a)}>
-            <span className="scelta-titolo">{AREE[a][0]}</span>
-            <span className="passo-dettaglio" style={{ fontSize: 15 }}>{AREE[a][1]}</span>
+            <span className="scelta-titolo">{a === 'segreteria' ? titoloDelMenu(persona) : AREE[a][0]}</span>
+            <span className="passo-dettaglio" style={{ fontSize: 15 }}>{a === 'segreteria' ? descrizioneDelMenu(persona) : AREE[a][1]}</span>
           </button>
         ))}
         <button type="button" className="chi-esci" style={{ alignSelf: 'flex-start' }} onClick={() => void esci()}>
