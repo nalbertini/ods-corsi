@@ -462,7 +462,10 @@ console.log('\n14. Niente di nuovo fuori dal generatore')
   const base = ['main', 'origin/main'].find((r) => { try { execSync(`git rev-parse --verify --quiet ${r}`, { stdio: 'ignore' }); return true } catch { return false } })
   if (!base) console.log('  (nessun `main` in questo checkout: confronto saltato; in locale e nelle PR si fa)')
   else {
-    const dip = (j) => JSON.stringify({ d: j.dependencies, v: j.devDependencies })
+    // Un sì dell'utente (2026-10-18): @pdf-lib/fontkit, solo per generare i PDF dei moduli (scripts/genera-moduli.mjs), non entra nell'app.
+    const AMMESSE = ['@pdf-lib/fontkit']
+    const senza = (o) => Object.fromEntries(Object.entries(o ?? {}).filter(([k]) => !AMMESSE.includes(k)))
+    const dip = (j) => JSON.stringify({ d: senza(j.dependencies), v: senza(j.devDependencies) })
     const prima = JSON.parse(execSync(`git show ${base}:package.json`, { encoding: 'utf8' }))
     ok('nessuna dipendenza nuova', dip(JSON.parse(readFileSync('package.json', 'utf8'))), dip(prima))
     const toccati = execSync(`git diff --name-only ${base} -- src/lib/sito.ts src/lib/sitoPagine.ts src/lib/sitoTesto.ts src/lib/sitoImmagini.ts supabase`, { encoding: 'utf8' }).trim()

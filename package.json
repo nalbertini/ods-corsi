@@ -13,6 +13,7 @@
     "build:timer": "npm --prefix timer run build -- --outDir ../dist/timer --emptyOutDir",
     "build:tutto": "npm run build && npm run build:timer",
     "sito:genera": "node scripts/genera-sito.mjs",
+    "moduli:genera": "node scripts/genera-moduli.mjs",
     "prova:musica": "node scripts/prova-musica.mjs",
     "prova:guida": "node scripts/prova-guida.mjs",
     "prova:musica-file": "node scripts/prova-musica-file.mjs",

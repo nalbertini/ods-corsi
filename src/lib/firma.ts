@@ -92,7 +92,8 @@ export async function moduloFirmato(f: DatiFirma): Promise<Uint8Array> {
   const dove = (nome: string) => {
     const campo = form.getFieldMaybe(nome)
     const rettangolo = campo?.acroField.getWidgets()[0]?.getRectangle()
-    if (!rettangolo) throw new Error(`Il foglio non ha il campo «${nome}»: va rigenerato con npm run moduli:genera.`)
+    // Succede solo con un foglio vecchio, senza campi: va rigenerato (`npm run moduli:genera`), e la prova di firma lo vede prima.
+    if (!rettangolo) throw new Error('Il modulo non si può compilare')
     return rettangolo
   }
   const scrivi = (nome: string, testo: string) => {

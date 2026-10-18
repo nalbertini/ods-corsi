@@ -1,4 +1,4 @@
-import type { PDFFont, PDFForm, PDFPage } from 'pdf-lib'
+import type { PDFDocument, PDFFont, PDFForm, PDFPage } from 'pdf-lib'
 import { COSTI, OFFERTE, QUOTA_ASSOCIATIVA, STAGIONE, VALIDITA, saldoAperto } from './costi'
 import { PAGAMENTO } from './iscrizione'
 
@@ -52,7 +52,7 @@ export const CASELLE = ['tesseramentoSi', 'tesseramentoNo', 'fotoSi', 'fotoNo', 
 
 export interface OpzioniFogli {
   /** `@pdf-lib/fontkit`, che il PDF vuole per incorporare un font: lo passa lo script. */
-  fontkit: unknown
+  fontkit: Parameters<PDFDocument['registerFontkit']>[0]
   /** TrueType (non woff2: il PDF incorpora i byte così come sono). */
   fonts: { titolo: Uint8Array; corpo: Uint8Array; corpoGrassetto: Uint8Array }
   loghi: { mascotte: Uint8Array; simbolo: Uint8Array }
@@ -86,7 +86,7 @@ export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uin
 
   const nuovo = async (titolo: string) => {
     const pdf = await PDFDocument.create({ updateMetadata: false })
-    pdf.registerFontkit(opz.fontkit as Parameters<typeof pdf.registerFontkit>[0])
+    pdf.registerFontkit(opz.fontkit)
     pdf.setTitle(titolo)
     pdf.setAuthor('ASD IL CENTRO JUDO')
     pdf.setCreator('ODS Corsi')
@@ -267,7 +267,7 @@ export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uin
     f.paragrafo([{ t: 'ACCONSENTO', g: true }], { casella: 'tesseramentoSi', sotto: 3 })
     f.paragrafo([{ t: 'non acconsento', g: true }], { casella: 'tesseramentoNo', sotto: 6 })
     f.paragrafo([{ t: 'L’associazione sportiva dilettantistica ASD IL CENTRO JUDO, a tesserarmi alla FIJLKAM e/o FIPE per l’anno' }], { sotto: 0 })
-    f.campi([{ nome: 'tesseramentoAnno', etichetta: 'ANNO', flex: 1 }, { nome: '', etichetta: '', flex: 5 }].slice(0, 1), { sopra: 4 })
+    f.campi([{ nome: 'tesseramentoAnno', etichetta: 'ANNO', flex: 1 }], { sopra: 4 })
     f.titoletto('IMMAGINI E FOTOGRAFIE')
     f.paragrafo([{ t: 'AUTORIZZO', g: true }], { casella: 'fotoSi', sotto: 3 })
     f.paragrafo([{ t: 'non autorizzo', g: true }], { casella: 'fotoNo', sotto: 6 })

@@ -3,7 +3,8 @@
 //
 //   node scripts/prova-fogli-moduli.mjs
 //
-// I PDF si rifanno con `npm run moduli:genera` (`src/lib/fogliModuli.ts`).
+// I PDF si rifanno con `npm run moduli:genera -- --oggi 2026-10-18` (`src/lib/fogliModuli.ts`): la
+// prova li confronta con quelli generati per quel giorno, perché da lì in poi il saldo non c'è.
 // Qui si controlla che i file COMMITTATI e quelli che `generaFogli` produce
 // adesso siano la stessa cosa: le autorizzazioni con i campi giusti e le
 // stesse parole di prima (`fixture-moduli/*.txt`, prese dai PDF di Google
