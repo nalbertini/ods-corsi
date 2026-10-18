@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { createUsePuck, Puck, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
@@ -127,7 +127,7 @@ const PARTI: Array<{ tipo: keyof Props; nome: string }> = [
  * I gesti senza trascinare: mettere una parte (dopo quella scelta, o in fondo), spostarla su o giù, toglierla.
  * Col dito sul tablet trascinare sbaglia facile; qui sono tasti da 44px.
  */
-function Comandi() {
+function Comandi({ onNuova }: { onNuova: () => void }) {
   const dispatch = usePuck((s) => s.dispatch)
   const scelto = usePuck((s) => s.appState.ui.itemSelector)
   const quanti = usePuck((s) => s.appState.data.content.length)
@@ -143,6 +143,13 @@ function Comandi() {
     dispatch({ type: 'insert', componentType: tipo, destinationIndex: dove, destinationZone: ZONA })
     // La parte nuova resta scelta: SU, GIÙ, TOGLI e i suoi campi sono lì, senza un tocco in più.
     dispatch({ type: 'setUi', ui: { itemSelector: { index: dove, zone: ZONA } } })
+    onNuova()
+  }
+  // Tolta la parte, nessuna è scelta: l'indice di prima punterebbe alla seguente (o a nulla) senza che si veda.
+  const togli = () => {
+    if (!scelto) return
+    dispatch({ type: 'remove', index: scelto.index, zone: ZONA })
+    dispatch({ type: 'setUi', ui: { itemSelector: null } })
   }
   return (
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', padding: 8 }}>
@@ -156,7 +163,7 @@ function Comandi() {
       <button type="button" className="sg-chip num" disabled={!storia.hasFuture} onClick={() => storia.forward()}>RIFAI</button>
       <button type="button" className="sg-chip num" disabled={!scelto || scelto.index === 0} onClick={() => vai(-1)}>SU ▲</button>
       <button type="button" className="sg-chip num" disabled={!scelto || scelto.index >= quanti - 1} onClick={() => vai(1)}>GIÙ ▼</button>
-      <button type="button" className="sg-chip num" disabled={!scelto} onClick={() => scelto && dispatch({ type: 'remove', index: scelto.index, zone: ZONA })}>TOGLI</button>
+      <button type="button" className="sg-chip num" disabled={!scelto} onClick={togli}>TOGLI</button>
     </div>
   )
 }
@@ -178,19 +185,13 @@ const PAROLE = {
  * A destra due schede: le impostazioni della parte scelta e l'elenco delle parti. Le parti si mettono coi tasti in alto,
  * quindi a sinistra non serve un pannello: la pagina prende lo spazio.
  */
-function Destra() {
-  const [scheda, setScheda] = useState<'impostazioni' | 'elenco'>('impostazioni')
+type Scheda = 'impostazioni' | 'elenco'
+
+function Destra({ scheda, setScheda }: { scheda: Scheda; setScheda: (k: Scheda) => void }) {
   const dispatch = usePuck((s) => s.dispatch)
   const scelto = usePuck((s) => s.appState.ui.itemSelector)
   const content = usePuck((s) => s.appState.data.content)
   const scelta = usePuck((s) => s.selectedItem)
-  const id = scelta?.props.id
-  // Toccare una parte nella pagina porta alle sue impostazioni; dall'ELENCO si resta lì, per spostarla con SU e GIÙ.
-  const daElenco = useRef(false)
-  useEffect(() => {
-    if (daElenco.current) daElenco.current = false
-    else if (id !== undefined) setScheda('impostazioni')
-  }, [id])
   return (
     <div className="sito-pezzi-destra">
       <div role="tablist" aria-label="Pannello della parte" className="schede sg-schede">
@@ -202,16 +203,14 @@ function Destra() {
       </div>
       {scheda === 'elenco' ? (
         <div className="stack" style={{ gap: 6 }}>
+          {content.length === 0 && <p className="sito-pezzi-frase">Nessuna parte: mettine una coi tasti + in alto.</p>}
           {content.map((c, i) => (
             <button
               key={String(c.props.id)}
               type="button"
               className="sito-pezzi-riga"
               data-on={scelto?.index === i}
-              onClick={() => {
-                daElenco.current = true
-                dispatch({ type: 'setUi', ui: { itemSelector: { index: i, zone: ZONA } } })
-              }}
+              onClick={() => dispatch({ type: 'setUi', ui: { itemSelector: { index: i, zone: ZONA } } })}
             >
               {/* Puck dà il contenuto come dati senza tipo; i pezzi sono quelli di `Props` (li controlla `pezziValidi` al salvataggio). */}
               {i + 1} · {nomeParte(c as unknown as Pezzo)}
@@ -231,6 +230,7 @@ export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria;
   const config = useMemo(() => configura(d), [d])
   // Puck vuole anche `root`; i pezzi sono quelli che teniamo noi. Si parte una volta sola: poi i pezzi li tiene Puck.
   const [iniziali] = useState<Data>(() => ({ root: { props: {} }, content: pezzi.content }))
+  const [scheda, setScheda] = useState<Scheda>('impostazioni')
   return (
     <div className="sito-pezzi" aria-label="Pezzi della pagina">
       <Puck
@@ -244,10 +244,11 @@ export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria;
         }}
       >
         <div className="sito-pezzi-corpo">
-          <Comandi />
+          <Comandi onNuova={() => setScheda('impostazioni')} />
           <div className="sito-pezzi-colonne">
-            <div className="sito-pezzi-pagina"><Puck.Preview /></div>
-            <Destra />
+            {/* Toccare una parte nella pagina porta alle sue impostazioni; dall'ELENCO si resta lì, per spostarla con SU e GIÙ. */}
+            <div className="sito-pezzi-pagina" onClickCapture={() => setScheda('impostazioni')}><Puck.Preview /></div>
+            <Destra scheda={scheda} setScheda={setScheda} />
           </div>
         </div>
       </Puck>
