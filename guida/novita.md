@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.103.0 — 18 ottobre 2026
+
+### Novità
+
+- Richieste, Corsi, Tessere, Listino e Pagamenti con i testi in parole
+
 ## 0.102.0 — 18 ottobre 2026
 
 ### Novità
