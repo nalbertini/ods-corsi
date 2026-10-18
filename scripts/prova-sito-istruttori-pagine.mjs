@@ -114,5 +114,29 @@ console.log('\n5. I testi da incollare (elenco e scheda scarna) escono come nel 
   ok('senza le pagine pubblicate, nessun nome è un link (niente 404)', conta(senza, /<h3><a /g), 0)
 }
 
+console.log('\n6. I paragrafi vuoti dell\'editor non cambiano le pagine')
+{
+  // L'editor lascia sempre un «<p></p>» dopo l'ultimo elenco: la pagina deve uscire come senza.
+  const pag = (slug, titolo, testo) => ({ slug, titolo, descrizione: '', testo })
+  const scarna = testo(leggi(`${DIR}/modello-scarno.md`)).match(/<ul>[\s\S]*?<\/ul>/)?.[0] ?? ''
+  const foto = '<img src="https://x.supabase.co/storage/v1/object/public/sito/f.jpg" alt="" />'
+  const genera = (t) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [pag('istruttori', 'Gli istruttori', '<p>x</p>'), pag('fabio-berta', 'Fabio Berta', t)], menu: [], rinvii: [] })['fabio-berta/index.html']
+  const giusta = genera(foto + scarna)
+  ok('la scheda scarna esiste senza paragrafi vuoti', /scheda-ritratto/.test(giusta), true)
+  for (const vuoto of ['<p></p>', '<p><br></p>', '<p> </p>']) {
+    ok(`scheda scarna con ${vuoto} in coda`, genera(foto + scarna + vuoto), giusta)
+    ok(`scheda scarna con ${vuoto} in mezzo`, genera(foto + vuoto + scarna + vuoto), giusta)
+  }
+  ok('un paragrafo con la sola foto non è vuoto', /scheda-ritratto/.test(genera(`<p>${foto}</p>` + scarna + '<p></p>')), true)
+
+  // Tutte le pagine del sito (home, chi siamo, corsi, contatti, corso, istruttori): stessa uscita con i paragrafi vuoti.
+  const nomi = readdirSync('docs/sito').filter((f) => f.endsWith('.html') && !f.includes('-precedente'))
+  const leggiPagina = (f) => leggi(`docs/sito/${f}`).replace(/<!doctype[^>]*>|<meta[^>]*>|<title>[^<]*<\/title>/gi, '')
+  const sito = (v) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: nomi.map((f) => pag(f.replace('.html', ''), f, v(leggiPagina(f)))), menu: [], rinvii: [] })
+  const base = sito((t) => t)
+  const conVuoti = sito((t) => '<p></p>' + t.replace(/<\/h2>/g, '</h2><p><br></p>') + '<p> </p><p></p>')
+  for (const f of nomi) { const k = f === 'home.html' ? 'index.html' : `${f.replace('.html', '')}/index.html`; ok(`${f}: uguale con i paragrafi vuoti`, k in conVuoti && conVuoti[k] === base[k], true) }
+}
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)
