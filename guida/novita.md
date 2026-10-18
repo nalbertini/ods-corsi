@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.94.0 — 18 ottobre 2026
+
+### Novità
+
+- Tasti, campi e stati della segreteria nello stile del sito
+
+### Risolto
+
+- Il menu del telefono è più chiaro
+
 ## 0.93.0 — 18 ottobre 2026
 
 ### Novità
