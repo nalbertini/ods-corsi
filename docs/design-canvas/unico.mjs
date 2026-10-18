@@ -72,6 +72,7 @@ const SEZIONI = [
   { id: 'sito-porta-ai-pezzi', nome: 'Sito · porta ai pezzi · proposta', cartella: 'sito-porta-ai-pezzi' },
   { id: 'sito-pezzi-spazio', nome: 'Sito · pezzi, più spazio · proposta', cartella: 'sito-pezzi-spazio' },
   { id: 'sito-pezzi-scrivi', nome: 'Sito · scrivi nella pagina · proposta', cartella: 'sito-pezzi-scrivi-in-pagina' },
+  { id: 'scheda-popover', nome: 'Segreteria · dettagli in una finestra · proposta', cartella: 'scheda-popover' },
 ]
 
 // Il canvas mostra al massimo 40 pagine: le sezioni vicine stanno sulla stessa pagina, una sotto l'altra, ognuna col suo titolo.

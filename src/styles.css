@@ -2153,8 +2153,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-nomi { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 16px; font-size: 14px; color: var(--sec); }
 
 /* Corsi e iscritti: la lista a sinistra, la scheda a destra. */
-.sg-due-colonne { display: flex; gap: 24px; align-items: flex-start; }
-.sg-lista { width: 470px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }
+.sg-lista { display: flex; flex-direction: column; gap: 6px; }
 .sg-lista-testa { display: grid; gap: 12px; padding: 0 14px 6px; border-bottom: 2px solid var(--line-soft); }
 /* Le intestazioni che ordinano la tabella: la freccia si accende sulla colonna scelta. */
 .sg-ordina { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font: inherit; letter-spacing: inherit; color: inherit; text-align: inherit; }
@@ -2202,7 +2201,37 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   position: sticky; top: 0;
 }
 /* La scheda di un iscritto o di un istruttore: tutta la sezione, al posto dell'elenco. */
-.sg-torna { align-self: flex-start; min-height: 40px; padding: 0 14px; font-size: 14px; }
+/* Il dettaglio in una finestra sopra l'elenco (`SchedaPiena`): il velo e la finestra coprono il corpo, non il menu (`--sg-finestra-sx`). */
+.sg-finestra-radice {
+  position: fixed; top: 0; right: 0; bottom: 0; left: var(--sg-finestra-sx, 0px); z-index: 10;
+  display: flex; justify-content: center; padding: 24px 16px;
+}
+.sg-finestra-velo { position: absolute; inset: 0; z-index: 0; }
+.sg-finestra {
+  position: relative; z-index: 1; display: flex; flex-direction: column; width: min(760px, 100%); min-height: 0;
+  background: var(--surface); border: 2px solid var(--text); border-top: 6px solid var(--tinta, var(--text));
+}
+.sg-finestra:focus { outline: none; }
+.sg-finestra-testa { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 20px; border-bottom: 2px solid var(--line-soft); }
+.sg-finestra-posizione { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); white-space: nowrap; }
+.sg-finestra-testa .sg-btn { white-space: nowrap; }
+/* Ai capi dell'elenco il tasto non fa niente: spento, non come un tasto premuto. */
+.sg-finestra-testa .sg-btn:disabled { opacity: 0.4; background: transparent; cursor: default; }
+.sg-finestra-corpo { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
+/* La scheda dentro la finestra non ha una cornice sua: la finestra ha già bordo e barra in alto. */
+.sg-finestra .sg-scheda { position: static; flex-grow: 1; border: 0; }
+/* Un campo che sta su due colonne (POSTI e TESSERA RICHIESTA) in una colonna sola ne farebbe una seconda a larghezza zero: i campi si sovrapporrebbero. */
+@media (max-width: 1000px) {
+  .sg-tre > * { grid-column: auto !important; }
+}
+/* Sul telefono la finestra è la pagina: tutto lo schermo, il menu è già dietro il tasto MENU. */
+@media (max-width: 767px) {
+  .sg-finestra { width: 100%; border-left: 0; border-right: 0; border-bottom: 0; }
+  .sg-finestra-radice { left: 0; padding: 0; }
+  .sg-finestra-testa { padding: 10px 14px; flex-wrap: nowrap; gap: 6px; }
+  .sg-finestra-testa .sg-btn { min-width: 0; padding: 0 14px; }
+  .sg-finestra-nome { display: none; }
+}
 .sg-scheda-piena { position: static; gap: 24px; padding: 24px 28px; }
 .sg-scheda-campi { max-width: 720px; }
 .sg-scheda-piede { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding-top: 16px; border-top: 2px solid var(--line-soft); }
@@ -2226,10 +2255,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-riga-iscritto-corso .sg-segno-regola { white-space: normal; }
 /* La scheda di un corso accanto all'elenco è stretta, sul telefono pure: le colonne vanno su due righe e «iscritto dal» sotto, le intestazioni restano e ordinano. */
 .sg-scheda { container-type: inline-size; }
-/* Affiancata all'elenco la scheda non scende sotto la misura in cui si legge; sotto 1240 px è a tutta larghezza (`STRETTO`). */
-@media (min-width: 1241px) {
-  .sg-due-colonne > .sg-scheda { min-width: 420px; }
-}
 @container (max-width: 780px) {
   .sg-riga-iscritto-corso { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 14px; padding-block: 8px; }
   .sg-lista-testa.sg-riga-iscritto-corso { display: flex; flex-wrap: wrap; gap: 6px 16px; padding-block: 0 6px; }
@@ -2611,12 +2636,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-barra-tel > .icon-btn { width: 36px; }
 }
 
-/* Elenco e scheda affiancati solo dove ci stanno tutti e due (`STRETTO` in lib/largo.ts). */
-@media (max-width: 1240px) {
-  .sg-due-colonne { flex-direction: column; align-items: stretch; }
-  .sg-lista { width: auto; }
-  .sg-scheda { position: static; }
-}
 
 @media (max-width: 600px) {
   /* Il modulo dei pagamenti a mano, in colonna: due colonne da 130px tagliano le parole. */

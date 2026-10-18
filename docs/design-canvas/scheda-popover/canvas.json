@@ -1,0 +1,12 @@
+{
+ "pages": [{"id": "page-1", "name": "Dettagli in una finestra"}],
+ "artboards": [
+  {"file": "Oggi.dc.html", "title": "1 · Richieste online com'è oggi (1440)", "x": 0, "y": 300, "w": 1440, "h": 900, "page": "page-1"},
+  {"file": "Richieste.dc.html", "title": "2 · Proposta: la richiesta in una finestra (1440)", "x": 1560, "y": 300, "w": 1440, "h": 900, "page": "page-1"},
+  {"file": "Corso.dc.html", "title": "3 · Proposta: un corso con modifiche non salvate (1440)", "x": 3120, "y": 300, "w": 1440, "h": 900, "page": "page-1"}
+ ],
+ "annotations": [
+  {"id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1400, "text": "I dettagli della segreteria si aprono in una finestra sopra l'elenco"},
+  {"id": "regole", "kind": "note", "x": 0, "y": 120, "maxW": 1500, "text": "Vale per Richieste, Corsi, Iscritti, Personale e Vestiario (anche «nuovo»): una sola finestra, larga 760px, a tutta pagina sotto i 768px. Si chiude con ✕ o Esc; il clic fuori chiude solo se non ci sono modifiche, altrimenti non fa niente; ✕ ed Esc con modifiche chiedono «Lascio le modifiche?». Esc chiude solo la finestra in cima. Il piede con le azioni resta fisso, scorre il corpo. In Richieste e Corsi PRECEDENTE e SUCCESSIVA passano alla scheda dopo senza chiudere. Dopo accogli, rifiuta o elimina la finestra si chiude. Il menu resta fuori dal velo: i numeri restano visibili. Stampa: solo la finestra, senza velo né elenco."}
+ ]
+}

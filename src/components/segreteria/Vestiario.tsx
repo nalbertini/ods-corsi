@@ -202,7 +202,7 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
         </SchedaPiena>
       )}
 
-      <div className="stack" style={{ gap: 18 }} hidden={pagina.a !== 'elenco'}>
+      <div className="stack" style={{ gap: 18 }}>
         <Testa titolo="VESTIARIO" sotto="Judogi, costumini e felpe. I genitori ordinano dal link, la segreteria segna chi ha pagato; al fornitore va solo il saldato.">
           {vedi}
         </Testa>

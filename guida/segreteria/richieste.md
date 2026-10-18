@@ -24,7 +24,7 @@ stampare.
 
 ## Guardare una richiesta
 
-Un clic apre le risposte: nato il / a, codice fiscale, residenza, genitore (per
+Un clic apre la richiesta in una finestra sopra l'elenco ([come funziona](README.md#la-finestra-dei-dettagli)), con **Precedente** e **Successiva** per scorrere le altre. Dentro ci sono le risposte: nato il / a, codice fiscale, residenza, genitore (per
 un minore), email, telefono e l'eventuale telefono 2, corsi (con «fuori età: nati 2017–2019, richiama» — gli anni del corso —
 accanto a un corso che non è per la sua età, secondo
 **NATI DAL / AL** del [listino](listino.md) coi sei mesi di tolleranza), come paga (trimestre o annuale), note.
@@ -67,6 +67,8 @@ c'è scritto in rosso. I link dei file valgono **dieci minuti**: se non si
 aprono più, riaprire la richiesta.
 
 ## Decidere
+
+Accolta o rifiutata, la finestra si chiude da sola e si torna all'elenco, alla prossima.
 
 - **Accogli** — la persona entra in elenco, iscritta ai corsi che ha scelto. Se
   c'era già (stessa persona), non si crea un doppione. Il codice fiscale da solo

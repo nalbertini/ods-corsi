@@ -120,7 +120,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
       ) : null}
 
       {/* L'elenco resta montato sotto la scheda: tornando, è dov'era. */}
-      <div className="stack" style={{ gap: 18 }} hidden={!!(nuovo || persona)}>
+      <div className="stack" style={{ gap: 18 }}>
         <Testa titolo="ISTRUTTORI E ACCESSI" sotto="Chi entra nell'app e cosa può fare. Gli iscritti non sono qui: non hanno un accesso.">
           <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuovo(true)}>
             + Aggiungi una persona

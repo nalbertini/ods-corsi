@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- RICHIESTE ONLINE: cornice di PaginaSito (menu 240px + corpo), RICHIESTE ONLINE o CORSI con l'elenco com'e' oggi. -->
+<div style="position: relative; display: flex; width: 1440px; height: 900px; overflow: hidden; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="RICHIESTE ONLINE" numeri="RICHIESTE ONLINE:3, PRESENZE ISTRUTTORI:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">RICHIESTE ONLINE</h1>
+      <span style="font-size: 14px; color: #46606f">3 richieste da guardare. Proposta: il dettaglio si apre sopra l’elenco; il menu resta fuori dal velo e il numero 3 si vede.</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+    <div style="display: flex; gap: 10px"><dc-import name="Chip" label="ANCHE QUELLE GIÀ GESTITE" acceso="{{ false }}" tema="sito" hint-size="240px,44px"></dc-import></div>
+    <div style="flex-grow:1;min-width:0;display:flex;flex-direction:column">
+      <dc-import name="TestataTabella" tema="sito" colonne="NOME|CORSI|ARRIVATA|STATO|" griglia="1.2fr 1.4fr 1.3fr 150px 80px" ordinata="ARRIVATA" verso="giu" hint-size="100%,40px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Ferrero Davide" corsi="Judo adulti" contatto="17 ottobre 2026, 20:45" bollini="" frequenza="NUOVA" stato="scelta" hint-size="100%,50px"></dc-import><dc-import name="RigaIscritto" tema="sito" nome="Bertola Giulia" corsi="Lotta 2" contatto="17 ottobre 2026, 19:10" bollini="" frequenza="NUOVA" stato="normale" hint-size="100%,50px"></dc-import><dc-import name="RigaIscritto" tema="sito" nome="Aiello Simone" corsi="Pre-pugilistica, MGA" contatto="15 ottobre 2026, 22:41" bollini="" frequenza="NUOVA" stato="normale" hint-size="100%,50px"></dc-import>
+    </div>
+    </div>
+  </main>
+  <dc-import name="SchedaPopover" titolo="DAVIDE FERRERO" sotto="Arrivata il 17 ottobre 2026, 20:45 · Judo adulti" tinta="#0d2a3d" posizione="1 DI 3" passaggio="{{ true }}" campi="NATO IL:12 aprile 1991|CODICE FISCALE:FRRDVD91D12L219X|RESIDENZA:Via Roma 56, 10100 Collegno|EMAIL:davide.ferrero@esempio.it|TELEFONO:347 210 5518|CORSI:Judo adulti|NOTE:Ha fatto judo da ragazzo, fino alla cintura verde.|REGOLAMENTO:Accettato (richiesta online)" azioni="ELIMINA RICHIESTA E FILE:rosso|RIFIUTA:linea|ACCOGLI:pieno" larghezza="760px" altezza="900px" style="position:absolute;left:240px;right:0;top:0" hint-size="1200px,900px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

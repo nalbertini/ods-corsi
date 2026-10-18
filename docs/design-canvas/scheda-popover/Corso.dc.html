@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- CORSI: cornice di PaginaSito (menu 240px + corpo), RICHIESTE ONLINE o CORSI con l'elenco com'e' oggi. -->
+<div style="position: relative; display: flex; width: 1440px; height: 900px; overflow: hidden; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="CORSI" numeri="RICHIESTE ONLINE:3, PRESENZE ISTRUTTORI:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CORSI</h1>
+      <span style="font-size: 14px; color: #46606f">14 corsi. Proposta: il corso aperto con modifiche non salvate; il clic fuori non fa niente.</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <dc-import name="TestataTabella" tema="sito" colonne="CORSO|GIORNI|ISCRITTI|" griglia="1.2fr 1.4fr 1.3fr 150px 80px" ordinata="CORSO" verso="su" hint-size="100%,40px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Judo adulti" corsi="Lunedì, mercoledì" contatto="18/25" bollini="" frequenza="" stato="normale" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Judo kids" corsi="Lunedì, mercoledì" contatto="14/20" bollini="" frequenza="" stato="scelta" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Lotta 2" corsi="Martedì, giovedì" contatto="9/16" bollini="" frequenza="" stato="normale" hint-size="100%,50px"></dc-import>
+    </div>
+  </main>
+  <dc-import name="SchedaPopover" titolo="JUDO KIDS" sotto="Lunedì e mercoledì · 17:30–18:30 · 14/20 iscritti" tinta="#1b8ac4" posizione="2 DI 14" passaggio="{{ true }}" avviso="● MODIFICHE NON SALVATE. Il clic fuori non chiude: si esce con ✕ o Esc, che chiedono prima." campi="NOME:Judo kids|ISTRUTTORE:Marco Bianchi|GIORNI:Lunedì, mercoledì|ORA:17:30|DURATA:60 minuti|CAPIENZA:20" azioni="LASCIA LE MODIFICHE:linea|SALVA:pieno" larghezza="760px" altezza="900px" style="position:absolute;left:240px;right:0;top:0" hint-size="1200px,900px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>
