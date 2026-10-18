@@ -383,5 +383,16 @@ console.log('\nPorta ai pezzi: in modalità prova la pagina converte senza cambi
   ok('nessuna parte scelta: la frase dice cosa succede, in italiano di palestra', typeof f === 'string' && /impostazioni/.test(f) && !/blocc|component|elemento/i.test(f), true)
 }
 
+// ELENCO: ogni parte col nome che la segreteria le dà (FOTO IN CIMA, TESTO, FOTO, DUE o TRE COLONNE).
+{
+  const col = (n) => ({ type: 'colonne', props: { id: 'c', colonne: Array.from({ length: n }, () => ({ html: '' })) } })
+  const nome = (p) => prova(() => z.nomeParte(p))
+  ok('elenco: foto in cima', nome({ type: 'fotoInCima', props: { id: 'a', src: '', alt: '' } }), 'Foto in cima')
+  ok('elenco: testo', nome({ type: 'testo', props: { id: 'b', html: '' } }), 'Testo')
+  ok('elenco: foto', nome({ type: 'foto', props: { id: 'd', src: '', alt: '' } }), 'Foto')
+  ok('elenco: due colonne', nome(col(2)), 'Due colonne')
+  ok('elenco: tre colonne', nome(col(3)), 'Tre colonne')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -2989,6 +2989,8 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
 .sito-pezzi-colonne { display: grid; grid-template-columns: minmax(0, 1fr) 320px; flex: 1; min-height: 0; }
 .sito-pezzi-pagina { overflow: auto; padding: 16px; min-width: 0; }
 .sito-pezzi-destra { display: flex; flex-direction: column; gap: 14px; padding: 12px; border-left: 2px solid var(--line); overflow: auto; }
+.sito-pezzi-riga { display: flex; align-items: center; min-height: 48px; padding: 0 14px; border: 2px solid var(--line); background: var(--surface); color: var(--text); font-size: 15px; text-align: left; }
+.sito-pezzi-riga[data-on='true'] { border-color: var(--text); background: var(--surface-2); font-weight: 700; }
 .sito-pezzi-frase { margin: 0; padding: 18px; border: 2px dashed var(--line); color: var(--dim); font-size: 16px; line-height: 1.45; }
 /* I tasti sopra l'editor sono quelli della segreteria; da spenti restano leggibili. */
 .sito-pezzi .sg-chip { color: var(--text); border-color: var(--riga-campo); background: var(--surface); }

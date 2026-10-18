@@ -25,6 +25,10 @@ export const MASSIMO_PEZZI = 100
 /** Il limite del database sul JSON dei pezzi (`supabase/62-sito-pezzi.sql`): oltre non si salva. */
 export const MASSIMO_CARATTERI = 400000
 
+/** Il nome di una parte nell'ELENCO, con le parole della segreteria. */
+export const nomeParte = (p: Pezzo): string =>
+  p.type === 'fotoInCima' ? 'Foto in cima' : p.type === 'testo' ? 'Testo' : p.type === 'foto' ? 'Foto' : p.props.colonne.length === 2 ? 'Due colonne' : 'Tre colonne'
+
 /** Cosa dice il pannello delle impostazioni finché nessuna parte è scelta. */
 export const FRASE_NESSUNA_PARTE = 'Tocca una parte della pagina per cambiarne le impostazioni.'
 

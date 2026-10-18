@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createUsePuck, Puck, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
+import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, nomeParte, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import { EditorTesto } from './EditorTesto'
 import { ScegliImmagine } from './ImmaginiSito'
@@ -168,10 +168,6 @@ const PAROLE = {
   'action-selectparent': 'Scegli quella sopra',
   'action-duplicate': 'Copia',
   'action-delete': 'Togli',
-  'outline-empty': 'Nessuna parte',
-  'outline-header-title': 'Le parti',
-  'outline-item-duplicate': 'Copia',
-  'outline-item-delete': 'Togli',
   'field-arrayitem-summary': 'Colonna {index}',
   'field-arrayitem-duplicate': 'Copia',
   'field-arrayitem-delete': 'Togli',
@@ -184,7 +180,17 @@ const PAROLE = {
  */
 function Destra() {
   const [scheda, setScheda] = useState<'impostazioni' | 'elenco'>('impostazioni')
+  const dispatch = usePuck((s) => s.dispatch)
+  const scelto = usePuck((s) => s.appState.ui.itemSelector)
+  const content = usePuck((s) => s.appState.data.content)
   const scelta = usePuck((s) => s.selectedItem)
+  const id = scelta?.props.id
+  // Toccare una parte nella pagina porta alle sue impostazioni; dall'ELENCO si resta lì, per spostarla con SU e GIÙ.
+  const daElenco = useRef(false)
+  useEffect(() => {
+    if (daElenco.current) daElenco.current = false
+    else if (id !== undefined) setScheda('impostazioni')
+  }, [id])
   return (
     <div className="sito-pezzi-destra">
       <div role="tablist" aria-label="Pannello della parte" className="schede sg-schede">
@@ -194,7 +200,29 @@ function Destra() {
           </button>
         ))}
       </div>
-      {scheda === 'elenco' ? <Puck.Outline /> : scelta ? <Puck.Fields /> : <p className="sito-pezzi-frase">{FRASE_NESSUNA_PARTE}</p>}
+      {scheda === 'elenco' ? (
+        <div className="stack" style={{ gap: 6 }}>
+          {content.map((c, i) => (
+            <button
+              key={String(c.props.id)}
+              type="button"
+              className="sito-pezzi-riga"
+              data-on={scelto?.index === i}
+              onClick={() => {
+                daElenco.current = true
+                dispatch({ type: 'setUi', ui: { itemSelector: { index: i, zone: ZONA } } })
+              }}
+            >
+              {/* Puck dà il contenuto come dati senza tipo; i pezzi sono quelli di `Props` (li controlla `pezziValidi` al salvataggio). */}
+              {i + 1} · {nomeParte(c as unknown as Pezzo)}
+            </button>
+          ))}
+        </div>
+      ) : scelta ? (
+        <Puck.Fields />
+      ) : (
+        <p className="sito-pezzi-frase">{FRASE_NESSUNA_PARTE}</p>
+      )}
     </div>
   )
 }
