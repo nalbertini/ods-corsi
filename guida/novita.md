@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.110.2 — 18 ottobre 2026
+
+### Risolto
+
+- Un pagamento a mano non si registra più nel futuro né in un giorno di cassa chiuso; riepilogo da confermare e cassa contata alla cieca
+
 ## 0.110.1 — 18 ottobre 2026
 
 ### Modificato
