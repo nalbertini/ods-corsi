@@ -2226,6 +2226,10 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-riga-iscritto-corso .sg-segno-regola { white-space: normal; }
 /* La scheda di un corso accanto all'elenco è stretta, sul telefono pure: le colonne vanno su due righe e «iscritto dal» sotto, le intestazioni restano e ordinano. */
 .sg-scheda { container-type: inline-size; }
+/* Affiancata all'elenco la scheda non scende sotto la misura in cui si legge; sotto 1240 px è a tutta larghezza (`STRETTO`). */
+@media (min-width: 1241px) {
+  .sg-due-colonne > .sg-scheda { min-width: 420px; }
+}
 @container (max-width: 780px) {
   .sg-riga-iscritto-corso { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 14px; padding-block: 8px; }
   .sg-lista-testa.sg-riga-iscritto-corso { display: flex; flex-wrap: wrap; gap: 6px 16px; padding-block: 0 6px; }
