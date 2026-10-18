@@ -183,18 +183,78 @@ function divDi(html: string, classe: RegExp): Array<{ da: number; a: number; den
 /** Tutto il testo in un pezzo solo: quando dividerlo rischierebbe di cambiare quello che c'è scritto. */
 const unico = (t: string): PezziPagina => ({ content: [{ type: 'testo', props: { id: 'p1', html: t } }] })
 
+const TAG = /<(\/?)([a-z][a-z0-9]*)\b[^>]*?(\/?)>/gi
+const SENZA_CHIUSURA = new Set(['img', 'br', 'hr'])
+
+type Segmento = { html: string } | { foto: { src: string; alt: string } }
+
 /**
- * Il testo piatto di una pagina vecchia, spezzato nei pezzi dell'editor: foto iniziale, colonne, testo.
- * Non si fida di sé: se i pezzi non rifanno esattamente il testo (`pezziInHtml`), la pagina resta un solo
- * pezzo di testo, così «Porta ai pezzi» non cambia mai quello che c'è scritto.
+ * Taglia un testo piatto solo a livello più alto, mai dentro un elenco o un paragrafo: un titolo `<h2>` apre un pezzo
+ * di testo, un'immagine rifatta uguale dall'editor è una foto. Il resto resta com'è, così il testo non cambia.
+ */
+function spezzaTesto(t: string): Segmento[] {
+  const segmenti: Segmento[] = []
+  const testo = (h: string) => {
+    if (h !== '') segmenti.push({ html: h })
+  }
+  let profondita = 0
+  let inizio = 0
+  for (const m of t.matchAll(TAG)) {
+    const nome = m[2].toLowerCase()
+    if (m[1]) {
+      profondita = Math.max(0, profondita - 1)
+      continue
+    }
+    // Un titolo vuoto non apre una parte: resta nel testo che c'è.
+    if (profondita === 0 && nome === 'h2' && !/^<h2\b[^>]*>\s*<\/h2>/i.test(t.slice(m.index))) {
+      testo(t.slice(inizio, m.index))
+      inizio = m.index
+    } else if (profondita === 0 && nome === 'img') {
+      const src = attributo(m[0], 'src')
+      const alt = attributo(m[0], 'alt')
+      // Un'immagine che l'editor non riscrive uguale (altri attributi, niente `alt`) resta nel testo.
+      if (src && alt !== null && pulisciTesto(inHtml({ type: 'foto', props: { id: 'x', src, alt } })) === m[0]) {
+        testo(t.slice(inizio, m.index))
+        segmenti.push({ foto: { src, alt } })
+        inizio = m.index + m[0].length
+      }
+    }
+    if (!SENZA_CHIUSURA.has(nome) && !m[3]) profondita++
+  }
+  testo(t.slice(inizio))
+  return segmenti
+}
+
+/**
+ * Il testo piatto di una pagina vecchia, spezzato nei pezzi dell'editor: foto iniziale, colonne, foto tra i
+ * paragrafi, testo che comincia a ogni titolo. Non si fida di sé: se i pezzi non rifanno esattamente il testo
+ * (`pezziInHtml`), la pagina resta un solo pezzo di testo, così «Porta ai pezzi» non cambia mai quello che c'è scritto.
  */
 export function htmlInPezzi(html: string): PezziPagina {
   const t = pulisciTesto(html)
   if (t.trim() === '') return pezziVuoti()
   const pezzi: Pezzo[] = []
-  const aggiungi = (nuovo: (id: string) => Pezzo) => pezzi.push(nuovo(`p${pezzi.length + 1}`))
+  const id = () => `p${pezzi.length + 1}`
   const testo = (h: string) => {
-    if (h !== '') aggiungi((id) => ({ type: 'testo', props: { id, html: h } }))
+    // Un `<p></p>` non è una parte: si unisce al testo prima, o a quello dopo; solo se non ne ha (dopo una foto, in fondo) resta da solo.
+    let vuotoInAttesa = ''
+    const scarica = () => {
+      if (vuotoInAttesa !== '') pezzi.push({ type: 'testo', props: { id: id(), html: vuotoInAttesa } })
+      vuotoInAttesa = ''
+    }
+    for (const s of spezzaTesto(h)) {
+      const prima = pezzi[pezzi.length - 1]
+      if ('foto' in s) {
+        scarica()
+        pezzi.push({ type: 'foto', props: { id: id(), ...s.foto } })
+      } else if (vuoto(s.html) && prima?.type === 'testo') prima.props.html += s.html
+      else if (vuoto(s.html)) vuotoInAttesa += s.html
+      else {
+        pezzi.push({ type: 'testo', props: { id: id(), html: vuotoInAttesa + s.html } })
+        vuotoInAttesa = ''
+      }
+    }
+    scarica()
   }
   let da = 0
   for (const b of divDi(t, /\bcolonne\b/)) {
@@ -202,22 +262,15 @@ export function htmlInPezzi(html: string): PezziPagina {
     const colonne = divDi(b.dentro, /\bcolonna\b/).map((c) => ({ html: c.dentro }))
     // Colonne dentro una colonna non si riaprono nell'editor: si lasciano come testo.
     if (colonne.some((c) => /<div\b/i.test(c.html))) return unico(t)
-    aggiungi((id) => ({ type: 'colonne', props: { id, colonne } }))
+    pezzi.push({ type: 'colonne', props: { id: id(), colonne } })
     da = b.a
   }
   testo(t.slice(da))
   const primo = pezzi[0]
-  const foto = primo?.type === 'testo' ? /^<img\b[^>]*>/i.exec(primo.props.html) : null
-  if (primo?.type === 'testo' && foto) {
-    const src = attributo(foto[0], 'src')
-    const alt = attributo(foto[0], 'alt')
-    if (src && alt !== null) {
-      const resto = primo.props.html.slice(foto[0].length)
-      pezzi.splice(0, 1, { type: 'fotoInCima', props: { id: 'p0', src, alt } }, ...(resto === '' ? [] : [{ type: 'testo' as const, props: { id: primo.props.id, html: resto } }]))
-    }
-  }
+  if (primo?.type === 'foto') pezzi[0] = { type: 'fotoInCima', props: { ...primo.props, id: 'p0' } }
   const candidato: PezziPagina = { content: pezzi }
-  return pezziValidi(candidato) && pezziInHtml(candidato) === t ? candidato : unico(t)
+  // Con troppe parti `pezziValidi` è falso: non si accorpa, `cosaNonVaPortare` avvisa e la segreteria toglie qualcosa.
+  return (pezziValidi(candidato) || pezzi.length > MASSIMO_PEZZI) && pezziInHtml(candidato) === t ? candidato : unico(t)
 }
 
 /** Il tasto «Porta ai pezzi»: solo per una pagina col vecchio editor (`null`; `undefined` = database senza il 62) e che non è di legge. */

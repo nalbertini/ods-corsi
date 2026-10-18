@@ -26,8 +26,9 @@ di legge restano così.
 
 Per portare una pagina vecchia ai pezzi, aprila e, sotto i tasti, premi **PORTA
 AI PEZZI** (sotto «EDITOR A PEZZI»). Il testo resta com'è: la foto messa in cima
-diventa **FOTO IN CIMA**, le colonne diventano **COLONNE**, il resto un
-**TESTO**. Il sito non cambia finché non premi **Pubblica**. **Non si torna al
+diventa **FOTO IN CIMA**, le colonne diventano **COLONNE**, ogni foto messa tra i
+paragrafi diventa una **FOTO**, e ogni titolo grande apre un nuovo **TESTO**: così
+nell'**Elenco** trovi più parti e le sposti con **Su** e **Giù**. Il sito non cambia finché non premi **Pubblica**. **Non si torna al
 vecchio editor.** Il tasto è spento finché ci sono modifiche non salvate: prima
 **Salva bozza**. Se la pagina è troppo lunga, un avviso dice di togliere qualcosa.
 

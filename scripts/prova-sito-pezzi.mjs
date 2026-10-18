@@ -292,7 +292,6 @@ console.log('\nPorta ai pezzi: htmlInPezzi')
     ['un’immagine con src vuoto', '<img src="" alt="Niente"><p>Ciao</p>'],
     ['div sbilanciati (uno in più aperto)', `<div class="colonne c-2"><div class="colonna"><p>A</p></div><div class="colonna"><p>B</p></div><p>Dopo</p>`],
     ['colonne annidate', col(2, col(2, '<p>A</p>', '<p>B</p>'), '<p>C</p>')],
-    ['un’immagine che non è la prima cosa', `<p>Prima</p>${FOTO}`],
     ['un’immagine dentro un paragrafo', `<p>Guarda ${FOTO} qui</p>`],
     ['colonne con altro dentro il contenitore', `<div class="colonne c-2"><p>Fuori</p><div class="colonna"><p>A</p></div><div class="colonna"><p>B</p></div></div>`],
   ]
@@ -330,6 +329,96 @@ console.log('\nPorta ai pezzi: htmlInPezzi')
   ok('troppo grande: i pezzi non sono validi', valido(gr), false)
   ok('troppo grande: cosaNonVaPezzi dice di toglierne', /lunga/.test(String(prova(() => z.cosaNonVaPezzi(gr)))), true)
   ok('troppo grande: il testo resta tutto (niente tagli)', forma(gr), uno(grande))
+}
+
+console.log('\nPorta ai pezzi: si taglia ai titoli h2 e alle foto isolate')
+{
+  const pezzi = (x) => prova(() => z.htmlInPezzi(x))
+  const forma = (r) => (r && Array.isArray(r.content) ? r.content.map((p) => [p.type, p.props.html ?? p.props.colonne?.map((c) => c.html) ?? [p.props.src, p.props.alt]]) : r)
+  const tipi = (x) => { const f = forma(pezzi(x)); return Array.isArray(f) ? f.map((p) => p[0]) : f }
+  const giro = (x) => prova(() => z.pezziInHtml(z.htmlInPezzi(x)))
+  const col = (n, ...c) => `<div class="colonne c-${n}">${c.map((h) => `<div class="colonna">${h}</div>`).join('')}</div>`
+  // Sempre vero, per ogni testo: il giro rida il testo, i pezzi sono validi, gli id unici, la foto in cima solo prima.
+  const regge = (cosa, x) => {
+    const r = pezzi(x)
+    const c = Array.isArray(r?.content) ? r.content : []
+    const id = c.map((p) => p.props.id)
+    ok(`${cosa}: il giro rida il testo ripulito`, giro(x), pulisci(x))
+    ok(`${cosa}: pezzi validi, id unici, foto in cima solo in testa`, [valido(r), new Set(id).size === id.length, c.every((p, i) => p.type !== 'fotoInCima' || i === 0)], [true, true, true])
+  }
+
+  const AIKIDO = '<p><a class="pulsante" href="https://x/">Prova</a> <a class="pulsante" href="/c/">Scrivici</a></p><img alt="Quattro" src="https://x/a.jpg" /><ul><li><strong>Per chi</strong> Dai 7 anni</li></ul><h2>Orario</h2><h3>Aikido 2</h3><p><strong>17:00</strong></p><h2></h2><h3>Cosa si fa</h3><p>Testo</p><img alt="Una" src="https://x/b.jpg" /><h2>Cosa aspettarsi</h2><p>x</p><p><a class="pulsante" href="/c/">Scrivici</a></p><img alt="Un adulto" src="https://x/c.jpg" /><p></p>'
+  const ai = forma(pezzi(AIKIDO))
+  ok('Aikido: testo, foto, testo, testo (h2), foto, testo (h2), foto, e in fondo il p vuoto', Array.isArray(ai) ? ai.map((p) => p[0]) : ai, ['testo', 'foto', 'testo', 'testo', 'foto', 'testo', 'foto', 'testo'])
+  ok('Aikido: le tre foto con il loro alt', Array.isArray(ai) ? ai.filter((p) => p[0] === 'foto').map((p) => p[1]) : ai, [['https://x/a.jpg', 'Quattro'], ['https://x/b.jpg', 'Una'], ['https://x/c.jpg', 'Un adulto']])
+  ok('Aikido: i testi cominciano com\'è giusto (ul, h2 Orario, h2 Cosa aspettarsi)', Array.isArray(ai) ? ai.filter((p) => p[0] === 'testo').map((p) => p[1].slice(0, 7)) : ai, ['<p><a c', '<ul><li', '<h2>Ora', '<h2>Cos', '<p></p>'])
+  // Il p vuoto in fondo viene dopo una foto: non ha un testo vicino, quindi resta da solo (cambiarlo cambierebbe il testo).
+  ok('Aikido: l\'h2 vuoto resta nel testo vicino; solo il p finale, senza testo vicino, sta da solo', Array.isArray(ai) ? ai.filter((p) => p[0] === 'testo' && z.vuoto(p[1])).map((p) => p[1]) : ai, ['<p></p>'])
+  ok('Aikido: l\'h2 vuoto sta nel testo di Orario, prima della foto Una', Array.isArray(ai) ? /<h2><\/h2>/.test(ai[3]?.[1] ?? '') : ai, true)
+  regge('Aikido', AIKIDO)
+
+  // 2. Più titoli h2: un testo per titolo, ognuno comincia dal suo h2.
+  const dueH2 = forma(pezzi('<p>a</p><h2>X</h2><p>b</p><h2>Y</h2><p>c</p>'))
+  ok('h2: tre testi', Array.isArray(dueH2) ? dueH2.map((p) => p[0]) : dueH2, ['testo', 'testo', 'testo'])
+  ok('h2: il secondo e il terzo cominciano con l\'h2', Array.isArray(dueH2) ? dueH2.map((p) => p[1].startsWith('<h2>')) : dueH2, [false, true, true])
+  ok('h2: il testo è diviso nei tre pezzi giusti', dueH2, [['testo', '<p>a</p>'], ['testo', '<h2>X</h2><p>b</p>'], ['testo', '<h2>Y</h2><p>c</p>']])
+  regge('h2', '<p>a</p><h2>X</h2><p>b</p><h2>Y</h2><p>c</p>')
+  ok('h3: non si taglia', tipi('<p>a</p><h3>X</h3><p>b</p>'), ['testo'])
+  ok('un h2 in testa non fa un pezzo vuoto prima', tipi('<h2>X</h2><p>b</p><h2>Y</h2><p>c</p>'), ['testo', 'testo'])
+
+  // 3 e 4. La foto isolata prende solo sé stessa.
+  ok('foto isolata in mezzo: testo, foto, testo', forma(pezzi('<p>a</p><img src="https://x.it/s.jpg" alt="d" /><p>b</p>')), [['testo', '<p>a</p>'], ['foto', ['https://x.it/s.jpg', 'd']], ['testo', '<p>b</p>']])
+  regge('foto in mezzo', '<p>a</p><img src="https://x.it/s.jpg" alt="d" /><p>b</p>')
+  ok('foto isolata con alt vuoto: foto con alt vuoto', forma(pezzi('<p>a</p><img src="https://x.it/s.jpg" alt="" />')), [['testo', '<p>a</p>'], ['foto', ['https://x.it/s.jpg', '']]])
+  ok('due foto di fila: due foto', tipi('<p>a</p><img src="https://x.it/s.jpg" alt="d" /><img src="https://x.it/t.jpg" alt="e" /><p>b</p>'), ['testo', 'foto', 'foto', 'testo'])
+  regge('due foto di fila', '<p>a</p><img src="https://x.it/s.jpg" alt="d" /><img src="https://x.it/t.jpg" alt="e" /><p>b</p>')
+  ok('foto isolata dopo un h2: l\'h2 resta col suo testo, la foto è sua', forma(pezzi('<h2>X</h2><img src="https://x.it/s.jpg" alt="d" /><p>b</p>')), [['testo', '<h2>X</h2>'], ['foto', ['https://x.it/s.jpg', 'd']], ['testo', '<p>b</p>']])
+
+  // 5. Le foto che non si possono dire «foto» restano nel testo.
+  const restano = [
+    ['senza alt', '<p>a</p><img src="https://x.it/s.jpg" /><p>b</p>'],
+    ['dentro un paragrafo', '<p>a</p><p><img src="https://x.it/s.jpg" alt="d" /></p><p>b</p>'],
+    ['dentro un link', '<p>a</p><a href="/c/"><img src="https://x.it/s.jpg" alt="d" /></a><p>b</p>'],
+  ]
+  for (const [cosa, x] of restano) {
+    ok(`foto ${cosa}: resta nel testo`, tipi(x), ['testo'])
+    regge(`foto ${cosa}`, x)
+  }
+
+  // 6. Dentro un elenco o una colonna non si taglia.
+  ok('h2 dentro un elenco: nessun taglio', tipi('<p>a</p><ul><li><h2>X</h2></li></ul><p>b</p>'), ['testo'])
+  ok('foto dentro un elenco: nessun taglio', tipi('<p>a</p><ul><li><img src="https://x.it/s.jpg" alt="d" /></li></ul><p>b</p>'), ['testo'])
+  ok('h2 e foto dentro una colonna: la colonna resta una', tipi(col(2, '<h2>X</h2><p>a</p><img src="https://x.it/s.jpg" alt="d" />', '<p>B</p>')), ['colonne'])
+  ok('h2 e foto dentro una colonna: i due html restano interi', forma(pezzi(col(2, '<h2>X</h2><p>a</p><img src="https://x.it/s.jpg" alt="d" />', '<p>B</p>')))?.[0]?.[1]?.length, 2)
+  regge('h2 in colonna', col(2, '<h2>X</h2><p>a</p><img src="https://x.it/s.jpg" alt="d" />', '<p>B</p>'))
+  ok('titoli e foto fuori dalle colonne si tagliano, quelli dentro no', tipi(`<h2>X</h2><p>a</p>${col(2, '<h2>Y</h2><p>b</p>', '<p>C</p>')}<h2>Z</h2><p>d</p>`), ['testo', 'colonne', 'testo'])
+
+  // 7. I vuoti non fanno pezzi da soli.
+  ok('h2 vuoto: nessun pezzo fatto solo di lui', tipi('<p>a</p><h2></h2><p>b</p>'), ['testo'])
+  ok('p vuoto finale: nessun pezzo fatto solo di lui', tipi('<p>a</p><h2>X</h2><p>b</p><p></p>'), ['testo', 'testo'])
+  ok('p vuoto dopo una foto finale: senza testo vicino resta da solo, il testo non cambia', tipi('<p>a</p><img src="https://x.it/s.jpg" alt="d" /><p></p>'), ['testo', 'foto', 'testo'])
+  regge('p vuoto dopo una foto finale', '<p>a</p><img src="https://x.it/s.jpg" alt="d" /><p></p>')
+  // Un <p></p> senza testo prima si unisce al testo dopo: due pezzi, non tre.
+  ok('p vuoto dopo la foto in cima: si unisce al testo che segue', forma(pezzi('<img src="https://x.it/s.jpg" alt="d" /><p></p><h2>T</h2><p>x</p>')).map((p) => p[0]), ['fotoInCima', 'testo'])
+  // La pulizia toglie class e width: la foto che resta è uguale a quella dei pezzi, e si taglia.
+  ok('foto con class o width: la pulizia le toglie, quindi è una foto', tipi('<p>a</p><img class="g" src="https://x.it/s.jpg" alt="d" width="300" /><p>b</p>'), ['testo', 'foto', 'testo'])
+  regge('h2 vuoto', '<p>a</p><h2></h2><p>b</p>')
+  regge('p vuoto finale', '<p>a</p><h2>X</h2><p>b</p><p></p>')
+
+  // 9. La foto in cima resta fotoInCima; le colonne annidate un pezzo solo.
+  ok('foto in cima: fotoInCima, poi i testi per titolo', tipi('<img src="https://x.it/s.jpg" alt="d" /><h2>X</h2><p>a</p><h2>Y</h2><p>b</p>'), ['fotoInCima', 'testo', 'testo'])
+  ok('foto in cima e foto isolata dopo: fotoInCima e foto', tipi('<img src="https://x.it/s.jpg" alt="d" /><p>a</p><img src="https://x.it/t.jpg" alt="e" />'), ['fotoInCima', 'testo', 'foto'])
+  regge('foto in cima e dopo', '<img src="https://x.it/s.jpg" alt="d" /><p>a</p><img src="https://x.it/t.jpg" alt="e" />')
+  const annidate = col(2, col(2, '<p>A</p>', '<p>B</p>'), '<p>C</p>')
+  ok('colonne annidate con h2 e foto fuori: un pezzo solo', tipi(`<h2>X</h2><p>a</p><img src="https://x.it/s.jpg" alt="d" />${annidate}`), ['testo'])
+
+  // 8. Oltre cento pezzi: l'avviso che c'è, e il testo resta identico.
+  const cento = Array.from({ length: 101 }, (_, i) => `<h2>T${i}</h2><p>x</p>`).join('')
+  const troppi = pezzi(cento)
+  ok('oltre 100 pezzi: i pezzi non sono validi, niente accorpamento', valido(troppi), false)
+  ok('oltre 100 pezzi: il testo resta tutto identico', giro(cento), pulisci(cento))
+  ok('oltre 100 pezzi: cosaNonVaPortare avvisa della pagina con troppe parti', prova(() => z.cosaNonVaPortare(cento)), 'La pagina ha troppe parti: al massimo 100')
+  ok('esattamente 100 pezzi: si porta', prova(() => z.cosaNonVaPortare(Array.from({ length: 100 }, (_, i) => `<h2>T${i}</h2><p>x</p>`).join(''))), null)
 }
 
 console.log('\nPorta ai pezzi: cosaNonVaPortare (prima di chiedere conferma)')
