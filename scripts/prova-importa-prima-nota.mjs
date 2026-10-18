@@ -113,5 +113,15 @@ console.log('\n4. quello che si manda al database')
   ok('a pacchetti: nessuno oltre il tetto, nessuna riga persa', prova(() => { const p = m.apacchetti(Array.from({ length: 2300 }, (_, i) => i), 1000); return [p.length, p.map((x) => x.length), p.flat().length] }), [3, [1000, 1000, 300], 2300])
 }
 
+console.log('\n5. gli incassi dei clienti dopo una certa data')
+{
+  const r = prova(() => m.leggiPrimaNota(TESTO))
+  const fino = (data) => prova(() => m.senzaIncassiDopo(r.righe, data).map((x) => x.posizione))
+  ok('fino al 31 dicembre 2019 restano le righe fino a lì, e le altre non incassi di clienti', fino('2019-12-31'), [1, 2, 3, 4, 5, 6, 9])
+  ok('prima del 2019-09-03 sparisce il cliente di quel giorno, le uscite e le altre entrate restano', fino('2019-09-02'), [1, 2, 3, 6, 9])
+  ok('senza data si tiene tutto', prova(() => m.senzaIncassiDopo(r.righe, null).length), 8)
+  ok('l\'uscita e l\'entrata non da cliente dopo la data restano', prova(() => m.senzaIncassiDopo(r.righe, '2000-01-01').map((x) => x.causale)), ['rimborso estate', 'affitto palestre scuole', 'detersivo', 'scuola gozzano', 'cena tecnici'])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

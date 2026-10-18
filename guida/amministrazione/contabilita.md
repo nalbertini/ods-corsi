@@ -107,6 +107,18 @@ conferma te lo dice prima. Se dopo una chiusura qualcuno annulla una ricevuta o 
 compare un avviso rosso «La chiusura del … non è più in regola»: il foglio già stampato non torna
 più coi conti, e la correzione è una rettifica con una data dopo la chiusura.
 
+## Lo storico dal vecchio programma
+
+I movimenti del vecchio programma (la «Prima Nota» dal 2011) sono stati caricati una volta sola
+come **movimenti** normali, con la voce scelta dalla causale: i pagamenti dei clienti sulle voci
+«Quota associativa» e «Corsi e altri pagamenti», tutto il resto su **«Da classificare»**. Si
+riconoscono perché nessuno risulta averli scritti qui. Si annullano come ogni movimento. Una voce
+di un movimento, per ora, non si cambia: si annulla e si rifà con la voce giusta.
+
+I saldi iniziali delle casse non cambiano per questo: lo storico entra nei conti dal giorno di
+ogni movimento. Se la cassa parte da una certa data (**DAL**), i movimenti più vecchi restano
+nell'elenco ma non contano nel «in cassa».
+
 ## Cosa non c'è
 
 - L'IVA e la fattura elettronica: restano nel software a parte.

@@ -131,6 +131,13 @@ export interface DatiImport {
   voce: string
 }
 
+/**
+ * Via gli incassi dei clienti (le due voci di sistema) dopo una data: da lì in poi l'app li ricava da ricevute
+ * e pagamenti a mano, e importarli anche dal vecchio programma li conterebbe due volte. Senza data si tiene tutto.
+ */
+export const senzaIncassiDopo = (righe: RigaPrimaNota[], data: string | null): RigaPrimaNota[] =>
+  data ? righe.filter((r) => r.data <= data || voceDellaCausale(r.causale, r.tipo) === VOCE_DA_CLASSIFICARE) : righe
+
 /** Le righe con la cassa mancante: l'import le mette sul conto, e l'anteprima le fa vedere. */
 export const cassaIncerta = (righe: RigaPrimaNota[]): RigaPrimaNota[] => righe.filter((r) => !r.cassa)
 
