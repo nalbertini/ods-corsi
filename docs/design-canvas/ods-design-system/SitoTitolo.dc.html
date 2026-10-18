@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="color: #0d2a3d">
+  <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><div style="margin-bottom: 10px"><span style="display: inline-block; background: #ffffff; color: #0d2a3d; border: 2px solid #e4292a; border-radius: 4px; padding: 4px 8px; font-family: {{inter}}; font-size: 12px; font-weight: 700; line-height: 1.2">{{nota}}</span></div></sc-if>
+  <h2 style="font-family: {{big}}; text-transform: uppercase; margin: 0; font-weight: 800; font-size: {{corpo}}; line-height: .9; text-wrap: balance">{{testo}}</h2>
+  <sc-if value="{{haIntro}}" hint-placeholder-val="{{ true }}"><p style="font-family: {{inter}}; margin: 20px 0 0; font-size: {{corpoIntro}}; line-height: 1.5; max-width: 760px">{{intro}}</p></sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"I nostri corsi"},"intro":{"editor":"text","default":""},"corpo":{"editor":"text","default":"80px"},"nota":{"editor":"text","default":""},"$preview":{"width":900,"height":160}}'>
+// PROPOSTA home del sito: titolo di sezione a 72-88px (oggi 120px, come l'hero: cinque titoli alla stessa voce), con una frase d'apertura sotto.
+// Big Shoulders 800 maiuscolo, inchiostro; intro in Inter 20px, larghezza massima 760px.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-rebrand/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const intro = p.intro ?? '';
+    const piccolo = parseInt(p.corpo, 10) < 64;
+    return { big: BIG, inter: INTER, testo: p.testo ?? '', intro, haIntro: intro !== '', corpo: p.corpo || '80px', corpoIntro: piccolo ? '17px' : '20px', ...segna(p.nota) };
+  }
+}
+</script>
+</body>
+</html>

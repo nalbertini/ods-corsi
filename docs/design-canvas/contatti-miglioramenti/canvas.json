@@ -1,0 +1,46 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Contatti · miglioramenti"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "ContattiAttuale.dc.html",
+      "title": "1 · Contatti com'è oggi (1440)",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 3720,
+      "page": "page-1"
+    },
+    {
+      "file": "ContattiProposta.dc.html",
+      "title": "2 · Contatti proposta (1440)",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 3600,
+      "page": "page-1"
+    },
+    {
+      "file": "ContattiAttualeTelefono.dc.html",
+      "title": "3 · Contatti com'è oggi (375)",
+      "x": 3120,
+      "y": 0,
+      "w": 375,
+      "h": 4010,
+      "page": "page-1"
+    },
+    {
+      "file": "ContattiPropostaTelefono.dc.html",
+      "title": "4 · Contatti proposta (375)",
+      "x": 3615,
+      "y": 0,
+      "w": 375,
+      "h": 6000,
+      "page": "page-1"
+    }
+  ]
+}

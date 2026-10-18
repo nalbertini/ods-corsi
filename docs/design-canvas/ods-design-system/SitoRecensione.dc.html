@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="height: 100%; min-height: {{minimo}}; background: {{bg}}; color: {{fg}}; border-radius: 6px; padding: {{pad}}; display: flex; flex-direction: column; justify-content: space-between; gap: 22px">
+  <p style="font-family: {{inter}}; margin: 0; font-size: {{corpo}}; line-height: 1.35; font-weight: 500">{{testo}}</p>
+  <div style="display: flex; align-items: center; gap: 14px">
+    <div style="width: 52px; height: 52px; flex: none; border-radius: 50%; background: #f4c31b; color: #0d2a3d; display: flex; align-items: center; justify-content: center; font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: 26px">{{iniziale}}</div>
+    <div style="font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: 32px; line-height: 1">{{autore}}</div>
+  </div>
+  <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><div style="margin: 0"><span style="display: inline-block; background: #ffffff; color: #0d2a3d; border: 2px solid #e4292a; border-radius: 4px; padding: 4px 8px; font-family: {{inter}}; font-size: 12px; font-weight: 700; line-height: 1.2">{{nota}}</span></div></sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"Una palestra come ce ne sono poche."},"autore":{"editor":"text","default":"Nicola A."},"tono":{"editor":"enum","options":["blu","giallo","inchiostro","chiara","bianco"],"default":"blu"},"piccolo":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"$preview":{"width":520,"height":320}}'>
+// PROPOSTA home del sito: una recensione per intero, in una carta larga (oggi: cinque carte di pari misura, due con 31-36 parole e tre con 7). Il testo e' quello vero, refusi compresi: non si corregge senza il permesso di chi l'ha scritta.
+// Fonte e stelle non ci sono nei dati: restano da confermare, per questo la carta non le disegna.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-rebrand/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const [bg, fg] = TONI[p.tono] || TONI.blu;
+    const pic = truthy(p.piccolo);
+    return { bg, fg, big: BIG, inter: INTER, testo: p.testo ?? '', autore: p.autore ?? '', iniziale: String(p.autore ?? '').charAt(0), pad: pic ? '22px' : '32px 36px', corpo: pic ? '20px' : '24px', minimo: pic ? '260px' : '300px', ...segna(p.nota) };
+  }
+}
+</script>
+</body>
+</html>
