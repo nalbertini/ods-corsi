@@ -810,5 +810,19 @@ console.log('\n33. ChiudiCassa non mostra il previsto prima di aver contato')
   ok('i movimenti del periodo hanno importi solo dietro `visibile`', corpo.lastIndexOf('{visibile', corpo.indexOf('importoPerCassa(r, cassa.id)')) > 0, true)
 }
 
+console.log('\n34. il dettaglio di un movimento è una pagina intera, come quello di un iscritto')
+{
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  const da = tsx.indexOf('function Movimenti(')
+  const fino = tsx.indexOf('function NuovoMovimento(')
+  const corpo = da >= 0 && fino > da ? tsx.slice(da, fino) : ''
+  ok('`SchedaPiena` arriva da ./comune', /import \{[^}]*\bSchedaPiena\b[^}]*\} from '\.\/comune'/.test(tsx), true)
+  const k = corpo.indexOf('<MovimentoAperto')
+  const prima = k > 0 ? corpo.slice(corpo.lastIndexOf('{aperto &&', k), k) : ''
+  ok('`MovimentoAperto` sta dentro una `SchedaPiena`', prima.includes('<SchedaPiena'), true)
+  ok('…e non più in un `InVista`', prima.includes('<InVista'), false)
+  ok('si torna all\'elenco chiedendo prima se c\'è una correzione non salvata (`lasciare`)', /lasciare\(\)/.test(corpo), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

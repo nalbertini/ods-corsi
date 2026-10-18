@@ -46,7 +46,7 @@ import {
 } from '../../lib/contabilita'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
-import { Campo, chiedi, Guaio, scaricaCsv, Testa, useAvviso, useBozza, useCarica } from './comune'
+import { Campo, chiedi, Guaio, lasciare, scaricaCsv, SchedaPiena, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { Numero } from './Presenze'
 
 type Scheda = 'movimenti' | 'voci' | 'casse'
@@ -175,6 +175,10 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
     chiudi()
     onCambiato()
   }
+  // Dal dettaglio si esce chiedendo prima, se c'è una correzione non salvata.
+  const torna = async () => {
+    if (await lasciare()) setAperto(null)
+  }
 
   return (
     <div className="stack" style={{ gap: 18 }}>
@@ -188,7 +192,11 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
 
       {scrivo === 'movimento' && <InVista><NuovoMovimento d={d} voci={voci} casse={casse} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={chiudi} /></InVista>}
       {scrivo === 'giroconto' && <InVista><NuovoGiroconto d={d} casse={casse} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={chiudi} /></InVista>}
-      {aperto && <InVista key={aperto.id}><MovimentoAperto d={d} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} fai={fai} onChiudi={chiudi} onFatto={fatto} /></InVista>}
+      {aperto && (
+        <SchedaPiena key={aperto.id} etichetta={`Movimento: ${aperto.descrizione}`} torna="I movimenti" onTorna={() => void torna()}>
+          <MovimentoAperto d={d} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} fai={fai} onChiudi={() => void torna()} onFatto={fatto} />
+        </SchedaPiena>
+      )}
 
       <div className="row" style={{ gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         <button type="button" className="sg-btn sg-btn-linea" disabled={!trovate.length} onClick={() => scaricaCsv(`movimenti-${oggi}.csv`, csvMovimenti(trovate, casse))}>
@@ -485,7 +493,7 @@ function MovimentoAperto({ d, riga, chiusure, cassa, cassaA, fai, onChiudi, onFa
     ['IMPORTO', soldi(riga.importo)],
   ]
   return (
-    <section aria-label="Il movimento" className="sg-riquadro">
+    <div className="stack" style={{ gap: 14 }}>
       <span className="sg-etichetta">{manuale ? 'IL MOVIMENTO' : 'INCASSO DI UN ISCRITTO'}</span>
       <span className="sg-riquadro-titolo ob">{riga.descrizione}</span>
       <div className="stack" style={{ gap: 0 }}>
@@ -531,7 +539,7 @@ function MovimentoAperto({ d, riga, chiusure, cassa, cassaA, fai, onChiudi, onFa
           Chiudi
         </button>
       </div>
-    </section>
+    </div>
   )
 }
 
