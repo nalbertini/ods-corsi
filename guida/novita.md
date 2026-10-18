@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.109.1 — 18 ottobre 2026
+
+### Risolto
+
+- Aggiungere una colonna alla parte COLONNE dell'editor del sito non svuota più lo schermo
+
+### Modificato
+
+- Gli ultimi testi in parole e via le regole di Tatami della segreteria
+
 ## 0.109.0 — 18 ottobre 2026
 
 ### Novità
