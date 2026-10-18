@@ -127,7 +127,20 @@ ok('via e numero con la virgola', m.viaECivico('Via Roma, 12/B'), { via: 'Via Ro
 ok('senza virgola', m.viaECivico('Corso Francia 224'), { via: 'Corso Francia', civico: '224' })
 ok('senza numero', m.viaECivico('Strada del Portone'), { via: 'Strada del Portone', civico: '' })
 ok('un numero nel nome della via', m.viaECivico('Via 4 Novembre 7'), { via: 'Via 4 Novembre', civico: '7' })
+ok('un interno dopo il civico resta nel numero', m.viaECivico('Via Fratelli Cervi Sant’Ambrogio 128/bis int. 12'), { via: 'Via Fratelli Cervi Sant’Ambrogio', civico: '128/bis int. 12' })
+ok('«interno» per esteso', m.viaECivico('Via Roma 5 interno 3'), { via: 'Via Roma', civico: '5 interno 3' })
 ok('la data come sul foglio', m.dataDelFoglio(quando), '27/09/2026')
+
+console.log('\n1b. i fogli veri di public/moduli: il firmato non lascia riferimenti vuoti')
+// Il foglio che l'app scarica è il file di public/moduli, già salvato una volta: da lì, togliere i campi
+// lascia le annotazioni nella pagina se non si tolgono anch'esse, e i lettori ne vedono i riferimenti rotti.
+for (const [foglio, minore] of [['maggiorenni', false], ['minori', true]]) {
+  const pdf = await m.moduloFirmato({ dati, minore, scelte: { tesseramento: true, foto: true }, genitoreNatoA: 'Pinerolo', genitoreProvincia: 'to', firma: firmaFinta(), originale: leggi(`public/moduli/autorizzazioni-${foglio}.pdf`), quando, stagione: '2026/27' })
+  const doc = await m.PDFDocument.load(pdf)
+  const annot = doc.getPage(0).node.Annots()
+  const rotti = annot ? annot.asArray().filter((r) => doc.context.lookup(r) === undefined).length : 0
+  ok(`${foglio}: nessuna annotazione che punta a un oggetto che non c’è`, rotti, 0)
+}
 
 console.log('\n2. i moduli compilati e firmati')
 const casi = [

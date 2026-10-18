@@ -72,15 +72,17 @@ export const scrivibileCon = (font: PDFFont) => (s: string) =>
 const due = (n: number) => String(n).padStart(2, '0')
 export const dataDelFoglio = (d: Date) => `${due(d.getDate())}/${due(d.getMonth() + 1)}/${d.getFullYear()}`
 
-/** Via e numero da «Via Roma 12», «Corso Francia, 224/B»; il numero può mancare. */
+/** Via e numero da «Via Roma 12», «Corso Francia, 224/B»; il numero può mancare. Un interno dopo il civico («128/bis int. 12») resta nel numero. */
 export function viaECivico(indirizzo: string): { via: string; civico: string } {
   const s = indirizzo.trim().replace(/\s+/g, ' ')
-  const m = /^(.*?)[\s,]+(?:n\.?\s*)?(\d+\s?[a-zA-Z]?(?:\/\s?\w+)?)$/.exec(s)
-  return m && m[1] ? { via: m[1].replace(/,$/, ''), civico: m[2] } : { via: s, civico: '' }
+  const interno = /[\s,]+((?:int\.?|interno|scala|sc\.?)\s*\w+)$/i.exec(s)
+  const base = interno ? s.slice(0, interno.index) : s
+  const m = /^(.*?)[\s,]+(?:n\.?\s*)?(\d+\s?[a-zA-Z]?(?:\/\s?\w+)?)$/.exec(base)
+  return m && m[1] ? { via: m[1].replace(/,$/, ''), civico: interno ? `${m[2]} ${interno[1]}` : m[2] } : { via: s, civico: '' }
 }
 
 export async function moduloFirmato(f: DatiFirma): Promise<Uint8Array> {
-  const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib')
+  const { PDFDocument, PDFName, StandardFonts, rgb } = await import('pdf-lib')
   const pdf = await PDFDocument.load(f.originale)
   const form = pdf.getForm()
   const pagina = pdf.getPage(0)
@@ -173,6 +175,9 @@ export async function moduloFirmato(f: DatiFirma): Promise<Uint8Array> {
 
   // I campi hanno fatto il loro lavoro: via, così il PDF è fermo e uguale ovunque.
   for (const campo of form.getFields()) form.removeField(campo)
+  // Nel foglio salvato una volta (quello di public/moduli) `removeField` toglie gli oggetti ma lascia i loro
+  // riferimenti in /Annots: i lettori ne vedono di rotti. Sulle pagine di questi fogli non c'è altro che i campi.
+  for (const p of pdf.getPages()) p.node.delete(PDFName.of('Annots'))
 
   // Sotto, in piccolo, per la segreteria: che è firmato dall'app, e quando.
   const ora = `${due(quando.getHours())}:${due(quando.getMinutes())}`
