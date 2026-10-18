@@ -100,4 +100,28 @@ reset role;
 update persone set anche_istruttore = false where id = 'aaaaaaaa-0000-0000-0000-000000000001';
 
 \echo ''
+\echo '--- 6. la presenza rifiutata si elimina (65-elimina-presenza-rifiutata.sql) ---'
+-- Quella di Maura sulla lezione 5 l'ha rifiutata Anna nella sezione 4.
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('un istruttore non la elimina', tenta($$select elimina_presenza_istruttore(id)::text from presenze_istruttori where stato = 'rifiutata'$$), 'NEGATO: la presenza la elimina la segreteria');
+reset role;
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select atteso('un tablet no', tenta($$select elimina_presenza_istruttore(id)::text from presenze_istruttori where stato = 'rifiutata'$$), 'a vuoto (0 righe)');
+select atteso('e nemmeno con l''id in mano', tenta($$select elimina_presenza_istruttore('00000000-0000-0000-0000-000000000000')::text$$), 'NEGATO: la presenza la elimina la segreteria');
+reset role;
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('una confermata non si elimina', tenta($$select elimina_presenza_istruttore(id)::text from presenze_istruttori where stato = 'confermata' limit 1$$), 'NEGATO: si elimina solo una presenza rifiutata');
+select atteso('una che non c''è', tenta($$select elimina_presenza_istruttore('00000000-0000-0000-0000-000000000000')::text$$), 'NEGATO: presenza inesistente');
+select atteso('la segreteria elimina la rifiutata', tenta($$select elimina_presenza_istruttore(id)::text from presenze_istruttori where stato = 'rifiutata'$$), '');
+reset role;
+select atteso('non c''è più', (select count(*)::text from presenze_istruttori where stato = 'rifiutata'), '0');
+select chi('');
+set role anon;
+select atteso('anon no', tenta($$select elimina_presenza_istruttore('00000000-0000-0000-0000-000000000000')::text$$), 'NEGATO: permission denied…');
+reset role;
+
+\echo ''
 \echo 'TUTTO A POSTO'

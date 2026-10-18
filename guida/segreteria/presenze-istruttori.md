@@ -63,6 +63,10 @@ previsto**). In cima quattro filtri:
 - **Corso** e **Istruttore** — solo quelli che nel mese scelto ci sono.
 - **Stato** — **Da confermare**, **Confermate** o **Rifiutate**.
 
+Una presenza **rifiutata** ha anche **Elimina**: la toglie dall'elenco per
+sempre. Una confermata o da confermare si rifiuta prima. Se l'istruttore
+rimette il PIN su quella lezione, la presenza si segna da capo.
+
 Sopra l'elenco si legge quante ce ne sono, confermate e da confermare. Se
 qualcuna da confermare è in un altro mese, lo dice, e **vedile tutte** le fa
 vedere, di tutti i mesi.

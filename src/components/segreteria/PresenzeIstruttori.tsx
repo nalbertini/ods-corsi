@@ -154,6 +154,9 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
       ricarica,
     )
 
+  const elimina = (x: PresenzaIstruttoreSeg) =>
+    void fai(() => d.eliminaPresenzaIstruttore(x.id), `Presenza di ${x.nome} eliminata`, ricarica)
+
   return (
     <>
       <Testa
@@ -381,6 +384,11 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
                     <button type="button" className="sg-link" disabled={lavora} onClick={() => gestisci(x, x.stato !== 'confermata')}>
                       {x.stato === 'confermata' ? 'Rifiuta' : 'Conferma'}
                     </button>
+                    {x.stato === 'rifiutata' && (
+                      <button type="button" className="sg-link" disabled={lavora} onClick={() => elimina(x)}>
+                        Elimina
+                      </button>
+                    )}
                   </>
                 )}
               </span>
