@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.121.0 — 18 ottobre 2026
+
+### Novità
+
+- Nel sito della palestra c'è la pagina con l'orario settimanale dei corsi
+
 ## 0.120.0 — 18 ottobre 2026
 
 ### Novità
