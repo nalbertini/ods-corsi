@@ -32,6 +32,15 @@ nell'**Elenco** trovi più parti e le sposti con **Su** e **Giù**. Il sito non 
 vecchio editor.** Il tasto è spento finché ci sono modifiche non salvate: prima
 **Salva bozza**. Se la pagina è troppo lunga, un avviso dice di togliere qualcosa.
 
+Una pagina già a pezzi, ma con un solo **TESTO** lungo (nell'**Elenco** c'è una
+voce sola), si divide con **DIVIDI IN PARTI**, sotto «EDITOR A PEZZI»: il tasto
+compare solo se c'è qualcosa da dividere. Ogni titolo apre una parte nuova (i
+sottotitoli restano nel testo) e ogni foto tra i paragrafi diventa una **FOTO**;
+foto in cima e colonne restano dove sono. Il testo non cambia. La pagina resta
+**Da salvare**: se non ti piace, **Tutte le pagine** e poi **Torna alle pagine**
+la scarta; se ti piace, **Salva bozza**. Il tasto è spento finché ci sono
+modifiche non salvate: prima **Salva bozza**.
+
 Una pagina a pezzi si compone con le parti che metti in fila:
 
 - **+ FOTO IN CIMA**: una foto sola, sempre in alto.

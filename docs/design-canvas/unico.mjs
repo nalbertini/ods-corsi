@@ -73,6 +73,7 @@ const SEZIONI = [
   { id: 'moduli-pdf', nome: 'Moduli PDF · carta (proposta)', cartella: 'moduli-pdf' },
   { id: 'sito-blocchi', nome: 'Sito · pagine a pezzi · proposta', cartella: 'sito-blocchi' },
   { id: 'sito-porta-ai-pezzi', nome: 'Sito · porta ai pezzi · proposta', cartella: 'sito-porta-ai-pezzi' },
+  { id: 'sito-dividi-in-parti', nome: 'Sito · dividi in parti · proposta', cartella: 'sito-dividi-in-parti' },
   { id: 'sito-pezzi-spazio', nome: 'Sito · pezzi, più spazio · proposta', cartella: 'sito-pezzi-spazio' },
   { id: 'sito-pezzi-scrivi', nome: 'Sito · scrivi nella pagina · proposta', cartella: 'sito-pezzi-scrivi-in-pagina' },
   { id: 'scheda-popover', nome: 'Segreteria · dettagli in una finestra · proposta', cartella: 'scheda-popover' },
