@@ -10,15 +10,7 @@ import { Listino } from './Listino'
 import { Contabilita } from './Contabilita'
 import { indirizzoPagina } from '../../lib/guida'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
-
-type VoceAmministrazione = 'contabilita' | 'pagamenti' | 'listino'
-
-/** Il menu dell'amministrazione: i conti, e basta. Le persone, le presenze e le statistiche non ci sono. */
-const VOCI: Array<[VoceAmministrazione, string]> = [
-  ['contabilita', 'CONTABILITÀ'],
-  ['pagamenti', 'PAGAMENTI'],
-  ['listino', 'LISTINO'],
-]
+import { TITOLO_AMMINISTRAZIONE, VOCI_AMMINISTRAZIONE, type VoceAmministrazione } from '../../lib/menuSegreteria'
 
 const GUIDE: Record<VoceAmministrazione, string> = {
   contabilita: 'amministrazione/contabilita',
@@ -108,12 +100,12 @@ export function Amministrazione({
           {prova && <Bollino>DATI{' '}DI PROVA</Bollino>}
         </div>
         <div className="sg-gruppi">
-          <div role="group" aria-label="I CONTI" className="sg-gruppo">
+          <div role="group" aria-label={TITOLO_AMMINISTRAZIONE} className="sg-gruppo">
             <span className="sg-gruppo-titolo" aria-hidden="true">
-              I CONTI
+              {TITOLO_AMMINISTRAZIONE}
             </span>
             <div className="sg-voci">
-              {VOCI.map(([id, testo]) => (
+              {VOCI_AMMINISTRAZIONE.map(([id, testo]) => (
                 <button key={id} type="button" className="num sg-voce" aria-current={voce === id ? 'page' : undefined} onClick={() => void vai(id)}>
                   <span className="sg-voce-testo">{testo}</span>
                 </button>
@@ -125,12 +117,12 @@ export function Amministrazione({
         <div className="sg-voci">
           {onSegreteria && (
             <button type="button" className="num sg-voce" onClick={onSegreteria}>
-              SEGRETERIA →
+              Segreteria →
             </button>
           )}
           {onIstruttori && (
             <button type="button" className="num sg-voce" onClick={onIstruttori}>
-              ISTRUTTORI →
+              Istruttori →
             </button>
           )}
         </div>

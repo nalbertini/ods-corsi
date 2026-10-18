@@ -21,15 +21,15 @@ delle persone come ogni istruttore, nell'area degli istruttori.
    in fondo al menu.
 
 Chi ha più ruoli, dopo **ENTRA**, sceglie dove andare, e poi passa da una parte
-all'altra dal menu (**SEGRETERIA →**, **ISTRUTTORI →**) senza uscire.
+all'altra dal menu (**Segreteria →**, **Istruttori →**) senza uscire.
 
 ## Il menu
 
 | Voce | Cosa fa |
 |---|---|
-| **CONTABILITÀ** | Le entrate e le uscite in due casse: movimenti, voci, saldi iniziali. [Apri](contabilita.md) |
-| **PAGAMENTI** | Tutto quello che è stato pagato: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV. [Apri](pagamenti.md) |
-| **LISTINO** | I costi della stagione, gli stessi della [segreteria](../segreteria/listino.md): si cambiano da qui. |
+| **Contabilità** | Le entrate e le uscite in due casse: movimenti, voci, saldi iniziali. [Apri](contabilita.md) |
+| **Pagamenti** | Tutto quello che è stato pagato: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV. [Apri](pagamenti.md) |
+| **Listino** | I costi della stagione, gli stessi della [segreteria](../segreteria/listino.md): si cambiano da qui. |
 
 Da **PAGAMENTI** si registra un pagamento fatto a mano e si annulla un pagamento
 o una ricevuta, senza aprire la scheda della persona. Le ricevute nuove, per ora,

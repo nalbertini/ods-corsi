@@ -13,9 +13,9 @@ Sul telefono resta il menu di sempre: Il Banco è fatto per lo schermo largo.
 
 - **La ricerca**: la stessa di sempre. Il tasto **/** ci porta il fuoco da
   qualunque pagina.
-- **LINK ▾**: **COPIA LINK ISCRIZIONI** e **COPIA LINK ORDINI**, che nel menu di
+- **LINK ▾**: **Copia link iscrizioni** e **Copia link ordini**, che nel menu di
   prima stavano in fondo.
-- **?**, le impostazioni e chi è dentro; **ISTRUTTORI →** per chi
+- **?**, le impostazioni e chi è dentro; **Istruttori →** per chi
   insegna anche. In prova, il bollino **DATI DI PROVA**.
 
 ## I cinque luoghi
