@@ -3,6 +3,10 @@
 Il testo e le colonne si scrivono **dentro la pagina**, non nel pannello stretto di destra. Parte da `main` dopo
 le PR #469 (schede IMPOSTAZIONI | ELENCO) e #471 (terza colonna), tutte e due unite.
 
+Tutte le tavole sono nel look del sito (`data-look='sito'`, quello della segreteria oggi): fondo #eef5fa, inchiostro
+#0d2a3d, tasti e campi a 6px, Big Shoulders per titoli, Inter per testi e tasti; i componenti della libreria hanno
+`tema="sito"`, il menu è quello di `../segreteria-sito/`. Tasti e stati riprodotti dallo schermo vero (SITO > pagina a pezzi).
+
 Artboard: 1 Oggi · 2 Proposta A (barra sopra il pezzo) · 3 Proposta B (barra fissa in alto) · 4 Colonne ·
 5 LINK aperto · 6 Tablet 768px · 7 Telefono 390px con la tastiera.
 
