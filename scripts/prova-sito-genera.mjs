@@ -326,7 +326,7 @@ console.log('\nLink leggibili e recapiti')
   ok('CONTATTI esiste in src/lib/sito.ts', typeof C.indirizzo === 'string' && typeof C.telefono === 'string', true)
   ok('il piede ha l’indirizzo di CONTATTI', C.indirizzo !== undefined && pie.includes(C.indirizzo), true)
   ok('il piede ha il telefono di CONTATTI', C.telefono !== undefined && pie.includes(C.telefono), true)
-  ok('e sono quelli attesi (Via Sassi 26, Collegno · 346 329 2786)', [C.indirizzo, C.telefono], ['Via Sassi 26, Collegno', '346 329 2786'])
+  ok('e sono quelli attesi (Via Vittorio Sassi 26, Collegno · 346 329 2786)', [C.indirizzo, C.telefono], ['Via Vittorio Sassi 26, Collegno', '346 329 2786'])
 }
 
 // ---------------------------------------------------------------------------

@@ -43,7 +43,7 @@ const conFoto = (k) => NUOVO.replace(FOTO2, foto(k))
 const img1 = (n) => `<img src="${P}f${n}.jpg" alt="Foto ${n}" />`
 const VECCHIO =
   '<h3>Telefono</h3><p>346 329 2786</p><h3>Instagram</h3><p>officine.dellosport</p><h3>Facebook</h3><p>Officine dello Sport</p>' +
-  '<h3>Indirizzo</h3><p>Via Sassi 26, Collegno</p><p>A pochi metri dalla metropolitana Fermi</p>' +
+  '<h3>Indirizzo</h3><p>Via Vittorio Sassi 26, Collegno</p><p>A pochi metri dalla metropolitana Fermi</p>' +
   `${img1(1)}<p><a class="pulsante" href="https://maps.example/x">Ottieni indicazioni</a></p><p>A pochi metri dalla metropolitana Fermi</p>${img1(2)}${img1(3)}${img1(4)}` +
   '<h2>Hai qualche domanda?</h2><p>Qui trovi le informazioni.</p>' + [1, 2, 3, 4, 5, 6].map((n) => `<h3>Domanda ${n}?</h3><p>Risposta ${n}</p>`).join('')
 
@@ -119,7 +119,7 @@ console.log('\n3. I recapiti: quattro tessere cliccabili')
   ok('«recapiti-sez» con una griglia «tessere n-4 recapiti» di 4 tessere', [Boolean(sez), t.length], [true, 4])
   ok('colori: giallo, blu, inchiostro, chiara; la prima è «breve»', t.map((x) => x.cl.slice(1)), [['giallo', 'breve'], ['blu'], ['inchiostro'], ['chiara']])
   ok('titoli: Telefono, Instagram, Facebook, Indirizzo', t.map((x) => x.html.match(/<h3>([^<]*)<\/h3>/)?.[1]), ['Telefono', 'Instagram', 'Facebook', 'Indirizzo'])
-  ok('il valore è un paragrafo', t.map((x) => testo(x.html.match(/<p>([\s\S]*?)<\/p>/)?.[1] ?? '')), ['346 329 2786', '@officine.dellosport', 'Officine dello Sport', 'Via Sassi 26, Collegno'])
+  ok('il valore è un paragrafo', t.map((x) => testo(x.html.match(/<p>([\s\S]*?)<\/p>/)?.[1] ?? '')), ['346 329 2786', '@officine.dellosport', 'Officine dello Sport', 'Via Vittorio Sassi 26, Collegno'])
   const az = t.map((x) => links(x.html.match(/<div class="azione">([\s\S]*?)<\/div>/)?.[1] ?? ''))
   ok('ogni azione è un solo link dentro div.azione; Telefono: tel:+393463292786', [az.map((a) => a.length), az[0]?.[0]?.href, az[0]?.[0]?.t], [[1, 1, 1, 1], 'tel:+393463292786', 'Chiama ora →'])
   ok('Instagram, Facebook e indicazioni vanno ai loro indirizzi', az.slice(1).map((a) => a[0]?.href?.replace(/\?.*/, '')), ['https://www.instagram.com/officine.dellosport/', 'https://www.facebook.com/ilCentroJudo/', 'https://www.google.com/maps/dir/'])
@@ -131,12 +131,12 @@ console.log('\n4. Come arrivare: mappa e tre modi')
 {
   const h2 = arrivare?.html.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)?.[1]
   const arrivo = arrivare?.html.match(/<div class="arrivo">([\s\S]*)<\/div>\s*$/)?.[1] ?? arrivare?.html.match(/<div class="arrivo">([\s\S]*)/)?.[1] ?? ''
-  ok('«sezione arrivare» con h2 «Come arrivare», intro in div.colonna e div.arrivo', [arrivare?.classi.slice(0, 2), h2, /<div class="colonna">[\s\S]*Via Sassi 26, a Collegno\./.test(arrivare?.html ?? ''), Boolean(arrivo)], [['sezione', 'arrivare'], 'Come arrivare', true, true])
+  ok('«sezione arrivare» con h2 «Come arrivare», intro in div.colonna e div.arrivo', [arrivare?.classi.slice(0, 2), h2, /<div class="colonna">[\s\S]*Via Vittorio Sassi 26, a Collegno\./.test(arrivare?.html ?? ''), Boolean(arrivo)], [['sezione', 'arrivare'], 'Come arrivare', true, true])
   const fig = arrivo.match(/<figure class="([^"]*)">([\s\S]*?)<\/figure>/)
   ok('una figure «tessera foto larga mappa»', fig?.[1].split(/\s+/), ['tessera', 'foto', 'larga', 'mappa'])
   const im = fig?.[2].match(/<img\b[^>]*>/)?.[0] ?? ''
   ok('l’immagine è quella interna, con larghezza e altezza (1344×520)', [/src="\/risorse\/mappa\.webp"/.test(im), /width="1344"/.test(im), /height="520"/.test(im)], [true, true, true])
-  ok('segnaposto, targhetta con nome e indirizzo, credito OpenStreetMap', [/<span class="segnaposto" aria-hidden="true"><\/span>/.test(fig?.[2] ?? ''), /<span class="targhetta">Officine dello Sport<span>Via Sassi 26, Collegno<\/span><\/span>/.test(fig?.[2] ?? ''), /<span class="credito">© OpenStreetMap contributors<\/span>/.test(fig?.[2] ?? '')], [true, true, true])
+  ok('segnaposto, targhetta con nome e indirizzo, credito OpenStreetMap', [/<span class="segnaposto" aria-hidden="true"><\/span>/.test(fig?.[2] ?? ''), /<span class="targhetta">Officine dello Sport<span>Via Vittorio Sassi 26, Collegno<\/span><\/span>/.test(fig?.[2] ?? ''), /<span class="credito">© OpenStreetMap contributors<\/span>/.test(fig?.[2] ?? '')], [true, true, true])
   const az = links(fig?.[2].match(/<div class="mappa-azioni">([\s\S]*?)<\/div>/)?.[1] ?? '')
   ok('in div.mappa-azioni un solo pulsante primario «Ottieni indicazioni» verso Google Maps, in sicurezza', [az.length, az[0]?.cl, az[0]?.t, az[0]?.href?.startsWith('https://www.google.com/maps/dir/'), az[0]?.rel?.split(/\s+/).sort()], [1, ['pulsante', 'primario'], 'Ottieni indicazioni', true, ['noopener', 'noreferrer']])
   const righe = articoli(arrivo.replace(/<figure[\s\S]*?<\/figure>/, '')).filter((a) => a.cl.includes('arrivo-riga'))
@@ -147,7 +147,7 @@ console.log('\n4. Come arrivare: mappa e tre modi')
   const senzaMappa = pag(NUOVO.replace(/<img src="\/risorse\/mappa\.webp"[^>]*>/, ''))
   const ms = main(senzaMappa)
   ok('senza immagine la pagina non si rompe e le sezioni dopo restano', [nuova(senzaMappa), /Una settimana per scegliere/.test(ms), /Hai qualche domanda/.test(ms), /class="tessera foto larga mappa"/.test(ms)], [true, true, true, false])
-  ok('…e nessun testo si perde (metro, auto, navigatore, intro)', ['In metro', 'In auto', 'Col navigatore', 'Via Sassi 26, a Collegno.'].map((x) => testo(ms).includes(x)), [true, true, true, true])
+  ok('…e nessun testo si perde (metro, auto, navigatore, intro)', ['In metro', 'In auto', 'Col navigatore', 'Via Vittorio Sassi 26, a Collegno.'].map((x) => testo(ms).includes(x)), [true, true, true, true])
 }
 
 console.log('\n5. Una settimana per scegliere: tre passi numerati')

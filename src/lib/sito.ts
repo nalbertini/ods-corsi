@@ -69,7 +69,7 @@ export const presentazione = (corso: string): Presentazione | undefined => PRESE
 
 /** Dove siamo e come ci si trova, dal piede del sito. */
 export const CONTATTI = {
-  indirizzo: 'Via Sassi 26, Collegno',
+  indirizzo: 'Via Vittorio Sassi 26, Collegno',
   mappa: 'https://www.google.com/maps/dir/?api=1&destination=Via+Vittorio+Sassi+26,+10093+Collegno+TO',
   telefono: '346 329 2786',
   instagram: 'https://www.instagram.com/officine.dellosport/',

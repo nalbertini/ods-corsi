@@ -10,7 +10,7 @@ Nome Cognome
 
 ## Descrizione
 
-Una frase: ruolo e disciplina, come «Maestro di Judo, docente di Educazione Fisica e presidente di ASD Il Centro Judo.»
+Una frase: ruolo e disciplina, come «Maestro di Judo, docente di Educazione Fisica e presidente di A.S.D. Il Centro Judo.»
 
 ## Testo
 

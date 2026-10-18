@@ -14,7 +14,7 @@ Nel testo ci sono due cose da decidere. Finché non sono risolte, vanno scelte a
 |---|---|---|
 | **C5**, «In auto» | `[C5: dove si parcheggia]` | Dove si parcheggia. Se non si sa, togli tutto il blocco «In auto» (titolo e riga): le altre due righe restano. Se lo lasci, il segnaposto si vede sul sito |
 | **C3**, Facebook | `facebook.com/ilCentroJudo` | La pagina è quella giusta? Il nome è «Officine dello Sport» ma l'indirizzo è del Centro Judo |
-| **C7**, via | «Via Sassi 26» | Via Sassi o Via Vittorio Sassi? Il testo dice la prima, il navigatore (Google Maps) la seconda. Se cambia, cambia anche in `src/lib/sito.ts` (`CONTATTI.indirizzo`) |
+| **C7**, via | «Via Vittorio Sassi 26» | Deciso il 18 ottobre 2026: sempre «Via Vittorio Sassi», come il navigatore (Google Maps). Se cambia, cambia anche in `src/lib/sito.ts` (`CONTATTI.indirizzo`) |
 
 ## Prima di incollare: le foto
 
