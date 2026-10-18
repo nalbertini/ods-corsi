@@ -8,12 +8,13 @@
 // ogni cassa, i totali, i filtri, il foglio CSV e gli stessi rifiuti di
 // `supabase/59-contabilita.sql` (provato da supabase/prova/contabilita.sql).
 // ---------------------------------------------------------------------------
+import { readFileSync } from 'node:fs'
 import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/contabilita'; export { righeDaRicevute, righeDirette } from './src/lib/pagamenti'; export { ENTE_PREDEFINITO } from './src/lib/ricevute'",
+      "export * from './src/lib/contabilita'; export { righeDaRicevute, righeDirette } from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro, dataRicevuta } from './src/lib/ricevute'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -748,6 +749,65 @@ console.log('\n29. il saldo salvato non è una bozza')
   ok('un saldo diverso è cambiato', prova(() => m.saldoCambiato('100,01', 10000)), true)
   ok('uno zero scritto in vari modi non è cambiato', prova(() => [m.saldoCambiato('0', 0), m.saldoCambiato('0,00', 0)]), [false, false])
   ok('un testo che non è un importo conta come cambiato (la bozza non si perde)', prova(() => [m.saldoCambiato('', 10000), m.saldoCambiato('abc', 10000)]), [true, true])
+}
+
+console.log('\n30. il riepilogo prima di registrare un movimento o un giroconto')
+{
+  const mov = { tipo: 'uscita', data: '2026-09-20', importo: 12345, voceId: 'v-aff', cassaId: 'c2', descrizione: 'Affitto di settembre', nota: 'bonifico del 20' }
+  const t = (d = mov) => prova(() => m.riepilogoMovimento(d, 'Affitto sala', 'Conto Corrente')).toString()
+  ok('il movimento è un elenco di righe', Array.isArray(prova(() => m.riepilogoMovimento(mov, 'Affitto sala', 'Conto Corrente'))), true)
+  ok('il movimento dice importo, voce, cassa, data e descrizione', [`${m.euro(12345)} €`, 'Affitto sala', 'Conto Corrente', m.dataRicevuta('2026-09-20'), 'Affitto di settembre'].map((x) => t().includes(x)), [true, true, true, true, true])
+  ok('…e la nota', t().includes('bonifico del 20'), true)
+  ok('…dice se è un\'uscita o un\'entrata', [/uscita/i.test(t()), /entrata/i.test(t()), /entrata/i.test(t({ ...mov, tipo: 'entrata' }))], [true, false, true])
+  const giro = { daCassaId: 'c1', aCassaId: 'c2', data: '2026-09-15', importo: 1000, nota: 'Versamento in banca' }
+  const g = () => prova(() => m.riepilogoGiroconto(giro, 'Cassa Contanti', 'Conto Corrente')).toString()
+  ok('il giroconto è un elenco di righe', Array.isArray(prova(() => m.riepilogoGiroconto(giro, 'Cassa Contanti', 'Conto Corrente'))), true)
+  ok('il giroconto dice importo, le due casse, data e nota', [`${m.euro(1000)} €`, 'Cassa Contanti', 'Conto Corrente', m.dataRicevuta('2026-09-15'), 'Versamento in banca'].map((x) => g().includes(x)), [true, true, true, true, true])
+  ok('…da quale cassa a quale: la prima viene prima', g().indexOf('Cassa Contanti') < g().indexOf('Conto Corrente') && g().indexOf('Cassa Contanti') >= 0, true)
+}
+
+console.log('\n31. Contabilita.tsx scrive solo dopo il sì del riepilogo')
+{
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  for (const [chiamata, riepilogo] of [['registraMovimento', 'riepilogoMovimento'], ['registraGiroconto', 'riepilogoGiroconto']]) {
+    ok(`una sola chiamata a ${chiamata}`, tsx.split(`${chiamata}(`).length - 1, 1)
+    const i = tsx.indexOf(`${chiamata}(`)
+    const inizi = [...tsx.slice(0, i).matchAll(/onClick=\{|=\s*async\b/g)]
+    const gestore = tsx.slice(inizi.at(-1)?.index ?? 0, i)
+    ok(`${chiamata} sta dopo un \`await chiedi(\` col ${riepilogo}`, [/await chiedi\(/.test(gestore), gestore.includes(`${riepilogo}(`)], [true, true])
+    ok(`…e senza il sì si esce prima di scrivere`, /if \(!\(await chiedi\([\s\S]*?\)\)\) return/.test(gestore), true)
+  }
+}
+
+console.log('\n32. la chiusura alla cieca: il previsto si vede solo dopo aver contato')
+{
+  const visibile = (contati, previsto = 26000) => prova(() => m.chiusuraVisibile(contati, previsto))
+  ok('senza aver scritto niente: niente da vedere', visibile(''), null)
+  ok('con soli spazi: niente', visibile('   '), null)
+  ok('con un testo che non è un importo: niente', [visibile('abc'), visibile('12,345'), visibile('-5')], [null, null, null])
+  ok('«0» è un importo valido: si vede, e la differenza è tutto il previsto in meno', visibile('0'), { previsto: 26000, differenza: -26000 })
+  ok('«0,00» come «0»', visibile('0,00'), { previsto: 26000, differenza: -26000 })
+  ok('contati giusti: tornano', visibile('260,00'), { previsto: 26000, differenza: 0 })
+  ok('contati in più', visibile('1.235,00', 100000), { previsto: 100000, differenza: 23500 })
+  ok('il previsto negativo si vede, dopo aver contato', visibile('10', -500), { previsto: -500, differenza: 1500 })
+  ok('senza contati il previsto non esce nemmeno se è zero o negativo', [visibile('', 0), visibile('', -500)], [null, null])
+}
+
+console.log('\n33. ChiudiCassa non mostra il previsto prima di aver contato')
+{
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  const da = tsx.indexOf('function ChiudiCassa(')
+  const fino = tsx.indexOf('function ElencoChiusure(')
+  const corpo = da >= 0 && fino > da ? tsx.slice(da, fino) : ''
+  ok('ChiudiCassa ricava `visibile` da chiusuraVisibile(contati, previsto)', /const visibile = chiusuraVisibile\(/.test(corpo), true)
+  for (const segno of ['IN CASSA SECONDO I CONTI', 'COSA C’È DENTRO', '>DIFFERENZA<', 'Meno di zero']) {
+    const k = corpo.indexOf(segno)
+    ok(`«${segno.replace(/[<>]/g, '')}» sta dopo un \`{visibile\``, k > 0 && corpo.lastIndexOf('{visibile', k) > 0, true)
+  }
+  const k = corpo.indexOf('Meno di zero')
+  ok('«Meno di zero» guarda il previsto visibile, non quello di prima', k > 0 && corpo.slice(Math.max(0, k - 250), k).includes('visibile'), true)
+  ok('il previsto non si scrive più a vista: `soldiConSegno(previsto)` non c\'è', corpo.includes('soldiConSegno(previsto)'), false)
+  ok('i movimenti del periodo hanno importi solo dietro `visibile`', corpo.lastIndexOf('{visibile', corpo.indexOf('importoPerCassa(r, cassa.id)')) > 0, true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

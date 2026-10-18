@@ -340,10 +340,10 @@ console.log('\n9c. i pagamenti a mano')
   const b = await s.salvaPersona({ nome: 'Pia', cognome: 'Pagamenti' })
   const dato = (personaId, data, importo, altro = {}) => ({ personaId, data, importo, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA', ...altro })
   const vecchio = await s.registraPagamentoDiretto(dato(a, '2026-09-10', 5000, { nota: 'in palestra' }))
-  const nuovo = await s.registraPagamentoDiretto(dato(a, '2026-10-01', 2000, { metodo: 'Satispay' }))
+  const nuovo = await s.registraPagamentoDiretto(dato(a, '2026-09-25', 2000, { metodo: 'Satispay' }))
   await s.registraPagamentoDiretto(dato(b, '2026-09-20', 1000))
   ok('un pagamento registrato ha id e data di creazione', [typeof vecchio.id, !!vecchio.creatoIl, vecchio.annullatoIl ?? null], ['string', true, null])
-  ok('i suoi, il più recente in cima', (await s.pagamentiDiretti(a)).map((p) => [p.data, p.importo, p.metodo]), [['2026-10-01', 2000, 'Satispay'], ['2026-09-10', 5000, 'Contanti']])
+  ok('i suoi, il più recente in cima', (await s.pagamentiDiretti(a)).map((p) => [p.data, p.importo, p.metodo]), [['2026-09-25', 2000, 'Satispay'], ['2026-09-10', 5000, 'Contanti']])
   ok('quelli di un\'altra scheda non ci sono', (await s.pagamentiDiretti(a)).every((p) => p.personaId === a), true)
   ok('senza persona: tutti', (await s.pagamentiDiretti()).length >= 3, true)
   ok('la nota resta', (await s.pagamentiDiretti(a)).find((p) => p.id === vecchio.id).nota, 'in palestra')
@@ -355,6 +355,25 @@ console.log('\n9c. i pagamenti a mano')
   ok('nota oltre 300 caratteri no', (await errore(() => s.registraPagamentoDiretto(dato(a, '2026-09-10', 100, { nota: 'x'.repeat(301) })))) !== 'nessun errore', true)
   ok('senza persona no', (await errore(() => s.registraPagamentoDiretto(dato('', '2026-09-10', 100)))) !== 'nessun errore', true)
   ok('i rifiutati non sono entrati', (await s.pagamentiDiretti(a)).length, 2)
+  // Oggi, nella prova, è il 26 settembre 2026: un pagamento a mano è quel che è già successo.
+  // Una persona sua: se il codice non rifiuta, gli altri casi di questa sezione non ne risentono.
+  const f = await s.salvaPersona({ nome: 'Fabio', cognome: 'Futuro' })
+  const FUTURO = 'La data è nel futuro: si registra quel che è già successo'
+  const entratiF = []
+  const provaF = async (data, metodo = 'Contanti') => {
+    let id
+    const esito = await errore(async () => { id = (await s.registraPagamentoDiretto(dato(f, data, 100, { metodo }))).id })
+    if (id) {
+      entratiF.push(data)
+      await s.annullaPagamentoDiretto(id)
+    }
+    return esito
+  }
+  ok('domani no', await provaF('2026-09-27'), FUTURO)
+  ok('il 2099 no', await provaF('2099-01-01'), FUTURO)
+  ok('nemmeno con un altro modo di pagare', await provaF('2026-09-27', 'Bonifico'), FUTURO)
+  ok('la persona che non c\'è viene prima della data, come nel database', await errore(() => s.registraPagamentoDiretto(dato('p-non-esiste', '2026-09-27', 100))), 'Questa scheda non c’è più')
+  ok('i pagamenti del futuro non sono entrati', entratiF, [])
 
   await s.annullaPagamentoDiretto(nuovo.id)
   const dopo = await s.pagamentiDiretti(a)
@@ -367,16 +386,20 @@ console.log('\n9c. i pagamenti a mano')
   ok('annullare un id che non c\'è: la stessa frase', await errore(() => s.annullaPagamentoDiretto('non-esiste')), 'Pagamento inesistente o già annullato')
 
   await s.unisciPersone(a, b)
-  ok('unite due schede, i pagamenti a mano passano a quella che resta', (await s.pagamentiDiretti(a)).map((p) => [p.data, p.importo]), [['2026-10-01', 2000], ['2026-09-20', 1000], ['2026-09-10', 5000]])
+  ok('unite due schede, i pagamenti a mano passano a quella che resta', (await s.pagamentiDiretti(a)).map((p) => [p.data, p.importo]), [['2026-09-25', 2000], ['2026-09-20', 1000], ['2026-09-10', 5000]])
   ok('e nessuno resta alla scheda che se ne va', (await s.pagamentiDiretti(b)).length, 0)
   ok('l\'annullato resta annullato', (await s.pagamentiDiretti(a)).filter((p) => p.annullatoIl).length, 1)
 
   // Come `registra_pagamento_diretto`: testo senza spazi attorno, la nota di soli spazi è vuota.
   const c = await s.salvaPersona({ nome: 'Carla', cognome: 'Spazi' })
-  const pulito = await s.registraPagamentoDiretto(dato(c, '2026-10-02', 300, { metodo: '  POS  ', voce: '  ALTRO ', nota: '   ' }))
+  const pulito = await s.registraPagamentoDiretto(dato(c, '2026-09-25', 300, { metodo: '  POS  ', voce: '  ALTRO ', nota: '   ' }))
   ok('metodo e voce senza spazi, la nota di soli spazi non c\'è', [pulito.metodo, pulito.voce, pulito.nota ?? null], ['POS', 'ALTRO', null])
-  const conNota = await s.registraPagamentoDiretto(dato(c, '2026-10-03', 300, { nota: '  ciao  ' }))
+  const conNota = await s.registraPagamentoDiretto(dato(c, '2026-09-26', 300, { metodo: 'Bonifico', nota: '  ciao  ' }))
   ok('la nota si pulisce dagli spazi attorno', conNota.nota, 'ciao')
+  const oggiStesso = await s.registraPagamentoDiretto(dato(c, '2026-09-26', 100, { metodo: 'Bonifico' }))
+  ok('oggi va', oggiStesso.data, '2026-09-26')
+  const vecchissimo = await s.registraPagamentoDiretto(dato(c, '2020-03-04', 100, { metodo: 'Bonifico' }))
+  ok('il passato non ha soglie nuove: il 4 marzo 2020 va', vecchissimo.data, '2020-03-04')
 }
 
 console.log('\n10. l\'import dai fogli')
@@ -3789,6 +3812,27 @@ await sezione('si chiude fino al 21 settembre: i contanti sono 5,00 in meno', as
   ok('il giorno stesso è chiuso: si dice da quando si può', await errore(() => s.chiudiCassa({ cassaId: cx.contanti, data: D1, contato: 0 })), 'Quel giorno è già chiuso: scegli un giorno dopo il 21/09/2026')
   ok('…anche un giorno prima', await errore(() => s.chiudiCassa({ cassaId: cx.contanti, data: '2026-09-10', contato: 0 })), 'Quel giorno è già chiuso: scegli un giorno dopo il 21/09/2026')
   ok('…e il Conto Corrente resta quello che non si chiude', await errore(() => s.chiudiCassa({ cassaId: cx.conto, data: D2, contato: 0 })), 'Si chiude solo la Cassa Contanti')
+  // Un pagamento a mano in contanti in un giorno chiuso cambierebbe il previsto già contato; carta e bonifico no.
+  const GIORNO_CHIUSO = 'Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura'
+  const gino = await s.salvaPersona({ nome: 'Gino', cognome: 'Chiuso' })
+  // Quel che entra si annulla subito: un annullato non conta nel previsto, e le chiusure di dopo tengono i loro numeri.
+  const entrati = []
+  const provaPagaA = async (data, metodo) => {
+    let id
+    const esito = await errore(async () => { id = (await s.registraPagamentoDiretto({ personaId: gino, data, importo: 700, metodo, voce: 'ALTRO' })).id })
+    if (id) {
+      entrati.push([data, metodo])
+      await s.annullaPagamentoDiretto(id)
+    }
+    return esito
+  }
+  ok('contanti nel giorno della chiusura no', await provaPagaA(D1, 'Contanti'), GIORNO_CHIUSO)
+  ok('contanti prima della chiusura no', await provaPagaA('2026-09-10', 'Contanti'), GIORNO_CHIUSO)
+  ok('«contanti» in minuscolo e con gli spazi, uguale', await provaPagaA(D1, '  contanti '), GIORNO_CHIUSO)
+  ok('contanti il giorno dopo la chiusura sì', await provaPagaA('2026-09-22', 'Contanti'), 'nessun errore')
+  ok('carta nello stesso giorno sì', await provaPagaA(D1, 'POS'), 'nessun errore')
+  ok('bonifico nello stesso giorno sì', await provaPagaA(D1, 'Bonifico'), 'nessun errore')
+  ok('sono entrati solo i tre permessi', entrati, [['2026-09-22', 'Contanti'], [D1, 'POS'], [D1, 'Bonifico']])
 })
 
 await sezione('i giorni chiusi: fino al 21 settembre non si scrive e non si annulla', async () => {

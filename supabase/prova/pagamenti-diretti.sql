@@ -235,4 +235,49 @@ select atteso('chi ha scritto se ne va: i pagamenti restano, senza il suo nome',
    from pagamenti_diretti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000021'), '2 2 1');
 
 \echo ''
+\echo '--- 14. non nel futuro, e non in un giorno già chiuso (64) ---'
+-- Una data dopo oggi (a Roma, come contabilita_oggi) è un pagamento che non è successo: no. Il passato non ha soglie nuove.
+create or replace function dopo_oggi(n int) returns text language sql stable security definer set search_path = public as $$
+  select (contabilita_oggi() + n)::text $$;
+grant execute on function dopo_oggi(int) to authenticated;
+insert into auth.users (id, email) values ('66666666-6666-6666-6666-666666666666', 'ada@ods.it');
+insert into persone (id, nome, cognome, ruolo, email, utente_id) values
+  ('aaaaaaaa-0000-0000-0000-000000000030', 'Ada', 'Conti', 'amministrazione', 'ada@ods.it', '66666666-6666-6666-6666-666666666666');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('domani no', rifiuto($$select registra_pagamento_diretto(pag(jsonb_build_object('data', dopo_oggi(1))))$$), '22023 La data è nel futuro: si registra quel che è già successo');
+select atteso('il 2099 no', rifiuto($$select registra_pagamento_diretto(pag('{"data": "2099-01-01"}'))$$), '22023 La data è nel futuro: si registra quel che è già successo');
+select atteso('oggi sì', (registra_pagamento_diretto(pag(jsonb_build_object('data', dopo_oggi(0), 'importo', 111, 'metodo', 'Carta'))))->>'importo', '111');
+select atteso('il 4 marzo 2020 sì: il passato non ha soglie nuove', (registra_pagamento_diretto(pag('{"data": "2020-03-04", "importo": 112, "metodo": "Carta"}')))->>'data', '2020-03-04');
+select atteso('i due rifiuti non hanno scritto niente', (select count(*)::text from pagamenti_diretti where importo in (111, 112)), '2');
+reset role;
+-- Come superutente: anche chi salta la funzione trova la porta chiusa (un trigger o un limite: basta che dica no).
+select atteso('scritto a mano per domani: no', (codice(format('insert into pagamenti_diretti (persona_id, data, importo, metodo, voce) values (%L, %L, 113, %L, %L)', 'aaaaaaaa-0000-0000-0000-000000000010', (current_date + 2)::text, 'Carta', 'Quota')) <> 'nessun errore')::text, 'true');
+select atteso('scritto a mano per il 2099: no', (codice($$insert into pagamenti_diretti (persona_id, data, importo, metodo, voce) values ('aaaaaaaa-0000-0000-0000-000000000010', '2099-01-01', 113, 'Carta', 'Quota')$$) <> 'nessun errore')::text, 'true');
+select atteso('scritto a mano per oggi: sì', codice(format('insert into pagamenti_diretti (persona_id, data, importo, metodo, voce) values (%L, %L, 114, %L, %L)', 'aaaaaaaa-0000-0000-0000-000000000010', (select dopo_oggi(0)), 'Carta', 'Quota')), 'nessun errore');
+select atteso('nessun pagamento del futuro è entrato', (select count(*)::text from pagamenti_diretti where importo = 113), '0');
+
+-- Il giorno chiuso: la Cassa Contanti chiusa fino al 21 settembre 2026. I contanti di quei giorni no, carta e bonifico sì.
+update casse set dal = date '2026-09-01' where nome = 'Cassa Contanti';
+select chi('66666666-6666-6666-6666-666666666666');
+select atteso('Ada chiude la cassa', tenta($$select 'fatto' from chiudi_cassa(jsonb_build_object('cassa_id', (select id from casse where nome = 'Cassa Contanti'), 'data', '2026-09-21', 'contato', 0, 'nota', 'prova'))$$), 'fatto');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('contanti nel giorno della chiusura no', rifiuto($$select registra_pagamento_diretto(pag('{"data": "2026-09-21", "importo": 121}'))$$), '22023 Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura');
+select atteso('contanti prima della chiusura no', rifiuto($$select registra_pagamento_diretto(pag('{"data": "2026-09-10", "importo": 122}'))$$), '22023 Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura');
+select atteso('«contanti» scritto in minuscolo e con gli spazi, uguale', rifiuto($$select registra_pagamento_diretto(pag('{"data": "2026-09-21", "importo": 123, "metodo": "  contanti "}'))$$), '22023 Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura');
+select atteso('contanti il giorno dopo sì', (registra_pagamento_diretto(pag('{"data": "2026-09-22", "importo": 124}')))->>'importo', '124');
+select atteso('carta nello stesso giorno sì', (registra_pagamento_diretto(pag('{"data": "2026-09-21", "importo": 125, "metodo": "Carta"}')))->>'importo', '125');
+select atteso('bonifico nello stesso giorno sì', (registra_pagamento_diretto(pag('{"data": "2026-09-21", "importo": 126, "metodo": "Bonifico"}')))->>'importo', '126');
+select atteso('i rifiuti non hanno scritto niente', (select count(*)::text from pagamenti_diretti where importo in (121, 122, 123)), '0');
+reset role;
+-- Annullata la chiusura il giorno si riapre.
+select chi('66666666-6666-6666-6666-666666666666');
+select tenta($$select annulla_chiusura_cassa((select id from chiusure_cassa where annullata_il is null))::text$$);
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('annullata la chiusura, i contanti di quel giorno tornano', (registra_pagamento_diretto(pag('{"data": "2026-09-21", "importo": 127}')))->>'importo', '127');
+reset role;
+
+\echo ''
 \echo 'TUTTO A POSTO'

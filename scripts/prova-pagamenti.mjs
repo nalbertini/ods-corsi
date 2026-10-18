@@ -6,11 +6,12 @@
 // Controlla `src/lib/pagamenti.ts`: le righe dalle ricevute e dai pagamenti a
 // mano, i filtri, i totali, i periodi, da incassare e il foglio CSV.
 // ---------------------------------------------------------------------------
+import { readFileSync } from 'node:fs'
 import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export * from './src/lib/pagamenti'; export { ENTE_PREDEFINITO } from './src/lib/ricevute'",
+    contents: "export * from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro } from './src/lib/ricevute'; export { dataLunga } from './src/lib/sala'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -322,6 +323,86 @@ console.log('\ncome si annulla un pagamento (per chi non apre la scheda)')
   ok('la domanda sul pagamento a mano dice importo e giorno', m.domandaAnnullaPagamento({ importo: 3000, data: '2026-10-09' }).startsWith('Annullare il pagamento di 30,00 € del '), true)
   ok('si cerca solo con almeno tre lettere', [m.bastaPerCercare(''), m.bastaPerCercare('bi'), m.bastaPerCercare('bia'), m.bastaPerCercare('a b c')], [false, false, true, false])
   ok('un testo oltre cento lettere non cerca, come nel database', m.trovaPagatori([{ id: '1', nome: 'Marco', cognome: 'Bianchi', attiva: true }], 'bianchi'.padEnd(101, 'x')), [])
+}
+
+console.log('\n4c. il pagamento a mano: non nel futuro (cosaNonVaDiretto(dati, oggi, chiusure))')
+{
+  const OGGI = '2026-10-18'
+  const FUTURO = 'La data è nel futuro: si registra quel che è già successo'
+  const buono = { personaId: 'p-Rossi', data: '2026-10-01', importo: 3000, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA' }
+  const frase = (cambio) => prova(() => m.cosaNonVaDiretto({ ...buono, ...cambio }, OGGI))
+  ok('oggi va', frase({ data: OGGI }), null)
+  ok('ieri va', frase({ data: '2026-10-17' }), null)
+  ok('domani no, con la frase di movimento e giroconto', frase({ data: '2026-10-19' }), FUTURO)
+  ok('il 2099 no', frase({ data: '2099-01-01' }), FUTURO)
+  ok('il 4 marzo 2020 va: il passato non ha soglie nuove', frase({ data: '2020-03-04' }), null)
+  ok('il primo giorno del 2000 va ancora', frase({ data: '2000-01-01' }), null)
+  ok('il 1999 non torna ancora', frase({ data: '1999-12-31' }), 'La data del pagamento non torna')
+  ok('una data che non esiste si dice prima del futuro', frase({ data: '2026-02-30' }), 'La data del pagamento non si capisce')
+  ok('con un altro oggi cambia il confine', prova(() => m.cosaNonVaDiretto({ ...buono, data: '2026-10-01' }, '2026-09-26')), FUTURO)
+  ok('il futuro vale per ogni modo di pagare', ['Bonifico', 'POS', 'Satispay'].map((metodo) => frase({ data: '2026-10-19', metodo })), [FUTURO, FUTURO, FUTURO])
+}
+
+console.log('\n4d. il pagamento a mano in contanti in un giorno già chiuso')
+{
+  const OGGI = '2026-10-18'
+  const CHIUSO = 'Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura'
+  const buono = { personaId: 'p-Rossi', data: '2026-09-21', importo: 3000, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA' }
+  const chiusura = (id, data, altro = {}) => ({ id, cassaId: 'c1', dal: '2026-09-01', data, previsto: 0, contato: 0, differenza: 0, chiusaIl: `${data}T20:00:00Z`, ...altro })
+  const k = [chiusura('k1', '2026-09-21')]
+  const frase = (cambio, chiusure = k) => prova(() => m.cosaNonVaDiretto({ ...buono, ...cambio }, OGGI, chiusure))
+  ok('contanti nel giorno della chiusura no', frase({}), CHIUSO)
+  ok('contanti prima della chiusura no', frase({ data: '2026-09-10' }), CHIUSO)
+  ok('contanti il giorno dopo la chiusura sì', frase({ data: '2026-09-22' }), null)
+  ok('«contanti» in minuscolo e con gli spazi è lo stesso', frase({ metodo: '  contanti ' }), CHIUSO)
+  ok('carta nello stesso giorno sì', frase({ metodo: 'POS' }), null)
+  ok('bonifico nello stesso giorno sì', frase({ metodo: 'Bonifico' }), null)
+  ok('Satispay nello stesso giorno sì', frase({ metodo: 'Satispay' }), null)
+  ok('senza chiusure i contanti vanno', frase({}, []), null)
+  ok('una chiusura annullata non chiude niente', frase({}, [chiusura('k1', '2026-09-21', { annullataIl: '2026-09-23T08:00:00Z' })]), null)
+  ok('vale l\'ultima chiusura attiva', frase({ data: '2026-09-25' }, [chiusura('k1', '2026-09-21'), chiusura('k2', '2026-09-26')]), CHIUSO)
+  ok('…e se l\'ultima è annullata, quella di prima', [frase({ data: '2026-09-25' }, [chiusura('k1', '2026-09-21'), chiusura('k2', '2026-09-26', { annullataIl: '2026-09-27T08:00:00Z' })]), frase({ data: '2026-09-21' }, [chiusura('k1', '2026-09-21'), chiusura('k2', '2026-09-26', { annullataIl: '2026-09-27T08:00:00Z' })])], [null, CHIUSO])
+  ok('il futuro si dice prima del giorno chiuso', frase({ data: '2026-10-19' }), 'La data è nel futuro: si registra quel che è già successo')
+  ok('un importo sbagliato si dice prima del giorno chiuso', frase({ importo: 0 }), 'L’importo deve essere più di zero')
+}
+
+console.log('\n5. il riepilogo prima di registrare un pagamento a mano (riepilogoPagamentoDiretto(dati, chi) → righe)')
+{
+  const base = { personaId: 'p-Rossi', data: '2026-10-01', importo: 4050, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA' }
+  const testo = (cambio = {}, chi = 'Rossi Giulia') => prova(() => m.riepilogoPagamentoDiretto({ ...base, ...cambio }, chi)).toString()
+  const SENZA = 'Senza ricevuta: resta nello storico e si può annullare'
+  ok('è un elenco di righe', Array.isArray(prova(() => m.riepilogoPagamentoDiretto(base, 'Rossi Giulia'))), true)
+  const t = testo()
+  ok('dice l\'importo', t.includes(`${m.euro(4050)} €`), true)
+  ok('dice come ha pagato', t.includes('Contanti'), true)
+  ok('dice chi', t.includes('Rossi Giulia'), true)
+  ok('dice la data', t.includes(m.dataLunga('2026-10-01')), true)
+  ok('dice a cosa serve', t.includes('QUOTA ASSOCIATIVA'), true)
+  ok('dice che va nella Cassa Contanti', t.includes('Va nella Cassa Contanti'), true)
+  ok('dice che non ha ricevuta e che si annulla', t.includes(SENZA), true)
+  ok('dice che non riduce il residuo di nessuna ricevuta', /residuo/i.test(t) && /nessuna ricevuta/i.test(t), true)
+  const carta = testo({ metodo: 'POS' })
+  ok('con la carta: il modo c\'è, la Cassa Contanti no', [carta.includes('POS'), carta.includes('Cassa Contanti')], [true, false])
+  ok('«contanti» in minuscolo va nella cassa lo stesso', testo({ metodo: 'contanti' }).includes('Va nella Cassa Contanti'), true)
+  ok('senza ricevuta e senza residuo anche con la carta', [carta.includes(SENZA), /residuo/i.test(carta)], [true, true])
+  ok('la nota, se c\'è, si legge', testo({ nota: 'in palestra' }).includes('in palestra'), true)
+}
+
+console.log('\n6. Ricevute.tsx scrive solo dopo il sì del riepilogo')
+{
+  const tsx = readFileSync('src/components/segreteria/Ricevute.tsx', 'utf8')
+  const chiamate = tsx.split('registraPagamentoDiretto(').length - 1
+  ok('c\'è una sola chiamata a registraPagamentoDiretto', chiamate, 1)
+  const i = tsx.indexOf('registraPagamentoDiretto(')
+  // Dall'inizio del gestore che la contiene: l'ultimo `onClick={` o `= async` prima della chiamata.
+  const inizi = [...tsx.slice(0, i).matchAll(/onClick=\{|=\s*async\b/g)]
+  const gestore = tsx.slice(inizi.at(-1)?.index ?? 0, i)
+  ok('nel gestore, prima della chiamata, c\'è un `await chiedi(`', /await chiedi\(/.test(gestore), true)
+  ok('…col riepilogo di riepilogoPagamentoDiretto', gestore.includes('riepilogoPagamentoDiretto('), true)
+  ok('…e senza il sì si esce prima di scrivere', /if \(!\(await chiedi\([\s\S]*?\)\)\) return/.test(gestore), true)
+  // Il guaio sotto al modulo è lo stesso del database: oggi (a Roma) e le chiusure arrivano alla funzione.
+  const riga = tsx.split('\n').find((l) => l.includes('cosaNonVaDiretto({')) ?? ''
+  ok('il modulo passa oggi e le chiusure a cosaNonVaDiretto', [riga.includes('oggi'), riga.includes('chiusure')], [true, true])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
