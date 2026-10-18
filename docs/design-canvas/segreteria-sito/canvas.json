@@ -1,0 +1,320 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Segreteria · look del sito"
+    },
+    {
+      "id": "page-2",
+      "name": "Componenti"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "OggiDaFare.dc.html",
+      "title": "DA FARE · oggi",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1100,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiDaFare.dc.html",
+      "title": "DA FARE · proposta",
+      "x": 1540,
+      "y": 0,
+      "w": 1440,
+      "h": 1100,
+      "page": "page-1"
+    },
+    {
+      "file": "OggiIscritti.dc.html",
+      "title": "ISCRITTI · oggi",
+      "x": 0,
+      "y": 1260,
+      "w": 1440,
+      "h": 1100,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiIscritti.dc.html",
+      "title": "ISCRITTI · proposta",
+      "x": 1540,
+      "y": 1260,
+      "w": 1440,
+      "h": 1100,
+      "page": "page-1"
+    },
+    {
+      "file": "OggiSettimana.dc.html",
+      "title": "SETTIMANA · oggi",
+      "x": 0,
+      "y": 2520,
+      "w": 1440,
+      "h": 1100,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiSettimana.dc.html",
+      "title": "SETTIMANA · proposta",
+      "x": 1540,
+      "y": 2520,
+      "w": 1440,
+      "h": 1100,
+      "page": "page-1"
+    },
+    {
+      "file": "OggiMenu.dc.html",
+      "title": "Menu · oggi",
+      "x": 0,
+      "y": 3780,
+      "w": 240,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiMenuA.dc.html",
+      "title": "Menu · proposta A (solo aspetto)",
+      "x": 340,
+      "y": 3780,
+      "w": 260,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiMenuB.dc.html",
+      "title": "Menu · proposta B (aspetto + gruppi)",
+      "x": 700,
+      "y": 3780,
+      "w": 260,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "TatamiSettimana.dc.html",
+      "title": "TatamiSettimana (da segreteria-tatami, tema chiaro)",
+      "x": 0,
+      "y": 0,
+      "w": 880,
+      "h": 850,
+      "page": "page-2"
+    },
+    {
+      "file": "ProponiAmmCassa.dc.html",
+      "title": "Amministrazione · chiusura cassa · proposta",
+      "x": 0,
+      "y": 4940,
+      "w": 1440,
+      "h": 1740,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiAmmContabilita.dc.html",
+      "title": "Amministrazione · contabilità · proposta",
+      "x": 1540,
+      "y": 4940,
+      "w": 1440,
+      "h": 1400,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiAmmPagamenti.dc.html",
+      "title": "Amministrazione · pagamenti · proposta",
+      "x": 3080,
+      "y": 4940,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiAmmRegistra.dc.html",
+      "title": "Amministrazione · registra un pagamento · proposta",
+      "x": 0,
+      "y": 6840,
+      "w": 1440,
+      "h": 1420,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiCorsi.dc.html",
+      "title": "CORSI · scheda dati · proposta",
+      "x": 1540,
+      "y": 6840,
+      "w": 1440,
+      "h": 1230,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiCorsiIscritti.dc.html",
+      "title": "CORSI · scheda iscritti · proposta",
+      "x": 3080,
+      "y": 6840,
+      "w": 1440,
+      "h": 1230,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiEsercizi.dc.html",
+      "title": "ESERCIZI · proposta",
+      "x": 0,
+      "y": 8420,
+      "w": 1440,
+      "h": 1300,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiListino.dc.html",
+      "title": "LISTINO · proposta",
+      "x": 1540,
+      "y": 8420,
+      "w": 1440,
+      "h": 1650,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiListinoCorso.dc.html",
+      "title": "LISTINO · un corso aperto · proposta",
+      "x": 3080,
+      "y": 8420,
+      "w": 1440,
+      "h": 1165,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiPagamenti.dc.html",
+      "title": "PAGAMENTI · proposta",
+      "x": 0,
+      "y": 10230,
+      "w": 1440,
+      "h": 1060,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiPagamentiResiduo.dc.html",
+      "title": "PAGAMENTI · chi deve ancora pagare · proposta",
+      "x": 1540,
+      "y": 10230,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiPagamentoAperto.dc.html",
+      "title": "PAGAMENTI · riga aperta · proposta",
+      "x": 3080,
+      "y": 10230,
+      "w": 1440,
+      "h": 1015,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiPersonale.dc.html",
+      "title": "ISTRUTTORI E ACCESSI · proposta",
+      "x": 0,
+      "y": 11450,
+      "w": 1440,
+      "h": 1250,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiPersonaleScheda.dc.html",
+      "title": "ISTRUTTORI E ACCESSI · una persona · proposta",
+      "x": 1540,
+      "y": 11450,
+      "w": 1440,
+      "h": 1250,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiPresenze.dc.html",
+      "title": "PRESENZE · il mese · proposta",
+      "x": 3080,
+      "y": 11450,
+      "w": 1440,
+      "h": 1750,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiPresenzeIstruttori.dc.html",
+      "title": "PRESENZE ISTRUTTORI · proposta",
+      "x": 0,
+      "y": 13360,
+      "w": 1440,
+      "h": 1450,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiPresenzeSegnalate.dc.html",
+      "title": "PRESENZE · segnalate · proposta",
+      "x": 1540,
+      "y": 13360,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiRichieste.dc.html",
+      "title": "RICHIESTE ONLINE · proposta",
+      "x": 3080,
+      "y": 13360,
+      "w": 1440,
+      "h": 1350,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiRichiesteManca.dc.html",
+      "title": "RICHIESTE ONLINE · prima di accogliere · proposta",
+      "x": 0,
+      "y": 14970,
+      "w": 1440,
+      "h": 1300,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiSegnalazioni.dc.html",
+      "title": "SEGNALAZIONI · proposta",
+      "x": 1540,
+      "y": 14970,
+      "w": 1440,
+      "h": 1100,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiSito.dc.html",
+      "title": "SITO · proposta",
+      "x": 3080,
+      "y": 14970,
+      "w": 1440,
+      "h": 1150,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiStatistiche.dc.html",
+      "title": "STATISTICHE · proposta",
+      "x": 0,
+      "y": 16430,
+      "w": 1440,
+      "h": 2008,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiTessere.dc.html",
+      "title": "TESSERE · proposta",
+      "x": 1540,
+      "y": 16430,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiVestiario.dc.html",
+      "title": "VESTIARIO · proposta",
+      "x": 3080,
+      "y": 16430,
+      "w": 1440,
+      "h": 1200,
+      "page": "page-1"
+    }
+  ]
+}

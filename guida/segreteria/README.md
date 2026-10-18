@@ -93,11 +93,11 @@ la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scel
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
 | **SITO** | Le pagine del sito della palestra, il menu in alto e il footer: si scrive la bozza e si pubblica | [Apri](sito.md) |
 
-In cima al menu, sotto il nome, si vedono subito senza scorrere tre tasti:
-**?**, la guida della voce aperta, in un'altra scheda; il tasto del **tema**
-(sole, tatami o luna: mostra dove porta; nero, bianco, Tatami) per questo
-computer; i **cursori**, le IMPOSTAZIONI. In
-prova, accanto, il bollino **DATI DI PROVA**.
+In cima al menu, sotto il nome, si vedono subito senza scorrere due tasti:
+**?**, la guida della voce aperta, in un'altra scheda; i **cursori**, le
+IMPOSTAZIONI. In prova, accanto, il bollino **DATI DI PROVA**. La segreteria ha
+sempre l'aspetto chiaro del sito della palestra, blu e giallo: il tasto del tema
+qui non c'è più (nero, bianco e Tatami restano per istruttori, tablet e timer).
 
 In fondo al menu:
 
@@ -119,7 +119,7 @@ aperto, Indietro chiude solo il menu.
 
 Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
 numero giallo accanto dice quante cose aspettano (richieste nuove, presenze da
-confermare, segnalazioni da rispondere). Accanto ci sono **?**, il tema e le impostazioni.
+confermare, segnalazioni da rispondere). Accanto ci sono **?** e le impostazioni.
 Aperto, ha gli stessi gruppi del computer; le voci di **LA PALESTRA** sono più
 piccole, perché si fanno meglio dal computer.
 

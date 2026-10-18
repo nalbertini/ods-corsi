@@ -15,7 +15,7 @@ Sul telefono resta il menu di sempre: Il Banco è fatto per lo schermo largo.
   qualunque pagina.
 - **LINK ▾**: **COPIA LINK ISCRIZIONI** e **COPIA LINK ORDINI**, che nel menu di
   prima stavano in fondo.
-- **?**, il **tema** (sole o luna) e chi è dentro; **ISTRUTTORI →** per chi
+- **?**, le impostazioni e chi è dentro; **ISTRUTTORI →** per chi
   insegna anche. In prova, il bollino **DATI DI PROVA**.
 
 ## I cinque luoghi

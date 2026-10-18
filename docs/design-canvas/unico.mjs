@@ -41,6 +41,7 @@ const SEZIONI = [
   { id: 'sito-rebrand', nome: 'Sito · tre rebrand (scartati)', cartella: 'sito-rebrand' },
   { id: 'sito-approvato', nome: 'Sito · design approvato', cartella: 'sito-approvato' },
   { id: 'segreteria-tatami', nome: 'Segreteria · tema Tatami', cartella: 'segreteria-tatami' },
+  { id: 'segreteria-sito', nome: 'Segreteria · look del sito (ipotesi)', cartella: 'segreteria-sito' },
   { id: 'banco', nome: 'Segreteria · il Banco, ridisegnata', cartella: 'banco' },
   { id: 'cerca-universale', nome: 'Segreteria · ricerca universale', cartella: 'cerca-universale' },
   { id: 'importa-fogli', nome: 'Segreteria · importa da Excel', cartella: 'import-fogli' },

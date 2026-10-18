@@ -246,6 +246,85 @@
 /* Come la voce del menu: nella barra in basso la scheda corrente è chiara, quindi il testo e il segno scuri. */
 :root[data-tema='tatami'] .barra-voce[aria-current='page'] { border-top-color: #1d1d1b; color: #1d1d1b; }
 
+/* Il look del sito per la segreteria e l'amministrazione (`lib/aspettoSegreteria.ts`): stessi
+   colori e caratteri del modulo di iscrizione (`data-modulo='sito'`, più sotto), che qui sono
+   sempre chiari, e il menu in inchiostro come il piede del sito. Sta dopo i temi chiaro e
+   Tatami perché a parità di specificità vince l'ordine; `prova:look` lo controlla. */
+:root[data-look='sito'] {
+  --bg: #eef5fa;
+  --surface: #ffffff;
+  --surface-2: #cfe6f4;
+  --line: #cfe6f4;
+  --line-soft: #cfe6f4;
+  --riga-campo: #14709f;
+  --text: #0d2a3d;
+  --sec: #0d2a3d;
+  --dim: #46606f;
+  --faint: #46606f;
+
+  --blu: #14709f;
+  --rosso: #e4292a;
+  --giallo: #f4c31b;
+  --verde: #12913f;
+  --giallo-testo: #8f6a00;
+  --verde-testo: #0b7a33;
+  --rosso-testo: #b81d1d;
+  --su-colore: #0d2a3d;
+  --su-rosso: #ffffff;
+  --tasto: #0d2a3d;
+  --tratteggio: #14709f;
+  --menu: #0d2a3d;
+
+  --cond: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;
+  --body: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  color-scheme: light;
+}
+/* Il menu è inchiostro dentro una pagina chiara: lì dentro il testo è chiaro, come per il Tatami. */
+:root[data-look='sito'] .sg-menu,
+:root[data-look='sito'] .sg-barra-tel {
+  --text: #ffffff;
+  --sec: #cfe6f4;
+  --dim: #cfe6f4;
+  --tasto: #cfe6f4;
+  --line: #46606f;
+  --line-soft: #46606f;
+  color: #ffffff;
+}
+:root[data-look='sito'] .sg-voce[aria-current='page'] { border-left-color: var(--giallo); background: var(--giallo); color: var(--su-colore); }
+:root[data-look='sito'] .sg-menu .sg-campo { background: #ffffff; border-color: #ffffff; color: var(--su-colore); }
+:root[data-look='sito'] .sg-menu .sg-campo::placeholder { color: var(--dim); }
+/* L'elenco della ricerca sta nel menu ma ha il fondo chiaro: lì i token tornano quelli della pagina. */
+:root[data-look='sito'] .sg-cerca-elenco {
+  --text: #0d2a3d;
+  --sec: #0d2a3d;
+  --dim: #46606f;
+  --line: #cfe6f4;
+  --line-soft: #cfe6f4;
+  color: #0d2a3d;
+}
+/* I caratteri: Big Shoulders solo per il titolo di pagina e le cifre grandi; tasti, etichette, voci e
+   numeri di telefono in Inter, dove 1 e I non si confondono. Big Shoulders è dritto: niente obliquo finto. */
+:root[data-look='sito'] .num { font-family: var(--body); font-variant-numeric: tabular-nums; }
+:root[data-look='sito'] .sg-btn,
+:root[data-look='sito'] .sg-chip,
+:root[data-look='sito'] .sg-voce,
+:root[data-look='sito'] .sg-tag,
+:root[data-look='sito'] .sg-etichetta { font-family: var(--body); font-style: normal; }
+:root[data-look='sito'] .ob,
+:root[data-look='sito'] .sg-titolo { font-style: normal; }
+/* Inter è più larga di Saira: con la spaziatura di prima le voci lunghe andavano a capo. */
+:root[data-look='sito'] .sg-voce { letter-spacing: 0; }
+/* Il tema qui è uno solo: il tasto non serve. */
+:root[data-look='sito'] .tasto-tema { display: none; }
+/* L'inchiostro del sito sul verde dei tasti «vai» non arriva a 4,5:1 (3,6); il nero di prima sì (4,6). */
+:root[data-look='sito'] .sg-btn-verde,
+:root[data-look='sito'] .btn-go { color: #121212; }
+/* Col carattere più largo la parola MENU e il numero non stanno più nella barra del telefono. */
+@media (max-width: 767px) {
+  :root[data-look='sito'] .sg-tasto-menu { letter-spacing: 0.08em; padding: 0 10px; }
+}
+
 * { box-sizing: border-box; }
 
 /* A pieno schermo la finestra cresce quando la barra del browser si ritrae, ma
