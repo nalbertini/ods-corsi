@@ -8,6 +8,10 @@
 -- Cassa Contanti non si tocca. Le righe sono movimenti come gli altri (si annullano, si leggono)
 -- ma senza `creato_da`: è storia, non l'ha scritta nessuno qui. Le voci sono le due di sistema degli
 -- incassi e «Da classificare», che l'amministrazione sistema poi a mano.
+--
+-- Come un movimento a mano, una riga non può essere prima dell'inizio della cassa (`dal`): si importa con
+-- la cassa ancora senza data di partenza, e si imposta dopo. Una riga importata e poi annullata non torna
+-- rilanciando il file: la chiave c'è ancora, e un annullo voluto non si disfa da solo.
 
 alter table movimenti add column if not exists origine_import text;
 -- La chiave è unica solo dove c'è: i movimenti scritti a mano non ce l'hanno.
@@ -19,6 +23,7 @@ declare
   riga jsonb;
   n integer := 0;
   fatte integer := 0;
+  viste text[] := '{}';
   dentro integer;
   giorno date;
   importo numeric;
@@ -34,18 +39,24 @@ begin
   if jsonb_array_length(dati) > 1000 then raise exception 'Troppe righe in una volta: al massimo 1000' using errcode = '22023'; end if;
   -- La voce da sistemare c'è sempre, di entrata e di uscita, non di sistema.
   insert into voci_contabili (nome, tipo) values ('Da classificare', 'entrata'), ('Da classificare', 'uscita') on conflict do nothing;
+  -- Se qualcuno l'ha spenta, per l'import si riaccende: è la voce di arrivo di tutto lo storico.
+  update voci_contabili v set attiva = true where lower(trim(v.nome)) = 'da classificare' and not v.attiva;
 
   for riga in select * from jsonb_array_elements(dati) loop
     n := n + 1;
     if jsonb_typeof(riga) is distinct from 'object' then raise exception 'La riga % non si capisce', n using errcode = '22023'; end if;
-    chiave := case when jsonb_typeof(riga->'chiave') = 'string' then trim(riga->>'chiave') else '' end;
-    if chiave = '' or char_length(chiave) > 100 then raise exception 'La riga % non ha la chiave', n using errcode = '22023'; end if;
+    chiave := case when jsonb_typeof(riga->'chiave') = 'string' then riga->>'chiave' else '' end;
+    if chiave !~ '^[A-Za-z0-9:_.-]{1,100}$' then raise exception 'La riga % non ha la chiave', n using errcode = '22023'; end if;
+    if chiave = any(viste) then raise exception 'La riga %: la chiave è già nel pacchetto', n using errcode = '22023'; end if;
+    viste := viste || chiave;
+    if jsonb_typeof(riga->'data') is distinct from 'string' or riga->>'data' !~ '^\d{4}-\d{2}-\d{2}$' then raise exception 'La riga %: la data non si capisce', n using errcode = '22023'; end if;
     begin giorno := (riga->>'data')::date; exception when others then
       raise exception 'La riga %: la data non si capisce', n using errcode = '22023';
     end;
     if giorno is null or giorno < date '2000-01-01' then raise exception 'La riga %: la data non si capisce', n using errcode = '22023'; end if;
     if giorno > contabilita_oggi() then raise exception 'La riga %: la data è nel futuro', n using errcode = '22023'; end if;
-    select * into cassa from casse c where c.nome = case riga->>'cassa' when 'contanti' then 'Cassa Contanti' when 'conto' then 'Conto Corrente' end;
+    select * into cassa from casse c where c.nome = case riga->>'cassa' when 'contanti' then 'Cassa Contanti' when 'conto' then 'Conto Corrente' end
+      for share;  -- come `registra_movimento`: una chiusura che si sta facendo in questo momento aspetta, o ci fa aspettare
     if not found then raise exception 'La riga %: la cassa non è quella dei contanti né quella del conto', n using errcode = '22023'; end if;
     tipo_riga := riga->>'tipo';
     if tipo_riga is null or tipo_riga not in ('entrata', 'uscita') then raise exception 'La riga %: scegli se è un’entrata o un’uscita', n using errcode = '22023'; end if;
@@ -54,7 +65,8 @@ begin
     if importo <> trunc(importo) then raise exception 'La riga %: l’importo non si capisce', n using errcode = '22023'; end if;
     if importo <= 0 then raise exception 'La riga %: l’importo deve essere più di zero', n using errcode = '22023'; end if;
     if importo > 10000000 then raise exception 'La riga %: l’importo è troppo alto', n using errcode = '22023'; end if;
-    descr := case when jsonb_typeof(riga->'descrizione') = 'string' then trim(riga->>'descrizione') else '' end;
+    -- Anche gli spazi che non si vedono (a-capo, spazio unificatore, spazio largo zero) contano come spazi.
+    descr := case when jsonb_typeof(riga->'descrizione') = 'string' then btrim(regexp_replace(riga->>'descrizione', '[\s\u00a0\u200b]+', ' ', 'g')) else '' end;
     if descr = '' then raise exception 'La riga %: scrivi una descrizione', n using errcode = '22023'; end if;
     if char_length(descr) > 200 then raise exception 'La riga %: la descrizione è troppo lunga', n using errcode = '22023'; end if;
     nome_voce := riga->>'voce';
@@ -64,6 +76,7 @@ begin
       where lower(trim(v.nome)) = lower(trim(nome_voce)) and v.tipo = tipo_riga
         and lower(trim(v.nome)) in ('quota associativa', 'corsi e altri pagamenti', 'da classificare');
     if not found then raise exception 'La riga %: la voce non va bene', n using errcode = '22023'; end if;
+    if cassa.dal is not null and giorno < cassa.dal then raise exception 'La riga %: la data è prima dell’inizio della cassa', n using errcode = '22023'; end if;
     -- Una riga già importata prima della chiusura non è un errore se si rilancia il pacchetto: non si riscrive.
     if cassa_giorno_chiuso(cassa.id, giorno) and not exists (select 1 from movimenti m where m.origine_import = chiave) then raise exception 'La riga %: quel giorno la cassa è già chiusa', n using errcode = '22023'; end if;
 

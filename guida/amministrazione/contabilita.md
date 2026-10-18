@@ -113,7 +113,7 @@ I movimenti del vecchio programma (la «Prima Nota» dal 2011) sono stati carica
 come **movimenti** normali, con la voce scelta dalla causale: i pagamenti dei clienti sulle voci
 «Quota associativa» e «Corsi e altri pagamenti», tutto il resto su **«Da classificare»**. Si
 riconoscono perché nessuno risulta averli scritti qui. Si annullano come ogni movimento. Una voce
-di un movimento, per ora, non si cambia: si annulla e si rifà con la voce giusta.
+di un movimento, per ora, non si cambia: si annulla e si rifà con la voce giusta. Un movimento dello storico che annulli non torna da solo se lo storico venisse ricaricato.
 
 I saldi iniziali delle casse non cambiano per questo: lo storico entra nei conti dal giorno di
 ogni movimento. Se la cassa parte da una certa data (**DAL**), i movimenti più vecchi restano

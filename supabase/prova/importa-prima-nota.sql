@@ -163,6 +163,11 @@ select atteso('descrizione vuota', esito(format('select importa_prima_nota(jsonb
 select atteso('descrizione di 201 lettere', esito(format('select importa_prima_nota(jsonb_build_array(riga(%L, %L, %L, %L, 100, %L, %L)))', 'k', '2019-09-03', 'conto', 'uscita', repeat('d', 201), 'Da classificare')), '22023 La riga 1: la descrizione è troppo lunga');
 select atteso('una voce che non è fra le tre', esito(format('select importa_prima_nota(jsonb_build_array(riga(%L, %L, %L, %L, 100, %L, %L)))', 'k', '2019-09-03', 'conto', 'uscita', 'x', 'Affitto sala')), '22023 La riga 1: la voce non va bene');
 select atteso('una voce di sistema è solo di entrata', esito(format('select importa_prima_nota(jsonb_build_array(riga(%L, %L, %L, %L, 100, %L, %L)))', 'k', '2019-09-03', 'conto', 'uscita', 'x', 'Quota associativa')), '22023 La riga 1: la voce non va bene');
+select atteso('una data scritta a parole', esito($$select importa_prima_nota(jsonb_build_array(jsonb_build_object('chiave', 'k', 'data', 'today', 'cassa', 'conto', 'tipo', 'uscita', 'importo', 100, 'descrizione', 'x', 'voce', 'Da classificare')))$$), '22023 La riga 1: la data non si capisce');
+select atteso('una data senza i trattini', esito(format('select importa_prima_nota(jsonb_build_array(riga(%L, %L, %L, %L, 100, %L, %L)))', 'k', '20200101', 'conto', 'uscita', 'x', 'Da classificare')), '22023 La riga 1: la data non si capisce');
+select atteso('una chiave con caratteri di controllo', esito(format('select importa_prima_nota(jsonb_build_array(riga(%L, %L, %L, %L, 100, %L, %L)))', E'a\nb', '2019-09-03', 'conto', 'uscita', 'x', 'Da classificare')), '22023 La riga 1 non ha la chiave');
+select atteso('una descrizione di soli spazi che non si vedono', esito(format('select importa_prima_nota(jsonb_build_array(riga(%L, %L, %L, %L, 100, %L, %L)))', 'k', '2019-09-03', 'conto', 'uscita', E'\u00a0\u200b ', 'Da classificare')), '22023 La riga 1: scrivi una descrizione');
+select atteso('la stessa chiave due volte nello stesso pacchetto', esito(format('select importa_prima_nota(jsonb_build_array(riga(%L, %L, %L, %L, 100, %L, %L), riga(%L, %L, %L, %L, 999, %L, %L)))', 'dup', '2020-01-01', 'conto', 'uscita', 'x', 'Da classificare', 'dup', '2021-05-05', 'conto', 'uscita', 'y', 'Da classificare')), '22023 La riga 2: la chiave è già nel pacchetto');
 select atteso('l''errore dice quale riga è (la terza)', esito(format('select importa_prima_nota(jsonb_build_array(riga(%L, %L, %L, %L, 100, %L, %L), riga(%L, %L, %L, %L, 100, %L, %L), riga(%L, %L, %L, %L, 0, %L, %L)))',
   'a', '2019-09-03', 'conto', 'uscita', 'x', 'Da classificare', 'b', '2019-09-03', 'conto', 'uscita', 'y', 'Da classificare', 'c', '2019-09-03', 'conto', 'uscita', 'z', 'Da classificare')), '22023 La riga 3: l’importo deve essere più di zero');
 reset role;
@@ -175,6 +180,7 @@ update casse set dal = '2026-09-01', saldo_iniziale = 0 where nome = 'Cassa Cont
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 select atteso('un movimento dei contanti del 5 settembre, prima della chiusura, entra', (select importa_prima_nota(jsonb_build_array(riga('g0', '2026-09-05', 'contanti', 'entrata', 100, 'prima', 'Da classificare')))::text), '1');
+select atteso('una riga prima dell''inizio della cassa non entra, come un movimento a mano', esito(format('select importa_prima_nota(jsonb_build_array(riga(%L, %L, %L, %L, 100, %L, %L)))', 'prima-del-dal', '2026-08-01', 'contanti', 'entrata', 'vecchia', 'Da classificare')), '22023 La riga 1: la data è prima dell’inizio della cassa');
 select atteso('si chiude la cassa fino al 10 settembre', esito(format('select chiudi_cassa(%L::jsonb)', jsonb_build_object('cassa_id', id_cassa('Cassa Contanti'), 'data', '2026-09-10', 'contato', 0))), 'ok');
 select atteso('un movimento dei contanti del 5 settembre non entra, e dice quale riga', esito(format('select importa_prima_nota(jsonb_build_array(riga(%L, %L, %L, %L, 100, %L, %L), riga(%L, %L, %L, %L, 100, %L, %L)))',
   'g1', '2026-09-11', 'contanti', 'entrata', 'dopo', 'Da classificare', 'g2', '2026-09-05', 'contanti', 'entrata', 'dentro', 'Da classificare')), '22023 La riga 2: quel giorno la cassa è già chiusa');
@@ -193,6 +199,13 @@ select atteso('l''import la trova e non fallisce', (select importa_prima_nota(js
 reset role;
 select atteso('…e non ne ha create due', (select count(*)::text from voci_contabili where lower(trim(nome)) = 'da classificare' and tipo = 'entrata'), '1');
 
+update voci_contabili set attiva = false where lower(trim(nome)) = 'da classificare' and tipo = 'uscita';
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('la voce spenta da qualcuno si riaccende per l''import', (select importa_prima_nota(jsonb_build_array(riga('v2', '2026-09-12', 'conto', 'uscita', 100, 'con la voce spenta', 'Da classificare')))::text), '1');
+reset role;
+select atteso('…e la voce è di nuovo in uso', (select attiva::text from voci_contabili where lower(trim(nome)) = 'da classificare' and tipo = 'uscita'), 'true');
+
 \echo ''
 \echo '--- 7. il file si rilancia senza danni ---'
 select impronta() as prima \gset
@@ -202,4 +215,5 @@ select atteso('…e la funzione è ancora di sola amministrazione', da_chiamata(
 select atteso('…con gli stessi permessi', (select string_agg(r || ':' || has_function_privilege(r, p.oid, 'execute')::text, ', ' order by r) from pg_proc p, unnest(array['anon', 'authenticated']) r
   where p.pronamespace = 'public'::regnamespace and p.proname = 'importa_prima_nota'), 'anon:false, authenticated:true');
 select atteso('la chiave è unica, ma solo dove c''è', (select count(*)::text from pg_indexes where tablename = 'movimenti' and indexname = 'movimenti_origine_import' and indexdef like '%UNIQUE%' and indexdef like '%WHERE%'), '1');
+select atteso('prende il blocco sulle casse come registra_movimento (un import contro una chiusura)', (select (prosrc ~* 'for share')::text from pg_proc where proname = 'importa_prima_nota' and pronamespace = 'public'::regnamespace), 'true');
 select atteso('importa_prima_nota è security definer con il suo search_path', (select (prosecdef and proconfig::text like '%search_path=public%')::text from pg_proc where proname = 'importa_prima_nota' and pronamespace = 'public'::regnamespace), 'true');
