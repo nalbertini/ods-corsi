@@ -8,7 +8,8 @@
 //  1. Un testo senza `h2` che comincia con un `h3` è una griglia di ritratti:
 //     ogni `h3` (il nome) con la foto, se c'è, e il paragrafo che lo segue (il ruolo).
 //     Quel che viene dopo l'ultimo ritratto resta testo, sotto la griglia.
-//  2. I colori ruotano come nel design (giallo, blu, inchiostro, sfalsati a ogni riga di tre).
+//  2. L'ordine è fisso per i primi otto (Maurizio, Maura, Diana, Fabio, Tiziano, Valerio, Manuel, Federico), poi gli altri
+//     come scritti. I colori vanno a diagonali: nessun vicino, in riga o in colonna, ha lo stesso colore.
 //  3. Senza foto il cerchio porta l’iniziale; col link nel nome la tessera è tutta cliccabile.
 //  4. La testata delle pagine senza collage: titolo a sinistra, descrizione e pulsante a destra.
 //  5. Le misure del design, a 1440px e a telefono, lette dal CSS.
@@ -64,7 +65,7 @@ console.log('\n1. Un testo che comincia con un h3 è l’elenco dei tecnici')
   ok('con la foto: la foto è quadrata in cima, dentro «ritratto-foto»', /^<span class="ritratto-foto"><img [^>]*alt="Maurizio"[^>]*><\/span>/.test(r[0].html), true)
   ok('nome e cognome sono nel titolo, il cognome in un suo span', /<h3><span class="nome">Maurizio<\/span> <span class="cognome">Cognome0<\/span><\/h3>/.test(r[0].html), true)
   ok('i corsi sono pastiglie, una per corso, nell’ordine scritto, senza la frase', [conta(r[0].html, /<span class="pillola">/g), /<span class="pillola">Judo<\/span><span class="pillola">Pesi<\/span>/.test(r[0].html), /·/.test(r[0].html)], [2, true, false])
-  ok('senza foto: fascia con l’iniziale, che non si legge', r[1].html.startsWith('<span class="ritratto-foto" aria-hidden="true">D</span>'), true)
+  ok('senza foto: fascia con l’iniziale, che non si legge', r[1].html.startsWith('<span class="ritratto-foto" aria-hidden="true">M</span>'), true)
   ok('il paragrafo dopo l’ultimo tecnico è testo sotto la griglia, non un tecnico', [/<\/section><div class="testo"><p>Ogni istruttore ha la sua pagina\.<\/p><\/div>/.test(main(h)), conta(r[12].html, /Ogni istruttore/g)], [true, 0])
   ok('senza paragrafo di chiusura, niente testo', /<div class="testo">/.test(main(pagina(tredici))), false)
   ok('un nome senza cognome: solo il nome, nessun «·» e nessuno span vuoto', (() => { const t = tessere(pagina('<h3>A</h3><h3>B</h3><p>Rossi · Judo</p>')); return [/class="cognome"/.test(t[0].html), /class="cognome"/.test(t[1].html)] })(), [false, true])
@@ -74,11 +75,14 @@ console.log('\n1. Un testo che comincia con un h3 è l’elenco dei tecnici')
   ok('la foto con «alt» scritto dalla segreteria lo tiene', /alt="Diana in tuta"/.test(main(pagina(`<h3>Diana</h3><img src="${P}d.jpg" alt="Diana in tuta"><p>Cognome1 · Judo</p><h3>B</h3><p>x</p>`))), true)
 }
 
-console.log('\n2. I colori sono quelli del design')
+console.log('\n2. L’ordine è fisso e i colori vanno a diagonali')
 {
+  const nomi = (h) => tessere(h).map((x) => x.html.match(/class="nome">([^<]*)</)?.[1])
+  ok('prima gli otto in ordine, poi gli altri come scritti', nomi(pagina(tredici)), ['Maurizio', 'Maura', 'Diana', 'Fabio', 'Tiziano', 'Valerio', 'Manuel', 'Federico', 'Katia', 'Serena', 'Giulia', 'Elena', 'Aldo'])
+  ok('maiuscole e link nel nome non contano', nomi(pagina('<h3>x</h3><h3>MAURA</h3><h3><a href="/m/">maurizio</a></h3>')), ['maurizio', 'MAURA', 'x'])
   const colori = tessere(pagina(tredici)).map((x) => x.colore)
-  ok('i tredici ritratti hanno i colori disegnati, uno per uno', colori, ['giallo', 'blu', 'inchiostro', 'blu', 'inchiostro', 'giallo', 'inchiostro', 'giallo', 'blu', 'blu', 'inchiostro', 'blu', 'inchiostro'])
-  ok('oltre i tredici la sequenza ricomincia', tessere(pagina(tredici + R('Z', 'x'))).map((x) => x.colore)[13], 'giallo')
+  ok('colori a diagonali (riga + colonna) su quattro colonne', colori, ['giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo'])
+  ok('nessun vicino in riga o in colonna ha lo stesso colore', colori.every((c, i) => (i % 4 === 3 || c !== colori[i + 1]) && (i + 4 >= colori.length || c !== colori[i + 4])), true)
 }
 
 console.log('\n3. Il nome è un link solo se la scheda è pubblicata')
