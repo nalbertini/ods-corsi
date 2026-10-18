@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.88.1 — 18 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione il tasto del tema non compare più, perché il modulo resta sempre chiaro
+
 ## 0.88.0 — 18 ottobre 2026
 
 ### Novità
