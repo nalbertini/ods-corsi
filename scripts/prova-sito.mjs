@@ -389,6 +389,9 @@ ok('oltre 1 MB → «prova con una più piccola»', prova(() => im.controllaImma
 ok('senza testo e non decorativa → una frase', prova(() => im.controllaAlt('  ', false)), 'Scrivi cosa si vede nell\'immagine, oppure scegli «solo decorativa»')
 ok('con testo → nessun messaggio', prova(() => im.controllaAlt('Il tatami', false)), null)
 ok('decorativa senza testo → nessun messaggio', prova(() => im.controllaAlt('', true)), null)
+// Il testo alternativo di una foto già nel testo: decorativa = vuoto di proposito, altrimenti ripulito come alla scelta.
+ok('altDellaFoto: decorativa → vuoto anche se c\'era testo', prova(() => im.altDellaFoto('Il tatami', true)), '')
+ok('altDellaFoto: ripulito come alla scelta', prova(() => im.altDellaFoto('  Il "ring"  di sala ', false)), 'Il ring di sala')
 ok('immaginiNelTesto: src in ordine, senza doppioni', prova(() => im.immaginiNelTesto('<p>a</p><img src="u1" alt="x"><img alt="" src="u2"><img src="u1" alt="y">')), ['u1', 'u2'])
 ok('immaginiNelTesto: senza immagini → vuoto', prova(() => im.immaginiNelTesto('<p>solo testo</p>')), [])
 {

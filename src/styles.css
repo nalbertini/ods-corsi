@@ -3054,6 +3054,9 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sito-immagini-scelta { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .sito-immagini-scelta img { height: 110px; }
 .sito-testo img { display: block; max-width: 100%; height: auto; }
+/* La foto scelta si vede scelta: bordo pieno, come la casella a fuoco. */
+.sito-testo img.ProseMirror-selectednode { outline: 4px solid var(--text); outline-offset: 2px; }
+.sito-barra-foto { align-items: center; }
 @media (max-width: 767px) { .sito-immagini-scelta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .sito-voce > .sg-campo { flex: 1 1 240px; min-width: 0; }
 .sito-voce-n { width: 28px; font-size: 20px; font-weight: 700; color: var(--dim); }
@@ -3175,6 +3178,9 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* La barra è una riga sola che scorre di lato: due o tre righe coprirebbero il pezzo di sopra, e sul telefono mezzo schermo. */
 .sito-barra-caja .sito-barra { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 6px; }
 .sito-barra-caja .sito-tasto { flex-shrink: 0; }
+/* La barra della foto va a capo anche sul telefono: i tasti dell'azione e la frase d'errore devono restare in vista, senza scorrere di lato. */
+.sito-barra-caja .sito-barra-foto { flex-wrap: wrap; overflow-x: visible; padding-bottom: 0; }
+.sito-barra-foto .sg-campo { min-width: 0; flex: 1 1 140px; }
 /* Sullo schermo largo i tasti stanno tutti in vista, su due righe (come nel design approvato): nessuno nascosto da scorrere di lato. */
 @media (min-width: 900px) {
   .sito-barra-caja .sito-barra { flex-wrap: wrap; overflow-x: visible; padding-bottom: 0; }

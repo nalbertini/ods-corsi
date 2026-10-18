@@ -111,6 +111,11 @@ spunta **solo decorativa**; poi **Inserisci**. Senza testo e senza la spunta
 non si inserisce. Nel testo l'immagine va a tutta la larghezza e si sposta o si
 cancella come un paragrafo.
 
+Toccata una foto nel testo, ha il bordo pieno e al posto dei tasti del testo
+compare la barra **FOTO SCELTA**: il campo del testo alternativo (si salva
+uscendo dal campo o con Invio), **Solo decorativa**, **CAMBIA FOTO** e **Togli la
+foto**. Un tocco sul testo riporta i tasti del testo.
+
 Le immagini sono **pubbliche**: chiunque conosca l'indirizzo le vede, anche se
 la pagina è nascosta. Niente foto di persone senza il loro permesso, per i
 minorenni quello dei genitori; niente documenti. Finché sul database non c'è
