@@ -542,7 +542,7 @@ export interface DatiSegreteria {
   /** Il foglio del RASD: con `soloProva` dice cosa farebbe senza scrivere, se no scrive le nuove. */
   importaTessere(righe: RigaRasd[], soloProva: boolean): Promise<EsitoImportTessere>
   /** Una tessera scritta a mano; vale fino al 31 dicembre dell'anno di `dal`. */
-  aggiungiTessera(t: { personaId: string; ente: string; tipo: TipoTessera; codice: string; dal: string }): Promise<void>
+  aggiungiTessera(t: { personaId: string; ente: string; tipo: TipoTessera; codice: string; dal: string; origine?: 'rasd' | 'manuale' }): Promise<void>
   /** Si toglie, non si cambia: l'import dell'RASD si rifà. */
   togliTessera(id: string): Promise<void>
 

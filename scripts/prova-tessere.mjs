@@ -17,8 +17,17 @@ process.env.TZ = 'Europe/Rome'
 
 import { build } from 'esbuild'
 
+// La segreteria di prova vuole un localStorage e una window: finti e in memoria, come le altre prove.
+const memoria = new Map()
+globalThis.localStorage = {
+  getItem: (k) => (memoria.has(k) ? memoria.get(k) : null),
+  setItem: (k, v) => memoria.set(k, String(v)),
+  removeItem: (k) => memoria.delete(k),
+}
+globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} }
+
 const { outputFiles } = await build({
-  stdin: { contents: "export * from './src/lib/tessere'; export * as cosaManca from './src/lib/cosaManca'", resolveDir: '.', loader: 'ts' },
+  stdin: { contents: "export * from './src/lib/tessere'; export * as cosaManca from './src/lib/cosaManca'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'", resolveDir: '.', loader: 'ts' },
   bundle: true,
   format: 'esm',
   write: false,
@@ -222,6 +231,42 @@ ok('un motivo che non conosciamo non è il testo grezzo', m.motivoNonAbbinata('b
 ok('COSA ENTRA: i conti dell\'anteprima', m.contiImport({ nuove: 248, gia_presenti: 6, non_abbinate: [{}, {}, {}] }),
   [['248', 'tessere nuove'], ['6', 'già in app, non cambiano'], ['3', 'righe non abbinate']])
 ok('una nuova sola: singolare', m.contiImport({ nuove: 1, gia_presenti: 0, non_abbinate: [] })[0], ['1', 'tessera nuova'])
+
+console.log('\nIl timbro TESSERA in cima alla scheda')
+{
+  const corsiT = [{ id: 'judo', nome: 'Judo 3', enteTessera: 'FIJLKAM' }, { id: 'lotta', nome: 'Lotta 2', enteTessera: 'FIJLKAM' }, { id: 'pesi', nome: 'Pesi', enteTessera: 'FIPE' }, { id: 'psico', nome: 'Psicomotricità' }]
+  const P = (corsi, tessere = []) => ({ id: 'x', attiva: true, iscrizioni: corsi.map((corsoId) => ({ corsoId, dal: '2026-09-14' })), tessere })
+  const tim = (p, oggi = OGGI) => m.timbroTessera(p, corsiT, oggi)
+  ok('nessun corso che la chiede: niente timbro', [tim(P(['psico'])), tim(P([]))], [null, null])
+  ok('manca: rosso, con l\'ente e il corso', tim(P(['judo'])), { tono: 'rosso', parola: 'NO TESSERA', righe: [{ testo: 'FIJLKAM · Judo 3' }] })
+  ok('scaduta: rosso, con la data', tim(P(['judo'], [T('FIJLKAM', '2025-09-01', '2025-12-31')])), { tono: 'rosso', parola: 'SCADUTA', righe: [{ testo: 'FIJLKAM · scaduta il 31/12/2025' }] })
+  ok('in scadenza: giallo, col mese e i giorni', tim(P(['judo'], [T('FIJLKAM', '2026-09-01', '2026-12-31')]), '2026-11-10'), { tono: 'giallo', parola: 'SCADE A DICEMBRE', righe: [{ testo: 'FIJLKAM · fino al 31/12/2026, fra 51 giorni' }] })
+  ok('valida: verde', tim(P(['judo'], [T('FIJLKAM', '2026-09-01', '2026-12-31')])), { tono: 'verde', parola: 'IN REGOLA', righe: [{ testo: 'FIJLKAM · fino al 31/12/2026' }] })
+  ok('due enti, uno a posto e uno no: vale il peggiore, e le righe sono due', ((t) => [t.tono, t.parola, t.righe.length])(tim(P(['judo', 'pesi'], [T('FIJLKAM', '2026-09-01', '2026-12-31')]))), ['rosso', 'NO TESSERA', 2])
+  ok('una tessera da dirigente non basta: manca', tim(P(['judo'], [T('FIJLKAM', '2026-09-01', '2026-12-31', 'dirigente')])).parola, 'NO TESSERA')
+}
+
+console.log('\nLe liste della pagina TESSERE')
+{
+  const R = (personaId, esito, ente = 'FIJLKAM') => ({ personaId, ente, esito })
+  const righe = [R('a', 'manca'), R('b', 'scaduta'), R('c', 'in_scadenza'), R('d', 'non_iscritto'), R('e', 'manca', 'FIPE')]
+  const chi = (lista) => m.righeDellaLista(righe, lista).map((r) => r.personaId)
+  ok('SENZA TESSERA: manca, scaduta e in scadenza', chi('senza'), ['a', 'b', 'c', 'e'])
+  ok('MAI AVUTE: solo chi non l\'ha mai avuta', chi('mai'), ['a', 'e'])
+  ok('SCADUTE: solo chi l\'aveva', chi('scadute'), ['b'])
+  ok('TESSERATI SENZA CORSO', chi('senza-corso'), ['d'])
+}
+
+console.log('\nTogliere una tessera e rimetterla com\'era (ANNULLA)')
+{
+  const s = m.creaSegreteriaProva()
+  const prima = (await s.tessere()).elenco.find((t) => t.origine === 'rasd')
+  await s.togliTessera(prima.id)
+  ok('tolta: non c\'è più', (await s.tessere()).elenco.some((t) => t.id === prima.id), false)
+  await s.aggiungiTessera({ personaId: prima.personaId, ente: prima.ente, tipo: prima.tipo, codice: prima.codice, dal: prima.dal, origine: prima.origine })
+  const dopo = (await s.tessere()).elenco.find((t) => t.personaId === prima.personaId && t.ente === prima.ente && t.dal === prima.dal)
+  ok('rimessa: stessi dati, anche «dal RASD»', [dopo.tipo, dopo.codice, dopo.al, dopo.origine], [prima.tipo, prima.codice, prima.al, prima.origine])
+}
 
 console.log('\nLa quinta casella di COSA MANCA (scelta A del canvas, confermata)')
 {

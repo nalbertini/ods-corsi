@@ -178,6 +178,18 @@ export interface RigaIncrocio {
 
 type PersonaPerTessere = Pick<PersonaSeg, 'id' | 'attiva' | 'iscrizioni'> & { tessere?: TesseraSeg[] }
 
+/** Le tessere che chiedono i corsi a cui è iscritta oggi una persona: ente → nomi dei corsi, in ordine. */
+export function tessereRichieste(p: Pick<PersonaSeg, 'iscrizioni'>, corsi: Array<Pick<CorsoSeg, 'id' | 'nome'> & { enteTessera?: string | null }>, oggi: string): Map<string, string[]> {
+  const perId = new Map(corsi.map((c) => [c.id, c]))
+  const per = new Map<string, string[]>()
+  for (const i of p.iscrizioni) {
+    const c = perId.get(i.corsoId)
+    if (c?.enteTessera && inCorso(i, oggi)) per.set(c.enteTessera, [...(per.get(c.enteTessera) ?? []), c.nome])
+  }
+  for (const [ente, nomi] of per) per.set(ente, [...new Set(nomi)].sort((a, b) => a.localeCompare(b)))
+  return per
+}
+
 /**
  * L'incrocio fra iscrizioni e tessere: una riga per
  * persona ed ente. Chi è iscritto a un corso che chiede la tessera di un ente
@@ -186,21 +198,15 @@ type PersonaPerTessere = Pick<PersonaSeg, 'id' | 'attiva' | 'iscrizioni'> & { te
  * iscrizioni, e le schede archiviate non si guardano.
  */
 export function incrocioTessere(persone: PersonaPerTessere[], corsi: Array<Pick<CorsoSeg, 'id' | 'nome'> & { enteTessera?: string | null }>, oggi: string): RigaIncrocio[] {
-  const perId = new Map(corsi.map((c) => [c.id, c]))
   const righe: RigaIncrocio[] = []
   for (const p of persone) {
     if (!p.attiva) continue
     const tessere = p.tessere ?? []
     const iscritta = p.iscrizioni.some((i) => inCorso(i, oggi))
-    const richieste = new Map<string, string[]>()
-    for (const i of p.iscrizioni) {
-      const c = perId.get(i.corsoId)
-      if (c?.enteTessera && inCorso(i, oggi)) richieste.set(c.enteTessera, [...(richieste.get(c.enteTessera) ?? []), c.nome])
-    }
-    for (const [ente, nomi] of richieste) {
+    for (const [ente, nomi] of tessereRichieste(p, corsi, oggi)) {
       const stato = statoTessera(tessere, ente, oggi)
       if (stato === 'valida') continue
-      righe.push({ personaId: p.id, ente, esito: stato, corsi: [...new Set(nomi)].sort((a, b) => a.localeCompare(b)).join(', '), tesseraAl: fineTessera(tessere, ente) })
+      righe.push({ personaId: p.id, ente, esito: stato, corsi: nomi.join(', '), tesseraAl: fineTessera(tessere, ente) })
     }
     if (iscritta) continue
     for (const ente of new Set(tessere.filter((t) => daAtleta(t) && t.dal <= oggi && t.al >= oggi).map((t) => t.ente))) {
@@ -328,4 +334,48 @@ export function paroleConTessera<P extends { tono: string; parola: string }>(par
 export function statoDiUna(t: Pick<TesseraSeg, 'al'>, oggi: string): 'scaduta' | 'in_scadenza' | 'valida' {
   if (t.al < oggi) return 'scaduta'
   return giorniTra(oggi, t.al) <= GIORNI_IN_SCADENZA ? 'in_scadenza' : 'valida'
+}
+
+const GRAVITA: Record<StatoTessera, number> = { manca: 3, scaduta: 2, in_scadenza: 1, valida: 0 }
+const dataBreve = (g: string) => g.split('-').reverse().join('/')
+
+/**
+ * Il timbro TESSERA in cima alla scheda, come quelli del certificato e della
+ * quota: la parola, e una riga per ente. Niente se nessun corso della persona
+ * la chiede. Con più enti vale il peggiore.
+ */
+export function timbroTessera(
+  p: PersonaPerTessere,
+  corsi: Array<Pick<CorsoSeg, 'id' | 'nome'> & { enteTessera?: string | null }>,
+  oggi: string,
+): { tono: 'rosso' | 'giallo' | 'verde'; parola: string; righe: Array<{ testo: string }> } | null {
+  const richieste = tessereRichieste(p, corsi, oggi)
+  if (!richieste.size) return null
+  const tessere = p.tessere ?? []
+  const stati = [...richieste].map(([ente, nomi]) => ({ ente, nomi, stato: statoTessera(tessere, ente, oggi), al: fineTessera(tessere, ente) }))
+  const peggiore = stati.reduce((m, x) => (GRAVITA[x.stato] > GRAVITA[m.stato] ? x : m))
+  const righe = stati.map((x) => ({
+    testo:
+      x.stato === 'manca'
+        ? `${x.ente} · ${x.nomi.join(', ')}`
+        : x.stato === 'scaduta'
+          ? `${x.ente} · scaduta il ${dataBreve(x.al!)}`
+          : `${x.ente} · fino al ${dataBreve(x.al!)}${x.stato === 'in_scadenza' ? `, fra ${giorniTra(oggi, x.al!)} ${giorniTra(oggi, x.al!) === 1 ? 'giorno' : 'giorni'}` : ''}`,
+  }))
+  if (peggiore.stato === 'valida') return { tono: 'verde', parola: 'IN REGOLA', righe }
+  if (peggiore.stato === 'in_scadenza') return { tono: 'giallo', parola: `SCADE A ${MESI[Number(peggiore.al!.slice(5, 7)) - 1]}`, righe }
+  return { tono: 'rosso', parola: peggiore.stato === 'manca' ? 'NO TESSERA' : 'SCADUTA', righe }
+}
+
+export type ListaTessere = 'senza' | 'mai' | 'scadute' | 'senza-corso'
+
+/** Le righe di una lista della pagina TESSERE: chi non l'ha (manca, scaduta, in scadenza), chi non l'ha mai avuta, chi l'ha scaduta, chi è tesserato senza corso. */
+export function righeDellaLista(righe: RigaIncrocio[], lista: ListaTessere): RigaIncrocio[] {
+  const esiti: Record<ListaTessere, EsitoIncrocio[]> = {
+    senza: ['manca', 'scaduta', 'in_scadenza'],
+    mai: ['manca'],
+    scadute: ['scaduta'],
+    'senza-corso': ['non_iscritto'],
+  }
+  return righe.filter((r) => esiti[lista].includes(r.esito))
 }

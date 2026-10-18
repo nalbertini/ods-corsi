@@ -732,7 +732,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async aggiungiTessera(t) {
       const ente = enteDaDati(t.ente)
       if (!ente || !t.codice.trim()) throw new Error('Scrivi l’ente e il numero della tessera')
-      ok(await db.from('tessere').insert({ persona_id: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: fineAnno(t.dal), origine: 'manuale' }))
+      ok(await db.from('tessere').insert({ persona_id: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: fineAnno(t.dal), origine: t.origine ?? 'manuale' }))
     },
 
     async togliTessera(id) {

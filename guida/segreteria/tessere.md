@@ -39,7 +39,8 @@ Due elenchi, con i loro numeri:
 
 - **SENZA TESSERA** — chi è iscritto oggi a un corso che chiede una tessera e **non ce l'ha**
   (**NO TESSERA**), ce l'ha **SCADUTA**, o scade entro 60 giorni (**TESSERA SCADE A DICEMBRE**,
-  in giallo). Una tessera da dirigente o da tecnico non basta: serve quella da atleta (praticante
+  in giallo). Due tasti restringono l'elenco: **MAI AVUTE** (chi non ha mai avuto la tessera: «vieni a
+  tesserarti») e **SCADUTE** (chi l'aveva e va rinnovata: «rinnova»). Una tessera da dirigente o da tecnico non basta: serve quella da atleta (praticante
   o agonista). Una prova gratuita non è un'iscrizione.
 - **TESSERATI SENZA CORSO** — chi ha una tessera da atleta che vale oggi e nessun corso. Può essere
   chi ha smesso e ha ancora la tessera dell'anno.
@@ -51,6 +52,8 @@ Un clic su una riga apre la scheda della persona.
 - In [ISCRITTI](iscritti.md): la colonna **IN REGOLA** dice anche **NO TESSERA** o **TESSERA SCADUTA**,
   c'è il filtro **SENZA TESSERA**, e **NON IN REGOLA** li comprende.
 - La striscia **COSA MANCA** ha la casella **TESSERE**, con il numero di chi non ha una tessera valida.
-- La scheda della persona ha la sezione **TESSERE**.
+- La scheda della persona ha il timbro **TESSERA** in cima, come il certificato e la quota (**NO TESSERA**,
+  **SCADUTA**, **SCADE A DICEMBRE** o **IN REGOLA**, con una riga per ente), e la sezione **TESSERE**.
+  **TOGLI** chiede conferma; subito dopo, nell'avviso, **ANNULLA** rimette la tessera com'era.
 
 Se il database non ha ancora le tessere, niente di tutto questo si vede e la pagina lo dice.

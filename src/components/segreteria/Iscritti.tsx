@@ -7,7 +7,7 @@ import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { conTessere, incrocioTessere, paroleConTessera, senzaTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
+import { conTessere, incrocioTessere, paroleConTessera, senzaTessera, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
 import { TessereDellaPersona } from './Tessere'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
@@ -250,6 +250,7 @@ export function Iscritti({
             f={freq.dato?.get(persona.id)}
             tessere={conTessereLette ? tessere.dato!.elenco : undefined}
             fai={fai}
+            avvisa={avvisa}
             onCambiato={() => {
               void ricarica()
               onConti?.()
@@ -518,6 +519,7 @@ function Scheda({
   f,
   tessere,
   fai,
+  avvisa,
   onCambiato,
   onApri,
   unisciCon,
@@ -534,6 +536,7 @@ function Scheda({
   /** Le tessere di tutti; senza (il database non le ha ancora) la sezione non c'è. */
   tessere?: TesseraSeg[]
   fai: Fai
+  avvisa: ReturnType<typeof useAvviso>['avvisa']
   onCambiato: () => void
   /** Apre la scheda di un'altra persona: una del nucleo. */
   onApri: (personaId: string) => void
@@ -573,7 +576,7 @@ function Scheda({
         <span style={{ fontSize: 13, color: 'var(--dim)' }}>{`In elenco dal ${dataLunga(p.creataIl)} · nessun accesso`}</span>
       </div>
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
-      {!unendo && !pagando && <Timbri p={p} oggi={oggi} />}
+      {!unendo && !pagando && <Timbri p={p} oggi={oggi} tessera={tessere ? timbroTessera({ ...p, tessere: tessere.filter((t) => t.personaId === p.id) }, [...corsi.values()], oggi) : null} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -652,7 +655,7 @@ function Scheda({
           <div id="sez-certificato">
             <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>
-          <TessereDellaPersona key={`t-${p.id}-${(tessere ?? []).length}`} d={d} p={p} tessere={tessere} corsi={corsi} oggi={chiaveGiorno(new Date())} fai={fai} onCambiato={onCambiato} />
+          <TessereDellaPersona key={`t-${p.id}-${(tessere ?? []).length}`} d={d} p={p} tessere={tessere} corsi={corsi} oggi={chiaveGiorno(new Date())} fai={fai} avvisa={avvisa} onCambiato={onCambiato} />
           <div id="sez-documento">
             <Documento d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>
@@ -855,7 +858,7 @@ function vaiA(id: string) {
  * In cima alla scheda: certificato, quota e documento in un colpo d'occhio,
  * con le parole dell'elenco (`timbriScheda`). Ognuno porta alla sua sezione.
  */
-function Timbri({ p, oggi }: { p: PersonaSeg; oggi: string }) {
+function Timbri({ p, oggi, tessera }: { p: PersonaSeg; oggi: string; tessera: ReturnType<typeof timbroTessera> }) {
   const t = timbriScheda(p, oggi)
   const uno = (titolo: string, x: Timbro, id: string, piccolo?: boolean) => (
     <button type="button" className="sg-timbro" data-tono={x.tono} data-piccolo={piccolo} onClick={() => vaiA(id)}>
@@ -875,9 +878,10 @@ function Timbri({ p, oggi }: { p: PersonaSeg; oggi: string }) {
           <strong>DISATTIVATA</strong> Non è negli appelli né sul tablet. Per rimetterla: RIATTIVA, in fondo alla scheda.
         </p>
       )}
-      <div className="sg-timbri">
+      <div className="sg-timbri" data-con-tessera={tessera ? true : undefined}>
         {uno('CERTIFICATO MEDICO', t.certificato, 'sez-certificato')}
         {uno('QUOTA', t.quota, 'sez-quota')}
+        {tessera && uno('TESSERA', { ...tessera, tono: p.attiva ? tessera.tono : 'spento' }, 'sez-tessere')}
         {uno('DOCUMENTO D’IDENTITÀ', t.documento, 'sez-documento', true)}
       </div>
     </div>

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { chiaveGiorno } from '../../lib/sala'
 import type { CorsoSeg, DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
-import { inCorso } from '../../lib/segreteria'
 import {
   conTessere,
   contaTessere,
@@ -9,19 +8,23 @@ import {
   fraseTessera,
   incrocioTessere,
   motivoNonAbbinata,
+  righeDellaLista,
+  tessereRichieste,
   parolaTessera,
   righeDalFoglio,
   statoDiUna,
   type EsitoImportTessere,
+  type ListaTessere,
   type RigaIncrocio,
   type RigaSaltata,
   type TesseraSeg,
   type TipoTessera,
 } from '../../lib/tessere'
 import type { Destinazione, Voce } from './Segreteria'
-import { Campo, Guaio, messaggio, Riga, Testa, useAvviso, useCarica } from './comune'
+import { Campo, chiedi, Guaio, messaggio, Riga, Testa, useAvviso, useCarica } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
+type Avvisa = ReturnType<typeof useAvviso>['avvisa']
 
 const TIPI: Array<[TipoTessera, string]> = [
   ['praticante', 'Praticante'],
@@ -59,6 +62,7 @@ export function TessereDellaPersona({
   corsi,
   oggi,
   fai,
+  avvisa,
   onCambiato,
 }: {
   d: DatiSegreteria
@@ -67,14 +71,11 @@ export function TessereDellaPersona({
   corsi: Map<string, CorsoSeg>
   oggi: string
   fai: Fai
+  avvisa: Avvisa
   onCambiato: () => void
 }) {
   const [scrivi, setScrivi] = useState(false)
-  const richieste = new Map<string, string[]>()
-  for (const i of p.iscrizioni.filter((x) => inCorso(x, oggi))) {
-    const c = corsi.get(i.corsoId)
-    if (c?.enteTessera) richieste.set(c.enteTessera, [...(richieste.get(c.enteTessera) ?? []), c.nome])
-  }
+  const richieste = tessereRichieste(p, [...corsi.values()], oggi)
   const primoEnte = [...richieste.keys()][0] ?? ''
   const [b, setB] = useState<{ ente: string; tipo: TipoTessera; codice: string; dal: string }>({ ente: primoEnte, tipo: 'praticante', codice: '', dal: oggi })
   if (!tessere) return null
@@ -102,7 +103,17 @@ export function TessereDellaPersona({
             type="button"
             className="sg-btn sg-btn-linea"
             aria-label={`Togli la tessera ${t.ente} n. ${t.codice}`}
-            onClick={() => void fai(() => d.togliTessera(t.id ?? ''), 'Tessera tolta', onCambiato)}
+            onClick={async () => {
+              if (!(await chiedi(`Togliere la tessera ${t.ente} n. ${t.codice} di ${p.nome} ${p.cognome}?`, 'SÌ, TOGLILA'))) return
+              // ANNULLA la rimette com'era, anche «dal RASD».
+              void fai(() => d.togliTessera(t.id ?? ''), undefined, async () => {
+                onCambiato()
+                avvisa('Tessera tolta', false, {
+                  etichetta: 'ANNULLA',
+                  fa: () => void fai(() => d.aggiungiTessera({ personaId: p.id, ente: t.ente, tipo: t.tipo, codice: t.codice ?? '', dal: t.dal, origine: t.origine }), 'Tessera rimessa', onCambiato),
+                })
+              })
+            }}
           >
             TOGLI
           </button>
@@ -163,7 +174,7 @@ export function TessereDellaPersona({
   )
 }
 
-type Lista = 'senza' | 'senza-corso'
+type Lista = ListaTessere
 
 /**
  * La pagina TESSERE: l'incrocio fra chi è iscritto e chi è tesserato. Due
@@ -182,9 +193,10 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
   const manca = !!tessere.dato?.manca
   const righe: RigaIncrocio[] = pronte && !manca ? incrocioTessere(conTessere(persone.dato!, tessere.dato!.elenco), corsi.dato!, oggi) : []
   const nome = new Map((persone.dato ?? []).map((p) => [p.id, `${p.cognome} ${p.nome}`]))
-  const senza = righe.filter((r) => r.esito !== 'non_iscritto').sort((a, b) => (nome.get(a.personaId) ?? '').localeCompare(nome.get(b.personaId) ?? '', 'it'))
-  const senzaCorso = righe.filter((r) => r.esito === 'non_iscritto').sort((a, b) => (nome.get(a.personaId) ?? '').localeCompare(nome.get(b.personaId) ?? '', 'it'))
-  const visibili = lista === 'senza' ? senza : senzaCorso
+  const ordinate = (l: Lista) => righeDellaLista(righe, l).sort((a, b) => (nome.get(a.personaId) ?? '').localeCompare(nome.get(b.personaId) ?? '', 'it'))
+  const senza = ordinate('senza')
+  const senzaCorso = ordinate('senza-corso')
+  const visibili = ordinate(lista)
   const sotto = !pronte
     ? 'Un attimo…'
     : manca
@@ -205,12 +217,18 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
             <button type="button" className="num sg-chip" aria-pressed={lista === 'senza'} onClick={() => setLista('senza')}>
               SENZA TESSERA {senza.length}
             </button>
+            <button type="button" className="num sg-chip" aria-pressed={lista === 'mai'} onClick={() => setLista('mai')}>
+              MAI AVUTE {ordinate('mai').length}
+            </button>
+            <button type="button" className="num sg-chip" aria-pressed={lista === 'scadute'} onClick={() => setLista('scadute')}>
+              SCADUTE {ordinate('scadute').length}
+            </button>
             <button type="button" className="num sg-chip" aria-pressed={lista === 'senza-corso'} onClick={() => setLista('senza-corso')}>
               TESSERATI SENZA CORSO {senzaCorso.length}
             </button>
           </div>
           {visibili.length === 0 ? (
-            <p className="sg-sotto">{lista === 'senza' ? 'Tutti gli iscritti hanno la tessera che il loro corso chiede.' : 'Chi è tesserato ha un corso.'}</p>
+            <p className="sg-sotto">{lista === 'senza-corso' ? 'Chi è tesserato ha un corso.' : lista === 'mai' ? 'Tutti hanno avuto almeno una tessera.' : lista === 'scadute' ? 'Nessuna tessera scaduta.' : 'Tutti gli iscritti hanno la tessera che il loro corso chiede.'}</p>
           ) : (
             <div className="stack" style={{ gap: 0 }}>
               {visibili.map((r) => {
