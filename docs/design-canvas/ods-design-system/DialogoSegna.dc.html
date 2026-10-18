@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="dialog" aria-label="{{titolo}}" style="display: flex; flex-direction: column; gap: 14px; width: 100%; padding: {{imbottitura}}; background: #ffffff; border: 2px solid #0d2a3d; border-radius: 6px; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #0d2a3d">
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 700; letter-spacing: 0.04em; line-height: 1.05">{{titolo}}</span>
+  <span style="font-size: 14px; line-height: 1.5; color: #46606f">{{sotto}}</span>
+  <div style="display: flex; flex-direction: column; max-height: {{altezzaElenco}}; overflow: hidden; border: 2px solid #cfe6f4">
+    <sc-for list="{{persone}}" as="x" hint-placeholder-count="4">
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 4px 4px 4px 12px; border-bottom: 1px solid #cfe6f4">
+        <span style="flex: 1; min-width: 0; font-size: 15px; font-weight: 600">{{x.nome}}<span style="display: block; font-size: 13px; font-weight: 400; font-variant-numeric: tabular-nums; color: #46606f">{{x.voce}}</span></span>
+        <dc-import name="Bottone" label="✕ Escludi" variante="linea" contesto="segreteria" tema="sito" hint-size="130px,44px"></dc-import>
+      </div>
+    </sc-for>
+    <sc-if value="{{haPiu}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 12px; font-size: 13px; color: #46606f; background: #eef5fa">{{piu}}</div></sc-if>
+  </div>
+  <div style="display: grid; grid-template-columns: {{colonne}}; gap: 12px">
+    <dc-import name="Campo" contesto="segreteria" tema="sito" etichetta="VALE FINO AL" valore="31/07/2027" hint-size="100%,72px"></dc-import>
+    <dc-import name="Campo" contesto="segreteria" tema="sito" etichetta="NOTA" valore="Dal vecchio programma" hint-size="100%,72px"></dc-import>
+  </div>
+  <span style="font-size: 14px; line-height: 1.5; color: #46606f">Se la data non è giusta per qualcuno, si corregge persona per persona dalla scheda: QUOTA E PAGAMENTI › Pagata senza ricevuta dell’app.</span>
+  <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px">
+    <dc-import name="Bottone" label="Annulla" variante="linea" contesto="segreteria" tema="sito" hint-size="130px,48px"></dc-import>
+    <dc-import name="Bottone" label="Segna" variante="pieno" contesto="segreteria" tema="sito" hint-size="130px,56px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"SEGNA 38 PERSONE"},"sotto":{"editor":"text","default":"La quota risulta pagata senza ricevuta dell’app, come col tasto della scheda. Non nasce nessun incasso: il pagamento resta nel vecchio programma."},"persone":{"editor":"text","default":"Tatone Clio:28/09/2026 · 50 € quota associativa|Esposito Marta:14/09/2026 · 50 € quota associativa"},"piu":{"editor":"text","default":""},"telefono":{"editor":"boolean","default":false},"$preview":{"width":620,"height":700}}'>
+// COSTRUITA (PagatoPrima.tsx, `Conferma`; `.sg-dialogo`; filtro-storico-pagamenti): la conferma prima di segnare in blocco. Va su un velo come `Dialogo` (rgba(13,42,61,.55), il velo di SchedaPopover): qui il solo
+// pannello, nel look del sito: bianco, bordo 2px inchiostro #0d2a3d, raggio 6px, padding 28px, titolo Big Shoulders 700 26px, maiuscolo, «SEGNA N PERSONE». Dentro: l'elenco di chi si segna (scorre,
+// ogni riga ha «✕ Escludi», Bottone `linea` da 44px: prova:pericolo vieta «Togli»), VALE FINO AL e NOTA con i valori proposti (`Campo` sito), la frase sulla correzione dalla scheda e i tasti
+// Annulla (linea) e Segna (giallo, uno solo), senza maiuscolo come ogni `.sg-btn` nel look sito (Inter 16px 600). `persone` = «Nome:voce» separati da |; `piu` = riga opzionale sotto l'elenco (nell'app l'elenco scorre, max 280px, e non la ha). Il testo sotto il titolo e' quello costruito.
+// Telefono: padding 18px, campi in colonna.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const tel = p.telefono === true || p.telefono === 'true';
+    const persone = String(p.persone ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
+      const i = s.indexOf(':');
+      return { nome: s.slice(0, i), voce: s.slice(i + 1).trim() };
+    });
+    return { titolo: p.titolo ?? 'SEGNA 38 PERSONE', sotto: p.sotto ?? 'La quota risulta pagata senza ricevuta dell’app, come col tasto della scheda. Non nasce nessun incasso: il pagamento resta nel vecchio programma.', persone, piu: p.piu ?? '', haPiu: (p.piu ?? '') !== '', imbottitura: tel ? '18px' : '28px', colonne: tel ? '1fr' : '1fr 1fr', altezzaElenco: '280px' };
+  }
+}
+</script>
+</body>
+</html>

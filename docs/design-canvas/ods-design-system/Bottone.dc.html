@@ -16,9 +16,9 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<button type="button" onClick="{{click}}" style="display: inline-flex; align-items: center; justify-content: center; gap: {{s.gap}}; min-height: {{s.minHeight}}; min-width: {{s.minWidth}}; width: {{s.width}}; padding: {{s.padding}}; border: {{s.border}}; border-radius: {{s.radius}}; background: {{s.bg}}; color: {{s.fg}}; font-family: {{s.family}}; font-style: {{s.fontStyle}}; font-size: {{s.fontSize}}; font-weight: {{s.weight}}; letter-spacing: {{s.spacing}}; line-height: normal; white-space: nowrap; opacity: {{s.opacity}}; cursor: {{s.cursor}}">{{label}}</button>
+<button type="button" onClick="{{click}}" style="display: inline-flex; align-items: center; justify-content: center; gap: {{s.gap}}; min-height: {{s.minHeight}}; min-width: {{s.minWidth}}; width: {{s.width}}; padding: {{s.padding}}; border: {{s.border}}; border-radius: {{s.radius}}; background: {{s.bg}}; color: {{s.fg}}; font-family: {{s.family}}; font-style: {{s.fontStyle}}; font-size: {{s.fontSize}}; font-weight: {{s.weight}}; letter-spacing: {{s.spacing}}; line-height: normal; text-align: center; white-space: {{s.aCapo}}; opacity: {{s.opacity}}; cursor: {{s.cursor}}">{{label}}</button>
 </x-dc>
-<script data-dc-script data-props='{"label":{"editor":"text","default":"SEGNA LA PRESENZA"},"variante":{"editor":"enum","options":["principale","vai","linea","tratteggiato","pieno","rosso","pericolo","icona"],"default":"principale"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"disabled":{"editor":"boolean","default":false},"alto":{"editor":"text","default":""},"corpo":{"editor":"text","default":""},"spazio":{"editor":"text","default":""},"larghezza":{"editor":"text","default":""},"bordo":{"editor":"enum","options":["","riga-campo"],"default":""},"onClick":{"editor":null},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":260,"height":80}}'>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"SEGNA LA PRESENZA"},"variante":{"editor":"enum","options":["principale","vai","linea","tratteggiato","pieno","rosso","pericolo","icona"],"default":"principale"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"disabled":{"editor":"boolean","default":false},"alto":{"editor":"text","default":""},"corpo":{"editor":"text","default":""},"spazio":{"editor":"text","default":""},"larghezza":{"editor":"text","default":""},"aCapo":{"editor":"boolean","default":false},"bordo":{"editor":"enum","options":["","riga-campo"],"default":""},"onClick":{"editor":null},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":260,"height":80}}'>
 // Riproduzione 1:1 di .btn / .icon-btn / .sg-btn in src/styles.css (righe 224-247 e 1295-1314) e dei tasti di
 // src/components/ds.tsx (Tasto).
 // contesto "app": .btn, 56px, 19px, 0.16em. contesto "segreteria": .sg-btn, 48px, 15px, 0.14em.
@@ -27,6 +27,7 @@
 // pericolo = .sg-pericolo su un tasto a linea: contorno e testo `rosso-testo`, per cio' che toglie (Cancella, Elimina, Annulla, Togli, Disattiva); il rosso pieno resta al «si'» della conferma.
 // In segreteria "principale" e' "pieno"; nell'app "pieno" e "rosso" sono "principale".
 // icona = .icon-btn: 44px quadrati, bordo 2px; con piu' di un carattere si allarga (.icon-btn.testo).
+// aCapo: il testo puo' andare su due righe (PROPOSTA filtro-storico-pagamenti: tasto lungo sul telefono); di norma una riga sola.
 // alto / corpo / spazio / larghezza: gli style inline del codice (es. il tasto ‹ del calendario: minHeight 44,
 // minWidth 44, fontSize 22, padding 0).
 // bordo = "riga-campo": il bordo dei campi e delle scelte del modulo (i tipi di TI SERVE ALTRO?, .vestiario-tasto.btn-ghost).
@@ -103,7 +104,7 @@ class Component extends DCLogic {
     return {
       label,
       click: () => { if (!off && typeof p.onClick === 'function') p.onClick(); },
-      s: { ...s, bg, fg, border, opacity: off && !sg ? 0.4 : 1, cursor: off ? 'not-allowed' : 'pointer' },
+      s: { ...s, aCapo: p.aCapo === true || p.aCapo === 'true' ? 'normal' : 'nowrap', bg, fg, border, opacity: off && !sg ? 0.4 : 1, cursor: off ? 'not-allowed' : 'pointer' },
     };
   }
 }

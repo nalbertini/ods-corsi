@@ -354,6 +354,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('70-movimenti-persona.sql', 'lo storico dei movimenti collegato alla persona, con la traccia di chi l''ha fatto',
     exists (select 1 from dentro where nome = 'collega_movimenti_persona') and to_regclass('public.collegamenti_persona') is not null
     and exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'movimenti' and column_name = 'persona_id')),
+  ('71-pagato-vecchio-programma.sql', 'la lettura degli incassi del vecchio programma nella stagione, per il filtro «Pagato nel vecchio programma»',
+    to_regprocedure('public.incassi_vecchio_programma()') is not null
+    and exists (select 1 from information_schema.columns
                 where table_schema = 'public' and table_name = 'movimenti' and column_name = 'persona_id'))
 ) as x(file, cosa, c)
 order by file, cosa;

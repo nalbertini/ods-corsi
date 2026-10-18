@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="row" style="display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 8px 14px; border-bottom: 1px solid #cfe6f4; background: transparent; box-shadow: {{barra}}; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #0d2a3d; text-align: left">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px">
+    <sc-if value="{{conCasella}}" hint-placeholder-val="{{ true }}">
+      <span role="checkbox" aria-checked="{{scelta}}" aria-label="{{ariaCasella}}" style="display: inline-flex; align-items: center; justify-content: center; flex: none; width: 44px; height: 44px; margin: -10px 0"><span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #0d2a3d; border-radius: 4px; background: {{fondoCasella}}; font-size: 16px; font-weight: 700; color: #ffffff">{{segnoCasella}}</span></span>
+    </sc-if>
+    <sc-if value="{{spazio}}" hint-placeholder-val="{{ false }}"><span style="flex: none; width: 44px"></span></sc-if>
+    <span style="display: flex; align-items: center; flex: 1 1 90px; min-width: 0; min-height: 44px; margin: -13px 0; font-size: 15px; font-weight: 600">{{nome}}</span>
+    <dc-import name="Badge" tipo="segno" tono="{{quotaTono}}" label="{{quota}}" tema="sito" hint-size="120px,24px"></dc-import>
+  </div>
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-left: {{rientro}}">
+    <span style="font-size: 14px; font-variant-numeric: tabular-nums; color: #0d2a3d">{{voce}}</span>
+    <sc-if value="{{haCollegato}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 600; color: #0d2a3d">{{collegato}}</span></sc-if>
+    <sc-if value="{{parziale}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="PARZIALE?" tema="sito" hint-size="110px,24px"></dc-import></sc-if>
+    <sc-if value="{{haErrore}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="rosso" label="{{errore}}" tema="sito" hint-size="190px,24px"></dc-import></sc-if>
+  </div>
+  <sc-if value="{{conLink}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding-left: {{rientro}}">
+      <span style="font-size: 14px; color: #46606f">{{nota}}</span>
+      <span style="display: inline-flex; align-items: center; min-height: 44px; margin: -8px 0; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">Apri la scheda ›</span>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Tatone Clio"},"voce":{"editor":"text","default":"28/09/2026 · 50 € quota associativa"},"quota":{"editor":"text","default":"DA PAGARE"},"collegato":{"editor":"text","default":""},"parziale":{"editor":"boolean","default":false},"casella":{"editor":"enum","options":["vuota","scelta","senza"],"default":"vuota"},"errore":{"editor":"text","default":""},"nota":{"editor":"text","default":""},"$preview":{"width":900,"height":80}}'>
+// COSTRUITA (PagatoPrima.tsx, `Riga`; docs/design-canvas/filtro-storico-pagamenti): una riga dell'elenco ISCRITTI filtrato su «Pagato nel vecchio programma». `.sg-riga-prima` nel look del sito:
+// fondo trasparente sull'azzurro (le righe NON stanno in un riquadro bianco), filetto 1px `line-soft` #cfe6f4, padding 8px 14px, gap 6px; il nome e' un bottone alto 44px (`.sg-riga-apri`, margine -13px) Inter 15px 600; segni con Badge. Dice perche' la persona e' qui:
+// `voce` = «data · importo · voce» dell'incasso dello storico (14px, cifre tabulari); `quota` = la quota di adesso (DA PAGARE giallo, SCADUTA rosso);
+// `collegato` = a chi e' intestato l'incasso quando non e' lei («incasso del genitore Rossi Anna», 13px 600 `sec`); `parziale` = PARZIALE? giallo (quota sotto i 50 €).
+// casella: vuota | scelta = checkbox nativa da 24px nel bersaglio da 44px (`.sg-scelta-riga`, accent `text` #0d2a3d); la riga scelta ha la barra laterale di 4px `giallo-testo` #8f6a00
+// (`.sg-riga-prima[data-scelta='true']`: box-shadow inset 4px 0 0), niente contorno; senza = nessuna casella (riga da guardare a mano: genitore, PARZIALE?, solo corsi): al suo posto una frase `nota` e «Apri la scheda ›» (44px).
+// `errore` = la ragione di una segnatura non riuscita (esito), sotto forma di segno rosso.
+// Sul telefono la riga e' gia' impilata (flex che va a capo): nome e bollino sulla prima riga, perche' sotto, scheda in fondo.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const casella = p.casella || 'vuota';
+    const scelta = casella === 'scelta';
+    const quota = p.quota ?? 'DA PAGARE';
+    return {
+      nome: p.nome ?? '', voce: p.voce ?? '', quota, quotaTono: quota === 'SCADUTA' ? 'rosso' : 'giallo',
+      conCasella: casella !== 'senza', spazio: casella === 'senza', scelta, rientro: '58px',
+      ariaCasella: 'Scegli ' + (p.nome ?? ''), fondoCasella: scelta ? '#0d2a3d' : '#ffffff', segnoCasella: scelta ? '✓' : '',
+      barra: scelta ? 'inset 4px 0 0 #8f6a00' : 'none',
+      haCollegato: (p.collegato ?? '') !== '', collegato: p.collegato ?? '',
+      parziale: p.parziale === true || p.parziale === 'true',
+      haErrore: (p.errore ?? '') !== '', errore: p.errore ?? '',
+      conLink: casella === 'senza', nota: p.nota ?? '',
+    };
+  }
+}
+</script>
+</body>
+</html>

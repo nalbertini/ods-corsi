@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; background: #ffffff; border: 2px solid #8f6a00; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #0d2a3d">
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 22px; font-weight: 700; line-height: 1">{{titolo}}</span>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; {{margine}}">
+    <dc-import name="Bottone" label="Seleziona tutte" variante="linea" contesto="segreteria" tema="sito" hint-size="190px,48px"></dc-import>
+    <dc-import name="Bottone" label="Deseleziona" variante="linea" contesto="segreteria" tema="sito" hint-size="150px,48px"></dc-import>
+  </div>
+  <div style="display: flex; {{tastoLargo}}">
+    <dc-import name="Bottone" label="{{tasto}}" variante="pieno" contesto="segreteria" tema="sito" larghezza="100%" corpo="{{corpoTasto}}" a-capo="{{aCapo}}" hint-size="100%,56px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"38 SCELTE"},"tasto":{"editor":"text","default":"Segna 38 come pagate senza ricevuta dell’app"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1100,"height":90}}'>
+// COSTRUITA (PagatoPrima.tsx): e' `.sg-barra-scelta` dell'app (src/styles.css ~2293): sticky in fondo, flex che va a capo, gap 10px 14px, padding 12px 14px, fondo `surface`
+// bianco, bordo 2px, angoli vivi; nel look del sito il bordo e' `giallo-testo` #8f6a00 (styles.css ~424), non l'inchiostro. Titolo «N SCELTE» (`.ob`, Big Shoulders 22px 700),
+// poi «Seleziona tutte» e «Deseleziona» a linea e il tasto pieno «Segna N come pagate senza ricevuta dell'app» (Inter 16px 600 come `.sg-btn` nel look sito, styles.css ~348:
+// frase normale, NON in maiuscolo). La barra compare solo con almeno una scelta; con zero scelte c'e' invece il tasto «Seleziona tutte le N» sopra l'elenco.
+// Con tutte le segnature fallite il tasto diventa «Riprova le N». Sul telefono il tasto e' a tutta larghezza sotto, su piu' righe.
+class Component extends DCLogic {
+  renderVals() {
+    const tel = this.props.telefono === true || this.props.telefono === 'true';
+    return {
+      titolo: this.props.titolo ?? '38 SCELTE', tasto: this.props.tasto ?? '',
+      margine: tel ? '' : 'margin-left: auto', corpoTasto: tel ? '18px' : '', aCapo: tel, tastoLargo: tel ? 'flex-basis: 100%' : 'flex: 0 1 auto',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@ import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
 import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
+import type { IncassoPrima } from './pagatoPrima'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
@@ -547,6 +548,8 @@ export interface DatiSegreteria {
    * ancora il file: l'elenco è vuoto e l'app lo dice invece di mostrare «nessuna tessera».
    */
   tessere(): Promise<{ elenco: TesseraSeg[]; manca?: boolean }>
+  /** Gli incassi del vecchio programma nella stagione, per il filtro «Pagato nel vecchio programma» (`71-pagato-vecchio-programma.sql`). `manca`: il database non ha il file, il filtro non si offre. */
+  pagatoPrima(): Promise<{ elenco: IncassoPrima[]; manca?: boolean }>
   /** Il foglio del RASD: con `soloProva` dice cosa farebbe senza scrivere, se no scrive le nuove. */
   importaTessere(righe: RigaRasd[], soloProva: boolean): Promise<EsitoImportTessere>
   /** Una tessera scritta a mano; vale fino al 31 dicembre dell'anno di `dal`. */
