@@ -62,6 +62,7 @@ const SEZIONI = [
   { id: 'timer-musica', nome: 'Timer · musica', cartella: 'timer-musica' },
   { id: 'timer-youtube', nome: 'Timer · YouTube', cartella: 'timer-youtube' },
   { id: 'moduli-pdf', nome: 'Moduli PDF · carta (proposta)', cartella: 'moduli-pdf' },
+  { id: 'sito-blocchi', nome: 'Sito · pagine a pezzi · proposta', cartella: 'sito-blocchi' },
 ]
 
 // Il canvas mostra al massimo 40 pagine: le sezioni vicine stanno sulla stessa pagina, una sotto l'altra, ognuna col suo titolo.

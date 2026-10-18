@@ -1,0 +1,82 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Pagina corso · miglioramenti"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "CorsoJudoAttuale.dc.html",
+      "title": "1 · Judo com’è oggi (1440)",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 5655,
+      "page": "page-1"
+    },
+    {
+      "file": "CorsoJudo.dc.html",
+      "title": "2 · Judo proposta (1440)",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 4621,
+      "page": "page-1"
+    },
+    {
+      "file": "CorsoJudoAttualeTelefono.dc.html",
+      "title": "3 · Judo com’è oggi (375)",
+      "x": 3120,
+      "y": 0,
+      "w": 375,
+      "h": 6237,
+      "page": "page-1"
+    },
+    {
+      "file": "CorsoJudoTelefono.dc.html",
+      "title": "4 · Judo proposta (375)",
+      "x": 3615,
+      "y": 0,
+      "w": 375,
+      "h": 6739,
+      "page": "page-1"
+    },
+    {
+      "file": "CorsoPrePugilisticaAttuale.dc.html",
+      "title": "5 · Pre pugilistica com’è oggi (1440)",
+      "x": 0,
+      "y": 7400,
+      "w": 1440,
+      "h": 3897,
+      "page": "page-1"
+    },
+    {
+      "file": "CorsoPrePugilistica.dc.html",
+      "title": "6 · Pre pugilistica proposta, senza foto (1440)",
+      "x": 1560,
+      "y": 7400,
+      "w": 1440,
+      "h": 2874,
+      "page": "page-1"
+    },
+    {
+      "file": "CorsoPrePugilisticaAttualeTelefono.dc.html",
+      "title": "7 · Pre pugilistica com’è oggi (375)",
+      "x": 3120,
+      "y": 7400,
+      "w": 375,
+      "h": 4312,
+      "page": "page-1"
+    },
+    {
+      "file": "CorsoPrePugilisticaTelefono.dc.html",
+      "title": "8 · Pre pugilistica proposta, senza foto (375)",
+      "x": 3615,
+      "y": 7400,
+      "w": 375,
+      "h": 4109,
+      "page": "page-1"
+    }
+  ]
+}

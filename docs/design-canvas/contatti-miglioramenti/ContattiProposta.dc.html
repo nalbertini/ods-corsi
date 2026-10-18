@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Contatti proposta</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA (1440px): la pagina Contatti con le correzioni di proposte-home/contatti (audit, foto, testi). Parte dai componenti Sito* della libreria ods-design-system (nuovi: SitoRecapito, SitoMappa, SitoArrivo). Un solo passo di sezione (96px), titoli di sezione 80px, bersagli >= 48px. I riquadri rossi tratteggiati sono [DA CONFERMARE]. -->
+<div style="width: 1440px; min-height: 3600px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+
+  <dc-import name="SitoTestata" logo="logo.webp" attiva="Contattaci" prova="Prova una settimana a 5 €" hint-size="100%,120px"></dc-import>
+
+  <section style="display:grid;grid-template-columns:1fr 520px;gap:48px;align-items:end;padding:24px 48px 0">
+    <h1 style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;margin:0;font-size:140px;line-height:.86;letter-spacing:-.01em">Contattaci</h1>
+    <div>
+      <p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0 0 24px;font-size:22px;line-height:1.5">Chiamaci, scrivici o passa in sede. Ti aiutiamo a scegliere il corso più adatto a te o alla tua famiglia.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:12px"><dc-import name="SitoPulsante" label="Prova una settimana a 5 €" tono="giallo" alto="60px" larghezza="auto" hint-size="320px,60px"></dc-import><dc-import name="SitoPulsante" label="Scrivici" tono="linea" alto="60px" larghezza="auto" hint-size="200px,60px"></dc-import></div>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:48px 48px 0">
+    <dc-import name="SitoRecapito" titolo="Telefono" valore="346 329 2786" azione="Chiama o scrivi su WhatsApp →" tono="giallo" alto="270px" hint-size="100%,270px"></dc-import>
+    <dc-import name="SitoRecapito" titolo="Instagram" valore="@officine.dellosport" azione="Scrivici su Instagram →" tono="blu" alto="270px" hint-size="100%,270px"></dc-import>
+    <dc-import name="SitoRecapito" titolo="Facebook" valore="Officine dello Sport" azione="Scrivici su Facebook →" tono="inchiostro" alto="270px" nota="DA CONFERMARE C3 · è la pagina giusta?" hint-size="100%,270px"></dc-import>
+    <dc-import name="SitoRecapito" titolo="Indirizzo" valore="Via Sassi 26, Collegno" azione="Ottieni indicazioni →" tono="chiara" nota="DA CONFERMARE C7 · nome della via" alto="270px" hint-size="100%,270px"></dc-import>
+  </section>
+  
+  <section style="padding:96px 48px 0">
+    <dc-import name="SitoTitolo" testo="Come arrivare" intro="Via Sassi 26, a Collegno." corpo="80px" hint-size="100%,160px"></dc-import>
+    <div style="display:grid;grid-template-columns:780px 1fr;gap:6px;margin-top:40px">
+      <dc-import name="SitoMappa" foto="img/mappa.webp" fuoco="50% 50%" pulsante="Ottieni indicazioni" alto="500px" hint-size="780px,500px"></dc-import>
+      <div style="display:grid;grid-template-rows:repeat(3,1fr);gap:6px">
+        <dc-import name="SitoArrivo" sigla="M" titolo="In metro" testo="La sede è vicino alla metro Fermi, Linea 1." tono="chiara" hint-size="100%,160px"></dc-import>
+        <dc-import name="SitoArrivo" sigla="A" titolo="In auto" testo="Dove si parcheggia da indicare." tono="giallo" nota="DA CONFERMARE C5 · parcheggio" hint-size="100%,160px"></dc-import>
+        <dc-import name="SitoArrivo" sigla="N" titolo="Col navigatore" testo="Tocca «Ottieni indicazioni»: si apre il percorso fino a Via Sassi 26." tono="blu" hint-size="100%,160px"></dc-import>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:96px 48px 0">
+    <dc-import name="SitoTitolo" testo="Una settimana per scegliere" intro="Una settimana a 5 €, per tutte le età dai 3 anni: provi tutte le discipline e scegli. Tre modi per cominciare." corpo="80px" hint-size="100%,200px"></dc-import>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:40px">
+      <dc-import name="SitoPerche" n="1" titolo="Prenota online" testo="Compili il modulo di iscrizione online, da telefono o da computer. Ci arrivi dal pulsante «Prova una settimana a 5 €»." tono="giallo" hint-size="100%,280px"></dc-import>
+      <dc-import name="SitoPerche" n="2" titolo="Scrivici o chiamaci" testo="Al 346 329 2786, anche su WhatsApp. Ti aiutiamo a scegliere il corso più adatto a te." tono="blu" hint-size="100%,280px"></dc-import>
+      <dc-import name="SitoPerche" n="3" titolo="Passa in sede" testo="In Via Sassi 26, a Collegno, vicino alla metro Fermi. Ti spieghiamo modalità, orari e disponibilità." tono="inchiostro" hint-size="100%,280px"></dc-import>
+    </div>
+  </section>
+
+  <section style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:96px 48px 0">
+    <div style="position:relative;height:360px;overflow:hidden;border-radius:6px"><img src="img/lezione.jpg" alt="Una lezione di judo: gli allievi in fila sul tatami" width="1169" height="1800" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% 45%"></div>
+    <div style="position:relative;height:360px;overflow:hidden;border-radius:6px"><img src="img/sala.jpg" alt="La sala attrezzata per la preparazione atletica" width="1201" height="1800" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% 55%"></div>
+  </section>
+
+  <section style="padding:96px 48px 0">
+    <dc-import name="SitoTitolo" testo="Hai qualche domanda?" intro="Qui trovi le informazioni principali su corsi, iscrizioni e attività." corpo="80px" hint-size="100%,200px"></dc-import>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:40px">
+      <div style="grid-column:span 2"><dc-import name="SitoDomanda" domanda="Posso provare prima di iscrivermi?" risposta="Sì: una settimana di prova a 5 €, per tutte le età dai 3 anni. Provi tutte le discipline, conosci l’ambiente e gli istruttori e scegli quella che fa per te, senza impegno." hint-size="100%,240px"></dc-import></div>
+      <div style="grid-column:span 2"><dc-import name="SitoDomanda" domanda="Come mi iscrivo?" risposta="Compila il modulo online, chiamaci o scrivici su WhatsApp, oppure passa in sede. Ti aiutiamo a scegliere il corso più adatto e ti spieghiamo modalità, orari e disponibilità." hint-size="100%,240px"></dc-import></div>
+      <div style="grid-column:span 2"><dc-import name="SitoDomanda" domanda="Dove siete e come arrivo?" risposta="In Via Sassi 26, a Collegno, vicino alla metro Fermi (Linea 1). Col navigatore tocca «Ottieni indicazioni» qui sopra." hint-size="100%,240px"></dc-import></div>
+      <div style="grid-column:span 3"><dc-import name="SitoDomanda" domanda="Posso provare una sola lezione?" risposta="No: la prova è di una settimana, a 5 €, per tutte le età dai 3 anni. Così provi più discipline e scegli con calma, senza impegno." hint-size="100%,240px"></dc-import></div>
+      <div style="grid-column:span 3"><dc-import name="SitoDomanda" domanda="I bambini sono divisi per età e livello?" risposta="Sì. I gruppi sono organizzati per fasce d’età e competenze: ogni bambino vive un’esperienza equilibrata, sicura e stimolante, in un gruppo adatto a lui." hint-size="100%,240px"></dc-import></div>
+    </div>
+  </section>
+
+  <section style="padding:96px 48px 48px">
+    <dc-import name="SitoPiede" hint-size="100%,260px"></dc-import>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; height: 100%; min-height: {{minimo}}; background: {{bg}}; color: {{fg}}; border-radius: 6px; padding: {{pad}}; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; outline: {{contorno}}; outline-offset: -3px">
+  <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; top: 8px; right: 8px; z-index: 2; background: #ffffff; color: #0d2a3d; border: 2px solid #e4292a; border-radius: 4px; padding: 4px 8px; font-family: {{inter}}; font-size: 12px; font-weight: 700; line-height: 1.2">{{nota}}</span></sc-if>
+  <div>
+    <p style="font-family: {{inter}}; margin: 0 0 8px; font-size: {{corpo}}; line-height: 1.4; font-weight: 500">{{testo}}</p>
+    <span style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; font-family: {{inter}}; font-size: 17px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px">Leggi tutto <span aria-hidden="true" style="text-decoration: none">+</span></span>
+  </div>
+  <div style="display: flex; align-items: center; gap: 14px">
+    <div style="width: 52px; height: 52px; flex: none; border-radius: 50%; background: #f4c31b; color: #0d2a3d; display: flex; align-items: center; justify-content: center; font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: 26px">{{iniziale}}</div>
+    <div><div style="font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: 30px; line-height: 1">{{autore}}</div><div style="font-family: {{inter}}; font-size: 15px; line-height: 1.3">{{ruolo}}</div></div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"«Facendo sport si migliora se stessi per essere utili agli altri.»"},"autore":{"editor":"text","default":"Maria"},"ruolo":{"editor":"text","default":"Psicologa"},"tono":{"editor":"enum","options":["blu","giallo","inchiostro","chiara","bianco"],"default":"blu"},"piccolo":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"$preview":{"width":440,"height":380}}'>
+// PROPOSTA home del sito: la citazione di un esperto come estratto letterale (30-46 parole, «[…]» dove si salta) + «Leggi tutto» (il testo intero si apre al tocco).
+// Oggi: tre citazioni di 61-88 parole, di altezza diversa, in un carosello con puntini da 10px. Il testo non si riscrive: si accorcia solo la vista.
+// L'avatar porta una sola iniziale (oggi il sito stampa «SSerena»). «Leggi tutto»: bersaglio 48px, sottolineato, non solo colore.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-rebrand/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const [bg, fg] = TONI[p.tono] || TONI.blu;
+    const pic = truthy(p.piccolo);
+    return { bg, fg, big: BIG, inter: INTER, testo: p.testo ?? '', autore: p.autore ?? '', ruolo: p.ruolo ?? '', iniziale: String(p.autore ?? '').charAt(0), pad: pic ? '22px' : '30px 32px', corpo: pic ? '19px' : '22px', minimo: pic ? '330px' : '400px', ...segna(p.nota) };
+  }
+}
+</script>
+</body>
+</html>

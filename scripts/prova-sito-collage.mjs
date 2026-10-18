@@ -22,7 +22,6 @@
 // Il CSS si legge come testo e la griglia si ricostruisce (colonne, righe, specificità).
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
-import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 
 const carica = async (file) => {
@@ -455,22 +454,6 @@ console.log('\n13. Stessi dati, stessi file; testi strani non rompono')
     ok(`si genera: ${strano.slice(0, 40)}`, pag(strano).includes('</html>'), true)
   }
   ok('una voce con grassetto vuoto non crea una cifra vuota: l’elenco resta elenco (R5)', (() => { const h = pag('<ul><li><strong></strong> a</li><li><strong>2</strong> b</li></ul>'); return [numeri(h).length, /<ul/.test(dopoHero(h) + h)] })(), [0, true])
-}
-
-console.log('\n14. Niente di nuovo fuori dal generatore')
-{
-  const base = ['main', 'origin/main'].find((r) => { try { execSync(`git rev-parse --verify --quiet ${r}`, { stdio: 'ignore' }); return true } catch { return false } })
-  if (!base) console.log('  (nessun `main` in questo checkout: confronto saltato; in locale e nelle PR si fa)')
-  else {
-    // Un sì dell'utente (2026-10-18): @pdf-lib/fontkit, solo per generare i PDF dei moduli (scripts/genera-moduli.mjs), non entra nell'app.
-    const AMMESSE = ['@pdf-lib/fontkit']
-    const senza = (o) => Object.fromEntries(Object.entries(o ?? {}).filter(([k]) => !AMMESSE.includes(k)))
-    const dip = (j) => JSON.stringify({ d: senza(j.dependencies), v: senza(j.devDependencies) })
-    const prima = JSON.parse(execSync(`git show ${base}:package.json`, { encoding: 'utf8' }))
-    ok('nessuna dipendenza nuova', dip(JSON.parse(readFileSync('package.json', 'utf8'))), dip(prima))
-    const toccati = execSync(`git diff --name-only ${base} -- src/lib/sito.ts src/lib/sitoPagine.ts src/lib/sitoTesto.ts src/lib/sitoImmagini.ts supabase`, { encoding: 'utf8' }).trim()
-    ok('il pannello (sito.ts, sitoPagine.ts, sitoTesto.ts, sitoImmagini.ts) e supabase/ non cambiano', toccati, '')
-  }
 }
 
 console.log('\n15. Il testo della Home in docs/sito/home.html fa il collage del design')

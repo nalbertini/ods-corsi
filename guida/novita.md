@@ -10,6 +10,22 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.90.0 — 18 ottobre 2026
+
+### Novità
+
+- Le pagine nuove del sito si scrivono a pezzi (foto, testi, colonne) e l'anteprima mostra la pagina vera
+
+### Modificato
+
+- Proposte di miglioramento per le pagine del sito della palestra
+
+## 0.89.3 — 18 ottobre 2026
+
+### Modificato
+
+- Il controllo dei moduli PDF gira a ogni modifica
+
 ## 0.89.2 — 18 ottobre 2026
 
 ### Modificato

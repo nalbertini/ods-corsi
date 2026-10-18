@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<span style="display: inline-flex; align-items: center; justify-content: center; min-height: {{alto}}; min-width: {{larghezza}}; width: {{larghezza}}; padding: 0 30px; border-radius: 6px; background: {{bg}}; color: {{fg}}; border: {{bordo}}; font-family: {{inter}}; font-weight: 600; font-size: 18px; text-align: center">{{label}}</span>
+</x-dc>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"Prova una settimana a 5 €"},"tono":{"editor":"enum","options":["giallo","inchiostro","linea"],"default":"giallo"},"alto":{"editor":"text","default":"60px"},"larghezza":{"editor":"text","default":"auto"},"$preview":{"width":320,"height":60}}'>
+// PROPOSTA home del sito: il pulsante del sito (Inter 600, raggio 6px, come in sito-rebrand/TatamiBlu). Verbo + cosa + prezzo; alto 60px (minimo 48px).
+// giallo = pulsante di prova nell'hero e nella testata; inchiostro = pieno sul giallo; linea = secondario.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-rebrand/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const v = { giallo: ['#f4c31b', '#0d2a3d', '0'], inchiostro: ['#0d2a3d', '#ffffff', '0'], linea: ['transparent', '#0d2a3d', '3px solid #0d2a3d'] }[p.tono] || ['#f4c31b', '#0d2a3d', '0'];
+    return { inter: INTER, label: p.label ?? '', bg: v[0], fg: v[1], bordo: v[2], alto: p.alto || '60px', larghezza: p.larghezza || 'auto' };
+  }
+}
+</script>
+</body>
+</html>

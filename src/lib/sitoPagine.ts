@@ -1,4 +1,5 @@
 import { pulisciTesto } from './sitoTesto'
+import type { PezziPagina } from './sitoPezzi'
 
 /**
  * Le pagine del sito della palestra: indirizzo, stato fra bozza e pubblicato,
@@ -25,6 +26,8 @@ export interface PaginaSito {
   titolo: string
   descrizione: string
   bozza: string
+  /** I pezzi della bozza: `null` = pagina col vecchio editor di testo; `undefined` = il database non ha ancora `62-sito-pezzi.sql`. */
+  pezzi?: PezziPagina | null
   /** Vuoto finché non si pubblica la prima volta. */
   pubblicato: string | null
   /** Titolo e descrizione che il sito mostra: cambiano solo con PUBBLICA, come il testo. */
