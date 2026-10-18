@@ -66,6 +66,7 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
   legge chi usa uno screen reader. Una foto senza paragrafo resta senza
   didascalia. Le didascalie non sono link.
 - **I nostri valori**: un paragrafo e quattro titoli piccoli, ognuno col suo paragrafo.
+- **Lo sport secondo chi lo studia** (prima della chiamata finale): più citazioni di fila. In ognuna: l'estratto (le virgolette le mette il sito, non scriverle), poi il testo intero, poi la firma in corsivo. «Leggi tutto» apre il testo intero nella carta; senza il testo intero la citazione resta com'è. Il sito non accorcia mai un testo: l'estratto lo scrive chi pubblica, uguale alle parole dell'autore, con «[…]» dove si salta.
 - **La chiamata finale** (l'ultima sezione): titolo, paragrafi, i due pulsanti
   («Prova una settimana a 5 €» verso il modulo online, «Scrivici» verso
   `/contatti/`) e la foto. **Il pulsante verso il modulo online è quello che
