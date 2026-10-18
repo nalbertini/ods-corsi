@@ -152,8 +152,8 @@ const CSS_TESTATA = `
 #menu:target{display:block;position:absolute;z-index:10;top:100%;left:0;right:0;padding:12px var(--margine) 24px;background:var(--fondo);box-shadow:0 14px 24px rgba(13,42,61,.2)}
 .testata nav ul{flex-direction:column;gap:6px}
 .testata nav a{min-height:48px;padding:0 16px;font-size:17px}
-.testata .chiudi{display:inline-flex;min-height:48px;margin-bottom:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
-.testata .nel-menu{display:inline-flex;margin-bottom:12px;padding:0 24px;font-size:16px}
+.testata .chiudi{display:flex;width:max-content;margin-left:auto;align-items:center;min-height:48px;margin-bottom:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.testata .nel-menu{display:flex;justify-content:center;margin-top:12px;padding:0 24px;font-size:16px}
 .piede-menu a{display:inline-flex}
 }
 `.replace(/\n/g, '')
@@ -896,7 +896,7 @@ function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
   // La testata nuova: due pulsanti interi a destra; sul telefono un tasto MENU che apre il menu con `:target`, senza script.
   const prova = `<a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.provaIntera}</a>`
   const scrivici = `<a class="pulsante secondario" href="${TESTI.contatti}"${segnata}>${TESTI.scrivici}</a>`
-  const dentro = `<a class="chiudi" href="#">Chiudi</a>${prova.replace('class="pulsante primario"', 'class="pulsante primario nel-menu"')}${conContatti ? `<a class="pulsante secondario nel-menu" href="${TESTI.contatti}">${TESTI.scrivici}</a>` : ''}${menu ? `<ul>${menu}</ul>` : ''}`
+  const dentro = `<a class="chiudi" href="#">Chiudi</a>${menu ? `<ul>${menu}</ul>` : ''}${prova.replace('class="pulsante primario"', 'class="pulsante primario nel-menu"')}${conContatti ? `<a class="pulsante secondario nel-menu" href="${TESTI.contatti}">${TESTI.scrivici}</a>` : ''}`
   return `<header class="testata">${logo}<a class="tasto-menu" href="#menu">MENU</a><nav id="menu" aria-label="Principale">${dentro}</nav><div class="azioni">${prova}${conContatti ? scrivici : ''}</div></header>`
 }
 

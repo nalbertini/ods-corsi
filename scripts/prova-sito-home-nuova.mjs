@@ -220,8 +220,8 @@ console.log('\n9. Testata e piede di ogni pagina')
     ok(`${nome}: «Scrivici» secondario verso Contatti`, /<a class="pulsante secondario" href="\/contatti\/"[^>]*>Scrivici<\/a>/.test(t), true)
     ok(`${nome}: sul telefono MENU apre #menu, senza script`, [/<a class="tasto-menu" href="#menu">MENU<\/a>/.test(t), /<nav\b[^>]*\bid="menu"/.test(t), /<script(?![^>]*application\/ld\+json)/i.test(h)], [true, true, false])
     const nav = t.match(/<nav\b[^>]*\bid="menu"[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? ''
-    ok(`${nome}: il menu aperto ha «Chiudi» e comincia col pulsante primario`, /<a [^>]*href="#"[^>]*>Chiudi<\/a>/.test(nav), true)
-    ok(`${nome}: nel menu aperto il pulsante primario viene prima delle voci`, nav.indexOf('pulsante primario') >= 0 && nav.indexOf('pulsante primario') < nav.indexOf('>Corsi<'), true)
+    ok(`${nome}: il menu aperto ha «Chiudi» e poi le voci`, /<a [^>]*href="#"[^>]*>Chiudi<\/a>/.test(nav), true)
+    ok(`${nome}: nel menu aperto il pulsante primario viene dopo le voci (con tutto in una riga non si capiva cosa fosse cosa)`, nav.indexOf('>Corsi<') >= 0 && nav.indexOf('>Corsi<') < nav.indexOf('pulsante primario'), true)
   }
   const senzaContatti = genera(F.dati(F.TESTO_NUOVO, { conContatti: false }))['index.html']
   ok('senza la pagina Contatti non c’è «Scrivici» in testata', [/Scrivici/.test(test(senzaContatti)), primario.test(test(senzaContatti))], [false, true])
