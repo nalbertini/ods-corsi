@@ -213,7 +213,8 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 28px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.85;overflow-wrap:anywhere}
 .testo + .sezione{padding-top:24px}
 .colonna{max-width:calc(62ch + var(--margine) * 2);padding-bottom:24px}
-.colonne{display:grid;gap:24px;padding:0 var(--margine) 24px}
+/* Dentro .testo o .sezione, che il margine laterale ce l'hanno già: qui non si raddoppia. */
+.colonne{display:grid;gap:24px;padding:0 0 24px}
 .colonne.c-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .colonne.c-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .colonne>.colonna{min-width:0;max-width:none;padding:0}

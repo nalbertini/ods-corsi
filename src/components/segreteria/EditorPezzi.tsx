@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { blocksPlugin, createUsePuck, fieldsPlugin, outlinePlugin, Puck, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
+import { MASSIMO_PEZZI, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import { EditorTesto } from './EditorTesto'
 import { ScegliImmagine } from './ImmaginiSito'
@@ -43,10 +43,13 @@ function CampoFoto({ d, id, src }: { d: DatiSegreteria; id: string; src: string 
       {apri && (
         <ScegliImmagine
           d={d}
+          perFoto
           onChiudi={() => setApri(false)}
           onScelta={(url, alt) => {
             // Un campo scrive solo se stesso: la foto e il suo testo alternativo si scrivono insieme sul pezzo.
-            dispatch({ type: 'setData', data: { content: contenuto.map((c) => (c.props.id === id ? { ...c, props: { ...c.props, src: url, alt } } : c)) } })
+            // `replace` è un passo solo per ANNULLA e RIFAI; `setData` rifarebbe tutta la pagina e li confonde.
+            const i = contenuto.findIndex((c) => c.props.id === id)
+            if (i >= 0) dispatch({ type: 'replace', destinationIndex: i, destinationZone: ZONA, data: { ...contenuto[i], props: { ...contenuto[i].props, src: url, alt } } })
             setApri(false)
           }}
         />
@@ -130,7 +133,10 @@ function Comandi() {
   const quanti = usePuck((s) => s.appState.data.content.length)
   const storia = usePuck((s) => s.history)
   const vai = (verso: number) => {
-    if (scelto) dispatch({ type: 'move', sourceIndex: scelto.index, sourceZone: ZONA, destinationIndex: scelto.index + verso, destinationZone: ZONA })
+    if (!scelto) return
+    dispatch({ type: 'move', sourceIndex: scelto.index, sourceZone: ZONA, destinationIndex: scelto.index + verso, destinationZone: ZONA })
+    // La parte spostata resta scelta: spostarla di più posti non vuol dire toccarla ogni volta.
+    dispatch({ type: 'setUi', ui: { itemSelector: { index: scelto.index + verso, zone: ZONA } } })
   }
   const metti = (tipo: keyof Props) => {
     const dove = scelto ? scelto.index + 1 : quanti
@@ -141,7 +147,7 @@ function Comandi() {
   return (
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', padding: 8 }}>
       {PARTI.map((p) => (
-        <button key={p.tipo} type="button" className="sg-chip num" onClick={() => metti(p.tipo)}>
+        <button key={p.tipo} type="button" className="sg-chip num" disabled={quanti >= MASSIMO_PEZZI} onClick={() => metti(p.tipo)}>
           + {p.nome}
         </button>
       ))}
@@ -172,8 +178,8 @@ const PAROLE = {
   'drawer-category-other': 'Parti',
 }
 
-/** Da 1000px ci stanno tre pannelli; sotto, le parti si mettono coi tasti e il pannello delle parti parte chiuso. */
-const leggeLargo = () => typeof window === 'undefined' || window.matchMedia('(min-width: 1000px)').matches
+/** Da 1280px ci stanno tre pannelli; sotto, le parti si mettono coi tasti e il pannello delle parti parte chiuso. */
+const leggeLargo = () => typeof window === 'undefined' || window.matchMedia('(min-width: 1280px)').matches
 
 export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria; pezzi: PezziPagina; onCambia: (p: PezziPagina) => void }) {
   const config = useMemo(() => configura(d), [d])
@@ -187,7 +193,7 @@ export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria;
         iframe={{ enabled: false }}
         dictionary={PAROLE}
         plugins={[blocksPlugin({ label: 'PARTI' }), outlinePlugin({ label: 'ELENCO' }), fieldsPlugin({ label: 'CAMPI' })]}
-        ui={{ leftSideBarVisible: leggeLargo() }}
+        ui={{ leftSideBarVisible: leggeLargo(), rightSideBarVisible: true }}
         onChange={(data) => {
           // I pezzi escono da Puck come dati senza tipo: `pezziValidi` li controlla prima di salvarli (Sito.tsx).
           onCambia({ content: data.content as unknown as Pezzo[] })

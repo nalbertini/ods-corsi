@@ -2761,15 +2761,16 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
 .sito-pezzi .sg-chip:disabled { background: var(--surface-2); color: var(--dim); border-color: transparent; opacity: 1; }
 /* Una parte senza niente dentro si vede e ha l'altezza di un tocco. */
 .sito-pezzi-vuoto { display: flex; align-items: center; min-height: 44px; padding: 0 16px; border: 2px dashed var(--line); color: var(--dim); font-size: 15px; }
-/* Sotto i 1000px Puck non ha posto per tre pannelli: le parti si mettono coi tasti in alto, e l'anteprima resta larga. */
-@media (max-width: 999px) {
+/* Sotto i 1280px Puck non ha posto per tre pannelli: le parti si mettono coi tasti in alto, e l'anteprima resta larga. */
+@media (max-width: 1279px) {
   .sito-pezzi > div { height: auto; min-height: 640px; }
   .sito-pezzi [class*='Sidebar--left'], .sito-pezzi [class*='PuckLayout-nav'] { display: none; }
   /* Puck riserva una colonna a ogni pannello, anche a quelli nascosti: qui la pagina sta sopra e i campi sotto, a tutta larghezza. */
   .sito-pezzi [class*='PuckLayout-inner'] { display: flex !important; flex-direction: column; height: auto; }
   .sito-pezzi [class*='PuckCanvas_'] { min-height: 280px; width: 100%; }
   .sito-pezzi [class*='PuckCanvas-inner'], .sito-pezzi [class*='PuckCanvas-root'] { height: auto !important; min-height: 240px; }
-  .sito-pezzi [class*='Sidebar--right'] { width: 100% !important; max-width: none; }
+  /* Puck chiude il pannello dei campi quando il suo contenitore è stretto: qui serve sempre, sotto la pagina. */
+  .sito-pezzi [class*='Sidebar--right'] { display: flex !important; flex-direction: column; width: 100% !important; max-width: none; min-height: 200px; }
 }
 .sito-testo h2 { font-size: 28px; }
 .sito-testo h3 { font-size: 22px; }
