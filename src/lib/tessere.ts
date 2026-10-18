@@ -92,6 +92,7 @@ export function righeDalFoglio(testo: string): { righe: RigaRasd[]; saltate: Rig
   }
   const righe: RigaRasd[] = []
   const saltate: RigaSaltata[] = []
+  if (t.righe.every((r) => r.every((x) => !x.trim()))) return { righe, saltate, errore: 'Il foglio non ha righe.' }
   t.righe.forEach((r, n) => {
     if (r.every((x) => !x.trim())) return
     const cella = (k: string) => (r[posto.get(k) ?? -1] ?? '').trim()
@@ -103,13 +104,16 @@ export function righeDalFoglio(testo: string): { righe: RigaRasd[]; saltate: Rig
     const codice = cella('codice tess')
     const dalScritto = cella('valido dal')
     if (!ente) return salta('Manca l’organismo.')
+    if (ente.length > 40) return salta('L’organismo è più lungo di 40 caratteri.')
     if (!nome) return salta('Manca il nome.')
     if (!cf) return salta('Manca il codice fiscale.')
     if (!/^[A-Z0-9]{16}$/.test(cf)) return salta('Il codice fiscale non è di 16 caratteri.')
     if (!codice) return salta('Manca il codice della tessera.')
+    if (codice.length > 20) return salta('Il codice della tessera è più lungo di 20 caratteri.')
     // Una tessera può valere da una data futura (un rinnovo già fatto): la data di «oggi» è lontana.
     const dal = leggiData(dalScritto, new Date(2100, 0, 1))
     if (!dal) return salta(`La data «${dalScritto}» non si legge.`)
+    if (dal < '2000-01-01' || dal > '2100-12-31') return salta(`La data «${dalScritto}» è fuori dal 2000-2100.`)
     righe.push({ ente, nome, codice_fiscale: cf, tipo: tipoDaRasd(cella('tipo')), codice, dal, al: fineAnno(dal) })
   })
   return { righe, saltate }

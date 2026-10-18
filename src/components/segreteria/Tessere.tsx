@@ -14,6 +14,7 @@ import {
   statoDiUna,
   type EsitoImportTessere,
   type RigaIncrocio,
+  type RigaSaltata,
   type TesseraSeg,
   type TipoTessera,
 } from '../../lib/tessere'
@@ -248,7 +249,8 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
 export function ImportaTessere({ d }: { d: DatiSegreteria }) {
   const [foglio, setFoglio] = useState<{ nome: string; testo: string } | null>(null)
   const [pronto, setPronto] = useState<{ righe: ReturnType<typeof righeDalFoglio>['righe']; saltate: ReturnType<typeof righeDalFoglio>['saltate']; esito: EsitoImportTessere } | null>(null)
-  const [fatto, setFatto] = useState<EsitoImportTessere | null>(null)
+  // Le righe saltate restano a vista anche dopo METTI: sono quelle da sistemare nel foglio.
+  const [fatto, setFatto] = useState<{ esito: EsitoImportTessere; saltate: RigaSaltata[] } | null>(null)
   const [aspetta, setAspetta] = useState(false)
   const [guaio, setGuaio] = useState<string | null>(null)
   const passo = fatto ? 3 : pronto ? 2 : 1
@@ -272,7 +274,7 @@ export function ImportaTessere({ d }: { d: DatiSegreteria }) {
     setAspetta(true)
     setGuaio(null)
     try {
-      setFatto(await d.importaTessere(pronto.righe, false))
+      setFatto({ esito: await d.importaTessere(pronto.righe, false), saltate: pronto.saltate })
       setPronto(null)
     } catch (e) {
       setGuaio(messaggio(e))
@@ -286,7 +288,8 @@ export function ImportaTessere({ d }: { d: DatiSegreteria }) {
     setFatto(null)
     setGuaio(null)
   }
-  const mostra = fatto ?? pronto?.esito
+  const mostra = fatto?.esito ?? pronto?.esito
+  const saltate = fatto?.saltate ?? pronto?.saltate ?? []
 
   return (
     <section aria-label="Tessere dal RASD" className="sg-riquadro" style={{ gridColumn: '1 / -1' }}>
@@ -346,12 +349,12 @@ export function ImportaTessere({ d }: { d: DatiSegreteria }) {
               </div>
             ))}
           </div>
-          {(mostra.non_abbinate.length > 0 || (pronto?.saltate.length ?? 0) > 0) && (
+          {(mostra.non_abbinate.length > 0 || saltate.length > 0) && (
             <div className="stack" style={{ gap: 4, fontSize: 13 }}>
               <span className="num" style={{ fontWeight: 700, color: 'var(--giallo-testo)', letterSpacing: '0.12em' }}>
                 RIGHE CHE RESTANO FUORI
               </span>
-              {(pronto?.saltate ?? []).map((x) => (
+              {saltate.map((x) => (
                 <span key={`s${x.riga}`}>
                   Riga {x.riga} del foglio: {x.motivo}
                 </span>
@@ -379,7 +382,7 @@ export function ImportaTessere({ d }: { d: DatiSegreteria }) {
       {passo === 3 && fatto && (
         <div className="stack" style={{ gap: 8 }}>
           <span style={{ fontSize: 15 }}>
-            Fatto: {fatto.nuove === 1 ? '1 tessera nuova' : `${fatto.nuove} tessere nuove`}. Le trovi nella scheda di ogni persona, sotto TESSERE.
+            Fatto: {fatto.esito.nuove === 1 ? '1 tessera nuova' : `${fatto.esito.nuove} tessere nuove`}. Le trovi nella scheda di ogni persona, sotto TESSERE.
           </span>
           <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={ricomincia}>
             IMPORTA UN ALTRO FOGLIO

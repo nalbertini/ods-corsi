@@ -69,6 +69,13 @@ const FOGLIO = [
   ok('un foglio senza la colonna del codice fiscale dice quale manca',
     m.righeDalFoglio('Organismo;Persona;Tipo\nFIPE;X;Dirigente').errore, 'Nel foglio manca la colonna «Codice fiscale».')
   ok('un foglio vuoto non è un foglio del RASD', m.righeDalFoglio('').errore, 'Il foglio è vuoto.')
+  const testa = 'Organismo;Persona;Codice fiscale;Tipo;Codice tess.;Valido dal'
+  ok('la sola intestazione: nessuna riga, e lo dice', m.righeDalFoglio(testa).errore, 'Il foglio non ha righe.')
+  ok('intestazione e righe vuote: lo stesso', m.righeDalFoglio(`${testa}\n;;;;;\n`).errore, 'Il foglio non ha righe.')
+  const una = (organismo, codice, dal) => m.righeDalFoglio(`${testa}\n${organismo};ROSSI MARIO;RSSMRA10A01L219X;Atleta Praticante;${codice};${dal}`).saltate[0]?.motivo
+  ok('una data prima del 2000 dice cosa non va', una('FIJLKAM', 'A1', '01/09/1999'), 'La data «01/09/1999» è fuori dal 2000-2100.')
+  ok('un organismo troppo lungo dice cosa non va, senza ripeterlo', una('X'.repeat(300), 'A1', '01/09/2026'), 'L’organismo è più lungo di 40 caratteri.')
+  ok('un codice troppo lungo dice cosa non va', una('FIJLKAM', 'A'.repeat(21), '01/09/2026'), 'Il codice della tessera è più lungo di 20 caratteri.')
 }
 
 console.log('\nLo stato di una persona per ente')
