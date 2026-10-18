@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Home proposta telefono</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA (375px): la stessa home sul telefono. Un solo passo di sezione (64px), titoli 56px, bersagli >= 48px. -->
+<div style="width: 375px; min-height: 12900px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+
+  <dc-import name="SitoTestata" logo="logo.webp" attiva="Home" prova="Prova una settimana a 5 €" piccolo="{{ true }}" hint-size="100%,96px"></dc-import>
+  <section style="padding:20px 16px 0">
+    <h1 style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;margin:0 0 20px;font-weight:800;font-size:92px;line-height:.86;letter-spacing:-.01em">Si cresce<br>sul tatami.</h1>
+    <p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0 0 24px;font-size:18px;line-height:1.5">Arti marziali e preparazione atletica a Collegno, dai 3 anni in su. Prova una settimana a 5 €.</p>
+    <div style="display:flex;flex-direction:column;gap:10px"><dc-import name="SitoPulsante" label="Prova una settimana a 5 €" tono="giallo" alto="56px" larghezza="100%" hint-size="343px,56px"></dc-import><dc-import name="SitoPulsante" label="Scrivici" tono="linea" alto="56px" larghezza="100%" hint-size="343px,56px"></dc-import></div>
+    <div style="height:210px;margin-top:28px;overflow:hidden;border-radius:6px"><img src="img/gruppo.jpg" alt="I bambini e le bambine del gruppo in posa sul tatami giallo con gli istruttori" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% 40%"></div>
+  </section>
+  <section style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:32px 16px 0">
+    <dc-import name="SitoTessera" numero="35+" etichetta="anni di sport" tono="blu" alto="160px" piccolo="{{ true }}" hint-size="100%,130px"></dc-import>
+    <dc-import name="SitoTessera" numero="9" etichetta="attività" tono="giallo" alto="160px" piccolo="{{ true }}" hint-size="100%,130px"></dc-import>
+    <dc-import name="SitoTessera" numero="300+" etichetta="atleti" tono="inchiostro" alto="160px" piccolo="{{ true }}" hint-size="100%,130px"></dc-import>
+    <dc-import name="SitoTessera" numero="13" etichetta="tecnici" tono="blu" alto="160px" piccolo="{{ true }}" hint-size="100%,130px"></dc-import>
+  </section>
+  <section style="padding:32px 16px 0">
+    <div style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;font-size:44px;line-height:.92;margin-bottom:16px">Il corso giusto, il gruppo giusto</div>
+    <div style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:17px;line-height:1.5"><p style="margin:0 0 10px">Professionisti dello sport, da oltre 35 anni accanto a bambini, ragazzi e adulti.</p><p style="margin:0">Armonia nel movimento, rispetto nelle relazioni, costanza nel tempo.</p></div>
+  </section>
+  <section style="padding:64px 16px 0">
+    <dc-import name="SitoTitolo" testo="I nostri corsi" intro="Accompagniamo bambini, ragazzi e adulti in percorsi sportivi pensati per ogni età e livello, dove tecnica, benessere e relazione vanno nella stessa direzione." corpo="56px" hint-size="100%,200px"></dc-import>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:28px">
+      <dc-import name="SitoSchedaCorso" titolo="Judo" eta="Dai 7 anni agli adulti" testo="Tecnica, disciplina e rispetto per crescere sul tatami, dai primi passi fino alle gare." tag="Bambini|Adulti|Agonisti" tono="blu" foto="img/judo.jpg" fuoco="50% 0%" fuocoTel="50% 30%" alt="Un istruttore e due ragazzi in judogi, in ginocchio e in piedi sul tatami" alta="220px" piccolo="{{ true }}" hint-size="100%,480px"></dc-import>
+      <dc-import name="SitoSchedaCorso" titolo="Lotta" eta="Dai 7 anni agli adulti" testo="Gioco, movimento e rispetto per crescere insieme, dalla prima prova alla gara." tag="Bambini|Adulti|Agonisti" tono="giallo" foto="img/lotta.jpg" fuoco="50% 85%" fuocoTel="50% 50%" alt="Due giovani lottatrici in gara sul tappeto, con l’arbitro dietro" alta="220px" piccolo="{{ true }}" hint-size="100%,480px"></dc-import>
+      <dc-import name="SitoSchedaCorso" titolo="Aikido" eta="Dai 7 anni agli adulti" testo="Armonia, equilibrio e difesa, in una disciplina adatta anche a chi ha più anni." tag="Bambini|Adulti|Anziani" tono="inchiostro" foto="img/aikido.jpg" fuoco="50% 5%" fuocoTel="35% 50%" alt="Un istruttore in hakama e una allieva durante una dimostrazione di aikido" alta="220px" piccolo="{{ true }}" hint-size="100%,480px"></dc-import>
+      <dc-import name="SitoSchedaCorso" titolo="Pre pugilistica" eta="Dai 18 anni" testo="Primi passi nella boxe: tecnica e coordinazione, per imparare i colpi in sicurezza." tag="Adulti" tono="giallo" foto="" fuoco="" fuocoTel="" alta="220px" piccolo="{{ true }}" hint-size="100%,480px"></dc-import>
+      <dc-import name="SitoSchedaCorso" titolo="Metodo Globale di Autodifesa" eta="Dai 15 anni" testo="Autodifesa pratica e realistica, basata su situazioni reali, spiegata passo dopo passo." tag="Adulti" tono="inchiostro" foto="" fuoco="" fuocoTel="" alta="220px" piccolo="{{ true }}" hint-size="100%,480px"></dc-import>
+      <dc-import name="SitoSchedaCorso" titolo="Preparazione atletica" eta="Dai 14 anni" testo="Allenamenti mirati per migliorare forza, resistenza, velocità e coordinazione, anche per chi gareggia." tag="Adulti|Anziani|Agonisti" tono="blu" foto="img/sala.jpg" fuoco="50% 50%" fuocoTel="" alt="L’istruttore sorride in sala attrezzata mentre i ragazzi si allenano con i pesi" alta="220px" piccolo="{{ true }}" hint-size="100%,480px"></dc-import>
+      <dc-import name="SitoSchedaCorso" titolo="Giocomotricità e psicomotricità" eta="Da 3 a 5 anni" testo="Percorsi motori per crescere giocando e migliorare coordinazione e fiducia in sé." tag="Bambini" tono="inchiostro" foto="img/cubi.jpg" fuoco="75% 50%" fuocoTel="" alt="Un bambino salta sui materassi colorati della sala di psicomotricità" alta="220px" piccolo="{{ true }}" hint-size="100%,480px"></dc-import>
+      <dc-import name="SitoSchedaCorso" titolo="Avviamento alle arti marziali" eta="5-6 anni" testo="Si scoprono le discipline, per aiutare i più piccoli a trovare la propria strada." tag="Bambini" tono="blu" foto="" fuoco="" fuocoTel="" alta="220px" piccolo="{{ true }}" hint-size="100%,480px"></dc-import>
+      <dc-import name="SitoSchedaCorso" titolo="Sollevamento pesi" eta="Dagli 11 anni" testo="Un percorso per imparare e perfezionare il sollevamento pesi, dai ragazzi agli adulti." tag="Bambini|Adulti|Agonisti" tono="giallo" foto="" fuoco="" fuocoTel="" alta="220px" piccolo="{{ true }}" hint-size="100%,480px"></dc-import>
+    </div>
+  </section>
+  <section style="padding:64px 16px 0">
+    <dc-import name="SitoTitolo" testo="Perché unirti a noi?" intro="Qui lo sport è un percorso condiviso, fatto di relazioni, rispetto e crescita continua. Che tu muova i primi passi o cerchi un posto solido dove allenarti, troverai il corso giusto e le persone giuste." corpo="56px" hint-size="100%,240px"></dc-import>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:28px">
+      <dc-import name="SitoPerche" n="1" titolo="La crescita viene prima del risultato" testo="Contano i progressi di ciascuno, a ogni età e livello. I risultati arrivano di conseguenza." tono="giallo" piccolo="{{ true }}" hint-size="100%,230px"></dc-import>
+      <dc-import name="SitoPerche" n="2" titolo="Educazione sportiva, prima di tutto" testo="Rispetto per compagni, istruttori e avversari: è la prima cosa che si impara sul tatami." tono="blu" piccolo="{{ true }}" hint-size="100%,230px"></dc-import>
+      <dc-import name="SitoPerche" n="3" titolo="Un ambiente sicuro e stimolante" testo="Gruppi divisi per età e competenze, con istruttori che seguono ogni persona passo dopo passo." tono="inchiostro" piccolo="{{ true }}" hint-size="100%,230px"></dc-import>
+      <dc-import name="SitoPerche" n="4" titolo="Attività agonistiche con svariati podi ogni anno" testo="Chi vuole gareggiare può farlo, e ogni anno i nostri atleti salgono sul podio." tono="giallo" piccolo="{{ true }}" hint-size="100%,230px"></dc-import>
+    </div>
+  </section>
+  <section style="padding:64px 16px 0">
+    <dc-import name="SitoTitolo" testo="Lo sport secondo chi lo studia" corpo="56px" hint-size="100%,120px"></dc-import>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:28px">
+      <dc-import name="SitoCitazione" testo="«[…] ottima per l’incremento della forza ed il mantenimento del tono muscolare. […] I muscoli di tutto il corpo, oltre a diventare più forti, saranno anche più elastici e reattivi, con un rafforzamento della schiena e di tutte le articolazioni.»" autore="Serena" ruolo="Stud. di Medicina" tono="blu" piccolo="{{ true }}" hint-size="100%,330px"></dc-import>
+      <dc-import name="SitoCitazione" testo="«Facendo sport si migliora se stessi per essere utili agli altri. In allenamento non serve fingere, si è quello che si è, non serve voler sembrare più bravi degli altri; bisogna fare quello che si può con il massimo impegno.»" autore="Maria" ruolo="Psicologa" tono="inchiostro" piccolo="{{ true }}" hint-size="100%,330px"></dc-import>
+      <dc-import name="SitoCitazione" testo="«Il judo è una disciplina che allena la gran parte dei muscoli del corpo in maniera bilanciata […] Mantiene attiva la mente e il corpo ed è praticabile ad ogni livello (amatoriale, agonistico, per tenersi in forma) e ad ogni età.»" autore="Rinaldo" ruolo="Prof. di Ed. Fisica" tono="blu" piccolo="{{ true }}" hint-size="100%,330px"></dc-import>
+    </div>
+  </section>
+  <section style="padding:64px 16px 0">
+    <dc-import name="SitoTitolo" testo="Cosa dicono di noi" corpo="56px" hint-size="100%,60px"></dc-import>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:28px">
+      <dc-import name="SitoRecensione" testo="Una palestra come ce ne sono poche, la passione guida tutti quelli che la gestiscono e si respira aria di casa. Tutto qui è all’insegna di crescere insieme con lo sport." autore="Nicola A." tono="blu" piccolo="{{ true }}" nota="DA CONFERMARE D8 · permesso a comparire col nome" hint-size="100%,260px"></dc-import>
+      <dc-import name="SitoRecensione" testo="La professionalità di Maurizio rende l’ambiente cordiale e amichevole è ideale x chi si avvicina alle arti marziali, e per chi già pratica con passione, la location è molto accogliente. L’offerta è vasta tra varie discipline" autore="Nando" tono="inchiostro" piccolo="{{ true }}" nota="DA CONFERMARE D8 · nome «Maurizio»; D7 · refuso «x chi»" hint-size="100%,260px"></dc-import>
+      <dc-import name="SitoInBreve" righe="Palestra ben attrezzata per sport di combattimento~Stefano G.|Insegnanti molto preparati e posto molto accogliente.~Blorida K.|Discretamente strutturato Persone gentili e ben preparate~Davide R." piccolo="{{ true }}" hint-size="100%,260px"></dc-import>
+    </div>
+  </section>
+  <section style="padding:64px 16px 0">
+    <dc-import name="SitoTitolo" testo="Hai qualche domanda?" intro="Qui trovi le informazioni principali su corsi, iscrizioni e attività." corpo="56px" hint-size="100%,200px"></dc-import>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:28px">
+      <dc-import name="SitoDomanda" domanda="Che tipo di associazione è Officine dello Sport?" risposta="Un’associazione sportiva dove il movimento è un percorso di crescita. Accogliamo bambini, ragazzi e adulti con corsi per età e livello, in un ambiente sicuro, seguito e progressivo." piccolo="{{ true }}" hint-size="100%,200px"></dc-import>
+      <dc-import name="SitoDomanda" domanda="Va bene anche se non ho mai fatto sport?" risposta="Sì. Molti percorsi sono pensati per chi comincia. Gli istruttori ti guidano passo dopo passo, nel rispetto dei tuoi tempi, delle tue capacità e dei tuoi obiettivi." piccolo="{{ true }}" hint-size="100%,200px"></dc-import>
+      <dc-import name="SitoDomanda" domanda="Posso provare prima di iscrivermi?" risposta="Sì: una settimana di prova a 5 €. In quei giorni provi tutte le discipline, conosci l’ambiente e gli istruttori e scegli quella che fa per te, senza impegno." piccolo="{{ true }}" hint-size="100%,200px"></dc-import>
+      <dc-import name="SitoDomanda" domanda="Come mi iscrivo?" risposta="Scrivici sui nostri canali social, chiamaci o passa in sede. Ti aiutiamo a scegliere il corso più adatto e ti spieghiamo modalità, orari e disponibilità." piccolo="{{ true }}" nota="DA CONFERMARE D10 · modulo online?" hint-size="100%,200px"></dc-import>
+      <dc-import name="SitoDomanda" domanda="I bambini sono divisi per età e livello?" risposta="Sì. I gruppi sono organizzati per fasce d’età e competenze: ogni bambino vive un’esperienza equilibrata, sicura e stimolante, in un gruppo adatto a lui." piccolo="{{ true }}" hint-size="100%,200px"></dc-import>
+    </div>
+  </section>
+  <section style="padding:64px 16px 0">
+    <dc-import name="SitoCta" titolo="Una settimana per scegliere." testo="5 € e provi tutte le discipline." indirizzo="Ti aspettiamo in Via Sassi 26, Collegno, vicino alla metro Fermi." principale="Prova una settimana a 5 €" secondario="Scrivici" foto="img/istruttori.jpg" fuoco="50% 25%" piccolo="{{ true }}" hint-size="100%,600px"></dc-import>
+  </section>
+  <section style="padding:24px 16px 24px">
+    <dc-import name="SitoPiede" piccolo="{{ true }}" hint-size="100%,420px"></dc-import>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>

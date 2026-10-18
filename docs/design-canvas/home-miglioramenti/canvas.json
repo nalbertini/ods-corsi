@@ -1,0 +1,46 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Home · miglioramenti"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "HomeAttuale.dc.html",
+      "title": "1 · Home com'è oggi (1440)",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 7300,
+      "page": "page-1"
+    },
+    {
+      "file": "HomeProposta.dc.html",
+      "title": "2 · Home proposta (1440)",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 6950,
+      "page": "page-1"
+    },
+    {
+      "file": "HomeAttualeTelefono.dc.html",
+      "title": "3 · Home com'è oggi (375)",
+      "x": 3120,
+      "y": 0,
+      "w": 375,
+      "h": 11100,
+      "page": "page-1"
+    },
+    {
+      "file": "HomePropostaTelefono.dc.html",
+      "title": "4 · Home proposta (375)",
+      "x": 3615,
+      "y": 0,
+      "w": 375,
+      "h": 12900,
+      "page": "page-1"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Corso Pre pugilistica proposta</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA (1440px): un corso senza foto (Pre pugilistica): la fascia blu con giorno, ora e età prende il posto della foto di apertura. Un solo passo di sezione (96px desktop, 64px telefono), titoli 80/56px, bersagli >= 48px. I riquadri rossi tratteggiati sono [DA CONFERMARE]. -->
+<div style="width: 1440px; min-height: 2874px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+
+<dc-import name="SitoTestata" logo="logo.webp" attiva="I corsi" prova="Prova una settimana a 5 €" hint-size="100%,120px"></dc-import>  <section style="padding:24px 48px 0">
+    <dc-import name="SitoCorsoTitolo" titolo="Pre pugilistica" descrizione="Primi passi nella boxe: tecnica e coordinazione, per imparare i colpi in sicurezza." pulsante="Prova una settimana a 5 €" nota="DA CONFERMARE Q11 · descrizione" hint-size="100%,260px"></dc-import>
+  </section>
+  <section style="padding:48px 48px 0">
+    <dc-import name="SitoCorsoFascia" fatti="Quando~Mercoledì|Ora~19:00 – 20:00|Per chi~Nati dal 2015" hint-size="100%,300px"></dc-import>
+  </section>
+  <section style="padding:6px 48px 0">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px"><dc-import name="SitoDatoPersona" etichetta="Dove" valore="Via Sassi 26, Collegno, vicino alla metro Fermi" tono="inchiostro" alto="auto" hint-size="100%,150px"></dc-import><dc-import name="SitoDatoPersona" etichetta="Per iniziare" valore="1 settimana di prova a 5 euro" tono="giallo" alto="auto" hint-size="100%,150px"></dc-import></div>
+  </section>
+  <section style="padding:96px 48px 0">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px"><dc-import name="SitoBloccoPersona" titolo="Cosa si fa" testo="Un percorso propedeutico alla boxe che introduce ai fondamentali in un ambiente sicuro e strutturato, per sviluppare coordinazione, reattività e disciplina. Si lavora su schemi motori, guardia, spostamenti e colpi base, con carichi calibrati sull’età." tono="giallo" minimo="220px" hint-size="100%,300px"></dc-import><dc-import name="SitoBloccoPersona" titolo="A chi è rivolto" testo="Per ragazzi e ragazze nati dal 2015 in poi, che vogliono avvicinarsi alla boxe partendo dalle basi, in un gruppo omogeneo per età." tono="inchiostro" minimo="220px" hint-size="100%,300px"></dc-import></div>
+  </section>
+  <section style="padding:96px 48px 0">
+    <dc-import name="SitoTitolo" testo="Cosa aspettarsi" corpo="80px" hint-size="100%,110px"></dc-import><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:28px"><dc-import name="SitoPerche" n="1" titolo="Sicuro, senza contatto pieno" testo="Si imparano guardia, passi e movimenti della boxe in sicurezza, senza colpire a pieno contatto: il fair play viene prima di tutto." tono="giallo" hint-size="100%,260px"></dc-import><dc-import name="SitoPerche" n="2" titolo="Istruttori qualificati nella boxe giovanile" testo="A guidare i ragazzi ci sono istruttori che conoscono la boxe e sanno insegnarla ai più giovani, con pazienza e con il sorriso." tono="blu" hint-size="100%,260px"></dc-import><dc-import name="SitoPerche" n="3" titolo="Percorso graduale" testo="Ognuno avanza ai suoi tempi, divertendosi, finché è pronto per il passo successivo. Senza bruciare le tappe." tono="inchiostro" hint-size="100%,260px"></dc-import><dc-import name="SitoPerche" n="4" titolo="Crescita fisica e mentale" testo="Coordinazione, concentrazione, autocontrollo e fiducia in sé: la tecnica serve a crescere meglio, dentro e fuori dalla palestra." tono="giallo" hint-size="100%,260px"></dc-import></div>
+  </section>
+  <section style="padding:96px 48px 0">
+    <dc-import name="SitoCorsoCta" titolo="Una settimana per scegliere." testo="Per scoprire la boxe nel modo giusto: disciplina, controllo e rispetto, prima ancora della tecnica pura." indirizzo="1 settimana di prova a 5 euro, per tutte le età dai 3 anni: solo la settimana, nessuna lezione singola. Scrivici sui nostri canali social o passa in via Sassi 26, Collegno, vicino alla metro Fermi." principale="Prova una settimana a 5 €" secondario="Scrivici" senzaFoto="{{ true }}" hint-size="100%,300px"></dc-import>
+  </section>
+  <section style="padding:24px 48px 48px">
+    <dc-import name="SitoPiede"  hint-size="100%,260px"></dc-import>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>
