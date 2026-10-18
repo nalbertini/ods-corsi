@@ -130,6 +130,13 @@ console.log('\n3. Hero solo: il titolo e la frase')
   ok('nessun hero-foto', /hero-foto/.test(M), false)
 }
 
+console.log('\n3b. Lo spazio tra la frase e le schede')
+{
+  // L'hero è una <section> anch'essa: `:first-of-type` non prende la sezione delle schede e restano i 96px della Home.
+  const sotto = /\.pagina-corsi \.pagina-hero\+\.sezione$/
+  ok('spazio sopra le schede: 40px sul computer, 32px sul telefono', [1440, 375].map((w) => px(ultimo(R, sotto, 'padding-top', w), w)), [40, 32])
+}
+
 console.log('\n4. Il titolo: 120px, 56px sul telefono')
 {
   const h1 = /\.pagina-corsi.*\bh1$|\bh1\.pagina-corsi$|\.pagina-corsi h1/
