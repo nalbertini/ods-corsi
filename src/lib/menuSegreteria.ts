@@ -1,5 +1,8 @@
 import type { Voce } from './indirizzoSegreteria'
 
+/** Le voci che stanno nel menu: «regole» e «segnalate» sono schede dentro altre sezioni. */
+export type VoceDelMenu = Exclude<Voce, 'segnalate' | 'regole'>
+
 /**
  * Il menu della segreteria in cinque gruppi, da quello che si apre ogni giorno
  * a quello che si tocca una volta a stagione. Ogni gruppo dice cosa ci si
@@ -7,7 +10,7 @@ import type { Voce } from './indirizzoSegreteria'
  * diverse. Le presenze segnalate sono una scheda di PRESENZE, non una voce.
  * Il maiuscolo dei titoli lo fa lo stile (`.sg-gruppo-titolo`), non il testo.
  */
-export const GRUPPI_MENU: Array<{ titolo: string; voci: Array<[Voce, string]>; secondario?: boolean }> = [
+export const GRUPPI_MENU: Array<{ titolo: string; voci: Array<[VoceDelMenu, string]>; secondario?: boolean }> = [
   {
     titolo: 'Ogni giorno',
     voci: [

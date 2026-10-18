@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 type P = { size?: number }
 const base = (size: number) => ({
   width: size,
@@ -107,3 +109,36 @@ export const Cursori = ({ size = 20 }: P) => (
     <circle cx="17" cy="17" r="3" />
   </svg>
 )
+
+/** Un'icona del menu: tratto più sottile delle altre (1,75), perché accanto al testo non deve pesare. */
+const voce = (corpo: ReactNode) =>
+  function IconaVoce({ size = 20 }: P) {
+    return (
+      <svg {...base(size)} strokeWidth={1.75} aria-hidden="true" style={{ flex: 'none' }}>
+        {corpo}
+      </svg>
+    )
+  }
+
+/** Le icone del menu della segreteria: una per voce, la chiave è la voce di GRUPPI_MENU. */
+export const ICONE_MENU = {
+  dafare: voce(<><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></>),
+  richieste: voce(<><rect x="3" y="5" width="18" height="14" rx="2" /><polyline points="3 7 12 13 21 7" /></>),
+  presenze: voce(<><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /><polyline points="9 14 11 16 15 12" /></>),
+  iscritti: voce(<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>),
+  tessere: voce(<><rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="8" cy="11" r="2" /><path d="M5.5 16c.5-1.5 1.5-2 2.5-2s2 .5 2.5 2" /><path d="M14 10h4M14 14h4" /></>),
+  pagamenti: voce(<><path d="M18 7c-1.2-1.3-3-2-5-2a7 7 0 0 0 0 14c2 0 3.8-.7 5-2" /><path d="M4 10h9M4 14h9" /></>),
+  settimana: voce(<><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></>),
+  corsi: voce(<><circle cx="12" cy="8" r="6" /><path d="M15.5 12.9 17 22l-5-3-5 3 1.5-9.1" /></>),
+  listino: voce(<><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z" /><circle cx="7" cy="7" r="1" /></>),
+  istruttori: voce(<><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>),
+  personale: voce(<><circle cx="7.5" cy="15.5" r="4.5" /><path d="M10.7 12.3 21 2M16 7l3 3M14 9l2 2" /></>),
+  statistiche: voce(<path d="M12 20V10M18 20V4M6 20v-4" />),
+  vestiario: voce(<path d="M20.4 3.5 16 2a4 4 0 0 1-8 0L3.6 3.5a2 2 0 0 0-1.3 2.2l.6 3.5a1 1 0 0 0 1 .8H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.2a1 1 0 0 0 1-.8l.6-3.5a2 2 0 0 0-1.4-2.2z" />),
+  esercizi: voce(<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11" />),
+  segnalazioni: voce(<><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><path d="M4 22v-7" /></>),
+  sito: voce(<><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></>),
+  amministrazione: voce(<path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />),
+  areaIstruttori: voce(<><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" /></>),
+  link: voce(<><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" /><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" /></>),
+}

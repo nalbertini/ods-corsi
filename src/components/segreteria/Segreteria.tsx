@@ -4,7 +4,7 @@ import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
 import { Bollino } from '../ds'
 import { TastoTema } from '../TastoTema'
-import { Cursori } from '../Icons'
+import { Cursori, ICONE_MENU } from '../Icons'
 import { Settimana } from './Settimana'
 import { Corsi, riapriSuIscritti } from './Corsi'
 import { Iscritti } from './Iscritti'
@@ -117,7 +117,8 @@ function CopiaLink({ link, testo, perche }: { link: string; testo: string; perch
   }
   return (
     <button type="button" className="num sg-voce" onClick={copia} title={link}>
-      {copiato ? 'LINK COPIATO ✓' : testo}
+      <ICONE_MENU.link />
+      <span className="sg-voce-testo">{copiato ? 'LINK COPIATO ✓' : testo}</span>
     </button>
   )
 }
@@ -450,22 +451,26 @@ export function Segreteria({
                 {g.titolo}
               </span>
               <div className="sg-voci">
-                {g.voci.map(([id, testo]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    className="num sg-voce"
-                    aria-current={voce === id || (id === 'presenze' && inPresenze) ? 'page' : undefined}
-                    onClick={() => vai(id)}
-                  >
-                    <span className="sg-voce-testo">{testo}</span>
-                    {id === 'richieste' && segno(richiesteNuove, 'nuove')}
-                    {id === 'presenze' && conSegnalate && segno(segnalateDaVedere, 'segnalate da vedere')}
-                    {id === 'istruttori' && segno(daConfermare, 'da confermare')}
-                    {id === 'segnalazioni' && segno(daRispondere, 'da rispondere')}
-                    {id === 'vestiario' && segno(daSaldare, 'ordini da saldare')}
-                  </button>
-                ))}
+                {g.voci.map(([id, testo]) => {
+                  const Icona = ICONE_MENU[id]
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      className="num sg-voce"
+                      aria-current={voce === id || (id === 'presenze' && inPresenze) ? 'page' : undefined}
+                      onClick={() => vai(id)}
+                    >
+                      <Icona />
+                      <span className="sg-voce-testo">{testo}</span>
+                      {id === 'richieste' && segno(richiesteNuove, 'nuove')}
+                      {id === 'presenze' && conSegnalate && segno(segnalateDaVedere, 'segnalate da vedere')}
+                      {id === 'istruttori' && segno(daConfermare, 'da confermare')}
+                      {id === 'segnalazioni' && segno(daRispondere, 'da rispondere')}
+                      {id === 'vestiario' && segno(daSaldare, 'ordini da saldare')}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           ))}
@@ -474,12 +479,14 @@ export function Segreteria({
         <div className="sg-voci">
           {onIstruttori && (
             <button type="button" className="num sg-voce" onClick={onIstruttori}>
-              Istruttori →
+              <ICONE_MENU.areaIstruttori />
+              <span className="sg-voce-testo">Istruttori →</span>
             </button>
           )}
           {onAmministrazione && (
             <button type="button" className="num sg-voce" onClick={onAmministrazione}>
-              Amministrazione →
+              <ICONE_MENU.amministrazione />
+              <span className="sg-voce-testo">Amministrazione →</span>
             </button>
           )}
           <CopiaLink link={LINK_PUBBLICO} testo="Copia link iscrizioni" perche="Il link per iscriversi:" />
