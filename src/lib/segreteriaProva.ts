@@ -11,6 +11,8 @@ import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva,
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { enteDaDati, fineAnno, importaTessereProva } from './tessere'
+import { QUOTA_ASSOCIATIVA } from './costi'
+import { NOTA_DI_DEFAULT, stagioneDi, type IncassoPrima } from './pagatoPrima'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
@@ -586,6 +588,30 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async tessere() {
       return { elenco: [...(a().tessere ?? [])] }
+    },
+
+    // Gli incassi del vecchio programma nella stagione (71-pagato-vecchio-programma.sql): quelli importati e scritti qui, e
+    // se non ce ne sono quattro inventati sulle prime persone da pagare, uno per caso, per vedere il filtro per intero.
+    async pagatoPrima() {
+      const { movimenti, voci } = contabilita()
+      const veri: IncassoPrima[] = movimenti
+        .filter((x) => x.tipo === 'entrata' && !x.annullatoIl && x.origineImport?.startsWith('prima-nota:') && x.data >= stagioneDi(chiaveGiorno(new Date())).dal && x.data <= stagioneDi(chiaveGiorno(new Date())).al)
+        .map((x) => ({ personaId: x.personaId ?? null, data: x.data, importo: x.importo, voce: voci.find((v) => v.id === x.voceId)?.nome ?? '' }))
+        .filter((x) => x.voce === VOCE_QUOTA || x.voce === VOCE_CORSI)
+      if (veri.length) return { elenco: veri }
+      const [intera, sotto, corsi] = a()
+        .persone.filter((p) => p.ruolo === 'iscritto' && p.attiva && ((p.pagamento?.stato ?? 'da_pagare') === 'da_pagare' || p.pagamento?.nota === NOTA_DI_DEFAULT))
+        .sort((x, y) => x.id.localeCompare(y.id))
+      const anno = stagioneDi(oggi()).dal.slice(0, 4)
+      const incasso = (personaId: string | null, giorno: string, importo: number, voce: string): IncassoPrima => ({ personaId, data: `${anno}-${giorno}`, importo, voce })
+      return {
+        elenco: [
+          ...(intera ? [incasso(intera.id, '09-28', QUOTA_ASSOCIATIVA * 100, VOCE_QUOTA)] : []),
+          ...(sotto ? [incasso(sotto.id, '10-03', 3000, VOCE_QUOTA)] : []),
+          ...(corsi ? [incasso(corsi.id, '09-28', 12500, VOCE_CORSI)] : []),
+          incasso(null, '09-29', QUOTA_ASSOCIATIVA * 100, VOCE_QUOTA),
+        ],
+      }
     },
 
     async importaTessere(righe, soloProva) {

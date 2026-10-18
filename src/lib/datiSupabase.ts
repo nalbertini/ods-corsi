@@ -5,7 +5,8 @@ import { daSenzaIstruttore, type MiaPresenza } from './ore'
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
 import { attivitaPerMenu, mancaAttivita, type ComePresenzaIstruttore } from './segreteria'
 import type { StatoPresenzaIstruttore } from './tablet'
-import { contiDellAppello, giornoDi, perCognome, valeIl } from './sala'
+import { contiDellAppello, giornoDi, valeIl } from './sala'
+import { contaPresenze, lezioniContate, ordinaPerPresenze } from './frequenza'
 import { Coda } from './coda'
 import { eFuoriFinestra } from './finestra'
 import { tutteLeRighe } from './tutteLeRighe'
@@ -284,6 +285,22 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
     },
 
     async dettaglio(sessioneId) {
+      // Quante volte ognuno è venuto a quella lezione, per l'ordine dell'appello. Se non si legge, l'appello si apre lo stesso, per cognome.
+      const presenzeDelleLezioni = async (aperta: { id: string; corsoId: string; inizio: string }) => {
+        try {
+          const sessioni = await tutteLeRighe((da, a) => db.from('sessioni').select('id, corso_id, inizio, stato').eq('corso_id', aperta.corsoId).neq('stato', 'annullata').lt('inizio', aperta.inizio).order('id').range(da, a))
+          if (sessioni.error) throw sessioni.error
+          const ultime = lezioniContate(aperta, sessioni.data.map((s) => ({ id: s.id, corsoId: s.corso_id, inizio: s.inizio, stato: s.stato })))
+          if (!ultime.length) return new Map<string, number>()
+          const ids = ultime.map((s) => s.id)
+          const presenze = await tutteLeRighe((da, a) => db.from('presenze').select('id, sessione_id, persona_id, stato').in('sessione_id', ids).eq('stato', 'presente').order('id').range(da, a))
+          if (presenze.error) throw presenze.error
+          return contaPresenze(aperta, ultime, presenze.data.map((p) => ({ sessioneId: p.sessione_id, personaId: p.persona_id, stato: p.stato as StatoPresenza })))
+        } catch {
+          return new Map<string, number>()
+        }
+      }
+
       const { data, error } = await leggiSessioni((sel) => db.from('sessioni').select(sel).eq('id', sessioneId).single())
       // Solo «non c'è» vuol dire null: un errore di rete detto come «nessun
       // iscritto» farebbe credere vuoto un corso che non lo è.
@@ -299,7 +316,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       if (e1) throw e1
       if (e2) throw e2
       const stati = new Map((presenze ?? []).map((p) => [p.persona_id, p.stato as StatoPresenza]))
-      const delCorso = iscrittiIl((iscritti ?? []) as unknown as RigaIscrizione[], riga.corso_id, giornoDi(riga.inizio)).sort(perCognome)
+      const delCorso = iscrittiIl((iscritti ?? []) as unknown as RigaIscrizione[], riga.corso_id, giornoDi(riga.inizio))
       const prove = new Map((await proveDi(db, sessioneId)).map((p) => [p.id, p]))
 
       // Quello che è ancora in coda: senza, una prova aggiunta senza rete
@@ -320,13 +337,13 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       }
 
       const iscrittiQui = new Set(delCorso.map((p) => p.id))
-      const elenco = [
+      const conti = await presenzeDelleLezioni({ id: sessioneId, corsoId: riga.corso_id, inizio: riga.inizio })
+      const elenco = ordinaPerPresenze([
         ...delCorso.map((p) => ({ ...p, stato: stati.get(p.id) ?? null })),
         ...[...prove.values()]
           .filter((p) => !iscrittiQui.has(p.id))
-          .sort(perCognome)
           .map((p) => ({ ...p, stato: stati.get(p.id) ?? null, prova: true })),
-      ]
+      ], conti)
 
       return { sessione: viste, note: riga.note ?? undefined, elenco } as DettaglioSessione
     },

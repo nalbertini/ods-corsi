@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; display: flex; flex-direction: column; width: 390px; min-height: 860px; background: #eef5fa">
+  <dc-import name="BarraTelefono" tema="sito" luogo="SEGRETERIA" da-fare="5" hint-size="100%,62px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 16px; flex: 1; padding: 20px 16px 0">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ISCRITTI</h1>
+      <span style="font-size: 14px; color: #46606f">46 persone da ricontrollare.</span>
+    </div>
+    <dc-import name="FiltriIscritti" tema="sito" attivi="PAGATO NEL VECCHIO PROGRAMMA 46" storico="46" hint-size="100%,200px"></dc-import>
+    <p style="margin: 0; font-size: 15px; line-height: 1.5" role="status"><b>38 persone da segnare</b> · 8 da guardare a mano. 12 incassi del vecchio programma non sono collegati a nessuna scheda: li collega l’amministrazione, in CONTABILITÀ › MOVIMENTI.</p>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <dc-import name="Titoletto" tema="sito" label="HA PAGATO LA QUOTA" conto="40" hint-size="100%,50px"></dc-import>
+      <span style="font-size: 14px; color: #46606f">Quelle con la casella si segnano insieme.</span>
+      <div style="display: flex; flex-direction: column">
+        <dc-import name="RigaStoricoIscritto" nome="Tatone Clio" voce="28/09/2026 · 50 € quota associativa" quota="DA PAGARE" casella="scelta" hint-size="100%,150px"></dc-import>
+        <dc-import name="RigaStoricoIscritto" nome="Esposito Marta" voce="14/09/2026 · 50 € quota associativa" quota="SCADUTA" casella="vuota" hint-size="100%,150px"></dc-import>
+        <dc-import name="RigaStoricoIscritto" nome="Gallo Elia" voce="12/09/2026 · 50 € quota associativa" quota="DA PAGARE" casella="senza" collegato="incasso del genitore Gallo Anna" nota="Non si segna il figlio per un incasso del genitore." hint-size="100%,150px"></dc-import>
+        <dc-import name="RigaStoricoIscritto" nome="Ferri Paolo" voce="03/10/2026 · 30 € quota associativa" quota="DA PAGARE" casella="senza" parziale="{{ true }}" nota="L’importo è sotto i 50 €: guarda se manca il resto." hint-size="100%,150px"></dc-import>
+        <div style="padding: 12px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px; color: #46606f">… e altre 35 persone con la casella</div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <dc-import name="Titoletto" tema="sito" label="HA PAGATO SOLO CORSI" conto="6" hint-size="100%,50px"></dc-import>
+      <span style="font-size: 14px; color: #46606f">Si decide dalla scheda, caso per caso.</span>
+      <div style="display: flex; flex-direction: column">
+        <dc-import name="RigaStoricoIscritto" nome="Moretti Elia" voce="12/09/2026 · 125 € psicomotricità" quota="DA PAGARE" casella="senza" nota="Ha pagato i corsi, non la quota: decide la segreteria." hint-size="100%,96px"></dc-import>
+        <dc-import name="RigaStoricoIscritto" nome="Villa Sara" voce="30/09/2026 · 310 € judo kids annuale" quota="SCADUTA" casella="senza" nota="Ha pagato i corsi, non la quota: decide la segreteria." hint-size="100%,96px"></dc-import>
+        <div style="padding: 12px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px; color: #46606f">… e altre 4 persone</div>
+      </div>
+    </div>
+
+    <div style="position: sticky; bottom: 0; margin: auto -16px 0"><dc-import name="BarraSegna" titolo="1 SCELTA" tasto="Segna 1 come pagata senza ricevuta dell’app" telefono="{{ true }}" hint-size="100%,170px"></dc-import></div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":860}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -118,6 +118,14 @@ Sotto, l'elenco degli iscritti. **Un tocco per nome**, e il giro è:
 Due tocchi veloci sullo stesso nome contano come uno: un presente toccato
 due volte «per sicurezza» resta presente.
 
+**L'ordine dei nomi**: in cima chi viene più spesso a *quella* lezione (lo
+stesso corso nello stesso giorno della settimana, sulle ultime 12 volte), poi
+gli altri; a parità, per cognome. Chi è nuovo sta dopo chi ha già delle
+presenze. L'ordine si fissa all'apertura e non si muove mentre segnate: un
+tocco non sposta mai un nome. Chi viene a provare resta in fondo, sotto
+**PROVE**. Se non si riesce a leggere lo storico, l'elenco è per cognome. Se
+riaprite una lezione passata, chi non è ancora segnato sta in cima.
+
 I due tasti in cima:
 
 - **TUTTI PRESENTI**: mette ✓ a tutti. È il modo più veloce: premetelo e poi

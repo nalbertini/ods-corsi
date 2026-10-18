@@ -34,6 +34,20 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
 - **Non archiviato** — solo finché ce ne sono: chi ha un file di certificato
   caricato prima della nuova gestione (senza data di caricamento). Quelli
   nuovi non ci sono mai.
+- **Pagato nel vecchio programma** col numero — solo finché ce ne sono: chi è
+  attivo, ha un incasso del vecchio programma nella stagione (collegato alla sua
+  scheda in CONTABILITÀ › MOVIMENTI) e nell'app risulta ancora da pagare. Sotto la
+  riga di stato c'è chi **ha pagato la quota** e chi **ha pagato solo corsi**; ogni
+  riga dice quale incasso è (data, importo, voce). Le righe con la casella si
+  segnano insieme: scegli, premi **Segna N come pagate senza ricevuta dell'app**,
+  controlla l'elenco (**✕ Escludi** toglie una persona), la data **Vale fino al**
+  (di partenza fine stagione) e la nota, e conferma. Chi è segnato esce dal
+  filtro; chi non è riuscito resta scelto e si riprova. Senza casella restano chi
+  ha pagato meno di 50 € (**PARZIALE?**), chi ha pagato solo corsi e chi ha un
+  incasso intestato al genitore: si guardano dalla scheda, caso per caso. Lo
+  storico non è un incasso: finché non segni, **Da pagare** e le statistiche non
+  cambiano. Gli incassi non collegati a nessuna scheda non ci sono: li collega
+  l'amministrazione.
 - **Possibili doppioni** col numero — solo finché ce ne sono: le schede che
   sembrano la stessa persona, a coppie, dalle più sicure: lo stesso codice
   fiscale, lo stesso nome scritto in un altro modo (D'Amico e Damico), nome e

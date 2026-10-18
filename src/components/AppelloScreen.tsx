@@ -3,6 +3,7 @@ import { conMioAppello, righeIstruttori, type Dati, type IstruttoreLezione } fro
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
 import { appelloAperto, eFuoriFinestra, etichettaFuoriFinestra, fraseFuoriFinestra } from '../lib/finestra'
 import { cercaNellElenco, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
+import { inOrdineDiApertura, primiDaSegnare } from '../lib/frequenza'
 import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
@@ -282,13 +283,8 @@ export function AppelloScreen({
   const segnati = d.elenco.filter((p) => p.stato !== null).length
   const iscritti = d.elenco.filter((p) => !p.prova)
   const inProva = d.elenco.filter((p) => p.prova)
-  if (!primi.current) {
-    const vuoti = iscritti.filter((p) => p.stato === null)
-    const passata = new Date(d.sessione.fine).getTime() < Date.now()
-    primi.current = new Set(passata && vuoti.length < iscritti.length ? vuoti.map((p) => p.id) : [])
-  }
-  const prima = primi.current
-  const inOrdine = prima.size ? [...iscritti.filter((p) => prima.has(p.id)), ...iscritti.filter((p) => !prima.has(p.id))] : iscritti
+  if (!primi.current) primi.current = primiDaSegnare(iscritti, new Date(d.sessione.fine).getTime() < Date.now())
+  const inOrdine = inOrdineDiApertura(iscritti, primi.current)
   const iscrittiTrovati = cercaNellElenco(inOrdine, cerca)
   const proveTrovate = cercaNellElenco(inProva, cerca)
   const cercando = cerca.trim() !== ''

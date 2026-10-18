@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; display: flex; width: 1440px; min-height: 1500px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="ISCRITTI" numeri="" nome="Marco Rossi" ruolo="Segreteria" altezza="1500px" hint-size="240px,1500px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ISCRITTI</h1>
+      <span style="font-size: 14px; color: #46606f">10 persone hanno un incasso del vecchio programma e risultano ancora da pagare.</span>
+    </div>
+    <dc-import name="FiltriIscritti" tema="sito" attivi="PAGATO NEL VECCHIO PROGRAMMA 10" storico="10" hint-size="100%,110px"></dc-import>
+    <div role="alert" style="padding: 12px 14px; border: 2px solid #b81d1d; font-size: 15px; line-height: 1.5"><b>Segnate 38. 2 non sono riuscite:</b> Rossi Anna, Bianchi Luca. Restano scelte: riprova, o aprile dalla scheda.</div>
+    <p style="margin: 0; font-size: 15px; line-height: 1.5" role="status"><b>2 persone da segnare</b> · 8 da guardare a mano. 12 incassi del vecchio programma non sono collegati a nessuna scheda: li collega l’amministrazione, in CONTABILITÀ › MOVIMENTI.</p>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <dc-import name="Titoletto" tema="sito" label="HA PAGATO LA QUOTA" conto="4" hint-size="100%,50px"></dc-import>
+      <span style="font-size: 14px; color: #46606f">Hanno pagato la quota associativa nel vecchio programma. Quelle con la casella si segnano insieme.</span>
+      <div style="display: flex; flex-direction: column">
+        <dc-import name="RigaStoricoIscritto" nome="Rossi Anna" voce="28/09/2026 · 50 € quota associativa" quota="DA PAGARE" casella="scelta" errore="NON RIUSCITA: riprova" hint-size="100%,96px"></dc-import>
+        <dc-import name="RigaStoricoIscritto" nome="Bianchi Luca" voce="28/09/2026 · 50 € quota associativa" quota="SCADUTA" casella="scelta" errore="NON RIUSCITA: riprova" hint-size="100%,96px"></dc-import>
+        <dc-import name="RigaStoricoIscritto" nome="Gallo Elia" voce="12/09/2026 · 50 € quota associativa" quota="DA PAGARE" casella="senza" collegato="incasso del genitore Gallo Anna" nota="Non si segna il figlio per un incasso del genitore." hint-size="100%,96px"></dc-import>
+        <dc-import name="RigaStoricoIscritto" nome="Ferri Paolo" voce="03/10/2026 · 30 € quota associativa" quota="DA PAGARE" casella="senza" parziale="{{ true }}" nota="L’importo è sotto i 50 €: guarda se manca il resto." hint-size="100%,96px"></dc-import>
+        
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <dc-import name="Titoletto" tema="sito" label="HA PAGATO SOLO CORSI" conto="6" hint-size="100%,50px"></dc-import>
+      <span style="font-size: 14px; color: #46606f">Niente quota associativa nell’incasso: si decide dalla scheda, caso per caso.</span>
+      <div style="display: flex; flex-direction: column">
+        <dc-import name="RigaStoricoIscritto" nome="Moretti Elia" voce="12/09/2026 · 125 € psicomotricità" quota="DA PAGARE" casella="senza" nota="Ha pagato i corsi, non la quota: decide la segreteria." hint-size="100%,96px"></dc-import>
+        <dc-import name="RigaStoricoIscritto" nome="Villa Sara" voce="30/09/2026 · 310 € judo kids annuale" quota="SCADUTA" casella="senza" nota="Ha pagato i corsi, non la quota: decide la segreteria." hint-size="100%,96px"></dc-import>
+        <div style="padding: 12px 14px; border-bottom: 1px solid #cfe6f4; font-size: 14px; color: #46606f">… e altre 4 persone</div>
+      </div>
+    </div>
+    <div style="position: sticky; bottom: 0; margin-top: auto"><dc-import name="BarraSegna" titolo="2 SCELTE" tasto="Riprova le 2" hint-size="100%,84px"></dc-import></div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
