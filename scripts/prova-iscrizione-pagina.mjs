@@ -64,6 +64,8 @@ ok('COSA_SERVE: il certificato non blocca («lo stesso»)', /certificato medico/
 ok('COSA_SERVE nomina la ricevuta', /ricevuta/.test(serve), true)
 ok('COSA_SERVE: per un minore firma il genitore', /minore firma il genitore/.test(serve), true)
 ok('COME_SI_PAGA', P.COME_SI_PAGA, { titolo: 'Dopo la richiesta, oppure in segreteria.', ricevuta: 'La ricevuta la puoi caricare nella richiesta, se hai già pagato.' })
+ok('apertura col modulo aperto: tasto e avviso, niente SENZA_MODULO', P.aperturaDellaPagina?.(true), { tasto: true, avviso: true, senzaModulo: false })
+ok('apertura col modulo chiuso: niente tasto né avviso, solo SENZA_MODULO', P.aperturaDellaPagina?.(false), { tasto: false, avviso: false, senzaModulo: true })
 ok('PROVA_CHIAMA, DUBBIO, INFORMATIVA_FRASE', [P.PROVA_CHIAMA, P.DUBBIO, P.INFORMATIVA_FRASE], ['Per cominciare, passa in palestra o chiamaci.', 'Hai un dubbio? Chiamaci o passa in palestra.', 'Come trattiamo i tuoi dati:'])
 ok('MODULO_DA_LEGGERE', P.MODULO_DA_LEGGERE, { titolo: 'Si firma col dito, nella richiesta.', testo: 'Se vuoi, prima lo leggi o lo stampi: quello per maggiorenni, o quello per minori che firma il genitore.' })
 
@@ -89,6 +91,11 @@ ok('usa sezioniPagina( (l’ordine non è scritto a mano)', /sezioniPagina\(/.te
 ok('chiama apriAspettoModulo( (tutta la pagina ha l’aspetto del sito)', /apriAspettoModulo\(/.test(pag), true)
 ok('non nomina più «metro Fermi»', pag.includes('metro Fermi'), false)
 ok('non usa più LINK_ISCRIZIONE', pag.includes('LINK_ISCRIZIONE'), false)
+// Il cancello è uno solo, MODULO_IN_APP, e il .tsx lo passa alle due funzioni di lib: con un `true` fisso o un condizionale a mano le due metà direbbero cose diverse.
+ok('il .tsx chiama sezioniPagina(MODULO_IN_APP) e le sezioni si rendono in quell\'ordine (map diretto, niente reverse)', /sezioniPagina\(MODULO_IN_APP\)\s*\.map\(/.test(pag) && !/\.reverse\(/.test(pag), true)
+ok('il .tsx chiama aperturaDellaPagina(MODULO_IN_APP) e non decide a mano il tasto', /aperturaDellaPagina\(MODULO_IN_APP\)/.test(pag) && !/\{MODULO_IN_APP\s*(\?|&&)/.test(pag), true)
+ok('MODULO_IN_APP: aperto in prova o con l\'informativa approvata', /export const MODULO_IN_APP\s*=\s*!haUnServer\s*\|\|\s*!!INFORMATIVA_PUBBLICA\s*$/m.test(lib), true)
+ok('{PROVA_CHIAMA} è nel JSX, non solo nell\'import', /\{PROVA_CHIAMA\}/.test(pag), true)
 // I testi stanno in lib: una frase ritoccata nel .tsx non farebbe cadere nessuna prova.
 for (const f of ['Per cominciare', 'Hai un dubbio', 'Come trattiamo'])
   ok(`«${f}…» non è scritta nel .tsx`, pag.includes(f), false)
@@ -119,6 +126,8 @@ const stretta = media.some((b) => {
   return da === 640 && [...b.corpo.matchAll(SEL)].some((r) => /max-width:\s*720px/.test(r[2]))
 })
 ok('da 640px `.scroll > .iscrizioni` ha max-width: 720px (e vale anche a 960px e oltre: la regola non ha un max-width)', stretta, true)
+const stretto = (sel) => media.some((b) => aPartireDa(b.cond) === 640 && [...b.corpo.matchAll(new RegExp('(^|[}\\s,])' + sel.replace(/[.>]/g, '\\$&').replace(/ /g, '\\s*') + '\\s*\\{([^}]*)\\}', 'g'))].some((r) => /max-width:\s*720px/.test(r[2])))
+ok('anche il riquadro IL VESTIARIO, sotto la pagina, sta nei 720px da 640px', stretto('.scroll > .iscrizioni-contatti'), true)
 ok('la griglia a due colonne (\'passi costi\') non c’è più', /grid-template-areas:\s*'passi costi'/.test(css), false)
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

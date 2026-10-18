@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { INFORMATIVA_PUBBLICA, MODULI, MODULO_IN_APP, PAGAMENTO, PROVA } from '../lib/iscrizione'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
-import { APERTURA, AVVISO_RICHIESTA, COME_SI_PAGA, COSA_SERVE, DUBBIO, INFORMATIVA_FRASE, MODULO_DA_LEGGERE, PROVA_CHIAMA, SENZA_MODULO, sezioniPagina, type Sezione } from '../lib/paginaIscrizioni'
+import { aperturaDellaPagina, APERTURA, AVVISO_RICHIESTA, COME_SI_PAGA, COSA_SERVE, DUBBIO, INFORMATIVA_FRASE, MODULO_DA_LEGGERE, PROVA_CHIAMA, SENZA_MODULO, sezioniPagina, type Sezione } from '../lib/paginaIscrizioni'
 import { CONTATTI, SITO, chiama } from '../lib/sito'
 import { Costi } from './Costi'
 import { Dettaglio, Etichetta, Cifra, Riquadro, Tasti, Tasto, Titoletto } from './ds'
@@ -63,21 +63,21 @@ export function IscrizioniScreen() {
 
 /** La frase, il tasto per cominciare e quel che serve sapere prima: la richiesta non chiude l'iscrizione, e l'informativa. */
 function Apertura({ onModulo }: { onModulo: () => void }) {
+  const a = aperturaDellaPagina(MODULO_IN_APP)
   return (
     <section className="pad stack iscrizioni-apertura">
       <h1 className="iscrizioni-titolo">{APERTURA.titolo}</h1>
       <span className="iscrizioni-frase">{APERTURA.frase}</span>
-      {MODULO_IN_APP ? (
+      {a.tasto && (
         <Tasto variante="principale" onClick={onModulo}>
           COMPILA LA RICHIESTA
         </Tasto>
-      ) : (
-        <Dettaglio tono="testo">{SENZA_MODULO}</Dettaglio>
       )}
+      {a.senzaModulo && <Dettaglio tono="testo">{SENZA_MODULO}</Dettaglio>}
       <Tasto href={chiama} qui>
         CHIAMA
       </Tasto>
-      {MODULO_IN_APP && <Dettaglio>{AVVISO_RICHIESTA}</Dettaglio>}
+      {a.avviso && <Dettaglio>{AVVISO_RICHIESTA}</Dettaglio>}
       {INFORMATIVA_PUBBLICA && (
         <Dettaglio>
           {INFORMATIVA_FRASE}{' '}

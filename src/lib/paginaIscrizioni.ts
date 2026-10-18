@@ -58,3 +58,12 @@ export function sezioniPagina(moduloAperto: boolean): Sezione[] {
   const tutte: Sezione[] = ['apertura', 'serve', 'prova', 'costi', 'paga', 'richiesta', 'modulo', 'aiuto', 'piede']
   return moduloAperto ? tutte : tutte.filter((s) => s !== 'richiesta')
 }
+
+/**
+ * Cosa mostra la cima della pagina. Senza il modulo aperto non c'è il tasto per
+ * cominciare né l'avviso su cosa succede dopo: c'è solo SENZA_MODULO. Tenuto in
+ * una funzione per avere un cancello solo, lo stesso di `sezioniPagina`.
+ */
+export function aperturaDellaPagina(moduloAperto: boolean): { tasto: boolean; avviso: boolean; senzaModulo: boolean } {
+  return { tasto: moduloAperto, avviso: moduloAperto, senzaModulo: !moduloAperto }
+}
