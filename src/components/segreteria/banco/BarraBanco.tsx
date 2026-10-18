@@ -24,6 +24,7 @@ export function BarraBanco({
   ruolo,
   segni,
   consentite,
+  titolo,
   cerca,
   link,
   guida,
@@ -38,6 +39,8 @@ export function BarraBanco({
   ruolo: string
   /** Le voci che la persona può aprire: le altre non ci sono, e un luogo senza voci nemmeno. */
   consentite: readonly Voce[]
+  /** Sotto «ODS CORSI»: lo stesso titolo del menu (`titoloDelMenu`). */
+  titolo: string
   /** Le cose che aspettano, per voce: la somma dà il numero del luogo. */
   segni: Partial<Record<Voce, { n: number; detto: string }>>
   cerca: ReactNode
@@ -78,7 +81,7 @@ export function BarraBanco({
           <Logo width={38} />
           <span className="stack" style={{ gap: 2 }}>
             <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.06em', lineHeight: 1 }}>ODS CORSI</span>
-            <span className="bn-sotto-marchio">SEGRETERIA</span>
+            <span className="bn-sotto-marchio">{titolo}</span>
           </span>
         </span>
         <div className="bn-cerca">{cerca}</div>

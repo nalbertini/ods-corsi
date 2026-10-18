@@ -368,6 +368,7 @@ export function Segreteria({
           nome={nome}
           ruolo={ruolo}
           consentite={consentite}
+          titolo={etichetta}
           segni={{
             richieste: { n: richiesteNuove, detto: 'nuove' },
             istruttori: { n: daConfermare, detto: 'da confermare' },

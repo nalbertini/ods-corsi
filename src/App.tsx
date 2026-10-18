@@ -170,7 +170,7 @@ function PortaUnica() {
 function TutteLeAree() {
   const voci: [keyof typeof INDIRIZZI, string, string][] = [
     ['istruttori', 'ISTRUTTORI', 'Il calendario e l’appello.'],
-    ['segreteria', 'GESTIONE', 'Corsi, iscritti, presenze e richieste, e per chi ha l’amministrazione i conti: pagamenti, listino e contabilità. Dal computer della reception.'],
+    ['segreteria', 'GESTIONE', 'Corsi, iscritti, presenze, richieste e conti. Dal computer della reception.'],
     ['iscrizioni', 'ISCRIZIONI', 'Come ci si iscrive, i costi e il modulo: la pagina da mandare a chi vuole iscriversi.'],
     ['iscritti', 'ISCRITTI', 'La pagina di chi frequenta i corsi: le sue lezioni, le presenze, il certificato e le ricevute. Il pilota.'],
     ['sala', 'SALA', 'Il tablet appeso al muro della sala. Da qui il dispositivo resta un tablet.'],
@@ -531,6 +531,9 @@ function AreaAmministrazione() {
  * La segreteria, con la sua porta: entra solo chi ne ha il ruolo. Un altro
  * account che arriva qui torna nella sua area (vedi `useChi`).
  */
+/** In prova non c'è un account: si vede tutto, con segreteria e amministrazione. */
+const PERSONA_DI_PROVA = { ruolo: 'staff', ancheAmministrazione: true }
+
 function AreaSegreteria() {
   const [chi, setChi] = useChi()
 
@@ -538,7 +541,8 @@ function AreaSegreteria() {
     return (
       <Segreteria
         nome="Segreteria di prova"
-        chi={{ ruolo: 'staff', ancheAmministrazione: true }}
+        ruolo={nomeDelRuolo(PERSONA_DI_PROVA)}
+        chi={PERSONA_DI_PROVA}
         prova
         onEsci={inProvaScelta ? () => scegliProva(false) : undefined}
       />
