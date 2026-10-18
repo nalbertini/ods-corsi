@@ -9,20 +9,34 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <!-- Tema sito: Inter (qui da Google Fonts, in app file locale OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; width: 100%">
-  <div style="display: flex; align-items: center; width: 360px; max-width: 100%; height: 44px; padding: 0 12px; background: {{c.bg}}; border: 2px solid {{c.line}}; font-size: 15px; color: {{coloreCerca}}">{{cercaMostrata}}</div>
-  <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 44px; padding: 0 12px; background: {{c.bg}}; border: 2px solid {{c.line}}; font-size: 15px; color: {{c.text}}">{{corso}}<span style="font-size: 11px; color: {{c.dim}}">▾</span></div>
-  <sc-for list="{{chip}}" as="x" hint-placeholder-count="6">
-    <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid {{x.bordo}}; background: {{x.sfondo}}; color: {{x.colore}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap">{{x.testo}}</span>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; width: 100%; font-family: {{fam}}">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; flex-basis: 100%">
+    <div style="display: flex; align-items: center; width: 360px; max-width: 100%; height: 44px; padding: 0 12px; background: {{campoSfondo}}; border: 2px solid {{campoBordo}}; border-radius: {{raggio}}; font-size: 15px; color: {{coloreCerca}}">{{cercaMostrata}}</div>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 44px; padding: 0 12px; background: {{campoSfondo}}; border: 2px solid {{campoBordo}}; border-radius: {{raggio}}; font-size: 15px; color: {{c.text}}">{{corso}}<span style="font-size: 11px; color: {{c.dim}}">▾</span></div>
+  </div>
+  <sc-for list="{{chip}}" as="x" hint-placeholder-count="3">
+    <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid {{x.bordo}}; border-radius: {{raggio}}; background: {{x.sfondo}}; color: {{x.colore}}; font-family: {{x.fam}}; font-variant-numeric: tabular-nums; font-size: {{x.corpo}}; font-weight: {{x.peso}}; letter-spacing: {{x.spazio}}; white-space: nowrap">{{x.testo}}</span>
   </sc-for>
+  <sc-if value="{{sito}}" hint-placeholder-val="{{ false }}">
+    <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600; color: {{c.text}}; text-decoration: underline; text-underline-offset: 4px">{{altriTesto}}</span>
+  </sc-if>
+  <sc-if value="{{altriAperti}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; flex-basis: 100%">
+      <sc-for list="{{altri}}" as="x" hint-placeholder-count="4">
+        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid {{x.bordo}}; border-radius: {{raggio}}; background: {{x.sfondo}}; color: {{x.colore}}; font-family: {{x.fam}}; font-size: {{x.corpo}}; font-weight: {{x.peso}}; letter-spacing: {{x.spazio}}; white-space: nowrap">{{x.testo}}</span>
+      </sc-for>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"cerca":{"editor":"text","default":""},"corso":{"editor":"text","default":"Tutti i corsi"},"attivi":{"editor":"text","default":"DA PAGARE"},"doppioni":{"editor":"text","default":"0"},"daStampare":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1000,"height":110}}'>
+<script data-dc-script data-props='{"cerca":{"editor":"text","default":""},"corso":{"editor":"text","default":"Tutti i corsi"},"attivi":{"editor":"text","default":"DA PAGARE"},"doppioni":{"editor":"text","default":"0"},"aperti":{"editor":"boolean","default":false},"daStampare":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":1000,"height":110}}'>
 // Riproduzione 1:1 della barra sopra la tabella ISCRITTI: src/components/segreteria/Iscritti.tsx (righe 191-235),
 // riga con gap 10px che va a capo. Il campo di ricerca e' .sg-campo (src/styles.css righe 1360-1364: alto 44px,
 // padding 0 12px, fondo `bg`, bordo 2px `line`, 15px; placeholder in `dim`) largo 360px; il filtro per corso e'
@@ -34,27 +48,49 @@
 // DA PAGARE, NON IN REGOLA, SENZA DOCUMENTO). daStampare: compare CERTIFICATI DA STAMPARE (solo se ce ne sono). doppioni: se > 0
 // compare POSSIBILI DOPPIONI con il numero.
 // Non riprodotto: fuoco, passaggio del mouse.
+// tema sito (src/lib/filtriIscritti.ts, `:root[data-look='sito']`): sopra la tabella solo ricerca, corso e i tre filtri che servono al banco (Senza certificato
+// valido, Da pagare, Non in regola), poi «Altri filtri (N) ▾», un comando sottolineato; gli altri stanno dietro e si aprono da soli se uno e' acceso
+// (`aperti` li apre a mano). I filtri sono in parole con l'iniziale maiuscola, Inter 15px 600, bordo blu; quello acceso e' blu pieno col segno ✓ davanti.
+// `attivi` si scrive come nel tema scuro (maiuscole): il confronto non guarda le maiuscole. `daStampare` e `doppioni` valgono solo se c'e' qualcosa.
 const T = {
   scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', tasto: '#b8b8b2', menu: '#161616' },
   chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', tasto: '#4a4a46', menu: '#ebebe7' },
+  sito: { bg: '#ffffff', surface: '#ffffff', surface2: '#cfe6f4', line: '#14709f', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', blu: '#14709f' },
 };
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
-const accesi = String(p.attivi ?? 'DA PAGARE').split('|').map((s) => s.trim()).filter(Boolean);
-    const nomi = ['SOLO SENZA EMAIL', 'VENGONO POCO', 'SENZA CERTIFICATO VALIDO', 'CERTIFICATO IN SCADENZA', 'DA PAGARE', 'NON IN REGOLA', 'SENZA DOCUMENTO'];
-    if (truthy(p.daStampare)) nomi.push('CERTIFICATI DA STAMPARE');
+const sito = p.tema === 'sito';
+    const accesi = String(p.attivi ?? 'DA PAGARE').split('|').map((s) => s.trim().toLowerCase()).filter(Boolean);
     const doppi = Number(p.doppioni) || 0;
-    if (doppi > 0) nomi.push('POSSIBILI DOPPIONI ' + doppi);
-    const chip = nomi.map((testo) => {
-      const on = accesi.includes(testo);
-      return { testo, bordo: on ? c.text : c.line, sfondo: on ? c.surface2 : 'transparent', colore: on ? c.text : c.sec };
-    });
+    const cap = (s) => s.charAt(0) + s.slice(1).toLowerCase();
+    let visibili = ['SOLO SENZA EMAIL', 'VENGONO POCO', 'SENZA CERTIFICATO VALIDO', 'CERTIFICATO IN SCADENZA', 'DA PAGARE', 'NON IN REGOLA', 'SENZA DOCUMENTO'];
+    let altri = [];
+    if (truthy(p.daStampare)) visibili.push('CERTIFICATI DA STAMPARE');
+    if (doppi > 0) visibili.push('POSSIBILI DOPPIONI ' + doppi);
+    if (sito) {
+      const tre = ['SENZA CERTIFICATO VALIDO', 'DA PAGARE', 'NON IN REGOLA'];
+      altri = visibili.filter((n) => !tre.includes(n));
+      visibili = tre;
+    }
+    const fa = (testo) => {
+      const on = accesi.includes(testo.toLowerCase());
+      if (!sito) return { testo, fam: COND, corpo: '13px', peso: 700, spazio: '0.12em', bordo: on ? c.text : c.line, sfondo: on ? c.surface2 : 'transparent', colore: on ? c.text : c.sec };
+      return { testo: (on ? '✓ ' : '') + cap(testo), fam: INTER, corpo: '15px', peso: 600, spazio: '0', bordo: on ? c.blu : c.line, sfondo: on ? c.blu : c.bg, colore: on ? '#ffffff' : c.text };
+    };
+    const accesiNascosti = altri.filter((n) => accesi.includes(n.toLowerCase())).length;
     const cerca = p.cerca ?? '';
-    return { c, chip, corso: p.corso || 'Tutti i corsi', cercaMostrata: cerca || 'Cerca per nome o email', coloreCerca: cerca ? c.text : c.dim };
+    return {
+      c, sito, fam: sito ? INTER : 'inherit', raggio: sito ? '6px' : '0', campoSfondo: sito ? c.surface : c.bg, campoBordo: sito ? c.blu : c.line,
+      chip: visibili.map(fa), altri: altri.map(fa),
+      altriAperti: sito && (truthy(p.aperti) || accesiNascosti > 0),
+      altriTesto: 'Altri filtri (' + altri.length + (accesiNascosti ? ', ' + accesiNascosti + ' acceso' : '') + ') ' + (truthy(p.aperti) || accesiNascosti ? '▴' : '▾'),
+      corso: p.corso || 'Tutti i corsi', cercaMostrata: cerca || 'Cerca per nome o email', coloreCerca: cerca ? c.text : c.dim,
+    };
   }
 }
 </script>

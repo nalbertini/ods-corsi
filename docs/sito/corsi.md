@@ -1,13 +1,34 @@
-# I nostri corsi: la pagina come nel design
+# I nostri corsi, nella nuova veste
 
-Testo da incollare nel pannello SITO (PAGINE › I nostri corsi, indirizzo `/corsi/`), per avere la pagina del design «tatami blu e giallo» (`TatamiBlu-Corsi`, desktop, e `TatamiBluM-Corsi`, telefono). Le regole del layout sono in `corsi.md` del ramo `claude/sito-corsi-f6b354`.
+Testo da incollare nel pannello SITO (PAGINE › I nostri corsi, indirizzo `/corsi/`)
+per avere la pagina rivista: titolo grande su una riga, una frase, nove schede
+uguali (foto o fascia con l'iniziale) e la chiamata «Una settimana per scegliere.».
+**Finché non si incolla il testo nuovo la pagina resta com'è oggi**: il sito
+riconosce quella nuova da due cose, il pulsante verso il modulo online e i corsi
+scritti tutti come sottotitoli con il link. Se manca una delle due la pagina
+resta quella di prima, senza avvisi.
 
-Come si fa:
+## Prima di incollare: le foto
+
+Le schede usano le stesse foto e gli stessi testi della Home (`home.html`): le
+tre foto nuove (`161-judo-C`, `446-lotta-A`, `989-aikido-B`) si caricano nella
+libreria IMMAGINI una volta sola, per la Home e per questa pagina. In
+`corsi.html` hanno lo stesso segnaposto (`DA-CARICARE-judo-161.jpg`,
+`DA-CARICARE-lotta-446.jpg`, `DA-CARICARE-aikido-989.jpg`): dopo il caricamento
+si sostituiscono con i nomi veri, come in `home.html`. Preparazione atletica,
+Giocomotricità e la foto degli istruttori sono già nella libreria. Pre
+pugilistica, Autodifesa, Avviamento e Sollevamento pesi non hanno foto: la
+scheda ha la fascia con l'iniziale (la foto dell'Avviamento è ancora da
+decidere: 0511 o quella online).
+
+## Come si fa
 
 1. Apri **PAGINE › I nostri corsi**.
-2. Nei campi a destra: **titolo** e **descrizione** qui sotto.
-3. Apri `docs/sito/corsi.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello clicca nel testo, cancella tutto e incolla (Cmd+V).
-4. **ANTEPRIMA** per controllare, poi **PUBBLICA**.
+2. Nei campi a destra: **titolo** e **descrizione** qui sotto (sono quelli di oggi).
+3. Apri `docs/sito/corsi.html` nel browser, seleziona tutto (Cmd+A), copia. Nel
+   pannello clicca nel testo, cancella **tutto** e incolla (Cmd+V).
+4. **ANTEPRIMA**, poi **PUBBLICA**. Il sito si aggiorna dopo una decina di minuti.
+   Le schede e i colori si vedono sul sito pubblicato, non nell'anteprima.
 
 ## Titolo
 
@@ -17,21 +38,28 @@ I nostri corsi
 
 Judo, lotta, aikido, pre pugilistica, autodifesa, preparazione atletica, pesi e psicomotricità per bambini, ragazzi e adulti a Collegno.
 
-## Testo
+## Come è scritto il testo
 
-Il testo sta in [`corsi.html`](corsi.html). Nessun titolo grande: una frase di apertura, poi nove corsi. Ognuno ha il nome (che è il link alla sua pagina), la foto se c’è, l’età in grassetto con la frase, e le fasce (Bambini, Adulti, Agonisti, Anziani). In fondo due foto di fila.
+- **La frase** è il primo paragrafo, prima dei corsi: sta sotto il titolo. Non è la
+  descrizione, che resta nei motori di ricerca. Altri paragrafi prima dei corsi
+  stanno sopra le schede.
+- **Ogni corso**: sottotitolo con il link alla sua pagina, la foto (facoltativa) subito
+  sotto, un paragrafo con l'età, uno con la descrizione e uno tutto in corsivo
+  con le fasce separate da « · » (Bambini · Adulti · Anziani · Agonisti). È
+  esattamente la forma della Home. Le foto messe dopo l'ultimo corso non si usano.
+- **La chiamata finale**: un titolo grande (qui «Una settimana per scegliere.»),
+  il paragrafo con l'indirizzo e «vicino alla metro Fermi», i due pulsanti
+  («Prova una settimana a 5 €» verso `https://app.officinedellosport.it/iscrizioni/`,
+  il giallo, sempre primo; «Scrivici» verso `/contatti/`) e la foto degli
+  istruttori. Senza, il sito mette l'invito giallo di sempre.
 
 ## Cosa cambia rispetto a oggi
 
-- Titolo e descrizione: identici a oggi.
-- La frase di apertura è quella di oggi.
-- I nove corsi: oggi sono un elenco di nomi con una frase; ora hanno anche l’età e le fasce, prese dal design (le stesse della Home).
-- Due foto di fila in fondo, come nel design.
-- I link vanno alle pagine vere di oggi (`/judo/`, `/lotta/`, `/aikido/`, `/pre-pugilistica/`, `/mga-metodo-globale-di-autodifesa/`, `/preparazione-atletica/`, `/giocomotricita-e-psicomotricita/`, `/avviamento-alle-arti-marziali/`, `/sollevamenti-pesi/`).
+- Titolo da 200 px su due righe → 120 px su una riga (56 px sul telefono); una sola frase al posto di due.
+- Nove schede uguali, con la fascia con l'iniziale dove manca la foto; testi di 12-14 parole, gli stessi della Home.
+- In fondo non ci sono più due foto di fila ma la chiamata «Una settimana per scegliere.» con i due pulsanti.
 
 ## Da controllare prima di pubblicare
 
-- **Età e fasce (Bambini, Adulti, Agonisti, Anziani)**: sono quelle del design e della Home. Non sempre coincidono col testo delle pagine: pre pugilistica «Dai 18 anni» contro «dal 2015 in poi» di oggi; Metodo Globale di Autodifesa «Dai 15 anni» contro «da 2015 in poi»; «Anziani» per aikido e preparazione atletica, che le pagine non dicono. Vedi i «Da controllare» di ogni disciplina.
-- FOTO DA SCEGLIERE: pugilistica, autodifesa, pesi (senza foto la tessera resta con il vuoto sopra il titolo, ed è giusto). Le altre foto sono le stesse delle pagine dei corsi.
-- Le due foto di fila in fondo (istruttori in judogi, gruppo di bambini) sono già nella Home.
-- Le foto ritraggono minori: servono i permessi dei genitori.
+- Le liberatorie delle foto con minori (le ha l'utente per tutte quelle proposte).
+- Età e fasce ancora aperte (le stesse della Home): Pre pugilistica «Dai 18 anni» e Autodifesa «Dai 15 anni» contro «dal 2015 in poi» delle loro pagine; «Anziani» ad Aikido e Preparazione atletica; «Bambini» a Sollevamento pesi (dagli 11 anni).

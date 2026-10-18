@@ -85,7 +85,7 @@ function fasceDi(corpo: Blocco[]): { nomi: string[]; resto: Blocco[] } {
   return nomi.length && nomi.every((x) => note.includes(x.toLowerCase())) ? { nomi, resto: corpo.slice(0, -1) } : { nomi: [], resto: corpo }
 }
 
-function scheda(g: { titolo: string; corpo: Blocco[] }, k: number, n: number): string {
+export function scheda(g: { titolo: string; corpo: Blocco[] }, k: number, n: number): string {
   const foto = g.corpo.map(immagine).find((x): x is string => x !== null)
   const { nomi, resto } = fasceDi(g.corpo.filter((x) => immagine(x) === null))
   const testi = resto.filter((x) => x.tag === 'p')

@@ -11,12 +11,12 @@ import type { Destinazione, Voce } from '../Segreteria'
 type ConVariabili = CSSProperties & Record<`--${string}`, string>
 
 /** Le parole dello stato: il colore da solo non basta a leggerlo. */
-const PAROLA: Record<StatoBlocco, string> = {
-  fatto: '✓ FATTO',
-  in_corso: 'ADESSO',
-  appello_non_fatto: '✕ APPELLO NON FATTO',
-  prossima: 'STA PER INIZIARE',
-  annullata: 'ANNULLATA',
+const PAROLE_BLOCCO: Record<StatoBlocco, string> = {
+  fatto: '✓ Fatto',
+  in_corso: 'Adesso',
+  appello_non_fatto: '✕ Appello non fatto',
+  prossima: 'Sta per iniziare',
+  annullata: 'Annullata',
 }
 
 const ora = (n: number) => `${String(n).padStart(2, '0')}:00`
@@ -121,7 +121,7 @@ export function Oggi({ d, conti, onVai, onRiprova }: { d: DatiSegreteria; conti:
                     <span className="bn-blocco-sotto">
                       {b.lezione.istruttori || 'Senza istruttore'} · {b.lezione.iscritti} iscritti
                     </span>
-                    <span className="num bn-blocco-stato">{b.stato === 'fatto' || b.stato === 'in_corso' ? `${PAROLA[b.stato]} · ${b.lezione.presenti} SU ${b.lezione.iscritti}` : PAROLA[b.stato]}</span>
+                    <span className="num bn-blocco-stato">{b.stato === 'fatto' || b.stato === 'in_corso' ? `${PAROLE_BLOCCO[b.stato]} · ${b.lezione.presenti} su ${b.lezione.iscritti}` : PAROLE_BLOCCO[b.stato]}</span>
                   </button>
                 ))}
               </div>
@@ -144,7 +144,7 @@ export function Oggi({ d, conti, onVai, onRiprova }: { d: DatiSegreteria; conti:
                 <span className="ob bn-riga-titolo">{r.titolo}</span>
                 <span className="bn-riga-sotto">{r.sotto}</span>
               </span>
-              <button type="button" className={`num sg-btn ${r.livello === 'blocca' && r.tasto === 'FAI LA RICEVUTA' ? 'sg-btn-rosso' : 'sg-btn-linea'}`} onClick={() => onVai(r.vai.voce, { persona: r.vai.persona, lezione: r.vai.lezione, filtro: r.vai.filtro })}>
+              <button type="button" className={`num sg-btn ${r.livello === 'blocca' && r.id.startsWith('quota-') ? 'sg-btn-rosso' : 'sg-btn-linea'}`} onClick={() => onVai(r.vai.voce, { persona: r.vai.persona, lezione: r.vai.lezione, filtro: r.vai.filtro })}>
                 {r.tasto}
               </button>
             </div>
@@ -153,7 +153,7 @@ export function Oggi({ d, conti, onVai, onRiprova }: { d: DatiSegreteria; conti:
       </div>
       {/* Quello che la coda non mostra (certificati in scadenza, da stampare, prezzi del listino) resta in DA FARE di sempre. */}
       <details className="bn-altro">
-        <summary className="num sg-btn sg-btn-linea">TUTTO QUELLO CHE C'È DA FARE</summary>
+        <summary className="num sg-btn sg-btn-linea">Tutto quello che c’è da fare</summary>
         <DaFare conti={conti} onVai={onVai} onRiprova={onRiprova} />
       </details>
     </>

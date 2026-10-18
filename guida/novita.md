@@ -10,6 +10,34 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.109.2 — 18 ottobre 2026
+
+### Modificato
+
+- La libreria di design descrive la segreteria nel look del sito
+
+## 0.109.1 — 18 ottobre 2026
+
+### Risolto
+
+- Aggiungere una colonna alla parte COLONNE dell'editor del sito non svuota più lo schermo
+
+### Modificato
+
+- Gli ultimi testi in parole e via le regole di Tatami della segreteria
+
+## 0.109.0 — 18 ottobre 2026
+
+### Novità
+
+- La pagina I nostri corsi con nove schede, titolo su una riga e la prova di una settimana
+
+## 0.108.0 — 18 ottobre 2026
+
+### Novità
+
+- L'editor delle pagine a pezzi dà più spazio alla pagina e dice cosa fare
+
 ## 0.107.0 — 18 ottobre 2026
 
 ### Novità

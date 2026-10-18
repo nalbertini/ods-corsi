@@ -580,7 +580,7 @@ function Scheda({
   useEffect(() => {
     if (vai) vaiA(vai.id)
   }, [vai])
-  // Il Banco («VAI ALLA SCHEDA») apre la scheda del problema.
+  // Il Banco («Vai alla scheda») apre la scheda del problema.
   useEffect(() => {
     // Il detail lo mette solo PersonaBanco, sempre un IdScheda.
     const apri = (e: Event) => setAperta((e as CustomEvent<IdScheda>).detail)

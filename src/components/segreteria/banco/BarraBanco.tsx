@@ -95,7 +95,7 @@ export function BarraBanco({
           }}
         >
           <button type="button" className="num sg-btn sg-btn-linea" style={{ height: 44 }} aria-expanded={linkAperto} onClick={() => setLinkAperto((x) => !x)}>
-            LINK ▾
+            Link ▾
           </button>
           {linkAperto && <div className="bn-link-voci sg-voci">{link}</div>}
         </div>
@@ -107,7 +107,7 @@ export function BarraBanco({
         </span>
         {onIstruttori && (
           <button type="button" className="num sg-btn sg-btn-linea" style={{ height: 44 }} onClick={onIstruttori}>
-            ISTRUTTORI →
+            Istruttori →
           </button>
         )}
         {onEsci && (
