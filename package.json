@@ -57,6 +57,7 @@
     "prova:sito-home-nuova": "node scripts/prova-sito-home-nuova.mjs",
     "prova:sito-home-aspetto": "node scripts/prova-sito-home-aspetto.mjs",
     "prova:sito-contatti": "node scripts/prova-sito-contatti.mjs",
+    "prova:sito-contatti-nuova": "node scripts/prova-sito-contatti-nuova.mjs",
     "prova:sito-corso": "node scripts/prova-sito-corso.mjs",
     "prova:sito-chi-siamo": "node scripts/prova-sito-chi-siamo.mjs",
     "prova:sito-chi-siamo-nuova": "node scripts/prova-sito-chi-siamo-nuova.mjs",

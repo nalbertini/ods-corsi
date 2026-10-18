@@ -22,7 +22,7 @@ tratteggiato e il cartellino con la sigla (C1-C6 sono nuove di questa pagina, D9
 ## Decisioni dell'utente applicate (18 ottobre 2026)
 
 - **Orari (C1):** nessuna riga «Quando trovarci» finché non ci sono gli orari.
-- **WhatsApp (C2):** il 346 329 2786 risponde su WhatsApp: tessera «Chiama o scrivi su WhatsApp →», pulsante «Scrivici».
+- **WhatsApp (C2):** il 346 329 2786 risponde su WhatsApp: tessera «Chiama ora →» (il tocco apre la chiamata), pulsante «Scrivici» su WhatsApp.
 - **Prova (D9, D10, D12):** due pulsanti, «Prova una settimana a 5 €» → modulo online (`app.officinedellosport.it/iscrizioni`) e «Scrivici» → WhatsApp. La prova vale per tutte le età dai 3 anni, solo la settimana, nessuna lezione singola (FAQ «Posso provare una sola lezione?»).
 - **Metro (C4):** «vicino alla metro Fermi» confermato, senza minuti a piedi.
 - **Liberatorie:** l'utente le ha per tutte le foto proposte; nessuna foto di ingresso per ora: layout a due foto.
@@ -32,7 +32,7 @@ tratteggiato e il cartellino con la sigla (C1-C6 sono nuove di questa pagina, D9
 | Sezione | Prima | Dopo | Perché |
 |---|---|---|---|
 | **Testa** | Titolo da 200 px, frase senza pulsante | Titolo da 140 px, frase coi tre modi, due pulsanti (prova, Scrivici) | Audit 2 |
-| **Recapiti** | 4 tessere, solo il testo sottolineato è un link (39 px) | 4 tessere uguali con azione da 48 px: «Chiama o scrivi su WhatsApp →», «Scrivici su…», «Ottieni indicazioni →» | Audit 3, 8 |
+| **Recapiti** | 4 tessere, solo il testo sottolineato è un link (39 px) | 4 tessere uguali con azione da 48 px: «Chiama ora →», «Scrivici su…», «Ottieni indicazioni →» | Audit 3, 8 |
 | **Orari** | Non ci sono | Non si mostra niente finché non ci sono | C1 deciso |
 | **Come arrivare** | Una frase ripetuta due volte, sulla mappa | Mappa con segnaposto e targhetta; In metro / In auto / Col navigatore | Audit 4-5 |
 | **Prova** | Pulsante in testata e «PROVA» enorme | «Una settimana per scegliere»: online, scrivici o chiamaci, passa in sede | Audit 2, testi §5 |
