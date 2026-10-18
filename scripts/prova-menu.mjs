@@ -65,6 +65,8 @@ ok('ognuna è un componente che disegna', Object.values(ICONE).filter((f) => typ
 ok('Segreteria.tsx disegna l\'icona di ogni voce', /ICONE_MENU\[id\]/.test(sg0()), true)
 ok('«Istruttori →» e i link hanno la loro icona', [/ICONE_MENU\.areaIstruttori/.test(sg0()), /ICONE_MENU\.link/.test(sg0())], [true, true])
 ok('un filetto separa un gruppo dal successivo', /\.sg-gruppo \+ \.sg-gruppo\s*\{[^}]*border-top/.test(readFileSync('src/styles.css', 'utf8')), true)
+// Elenco e scheda affiancati: la tabella cresce quanto il suo contenuto, e senza un minimo la scheda si riduce a una striscia.
+ok('la scheda accanto all\'elenco ha una larghezza minima', /\.sg-due-colonne > \.sg-scheda\s*\{[^}]*min-width:\s*420px/.test(readFileSync('src/styles.css', 'utf8')), true)
 
 
 console.log('\nIl gruppo dei conti (con l\'amministrazione)')
