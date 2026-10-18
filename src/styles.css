@@ -2039,6 +2039,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-griglia { display: grid; grid-template-columns: 56px repeat(7, minmax(120px, 1fr)); gap: 0; min-width: 940px; }
 .sg-giorno { display: flex; align-items: baseline; gap: 6px; padding: 6px 8px; border-bottom: 2px solid var(--line-soft); color: var(--dim); }
 .sg-giorno[data-oggi='true'] { border-bottom-color: var(--giallo); color: var(--giallo-testo); }
+.sg-giorno[data-stretto='true'] { flex-direction: column; align-items: center; gap: 0; padding: 6px 0; }
 /* Una linea per fascia: le righe si distinguono, e l'ora sta in cima alla sua. Le caselle vuote restano vuote, senza tratteggio. */
 .sg-ora { font-size: 16px; font-weight: 700; color: var(--dim); padding-top: 10px; border-top: 2px solid var(--line-soft); }
 .sg-casella { display: flex; flex-direction: column; gap: 4px; min-height: 64px; padding: 8px 3px; border-top: 2px solid var(--line-soft); }

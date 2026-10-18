@@ -10,7 +10,7 @@ import { unaVolta } from '../../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
 import { settimanaDi, type Posto } from '../../lib/indirizzoSegreteria'
 import { annuncio, chiSegnaTuttiPresenti, segnaNonSegnati, contiListe, dividiElenco, dopoIlTocco, LISTE, messaggioVuoto, nomeLista, parolaDiStato, serveConferma, statoDaTocco, tastoIniziale, type Azione, type Lista } from '../../lib/appelloListe'
-import { finestraDelMese, giorniDellaSettimana, meseDellaSettimana, nomeTitoloSettimana, postoDopoIlGiorno, titoloSettimana, type MeseDelCalendario } from '../../lib/calendarioSettimana'
+import { finestraDelMese, giorniDellaSettimana, giorniStretti, meseDellaSettimana, nomeTitoloSettimana, postoDopoIlGiorno, titoloSettimana, type MeseDelCalendario } from '../../lib/calendarioSettimana'
 import { etichetteLezione } from '../../lib/etichetteLezione'
 import { CalendarioSettimana } from './CalendarioSettimana'
 import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
@@ -104,6 +104,7 @@ export function Settimana({
 
   const lezioni = (sett.dato ?? []).filter((l) => !sala || l.salaId === sala)
   const ore = [...new Set(lezioni.map((l) => oraDi(l.inizio)))].sort()
+  const stretti = giorniStretti(giorni, sett.dato === null ? null : lezioni.map((l) => l.inizio))
   const oggi = chiaveGiorno(new Date())
   const adesso = Date.now()
   const lezione = sett.dato?.find((l) => l.id === aperta?.id) ?? null
@@ -258,12 +259,12 @@ export function Settimana({
         </>
       ) : (
         <div className="sg-griglia-scorre">
-          <div className="sg-griglia">
+          <div className="sg-griglia" style={{ gridTemplateColumns: `56px ${stretti.map((s) => (s ? '44px' : 'minmax(120px, 1fr)')).join(' ')}` }}>
             <span />
             {giorni.map((g) => {
               const k = chiaveGiorno(g)
               return (
-                <div key={k} className="sg-giorno" data-oggi={k === oggi}>
+                <div key={k} className="sg-giorno" data-oggi={k === oggi} data-stretto={stretti[giorni.indexOf(g)]}>
                   <span className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.14em' }}>{CORTI[g.getDay()]}</span>
                   <span className="num" style={{ fontSize: 20, fontWeight: 700 }}>{g.getDate()}</span>
                 </div>

@@ -47,6 +47,17 @@ ok('a cavallo d\'anno: 28 DIC – 3 GENNAIO', m.titoloSettimana(g(2026, 12, 28))
 ok('la versione per chi non vede: minuscolo e invito', m.nomeTitoloSettimana(g(2026, 10, 12)), "12 – 18 ottobre: scegli un'altra data")
 ok('la versione per chi non vede, a cavallo di mese', m.nomeTitoloSettimana(g(2026, 9, 28)), "28 set – 4 ottobre: scegli un'altra data")
 
+console.log('\nSabato e domenica senza lezioni')
+{
+  const sett = m.giorniDellaSettimana(g(2026, 10, 12))
+  const alle = (giorno, ora = 17) => new Date(2026, 9, giorno, ora).toISOString()
+  ok('solo feriali: sabato e domenica si stringono', m.giorniStretti(sett, [alle(12), alle(14)]), [false, false, false, false, false, true, true])
+  ok('una lezione di sabato: sabato resta largo, domenica no', m.giorniStretti(sett, [alle(12), alle(17)]), [false, false, false, false, false, false, true])
+  ok('una lezione di domenica: domenica resta larga', m.giorniStretti(sett, [alle(18, 23)]), [false, false, false, false, false, true, false])
+  ok('un giorno feriale vuoto non si stringe mai', m.giorniStretti(sett, [alle(17)])[2], false)
+  ok('settimana ancora da leggere: niente si stringe', m.giorniStretti(sett, null), [false, false, false, false, false, false, false])
+}
+
 console.log('\nI giorni della settimana')
 ok('19/10/2026 (cambio d\'ora del 25): sette consecutivi', chiavi(m.giorniDellaSettimana(g(2026, 10, 19))), ['2026-10-19', '2026-10-20', '2026-10-21', '2026-10-22', '2026-10-23', '2026-10-24', '2026-10-25'])
 ok('23/3/2026 (cambio d\'ora del 29): sette consecutivi', chiavi(m.giorniDellaSettimana(g(2026, 3, 23))), ['2026-03-23', '2026-03-24', '2026-03-25', '2026-03-26', '2026-03-27', '2026-03-28', '2026-03-29'])
