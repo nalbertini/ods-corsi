@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-03T04:20:13.956686+00:00",
+  "generatedAt": "2026-10-18T17:25:16.597618+00:00",
   "title": "Design System: ODS Corsi",
   "extensions": {
     "colorMeta": {
@@ -10,12 +10,12 @@
         "canonical": "oklch(18.2% 0.000 89.9)",
         "tonalRamp": [
           "#0b0b0b",
-          "#242424",
-          "#404040",
-          "#5d5d5d",
-          "#7d7d7d",
-          "#9e9e9e",
-          "#c4c4c4",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#cecece",
           "#eeeeee"
         ]
       },
@@ -25,12 +25,12 @@
         "canonical": "oklch(22.6% 0.000 89.9)",
         "tonalRamp": [
           "#0b0b0b",
-          "#242424",
-          "#404040",
-          "#5d5d5d",
-          "#7d7d7d",
-          "#9e9e9e",
-          "#c4c4c4",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#cecece",
           "#eeeeee"
         ]
       },
@@ -40,12 +40,12 @@
         "canonical": "oklch(26.0% 0.000 89.9)",
         "tonalRamp": [
           "#0b0b0b",
-          "#242424",
-          "#404040",
-          "#5d5d5d",
-          "#7d7d7d",
-          "#9e9e9e",
-          "#c4c4c4",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#cecece",
           "#eeeeee"
         ]
       },
@@ -55,12 +55,12 @@
         "canonical": "oklch(20.0% 0.000 89.9)",
         "tonalRamp": [
           "#0b0b0b",
-          "#242424",
-          "#404040",
-          "#5d5d5d",
-          "#7d7d7d",
-          "#9e9e9e",
-          "#c4c4c4",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#cecece",
           "#eeeeee"
         ]
       },
@@ -70,12 +70,12 @@
         "canonical": "oklch(32.1% 0.000 89.9)",
         "tonalRamp": [
           "#0b0b0b",
-          "#242424",
-          "#404040",
-          "#5d5d5d",
-          "#7d7d7d",
-          "#9e9e9e",
-          "#c4c4c4",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#cecece",
           "#eeeeee"
         ]
       },
@@ -85,13 +85,28 @@
         "canonical": "oklch(28.5% 0.000 89.9)",
         "tonalRamp": [
           "#0b0b0b",
-          "#242424",
-          "#404040",
-          "#5d5d5d",
-          "#7d7d7d",
-          "#9e9e9e",
-          "#c4c4c4",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#cecece",
           "#eeeeee"
+        ]
+      },
+      "riga-campo": {
+        "role": "neutral",
+        "displayName": "Riga Campo",
+        "canonical": "oklch(53.7% 0.006 106.6)",
+        "tonalRamp": [
+          "#0b0b08",
+          "#272723",
+          "#454542",
+          "#666662",
+          "#898985",
+          "#aeaeaa",
+          "#cecec9",
+          "#efefea"
         ]
       },
       "tratteggio": {
@@ -100,12 +115,12 @@
         "canonical": "oklch(40.8% 0.007 106.7)",
         "tonalRamp": [
           "#0b0b08",
-          "#242420",
-          "#40403c",
-          "#5e5e59",
-          "#7e7e79",
-          "#9f9f9a",
-          "#c4c4bf",
+          "#272723",
+          "#454541",
+          "#666662",
+          "#898985",
+          "#aeaeaa",
+          "#cecec9",
           "#efefea"
         ]
       },
@@ -115,13 +130,13 @@
         "canonical": "oklch(96.1% 0.003 106.4)",
         "tonalRamp": [
           "#0b0b0a",
-          "#242422",
-          "#40403e",
-          "#5e5e5c",
-          "#7d7d7b",
-          "#9e9e9c",
-          "#c4c4c2",
-          "#efefec"
+          "#262625",
+          "#454543",
+          "#666664",
+          "#898987",
+          "#aeaeac",
+          "#cececc",
+          "#eeeeec"
         ]
       },
       "testo-secondario": {
@@ -130,12 +145,12 @@
         "canonical": "oklch(83.4% 0.007 106.5)",
         "tonalRamp": [
           "#0b0b08",
-          "#242420",
-          "#40403c",
-          "#5e5e59",
-          "#7e7e79",
-          "#9f9f9a",
-          "#c4c4bf",
+          "#272723",
+          "#454541",
+          "#666662",
+          "#898985",
+          "#aeaea9",
+          "#cecec9",
           "#efefea"
         ]
       },
@@ -145,12 +160,12 @@
         "canonical": "oklch(63.9% 0.006 106.6)",
         "tonalRamp": [
           "#0b0b09",
-          "#242421",
-          "#40403c",
-          "#5e5e5a",
-          "#7d7d79",
-          "#9f9f9a",
-          "#c4c4c0",
+          "#272723",
+          "#454542",
+          "#666662",
+          "#898985",
+          "#aeaeaa",
+          "#cececa",
           "#efefea"
         ]
       },
@@ -159,13 +174,13 @@
         "displayName": "Testo Flebile",
         "canonical": "oklch(46.6% 0.006 106.6)",
         "tonalRamp": [
-          "#0b0b09",
-          "#242421",
-          "#40403c",
-          "#5e5e5a",
-          "#7d7d79",
-          "#9f9f9a",
-          "#c4c4c0",
+          "#0b0b08",
+          "#272723",
+          "#454541",
+          "#666662",
+          "#898985",
+          "#aeaeaa",
+          "#cecec9",
           "#efefea"
         ]
       },
@@ -175,12 +190,12 @@
         "canonical": "oklch(78.1% 0.008 106.6)",
         "tonalRamp": [
           "#0b0b08",
-          "#242420",
-          "#40403b",
-          "#5e5e59",
-          "#7e7e78",
-          "#9f9f99",
-          "#c4c4bf",
+          "#272722",
+          "#454540",
+          "#666661",
+          "#898984",
+          "#aeaea8",
+          "#cecec8",
           "#efefe9"
         ]
       },
@@ -189,14 +204,14 @@
         "displayName": "Rosso Ingranaggio",
         "canonical": "oklch(59.4% 0.220 27.0)",
         "tonalRamp": [
-          "#1f0000",
-          "#4b0003",
-          "#7c0109",
-          "#b10412",
-          "#e32729",
-          "#ff655a",
-          "#feaba1",
-          "#fee9e6"
+          "#440000",
+          "#6f0000",
+          "#9a0000",
+          "#c50006",
+          "#f13936",
+          "#ff665c",
+          "#ff897b",
+          "#ffab9b"
         ]
       },
       "verde-ingranaggio": {
@@ -204,14 +219,14 @@
         "displayName": "Verde Ingranaggio",
         "canonical": "oklch(63.3% 0.172 149.0)",
         "tonalRamp": [
-          "#001003",
-          "#012d0e",
-          "#014e1e",
-          "#04712f",
-          "#029740",
-          "#3abb5f",
-          "#67e284",
-          "#c8ffd0"
+          "#001800",
+          "#003800",
+          "#005b00",
+          "#007f23",
+          "#14a449",
+          "#4dcb6e",
+          "#71ec8d",
+          "#93ffad"
         ]
       },
       "giallo-ingranaggio": {
@@ -219,14 +234,14 @@
         "displayName": "Giallo Ingranaggio",
         "canonical": "oklch(83.7% 0.167 89.7)",
         "tonalRamp": [
-          "#100a00",
-          "#2e2200",
-          "#4f3d01",
-          "#735a03",
-          "#997906",
-          "#c19900",
-          "#eebd04",
-          "#ffedc0"
+          "#240000",
+          "#451800",
+          "#673a00",
+          "#8b5d00",
+          "#b08100",
+          "#d7a700",
+          "#f8c724",
+          "#ffe855"
         ]
       },
       "blu-ingranaggio": {
@@ -234,14 +249,29 @@
         "displayName": "Blu Ingranaggio",
         "canonical": "oklch(60.3% 0.127 238.6)",
         "tonalRamp": [
-          "#000d17",
-          "#01273c",
-          "#004566",
-          "#016493",
-          "#1486c0",
-          "#44a8e4",
-          "#84cefe",
-          "#dff2ff"
+          "#000439",
+          "#00285c",
+          "#004a80",
+          "#006ea6",
+          "#2892cd",
+          "#55b8f5",
+          "#77d9ff",
+          "#99fbff"
+        ]
+      },
+      "viola-corso": {
+        "role": "tertiary",
+        "displayName": "Viola Corso",
+        "canonical": "oklch(57.2% 0.159 302.5)",
+        "tonalRamp": [
+          "#1c0040",
+          "#380064",
+          "#572489",
+          "#7949b0",
+          "#9c6ed7",
+          "#c293ff",
+          "#e2b3ff",
+          "#ffd4ff"
         ]
       },
       "su-colore": {
@@ -250,13 +280,58 @@
         "canonical": "oklch(18.2% 0.000 89.9)",
         "tonalRamp": [
           "#0b0b0b",
-          "#242424",
-          "#404040",
-          "#5d5d5d",
-          "#7d7d7d",
-          "#9e9e9e",
-          "#c4c4c4",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#cecece",
           "#eeeeee"
+        ]
+      },
+      "su-rosso": {
+        "role": "neutral",
+        "displayName": "Su Rosso",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#cecece",
+          "#eeeeee"
+        ]
+      },
+      "rosso-testo": {
+        "role": "neutral",
+        "displayName": "Rosso Testo",
+        "canonical": "oklch(68.7% 0.202 26.6)",
+        "tonalRamp": [
+          "#400000",
+          "#6a0000",
+          "#940000",
+          "#bf0e1a",
+          "#ea4641",
+          "#ff6f65",
+          "#ff9184",
+          "#ffb3a4"
+        ]
+      },
+      "rosso-testo-chiaro": {
+        "role": "neutral",
+        "displayName": "Rosso Testo Chiaro",
+        "canonical": "oklch(50.4% 0.189 27.4)",
+        "tonalRamp": [
+          "#3d0000",
+          "#660000",
+          "#900000",
+          "#ba201f",
+          "#e54e44",
+          "#ff7668",
+          "#ff9787",
+          "#ffb8a7"
         ]
       },
       "carta-chiara": {
@@ -265,12 +340,12 @@
         "canonical": "oklch(96.6% 0.004 106.5)",
         "tonalRamp": [
           "#0b0b09",
-          "#242422",
-          "#40403d",
-          "#5e5e5b",
-          "#7d7d7b",
-          "#9e9e9c",
-          "#c4c4c1",
+          "#272724",
+          "#454543",
+          "#666664",
+          "#898987",
+          "#aeaeab",
+          "#cececb",
           "#efefec"
         ]
       },
@@ -280,12 +355,12 @@
         "canonical": "oklch(100.0% 0.000 89.9)",
         "tonalRamp": [
           "#0b0b0b",
-          "#242424",
-          "#404040",
-          "#5d5d5d",
-          "#7d7d7d",
-          "#9e9e9e",
-          "#c4c4c4",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#cecece",
           "#eeeeee"
         ]
       },
@@ -295,12 +370,12 @@
         "canonical": "oklch(93.3% 0.005 106.5)",
         "tonalRamp": [
           "#0b0b09",
-          "#242421",
-          "#40403d",
-          "#5e5e5b",
-          "#7d7d7a",
-          "#9f9f9b",
-          "#c4c4c1",
+          "#272724",
+          "#454542",
+          "#666663",
+          "#898986",
+          "#aeaeaa",
+          "#cececa",
           "#efefeb"
         ]
       },
@@ -310,12 +385,27 @@
         "canonical": "oklch(86.8% 0.008 106.6)",
         "tonalRamp": [
           "#0b0b08",
-          "#242420",
-          "#40403b",
-          "#5e5e59",
-          "#7e7e78",
-          "#9f9f99",
-          "#c4c4bf",
+          "#272722",
+          "#454540",
+          "#666661",
+          "#898984",
+          "#aeaea8",
+          "#cecec8",
+          "#efefe9"
+        ]
+      },
+      "riga-campo-chiara": {
+        "role": "neutral",
+        "displayName": "Riga Campo Chiara",
+        "canonical": "oklch(63.2% 0.007 106.6)",
+        "tonalRamp": [
+          "#0b0b08",
+          "#272723",
+          "#454541",
+          "#666662",
+          "#898984",
+          "#aeaea9",
+          "#cecec9",
           "#efefe9"
         ]
       },
@@ -325,27 +415,27 @@
         "canonical": "oklch(20.0% 0.000 89.9)",
         "tonalRamp": [
           "#0b0b0b",
-          "#242424",
-          "#404040",
-          "#5d5d5d",
-          "#7d7d7d",
-          "#9e9e9e",
-          "#c4c4c4",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#cecece",
           "#eeeeee"
         ]
       },
       "testo-spento-chiaro": {
         "role": "neutral",
         "displayName": "Testo Spento Chiaro (tema chiaro)",
-        "canonical": "oklch(52.7% 0.006 106.6)",
+        "canonical": "oklch(50.5% 0.006 106.6)",
         "tonalRamp": [
-          "#0b0b09",
-          "#242421",
-          "#40403c",
-          "#5e5e5a",
-          "#7d7d79",
-          "#9f9f9a",
-          "#c4c4c0",
+          "#0b0b08",
+          "#272723",
+          "#454541",
+          "#666662",
+          "#898985",
+          "#aeaeaa",
+          "#cecec9",
           "#efefea"
         ]
       },
@@ -354,14 +444,29 @@
         "displayName": "Verde Ingranaggio (tema chiaro)",
         "canonical": "oklch(57.5% 0.158 148.7)",
         "tonalRamp": [
-          "#001003",
-          "#002d0d",
-          "#024e1d",
-          "#01712d",
-          "#1b9643",
-          "#49b964",
-          "#73e089",
-          "#c8ffd0"
+          "#001700",
+          "#003700",
+          "#005900",
+          "#007d2b",
+          "#2ea24f",
+          "#5bc974",
+          "#7dea93",
+          "#9effb3"
+        ]
+      },
+      "verde-testo-chiaro": {
+        "role": "neutral",
+        "displayName": "Verde Testo Chiaro",
+        "canonical": "oklch(50.7% 0.140 148.6)",
+        "tonalRamp": [
+          "#001600",
+          "#003600",
+          "#00570e",
+          "#0d7b34",
+          "#40a057",
+          "#68c67b",
+          "#88e79a",
+          "#a9ffba"
         ]
       },
       "giallo-testo-chiaro": {
@@ -369,14 +474,299 @@
         "displayName": "Giallo Testo (tema chiaro)",
         "canonical": "oklch(54.7% 0.112 84.4)",
         "tonalRamp": [
+          "#1f0100",
+          "#3f1d00",
+          "#603d00",
+          "#845f00",
+          "#a9832b",
+          "#cfa854",
+          "#f0c874",
+          "#ffe995"
+        ]
+      },
+      "paglia": {
+        "role": "neutral",
+        "displayName": "Paglia",
+        "canonical": "oklch(92.3% 0.030 96.4)",
+        "tonalRamp": [
+          "#0f0b00",
+          "#2b2615",
+          "#494533",
+          "#6b6653",
+          "#8e8975",
+          "#b3ae99",
+          "#d3ceb9",
+          "#f4efd9"
+        ]
+      },
+      "paglia-chiara": {
+        "role": "neutral",
+        "displayName": "Paglia Chiara",
+        "canonical": "oklch(96.2% 0.020 97.5)",
+        "tonalRamp": [
+          "#0d0b03",
+          "#29271b",
+          "#484539",
+          "#696659",
+          "#8c897c",
+          "#b1aea0",
+          "#d1cec0",
+          "#f2efe0"
+        ]
+      },
+      "paglia-scura": {
+        "role": "neutral",
+        "displayName": "Paglia Scura",
+        "canonical": "oklch(86.1% 0.046 97.6)",
+        "tonalRamp": [
+          "#110b00",
+          "#2d2609",
+          "#4c4528",
+          "#6d6748",
+          "#908a6a",
+          "#b6af8e",
+          "#d6cfad",
+          "#f7efcd"
+        ]
+      },
+      "cucitura-paglia": {
+        "role": "neutral",
+        "displayName": "Cucitura Paglia",
+        "canonical": "oklch(77.2% 0.053 99.0)",
+        "tonalRamp": [
           "#110a00",
-          "#302101",
-          "#523c00",
-          "#775801",
-          "#9c771b",
-          "#bf9844",
-          "#e6be6b",
-          "#ffecc8"
+          "#2d2702",
+          "#4c4622",
+          "#6e6743",
+          "#918a65",
+          "#b6af88",
+          "#d6cfa7",
+          "#f7f0c7"
+        ]
+      },
+      "cucitura-tenue": {
+        "role": "neutral",
+        "displayName": "Cucitura Tenue",
+        "canonical": "oklch(83.2% 0.045 98.7)",
+        "tonalRamp": [
+          "#100b00",
+          "#2c270a",
+          "#4b4629",
+          "#6c6749",
+          "#908a6b",
+          "#b5af8f",
+          "#d5cfae",
+          "#f6f0ce"
+        ]
+      },
+      "riga-campo-paglia": {
+        "role": "neutral",
+        "displayName": "Riga Campo Paglia",
+        "canonical": "oklch(52.1% 0.021 103.8)",
+        "tonalRamp": [
+          "#0d0c03",
+          "#28271b",
+          "#474639",
+          "#686759",
+          "#8b8a7b",
+          "#b0afa0",
+          "#d0cfbf",
+          "#f1efdf"
+        ]
+      },
+      "orlo": {
+        "role": "neutral",
+        "displayName": "Orlo",
+        "canonical": "oklch(23.0% 0.004 106.7)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#272724",
+          "#454543",
+          "#666664",
+          "#898987",
+          "#aeaeab",
+          "#cececb",
+          "#efefec"
+        ]
+      },
+      "muschio": {
+        "role": "neutral",
+        "displayName": "Muschio",
+        "canonical": "oklch(34.2% 0.036 138.8)",
+        "tonalRamp": [
+          "#040f02",
+          "#1d2b1a",
+          "#3b4a37",
+          "#5c6b58",
+          "#7f8f7a",
+          "#a3b49e",
+          "#c2d4bd",
+          "#e3f5de"
+        ]
+      },
+      "testo-secondario-paglia": {
+        "role": "neutral",
+        "displayName": "Testo Secondario Paglia",
+        "canonical": "oklch(35.9% 0.005 106.7)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#272724",
+          "#454542",
+          "#666663",
+          "#898986",
+          "#aeaeaa",
+          "#cececa",
+          "#efefeb"
+        ]
+      },
+      "testo-spento-paglia": {
+        "role": "neutral",
+        "displayName": "Testo Spento Paglia",
+        "canonical": "oklch(46.1% 0.020 103.6)",
+        "tonalRamp": [
+          "#0d0c03",
+          "#28271b",
+          "#474639",
+          "#68675a",
+          "#8b8a7c",
+          "#b0afa0",
+          "#d0cfc0",
+          "#f0efe0"
+        ]
+      },
+      "tratteggio-paglia": {
+        "role": "neutral",
+        "displayName": "Tratteggio Paglia",
+        "canonical": "oklch(69.2% 0.047 98.9)",
+        "tonalRamp": [
+          "#100b00",
+          "#2c2708",
+          "#4b4627",
+          "#6d6748",
+          "#908a6a",
+          "#b5af8d",
+          "#d5cfac",
+          "#f6f0cc"
+        ]
+      },
+      "testo-flebile-paglia": {
+        "role": "neutral",
+        "displayName": "Testo Flebile Paglia",
+        "canonical": "oklch(49.5% 0.029 104.9)",
+        "tonalRamp": [
+          "#0d0c01",
+          "#282716",
+          "#474634",
+          "#686754",
+          "#8b8a76",
+          "#b0af9a",
+          "#d0cfba",
+          "#f1f0da"
+        ]
+      },
+      "blu-su-muschio": {
+        "role": "neutral",
+        "displayName": "Blu Su Muschio",
+        "canonical": "oklch(77.2% 0.103 233.1)",
+        "tonalRamp": [
+          "#000b2e",
+          "#002b50",
+          "#004c73",
+          "#086f97",
+          "#3d93bd",
+          "#65b9e5",
+          "#85daff",
+          "#a6fbff"
+        ]
+      },
+      "verde-testo-paglia": {
+        "role": "neutral",
+        "displayName": "Verde Testo Paglia",
+        "canonical": "oklch(43.5% 0.119 148.6)",
+        "tonalRamp": [
+          "#001500",
+          "#003400",
+          "#00551b",
+          "#29783d",
+          "#509d5f",
+          "#75c383",
+          "#95e4a2",
+          "#b6ffc2"
+        ]
+      },
+      "giallo-testo-paglia": {
+        "role": "neutral",
+        "displayName": "Giallo Testo Paglia",
+        "canonical": "oklch(45.7% 0.094 84.9)",
+        "tonalRamp": [
+          "#1c0300",
+          "#3b2000",
+          "#5c4000",
+          "#7f611a",
+          "#a38541",
+          "#c9aa66",
+          "#eac986",
+          "#ffeaa5"
+        ]
+      },
+      "rosso-testo-paglia": {
+        "role": "neutral",
+        "displayName": "Rosso Testo Paglia",
+        "canonical": "oklch(47.2% 0.176 27.4)",
+        "tonalRamp": [
+          "#3a0000",
+          "#630000",
+          "#8c0000",
+          "#b52a26",
+          "#e0544a",
+          "#ff7b6e",
+          "#ff9c8d",
+          "#ffbdac"
+        ]
+      },
+      "su-muschio": {
+        "role": "neutral",
+        "displayName": "Su Muschio",
+        "canonical": "oklch(86.5% 0.031 121.4)",
+        "tonalRamp": [
+          "#090d01",
+          "#242918",
+          "#424835",
+          "#636956",
+          "#868c78",
+          "#abb19c",
+          "#cad1bb",
+          "#ebf2dc"
+        ]
+      },
+      "riga-muschio": {
+        "role": "neutral",
+        "displayName": "Riga Muschio",
+        "canonical": "oklch(51.8% 0.040 138.6)",
+        "tonalRamp": [
+          "#030f01",
+          "#1c2b18",
+          "#3a4a36",
+          "#5b6c56",
+          "#7d8f78",
+          "#a2b49c",
+          "#c1d4bc",
+          "#e2f5dc"
+        ]
+      },
+      "riga-tenue-muschio": {
+        "role": "neutral",
+        "displayName": "Riga Tenue Muschio",
+        "canonical": "oklch(42.6% 0.039 138.3)",
+        "tonalRamp": [
+          "#040f01",
+          "#1d2b18",
+          "#3b4a36",
+          "#5b6c56",
+          "#7e8f78",
+          "#a2b49c",
+          "#c1d4bc",
+          "#e2f5dc"
         ]
       }
     },
@@ -550,9 +940,9 @@
   ],
   "narrative": {
     "northStar": "Il Tabellone di Palestra",
-    "overview": "ODS Corsi è segnaletica di sala prima che interfaccia. Si usa in piedi, col telefono in una mano durante l'appello, da un tablet appeso al muro guardato da due metri, dal computer della reception tra una telefonata e l'altra. Ogni scelta visiva risponde a quella scena: fondo nero pieno, i cinque colori degli ingranaggi del marchio usati come segnali, lettere condensate in maiuscolo obliquo che si leggono dalla porta, bersagli alti quanto un dito di fretta. Prima si legge da lontano, poi si fa bello (lo dice il codice stesso).\n\nLa densità è quella di un tabellone: poche cose, grandi, con contrasto netto. Niente angoli arrotondati, niente ombre decorative, niente sfumature: la profondità la fanno i bordi da 2px e il passaggio da superficie a superficie-alta. Lo stato si capisce dal colore del bordo e dal segno grande a sinistra prima ancora di leggere il nome. Il tema chiaro esiste per la reception illuminata: stessi segnali, carta calda invece del nero.\n\nIl sistema rifiuta l'aspetto da SaaS generico: niente card morbide con ombra, niente pillole arrotondate, niente gradienti, niente icone decorative dove basta una parola in maiuscolo.",
+    "overview": "ODS Corsi è segnaletica di sala prima che interfaccia. Si usa in piedi, col telefono in una mano durante l'appello, da un tablet appeso al muro guardato da due metri, dal computer della reception tra una telefonata e l'altra. Ogni scelta visiva risponde a quella scena: fondo nero pieno, i cinque colori degli ingranaggi del marchio usati come segnali, lettere condensate in maiuscolo obliquo che si leggono dalla porta, bersagli alti quanto un dito di fretta. *Prima si legge da lontano, poi si fa bello* (lo dice il codice stesso).\n\nLa densità è quella di un tabellone: poche cose, grandi, con contrasto netto. Niente angoli arrotondati, niente ombre decorative, niente sfumature: la profondità la fanno i bordi da 2px e il passaggio da `superficie` a `superficie-alta`. Lo stato si capisce dal colore del bordo e dal segno grande a sinistra prima ancora di leggere il nome. Il tema chiaro esiste per la reception illuminata: stessi segnali, carta calda invece del nero. Il terzo tema, **Tatami**, è anch'esso chiaro: fondo `paglia` (la stuoia del dojo), superfici `paglia-chiara` e `paglia-scura`, testo e bordi `orlo` (il nero della stoffa che orla i tatami), menu `muschio` con testo chiaro (`su-muschio`). I segnali sono gli stessi; i testi scritti in giallo, verde e rosso sono più scuri di quelli del chiaro (`giallo-testo-paglia`, `verde-testo-paglia`, `rosso-testo-paglia`) perché sulla paglia quelli del bianco non arrivano a 4,5:1. Si sceglie dal tasto del tema, che passa nero → bianco → Tatami, ed è uno solo per app e timer. Cambiano solo i colori: layout e componenti sono gli stessi.\n\nIl sistema rifiuta l'aspetto da SaaS generico: niente card morbide con ombra, niente pillole arrotondate, niente gradienti, niente icone decorative dove basta una parola in maiuscolo.",
     "keyCharacteristics": [
-      "Nero palestra (#121212) come fondo, superfici a gradini tonali, bordi 2px pieni.",
+      "Nero palestra (`#121212`) come fondo, superfici a gradini tonali, bordi 2px pieni.",
       "Cinque colori del marchio, ciascuno con un solo significato (rosso azione/errore, verde fatto/presente, giallo avviso/prova, blu informazione, testo).",
       "Saira Condensed obliqua 9° per tasti e titoli, Barlow per il testo corrente.",
       "Raggio zero ovunque, tranne il timbro kanji.",
@@ -562,32 +952,37 @@
     "rules": [
       {
         "name": "La Regola del Segnale Unico",
-        "body": "Ogni colore del marchio ha un significato e uno solo. Il rosso non decora, il verde non è \"brand\": se un elemento è verde, qualcosa è fatto o presente.",
+        "body": "Ogni colore del marchio ha un significato e uno solo. Il rosso non decora, il verde non è \"brand\": se un elemento è verde, qualcosa è fatto o presente. In segreteria il rosso dice solo «manca» o «non si torna indietro». Nella settimana è rosso solo il SENZA APPELLO; istruttore? e sala? sono grigi, perché sono buchi del corso e il rosso lo hanno in CORSI. Le lezioni passate con l'appello fatto si fanno da parte (fondo trasparente, bordo tenue). In DA FARE il numero è rosso solo per ciò che è già un guaio (appelli, certificati mancanti, quote); giallo (`giallo-testo`) per ciò che aspetta una risposta o scade presto, come i numeri del menu; le stampe stanno in una riga neutra in fondo.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regola dei Colori dei Corsi",
+        "body": "Un corso si colora fra Blu, Viola (#8b5cc4, fuori dal marchio, scelto apposta per non essere un segnale), Giallo e Verde. Mai Rosso (`supabase/26-colori-corsi.sql`).",
         "section": "colors"
       },
       {
         "name": "La Regola della Tinta del Corso",
-        "body": "Il colore di un corso arriva come --tinta e vive solo su un bordo spesso (sinistra 6–8px, o in alto 4–6px). Mai come fondo pieno.",
+        "body": "Il colore di un corso arriva come `--tinta` e vive solo su un bordo spesso (sinistra 6–8px, o in alto 4–6px). Mai come fondo pieno.",
         "section": "colors"
       },
       {
         "name": "La Regola del Testo sul Colore",
-        "body": "Sopra rosso, verde e giallo il testo è sempre su-colore (#121212), in entrambi i temi.",
+        "body": "Sopra verde, giallo e blu pieno il testo è `su-colore` (#121212), in entrambi i temi. Sopra il rosso è bianco (#ffffff): il nero si ferma a 4,1:1, il bianco arriva a 4,5:1.",
         "section": "colors"
       },
       {
         "name": "La Regola dell'Obliquo",
-        "body": "L'obliquo 9° (.ob, font-style: oblique 9deg) è per i tasti e il marchio. Non per il testo corrente.",
+        "body": "L'obliquo 9° (`.ob`, `font-style: oblique 9deg`) è per i tasti e il marchio. Non per il testo corrente.",
         "section": "typography"
       },
       {
         "name": "La Regola dei Numeri Tabellari",
-        "body": "Orari, conteggi e prezzi usano .num/.cond con tabular-nums: le cifre non ballano quando cambiano.",
+        "body": "Orari, conteggi e prezzi usano `.num`/`.cond` con `tabular-nums`: le cifre non ballano quando cambiano.",
         "section": "typography"
       },
       {
         "name": "La Regola del Maiuscolo Spaziato",
-        "body": "Le etichette sono maiuscole e spaziate largo (0.12–0.24em); i nomi delle persone mai.",
+        "body": "Le etichette sono maiuscole e spaziate largo (0.12–0.24em); i nomi delle persone mai. Eccezione: le voci del menu di segreteria stanno a 0.1em da 768px, perché nessuna vada a capo accanto al suo numero.",
         "section": "typography"
       },
       {
@@ -597,25 +992,26 @@
       },
       {
         "name": "La Regola del Bordo che si Accende",
-        "body": "Selezione e fuoco si mostrano col bordo che passa a testo (o al colore dello stato), mai con un'ombra.",
+        "body": "Selezione e fuoco si mostrano col bordo che passa a `testo` (o al colore dello stato), mai con un'ombra.",
         "section": "elevation"
       }
     ],
     "dos": [
-      "Do usare i token di :root (--bg, --surface, --line, --rosso…) e mai esadecimali sciolti: il tema chiaro li ridefinisce.",
-      "Do dare a ogni stato un bordo colorato e un segno grande, così si legge da lontano.",
-      "Do tenere i bersagli ad almeno 44px, 56px per le righe che si toccano in piedi, 60px+ sul tablet.",
-      "Do scrivere tasti ed etichette in maiuscolo Saira Condensed, tasti obliqui 9°.",
-      "Do usare su-colore (#121212) per il testo sopra rosso, verde e giallo.",
-      "Do usare --giallo-testo per il giallo scritto, mai --giallo sul tema chiaro."
+      "**Do** usare i token di `:root` (`--bg`, `--surface`, `--line`, `--rosso`…) e mai esadecimali sciolti: il tema chiaro li ridefinisce.",
+      "**Do** dare a ogni stato un bordo colorato e un segno grande, così si legge da lontano.",
+      "**Do** tenere i bersagli ad almeno 44px, 56px per le righe che si toccano in piedi, 60px+ sul tablet.",
+      "**Do** scrivere tasti ed etichette in maiuscolo Saira Condensed, tasti obliqui 9°.",
+      "**Do** usare `su-colore` (#121212) per il testo sopra verde, giallo e blu pieno; `su-rosso` (bianco) sopra il rosso.",
+      "**Do** usare `--giallo-testo`, `--verde-testo` e `--rosso-testo` per giallo, verde e rosso scritti, mai `--giallo`, `--verde` o `--rosso` puri come testo piccolo."
     ],
     "donts": [
-      "Don't arrotondare angoli: raggio 0 ovunque, salvo il timbro kanji.",
-      "Don't usare ombre per dare profondità a card o tasti; solo per ciò che galleggia (playlist, fascia, lettore).",
-      "Don't usare gradienti o fondi pieni nella tinta del corso: la tinta vive su una barra di bordo.",
-      "Don't usare un colore del marchio per decorare: rosso è azione o errore, verde è fatto, giallo è avviso.",
-      "Don't caricare font da servizi esterni: i caratteri stanno in public/fonts.",
-      "Don't mettere il maiuscolo spaziato sui nomi delle persone."
+      "**Don't** arrotondare angoli: raggio 0 ovunque, salvo il timbro kanji.",
+      "**Don't** usare ombre per dare profondità a card o tasti; solo per ciò che galleggia (playlist, fascia, lettore).",
+      "**Don't** usare gradienti o fondi pieni nella tinta del corso: la tinta vive su una barra di bordo.",
+      "**Don't** usare un colore del marchio per decorare: rosso è mancanza o errore, verde è fatto, giallo è avviso.",
+      "**Don't** dare il rosso a un corso, alla voce attiva del menu o a un tasto che si può annullare.",
+      "**Don't** caricare font da servizi esterni: i caratteri stanno in `public/fonts`.",
+      "**Don't** mettere il maiuscolo spaziato sui nomi delle persone."
     ]
   }
 }
