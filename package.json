@@ -60,6 +60,7 @@
     "prova:sito-contatti": "node scripts/prova-sito-contatti.mjs",
     "prova:sito-contatti-nuova": "node scripts/prova-sito-contatti-nuova.mjs",
     "prova:sito-corso": "node scripts/prova-sito-corso.mjs",
+    "prova:sito-corso-nuovo": "node scripts/prova-sito-corso-nuovo.mjs",
     "prova:sito-chi-siamo": "node scripts/prova-sito-chi-siamo.mjs",
     "prova:sito-chi-siamo-nuova": "node scripts/prova-sito-chi-siamo-nuova.mjs",
     "prova:sito-istruttore": "node scripts/prova-sito-istruttore.mjs",
