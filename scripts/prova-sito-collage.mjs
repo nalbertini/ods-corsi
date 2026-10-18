@@ -6,7 +6,7 @@
 // Si passa sempre da `generaSito` (src/lib/sitoGenera.ts): la prova non sa in
 // quale file stia il codice. Il patto fra prova e codice è il markup:
 //
-//   <section class="pagina-hero">        la testata di sempre (h1, frase, «Contattaci»)
+//   <section class="pagina-hero">        la testata di sempre (h1 e frase)
 //     <div class="intro">…</div>         h1, descrizione, pulsante: come oggi
 //     <div class="collage …">            SE ci sono foto (anche con i numeri): la griglia a 6 colonne
 //     <div class="tessere n-N">          SE ci sono solo numeri (N tessere) o una sola foto (n-1)
@@ -380,7 +380,7 @@ console.log('\n9. Contattaci e prezzo (R12)')
   const senza = pag(testo)
   ok('senza la pagina contatti: nessun pulsante «Contattaci» né /contatti/ nella testata', /Contattaci|\/contatti\//.test(hero(senza)), false)
   const con = pag(testo, { contatti: true })
-  ok('con la pagina contatti: un solo pulsante verso /contatti/, fuori dalle tessere', [conta(hero(con), /<a class="pulsante" href="\/contatti\/">Contattaci<\/a>/g), tessere(hero(con)).some((x) => /pulsante/.test(x.html))], [1, false])
+  ok('con la pagina contatti: nessun pulsante «Contattaci» sotto la frase (sta in testata), né nelle tessere', [conta(hero(con), /<a class="pulsante" href="\/contatti\/">Contattaci<\/a>/g), tessere(hero(con)).some((x) => /pulsante/.test(x.html))], [0, false])
   ok('«5 €» non compare se non lo scrive la segreteria', [/5\s*€|€/.test(hero(con)), testoDi(hero(con)).includes('prova')], [false, false])
   const scritto = pag(ul([['1 settimana', 'di prova: 5 €'], ['3', 'sedi']]))
   ok('se la segreteria lo scrive in una voce, compare una volta sola', [conta(testoDi(hero(scritto)), /5 €/g), numeri(scritto).length], [1, 2])
