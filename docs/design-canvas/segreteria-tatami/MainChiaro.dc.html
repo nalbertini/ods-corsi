@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #1d1d1b; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «Segreteria · Tatami»: SETTIMANA nel guscio nuovo, tema CHIARO, a 1600px (il computer del banco ha uno schermo largo). Cambiano struttura e stile, non le voci del menu ne' i
+     gesti. Tre cose nuove: (1) la striscia COSA MANCA fissa in cima a ogni pagina; (2) la settimana come pianta di tatami
+     (un tatami per lezione, alto quanto dura); (3) l'appello della lezione scelta sempre accanto, senza cambiare pagina.
+     Fatto copiando Pagina.dc.html: solo <dc-import>, componenti in questa cartella (token in token-proposta.md). -->
+<div style="display: flex; width: 1600px; min-height: 1200px; background: #f4f4f1">
+  <div style="width: 260px; flex-shrink: 0">
+    <dc-import name="TatamiMenu" tema="chiaro" attiva="SETTIMANA" numeri="DA FARE:14, RICHIESTE ONLINE:3, PRESENZE:2" altezza="1200px" hint-size="260px,1200px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 24px; flex: 1; min-width: 0; padding: 28px 28px 32px">
+    <dc-import name="TatamiMancano" tema="chiaro" hint-size="100%,108px"></dc-import>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start">
+      <dc-import name="TatamiSettimana" tema="chiaro" scelto="MAR 19:30" hint-size="100%,850px"></dc-import>
+      <div style="padding-top: 0">
+        <dc-import name="TatamiAppello" tema="chiaro" hint-size="100%,1000px"></dc-import>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

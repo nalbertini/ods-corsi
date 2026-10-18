@@ -7,6 +7,7 @@ import { attivitaPerMenu, mancaAttivita, type ComePresenzaIstruttore } from './s
 import type { StatoPresenzaIstruttore } from './tablet'
 import { contiDellAppello, giornoDi, perCognome, valeIl } from './sala'
 import { Coda } from './coda'
+import { eFuoriFinestra } from './finestra'
 import { tutteLeRighe } from './tutteLeRighe'
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import type { GiaProvato, NuovaProva, PersonaTrovata } from './prove'
@@ -115,6 +116,9 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
   // l'appello lo deve sapere, se no la coda vuota direbbe «arrivato».
   let scartate = 0
   const chiScarta = new Set<(n: number) => void>()
+  // Il rifiuto della finestra (52-presenze-finestra.sql) ha un posto suo: non
+  // è un guasto da dire alla segreteria, è una lezione da rileggere com'è.
+  const chiFuori = new Set<(sessioneId: string) => boolean>()
   const coda = new Coda(async (op) => {
     const [a, b, c] = op.args as [string, string, StatoPresenza | null]
     try {
@@ -126,6 +130,8 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       // Per 'collega' il terzo argomento è `presente`, non uno stato.
       else if (op.tipo === 'collega') await scriviCollega(db, a, b, op.args[2] as boolean)
     } catch (e) {
+      // Se nessun appello di quella lezione è aperto a dirlo, resta una presenza rifiutata come le altre.
+      if (eFuoriFinestra(e) && [...chiFuori].map((f) => f(a)).some(Boolean)) return
       if (definitivo(e)) {
         // Scartata: riprovarla non cambierebbe niente.
         scartate++
@@ -418,6 +424,10 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       chiScarta.add(f)
       f(scartate)
       return () => void chiScarta.delete(f)
+    },
+    guardaFuoriFinestra: (f) => {
+      chiFuori.add(f)
+      return () => void chiFuori.delete(f)
     },
   }
 }

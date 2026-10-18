@@ -1,0 +1,5 @@
+{
+ "pages": [{"id": "page-1", "name": "Tessere"}],
+ "artboards": [{"file": "Main.dc.html", "title": "Proposta · tessere e incrocio", "x": 0, "y": 300, "page": "page-1"}],
+ "annotations": [{"id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1280, "text": "Tessere per persona e incrocio iscritti / tesserati"}]
+}

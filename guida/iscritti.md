@@ -10,7 +10,7 @@ qualcosa si passa in segreteria.
 
 È un **pilota**: per ora si vede solo con i dati inventati, per far vedere
 alla palestra com'è prima di aprirla agli iscritti veri. L'indirizzo è
-<https://nalbertini.github.io/ods-corsi/iscritti/>: col database vero dice
+<https://app.officinedellosport.it/iscritti/>: col database vero dice
 che l'area è in arrivo, e il tasto **GUARDALA IN PROVA** la apre con i dati
 inventati.
 
@@ -38,16 +38,15 @@ ognuno, e il dispositivo si ricorda la scelta.
 - **Certificato e quota**: fino a quando vale il certificato medico (sotto i
   6 anni non è obbligatorio), e fino a quando è pagata la quota. Il file del
   certificato lo vede solo la segreteria: qui c'è solo la data.
-- **Ricevute**: quelle fatte dalla segreteria (**SEGRETERIA → RICEVUTE**),
-  dalla più recente, ognuna col suo **PDF** da scaricare: lo stesso che
-  stampa la segreteria.
+- **Ricevute**: quelle fatte dalla segreteria, dalla più recente, ognuna col
+  suo **PDF** da scaricare: lo stesso che stampa la segreteria.
 - **Qualcosa non torna?**: il telefono della palestra, per chi vede
   qualcosa di sbagliato.
 
 Tutto viene da quello che la segreteria e gli istruttori fanno già: una
 lezione annullata o un sostituto dalla **SETTIMANA**, le presenze
 dall'appello e dal tablet, il certificato e il pagamento dalla scheda di
-**ISCRITTI**, le ricevute da **RICEVUTE**. In prova si può provare: si annulla
+**ISCRITTI**, le ricevute e i pagamenti dalla scheda di **ISCRITTI** e da **PAGAMENTI**. In prova si può provare: si annulla
 una lezione in segreteria, e l'iscritto la vede annullata.
 
 ## Il nucleo familiare
@@ -67,7 +66,9 @@ cognome fanno famiglia, a gruppi di due o tre.
 - **Aggiungi una persona**: apre il modulo di iscrizione già compilato coi
   dati che la segreteria ha del titolare: cognome, residenza, email e
   telefono, e il titolare come genitore per un minore, col suo codice fiscale. Si
-  cambia tutto, prima di mandare. Per un minore il documento non va portato:
+  cambia tutto, prima di mandare: toccando un campo ancora com'era, il testo
+  si seleziona e basta scrivere per sostituirlo; toccando di nuovo dentro il
+  testo il cursore va dove tocchi. Per un minore il documento non va portato:
   è quello del genitore, che la segreteria ha già.
 - **Quanto costa**, nel modulo, scelti corsi e formula: la quota
   associativa, il corso, e lo **sconto famiglia** del listino (il 20%

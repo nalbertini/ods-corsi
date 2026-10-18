@@ -6,6 +6,7 @@
  * nella cronologia e nei link incollati.
  *
  *   #iscritti/<id>
+ *   #iscritti/<id>?corso=<id> la scheda aperta da un corso: «‹ CORSO» riporta lì
  *   #iscritti/nuovo           il modulo del nuovo iscritto
  *   #corsi/<id>
  *   #corsi/nuovo              il modulo del nuovo corso
@@ -15,13 +16,18 @@
 import { eIndirizzoGuida, INDIRIZZO_AREE } from './cancelletti'
 import { chiaveGiorno, lunedi } from './sala'
 
-export const VOCI = ['dafare', 'settimana', 'corsi', 'iscritti', 'richieste', 'presenze', 'segnalate', 'statistiche', 'istruttori', 'personale', 'esercizi', 'listino', 'vestiario', 'regole', 'segnalazioni', 'dapagare', 'ricevute'] as const
+export const VOCI = ['dafare', 'settimana', 'corsi', 'iscritti', 'tessere', 'pagamenti', 'richieste', 'presenze', 'segnalate', 'statistiche', 'istruttori', 'personale', 'esercizi', 'listino', 'vestiario', 'regole', 'segnalazioni', 'sito'] as const
 export type Voce = (typeof VOCI)[number]
+
+/** Un filtro già acceso quando si arriva a una voce: chi ha il certificato da sistemare, chi deve pagare, cosa c'è da stampare. */
+export type FiltroSegreteria = 'certificato' | 'scadenza' | 'arrivo' | 'pagare' | 'file-di-prima' | 'stampare' | 'fuori-regola' | 'senza-appello' | 'senza-tessera'
 
 export interface Posto {
   voce: Voce
   persona?: string
   corso?: string
+  /** Il corso da cui si è aperta la scheda iscritto: il tasto in alto riporta lì. */
+  daCorso?: string
   /** Il modulo del nuovo iscritto o del nuovo corso aperto: Indietro lo chiude come una scheda. */
   nuovo?: true
   lezione?: { id: string; inizio: string }
@@ -55,7 +61,9 @@ export function leggiIndirizzo(hash: string, { prova }: { prova: boolean }): Pos
     if (resto[0] === 'nuovo') return { voce, nuovo: true }
     try {
       const id = decodeURIComponent(resto[0])
-      return voce === 'iscritti' ? { voce, persona: id } : { voce, corso: id }
+      if (voce === 'corsi') return { voce, corso: id }
+      const daCorso = new URLSearchParams(coda).get('corso')
+      return { voce, persona: id, ...(daCorso && { daCorso }) }
     } catch {
       // Un indirizzo storpiato (`%E0`): meglio DA FARE che uno schermo bianco.
       return dafare
@@ -79,7 +87,7 @@ export function leggiIndirizzo(hash: string, { prova }: { prova: boolean }): Pos
 /** L'indirizzo di un posto, col cancelletto: solo i campi del posto, il resto resta fuori. */
 export function scriviIndirizzo(p: Posto): string {
   if (p.voce === 'iscritti' && p.nuovo) return '#iscritti/nuovo'
-  if (p.voce === 'iscritti' && p.persona) return `#iscritti/${encodeURIComponent(p.persona)}`
+  if (p.voce === 'iscritti' && p.persona) return `#iscritti/${encodeURIComponent(p.persona)}${p.daCorso ? `?corso=${encodeURIComponent(p.daCorso)}` : ''}`
   if (p.voce === 'corsi' && p.nuovo) return '#corsi/nuovo'
   if (p.voce === 'corsi' && p.corso) return `#corsi/${encodeURIComponent(p.corso)}`
   if (p.voce !== 'settimana') return `#${p.voce}`
@@ -99,12 +107,12 @@ export function scriviIndirizzo(p: Posto): string {
  * ritoccata chiude la scheda, il modulo nuovo o la lezione e tiene il resto (settimana e
  * sala); una voce diversa riparte da capo.
  */
-export function postoDelMenu(ora: Posto, voce: Voce, dest: Pick<Posto, 'persona' | 'lezione'> = {}): Posto {
-  if (voce === ora.voce && !dest.persona && !dest.lezione) {
-    const { persona: _p, corso: _c, lezione: _l, nuovo: _n, ...resto } = ora
+export function postoDelMenu(ora: Posto, voce: Voce, dest: Pick<Posto, 'persona' | 'corso' | 'lezione' | 'daCorso'> = {}): Posto {
+  if (voce === ora.voce && !dest.persona && !dest.corso && !dest.lezione) {
+    const { persona: _p, corso: _c, lezione: _l, nuovo: _n, daCorso: _d, ...resto } = ora
     return resto
   }
-  return { voce, ...(dest.persona && { persona: dest.persona }), ...(dest.lezione && { lezione: dest.lezione }) }
+  return { voce, ...(dest.persona && { persona: dest.persona }), ...(voce === 'iscritti' && dest.persona && dest.daCorso && { daCorso: dest.daCorso }), ...(dest.corso && { corso: dest.corso }), ...(dest.lezione && { lezione: dest.lezione }) }
 }
 
 /**

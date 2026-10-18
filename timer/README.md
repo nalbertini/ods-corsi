@@ -71,7 +71,7 @@ modifiche aspettano in coda. Come funziona è nel
 
 Il timer sta dentro il repository di ODS Corsi, nella cartella `timer/`, e si
 pubblica nella sottocartella `timer/` dello stesso sito
-(`nalbertini.github.io/ods-corsi/timer/`). Fino a settembre 2026 era un
+(`app.officinedellosport.it/timer/`). Fino a settembre 2026 era un
 repository a sé, [nalbertini/Timer-](https://github.com/nalbertini/Timer-): la
 storia è stata portata qui intera.
 

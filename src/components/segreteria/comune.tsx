@@ -418,6 +418,10 @@ export function SchedaPiena({
   )
 }
 
+type Ordine<K extends string> = { per: K; verso: 1 | -1 }
+/** Dove una tabella tiene il suo ordine fra una visita e l'altra. */
+export type MemoriaOrdine<K extends string> = { ordine: Ordine<K> | null }
+
 /**
  * Una tabella che si ordina toccando l'intestazione di una colonna. Il primo
  * tocco mette le parole dalla A alla Z e i numeri dal più grande, il secondo
@@ -427,8 +431,15 @@ export function SchedaPiena({
  * `colonne` dice, per ogni colonna ordinabile, il valore da confrontare: un
  * numero o un testo, non quello che si vede («12/20», «3 febbraio»).
  */
-export function useOrdina<T, K extends string>(colonne: Record<K, (x: T) => Valore>) {
-  const [ordine, setOrdine] = useState<{ per: K; verso: 1 | -1 } | null>(null)
+export function useOrdina<T, K extends string>(colonne: Record<K, (x: T) => Valore>, memoria?: MemoriaOrdine<K>) {
+  const [ordine, setOrdineGiu] = useState<Ordine<K> | null>(memoria?.ordine ?? null)
+  // Chi la passa ritrova l'ordine dopo essere uscito e tornato (un corso aperto, un iscritto, e Indietro).
+  const setOrdine = (f: (o: Ordine<K> | null) => Ordine<K> | null) =>
+    setOrdineGiu((o) => {
+      const nuovo = f(o)
+      if (memoria) memoria.ordine = nuovo
+      return nuovo
+    })
 
   const ordina = (righe: T[]): T[] => {
     // La colonna scelta può non esserci più: un'ora che nel periodo nuovo non ha lezioni.
@@ -484,4 +495,14 @@ export function useOrdina<T, K extends string>(colonne: Record<K, (x: T) => Valo
   }
 
   return { ordina, colonna }
+}
+
+/** Il foglio CSV scaricato dal browser, col BOM perché Excel legga gli accenti (PRESENZE, PAGAMENTI, CONTABILITÀ). */
+export function scaricaCsv(nome: string, testo: string) {
+  const url = URL.createObjectURL(new Blob(['\ufeff' + testo], { type: 'text/csv;charset=utf-8' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = nome
+  a.click()
+  URL.revokeObjectURL(url)
 }

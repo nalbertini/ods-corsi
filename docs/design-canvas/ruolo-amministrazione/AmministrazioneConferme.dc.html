@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 24px; width: 1140px; background: #121212">
+  <div style="width: 560px; height: 360px; position: relative">
+    <dc-import name="Dialogo" tipo="conferma" domanda="Annullare la ricevuta 12/2026?" resto="Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare." no="NO, LASCIALA" si="SÌ, ANNULLA LA RICEVUTA" pericolo="{{ true }}" altezza="360px" hint-size="560px,360px"></dc-import>
+  </div>
+  <div style="width: 560px; height: 360px; position: relative">
+    <dc-import name="Dialogo" tipo="conferma" domanda="Annullare il pagamento di 30,00 € del 9 ottobre?" resto="Resta in elenco, annullato, e non si conta più." no="NO, LASCIALO" si="SÌ, ANNULLA IL PAGAMENTO" pericolo="{{ true }}" altezza="360px" hint-size="560px,360px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1140,"height":360}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

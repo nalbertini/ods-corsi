@@ -214,11 +214,12 @@ export function SettingsScreen({
       </div>
       <div className="pad stack" style={{ gap: 2 }}>
         <div className="card stack" style={{ gap: 10, padding: '12px 14px 14px' }}>
-          <div className="segmenti" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+          <div className="segmenti" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
             {(
               [
                 ['scuro', 'NERO'],
                 ['chiaro', 'BIANCO'],
+                ['tatami', 'TATAMI'],
               ] as [Tema, string][]
             ).map(([t, etichetta]) => (
               <button key={t} className="segmento" data-on={tema === t} aria-pressed={tema === t} onClick={() => scegliTema(t)}>

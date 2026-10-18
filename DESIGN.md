@@ -34,6 +34,25 @@ colors:
   verde-chiaro: "#12913f"
   verde-testo-chiaro: "#0b7a33"
   giallo-testo-chiaro: "#8f6a00"
+  paglia: "#ebe6d0"
+  paglia-chiara: "#f6f3e4"
+  paglia-scura: "#d9d2b0"
+  cucitura-paglia: "#bdb68f"
+  cucitura-tenue: "#cfc9a8"
+  riga-campo-paglia: "#6b6a5c"
+  orlo: "#1d1d1b"
+  muschio: "#2f3d2b"
+  testo-secondario-paglia: "#3d3d3a"
+  testo-spento-paglia: "#5a594c"
+  tratteggio-paglia: "#a39d7c"
+  testo-flebile-paglia: "#646350"
+  blu-su-muschio: "#6cc0ec"
+  verde-testo-paglia: "#096228"
+  giallo-testo-paglia: "#6f5200"
+  rosso-testo-paglia: "#a81a1a"
+  su-muschio: "#cfd6c0"
+  riga-muschio: "#5d6e58"
+  riga-tenue-muschio: "#44543f"
 typography:
   display:
     fontFamily: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif"
@@ -160,7 +179,7 @@ components:
 
 ODS Corsi è segnaletica di sala prima che interfaccia. Si usa in piedi, col telefono in una mano durante l'appello, da un tablet appeso al muro guardato da due metri, dal computer della reception tra una telefonata e l'altra. Ogni scelta visiva risponde a quella scena: fondo nero pieno, i cinque colori degli ingranaggi del marchio usati come segnali, lettere condensate in maiuscolo obliquo che si leggono dalla porta, bersagli alti quanto un dito di fretta. *Prima si legge da lontano, poi si fa bello* (lo dice il codice stesso).
 
-La densità è quella di un tabellone: poche cose, grandi, con contrasto netto. Niente angoli arrotondati, niente ombre decorative, niente sfumature: la profondità la fanno i bordi da 2px e il passaggio da `superficie` a `superficie-alta`. Lo stato si capisce dal colore del bordo e dal segno grande a sinistra prima ancora di leggere il nome. Il tema chiaro esiste per la reception illuminata: stessi segnali, carta calda invece del nero.
+La densità è quella di un tabellone: poche cose, grandi, con contrasto netto. Niente angoli arrotondati, niente ombre decorative, niente sfumature: la profondità la fanno i bordi da 2px e il passaggio da `superficie` a `superficie-alta`. Lo stato si capisce dal colore del bordo e dal segno grande a sinistra prima ancora di leggere il nome. Il tema chiaro esiste per la reception illuminata: stessi segnali, carta calda invece del nero. Il terzo tema, **Tatami**, è anch'esso chiaro: fondo `paglia` (la stuoia del dojo), superfici `paglia-chiara` e `paglia-scura`, testo e bordi `orlo` (il nero della stoffa che orla i tatami), menu `muschio` con testo chiaro (`su-muschio`). I segnali sono gli stessi; i testi scritti in giallo, verde e rosso sono più scuri di quelli del chiaro (`giallo-testo-paglia`, `verde-testo-paglia`, `rosso-testo-paglia`) perché sulla paglia quelli del bianco non arrivano a 4,5:1. Si sceglie dal tasto del tema, che passa nero → bianco → Tatami, ed è uno solo per app e timer. Cambiano solo i colori: layout e componenti sono gli stessi.
 
 Il sistema rifiuta l'aspetto da SaaS generico: niente card morbide con ombra, niente pillole arrotondate, niente gradienti, niente icone decorative dove basta una parola in maiuscolo.
 
@@ -283,7 +302,7 @@ Quadrato 44px con bordo 2px `riga` e segno in `tasto`; quando contiene una parol
 - **FAMIGLIA** (modulo a passi, il passo prima di PAGAMENTO): la domanda «Iscrivi anche qualcuno della tua famiglia?» (o «qualcun altro della famiglia?» per un bambino) in `.passo-titolo`; il riquadro dello sconto (`.famiglia-sconto`: `.card` col bordo 2px `verde`, fondo `superficie`), «−20%» in Saira 30px 700 `verde-testo`, SCONTO FAMIGLIA in Saira 13px 0.16em `verde-testo` e la frase in Barlow 14px; poi due carte (`Riquadro`), una per un bambino e una per un adulto: il titolo in Saira 22px 700 0.04em (`.famiglia-carta-titolo`), la frase in `testo`, fino a tre righe di corsi proposti (`.famiglia-carta-ora`): a sinistra l'etichetta STESSO CORSO, STESSA ORA, SUBITO PRIMA, SUBITO DOPO o STESSI GIORNI col bordo 2px `riga` (Saira 11px 0.16em, `testo-secondario`), accanto il corso in Barlow 14px 600 `testo` e l'orario 13px `testo-spento` a pezzi (`TestoAPezzi`), coi giorni che vanno col tuo orario e l'ora della loro fascia in `.orario-evidenza` (700, `testo`); sopra le righe, solo se almeno una ha l’orario, «In **grassetto** i giorni che vanno col tuo orario.» (`.famiglia-carta-legenda`, Barlow 13px `testo-secondario`, «grassetto» 700 `testo`); quanto si risparmia col primo corso in Barlow 13px 600 `verde-testo` e il tasto tratteggiato (`.btn-dashed`) a tutta riga, «+ AGGIUNGI UN FIGLIO / UN BAMBINO / UN ADULTO». Senza corsi da proporre la carta resta, senza le righe e senza il risparmio. A sei persone al posto delle carte sta il riquadro SIETE IN SEI col tasto CHIAMA. Con più persone, sotto, NEL MODULO e una riga per persona (`Riepilogo`). Nella barra la nota «Nessuno da aggiungere? Vai avanti.» e AVANTI, che da soli (adulto) si chiama AVANTI, SOLO IO. Al passo del corso di chi si è aggiunto, in cima, **ALLA STESSA ORA DI** e il nome della prima persona, etichetta in `giallo-testo` (`.modulo-etichetta-stessa-ora`), col corso già spuntato se è uno solo; poi SUBITO PRIMA O DOPO e NEGLI STESSI GIORNI, ogni corso con l'orario a pezzi come nella carta.
 - **PAGAMENTO** (modulo a passi, penultimo passo): una frase `testo` («Un pagamento solo per tutti.» con più persone), l'etichetta IL CONTO (o IL CONTO DELLA FAMIGLIA) e un `Riquadro` stretto con le righe di `.stima` (sconto in `verde`), il totale, la frase «Paga questo totale…», l'IBAN `.iban`, la causale e i tasti COPIA IBAN, COPIA CAUSALE, PAGA CON SATISPAY; sotto, LA RICEVUTA · FACOLTATIVA con un `CaricaFile` solo per tutti e, se il totale è cambiato dopo averla caricata, l'avviso in `giallo-testo`.
 - **Riepilogo** (`.riepilogo`): riquadro `.card` con una riga per cosa, alta almeno 56px, divise da 2px `riga-tenue`. A sinistra il segno, Saira 22px: ✓ `verde-testo` (fatto), – `giallo-testo` (manca una cosa facoltativa), ! `rosso-testo` (non va), oppure il numero della riga («E ADESSO»). Titolo Barlow 600, sotto il dettaglio 13px `testo-spento`. A destra il tasto (MODIFICA, CARICA) alto 44px, bordo 2px `riga`, Saira 13px 0.14em.
-- **Bollini** (`.prova-marchio`, `.sg-bollino`, `.sg-tag`, `.sg-segno-regola`): 12px maiuscolo spaziato (11px `.prova-marchio` e `.sg-bollino`, DATI DI PROVA: devono stare nei 56px del menu), bordo 2px giallo o fondo pieno; 13px nella testata di un filo delle segnalazioni.
+- **Bollini** (`.prova-marchio`, `.sg-bollino`, `.sg-tag`, `.sg-segno-regola`): 12px maiuscolo spaziato (11px `.prova-marchio` e `.sg-bollino`, DATI DI PROVA: devono stare nei 56px del menu), bordo 2px giallo o fondo pieno; 13px nella testata di un filo delle segnalazioni. `.sg-tag` ha anche il verde (`data-tipo='fatto'`, fondo `verde`, testo `su-colore`) per una cosa a posto: PUBBLICATA nell'elenco delle pagine del SITO.
 - **Etichetta attività** (`.attivita-et`): cosa si fa in una lezione, accanto all'orario. Saira 700 12px (15px sul tablet, che si legge da due metri), maiuscolo, 0.1em, bordo 2px `riga`, testo `testo-secondario`; al massimo due righe, poi «…», col nome intero nel `title`. Vuota non c'è: né etichetta né spazio. L'orario non va mai a capo: a stringersi è l'etichetta.
 
 ### Cards / Containers

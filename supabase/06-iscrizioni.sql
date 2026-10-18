@@ -590,6 +590,14 @@ begin
     grant execute on function vestiario(), invia_ordine_vestiario(jsonb) to anon, authenticated;
   end if;
 end $$;
+-- Le pagine del sito della palestra, da cui il sito si genera, se
+-- 56-sito.sql è già stato lanciato.
+do $$
+begin
+  if to_regprocedure('public.sito_pagine_pubbliche()') is not null then
+    grant execute on function sito_pagine_pubbliche(), sito_menu_pubblico(), sito_redirect_pubblici() to anon, authenticated;
+  end if;
+end $$;
 -- Gli orari dei corsi aperti, per la «stessa ora» del genitore, se
 -- 48-orari-aperti.sql è già stato lanciato.
 do $$

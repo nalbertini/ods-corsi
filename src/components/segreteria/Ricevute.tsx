@@ -1,7 +1,9 @@
 import { listinoUsabile, type CorsoRef } from '../../lib/listino'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
-import { pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
+import { etichettaQuota, pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
+import { avvisoCassaChiusa } from '../../lib/contabilita'
+import { cosaNonVaDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, vociSuggerite, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
 import {
   centesimi,
   conti,
@@ -27,6 +29,7 @@ import {
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
 import { chiaveGiorno } from '../../lib/sala'
 import { chiedi, Campo, dataLunga, Guaio, Riga, useAvviso, useBozza, useCarica } from './comune'
+import { Numero } from './Presenze'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 
@@ -34,15 +37,26 @@ type Fai = ReturnType<typeof useAvviso>['fai']
 const scarica = async (r: Ricevuta) => (await import('../../lib/ricevutaPdf')).scaricaRicevuta(r, nomeFileRicevuta(r))
 
 /**
- * Le ricevute di un iscritto, nella sua scheda: quelle fatte, da riscaricare
- * o annullare, e il tasto per registrare un pagamento nuovo.
+ * Lo storico dei pagamenti di un iscritto, nella sua scheda: ogni ricevuta con
+ * i suoi pagamenti sotto, poi quelli registrati a mano senza ricevuta. Le
+ * ricevute si riscaricano e si annullano da qui, e da qui si fa la ricevuta
+ * nuova o si registra un pagamento fatto a mano.
  */
-export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onNuova: () => void; onCambiato: () => void }) {
+export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; corsi: string[]; fai: Fai; onNuova: () => void; onCambiato: () => void }) {
   const ricevute = useCarica(() => d.ricevute(p.id), [d, p.id])
+  // Senza 54-pagamenti-diretti.sql le ricevute si vedono lo stesso: il guaio si dice, ma non ferma lo storico.
+  const diretti = useCarica(() => d.pagamentiDiretti(p.id), [d, p.id])
+  const [registrando, setRegistrando] = useState(false)
+  // Aperto il modulo, si porta in vista: sul telefono sta sotto lo schermo.
+  const modulo = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (registrando) modulo.current?.scrollIntoView({ block: 'center' })
+  }, [registrando])
   // Annullata una ricevuta con la quota che nessun'altra copre: la quota torna da pagare, o era pagata fuori dall'app?
   const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
   const annulla = async (r: Ricevuta) => {
-    if (!(await chiedi(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare.`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
+    const avviso = avvisoCassaChiusa(r.voci.flatMap((v) => v.pagamenti), await d.chiusure().catch(() => []))
+    if (!(await chiedi(`${domandaAnnullaRicevuta(r)}${avviso ? ` ${avviso}` : ''}`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
     const oggi = chiaveGiorno(new Date())
     const altre = (ricevute.dato ?? []).filter((x) => x.id !== r.id)
     const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
@@ -53,38 +67,74 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
       if (quota && dopo.come !== 'pagato') setScoperta({ numero: `${r.numero}/${r.anno}`, al: quota.al })
     })
   }
+  const annullaPagamento = async (x: PagamentoDiretto) => {
+    const avviso = avvisoCassaChiusa([x], await d.chiusure().catch(() => []))
+    if (!(await chiedi(`${domandaAnnullaPagamento(x)}${avviso ? ` ${avviso}` : ''}`, 'SÌ, ANNULLA IL PAGAMENTO', { no: 'NO, LASCIALO', pericolo: true }))) return
+    void fai(() => d.annullaPagamentoDiretto(x.id), 'Pagamento annullato', () => diretti.ricarica())
+  }
+
+  const oggi = chiaveGiorno(new Date())
+  const tutteRicevute = ricevute.dato ?? []
+  const aMano = diretti.dato ?? []
+  const somma = riassunto(tutteRicevute, aMano)
+  const stato = pagamentoDi(p, oggi)
+  const vuoto = ricevute.dato !== null && tutteRicevute.length === 0 && aMano.length === 0
 
   return (
     <div className="stack" style={{ gap: 8 }}>
-      <Riga titolo="RICEVUTE" />
+      <Riga titolo="PAGAMENTI" />
       {ricevute.guaio && <Guaio testo={ricevute.guaio} />}
-      {ricevute.dato?.length === 0 && <span className="sg-sotto">Ancora nessuna ricevuta.</span>}
-      {ricevute.dato?.map((r) => (
-        <div key={r.id} className="sg-voce-elenco" style={{ flexWrap: 'wrap' }}>
-          {/* Base zero: il testo lungo di una annullata non deve mandare a capo il PDF. */}
-          <span className="stack grow" style={{ minWidth: 0, flexBasis: 0 }}>
-            {/* Annullata è storia, non qualcosa che manca: barrata e in grigio, non in rosso. */}
-            <span className="num" style={{ fontSize: 15, fontWeight: 700, textDecoration: r.annullataIl ? 'line-through' : undefined, color: r.annullataIl ? 'var(--dim)' : undefined }}>
-              N. {r.numero}/{r.anno} · {euro(r.totale)} €
-            </span>
-            <span style={{ fontSize: 12, color: 'var(--dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {r.annullataIl ? `Annullata il ${dataLunga(r.annullataIl.slice(0, 10))} · ` : ''}
-              {dataLunga(r.data)} · {r.voci.map((v) => v.descrizione).join(', ')}
-            </span>
-          </span>
-          <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(r))}>
-            PDF
-          </button>
-          {/* Raro e senza ritorno: su una riga sua, a destra, e non più grande del PDF che si preme ogni giorno. */}
-          {!r.annullataIl && (
-            <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
-              <button type="button" className="num sg-chip" onClick={() => annulla(r)}>
-                ANNULLA RICEVUTA
-              </button>
-            </div>
-          )}
+      {diretti.guaio && <Guaio testo={diretti.guaio} />}
+      {!vuoto && ricevute.dato && (
+        <div className="sg-numeri-tre">
+          <Numero titolo="PAGATO" valore={`${euro(somma.pagato)} €`} sotto="ricevute e pagamenti a mano" />
+          <Numero titolo="MANCA" valore={`${euro(somma.manca)} €`} sotto={somma.manca ? 'sulle ricevute non saldate: un pagamento a mano non la riduce' : 'niente da incassare'} allarme={somma.manca > 0} />
+          <Numero titolo="QUOTA" valore={etichettaQuota(stato.come)} sotto={stato.fino ? `fino al ${dataLunga(stato.fino)}` : 'ricevute e pagamenti a mano non cambiano la quota'} />
         </div>
-      ))}
+      )}
+      {vuoto && <span className="sg-sotto">Nessun pagamento registrato. Fai la ricevuta quando paga, o registra un pagamento già fatto: lo trovi qui.</span>}
+      {tutteRicevute.map((r) => {
+        const manca = r.annullataIl ? 0 : conti(r).netto
+        const righe = righeDaRicevute([r])
+        return (
+          <div key={r.id} className="stack" style={{ gap: 6 }}>
+            <div className="sg-voce-elenco" style={{ flexWrap: 'wrap' }}>
+              {/* Base zero: il testo lungo di una annullata non deve mandare a capo il PDF. */}
+              <span className="stack grow" style={{ minWidth: 0, flexBasis: 0 }}>
+                {/* Annullata è storia, non qualcosa che manca: barrata e in grigio, non in rosso. */}
+                <span style={{ fontSize: 15, fontWeight: 700, textDecoration: r.annullataIl ? 'line-through' : undefined, color: r.annullataIl ? 'var(--dim)' : undefined }}>
+                  N. {r.numero}/{r.anno} · {dataLunga(r.data)}
+                  {manca > 0 && <span className="num sg-tag" data-tipo="presto" style={{ marginLeft: 8, textDecoration: 'none' }}>MANCA {euro(manca)} €</span>}
+                  {r.annullataIl && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8, textDecoration: 'none' }}>ANNULLATA</span>}
+                </span>
+                <span style={{ fontSize: 12, color: 'var(--dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {r.annullataIl ? `Annullata il ${dataLunga(r.annullataIl.slice(0, 10))} · ` : ''}
+                  {r.voci.map((v) => v.descrizione).join(', ')} · totale {euro(r.totale)} €{r.anticipo > 0 ? ` · anticipo ${euro(r.anticipo)} €` : ''}
+                </span>
+              </span>
+              <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(r))}>
+                PDF
+              </button>
+              {/* Raro e senza ritorno: su una riga sua, a destra, e non più grande del PDF che si preme ogni giorno. */}
+              {!r.annullataIl && (
+                <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
+                  <button type="button" className="num sg-chip" onClick={() => annulla(r)}>
+                    ANNULLA RICEVUTA
+                  </button>
+                </div>
+              )}
+            </div>
+            {righe.map((x) => (
+              <RigaDelloStorico key={x.id} riga={x} />
+            ))}
+          </div>
+        )
+      })}
+      {aMano.length > 0 && <Riga titolo="SENZA RICEVUTA" />}
+      {righeDirette(aMano, () => `${p.cognome} ${p.nome}`).map((x) => {
+        const suo = aMano.find((y) => y.id === x.direttoId)
+        return <RigaDelloStorico key={x.id} riga={x} aMano onAnnulla={x.annullato || !suo ? undefined : () => annullaPagamento(suo)} />
+      })}
       {scoperta && (
         <div className="sg-prima">
           <span className="sg-etichetta" data-manca>LA QUOTA NON È PIÙ PAGATA</span>
@@ -115,13 +165,130 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
           <span className="sg-sotto">Se ne fai subito un’altra giusta, scegli RESTA DA PAGARE: la nuova ricevuta la rimette pagata.</span>
         </div>
       )}
-      <div className="row">
-        {/* Pieno se è la prima cosa da fare, o se è tutto a posto: la scheda si apre per incassare. */}
-        <button type="button" className={tastoPrincipale(p, chiaveGiorno(new Date())) === 'quota' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo onClick={onNuova}>
-          + REGISTRA UN PAGAMENTO
+      {registrando ? (
+        <div ref={modulo}>
+        <RegistraPagamento
+          d={d}
+          p={p}
+          corsi={corsi}
+          fai={fai}
+          onFatto={() => {
+            setRegistrando(false)
+            void diretti.ricarica()
+          }}
+          onChiudi={() => setRegistrando(false)}
+        />
+        </div>
+      ) : (
+        <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+          {/* Pieno se è la prima cosa da fare, o se è tutto a posto: la scheda si apre per incassare. */}
+          <button type="button" className={tastoPrincipale(p, oggi) === 'quota' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo onClick={onNuova}>
+            + FAI LA RICEVUTA
+          </button>
+          <button type="button" className="num sg-chip" onClick={() => setRegistrando(true)}>
+            + REGISTRA UN PAGAMENTO
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Un pagamento nello storico: la data e come, a cosa serve, l'importo. */
+function RigaDelloStorico({ riga, aMano, onAnnulla }: { riga: RigaPagamento; aMano?: boolean; onAnnulla?: () => void }) {
+  const barrato = riga.annullato ? 'line-through' : undefined
+  return (
+    <div className="sg-voce-elenco sg-pagamento" data-amano={aMano || undefined} data-annullato={riga.annullato || undefined} style={{ flexWrap: 'wrap' }}>
+      {/* Base 200: sul telefono il testo non si schiaccia accanto all'importo. */}
+      <span className="stack grow" style={{ minWidth: 0, flex: '1 1 200px' }}>
+        <span style={{ fontSize: 15, fontWeight: 600, textDecoration: barrato, color: riga.annullato ? 'var(--dim)' : undefined }}>
+          {dataLunga(riga.data)} · {riga.metodo}
+        </span>
+        <span style={{ fontSize: 12, color: 'var(--dim)', overflowWrap: 'anywhere' }}>
+          {[riga.voce, riga.nota].filter(Boolean).join(' · ')}
+          {aMano && <span className="num sg-tag" data-tipo={riga.annullato ? 'manca' : undefined} style={{ marginLeft: 8 }}>{riga.annullato ? 'ANNULLATO' : 'SENZA RICEVUTA'}</span>}
+        </span>
+      </span>
+      <span className="num" style={{ fontSize: 18, fontWeight: 700, whiteSpace: 'nowrap', textDecoration: barrato, color: riga.annullato ? 'var(--dim)' : 'var(--verde-testo)' }}>
+        {euro(riga.importo)} €
+      </span>
+      {onAnnulla && (
+        <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
+          <button type="button" className="num sg-chip" onClick={onAnnulla}>
+            ANNULLA PAGAMENTO
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Un pagamento già avvenuto senza ricevuta (in palestra, in contanti, prima
+ * dell'app). Resta nello storico, SENZA RICEVUTA, e non cambia se è in regola.
+ * La persona serve solo per registrare: il modulo va anche senza la sua scheda
+ * (l'amministrazione).
+ */
+export function RegistraPagamento({ d, p, corsi, fai, onFatto, onChiudi }: { d: DatiSegreteria; p: { id: string; nome: string; cognome: string }; corsi: string[]; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
+  const [data, setData] = useState(chiaveGiorno(new Date()))
+  const [importo, setImporto] = useState('')
+  const [metodo, setMetodo] = useState(METODI_A_MANO[0])
+  const [voce, setVoce] = useState('')
+  const [nota, setNota] = useState('')
+  // Lasciarlo a metà chiede prima di perderlo, come il resto della scheda.
+  useBozza(importo !== '' || nota !== '', 'Il pagamento a mano')
+  const cent = centesimi(importo)
+  const guaio = importo === '' ? null : cent === null ? 'L’importo non si capisce: scrivi un numero, per esempio 40,00.' : cosaNonVaDiretto({ personaId: p.id, data, importo: cent, metodo, voce, nota })
+  const manca = cent === null || !!guaio || !voce.trim()
+  return (
+    <section aria-label="Pagamento fatto a mano" className="sg-riquadro">
+      <span className="sg-etichetta">PAGAMENTO FATTO A MANO</span>
+      <span className="sg-riquadro-titolo ob">{p.cognome} {p.nome}</span>
+      <span className="sg-sotto">Per un pagamento già avvenuto senza ricevuta: in palestra, in contanti, prima dell’app. Resta nello storico e si può annullare.</span>
+      <div className="sg-due sg-scheda-campi">
+        <Campo id="pd-data" etichetta="DATA">
+          <input id="pd-data" className="sg-campo" type="date" value={data} onChange={(e) => setData(e.target.value)} />
+        </Campo>
+        <Campo id="pd-importo" etichetta="IMPORTO" manca={importo === ''}>
+          <input id="pd-importo" className="sg-campo" inputMode="decimal" placeholder="40,00" value={importo} onChange={(e) => setImporto(e.target.value)} aria-invalid={(cent === null || importoNonVa({ personaId: p.id, data, importo: cent, metodo, voce, nota })) || undefined} />
+        </Campo>
+        <Campo id="pd-metodo" etichetta="COME HA PAGATO">
+          <select id="pd-metodo" className="sg-campo" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
+            {METODI_A_MANO.map((m) => (
+              <option key={m}>{m}</option>
+            ))}
+          </select>
+        </Campo>
+        <Campo id="pd-voce" etichetta="A COSA SERVE" manca={voce.trim() === ''}>
+          <input id="pd-voce" className="sg-campo" list="pd-voci" placeholder="Quota, annuale, trimestre…" value={voce} onChange={(e) => setVoce(e.target.value)} />
+          <datalist id="pd-voci">
+            {vociSuggerite(corsi).map((v) => (
+              <option key={v} value={v} />
+            ))}
+          </datalist>
+        </Campo>
+        <Campo id="pd-nota" etichetta="NOTA · FACOLTATIVA" largo>
+          <textarea id="pd-nota" className="sg-campo" rows={2} value={nota} onChange={(e) => setNota(e.target.value)} placeholder="Pagato direttamente in palestra" />
+        </Campo>
+      </div>
+      {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
+      <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          className="sg-btn sg-btn-pieno"
+          disabled={manca}
+          onClick={() => {
+            if (cent === null) return
+            void fai(() => d.registraPagamentoDiretto({ personaId: p.id, data, importo: cent, metodo, voce: voce.trim(), nota: nota.trim() || undefined }), 'Pagamento registrato', onFatto)
+          }}
+        >
+          REGISTRA IL PAGAMENTO
+        </button>
+        <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
+          NO, TORNA INDIETRO
         </button>
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -605,6 +772,7 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
         {campo('comune', 'COMUNE', 80)}
         {campo('codiceFiscale', 'CODICE FISCALE', 16)}
         {campo('partitaIva', 'PARTITA IVA · FACOLTATIVA', 11)}
+        {campo('rasd', 'NUMERO RASD · FACOLTATIVO', 20)}
       </div>
       <Campo id="en-dicitura" etichetta="DICITURA IN FONDO">
         <textarea id="en-dicitura" className="sg-campo" rows={3} maxLength={600} value={e?.dicitura ?? ''} disabled={!e} onChange={(x) => e && setB({ ...e, dicitura: x.target.value })} style={{ minHeight: 72, paddingTop: 8 }} />

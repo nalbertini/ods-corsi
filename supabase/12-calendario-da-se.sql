@@ -68,7 +68,7 @@ declare
   pronto date;
   fino date;
 begin
-  -- Chiunque abbia un accesso, tablet compresi: allunga soltanto, e soltanto
+  -- Chiunque lavori (dal 57, non un iscritto né un account senza scheda), tablet compresi: allunga soltanto, e soltanto
   -- secondo le regole della segreteria, quindi non c'è niente da scegliere.
   if auth.uid() is null then raise exception 'serve un accesso'; end if;
 

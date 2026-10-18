@@ -5,17 +5,19 @@ import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
 import { aspettoInUso, useAspetto, type Aspetto } from '../../lib/aspetto'
 import { TELEFONO, useSchermo } from '../../lib/largo'
+import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
 import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { StoricoTimer, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
 import { Importa } from './Importa'
+import { ImportaTessere } from './Tessere'
 import type { Destinazione, Voce } from './Segreteria'
 import { type Disciplina, nomeDisciplina } from '../../../timer/src/lib/discipline'
 import { SelectDisciplina } from './TimerPalestra'
 
 /** I gruppi della pagina, da quello che si tocca a inizio stagione a quello che si tocca quasi mai. */
 const GRUPPI = {
-  'imp-aspetto': 'COME VUOI LA SEGRETERIA',
+  'imp-schermo': 'QUESTO SCHERMO',
   'imp-stagione': 'LA STAGIONE',
   'imp-sale': 'LE SALE E I TABLET',
   'imp-ricevute': 'LE RICEVUTE',
@@ -56,10 +58,9 @@ function ScegliAspetto() {
   return (
     <section aria-label="L'aspetto della segreteria" className="sg-riquadro">
       <span className="ob sg-riquadro-titolo">L'ASPETTO</span>
-      <div className="row" role="group" aria-label="Aspetto della segreteria" style={{ gap: 8, flexWrap: 'wrap' }}>
+      <div className="row" role="radiogroup" aria-label="Aspetto della segreteria" style={{ gap: 8, flexWrap: 'wrap' }}>
         {ASPETTI.map((a) => (
-          <button key={a.id} type="button" className={`num sg-btn ${aspetto === a.id ? 'sg-btn-pieno' : 'sg-btn-linea'}`} aria-pressed={aspetto === a.id} onClick={() => scegli(a.id)}>
-            {aspetto === a.id ? '✓ ' : ''}
+          <button key={a.id} type="button" role="radio" aria-checked={aspetto === a.id} className="num sg-btn sg-scelta" onClick={() => scegli(a.id)}>
             {a.nome}
           </button>
         ))}
@@ -78,6 +79,7 @@ function ScegliAspetto() {
  * fa le ricevute; per quanto si tengono le presenze, il backup, la privacy.
  */
 export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void }) {
+  const [strisciaVoluta, scegliStriscia] = useStrisciaVoluta()
   const imp = useCarica(() => d.impostazioni(), [d])
   const scadute = useCarica(() => d.scadute(), [d, imp.dato?.mesiPresenze])
   const pronto = useCarica(() => d.prontoFino(), [d])
@@ -130,8 +132,22 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
       </nav>
       {imp.guaio && <Guaio testo={`Le impostazioni non si leggono: ${imp.guaio}`} />}
 
-      <Gruppo id="imp-aspetto">
+      <Gruppo id="imp-schermo">
         <ScegliAspetto />
+        <section aria-label="La striscia COSA MANCA" className="sg-riquadro">
+          <span className="ob sg-riquadro-titolo">LA STRISCIA COSA MANCA</span>
+          <span className="sg-sotto">
+            Le cinque caselle in cima alle pagine (appelli non fatti, certificati, pagamenti, tessere, richieste). Vale solo per questo schermo: DA FARE ha sempre gli stessi conti.
+          </span>
+          <div role="radiogroup" aria-label="Mostra o nascondi la striscia" className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" role="radio" aria-checked={strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(true)}>
+              MOSTRALA
+            </button>
+            <button type="button" role="radio" aria-checked={!strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(false)}>
+              NASCONDILA
+            </button>
+          </div>
+        </section>
       </Gruppo>
 
       <Gruppo id="imp-stagione">
@@ -244,6 +260,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
 
       <Gruppo id="imp-importa">
         <Importa d={d} onVai={onVai} />
+        <ImportaTessere d={d} />
       </Gruppo>
 
       <Gruppo id="imp-dati">

@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- I FILE e il tasto di invio nell'aspetto del sito. Stati dei file, sempre a parole oltre che a colore: CARICATO = bordo verde #12913f (4,08:1 sul bianco), ✓ davanti all'etichetta in #0b7a33 (5,46:1), nome del file e KB, tasto CAMBIA; MANCA = scheda col filo #cfe6f4, la parola che dice cosa succede («PUOI PORTARLO DOPO») e il tasto SCEGLI col bordo blu. Il tasto MANDA LA RICHIESTA, ultimo gesto del modulo, e' giallo #f4c31b con l'inchiostro sopra (8,95:1), alto 56px: SCELTA MIA DA CONFERMARE (nel modulo vero c'e' un tasto solo, non c'e' AVANTI; l'inchiostro con testo bianco, come .pulsante del sito, e' il tasto principale degli altri punti, vedi «Colori e caratteri»). L'avviso del certificato e' in #8f6a00 col «!».
+
+Board di partenza (stessi campi, testi e ordine): iscrizione/ModuloFile.dc.html. -->
+<!-- Il modulo di iscrizione, fondo: I FILE, ALTRO e il tasto (ModuloIscrizione.tsx, CaricaFile di ds.tsx). Il certificato medico si ricorda solo quando serve (dai 6 anni; dai 12 l'agonistico per judo, aikido e lotta) e non ferma la richiesta: PUOI PORTARLO DOPO. La carta d'identita' (quella del genitore, per un minore) e' qui caricata (bordo verde, nome del file, CAMBIA); il retro, il certificato e la ricevuta sono facoltativi, con la parola accanto all'etichetta che dice cosa succede se mancano. In ALTRO: note per la segreteria (mai dati sulla salute), la casella obbligatoria del Regolamento Sociale e quella dell'informativa privacy, qui entrambe spuntate. Il tasto parte spento ma quando e' premuto dice, in maiuscolo, il passo («PREPARO IL MODULO FIRMATO…», «MANDO LE RISPOSTE…», «CARICO LA CARTA D'IDENTITÀ…»): non riprodotto. Non riprodotti: «Il file è troppo grande: al massimo 10 MB» e «Serve una foto (JPG, PNG, HEIC) o un PDF» (stesso schema, riga rossa sotto il file). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1400px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" tema="sito" label="I FILE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">IL CERTIFICATO MEDICO</span>
+  <span style="font-size: 15px; line-height: 1.4; color: #8f6a00">! Dai 6 anni il certificato medico è obbligatorio. Caricalo qui sotto, o consegnalo in segreteria: senza non si partecipa alle lezioni.</span>
+</div>
+<dc-import name="CaricaFile" tema="sito" etichetta="CARTA D’IDENTITÀ" nome="carta-identita-genitore.jpg" kb="412" hint-size="100%,84px"></dc-import>
+<dc-import name="CaricaFile" tema="sito" etichetta="RETRO DEL DOCUMENTO" seManca="FACOLTATIVO" dettaglio="Se il fronte non basta." hint-size="100%,84px"></dc-import>
+<dc-import name="CaricaFile" tema="sito" etichetta="CERTIFICATO MEDICO" seManca="PUOI PORTARLO DOPO" dettaglio="Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria." hint-size="100%,100px"></dc-import>
+<dc-import name="CaricaFile" tema="sito" etichetta="RICEVUTA DEL PAGAMENTO" seManca="PUOI PAGARE IN SEGRETERIA" dettaglio="Se hai già pagato la quota associativa e il trimestre, oppure l’annuale." hint-size="100%,120px"></dc-import>
+</div>
+<dc-import name="Titoletto" tema="sito" label="ALTRO" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" tema="sito" tipo="area" etichetta="NOTE PER LA SEGRETERIA · FACOLTATIVE" segnaposto="Niente dati sulla salute: quelli si portano in segreteria." hint-size="100%,130px"></dc-import>
+<dc-import name="Campo" tema="sito" tipo="spunta" etichetta="" valore="Accetto il Regolamento Sociale dell’associazione." scelto="{{ true }}" hint-size="100%,70px"></dc-import>
+<dc-import name="Campo" tema="sito" tipo="spunta" etichetta="" valore="Ho letto l’informativa privacy e so che questi dati li legge solo la segreteria della palestra." scelto="{{ true }}" hint-size="100%,90px"></dc-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 20px 20px 28px">
+  
+  <dc-import name="Bottone" tema="sito" label="MANDA LA RICHIESTA" variante="vai" hint-size="100%,56px"></dc-import>
+</div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

@@ -83,7 +83,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
         and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
         and has_function_privilege('anon', p.oid, 'execute')
         and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino', 'mesi_presenze_pubblici',
-                                'vestiario', 'invia_ordine_vestiario', 'orari_aperti'))),
+                                'vestiario', 'invia_ordine_vestiario', 'orari_aperti',
+                                'sito_pagine_pubbliche', 'sito_menu_pubblico', 'sito_redirect_pubblici'))),
   ('06-iscrizioni.sql', 'documento e certificato col modulo, da stampare',
     exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%certificato%')
     and exists (select 1 from dentro where nome = 'richieste_con_documento')),
@@ -253,6 +254,51 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'vestiario_tabelle')
     and exists (select 1 from dentro where nome = 'vestiario' and corpo like '%tabelle%')
     and exists (select 1 from pg_constraint where conname = 'impostazioni_vestiario_capi_check')),
+  ('52-presenze-finestra.sql', 'le presenze si toccano solo nelle lezioni di questi giorni',
+    exists (select 1 from pg_trigger where tgname = 'presenze_a_finestra' and not tgisinternal)
+    and exists (select 1 from dentro where nome = 'istruttore_dall_appello' and corpo like '%tablet_regole%')),
+  ('57-accessi-piu-stretti.sql', 'sessioni e impostazioni solo a chi lavora, e le funzioni del calendario non passano senza accesso',
+    exists (select 1 from dentro where nome = 'materializza_sessioni' and corpo like '%e_di_sistema%')
+    and exists (select 1 from dentro where nome = 'imposta_pin' and corpo like '%e_di_sistema%')
+    and exists (select 1 from dentro where nome = 'pulisci_presenze' and corpo like '%e_di_sistema%')
+    and exists (select 1 from dentro where nome = 'chiudi_ricorrenza' and corpo like '%e_di_sistema%')
+    and exists (select 1 from dentro where nome = 'salva_date_corsi' and corpo like '%e_di_sistema%')
+    and exists (select 1 from dentro where nome = 'allunga_calendario' and corpo like '%e_personale%')
+    and exists (select 1 from pg_policies where schemaname = 'public' and policyname = 'impostazioni_legge' and qual like '%e_personale%')
+    and exists (select 1 from pg_policies where schemaname = 'public' and policyname = 'sessioni_legge' and qual like '%e_personale%')),
+  ('56-sito.sql', 'le pagine del sito, col menu e i rinvii, scritte dalla segreteria',
+    to_regclass('public.sito_pagine') is not null
+    and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'salva_bozza_sito')
+    and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'sito_pagine_pubbliche')),
+  ('54-pagamenti-diretti.sql', 'i pagamenti fatti a mano, senza ricevuta',
+    to_regclass('public.pagamenti_diretti') is not null
+    and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'registra_pagamento_diretto')
+    and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'annulla_pagamento_diretto')),
+  ('59-contabilita.sql', 'la contabilità: voci, casse e movimenti, solo per chi cura i conti',
+    to_regclass('public.movimenti') is not null
+    and to_regclass('public.casse') is not null
+    and to_regclass('public.voci_contabili') is not null
+    and exists (select 1 from dentro where nome = 'registra_movimento' and corpo like '%contabilita_porta()%')
+    and exists (select 1 from dentro where nome = 'registra_giroconto')),
+  ('60-chiusura-cassa.sql', 'la chiusura di cassa: il contato dei contanti, la differenza e i giorni chiusi',
+    to_regclass('public.chiusure_cassa') is not null
+    and exists (select 1 from dentro where nome = 'chiudi_cassa' and corpo like '%contabilita_porta()%')
+    and exists (select 1 from dentro where nome = 'annulla_chiusura_cassa')
+    and exists (select 1 from dentro where nome = 'registra_movimento' and corpo like '%cassa_giorno_chiuso%')),
+  ('55-amministrazione.sql', 'il ruolo amministrazione, per chi cura i conti',
+    exists (select 1 from pg_enum e where e.enumtypid = 'ruolo'::regtype and e.enumlabel = 'amministrazione')
+    and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'persone' and column_name = 'anche_amministrazione')
+    and exists (select 1 from dentro where nome = 'e_amministrazione')
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%e_amministrazione()%')
+    and exists (select 1 from dentro where nome = 'nomi_persone')
+    and exists (select 1 from dentro where nome = 'cerca_pagatori')
+    and to_regclass('public.ricerche_pagatori') is not null),
+  ('61-tessere.sql', 'le tessere, e quale tessera chiede un corso',
+    to_regclass('public.tessere') is not null
+    and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'corsi' and column_name = 'ente_tessera')),
+  ('61-tessere.sql', 'l''import dal RASD e l''unione delle schede',
+    exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'importa_tessere')
+    and exists (select 1 from pg_trigger where tgname = 'tessere_unione' and not tgisinternal)),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',
@@ -270,6 +316,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')
-    and exists (select 1 from storage.buckets where id = 'voce'))
+    and exists (select 1 from storage.buckets where id = 'voce')),
+  ('58-sito-immagini.sql', 'le immagini del sito, in un contenitore pubblico, caricate solo dalla segreteria',
+    exists (select 1 from storage.buckets where id = 'sito' and public)
+    and (select count(*) from pg_policies where schemaname = 'storage' and tablename = 'objects'
+           and (qual like '%''sito''%' or with_check like '%''sito''%')
+           and cmd in ('INSERT', 'SELECT', 'DELETE') and roles = '{authenticated}') = 3)
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -15,7 +15,7 @@ end $$;
 select pg_temp.atteso('le funzioni che chiama anon',
   (select string_agg(p.proname, ', ' order by p.proname) from pg_proc p
     where p.pronamespace = 'public'::regnamespace and has_function_privilege('anon', p.oid, 'execute')),
-  'corsi_aperti, invia_iscrizione, invia_ordine_vestiario, iscrizioni_regole, listino, mesi_presenze_pubblici, orari_aperti, puo_caricare, vestiario');
+  'corsi_aperti, invia_iscrizione, invia_ordine_vestiario, iscrizioni_regole, listino, mesi_presenze_pubblici, orari_aperti, puo_caricare, sito_menu_pubblico, sito_pagine_pubbliche, sito_redirect_pubblici, vestiario');
 -- Ogni funzione dice dove cerca le tabelle: se no le cerca nel search_path di
 -- chi la chiama, che se lo può cambiare (l'avviso di Supabase).
 select pg_temp.atteso('le funzioni senza search_path',
@@ -38,7 +38,7 @@ insert into sale (id, nome) values ('bbbbbbbb-0000-0000-0000-000000000001', 'Sal
 insert into corsi (id, nome, sala_id, istruttore_id) values
   ('cccccccc-0000-0000-0000-000000000001', 'Spinning', 'bbbbbbbb-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000002');
 insert into ricorrenze (corso_id, giorno, ora, durata_min, dal)
-  values ('cccccccc-0000-0000-0000-000000000001', 2, '19:00', 50, '2026-10-01');
+  values ('cccccccc-0000-0000-0000-000000000001', 2, '19:00', 50, current_date - 30);
 -- Un secondo corso, tenuto da un'altra persona: serve a provare il rovescio
 -- della policy, cioè che l'istruttore non metta le mani sulle lezioni altrui.
 insert into persone (id, nome, cognome, ruolo) values
@@ -46,15 +46,22 @@ insert into persone (id, nome, cognome, ruolo) values
 insert into corsi (id, nome, istruttore_id) values
   ('cccccccc-0000-0000-0000-000000000002', 'Pilates', 'aaaaaaaa-0000-0000-0000-000000000005');
 insert into ricorrenze (corso_id, giorno, ora, durata_min, dal)
-  values ('cccccccc-0000-0000-0000-000000000002', 4, '10:00', 55, '2026-10-01');
+  values ('cccccccc-0000-0000-0000-000000000002', 4, '10:00', 55, current_date - 30);
 insert into iscrizioni (corso_id, persona_id) values
   ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000003'),
   ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000004');
-select materializza_sessioni('2026-10-01', '2026-10-31');
-insert into presenze (sessione_id, persona_id, stato)
-  select id, 'aaaaaaaa-0000-0000-0000-000000000003', 'presente' from sessioni order by inizio limit 1;
-insert into presenze (sessione_id, persona_id, stato)
-  select id, 'aaaaaaaa-0000-0000-0000-000000000004', 'assente' from sessioni order by inizio limit 1;
+-- Le lezioni stanno attorno ad adesso: un istruttore segna le presenze solo di
+-- quelle da 14 giorni fa a mezz'ora avanti (52-presenze-finestra.sql), e con
+-- date fisse la prova fra qualche mese non direbbe più niente. Con l'istruttore
+-- sopra, come le lascia `materializza_sessioni`: la policy delle lezioni guarda lì.
+insert into sessioni (id, corso_id, inizio, fine, istruttore_id) values
+  ('eeeeeeee-0000-0000-0000-000000000101', 'cccccccc-0000-0000-0000-000000000001', now() - interval '3 days', now() - interval '3 days' + interval '50 minutes', 'aaaaaaaa-0000-0000-0000-000000000002'),
+  ('eeeeeeee-0000-0000-0000-000000000102', 'cccccccc-0000-0000-0000-000000000001', now() - interval '2 days', now() - interval '2 days' + interval '50 minutes', 'aaaaaaaa-0000-0000-0000-000000000002'),
+  ('eeeeeeee-0000-0000-0000-000000000103', 'cccccccc-0000-0000-0000-000000000001', now() - interval '1 day',  now() - interval '1 day' + interval '50 minutes', 'aaaaaaaa-0000-0000-0000-000000000002'),
+  ('eeeeeeee-0000-0000-0000-000000000104', 'cccccccc-0000-0000-0000-000000000002', now() - interval '1 day',  now() - interval '1 day' + interval '55 minutes', 'aaaaaaaa-0000-0000-0000-000000000005');
+insert into presenze (sessione_id, persona_id, stato) values
+  ('eeeeeeee-0000-0000-0000-000000000101', 'aaaaaaaa-0000-0000-0000-000000000003', 'presente'),
+  ('eeeeeeee-0000-0000-0000-000000000101', 'aaaaaaaa-0000-0000-0000-000000000004', 'assente');
 
 create or replace function chi(u text) returns void language plpgsql as $$
 begin perform set_config('prova.utente', u, false); end $$;
@@ -82,7 +89,7 @@ union all select 'presenze', count(*), coalesce(string_agg(stato::text, ', '), '
 select tenta($$insert into corsi (nome) values ('Corso abusivo')$$) as "crea un corso",
        tenta($$update presenze set stato = 'presente'$$)            as "cambia una presenza",
        tenta($$select * from presenze_scadute$$)                    as "righe nella vista",
-       tenta($$select materializza_sessioni('2026-11-01','2026-11-30')$$) as "rigenera il calendario";
+       tenta($$select materializza_sessioni(current_date + 60, current_date + 90)$$) as "rigenera il calendario";
 reset role;
 select stato as "la presenza di Sara dopo il tentativo dell'iscritto" from presenze pr
   where pr.persona_id = 'aaaaaaaa-0000-0000-0000-000000000004';
@@ -94,7 +101,7 @@ set role authenticated;
 select 'persone che vede' t, count(*) n from persone
 union all select 'presenze', count(*) from presenze;
 select tenta($$insert into presenze (sessione_id, persona_id, stato)
-               select id, 'aaaaaaaa-0000-0000-0000-000000000004', 'presente' from sessioni order by inizio offset 1 limit 1$$) as "segna una presenza",
+               values ('eeeeeeee-0000-0000-0000-000000000102', 'aaaaaaaa-0000-0000-0000-000000000004', 'presente')$$) as "segna una presenza",
        tenta($$insert into corsi (nome) values ('Corso abusivo')$$)  as "crea un corso",
        tenta($$delete from presenze where persona_id = 'aaaaaaaa-0000-0000-0000-000000000004'$$) as "toglie il segno di Sara",
        tenta($$update sessioni set stato = 'svolta' where corso_id = 'cccccccc-0000-0000-0000-000000000001'$$) as "chiude le sue lezioni",
@@ -112,7 +119,7 @@ set role authenticated;
 select 'persone che vede' t, count(*) n from persone;
 select tenta($$insert into corsi (nome) values ('Corso nuovo')$$)   as "crea un corso",
        tenta($$delete from presenze where false$$)                  as "cancella le presenze",
-       tenta($$select materializza_sessioni('2026-11-01','2026-11-30')$$) as "rigenera il calendario";
+       tenta($$select materializza_sessioni(current_date + 60, current_date + 90)$$) as "rigenera il calendario";
 reset role;
 
 \echo ''
@@ -130,8 +137,7 @@ select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 -- Maurizio prova a dare la colpa ad Anna
 insert into presenze (sessione_id, persona_id, stato, segnata_da)
-  select id, 'aaaaaaaa-0000-0000-0000-000000000003', 'assente', 'aaaaaaaa-0000-0000-0000-000000000001'
-  from sessioni order by inizio offset 2 limit 1
+  values ('eeeeeeee-0000-0000-0000-000000000103', 'aaaaaaaa-0000-0000-0000-000000000003', 'assente', 'aaaaaaaa-0000-0000-0000-000000000001')
   on conflict (sessione_id, persona_id) do update set stato = excluded.stato, segnata_da = excluded.segnata_da;
 reset role;
 select p.cognome as "risulta segnata da" from presenze pr join persone p on p.id = pr.segnata_da
@@ -217,3 +223,84 @@ set role anon;
 select pg_temp.atteso('chi non ha l''accesso non legge i contatti', contatti_letti(), 'non lo legge');
 reset role;
 select pg_temp.atteso('il contatto di Sara è quello scritto dalla segreteria', (select email_contatto::text from persone where id = 'aaaaaaaa-0000-0000-0000-000000000004'), 'mamma.bianchi@esempio.it');
+
+\echo ''
+\echo '--- CONTABILITÀ (59-contabilita.sql) ---'
+-- Voci, casse e movimenti sono dell'amministrazione (`e_amministrazione()`): in
+-- questa prova nessuno ha quel ruolo, quindi nessuno vede una riga (le due casse
+-- e le due voci di sistema ci sono, messe dal file) e nessuno ci scrive.
+-- Anon non ha nemmeno il permesso di guardare, né di chiamare le funzioni (la
+-- lista di cosa può chiamare anon, in cima, non cambia).
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select pg_temp.atteso('la segreteria senza il ruolo non vede le casse', (select count(*)::text from casse), '0');
+select pg_temp.atteso('…né le voci', (select count(*)::text from voci_contabili), '0');
+select pg_temp.atteso('…né i movimenti', (select count(*)::text from movimenti), '0');
+select pg_temp.atteso('…e non crea una voce', tenta($$select salva_voce('{"nome": "Abusiva", "tipo": "entrata"}')$$), 'NEGATO');
+reset role;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select pg_temp.atteso('l''istruttore non vede le casse', (select count(*)::text from casse), '0');
+select pg_temp.atteso('…né i movimenti', (select count(*)::text from movimenti), '0');
+select pg_temp.atteso('…e non scrive sulle tabelle', tenta($$insert into casse (nome) values ('Abusiva')$$), 'NEGATO');
+select pg_temp.atteso('…né registra un movimento', tenta($$select registra_movimento('{}')$$), 'NEGATO');
+reset role;
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select pg_temp.atteso('l''iscritto non vede i movimenti', (select count(*)::text from movimenti), '0');
+select pg_temp.atteso('…e non annulla niente', tenta($$select annulla_movimento('00000000-0000-0000-0000-000000000000')$$), 'NEGATO');
+reset role;
+select chi('');
+set role anon;
+select pg_temp.atteso('anon non legge le casse', tenta($$select count(*) from casse$$), 'NEGATO');
+select pg_temp.atteso('…né le voci', tenta($$select count(*) from voci_contabili$$), 'NEGATO');
+select pg_temp.atteso('…né i movimenti', tenta($$select count(*) from movimenti$$), 'NEGATO');
+select pg_temp.atteso('…non scrive', tenta($$insert into movimenti (descrizione) values ('Abusivo')$$), 'NEGATO');
+select pg_temp.atteso('…non cambia un saldo', tenta($$select imposta_saldo_cassa('00000000-0000-0000-0000-000000000000', 0, null)$$), 'NEGATO');
+reset role;
+select pg_temp.atteso('le tre tabelle hanno la RLS accesa e nessun permesso ad anon',
+  (select count(*)::text from pg_class c where c.relnamespace = 'public'::regnamespace and c.relname in ('voci_contabili', 'casse', 'movimenti') and c.relrowsecurity
+     and not has_table_privilege('anon', c.oid, 'select, insert, update, delete')), '3');
+
+\echo ''
+\echo '--- CHIUSURA DI CASSA (60-chiusura-cassa.sql) ---'
+-- Le chiusure sono dell'amministrazione, come i movimenti: in questa prova nessuno
+-- ha quel ruolo, quindi nessuno ne vede una (la prova supabase/prova/chiusura-cassa.sql
+-- ha i dati e prova il resto). Nessuno ci scrive dritto, anon non guarda nemmeno,
+-- e chi non è amministrazione non chiude né annulla. «previsto_cassa» è interna:
+-- non la chiama nessuno da fuori.
+select pg_temp.atteso('60-chiusura-cassa.sql è stato lanciato: c''è la tabella delle chiusure', (to_regclass('public.chiusure_cassa') is not null)::text, 'true');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select pg_temp.atteso('la segreteria senza il ruolo non vede le chiusure', (select count(*)::text from chiusure_cassa), '0');
+select pg_temp.atteso('…non scrive sulla tabella', tenta($$insert into chiusure_cassa (nota) values ('Abusiva')$$), 'NEGATO');
+select pg_temp.atteso('…non chiude la cassa', tenta($$select chiudi_cassa('{}')$$), 'NEGATO');
+select pg_temp.atteso('…né annulla una chiusura', tenta($$select annulla_chiusura_cassa('00000000-0000-0000-0000-000000000000')$$), 'NEGATO');
+reset role;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select pg_temp.atteso('l''istruttore non vede le chiusure', (select count(*)::text from chiusure_cassa), '0');
+select pg_temp.atteso('…non le cambia', tenta($$update chiusure_cassa set nota = 'Abusiva'$$), 'NEGATO');
+select pg_temp.atteso('…non le cancella', tenta($$delete from chiusure_cassa$$), 'NEGATO');
+select pg_temp.atteso('…non chiude la cassa', tenta($$select chiudi_cassa('{}')$$), 'NEGATO');
+reset role;
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select pg_temp.atteso('l''iscritto non vede le chiusure', (select count(*)::text from chiusure_cassa), '0');
+select pg_temp.atteso('…non annulla niente', tenta($$select annulla_chiusura_cassa('00000000-0000-0000-0000-000000000000')$$), 'NEGATO');
+reset role;
+select chi('');
+set role anon;
+select pg_temp.atteso('anon non legge le chiusure', tenta($$select count(*) from chiusure_cassa$$), 'NEGATO');
+select pg_temp.atteso('…non scrive', tenta($$insert into chiusure_cassa (nota) values ('Abusiva')$$), 'NEGATO');
+select pg_temp.atteso('…non chiude la cassa', tenta($$select chiudi_cassa('{}')$$), 'NEGATO');
+select pg_temp.atteso('…non annulla una chiusura', tenta($$select annulla_chiusura_cassa('00000000-0000-0000-0000-000000000000')$$), 'NEGATO');
+reset role;
+select pg_temp.atteso('la tabella ha la RLS accesa e nessun permesso ad anon',
+  (select count(*)::text from pg_class c where c.relnamespace = 'public'::regnamespace and c.relname = 'chiusure_cassa' and c.relrowsecurity
+     and not has_table_privilege('anon', c.oid, 'select, insert, update, delete')), '1');
+select pg_temp.atteso('authenticated la legge e basta',
+  (select coalesce(string_agg(p, ',' order by p), 'niente') from unnest(array['select', 'insert', 'update', 'delete', 'truncate']) p where has_table_privilege('authenticated', 'public.chiusure_cassa', p)), 'select');
+select pg_temp.atteso('il previsto è interno: non lo chiama nessuno',
+  (select coalesce(string_agg(p.proname, ', '), 'nessuna') from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'previsto_cassa'
+     and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('authenticated', p.oid, 'execute'))), 'nessuna');

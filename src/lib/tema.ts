@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Il tema: nero, come il marchio, o bianco.
+ * Il tema: nero, come il marchio, bianco, o Tatami (paglia e verde muschio).
  *
  * Finché nessuno sceglie segue il dispositivo; chi tocca il tasto sceglie per
  * quel dispositivo, e la scelta resta. Il tema sta su `<html data-tema>`: i
@@ -10,7 +10,22 @@ import { useEffect, useState } from 'react'
  * Il timer usa lo stesso tema con la stessa chiave: scelto in un'app, vale
  * anche nell'altra.
  */
-export type Tema = 'scuro' | 'chiaro'
+export type Tema = 'scuro' | 'chiaro' | 'tatami'
+
+/** In quest'ordine passa il tasto: ogni tocco porta al successivo, dopo l'ultimo si ricomincia. */
+export const TEMI: readonly Tema[] = ['scuro', 'chiaro', 'tatami']
+
+/** Il colore della barra del browser e del telefono per ogni tema: quello del fondo. */
+export const COLORE_BARRA: Record<Tema, string> = { scuro: '#121212', chiaro: '#f4f4f1', tatami: '#ebe6d0' }
+
+/** Un valore salvato che non è esattamente uno dei temi (un altro nome, una versione più nuova) non conta. */
+export function leggiTema(valore: unknown): Tema | null {
+  return TEMI.find((t) => t === valore) ?? null
+}
+
+export function prossimoTema(t: Tema): Tema {
+  return TEMI[(TEMI.indexOf(t) + 1) % TEMI.length]
+}
 
 const DOVE = 'ods-tema'
 const sistema = typeof window !== 'undefined' ? window.matchMedia?.('(prefers-color-scheme: light)') : undefined
@@ -20,8 +35,8 @@ let inMemoria: Tema | null = null
 
 function scelto(): Tema | null {
   try {
-    const t = localStorage.getItem(DOVE)
-    if (t === 'scuro' || t === 'chiaro') return t
+    const t = leggiTema(localStorage.getItem(DOVE))
+    if (t) return t
   } catch {
     // niente: resta quella in memoria
   }
@@ -37,8 +52,9 @@ const ascoltatori = new Set<(t: Tema) => void>()
 function applica() {
   const t = attuale()
   document.documentElement.dataset.tema = t
-  // La barra del browser e quella del telefono prendono il colore del fondo.
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', t === 'chiaro' ? '#f4f4f1' : '#121212')
+  // La barra del browser e quella del telefono prendono il colore del fondo,
+  // tranne nel modulo di iscrizione, che è sempre chiaro (`aspettoModulo.ts`).
+  if (!document.documentElement.dataset.modulo) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', COLORE_BARRA[t])
   ascoltatori.forEach((f) => f(t))
 }
 
@@ -66,12 +82,12 @@ export function scegliTema(t: Tema) {
 }
 
 export function useTema(): [Tema, () => void] {
-  const [t, setT] = useState<Tema>(() => (document.documentElement.dataset.tema as Tema | undefined) ?? attuale())
+  const [t, setT] = useState<Tema>(() => leggiTema(document.documentElement.dataset.tema) ?? attuale())
   useEffect(() => {
     ascoltatori.add(setT)
     return () => {
       ascoltatori.delete(setT)
     }
   }, [])
-  return [t, () => scegliTema(t === 'chiaro' ? 'scuro' : 'chiaro')]
+  return [t, () => scegliTema(prossimoTema(t))]
 }

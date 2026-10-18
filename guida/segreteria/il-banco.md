@@ -4,8 +4,7 @@
 
 **Il Banco** è un altro modo di vedere la segreteria: al posto del menu a
 sinistra c'è la **ricerca sempre in cima** e **cinque luoghi**. Si sceglie da
-**IMPOSTAZIONI**, nel gruppo **COME VUOI LA SEGRETERIA**: **COME OGGI** o **IL
-BANCO**. Cambia subito, senza ricaricare, e vale **solo per questo computer**.
+**IMPOSTAZIONI**, nel gruppo **QUESTO SCHERMO**: **COME OGGI** o **IL BANCO**. Cambia subito, senza ricaricare, e vale **solo per questo computer**.
 Chi non sceglie niente vede la segreteria di sempre.
 
 Sul telefono resta il menu di sempre: Il Banco è fatto per lo schermo largo.
@@ -27,10 +26,10 @@ numeri gialli dicono cosa aspetta, con le stesse parole del menu di prima.
 | Luogo | Voci |
 |---|---|
 | **OGGI** | OGGI ([la giornata](#oggi)), [SETTIMANA](settimana.md), [PRESENZE](presenze.md) |
-| **PERSONE** | [ISCRITTI](iscritti.md), [RICHIESTE ONLINE](richieste.md), [ISTRUTTORI](presenze-istruttori.md), [ACCESSI](istruttori-e-accessi.md) |
+| **PERSONE** | [ISCRITTI](iscritti.md), [TESSERE](tessere.md), [RICHIESTE ONLINE](richieste.md), [ISTRUTTORI](presenze-istruttori.md), [ACCESSI](istruttori-e-accessi.md) |
 | **CORSI** | [CORSI](corsi.md), [ESERCIZI](esercizi.md) |
-| **SOLDI** | [DA PAGARE](da-pagare.md), [RICEVUTE](ricevute.md), [LISTINO](listino.md), [VESTIARIO](vestiario.md) |
-| **PALESTRA** | [STATISTICHE](statistiche.md), [SEGNALAZIONI](segnalazioni.md), [IMPOSTAZIONI](regole.md) |
+| **SOLDI** | [PAGAMENTI](pagamenti.md), [LISTINO](listino.md), [VESTIARIO](vestiario.md) |
+| **PALESTRA** | [STATISTICHE](statistiche.md), [SEGNALAZIONI](segnalazioni.md), [SITO](sito.md), [IMPOSTAZIONI](regole.md) |
 
 Nessuna voce di prima si perde. Le pagine sono le stesse; gli indirizzi
 (`#iscritti`, `#settimana`…) anche, così un segnalibro vecchio funziona in
@@ -45,7 +44,8 @@ e in rosso **APPELLO NON FATTO**. Toccare un blocco apre la lezione in
 PRESENZE.
 
 Sopra, quattro numeri che aprono l'elenco da cui nascono: **SENZA
-CERTIFICATO**, **DA PAGARE**, **RICHIESTE**, **PRESENTI OGGI**.
+CERTIFICATO**, **DA PAGARE** (apre gli iscritti col filtro già acceso), **RICHIESTE**,
+**PRESENTI OGGI**.
 
 A destra la coda **DA FARE AL BANCO**, in ordine di urgenza: prima gli appelli
 non fatti, poi chi è senza certificato, poi chi deve la quota (in rosso), infine

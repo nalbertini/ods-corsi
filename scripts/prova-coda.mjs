@@ -101,6 +101,61 @@ const dimmi = (s) => { console.log('  ✗', s); guai++ }
   if (fatte.join() !== 'presente') dimmi(`al server è arrivato ${fatte.join(', ')} invece dell'ultimo stato`)
 }
 
+// --- 4b. TUTTI PRESENTI a mano: tante persone di fila, senza rete ----------
+// Ogni persona ha la sua chiave `segna:sessione:persona`: nessuna scrittura si
+// perde o ne copre un'altra, e al ritorno della rete partono nell'ordine in cui sono entrate.
+{
+  memoria.clear()
+  let giù = true
+  const fatte = []
+  const c = new Coda(async (op) => { if (giù) throw new Error('niente rete'); fatte.push(op.args[1]) })
+  const persone = Array.from({ length: 10 }, (_, i) => `p${i + 1}`)
+  for (const p of persone) c.accoda(`segna:s1:${p}`, 'segna', ['s1', p, 'presente'])
+  await attesa()
+  console.log(`4b ${persone.length} persone di fila, offline: in coda ${c.inAttesa}`)
+  if (c.inAttesa !== persone.length) dimmi(`in coda ${c.inAttesa} scritture invece di ${persone.length}`)
+  giù = false
+  rete('online')
+  await attesa()
+  console.log(`  arrivano al server: ${fatte.join(',')}`)
+  if (fatte.join() !== persone.join()) dimmi(`ordine o numero sbagliato: ${fatte.join(', ')}`)
+  if (c.inAttesa) dimmi('la coda non si è svuotata')
+}
+
+// --- 4c. segna e poi rimetti: l'ultimo tocco vince, e arriva null ----------
+{
+  memoria.clear()
+  let giù = true
+  const fatte = []
+  const c = new Coda(async (op) => { if (giù) throw new Error('niente rete'); fatte.push(op.args[2]) })
+  c.accoda('segna:s1:p1', 'segna', ['s1', 'p1', 'presente'])
+  c.accoda('segna:s1:p1', 'segna', ['s1', 'p1', null])
+  await attesa()
+  giù = false
+  rete('online')
+  await attesa()
+  console.log(`4c segna e rimetti offline: arriva ${JSON.stringify(fatte)}`)
+  if (fatte.length !== 1 || fatte[0] !== null) dimmi(`al server è arrivato ${JSON.stringify(fatte)} invece di [null]`)
+}
+
+// --- 4d. i non segnati uno a uno, poi un tocco su uno già in coda -----------
+{
+  memoria.clear()
+  let giù = true
+  const fatte = []
+  const c = new Coda(async (op) => { if (giù) throw new Error('niente rete'); fatte.push(`${op.args[1]}=${op.args[2]}`) })
+  for (const p of ['p1', 'p2', 'p3', 'p4']) c.accoda(`segna:s1:${p}`, 'segna', ['s1', p, 'presente'])
+  c.accoda('segna:s1:p2', 'segna', ['s1', 'p2', 'assente'])   // ci ripensa su p2
+  await attesa()
+  if (c.inAttesa !== 4) dimmi(`in coda ${c.inAttesa} scritture invece di 4`)
+  giù = false
+  rete('online')
+  await attesa()
+  console.log(`4d tocco su uno già in coda: ${fatte.join(' ')}`)
+  // Le altre restano presenti; p2 è assente. L'ordine di p2 non conta, il suo stato sì.
+  if (fatte.slice().sort().join() !== 'p1=presente,p2=assente,p3=presente,p4=presente') dimmi(`al server è arrivato ${fatte.join(', ')}`)
+}
+
 // --- 5. l'app chiusa e riaperta ritrova la coda ---------------------------
 {
   memoria.clear()

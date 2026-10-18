@@ -44,7 +44,7 @@ ok('senza cancelletto si apre DA FARE', leggi('')?.voce, 'dafare')
 ok('il cancelletto da solo apre DA FARE', leggi('#')?.voce, 'dafare')
 ok('#dafare apre DA FARE', leggi('#dafare')?.voce, 'dafare')
 ok('ogni voce scritta si rilegge uguale',
-  ['dafare', 'settimana', 'corsi', 'iscritti', 'richieste', 'presenze', 'statistiche', 'istruttori', 'personale', 'esercizi', 'listino', 'regole', 'segnalazioni']
+  ['dafare', 'settimana', 'corsi', 'iscritti', 'pagamenti', 'richieste', 'presenze', 'statistiche', 'istruttori', 'personale', 'esercizi', 'listino', 'regole', 'segnalazioni']
     .filter((voce) => andataRitorno({ voce })?.voce !== voce),
   [])
 // L'import da Excel sta dentro IMPOSTAZIONI: un vecchio link a #importa non porta a una voce che non c'è più.
@@ -82,6 +82,8 @@ ok('Indietro dal corso torna all\'elenco CORSI', m.dopoIndietro({ voce: 'corsi',
 ok('Avanti riapre il corso', piatto(m.dopoIndietro({ voce: 'corsi' }, '#corsi/X', { prova: false })), { corso: 'X', voce: 'corsi' })
 ok('Indietro dal corso nuovo torna all\'elenco CORSI', m.dopoIndietro({ voce: 'corsi', nuovo: true }, '#corsi', { prova: false }), { voce: 'corsi' })
 ok('CORSI ritoccato chiude il corso', m.postoDelMenu({ voce: 'corsi', corso: 'X' }, 'corsi'), { voce: 'corsi' })
+ok('la ricerca apre la scheda di un corso, da un\'altra voce', m.postoDelMenu({ voce: 'iscritti' }, 'corsi', { corso: 'c1' }), { voce: 'corsi', corso: 'c1' })
+ok('e dai CORSI stessi', m.postoDelMenu({ voce: 'corsi', corso: 'X' }, 'corsi', { corso: 'c1' }), { voce: 'corsi', corso: 'c1' })
 ok('un\'altra voce chiude il corso', m.postoDelMenu({ voce: 'corsi', corso: 'X' }, 'iscritti'), { voce: 'iscritti' })
 ok('il corso non va nell\'indirizzo di ISCRITTI', m.scriviIndirizzo({ voce: 'iscritti', corso: 'X' }), '#iscritti')
 ok('la persona non va nell\'indirizzo di CORSI', m.scriviIndirizzo({ voce: 'corsi', persona: 'X' }), '#corsi')
@@ -193,6 +195,33 @@ ok('una voce diversa senza filtro chiesto riparte senza filtro', filtroDopo('isc
 ok('una voce diversa col filtro chiesto apre quello, non l\'acceso', filtroDopo('iscritti', 'richieste', 'certificato', 'stampare'), 'stampare')
 ok('la stessa voce con un altro filtro chiesto passa a quello', filtroDopo('iscritti', 'iscritti', 'certificato', 'pagare'), 'pagare')
 ok('la stessa voce senza filtri resta senza filtro', filtroDopo('iscritti', 'iscritti', undefined, undefined), undefined)
+
+console.log('Il corso da cui si arriva alla scheda')
+ok('la scheda aperta da un corso è #iscritti/X?corso=C', m.scriviIndirizzo({ voce: 'iscritti', persona: 'p1', daCorso: 'c1' }), '#iscritti/p1?corso=c1')
+ok('#iscritti/X?corso=C si rilegge', piatto(leggi('#iscritti/p1?corso=c1')), { daCorso: 'c1', persona: 'p1', voce: 'iscritti' })
+ok('scritta e riletta è uguale', andataRitorno({ voce: 'iscritti', persona: 'p1', daCorso: 'c1' }), { daCorso: 'c1', persona: 'p1', voce: 'iscritti' })
+ok('un id di corso con barre e spazi torna uguale',
+  andataRitorno({ voce: 'iscritti', persona: 'p1', daCorso: 'a/b c' }), { daCorso: 'a/b c', persona: 'p1', voce: 'iscritti' })
+ok('e nell’indirizzo è codificato', m.scriviIndirizzo({ voce: 'iscritti', persona: 'p1', daCorso: 'a/b c' }).includes('a/b c'), false)
+ok('corso vuoto: scheda senza corso', piatto(leggi('#iscritti/p1?corso=')), { persona: 'p1', voce: 'iscritti' })
+ok('e si corregge in #iscritti/p1', m.indirizzoCorretto('#iscritti/p1?corso=', { prova: false }), '#iscritti/p1')
+ok('un corso storpiato non fa errori', (() => { try { leggi('#iscritti/p1?corso=%E0'); return 'niente errori' } catch { return 'errore' } })(), 'niente errori')
+ok('il corso senza scheda si ignora', leggi('#iscritti?corso=c1'), { voce: 'iscritti' })
+ok('e si corregge in #iscritti', m.indirizzoCorretto('#iscritti?corso=c1', { prova: false }), '#iscritti')
+ok('in CORSI il «corso» si ignora', piatto(leggi('#corsi/c1?corso=x')), { corso: 'c1', voce: 'corsi' })
+ok('e si corregge in #corsi/c1', m.indirizzoCorretto('#corsi/c1?corso=x', { prova: false }), '#corsi/c1')
+ok('il modulo nuovo non ha corso di provenienza', piatto(leggi('#iscritti/nuovo?corso=c1')), { nuovo: true, voce: 'iscritti' })
+ok('il corso di provenienza non va in altre voci', m.scriviIndirizzo({ voce: 'corsi', corso: 'c1', daCorso: 'c2' }), '#corsi/c1')
+ok('ISCRITTI ritoccato chiude la scheda e il corso di provenienza',
+  m.postoDelMenu({ voce: 'iscritti', persona: 'p1', daCorso: 'c1' }, 'iscritti'), { voce: 'iscritti' })
+ok('dal corso alla scheda di una persona, ricordando il corso',
+  piatto(m.postoDelMenu({ voce: 'corsi', corso: 'c1' }, 'iscritti', { persona: 'p1', daCorso: 'c1' })), { daCorso: 'c1', persona: 'p1', voce: 'iscritti' })
+ok('il corso senza persona si ignora', m.postoDelMenu({ voce: 'corsi', corso: 'c1' }, 'iscritti', { daCorso: 'c1' }), { voce: 'iscritti' })
+ok('il corso con un’altra voce si ignora: nessun daCorso', m.postoDelMenu({ voce: 'iscritti' }, 'richieste', { persona: 'p1', daCorso: 'c1' })?.daCorso, undefined)
+ok('Indietro dalla scheda col corso all’indirizzo senza corso: è un posto diverso',
+  m.dopoIndietro({ voce: 'iscritti', persona: 'p1', daCorso: 'c1' }, '#iscritti/p1', { prova: false }), { voce: 'iscritti', persona: 'p1' })
+ok('Avanti riapre la scheda col corso',
+  piatto(m.dopoIndietro({ voce: 'iscritti', persona: 'p1' }, '#iscritti/p1?corso=c1', { prova: false })), { daCorso: 'c1', persona: 'p1', voce: 'iscritti' })
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

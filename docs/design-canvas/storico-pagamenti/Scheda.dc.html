@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 48px; align-items: flex-start; width: 1480px; background: #121212; padding: 28px 36px 36px">
+<div style="display: flex; flex-direction: column; width: 560px; gap: 8px">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">OGGI · RICEVUTE</span>
+  <dc-import name="Titoletto" label="RICEVUTE" hint-size="100%,50px"></dc-import>
+  <dc-import name="VoceElenco" nome="N. 12/2026 · 80,00 €" riassunto="14 ottobre 2026 · QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS" tasto="PDF" hint-size="100%,64px"></dc-import>
+  <dc-import name="VoceElenco" nome="N. 3/2026 · 30,00 €" riassunto="2 settembre 2026 · QUOTA ASSOCIATIVA" tasto="PDF" hint-size="100%,64px"></dc-import>
+  <dc-import name="VoceElenco" nome="N. 2/2026 · 30,00 €" riassunto="Annullata il 2 settembre 2026 · 2 settembre 2026 · QUOTA ASSOCIATIVA" tasto="PDF" hint-size="100%,64px"></dc-import>
+  <span style="font-size: 14px; color: #8c8c88; line-height: 1.4; margin-top: 6px">Non si vede come è stata pagata, né quanto manca, né i pagamenti fatti a mano.</span>
+</div>
+<div style="display: flex; flex-direction: column; width: 780px; gap: 8px">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · PAGAMENTI</span>
+  <dc-import name="Titoletto" label="PAGAMENTI" conto="4" hint-size="100%,50px"></dc-import>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px">
+    <dc-import name="Numero" titolo="PAGATO" valore="120 €" sotto="3 pagamenti, 1 senza ricevuta" hint-size="100%,120px"></dc-import>
+    <dc-import name="Numero" titolo="MANCA" valore="30 €" sotto="sulla ricevuta 12/2026" allarme="{{ true }}" hint-size="100%,120px"></dc-import>
+    <dc-import name="Numero" titolo="QUOTA" valore="PAGATA" sotto="fino al 30 settembre 2027" hint-size="100%,120px"></dc-import>
+  </div>
+  <dc-import name="RigaPagamento" tipo="ricevuta" titolo="N. 12/2026 · 14 ottobre 2026" sotto="QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS · totale 80,00 €" importo="" tag="MANCA 30,00 €" tagTono="giallo" tasti="PDF|ANNULLA RICEVUTA" hint-size="100%,64px"></dc-import>
+  <dc-import name="RigaPagamento" tipo="pagamento" titolo="14 ottobre 2026 · Contanti" sotto="QUOTA ASSOCIATIVA" importo="30,00 €" tasti="" hint-size="100%,48px"></dc-import>
+  <dc-import name="RigaPagamento" tipo="pagamento" titolo="14 ottobre 2026 · POS" sotto="ANNUALE JUDO KIDS" importo="20,00 €" tasti="" hint-size="100%,48px"></dc-import>
+  <dc-import name="RigaPagamento" tipo="ricevuta" titolo="N. 3/2026 · 2 settembre 2026" sotto="QUOTA ASSOCIATIVA · totale 30,00 €" importo="" tasti="PDF|ANNULLA RICEVUTA" hint-size="100%,64px"></dc-import>
+  <dc-import name="RigaPagamento" tipo="pagamento" titolo="2 settembre 2026 · Bonifico" sotto="QUOTA ASSOCIATIVA" importo="30,00 €" tasti="" hint-size="100%,48px"></dc-import>
+  <dc-import name="RigaPagamento" tipo="ricevuta" titolo="N. 2/2026 · 2 settembre 2026" sotto="Annullata il 2 settembre 2026 · QUOTA ASSOCIATIVA" importo="" tag="ANNULLATA" tagTono="rosso" tasti="PDF" annullato="{{ true }}" hint-size="100%,64px"></dc-import>
+  <dc-import name="Titoletto" label="SENZA RICEVUTA" conto="1" hint-size="100%,50px"></dc-import>
+  <dc-import name="RigaPagamento" tipo="ricevuta" titolo="5 settembre 2026 · Contanti" sotto="ANNUALE JUDO KIDS · pagato direttamente in palestra" importo="40,00 €" tag="SENZA RICEVUTA" tasti="ANNULLA PAGAMENTO" hint-size="100%,64px"></dc-import>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px">
+    <dc-import name="Bottone" label="FAI LA RICEVUTA" variante="pieno" contesto="segreteria" hint-size="200px,48px"></dc-import>
+    <dc-import name="Bottone" label="REGISTRA UN PAGAMENTO" variante="linea" contesto="segreteria" hint-size="240px,48px"></dc-import>
+  </div>
+  <span style="font-size: 14px; color: #8c8c88; line-height: 1.4">Una sola lista: ogni ricevuta con i suoi pagamenti sotto, poi i pagamenti fatti a mano. Ordine dal più recente. Le annullate restano, barrate, e non si contano. «Da quando a quando vale la quota» resta nella sezione QUOTA, sopra.</span>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1480,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

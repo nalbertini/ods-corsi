@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
@@ -6,10 +6,12 @@ import { Bollino } from '../ds'
 import { TastoTema } from '../TastoTema'
 import { Cursori } from '../Icons'
 import { Settimana } from './Settimana'
-import { Corsi } from './Corsi'
+import { Corsi, riapriSuIscritti } from './Corsi'
 import { Iscritti } from './Iscritti'
 import { Presenze } from './Presenze'
 import { Statistiche } from './Statistiche'
+import { Pagamenti } from './Pagamenti'
+import { PaginaTessere } from './Tessere'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
 import { Listino } from './Listino'
@@ -20,21 +22,26 @@ import { Richieste } from './Richieste'
 import { PresenzeIstruttori } from './PresenzeIstruttori'
 import { PresenzeSegnalate } from './PresenzeSegnalate'
 import { Segnalazioni } from './Segnalazioni'
+// Il pannello del sito porta con sé l'editor del testo e la sua pulizia: si scaricano solo aprendolo.
+const Sito = lazy(() => import('./Sito').then((m) => ({ default: m.Sito })))
 import { tocca } from '../../lib/segnalazioni'
 import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
+import { CosaManca } from './CosaManca'
+import { strisciaVisibile } from '../../lib/cosaManca'
+import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
 import { bozzaAperta, chiedi, Conferme, dialogoAperto, Guaio, lasciare, scordaBozze } from './comune'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { aspettoInUso, useAspetto } from '../../lib/aspetto'
 import { BarraBanco } from './banco/BarraBanco'
 import { Oggi } from './banco/Oggi'
 import { PersonaBanco } from './banco/PersonaBanco'
-import { DaPagare, RicevuteElenco } from './banco/Soldi'
 import { CercaIscritto } from './CercaIscritto'
+import type { Ricercata } from '../../lib/ricerca'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
-import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
+import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 import { cambiaVoce, scorre } from '../../lib/scorri'
 
 export type { Voce }
@@ -42,9 +49,16 @@ export type { Voce }
 /** Dove portare la segreteria da un'altra sezione: la scheda di qualcuno, una lezione da aprire. */
 export interface Destinazione {
   persona?: string
+  corso?: string
+  /** Con `persona`: il corso da cui si apre la scheda, a cui riporta «‹ CORSO». */
+  daCorso?: string
+  /** Una richiesta da aprire, scelta dalla ricerca. */
+  richiesta?: string
+  /** Cosa si è cercato e chi è uscito: la voce mostra solo quelli, finché non si dice MOSTRA TUTTI. */
+  ricerca?: Ricercata
   lezione?: { id: string; inizio: string }
   /** Un filtro già acceso: chi ha il certificato da sistemare, chi deve pagare, chi ha un file di prima, cosa c'è da stampare. */
-  filtro?: 'certificato' | 'scadenza' | 'arrivo' | 'pagare' | 'file-di-prima' | 'stampare' | 'fuori-regola' | 'senza-appello'
+  filtro?: FiltroSegreteria
 }
 
 /**
@@ -66,6 +80,8 @@ const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]>; secondario?: 
     titolo: 'PERSONE',
     voci: [
       ['iscritti', 'ISCRITTI'],
+      ['tessere', 'TESSERE'],
+      ['pagamenti', 'PAGAMENTI'],
       ['corsi', 'CORSI'],
     ],
   },
@@ -86,6 +102,7 @@ const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]>; secondario?: 
       ['vestiario', 'VESTIARIO'],
       ['esercizi', 'ESERCIZI'],
       ['segnalazioni', 'SEGNALAZIONI'],
+      ['sito', 'SITO'],
     ],
   },
 ]
@@ -96,6 +113,8 @@ const GUIDE: Record<Voce, string> = {
   settimana: 'segreteria/settimana',
   corsi: 'segreteria/corsi',
   iscritti: 'segreteria/iscritti',
+  tessere: 'segreteria/tessere',
+  pagamenti: 'segreteria/pagamenti',
   richieste: 'segreteria/richieste',
   presenze: 'segreteria/presenze',
   segnalate: 'segreteria/presenze-segnalate',
@@ -105,10 +124,9 @@ const GUIDE: Record<Voce, string> = {
   esercizi: 'segreteria/esercizi',
   listino: 'segreteria/listino',
   vestiario: 'segreteria/vestiario',
-  dapagare: 'segreteria/da-pagare',
-  ricevute: 'segreteria/ricevute',
   regole: 'segreteria/regole',
   segnalazioni: 'segreteria/segnalazioni',
+  sito: 'segreteria/sito',
 }
 
 /** Scrive l'indirizzo della segreteria nella cronologia, senza ricaricare. */
@@ -163,6 +181,7 @@ export function Segreteria({
   prova,
   onEsci,
   onIstruttori,
+  onAmministrazione,
 }: {
   nome: string
   ruolo?: string
@@ -170,6 +189,8 @@ export function Segreteria({
   onEsci?: () => void
   /** Per chi è di segreteria e insegna anche: il passaggio al calendario, senza uscire. */
   onIstruttori?: () => void
+  /** Per chi è di segreteria e cura anche i conti: il passaggio all'amministrazione, senza uscire. */
+  onAmministrazione?: () => void
 }) {
   const [d, setD] = useState<DatiSegreteria | null>(null)
   // Dove si è sta nell'indirizzo (vedi `indirizzoSegreteria.ts`): si parte
@@ -178,8 +199,9 @@ export function Segreteria({
   const voce = posto.voce
   // Il filtro acceso da DA FARE resta fuori dall'indirizzo: è un punto di partenza, non un posto.
   const [filtro, setFiltro] = useState<Destinazione['filtro']>()
-  // Una modifica fatta nella scheda di un iscritto: la scheda de «Il Banco», sopra, la rilegge.
-  const [giroPersona, setGiroPersona] = useState(0)
+  // Come il filtro: un punto di partenza dato dalla ricerca, non un posto dell'indirizzo.
+  const [ricerca, setRicerca] = useState<Ricercata>()
+  const [richiesta, setRichiesta] = useState<string>()
   // Il menu del telefono, aperto o chiuso; sul computer non conta.
   const [aperto, setAperto] = useState(false)
   // Sul telefono il menu aperto è un passo della cronologia, sullo stesso
@@ -209,6 +231,8 @@ export function Segreteria({
     // un clic sul menu. Chi resta torna al modulo: sul telefono il menu lo coprirebbe.
     if (!(await lasciare())) return chiudiMenu()
     setFiltro(filtroDopo(ora.current.voce, v, filtro, d.filtro))
+    setRicerca(d.ricerca)
+    setRichiesta(d.richiesta)
     // Dal menu del telefono la voce scelta prende il posto del passo del
     // menu: Indietro poi torna alla voce di prima, non al menu aperto.
     segna(postoDelMenu(ora.current, v, d), nelMenu() ? 'replace' : 'push')
@@ -289,7 +313,14 @@ export function Segreteria({
   // di istruttori e segnalate, da qualunque voce; DA FARE conta tutto. Si
   // riconta cambiando voce, e quando una sezione dice che è cambiato qualcosa.
   const [giroConte, setGiroConte] = useState(0)
-  const conti = useDaFare(d, voce === 'dafare', `${voce}-${giroConte}`)
+  // Quando i conti della striscia vanno riletti per forza: un appello segnato, una richiesta accolta, una scheda cambiata, RICONTA.
+  const [giroStriscia, setGiroStriscia] = useState(0)
+  const contiCambiati = () => {
+    setGiroConte((g) => g + 1)
+    setGiroStriscia((g) => g + 1)
+  }
+  const [strisciaVoluta] = useStrisciaVoluta()
+  const conti = useDaFare(d, voce === 'dafare', `${voce}-${giroConte}`, giroStriscia)
   const richiesteNuove = conti.richieste ?? 0
   const daConfermare = conti.istruttori ?? 0
   const segnalateDaVedere = conti.segnalate ?? 0
@@ -400,7 +431,7 @@ export function Segreteria({
             segnalazioni: { n: daRispondere, detto: 'da rispondere' },
             vestiario: { n: daSaldare, detto: 'ordini da saldare' },
           }}
-          cerca={d && <CercaIscritto d={d} onApri={(id) => void vai('iscritti', { persona: id })} />}
+          cerca={d && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
           link={
             <>
               <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
@@ -456,7 +487,7 @@ export function Segreteria({
           {/* Fra DATI e DI uno spazio che non va a capo: in 56px si spezza solo prima di PROVA. */}
           {prova && <Bollino>DATI{'\u00a0'}DI PROVA</Bollino>}
         </div>
-        {d && <CercaIscritto d={d} onApri={(id) => void vai('iscritti', { persona: id })} />}
+        {d && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
         <div className="sg-gruppi">
           {GRUPPI.map((g) => (
             <div key={g.titolo} role="group" aria-label={g.titolo} className="sg-gruppo" data-secondario={g.secondario}>
@@ -489,6 +520,11 @@ export function Segreteria({
           {onIstruttori && (
             <button type="button" className="num sg-voce" onClick={onIstruttori}>
               ISTRUTTORI →
+            </button>
+          )}
+          {onAmministrazione && (
+            <button type="button" className="num sg-voce" onClick={onAmministrazione}>
+              AMMINISTRAZIONE →
             </button>
           )}
           <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
@@ -546,34 +582,47 @@ export function Segreteria({
             </button>
           </div>
         )}
+        {d && strisciaVisibile(voce, telefono, !!(posto.persona || posto.corso || posto.nuovo || richiesta || posto.lezione), strisciaVoluta) && (
+          <CosaManca conti={conti.striscia} onVai={vai} onRiprova={contiCambiati} />
+        )}
         {d && voce === 'dafare' && !banco && <DaFare conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'dafare' && banco && <Oggi d={d} conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
-        {d && voce === 'dapagare' && <DaPagare d={d} onVai={vai} />}
-        {d && voce === 'ricevute' && <RicevuteElenco d={d} />}
-        {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} />}
+        {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} onConti={contiCambiati} />}
         {d && voce === 'corsi' && (
           <Corsi
+            key={ricerca?.testo ?? ''}
             d={d}
+            ricerca={ricerca}
+            onTogliRicerca={() => setRicerca(undefined)}
             scelto={posto.corso}
             nuovo={posto.nuovo}
             onScelta={(id, passo) => segna({ voce: 'corsi', ...(id && { corso: id }) }, passo)}
             onNuovo={() => segna({ voce: 'corsi', nuovo: true }, 'push')}
+            onConti={contiCambiati}
+            onVai={vai}
           />
         )}
-        {d && voce === 'iscritti' && banco && posto.persona && <PersonaBanco d={d} id={posto.persona} giro={giroPersona} />}
+        {d && voce === 'iscritti' && banco && posto.persona && <PersonaBanco d={d} id={posto.persona} giro={giroConte} />}
         {d && voce === 'iscritti' && (
           <Iscritti
-            key={filtro ?? ''}
+            key={`${filtro ?? ''}|${ricerca?.testo ?? ''}`}
             d={d}
+            ricerca={ricerca}
+            onTogliRicerca={() => setRicerca(undefined)}
             scelta={posto.persona}
+            daCorso={posto.daCorso}
+            onCorso={(id) => {
+              riapriSuIscritti(id)
+              segna({ voce: 'corsi', corso: id }, 'push')
+            }}
             nuovo={posto.nuovo}
             onScelta={(id, passo) => segna({ voce: 'iscritti', ...(id && { persona: id }) }, passo)}
             onNuovo={() => segna({ voce: 'iscritti', nuovo: true }, 'push')}
+            onConti={contiCambiati}
             filtroIniziale={filtro}
-            onCambiato={() => setGiroPersona((g) => g + 1)}
           />
         )}
-        {d && voce === 'richieste' && <Richieste key={filtro ?? ''} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} />}
+        {d && voce === 'richieste' && <Richieste key={`${filtro ?? ''}|${ricerca?.testo ?? ''}|${richiesta ?? ''}`} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} ricerca={ricerca} aperta={richiesta} onTogliRicerca={() => setRicerca(undefined)} onConti={contiCambiati} />}
         {d && inPresenze && conSegnalate && (
           <div role="tablist" aria-label="Presenze" className="schede sg-schede">
             <button type="button" role="tab" aria-selected={voce === 'presenze'} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>
@@ -585,6 +634,8 @@ export function Segreteria({
           </div>
         )}
         {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} />}
+        {d && voce === 'tessere' && <PaginaTessere d={d} onVai={vai} />}
+        {d && voce === 'pagamenti' && <Pagamenti d={d} onVai={vai} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
@@ -594,6 +645,11 @@ export function Segreteria({
         {d && voce === 'vestiario' && <Vestiario onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'regole' && <Regole d={d} onVai={vai} />}
         {d && voce === 'segnalazioni' && <Segnalazioni d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
+        {d && voce === 'sito' && (
+          <Suspense fallback={<span className="sg-sotto">Apro il sito…</span>}>
+            <Sito d={d} />
+          </Suspense>
+        )}
       </main>
       <Conferme />
     </div>

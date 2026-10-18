@@ -62,7 +62,7 @@ const contrasto = (a, b) => {
   return (x + 0.05) / (y + 0.05)
 }
 
-const TEMI = { scuro: ':root', chiaro: ":root[data-tema='chiaro']" }
+const TEMI = { scuro: ':root', chiaro: ":root[data-tema='chiaro']", tatami: ":root[data-tema='tatami']" }
 
 console.log('Il token --riga-campo')
 const valore = {}
@@ -72,6 +72,7 @@ for (const [tema, sel] of Object.entries(TEMI)) {
 }
 ok('scuro: --riga-campo è #6e6e6a', valore.scuro, '#6e6e6a')
 ok('chiaro: --riga-campo è #8a8a85', valore.chiaro, '#8a8a85')
+// Il Tatami non ha un valore fisso: basta che il bordo si veda (3:1, sotto).
 
 console.log('Il contrasto contro lo sfondo (almeno 3:1)')
 for (const [tema, sel] of Object.entries(TEMI))
@@ -111,6 +112,14 @@ const design = readFileSync('DESIGN.md', 'utf8')
 ok('ha il token riga-campo', /^\s*riga-campo:\s*"#6e6e6a"/m.test(design), true)
 ok('ha il token riga-campo-chiara', /^\s*riga-campo-chiara:\s*"#8a8a85"/m.test(design), true)
 ok('la descrizione dei campi cita riga-campo', /campi[^\n]*riga-campo|riga-campo[^\n]*campi|\*\*Riga Campo\*\*/i.test(design.split('---').slice(2).join('---')), true)
+
+console.log('Il tasto di invio del modulo')
+// Largo quanto i campi: `.passo-btn` è `flex-start` per tutti gli altri tasti, e il modulo lo scavalca solo nel suo piede
+// (dentro il blocco `data-modulo`, perché `prova:iscrizione-sito` non vuole regole nuove fuori).
+ok('nel piede del modulo il tasto è a tutta larghezza', dichiarato(":root[data-modulo='sito'] .modulo-piede .passo-btn", 'align-self'), 'stretch')
+ok('…alto 56px come prima', dichiarato('.modulo-piede .passo-btn', 'min-height'), '56px')
+ok('gli altri tasti restano a inizio riga', dichiarato('.passo-btn', 'align-self'), 'flex-start')
+ok('…anche quelli di aiuto', dichiarato('.passo-aiuto .passo-btn', 'align-self'), null)
 
 console.log(guai ? `\n${guai} DA SISTEMARE` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

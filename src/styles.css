@@ -102,6 +102,24 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
+/* Big Shoulders Display e Inter sono i caratteri del sito pubblico: il modulo di
+   iscrizione li usa (vedi `:root[data-modulo='sito']`). Stessi file del sito,
+   locali come gli altri, licenza SIL OFL 1.1 (public/fonts). */
+@font-face {
+  font-family: 'Big Shoulders Display';
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/big-shoulders-display-800.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-variable.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* I colori del marchio Officine Dello Sport. */
 :root {
   --bg: #121212;
@@ -171,6 +189,62 @@
 
   color-scheme: light;
 }
+
+/* Il tema Tatami: la paglia del pavimento del dojo, il bordo nero di stoffa dei
+   tatami, il menu verde muschio. È un tema chiaro: segue le regole del bianco, ma
+   i colori scritti (giallo, verde, rosso, testo spento) sono un po' più scuri,
+   perché sulla paglia i valori del bianco non arrivano a 4,5:1 (`prova:tema`
+   lo calcola). Si sceglie dal tasto del tema (vedi `lib/tema.ts`). */
+:root[data-tema='tatami'] {
+  --bg: #ebe6d0;
+  --surface: #f6f3e4;
+  --surface-2: #d9d2b0;
+  --line: #bdb68f;
+  --line-soft: #cfc9a8;
+  --riga-campo: #6b6a5c;
+  --text: #1d1d1b;
+  --sec: #3d3d3a;
+  --dim: #5a594c;
+  --faint: #646350;
+
+  --verde: #12913f;
+  --giallo-testo: #6f5200;
+  --verde-testo: #096228;
+  --rosso-testo: #a81a1a;
+  --tasto: #3d3d3a;
+  --tratteggio: #a39d7c;
+  --menu: #2f3d2b;
+
+  color-scheme: light;
+}
+/* Il menu è verde scuro dentro una pagina chiara: lì dentro il testo è chiaro. */
+:root[data-tema='tatami'] .sg-menu,
+:root[data-tema='tatami'] .barra-nav,
+:root[data-tema='tatami'] .sg-barra-tel {
+  --text: #f6f3e4;
+  --sec: #cfd6c0;
+  --dim: #cfd6c0;
+  --tasto: #cfd6c0;
+  --line: #5d6e58;
+  --line-soft: #44543f;
+  /* Il testo senza colore suo (il marchio) eredita dal body: lì dentro va chiaro anche lui. */
+  color: #f6f3e4;
+}
+/* La voce corrente e il campo di ricerca restano due tatami chiari nel menu verde. */
+:root[data-tema='tatami'] .sg-voce[aria-current='page'] { border-left-color: #1d1d1b; background: #f6f3e4; color: #1d1d1b; }
+:root[data-tema='tatami'] .sg-menu .sg-campo { background: #f6f3e4; border-color: #1d1d1b; color: #1d1d1b; }
+:root[data-tema='tatami'] .sg-menu .sg-campo::placeholder { color: #5a594c; }
+/* L'elenco della ricerca sta dentro il menu verde ma ha il fondo chiaro: lì i token tornano quelli della pagina, se no il testo sparisce. */
+:root[data-tema='tatami'] .sg-cerca-elenco {
+  --text: #1d1d1b;
+  --sec: #3d3d3a;
+  --dim: #5a594c;
+  --line: #bdb68f;
+  --line-soft: #cfc9a8;
+  color: #1d1d1b;
+}
+/* Come la voce del menu: nella barra in basso la scheda corrente è chiara, quindi il testo e il segno scuri. */
+:root[data-tema='tatami'] .barra-voce[aria-current='page'] { border-top-color: #1d1d1b; color: #1d1d1b; }
 
 * { box-sizing: border-box; }
 
@@ -507,7 +581,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 }
 .nome-appello { font-size: 17px; font-weight: 500; }
 .riga-appello[data-stato='presente'] { border-color: var(--verde); }
-.riga-appello[data-stato='presente'] .segno { color: var(--verde); }
+.riga-appello[data-stato='presente'] .segno { color: var(--verde-testo); }
 .riga-appello[data-stato='assente'] { border-color: var(--rosso); }
 .riga-appello[data-stato='assente'] .segno { color: var(--rosso-testo); }
 .riga-appello[data-stato='assente'] .nome-appello { color: var(--dim); text-decoration: line-through; }
@@ -649,7 +723,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .una-riga { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .esito { gap: 14px; padding: 20px 20px 28px; }
 .esito-titolo { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; }
-.esito-titolo[data-tono='fatto'] { color: var(--verde); }
+.esito-titolo[data-tono='fatto'] { color: var(--verde-testo); }
 .esito-titolo[data-tono='avviso'] { font-size: 26px; color: var(--giallo-testo); }
 .esito-testo { font-size: 16px; color: var(--dim); line-height: 1.4; }
 
@@ -1010,7 +1084,7 @@ a.btn { text-decoration: none; }
 .mia-lezione-cosa { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-align: right; max-width: 40%; }
 .mia-lezione-cosa[data-tono='guaio'] { color: var(--rosso-testo); }
 .mia-lezione-cosa[data-tono='avviso'] { color: var(--giallo-testo); }
-.mia-lezione-cosa[data-tono='fatto'] { color: var(--verde); }
+.mia-lezione-cosa[data-tono='fatto'] { color: var(--verde-testo); }
 /* Il nucleo familiare: di chi si guarda la pagina, e le persone del nucleo. */
 .mio-nucleo-scelta { padding-top: 4px; padding-bottom: 6px; }
 .mia-chip-tasto { cursor: pointer; color: var(--dim); min-height: 36px; padding: 6px 12px; border-left-width: 2px; }
@@ -1020,7 +1094,7 @@ a.btn { text-decoration: none; }
 /* Quanto costa una persona in più: le righe della stima, e il totale. */
 .stima { list-style: none; margin: 0; padding: 0; gap: 4px; }
 .stima-riga { gap: 12px; font-size: 15px; }
-.stima-riga[data-sconto] { color: var(--verde); }
+.stima-riga[data-sconto] { color: var(--verde-testo); }
 .stima-totale { border-top: 2px solid var(--line); padding-top: 6px; font-weight: 700; font-size: 17px; }
 .mie-presenze { list-style: none; margin: 0; padding: 4px 14px; gap: 0; }
 .mia-presenza { gap: 12px; padding: 8px 0; align-items: center; }
@@ -1036,7 +1110,7 @@ a.btn { text-decoration: none; }
 .mia-segnala-modulo .campo { width: 100%; }
 .mia-presenza-segno { font-size: 20px; font-weight: 700; width: 22px; text-align: center; color: var(--faint); }
 .mia-presenza-detto { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint); }
-.mia-presenza[data-stato='presente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--verde); }
+.mia-presenza[data-stato='presente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--verde-testo); }
 .mia-presenza[data-stato='assente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--rosso-testo); }
 .mie-schede { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; padding-bottom: 12px; }
 .mia-ricevuta { gap: 12px; padding: 10px 14px; align-items: center; }
@@ -1291,7 +1365,8 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .tb-fascia[data-tipo='errore'] { border-color: var(--rosso); }
 .tb-fascia[data-attesa] { border-color: var(--giallo); }
 /* Sul tema chiaro un'ombra così scura diventa una fascia grigia. */
-:root[data-tema='chiaro'] .tb-fascia { box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.16); }
+:root[data-tema='chiaro'] .tb-fascia,
+:root[data-tema='tatami'] .tb-fascia { box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.16); }
 /* Un tasto che apre un pannello si accende finché è aperto (PROVE). */
 .tb-btn-linea[aria-expanded='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 /* Le prove sono dell'app e della segreteria: sul tablet il loro testo sale al minimo della sala. */
@@ -1365,7 +1440,7 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .tb-riga-segno { width: 26px; display: flex; justify-content: center; }
 .tb-riga-nome { font-size: 18px; font-weight: 500; }
 .tb-riga[data-stato='presente'] { border-color: var(--verde); }
-.tb-riga[data-stato='presente'] .tb-riga-segno { color: var(--verde); }
+.tb-riga[data-stato='presente'] .tb-riga-segno { color: var(--verde-testo); }
 .tb-riga[data-stato='assente'] { border-color: var(--rosso); }
 .tb-riga[data-stato='assente'] .tb-riga-segno { color: var(--rosso-testo); }
 .tb-riga[data-stato='assente'] .tb-riga-nome { color: var(--dim); text-decoration: line-through; }
@@ -1484,25 +1559,90 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 }
 .sg-salta:focus { top: calc(var(--safe-t) + 12px); outline: 2px solid var(--text); outline-offset: 2px; }
 .sg-corpo:focus { outline: none; }
+/* La striscia COSA MANCA, in cima al corpo: quattro caselle, ognuna un tasto. Il segno sotto dice lo stato col colore, il numero
+   e la nota lo dicono con le parole (✓ 0, «—», «scaduti o mancanti»): non solo colore. */
+.sg-mancano {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); flex-shrink: 0;
+  background: var(--surface); border: 2px solid var(--riga-campo);
+}
+.sg-mancano-casella {
+  display: flex; align-items: flex-start; gap: 18px; min-height: 100px; padding: 14px 22px; min-width: 0;
+  color: var(--text); text-align: left; border-bottom: 8px solid var(--tratteggio);
+}
+.sg-mancano-casella + .sg-mancano-casella { border-left: 2px solid var(--tratteggio); }
+.sg-mancano-casella[data-stato='manca'] { border-bottom-color: var(--rosso); }
+.sg-mancano-casella[data-stato='attesa'] { border-bottom-color: var(--giallo); }
+.sg-mancano-casella[data-stato='aposto'] { border-bottom-color: var(--verde); }
+.sg-mancano-casella:hover { background: var(--surface-2); }
+.sg-mancano-n { font-family: var(--cond); font-variant-numeric: tabular-nums; font-size: 64px; font-weight: 700; line-height: 0.95; color: var(--dim); white-space: nowrap; }
+.sg-mancano-casella[data-stato='manca'] .sg-mancano-n { color: var(--rosso-testo); }
+.sg-mancano-casella[data-stato='attesa'] .sg-mancano-n { color: var(--giallo-testo); }
+.sg-mancano-casella[data-stato='aposto'] .sg-mancano-n { color: var(--verde-testo); }
+.sg-mancano-testi { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sg-mancano-titolo { font-family: var(--cond); font-size: 19px; font-weight: 700; letter-spacing: 0.12em; }
+.sg-mancano-nota { font-size: 16px; color: var(--dim); }
+.sg-mancano .sg-mancano-riconta { grid-column: 1 / -1; border-width: 0; border-top: 2px solid var(--line); }
+.sg-mancano-casella:focus-visible { outline-offset: -2px; }
+/* Il menu di 240px più cinque caselle da 22px di margine non ci stanno sotto 1360px: due per due, l'ultima da sola sulla riga. */
+@media (max-width: 1360px) {
+  .sg-mancano { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-mancano-casella:nth-child(odd) { border-left: 0; }
+  .sg-mancano-casella:nth-child(n + 3) { border-top: 2px solid var(--tratteggio); }
+  .sg-mancano-casella:nth-child(5) { grid-column: 1 / -1; }
+}
+/* Fra 1361 e 1700px le cinque caselle ci stanno ma strette: il numero scende e il resto si stringe, così i titoli vanno a capo meno. */
+@media (min-width: 1361px) and (max-width: 1700px) {
+  .sg-mancano-casella { gap: 10px; padding: 14px 12px; }
+  .sg-mancano-n { font-size: 44px; }
+  .sg-mancano-titolo { letter-spacing: 0.04em; font-size: 17px; }
+  .sg-mancano-nota { font-size: 14px; }
+}
+/* Su uno schermo basso (il portatile della reception, circa 700px) la striscia a due righe lasciava alla griglia della settimana 82px:
+   una riga sola, bassa, senza la nota (il nome accessibile e il segno la dicono già). */
+@media (max-height: 800px) and (min-width: 768px) {
+  .sg-mancano { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .sg-mancano-casella { min-height: 0; padding: 8px 12px; gap: 10px; border-bottom-width: 6px; }
+  .sg-mancano-casella:nth-child(n + 3) { border-top: 0; }
+  .sg-mancano-casella:nth-child(odd) { border-left: 2px solid var(--tratteggio); }
+  .sg-mancano-casella:nth-child(1) { border-left: 0; }
+  .sg-mancano-casella:nth-child(5) { grid-column: auto; }
+  .sg-mancano-n { font-size: 36px; }
+  .sg-mancano-titolo { font-size: 14px; letter-spacing: 0.04em; }
+  .sg-mancano-nota { display: none; }
+}
+@media (max-width: 767px) {
+  /* Numero sopra, testo sotto: sul telefono la striscia non deve spingere via l'elenco. */
+  .sg-mancano-casella { flex-direction: column; gap: 4px; padding: 12px 14px; min-height: 0; }
+  .sg-mancano-n { font-size: 40px; }
+  .sg-mancano-titolo { font-size: 15px; letter-spacing: 0.08em; }
+  .sg-mancano-nota { font-size: 14px; }
+}
 /* Cerca iscritto, in cima al menu. */
 .sg-cerca { position: relative; padding: 0 4px; }
 .sg-cerca .sg-campo { width: 100%; background: var(--surface); }
 .sg-campo::placeholder { color: var(--dim); opacity: 1; }
 .sg-cerca-elenco {
-  position: absolute; left: 4px; right: 4px; top: calc(100% + 4px); z-index: 25; margin: 0; padding: 4px; list-style: none;
+  position: fixed; width: 368px; max-width: calc(100vw - 16px); overflow-y: auto; z-index: 25; margin: 0; padding: 4px; list-style: none;
   background: var(--surface); border: 2px solid var(--text); box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25);
 }
-.sg-cerca-voce { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 10px; font-size: 15px; cursor: pointer; }
-.sg-cerca-voce[aria-selected='true'] { background: var(--surface-2); }
+.sg-cerca-righe { margin: 0; padding: 0; list-style: none; }
+.sg-cerca-gruppo { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: var(--dim); }
+.sg-cerca-filo { flex-grow: 1; height: 1px; background: var(--line-soft); }
+.sg-cerca-voce { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; padding: 6px 10px; font-size: 15px; cursor: pointer; }
+.sg-cerca-voce[aria-selected='true'] { background: var(--surface-2); box-shadow: inset 4px 0 0 var(--text); }
 .sg-cerca-voce[data-spento] { color: var(--dim); }
-.sg-cerca-nota { font-size: 12px; color: var(--dim); }
+.sg-cerca-testo { display: flex; flex-direction: column; min-width: 0; }
+.sg-cerca-sotto { font-size: 12px; color: var(--dim); }
+.sg-cerca-altri { min-height: 44px; font-size: 14px; font-weight: 600; color: var(--sec); }
+.sg-cerca-nota { flex-shrink: 0; font-size: 12px; color: var(--dim); }
 .sg-cerca-vuoto { padding: 10px; font-size: 14px; color: var(--dim); }
+.sg-filtro-ricerca { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 14px; color: var(--sec); }
 .sg-gruppi { display: flex; flex-direction: column; gap: 18px; }
 .sg-gruppo { display: flex; flex-direction: column; gap: 4px; }
 .sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
 /* Le schede di PRESENZE: larghe quanto serve, non quanto la sezione. */
 .sg-schede { flex-basis: auto; align-self: flex-start; grid-auto-columns: minmax(150px, auto); }
-.sg-schede .scheda { padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; }
+.sg-schede .scheda { min-height: 44px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; }
 .sg-voce {
   display: flex; align-items: center; min-height: 44px; padding: 0 12px;
   border-left: 4px solid transparent; color: var(--sec);
@@ -1586,8 +1726,10 @@ a.sg-btn { text-decoration: none; }
   min-height: 44px; padding: 0 12px; border: 2px solid var(--line); color: var(--sec);
   font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap;
 }
-.sg-chip[aria-pressed='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
+.sg-chip[aria-pressed='true'], .sg-chip[aria-selected='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 .sg-chip-pieno { background: var(--text); border-color: var(--text); color: var(--bg); }
+.sg-spunte { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.sg-spunte .sg-scelta > span { flex-shrink: 0; }
 .sg-scelta { border: 2px solid var(--line); color: var(--sec); min-height: 44px; font-size: 14px; }
 .sg-scelta[aria-checked='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 .sg-campo {
@@ -1611,7 +1753,42 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 
 /* La settimana */
 .sg-griglia-scorre { overflow-x: auto; }
-.sg-sett-titolo { min-width: 240px; text-align: center; font-size: 18px; font-weight: 700; letter-spacing: 0.06em; }
+.sg-sett-barra { position: relative; }
+.sg-sett-titolo-box { position: relative; }
+/* Le date sono un tasto: bordo e freccia, e apre il calendario per saltare a un'altra settimana. */
+.sg-sett-titolo {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; min-width: 240px; padding: 0 14px;
+  background: var(--surface); border: 2px solid var(--riga-campo); color: var(--text); font-size: 18px; font-weight: 700; letter-spacing: 0.06em;
+}
+.sg-sett-titolo[aria-expanded='true'] { background: var(--surface-2); border-color: var(--text); }
+.sg-sett-freccia { font-size: 14px; }
+/* Il calendario: sotto il tasto delle date, sopra la griglia (e sotto il cassetto e le conferme, che stanno sul velo). */
+.sg-calendario {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 9; width: 460px; max-width: calc(100vw - 32px);
+  display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 2px solid var(--text);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25);
+}
+.sg-cal-testa { display: flex; align-items: center; gap: 8px; }
+.sg-cal-mese { flex-grow: 1; text-align: center; font-family: var(--cond); font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.06em; }
+.sg-cal-freccia { width: 52px; height: 52px; border: 2px solid var(--riga-campo); font-family: var(--cond); font-size: 26px; font-weight: 700; }
+.sg-cal-griglia { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.sg-cal-sigla { text-align: center; font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+.sg-cal-giorno {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 52px;
+  background: var(--surface); border: 2px solid var(--line); color: var(--text);
+  font-family: var(--cond); font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700; line-height: 1;
+}
+.sg-cal-giorno[data-fuori='true'] { color: var(--dim); }
+.sg-cal-giorno[data-oltre='true'] { color: var(--dim); border-style: dashed; border-color: var(--tratteggio); }
+.sg-cal-giorno:focus-visible { outline-offset: -4px; }
+.sg-cal-giorno[data-settimana='true'] .sg-cal-quadratino[data-si='true'] { outline: 1px solid var(--text); }
+.sg-cal-giorno[data-oggi='true'] { color: var(--giallo-testo); }
+.sg-cal-giorno[data-settimana='true'] { background: var(--surface-2); border-color: var(--text); }
+.sg-cal-quadratino { width: 8px; height: 8px; background: transparent; }
+.sg-cal-quadratino[data-si='true'] { background: var(--blu); }
+.sg-cal-nota { font-size: 14px; color: var(--dim); }
+.sg-cal-piede { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sg-cal-aiuto { font-size: 14px; color: var(--dim); }
 /* Il telefono: la striscia dei sette giorni, e le lezioni di quello scelto in colonna. */
 .sg-giorni-tel { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
 .sg-giorno-tel {
@@ -1624,7 +1801,12 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-giorno-lista { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 6px; }
 @media (max-width: 767px) {
   /* Frecce e titolo su una riga; OGGI e le sale vanno sotto. */
-  .sg-sett-titolo { flex: 1 1 calc(100% - 128px); min-width: 0; font-size: 17px; white-space: nowrap; }
+  .sg-sett-titolo-box { flex: 1 1 calc(100% - 128px); min-width: 0; }
+  /* Sul telefono il calendario è un foglio dal fondo, largo quanto lo schermo: sempre in vista (sotto le righe di chip a capo
+     sarebbe fuori schermo) e con le sette colonne da almeno 44px. */
+  .sg-calendario { position: fixed; top: auto; left: 0; right: 0; bottom: 0; width: auto; max-width: none; max-height: 92dvh; overflow-y: auto; padding: 10px; border-width: 2px 0 0; box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.25); }
+  .sg-cal-freccia { width: 44px; height: 44px; }
+  .sg-sett-titolo { width: 100%; min-width: 0; font-size: 17px; white-space: nowrap; }
 }
 .sg-griglia { display: grid; grid-template-columns: 56px repeat(7, minmax(120px, 1fr)); gap: 6px; min-width: 940px; }
 .sg-giorno { display: flex; align-items: baseline; gap: 6px; padding: 6px 8px; border-bottom: 2px solid var(--line-soft); color: var(--dim); }
@@ -1675,6 +1857,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-filo-titolo { font-size: 17px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
 .sg-tag[data-tipo='sostituto'] { background: var(--giallo); color: var(--su-colore); }
 .sg-tag[data-tipo='presto'] { background: var(--giallo); color: var(--su-colore); }
+.sg-tag[data-tipo='fatto'] { background: var(--verde); color: var(--su-colore); }
 .sg-legenda { gap: 20px; flex-wrap: wrap; font-size: 12px; color: var(--dim); }
 
 .sg-velo { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 10; cursor: pointer; }
@@ -1702,9 +1885,43 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-appello { display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--bg); border: 2px solid var(--line); }
 .sg-appello[data-manca='true'] { border-color: var(--rosso); }
 .sg-elenco-appello { display: flex; flex-direction: column; gap: 6px; }
-.sg-elenco-appello .riga-appello { min-height: 44px; }
-.sg-elenco-appello .nome-appello { font-size: 15px; }
+.sg-elenco-appello .riga-appello { min-height: 56px; }
+.sg-elenco-appello { gap: 8px; }
+.sg-elenco-appello .riga-appello { gap: 14px; }
+.sg-elenco-appello .riga-appello .segno { font-size: 32px; width: 32px; }
+.sg-elenco-appello .nome-appello { font-size: 20px; }
+.sg-elenco-appello div.riga-appello { cursor: default; }
 .sg-elenco-appello .riga-appello:disabled { cursor: default; color: var(--sec); }
+/* I tre tasti dell'appello: DA SEGNARE, PRESENTI, ASSENTI. Il conto e la parola stanno su una riga sola; il premuto ha il bordo
+   doppio (un'ombra dentro, così la riga non si sposta). */
+.sg-appello .sg-btn { min-height: 56px; }
+.sg-liste { display: flex; gap: 6px; }
+.sg-lista-tasto {
+  display: flex; flex: 1 1 auto; align-items: center; justify-content: center; gap: 5px; min-height: 48px; padding: 0 6px;
+  white-space: nowrap; background: var(--surface); border: 2px solid var(--line); color: var(--text);
+}
+.sg-lista-tasto[data-lista='da_segnare'] { border-color: var(--text); }
+.sg-lista-tasto[data-lista='presenti'] { border-color: var(--verde); }
+.sg-lista-tasto[data-lista='assenti'] { border-color: var(--rosso); }
+.sg-lista-tasto[aria-pressed='true'] { background: var(--surface-2); box-shadow: inset 0 0 0 2px var(--text); }
+.sg-lista-tasto[data-lista='presenti'][aria-pressed='true'] { box-shadow: inset 0 0 0 2px var(--verde); }
+.sg-lista-tasto[data-lista='assenti'][aria-pressed='true'] { box-shadow: inset 0 0 0 2px var(--rosso); }
+.sg-lista-segno, .sg-lista-n { font-family: var(--cond); font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700; line-height: 1; }
+.sg-lista-tasto[data-lista='da_segnare'] :is(.sg-lista-segno, .sg-lista-n) { color: var(--dim); }
+.sg-lista-tasto[data-lista='presenti'] :is(.sg-lista-segno, .sg-lista-n) { color: var(--verde-testo); }
+.sg-lista-tasto[data-lista='assenti'] :is(.sg-lista-segno, .sg-lista-n) { color: var(--rosso-testo); }
+.sg-lista-nome { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--dim); }
+/* In DA SEGNARE ogni riga ha ✓ e ✕ da 44px; in PRESENTI e ASSENTI la riga è un tasto che la rimette da segnare. */
+.riga-segna { padding-right: 6px; cursor: default; }
+.sg-segna {
+  flex-shrink: 0; width: 52px; height: 44px; display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--cond); font-size: 22px; font-weight: 700; line-height: 1;
+}
+.sg-segna-si { background: var(--verde); color: var(--su-colore); }
+.sg-segna-no { background: transparent; border: 2px solid var(--rosso); color: var(--rosso-testo); }
+.sg-parola-stato { font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+.riga-appello[data-stato='presente'] .sg-parola-stato { color: var(--verde-testo); }
+.riga-appello[data-stato='assente'] .sg-parola-stato { color: var(--rosso-testo); }
 .sg-nomi { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 16px; font-size: 14px; color: var(--sec); }
 
 /* Corsi e iscritti: la lista a sinistra, la scheda a destra. */
@@ -1777,6 +1994,29 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 
 .sg-tabella { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
 .sg-riga-iscritto { display: grid; grid-template-columns: 1.2fr 1.4fr 1.3fr 150px 80px; gap: 14px; align-items: center; }
+/* Il tab ISCRITTI di un corso: cognome, nome, da quando, certificato, quota. */
+.sg-riga-iscritto-corso { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 150px minmax(0, 170px) minmax(0, 170px); gap: 14px; align-items: center; }
+.sg-riga-iscritto-corso .sg-segno-regola { white-space: normal; }
+/* La scheda di un corso accanto all'elenco è stretta, sul telefono pure: le colonne vanno su due righe e «iscritto dal» sotto, le intestazioni restano e ordinano. */
+.sg-scheda { container-type: inline-size; }
+@container (max-width: 780px) {
+  .sg-riga-iscritto-corso { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 14px; padding-block: 8px; }
+  .sg-lista-testa.sg-riga-iscritto-corso { display: flex; flex-wrap: wrap; gap: 6px 16px; padding-block: 0 6px; }
+  .sg-lista-testa.sg-riga-iscritto-corso .sg-ordina { min-height: 44px; }
+  .sg-riga-iscritto-corso > :nth-child(3) { order: 5; grid-column: 1 / -1; }
+  .sg-riga-iscritto:not(.sg-lista-testa) > :nth-child(3)::before { content: 'Iscritto dal '; color: var(--dim); }
+}
+.sg-riga-movimento { display: grid; grid-template-columns: 100px minmax(0, 1.6fr) minmax(0, 1fr) 150px 130px; gap: 14px; align-items: center; }
+.sg-riga-movimento[data-spento='true'] { opacity: 0.55; }
+/* Sotto la descrizione: la causale dell'incasso; sul telefono, davanti, anche data, voce e cassa che lì non hanno la loro colonna. */
+.sg-sotto-movimento { display: flex; flex-direction: column; font-size: 13px; color: var(--sec); font-weight: 400; overflow-wrap: anywhere; }
+.sg-solo-telefono { display: none; }
+/* Una descrizione lunga senza spazi va a capo invece di uscire dallo schermo. */
+.sg-riga-movimento .sg-riga-apri, .sg-riquadro-titolo { overflow-wrap: anywhere; }
+.sg-riga-pagamento-tab { display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; }
+.sg-riga-residuo { display: grid; grid-template-columns: minmax(0, 1.2fr) 100px 110px 110px 110px 160px; gap: 14px; align-items: center; }
+/* L'amministrazione non vede i contatti: una colonna in meno. */
+.sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1.2fr) 100px 110px 110px 110px; }
 /* In regola o no: il certificato e il pagamento, in un bollino ciascuno. */
 .sg-in-regola { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 0; }
 .sg-segno-regola {
@@ -1789,6 +2029,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-segno-regola[data-tono='spento'] { color: var(--dim); }
 /* I timbri in cima alla scheda: bordo e parola del colore dello stato, il resto si legge sul fondo. */
 .sg-timbri { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.75fr); gap: 12px; align-items: stretch; }
+.sg-timbri[data-con-tessera] { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 0.75fr); }
 .sg-timbro {
   display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 44px; min-width: 0;
   padding: 12px 14px; text-align: left; background: var(--bg); border: 2px solid var(--tono, var(--line)); border-left-width: 4px;
@@ -1815,7 +2056,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-timbri-spenta strong { margin-right: 8px; font-family: var(--cond); font-size: 19px; font-weight: 700; letter-spacing: 0.12em; color: var(--text); }
 /* Sotto i 1000px la scheda è una colonna stretta: tre timbri in fila andrebbero a capo parola per parola. */
 @media (max-width: 1000px) {
-  .sg-timbri { grid-template-columns: minmax(0, 1fr); }
+  .sg-timbri, .sg-timbri[data-con-tessera] { grid-template-columns: minmax(0, 1fr); }
 }
 .sg-iscritto {
   width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid var(--surface-2); text-align: left;
@@ -1925,6 +2166,17 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-riquadro[data-fatto='true'] { border-color: var(--verde); }
 .sg-riquadro-titolo { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 .sg-voce-elenco { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 12px; background: var(--bg); border: 2px solid var(--line); }
+/* Un pagamento sotto la sua ricevuta: rientrato, con la barra a sinistra. Quello fatto a mano sta da solo, come una ricevuta. */
+.sg-pagamento { margin-left: 24px; min-height: 44px; padding: 4px 12px; background: var(--surface); border-left-width: 4px; }
+.sg-pagamento[data-amano] { margin-left: 0; background: var(--bg); border-left-width: 2px; }
+/* Annullato è storia da poter verificare: leggibile, barrato e in grigio, non spento a metà. */
+.sg-riga-pagamento-tab.sg-iscritto[data-spento='true'] { opacity: 1; color: var(--dim); }
+/* Sotto il nome, per il telefono: data, a cosa serve, come, e i bollini. Sul computer stanno nelle loro colonne. */
+.sg-sotto-nome { overflow-wrap: anywhere; display: none; font-size: 13px; color: var(--sec); font-weight: 400; }
+/* Le tre cifre in cima allo storico della scheda; sul telefono una sotto l'altra, se no si tagliano. */
+.sg-numeri-tre { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+/* Le cifre grandi non vanno a capo: l'euro resterebbe da solo. */
+.sg-numero > .num { white-space: nowrap; }
 .sg-numeri { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .sg-numero { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; background: var(--surface); border: 2px solid var(--line); }
 .sg-numero[data-allarme='true'] { border-color: var(--rosso); }
@@ -2026,11 +2278,11 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-personale { width: 100%; min-height: 60px; padding: 6px 14px; border-bottom: 1px solid var(--surface-2); text-align: left; }
 .sg-personale:hover { background: var(--surface); }
 .sg-personale[data-spento='true'] { opacity: 0.5; }
-.sg-permessi { display: grid; grid-template-columns: 1fr 110px 110px; gap: 8px 12px; align-items: center; }
-/* Sul telefono le colonne dei permessi prendono quanto serve, il resto va al testo. */
+.sg-permessi { display: grid; grid-template-columns: minmax(0, 1fr) 110px 110px 170px; gap: 8px 12px; align-items: center; }
+/* Sul telefono quattro colonne non entrano: la tabella scorre di lato e il testo del permesso resta leggibile. */
+.sg-permessi-scorre { overflow-x: auto; }
 @media (max-width: 560px) {
-  .sg-permessi { grid-template-columns: minmax(0, 1fr) auto auto; column-gap: 10px; }
-  .sg-permessi [role='columnheader'] { font-size: 10px; letter-spacing: 0.06em; }
+  .sg-permessi { min-width: 500px; grid-template-columns: 210px 90px 90px 110px; column-gap: 10px; }
 }
 /* Quello che si legge solo quando le intestazioni delle colonne sono nascoste. */
 .sg-solo-stretto { display: none; }
@@ -2135,6 +2387,15 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-scheda { position: static; }
 }
 
+@media (max-width: 600px) {
+  /* Il modulo dei pagamenti a mano, in colonna: due colonne da 130px tagliano le parole. */
+  .sg-due.sg-scheda-campi { grid-template-columns: minmax(0, 1fr); }
+  /* Un campo «largo» chiede due colonne inline: in una colonna sola ne farebbe nascere un'altra. */
+  .sg-due.sg-scheda-campi > * { grid-column: auto !important; }
+  .sg-numeri-tre { grid-template-columns: minmax(0, 1fr); }
+  .sg-numero > .num { font-size: 34px !important; }
+}
+
 @media (max-width: 1000px) {
   .sg-scheda-piena { padding: 20px; }
   .sg-scheda-griglia { grid-template-columns: minmax(0, 1fr); }
@@ -2143,6 +2404,16 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-ricevuta-voce { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sg-riga-iscritto { grid-template-columns: 1fr auto 70px; }
   .sg-riga-iscritto > :nth-child(2), .sg-riga-iscritto > :nth-child(3) { display: none; }
+  /* Sul telefono: chi con sotto il resto, e l'importo. */
+  .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-movimento { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-movimento > :not(:nth-child(2)):not(:last-child) { display: none; }
+  .sg-solo-telefono { display: inline; }
+  .sg-lista-testa.sg-riga-movimento { display: none; }
+  .sg-riga-pagamento-tab > :not(:nth-child(2)):not(:last-child), .sg-riga-residuo > :not(:first-child):not(:nth-child(5)) { display: none; }
+  .sg-sotto-nome { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+  .sg-pagamento { margin-left: 12px; }
+  .sg-lista-testa.sg-riga-pagamento-tab, .sg-lista-testa.sg-riga-residuo { display: none; }
   .sg-riga-presenza-istr { grid-template-columns: 1fr 1fr; }
   .sg-riga-presenza-istr > :nth-child(3), .sg-riga-presenza-istr > :nth-child(4) { display: none; }
   .sg-lista-testa.sg-riga-presenza-istr { display: none; }
@@ -2432,3 +2703,126 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
   .bn-chi { display: none; }
   .bn-cifre { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+/* A 320px sette colonne da 44px entrano solo senza spazi fra le celle: il bordo di ognuna fa da separatore. */
+@media (max-width: 359px) {
+  .sg-calendario { padding: 4px; }
+  .sg-cal-griglia { gap: 0; }
+}
+
+/* SITO (segreteria): le pagine del sito della palestra, il loro testo e il menu. */
+.sito-due { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+@media (max-width: 1000px) { .sito-due { grid-template-columns: minmax(0, 1fr); } }
+.sito-barra { gap: 6px; flex-wrap: wrap; }
+.sito-tasto { min-width: 44px; min-height: 44px; }
+.sito-testo { min-height: 420px; padding: 24px 28px; background: var(--surface); border: 2px solid var(--line); font-size: 17px; line-height: 1.5; color: var(--text); }
+.sito-testo:focus { outline: 2px solid var(--text); outline-offset: 2px; }
+.sito-testo > * + * { margin-top: 14px; }
+.sito-testo p, .sito-testo ul, .sito-testo ol, .sito-testo blockquote { margin-top: 0; margin-bottom: 0; }
+.sito-testo h2, .sito-testo h3 { margin: 0; font-family: var(--cond); font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; line-height: 1.1; }
+.sito-testo h2 { font-size: 28px; }
+.sito-testo h3 { font-size: 22px; }
+.sito-testo ul, .sito-testo ol { padding-left: 24px; }
+.sito-testo blockquote { padding-left: 14px; border-left: 4px solid var(--line); color: var(--sec); }
+.sito-testo a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.sito-testo a.pulsante, .sito-testo a[data-pulsante='true'] { display: inline-block; padding: 10px 18px; background: var(--text); color: var(--bg); text-decoration: none; font-family: var(--cond); font-weight: 700; letter-spacing: 0.1em; }
+.sito-elenco { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 2px solid var(--line); background: var(--surface); }
+.sito-riga { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr) 210px 100px; width: 100%; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; border: 0; border-top: 2px solid var(--line-soft); background: transparent; color: var(--text); text-align: left; font: inherit; cursor: pointer; }
+.sito-riga:hover { background: var(--surface-2); }
+.sito-riga:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+.sito-riga[data-spenta] { color: var(--dim); }
+.sito-riga-testa { min-height: 40px; border-top: 0; color: var(--dim); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; cursor: default; }
+.sito-riga-testa:hover { background: transparent; }
+.sito-nome { font-size: 17px; font-weight: 600; }
+@media (max-width: 1000px) { .sito-riga { grid-template-columns: 1fr; gap: 4px; padding: 12px 16px; } .sito-riga-testa { display: none; } }
+.sito-voci { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 2px solid var(--line); background: var(--surface); }
+.sito-voce { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; border-top: 2px solid var(--line-soft); }
+.sito-voce:first-child { border-top: 0; }
+.sito-sposta { min-width: 44px; padding: 0; }
+.sito-immagini { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.sito-immagine { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; width: 100%; padding: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--text); font: inherit; text-align: left; }
+.sito-immagine img { width: 100%; height: 160px; object-fit: cover; background: var(--surface-2); }
+button.sito-immagine { cursor: pointer; }
+button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shadow: inset 0 0 0 2px var(--text); }
+.sito-scegli { width: min(760px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow-y: auto; }
+.sito-immagini-scelta { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.sito-immagini-scelta img { height: 110px; }
+.sito-testo img { display: block; max-width: 100%; height: auto; }
+@media (max-width: 767px) { .sito-immagini-scelta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sito-voce > .sg-campo { flex: 1 1 240px; min-width: 0; }
+.sito-voce-n { width: 28px; font-size: 20px; font-weight: 700; color: var(--dim); }
+
+/* Le cifre grandi delle casse, a telefono, una per riga: affiancate toccavano il bordo. */
+@media (max-width: 480px) { .sg-numeri { grid-template-columns: minmax(0, 1fr); } }
+
+/* Il modulo di iscrizione con l'aspetto del sito pubblico (tatami blu e giallo,
+   `docs/design-canvas/iscrizione-sito/`). Sempre chiaro: lo accende
+   `lib/aspettoModulo.ts` finché il modulo è aperto, anche aperto dall'area
+   iscritti. I colori sono i cinque del sito più i toni degli stati del tema
+   bianco; `--dim` è l'inchiostro attenuato, perché sul fondo e sulla tessera
+   chiara nessun colore del sito arriva a 4,5:1 (`prova:iscrizione-sito` li calcola). */
+:root[data-modulo='sito'] {
+  --bg: #eef5fa;
+  --surface: #ffffff;
+  --surface-2: #cfe6f4;
+  --line: #cfe6f4;
+  --line-soft: #cfe6f4;
+  --riga-campo: #14709f;
+  --text: #0d2a3d;
+  --sec: #0d2a3d;
+  --dim: #46606f;
+  --faint: #46606f;
+
+  --blu: #14709f;
+  --rosso: #e4292a;
+  --giallo: #f4c31b;
+  --verde: #12913f;
+  --giallo-testo: #8f6a00;
+  --verde-testo: #0b7a33;
+  --rosso-testo: #b81d1d;
+  --su-colore: #0d2a3d;
+  --su-rosso: #ffffff;
+  --tasto: #0d2a3d;
+  --tratteggio: #14709f;
+  --menu: #cfe6f4;
+
+  --cond: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;
+  --body: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  color-scheme: light;
+}
+/* Il carattere di Big Shoulders è dritto e ha un solo peso: niente obliquo finto. */
+:root[data-modulo='sito'] .btn,
+:root[data-modulo='sito'] .ob,
+:root[data-modulo='sito'] .testata-nome { font-style: normal; }
+:root[data-modulo='sito'] .btn { font-size: 22px; letter-spacing: 0.06em; }
+:root[data-modulo='sito'] .modulo-etichetta { font-size: 15px; letter-spacing: 0.08em; }
+:root[data-modulo='sito'] .rule-label { font-size: 26px; letter-spacing: 0.04em; }
+/* I tasti principali del modulo (MANDA LA RICHIESTA, RIPROVA) sono il giallo del sito con l'inchiostro sopra. */
+:root[data-modulo='sito'] .btn-primary { background: var(--giallo); color: var(--su-colore); }
+/* La firma a schermo intero: bordo dei controlli come i campi, non il filo decorativo; FATTO resta rosso. */
+:root[data-modulo='sito'] .firma-intera-tasto { font-style: normal; border-color: var(--riga-campo); }
+:root[data-modulo='sito'] .firma-intera-fatto { border-color: var(--rosso); }
+:root[data-modulo='sito'] .firma-intera-fatto:disabled { border-color: var(--line); }
+/* Il raggio del sito. */
+:root[data-modulo='sito'] .campo,
+:root[data-modulo='sito'] .modulo-corso,
+:root[data-modulo='sito'] .btn,
+:root[data-modulo='sito'] .modulo-file,
+:root[data-modulo='sito'] .card { border-radius: 6px; }
+:root[data-modulo='sito'] .modulo-spunta { border-radius: 4px; }
+/* Il bordo di un file non caricato non è quello decorativo `--line` (1,2:1): è il bordo dei campi. */
+:root[data-modulo='sito'] .modulo-file,
+:root[data-modulo='sito'] .btn-ghost { border-color: var(--riga-campo); }
+:root[data-modulo='sito'] .modulo-file[data-fatto='true'] { border-color: var(--verde); }
+:root[data-modulo='sito'] :focus-visible,
+:root[data-modulo='sito'] .modulo-file:focus-within .modulo-scegli { outline: 3px solid var(--blu); outline-offset: 3px; }
+/* A 320px l'etichetta di un file («RICEVUTA DEL PAGAMENTO · PUOI PAGARE IN SEGRETERIA») è più larga della sua colonna: va a capo, non sotto SCEGLI. */
+:root[data-modulo='sito'] .modulo-file-testo,
+:root[data-modulo='sito'] .modulo-file .modulo-etichetta { min-width: 0; overflow-wrap: anywhere; }
+/* Codice fiscale, CAP e telefono in Big Shoulders confondono 1 e I: si leggono e si controllano in Inter. */
+:root[data-modulo='sito'] .campo.campo-codice,
+:root[data-modulo='sito'] .campo.num { font-family: var(--body); font-variant-numeric: tabular-nums; }
+/* L'invio chiude il modulo: largo quanto i campi, non a inizio riga come gli altri tasti. */
+:root[data-modulo='sito'] .modulo-piede .passo-btn { align-self: stretch; }
+/* Il modulo è sempre chiaro: il tasto del tema in testata cambierebbe solo l'icona, quindi a modulo aperto non c'è. */
+:root[data-modulo='sito'] .tasto-tema { display: none; }

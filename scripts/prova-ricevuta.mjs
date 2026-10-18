@@ -14,7 +14,7 @@ import { writeFileSync } from 'node:fs'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/ricevute'; export { annoScritto, anniDiNascita, corsiPerEta, cosaNonVaListino, fuoriEta, listinoDa, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
+      "export * from './src/lib/ricevute'; export { annoScritto, anniDiNascita, altriAperti, corsiPerEta, cosaNonVaListino, testoAltriCorsi, fuoriEta, listinoDa, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -46,7 +46,9 @@ ok('Milano no', m.provinciaDalCap('20121'), '')
 ok('il trimestre da ottobre', m.fineTrimestre('2026-10-01'), '2026-12-31')
 ok('il trimestre non va oltre la stagione', m.fineTrimestre('2027-05-10'), '2027-06-30')
 
-const pagato = (importo) => [{ data: '2026-09-01', importo, metodo: 'Bonifico' }]
+ok('la palestra parte col suo numero RASD', m.ENTE_PREDEFINITO.rasd, '95562500017')
+
+const pagato = (importo) =>[{ data: '2026-09-01', importo, metodo: 'Bonifico' }]
 const quella = {
   id: 'r1',
   anno: 2026,
@@ -252,6 +254,20 @@ for (const [cosa, d] of [['vuota', ''], ['dell’anno 2', '0002-03-01']]) {
   ok(`data ${cosa}: niente gruppi`, dove(d, conPiccoli, apertiPiccoli), { adatti: ['JUDO 2', 'Judo adulti', 'Judo agonisti', 'Judo piccoli', 'Body functional'], senzaAnni: [], altri: [] })
   ok(`data ${cosa}: nessun corso fuori età`, prova(() => apertiPiccoli.filter((c) => m.fuoriEta(c, d, conPiccoli)).map((c) => c.nome)), [])
 }
+
+console.log('ALTRI CORSI chiusi dietro un tasto')
+const altriDue = [{ id: 'x' }, { id: 'y' }]
+ok('chiusi di default', prova(() => m.altriAperti(false, altriDue, [])), false)
+ok('aperti a mano', prova(() => m.altriAperti(true, altriDue, [])), true)
+ok('un corso fuori età scelto: restano aperti anche se chiusi', prova(() => m.altriAperti(false, altriDue, ['y'])), true)
+ok('un corso scelto che non è tra gli altri: restano chiusi', prova(() => m.altriAperti(false, altriDue, ['a', 'z'])), false)
+ok('nessun altro corso: chiusi', prova(() => m.altriAperti(false, [], ['a'])), false)
+ok('il tasto per la sua età', prova(() => m.testoAltriCorsi(3, 'sua')), '+ ALTRI 3 CORSI, NON PER LA SUA ETÀ')
+ok('il tasto per la tua età', prova(() => m.testoAltriCorsi(3, 'tua')), '+ ALTRI 3 CORSI, NON PER LA TUA ETÀ')
+ok('il tasto con un corso solo è al singolare', prova(() => m.testoAltriCorsi(1, 'sua')), '+ 1 ALTRO CORSO, NON PER LA SUA ETÀ')
+ok('…anche per la tua età', prova(() => m.testoAltriCorsi(1, 'tua')), '+ 1 ALTRO CORSO, NON PER LA TUA ETÀ')
+// Un corso senza voce nel listino non ha fasce: non è mai «non per la sua età».
+ok('un corso senza voce con la data: in senzaAnni, mai negli altri', prova(() => { const r = m.corsiPerEta([{ id: 'q', nome: 'Zumba' }], voci, '2018-05-10'); return [r.senzaAnni.map((c) => c.id), r.altri.map((c) => c.id)] }), [['q'], []])
 
 console.log('I dati del socio')
 const adulto = { nome: 'Nicola', cognome: 'Albertini', natoIl: '1980-03-02', codiceFiscale: 'LBRNCL80C02L219F', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno' }

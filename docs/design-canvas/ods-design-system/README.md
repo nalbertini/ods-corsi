@@ -22,8 +22,8 @@ Google, e vale solo per i mockup.
 | `SchedaCorso.dc.html` | `Costo` di `ds.tsx`: la scheda di un corso nel listino |
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
-| `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag`, `.sg-segno-regola` |
-| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): VESTIARIO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori |
+| `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag` (neutro, rosso, giallo e verde `fatto`: PUBBLICATA nel SITO), `.sg-segno-regola` |
+| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): PAGAMENTI in PERSONE, VESTIARIO e SITO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` è il menu di chi cura i conti (I CONTI: CONTABILITÀ, PAGAMENTI, LISTINO), senza ricerca né link da copiare |
 | `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
@@ -46,8 +46,12 @@ Google, e vale solo per i mockup.
 | `RigaIscritto` | La riga della tabella ISCRITTI: normale, scelta, spenta |
 | `RigaPresenzaIstruttore` | La riga di PRESENZE ISTRUTTORI, con CONFERMA e RIFIUTA; `nonSegnati` (nomi separati da `\|`) mette sotto PREVISTO i link «+ Nome c’era» |
 | `FiltriIscritti` | La barra sopra la tabella ISCRITTI: ricerca, corso, chip |
-| `CercaIscritto` | La ricerca in cima al menu di segreteria, anche con l'elenco aperto |
-| `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`) |
+| `CercaIscritto` | La ricerca in cima al menu di segreteria (campo da 216px) con l'elenco aperto, da 368px, a gruppi ISCRITTI / RICHIESTE ONLINE / CORSI / ISTRUTTORI (`gruppi` = `TITOLO:totale=nome~sotto~nota\|…;…`, tre righe e «ALTRI N ›», nota in maiuscole = bollino giallo), riga scelta con la barra a sinistra, `leggo`, `offline` |
+| `FiltroRicerca` | La riga sopra ISCRITTI, CORSI e RICHIESTE ONLINE aperti da «ALTRI N» della ricerca (`.sg-filtro-ricerca`): «Cercato «gio»: 17 trovati.» e il chip MOSTRA TUTTI |
+| `SchedeCorso` | `Scheda` di `Corsi.tsx`: le schede DATI \| ISCRITTI in cima alla scheda di un corso (`.schede` come IL MESE \| SEGNALATE); `acceso`, `conto` n/capienza sulla scheda ISCRITTI (`tonoConto` giallo a corso pieno, rosso oltre), `daSalvare` il puntino ● giallo su DATI, `daIscrivere` su ISCRITTI, `conIscritti` falso nel corso nuovo |
+| `RigaIscrittoCorso` | `IscrittiDelCorso` di `Corsi.tsx` (`.sg-riga-iscritto-corso`): una riga del tab ISCRITTI di un corso: cognome, nome, ISCRITTO DAL (data lunga), segno del certificato e della quota, sempre a parole (NO CERTIFICATO, DA PAGARE, quelle di `paroleInRegola`); sotto i 780px della scheda va su due righe; `stato="fuoco"` per la riga scelta |
+| `RiepilogoIscrittiCorso` | `RiepilogoCorso` di `Corsi.tsx` (da `riepilogoCorso`): la riga sopra la ricerca del tab ISCRITTI, `voci` «testo:tono» separate da «\|» (conto n/capienza, SENZA CERTIFICATO e DA PAGARE rossi, CORSO PIENO giallo, TUTTO IN REGOLA verde) |
+| `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`); il quarto, `titolo="TESSERA"` (parola NO TESSERA, SCADUTA, SCADE A DICEMBRE o IN REGOLA, una riga per ente), c’è solo per chi ha un corso che chiede la tessera: la fila `.sg-timbri` passa a quattro colonne (`data-con-tessera`) |
 | `SchedaCertificato` | PROPOSTA «certificati online»: il blocco CERTIFICATO MEDICO della scheda iscritto (`Certificato` di `Iscritti.tsx`) col file online: titolo + bollino, frase di stato, riga del file con APRI, CARICA / SOSTITUISCI e TOGLI; `stato` nessuno, valido, in_scadenza, scaduto_con_file, scaduto_senza_file, valido_senza_file, file_vecchio; `gesto` apre file + VALIDO FINO AL + un solo SALVA; `telefono` mette i tasti in colonna |
 | `MenuIstruttori` | Il menu degli istruttori sullo schermo largo (`App.tsx`) |
 | `BarraTelefono` | La barra in cima al telefono con il tasto MENU (`.sg-barra-tel`); il menu aperto è `Menu` |
@@ -110,11 +114,13 @@ Google, e vale solo per i mockup.
 | `TimerInterruttore` | `Toggle` delle impostazioni del timer: nome, nota, acceso o spento |
 | `TabletTendina` | La tendina CORSO aperta dell'area istruttore (`.tb-select`); il `<select>` vero è del sistema |
 | `TabletProvaPannello` | `PannelloProve` con stile tablet (`Prove.tsx`): CHI VIENE A PROVARE alzato per il dito, campi su tre colonne e già venuti sotto |
+| `CosaManca` | `CosaManca` di `CosaManca.tsx` (`.sg-mancano*`): la striscia COSA MANCA in cima alle pagine di segreteria, `voci` «numero\|titolo\|nota\|tono» separate da `;` (tono r manca, g da accogliere, v a posto, n non si sa; 0 è sempre ✓ verde); `colonne` 4 come oggi, 5 o 2 per le proposte |
 | `Numero` | `Numero` di `Presenze.tsx` (`.sg-numero`): titolo, cifra da 44px e riga sotto; `allarme` col bordo rosso. Quattro in fila in `.sg-numeri`, cinque in VESTIARIO (`data-cinque`) |
 | `BarraSalva` | La barra per salvare di LISTINO (`.sg-listino-salva`): frase, BUTTA I CAMBI e SALVA, bordo giallo; `guaio` la frase in rosso e SALVA spento |
 | `VoceElenco` | Una voce chiusa di LISTINO > I CORSI (`.sg-voce-elenco`): nome, riga rossa se manca qualcosa, riassunto e il chip CAMBIA; `bollino` il `.sg-tag` giallo accanto al nome (SENZA TIPO nel catalogo del vestiario) |
 | `RigaVestiario` | Una riga di un ordine di vestiario in segreteria (`RigheTabella` di `Vestiario.tsx`): `contesto="segreteria"`, una riga di campi sotto `TestataTabella` (`etichette` sotto i 1000px). Il `contesto` app (il riquadro RIGA N del telefono) **non è più usato**: la pagina degli ordini va a passi, con `SchedaCapo` e `RigaRiepilogoVestiario` |
 | `RigaOrdineVestiario` | La riga della tabella degli ordini in VESTIARIO: chi ordina (sotto, quando e da dove è arrivato; `stessoTelefono` il bollino giallo STESSO TELEFONO), capi, telefono, DA SALDARE / SALDATO / ANNULLATO, totale (sotto, in rosso, `resto`: «mancano 7 €»); l'annullato ha il testo spento, non è trasparente |
+| `RigaPagamento` | Una riga dello storico dei pagamenti (`RigaDelloStorico` e la testata della ricevuta in `StoricoIscritto`, `Ricevute.tsx`; `.sg-voce-elenco` e `.sg-pagamento` di `styles.css`): `tipo=ricevuta` la testata (N./anno, data, voci e totale, tag MANCA o ANNULLATA, PDF e ANNULLA RICEVUTA), `tipo=pagamento` un pagamento rientrato sotto la sua ricevuta, importo verde; `annullato` barra e spegne |
 | `Chip` | `.sg-chip`: il tasto piccolo della segreteria (filtri, CAMBIA, SCHEDA); `acceso` (aria-pressed), `pieno`, `disabled`, e un numero dentro |
 | `AnteprimaCsv` | PROPOSTA «ordini vestiario», non costruita: le prime righe di un CSV scaricato, in `.sg-mono`, col nome del file sopra. Nell'app ci sono solo i due tasti, con una frase sotto |
 | `FotoCapo` | La foto di un capo o la tabella delle taglie (`Foto` di `OrdinaVestiario.tsx`, `.vestiario-foto`). Nel canvas niente immagini: l'icona a linea del tipo (`judogi`, `costume`, `felpa`, `tabella`) e il nome, su `surface-2`, alta 220px col tasto ⤢ da 44px; `tabella` alta 200px senza bordi ai lati; `stato="errore"` resta il nome (il testo alternativo); `tasto` falso senza ⤢ (foto aperta, miniatura). Un capo senza foto non ne ha: niente segnaposto |
@@ -126,7 +132,9 @@ Google, e vale solo per i mockup.
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 
-Tutti i componenti hanno la prop `tema` (`scuro` | `chiaro`).
+Tutti i componenti hanno la prop `tema` (`scuro` | `chiaro`). `sito` è un terzo tema, solo per il **modulo di
+iscrizione**, e ce l'hanno soltanto i componenti che il modulo vero usa (`Campo`, `Bottone`, `Titoletto`,
+`CaricaFile`, `TavolaFirma`, `RiquadroPasso`, `Testata`): vedi «Il tema sito».
 
 ## Come si riusa
 
@@ -218,3 +226,52 @@ esadecimali a 6 cifre: i file della libreria scrivono sempre così.
 
 Un mockup che vuole una cosa che manca la aggiunge alla libreria come
 `<Nome>.dc.html`, copiando i valori dal codice, prima di usarla.
+
+## Il calendario dalle date
+
+`../segreteria-tatami/TatamiCalendario.dc.html` (e `TatamiSettimana.dc.html` per il titolo che diventa un tasto con ▾) è il
+riferimento del calendario della SETTIMANA (`CalendarioSettimana.tsx`, regole in `src/lib/calendarioSettimana.ts`): 460px, celle
+da 52px, sei righe da sette, settimana evidenziata, oggi in giallo-testo, quadratino blu sui giorni con lezioni (assente finché non
+si sa). Nell'app si aggancia sotto il tasto delle date e non esce mai dallo schermo.
+
+## La striscia COSA MANCA
+
+`../segreteria-tatami/TatamiMancano.dc.html` è il riferimento della striscia in cima alle pagine di segreteria
+(`CosaManca.tsx`, regole in `src/lib/cosaManca.ts`): quattro caselle, numero da 64px, segno spesso sotto. Il canvas la
+mostra a 1284px in una riga. Nell'app sotto i 1240px va due per due, sotto i 768px il numero sta sopra il testo, e su
+uno schermo basso (fino a 800px, da 768px di larghezza) è una riga sola senza nota; sul telefono sparisce con una scheda aperta.
+
+## L'appello a tre tasti
+
+`../segreteria-tatami/TatamiAppello.dc.html` è il riferimento dell'appello della segreteria (`Appello` di
+`Settimana.tsx`, regole in `src/lib/appelloListe.ts`): tre tasti DA SEGNARE / PRESENTI / ASSENTI, una lista sola sotto,
+✓ e ✕ in DA SEGNARE. Il canvas ha sempre tutta la lista; nell'app il pannello scorre con la pagina.
+
+## Il tema Tatami
+
+L'app ha tre temi: nero, bianco e **Tatami** (paglia e verde muschio). I componenti di questa libreria sono
+disegnati nel nero e nel bianco (`tema`). I valori del Tatami e il confronto fra i tre temi stanno in
+`../segreteria-tatami/token-proposta.md` e nei componenti `Tatami*.dc.html` della stessa sezione, che hanno il `tema`
+a tre valori. I token veri sono nel blocco `:root[data-tema='tatami']` di `src/styles.css` (valori finali, un po' più
+scuri per giallo, verde, rosso e testo spento: vedi `DESIGN.md`). Il canvas della sezione conserva i valori della
+proposta, che per quei quattro colori sono precedenti ai valori finali.
+
+## Il tema sito (modulo di iscrizione)
+
+PROPOSTA, non costruita: `sito` è il tema del **modulo di iscrizione** (`ModuloIscrizione.tsx`) nell'aspetto del sito
+pubblico «tatami blu e giallo» (A2). Il modulo è sempre chiaro, qualunque sia il tema dell'app. Non è un quarto tema
+dell'app: nei componenti sopra, `tema="sito"` cambia colori, **carattere** (Big Shoulders Display 800 per titoli, etichette
+e tasti; Inter per testi e campi; il canvas li prende da Google Fonts, in app saranno file locali OFL) e **raggio** (6px su
+campi, scelte, tasti e riquadri). Senza `tema="sito"` l'aspetto dei componenti è quello di prima.
+
+| Cosa | Valore nel tema `sito` |
+|---|---|
+| Fondo, bianco, scelta scelta | #eef5fa, #ffffff, #cfe6f4 (con ✓ o ●) |
+| Inchiostro, bordo dei controlli | #0d2a3d, #14709f (4,96:1 sul fondo) |
+| Testo spento | #46606f (6,03:1 sul fondo, 5,15:1 su #cfe6f4) |
+| Tasto principale · `vai` | inchiostro con testo bianco · giallo #f4c31b con l'inchiostro sopra |
+| Stati | rosso, verde e giallo del tema chiaro, sempre con «!» o ✓ e una parola |
+| Misure | tasti 56px, campi 52px, bersagli ≥ 44px; etichette Big Shoulders 15px, 0.08em |
+
+I valori e i rapporti di contrasto calcolati stanno in `../iscrizione-sito/token-proposta.md`; i board in
+`../iscrizione-sito/`. Il fuoco da tastiera (contorno 3px blu #14709f) non è riprodotto.

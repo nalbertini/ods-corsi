@@ -1,20 +1,21 @@
 // Controllo prima di pubblicare un canvas: node docs/design-canvas/ods-design-system/verifica.mjs [cartella ...]
 // Senza argomenti controlla tutte le cartelle di docs/design-canvas.
 // Errori (exit 1): un colore esadecimale che non e' in src/styles.css, DESIGN.md o COLORI di
-// src/lib/segreteria.ts (cioe' inventato); un <dc-import> senza hint-size o verso un file che non c'e'.
+// src/lib/segreteria.ts o dai token-proposta.md delle sezioni (cioe' inventato); un <dc-import> senza hint-size o verso un file che non c'e'.
 // Come nel Toolkit, riconosce solo #rrggbb a 6 cifre: scrivere sempre cosi'.
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const radice = resolve(import.meta.dirname, '../../..')
 const HEX = /#[0-9a-fA-F]{6}\b/g
+const base = join(radice, 'docs/design-canvas')
+// I token di una proposta non ancora approvata stanno in <sezione>/token-proposta.md (non in DESIGN.md prima del sì).
+const proposte = readdirSync(base).map((n) => join(base, n, 'token-proposta.md')).filter((f) => existsSync(f))
 const ammessi = new Set(
-  ['src/styles.css', 'DESIGN.md', 'src/lib/segreteria.ts'].flatMap((f) =>
-    (readFileSync(join(radice, f), 'utf8').match(HEX) ?? []).map((h) => h.toLowerCase()),
+  [...['src/styles.css', 'DESIGN.md', 'src/lib/segreteria.ts'].map((f) => join(radice, f)), ...proposte].flatMap((f) =>
+    (readFileSync(f, 'utf8').match(HEX) ?? []).map((h) => h.toLowerCase()),
   ),
 )
-
-const base = join(radice, 'docs/design-canvas')
 const cartelle = process.argv.length > 2
   ? process.argv.slice(2).map((c) => resolve(c))
   : readdirSync(base).map((n) => join(base, n)).filter((p) => statSync(p).isDirectory())

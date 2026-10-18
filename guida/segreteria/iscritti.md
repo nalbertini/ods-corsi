@@ -22,8 +22,9 @@ elenco, che compaiono negli appelli e sul tablet.
   certificato: da quel giorno serve, e conviene avvisare la famiglia prima.
 - **DA PAGARE** — chi è attivo e non ha la quota associativa pagata: nessuna ricevuta
   con la quota, pagata solo in parte, o scaduta.
-- **NON IN REGOLA** — chi è attivo e ha il certificato o la quota da sistemare. Ci arrivi
+- **NON IN REGOLA** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
   anche dal bottone **CHI NON È IN REGOLA** delle [Statistiche](statistiche.md).
+- **SENZA TESSERA** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([TESSERE](tessere.md)).
 - **SENZA DOCUMENTO** — chi non ha ancora la copia del documento d'identità in
   segreteria.
 - **NON ARCHIVIATO** — solo finché ce ne sono: chi ha un file di certificato
@@ -45,11 +46,11 @@ elenco, che compaiono negli appelli e sul tablet.
   sezione **NON SONO DOPPIONI** → **TOGLI** accanto all'altra.
 
 La colonna **IN REGOLA** dice in un colpo d'occhio cosa manca: in verde
-**IN REGOLA** se certificato e quota sono a posto (**FUORI APP**, in grigio,
+**IN REGOLA** se certificato, quota e tessera sono a posto (**FUORI APP**, in grigio,
 se la quota è pagata senza una ricevuta dell'app); altrimenti in rosso
 **NO CERTIFICATO**, **CERT. SCADUTO**, **DA PAGARE** o **QUOTA SCADUTA**, e in
 giallo **SCADE IL 14/10** (entro un mese; **SCADE OGGI** l'ultimo giorno) o
-**IN PARTE**. Sotto i 6 anni il certificato non serve: il bambino è
+**IN PARTE**. Per chi è iscritto a un corso che chiede la tessera ci sono anche **NO TESSERA** e **TESSERA SCADUTA** in rosso, e **TESSERA SCADE A DICEMBRE** in giallo (da 60 giorni prima della fine; non conta nei filtri). Sotto i 6 anni il certificato non serve: il bambino è
 **IN REGOLA** con la quota pagata, e accanto c'è **CERT. NON SERVE** in grigio;
 un mese prima del compleanno diventa **SERVE DAL 14/10** in giallo. Per
 sapere l'età serve la data di nascita: senza, il certificato serve come per
@@ -87,12 +88,12 @@ accoglie la sua richiesta (vedi [Richieste online](richieste.md)).
 ## La scheda di una persona
 
 Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
-**ISCRITTI** in alto torna all'elenco, con la ricerca e i filtri di prima.
+**ISCRITTI** in alto torna all'elenco, con la ricerca e i filtri di prima. Se hai aperto la scheda dalla scheda di un corso, il tasto dice **CORSO** e riporta lì.
 Anche il tasto Indietro del browser torna all'elenco, dalla scheda come dal
 modulo di un iscritto nuovo, e una scheda aperta
 resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 
-In cima, tre timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
+In cima, i timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
 grandi (verde a posto, giallo da guardare, rosso manca), con le parole
 dell'elenco ma la data intera: **SCADUTO IL 25/09/2026**, **VALIDO FINO
 AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
@@ -176,7 +177,7 @@ scheda è disattivata, nessuno.
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
   PAGATA**. In elenco e nella scheda si vede **FUORI APP**; alla sua data
   scade da sola, e **Togli «pagata fuori dall'app»** la toglie prima.
-- **RICEVUTE** — le ricevute dei pagamenti di questa persona (vedi sotto).
+- **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima **PAGATO**, **MANCA** e **QUOTA**; poi ogni ricevuta con i suoi pagamenti sotto, e dopo **SENZA RICEVUTA** quelli registrati a mano. Quelli di tutti sono in [PAGAMENTI](pagamenti.md).
 - **ISCRIZIONI** — i corsi che fa. **TERMINA** la toglie da un corso: da
   domani non è più nell'appello, il registro resta. «Iscrivi a un corso…» +
   **ISCRIVI** la aggiunge a un altro.
@@ -205,9 +206,13 @@ scheda è disattivata, nessuno.
   arrivati: un appello fatto senza rete che arriva dopo sulla scheda che se
   ne va si perde.
 
+## Le tessere
+
+Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a quando vale (**FIJLKAM · agonista · fino al 31 dicembre 2026**), il numero, se viene dal RASD o è scritta a mano, e se è **IN REGOLA**, **SCADE A DICEMBRE** o **SCADUTA**. Senza tessera la scheda dice se il corso la chiede. **+ AGGIUNGI UNA TESSERA** serve per chi non è nel foglio del RASD; **TOGLI** la toglie, dopo una conferma, e **ANNULLA** nell'avviso la rimette com'era. In cima alla scheda c'è anche il timbro **TESSERA** (solo per chi ha un corso che la chiede). Le tessere del RASD non si cambiano: si rifà l'import ([Tessere](tessere.md)).
+
 ## Un pagamento e la sua ricevuta
 
-Quando qualcuno paga, nella sua scheda **+ REGISTRA UN PAGAMENTO** prepara la
+Quando qualcuno paga, nella sua scheda **+ FAI LA RICEVUTA** prepara la
 ricevuta, la stessa «ricevuta semplice» di prima: due copie uguali su un
 foglio A4 in orizzontale, una per il socio e una per l'associazione.
 
@@ -262,8 +267,9 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
 **FAI LA RICEVUTA** prima chiede di rileggere: a chi va (per un minore, il
 socio e il genitore), il totale e, con un acconto, quanto si paga ora e quanto
 resta. Confermato, le dà il numero e scarica il PDF, da stampare o mandare.
-Nell'elenco **RICEVUTE** della scheda ogni ricevuta si riscarica con **PDF**,
-uguale a com'era.
+Nello storico **PAGAMENTI** della scheda ogni ricevuta si riscarica con **PDF**,
+uguale a com'era, e sotto ci sono i suoi pagamenti: data, come, a cosa serve e importo.
+**MANCA** dice quanto resta da pagare di quella ricevuta.
 
 Una ricevuta fatta **non si cambia e non si cancella**: se è sbagliata,
 **ANNULLA RICEVUTA**, sotto la ricevuta (chiede conferma), e se ne fa un'altra. Se la ricevuta annullata
@@ -273,6 +279,22 @@ DALL'APP**. L'annullata resta in elenco
 col suo numero, e il suo PDF dice ANNULLATA, così nella numerazione non ci
 sono buchi. I dati dell'associazione in testa alle ricevute si cambiano da
 [Impostazioni](regole.md#le-ricevute).
+
+### Un pagamento fatto a mano
+
+Non tutto passa da una ricevuta: si paga in palestra, in contanti, o si è
+pagato prima dell'app. **+ REGISTRA UN PAGAMENTO** (sotto lo storico) apre un
+modulo: **DATA**, **IMPORTO**, **COME HA PAGATO**, **A COSA SERVE** (la quota
+associativa, un corso, altro: si sceglie dai suggerimenti o si scrive) e una
+**NOTA** facoltativa («pagato direttamente in palestra»). **REGISTRA IL
+PAGAMENTO** lo mette nello storico, sotto **SENZA RICEVUTA**, e lo conta in
+**PAGATO**. Come una ricevuta, non si cambia e non si cancella: se è sbagliato,
+**ANNULLA PAGAMENTO** (chiede conferma) e se ne registra un altro; l'annullato
+resta in elenco, barrato, e non si conta.
+
+**MANCA** si calcola sulle ricevute: un pagamento a mano **non lo riduce**, perché non si sa su quale ricevuta va (se paga il saldo di una ricevuta, il saldo si registra come pagamento di quella ricevuta, facendo una ricevuta nuova). Un pagamento a mano **non cambia se la persona è in regola**: la quota pagata
+fuori dall'app si segna dalla sezione **QUOTA** (**PAGATA SENZA RICEVUTA
+DELL'APP**), o con una ricevuta.
 
 Il certificato è un dato sulla salute: lo vede solo la segreteria, non gli
 istruttori, e non va scritto da nessun'altra parte (nemmeno nelle note). In

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { attivitaDelGiorno, COME_IL_GIORNO, NESSUNA_ATTIVITA, sceltaAttivitaLezione, vociAttivita, type DatiSegreteria, type LezioneSeg } from '../../lib/segreteria'
 import type { DettaglioSessione, StatoPresenza, StatoSessione } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso, lunedi, oraDi, perEsteso } from '../../lib/sala'
@@ -9,24 +9,17 @@ import type { ChiProva } from '../../lib/prove'
 import { unaVolta } from '../../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
 import { settimanaDi, type Posto } from '../../lib/indirizzoSegreteria'
+import { annuncio, chiSegnaTuttiPresenti, segnaNonSegnati, contiListe, dividiElenco, dopoIlTocco, LISTE, messaggioVuoto, nomeLista, parolaDiStato, serveConferma, statoDaTocco, tastoIniziale, type Azione, type Lista } from '../../lib/appelloListe'
+import { finestraDelMese, giorniDellaSettimana, meseDellaSettimana, nomeTitoloSettimana, postoDopoIlGiorno, titoloSettimana, type MeseDelCalendario } from '../../lib/calendarioSettimana'
+import { CalendarioSettimana } from './CalendarioSettimana'
 import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
 
 const CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
-const MESI_CORTI = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC']
 
 const piu = (d: Date, giorni: number) => {
   const x = new Date(d)
   x.setDate(x.getDate() + giorni)
   return x
-}
-
-/** «21 – 27 SETTEMBRE», o «28 SET – 4 OTTOBRE» quando cambia il mese. */
-function titolo(primo: Date) {
-  const ultimo = piu(primo, 6)
-  const mese = (d: Date) => giornoPerEsteso(chiaveGiorno(d)).split(' ').at(-1)!.toUpperCase()
-  return primo.getMonth() === ultimo.getMonth()
-    ? `${primo.getDate()} – ${ultimo.getDate()} ${mese(ultimo)}`
-    : `${primo.getDate()} ${MESI_CORTI[primo.getMonth()]} – ${ultimo.getDate()} ${mese(ultimo)}`
 }
 
 /**
@@ -38,11 +31,14 @@ export function Settimana({
   d,
   posto,
   onPosto,
+  onConti,
 }: {
   d: DatiSegreteria
   /** Settimana, sala e lezione aperta stanno nell'indirizzo: le tiene la segreteria. */
   posto: Posto
   onPosto: (p: Omit<Posto, 'voce'>, passo: 'push' | 'replace') => void
+  /** Un appello segnato o una lezione cambiata: i conti di COSA MANCA si rileggono. */
+  onConti?: () => void
 }) {
   const { lezione: aperta, sala = '' } = posto
   // Una chiave e non la data: la stessa settimana a ogni giro non rilegge la griglia.
@@ -56,7 +52,7 @@ export function Settimana({
   const [nuova, setNuova] = useState(false)
   const { avviso, avvisa, fai } = useAvviso()
 
-  const giorni = useMemo(() => Array.from({ length: 7 }, (_, i) => piu(primo, i)), [primo])
+  const giorni = useMemo(() => giorniDellaSettimana(primo), [primo])
   const sett = useCarica(() => d.settimana(giorni[0], giorni[6]), [d, giorni])
   const sale = useCarica(() => d.sale(), [d])
   const pronto = useCarica(() => d.prontoFino(), [d])
@@ -83,6 +79,8 @@ export function Settimana({
   // Le presenze segnate dal cassetto viaggiano nella coda dell'appello: la
   // griglia si rilegge quando la coda si svuota, cioè quando sono arrivate.
   const rileggi = sett.ricarica
+  const contiRef = useRef(onConti)
+  contiRef.current = onConti
   useEffect(() => {
     let vivo = true
     let via: (() => void) | undefined
@@ -90,7 +88,10 @@ export function Settimana({
       if (!vivo) return
       let prima = 0
       via = x.guardaCoda?.((n) => {
-        if (prima > 0 && n === 0) void rileggi()
+        if (prima > 0 && n === 0) {
+          void rileggi()
+          contiRef.current?.()
+        }
         prima = n
       })
     })
@@ -110,6 +111,48 @@ export function Settimana({
   // dalla striscia dei giorni; da sé oggi, se è in questa settimana.
   const telefono = useSchermo('(max-width: 767px)')
   const [giornoTel, setGiornoTel] = useState<string | null>(null)
+
+  // Il calendario delle date: si apre sul mese della settimana in griglia; le frecce cambiano solo il mese che si vede.
+  const tastoDate = useRef<HTMLButtonElement>(null)
+  const [calAperto, setCalAperto] = useState(false)
+  const [meseVisto, setMeseVisto] = useState<MeseDelCalendario>(() => meseDellaSettimana(primo))
+  const apriCalendario = () => {
+    if (!calAperto) setMeseVisto(meseDellaSettimana(primo))
+    setCalAperto(!calAperto)
+  }
+  const chiudiCalendario = useCallback((fuoco: boolean) => {
+    setCalAperto(false)
+    if (fuoco) tastoDate.current?.focus()
+  }, [])
+  // Una lezione aperta (link, Indietro) ha il suo cassetto sopra: il calendario si chiude.
+  useEffect(() => {
+    if (aperta) setCalAperto(false)
+  }, [aperta])
+  // I giorni con lezioni, una lettura per mese: finché la griglia non cambia, riaprire o tornare a un mese già visto non rilegge.
+  // Se la lettura fallisce restano i giorni senza quadratino, senza errori, e riaprendo si riprova.
+  const [giorniMesi, setGiorniMesi] = useState<Record<string, Set<string>>>({})
+  const inLettura = useRef(new Set<string>())
+  // I giorni con lezioni cambiano solo quando cambiano le lezioni (una annullata, una straordinaria): `giroLezioni` svuota la
+  // memoria dei mesi, e una lettura partita prima dello svuotamento non ci scrive i giorni vecchi.
+  const [giroLezioni, setGiroLezioni] = useState(0)
+  const generazione = useRef(0)
+  const chiaveMese = `${meseVisto.anno}-${meseVisto.mese}`
+  useEffect(() => {
+    generazione.current += 1
+    inLettura.current.clear()
+    setGiorniMesi({})
+  }, [giroLezioni])
+  useEffect(() => {
+    if (!calAperto || giorniMesi[chiaveMese] || inLettura.current.has(chiaveMese)) return
+    inLettura.current.add(chiaveMese)
+    const mia = generazione.current
+    const { da, a } = finestraDelMese(meseVisto)
+    d.giorniConLezioni(da, a)
+      .then((l) => mia === generazione.current && setGiorniMesi((p) => ({ ...p, [chiaveMese]: new Set(l) })))
+      .catch(() => undefined)
+      .finally(() => mia === generazione.current && inLettura.current.delete(chiaveMese))
+  }, [calAperto, chiaveMese, giorniMesi, d])
+  const conLezioniDelMese = giorniMesi[chiaveMese] ?? null
   const chiavi = giorni.map(chiaveGiorno)
   const delGiorno = giornoTel && chiavi.includes(giornoTel) ? giornoTel : chiavi.includes(oggi) ? oggi : chiavi[0]
   const lezioniDelGiorno = lezioni.filter((l) => chiaveGiorno(new Date(l.inizio)) === delGiorno)
@@ -126,11 +169,43 @@ export function Settimana({
         </button>
       </Testa>
 
-      <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+      <div className="row sg-sett-barra" style={{ gap: 8, flexWrap: 'wrap' }}>
         <button type="button" className="icon-btn" aria-label="Settimana prima" onClick={() => sfoglia(piu(primo, -7))}>
           <Back />
         </button>
-        <span className="ob sg-sett-titolo">{titolo(primo)}</span>
+        <div className="sg-sett-titolo-box">
+          <button
+            ref={tastoDate}
+            type="button"
+            className="ob sg-sett-titolo"
+            aria-haspopup="dialog"
+            aria-expanded={calAperto}
+            aria-label={nomeTitoloSettimana(primo)}
+            onClick={apriCalendario}
+          >
+            {titoloSettimana(primo)}
+            <span className="sg-sett-freccia" aria-hidden="true">
+              ▾
+            </span>
+          </button>
+          {calAperto && (
+            <CalendarioSettimana
+              mese={meseVisto}
+              onMese={setMeseVisto}
+              lunediScelto={primo}
+              conLezioni={conLezioniDelMese}
+              prontoFino={pronto.dato ?? null}
+              titolo={tastoDate}
+              onChiudi={chiudiCalendario}
+              onScegli={(g) => {
+                onPosto(postoDopoIlGiorno({ settimana: chiaveGiorno(primo), sala: sala || undefined, lezione: aperta }, g), 'replace')
+                // Sul telefono il giorno toccato è anche il giorno della striscia.
+                setGiornoTel(chiaveGiorno(g))
+                chiudiCalendario(true)
+              }}
+            />
+          )}
+        </div>
         <button type="button" className="icon-btn" aria-label="Settimana dopo" onClick={() => sfoglia(piu(primo, 7))}>
           <span style={{ transform: 'scaleX(-1)', display: 'flex' }}>
             <Back />
@@ -243,7 +318,11 @@ export function Settimana({
           d={d}
           l={lezione}
           sale={sale.dato ?? []}
-          onCambiato={() => void sett.ricarica()}
+          onCambiato={() => {
+            void sett.ricarica()
+            setGiroLezioni((g) => g + 1)
+            onConti?.()
+          }}
           onChiudi={() => vai({ lezione: undefined }, 'push')}
           fai={fai}
         />
@@ -258,6 +337,7 @@ export function Settimana({
             setNuova(false)
             sfoglia(lunedi(inizio))
             void sett.ricarica()
+            setGiroLezioni((g) => g + 1)
           }}
         />
       )}
@@ -535,14 +615,13 @@ function Attivita({
   )
 }
 
-// presente → assente → non segnato, e si ricomincia: come nell'appello.
-const prossimo = (s: StatoPresenza | null): StatoPresenza | null => (s === null ? 'presente' : s === 'presente' ? 'assente' : null)
-
 /**
- * L'appello dalla segreteria: lo stesso dell'app, un tocco per riga, per
- * segnare al banco le presenze che l'istruttore ha preso su carta o
- * correggere un tocco sbagliato. Scrive con gli stessi `dati` dell'appello,
- * quindi anche da qui senza rete non si perde niente.
+ * L'appello dalla segreteria, a tre tasti (DA SEGNARE, PRESENTI, ASSENTI): sotto
+ * c'è una lista sola, quella del tasto premuto, e in DA SEGNARE ogni riga ha ✓ e ✕.
+ * Serve a segnare al banco le presenze che l'istruttore ha preso su carta o a
+ * correggere un tocco sbagliato (un tocco sul nome in PRESENTI o ASSENTI lo
+ * rimette da segnare). Le regole stanno in `lib/appelloListe.ts`. Scrive con gli
+ * stessi `dati` dell'appello, quindi anche da qui senza rete non si perde niente.
  *
  * Si apre quando la lezione è cominciata: prima non c'è niente da segnare,
  * e una presenza messa in anticipo sporcherebbe le medie. Da lì c'è anche il
@@ -553,6 +632,16 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
   const [elenco, setElenco] = useState<DettaglioSessione['elenco'] | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
   const [conProve, setConProve] = useState(false)
+  // Il tasto premuto si decide quando l'elenco arriva e poi non cambia da solo: se
+  // DA SEGNARE si svuota mentre si segna, non si passa a un'altra lista senza chiederlo.
+  const [lista, setLista] = useState<Lista>('da_segnare')
+  const [annunciato, setAnnunciato] = useState('')
+  // Dove va il fuoco dopo un tocco: su una riga, o (id null) sul tasto premuto se la lista si è svuotata.
+  const [fuoco, setFuoco] = useState<{ id: string | null } | null>(null)
+  const tastiLista = useRef<HTMLDivElement>(null)
+  // L'altezza della lista a ogni segno: la lista si accorcia, ma il cassetto non deve scorrere sotto il dito.
+  const listaRef = useRef<HTMLDivElement>(null)
+  const [altezzaLista, setAltezzaLista] = useState<number | null>(null)
   const cominciata = Date.parse(l.inizio) <= Date.now()
   const annullata = l.stato === 'annullata'
   const aperto = cominciata && !annullata
@@ -565,6 +654,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
         if (!vivo) return
         setStrato(x)
         setElenco(det?.elenco ?? [])
+        setLista(tastoIniziale(det?.elenco ?? []))
       })
       .catch((e: unknown) => vivo && setGuaio(messaggio(e, 'Non riesco a leggere l\'appello')))
     return () => {
@@ -586,11 +676,33 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
     setElenco((v) => v && v.map((p) => (p.id === personaId ? { ...p, stato } : p)))
     scritto(strato.segna(l.id, personaId, stato))
   }
+  // Solo chi non è segnato: le assenze già messe non si toccano.
   const tutti = () => {
-    if (!strato) return
-    setElenco((v) => v && v.map((p) => ({ ...p, stato: 'presente' })))
-    scritto(strato.segnaTutti(l.id, 'presente'))
+    if (!strato || !elenco) return
+    const chi = chiSegnaTuttiPresenti(elenco)
+    if (chi.length === 0) return
+    setElenco((v) => v && v.map((p) => (chi.includes(p.id) ? { ...p, stato: 'presente' } : p)))
+    scritto(segnaNonSegnati(strato, l.id, elenco))
   }
+  // ✓, ✕ o «rimetti da segnare»: la riga cambia lista, il fuoco va a quella che prende il suo posto.
+  const segna = async (personaId: string, azione: Azione) => {
+    if (!strato || !elenco) return
+    const chi = elenco.find((p) => p.id === personaId)
+    if (chi && serveConferma(chi, azione) && !(await chiedi(`Togliere la giustificazione di ${perEsteso(chi)}?`, 'TOGLI', { pericolo: true }))) return
+    const r = dopoIlTocco(elenco, personaId, azione, lista)
+    setAltezzaLista(listaRef.current?.offsetHeight ?? null)
+    setElenco(r.elenco)
+    setFuoco({ id: r.prossimoFuoco })
+    if (chi) setAnnunciato(annuncio(chi, azione, contiListe(r.elenco).da_segnare))
+    scritto(strato.segna(l.id, personaId, statoDaTocco(azione)))
+  }
+  useEffect(() => {
+    if (fuoco === null) return
+    const riga = fuoco.id ? document.querySelector<HTMLElement>(`[data-fuoco="${CSS.escape(fuoco.id)}"]`) : null
+    // preventScroll: il fuoco non deve far scorrere il cassetto, se no il tocco dopo cade su un'altra riga.
+    ;(riga ?? tastiLista.current?.querySelector<HTMLElement>('button[aria-pressed="true"]'))?.focus({ preventScroll: true })
+    setFuoco(null)
+  }, [fuoco])
   const aggiungiProva = async (chi: ChiProva) => {
     if (!strato) return
     const p = await strato.aggiungiProva(l.id, chi)
@@ -603,12 +715,17 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
     scritto(strato.togliProva(l.id, personaId))
   }
   const iscritti = elenco?.filter((p) => !p.prova)
+  const conti = contiListe(elenco ?? [])
+  const qui = dividiElenco(elenco ?? [])[lista]
   const prove = elenco?.filter((p) => p.prova) ?? []
 
   const azzera = async () => {
     if (!strato || !elenco) return
     if (segnati && !(await chiedi(`Togliere i ${segnati} segni di questa lezione?`, 'TOGLI I SEGNI', { pericolo: true }))) return
     setElenco(elenco.map((p) => ({ ...p, stato: null })))
+    // Senza segni la lista premuta (PRESENTI, ASSENTI) è vuota e non serve a niente: si torna a DA SEGNARE.
+    setLista('da_segnare')
+    setAltezzaLista(null)
     scritto(Promise.all(elenco.filter((p) => p.stato !== null).map((p) => strato.segna(l.id, p.id, null))).then(() => undefined))
   }
 
@@ -665,25 +782,82 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
         {guaio && <Guaio testo={guaio} />}
         {!elenco && !guaio && <span className="sg-sotto">Sto leggendo l'appello…</span>}
         {iscritti && iscritti.length === 0 && <span className="sg-sotto">Nessun iscritto.</span>}
-        {iscritti && iscritti.length > 0 && (
+        {iscritti && iscritti.length > 0 && !aperto && (
           <div className="sg-elenco-appello">
             {iscritti.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className="riga-appello"
-                data-stato={p.stato ?? 'niente'}
-                disabled={!aperto}
-                onClick={() => tocca(p.id, prossimo(p.stato))}
-                aria-label={`${perEsteso(p)}: ${p.stato ?? 'non segnato'}`}
-              >
+              <div key={p.id} className="riga-appello" data-stato={p.stato ?? 'niente'}>
                 <span className="segno" aria-hidden="true">
                   {p.stato === 'presente' ? '✓' : p.stato === 'assente' ? '✕' : ''}
                 </span>
                 <span className="nome-appello grow">{perEsteso(p)}</span>
-              </button>
+              </div>
             ))}
           </div>
+        )}
+        {iscritti && iscritti.length > 0 && aperto && elenco && (
+          <>
+            {/* conti e liste si calcolano una volta per disegno */}
+            <div className="sg-liste" role="group" aria-label="Chi vedere" ref={tastiLista}>
+              {LISTE.map((x) => {
+                const n = conti[x]
+                return (
+                  <button key={x} type="button" className="sg-lista-tasto" data-lista={x} aria-pressed={lista === x} onClick={() => {
+                      setLista(x)
+                      setAltezzaLista(null)
+                    }}>
+                    <span className="sg-lista-segno" aria-hidden="true">
+                      {x === 'da_segnare' ? '○' : x === 'presenti' ? '✓' : '✕'}
+                    </span>
+                    <span className="sg-lista-n">{n}</span>
+                    <span className="sg-lista-nome">{nomeLista(x)}</span>
+                  </button>
+                )
+              })}
+            </div>
+            <Riga titolo={nomeLista(lista)}>
+              <span className="num" style={{ fontSize: 14, fontWeight: 700 }}>
+                {conti[lista]}
+              </span>
+            </Riga>
+            {qui.length === 0 && <span className="sg-sotto">{messaggioVuoto(lista)}</span>}
+            <div className="sg-elenco-appello" ref={listaRef} style={altezzaLista ? { minHeight: altezzaLista } : undefined}>
+              {qui.map((p) =>
+                lista === 'da_segnare' ? (
+                  <div key={p.id} className="riga-appello riga-segna" data-stato="niente">
+                    <span className="segno" aria-hidden="true">
+                      ○
+                    </span>
+                    <span className="nome-appello grow">{perEsteso(p)}</span>
+                    <button type="button" className="sg-segna sg-segna-si" data-fuoco={p.id} onClick={() => segna(p.id, 'presente')} aria-label={`${perEsteso(p)}: presente`}>
+                      ✓
+                    </button>
+                    <button type="button" className="sg-segna sg-segna-no" onClick={() => segna(p.id, 'assente')} aria-label={`${perEsteso(p)}: assente`}>
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className="riga-appello"
+                    data-stato={p.stato ?? 'niente'}
+                    data-fuoco={p.id}
+                    onClick={() => segna(p.id, 'rimetti')}
+                    aria-label={`${perEsteso(p)}: ${parolaDiStato(p.stato).toLowerCase()}. Tocca per rimetterlo da segnare`}
+                  >
+                    <span className="segno" aria-hidden="true">
+                      {p.stato === 'presente' ? '✓' : '✕'}
+                    </span>
+                    <span className="nome-appello grow">{perEsteso(p)}</span>
+                    <span className="sg-parola-stato">{parolaDiStato(p.stato)}</span>
+                  </button>
+                ),
+              )}
+            </div>
+            <span role="status" className="vh">
+              {annunciato}
+            </span>
+          </>
         )}
         {prove.length > 0 && (
           <>
@@ -700,7 +874,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
                     className="riga-appello"
                     data-stato={p.stato ?? 'niente'}
                     disabled={!aperto}
-                    onClick={() => tocca(p.id, prossimo(p.stato))}
+                    onClick={() => tocca(p.id, p.stato === 'presente' ? 'assente' : 'presente')}
                     aria-label={`${perEsteso(p)}, in prova: ${p.stato ?? 'non segnato'}`}
                   >
                     <span className="segno" aria-hidden="true">
@@ -714,9 +888,6 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
               ))}
             </div>
           </>
-        )}
-        {aperto && elenco && elenco.length > 0 && (
-          <span style={{ fontSize: 12, color: 'var(--faint)' }}>Un clic: presente, due: assente, tre: non segnato.</span>
         )}
       </div>
     </>

@@ -1,3 +1,5 @@
+import { FiltroRicerca } from './FiltroRicerca'
+import type { Ricercata } from '../../lib/ricerca'
 import { useState, type ReactNode } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
@@ -40,7 +42,26 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * con la sua email non ha niente che la leghi all'iscritto che aveva dato la
  * propria, e da sola diventerebbe un doppione.
  */
-export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; onVai: (v: Voce, d?: Destinazione) => void; stampareIniziale?: boolean }) {
+export function Richieste({
+  d,
+  onVai,
+  stampareIniziale,
+  ricerca,
+  aperta,
+  onTogliRicerca,
+  onConti,
+}: {
+  d: DatiSegreteria
+  onVai: (v: Voce, d?: Destinazione) => void
+  stampareIniziale?: boolean
+  /** Aperta da «ALTRI N» della ricerca: l'elenco è solo delle richieste uscite, anche già accolte o rifiutate. */
+  ricerca?: Ricercata
+  /** Una richiesta scelta dalla ricerca: si apre da sola. */
+  aperta?: string
+  onTogliRicerca: () => void
+  /** Una richiesta accolta, rifiutata o eliminata: i conti di COSA MANCA si rileggono. */
+  onConti?: () => void
+}) {
   const [r, setR] = useState<DatiRichieste | null>(null)
   const elenco = useCarica(async () => {
     const x = await datiRichieste()
@@ -52,7 +73,7 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
   const conDocumento = useCarica(async () => (await datiRichieste()).conDocumento(), [])
   const [tutte, setTutte] = useState(false)
   const [daStampare, setDaStampare] = useState(!!stampareIniziale)
-  const [scelta, setScelta] = useState<string | null>(null)
+  const [scelta, setScelta] = useState<string | null>(aperta ?? null)
   const { avviso, fai } = useAvviso()
   const voci = useListino()?.listino.corsi
 
@@ -62,7 +83,7 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
   const stampare = (elenco.dato ?? []).filter((x) => doc.has(x.id)).length
   // Stampati tutti, si torna all'elenco di prima.
   const soloStampare = daStampare && stampare > 0
-  const lista = (elenco.dato ?? []).filter((x) => (soloStampare ? doc.has(x.id) : tutte || x.stato === 'nuova'))
+  const lista = (elenco.dato ?? []).filter((x) => (ricerca ? ricerca.ids.includes(x.id) : soloStampare ? doc.has(x.id) : tutte || x.stato === 'nuova'))
   const nuove = (elenco.dato ?? []).filter((x) => x.stato === 'nuova').length
   const richiesta = (elenco.dato ?? []).find((x) => x.id === scelta) ?? null
   // Sullo schermo stretto la richiesta si apre al posto dell'elenco, non sotto.
@@ -85,11 +106,15 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
       titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
       omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
       fai={fai}
-      onCambiato={() => void elenco.ricarica()}
+      onCambiato={() => {
+        void elenco.ricarica()
+        onConti?.()
+      }}
       onStampato={() => void conDocumento.ricarica()}
       onEliminata={() => {
         setScelta(null)
         void elenco.ricarica()
+        onConti?.()
       }}
       onApri={(persona) => onVai('iscritti', { persona })}
     />
@@ -118,6 +143,7 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
             ANCHE QUELLE GIÀ GESTITE
           </button>
         </Testa>
+        {ricerca && <FiltroRicerca ricerca={ricerca} onTogli={onTogliRicerca} />}
 
         {elenco.guaio && <Guaio testo={elenco.guaio} />}
 

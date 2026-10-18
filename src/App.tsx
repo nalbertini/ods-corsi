@@ -15,8 +15,9 @@ import { BarraMusicaTelefono, BarraNavigazione, MusicaMini, PaginaTimer, Strisci
 import { Conferme, chiedi } from './components/segreteria/comune'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
+import { Amministrazione } from './components/segreteria/Amministrazione'
 import { INDIRIZZI, useArea } from './lib/aree'
-import { account, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type Personale } from './lib/accesso'
+import { account, altreAree, areeDi, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
@@ -68,6 +69,7 @@ export default function App() {
 function Aree() {
   const area = useArea()
   if (area === 'segreteria') return <AreaSegreteria />
+  if (area === 'amministrazione') return <AreaAmministrazione />
   if (area === 'iscrizioni') return <Iscrizioni />
   if (area === 'iscritti') return <Iscritti />
   if (area === 'istruttori') return <Istruttori />
@@ -169,6 +171,7 @@ function TutteLeAree() {
   const voci: [keyof typeof INDIRIZZI, string, string][] = [
     ['istruttori', 'ISTRUTTORI', 'Il calendario e l’appello.'],
     ['segreteria', 'SEGRETERIA', 'Corsi, iscritti, presenze e richieste, dal computer della reception.'],
+    ['amministrazione', 'AMMINISTRAZIONE', 'I conti della palestra: i pagamenti e il listino.'],
     ['iscrizioni', 'ISCRIZIONI', 'Come ci si iscrive, i costi e il modulo: la pagina da mandare a chi vuole iscriversi.'],
     ['iscritti', 'ISCRITTI', 'La pagina di chi frequenta i corsi: le sue lezioni, le presenze, il certificato e le ricevute. Il pilota.'],
     ['sala', 'SALA', 'Il tablet appeso al muro della sala. Da qui il dispositivo resta un tablet.'],
@@ -401,7 +404,7 @@ function Istruttori() {
             {largo && striscia}
             {!largo && chi && pagina !== 'timer' && <ChiSei chi={chi} onEsci={onEsci} />}
             <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
-              <Sala soloDi={mio} onTimer={(l) => void apriTimer(l)} />
+              <Sala soloDi={mio} senzaLimiti={chi?.ruolo === 'staff'} onTimer={(l) => void apriTimer(l)} />
             </div>
             {timerMontato && (
               <PaginaTimer
@@ -470,11 +473,12 @@ function MenuIstruttori({
       </div>
       <div className="grow" />
       <div className="sg-voci">
-        {chi?.ancheIstruttore && (
-          <button type="button" className="num sg-voce" onClick={() => passaA('segreteria')}>
-            SEGRETERIA →
-          </button>
-        )}
+        {chi &&
+          altreAree(chi, 'istruttori').map((a) => (
+            <button key={a} type="button" className="num sg-voce" onClick={() => passaA(a)}>
+              {a.toUpperCase()} →
+            </button>
+          ))}
       </div>
       <div className="row sg-icone">
         <a className="icon-btn tasto-guida" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener" title="La guida" aria-label="Apri la guida">
@@ -512,6 +516,40 @@ function AreaGuida() {
 }
 
 /**
+ * L'amministrazione, con la sua porta: entra solo chi ne ha il ruolo, anche
+ * insieme alla segreteria. Vede i pagamenti e il listino, e non le persone.
+ */
+function AreaAmministrazione() {
+  const [chi, setChi] = useChi()
+
+  if (!serveAccesso) {
+    return <Amministrazione nome="Amministrazione di prova" prova onEsci={inProvaScelta ? () => scegliProva(false) : undefined} />
+  }
+
+  if (chi)
+    return (
+      <Amministrazione
+        nome={`${chi.nome} ${chi.cognome}`}
+        ruolo={nomeDelRuolo(chi)}
+        prova={false}
+        onEsci={() => void esci()}
+        onSegreteria={areeDi(chi).includes('segreteria') ? () => passaA('segreteria') : undefined}
+        onIstruttori={chi.ancheIstruttore ? () => passaA('istruttori') : undefined}
+      />
+    )
+
+  return (
+    <div className="app">
+      <Testata luogo="AMMINISTRAZIONE" />
+      <main className="scroll">
+        {chi === undefined && <UnAttimo />}
+        {chi === null && <Accesso onEntrato={setChi} />}
+      </main>
+    </div>
+  )
+}
+
+/**
  * La segreteria, con la sua porta: entra solo chi ne ha il ruolo. Un altro
  * account che arriva qui torna nella sua area (vedi `useChi`).
  */
@@ -536,6 +574,7 @@ function AreaSegreteria() {
         prova={false}
         onEsci={() => void esci()}
         onIstruttori={chi.ancheIstruttore ? () => passaA('istruttori') : undefined}
+        onAmministrazione={chi.ancheAmministrazione ? () => passaA('amministrazione') : undefined}
       />
     )
 

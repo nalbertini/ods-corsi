@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «sito»: SITO > MENU E FOOTER. Due elenchi di voci (etichetta + pagina a cui portano) con i tasti per
+     riordinare. Una voce che porta a una pagina nascosta e' in rosso e SALVA resta spento. Le tre pagine di legge nel
+     footer non si tolgono (niente TOGLI). Dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="MenuSito" attiva="SITO" numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" tema="scuro" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">SITO</h1>
+      <span style="font-size: 14px; color: #8c8c88">officinedellosport.it · il menu in alto e il footer in fondo</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+      <dc-import name="Chip" label="PAGINE" tema="scuro" hint-size="110px,44px"></dc-import>
+      <dc-import name="Chip" label="MENU E FOOTER" acceso="{{ true }}" tema="scuro" hint-size="170px,44px"></dc-import>
+      <dc-import name="Chip" label="IMMAGINI" tema="scuro" hint-size="120px,44px"></dc-import>
+      <dc-import name="Chip" label="REDIRECT" tema="scuro" hint-size="120px,44px"></dc-import>
+    </div>
+
+    <dc-import name="Titoletto" label="MENU IN ALTO" conto="4" tema="scuro" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; max-width: 960px; border: 2px solid #333333; background: #1c1c1c">
+      <div style="display: grid; grid-template-columns: 56px 1fr 1fr 44px 44px 90px; align-items: center; gap: 12px; min-height: 60px; padding: 0 12px">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700; color: #8c8c88">1</span>
+        <span style="font-size: 17px; font-weight: 600">Home</span>
+        <span style="font-size: 15px; color: #c9c9c4">Pagina: Home</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↑</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↓</span>
+        <dc-import name="Chip" label="TOGLI" tema="scuro" hint-size="90px,44px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 56px 1fr 1fr 44px 44px 90px; align-items: center; gap: 12px; min-height: 60px; padding: 0 12px; border-top: 2px solid #2a2a2a">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700; color: #8c8c88">2</span>
+        <span style="font-size: 17px; font-weight: 600">I nostri corsi</span>
+        <span style="font-size: 15px; color: #c9c9c4">Pagina: Home, sezione corsi</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↑</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↓</span>
+        <dc-import name="Chip" label="TOGLI" tema="scuro" hint-size="90px,44px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 56px 1fr 1fr 44px 44px 90px; align-items: center; gap: 12px; min-height: 60px; padding: 0 12px; border-top: 2px solid #2a2a2a">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700; color: #8c8c88">3</span>
+        <span style="font-size: 17px; font-weight: 600">Chi siamo</span>
+        <span style="font-size: 15px; color: #e4292a; font-weight: 600">Pagina nascosta: non si può pubblicare</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↑</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↓</span>
+        <dc-import name="Chip" label="TOGLI" tema="scuro" hint-size="90px,44px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 56px 1fr 1fr 44px 44px 90px; align-items: center; gap: 12px; min-height: 60px; padding: 0 12px; border-top: 2px solid #2a2a2a">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700; color: #8c8c88">4</span>
+        <span style="font-size: 17px; font-weight: 600">Contattaci</span>
+        <span style="font-size: 15px; color: #c9c9c4">Pagina: Contattaci</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↑</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↓</span>
+        <dc-import name="Chip" label="TOGLI" tema="scuro" hint-size="90px,44px"></dc-import>
+      </div>
+    </div>
+    <div style="display: flex; max-width: 960px">
+      <dc-import name="Bottone" label="+ AGGIUNGI UNA VOCE" variante="tratteggiato" contesto="segreteria" tema="scuro" hint-size="240px,48px"></dc-import>
+    </div>
+
+    <dc-import name="Titoletto" label="FOOTER" conto="3" tema="scuro" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; max-width: 960px; border: 2px solid #333333; background: #1c1c1c">
+      <div style="display: grid; grid-template-columns: 56px 1fr 1fr 44px 44px 90px; align-items: center; gap: 12px; min-height: 60px; padding: 0 12px">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700; color: #8c8c88">1</span>
+        <span style="font-size: 17px; font-weight: 600">Privacy policy</span>
+        <span style="font-size: 15px; color: #c9c9c4">Pagina: Privacy policy</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↑</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↓</span>
+        <dc-import name="Badge" tipo="tag" tono="spento" label="DI LEGGE" tema="scuro" hint-size="90px,24px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 56px 1fr 1fr 44px 44px 90px; align-items: center; gap: 12px; min-height: 60px; padding: 0 12px; border-top: 2px solid #2a2a2a">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700; color: #8c8c88">2</span>
+        <span style="font-size: 17px; font-weight: 600">Cookie policy</span>
+        <span style="font-size: 15px; color: #c9c9c4">Pagina: Cookie policy</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↑</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↓</span>
+        <dc-import name="Badge" tipo="tag" tono="spento" label="DI LEGGE" tema="scuro" hint-size="90px,24px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 56px 1fr 1fr 44px 44px 90px; align-items: center; gap: 12px; min-height: 60px; padding: 0 12px; border-top: 2px solid #2a2a2a">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700; color: #8c8c88">3</span>
+        <span style="font-size: 17px; font-weight: 600">Contributi pubblici</span>
+        <span style="font-size: 15px; color: #c9c9c4">Pagina: Contributi pubblici</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↑</span>
+        <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2">↓</span>
+        <dc-import name="Badge" tipo="tag" tono="spento" label="DI LEGGE" tema="scuro" hint-size="90px,24px"></dc-import>
+      </div>
+    </div>
+
+    <dc-import name="BarraSalva" frase="" guaio="Il menu ha «Chi siamo», che porta a una pagina nascosta. Mostrala o togli la voce." butta="BUTTA I CAMBI" salva="SALVA" tema="scuro" hint-size="100%,76px"></dc-import>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

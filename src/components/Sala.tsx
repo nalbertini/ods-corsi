@@ -20,7 +20,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
  * `soloDi` è l'istruttore di cui mostrare le lezioni (vedi `CalendarioScreen`);
  * `onTimer` apre il timer della lezione, dal cronometro dell'appello.
  */
-export function Sala({ soloDi, onTimer }: { soloDi?: string; onTimer?: (l: SessioneVista) => void } = {}) {
+export function Sala({ soloDi, senzaLimiti = soloDi === undefined, onTimer }: { soloDi?: string; senzaLimiti?: boolean; onTimer?: (l: SessioneVista) => void } = {}) {
   const [d, setD] = useState<Dati | null>(null)
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
@@ -134,6 +134,7 @@ export function Sala({ soloDi, onTimer }: { soloDi?: string; onTimer?: (l: Sessi
               dati={d}
               sessioneId={aperta.id}
               soloDi={soloDi}
+              senzaLimiti={senzaLimiti}
               onSegnalate={ricontaSegnalate}
               onTimer={onTimer}
               onAttivitaCambiata={() => (attivitaCambiata.current = true)}

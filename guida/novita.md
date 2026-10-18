@@ -10,6 +10,342 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.88.1 — 18 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione il tasto del tema non compare più, perché il modulo resta sempre chiaro
+
+## 0.88.0 — 18 ottobre 2026
+
+### Novità
+
+- Le tessere degli iscritti, con import dal RASD
+
+### Risolto
+
+- Nel modulo di iscrizione «1 altro corso» al singolare e il tag dei file su una riga sua
+
+## 0.87.2 — 18 ottobre 2026
+
+### Modificato
+
+- Pagine dei corsi: una frase sotto ogni voce di «Cosa può aspettarsi»
+
+## 0.87.1 — 18 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione il certificato medico si legge chiaro: serve per partecipare, si carica o si porta in segreteria
+
+## 0.87.0 — 18 ottobre 2026
+
+### Novità
+
+- Nel modulo di iscrizione gli altri corsi (non per la sua età) si aprono con un tasto
+
+## 0.86.0 — 18 ottobre 2026
+
+### Novità
+
+- Nel modulo di iscrizione si capisce che tesseramento e foto vanno scelti, e che dire no non ferma l'iscrizione
+
+## 0.85.9 — 18 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione il tasto «Manda la richiesta» è largo quanto i campi
+
+## 0.85.8 — 17 ottobre 2026
+
+### Modificato
+
+- Sul sito la Home non ripete «Contattaci» sotto il titolo
+
+## 0.85.7 — 17 ottobre 2026
+
+### Risolto
+
+- Sul sito, da iPhone, la freccia dei corsi non è più un'emoji azzurra
+
+## 0.85.6 — 17 ottobre 2026
+
+### Risolto
+
+- Sul telefono i corsi del sito non sono più attaccati, c'è spazio tra un riquadro e l'altro
+
+## 0.85.5 — 17 ottobre 2026
+
+### Modificato
+
+- Sul sito il pulsante «Contattaci» sotto il titolo resta solo nella Home
+
+## 0.85.4 — 17 ottobre 2026
+
+### Modificato
+
+- Sul sito «Contattaci» è un pulsante accanto a «Prova», e sul telefono il menu sta su una riga
+
+## 0.85.3 — 17 ottobre 2026
+
+### Risolto
+
+- Le foto del sito non tagliano più le teste
+
+## 0.85.2 — 17 ottobre 2026
+
+### Risolto
+
+- Il pulsante in testata del sito ha lo spazio tra «Prova» e «una settimana»
+
+## 0.85.1 — 17 ottobre 2026
+
+### Modificato
+
+- Il sito mostra l'anteprima giusta quando lo condividi e si presenta agli assistenti AI
+
+## 0.85.0 — 17 ottobre 2026
+
+### Novità
+
+- Il modulo di iscrizione ha l'aspetto del sito, in blu e giallo
+
+## 0.84.1 — 17 ottobre 2026
+
+### Modificato
+
+- Il sito pubblico dice a Google e agli assistenti AI chi siamo, dove e quali corsi
+
+## 0.84.0 — 17 ottobre 2026
+
+### Novità
+
+- Il sito pubblico ha le pagine come nel design, con il collage in Home e i testi pronti
+
+## 0.83.1 — 17 ottobre 2026
+
+### Risolto
+
+- Il pulsante Prova del sito porta al modulo di iscrizione
+
+## 0.83.0 — 17 ottobre 2026
+
+### Novità
+
+- La contabilità per chi cura i conti, con movimenti, voci e casse
+
+### Modificato
+
+- La pagina del sito resta centrata sugli schermi larghi
+
+## 0.82.0 — 17 ottobre 2026
+
+### Novità
+
+- Le tessere dei corsi hanno la fascia d'età e le pillole bambini, adulti, anziani, agonisti
+
+## 0.81.0 — 17 ottobre 2026
+
+### Novità
+
+- La Home del sito ha la foto a sinistra e il carosello dei clienti a destra
+
+## 0.80.1 — 17 ottobre 2026
+
+### Risolto
+
+- Il sito pubblico mostra l'icona nella scheda del browser
+
+## 0.80.0 — 17 ottobre 2026
+
+### Novità
+
+- La Home del sito ha quattro foto alte, avatar nelle citazioni e titoli grandi nei valori
+
+## 0.79.0 — 17 ottobre 2026
+
+### Novità
+
+- Il sito sul computer ha la scala del design, con titolo grande, collage largo e tessere alte
+
+## 0.78.0 — 17 ottobre 2026
+
+### Novità
+
+- Il testo della Home come nel design, pronto da incollare nel pannello SITO
+
+## 0.77.1 — 17 ottobre 2026
+
+### Modificato
+
+- Nomi veri dei tredici istruttori nei disegni del sito
+
+## 0.77.0 — 17 ottobre 2026
+
+### Novità
+
+- La Home del sito ha in cima un collage di foto e numeri accanto al titolo
+
+## 0.76.0 — 17 ottobre 2026
+
+### Novità
+
+- Il sito della palestra mostra i testi a tessere colorate, con titoli grandi e commenti che scorrono
+
+## 0.75.0 — 17 ottobre 2026
+
+### Novità
+
+- Il sito di Officine dello Sport ha un aspetto nuovo, in blu e giallo
+
+## 0.74.0 — 17 ottobre 2026
+
+### Novità
+
+- Nel pannello Sito puoi caricare le foto e metterle nelle pagine
+
+## 0.73.4 — 17 ottobre 2026
+
+### Modificato
+
+- Il grafo del progetto: Claude lo consulta prima di cercare nel codice
+
+## 0.73.3 — 17 ottobre 2026
+
+### Modificato
+
+- Il sito si pubblica da solo: ogni cinque minuti, dalle pagine pubblicate
+- Bump actions/setup-node from 5.0.0 to 7.1.0
+- Bump supabase/setup-cli from 1.7.3 to 3.0.1
+- Bump actions/checkout from 5.1.0 to 7.0.1
+- Bump actions/upload-artifact from 4.6.2 to 7.0.2
+
+## 0.73.2 — 17 ottobre 2026
+
+### Modificato
+
+- Il sito pubblico: dalle pagine pubblicate ai file del sito, con l'aspetto approvato
+
+## 0.73.1 — 17 ottobre 2026
+
+### Modificato
+
+- Gli accessi al database più stretti: calendario e impostazioni solo a chi lavora
+
+## 0.73.0 — 17 ottobre 2026
+
+### Novità
+
+- Il portale ha il suo indirizzo, app.officinedellosport.it
+
+## 0.72.2 — 17 ottobre 2026
+
+### Modificato
+
+- Le azioni dei workflow puntano allo SHA del commit, e Dependabot le tiene aggiornate
+
+## 0.72.1 — 17 ottobre 2026
+
+### Modificato
+
+- Il sito: rilanciando 06-iscrizioni.sql le funzioni pubbliche del sito restano aperte
+
+## 0.72.0 — 17 ottobre 2026
+
+### Novità
+
+- La segreteria scrive le pagine del sito della palestra dall'app, con bozza e pubblicazione
+
+## 0.71.0 — 17 ottobre 2026
+
+### Novità
+
+- Il ruolo «amministrazione» per chi cura i conti, con pagamenti e listino
+
+## 0.70.1 — 17 ottobre 2026
+
+### Risolto
+
+- L'accesso non si blocca più con «Failed to fetch dynamically imported module» dopo un aggiornamento
+
+## 0.70.0 — 17 ottobre 2026
+
+### Novità
+
+- Nella scheda ISCRITTI di un corso il riepilogo, il filtro NON IN REGOLA e il tasto CORSO dalla scheda della persona
+
+## 0.69.0 — 17 ottobre 2026
+
+### Novità
+
+- Gli iscritti di un corso in una scheda a parte, con ricerca, ordinamento e clic sulla persona
+
+## 0.68.0 — 17 ottobre 2026
+
+### Novità
+
+- Lo storico dei pagamenti di ogni persona nella scheda e una pagina PAGAMENTI con quelli di tutti
+
+## 0.67.0 — 17 ottobre 2026
+
+### Novità
+
+- Il numero RASD della palestra, in IMPOSTAZIONI sotto «Chi fa le ricevute»
+
+## 0.66.0 — 16 ottobre 2026
+
+### Novità
+
+- La striscia COSA MANCA si può nascondere da IMPOSTAZIONI, su quel dispositivo
+
+## 0.65.0 — 16 ottobre 2026
+
+### Novità
+
+- Nella SETTIMANA, toccando le date si apre un calendario del mese per saltare a un'altra settimana, con un quadratino sui giorni che hanno lezioni
+
+## 0.64.0 — 16 ottobre 2026
+
+### Novità
+
+- In cima a ogni pagina della segreteria la striscia COSA MANCA, con appelli non fatti, certificati scaduti, pagamenti e richieste online
+
+## 0.63.0 — 16 ottobre 2026
+
+### Novità
+
+- Nell'appello della segreteria tre tasti (DA SEGNARE, PRESENTI, ASSENTI) con una lista alla volta e ✓ ✕ per segnare chi manca
+
+## 0.62.2 — 15 ottobre 2026
+
+### Risolto
+
+- Nel tema Tatami l'elenco della ricerca iscritto si legge
+
+## 0.62.1 — 15 ottobre 2026
+
+### Risolto
+
+- L'appello di una lezione troppo vecchia o troppo lontana si apre in sola lettura
+
+## 0.62.0 — 15 ottobre 2026
+
+### Novità
+
+- La ricerca in cima al menu trova anche richieste, corsi e istruttori, e gli iscritti dal telefono
+
+## 0.61.0 — 15 ottobre 2026
+
+### Novità
+
+- Terzo tema Tatami (paglia e verde muschio), a scelta accanto a nero e bianco, anche nel timer
+
+## 0.60.5 — 15 ottobre 2026
+
+### Risolto
+
+- Gli istruttori segnano le presenze solo delle lezioni di questi giorni
+
 ## 0.60.4 — 15 ottobre 2026
 
 ### Risolto

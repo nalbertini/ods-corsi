@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
     .eq('id', corpo.persona)
     .maybeSingle()
   if (error) return no(error.message, 500)
-  if (!p || (p.ruolo !== 'istruttore' && p.ruolo !== 'staff')) return no('Si invitano solo istruttori e segreteria', 400)
+  if (!p || (p.ruolo !== 'istruttore' && p.ruolo !== 'staff' && p.ruolo !== 'amministrazione')) return no('Si invitano solo istruttori, segreteria e amministrazione', 400)
   if (!p.attiva) return no(`${p.nome} è senza accesso: prima va ridato`, 400)
   if (!p.email) return no(`${p.nome} non ha un’email`, 400)
   if (p.utente_id) return no(`${p.nome} è già entrata: se ha perso la password, la chiede dalla porta con «password dimenticata»`, 409)

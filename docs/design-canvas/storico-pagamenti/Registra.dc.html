@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 14px; width: 760px; background: #121212; padding: 28px 36px 36px">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · REGISTRA UN PAGAMENTO (si apre dal tasto nella scheda)</span>
+  <dc-import name="Riquadro" contesto="segreteria" etichetta="PAGAMENTO FATTO A MANO" titolo="Rossi Giulia" testo="Per un pagamento già avvenuto senza ricevuta: in palestra, in contanti, prima dell'app. Resta nello storico e si può annullare." hint-size="100%,150px"></dc-import>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px">
+    <dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="DATA" valore="14/10/2026" hint-size="100%,80px"></dc-import>
+    <dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="IMPORTO" valore="40,00" hint-size="100%,80px"></dc-import>
+    <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="COME HA PAGATO" valore="Contanti" hint-size="100%,80px"></dc-import>
+  </div>
+  <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="A COSA SERVE" valore="ANNUALE JUDO KIDS" hint-size="100%,80px"></dc-import>
+  <dc-import name="Campo" contesto="segreteria" tipo="area" etichetta="NOTA (FACOLTATIVA)" valore="Pagato direttamente in palestra" hint-size="100%,100px"></dc-import>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">A COSA SERVE si sceglie fra le voci del listino della persona: QUOTA ASSOCIATIVA, i suoi corsi, ALTRO. Se è la QUOTA ASSOCIATIVA, vale come quota pagata fino alla data che metti.</span>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+    <dc-import name="Bottone" label="REGISTRA IL PAGAMENTO" variante="pieno" contesto="segreteria" hint-size="260px,48px"></dc-import>
+    <dc-import name="Bottone" label="NO, TORNA INDIETRO" variante="linea" contesto="segreteria" hint-size="220px,48px"></dc-import>
+  </div>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88; margin-top: 18px">ERRORE · IMPORTO SBAGLIATO</span>
+  <dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="IMPORTO" valore="40,0x" nota="L'importo non si capisce: scrivi un numero, per esempio 40,00." hint-size="100%,110px"></dc-import>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":760,"height":860}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

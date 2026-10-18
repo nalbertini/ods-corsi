@@ -1,7 +1,6 @@
 // ---------------------------------------------------------------------------
 // Il Banco, senza browser: l'aspetto scelto, dove sta ogni voce, cosa tiene
-// fuori di sala, il tabellone di oggi, la coda «da fare al banco», gli
-// elenchi dei soldi.
+// fuori di sala, il tabellone di oggi, la coda «da fare al banco».
 //
 //   node scripts/prova-banco.mjs
 //
@@ -18,7 +17,6 @@ const { outputFiles } = await build({
       export * as blocca from './src/lib/cosaBlocca'
       export * as giornata from './src/lib/giornata'
       export * as coda from './src/lib/codaBanco'
-      export * as soldi from './src/lib/elenchiSoldi'
       export * as segreteria from './src/lib/segreteria'
     `,
     resolveDir: '.',
@@ -115,11 +113,7 @@ titolo('aspetto')
 titolo('indirizzi del Banco')
 {
   const leggi = (h) => m.indirizzo.leggiIndirizzo(h, { prova: false })
-  ok('#dapagare è la voce dapagare', leggi('#dapagare'), { voce: 'dapagare' })
-  ok('#ricevute è la voce ricevute', leggi('#ricevute'), { voce: 'ricevute' })
-  ok('scriviIndirizzo di ricevute', m.indirizzo.scriviIndirizzo({ voce: 'ricevute' }), '#ricevute')
-  ok('scriviIndirizzo di dapagare', m.indirizzo.scriviIndirizzo({ voce: 'dapagare' }), '#dapagare')
-  ok('dapagare e ricevute sono fra le voci', ['dapagare', 'ricevute'].every((v) => m.indirizzo.VOCI.includes(v)), true)
+  ok('#pagamenti, #tessere e #sito sono voci', ['#pagamenti', '#tessere', '#sito'].map((h) => leggi(h)?.voce), ['pagamenti', 'tessere', 'sito'])
 }
 
 // ---------------------------------------------------------------------------
@@ -133,10 +127,10 @@ titolo('luoghi del Banco')
   ok('i nomi dei luoghi', LUOGHI.map((l) => l.nome), ['OGGI', 'PERSONE', 'CORSI', 'SOLDI', 'PALESTRA'])
   const voci = (id) => (LUOGHI.find((l) => l.id === id)?.voci ?? []).map((v) => [v.voce, v.nome])
   ok('OGGI', voci('oggi'), [['dafare', 'OGGI'], ['settimana', 'SETTIMANA'], ['presenze', 'PRESENZE']])
-  ok('PERSONE', voci('persone'), [['iscritti', 'ISCRITTI'], ['richieste', 'RICHIESTE ONLINE'], ['istruttori', 'ISTRUTTORI'], ['personale', 'ACCESSI']])
+  ok('PERSONE', voci('persone'), [['iscritti', 'ISCRITTI'], ['tessere', 'TESSERE'], ['richieste', 'RICHIESTE ONLINE'], ['istruttori', 'ISTRUTTORI'], ['personale', 'ACCESSI']])
   ok('CORSI', voci('corsi'), [['corsi', 'CORSI'], ['esercizi', 'ESERCIZI']])
-  ok('SOLDI', voci('soldi'), [['dapagare', 'DA PAGARE'], ['ricevute', 'RICEVUTE'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
-  ok('PALESTRA', voci('palestra'), [['statistiche', 'STATISTICHE'], ['segnalazioni', 'SEGNALAZIONI'], ['regole', 'IMPOSTAZIONI']])
+  ok('SOLDI', voci('soldi'), [['pagamenti', 'PAGAMENTI'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
+  ok('PALESTRA', voci('palestra'), [['statistiche', 'STATISTICHE'], ['segnalazioni', 'SEGNALAZIONI'], ['sito', 'SITO'], ['regole', 'IMPOSTAZIONI']])
 
   for (const v of VOCI) {
     if (v === 'segnalate') continue
@@ -408,47 +402,6 @@ titolo('coda del banco')
   const tutto = cod({ appelli: [app('x', [17, 0])], persone: [cert('c', 'Rossi', 'Anna'), senzaQuota('q', 'Neri', 'Dario')], richieste: 2, istruttori: 1, segnalate: 1 })
   ok('l\'ordine: appelli, certificati, quote, poi le cose da fare presto', ids(tutto), ['appello-x', 'certificato-c', 'quota-q', 'richieste', 'istruttori', 'segnalate'])
   ok('i «blocca» vengono prima dei «presto»', tutto.map((r) => r.livello), ['blocca', 'blocca', 'blocca', 'presto', 'presto', 'presto'])
-}
-
-// ---------------------------------------------------------------------------
-titolo('elenchi dei soldi: DA PAGARE')
-{
-  const dp = (persone) => m.soldi.daPagareElenco(persone, OGGI)
-  const riga = (r) => ({ id: r.persona.id, come: r.come, giorni: r.giorni, mancano: r.mancano })
-  ok('lista vuota: niente', dp([]), [])
-  ok('chi è in regola, chi è pagato e chi non è attivo non compaiono', dp([persona('a', 'Rossi', 'Anna', { quote: PAGATA }), persona('b', 'Rossi', 'Bruno', { attiva: false }), persona('c', 'Rossi', 'Carlo', { pagamento: { stato: 'pagato', fino: '2027-07-31' } })]), [])
-
-  ok('un solo da pagare: i giorni da quando è iscritta', dp([persona('a', 'Bianchi', 'Anna')]).map(riga), [{ id: 'a', come: 'da_pagare', giorni: 38 }])
-  ok('più iscrizioni: conta la prima', dp([persona('m', 'Gialli', 'Gino', { iscrizioni: [{ corsoId: 'x', dal: '2026-10-01' }, { corsoId: 'y', dal: '2026-09-20' }] })]).map(riga), [{ id: 'm', come: 'da_pagare', giorni: 28 }])
-  ok('senza iscrizioni: giorni null', dp([persona('n', 'Neri', 'Dario', { iscrizioni: [] })]).map(riga), [{ id: 'n', come: 'da_pagare', giorni: null }])
-  // Un'iscrizione che parte domani non ha ancora fatto aspettare nessuno: niente giorni negativi, e sta in fondo con chi non ha data.
-  ok('iscrizione futura: giorni null', dp([persona('u', 'Ultimi', 'Ugo', { iscrizioni: [{ corsoId: 'x', dal: '2026-10-25' }] })]).map(riga), [{ id: 'u', come: 'da_pagare', giorni: null }])
-  ok('quota scaduta: i giorni da quando è scaduta', dp([persona('r', 'Rossi', 'Bruno', { quote: [{ anno: 2025, numero: 9, dal: '2025-10-09', al: '2026-10-08', mancano: 0 }] })]).map(riga), [{ id: 'r', come: 'scaduto', giorni: 10 }])
-  ok('in parte da una ricevuta: giorni null e quanto manca', dp([persona('v', 'Verdi', 'Carla', { quote: [{ anno: 2026, numero: 4, dal: '2026-09-01', al: '2027-07-31', mancano: 500 }] })]).map(riga), [{ id: 'v', come: 'in_parte', giorni: null, mancano: 500 }])
-  ok('in parte fuori app: giorni null e nessun importo', dp([persona('f', 'Fucsia', 'Fabio', { pagamento: { stato: 'in_parte', fino: '2027-07-31' } })]).map(riga), [{ id: 'f', come: 'in_parte', giorni: null }])
-
-  const tutti = [
-    persona('v', 'Verdi', 'Carla', { quote: [{ anno: 2026, numero: 4, dal: '2026-09-01', al: '2027-07-31', mancano: 500 }] }),
-    persona('n', 'Neri', 'Dario', { iscrizioni: [] }),
-    persona('r', 'Rossi', 'Bruno', { quote: [{ anno: 2025, numero: 9, dal: '2025-10-09', al: '2026-10-08', mancano: 0 }] }),
-    persona('m', 'Gialli', 'Gino', { iscrizioni: [{ corsoId: 'x', dal: '2026-09-20' }] }),
-    persona('b2', 'Bianchi', 'Anna'),
-    persona('b1', 'Bianchi', 'Aldo'),
-  ]
-  ok('prima chi aspetta da più giorni, a pari merito cognome e nome, i null in fondo', dp(tutti).map((r) => r.persona.id), ['b1', 'b2', 'm', 'r', 'n', 'v'])
-}
-
-titolo('elenchi dei soldi: RICEVUTE')
-{
-  const r = (id, anno, numero, extra = {}) => ({ id, anno, numero, totale: 1000, pagato: 1000, creataIl: `${anno}-10-01`, voci: [], anticipo: 0, ...extra })
-  const sono = [r('a', 2025, 40), r('b', 2026, 2), r('c', 2026, 11, { annullataIl: '2026-10-05' }), r('d', 2025, 41), r('e', 2026, 1)]
-  const dopo = m.soldi.ricevuteElenco(sono)
-  ok('lista vuota: niente', m.soldi.ricevuteElenco([]), [])
-  ok('una sola ricevuta', m.soldi.ricevuteElenco([r('a', 2026, 1)]).map((x) => x.id), ['a'])
-  ok('dalla più recente: anno poi numero, decrescenti', dopo.map((x) => x.id), ['c', 'b', 'e', 'd', 'a'])
-  ok('le annullate restano in elenco', dopo.some((x) => x.id === 'c' && x.annullataIl), true)
-  ok('non se ne scarta nessuna', dopo.length, sono.length)
-  ok('l\'elenco ricevuto non viene riordinato', sono.map((x) => x.id), ['a', 'b', 'c', 'd', 'e'])
 }
 
 console.log(guai ? `\n${guai} prove non passano` : '\nTutto bene')

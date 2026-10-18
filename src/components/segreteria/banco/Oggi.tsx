@@ -75,7 +75,7 @@ export function Oggi({ d, conti, onVai, onRiprova }: { d: DatiSegreteria; conti:
       {guaio && <Guaio testo={`La giornata non si legge: ${guaio}`} />}
       <div className="bn-cifre">
         <Cifra titolo="SENZA CERTIFICATO" valore={conti.certificati} sotto="in sala non entrano" guaio onClick={() => onVai('iscritti', { filtro: 'certificato' })} />
-        <Cifra titolo="DA PAGARE" valore={conti.pagare} sotto="quota non in regola" guaio onClick={() => onVai('dapagare')} />
+        <Cifra titolo="DA PAGARE" valore={conti.pagare} sotto="quota non in regola" guaio onClick={() => onVai('iscritti', { filtro: 'pagare' })} />
         <Cifra titolo="RICHIESTE" valore={conti.richieste} sotto="dal modulo online" onClick={() => onVai('richieste')} />
         <Cifra titolo="PRESENTI OGGI" valore={lezioni.dato ? presenti : null} sotto={`su ${attesi} attesi`} />
       </div>

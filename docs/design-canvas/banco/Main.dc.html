@@ -20,7 +20,7 @@
   <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #c9c9c4">Una segreteria ridisegnata attorno a quello che fa la reception: una persona davanti, il telefono che suona, una domanda («è in regola?»). Oggi l’app è un menu di 14 voci; qui è una ricerca, cinque luoghi, una giornata e una scheda per persona. Schermate: MAPPA, OGGI, PERSONA, PERSONE, RICERCA, PALESTRA. Dati inventati.</p>
   <h2 style="margin: 14px 0 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.12em; line-height: 1; color: #f4c31b">COSA CAMBIA, RADICALMENTE</h2>
   <ul style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.5; color: #c9c9c4">
-    <li><b>Niente menu a sinistra.</b> In alto una ricerca sempre pronta (tasto /) e cinque luoghi: OGGI, PERSONE, CORSI, SOLDI, PALESTRA. Le 13 voci di oggi più IMPOSTAZIONI ci stanno tutte (vedi la MAPPA): OGGI (DA FARE, SETTIMANA, PRESENZE), PERSONE (ISCRITTI, RICHIESTE ONLINE, ISTRUTTORI), CORSI (CORSI, ESERCIZI), SOLDI (DA PAGARE, LISTINO, VESTIARIO, RICEVUTE), PALESTRA (STATISTICHE, SEGNALAZIONI, IMPOSTAZIONI, IMPORTA, TIMER). Ogni luogo ha una seconda riga con le sue voci; LINK, GUIDA e TEMA stanno in cima a ogni pagina.</li>
+    <li><b>Niente menu a sinistra.</b> In alto una ricerca sempre pronta (tasto /) e cinque luoghi: OGGI, PERSONE, CORSI, SOLDI, PALESTRA. Le 13 voci di oggi più IMPOSTAZIONI ci stanno tutte (vedi la MAPPA): OGGI (DA FARE, SETTIMANA, PRESENZE), PERSONE (ISCRITTI, RICHIESTE ONLINE, ISTRUTTORI), CORSI (CORSI, ESERCIZI), SOLDI (PAGAMENTI, LISTINO, VESTIARIO), PALESTRA (STATISTICHE, SEGNALAZIONI, IMPOSTAZIONI, IMPORTA, TIMER). Ogni luogo ha una seconda riga con le sue voci; LINK, GUIDA e TEMA stanno in cima a ogni pagina.</li>
     <li><b>Si parte dalla persona, non dalla tabella.</b> Chi telefona o sta al banco si cerca per nome; la scheda mostra in una pagina certificato, quota, presenze, ricevute e famiglia, e dice in una frase cosa blocca e con quale tasto si sblocca.</li>
     <li><b>La giornata è un tabellone sale × ore.</b> Si vede a colpo d’occhio dove si è e cosa è saltato (appello non fatto in rosso, con segno e parole). Oggi è un elenco per orario.</li>
     <li><b>Chiaro di default.</b> La reception è illuminata (PRODUCT.md): carta calda, barra scura in cima come segnaletica. Il tema scuro resta, con gli stessi segnali.</li>
@@ -53,7 +53,7 @@
     <li>La ricerca è quella di sempre (solo persone), non la palette con corsi e azioni.</li>
     <li>OGGI: sotto la coda, «TUTTO QUELLO CHE C’È DA FARE» apre il DA FARE di sempre, con quello che la coda non mostra. Senza lezioni, la giornata dice «Nessuna lezione oggi».</li>
     <li>Sotto i 1100px la coda viene prima del tabellone; sotto i 768px resta il menu di sempre.</li>
-    <li>DA PAGARE: i tasti sono a linea (il rosso resta solo sulla coda di OGGI).</li>
+    <li>SOLDI non ha pagine nuove: DA PAGARE e RICEVUTE sono state tolte, perché <code>main</code> ha nel frattempo PAGAMENTI (tutti i pagamenti, chi deve ancora pagare, il CSV). Le due pagine disegnate qui non ci sono più.</li>
   </ul>
 </div>
 </x-dc>

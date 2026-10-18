@@ -2,12 +2,13 @@ import { daSenzaIstruttore } from './ore'
 import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
+import { giorniConLezioni } from './calendarioSettimana'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
 import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { tutteLeRighe } from './tutteLeRighe'
 import { ESTENSIONI } from './richieste'
-import { insegna, type RuoloPersonale } from './ruoli'
+import { insegna, RUOLI_DEL_PERSONALE, segniDi, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
@@ -16,9 +17,15 @@ import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
+import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
+import { enteDaDati, fineAnno, mancaTessere, type EsitoImportTessere, type TesseraSeg } from './tessere'
+import type { PaginaSito, VoceMenu } from './sitoPagine'
+import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
+import { riduciFoto } from './foto'
+import { URL_SUPABASE } from './dati'
 import { AllegatiNonPartiti, cosaNonVaSegnalazione, eCategoria, SCEGLI, type Categoria, guaioAllegati, mandaAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 
 /**
@@ -50,6 +57,31 @@ interface RigaSessione {
 }
 
 type Iscrizione = { corso_id: string; persona_id: string; dal: string; al: string | null }
+
+/** Una riga di `pagamenti_diretti` (54-pagamenti-diretti.sql). */
+interface RigaPagamentoDiretto {
+  id: string
+  persona_id: string
+  data: string
+  importo: number
+  metodo: string
+  voce: string
+  nota: string | null
+  creato_il: string
+  annullato_il: string | null
+}
+const CAMPI_DIRETTO = 'id, persona_id, data, importo, metodo, voce, nota, creato_il, annullato_il'
+const pagamentoDiretto = (r: RigaPagamentoDiretto): PagamentoDiretto => ({
+  id: r.id,
+  personaId: r.persona_id,
+  data: r.data,
+  importo: r.importo,
+  metodo: r.metodo,
+  voce: r.voce,
+  nota: r.nota ?? undefined,
+  creatoIl: r.creato_il,
+  annullatoIl: r.annullato_il ?? undefined,
+})
 
 /** Una riga di `ricevute` (16-ricevute.sql): le voci sono il JSON che scrive `emetti_ricevuta`. */
 interface RigaRicevuta {
@@ -107,19 +139,30 @@ const MANCA_CERTIFICATI = 'I certificati nell’app non sono ancora attivi sul d
 const NUCLEO_SOLO_PROVA = 'Il nucleo familiare c’è solo in prova, per ora: il database non lo tiene ancora'
 const DURATA_LINK = 600
 const ALLEGATI = 'segnalazioni'
+const MANCANO_PAGAMENTI_A_MANO = 'I pagamenti a mano non sono ancora attivi sul database: va lanciato 54-pagamenti-diretti.sql'
+/** Lo Storage risponde con errori suoi: si traducono in frasi per chi usa l'app (`cosaNonVaImmagini`). */
+const immaginiNonAttive = (e: { message: string; statusCode?: string }) => new Error(cosaNonVaImmagini(e.message, e.statusCode))
+const MANCA_SITO = 'Il pannello del sito non è ancora attivo sul database: va lanciato 56-sito.sql'
 const MANCANO_ALLEGATI = 'Gli allegati non sono ancora attivi sul database: va lanciato 32-segnalazioni-allegati.sql'
 
 const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `${p.nome} ${p.cognome}`.trim() : '')
 
 /** Le tabelle che arrivano dopo lo schema, col file che le crea. */
+const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
+const MANCA_CHIUSURA = 'Il database non è ancora aggiornato per la chiusura della cassa: va lanciato 60-chiusura-cassa.sql'
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   // Prima di `segnalazioni`, che le somiglia.
+  [/chiusure_cassa/, MANCA_CHIUSURA],
+  [/voci_contabili|relation "(public\.)?(casse|movimenti)"|table 'public\.(casse|movimenti)'/, MANCA_CONTABILITA],
+  [/sito_pagine|sito_menu|sito_redirect|salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito/, MANCA_SITO],
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
+  [/tessere/, 'Le tessere non sono ancora attive sul database: va lanciato 61-tessere.sql'],
   [/non_doppioni/, 'Segnare due schede «non sono doppioni» non è ancora attivo sul database: va lanciato 33-non-doppioni.sql'],
   [/segnalazioni/, 'Le segnalazioni non sono ancora attive sul database: va lanciato 25-segnalazioni.sql'],
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
   [/musica_sale/, 'La musica delle sale non è ancora attiva sul database: va lanciato 09-musica.sql'],
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
+  [/pagamenti_diretti|pagamento_diretto/, MANCANO_PAGAMENTI_A_MANO],
   [/ricevute|emetti_ricevuta/, 'Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql'],
   [/anagrafiche/, 'Nascita, residenza e genitore degli iscritti non sono ancora attivi sul database: va lanciato 18-anagrafiche.sql'],
   [/segna_istruttore_previsto/, 'Segnare un istruttore su una lezione già coperta non è ancora attivo sul database: va lanciato 46-istruttore-collega.sql'],
@@ -129,6 +172,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
 
 const MANCA_ATTIVITA = 'Le attività non sono ancora attive sul database: va lanciato 41-attivita.sql'
 
+const MANCA_AMMINISTRAZIONE = 'Il ruolo amministrazione non è ancora attivo sul database: va lanciato 55-amministrazione.sql'
 const MANCA_DOPPIO = 'Il ruolo doppio, segreteria e istruttore, non è ancora attivo sul database: va rilanciato 01-schema.sql'
 
 /**
@@ -137,9 +181,12 @@ const MANCA_DOPPIO = 'Il ruolo doppio, segreteria e istruttore, non è ancora at
  * `Personale.tsx`), così un database che non ha ancora la colonna salva lo
  * stesso istruttori e segreteria.
  */
-function ruoloDaScrivere(p: RuoloPersonale): { ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean } {
-  if (p.ancheIstruttore === undefined) return { ruolo: p.ruolo }
-  return { ruolo: p.ruolo, anche_istruttore: p.ruolo === 'staff' && p.ancheIstruttore }
+function ruoloDaScrivere(p: RuoloPersonale): { ruolo: 'istruttore' | 'staff' | 'amministrazione'; anche_istruttore?: boolean; anche_amministrazione?: boolean } {
+  return {
+    ruolo: p.ruolo,
+    ...(p.ancheIstruttore === undefined ? {} : { anche_istruttore: segniDi(p.ruolo, p.ancheIstruttore).ancheIstruttore }),
+    ...(p.ancheAmministrazione === undefined ? {} : { anche_amministrazione: segniDi(p.ruolo, false, p.ancheAmministrazione).ancheAmministrazione }),
+  }
 }
 
 /** `anagrafiche` (18-anagrafiche.sql): i nomi delle colonne e dei campi, nello stesso ordine. */
@@ -189,6 +236,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // Una radio nelle liste della musica: il vincolo del link la ammette dal 39.
   if (e?.code === '23514' && /musica_sale_link_check/.test(e.message ?? ''))
     return new Error('Le radio nelle liste non sono ancora attive sul database: va lanciato 39-musica-radio.sql')
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /pagamento_diretto/.test(e.message ?? '')) return new Error(MANCANO_PAGAMENTI_A_MANO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
     return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
   if (e?.code === '42703' && /ricevute/.test(e.message ?? '')) return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
@@ -200,6 +248,19 @@ function guaio(e: { message?: string; code?: string } | null): Error {
     return new Error('La voce e gli esercizi dei tablet non sono ancora attivi sul database: va lanciato 13-voce-esercizi.sql')
   // La colonna del ruolo doppio, che arriva con 01-schema.sql: 42703 leggendo, PGRST204 scrivendo.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /anche_istruttore/.test(e.message ?? '')) return new Error(MANCA_DOPPIO)
+  // Il ruolo amministrazione arriva con 55-amministrazione.sql: la colonna che non c'è, o il valore che l'enum non conosce (22P02).
+  if (
+    ((e?.code === '42703' || e?.code === 'PGRST204') && /anche_amministrazione/.test(e.message ?? '')) ||
+    (e?.code === '22P02' && /amministrazione/.test(e.message ?? ''))
+  )
+    return new Error(MANCA_AMMINISTRAZIONE)
+  // Le funzioni dell'amministrazione, che arrivano con lo stesso file.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /cerca_pagatori|nomi_persone/.test(e.message ?? '')) return new Error(MANCA_AMMINISTRAZIONE)
+  // Le funzioni della contabilità arrivano con 59-contabilita.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /salva_voce|rinomina_voce|imposta_voce_attiva|imposta_saldo_cassa|registra_movimento|registra_giroconto|annulla_movimento|correggi_testo_movimento/.test(e.message ?? '')) return new Error(MANCA_CONTABILITA)
+  // Le funzioni della chiusura di cassa arrivano con 60-chiusura-cassa.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /chiudi_cassa|annulla_chiusura_cassa/.test(e.message ?? '')) return new Error(MANCA_CHIUSURA)
+  if (e?.code === '42501' && /contabilità/.test(e.message ?? '')) return new Error('Non hai il permesso: la contabilità la cura l’amministrazione')
   // Il kanji arriva con 24-kanji.sql; due persone con lo stesso non si possono avere.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
   // Il file del certificato e la data insieme arrivano con 45-certificati-online.sql.
@@ -211,6 +272,16 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === 'P0002' && /allegato/.test(e.message ?? '')) return new Error('Questo allegato non c’è più')
   if (e?.code === '42501' && /allegato/.test(e.message ?? '')) return new Error('Un allegato lo toglie solo chi l’ha mandato')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /allegato/.test(e.message ?? '')) return new Error(MANCANO_ALLEGATI)
+  // Il sito arriva con 56-sito.sql: le funzioni che mancano, il testo che il sito non ammette, la pagina ancora nel menu.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /(salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito)/.test(e.message ?? '')) return new Error(MANCA_SITO)
+  if (e?.code === '23514' && /sito_pagine_(bozza|pubblicato)_check/.test(e.message ?? '')) return new Error('Il testo contiene cose che il sito non ammette (script, moduli, stili): toglile e riprova')
+  if (e?.code === '23514' && /sito_pagine_slug_check/.test(e.message ?? '')) return new Error('Questo indirizzo non va bene: solo lettere minuscole senza accenti, numeri e trattini, e non uno che serve al sito')
+  if (e?.code === '23514' && /sito_pagine_legge_visibile/.test(e.message ?? '')) return new Error('Le pagine di legge devono restare sul sito: non si possono nascondere')
+  if (e?.code === '23514' && /sito_pagine_titolo_check/.test(e.message ?? '')) return new Error('Il titolo va da 1 a 120 lettere')
+  if (e?.code === '23514' && /sito_pagine_descrizione_check/.test(e.message ?? '')) return new Error('La descrizione arriva al massimo a 300 lettere')
+  if (e?.code === '23514' && /sito_menu/.test(e.message ?? '')) return new Error('Una voce del menu ha un nome o un indirizzo che il sito non ammette')
+  if (e?.code === '23505' && /sito_pagine_slug_key/.test(e.message ?? '')) return new Error('Questo indirizzo è già di un’altra pagina')
+  if (e?.code === '23503' && /sito_menu/.test(e.message ?? '')) return new Error('La pagina è nel menu o nel footer del sito: toglila da lì, poi si cancella')
   // Le discipline arrivano con 40-discipline.sql.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /disciplin/.test(e.message ?? ''))
     return new Error('Le discipline non sono ancora attive sul database: va lanciato 40-discipline.sql')
@@ -221,8 +292,11 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /email_contatto/.test(e.message ?? ''))
     return new Error('L’email di contatto non è ancora attiva sul database: va lanciato 44-email-contatto.sql')
   if (e?.code === '23514' && /email_contatto/.test(e.message ?? '')) return new Error(CONTATTO_SBAGLIATO)
+  // `pagamenti_diretti` non lascia cancellare chi ne ha (54-pagamenti-diretti.sql).
+  if (e?.code === '23503' && /pagamenti_diretti/.test(e.message ?? '')) return new Error('Ha dei pagamenti registrati: non si elimina, gli si toglie l’accesso')
   if (e?.code === '23505' && /kanji/.test(e.message ?? '')) return new Error('Questo kanji è già di un’altra persona: scegline un altro')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
+  if (e?.code === '42501' && /troppe ricerche/.test(e.message ?? '')) return new Error('Hai fatto troppe ricerche: riprova fra qualche minuto')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
   // I nostri `raise exception` (P0001 quando non hanno un codice; P0002 «non c'è più»; 22023 e 54000)
   // sono già scritti per la segreteria: passano così come sono.
@@ -429,10 +503,20 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Anche la segreteria che insegna. Con `*` e il filtro qui, non nella
       // richiesta: su un database senza la colonna del ruolo doppio
       // (`01-schema.sql` non rilanciato) l'elenco degli istruttori c'è lo stesso.
-      const righe = ok(await db.from('persone').select('*').in('ruolo', ['istruttore', 'staff']).eq('attiva', true).order('nome')) as Array<{
-        id: string; nome: string; cognome: string; ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean
+      const righe = ok(await db.from('persone').select('*').in('ruolo', [...RUOLI_DEL_PERSONALE]).eq('attiva', true).order('nome')) as Array<{
+        id: string; nome: string; cognome: string; ruolo: 'istruttore' | 'staff' | 'amministrazione'; anche_istruttore?: boolean
       }>
       return righe.filter((r) => insegna({ ruolo: r.ruolo, ancheIstruttore: r.anche_istruttore })).map((r) => ({ id: r.id, nome: nome(r) }))
+    },
+
+    async giorniConLezioni(da, a) {
+      // Sola lettura delle date, senza `allungaCalendario`: il calendario si apre spesso e non deve scrivere.
+      const fino = new Date(a)
+      fino.setHours(23, 59, 59, 999)
+      const righe = ok(
+        await tutteLeRighe((prima, ultima) => db.from('sessioni').select('inizio').gte('inizio', da.toISOString()).lte('inizio', fino.toISOString()).order('inizio').order('id').range(prima, ultima)),
+      ) as unknown as Array<{ inizio: string }>
+      return [...giorniConLezioni(righe.map((r) => r.inizio))]
     },
 
     async settimana(da, a) {
@@ -532,13 +616,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     rigenera,
 
     async corsi() {
-      const leggi = (giorno: string) =>
-        db.from('corsi').select(`id, nome, colore, capienza, attivo, sala_id, istruttore_id, sale ( nome ), ricorrenze ( id, giorno, ora, durata_min, dal, al, sala_id, sale ( nome )${giorno} )`).order('nome')
-      let lette = await leggi(', attivita_id, attivita ( nome )')
+      const leggi = (giorno: string, ente: string) =>
+        db.from('corsi').select(`id, nome, colore, capienza, attivo, sala_id, istruttore_id${ente}, sale ( nome ), ricorrenze ( id, giorno, ora, durata_min, dal, al, sala_id, sale ( nome )${giorno} )`).order('nome')
+      let ente = ', ente_tessera'
+      let lette = await leggi(', attivita_id, attivita ( nome )', ente)
+      // Senza 61-tessere.sql i corsi si leggono come prima, senza la tessera richiesta.
+      if (mancaTessere(lette.error)) lette = await leggi(', attivita_id, attivita ( nome )', (ente = ''))
       // Senza 41-attivita.sql i giorni si leggono come prima, senza attività.
-      if (mancaAttivita(lette.error)) lette = await leggi('')
+      if (mancaAttivita(lette.error)) lette = await leggi('', ente)
       const righe = ok(lette) as unknown as Array<{
-        id: string; nome: string; colore: string | null; capienza: number | null; attivo: boolean; sala_id: string | null; istruttore_id: string | null
+        id: string; nome: string; colore: string | null; capienza: number | null; attivo: boolean; sala_id: string | null; istruttore_id: string | null; ente_tessera?: string | null
         sale: { nome: string } | null
         ricorrenze: Array<{ id: string; giorno: number; ora: string; durata_min: number; dal: string; al: string | null; sala_id: string | null; sale: { nome: string } | null; attivita_id?: string | null; attivita?: { nome: string } | null }>
       }>
@@ -554,6 +641,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           istruttori: [...(chi.get(r.id) ?? [])].sort((x, y) => Number(y.id === r.istruttore_id) - Number(x.id === r.istruttore_id)),
           capienza: r.capienza ?? undefined,
           attivo: r.attivo,
+          enteTessera: r.ente_tessera ?? undefined,
           ricorrenze: r.ricorrenze
             .filter((x) => !x.al || x.al >= g)
             .map((x) => ({
@@ -581,6 +669,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         istruttore_id: c.istruttori[0] ?? null,
         capienza: c.capienza ?? null,
         colore: c.colore ?? null,
+        // Solo se la scelta c'è: senza `61-tessere.sql` la schermata non la offre e la colonna non esiste.
+        ...(c.enteTessera === undefined ? {} : { ente_tessera: enteDaDati(c.enteTessera) ?? null }),
       }
       const id = c.id
         ? (ok(await db.from('corsi').update(riga).eq('id', c.id)), c.id)
@@ -658,6 +748,35 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async togliRicorrenza(ricorrenzaId) {
       ok(await db.rpc('chiudi_ricorrenza', { ricorrenza: ricorrenzaId }))
+    },
+
+    async tessere() {
+      const r = await tutteLeRighe((prima, ultima) =>
+        db.from('tessere').select('id, persona_id, ente, tipo, codice, dal, al, origine').order('persona_id').order('ente').order('dal').order('id').range(prima, ultima),
+      )
+      // Senza 61-tessere.sql: nessuna tessera, e lo si dice.
+      if (mancaTessere(r.error)) return { elenco: [], manca: true }
+      return {
+        elenco: (ok(r) as unknown as Array<{ id: string; persona_id: string; ente: string; tipo: TesseraSeg['tipo']; codice: string; dal: string; al: string; origine: 'rasd' | 'manuale' }>).map(
+          (x): TesseraSeg => ({ id: x.id, personaId: x.persona_id, ente: x.ente, tipo: x.tipo, codice: x.codice, dal: x.dal, al: x.al, origine: x.origine }),
+        ),
+      }
+    },
+
+    async importaTessere(righe, soloProva) {
+      const r = await db.rpc('importa_tessere', { righe, solo_prova: soloProva })
+      if (mancaTessere(r.error)) throw new Error('Le tessere non sono ancora attive sul database: va lanciato 61-tessere.sql')
+      return ok(r) as EsitoImportTessere
+    },
+
+    async aggiungiTessera(t) {
+      const ente = enteDaDati(t.ente)
+      if (!ente || !t.codice.trim()) throw new Error('Scrivi l’ente e il numero della tessera')
+      ok(await db.from('tessere').insert({ persona_id: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: fineAnno(t.dal), origine: t.origine ?? 'manuale' }))
+    },
+
+    async togliTessera(id) {
+      ok(await db.from('tessere').delete().eq('id', id))
     },
 
     async persone() {
@@ -974,6 +1093,155 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.rpc('annulla_ricevuta', { ricevuta: id }))
     },
 
+    async pagamentiDiretti(personaId) {
+      const leggi = (prima: number, ultima: number) => {
+        const q = db.from('pagamenti_diretti').select(CAMPI_DIRETTO)
+        return (personaId ? q.eq('persona_id', personaId) : q).order('data', { ascending: false }).order('creato_il', { ascending: false }).order('id').range(prima, ultima)
+      }
+      // `as`: Supabase tipa la riga a modo suo, la forma è quella di `CAMPI_DIRETTO`.
+      return (ok(await tutteLeRighe(leggi)) as unknown as RigaPagamentoDiretto[]).map(pagamentoDiretto)
+    },
+
+    async nomiPersone(ids) {
+      // Cinquecento alla volta: l'elenco va nell'indirizzo, e uno lungo non passa.
+      const unici = [...new Set(ids)]
+      const fuori: Array<{ id: string; nome: string; cognome: string }> = []
+      for (let i = 0; i < unici.length; i += 500) {
+        fuori.push(...(ok(await db.rpc('nomi_persone', { ids: unici.slice(i, i + 500) })) as Array<{ id: string; nome: string; cognome: string }>))
+      }
+      return fuori
+    },
+
+    // Le righe arrivano senza tipo dall'API: la forma è quella di 59-contabilita.sql. Per nome, così le casse e le voci
+    // escono nello stesso ordine su ogni database (gli id sono a caso) e il giroconto parte sempre da Cassa Contanti.
+    async voci() {
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('voci_contabili').select('*').order('nome').order('id').range(prima, ultima))) as Array<{ id: string; nome: string; tipo: 'entrata' | 'uscita'; di_sistema: boolean; attiva: boolean }>
+      return righe.map((r) => ({ id: r.id, nome: r.nome, tipo: r.tipo, diSistema: r.di_sistema, attiva: r.attiva }))
+    },
+
+    async casse() {
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('casse').select('*').order('nome').order('id').range(prima, ultima))) as Array<{ id: string; nome: string; saldo_iniziale: number; dal: string | null }>
+      return righe.map((r) => ({ id: r.id, nome: r.nome, saldoIniziale: r.saldo_iniziale, ...(r.dal ? { dal: r.dal } : {}) }))
+    },
+
+    async movimenti() {
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('movimenti').select('*').order('id').range(prima, ultima))) as Array<{
+        id: string; tipo: 'entrata' | 'uscita' | 'giroconto'; data: string; importo: number; voce_id: string | null; cassa_id: string; cassa_a_id: string | null
+        descrizione: string; nota: string | null; creato_il: string; annullato_il: string | null
+      }>
+      return righe.map((r) => ({
+        id: r.id,
+        tipo: r.tipo,
+        data: r.data,
+        importo: r.importo,
+        ...(r.voce_id ? { voceId: r.voce_id } : {}),
+        cassaId: r.cassa_id,
+        ...(r.cassa_a_id ? { cassaAId: r.cassa_a_id } : {}),
+        descrizione: r.descrizione,
+        ...(r.nota ? { nota: r.nota } : {}),
+        creatoIl: r.creato_il,
+        ...(r.annullato_il ? { annullatoIl: r.annullato_il } : {}),
+      }))
+    },
+
+    async salvaVoce(d) {
+      return (ok(await db.rpc('salva_voce', { dati: { nome: d.nome.trim(), tipo: d.tipo } })) as { id: string }).id
+    },
+
+    async rinominaVoce(id, nome) {
+      ok(await db.rpc('rinomina_voce', { id, nome: nome.trim() }))
+    },
+
+    async attivaVoce(id, attiva) {
+      ok(await db.rpc('imposta_voce_attiva', { id, attiva }))
+    },
+
+    async salvaSaldoCassa(id, saldo, dal) {
+      ok(await db.rpc('imposta_saldo_cassa', { id, saldo, dal: dal ?? null }))
+    },
+
+    async registraMovimento(d) {
+      const riga = ok(
+        await db.rpc('registra_movimento', {
+          dati: { tipo: d.tipo, data: d.data, importo: d.importo, voce_id: d.voceId, cassa_id: d.cassaId, descrizione: d.descrizione.trim(), nota: d.nota?.trim() || null },
+        }),
+      ) as { id: string }
+      return riga.id
+    },
+
+    async registraGiroconto(d) {
+      const riga = ok(await db.rpc('registra_giroconto', { dati: { da: d.daCassaId, a: d.aCassaId, data: d.data, importo: d.importo, nota: d.nota?.trim() || null } })) as { id: string }
+      return riga.id
+    },
+
+    async annullaMovimento(id) {
+      ok(await db.rpc('annulla_movimento', { id }))
+    },
+
+    async correggiTestoMovimento(id, descrizione, nota) {
+      ok(await db.rpc('correggi_testo_movimento', { id, descrizione: descrizione.trim(), nota: nota?.trim() || null }))
+    },
+
+    async chiusure() {
+      // Le righe arrivano senza tipo dall'API: la forma è quella di 60-chiusura-cassa.sql.
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('chiusure_cassa').select('*').order('data', { ascending: false }).order('id').range(prima, ultima))) as Array<{
+        id: string; cassa_id: string; dal: string; data: string; previsto: number; contato: number; differenza: number; nota: string | null
+        movimento_id: string | null; chiusa_da: string | null; chiusa_il: string; annullata_il: string | null; annullata_da: string | null
+      }>
+      // Chi ha chiuso (e chi ha annullato): nome e cognome, e un trattino se la persona non c'è più.
+      const ids = [...new Set(righe.flatMap((r) => [r.chiusa_da, r.annullata_da]).filter((x): x is string => !!x))]
+      const persone = ids.length ? (ok(await db.rpc('nomi_persone', { ids })) as Array<{ id: string; nome: string; cognome: string }>) : []
+      const chi = (id: string | null) => {
+        if (!id) return undefined
+        const p = persone.find((x) => x.id === id)
+        return p ? `${p.nome} ${p.cognome}` : '—'
+      }
+      return righe.map((r) => ({
+        id: r.id,
+        cassaId: r.cassa_id,
+        dal: r.dal,
+        data: r.data,
+        previsto: r.previsto,
+        contato: r.contato,
+        differenza: r.differenza,
+        ...(r.nota ? { nota: r.nota } : {}),
+        ...(r.movimento_id ? { movimentoId: r.movimento_id } : {}),
+        chiusaDa: chi(r.chiusa_da) ?? '—',
+        chiusaIl: r.chiusa_il,
+        ...(r.annullata_il ? { annullataIl: r.annullata_il } : {}),
+        ...(r.annullata_da ? { annullataDa: chi(r.annullata_da) } : {}),
+      }))
+    },
+
+    async chiudiCassa(d) {
+      const riga = ok(await db.rpc('chiudi_cassa', { dati: { cassa_id: d.cassaId, data: d.data, contato: d.contato, nota: d.nota?.trim() || null } })) as { id: string }
+      return riga.id
+    },
+
+    async annullaChiusuraCassa(id) {
+      ok(await db.rpc('annulla_chiusura_cassa', { id }))
+    },
+
+    async cercaPagatori(scritto) {
+      const righe = ok(await db.rpc('cerca_pagatori', { scritto })) as Array<{ persona_id: string; nome: string; cognome: string }>
+      return righe.map((r) => ({ id: r.persona_id, nome: r.nome, cognome: r.cognome }))
+    },
+
+    async registraPagamentoDiretto(d: DatiPagamentoDiretto) {
+      const no = cosaNonVaDiretto(d)
+      if (no) throw new Error(no)
+      const riga = ok(
+        await db.rpc('registra_pagamento_diretto', {
+          dati: { persona_id: d.personaId, data: d.data, importo: d.importo, metodo: d.metodo.trim(), voce: d.voce.trim(), nota: d.nota?.trim() || null },
+        }),
+      ) as RigaPagamentoDiretto
+      return pagamentoDiretto(riga)
+    },
+
+    async annullaPagamentoDiretto(id) {
+      ok(await db.rpc('annulla_pagamento_diretto', { pagamento: id }))
+    },
+
     async enteRicevute() {
       const r = await db.from('impostazioni').select('ricevute').maybeSingle()
       // Senza 16-ricevute.sql la colonna non c'è: valgono quelli scritti nell'app.
@@ -1132,12 +1400,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async personale() {
       const [righe, legami, pin] = await Promise.all([
         // `*` e non l'elenco delle colonne: `anche_istruttore` può non esserci ancora (vedi `istruttori`).
-        db.from('persone').select('*').in('ruolo', ['istruttore', 'staff']).order('nome'),
+        db.from('persone').select('*').in('ruolo', [...RUOLI_DEL_PERSONALE]).order('nome'),
         db.from('corsi_istruttori').select('persona_id, corsi ( nome, attivo )'),
         db.rpc('pin_impostati'),
       ])
       const persone = ok(righe) as Array<{
-        id: string; nome: string; cognome: string; email: string | null; ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean; attiva: boolean; utente_id: string | null
+        id: string; nome: string; cognome: string; email: string | null; ruolo: 'istruttore' | 'staff' | 'amministrazione'; anche_istruttore?: boolean; anche_amministrazione?: boolean; attiva: boolean; utente_id: string | null
         kanji?: string | null
       }>
       const corsi = ok(legami) as unknown as Array<{ persona_id: string; corsi: { nome: string; attivo: boolean } | null }>
@@ -1149,7 +1417,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           cognome: p.cognome,
           email: p.email ?? undefined,
           ruolo: p.ruolo,
-          ancheIstruttore: p.ruolo === 'staff' && !!p.anche_istruttore,
+          ...segniDi(p.ruolo, p.anche_istruttore, p.anche_amministrazione),
           attiva: p.attiva,
           collegato: !!p.utente_id,
           haPin: conPin.has(p.id),
@@ -1171,7 +1439,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Un'iscritta con la stessa email diventa personale, invece di un doppione.
       if (email) {
         const c = ok(await db.from('persone').select('id, ruolo').eq('email', email).maybeSingle()) as { id: string; ruolo: string } | null
-        if (c && c.ruolo !== 'iscritto') throw new Error('Questa email è già di un istruttore o della segreteria')
+        if (c && c.ruolo !== 'iscritto') throw new Error('Questa email è già di una persona del personale')
         if (c) {
           ok(await db.from('persone').update({ ...ruolo, attiva: true }).eq('id', c.id))
           return c.id
@@ -1179,7 +1447,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       }
       // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla.
       const senza = ok(
-        await db.from('persone').select('id').in('ruolo', ['istruttore', 'staff']).is('email', null).ilike('nome', riga.nome).ilike('cognome', riga.cognome).limit(1),
+        await db.from('persone').select('id').in('ruolo', [...RUOLI_DEL_PERSONALE]).is('email', null).ilike('nome', riga.nome).ilike('cognome', riga.cognome).limit(1),
       ) as Array<{ id: string }>
       if (senza[0]) {
         ok(await db.from('persone').update({ email, ...ruolo, attiva: true }).eq('id', senza[0].id))
@@ -1525,6 +1793,110 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.from('segnalazioni').update({ categoria }).eq('id', id))
     },
 
+    async sitoPagine() {
+      const righe = ok(await db.from('sito_pagine').select('id, slug, titolo, descrizione, titolo_pubblicato, descrizione_pubblicata, bozza, pubblicato, nascosta, di_legge, versione, pubblicata_il').order('slug')) as unknown as Array<{
+        id: string
+        slug: string
+        titolo: string
+        descrizione: string
+        titolo_pubblicato: string | null
+        descrizione_pubblicata: string | null
+        bozza: string
+        pubblicato: string | null
+        nascosta: boolean
+        di_legge: boolean
+        versione: number
+        pubblicata_il: string | null
+      }>
+      return righe.map((r): PaginaSito => ({
+        id: r.id,
+        slug: r.slug,
+        titolo: r.titolo,
+        descrizione: r.descrizione,
+        titoloPubblicato: r.titolo_pubblicato,
+        descrizionePubblicata: r.descrizione_pubblicata,
+        bozza: r.bozza,
+        pubblicato: r.pubblicato,
+        nascosta: r.nascosta,
+        diLegge: r.di_legge,
+        versione: r.versione,
+        pubblicataIl: r.pubblicata_il ?? undefined,
+      }))
+    },
+
+    async sitoMenu() {
+      const righe = ok(await db.from('sito_menu').select('dove, etichetta, pagina_id, indirizzo').order('dove').order('ordine')) as unknown as Array<{
+        dove: 'menu' | 'footer'
+        etichetta: string
+        pagina_id: string | null
+        indirizzo: string | null
+      }>
+      const voci = (dove: 'menu' | 'footer'): VoceMenu[] => righe.filter((r) => r.dove === dove).map((r) => ({ etichetta: r.etichetta, paginaId: r.pagina_id, indirizzo: r.indirizzo }))
+      return { menu: voci('menu'), footer: voci('footer') }
+    },
+
+    async nuovaPaginaSito(titolo, slug) {
+      const r = await db.from('sito_pagine').insert({ titolo: titolo.trim(), slug }).select('id').single()
+      // Un indirizzo che è il vecchio di una pagina cambiata: la regola lo ferma come «permesso negato».
+      if (r.error?.code === '42501') throw new Error('Questo indirizzo era di una pagina che ha cambiato indirizzo: scegline un altro')
+      return (ok(r) as { id: string }).id
+    },
+
+    async salvaBozzaSito(id, versione, dati) {
+      return ok(await db.rpc('salva_bozza_sito', { p_id: id, p_versione: versione, p_titolo: dati.titolo.trim(), p_descrizione: dati.descrizione.trim(), p_bozza: dati.bozza })) as number
+    },
+
+    async pubblicaPaginaSito(id, versione) {
+      return ok(await db.rpc('pubblica_pagina_sito', { p_id: id, p_versione: versione })) as number
+    },
+
+    async cambiaIndirizzoSito(id, slug) {
+      ok(await db.rpc('cambia_indirizzo_sito', { p_id: id, p_slug: slug }))
+    },
+
+    async nascondiPaginaSito(id, nascosta) {
+      // Senza `select`, una pagina che non c'è più (o di legge) darebbe 0 righe e nessun errore: sembrerebbe fatto.
+      const fatte = ok(await db.from('sito_pagine').update({ nascosta }).eq('id', id).select('id')) as unknown as unknown[]
+      if (!fatte.length) throw new Error('La pagina non c’è più')
+    },
+
+    async cancellaPaginaSito(id) {
+      // Come sopra: una pagina di legge o già cancellata dà 0 righe, e va detto.
+      const fatte = ok(await db.from('sito_pagine').delete().eq('id', id).select('id')) as unknown as unknown[]
+      if (!fatte.length) throw new Error('Questa pagina non si cancella: o non c’è più, o è una pagina di legge')
+    },
+
+    async salvaMenuSito(dove, voci) {
+      ok(await db.rpc('salva_menu_sito', { p_dove: dove, p_voci: voci.map((v) => ({ etichetta: v.etichetta, pagina_id: v.paginaId, indirizzo: v.indirizzo })) }))
+    },
+
+    async sitoImmagini() {
+      // Mille bastano a un sito di palestra; oltre, le più vecchie non comparirebbero.
+      const { data, error } = await db.storage.from(CONTENITORE_SITO).list('', { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } })
+      if (error) throw immaginiNonAttive(error)
+      return (data ?? []).filter((f) => eNomeDelContenitore(f.name)).map((f) => ({ nome: f.name, url: urlImmagine(URL_SUPABASE ?? '', f.name) }))
+    },
+
+    async caricaImmagineSito(file) {
+      // Il tipo si controlla prima di rimpicciolire: un SVG non diventa una foto.
+      const noTipo = controllaImmagine({ type: file.type, size: 0 })
+      if (noTipo) throw new Error(noTipo)
+      // Fino a 1 MB resta com'è (anche una PNG con la trasparenza); più grande si rimpicciolisce in JPEG.
+      const pronta = file.size <= MASSIMO_BYTE ? file : await riduciFoto(file, { basta: MASSIMO_BYTE, sempreJpeg: true })
+      const no = controllaImmagine(pronta)
+      const nome = nomeNelContenitore(crypto.randomUUID(), pronta.type)
+      if (no || !nome) throw new Error(no ?? cosaNonVaImmagini(''))
+      const { error } = await db.storage.from(CONTENITORE_SITO).upload(nome, pronta, { contentType: pronta.type, upsert: false })
+      if (error) throw immaginiNonAttive(error)
+      return { nome, url: urlImmagine(URL_SUPABASE ?? '', nome) }
+    },
+
+    async cancellaImmagineSito(nome) {
+      const { data, error } = await db.storage.from(CONTENITORE_SITO).remove([nome])
+      if (error) throw immaginiNonAttive(error)
+      if (!data?.length) throw new Error('Questa immagine non si cancella: o non c’è più, o non hai il permesso')
+    },
+
     async gestisciPresenzaIstruttore(id, conferma) {
       ok(await db.rpc('gestisci_presenza_istruttore', { presenza: id, conferma }))
     },
@@ -1608,7 +1980,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async esporta(personaId) {
-      const [persona, isc, pres, rich, scheda, ric, anag] = await Promise.all([
+      const [persona, isc, pres, rich, scheda, ric, dir, anag] = await Promise.all([
         db.from('persone').select('nome, cognome, email, telefono, ruolo, attiva, creata_il').eq('id', personaId).single(),
         db.from('iscrizioni').select('dal, al, corsi ( nome )').eq('persona_id', personaId),
         tutteLeRighe((prima, ultima) => db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId).order('id').range(prima, ultima)),
@@ -1619,6 +1991,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         db.from('schede_iscritti').select('*').eq('persona_id', personaId).maybeSingle(),
         // Le ricevute: col socio e le voci così come sono stampate.
         db.from('ricevute').select('anno, numero, data, intestatario, voci, totale, pagato, anticipo, note, creata_il, annullata_il').eq('persona_id', personaId),
+        // I pagamenti fatti a mano.
+        db.from('pagamenti_diretti').select('data, importo, metodo, voce, nota, creato_il, annullato_il').eq('persona_id', personaId),
         // Nascita, residenza e genitore di chi è entrato dall'import.
         db.from('anagrafiche').select(`${CAMPI_ANAGRAFICA}, cambiata_il`).eq('persona_id', personaId).maybeSingle(),
       ])
@@ -1631,6 +2005,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         certificato_e_pagamento: ok(scheda),
         // Senza 16-ricevute.sql non ce ne sono.
         ricevute: ric.error?.code === '42P01' || ric.error?.code === 'PGRST205' ? [] : ok(ric),
+        // Senza 54-pagamenti-diretti.sql non ce ne sono.
+        pagamenti_a_mano: dir.error?.code === '42P01' || dir.error?.code === 'PGRST205' ? [] : ok(dir),
         // Senza 18-anagrafiche.sql non ce n'è.
         dati_anagrafici: anag.error?.code === '42P01' || anag.error?.code === 'PGRST205' ? null : ok(anag),
       }

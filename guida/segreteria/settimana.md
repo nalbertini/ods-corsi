@@ -23,6 +23,15 @@ della disciplina, la sala e l'istruttore. Il numero in basso dice:
 In alto:
 
 - le frecce spostano di una settimana, **OGGI** riporta a quella corrente;
+- le **date** (es. «12 – 18 OTTOBRE», col ▾) sono un tasto: aprono un **calendario** del mese,
+  con la settimana che si vede evidenziata e oggi in giallo. Un tocco su un giorno porta alla
+  sua settimana (sul telefono, a quel giorno) e chiude il calendario; le frecce del calendario
+  cambiano solo il mese che si guarda. Un quadratino blu sotto un giorno dice che ha lezioni
+  (anche annullate, e di **qualunque sala**, anche se in griglia ne hai scelta una); se non c'è,
+  può essere che non si sia ancora letto: non vuol dire che non ce ne siano. Scegliere un
+  giorno non aggiunge un passo per Indietro. **OGGI** nel calendario porta alla settimana di oggi. Si
+  chiude con **Esc**, con un tocco fuori o ritoccando le date. Dopo la data fino a cui il
+  calendario ha le lezioni lo dice sotto il mese;
 - i tasti delle sale (**TUTTE**, **TATAMI**, …) fanno vedere una sala sola;
 - sotto il titolo c'è scritto fino a che giorno è pronto il calendario, cioè
   fin dove ci sono le lezioni dell'orario (le straordinarie non contano).
@@ -53,15 +62,25 @@ contano: Indietro riporta alla voce di prima.
 - **SALA**: per spostare quella lezione in un'altra sala. Se un giorno del
   corso si fa **sempre** in un'altra sala, si sceglie invece nei
   [corsi](corsi.md), accanto a quel giorno.
-- **APPELLO**: lo stesso dell'app, per segnare al banco le presenze che
-  l'istruttore ha preso su carta, o per correggere un errore.
-  - Un clic: presente; due: assente; tre: non segnato.
-  - **TUTTI PRESENTI** e **AZZERA** (che chiede conferma).
+- **APPELLO**: per segnare al banco le presenze che l'istruttore ha preso su
+  carta, o per correggere un errore. Sotto i conti ci sono tre tasti, **DA
+  SEGNARE**, **PRESENTI** e **ASSENTI**, ognuno col suo numero: sotto si vede
+  la lista di quello premuto, intera, e si apre su DA SEGNARE (se non manca
+  nessuno, su PRESENTI).
+  - In **DA SEGNARE** ogni nome ha **✓** (presente) e **✕** (assente): il nome
+    passa nell'altra lista e il cursore va al nome dopo, così si segna in fila.
+    Il tasto premuto non cambia da solo, nemmeno quando DA SEGNARE si svuota.
+  - In **PRESENTI** e **ASSENTI** un tocco sul nome lo rimette da segnare. Un
+    giustificato sta fra gli assenti, con la scritta GIUSTIFICATO; per toglierlo
+    da lì chiede conferma, perché la giustifica è un'informazione che qualcuno ha messo.
+  - **TUTTI PRESENTI** segna presenti solo chi non è ancora segnato: le assenze
+    già messe restano. **AZZERA** toglie tutti i segni, chiede conferma e riporta su DA SEGNARE.
   - Si apre solo quando la lezione è **cominciata**: prima c'è scritto «Si segna
     quando la lezione è cominciata».
   - **PROVE**: per aggiungere chi è venuto a provare, come fanno gli istruttori
     dall'app (vedi la [guida degli istruttori](../istruttori.md)). Entra in
-    fondo all'appello, presente, col bollino **PROVA**; **TOGLI** lo toglie.
+    fondo all'appello, presente, col bollino **PROVA**; un tocco sul nome lo gira
+    fra presente e assente, **TOGLI** lo toglie. Le prove non sono nei tre tasti.
 
 ## Lezione straordinaria
 

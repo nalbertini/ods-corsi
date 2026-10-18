@@ -4,17 +4,23 @@
 
 Le scelte che spettano alla palestra, non al programma.
 
-La pagina ha sei gruppi: **COME VUOI LA SEGRETERIA** (qui sotto), **LA STAGIONE**, **LE SALE E I TABLET**, **LE
+La pagina ha sei gruppi: **QUESTO SCHERMO**, **LA STAGIONE**, **LE SALE E I TABLET**, **LE
 RICEVUTE**, **IMPORTA DA EXCEL** (la [guida](importa.md)), **DATI E PRIVACY**. In cima, un tasto per ognuno porta dritto al
 gruppo. Le spiegazioni lunghe di un riquadro stanno dietro **COME
 FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista.
 
-## Come vuoi la segreteria
+## Questo schermo
 
-Due scelte: **COME OGGI**, col menu a sinistra, e **IL BANCO**, con la ricerca in
-cima e cinque luoghi ([la guida](il-banco.md)). Cambia subito, senza
-ricaricare, e vale **solo per questo computer**: un altro computer della
-segreteria resta com'è. Sul telefono resta sempre il menu di sempre.
+Le scelte che valgono solo per il computer (o il telefono) che si sta usando, non per la
+segreteria intera: restano su questo dispositivo, come il tema.
+
+- **L'ASPETTO** — **COME OGGI**, col menu a sinistra, o **IL BANCO**, con la ricerca in
+  cima e cinque luoghi ([la guida](il-banco.md)). Cambia subito, senza ricaricare. Sul
+  telefono resta sempre il menu di sempre.
+- **LA STRISCIA COSA MANCA** — **MOSTRALA** (com'è all'inizio) o **NASCONDILA**: le cinque
+  caselle in cima alle pagine ([guida](README.md#la-striscia-cosa-manca)) spariscono da
+  tutte le pagine. **DA FARE** ha sempre gli stessi conti, quindi non si perde niente: ci si
+  torna quando si vuole. Per rimetterla basta **MOSTRALA**.
 
 ## La stagione
 
@@ -121,7 +127,8 @@ andare indietro.
 ## Le ricevute
 
 **CHI FA LE RICEVUTE**: i dati dell'associazione che vanno in testa a ogni ricevuta: nome, indirizzo,
-CAP, comune, codice fiscale e, se c'è, la partita IVA; e la **DICITURA IN
+CAP, comune, codice fiscale e, se c'è, la partita IVA e il numero di iscrizione
+al RASD (il registro delle attività sportive dilettantistiche); e la **DICITURA IN
 FONDO**, quella dell'esenzione da IVA e bollo. Si parte con quelli di Asd Il
 Centro Judo. **SALVA** compare quando si cambia qualcosa, e vale per le
 ricevute che si fanno da lì in poi: quelle già fatte restano come erano. Le
@@ -133,6 +140,10 @@ ricevute si fanno dalla scheda di un iscritto (vedi
 Corsi e iscritti dai fogli CSV, o gli iscritti dalle risposte del modulo Google,
 in tre passi: i fogli, il controllo, il database. Si può rifare quante volte si
 vuole, non duplica niente. Tutto è spiegato in [Importa da Excel](importa.md).
+
+## Tessere dal RASD
+
+Il foglio dei tesseramenti del RASD, salvato come CSV, si carica da qui e si abbina a chi ha già la scheda. Tutto è spiegato in [Tessere](tessere.md#caricare-il-foglio-del-rasd).
 
 ## Dati e privacy
 

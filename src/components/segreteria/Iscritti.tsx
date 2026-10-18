@@ -2,13 +2,17 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, fuoriRegola, confermaDisattiva, confermaUnione, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
+import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, fuoriRegola, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
+import { conTessere, incrocioTessere, paroleConTessera, senzaTessera, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
+import { TessereDellaPersona } from './Tessere'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
-import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
+import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
+import { FiltroRicerca } from './FiltroRicerca'
+import type { Ricercata } from '../../lib/ricerca'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
@@ -85,27 +89,38 @@ function Bollino({ tono, children }: { tono: Tono; children: string }) {
 export function Iscritti({
   d,
   scelta,
+  daCorso,
+  onCorso,
   nuovo = false,
   onScelta,
   onNuovo,
   filtroIniziale,
-  onCambiato,
+  ricerca,
+  onTogliRicerca,
+  onConti,
 }: {
   d: DatiSegreteria
   /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
   scelta?: string
+  /** Il corso da cui si è aperta la scheda: «‹ CORSO» riporta lì, se è ancora in calendario. */
+  daCorso?: string
+  onCorso: (corsoId: string) => void
   /** Il modulo del nuovo iscritto: sta nell'indirizzo anche lui, così Indietro lo chiude. */
   nuovo?: boolean
   /** `push` è un passo per Indietro, `replace` corregge l'indirizzo di adesso. */
   onScelta: (id: string | null, passo: 'push' | 'replace') => void
   onNuovo: () => void
   filtroIniziale?: Destinazione['filtro']
-  /** Dopo una modifica nella scheda: chi sta sopra (la scheda de «Il Banco») rilegge anche lui. */
-  onCambiato?: () => void
+  /** Aperta da «ALTRI N» della ricerca: l'elenco è solo di chi è uscito. */
+  ricerca?: Ricercata
+  onTogliRicerca: () => void
+  /** Una scheda cambiata (certificato, pagamento, archiviata, nuova): i conti di COSA MANCA si rileggono. */
+  onConti?: () => void
 }) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
   const freq = useCarica(() => d.frequenze(), [d])
+  const tessere = useCarica(() => d.tessere(), [d])
   const indizi = useCarica(() => d.indiziDoppioni(), [d])
   const [cerca, setCerca] = useState('')
   const [corso, setCorso] = useState('')
@@ -116,6 +131,7 @@ export function Iscritti({
   const [arrivo, setArrivo] = useState(filtroIniziale === 'arrivo')
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [fuori, setFuori] = useState(filtroIniziale === 'fuori-regola')
+  const [noTessera, setNoTessera] = useState(filtroIniziale === 'senza-tessera')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [filePrima, setFilePrima] = useState(filtroIniziale === 'file-di-prima')
   const [doppi, setDoppi] = useState(false)
@@ -129,6 +145,12 @@ export function Iscritti({
   const tutti = [...(persone.dato ?? [])].sort(
     (a, b) => Number(b.attiva) - Number(a.attiva) || a.cognome.localeCompare(b.cognome, 'it') || a.nome.localeCompare(b.nome, 'it'),
   )
+  // Le tessere contano solo quando si sa: lette, e il database le ha (61-tessere.sql). Mai «senza tessera» per un elenco che non è arrivato.
+  const conTessereLette = !!tessere.dato && !tessere.dato.manca
+  const incroci = new Map<string, RigaIncrocio[]>()
+  if (conTessereLette)
+    for (const r of incrocioTessere(conTessere(tutti, tessere.dato!.elenco), corsi.dato ?? [], oggi)) incroci.set(r.personaId, [...(incroci.get(r.personaId) ?? []), r])
+  const tesseraDi = (p: PersonaSeg) => incroci.get(p.id) ?? []
   const nFilePrima = tutti.filter((p) => certificatoDaStampare(p.certificato)).length
   // Finiti tutti (cancellati da soli o tolti), il filtro si spegne da sé.
   const soloFilePrima = filePrima && nFilePrima > 0
@@ -137,6 +159,7 @@ export function Iscritti({
   const soloDoppi = doppi && coppie.length > 0
   const trovati = tutti.filter(
     (p) =>
+      (!ricerca || ricerca.ids.includes(p.id)) &&
       cercaNellElenco(p, cerca) &&
       (!corso || p.iscrizioni.some((i) => i.corsoId === corso && inCorso(i, oggi))) &&
       (!soloSenzaEmail || senzaEmail(p)) &&
@@ -145,7 +168,8 @@ export function Iscritti({
       (!scadenza || certificatoInScadenza(p, oggi)) &&
       (!arrivo || certificatoInArrivo(p, oggi)) &&
       (!pagare || daPagare(p, oggi)) &&
-      (!fuori || fuoriRegola(p, oggi)) &&
+      (!fuori || fuoriRegola(p, oggi) || (p.attiva && senzaTessera(tesseraDi(p)))) &&
+      (!noTessera || senzaTessera(tesseraDi(p))) &&
       (!senzaDocumento || !p.documento) &&
       (!soloFilePrima || certificatoDaStampare(p.certificato)),
   )
@@ -165,16 +189,26 @@ export function Iscritti({
   const inScadenza = attiveOra.filter((p) => certificatoInScadenza(p, oggi)).length
   const nonPagato = attiveOra.filter((p) => daPagare(p, oggi)).length
   const persona = nuovo ? null : (tutti.find((p) => p.id === scelta) ?? null)
-  const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica(), indizi.ricarica()])
+  const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica(), indizi.ricarica(), tessere.ricarica()])
 
   const chiudi = () => {
     setUnisciCon(null)
     if (scelta || nuovo) onScelta(null, 'push')
   }
   // ← ISCRITTI con un iscritto nuovo o una ricevuta a metà: la stessa domanda del menu e di Indietro.
+  // Aperta da un corso ancora in calendario, il tasto riporta lì; se no (corso archiviato, indirizzo inventato) all'elenco.
+  const corsoDa = corsoDiProvenienza(daCorso, corsi.dato ?? [])
   const torna = async () => {
-    if (await lasciare()) chiudi()
+    if (!(await lasciare())) return
+    if (corsoDa) onCorso(corsoDa)
+    else chiudi()
   }
+  // Un `?corso=` che non porta a un corso in calendario si toglie dall'indirizzo, senza avviso: la persona c'è.
+  useEffect(() => {
+    if (!daCorso || !scelta || !corsi.dato || corsoDa) return
+    onScelta(scelta, 'replace')
+    // All'arrivo dei corsi e quando cambia il corso di provenienza (Avanti del browser).
+  }, [corsi.dato, daCorso])
 
   // Una scheda di qualcuno che non c'è più (un link vecchio, un'altra
   // finestra): si torna all'elenco e lo si dice. Solo quando l'elenco arriva:
@@ -200,12 +234,13 @@ export function Iscritti({
               // Al posto del modulo: Indietro dalla scheda nuova torna all'elenco, non a un modulo vuoto.
               onScelta(id, 'replace')
               void ricarica()
+              onConti?.()
             }}
           />
           </Bozza>
         </SchedaPiena>
       ) : persona ? (
-        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna="ISCRITTI" onTorna={torna}>
+        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna={corsoDa ? 'CORSO' : 'ISCRITTI'} onTorna={torna}>
           <Scheda
             d={d}
             p={persona}
@@ -213,10 +248,12 @@ export function Iscritti({
             corsi={perId}
             attivi={attivi}
             f={freq.dato?.get(persona.id)}
+            tessere={conTessereLette ? tessere.dato!.elenco : undefined}
             fai={fai}
+            avvisa={avvisa}
             onCambiato={() => {
               void ricarica()
-              onCambiato?.()
+              onConti?.()
             }}
             onApri={(id) => {
               setUnisciCon(null)
@@ -242,6 +279,7 @@ export function Iscritti({
           </button>
         </Testa>
 
+        {ricerca && <FiltroRicerca ricerca={ricerca} onTogli={onTogliRicerca} />}
         <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
           <label htmlFor="cerca" className="vh">
             Cerca un iscritto
@@ -279,6 +317,11 @@ export function Iscritti({
           <button type="button" className="num sg-chip" aria-pressed={fuori} onClick={() => setFuori(!fuori)}>
             NON IN REGOLA
           </button>
+          {conTessereLette && (
+            <button type="button" className="num sg-chip" aria-pressed={noTessera} onClick={() => setNoTessera(!noTessera)}>
+              SENZA TESSERA
+            </button>
+          )}
           <button type="button" className="num sg-chip" aria-pressed={senzaDocumento} onClick={() => setSenzaDocumento(!senzaDocumento)}>
             SENZA DOCUMENTO
           </button>
@@ -365,7 +408,7 @@ export function Iscritti({
                     {p.telefono ?? p.email ?? p.emailContatto ?? 'nessun contatto'}
                   </span>
                   <span role="cell" className="sg-in-regola">
-                    {paroleInRegola(p, oggi).map((b) => (
+                    {paroleConTessera(paroleInRegola(p, oggi), tesseraDi(p)).map((b) => (
                       <Bollino key={b.parola} tono={b.tono}>{b.parola}</Bollino>
                     ))}
                   </span>
@@ -474,7 +517,9 @@ function Scheda({
   corsi,
   attivi,
   f,
+  tessere,
   fai,
+  avvisa,
   onCambiato,
   onApri,
   unisciCon,
@@ -488,7 +533,10 @@ function Scheda({
   corsi: Map<string, CorsoSeg>
   attivi: CorsoSeg[]
   f?: Frequenza
+  /** Le tessere di tutti; senza (il database non le ha ancora) la sezione non c'è. */
+  tessere?: TesseraSeg[]
   fai: Fai
+  avvisa: ReturnType<typeof useAvviso>['avvisa']
   onCambiato: () => void
   /** Apre la scheda di un'altra persona: una del nucleo. */
   onApri: (personaId: string) => void
@@ -528,7 +576,7 @@ function Scheda({
         <span style={{ fontSize: 13, color: 'var(--dim)' }}>{`In elenco dal ${dataLunga(p.creataIl)} · nessun accesso`}</span>
       </div>
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
-      {!unendo && !pagando && <Timbri p={p} oggi={oggi} />}
+      {!unendo && !pagando && <Timbri p={p} oggi={oggi} tessera={tessere ? timbroTessera({ ...p, tessere: tessere.filter((t) => t.personaId === p.id) }, [...corsi.values()], oggi) : null} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -607,12 +655,13 @@ function Scheda({
           <div id="sez-certificato">
             <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>
+          <TessereDellaPersona key={`t-${p.id}-${(tessere ?? []).length}`} d={d} p={p} tessere={tessere} corsi={corsi} oggi={chiaveGiorno(new Date())} fai={fai} avvisa={avvisa} onCambiato={onCambiato} />
           <div id="sez-documento">
             <Documento d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>
           <div id="sez-quota" className="stack" style={{ gap: 20 }}>
             <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
-            <RicevuteIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
+            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
           </div>
           {d.modo === 'prova' && <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />}
           {nonDoppioni.length > 0 && (
@@ -809,7 +858,7 @@ function vaiA(id: string) {
  * In cima alla scheda: certificato, quota e documento in un colpo d'occhio,
  * con le parole dell'elenco (`timbriScheda`). Ognuno porta alla sua sezione.
  */
-function Timbri({ p, oggi }: { p: PersonaSeg; oggi: string }) {
+function Timbri({ p, oggi, tessera }: { p: PersonaSeg; oggi: string; tessera: ReturnType<typeof timbroTessera> }) {
   const t = timbriScheda(p, oggi)
   const uno = (titolo: string, x: Timbro, id: string, piccolo?: boolean) => (
     <button type="button" className="sg-timbro" data-tono={x.tono} data-piccolo={piccolo} onClick={() => vaiA(id)}>
@@ -829,9 +878,10 @@ function Timbri({ p, oggi }: { p: PersonaSeg; oggi: string }) {
           <strong>DISATTIVATA</strong> Non è negli appelli né sul tablet. Per rimetterla: RIATTIVA, in fondo alla scheda.
         </p>
       )}
-      <div className="sg-timbri">
+      <div className="sg-timbri" data-con-tessera={tessera ? true : undefined}>
         {uno('CERTIFICATO MEDICO', t.certificato, 'sez-certificato')}
         {uno('QUOTA', t.quota, 'sez-quota')}
+        {tessera && uno('TESSERA', { ...tessera, tono: p.attiva ? tessera.tono : 'spento' }, 'sez-tessere')}
         {uno('DOCUMENTO D’IDENTITÀ', t.documento, 'sez-documento', true)}
       </div>
     </div>

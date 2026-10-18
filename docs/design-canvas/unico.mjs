@@ -25,6 +25,9 @@ const SEZIONI = [
   { id: 'iscrizione-rifinitura', nome: 'Iscrizione a passi · rifinitura', cartella: 'iscrizione-rifinitura' },
   { id: 'importa-fogli', nome: 'Importa da Excel', cartella: 'import-fogli' },
   { id: 'email-contatto', nome: 'Email di contatto · proposta', cartella: 'email-contatto' },
+  { id: 'ruolo-amministrazione', nome: 'Ruolo amministrazione · proposta', cartella: 'ruolo-amministrazione' },
+  { id: 'contabilita', nome: 'Contabilità · proposta', cartella: 'contabilita' },
+  { id: 'chiusura-cassa', nome: 'Chiusura di cassa · proposta', cartella: 'chiusura-cassa' },
   { id: 'timer-desktop', nome: 'Timer desktop · proposte', cartella: 'timer-desktop' },
   { id: 'timer-istruttori', nome: 'Timer nell\'app istruttori', cartella: 'timer-istruttori' },
   { id: 'timer-musica', nome: 'Musica nel timer istruttori', cartella: 'timer-musica' },
@@ -48,6 +51,16 @@ const SEZIONI = [
   { id: 'navigazione-passi', nome: 'La testa del modulo a passi · ipotesi', cartella: 'navigazione-passi' },
   { id: 'prezzi-mancanti', nome: 'Prezzi mancanti in DA FARE · proposta', cartella: 'prezzi-mancanti' },
   { id: 'banco', nome: 'Il Banco · segreteria ridisegnata', cartella: 'banco' },
+  { id: 'cerca-universale', nome: 'Ricerca universale · proposta', cartella: 'cerca-universale' },
+  { id: 'segreteria-tatami', nome: 'Segreteria · Tatami · proposta', cartella: 'segreteria-tatami' },
+  { id: 'iscritti-del-corso', nome: 'Iscritti del corso · proposta', cartella: 'iscritti-del-corso' },
+  { id: 'iscritti-riepilogo', nome: 'Iscritti del corso · riepilogo', cartella: 'iscritti-riepilogo' },
+  { id: 'storico-pagamenti', nome: 'Storico pagamenti · proposta', cartella: 'storico-pagamenti' },
+  { id: 'tessere', nome: 'Tessere e incrocio · proposta', cartella: 'tessere' },
+  { id: 'sito-pannello', nome: 'Sito · pannello · proposta', cartella: 'sito-pannello' },
+  { id: 'sito-pubblico', nome: 'Sito pubblico · proposta', cartella: 'sito-pubblico' },
+  { id: 'sito-rebrand', nome: 'Sito pubblico · tre rebrand', cartella: 'sito-rebrand' },
+  { id: 'iscrizione-sito', nome: 'Modulo di iscrizione · aspetto del sito · proposta', cartella: 'iscrizione-sito' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')

@@ -9,7 +9,7 @@ dentro ogni lezione, l'appello.
 
 ## Entrare
 
-1. Aprite <https://nalbertini.github.io/ods-corsi/> (va bene anche
+1. Aprite <https://app.officinedellosport.it/> (va bene anche
    `…/istruttori/`).
 2. Scrivete **email** e **password** dell'account che vi ha dato la palestra e
    premete **ENTRA**: l'app vi porta da sola nel calendario.
@@ -93,7 +93,13 @@ il conto grande degli iscritti presenti (`18 / 20`, con **+1 PROVA** a parte) e
 quanti iscritti restano da segnare; quando hanno tutti un segno, **CHIUDI IN
 FONDO ↓**, che si tocca e porta al tasto per chiudere. Tutti i conti sono degli iscritti: chi prova è sempre detto a
 parte. Se la lezione non è ancora
-cominciata c'è scritto **NON ANCORA COMINCIATA**: si può segnare lo stesso.
+cominciata c'è scritto **NON ANCORA COMINCIATA**: si può segnare da mezz'ora
+prima dell'inizio. Le presenze si correggono fino a 14 giorni dopo la lezione.
+Una lezione più vecchia, o che comincia fra più di mezz'ora, si apre in **SOLA
+LETTURA**: vedete i segni com'erano, e un riquadro giallo dice di scrivere alla
+segreteria, che può cambiarli. I tasti per segnare, aggiungere chi prova e
+chiudere non ci sono. Se la lezione supera i 14 giorni mentre l'appello è
+aperto, i segni tornano com'erano e compare lo stesso riquadro.
 
 Se la segreteria ha scelto un'attività per quella lezione («Karate», «Open
 mat»), la leggete accanto all'ora. Se la lezione è vostra, sotto la testata c'è

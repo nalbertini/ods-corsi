@@ -24,6 +24,8 @@ export interface EnteRicevuta {
   comune: string
   codiceFiscale: string
   partitaIva?: string
+  /** Numero di iscrizione al RASD (Registro nazionale delle attività sportive dilettantistiche). */
+  rasd?: string
   /** Sotto i totali: perché la ricevuta non ha IVA né bollo. */
   dicitura: string
 }
@@ -35,6 +37,7 @@ export const ENTE_PREDEFINITO: EnteRicevuta = {
   cap: '10098',
   comune: 'Rivoli',
   codiceFiscale: '10002760014',
+  rasd: '95562500017',
   dicitura:
     "Esente da imposta e tasse ai sensi dell'art. 11 e 11bis del D.P.R. 971/86 e art.4 e 10 D.P.R. 633/72. Esente da bollo in modo assoluto art.7 Tabella allegato B D.P.R. 642/72",
 }

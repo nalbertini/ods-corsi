@@ -281,6 +281,10 @@ export function firmaDaRifare(minore: boolean, prima: { tratti: number; scelte: 
   return `Firma e autorizzazioni vanno rifatte: ora firma ${minore ? 'il genitore' : 'chi si iscrive'}.`
 }
 
+/** Una frase sola: il certificato serve per partecipare, e si carica o si porta in segreteria. */
+export const avvisoCertificato = (tipo: 'normale' | 'agonistico'): string =>
+  `${tipo === 'agonistico' ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico' : 'Dai 6 anni serve il certificato medico'} per partecipare alle lezioni. Caricalo qui sotto o portalo in segreteria.`
+
 /**
  * Quale certificato medico ricordare a chi si iscrive: nessuno sotto i 6
  * anni (o finché non c'è la data di nascita), l'agonistico dai 12 per judo,
@@ -413,6 +417,62 @@ export function controlla(d: DatiRichiesta, oggi = new Date()): string | null {
   if (vuoti.length) return `Mancano: ${vuoti.map((x) => NOMI_CAMPI[x.campo]).join(', ')}`
   // Come il database: il vincolo sulle note scatta dopo gli altri controlli, a note già pulite dagli spazi.
   return tutti[0]?.messaggio ?? ((d.note ?? '').trim().length > NOTE_NEL_DATABASE ? 'Un campo non va: un testo è troppo lungo' : null)
+}
+
+/**
+ * Il primo messaggio che blocca l'invio del modulo, nell'ordine: campi, firma,
+ * file obbligatori, privacy; `null` se si può mandare. Il riquadro in fondo lo
+ * ricalcola a ogni modifica, così non resta un avviso già sistemato.
+ */
+export function mancaPerInviare(
+  s: {
+    dati: DatiRichiesta
+    privacy: boolean
+    come: 'qui' | 'foto'
+    /** Esito del controllo della firma (`null` = firmato): conta solo se si firma qui. */
+    firma: string | null
+    file: Partial<Record<TipoFile, unknown>>
+    obbligatori: TipoFile[]
+  },
+  oggi = new Date(),
+): string | null {
+  const fileMancante = FILE.find((f) => s.obbligatori.includes(f.tipo) && !s.file[f.tipo] && !(f.tipo === 'modulo' && s.come === 'qui'))
+  return (
+    controlla(s.dati, oggi) ??
+    (s.come === 'qui' ? s.firma : null) ??
+    (fileMancante ? `Manca: ${fileMancante.etichetta.toLowerCase()}` : null) ??
+    (s.privacy ? null : "Serve la conferma di aver letto l'informativa privacy")
+  )
+}
+
+/**
+ * Un campo ancora com'era all'apertura (precompilato dal nucleo) si seleziona
+ * tutto al primo tocco: la prima lettera lo sostituisce invece di attaccarsi.
+ * Cambiato, o vuoto, no: il cursore va dove si tocca.
+ */
+export const daSelezionare = (valore: string, iniziale: string): boolean => valore.trim() !== '' && valore === iniziale
+
+/** Le due scelte del modulo firmato qui: «non autorizzo» è una risposta, il silenzio no. */
+export const sceltaMancante = (s: { tesseramento?: boolean; foto?: boolean }): 'tesseramento' | 'foto' | null =>
+  s.tesseramento === undefined ? 'tesseramento' : s.foto === undefined ? 'foto' : null
+
+/** Cosa manca, nel riquadro in fondo e sotto la firma. */
+export const MANCA_SCELTA: Record<'tesseramento' | 'foto', string> = {
+  tesseramento: 'Nel modulo: scegli se acconsenti al tesseramento alla FIJLKAM e/o FIPE',
+  foto: 'Nel modulo: scegli se autorizzi le foto',
+}
+
+/** Cosa manca, sotto la scelta stessa: lì «Nel modulo» è inutile. */
+export const NOTA_SCELTA: Record<'tesseramento' | 'foto', string> = {
+  tesseramento: 'Scegli una risposta per il tesseramento alla FIJLKAM e/o FIPE',
+  foto: 'Scegli una risposta per le foto',
+}
+
+/** Sotto ogni scelta: che va fatta, e che dire no non ferma l'iscrizione. */
+export function aiutoScelta(quale: 'tesseramento' | 'foto', minore: boolean): string {
+  const scegli = 'Devi scegliere una delle due.'
+  if (quale === 'tesseramento') return `${scegli} Anche se non ${minore ? 'autorizzi' : 'acconsenti'}, l'iscrizione va avanti.`
+  return `${scegli} Anche se non autorizzi, l'iscrizione non cambia e ${minore ? 'il minore non compare' : 'non compari'} nelle foto.`
 }
 
 /** Cosa non va campo per campo, da scrivere sotto ognuno. */

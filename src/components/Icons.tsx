@@ -91,6 +91,14 @@ export const Luna = ({ size = 20 }: P) => (
   </svg>
 )
 
+/** Il tatami visto dall'alto: due moduli affiancati, come la stuoia del dojo. */
+export const Tatami = ({ size = 20 }: P) => (
+  <svg {...base(size)} aria-hidden="true">
+    <rect x="3" y="6" width="18" height="12" />
+    <path d="M12 6v12M3 12h9" />
+  </svg>
+)
+
 /** Le impostazioni: due cursori, non l'ingranaggio, che accanto al sole si confonde. */
 export const Cursori = ({ size = 20 }: P) => (
   <svg {...base(size)} aria-hidden="true">

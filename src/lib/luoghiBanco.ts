@@ -22,6 +22,7 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
     nome: 'PERSONE',
     voci: [
       { voce: 'iscritti', nome: 'ISCRITTI' },
+      { voce: 'tessere', nome: 'TESSERE' },
       { voce: 'richieste', nome: 'RICHIESTE ONLINE' },
       { voce: 'istruttori', nome: 'ISTRUTTORI' },
       { voce: 'personale', nome: 'ACCESSI' },
@@ -39,8 +40,7 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
     id: 'soldi',
     nome: 'SOLDI',
     voci: [
-      { voce: 'dapagare', nome: 'DA PAGARE' },
-      { voce: 'ricevute', nome: 'RICEVUTE' },
+      { voce: 'pagamenti', nome: 'PAGAMENTI' },
       { voce: 'listino', nome: 'LISTINO' },
       { voce: 'vestiario', nome: 'VESTIARIO' },
     ],
@@ -51,6 +51,7 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
     voci: [
       { voce: 'statistiche', nome: 'STATISTICHE' },
       { voce: 'segnalazioni', nome: 'SEGNALAZIONI' },
+      { voce: 'sito', nome: 'SITO' },
       { voce: 'regole', nome: 'IMPOSTAZIONI' },
     ],
   },

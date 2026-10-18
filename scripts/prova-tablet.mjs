@@ -204,7 +204,11 @@ console.log('\n9. chi fa l\'appello c\'era, e le lezioni tenute senza istruttore
   // Maura, che la insegna, fa l'appello del venerdì dopo dall'app.
   window.location.pathname = '/istruttori/'
   const app = m.creaDatiProva()
-  const maurizio = m.lezioniFra(new Date('2026-09-21'), new Date('2026-09-27')).find((l) => m.comeE(l).istruttori.includes('i-maurizio') && m.comeE(l).istruttori.length === 1)
+  // Una sua lezione già cominciata, dell'ultima settimana: l'istruttore tocca le presenze solo da mezz'ora prima a 14 giorni dopo (52-presenze-finestra.sql), e con una data fissa la prova scadeva col tempo.
+  const adesso = new Date()
+  const maurizio = m.lezioniFra(new Date(adesso.getTime() - 7 * 24 * 60 * 60_000), adesso)
+    .filter((l) => l.inizio <= adesso && m.comeE(l).stato !== 'annullata' && m.comeE(l).istruttori.includes('i-maurizio') && m.comeE(l).istruttori.length === 1)
+    .at(-1)
   const dettaglio = await app.dettaglio(maurizio.id)
   await app.segna(maurizio.id, dettaglio.elenco[0].id, 'presente')
   ok('Maurizio fa l\'appello dall\'app: confermato', await di(maurizio.id, 'Maurizio'), 'confermata appello')

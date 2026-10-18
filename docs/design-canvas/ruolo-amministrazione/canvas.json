@@ -1,0 +1,55 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Ruolo amministrazione · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Ruolo.dc.html",
+   "title": "ISTRUTTORI E ACCESSI: il ruolo si sceglie, anche più d'uno",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Amministrazione.dc.html",
+   "title": "L'area amministrazione: PAGAMENTI",
+   "x": 1560,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "AmministrazionePagamento.dc.html",
+   "title": "Il pagamento di una riga: annulla ricevuta, annulla pagamento",
+   "x": 0,
+   "y": 1760,
+   "page": "page-1"
+  },
+  {
+   "file": "AmministrazioneRegistra.dc.html",
+   "title": "REGISTRA UN PAGAMENTO: prima chi, poi il resto",
+   "x": 1520,
+   "y": 1760,
+   "page": "page-1"
+  },
+  {
+   "file": "AmministrazioneConferme.dc.html",
+   "title": "Le due conferme di annullo",
+   "x": 0,
+   "y": 2960,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Il ruolo «amministrazione»: scelta del ruolo e area dei conti"
+  }
+ ]
+}

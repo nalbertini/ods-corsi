@@ -10,7 +10,7 @@ che entra da questo indirizzo finisce nel calendario degli istruttori.
 
 ## Entrare
 
-1. Aprire <https://nalbertini.github.io/ods-corsi/> (va bene anche
+1. Aprire <https://app.officinedellosport.it/> (va bene anche
    `…/segreteria/`).
 2. Email e password, **ENTRA**: con l'account della segreteria si arriva
    qui. Si resta collegati finché non si preme **Esci**, in fondo al menu.
@@ -23,17 +23,54 @@ con **ISTRUTTORI →** nel menu, senza uscire.
 
 Questo è l'aspetto di sempre. Da **IMPOSTAZIONI** si può scegliere **Il Banco**, con la ricerca in cima e cinque luoghi al posto del menu: la [guida](il-banco.md).
 
-In cima al menu c'è **Cerca iscritto**: si scrive un pezzo del nome o del
-cognome, si sceglie con le frecce (o col mouse) e Invio apre la sua scheda, da
-qualunque voce. Apostrofi, trattini e spazi nel cognome non contano: «d'am»,
-«dam» e «amico» trovano D'Amico, «deluca» trova De Luca. Il tasto **/** ci porta subito, senza mouse.
+In cima al menu c'è **Cerca**: si scrive e i risultati escono a gruppi,
+nell'ordine **ISCRITTI**, **RICHIESTE ONLINE**, **CORSI**, **ISTRUTTORI**. Un
+gruppo senza risultati non compare. Si sceglie con le frecce (o col mouse) e
+Invio apre: la scheda di un iscritto o di un corso, oppure la voce delle
+richieste o degli istruttori. Di ogni gruppo si vedono tre righe; **ALTRI 14**
+apre ISCRITTI, CORSI o RICHIESTE ONLINE già filtrati su quelli trovati («Cercato
+«gio»: 17 trovati»), e **MOSTRA TUTTI** toglie il filtro. Il tasto **/** porta il fuoco nel campo, senza mouse. Il
+testo resta scritto anche dopo aver aperto un risultato, così se ne guardano
+due o tre di fila; **Esc** lo svuota.
+
+- **Iscritti**: per nome e cognome. Apostrofi, trattini e spazi non contano:
+  «d'am», «dam» e «amico» trovano D'Amico, «deluca» trova De Luca. Anche per
+  **telefono** (comunque sia scritto, con o senza +39 e spazi: bastano tre
+  cifre, anche le ultime) e per **email**. Sotto il nome si vede chi è, o perché
+  è uscito («tel. 338 123 4567»). Chi non è più iscritto si trova ancora, con
+  «non attiva». Se il telefono o l'email sono di un genitore esce il bambino, con
+  «numero di un genitore», senza i dati del genitore.
+- **Richieste online**: per il nome di chi chiede, anche quelle già accolte o
+  rifiutate; Invio la apre. Quelle ancora da accogliere vengono prima, col bollino.
+- **Corsi**: per nome, sala o giorno: «gio» trova i corsi del giovedì.
+- **Istruttori**: per nome, coi corsi che insegnano.
+
+Se non si riesce a leggere un elenco, il campo lo dice («Non riesco ad
+aggiornare l'elenco: questi sono i dati di prima»), non scrive «niente».
+Dentro ISCRITTI c'è sempre il campo per cercare e filtrare l'elenco.
 
 A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
-**PERSONE** (ISCRITTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
-E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, VESTIARIO, ESERCIZI, SEGNALAZIONI). Le
+**PERSONE** (ISCRITTI, TESSERE, PAGAMENTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
+E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, VESTIARIO, ESERCIZI, SEGNALAZIONI, SITO). Le
 **IMPOSTAZIONI** sono il tasto coi due cursori in cima al menu. Ogni voce ha la
 sua guida:
+
+## La striscia COSA MANCA
+
+In cima a ogni pagina, tranne **DA FARE**, ci sono cinque caselle con un numero grande:
+**APPELLI NON FATTI** (lezioni degli ultimi 30 giorni senza appello), **CERTIFICATI
+SCADUTI** (scaduti o mancanti), **PAGAMENTI** (quote non in regola), **TESSERE**
+(iscritti a un corso che chiede la tessera e non ne hanno una valida) e **RICHIESTE
+ONLINE** (da accogliere). Sono gli stessi numeri di [DA FARE](da-fare.md). Il segno
+sotto dice lo stato: rosso, qualcosa manca; giallo, c'è da accogliere; verde con **✓ 0**,
+a posto. Se il numero non si sa (la lettura non è riuscita) c'è «—», mai uno zero verde, e
+un tasto **RICONTA**; se una lettura fallisce dopo una riuscita resta l'ultimo numero,
+con scritto a che ora era. Toccando una casella si va alla pagina giusta, già filtrata.
+I conti si rileggono quando si segna un appello, si accoglie una richiesta o si cambia
+una scheda, e cambiando voce solo se l'ultima lettura ha più di due minuti. Sotto i 1360 pixel di larghezza e sul telefono la
+striscia sta due caselle per riga e si nasconde quando c'è una scheda aperta. Chi non la vuole
+la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scelta resta su quel dispositivo.
 
 | Voce | A cosa serve | Guida |
 |---|---|---|
@@ -41,6 +78,8 @@ sua guida:
 | **SETTIMANA** | La griglia della settimana, gli appelli mancanti, annullare, sostituti, lezioni straordinarie | [Apri](settimana.md) |
 | **CORSI** | I corsi: sala, istruttori, posti, colore, giorni e orari | [Apri](corsi.md) |
 | **ISCRITTI** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |
+| **TESSERE** | Chi è iscritto senza la tessera che il corso chiede (FIJLKAM, FIPE…) e chi è tesserato senza un corso | [Apri](tessere.md) |
+| **PAGAMENTI** | Tutti i pagamenti, delle ricevute e fatti a mano: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV | [Apri](pagamenti.md) |
 | **RICHIESTE ONLINE** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
 | **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, chi c'era a ogni lezione, il CSV | [Apri](presenze.md) |
 | **PRESENZE · SEGNALATE** | Una scheda di PRESENZE: gli iscritti che dicono di esserci stati e non risultano, da accogliere o rifiutare (solo in prova) | [Apri](presenze-segnalate.md) |
@@ -50,13 +89,14 @@ sua guida:
 | **ESERCIZI** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
 | **LISTINO** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
 | **VESTIARIO** | Gli ordini di vestiario, judogi e costumini: il catalogo, la chiusura, chi ha saldato, l'elenco per il fornitore | [Apri](vestiario.md) |
-| **IMPOSTAZIONI** | In quattro gruppi: la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa); in mezzo, **IMPORTA DA EXCEL**: corsi e iscritti dai fogli o dalle risposte del modulo Google | [Apri](regole.md) · [Importa](importa.md) |
-| **DA PAGARE** · **RICEVUTE** | Solo nell'aspetto Il Banco, luogo SOLDI: chi ha la quota non in regola e l'elenco di tutte le ricevute | [Da pagare](da-pagare.md) · [Ricevute](ricevute.md) |
+| **IMPOSTAZIONI** | In sei gruppi: questo schermo; la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa); in mezzo, **IMPORTA DA EXCEL**: corsi e iscritti dai fogli o dalle risposte del modulo Google | [Apri](regole.md) · [Importa](importa.md) |
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
+| **SITO** | Le pagine del sito della palestra, il menu in alto e il footer: si scrive la bozza e si pubblica | [Apri](sito.md) |
 
 In cima al menu, sotto il nome, si vedono subito senza scorrere tre tasti:
-**?**, la guida della voce aperta, in un'altra scheda; il **sole** (o la
-luna), il tema bianco per questo computer; i **cursori**, le IMPOSTAZIONI. In
+**?**, la guida della voce aperta, in un'altra scheda; il tasto del **tema**
+(sole, tatami o luna: mostra dove porta; nero, bianco, Tatami) per questo
+computer; i **cursori**, le IMPOSTAZIONI. In
 prova, accanto, il bollino **DATI DI PROVA**.
 
 In fondo al menu:

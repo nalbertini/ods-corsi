@@ -8,6 +8,8 @@ import { eIndirizzoGuida, INDIRIZZO_AREE } from './cancelletti'
  *
  * - `segreteria/`: il computer della reception, solo per chi ha il ruolo di
  *   segreteria;
+ * - `amministrazione/`: i conti della palestra (pagamenti e listino), per chi
+ *   ha il ruolo di amministrazione;
  * - `iscrizioni/`: la pagina pubblica, quella del link da mandare a chi vuole
  *   iscriversi, senza accesso;
  * - `iscritti/`: la pagina di chi frequenta i corsi, col suo calendario, le
@@ -38,12 +40,13 @@ import { eIndirizzoGuida, INDIRIZZO_AREE } from './cancelletti'
  * portano i link «tutte le aree». Con la radice e basta, un dispositivo che
  * una volta ha aperto `sala/` tornerebbe al tablet.
  */
-export type Area = 'segreteria' | 'iscrizioni' | 'iscritti' | 'istruttori' | 'sala' | 'guida' | 'scelta'
+export type Area = 'segreteria' | 'amministrazione' | 'iscrizioni' | 'iscritti' | 'istruttori' | 'sala' | 'guida' | 'scelta'
 
 export type AreaConIndirizzo = Exclude<Area, 'scelta' | 'guida'>
 
 export const INDIRIZZI: Record<AreaConIndirizzo, string> = {
   segreteria: 'segreteria/',
+  amministrazione: 'amministrazione/',
   iscrizioni: 'iscrizioni/',
   iscritti: 'iscritti/',
   istruttori: 'istruttori/',
