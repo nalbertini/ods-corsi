@@ -42,6 +42,7 @@ import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
+import { GRUPPI_MENU } from '../../lib/menuSegreteria'
 import { cambiaVoce, scorre } from '../../lib/scorri'
 
 export type { Voce }
@@ -60,52 +61,6 @@ export interface Destinazione {
   /** Un filtro già acceso: chi ha il certificato da sistemare, chi deve pagare, chi ha un file di prima, cosa c'è da stampare. */
   filtro?: FiltroSegreteria
 }
-
-/**
- * Il menu in quattro gruppi, da quello che si apre ogni giorno a quello che
- * si tocca una volta a stagione: tredici voci in fila non si leggevano. Le
- * presenze segnalate sono una scheda di PRESENZE, non una voce.
- */
-const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]>; secondario?: boolean }> = [
-  {
-    titolo: 'OGNI GIORNO',
-    voci: [
-      ['dafare', 'DA FARE'],
-      ['settimana', 'SETTIMANA'],
-      ['richieste', 'RICHIESTE ONLINE'],
-      ['presenze', 'PRESENZE'],
-    ],
-  },
-  {
-    titolo: 'PERSONE',
-    voci: [
-      ['iscritti', 'ISCRITTI'],
-      ['tessere', 'TESSERE'],
-      ['pagamenti', 'PAGAMENTI'],
-      ['corsi', 'CORSI'],
-    ],
-  },
-  {
-    titolo: 'ISTRUTTORI',
-    voci: [
-      ['istruttori', 'PRESENZE ISTRUTTORI'],
-      ['personale', 'ISTRUTTORI E ACCESSI'],
-    ],
-  },
-  {
-    titolo: 'LA PALESTRA',
-    // Sul telefono più piccolo: sono cose da computer.
-    secondario: true,
-    voci: [
-      ['statistiche', 'STATISTICHE'],
-      ['listino', 'LISTINO'],
-      ['vestiario', 'VESTIARIO'],
-      ['esercizi', 'ESERCIZI'],
-      ['segnalazioni', 'SEGNALAZIONI'],
-      ['sito', 'SITO'],
-    ],
-  },
-]
 
 /** La pagina della guida per ogni voce del menu: il tasto GUIDA apre quella della voce aperta. */
 const GUIDE: Record<Voce, string> = {
@@ -434,8 +389,8 @@ export function Segreteria({
           cerca={d && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
           link={
             <>
-              <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
-              <CopiaLink link={LINK_ORDINI} testo="COPIA LINK ORDINI" perche="Il link per ordinare il vestiario:" />
+              <CopiaLink link={LINK_PUBBLICO} testo="Copia link iscrizioni" perche="Il link per iscriversi:" />
+              <CopiaLink link={LINK_ORDINI} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" />
             </>
           }
           guida={guida}
@@ -489,7 +444,7 @@ export function Segreteria({
         </div>
         {d && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
         <div className="sg-gruppi">
-          {GRUPPI.map((g) => (
+          {GRUPPI_MENU.map((g) => (
             <div key={g.titolo} role="group" aria-label={g.titolo} className="sg-gruppo" data-secondario={g.secondario}>
               <span className="sg-gruppo-titolo" aria-hidden="true">
                 {g.titolo}
@@ -519,16 +474,16 @@ export function Segreteria({
         <div className="sg-voci">
           {onIstruttori && (
             <button type="button" className="num sg-voce" onClick={onIstruttori}>
-              ISTRUTTORI →
+              Istruttori →
             </button>
           )}
           {onAmministrazione && (
             <button type="button" className="num sg-voce" onClick={onAmministrazione}>
-              AMMINISTRAZIONE →
+              Amministrazione →
             </button>
           )}
-          <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
-          <CopiaLink link={LINK_ORDINI} testo="COPIA LINK ORDINI" perche="Il link per ordinare il vestiario:" />
+          <CopiaLink link={LINK_PUBBLICO} testo="Copia link iscrizioni" perche="Il link per iscriversi:" />
+          <CopiaLink link={LINK_ORDINI} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" />
         </div>
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
