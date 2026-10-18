@@ -55,8 +55,11 @@ export function leggiPrimaNota(testo: string): LetturaPrimaNota {
   let posizione = 0
   // Dove attaccare una causale che va a capo: l'ultima riga letta, se è stata letta.
   let ultima: RigaPrimaNota | null = null
-  // Il salto pagina (\f) sta davanti alla prima riga della pagina: toglierlo, se no la riga non si legge.
-  for (const riga of testo.replace(/\f/g, '').split('\n')) {
+  for (let riga of testo.split('\n')) {
+    // Una riga vuota o un salto pagina chiude la riga di prima: quel che segue (un «Pagina 2 di 40», l'intestazione
+    // ripetuta) non è la continuazione della sua causale. Il \f sta davanti alla prima riga della pagina: tolto, se no non si legge.
+    if (riga.includes('\f') || !riga.trim()) ultima = null
+    riga = riga.replace(/\f/g, '')
     if (CON_DATA.test(riga)) {
       posizione++
       ultima = null
@@ -91,6 +94,27 @@ export function leggiPrimaNota(testo: string): LetturaPrimaNota {
   return { righe, scartate }
 }
 
+/**
+ * Una cartella sta dentro il repository (o è il repository)? I percorsi sono assoluti; i «..» si risolvono prima di
+ * confrontare e il confronto è per cartelle intere (`/repo2` non è dentro `/repo`, `/repo/..dati` sì).
+ * Lo script rifiuta le cartelle di uscita che stanno in una delle radici: i dati hanno nomi di iscritti.
+ */
+export function staDentro(cartella: string, radici: string[]): boolean {
+  const pulito = (percorso: string) => {
+    const pezzi: string[] = []
+    for (const p of percorso.split('/')) {
+      if (p === '..') pezzi.pop()
+      else if (p && p !== '.') pezzi.push(p)
+    }
+    return `/${pezzi.join('/')}`
+  }
+  const c = pulito(cartella)
+  return radici.some((r) => {
+    const radice = pulito(r)
+    return c === radice || c.startsWith(radice === '/' ? '/' : `${radice}/`)
+  })
+}
+
 /** Il piede del file: quanti movimenti e il totale delle entrate e delle uscite. */
 export function totaliDelPiede(testo: string): TotaliPrimaNota | null {
   const m = PIEDE.exec(testo)
@@ -121,7 +145,10 @@ export function voceDellaCausale(causale: string, tipo: 'entrata' | 'uscita'): s
 }
 
 export interface DatiImport {
-  /** Non cambia rileggendo lo stesso file: rilanciare l'import non duplica niente. */
+  /**
+   * `prima-nota:<posizione>`: non cambia rileggendo lo STESSO file, quindi rilanciare i suoi pacchetti non duplica niente.
+   * Un export nuovo con una riga in più o in meno prima sposterebbe le posizioni: non si rilancia sopra un import fatto.
+   */
   chiave: string
   data: string
   cassa: 'contanti' | 'conto'

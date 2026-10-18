@@ -45,8 +45,10 @@ const TESTO = [
   '17/06/2019   Cassa Conto Corrente   Uscita         affitto palestre scuole                            €6.725,00                 €67,25',
   '20/12/2018   Cassa Contanti         Uscita         detersivo                                           €180,00                 €180,00',
   '03/09/2019   Cassa Contanti         Entrata        Cliente ROSSI MARIO per QUOTA ASSOCIATIVA ANNUALE     €60,00    N.I.      €60,00    68',
-  '03/09/2019   Cassa Contanti         Entrata        Cliente ROSSI MARIO per Mensile Collegno Judo 2 fa-ra 8-11      €47,00    N.I.      €47,00    69',
+  '03/09/2019   Cassa Contanti         Entrata        Cliente ROSSI MARIO per Mensile Corso X 2 gg 8-11      €47,00    N.I.      €47,00    69',
   '                                              Anni 3-Ingr.',
+  '',
+  '                                          Pagina 1 di 2',
   '\f19/07/2019   Cassa Conto Corrente   Entrata   scuola gozzano                                                   €300,00             €300,00',
   '23/09/2019   Cassa Contanti                                                                              €0,00            €0,00',
   '26/08/2019   Cassa Contanti         Uscita                                                                        €0,00               €0,00',
@@ -65,7 +67,7 @@ console.log('1. le righe del file')
   ok('la prima: data, cassa, tipo, importo, causale', prova(() => [righe[0].data, righe[0].cassa, righe[0].tipo, righe[0].importo, righe[0].causale]), ['2011-11-25', 'conto', 'uscita', 8000, 'rimborso estate'])
   ok('il contante e il conto', prova(() => righe.map((x) => x.cassa)), ['conto', 'conto', 'contanti', 'contanti', 'contanti', 'conto', null, 'conto'])
   ok('conta l\'importo lordo, non il netto (6.725,00 era un errore di virgola)', prova(() => righe[1].importo), 6725)
-  ok('la causale che va a capo si unisce', prova(() => righe[4].causale), 'Cliente ROSSI MARIO per Mensile Collegno Judo 2 fa-ra 8-11 Anni 3-Ingr.')
+  ok('la causale che va a capo si unisce', prova(() => righe[4].causale), 'Cliente ROSSI MARIO per Mensile Corso X 2 gg 8-11 Anni 3-Ingr.')
   ok('la riga dopo il salto pagina c\'è', prova(() => righe[5].causale), 'scuola gozzano')
   ok('IVA «N.I.» e numero del movimento non disturbano', prova(() => [righe[3].importo, righe[3].causale]), [6000, 'Cliente ROSSI MARIO per QUOTA ASSOCIATIVA ANNUALE'])
   ok('le migliaia all\'italiana', prova(() => righe[7].importo), 123456)
@@ -73,6 +75,7 @@ console.log('1. le righe del file')
   ok('le righe a zero si scartano, dicendo perché', prova(() => r.scartate.map((x) => x.motivo)), ['Importo zero', 'Importo zero'])
   ok('la posizione è quella fra le righe con la data, buchi compresi: stabile se si rilegge', prova(() => righe.map((x) => x.posizione)), [1, 2, 3, 4, 5, 6, 9, 10])
   ok('…e uguale rileggendo lo stesso testo', prova(() => m.leggiPrimaNota(TESTO).righe.map((x) => x.posizione)), prova(() => righe.map((x) => x.posizione)))
+  ok('un piè di pagina rientrato non si attacca alla causale di prima', prova(() => righe[4].causale.includes('Pagina')), false)
   ok('il testo vuoto non dà niente', prova(() => m.leggiPrimaNota('').righe), [])
 }
 
@@ -121,6 +124,19 @@ console.log('\n5. gli incassi dei clienti dopo una certa data')
   ok('prima del 2019-09-03 sparisce il cliente di quel giorno, le uscite e le altre entrate restano', fino('2019-09-02'), [1, 2, 3, 6, 9])
   ok('senza data si tiene tutto', prova(() => m.senzaIncassiDopo(r.righe, null).length), 8)
   ok('l\'uscita e l\'entrata non da cliente dopo la data restano', prova(() => m.senzaIncassiDopo(r.righe, '2000-01-01').map((x) => x.causale)), ['rimborso estate', 'affitto palestre scuole', 'detersivo', 'scuola gozzano', 'cena tecnici'])
+}
+
+console.log('\n6. la cartella dei dati non può stare nel repository')
+{
+  const dentro = (cartella, ...radici) => prova(() => m.staDentro(cartella, radici))
+  ok('una cartella nel repo', dentro('/repo/dati', '/repo'), true)
+  ok('il repo stesso', dentro('/repo', '/repo'), true)
+  ok('una cartella fuori', dentro('/tmp/dati', '/repo'), false)
+  ok('una che si chiama «..dati» dentro il repo', dentro('/repo/..dati', '/repo'), true)
+  ok('una con lo stesso inizio ma un altro repo', dentro('/repo2/dati', '/repo'), false)
+  ok('con un segno finale', dentro('/repo/dati/', '/repo/'), true)
+  ok('basta una delle radici (il worktree e il checkout principale)', dentro('/principale/dati', '/worktree', '/principale'), true)
+  ok('con i «..» in mezzo si guarda dove arriva', dentro('/tmp/../repo/dati', '/repo'), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

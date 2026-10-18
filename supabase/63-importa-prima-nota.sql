@@ -3,7 +3,8 @@
 -- 59-contabilita.sql e 60-chiusura-cassa.sql, e si può rilanciare senza danni.
 --
 -- Solo l'amministrazione la chiama. Ogni riga porta una chiave (`origine_import`): rilanciare lo
--- stesso file non duplica niente. Un pacchetto o entra tutto o niente, e un giorno già chiuso della
+-- stesso file non duplica niente (la chiave è la posizione della riga nel file: un export diverso la
+-- sposta, e non si rilancia sopra un import fatto). Un pacchetto o entra tutto o niente, e un giorno già chiuso della
 -- Cassa Contanti non si tocca. Le righe sono movimenti come gli altri (si annullano, si leggono)
 -- ma senza `creato_da`: è storia, non l'ha scritta nessuno qui. Le voci sono le due di sistema degli
 -- incassi e «Da classificare», che l'amministrazione sistema poi a mano.

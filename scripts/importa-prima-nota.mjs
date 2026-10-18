@@ -11,8 +11,8 @@
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { relative, resolve } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { basename, dirname, join, resolve } from 'node:path'
 
 const [, , file, uscita, ...resto] = process.argv
 const dopoUnaData = (nome) => {
@@ -20,31 +20,43 @@ const dopoUnaData = (nome) => {
   return i >= 0 ? resto[i + 1] : null
 }
 const incassiFinoAl = dopoUnaData('--incassi-fino-al')
-if (!file || !uscita || (incassiFinoAl && !/^\d{4}-\d{2}-\d{2}$/.test(incassiFinoAl))) {
+if (!file || !uscita || (resto.includes('--incassi-fino-al') && !/^\d{4}-\d{2}-\d{2}$/.test(incassiFinoAl ?? ''))) {
   console.error('Uso: node scripts/importa-prima-nota.mjs <file.pdf|file.txt> <cartella-fuori-dal-repo> [--incassi-fino-al AAAA-MM-GG]')
   process.exit(1)
 }
 
-// Il repository è pubblico: niente del file vero ci deve finire.
-const radice = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
-const dentro = relative(radice, resolve(uscita))
-if (!dentro.startsWith('..') && !dentro.startsWith('/')) {
-  console.error(`La cartella «${uscita}» sta dentro il repository: scegline una fuori (per esempio in /tmp), i dati dei clienti non vanno su GitHub.`)
+// Il repository è pubblico: niente del file vero ci deve finire. Si guardano il worktree e il checkout principale
+// (stesso repository), con i percorsi veri (i collegamenti simbolici non ingannano).
+const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim()
+const veroPercorso = (percorso) => {
+  const completo = resolve(percorso)
+  // La cartella può non esserci ancora: si risolve il primo pezzo che esiste e si riattacca il resto.
+  let su = completo
+  const resta = []
+  while (!existsSync(su) && dirname(su) !== su) {
+    resta.unshift(basename(su))
+    su = dirname(su)
+  }
+  return join(realpathSync(su), ...resta)
+}
+const radici = [git('rev-parse', '--show-toplevel'), dirname(git('rev-parse', '--path-format=absolute', '--git-common-dir'))].map(veroPercorso)
+
+if (!existsSync(file)) {
+  console.error(`Il file «${file}» non c'è.`)
   process.exit(1)
 }
-
 let testo
 if (file.toLowerCase().endsWith('.pdf')) {
   const r = spawnSync('pdftotext', ['-layout', file, '-'], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
   if (r.status !== 0) {
-    console.error('Non riesco a leggere il PDF con pdftotext (brew install poppler):', r.stderr || r.error?.message)
+    console.error('Non riesco a leggere il PDF con pdftotext (si installa con: brew install poppler):', r.error?.message ?? r.stderr)
     process.exit(1)
   }
   testo = r.stdout
 } else testo = readFileSync(file, 'utf8')
 
 const { outputFiles } = await build({
-  stdin: { contents: "export * from './src/lib/importaPrimaNota'; export { euro } from './src/lib/ricevute'", resolveDir: radice, loader: 'ts' },
+  stdin: { contents: "export * from './src/lib/importaPrimaNota'; export { euro } from './src/lib/ricevute'", resolveDir: radici[0], loader: 'ts' },
   bundle: true,
   format: 'esm',
   platform: 'node',
@@ -53,6 +65,11 @@ const { outputFiles } = await build({
   define: { 'import.meta.env': '{}' },
 })
 const m = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+
+if (m.staDentro(veroPercorso(uscita), radici)) {
+  console.error(`La cartella «${uscita}» sta dentro il repository: scegline una fuori (per esempio in /tmp), i dati dei clienti non vanno su GitHub.`)
+  process.exit(1)
+}
 
 const lettura = m.leggiPrimaNota(testo)
 const piede = m.totaliDelPiede(testo)
