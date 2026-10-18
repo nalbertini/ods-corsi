@@ -42,6 +42,7 @@
     "prova:iscritti": "node scripts/prova-iscritti.mjs",
     "prova:iscritti-corso": "node scripts/prova-iscritti-corso.mjs",
     "prova:listino": "node scripts/prova-listino.mjs",
+    "prova:dafare": "node scripts/prova-dafare.mjs",
     "prova:menu": "node scripts/prova-menu.mjs",
     "prova:sito": "node scripts/prova-sito.mjs",
     "prova:sito-aspetto": "node scripts/prova-sito-aspetto.mjs",
