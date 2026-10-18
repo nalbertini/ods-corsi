@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.128.0 — 18 ottobre 2026
+
+### Novità
+
+- In Contabilità, Nuovo movimento si apre in una pagina intera, i filtri sono in ordine e si parte da Tutto l'anno
+- Le citazioni di chi studia lo sport sono in Chi siamo, e la Home non ha più «Perché unirti a noi?»
+
 ## 0.127.0 — 18 ottobre 2026
 
 ### Novità
