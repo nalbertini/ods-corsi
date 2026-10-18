@@ -21,6 +21,7 @@ Componenti della libreria usati, nessuno nuovo: `SitoTessera`, `SitoRecensione`,
 | Podi | «Attività agonistiche con svariati podi ogni anno», nessun dato | Non c'è: entra solo con un dato vero (quanti podi, quale anno) |
 | Citazioni accademiche | Home, «Lo sport secondo chi lo studia», estratto e «Leggi tutto» | Chi siamo, in fondo, prima della chiamata finale, stesso estratto |
 | Recensioni | Due carte e una tessera «In breve» con tre recensioni | Cinque carte uguali: citazione e nome, niente «In breve» |
+| Sul computer | — | Sei colonne: tre carte per riga, e a cinque carte le ultime due più larghe (nessun buco); sul telefono una per riga |
 | Refusi | «x chi», «amichevole è ideale», frase di Davide senza punto | Solo punteggiatura e «x» → «per» (vedi sotto); il senso non cambia |
 
 Correzioni alle citazioni di Google, e nient'altro:

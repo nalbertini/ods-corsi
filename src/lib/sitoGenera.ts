@@ -279,13 +279,12 @@ const CSS_HOME = `
 .intero[open] summary::after{content:" · chiudi";white-space:pre}
 .intero summary:focus-visible{outline:3px solid currentColor;outline-offset:3px}
 .citazione:has(.intero[open]) .estratto{display:none}
-.recensioni{display:grid;grid-template-columns:1.2fr 1.2fr 1fr;gap:6px}
+.recensioni{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+@media (min-width:901px){
+.recensioni>*{grid-column:span 2}
+.recensioni>:nth-child(4):nth-last-child(2),.recensioni>:nth-child(5):last-child{grid-column:span 3}
+}
 .recensioni .tessera{min-height:300px;padding:32px;gap:20px;font-size:21px;line-height:1.4;font-weight:500}
-.recensioni .tessera.in-breve{font-size:18px;font-weight:400}
-.in-breve h3{font-size:44px;line-height:.95}
-.in-breve ul{margin:0;padding:0;list-style:none}
-.in-breve li{padding:12px 0;border-top:1px solid rgba(13,42,61,.25)}
-.in-breve li em{display:block;font-style:normal;font-weight:700}
 .passo-unico .sezione.cta{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:96px var(--margine) 0}
 .passo-unico .sezione.cta.solo{grid-template-columns:1fr}
 .cta-testo{display:flex;flex-direction:column;justify-content:center;gap:22px;padding:48px;background:var(--giallo);color:var(--inchiostro);border-radius:6px 0 0 6px}
