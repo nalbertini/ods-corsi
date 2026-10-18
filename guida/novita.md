@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.124.1 — 18 ottobre 2026
+
+### Risolto
+
+- Nella scheda della persona il testo delle linguette non esce più
+
+### Modificato
+
+- I titoli di tutte le pagine, tranne la Home, hanno la stessa misura
+
 ## 0.124.0 — 18 ottobre 2026
 
 ### Novità
