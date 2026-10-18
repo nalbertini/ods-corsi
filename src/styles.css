@@ -1865,7 +1865,7 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-gruppo { display: flex; flex-direction: column; gap: 4px; }
 .sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
 /* Le schede di PRESENZE: larghe quanto serve, non quanto la sezione. */
-.sg-schede { flex-basis: auto; align-self: flex-start; grid-auto-columns: minmax(150px, auto); }
+.sg-schede { flex-basis: auto; align-self: flex-start; grid-auto-columns: minmax(min-content, 1fr); }
 .sg-schede .scheda { min-height: 44px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; }
 .sg-voce {
   display: flex; align-items: center; min-height: 44px; padding: 0 12px;
@@ -2214,7 +2214,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 }
 .sg-finestra-velo { position: absolute; inset: 0; z-index: 0; }
 .sg-finestra {
-  position: relative; z-index: 1; display: flex; flex-direction: column; width: min(760px, 100%); min-height: 0;
+  position: relative; z-index: 1; display: flex; flex-direction: column; width: min(920px, 100%); min-height: 0;
   background: var(--surface); border: 2px solid var(--text); border-top: 6px solid var(--tinta, var(--text));
 }
 .sg-finestra:focus { outline: none; }
@@ -3186,6 +3186,7 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 
 /* La scheda iscritto a schede: la linguetta dice a parole se c'è qualcosa da sistemare, e il piede resta in vista. */
 .sg-schede-scheda .scheda { white-space: nowrap; gap: 8px; }
+.sg-schede-scheda { align-self: stretch; }
 .sg-scheda-segno { font-size: 11px; letter-spacing: 0.1em; }
 .sg-scheda-segno[data-tono='giallo'] { color: var(--giallo-testo); }
 .sg-scheda-segno[data-tono='rosso'] { color: var(--rosso-testo); }
