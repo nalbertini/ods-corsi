@@ -283,7 +283,30 @@ console.log('\n15. Titoli in ordine, «Salta al contenuto» e fuoco da tastiera'
   ok('ogni pagina ha una sola destinazione #contenuto, subito prima del <main>', pagine.filter(([, h]) => conta(h, /id="contenuto"/g) !== 1 || !/<span id="contenuto"><\/span><main[\s>]/.test(h)).map(([k]) => k), [])
   ok('il link è nascosto finché non prende il fuoco, poi si vede', [/\.salta\{[^}]*(left:-9999px|clip)/.test(H), /\.salta:focus\{[^}]*left:/.test(H)], [true, true])
   ok('il fuoco da tastiera ha un contorno di 3px su link e pulsanti', /a:focus-visible,button:focus-visible\{outline:3px solid/.test(H), true)
-  ok('la scheda del corso è tutta cliccabile: il contorno del fuoco è sulla scheda intera, non sul solo titolo', [/\.scheda:has\(a:focus-visible\)\{[^}]*outline:3px solid/.test(H), /\.scheda h3 a:focus-visible,\.passo-unico \.scheda h4 a:focus-visible\{outline:none/.test(H)], [true, true])}
+  ok('la scheda del corso è tutta cliccabile: il contorno del fuoco è sulla scheda intera, non sul solo titolo', [/\.scheda:has\(a:focus-visible\)\{[^}]*outline:3px solid/.test(H), /\.scheda h3 a:focus-visible,\.passo-unico \.scheda h4 a:focus-visible\{outline:none/.test(H)], [true, true])
+}
+
+console.log('\n16. Barra «Prova a 5 € / Chiama» sul telefono')
+{
+  const TEL = 'tel:+393463292786'
+  const barra = (h) => h.match(/<nav class="barra-prova"[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? ''
+  const link = (b) => [...b.matchAll(/<a class="pulsante (\w+)" href="([^"]*)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], m[2], m[3]])
+  ok('la Home nuova ha una barra sola, con due pulsanti: «Prova a 5 €» giallo verso il modulo e «Chiama» verso tel:', [conta(H, /class="barra-prova"/g), link(barra(H))], [1, [['primario', F.ISCRIZIONE, 'Prova a 5 €'], ['secondario', TEL, 'Chiama']]])
+  ok('il pulsante di prova ha il nome accessibile intero (le altre prove dicono «una settimana»)', /class="pulsante primario"[^>]*aria-label="Prova una settimana a 5 euro"/.test(barra(H)), true)
+  const iBarra = H.indexOf('class="barra-prova"')
+  ok('la barra sta dopo l’hero e prima della chiamata finale, nel suo blocco «dopo-hero»', [H.indexOf('class="pagina-hero') < iBarra, iBarra < H.indexOf('class="sezione cta'), /<div class="dopo-hero">[\s\S]*<nav class="barra-prova"[\s\S]*<\/nav><\/div><section class="sezione cta/.test(M)], [true, true, true])
+  const senzaCta = home(F.TESTO_NUOVO.replace(F.CTA(), ''))
+  ok('senza la chiamata finale nel testo la barra c’è ancora, ultima nel blocco, e resta l’invito', [conta(senzaCta, /class="barra-prova"/g), /<\/nav><\/div><\/main>/.test(senzaCta), /class="invito"/.test(senzaCta)], [1, true, true])
+  const vecchia = genera(F.datiVecchi())
+  ok('la Home di prima, Corsi e Contatti non hanno la barra', [vecchia['index.html'], vecchia['corsi/index.html'], vecchia['contatti/index.html']].map((h) => conta(h, /barra-prova/g)), [0, 0, 0])
+  ok('c’è solo sul telefono: nascosta di base, sotto i 901px resta appiccicata in basso, sotto il menu aperto', [/\.barra-prova\{display:none\}/.test(H), /@media \(max-width:900px\)\{[^@]*\.barra-prova\{[^}]*display:flex[^}]*position:sticky[^}]*bottom:0/.test(H.replace(/\n/g, ''))], [true, true])
+  const z = Number(H.match(/\.barra-prova\{[^}]*z-index:(\d+)/)?.[1] ?? 99)
+  ok('sta sotto il menu aperto (z-index del menu: 10)', z < 10, true)
+  ok('i pulsanti della barra sono alti 56px (almeno 48) e il secondario ha il filo bianco', [/\.barra-prova \.pulsante\{[^}]*min-height:56px/.test(H), /\.barra-prova \.secondario\{[^}]*border-color:#fff/.test(H)], [true, true])
+  ok('nessuno script: la barra sta in fondo al suo blocco e si ferma lì', /<script/i.test(H.replace(/<script type="application\/ld\+json">[^<]*<\/script>/g, '')), false)
+  const piedi = Object.entries(vecchia).filter(([, h]) => typeof h === 'string' && /<footer class="piede"/.test(h))
+  ok('in ogni pagina il telefono del piede è un link tel:', piedi.filter(([, h]) => !h.includes(`<li><a href="${TEL}">346 329 2786</a></li>`)).map(([k]) => k), [])
+}
 
 console.log('\n17. Corsi per età: senza l’età resta l’elenco di prima, la scheda compatta sul telefono')
 {

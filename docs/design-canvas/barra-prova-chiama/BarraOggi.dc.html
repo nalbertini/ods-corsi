@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Barra oggi</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- OGGI: a metà pagina (circa 3.000 px sotto la testata) non c'è nessun pulsante di prova a portata di pollice: «Prova una settimana a 5 €» sta solo in testata, nell'hero (465 px) e nel finale (12.223 px). Il telefono è solo testo nel piede. -->
+<div style="width: 375px; height: 812px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+<dc-import name="SitoTestata" logo="logo.webp" attiva="Home" prova="Prova una settimana a 5 €" piccolo="{{ true }}" hint-size="100%%,96px"></dc-import><div style="padding:6px 16px 0"><dc-import name="SitoSchedaCorso" titolo="Judo" eta="Dai 7 anni agli adulti" testo="Tecnica, disciplina e rispetto per crescere sul tatami, dai primi passi fino alle gare." tag="Bambini|Adulti|Agonisti" tono="blu" piccolo="{{ true }}" alta="150px" hint-size="100%,420px"></dc-import></div><div style="padding:6px 16px 0"><dc-import name="SitoSchedaCorso" titolo="Lotta" eta="Dai 7 anni agli adulti" testo="Gioco, movimento e rispetto per crescere insieme, dalla prima prova alla gara." tag="Bambini|Adulti|Agonisti" tono="giallo" piccolo="{{ true }}" alta="150px" hint-size="100%,420px"></dc-import></div><div style="padding:6px 16px 0"><dc-import name="SitoSchedaCorso" titolo="Aikido" eta="Dai 7 anni agli adulti" testo="Armonia, equilibrio e difesa, in una disciplina adatta anche a chi ha più anni." tag="Bambini|Adulti|Anziani" tono="inchiostro" piccolo="{{ true }}" alta="150px" hint-size="100%,420px"></dc-import></div>
+</div>
+</x-dc>
+</body>
+</html>

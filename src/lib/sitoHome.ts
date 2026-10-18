@@ -177,7 +177,7 @@ export function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, i
  * La Home nuova: `html` va in `<main>` dopo il titolo (che sta nella testata della pagina), `foto` e `bottoni` stanno
  * nella testata della pagina; `chiamata` dice se la chiamata finale c'è già (allora l'invito globale non si ripete).
  */
-export function homeNuova(testoPulito: string, iscrizione: string): { bottoni: string; foto: string; html: string; chiamata: boolean } {
+export function homeNuova(testoPulito: string, iscrizione: string, barra: string): { bottoni: string; foto: string; html: string; chiamata: boolean } {
   const b = blocchi(testoPulito)
   const primoTitolo = b.findIndex((x) => x.tag === 'h2')
   const testa = b.slice(0, primoTitolo < 0 ? b.length : primoTitolo)
@@ -194,6 +194,10 @@ export function homeNuova(testoPulito: string, iscrizione: string): { bottoni: s
   const sezioni: string[] = []
   const titoli = b.map((x, i) => (x.tag === 'h2' ? i : -1)).filter((i) => i >= 0)
   titoli.forEach((i, k) => sezioni.push(sezioneNuova(contenuto(b[i]), b.slice(i + 1, titoli[k + 1] ?? b.length), k === titoli.length - 1, iscrizione)))
-  const html = `${tNumeri}${tMotto}${tResto}${sezioni.join('')}`
-  return { bottoni: bottoni ? pulsanti(bottoni, iscrizione) : '', foto: foto ? `<figure class="hero-foto">${conCaricamento(foto, true)}</figure>` : '', html, chiamata: sezioni.some((s) => s.startsWith('<section class="sezione cta')) }
+  // La barra sta in fondo al blocco che segue l'hero, prima della chiamata finale: `position: sticky` la tiene in basso
+  // mentre si scorre quel blocco, e finito il blocco se ne va con la pagina, senza script (il sito non ne usa).
+  const chiamata = sezioni.length > 0 && sezioni[sezioni.length - 1].startsWith('<section class="sezione cta')
+  const dopoHero = chiamata ? sezioni.slice(0, -1) : sezioni
+  const html = `<div class="dopo-hero">${tNumeri}${tMotto}${tResto}${dopoHero.join('')}${barra}</div>${chiamata ? sezioni[sezioni.length - 1] : ''}`
+  return { bottoni: bottoni ? pulsanti(bottoni, iscrizione) : '', foto: foto ? `<figure class="hero-foto">${conCaricamento(foto, true)}</figure>` : '', html, chiamata }
 }

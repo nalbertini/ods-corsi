@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 8px; width: 100%; padding: 12px 16px; background: #0d2a3d; box-shadow: 0 -6px 18px rgba(13, 42, 61, .22)">
+  <span style="flex: 3; display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 16px; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 17px; text-align: center">{{principale}}</span>
+  <span style="flex: 2; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 0 16px; border-radius: 6px; border: 2px solid #ffffff; color: #ffffff; font-family: {{inter}}; font-weight: 600; font-size: 17px; text-align: center">{{secondario}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"principale":{"editor":"text","default":"Prova a 5 €"},"secondario":{"editor":"text","default":"Chiama"},"$preview":{"width":375,"height":80}}'>
+// PROPOSTA home del sito: la barra fissa in basso del telefono (sotto i 901px, come il tasto MENU). Due pulsanti da 56px come quelli dell'hero sul telefono (.pulsanti .pulsante, 17px, raggio 6px): «Prova a 5 €» giallo verso il modulo online, «Chiama» col filo bianco (tel:). Fondo inchiostro: giallo su inchiostro 8,95:1, bianco su inchiostro 14,8:1. Alta 80px (12 + 56 + 12), più l'area sicura dell'iPhone sotto.
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { inter: INTER, principale: p.principale ?? 'Prova a 5 €', secondario: p.secondario ?? 'Chiama' };
+  }
+}
+</script>
+</body>
+</html>
