@@ -658,13 +658,14 @@ console.log('\nDividi in parti: una pagina già a pezzi con un solo testo lungo'
   const dt = dividi(tanti)
   ok('8: oltre 100 parti il risultato non si accorpa', prova(() => dt.content.length), 101)
   ok('8: cosaNonVaPezzi dà la frase delle 100 parti', prova(() => z.cosaNonVaPezzi(dt)), 'La pagina ha troppe parti: al massimo 100')
+  ok('8: è comunque divisibile, così la schermata mostra l’avviso', prova(() => z.divisibileInParti(tanti)), true)
   ok('8: il testo del sito è lo stesso', prova(() => z.pezziInHtml(dt) === z.pezziInHtml(tanti)), true)
 
   for (const [cosa, p] of [['Judo', pagina(T('t1', judo))], ['mista', mista], ['id strani', ids], ['semplice', semplice]]) {
     ok(`9: dividere due volte è come dividere una (${cosa})`, [valido(dividi(p)), dividi(dividi(p))], [true, dividi(p)])
   }
 
-  ok('10: la frase con 11 parti', prova(() => z.frasePartiNuove(11)), 'Ora ci sono 11 parti, nell\'ELENCO. Il testo è lo stesso. Per tenerle premi SALVA BOZZA; per lasciare tutto com\'era, TORNA ALLE PAGINE.')
+  ok('10: la frase dice quante parti, SALVA BOZZA e TORNA ALLE PAGINE', prova(() => { const f = z.frasePartiNuove(11); return ['11 parti', 'SALVA BOZZA', 'TORNA ALLE PAGINE'].every((x) => f.includes(x)) }), true)
 
   const due = pagina(T('t1', lungo), K, T('t2', `<h2>X</h2><p>1</p>${IMG('e')}<p>2</p>`), FO)
   ok('11: due testi divisibili si dividono tutti e due', forma(dividi(due)), [

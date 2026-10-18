@@ -293,7 +293,7 @@ export function dividiInParti(p: PezziPagina): PezziPagina {
     const parti = htmlInPezzi(x.props.html).content
     if (parti.length < 2 || parti.some((q) => q.type === 'colonne')) return [x]
     return parti.flatMap((q, i): Pezzo[] => {
-      if (q.type === 'colonne') return []
+      if (q.type === 'colonne') return [] // già escluso sopra: serve solo a restringere il tipo
       // La prima parte tiene l'id del testo; la foto in cima di una divisione è una foto qualunque: in cima ce n'è una sola.
       const id = i === 0 && q.type === 'testo' ? x.props.id : idNuovo()
       return [q.type === 'testo' ? { type: 'testo', props: { id, html: q.props.html } } : { type: 'foto', props: { id, src: q.props.src, alt: q.props.alt } }]

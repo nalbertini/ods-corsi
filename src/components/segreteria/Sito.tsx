@@ -62,16 +62,21 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
   const aPezzi = !!pagina.pezzi
   // Dopo «Dividi in parti» l'editor si rimonta (`key`): prende i pezzi una volta sola, poi li tiene Puck.
   const [rimonta, setRimonta] = useState(0)
-  const [partiNuove, setPartiNuove] = useState<number | null>(null)
+  const [appenaDivisa, setAppenaDivisa] = useState(false)
   const [slug, setSlug] = useState(pagina.slug)
   const [anteprima, setAnteprima] = useState(false)
   const { avviso, avvisa, fai, lavora } = useAvviso()
   // I pezzi si controllano e si traducono in testo solo quando cambiano, non a ogni tasto di un altro campo.
   const noPezzi = useMemo(() => (aPezzi ? cosaNonVaPezzi(pezzi) : null), [aPezzi, pezzi])
   const bozza = useMemo(() => (aPezzi && !noPezzi ? pezziInHtml(pezzi) : bozzaTesto), [aPezzi, noPezzi, pezzi, bozzaTesto])
-  const puoDividere = useMemo(() => aPezzi && !pagina.diLegge && divisibileInParti(pezzi), [aPezzi, pagina.diLegge, pezzi])
   const pezziDiversi = useMemo(() => aPezzi && pezziCambiati(pezzi, pagina.pezzi), [aPezzi, pezzi, pagina.pezzi])
   const sporca = titolo.trim() !== pagina.titolo || descrizione.trim() !== pagina.descrizione || (aPezzi ? pezziDiversi : bozzaCambiata(bozza, pagina.bozza))
+  // Si guarda la pagina salvata, non a ogni tasto battuto: il tasto è spento finché c'è DA SALVARE, e dopo il salvataggio vale quella.
+  const puoDividere = useMemo(() => !pagina.diLegge && !!pagina.pezzi && divisibileInParti(pagina.pezzi), [pagina.diLegge, pagina.pezzi])
+  // La frase «Ora ci sono N parti» vale finché la divisione è da salvare; salvata (o scartata), non c'è più.
+  useEffect(() => {
+    if (!sporca) setAppenaDivisa(false)
+  }, [sporca])
   useBozza(sporca, pagina.titolo)
   const noSlug = slug === pagina.slug ? null : controllaSlug(slug, altri)
   const noTitolo = !titolo.trim() ? 'Scrivi il titolo della pagina' : null
@@ -120,7 +125,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
     if (no) return avvisa(no, true)
     if (!(await chiedi(`Dividere «${pagina.titolo}» in parti? Il testo non cambia: ogni titolo e ogni foto aprono una parte nuova. Non va online finché non pubblichi. Se non ti piace, TORNA ALLE PAGINE e non cambia niente.`, 'Dividi', { no: 'Lascia stare' }))) return
     setPezzi(nuovi)
-    setPartiNuove(nuovi.content.length)
+    setAppenaDivisa(true)
     setRimonta((k) => k + 1)
   }
   const cambiaSlug = () => fai(() => d.cambiaIndirizzoSito(pagina.id, slug), 'Indirizzo cambiato', ricarica)
@@ -198,20 +203,20 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
               <span className="sg-sotto">{sporca ? 'Salva la bozza prima di passare ai pezzi.' : 'Il testo resta com’è: lo trovi in foto, testo e colonne da trascinare. Sul sito non cambia niente finché non pubblichi.'}</span>
             </div>
           )}
-          {(puoDividere || (partiNuove !== null && sporca)) && (
+          {(puoDividere || appenaDivisa) && (
             <div className="stack" style={{ gap: 10, paddingTop: 8, borderTop: '2px solid var(--line)' }}>
               <Titoletto>EDITOR A PEZZI</Titoletto>
-              {puoDividere && (
+              {puoDividere && !appenaDivisa && (
                 <button type="button" className="sg-btn sg-btn-linea" disabled={lavora || sporca} onClick={() => void dividi()}>
                   Dividi in parti
                 </button>
               )}
               <span className="sg-sotto">
-                {puoDividere
-                  ? sporca
+                {appenaDivisa
+                  ? frasePartiNuove(pezzi.content.length)
+                  : sporca
                     ? 'Salva la bozza prima di dividere.'
-                    : 'Il testo resta com’è: ogni titolo apre una parte nuova e ogni foto tra i paragrafi diventa una Foto. I sottotitoli restano nel testo. Sul sito non cambia niente finché non pubblichi.'
-                  : frasePartiNuove(partiNuove ?? 0)}
+                    : 'Il testo resta com’è: ogni titolo apre una parte nuova e ogni foto tra i paragrafi diventa una Foto. I sottotitoli restano nel testo. Sul sito non cambia niente finché non pubblichi.'}
               </span>
             </div>
           )}
