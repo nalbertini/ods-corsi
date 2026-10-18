@@ -262,7 +262,10 @@ export interface CambioVoce {
   dopo: string
 }
 
-/** Si sceglie per cambiarle la voce solo un movimento a mano, in uso, con una voce: non un incasso, un annullato, un giroconto o la differenza di una chiusura. */
+/**
+ * Si sceglie per cambiarle la voce solo un movimento a mano, in uso, con una voce: non un incasso, un annullato, un giroconto o la differenza di una chiusura.
+ * La differenza si riconosce dal nome: nessuno può creare una voce con quel nome (nome unico per tipo, `59-contabilita.sql`).
+ */
 export const cambiabile = (r: RigaMovimento): boolean => r.origine === 'movimento' && r.tipo !== 'giroconto' && !r.annullato && r.voce !== VOCE_DIFFERENZA
 
 /**
@@ -277,7 +280,9 @@ export function cosaNonVaCambioVoce(ids: string[], righe: RigaMovimento[], voci:
   if (!voce) return 'Scegli la voce'
   if (!voce.attiva) return 'La voce non è più in uso: scegline un’altra'
   if (voce.nome === VOCE_DIFFERENZA) return 'La «Differenza di cassa» si scrive da sola chiudendo la cassa'
-  const trovate = scelte.map((id) => righe.find((r) => r.id === id && r.origine === 'movimento'))
+  // Una mappa sola: l'elenco intero ha migliaia di righe, e questa funzione gira a ogni giro dello schermo.
+  const perId = new Map(righe.filter((r) => r.origine === 'movimento').map((r) => [r.id, r]))
+  const trovate = scelte.map((id) => perId.get(id))
   if (trovate.some((r) => !r)) return 'Il movimento non c’è'
   for (const r of trovate) {
     if (!r) continue
@@ -293,13 +298,14 @@ export function cosaNonVaCambioVoce(ids: string[], righe: RigaMovimento[], voci:
 /** Il riepilogo prima di scrivere: quanti, di che tipo, quanto, da quali voci e quanti hanno già la voce di arrivo. */
 export function riepilogoCambioVoce(ids: string[], righe: RigaMovimento[], voceId: string, voci: VoceContabile[]) {
   const voce = voci.find((v) => v.id === voceId)
-  const scelte = righe.filter((r) => new Set(ids).has(r.id) && r.origine === 'movimento')
+  const scelti = new Set(ids)
+  const scelte = righe.filter((r) => scelti.has(r.id) && r.origine === 'movimento')
   const tipi = new Set(scelte.map((r) => r.tipo))
   const per = new Map<string, number>()
   for (const r of scelte) per.set(r.voce ?? '—', (per.get(r.voce ?? '—') ?? 0) + 1)
   return {
     quanti: scelte.length,
-    tipo: (tipi.size === 1 ? [...tipi][0] : 'misto') as 'entrata' | 'uscita' | 'giroconto' | 'misto',
+    tipo: tipi.size === 1 ? [...tipi][0] : ('misto' as const),
     totale: scelte.reduce((s, r) => s + r.importo, 0),
     daVoci: [...per].map(([nome, quanti]) => ({ voce: nome, quanti })).sort((a, b) => b.quanti - a.quanti || a.voce.localeCompare(b.voce, 'it')),
     giaCosi: voce ? scelte.filter((r) => r.voce === voce.nome && r.tipo === voce.tipo).length : 0,
@@ -307,9 +313,9 @@ export function riepilogoCambioVoce(ids: string[], righe: RigaMovimento[], voceI
 }
 
 /** Una lista a pacchetti: ognuno entra tutto o niente. */
-export function pacchetti<T>(elementi: T[], per = LIMITE_CAMBIO_VOCE): T[][] {
+export function pacchetti<T>(elementi: T[]): T[][] {
   const fuori: T[][] = []
-  for (let i = 0; i < elementi.length; i += per) fuori.push(elementi.slice(i, i + per))
+  for (let i = 0; i < elementi.length; i += LIMITE_CAMBIO_VOCE) fuori.push(elementi.slice(i, i + LIMITE_CAMBIO_VOCE))
   return fuori
 }
 
@@ -321,7 +327,8 @@ export function esitoCambioVoce(cambiati: number, giaCosi: number): string {
 
 /** Le voci da offrire per una scelta: quelle del suo tipo; con entrate e uscite insieme, o niente scelto, nessuna. */
 export function vociPerLaScelta(ids: string[], righe: RigaMovimento[], voci: VoceContabile[]): VoceContabile[] {
-  const tipi = new Set(righe.filter((r) => new Set(ids).has(r.id) && r.origine === 'movimento').map((r) => r.tipo))
+  const scelti = new Set(ids)
+  const tipi = new Set(righe.filter((r) => scelti.has(r.id) && r.origine === 'movimento').map((r) => r.tipo))
   const tipo = tipi.size === 1 ? [...tipi][0] : undefined
   return tipo === 'entrata' || tipo === 'uscita' ? vociOfferte(voci, tipo) : []
 }

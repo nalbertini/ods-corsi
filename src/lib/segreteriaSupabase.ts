@@ -1210,6 +1210,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async cambiaVoceMovimenti(ids, voceId) {
+      // La risposta arriva senza tipo dall'API: la forma è quella di 67-cambia-voce.sql.
       const r = ok(await db.rpc('cambia_voce_movimenti', { ids, voce: voceId })) as { cambiati: number; gia_cosi: number }
       return { cambiati: r.cambiati, giaCosi: r.gia_cosi }
     },

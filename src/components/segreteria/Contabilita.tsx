@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import {
   cambiabile,
@@ -407,7 +407,8 @@ function CambiaVoce({ d, ids, righe, voci, onRileggi, onFatto, onChiudi }: { d: 
   const [fermo, setFermo] = useState<string | null>(null)
   const offerte = vociPerLaScelta(ids, righe, voci)
   const riep = riepilogoCambioVoce(ids, righe, voceId, voci)
-  const guaio = voceId ? pacchetti(ids).map((p) => cosaNonVaCambioVoce(p, righe, voci, voceId)).find(Boolean) ?? null : null
+  // Il controllo scorre l'elenco intero: si rifà solo se cambia la scelta o la voce, non a ogni pacchetto scritto.
+  const guaio = useMemo(() => (voceId ? pacchetti(ids).map((p) => cosaNonVaCambioVoce(p, righe, voci, voceId)).find(Boolean) ?? null : null), [ids, righe, voci, voceId])
   const nomeVoce = voci.find((v) => v.id === voceId)?.nome
   const cambia = async () => {
     if (lavoro !== null) return
@@ -425,12 +426,13 @@ function CambiaVoce({ d, ids, righe, voci, onRileggi, onFatto, onChiudi }: { d: 
         fatti += lotto.length
         setLavoro(fatti)
       }
+      // Si rilegge quando si torna all'elenco (onFatto): una volta sola.
       setEsito(esitoCambioVoce(cambiati, giaCosi))
     } catch (e) {
       setFermo(`${lotti.length > 1 ? `Cambiati ${fatti} su ${ids.length}. ` : ''}${messaggio(e, 'Non è cambiato niente: riprova.')}${lotti.length > 1 ? ' Quel pacchetto e i seguenti non sono cambiati: togli il movimento che non va dalla scelta e riprova.' : ''}`)
+      onRileggi()
     } finally {
       setLavoro(null)
-      onRileggi()
     }
   }
   if (esito)

@@ -7,7 +7,7 @@
 --
 -- Chi può cosa: solo chi ha il ruolo di amministrazione (`contabilita_porta()`, 59-contabilita.sql). La traccia
 -- `cambi_voce` (chi, quando, la voce di prima e quella di dopo, per ogni movimento cambiato) la legge solo
--- l'amministrazione e non la scrive nessuno da fuori: si scrive solo da questa funzione e non si cancella.
+-- l'amministrazione e nessuno la scrive o la cancella da fuori (nessun grant di scrittura): si scrive solo da questa funzione.
 --
 -- Le regole: al massimo 500 movimenti per volta; o cambiano tutti o nessuno (un solo errore ferma il lotto e dice
 -- quale movimento); la voce di arrivo esiste, è in uso, è del tipo dei movimenti e non è «Differenza di cassa»;
@@ -51,7 +51,8 @@ begin
   select coalesce(array_agg(distinct x order by x), '{}') into elenco from unnest(ids) x where x is not null;
   if cardinality(elenco) = 0 then raise exception 'Scegli almeno un movimento' using errcode = '22023'; end if;
   if cardinality(elenco) > 500 then raise exception 'Troppi movimenti in una volta: al massimo 500' using errcode = '22023'; end if;
-  select * into v from voci_contabili x where x.id = cambia_voce_movimenti.voce;
+  -- for share: chi spegne la voce nello stesso momento aspetta, e una voce appena spenta non riceve movimenti
+  select * into v from voci_contabili x where x.id = cambia_voce_movimenti.voce for share;
   if not found then raise exception 'Scegli la voce' using errcode = '22023'; end if;
   if not v.attiva then raise exception 'La voce non è più in uso: scegline un’altra' using errcode = '22023'; end if;
   if v.di_sistema and v.nome = 'Differenza di cassa' then raise exception 'La «Differenza di cassa» si scrive da sola chiudendo la cassa' using errcode = '22023'; end if;
