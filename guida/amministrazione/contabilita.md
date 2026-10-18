@@ -37,7 +37,8 @@ la cassa. Niente dati personali che non servono, nella descrizione e nella nota.
 Prima di scrivere, l'app mostra un **riepilogo** (importo, voce, cassa, data): **Sì,
 registra il movimento** lo scrive, **No, torna al modulo** lascia tutto com'era.
 
-Un movimento registrato **non si cambia**: toccandolo si apre, e si può **annullare**
+Un movimento registrato **non si cambia**: toccandolo si apre in una **finestra** sopra l'elenco (vedi
+[La finestra dei dettagli](../segreteria/README.md#la-finestra-dei-dettagli)), e si può **annullare**
 (resta in elenco, annullato, e non si conta più) oppure correggere la descrizione e
 la nota (di un giroconto, solo la nota). Per correggere importo, data, voce o
 cassa si annulla e si rifà.
