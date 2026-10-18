@@ -92,7 +92,7 @@
   </div>
 </nav>
 </x-dc>
-<script data-dc-script data-props='{"attiva":{"editor":"text","default":"PRESENZE"},"numeri":{"editor":"text","default":"RICHIESTE ONLINE:3, PRESENZE:2"},"prova":{"editor":"boolean","default":false},"impostazioni":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Marco Rossi"},"ruolo":{"editor":"text","default":"Segreteria"},"area":{"editor":"enum","options":["segreteria","amministrazione"],"default":"segreteria"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
+<script data-dc-script data-props='{"attiva":{"editor":"text","default":"PRESENZE"},"numeri":{"editor":"text","default":"RICHIESTE ONLINE:3, PRESENZE:2"},"prova":{"editor":"boolean","default":false},"impostazioni":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Marco Rossi"},"ruolo":{"editor":"text","default":"Segreteria"},"area":{"editor":"enum","options":["segreteria","amministrazione"],"default":"segreteria"},"autorizzazioni":{"editor":"enum","options":["segreteria","segreteria e amministrazione","amministrazione"],"default":"segreteria"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
 // Riproduzione 1:1 del menu di segreteria: src/components/segreteria/Segreteria.tsx (righe 402-494, GRUPPI alle
 // righe 50-86) con .sg-menu, .sg-voce, .sg-gruppo, .sg-chi e figli di src/styles.css (righe 1201-1270).
 // Misure del computer (da 1001px): colonna di 240px su `menu`, padding 28px 12px 24px, gap 28px, bordo destro
@@ -114,13 +114,20 @@ const T = {
   scuro: { surface: '#1c1c1c', menu: '#161616', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', tasto: '#b8b8b2' },
   chiaro: { surface: '#ffffff', menu: '#ebebe7', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', tasto: '#4a4a46' },
 };
-const GRUPPI = [
+// Un solo menu: le voci sono quelle delle autorizzazioni della persona (`autorizzazioni`), non di due aree.
+// I CONTI raccoglie CONTABILITÀ (solo con l'amministrazione), PAGAMENTI e LISTINO: chi ha la segreteria apre
+// PAGAMENTI e LISTINO completi, chi ha solo l'amministrazione quelli ridotti (nomi e importi, niente schede).
+// Un gruppo senza voci non c'è; chi ha solo l'amministrazione non ha la ricerca di iscritti ne' i link da copiare.
+const DI_SEGRETERIA = [
   ['OGNI GIORNO', ['DA FARE', 'SETTIMANA', 'RICHIESTE ONLINE', 'PRESENZE']],
-  ['PERSONE', ['ISCRITTI', 'PAGAMENTI', 'CORSI']],
+  ['PERSONE', ['ISCRITTI', 'CORSI']],
+  ['I CONTI', ['PAGAMENTI', 'LISTINO']],
   ['ISTRUTTORI', ['PRESENZE ISTRUTTORI', 'ISTRUTTORI E ACCESSI']],
-  ['LA PALESTRA', ['STATISTICHE', 'LISTINO', 'VESTIARIO', 'ESERCIZI', 'SEGNALAZIONI', 'SITO']],
+  ['LA PALESTRA', ['STATISTICHE', 'VESTIARIO', 'ESERCIZI', 'SEGNALAZIONI', 'SITO']],
 ];
-// area="amministrazione": il menu di chi cura i conti (area propria, senza ricerca di iscritti ne' link da copiare).
+const GRUPPI = DI_SEGRETERIA;
+const CON_AMMINISTRAZIONE = DI_SEGRETERIA.map(([titolo, elenco]) => [titolo, titolo === 'I CONTI' ? ['CONTABILITÀ', ...elenco] : elenco]);
+// Solo amministrazione (la vecchia area="amministrazione"): il menu ridotto ai conti.
 const GRUPPI_AMMINISTRAZIONE = [
   ['I CONTI', ['CONTABILITÀ', 'PAGAMENTI', 'LISTINO']],
 ];
@@ -135,8 +142,9 @@ class Component extends DCLogic {
       if (i > 0) numeri[s.slice(0, i).trim()] = s.slice(i + 1).trim();
     }
     const voci = [];
-    const amm = p.area === 'amministrazione';
-    (amm ? GRUPPI_AMMINISTRAZIONE : GRUPPI).forEach(([titolo, elenco], g) => {
+    const aut = p.autorizzazioni || (p.area === 'amministrazione' ? 'amministrazione' : 'segreteria');
+    const amm = aut === 'amministrazione';
+    (amm ? GRUPPI_AMMINISTRAZIONE : aut === 'segreteria e amministrazione' ? CON_AMMINISTRAZIONE : GRUPPI).forEach(([titolo, elenco], g) => {
       voci.push({
         testo: titolo, haNumero: false, numero: '', altezza: '0', padding: '0 12px 0 16px', barra: 'transparent', sfondo: 'transparent', colore: c.dim,
         corpo: '12px', spazio: '0.22em', sopra: g === 0 ? '0' : '18px', sotto: '4px',
@@ -152,7 +160,7 @@ class Component extends DCLogic {
     });
     return {
       c, voci,
-      nomeArea: amm ? 'AMMINISTRAZIONE' : 'SEGRETERIA',
+      nomeArea: aut.toUpperCase(),
       conRicerca: !amm,
       conLink: !amm,
       scuro: (p.tema || 'scuro') !== 'chiaro',
