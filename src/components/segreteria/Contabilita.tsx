@@ -268,7 +268,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
           </button>
         ))}
         <label htmlFor="filtro-voce" className="vh">
-          Solo la voce
+          Filtra per voce
         </label>
         <select id="filtro-voce" className="sg-campo" style={{ width: 'auto', maxWidth: '100%' }} value={voce} onChange={(e) => setVoce(e.target.value)}>
           <option value="">Tutte le voci</option>
@@ -288,6 +288,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
         <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <span className="sg-sotto" role="status">
             {trovate.length === 1 ? '1 trovato' : `${trovate.length} trovati`}
+            {periodo !== 'tutto' && ' nel periodo scelto: tocca Tutto per lo storico'}
             {idScelti.length > 0 && ` · ${idScelti.length} ${idScelti.length === 1 ? 'scelto' : 'scelti'}`}
           </span>
           {scegliibili.length > 0 && scegliibili.length > idScelti.length && (
@@ -433,7 +434,7 @@ function CambiaVoce({ d, ids, righe, voci, onRileggi, onFatto, onChiudi }: { d: 
         fatti += lotto.length
         setLavoro(fatti)
       }
-      setEsito(esitoCambioVoce(cambiati, giaCosi))
+      setEsito(`Voce «${nomeVoce ?? ''}»: ${esitoCambioVoce(cambiati, giaCosi)}`)
       onRileggi()
     } catch (e) {
       setFermo(`${lotti.length > 1 ? `Cambiati ${fatti} su ${ids.length}. ` : ''}${messaggio(e, 'Non è cambiato niente: riprova.')}${lotti.length > 1 ? ' Quel pacchetto e i seguenti non sono cambiati: togli il movimento che non va dalla scelta e riprova.' : ''}`)
@@ -461,8 +462,8 @@ function CambiaVoce({ d, ids, righe, voci, onRileggi, onFatto, onChiudi }: { d: 
       <div className="stack" style={{ gap: 0 }}>
         {([
           ['MOVIMENTI', `${riep.quanti} ${riep.tipo === 'entrata' ? 'entrate' : 'uscite'} · ${riep.tipo === 'entrata' ? '+ ' : '− '}${soldi(riep.totale)}`],
-          ['ORA', riep.daVoci.map((x) => `${x.voce} (${x.quanti})`).join(', ')],
-          ['CASSE', 'non cambiano: i saldi restano uguali'],
+          ['VOCE ATTUALE', riep.daVoci.map((x) => `${x.voce} (${x.quanti})`).join(', ')],
+          ['SALDI', 'restano uguali'],
         ] as const).map(([k, v]) => (
           <div key={k} className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline' }}>
             <span className="sg-etichetta" style={{ width: 130, flexShrink: 0 }}>{k}</span>
@@ -726,7 +727,7 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
         {manuale && !riga.annullato && (
           <>
             {cambiabile(riga) && (
-              <button type="button" className="sg-btn sg-btn-pieno" disabled={!voceId || voceId === voceAttuale?.id || !!voceGuaio} onClick={() => void fai(() => d.cambiaVoceMovimenti([riga.id], voceId), 'Voce cambiata', onFatto)}>
+              <button type="button" className="sg-btn sg-btn-pieno" disabled={!voceId || voceId === voceAttuale?.id || !!voceGuaio} onClick={() => void fai(() => d.cambiaVoceMovimenti([riga.id], voceId), `Voce cambiata in «${offerte.find((v) => v.id === voceId)?.nome ?? ''}»`, onFatto)}>
                 Cambia la voce
               </button>
             )}
