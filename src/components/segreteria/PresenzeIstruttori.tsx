@@ -240,7 +240,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
             )
           }
         >
-          SCARICA CSV
+          Scarica CSV
         </button>
         <button
           type="button"
@@ -264,7 +264,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
             )
           }
         >
-          REPORT PDF
+          Report PDF
         </button>
       </div>
 
@@ -358,10 +358,10 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
                 {x.stato === 'da_confermare' ? (
                   <>
                     <button type="button" className="sg-btn sg-btn-verde" disabled={lavora} onClick={() => gestisci(x, true)}>
-                      CONFERMA
+                      Conferma
                     </button>
                     <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => gestisci(x, false)}>
-                      RIFIUTA
+                      Rifiuta
                     </button>
                   </>
                 ) : (
@@ -371,7 +371,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
                         className="num"
                         style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.12em', color: x.stato === 'confermata' ? 'var(--verde-testo)' : 'var(--rosso-testo)' }}
                       >
-                        {x.stato === 'confermata' ? 'CONFERMATA' : 'RIFIUTATA'}
+                        {x.stato === 'confermata' ? 'Confermata' : 'Rifiutata'}
                       </span>
                       <span style={{ fontSize: 15, color: 'var(--dim)' }}>
                         {x.gestitaIl ? `${x.gestitaDa ? `da ${x.gestitaDa}, ` : ''}${quando(x.gestitaIl)}` : comeArrivata(x).nota}
@@ -440,15 +440,15 @@ function LezioniDaConfermare({ lezioni, lavora, onScegli }: { lezioni: LezioneSe
                   {daDecidere.length === 1 ? (
                     <>
                       <button type="button" className="sg-btn sg-btn-verde" disabled={lavora} onClick={() => onScegli(l, [daDecidere[0].id])}>
-                        CONFERMA
+                        Conferma
                       </button>
                       <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => onScegli(l, [])}>
-                        NON C’ERA
+                        Non c’era
                       </button>
                     </>
                   ) : (
                     <button type="button" className={miei.length ? 'sg-btn sg-btn-verde' : 'sg-btn sg-btn-linea'} disabled={lavora} onClick={() => onScegli(l, miei)}>
-                      {miei.length ? `CONFERMA ${miei.length === 1 ? 'QUELLO SCELTO' : `I ${miei.length} SCELTI`}` : 'NESSUNO C’ERA'}
+                      {miei.length ? `Conferma ${miei.length === 1 ? 'lo scelto' : `i ${miei.length} scelti`}` : 'Nessuno c’era'}
                     </button>
                   )}
                 </span>

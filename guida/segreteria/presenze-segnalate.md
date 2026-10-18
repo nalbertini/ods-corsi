@@ -14,16 +14,16 @@ Per ognuna: chi (toccando il nome si apre la sua scheda), la lezione
 (toccandola si apre nella settimana), cosa dice l'appello adesso, la nota e
 quando è arrivata.
 
-- **PRESENTE**: la segnalazione è accolta, e l'iscritto risulta presente
+- **Segna presente**: la segnalazione è accolta, e l'iscritto risulta presente
   nell'appello, come se l'avesse segnato l'istruttore.
-- **RIFIUTA**: l'appello resta com'era. L'iscritto vede **RIFIUTATA** nella
+- **Rifiuta**: l'appello resta com'era. L'iscritto vede **Rifiutata** nella
   sua pagina, e quella lezione non la può segnalare di nuovo: se serve, ne
   parla con la segreteria.
 
 Le stesse segnalazioni le vede l'istruttore della lezione, in cima al suo
 calendario e nell'appello di quella lezione (vedi la [guida degli
 istruttori](../istruttori.md#le-presenze-segnalate)): le gestisce chi arriva
-prima. **ANCHE QUELLE GIÀ GESTITE** mostra anche le accolte e le rifiutate,
+prima. **Anche quelle già gestite** mostra anche le accolte e le rifiutate,
 con chi l'ha fatto e quando.
 
 Si segnalano solo le lezioni degli ultimi trenta giorni, già cominciate e

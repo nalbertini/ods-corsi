@@ -354,6 +354,8 @@
 :root[data-look='sito'] .sg-altri-filtri { font-size: 15px; font-weight: 600; color: var(--text); text-underline-offset: 4px; }
 /* Un filtro scelto non è solo di un altro colore: ha anche il segno ✓ davanti. */
 :root[data-look='sito'] .sg-chip[aria-pressed='true']::before { content: '✓ '; }
+/* Nella tessera di una lezione i tag possono andare a capo e restano dentro la tessera. */
+:root[data-look='sito'] .sg-lezione .sg-tag { white-space: normal; max-width: 100%; overflow-wrap: anywhere; }
 :root[data-look='sito'] .sg-dafare-tasto { letter-spacing: 0; font-size: 16px; font-weight: 600; }
 /* Sotto i 1360px le caselle sono più strette: numero e riempimento più piccoli, perché anche con tre cifre il titolo non esca. */
 @media (max-width: 1360px) {

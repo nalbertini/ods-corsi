@@ -27,11 +27,11 @@ orario, sala, quanti presenti, e chi doveva farla. Basta un istruttore
 segnato, anche uno non previsto, e la lezione non arriva qui: se la Lotta la
 tengono in due e uno si è segnato, l'altro non si chiede.
 
-- **Un istruttore solo previsto**: **CONFERMA** se c'era, **NON C'ERA** se
+- **Un istruttore solo previsto**: **Conferma** se c'era, **Non c'era** se
   no.
 - **Più istruttori** (la Lotta in due, la Preparazione atletica in tre): si
-  spuntano quelli che c'erano e si preme **CONFERMA I SCELTI**; senza
-  spuntare nessuno il tasto dice **NESSUNO C'ERA**.
+  spuntano quelli che c'erano e si preme **Conferma lo scelto** o **Conferma i N scelti**; senza
+  spuntare nessuno il tasto dice **Nessuno c'era**.
 
 Chi è scelto ha la presenza confermata, gli altri previsti rifiutata, e la
 lezione esce dall'elenco. Ci si può ripensare dall'elenco qui sotto, con
@@ -67,13 +67,13 @@ Sopra l'elenco si legge quante ce ne sono, confermate e da confermare. Se
 qualcuna da confermare è in un altro mese, lo dice, e **vedile tutte** le fa
 vedere, di tutti i mesi.
 
-**SCARICA CSV** scarica l'elenco così come si vede, coi filtri, in un foglio
+**Scarica CSV** scarica l'elenco così come si vede, coi filtri, in un foglio
 da aprire con Excel: giorno, orario e ore della lezione, istruttore, corso, chi
 era previsto, sala, quando è entrato, stato e chi l'ha decisa.
 
 ## Il report PDF
 
-**REPORT PDF** scarica il report del periodo scelto, da stampare o da tenere:
+**Report PDF** scarica il report del periodo scelto, da stampare o da tenere:
 un A4 col logo, i numeri e il dettaglio, per capire com'è andato il mese o l'anno.
 Tiene conto del corso e dell'istruttore scelti, non dello stato: le
 statistiche contano sempre confermate, da confermare e rifiutate.
@@ -96,8 +96,8 @@ le conta a parte, in rosso.
 
 ## Decidere
 
-- **CONFERMA** — l'istruttore c'era davvero: ha fatto lezione, o ha aiutato.
-- **RIFIUTA** — non conta: era passato solo per fare l'appello di un collega,
+- **Conferma** — l'istruttore c'era davvero: ha fatto lezione, o ha aiutato.
+- **Rifiuta** — non conta: era passato solo per fare l'appello di un collega,
   o ha sbagliato sala.
 
 Ci si può ripensare: accanto a una presenza già gestita c'è **Rifiuta** o

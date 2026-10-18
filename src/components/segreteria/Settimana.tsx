@@ -11,6 +11,7 @@ import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
 import { settimanaDi, type Posto } from '../../lib/indirizzoSegreteria'
 import { annuncio, chiSegnaTuttiPresenti, segnaNonSegnati, contiListe, dividiElenco, dopoIlTocco, LISTE, messaggioVuoto, nomeLista, parolaDiStato, serveConferma, statoDaTocco, tastoIniziale, type Azione, type Lista } from '../../lib/appelloListe'
 import { finestraDelMese, giorniDellaSettimana, meseDellaSettimana, nomeTitoloSettimana, postoDopoIlGiorno, titoloSettimana, type MeseDelCalendario } from '../../lib/calendarioSettimana'
+import { etichetteLezione } from '../../lib/etichetteLezione'
 import { CalendarioSettimana } from './CalendarioSettimana'
 import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
 
@@ -165,7 +166,7 @@ export function Settimana({
         sotto={`Le lezioni dell’orario dei corsi: aprine una per l’appello, il sostituto o per annullarla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato)}: si allunga da sé, e subito da IMPOSTAZIONI → IL CALENDARIO.` : ''}`}
       >
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => setNuova(true)}>
-          + LEZIONE STRAORDINARIA
+          + Lezione straordinaria
         </button>
       </Testa>
 
@@ -212,12 +213,12 @@ export function Settimana({
           </span>
         </button>
         <button type="button" className="sg-chip" onClick={() => sfoglia(lunedi(new Date()))}>
-          OGGI
+          Oggi
         </button>
         <div className="grow" />
-        {[{ id: '', nome: 'TUTTE' }, ...(sale.dato ?? [])].map((s) => (
+        {[{ id: '', nome: 'Tutte' }, ...(sale.dato ?? [])].map((s) => (
           <button key={s.id} type="button" className="num sg-chip" aria-pressed={sala === s.id} onClick={() => scegliSala(s.id)}>
-            {s.nome.toUpperCase()}
+            {s.nome}
           </button>
         ))}
       </div>
@@ -303,13 +304,16 @@ export function Settimana({
           <span className="num" style={{ fontWeight: 700, color: 'var(--sec)' }}>14/16</span>iscritti su posti
         </span>
         <span className="row" style={{ gap: 6 }}>
-          <span className="num sg-tag" data-tipo="manca">SENZA APPELLO</span>passata, nessuno ha segnato
+          <span className="num sg-tag" data-tipo="manca">Senza appello</span>passata, nessuno ha segnato
         </span>
         <span className="row" style={{ gap: 6 }}>
-          <span className="num sg-tag" data-tipo="sostituto">SOSTITUTO</span>un altro istruttore, solo per quel giorno
+          <span className="num sg-tag" data-tipo="fatto">Appello fatto</span>passata, e l’appello c’è
         </span>
         <span className="row" style={{ gap: 6 }}>
-          <span className="sg-forse">istruttore?</span>il corso non ne ha uno: si assegna in CORSI
+          <span className="num sg-tag" data-tipo="aspetta">Manca l’istruttore</span>la lezione non ne ha uno: si assegna in CORSI
+        </span>
+        <span className="row" style={{ gap: 6 }}>
+          <span className="num sg-tag" data-tipo="sostituto">Sostituto</span>un altro istruttore, solo per quel giorno
         </span>
       </div>
 
@@ -358,10 +362,12 @@ function Fila({ ora, children }: { ora: string; children: React.ReactNode }) {
 function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onApri: () => void }) {
   const annullata = l.stato === 'annullata'
   const fatto = l.segnati > 0
-  const manca = passata && !annullata && !fatto
+  const etichette = etichetteLezione(l, passata)
+  // Una regola sola per il tag e per il bordo: manca l'appello, o è fatto.
+  const manca = etichette.some((e) => e.tipo === 'manca')
   // Passata e con l'appello fatto non chiede più niente: si fa da parte, e
   // nella settimana resta in vista solo quello che manca.
-  const chiusa = passata && !annullata && fatto
+  const chiusa = etichette.some((e) => e.tipo === 'fatto')
   return (
     <button
       type="button"
@@ -372,9 +378,9 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
       style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}
       onClick={onApri}
     >
-      <span className="ob sg-lezione-nome">{l.corso.toUpperCase()}</span>
+      <span className="ob sg-lezione-nome">{l.corso}</span>
       <span className="sg-lezione-dove">
-        {[l.sala ?? <span key="s" className="sg-forse">sala?</span>, l.istruttori || <span key="i" className="sg-forse">istruttore?</span>, ...(l.attivita ? [l.attivita] : [])].map((x, i) => (
+        {[l.sala ?? <span key="s" className="sg-forse">sala?</span>, ...(l.istruttori ? [l.istruttori] : []), ...(l.attivita ? [l.attivita] : [])].map((x, i) => (
           <span key={i}>
             {i > 0 && ' · '}
             {x}
@@ -385,23 +391,11 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
         <span className="num" style={{ fontSize: 14, fontWeight: 700, color: fatto ? 'var(--verde-testo)' : 'var(--sec)' }}>
           {fatto ? `${l.presenti}/${l.iscritti}` : l.capienza ? `${l.iscritti}/${l.capienza}` : l.iscritti}
         </span>
-        {annullata && <span className="num sg-tag">ANNULLATA</span>}
-        {manca && (
-          <span className="num sg-tag" data-tipo="manca">
-            SENZA APPELLO
+        {etichette.map((e) => (
+          <span key={e.testo} className="num sg-tag" data-tipo={e.tipo} title={e.titolo}>
+            {e.testo}
           </span>
-        )}
-        {l.sostitutoId && (
-          <span className="num sg-tag" data-tipo="sostituto">
-            SOSTITUTO
-          </span>
-        )}
-        {l.attivitaCambiata && (
-          <span className="num sg-tag" data-tipo="sostituto" title="L'attività di questa lezione è stata scelta a mano: non segue più il giorno">
-            ✎ CAMBIATA A MANO
-          </span>
-        )}
-        {l.straordinaria && <span className="num sg-tag">STRAORDINARIA</span>}
+        ))}
       </span>
     </button>
   )
@@ -410,9 +404,9 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
 type Fai = ReturnType<typeof useAvviso>['fai']
 
 const STATI: Array<[StatoSessione, string]> = [
-  ['prevista', 'PREVISTA'],
-  ['svolta', 'SVOLTA'],
-  ['annullata', 'ANNULLATA'],
+  ['prevista', 'Prevista'],
+  ['svolta', 'Svolta'],
+  ['annullata', 'Annullata'],
 ]
 
 /** Una lezione aperta: stato, sostituto, sala, appello. Ogni cambio si salva subito. */
@@ -470,8 +464,8 @@ function Lezione({
                   if (
                     s === 'annullata' &&
                     !(await chiedi(
-                      `Annullare ${l.corso} di ${giornoPerEsteso(chiaveGiorno(new Date(l.inizio))).toLowerCase()} alle ${oraDi(l.inizio)}? Calendario e tablet la mostrano annullata, ma gli iscritti non vengono avvisati: vanno chiamati o scritti. Si rimette con PREVISTA.`,
-                      'ANNULLA LA LEZIONE',
+                      `Annullare ${l.corso} di ${giornoPerEsteso(chiaveGiorno(new Date(l.inizio))).toLowerCase()} alle ${oraDi(l.inizio)}? Calendario e tablet la mostrano annullata, ma gli iscritti non vengono avvisati: vanno chiamati o scritti. Si rimette con Prevista.`,
+                      'Annulla la lezione',
                     ))
                   )
                     return
@@ -546,11 +540,11 @@ function Lezione({
               })
             }
           >
-            TOGLI QUESTA LEZIONE STRAORDINARIA
+            Togli questa lezione straordinaria
           </button>
         )}
         <button type="button" className="sg-btn sg-btn-pieno" onClick={onChiudi}>
-          FATTO
+          Fatto
         </button>
       </section>
     </>
@@ -605,7 +599,7 @@ function Attivita({
             <>
               <span>Cambiata a mano. Solo per questa lezione: il giorno resta com'è.</span>
               <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={comeIlGiorno}>
-                COME IL GIORNO
+                Come il giorno
               </button>
             </>
           )}
@@ -688,7 +682,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
   const segna = async (personaId: string, azione: Azione) => {
     if (!strato || !elenco) return
     const chi = elenco.find((p) => p.id === personaId)
-    if (chi && serveConferma(chi, azione) && !(await chiedi(`Togliere la giustificazione di ${perEsteso(chi)}?`, 'TOGLI', { pericolo: true }))) return
+    if (chi && serveConferma(chi, azione) && !(await chiedi(`Togliere la giustificazione di ${perEsteso(chi)}?`, 'Togli', { pericolo: true }))) return
     const r = dopoIlTocco(elenco, personaId, azione, lista)
     setAltezzaLista(listaRef.current?.offsetHeight ?? null)
     setElenco(r.elenco)
@@ -721,7 +715,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
 
   const azzera = async () => {
     if (!strato || !elenco) return
-    if (segnati && !(await chiedi(`Togliere i ${segnati} segni di questa lezione?`, 'TOGLI I SEGNI', { pericolo: true }))) return
+    if (segnati && !(await chiedi(`Togliere i ${segnati} segni di questa lezione?`, 'Togli i segni', { pericolo: true }))) return
     setElenco(elenco.map((p) => ({ ...p, stato: null })))
     // Senza segni la lista premuta (PRESENTI, ASSENTI) è vuota e non serve a niente: si torna a DA SEGNARE.
     setLista('da_segnare')
@@ -738,7 +732,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
             className="num"
             style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', color: segnati ? 'var(--verde-testo)' : manca ? 'var(--rosso-testo)' : 'var(--dim)' }}
           >
-            {annullata ? 'ANNULLATA' : !cominciata ? 'NON ANCORA' : segnati === quanti && quanti ? 'FATTO' : segnati ? `${quanti - segnati} DA SEGNARE` : 'NON FATTO'}
+            {annullata ? 'Annullata' : !cominciata ? 'Non ancora' : segnati === quanti && quanti ? 'Fatto' : segnati ? `${quanti - segnati} da segnare` : 'Non fatto'}
           </span>
         </div>
         <span className="num" style={{ fontSize: 40, fontWeight: 700, lineHeight: 1 }}>
@@ -749,16 +743,16 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
         {aperto && elenco && elenco.length > 0 && (
           <div className="row" style={{ gap: 8 }}>
             <button type="button" className="sg-btn sg-btn-verde grow" onClick={tutti}>
-              TUTTI PRESENTI
+              Tutti presenti
             </button>
             <button type="button" className="sg-btn sg-btn-linea" onClick={azzera} disabled={!segnati}>
-              AZZERA
+              Azzera
             </button>
           </div>
         )}
         {aperto && elenco && (
           <button type="button" className="sg-btn sg-btn-tratteggio" aria-expanded={conProve} disabled={!strato} onClick={() => setConProve((x) => !x)}>
-            PROVE
+            Prove
           </button>
         )}
       </div>
@@ -964,10 +958,10 @@ function Straordinaria({
         </div>
         <div className="row" style={{ gap: 10, paddingTop: 6 }}>
           <button type="button" className="sg-btn sg-btn-linea grow" onClick={onChiudi}>
-            LASCIA STARE
+            Lascia stare
           </button>
           <button type="submit" className="sg-btn sg-btn-pieno grow" disabled={!scelto}>
-            AGGIUNGI
+            Aggiungi
           </button>
         </div>
       </form>
