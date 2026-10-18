@@ -376,5 +376,12 @@ console.log('\nPorta ai pezzi: in modalità prova la pagina converte senza cambi
   ok('versione vecchia: i pezzi restano null (lo stato di prima non cambia)', pagina(s0, 'pre-pugilistica').pezzi, null)
 }
 
+// Il pannello a destra, finché nessuna parte è scelta: dice cosa fare, con le parole della segreteria (parte, non blocco).
+{
+  const f = z.FRASE_NESSUNA_PARTE
+  ok('nessuna parte scelta: il pannello dice di toccarne una', typeof f === 'string' && /^Tocca una parte della pagina/.test(f), true)
+  ok('nessuna parte scelta: la frase dice cosa succede, in italiano di palestra', typeof f === 'string' && /impostazioni/.test(f) && !/blocc|component|elemento/i.test(f), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

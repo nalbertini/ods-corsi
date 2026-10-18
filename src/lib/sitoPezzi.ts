@@ -25,6 +25,9 @@ export const MASSIMO_PEZZI = 100
 /** Il limite del database sul JSON dei pezzi (`supabase/62-sito-pezzi.sql`): oltre non si salva. */
 export const MASSIMO_CARATTERI = 400000
 
+/** Cosa dice il pannello delle impostazioni finché nessuna parte è scelta. */
+export const FRASE_NESSUNA_PARTE = 'Tocca una parte della pagina per cambiarne le impostazioni.'
+
 export const pezziVuoti = (): PezziPagina => ({ content: [] })
 
 const stringa = (x: unknown): x is string => typeof x === 'string'

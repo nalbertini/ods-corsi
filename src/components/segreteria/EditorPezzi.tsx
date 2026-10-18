@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-import { blocksPlugin, createUsePuck, fieldsPlugin, outlinePlugin, Puck, type Config, type Data } from '@puckeditor/core'
+import { createUsePuck, Puck, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { MASSIMO_PEZZI, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
+import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import { EditorTesto } from './EditorTesto'
 import { ScegliImmagine } from './ImmaginiSito'
@@ -178,8 +178,26 @@ const PAROLE = {
   'drawer-category-other': 'Parti',
 }
 
-/** Da 1280px ci stanno tre pannelli; sotto, le parti si mettono coi tasti e il pannello delle parti parte chiuso. */
-const leggeLargo = () => typeof window === 'undefined' || window.matchMedia('(min-width: 1280px)').matches
+/**
+ * A destra due schede: le impostazioni della parte scelta e l'elenco delle parti. Le parti si mettono coi tasti in alto,
+ * quindi a sinistra non serve un pannello: la pagina prende lo spazio.
+ */
+function Destra() {
+  const [scheda, setScheda] = useState<'impostazioni' | 'elenco'>('impostazioni')
+  const scelta = usePuck((s) => s.selectedItem)
+  return (
+    <div className="sito-pezzi-destra">
+      <div role="tablist" aria-label="Pannello della parte" className="schede sg-schede">
+        {(['impostazioni', 'elenco'] as const).map((k) => (
+          <button key={k} type="button" role="tab" aria-selected={scheda === k} data-on={scheda === k} className="scheda" onClick={() => setScheda(k)}>
+            {k === 'impostazioni' ? 'IMPOSTAZIONI' : 'ELENCO'}
+          </button>
+        ))}
+      </div>
+      {scheda === 'elenco' ? <Puck.Outline /> : scelta ? <Puck.Fields /> : <p className="sito-pezzi-frase">{FRASE_NESSUNA_PARTE}</p>}
+    </div>
+  )
+}
 
 export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria; pezzi: PezziPagina; onCambia: (p: PezziPagina) => void }) {
   const config = useMemo(() => configura(d), [d])
@@ -192,16 +210,19 @@ export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria;
         data={iniziali}
         iframe={{ enabled: false }}
         dictionary={PAROLE}
-        plugins={[blocksPlugin({ label: 'PARTI' }), outlinePlugin({ label: 'ELENCO' }), fieldsPlugin({ label: 'CAMPI' })]}
-        ui={{ leftSideBarVisible: leggeLargo(), rightSideBarVisible: true }}
         onChange={(data) => {
           // I pezzi escono da Puck come dati senza tipo: `pezziValidi` li controlla prima di salvarli (Sito.tsx).
           onCambia({ content: data.content as unknown as Pezzo[] })
         }}
-        overrides={{
-          header: () => <Comandi />,
-        }}
-      />
+      >
+        <div className="sito-pezzi-corpo">
+          <Comandi />
+          <div className="sito-pezzi-colonne">
+            <div className="sito-pezzi-pagina"><Puck.Preview /></div>
+            <Destra />
+          </div>
+        </div>
+      </Puck>
     </div>
   )
 }
