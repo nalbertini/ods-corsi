@@ -478,5 +478,14 @@ console.log('\nScrivere il testo nella pagina')
   ok('storia: nessuna scelta, nessuna scelta', sel(null, 3), null)
 }
 
+// Puck registra un passo nella storia 250ms dopo l'ultima scrittura: annullare prima toglierebbe il passo di prima.
+{
+  const a = (ultima, ora) => prova(() => z.attesaStoria(ultima, ora))
+  ok('storia: appena scritto, si aspetta quasi tutta la finestra', a(1000, 1010), 290)
+  ok('storia: a metà finestra si aspetta il resto', a(1000, 1150), 150)
+  ok('storia: passata la finestra non si aspetta', a(1000, 1400), 0)
+  ok('storia: mai scritto, non si aspetta', a(0, 5000), 0)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

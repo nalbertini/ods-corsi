@@ -104,6 +104,12 @@ export function versoStoria(tasto: string, conMeta: boolean, conMaiusc: boolean,
 /** La parte scelta dopo ANNULLA o RIFAI: la stessa di prima se c'è ancora, se no nessuna (Puck riporta la scelta di allora). */
 export const selezioneDopoStoria = <S extends { index: number }>(scelto: S | null, quanti: number): S | null => (scelto && scelto.index < quanti ? scelto : null)
 
+/** Dopo quanto Puck ha registrato nella storia l'ultima scrittura (lui aspetta 250ms dall'ultima: qui un po' di più). */
+export const FINESTRA_STORIA_MS = 300
+
+/** Quanto aspettare prima di annullare o rifare, perché l'ultima scrittura (all'istante `ultima`, 0 se mai) sia già nella storia di Puck. */
+export const attesaStoria = (ultima: number, ora: number): number => (ultima === 0 ? 0 : Math.max(0, FINESTRA_STORIA_MS - (ora - ultima)))
+
 function inHtml(p: Pezzo): string {
   switch (p.type) {
     case 'testo':

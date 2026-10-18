@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
+import { registerOverlayPortal } from '@puckeditor/core'
 import { EditorContent, useEditor } from '@tiptap/react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { versoStoria } from '../../lib/sitoPezzi'
@@ -49,13 +50,15 @@ export function TestoInPagina({
   const timer = useRef<number | undefined>(undefined)
   const contenitore = useRef<HTMLDivElement>(null)
 
-  const daiAPuck = () => {
+  /** Dà a Puck il testo in sospeso; dice se ce n'era. */
+  const daiAPuck = (): boolean => {
     window.clearTimeout(timer.current)
-    if (pendente.current === null) return
+    if (pendente.current === null) return false
     const testo = pendente.current
     pendente.current = null
     dato.current = testo
     pausa.current(testo)
+    return true
   }
 
   const editor = useEditor({
@@ -81,7 +84,7 @@ export function TestoInPagina({
       window.clearTimeout(timer.current)
       timer.current = window.setTimeout(daiAPuck, PAUSA_MS)
     },
-    onBlur: daiAPuck,
+    onBlur: () => void daiAPuck(),
   })
 
   // Il testo cambia da fuori (annulla, rifai, un'altra pagina): l'editor lo segue. Non se è quello che Puck ha appena ricevuto da qui
@@ -93,17 +96,16 @@ export function TestoInPagina({
   }, [editor, html])
 
   // Lasciato il pezzo, il testo scritto arriva comunque a Puck.
-  useEffect(() => daiAPuck, []) // eslint-disable-line react-hooks/exhaustive-deps -- `daiAPuck` legge solo refs
+  useEffect(() => () => void daiAPuck(), []) // eslint-disable-line react-hooks/exhaustive-deps -- `daiAPuck` legge solo refs
 
-  // Trascinare il pezzo e selezionare le parole sono due gesti: sul testo e sulla barra vince il testo. Il pezzo si sposta da fuori e con SU e GIÙ.
-  // La barra sta in un portale ma per React è figlia del pezzo: anche lei ferma i gesti prima che arrivino al trascinamento di Puck.
+  // Dentro un pezzo Puck spegne i puntatori e porta il trascinamento su tutta la sua area: il testo e la barra si dichiarano a Puck
+  // come zone da usare (`registerOverlayPortal`) e senza trascinamento, così col mouse e col dito si scrive, si selezionano le parole
+  // e si premono i tasti. Il pezzo si sposta da fuori dal testo e con SU e GIÙ. La barra è in un portale ma per React è figlia del pezzo.
   const cassetta = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    const ferma = (e: Event) => e.stopPropagation()
-    const eventi = ['pointerdown', 'mousedown', 'touchstart'] as const
     const els = [contenitore.current, cassetta.current].filter((x): x is HTMLDivElement => x !== null)
-    els.forEach((el) => eventi.forEach((n) => el.addEventListener(n, ferma)))
-    return () => els.forEach((el) => eventi.forEach((n) => el.removeEventListener(n, ferma)))
+    const fine = els.map((el) => registerOverlayPortal(el, { disableDrag: true }))
+    return () => fine.forEach((f) => f?.())
   }, [editor, slot])
 
   // La barra occupa il suo posto: il posto prende la sua altezza per stare sopra il pezzo senza spostare la pagina.

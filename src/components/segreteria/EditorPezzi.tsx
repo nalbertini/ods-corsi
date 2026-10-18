@@ -1,8 +1,8 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { createUsePuck, Puck, type ComponentData, type Config, type Data } from '@puckeditor/core'
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createUsePuck, Puck, registerOverlayPortal, type ComponentData, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, colonnaNuova, conTestoScritto, nomeParte, scriviTesto, selezioneDopoStoria, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
+import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, attesaStoria, colonnaNuova, conTestoScritto, nomeParte, scriviTesto, selezioneDopoStoria, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import { TestoInPagina } from './TestoInPagina'
 import { ScegliImmagine } from './ImmaginiSito'
@@ -62,15 +62,21 @@ function CampoFoto({ d, id, src }: { d: DatiSegreteria; id: string; src: string 
  * Annulla e rifai di Puck, che riportano anche la parte scelta com'era: si rimette quella di prima, se c'è ancora,
  * se no scrivere nel testo e annullare toglierebbe il cursore dalla pagina a ogni passo.
  */
+/** Quando si è dato a Puck l'ultimo testo (0: mai). */
+let ultimaScrittura = 0
+
 function useStoria() {
   const dispatch = usePuck((s) => s.dispatch)
   const storia = usePuck((s) => s.history)
   const scelto = usePuck((s) => s.appState.ui.itemSelector)
   const quanti = usePuck((s) => s.appState.data.content.length)
+  // Il testo appena scritto Puck lo mette nella storia un attimo dopo: annullare prima toglierebbe il passo di prima.
   const con = (passo: () => void) => () => {
-    passo()
-    const resta = selezioneDopoStoria(scelto, quanti)
-    if (resta) dispatch({ type: 'setUi', ui: { itemSelector: resta } })
+    window.setTimeout(() => {
+      passo()
+      const resta = selezioneDopoStoria(scelto, quanti)
+      if (resta) dispatch({ type: 'setUi', ui: { itemSelector: resta } })
+    }, attesaStoria(ultimaScrittura, Date.now()))
   }
   return { storia, indietro: con(() => storia.back()), avanti: con(() => storia.forward()) }
 }
@@ -83,6 +89,20 @@ const SPAZIO_BARRA = 72
  * scelto si vede soltanto; scelto, la colonna toccata diventa un editor vivo e la barra dei tasti sta sopra il pezzo.
  * Un editor solo alla volta: con tre colonne vive montarne tre sul telefono è pesante.
  */
+/**
+ * Una colonna (o il testo intero) del pezzo. Dentro un pezzo Puck spegne i puntatori: la colonna si dichiara a Puck come zona da usare
+ * (`registerOverlayPortal`), così un tocco la sceglie (`onTocca`); scelta, il suo testo non si trascina più (si selezionano le parole).
+ */
+function Colonna({ viva, onTocca, children }: { viva: boolean | undefined; onTocca: () => void; children: ReactNode }) {
+  const el = useRef<HTMLDivElement>(null)
+  useEffect(() => registerOverlayPortal(el.current, { disableDrag: viva === true }), [viva])
+  return (
+    <div ref={el} className="sito-colonna" data-viva={viva} onPointerDown={onTocca}>
+      {children}
+    </div>
+  )
+}
+
 /** Dove arriva il testo scritto, subito: chi salva la pagina (`onCambia` di `EditorPezzi`), senza aspettare Puck. */
 const Cambia = createContext<(p: PezziPagina) => void>(() => {})
 
@@ -94,6 +114,13 @@ function PezzoTesto({ d, id, colonne }: { d: DatiSegreteria; id: string; colonne
   const cambia = useContext(Cambia)
   const [slot, setSlot] = useState<HTMLElement | null>(null)
   const [toccata, setViva] = useState(0)
+  // L'editor parte appena si tocca la colonna, senza aspettare che Puck segni il pezzo come scelto (mezzo secondo): i primi tasti non si perdono.
+  const [premuto, setPremuto] = useState(false)
+  useEffect(() => (scelto ? () => setPremuto(false) : undefined), [scelto])
+  const attivo = scelto || premuto
+  // Scelto un altro pezzo, questo smette di scrivere anche se Puck non l'aveva mai segnato come scelto.
+  const altro = usePuck((s) => { const k = s.selectedItem?.props.id; return typeof k === 'string' && k !== id })
+  useEffect(() => { if (altro) setPremuto(false) }, [altro])
   // Tolta una colonna, la viva non resta oltre l'ultima.
   const viva = Math.min(toccata, colonne.length - 1)
   // In cima alla pagina sopra il pezzo non c'è posto per la barra: lì sta nel pezzo, sopra il testo, e lo spinge giù.
@@ -102,24 +129,30 @@ function PezzoTesto({ d, id, colonne }: { d: DatiSegreteria; id: string; colonne
   useEffect(() => {
     const el = pezzo.current
     const pagina = el?.closest('.sito-pezzi-pagina')
-    if (!scelto || !el || !(pagina instanceof HTMLElement)) return
+    if (!attivo || !el || !(pagina instanceof HTMLElement)) return
     const sopra = el.getBoundingClientRect().top - pagina.getBoundingClientRect().top + pagina.scrollTop - parseFloat(getComputedStyle(pagina).paddingTop)
     setInCima(sopra < SPAZIO_BARRA)
-  }, [scelto, contenuto.length])
+  }, [attivo, contenuto.length])
   // Il testo si dà a Puck con `replace`, un passo solo per ANNULLA e RIFAI (come per la foto).
   const scrivi = (i: number) => (html: string) => {
     const k = contenuto.findIndex((c) => c.props.id === id)
     // Puck dà il contenuto senza tipo; i pezzi sono quelli di `Props` (li controlla `pezziValidi` al salvataggio).
+    ultimaScrittura = Date.now()
     if (k >= 0) dispatch({ type: 'replace', destinationIndex: k, destinationZone: ZONA, data: scriviTesto(contenuto[k] as unknown as Pezzo, html, i) as unknown as ComponentData })
+  }
+  // Un tocco sulla colonna non arriva al pezzo di Puck (la colonna è una zona sua, vedi `Colonna`): il pezzo si sceglie da qui, se no SU, GIÙ, TOGLI e le impostazioni non lo vedono.
+  const sceglimi = () => {
+    const k = contenuto.findIndex((c) => c.props.id === id)
+    if (k >= 0 && !scelto) dispatch({ type: 'setUi', ui: { itemSelector: { index: k, zone: ZONA } } })
   }
   const solo = colonne.length === 1
   return (
-    <div ref={pezzo} className="sito-pezzo" data-scelto={scelto || undefined}>
-      {scelto && <div ref={setSlot} className="sito-barra-flotta" data-in-cima={inCima || undefined} />}
+    <div ref={pezzo} className="sito-pezzo" data-scelto={attivo || undefined}>
+      {attivo && <div ref={setSlot} className="sito-barra-flotta" data-in-cima={inCima || undefined} />}
       <div className={solo ? undefined : 'sito-colonne'} style={solo ? undefined : { gridTemplateColumns: `repeat(${colonne.length}, minmax(0, 1fr))` }}>
         {colonne.map((c, i) => (
-          <div key={i} className="sito-colonna" data-viva={scelto && !solo ? i === viva : undefined} onClick={() => setViva(i)}>
-            {scelto && i === viva ? (
+          <Colonna key={i} viva={attivo && !solo ? i === viva : undefined} onTocca={() => { setViva(i); setPremuto(true); sceglimi() }}>
+            {attivo && i === viva ? (
               <TestoInPagina
                 d={d}
                 html={c.html}
@@ -134,7 +167,7 @@ function PezzoTesto({ d, id, colonne }: { d: DatiSegreteria; id: string; colonne
             ) : (
               <Testo html={c.html} />
             )}
-          </div>
+          </Colonna>
         ))}
       </div>
     </div>
