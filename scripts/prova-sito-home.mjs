@@ -14,7 +14,7 @@
 //  3. Le tessere che hanno solo il titolo (i valori) lo tengono in basso, grande.
 //  4. Il collage pieno della testata: 4 foto e un elenco di 9 voci sono le 13 tessere
 //     del design (foto grande, 9 voci, 3 foto), ognuna al suo posto sulla griglia a 6x6.
-//  5. Il pulsante in testata dice «Prova una settimana · 5 €» (l'invito in fondo resta «Prova»).
+//  5. Il pulsante in testata dice «Prova una settimana a 5 €» (l'invito in fondo resta «Prova»).
 //  6. Il piede è una scheda scura in riga: nome a sinistra, poi gli elenchi.
 //
 // Il CSS si legge come testo e i `clamp()` si calcolano a 1440px.
@@ -148,12 +148,10 @@ console.log('\n4. Il collage pieno della testata (design TatamiBlu)')
 console.log('\n6. Il pulsante in testata')
 {
   const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [], rinvii: [] })['index.html'] ?? ''
-  ok('in testata: «Prova una settimana · 5 €» verso il modulo di iscrizione', /<header class="testata">[\s\S]*<a class="pulsante piccolo" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/" rel="noopener noreferrer">Prova<span class="estensione"> una settimana · 5 €<\/span><\/a>/.test(h), true)
+  ok('in testata: «Prova una settimana a 5 €» (pulsante primario, intero) verso il modulo di iscrizione', /<header class="testata">[\s\S]*<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Prova una settimana a 5 €<\/a>/.test(h), true)
   ok('l’invito in fondo resta «Prova»', /class="parola">Prova</.test(h), true)
-  // Il pulsante è un flex: lo spazio all'inizio del `span` si perde e il testo diventa «Provauna settimana». Lo spazio lo dà il margine.
-  const css = h.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
-  const base = css.split('@media')[0]
-  ok('lo spazio tra «Prova» e «una settimana» lo dà un margine sul span (il pulsante è un flex)', /\.testata \.estensione\{[^}]*margin-left:\s*\.3em/.test(base), true)
+  // Il pulsante non ha più la coda «una settimana · 5 €» da nascondere sul telefono: l'etichetta è una sola.
+  ok('l’etichetta è intera: niente «estensione» in testata', /class="estensione"/.test(h), false)
 }
 
 console.log('\n7. Il piede è una scheda scura in riga')
@@ -170,6 +168,10 @@ console.log('\n7. Il piede è una scheda scura in riga')
 const cssPagina = pagina('<p>x</p>').match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
 const mobile = (cssPagina.match(/@media \(max-width:900px\)\{(.*?)\}\}/)?.[1] ?? '') + '}'
 const scrivania = (cssPagina.match(/@media \(min-width:901px\)\{(.*?)\}\}/)?.[1] ?? '') + '}'
+// La testata ha i suoi @media (CSS_TESTATA), in coda agli altri: qui si leggono tutti.
+const tuttiMedia = (q) => [...cssPagina.matchAll(new RegExp(`@media \\(${q}\\)\\{(.*?)\\}\\}`, 'g'))].map((m) => m[1] + '}').join('')
+const scrivaniaTutte = tuttiMedia('min-width:901px')
+const mobileTutte = tuttiMedia('max-width:900px')
 const base = cssPagina.replace(/@media[^{]*\{.*?\}\}/g, '')
 const regola = (css, sel) => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => m[1].split(',').some((s) => s.trim() === sel)).map((m) => m[2]).join(';')
 const ha = (css, sel, dich) => new RegExp(`(^|;)${dich.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(;|$)`).test(regola(css, sel))
@@ -177,8 +179,8 @@ const ha = (css, sel, dich) => new RegExp(`(^|;)${dich.replace(/[.*+?^${}()|[\]\
 console.log('\n7. Desktop: le misure del design')
 {
   ok('testata: padding 22px sui lati del margine', ha(base, '.testata', 'padding:22px var(--margine)'), true)
-  ok('testata: le voci del menu stanno a 36px una dall’altra, senza imbottitura', [ha(scrivania, '.testata nav ul', 'gap:36px'), ha(scrivania, '.testata nav a', 'padding:0')], [true, true])
-  ok('testata: il pulsante ha 26px di imbottitura', ha(base, '.pulsante.piccolo', 'padding:0 26px'), true)
+  ok('testata: le voci del menu stanno a 36px una dall’altra, senza imbottitura', [ha(scrivaniaTutte, '.testata nav ul', 'gap:36px'), ha(scrivaniaTutte, '.testata nav a', 'padding:0')], [true, true])
+  ok('testata: i pulsanti hanno 24px di imbottitura e sono alti 52px', [ha(base, '.testata .pulsante', 'padding:0 24px'), ha(base, '.testata .pulsante', 'min-height:52px')], [true, true])
   ok('titolo grande: interlinea .82', ha(base, 'h1', 'line-height:.82'), true)
   ok('testata: il collage non si allunga con la colonna del titolo', ha(scrivania, '.pagina-hero>.collage', 'align-self:start'), true)
   ok('testata: la frase sotto il titolo sta in 520px, con 28px sotto', [ha(base, '.intro p', 'max-width:520px'), ha(base, '.intro p', 'margin:0 0 28px')], [true, true])
@@ -204,8 +206,8 @@ console.log('\n8. Citazioni con la foto a sinistra')
 
 console.log('\n9. Telefono: le misure del design')
 {
-  ok('testata: padding 12px 16px', ha(mobile, '.testata', 'padding:12px var(--margine) 0'), true)
-  ok('menu a tessere: la voce della pagina è gialla, le altre chiare', [ha(mobile, '.testata nav a', 'background:var(--chiara)'), ha(mobile, '.testata nav a[aria-current]', 'background:var(--giallo)')], [true, true])
+  ok('testata: padding 12px 16px', ha(mobileTutte, '.testata', 'padding:12px var(--margine)'), true)
+  ok('menu aperto sul telefono: voci da 48px in colonna, la voce della pagina è gialla', [ha(mobileTutte, '.testata nav a', 'min-height:48px'), ha(base, '.testata nav a[aria-current]', 'background:var(--giallo)')], [true, true])
   ok('titolo da 84px', ha(mobile, 'h1', 'font-size:84px'), true)
   ok('titoli di sezione da 64px, sezioni a 48px una dall’altra', [ha(mobile, '.sezione h2', 'font-size:64px'), ha(mobile, '.sezione', 'padding:48px var(--margine) 0')], [true, true])
   ok('collage: i numeri stanno in 2 colonne, alti 150px, cifra da 68px', [ha(mobile, '.collage.pieno .tessera.numero', 'min-height:150px'), ha(mobile, '.collage.pieno .cifra', 'font-size:68px')], [true, true])
@@ -218,7 +220,7 @@ console.log('\n9. Telefono: le misure del design')
   ok('piede: nome da 44px, 24px di imbottitura', [ha(mobile, '.piede .nome', 'font-size:44px'), ha(mobile, '.piede', 'padding:24px')], [true, true])
   const m = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contatti', slug: 'contatti', indirizzo: null }], rinvii: [] })
   ok('domande: una gialla e una chiara, a turno', ha(mobile, '.tessere .tessera.chiara:nth-child(odd)', 'background:var(--giallo)'), true)
-  ok('la voce della pagina aperta ha aria-current="page", solo quella', [/<a href="\/" aria-current="page">Home/.test(m['index.html']), /<a class="contattaci" href="\/contatti\/" aria-current="page">Contattaci/.test(m['contatti/index.html']), (m['index.html'].match(/aria-current="page"/g) ?? []).length], [true, true, 1])
+  ok('la voce della pagina aperta ha aria-current="page", solo quella', [/<a href="\/" aria-current="page">Home/.test(m['index.html']), /<a class="pulsante secondario" href="\/contatti\/" aria-current="page">Scrivici/.test(m['contatti/index.html']), (m['index.html'].match(/aria-current="page"/g) ?? []).length], [true, true, 1])
 }
 
 console.log('\n10. I colori delle tessere come nel design')
@@ -262,7 +264,7 @@ console.log('\n12. Schede dei corsi, marchio ritagliato, puntini, pulsante breve
   const tp = pagina(`<ul>${[1, 2].map((i) => `<li><strong>Cifra ${i}</strong> cose</li>`).join('')}<li><strong>Prova</strong><br><em>Provi tutto.</em></li></ul>`)
   ok('una voce «titolo + a capo + corsivo» ha la scritta sotto, nascosta sul desktop', [ha(base, '.sotto', 'display:none'), ha(mobile, '.sotto', 'display:block')], [true, true])
   ok('il marchio (già tagliato ai margini) è 112x110 sul desktop e 84x82 sul telefono, come nel design', [ha(base, '.logo img', 'width:112px'), ha(base, '.logo img', 'height:110px'), ha(mobile, '.logo img', 'width:84px'), ha(mobile, '.logo img', 'height:82px')], [true, true, true, true])
-  ok('il pulsante in testata sul telefono mostra «Prova»', /\.testata \.pulsante::before\{content:"Prova"/.test(mobile), true)
+  ok('sul telefono la testata ha il tasto MENU (niente pulsante accorciato a «Prova»)', /<a class="tasto-menu" href="#menu">MENU<\/a>/.test(pagina('<p>x</p>')), true)
   ok('le citazioni hanno i puntini (scroll-marker)', [/scroll-marker-group:\s*after/.test(cssPagina), /\.citazioni \.tessera::scroll-marker\{/.test(cssPagina)], [true, true])
   ok('sul telefono le foto della fascia sono due', ha(mobile, '.foto-fila.quattro .foto:nth-child(n+3)', 'display:none'), true)
   const piede = pagina('<p>x</p>')

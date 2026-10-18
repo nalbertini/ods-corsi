@@ -379,8 +379,8 @@ console.log('\nDopo la revisione')
   const r = genera(dati())
   const home = c(r, 'index.html')
   ok('sotto i 900px il menu non sparisce', /\.testata nav\{display:none\}/.test(home), false)
-  ok('sotto i 900px il menu va a capo sotto la testata', /@media \(max-width:900px\)\{[^}]*\}?[\s\S]*\.testata nav\{[^}]*order:3/.test(home), true)
-  ok('la nav c\'è ancora nell\'HTML', /<nav aria-label="Principale">/.test(home), true)
+  ok('sotto i 900px il menu è chiuso e si apre sotto la testata con #menu:target', /@media \(max-width:900px\)[\s\S]*#menu\{display:none[^}]*\}#menu:target\{display:block;position:absolute[^}]*top:100%/.test(home), true)
+  ok('la nav c\'è ancora nell\'HTML', /<nav id="menu" aria-label="Principale">/.test(home), true)
   ok('niente ingranaggio decorativo (il disegno è uscito dal sito)', [/fill-rule/.test(home), /class="(motivo|marchio)"/.test(home)], [false, false])
   // Il contrasto dell'invito (inchiostro sul giallo) e il pulsante che non schiarisce: scripts/prova-sito-aspetto.mjs, con i valori A2.
   const css = home.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
