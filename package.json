@@ -92,7 +92,9 @@
     "prova:sql": "bash scripts/prova-sql.sh",
     "prova:comune-cap": "node scripts/prova-comune-cap.mjs",
     "prova:tessere": "node scripts/prova-tessere.mjs",
-    "prova:fogli-moduli": "node scripts/prova-fogli-moduli.mjs"
+    "prova:fogli-moduli": "node scripts/prova-fogli-moduli.mjs",
+    "prova:testi": "node scripts/prova-testi.mjs",
+    "prova:etichette-lezione": "node scripts/prova-etichette-lezione.mjs"
   },
   "dependencies": {
     "@puckeditor/core": "^0.23.0",
