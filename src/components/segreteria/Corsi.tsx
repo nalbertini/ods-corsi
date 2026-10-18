@@ -571,10 +571,10 @@ function Scheda({
               </span>
               <button
                 type="button"
-                className="sg-togli"
+                className="sg-togli sg-pericolo"
                 aria-label={`Togli ${GIORNI_LUNGHI[r.giorno]} alle ${r.ora}`}
                 onClick={async () => {
-                  if ((await chiedi(`Togliere ${GIORNI_LUNGHI[r.giorno].toLowerCase()} alle ${r.ora}? Le lezioni future senza appello spariscono; quelle già fatte restano.`, 'Togli il giorno'))) {
+                  if ((await chiedi(`Togliere ${GIORNI_LUNGHI[r.giorno].toLowerCase()} alle ${r.ora}? Le lezioni future senza appello spariscono; quelle già fatte restano.`, 'Togli il giorno', { pericolo: true }))) {
                     void fai(() => d.togliRicorrenza(r.id), 'Giorno tolto', onCambiato)
                   }
                 }}

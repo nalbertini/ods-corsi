@@ -141,7 +141,7 @@ function Allega({ f, id }: { f: ReturnType<typeof useFile>; id: string }) {
           <span className="sg-nota" style={{ overflowWrap: 'anywhere' }}>
             {x.name}
           </span>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => f.togli(i)} aria-label={`Non allegare ${x.name}`}>
+          <button data-bozza type="button" className="sg-btn sg-btn-linea sg-pericolo" onClick={() => f.togli(i)} aria-label={`Non allegare ${x.name}`}>
             Togli
           </button>
         </span>
@@ -183,7 +183,7 @@ function RigaAllegato({ a, d, fai, poi, lavora }: { a: Allegato; d: DatiSegreter
         Apri
       </button>
       {a.mio && (
-        <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={togli} aria-label={`Togli ${a.nome}`}>
+        <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={lavora} onClick={togli} aria-label={`Togli ${a.nome}`}>
           Togli
         </button>
       )}

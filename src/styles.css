@@ -1935,7 +1935,8 @@ a.sg-voce { text-decoration: none; }
   font-family: var(--cond); font-style: oblique 9deg; font-size: 15px; font-weight: 700; letter-spacing: 0.14em;
 }
 /* Il tasto principale è pieno del colore del testo; rosso solo quando quello
-   che fa non si annulla (una ricevuta, un file cancellato, un import). Sul
+   che fa non si annulla (una ricevuta, un file cancellato, un import); i
+   pulsanti che aprono quelle azioni sono a linea rossa (`sg-pericolo`). Sul
    rosso il testo è bianco: il nero arriva a 4,1:1, il bianco a 4,5:1. */
 .sg-btn-pieno { background: var(--text); color: var(--bg); }
 .sg-btn-rosso { background: var(--rosso); color: var(--su-rosso); }
@@ -3133,3 +3134,12 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 
 /* CONTABILITÀ: i totali delle casse vanno a capo sotto una certa larghezza, invece di tagliare gli importi a 40px. */
 .sg-numeri.sg-numeri-conti { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+/* Quello che toglie qualcosa (cancella, elimina, annulla, disattiva) è rosso
+   in ogni pulsante, a linea, chip o link: il rosso pieno resta al «sì» della
+   conferma. In coda al file e con `:root[data-look='sito']` per battere i colori del
+   tasto a linea in entrambe le grafiche. */
+.sg-pericolo:not(:disabled),
+.sg-pericolo:not(:disabled):hover { color: var(--rosso-testo); border-color: var(--rosso-testo); }
+:root[data-look='sito'] .sg-pericolo:not(:disabled),
+:root[data-look='sito'] .sg-pericolo:not(:disabled):hover { color: var(--rosso-testo); border-color: var(--rosso-testo); }

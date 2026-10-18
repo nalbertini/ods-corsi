@@ -160,9 +160,10 @@ compare un avviso che dice cosa è stato fatto.
 
 ## Le conferme
 
-Prima di un'azione che pesa (annullare una ricevuta o una lezione, accogliere o
-rifiutare una richiesta, cancellare un file) l'app chiede conferma con una
-finestra sua: il tasto di sinistra lascia stare, quello di destra dice cosa fa
+Ogni pulsante che toglie qualcosa (cancella, elimina, annulla, disattiva, togli)
+è rosso, e prima di un'azione che pesa (annullare una ricevuta o una lezione,
+accogliere o rifiutare una richiesta, cancellare un file) l'app chiede conferma
+con una finestra sua: il tasto di sinistra lascia stare, quello di destra dice cosa fa
 («Sì, annulla la ricevuta»). È rosso quando non si torna indietro. ESC, o un
 clic fuori, lascia stare.
 

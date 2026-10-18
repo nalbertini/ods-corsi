@@ -276,7 +276,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
                   onCambia={(x) => cambiaCorso(c.chiave, x)}
                   onSposta={(v) => sposta(i, v)}
                   onTogli={async () => {
-                    if ((await chiedi(`Togliere «${c.corso || 'questo corso'}» dal listino?`, 'Togli dal listino'))) cambia({ corsi: b.corsi.filter((x) => x.chiave !== c.chiave) })
+                    if ((await chiedi(`Togliere «${c.corso || 'questo corso'}» dal listino?`, 'Togli dal listino', { pericolo: true }))) cambia({ corsi: b.corsi.filter((x) => x.chiave !== c.chiave) })
                   }}
                   onChiudi={() => setAperto(null)}
                 />
@@ -324,7 +324,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
                     value={o.titolo}
                     onChange={(e) => cambia({ offerte: b.offerte.map((x) => (x.chiave === o.chiave ? { ...x, titolo: e.target.value } : x)) })}
                   />
-                  <button type="button" className="sg-link" onClick={() => cambia({ offerte: b.offerte.filter((x) => x.chiave !== o.chiave) })}>
+                  <button data-bozza type="button" className="sg-link sg-pericolo" onClick={() => cambia({ offerte: b.offerte.filter((x) => x.chiave !== o.chiave) })}>
                     Togli
                   </button>
                 </div>
@@ -506,7 +506,7 @@ function SchedaCorso({
             </Campo>
           ))}
           {piuRighe && (
-            <button type="button" className="sg-link" style={{ alignSelf: 'end', paddingBottom: 12 }} onClick={() => onCambia({ prezzi: c.prezzi.filter((_, j) => j !== i) })}>
+            <button data-bozza type="button" className="sg-link sg-pericolo" style={{ alignSelf: 'end', paddingBottom: 12 }} onClick={() => onCambia({ prezzi: c.prezzi.filter((_, j) => j !== i) })}>
               Togli
             </button>
           )}
@@ -531,7 +531,7 @@ function SchedaCorso({
         <button type="button" className="num sg-chip" disabled={ultimo} onClick={() => onSposta(1)} aria-label="Più giù">
           ↓ Giù
         </button>
-        <button type="button" className="sg-link" onClick={onTogli}>
+        <button type="button" className="sg-link sg-pericolo" onClick={onTogli}>
           Togli dal listino
         </button>
         <span className="grow" />

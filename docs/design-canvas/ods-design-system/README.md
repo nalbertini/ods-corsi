@@ -21,7 +21,7 @@ Google, e vale solo per i mockup.
 | `PaginaSito.dc.html`, `PaginaSitoTelefono.dc.html` | Le cornici della **segreteria nel look del sito**: menu inchiostro con le icone (240px) o barra del telefono, titolo, COSA MANCA a cinque caselle e le righe di DA FARE; per una schermata nuova della segreteria si copia una di queste, non `Pagina.dc.html` |
 | `TemaSito.dc.html` | Tutti i componenti della segreteria col `tema="sito"` uno accanto all'altro: la tavola da guardare per capire il look |
 | `LezioneSettimana.dc.html` | La lezione nella SETTIMANA (`Tessera` di `Settimana.tsx`) col look del sito: tinta in alto, barra rossa se manca l'appello, tag in parole (`etichetteLezione.ts`) |
-| `Bottone.dc.html` | `.btn`, `.sg-btn`, `.icon-btn`: principale, vai, linea, tratteggiato, pieno, rosso, icona; app e segreteria; `bordo="riga-campo"` per i tasti che sono scelte (i tipi di TI SERVE ALTRO?) |
+| `Bottone.dc.html` | `.btn`, `.sg-btn`, `.icon-btn`: principale, vai, linea, tratteggiato, pieno, rosso, pericolo (contorno e testo rossi: cancella, elimina, annulla, togli, disattiva), icona; app e segreteria; `bordo="riga-campo"` per i tasti che sono scelte (i tipi di TI SERVE ALTRO?) |
 | `SchedaCorso.dc.html` | `Costo` di `ds.tsx`: la scheda di un corso nel listino; col `tema="sito"` (pagina `iscrizioni/`) bianca, filo `#cfe6f4`, corso e prezzi in Big Shoulders |
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |

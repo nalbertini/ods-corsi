@@ -20,6 +20,7 @@
     "prova:coda": "node scripts/prova-coda.mjs",
     "prova:tablet": "node scripts/prova-tablet.mjs",
     "prova:segreteria": "node scripts/prova-segreteria.mjs",
+    "prova:pericolo": "node scripts/prova-pericolo.mjs",
     "prova:ruoli": "node scripts/prova-ruoli.mjs",
     "prova:contabilita": "node scripts/prova-contabilita.mjs",
     "prova:certificati": "node scripts/prova-certificati.mjs",

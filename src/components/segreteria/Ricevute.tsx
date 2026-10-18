@@ -118,7 +118,7 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
               {/* Raro e senza ritorno: su una riga sua, a destra, e non più grande del PDF che si preme ogni giorno. */}
               {!r.annullataIl && (
                 <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
-                  <button type="button" className="num sg-chip" onClick={() => annulla(r)}>
+                  <button type="button" className="num sg-chip sg-pericolo" onClick={() => annulla(r)}>
                     Annulla ricevuta
                   </button>
                 </div>
@@ -214,7 +214,7 @@ function RigaDelloStorico({ riga, aMano, onAnnulla }: { riga: RigaPagamento; aMa
       </span>
       {onAnnulla && (
         <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
-          <button type="button" className="num sg-chip" onClick={onAnnulla}>
+          <button type="button" className="num sg-chip sg-pericolo" onClick={onAnnulla}>
             Annulla pagamento
           </button>
         </div>
@@ -581,7 +581,7 @@ export function NuovaRicevuta({
                 Descrizione
               </label>
               <input id={`rv-d-${b.chiave}`} className="sg-campo grow" maxLength={120} value={b.descrizione} onChange={(e) => cambia(b.chiave, { descrizione: e.target.value })} style={{ minWidth: 0 }} />
-              <button type="button" className="sg-link" onClick={() => metti(voci.filter((x) => x.chiave !== b.chiave))}>
+              <button data-bozza type="button" className="sg-link sg-pericolo" onClick={() => metti(voci.filter((x) => x.chiave !== b.chiave))}>
                 Togli
               </button>
             </div>
@@ -647,7 +647,7 @@ export function NuovaRicevuta({
         {scontata ? (
           <span className="row" style={{ gap: 8, fontSize: 12, color: 'var(--sec)', flexWrap: 'wrap' }}>
             Sconto famiglia: {percento}% su {scontoDellaVoce(scontata.descrizione)?.descrizione ?? scontata.descrizione}, cioè −{euro(importoSconto(scontata.pieno!))} €.
-            <button type="button" className="sg-link" onClick={() => { setScontoSi(false); metti(voci, false) }}>
+            <button data-bozza type="button" className="sg-link sg-pericolo" onClick={() => { setScontoSi(false); metti(voci, false) }}>
               Togli lo sconto
             </button>
           </span>
