@@ -1584,16 +1584,16 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
           </div>
         </div>
       ) : x.puoCambiare ? (
-        <div className="row sg-tasti-cert" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="row sg-tasti-cert" style={{ gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
           {/* Pieno solo se è la prima cosa da fare: in scheda un tasto pieno alla volta. */}
           <button type="button" className={x.primo ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo={x.primo || undefined} onClick={() => setGesto(gestoIniziale(c))}>
             {x.tasto}
           </button>
-          <div className="grow" />
           {(c.conFile || c.scade) && (
             <button
               type="button"
-              className="sg-btn sg-btn-linea sg-pericolo"
+              className="sg-link sg-pericolo"
+              style={{ fontSize: 15, fontWeight: 600, minHeight: 44, padding: 0, display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start' }}
               onClick={async () => {
                 if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file si cancella per sempre.' : ''} Senza certificato non entra in sala finché non se ne carica uno nuovo.`, 'Togli il certificato', { pericolo: true })))
                   void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
@@ -1619,13 +1619,13 @@ function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
       <Riga titolo="DOCUMENTO D’IDENTITÀ">
         <Bollino tono={t.tono}>{t.parola}</Bollino>
       </Riga>
-      <span style={{ fontSize: 14, color: p.documento ? 'var(--sec)' : 'var(--giallo-testo)' }}>
-        {p.documento ? 'La copia è nella cartellina.' : 'Manca la copia: va mostrato in segreteria (per un minore, quello del genitore).'}
-      </span>
+      {/* Con la copia in segreteria il bollino dice già tutto: resta solo il modo di toglierla. */}
+      {!p.documento && <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>Manca la copia: va mostrato in segreteria (per un minore, quello del genitore).</span>}
       <div className="row">
         <button
           type="button"
-          className="num sg-chip"
+          className={p.documento ? 'sg-link' : 'num sg-chip'}
+          style={p.documento ? { fontSize: 15, fontWeight: 600, minHeight: 44, padding: 0, display: 'inline-flex', alignItems: 'center' } : undefined}
           data-primo={p.documento ? undefined : true}
           onClick={() =>
             void fai(() => d.salvaDocumento(p.id, !p.documento), p.documento ? 'Documento tolto: ora è «Da portare». Se era uno sbaglio, «La copia è in segreteria» lo rimette' : 'Documento segnato in segreteria', onCambiato)

@@ -163,7 +163,7 @@ scheda è disattivata, nessuno.
   lo avvisa prima): per ogni persona c'è un file solo. **Lascia stare** non
   cambia niente. Se il file è arrivato col modulo di iscrizione, c'è già ma
   senza data: **SCRIVI LA DATA** → **Salva**, senza scegliere un altro file.
-  **Togli il certificato** toglie file e data. Una data più di tre anni avanti
+  **Togli il certificato** (il link rosso) toglie file e data. Una data più di tre anni avanti
   non si salva («La data è troppo lontana: controlla l'anno»), e con una
   scadenza di più di 30 giorni fa l'app avvisa che il file verrà cancellato
   subito. Una scheda disattivata non offre né SOSTITUISCI né TOGLI IL
@@ -181,8 +181,8 @@ scheda è disattivata, nessuno.
   **Non archiviato** li mostra tutti, finché ce ne sono). Si cancella
   da solo come gli altri, o con **Togli il certificato**.
 - **DOCUMENTO D'IDENTITÀ** — se la copia è in segreteria, su carta (per un
-  minore, quella del genitore). **La copia è in segreteria** lo segna, **LA
-  COPIA NON C'È PIÙ** lo toglie. **Senza documento**, sotto «Altri filtri», mostra chi non ce
+  minore, quella del genitore). **La copia è in segreteria** lo segna; quando c'è resta solo il link **La copia non c'è più**, che la toglie senza
+  chiedere (si rimette col tasto). **Senza documento**, sotto «Altri filtri», mostra chi non ce
   l'ha ancora.
 - **QUOTA** — se ha pagato lo dicono le ricevute: **PAGATA** se c'è una
   ricevuta non annullata con la **QUOTA ASSOCIATIVA** che vale oggi, con fin

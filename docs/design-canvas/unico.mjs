@@ -52,6 +52,7 @@ const SEZIONI = [
   { id: 'storico-pagamenti', nome: 'Segreteria · storico pagamenti', cartella: 'storico-pagamenti' },
   { id: 'tessere', nome: 'Segreteria · tessere e incrocio', cartella: 'tessere' },
   { id: 'scheda-iscritto-schede', nome: 'Segreteria · scheda iscritto a schede', cartella: 'scheda-iscritto-schede' },
+  { id: 'documenti-semplici', nome: 'Segreteria · documenti più semplici', cartella: 'documenti-semplici' },
   { id: 'prezzi-mancanti', nome: 'Segreteria · prezzi mancanti', cartella: 'prezzi-mancanti' },
   { id: 'certificati-online', nome: 'Segreteria · certificati online', cartella: 'certificati-online' },
   { id: 'certificato-piccoli', nome: 'Segreteria · certificato sotto i 6 anni', cartella: 'certificato-piccoli' },

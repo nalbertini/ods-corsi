@@ -944,7 +944,8 @@ export function presentaCertificato(c: CertificatoSeg, natoIl: string | undefine
     nessuno: c.conFile ? 'Il file c’è, ma manca la data: scrivila leggendo il foglio. Senza, in sala non si entra.' : 'Nessun certificato in segreteria: senza, in sala non si entra.',
     valido: `Valido fino al ${data}.`,
     file_vecchio: `Valido fino al ${data}.`,
-    valido_senza_file: `Valido fino al ${data}, ma il file non c’è: la data è segnata, il foglio no.`,
+    // Una frase sola (niente nota sotto che la ripete). Disattivata non si carica più: non invita.
+    valido_senza_file: attiva ? `Valido fino al ${data}. Il file non c’è: carica la copia.` : `Valido fino al ${data}.`,
     in_scadenza: `Scade il ${data}, ${fra === 0 ? 'oggi' : fra === 1 ? 'domani' : `fra ${fra} giorni`}.`,
     scaduto_con_file: `Scaduto il ${data}: va rinnovato prima di tornare in sala.`,
     // «File cancellato» solo se un file c'è stato: la sola data scritta a mano non ne ha mai avuto.
@@ -963,7 +964,9 @@ export function presentaCertificato(c: CertificatoSeg, natoIl: string | undefine
           : 'Il file è stato cancellato.'
       : stato === 'nessuno'
         ? 'Nessun file caricato.'
-        : 'Nessun file caricato: la data l’ha scritta la segreteria.'
+        : stato === 'valido_senza_file' && attiva
+          ? undefined
+          : 'Nessun file caricato: la data l’ha scritta la segreteria.'
   const parola = { nessuno: 'MANCA', valido: 'VALIDO', file_vecchio: 'VALIDO', valido_senza_file: 'VALIDO', in_scadenza: 'IN SCADENZA', scaduto_con_file: 'SCADUTO', scaduto_senza_file: 'SCADUTO' }[stato]
   const verde = stato === 'valido' || stato === 'file_vecchio' || stato === 'valido_senza_file'
   const tasto =
