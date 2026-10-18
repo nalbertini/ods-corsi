@@ -11,6 +11,7 @@ import {
   righeDellaLista,
   tessereRichieste,
   parolaTessera,
+  parolaTesseraBreve,
   righeDalFoglio,
   statoDiUna,
   type EsitoImportTessere,
@@ -45,8 +46,8 @@ function Segno({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde' | 'spent
 /** La parola di una tessera nella sua riga: lo stato dalle sue date, senza «TESSERA» davanti. */
 function segnoDiUna(t: TesseraSeg, oggi: string) {
   const stato = statoDiUna(t, oggi)
-  const p = parolaTessera(stato, t.al)
-  return p ? <Segno tono={p.tono}>{p.parola.replace('TESSERA ', '')}</Segno> : <Segno tono="verde">IN REGOLA</Segno>
+  const p = parolaTesseraBreve(stato, t.al)
+  return p ? <Segno tono={p.tono}>{p.parola}</Segno> : <Segno tono="verde">IN REGOLA</Segno>
 }
 
 /**
