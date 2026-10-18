@@ -58,8 +58,12 @@ Chi si iscrive risponde alle domande dal telefono:
   «prezzo da confermare».
 - **Il modulo**: le autorizzazioni si firmano **qui, col dito** (o col mouse
   dal computer). Si sceglie come sul foglio se si acconsente al
-  **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**; per
-  un minore si scrive anche dove è nato il genitore, e firma il genitore.
+  **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**: le
+  due scelte partono vuote e vanno fatte per mandare il modulo, ma anche con
+  «non autorizzo» l'iscrizione va avanti (per le foto il minore non compare).
+  Se si prova a mandare senza sceglierne una, sotto quella scelta compare una
+  nota rossa e la pagina va lì. **Firmo qui** è già scelto; con **Ho il foglio
+  firmato** si carica invece la foto del foglio. Per un minore si scrive anche dove è nato il genitore, e firma il genitore.
   Il riquadro della firma è piccolo: sotto c'è **FIRMA A SCHERMO INTERO**
   (o basta un tocco sul riquadro), che apre una schermata tutta per la firma,
   con **ANNULLA**, **FATTO** e **CANCELLA E RIFAI**. **Gira il telefono in
