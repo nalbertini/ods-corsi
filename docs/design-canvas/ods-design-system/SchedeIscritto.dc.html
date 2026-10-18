@@ -14,9 +14,9 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div role="tablist" aria-label="Scheda dell'iscritto" style="display: flex; gap: {{gap}}; align-self: flex-start; width: {{larghezza}}; max-width: 100%; overflow-x: auto">
+<div role="tablist" aria-label="Scheda dell'iscritto" style="display: flex; gap: {{gap}}; align-self: flex-start; width: {{larghezza}}; max-width: 100%">
   <sc-for list="{{schede}}" as="x" hint-placeholder-count="4">
-    <span role="tab" aria-label="{{x.nomeIntero}}" aria-selected="{{x.selezionata}}" style="display: inline-flex; flex-direction: {{direzione}}; align-items: center; justify-content: center; flex: {{x.flex}}; gap: {{gapDentro}}; min-height: 44px; padding: {{padding}}; white-space: nowrap; background: {{x.sfondo}}; border: 2px solid {{x.bordo}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: {{x.colore}}">{{x.testo}}<span style="font-size: {{corpoSegno}}; letter-spacing: 0.12em; color: {{x.coloreSegno}}">{{x.segno}}</span></span>
+    <span role="tab" aria-label="{{x.nomeIntero}}" aria-selected="{{x.selezionata}}" style="display: inline-flex; flex-direction: {{direzione}}; align-items: center; justify-content: center; flex: {{x.flex}}; min-width: 0; gap: {{gapDentro}}; min-height: 44px; padding: {{padding}}; white-space: {{aCapo}}; text-align: center; background: {{x.sfondo}}; border: 2px solid {{x.bordo}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: {{corpoNome}}; font-weight: 700; letter-spacing: {{spazioNome}}; color: {{x.colore}}">{{x.testo}}<span style="font-size: {{corpoSegno}}; letter-spacing: {{spazioSegno}}; color: {{x.coloreSegno}}">{{x.segno}}</span></span>
   </sc-for>
 </div>
 </x-dc>
@@ -30,7 +30,7 @@
 // e `parolaQuota` sono le parole. `inModifica` mette ● IN MODIFICA (giallo) su PERSONA, ma solo se non e' la scheda accesa:
 // una modifica aperta non si perde di vista guardando un'altra scheda.
 // `telefono`: l'etichetta di QUOTA E PAGAMENTI diventa QUOTA (il nome intero resta nell'aria-label, per il lettore schermo),
-// il segno va sotto il nome in 11px, e le schede stanno in una riga che scorre in orizzontale senza tagliare il testo.
+// il segno va sotto il nome in 11px, e le quattro schede stanno tutte nella larghezza, in colonne uguali (`@media (max-width: 1000px)` di styles.css), senza scorrere. Sulla scheda accesa il segno giallo e' del colore `text`, per il contrasto.
 const T = {
   scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
   chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', dim: '#656561', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
@@ -51,17 +51,20 @@ class Component extends DCLogic {
       if (nome === 'QUOTA E PAGAMENTI') s = segno(p.segnoQuota, p.parolaQuota ?? 'DA PAGARE');
       if (nome === 'PERSONA' && truthy(p.inModifica) && acceso !== 'PERSONA') s = { segno: '● IN MODIFICA', coloreSegno: c.gialloTesto };
       const on = nome === acceso;
+      // Sulla scheda accesa (fondo surface-2) il giallo scuro non arriva a 4,5:1: li' vale il testo, come in styles.css.
+      if (on && s.coloreSegno === c.gialloTesto) s = { ...s, coloreSegno: c.text };
       return {
         nomeIntero: nome + (s.segno ? ', ' + s.segno.slice(2).toLowerCase() : ''),
         testo: tel && nome === 'QUOTA E PAGAMENTI' ? 'QUOTA' : nome,
-        ...s, selezionata: on ? 'true' : 'false', flex: tel ? '1 0 auto' : '0 0 auto',
+        ...s, selezionata: on ? 'true' : 'false', flex: tel ? '1 1 0' : '0 0 auto',
         sfondo: on ? c.surface2 : c.surface, bordo: on ? c.text : c.line, colore: on ? c.text : c.dim,
       };
     });
     return {
-      schede, c, gap: tel ? '2px' : '4px', larghezza: tel ? '100%' : 'fit-content',
-      direzione: tel ? 'column' : 'row', gapDentro: tel ? '0' : '10px', padding: tel ? '4px 10px' : '0 18px',
-      corpoSegno: tel ? '11px' : '12px',
+      schede, c, gap: '4px', larghezza: tel ? '100%' : 'fit-content',
+      direzione: tel ? 'column' : 'row', gapDentro: tel ? '2px' : '8px', padding: tel ? '4px' : '0 18px',
+      corpoSegno: '11px', corpoNome: tel ? '13px' : '14px', aCapo: tel ? 'normal' : 'nowrap',
+      spazioNome: tel ? '0.08em' : '0.18em', spazioSegno: tel ? '0.04em' : '0.1em',
     };
   }
 }

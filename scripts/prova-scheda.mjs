@@ -85,6 +85,7 @@ const senzaTessera = { ...inRegola, iscrizioni: [{ corsoId: 'judo', dal: '2026-0
 ok('tessera mancante: DOCUMENTI rosso', segni(senzaTessera).documenti, { parola: 'DA SISTEMARE', tono: 'rosso' })
 ok('tessere undefined: nessun timbro tessera, nessun segno', segni({ ...senzaTessera, tessere: undefined }), SENZA)
 ok('tessera valida: nessun segno', segni({ ...senzaTessera, tessere: [{ ente: 'FIJLKAM', dal: '2026-09-01', al: '2026-12-31', tipo: 'praticante' }] }).documenti, null)
+ok('disattivata con tessera mancante: nessun segno (il timbro tessera è grigio)', segni({ ...senzaTessera, attiva: false }), SENZA)
 ok('disattivata (timbri grigi): nessun segno di timbro', segni({ ...inRegola, attiva: false, certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' } }), SENZA)
 
 console.log('\nIN MODIFICA su PERSONA')
@@ -95,6 +96,7 @@ ok('nessuna modifica: niente segno', segni(inRegola, 'quota', false).persona, nu
 console.log('\nQuale scheda si apre')
 ok('all’inizio PERSONA', f('schedaIniziale'), 'persona')
 ok('cambiando persona: ancora PERSONA', f('schedaIniziale', false), 'persona')
+// Dopo UNISCI che tiene la stessa persona la scheda non si ricrea: `onUnite` chiama schedaIniziale() a mano (era il problema «resta su QUOTA»).
 ok('dopo una ricevuta fatta: QUOTA', f('schedaIniziale', true), 'quota')
 ok('SISTEMARE dal Banco: quota → QUOTA, certificato → DOCUMENTI', [f('schedaPerApertura', 'quota'), f('schedaPerApertura', 'certificato')], ['quota', 'documenti'])
 ok('in ogni altro caso PERSONA', [f('schedaPerApertura', null), f('schedaPerApertura', undefined), f('schedaPerApertura', 'boh')], ['persona', 'persona', 'persona'])
