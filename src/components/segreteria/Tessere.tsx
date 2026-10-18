@@ -47,7 +47,7 @@ function Segno({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde' | 'spent
 function segnoDiUna(t: TesseraSeg, oggi: string) {
   const stato = statoDiUna(t, oggi)
   const p = parolaTesseraBreve(stato, t.al)
-  return p ? <Segno tono={p.tono}>{p.parola}</Segno> : <Segno tono="verde">IN REGOLA</Segno>
+  return p ? <Segno tono={p.tono}>{p.parola}</Segno> : <Segno tono="verde">In regola</Segno>
 }
 
 /**
@@ -105,18 +105,18 @@ export function TessereDellaPersona({
             className="sg-btn sg-btn-linea"
             aria-label={`Togli la tessera ${t.ente} n. ${t.codice}`}
             onClick={async () => {
-              if (!(await chiedi(`Togliere la tessera ${t.ente} n. ${t.codice} di ${p.nome} ${p.cognome}?`, 'SÌ, TOGLILA'))) return
+              if (!(await chiedi(`Togliere la tessera ${t.ente} n. ${t.codice} di ${p.nome} ${p.cognome}?`, 'Sì, toglila'))) return
               // ANNULLA la rimette com'era, anche «dal RASD».
               void fai(() => d.togliTessera(t.id ?? ''), undefined, async () => {
                 onCambiato()
                 avvisa('Tessera tolta', false, {
-                  etichetta: 'ANNULLA',
+                  etichetta: 'Annulla',
                   fa: () => void fai(() => d.aggiungiTessera({ personaId: p.id, ente: t.ente, tipo: t.tipo, codice: t.codice ?? '', dal: t.dal, origine: t.origine }), 'Tessera rimessa', onCambiato),
                 })
               })
             }}
           >
-            TOGLI
+            Togli
           </button>
         </div>
       ))}
@@ -148,7 +148,7 @@ export function TessereDellaPersona({
           )}
           <div className="row" style={{ gap: 8 }}>
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setScrivi(false)}>
-              LASCIA STARE
+              Lascia stare
             </button>
             <button
               type="button"
@@ -162,13 +162,13 @@ export function TessereDellaPersona({
                 })
               }
             >
-              SALVA LA TESSERA
+              Salva la tessera
             </button>
           </div>
         </div>
       ) : (
         <button type="button" className="sg-btn sg-btn-tratteggio" style={{ alignSelf: 'flex-start' }} onClick={() => setScrivi(true)}>
-          + AGGIUNGI UNA TESSERA
+          + Aggiungi una tessera
         </button>
       )}
     </div>
@@ -208,7 +208,7 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
     <div className="stack" style={{ gap: 18 }}>
       <Testa titolo="TESSERE" sotto={sotto}>
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => onVai('regole')}>
-          IMPORTA DAL RASD
+          Importa dal RASD
         </button>
       </Testa>
       {guaio && <Guaio testo={guaio} />}
@@ -216,16 +216,16 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
         <>
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
             <button type="button" className="num sg-chip" aria-pressed={lista === 'senza'} onClick={() => setLista('senza')}>
-              SENZA TESSERA {senza.length}
+              Senza tessera {senza.length}
             </button>
             <button type="button" className="num sg-chip" aria-pressed={lista === 'mai'} onClick={() => setLista('mai')}>
-              MAI AVUTE {ordinate('mai').length}
+              Mai avute {ordinate('mai').length}
             </button>
             <button type="button" className="num sg-chip" aria-pressed={lista === 'scadute'} onClick={() => setLista('scadute')}>
-              SCADUTE {ordinate('scadute').length}
+              Scadute {ordinate('scadute').length}
             </button>
             <button type="button" className="num sg-chip" aria-pressed={lista === 'senza-corso'} onClick={() => setLista('senza-corso')}>
-              TESSERATI SENZA CORSO {senzaCorso.length}
+              Tesserati senza corso {senzaCorso.length}
             </button>
           </div>
           {visibili.length === 0 ? (
@@ -250,7 +250,7 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
                         {r.tesseraAl ? ` · ${r.esito === 'scaduta' ? 'scaduta il' : 'fino al'} ${r.tesseraAl.split('-').reverse().join('/')}` : r.esito === 'manca' ? ' · mai avuta' : ''}
                       </span>
                     </span>
-                    {t ? <Segno tono={t.tono}>{t.parola}</Segno> : <Segno tono="spento">NESSUN CORSO</Segno>}
+                    {t ? <Segno tono={t.tono}>{t.parola}</Segno> : <Segno tono="spento">Nessun corso</Segno>}
                   </button>
                 )
               })}
@@ -339,7 +339,7 @@ export function ImportaTessere({ d }: { d: DatiSegreteria }) {
       {passo === 1 && (
         <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           <label htmlFor="rasd-file" className="sg-btn sg-btn-linea" style={{ cursor: 'pointer' }}>
-            {foglio ? 'CAMBIA FOGLIO' : 'SCEGLI IL FOGLIO'}
+            {foglio ? 'Cambia foglio' : 'Scegli il foglio'}
           </label>
           <input
             id="rasd-file"
@@ -354,7 +354,7 @@ export function ImportaTessere({ d }: { d: DatiSegreteria }) {
           />
           {foglio && <span style={{ fontSize: 14 }}>{foglio.nome}</span>}
           <button type="button" className="sg-btn sg-btn-pieno" disabled={!foglio || aspetta} onClick={() => void controlla()}>
-            CONTROLLA
+            Controlla
           </button>
         </div>
       )}
@@ -394,20 +394,20 @@ export function ImportaTessere({ d }: { d: DatiSegreteria }) {
       {passo === 2 && pronto && (
         <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
           <button type="button" className="sg-btn sg-btn-linea" onClick={ricomincia}>
-            INDIETRO
+            Indietro
           </button>
           <button type="button" className="sg-btn sg-btn-pieno" disabled={aspetta || pronto.esito.nuove === 0} onClick={() => void metti()}>
-            {pronto.esito.nuove === 1 ? 'METTI 1 TESSERA' : `METTI ${pronto.esito.nuove} TESSERE`}
+            {pronto.esito.nuove === 1 ? 'Metti 1 tessera' : `Metti ${pronto.esito.nuove} tessere`}
           </button>
         </div>
       )}
       {passo === 3 && fatto && (
         <div className="stack" style={{ gap: 8 }}>
           <span style={{ fontSize: 15 }}>
-            Fatto: {fatto.esito.nuove === 1 ? '1 tessera nuova' : `${fatto.esito.nuove} tessere nuove`}. Le trovi nella scheda di ogni persona, sotto TESSERE.
+            Fatto: {fatto.esito.nuove === 1 ? '1 tessera nuova' : `${fatto.esito.nuove} tessere nuove`}. Le trovi nella scheda di ogni persona, sotto «Tessere».
           </span>
           <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={ricomincia}>
-            IMPORTA UN ALTRO FOGLIO
+            Importa un altro foglio
           </button>
         </div>
       )}

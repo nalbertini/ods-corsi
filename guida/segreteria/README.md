@@ -169,8 +169,8 @@ clic fuori, lascia stare.
 Se si esce da qualcosa scritto e non salvato (una ricevuta, un iscritto nuovo,
 la modifica di una scheda, un corso, un istruttore, il listino, un riquadro
 delle impostazioni) l'app chiede prima: «Ci sono modifiche non salvate. Se esci
-si perdono.», con **TORNA A FINIRE** (il tasto in evidenza: INVIO resta) o
-**ESCI SENZA SALVARE**. Lo chiede cambiando voce del menu, aprendo un altro
+si perdono.», con **Torna a finire** (il tasto in evidenza: INVIO resta) o
+**Esci senza salvare**. Lo chiede cambiando voce del menu, aprendo un altro
 corso, tornando all'elenco da una scheda e col tasto Indietro o Avanti del
-browser: **TORNA A FINIRE** lascia tutto com'era. Una modifica rimessa
+browser: **Torna a finire** lascia tutto com'era. Una modifica rimessa
 com'era non conta. Chiudendo o ricaricando la pagina lo chiede il browser.

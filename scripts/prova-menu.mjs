@@ -91,7 +91,9 @@ console.log('\nIl menu del Banco non cambia')
 const ora = await impacchetta("export { LUOGHI } from './src/lib/luoghiBanco'")
 let prima = null
 try {
-  prima = execSync('git show origin/main:src/lib/luoghiBanco.ts', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  // Il punto in cui il ramo è partito da main: se main cambia i luoghi del Banco dopo, non è colpa di questo ramo.
+  const base = execSync('git merge-base origin/main HEAD', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+  prima = execSync(`git show ${base}:src/lib/luoghiBanco.ts`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
 } catch {
   console.log('  - confronto con origin/main saltato: il ramo non c\'è')
 }
@@ -103,7 +105,7 @@ if (prima !== null) {
   const vecchio = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
   // L'unica differenza voluta: CONTABILITÀ in SOLDI (menu unico), che solo chi ha l'amministrazione vede (`luoghiPer`).
   const senzaContabilita = ora.LUOGHI.map((l) => ({ ...l, voci: l.voci.filter((v) => v.voce !== 'contabilita') }))
-  ok('LUOGHI identico a quello di origin/main, tolta CONTABILITÀ', senzaContabilita, vecchio.LUOGHI)
+  ok('LUOGHI identico a quello da cui il ramo è partito, tolta CONTABILITÀ', senzaContabilita, vecchio.LUOGHI)
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
