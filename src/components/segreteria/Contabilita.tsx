@@ -27,6 +27,7 @@ import {
   oggiARoma,
   pacchetti,
   riepilogoCambioVoce,
+  soloTipo,
   riepilogoGiroconto,
   riepilogoMovimento,
   perVoce,
@@ -183,7 +184,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
     setCambio(false)
   }, [chiave])
   const scegliibili = trovate.filter(cambiabile)
-  const idScelti = righe.filter((r) => scelti.has(r.id)).map((r) => r.id)
+  const idScelti = righe.filter((r) => scelti.has(r.id) && cambiabile(r)).map((r) => r.id)
   const sceltiDelTipo = (t: 'entrata' | 'uscita') => righe.filter((r) => scelti.has(r.id) && r.tipo === t).map((r) => r.id)
   const sceltaRiep = riepilogoCambioVoce(idScelti, righe, '', voci)
   const alterna = (id: string) => setScelti((x) => { const y = new Set(x); if (y.has(id)) y.delete(id); else y.add(id); return y })
@@ -198,9 +199,12 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
   }
   const fatto = () => {
     chiudi()
+    onCambiato()
+  }
+  // Il cambio di voce rilegge da sé quando finisce: tornando all'elenco si chiude e si svuota la scelta, senza rileggere ancora.
+  const cambioFinito = () => {
     setCambio(false)
     setScelti(new Set())
-    onCambiato()
   }
 
   return (
@@ -215,7 +219,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
 
       {scrivo === 'movimento' && <InVista><NuovoMovimento d={d} voci={voci} casse={casse} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={chiudi} /></InVista>}
       {scrivo === 'giroconto' && <InVista><NuovoGiroconto d={d} casse={casse} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={chiudi} /></InVista>}
-      {cambio && idScelti.length > 0 && <InVista><CambiaVoce d={d} ids={idScelti} righe={righe} voci={voci} onRileggi={onCambiato} onFatto={fatto} onChiudi={() => setCambio(false)} /></InVista>}
+      {cambio && idScelti.length > 0 && sceltaRiep.tipo !== 'misto' && <InVista><CambiaVoce d={d} ids={idScelti} righe={righe} voci={voci} onRileggi={onCambiato} onFatto={cambioFinito} onChiudi={() => setCambio(false)} /></InVista>}
       {aperto && <InVista key={aperto.id}><MovimentoAperto d={d} voci={voci} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} fai={fai} onChiudi={chiudi} onFatto={fatto} /></InVista>}
 
       <div className="row" style={{ gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -288,7 +292,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
           </span>
           {scegliibili.length > 0 && scegliibili.length > idScelti.length && (
             <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelti(new Set(scegliibili.map((r) => r.id)))}>
-              Scegli {scegliibili.length === 1 ? 'la trovata' : `tutte le ${scegliibili.length} trovate`}
+              {scegliibili.length === trovate.length ? (scegliibili.length === 1 ? 'Scegli la trovata' : `Scegli tutte le ${scegliibili.length} trovate`) : `Scegli le ${scegliibili.length} che si possono cambiare`}
             </button>
           )}
         </div>
@@ -358,7 +362,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
         </div>
       )}
 
-      {idScelti.length > 0 && (
+      {idScelti.length > 0 && !aperto && !cambio && (
         <div className="sg-barra-scelta" role="region" aria-label="Movimenti scelti">
           <span className="ob" style={{ fontSize: 22, fontWeight: 700 }}>{idScelti.length} {idScelti.length === 1 ? 'SCELTO' : 'SCELTI'}</span>
           <span className="sg-sotto">
@@ -367,8 +371,8 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
           <div className="row" style={{ gap: 10, flexWrap: 'wrap', marginLeft: 'auto' }}>
             {sceltaRiep.tipo === 'misto' ? (
               <>
-                <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelti(new Set(sceltiDelTipo('entrata')))}>Solo le {sceltiDelTipo('entrata').length} entrate</button>
-                <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelti(new Set(sceltiDelTipo('uscita')))}>Solo le {sceltiDelTipo('uscita').length} uscite</button>
+                <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelti(new Set(sceltiDelTipo('entrata')))}>{soloTipo(sceltiDelTipo('entrata').length, 'entrata')}</button>
+                <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelti(new Set(sceltiDelTipo('uscita')))}>{soloTipo(sceltiDelTipo('uscita').length, 'uscita')}</button>
               </>
             ) : (
               <button type="button" className="sg-btn sg-btn-pieno" onClick={() => { setScrivo(null); setAperto(null); setCambio(true) }}>Cambia voce</button>
@@ -403,6 +407,8 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
 function CambiaVoce({ d, ids, righe, voci, onRileggi, onFatto, onChiudi }: { d: DatiSegreteria; ids: string[]; righe: RigaMovimento[]; voci: VoceContabile[]; onRileggi: () => void; onFatto: () => void; onChiudi: () => void }) {
   const [voceId, setVoceId] = useState('')
   const [lavoro, setLavoro] = useState<number | null>(null)
+  // Un secondo tocco prima che lo schermo cambi non deve ripartire: lo stato arriva dopo, il riferimento subito.
+  const inCorso = useRef(false)
   const [esito, setEsito] = useState<string | null>(null)
   const [fermo, setFermo] = useState<string | null>(null)
   const offerte = vociPerLaScelta(ids, righe, voci)
@@ -411,7 +417,8 @@ function CambiaVoce({ d, ids, righe, voci, onRileggi, onFatto, onChiudi }: { d: 
   const guaio = useMemo(() => (voceId ? pacchetti(ids).map((p) => cosaNonVaCambioVoce(p, righe, voci, voceId)).find(Boolean) ?? null : null), [ids, righe, voci, voceId])
   const nomeVoce = voci.find((v) => v.id === voceId)?.nome
   const cambia = async () => {
-    if (lavoro !== null) return
+    if (inCorso.current) return
+    inCorso.current = true
     const lotti = pacchetti(ids)
     let cambiati = 0
     let giaCosi = 0
@@ -426,12 +433,13 @@ function CambiaVoce({ d, ids, righe, voci, onRileggi, onFatto, onChiudi }: { d: 
         fatti += lotto.length
         setLavoro(fatti)
       }
-      // Si rilegge quando si torna all'elenco (onFatto): una volta sola.
       setEsito(esitoCambioVoce(cambiati, giaCosi))
+      onRileggi()
     } catch (e) {
       setFermo(`${lotti.length > 1 ? `Cambiati ${fatti} su ${ids.length}. ` : ''}${messaggio(e, 'Non è cambiato niente: riprova.')}${lotti.length > 1 ? ' Quel pacchetto e i seguenti non sono cambiati: togli il movimento che non va dalla scelta e riprova.' : ''}`)
       onRileggi()
     } finally {
+      inCorso.current = false
       setLavoro(null)
     }
   }
@@ -643,7 +651,7 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
   // La voce si cambia anche nei giorni chiusi: non tocca i soldi. La traccia dice chi l'ha cambiata e quando.
   const offerte = riga.tipo === 'entrata' || riga.tipo === 'uscita' ? vociOfferte(voci, riga.tipo) : []
   const voceAttuale = voci.find((v) => v.nome === riga.voce && v.tipo === riga.tipo)
-  const [voceId, setVoceId] = useState(offerte.some((v) => v.id === voceAttuale?.id) ? (voceAttuale?.id ?? '') : '')
+  const [voceId, setVoceId] = useState(voceAttuale?.id ?? '')
   const voceGuaio = voceId && voceId !== voceAttuale?.id ? cosaNonVaCambioVoce([riga.id], [riga], voci, voceId) : null
   const traccia = useCarica(() => (manuale && !giro ? d.cambiVoceMovimento(riga.id) : Promise.resolve([])), [d, riga.id, manuale, giro])
   useBozza(descrizione !== riga.descrizione || nota !== (riga.nota ?? ''), 'La correzione')
@@ -684,6 +692,7 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
               <Campo id="ma-voce" etichetta="VOCE" largo>
                 <select id="ma-voce" className="sg-campo" value={voceId} onChange={(e) => setVoceId(e.target.value)}>
                   {!voceId && <option value="">Scegli la voce</option>}
+                  {voceAttuale && !offerte.some((v) => v.id === voceAttuale.id) && <option value={voceAttuale.id}>{voceAttuale.nome}</option>}
                   {offerte.map((v) => (
                     <option key={v.id} value={v.id}>{v.nome}</option>
                   ))}
@@ -701,7 +710,7 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
           </div>
           {chiuso && <span className="sg-sotto">{chiuso}</span>}
           {voceGuaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{voceGuaio}</span>}
-          <span className="sg-sotto">Importo, data e cassa non si cambiano: si annulla e si rifà. La voce sì, anche se il giorno è già chiuso: i soldi non cambiano.{giro && ' La descrizione di un giroconto la scrive il sistema.'}</span>
+          <span className="sg-sotto">Importo, data e cassa non si cambiano: si annulla e si rifà.{giro ? ' La descrizione di un giroconto la scrive il sistema.' : ' La voce sì, anche se il giorno è già chiuso: i soldi non cambiano.'}</span>
         </>
       )}
       {manuale && !giro && (traccia.guaio || (traccia.dato?.length ?? 0) > 0) && (

@@ -859,6 +859,7 @@ console.log('\n34. cambiare la voce: cosa si può e cosa no (le stesse parole di
   ok('pacchetti da 500: 1.200 → 500, 500, 200', m.pacchetti(Array.from({ length: 1200 }, (_, i) => i)).map((p) => p.length), [500, 500, 200])
   ok('…e uno solo se ci sta', m.pacchetti([1, 2, 3]).length, 1)
   ok('…nessuno se non c\'è niente', m.pacchetti([]), [])
+  ok('«Solo le N entrate/uscite»: al singolare dice «Solo 1 entrata»', [m.soloTipo(4, 'entrata'), m.soloTipo(1, 'entrata'), m.soloTipo(2, 'uscita'), m.soloTipo(1, 'uscita')], ['Solo le 4 entrate', 'Solo 1 entrata', 'Solo le 2 uscite', 'Solo 1 uscita'])
   ok('l\'esito', [m.esitoCambioVoce(12, 3), m.esitoCambioVoce(1, 0), m.esitoCambioVoce(0, 3), m.esitoCambioVoce(2, 1)], ['12 cambiati, 3 erano già così', '1 cambiato', '3 erano già così: non è cambiato niente', '2 cambiati, 1 era già così'])
   ok('la scelta è di un tipo solo? vale l\'elenco dei trovati', prova(() => m.vociPerLaScelta(['a1', 'a2'], righe, vv)).map((v) => v.nome), ['Affitto sala', 'Da classificare', 'Energia'])
   ok('…con entrate e uscite insieme non se ne offre nessuna', prova(() => m.vociPerLaScelta(['a1', 'a4'], righe, vv)), [])

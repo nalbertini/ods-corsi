@@ -319,6 +319,10 @@ export function pacchetti<T>(elementi: T[]): T[][] {
   return fuori
 }
 
+/** Il tasto che tiene solo le entrate o solo le uscite di una scelta mista: «Solo le 4 entrate», «Solo 1 entrata». */
+export const soloTipo = (quante: number, tipo: 'entrata' | 'uscita'): string =>
+  quante === 1 ? `Solo 1 ${tipo}` : `Solo le ${quante} ${tipo === 'entrata' ? 'entrate' : 'uscite'}`
+
 /** L'esito a lavoro fatto: «12 cambiati, 3 erano già così». */
 export function esitoCambioVoce(cambiati: number, giaCosi: number): string {
   if (!cambiati) return `${giaCosi} ${giaCosi === 1 ? 'era già così' : 'erano già così'}: non è cambiato niente`
