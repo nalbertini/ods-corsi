@@ -90,8 +90,9 @@ Chi si iscrive risponde alle domande dal telefono:
   SEGRETERIA**). Il certificato si
   chiede solo quando serve: dai 6 anni quello normale, dai 12 quello
   agonistico se tra i corsi scelti c'è judo, aikido o lotta (lo dice il nome
-  del corso). Si può anche portare dopo in segreteria (accanto al nome
-  c'è **PUOI PORTARLO DOPO**), ma senza non si
+  del corso). Sopra c'è una frase sola: serve per partecipare alle lezioni,
+  e si carica lì o si porta in segreteria (accanto al nome
+  c'è **PUOI PORTARLO DOPO**); senza non si
   partecipa alle lezioni: se non è stato caricato, lo ricorda **RICHIESTA
   ARRIVATA**. Il documento la segreteria lo stampa, lo tiene su carta e lo
   cancella dall'app; il certificato resta nell'app e lo vede solo la
