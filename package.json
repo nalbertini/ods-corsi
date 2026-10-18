@@ -71,6 +71,7 @@
     "prova:sito-genera": "node scripts/prova-sito-genera.mjs",
     "prova:sito-dati": "node scripts/prova-sito-dati.mjs",
     "prova:sito-social": "node scripts/prova-sito-social.mjs",
+    "prova:sito-elenchi-tiptap": "node scripts/prova-sito-elenchi-tiptap.mjs",
     "prova:sito-pezzi": "node scripts/prova-sito-pezzi.mjs",
     "prova:sito-pubblica": "node scripts/prova-sito-pubblica.mjs",
     "prova:sito-avvia": "node scripts/prova-sito-avvia.mjs",
