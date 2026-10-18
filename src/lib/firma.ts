@@ -137,7 +137,7 @@ export async function moduloFirmato(f: DatiFirma): Promise<Uint8Array> {
   if (!f.minore) {
     scrivi('nome', nome(d.nome, d.cognome))
     crocia(f.scelte.tesseramento ? 'tesseramentoSi' : 'tesseramentoNo')
-    scrivi('tesseramentoAnno', f.stagione)
+    scrivi('tesseramentoAnno', f.stagione.replace(/^2/, '')) // il «2» è già stampato sul foglio
     crocia(f.scelte.foto ? 'fotoSi' : 'fotoNo')
     crocia('privacy')
     scrivi('data', oggi)
@@ -165,7 +165,7 @@ export async function moduloFirmato(f: DatiFirma): Promise<Uint8Array> {
     }
     if (f.scelte.tesseramento) {
       crocia('tesseramento')
-      scrivi('tesseramentoAnno', f.stagione)
+      scrivi('tesseramentoAnno', f.stagione.replace(/^2/, '')) // il «2» è già stampato sul foglio
       firma('firmaTesseramento')
     }
     crocia('privacy')

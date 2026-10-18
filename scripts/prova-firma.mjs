@@ -166,7 +166,7 @@ for (const [foglio, nome, minore, scelte, d] of casi) {
   if (minore) sulFoglio.push(d.genitoreCodiceFiscale, 'Roma', '12/B', d.cap, d.comune, d.natoA, '05/03/2014', '01/01/1980', 'Pinerolo', d.genitoreNome)
   const piatto = t.replace(/[’‘]/g, "'")
   ok(`${nome}: i dati dati si leggono sul foglio`, sulFoglio.filter((v) => !piatto.includes(v.replace(/[’‘]/g, "'"))), [])
-  ok(`${nome}: l’anno di stagione solo se si accetta il tesseramento`, t.includes('2026/27'), scelte.tesseramento)
+  ok(`${nome}: l’anno di stagione solo se si accetta il tesseramento`, /\b2\s*026\/27\b/.test(t), scelte.tesseramento) // il «2» è stampato sul foglio, il resto lo scrive l'app: l'estrazione li dà separati
   if (cartella) writeFileSync(`${cartella}/modulo-${nome}.pdf`, pdf)
 }
 

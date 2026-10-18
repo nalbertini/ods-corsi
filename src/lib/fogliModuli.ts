@@ -232,7 +232,7 @@ export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uin
     }
 
     /** Una riga di campi: ognuno ha il filo da scrivere, l'etichetta sotto e il suo nome. `flex` è la larghezza relativa. */
-    campi(lista: Array<{ nome: string; etichetta: string; flex: number }>, o: { sopra?: number; alto?: number } = {}) {
+    campi(lista: Array<{ nome: string; etichetta: string; flex: number; prefisso?: string }>, o: { sopra?: number; alto?: number } = {}) {
       const { b } = this
       this.y += o.sopra ?? 6
       const gap = 10
@@ -242,12 +242,17 @@ export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uin
       let x = MARGINE
       for (const c of lista) {
         const w = (utile * c.flex) / totale
-        this.pagina.drawLine({ start: { x, y: A - this.y - altezza }, end: { x: x + w, y: A - this.y - altezza }, thickness: 0.9, color: colore(COL.blu) })
-        this.testo(c.etichetta, { font: b.titoloFont, corpo: 8, x, y: this.y + altezza + 9, tracking: 0.9, colore: COL.tenue })
-        if (this.form) {
-          const f = this.form.createTextField(c.nome)
-          f.addToPage(this.pagina, { x, y: A - this.y - altezza, width: w, height: altezza - 1, borderWidth: 0, textColor: colore(COL.inchiostro) })
-          f.setFontSize(0)
+        // Un posto vuoto (nome senza campo) serve a tenere corto il campo accanto.
+        if (c.nome) {
+          this.pagina.drawLine({ start: { x, y: A - this.y - altezza }, end: { x: x + w, y: A - this.y - altezza }, thickness: 0.9, color: colore(COL.blu) })
+          this.testo(c.etichetta, { font: b.titoloFont, corpo: 8, x, y: this.y + altezza + 9, tracking: 0.9, colore: COL.tenue })
+          // Un prefisso stampato («2» di 2026/27): il campo comincia dopo, e chi scrive non lo ripete.
+          const dopo = c.prefisso ? this.testo(c.prefisso, { font: b.corpo, corpo: 9.4, x, y: this.y + altezza - 3.5, colore: COL.inchiostro }) - 1.5 : 0
+          if (this.form) {
+            const f = this.form.createTextField(c.nome)
+            f.addToPage(this.pagina, { x: x + dopo, y: A - this.y - altezza, width: w - dopo, height: altezza - 1, borderWidth: 0, textColor: colore(COL.inchiostro) })
+            f.setFontSize(0)
+          }
         }
         x += w + gap
       }
@@ -267,7 +272,7 @@ export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uin
     f.paragrafo([{ t: 'ACCONSENTO', g: true }], { casella: 'tesseramentoSi', sotto: 3 })
     f.paragrafo([{ t: 'non acconsento', g: true }], { casella: 'tesseramentoNo', sotto: 6 })
     f.paragrafo([{ t: 'L’associazione sportiva dilettantistica ASD IL CENTRO JUDO, a tesserarmi alla FIJLKAM e/o FIPE per l’anno' }], { sotto: 0 })
-    f.campi([{ nome: 'tesseramentoAnno', etichetta: 'ANNO', flex: 1 }], { sopra: 4 })
+    f.campi([{ nome: 'tesseramentoAnno', etichetta: '', flex: 0.5, prefisso: '2' }, { nome: '', etichetta: '', flex: 3 }], { sopra: 4 })
     f.titoletto('IMMAGINI E FOTOGRAFIE')
     f.paragrafo([{ t: 'AUTORIZZO', g: true }], { casella: 'fotoSi', sotto: 3 })
     f.paragrafo([{ t: 'non autorizzo', g: true }], { casella: 'fotoNo', sotto: 6 })
@@ -353,7 +358,7 @@ export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uin
       { casella: 'tesseramento', sotto: 0 },
     )
     f.campi([
-      { nome: 'tesseramentoAnno', etichetta: 'ANNO', flex: 0.5 },
+      { nome: 'tesseramentoAnno', etichetta: '', flex: 0.5, prefisso: '2' },
       { nome: 'firmaTesseramento', etichetta: 'FIRMA', flex: 2 },
     ], { sopra: 2, alto: 28 })
     f.titoletto('PRIVACY')

@@ -66,17 +66,17 @@ const fixture = (nome) => readFileSync(`scripts/fixture-moduli/${nome}.txt`, 'ut
 /**
  * Le parole di un'autorizzazione non cambiano: il foglio nuovo ha in più solo i titoletti di sezione e le
  * etichette sotto i campi (la pelle B approvata nel canvas `docs/design-canvas/moduli-pdf`), e perde solo
- * le parole che erano stampate accanto ai campi («C.F.», «nato/a», «il», «CAP», il «2» di «2___»), ora
- * etichette. Le differenze sono elencate una per una: una parola legale che cambia o sparisce le rompe.
+ * le parole che erano stampate accanto ai campi («C.F.», «nato/a», «il», «CAP»), ora etichette. L'anno
+ * del tesseramento ha un campo corto che comincia per «2» stampato, come «2___» sul foglio dei maggiorenni. Le differenze sono elencate una per una: una parola legale che cambia o sparisce le rompe.
  */
 const DIFFERENZE = {
   maggiorenni: {
-    tolte: ['2'],
-    aggiunte: ['chi', 'firma', 'tesseramento', 'anno', 'immagini', 'e', 'fotografie', 'privacy'],
+    tolte: [],
+    aggiunte: ['chi', 'firma', 'tesseramento', 'immagini', 'e', 'fotografie', 'privacy'],
   },
   minori: {
     tolte: ['c', 'f', 'e', 'cap', 'nato', 'a', 'il'],
-    aggiunte: ['chi', 'firma', 'codice', 'fiscale', 'a', 'prov', 'cap', 'il', 'minore', 'e', 'cognome', 'nato', 'a', 'a', 'il', 'immagini', 'e', 'video', 'tesseramento', 'anno', 'privacy'],
+    aggiunte: ['chi', 'firma', 'codice', 'fiscale', 'a', 'prov', 'cap', 'il', 'minore', 'e', 'cognome', 'nato', 'a', 'a', 'il', 'immagini', 'e', 'video', 'tesseramento', '2', 'privacy'],
   },
 }
 /** Cosa manca e cosa c'è in più fra due liste di parole, alla più lunga sottosequenza comune. */

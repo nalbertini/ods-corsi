@@ -84,8 +84,8 @@ Chi si iscrive risponde alle domande dal telefono:
   sceglie **Ho il foglio firmato** e ne carica la foto.
   I fogli delle autorizzazioni da scaricare (maggiorenni e minori) hanno ora
   l'aspetto del sito, con la mascotte e il simbolo di sempre, e si compilano
-  anche al computer: nome, date, anno e caselle sono campi da scrivere o da
-  crociare; poi si stampa e si firma. Le parole non cambiano. Sul telefono molti
+  anche al computer: nome, date, anno (un campo corto che comincia per «2») e
+  caselle sono campi da scrivere o da crociare; poi si stampa e si firma. Le parole non cambiano. Sul telefono molti
   lettori di PDF non compilano i campi: lì c'è il modulo dell'app. Il modulo
   firmato che parte dall'app non ha campi: è fermo e uguale in ogni lettore.
   Se si cambia la data di nascita e chi si iscrive diventa minore (o non lo è
