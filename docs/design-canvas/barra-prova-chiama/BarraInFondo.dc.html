@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Barra in fondo</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA: in fondo alla pagina, quando si vede la chiamata finale con i suoi due pulsanti, la barra sparisce: non si vedono due volte lo stesso pulsante. -->
+<div style="width: 375px; height: 812px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+<div style="position:absolute;left:0;right:0;bottom:-230px"><dc-import name="SitoCta" titolo="Una settimana per scegliere." testo="5 € e provi tutte le discipline." principale="Prova una settimana a 5 €" secondario="Scrivici" piccolo="{{ true }}" hint-size="100%,520px"></dc-import><dc-import name="SitoPiede" piccolo="{{ true }}" hint-size="100%,560px"></dc-import></div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -42,6 +42,7 @@ const SEZIONI = [
   { id: 'orari-sito', nome: 'Sito · pagina orari', cartella: 'orari-sito' },
   { id: 'sito-rebrand', nome: 'Sito · tre rebrand (scartati)', cartella: 'sito-rebrand' },
   { id: 'sito-approvato', nome: 'Sito · design approvato', cartella: 'sito-approvato' },
+  { id: 'barra-prova', nome: 'Sito · barra Prova a 5 € / Chiama', cartella: 'barra-prova-chiama' },
   { id: 'segreteria-tatami', nome: 'Segreteria · tema Tatami', cartella: 'segreteria-tatami' },
   { id: 'segreteria-sito', nome: 'Segreteria · look del sito', cartella: 'segreteria-sito' },
   { id: 'banco', nome: 'Segreteria · il Banco, ridisegnata', cartella: 'banco' },

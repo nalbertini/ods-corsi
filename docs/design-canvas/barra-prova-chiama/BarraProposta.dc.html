@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Barra proposta</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA: la stessa schermata con la barra fissa «Prova a 5 € / Chiama» in basso. Compare dopo l'hero. Le schede restano leggibili: sul sito la pagina ha 80 px di spazio sotto per non coprire il piede. -->
+<div style="width: 375px; height: 812px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+<dc-import name="SitoTestata" logo="logo.webp" attiva="Home" prova="Prova una settimana a 5 €" piccolo="{{ true }}" hint-size="100%%,96px"></dc-import><div style="padding:6px 16px 0"><dc-import name="SitoSchedaCorso" titolo="Judo" eta="Dai 7 anni agli adulti" testo="Tecnica, disciplina e rispetto per crescere sul tatami, dai primi passi fino alle gare." tag="Bambini|Adulti|Agonisti" tono="blu" piccolo="{{ true }}" alta="150px" hint-size="100%,420px"></dc-import></div><div style="padding:6px 16px 0"><dc-import name="SitoSchedaCorso" titolo="Lotta" eta="Dai 7 anni agli adulti" testo="Gioco, movimento e rispetto per crescere insieme, dalla prima prova alla gara." tag="Bambini|Adulti|Agonisti" tono="giallo" piccolo="{{ true }}" alta="150px" hint-size="100%,420px"></dc-import></div><div style="padding:6px 16px 0"><dc-import name="SitoSchedaCorso" titolo="Aikido" eta="Dai 7 anni agli adulti" testo="Armonia, equilibrio e difesa, in una disciplina adatta anche a chi ha più anni." tag="Bambini|Adulti|Anziani" tono="inchiostro" piccolo="{{ true }}" alta="150px" hint-size="100%,420px"></dc-import></div><div style="position:absolute;left:0;right:0;bottom:0;z-index:5"><dc-import name="SitoBarraProva" principale="Prova a 5 €" secondario="Chiama" hint-size="100%%,80px"></dc-import></div>
+</div>
+</x-dc>
+</body>
+</html>
