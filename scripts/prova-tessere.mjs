@@ -102,10 +102,15 @@ ok('il rinnovo già fatto (comincia l\'anno dopo) basta: non è in scadenza', m.
 ok('una tessera da dirigente o da tecnico non copre chi pratica: manca', [m.statoTessera([T('FIJLKAM', '2026-09-01', '2026-12-31', 'dirigente')], 'FIJLKAM', OGGI), m.statoTessera([T('FIJLKAM', '2026-09-01', '2026-12-31', 'tecnico')], 'FIJLKAM', OGGI)], ['manca', 'manca'])
 
 console.log('\nLe parole nella tabella ISCRITTI')
-ok('manca: rosso', m.parolaTessera('manca', undefined), { tono: 'rosso', parola: 'NO TESSERA' })
-ok('scaduta: rosso', m.parolaTessera('scaduta', '2025-12-31'), { tono: 'rosso', parola: 'TESSERA SCADUTA' })
-ok('in scadenza: giallo, col mese', m.parolaTessera('in_scadenza', '2026-12-31'), { tono: 'giallo', parola: 'TESSERA SCADE A DICEMBRE' })
-ok('valida: niente, IN REGOLA lo dice già', m.parolaTessera('valida', '2026-12-31'), null)
+ok('manca: rosso', m.parolaTessera('manca', undefined), { tono: 'rosso', parola: 'Manca la tessera' })
+ok('scaduta: rosso', m.parolaTessera('scaduta', '2025-12-31'), { tono: 'rosso', parola: 'Tessera scaduta' })
+ok('in scadenza: giallo, col mese', m.parolaTessera('in_scadenza', '2026-12-31'), { tono: 'giallo', parola: 'Tessera scade a dicembre' })
+ok('valida: niente, In regola lo dice già', m.parolaTessera('valida', '2026-12-31'), null)
+// La parola breve della riga di una tessera nella scheda: la riga dice già «tessera».
+ok('riga: manca', m.parolaTesseraBreve('manca', undefined), { tono: 'rosso', parola: 'Manca la tessera' })
+ok('riga: scaduta', m.parolaTesseraBreve('scaduta', '2025-12-31'), { tono: 'rosso', parola: 'Scaduta' })
+ok('riga: in scadenza, col mese', m.parolaTesseraBreve('in_scadenza', '2026-12-31'), { tono: 'giallo', parola: 'Scade a dicembre' })
+ok('riga: valida, niente', m.parolaTesseraBreve('valida', '2026-12-31'), null)
 ok('la frase nella scheda: valida', m.fraseTessera(T('FIJLKAM', '2026-09-01', '2026-12-31', 'agonista'), OGGI), 'FIJLKAM · agonista · fino al 31 dicembre 2026')
 ok('la frase nella scheda: scaduta', m.fraseTessera(T('FIPE', '2025-09-01', '2025-12-31'), OGGI), 'FIPE · praticante · scaduta il 31 dicembre 2025')
 ok('la frase nella scheda: scade presto', m.fraseTessera(T('FIJLKAM', '2026-09-01', '2026-12-31'), '2026-11-10'), 'FIJLKAM · praticante · fino al 31 dicembre 2026 · scade fra 51 giorni')
@@ -166,13 +171,13 @@ ok('il conto per COSA MANCA: manca + scaduta, non l\'in scadenza né i non iscri
 
 console.log('\nLa tessera dentro IN REGOLA')
 {
-  const V = [{ tono: 'verde', parola: 'IN REGOLA' }]
+  const V = [{ tono: 'verde', parola: 'In regola' }]
   const R = (esito, tesseraAl) => ({ personaId: 'x', ente: 'FIJLKAM', esito, tesseraAl })
   ok('niente corsi che la chiedono: le parole di prima', m.paroleConTessera(V, []), V)
-  ok('manca: IN REGOLA se ne va, resta il rosso', m.paroleConTessera(V, [R('manca')]), [{ tono: 'rosso', parola: 'NO TESSERA' }])
-  ok('scaduta: rosso', m.paroleConTessera(V, [R('scaduta', '2025-12-31')]), [{ tono: 'rosso', parola: 'TESSERA SCADUTA' }])
-  ok('in scadenza: giallo, col mese', m.paroleConTessera(V, [R('in_scadenza', '2026-12-31')]), [{ tono: 'giallo', parola: 'TESSERA SCADE A DICEMBRE' }])
-  ok('con un altro guaio: resta anche quello', m.paroleConTessera([{ tono: 'rosso', parola: 'DA PAGARE' }], [R('manca')]), [{ tono: 'rosso', parola: 'DA PAGARE' }, { tono: 'rosso', parola: 'NO TESSERA' }])
+  ok('manca: IN REGOLA se ne va, resta il rosso', m.paroleConTessera(V, [R('manca')]), [{ tono: 'rosso', parola: 'Manca la tessera' }])
+  ok('scaduta: rosso', m.paroleConTessera(V, [R('scaduta', '2025-12-31')]), [{ tono: 'rosso', parola: 'Tessera scaduta' }])
+  ok('in scadenza: giallo, col mese', m.paroleConTessera(V, [R('in_scadenza', '2026-12-31')]), [{ tono: 'giallo', parola: 'Tessera scade a dicembre' }])
+  ok('con un altro guaio: resta anche quello', m.paroleConTessera([{ tono: 'rosso', parola: 'Da pagare' }], [R('manca')]), [{ tono: 'rosso', parola: 'Da pagare' }, { tono: 'rosso', parola: 'Manca la tessera' }])
   ok('«non iscritto» non è un guaio della tabella ISCRITTI', m.paroleConTessera(V, [R('non_iscritto', '2026-12-31')]), V)
   ok('due enti senza tessera: la parola una volta sola', m.paroleConTessera(V, [R('manca'), { ...R('manca'), ente: 'FIPE' }]).length, 1)
   ok('SENZA TESSERA: manca e scaduta sì, in scadenza e non iscritto no', [R('manca'), R('scaduta'), R('in_scadenza'), R('non_iscritto')].map((r) => m.senzaTessera([r])), [true, true, false, false])

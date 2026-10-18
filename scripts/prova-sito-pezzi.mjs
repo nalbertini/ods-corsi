@@ -27,6 +27,7 @@ const t = await carica('src/lib/sitoTesto.ts')
 const g = await carica('src/lib/sitoGenera.ts')
 const sp = await carica('src/lib/sitoProva.ts')
 const sb = await carica('src/lib/segreteriaSupabase.ts')
+const sa = await carica('src/lib/sitoPagine.ts')
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -200,6 +201,10 @@ console.log('\nCosa non va nei pezzi, a parole')
   ok('pezzi uguali a quelli salvati: non cambiati', c({ content: [T('a', 'x')] }, { content: [T('a', 'x')] }), false)
   ok('un testo diverso: cambiati', c({ content: [T('a', 'y')] }, { content: [T('a', 'x')] }), true)
   ok('stessi pezzi in un altro ordine: cambiati', c({ content: [T('a', 'x'), T('b', 'y')] }, { content: [T('b', 'y'), T('a', 'x')] }), true)
+  // Il database (jsonb) rimette le chiavi in un altro ordine: leggere i pezzi appena salvati non è una modifica.
+  ok('stesse chiavi in un altro ordine (jsonb): non cambiati', c({ content: [{ type: 'foto', props: { id: 'a', src: 'https://x.it/a.jpg', alt: 'x' } }] }, { content: [{ type: 'foto', props: { id: 'a', alt: 'x', src: 'https://x.it/a.jpg' } }] }), false)
+  ok('niente salvato (null): cambiati', c({ content: [T('a', 'x')] }, null), true)
+  ok('niente salvato (undefined): cambiati', c({ content: [T('a', 'x')] }, undefined), true)
   const db = (...v) => prova(() => z.databaseConPezzi(v.map((pezzi) => ({ pezzi }))))
   ok('nessuna pagina: non si sa, vale «senza 62»', db(), false)
   ok('tutte senza il campo: il database non ha il 62', db(undefined, undefined), false)
@@ -233,6 +238,142 @@ console.log('\nDatabase senza 62-sito-pezzi.sql: l\'app regge')
   ok('senza il 62: salvare i pezzi, funzione assente (42883)', await errore(() => manca('42883', 'function public.salva_bozza_pezzi_sito does not exist').salvaBozzaPezziSito('p1', 1, { titolo: 'T', descrizione: '', pezzi: { content: [] } })), FRASE)
   ok('senza il 62: creare una pagina a pezzi dice quale file lanciare (colonna assente, PGRST204)', await errore(() => manca('PGRST204', "Could not find the 'bozza_pezzi' column of 'sito_pagine' in the schema cache").nuovaPaginaSito('T', 't-t', { content: [] })), FRASE)
   ok('un limite del database sui pezzi: frase per chi usa l\'app', await errore(() => manca('23514', 'new row for relation "sito_pagine" violates check constraint "sito_pagine_bozza_pezzi_check"').nuovaPaginaSito('T', 't-t', { content: [] })), 'La pagina è troppo lunga: togli qualcosa e riprova')
+}
+
+console.log('\nPorta ai pezzi: le funzioni ci sono')
+ok('htmlInPezzi è una funzione di sitoPezzi', typeof z.htmlInPezzi, 'function')
+ok('portabileAiPezzi è una funzione di sitoPezzi', typeof z.portabileAiPezzi, 'function')
+
+console.log('\nPorta ai pezzi: htmlInPezzi')
+{
+  const pezzi = (x) => prova(() => z.htmlInPezzi(x))
+  // Solo tipo e contenuto: gli id sono a scelta di chi divide, purché unici (si prova a parte).
+  const forma = (r) => (r && Array.isArray(r.content) ? r.content.map((p) => [p.type, p.props.html ?? p.props.colonne?.map((c) => c.html) ?? [p.props.src, p.props.alt]]) : r)
+  const uno = (x) => (pulisci(x) === '' ? [] : [['testo', pulisci(x)]])
+  const giro = (x) => prova(() => z.pezziInHtml(z.htmlInPezzi(x)))
+  const FOTO = '<img src="https://x.it/a.jpg" alt="Il tatami">'
+  const col = (n, ...c) => `<div class="colonne c-${n}">${c.map((h) => `<div class="colonna">${h}</div>`).join('')}</div>`
+
+  ok('testo vuoto: nessun pezzo', pezzi(''), { content: [] })
+  ok('solo spazi: nessun pezzo', pezzi('  \n '), { content: [] })
+  ok('un paragrafo: un pezzo testo', forma(pezzi('<p>Ciao</p>')), [['testo', '<p>Ciao</p>']])
+  ok('foto iniziale, titolo e paragrafo: foto in cima poi un testo', forma(pezzi(`${FOTO}<h2>Titolo</h2><p>Ciao</p>`)), [['fotoInCima', ['https://x.it/a.jpg', 'Il tatami']], ['testo', '<h2>Titolo</h2><p>Ciao</p>']])
+  ok('solo la foto iniziale: un solo pezzo', forma(pezzi(FOTO)), [['fotoInCima', ['https://x.it/a.jpg', 'Il tatami']]])
+  ok('colonne in mezzo al testo: testo, colonne, testo (in ordine)', forma(pezzi(`<p>Prima</p>${col(2, '<p>A</p>', '<p>B</p>')}<p>Dopo</p>`)), [['testo', '<p>Prima</p>'], ['colonne', ['<p>A</p>', '<p>B</p>']], ['testo', '<p>Dopo</p>']])
+  ok('tre colonne: un pezzo colonne con tre html', forma(pezzi(col(3, '<p>A</p>', '<p>B</p>', '<p>C</p>'))), [['colonne', ['<p>A</p>', '<p>B</p>', '<p>C</p>']]])
+  ok('foto, testo, colonne, testo: tutto in ordine', prova(() => forma(pezzi(`${FOTO}<p>1</p>${col(2, '<p>A</p>', '<p>B</p>')}<p>2</p>`)).map((p) => p[0])), ['fotoInCima', 'testo', 'colonne', 'testo'])
+  const molti = pezzi(`${FOTO}<p>1</p>${col(2, '<p>A</p>', '<p>B</p>')}<p>2</p>${col(3, '<p>A</p>', '<p>B</p>', '<p>C</p>')}`)
+  ok('id unici e non vuoti', prova(() => { const id = molti.content.map((p) => p.props.id); return new Set(id).size === id.length && id.every((i) => typeof i === 'string' && i !== '') }), true)
+  ok('il risultato con più pezzi passa pezziValidi', valido(molti), true)
+
+  // Il div chiuso in più lo toglie già la pulizia: il testo che resta è in ordine e si divide. Una foto in una colonna
+  // sta nell'editor di testo della colonna (IMMAGINE c'è anche lì): niente si perde.
+  ok('un div chiuso in più (tolto dalla pulizia): colonne e testo', forma(pezzi(`${col(2, '<p>A</p>', '<p>B</p>')}</div><p>Dopo</p>`)), [['colonne', ['<p>A</p>', '<p>B</p>']], ['testo', '<p>Dopo</p>']])
+  ok('una foto dentro una colonna: resta nella colonna', forma(pezzi(col(2, `<p>A</p>${FOTO}`, '<p>B</p>'))).map((p) => p[0]), ['colonne'])
+  ok('una foto dentro una colonna: il giro rida il testo', giro(col(2, `<p>A</p>${FOTO}`, '<p>B</p>')), pulisci(col(2, `<p>A</p>${FOTO}`, '<p>B</p>')))
+
+  console.log('\nPorta ai pezzi: se non regge il giro, un solo pezzo testo')
+  const colonne2 = col(2, '<p>A</p>', '<p>B</p>')
+  const fuori = [
+    ['una colonna vuota', col(2, '<p>A</p>', '<p></p>')],
+    ['una colonna senza niente dentro', col(2, '<p>A</p>', '')],
+    ['una colonna sola', col(2, '<p>A</p>').replace('c-2', 'c-1')],
+    ['c-3 con due colonne', col(3, '<p>A</p>', '<p>B</p>')],
+    ['c-2 con tre colonne', col(2, '<p>A</p>', '<p>B</p>', '<p>C</p>')],
+    ['quattro colonne', col(3, '<p>A</p>', '<p>B</p>', '<p>C</p>', '<p>D</p>').replace('c-3', 'c-4')],
+    ['un’immagine senza alt', '<img src="https://x.it/a.jpg"><p>Ciao</p>'],
+    ['un’immagine senza src', '<img alt="Niente"><p>Ciao</p>'],
+    ['un’immagine con src vuoto', '<img src="" alt="Niente"><p>Ciao</p>'],
+    ['div sbilanciati (uno in più aperto)', `<div class="colonne c-2"><div class="colonna"><p>A</p></div><div class="colonna"><p>B</p></div><p>Dopo</p>`],
+    ['colonne annidate', col(2, col(2, '<p>A</p>', '<p>B</p>'), '<p>C</p>')],
+    ['un’immagine che non è la prima cosa', `<p>Prima</p>${FOTO}`],
+    ['un’immagine dentro un paragrafo', `<p>Guarda ${FOTO} qui</p>`],
+    ['colonne con altro dentro il contenitore', `<div class="colonne c-2"><p>Fuori</p><div class="colonna"><p>A</p></div><div class="colonna"><p>B</p></div></div>`],
+  ]
+  for (const [cosa, x] of fuori) {
+    ok(`${cosa}: un solo pezzo testo, mai spezzata male`, forma(pezzi(x)), uno(x))
+    ok(`${cosa}: il giro rida il testo ripulito`, giro(x), pulisci(x))
+    ok(`${cosa}: i pezzi sono validi`, valido(pezzi(x)), true)
+  }
+
+  console.log('\nPorta ai pezzi: il giro regge per ogni testo')
+  const iniziali = prova(() => sp.sitoIniziale().pagine.flatMap((p) => [p.bozza, p.pubblicato ?? '']))
+  const insieme = [
+    ...(Array.isArray(iniziali) ? iniziali : []),
+    `${FOTO}<h2>Titolo</h2><p>Ciao</p>`,
+    `<p>Prima</p>${colonne2}<p>Dopo</p>`,
+    col(3, '<p>A</p>', '<p>B</p>', '<p>C</p>'),
+    `${FOTO}${colonne2}`,
+    '<h2>Solo titolo</h2>',
+    '<p>Con <strong>grassetto</strong> e <a href="/corsi" class="pulsante">un pulsante</a></p>',
+    '<script>x()</script><p>Pulito</p>',
+    '',
+    ...fuori.map(([, x]) => x),
+  ]
+  ok('i testi di prova sono quelli di sitoIniziale (almeno sei pagine)', Array.isArray(iniziali) && iniziali.length >= 6, true)
+  for (const x of insieme) {
+    ok(`giro: ${JSON.stringify(x).slice(0, 70)}`, [giro(x), valido(pezzi(x))], [pulisci(x), true])
+  }
+
+  console.log('\nPorta ai pezzi: testo troppo grande')
+  // ponytail: il testo cresce fino al limite dei pezzi (400000) mentre quello della bozza è 200000:
+  // un testo ammesso può dare pezzi che il database non prende. htmlInPezzi non può evitarlo (il testo è uno solo),
+  // quindi il risultato non è valido e chi chiama lo sa da cosaNonVaPezzi.
+  const grande = `<p>${'a'.repeat(z.MASSIMO_CARATTERI ?? 400000)}</p>`
+  const gr = pezzi(grande)
+  ok('troppo grande: i pezzi non sono validi', valido(gr), false)
+  ok('troppo grande: cosaNonVaPezzi dice di toglierne', /lunga/.test(String(prova(() => z.cosaNonVaPezzi(gr)))), true)
+  ok('troppo grande: il testo resta tutto (niente tagli)', forma(gr), uno(grande))
+}
+
+console.log('\nPorta ai pezzi: cosaNonVaPortare (prima di chiedere conferma)')
+{
+  const no = (x) => prova(() => z.cosaNonVaPortare(x))
+  ok('un testo normale si porta', no('<p>Ciao</p>'), null)
+  ok('il testo vuoto si porta', no(''), null)
+  // Un limite per volta (insieme, ciascun controllo coprirebbe l'altro): solo quello della bozza, e solo quello dei pezzi.
+  ok('sopra i 200000 della bozza ma sotto i 400000 dei pezzi: la frase sul testo lungo', /Il testo è troppo lungo/.test(String(no(`<p>${'a'.repeat(300000)}</p>`))), true)
+  const virgolette = `<p>${'"'.repeat(199990)}</p>`
+  ok('sotto i 200000 della bozza ma con il JSON oltre i 400000 dei pezzi: la frase sulla pagina lunga', [pulisci(virgolette).length < 200000, /La pagina è troppo lunga/.test(String(no(virgolette)))], [true, true])
+  ok('troppo grande per i pezzi: una frase che dice di toglierne, non di ricaricare', [/lung/.test(String(no(`<p>${'a'.repeat(400000)}</p>`))), /ricarica/.test(String(no(`<p>${'a'.repeat(400000)}</p>`)))], [true, false])
+  ok('testo che dopo la pulizia supera il limite della bozza (& diventa &amp;): una frase sul testo lungo', /lung/.test(String(no(`<p>${'&'.repeat(190000)}</p>`))), true)
+}
+
+console.log('\nPorta ai pezzi: portabileAiPezzi')
+{
+  const p = (o) => prova(() => z.portabileAiPezzi(o))
+  ok('vecchio editor (null), non di legge: si può portare', p({ pezzi: null, diLegge: false }), true)
+  ok('database senza il 62 (undefined): no', p({ pezzi: undefined, diLegge: false }), false)
+  ok('campo assente: no', p({ diLegge: false }), false)
+  ok('già a pezzi: no', p({ pezzi: { content: [] }, diLegge: false }), false)
+  ok('già a pezzi con contenuto: no', p({ pezzi: { content: [T('a', 'x')] }, diLegge: false }), false)
+  ok('pagina di legge con pezzi null: no', p({ pezzi: null, diLegge: true }), false)
+  ok('pagina di legge senza il 62: no', p({ pezzi: undefined, diLegge: true }), false)
+}
+
+console.log('\nPorta ai pezzi: in modalità prova la pagina converte senza cambiare nulla')
+{
+  const s0 = sp.conPezzi(sp.sitoIniziale())
+  const pagina = (s, slug) => s.pagine.find((x) => x.slug === slug)
+  const conv = (slug, versione) => prova(() => {
+    const v = pagina(s0, slug)
+    return sp.salvaBozzaPezzi(s0, v.id, versione ?? v.versione, { titolo: v.titolo, descrizione: v.descrizione, pezzi: z.htmlInPezzi(v.bozza) })
+  })
+  const prima = pagina(s0, 'pre-pugilistica')
+  const dopo = prova(() => pagina(conv('pre-pugilistica').stato, 'pre-pugilistica'))
+  ok('prima: «Pre pugilistica» è modificata e col vecchio editor', [prova(() => sa.statoPagina(prima)), prima.pezzi], ['modificata', null])
+  ok('Pre pugilistica: la bozza resta identica', dopo.bozza, prima.bozza)
+  ok('Pre pugilistica: il pubblicato resta identico', [dopo.pubblicato, dopo.titoloPubblicato, dopo.descrizionePubblicata, dopo.pubblicataIl], [prima.pubblicato, prima.titoloPubblicato, prima.descrizionePubblicata, prima.pubblicataIl])
+  ok('Pre pugilistica: titolo e descrizione restano', [dopo.titolo, dopo.descrizione], [prima.titolo, prima.descrizione])
+  ok('Pre pugilistica: la versione sale di uno', dopo.versione, prima.versione + 1)
+  ok('Pre pugilistica: ora ha pezzi validi', valido(dopo.pezzi), true)
+  ok('Pre pugilistica: dai pezzi esce la stessa bozza', prova(() => z.pezziInHtml(dopo.pezzi)), prima.bozza)
+  ok('Pre pugilistica: resta «modificata» (niente di nuovo da pubblicare)', prova(() => sa.statoPagina(dopo)), 'modificata')
+  const home = prova(() => pagina(conv('home').stato, 'home'))
+  ok('Home: resta «pubblicata»', [prova(() => sa.statoPagina(pagina(s0, 'home'))), prova(() => sa.statoPagina(home))], ['pubblicata', 'pubblicata'])
+  ok('Home: ora ha pezzi validi', valido(home.pezzi), true)
+  ok('versione vecchia: fermata con la frase di oggi', conv('pre-pugilistica', 99), 'ERRORE: La pagina è cambiata mentre la modificavi: ricaricala per vedere le modifiche di chi l’ha toccata')
+  ok('versione vecchia: i pezzi restano null (lo stato di prima non cambia)', pagina(s0, 'pre-pugilistica').pezzi, null)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

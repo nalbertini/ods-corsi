@@ -84,11 +84,11 @@ console.log('\n2. certificato e quota in una parola')
 {
   const r = m.iscrittiDelCorso(gente, 'judo', OGGI)
   ok('tutto a posto: verde, e la quota è sempre una parola', [riga(r, 'p1').certificato.tono, riga(r, 'p1').quota], ['verde', { tono: 'verde', parola: 'PAGATA' }])
-  ok('senza certificato: rosso', riga(r, 'nocert').certificato, { tono: 'rosso', parola: 'NO CERTIFICATO' })
-  ok('certificato scaduto: rosso, parola da elenco', riga(r, 'scad').certificato, { tono: 'rosso', parola: 'CERT. SCADUTO' })
-  ok('in scadenza: giallo', riga(r, 'sca').certificato, { tono: 'giallo', parola: 'SCADE IL 25/10' })
-  ok('quota da pagare: rosso', riga(r, 'nopaga').quota, { tono: 'rosso', parola: 'DA PAGARE' })
-  ok('sotto i 6 anni il certificato non serve: spento', riga(r, 'mini').certificato, { tono: 'spento', parola: 'CERT. NON SERVE' })
+  ok('senza certificato: rosso', riga(r, 'nocert').certificato, { tono: 'rosso', parola: 'Manca il certificato' })
+  ok('certificato scaduto: rosso, parola da elenco', riga(r, 'scad').certificato, { tono: 'rosso', parola: 'Certificato scaduto' })
+  ok('in scadenza: giallo', riga(r, 'sca').certificato, { tono: 'giallo', parola: 'Scade il 25/10' })
+  ok('quota da pagare: rosso', riga(r, 'nopaga').quota, { tono: 'rosso', parola: 'Da pagare' })
+  ok('sotto i 6 anni il certificato non serve: spento', riga(r, 'mini').certificato, { tono: 'spento', parola: 'Non serve il certificato' })
 }
 
 console.log('\n3. la ricerca fra gli iscritti')

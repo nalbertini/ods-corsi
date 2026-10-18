@@ -149,7 +149,7 @@ export function Presenze({ d, onVai, senzaAppello }: { d: DatiSegreteria; onVai:
           ))}
         </select>
         <button type="button" className="sg-btn sg-btn-linea" disabled={!righe.length} onClick={() => scaricaCsv(righe, p.nome)}>
-          SCARICA CSV
+          Scarica CSV
         </button>
       </Testa>
 
@@ -226,7 +226,7 @@ export function Presenze({ d, onVai, senzaAppello }: { d: DatiSegreteria; onVai:
                 </span>
                 <span className="num" style={{ fontSize: 18, fontWeight: 700, color: 'var(--rosso-testo)' }}>{x.fila}</span>
                 <button type="button" className="num sg-chip" onClick={() => onVai('iscritti', { persona: x.id })}>
-                  SCHEDA
+                  Apri la scheda
                 </button>
               </div>
             ))}
@@ -245,7 +245,7 @@ export function Presenze({ d, onVai, senzaAppello }: { d: DatiSegreteria; onVai:
                   </span>
                 </span>
                 <button type="button" className="num sg-chip" onClick={() => onVai('settimana', { lezione: { id: r.sessioneId, inizio: r.inizio } })}>
-                  FALLO ORA
+                  Fai l’appello ora
                 </button>
               </div>
             ))}
@@ -323,7 +323,7 @@ function Registro({ righe, caricato, onVai }: { righe: RigaRegistro[]; caricato:
                     style={{ alignSelf: 'flex-start', marginTop: 6 }}
                     onClick={() => onVai('settimana', { lezione: { id: r.sessioneId, inizio: r.inizio } })}
                   >
-                    APRI LA LEZIONE
+                    Apri la lezione
                   </button>
                 </div>
               </details>
@@ -371,9 +371,9 @@ function Prove({ prove, corso, onVai }: { prove: { dato: ProvaSeg[] | null; guai
           ) : (
             <span style={{ fontSize: 12, color: 'var(--faint)' }}>senza telefono</span>
           )}
-          {x.iscritto && <span className="num sg-chip" style={{ color: 'var(--verde-testo)', borderColor: 'var(--verde)', display: 'inline-flex', alignItems: 'center' }}>ISCRITTO</span>}
+          {x.iscritto && <span className="num sg-chip" style={{ color: 'var(--verde-testo)', borderColor: 'var(--verde)', display: 'inline-flex', alignItems: 'center' }}>Iscritto</span>}
           <button type="button" className="num sg-chip" onClick={() => onVai('iscritti', { persona: x.personaId })}>
-            SCHEDA
+            Apri la scheda
           </button>
         </div>
       ))}

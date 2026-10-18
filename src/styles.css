@@ -353,6 +353,12 @@
   :root[data-look='sito'] .sg-mancano-casella:nth-child(5) { grid-column: auto; }
 }
 /* Il titolo di una riga di DA FARE è in Inter come il testo: Big Shoulders resta per il numero. */
+/* «Altri filtri» è un comando: più grande e col colore del testo, sottolineato. */
+:root[data-look='sito'] .sg-altri-filtri { font-size: 15px; font-weight: 600; color: var(--text); text-underline-offset: 4px; }
+/* Un filtro scelto non è solo di un altro colore: ha anche il segno ✓ davanti. */
+:root[data-look='sito'] .sg-chip[aria-pressed='true']::before { content: '✓ '; }
+/* Nella tessera di una lezione i tag possono andare a capo e restano dentro la tessera. */
+:root[data-look='sito'] .sg-lezione .sg-tag { white-space: normal; max-width: 100%; overflow-wrap: anywhere; }
 :root[data-look='sito'] .sg-dafare-tasto { letter-spacing: 0; font-size: 16px; font-weight: 600; }
 /* Sotto i 1360px le caselle sono più strette: numero e riempimento più piccoli, perché anche con tre cifre il titolo non esca. */
 @media (max-width: 1360px) {
@@ -1931,6 +1937,8 @@ a.sg-voce { text-decoration: none; }
 .sg-titolo:focus { outline: none; }
 .sg-sotto { font-size: 14px; color: var(--dim); margin: 0; }
 .sg-etichetta { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim); }
+/* Il valore si legge più grande e più scuro dell'etichetta, che resta piccola e spenta. */
+.sg-valore { font-size: 16px; font-weight: 500; line-height: 1.3; }
 .sg-riga-titolo { display: flex; align-items: baseline; gap: 10px; }
 
 .sg-btn {
@@ -3110,3 +3118,6 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 :root[data-modulo='sito'] .modulo-piede .passo-btn { align-self: stretch; }
 /* Il modulo è sempre chiaro: il tasto del tema in testata cambierebbe solo l'icona, quindi a modulo aperto non c'è. */
 :root[data-modulo='sito'] .tasto-tema { display: none; }
+
+/* CONTABILITÀ: i totali delle casse vanno a capo sotto una certa larghezza, invece di tagliare gli importi a 40px. */
+.sg-numeri.sg-numeri-conti { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }

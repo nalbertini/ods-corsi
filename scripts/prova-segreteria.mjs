@@ -940,15 +940,15 @@ console.log('\nil ruolo amministrazione')
   const id = await s.salvaPersonale({ nome: 'Ada', cognome: 'Conti', email: 'ada@esempio.it', ...m.daSpunte(['amministrazione']) })
   const ada = async () => (await s.personale()).find((p) => p.id === id)
   ok('è solo amministrazione', [m.spunteDi(await ada()), (await ada()).ruolo], [['amministrazione'], 'amministrazione'])
-  ok('entra nell\'area amministrazione e basta', m.areeDi(await ada()), ['amministrazione'])
+  ok('entra nel menu unico (un posto solo, le voci dei conti)', m.areeDi(await ada()), ['segreteria'])
   ok('e lo si dice', m.nomeDelRuolo(await ada()), 'Amministrazione')
   ok('non le si dà un corso', (await s.istruttori()).some((i) => i.id === id), false)
   await s.salvaPersonale({ ...(await ada()), ...m.daSpunte(['segreteria', 'amministrazione']) })
-  ok('segreteria e amministrazione: due aree', m.areeDi(await ada()), ['segreteria', 'amministrazione'])
+  ok('segreteria e amministrazione: un posto solo, non due sezioni', m.areeDi(await ada()), ['segreteria'])
   ok('e lo si dice per esteso', m.nomeDelRuolo(await ada()), 'Segreteria e amministrazione')
   await s.salvaPersonale({ ...(await ada()), ...m.daSpunte(['amministrazione', 'istruttore']) })
   ok('amministrazione e istruttore: le si dà un corso', (await s.istruttori()).some((i) => i.id === id), true)
-  ok('con due aree', m.areeDi(await ada()), ['amministrazione', 'istruttori'])
+  ok('con l\'istruttore: il menu unico e il calendario', m.areeDi(await ada()), ['segreteria', 'istruttori'])
   await s.salvaPersonale({ ...(await ada()), ...m.daSpunte(['segreteria', 'amministrazione', 'istruttore']) })
   ok('tutte e tre le spunte tornano com\'erano', m.spunteDi(await ada()), ['segreteria', 'amministrazione', 'istruttore'])
   ok('i nomi di chi ha pagato, e nient\'altro', await s.nomiPersone([id, 'non-c-e']), [{ id, nome: 'Ada', cognome: 'Conti' }])
@@ -1682,7 +1682,7 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
   ok('… e sotto solo NON SERVE PER ENTRARE', testi(doc(false)).slice(1), ['NON SERVE PER ENTRARE'])
   const senzaDoc = persona({ certificato: { scade: fra(100), conFile: false }, quote: [pagata], documento: false })
   ok('senza documento è in regola lo stesso', m.inRegola(senzaDoc, oggi), true)
-  ok('… e in elenco resta IN REGOLA', inElenco(senzaDoc), [{ tono: 'verde', parola: 'IN REGOLA' }])
+  ok('… e in elenco resta IN REGOLA', inElenco(senzaDoc), [{ tono: 'verde', parola: 'In regola' }])
 
   // 5. Chi è disattivato: tutto spento, le parole restano.
   const guai5 = { certificato: { scade: fra(-1), conFile: false }, pagamento: { stato: 'da_pagare' }, quote: [] }
@@ -1701,18 +1701,18 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
 
   // 6. La colonna IN REGOLA e i timbri dicono le stesse parole, prese dallo stesso posto.
   const casi = [
-    ['niente certificato, niente quota', persona(), [{ tono: 'rosso', parola: 'NO CERTIFICATO' }, { tono: 'rosso', parola: 'DA PAGARE' }, { tono: 'spento', parola: 'MANCA LA DATA' }]],
-    ['certificato scaduto, quota scaduta', persona({ certificato: { scade: fra(-1), conFile: false }, quote: [{ ...pagata, dal: '2025-09-01', al: fra(-1) }] }), [{ tono: 'rosso', parola: 'CERT. SCADUTO' }, { tono: 'rosso', parola: 'QUOTA SCADUTA' }]],
-    ['certificato valido, quota in parte', persona({ certificato: { scade: fra(100), conFile: false }, quote: [{ ...pagata, mancano: 2000 }] }), [{ tono: 'giallo', parola: 'IN PARTE' }]],
-    ['in regola', persona({ certificato: { scade: fra(100), conFile: false }, quote: [pagata] }), [{ tono: 'verde', parola: 'IN REGOLA' }]],
-    ['in regola fuori dall’app', persona({ certificato: { scade: fra(100), conFile: false }, pagamento: { stato: 'pagato', fino: fra(100) } }), [{ tono: 'verde', parola: 'IN REGOLA' }, { tono: 'spento', parola: 'FUORI APP' }]],
+    ['niente certificato, niente quota', persona(), [{ tono: 'rosso', parola: 'Manca il certificato' }, { tono: 'rosso', parola: 'Da pagare' }, { tono: 'spento', parola: 'Senza data' }]],
+    ['certificato scaduto, quota scaduta', persona({ certificato: { scade: fra(-1), conFile: false }, quote: [{ ...pagata, dal: '2025-09-01', al: fra(-1) }] }), [{ tono: 'rosso', parola: 'Certificato scaduto' }, { tono: 'rosso', parola: 'Quota scaduta' }]],
+    ['certificato valido, quota in parte', persona({ certificato: { scade: fra(100), conFile: false }, quote: [{ ...pagata, mancano: 2000 }] }), [{ tono: 'giallo', parola: 'Pagata in parte' }]],
+    ['in regola', persona({ certificato: { scade: fra(100), conFile: false }, quote: [pagata] }), [{ tono: 'verde', parola: 'In regola' }]],
+    ['in regola fuori dall’app', persona({ certificato: { scade: fra(100), conFile: false }, pagamento: { stato: 'pagato', fino: fra(100) } }), [{ tono: 'verde', parola: 'In regola' }, { tono: 'spento', parola: 'Fuori app' }]],
   ]
   for (const [cosa, p, voluto] of casi) ok(`in elenco, ${cosa}: le parole di oggi`, inElenco(p), voluto)
   // In elenco la forma corta del timbro, se ne ha una (SCADUTO IL gg/mm → CERT. SCADUTO): stesso tono, stessa funzione.
   const bollino = (t) => (t ? { tono: t.tono, parola: t.inElenco ?? t.parola } : null)
   for (const [cosa, p] of casi.slice(0, 3)) {
     const t = timbri(p)
-    const fuori = (inElenco(p) ?? []).filter((b) => !['IN REGOLA', 'FUORI APP', 'MANCA LA DATA'].includes(b.parola))
+    const fuori = (inElenco(p) ?? []).filter((b) => !['In regola', 'Fuori app', 'Senza data'].includes(b.parola))
     const daiTimbri = [t?.certificato, t?.quota].filter((x) => x && x.tono !== 'verde').map(bollino)
     ok(`${cosa}: in elenco le stesse parole dei timbri`, inElenco(p) && t ? fuori : 'manca l’elenco o i timbri', daiTimbri)
   }
@@ -1720,8 +1720,16 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
   const inScadenza = persona({ certificato: { scade: fra(10), conFile: false }, quote: [pagata] })
   ok('certificato in scadenza: in elenco la parola del timbro', inElenco(inScadenza), [bollino(timbri(inScadenza)?.certificato)])
   // In elenco la colonna è stretta: la data resta corta, senza l'anno.
-  ok('certificato in scadenza: in elenco SCADE IL gg/mm', inElenco(inScadenza), [{ tono: 'giallo', parola: `SCADE IL ${corta(fra(10))}` }])
-  ok('scade oggi: in elenco SCADE OGGI', inElenco(persona({ certificato: { scade: oggi, conFile: false }, quote: [pagata] })), [{ tono: 'giallo', parola: 'SCADE OGGI' }])
+  ok('certificato in scadenza: in elenco Scade il gg/mm', inElenco(inScadenza), [{ tono: 'giallo', parola: `Scade il ${corta(fra(10))}` }])
+  ok('scade oggi: in elenco Scade oggi', inElenco(persona({ certificato: { scade: oggi, conFile: false }, quote: [pagata] })), [{ tono: 'giallo', parola: 'Scade oggi' }])
+  // Solo l'elenco cambia parole: i timbri della scheda restano in maiuscolo, con la forma d'elenco accanto.
+  const tp = timbri(persona())
+  ok('scheda: NO CERTIFICATO e DA PAGARE restano maiuscoli, con la parola d\'elenco', [tp?.certificato.parola, tp?.certificato.inElenco, tp?.quota.parola, tp?.quota.inElenco], ['NO CERTIFICATO', 'Manca il certificato', 'DA PAGARE', 'Da pagare'])
+  const tq = timbri(persona({ certificato: { scade: fra(100), conFile: false }, quote: [{ ...pagata, mancano: 2000 }] }))?.quota
+  ok('scheda: IN PARTE resta maiuscolo, in elenco Pagata in parte', [tq?.parola, tq?.inElenco], ['IN PARTE', 'Pagata in parte'])
+  const ts = timbri(persona({ quote: [{ ...pagata, dal: '2025-09-01', al: fra(-1) }] }))?.quota
+  ok('scheda: QUOTA SCADUTA resta maiuscolo, in elenco Quota scaduta', [ts?.parola, ts?.inElenco], ['QUOTA SCADUTA', 'Quota scaduta'])
+  ok('scheda: SCADE OGGI resta maiuscolo, in elenco Scade oggi', [cert(oggi)?.parola, cert(oggi)?.inElenco], ['SCADE OGGI', 'Scade oggi'])
 
   // «AL» o «ALL’»: come si legge il giorno. 1, 8 e 11 cominciano per vocale.
   const al = [['2027-07-31', 'AL 31/07/2027'], ['2027-07-01', 'ALL’1/07/2027'], ['2027-08-08', 'ALL’8/08/2027'], ['2027-07-11', 'ALL’11/07/2027'], ['2027-07-18', 'AL 18/07/2027'], ['2027-07-05', 'AL 05/07/2027']]
@@ -3276,14 +3284,14 @@ console.log('\nsotto i 6 anni il certificato non serve')
   ok('CHI NON È IN REGOLA: chi è disattivato no', fuori(persona('1990-01-01', { conFile: false }, { attiva: false })), false)
 
   // La colonna IN REGOLA dell'elenco.
-  ok('elenco: 5 anni, quota pagata, senza certificato: in regola e certificato spento', vedi(() => parole(persona(cinque))), [{ tono: 'verde', parola: 'IN REGOLA' }, { tono: 'spento', parola: 'CERT. NON SERVE' }])
-  ok('elenco: 5 anni con la quota da pagare: non in regola, il guaio è la quota', vedi(() => parole(persona(cinque, undefined, { quote: [] }))).map((x) => x.parola), ['DA PAGARE', 'CERT. NON SERVE'])
-  ok('elenco: ai 6 anni mancano 14 giorni: bollino giallo con la data', vedi(() => parole(persona('2020-10-10'))), [{ tono: 'giallo', parola: 'SERVE DAL 10/10' }])
-  ok('elenco: 6 anni oggi: NO CERTIFICATO come oggi', vedi(() => parole(persona('2020-09-26'))), [{ tono: 'rosso', parola: 'NO CERTIFICATO' }])
-  ok('elenco: senza data di nascita e senza certificato: NO CERTIFICATO e MANCA LA DATA', vedi(() => parole(persona(undefined))), [{ tono: 'rosso', parola: 'NO CERTIFICATO' }, { tono: 'spento', parola: 'MANCA LA DATA' }])
-  ok('elenco: senza data di nascita ma col certificato valido: niente MANCA LA DATA', vedi(() => parole(persona(undefined, { scade: '2027-06-01', conFile: false })).map((x) => x.parola)), ['IN REGOLA'])
+  ok('elenco: 5 anni, quota pagata, senza certificato: in regola e certificato spento', vedi(() => parole(persona(cinque))), [{ tono: 'verde', parola: 'In regola' }, { tono: 'spento', parola: 'Non serve il certificato' }])
+  ok('elenco: 5 anni con la quota da pagare: non in regola, il guaio è la quota', vedi(() => parole(persona(cinque, undefined, { quote: [] }))).map((x) => x.parola), ['Da pagare', 'Non serve il certificato'])
+  ok('elenco: ai 6 anni mancano 14 giorni: bollino giallo con la data', vedi(() => parole(persona('2020-10-10'))), [{ tono: 'giallo', parola: 'Serve dal 10/10' }])
+  ok('elenco: 6 anni oggi: NO CERTIFICATO come oggi', vedi(() => parole(persona('2020-09-26'))), [{ tono: 'rosso', parola: 'Manca il certificato' }])
+  ok('elenco: senza data di nascita e senza certificato: NO CERTIFICATO e MANCA LA DATA', vedi(() => parole(persona(undefined))), [{ tono: 'rosso', parola: 'Manca il certificato' }, { tono: 'spento', parola: 'Senza data' }])
+  ok('elenco: senza data di nascita ma col certificato valido: niente MANCA LA DATA', vedi(() => parole(persona(undefined, { scade: '2027-06-01', conFile: false })).map((x) => x.parola)), ['In regola'])
   ok('manca la data: solo senza data e senza certificato (la frase della scheda parte da qui)', [persona(undefined), persona(undefined, { scade: '2027-06-01', conFile: false }), persona('2020-09-26')].map((p) => vedi(() => L.mancaLaData(p))), [true, false, false])
-  ok('elenco: 5 anni col certificato valido: niente bollino del certificato: è verde come per tutti', vedi(() => parole(persona(cinque, { scade: '2027-06-01', conFile: false }))).map((x) => x.parola), ['IN REGOLA'])
+  ok('elenco: 5 anni col certificato valido: niente bollino del certificato: è verde come per tutti', vedi(() => parole(persona(cinque, { scade: '2027-06-01', conFile: false }))).map((x) => x.parola), ['In regola'])
 
   // In regola.
   ok('in regola: 5 anni, quota pagata, niente certificato', vedi(() => L.inRegola(persona(cinque), oggi)), true)
@@ -3294,12 +3302,12 @@ console.log('\nsotto i 6 anni il certificato non serve')
 
   // La scheda.
   const cert = (p) => vedi(() => L.timbriScheda(p, oggi).certificato)
-  ok('scheda: 5 anni senza certificato, timbro spento', cert(persona(cinque)), { tono: 'spento', parola: 'NON SERVE', righe: [{ testo: 'SOTTO I 6 ANNI' }], inElenco: 'CERT. NON SERVE' })
+  ok('scheda: 5 anni senza certificato, timbro spento', cert(persona(cinque)), { tono: 'spento', parola: 'NON SERVE', righe: [{ testo: 'SOTTO I 6 ANNI' }], inElenco: 'Non serve il certificato' })
   ok('scheda: 5 anni col certificato valido, la data resta, verde', cert(persona(cinque, { scade: '2027-06-01', conFile: false })), { tono: 'verde', parola: 'VALIDO FINO ALL’1/06/2027', righe: [{ testo: 'NON SERVE SOTTO I 6 ANNI' }] })
-  ok('scheda: 5 anni col certificato scaduto, la data resta, spento e non rosso', cert(persona(cinque, { scade: '2026-01-15', conFile: false })), { tono: 'spento', parola: 'SCADUTO IL 15/01/2026', inElenco: 'CERT. SCADUTO', righe: [{ testo: 'NON SERVE SOTTO I 6 ANNI' }] })
-  ok('scheda: ai 6 anni mancano 14 giorni, giallo con la data e i giorni', cert(persona('2020-10-10')), { tono: 'giallo', parola: 'SERVE DAL 10/10/2026', inElenco: 'SERVE DAL 10/10', righe: [{ testo: 'FRA 14 GIORNI' }] })
+  ok('scheda: 5 anni col certificato scaduto, la data resta, spento e non rosso', cert(persona(cinque, { scade: '2026-01-15', conFile: false })), { tono: 'spento', parola: 'SCADUTO IL 15/01/2026', inElenco: 'Certificato scaduto', righe: [{ testo: 'NON SERVE SOTTO I 6 ANNI' }] })
+  ok('scheda: ai 6 anni mancano 14 giorni, giallo con la data e i giorni', cert(persona('2020-10-10')), { tono: 'giallo', parola: 'SERVE DAL 10/10/2026', inElenco: 'Serve dal 10/10', righe: [{ testo: 'FRA 14 GIORNI' }] })
   ok('scheda: 6 anni oggi, rosso come oggi', cert(persona('2020-09-26')).parola, 'NO CERTIFICATO')
-  ok('scheda: senza data di nascita, rosso e una riga che dice che manca la data', cert(persona(undefined)), { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, { testo: 'MANCA LA DATA DI NASCITA' }] })
+  ok('scheda: senza data di nascita, rosso e una riga che dice che manca la data', cert(persona(undefined)), { tono: 'rosso', parola: 'NO CERTIFICATO', inElenco: 'Manca il certificato', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, { testo: 'MANCA LA DATA DI NASCITA' }] })
   ok('scheda: con la data di nascita la riga non c\'è', cert(persona('2020-09-26')).righe, [{ testo: 'SENZA, IN SALA NON SI ENTRA' }])
   ok('scheda: il file non porta più DA STAMPARE, nemmeno sotto i 6 anni', vedi(() => cert(persona(cinque, { scade: '2027-06-01', conFile: true })).righe), [{ testo: 'NON SERVE SOTTO I 6 ANNI' }])
   ok('scheda: chi è disattivato ha il timbro spento, con le stesse parole', vedi(() => { const t = L.timbriScheda(persona(cinque, undefined, { attiva: false }), oggi); return [t.certificato.tono, t.certificato.parola] }), ['spento', 'NON SERVE'])

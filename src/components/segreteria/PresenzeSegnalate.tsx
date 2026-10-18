@@ -47,7 +47,7 @@ export function PresenzeSegnalate({ d, onCambiato, onVai }: { d: DatiSegreteria;
         sotto={daVedere.length === 1 ? 'Una da vedere.' : daVedere.length ? `${daVedere.length} da vedere.` : 'Nessuna da vedere.'}
       >
         <button type="button" className="num sg-chip" aria-pressed={tutte} onClick={() => setTutte(!tutte)}>
-          ANCHE QUELLE GIÀ GESTITE
+          Anche quelle già gestite
         </button>
       </Testa>
 
@@ -94,16 +94,16 @@ export function PresenzeSegnalate({ d, onCambiato, onVai }: { d: DatiSegreteria;
                 {x.stato === 'da_vedere' ? (
                   <>
                     <button type="button" className="sg-btn sg-btn-verde" disabled={lavora} onClick={() => gestisci(x, true)}>
-                      PRESENTE
+                      Segna presente
                     </button>
                     <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => gestisci(x, false)}>
-                      RIFIUTA
+                      Rifiuta
                     </button>
                   </>
                 ) : (
                   <span className="stack" style={{ gap: 2 }}>
                     <span className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', color: x.stato === 'accolta' ? 'var(--verde-testo)' : 'var(--rosso-testo)' }}>
-                      {x.stato === 'accolta' ? 'ACCOLTA' : 'RIFIUTATA'}
+                      {x.stato === 'accolta' ? 'Accolta' : 'Rifiutata'}
                     </span>
                     {x.gestitaIl && (
                       <span style={{ fontSize: 12, color: 'var(--dim)' }}>

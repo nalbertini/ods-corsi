@@ -1133,9 +1133,9 @@ function timbroCertificato(c: CertificatoSeg, oggi: string, natoIl?: string): Ti
   if (stato === 'non_serve') {
     const nonServe = [{ testo: 'NON SERVE SOTTO I 6 ANNI' }, ...file]
     // Un certificato già segnato si vede com'è, ma senza rosso: non serve.
-    if (c.scade && c.scade < oggi) return { tono: 'spento', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'CERT. SCADUTO', righe: nonServe }
+    if (c.scade && c.scade < oggi) return { tono: 'spento', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'Certificato scaduto', righe: nonServe }
     if (c.scade) return { tono: 'verde', parola: `VALIDO FINO ${alGiorno(c.scade)}`, righe: nonServe }
-    return { tono: 'spento', parola: 'NON SERVE', righe: [{ testo: 'SOTTO I 6 ANNI' }, ...file], inElenco: 'CERT. NON SERVE' }
+    return { tono: 'spento', parola: 'NON SERVE', righe: [{ testo: 'SOTTO I 6 ANNI' }, ...file], inElenco: 'Non serve il certificato' }
   }
   if (stato === 'in_arrivo') {
     // `in_arrivo` c'è solo con una data di nascita valida.
@@ -1144,21 +1144,21 @@ function timbroCertificato(c: CertificatoSeg, oggi: string, natoIl?: string): Ti
     return {
       tono: 'giallo',
       parola: `SERVE DAL ${dataTimbro(dal)}`,
-      inElenco: `SERVE DAL ${dataCorta(dal)}`,
+      inElenco: `Serve dal ${dataCorta(dal)}`,
       righe: [{ testo: fra === 1 ? 'DOMANI' : `FRA ${fra} GIORNI` }, ...file],
     }
   }
   const righe = file
-  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...(mancaLaData({ certificato: c, natoIl }) ? [{ testo: 'MANCA LA DATA DI NASCITA' }] : []), ...righe] }
-  if (stato === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'CERT. SCADUTO', righe }
+  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', inElenco: 'Manca il certificato', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...(mancaLaData({ certificato: c, natoIl }) ? [{ testo: 'MANCA LA DATA DI NASCITA' }] : []), ...righe] }
+  if (stato === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'Certificato scaduto', righe }
   if (stato === 'in_scadenza') {
-    if (c.scade === oggi) return { tono: 'giallo', parola: 'SCADE OGGI', righe }
+    if (c.scade === oggi) return { tono: 'giallo', parola: 'SCADE OGGI', inElenco: 'Scade oggi', righe }
     const fra = Math.round((Date.parse(c.scade) - Date.parse(oggi)) / 86_400_000)
     return {
       tono: 'giallo',
       parola: `SCADE IL ${dataTimbro(c.scade)}`,
       // In elenco la colonna è stretta: la data senza l'anno.
-      inElenco: `SCADE IL ${dataCorta(c.scade)}`,
+      inElenco: `Scade il ${dataCorta(c.scade)}`,
       righe: [{ testo: fra === 1 ? 'DOMANI' : `FRA ${fra} GIORNI` }, ...righe],
     }
   }
@@ -1170,9 +1170,9 @@ function timbroQuota(s: StatoPaga): Timbro {
   const da = s.fonte === 'fuori_app' ? [{ testo: 'FUORI APP' }] : s.ricevuta ? [{ testo: `RICEVUTA ${s.ricevuta}` }] : []
   if (s.come === 'pagato') return { tono: 'verde', parola: 'PAGATA', righe: [...da, ...fino] }
   if (s.come === 'in_parte')
-    return { tono: 'giallo', parola: 'IN PARTE', righe: s.fonte === 'ricevuta' ? [{ testo: `MANCANO ${euro(s.mancano ?? 0)} €` }, ...da] : [...da, ...fino] }
-  if (s.come === 'scaduto') return { tono: 'rosso', parola: 'QUOTA SCADUTA', righe: s.fino ? [{ testo: `VALEVA FINO ${alGiorno(s.fino)}` }] : [] }
-  return { tono: 'rosso', parola: 'DA PAGARE', righe: [{ testo: 'NESSUNA RICEVUTA' }] }
+    return { tono: 'giallo', parola: 'IN PARTE', inElenco: 'Pagata in parte', righe: s.fonte === 'ricevuta' ? [{ testo: `MANCANO ${euro(s.mancano ?? 0)} €` }, ...da] : [...da, ...fino] }
+  if (s.come === 'scaduto') return { tono: 'rosso', parola: 'QUOTA SCADUTA', inElenco: 'Quota scaduta', righe: s.fino ? [{ testo: `VALEVA FINO ${alGiorno(s.fino)}` }] : [] }
+  return { tono: 'rosso', parola: 'DA PAGARE', inElenco: 'Da pagare', righe: [{ testo: 'NESSUNA RICEVUTA' }] }
 }
 
 /**
@@ -1222,13 +1222,13 @@ export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' |
   // Sotto i 6 anni, senza un certificato valido: non è un guaio, ma si dice perché non c'è.
   const nonServe = statoCertificato(p, oggi) === 'non_serve' && cert.tono === 'spento'
   const quota = timbroQuota(s)
-  const fuori: ParolaStato[] = s.fonte === 'fuori_app' ? [{ tono: 'spento', parola: 'FUORI APP' }] : []
+  const fuori: ParolaStato[] = s.fonte === 'fuori_app' ? [{ tono: 'spento', parola: 'Fuori app' }] : []
   const guai = (nonServe ? [quota] : [cert, quota]).filter((t) => t.tono !== 'verde').map((t): ParolaStato => ({ tono: t.tono, parola: t.inElenco ?? t.parola }))
-  const inRegola: ParolaStato = { tono: 'verde', parola: 'IN REGOLA' }
+  const inRegola: ParolaStato = { tono: 'verde', parola: 'In regola' }
   const segno: ParolaStato[] = nonServe
-    ? [{ tono: 'spento', parola: 'CERT. NON SERVE' }]
+    ? [{ tono: 'spento', parola: 'Non serve il certificato' }]
     : mancaLaData(p)
-      ? [{ tono: 'spento', parola: 'MANCA LA DATA' }]
+      ? [{ tono: 'spento', parola: 'Senza data' }]
       : []
   return [...(guai.length ? guai : [inRegola]), ...segno, ...fuori]
 }

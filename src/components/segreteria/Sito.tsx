@@ -18,9 +18,10 @@ import {
   type VoceMenu,
 } from '../../lib/sitoPagine'
 import { pulisciTesto } from '../../lib/sitoTesto'
-import { cosaNonVaPezzi, databaseConPezzi, pezziCambiati, pezziInHtml, pezziVuoti, type PezziPagina } from '../../lib/sitoPezzi'
+import { cosaNonVaPezzi, databaseConPezzi, cosaNonVaPortare, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
 import { Immagini } from './ImmaginiSito'
 import { Campo, chiedi, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
+import { Titoletto } from '../ds'
 
 // L'editor porta con sé una libreria grossa: si scarica solo quando si apre una pagina da scrivere.
 const EditorTesto = lazy(() => import('./EditorTesto').then((m) => ({ default: m.EditorTesto })))
@@ -61,7 +62,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
   const aPezzi = !!pagina.pezzi
   const [slug, setSlug] = useState(pagina.slug)
   const [anteprima, setAnteprima] = useState(false)
-  const { avviso, fai, lavora } = useAvviso()
+  const { avviso, avvisa, fai, lavora } = useAvviso()
   // I pezzi si controllano e si traducono in testo solo quando cambiano, non a ogni tasto di un altro campo.
   const noPezzi = useMemo(() => (aPezzi ? cosaNonVaPezzi(pezzi) : null), [aPezzi, pezzi])
   const bozza = useMemo(() => (aPezzi && !noPezzi ? pezziInHtml(pezzi) : bozzaTesto), [aPezzi, noPezzi, pezzi, bozzaTesto])
@@ -89,6 +90,22 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
         }
       },
       'Pubblicata',
+      ricarica,
+    )
+  }
+  // Il testo di prima diventa pezzi senza cambiare una parola (`htmlInPezzi`); `Scrivi` non si rimonta dopo `ricarica`,
+  // quindi i pezzi nuovi si danno anche allo stato locale, o l'editor si aprirebbe vuoto.
+  const portaAiPezzi = async () => {
+    const no = cosaNonVaPortare(pagina.bozza)
+    if (no) return avvisa(no, true)
+    if (!(await chiedi(`Portare «${pagina.titolo}» ai pezzi? Non si torna più al vecchio editor di testo. Il testo resta com’è e il sito non cambia finché non pubblichi.`, 'PORTA AI PEZZI', { no: 'LASCIA STARE' }))) return
+    const nuovi = htmlInPezzi(pagina.bozza)
+    await fai(
+      async () => {
+        await d.salvaBozzaPezziSito(pagina.id, pagina.versione, { titolo: pagina.titolo, descrizione: pagina.descrizione, pezzi: nuovi })
+        setPezzi(nuovi)
+      },
+      'Pagina portata ai pezzi. Il sito non è cambiato',
       ricarica,
     )
   }
@@ -157,6 +174,15 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
             <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || !!noSlug} onClick={() => void cambiaSlug()}>
               CAMBIA INDIRIZZO
             </button>
+          )}
+          {portabileAiPezzi(pagina) && (
+            <div className="stack" style={{ gap: 10, paddingTop: 8, borderTop: '2px solid var(--line)' }}>
+              <Titoletto>EDITOR A PEZZI</Titoletto>
+              <button type="button" className="sg-btn sg-btn-linea" disabled={lavora || sporca} onClick={() => void portaAiPezzi()}>
+                PORTA AI PEZZI
+              </button>
+              <span className="sg-sotto">{sporca ? 'Salva la bozza prima di passare ai pezzi.' : 'Il testo resta com’è: lo trovi in foto, testo e colonne da trascinare. Sul sito non cambia niente finché non pubblichi.'}</span>
+            </div>
           )}
           <div className="stack" style={{ gap: 8 }}>
             {pagina.diLegge ? (

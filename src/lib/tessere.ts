@@ -146,12 +146,21 @@ export function statoTessera(tessere: Array<Pick<TesseraSeg, 'ente' | 'tipo' | '
 }
 
 const MESI = ['GENNAIO', 'FEBBRAIO', 'MARZO', 'APRILE', 'MAGGIO', 'GIUGNO', 'LUGLIO', 'AGOSTO', 'SETTEMBRE', 'OTTOBRE', 'NOVEMBRE', 'DICEMBRE']
+const mese = (al: string | undefined) => (MESI[Number((al ?? '').slice(5, 7)) - 1] ?? '').toLowerCase()
 
 /** La parola nella colonna IN REGOLA di ISCRITTI; niente se la tessera è valida (IN REGOLA lo dice già). */
 export function parolaTessera(stato: StatoTessera, al: string | undefined): { tono: 'rosso' | 'giallo'; parola: string } | null {
-  if (stato === 'manca') return { tono: 'rosso', parola: 'NO TESSERA' }
-  if (stato === 'scaduta') return { tono: 'rosso', parola: 'TESSERA SCADUTA' }
-  if (stato === 'in_scadenza') return { tono: 'giallo', parola: `TESSERA SCADE A ${MESI[Number((al ?? '').slice(5, 7)) - 1] ?? ''}`.trim() }
+  if (stato === 'manca') return { tono: 'rosso', parola: 'Manca la tessera' }
+  if (stato === 'scaduta') return { tono: 'rosso', parola: 'Tessera scaduta' }
+  if (stato === 'in_scadenza') return { tono: 'giallo', parola: `Tessera scade a ${mese(al)}`.trim() }
+  return null
+}
+
+/** La parola di una tessera nella sua riga (nella scheda), senza «tessera» davanti: la riga lo dice già. */
+export function parolaTesseraBreve(stato: StatoTessera, al: string | undefined): { tono: 'rosso' | 'giallo'; parola: string } | null {
+  if (stato === 'manca') return { tono: 'rosso', parola: 'Manca la tessera' }
+  if (stato === 'scaduta') return { tono: 'rosso', parola: 'Scaduta' }
+  if (stato === 'in_scadenza') return { tono: 'giallo', parola: `Scade a ${mese(al)}`.trim() }
   return null
 }
 
@@ -327,7 +336,8 @@ export function paroleConTessera<P extends { tono: string; parola: string }>(par
     if (p && !nuove.some((x) => x.parola === p.parola)) nuove.push(p)
   }
   if (!nuove.length) return parole
-  return [...parole.filter((x) => x.parola !== 'IN REGOLA'), ...nuove]
+  // In questa lista il verde è solo «In regola»: se la tessera manca o scade non c'è più.
+  return [...parole.filter((x) => x.tono !== 'verde'), ...nuove]
 }
 
 /** Una tessera da sola, per le sue date: quella dello stato di una persona è `statoTessera`. */

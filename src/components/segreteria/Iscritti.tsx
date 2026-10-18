@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
+import { altriAperti, altriFiltri, FILTRI_VISIBILI, ID_FILTRI, TESTI_FILTRI, type IdFiltro } from '../../lib/filtriIscritti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
@@ -135,6 +136,7 @@ export function Iscritti({
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [filePrima, setFilePrima] = useState(filtroIniziale === 'file-di-prima')
   const [doppi, setDoppi] = useState(false)
+  const [altriScelto, setAltriScelto] = useState(false)
   // Da una coppia di possibili doppioni: la scheda si apre con UNISCI già sull'altra.
   const [unisciCon, setUnisciCon] = useState<string | null>(null)
   const { avviso, avvisa, fai } = useAvviso()
@@ -157,6 +159,36 @@ export function Iscritti({
   const coppie = indizi.dato ? coppieDoppioni(tutti, indizi.dato) : []
   // Unite o segnate tutte, il filtro si spegne da sé.
   const soloDoppi = doppi && coppie.length > 0
+  // Ogni filtro con il suo stato; l'elenco dei nascosti e quali sono accesi lo dice `filtriIscritti.ts`.
+  const filtri: Record<IdFiltro, [boolean, (v: boolean) => void]> = {
+    'senza-email': [soloSenzaEmail, setSoloSenzaEmail],
+    poco: [poco, setPoco],
+    certificato: [certificato, setCertificato],
+    scadenza: [scadenza, setScadenza],
+    arrivo: [arrivo, setArrivo],
+    pagare: [pagare, setPagare],
+    fuori: [fuori, setFuori],
+    'senza-tessera': [noTessera, setNoTessera],
+    'senza-documento': [senzaDocumento, setSenzaDocumento],
+    'file-di-prima': [soloFilePrima, setFilePrima],
+    doppioni: [soloDoppi, setDoppi],
+  }
+  const altri = altriFiltri({ conTessere: conTessereLette, filePrima: nFilePrima, doppioni: coppie.length })
+  const accesi = ID_FILTRI.filter((id) => filtri[id][0])
+  const altriVisibili = altriAperti(accesi, altriScelto)
+  // Il gruppo è aperto solo perché un filtro nascosto è acceso: finché lo è, non si chiude.
+  const altriForzato = altriVisibili && !altriScelto
+  const togliFiltri = () => {
+    setCerca('')
+    setCorso('')
+    accesi.forEach((id) => filtri[id][1](false))
+  }
+  const chipFiltro = (id: IdFiltro) => (
+    <button key={id} type="button" className="num sg-chip" aria-pressed={filtri[id][0]} onClick={() => filtri[id][1](!filtri[id][0])}>
+      {TESTI_FILTRI[id]}
+      {id === 'doppioni' ? ` ${coppie.length}` : ''}
+    </button>
+  )
   const trovati = tutti.filter(
     (p) =>
       (!ricerca || ricerca.ids.includes(p.id)) &&
@@ -275,12 +307,13 @@ export function Iscritti({
           }`}
         >
           <button type="button" className="sg-btn sg-btn-pieno" onClick={onNuovo}>
-            + NUOVO ISCRITTO
+            + Nuovo iscritto
           </button>
         </Testa>
 
         {ricerca && <FiltroRicerca ricerca={ricerca} onTogli={onTogliRicerca} />}
         <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+          <div className="row" style={{ gap: 10, flexWrap: 'wrap', flexBasis: '100%' }}>
           <label htmlFor="cerca" className="vh">
             Cerca un iscritto
           </label>
@@ -296,44 +329,25 @@ export function Iscritti({
               </option>
             ))}
           </select>
-          <button type="button" className="num sg-chip" aria-pressed={soloSenzaEmail} onClick={() => setSoloSenzaEmail(!soloSenzaEmail)}>
-            SOLO SENZA EMAIL
+          </div>
+          {FILTRI_VISIBILI.map(chipFiltro)}
+          {/* Con un filtro nascosto acceso il gruppo non si chiude: un filtro acceso non resta mai nascosto. Il tasto lo dice. */}
+          <button
+            type="button"
+            className="sg-link sg-link-alto sg-altri-filtri"
+            aria-expanded={altriVisibili}
+            aria-controls={altriVisibili ? 'altri-filtri' : undefined}
+            aria-disabled={altriForzato || undefined}
+            title={altriForzato ? 'Uno di questi filtri è acceso: spegnilo per chiudere' : undefined}
+            onClick={() => !altriForzato && setAltriScelto(!altriScelto)}
+          >
+            Altri filtri ({altri.length}
+            {altriForzato ? `, ${accesi.filter((id) => !FILTRI_VISIBILI.includes(id)).length} acceso` : ''}) <span aria-hidden="true">{altriVisibili ? '▴' : '▾'}</span>
           </button>
-          <button type="button" className="num sg-chip" aria-pressed={poco} onClick={() => setPoco(!poco)}>
-            VENGONO POCO
-          </button>
-          <button type="button" className="num sg-chip" aria-pressed={certificato} onClick={() => setCertificato(!certificato)}>
-            SENZA CERTIFICATO VALIDO
-          </button>
-          <button type="button" className="num sg-chip" aria-pressed={scadenza} onClick={() => setScadenza(!scadenza)}>
-            CERTIFICATO IN SCADENZA
-          </button>
-          <button type="button" className="num sg-chip" aria-pressed={arrivo} onClick={() => setArrivo(!arrivo)}>
-            COMPIONO 6 ANNI
-          </button>
-          <button type="button" className="num sg-chip" aria-pressed={pagare} onClick={() => setPagare(!pagare)}>
-            DA PAGARE
-          </button>
-          <button type="button" className="num sg-chip" aria-pressed={fuori} onClick={() => setFuori(!fuori)}>
-            NON IN REGOLA
-          </button>
-          {conTessereLette && (
-            <button type="button" className="num sg-chip" aria-pressed={noTessera} onClick={() => setNoTessera(!noTessera)}>
-              SENZA TESSERA
-            </button>
-          )}
-          <button type="button" className="num sg-chip" aria-pressed={senzaDocumento} onClick={() => setSenzaDocumento(!senzaDocumento)}>
-            SENZA DOCUMENTO
-          </button>
-          {nFilePrima > 0 && (
-            <button type="button" className="num sg-chip" aria-pressed={soloFilePrima} onClick={() => setFilePrima(!soloFilePrima)}>
-              NON ARCHIVIATO
-            </button>
-          )}
-          {coppie.length > 0 && (
-            <button type="button" className="num sg-chip" aria-pressed={soloDoppi} onClick={() => setDoppi(!soloDoppi)}>
-              POSSIBILI DOPPIONI {coppie.length}
-            </button>
+          {altriVisibili && (
+            <div id="altri-filtri" className="row" style={{ gap: 10, flexWrap: 'wrap', flexBasis: '100%' }}>
+              {altri.map(chipFiltro)}
+            </div>
           )}
         </div>
 
@@ -375,12 +389,12 @@ export function Iscritti({
             {colonna('nome', 'NOME')}
             {colonna('corsi', 'CORSI')}
             {colonna('contatto', 'CONTATTO')}
-            {colonna('regola', 'IN REGOLA', { numeri: true })}
+            {colonna('regola', 'IN REGOLA?', { numeri: true })}
             {colonna('frequenza', '30 GIORNI', { numeri: true, destra: true })}
           </div>
           <div className="sg-tabella-corpo">
             {persone.dato === null && !persone.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo gli iscritti…</p>}
-            {persone.dato !== null && trovati.length === 0 && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Nessuno corrisponde alla ricerca.</p>}
+            {persone.dato !== null && trovati.length === 0 && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Nessuno corrisponde alla ricerca. <button type="button" className="sg-link sg-link-alto" onClick={togliFiltri}>Togli ricerca e filtri</button></p>}
             {ordina(trovati).map((p) => {
               const f = freq.dato?.get(p.id)
               const suoi = suoiCorsi(p)
@@ -401,7 +415,7 @@ export function Iscritti({
                     <button type="button" className="sg-riga-apri" aria-current={!nuovo && scelta === p.id ? 'true' : undefined}>
                       {p.cognome} {p.nome}
                     </button>
-                    {certificatoDaStampare(p.certificato) && <span className="num sg-tag" style={{ marginLeft: 8 }}>NON ARCHIVIATO</span>}
+                    {certificatoDaStampare(p.certificato) && <span className="num sg-tag" style={{ marginLeft: 8 }}>{TESTI_FILTRI['file-di-prima']}</span>}
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(', ') || '—'}</span>
                   <span role="cell" style={{ fontSize: 13, color: p.email || p.emailContatto || p.telefono ? 'var(--sec)' : 'var(--rosso-testo)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -628,13 +642,13 @@ function Scheda({
           ) : (
             <div className="sg-due">
               <Campo etichetta="EMAIL">
-                <span style={{ fontSize: 14, wordBreak: 'break-all', color: p.email ? 'var(--text)' : 'var(--dim)' }}>{p.email ?? '—'}</span>
+                <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.email ? 'var(--text)' : 'var(--dim)' }}>{p.email ?? '—'}</span>
               </Campo>
               <Campo etichetta="EMAIL DI CONTATTO">
-                <span style={{ fontSize: 14, wordBreak: 'break-all', color: p.emailContatto ? 'var(--text)' : 'var(--dim)' }}>{p.emailContatto ?? '—'}</span>
+                <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.emailContatto ? 'var(--text)' : 'var(--dim)' }}>{p.emailContatto ?? '—'}</span>
               </Campo>
               <Campo etichetta="TELEFONO">
-                <span style={{ fontSize: 14, color: p.telefono ? 'var(--text)' : 'var(--dim)' }}>{p.telefono ?? '—'}</span>
+                <span className="sg-valore" style={{ color: p.telefono ? 'var(--text)' : 'var(--dim)' }}>{p.telefono ?? '—'}</span>
               </Campo>
             </div>
           )}
@@ -1227,9 +1241,9 @@ function DatiAnagrafici({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: Perso
   const an = useCarica(async () => ({ di: await d.anagraficaDi(p.id) }), [d, p.id])
   const [modifica, setModifica] = useState<Anagrafica | null>(null)
   const x = an.dato?.di?.dati
-  const valore = (testo?: string) => <span style={{ fontSize: 14, color: testo ? 'var(--text)' : 'var(--dim)', overflowWrap: 'anywhere' }}>{testo || '—'}</span>
+  const valore = (testo?: string) => <span className="sg-valore" style={{ color: testo ? 'var(--text)' : 'var(--dim)', overflowWrap: 'anywhere' }}>{testo || '—'}</span>
   const codice = (testo?: string) => (
-    <span className="num" style={{ fontSize: 14, color: testo ? 'var(--text)' : 'var(--dim)', letterSpacing: '0.04em' }}>{testo ?? '—'}</span>
+    <span className="num sg-valore" style={{ color: testo ? 'var(--text)' : 'var(--dim)', letterSpacing: '0.04em' }}>{testo ?? '—'}</span>
   )
   const residenza = x && [x.indirizzo, [x.cap, x.comune].filter(Boolean).join(' ')].filter(Boolean).join(', ')
   const genitore = x && [x.genitoreCognome, x.genitoreNome].filter(Boolean).join(' ')

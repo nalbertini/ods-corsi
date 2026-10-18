@@ -10,27 +10,31 @@ elenco, che compaiono negli appelli e sul tablet.
 
 - **Cerca per nome o email**, di accesso o di contatto.
 - **Tutti i corsi** → uno solo, per vedere chi fa quel corso.
-- **SOLO SENZA EMAIL** — chi non ha l'email di accesso in scheda (quella di
+Tre filtri stanno sempre in vista: **Senza certificato valido**, **Da pagare** e
+**Non in regola**. Gli altri sono dietro **Altri filtri (N)**, col numero di quelli
+che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
+
+- **Solo senza email** — chi non ha l'email di accesso in scheda (quella di
   contatto non conta: non serve per entrare nell'app).
-- **VENGONO POCO** — chi è venuto a meno di metà delle lezioni, su almeno tre.
-- **SENZA CERTIFICATO VALIDO** — chi è attivo e non ha il certificato medico,
+- **Vengono poco** — chi è venuto a meno di metà delle lezioni, su almeno tre.
+- **Senza certificato valido** — chi è attivo e non ha il certificato medico,
   o ce l'ha scaduto. Chi ha meno di 6 anni non c'è: per lui il certificato
   non è obbligatorio.
-- **CERTIFICATO IN SCADENZA** — chi è attivo e ha il certificato che scade
+- **Certificato in scadenza** — chi è attivo e ha il certificato che scade
   entro un mese (di chi ha meno di 6 anni no).
-- **COMPIONO 6 ANNI** — chi è attivo, compie 6 anni entro un mese e non ha il
+- **Compiono 6 anni** — chi è attivo, compie 6 anni entro un mese e non ha il
   certificato: da quel giorno serve, e conviene avvisare la famiglia prima.
-- **DA PAGARE** — chi è attivo e non ha la quota associativa pagata: nessuna ricevuta
+- **Da pagare** — chi è attivo e non ha la quota associativa pagata: nessuna ricevuta
   con la quota, pagata solo in parte, o scaduta.
-- **NON IN REGOLA** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
+- **Non in regola** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
   anche dal bottone **CHI NON È IN REGOLA** delle [Statistiche](statistiche.md).
-- **SENZA TESSERA** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([TESSERE](tessere.md)).
-- **SENZA DOCUMENTO** — chi non ha ancora la copia del documento d'identità in
+- **Senza tessera** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([TESSERE](tessere.md)).
+- **Senza documento** — chi non ha ancora la copia del documento d'identità in
   segreteria.
-- **NON ARCHIVIATO** — solo finché ce ne sono: chi ha un file di certificato
+- **Non archiviato** — solo finché ce ne sono: chi ha un file di certificato
   caricato prima della nuova gestione (senza data di caricamento). Quelli
   nuovi non ci sono mai.
-- **POSSIBILI DOPPIONI** col numero — solo finché ce ne sono: le schede che
+- **Possibili doppioni** col numero — solo finché ce ne sono: le schede che
   sembrano la stessa persona, a coppie, dalle più sicure: lo stesso codice
   fiscale, lo stesso nome scritto in un altro modo (D'Amico e Damico), nome e
   cognome scambiati (dal modulo arriva «Rossi Chiara»), un secondo nome
@@ -45,16 +49,16 @@ elenco, che compaiono negli appelli e sul tablet.
   nell'avviso, subito dopo; o, più tardi, nella scheda di una delle due,
   sezione **NON SONO DOPPIONI** → **TOGLI** accanto all'altra.
 
-La colonna **IN REGOLA** dice in un colpo d'occhio cosa manca: in verde
-**IN REGOLA** se certificato, quota e tessera sono a posto (**FUORI APP**, in grigio,
+La colonna **IN REGOLA?** dice in un colpo d'occhio cosa manca: in verde
+**In regola** se certificato, quota e tessera sono a posto (**Fuori app**, in grigio,
 se la quota è pagata senza una ricevuta dell'app); altrimenti in rosso
-**NO CERTIFICATO**, **CERT. SCADUTO**, **DA PAGARE** o **QUOTA SCADUTA**, e in
-giallo **SCADE IL 14/10** (entro un mese; **SCADE OGGI** l'ultimo giorno) o
-**IN PARTE**. Per chi è iscritto a un corso che chiede la tessera ci sono anche **NO TESSERA** e **TESSERA SCADUTA** in rosso, e **TESSERA SCADE A DICEMBRE** in giallo (da 60 giorni prima della fine; non conta nei filtri). Sotto i 6 anni il certificato non serve: il bambino è
-**IN REGOLA** con la quota pagata, e accanto c'è **CERT. NON SERVE** in grigio;
-un mese prima del compleanno diventa **SERVE DAL 14/10** in giallo. Per
+**Manca il certificato**, **Certificato scaduto**, **Da pagare** o **Quota scaduta**, e in
+giallo **Scade il 14/10** (entro un mese; **Scade oggi** l'ultimo giorno) o
+**Pagata in parte**. Ogni stato ha un segno davanti: ✕ manca, … aspetta, ✓ a posto. Per chi è iscritto a un corso che chiede la tessera ci sono anche **Manca la tessera** e **Tessera scaduta** in rosso, e **Tessera scade a dicembre** in giallo (da 60 giorni prima della fine; non conta nei filtri). Sotto i 6 anni il certificato non serve: il bambino è
+**In regola** con la quota pagata, e accanto c'è **Non serve il certificato** in grigio;
+un mese prima del compleanno diventa **Serve dal 14/10** in giallo. Per
 sapere l'età serve la data di nascita: senza, il certificato serve come per
-tutti, e chi non ha nemmeno il certificato ha accanto **MANCA LA DATA** in grigio:
+tutti, e chi non ha nemmeno il certificato ha accanto **Senza data** in grigio:
 scrivila nei dati anagrafici della scheda. In
 cima alla pagina c'è quanti sono senza certificato valido e quanti da pagare.
 
@@ -68,7 +72,7 @@ manca tutto c'è scritto «nessun contatto».
 
 ## Nuovo iscritto
 
-**NUOVO ISCRITTO** → nome, cognome, email, email di contatto e telefono
+**+ Nuovo iscritto** → nome, cognome, email, email di contatto e telefono
 (facoltativi), **ISCRIVI A** un corso → **SALVA**.
 
 Le email sono due, e servono a cose diverse:
@@ -158,12 +162,12 @@ scheda è disattivata, nessuno.
   senza certificato valido.
 - **Un certificato non archiviato** (file caricato quando il certificato
   stava su carta) si apre con **APRI** come gli altri, e la scheda lo dice in
-  giallo; in elenco c'è **NON ARCHIVIATO** accanto al nome (il filtro
-  **NON ARCHIVIATO** li mostra tutti, finché ce ne sono). Si cancella
+  giallo; in elenco c'è **Non archiviato** accanto al nome (il filtro
+  **Non archiviato** li mostra tutti, finché ce ne sono). Si cancella
   da solo come gli altri, o con **TOGLI IL CERTIFICATO**.
 - **DOCUMENTO D'IDENTITÀ** — se la copia è in segreteria, su carta (per un
   minore, quella del genitore). **LA COPIA È IN SEGRETERIA** lo segna, **LA
-  COPIA NON C'È PIÙ** lo toglie. **SENZA DOCUMENTO**, sopra l'elenco, mostra chi non ce
+  COPIA NON C'È PIÙ** lo toglie. **Senza documento**, sotto «Altri filtri», mostra chi non ce
   l'ha ancora.
 - **QUOTA** — se ha pagato lo dicono le ricevute: **PAGATA** se c'è una
   ricevuta non annullata con la **QUOTA ASSOCIATIVA** che vale oggi, con fin
@@ -175,7 +179,7 @@ scheda è disattivata, nessuno.
   Per chi ha pagato la quota fuori dall'app (prima dell'app, con una ricevuta
   di carta) c'è **PAGATA SENZA RICEVUTA DELL'APP**: **VALE FINO AL** (di
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
-  PAGATA**. In elenco e nella scheda si vede **FUORI APP**; alla sua data
+  PAGATA**. In elenco si vede **Fuori app** e nella scheda **FUORI APP**; alla sua data
   scade da sola, e **Togli «pagata fuori dall'app»** la toglie prima.
 - **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima **PAGATO**, **MANCA** e **QUOTA**; poi ogni ricevuta con i suoi pagamenti sotto, e dopo **SENZA RICEVUTA** quelli registrati a mano. Quelli di tutti sono in [PAGAMENTI](pagamenti.md).
 - **ISCRIZIONI** — i corsi che fa. **TERMINA** la toglie da un corso: da

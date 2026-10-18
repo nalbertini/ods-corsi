@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Logo } from '../../Logo'
 import { Bollino } from '../../ds'
 import type { Voce } from '../../../lib/indirizzoSegreteria'
-import { LUOGHI, luogoDi, voceInLista } from '../../../lib/luoghiBanco'
+import { luoghiPer, luogoDi, voceInLista } from '../../../lib/luoghiBanco'
 
 /** Il numero da mostrare accanto a una voce: cose che aspettano, con la parola per chi non vede il colore. */
 const Segno = ({ n, detto }: { n: number; detto: string }) =>
@@ -23,6 +23,8 @@ export function BarraBanco({
   nome,
   ruolo,
   segni,
+  consentite,
+  titolo,
   cerca,
   link,
   guida,
@@ -35,6 +37,10 @@ export function BarraBanco({
   prova: boolean
   nome: string
   ruolo: string
+  /** Le voci che la persona può aprire: le altre non ci sono, e un luogo senza voci nemmeno. */
+  consentite: readonly Voce[]
+  /** Sotto «ODS CORSI»: lo stesso titolo del menu (`titoloDelMenu`). */
+  titolo: string
   /** Le cose che aspettano, per voce: la somma dà il numero del luogo. */
   segni: Partial<Record<Voce, { n: number; detto: string }>>
   cerca: ReactNode
@@ -65,7 +71,8 @@ export function BarraBanco({
       document.removeEventListener('keydown', esc)
     }
   }, [linkAperto])
-  const luogo = LUOGHI.find((l) => l.id === luogoDi(voce)) ?? LUOGHI[0]
+  const luoghi = luoghiPer(consentite)
+  const luogo = luoghi.find((l) => l.id === luogoDi(voce)) ?? luoghi[0]
   const inLista = voceInLista(voce)
   return (
     <header className="bn-barra">
@@ -74,7 +81,7 @@ export function BarraBanco({
           <Logo width={38} />
           <span className="stack" style={{ gap: 2 }}>
             <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.06em', lineHeight: 1 }}>ODS CORSI</span>
-            <span className="bn-sotto-marchio">SEGRETERIA</span>
+            <span className="bn-sotto-marchio">{titolo}</span>
           </span>
         </span>
         <div className="bn-cerca">{cerca}</div>
@@ -110,7 +117,7 @@ export function BarraBanco({
         )}
       </div>
       <nav className="bn-luoghi" aria-label="Segreteria">
-        {LUOGHI.map((l) => {
+        {luoghi.map((l) => {
           const n = l.voci.reduce((somma, v) => somma + (segni[v.voce]?.n ?? 0), 0)
           return (
             <button key={l.id} type="button" className="num bn-luogo" aria-current={l.id === luogo.id ? 'page' : undefined} onClick={() => onVai(l.voci[0].voce)}>

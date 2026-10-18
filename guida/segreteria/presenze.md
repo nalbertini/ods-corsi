@@ -13,7 +13,7 @@ questo sta in un riquadro a parte e non abbassa le medie.
 
 - il **mese** da guardare, o gli **ultimi 30 giorni** (quelli di DA FARE, anche a cavallo di due mesi);
 - **Tutti i corsi**, o un corso solo;
-- **SCARICA CSV** — il registro del periodo in un file che si apre con Excel.
+- **Scarica CSV** — il registro del periodo in un file che si apre con Excel.
 
 ## I quattro numeri
 
@@ -29,15 +29,15 @@ questo sta in un riquadro a parte e non abbassa le medie.
 - **PRESENZA MEDIA PER CORSO** — una barra per corso, presenti su iscritti,
   dal più frequentato.
 - **CHI SI STA PERDENDO** — chi ha **tre o più assenze di fila** negli ultimi
-  due mesi, con i corsi e l'ultima volta che è venuto. **SCHEDA** apre la sua
+  due mesi, con i corsi e l'ultima volta che è venuto. **Apri la scheda** apre la sua
   scheda in [Iscritti](iscritti.md). È la lista di chi chiamare.
-- **APPELLI MANCANTI** — le lezioni passate senza appello. **FALLO ORA** apre la
+- **APPELLI MANCANTI** — le lezioni passate senza appello. **Fai l'appello ora** apre la
   lezione nella [Settimana](settimana.md), per segnarlo da lì o per metterla
   ANNULLATA se non si è fatta.
 - **PROVE** — chi è venuto a provare nel mese, dalla lezione più recente: il
   corso, il giorno, chi l'ha aggiunto all'appello (di solito l'istruttore,
-  col tasto PROVE) e il **telefono**, che si tocca per chiamare. **ISCRITTO**
-  vuol dire che nel frattempo si è iscritto; **SCHEDA** apre la sua scheda in
+  col tasto Prove) e il **telefono**, che si tocca per chiamare. **Iscritto**
+  vuol dire che nel frattempo si è iscritto; **Apri la scheda** apre la sua scheda in
   [Iscritti](iscritti.md), dove c'è già, e da lì lo si iscrive. Le prove
   non contano nelle medie, che sono sugli iscritti.
 
@@ -47,5 +47,5 @@ In fondo, **REGISTRO DEL MESE**: le lezioni del mese con l'appello fatto,
 giorno per giorno dal più recente (con un corso scelto, solo quel corso).
 Ogni lezione dice ora, sala, istruttore e quanti presenti su iscritti; un
 tocco la apre e mostra **chi c'era**, in ordine di cognome, e sotto, più
-spenti, assenti, giustificati e non segnati. **APRI LA LEZIONE** la porta
+spenti, assenti, giustificati e non segnati. **Apri la lezione** la porta
 nella [Settimana](settimana.md), per correggere un segno.

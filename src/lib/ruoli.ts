@@ -79,8 +79,9 @@ export const insegna = (p: { ruolo: string; ancheIstruttore?: boolean }) => spun
 
 /** Le aree di una persona: una per cosa che fa, e nessuna per un ruolo che l'app non conosce. */
 export function areeDi(p: { ruolo: string; ancheIstruttore?: boolean; ancheAmministrazione?: boolean }): AreaDiAccount[] {
-  const area: Record<Spunta, AreaDiAccount> = { segreteria: 'segreteria', amministrazione: 'amministrazione', istruttore: 'istruttori' }
-  return spunteDi(p).map((s) => area[s])
+  // Segreteria e amministrazione sono due autorizzazioni di uno stesso posto: un menu solo (`menuSegreteria.ts`).
+  const area: Record<Spunta, AreaDiAccount> = { segreteria: 'segreteria', amministrazione: 'segreteria', istruttore: 'istruttori' }
+  return [...new Set(spunteDi(p).map((s) => area[s]))]
 }
 
 /** Il ruolo detto per esteso, per mostrarlo: «Segreteria e amministrazione». */
