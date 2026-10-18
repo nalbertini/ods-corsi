@@ -240,7 +240,7 @@ const CSS_HOME = `
 .passo-unico .numeri .tessera{min-height:150px}
 .passo-unico .numeri .cifra{font-size:clamp(56px,6.3vw,84px)}
 .motto{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin:48px var(--margine) 0}
-.motto h3{margin:0;font-size:64px;line-height:.92}
+.motto h2{margin:0;font-size:64px;line-height:.92}
 .motto p{margin:0 0 12px;font-size:20px;line-height:1.5}
 .motto p:last-child{margin:0}
 .passo-unico .sezione{padding:96px var(--margine) 0}
@@ -259,6 +259,8 @@ const CSS_HOME = `
 .passo-unico .scheda h3{margin:24px 72px 0 24px;font-size:clamp(36px,3.6vw,52px);line-height:.95;display:block}
 .passo-unico .scheda h3 a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none}
 .passo-unico .scheda h3 a::before{content:"";position:absolute;inset:0}
+.passo-unico .scheda h3 a:focus-visible{outline:none}
+.passo-unico .scheda:has(a:focus-visible){outline:3px solid var(--blu);outline-offset:3px}
 .passo-unico .scheda h3::after{content:"↗\uFE0E";position:absolute;top:16px;right:16px;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:#fff;color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:24px;font-weight:600;line-height:1}
 .passo-unico .scheda p{margin:10px 24px 0;font-size:17px;line-height:1.45;max-width:none}
 .passo-unico .scheda p.eta{margin-top:4px;font-size:16px;font-weight:700}
@@ -304,7 +306,7 @@ const CSS_HOME = `
 .passo-unico .tessere.numeri{margin-top:32px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .passo-unico .numeri .tessera{min-height:160px}
 .motto{grid-template-columns:1fr;gap:16px;margin-top:32px}
-.motto h3{font-size:44px}
+.motto h2{font-size:44px}
 .passo-unico .sezione{padding:64px var(--margine) 0}
 .passo-unico .sezione h2{font-size:clamp(56px,5.56vw,80px)}
 .tessere.schede{grid-template-columns:1fr;grid-auto-rows:auto}
@@ -382,6 +384,8 @@ html{-webkit-text-size-adjust:100%}
 body{margin:0 auto;max-width:1440px;background:var(--fondo);color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:clamp(17px,1rem + .25vw,19px);line-height:1.55;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset:3px}
+.salta{position:absolute;left:-9999px;top:0}
+.salta:focus{left:16px;top:16px;z-index:100;display:inline-flex;align-items:center;min-height:48px;padding:0 20px;background:var(--giallo);color:var(--inchiostro);font-weight:700;text-decoration:none}
 .invito:focus-visible{outline-color:var(--inchiostro)}
 .piede a:focus-visible{outline-color:var(--giallo)}
 .logo{display:block;flex-shrink:0}
@@ -1077,10 +1081,16 @@ function social(c: Contesto, titolo: string, descrizione: string): string {
   ].join('')
 }
 
+// Chi naviga da tastiera o con lo screen reader salta la testata: il link porta al <main>.
+const conSalto = (corpo: string) => {
+  const conDestinazione = corpo.replace(/<main[\s>]/, (m) => `<span id="contenuto"></span>${m}`)
+  return conDestinazione === corpo ? corpo : `<a class="salta" href="#contenuto">Salta al contenuto</a>${conDestinazione}`
+}
+
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssContatti?: boolean; cssCorsoNuovo?: string; cssCorsi?: boolean; cssOrari?: boolean; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}${o.cssOrari ? `<style>${CSS_ORARI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}${o.cssOrari ? `<style>${CSS_ORARI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${conSalto(o.corpo)}</body></html>`
 }
 
 /**

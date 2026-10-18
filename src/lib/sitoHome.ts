@@ -159,7 +159,7 @@ export function homeNuova(testoPulito: string, iscrizione: string): { bottoni: s
   const usatiNumeri = testa.findIndex((x) => x.tag === 'ul' && numeriDiUnElenco(x))
   const resto = testa.filter((x, i) => pulsantiDi(x) === null && immagine(x) === null && i !== usatiNumeri && !(iM >= 0 && i >= iM))
   const tNumeri = numeri ? `<div class="tessere n-${numeri.length} numeri">${numeri.map((n, k) => `<article class="tessera ${COLORI_NUMERI[k % COLORI_NUMERI.length]} numero"><strong class="cifra">${n.cifra}</strong>${n.scritta ? ` <span class="scritta">${n.scritta}</span>` : ''}</article>`).join('')}</div>` : ''
-  const tMotto = motto ? `<section class="motto"><h3>${motto.titolo}</h3><div>${motto.righe.map((x) => x.html).join('')}</div></section>` : ''
+  const tMotto = motto ? `<section class="motto"><h2>${motto.titolo}</h2><div>${motto.righe.map((x) => x.html).join('')}</div></section>` : ''
   const tResto = resto.length ? `<div class="testo">${resto.map((x) => x.html).join('')}</div>` : ''
   const sezioni: string[] = []
   const titoli = b.map((x, i) => (x.tag === 'h2' ? i : -1)).filter((i) => i >= 0)
