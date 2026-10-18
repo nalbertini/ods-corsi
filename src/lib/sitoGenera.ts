@@ -106,8 +106,9 @@ export const fileDi = (slug: string) => (slug === 'home' ? 'index.html' : `${slu
 /**
  * Il marchio intero (anelli e scritta). `logo.webp` è già tagliato ai margini del disegno: width e height qui
  * sono le sue misure vere (le controlla `prova-sito-aspetto`). Il suo fondo è bianco e `multiply` lo fonde col fondo della pagina.
+ * `sizes` è la larghezza a cui si vede (`.logo img`, 112px): `logo-224.webp` è il doppio, per gli schermi nitidi.
  */
-const MARCHIO = '<img src="/risorse/logo.webp" alt="Officine dello Sport" width="1060" height="1040" decoding="async">'
+const MARCHIO = '<img src="/risorse/logo.webp" srcset="/risorse/logo-224.webp 224w, /risorse/logo.webp 1060w" sizes="112px" alt="Officine dello Sport" width="1060" height="1040" decoding="async">'
 
 /** L'ultima riga di una griglia da 8 a 16 tessere si allarga: con una in più l'ultima è a tutta riga, con due in più sono due larghe. */
 const GRIGLIE_LUNGHE = Array.from({ length: GRIGLIA_MASSIMA - 7 }, (_, i) => i + 8)
@@ -191,7 +192,6 @@ const CSS_CORSO_NUOVO = `
 .corso-nuovo .orario h3{font-size:clamp(28px,3.2vw,46px)}
 .corso-nuovo .orario .ora{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(26px,2.8vw,40px);line-height:1;text-transform:uppercase}
 .corso-nuovo .orario .dettagli{grid-column:1 / -1;align-self:end;display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 12px}
-.corso-nuovo .numero-perche{opacity:.6}
 .corso-nuovo .orario .dettagli p{margin:0}
 .corso-nuovo .cosa-griglia{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
 .corso-nuovo .cosa-si-fa.con-foto .cosa-griglia{grid-template-columns:minmax(0,1fr) 440px}
@@ -267,7 +267,7 @@ const CSS_HOME = `
 .pastiglie svg{display:block;flex:none;width:20px;height:20px}
 .passo-unico .tessere.perche .tessera{position:relative;min-height:280px;padding:32px;justify-content:flex-start;gap:12px;font-size:20px;line-height:1.45}
 .passo-unico .perche h3{font-size:clamp(36px,3.6vw,52px);line-height:.95;padding-right:56px}
-.numero-perche{position:absolute;top:24px;right:28px;font-family:var(--display);font-weight:800;font-size:56px;line-height:1;opacity:.35}
+.numero-perche{position:absolute;top:24px;right:28px;font-family:var(--display);font-weight:800;font-size:56px;line-height:1;opacity:.7}
 .passo-unico .tessere.estratti .tessera.citazione{min-height:400px;padding:32px;gap:20px;font-size:20px;line-height:1.45;font-weight:500}
 .citazione .estratto::before,.citazione .testo-intero p:first-child::before{content:"«"}
 .citazione .estratto::after,.citazione .testo-intero p:last-child::after{content:"»"}
@@ -389,6 +389,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .testata{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:22px var(--margine)}
 .pulsante,.testo a.pulsante,.colonna a.pulsante{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 32px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:18px;font-weight:600;text-decoration:none}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
+span.pulsante{pointer-events:none}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
 h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height:.82;overflow-wrap:anywhere}
 .pagina-hero{padding:40px var(--margine) 96px;display:flex;flex-wrap:wrap;align-items:stretch;gap:28px 56px}
@@ -1005,7 +1006,8 @@ function voci(dove: 'menu' | 'footer', c: Contesto): Array<{ etichetta: string; 
     .sort((a, b) => a.ordine - b.ordine)
     .flatMap((v) => {
       const href = indirizzoVoce(v, c)
-      return href === null ? [] : [{ etichetta: v.etichetta.trim(), href }]
+      // La pagina Contatti ha un solo nome, qualunque etichetta abbia scritto la segreteria: «Scrivici», come il pulsante in testata.
+      return href === null ? [] : [{ etichetta: href === TESTI.contatti ? TESTI.scrivici : v.etichetta.trim(), href }]
     })
 }
 
@@ -1034,15 +1036,19 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
   })
 }
 
-/** «Contattaci» sta accanto a «Prova», non nel menu: così sul telefono il menu entra in una riga. Nel piede resta tra le pagine. */
+/** «Scrivici» sta accanto a «Prova», non nel menu: così sul telefono il menu entra in una riga. Nel piede resta tra le pagine. */
 function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
   const menu = lista(voci('menu', c).filter((v) => !conContatti || v.href !== TESTI.contatti), corrente)
-  const segnata = corrente === TESTI.contatti ? ' aria-current="page"' : ''
+  // In Contatti il pulsante non porta alla pagina in cui sei già: resta il nome, senza link.
+  const inContatti = corrente === TESTI.contatti
   const logo = `<a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>`
   // La testata nuova: due pulsanti interi a destra; sul telefono un tasto MENU che apre il menu con `:target`, senza script.
   const prova = `<a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.provaIntera}</a>`
-  const scrivici = `<a class="pulsante secondario" href="${TESTI.contatti}"${segnata}>${TESTI.scrivici}</a>`
-  const dentro = `<a class="chiudi" href="#">Chiudi</a>${menu ? `<ul>${menu}</ul>` : ''}${prova.replace('class="pulsante primario"', 'class="pulsante primario nel-menu"')}${conContatti ? `<a class="pulsante secondario nel-menu" href="${TESTI.contatti}">${TESTI.scrivici}</a>` : ''}`
+  const scriviciPulsante = (extra: string) => inContatti
+    ? `<span class="pulsante secondario${extra}" aria-current="page">${TESTI.scrivici}</span>`
+    : `<a class="pulsante secondario${extra}" href="${TESTI.contatti}">${TESTI.scrivici}</a>`
+  const scrivici = scriviciPulsante('')
+  const dentro = `<a class="chiudi" href="#">Chiudi</a>${menu ? `<ul>${menu}</ul>` : ''}${prova.replace('class="pulsante primario"', 'class="pulsante primario nel-menu"')}${conContatti ? scriviciPulsante(' nel-menu') : ''}`
   return `<header class="testata">${logo}<a class="tasto-menu" href="#menu">MENU</a><nav id="menu" aria-label="Principale">${dentro}</nav><div class="azioni">${prova}${conContatti ? scrivici : ''}</div></header>`
 }
 
@@ -1118,7 +1124,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const tecnici = !p.diLegge && !dellaPersona && !scheda && !corso && !/<h2[\s>]/i.test(inTestata.resto) ? elencoIstruttori(inTestata.resto, cornice) : null
   const testo = scheda ? '' : dellaPersona ? dellaPersona.resto : corso ? corso.resto : tecnici ? tecnici.resto : inTestata.resto
   const t = testata(c, conContatti, dellaPersona || scheda ? percorso('chi-siamo') : corso ? percorso('corsi') : percorso(p.slug))
-  // «Contattaci» sta in testata, accanto a «Prova»: sotto titolo e frase non si ripete.
+  // «Scrivici» sta in testata, accanto a «Prova»: sotto titolo e frase non si ripete.
   const intro = scheda
     ? `<section class="scheda-persona">${scheda}</section>`
     : dellaPersona

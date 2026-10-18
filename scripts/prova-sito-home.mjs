@@ -220,7 +220,7 @@ console.log('\n9. Telefono: le misure del design')
   ok('piede: nome da 44px, 24px di imbottitura', [ha(mobile, '.piede .nome', 'font-size:44px'), ha(mobile, '.piede', 'padding:24px')], [true, true])
   const m = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contatti', slug: 'contatti', indirizzo: null }], rinvii: [] })
   ok('domande: una gialla e una chiara, a turno', ha(mobile, '.tessere .tessera.chiara:nth-child(odd)', 'background:var(--giallo)'), true)
-  ok('la voce della pagina aperta ha aria-current="page", solo quella', [/<a href="\/" aria-current="page">Home/.test(m['index.html']), /<a class="pulsante secondario" href="\/contatti\/" aria-current="page">Scrivici/.test(m['contatti/index.html']), (m['index.html'].match(/aria-current="page"/g) ?? []).length], [true, true, 1])
+  ok('la voce della pagina aperta ha aria-current="page", solo quella', [/<a href="\/" aria-current="page">Home/.test(m['index.html']), /<a [^>]*href="\/contatti\/"/.test((m['contatti/index.html'].match(/<header class="testata">[\s\S]*?<\/header>/) ?? [''])[0]) === false, (m['index.html'].match(/aria-current="page"/g) ?? []).length], [true, true, 1])
 }
 
 console.log('\n10. I colori delle tessere come nel design')
@@ -268,7 +268,7 @@ console.log('\n12. Schede dei corsi, marchio ritagliato, puntini, pulsante breve
   ok('le citazioni hanno i puntini (scroll-marker)', [/scroll-marker-group:\s*after/.test(cssPagina), /\.citazioni \.tessera::scroll-marker\{/.test(cssPagina)], [true, true])
   ok('sul telefono le foto della fascia sono due', ha(mobile, '.foto-fila.quattro .foto:nth-child(n+3)', 'display:none'), true)
   const piede = pagina('<p>x</p>')
-  ok('il piede ripete le voci del menu', /<footer class="piede">[\s\S]*Contatti/.test(g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Contatti', slug: 'contatti', indirizzo: null }], rinvii: [] })['index.html']?.match(/<footer[\s\S]*<\/footer>/)?.[0] ?? ''), true)
+  ok('il piede ripete le voci del menu', /<footer class="piede">[\s\S]*Chi siamo/.test(g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'chi-siamo', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Chi siamo', slug: 'chi-siamo', indirizzo: null }], rinvii: [] })['index.html']?.match(/<footer[\s\S]*<\/footer>/)?.[0] ?? ''), true)
 }
 
 console.log('\n13. Una foto e il carosello dei clienti: affiancati')

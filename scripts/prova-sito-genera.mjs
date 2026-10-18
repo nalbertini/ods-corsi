@@ -486,5 +486,19 @@ ok('il dominio giusto va', typeof prova(() => g.generaSito(dati({ dominio: 'http
   ok('lanciato da un\'altra cartella funziona lo stesso (sanitize-html si trova)', lancia(altrove, join(altrove, 'sito'), '--da-file', buoni).status, 0)
 }
 
+console.log('\nIl logo: una variante piccola per lo schermo normale')
+{
+  const { existsSync, statSync } = await import('node:fs')
+  const r = genera(dati())
+  const loghi = html(r).flatMap((f) => (c(r, f).match(/<img\b[^>]*\/risorse\/logo[^>]*>/g) || []).map((i) => [f, i]))
+  ok('il logo compare nelle pagine', loghi.length > 0, true)
+  ok('ogni logo tiene width="1060" height="1040" (aspetto invariato)', loghi.every(([, i]) => /\bwidth="1060"/.test(i) && /\bheight="1040"/.test(i)), true)
+  ok('ogni logo ha uno srcset con la variante piccola (224w) e la grande (1060w)', loghi.every(([, i]) => /\bsrcset="[^"]*\s224w/.test(i) && /\bsrcset="[^"]*\/risorse\/logo\.webp 1060w/.test(i)), true)
+  const piccolo = (loghi[0]?.[1].match(/srcset="([^"]*?)\s+224w/)?.[1] ?? '').split(/[\s,]+/).pop()
+  ok('il logo ha un src valido e le sizes dicono 112px', loghi.every(([, i]) => /\bsrc="\/risorse\/logo\.webp"/.test(i) && /\bsizes="112px"/.test(i)), true)
+  ok('la variante piccola esiste in sito/risorse/', !!piccolo && existsSync(`sito${piccolo}`), true)
+  ok('la variante piccola pesa meno di 20 KB', !!piccolo && existsSync(`sito${piccolo}`) && statSync(`sito${piccolo}`).size < 20480, true)
+}
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)

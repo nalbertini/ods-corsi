@@ -141,8 +141,8 @@ const orariDel = (...x) => x.map(({ corsoId, giorno, ora, durataMin }) => ({ cor
 const ORARI = orariDel(r(A, 1, '17:00'), r(A, 3, '17:00'), r(B, 2, '16:30'), r(B, 6, '10:00'), r(B, 6, '11:15'), r(C, 5, '20:00'))
 
 console.log('\n3. Pagina non collegata: l’HTML è quello di oggi')
-// Le impronte sono dell’HTML generato PRIMA della funzione (stessa pagina, senza campi nuovi).
-const OGGI = { dati: "84eaa7b4a58846b2183d0945bee5b678e77b361930a7b6af6503639ba19acd08", foto: '76411b09efca299fb7805290664ad7a579921f709c936ffc2db71eb02860fbd0', fascia: 'c8d44d7113549af6ece82559c4fc46f221c56a7d5b8fcdb34a79d4ca37ea5d78' }
+// Le impronte sono dell’HTML di una pagina non collegata (senza campi nuovi): cambiano se cambia la testata, il logo o il CSS, e allora si rifanno.
+const OGGI = { dati: "2cee972c1b23c72beb8ae7db1c62c908dca6c0d7c296c75274222c55283f1f90", foto: '3da7efac3ed9761ae10bb13a3a8793ad10a93eab0ee1975e05168a89614c1ffa', fascia: '1884e3985ddee0404cd2e303c6536f7ed491d95c99a61b2f1a0f359cefc4772b' }
 ok('con foto di apertura: HTML di oggi', sha(pagina(CON_FOTO)), OGGI.foto)
 ok('fascia blu: HTML di oggi', sha(pagina(FASCIA)), OGGI.fascia)
 ok('l’orario a mano si vede ancora', /09:15 – 10:15/.test(testo(main(pagina(CON_FOTO)))), true)

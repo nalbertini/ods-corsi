@@ -188,5 +188,30 @@ console.log('\n6. Dopo la revisione del design')
   ok('i link del piede sono larghi almeno 48px', px(ultimo(Rc, /\.piede a$/, 'min-width', 375), 375), 48)
 }
 
+console.log('\n7. Il contrasto dei numeri 1–4 (WCAG, almeno 3:1 con l’opacity mescolata sul fondo)')
+{
+  const radice = Object.fromEntries([...(stili(pagina(F.TESTO_NUOVO)).match(/:root\{([^}]*)\}/)?.[1] ?? '').matchAll(/--([a-z]+):\s*(#[0-9a-f]{6})/gi)].map((m) => [m[1], m[2]]))
+  const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
+  const lum = (c) => c.map((v) => v / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0)
+  const contrasto = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05) }
+  const sfuma = (t, f, o) => t.map((v, i) => v * o + f[i] * (1 - o))
+  const fondi = [['giallo', radice.inchiostro], ['blu', '#ffffff'], ['inchiostro', '#ffffff']]
+  // La pagina del corso rivista: pulsante all'iscrizione, foto, 4 dati e «Cosa aspettarsi» a 4 tessere (come in prova-sito-corso-nuovo.mjs).
+  const P = 'https://abc.supabase.co/storage/v1/object/public/sito/'
+  const testoCorso = `<p><a class="pulsante" href="/contatti/">Scrivici</a> <a class="pulsante" href="https://app.officinedellosport.it/iscrizioni/">Prova una settimana a 5 €</a></p><img src="${P}a.jpg" alt="Una lezione" /><ul>${[1, 2, 3, 4].map((n) => `<li><strong>Etichetta ${n}</strong> Valore ${n}</li>`).join('')}</ul><h2>Cosa aspettarsi</h2>${[1, 2, 3, 4].map((n) => `<h3>Aspetto ${n}</h3><p>Testo ${n}.</p>`).join('')}`
+  const nuovo = g.generaSito({ dominio: F.DOMINIO, pagine: [{ slug: 'judo', titolo: 'Judo', descrizione: 'd', testo: testoCorso }, { slug: 'corsi', titolo: 'Corsi', descrizione: '', testo: '<p>c</p>' }, { slug: 'contatti', titolo: 'Contatti', descrizione: '', testo: '<p>c</p>' }], menu: [], rinvii: [], ospitiImmagini: [P] })['judo/index.html'] ?? ''
+  ok('la pagina di prova è un corso rivista (ha il CSS di .corso-nuovo)', /\.corso-nuovo \.corso-apertura/.test(nuovo), true)
+  const Rn = regole(stili(nuovo))
+  const pagine = [['home', R], ['corso', Rn]]
+  for (const [nome, Rp] of pagine) {
+    const o = parseFloat(ultimo(Rp, /\.numero-perche$/, 'opacity', 1440))
+    for (const [fondo, testo] of fondi) {
+      const c = contrasto(sfuma(rgb(testo), rgb(radice[fondo] ?? ''), o), rgb(radice[fondo] ?? ''))
+      ok(`${nome}: il numero su ${fondo} ha contrasto >= 3 (opacity ${o}, avuto ${c.toFixed(2)})`, c >= 3, true)
+    }
+  }
+  ok('l’opacity è la stessa in tutte le pagine: nessuna regola propria per «.corso-nuovo .numero-perche»', R.concat(Rn).some((r) => /^\.corso-nuovo \.numero-perche$/.test(r.sel) && /opacity/.test(r.corpo)), false)
+}
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)
