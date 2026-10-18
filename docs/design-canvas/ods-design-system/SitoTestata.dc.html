@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<header style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: {{pad}}; color: #0d2a3d">
+  <div style="width: {{lw}}; height: {{lh}}; flex: none; background-image: url({{logo}}); background-repeat: no-repeat; background-size: {{ls}}; background-position: {{lp}}; mix-blend-mode: multiply" role="img" aria-label="Officine dello Sport"></div>
+  <sc-if value="{{largo}}" hint-placeholder-val="{{ true }}"><nav style="display: flex; gap: 8px; font-family: {{inter}}; font-size: 17px; font-weight: 500">
+    <sc-for list="{{voci}}" as="v" hint-placeholder-count="4"><span style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 14px; border-bottom: {{v.riga}}; font-weight: {{v.peso}}">{{v.nome}}</span></sc-for>
+  </nav></sc-if>
+  <sc-if value="{{largo}}" hint-placeholder-val="{{ true }}"><span style="display: flex; gap: 8px"><span style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 16px">{{prova}}</span><span style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; border-radius: 6px; border: 3px solid #0d2a3d; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 16px">Scrivici</span></span></sc-if>
+  <sc-if value="{{stretto}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border-radius: 6px; background: #0d2a3d; color: #ffffff; font-family: {{inter}}; font-weight: 600; font-size: 16px">Menu <span aria-hidden="true">☰</span></span></sc-if>
+</header>
+</x-dc>
+<script data-dc-script data-props='{"logo":{"editor":"text","default":"logo.webp"},"attiva":{"editor":"text","default":"Home"},"prova":{"editor":"text","default":"Prova una settimana a 5 €"},"piccolo":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":120}}'>
+// PROPOSTA home del sito: la testata. Voci di menu con bersaglio da 48px (oggi 39px), il pulsante di prova col verbo e il prezzo (porta al modulo online) e «Scrivici» (porta a Contatti; il 346 329 2786 risponde anche su WhatsApp).
+// Sul telefono: marchio + tasto MENU da 48px (oggi due righe di voci schiacciate contro il titolo). Il marchio e' ritagliato come sul sito (logo.webp, 207px, scostamento -47 -43).
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const pic = truthy(p.piccolo);
+    const attiva = p.attiva || 'Home';
+    return { inter: INTER, logo: p.logo || 'logo.webp', prova: p.prova ?? '', largo: !pic, stretto: pic,
+      pad: pic ? '12px 16px 0' : '22px 48px', lw: pic ? '84px' : '112px', lh: pic ? '82px' : '110px', ls: pic ? '156px 156px' : '207px 207px', lp: pic ? '-36px -33px' : '-47px -43px',
+      voci: ['Home', 'I nostri corsi', 'Chi siamo', 'Contattaci'].map((nome) => ({ nome, riga: nome === attiva ? '3px solid #14709f' : '3px solid transparent', peso: nome === attiva ? 700 : 500 })) };
+  }
+}
+</script>
+</body>
+</html>

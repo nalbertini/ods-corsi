@@ -14,6 +14,9 @@ FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista
 Le scelte che valgono solo per il computer (o il telefono) che si sta usando, non per la
 segreteria intera: restano su questo dispositivo, come il tema.
 
+- **L'ASPETTO** — **COME OGGI**, col menu a sinistra, o **IL BANCO**, con la ricerca in
+  cima e cinque luoghi ([la guida](il-banco.md)). Cambia subito, senza ricaricare. Sul
+  telefono resta sempre il menu di sempre.
 - **LA STRISCIA COSA MANCA** — **MOSTRALA** (com'è all'inizio) o **NASCONDILA**: le cinque
   caselle in cima alle pagine ([guida](README.md#la-striscia-cosa-manca)) spariscono da
   tutte le pagine. **DA FARE** ha sempre gli stessi conti, quindi non si perde niente: ci si

@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; height: {{alto}}; background: {{bg}}; color: {{fg}}; border-radius: 6px; padding: {{pad}}; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; outline: {{contorno}}; outline-offset: -3px">
+  <div style="font-family: {{inter}}; font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border-bottom: 3px solid {{fg}}; align-self: flex-start; padding-bottom: 6px">{{etichetta}}</div>
+  <div style="display: flex; flex-direction: column"><div style="font-family: {{inter}}; font-size: {{corpo}}; line-height: 1.4; font-weight: 500">{{valore}}</div><sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><span style="align-self: flex-start; display: inline-block; margin-top: 12px; background: #ffffff; color: #0d2a3d; border: 2px solid #e4292a; border-radius: 4px; padding: 4px 8px; font-family: {{inter}}; font-size: 12px; font-weight: 700; line-height: 1.2">{{nota}}</span></sc-if></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"Ruolo"},"valore":{"editor":"text","default":"Presidente e direttore tecnico di ASD Il Centro Judo"},"tono":{"editor":"enum","options":["blu","giallo","inchiostro","chiara","bianco"],"default":"blu"},"alto":{"editor":"text","default":"230px"},"piccolo":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"$preview":{"width":320,"height":190}}'>
+// PROPOSTA scheda di un istruttore: una delle quattro tessere Ruolo / Corsi / Quando / Titoli, tutte alte uguali, valore di 9-10 parole. Il cartellino «DA CONFERMARE» sta sotto il testo, mai sopra il titolo.
+// Se un dato non c'e', la tessera non si mostra (niente tessere vuote): decide la pagina, non il componente.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const [bg, fg] = TONI[p.tono] || TONI.blu;
+    const pic = truthy(p.piccolo);
+    return { inter: INTER, bg, fg, etichetta: p.etichetta ?? '', valore: p.valore ?? '', alto: p.alto || "230px", pad: pic ? '16px 18px' : '20px 24px', corpo: pic ? '17px' : '20px', ...segna(p.nota) };
+  }
+}
+</script>
+</body>
+</html>

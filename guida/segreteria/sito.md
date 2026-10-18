@@ -20,6 +20,29 @@ il footer in fondo. Quello che scrivi resta **bozza** finché non premi
 trattini: «Chi siamo» diventa `chi-siamo`). Si può cambiare. Un indirizzo già
 usato, o uno che serve al sito (`admin`, `api`, `privacy`…), non va.
 
+**NUOVA PAGINA** crea una pagina **a pezzi**. Le pagine che c'erano prima (la
+Home, i corsi, le pagine di legge) si scrivono ancora come ti ricordi, con il
+testo solo: passeranno ai pezzi più avanti.
+
+Una pagina a pezzi si compone con le parti che metti in fila:
+
+- **+ FOTO IN CIMA**: una foto sola, sempre in alto.
+- **+ TESTO**: un testo, con gli stessi tasti di sempre (qui sotto).
+- **+ FOTO**: una foto, col suo testo alternativo (o «solo decorativa»).
+- **+ COLONNE**: da due a tre colonne di testo, una accanto all'altra. Sul telefono
+  si mettono una sotto l'altra. Una colonna lasciata vuota non compare sul sito.
+
+Le parti si mettono dopo quella scelta, o in fondo. Per cambiare l'ordine si
+trascina la parte, oppure si sceglie e si premono **SU** o **GIÙ**; **TOGLI** la
+toglie dalla pagina. Le tessere, le domande e le citazioni a scorrimento si
+formano da sole dal testo, come per ogni pagina (vedi «Come il testo diventa
+tessere»). **ANTEPRIMA** mostra la pagina come il sito la farà, con le
+tessere; il carattere del sito e il logo si vedono solo sul sito vero.
+
+Se compare «Le pagine a pezzi non sono ancora attive sul database», va
+lanciato `62-sito-pezzi.sql` (lo fa chi cura l'app): finché non c'è, le pagine
+nuove si scrivono col testo solo.
+
 Toccando una pagina si apre per scriverla:
 
 - Il testo ha i tasti **TITOLO**, **SOTTOTITOLO**, **G** (grassetto), **C**
@@ -37,7 +60,7 @@ Toccando una pagina si apre per scriverla:
   Titolo e descrizione compaiono anche nell'anteprima di quando qualcuno
   condivide la pagina (WhatsApp, Facebook, Instagram), con l'immagine del sito.
 - **SALVA BOZZA** salva senza cambiare il sito. **ANTEPRIMA** mostra com'è
-  scritta; **TORNA A SCRIVERE** la richiude.
+  scritta (nelle pagine a pezzi, com'è sul sito); **TORNA A SCRIVERE** la richiude.
 - **PUBBLICA** salva la bozza, se serve, e la rende il testo del sito. Se
   nel frattempo qualcun altro ha cambiato la pagina, non scrive niente e lo
   dice: ricaricala per vedere le sue modifiche, poi rifai la tua.
@@ -149,6 +172,7 @@ il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA
   rispetta la regola, restano nel testo. Vale solo per la Home. La foto grande è più larga che alta: scegli
   foto con spazio sopra e ai lati, e senza minori riconoscibili senza il permesso dei genitori.
 - **Collage pieno** (Home): con **4 foto** e **un elenco di 9 voci** prima del primo titolo grande, la testata ha le 13 tessere del design. Le voci seguono l'ordine: i **numeri** (grassetto + scritta, come «**35+** anni di sport»), i **titoli** (solo grassetto, scritta grande), le **note** (niente grassetto, scritta piccola, per l'indirizzo e il motto). Con altre quantità resta il collage di prima.
+- **La Home nuova** (testo pronto in `docs/sito/home.md` e `home.html`): si riconosce da un paragrafo con due pulsanti, **«Prova una settimana a 5 €»** (verso `https://app.officinedellosport.it/iscrizioni/`) e **«Scrivici»** (verso `/contatti/`), prima del primo titolo grande. Senza il pulsante verso il modulo online la Home resta come prima, senza avvisi: se dopo **PUBBLICA** non cambia niente, controlla quell'indirizzo. Da lì il sito riconosce ogni sezione dalla forma: i **numeri** (elenco di 2–6 voci col grassetto), i **corsi** (sottotitoli col link: foto facoltativa, età, descrizione, fasce in corsivo), i **quattro motivi** (quattro sottotitoli con un paragrafo), le **citazioni con «LEGGI TUTTO»** (primo paragrafo l'estratto, poi il testo intero, poi la firma in corsivo; le virgolette non si scrivono), le **recensioni** (due citazioni e un sottotitolo «In breve» con un elenco), le **domande** e la **chiamata finale** (l'ultima sezione, con i due pulsanti e la foto). Prima di incollare il testo nuovo cancella tutto il vecchio.
 - Nelle **pagine di un corso**, di **Chi siamo**, di **Contatti**, degli **istruttori** (elenco e singola persona) e nell'elenco **I nostri corsi** le regole di scrittura sono nei testi pronti di `docs/sito/<pagina>.md`: ogni pagina ha il suo testo da incollare e le sue foto proposte in `docs/sito/foto.md`.
 - Il paragrafo scritto **dopo l'ultimo sottotitolo** finisce nell'ultima tessera: per chiudere la griglia e
   scrivere altro, apri un nuovo titolo grande.

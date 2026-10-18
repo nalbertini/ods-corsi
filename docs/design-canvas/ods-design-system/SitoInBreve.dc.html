@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="height: 100%; min-height: {{minimo}}; background: #f4c31b; color: #0d2a3d; border-radius: 6px; padding: {{pad}}; display: flex; flex-direction: column; gap: 18px">
+  <div style="font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: 40px; line-height: .95">In breve</div>
+  <sc-for list="{{righe}}" as="r" hint-placeholder-count="3">
+    <div style="border-top: 3px solid #0d2a3d; padding-top: 14px"><p style="font-family: {{inter}}; margin: 0 0 6px; font-size: 19px; line-height: 1.35; font-weight: 500">{{r.testo}}</p><span style="font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: 24px">{{r.autore}}</span></div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"righe":{"editor":"text","default":"Palestra ben attrezzata per sport di combattimento~Stefano G.|Insegnanti molto preparati e posto molto accogliente.~Blorida K."},"piccolo":{"editor":"boolean","default":false},"$preview":{"width":400,"height":340}}'>
+// PROPOSTA home del sito: le recensioni da 7 parole in una sola carta «In breve», con il nome sotto ogni frase (tre frasi ≈ 21 parole: lunghezza paragonabile alle altre carte). Righe: «testo~nome» separate da «|».
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const pic = truthy(p.piccolo);
+    return { big: BIG, inter: INTER, pad: pic ? '22px' : '32px 36px', minimo: pic ? '260px' : '340px', righe: String(p.righe ?? '').split('|').filter(Boolean).map((r) => { const [testo, autore] = r.split('~'); return { testo: testo || '', autore: autore || '' }; }) };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «sito a pezzi»: SITO > PAGINE > una pagina, sullo schermo largo. Tre colonne:
+     a sinistra LE PARTI da trascinare e l'elenco della pagina (per riordinare e togliere);
+     al centro COME SARÀ, che mostra il disegno vero del sito (le tessere si formano da sole dal testo, come adesso);
+     a destra le impostazioni della parte scelta. Sopra: ANNULLA e RIFAI. I tasti di salvataggio sono quelli di oggi.
+     Parole della segreteria («parte», «foto in cima»), non «blocco» o «hero». Dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="SITO" numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" tema="scuro" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">PRE PUGILISTICA</h1>
+        <span style="font-size: 14px; color: #8c8c88">SITO · PAGINE · pubblicata il 3 ott, con modifiche non pubblicate</span>
+      </div>
+      <div style="display: flex; gap: 10px">
+        <dc-import name="Bottone" label="ANNULLA" variante="linea" contesto="segreteria" tema="scuro" hint-size="130px,48px"></dc-import>
+        <dc-import name="Bottone" label="RIFAI" variante="linea" contesto="segreteria" tema="scuro" hint-size="110px,48px"></dc-import>
+        <dc-import name="Bottone" label="‹ TUTTE LE PAGINE" variante="linea" contesto="segreteria" tema="scuro" hint-size="190px,48px"></dc-import>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 220px minmax(0, 1fr) 300px; gap: 20px; align-items: start">
+      <!-- LE PARTI + elenco della pagina -->
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <dc-import name="Titoletto" label="METTI NELLA PAGINA" tema="scuro" hint-size="100%,28px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="display: flex; align-items: center; min-height: 48px; padding: 0 14px; border: 2px solid #333333; background: #1c1c1c; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.1em">⋮⋮&nbsp; FOTO IN CIMA</span>
+          <span style="display: flex; align-items: center; min-height: 48px; padding: 0 14px; border: 2px solid #333333; background: #1c1c1c; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.1em">⋮⋮&nbsp; TESTO</span>
+          <span style="display: flex; align-items: center; min-height: 48px; padding: 0 14px; border: 2px solid #333333; background: #1c1c1c; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.1em">⋮⋮&nbsp; FOTO</span>
+          <span style="display: flex; align-items: center; min-height: 48px; padding: 0 14px; border: 2px solid #333333; background: #1c1c1c; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.1em">⋮⋮&nbsp; DUE COLONNE</span>
+          <span style="display: flex; align-items: center; min-height: 48px; padding: 0 14px; border: 2px solid #333333; background: #1c1c1c; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.1em">⋮⋮&nbsp; TRE COLONNE</span>
+          <span style="display: flex; align-items: center; min-height: 48px; padding: 0 14px; border: 2px solid #333333; background: #1c1c1c; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.1em">⋮⋮&nbsp; ELENCO DEI CORSI</span>
+        </div>
+        <dc-import name="Titoletto" label="LA PAGINA" tema="scuro" hint-size="100%,28px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 15px">
+          <span style="padding: 10px 12px; border: 2px solid #333333">1 · Foto in cima</span>
+          <span style="padding: 10px 12px; border: 2px solid #f4c31b; color: #f4c31b">2 · Testo</span>
+          <span style="padding: 10px 12px; border: 2px solid #333333">3 · Due colonne</span>
+          <span style="padding: 10px 12px; border: 2px solid #333333">4 · Elenco dei corsi</span>
+        </div>
+      </div>
+
+      <!-- COME SARÀ: il disegno vero -->
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <dc-import name="Titoletto" label="COME SARÀ SUL SITO" tema="scuro" hint-size="100%,28px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 0; border: 2px solid #333333; background: #1c1c1c">
+          <div style="display: flex; align-items: flex-end; min-height: 150px; padding: 18px 24px; border-bottom: 2px solid #333333; background: #333333">
+            <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 36px; font-weight: 700; letter-spacing: 0.04em">PRE PUGILISTICA</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px; padding: 20px 24px; border-bottom: 2px solid #f4c31b">
+            <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 24px; font-weight: 700; letter-spacing: 0.04em">COS'È IL CORSO</span>
+            <span style="font-size: 16px; line-height: 1.5">Un percorso introduttivo ai fondamentali della boxe: guardia, spostamenti e colpi base, imparati in sicurezza e senza contatto pieno.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px 24px; border-bottom: 2px solid #333333">
+            <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px; border: 2px solid #333333"><b style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 18px; letter-spacing: 0.06em">PIÙ COORDINAZIONE</b><span style="font-size: 15px; color: #8c8c88">Tessera: nasce da un sottotitolo.</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px; border: 2px solid #333333"><b style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 18px; letter-spacing: 0.06em">UN GRUPPO CHE SOSTIENE</b><span style="font-size: 15px; color: #8c8c88">Tessera: nasce da un sottotitolo.</span></div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; padding: 20px 24px">
+            <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.1em">I CORSI DEI RAGAZZI</span>
+            <span style="padding: 12px 14px; border: 2px dashed #8c8c88; color: #8c8c88; font-size: 15px">Pre pugilistica · Boxe ragazzi · Judo bambini</span>
+          </div>
+        </div>
+        <span style="font-size: 14px; color: #8c8c88">Il disegno è quello del sito vero: le tessere si formano da sole dal testo, come adesso.</span>
+      </div>
+
+      <!-- Impostazioni della parte scelta (2 · Testo) + i tasti di oggi -->
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <dc-import name="Titoletto" label="TESTO · IMPOSTAZIONI" tema="scuro" hint-size="100%,28px"></dc-import>
+        <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="SFONDO" valore="Scuro" tema="scuro" hint-size="100%,72px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 4px">
+          <dc-import name="Bottone" label="PUBBLICA" variante="vai" contesto="segreteria" tema="scuro" hint-size="100%,52px"></dc-import>
+          <dc-import name="Bottone" label="SALVA BOZZA" variante="pieno" contesto="segreteria" tema="scuro" hint-size="100%,48px"></dc-import>
+          <dc-import name="Bottone" label="ANTEPRIMA" variante="linea" contesto="segreteria" tema="scuro" hint-size="100%,48px"></dc-import>
+          <dc-import name="Bottone" label="NASCONDI DAL SITO" variante="tratteggiato" contesto="segreteria" tema="scuro" hint-size="100%,48px"></dc-import>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

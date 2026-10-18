@@ -807,7 +807,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     // Il sito: le stesse regole del database, in memoria (vedi `sitoProva.ts`).
     async sitoPagine() {
       const sito = await sitoProva()
-      return (a().sito ??= sito.sitoIniziale()).pagine
+      return sito.conPezzi((a().sito ??= sito.sitoIniziale())).pagine
     },
 
     async sitoMenu() {
@@ -816,9 +816,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return { menu, footer }
     },
 
-    async nuovaPaginaSito(titolo, slug) {
+    async nuovaPaginaSito(titolo, slug, pezzi) {
       const sito = await sitoProva()
-      const r = sito.nuovaPagina((a().sito ??= sito.sitoIniziale()), titolo, slug)
+      const r = sito.nuovaPagina((a().sito ??= sito.sitoIniziale()), titolo, slug, pezzi)
       a().sito = r.stato
       salva()
       return r.id
@@ -827,6 +827,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async salvaBozzaSito(id, versione, dati) {
       const sito = await sitoProva()
       const r = sito.salvaBozza((a().sito ??= sito.sitoIniziale()), id, versione, dati)
+      a().sito = r.stato
+      salva()
+      return r.versione
+    },
+
+    async salvaBozzaPezziSito(id, versione, dati) {
+      const sito = await sitoProva()
+      const r = sito.salvaBozzaPezzi((a().sito ??= sito.sitoIniziale()), id, versione, dati)
       a().sito = r.stato
       salva()
       return r.versione

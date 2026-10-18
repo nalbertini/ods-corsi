@@ -1,0 +1,107 @@
+import { pulisciTesto } from './sitoTesto'
+
+/**
+ * Una pagina del sito composta a pezzi: l'ordine e il contenuto che la
+ * segreteria sceglie nell'editor (Puck). Il sito resta statico e fatto di testo:
+ * i pezzi si salvano così come sono (`bozza_pezzi`, per riaprirli uguali) e
+ * si traducono nel testo piatto di sempre (`pezziInHtml`), da cui il generatore
+ * fa le tessere. Le regole stanno qui, non nella schermata, per provarle senza browser
+ * (`scripts/prova-sito-pezzi.mjs`).
+ */
+
+export type Pezzo =
+  | { type: 'fotoInCima'; props: { id: string; src: string; alt: string } }
+  | { type: 'testo'; props: { id: string; html: string } }
+  | { type: 'foto'; props: { id: string; src: string; alt: string } }
+  | { type: 'colonne'; props: { id: string; colonne: Array<{ html: string }> } }
+
+export interface PezziPagina {
+  content: Pezzo[]
+}
+
+/** Quanti pezzi al massimo: oltre, la pagina non si legge più e il testo sfiora il limite del database. */
+export const MASSIMO_PEZZI = 100
+/** Il limite del database sul JSON dei pezzi (`supabase/62-sito-pezzi.sql`): oltre non si salva. */
+export const MASSIMO_CARATTERI = 400000
+
+export const pezziVuoti = (): PezziPagina => ({ content: [] })
+
+const stringa = (x: unknown): x is string => typeof x === 'string'
+const oggetto = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x)
+
+function pezzoValido(x: unknown): x is Pezzo {
+  if (!oggetto(x) || !oggetto(x.props) || !stringa(x.props.id) || x.props.id === '') return false
+  const p = x.props
+  switch (x.type) {
+    case 'testo':
+      return stringa(p.html)
+    case 'foto':
+    case 'fotoInCima':
+      return stringa(p.src) && p.src !== '' && stringa(p.alt)
+    case 'colonne':
+      return Array.isArray(p.colonne) && p.colonne.length >= 2 && p.colonne.length <= 3 && p.colonne.every((c) => oggetto(c) && stringa(c.html))
+    default:
+      return false
+  }
+}
+
+/** Vero solo per pezzi fatti come li sa leggere il sito; tutto il resto (anche JSON arrivato da fuori) è falso. */
+export function pezziValidi(x: unknown): x is PezziPagina {
+  if (!oggetto(x) || !Array.isArray(x.content) || x.content.length > MASSIMO_PEZZI) return false
+  if (!x.content.every(pezzoValido)) return false
+  if (JSON.stringify(x).length > MASSIMO_CARATTERI) return false
+  const pezzi = x.content as Pezzo[]
+  if (new Set(pezzi.map((p) => p.props.id)).size !== pezzi.length) return false
+  const incima = pezzi.flatMap((p, i) => (p.type === 'fotoInCima' ? [i] : []))
+  return incima.length === 0 || (incima.length === 1 && incima[0] === 0)
+}
+
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;')
+
+/** Senza testo e senza foto. */
+export const vuoto = (html: string) => !/<img\b/i.test(html) && html.replace(/<[^>]*>/g, '').trim() === ''
+
+function inHtml(p: Pezzo): string {
+  switch (p.type) {
+    case 'testo':
+      return p.props.html
+    case 'foto':
+    case 'fotoInCima':
+      return `<img src="${esc(p.props.src)}" alt="${esc(p.props.alt)}">`
+    case 'colonne': {
+      // Una colonna lasciata vuota non deve restare sul sito come un buco: l'editor di testo vuoto dà «<p></p>».
+      const piene = p.props.colonne.filter((c) => !vuoto(c.html))
+      if (piene.length < 2) return piene[0]?.html ?? ''
+      return `<div class="colonne c-${piene.length}">${piene.map((c) => `<div class="colonna">${c.html}</div>`).join('')}</div>`
+    }
+  }
+}
+
+/** Il testo piatto della pagina, già ripulito: quello che si salva come bozza e che il sito pubblica. */
+export const pezziInHtml = (p: PezziPagina): string => pulisciTesto(p.content.map(inHtml).join(''))
+
+/** Perché i pezzi non vanno, a parole e una causa per volta; `null` se vanno. Chi legge sa cosa fare. */
+export function cosaNonVaPezzi(x: unknown): string | null {
+  if (pezziValidi(x)) return null
+  if (oggetto(x) && Array.isArray(x.content)) {
+    const parti = x.content.filter(oggetto)
+    if (x.content.length > MASSIMO_PEZZI) return `La pagina ha troppe parti: al massimo ${MASSIMO_PEZZI}`
+    const incima = parti.filter((p) => p.type === 'fotoInCima')
+    if (incima.length > 1 || (incima.length === 1 && x.content[0] !== incima[0])) return 'La foto in cima è una sola e sta in alto'
+    const foto = parti.filter((p) => (p.type === 'foto' || p.type === 'fotoInCima') && oggetto(p.props))
+    if (foto.some((p) => !stringa((p.props as Record<string, unknown>).src) || (p.props as Record<string, unknown>).src === '')) return 'Ogni foto ha bisogno della sua immagine: scegline una o togli la foto'
+    const colonne = parti.filter((p) => p.type === 'colonne' && oggetto(p.props) && Array.isArray((p.props as Record<string, unknown>).colonne))
+    if (colonne.some((p) => { const n = ((p.props as Record<string, unknown>).colonne as unknown[]).length; return n < 2 || n > 3 })) return 'Le colonne sono due o tre'
+    if (JSON.stringify(x).length > MASSIMO_CARATTERI) return 'La pagina è troppo lunga: togli qualcosa'
+  }
+  return 'La pagina non è fatta come il sito la vuole: ricaricala e riprova'
+}
+
+/** I pezzi di ora sono diversi da quelli salvati (anche solo nell'ordine). */
+export const pezziCambiati = (locali: PezziPagina, salvati: PezziPagina | null | undefined): boolean => JSON.stringify(locali) !== JSON.stringify(salvati)
+
+/**
+ * Il database sa i pezzi (c'è `62-sito-pezzi.sql`) se almeno una pagina arriva col campo, anche vuoto (`null`):
+ * senza il file la colonna non c'è e nessuna pagina lo porta. Con nessuna pagina non si sa, e vale «no».
+ */
+export const databaseConPezzi = (pagine: ReadonlyArray<{ pezzi?: PezziPagina | null }>): boolean => pagine.some((p) => p.pezzi !== undefined)

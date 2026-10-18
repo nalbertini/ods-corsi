@@ -1,0 +1,46 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Chi siamo · miglioramenti"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "ChiSiamoAttuale.dc.html",
+      "title": "1 · Chi siamo com'è oggi (1440)",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 4951,
+      "page": "page-1"
+    },
+    {
+      "file": "ChiSiamoProposta.dc.html",
+      "title": "2 · Chi siamo proposta (1440)",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 4957,
+      "page": "page-1"
+    },
+    {
+      "file": "ChiSiamoAttualeTelefono.dc.html",
+      "title": "3 · Chi siamo com'è oggi (375)",
+      "x": 3120,
+      "y": 0,
+      "w": 375,
+      "h": 5199,
+      "page": "page-1"
+    },
+    {
+      "file": "ChiSiamoPropostaTelefono.dc.html",
+      "title": "4 · Chi siamo proposta (375)",
+      "x": 3615,
+      "y": 0,
+      "w": 375,
+      "h": 6591,
+      "page": "page-1"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; height: 100%; min-height: {{minimo}}; background: {{bg}}; color: {{fg}}; border-radius: 6px; padding: {{pad}}; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; outline: {{contorno}}; outline-offset: -3px">
+  <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; top: 8px; right: 8px; z-index: 2; background: #ffffff; color: #0d2a3d; border: 2px solid #e4292a; border-radius: 4px; padding: 4px 8px; font-family: {{inter}}; font-size: 12px; font-weight: 700; line-height: 1.2">{{nota}}</span></sc-if>
+  <div style="font-family: {{big}}; font-weight: 800; font-size: 28px; line-height: 1; border-bottom: 3px solid {{fg}}; align-self: flex-start; padding-bottom: 6px">{{n}}</div>
+  <div>
+    <div style="font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: {{corpoTitolo}}; line-height: .95; margin-bottom: 12px">{{titolo}}</div>
+    <div style="font-family: {{inter}}; font-size: {{corpoTesto}}; line-height: 1.45; max-width: 520px">{{testo}}</div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"n":{"editor":"text","default":"1"},"titolo":{"editor":"text","default":"La crescita viene prima del risultato"},"testo":{"editor":"text","default":"Contano i progressi di ciascuno, a ogni età e livello. I risultati arrivano di conseguenza."},"tono":{"editor":"enum","options":["blu","giallo","inchiostro","chiara","bianco"],"default":"blu"},"piccolo":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"$preview":{"width":660,"height":260}}'>
+// PROPOSTA home del sito: «Perché unirti a noi?» come quattro tessere con titolo e riga di testo (oggi: solo un titolo di 3-6 parole in 190px di colore).
+// Niente foto: la fascia di quattro foto ripeteva le schede corso. Testi da proposte-home/testi/REPORT.md §4.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const [bg, fg] = TONI[p.tono] || TONI.blu;
+    const pic = truthy(p.piccolo);
+    return { bg, fg, big: BIG, inter: INTER, n: p.n ?? '', titolo: p.titolo ?? '', testo: p.testo ?? '', pad: pic ? '22px' : '28px 32px', corpoTitolo: pic ? '36px' : '52px', corpoTesto: pic ? '17px' : '19px', minimo: pic ? '230px' : '280px', ...segna(p.nota) };
+  }
+}
+</script>
+</body>
+</html>

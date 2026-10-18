@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; height: 100%; min-height: {{minimo}}; background: #14709f; color: #ffffff; border-radius: 6px; padding: {{pad}}; display: grid; grid-template-columns: {{colonne}}; gap: {{gap}}; align-content: center; outline: {{contorno}}; outline-offset: -3px">
+  <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; top: -12px; right: 12px; z-index: 2; background: #ffffff; color: #0d2a3d; border: 2px solid #e4292a; border-radius: 4px; padding: 4px 8px; font-family: {{inter}}; font-size: 12px; font-weight: 700; line-height: 1.2">{{nota}}</span></sc-if>
+  <sc-for list="{{fatti}}" as="f" hint-placeholder-count="3">
+    <div style="border-top: 3px solid #ffffff; padding-top: 14px">
+      <div style="font-family: {{inter}}; font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px">{{f.etichetta}}</div>
+      <div style="font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: {{corpo}}; line-height: .95">{{f.valore}}</div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"fatti":{"editor":"text","default":"Quando~Mercoledì|Ora~19:00 – 20:00|Per chi~Nati dal 2015"},"piccolo":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"$preview":{"width":1344,"height":300}}'>
+// PROPOSTA pagina del corso: l'apertura di un corso che non ha ancora una foto. Invece di prestare la foto di un'altra disciplina (oggi Pre pugilistica e Autodifesa mostrano gli istruttori di judo)
+// la fascia blu dice le tre cose che si cercano per prime: giorno, ora, per chi. Righe: «etichetta~valore» separate da «|». Stessa altezza della foto di apertura a desktop (300px contro 619: la pagina sale),
+// sul telefono tre righe una sotto l'altra. Quando arriva una foto vera la fascia sparisce e si usa la foto (ruolo A).
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const pic = truthy(p.piccolo);
+    return { big: BIG, inter: INTER, fatti: String(p.fatti ?? '').split('|').filter(Boolean).map((r) => { const [etichetta, valore] = r.split('~'); return { etichetta: etichetta || '', valore: valore || '' }; }), minimo: pic ? '0' : '300px', pad: pic ? '24px 20px' : '48px 56px', colonne: pic ? '1fr' : 'repeat(3, 1fr)', gap: pic ? '22px' : '48px', corpo: pic ? '44px' : '72px', ...segna(p.nota) };
+  }
+}
+</script>
+</body>
+</html>

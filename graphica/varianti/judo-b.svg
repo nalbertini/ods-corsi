@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img">
+  <title>Judo, proiezione di spalla</title>
+  <circle cx="37" cy="63" r="8.5" fill="#000"/>
+  <polyline points="50,78 66,96" fill="none" stroke="#000" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="66,96 52,108 44,122" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="66,96 84,108 90,122" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="50,78 66,66 80,58" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="107" cy="50" r="8.5" fill="#000"/>
+  <polyline points="90,40 70,28" fill="none" stroke="#000" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="70,28 52,18 40,24" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="70,28 58,40 46,38" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="90,40 92,54 82,62" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

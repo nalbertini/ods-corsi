@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; display: grid; grid-template-columns: {{colonne}}; gap: {{gap}}; align-items: end; color: #0d2a3d">
+  <h1 style="font-family: {{big}}; text-transform: uppercase; margin: 0; font-weight: 800; font-size: {{corpo}}; line-height: .86; letter-spacing: -.01em; text-wrap: balance">{{titolo}}</h1>
+  <div style="display: flex; flex-direction: column; gap: 24px; align-items: flex-start; padding-bottom: {{padSotto}}">
+    <p style="font-family: {{inter}}; margin: 0; font-size: {{corpoTesto}}; line-height: 1.45; max-width: 460px">{{descrizione}}</p>
+    <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 60px; padding: 0 30px; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 18px; width: {{larghezzaPulsante}}">{{pulsante}}</span>
+    <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; background: #ffffff; color: #0d2a3d; border: 2px solid #e4292a; border-radius: 4px; padding: 4px 8px; font-family: {{inter}}; font-size: 12px; font-weight: 700; line-height: 1.2">{{nota}}</span></sc-if>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"Judo"},"descrizione":{"editor":"text","default":"Tecnica, disciplina e rispetto per crescere sul tatami, dai primi passi fino alle gare."},"pulsante":{"editor":"text","default":"Prova una settimana a 5 €"},"corpo":{"editor":"text","default":""},"piccolo":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"$preview":{"width":1344,"height":260}}'>
+// PROPOSTA pagina del corso: la testata col nome enorme a sinistra, a destra la descrizione di 12-14 parole e il pulsante di prova (verbo + cosa + prezzo, 60px).
+// Oggi: titolo da 175-200px (fino a 2 righe a 287px di altezza) e nessun invito fino alla chiusura. Qui 160px (92px sul telefono, 72px se il nome e' lungo: «Metodo Globale di Autodifesa»).
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const pic = truthy(p.piccolo);
+    return { big: BIG, inter: INTER, titolo: p.titolo ?? '', descrizione: p.descrizione ?? '', pulsante: p.pulsante ?? '', corpo: p.corpo || (pic ? '92px' : '160px'), colonne: pic ? '1fr' : '1fr 460px', gap: pic ? '20px' : '48px', corpoTesto: pic ? '18px' : '22px', padSotto: pic ? '0' : '14px', larghezzaPulsante: pic ? '100%' : 'auto', ...segna(p.nota) };
+  }
+}
+</script>
+</body>
+</html>

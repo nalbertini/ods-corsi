@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- OGGI · DA FARE come l’app lo mostra adesso (tema chiaro), con i componenti della libreria. -->
+<div style="display:flex;width:1440px;min-height:1100px;background:#f4f4f1">
+  <div style="width:240px;flex-shrink:0">
+    <dc-import name="Menu" tema="chiaro" attiva="DA FARE" numeri="RICHIESTE ONLINE:3, PRESENZE:2, PRESENZE ISTRUTTORI:14" altezza="1100px" hint-size="240px,1100px"></dc-import>
+  </div>
+  <main style="flex:1;min-width:0;padding:28px 36px 36px">
+    <h1 style="margin:0;font-family:'Saira Condensed','Helvetica Neue',Arial,sans-serif;font-style:oblique 9deg;font-size:34px;font-weight:700;letter-spacing:0.04em;line-height:1;color:#161616">DA FARE</h1>
+    <p style="margin:6px 0 0;font-family:Barlow,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:#656561">domenica 18 ottobre 2026. Quello che aspetta la segreteria: si ricontrolla ogni volta che torni qui.</p>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px">
+      <dc-import name="RigaDaFare" tema="chiaro" n="14" titolo="lezioni senza appello" sotto="Negli ultimi 30 giorni: passate, e nessuno ha segnato. Si apre la lezione e si fa l’appello, o si annulla se non c’è stata." tasto="TUTTE IN PRESENZE" livello="blocca" hint-size="100%,100px"></dc-import>
+      <dc-import name="RigaDaFare" tema="chiaro" n="47" titolo="iscritti senza certificato valido" sotto="Il certificato medico manca o è scaduto: senza, in sala non si entra. Sotto i 6 anni non serve." tasto="VEDI CHI" livello="blocca" hint-size="100%,100px"></dc-import>
+      <dc-import name="RigaDaFare" tema="chiaro" n="37" titolo="iscritti da pagare" sotto="Da pagare, pagato in parte, o pagato fino a una data passata." tasto="VEDI CHI" livello="blocca" hint-size="100%,100px"></dc-import>
+      <dc-import name="RigaDaFare" tema="chiaro" n="3" titolo="richieste online nuove" sotto="Iscrizioni arrivate dal modulo, da accogliere o rifiutare." tasto="APRI LE RICHIESTE" livello="presto" hint-size="100%,100px"></dc-import>
+      <dc-import name="RigaDaFare" tema="chiaro" n="14" titolo="presenze istruttori da confermare" sotto="Istruttori segnati dove non erano previsti, e lezioni tenute in cui scegliere chi c’era." tasto="APRI LE PRESENZE ISTRUTTORI" livello="presto" hint-size="100%,100px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

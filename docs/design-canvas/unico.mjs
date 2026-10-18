@@ -17,51 +17,74 @@ if (!process.argv[2]) {
 const LIBRERIA = 'ods-design-system'
 const FONDAMENTA = new Set(['Main', 'Pagina', 'PaginaTelefono'])
 const SEZIONI = [
-  { id: 'istruttore', nome: 'Sezione istruttore', cartella: 'istruttore' },
+  { id: 'iscrizione', nome: 'Iscrizione · modulo attuale', cartella: 'iscrizione' },
+  { id: 'iscrizione-nuovo', nome: 'Iscrizione · nuovo flusso a passi', cartella: 'iscrizione-nuovo' },
+  { id: 'iscrizione-rifinitura', nome: 'Iscrizione · passi, rifinitura', cartella: 'iscrizione-rifinitura' },
+  { id: 'navigazione-passi', nome: 'Iscrizione · testa dei passi (ipotesi)', cartella: 'navigazione-passi' },
+  { id: 'iscrizione-famiglia', nome: 'Iscrizione · famiglia', cartella: 'iscrizione-famiglia' },
+  { id: 'famiglia-passo', nome: 'Iscrizione · famiglia, un passo a sé', cartella: 'famiglia-passo' },
+  { id: 'famiglia-ultimo', nome: 'Iscrizione · famiglia all\'ultimo passo', cartella: 'famiglia-ultimo-passo' },
+  { id: 'anche-tu', nome: 'Iscrizione · anche tu, stessa ora', cartella: 'anche-tu-stessa-ora' },
+  { id: 'orari-evidenziati', nome: 'Iscrizione · orari compatibili', cartella: 'orari-evidenziati' },
+  { id: 'corsi-vicini', nome: 'Iscrizione · corsi vicini', cartella: 'corsi-vicini' },
+  { id: 'quanto-paghi', nome: 'Iscrizione · quanto paghi', cartella: 'quanto-paghi' },
+  { id: 'totale-barra', nome: 'Iscrizione · totale del modulo', cartella: 'totale-barra' },
+  { id: 'comune-dal-cap', nome: 'Iscrizione · comune dal CAP', cartella: 'comune-dal-cap' },
+  { id: 'firma-schermo-intero', nome: 'Iscrizione · firma a schermo intero', cartella: 'firma-schermo-intero' },
+  { id: 'riempi-prova', nome: 'Iscrizione · riempi per prova', cartella: 'riempi-prova' },
+  { id: 'esci-dalla-prova', nome: 'Iscrizione · esci dalla prova', cartella: 'esci-dalla-prova' },
+  { id: 'iscrizione-sito', nome: 'Iscrizione · modulo nell\'aspetto del sito', cartella: 'iscrizione-sito' },
+  { id: 'iscrizioni-pagina', nome: 'Iscrizioni · la pagina d\'ingresso', cartella: 'iscrizioni-pagina' },
+  { id: 'vestiario', nome: 'Vestiario · ordini', cartella: 'vestiario' },
+  { id: 'vestiario-modulo', nome: 'Vestiario · come il modulo', cartella: 'vestiario-modulo' },
+  { id: 'sito-pannello', nome: 'Sito · pannello', cartella: 'sito-pannello' },
+  { id: 'sito-pubblico', nome: 'Sito · pagine pubbliche', cartella: 'sito-pubblico' },
+  { id: 'sito-rebrand', nome: 'Sito · tre rebrand (scartati)', cartella: 'sito-rebrand' },
+  { id: 'sito-approvato', nome: 'Sito · design approvato', cartella: 'sito-approvato' },
+  { id: 'segreteria-tatami', nome: 'Segreteria · tema Tatami', cartella: 'segreteria-tatami' },
+  { id: 'segreteria-sito', nome: 'Segreteria · look del sito (ipotesi)', cartella: 'segreteria-sito' },
+  { id: 'banco', nome: 'Segreteria · il Banco, ridisegnata', cartella: 'banco' },
+  { id: 'cerca-universale', nome: 'Segreteria · ricerca universale', cartella: 'cerca-universale' },
+  { id: 'importa-fogli', nome: 'Segreteria · importa da Excel', cartella: 'import-fogli' },
+  { id: 'iscritti-del-corso', nome: 'Segreteria · iscritti del corso', cartella: 'iscritti-del-corso' },
+  { id: 'iscritti-riepilogo', nome: 'Segreteria · iscritti, riepilogo', cartella: 'iscritti-riepilogo' },
+  { id: 'storico-pagamenti', nome: 'Segreteria · storico pagamenti', cartella: 'storico-pagamenti' },
+  { id: 'tessere', nome: 'Segreteria · tessere e incrocio', cartella: 'tessere' },
+  { id: 'prezzi-mancanti', nome: 'Segreteria · prezzi mancanti', cartella: 'prezzi-mancanti' },
+  { id: 'certificati-online', nome: 'Segreteria · certificati online', cartella: 'certificati-online' },
+  { id: 'certificato-piccoli', nome: 'Segreteria · certificato sotto i 6 anni', cartella: 'certificato-piccoli' },
+  { id: 'email-contatto', nome: 'Segreteria · email di contatto', cartella: 'email-contatto' },
+  { id: 'ruolo-amministrazione', nome: 'Segreteria · ruolo amministrazione', cartella: 'ruolo-amministrazione' },
+  { id: 'contabilita', nome: 'Segreteria · contabilità', cartella: 'contabilita' },
+  { id: 'chiusura-cassa', nome: 'Segreteria · chiusura di cassa', cartella: 'chiusura-cassa' },
+  { id: 'istruttore', nome: 'Istruttori · sezione', cartella: 'istruttore' },
+  { id: 'istruttore-collega', nome: 'Istruttori · insegna con te', cartella: 'istruttore-collega' },
   { id: 'tablet-sala', nome: 'Tablet di sala', cartella: 'tablet-sala' },
-  { id: 'iscrizione', nome: 'Registrazione utente', cartella: 'iscrizione' },
-  { id: 'firma-schermo-intero', nome: 'Firma a schermo intero', cartella: 'firma-schermo-intero' },
-  { id: 'iscrizione-nuovo', nome: 'Registrazione · nuovo flusso', cartella: 'iscrizione-nuovo' },
-  { id: 'iscrizione-rifinitura', nome: 'Iscrizione a passi · rifinitura', cartella: 'iscrizione-rifinitura' },
-  { id: 'importa-fogli', nome: 'Importa da Excel', cartella: 'import-fogli' },
-  { id: 'email-contatto', nome: 'Email di contatto · proposta', cartella: 'email-contatto' },
-  { id: 'ruolo-amministrazione', nome: 'Ruolo amministrazione · proposta', cartella: 'ruolo-amministrazione' },
-  { id: 'contabilita', nome: 'Contabilità · proposta', cartella: 'contabilita' },
-  { id: 'chiusura-cassa', nome: 'Chiusura di cassa · proposta', cartella: 'chiusura-cassa' },
-  { id: 'timer-desktop', nome: 'Timer desktop · proposte', cartella: 'timer-desktop' },
-  { id: 'timer-istruttori', nome: 'Timer nell\'app istruttori', cartella: 'timer-istruttori' },
-  { id: 'timer-musica', nome: 'Musica nel timer istruttori', cartella: 'timer-musica' },
-  { id: 'timer-youtube', nome: 'YouTube accanto ai comandi', cartella: 'timer-youtube' },
-  { id: 'certificati-online', nome: 'Certificati online', cartella: 'certificati-online' },
-  { id: 'certificato-piccoli', nome: 'Certificato sotto i 6 anni', cartella: 'certificato-piccoli' },
-  { id: 'istruttore-collega', nome: 'Istruttore che insegna con te', cartella: 'istruttore-collega' },
-  { id: 'vestiario', nome: 'Ordini vestiario · proposta', cartella: 'vestiario' },
-  { id: 'anche-tu', nome: 'Anche tu · stessa ora', cartella: 'anche-tu-stessa-ora' },
-  { id: 'iscrizione-famiglia', nome: 'Iscrizione di famiglia · proposta', cartella: 'iscrizione-famiglia' },
-  { id: 'famiglia-ultimo', nome: 'La famiglia all\'ultimo passo', cartella: 'famiglia-ultimo-passo' },
-  { id: 'comune-dal-cap', nome: 'Il comune dal CAP', cartella: 'comune-dal-cap' },
-  { id: 'quanto-paghi', nome: 'Quanto paghi e le carte col nome', cartella: 'quanto-paghi' },
-  { id: 'totale-barra', nome: 'Il totale del modulo', cartella: 'totale-barra' },
-  { id: 'famiglia-passo', nome: 'La famiglia, un passo a sé', cartella: 'famiglia-passo' },
-  { id: 'vestiario-modulo', nome: 'Vestiario come il modulo · proposta', cartella: 'vestiario-modulo' },
-  { id: 'corsi-vicini', nome: 'Corsi vicini e altre idee', cartella: 'corsi-vicini' },
-  { id: 'orari-evidenziati', nome: 'Orari compatibili evidenziati', cartella: 'orari-evidenziati' },
-  { id: 'riempi-prova', nome: 'Riempi per prova · proposta', cartella: 'riempi-prova' },
-  { id: 'esci-dalla-prova', nome: 'Esci dalla prova · proposta', cartella: 'esci-dalla-prova' },
-  { id: 'navigazione-passi', nome: 'La testa del modulo a passi · ipotesi', cartella: 'navigazione-passi' },
-  { id: 'prezzi-mancanti', nome: 'Prezzi mancanti in DA FARE · proposta', cartella: 'prezzi-mancanti' },
-  { id: 'cerca-universale', nome: 'Ricerca universale · proposta', cartella: 'cerca-universale' },
-  { id: 'segreteria-tatami', nome: 'Segreteria · Tatami · proposta', cartella: 'segreteria-tatami' },
-  { id: 'iscritti-del-corso', nome: 'Iscritti del corso · proposta', cartella: 'iscritti-del-corso' },
-  { id: 'iscritti-riepilogo', nome: 'Iscritti del corso · riepilogo', cartella: 'iscritti-riepilogo' },
-  { id: 'storico-pagamenti', nome: 'Storico pagamenti · proposta', cartella: 'storico-pagamenti' },
-  { id: 'tessere', nome: 'Tessere e incrocio · proposta', cartella: 'tessere' },
-  { id: 'sito-pannello', nome: 'Sito · pannello · proposta', cartella: 'sito-pannello' },
-  { id: 'sito-pubblico', nome: 'Sito pubblico · proposta', cartella: 'sito-pubblico' },
-  { id: 'sito-rebrand', nome: 'Sito pubblico · tre rebrand', cartella: 'sito-rebrand' },
-  { id: 'iscrizione-sito', nome: 'Modulo di iscrizione · aspetto del sito · proposta', cartella: 'iscrizione-sito' },
-  { id: 'iscrizioni-pagina', nome: 'Pagina iscrizioni · aspetto del sito · proposta', cartella: 'iscrizioni-pagina' },
+  { id: 'timer-desktop', nome: 'Timer · desktop', cartella: 'timer-desktop' },
+  { id: 'timer-istruttori', nome: 'Timer · app istruttori', cartella: 'timer-istruttori' },
+  { id: 'timer-musica', nome: 'Timer · musica', cartella: 'timer-musica' },
+  { id: 'timer-youtube', nome: 'Timer · YouTube', cartella: 'timer-youtube' },
+  { id: 'moduli-pdf', nome: 'Moduli PDF · carta (proposta)', cartella: 'moduli-pdf' },
+  { id: 'sito-blocchi', nome: 'Sito · pagine a pezzi · proposta', cartella: 'sito-blocchi' },
 ]
+
+// Il canvas mostra al massimo 40 pagine: le sezioni vicine stanno sulla stessa pagina, una sotto l'altra, ognuna col suo titolo.
+// Una sezione che non è in un gruppo ha una pagina sua.
+const MAX_PAGINE = 40
+const GRUPPI = {
+  'iscrizione-flusso': { nome: 'Iscrizione · il modulo', sezioni: ['iscrizione', 'iscrizione-nuovo', 'iscrizione-rifinitura', 'navigazione-passi', 'iscrizione-sito', 'iscrizioni-pagina'] },
+  'iscrizione-famiglia': { nome: 'Iscrizione · famiglia', sezioni: ['iscrizione-famiglia', 'famiglia-passo', 'famiglia-ultimo', 'anche-tu'] },
+  'iscrizione-dettagli': { nome: 'Iscrizione · dettagli', sezioni: ['orari-evidenziati', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'comune-dal-cap', 'firma-schermo-intero', 'riempi-prova', 'esci-dalla-prova'] },
+  'vestiario': { nome: 'Vestiario', sezioni: ['vestiario', 'vestiario-modulo'] },
+  'sito': { nome: 'Sito', sezioni: ['sito-pannello', 'sito-pubblico', 'sito-rebrand', 'sito-approvato'] },
+  'segreteria-iscritti': { nome: 'Segreteria · iscritti e prezzi', sezioni: ['iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'tessere', 'prezzi-mancanti'] },
+  'segreteria-certificati': { nome: 'Segreteria · certificati', sezioni: ['certificati-online', 'certificato-piccoli'] },
+  'segreteria-strumenti': { nome: 'Segreteria · strumenti', sezioni: ['segreteria-tatami', 'banco', 'cerca-universale', 'importa-fogli'] },
+  'segreteria-conti': { nome: 'Segreteria · conti e ruoli', sezioni: ['contabilita', 'chiusura-cassa', 'ruolo-amministrazione', 'email-contatto'] },
+  'istruttori': { nome: 'Istruttori', sezioni: ['istruttore', 'istruttore-collega'] },
+  'timer': { nome: 'Timer', sezioni: ['timer-desktop', 'timer-istruttori', 'timer-musica', 'timer-youtube'] },
+}
+const gruppoDi = (id) => Object.keys(GRUPPI).find((g) => GRUPPI[g].sezioni.includes(id))
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')
 const leggi = (p) => readFileSync(p, 'utf8')
@@ -95,6 +118,7 @@ const boards = {}
 const order = []
 const pages = []
 const notes = {}
+const cursori = new Map() // pagina → fondo dell'ultima sezione messa, per i gruppi
 const nomiLibreria = new Set(dcHtml(join(base, LIBRERIA)).map(stem))
 
 function copia(da, nome, riscrivi) {
@@ -153,17 +177,27 @@ for (const s of SEZIONI) {
   } else {
     posti = griglia(cartella, propri)
   }
-  pages.push({ id: s.id, name: s.nome })
+  const g = gruppoDi(s.id)
+  const pagina = g ?? s.id
+  if (!pages.some((p) => p.id === pagina)) pages.push({ id: pagina, name: g ? GRUPPI[g].nome : s.nome })
+  // In un gruppo ogni sezione parte sotto la precedente, con un titolo sopra (≥ 223 px sopra la prima riga).
+  let dy = 0
+  if (g) {
+    const sx = Math.min(...posti.map((a) => a.x)), larg = Math.max(...posti.map((a) => a.x + a.w)) - sx
+    dy = (cursori.get(pagina) ?? 0) + 300
+    notes[`${s.id}-titolo`] = { x: sx, y: dy - 260, text: s.nome, kind: 'title1', maxW: Math.min(Math.max(larg, 600), 1840), page: pagina }
+    cursori.set(pagina, dy + Math.max(...posti.map((a) => a.y + a.h)))
+  }
   for (const a of posti) {
     const nome = `${s.id}-${a.file}`
-    boards[nome] = { x: a.x, y: a.y, w: a.w, h: a.h, page: s.id, title: a.title ?? stem(a.file) }
+    boards[nome] = { x: a.x, y: a.y + dy, w: a.w, h: a.h, page: pagina, title: a.title ?? stem(a.file) }
     order.push(nome)
     copia(join(cartella, a.file), nome, nuovo)
   }
   for (const n of c?.annotations ?? []) {
     if (n.page && n.page !== 'page-1') continue
     // Un titolo (`kind`) resta titolo: un post-it largo si allunga a 4/3 e copre le tavole sotto.
-    notes[`${s.id}-${n.id}`] = { x: n.x, y: n.y, w: n.w, text: n.text, page: s.id, ...(n.kind && { kind: n.kind, maxW: n.maxW }) }
+    notes[`${s.id}-${n.id}`] = { x: n.x, y: n.y + dy, w: n.w, text: n.text, page: pagina, ...(n.kind && { kind: n.kind, maxW: n.maxW }) }
   }
 }
 
@@ -187,6 +221,7 @@ const indice = {
   notes,
   designSystems: [],
 }
+if (pages.length > MAX_PAGINE) { console.error(`${pages.length} pagine: il canvas ne mostra ${MAX_PAGINE}. Raggruppa altre sezioni in GRUPPI.`); errori++ }
 writeFileSync(join(uscita, 'project', 'canvas.json'), JSON.stringify(indice, null, 1))
 writeFileSync(join(uscita, 'files.json'), JSON.stringify(['project/canvas.json', ...order.map((f) => `project/${f}`)]))
 console.log(`${order.length} artboard in ${pages.length} pagine → ${uscita}`)

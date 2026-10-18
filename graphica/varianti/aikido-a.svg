@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img">
+  <title>Aikido, proiezione circolare</title>
+  <circle cx="39" cy="27" r="8.5" fill="#000"/>
+  <polyline points="42,46 46,76" fill="none" stroke="#000" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="46,76 34,98 28,120" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="46,76 66,96 76,120" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="42,46 64,44 88,50" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="42,46 30,56 26,70" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="112" cy="52" r="8.5" fill="#000"/>
+  <polyline points="104,70 92,96" fill="none" stroke="#000" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="92,96 100,112 112,118" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="92,96 80,108 78,122" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="104,70 96,58 88,50" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="104,70 116,80 122,92" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -17,9 +17,11 @@ che entra da questo indirizzo finisce nel calendario degli istruttori.
 
 Chi è della segreteria e insegna anche, dopo **ENTRA**, sceglie dove andare:
 **SEGRETERIA** o **ISTRUTTORI**. Dalla segreteria si va al proprio calendario
-con **ISTRUTTORI →** nel menu, senza uscire.
+con **Istruttori →** nel menu, senza uscire.
 
 ## Il menu
+
+Questo è l'aspetto di sempre. Da **IMPOSTAZIONI** si può scegliere **Il Banco**, con la ricerca in cima e cinque luoghi al posto del menu: la [guida](il-banco.md).
 
 In cima al menu c'è **Cerca**: si scrive e i risultati escono a gruppi,
 nell'ordine **ISCRITTI**, **RICHIESTE ONLINE**, **CORSI**, **ISTRUTTORI**. Un
@@ -47,10 +49,11 @@ Se non si riesce a leggere un elenco, il campo lo dice («Non riesco ad
 aggiornare l'elenco: questi sono i dati di prima»), non scrive «niente».
 Dentro ISCRITTI c'è sempre il campo per cercare e filtrare l'elenco.
 
-A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
-**OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
-**PERSONE** (ISCRITTI, TESSERE, PAGAMENTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
-E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, VESTIARIO, ESERCIZI, SEGNALAZIONI, SITO). Le
+A sinistra il menu, a destra la voce scelta. Le voci sono in cinque gruppi:
+**Ogni giorno** (Da fare, Richieste online, Presenze),
+**Iscritti e soldi** (Iscritti, Tessere, Pagamenti), **Corsi e orari** (Settimana, Corsi,
+Listino), **Istruttori** (Presenze istruttori, Istruttori e accessi) e **Il resto**
+(Statistiche, Vestiario, Esercizi, Segnalazioni, Sito). Le
 **IMPOSTAZIONI** sono il tasto coi due cursori in cima al menu. Ogni voce ha la
 sua guida:
 
@@ -72,36 +75,36 @@ la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scel
 
 | Voce | A cosa serve | Guida |
 |---|---|---|
-| **DA FARE** | La prima pagina: appelli mancanti, richieste nuove, presenze da confermare, certificati e pagamenti, contati, con il tasto per sistemarli | [Apri](da-fare.md) |
-| **SETTIMANA** | La griglia della settimana, gli appelli mancanti, annullare, sostituti, lezioni straordinarie | [Apri](settimana.md) |
-| **CORSI** | I corsi: sala, istruttori, posti, colore, giorni e orari | [Apri](corsi.md) |
-| **ISCRITTI** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |
-| **TESSERE** | Chi è iscritto senza la tessera che il corso chiede (FIJLKAM, FIPE…) e chi è tesserato senza un corso | [Apri](tessere.md) |
-| **PAGAMENTI** | Tutti i pagamenti, delle ricevute e fatti a mano: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV | [Apri](pagamenti.md) |
-| **RICHIESTE ONLINE** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
-| **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, chi c'era a ogni lezione, il CSV | [Apri](presenze.md) |
+| **Da fare** | La prima pagina: appelli mancanti, richieste nuove, presenze da confermare, certificati e pagamenti, contati, con il tasto per sistemarli | [Apri](da-fare.md) |
+| **Settimana** | La griglia della settimana, gli appelli mancanti, annullare, sostituti, lezioni straordinarie | [Apri](settimana.md) |
+| **Corsi** | I corsi: sala, istruttori, posti, colore, giorni e orari | [Apri](corsi.md) |
+| **Iscritti** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |
+| **Tessere** | Chi è iscritto senza la tessera che il corso chiede (FIJLKAM, FIPE…) e chi è tesserato senza un corso | [Apri](tessere.md) |
+| **Pagamenti** | Tutti i pagamenti, delle ricevute e fatti a mano: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV | [Apri](pagamenti.md) |
+| **Richieste online** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
+| **Presenze** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, chi c'era a ogni lezione, il CSV | [Apri](presenze.md) |
 | **PRESENZE · SEGNALATE** | Una scheda di PRESENZE: gli iscritti che dicono di esserci stati e non risultano, da accogliere o rifiutare (solo in prova) | [Apri](presenze-segnalate.md) |
-| **STATISTICHE** | Come va la palestra mese per mese: presenze, iscritti, giorni e ore, corsi, istruttori, incassi | [Apri](statistiche.md) |
-| **PRESENZE ISTRUTTORI** | Le presenze degli istruttori dal PIN e dall'appello, confermate e da confermare, le lezioni tenute in cui scegliere chi c'era, il CSV e il report PDF | [Apri](presenze-istruttori.md) |
-| **ISTRUTTORI E ACCESSI** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
-| **ESERCIZI** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
-| **LISTINO** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
-| **VESTIARIO** | Gli ordini di vestiario, judogi e costumini: il catalogo, la chiusura, chi ha saldato, l'elenco per il fornitore | [Apri](vestiario.md) |
+| **Statistiche** | Come va la palestra mese per mese: presenze, iscritti, giorni e ore, corsi, istruttori, incassi | [Apri](statistiche.md) |
+| **Presenze istruttori** | Le presenze degli istruttori dal PIN e dall'appello, confermate e da confermare, le lezioni tenute in cui scegliere chi c'era, il CSV e il report PDF | [Apri](presenze-istruttori.md) |
+| **Istruttori e accessi** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
+| **Esercizi** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
+| **Listino** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
+| **Vestiario** | Gli ordini di vestiario, judogi e costumini: il catalogo, la chiusura, chi ha saldato, l'elenco per il fornitore | [Apri](vestiario.md) |
 | **IMPOSTAZIONI** | In sei gruppi: questo schermo; la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa); in mezzo, **IMPORTA DA EXCEL**: corsi e iscritti dai fogli o dalle risposte del modulo Google | [Apri](regole.md) · [Importa](importa.md) |
-| **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
-| **SITO** | Le pagine del sito della palestra, il menu in alto e il footer: si scrive la bozza e si pubblica | [Apri](sito.md) |
+| **Segnalazioni** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
+| **Sito** | Le pagine del sito della palestra, il menu in alto e il footer: si scrive la bozza e si pubblica | [Apri](sito.md) |
 
-In cima al menu, sotto il nome, si vedono subito senza scorrere tre tasti:
-**?**, la guida della voce aperta, in un'altra scheda; il tasto del **tema**
-(sole, tatami o luna: mostra dove porta; nero, bianco, Tatami) per questo
-computer; i **cursori**, le IMPOSTAZIONI. In
-prova, accanto, il bollino **DATI DI PROVA**.
+In cima al menu, sotto il nome, si vedono subito senza scorrere due tasti:
+**?**, la guida della voce aperta, in un'altra scheda; i **cursori**, le
+IMPOSTAZIONI. In prova, accanto, il bollino **DATI DI PROVA**. La segreteria ha
+sempre l'aspetto chiaro del sito della palestra, blu e giallo: il tasto del tema
+qui non c'è più (nero, bianco e Tatami restano per istruttori, tablet e timer).
 
 In fondo al menu:
 
-- **COPIA LINK ISCRIZIONI** — copia l'indirizzo della pagina pubblica, da
+- **Copia link iscrizioni** — copia l'indirizzo della pagina pubblica, da
   incollare su WhatsApp.
-- **COPIA LINK ORDINI** — copia l'indirizzo della pagina degli ordini di
+- **Copia link ordini** — copia l'indirizzo della pagina degli ordini di
   vestiario (vedi [Vestiario](vestiario.md)).
 - Chi è entrato ed **Esci**.
 
@@ -117,8 +120,8 @@ aperto, Indietro chiude solo il menu.
 
 Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
 numero giallo accanto dice quante cose aspettano (richieste nuove, presenze da
-confermare, segnalazioni da rispondere). Accanto ci sono **?**, il tema e le impostazioni.
-Aperto, ha gli stessi gruppi del computer; le voci di **LA PALESTRA** sono più
+confermare, segnalazioni da rispondere). Accanto ci sono **?** e le impostazioni.
+Aperto, ha gli stessi gruppi del computer; le voci di **Il resto** sono più
 piccole, perché si fanno meglio dal computer.
 
 ## Ordinare le tabelle

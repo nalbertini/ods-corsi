@@ -23,6 +23,7 @@ import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scor
 import { kanjiScritto } from './kanji'
 import { enteDaDati, fineAnno, mancaTessere, type EsitoImportTessere, type TesseraSeg } from './tessere'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
+import { pezziInHtml, pezziValidi } from './sitoPezzi'
 import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
 import { riduciFoto } from './foto'
 import { URL_SUPABASE } from './dati'
@@ -143,6 +144,7 @@ const MANCANO_PAGAMENTI_A_MANO = 'I pagamenti a mano non sono ancora attivi sul 
 /** Lo Storage risponde con errori suoi: si traducono in frasi per chi usa l'app (`cosaNonVaImmagini`). */
 const immaginiNonAttive = (e: { message: string; statusCode?: string }) => new Error(cosaNonVaImmagini(e.message, e.statusCode))
 const MANCA_SITO = 'Il pannello del sito non è ancora attivo sul database: va lanciato 56-sito.sql'
+const MANCANO_PEZZI = 'Le pagine a pezzi non sono ancora attive sul database: va lanciato 62-sito-pezzi.sql'
 const MANCANO_ALLEGATI = 'Gli allegati non sono ancora attivi sul database: va lanciato 32-segnalazioni-allegati.sql'
 
 const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `${p.nome} ${p.cognome}`.trim() : '')
@@ -273,6 +275,10 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === '42501' && /allegato/.test(e.message ?? '')) return new Error('Un allegato lo toglie solo chi l’ha mandato')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /allegato/.test(e.message ?? '')) return new Error(MANCANO_ALLEGATI)
   // Il sito arriva con 56-sito.sql: le funzioni che mancano, il testo che il sito non ammette, la pagina ancora nel menu.
+  // I pezzi di una pagina oltre il limite del database (stessa frase del testo troppo lungo, `testoTroppoLungo`).
+  if (e?.code === '23514' && /bozza_pezzi_check/.test(e.message ?? '')) return new Error('La pagina è troppo lunga: togli qualcosa e riprova')
+  // Le pagine a pezzi arrivano con 62-sito-pezzi.sql: la colonna che non c'è (42703 leggendo e creando, PGRST204 scrivendo) o la funzione.
+  if ((e?.code === '42703' || e?.code === 'PGRST204' || e?.code === 'PGRST202' || e?.code === '42883') && /bozza_pezzi|salva_bozza_pezzi_sito/.test(e.message ?? '')) return new Error(MANCANO_PEZZI)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /(salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito)/.test(e.message ?? '')) return new Error(MANCA_SITO)
   if (e?.code === '23514' && /sito_pagine_(bozza|pubblicato)_check/.test(e.message ?? '')) return new Error('Il testo contiene cose che il sito non ammette (script, moduli, stili): toglile e riprova')
   if (e?.code === '23514' && /sito_pagine_slug_check/.test(e.message ?? '')) return new Error('Questo indirizzo non va bene: solo lettere minuscole senza accenti, numeri e trattini, e non uno che serve al sito')
@@ -1794,7 +1800,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async sitoPagine() {
-      const righe = ok(await db.from('sito_pagine').select('id, slug, titolo, descrizione, titolo_pubblicato, descrizione_pubblicata, bozza, pubblicato, nascosta, di_legge, versione, pubblicata_il').order('slug')) as unknown as Array<{
+      const COLONNE = 'id, slug, titolo, descrizione, titolo_pubblicato, descrizione_pubblicata, bozza, pubblicato, nascosta, di_legge, versione, pubblicata_il'
+      type Riga = {
         id: string
         slug: string
         titolo: string
@@ -1802,12 +1809,22 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         titolo_pubblicato: string | null
         descrizione_pubblicata: string | null
         bozza: string
+        bozza_pezzi?: unknown
         pubblicato: string | null
         nascosta: boolean
         di_legge: boolean
         versione: number
         pubblicata_il: string | null
-      }>
+      }
+      // Senza `62-sito-pezzi.sql` la colonna non c'è (42703): le pagine si leggono lo stesso, tutte col vecchio editor.
+      const leggi = (colonne: string) => db.from('sito_pagine').select(colonne).order('slug')
+      let risposta = await leggi(`${COLONNE}, bozza_pezzi`)
+      let conPezzi = true
+      if (risposta.error?.code === '42703') {
+        conPezzi = false
+        risposta = await leggi(COLONNE)
+      }
+      const righe = ok(risposta) as unknown as Riga[]
       return righe.map((r): PaginaSito => ({
         id: r.id,
         slug: r.slug,
@@ -1816,6 +1833,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         titoloPubblicato: r.titolo_pubblicato,
         descrizionePubblicata: r.descrizione_pubblicata,
         bozza: r.bozza,
+        // Un valore che non è fatto come i pezzi (scritto da fuori) vale «vecchio editor»: il testo c'è, e si apre.
+        ...(conPezzi ? { pezzi: pezziValidi(r.bozza_pezzi) ? r.bozza_pezzi : null } : {}),
         pubblicato: r.pubblicato,
         nascosta: r.nascosta,
         diLegge: r.di_legge,
@@ -1835,8 +1854,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return { menu: voci('menu'), footer: voci('footer') }
     },
 
-    async nuovaPaginaSito(titolo, slug) {
-      const r = await db.from('sito_pagine').insert({ titolo: titolo.trim(), slug }).select('id').single()
+    async nuovaPaginaSito(titolo, slug, pezzi) {
+      if (pezzi && !pezziValidi(pezzi)) throw new Error('I pezzi della pagina non sono fatti come il sito li vuole: ricarica la pagina e riprova')
+      const r = await db.from('sito_pagine').insert({ titolo: titolo.trim(), slug, ...(pezzi ? { bozza_pezzi: pezzi, bozza: pezziInHtml(pezzi) } : {}) }).select('id').single()
       // Un indirizzo che è il vecchio di una pagina cambiata: la regola lo ferma come «permesso negato».
       if (r.error?.code === '42501') throw new Error('Questo indirizzo era di una pagina che ha cambiato indirizzo: scegline un altro')
       return (ok(r) as { id: string }).id
@@ -1844,6 +1864,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async salvaBozzaSito(id, versione, dati) {
       return ok(await db.rpc('salva_bozza_sito', { p_id: id, p_versione: versione, p_titolo: dati.titolo.trim(), p_descrizione: dati.descrizione.trim(), p_bozza: dati.bozza })) as number
+    },
+
+    async salvaBozzaPezziSito(id, versione, dati) {
+      if (!pezziValidi(dati.pezzi)) throw new Error('I pezzi della pagina non sono fatti come il sito li vuole: ricarica la pagina e riprova')
+      return ok(
+        await db.rpc('salva_bozza_pezzi_sito', { p_id: id, p_versione: versione, p_titolo: dati.titolo.trim(), p_descrizione: dati.descrizione.trim(), p_bozza: pezziInHtml(dati.pezzi), p_pezzi: dati.pezzi }),
+      ) as number
     },
 
     async pubblicaPaginaSito(id, versione) {

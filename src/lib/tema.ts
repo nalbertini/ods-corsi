@@ -18,6 +18,9 @@ export const TEMI: readonly Tema[] = ['scuro', 'chiaro', 'tatami']
 /** Il colore della barra del browser e del telefono per ogni tema: quello del fondo. */
 export const COLORE_BARRA: Record<Tema, string> = { scuro: '#121212', chiaro: '#f4f4f1', tatami: '#ebe6d0' }
 
+/** La barra con il look del sito (segreteria e amministrazione): il fondo di quell'aspetto, qualunque sia il tema scelto. */
+export const COLORE_BARRA_LOOK = '#eef5fa'
+
 /** Un valore salvato che non è esattamente uno dei temi (un altro nome, una versione più nuova) non conta. */
 export function leggiTema(valore: unknown): Tema | null {
   return TEMI.find((t) => t === valore) ?? null
@@ -50,12 +53,21 @@ function attuale(): Tema {
 const ascoltatori = new Set<(t: Tema) => void>()
 
 function applica() {
-  const t = attuale()
-  document.documentElement.dataset.tema = t
+  const html = document.documentElement
+  // Col look del sito (`aspettoSegreteria.ts`) il tema è sempre il chiaro: la scelta salvata non si tocca, vale per le altre aree.
+  const look = !!html.dataset.look
+  const t = look ? 'chiaro' : attuale()
+  html.dataset.tema = t
   // La barra del browser e quella del telefono prendono il colore del fondo,
   // tranne nel modulo di iscrizione, che è sempre chiaro (`aspettoModulo.ts`).
-  if (!document.documentElement.dataset.modulo) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', COLORE_BARRA[t])
+  const barra = look ? COLORE_BARRA_LOOK : html.dataset.modulo ? null : COLORE_BARRA[t]
+  if (barra) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', barra)
   ascoltatori.forEach((f) => f(t))
+}
+
+/** Per chi cambia l'aspetto dell'area dopo l'avvio: rifà il tema com'è adesso. */
+export function riapplicaTema() {
+  applica()
 }
 
 /** Da chiamare una volta, prima di disegnare l'app, così non lampeggia. */

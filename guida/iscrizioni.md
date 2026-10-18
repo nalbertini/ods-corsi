@@ -29,7 +29,10 @@ segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
 - **I costi** della stagione, quelli del [listino](segreteria/listino.md)
   della segreteria, e il foglio in PDF finché il listino non è stato
   cambiato. Passata la data del saldo (il 31 agosto) la colonna **SALDO 31/8**
-  sparisce: quel prezzo non vale più.
+  sparisce: quel prezzo non vale più. Il foglio in PDF da scaricare riporta i
+  costi di partenza della stagione, nel nuovo aspetto: se la segreteria li
+  cambia da LISTINO, l'app mostra quelli nuovi ma il PDF resta quello di
+  partenza, finché non lo si rigenera.
 - **I contatti**: CHIAMA, MAPPA, INSTAGRAM, FACEBOOK, IL SITO.
 
 ## Il modulo di iscrizione dell'app
@@ -79,6 +82,12 @@ Chi si iscrive risponde alle domande dal telefono:
   serve, e in fondo, in piccolo, che è stato firmato dal telefono e quando.
   È quello che parte come modulo firmato. Chi ha già il foglio firmato a mano
   sceglie **Ho il foglio firmato** e ne carica la foto.
+  I fogli delle autorizzazioni da scaricare (maggiorenni e minori) hanno ora
+  l'aspetto del sito, con la mascotte e il simbolo di sempre, e si compilano
+  anche al computer: nome, date, anno (un campo corto che comincia per «2») e
+  caselle sono campi da scrivere o da crociare; poi si stampa e si firma. Le parole non cambiano. Sul telefono molti
+  lettori di PDF non compilano i campi: lì c'è il modulo dell'app. Il modulo
+  firmato che parte dall'app non ha campi: è fermo e uguale in ogni lettore.
   Se si cambia la data di nascita e chi si iscrive diventa minore (o non lo è
   più), il foglio è un altro: firma, crocette e foto del foglio si azzerano, e
   un avviso giallo dice «Firma e autorizzazioni vanno rifatte».
@@ -121,7 +130,7 @@ La richiesta **non è ancora un'iscrizione**: arriva in segreteria, in
 [RICHIESTE ONLINE](segreteria/richieste.md), dove qualcuno guarda i file e la
 accoglie.
 
-Il modulo ha l'aspetto del sito della palestra: sfondo chiaro, blu e giallo, anche se il telefono è in tema scuro. Il tasto del tema in alto c'è ancora: cambia il tema dell'app per quando si torna indietro, non il modulo.
+Il modulo ha l'aspetto del sito della palestra: sfondo chiaro, blu e giallo, anche se il telefono è in tema scuro. Il tasto del tema in alto, a modulo aperto, non c'è: il modulo resta chiaro in ogni caso; ricompare quando si chiude.
 
 ## Il modulo a passi (solo in prova)
 

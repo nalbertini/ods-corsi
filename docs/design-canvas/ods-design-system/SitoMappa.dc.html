@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; height: {{alto}}; border-radius: 6px; overflow: hidden; background: #cfe6f4; outline: {{contorno}}; outline-offset: -3px">
+  <img src="{{foto}}" alt="Mappa: Officine dello Sport, Via Sassi 26, Collegno" width="1344" height="520" style="display: block; width: 100%; height: 100%; object-fit: cover; object-position: {{fuoco}}">
+  <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; top: 8px; right: 8px; z-index: 2; background: #ffffff; color: #0d2a3d; border: 2px solid #e4292a; border-radius: 4px; padding: 4px 8px; font-family: {{inter}}; font-size: 12px; font-weight: 700; line-height: 1.2">{{nota}}</span></sc-if>
+  <div style="position: absolute; left: 50%; top: {{topPin}}; transform: {{sposta}}; display: flex; flex-direction: {{verso}}; align-items: center; gap: 10px"><span style="width: 40px; height: 40px; border-radius: 50%; background: #f4c31b; border: 6px solid #0d2a3d; flex: none"></span><span style="background: #0d2a3d; color: #ffffff; border-radius: 6px; padding: 10px 16px; white-space: nowrap"><span style="display: block; font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: 24px; line-height: 1">Officine dello Sport</span><span style="display: block; font-family: {{inter}}; font-size: 15px; line-height: 1.3; margin-top: 2px">Via Sassi 26, Collegno</span></span></div>
+  <div style="position: absolute; left: 16px; bottom: 28px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center"><span style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 28px; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 18px">{{pulsante}}</span></div>
+  <span style="position: absolute; right: 0; bottom: 0; background: #ffffff; color: #0d2a3d; font-family: {{inter}}; font-size: 13px; line-height: 1.2; padding: 6px 10px; border-top-left-radius: 6px">© OpenStreetMap contributors</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"foto":{"editor":"text","default":"mappa.webp"},"fuoco":{"editor":"text","default":"50% 50%"},"pulsante":{"editor":"text","default":"Ottieni indicazioni"},"alto":{"editor":"text","default":"460px"},"piccolo":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"$preview":{"width":780,"height":460}}'>
+// PROPOSTA contatti del sito: la mappa (immagine OpenStreetMap, zoom 17, 1344x520) con width/height dichiarati (niente salto di layout) e il pulsante «Ottieni indicazioni» da 56px.
+// Oggi la pillola «A pochi metri dalla metropolitana Fermi» e' sull'immagine e copre le etichette della mappa; qui la frase sta nel testo accanto (SitoArrivo), dove si puo' leggere e correggere.
+// Sul telefono (piccolo) la targhetta va sotto il segnaposto, centrata, perche' di lato esce dallo schermo.
+// Il segnaposto e la targhetta «Officine dello Sport» sono livelli sopra l'immagine (come sul sito vero, dove mappa.webp e' la mappa senza segnaposto).
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const pic = truthy(p.piccolo);
+    return { topPin: pic ? '36%' : '50%', sposta: pic ? 'translate(-50%, -20px)' : 'translate(-20px, -20px)', verso: pic ? 'column' : 'row', big: BIG, inter: INTER, foto: p.foto || 'mappa.webp', fuoco: p.fuoco || '50% 50%', pulsante: p.pulsante ?? '', alto: p.alto || '460px', ...segna(p.nota) };
+  }
+}
+</script>
+</body>
+</html>

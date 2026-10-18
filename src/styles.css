@@ -246,6 +246,210 @@
 /* Come la voce del menu: nella barra in basso la scheda corrente è chiara, quindi il testo e il segno scuri. */
 :root[data-tema='tatami'] .barra-voce[aria-current='page'] { border-top-color: #1d1d1b; color: #1d1d1b; }
 
+/* Il look del sito per la segreteria e l'amministrazione (`lib/aspettoSegreteria.ts`): stessi
+   colori e caratteri del modulo di iscrizione (`data-modulo='sito'`, più sotto), che qui sono
+   sempre chiari, e il menu in inchiostro come il piede del sito. Sta dopo i temi chiaro e
+   Tatami perché a parità di specificità vince l'ordine; `prova:look` lo controlla. */
+:root[data-look='sito'] {
+  --bg: #eef5fa;
+  --surface: #ffffff;
+  --surface-2: #cfe6f4;
+  --line: #cfe6f4;
+  --line-soft: #cfe6f4;
+  --riga-campo: #14709f;
+  --text: #0d2a3d;
+  --sec: #0d2a3d;
+  --dim: #46606f;
+  --faint: #46606f;
+
+  --blu: #14709f;
+  --rosso: #e4292a;
+  --giallo: #f4c31b;
+  --verde: #12913f;
+  --giallo-testo: #8f6a00;
+  --verde-testo: #0b7a33;
+  --rosso-testo: #b81d1d;
+  --su-colore: #0d2a3d;
+  --su-rosso: #ffffff;
+  --tasto: #0d2a3d;
+  --tratteggio: #14709f;
+  --menu: #0d2a3d;
+
+  --cond: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;
+  --body: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  color-scheme: light;
+}
+/* Il menu è inchiostro dentro una pagina chiara: lì dentro il testo è chiaro, come per il Tatami. */
+:root[data-look='sito'] .sg-menu,
+:root[data-look='sito'] .sg-barra-tel,
+:root[data-look='sito'] .bn-alto {
+  --text: #ffffff;
+  --sec: #cfe6f4;
+  --dim: #cfe6f4;
+  --tasto: #cfe6f4;
+  --line: #46606f;
+  --line-soft: #46606f;
+  color: #ffffff;
+}
+:root[data-look='sito'] .sg-voce[aria-current='page'] { border-left-color: var(--giallo); background: var(--giallo); color: var(--su-colore); }
+:root[data-look='sito'] .sg-menu .sg-campo { background: #ffffff; border-color: #ffffff; color: var(--su-colore); }
+/* `--dim` nel menu è chiaro (testo su inchiostro): sul campo bianco il segnaposto usa `--faint`, che il menu non cambia. */
+:root[data-look='sito'] .sg-menu .sg-campo::placeholder { color: var(--faint); }
+/* L'elenco della ricerca sta nel menu ma ha il fondo chiaro: lì i token tornano quelli della pagina. */
+:root[data-look='sito'] .sg-cerca-elenco {
+  --text: #0d2a3d;
+  --sec: #0d2a3d;
+  --dim: #46606f;
+  --line: #cfe6f4;
+  --line-soft: #cfe6f4;
+  color: #0d2a3d;
+}
+/* I caratteri: Big Shoulders solo per il titolo di pagina e le cifre grandi; tasti, etichette, voci e
+   numeri di telefono in Inter, dove 1 e I non si confondono. Big Shoulders è dritto: niente obliquo finto. */
+:root[data-look='sito'] .num { font-family: var(--body); font-variant-numeric: tabular-nums; }
+:root[data-look='sito'] .sg-btn,
+:root[data-look='sito'] .sg-chip,
+:root[data-look='sito'] .sg-voce,
+:root[data-look='sito'] .sg-tag,
+:root[data-look='sito'] .sg-etichetta { font-family: var(--body); font-style: normal; }
+:root[data-look='sito'] .ob,
+:root[data-look='sito'] .sg-titolo { font-style: normal; }
+/* Inter è più larga di Saira: con la spaziatura di prima le voci lunghe andavano a capo. */
+:root[data-look='sito'] .sg-voce { letter-spacing: 0; min-height: 44px; border-radius: 6px; font-weight: 500; font-size: 15px; white-space: nowrap; }
+/* Nel menu di 240px una voce non va a capo col suo numero accanto: poco riempimento ai lati. */
+:root[data-look='sito'] #sg-menu .sg-voce { padding-left: 8px; padding-right: 4px; }
+:root[data-look='sito'] #sg-menu .sg-voce .sg-tag { margin-left: 4px; padding: 1px 6px; }
+@media (min-width: 768px) {
+  :root[data-look='sito'] .sg-menu { padding-left: 12px; padding-right: 12px; }
+}
+/* Sotto i 1000px il menu è di 200px: lì una voce lunga può andare a capo, il numero resta accanto. */
+@media (max-width: 1000px) {
+  :root[data-look='sito'] .sg-voce { white-space: normal; }
+}
+:root[data-look='sito'] .sg-gruppo[data-secondario='true'] .sg-voce { font-size: 15px; }
+:root[data-look='sito'] .sg-voce[aria-current='page'] { font-weight: 700; }
+/* I titoli dei gruppi sono scritti con l'iniziale maiuscola nel codice; il maiuscolo è dello stile, come le etichette di colonna. */
+:root[data-look='sito'] .sg-gruppo-titolo { font-family: var(--body); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; }
+/* Il tema qui è uno solo: il tasto non serve. */
+:root[data-look='sito'] .tasto-tema { display: none; }
+/* L'inchiostro del sito sul verde dei tasti «vai» non arriva a 4,5:1 (3,6); il nero di prima sì (4,6). */
+:root[data-look='sito'] .sg-btn-verde,
+:root[data-look='sito'] .btn-go { color: #121212; }
+/* Col carattere più largo la parola MENU e il numero non stanno più nella barra del telefono. */
+@media (max-width: 767px) {
+  :root[data-look='sito'] .sg-tasto-menu { letter-spacing: 0.08em; padding: 0 10px; }
+}
+
+/* ---- Forme, tasti, campi e stati del look (design: docs/design-canvas/segreteria-sito) ---- */
+/* Il raggio del sito. */
+:root[data-look='sito'] .sg-btn,
+:root[data-look='sito'] .sg-chip,
+:root[data-look='sito'] .sg-campo,
+:root[data-look='sito'] .sg-tag,
+:root[data-look='sito'] .sg-bollino,
+:root[data-look='sito'] .sg-riquadro,
+:root[data-look='sito'] .sg-dafare-riga,
+:root[data-look='sito'] .sg-scelta,
+:root[data-look='sito'] .card,
+:root[data-look='sito'] .sg-segno-regola,
+:root[data-look='sito'] .sg-dialogo,
+:root[data-look='sito'] .sg-scheda,
+:root[data-look='sito'] .sg-timbro,
+:root[data-look='sito'] .sg-lezione,
+:root[data-look='sito'] .sg-dafare-lezione { border-radius: 6px; }
+/* Tessere bianche sul fondo azzurro, senza il bordo da 2px: lo stato sta in una barra a sinistra, con le parole accanto. */
+:root[data-look='sito'] .sg-riquadro,
+:root[data-look='sito'] .sg-dafare-riga,
+:root[data-look='sito'] .card,
+:root[data-look='sito'] .sg-mancano { border: 0; background: var(--surface); }
+:root[data-look='sito'] .sg-dafare-riga[data-livello='blocca'] { box-shadow: inset 4px 0 0 var(--rosso); }
+:root[data-look='sito'] .sg-dafare-riga[data-livello='presto'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
+:root[data-look='sito'] .sg-riquadro[data-fatto='true'] { box-shadow: inset 4px 0 0 var(--verde); }
+/* Il tasto principale è il giallo del marchio (uno per schermata); il tasto a linea e i filtri hanno il blu dei campi. */
+:root[data-look='sito'] .sg-btn-pieno { background: var(--giallo); color: var(--su-colore); }
+:root[data-look='sito'] .sg-btn-linea,
+:root[data-look='sito'] .sg-btn-tratteggio,
+:root[data-look='sito'] .sg-chip,
+:root[data-look='sito'] .sg-scelta { border-color: var(--riga-campo); color: var(--text); }
+:root[data-look='sito'] .sg-btn-linea:hover { border-color: var(--text); }
+:root[data-look='sito'] .sg-chip[aria-pressed='true'],
+:root[data-look='sito'] .sg-chip[aria-selected='true'],
+:root[data-look='sito'] .sg-chip-pieno { background: var(--blu); border-color: var(--blu); color: #ffffff; }
+:root[data-look='sito'] .sg-scelta[aria-checked='true'] { border-color: var(--blu); background: var(--surface); color: var(--text); box-shadow: inset 0 0 0 2px var(--blu); }
+:root[data-look='sito'] .sg-campo { border-color: var(--riga-campo); background: var(--surface); }
+/* La lezione di SETTIMANA, come le altre tessere: senza il bordo da 2px, con la tinta del corso in alto e, se manca l'appello, la barra rossa a sinistra. */
+:root[data-look='sito'] .sg-lezione { border: 0; border-top: 4px solid var(--tinta); }
+:root[data-look='sito'] .sg-lezione[data-manca='true'] { box-shadow: inset 4px 0 0 var(--rosso); }
+:root[data-look='sito'] .sg-lezione:hover { box-shadow: inset 0 0 0 2px var(--blu); }
+:root[data-look='sito'] .sg-lezione[data-chiusa='true'] { border-top-color: color-mix(in srgb, var(--tinta) 55%, var(--bg)); }
+/* Una lezione annullata si legge dal nome barrato e dal tag, non dall'opacità: sotto il 50% il testo non arriva a 4,5:1. */
+:root[data-look='sito'] .sg-lezione[data-annullata='true'] { opacity: 1; }
+/* Lo stato in parole dei segni delle schede (IN REGOLA, NO TESSERA…): tag bianco con il segno davanti, come .sg-tag. */
+:root[data-look='sito'] .sg-segno-regola { background: var(--surface); }
+:root[data-look='sito'] .sg-segno-regola[data-tono='rosso']::before { content: '✕ '; }
+:root[data-look='sito'] .sg-segno-regola[data-tono='giallo']::before { content: '… '; }
+:root[data-look='sito'] .sg-segno-regola[data-tono='verde']::before { content: '✓ '; }
+/* Un elemento scelto non prende il celeste: sotto un testo giallo scuro o verde non arriva a 4,5:1. */
+:root[data-look='sito'] .sg-corso[aria-pressed='true'],
+:root[data-look='sito'] .sg-lista-tasto[aria-pressed='true'],
+:root[data-look='sito'] .sg-sett-titolo[aria-expanded='true'] { background: var(--surface); box-shadow: inset 0 0 0 2px var(--blu); border-color: var(--blu); }
+/* Passando sopra o scegliendo una riga non si cambia il fondo: sotto un testo giallo scuro o verde il celeste non arriva a 4,5:1. */
+:root[data-look='sito'] .sg-mancano-casella:hover { background: var(--surface); box-shadow: inset 0 0 0 2px var(--blu); }
+:root[data-look='sito'] .sg-iscritto[data-scelto='true'] { background: var(--surface); outline: 2px solid var(--blu); outline-offset: -2px; }
+/* Il fuoco da tastiera: contorno blu sulla pagina, bianco nel menu scuro. */
+:root[data-look='sito'] .sg-btn:focus-visible,
+:root[data-look='sito'] .sg-chip:focus-visible,
+:root[data-look='sito'] .sg-campo:focus-visible,
+:root[data-look='sito'] .sg-link:focus-visible,
+:root[data-look='sito'] .sg-scelta:focus-visible { outline: 3px solid var(--blu); outline-offset: 3px; }
+:root[data-look='sito'] .sg-menu :focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+/* Gli stati sono un tag bianco con bordo e testo del colore dello stato e un segno prima della parola: ✕ manca, … aspetta, ✓ fatto. */
+/* Il bordo e il testo hanno lo stesso colore (scritto per esteso: `prova:look` lo legge così). */
+:root[data-look='sito'] .sg-tag { background: var(--surface); color: var(--dim); border: 1.5px solid var(--dim); padding: 1px 8px; letter-spacing: 0.02em; }
+:root[data-look='sito'] .sg-tag[data-tipo='manca'] { background: var(--surface); color: var(--rosso-testo); border: 1.5px solid var(--rosso-testo); }
+:root[data-look='sito'] .sg-tag[data-tipo='aspetta'],
+:root[data-look='sito'] .sg-tag[data-tipo='sostituto'] { background: var(--surface); color: var(--giallo-testo); border: 1.5px solid var(--giallo-testo); }
+:root[data-look='sito'] .sg-tag[data-tipo='fatto'] { background: var(--surface); color: var(--verde-testo); border: 1.5px solid var(--verde-testo); }
+/* Il numero accanto alle voci del menu non è uno stato: niente segno, bianco con l'inchiostro; il bordo giallo scuro dice che aspetta. */
+:root[data-look='sito'] .sg-tag[data-tipo='presto'] { background: var(--surface); color: var(--su-colore); border: 1.5px solid var(--giallo-testo); }
+/* Nel menu e nella barra del telefono `--dim` è chiaro (testo su inchiostro): il tag neutro lì sta sul bianco e prende l'inchiostro. */
+:root[data-look='sito'] .sg-menu .sg-tag,
+:root[data-look='sito'] .sg-barra-tel .sg-tag { color: var(--su-colore); border-color: var(--su-colore); }
+:root[data-look='sito'] .sg-tag[data-tipo='manca']::before { content: '✕ '; }
+:root[data-look='sito'] .sg-tag[data-tipo='aspetta']::before,
+:root[data-look='sito'] .sg-tag[data-tipo='sostituto']::before { content: '… '; }
+:root[data-look='sito'] .sg-tag[data-tipo='fatto']::before { content: '✓ '; }
+/* Il giallo pieno è solo del tasto principale e della voce corrente: «aspetta» è testo e bordo in giallo scuro. */
+:root[data-look='sito'] .sg-bollino { background: var(--surface); color: var(--giallo-testo); border: 1.5px solid var(--giallo-testo); }
+:root[data-look='sito'] .sg-mancano-casella[data-stato='attesa'] { border-bottom-color: var(--giallo-testo); }
+:root[data-look='sito'] .sg-campo[data-acceso='true'] { border-color: var(--giallo-testo); }
+:root[data-look='sito'] .sg-giorno-tel[data-oggi='true'],
+:root[data-look='sito'] .sg-giorno[data-oggi='true'] { border-bottom-color: var(--giallo-testo); }
+:root[data-look='sito'] .sg-giorno-tel[aria-pressed='true'][data-oggi='true'] { border-bottom-color: var(--giallo-testo); }
+:root[data-look='sito'] .sg-filo[data-tocca='true'] { border-left: 4px solid var(--giallo-testo); }
+:root[data-look='sito'] .sg-timbro[data-tono='giallo'] { --tono: var(--giallo-testo); --tono-testo: var(--giallo-testo); }
+:root[data-look='sito'] .sg-timbro-riga[data-tono='giallo'] { color: var(--giallo-testo); border: 2px solid var(--giallo-testo); }
+:root[data-look='sito'] .sg-quadretto[data-stato='giustificato'] { border-color: var(--giallo-testo); color: var(--giallo-testo); }
+:root[data-look='sito'] .sg-parte[data-tono='giallo'],
+:root[data-look='sito'] .sg-parte-segno[data-tono='giallo'] { background: var(--giallo-testo); }
+:root[data-look='sito'] .sg-listino-salva { border-color: var(--giallo-testo); }
+:root[data-look='sito'] .sg-carica-foto-nuova { background: var(--surface); color: var(--giallo-testo); border: 1.5px solid var(--giallo-testo); }
+/* Lo stesso per le righe di appello, il Banco, il nastro di prova e la spia delle scritture, che usano il giallo come fondo o come bordo. */
+:root[data-look='sito'] .avviso-rete { border-left: 6px solid var(--giallo-testo); }
+:root[data-look='sito'] .segnalata,
+:root[data-look='sito'] .esito-appello,
+:root[data-look='sito'] .prove-pannello.prove-pannello { border-color: var(--giallo-testo); }
+:root[data-look='sito'] .prova-marchio { border: 2px solid var(--giallo-testo); }
+:root[data-look='sito'] .spia-coda { border: 2px solid var(--giallo-testo); }
+:root[data-look='sito'] .nastro-prova { background: var(--surface); color: var(--giallo-testo); }
+:root[data-look='sito'] .riquadro[data-tono='prova'] { border-left: 4px solid var(--giallo-testo); }
+:root[data-look='sito'] .bn-adesso { border-top: 3px solid var(--giallo-testo); }
+:root[data-look='sito'] .bn-adesso .num { background: var(--giallo-testo); color: #ffffff; }
+:root[data-look='sito'] .bn-riga { border-left: 8px solid var(--giallo-testo); }
+:root[data-look='sito'] .bn-riga[data-livello='blocca'] { border-left-color: var(--rosso); }
+:root[data-look='sito'] .bn-blocca { border: 2px solid var(--giallo-testo); border-left: 8px solid var(--giallo-testo); }
+
 * { box-sizing: border-box; }
 
 /* A pieno schermo la finestra cresce quando la barra del browser si ritrae, ma
@@ -2341,7 +2545,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 
 /* Sul telefono il menu sta dietro una barra in cima: il marchio e MENU, col
    numero di quello che aspetta. Aperto copre la sezione, coi gruppi come sul
-   computer; LA PALESTRA, roba da computer, più piccola. */
+   computer; «Il resto», roba da computer, più piccolo. */
 .sg-barra-tel { display: none; }
 @media (max-width: 767px) {
   .sg-regole-gruppo { margin-top: 28px; }
@@ -2602,6 +2806,109 @@ html.firma-aperta, html.firma-aperta body { overflow: hidden; overscroll-behavio
 label.sg-btn { cursor: pointer; }
 .sg-carica-foto:has(input:focus-visible) label.sg-btn { outline: 2px solid var(--text); outline-offset: 2px; }
 
+/* ---------------------------------------------------------------------------
+   Il Banco: la segreteria con la ricerca in cima e cinque luoghi, al posto del
+   menu a sinistra. Si sceglie da IMPOSTAZIONI (src/lib/aspetto.ts). Stessi
+   token di sempre; la proposta è in docs/design-canvas/banco/.
+   --------------------------------------------------------------------------- */
+.sg[data-aspetto='banco'] { flex-direction: column; }
+.sg[data-aspetto='banco'] > .sg-corpo { padding-top: 24px; }
+.bn-barra { flex-shrink: 0; background: var(--bg); border-bottom: 2px solid var(--line); }
+.bn-alto { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: calc(var(--safe-t) + 10px) 28px 10px; background: var(--menu); border-bottom: 2px solid var(--line-soft); }
+.bn-marchio { display: flex; align-items: center; gap: 10px; min-width: 170px; }
+.bn-cerca { flex: 1 1 320px; max-width: 560px; }
+.bn-cerca .sg-cerca { padding: 0; }
+.bn-chi { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.bn-marchio .bn-sotto-marchio { font-size: 12px; font-weight: 600; letter-spacing: 0.22em; color: var(--dim); }
+.bn-alto > .sg-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; }
+.bn-link { position: relative; }
+.bn-link-voci { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 240px; padding: 4px; background: var(--surface); border: 2px solid var(--text); }
+.bn-luoghi, .bn-voci { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; padding: 0 28px; }
+.bn-luoghi { background: var(--surface); border-bottom: 2px solid var(--line-soft); }
+.bn-luogo {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 18px; border-bottom: 4px solid transparent;
+  font-size: 19px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim);
+}
+.bn-luogo:hover { color: var(--text); }
+.bn-luogo[aria-current='page'] { border-bottom-color: var(--text); color: var(--text); }
+.bn-voci { align-items: center; min-height: 52px; background: var(--surface-2); }
+.bn-voce {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 2px solid var(--line);
+  font-size: 15px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec);
+}
+.bn-voce:hover { color: var(--text); border-color: var(--dim); }
+.bn-voce[aria-current='page'] { background: var(--text); border-color: var(--text); color: var(--bg); }
+.bn-voce[aria-current='page'] .sg-tag { outline: 2px solid var(--bg); }
+
+.bn-cifre { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.bn-cifra {
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-height: 110px; padding: 14px 16px; text-align: left;
+  background: var(--surface); border: 2px solid var(--line);
+}
+button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
+.bn-cifra[data-guaio='true'] .bn-cifra-n { color: var(--rosso-testo); }
+.bn-cifra-n { font-size: 44px; font-weight: 700; line-height: 1; }
+.bn-cifra-sotto { font-size: 13px; color: var(--dim); }
+.bn-oggi { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 28px; align-items: start; }
+.bn-sale { display: grid; gap: 0; padding-bottom: 6px; border-bottom: 2px solid var(--line); }
+.bn-sale .sg-etichetta { padding: 0 12px; letter-spacing: 0.24em; }
+.bn-griglia {
+  position: relative; display: grid;
+  background-image: linear-gradient(var(--line-soft) 2px, transparent 2px); background-size: 100% var(--ora-px);
+}
+.bn-ore { display: flex; flex-direction: column; }
+.bn-ore span { font-size: 14px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.bn-colonna { position: relative; }
+.bn-blocco {
+  position: absolute; left: 5px; right: 5px; display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; text-align: left; overflow: hidden;
+  background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--tinta);
+}
+.bn-blocco:hover { border-color: var(--dim); border-left-color: var(--tinta); }
+.bn-blocco-testa { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 20px; font-weight: 700; line-height: 1.05; }
+.bn-blocco-testa .num { font-size: 14px; font-weight: 500; color: var(--dim); }
+.bn-blocco-sotto { font-size: 13px; color: var(--sec); }
+.bn-blocco-stato { margin-top: auto; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+.bn-blocco[data-stato='fatto'] { border-color: var(--verde); }
+.bn-blocco[data-stato='fatto'] .bn-blocco-stato, .bn-blocco[data-stato='in_corso'] .bn-blocco-stato { color: var(--verde-testo); }
+.bn-blocco[data-stato='appello_non_fatto'] { border-color: var(--rosso); }
+.bn-blocco[data-stato='appello_non_fatto'] .bn-blocco-stato { color: var(--rosso-testo); }
+.bn-blocco[data-stato='annullata'] { background: transparent; border-color: var(--line-soft); border-left-color: var(--tinta); }
+.bn-blocco[data-stato='annullata'] .bn-blocco-testa { color: var(--sec); }
+/* In un blocco corto la riga di mezzo sparisce: la parola dello stato, in fondo, deve restare in vista. */
+.bn-blocco[data-corto='true'] .bn-blocco-sotto { display: none; }
+.bn-adesso { position: absolute; left: 0; right: 0; height: 0; border-top: 3px solid var(--giallo); pointer-events: none; }
+.bn-adesso .num { position: absolute; left: 0; top: -11px; padding: 0 5px; background: var(--giallo); color: var(--su-colore); font-size: 13px; font-weight: 700; }
+.bn-coda { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.bn-coda-testa { padding-bottom: 8px; border-bottom: 2px solid var(--line); letter-spacing: 0.18em; }
+.bn-riga { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--giallo); }
+.bn-riga[data-livello='blocca'] { border-left-color: var(--rosso); }
+.bn-riga .sg-btn { white-space: nowrap; flex-shrink: 0; }
+.bn-riga-titolo { font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.1; }
+.bn-riga-sotto { font-size: 13px; line-height: 1.35; color: var(--sec); }
+.bn-altro { margin-top: 8px; }
+.bn-altro > summary { list-style: none; display: inline-flex; align-items: center; cursor: pointer; }
+.bn-altro > summary::-webkit-details-marker { display: none; }
+.bn-altro[open] > summary { margin-bottom: 18px; }
+
+.bn-persona { display: flex; flex-direction: column; gap: 14px; }
+.bn-blocca { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 18px; background: var(--surface); border: 2px solid var(--giallo); border-left: 8px solid var(--giallo); }
+.bn-blocca[data-blocca='true'] { border-color: var(--rosso); }
+.bn-blocca-titolo { font-size: 22px; font-weight: 700; letter-spacing: 0.04em; color: var(--giallo-testo); }
+.bn-blocca[data-blocca='true'] .bn-blocca-titolo { color: var(--rosso-testo); }
+.bn-famiglia { margin: 0; font-size: 15px; }
+
+.bn-tabella { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.bn-tabella-testa, .bn-tabella-riga { display: grid; gap: 12px; align-items: center; padding: 6px 14px; }
+.bn-tabella-testa { border-bottom: 2px solid var(--line); padding-top: 8px; padding-bottom: 8px; }
+.bn-tabella-riga { min-height: 64px; background: var(--surface); border: 2px solid var(--line); border-top: 0; font-size: 16px; }
+
+@media (max-width: 1100px) {
+  .bn-oggi { grid-template-columns: minmax(0, 1fr); }
+  /* La coda è il lavoro del banco: sullo schermo stretto viene prima del tabellone, non dopo. */
+  .bn-coda { order: -1; }
+  .bn-chi { display: none; }
+  .bn-cifre { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 /* A 320px sette colonne da 44px entrano solo senza spazi fra le celle: il bordo di ognuna fa da separatore. */
 @media (max-width: 359px) {
   .sg-calendario { padding: 4px; }
@@ -2618,6 +2925,59 @@ label.sg-btn { cursor: pointer; }
 .sito-testo > * + * { margin-top: 14px; }
 .sito-testo p, .sito-testo ul, .sito-testo ol, .sito-testo blockquote { margin-top: 0; margin-bottom: 0; }
 .sito-testo h2, .sito-testo h3 { margin: 0; font-family: var(--cond); font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; line-height: 1.1; }
+/* Puck ha tre pannelli: ha bisogno di tutta la larghezza, e i campi della pagina vanno sotto. */
+.sito-due-pezzi { grid-template-columns: minmax(0, 1fr); }
+.sito-due-pezzi > .stack:last-child { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); align-items: start; }
+/* L'anteprima vera segue il tema come gli altri riquadri: il fondo azzurro del sito sta dentro la pagina. */
+.sito-anteprima-pagina { width: 100%; height: 720px; border: 2px solid var(--line); background: var(--surface); }
+/* Puck: i suoi colori, i raggi e il carattere sono quelli dell'app (squadrato, token del tema), non i suoi. */
+.sito-pezzi {
+  --puck-font-family: var(--body);
+  --puck-color-surface: var(--surface);
+  --puck-color-surface-muted: var(--surface-2);
+  --puck-color-surface-subtle: var(--surface-2);
+  --puck-color-border: var(--line);
+  --puck-color-border-muted: var(--line-soft);
+  --puck-color-border-hover: var(--text);
+  --puck-color-text: var(--text);
+  --puck-color-text-secondary: var(--dim);
+  --puck-color-text-muted: var(--dim);
+  --puck-color-text-subtle: var(--dim);
+  --puck-color-text-inverse: var(--bg);
+  --puck-color-interactive: var(--text);
+  --puck-color-interactive-soft: var(--surface-2);
+  --puck-color-interactive-soft-hover: var(--line);
+  --puck-color-selection-border: var(--text);
+  --puck-color-focus-ring: var(--text);
+  --puck-radius-m: 0;
+  --puck-radius-l: 0;
+  --puck-field-radius: 0;
+  --puck-field-color-text: var(--text);
+  --puck-field-color-bg: var(--surface);
+  --puck-field-color-border: var(--riga-campo);
+  min-height: 520px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+}
+.sito-pezzi * { border-radius: 0; }
+.sito-pezzi > div { height: 720px; }
+/* I tasti sopra l'editor sono quelli della segreteria; da spenti restano leggibili. */
+.sito-pezzi .sg-chip { color: var(--text); border-color: var(--riga-campo); background: var(--surface); }
+.sito-pezzi .sg-chip:disabled { background: var(--surface-2); color: var(--dim); border-color: transparent; opacity: 1; }
+/* Una parte senza niente dentro si vede e ha l'altezza di un tocco. */
+.sito-pezzi-vuoto { display: flex; align-items: center; min-height: 44px; padding: 0 16px; border: 2px dashed var(--line); color: var(--dim); font-size: 15px; }
+/* Sotto i 1280px Puck non ha posto per tre pannelli: le parti si mettono coi tasti in alto, e l'anteprima resta larga. */
+@media (max-width: 1279px) {
+  .sito-pezzi > div { height: auto; min-height: 640px; }
+  .sito-pezzi [class*='Sidebar--left'], .sito-pezzi [class*='PuckLayout-nav'] { display: none; }
+  /* Puck riserva una colonna a ogni pannello, anche a quelli nascosti: qui la pagina sta sopra e i campi sotto, a tutta larghezza. */
+  .sito-pezzi [class*='PuckLayout-inner'] { display: flex !important; flex-direction: column; height: auto; }
+  .sito-pezzi [class*='PuckCanvas_'] { min-height: 280px; width: 100%; }
+  .sito-pezzi [class*='PuckCanvas-inner'], .sito-pezzi [class*='PuckCanvas-root'] { height: auto !important; min-height: 240px; }
+  /* Puck chiude il pannello dei campi quando il suo contenitore è stretto: qui serve sempre, sotto la pagina. */
+  .sito-pezzi [class*='Sidebar--right'] { display: flex !important; flex-direction: column; width: 100% !important; max-width: none; min-height: 200px; }
+}
 .sito-testo h2 { font-size: 28px; }
 .sito-testo h3 { font-size: 22px; }
 .sito-testo ul, .sito-testo ol { padding-left: 24px; }
@@ -2723,3 +3083,5 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 :root[data-modulo='sito'] .campo.num { font-family: var(--body); font-variant-numeric: tabular-nums; }
 /* L'invio chiude il modulo: largo quanto i campi, non a inizio riga come gli altri tasti. */
 :root[data-modulo='sito'] .modulo-piede .passo-btn { align-self: stretch; }
+/* Il modulo è sempre chiaro: il tasto del tema in testata cambierebbe solo l'icona, quindi a modulo aperto non c'è. */
+:root[data-modulo='sito'] .tasto-tema { display: none; }

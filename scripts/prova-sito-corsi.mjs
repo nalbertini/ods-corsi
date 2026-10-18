@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// La pagina «I nostri corsi» come nel design (docs/design-canvas/sito-rebrand/
+// La pagina «I nostri corsi» come nel design (docs/design-canvas/sito-approvato/
 // TatamiBlu-Corsi e TatamiBluM-Corsi), senza browser.
 //
 //   node scripts/prova-sito-corsi.mjs

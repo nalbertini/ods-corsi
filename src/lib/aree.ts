@@ -87,7 +87,7 @@ export function timerDellaLezione(l: { id: string; corsoId: string; corso: strin
   return `${TIMER}?${q.toString()}`
 }
 
-function areaAdesso(): Area {
+export function areaAdesso(): Area {
   // Va chiamata comunque: con `sala/` è lei a ricordarselo.
   const tablet = eUnTablet()
   const scritta = areaDelPercorso()

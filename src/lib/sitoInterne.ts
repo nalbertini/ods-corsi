@@ -9,10 +9,6 @@
 export const CSS_INTERNE = `
 .testata{padding:22px var(--margine)}
 .logo img{height:110px}
-.testata nav ul{gap:10px}
-.testata nav a{min-height:0;padding:9px 16px;line-height:normal}
-.testata nav a[aria-current]{background:var(--giallo)}
-.pulsante.piccolo{padding:0 26px}
 .pagina-hero.interna{display:block;padding:40px var(--margine) 72px}
 .interna h1{font-size:clamp(84px,13.9vw,200px);line-height:.82;margin:0 0 20px}
 .interna .intro{display:block;max-width:none}
@@ -37,10 +33,6 @@ export const CSS_INTERNE = `
 @media (max-width:900px){
 .testata{padding:12px var(--margine) 0;gap:10px 16px}
 .logo img{height:82px}
-.pulsante.piccolo{padding:0 22px}
-.testata nav ul{gap:6px}
-.testata nav a{min-height:44px;padding:0 14px;background:var(--chiara);font-size:16px}
-.testata nav a[aria-current]{background:var(--giallo)}
 .pagina-hero.interna{padding:20px var(--margine) 36px}
 .interna h1{font-size:84px;line-height:.84}
 .interna .intro p{margin:0 0 22px;font-size:18px}

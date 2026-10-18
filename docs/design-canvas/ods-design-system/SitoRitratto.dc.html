@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; display: flex; flex-direction: {{dir}}; height: {{altoTessera}}; background: {{bg}}; color: {{fg}}; border-radius: 6px; overflow: hidden; outline: {{contorno}}; outline-offset: -3px">
+  <sc-if value="{{haFoto}}" hint-placeholder-val="{{ true }}"><div style="{{boxFoto}}; flex: none; overflow: hidden"><img src="{{foto}}" alt="{{alt}}" style="display: block; width: 100%; height: 100%; object-fit: cover; object-position: {{fuoco}}"></div></sc-if>
+  <sc-if value="{{senzaFoto}}" hint-placeholder-val="{{ false }}"><div style="{{boxFoto}}; flex: none; background: #cfe6f4; display: flex; align-items: center; justify-content: center; overflow: hidden"><span aria-hidden="true" style="font-family: {{big}}; font-weight: 800; font-size: {{corpoLettera}}; line-height: 1; color: #14709f">{{iniziale}}</span></div></sc-if>
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: {{gap}}; padding: {{pad}}; padding-right: {{padDx}}">
+    <div>
+      <div style="font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: {{corpoNome}}; line-height: .95">{{nome}}</div>
+      <div style="font-family: {{inter}}; font-size: {{corpoCognome}}; font-weight: 600; line-height: 1.3; margin-top: 4px">{{cognome}}</div>
+    </div>
+    <sc-if value="{{conPastiglie}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-wrap: wrap; gap: 6px">
+      <sc-for list="{{corsi}}" as="c" hint-placeholder-count="3"><span style="display: inline-flex; align-items: center; min-height: 32px; background: #cfe6f4; color: #0d2a3d; border-radius: 999px; padding: 6px 12px; font-family: {{inter}}; font-size: 14px; font-weight: 600; line-height: 1">{{c}}</span></sc-for>
+    </div></sc-if>
+    <sc-if value="{{conTesto}}" hint-placeholder-val="{{ false }}"><div style="font-family: {{inter}}; font-size: 15px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden">{{corsiTesto}}</div></sc-if>
+  </div>
+  <sc-if value="{{freccia}}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="position: absolute; top: {{topFreccia}}; right: 12px; width: 48px; height: 48px; border-radius: 50%; background: #ffffff; color: #0d2a3d; display: flex; align-items: center; justify-content: center; font-family: {{inter}}; font-size: 24px; font-weight: 600; line-height: 1">↗</span></sc-if>
+  <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; {{posNota}} z-index: 2; background: #ffffff; color: #0d2a3d; border: 2px solid #e4292a; border-radius: 4px; padding: 4px 8px; font-family: {{inter}}; font-size: 12px; font-weight: 700; line-height: 1.2">{{nota}}</span></sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Maurizio"},"cognome":{"editor":"text","default":"Innella"},"corsi":{"editor":"text","default":"Judo|Preparazione atletica|Pesi agonisti"},"tono":{"editor":"enum","options":["blu","giallo","inchiostro","chiara","bianco"],"default":"giallo"},"foto":{"editor":"text","default":""},"fuoco":{"editor":"text","default":"50% 35%"},"alt":{"editor":"text","default":""},"alta":{"editor":"text","default":"300px"},"piccolo":{"editor":"boolean","default":false},"freccia":{"editor":"boolean","default":true},"nota":{"editor":"text","default":""},"$preview":{"width":331,"height":500}}'>
+// PROPOSTA pagina Istruttori: il ritratto dell'elenco. Foto quadrata in cima (fuoco object-position sul volto), nome in Big Shoulders, cognome sotto, corsi in pastiglie.
+// Tutti i ritratti hanno la stessa altezza: nome in alto, pastiglie subito sotto, il vuoto resta in fondo (oggi il nome sta in basso e cambia altezza da una tessera all'altra).
+// Senza foto: fascia azzurra con l'iniziale del nome (come SitoSchedaCorso). Sul telefono (piccolo): foto a sinistra da 112px, corsi su una riga di testo (max 2 righe).
+// La freccia c'e' solo se la scheda dell'istruttore esiste (freccia=false finche' non c'e'). Bersaglio: tutta la tessera, freccia da 48px.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const [bg, fg] = TONI[p.tono] || TONI.giallo;
+    const pic = truthy(p.piccolo);
+    const foto = p.foto || '';
+    const corsi = String(p.corsi ?? '').split('|').filter(Boolean);
+    return {
+      big: BIG, inter: INTER, bg, fg, foto, fuoco: p.fuoco || '50% 35%', haFoto: foto !== '', senzaFoto: foto === '',
+      alt: p.alt || 'Ritratto di un istruttore (nome da abbinare)',
+      iniziale: String(p.nome ?? 'M').charAt(0), nome: p.nome ?? '', cognome: p.cognome ?? '', corsi, corsiTesto: corsi.join(', '),
+      conPastiglie: !pic, conTesto: pic, freccia: truthy(p.freccia ?? true),
+      dir: pic ? 'row' : 'column', boxFoto: pic ? 'width: 112px; height: 100%' : 'width: 100%; height: ' + (p.alta || '300px'),
+      altoTessera: pic ? '136px' : '484px', corpoLettera: pic ? '64px' : '140px', corpoNome: pic ? '34px' : '48px', corpoCognome: pic ? '16px' : '20px',
+      pad: pic ? '14px 14px 12px 16px' : '20px 24px 24px', padDx: pic ? '14px' : '24px', gap: pic ? '6px' : '14px', topFreccia: '12px', posNota: pic ? 'bottom: 8px; left: 8px;' : 'top: 8px; left: 8px;',
+      ...segna(p.nota),
+    };
+  }
+}
+</script>
+</body>
+</html>

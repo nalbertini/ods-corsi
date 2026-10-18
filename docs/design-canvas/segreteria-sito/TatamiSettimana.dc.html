@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 100%; color: {{c.ink}}">
+  <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 16px">
+    <span style="display: inline-grid; place-items: center; width: 56px; height: 56px; border: 2px solid {{c.orlo}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 28px; font-weight: 700">‹</span>
+    <span style="display: inline-grid; place-items: center; width: 56px; height: 56px; border: 2px solid {{c.orlo}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 28px; font-weight: 700">›</span>
+    <span style="display: inline-flex; align-items: center; gap: 12px; height: 56px; margin-left: 8px; padding: 0 14px; border: 2px solid {{c.orlo}}; background: {{c.sup}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 40px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">{{titolo}}<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" role="img" aria-label="Scegli la data"><path d="M5 9l7 7 7-7"></path></svg></span>
+    <span style="flex-grow: 1"></span>
+    <span style="display: inline-flex; align-items: center; height: 56px; padding: 0 24px; background: #e4292a; color: #ffffff; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 20px; font-weight: 700; letter-spacing: 0.16em">+ LEZIONE</span>
+  </div>
+  <div style="position: relative; width: 100%; height: {{altezzaTotale}}; background: {{c.sup}}; border: 2px solid {{c.orlo}}">
+    <sc-for list="{{giorni}}" as="g" hint-placeholder-count="7">
+      <div style="position: absolute; top: 0; left: {{g.sinistra}}; width: {{larghezza}}; height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-left: 2px solid {{c.cuci}}; background: {{g.sfondo}}; border-bottom: 2px solid {{c.orlo}}">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: {{c.dim}}">{{g.nome}}</span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 700; line-height: 1; color: {{g.colore}}">{{g.num}}</span>
+      </div>
+      <div style="position: absolute; top: 64px; bottom: 0; left: {{g.sinistra}}; width: {{larghezza}}; border-left: 2px solid {{c.cuci}}"></div>
+    </sc-for>
+    <sc-for list="{{ore}}" as="o" hint-placeholder-count="6">
+      <div style="position: absolute; top: {{o.alto}}; left: 0; width: 100%; border-top: 2px solid {{c.cuci}}"></div>
+      <span style="position: absolute; top: {{o.testo}}; left: 0; width: 52px; text-align: center; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; color: {{c.dim}}">{{o.ora}}</span>
+    </sc-for>
+    <sc-for list="{{lezioni}}" as="l" hint-placeholder-count="10">
+      <div style="position: absolute; top: {{l.alto}}; left: {{l.sinistra}}; width: {{larghezza}}; height: {{l.altezza}}; display: flex; flex-direction: column; gap: 1px; padding: 8px 6px 6px 12px; background: {{l.sfondo}}; border: {{l.spessore}} solid {{l.bordo}}; border-left: 6px solid {{l.tinta}}; overflow: hidden">
+        <span style="display: flex; justify-content: space-between; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 19px; font-weight: 700; line-height: 1.1"><span>{{l.ora}}</span><span style="color: {{c.dim}}">{{l.conto}}</span></span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 17px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; text-transform: uppercase">{{l.corso}}</span>
+        <span style="font-size: 14px; color: {{c.dim}}; white-space: nowrap">{{l.sala}}</span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; color: {{l.coloreStato}}">{{l.stato}}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tema":{"editor":"enum","options":["tatami","scuro","chiaro"],"default":"tatami","section":"Tema"},"titolo":{"editor":"text","default":"5 – 11 OTTOBRE"},"scelto":{"editor":"text","default":"MAR 6 19:30"},"lezioni":{"editor":"text","default":"LUN|16:30|60|Pilates|Sala 2|#8b5cc4|fatto|9, LUN|18:30|60|Judo kids|Sala 1|#1b8ac4|fatto|12, LUN|19:30|60|Lotta adulti|Sala 1|#16a54a|da-chiudere|14, MAR|16:30|60|Pilates|Sala 2|#8b5cc4|fatto|9, MAR|18:30|60|Judo kids|Sala 1|#1b8ac4|in-corso|12, MAR|19:30|60|Lotta adulti|Sala 1|#16a54a|iscritti|14, MAR|20:30|60|Yoga|Sala 2|#f4c31b|iscritti|10, MER|17:30|60|Judo kids|Sala 1|#1b8ac4|iscritti|12, MER|19:00|90|Judo adulti|Sala 1|#1b8ac4|iscritti|9, GIO|18:30|60|Judo kids|Sala 1|#1b8ac4|iscritti|12, GIO|19:30|60|Lotta adulti|Sala 1|#16a54a|iscritti|14, VEN|16:30|60|Pilates|Sala 2|#8b5cc4|iscritti|9, VEN|20:30|60|Yoga|Sala 2|#f4c31b|iscritti|10, SAB|10:00|90|Judo kids|Sala 1|#1b8ac4|iscritti|12"},"$preview":{"width":880,"height":850}}'>
+// Il titolo con le date e' un tasto (bordo 2px, freccia ▾): tocca apre TatamiCalendario per scegliere un'altra settimana.
+// PROPOSTA «Tatami»: la SETTIMANA (CalendarioScreen, vista larga) come una pianta di tatami: sette colonne, un
+// tatami per lezione. Il tatami e' alto quanto dura (120px l'ora) e largo quanto la colonna: 118 x 120 e' piu' vicino a 1:1 di un tatami: l'ora e' la misura, non la proporzione,
+// la proporzione di un tatami. La tinta del corso e' SEMPRE la barra di sinistra (DESIGN.md, La Regola della Tinta del
+// Corso); lo stato sta nel bordo E nel testo (✓ FATTO, DA CHIUDERE, IN CORSO), mai solo nel colore.
+// Le cuciture fra i tatami (`riga-paglia`) sono le righe dei giorni e delle ore.
+// lezioni: "GIORNO|ora|minuti|corso|sala|tinta|stato|iscritti" separate da virgola; stato come RigaCalendario
+// (iscritti | in-corso | fatto | da-chiudere). scelto: "GIORNO ora": il tatami col fondo `paglia-scura`.
+// Il giorno di oggi e' MAR: numero giallo-testo.
+const T = {
+  tatami: { fondo: '#ebe6d0', sup: '#f6f3e4', supAlta: '#d9d2b0', cuci: '#bdb68f', orlo: '#1d1d1b', ink: '#1d1d1b', dim: '#5d5c4f', su: '#1d1d1b', verdeT: '#0b7a33', rossoT: '#b81d1d', gialloT: '#8f6a00', menu: '#2f3d2b', menuTesto: '#f6f3e4', menuSec: '#cfd6c0' },
+  scuro: { fondo: '#121212', sup: '#1c1c1c', supAlta: '#242424', cuci: '#333333', orlo: '#4a4a46', ink: '#f2f2f0', dim: '#8c8c88', su: '#121212', verdeT: '#16a54a', rossoT: '#ff5a52', gialloT: '#f4c31b', menu: '#161616', menuTesto: '#f2f2f0', menuSec: '#c9c9c4' },
+  chiaro: { fondo: '#f4f4f1', sup: '#ffffff', supAlta: '#e9e9e5', cuci: '#d4d4ce', orlo: '#8a8a85', ink: '#161616', dim: '#656561', su: '#121212', verdeT: '#0b7a33', rossoT: '#b81d1d', gialloT: '#8f6a00', menu: '#ebebe7', menuTesto: '#161616', menuSec: '#3d3d3a' },
+};
+const GIORNI = [['LUN', 5], ['MAR', 6], ['MER', 7], ['GIO', 8], ['VEN', 9], ['SAB', 10], ['DOM', 11]];
+const DA = 16, ORA_H = 120, TESTA = 64, GUTTER = 52, FINE = 22;
+const col = (i) => `calc(${GUTTER}px + (100% - ${GUTTER}px) * ${i} / 7)`;
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.tatami;
+    const STATI = {
+      'iscritti': { bordo: c.orlo, spessore: '2px', testo: '', colore: c.dim },
+      'in-corso': { bordo: c.ink, spessore: '4px', testo: 'IN CORSO', colore: c.gialloT },
+      'fatto': { bordo: '#16a54a', spessore: '2px', testo: '✓ FATTO', colore: c.verdeT },
+      'da-chiudere': { bordo: '#e4292a', spessore: '4px', testo: 'DA CHIUDERE', colore: c.rossoT },
+    };
+    const scelto = String(p.scelto ?? '').split(' ');
+    const lezioni = String(p.lezioni ?? '').split(',').map((s) => s.split('|').map((x) => x.trim())).filter((w) => w.length >= 8).map(([g, ora, min, corso, sala, tinta, stato, iscritti]) => {
+      const [h, m] = ora.split(':').map(Number);
+      const st = STATI[stato] || STATI.iscritti;
+      const i = GIORNI.findIndex(([n]) => n === g);
+      const alto = TESTA + ((h * 60 + m - DA * 60) / 60) * ORA_H;
+      const altezza = (Number(min) / 60) * ORA_H;
+      return {
+        alto: alto + 'px', altezza: altezza + 'px', sinistra: col(i), ora, corso, sala, tinta, conto: iscritti,
+        sfondo: scelto[0] === g && scelto[1] === ora ? c.supAlta : c.sup, bordo: st.bordo, spessore: st.spessore,
+        stato: altezza >= ORA_H ? st.testo : '', coloreStato: st.colore,
+      };
+    });
+    return {
+      c,
+      titolo: p.titolo ?? '5 – 11 OTTOBRE',
+      larghezza: `calc((100% - ${GUTTER}px) / 7)`,
+      altezzaTotale: TESTA + (FINE - DA) * ORA_H + 'px',
+      giorni: GIORNI.map(([nome, num], i) => ({ nome, num, sinistra: col(i), sfondo: nome === scelto[0] ? c.supAlta : c.sup, colore: nome === 'MAR' ? c.gialloT : c.ink })),
+      ore: Array.from({ length: FINE - DA }, (_, k) => ({ ora: DA + k + ':00', alto: TESTA + k * ORA_H + 'px', testo: TESTA + k * ORA_H + 4 + 'px' })),
+      lezioni,
+    };
+  }
+}
+</script>
+</body>
+</html>

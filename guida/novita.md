@@ -10,6 +10,90 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.94.0 — 18 ottobre 2026
+
+### Novità
+
+- Tasti, campi e stati della segreteria nello stile del sito
+
+### Risolto
+
+- Il menu del telefono è più chiaro
+
+## 0.93.0 — 18 ottobre 2026
+
+### Novità
+
+- La segreteria e l'amministrazione hanno i colori e i caratteri del sito
+
+## 0.92.1 — 18 ottobre 2026
+
+### Modificato
+
+- Il design approvato del sito sta in un canvas suo, separato dai rebrand scartati
+
+## 0.92.0 — 18 ottobre 2026
+
+### Novità
+
+- La Home del sito con i due pulsanti per provare, schede dei corsi con foto, citazioni con «Leggi tutto» e il tasto MENU sul telefono
+
+## 0.91.0 — 18 ottobre 2026
+
+### Novità
+
+- I fogli delle autorizzazioni si compilano al computer e hanno il nuovo aspetto
+
+## 0.90.0 — 18 ottobre 2026
+
+### Novità
+
+- Le pagine nuove del sito si scrivono a pezzi (foto, testi, colonne) e l'anteprima mostra la pagina vera
+
+### Modificato
+
+- Proposte di miglioramento per le pagine del sito della palestra
+
+## 0.89.3 — 18 ottobre 2026
+
+### Modificato
+
+- Il controllo dei moduli PDF gira a ogni modifica
+
+## 0.89.2 — 18 ottobre 2026
+
+### Modificato
+
+- Pittogrammi di Judo e Aikido e strumenti per le grafiche
+
+## 0.89.1 — 18 ottobre 2026
+
+### Modificato
+
+- Il canvas del design ha le pagine in ordine per area
+
+## 0.89.0 — 18 ottobre 2026
+
+### Novità
+
+- Scegli da IMPOSTAZIONI come vedere la segreteria, con il menu a sinistra o con «Il Banco»
+
+## 0.88.1 — 18 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione il tasto del tema non compare più, perché il modulo resta sempre chiaro
+
+## 0.88.0 — 18 ottobre 2026
+
+### Novità
+
+- Le tessere degli iscritti, con import dal RASD
+
+### Risolto
+
+- Nel modulo di iscrizione «1 altro corso» al singolare e il tag dei file su una riga sua
+
 ## 0.87.2 — 18 ottobre 2026
 
 ### Modificato

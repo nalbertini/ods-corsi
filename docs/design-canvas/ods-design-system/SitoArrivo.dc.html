@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; display: grid; grid-template-columns: {{colonne}}; gap: 16px; align-items: start; background: {{bg}}; color: {{fg}}; border-radius: 6px; padding: {{pad}}; outline: {{contorno}}; outline-offset: -3px">
+  <div style="font-family: {{big}}; font-weight: 800; font-size: 36px; line-height: 1; width: 48px; height: 48px; border: 3px solid {{fg}}; border-radius: 6px; display: flex; align-items: center; justify-content: center">{{sigla}}</div>
+  <div>
+    <div style="font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: {{corpoTitolo}}; line-height: .95; margin-bottom: 8px">{{titolo}}</div>
+    <div style="font-family: {{inter}}; font-size: 17px; line-height: 1.45">{{testo}}</div>
+    <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><div style="margin-top: 10px"><span style="display: inline-block; background: #ffffff; color: #0d2a3d; border: 2px solid #e4292a; border-radius: 4px; padding: 4px 8px; font-family: {{inter}}; font-size: 12px; font-weight: 700; line-height: 1.2">{{nota}}</span></div></sc-if>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"sigla":{"editor":"text","default":"M"},"titolo":{"editor":"text","default":"In metro"},"testo":{"editor":"text","default":"Scendi alla fermata Fermi, Linea 1."},"tono":{"editor":"enum","options":["blu","giallo","inchiostro","chiara","bianco"],"default":"chiara"},"piccolo":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"$preview":{"width":520,"height":150}}'>
+// PROPOSTA contatti del sito: una riga di «Come arrivare» (metro, auto, navigatore): sigla da 48px, titolo e una frase.
+// Oggi del «come arrivare» c'e' solo una frase di sei parole, due volte (tessera e mappa), e nessun dato verificato.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const [bg, fg] = TONI[p.tono] || TONI.chiara;
+    const pic = truthy(p.piccolo);
+    return { bg, fg, big: BIG, inter: INTER, sigla: p.sigla ?? '', titolo: p.titolo ?? '', testo: p.testo ?? '', colonne: '48px 1fr', pad: pic ? '16px' : '20px 24px', corpoTitolo: pic ? '28px' : '32px', ...segna(p.nota) };
+  }
+}
+</script>
+</body>
+</html>

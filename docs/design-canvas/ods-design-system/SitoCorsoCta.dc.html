@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: {{disp}}; grid-template-columns: {{colonne}}; background: #f4c31b; color: #0d2a3d; border-radius: 6px; overflow: hidden">
+  <div style="padding: {{pad}}; display: flex; flex-direction: column; justify-content: center; gap: 22px">
+    <h2 style="font-family: {{big}}; text-transform: uppercase; margin: 0; font-weight: 800; font-size: {{corpo}}; line-height: .9; text-wrap: balance">{{titolo}}</h2>
+    <div style="display: flex; flex-direction: {{dirCorpo}}; justify-content: space-between; align-items: {{allineaCorpo}}; gap: 28px 56px">
+    <p style="font-family: {{inter}}; margin: 0; font-size: {{corpoTesto}}; line-height: 1.45; max-width: 520px"><b>{{testo}}</b> {{indirizzo}}</p>
+    <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><div style="margin: 0"><span style="display: inline-block; background: #ffffff; color: #0d2a3d; border: 2px solid #e4292a; border-radius: 4px; padding: 4px 8px; font-family: {{inter}}; font-size: 12px; font-weight: 700; line-height: 1.2">{{nota}}</span></div></sc-if>
+    <div style="display: flex; flex-wrap: wrap; gap: 12px">
+      <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 60px; padding: 0 30px; border-radius: 6px; background: #0d2a3d; color: #ffffff; font-family: {{inter}}; font-weight: 600; font-size: 18px; width: {{largPulsante}}">{{principale}}</span>
+      <sc-if value="{{haSecondario}}" hint-placeholder-val="{{ true }}"><span style="display: inline-flex; align-items: center; justify-content: center; min-height: 60px; padding: 0 28px; border-radius: 6px; border: 3px solid #0d2a3d; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 18px; width: {{largPulsante}}">{{secondario}}</span></sc-if>
+    </div>
+    </div>
+  </div>
+  <sc-if value="{{haFoto}}" hint-placeholder-val="{{ true }}"><div style="min-height: {{altoFoto}}; overflow: hidden"><img src="{{foto}}" alt="{{alt}}" style="display: block; width: 100%; height: 100%; object-fit: cover; object-position: {{fuoco}}"></div></sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"Una settimana per scegliere."},"testo":{"editor":"text","default":"5 € e provi tutte le discipline."},"indirizzo":{"editor":"text","default":"Ti aspettiamo in Via Sassi 26, Collegno, vicino alla metro Fermi."},"principale":{"editor":"text","default":"Prova una settimana a 5 €"},"secondario":{"editor":"text","default":"Scrivici"},"foto":{"editor":"text","default":""},"fuoco":{"editor":"text","default":"50% 25%"},"alt":{"editor":"text","default":""},"senzaFoto":{"editor":"boolean","default":false},"piccolo":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"$preview":{"width":1344,"height":440}}'>
+// PROPOSTA pagina del corso (copia di SitoCta, la chiamata finale della home, con `alt` come prop e `senzaFoto`: una colonna, testo a sinistra e pulsanti a destra in basso). Tenuta a parte perche' SitoCta e' condivisa con le altre pagine proposte.
+// PROPOSTA home del sito: la chiamata finale a due colonne. A sinistra titolo, frase e pulsante pieno (verbo + cosa + prezzo, come in testata), a destra la foto degli istruttori.
+// Oggi: la parola «PROVA» a 170px senza verbo ne' prezzo, che tocca la frase, e meta' del riquadro vuota. «Scrivici» e' per chi non e' pronto (D9).
+// Pulsanti: 60px di altezza, raggio 6px, inchiostro pieno sul giallo.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const pic = truthy(p.piccolo);
+    const sec = p.secondario ?? '';
+    return { big: BIG, inter: INTER, titolo: p.titolo ?? '', testo: p.testo ?? '', indirizzo: p.indirizzo ?? '', principale: p.principale ?? '', secondario: sec, haSecondario: sec !== '', foto: p.foto || '', alt: p.alt ?? '', haFoto: !truthy(p.senzaFoto), dirCorpo: truthy(p.senzaFoto) && !pic ? 'row' : 'column', allineaCorpo: truthy(p.senzaFoto) && !pic ? 'flex-end' : 'stretch', fuoco: p.fuoco || '50% 25%', disp: 'grid', colonne: pic || truthy(p.senzaFoto) ? '1fr' : '1fr 1fr', pad: pic ? '28px 22px' : '56px 56px', corpo: pic ? '48px' : '88px', corpoTesto: pic ? '18px' : '22px', largPulsante: pic ? '100%' : 'auto', altoFoto: pic ? '240px' : '440px', ...segna(p.nota) };
+  }
+}
+</script>
+</body>
+</html>

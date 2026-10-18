@@ -1,0 +1,21 @@
+{
+  "nota": "Il <main> generato dal main PRIMA della Home rivista (commit e1cf3560). Home di prima = scripts/fixture-home-vecchia.html; senzaLink = TESTO_NUOVO senza i due paragrafi di pulsanti. sha256 del contenuto di <main>.",
+  "homeVecchia": {
+    "sha256": "07e4de1f4b1197088d6ebec5a2c035c2759bd63c687228e08988cf6acae3f09f",
+    "lunghezza": 23134
+  },
+  "homeSenzaLink": {
+    "sha256": "baf04fbfd3f199f5cf17532d4824ac4a18149af56cdabdad910f99bafcbc1595",
+    "lunghezza": 11071
+  },
+  "corsi": {
+    "sha256": "8d19465b36e2955219d81e7f9caa9d472be2b35fd9f255781a5a2a9986e92bc1",
+    "lunghezza": 379
+  },
+  "contatti": {
+    "sha256": "eda0491f3987b1d497aafa5a02ea37bf37a244939facf4e76ebf724396107b64",
+    "lunghezza": 143
+  },
+  "piedeLi": 5,
+  "invitoNellaHomeVecchia": true
+}

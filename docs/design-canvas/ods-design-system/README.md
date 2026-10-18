@@ -62,6 +62,9 @@ Google, e vale solo per i mockup.
 | `SegnalazioneListino` | Una riga di `Segnalazioni` in LISTINO: in rosso cosa manca a un corso («senza prezzo nel listino», «manca il prezzo del trimestre»…), col link «Va bene senza prezzo» che non va a capo; `rosso` falso per «…, va bene così» col link «Rimetti il rosso» |
 | `TabletTasto` | `.tb-btn`: linea, verde, rosso, grande, quadro |
 | `TabletTastiera` | I pallini e il tastierino del PIN |
+| `Cifra` | Un numero grande di OGGI nel Banco (`.bn-cifra`): titolo, numero (rosso se è un guaio), frase |
+| `RigaCoda` | Una riga della coda DA FARE AL BANCO (`.bn-riga`): titolo, frase, tasto; bordo rosso se blocca, giallo se aspetta |
+| `BloccoLezione` | Un blocco del tabellone sale × ore di OGGI (`.bn-blocco`): corso, ora, stato in parole; `stato` fatto, in_corso, appello_non_fatto, prossima, annullata |
 | `TabletTessera` | Il nome da toccare nella lista della sala |
 | `TabletFascia` | La fascia dopo un tocco: fatto, attesa, già, errore |
 | `TabletTestata`, `TabletLezione`, `TabletPiede`, `TabletRigaGiornata` | La testata, la lezione aperta, il piede e la riga della giornata del tablet di sala |
@@ -186,7 +189,9 @@ iscrizione**, e ce l'hanno soltanto i componenti che il modulo vero usa (`Campo`
 ## Il canvas unico
 
 Libreria e sezioni (istruttore, tablet di sala, registrazione utente, importa
-da Excel, timer) stanno in un solo Artifact, una pagina per sezione:
+da Excel, timer) stanno in un solo Artifact. Il canvas mostra al massimo 40 pagine, quindi le sezioni vicine
+stanno sulla stessa pagina, una sotto l'altra col suo titolo (`GRUPPI` in `unico.mjs`; una sezione fuori da un
+gruppo ha una pagina sua, e lo script si ferma se le pagine superano 40):
 
 ```bash
 node docs/design-canvas/unico.mjs <cartella>
@@ -272,3 +277,43 @@ campi, scelte, tasti e riquadri). Senza `tema="sito"` l'aspetto dei componenti �
 
 I valori e i rapporti di contrasto calcolati stanno in `../iscrizione-sito/token-proposta.md`; i board in
 `../iscrizione-sito/`. Il fuoco da tastiera (contorno 3px blu #14709f) non è riprodotto.
+
+## Il sito pubblico: i pezzi della home
+
+COSTRUITA nella Home del sito (`src/lib/sitoHome.ts`, regole in `src/lib/sitoGenera.ts`, testo da incollare in `docs/sito/home.md`): la testata (due pulsanti, tasto MENU sul telefono) e il piede valgono per tutte le pagine; le altre pagine potranno chiedere gli stessi pezzi. Differenze del costruito: nel menu aperto sul telefono il pulsante di prova è la prima voce; il fuoco delle foto delle schede segue il corso (`FOCI_SCHEDE`), non il file; la voce attiva del menu ha il fondo giallo. I componenti `Sito*` riproducono nell'aspetto del sito (Big Shoulders Display + Inter, colori A2 di
+`../sito-approvato/token-proposta.md`) i pezzi della home proposta in `../home-miglioramenti/`. Non hanno la prop `tema`: sono già
+del sito. `piccolo` li porta alla misura del telefono (375px). `nota="DA CONFERMARE …"` li marca con contorno rosso e cartellino.
+
+| File | Cosa è |
+|---|---|
+| `SitoTestata.dc.html` | La testata: marchio, voci da 48px, pulsante di prova; sul telefono marchio + MENU |
+| `SitoPulsante.dc.html` | Il pulsante del sito (giallo, inchiostro, linea), minimo 48px |
+| `SitoTessera.dc.html` | Una tessera numero (`35+`, `300+`…), tutte alte uguali |
+| `SitoTitolo.dc.html` | Titolo di sezione a 72-88px (56px sul telefono) con la frase d'apertura |
+| `SitoSchedaCorso.dc.html` | La scheda corso con foto (fuoco `object-position`), freccia e pastiglie; senza foto, fascia azzurra con l'iniziale |
+| `SitoPerche.dc.html` | Le quattro tessere di «Perché unirti a noi?», con titolo e riga di testo |
+| `SitoCitazione.dc.html` | La citazione di un esperto: estratto + «Leggi tutto», avatar con una sola iniziale |
+| `SitoRecensione.dc.html` | Una recensione per intero, carta larga |
+| `SitoInBreve.dc.html` | La carta «In breve» con le recensioni da 7 parole |
+| `SitoDomanda.dc.html` | Una domanda delle FAQ |
+| `SitoCta.dc.html` | La chiamata finale a due colonne con pulsante pieno (`alt` della foto come prop) |
+| `SitoPiede.dc.html` | Il piede, link da 48px |
+| `SitoRecapito.dc.html` | Un recapito (telefono, Instagram, Facebook, indirizzo) come tessera intera con azione da 48px; il cartellino «DA CONFERMARE» sta sopra il titolo |
+| `SitoMappa.dc.html` | La mappa OpenStreetMap con segnaposto, targhetta e pulsante «Ottieni indicazioni» da 56px; `width`/`height` dichiarati |
+| `SitoArrivo.dc.html` | Una riga di «Come arrivare» (metro, auto, navigatore): sigla da 48px, titolo e frase |
+| `SitoRitratto.dc.html` | Il ritratto dell'elenco Istruttori: foto quadrata (fuoco `object-position`), nome, cognome, corsi in pastiglie; tutti alti uguali; senza foto, fascia azzurra con l'iniziale; telefono (`piccolo`): foto a sinistra e corsi su due righe |
+| `SitoDatoPersona.dc.html` | Una tessera Ruolo / Corsi / Quando / Titoli della scheda di un istruttore, tutte alte uguali (9-10 parole); il cartellino «DA CONFERMARE» sta a cavallo del bordo alto |
+| `SitoBloccoPersona.dc.html` | Un blocco di testo della scheda (Chi è / Come ha iniziato / A scuola), 25-36 parole |
+| `SitoElencoPercorso.dc.html` | Una colonna di «Il percorso» (Federazione e sport / Scuola / Titoli e studi) con elenco puntato |
+
+## La pagina del corso (proposta)
+
+PROPOSTA, non costruita: i pezzi nuovi della pagina di un corso in `../corso-miglioramenti/`. Gli altri pezzi sono quelli della home (`SitoDatoPersona` per i quattro dati, `SitoBloccoPersona` per i testi, `SitoPerche`, `SitoPiede`).
+
+| File | Cosa è |
+|---|---|
+| `SitoCorsoTitolo.dc.html` | La testata: nome a 160px (92px sul telefono), descrizione di 12-14 parole e pulsante di prova da 60px |
+| `SitoOrarioGruppo.dc.html` | Una tessera dell'orario (nome, ora, giorni, anni di nascita), tutte alte uguali nella riga |
+| `SitoCorsoFascia.dc.html` | L'apertura di un corso senza foto: tre fatti (giorno, ora, per chi) su blu, al posto della foto |
+| `SitoCorsoCta.dc.html` | La chiamata finale della pagina corso: come `SitoCta`, con `alt` della foto come prop e `senzaFoto` (una colonna, testo a sinistra e pulsanti a destra in basso) |
+| `SitoPiedeContatti.dc.html` | Il piede di `SitoPiede` con telefono, Instagram e Facebook nella colonna dell'indirizzo, come in Contatti |

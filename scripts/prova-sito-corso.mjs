@@ -112,14 +112,14 @@ console.log('\n7. Testata, invito e piede come nel design (solo pagine di corso)
   const dec = (sel, prop, n = 0) => regole.filter((r) => r.s.split(',').includes(sel)).map((r) => (r.d.match(new RegExp(`(?:^|;)${prop}:([^;]*)`)) || [])[1]).filter(Boolean)[n]
   const px = (v) => Math.max(...[...(v ?? '').matchAll(/(\d+(?:\.\d+)?)px/g)].map((m) => Number(m[1])))
   ok('testata: padding 22px, logo alto 110px', [dec('.pagina-corso .testata', 'padding'), px(dec('.pagina-corso .logo img', 'height'))], ['22px var(--margine)', 110])
-  ok('menu: voci a 10px una dall’altra, la corrente gialla', [dec('.pagina-corso .testata nav ul', 'gap'), dec('.pagina-corso .testata nav [aria-current]', 'background')], ['10px', 'var(--giallo)'])
-  ok('menu: voci alte come nel design (padding 9px 16px, interlinea 1.2)', [dec('.pagina-corso .testata nav a', 'padding'), dec('.pagina-corso .testata nav a', 'line-height')], ['9px 16px', '1.2'])
-  ok('pulsante in testata: padding 0 26px', dec('.pagina-corso .testata .pulsante', 'padding'), '0 26px')
+  ok('menu: voci a 36px una dall’altra sul computer, la corrente gialla', [dec('.testata nav ul', 'gap', 1), dec('.testata nav a[aria-current]', 'background')], ['36px', 'var(--giallo)'])
+  ok('menu: voci alte come nel design (48px, senza imbottitura sul computer)', [dec('.testata nav a', 'min-height'), dec('.testata nav a', 'padding', 1)], ['48px', '0'])
+  ok('pulsanti in testata: padding 0 24px', dec('.testata .pulsante', 'padding'), '0 24px')
   ok('invito: alto 300px, padding 36px 40px, margini 96px e 6px', [px(dec('.pagina-corso .invito', 'min-height')), dec('.pagina-corso .invito', 'padding'), dec('.pagina-corso .invito', 'margin')], [300, '36px 40px', '96px var(--margine) 6px'])
   ok('invito: frase a 22px, «Prova» a 170px, senza freccia', [px(dec('.pagina-corso .invito .frase', 'font-size')), px(dec('.pagina-corso .invito .parola', 'font-size')), dec('.pagina-corso .invito .freccia', 'display')], [22, 170, 'none'])
   ok('piede: margini 0 e 48px, nome a 56px', [dec('.pagina-corso .piede', 'margin'), px(dec('.pagina-corso .piede .nome', 'font-size'))], ['0 var(--margine) 48px', 56])
   ok('piede: padding 40px, colonne senza riquadro (i recapiti prima delle altre)', [dec('.pagina-corso .piede', 'padding'), dec('.pagina-corso .piede .colonne', 'display')], ['40px', 'contents'])
-  ok('telefono: logo 82px, menu a pillole chiare da 44px', [px(dec('.pagina-corso .logo img', 'height', 1)), dec('.pagina-corso .testata nav a', 'background')], [82, 'var(--chiara)'])
+  ok('telefono: logo 82px, menu aperto su fondo pieno con voci da 48px', [px(dec('.pagina-corso .logo img', 'height', 1)), dec('#menu:target', 'background'), dec('.testata nav a', 'min-height', 1)], [82, 'var(--fondo)', '48px'])
   ok('telefono: invito alto 260px, «Prova» a 120px; piede con nome a 44px e padding 24px', [px(dec('.pagina-corso .invito', 'min-height', 1)), px(dec('.pagina-corso .invito .parola', 'font-size', 1)), px(dec('.pagina-corso .piede .nome', 'font-size', 1)), dec('.pagina-corso .piede', 'padding', 1)], [260, 120, 44, '24px'])
 }
 
@@ -143,7 +143,7 @@ console.log('\n8. Le differenze che restavano')
   ok('un titolo oltre 30 caratteri ha la classe «lungo», uno corto no', [/<h2 class="lungo">Cosa può aspettarsi un genitore o un atleta<\/h2>/.test(main(pagina(TESTA + '<h2>Cosa può aspettarsi un genitore o un atleta</h2><h3>a</h3>'))), /<h2 class="lungo"/.test(main(pagina(TESTA + '<h2>Orario delle lezioni</h2><h3>a</h3>')))], [true, false])
   ok('titolo lungo: 22px sotto sul computer, 48px sul telefono', [dec('.corso .sezione h2.lungo', 'margin-bottom'), dec('.corso .sezione h2.lungo', 'font-size')], ['22px', '48px'])
   // 8.5 telefono: terza tessera di presentazione, menu
-  ok('telefono: la terza tessera di presentazione è alta 180px, il menu a 16px', [dec('.corso .corso-testata .n-3 .tessera:last-child', 'min-height'), dec('.pagina-corso .testata nav ul', 'font-size')], ['180px', '16px'])
+  ok('telefono: la terza tessera di presentazione è alta 180px, il menu a 17px', [dec('.corso .corso-testata .n-3 .tessera:last-child', 'min-height'), dec('.testata nav a', 'font-size')], ['180px', '17px'])
   // 8.6 piede: recapiti, menu, link legali
   const pie = (h2) => h2.match(/<footer class="piede">[\s\S]*<\/footer>/)?.[0] ?? ''
   const dati2 = (testo) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'judo', titolo: 'Judo', descrizione: 'd', testo }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '<p>c</p>' }, { slug: 'privacy', titolo: 'Privacy', descrizione: '', testo: '<p>p</p>', diLegge: true }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: null, indirizzo: '/' }, { dove: 'footer', ordine: 1, etichetta: 'Privacy policy', slug: 'privacy', indirizzo: null }], rinvii: [] })['judo/index.html']

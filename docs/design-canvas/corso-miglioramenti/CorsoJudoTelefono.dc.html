@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Corso Judo proposta telefono</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA (375px): la pagina Judo sul telefono. Un solo passo di sezione (96px desktop, 64px telefono), titoli 80/56px, bersagli >= 48px. I riquadri rossi tratteggiati sono [DA CONFERMARE]. -->
+<div style="width: 375px; min-height: 6739px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+
+<dc-import name="SitoTestata" logo="logo.webp" attiva="I corsi" prova="Prova una settimana a 5 €" piccolo="{{ true }}" hint-size="100%,96px"></dc-import>  <section style="padding:20px 16px 0">
+    <dc-import name="SitoCorsoTitolo" titolo="Judo" descrizione="Tecnica, disciplina e rispetto per crescere sul tatami, dai primi passi fino alle gare." pulsante="Prova una settimana a 5 €" piccolo="{{ true }}" nota="DA CONFERMARE Q11 · descrizione" hint-size="100%,260px"></dc-import>
+  </section>
+  <section style="padding:28px 16px 0">
+    <div style="position:relative;height:240px;overflow:hidden;border-radius:6px"><img src="img/judo-A.jpg" alt="Due judoka in una presa in piedi sul tatami giallo, con la parete grigia dietro" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%"></div>
+  </section>
+  <section style="padding:6px 16px 0">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px"><dc-import name="SitoDatoPersona" etichetta="Per chi" valore="Dai 7 anni (nati dal 2019) agli adulti, principianti e agonisti" tono="giallo" alto="auto" piccolo="{{ true }}" hint-size="100%,150px"></dc-import><dc-import name="SitoDatoPersona" etichetta="Quando" valore="Lunedì, mercoledì e venerdì; martedì e giovedì per gli agonisti" tono="blu" alto="auto" piccolo="{{ true }}" hint-size="100%,150px"></dc-import><dc-import name="SitoDatoPersona" etichetta="Dove" valore="Via Sassi 26, Collegno, vicino alla metro Fermi" tono="inchiostro" alto="auto" piccolo="{{ true }}" hint-size="100%,150px"></dc-import><dc-import name="SitoDatoPersona" etichetta="Per iniziare" valore="1 settimana di prova a 5 euro" tono="giallo" alto="auto" piccolo="{{ true }}" hint-size="100%,150px"></dc-import></div>
+  </section>
+  <section style="padding:64px 16px 0">
+    <dc-import name="SitoTitolo" testo="Orario delle lezioni" corpo="56px" nota="DA CONFERMARE Q9 · età sull’anno 2026" hint-size="100%,90px"></dc-import><div style="display:flex;flex-direction:column;gap:6px;margin-top:24px"><dc-import name="SitoOrarioGruppo" nome="Judo 2" ora="17:00 – 18:00" giorni="lun · mer · ven" eta="7-9 anni · nati 2019-2017" tono="chiara" piccolo="{{ true }}" hint-size="100%,150px"></dc-import><dc-import name="SitoOrarioGruppo" nome="Judo 3" ora="18:00 – 19:00" giorni="lun · mer · ven" eta="10-13 anni · nati 2016-2013" tono="chiara" piccolo="{{ true }}" hint-size="100%,150px"></dc-import><dc-import name="SitoOrarioGruppo" nome="Judo adulti" ora="19:00 – 20:30" giorni="lun · mer · ven" eta="dai 14 anni · nati dal 2012" tono="chiara" piccolo="{{ true }}" hint-size="100%,150px"></dc-import><dc-import name="SitoOrarioGruppo" nome="Judo principianti" ora="19:00 – 20:30" giorni="lun · mer · ven" eta="" tono="chiara" piccolo="{{ true }}" hint-size="100%,150px"></dc-import><dc-import name="SitoOrarioGruppo" nome="Judo agonisti" ora="18:00 – 19:30" giorni="mar · gio" eta="judo 3 / adulti" tono="giallo" piccolo="{{ true }}" nota="DA CONFERMARE Q10 · chi può entrare" hint-size="100%,150px"></dc-import></div>
+  </section>
+  <section style="padding:64px 16px 0">
+    <div style="display:flex;flex-direction:column;gap:6px"><dc-import name="SitoBloccoPersona" titolo="Cosa si fa" testo="Un percorso educativo e sportivo che unisce tecnica, disciplina e relazione, per conoscere il proprio corpo e confrontarsi con gli altri in modo costruttivo. Si lavora su movimenti, cadute, prese e controllo del corpo, con esercizi adattati all’età e al livello." tono="giallo" minimo="0px" piccolo="{{ true }}" hint-size="100%,300px"></dc-import><div style="position:relative;height:300px;overflow:hidden;border-radius:6px"><img src="img/judo-B.jpg" alt="Tre ragazzi in judogi abbracciati sorridono davanti a un muro verde" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% 29%"></div><dc-import name="SitoBloccoPersona" titolo="A chi è rivolto" testo="Per bambini, ragazzi e adulti, sia principianti sia agonisti, divisi in gruppi omogenei." tono="inchiostro" minimo="0px" piccolo="{{ true }}" hint-size="100%,300px"></dc-import></div>
+  </section>
+  <section style="padding:64px 16px 0">
+    <dc-import name="SitoTitolo" testo="La storia del judo" corpo="56px" nota="DA CONFERMARE Q12 · da far rileggere" hint-size="100%,90px"></dc-import><div style="display:flex;flex-direction:column;gap:6px;margin-top:24px"><dc-import name="SitoBloccoPersona" titolo="1882 · Tokyo" testo="Jigoro Kano fonda il judo e apre il Kodokan. Il nome significa «via della flessibilità»: cedere per vincere, usando la forza dell’altro invece di opporsi." tono="chiara" minimo="0px" piccolo="{{ true }}" hint-size="100%,300px"></dc-import><dc-import name="SitoBloccoPersona" titolo="Due idee di Kano" testo="Massima efficienza con il minimo sforzo, e benessere e prosperità reciproci: allenarsi insieme, per crescere insieme." tono="blu" minimo="0px" piccolo="{{ true }}" hint-size="100%,300px"></dc-import><dc-import name="SitoBloccoPersona" titolo="1964 · Giochi di Tokyo" testo="Il judo entra nel programma olimpico e da disciplina giapponese diventa sport di tutto il mondo." tono="inchiostro" minimo="0px" piccolo="{{ true }}" hint-size="100%,300px"></dc-import><dc-import name="SitoBloccoPersona" titolo="Oggi a Collegno" testo="Officine dello Sport nasce da un’associazione di judo, A.s.d. il Centro Judo: portiamo quei valori in tutte le nostre attività." tono="giallo" minimo="0px" piccolo="{{ true }}" hint-size="100%,300px"></dc-import></div>
+  </section>
+  <section style="padding:64px 16px 0">
+    <dc-import name="SitoTitolo" testo="Cosa aspettarsi" corpo="56px" hint-size="100%,90px"></dc-import><div style="display:flex;flex-direction:column;gap:6px;margin-top:24px"><dc-import name="SitoPerche" n="1" titolo="Ambiente educativo e regolato" testo="Il saluto, il rispetto del compagno e le regole del tatami fanno parte della lezione quanto la tecnica: lealtà e fair play si imparano facendo." tono="giallo" piccolo="{{ true }}" hint-size="100%,260px"></dc-import><dc-import name="SitoPerche" n="2" titolo="Istruttori esperti e presenti" testo="Chi insegna è sempre sul tatami: conosce ogni allievo, corregge con pazienza e si diverte a vederlo migliorare." tono="blu" piccolo="{{ true }}" hint-size="100%,260px"></dc-import><dc-import name="SitoPerche" n="3" titolo="Percorsi progressivi e sicuri" testo="Si procede un passo alla volta, dalle cadute alle proiezioni, ognuno ai suoi tempi. La disciplina nasce dalla costanza, non dalla fretta." tono="inchiostro" piccolo="{{ true }}" hint-size="100%,260px"></dc-import><dc-import name="SitoPerche" n="4" titolo="Crescita personale, non solo sportiva" testo="Rispetto, autocontrollo, fiducia in sé: il judo vale anche fuori dal tatami, e il divertimento di crescere insieme conta quanto la cintura." tono="giallo" piccolo="{{ true }}" hint-size="100%,260px"></dc-import></div>
+  </section>
+  <section style="padding:64px 16px 0">
+    <dc-import name="SitoCorsoCta" titolo="Una settimana per scegliere." testo="Per imparare rispetto, autocontrollo e fiducia, dentro e fuori dal tatami." indirizzo="1 settimana di prova a 5 euro, per tutte le età dai 3 anni: solo la settimana, nessuna lezione singola. Scrivici sui nostri canali social o passa in via Sassi 26, Collegno, vicino alla metro Fermi." principale="Prova una settimana a 5 €" secondario="Scrivici" foto="img/judo-C.jpg" fuoco="85% 50%" alt="Un istruttore di judo sorride in kimono bianco in palestra" piccolo="{{ true }}" hint-size="100%,440px"></dc-import>
+  </section>
+  <section style="padding:24px 16px 32px">
+    <dc-import name="SitoPiede" piccolo="{{ true }}" hint-size="100%,260px"></dc-import>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>
