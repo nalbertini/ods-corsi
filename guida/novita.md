@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.123.2 — 18 ottobre 2026
+
+### Risolto
+
+- Sul sito i numeri delle card si leggono meglio, Contatti si chiama sempre «Scrivici» e il logo pesa meno
+
 ## 0.123.1 — 18 ottobre 2026
 
 ### Modificato
