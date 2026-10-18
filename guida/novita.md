@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.108.0 — 18 ottobre 2026
+
+### Novità
+
+- L'editor delle pagine a pezzi dà più spazio alla pagina e dice cosa fare
+
 ## 0.107.0 — 18 ottobre 2026
 
 ### Novità
