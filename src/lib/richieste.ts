@@ -281,6 +281,10 @@ export function firmaDaRifare(minore: boolean, prima: { tratti: number; scelte: 
   return `Firma e autorizzazioni vanno rifatte: ora firma ${minore ? 'il genitore' : 'chi si iscrive'}.`
 }
 
+/** Una frase sola: il certificato serve per partecipare, e si carica o si porta in segreteria. */
+export const avvisoCertificato = (tipo: 'normale' | 'agonistico'): string =>
+  `${tipo === 'agonistico' ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico' : 'Dai 6 anni serve il certificato medico'} per partecipare alle lezioni. Caricalo qui sotto o portalo in segreteria.`
+
 /**
  * Quale certificato medico ricordare a chi si iscrive: nessuno sotto i 6
  * anni (o finché non c'è la data di nascita), l'agonistico dai 12 per judo,

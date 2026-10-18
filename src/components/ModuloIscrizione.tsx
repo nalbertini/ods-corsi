@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FocusEvent, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { anniScritti, certificatoDaPortare, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante } from '../lib/richieste'
+import { anniScritti, avvisoCertificato, certificatoDaPortare, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { riduciFoto } from '../lib/foto'
@@ -690,13 +690,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       <Sezione titolo="I FILE">
         {certificato !== 'nessuno' && (
           <div className="modulo-campo modulo-largo">
-            <span className="modulo-etichetta">{certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
-            <Dettaglio tono="avviso">
-              {certificato === 'agonistico'
-                ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico.'
-                : 'Dai 6 anni il certificato medico è obbligatorio.'}{' '}
-              Caricalo qui sotto, o consegnalo in segreteria: senza non si partecipa alle lezioni.
-            </Dettaglio>
+            <Dettaglio tono="avviso">{avvisoCertificato(certificato)}</Dettaglio>
           </div>
         )}
         {daChiedere.filter((f) => f.tipo !== 'modulo').map((f) => (
