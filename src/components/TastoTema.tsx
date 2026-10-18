@@ -8,7 +8,7 @@ export function TastoTema() {
   const [tema, cambia] = useTema()
   const verso = prossimoTema(tema)
   return (
-    <button type="button" className="icon-btn" onClick={cambia} title={`Tema ${NOME[verso]}`} aria-label={`Passa al tema ${NOME[verso]}`}>
+    <button type="button" className="icon-btn tasto-tema" onClick={cambia} title={`Tema ${NOME[verso]}`} aria-label={`Passa al tema ${NOME[verso]}`}>
       {verso === 'scuro' ? <Luna /> : verso === 'chiaro' ? <Sole /> : <Tatami />}
     </button>
   )

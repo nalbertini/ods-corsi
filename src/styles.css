@@ -2721,3 +2721,5 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 :root[data-modulo='sito'] .campo.num { font-family: var(--body); font-variant-numeric: tabular-nums; }
 /* L'invio chiude il modulo: largo quanto i campi, non a inizio riga come gli altri tasti. */
 :root[data-modulo='sito'] .modulo-piede .passo-btn { align-self: stretch; }
+/* Il modulo è sempre chiaro: il tasto del tema in testata cambierebbe solo l'icona, quindi a modulo aperto non c'è. */
+:root[data-modulo='sito'] .tasto-tema { display: none; }
