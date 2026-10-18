@@ -4,7 +4,7 @@
 
 Le entrate e le uscite della palestra, in due casse: **Cassa Contanti** e
 **Conto Corrente**. La vede solo chi ha il ruolo di amministrazione: la segreteria
-semplice, gli istruttori e il tablet no. Ha tre schede: **MOVIMENTI**, **VOCI**, **CASSE**.
+semplice, gli istruttori e il tablet no. Ha quattro schede: **MOVIMENTI**, **BILANCIO**, **VOCI**, **CASSE**.
 
 ## Movimenti
 
@@ -81,6 +81,45 @@ Un rimborso a un iscritto è un'uscita, con una voce tua. Un errore trovato dopo
 corregge annullando e rifacendo, oppure, se il giorno è già chiuso (vedi sotto), con un movimento
 con una data dopo la chiusura e una voce «Rettifica» (in VOCI si crea con un tocco).
 
+## Bilancio
+
+Il bilancio di un anno solare, da gennaio a dicembre: ogni anno ha il suo e niente
+si mescola da un anno all'altro. Si sceglie l'anno con le frecce **‹ ›**, con i
+chip degli ultimi cinque anni o con **Altri anni** (si va indietro fino al primo anno
+con movimenti).
+
+È **per cassa**: conta il giorno in cui il denaro è entrato o uscito (per gli incassi
+degli iscritti, il giorno del singolo pagamento), non l'anno a cui la quota si
+riferisce. Una quota pagata a dicembre per l'anno dopo sta nell'anno in cui l'hai incassata.
+Non è un bilancio fiscale: è il riepilogo di cassa da dare al commercialista.
+
+Si vede:
+
+- **Entrate**, **uscite** e **risultato** dell'anno, ognuno col confronto con
+  l'anno prima («nessun dato» se l'anno prima è vuoto). L'anno in corso è **parziale**:
+  va dal 1 gennaio a oggi e si confronta con lo stesso periodo dell'anno prima.
+- Il dettaglio **per voce**, con l'anno prima e la differenza. La
+  **Differenza di cassa** della chiusura sta a parte, nelle uscite o nelle entrate
+  secondo il segno.
+- Il riquadro giallo **Da classificare**: i movimenti senza una voce (quasi tutte le
+  uscite dello storico dal vecchio programma). Se sono più di metà delle uscite, il
+  risultato è segnato **provvisorio**: non è affidabile finché non si classificano.
+- L'avviso **Possibile doppio conteggio**, se nell'anno ci sono incassi dello storico importato
+  oltre il primo incasso registrato nell'app: in quei giorni lo stesso incasso può
+  comparire due volte. Si controlla in MOVIMENTI.
+- I **saldi delle casse** al 1 gennaio e a fine anno. Per gli anni prima che la cassa
+  partisse c'è scritto «saldo non disponibile», mai uno zero.
+
+**Esporta CSV** e **Esporta PDF** danno il foglio per il commercialista: le voci con
+l'anno prima, i totali e i saldi, con «per cassa» e la data di calcolo. Non
+portano nomi di iscritti né movimenti singoli.
+
+Un movimento con la data di domani non c'è ancora in nessun anno (non si può scrivere).
+Si legge e basta: non scrive niente e non blocca niente. Se si annulla un incasso dopo,
+il bilancio dell'anno in cui era cambia (l'incasso non c'è mai stato): per questo il foglio
+porta la data di calcolo. Una rettifica in un periodo chiuso va nell'anno in cui la
+scrivi, non nell'anno vecchio.
+
 ## Voci
 
 Le voci sono quelle che crei: ogni voce è **solo di entrata o solo di uscita**, con un
@@ -155,7 +194,7 @@ nell'elenco ma non contano nel «in cassa».
 
 - L'IVA e la fattura elettronica: restano nel software a parte.
 - Allegati di fatture e scontrini: la carta resta carta.
-- Il rendiconto di fine anno e il collegamento al RASD.
+- Un bilancio per competenza, la chiusura di un anno (si può leggere, non bloccare) e il collegamento al RASD.
 - Il backup scaricato dalla segreteria contiene anche i conti, ma è cifrato: la
   password non è della segreteria.
 

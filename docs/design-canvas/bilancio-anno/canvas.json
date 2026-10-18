@@ -1,0 +1,62 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Bilancio di un anno · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Bilancio.dc.html",
+   "title": "BILANCIO · anno passato (2025)",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "BilancioInCorso.dc.html",
+   "title": "BILANCIO · anno in corso (2026, parziale)",
+   "x": 1520,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "BilancioStorico.dc.html",
+   "title": "BILANCIO · anno storico (2014)",
+   "x": 3040,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "BilancioVuoto.dc.html",
+   "title": "BILANCIO · anno senza movimenti (2012)",
+   "x": 4560,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "BilancioTelefono.dc.html",
+   "title": "BILANCIO · telefono",
+   "x": 6080,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "FoglioPdf.dc.html",
+   "title": "Il foglio PDF del bilancio",
+   "x": 6560,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Contabilità: il bilancio di un anno"
+  }
+ ]
+}

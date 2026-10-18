@@ -404,7 +404,8 @@ export function elencoPersone(ordini: Ordine[]): VocePersona[] {
 export function csv(righe: (string | number)[][]): string {
   const q = (v: string | number) => {
     // Un valore che comincia per = + - @ (o tab, a capo) Excel lo legge come formula: col ' davanti resta testo.
-    const s = /^[=+\-@\t\r]/.test(String(v)) ? `'${v}` : String(v)
+    // Un numero negativo (-12,50) non è una formula: resta un numero. Un nome che comincia per «-» sì.
+    const s = /^[=+\-@\t\r]/.test(String(v)) && !/^-\d+([.,]\d+)?$/.test(String(v)) ? `'${v}` : String(v)
     return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
   }
   return righe.map((r) => r.map(q).join(';')).join('\r\n')

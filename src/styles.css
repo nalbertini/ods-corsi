@@ -3211,3 +3211,14 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-pericolo:not(:disabled):hover { color: var(--rosso-testo); border-color: var(--rosso-testo); }
 :root[data-look='sito'] .sg-pericolo:not(:disabled),
 :root[data-look='sito'] .sg-pericolo:not(:disabled):hover { color: var(--rosso-testo); border-color: var(--rosso-testo); }
+
+/* CONTABILITÀ > BILANCIO: la tabella per voce (voce, anno, anno prima, differenza). Sul telefono le cifre vanno sotto il nome. */
+.sg-riga-bilancio { display: grid; grid-template-columns: minmax(0, 1fr) 150px 150px 150px; gap: 14px; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--line-soft); }
+.sg-riga-bilancio-gruppo { padding: 14px 14px 4px; }
+.sg-riga-bilancio[data-totale='true'] { border-bottom: 2px solid var(--line-soft); background: var(--surface); }
+.sg-riga-bilancio[data-sospesa='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
+.sg-lista-testa.sg-riga-bilancio { padding-block: 0 6px; background: none; }
+@media (max-width: 780px) {
+  .sg-riga-bilancio { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; }
+  .sg-riga-bilancio > :first-child { grid-column: 1 / -1; }
+}

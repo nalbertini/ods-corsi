@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- BILANCIO · telefono (390px) Parte da PaginaSito.dc.html / PaginaSitoTelefono.dc.html (segreteria nel look del sito, sempre chiara). Solo amministrazione, schermata di sola lettura:
+     nessun tasto principale giallo. Il bilancio e' PER CASSA (data del singolo pagamento). Verde e rosso solo per il segno, sempre anche in parole. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #eef5fa">
+  <dc-import name="BarraTelefono" tema="sito" luogo="CONTABILITÀ" da-fare="0" hint-size="100%,62px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 16px; padding: 20px 16px 28px">
+    <div style="display: flex; flex-wrap: wrap; gap: 10px">
+      <dc-import name="Chip" tema="sito" label="MOVIMENTI" acceso="{{ false }}" hint-size="130px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="VOCI" acceso="{{ false }}" hint-size="90px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="CASSE" acceso="{{ false }}" hint-size="100px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="BILANCIO" acceso="{{ true }}" hint-size="130px,44px"></dc-import>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="‹" variante="linea" alto="44px" larghezza="48px" hint-size="48px,44px"></dc-import>
+      <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; min-width: 76px; text-align: center">2025</span>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="›" variante="linea" alto="44px" larghezza="48px" hint-size="48px,44px"></dc-import>
+      
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">Bilancio 2025</h1>
+      <span style="font-size: 14px; color: #46606f">Entrate e uscite dell’anno, per cassa: conta il giorno in cui il denaro è entrato o uscito. Calcolato il 18 ott 2026.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px; background: #ffffff; border-radius: 6px; padding: 14px 18px; box-shadow: inset 4px 0 0 #f4c31b; padding-left: 22px">
+      <span style="font-size: 15px; color: #0d2a3d; line-height: 1.4"><b style="color: #8f6a00">DA CLASSIFICARE</b> · 31 movimenti (4.200,00 € di uscite, 9% delle uscite) non hanno una voce: il dettaglio per voce non è completo.</span>
+      
+      <span style="font-size: 14px; color: #46606f">Si classificano da MOVIMENTI.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="flex: 1; min-width: 0; background: #ffffff; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">ENTRATE</span></div>
+        <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 44px; font-weight: 800; letter-spacing: 0.02em; line-height: 1; color: #0d2a3d">52.370,00 €</span>
+        
+        <span style="font-size: 14px; color: #46606f">2024: 48.390,00 € · +8%</span>
+      </div>
+      <div style="flex: 1; min-width: 0; background: #ffffff; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">USCITE</span></div>
+        <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 44px; font-weight: 800; letter-spacing: 0.02em; line-height: 1; color: #0d2a3d">47.185,00 €</span>
+        
+        <span style="font-size: 14px; color: #46606f">2024: 45.570,00 € · +4%</span>
+      </div>
+      <div style="flex: 1; min-width: 0; background: #ffffff; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">RISULTATO</span></div>
+        <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 44px; font-weight: 800; letter-spacing: 0.02em; line-height: 1; color: #0b7a33">+5.185,00 €</span>
+        <span style="font-size: 15px; font-weight: 700; color: #0b7a33">In avanzo</span>
+        <span style="font-size: 14px; color: #46606f">2024: 2.820,00 € · +84%</span>
+      </div>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="PER VOCE" hint-size="100%,44px"></dc-import>
+    <div style="display: flex; flex-direction: column; background: #ffffff; border-radius: 6px; overflow: hidden">
+      
+      <div style="padding: 14px 16px 6px; background: #eef5fa"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">ENTRATE</span></div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Corsi e altri pagamenti</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">43.280,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">40.210,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza +3.070,00 €</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Quota associativa</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">6.150,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">5.800,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza +350,00 €</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Vestiario</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">2.140,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">1.980,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza +160,00 €</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Sponsor e donazioni</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">800,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">400,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza +400,00 €</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #eef5fa; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 700">Totale entrate</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">52.370,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">48.390,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza +3.980,00 €</span>
+      </div>
+      <div style="padding: 14px 16px 6px; background: #eef5fa"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">USCITE</span></div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Pagamento istruttori</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">24.300,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">23.100,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza +1.200,00 €</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Affitto sala</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">12.000,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">11.400,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza +600,00 €</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Tasse</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">1.850,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">1.700,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza +150,00 €</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Pulizie</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">1.440,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">1.380,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza +60,00 €</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Attrezzatura</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">1.260,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">—</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza —</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Spese ufficio</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">1.120,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">1.290,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza −170,00 €</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Assicurazioni</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">980,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">950,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza +30,00 €</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Corsi di formazione</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">—</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">600,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza —</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; box-shadow: inset 4px 0 0 #f4c31b;">
+        <span style="font-size: 15px; font-weight: 700">Da classificare</span><span style="font-size: 13px; color: #46606f; font-weight: 400">31 movimenti senza voce</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">4.200,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">5.150,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza −950,00 €</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 600">Differenza di cassa</span><span style="font-size: 13px; color: #46606f; font-weight: 400">Chiusura di cassa, a parte dalle voci</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">35,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">—</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza —</span>
+      </div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #eef5fa; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 700">Totale uscite</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">47.185,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">45.570,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0d2a3d; font-variant-numeric: tabular-nums">Differenza +1.615,00 €</span>
+      </div>
+      <div style="padding: 14px 16px 6px; background: #eef5fa"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">RISULTATO</span></div><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #cfe6f4; ">
+        <span style="font-size: 15px; font-weight: 700">Entrate meno uscite</span><span style="font-size: 13px; color: #46606f; font-weight: 400">In avanzo</span>
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums"><span style="color: #46606f">2025 <b style="color: #0d2a3d">5.185,00 €</b></span><span style="color: #46606f">2024 <b style="color: #0d2a3d">2.820,00 €</b></span></div>
+        <span style="font-size: 14px; font-weight: 600; color: #0b7a33; font-variant-numeric: tabular-nums">Differenza +2.365,00 €</span>
+      </div>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="SALDI DELLE CASSE" hint-size="100%,44px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 14px"><div style="flex: 1; min-width: 0"><dc-import name="SaldoCassa" tema="sito" nome="CASSA CONTANTI" testoInizio="Saldo al 1 gen 2025" inizio="1.250,00 €" entrate="+ 19.400,00 €" uscite="− 7.285,00 €" giroconti="− 12.000,00 €" testoFine="Saldo al 31 dic 2025" fine="1.365,00 €" hint-size="100%,200px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="SaldoCassa" tema="sito" nome="CONTO CORRENTE" testoInizio="Saldo al 1 gen 2025" inizio="6.800,00 €" entrate="+ 32.970,00 €" uscite="− 39.900,00 €" giroconti="+ 12.000,00 €" testoFine="Saldo al 31 dic 2025" fine="11.870,00 €" hint-size="100%,200px"></dc-import></div></div>
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: stretch">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Esporta CSV" variante="linea" alto="48px" larghezza="100%" hint-size="100%,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Esporta PDF" variante="linea" alto="48px" larghezza="100%" hint-size="100%,48px"></dc-import>
+    </div>
+    <span style="font-size: 13px; color: #46606f; line-height: 1.4">CSV e PDF dicono «per cassa» e la data di calcolo; non portano nomi di iscritti né movimenti singoli.</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":2200}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
