@@ -12,13 +12,16 @@ import { spunteDi, type AreaDiAccount } from './ruoli'
  * qui si sceglie cosa mostrare, non cosa è permesso.
  */
 
+/** Le voci che stanno nel menu: «regole» e «segnalate» sono schede dentro altre sezioni. */
+export type VoceDelMenu = Exclude<Voce, 'segnalate' | 'regole'>
+
 type Chi = { ruolo: string; ancheIstruttore?: boolean; ancheAmministrazione?: boolean }
 
 export interface GruppoMenu {
   titolo: string
   /** Sul telefono più piccolo: sono cose da computer. */
   secondario?: boolean
-  voci: Array<[Voce, string]>
+  voci: Array<[VoceDelMenu, string]>
 }
 
 /**

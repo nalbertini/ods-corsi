@@ -385,6 +385,8 @@ for (const [sel, re, cosa] of [
   ['.sg-dafare-titolo', /letter-spacing:\s*0\s*;/, 'titolo della riga senza spaziatura'],
 ]) ok(`${sel}: ${cosa}`, ha(sel, re), true)
 ok('fra 768 e 1360px le cinque caselle non prendono i bordi e lo spazio del caso a due colonne (nth-child 5 e n+3)', /grid-column:\s*auto/.test(esatto(".sg-mancano-casella:nth-child(5)")) && /border-top:\s*0/.test(esatto('.sg-mancano-casella:nth-child(n + 3)')), true)
+for (const [sel, corpo] of [['.sg-btn', /letter-spacing:\s*0\s*;/], ['.sg-chip', /letter-spacing:\s*0\s*;/]])
+  ok(`${sel}: senza la spaziatura da maiuscolo (i testi sono con l'iniziale maiuscola)`, ha(sel, corpo) && ha(sel, /font-weight:\s*600/), true)
 console.log(`\n${asserzioni} asserzioni.`)
 console.log(guai ? `${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : 'TUTTO A POSTO')
 process.exit(guai ? 1 : 0)

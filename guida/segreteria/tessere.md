@@ -19,9 +19,9 @@ In IMPOSTAZIONI, **TESSERE DAL RASD**, in tre passi:
 
 1. **IL FOGLIO** — dal RASD, tab Tesseramenti, salva il foglio come **CSV** (da Excel: *File → Salva con
    nome → CSV UTF-8*). Le colonne sono **Organismo, Persona, Codice fiscale, Tipo, Codice tess., Valido dal**,
-   con `;` o `,` come separatore. **SCEGLI IL FOGLIO**, poi **CONTROLLA**.
+   con `;` o `,` come separatore. **Scegli il foglio**, poi **Controlla**.
 2. **IL CONTROLLO** — non scrive niente. Dice quante tessere sono nuove, quante ci sono già e non
-   cambiano, e quante righe restano fuori, ognuna col motivo. **METTI N TESSERE** le scrive.
+   cambiano, e quante righe restano fuori, ognuna col motivo. **Metti N tessere** le scrive.
 3. **NELL'APP** — le trovi nella scheda di ogni persona, sotto **TESSERE**.
 
 La persona si riconosce dal **codice fiscale e dallo stesso nome** (anche con accenti, apostrofi o
@@ -37,12 +37,12 @@ fiscale è di un'altra persona** (controlla il nome) e **la riga ha dei dati che
 
 Due elenchi, con i loro numeri:
 
-- **SENZA TESSERA** — chi è iscritto oggi a un corso che chiede una tessera e **non ce l'ha**
+- **Senza tessera** — chi è iscritto oggi a un corso che chiede una tessera e **non ce l'ha**
   (**NO TESSERA**), ce l'ha **SCADUTA**, o scade entro 60 giorni (**TESSERA SCADE A DICEMBRE**,
-  in giallo). Due tasti restringono l'elenco: **MAI AVUTE** (chi non ha mai avuto la tessera: «vieni a
-  tesserarti») e **SCADUTE** (chi l'aveva e va rinnovata: «rinnova»). Una tessera da dirigente o da tecnico non basta: serve quella da atleta (praticante
+  in giallo). Due tasti restringono l'elenco: **Mai avute** (chi non ha mai avuto la tessera: «vieni a
+  tesserarti») e **Scadute** (chi l'aveva e va rinnovata: «rinnova»). Una tessera da dirigente o da tecnico non basta: serve quella da atleta (praticante
   o agonista). Una prova gratuita non è un'iscrizione.
-- **TESSERATI SENZA CORSO** — chi ha una tessera da atleta che vale oggi e nessun corso. Può essere
+- **Tesserati senza corso** — chi ha una tessera da atleta che vale oggi e nessun corso. Può essere
   chi ha smesso e ha ancora la tessera dell'anno.
 
 Un clic su una riga apre la scheda della persona.
@@ -54,6 +54,6 @@ Un clic su una riga apre la scheda della persona.
 - La striscia **COSA MANCA** ha la casella **TESSERE**, con il numero di chi non ha una tessera valida.
 - La scheda della persona ha il timbro **TESSERA** in cima, come il certificato e la quota (**NO TESSERA**,
   **SCADUTA**, **SCADE A DICEMBRE** o **IN REGOLA**, con una riga per ente), e la sezione **TESSERE**.
-  **TOGLI** chiede conferma; subito dopo, nell'avviso, **ANNULLA** rimette la tessera com'era.
+  **Togli** chiede conferma; subito dopo, nell'avviso, **Annulla** rimette la tessera com'era.
 
 Se il database non ha ancora le tessere, niente di tutto questo si vede e la pagina lo dice.

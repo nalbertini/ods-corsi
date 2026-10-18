@@ -84,8 +84,8 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
   const n = riepilogo(trovate, ricevute.dato ?? [])
   const caricato = ricevute.dato !== null
 
-  const mese = new Date(`${oggi}T12:00:00`).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase()
-  const meseScorso = new Date(`${intervalloMese(oggi, -1).dal}T12:00:00`).toLocaleDateString('it-IT', { month: 'long' }).toUpperCase()
+  const mese = new Date(`${oggi}T12:00:00`).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }).replace(/^./, (c) => c.toUpperCase())
+  const meseScorso = new Date(`${intervalloMese(oggi, -1).dal}T12:00:00`).toLocaleDateString('it-IT', { month: 'long' }).replace(/^./, (c) => c.toUpperCase())
   // L'amministrazione non apre le schede: non ha il permesso di leggerle.
   const apri = (personaId?: string) => (!soloNomi && personaId ? onVai?.('iscritti', { persona: personaId }) : undefined)
   // La riga è un pagamento da aprire (e da annullare) per l'amministrazione, una persona da aprire per la segreteria.
@@ -101,7 +101,7 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
       {soloNomi && !registrando && !aperto && (
         <div className="row">
           <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setRegistrando(true)}>
-            REGISTRA UN PAGAMENTO
+            Registra un pagamento
           </button>
         </div>
       )}
@@ -132,13 +132,13 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
               {meseScorso}
             </button>
             <button type="button" className="num sg-chip" aria-pressed={periodo === 'anno'} onClick={() => setPeriodo('anno')}>
-              TUTTO L’ANNO
+              Tutto l’anno
             </button>
             <button type="button" className="num sg-chip" aria-pressed={periodo === 'tutto'} onClick={() => setPeriodo('tutto')}>
-              TUTTO
+              Tutto
             </button>
             <button type="button" className="num sg-chip" aria-pressed={periodo === 'date'} onClick={() => setPeriodo('date')}>
-              DAL – AL
+              Dal – al
             </button>
             {periodo === 'date' && (
               <>
@@ -155,27 +155,27 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
             <span aria-hidden="true" style={{ width: 2, height: 28, background: 'var(--line)' }} />
             {METODI_A_MANO.map((m) => (
               <button key={m} type="button" className="num sg-chip" aria-pressed={metodo === m} onClick={() => setMetodo(metodo === m ? '' : m)}>
-                {m.toUpperCase()}
+                {m === 'pos' ? 'POS' : m.replace(/^./, (c) => c.toUpperCase())}
               </button>
             ))}
             <span aria-hidden="true" style={{ width: 2, height: 28, background: 'var(--line)' }} />
           </>
         )}
         <button type="button" className="num sg-chip" aria-pressed={conResiduo} onClick={() => setConResiduo(!conResiduo)}>
-          CON RESIDUO DA PAGARE
+          Con residuo da pagare
           {n.ricevuteDaIncassare > 0 && <span className="sg-tag" data-tipo="presto" style={{ marginLeft: 8 }}>{n.ricevuteDaIncassare}</span>}
         </button>
         {!conResiduo && (
           <>
             <button type="button" className="num sg-chip" aria-pressed={senzaRicevuta} onClick={() => setSenzaRicevuta(!senzaRicevuta)}>
-              SENZA RICEVUTA
+              Senza ricevuta
             </button>
             <button type="button" className="num sg-chip" aria-pressed={annullati} onClick={() => setAnnullati(!annullati)}>
-              ANNULLATI
+              Annullati
             </button>
             <span className="grow" />
             <button type="button" className="sg-btn sg-btn-linea" disabled={!n.pagamenti} onClick={() => scaricaCsv(`pagamenti-${oggi}.csv`, csvPagamenti(trovate))}>
-              ESPORTA CSV
+              Esporta CSV
             </button>
           </>
         )}
@@ -247,14 +247,14 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
                   {x.personaId || soloNomi ? <button type="button" className="sg-riga-apri">{x.chi}</button> : x.chi}
                   <span className="sg-sotto-nome">
                     <span>{dataRicevuta(x.data)} · {x.voce} · {x.metodo}{x.ricevuta ? ` · ${x.ricevuta.numero}/${x.ricevuta.anno}` : ''}</span>
-                    {!x.ricevuta && <span className="num sg-tag">SENZA RICEVUTA</span>}
-                    {x.annullato && <span className="num sg-tag" data-tipo="manca">ANNULLATO</span>}
+                    {!x.ricevuta && <span className="num sg-tag">Senza ricevuta</span>}
+                    {x.annullato && <span className="num sg-tag" data-tipo="manca">Annullato</span>}
                   </span>
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>
                   {x.voce}
-                  {!x.ricevuta && <span className="num sg-tag" style={{ marginLeft: 8 }}>SENZA RICEVUTA</span>}
-                  {x.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>ANNULLATO</span>}
+                  {!x.ricevuta && <span className="num sg-tag" style={{ marginLeft: 8 }}>Senza ricevuta</span>}
+                  {x.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.metodo}</span>
                 <span role="cell" className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--sec)' }}>{x.ricevuta ? `${x.ricevuta.numero}/${x.ricevuta.anno}` : '—'}</span>
@@ -269,10 +269,10 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
               {trovate.length} {trovate.length === 1 ? 'pagamento' : 'pagamenti'} · pagina {pagina + 1} di {pagine}
             </span>
             <button type="button" className="num sg-chip" disabled={pagina === 0} onClick={() => setPagina(pagina - 1)}>
-              ‹ PRIMA
+              ‹ Prima
             </button>
             <button type="button" className="num sg-chip" disabled={pagina + 1 >= pagine} onClick={() => setPagina(pagina + 1)}>
-              DOPO ›
+              Dopo ›
             </button>
             <span className="sg-etichetta">TOTALE DEL PERIODO</span>
             <span className="num" style={{ fontSize: 26, fontWeight: 700 }}>{euro(n.totale)} €</span>

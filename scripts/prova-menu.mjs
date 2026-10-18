@@ -21,10 +21,13 @@ const impacchetta = async (contents) => {
   const { outputFiles } = await build({
     stdin: { contents, resolveDir: '.', loader: 'ts' },
     bundle: true, format: 'esm', write: false, logLevel: 'error', define: { 'import.meta.env': '{}' },
+    // Icons.tsx è JSX: senza questo cercherebbe React.createElement.
+    jsx: 'automatic',
   })
   return import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 }
 
+const sg0 = () => readFileSync('src/components/segreteria/Segreteria.tsx', 'utf8')
 const c = existsSync('src/lib/menuSegreteria.ts')
 const m = c ? await impacchetta("export * from './src/lib/menuSegreteria'") : {}
 const mancante = 'src/lib/menuSegreteria.ts non esiste'
@@ -53,6 +56,18 @@ ok('titoli dei gruppi e voci: iniziale maiuscola, non tutto maiuscolo',
   testi(GRUPPI).flatMap((g) => [g.titolo, ...g.voci.map(([, t]) => t)]).filter((t) => !maiuscola(t)),
   Array.isArray(GRUPPI) ? [] : ['mancano i gruppi'])
 
+console.log('\nUn\'icona per ogni voce')
+const ic = await impacchetta("export { ICONE_MENU } from './src/components/Icons'").catch(() => ({}))
+const ICONE = ic.ICONE_MENU ?? {}
+const chiavi = Object.keys(ICONE).sort()
+const attese = [...ID16, 'contabilita', 'areaIstruttori', 'link'].sort()
+ok('ICONE_MENU ha una chiave per ogni voce, per la contabilità, il passaggio agli istruttori e i link', chiavi, attese)
+ok('ognuna è un componente che disegna', Object.values(ICONE).filter((f) => typeof f !== 'function').length, 0)
+ok('Segreteria.tsx disegna l\'icona di ogni voce', /ICONE_MENU\[id\]/.test(sg0()), true)
+ok('«Istruttori →» e i link hanno la loro icona', [/ICONE_MENU\.areaIstruttori/.test(sg0()), /ICONE_MENU\.link/.test(sg0())], [true, true])
+ok('un filetto separa un gruppo dal successivo', /\.sg-gruppo \+ \.sg-gruppo\s*\{[^}]*border-top/.test(readFileSync('src/styles.css', 'utf8')), true)
+
+
 console.log('\nIl gruppo dei conti (con l\'amministrazione)')
 const chi = (ruolo, ancheAmministrazione = false) => ({ ruolo, ancheIstruttore: false, ancheAmministrazione })
 const gruppi = (c) => (m.menuDi ? m.menuDi(c).map((g) => [g.titolo, g.voci]) : mancante)
@@ -76,7 +91,9 @@ console.log('\nIl menu del Banco non cambia')
 const ora = await impacchetta("export { LUOGHI } from './src/lib/luoghiBanco'")
 let prima = null
 try {
-  prima = execSync('git show origin/main:src/lib/luoghiBanco.ts', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  // Il punto in cui il ramo è partito da main: se main cambia i luoghi del Banco dopo, non è colpa di questo ramo.
+  const base = execSync('git merge-base origin/main HEAD', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+  prima = execSync(`git show ${base}:src/lib/luoghiBanco.ts`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
 } catch {
   console.log('  - confronto con origin/main saltato: il ramo non c\'è')
 }
@@ -88,7 +105,7 @@ if (prima !== null) {
   const vecchio = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
   // L'unica differenza voluta: CONTABILITÀ in SOLDI (menu unico), che solo chi ha l'amministrazione vede (`luoghiPer`).
   const senzaContabilita = ora.LUOGHI.map((l) => ({ ...l, voci: l.voci.filter((v) => v.voce !== 'contabilita') }))
-  ok('LUOGHI identico a quello di origin/main, tolta CONTABILITÀ', senzaContabilita, vecchio.LUOGHI)
+  ok('LUOGHI identico a quello da cui il ramo è partito, tolta CONTABILITÀ', senzaContabilita, vecchio.LUOGHI)
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
