@@ -64,9 +64,17 @@ function senzaDivEstranei(html: string): string {
   })
 }
 
+/**
+ * Toglie i `<p>` che fanno da solo contenuto di una voce d'elenco (più `<p>`: a capo fra l'uno e l'altro).
+ * L'editor salva `<li><p>…</p></li>`; il layout legge le voci come `<li><strong>…`, e col `<p>` in mezzo
+ * numeri, fasce e dati restavano un elenco semplice. Lo si fa dopo `sanitizeHtml`: lì i tag sono bilanciati e senza attributi.
+ */
+const senzaPNelleVoci = (html: string): string =>
+  html.replace(/<li>((?:<p>(?:(?!<\/p>)[\s\S])*<\/p>)+)<\/li>/g, (_, voce: string) => `<li>${voce.slice(3, -4).replace(/<\/p><p>/g, '<br />')}</li>`)
+
 /** Il testo con solo quel che il sito ammette. */
 export function pulisciTesto(html: string): string {
-  return sanitizeHtml(senzaDivEstranei(html), OPZIONI)
+  return senzaPNelleVoci(sanitizeHtml(senzaDivEstranei(html), OPZIONI))
 }
 
 /** Vero se il testo non ha niente da togliere: è già come lo vuole il sito. */
