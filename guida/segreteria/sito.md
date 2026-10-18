@@ -41,7 +41,13 @@ Una pagina a pezzi si compone con le parti che metti in fila:
 
 Le parti si mettono dopo quella scelta, o in fondo. Per cambiare l'ordine si
 trascina la parte, oppure si sceglie e si premono **SU** o **GIÙ**; **Togli** la
-toglie dalla pagina. Le tessere, le domande e le citazioni a scorrimento si
+toglie dalla pagina.
+
+La pagina prende tutto lo spazio; a destra ci sono due schede. **IMPOSTAZIONI**
+mostra i campi della parte che hai toccato (se non ne hai toccata nessuna dice
+di toccarne una). **ELENCO** mostra le parti della pagina in fila: da lì le
+scegli e le trascini. Sotto i 1280 pixel di larghezza (tablet in piedi) la pagina
+sta sopra e le due schede sotto. Le tessere, le domande e le citazioni a scorrimento si
 formano da sole dal testo, come per ogni pagina (vedi «Come il testo diventa
 tessere»). **Anteprima** mostra la pagina come il sito la farà, con le
 tessere; il carattere del sito e il logo si vedono solo sul sito vero.
