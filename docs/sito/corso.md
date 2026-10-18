@@ -39,3 +39,21 @@ Solo ciò che il testo di una pagina non può avere:
 - Il design del telefono usa testi accorciati («Dai 7 anni (nati dal 2019) agli adulti», «Lun, mer e ven…») e di conseguenza qualche altezza: la pagina ha un testo solo, uguale su computer e telefono, quindi le tessere crescono col testo intero.
 - «I nostri corsi» è segnato nel menu solo se esiste una voce con indirizzo `/corsi/`.
 - A 375px il titolo di un orario è a 31,5px (8,4vw) per non spezzare «principianti»; a 390px, la misura del design, arriva a 34px.
+
+## La pagina nuova (design `docs/design-canvas/corso-miglioramenti/`)
+
+Codice: `src/lib/sitoCorso.ts`. Prova: `npm run prova:sito-corso-nuovo`. Testi pronti: `docs/sito/<corso>.html` (quelli di prima: `<corso>-precedente.html`).
+
+La pagina è nuova se prima del primo `h2` c'è un paragrafo di soli pulsanti con uno verso il modulo online (`https://app.officinedellosport.it/iscrizioni/`, anche con `http`, `www` o senza «/» finale); senza, vale tutto quello sopra. Il giallo viene sempre per primo. Ogni sezione si riconosce dalla forma, mai dal titolo; una forma che non torna si impagina come le altre pagine e nessuna parola si perde.
+
+| Nel testo | Come esce |
+| --- | --- |
+| prima del primo `h2`: una foto (A) | foto di apertura, poi i dati come tessere (colori giallo, blu, inchiostro) |
+| senza foto A: un elenco di 4-6 voci | fascia blu con le prime 3 voci; le altre sono tessere. Nessuna sezione orario |
+| `h2` i cui `h3` hanno come primo paragrafo solo l'ora in grassetto (con foto A) | orario a tessere, l'ultima gialla, righe da 6 colonne senza buchi |
+| un `h2` (anche vuoto) con esattamente 2 `h3` di soli paragrafi | «Cosa si fa» (giallo) e «A chi è rivolto» (inchiostro); una foto nel primo gruppo (B) sta accanto, a destra |
+| ogni altra sezione con `h3` | come sempre (la storia del judo: quattro tessere) |
+| la sezione subito prima della chiusura, con 3 o 4 `h3` e un solo paragrafo ciascuno | «Cosa aspettarsi», tessere numerate |
+| l'ultima sezione con un pulsante verso il modulo | chiusura gialla: titolo, frasi, pulsanti, foto C a destra (senza, a una colonna); l'invito «PROVA» del piede non si ripete |
+
+Il punto da tenere al centro delle foto è per corso e ruolo (`FUOCHI_CORSO`), non per file: le foto nuove hanno il nome che dà la libreria IMMAGINI. Un corso senza foto approvate non ha regole di fuoco.

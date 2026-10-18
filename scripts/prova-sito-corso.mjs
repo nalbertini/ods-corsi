@@ -57,6 +57,7 @@ console.log('\n2. Senza la testata intera la pagina resta com’era')
   ok('solo foto e paragrafo: niente classe corso', /corso/.test(classi(pagina(IMG + '<p>x</p><h2>S</h2><p>y</p>'))), false)
   ok('foto e dati ma senza h3: niente classe corso', /corso/.test(classi(pagina(IMG + DATI + '<h2>S</h2><p>y</p>'))), false)
   ok('la Home non è mai un corso', /corso/.test(classi(pagina(TESTA, 'home'))), false)
+  ok('un corso senza pulsante verso il modulo ha il <main class="corso"> di sempre', classi(pagina(TESTA + '<h2>Storia</h2><h3>1882</h3><p>Kano.</p>')).trim(), 'class="corso"')
 }
 
 console.log('\n3. L’orario: ora in alto a destra, giorni ed età sotto')
