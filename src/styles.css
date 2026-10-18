@@ -729,6 +729,13 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 
 /* Le pagine delle iscrizioni. */
 .iscrizioni-prova { padding-bottom: 10px; }
+/* La cima della pagina pubblica: il titolo del sito (Big Shoulders sotto il tema `sito`), la frase e il tasto. */
+.iscrizioni-apertura { gap: 14px; padding-top: 28px; padding-bottom: 8px; }
+.iscrizioni-titolo { margin: 0; font-family: var(--cond); font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; text-transform: uppercase; }
+.iscrizioni-frase { font-size: 17px; line-height: 1.45; }
+.iscrizioni-apertura .passo-btn, .iscrizioni-richiesta .passo-btn { align-self: stretch; min-height: 56px; }
+.iscrizioni-richiesta { padding-top: 20px; padding-bottom: 6px; }
+.iscrizioni-piede { padding-top: 14px; padding-bottom: 32px; }
 .iscrizioni-contatti { padding-bottom: 16px; }
 .prova-testa { gap: 10px; align-items: baseline; flex-wrap: wrap; }
 .passi { gap: 10px; padding-bottom: 16px; }
@@ -1028,15 +1035,10 @@ a.btn { text-decoration: none; }
   .scelta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (min-width: 768px) {
-  .scroll > .iscrizioni {
-    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start;
-    grid-template-areas: 'passi costi' 'nota costi';
-    max-width: 1280px; margin: 0 auto;
-  }
-  .iscrizioni-passi { grid-area: passi; }
-  .iscrizioni #costi { grid-area: costi; }
-  .iscrizioni-nota { grid-area: nota; }
+
+@media (min-width: 640px) {
+  /* La pagina pubblica delle iscrizioni è una colonna sola, da leggere dall'alto: il tasto per cominciare sta in cima. */
+  .scroll > .iscrizioni { max-width: 720px; margin: 0 auto; }
 }
 
 @media (min-width: 960px) {

@@ -1,0 +1,10 @@
+{
+  "pages": [{ "id": "page-1", "name": "Pagina iscrizioni · aspetto del sito" }],
+  "artboards": [
+    { "file": "Oggi.dc.html", "title": "Oggi · cima (tema dell'app)", "x": 0, "y": 0, "w": 390, "h": 1700, "page": "page-1" },
+    { "file": "OggiCosti.dc.html", "title": "Oggi · costi (tema dell'app)", "x": 510, "y": 0, "w": 390, "h": 1900, "page": "page-1" },
+    { "file": "Proposta.dc.html", "title": "Proposta · telefono (tema sito)", "x": 1020, "y": 0, "w": 390, "h": 2900, "page": "page-1" }
+  ],
+  "annotations": [],
+  "launch": { "view": "canvas", "page": "page-1" }
+}

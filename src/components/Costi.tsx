@@ -37,7 +37,7 @@ export function Costi() {
   if (!letto) {
     return (
       <section id="costi">
-        <Titoletto>COSTI {STAGIONE}</Titoletto>
+        <Titoletto>QUANTO COSTA · {STAGIONE}</Titoletto>
         <div className="pad stack costi">
           <Dettaglio>Un attimo…</Dettaglio>
         </div>
@@ -48,7 +48,7 @@ export function Costi() {
   const saldo = saldoAperto(chiaveGiorno(new Date()), listino.saldoEntro)
   return (
     <section id="costi">
-      <Titoletto>COSTI {STAGIONE}</Titoletto>
+      <Titoletto>QUANTO COSTA · {STAGIONE}</Titoletto>
 
       <div className="pad stack costi">
         <Riquadro stretto>
