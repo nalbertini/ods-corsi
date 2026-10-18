@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.113.1 — 18 ottobre 2026
+
+### Risolto
+
+- Presenze istruttori parte da Ultimi dodici mesi
+
 ## 0.113.0 — 18 ottobre 2026
 
 ### Novità
