@@ -8,7 +8,7 @@ import { piatto } from '../../lib/importa'
 import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
-import { STRETTO, useSchermo } from '../../lib/largo'
+import { posizione, vicina } from '../../lib/schedaFinestra'
 import { chiedi, Campo, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
@@ -86,15 +86,20 @@ export function Richieste({
   const lista = (elenco.dato ?? []).filter((x) => (ricerca ? ricerca.ids.includes(x.id) : soloStampare ? doc.has(x.id) : tutte || x.stato === 'nuova'))
   const nuove = (elenco.dato ?? []).filter((x) => x.stato === 'nuova').length
   const richiesta = (elenco.dato ?? []).find((x) => x.id === scelta) ?? null
-  // Sullo schermo stretto la richiesta si apre al posto dell'elenco, non sotto.
-  const stretto = useSchermo(STRETTO)
-  const piena = stretto && !!richiesta
   const { ordina, colonna } = useOrdina<Richiesta, 'nome' | 'corsi' | 'arrivata' | 'stato'>({
     nome: (x) => `${x.cognome} ${x.nome}`,
     corsi: (x) => x.corsi.map((c) => nomi.get(c) ?? '?').join(', '),
     arrivata: (x) => x.creataIl,
     stato: (x) => ORDINE_STATI[x.stato],
   })
+
+  // PRECEDENTE e SUCCESSIVA scorrono le richieste che l'elenco mostra, nel suo ordine.
+  const mostrate = ordina(lista)
+  const ids = mostrate.map((x) => x.id)
+  const vai = (verso: 1 | -1) => {
+    const id = vicina(ids, richiesta?.id ?? null, verso)
+    return id ? () => setScelta(id) : undefined
+  }
 
   const scheda = richiesta && r && (
     <Scheda
@@ -111,6 +116,8 @@ export function Richieste({
         onConti?.()
       }}
       onStampato={() => void conDocumento.ricarica()}
+      // Accolta o rifiutata la richiesta è sbrigata: si torna all'elenco, alla prossima.
+      onConclusa={() => setScelta(null)}
       onEliminata={() => {
         setScelta(null)
         void elenco.ricarica()
@@ -122,12 +129,18 @@ export function Richieste({
 
   return (
     <>
-      {piena && (
-        <SchedaPiena key={richiesta.id} etichetta={`Richiesta di ${richiesta.nome} ${richiesta.cognome}`} torna="Richieste" onTorna={() => setScelta(null)}>
+      {scheda && (
+        <SchedaPiena
+          key={richiesta.id}
+          etichetta={`Richiesta di ${richiesta.nome} ${richiesta.cognome}`}
+          torna="Richieste"
+          onTorna={() => setScelta(null)}
+          passaggio={{ posizione: posizione(ids, richiesta.id), onPrecedente: vai(-1), onSuccessiva: vai(1) }}
+        >
           {scheda}
         </SchedaPiena>
       )}
-      <div className="stack" style={{ gap: 18 }} hidden={piena}>
+      <div className="stack" style={{ gap: 18 }}>
         <Testa
           titolo="RICHIESTE ONLINE"
           sotto={`${nuove === 1 ? 'Una richiesta da guardare.' : nuove ? `${nuove} richieste da guardare.` : 'Nessuna richiesta da guardare.'}${
@@ -147,7 +160,7 @@ export function Richieste({
 
         {elenco.guaio && <Guaio testo={elenco.guaio} />}
 
-        <div className="sg-due-colonne sg-iscritti">
+        <div className="sg-iscritti">
           <div role="table" aria-label="Richieste" className="sg-tabella">
             <div role="row" className="sg-lista-testa sg-riga-iscritto">
               {colonna('nome', 'NOME')}
@@ -166,7 +179,7 @@ export function Richieste({
                       : 'Nessuna richiesta nuova. Le altre si vedono con «anche quelle già gestite».'}
                 </p>
               )}
-              {ordina(lista).map((x) => (
+              {mostrate.map((x) => (
                 <div
                   key={x.id}
                   role="row"
@@ -201,11 +214,6 @@ export function Richieste({
             </div>
           </div>
 
-          {!stretto && (
-            <section aria-label="Richiesta" className="sg-scheda" style={{ maxWidth: 560 }}>
-              {scheda || <span className="sg-sotto">Apri una richiesta per vedere le risposte e i file.</span>}
-            </section>
-          )}
         </div>
       </div>
       {avviso}
@@ -225,6 +233,7 @@ function Scheda({
   fai,
   onCambiato,
   onStampato,
+  onConclusa,
   onEliminata,
   onApri,
 }: {
@@ -240,6 +249,8 @@ function Scheda({
   onCambiato: () => void
   /** Il documento stampato e cancellato. */
   onStampato: () => void
+  /** Accolta o rifiutata: la richiesta è sbrigata. */
+  onConclusa: () => void
   onEliminata: () => void
   onApri: (personaId: string) => void
 }) {
@@ -271,6 +282,11 @@ function Scheda({
       void file.ricarica()
       onCambiato()
     }
+    // Solo se è andata: con la data del certificato non salvata la richiesta è già cambiata (rileggi), ma l'errore si legge qui.
+    const finito = () => {
+      rileggi()
+      onConclusa()
+    }
     void fai(
       async () => {
         try {
@@ -282,7 +298,7 @@ function Scheda({
         }
       },
       riuscito,
-      rileggi,
+      finito,
     )
   }
   // La data del certificato la scrive la segreteria dal foglio: la richiesta non la porta, e viaggia con l'accoglimento.
@@ -497,7 +513,8 @@ function Scheda({
         </div>
       )}
 
-      <div className="row" style={{ gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+      {/* Accogli e Rifiuta restano in vista anche con la scheda lunga: scorre il corpo della finestra. */}
+      <div className="row sg-scheda-piede-fisso" style={{ gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
         {x.stato === 'nuova' && (
           <>
             <button
@@ -513,7 +530,10 @@ function Scheda({
               className="sg-btn sg-btn-linea"
               onClick={async () => {
                 if ((await chiedi(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.`, 'Rifiuta la richiesta', { pericolo: true })))
-                  void fai(() => r.rifiuta(x.id), 'Richiesta rifiutata', onCambiato)
+                  void fai(() => r.rifiuta(x.id), 'Richiesta rifiutata', () => {
+                    onCambiato()
+                    onConclusa()
+                  })
               }}
             >
               Rifiuta

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { Back } from '../Icons'
 import { NotaCampo, type Nota } from '../ds'
-import { apriScheda } from '../../lib/scorri'
+import { clicFuoriChiude } from '../../lib/schedaFinestra'
 import { dataLunga } from '../../lib/sala'
 
 type Valore = string | number | null | undefined
@@ -375,9 +374,13 @@ export function ComeFunziona({ children }: { children: ReactNode }) {
 export { dataLunga }
 
 /**
- * Una scheda a pieno schermo: prende tutta la sezione al posto dell'elenco,
- * invece di stargli accanto. L'elenco sotto resta montato ma nascosto, con i
- * filtri e la ricerca di prima; tornando, la pagina torna dov'era.
+ * Il dettaglio di una pagina (una richiesta, un corso, un iscritto, un ordine)
+ * in una finestra sopra l'elenco. L'elenco resta dov'era, con filtri, ricerca e
+ * ordine; il menu resta fuori dal velo, coi suoi numeri. Si chiude con ✕ o Esc
+ * (`onTorna`, che chiede se c'è qualcosa non salvato) e con un clic sul velo,
+ * ma solo se non c'è niente da perdere (`clicFuoriChiude`). Scorre il corpo; la
+ * testa resta. `passaggio` aggiunge PRECEDENTE e SUCCESSIVA, per scorrere
+ * l'elenco senza chiudere.
  *
  * `cornice={false}` per una scheda che ha già la sua (quella dei corsi).
  */
@@ -387,33 +390,78 @@ export function SchedaPiena({
   onTorna,
   tinta,
   cornice = true,
+  passaggio,
   children,
 }: {
   etichetta: string
+  /** La pagina a cui si torna: la dice chi legge lo schermo, il tasto è ✕. */
   torna: string
   onTorna: () => void
   tinta?: string
   cornice?: boolean
+  passaggio?: { posizione: string | null; onPrecedente?: () => void; onSuccessiva?: () => void }
   children: ReactNode
 }) {
-  const cima = useRef<HTMLDivElement>(null)
+  const radice = useRef<HTMLDivElement>(null)
+  const finestra = useDialogo<HTMLDivElement>(onTorna)
+  // Il velo e la finestra coprono il corpo, non il menu: dietro la finestra il corpo non scorre.
   useLayoutEffect(() => {
-    const corpo = cima.current?.closest('.sg-corpo')
-    if (corpo) return apriScheda(corpo)
+    const corpo = radice.current?.closest<HTMLElement>('.sg-corpo')
+    if (!corpo || !radice.current) return
+    const radiceEl = radice.current
+    const misura = () => radiceEl.style.setProperty('--sg-finestra-sx', `${corpo.getBoundingClientRect().left}px`)
+    misura()
+    window.addEventListener('resize', misura)
+    const prima = corpo.style.overflowY
+    corpo.style.overflowY = 'hidden'
+    return () => {
+      window.removeEventListener('resize', misura)
+      corpo.style.overflowY = prima
+    }
   }, [])
   return (
-    <div ref={cima} className="stack" style={{ gap: 16 }}>
-      <button type="button" className="sg-btn sg-btn-linea sg-torna" onClick={onTorna}>
-        <Back size={18} />
-        {torna}
-      </button>
-      {cornice ? (
-        <section aria-label={etichetta} className="sg-scheda sg-scheda-piena" style={tinta ? { ['--tinta' as string]: tinta } : undefined}>
-          {children}
-        </section>
-      ) : (
-        children
-      )}
+    <div ref={radice} className="sg-finestra-radice">
+      <button type="button" className="sg-velo sg-finestra-velo" tabIndex={-1} aria-label="Chiudi" onClick={() => clicFuoriChiude(bozzaAperta()) && onTorna()} />
+      <div
+        ref={finestra}
+        role="dialog"
+        aria-modal="true"
+        aria-label={etichetta}
+        tabIndex={-1}
+        className="sg-finestra"
+        style={tinta ? { ['--tinta' as string]: tinta } : undefined}
+      >
+        <div className="sg-finestra-testa">
+          {passaggio && (
+            <>
+              <button type="button" className="sg-btn sg-btn-linea" disabled={!passaggio.onPrecedente} onClick={passaggio.onPrecedente}>
+                ‹ Precedente
+              </button>
+              {passaggio.posizione && (
+                <span className="num sg-finestra-posizione" aria-live="polite">
+                  {passaggio.posizione}
+                </span>
+              )}
+              <button type="button" className="sg-btn sg-btn-linea" disabled={!passaggio.onSuccessiva} onClick={passaggio.onSuccessiva}>
+                Successiva ›
+              </button>
+            </>
+          )}
+          <span className="grow" />
+          <button type="button" className="icon-btn" aria-label={`Chiudi e torna a ${torna}`} onClick={onTorna}>
+            <span aria-hidden="true">✕</span>
+          </button>
+        </div>
+        <div className="sg-finestra-corpo">
+          {cornice ? (
+            <section aria-label={etichetta} className="sg-scheda sg-scheda-piena" style={tinta ? { ['--tinta' as string]: tinta } : undefined}>
+              {children}
+            </section>
+          ) : (
+            children
+          )}
+        </div>
+      </div>
     </div>
   )
 }
