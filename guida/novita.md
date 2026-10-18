@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.124.0 — 18 ottobre 2026
+
+### Novità
+
+- Lo storico del vecchio programma si collega alla persona che ha pagato, e si vede nella sua scheda
+
 ## 0.123.4 — 18 ottobre 2026
 
 ### Risolto
