@@ -96,6 +96,9 @@ class Component extends DCLogic {
     const c = T[p.tema] || T.scuro;
     const sito = p.tema === 'sito';
     const sg = p.contesto === 'segreteria';
+    // `sito` + contesto segreteria = look del sito della segreteria (:root[data-look='sito']): etichetta in Inter 12px 600 (non Big Shoulders),
+    // campo bianco col bordo blu, raggio 6px, `acceso` col bordo giallo scuro #8f6a00 (il giallo pieno e' solo del tasto principale).
+    const sgSito = sito && sg;
     const tipo = p.tipo || 'testo';
     const etichetta = p.etichetta ?? 'NOME';
     const nota = p.nota ?? '';
@@ -112,9 +115,9 @@ class Component extends DCLogic {
     // «*lunedì* e giovedì *18.00-19.00*»: fra asterischi i pezzi in evidenza (le posizioni dispari dopo lo split).
     const orario = orarioScritto.split('*').map((testo, i) => ({ testo, peso: i % 2 ? 700 : 400, colore: i % 2 ? c.text : coloreRiga })).filter((x) => x.testo !== '');
     return {
-      c, cond: sito ? BIG : COND, testoFam: sito ? INTER : BODY,
+      c, cond: sgSito ? INTER : sito ? BIG : COND, testoFam: sito ? INTER : BODY,
       // Il carattere del sito e' piu' stretto: l'etichetta sale da 12px a 15px (800, 0.08em); campi e scelte hanno il raggio da 6px (la casella da 4px).
-      etichettaCorpo: sito ? '15px' : '12px', etichettaPeso: sito ? 800 : 700, etichettaSpazio: sito ? '0.08em' : '0.18em',
+      etichettaCorpo: sgSito ? '12px' : sito ? '15px' : '12px', etichettaPeso: sgSito ? 600 : sito ? 800 : 700, etichettaSpazio: sgSito ? '0.12em' : sito ? '0.08em' : '0.18em',
       raggio: sito ? '6px' : '0', raggioPiccolo: sito ? '4px' : '0', corpoScelta: sito ? '16px' : '15px', corpoRiga: sito ? '14px' : '13px',
       suInchiostro: c.suInchiostro || c.bg,
       etichetta, conEtichetta: etichetta !== '',
@@ -124,9 +127,9 @@ class Component extends DCLogic {
       allinea: area ? 'flex-start' : 'center',
       alto: area ? (sg ? '88px' : '104px') : sg ? '44px' : '52px',
       padding: area ? (sg ? '10px 12px' : '12px 14px 0') : sg ? '0 12px' : '0 14px',
-      sfondo: sola ? 'transparent' : sg ? c.bg : c.surface,
+      sfondo: sola ? 'transparent' : sg && !sito ? c.bg : c.surface,
       stileBordo: sola ? 'dashed' : 'solid',
-      bordo: guaio ? c.rosso : truthy(p.acceso) ? c.giallo : c.lineCampo,
+      bordo: guaio ? c.rosso : truthy(p.acceso) ? (sgSito ? c.gialloTesto : c.giallo) : c.lineCampo,
       coloreValore: sola ? c.dim : valore !== '' ? c.text : c.dim,
       famiglia: sito ? INTER : codice ? COND : BODY,
       tabulare: codice ? 'tabular-nums' : 'normal',
