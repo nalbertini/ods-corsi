@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.123.1 — 18 ottobre 2026
+
+### Modificato
+
+- Il sito pubblico in un file FigCraft, con gli script per rifarlo
+
 ## 0.123.0 — 18 ottobre 2026
 
 ### Novità
