@@ -26,6 +26,7 @@
     "prova:campi": "node scripts/prova-campi.mjs",
     "prova:richieste": "node scripts/prova-richieste.mjs",
     "prova:iscrizione-passi": "node scripts/prova-iscrizione-passi.mjs",
+    "prova:iscrizione-pagina": "node scripts/prova-iscrizione-pagina.mjs",
     "prova:firma": "node scripts/prova-firma.mjs",
     "prova:moduli": "node scripts/prova-moduli.mjs",
     "prova:firma-tratti": "node scripts/prova-firma-tratti.mjs",

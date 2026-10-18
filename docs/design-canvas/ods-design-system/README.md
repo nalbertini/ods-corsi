@@ -19,7 +19,7 @@ Google, e vale solo per i mockup.
 | `Pagina.dc.html` | Cornice dello schermo largo: menu di segreteria (240px) + corpo, con PRESENZE come schermata d'esempio. Una schermata nuova si copia da qui |
 | `PaginaTelefono.dc.html` | Cornice del telefono (390px): testata col marchio + scorrimento, con ISCRIZIONI > COSTI d'esempio. È la faccia che l'app mostra per prima |
 | `Bottone.dc.html` | `.btn`, `.sg-btn`, `.icon-btn`: principale, vai, linea, tratteggiato, pieno, rosso, icona; app e segreteria; `bordo="riga-campo"` per i tasti che sono scelte (i tipi di TI SERVE ALTRO?) |
-| `SchedaCorso.dc.html` | `Costo` di `ds.tsx`: la scheda di un corso nel listino |
+| `SchedaCorso.dc.html` | `Costo` di `ds.tsx`: la scheda di un corso nel listino; col `tema="sito"` (pagina `iscrizioni/`) bianca, filo `#cfe6f4`, corso e prezzi in Big Shoulders |
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
 | `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag` (neutro, rosso, giallo e verde `fatto`: PUBBLICATA nel SITO), `.sg-segno-regola` |
@@ -133,8 +133,8 @@ Google, e vale solo per i mockup.
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 
 Tutti i componenti hanno la prop `tema` (`scuro` | `chiaro`). `sito` è un terzo tema, solo per il **modulo di
-iscrizione**, e ce l'hanno soltanto i componenti che il modulo vero usa (`Campo`, `Bottone`, `Titoletto`,
-`CaricaFile`, `TavolaFirma`, `RiquadroPasso`, `Testata`): vedi «Il tema sito».
+iscrizione**, e ce l'hanno soltanto i componenti che il modulo e la pagina veri usano (`Campo`, `Bottone`, `Titoletto`,
+`CaricaFile`, `TavolaFirma`, `RiquadroPasso`, `Testata`, `SchedaCorso`): vedi «Il tema sito».
 
 ## Come si riusa
 
@@ -258,9 +258,9 @@ a tre valori. I token veri sono nel blocco `:root[data-tema='tatami']` di `src/s
 scuri per giallo, verde, rosso e testo spento: vedi `DESIGN.md`). Il canvas della sezione conserva i valori della
 proposta, che per quei quattro colori sono precedenti ai valori finali.
 
-## Il tema sito (modulo di iscrizione)
+## Il tema sito (pagina `iscrizioni/` e modulo di iscrizione)
 
-PROPOSTA, non costruita: `sito` è il tema del **modulo di iscrizione** (`ModuloIscrizione.tsx`) nell'aspetto del sito
+Costruito: `sito` è il tema della pagina pubblica `iscrizioni/` (`IscrizioniScreen.tsx`, sezione `../iscrizioni-pagina/`) e del **modulo di iscrizione** (`ModuloIscrizione.tsx`) nell'aspetto del sito
 pubblico «tatami blu e giallo» (A2). Il modulo è sempre chiaro, qualunque sia il tema dell'app. Non è un quarto tema
 dell'app: nei componenti sopra, `tema="sito"` cambia colori, **carattere** (Big Shoulders Display 800 per titoli, etichette
 e tasti; Inter per testi e campi; il canvas li prende da Google Fonts, in app saranno file locali OFL) e **raggio** (6px su

@@ -1,19 +1,11 @@
 /**
- * I passi dell'iscrizione, come li dà la segreteria.
- *
- * Stanno qui, e non dentro la schermata, perché sono la parte che cambia: un
- * nuovo modulo, un nuovo link, un passo in più, i prezzi della stagione dopo.
- * Il resto è impaginazione.
+ * I dati dell'iscrizione, come li dà la segreteria: i moduli, dove si paga, la
+ * prova. Stanno qui, e non dentro la schermata, perché sono la parte che
+ * cambia (un nuovo modulo, i prezzi della stagione dopo). I testi della pagina
+ * pubblica sono in `paginaIscrizioni.ts`.
  */
 
 import { haUnServer } from './dati'
-
-/**
- * Il modulo Google dove si caricavano risposte, foto e pagamento. Resta solo
- * per la pagina pubblica senza il database vero, vedi `MODULO_IN_APP_PUBBLICO`,
- * e per rimettere il passo com'era se il modulo dell'app si dovesse spegnere.
- */
-export const LINK_ISCRIZIONE = 'https://forms.gle/eZyGvAD4h7cNNpXF7'
 
 /**
  * L'informativa privacy per iscrizioni e corsi, di cui la palestra è titolare
@@ -36,24 +28,13 @@ export const INFORMATIVA_BOZZA = false
 export const INFORMATIVA_PUBBLICA = INFORMATIVA && (!INFORMATIVA_BOZZA || !haUnServer) ? INFORMATIVA : undefined
 
 /**
- * Il modulo di iscrizione dentro l'app (`ModuloIscrizione`), al posto di
- * quello Google. Raccoglie codici fiscali, dati dei genitori, documenti d'identità e
- * certificati medici, e col
- * database vero si accende solo quando c'è un'informativa approvata da far
- * leggere prima: fino ad allora il passo porta ancora al modulo Google. In
- * prova è sempre acceso, perché lì i dati restano sul dispositivo.
+ * Il modulo di iscrizione dentro l'app (`ModuloIscrizione`). Raccoglie codici
+ * fiscali, dati dei genitori, documenti d'identità e certificati medici, e col
+ * database vero si apre solo quando c'è un'informativa approvata da far
+ * leggere prima: fino ad allora la pagina pubblica manda a chiamare la
+ * segreteria. In prova è sempre aperto, perché lì i dati restano sul dispositivo.
  */
 export const MODULO_IN_APP = !haUnServer || !!INFORMATIVA_PUBBLICA
-
-/**
- * Il modulo dell'app per la pagina pubblica (`iscrizioni/`), quella del link
- * che si manda a chi vuole iscriversi: lì la prova non vale, perché una
- * richiesta rimasta sul telefono di chi l'ha mandata non arriva a nessuno.
- * Senza il database vero, quindi, il passo porta al modulo Google; col
- * database vero vale come `MODULO_IN_APP`: resta Google finché l'informativa
- * è una bozza.
- */
-export const MODULO_IN_APP_PUBBLICO = haUnServer && !!INFORMATIVA_PUBBLICA
 
 export interface Documento {
   etichetta: string
@@ -111,59 +92,6 @@ export const PROVA = {
     { cosa: 'Una lezione', costo: '3 €' },
     { cosa: 'Una settimana', costo: '10 €' },
   ],
+  etichetta: 'Non sai ancora quale corso?',
   testo: 'Una lezione per provare un corso, o una settimana per provare tutti gli sport e scegliere quello giusto, prima di iscriversi.',
 }
-
-export interface Passo {
-  titolo: string
-  dettaglio?: string
-  /** Cosa mostra il passo sotto il titolo, se ha qualcosa da far fare. */
-  azione?: 'moduli' | 'link' | 'pagamento' | 'modulo'
-}
-
-/**
- * Col modulo dell'app: le domande, la firma e le foto stanno tutte
- * nell'ultimo passo. Il modulo delle autorizzazioni si firma lì col dito
- * (`src/lib/firma.ts`), e qui si scarica solo per leggerlo, o per chi
- * preferisce stamparlo.
- */
-const PASSI_APP: Passo[] = [
-  {
-    titolo: 'Leggi il modulo',
-    dettaglio: 'Quello per maggiorenni, o quello per minori che firma il genitore. Lo firmi col dito nell’ultimo passo, o lo stampi e ne fai una foto.',
-    azione: 'moduli',
-  },
-  {
-    titolo: 'Fai il pagamento',
-    dettaglio: 'La quota associativa e il trimestre, oppure l’annuale. Tieni la ricevuta, o paga in segreteria.',
-    azione: 'pagamento',
-  },
-  {
-    titolo: 'Manda la richiesta da qui',
-    dettaglio: "Le domande, la firma sul modulo, poi le foto della carta d'identità, e del certificato medico e della ricevuta se li hai.",
-    azione: 'modulo',
-  },
-]
-
-/** Col modulo Google, com'era. */
-const PASSI_GOOGLE: Passo[] = [
-  { titolo: 'Scarica il modulo', dettaglio: 'Quello per maggiorenni, o quello per minori che firma il genitore.', azione: 'moduli' },
-  {
-    titolo: 'Compilalo e firmalo dal telefono',
-    dettaglio: 'Se non ci riesci, stampalo e firmalo a mano.',
-  },
-  { titolo: 'Apri il modulo di iscrizione', azione: 'link' },
-  { titolo: 'Rispondi alle domande' },
-  { titolo: 'Fai una foto al modulo firmato e caricala' },
-  { titolo: "Fai una foto alla carta d'identità e caricala" },
-  {
-    titolo: 'Carica la ricevuta del pagamento',
-    dettaglio: 'La quota associativa e il trimestre, oppure l’annuale.',
-    azione: 'pagamento',
-  },
-]
-
-export const PASSI: Passo[] = MODULO_IN_APP ? PASSI_APP : PASSI_GOOGLE
-
-/** I passi della pagina pubblica: vedi `MODULO_IN_APP_PUBBLICO`. */
-export const PASSI_PUBBLICI: Passo[] = MODULO_IN_APP_PUBBLICO ? PASSI_APP : PASSI_GOOGLE

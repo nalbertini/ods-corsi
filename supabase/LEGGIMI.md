@@ -564,8 +564,9 @@ Cosa fa `06-iscrizioni.sql`:
 e dati dei genitori, e col database vero l'app lo mostra solo quando
 l'informativa (`informativa.html`) è approvata, cioè quando in
 `src/lib/iscrizione.ts` `INFORMATIVA_BOZZA` è `false`: lo è dal 27 settembre
-2026. Se si rimette a `true` il passo torna al modulo Google
-(`LINK_ISCRIZIONE`). In prova il modulo è sempre acceso.
+2026. Se si rimette a `true` la pagina `iscrizioni/` non mostra più il
+tasto e dice di chiamare la segreteria (`SENZA_MODULO`). In prova il modulo è
+sempre acceso.
 
 **Le domande** sono ricavate dai moduli di autorizzazione e dai passi di
 prima, non copiate dal modulo Google, che senza accesso non si legge. Se
