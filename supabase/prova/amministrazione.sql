@@ -313,7 +313,7 @@ select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('amministrazione e istruttore, senza storia, si elimina', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000011')::text$$), 'FATTO (1 righe)');
 select atteso('e non c''è più', (select count(*)::text from persone where id = 'aaaaaaaa-0000-0000-0000-000000000011'), '0');
-select atteso('solo amministrazione no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000012')::text$$), 'NEGATO: Si eliminano solo gli istruttori: a Aldo si toglie l''accesso');
+select atteso('solo amministrazione no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000012')::text$$), 'NEGATO: Si eliminano solo gli istruttori e la segreteria: a Aldo si toglie l''accesso');
 reset role;
 
 \echo ''

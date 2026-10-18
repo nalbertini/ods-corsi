@@ -68,6 +68,19 @@ for (const c of COMBINAZIONI) {
   ok(`${chiave}: il nome`, m.nomeDelRuolo(c.persona), c.nome)
 }
 
+console.log('\nchi si può eliminare (se non ha storia)')
+{
+  // Come `elimina_istruttore` in `supabase/66-elimina-segreteria.sql`.
+  const si = (nome, persona, voluto) => ok(nome, m.siElimina(persona), voluto)
+  si('un istruttore', { ruolo: 'istruttore' }, true)
+  si('la segreteria', { ruolo: 'staff' }, true)
+  si('la segreteria che insegna anche', { ruolo: 'staff', ancheIstruttore: true }, true)
+  si('la segreteria con l\'amministrazione', { ruolo: 'staff', ancheAmministrazione: true }, true)
+  si('solo amministrazione no', { ruolo: 'amministrazione' }, false)
+  si('amministrazione che insegna anche', { ruolo: 'amministrazione', ancheIstruttore: true }, true)
+  si('un ruolo che l\'app non conosce no', { ruolo: 'contabile' }, false)
+}
+
 console.log('\nun ruolo che l\'app non conosce')
 {
   const strano = { ruolo: 'contabile' }

@@ -77,6 +77,12 @@ export function spunteDi(p: { ruolo: string; ancheIstruttore?: boolean; ancheAmm
 /** Insegna: un istruttore, o chi ha un altro ruolo e anche questo. Gli si danno i corsi. */
 export const insegna = (p: { ruolo: string; ancheIstruttore?: boolean }) => spunteDi(p).includes('istruttore')
 
+/**
+ * Si può eliminare, se non ha storia: chi insegna e la segreteria. A chi è solo
+ * di amministrazione si toglie l'accesso (`66-elimina-segreteria.sql`).
+ */
+export const siElimina = (p: { ruolo: string; ancheIstruttore?: boolean }) => insegna(p) || p.ruolo === 'staff'
+
 /** Le aree di una persona: una per cosa che fa, e nessuna per un ruolo che l'app non conosce. */
 export function areeDi(p: { ruolo: string; ancheIstruttore?: boolean; ancheAmministrazione?: boolean }): AreaDiAccount[] {
   // Segreteria e amministrazione sono due autorizzazioni di uno stesso posto: un menu solo (`menuSegreteria.ts`).

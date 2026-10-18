@@ -32,7 +32,19 @@ insert into persone (id, nome, cognome, ruolo, email, utente_id) values
   ('aaaaaaaa-0000-0000-0000-000000000011', 'Zeno', 'Tablet', 'istruttore', null, '66666666-6666-6666-6666-666666666666'),
   -- Solo segreteria, e segreteria che insegna anche: nessun corso.
   ('aaaaaaaa-0000-0000-0000-000000000012', 'Bea', 'Banco', 'staff', null, null),
-  ('aaaaaaaa-0000-0000-0000-000000000013', 'Dario', 'Doppio', 'staff', null, null);
+  ('aaaaaaaa-0000-0000-0000-000000000013', 'Dario', 'Doppio', 'staff', null, null),
+  -- Solo segreteria, ma ha emesso una ricevuta: dal registro non sparisce.
+  ('aaaaaaaa-0000-0000-0000-000000000014', 'Carla', 'Cassa', 'staff', null, null),
+  -- Solo amministrazione: a lei si toglie l'accesso.
+  ('aaaaaaaa-0000-0000-0000-000000000015', 'Ada', 'Conti', 'amministrazione', null, null),
+  -- Solo segreteria con un pagamento a mano a suo nome (`restrict`), e una che ne ha registrato uno di un'altra.
+  ('aaaaaaaa-0000-0000-0000-000000000016', 'Pia', 'Pagata', 'staff', null, null),
+  ('aaaaaaaa-0000-0000-0000-000000000017', 'Gio', 'Registro', 'staff', null, null);
+insert into ricevute (anno, numero, data, ente, intestatario, voci, totale, pagato, creata_da) values
+  (2026, 1, current_date, '{}', '{}', '[{"descrizione": "Quota"}]', 5000, 5000, 'aaaaaaaa-0000-0000-0000-000000000014');
+insert into pagamenti_diretti (persona_id, data, importo, metodo, voce, creato_da) values
+  ('aaaaaaaa-0000-0000-0000-000000000016', current_date, 1000, 'Contanti', 'ALTRO', null),
+  ('aaaaaaaa-0000-0000-0000-000000000003', current_date, 1000, 'Contanti', 'ALTRO', 'aaaaaaaa-0000-0000-0000-000000000017');
 update persone set anche_istruttore = true where id = 'aaaaaaaa-0000-0000-0000-000000000013';
 insert into sale (id, nome) values ('bbbbbbbb-0000-0000-0000-000000000001', 'Lotta');
 insert into postazioni (id, nome, sala_id, utente_id) values
@@ -105,10 +117,16 @@ select atteso('chi ha una presenza da istruttore no', tenta($$select elimina_ist
   'NEGATO: Teo Passato ha delle presenze da istruttore…');
 select atteso('se stessa no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000001')::text$$),
   'NEGATO: Non ci si elimina da soli…');
-select atteso('chi è solo di segreteria no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000012')::text$$),
-  'NEGATO: Si eliminano solo gli istruttori…');
+select atteso('chi ha emesso una ricevuta no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000014')::text$$),
+  'NEGATO: Carla Cassa ha già lavorato nei registri…');
+select atteso('chi ha un pagamento a suo nome no, e non col testo di Postgres', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000016')::text$$),
+  'NEGATO: Pia Pagata ha già lavorato nei registri…');
+select atteso('chi ha registrato un pagamento no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000017')::text$$),
+  'NEGATO: Gio Registro ha già lavorato nei registri…');
+select atteso('e il pagamento resta col suo autore', (select creato_da::text from pagamenti_diretti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000003'), 'aaaaaaaa-0000-0000-0000-000000000017');
+select atteso('e la ricevuta resta col suo autore', (select creata_da::text from ricevute where numero = 1), 'aaaaaaaa-0000-0000-0000-000000000014');
 select atteso('un iscritto da qui no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000003')::text$$),
-  'NEGATO: Si eliminano solo gli istruttori…');
+  'NEGATO: Si eliminano solo gli istruttori e la segreteria…');
 select atteso('chi è anche allievo no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000010')::text$$),
   'NEGATO: Ugo Allievo è anche allievo…');
 select atteso('e la sua iscrizione resta', (select count(*)::text from iscrizioni where persona_id = 'aaaaaaaa-0000-0000-0000-000000000010'), '1');
@@ -128,6 +146,11 @@ select atteso('senza account non c''è niente da togliere', tenta($$select coale
   'nessun account');
 select atteso('la segreteria che insegna anche, senza corsi, sì', tenta($$select coalesce(elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000013')::text, 'nessun account')$$),
   'nessun account');
+select atteso('chi è solo di segreteria, senza storia, sì', tenta($$select coalesce(elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000012')::text, 'nessun account')$$),
+  'nessun account');
+select atteso('Bea non c''è più', (select count(*)::text from persone where nome = 'Bea'), '0');
+select atteso('solo amministrazione no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000015')::text$$),
+  'NEGATO: Si eliminano solo gli istruttori e la segreteria…');
 select atteso('Dario non c''è più', (select count(*)::text from persone where nome = 'Dario'), '0');
 select atteso('un iscritto si cancella come prima', tenta($$delete from persone where id = 'aaaaaaaa-0000-0000-0000-000000000009'$$), 'FATTO (1 righe)');
 select atteso('una persona che non c''è', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000005')::text$$), 'NEGATO: Questa persona non c''è più');

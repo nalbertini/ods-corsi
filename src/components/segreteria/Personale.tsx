@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import { personaCambiata } from '../../lib/segreteria'
-import { daSpunte, insegna, nomeDelRuolo, puo, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
+import { daSpunte, insegna, nomeDelRuolo, puo, siElimina, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
@@ -572,12 +572,12 @@ function Scheda({
         >
           {p.attiva ? 'Togli l’accesso' : 'Ridai l’accesso'}
         </button>
-        {/* Solo chi insegna, anche col ruolo doppio: a chi è solo di segreteria si toglie l'accesso. Se ha corsi, lezioni o presenze il database dice di no, e perché. */}
-        {insegna(p) && (
+        {/* Chi insegna e la segreteria: a chi è solo di amministrazione si toglie l'accesso. Se ha corsi, lezioni, presenze o righe nei registri il database dice di no, e perché. */}
+        {siElimina(p) && (
           <button
             type="button"
             className="sg-btn sg-btn-linea sg-pericolo"
-            title="Solo per chi non ha mai insegnato: senza corsi, lezioni o presenze"
+            title="Solo per chi non ha storia: senza corsi, lezioni, presenze o registri a suo nome"
             onClick={() => void elimina()}
           >
             Elimina
