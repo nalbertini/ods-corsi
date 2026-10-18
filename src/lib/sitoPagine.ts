@@ -28,6 +28,8 @@ export interface PaginaSito {
   bozza: string
   /** I pezzi della bozza: `null` = pagina col vecchio editor di testo; `undefined` = il database non ha ancora `62-sito-pezzi.sql`. */
   pezzi?: PezziPagina | null
+  /** I corsi da cui viene l'orario della pagina, in ordine di scelta (`67-sito-orario.sql`): vuoto = orario scritto a mano; `undefined` = il database non ha ancora il 67. */
+  corsiCollegati?: string[]
   /** Vuoto finché non si pubblica la prima volta. */
   pubblicato: string | null
   /** Titolo e descrizione che il sito mostra: cambiano solo con PUBBLICA, come il testo. */

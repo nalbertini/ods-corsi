@@ -2974,6 +2974,14 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
 .sito-testo h2, .sito-testo h3 { margin: 0; font-family: var(--cond); font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; line-height: 1.1; }
 /* Puck ha tre pannelli: ha bisogno di tutta la larghezza, e i campi della pagina vanno sotto. */
 .sito-due-pezzi { grid-template-columns: minmax(0, 1fr); }
+/* L'orario dai corsi nel pannello SITO: i corsi collegati e le righe come le vede il sito. */
+.sito-corso-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 0 0 12px; border: 2px solid var(--blu); background: var(--surface); font-size: 15px; font-weight: 600; }
+.sito-chip-x { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: inherit; font-size: 18px; cursor: pointer; }
+.sito-chip-x:disabled { cursor: not-allowed; opacity: 0.5; }
+.sito-spento { height: auto; min-height: 44px; padding: 10px 12px; line-height: 1.4; display: flex; align-items: center; background: var(--surface-2); color: var(--dim); cursor: not-allowed; overflow-wrap: anywhere; }
+.sito-orario-righe { list-style: none; margin: 0; padding: 0; }
+.sito-orario-riga { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0 10px; padding: 14px 16px; border-left: 6px solid var(--blu); background: var(--surface-2); font-family: var(--cond); font-size: 24px; font-weight: 800; line-height: 1; text-transform: uppercase; }
+.sito-orario-ora { white-space: nowrap; font-size: 22px; }
 .sito-due-pezzi > .stack:last-child { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); align-items: start; }
 /* L'anteprima vera segue il tema come gli altri riquadri: il fondo azzurro del sito sta dentro la pagina. */
 .sito-anteprima-pagina { width: 100%; height: 720px; border: 2px solid var(--line); background: var(--surface); }

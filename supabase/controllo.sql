@@ -338,6 +338,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('65-elimina-presenza-rifiutata.sql', 'la presenza di un istruttore rifiutata si può eliminare',
     exists (select 1 from dentro where nome = 'elimina_presenza_istruttore')),
   ('66-elimina-segreteria.sql', 'eliminare anche la segreteria, se non ha storia nei registri',
-    exists (select 1 from dentro where nome = 'elimina_istruttore' and corpo like '%ha già lavorato nei registri%'))
+    exists (select 1 from dentro where nome = 'elimina_istruttore' and corpo like '%ha già lavorato nei registri%')),
+  ('67-sito-orario.sql', 'l''orario del sito dalle ricorrenze di CORSI: le pagine si collegano ai corsi, solo dalla segreteria',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'sito_pagine' and column_name = 'corsi_collegati')
+    and to_regprocedure('public.salva_corsi_sito(uuid,uuid[])') is not null
+    -- Rilanciare 56 dopo 67 rimette la funzione pubblica senza la colonna: la riga torna «da lanciare».
+    and exists (select 1 from pg_proc p where p.oid = to_regprocedure('public.sito_pagine_pubbliche()') and 'corsi_collegati' = any(p.proargnames)))
 ) as x(file, cosa, c)
 order by file, cosa;

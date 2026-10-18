@@ -102,7 +102,8 @@
     "prova:fogli-moduli": "node scripts/prova-fogli-moduli.mjs",
     "prova:testi": "node scripts/prova-testi.mjs",
     "prova:etichette-lezione": "node scripts/prova-etichette-lezione.mjs",
-    "prova:scheda": "node scripts/prova-scheda.mjs"
+    "prova:scheda": "node scripts/prova-scheda.mjs",
+    "prova:sito-orario": "node scripts/prova-sito-orario.mjs"
   },
   "dependencies": {
     "@puckeditor/core": "^0.23.0",

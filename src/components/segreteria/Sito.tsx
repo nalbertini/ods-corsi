@@ -20,6 +20,7 @@ import {
 import { pulisciTesto } from '../../lib/sitoTesto'
 import { cosaNonVaPezzi, databaseConPezzi, cosaNonVaPortare, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
 import { Immagini } from './ImmaginiSito'
+import { OrarioSito } from './OrarioSito'
 import { Campo, chiedi, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { Titoletto } from '../ds'
 
@@ -109,6 +110,8 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
       ricarica,
     )
   }
+  // Collegare i corsi non cambia il testo: si salva subito e il sito si aggiorna da solo.
+  const collegaCorsi = (corsi: string[]) => fai(() => d.collegaCorsiSito(pagina.id, corsi), 'Fatto. Il sito si aggiorna da solo entro 5 minuti', ricarica)
   const cambiaSlug = () => fai(() => d.cambiaIndirizzoSito(pagina.id, slug), 'Indirizzo cambiato', ricarica)
   const nascondi = async () => {
     if (!pagina.nascosta && !(await chiedi(`Nascondere «${pagina.titolo}»? Sparisce dal sito alla prossima pubblicazione, ma resta qui.`, 'Nascondi', { pericolo: true }))) return
@@ -129,6 +132,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
           ‹ Tutte le pagine
         </button>
         <Stato p={pagina} />
+        {!!pagina.corsiCollegati?.length && <span className="sg-tag" data-tipo="fatto">Collegata a {pagina.corsiCollegati.length} {pagina.corsiCollegati.length === 1 ? 'corso' : 'corsi'}</span>}
         {sporca && <span className="sg-tag" data-tipo="presto">Da salvare</span>}
         <span className="grow" />
         <button type="button" className="sg-btn sg-btn-verde" disabled={lavora || !!noTitolo || !!noSlug || !!noTesto || conteggio(titolo, LIMITE_TITOLO).troppo} onClick={() => void pubblica()}>
@@ -174,6 +178,12 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
             <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || !!noSlug} onClick={() => void cambiaSlug()}>
               Cambia indirizzo
             </button>
+          )}
+          {!pagina.diLegge && (
+            <div className="stack" style={{ gap: 10, paddingTop: 8, borderTop: '2px solid var(--line)' }}>
+              <Titoletto>ORARIO DAI CORSI</Titoletto>
+              <OrarioSito d={d} pagina={pagina} lavora={lavora} onCambia={(corsi) => void collegaCorsi(corsi)} />
+            </div>
           )}
           {portabileAiPezzi(pagina) && (
             <div className="stack" style={{ gap: 10, paddingTop: 8, borderTop: '2px solid var(--line)' }}>

@@ -148,9 +148,9 @@ select atteso('salva pezzi nuovi dopo la pubblicazione',
 reset role;
 select chi('');
 set role anon;
-select atteso('sito_pagine_pubbliche ha le colonne di prima, nessuna dei pezzi',
+select atteso('sito_pagine_pubbliche ha le colonne di prima più i corsi collegati (67), nessuna dei pezzi',
   (select string_agg(a.attname, ',' order by a.attnum) from pg_proc p, unnest(p.proargnames, p.proargmodes) with ordinality as a(attname, m, attnum)
-    where p.proname = 'sito_pagine_pubbliche' and a.m = 't'), 'slug,titolo,descrizione,testo,pubblicata_il');
+    where p.proname = 'sito_pagine_pubbliche' and a.m = 't'), 'slug,titolo,descrizione,testo,pubblicata_il,corsi_collegati');
 select atteso('il pubblico legge il pubblicato, non la bozza',
   (select testo from sito_pagine_pubbliche() where slug = 'a-pezzi'), '<p>x</p>');
 select atteso('nessun risultato porta la struttura dei pezzi',

@@ -1,0 +1,100 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Sito · orario automatico"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Oggi.dc.html",
+      "title": "1 · Oggi, schermo largo: l’orario si scrive a mano",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiUnCorso.dc.html",
+      "title": "2 · Proposta · collegata a un corso, con anteprima",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiPiuCorsi.dc.html",
+      "title": "3 · Proposta · collegata a più corsi, le righe si sommano",
+      "x": 3120,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiInArrivo.dc.html",
+      "title": "4 · Proposta · avviso «Orario in arrivo»",
+      "x": 0,
+      "y": 1120,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiNonCollegata.dc.html",
+      "title": "5 · Proposta · pagina non collegata («Nessuno»), come oggi",
+      "x": 1560,
+      "y": 1120,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "FasciaBlu.dc.html",
+      "title": "6 · Pre pugilistica e Autodifesa · la fascia blu sostituita (oggi e proposta)",
+      "x": 3120,
+      "y": 1120,
+      "w": 1440,
+      "h": 640,
+      "page": "page-1"
+    },
+    {
+      "file": "OggiTelefono.dc.html",
+      "title": "7 · Oggi, telefono",
+      "x": 0,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiCollegataTelefono.dc.html",
+      "title": "8 · Proposta · telefono · collegata a più corsi",
+      "x": 510,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiInArrivoTelefono.dc.html",
+      "title": "9 · Proposta · telefono · «Orario in arrivo»",
+      "x": 1020,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiNonCollegataTelefono.dc.html",
+      "title": "10 · Proposta · telefono · non collegata",
+      "x": 1530,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    }
+  ]
+}

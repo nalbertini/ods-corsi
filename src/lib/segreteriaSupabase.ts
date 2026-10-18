@@ -25,6 +25,7 @@ import { kanjiScritto } from './kanji'
 import { enteDaDati, fineAnno, mancaTessere, type EsitoImportTessere, type TesseraSeg } from './tessere'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
 import { pezziInHtml, pezziValidi } from './sitoPezzi'
+import { ORARIO_NON_ATTIVO } from './sitoOrario'
 import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
 import { riduciFoto } from './foto'
 import { URL_SUPABASE } from './dati'
@@ -145,6 +146,7 @@ const MANCANO_PAGAMENTI_A_MANO = 'I pagamenti a mano non sono ancora attivi sul 
 /** Lo Storage risponde con errori suoi: si traducono in frasi per chi usa l'app (`cosaNonVaImmagini`). */
 const immaginiNonAttive = (e: { message: string; statusCode?: string }) => new Error(cosaNonVaImmagini(e.message, e.statusCode))
 const MANCA_SITO = 'Il pannello del sito non è ancora attivo sul database: va lanciato 56-sito.sql'
+const MANCANO_CORSI_SITO = ORARIO_NON_ATTIVO
 const MANCANO_PEZZI = 'Le pagine a pezzi non sono ancora attive sul database: va lanciato 62-sito-pezzi.sql'
 const MANCANO_ALLEGATI = 'Gli allegati non sono ancora attivi sul database: va lanciato 32-segnalazioni-allegati.sql'
 
@@ -281,6 +283,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === '23514' && /bozza_pezzi_check/.test(e.message ?? '')) return new Error('La pagina è troppo lunga: togli qualcosa e riprova')
   // Le pagine a pezzi arrivano con 62-sito-pezzi.sql: la colonna che non c'è (42703 leggendo e creando, PGRST204 scrivendo) o la funzione.
   if ((e?.code === '42703' || e?.code === 'PGRST204' || e?.code === 'PGRST202' || e?.code === '42883') && /bozza_pezzi|salva_bozza_pezzi_sito/.test(e.message ?? '')) return new Error(MANCANO_PEZZI)
+  // I corsi collegati arrivano con 67-sito-orario.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /salva_corsi_sito/.test(e.message ?? '')) return new Error(MANCANO_CORSI_SITO)
+  if ((e?.code === '42703' || e?.code === 'PGRST204') && /corsi_collegati/.test(e.message ?? '')) return new Error(MANCANO_CORSI_SITO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /(salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito)/.test(e.message ?? '')) return new Error(MANCA_SITO)
   if (e?.code === '23514' && /sito_pagine_(bozza|pubblicato)_check/.test(e.message ?? '')) return new Error('Il testo contiene cose che il sito non ammette (script, moduli, stili): toglile e riprova')
   if (e?.code === '23514' && /sito_pagine_slug_check/.test(e.message ?? '')) return new Error('Questo indirizzo non va bene: solo lettere minuscole senza accenti, numeri e trattini, e non uno che serve al sito')
@@ -1828,19 +1833,25 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         descrizione_pubblicata: string | null
         bozza: string
         bozza_pezzi?: unknown
+        corsi_collegati?: string[] | null
         pubblicato: string | null
         nascosta: boolean
         di_legge: boolean
         versione: number
         pubblicata_il: string | null
       }
-      // Senza `62-sito-pezzi.sql` la colonna non c'è (42703): le pagine si leggono lo stesso, tutte col vecchio editor.
-      const leggi = (colonne: string) => db.from('sito_pagine').select(colonne).order('slug')
-      let risposta = await leggi(`${COLONNE}, bozza_pezzi`)
+      // Senza `62-sito-pezzi.sql` (o senza `67-sito-orario.sql`) la colonna non c'è (42703): le pagine si leggono lo stesso,
+      // tutte col vecchio editor (o senza i corsi collegati). Si toglie la colonna di cui il database si lamenta.
       let conPezzi = true
-      if (risposta.error?.code === '42703') {
-        conPezzi = false
-        risposta = await leggi(COLONNE)
+      let conCorsi = true
+      const leggi = () => db.from('sito_pagine').select(`${COLONNE}${conPezzi ? ', bozza_pezzi' : ''}${conCorsi ? ', corsi_collegati' : ''}`).order('slug')
+      let risposta = await leggi()
+      while (risposta.error?.code === '42703' && (conPezzi || conCorsi)) {
+        const m = risposta.error.message ?? ''
+        if (conCorsi && /corsi_collegati/.test(m)) conCorsi = false
+        else if (conPezzi && /bozza_pezzi/.test(m)) conPezzi = false
+        else conPezzi = conCorsi = false
+        risposta = await leggi()
       }
       const righe = ok(risposta) as unknown as Riga[]
       return righe.map((r): PaginaSito => ({
@@ -1853,6 +1864,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         bozza: r.bozza,
         // Un valore che non è fatto come i pezzi (scritto da fuori) vale «vecchio editor»: il testo c'è, e si apre.
         ...(conPezzi ? { pezzi: pezziValidi(r.bozza_pezzi) ? r.bozza_pezzi : null } : {}),
+        ...(conCorsi ? { corsiCollegati: r.corsi_collegati ?? [] } : {}),
         pubblicato: r.pubblicato,
         nascosta: r.nascosta,
         diLegge: r.di_legge,
@@ -1906,6 +1918,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Senza `select`, una pagina che non c'è più (o di legge) darebbe 0 righe e nessun errore: sembrerebbe fatto.
       const fatte = ok(await db.from('sito_pagine').update({ nascosta }).eq('id', id).select('id')) as unknown as unknown[]
       if (!fatte.length) throw new Error('La pagina non c’è più')
+      void rigeneraSito()
+    },
+
+    async collegaCorsiSito(id, corsi) {
+      ok(await db.rpc('salva_corsi_sito', { p_id: id, p_corsi: corsi }))
+      // Cambia l'orario del sito, non il testo della pagina: il sito si rigenera lo stesso.
       void rigeneraSito()
     },
 

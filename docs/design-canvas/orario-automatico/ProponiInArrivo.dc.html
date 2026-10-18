@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA · l’avviso «Orario in arrivo»: la rete di sicurezza del pannello SITO. Compare quando una pagina collegata sta per mostrare la riga unica. La parola della scheda corso per «ricorrenza finita» è «data di fine». -->
+<div style="display:flex;width:1440px;min-height:1000px;background:#eef5fa;color:#0d2a3d">
+  <div style="width:240px;flex-shrink:0">
+    <dc-import name="Menu" tema="sito" attiva="SITO" numeri="RICHIESTE ONLINE:3, PRESENZE ISTRUTTORI:2" nome="Marco Rossi" ruolo="Segreteria" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display:flex;flex-direction:column;gap:18px;flex:1;min-width:0;padding:28px 36px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <h1 style="margin:0;font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-size:34px;font-weight:800;letter-spacing:0.04em;line-height:1;text-transform:uppercase">Autodifesa</h1>
+        <span style="font-size:14px;color:#46606f">SITO · PAGINE · pubblicata il 3 ottobre</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px"><span style="display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:6px;border:1.5px solid #0b7a33;background:#ffffff;color:#0b7a33;font-size:13px;font-weight:600;white-space:nowrap">Collegata a 1 corso</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start"><div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+  <div style="display:flex;align-items:flex-end;min-height:110px;padding:18px 22px;border-radius:6px;background:#14709f;color:#ffffff"><span style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:38px;line-height:1;text-transform:uppercase">Autodifesa</span></div>
+  <div style="display:flex;flex-direction:column;gap:8px;padding:18px 22px;border-radius:6px;background:#ffffff"><span style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:26px;text-transform:uppercase">Per chi è</span><span style="font-size:16px;line-height:1.5">Bambine e bambini <b>dal 2019 in poi</b>. Si prova con la prima lezione gratuita. [DA CONFERMARE: testo d’esempio]</span></div>
+  <div style="display:flex;flex-direction:column;gap:8px;padding:18px 22px;border-radius:6px;background:#ffffff"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:26px;text-transform:uppercase">Orari</span><span style="display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:6px;border:1.5px solid #8f6a00;background:#ffffff;color:#8f6a00;font-size:13px;font-weight:600;white-space:nowrap">Orario in arrivo</span></div><div style="padding:20px 22px;border-radius:6px;background:#cfe6f4;color:#0d2a3d;font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:32px;line-height:1;text-transform:uppercase">Orario in arrivo</div></div>
+</div><aside style="display:flex;flex-direction:column;gap:14px;padding:14px;border-radius:6px;background:#eef5fa;border:2px solid #cfe6f4;min-width:0">
+  <div style="display:flex"><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border-bottom:4px solid #14709f;font-size:15px;font-weight:700">Impostazioni</span><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border-bottom:2px solid #cfe6f4;font-size:15px;font-weight:500;color:#46606f">Elenco</span></div>
+  
+    <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="Titolo per Google" valore="Autodifesa a Collegno" hint-size="100%,72px"></dc-import>
+    <div role="alert" style="display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:6px;border:2px solid #8f6a00;background:#ffffff"><span style="font-size:15px;font-weight:700;color:#8f6a00"><span aria-hidden="true">! </span>Il sito mostrerà «Orario in arrivo»</span><span style="font-size:14px;line-height:1.4;color:#0d2a3d">Il corso «Autodifesa» non ha giorni in CORSI, oppure tutte le sue ricorrenze hanno la data di fine passata. Finché non ne aggiungi una, la pagina non ha orari.</span><span style="display:inline-flex;align-items:center;min-height:44px;font-size:15px;font-weight:600;color:#14709f;text-decoration:underline">Apri il corso in CORSI ›</span></div>
+    <div style="display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:6px;background:#ffffff"><span style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#46606f">Collegata al corso</span><div style="display:flex;flex-wrap:wrap;gap:8px"><span style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 6px 0 12px;border-radius:6px;border:2px solid #14709f;background:#ffffff;font-size:15px;font-weight:600">Autodifesa<span aria-label="Scollega Autodifesa" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;font-size:18px">✕</span></span></div></div>
+    <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="sola-lettura" etichetta="Orario (scritto a mano)" valore="Ora vale CORSI · Giovedì · 20:00–21:00" hint-size="100%,88px"></dc-import>
+    <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#46606f">Così lo vede il sito</span><div style="padding:12px;border-radius:6px;background:#eef5fa;border:1px solid #cfe6f4"><div style="padding:14px 16px;border-radius:6px;background:#cfe6f4;color:#0d2a3d;font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:24px;line-height:1;text-transform:uppercase">Orario in arrivo</div></div><span style="font-size:14px;line-height:1.4;color:#46606f">Giorno, ora e durata. Mai sala, istruttore o posti.</span></div>
+    <span style="font-size:14px;line-height:1.4;color:#46606f">Mai orari vecchi: un corso archiviato, senza giorni o con tutte le ricorrenze finite mostra una riga sola.</span>
+    <span style="font-size:14px;line-height:1.4;color:#46606f">Si aggiorna da solo: un cambio in CORSI arriva sul sito entro 5 minuti, senza premere Pubblica.</span>
+</aside></div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

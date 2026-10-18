@@ -860,6 +860,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
+    async collegaCorsiSito(id, corsi) {
+      const sito = await sitoProva()
+      a().sito = sito.collegaCorsi((a().sito ??= sito.sitoIniziale()), id, corsi, a().corsi.map((x) => x.id))
+      salva()
+    },
+
     async cancellaPaginaSito(id) {
       const sito = await sitoProva()
       a().sito = sito.cancella((a().sito ??= sito.sitoIniziale()), id)
