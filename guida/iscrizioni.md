@@ -49,8 +49,10 @@ Chi si iscrive risponde alle domande dal telefono:
   ogni corso ci sono età e orari del listino. Scritta la data di nascita, i
   corsi giusti per quell'anno vengono per primi, sotto **PER LA SUA ETÀ** (anche se si è nati nei sei
   mesi prima o dopo gli anni del corso); sotto **SENZA FASCIA D'ETÀ**
-  quelli per cui il listino non dice gli anni, e sotto **ALTRI CORSI** quelli
-  di un'altra età: si possono scegliere lo stesso, e un avviso giallo dice
+  quelli per cui il listino non dice gli anni. I corsi di un'altra età stanno
+  chiusi dietro **+ ALTRI N CORSI, NON PER LA SUA ETÀ**: un tocco e compaiono
+  sotto **ALTRI CORSI** (restano aperti se ne hai già scelto uno). Si possono
+  scegliere lo stesso, e un avviso giallo dice
   quali sono e che la segreteria richiama. Un corso che il listino non ha
   ancora (senza prezzo) si sceglie lo stesso, e sotto il nome c'è scritto
   «prezzo da confermare».

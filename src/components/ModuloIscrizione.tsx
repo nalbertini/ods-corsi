@@ -5,7 +5,7 @@ import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codice
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
-import { corsiPerEta, type CorsoPerEta, type CorsoRef } from '../lib/listino'
+import { altriAperti, corsiPerEta, testoAltriCorsi, type CorsoPerEta, type CorsoRef } from '../lib/listino'
 import { causale, stimaIscrizione, type Abbonamento } from '../lib/nucleo'
 import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
@@ -100,6 +100,8 @@ type Fase = { tipo: 'compila' } | { tipo: 'invio'; passo: string } | { tipo: 'fi
 export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZIONI' }: { onChiudi: () => void; nucleo?: PerIlNucleo; torna?: string }) {
   const [d, setD] = useState<DatiRichieste | null>(null)
   const [corsi, setCorsi] = useState<CorsoAperto[] | null>(null)
+  // Gli «altri corsi» (non per la sua età) si aprono con un tasto.
+  const [altriApertiAMano, setAltriApertiAMano] = useState(false)
   const [guaioCorsi, setGuaioCorsi] = useState<string | null>(null)
   // Com'era all'apertura: INDIETRO chiede solo se c'è qualcosa di nuovo.
   const [inizio] = useState<DatiRichiesta>(() => ({ ...VUOTO, ...nucleo?.dati }))
@@ -182,6 +184,11 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const listino = useListino()?.listino
   const perEta = corsiPerEta(corsi ?? [], listino?.corsi ?? [], natoIl, listino?.senzaPrezzoVaBene)
   const fuoriEta = perEta.altri.filter((c) => b.corsi.includes(c.id)).map((c) => c.nome)
+  const altriVisibili = altriAperti(altriApertiAMano, perEta.altri, b.corsi)
+  // Aperto da un corso fuori età scelto, resta aperto anche se lo si toglie: l'elenco non si richiude sotto il dito.
+  useEffect(() => {
+    if (altriVisibili) setAltriApertiAMano(true)
+  }, [altriVisibili])
   const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined })
   const certificato = certificatoDaPortare(
     natoIl,
@@ -518,19 +525,24 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
               />
             </>
           )}
-          {perEta.altri.length > 0 && (
-            <>
-              <span className="modulo-etichetta modulo-altri">ALTRI CORSI</span>
-              <SceltaCorsi
-                id="m-corsi-altri"
-                etichetta="Altri corsi"
-                voci={perEta.altri.map(tasto)}
-                scelti={b.corsi}
-                onScegli={scegli}
-                descritto={nota('corsi') ? 'm-corsi-nota' : undefined}
-              />
-            </>
-          )}
+          {perEta.altri.length > 0 &&
+            (altriVisibili ? (
+              <>
+                <span className="modulo-etichetta modulo-altri">ALTRI CORSI</span>
+                <SceltaCorsi
+                  id="m-corsi-altri"
+                  etichetta="Altri corsi"
+                  voci={perEta.altri.map(tasto)}
+                  scelti={b.corsi}
+                  onScegli={scegli}
+                  descritto={nota('corsi') ? 'm-corsi-nota' : undefined}
+                />
+              </>
+            ) : (
+              <button type="button" className="btn btn-dashed passo-btn" onClick={() => setAltriApertiAMano(true)}>
+                {testoAltriCorsi(perEta.altri.length, 'sua')}
+              </button>
+            ))}
           {/* Sotto il gruppo da cui nasce, così il tasto appena toccato non scende sotto il dito; letto da chi usa un lettore di schermo. */}
           <div aria-live="polite">{fuoriEta.length > 0 && (
               <Dettaglio tono="avviso">
