@@ -80,6 +80,8 @@ ok('c\'è la finestra, con la sua barra in alto', /\.sg-finestra\s*\{[^}]*border
 ok('il corpo scorre e il piede resta (la finestra è una colonna)', /\.sg-finestra\s*\{[^}]*flex-direction:\s*column/.test(css) && /\.sg-finestra-corpo\s*\{[^}]*overflow-y:\s*auto/.test(css), true)
 ok('la finestra sta sopra il suo velo (se no il velo prende i clic)', [/\.sg-finestra-velo\s*\{[^}]*z-index:\s*0/.test(css), /\.sg-finestra\s*\{[^}]*z-index:\s*1/.test(css)], [true, true])
 ok('sul telefono la testa non va a capo: il ✕ resta con PRECEDENTE e SUCCESSIVA', /@media \(max-width: 767px\)[^@]*\.sg-finestra-testa\s*\{[^}]*flex-wrap:\s*nowrap/.test(css.replace(/\n/g, ' ')), true)
+ok('sul telefono PRECEDENTE e SUCCESSIVA sono frecce: il nome sparisce e i tasti stanno su una riga', [/@media \(max-width: 767px\)[^@]*\.sg-finestra-nome\s*\{[^}]*display:\s*none/.test(css.replace(/\n/g, ' ')), /\.sg-finestra-testa \.sg-btn\s*\{[^}]*white-space:\s*nowrap/.test(css), /className="sg-finestra-nome"/.test(comune)], [true, true, true])
+ok('un tasto disabilitato della testa si vede spento (non come premuto)', /\.sg-finestra-testa \.sg-btn:disabled\s*\{[^}]*opacity/.test(css), true)
 ok('a una colonna i campi che occupano due colonne tornano a una (se no si sovrappongono)', /@media \(max-width: 1000px\)\s*\{\s*\.sg-tre > \* \{[^}]*grid-column:\s*auto/.test(css), true)
 ok('sul telefono la finestra prende tutto lo schermo', /@media \(max-width: 767px\)\s*\{[^}]*\.sg-finestra\s*\{/.test(css.replace(/\n/g, ' ')), true)
 

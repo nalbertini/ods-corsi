@@ -2213,7 +2213,10 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 }
 .sg-finestra:focus { outline: none; }
 .sg-finestra-testa { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 20px; border-bottom: 2px solid var(--line-soft); }
-.sg-finestra-posizione { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); }
+.sg-finestra-posizione { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); white-space: nowrap; }
+.sg-finestra-testa .sg-btn { white-space: nowrap; }
+/* Ai capi dell'elenco il tasto non fa niente: spento, non come un tasto premuto. */
+.sg-finestra-testa .sg-btn:disabled { opacity: 0.4; background: transparent; cursor: default; }
 .sg-finestra-corpo { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
 /* La scheda dentro la finestra non ha una cornice sua: la finestra ha già bordo e barra in alto. */
 .sg-finestra .sg-scheda { position: static; flex-grow: 1; border: 0; }
@@ -2226,7 +2229,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-finestra { width: 100%; border-left: 0; border-right: 0; border-bottom: 0; }
   .sg-finestra-radice { left: 0; padding: 0; }
   .sg-finestra-testa { padding: 10px 14px; flex-wrap: nowrap; gap: 6px; }
-  .sg-finestra-testa .sg-btn { min-width: 0; padding: 0 10px; letter-spacing: 0.06em; }
+  .sg-finestra-testa .sg-btn { min-width: 0; padding: 0 14px; }
+  .sg-finestra-nome { display: none; }
 }
 .sg-scheda-piena { position: static; gap: 24px; padding: 24px 28px; }
 .sg-scheda-campi { max-width: 720px; }

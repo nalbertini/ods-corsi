@@ -434,16 +434,16 @@ export function SchedaPiena({
         <div className="sg-finestra-testa">
           {passaggio && (
             <>
-              <button type="button" className="sg-btn sg-btn-linea" disabled={!passaggio.onPrecedente} onClick={passaggio.onPrecedente}>
-                ‹ Precedente
+              <button type="button" className="sg-btn sg-btn-linea" aria-label="Precedente" disabled={!passaggio.onPrecedente} onClick={passaggio.onPrecedente}>
+                ‹<span className="sg-finestra-nome"> Precedente</span>
               </button>
               {passaggio.posizione && (
                 <span className="num sg-finestra-posizione" aria-live="polite">
                   {passaggio.posizione}
                 </span>
               )}
-              <button type="button" className="sg-btn sg-btn-linea" disabled={!passaggio.onSuccessiva} onClick={passaggio.onSuccessiva}>
-                Successiva ›
+              <button type="button" className="sg-btn sg-btn-linea" aria-label="Successiva" disabled={!passaggio.onSuccessiva} onClick={passaggio.onSuccessiva}>
+                <span className="sg-finestra-nome">Successiva </span>›
               </button>
             </>
           )}
