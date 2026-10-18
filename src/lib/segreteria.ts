@@ -17,6 +17,7 @@ import { nomeProprio, paroleCercate, somiglia } from './nomi'
 import type { SegnalataVista } from './segnalate'
 import type { Categoria, Segnalazione } from './segnalazioni'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
+import type { PezziPagina } from './sitoPezzi'
 import type { ImmagineSito } from './sitoImmagini'
 
 export type { ListaMusica } from './musica'
@@ -559,10 +560,12 @@ export interface DatiSegreteria {
   sitoPagine(): Promise<PaginaSito[]>
   /** Il menu in alto e il footer del sito. */
   sitoMenu(): Promise<{ menu: VoceMenu[]; footer: VoceMenu[] }>
-  /** Una pagina nuova, solo bozza; dice il suo id. */
-  nuovaPaginaSito(titolo: string, slug: string): Promise<string>
+  /** Una pagina nuova, solo bozza; dice il suo id. Con `pezzi` nasce a pezzi (serve `62-sito-pezzi.sql`). */
+  nuovaPaginaSito(titolo: string, slug: string, pezzi?: PezziPagina): Promise<string>
   /** Salva la bozza; `versione` è quella che si aveva in mano, e dice la nuova. Se nel frattempo è cambiata lancia un errore. */
   salvaBozzaSito(id: string, versione: number, dati: { titolo: string; descrizione: string; bozza: string }): Promise<number>
+  /** Come `salvaBozzaSito` per una pagina a pezzi: salva i pezzi e il testo piatto che ne esce. */
+  salvaBozzaPezziSito(id: string, versione: number, dati: { titolo: string; descrizione: string; pezzi: PezziPagina }): Promise<number>
   /** La bozza diventa il testo del sito. Dice la nuova versione. */
   pubblicaPaginaSito(id: string, versione: number): Promise<number>
   /** Cambia l'indirizzo; il vecchio porta al nuovo. */

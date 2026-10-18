@@ -315,6 +315,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from storage.buckets where id = 'sito' and public)
     and (select count(*) from pg_policies where schemaname = 'storage' and tablename = 'objects'
            and (qual like '%''sito''%' or with_check like '%''sito''%')
-           and cmd in ('INSERT', 'SELECT', 'DELETE') and roles = '{authenticated}') = 3)
+           and cmd in ('INSERT', 'SELECT', 'DELETE') and roles = '{authenticated}') = 3),
+  ('62-sito-pezzi.sql', 'le pagine del sito a pezzi: la struttura salvata accanto alla bozza, scritta solo dalla segreteria',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'sito_pagine' and column_name = 'bozza_pezzi')
+    and to_regprocedure('public.salva_bozza_pezzi_sito(uuid,integer,text,text,text,jsonb)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

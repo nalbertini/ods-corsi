@@ -20,6 +20,29 @@ il footer in fondo. Quello che scrivi resta **bozza** finché non premi
 trattini: «Chi siamo» diventa `chi-siamo`). Si può cambiare. Un indirizzo già
 usato, o uno che serve al sito (`admin`, `api`, `privacy`…), non va.
 
+**NUOVA PAGINA** crea una pagina **a pezzi**. Le pagine che c'erano prima (la
+Home, i corsi, le pagine di legge) si scrivono ancora come ti ricordi, con il
+testo solo: passeranno ai pezzi più avanti.
+
+Una pagina a pezzi si compone con le parti che metti in fila:
+
+- **+ FOTO IN CIMA**: una foto sola, sempre in alto.
+- **+ TESTO**: un testo, con gli stessi tasti di sempre (qui sotto).
+- **+ FOTO**: una foto, col suo testo alternativo (o «solo decorativa»).
+- **+ COLONNE**: da due a tre colonne di testo, una accanto all'altra. Sul telefono
+  si mettono una sotto l'altra. Una colonna lasciata vuota non compare sul sito.
+
+Le parti si mettono dopo quella scelta, o in fondo. Per cambiare l'ordine si
+trascina la parte, oppure si sceglie e si premono **SU** o **GIÙ**; **TOGLI** la
+toglie dalla pagina. Le tessere, le domande e le citazioni a scorrimento si
+formano da sole dal testo, come per ogni pagina (vedi «Come il testo diventa
+tessere»). **ANTEPRIMA** mostra la pagina come il sito la farà, con le
+tessere; il carattere del sito e il logo si vedono solo sul sito vero.
+
+Se compare «Le pagine a pezzi non sono ancora attive sul database», va
+lanciato `62-sito-pezzi.sql` (lo fa chi cura l'app): finché non c'è, le pagine
+nuove si scrivono col testo solo.
+
 Toccando una pagina si apre per scriverla:
 
 - Il testo ha i tasti **TITOLO**, **SOTTOTITOLO**, **G** (grassetto), **C**
@@ -37,7 +60,7 @@ Toccando una pagina si apre per scriverla:
   Titolo e descrizione compaiono anche nell'anteprima di quando qualcuno
   condivide la pagina (WhatsApp, Facebook, Instagram), con l'immagine del sito.
 - **SALVA BOZZA** salva senza cambiare il sito. **ANTEPRIMA** mostra com'è
-  scritta; **TORNA A SCRIVERE** la richiude.
+  scritta (nelle pagine a pezzi, com'è sul sito); **TORNA A SCRIVERE** la richiude.
 - **PUBBLICA** salva la bozza, se serve, e la rende il testo del sito. Se
   nel frattempo qualcun altro ha cambiato la pagina, non scrive niente e lo
   dice: ricaricala per vedere le sue modifiche, poi rifai la tua.

@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «sito a pezzi»: la parte ELENCO DEI CORSI. Si sceglie l'area (come in CORSI); il sito mostra nome, età e giorni
+     dei corsi di quell'area, presi dall'app nel momento in cui si pubblica. La frase gialla dice, accanto alla parte e non
+     in una guida, che il sito si aggiorna da solo dopo circa dieci minuti: cambiare un orario nell'app non cambia il sito
+     finché non si pubblica. Dati inventati. -->
+<div style="display: flex; flex-direction: column; gap: 20px; width: 1440px; min-height: 900px; padding: 36px; background: #121212">
+  <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">ELENCO DEI CORSI</h1>
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <dc-import name="Titoletto" label="COME SARÀ SUL SITO" tema="scuro" hint-size="100%,28px"></dc-import>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 16px; border: 2px solid #333333; background: #1c1c1c"><b style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 22px; letter-spacing: 0.06em">PRE PUGILISTICA</b><span style="font-size: 15px; color: #8c8c88">Dal 2015 in poi</span><span style="font-size: 15px">Lunedì e giovedì, 17:30</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 16px; border: 2px solid #333333; background: #1c1c1c"><b style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 22px; letter-spacing: 0.06em">BOXE RAGAZZI</b><span style="font-size: 15px; color: #8c8c88">Dal 2010 al 2014</span><span style="font-size: 15px">Martedì e venerdì, 18:30</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 16px; border: 2px solid #333333; background: #1c1c1c"><b style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 22px; letter-spacing: 0.06em">JUDO BAMBINI</b><span style="font-size: 15px; color: #8c8c88">Dal 2017 al 2019</span><span style="font-size: 15px">Mercoledì, 17:00</span></div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="QUALI CORSI" valore="Solo i corsi dei ragazzi" tema="scuro" hint-size="100%,72px"></dc-import>
+      <dc-import name="Campo" contesto="segreteria" etichetta="TITOLO SOPRA L'ELENCO" valore="I corsi dei ragazzi" tema="scuro" hint-size="100%,72px"></dc-import>
+      <span style="padding: 12px 14px; border: 2px solid #f4c31b; color: #f4c31b; font-size: 15px; line-height: 1.4">I corsi si leggono dall'app quando premi PUBBLICA. Se cambi un orario o un corso dopo, il sito lo mostra solo alla prossima pubblicazione, circa dieci minuti dopo.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
