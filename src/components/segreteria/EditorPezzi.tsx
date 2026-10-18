@@ -81,8 +81,8 @@ function useStoria() {
   return { storia, indietro: con(() => storia.back()), avanti: con(() => storia.forward()) }
 }
 
-/** L'altezza della barra (una riga di tasti da 44px, il bordo e il respiro): meno spazio di così sopra il pezzo e la barra non ci sta. Misura a occhio, non provata senza browser. */
-const SPAZIO_BARRA = 72
+/** L'altezza della barra: una riga di tasti da 44px sul telefono, due dai 900px (come `.sito-barra-caja` in styles.css), più il bordo e il respiro. Meno spazio di così sopra il pezzo e la barra non ci sta. Misura a occhio, non provata senza browser. */
+const spazioBarra = () => (window.matchMedia('(min-width: 900px)').matches ? 116 : 72)
 
 /**
  * Un pezzo di testo (TESTO: una colonna sola; COLONNE: due o tre affiancate) scritto nella pagina. Finché il pezzo non è
@@ -131,7 +131,7 @@ function PezzoTesto({ d, id, colonne }: { d: DatiSegreteria; id: string; colonne
     const pagina = el?.closest('.sito-pezzi-pagina')
     if (!attivo || !el || !(pagina instanceof HTMLElement)) return
     const sopra = el.getBoundingClientRect().top - pagina.getBoundingClientRect().top + pagina.scrollTop - parseFloat(getComputedStyle(pagina).paddingTop)
-    setInCima(sopra < SPAZIO_BARRA)
+    setInCima(sopra < spazioBarra())
   }, [attivo, contenuto.length])
   // Il testo si dà a Puck con `replace`, un passo solo per ANNULLA e RIFAI (come per la foto).
   const scrivi = (i: number) => (html: string) => {

@@ -3153,6 +3153,10 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* La barra è una riga sola che scorre di lato: due o tre righe coprirebbero il pezzo di sopra, e sul telefono mezzo schermo. */
 .sito-barra-caja .sito-barra { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 6px; }
 .sito-barra-caja .sito-tasto { flex-shrink: 0; }
+/* Sullo schermo largo i tasti stanno tutti in vista, su due righe (come nel design approvato): nessuno nascosto da scorrere di lato. */
+@media (min-width: 900px) {
+  .sito-barra-caja .sito-barra { flex-wrap: wrap; overflow-x: visible; padding-bottom: 0; }
+}
 /* La linguetta di Puck (nome, copia, togli) è una sola, sul bordo alto del pezzo scelto, e coprirebbe la barra: con un testo scelto Togli, Su e Giù sono già in alto. */
 .sito-pezzi:has(.sito-pezzo[data-scelto]) [class*='DraggableComponent-actionsOverlay'] { display: none; }
 @media (max-width: 600px) {
