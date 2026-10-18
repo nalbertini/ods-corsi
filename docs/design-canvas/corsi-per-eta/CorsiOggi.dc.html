@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Corsi oggi</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- OGGI sul telefono: nove schede alte circa 500 px una dopo l'altra (circa 4.600 px in tutto), senza gruppi né ancore. Qui le prime due. -->
+<div style="width: 375px; min-height: 812px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+<dc-import name="SitoTestata" logo="logo.webp" attiva="I corsi" prova="Prova una settimana a 5 €" piccolo="{{ true }}" hint-size="100%,96px"></dc-import><div style="padding:24px 16px 0"><h2 style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;margin:0 0 16px;font-size:56px;line-height:.9">I nostri corsi</h2></div><div style="padding:6px 16px 0"><dc-import name="SitoSchedaCorso" titolo="Judo" eta="Dai 7 anni agli adulti" testo="Tecnica, disciplina e rispetto per crescere sul tatami, dai primi passi fino alle gare." tag="Bambini|Adulti|Agonisti" tono="blu" foto="" alt="" alta="200px" hint-size="100%,440px"></dc-import></div><div style="padding:6px 16px 0"><dc-import name="SitoSchedaCorso" titolo="Lotta" eta="Dai 7 anni agli adulti" testo="Gioco, movimento e rispetto per crescere insieme, dalla prima prova alla gara." tag="Bambini|Adulti|Agonisti" tono="giallo" foto="" alt="" alta="200px" hint-size="100%,440px"></dc-import></div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -117,7 +117,7 @@ console.log('\n3. Numeri, schede, citazioni, recensioni, chiamata finale')
   ok('numeri: alti almeno 150px, 160px sul telefono', [1440, 768, 375].map((w) => px(ultimo(R, /\.numeri \.tessera$/, 'min-height', w), w)), [150, 160, 160])
   ok('numeri: 2 colonne sul telefono', [768, 375].map((w) => /repeat\(2/.test(ultimo(R, /\.numeri$/, 'grid-template-columns', w) ?? '')), [true, true])
   ok('numeri: 4 colonne sul computer', /repeat\(4|(1fr\s*){4}/.test(ultimo(R, /\.numeri$/, 'grid-template-columns', 1440) ?? ''), true)
-  ok('foto della scheda: 240px a 1440, 230px a 768, 220px a 375 (clamp(220px,30vw,240px))', W.map((w) => px(ultimo(R, /\.scheda-foto$/, 'height', w), w)), [240, 230, 220])
+  ok('foto della scheda: 240px a 1440, 230px a 768, 220px a 375 (clamp(220px,30vw,240px))', W.map((w) => px(ultimo(R, /^\.scheda-foto$/, 'height', w), w)), [240, 230, 220])
   ok('scheda senza foto: sul telefono è alta 120px', [768, 375].map((w) => px(ultimo(R, /\.scheda-foto\.senza-foto$/, 'height', w), w)), [120, 120])
   const col = (w) => ultimo(R, /\.tessere\.n-9$|\.tessere\.corsi$|\.tessere\.schede$/, 'grid-template-columns', w) ?? ''
   ok('schede: 3 colonne dal computer (901px), 1 colonna sotto', [1440, 901].map((w) => /repeat\(3|(1fr\s*){3}/.test(col(w))).concat([768, 375].map((w) => /^(1fr|repeat\(1,)/.test(col(w)))), [true, true, true, true])

@@ -256,12 +256,12 @@ const CSS_HOME = `
 .scheda-foto img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;border-radius:0}
 .scheda-foto.senza-foto{display:flex;align-items:center;justify-content:center;background:var(--chiara);color:var(--inchiostro);font-family:var(--display);font-weight:800;line-height:1}
 .scheda-foto.senza-foto span{font-size:96px}
-.passo-unico .scheda h3{margin:24px 72px 0 24px;font-size:clamp(36px,3.6vw,52px);line-height:.95;display:block}
-.passo-unico .scheda h3 a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none}
-.passo-unico .scheda h3 a::before{content:"";position:absolute;inset:0}
-.passo-unico .scheda h3 a:focus-visible{outline:none}
+.passo-unico .scheda h3,.passo-unico .scheda h4{margin:24px 72px 0 24px;font-size:clamp(36px,3.6vw,52px);line-height:.95;display:block}
+.passo-unico .scheda h3 a,.passo-unico .scheda h4 a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none}
+.passo-unico .scheda h3 a::before,.passo-unico .scheda h4 a::before{content:"";position:absolute;inset:0}
+.passo-unico .scheda h3 a:focus-visible,.passo-unico .scheda h4 a:focus-visible{outline:none}
 .passo-unico .scheda:has(a:focus-visible){outline:3px solid var(--blu);outline-offset:3px}
-.passo-unico .scheda h3::after{content:"↗\uFE0E";position:absolute;top:16px;right:16px;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:#fff;color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:24px;font-weight:600;line-height:1}
+.passo-unico .scheda h3::after,.passo-unico .scheda h4::after{content:"↗\uFE0E";position:absolute;top:16px;right:16px;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:#fff;color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:24px;font-weight:600;line-height:1}
 .passo-unico .scheda p{margin:10px 24px 0;font-size:17px;line-height:1.45;max-width:none}
 .passo-unico .scheda p.eta{margin-top:4px;font-size:16px;font-weight:700}
 .passo-unico .scheda .pastiglie{display:flex;flex-wrap:wrap;gap:6px;margin:auto 0 0;padding:20px 24px 24px;list-style:none}
@@ -297,12 +297,32 @@ const CSS_HOME = `
 .cta-foto{margin:0;min-height:440px;overflow:hidden;border-radius:0 6px 6px 0}
 .cta-foto img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 25%;border-radius:0}
 .passo-unico + .piede{margin-top:24px}
+.ancore-corsi{display:flex;flex-wrap:wrap;gap:6px}
+.passo-unico .sezione>.ancore-corsi{margin-top:24px}
+.ancore-corsi .ancora{display:inline-flex;align-items:center;min-height:48px;padding:0 16px;border-radius:999px;background:var(--chiara);color:var(--inchiostro);font-size:16px;font-weight:600;text-decoration:none}
+.gruppo-corsi{scroll-margin-top:16px}
+.passo-unico .sezione>.gruppo-corsi{margin-top:48px}
+.gruppo-corsi>h3{margin:0 0 20px;font-size:clamp(40px,4.4vw,64px);line-height:.9}
+.gruppo-corsi>h3 span{font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:clamp(16px,1.4vw,20px);font-weight:600;text-transform:none}
+.gruppo-corsi .tessere.schede{grid-template-columns:repeat(3,minmax(0,1fr))}
 .barra-prova{display:none}
 @media (max-width:900px){
 .barra-prova{display:flex;gap:8px;position:sticky;bottom:0;z-index:5;margin-top:48px;padding:12px var(--margine) calc(12px + env(safe-area-inset-bottom));background:var(--inchiostro);box-shadow:0 -6px 18px rgba(13,42,61,.22)}
 .barra-prova .pulsante{min-height:56px;padding:0 16px;font-size:17px}
 .barra-prova .primario{flex:3}
 .barra-prova .secondario{flex:2;color:#fff;border-color:#fff}
+.passo-unico .sezione>.gruppo-corsi{margin-top:32px}
+.gruppo-corsi>h3{margin-bottom:12px}
+.gruppo-corsi .tessere.schede{grid-template-columns:1fr}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto){display:grid;grid-template-columns:80px minmax(0,1fr);align-content:center;min-height:104px}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) .scheda-foto{grid-column:1;grid-row:1 / span 3;height:auto;min-height:104px;position:relative}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) .scheda-foto img{position:absolute;inset:0}
+.passo-unico .gruppo-corsi .scheda-foto.senza-foto span{font-size:48px}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) h3,.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) h4{grid-column:2;margin:12px 56px 0 16px;font-size:22px}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) h3::after,.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) h4::after{top:50%;right:12px;width:40px;height:40px;margin-top:-20px;font-size:20px}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) p.eta{grid-column:2;margin:4px 56px 0 16px;font-size:15px}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) p:not(.eta){grid-column:2;margin:2px 56px 12px 16px;font-size:15px;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) .pastiglie{display:none}
 .passo-unico .pagina-hero{grid-template-columns:1fr;gap:32px;padding:20px var(--margine) 0}
 .passo-unico .intro h1{margin-bottom:24px}
 .passo-unico .intro p{font-size:18px;margin-bottom:24px}
