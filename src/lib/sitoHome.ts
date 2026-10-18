@@ -14,15 +14,15 @@ import { PILLOLE, blocchi, coloreDi, conCaricamento, contenuto, gruppiDa, grigli
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
 /** Stesso indirizzo anche scritto con http, con www o senza «/» in fondo: una svista della segreteria non deve lasciare la vecchia Home senza dirlo. */
-const eIscrizione = (href: string, iscrizione: string) => {
+export const eIscrizione = (href: string, iscrizione: string) => {
   const forma = (u: string) => u.trim().toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '')
   return forma(href) === forma(iscrizione)
 }
 
-interface Link { href: string; resto: string; testo: string }
+export interface Link { href: string; resto: string; testo: string }
 
 /** I link `a.pulsante` di un blocco `p` fatto solo di pulsanti (spazi a parte); altrimenti null. */
-function pulsantiDi(b: Blocco): Link[] | null {
+export function pulsantiDi(b: Blocco): Link[] | null {
   if (b.tag !== 'p') return null
   const dentro = contenuto(b)
   const a = [...dentro.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)]
@@ -106,7 +106,7 @@ const intro = (b: Blocco[]) => {
   return p ? `<div class="colonna">${p}</div>` : ''
 }
 
-function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, iscrizione: string): string {
+export function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, iscrizione: string): string {
   const h2 = `<h2>${titolo}</h2>`
   const primo = corpo.findIndex((x) => x.tag === 'h3')
   const citazioni = corpo.filter((x) => x.tag === 'blockquote')

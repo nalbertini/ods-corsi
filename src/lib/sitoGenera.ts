@@ -6,6 +6,7 @@ import { CSS_CORSI } from './sitoCorsi'
 import { CSS_INTERNE } from './sitoInterne'
 import { cssFoci, cssFociSchede } from './sitoFoto'
 import { eHomeNuova, homeNuova } from './sitoHome'
+import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
 import { CONTATTI } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
 
@@ -949,6 +950,7 @@ function classeTitolo(titolo: string): string {
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
   if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, conContatti, pulito)
+  if (p.slug === 'chi-siamo' && !p.diLegge && eChiSiamoNuova(pulito, TESTI.iscrizione)) return paginaChiSiamoNuova(p, c, conContatti, pulito)
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
   // La pagina di un corso (foto, dati, presentazione prima del primo h2) ha la sua testata; le regole stanno in `main.corso`.
@@ -977,6 +979,16 @@ function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, p
   const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati })
+}
+
+/** La Chi siamo nuova (sitoChiSiamo.ts): le regole della Home più le sue, dopo. Senza la chiamata finale nel testo resta l'invito di sempre. */
+function paginaChiSiamoNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+  const h = chiSiamoNuova(pulito, TESTI.iscrizione)
+  const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div></section>`
+  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico chi-siamo-nuova">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
+  // Le regole della pagina vanno in coda al CSS della Home, senza toccare `documento` (condiviso con le altre pagine).
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati }).replace('</head>', () => `<style>${CSS_CHI_SIAMO}</style></head>`)
 }
 
 function nonTrovata(c: Contesto, conContatti: boolean): string {
