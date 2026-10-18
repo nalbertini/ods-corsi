@@ -89,6 +89,7 @@ export function Iscritti({
   onScelta,
   onNuovo,
   filtroIniziale,
+  onCambiato,
 }: {
   d: DatiSegreteria
   /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
@@ -99,6 +100,8 @@ export function Iscritti({
   onScelta: (id: string | null, passo: 'push' | 'replace') => void
   onNuovo: () => void
   filtroIniziale?: Destinazione['filtro']
+  /** Dopo una modifica nella scheda: chi sta sopra (la scheda de «Il Banco») rilegge anche lui. */
+  onCambiato?: () => void
 }) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
@@ -211,7 +214,10 @@ export function Iscritti({
             attivi={attivi}
             f={freq.dato?.get(persona.id)}
             fai={fai}
-            onCambiato={() => void ricarica()}
+            onCambiato={() => {
+              void ricarica()
+              onCambiato?.()
+            }}
             onApri={(id) => {
               setUnisciCon(null)
               onScelta(id, 'push')

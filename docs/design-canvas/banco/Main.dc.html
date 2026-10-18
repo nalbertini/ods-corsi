@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Le note della proposta: cosa cambia, cosa resta, cosa costa, domande aperte. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 1000px; min-height: 1500px; padding: 40px; background: #121212; color: #f2f2f0">
+  <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; font-size: 40px; line-height: 1">IL BANCO · PROPOSTA DI SEGRETERIA</h1>
+  <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #c9c9c4">Una segreteria ridisegnata attorno a quello che fa la reception: una persona davanti, il telefono che suona, una domanda («è in regola?»). Oggi l’app è un menu di 14 voci; qui è una ricerca, cinque luoghi, una giornata e una scheda per persona. Schermate: MAPPA, OGGI, PERSONA, PERSONE, RICERCA, PALESTRA. Dati inventati.</p>
+  <h2 style="margin: 14px 0 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.12em; line-height: 1; color: #f4c31b">COSA CAMBIA, RADICALMENTE</h2>
+  <ul style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.5; color: #c9c9c4">
+    <li><b>Niente menu a sinistra.</b> In alto una ricerca sempre pronta (tasto /) e cinque luoghi: OGGI, PERSONE, CORSI, SOLDI, PALESTRA. Le 13 voci di oggi più IMPOSTAZIONI ci stanno tutte (vedi la MAPPA): OGGI (DA FARE, SETTIMANA, PRESENZE), PERSONE (ISCRITTI, RICHIESTE ONLINE, ISTRUTTORI), CORSI (CORSI, ESERCIZI), SOLDI (DA PAGARE, LISTINO, VESTIARIO, RICEVUTE), PALESTRA (STATISTICHE, SEGNALAZIONI, IMPOSTAZIONI, IMPORTA, TIMER). Ogni luogo ha una seconda riga con le sue voci; LINK, GUIDA e TEMA stanno in cima a ogni pagina.</li>
+    <li><b>Si parte dalla persona, non dalla tabella.</b> Chi telefona o sta al banco si cerca per nome; la scheda mostra in una pagina certificato, quota, presenze, ricevute e famiglia, e dice in una frase cosa blocca e con quale tasto si sblocca.</li>
+    <li><b>La giornata è un tabellone sale × ore.</b> Si vede a colpo d’occhio dove si è e cosa è saltato (appello non fatto in rosso, con segno e parole). Oggi è un elenco per orario.</li>
+    <li><b>Chiaro di default.</b> La reception è illuminata (PRODUCT.md): carta calda, barra scura in cima come segnaletica. Il tema scuro resta, con gli stessi segnali.</li>
+    <li><b>La coda sostituisce DA FARE.</b> Ogni riga è una persona o una lezione con un solo tasto, in ordine di urgenza; i quattro numeri grandi sono i filtri di prima.</li>
+  </ul>
+  <h2 style="margin: 14px 0 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.12em; line-height: 1; color: #f4c31b">COSA NON CAMBIA</h2>
+  <ul style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.5; color: #c9c9c4">
+    <li>Token, font (Saira Condensed e Barlow), raggi a zero, bordi da 2px, i cinque colori del marchio: ogni colore ha ancora un solo significato.</li>
+    <li>Rosso sui tasti solo per ciò che non si annulla (FAI LA RICEVUTA); stato sempre con segno e parola oltre al colore; bersagli da 44px o più.</li>
+    <li>Parole della palestra: appello, prove, quota, ricevuta, famiglia. Nessuna icona decorativa.</li>
+  </ul>
+  <h2 style="margin: 14px 0 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.12em; line-height: 1; color: #f4c31b">COSA COSTA</h2>
+  <ul style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.5; color: #c9c9c4">
+    <li>Cambia il guscio di <code>Segreteria.tsx</code> (menu → barra + ricerca) e nascono tre viste: OGGI, la scheda PERSONA e la ricerca. Le pagine di dettaglio (Corsi, Listino, Importa…) restano com’erano dentro i loro luoghi.</li>
+    <li>La scheda persona oggi è dentro <code>Iscritti.tsx</code> (1605 righe): andrebbe estratta. La regola «cosa blocca questa persona» va in <code>src/lib</code>, con la sua prova.</li>
+    <li>Gli indirizzi <code>#iscritti</code>, <code>#dafare</code>… vanno tenuti come alias, per i segnalibri e la guida.</li>
+  </ul>
+  <h2 style="margin: 14px 0 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.12em; line-height: 1; color: #f4c31b">DOMANDE APERTE</h2>
+  <ul style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.5; color: #c9c9c4">
+    <li>La reception tiene meglio un menu sempre visibile (voci in vista) o la ricerca sempre pronta? Con la tastiera la ricerca è più corta; chi non la usa perde le voci.</li>
+    <li>OGGI col tabellone sale × ore: le sale sono tre. Se diventano di più, a 1280px la griglia sta stretta.</li>
+    <li>Il tema chiaro di default: lo vuole anche chi apre l’app la sera?</li>
+    <li>Telefono (390px): non disegnato. Il tabellone diventa una colonna per ora; la ricerca resta in cima.</li>
+  </ul>
+  <h2 style="margin: 14px 0 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.12em; line-height: 1; color: #f4c31b">COSTRUITO: COSA È DIVERSO DAL DISEGNO</h2>
+  <ul style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.5; color: #c9c9c4">
+    <li>Il luogo aperto ha 4px di <b>testo</b> sotto, non di rosso: DESIGN.md vieta il rosso alla voce attiva. La riga dell’ora nel tabellone è gialla, non rossa.</li>
+    <li>PERSONA: sopra la scheda di sempre ci sono solo la riga «cosa blocca», le presenze e la famiglia; i timbri sono quelli della scheda. Il tasto dice VAI ALLA SCHEDA (fa solo scorrere).</li>
+    <li>PALESTRA apre direttamente STATISTICHE: la pagina a tessere non c’è.</li>
+    <li>La ricerca è quella di sempre (solo persone), non la palette con corsi e azioni.</li>
+    <li>OGGI: sotto la coda, «TUTTO QUELLO CHE C’È DA FARE» apre il DA FARE di sempre, con quello che la coda non mostra. Senza lezioni, la giornata dice «Nessuna lezione oggi».</li>
+    <li>Sotto i 1100px la coda viene prima del tabellone; sotto i 768px resta il menu di sempre.</li>
+    <li>DA PAGARE: i tasti sono a linea (il rosso resta solo sulla coda di OGGI).</li>
+  </ul>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1000,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

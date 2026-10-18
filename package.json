@@ -42,6 +42,7 @@
     "prova:colleghi": "node scripts/prova-colleghi.mjs",
     "prova:vestiario": "node scripts/prova-vestiario.mjs",
     "prova:backup": "node scripts/prova-backup.mjs",
+    "prova:banco": "node scripts/prova-banco.mjs",
     "prova:sql": "bash scripts/prova-sql.sh",
     "prova:comune-cap": "node scripts/prova-comune-cap.mjs"
   },

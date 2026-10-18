@@ -1,0 +1,66 @@
+import type { Voce } from './indirizzoSegreteria'
+
+/**
+ * I cinque luoghi de «Il Banco», con le voci della seconda riga. Sono dati,
+ * non markup: la mappa del design (`docs/design-canvas/banco/Mappa.dc.html`)
+ * e la barra dicono la stessa cosa perché nascono da qui.
+ */
+export type LuogoId = 'oggi' | 'persone' | 'corsi' | 'soldi' | 'palestra'
+
+export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce; nome: string }> }> = [
+  {
+    id: 'oggi',
+    nome: 'OGGI',
+    voci: [
+      { voce: 'dafare', nome: 'OGGI' },
+      { voce: 'settimana', nome: 'SETTIMANA' },
+      { voce: 'presenze', nome: 'PRESENZE' },
+    ],
+  },
+  {
+    id: 'persone',
+    nome: 'PERSONE',
+    voci: [
+      { voce: 'iscritti', nome: 'ISCRITTI' },
+      { voce: 'richieste', nome: 'RICHIESTE ONLINE' },
+      { voce: 'istruttori', nome: 'ISTRUTTORI' },
+      { voce: 'personale', nome: 'ACCESSI' },
+    ],
+  },
+  {
+    id: 'corsi',
+    nome: 'CORSI',
+    voci: [
+      { voce: 'corsi', nome: 'CORSI' },
+      { voce: 'esercizi', nome: 'ESERCIZI' },
+    ],
+  },
+  {
+    id: 'soldi',
+    nome: 'SOLDI',
+    voci: [
+      { voce: 'dapagare', nome: 'DA PAGARE' },
+      { voce: 'ricevute', nome: 'RICEVUTE' },
+      { voce: 'listino', nome: 'LISTINO' },
+      { voce: 'vestiario', nome: 'VESTIARIO' },
+    ],
+  },
+  {
+    id: 'palestra',
+    nome: 'PALESTRA',
+    voci: [
+      { voce: 'statistiche', nome: 'STATISTICHE' },
+      { voce: 'segnalazioni', nome: 'SEGNALAZIONI' },
+      { voce: 'regole', nome: 'IMPOSTAZIONI' },
+    ],
+  },
+]
+
+/** La voce da evidenziare nella seconda riga: le segnalate sono una scheda di PRESENZE, non una voce. */
+export const voceInLista = (voce: Voce): Voce => (voce === 'segnalate' ? 'presenze' : voce)
+
+/** In che luogo sta una voce: da qui la barra sa quale luogo accendere. */
+export function luogoDi(voce: Voce): LuogoId {
+  const lista = voceInLista(voce)
+  return LUOGHI.find((l) => l.voci.some((v) => v.voce === lista))?.id ?? 'oggi'
+}

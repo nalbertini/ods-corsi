@@ -3,6 +3,8 @@ import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, motivoAttiv
 import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
+import { aspettoInUso, useAspetto, type Aspetto } from '../../lib/aspetto'
+import { TELEFONO, useSchermo } from '../../lib/largo'
 import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { StoricoTimer, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
@@ -13,6 +15,7 @@ import { SelectDisciplina } from './TimerPalestra'
 
 /** I gruppi della pagina, da quello che si tocca a inizio stagione a quello che si tocca quasi mai. */
 const GRUPPI = {
+  'imp-aspetto': 'COME VUOI LA SEGRETERIA',
   'imp-stagione': 'LA STAGIONE',
   'imp-sale': 'LE SALE E I TABLET',
   'imp-ricevute': 'LE RICEVUTE',
@@ -36,6 +39,35 @@ function Gruppo({ id, children }: { id: IdGruppo; children: ReactNode }) {
         {GRUPPI[id]}
       </h2>
       <div className="sg-regole">{children}</div>
+    </section>
+  )
+}
+
+const ASPETTI: Array<{ id: Aspetto; nome: string; testo: string }> = [
+  { id: 'oggi', nome: 'COME OGGI', testo: 'Il menu a sinistra, con tutte le voci in vista.' },
+  { id: 'banco', nome: 'IL BANCO', testo: 'La ricerca sempre in cima e cinque luoghi: OGGI, PERSONE, CORSI, SOLDI, PALESTRA.' },
+]
+
+/** La scelta dell'aspetto: vale per questo computer, non per tutta la segreteria, e cambia subito. */
+function ScegliAspetto() {
+  const [aspetto, scegli] = useAspetto()
+  const telefono = useSchermo(TELEFONO)
+  const inUso = aspettoInUso(aspetto, telefono)
+  return (
+    <section aria-label="L'aspetto della segreteria" className="sg-riquadro">
+      <span className="ob sg-riquadro-titolo">L'ASPETTO</span>
+      <div className="row" role="group" aria-label="Aspetto della segreteria" style={{ gap: 8, flexWrap: 'wrap' }}>
+        {ASPETTI.map((a) => (
+          <button key={a.id} type="button" className={`num sg-btn ${aspetto === a.id ? 'sg-btn-pieno' : 'sg-btn-linea'}`} aria-pressed={aspetto === a.id} onClick={() => scegli(a.id)}>
+            {aspetto === a.id ? '✓ ' : ''}
+            {a.nome}
+          </button>
+        ))}
+      </div>
+      <p className="sg-sotto" style={{ margin: 0 }}>
+        {ASPETTI.find((a) => a.id === aspetto)?.testo} La scelta vale solo per questo computer.
+      </p>
+      {inUso !== aspetto && <p className="sg-sotto" style={{ margin: 0 }}>Sul telefono resta il menu di sempre: Il Banco è fatto per lo schermo largo.</p>}
     </section>
   )
 }
@@ -97,6 +129,10 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
         ))}
       </nav>
       {imp.guaio && <Guaio testo={`Le impostazioni non si leggono: ${imp.guaio}`} />}
+
+      <Gruppo id="imp-aspetto">
+        <ScegliAspetto />
+      </Gruppo>
 
       <Gruppo id="imp-stagione">
         <section aria-label="Il calendario" className="sg-riquadro">

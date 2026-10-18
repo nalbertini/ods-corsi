@@ -4,10 +4,17 @@
 
 Le scelte che spettano alla palestra, non al programma.
 
-La pagina ha cinque gruppi: **LA STAGIONE**, **LE SALE E I TABLET**, **LE
+La pagina ha sei gruppi: **COME VUOI LA SEGRETERIA** (qui sotto), **LA STAGIONE**, **LE SALE E I TABLET**, **LE
 RICEVUTE**, **IMPORTA DA EXCEL** (la [guida](importa.md)), **DATI E PRIVACY**. In cima, un tasto per ognuno porta dritto al
 gruppo. Le spiegazioni lunghe di un riquadro stanno dietro **COME
 FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista.
+
+## Come vuoi la segreteria
+
+Due scelte: **COME OGGI**, col menu a sinistra, e **IL BANCO**, con la ricerca in
+cima e cinque luoghi ([la guida](il-banco.md)). Cambia subito, senza
+ricaricare, e vale **solo per questo computer**: un altro computer della
+segreteria resta com'è. Sul telefono resta sempre il menu di sempre.
 
 ## La stagione
 

@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- MAPPA: dove va ogni voce del menu di oggi. Cinque luoghi, ognuno con la sua seconda riga di voci. Proposta «Il Banco»: tema chiaro, niente menu a sinistra, ricerca sempre in cima. Cornice nuova (non Pagina.dc.html), componenti dalla libreria con tema="chiaro"; dati inventati. -->
+<div style="display: flex; flex-direction: column; gap: 22px; width: 1440px; min-height: 760px; padding: 32px 36px; background: #f4f4f1">
+  <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 34px; letter-spacing: 0.04em; line-height: 1">DOVE È FINITO IL MENU</h1>
+  <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #3d3d3a">Le 13 voci di oggi più IMPOSTAZIONI: nessuna sparisce. Sotto, ogni voce nuova con «era» = dove stava.</p>
+  <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px">
+    <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+      <span style="padding-bottom: 8px; border-bottom: 4px solid #e4292a; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.12em">OGGI</span>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">OGGI</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era DA FARE, con la giornata a tabellone</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">SETTIMANA</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era SETTIMANA</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">PRESENZE</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era PRESENZE, con le SEGNALATE dentro come oggi</span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+      <span style="padding-bottom: 8px; border-bottom: 4px solid #e4292a; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.12em">PERSONE</span>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">ISCRITTI</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era ISCRITTI; la scheda è la pagina PERSONA</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">RICHIESTE ONLINE</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era RICHIESTE ONLINE</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">ISTRUTTORI</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era PRESENZE ISTRUTTORI e ISTRUTTORI E ACCESSI, due schede della stessa voce</span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+      <span style="padding-bottom: 8px; border-bottom: 4px solid #1b8ac4; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.12em">CORSI</span>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">CORSI</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era CORSI</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">ESERCIZI</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era ESERCIZI</span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+      <span style="padding-bottom: 8px; border-bottom: 4px solid #16a54a; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.12em">SOLDI</span>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">DA PAGARE</span><span style="font-size: 13px; line-height: 1.35; color: #656561">oggi è un filtro di ISCRITTI: qui è una voce, col numero 37</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">LISTINO</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era LISTINO</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">VESTIARIO</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era VESTIARIO</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">RICEVUTE</span><span style="font-size: 13px; line-height: 1.35; color: #656561">oggi si apre da dentro la scheda; qui l’elenco di tutte</span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+      <span style="padding-bottom: 8px; border-bottom: 4px solid #f4c31b; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.12em">PALESTRA</span>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">STATISTICHE</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era STATISTICHE</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">SEGNALAZIONI</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era SEGNALAZIONI</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">IMPOSTAZIONI</span><span style="font-size: 13px; line-height: 1.35; color: #656561">era il tasto con i cursori in cima</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">IMPORTA DA EXCEL</span><span style="font-size: 13px; line-height: 1.35; color: #656561">oggi si apre da dentro</span></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">TIMER DI SALA</span><span style="font-size: 13px; line-height: 1.35; color: #656561">oggi si apre da dentro</span></div>
+    </div>
+  </div>
+  <span style="margin-top: 8px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; color: #656561; padding-bottom: 8px; border-bottom: 2px solid #d4d4ce">SEMPRE A PORTATA, IN CIMA A OGNI PAGINA</span>
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+    <div style="padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">LA RICERCA ( / )</span><br><span style="font-size: 13px; color: #656561">era CERCA ISCRITTO in cima al menu; ora trova anche corsi e azioni</span></div>
+    <div style="padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">LINK ▾</span><br><span style="font-size: 13px; color: #656561">COPIA LINK ISCRIZIONI e COPIA LINK ORDINI, che erano in fondo al menu</span></div>
+    <div style="padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">GUIDA</span><br><span style="font-size: 13px; color: #656561">apre la pagina della guida del luogo in cui sei</span></div>
+    <div style="padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 17px; letter-spacing: 0.08em">TEMA E UTENTE</span><br><span style="font-size: 13px; color: #656561">chiaro o scuro; chi è dentro e col quale ruolo</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- SOLDI › DA PAGARE: oggi è il filtro DA PAGARE di ISCRITTI; qui è una pagina con la quota, da quanto e il tasto. Il tasto rosso è quello di oggi (FAI LA RICEVUTA, non si annulla). Proposta «Il Banco»: tema chiaro, niente menu a sinistra, ricerca sempre in cima; componenti dalla libreria con tema="chiaro"; dati inventati. -->
+<div style="display: flex; flex-direction: column; width: 1440px; min-height: 960px; background: #f4f4f1">
+  <div style="display: flex; align-items: center; gap: 24px; height: 72px; padding: 0 28px; background: #121212; color: #f2f2f0">
+    <div style="display: flex; flex-direction: column; gap: 2px; width: 170px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 26px; letter-spacing: 0.06em; line-height: 1">ODS CORSI</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 11px; letter-spacing: 0.24em; color: #8c8c88">SEGRETERIA</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; max-width: 560px; height: 48px; padding: 0 16px; background: #ffffff; border: 2px solid #8a8a85; color: #161616">
+      <span style="flex-grow: 1; font-size: 17px; font-weight: 500; color: #656561">Cerca una persona, un corso, una ricevuta</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; padding: 2px 8px; border: 2px solid #8a8a85; color: #656561">/</span>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <dc-import name="Badge" label="DATI DI PROVA" tipo="bollino" hint-size="110px,24px"></dc-import>
+    <span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">LINK ▾</span><span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">GUIDA</span><span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">TEMA</span>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+      <span style="font-size: 15px; font-weight: 600">Marco Rossi</span>
+      <span style="font-size: 13px; color: #8c8c88">Segreteria</span>
+    </div>
+  </div>
+  <div style="display: flex; align-items: stretch; gap: 8px; height: 52px; padding: 0 28px; background: #ffffff; border-bottom: 2px solid #e2e2dd">
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">OGGI<dc-import name="Badge" label="7" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">PERSONE<dc-import name="Badge" label="4" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">CORSI</div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid #e4292a; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #161616">SOLDI<dc-import name="Badge" label="37" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">PALESTRA</div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 28px; background: #e9e9e5; border-bottom: 2px solid #d4d4ce">
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; background: #161616; color: #f4f4f1">DA PAGARE  37</span>
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #3d3d3a; border: 2px solid #d4d4ce">RICEVUTE</span>
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #3d3d3a; border: 2px solid #d4d4ce">LISTINO</span>
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #3d3d3a; border: 2px solid #d4d4ce">VESTIARIO  3</span>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 14px; padding: 24px 28px 36px">
+    <div style="display: flex; align-items: baseline; gap: 16px"><h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 34px; letter-spacing: 0.04em; line-height: 1">DA PAGARE</h1><span style="font-size: 15px; color: #656561">37 persone con la quota non in regola. Prima chi aspetta da più tempo.</span></div>
+    <div style="display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1.2fr) 140px 110px 200px; gap: 12px; padding: 8px 14px; border-bottom: 2px solid #d4d4ce; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.18em; color: #656561"><span>NOME</span><span>QUOTA</span><span>DA QUANTO</span><span>IMPORTO</span><span></span></div>
+    <div style="display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1.2fr) 140px 110px 200px; gap: 12px; align-items: center; min-height: 64px; padding: 6px 14px; background: #ffffff; border: 2px solid #d4d4ce; border-top: 0; font-size: 16px"><span style="font-weight: 600">Colombo Sara</span><span>Pilates · trimestre da ottobre</span><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.08em; color: #b81d1d">14 GIORNI</span><span style="font-variant-numeric: tabular-nums">€ 90</span><dc-import name="Bottone" label="FAI LA RICEVUTA" variante="rosso" contesto="segreteria" tema="chiaro" corpo="15px" hint-size="100%,44px"></dc-import></div>
+    <div style="display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1.2fr) 140px 110px 200px; gap: 12px; align-items: center; min-height: 64px; padding: 6px 14px; background: #ffffff; border: 2px solid #d4d4ce; border-top: 0; font-size: 16px"><span style="font-weight: 600">Marino Pietro</span><span>Lotta adulti · mensile ottobre</span><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.08em; color: #b81d1d">9 GIORNI</span><span style="font-variant-numeric: tabular-nums">€ 35</span><dc-import name="Bottone" label="FAI LA RICEVUTA" variante="rosso" contesto="segreteria" tema="chiaro" corpo="15px" hint-size="100%,44px"></dc-import></div>
+    <div style="display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1.2fr) 140px 110px 200px; gap: 12px; align-items: center; min-height: 64px; padding: 6px 14px; background: #ffffff; border: 2px solid #d4d4ce; border-top: 0; font-size: 16px"><span style="font-weight: 600">Ferrero Davide</span><span>Judo adulti · pagato in parte</span><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.08em; color: #8f6a00">6 GIORNI</span><span style="font-variant-numeric: tabular-nums">€ 40 su 90</span><dc-import name="Bottone" label="FAI LA RICEVUTA" variante="rosso" contesto="segreteria" tema="chiaro" corpo="15px" hint-size="100%,44px"></dc-import></div>
+    <div style="display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1.2fr) 140px 110px 200px; gap: 12px; align-items: center; min-height: 64px; padding: 6px 14px; background: #ffffff; border: 2px solid #d4d4ce; border-top: 0; font-size: 16px"><span style="font-weight: 600">Greco Anna</span><span>Yoga · trimestre da ottobre</span><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.08em; color: #8f6a00">3 GIORNI</span><span style="font-variant-numeric: tabular-nums">€ 90</span><dc-import name="Bottone" label="FAI LA RICEVUTA" variante="rosso" contesto="segreteria" tema="chiaro" corpo="15px" hint-size="100%,44px"></dc-import></div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

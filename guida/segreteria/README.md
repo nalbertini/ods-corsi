@@ -21,6 +21,8 @@ con **ISTRUTTORI →** nel menu, senza uscire.
 
 ## Il menu
 
+Questo è l'aspetto di sempre. Da **IMPOSTAZIONI** si può scegliere **Il Banco**, con la ricerca in cima e cinque luoghi al posto del menu: la [guida](il-banco.md).
+
 In cima al menu c'è **Cerca iscritto**: si scrive un pezzo del nome o del
 cognome, si sceglie con le frecce (o col mouse) e Invio apre la sua scheda, da
 qualunque voce. Apostrofi, trattini e spazi nel cognome non contano: «d'am»,
@@ -49,6 +51,7 @@ sua guida:
 | **LISTINO** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
 | **VESTIARIO** | Gli ordini di vestiario, judogi e costumini: il catalogo, la chiusura, chi ha saldato, l'elenco per il fornitore | [Apri](vestiario.md) |
 | **IMPOSTAZIONI** | In quattro gruppi: la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa); in mezzo, **IMPORTA DA EXCEL**: corsi e iscritti dai fogli o dalle risposte del modulo Google | [Apri](regole.md) · [Importa](importa.md) |
+| **DA PAGARE** · **RICEVUTE** | Solo nell'aspetto Il Banco, luogo SOLDI: chi ha la quota non in regola e l'elenco di tutte le ricevute | [Da pagare](da-pagare.md) · [Ricevute](ricevute.md) |
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
 
 In cima al menu, sotto il nome, si vedono subito senza scorrere tre tasti:
