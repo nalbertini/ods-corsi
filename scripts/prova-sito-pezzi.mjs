@@ -400,5 +400,52 @@ console.log('\nPorta ai pezzi: in modalità prova la pagina converte senza cambi
   ok('elenco: tre colonne', nome(col(3)), 'Tre colonne')
 }
 
+// SCRIVERE NELLA PAGINA: il testo e le colonne si scrivono nel pezzo, senza toccare il resto.
+console.log('\nScrivere il testo nella pagina')
+{
+  const scrivi = (p, h, c) => prova(() => (c === undefined ? z.scriviTesto(p, h) : z.scriviTesto(p, h, c)))
+  const copia = (x) => JSON.parse(JSON.stringify(x))
+
+  const t0 = T('t1', '<p>vecchio</p>')
+  const t1 = scrivi(t0, '<p>nuovo</p>')
+  ok('testo: l’html è quello scritto', t1?.props?.html, '<p>nuovo</p>')
+  ok('testo: restano id e tipo', [t1?.props?.id, t1?.type], ['t1', 'testo'])
+
+  for (const n of [2, 3]) {
+    const cols = Array.from({ length: n }, (_, i) => ({ html: `<p>${i}</p>` }))
+    const c0 = C('c1', cols)
+    const c1 = scrivi(c0, '<p>scritta</p>', 1)
+    const voluto = cols.map((c, i) => (i === 1 ? { html: '<p>scritta</p>' } : c))
+    ok(`${n} colonne: cambia solo la seconda`, c1?.props?.colonne, voluto)
+    ok(`${n} colonne: restano id, tipo e numero di colonne`, [c1?.props?.id, c1?.type, c1?.props?.colonne?.length], ['c1', 'colonne', n])
+  }
+  ok('colonne: senza indicarla si scrive la prima', scrivi(C('c1', [{ html: 'a' }, { html: 'b' }]), 'x')?.props?.colonne, [{ html: 'x' }, { html: 'b' }])
+
+  for (const [cosa, p, h, c] of [
+    ['testo', T('t1', '<p>a</p>'), '<p>b</p>'],
+    ['colonne', C('c1', [{ html: 'a' }, { html: 'b' }, { html: 'c' }]), '<p>x</p>', 2],
+  ]) {
+    const prima = copia(p)
+    scrivi(p, h, c)
+    ok(`${cosa}: l’oggetto ricevuto non cambia`, p, prima)
+  }
+
+  const f = F('f1'), cima = CIMA('k1')
+  ok('foto: restituisce lo stesso oggetto', scrivi(f, '<p>x</p>') === f, true)
+  ok('foto in cima: restituisce lo stesso oggetto', scrivi(cima, '<p>x</p>') === cima, true)
+  ok('foto: l’oggetto ricevuto non cambia', f, F('f1'))
+  const c2 = C('c2', [{ html: 'a' }, { html: 'b' }])
+  ok('colonne: colonna -1 restituisce lo stesso oggetto', scrivi(c2, 'x', -1) === c2, true)
+  ok('colonne: colonna oltre il numero restituisce lo stesso oggetto', scrivi(c2, 'x', 2) === c2, true)
+  ok('colonne: nessuna colonna cambia se fuori misura', c2, C('c2', [{ html: 'a' }, { html: 'b' }]))
+
+  const sporco = '<p>ciao</p><script>alert(1)</script>'
+  const pagina = { content: [scrivi(T('t1', ''), sporco), scrivi(C('c1', [{ html: '' }, { html: '' }]), sporco, 1)] }
+  ok('scritto: la pagina resta valida', valido(pagina), true)
+  const uscito = html(pagina.content)
+  ok('scritto: nell’html finale c’è il testo', buono(uscito) && uscito.includes('ciao'), true)
+  ok('scritto: un <script> non esce', buono(uscito) && !/script|alert/i.test(uscito), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

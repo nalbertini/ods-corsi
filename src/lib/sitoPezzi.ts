@@ -72,6 +72,19 @@ export const vuoto = (html: string | undefined) => !html || (!/<img\b/i.test(htm
 /** Cosa nasce quando la segreteria aggiunge una colonna: vuota, ma con il suo `html` (il campo array di Puck non ne mette uno da solo). */
 export const colonnaNuova = (): { html: string } => ({ html: '' })
 
+/**
+ * Il pezzo con il testo scritto nella pagina: il testo di un TESTO, o quello della colonna `colonna` di COLONNE.
+ * Non cambia mai il pezzo ricevuto; per una foto o una colonna che non c'è lo restituisce com'è, così nessuna
+ * scrittura finisce nel posto sbagliato.
+ */
+export function scriviTesto(p: Pezzo, html: string, colonna = 0): Pezzo {
+  if (p.type === 'testo') return { ...p, props: { ...p.props, html } }
+  if (p.type === 'colonne' && colonna >= 0 && colonna < p.props.colonne.length) {
+    return { ...p, props: { ...p.props, colonne: p.props.colonne.map((c, i) => (i === colonna ? { html } : c)) } }
+  }
+  return p
+}
+
 function inHtml(p: Pezzo): string {
   switch (p.type) {
     case 'testo':

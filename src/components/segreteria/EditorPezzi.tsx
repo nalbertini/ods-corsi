@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react'
-import { createUsePuck, Puck, type Config, type Data } from '@puckeditor/core'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createUsePuck, Puck, type ComponentData, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, colonnaNuova, nomeParte, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
+import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, colonnaNuova, nomeParte, scriviTesto, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
-import { EditorTesto } from './EditorTesto'
+import { TestoInPagina } from './TestoInPagina'
 import { ScegliImmagine } from './ImmaginiSito'
 
 /**
@@ -58,14 +58,82 @@ function CampoFoto({ d, id, src }: { d: DatiSegreteria; id: string; src: string 
   )
 }
 
+/**
+ * Annulla e rifai di Puck, che riportano anche la parte scelta com'era: si rimette quella di prima, se c'è ancora,
+ * se no scrivere nel testo e annullare toglierebbe il cursore dalla pagina a ogni passo.
+ */
+function useStoria() {
+  const dispatch = usePuck((s) => s.dispatch)
+  const storia = usePuck((s) => s.history)
+  const scelto = usePuck((s) => s.appState.ui.itemSelector)
+  const quanti = usePuck((s) => s.appState.data.content.length)
+  const con = (passo: () => void) => () => {
+    passo()
+    if (scelto && scelto.index < quanti) dispatch({ type: 'setUi', ui: { itemSelector: scelto } })
+  }
+  return { storia, indietro: con(() => storia.back()), avanti: con(() => storia.forward()) }
+}
+
+/** L'altezza della barra su due righe di tasti, più il suo respiro: meno spazio di così sopra il pezzo e la barra non ci sta. */
+const SPAZIO_BARRA = 116
+
+/**
+ * Un pezzo di testo (TESTO: una colonna sola; COLONNE: due o tre affiancate) scritto nella pagina. Finché il pezzo non è
+ * scelto si vede soltanto; scelto, la colonna toccata diventa un editor vivo e la barra dei tasti sta sopra il pezzo.
+ * Un editor solo alla volta: con tre colonne vive montarne tre sul telefono è pesante.
+ */
+function PezzoTesto({ d, id, colonne }: { d: DatiSegreteria; id: string; colonne: Array<{ html: string }> }) {
+  const scelto = usePuck((s) => s.selectedItem?.props.id === id)
+  const dispatch = usePuck((s) => s.dispatch)
+  const contenuto = usePuck((s) => s.appState.data.content)
+  const { indietro, avanti } = useStoria()
+  const [slot, setSlot] = useState<HTMLElement | null>(null)
+  const [viva, setViva] = useState(0)
+  // In cima alla pagina sopra il pezzo non c'è posto per la barra: lì sta nel pezzo, sopra il testo, e lo spinge giù.
+  const pezzo = useRef<HTMLDivElement>(null)
+  const [inCima, setInCima] = useState(false)
+  useEffect(() => {
+    const el = pezzo.current
+    const pagina = el?.closest('.sito-pezzi-pagina')
+    if (!scelto || !el || !(pagina instanceof HTMLElement)) return
+    const sopra = el.getBoundingClientRect().top - pagina.getBoundingClientRect().top + pagina.scrollTop - parseFloat(getComputedStyle(pagina).paddingTop)
+    setInCima(sopra < SPAZIO_BARRA)
+  }, [scelto, contenuto.length])
+  // Il testo si dà a Puck con `replace`, un passo solo per ANNULLA e RIFAI (come per la foto).
+  const scrivi = (i: number) => (html: string) => {
+    const k = contenuto.findIndex((c) => c.props.id === id)
+    // Puck dà il contenuto senza tipo; i pezzi sono quelli di `Props` (li controlla `pezziValidi` al salvataggio).
+    if (k >= 0) dispatch({ type: 'replace', destinationIndex: k, destinationZone: ZONA, data: scriviTesto(contenuto[k] as unknown as Pezzo, html, i) as unknown as ComponentData })
+  }
+  const solo = colonne.length === 1
+  return (
+    <div ref={pezzo} className="sito-pezzo" data-scelto={scelto || undefined}>
+      {scelto && <div ref={setSlot} className="sito-barra-flotta" data-in-cima={inCima || undefined} />}
+      <div className={solo ? undefined : 'sito-colonne'} style={solo ? undefined : { gridTemplateColumns: `repeat(${colonne.length}, minmax(0, 1fr))` }}>
+        {colonne.map((c, i) => (
+          <div key={i} className="sito-colonna" data-viva={scelto && !solo ? i === viva : undefined} onClick={() => setViva(i)}>
+            {scelto && i === viva ? (
+              <TestoInPagina
+                d={d}
+                html={c.html}
+                etichetta={solo ? 'Testo' : `Colonna ${i + 1}`}
+                slot={slot}
+                onScrivi={scrivi(i)}
+                onStoria={(verso) => (verso === 'indietro' ? indietro() : avanti())}
+              />
+            ) : vuoto(c.html) ? (
+              <span className="sito-pezzi-vuoto">{solo ? 'Testo vuoto' : `Colonna ${i + 1} vuota`}</span>
+            ) : (
+              <Testo html={c.html} />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function configura(d: DatiSegreteria): Config<Props> {
-  const campoTesto = (etichetta: string) => ({
-    type: 'custom' as const,
-    label: etichetta,
-    render: ({ value, onChange, name }: { value: string; onChange: (v: string) => void; name: string }) => (
-      <EditorTesto valore={value} onCambia={onChange} etichetta={`${etichetta} (${name})`} d={d} />
-    ),
-  })
   const foto = {
     src: {
       type: 'custom' as const,
@@ -86,9 +154,10 @@ function configura(d: DatiSegreteria): Config<Props> {
       },
       testo: {
         label: 'TESTO',
-        fields: { html: campoTesto('Testo') },
+        // Il testo si scrive nella pagina: il pannello di destra non ha niente da mostrare per questo campo (`Destra` dice dov'è).
+        fields: { html: { type: 'custom', render: () => <></> } },
         defaultProps: { html: '' },
-        render: ({ html }) => (vuoto(html) ? <span className="sito-pezzi-vuoto">Testo vuoto</span> : <Testo html={html} />),
+        render: ({ id, html }) => <PezzoTesto d={d} id={id} colonne={[{ html }]} />,
       },
       foto: {
         label: 'FOTO',
@@ -98,13 +167,10 @@ function configura(d: DatiSegreteria): Config<Props> {
       },
       colonne: {
         label: 'COLONNE',
-        fields: { colonne: { type: 'array', label: 'COLONNE (da 2 a 3)', min: 2, max: 3, arrayFields: { html: campoTesto('Colonna') }, defaultItemProps: colonnaNuova(), getItemSummary: (_, i) => `Colonna ${(i ?? 0) + 1}` } },
+        // Le colonne si scrivono nella pagina; nel pannello restano solo quante sono (da 2 a 3), con aggiungi e togli.
+        fields: { colonne: { type: 'array', label: 'COLONNE (da 2 a 3)', min: 2, max: 3, arrayFields: { html: { type: 'custom', render: () => <></> } }, defaultItemProps: colonnaNuova(), getItemSummary: (_, i) => `Colonna ${(i ?? 0) + 1}` } },
         defaultProps: { colonne: [{ html: '' }, { html: '' }] },
-        render: ({ colonne }) => (
-          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: `repeat(${colonne.length}, minmax(0, 1fr))` }}>
-            {colonne.map((c, i) => (vuoto(c.html) ? <span key={i} className="sito-pezzi-vuoto">{`Colonna ${i + 1} vuota`}</span> : <Testo key={i} html={c.html} />))}
-          </div>
-        ),
+        render: ({ id, colonne }) => <PezzoTesto d={d} id={id} colonne={colonne} />,
       },
     },
   }
@@ -115,6 +181,8 @@ function FotoDelPezzo({ d, src }: { d: DatiSegreteria; src: string }) {
   const id = usePuck((s) => s.selectedItem?.props.id)
   return typeof id === 'string' ? <CampoFoto d={d} id={id} src={src} /> : null
 }
+
+const FRASE_TESTO_IN_PAGINA = 'Il testo si scrive direttamente nella pagina, a sinistra.'
 
 const PARTI: Array<{ tipo: keyof Props; nome: string }> = [
   { tipo: 'fotoInCima', nome: 'FOTO IN CIMA' },
@@ -131,7 +199,7 @@ function Comandi({ onNuova }: { onNuova: () => void }) {
   const dispatch = usePuck((s) => s.dispatch)
   const scelto = usePuck((s) => s.appState.ui.itemSelector)
   const quanti = usePuck((s) => s.appState.data.content.length)
-  const storia = usePuck((s) => s.history)
+  const { storia, indietro, avanti } = useStoria()
   const vai = (verso: number) => {
     if (!scelto) return
     dispatch({ type: 'move', sourceIndex: scelto.index, sourceZone: ZONA, destinationIndex: scelto.index + verso, destinationZone: ZONA })
@@ -159,8 +227,8 @@ function Comandi({ onNuova }: { onNuova: () => void }) {
         </button>
       ))}
       <span className="grow" />
-      <button type="button" className="sg-chip num" disabled={!storia.hasPast} onClick={() => storia.back()}>Annulla</button>
-      <button type="button" className="sg-chip num" disabled={!storia.hasFuture} onClick={() => storia.forward()}>Rifai</button>
+      <button type="button" className="sg-chip num" disabled={!storia.hasPast} onClick={indietro}>Annulla</button>
+      <button type="button" className="sg-chip num" disabled={!storia.hasFuture} onClick={avanti}>Rifai</button>
       <button type="button" className="sg-chip num" disabled={!scelto || scelto.index === 0} onClick={() => vai(-1)}>Su ▲</button>
       <button type="button" className="sg-chip num" disabled={!scelto || scelto.index >= quanti - 1} onClick={() => vai(1)}>Giù ▼</button>
       <button type="button" className="sg-chip num" disabled={!scelto} onClick={togli}>Togli</button>
@@ -217,6 +285,8 @@ function Destra({ scheda, setScheda }: { scheda: Scheda; setScheda: (k: Scheda) 
             </button>
           ))}
         </div>
+      ) : scelta?.type === 'testo' ? (
+        <p className="sito-pezzi-frase">{FRASE_TESTO_IN_PAGINA}</p>
       ) : scelta ? (
         <Puck.Fields />
       ) : (
