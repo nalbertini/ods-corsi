@@ -38,7 +38,7 @@ function CampoFoto({ d, id, src }: { d: DatiSegreteria; id: string; src: string 
     <div className="stack" style={{ gap: 8 }}>
       {src && <img src={src} alt="" style={{ width: '100%', height: 120, objectFit: 'cover' }} />}
       <button type="button" className="sg-btn sg-btn-linea" onClick={() => setApri(true)}>
-        {src ? 'CAMBIA FOTO' : 'SCEGLI LA FOTO'}
+        {src ? 'Cambia foto' : 'Scegli la foto'}
       </button>
       {apri && (
         <ScegliImmagine
@@ -152,11 +152,11 @@ function Comandi() {
         </button>
       ))}
       <span className="grow" />
-      <button type="button" className="sg-chip num" disabled={!storia.hasPast} onClick={() => storia.back()}>ANNULLA</button>
-      <button type="button" className="sg-chip num" disabled={!storia.hasFuture} onClick={() => storia.forward()}>RIFAI</button>
-      <button type="button" className="sg-chip num" disabled={!scelto || scelto.index === 0} onClick={() => vai(-1)}>SU ▲</button>
-      <button type="button" className="sg-chip num" disabled={!scelto || scelto.index >= quanti - 1} onClick={() => vai(1)}>GIÙ ▼</button>
-      <button type="button" className="sg-chip num" disabled={!scelto} onClick={() => scelto && dispatch({ type: 'remove', index: scelto.index, zone: ZONA })}>TOGLI</button>
+      <button type="button" className="sg-chip num" disabled={!storia.hasPast} onClick={() => storia.back()}>Annulla</button>
+      <button type="button" className="sg-chip num" disabled={!storia.hasFuture} onClick={() => storia.forward()}>Rifai</button>
+      <button type="button" className="sg-chip num" disabled={!scelto || scelto.index === 0} onClick={() => vai(-1)}>Su ▲</button>
+      <button type="button" className="sg-chip num" disabled={!scelto || scelto.index >= quanti - 1} onClick={() => vai(1)}>Giù ▼</button>
+      <button type="button" className="sg-chip num" disabled={!scelto} onClick={() => scelto && dispatch({ type: 'remove', index: scelto.index, zone: ZONA })}>Togli</button>
     </div>
   )
 }

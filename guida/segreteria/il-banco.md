@@ -4,7 +4,7 @@
 
 **Il Banco** è un altro modo di vedere la segreteria: al posto del menu a
 sinistra c'è la **ricerca sempre in cima** e **cinque luoghi**. Si sceglie da
-**IMPOSTAZIONI**, nel gruppo **QUESTO SCHERMO**: **COME OGGI** o **IL BANCO**. Cambia subito, senza ricaricare, e vale **solo per questo computer**.
+**IMPOSTAZIONI**, nel gruppo **Questo schermo**: **Come oggi** o **Il banco**. Cambia subito, senza ricaricare, e vale **solo per questo computer**.
 Chi non sceglie niente vede la segreteria di sempre.
 
 Sul telefono resta il menu di sempre: Il Banco è fatto per lo schermo largo.
@@ -39,8 +39,8 @@ tutti e due gli aspetti.
 
 La giornata a tabellone: una colonna per sala, le ore a sinistra, le lezioni
 come blocchi. La riga rossa è l'ora di adesso. Ogni blocco dice il suo stato
-con parole e colore: **FATTO**, **ADESSO**, **STA PER INIZIARE**, **ANNULLATA**,
-e in rosso **APPELLO NON FATTO**. Toccare un blocco apre la lezione in
+con parole e colore: **Fatto**, **Adesso**, **Sta per iniziare**, **Annullata**,
+e in rosso **Appello non fatto**. Toccare un blocco apre la lezione in
 PRESENZE.
 
 Sopra, quattro numeri che aprono l'elenco da cui nascono: **SENZA
@@ -50,10 +50,10 @@ CERTIFICATO**, **DA PAGARE** (apre gli iscritti col filtro già acceso), **RICHI
 A destra la coda **DA FARE AL BANCO**, in ordine di urgenza: prima gli appelli
 non fatti, poi chi è senza certificato, poi chi deve la quota (in rosso), infine
 richieste, presenze da confermare e segnalate (in giallo). Ogni riga ha il suo
-tasto. Oltre le tre righe per tipo c'è **ALTRI N**, che apre l'elenco.
+tasto. Oltre le tre righe per tipo c'è una riga **Altri N …**, che apre l'elenco.
 
 Quello che la coda non mostra (certificati in scadenza, da stampare, prezzi del
-listino) sta sotto, in **TUTTO QUELLO CHE C'È DA FARE**: è il **DA FARE** di
+listino) sta sotto, in **Tutto quello che c’è da fare**: è il **DA FARE** di
 sempre.
 
 ## La scheda di una persona

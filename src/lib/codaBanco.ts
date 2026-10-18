@@ -35,14 +35,14 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
       titolo: `${l.corso} · appello non fatto`,
       // Un appello di un altro giorno dice quale: due «Judo adulti» uguali non si distinguono dall'ora.
       sotto: `${l.inizio.slice(0, 10) === oggi ? 'Erano' : `${giornoPerEsteso(l.inizio.slice(0, 10))}, erano`} alle ${oraDi(l.inizio)}. ${l.iscritti} iscritti da segnare.`,
-      tasto: "FAI L'APPELLO",
+      tasto: 'Fai l’appello',
       // L'appello vero si fa dalla lezione in SETTIMANA, come da DA FARE: PRESENZE non apre una lezione sola.
       vai: { voce: 'settimana', lezione: { id: l.id, inizio: l.inizio } },
     })
   }
   if (appelli.length > PER_TIPO) {
     const n = appelli.length - PER_TIPO
-    righe.push({ id: 'appelli-altri', livello: 'blocca', titolo: `Altri ${n} appelli non fatti`, sotto: 'Si aprono da PRESENZE, dal più recente.', tasto: 'VEDI TUTTI', vai: { voce: 'presenze', filtro: 'senza-appello' } })
+    righe.push({ id: 'appelli-altri', livello: 'blocca', titolo: `Altri ${n} appelli non fatti`, sotto: 'Si aprono da PRESENZE, dal più recente.', tasto: 'Vedi tutti', vai: { voce: 'presenze', filtro: 'senza-appello' } })
   }
 
   const attive = i.persone.filter((p) => p.attiva)
@@ -53,12 +53,12 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
       livello: 'blocca',
       titolo: `${conNome(p)} · certificato ${statoCertificato(p, oggi) === 'manca' ? 'mancante' : 'scaduto'}`,
       sotto: cosaBlocca(p, oggi)?.frase ?? '',
-      tasto: 'APRI LA SCHEDA',
+      tasto: 'Apri la scheda',
       vai: { voce: 'iscritti', persona: p.id },
     })
   }
   if (senzaCert.length > PER_TIPO) {
-    righe.push({ id: 'certificati-altri', livello: 'blocca', titolo: `Altri ${senzaCert.length - PER_TIPO} senza certificato`, sotto: 'In sala non entrano.', tasto: 'VEDI CHI', vai: { voce: 'iscritti', filtro: 'certificato' } })
+    righe.push({ id: 'certificati-altri', livello: 'blocca', titolo: `Altri ${senzaCert.length - PER_TIPO} senza certificato`, sotto: 'In sala non entrano.', tasto: 'Vedi chi', vai: { voce: 'iscritti', filtro: 'certificato' } })
   }
 
   // Chi è già fra i certificati non si ripete: la scheda è la stessa. Per questo «Altri N» può
@@ -70,12 +70,12 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
       livello: 'blocca',
       titolo: `${conNome(p)} · quota non pagata`,
       sotto: cosaBlocca(p, oggi)?.frase ?? '',
-      tasto: 'FAI LA RICEVUTA',
+      tasto: 'Fai la ricevuta',
       vai: { voce: 'iscritti', persona: p.id },
     })
   }
   if (daPagare.length > PER_TIPO) {
-    righe.push({ id: 'quote-altre', livello: 'blocca', titolo: `Altri ${daPagare.length - PER_TIPO} da pagare`, sotto: 'La quota non è in regola.', tasto: 'VEDI CHI', vai: { voce: 'iscritti', filtro: 'pagare' } })
+    righe.push({ id: 'quote-altre', livello: 'blocca', titolo: `Altri ${daPagare.length - PER_TIPO} da pagare`, sotto: 'La quota non è in regola.', tasto: 'Vedi chi', vai: { voce: 'iscritti', filtro: 'pagare' } })
   }
 
   if (i.richieste > 0) {
@@ -84,7 +84,7 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
       livello: 'presto',
       titolo: i.richieste === 1 ? '1 richiesta online nuova' : `${i.richieste} richieste online nuove`,
       sotto: 'Da accogliere o da rifiutare.',
-      tasto: 'ACCOGLI',
+      tasto: 'Accogli',
       vai: { voce: 'richieste' },
     })
   }
@@ -94,7 +94,7 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
       livello: 'presto',
       titolo: i.istruttori === 1 ? '1 presenza istruttore da confermare' : `${i.istruttori} presenze istruttori da confermare`,
       sotto: 'Segnate da loro, da confermare.',
-      tasto: 'CONFERMA',
+      tasto: 'Conferma',
       vai: { voce: 'istruttori' },
     })
   }
@@ -104,7 +104,7 @@ export function codaBanco(i: { appelli: LezioneSeg[]; persone: PersonaSeg[]; ric
       livello: 'presto',
       titolo: i.segnalate === 1 ? '1 presenza segnalata da vedere' : `${i.segnalate} presenze segnalate da vedere`,
       sotto: 'Segnalate da chi viene a lezione.',
-      tasto: 'VEDI',
+      tasto: 'Vedi',
       vai: { voce: 'segnalate' },
     })
   }

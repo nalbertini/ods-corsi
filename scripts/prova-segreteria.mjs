@@ -259,10 +259,10 @@ console.log('\n9. sale e regole')
   const cinque = conferma(24, 12, 5)
   ok('meno mesi con cinque presenze: si chiede, col numero, i mesi e il primo del mese',
     [cinque?.testo.includes('5 presenze'), cinque?.testo.includes('12 mesi'), cinque?.testo.includes('primo del mese')], [true, true, true])
-  ok('il tasto dice i mesi', cinque?.tasto.includes('12 MESI'), true)
+  ok('il tasto dice i mesi', cinque?.tasto.includes('12 mesi'), true)
   const nonSo = conferma(24, 12, null)
   ok('conteggio non riuscito: si chiede lo stesso, senza un numero di presenze',
-    [nonSo !== null, nonSo?.testo.includes('le presenze'), /\d+ presenz/.test(nonSo?.testo ?? ''), nonSo?.tasto.includes('12 MESI')], [true, true, false, true])
+    [nonSo !== null, nonSo?.testo.includes('le presenze'), /\d+ presenz/.test(nonSo?.testo ?? ''), nonSo?.tasto.includes('12 mesi')], [true, true, false, true])
   const una = conferma(24, 12, 1)?.testo ?? ''
   const unaProva = conferma(24, 12, 1, 'prova')?.testo ?? ''
   ok('una sola: «1 presenza più vecchia», col database e in prova',
@@ -2627,12 +2627,12 @@ console.log('\nSALVA LE DATE toglie le lezioni fuori dalle date dei corsi, trann
   ok('più di tre: le frasi senza corso', conRimaste(12, 4, [il('Judo 2', 9, 14, 17), il('Judo 3', 9, 21, 18), il('Lotta 2', 10, 3, 19)]), t12 + 'Restano 4 lezioni fra il 14 ottobre e il 3 novembre' + hanno)
 
   // La conferma prima di togliere, come per i mesi delle presenze.
-  ok('conferma: il conto non è riuscito, si chiede lo stesso', m.confermaDateCorsi(null), { testo: 'Salvare le date? Da domani le lezioni fuori dalle date se ne vanno, tranne quelle con l’appello o una prova.', tasto: 'SALVA LE DATE' })
+  ok('conferma: il conto non è riuscito, si chiede lo stesso', m.confermaDateCorsi(null), { testo: 'Salvare le date? Da domani le lezioni fuori dalle date se ne vanno, tranne quelle con l’appello o una prova.', tasto: 'Salva le date' })
   ok('conferma: senza il file non si chiede', m.confermaDateCorsi({ tolte: 0, restano: 0, prima: null, ultima: null, manca: 'va lanciato 35-date-corsi.sql' }), null)
   ok('conferma: niente da togliere, non si chiede', m.confermaDateCorsi({ tolte: 0, restano: 2, prima: '2026-10-19', ultima: '2026-10-21' }), null)
-  ok('conferma: tante da togliere, due restano', m.confermaDateCorsi({ tolte: 1877, restano: 2, prima: '2026-10-19', ultima: '2026-10-21' }), { testo: 'Togliere 1877 lezioni fuori dalle date? Restano 2 lezioni con l’appello o una prova.', tasto: 'SÌ, TOGLI 1877 LEZIONI' })
-  ok('conferma: una da togliere', m.confermaDateCorsi({ tolte: 1, restano: 0, prima: null, ultima: null }), { testo: 'Togliere 1 lezione fuori dalle date?', tasto: 'SÌ, TOGLI 1 LEZIONE' })
-  ok('conferma: cinque da togliere, una resta', m.confermaDateCorsi({ tolte: 5, restano: 1, prima: '2026-10-19', ultima: '2026-10-19' }), { testo: 'Togliere 5 lezioni fuori dalle date? Resta 1 lezione con l’appello o una prova.', tasto: 'SÌ, TOGLI 5 LEZIONI' })
+  ok('conferma: tante da togliere, due restano', m.confermaDateCorsi({ tolte: 1877, restano: 2, prima: '2026-10-19', ultima: '2026-10-21' }), { testo: 'Togliere 1877 lezioni fuori dalle date? Restano 2 lezioni con l’appello o una prova.', tasto: 'Sì, togli 1877 lezioni' })
+  ok('conferma: una da togliere', m.confermaDateCorsi({ tolte: 1, restano: 0, prima: null, ultima: null }), { testo: 'Togliere 1 lezione fuori dalle date?', tasto: 'Sì, togli 1 lezione' })
+  ok('conferma: cinque da togliere, una resta', m.confermaDateCorsi({ tolte: 5, restano: 1, prima: '2026-10-19', ultima: '2026-10-19' }), { testo: 'Togliere 5 lezioni fuori dalle date? Resta 1 lezione con l’appello o una prova.', tasto: 'Sì, togli 5 lezioni' })
   ok('senza 35-date-corsi.sql', m.testoDateSalvate({ tolte: 0, restano: 0, prima: null, ultima: null, manca: 'va lanciato 35-date-corsi.sql' }), 'Date salvate, ma per togliere le lezioni fuori dalle date va lanciato 35-date-corsi.sql')
 
   await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })

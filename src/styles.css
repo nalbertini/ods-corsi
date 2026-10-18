@@ -217,10 +217,9 @@
 
   color-scheme: light;
 }
-/* Il menu è verde scuro dentro una pagina chiara: lì dentro il testo è chiaro. */
-:root[data-tema='tatami'] .sg-menu,
-:root[data-tema='tatami'] .barra-nav,
-:root[data-tema='tatami'] .sg-barra-tel {
+/* La barra in basso degli istruttori è verde scuro dentro una pagina chiara: lì dentro il testo è chiaro.
+   (La segreteria ha il suo aspetto, `data-look`, e non passa da qui.) */
+:root[data-tema='tatami'] .barra-nav {
   --text: #f6f3e4;
   --sec: #cfd6c0;
   --dim: #cfd6c0;
@@ -230,20 +229,7 @@
   /* Il testo senza colore suo (il marchio) eredita dal body: lì dentro va chiaro anche lui. */
   color: #f6f3e4;
 }
-/* La voce corrente e il campo di ricerca restano due tatami chiari nel menu verde. */
-:root[data-tema='tatami'] .sg-voce[aria-current='page'] { border-left-color: #1d1d1b; background: #f6f3e4; color: #1d1d1b; }
-:root[data-tema='tatami'] .sg-menu .sg-campo { background: #f6f3e4; border-color: #1d1d1b; color: #1d1d1b; }
-:root[data-tema='tatami'] .sg-menu .sg-campo::placeholder { color: #5a594c; }
-/* L'elenco della ricerca sta dentro il menu verde ma ha il fondo chiaro: lì i token tornano quelli della pagina, se no il testo sparisce. */
-:root[data-tema='tatami'] .sg-cerca-elenco {
-  --text: #1d1d1b;
-  --sec: #3d3d3a;
-  --dim: #5a594c;
-  --line: #bdb68f;
-  --line-soft: #cfc9a8;
-  color: #1d1d1b;
-}
-/* Come la voce del menu: nella barra in basso la scheda corrente è chiara, quindi il testo e il segno scuri. */
+/* Nella barra in basso la scheda corrente è chiara, quindi il testo e il segno scuri. */
 :root[data-tema='tatami'] .barra-voce[aria-current='page'] { border-top-color: #1d1d1b; color: #1d1d1b; }
 
 /* Il look del sito per la segreteria e l'amministrazione (`lib/aspettoSegreteria.ts`): stessi

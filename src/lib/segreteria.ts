@@ -1407,11 +1407,11 @@ export interface EsitoDate {
  * chiede lo stesso, senza numero.
  */
 export function confermaDateCorsi(e: EsitoDate | null): { testo: string; tasto: string } | null {
-  if (!e) return { testo: 'Salvare le date? Da domani le lezioni fuori dalle date se ne vanno, tranne quelle con l’appello o una prova.', tasto: 'SALVA LE DATE' }
+  if (!e) return { testo: 'Salvare le date? Da domani le lezioni fuori dalle date se ne vanno, tranne quelle con l’appello o una prova.', tasto: 'Salva le date' }
   if (e.manca || !e.tolte) return null
   const quante = e.tolte === 1 ? '1 lezione' : `${e.tolte} lezioni`
   const restano = !e.restano ? '' : e.restano === 1 ? ' Resta 1 lezione con l’appello o una prova.' : ` Restano ${e.restano} lezioni con l’appello o una prova.`
-  return { testo: `Togliere ${quante} fuori dalle date?${restano}`, tasto: `SÌ, TOGLI ${quante.toUpperCase()}` }
+  return { testo: `Togliere ${quante} fuori dalle date?${restano}`, tasto: `Sì, togli ${quante}` }
 }
 
 /**
@@ -1472,7 +1472,7 @@ export function confermaMesiPresenze({
       ? `Il primo del mese si ${una ? 'cancella' : 'cancellano'} ${quante}`
       : `${quante[0].toUpperCase()}${quante.slice(1)} si ${una ? 'potrà' : 'potranno'} cancellare con CANCELLA ORA`
   const testo = `Accorciare a ${dopo} mesi? ${dopoCosa}: non si recuperano.`
-  return { testo, tasto: `SÌ, ACCORCIA A ${dopo} MESI` }
+  return { testo, tasto: `Sì, accorcia a ${dopo} mesi` }
 }
 
 const istruttoriDetti = ([primo, ...altri]: string[]) => [primo, ...altri.sort()].join()

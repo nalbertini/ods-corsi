@@ -32,7 +32,7 @@ export function PersonaBanco({ d, id, giro }: { d: DatiSegreteria; id: string; /
           <span className="grow">{blocca.frase}</span>
           {/* Fa solo scorrere: il certificato e la ricevuta si sistemano nella scheda, qui sotto. */}
           <button type="button" className="num sg-btn sg-btn-pieno" onClick={allaScheda}>
-            VAI ALLA SCHEDA
+            Vai alla scheda
           </button>
         </div>
       )}

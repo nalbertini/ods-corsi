@@ -353,7 +353,7 @@ titolo('coda del banco')
   // (a) gli appelli
   const uno = cod({ appelli: [app('x', [17, 0], 9)] })
   ok('un appello non fatto: una riga che blocca', uno, [
-    { id: 'appello-x', livello: 'blocca', titolo: 'Corso x · appello non fatto', sotto: 'Erano alle 17:00. 9 iscritti da segnare.', tasto: 'FAI L\'APPELLO', vai: { voce: 'settimana', lezione: { id: 'x', inizio: ora(17) } } },
+    { id: 'appello-x', livello: 'blocca', titolo: 'Corso x · appello non fatto', sotto: 'Erano alle 17:00. 9 iscritti da segnare.', tasto: 'Fai l’appello', vai: { voce: 'settimana', lezione: { id: 'x', inizio: ora(17) } } },
   ])
   // Un appello di un altro giorno dice quale: due lezioni uguali non si distinguono dall'ora.
   const vecchio = { ...app('y', [17, 0], 9), inizio: '2000-01-03T17:00:00', fine: '2000-01-03T18:00:00' }
@@ -364,20 +364,20 @@ titolo('coda del banco')
   ok('tre appelli: tre righe, la più recente prima, senza «altri»', ids(tre), ['appello-c', 'appello-b', 'appello-a'])
   const cinque = cod({ appelli: [app('a', [16, 0]), app('b', [17, 0]), app('c', [18, 0]), app('d', [19, 0]), app('e', [20, 0])] })
   ok('cinque appelli: tre più «altri»', ids(cinque), ['appello-e', 'appello-d', 'appello-c', 'appelli-altri'])
-  ok('«altri» appelli', cinque[3], { id: 'appelli-altri', livello: 'blocca', titolo: 'Altri 2 appelli non fatti', sotto: cinque[3]?.sotto, tasto: 'VEDI TUTTI', vai: { voce: 'presenze', filtro: 'senza-appello' } })
+  ok('«altri» appelli', cinque[3], { id: 'appelli-altri', livello: 'blocca', titolo: 'Altri 2 appelli non fatti', sotto: cinque[3]?.sotto, tasto: 'Vedi tutti', vai: { voce: 'presenze', filtro: 'senza-appello' } })
 
   // (b) il certificato
   const cert = (id, cognome, nome, extra) => ok1(id, cognome, nome, { certificato: SENZA_CERT, ...extra })
   const c1 = cod({ persone: [cert('p1', 'Rossi', 'Anna')] })
   ok('un senza certificato: una riga', c1, [
-    { id: 'certificato-p1', livello: 'blocca', titolo: 'Rossi Anna · certificato mancante', sotto: 'Manca il certificato medico.', tasto: 'APRI LA SCHEDA', vai: { voce: 'iscritti', persona: 'p1' } },
+    { id: 'certificato-p1', livello: 'blocca', titolo: 'Rossi Anna · certificato mancante', sotto: 'Manca il certificato medico.', tasto: 'Apri la scheda', vai: { voce: 'iscritti', persona: 'p1' } },
   ])
   const c2 = cod({ persone: [ok1('p2', 'Verdi', 'Carla', { certificato: CERT_SCADUTO })] })
   ok('certificato scaduto: titolo e frase', [c2[0]?.titolo, c2[0]?.sotto], ['Verdi Carla · certificato scaduto', 'Il certificato è scaduto il 01/10/2026.'])
   const molti = ['Zeta', 'Beta', 'Alfa', 'Delta', 'Gamma'].map((c, i) => cert(`z${i}`, c, 'Mario'))
   const c5 = cod({ persone: molti })
   ok('cinque senza certificato: tre per cognome e «altri»', ids(c5), ['certificato-z2', 'certificato-z1', 'certificato-z3', 'certificati-altri'])
-  ok('«altri» certificati', [c5[3]?.titolo, c5[3]?.tasto, c5[3]?.vai], ['Altri 2 senza certificato', 'VEDI CHI', { voce: 'iscritti', filtro: 'certificato' }])
+  ok('«altri» certificati', [c5[3]?.titolo, c5[3]?.tasto, c5[3]?.vai], ['Altri 2 senza certificato', 'Vedi chi', { voce: 'iscritti', filtro: 'certificato' }])
   ok('a pari cognome conta il nome', ids(cod({ persone: [cert('b', 'Rossi', 'Bruno'), cert('a', 'Rossi', 'Anna')] })), ['certificato-a', 'certificato-b'])
   ok('tre senza certificato: niente «altri»', ids(cod({ persone: molti.slice(0, 3) })).includes('certificati-altri'), false)
   ok('chi non è attivo non conta', cod({ persone: [cert('i', 'Rossi', 'Anna', { attiva: false })] }), [])
@@ -387,23 +387,23 @@ titolo('coda del banco')
   const senzaQuota = (id, cognome, nome, extra) => persona(id, cognome, nome, extra)
   const q1 = cod({ persone: [senzaQuota('q1', 'Neri', 'Dario')] })
   ok('quota non pagata: una riga che blocca', q1, [
-    { id: 'quota-q1', livello: 'blocca', titolo: 'Neri Dario · quota non pagata', sotto: 'La quota non è pagata.', tasto: 'FAI LA RICEVUTA', vai: { voce: 'iscritti', persona: 'q1' } },
+    { id: 'quota-q1', livello: 'blocca', titolo: 'Neri Dario · quota non pagata', sotto: 'La quota non è pagata.', tasto: 'Fai la ricevuta', vai: { voce: 'iscritti', persona: 'q1' } },
   ])
   ok('chi ha già il certificato mancante non si ripete per la quota', ids(cod({ persone: [senzaQuota('d', 'Neri', 'Dario', { certificato: SENZA_CERT })] })), ['certificato-d'])
   ok('quota in parte e scaduta contano', ids(cod({ persone: [senzaQuota('p', 'Alfa', 'A', { quote: [{ anno: 2026, numero: 4, dal: '2026-09-01', al: '2027-07-31', mancano: 500 }] }), senzaQuota('s', 'Beta', 'B', { quote: [{ anno: 2025, numero: 3, dal: '2025-09-01', al: '2026-07-31', mancano: 0 }] })] })), ['quota-p', 'quota-s'])
   const q5 = cod({ persone: ['Zeta', 'Beta', 'Alfa', 'Delta', 'Gamma'].map((c, i) => senzaQuota(`y${i}`, c, 'Mario')) })
   ok('cinque da pagare: tre più «altri»', ids(q5), ['quota-y2', 'quota-y1', 'quota-y3', 'quote-altre'])
-  ok('«altri» da pagare', [q5[3]?.livello, q5[3]?.titolo, q5[3]?.tasto, q5[3]?.vai], ['blocca', 'Altri 2 da pagare', 'VEDI CHI', { voce: 'iscritti', filtro: 'pagare' }])
+  ok('«altri» da pagare', [q5[3]?.livello, q5[3]?.titolo, q5[3]?.tasto, q5[3]?.vai], ['blocca', 'Altri 2 da pagare', 'Vedi chi', { voce: 'iscritti', filtro: 'pagare' }])
   const q3 = cod({ persone: ['Zeta', 'Beta', 'Alfa'].map((c, i) => senzaQuota(`z${i}`, c, 'Mario')) })
   ok('tre da pagare esatti: niente «altri»', ids(q3), ['quota-z2', 'quota-z1', 'quota-z0'])
   ok('la quota non pagata di chi non è attivo non conta', cod({ persone: [senzaQuota('n', 'Neri', 'Dario', { attiva: false })] }), [])
 
   // (d) le cose da fare presto
-  ok('richieste: plurale', cod({ richieste: 3 }), [{ id: 'richieste', livello: 'presto', titolo: '3 richieste online nuove', sotto: cod({ richieste: 3 })[0]?.sotto, tasto: 'ACCOGLI', vai: { voce: 'richieste' } }])
+  ok('richieste: plurale', cod({ richieste: 3 }), [{ id: 'richieste', livello: 'presto', titolo: '3 richieste online nuove', sotto: cod({ richieste: 3 })[0]?.sotto, tasto: 'Accogli', vai: { voce: 'richieste' } }])
   ok('richieste: singolare', cod({ richieste: 1 })[0]?.titolo, '1 richiesta online nuova')
-  ok('istruttori: plurale', [cod({ istruttori: 2 })[0]?.titolo, cod({ istruttori: 2 })[0]?.tasto, cod({ istruttori: 2 })[0]?.vai], ['2 presenze istruttori da confermare', 'CONFERMA', { voce: 'istruttori' }])
+  ok('istruttori: plurale', [cod({ istruttori: 2 })[0]?.titolo, cod({ istruttori: 2 })[0]?.tasto, cod({ istruttori: 2 })[0]?.vai], ['2 presenze istruttori da confermare', 'Conferma', { voce: 'istruttori' }])
   ok('istruttori: singolare', cod({ istruttori: 1 })[0]?.titolo, '1 presenza istruttore da confermare')
-  ok('segnalate: plurale', [cod({ segnalate: 4 })[0]?.titolo, cod({ segnalate: 4 })[0]?.tasto, cod({ segnalate: 4 })[0]?.vai], ['4 presenze segnalate da vedere', 'VEDI', { voce: 'segnalate' }])
+  ok('segnalate: plurale', [cod({ segnalate: 4 })[0]?.titolo, cod({ segnalate: 4 })[0]?.tasto, cod({ segnalate: 4 })[0]?.vai], ['4 presenze segnalate da vedere', 'Vedi', { voce: 'segnalate' }])
   ok('segnalate: singolare', cod({ segnalate: 1 })[0]?.titolo, '1 presenza segnalata da vedere')
   ok('segnalate 0 o assenti: niente', [cod({ segnalate: 0 }), cod({})], [[], []])
   ok('livello delle cose da fare presto', cod({ richieste: 1, istruttori: 1, segnalate: 1 }).map((r) => r.livello), ['presto', 'presto', 'presto'])
@@ -414,5 +414,10 @@ titolo('coda del banco')
   ok('i «blocca» vengono prima dei «presto»', tutto.map((r) => r.livello), ['blocca', 'blocca', 'blocca', 'presto', 'presto', 'presto'])
 }
 
+// Il rosso di «Fai la ricevuta» viene dall'id della riga, non dal testo del tasto: le parole si cambiano, il segnale no.
+{
+  const oggiTsx = (await import('node:fs')).readFileSync('src/components/segreteria/banco/Oggi.tsx', 'utf8')
+  ok('Oggi.tsx non confronta il testo del tasto', /\.tasto\s*[!=]==/.test(oggiTsx), false)
+}
 console.log(guai ? `\n${guai} prove non passano` : '\nTutto bene')
 process.exit(guai ? 1 : 0)

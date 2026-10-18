@@ -192,9 +192,11 @@ for (const sel of [':root', ":root[data-tema='chiaro']", ":root[data-tema='tatam
   if (prima !== null) ok(`il blocco ${sel} non è cambiato`, rOra.filter((r) => r.selettori.includes(sel)).map(chiaveR), rPrima.filter((r) => r.selettori.includes(sel)).map(chiaveR))
 // Il look della segreteria (`data-look`, PR successive a questa) ha la sua prova (`prova:look`): le sue regole possono cambiare.
 const delLook = (r) => r.selettori.some((x) => x.includes('data-look'))
+// Le regole di Tatami per le classi della segreteria (`.sg-*`) sono state tolte: la segreteria è sempre nel look del sito (`prova:tema` lo controlla).
+const tatamiSegreteria = (r) => r.selettori.some((x) => x.includes("data-tema='tatami'") && x.includes('.sg-'))
 // La griglia a due colonne della pagina d'ingresso (passi | costi) e le regole dell'elenco dei passi sono tolte di proposito: ora è una colonna sola (`prova:iscrizione-pagina`). Le altre regole restano tutte.
 const impaginazioneVecchia = (r) => /grid-area:\s*nota/.test(r.corpo) || r.selettori.some((x) => /^\.scroll > \.iscrizioni$|^\.iscrizioni-passi$|^\.iscrizioni #costi$|^\.passi$|^\.passo$|^\.passo-num$|^\.passo-testo$|^\.pagamento$/.test(x))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !delLook(r) && !impaginazioneVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !delLook(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
