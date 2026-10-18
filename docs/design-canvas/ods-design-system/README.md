@@ -281,7 +281,7 @@ I valori e i rapporti di contrasto calcolati stanno in `../iscrizione-sito/token
 ## Il sito pubblico: i pezzi della home (proposta)
 
 PROPOSTA, non costruita: i componenti `Sito*` riproducono nell'aspetto del sito (Big Shoulders Display + Inter, colori A2 di
-`../sito-rebrand/token-proposta.md`) i pezzi della home proposta in `../home-miglioramenti/`. Non hanno la prop `tema`: sono già
+`../sito-approvato/token-proposta.md`) i pezzi della home proposta in `../home-miglioramenti/`. Non hanno la prop `tema`: sono già
 del sito. `piccolo` li porta alla misura del telefono (375px). `nota="DA CONFERMARE …"` li marca con contorno rosso e cartellino.
 
 | File | Cosa è |

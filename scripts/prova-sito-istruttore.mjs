@@ -3,7 +3,7 @@
 //
 //   node scripts/prova-sito-istruttore.mjs
 //
-// Design: docs/design-canvas/sito-rebrand/TatamiBlu-Istruttore.dc.html (computer, 1440px)
+// Design: docs/design-canvas/sito-approvato/TatamiBlu-Istruttore.dc.html (computer, 1440px)
 // e TatamiBluM-Istruttore.dc.html (telefono). Regola di testo: docs/sito/istruttore.md.
 // Una pagina (non la Home, non di legge) il cui testo comincia con una foto e una
 // citazione è «di persona»: testata a due colonne, ritratto con citazione, tessere.

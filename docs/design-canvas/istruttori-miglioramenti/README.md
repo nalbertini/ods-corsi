@@ -10,11 +10,11 @@ Proposta da approvare prima di toccare il sito. Parte da `docs/proposte-home/ist
 | `IstruttoriProposta` (1440) | L'elenco proposto |
 | `IstruttoriPropostaTelefono` (375) | Lo stesso sul telefono |
 | `IstruttoreMinima` (1440) e `IstruttoreMinimaTelefono` (375) | **La scheda di default** (decisione dell'utente): nome, foto se c'è, corsi dal database, due pulsanti, invito. Esempio Fabio Berta. Senza foto: fascia azzurra con l'iniziale. Niente tessere vuote |
-| `IstruttoreProposta` (1440) e `IstruttoreTelefono` (375) | **La scheda completa**, per quando i dati arrivano (esempio: Maurizio Innella, con i dati del canvas `sito-rebrand/TatamiBlu-Istruttore`) |
+| `IstruttoreProposta` (1440) e `IstruttoreTelefono` (375) | **La scheda completa**, per quando i dati arrivano (esempio: Maurizio Innella, con i dati del canvas `sito-approvato/TatamiBlu-Istruttore`) |
 
 La scheda singola **oggi non esiste sul sito** (`/istruttori/<nome>/` dà 404): le tavole 5-7 sono una proposta, non un confronto.
 
-I pezzi nuovi stanno in `../ods-design-system/`: `SitoRitratto`, `SitoDatoPersona`, `SitoBloccoPersona`, `SitoElencoPercorso` (righe nel README della libreria). Il resto è della libreria: `SitoTestata`, `SitoPulsante`, `SitoTitolo`, `SitoPiede`. Valori e colori sono quelli di `sito-rebrand/TatamiBlu.dc.html` (A2). `node docs/design-canvas/ods-design-system/verifica.mjs`: «tutto in regola».
+I pezzi nuovi stanno in `../ods-design-system/`: `SitoRitratto`, `SitoDatoPersona`, `SitoBloccoPersona`, `SitoElencoPercorso` (righe nel README della libreria). Il resto è della libreria: `SitoTestata`, `SitoPulsante`, `SitoTitolo`, `SitoPiede`. Valori e colori sono quelli di `sito-approvato/TatamiBlu.dc.html` (A2). `node docs/design-canvas/ods-design-system/verifica.mjs`: «tutto in regola».
 
 `canvas.json` elenca le otto tavole. `rendi.mjs` genera le anteprime statiche `anteprima-elenco-1440.html`, `anteprima-elenco-375.html`, `anteprima-scheda-1440.html`, `anteprima-scheda-375.html`, `anteprima-scheda-minima-1440.html`, `anteprima-scheda-minima-375.html` (pagine autonome, foto da `img/`); `shot/` ha gli screenshot a pagina intera. I `.dc.html` si aprono col canvas.
 
