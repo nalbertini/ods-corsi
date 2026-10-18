@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<nav aria-label="Corsi per età" style="display: flex; gap: 6px; flex-wrap: wrap">
+  <sc-for list="{{voci}}" as="v" hint-placeholder-count="3"><a style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 16px; border-radius: 999px; background: #cfe6f4; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 16px; text-decoration: none">{{v.nome}}</a></sc-for>
+</nav>
+</x-dc>
+<script data-dc-script data-props='{"voci":{"editor":"text","default":"Piccoli 3-6|Ragazzi 7-14|Dai 14 anni"},"$preview":{"width":343,"height":48}}'>
+// PROPOSTA Home del sito: la riga di ancore sopra i gruppi di eta' dei corsi. Link veri (#piccoli, #ragazzi, #adulti), senza script; chip da 48px come le pastiglie di navigazione.
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { inter: INTER, voci: String(p.voci ?? '').split('|').filter(Boolean).map((nome, i) => ({ nome, href: ['#piccoli', '#ragazzi', '#adulti'][i] || '#' })) };
+  }
+}
+</script>
+</body>
+</html>
