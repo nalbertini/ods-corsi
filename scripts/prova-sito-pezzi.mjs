@@ -152,6 +152,8 @@ ok('c-2 ha due colonne', nCol(regola(base, /\.c-2/)), 2)
 ok('c-3 ha tre colonne', nCol(regola(base, /\.c-3/)), 3)
 ok('c\'è una regola @media (max-width:720px) per le colonne', /\.colonne/.test(media), true)
 ok('sul telefono sono una colonna sola', /grid-template-columns:\s*(1fr|minmax\(0,\s*1fr\)|repeat\(1,)/.test(regola(media, /\.colonne|\.c-[23]/)), true)
+// Dentro .testo e .sezione il margine laterale c'è già: le colonne non lo raddoppiano e non ereditano il 62ch di .colonna.
+ok('le colonne non raddoppiano il margine né il 62ch', (r => [/padding:\s*0\s+0\s+24px/.test(regola(css, /\.colonne\s*$/)), /max-width:\s*none/.test(r), /padding:\s*0(;|$)/.test(r)])(regola(css, /\.colonne>\.colonna/)), [true, true, true])
 ok('niente scorrimento orizzontale: celle che si restringono', /minmax\(0,|min-width:\s*0|overflow-wrap|overflow-x:\s*hidden/.test(regola(css, /\.colonne|\.colonna/)), true)
 
 console.log('\nModalità prova: le stesse regole di salva_bozza_pezzi_sito')
