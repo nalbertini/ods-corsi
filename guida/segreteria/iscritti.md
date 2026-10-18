@@ -106,9 +106,24 @@ il timbro è grigio, **NON SERVE**, con **SOTTO I 6 ANNI**; un certificato già
 segnato si vede com'è, senza rosso. Nell'ultimo mese prima del compleanno è
 giallo, **SERVE DAL 14/10/2026**, sotto **FRA 14 GIORNI**. Senza certificato e senza data di nascita il timbro è rosso e dice anche **MANCA LA DATA DI NASCITA**. E
 **DOCUMENTO D'IDENTITÀ** più piccolo, perché non serve per entrare. Un clic su
-un timbro porta alla sua parte della scheda. Se la scheda è disattivata i
+un timbro apre la scheda che lo contiene (sotto) e porta alla sua parte. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
 **Riattiva**.
+
+Sotto i timbri la scheda è divisa in quattro schede, e se ne vede una alla volta:
+
+- **PERSONA** — i contatti, **STESSO CONTATTO DI**, **DATI ANAGRAFICI**, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
+- **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
+- **QUOTA E PAGAMENTI** — la quota e i pagamenti, con **+ FAI LA RICEVUTA** e **+ REGISTRA UN PAGAMENTO**. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui.
+- **CORSI** — le iscrizioni e le ultime 12 lezioni.
+
+Se in **DOCUMENTI** o in **QUOTA E PAGAMENTI** c'è qualcosa da sistemare, la
+scheda lo dice a parole, con un puntino giallo o rosso: **DA SISTEMARE** o
+**DA PAGARE**. Con una modifica aperta, da un'altra scheda, **PERSONA** dice
+**IN MODIFICA**. Cambiando scheda non si perde quello che stai scrivendo. Si
+cambia anche con la tastiera: le frecce spostano, **Home** e **Fine** vanno
+alla prima e all'ultima. Il nome, i timbri e i tasti in fondo (**MODIFICA**,
+**DISATTIVA**, **UNISCI…**) restano sempre in vista.
 
 In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
 **CARICA IL CERTIFICATO**, **CARICA IL NUOVO**, **CARICA IL FILE** o
@@ -297,7 +312,7 @@ PAGAMENTO** lo mette nello storico, sotto **SENZA RICEVUTA**, e lo conta in
 resta in elenco, barrato, e non si conta.
 
 **MANCA** si calcola sulle ricevute: un pagamento a mano **non lo riduce**, perché non si sa su quale ricevuta va (se paga il saldo di una ricevuta, il saldo si registra come pagamento di quella ricevuta, facendo una ricevuta nuova). Un pagamento a mano **non cambia se la persona è in regola**: la quota pagata
-fuori dall'app si segna dalla sezione **QUOTA** (**PAGATA SENZA RICEVUTA
+fuori dall'app si segna dalla scheda **QUOTA E PAGAMENTI** (**PAGATA SENZA RICEVUTA
 DELL'APP**), o con una ricevuta.
 
 Il certificato è un dato sulla salute: lo vede solo la segreteria, non gli
@@ -309,7 +324,7 @@ aprono più, e si possono togliere lo stesso.
 
 *Per ora solo in prova: col database vero la sezione non c'è.*
 
-In fondo alla scheda, **NUCLEO FAMILIARE**: le persone che stanno insieme in
+Nella scheda **PERSONA**, **NUCLEO FAMILIARE**: le persone che stanno insieme in
 un nucleo, come un genitore coi figli. Il **titolare** vede tutto il nucleo
 nella sua pagina dell'[area iscritti](../iscritti.md#il-nucleo-familiare);
 gli altri vedono solo sé stessi. Toccando un nome si apre la sua scheda.

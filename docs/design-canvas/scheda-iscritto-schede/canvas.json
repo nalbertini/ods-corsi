@@ -1,0 +1,17 @@
+{
+ "pages": [{"id": "page-1", "name": "Scheda iscritto a schede"}],
+ "artboards": [
+  {"file": "Oggi.dc.html", "title": "1 · Oggi: due colonne", "x": 0, "y": 300, "page": "page-1"},
+  {"file": "Persona.dc.html", "title": "2 · Proposta: PERSONA", "x": 1560, "y": 300, "page": "page-1"},
+  {"file": "Documenti.dc.html", "title": "3 · Proposta: DOCUMENTI", "x": 3120, "y": 300, "page": "page-1"},
+  {"file": "Quota.dc.html", "title": "4 · Proposta: QUOTA E PAGAMENTI", "x": 0, "y": 3000, "page": "page-1"},
+  {"file": "Corsi.dc.html", "title": "5 · Proposta: CORSI", "x": 1560, "y": 3000, "page": "page-1"},
+  {"file": "Modifica.dc.html", "title": "6 · In modifica", "x": 3120, "y": 3000, "page": "page-1"},
+  {"file": "AltraScheda.dc.html", "title": "7 · Modifica aperta, altra scheda", "x": 0, "y": 4500, "page": "page-1"},
+  {"file": "Disattivata.dc.html", "title": "8 · Scheda disattivata", "x": 1560, "y": 4500, "page": "page-1"},
+  {"file": "SenzaTessere.dc.html", "title": "9 · Senza tessere", "x": 3120, "y": 4500, "page": "page-1"},
+  {"file": "Telefono.dc.html", "title": "10-11 · Telefono", "x": 0, "y": 6000, "page": "page-1"},
+  {"file": "Chiaro.dc.html", "title": "12 · Tema chiaro", "x": 1100, "y": 6000, "page": "page-1"}
+ ],
+ "annotations": [{"id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1280, "text": "Scheda dell’iscritto a schede: PERSONA, DOCUMENTI, QUOTA E PAGAMENTI, CORSI"}]
+}

@@ -3109,5 +3109,27 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* Il modulo è sempre chiaro: il tasto del tema in testata cambierebbe solo l'icona, quindi a modulo aperto non c'è. */
 :root[data-modulo='sito'] .tasto-tema { display: none; }
 
+/* La scheda iscritto a schede: la linguetta dice a parole se c'è qualcosa da sistemare, e il piede resta in vista. */
+.sg-schede-scheda .scheda { white-space: nowrap; gap: 8px; }
+.sg-scheda-segno { font-size: 11px; letter-spacing: 0.1em; }
+.sg-scheda-segno[data-tono='giallo'] { color: var(--giallo-testo); }
+.sg-scheda-segno[data-tono='rosso'] { color: var(--rosso-testo); }
+/* Sulla linguetta accesa (fondo surface-2) il giallo scuro non arriva a 4,5:1: lì vale il testo; il puntino e la parola dicono comunque il segno. */
+.sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno[data-tono='giallo'] { color: var(--text); }
+.sg-scheda-corta { display: none; }
+.sg-scheda-piede-fisso { position: sticky; bottom: 0; z-index: 2; padding-bottom: 12px; background: var(--surface); }
+/* Stretto: i timbri due per due (una colonna sola spingerebbe le schede sotto lo scorrimento; questa regola sta dopo quella a una colonna e vince) e le quattro linguette stanno tutte nella larghezza, il segno va sotto il nome (niente scorrimento nascosto). */
+@media (max-width: 1000px) {
+  .sg-timbri, .sg-timbri[data-con-tessera] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-schede-scheda { grid-auto-columns: minmax(0, 1fr); align-self: stretch; width: 100%; }
+  .sg-schede-scheda .scheda { flex-direction: column; gap: 2px; padding: 4px; white-space: normal; text-align: center; letter-spacing: 0.08em; font-size: 13px; }
+  .sg-schede-scheda .sg-scheda-segno { letter-spacing: 0.04em; }
+  .sg-scheda-lunga { display: none; }
+  .sg-scheda-corta { display: inline; }
+}
+@media (max-width: 480px) {
+  .sg-scheda-piede-fisso > .sg-btn { padding: 0 6px; letter-spacing: 0.08em; font-size: 14px; }
+}
+
 /* CONTABILITÀ: i totali delle casse vanno a capo sotto una certa larghezza, invece di tagliare gli importi a 40px. */
 .sg-numeri.sg-numeri-conti { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
