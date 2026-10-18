@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=375, initial-scale=1">
+  <title>Orari telefono</title>
+</head>
+<body>
+
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+
+<!-- PROPOSTA pagina Orari (375px): l’orario tipo da lunedì a domenica; la riempie il generatore del sito da orari_aperti() + corsi_aperti(). Gli orari qui sono d’esempio. -->
+<div style="width:375px;min-height:2600px;position:relative;overflow:hidden;background:#eef5fa;color:#0d2a3d">
+  
+<header style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px 0; color: #0d2a3d">
+  <div style="width: 84px; height: 82px; flex: none; background-image: url(logo.webp); background-repeat: no-repeat; background-size: 156px 156px; background-position: -36px -33px; mix-blend-mode: multiply" role="img" aria-label="Officine dello Sport"></div>
+  
+  
+  <span style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border-radius: 6px; background: #0d2a3d; color: #ffffff; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 600; font-size: 16px">Menu <span aria-hidden="true">☰</span></span>
+</header>
+
+  <section style="padding:20px 16px 0"><h1 style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;margin:0 0 16px;font-size:84px;line-height:.84;letter-spacing:-.01em">Orari</h1><p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:18px;line-height:1.5;max-width:760px">I corsi della settimana, giorno per giorno. Sono gli orari di tutto l’anno.</p></section>
+  <section style="display:grid;grid-template-columns:1fr;gap:6px;padding:32px 16px 0">
+    
+<section style="height: 100%; background: #cfe6f4; color: #0d2a3d; border-radius: 6px; padding: 20px 20px 8px">
+  <h2 style="margin: 0 0 8px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; font-weight: 800; font-size: 36px; line-height: .95">Lunedì</h2>
+  <ul style="list-style: none; margin: 0; padding: 0">
+    <li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">17:00–18:00</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Judo bambini</span>
+    </li><li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">18:00–19:00</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Judo ragazzi</span>
+    </li><li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">19:30–20:30</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Aikido</span>
+    </li>
+  </ul>
+</section>
+
+    
+<section style="height: 100%; background: #cfe6f4; color: #0d2a3d; border-radius: 6px; padding: 20px 20px 8px">
+  <h2 style="margin: 0 0 8px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; font-weight: 800; font-size: 36px; line-height: .95">Martedì</h2>
+  <ul style="list-style: none; margin: 0; padding: 0">
+    <li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">18:00–19:00</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Pre pugilistica</span>
+    </li><li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">19:00–20:00</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Preparazione atletica</span>
+    </li>
+  </ul>
+</section>
+
+    
+<section style="height: 100%; background: #cfe6f4; color: #0d2a3d; border-radius: 6px; padding: 20px 20px 8px">
+  <h2 style="margin: 0 0 8px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; font-weight: 800; font-size: 36px; line-height: .95">Mercoledì</h2>
+  <ul style="list-style: none; margin: 0; padding: 0">
+    <li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">17:00–18:00</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Judo bambini</span>
+    </li><li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">18:00–19:00</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Judo ragazzi</span>
+    </li><li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">19:30–20:30</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Aikido</span>
+    </li>
+  </ul>
+</section>
+
+    
+<section style="height: 100%; background: #cfe6f4; color: #0d2a3d; border-radius: 6px; padding: 20px 20px 8px">
+  <h2 style="margin: 0 0 8px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; font-weight: 800; font-size: 36px; line-height: .95">Giovedì</h2>
+  <ul style="list-style: none; margin: 0; padding: 0">
+    <li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">17:30–18:30</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Lotta</span>
+    </li><li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">19:00–20:30</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Metodo Globale di Autodifesa (MGA)</span>
+    </li>
+  </ul>
+</section>
+
+    
+<section style="height: 100%; background: #cfe6f4; color: #0d2a3d; border-radius: 6px; padding: 20px 20px 8px">
+  <h2 style="margin: 0 0 8px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; font-weight: 800; font-size: 36px; line-height: .95">Venerdì</h2>
+  <ul style="list-style: none; margin: 0; padding: 0">
+    <li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">17:00–18:00</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Giocomotricità e psicomotricità</span>
+    </li><li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">18:00–19:00</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Judo ragazzi</span>
+    </li>
+  </ul>
+</section>
+
+    
+<section style="height: 100%; background: #cfe6f4; color: #0d2a3d; border-radius: 6px; padding: 20px 20px 8px">
+  <h2 style="margin: 0 0 8px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; font-weight: 800; font-size: 36px; line-height: .95">Sabato</h2>
+  <ul style="list-style: none; margin: 0; padding: 0">
+    <li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">10:00–11:00</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Avviamento alle arti marziali</span>
+    </li><li style="display: flex; flex-direction: row; gap: 16px; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: 128px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; line-height: 1; white-space: nowrap">11:00–12:00</span>
+      <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">Sollevamenti pesi</span>
+    </li>
+  </ul>
+</section>
+
+  </section>
+  <section style="padding:6px 16px 0"><section style="background:#0d2a3d;color:#ffffff;border-radius:6px;padding:24px 20px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:20px"><p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:18px;line-height:1.45;max-width:760px">Per variazioni contatta la segreteria: 346 329 2786, anche su WhatsApp.</p><span style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;display:inline-flex;align-items:center;min-height:56px;padding:0 28px;border-radius:6px;background:#f4c31b;color:#0d2a3d;font-weight:600;font-size:17px;flex:none;width:100%;justify-content:center">Scrivici su WhatsApp</span></section><p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:16px 0 0;font-size:15px;line-height:1.5;font-weight:500">Aggiornato al 18 ottobre 2026</p></section>
+  <section style="padding:48px 16px 16px">
+<footer style="background: #0d2a3d; color: #ffffff; border-radius: 6px; padding: 28px 24px; display: flex; flex-direction: column; justify-content: space-between; gap: 28px; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.5">
+  <div style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; font-weight: 800; font-size: 44px; line-height: .9">Officine<br>dello Sport</div>
+  <div>Via Sassi 26, Collegno<br>vicino alla metro Fermi</div>
+  <div style="display: flex; flex-direction: column">
+    <span style="display: inline-flex; align-items: center; min-height: 48px">Home</span><span style="display: inline-flex; align-items: center; min-height: 48px">I nostri corsi</span><span style="display: inline-flex; align-items: center; min-height: 48px">Orari</span><span style="display: inline-flex; align-items: center; min-height: 48px">Chi siamo</span><span style="display: inline-flex; align-items: center; min-height: 48px">Contattaci</span>
+  </div>
+  <div style="display: flex; flex-direction: column">
+    <span style="display: inline-flex; align-items: center; min-height: 48px">Privacy</span><span style="display: inline-flex; align-items: center; min-height: 48px">Cookie</span><span style="display: inline-flex; align-items: center; min-height: 48px">Contributi pubblici</span>
+  </div>
+</footer>
+</section>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Orari telefono</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA pagina Orari (375px): l’orario tipo da lunedì a domenica; la riempie il generatore del sito da orari_aperti() + corsi_aperti(). Gli orari qui sono d’esempio. -->
+<div style="width:375px;min-height:2600px;position:relative;overflow:hidden;background:#eef5fa;color:#0d2a3d">
+  <dc-import name="SitoTestata" logo="logo.webp" attiva="Orari" con-orari="{{ true }}" prova="Prova una settimana a 5 €" piccolo="{{ true }}" hint-size="100%,96px"></dc-import>
+  <section style="padding:20px 16px 0"><h1 style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;margin:0 0 16px;font-size:84px;line-height:.84;letter-spacing:-.01em">Orari</h1><p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:18px;line-height:1.5;max-width:760px">I corsi della settimana, giorno per giorno. Sono gli orari di tutto l’anno.</p></section>
+  <section style="display:grid;grid-template-columns:1fr;gap:6px;padding:32px 16px 0">
+    <dc-import name="SitoOrarioGiorno" giorno="Lunedì" voci="17:00–18:00|Judo bambini;18:00–19:00|Judo ragazzi;19:30–20:30|Aikido" piccolo="{{ true }}" hint-size="100%,200px"></dc-import>
+    <dc-import name="SitoOrarioGiorno" giorno="Martedì" voci="18:00–19:00|Pre pugilistica;19:00–20:00|Preparazione atletica" piccolo="{{ true }}" hint-size="100%,200px"></dc-import>
+    <dc-import name="SitoOrarioGiorno" giorno="Mercoledì" voci="17:00–18:00|Judo bambini;18:00–19:00|Judo ragazzi;19:30–20:30|Aikido" piccolo="{{ true }}" hint-size="100%,200px"></dc-import>
+    <dc-import name="SitoOrarioGiorno" giorno="Giovedì" voci="17:30–18:30|Lotta;19:00–20:30|Metodo Globale di Autodifesa (MGA)" piccolo="{{ true }}" hint-size="100%,200px"></dc-import>
+    <dc-import name="SitoOrarioGiorno" giorno="Venerdì" voci="17:00–18:00|Giocomotricità e psicomotricità;18:00–19:00|Judo ragazzi" piccolo="{{ true }}" hint-size="100%,200px"></dc-import>
+    <dc-import name="SitoOrarioGiorno" giorno="Sabato" voci="10:00–11:00|Avviamento alle arti marziali;11:00–12:00|Sollevamenti pesi" piccolo="{{ true }}" hint-size="100%,200px"></dc-import>
+  </section>
+  <section style="padding:6px 16px 0"><section style="background:#0d2a3d;color:#ffffff;border-radius:6px;padding:24px 20px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:20px"><p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:18px;line-height:1.45;max-width:760px">Per variazioni contatta la segreteria: 346 329 2786, anche su WhatsApp.</p><span style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;display:inline-flex;align-items:center;min-height:56px;padding:0 28px;border-radius:6px;background:#f4c31b;color:#0d2a3d;font-weight:600;font-size:17px;flex:none;width:100%;justify-content:center">Scrivici su WhatsApp</span></section><p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:16px 0 0;font-size:15px;line-height:1.5;font-weight:500">Aggiornato al 18 ottobre 2026</p></section>
+  <section style="padding:48px 16px 16px"><dc-import name="SitoPiede" con-orari="{{ true }}" piccolo="{{ true }}" hint-size="100%,560px"></dc-import></section>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<section style="height: 100%; background: #cfe6f4; color: #0d2a3d; border-radius: 6px; padding: {{pad}}">
+  <h2 style="margin: 0 0 {{stacco}}; font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: {{corpoGiorno}}; line-height: .95">{{giorno}}</h2>
+  <ul style="list-style: none; margin: 0; padding: 0">
+    <sc-for list="{{righe}}" as="r" hint-placeholder-count="3"><li style="display: flex; flex-direction: {{dir}}; gap: {{gap}}; padding: 12px 0; border-top: 2px solid #eef5fa">
+      <span style="flex: none; width: {{largOra}}; font-family: {{big}}; font-weight: 800; font-size: {{corpoOra}}; line-height: 1; white-space: nowrap">{{r.ora}}</span>
+      <span style="font-family: {{inter}}; font-size: {{corpoNome}}; line-height: 1.35; font-weight: 600; overflow-wrap: anywhere">{{r.nome}}</span>
+    </li></sc-for>
+  </ul>
+</section>
+</x-dc>
+<script data-dc-script data-props='{"giorno":{"editor":"text","default":"Lunedì"},"voci":{"editor":"text","default":"17:00–18:00|Judo 2;18:00–19:00|Judo 3"},"piccolo":{"editor":"boolean","default":false},"$preview":{"width":316,"height":260}}'>
+// PROPOSTA pagina Orari del sito: un giorno dell'orario tipo. `voci` = «ora|corso» separate da «;», in ordine di ora (le scrive il generatore da orari_aperti() + corsi_aperti()).
+// Tessera chiara (#cfe6f4) come le altre del sito, giorno in Big Shoulders 800 maiuscolo; filo #eef5fa fra le voci. Il nome del corso va a capo (anche parole lunghe), mai tagliato.
+// Schermo largo: ora sopra, nome sotto (colonna da ~316px). Telefono (`piccolo`): ora a sinistra in colonna fissa, nome a destra.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const pic = truthy(p.piccolo);
+    const righe = (p.voci ?? '').split(';').filter(Boolean).map((v) => { const [ora, ...n] = v.split('|'); return { ora, nome: n.join('|') }; });
+    return { big: BIG, inter: INTER, giorno: p.giorno ?? '', righe, pad: pic ? '20px 20px 8px' : '24px 24px 12px', stacco: pic ? '8px' : '12px', corpoGiorno: pic ? '36px' : '44px',
+      dir: pic ? 'row' : 'column', gap: pic ? '16px' : '2px', largOra: pic ? '128px' : 'auto', corpoOra: pic ? '24px' : '30px', corpoNome: pic ? '17px' : '18px' };
+  }
+}
+</script>
+</body>
+</html>

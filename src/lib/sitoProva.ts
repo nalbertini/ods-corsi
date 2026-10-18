@@ -1,6 +1,7 @@
 import { controllaMenu, controllaSlug, MASSIMO_DESCRIZIONE, MASSIMO_TITOLO, pagineDiLeggeProtette, testoTroppoLungo, type PaginaSito, type VoceMenu } from './sitoPagine'
 import { testoSicuro } from './sitoTesto'
 import { pezziInHtml, pezziValidi, type PezziPagina } from './sitoPezzi'
+import type { OrarioSito } from './sitoOrari'
 
 /**
  * Le regole di `supabase/56-sito.sql` rifatte in memoria, per la modalità
@@ -153,4 +154,15 @@ export function salvaMenu(s: StatoSito, dove: 'menu' | 'footer', voci: VoceMenu[
   const problemi = controllaMenu(dove, voci, s.pagine)
   if (problemi.length) throw new Error(problemi[0])
   return { ...s, [dove]: voci.map((v) => ({ ...v, etichetta: v.etichetta.trim() })) }
+}
+
+/**
+ * Gli orari della pagina «Orari» in prova: gli stessi che darebbe `orari_sito()` (67-orari-sito.sql), corsi attivi e
+ * ricorrenze non finite (quella che finisce oggi c'è ancora), e nient'altro. La data di modifica è quella di oggi, fissa:
+ * in prova niente la sposta, e gli stessi dati danno la stessa pagina.
+ */
+export function orariSitoProva(corsi: Array<{ nome: string; attivo: boolean; ricorrenze: Array<{ giorno: number; ora: string; durata: number; al?: string }> }>, oggi: string): OrarioSito[] {
+  return corsi
+    .filter((c) => c.attivo)
+    .flatMap((c) => c.ricorrenze.filter((r) => !r.al || r.al >= oggi).map((r) => ({ corso: c.nome, giorno: r.giorno, ora: r.ora.length === 5 ? `${r.ora}:00` : r.ora, durata_min: r.durata, modificata_il: `${oggi}T10:00:00+00:00` })))
 }

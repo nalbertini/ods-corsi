@@ -54,6 +54,10 @@ Nella scheda, sotto **RICORRENZE**:
 - **+ Aggiungi un giorno** → giorno, ora, minuti, sala → **Aggiungi**;
 - la ✕ accanto a un giorno lo toglie (chiede conferma).
 
+I giorni e le ore dei corsi attivi sono anche gli orari della pagina **Orari**
+del sito: cambiano da soli in circa 5 minuti (vedi
+[Sito](sito.md#la-pagina-degli-orari)).
+
 Cambiare i giorni tocca **solo le lezioni future**: quelle con un appello
 restano come sono, il passato è già nel registro. Un corso senza giorni non
 genera lezioni.

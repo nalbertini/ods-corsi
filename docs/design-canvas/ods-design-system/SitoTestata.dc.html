@@ -23,7 +23,7 @@
   <sc-if value="{{stretto}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border-radius: 6px; background: #0d2a3d; color: #ffffff; font-family: {{inter}}; font-weight: 600; font-size: 16px">Menu <span aria-hidden="true">☰</span></span></sc-if>
 </header>
 </x-dc>
-<script data-dc-script data-props='{"logo":{"editor":"text","default":"logo.webp"},"attiva":{"editor":"text","default":"Home"},"prova":{"editor":"text","default":"Prova una settimana a 5 €"},"piccolo":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":120}}'>
+<script data-dc-script data-props='{"logo":{"editor":"text","default":"logo.webp"},"attiva":{"editor":"text","default":"Home"},"prova":{"editor":"text","default":"Prova una settimana a 5 €"},"piccolo":{"editor":"boolean","default":false},"conOrari":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":120}}'>
 // PROPOSTA home del sito: la testata. Voci di menu con bersaglio da 48px (oggi 39px), il pulsante di prova col verbo e il prezzo (porta al modulo online) e «Scrivici» (porta a Contatti; il 346 329 2786 risponde anche su WhatsApp).
 // Sul telefono: marchio + tasto MENU da 48px (oggi due righe di voci schiacciate contro il titolo). Il marchio e' ritagliato come sul sito (logo.webp, 207px, scostamento -47 -43).
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
@@ -40,7 +40,7 @@ class Component extends DCLogic {
     const attiva = p.attiva || 'Home';
     return { inter: INTER, logo: p.logo || 'logo.webp', prova: p.prova ?? '', largo: !pic, stretto: pic,
       pad: pic ? '12px 16px 0' : '22px 48px', lw: pic ? '84px' : '112px', lh: pic ? '82px' : '110px', ls: pic ? '156px 156px' : '207px 207px', lp: pic ? '-36px -33px' : '-47px -43px',
-      voci: ['Home', 'I nostri corsi', 'Chi siamo', 'Contattaci'].map((nome) => ({ nome, riga: nome === attiva ? '3px solid #14709f' : '3px solid transparent', peso: nome === attiva ? 700 : 500 })) };
+      voci: (truthy(p.conOrari) ? ['Home', 'I nostri corsi', 'Orari', 'Chi siamo', 'Contattaci'] : ['Home', 'I nostri corsi', 'Chi siamo', 'Contattaci']).map((nome) => ({ nome, riga: nome === attiva ? '3px solid #14709f' : '3px solid transparent', peso: nome === attiva ? 700 : 500 })) };
   }
 }
 </script>

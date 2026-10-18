@@ -7,6 +7,7 @@ import { CSS_CORSI, CSS_CORSI_NUOVA, corsiNuova, eCorsiNuova } from './sitoCorsi
 import { CSS_INTERNE } from './sitoInterne'
 import { cssFoci, cssFociSchede } from './sitoFoto'
 import { eContattiNuova, contattiNuova } from './sitoContatti'
+import { CSS_ORARI, dividiOrari, orariHtml, type OrarioSito } from './sitoOrari'
 import { eHomeNuova, homeNuova } from './sitoHome'
 import { corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
 import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
@@ -53,6 +54,8 @@ export interface DatiSito {
   pagine: PaginaGenerata[]
   menu: VoceGenerata[]
   rinvii: Array<{ da: string; a: string }>
+  /** Gli orari tipo dei corsi attivi (`orari_sito()`) per la pagina «orari». Può mancare: la pagina dice «Orari in arrivo». */
+  orari?: OrarioSito[]
   /** Prefissi di indirizzo da cui le immagini del testo sono ammesse: il contenitore delle immagini (`…/storage/v1/object/public/sito/`). Vuoto: solo quelle del sito. */
   ospitiImmagini?: string[]
 }
@@ -1069,10 +1072,10 @@ function social(c: Contesto, titolo: string, descrizione: string): string {
   ].join('')
 }
 
-function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssContatti?: boolean; cssCorsoNuovo?: string; cssCorsi?: boolean; dati?: string }): string {
+function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssContatti?: boolean; cssCorsoNuovo?: string; cssCorsi?: boolean; cssOrari?: boolean; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}${o.cssOrari ? `<style>${CSS_ORARI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
 }
 
 /**
@@ -1089,6 +1092,9 @@ const PAGINE_NON_CORSO = new Set(['home', 'corsi', 'contatti', 'chi-siamo'])
 
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
+  // La pagina «orari» col segnaposto [orari]: gli orari veri dei corsi. Senza il segnaposto è una pagina come le altre.
+  const orari = p.slug === 'orari' && !p.diLegge ? dividiOrari(pulito) : null
+  if (orari) return paginaOrari(p, c, conContatti, orari)
   if (!PAGINE_NON_CORSO.has(p.slug) && !p.diLegge && eCorsoNuovo(pulito, TESTI.iscrizione)) return paginaCorsoNuovo(p, c, conContatti, pulito)
   if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, conContatti, pulito)
   if (p.slug === 'corsi' && !p.diLegge && eCorsiNuova(pulito, TESTI.iscrizione)) return paginaCorsiNuova(p, c, conContatti, pulito)
@@ -1127,6 +1133,16 @@ function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, p
   const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati })
+}
+
+/** Gli orari (sitoOrari.ts): titolo e introduzione della segreteria, una tessera per giorno, la riga «Per variazioni…» e la data. Senza l'invito: nel design la pagina finisce con le variazioni. */
+function paginaOrari(p: PaginaGenerata, c: Contesto, conContatti: boolean, { prima, dopo }: { prima: string; dopo: string }): string {
+  // Senza orari la pagina non ha niente da introdurre: la frase del design al posto dell'introduzione della segreteria.
+  const intro = (c.d.orari ?? []).length ? prima || (p.descrizione ? `<p>${esc(p.descrizione)}</p>` : '') : '<p>L’orario della settimana comparirà qui.</p>'
+  const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${intro}</div></section>`
+  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico pagina-orari">${hero}${orariHtml(dopo, c.d.orari ?? [])}</main>${piede(c)}`
+  const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: '', titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssOrari: true, dati })
 }
 
 /** I corsi nuova (sitoCorsi.ts): testata col solo titolo e la frase, nove schede, chiamata finale. Senza la chiamata nel testo resta l'invito di sempre. */
@@ -1241,12 +1257,13 @@ export function generaSito(d: DatiSito): Record<string, string> {
 /** Le pagine di legge del sito: le tre che `56-sito.sql` crea e che non si nascondono (la funzione pubblica non dice quali sono). */
 export const PAGINE_DI_LEGGE = ['privacy', 'cookie', 'contributi-pubblici']
 
-/** Le risposte delle tre funzioni pubbliche del database (`sito_pagine_pubbliche`, `sito_menu_pubblico`, `sito_redirect_pubblici`) come servono al generatore. */
+/** Le risposte delle funzioni pubbliche del database (`sito_pagine_pubbliche`, `sito_menu_pubblico`, `sito_redirect_pubblici`, `orari_sito`) come servono al generatore. */
 export function datiDaRisposte(
   dominio: string,
   pagine: Array<{ slug: string; titolo: string | null; descrizione: string | null; testo: string | null; pubblicata_il: string | null }>,
   menu: Array<{ dove: string; ordine: number; etichetta: string; slug: string | null; indirizzo: string | null }>,
   rinvii: Array<{ da: string; a: string }>,
+  orari?: OrarioSito[],
 ): DatiSito {
   return {
     dominio: dominio.replace(/\/+$/, ''),
@@ -1260,5 +1277,6 @@ export function datiDaRisposte(
     })),
     menu: menu.flatMap((v) => (v.dove === 'menu' || v.dove === 'footer' ? [{ dove: v.dove, ordine: v.ordine, etichetta: v.etichetta, slug: v.slug, indirizzo: v.indirizzo }] : [])),
     rinvii,
+    orari,
   }
 }

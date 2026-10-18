@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Orari nome lungo</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- Nome lungo: il nome del corso va a capo, mai tagliato; l’ora resta su una riga. A sinistra lo schermo largo (tessera da 446px), a destra il telefono (343px). -->
+<div style="width:1440px;min-height:400px;position:relative;overflow:hidden;background:#eef5fa;color:#0d2a3d;padding:48px;display:flex;gap:48px;align-items:flex-start">
+  <div style="width:446px;flex:none"><dc-import name="SitoOrarioGiorno" giorno="Giovedì" voci="17:30–18:30|Metodo Globale di Autodifesa (MGA) per adulti e ragazzi;19:00–20:30|Giocomotricità e psicomotricità 3-5 anni;20:30–21:30|Preparazione atletica e sollevamenti pesi" hint-size="100%,300px"></dc-import></div>
+  <div style="width:343px;flex:none"><dc-import name="SitoOrarioGiorno" giorno="Giovedì" voci="17:30–18:30|Metodo Globale di Autodifesa (MGA) per adulti e ragazzi;19:00–20:30|Giocomotricità e psicomotricità 3-5 anni;20:30–21:30|Preparazione atletica e sollevamenti pesi" piccolo="{{ true }}" hint-size="100%,200px"></dc-import></div>
+  <p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:18px;line-height:1.5;max-width:340px">I nomi sono quelli del calendario. Va a capo su più righe; la tessera cresce e le altre della riga si allungano uguali (grid, stessa altezza).</p>
+</div>
+</x-dc>
+</body>
+</html>

@@ -25,7 +25,7 @@
   </div>
 </footer>
 </x-dc>
-<script data-dc-script data-props='{"piccolo":{"editor":"boolean","default":false},"$preview":{"width":1344,"height":260}}'>
+<script data-dc-script data-props='{"piccolo":{"editor":"boolean","default":false},"conOrari":{"editor":"boolean","default":false},"$preview":{"width":1344,"height":260}}'>
 // PROPOSTA home del sito: il piede. Link da 48px di altezza (oggi 20-30px) e 24px di stacco dalla chiamata finale (oggi 6px).
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -38,7 +38,7 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const pic = truthy(p.piccolo);
-    return { big: BIG, inter: INTER, dir: pic ? 'column' : 'row', pad: pic ? '28px 24px' : '40px', corpo: pic ? '44px' : '56px', link: ['Home', 'I nostri corsi', 'Chi siamo', 'Contattaci'], legali: ['Privacy', 'Cookie', 'Contributi pubblici'] };
+    return { big: BIG, inter: INTER, dir: pic ? 'column' : 'row', pad: pic ? '28px 24px' : '40px', corpo: pic ? '44px' : '56px', link: truthy(p.conOrari) ? ['Home', 'I nostri corsi', 'Orari', 'Chi siamo', 'Contattaci'] : ['Home', 'I nostri corsi', 'Chi siamo', 'Contattaci'], legali: ['Privacy', 'Cookie', 'Contributi pubblici'] };
   }
 }
 </script>

@@ -1,0 +1,10 @@
+{
+  "pages": [{ "id": "page-1", "name": "Sito · pagina orari" }],
+  "artboards": [
+    { "file": "OrariDesktop.dc.html", "title": "1 · Orari, schermo largo (1440)", "x": 0, "y": 0, "w": 1440, "h": 1700, "page": "page-1" },
+    { "file": "OrariTelefono.dc.html", "title": "2 · Orari, telefono (375)", "x": 1560, "y": 0, "w": 375, "h": 2600, "page": "page-1" },
+    { "file": "OrariVuoto.dc.html", "title": "3 · Stato vuoto, schermo largo", "x": 2055, "y": 0, "w": 1440, "h": 1100, "page": "page-1" },
+    { "file": "OrariVuotoTelefono.dc.html", "title": "4 · Stato vuoto, telefono", "x": 3615, "y": 0, "w": 375, "h": 1500, "page": "page-1" },
+    { "file": "OrariNomeLungo.dc.html", "title": "5 · Nome lungo, largo e telefono", "x": 4110, "y": 0, "w": 1440, "h": 400, "page": "page-1" }
+  ]
+}
