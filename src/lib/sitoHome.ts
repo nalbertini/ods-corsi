@@ -85,7 +85,7 @@ function fasceDi(corpo: Blocco[]): { nomi: string[]; resto: Blocco[] } {
   return nomi.length && nomi.every((x) => note.includes(x.toLowerCase())) ? { nomi, resto: corpo.slice(0, -1) } : { nomi: [], resto: corpo }
 }
 
-export function scheda(g: { titolo: string; corpo: Blocco[] }, k: number, n: number, colore = coloreDi(k, n), titoloH = 'h3'): string {
+export function scheda(g: { titolo: string; corpo: Blocco[] }, k: number, n: number, colore = coloreDi(k, n), titoloH: 'h3' | 'h4' = 'h3'): string {
   const foto = g.corpo.map(immagine).find((x): x is string => x !== null)
   const { nomi, resto } = fasceDi(g.corpo.filter((x) => immagine(x) === null))
   const testi = resto.filter((x) => x.tag === 'p')
@@ -117,9 +117,14 @@ const GRUPPI_ETA = [
 
 /** I corsi in gruppi con le ancore; senza l'età di ogni scheda, o con un gruppo solo, resta l'elenco unico (null). */
 function corsiPerEta(gruppi: { titolo: string; corpo: Blocco[] }[]): string | null {
-  const eta = gruppi.map(etaDiInizio)
-  if (eta.some((x) => x === null)) return null
-  const dentro = GRUPPI_ETA.map((g, i) => ({ ...g, corsi: gruppi.map((c, k) => ({ c, e: eta[k] as number })).filter(({ e }) => e <= g.fino && e > (GRUPPI_ETA[i - 1]?.fino ?? -1)).sort((a, b) => a.e - b.e).map(({ c }) => c) })).filter((g) => g.corsi.length)
+  const conEta: { c: { titolo: string; corpo: Blocco[] }; e: number }[] = []
+  for (const c of gruppi) {
+    const e = etaDiInizio(c)
+    if (e === null) return null
+    conEta.push({ c, e })
+  }
+  // «Ragazzi 7-14 anni» dice fino a che età sono ragazzi; chi comincia a 14 sta già in «Dai 14 anni» (`fino: 13`).
+  const dentro = GRUPPI_ETA.map((g, i) => ({ ...g, corsi: conEta.filter(({ e }) => e <= g.fino && e > (GRUPPI_ETA[i - 1]?.fino ?? -1)).sort((a, b) => a.e - b.e).map(({ c }) => c) })).filter((g) => g.corsi.length)
   if (dentro.length < 2) return null
   const ancore = `<nav class="ancore-corsi" aria-label="Corsi per età">${dentro.map((g) => `<a class="ancora" href="#${g.id}">${g.ancora}</a>`).join('')}</nav>`
   const blocchi = dentro.map((g) => `<div class="gruppo-corsi" id="${g.id}"><h3>${g.nome} <span>${g.eta}</span></h3>${griglia(g.corsi.length, g.corsi.map((c, k) => scheda(c, k, g.corsi.length, g.colore, 'h4')).join(''), ' schede')}</div>`)

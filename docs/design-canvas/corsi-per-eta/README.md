@@ -8,7 +8,7 @@ anni»). Niente è stato cambiato in `src/`.
 | Tavola | Cosa è |
 |---|---|
 | 1 · Corsi oggi (375) | Le schede di oggi sul telefono: alte circa 500 px, nove una dopo l'altra |
-| 2 · Corsi proposta telefono (375) | Tre gruppi, ancore in alto, scheda compatta da 104 px |
+| 2 · Corsi proposta telefono (375) | Tre gruppi, ancore in alto, scheda compatta da 104 px (colonna foto da 80 px, titolo da 22 px) |
 | 3 · Corsi proposta desktop (1440) | Le schede grandi di oggi, ma sotto lo stesso titolo di gruppo e con le stesse ancore |
 
 Componenti nuovi in `../ods-design-system/`: `SitoRigaCorso` (la scheda compatta) e
