@@ -91,7 +91,7 @@ Chi si iscrive risponde alle domande dal telefono:
   chiede solo quando serve: dai 6 anni quello normale, dai 12 quello
   agonistico se tra i corsi scelti c'è judo, aikido o lotta (lo dice il nome
   del corso). Sopra c'è una frase sola: serve per partecipare alle lezioni,
-  e si carica lì o si porta in segreteria (accanto al nome
+  e si carica lì o si porta in segreteria (sotto il nome
   c'è **PUOI PORTARLO DOPO**); senza non si
   partecipa alle lezioni: se non è stato caricato, lo ricorda **RICHIESTA
   ARRIVATA**. Il documento la segreteria lo stampa, lo tiene su carta e lo

@@ -230,7 +230,8 @@ export const altriAperti = (aperti: boolean, altri: ReadonlyArray<{ id: string }
   aperti || altri.some((c) => scelti.includes(c.id))
 
 /** Il tasto che apre gli «altri corsi». */
-export const testoAltriCorsi = (n: number, eta: 'tua' | 'sua'): string => `+ ALTRI ${n} CORSI, NON PER LA ${eta.toUpperCase()} ETÀ`
+export const testoAltriCorsi = (n: number, eta: 'tua' | 'sua'): string =>
+  `+ ${n === 1 ? '1 ALTRO CORSO' : `ALTRI ${n} CORSI`}, NON PER LA ${eta.toUpperCase()} ETÀ`
 
 /**
  * I corsi del modulo di iscrizione, divisi per l'anno di nascita: prima
