@@ -55,6 +55,7 @@ const SEZIONI = [
   { id: 'iscritti-del-corso', nome: 'Iscritti del corso · proposta', cartella: 'iscritti-del-corso' },
   { id: 'iscritti-riepilogo', nome: 'Iscritti del corso · riepilogo', cartella: 'iscritti-riepilogo' },
   { id: 'storico-pagamenti', nome: 'Storico pagamenti · proposta', cartella: 'storico-pagamenti' },
+  { id: 'tessere', nome: 'Tessere e incrocio · proposta', cartella: 'tessere' },
   { id: 'sito-pannello', nome: 'Sito · pannello · proposta', cartella: 'sito-pannello' },
   { id: 'sito-pubblico', nome: 'Sito pubblico · proposta', cartella: 'sito-pubblico' },
   { id: 'sito-rebrand', nome: 'Sito pubblico · tre rebrand', cartella: 'sito-rebrand' },

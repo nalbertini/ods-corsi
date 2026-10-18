@@ -1771,6 +1771,12 @@ console.log('\nuna modifica non salvata: CORSI e ISTRUTTORI E ACCESSI chiedono p
   ok('il colore cambiato è una modifica', cambiato(corso, { ...b, colore: m.COLORI[2].hex }), true)
   ok('gli istruttori scambiati di posto sono una modifica: il primo è quello di riferimento', cambiato(corso, { ...b, istruttori: ['y', 'x'] }), true)
   ok('gli stessi istruttori nello stesso ordine non sono una modifica', cambiato(corso, { ...b, istruttori: ['x', 'y'] }), false)
+  // La tessera richiesta (61-tessere.sql): cambiare solo quella è una modifica, e non vuol dire lo stesso che non averla.
+  const conTessera = { ...corso, enteTessera: 'FIJLKAM' }
+  ok('la tessera richiesta cambiata è una modifica', cambiato(conTessera, { ...bozzaDi(conTessera), enteTessera: 'FIPE' }), true)
+  ok('la tessera richiesta tolta (vuota) è una modifica', cambiato(conTessera, { ...bozzaDi(conTessera), enteTessera: '' }), true)
+  ok('la tessera richiesta data a un corso che non l\'aveva è una modifica', cambiato(corso, { ...b, enteTessera: 'FIPE' }), true)
+  ok('senza tessera, vuota o assente, non è una modifica', [cambiato(corso, { ...b, enteTessera: '' }), cambiato(corso, b)], [false, false])
   const Z = { id: 'z', nome: 'Carla' }
   ok('gli altri istruttori in un altro ordine non sono una modifica: il database tiene solo il primo', cambiato({ ...corso, istruttori: [X, Y, Z] }, { ...b, istruttori: ['x', 'z', 'y'] }), false)
   ok('un istruttore tolto è una modifica', cambiato(corso, { ...b, istruttori: ['x'] }), true)

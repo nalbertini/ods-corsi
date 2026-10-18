@@ -8,6 +8,7 @@ import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBoz
 import { StoricoTimer, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
 import { Importa } from './Importa'
+import { ImportaTessere } from './Tessere'
 import type { Destinazione, Voce } from './Segreteria'
 import { type Disciplina, nomeDisciplina } from '../../../timer/src/lib/discipline'
 import { SelectDisciplina } from './TimerPalestra'
@@ -105,7 +106,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
         <section aria-label="La striscia COSA MANCA" className="sg-riquadro">
           <span className="ob sg-riquadro-titolo">LA STRISCIA COSA MANCA</span>
           <span className="sg-sotto">
-            Le quattro caselle in cima alle pagine (appelli non fatti, certificati, pagamenti, richieste). Vale solo per questo schermo: DA FARE ha sempre gli stessi conti.
+            Le cinque caselle in cima alle pagine (appelli non fatti, certificati, pagamenti, tessere, richieste). Vale solo per questo schermo: DA FARE ha sempre gli stessi conti.
           </span>
           <div role="radiogroup" aria-label="Mostra o nascondi la striscia" className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
             <button type="button" role="radio" aria-checked={strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(true)}>
@@ -228,6 +229,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
 
       <Gruppo id="imp-importa">
         <Importa d={d} onVai={onVai} />
+        <ImportaTessere d={d} />
       </Gruppo>
 
       <Gruppo id="imp-dati">

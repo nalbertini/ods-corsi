@@ -21,6 +21,7 @@ import type { ImmagineSito } from './sitoImmagini'
 
 export type { ListaMusica } from './musica'
 import type { IndiziDoppioni } from './doppioni'
+import type { EsitoImportTessere, RigaRasd, TesseraSeg, TipoTessera } from './tessere'
 
 /**
  * La segreteria: il calendario della settimana, i corsi con i loro orari, gli
@@ -71,6 +72,8 @@ export interface CorsoSeg {
   istruttori: Istruttore[]
   capienza?: number
   attivo: boolean
+  /** Quale tessera chiede il corso (FIJLKAM, FIPE…); senza, nessuna (`61-tessere.sql`). */
+  enteTessera?: string
   /** Solo quelle ancora in corso o future: quelle chiuse restano nel registro. */
   ricorrenze: RicorrenzaSeg[]
 }
@@ -142,6 +145,8 @@ export interface PersonaSeg {
   nucleo?: string
   /** `AAAA-MM-GG`, dall'anagrafica; senza, l'età non si sa e il certificato serve (vedi `serveCertificato`). */
   natoIl?: string
+  /** Le sue tessere: non le dà `persone()`, le attacca `conTessere` (vedi `tessere.ts`). */
+  tessere?: TesseraSeg[]
 }
 
 /**
@@ -251,6 +256,8 @@ export interface DatiCorso {
   istruttori: string[]
   capienza?: number
   colore?: string
+  /** In maiuscolo; vuoto o assente: il corso non chiede una tessera. */
+  enteTessera?: string
 }
 
 /** Una lezione passata con il suo appello, per il resoconto delle presenze. */
@@ -531,6 +538,18 @@ export interface DatiSegreteria {
   /** Se la copia del documento d'identità è in segreteria. */
   salvaDocumento(personaId: string, inSegreteria: boolean): Promise<void>
   salvaPagamento(personaId: string, p: PagamentoSeg): Promise<void>
+
+  /**
+   * Le tessere di tutti (`61-tessere.sql`). `manca` dice che il database non ha
+   * ancora il file: l'elenco è vuoto e l'app lo dice invece di mostrare «nessuna tessera».
+   */
+  tessere(): Promise<{ elenco: TesseraSeg[]; manca?: boolean }>
+  /** Il foglio del RASD: con `soloProva` dice cosa farebbe senza scrivere, se no scrive le nuove. */
+  importaTessere(righe: RigaRasd[], soloProva: boolean): Promise<EsitoImportTessere>
+  /** Una tessera scritta a mano; vale fino al 31 dicembre dell'anno di `dal`. */
+  aggiungiTessera(t: { personaId: string; ente: string; tipo: TipoTessera; codice: string; dal: string; origine?: 'rasd' | 'manuale' }): Promise<void>
+  /** Si toglie, non si cambia: l'import dell'RASD si rifà. */
+  togliTessera(id: string): Promise<void>
 
   /**
    * Il nucleo familiare (vedi `nucleo.ts`): mette una persona nel nucleo di
@@ -1469,13 +1488,16 @@ export function corsoCambiato(corso: CorsoSeg | null, bozza: DatiCorso, salaIniz
     istruttori: corso?.istruttori.map((i) => i.id) ?? [],
     capienza: corso?.capienza,
     colore: corso?.colore ?? COLORI[0].hex,
+    enteTessera: corso?.enteTessera ?? '',
   }
   return (
     bozza.nome.trim() !== salvato.nome.trim() ||
     (bozza.salaId ?? '') !== (salvato.salaId ?? '') ||
     istruttoriDetti(bozza.istruttori) !== istruttoriDetti(salvato.istruttori) ||
     bozza.capienza !== salvato.capienza ||
-    (bozza.colore ?? COLORI[0].hex) !== salvato.colore
+    (bozza.colore ?? COLORI[0].hex) !== salvato.colore ||
+    // Senza tessera è vuota o assente, lo stesso.
+    (bozza.enteTessera ?? '') !== salvato.enteTessera
   )
 }
 
