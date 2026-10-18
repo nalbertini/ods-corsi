@@ -31,7 +31,7 @@ Google, e vale solo per i mockup.
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
 | `TimerLinea.dc.html` | `LineaDelTempo`: un blocco per passo, che si colora via via |
-| `BarraScelta.dc.html` | La barra dei movimenti scelti in CONTABILITÀ → MOVIMENTI (`.sg-barra-scelta`): «N SCELTI», uscite o entrate e il totale, CAMBIA VOCE e SVUOTA; con scelta mista SOLO LE N ENTRATE / SOLO LE N USCITE al posto di CAMBIA VOCE (`misto`) |
+| `BarraScelta.dc.html` | La barra dei movimenti scelti in CONTABILITÀ → MOVIMENTI (`.sg-barra-scelta`): «N SCELTI», uscite o entrate e il totale, CAMBIA VOCE e DESELEZIONA; con scelta mista SOLO LE N ENTRATE / SOLO LE N USCITE al posto di CAMBIA VOCE (`misto`) |
 | `Titoletto.dc.html` | `Titoletto` di `ds.tsx`: l'etichetta spaziata con la riga |
 | `Testata.dc.html` | `Testata` di `App.tsx`: marchio, luogo, guida e tema (misura del telefono) |
 | `Passi.dc.html` | `.sg-passi` di `Importa.tsx`: I FOGLI, IL CONTROLLO, NELL'APP, con quello corrente acceso |

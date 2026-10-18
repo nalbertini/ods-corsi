@@ -378,7 +378,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
             ) : (
               <button type="button" className="sg-btn sg-btn-pieno" onClick={() => { setScrivo(null); setAperto(null); setCambio(true) }}>Cambia voce</button>
             )}
-            <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setScelti(new Set()); setCambio(false) }}>Svuota</button>
+            <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setScelti(new Set()); setCambio(false) }}>Deseleziona</button>
           </div>
         </div>
       )}
