@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI: la giornata come tabellone sale × ore, a sinistra; la coda di ciò che aspetta il banco, a destra. Sostituisce DA FARE + SETTIMANA + PRESENZE, che oggi sono tre voci. Proposta «Il Banco»: tema chiaro, niente menu a sinistra, ricerca sempre in cima. Cornice nuova (non Pagina.dc.html), componenti dalla libreria con tema="chiaro"; dati inventati. -->
+<div style="display: flex; flex-direction: column; width: 1440px; min-height: 960px; background: #f4f4f1">
+  <div style="display: flex; align-items: center; gap: 24px; height: 72px; padding: 0 28px; background: #121212; color: #f2f2f0">
+    <div style="display: flex; flex-direction: column; gap: 2px; width: 170px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 26px; letter-spacing: 0.06em; line-height: 1">ODS CORSI</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 11px; letter-spacing: 0.24em; color: #8c8c88">SEGRETERIA</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; max-width: 560px; height: 48px; padding: 0 16px; background: #ffffff; border: 2px solid #8a8a85; color: #161616">
+      <span style="flex-grow: 1; font-size: 17px; font-weight: 500; color: #656561">Cerca una persona, un corso, una ricevuta</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; padding: 2px 8px; border: 2px solid #8a8a85; color: #656561">/</span>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <dc-import name="Badge" label="DATI DI PROVA" tipo="bollino" hint-size="110px,24px"></dc-import>
+    <span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">LINK ▾</span><span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">GUIDA</span><span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">TEMA</span>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+      <span style="font-size: 15px; font-weight: 600">Marco Rossi</span>
+      <span style="font-size: 13px; color: #8c8c88">Segreteria</span>
+    </div>
+  </div>
+  <div style="display: flex; align-items: stretch; gap: 8px; height: 52px; padding: 0 28px; background: #ffffff; border-bottom: 2px solid #e2e2dd">
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid #e4292a; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #161616">OGGI<dc-import name="Badge" label="7" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">PERSONE<dc-import name="Badge" label="4" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">CORSI</div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">SOLDI<dc-import name="Badge" label="37" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">PALESTRA</div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 28px; background: #e9e9e5; border-bottom: 2px solid #d4d4ce">
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; background: #161616; color: #f4f4f1">OGGI</span>
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #3d3d3a; border: 2px solid #d4d4ce">SETTIMANA</span>
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #3d3d3a; border: 2px solid #d4d4ce">PRESENZE  2</span>
+  </div>
+  <main style="display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 28px; padding: 24px 28px 32px">
+    <section style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+      <div style="display: flex; align-items: baseline; gap: 16px">
+        <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 34px; letter-spacing: 0.04em; line-height: 1">GIOVEDÌ 15 OTTOBRE</h1>
+        <span style="font-size: 15px; color: #656561">ore 18:40 · 6 lezioni, 1 appello da fare</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+        <dc-import name="Numero" titolo="SENZA CERTIFICATO" valore="47" sotto="in sala non entrano" allarme="{{ true }}" tema="chiaro" hint-size="100%,120px"></dc-import>
+        <dc-import name="Numero" titolo="DA PAGARE" valore="37" sotto="quota non in regola" allarme="{{ true }}" tema="chiaro" hint-size="100%,120px"></dc-import>
+        <dc-import name="Numero" titolo="RICHIESTE" valore="4" sotto="dal modulo online" tema="chiaro" hint-size="100%,120px"></dc-import>
+        <dc-import name="Numero" titolo="PRESENTI OGGI" valore="15" sotto="su 27 attesi" tema="chiaro" hint-size="100%,120px"></dc-import>
+      </div>
+      <div style="display: grid; grid-template-columns: 56px repeat(3, minmax(0, 1fr)); border-bottom: 2px solid #d4d4ce">
+        <span></span>
+        <span style="padding: 6px 12px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; color: #656561">SALA 1</span>
+        <span style="padding: 6px 12px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; color: #656561">SALA 2</span>
+        <span style="padding: 6px 12px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; color: #656561">TATAMI</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr); background: #f4f4f1">
+        <div style="display: flex; flex-direction: column">
+          <span style="height: 96px; font-size: 14px; color: #656561; font-variant-numeric: tabular-nums">16:00</span>
+          <span style="height: 96px; font-size: 14px; color: #656561; font-variant-numeric: tabular-nums">17:00</span>
+          <span style="height: 96px; font-size: 14px; color: #656561; font-variant-numeric: tabular-nums">18:00</span>
+          <span style="height: 96px; font-size: 14px; color: #656561; font-variant-numeric: tabular-nums">19:00</span>
+          <span style="height: 96px; font-size: 14px; color: #656561; font-variant-numeric: tabular-nums">20:00</span>
+        </div>
+        <div style="position: relative; height: 480px; background-image: linear-gradient(#d4d4ce 2px, transparent 2px); background-size: 100% 96px">
+        <div style="position: absolute; left: 33.333%; width: 33.333%; top: 51px; height: 90px; padding: 0 5px">
+          <div style="height: 100%; display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; background: #ffffff; border: 2px solid #12913f; border-left: 8px solid #8b5cc4">
+            <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 20px; letter-spacing: 0.03em; line-height: 1.05">Pilates</span><span style="font-size: 14px; color: #656561">16:30</span></span>
+            <span style="font-size: 13px; color: #3d3d3a">Elena B. · 9 iscritti</span>
+            <span style="margin-top: auto; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #0b7a33">✓ FATTO · 8 SU 9</span>
+          </div>
+        </div>
+        <div style="position: absolute; left: 66.666%; width: 33.333%; top: 147px; height: 90px; padding: 0 5px">
+          <div style="height: 100%; display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; background: #ffffff; border: 2px solid #e4292a; border-left: 8px solid #1b8ac4">
+            <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 20px; letter-spacing: 0.03em; line-height: 1.05">Judo principianti</span><span style="font-size: 14px; color: #656561">17:30</span></span>
+            <span style="font-size: 13px; color: #3d3d3a">Davide T. · 11 iscritti</span>
+            <span style="margin-top: auto; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #b81d1d">✕ APPELLO NON FATTO</span>
+          </div>
+        </div>
+        <div style="position: absolute; left: 0%; width: 33.333%; top: 243px; height: 90px; padding: 0 5px">
+          <div style="height: 100%; display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; background: #ffffff; border: 2px solid #12913f; border-left: 8px solid #1b8ac4">
+            <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 20px; letter-spacing: 0.03em; line-height: 1.05">Judo kids</span><span style="font-size: 14px; color: #656561">18:30</span></span>
+            <span style="font-size: 13px; color: #3d3d3a">Marco R. · 12 iscritti</span>
+            <span style="margin-top: auto; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #0b7a33">ADESSO · 7 SU 12</span>
+          </div>
+        </div>
+        <div style="position: absolute; left: 0%; width: 33.333%; top: 339px; height: 90px; padding: 0 5px">
+          <div style="height: 100%; display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; background: #ffffff; border: 2px solid #d4d4ce; border-left: 8px solid #16a54a">
+            <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 20px; letter-spacing: 0.03em; line-height: 1.05">Lotta adulti</span><span style="font-size: 14px; color: #656561">19:30</span></span>
+            <span style="font-size: 13px; color: #3d3d3a">Davide T. · 14 iscritti · 1 prova</span>
+            <span style="margin-top: auto; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #656561">STA PER INIZIARE</span>
+          </div>
+        </div>
+        <div style="position: absolute; left: 66.666%; width: 33.333%; top: 339px; height: 90px; padding: 0 5px">
+          <div style="height: 100%; display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; background: #ffffff; border: 2px solid #d4d4ce; border-left: 8px solid #1b8ac4">
+            <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 20px; letter-spacing: 0.03em; line-height: 1.05">Judo adulti</span><span style="font-size: 14px; color: #656561">19:30</span></span>
+            <span style="font-size: 13px; color: #3d3d3a">Marco R. · 10 iscritti</span>
+            <span style="margin-top: auto; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #656561">STA PER INIZIARE</span>
+          </div>
+        </div>
+        <div style="position: absolute; left: 33.333%; width: 33.333%; top: 435px; height: 90px; padding: 0 5px">
+          <div style="height: 100%; display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; background: #ffffff; border: 2px solid #d4d4ce; border-left: 8px solid #f4c31b">
+            <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 20px; letter-spacing: 0.03em; line-height: 1.05">Yoga</span><span style="font-size: 14px; color: #656561">20:30</span></span>
+            <span style="font-size: 13px; color: #3d3d3a">Elena B. · 10 iscritti</span>
+            <span style="margin-top: auto; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #656561">PIÙ TARDI</span>
+          </div>
+        </div>
+          <div style="position: absolute; left: 0; right: 0; top: 256px; height: 0; border-top: 3px solid #e4292a"><span style="position: absolute; left: -56px; top: -11px; padding: 0 5px; background: #e4292a; color: #ffffff; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 13px; letter-spacing: 0.08em">18:40</span></div>
+        </div>
+      </div>
+    </section>
+    <aside style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 8px; border-bottom: 2px solid #d4d4ce">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.24em">DA FARE AL BANCO</span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #656561">7 · IN ORDINE DI URGENZA</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce; border-left: 8px solid #e4292a">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.03em; line-height: 1.1">Judo principianti · appello non fatto</span>
+          <span style="font-size: 13px; line-height: 1.35; color: #3d3d3a">Erano alle 17:30. 11 iscritti da segnare.</span>
+        </div>
+        <dc-import name="Bottone" label="FAI L'APPELLO" variante="pieno" contesto="segreteria" tema="chiaro" corpo="15px" hint-size="130px,44px"></dc-import>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce; border-left: 8px solid #e4292a">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.03em; line-height: 1.1">Bianchi Luca · certificato scaduto</span>
+          <span style="font-size: 13px; line-height: 1.35; color: #3d3d3a">Da 12 giorni. Stasera ha Judo kids.</span>
+        </div>
+        <dc-import name="Bottone" label="APRI LA SCHEDA" variante="linea" contesto="segreteria" tema="chiaro" corpo="15px" hint-size="130px,44px"></dc-import>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce; border-left: 8px solid #e4292a">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.03em; line-height: 1.1">Colombo Sara · quota non pagata</span>
+          <span style="font-size: 13px; line-height: 1.35; color: #3d3d3a">Trimestre da ottobre. È al banco?</span>
+        </div>
+        <dc-import name="Bottone" label="FAI LA RICEVUTA" variante="rosso" contesto="segreteria" tema="chiaro" corpo="15px" hint-size="130px,44px"></dc-import>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce; border-left: 8px solid #f4c31b">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.03em; line-height: 1.1">Neri Chiara viene a provare</span>
+          <span style="font-size: 13px; line-height: 1.35; color: #3d3d3a">Lotta adulti, alle 19:30. Manca il numero.</span>
+        </div>
+        <dc-import name="Bottone" label="AGGIUNGI" variante="linea" contesto="segreteria" tema="chiaro" corpo="15px" hint-size="130px,44px"></dc-import>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce; border-left: 8px solid #f4c31b">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.03em; line-height: 1.1">4 richieste online nuove</span>
+          <span style="font-size: 13px; line-height: 1.35; color: #3d3d3a">La più vecchia è di ieri sera.</span>
+        </div>
+        <dc-import name="Bottone" label="ACCOGLI" variante="linea" contesto="segreteria" tema="chiaro" corpo="15px" hint-size="130px,44px"></dc-import>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce; border-left: 8px solid #f4c31b">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.03em; line-height: 1.1">2 presenze istruttori</span>
+          <span style="font-size: 13px; line-height: 1.35; color: #3d3d3a">Segnate da loro, da confermare.</span>
+        </div>
+        <dc-import name="Bottone" label="CONFERMA" variante="linea" contesto="segreteria" tema="chiaro" corpo="15px" hint-size="130px,44px"></dc-import>
+      </div>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

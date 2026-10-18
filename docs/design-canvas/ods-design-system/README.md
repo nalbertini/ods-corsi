@@ -62,6 +62,9 @@ Google, e vale solo per i mockup.
 | `SegnalazioneListino` | Una riga di `Segnalazioni` in LISTINO: in rosso cosa manca a un corso («senza prezzo nel listino», «manca il prezzo del trimestre»…), col link «Va bene senza prezzo» che non va a capo; `rosso` falso per «…, va bene così» col link «Rimetti il rosso» |
 | `TabletTasto` | `.tb-btn`: linea, verde, rosso, grande, quadro |
 | `TabletTastiera` | I pallini e il tastierino del PIN |
+| `Cifra` | Un numero grande di OGGI nel Banco (`.bn-cifra`): titolo, numero (rosso se è un guaio), frase |
+| `RigaCoda` | Una riga della coda DA FARE AL BANCO (`.bn-riga`): titolo, frase, tasto; bordo rosso se blocca, giallo se aspetta |
+| `BloccoLezione` | Un blocco del tabellone sale × ore di OGGI (`.bn-blocco`): corso, ora, stato in parole; `stato` fatto, in_corso, appello_non_fatto, prossima, annullata |
 | `TabletTessera` | Il nome da toccare nella lista della sala |
 | `TabletFascia` | La fascia dopo un tocco: fatto, attesa, già, errore |
 | `TabletTestata`, `TabletLezione`, `TabletPiede`, `TabletRigaGiornata` | La testata, la lezione aperta, il piede e la riga della giornata del tablet di sala |

@@ -32,6 +32,10 @@ import { strisciaVisibile } from '../../lib/cosaManca'
 import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
 import { bozzaAperta, chiedi, Conferme, dialogoAperto, Guaio, lasciare, scordaBozze } from './comune'
 import { TELEFONO, useSchermo } from '../../lib/largo'
+import { aspettoInUso, useAspetto } from '../../lib/aspetto'
+import { BarraBanco } from './banco/BarraBanco'
+import { Oggi } from './banco/Oggi'
+import { PersonaBanco } from './banco/PersonaBanco'
 import { CercaIscritto } from './CercaIscritto'
 import type { Ricercata } from '../../lib/ricerca'
 import { indirizzoPagina } from '../../lib/guida'
@@ -295,6 +299,10 @@ export function Segreteria({
   // sotto i 768px: più largo il menu sta di fianco, e la pagina va usata.
   // `inert` si scrive a mano: i tipi di React 18 non lo conoscono.
   const telefono = useSchermo(TELEFONO)
+  // Sul telefono Il Banco non c'è ancora: resta l'aspetto di sempre, anche se è scelto (vedi `aspettoInUso`).
+  const [scelto] = useAspetto()
+  const aspetto = aspettoInUso(scelto, telefono)
+  const banco = aspetto === 'banco'
   useEffect(() => {
     const corpo = document.getElementById('sg-contenuto')
     corpo?.toggleAttribute('inert', aperto && telefono)
@@ -405,11 +413,39 @@ export function Segreteria({
   )
 
   return (
-    <div className="sg">
+    <div className="sg" data-aspetto={aspetto}>
       {/* Un tasto e non un link «#…»: con <base href="../"> delle pagine delle aree, l'ancora porterebbe via dalla segreteria. */}
       <button type="button" className="sg-salta" onClick={vaiAlContenuto}>
         Vai al contenuto
       </button>
+      {banco ? (
+        <BarraBanco
+          voce={voce}
+          prova={prova}
+          nome={nome}
+          ruolo={ruolo}
+          segni={{
+            richieste: { n: richiesteNuove, detto: 'nuove' },
+            istruttori: { n: daConfermare, detto: 'da confermare' },
+            presenze: { n: conSegnalate ? segnalateDaVedere : 0, detto: 'segnalate da vedere' },
+            segnalazioni: { n: daRispondere, detto: 'da rispondere' },
+            vestiario: { n: daSaldare, detto: 'ordini da saldare' },
+          }}
+          cerca={d && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
+          link={
+            <>
+              <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
+              <CopiaLink link={LINK_ORDINI} testo="COPIA LINK ORDINI" perche="Il link per ordinare il vestiario:" />
+            </>
+          }
+          guida={guida}
+          tema={<TastoTema />}
+          onVai={(v) => void vai(v)}
+          onIstruttori={onIstruttori}
+          onEsci={onEsci}
+        />
+      ) : (
+        <>
       <header className="sg-barra-tel">
         <Logo width={36} />
         <span className="stack grow" style={{ gap: 2 }}>
@@ -533,6 +569,8 @@ export function Segreteria({
           </span>
         </div>
       </nav>
+        </>
+      )}
 
       <main className="sg-corpo" id="sg-contenuto" tabIndex={-1} onScroll={(e) => scorre(e.currentTarget)}>
         {!d && !guaio && <p className="sg-sotto">Un attimo…</p>}
@@ -547,7 +585,8 @@ export function Segreteria({
         {d && strisciaVisibile(voce, telefono, !!(posto.persona || posto.corso || posto.nuovo || richiesta || posto.lezione), strisciaVoluta) && (
           <CosaManca conti={conti.striscia} onVai={vai} onRiprova={contiCambiati} />
         )}
-        {d && voce === 'dafare' && <DaFare conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
+        {d && voce === 'dafare' && !banco && <DaFare conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
+        {d && voce === 'dafare' && banco && <Oggi d={d} conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} onConti={contiCambiati} />}
         {d && voce === 'corsi' && (
           <Corsi
@@ -563,6 +602,7 @@ export function Segreteria({
             onVai={vai}
           />
         )}
+        {d && voce === 'iscritti' && banco && posto.persona && <PersonaBanco d={d} id={posto.persona} giro={giroConte} />}
         {d && voce === 'iscritti' && (
           <Iscritti
             key={`${filtro ?? ''}|${ricerca?.testo ?? ''}`}

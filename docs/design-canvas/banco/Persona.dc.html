@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PERSONA: dopo la ricerca. Una pagina sola con tutto di una persona (certificato, quota, presenze, ricevute, famiglia); la frase in rosso dice cosa blocca, col tasto che lo sblocca. Proposta «Il Banco»: tema chiaro, niente menu a sinistra, ricerca sempre in cima. Cornice nuova (non Pagina.dc.html), componenti dalla libreria con tema="chiaro"; dati inventati. -->
+<div style="display: flex; flex-direction: column; width: 1440px; min-height: 960px; background: #f4f4f1">
+  <div style="display: flex; align-items: center; gap: 24px; height: 72px; padding: 0 28px; background: #121212; color: #f2f2f0">
+    <div style="display: flex; flex-direction: column; gap: 2px; width: 170px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 26px; letter-spacing: 0.06em; line-height: 1">ODS CORSI</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 11px; letter-spacing: 0.24em; color: #8c8c88">SEGRETERIA</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; max-width: 560px; height: 48px; padding: 0 16px; background: #ffffff; border: 2px solid #e4292a; color: #161616">
+      <span style="flex-grow: 1; font-size: 17px; font-weight: 500; color: #161616">bianchi luca</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; padding: 2px 8px; border: 2px solid #8a8a85; color: #656561">/</span>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <dc-import name="Badge" label="DATI DI PROVA" tipo="bollino" hint-size="110px,24px"></dc-import>
+    <span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">LINK ▾</span><span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">GUIDA</span><span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">TEMA</span>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+      <span style="font-size: 15px; font-weight: 600">Marco Rossi</span>
+      <span style="font-size: 13px; color: #8c8c88">Segreteria</span>
+    </div>
+  </div>
+  <div style="display: flex; align-items: stretch; gap: 8px; height: 52px; padding: 0 28px; background: #ffffff; border-bottom: 2px solid #e2e2dd">
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">OGGI<dc-import name="Badge" label="7" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid #e4292a; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #161616">PERSONE<dc-import name="Badge" label="4" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">CORSI</div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">SOLDI<dc-import name="Badge" label="37" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">PALESTRA</div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 28px; background: #e9e9e5; border-bottom: 2px solid #d4d4ce">
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; background: #161616; color: #f4f4f1">ISCRITTI</span>
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #3d3d3a; border: 2px solid #d4d4ce">RICHIESTE ONLINE  4</span>
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #3d3d3a; border: 2px solid #d4d4ce">ISTRUTTORI</span>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 22px; padding: 22px 28px 36px">
+    <div style="display: flex; align-items: flex-end; gap: 20px">
+      <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; color: #656561">‹ PERSONE</span>
+        <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 56px; letter-spacing: 0.02em; line-height: 1">BIANCHI LUCA</h1>
+        <span style="display: flex; align-items: center; gap: 10px; font-size: 16px; color: #3d3d3a">12 anni · Judo kids, Judo principianti · iscritto dal 3 settembre 2025 <dc-import name="Badge" label="MINORE" tipo="segno" tono="neutro" tema="chiaro" hint-size="70px,24px"></dc-import></span>
+      </div>
+      <dc-import name="Bottone" label="CHIAMA IL GENITORE" variante="linea" contesto="segreteria" tema="chiaro" hint-size="230px,56px"></dc-import>
+      <dc-import name="Bottone" label="SEGNA PRESENTE OGGI" variante="vai" contesto="segreteria" tema="chiaro" hint-size="260px,56px"></dc-import>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px; padding: 14px 18px; background: #ffffff; border: 2px solid #e4292a; border-left: 8px solid #e4292a">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 22px; letter-spacing: 0.04em; color: #b81d1d">NON PUÒ ENTRARE IN SALA</span>
+      <span style="flex-grow: 1; font-size: 16px">Il certificato è scaduto il 3 ottobre. Stasera ha Judo kids alle 18:30.</span>
+      <dc-import name="Bottone" label="CARICA IL NUOVO" variante="pieno" contesto="segreteria" tema="chiaro" hint-size="200px,48px"></dc-import>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+      <dc-import name="Riquadro" tono="guaio" contesto="segreteria" tema="chiaro" etichetta="CERTIFICATO MEDICO" titolo="SCADUTO" testo="3 ottobre 2026 · 12 giorni fa. Il file è in segreteria." tonoTesto="guaio" hint-size="100%,150px"></dc-import>
+      <dc-import name="Riquadro" contesto="segreteria" tema="chiaro" etichetta="QUOTA" titolo="IN REGOLA" fatto="{{ true }}" testo="Trimestre pagato, fino al 31 dicembre." hint-size="100%,150px"></dc-import>
+      <dc-import name="Riquadro" contesto="segreteria" tema="chiaro" etichetta="PRESENZE · OTTOBRE" cifra="9 su 11" testo="Ha saltato il 2 e il 9. Non ha avvisato." hint-size="100%,150px"></dc-import>
+      <dc-import name="Riquadro" contesto="segreteria" tema="chiaro" etichetta="RICEVUTE" cifra="3" testo="L'ultima è la n. 0142, del 12 settembre." hint-size="100%,150px"></dc-import>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) 460px; gap: 28px">
+      <section style="display: flex; flex-direction: column">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; padding-bottom: 8px; border-bottom: 2px solid #d4d4ce">COSA È SUCCESSO</span>
+        <div style="display: flex; gap: 14px; align-items: baseline; padding: 10px 0; border-bottom: 2px solid #e2e2dd">
+          <span style="width: 78px; flex-shrink: 0; font-size: 14px; color: #656561">GIO 15 OTT</span>
+          <span style="flex-grow: 1; font-size: 16px">Judo kids · lezione di stasera</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #656561">ALLE 18:30</span>
+        </div>
+        <div style="display: flex; gap: 14px; align-items: baseline; padding: 10px 0; border-bottom: 2px solid #e2e2dd">
+          <span style="width: 78px; flex-shrink: 0; font-size: 14px; color: #656561">MAR 13 OTT</span>
+          <span style="flex-grow: 1; font-size: 16px">Judo principianti · presente</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #0b7a33">✓ PRESENTE</span>
+        </div>
+        <div style="display: flex; gap: 14px; align-items: baseline; padding: 10px 0; border-bottom: 2px solid #e2e2dd">
+          <span style="width: 78px; flex-shrink: 0; font-size: 14px; color: #656561">SAB 10 OTT</span>
+          <span style="flex-grow: 1; font-size: 16px">Judo kids · presente</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #0b7a33">✓ PRESENTE</span>
+        </div>
+        <div style="display: flex; gap: 14px; align-items: baseline; padding: 10px 0; border-bottom: 2px solid #e2e2dd">
+          <span style="width: 78px; flex-shrink: 0; font-size: 14px; color: #656561">SAB 3 OTT</span>
+          <span style="flex-grow: 1; font-size: 16px">Il certificato medico è scaduto</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #b81d1d">SCADUTO</span>
+        </div>
+        <div style="display: flex; gap: 14px; align-items: baseline; padding: 10px 0; border-bottom: 2px solid #e2e2dd">
+          <span style="width: 78px; flex-shrink: 0; font-size: 14px; color: #656561">GIO 1 OTT</span>
+          <span style="flex-grow: 1; font-size: 16px">Quota del trimestre · € 90 · ricevuta n. 0142</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #0b7a33">✓ PAGATA</span>
+        </div>
+        <div style="display: flex; gap: 14px; align-items: baseline; padding: 10px 0; border-bottom: 2px solid #e2e2dd">
+          <span style="width: 78px; flex-shrink: 0; font-size: 14px; color: #656561">SET 2025</span>
+          <span style="flex-grow: 1; font-size: 16px">Iscrizione online, firmata dal genitore</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #0b7a33">✓ FATTA</span>
+        </div>
+      </section>
+      <aside style="display: flex; flex-direction: column; gap: 12px">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; padding-bottom: 8px; border-bottom: 2px solid #d4d4ce">LA FAMIGLIA BIANCHI</span>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce"><span style="flex-grow: 1"><span style="font-size: 17px; font-weight: 600">Bianchi Marta</span><br><span style="font-size: 13px; color: #656561">9 anni · Giocomotricità</span></span><dc-import name="Badge" label="IN REGOLA" tipo="segno" tono="verde" tema="chiaro" hint-size="90px,24px"></dc-import></div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #ffffff; border: 2px solid #d4d4ce"><span style="flex-grow: 1"><span style="font-size: 17px; font-weight: 600">Bianchi Roberto</span><br><span style="font-size: 13px; color: #656561">genitore · 339 555 0142</span></span><dc-import name="Bottone" label="CHIAMA" variante="linea" contesto="segreteria" tema="chiaro" corpo="15px" hint-size="110px,44px"></dc-import></div>
+        <dc-import name="Bottone" label="FAI LA RICEVUTA" variante="rosso" contesto="segreteria" tema="chiaro" hint-size="100%,56px"></dc-import>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

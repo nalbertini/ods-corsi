@@ -40,6 +40,7 @@ const SEZIONI = [
   { id: 'sito-pubblico', nome: 'Sito · pagine pubbliche', cartella: 'sito-pubblico' },
   { id: 'sito-rebrand', nome: 'Sito · tre rebrand', cartella: 'sito-rebrand' },
   { id: 'segreteria-tatami', nome: 'Segreteria · tema Tatami', cartella: 'segreteria-tatami' },
+  { id: 'banco', nome: 'Segreteria · il Banco, ridisegnata', cartella: 'banco' },
   { id: 'cerca-universale', nome: 'Segreteria · ricerca universale', cartella: 'cerca-universale' },
   { id: 'importa-fogli', nome: 'Segreteria · importa da Excel', cartella: 'import-fogli' },
   { id: 'iscritti-del-corso', nome: 'Segreteria · iscritti del corso', cartella: 'iscritti-del-corso' },
