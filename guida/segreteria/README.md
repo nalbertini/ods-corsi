@@ -53,7 +53,7 @@ A sinistra il menu, a destra la voce scelta. Le voci sono in cinque gruppi (sei 
 **Ogni giorno** (Da fare, Richieste online, Presenze),
 **Iscritti e soldi** (Iscritti, Tessere, Pagamenti), **I conti** (Contabilità, solo per chi ha anche
 l'amministrazione), **Corsi e orari** (Settimana, Corsi, Listino), **Istruttori** (Presenze istruttori,
-Istruttori e accessi) e **Il resto** (Statistiche, Vestiario, Esercizi, Segnalazioni, Sito). Le
+Istruttori e accessi) e **Il resto** (Statistiche, Vestiario, Esercizi, Segnalazioni, Sito). Un filetto separa un gruppo dal successivo e ogni voce ha la sua icona, per ritrovarla a colpo d'occhio. Le
 **IMPOSTAZIONI** sono il tasto coi due cursori in cima al menu. Ogni voce ha la
 sua guida:
 
