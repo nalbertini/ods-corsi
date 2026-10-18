@@ -186,6 +186,11 @@ console.log('\n8. la presenza dell\'istruttore col PIN')
   const rifiuta = (await seg.presenzeIstruttori(0)).find((x) => x.stato === 'da_confermare' && x.nome === 'Maura').id
   await seg.gestisciPresenzaIstruttore(rifiuta, false)
   ok('rifiutata, al PIN dopo resta rifiutata', presenze(await sost.entraConPin('2468')), ['Lotta 3 rifiutata'])
+  // Una rifiutata si elimina; una confermata no.
+  const confermata = (await seg.presenzeIstruttori(365)).find((x) => x.stato === 'confermata').id
+  ok('una confermata non si elimina', await seg.eliminaPresenzaIstruttore(confermata).then(() => 'eliminata', (e) => e.message), 'si elimina solo una presenza rifiutata')
+  await seg.eliminaPresenzaIstruttore(rifiuta)
+  ok('la rifiutata eliminata non è più in elenco', (await seg.presenzeIstruttori(365)).some((x) => x.id === rifiuta), false)
 }
 
 console.log('\n9. chi fa l\'appello c\'era, e le lezioni tenute senza istruttore')

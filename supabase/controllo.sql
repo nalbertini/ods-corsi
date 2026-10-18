@@ -332,6 +332,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('64-pagamenti-non-nel-futuro.sql', 'il pagamento a mano non nel futuro e i contanti non in un giorno di cassa chiuso',
     exists (select 1 from pg_trigger where tgname = 'pagamenti_diretti_non_nel_futuro' and not tgisinternal)
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'registra_pagamento_diretto'
-                and pg_get_functiondef(p.oid) like '%cassa_giorno_chiuso%' and pg_get_functiondef(p.oid) like '%contabilita_oggi()%'))
+                and pg_get_functiondef(p.oid) like '%cassa_giorno_chiuso%' and pg_get_functiondef(p.oid) like '%contabilita_oggi()%')),
+  ('65-elimina-presenza-rifiutata.sql', 'la presenza di un istruttore rifiutata si può eliminare',
+    exists (select 1 from dentro where nome = 'elimina_presenza_istruttore'))
 ) as x(file, cosa, c)
 order by file, cosa;

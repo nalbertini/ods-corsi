@@ -735,6 +735,8 @@ export interface DatiSegreteria {
   presenzeIstruttori(giorni: number): Promise<PresenzaIstruttoreSeg[]>
   /** Conferma, o rifiuta, una presenza di un istruttore. */
   gestisciPresenzaIstruttore(id: string, conferma: boolean): Promise<void>
+  /** Elimina una presenza rifiutata: una confermata o da confermare si rifiuta prima. */
+  eliminaPresenzaIstruttore(id: string): Promise<void>
   /** Le lezioni tenute in cui nessun istruttore ha una presenza, dalla più recente. */
   lezioniSenzaIstruttore(): Promise<LezioneSenzaIstruttore[]>
   /** Chi, fra i previsti senza presenza, ha fatto la lezione: confermati loro, rifiutati gli altri. */

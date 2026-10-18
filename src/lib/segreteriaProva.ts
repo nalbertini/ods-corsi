@@ -1723,6 +1723,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
+    async eliminaPresenzaIstruttore(id) {
+      const tutte = a().presenzeIstruttori ?? []
+      const x = tutte.find((p) => p.id === id)
+      if (!x) throw new Error('presenza inesistente')
+      if (x.stato !== 'rifiutata') throw new Error('si elimina solo una presenza rifiutata')
+      a().presenzeIstruttori = tutte.filter((p) => p.id !== id)
+      salva()
+    },
+
     async lezioniSenzaIstruttore() {
       return lezioniSenzaIstruttoreProva()
     },
