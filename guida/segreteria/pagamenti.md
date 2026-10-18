@@ -28,7 +28,7 @@ PERIODO** sotto vale su tutti i pagamenti trovati, non solo sulla pagina.
 - **Cerca**: per nome (nome e cognome in qualunque ordine, senza badare ad accenti e maiuscole), o per numero di ricevuta, anche con l'anno
   («12» o «12/2026»: «12» non trova la 112). Non cerca nella voce né nella nota.
 - **Il periodo**: il mese in corso, il mese scorso, **Tutto l’anno**, **Tutto**,
-  o **Dal – al** con due date. Si parte dal mese in corso.
+  o **Dal – al** con due date. Si parte da **Tutto l’anno**.
 - **Il modo di pagare**: contanti, bonifico, POS, Satispay, assegno.
 - **Senza ricevuta**: solo i pagamenti registrati a mano.
 - **Annullati**: mostra anche quelli annullati, barrati. Non entrano mai nei

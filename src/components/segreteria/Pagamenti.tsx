@@ -47,7 +47,7 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
     void diretti.ricarica()
   }
   const [cerca, setCerca] = useState('')
-  const [periodo, setPeriodo] = useState<Periodo>('mese')
+  const [periodo, setPeriodo] = useState<Periodo>('anno')
   const [dal, setDal] = useState('')
   const [al, setAl] = useState('')
   const [metodo, setMetodo] = useState('')
