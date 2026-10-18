@@ -41,7 +41,8 @@ export function scegliAspetto(a: Aspetto) {
 }
 
 /** Sul telefono Il Banco non c'è ancora (non è disegnato): sotto i 768px resta l'aspetto di oggi. */
-export const aspettoInUso = (scelto: Aspetto, telefono: boolean): Aspetto => (telefono ? 'oggi' : scelto)
+/** E il Banco è della segreteria: chi cura solo i conti (`conSegreteria` falso) ha l'aspetto di sempre. */
+export const aspettoInUso = (scelto: Aspetto, telefono: boolean, conSegreteria = true): Aspetto => (telefono || !conSegreteria ? 'oggi' : scelto)
 
 export function useAspetto(): [Aspetto, (a: Aspetto) => void] {
   const [a, setA] = useState<Aspetto>(leggiAspetto)

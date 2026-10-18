@@ -3108,3 +3108,6 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 :root[data-modulo='sito'] .modulo-piede .passo-btn { align-self: stretch; }
 /* Il modulo è sempre chiaro: il tasto del tema in testata cambierebbe solo l'icona, quindi a modulo aperto non c'è. */
 :root[data-modulo='sito'] .tasto-tema { display: none; }
+
+/* CONTABILITÀ: i totali delle casse vanno a capo sotto una certa larghezza, invece di tagliare gli importi a 40px. */
+.sg-numeri.sg-numeri-conti { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }

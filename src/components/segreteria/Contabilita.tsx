@@ -175,7 +175,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <div className="sg-numeri">
+      <div className="sg-numeri sg-numeri-conti">
         {casse.map((c) => {
           const r = conti.find((x) => x.cassaId === c.id)
           return <Numero key={c.id} titolo={c.nome.toUpperCase()} valore={soldiConSegno(r?.residuo ?? 0)} sotto={`entrate ${soldi(r?.entrate ?? 0)} · uscite ${soldi(r?.uscite ?? 0)}`} />

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 32px; width: 1440px; padding: 28px 36px 36px; background: #121212; align-items: flex-start">
+<div style="width: 440px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">SOLO SEGRETERIA</span><div style="width: 240px"><dc-import name="Menu" autorizzazioni="segreteria" attiva="DA FARE" numeri="RICHIESTE ONLINE:3" nome="Chiara Bianchi" ruolo="Segreteria" altezza="1100px" hint-size="240px,1100px"></dc-import></div><span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">I cinque gruppi di oggi. Niente CONTABILITÀ.</span></div>
+<div style="width: 440px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">SEGRETERIA E AMMINISTRAZIONE</span><div style="width: 240px"><dc-import name="Menu" autorizzazioni="segreteria e amministrazione" attiva="CONTABILITÀ" numeri="RICHIESTE ONLINE:3" nome="Chiara Bianchi" ruolo="Segreteria e amministrazione" altezza="1100px" hint-size="240px,1100px"></dc-import></div><span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">Un solo menu con tutte le voci: in più il gruppo I CONTI con CONTABILITÀ. Non ci sono più i tasti per passare da una sezione all’altra.</span></div>
+<div style="width: 440px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">SOLO AMMINISTRAZIONE</span><div style="width: 240px"><dc-import name="Menu" autorizzazioni="amministrazione" attiva="CONTABILITÀ" numeri="RICHIESTE ONLINE:3" nome="Chiara Bianchi" ruolo="Amministrazione" altezza="1100px" hint-size="240px,1100px"></dc-import></div><span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">Solo I CONTI: CONTABILITÀ, PAGAMENTI e LISTINO ridotti (nomi e importi, niente schede). Senza ricerca di iscritti né numeri sul menu.</span></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1260}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

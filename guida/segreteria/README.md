@@ -49,11 +49,11 @@ Se non si riesce a leggere un elenco, il campo lo dice («Non riesco ad
 aggiornare l'elenco: questi sono i dati di prima»), non scrive «niente».
 Dentro ISCRITTI c'è sempre il campo per cercare e filtrare l'elenco.
 
-A sinistra il menu, a destra la voce scelta. Le voci sono in cinque gruppi:
+A sinistra il menu, a destra la voce scelta. Le voci sono in cinque gruppi (sei con l'amministrazione):
 **Ogni giorno** (Da fare, Richieste online, Presenze),
-**Iscritti e soldi** (Iscritti, Tessere, Pagamenti), **Corsi e orari** (Settimana, Corsi,
-Listino), **Istruttori** (Presenze istruttori, Istruttori e accessi) e **Il resto**
-(Statistiche, Vestiario, Esercizi, Segnalazioni, Sito). Le
+**Iscritti e soldi** (Iscritti, Tessere, Pagamenti), **I conti** (Contabilità, solo per chi ha anche
+l'amministrazione), **Corsi e orari** (Settimana, Corsi, Listino), **Istruttori** (Presenze istruttori,
+Istruttori e accessi) e **Il resto** (Statistiche, Vestiario, Esercizi, Segnalazioni, Sito). Le
 **IMPOSTAZIONI** sono il tasto coi due cursori in cima al menu. Ogni voce ha la
 sua guida:
 
