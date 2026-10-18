@@ -172,7 +172,9 @@ console.log('\nModalità prova: le stesse regole di salva_bozza_pezzi_sito')
   ok('una pagina nuova a pezzi porta i pezzi e il testo piatto', [nuova?.pezzi, nuova?.bozza], [P, z.pezziInHtml?.(P)])
   const senza = prova(() => sp.nuovaPagina(stato(), 'Vecchia', 'vecchia'))
   ok('una pagina nuova senza pezzi resta col vecchio editor (pezzi null)', senza.stato ? senza.stato.pagine.find((x) => x.id === senza.id)?.pezzi : senza, null)
-  ok('la pagina di oggi ha pezzi null', stato().pagine.every((x) => x.pezzi === null), true)
+  // Judo è l'unica pagina di prova già a pezzi: un solo TESTO lungo, per provare «Dividi in parti».
+  ok('le pagine di oggi hanno pezzi null, tranne Judo', stato().pagine.filter((x) => x.slug !== 'judo').every((x) => x.pezzi === null), true)
+  ok('Judo è a pezzi con un solo testo', stato().pagine.find((x) => x.slug === 'judo')?.pezzi?.content.map((c) => c.type), ['testo'])
   ok('pezzi non validi: la pagina nuova non si crea', String(prova(() => sp.nuovaPagina(stato(), 'X', 'x-y', { content: [{ type: 'boh', props: { id: 'a' } }] }))).startsWith('ERRORE'), true)
   const s0 = r.stato
   const salvata = prova(() => sp.salvaBozzaPezzi(s0, r.id, 1, { titolo: 'Prova', descrizione: '', pezzi: { content: [T('a', '<p>Nuovo</p>')] } }))
@@ -574,6 +576,107 @@ console.log('\nScrivere il testo nella pagina')
   ok('storia: a metà finestra si aspetta il resto', a(1000, 1150), 150)
   ok('storia: passata la finestra non si aspetta', a(1000, 1400), 0)
   ok('storia: mai scritto, non si aspetta', a(0, 5000), 0)
+}
+
+console.log('\nDividi in parti: una pagina già a pezzi con un solo testo lungo')
+{
+  const dividi = (p) => prova(() => z.dividiInParti(p))
+  const divisibile = (p) => prova(() => z.divisibileInParti(p))
+  const forma = (r) => (r && Array.isArray(r.content) ? r.content.map((p) => [p.type, p.props.html ?? p.props.colonne?.map((c) => c.html) ?? [p.props.src, p.props.alt]]) : r)
+  const id = (r) => (r && Array.isArray(r.content) ? r.content.map((p) => p.props.id) : r)
+  const unici = (r) => prova(() => { const i = id(r); return new Set(i).size === i.length && i.every((x) => typeof x === 'string' && x !== '') })
+  const IMG = (n) => `<img alt="${n}" src="https://x.it/${n}.jpg" />`
+  const COL = '<div class="colonne c-2"><div class="colonna"><p>A</p></div><div class="colonna"><p>B</p></div></div>'
+  const lungo = `<p>a</p><h2>T</h2><p>b</p>${IMG('d')}<p>c</p>`
+  const pagina = (...content) => ({ content })
+  // Le tre cose che valgono sempre: lo stesso testo del sito, pagina valida, id unici.
+  const regge = (cosa, p) => {
+    const d = dividi(p)
+    ok(`${cosa}: il testo del sito è lo stesso`, prova(() => z.pezziInHtml(d) === z.pezziInHtml(p)), true)
+    ok(`${cosa}: i pezzi sono validi`, valido(d), true)
+    ok(`${cosa}: gli id sono unici`, unici(d), true)
+  }
+
+  ok('1: un testo con titolo e foto si divide in testo, testo, foto, testo', forma(dividi(pagina(T('t1', lungo)))), [
+    ['testo', '<p>a</p>'], ['testo', '<h2>T</h2><p>b</p>'], ['foto', ['https://x.it/d.jpg', 'd']], ['testo', '<p>c</p>'],
+  ])
+  ok('1: la prima parte tiene l\'id del testo', id(dividi(pagina(T('t1', lungo))))[0], 't1')
+  ok('1: prima è divisibile', divisibile(pagina(T('t1', lungo))), true)
+  regge('1', pagina(T('t1', lungo)))
+
+  const semplice = pagina(T('t1', '<p>a</p><p>b</p>'))
+  ok('2: un testo senza titoli né foto resta com\'è', dividi(semplice), semplice)
+  ok('2: non è divisibile', divisibile(semplice), false)
+  ok('2: nemmeno la pagina vuota è divisibile', divisibile(pagina()), false)
+
+  const CI = CIMA('c0'), K = C('k1', [{ html: '<p>1</p>' }, { html: '<p>2</p>' }]), FO = F('f1')
+  const mista = pagina(CI, T('t1', lungo), K, FO)
+  const dm = dividi(mista)
+  ok('3: la foto in cima è identica e prima', prova(() => dm.content[0]), CI)
+  ok('3: colonne e foto sono identiche e in fondo, nell\'ordine', prova(() => dm.content.slice(-2)), [K, FO])
+  ok('3: le parti nuove stanno al posto del testo', prova(() => dm.content.slice(1, -2).map((p) => p.type)), ['testo', 'testo', 'foto', 'testo'])
+  regge('3', mista)
+
+  console.log('\nDividi in parti: il testo del sito non cambia mai')
+  const judo = `${IMG('sala')}<ul><li>Lunedì</li><li>Giovedì</li></ul><h2>Orari</h2><p>Sera</p><h3>Bambini</h3><p>Pomeriggio</p><h2></h2>${IMG('tatami')}<p>Chiusura</p>`
+  for (const [cosa, x] of [
+    ['paragrafi e titoli vuoti', '<p></p><h2></h2><p>x</p><h2>T</h2><p></p><p>y</p><h2></h2>'],
+    ['il caso Judo (foto, elenco, h2, h3, h2 vuoto, foto)', judo],
+    ['solo titoli', '<h2>A</h2><h2>B</h2><h2>C</h2>'],
+    ['foto una dopo l\'altra', `${IMG('a')}${IMG('b')}<p>x</p>`],
+  ]) {
+    regge(`4: ${cosa}`, pagina(T('t1', x)))
+    regge(`4: ${cosa}, con la foto in cima`, pagina(CI, T('t1', x)))
+  }
+  const dj = dividi(pagina(T('t1', judo)))
+  ok('4: Judo: le foto diventano foto, mai foto in cima', prova(() => dj.content.map((p) => p.type)), ['foto', 'testo', 'testo', 'foto', 'testo'])
+
+  const apre = pagina(CI, T('t1', `${IMG('d')}<h2>T</h2><p>b</p>`))
+  const da = dividi(apre)
+  ok('5: con la foto in cima già presente, la prima parte del testo è foto', prova(() => da.content.map((p) => p.type)), ['fotoInCima', 'foto', 'testo'])
+  ok('5: la pagina è valida', valido(da), true)
+  ok('5: senza foto in cima, la foto d\'apertura è comunque foto', prova(() => dividi(pagina(T('t1', `${IMG('d')}<h2>T</h2><p>b</p>`))).content.map((p) => p.type)), ['foto', 'testo'])
+
+  console.log('\nDividi in parti: gli id')
+  const ids = pagina(T('abc', lungo), F('p1'), T('p7', lungo), K, T('xyz', '<p>solo</p>'))
+  const di = dividi(ids)
+  ok('6: gli id sono unici', unici(di), true)
+  ok('6: i pezzi non toccati hanno lo stesso id e lo stesso contenuto', prova(() => [F('p1'), K, T('xyz', '<p>solo</p>')].every((x) => JSON.stringify(di.content.find((p) => p.props.id === x.props.id)) === JSON.stringify(x))), true)
+  ok('6: id non numerico: la prima parte lo tiene', prova(() => di.content[0].props.id), 'abc')
+  ok('6: il testo p7 tiene p7 per la sua prima parte', prova(() => di.content.some((p) => p.props.id === 'p7' && p.type === 'testo' && p.props.html === '<p>a</p>')), true)
+  ok('6: le parti nuove sono p<numero> sopra il più alto (7)', prova(() => {
+    const vecchi = new Set(['abc', 'p1', 'p7', 'k1', 'xyz'])
+    const nuovi = di.content.map((p) => p.props.id).filter((x) => !vecchi.has(x))
+    return nuovi.length > 0 && nuovi.every((x) => /^p\d+$/.test(x) && Number(x.slice(1)) > 7)
+  }), true)
+  regge('6', ids)
+
+  console.log('\nDividi in parti: colonne, troppe parti, ripetizioni')
+  const conCol = pagina(T('t1', `<p>a</p><h2>T</h2><p>b</p>${COL}<p>c</p>`))
+  ok('7: un testo che darebbe colonne resta com\'è', dividi(conCol), conCol)
+  ok('7: non è divisibile', divisibile(conCol), false)
+
+  const tanti = pagina(T('t1', Array.from({ length: 101 }, (_, i) => `<h2>T${i}</h2><p>x</p>`).join('')))
+  const dt = dividi(tanti)
+  ok('8: oltre 100 parti il risultato non si accorpa', prova(() => dt.content.length), 101)
+  ok('8: cosaNonVaPezzi dà la frase delle 100 parti', prova(() => z.cosaNonVaPezzi(dt)), 'La pagina ha troppe parti: al massimo 100')
+  ok('8: è comunque divisibile, così la schermata mostra l’avviso', prova(() => z.divisibileInParti(tanti)), true)
+  ok('8: il testo del sito è lo stesso', prova(() => z.pezziInHtml(dt) === z.pezziInHtml(tanti)), true)
+
+  for (const [cosa, p] of [['Judo', pagina(T('t1', judo))], ['mista', mista], ['id strani', ids], ['semplice', semplice]]) {
+    ok(`9: dividere due volte è come dividere una (${cosa})`, [valido(dividi(p)), dividi(dividi(p))], [true, dividi(p)])
+  }
+
+  ok('10: la frase dice quante parti, SALVA BOZZA e TORNA ALLE PAGINE', prova(() => { const f = z.frasePartiNuove(11); return ['11 parti', 'SALVA BOZZA', 'TUTTE LE PAGINE', 'TORNA ALLE PAGINE'].every((x) => f.includes(x)) }), true)
+
+  const due = pagina(T('t1', lungo), K, T('t2', `<h2>X</h2><p>1</p>${IMG('e')}<p>2</p>`), FO)
+  ok('11: due testi divisibili si dividono tutti e due', forma(dividi(due)), [
+    ['testo', '<p>a</p>'], ['testo', '<h2>T</h2><p>b</p>'], ['foto', ['https://x.it/d.jpg', 'd']], ['testo', '<p>c</p>'],
+    ['colonne', ['<p>1</p>', '<p>2</p>']],
+    ['testo', '<h2>X</h2><p>1</p>'], ['foto', ['https://x.it/e.jpg', 'e']], ['testo', '<p>2</p>'],
+    ['foto', ['https://x.it/a.jpg', 'Un tatami']],
+  ])
+  regge('11', due)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

@@ -31,6 +31,7 @@ Google, e vale solo per i mockup.
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
 | `TimerLinea.dc.html` | `LineaDelTempo`: un blocco per passo, che si colora via via |
+| `BarraScelta.dc.html` | La barra dei movimenti scelti in CONTABILITÀ → MOVIMENTI (`.sg-barra-scelta`): «N SCELTI», uscite o entrate e il totale, CAMBIA VOCE e DESELEZIONA; con scelta mista SOLO LE N ENTRATE / SOLO LE N USCITE al posto di CAMBIA VOCE (`misto`) |
 | `Titoletto.dc.html` | `Titoletto` di `ds.tsx`: l'etichetta spaziata con la riga |
 | `Testata.dc.html` | `Testata` di `App.tsx`: marchio, luogo, guida e tema (misura del telefono) |
 | `Passi.dc.html` | `.sg-passi` di `Importa.tsx`: I FOGLI, IL CONTROLLO, NELL'APP, con quello corrente acceso |
@@ -120,7 +121,9 @@ Google, e vale solo per i mockup.
 | `TabletTendina` | La tendina CORSO aperta dell'area istruttore (`.tb-select`); il `<select>` vero è del sistema |
 | `TabletProvaPannello` | `PannelloProve` con stile tablet (`Prove.tsx`): CHI VIENE A PROVARE alzato per il dito, campi su tre colonne e già venuti sotto |
 | `CosaManca` | `CosaManca` di `CosaManca.tsx` (`.sg-mancano*`): la striscia COSA MANCA in cima alle pagine di segreteria, `voci` «numero\|titolo\|nota\|tono» separate da `;` (tono r manca, g da accogliere, v a posto, n non si sa; 0 è sempre ✓ verde); `colonne` 4 come oggi, 5 o 2 per le proposte |
-| `Numero` | `Numero` di `Presenze.tsx` (`.sg-numero`): titolo, cifra da 44px e riga sotto; `allarme` col bordo rosso. Quattro in fila in `.sg-numeri`, cinque in VESTIARIO (`data-cinque`) |
+| `Numero` | `Numero` di `Presenze.tsx` (`.sg-numero`): titolo, cifra da 44px e riga sotto; `allarme` col bordo rosso. Quattro in fila in `.sg-numeri`, cinque in VESTIARIO (`data-cinque`). BILANCIO (`Bilancio.tsx`) usa questo stesso `Numero` per ENTRATE, USCITE e RISULTATO, tre in `.sg-numeri-tre`; non ha il tema sito, per questo i canvas di `bilancio-anno` tengono i tre numeri inline |
+| `RigaBilancio` | `RigaVoce` di `Bilancio.tsx` (`.sg-riga-bilancio`): nome con nota, importo dell'anno, quello di prima e la differenza (cifre già scritte come `euro()`); `variante` normale, totale (filo 2px e fondo), daclassificare (barra gialla a sinistra) |
+| `SaldoCassa` | Il riquadro di una cassa sotto SALDI DELLE CASSE di `Bilancio.tsx`: saldo iniziale, entrate, uscite, giroconti, saldo finale; `nonDisponibile` la frase «Saldo non disponibile» al posto delle righe |
 | `BarraSalva` | La barra per salvare di LISTINO (`.sg-listino-salva`): frase, BUTTA I CAMBI e SALVA, bordo giallo; `guaio` la frase in rosso e SALVA spento |
 | `VoceElenco` | Una voce chiusa di LISTINO > I CORSI (`.sg-voce-elenco`): nome, riga rossa se manca qualcosa, riassunto e il chip CAMBIA; `bollino` il `.sg-tag` giallo accanto al nome (SENZA TIPO nel catalogo del vestiario) |
 | `RigaVestiario` | Una riga di un ordine di vestiario in segreteria (`RigheTabella` di `Vestiario.tsx`): `contesto="segreteria"`, una riga di campi sotto `TestataTabella` (`etichette` sotto i 1000px). Il `contesto` app (il riquadro RIGA N del telefono) **non è più usato**: la pagina degli ordini va a passi, con `SchedaCapo` e `RigaRiepilogoVestiario` |

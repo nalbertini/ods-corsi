@@ -18,7 +18,7 @@ import {
   type VoceMenu,
 } from '../../lib/sitoPagine'
 import { pulisciTesto } from '../../lib/sitoTesto'
-import { cosaNonVaPezzi, databaseConPezzi, cosaNonVaPortare, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
+import { cosaNonVaPezzi, databaseConPezzi, cosaNonVaPortare, dividiInParti, divisibileInParti, frasePartiNuove, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
 import { Immagini } from './ImmaginiSito'
 import { OrarioSito } from './OrarioSito'
 import { Campo, chiedi, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
@@ -61,6 +61,9 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
   // Una pagina a pezzi (`pagina.pezzi`) si scrive coi pezzi; una col vecchio editor, col testo.
   const [pezzi, setPezzi] = useState<PezziPagina>(pagina.pezzi ?? pezziVuoti())
   const aPezzi = !!pagina.pezzi
+  // Dopo «Dividi in parti» l'editor si rimonta (`key`): prende i pezzi una volta sola, poi li tiene Puck.
+  const [rimonta, setRimonta] = useState(0)
+  const [appenaDivisa, setAppenaDivisa] = useState(false)
   const [slug, setSlug] = useState(pagina.slug)
   const [anteprima, setAnteprima] = useState(false)
   const { avviso, avvisa, fai, lavora } = useAvviso()
@@ -69,6 +72,12 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
   const bozza = useMemo(() => (aPezzi && !noPezzi ? pezziInHtml(pezzi) : bozzaTesto), [aPezzi, noPezzi, pezzi, bozzaTesto])
   const pezziDiversi = useMemo(() => aPezzi && pezziCambiati(pezzi, pagina.pezzi), [aPezzi, pezzi, pagina.pezzi])
   const sporca = titolo.trim() !== pagina.titolo || descrizione.trim() !== pagina.descrizione || (aPezzi ? pezziDiversi : bozzaCambiata(bozza, pagina.bozza))
+  // Si guarda la pagina salvata, non a ogni tasto battuto: il tasto è spento finché c'è DA SALVARE, e dopo il salvataggio vale quella.
+  const puoDividere = useMemo(() => !pagina.diLegge && !!pagina.pezzi && divisibileInParti(pagina.pezzi), [pagina.diLegge, pagina.pezzi])
+  // La frase «Ora ci sono N parti» vale finché la divisione è da salvare; salvata (o scartata), non c'è più.
+  useEffect(() => {
+    if (!sporca) setAppenaDivisa(false)
+  }, [sporca])
   useBozza(sporca, pagina.titolo)
   const noSlug = slug === pagina.slug ? null : controllaSlug(slug, altri)
   const noTitolo = !titolo.trim() ? 'Scrivi il titolo della pagina' : null
@@ -112,6 +121,16 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
   }
   // Collegare i corsi non cambia il testo: si salva subito e il sito si aggiorna da solo.
   const collegaCorsi = (corsi: string[]) => fai(() => d.collegaCorsiSito(pagina.id, corsi), 'Fatto. Il sito si aggiorna da solo entro 5 minuti', ricarica)
+  // Non si salva da sola: la divisione resta DA SALVARE e «Torna alle pagine» la scarta.
+  const dividi = async () => {
+    const nuovi = dividiInParti(pezzi)
+    const no = cosaNonVaPezzi(nuovi)
+    if (no) return avvisa(no, true)
+    if (!(await chiedi(`Dividere «${pagina.titolo}» in parti? Il testo non cambia: ogni titolo e ogni foto aprono una parte nuova. Non va online finché non pubblichi. Se non ti piace, premi TUTTE LE PAGINE e scegli TORNA ALLE PAGINE: non cambia niente.`, 'Dividi', { no: 'Lascia stare' }))) return
+    setPezzi(nuovi)
+    setAppenaDivisa(true)
+    setRimonta((k) => k + 1)
+  }
   const cambiaSlug = () => fai(() => d.cambiaIndirizzoSito(pagina.id, slug), 'Indirizzo cambiato', ricarica)
   const nascondi = async () => {
     if (!pagina.nascosta && !(await chiedi(`Nascondere «${pagina.titolo}»? Sparisce dal sito alla prossima pubblicazione, ma resta qui.`, 'Nascondi', { pericolo: true }))) return
@@ -157,7 +176,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
             <div className="sito-testo sito-anteprima" aria-label="Com’è sul sito" dangerouslySetInnerHTML={{ __html: pulisciTesto(bozza) }} />
           ) : (
             <Suspense fallback={<span className="sg-sotto">Apro l’editor…</span>}>
-              {aPezzi ? <EditorPezzi d={d} pezzi={pezzi} onCambia={setPezzi} /> : <EditorTesto valore={bozzaTesto} onCambia={setBozza} etichetta={`Testo di ${pagina.titolo}`} d={d} />}
+              {aPezzi ? <EditorPezzi key={rimonta} d={d} pezzi={pezzi} onCambia={setPezzi} /> : <EditorTesto valore={bozzaTesto} onCambia={setBozza} etichetta={`Testo di ${pagina.titolo}`} d={d} />}
             </Suspense>
           )}
           {noTesto && <Guaio testo={noTesto} />}
@@ -192,6 +211,23 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
                 Porta ai pezzi
               </button>
               <span className="sg-sotto">{sporca ? 'Salva la bozza prima di passare ai pezzi.' : 'Il testo resta com’è: lo trovi in foto, testo e colonne da trascinare. Sul sito non cambia niente finché non pubblichi.'}</span>
+            </div>
+          )}
+          {(puoDividere || appenaDivisa) && (
+            <div className="stack" style={{ gap: 10, paddingTop: 8, borderTop: '2px solid var(--line)' }}>
+              <Titoletto>EDITOR A PEZZI</Titoletto>
+              {puoDividere && !appenaDivisa && (
+                <button type="button" className="sg-btn sg-btn-linea" disabled={lavora || sporca} onClick={() => void dividi()}>
+                  Dividi in parti
+                </button>
+              )}
+              <span className="sg-sotto">
+                {appenaDivisa
+                  ? frasePartiNuove(pezzi.content.length)
+                  : sporca
+                    ? 'Salva la bozza prima di dividere.'
+                    : 'Il testo resta com’è: ogni titolo apre una parte nuova e ogni foto tra i paragrafi diventa una Foto. I sottotitoli restano nel testo. Sul sito non cambia niente finché non pubblichi.'}
+              </span>
             </div>
           )}
           <div className="stack" style={{ gap: 8 }}>

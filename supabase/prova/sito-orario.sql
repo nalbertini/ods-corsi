@@ -1,5 +1,5 @@
 -- L'orario del sito viene da CORSI: una pagina si collega a uno o più corsi
--- (`sito_pagine.corsi_collegati`, 67-sito-orario.sql) e il sito generato ne
+-- (`sito_pagine.corsi_collegati`, 68-sito-orario.sql) e il sito generato ne
 -- legge le ricorrenze con `orari_aperti()`. Il collegamento lo scrive solo la
 -- segreteria, con `salva_corsi_sito`; il sito pubblico lo legge solo delle
 -- pagine pubblicate, da `sito_pagine_pubbliche()` (colonna `corsi_collegati`);
@@ -8,7 +8,7 @@
 -- Le stesse regole, nella metà di prova, sono in `collegaCorsi` di
 -- `src/lib/sitoProva.ts` (scripts/prova-sito-orario.mjs).
 -- Si lancia dopo finto-supabase.sql, i file dello schema (48-orari-aperti.sql,
--- 56-sito.sql e 67-sito-orario.sql compresi). Parte da un database pulito.
+-- 56-sito.sql e 68-sito-orario.sql compresi). Parte da un database pulito.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -153,7 +153,7 @@ select atteso('ma ancora non collega', tenta($$select salva_corsi_sito('ffffffff
 reset role;
 
 \echo ''
-\echo '--- 6. rilanciando 56-sito.sql la funzione perde la colonna; il 67 la rimette ---'
+\echo '--- 6. rilanciando 56-sito.sql la funzione perde la colonna; il 68 la rimette ---'
 \ir ../56-sito.sql
 grant execute on function tenta(text), atteso(text, text, text), chi(text) to anon, authenticated;
 select chi('');
@@ -162,11 +162,11 @@ select atteso('dopo solo il 56 la funzione pubblica non ha corsi_collegati (e si
   (select count(*)::text from pg_proc p where p.proname = 'sito_pagine_pubbliche' and 'corsi_collegati' = any(p.proargnames)), '0');
 select atteso('…e le pagine si leggono lo stesso', (select count(*)::text from sito_pagine_pubbliche() where slug = 'avviamento'), '1');
 reset role;
-\ir ../67-sito-orario.sql
+\ir ../68-sito-orario.sql
 grant execute on function tenta(text), atteso(text, text, text), chi(text) to anon, authenticated;
 select chi('');
 set role anon;
-select atteso('dopo il 67 anon legge di nuovo i corsi collegati',
+select atteso('dopo il 68 anon legge di nuovo i corsi collegati',
   (select corsi_collegati::text from sito_pagine_pubbliche() where slug = 'avviamento'), '{cccccccc-0000-0000-0000-000000000001,cccccccc-0000-0000-0000-000000000002}');
 select atteso('anon non collega ancora', tenta($$select salva_corsi_sito('ffffffff-0000-0000-0000-0000000000a1', array[]::uuid[])::text$$), 'NEGATO: …');
 reset role;

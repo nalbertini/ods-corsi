@@ -8,7 +8,7 @@
 // `sito_menu_pubblico`, `sito_redirect_pubblici`) con la chiave anon: mai le
 // bozze, mai le pagine nascoste. Per le pagine collegate ai corsi legge anche
 // `orari_aperti()` (solo corso, giorno, ora, durata): se manca la funzione o la
-// colonna (48 o 67 non lanciati) le pagine restano non collegate (lo decide `datiDaRisposte`), e il giro non si ferma. Scrive i file in `<cartella>` (di solito
+// colonna (48 o 68 non lanciati) le pagine restano non collegate (lo decide `datiDaRisposte`), e il giro non si ferma. Scrive i file in `<cartella>` (di solito
 // `dist-sito`), con carattere e logo da `sito/risorse/`. Se qualcosa non va non
 // tocca la cartella: i file nascono in una cartella accanto e la sostituiscono
 // solo a lavoro finito, così il sito di prima resta com'è.

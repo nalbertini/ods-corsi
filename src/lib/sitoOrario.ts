@@ -25,7 +25,7 @@ export interface RigaOrario {
 /** Quello che il sito dice quando i corsi collegati non hanno nessun orario: mai gli orari di prima. */
 export const IN_ARRIVO = 'Orario in arrivo'
 
-/** Quello che dice il pannello quando il database non ha `67-sito-orario.sql` (il file sta in LEGGIMI, non qui: chi usa l'app non lo lancia). */
+/** Quello che dice il pannello quando il database non ha `68-sito-orario.sql` (il file sta in LEGGIMI, non qui: chi usa l'app non lo lancia). */
 export const ORARIO_NON_ATTIVO = 'Qui l’orario dai corsi non è ancora attivo. Per ora l’orario resta quello scritto a mano.'
 
 const GIORNI = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
@@ -76,7 +76,7 @@ export function corsiSenzaOrari(corsi: string[], orari: OrarioAperto[]): string[
   return [...new Set(corsi)].filter((c) => !conOrari.has(c))
 }
 
-/** Vero se il database ha `67-sito-orario.sql`: la colonna c'è, anche vuota, in almeno una pagina. */
+/** Vero se il database ha `68-sito-orario.sql`: la colonna c'è, anche vuota, in almeno una pagina. */
 export const databaseConCorsi = (pagine: Array<{ corsiCollegati?: string[] }>): boolean => pagine.some((p) => p.corsiCollegati !== undefined)
 
 /**

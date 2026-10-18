@@ -30,6 +30,7 @@ import { cosaNonVaDiretto, trovaPagatori, type PagamentoDiretto } from './pagame
 import {
   cosaNonVaAnnulloChiusura,
   cosaNonVaAnnulloMovimento,
+  cosaNonVaCambioVoce,
   cosaNonVaChiusura,
   cosaNonVaGiroconto,
   cosaNonVaMovimento,
@@ -1088,6 +1089,35 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (chiuso) throw new Error(chiuso)
       a().movimenti = contabilita().movimenti.map((x) => (x.id === id ? { ...x, annullatoIl: new Date().toISOString() } : x))
       salva()
+    },
+
+    async cambiaVoceMovimenti(ids, voceId) {
+      const { movimenti, voci } = contabilita()
+      const no = cosaNonVaCambioVoce(ids, righeMovimenti([], movimenti, voci), voci, voceId)
+      if (no) throw new Error(no)
+      const scelti = new Set(ids)
+      const arrivo = voci.find((v) => v.id === voceId)
+      const quando = new Date().toISOString()
+      const cambiVoce = [...(a().cambiVoce ?? [])]
+      let cambiati = 0
+      let giaCosi = 0
+      a().movimenti = movimenti.map((x) => {
+        if (!scelti.has(x.id)) return x
+        if (x.voceId === voceId) {
+          giaCosi++
+          return x
+        }
+        cambiati++
+        cambiVoce.push({ movimentoId: x.id, quando, chi: 'Amministrazione', prima: voci.find((v) => v.id === x.voceId)?.nome ?? '—', dopo: arrivo?.nome ?? '—' })
+        return { ...x, voceId }
+      })
+      a().cambiVoce = cambiVoce
+      salva()
+      return { cambiati, giaCosi }
+    },
+
+    async cambiVoceMovimento(id) {
+      return (a().cambiVoce ?? []).filter((c) => c.movimentoId === id).map(({ movimentoId: _m, ...c }) => c)
     },
 
     async chiusure() {

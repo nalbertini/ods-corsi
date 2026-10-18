@@ -12,7 +12,7 @@
 //
 //  1. Le righe: raggruppate, ordinate, scritte.  2. Più corsi, corsi vuoti.
 //  3. Il generatore: pagina non collegata = identica a oggi.
-//  4. Pagina collegata.  5. Fascia blu.  6. Database senza 67-sito-orario.sql.
+//  4. Pagina collegata.  5. Fascia blu.  6. Database senza 68-sito-orario.sql.
 //  7. Modalità prova.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
@@ -183,7 +183,7 @@ console.log('\n5. Pre pugilistica e Autodifesa: la fascia blu')
   ok('senza orari: «Orario in arrivo» e non quelli a mano', [righe(pagina(FASCIA, { corsiCollegati: [A] })), /Martedì|20:00/.test(testo(main(pagina(FASCIA, { corsiCollegati: [A] }))))], [['Orario in arrivo'], false])
 }
 
-console.log('\n6. Dal database al generatore, e senza 67-sito-orario.sql')
+console.log('\n6. Dal database al generatore, e senza 68-sito-orario.sql')
 {
   const riga = (extra = {}) => ({ slug: 'avviamento', titolo: 'Avviamento', descrizione: 'Per iniziare.', testo: CON_FOTO, pubblicata_il: null, ...extra })
   const dati = (pagine, orari) => prova(() => g.datiDaRisposte('https://officinedellosport.it/', pagine, [], [], orari))
@@ -193,7 +193,7 @@ console.log('\n6. Dal database al generatore, e senza 67-sito-orario.sql')
   ok('gli orari arrivano con le chiavi del generatore', riceve.orari, [{ corsoId: A, giorno: 1, ora: '17:00:00', durataMin: 60 }])
   ok('dal database alla pagina: la riga d’orario', righe(html(riceve)), ['Lunedì · 17:00–18:00'])
   const senza = dati([riga()])
-  ok('senza la colonna (67 non lanciato): pagina non collegata, nessun errore', (senza.pagine?.[0]?.corsiCollegati ?? []).length, 0)
+  ok('senza la colonna (68 non lanciato): pagina non collegata, nessun errore', (senza.pagine?.[0]?.corsiCollegati ?? []).length, 0)
   ok('senza la colonna: la pagina è quella di oggi', sha(html(senza)), OGGI.dati)
   ok('colonna null: pagina non collegata', sha(html(dati([riga({ corsi_collegati: null })]))), OGGI.dati)
   ok('colonna vuota: pagina non collegata', sha(html(dati([riga({ corsi_collegati: [] })], []))), OGGI.dati)
@@ -203,10 +203,10 @@ console.log('\n6. Dal database al generatore, e senza 67-sito-orario.sql')
   ok('orari presenti ma vuoti: la pagina collegata dice «Orario in arrivo»', righe(html(dati([riga({ corsi_collegati: [A] })], []))), ['Orario in arrivo'])
   ok('senza orari_aperti() (48 non lanciato) i dati si costruiscono lo stesso', (dati([riga({ corsi_collegati: [A] })]).orari ?? []).length, 0)
 
-  // La segreteria: senza 67 il pannello lo sa e lo dice, come per 62-sito-pezzi.sql.
-  ok('databaseConCorsi: nessuna pagina, non si sa = senza 67', prova(() => o.databaseConCorsi([])), false)
-  ok('databaseConCorsi: nessuna pagina col campo = senza 67', prova(() => o.databaseConCorsi([{}, {}])), false)
-  ok('databaseConCorsi: una pagina col campo (anche vuoto) = con 67', prova(() => o.databaseConCorsi([{}, { corsiCollegati: [] }])), true)
+  // La segreteria: senza 68 il pannello lo sa e lo dice, come per 62-sito-pezzi.sql.
+  ok('databaseConCorsi: nessuna pagina, non si sa = senza 68', prova(() => o.databaseConCorsi([])), false)
+  ok('databaseConCorsi: nessuna pagina col campo = senza 68', prova(() => o.databaseConCorsi([{}, {}])), false)
+  ok('databaseConCorsi: una pagina col campo (anche vuoto) = con 68', prova(() => o.databaseConCorsi([{}, { corsiCollegati: [] }])), true)
   const risposta = (x) => ({ ...x, then: (f, ko) => Promise.resolve(x).then(f, ko) })
   const base = { id: 'p1', slug: 'home', titolo: 'Home', descrizione: '', titolo_pubblicato: null, descrizione_pubblicata: null, bozza: '<p>x</p>', pubblicato: null, nascosta: false, di_legge: false, versione: 1, pubblicata_il: null }
   const errore = async (f) => { try { await f(); return 'nessun errore' } catch (e) { return e.message } }
@@ -221,12 +221,12 @@ console.log('\n6. Dal database al generatore, e senza 67-sito-orario.sql')
     rpc: () => risposta(con67 ? { data: null, error: null } : { data: null, error: { code: codice, message: messaggio } }),
   })
   const con = await prova(() => client(true).sitoPagine())
-  ok('con il 67: la pagina porta i corsi collegati', Array.isArray(con) ? con[0]?.corsiCollegati : con, [A, B])
+  ok('con il 68: la pagina porta i corsi collegati', Array.isArray(con) ? con[0]?.corsiCollegati : con, [A, B])
   const senza67 = await prova(() => client(false).sitoPagine())
-  ok('senza il 67: le pagine si leggono lo stesso, senza il campo', Array.isArray(senza67) ? [senza67.length, senza67[0].corsiCollegati] : senza67, [1, undefined])
-  ok('senza il 67: collegare un corso dice quale file lanciare (funzione assente, PGRST202)', await errore(() => client(false, 'PGRST202', 'Could not find the function public.salva_corsi_sito in the schema cache').collegaCorsiSito('p1', [A])), FRASE)
-  ok('senza il 67: collegare un corso (42883)', await errore(() => client(false, '42883', 'function public.salva_corsi_sito does not exist').collegaCorsiSito('p1', [A])), FRASE)
-  ok('con il 67: collegare i corsi riesce', await errore(() => client(true).collegaCorsiSito('p1', [A, B])), 'nessun errore')
+  ok('senza il 68: le pagine si leggono lo stesso, senza il campo', Array.isArray(senza67) ? [senza67.length, senza67[0].corsiCollegati] : senza67, [1, undefined])
+  ok('senza il 68: collegare un corso dice quale file lanciare (funzione assente, PGRST202)', await errore(() => client(false, 'PGRST202', 'Could not find the function public.salva_corsi_sito in the schema cache').collegaCorsiSito('p1', [A])), FRASE)
+  ok('senza il 68: collegare un corso (42883)', await errore(() => client(false, '42883', 'function public.salva_corsi_sito does not exist').collegaCorsiSito('p1', [A])), FRASE)
+  ok('con il 68: collegare i corsi riesce', await errore(() => client(true).collegaCorsiSito('p1', [A, B])), 'nessun errore')
 }
 
 console.log('\n7. Modalità prova: le stesse regole sui dati inventati')
