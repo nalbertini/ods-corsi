@@ -29,7 +29,7 @@ Il testo sta in [`judo.html`](judo.html): è quello che va incollato. Ordine, co
 - In cima la foto grande e le quattro tessere dei dati: frasi prese dal testo di oggi e dal design (Dove, Per iniziare: via Sassi 26 e settimana di prova a 5 euro, già nelle domande frequenti).
 - «Cos’è il corso», «Cosa si fa durante le lezioni», «Per chi è pensato» diventano tre tessere sotto le tessere dei dati, non più titoli grandi.
 - L’orario di oggi, scritto in un solo paragrafo, diventa una tessera per gruppo: nome, ora, giorni, anni di nascita.
-- «Cosa può aspettarsi un genitore o un atleta»: le stesse frasi di oggi, una per tessera.
+- «Cosa può aspettarsi un genitore o un atleta»: i titoli di oggi, una tessera ciascuno, con una frase nuova sotto.
 - «Perché sceglierlo» diventa la banda blu.
 - Nuova sezione «La storia del judo»: viene dal design, il testo di oggi non ce l’ha.
 - Fila di foto (titolo grande vuoto): come nel design.
@@ -37,6 +37,7 @@ Il testo sta in [`judo.html`](judo.html): è quello che va incollato. Ordine, co
 
 ## Da controllare prima di pubblicare
 
+- Le frasi sotto le tessere «Cosa può aspettarsi» sono nuove (lealtà, crescita insieme, fair play, divertimento, disciplina): le rilegga chi insegna, perché dicono come si lavora davvero.
 - Le età accanto ai gruppi («7-9 anni», «10-13 anni», «dai 14 anni») sono quelle del design, calcolate sull’anno 2026: ogni settembre vanno riviste (gli anni di nascita restano giusti).
 - La storia del judo (1882 Kano, Kodokan, Giochi di Tokyo 1964) viene dal design: è storia vera, ma la rilegga chi insegna judo.
 - Il testo di oggi non ha una tessera «Dove» né «Per iniziare»: le due frasi (via Sassi 26, vicino alla metro Fermi; 1 settimana di prova a 5 euro) vengono dal design e dalle domande frequenti.
