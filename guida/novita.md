@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.122.0 — 18 ottobre 2026
+
+### Novità
+
+- Sul telefono la Home del sito ha la barra «Prova a 5 €» e «Chiama», e il numero nel piede si tocca per chiamare
+
 ## 0.121.1 — 18 ottobre 2026
 
 ### Risolto
