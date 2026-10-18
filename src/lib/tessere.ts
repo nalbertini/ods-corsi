@@ -4,7 +4,7 @@
  * schermo sta qui: il foglio del RASD, lo stato di una persona per ente, le
  * parole nella tabella ISCRITTI, l'incrocio con le iscrizioni e i motivi di
  * un'import che non si può fare. L'import ha le stesse regole di `importa_tessere`
- * in `55-tessere.sql` (in prova: `importaTessereProva`): se cambia una, cambia l'altra.
+ * in `61-tessere.sql` (in prova: `importaTessereProva`): se cambia una, cambia l'altra.
  * L'incrocio sta solo qui: il database non ne ha una copia.
  */
 
@@ -305,7 +305,7 @@ export function importaTessereProva(
 /** L'ente scritto da chi usa l'app: in maiuscolo, o niente se è vuoto. */
 export const enteDaDati = (ente?: string): string | undefined => ente?.trim().toUpperCase() || undefined
 
-/** L'errore di un database dove `55-tessere.sql` non è ancora passato (tabella, colonna o funzione che non ci sono). */
+/** L'errore di un database dove `61-tessere.sql` non è ancora passato (tabella, colonna o funzione che non ci sono). */
 export function mancaTessere(e: { code?: string; message?: string } | null | undefined): boolean {
   return !!e && ['42703', '42P01', '42883', 'PGRST200', 'PGRST202', 'PGRST204', 'PGRST205'].includes(e.code ?? '') && /tessere|ente_tessera/.test(e.message ?? '')
 }

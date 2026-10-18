@@ -68,7 +68,7 @@ jobs:
           fi
           echo "pronto=si" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: steps.segreti.outputs.pronto == 'si'
 
       # L'ultima copia riuscita. Se il backup è passato ma non c'è nessun

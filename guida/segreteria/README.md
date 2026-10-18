@@ -10,7 +10,7 @@ che entra da questo indirizzo finisce nel calendario degli istruttori.
 
 ## Entrare
 
-1. Aprire <https://nalbertini.github.io/ods-corsi/> (va bene anche
+1. Aprire <https://app.officinedellosport.it/> (va bene anche
    `…/segreteria/`).
 2. Email e password, **ENTRA**: con l'account della segreteria si arriva
    qui. Si resta collegati finché non si preme **Esci**, in fondo al menu.
@@ -50,7 +50,7 @@ Dentro ISCRITTI c'è sempre il campo per cercare e filtrare l'elenco.
 A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
 **PERSONE** (ISCRITTI, TESSERE, PAGAMENTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
-E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, VESTIARIO, ESERCIZI, SEGNALAZIONI). Le
+E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, VESTIARIO, ESERCIZI, SEGNALAZIONI, SITO). Le
 **IMPOSTAZIONI** sono il tasto coi due cursori in cima al menu. Ogni voce ha la
 sua guida:
 
@@ -89,6 +89,7 @@ la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scel
 | **VESTIARIO** | Gli ordini di vestiario, judogi e costumini: il catalogo, la chiusura, chi ha saldato, l'elenco per il fornitore | [Apri](vestiario.md) |
 | **IMPOSTAZIONI** | In sei gruppi: questo schermo; la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa); in mezzo, **IMPORTA DA EXCEL**: corsi e iscritti dai fogli o dalle risposte del modulo Google | [Apri](regole.md) · [Importa](importa.md) |
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
+| **SITO** | Le pagine del sito della palestra, il menu in alto e il footer: si scrive la bozza e si pubblica | [Apri](sito.md) |
 
 In cima al menu, sotto il nome, si vedono subito senza scorrere tre tasti:
 **?**, la guida della voce aperta, in un'altra scheda; il tasto del **tema**

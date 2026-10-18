@@ -109,7 +109,8 @@ reset role;
 \echo '--- 4. Luca, iscritto ---'
 select chi('33333333-3333-3333-3333-333333333333');
 set role authenticated;
-select atteso('la legge (non è un dato di persone)', tenta($$select jsonb_array_length(discipline)::text from impostazioni$$), '3');
+-- Dal 57 le impostazioni le legge solo chi lavora: l'iscritto non ha un'area, e le discipline non gli servono.
+select atteso('non la legge più (solo chi lavora)', tenta($$select count(*)::text from impostazioni$$), '0');
 select atteso('non la cambia', tenta($$update impostazioni set discipline = '[]' where id$$), 'a vuoto (0 righe)');
 select atteso('le liste di musica non le vede', tenta($$select count(*)::text from musica_sale$$), '0');
 reset role;

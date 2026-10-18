@@ -145,7 +145,7 @@ export function Iscritti({
   const tutti = [...(persone.dato ?? [])].sort(
     (a, b) => Number(b.attiva) - Number(a.attiva) || a.cognome.localeCompare(b.cognome, 'it') || a.nome.localeCompare(b.nome, 'it'),
   )
-  // Le tessere contano solo quando si sa: lette, e il database le ha (55-tessere.sql). Mai «senza tessera» per un elenco che non è arrivato.
+  // Le tessere contano solo quando si sa: lette, e il database le ha (61-tessere.sql). Mai «senza tessera» per un elenco che non è arrivato.
   const conTessereLette = !!tessere.dato && !tessere.dato.manca
   const incroci = new Map<string, RigaIncrocio[]>()
   if (conTessereLette)

@@ -1,5 +1,8 @@
 import type { Segnalata } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
+import type { StatoSito } from './sitoProva'
+import type { ImmagineSito } from './sitoImmagini'
+import type { Cassa, ChiusuraCassa, MovimentoManuale, VoceContabile } from './contabilita'
 import type { Ruolo, StatoSessione } from './sala'
 import type { PagamentoDiretto } from './pagamenti'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
@@ -60,8 +63,10 @@ export interface PersonaProva {
   nome: string
   cognome: string
   ruolo: Ruolo
-  /** Di segreteria, e insegna anche (vedi `ruoli.ts`). */
+  /** Di segreteria o di amministrazione, e insegna anche (vedi `ruoli.ts`). */
   ancheIstruttore?: boolean
+  /** Di segreteria, e cura anche i conti (vedi `ruoli.ts`). */
+  ancheAmministrazione?: boolean
   /** Il suo segno, per riconoscerlo (vedi `kanji.ts`). */
   kanji?: string
   email?: string
@@ -146,13 +151,19 @@ export interface Archivio {
   ricevute?: Ricevuta[]
   /** I pagamenti fatti a mano, senza ricevuta (54-pagamenti-diretti.sql). */
   pagamentiDiretti?: PagamentoDiretto[]
+  /** La contabilità (59-contabilita.sql): le casse con i saldi iniziali, le voci, i movimenti a mano. Mancanti: quelle di partenza. */
+  casse?: Cassa[]
+  voci?: VoceContabile[]
+  movimenti?: MovimentoManuale[]
+  /** Le chiusure della Cassa Contanti (60-chiusura-cassa.sql). */
+  chiusure?: ChiusuraCassa[]
   /** I dati dell'associazione per le ricevute, se la segreteria li ha cambiati. */
   enteRicevute?: EnteRicevuta
   /** Nascita, residenza e genitore degli iscritti importati, per persona (18-anagrafiche.sql). */
   anagrafiche?: Record<string, Anagrafica & { cambiataIl?: string }>
   /** Chi è venuto a provare una lezione, come le righe di `prove` (21-prove.sql). */
   prove?: ProvaLezione[]
-  /** Le tessere (55-tessere.sql); un archivio salvato prima non le ha. */
+  /** Le tessere (61-tessere.sql); un archivio salvato prima non le ha. */
   tessere?: Array<TesseraSeg & { id: string; personaId: string }>
   /** Le coppie di schede segnate «non sono doppioni» (33-non-doppioni.sql), con la più piccola prima. */
   nonDoppioni?: [string, string][]
@@ -160,6 +171,10 @@ export interface Archivio {
   segnalate?: Segnalata[]
   /** Le segnalazioni della segreteria, coi loro messaggi (vedi `segnalazioni.ts`). */
   segnalazioni?: Segnalazione[]
+  /** Le pagine, il menu e il footer del sito (vedi `sitoProva.ts`); nasce al primo uso. */
+  sito?: StatoSito
+  /** Le immagini del sito (vedi `sitoImmagini.ts`); nascono al primo uso. */
+  sitoImmagini?: ImmagineSito[]
 }
 
 /** Come una riga di `prove` (21-prove.sql). */
@@ -334,7 +349,7 @@ function natoIlDa(anni: number, giorni: number): string {
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
 }
 
-/** Come la mappa di `55-tessere.sql`: Judo, Lotta, Aikido, MGA e Avviamento chiedono FIJLKAM, la sala Pesi FIPE, gli altri niente. */
+/** Come la mappa di `61-tessere.sql`: Judo, Lotta, Aikido, MGA e Avviamento chiedono FIJLKAM, la sala Pesi FIPE, gli altri niente. */
 export function enteDelCorso(nome: string): string | undefined {
   if (/^(judo|lotta|aikido|mga|avviamento)/i.test(nome)) return 'FIJLKAM'
   if (/^(pesi|pesistica|preparazione atletica)/i.test(nome)) return 'FIPE'
@@ -377,6 +392,7 @@ function iniziale(): Archivio {
   }
   // Chi usa la prova: la segreteria che vede tutto.
   persone.set('s-prova', { id: 's-prova', nome: 'Segreteria', cognome: 'di prova', ruolo: 'staff', email: 'segreteria@esempio.it', attiva: true, creataIl: STAGIONE.dal })
+  persone.set('a-prova', { id: 'a-prova', nome: 'Amministrazione', cognome: 'di prova', ruolo: 'amministrazione', email: 'amministrazione@esempio.it', attiva: true, creataIl: STAGIONE.dal })
   const iscrizioni: IscrizioneProva[] = []
   for (const c of CORSI) {
     for (const p of elenco(...c.iscritti)) {

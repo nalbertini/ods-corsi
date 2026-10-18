@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 32px; width: 1440px; padding: 28px 36px 36px; background: #121212; align-items: flex-start">
+  <div style="width: 680px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · NUOVO MOVIMENTO (dal tasto in CONTABILITÀ)</span><section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">ENTRATA O USCITA</span>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">NUOVO MOVIMENTO</span>
+  <div style="display: flex; gap: 10px"><dc-import name="Chip" label="USCITA" acceso="{{ true }}" hint-size="130px,44px"></dc-import><dc-import name="Chip" label="ENTRATA" hint-size="130px,44px"></dc-import></div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px"><dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="DATA" valore="12/10/2026" hint-size="100%,80px"></dc-import><dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="IMPORTO" valore="1.976,10" hint-size="100%,80px"></dc-import><dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="CASSA" valore="Conto Corrente" hint-size="100%,80px"></dc-import></div>
+  <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="VOCE" valore="Affitto sala" nota="Solo le voci di uscita. Non c’è la voce? Si crea in VOCI." hint-size="100%,90px"></dc-import>
+  <dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="DESCRIZIONE" valore="Affitto palestra ottobre" hint-size="100%,80px"></dc-import>
+  <dc-import name="Campo" contesto="segreteria" tipo="area" etichetta="NOTA (FACOLTATIVA)" valore="" hint-size="100%,80px"></dc-import>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">Un solo importo, senza IVA. Registrato, non si cambia: si annulla e si rifà (la descrizione e la nota sì). Niente dati personali che non servono.</span>
+  <div style="display: flex; gap: 10px"><dc-import name="Bottone" label="REGISTRA IL MOVIMENTO" variante="pieno" contesto="segreteria" hint-size="280px,48px"></dc-import><dc-import name="Bottone" label="NO, TORNA INDIETRO" variante="linea" contesto="segreteria" hint-size="220px,48px"></dc-import></div>
+</section></div>
+  <div style="width: 680px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · GIROCONTO</span><section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">PER IL VERSAMENTO IN BANCA</span>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">GIROCONTO FRA LE CASSE</span>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px"><dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="DA" valore="Cassa Contanti" hint-size="100%,80px"></dc-import><dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="A" valore="Conto Corrente" hint-size="100%,80px"></dc-import></div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px"><dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="DATA" valore="10/10/2026" hint-size="100%,80px"></dc-import><dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="IMPORTO" valore="1.000,00" hint-size="100%,80px"></dc-import></div>
+  <dc-import name="Campo" contesto="segreteria" tipo="area" etichetta="NOTA (FACOLTATIVA)" valore="Versamento della settimana" hint-size="100%,80px"></dc-import>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">Sposta soldi fra le due casse: non è un’entrata né un’uscita, e non entra nei totali per voce. Si annulla come un movimento.</span>
+  <div style="display: flex; gap: 10px"><dc-import name="Bottone" label="REGISTRA IL GIROCONTO" variante="pieno" contesto="segreteria" hint-size="260px,48px"></dc-import><dc-import name="Bottone" label="NO, TORNA INDIETRO" variante="linea" contesto="segreteria" hint-size="220px,48px"></dc-import></div>
+</section></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":980}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

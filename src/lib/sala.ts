@@ -10,7 +10,7 @@
 
 import { paroleCercate, somiglia } from './nomi'
 
-export type Ruolo = 'istruttore' | 'staff' | 'iscritto'
+export type Ruolo = 'istruttore' | 'staff' | 'amministrazione' | 'iscritto'
 export type StatoSessione = 'prevista' | 'svolta' | 'annullata'
 export type StatoPresenza = 'presente' | 'assente' | 'giustificato'
 

@@ -5,7 +5,7 @@ import { anniScritti, dataDaCf, datiRichieste, ESTENSIONI, ETICHETTA_FILE, FILE,
 import { riduciFoto } from '../lib/foto'
 import { caricaLuoghi, cfValido, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
-import { corsiAmmessi, type CorsoPerEta, type Listino } from '../lib/listino'
+import { altriAperti, corsiAmmessi, testoAltriCorsi, type CorsoPerEta, type Listino } from '../lib/listino'
 import { elenco, euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import * as P from '../lib/passiIscrizione'
@@ -246,8 +246,7 @@ function ElencoCorsi({
 }) {
   const [aperti, setAperti] = useState(false)
   const fuoriEta = perEta.altri.filter((c) => scelti.includes(c.id)).map((c) => c.nome)
-  // Un corso fuori età già scelto non si nasconde: si vede cosa c'è nella richiesta.
-  const mostraAltri = aperti || fuoriEta.length > 0
+  const mostraAltri = altriAperti(aperti, perEta.altri, scelti)
   const tasto = (c: P.CorsoProposto) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined, orario: c.orario })
   const inCima = !!(perEta.stessaOra?.length || perEta.vicini?.length || perEta.stessiGiorni?.length)
   const descritto = nota ? `${id}-nota` : undefined
@@ -289,7 +288,7 @@ function ElencoCorsi({
           </>
         ) : (
           <button type="button" className="btn btn-dashed passo-btn" onClick={() => setAperti(true)}>
-            + ALTRI {perEta.altri.length} CORSI, NON PER LA {etaDi.toUpperCase()} ETÀ
+            {testoAltriCorsi(perEta.altri.length, etaDi)}
           </button>
         ))}
       <div aria-live="polite">

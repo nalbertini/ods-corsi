@@ -1,6 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
+import type { Cassa, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
@@ -15,6 +16,8 @@ import type { Listino, ListinoLetto } from './listino'
 import { nomeProprio, paroleCercate, somiglia } from './nomi'
 import type { SegnalataVista } from './segnalate'
 import type { Categoria, Segnalazione } from './segnalazioni'
+import type { PaginaSito, VoceMenu } from './sitoPagine'
+import type { ImmagineSito } from './sitoImmagini'
 
 export type { ListaMusica } from './musica'
 import type { IndiziDoppioni } from './doppioni'
@@ -69,7 +72,7 @@ export interface CorsoSeg {
   istruttori: Istruttore[]
   capienza?: number
   attivo: boolean
-  /** Quale tessera chiede il corso (FIJLKAM, FIPE…); senza, nessuna (`55-tessere.sql`). */
+  /** Quale tessera chiede il corso (FIJLKAM, FIPE…); senza, nessuna (`61-tessere.sql`). */
   enteTessera?: string
   /** Solo quelle ancora in corso o future: quelle chiuse restano nel registro. */
   ricorrenze: RicorrenzaSeg[]
@@ -331,9 +334,11 @@ export interface PersonaleSeg {
   nome: string
   cognome: string
   email?: string
-  ruolo: 'istruttore' | 'staff'
-  /** Di segreteria, e insegna anche: vedi `ruoli.ts`. */
+  ruolo: 'istruttore' | 'staff' | 'amministrazione'
+  /** Di segreteria o di amministrazione, e insegna anche: vedi `ruoli.ts`. */
   ancheIstruttore: boolean
+  /** Di segreteria, e cura anche i conti: vedi `ruoli.ts`. */
+  ancheAmministrazione: boolean
   attiva: boolean
   /** Ha già fatto l'accesso almeno una volta: il suo account è legato. */
   collegato: boolean
@@ -535,7 +540,7 @@ export interface DatiSegreteria {
   salvaPagamento(personaId: string, p: PagamentoSeg): Promise<void>
 
   /**
-   * Le tessere di tutti (`55-tessere.sql`). `manca` dice che il database non ha
+   * Le tessere di tutti (`61-tessere.sql`). `manca` dice che il database non ha
    * ancora il file: l'elenco è vuoto e l'app lo dice invece di mostrare «nessuna tessera».
    */
   tessere(): Promise<{ elenco: TesseraSeg[]; manca?: boolean }>
@@ -568,6 +573,28 @@ export interface DatiSegreteria {
   chiudiSegnalazione(id: string, chiusa: boolean): Promise<void>
   /** Cambia la categoria di un filo: una scelta sbagliata non resta sbagliata. */
   categoriaSegnalazione(id: string, categoria: Categoria): Promise<void>
+
+  /** Le pagine del sito della palestra, con bozza e pubblicato (vedi `sitoPagine.ts`). */
+  sitoPagine(): Promise<PaginaSito[]>
+  /** Il menu in alto e il footer del sito. */
+  sitoMenu(): Promise<{ menu: VoceMenu[]; footer: VoceMenu[] }>
+  /** Una pagina nuova, solo bozza; dice il suo id. */
+  nuovaPaginaSito(titolo: string, slug: string): Promise<string>
+  /** Salva la bozza; `versione` è quella che si aveva in mano, e dice la nuova. Se nel frattempo è cambiata lancia un errore. */
+  salvaBozzaSito(id: string, versione: number, dati: { titolo: string; descrizione: string; bozza: string }): Promise<number>
+  /** La bozza diventa il testo del sito. Dice la nuova versione. */
+  pubblicaPaginaSito(id: string, versione: number): Promise<number>
+  /** Cambia l'indirizzo; il vecchio porta al nuovo. */
+  cambiaIndirizzoSito(id: string, slug: string): Promise<void>
+  nascondiPaginaSito(id: string, nascosta: boolean): Promise<void>
+  cancellaPaginaSito(id: string): Promise<void>
+  /** Riscrive il menu o il footer con queste voci, nell'ordine dato. */
+  salvaMenuSito(dove: 'menu' | 'footer', voci: VoceMenu[]): Promise<void>
+  /** Le immagini caricate per le pagine del sito, la più recente prima (vedi `sitoImmagini.ts`). */
+  sitoImmagini(): Promise<ImmagineSito[]>
+  /** Carica un'immagine (JPEG, PNG o WebP; se pesa troppo la rimpicciolisce); il nome lo decide l'app. */
+  caricaImmagineSito(file: File): Promise<ImmagineSito>
+  cancellaImmagineSito(nome: string): Promise<void>
 
   mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
   togliDalNucleo(personaId: string): Promise<void>
@@ -602,6 +629,32 @@ export interface DatiSegreteria {
   annullaRicevuta(id: string): Promise<void>
   /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
   pagamentiDiretti(personaId?: string): Promise<PagamentoDiretto[]>
+  /** Nome e cognome di chi ha pagato, e nient'altro: per chi segue i pagamenti senza vedere le persone (`55-amministrazione.sql`). */
+  nomiPersone(ids: string[]): Promise<Array<{ id: string; nome: string; cognome: string }>>
+  /** Chi ha pagato, cercato per nome: almeno tre lettere, al massimo otto, solo nome e cognome (`cerca_pagatori`). */
+  cercaPagatori(scritto: string): Promise<Array<{ id: string; nome: string; cognome: string }>>
+  /** Le casse con il loro saldo iniziale (`59-contabilita.sql`). Solo per l'amministrazione, come tutto quello che segue. */
+  casse(): Promise<Cassa[]>
+  voci(): Promise<VoceContabile[]>
+  /** I movimenti scritti a mano, anche gli annullati; gli incassi degli iscritti si ricavano da `ricevute` e `pagamentiDiretti`. */
+  movimenti(): Promise<MovimentoManuale[]>
+  salvaVoce(d: { nome: string; tipo: 'entrata' | 'uscita' }): Promise<string>
+  rinominaVoce(id: string, nome: string): Promise<void>
+  /** Una voce usata non si cancella: si disattiva e non si offre più per i movimenti nuovi. */
+  attivaVoce(id: string, attiva: boolean): Promise<void>
+  salvaSaldoCassa(id: string, saldo: number, dal?: string): Promise<void>
+  registraMovimento(d: Omit<DatiMovimento, 'tipo'> & { tipo: 'entrata' | 'uscita' }): Promise<string>
+  registraGiroconto(d: DatiGiroconto): Promise<string>
+  /** Un movimento non si modifica né si cancella: si annulla e si rifà. */
+  annullaMovimento(id: string): Promise<void>
+  /** Solo la descrizione e la nota si correggono sul posto. */
+  correggiTestoMovimento(id: string, descrizione: string, nota?: string): Promise<void>
+  /** Le chiusure della Cassa Contanti, anche le annullate (`60-chiusura-cassa.sql`). */
+  chiusure(): Promise<ChiusuraCassa[]>
+  /** Chiude la Cassa Contanti fino a un giorno: il previsto lo calcola il database, la differenza si scrive da sé. Rende l'id. */
+  chiudiCassa(d: { cassaId: string; data: string; contato: number; nota?: string }): Promise<string>
+  /** Si annulla solo l'ultima chiusura, con il suo movimento di differenza. */
+  annullaChiusuraCassa(id: string): Promise<void>
   /** Registra un pagamento fatto a mano, senza ricevuta. */
   registraPagamentoDiretto(d: DatiPagamentoDiretto): Promise<PagamentoDiretto>
   /** Lo annulla: resta in elenco, segnato annullato. */

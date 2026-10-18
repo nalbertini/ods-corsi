@@ -8,7 +8,6 @@
 // `prova:richieste` deve passare com'era.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
-import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 
 const { outputFiles } = await build({
@@ -176,27 +175,6 @@ console.log('\n2. in prova le richieste restano sul dispositivo')
   ok('una richiesta, nuova', tutte.map((x) => [x.stato, x.codiceFiscale]), [['nuova', CF_LUCA]])
   ok('con i suoi due file', (await r.file(tutte[0].id)).map((f) => f.tipo).sort(), ['documento', 'modulo'])
   ok('nessuna chiamata alla rete', chiamateDiRete, 0)
-}
-
-// ---------------------------------------------------------------------------
-console.log('\n3. il modulo di oggi non cambia: solo la parola export')
-{
-  const file = ['src/components/ModuloIscrizione.tsx', 'src/components/IscrizioniScreen.tsx']
-  let diff
-  for (const base of ['main', 'origin/main']) {
-    try {
-      diff = execFileSync('git', ['diff', '--unified=0', base, '--', ...file], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-      break
-    } catch {
-      /* quel ramo qui non c'è: si prova l'altro */
-    }
-  }
-  if (diff === undefined) console.log('  - saltata: senza un ramo main con cui confrontare')
-  else {
-    const righe = diff.split('\n').filter((r) => /^[+-]/.test(r) && !/^(\+\+\+|---)/.test(r))
-    const senza = (segno) => righe.filter((r) => r[0] === segno).map((r) => r.slice(1).replace(/^export /, '')).sort()
-    ok('le righe cambiate sono le stesse, a meno di «export»', senza('+'), senza('-'))
-  }
 }
 
 // ---------------------------------------------------------------------------

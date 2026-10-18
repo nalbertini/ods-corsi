@@ -113,5 +113,13 @@ ok('ha il token riga-campo', /^\s*riga-campo:\s*"#6e6e6a"/m.test(design), true)
 ok('ha il token riga-campo-chiara', /^\s*riga-campo-chiara:\s*"#8a8a85"/m.test(design), true)
 ok('la descrizione dei campi cita riga-campo', /campi[^\n]*riga-campo|riga-campo[^\n]*campi|\*\*Riga Campo\*\*/i.test(design.split('---').slice(2).join('---')), true)
 
+console.log('Il tasto di invio del modulo')
+// Largo quanto i campi: `.passo-btn` è `flex-start` per tutti gli altri tasti, e il modulo lo scavalca solo nel suo piede
+// (dentro il blocco `data-modulo`, perché `prova:iscrizione-sito` non vuole regole nuove fuori).
+ok('nel piede del modulo il tasto è a tutta larghezza', dichiarato(":root[data-modulo='sito'] .modulo-piede .passo-btn", 'align-self'), 'stretch')
+ok('…alto 56px come prima', dichiarato('.modulo-piede .passo-btn', 'min-height'), '56px')
+ok('gli altri tasti restano a inizio riga', dichiarato('.passo-btn', 'align-self'), 'flex-start')
+ok('…anche quelli di aiuto', dichiarato('.passo-aiuto .passo-btn', 'align-self'), null)
+
 console.log(guai ? `\n${guai} DA SISTEMARE` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
@@ -22,6 +22,8 @@ import { Richieste } from './Richieste'
 import { PresenzeIstruttori } from './PresenzeIstruttori'
 import { PresenzeSegnalate } from './PresenzeSegnalate'
 import { Segnalazioni } from './Segnalazioni'
+// Il pannello del sito porta con sé l'editor del testo e la sua pulizia: si scaricano solo aprendolo.
+const Sito = lazy(() => import('./Sito').then((m) => ({ default: m.Sito })))
 import { tocca } from '../../lib/segnalazioni'
 import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
@@ -96,6 +98,7 @@ const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]>; secondario?: 
       ['vestiario', 'VESTIARIO'],
       ['esercizi', 'ESERCIZI'],
       ['segnalazioni', 'SEGNALAZIONI'],
+      ['sito', 'SITO'],
     ],
   },
 ]
@@ -119,6 +122,7 @@ const GUIDE: Record<Voce, string> = {
   vestiario: 'segreteria/vestiario',
   regole: 'segreteria/regole',
   segnalazioni: 'segreteria/segnalazioni',
+  sito: 'segreteria/sito',
 }
 
 /** Scrive l'indirizzo della segreteria nella cronologia, senza ricaricare. */
@@ -173,6 +177,7 @@ export function Segreteria({
   prova,
   onEsci,
   onIstruttori,
+  onAmministrazione,
 }: {
   nome: string
   ruolo?: string
@@ -180,6 +185,8 @@ export function Segreteria({
   onEsci?: () => void
   /** Per chi è di segreteria e insegna anche: il passaggio al calendario, senza uscire. */
   onIstruttori?: () => void
+  /** Per chi è di segreteria e cura anche i conti: il passaggio all'amministrazione, senza uscire. */
+  onAmministrazione?: () => void
 }) {
   const [d, setD] = useState<DatiSegreteria | null>(null)
   // Dove si è sta nell'indirizzo (vedi `indirizzoSegreteria.ts`): si parte
@@ -479,6 +486,11 @@ export function Segreteria({
               ISTRUTTORI →
             </button>
           )}
+          {onAmministrazione && (
+            <button type="button" className="num sg-voce" onClick={onAmministrazione}>
+              AMMINISTRAZIONE →
+            </button>
+          )}
           <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
           <CopiaLink link={LINK_ORDINI} testo="COPIA LINK ORDINI" perche="Il link per ordinare il vestiario:" />
         </div>
@@ -593,6 +605,11 @@ export function Segreteria({
         {d && voce === 'vestiario' && <Vestiario onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'regole' && <Regole d={d} onVai={vai} />}
         {d && voce === 'segnalazioni' && <Segnalazioni d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
+        {d && voce === 'sito' && (
+          <Suspense fallback={<span className="sg-sotto">Apro il sito…</span>}>
+            <Sito d={d} />
+          </Suspense>
+        )}
       </main>
       <Conferme />
     </div>

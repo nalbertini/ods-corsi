@@ -7,7 +7,7 @@
 È la pagina pubblica da mandare a chi chiede come ci si iscrive, al posto della
 lista di passi scritta ogni volta su WhatsApp. Non chiede nessun accesso.
 
-L'indirizzo è <https://nalbertini.github.io/ods-corsi/iscrizioni/>. In
+L'indirizzo è <https://app.officinedellosport.it/iscrizioni/>. In
 segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
 
 ## Cosa c'è nella pagina
@@ -49,15 +49,21 @@ Chi si iscrive risponde alle domande dal telefono:
   ogni corso ci sono età e orari del listino. Scritta la data di nascita, i
   corsi giusti per quell'anno vengono per primi, sotto **PER LA SUA ETÀ** (anche se si è nati nei sei
   mesi prima o dopo gli anni del corso); sotto **SENZA FASCIA D'ETÀ**
-  quelli per cui il listino non dice gli anni, e sotto **ALTRI CORSI** quelli
-  di un'altra età: si possono scegliere lo stesso, e un avviso giallo dice
+  quelli per cui il listino non dice gli anni. I corsi di un'altra età stanno
+  chiusi dietro **+ ALTRI N CORSI, NON PER LA SUA ETÀ**: un tocco e compaiono
+  sotto **ALTRI CORSI** (restano aperti se ne hai già scelto uno). Si possono
+  scegliere lo stesso, e un avviso giallo dice
   quali sono e che la segreteria richiama. Un corso che il listino non ha
   ancora (senza prezzo) si sceglie lo stesso, e sotto il nome c'è scritto
   «prezzo da confermare».
 - **Il modulo**: le autorizzazioni si firmano **qui, col dito** (o col mouse
   dal computer). Si sceglie come sul foglio se si acconsente al
-  **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**; per
-  un minore si scrive anche dove è nato il genitore, e firma il genitore.
+  **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**: le
+  due scelte partono vuote e vanno fatte per mandare il modulo, ma anche con
+  «non autorizzo» l'iscrizione va avanti (per le foto il minore non compare).
+  Se si prova a mandare senza sceglierne una, sotto quella scelta compare una
+  nota rossa e la pagina va lì. **Firmo qui** è già scelto; con **Ho il foglio
+  firmato** si carica invece la foto del foglio. Per un minore si scrive anche dove è nato il genitore, e firma il genitore.
   Il riquadro della firma è piccolo: sotto c'è **FIRMA A SCHERMO INTERO**
   (o basta un tocco sul riquadro), che apre una schermata tutta per la firma,
   con **ANNULLA**, **FATTO** e **CANCELLA E RIFAI**. **Gira il telefono in
@@ -84,8 +90,9 @@ Chi si iscrive risponde alle domande dal telefono:
   SEGRETERIA**). Il certificato si
   chiede solo quando serve: dai 6 anni quello normale, dai 12 quello
   agonistico se tra i corsi scelti c'è judo, aikido o lotta (lo dice il nome
-  del corso). Si può anche portare dopo in segreteria (accanto al nome
-  c'è **PUOI PORTARLO DOPO**), ma senza non si
+  del corso). Sopra c'è una frase sola: serve per partecipare alle lezioni,
+  e si carica lì o si porta in segreteria (accanto al nome
+  c'è **PUOI PORTARLO DOPO**); senza non si
   partecipa alle lezioni: se non è stato caricato, lo ricorda **RICHIESTA
   ARRIVATA**. Il documento la segreteria lo stampa, lo tiene su carta e lo
   cancella dall'app; il certificato resta nell'app e lo vede solo la
@@ -101,6 +108,11 @@ questo **← INDIETRO**, se c'è già qualcosa di scritto, firmato o scelto, al
 primo tocco chiede «LE RISPOSTE SI PERDONO · ESCI?» e esce solo al secondo;
 senza il secondo tocco, dopo qualche secondo torna com'era.
 
+Se **MANDA LA RICHIESTA** trova qualcosa che manca, in fondo al modulo
+compare un avviso rosso con la prima cosa da sistemare. L'avviso si aggiorna
+da solo: sistemata quella passa alla successiva, e sparisce quando non manca
+più niente, senza premere di nuovo il tasto.
+
 Premuto **MANDA LA RICHIESTA**, compare **RICHIESTA ARRIVATA**. Se un file non
 è partito compare **MANCA QUALCHE FILE**, con il tasto per riprovare (per
 un'ora); altrimenti i fogli si portano in segreteria.
@@ -108,6 +120,8 @@ un'ora); altrimenti i fogli si portano in segreteria.
 La richiesta **non è ancora un'iscrizione**: arriva in segreteria, in
 [RICHIESTE ONLINE](segreteria/richieste.md), dove qualcuno guarda i file e la
 accoglie.
+
+Il modulo ha l'aspetto del sito della palestra: sfondo chiaro, blu e giallo, anche se il telefono è in tema scuro. Il tasto del tema in alto c'è ancora: cambia il tema dell'app per quando si torna indietro, non il modulo.
 
 ## Il modulo a passi (solo in prova)
 
@@ -225,7 +239,7 @@ compila sono al massimo 900 caratteri, per fare posto a quella riga.
 
 Judogi, costumini da lotta e vestiario della palestra si ordinano da una pagina
 pubblica, al posto del modulo Google. L'indirizzo è
-<https://nalbertini.github.io/ods-corsi/iscrizioni/#vestiario>: in segreteria
+<https://app.officinedellosport.it/iscrizioni/#vestiario>: in segreteria
 si copia con **COPIA LINK ORDINI**, in fondo al menu. Finché gli ordini sono
 aperti, anche la pagina delle iscrizioni ha in fondo il riquadro **IL
 VESTIARIO** con **ORDINA IL VESTIARIO**.

@@ -53,7 +53,7 @@ function segnoDiUna(t: TesseraSeg, oggi: string) {
  * La sezione TESSERE nella scheda di una persona: una riga per tessera, e che
  * tessera chiedono i suoi corsi. A mano si aggiunge una tessera (per chi non
  * è nel foglio del RASD) e si toglie; quelle dell'RASD non si cambiano, si
- * rifà l'import. Senza `55-tessere.sql` (`tessere` indefinito) non c'è.
+ * rifà l'import. Senza `61-tessere.sql` (`tessere` indefinito) non c'è.
  */
 export function TessereDellaPersona({
   d,
@@ -200,7 +200,7 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
   const sotto = !pronte
     ? 'Un attimo…'
     : manca
-      ? 'Le tessere non sono ancora attive sul database: va lanciato 55-tessere.sql.'
+      ? 'Le tessere non sono ancora attive sul database: va lanciato 61-tessere.sql.'
       : `${contaTessere(righe)} ${contaTessere(righe) === 1 ? 'iscritto senza tessera valida' : 'iscritti senza tessera valida'} · ${senzaCorso.length} ${senzaCorso.length === 1 ? 'tesserato senza corso' : 'tesserati senza corso'}.`
 
   return (

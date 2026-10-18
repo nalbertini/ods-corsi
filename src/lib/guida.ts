@@ -53,7 +53,7 @@ export async function leggiPagina(nome: string): Promise<string | null> {
  * bastano l'indirizzo interno (`istruttori/`), che vale anche in prova e sul
  * computer di chi la sviluppa.
  */
-const APP_PUBBLICATA = 'https://nalbertini.github.io/ods-corsi/'
+const APP_PUBBLICATA = 'https://app.officinedellosport.it/'
 
 /**
  * Dove porta un collegamento scritto in una pagina: un altro file della guida

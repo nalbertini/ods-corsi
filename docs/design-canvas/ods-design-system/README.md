@@ -22,8 +22,8 @@ Google, e vale solo per i mockup.
 | `SchedaCorso.dc.html` | `Costo` di `ds.tsx`: la scheda di un corso nel listino |
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
-| `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag`, `.sg-segno-regola` |
-| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): PAGAMENTI in PERSONE, VESTIARIO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori |
+| `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag` (neutro, rosso, giallo e verde `fatto`: PUBBLICATA nel SITO), `.sg-segno-regola` |
+| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): PAGAMENTI in PERSONE, VESTIARIO e SITO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` è il menu di chi cura i conti (I CONTI: CONTABILITÀ, PAGAMENTI, LISTINO), senza ricerca né link da copiare |
 | `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
@@ -129,7 +129,9 @@ Google, e vale solo per i mockup.
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 
-Tutti i componenti hanno la prop `tema` (`scuro` | `chiaro`).
+Tutti i componenti hanno la prop `tema` (`scuro` | `chiaro`). `sito` è un terzo tema, solo per il **modulo di
+iscrizione**, e ce l'hanno soltanto i componenti che il modulo vero usa (`Campo`, `Bottone`, `Titoletto`,
+`CaricaFile`, `TavolaFirma`, `RiquadroPasso`, `Testata`): vedi «Il tema sito».
 
 ## Come si riusa
 
@@ -250,3 +252,23 @@ disegnati nel nero e nel bianco (`tema`). I valori del Tatami e il confronto fra
 a tre valori. I token veri sono nel blocco `:root[data-tema='tatami']` di `src/styles.css` (valori finali, un po' più
 scuri per giallo, verde, rosso e testo spento: vedi `DESIGN.md`). Il canvas della sezione conserva i valori della
 proposta, che per quei quattro colori sono precedenti ai valori finali.
+
+## Il tema sito (modulo di iscrizione)
+
+PROPOSTA, non costruita: `sito` è il tema del **modulo di iscrizione** (`ModuloIscrizione.tsx`) nell'aspetto del sito
+pubblico «tatami blu e giallo» (A2). Il modulo è sempre chiaro, qualunque sia il tema dell'app. Non è un quarto tema
+dell'app: nei componenti sopra, `tema="sito"` cambia colori, **carattere** (Big Shoulders Display 800 per titoli, etichette
+e tasti; Inter per testi e campi; il canvas li prende da Google Fonts, in app saranno file locali OFL) e **raggio** (6px su
+campi, scelte, tasti e riquadri). Senza `tema="sito"` l'aspetto dei componenti è quello di prima.
+
+| Cosa | Valore nel tema `sito` |
+|---|---|
+| Fondo, bianco, scelta scelta | #eef5fa, #ffffff, #cfe6f4 (con ✓ o ●) |
+| Inchiostro, bordo dei controlli | #0d2a3d, #14709f (4,96:1 sul fondo) |
+| Testo spento | #46606f (6,03:1 sul fondo, 5,15:1 su #cfe6f4) |
+| Tasto principale · `vai` | inchiostro con testo bianco · giallo #f4c31b con l'inchiostro sopra |
+| Stati | rosso, verde e giallo del tema chiaro, sempre con «!» o ✓ e una parola |
+| Misure | tasti 56px, campi 52px, bersagli ≥ 44px; etichette Big Shoulders 15px, 0.08em |
+
+I valori e i rapporti di contrasto calcolati stanno in `../iscrizione-sito/token-proposta.md`; i board in
+`../iscrizione-sito/`. Il fuoco da tastiera (contorno 3px blu #14709f) non è riprodotto.

@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «sito»: SITO > PAGINE. Elenco delle pagine del sito con lo stato di ciascuna e, in cima, quello dell'ultima
+     rigenerazione. Fatto copiando Pagina.dc.html; la voce SITO nel menu e' di MenuSito (copia di Menu con SITO in LA PALESTRA).
+     Dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="MenuSito" attiva="SITO" numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" tema="scuro" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">SITO</h1>
+        <span style="font-size: 14px; color: #8c8c88">officinedellosport.it · le pagine che vede chi visita il sito</span>
+      </div>
+      <dc-import name="Bottone" label="NUOVA PAGINA" variante="pieno" contesto="segreteria" tema="scuro" hint-size="170px,48px"></dc-import>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+      <dc-import name="Chip" label="PAGINE" acceso="{{ true }}" tema="scuro" hint-size="110px,44px"></dc-import>
+      <dc-import name="Chip" label="MENU E FOOTER" tema="scuro" hint-size="170px,44px"></dc-import>
+      <dc-import name="Chip" label="IMMAGINI" tema="scuro" hint-size="120px,44px"></dc-import>
+      <dc-import name="Chip" label="REDIRECT" tema="scuro" hint-size="120px,44px"></dc-import>
+    </div>
+
+    <dc-import name="Riquadro" contesto="segreteria" tono="normale" etichetta="IL SITO" titolo="Aggiornato oggi alle 10:45" testo="Quando pubblichi una pagina, il sito si aggiorna entro 5 minuti." tema="scuro" hint-size="100%,110px"></dc-import>
+
+    <div style="display: flex; flex-direction: column; border: 2px solid #333333; background: #1c1c1c">
+      <dc-import name="TestataTabella" colonne="PAGINA|INDIRIZZO|STATO|AGGIORNATA" griglia="1.4fr 1.2fr 220px 150px" ordinata="PAGINA" verso="su" ultimaADestra="{{ false }}" tema="scuro" hint-size="100%,40px"></dc-import>
+      <div style="display: grid; grid-template-columns: 1.4fr 1.2fr 220px 150px; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; border-top: 2px solid #2a2a2a">
+        <span style="font-size: 17px; font-weight: 600">Home</span>
+        <span style="font-size: 15px; color: #8c8c88">/</span>
+        <dc-import name="Badge" tipo="tag" tono="verde" label="PUBBLICATA" tema="scuro" hint-size="130px,24px"></dc-import>
+        <span style="font-size: 14px; color: #c9c9c4">12 ott</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1.4fr 1.2fr 220px 150px; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; border-top: 2px solid #2a2a2a; background: #121212">
+        <span style="font-size: 17px; font-weight: 600">Pre pugilistica</span>
+        <span style="font-size: 15px; color: #8c8c88">/pre-pugilistica</span>
+        <dc-import name="Badge" tipo="tag" tono="giallo" label="MODIFICHE NON PUBBLICATE" tema="scuro" hint-size="210px,24px"></dc-import>
+        <span style="font-size: 14px; color: #c9c9c4">oggi, 10:12</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1.4fr 1.2fr 220px 150px; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; border-top: 2px solid #2a2a2a">
+        <span style="font-size: 17px; font-weight: 600">Aikido</span>
+        <span style="font-size: 15px; color: #8c8c88">/aikido</span>
+        <dc-import name="Badge" tipo="tag" tono="verde" label="PUBBLICATA" tema="scuro" hint-size="130px,24px"></dc-import>
+        <span style="font-size: 14px; color: #c9c9c4">3 ott</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1.4fr 1.2fr 220px 150px; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; border-top: 2px solid #2a2a2a">
+        <span style="font-size: 17px; font-weight: 600">Judo</span>
+        <span style="font-size: 15px; color: #8c8c88">/judo</span>
+        <dc-import name="Badge" tipo="tag" tono="verde" label="PUBBLICATA" tema="scuro" hint-size="130px,24px"></dc-import>
+        <span style="font-size: 14px; color: #c9c9c4">3 ott</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1.4fr 1.2fr 220px 150px; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; border-top: 2px solid #2a2a2a">
+        <span style="font-size: 17px; font-weight: 600">Chi siamo</span>
+        <span style="font-size: 15px; color: #8c8c88">/chi-siamo</span>
+        <dc-import name="Badge" tipo="tag" tono="spento" label="SOLO BOZZA" tema="scuro" hint-size="120px,24px"></dc-import>
+        <span style="font-size: 14px; color: #c9c9c4">ieri</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1.4fr 1.2fr 220px 150px; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; border-top: 2px solid #2a2a2a">
+        <span style="font-size: 17px; font-weight: 600; color: #8c8c88">Corso di prova vecchio</span>
+        <span style="font-size: 15px; color: #8c8c88">/corso-vecchio</span>
+        <dc-import name="Badge" tipo="tag" tono="spento" label="NASCOSTA" tema="scuro" hint-size="110px,24px"></dc-import>
+        <span style="font-size: 14px; color: #8c8c88">20 set</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1.4fr 1.2fr 220px 150px; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; border-top: 2px solid #2a2a2a">
+        <span style="font-size: 17px; font-weight: 600">Privacy policy</span>
+        <span style="font-size: 15px; color: #8c8c88">/privacy</span>
+        <dc-import name="Badge" tipo="tag" tono="verde" label="PUBBLICATA" tema="scuro" hint-size="130px,24px"></dc-import>
+        <span style="font-size: 14px; color: #c9c9c4">2 ott</span>
+      </div>
+    </div>
+    <span style="font-size: 14px; color: #8c8c88">Le pagine di legge (privacy, cookie, contributi pubblici) non si possono nascondere né cancellare.</span>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

@@ -10,7 +10,7 @@ qualcosa si passa in segreteria.
 
 È un **pilota**: per ora si vede solo con i dati inventati, per far vedere
 alla palestra com'è prima di aprirla agli iscritti veri. L'indirizzo è
-<https://nalbertini.github.io/ods-corsi/iscritti/>: col database vero dice
+<https://app.officinedellosport.it/iscritti/>: col database vero dice
 che l'area è in arrivo, e il tasto **GUARDALA IN PROVA** la apre con i dati
 inventati.
 
@@ -66,7 +66,9 @@ cognome fanno famiglia, a gruppi di due o tre.
 - **Aggiungi una persona**: apre il modulo di iscrizione già compilato coi
   dati che la segreteria ha del titolare: cognome, residenza, email e
   telefono, e il titolare come genitore per un minore, col suo codice fiscale. Si
-  cambia tutto, prima di mandare. Per un minore il documento non va portato:
+  cambia tutto, prima di mandare: toccando un campo ancora com'era, il testo
+  si seleziona e basta scrivere per sostituirlo; toccando di nuovo dentro il
+  testo il cursore va dove tocchi. Per un minore il documento non va portato:
   è quello del genitore, che la segreteria ha già.
 - **Quanto costa**, nel modulo, scelti corsi e formula: la quota
   associativa, il corso, e lo **sconto famiglia** del listino (il 20%

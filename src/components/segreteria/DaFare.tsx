@@ -88,7 +88,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
     )
     const richieste = datiRichieste().then(async (r) => ({ tutte: await r.richieste(), conDocumento: tutto ? await r.conDocumento() : null }))
     const persone = pesante ? d.persone() : Promise.resolve(null)
-    // Le tessere si leggono con le persone: senza `55-tessere.sql` (manca) il conto resta «non so».
+    // Le tessere si leggono con le persone: senza `61-tessere.sql` (manca) il conto resta «non so».
     const tessere = pesante ? Promise.all([d.tessere(), d.corsi()]) : Promise.resolve(null)
     const lezioni = pesante ? d.settimana(new Date(adesso - GIORNI_APPELLI * 24 * 60 * 60_000), new Date(adesso)) : Promise.resolve(null)
     const listino = tutto ? Promise.all([d.listino(), d.corsi()]).then(([l, corsi]) => prezziMancanti(l.listino, corsi, oggi)) : Promise.resolve(null)

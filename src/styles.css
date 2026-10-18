@@ -102,6 +102,24 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
+/* Big Shoulders Display e Inter sono i caratteri del sito pubblico: il modulo di
+   iscrizione li usa (vedi `:root[data-modulo='sito']`). Stessi file del sito,
+   locali come gli altri, licenza SIL OFL 1.1 (public/fonts). */
+@font-face {
+  font-family: 'Big Shoulders Display';
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/big-shoulders-display-800.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-variable.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* I colori del marchio Officine Dello Sport. */
 :root {
   --bg: #121212;
@@ -1708,8 +1726,10 @@ a.sg-btn { text-decoration: none; }
   min-height: 44px; padding: 0 12px; border: 2px solid var(--line); color: var(--sec);
   font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap;
 }
-.sg-chip[aria-pressed='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
+.sg-chip[aria-pressed='true'], .sg-chip[aria-selected='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 .sg-chip-pieno { background: var(--text); border-color: var(--text); color: var(--bg); }
+.sg-spunte { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.sg-spunte .sg-scelta > span { flex-shrink: 0; }
 .sg-scelta { border: 2px solid var(--line); color: var(--sec); min-height: 44px; font-size: 14px; }
 .sg-scelta[aria-checked='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 .sg-campo {
@@ -1837,6 +1857,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-filo-titolo { font-size: 17px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
 .sg-tag[data-tipo='sostituto'] { background: var(--giallo); color: var(--su-colore); }
 .sg-tag[data-tipo='presto'] { background: var(--giallo); color: var(--su-colore); }
+.sg-tag[data-tipo='fatto'] { background: var(--verde); color: var(--su-colore); }
 .sg-legenda { gap: 20px; flex-wrap: wrap; font-size: 12px; color: var(--dim); }
 
 .sg-velo { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 10; cursor: pointer; }
@@ -1985,8 +2006,17 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto-corso > :nth-child(3) { order: 5; grid-column: 1 / -1; }
   .sg-riga-iscritto:not(.sg-lista-testa) > :nth-child(3)::before { content: 'Iscritto dal '; color: var(--dim); }
 }
+.sg-riga-movimento { display: grid; grid-template-columns: 100px minmax(0, 1.6fr) minmax(0, 1fr) 150px 130px; gap: 14px; align-items: center; }
+.sg-riga-movimento[data-spento='true'] { opacity: 0.55; }
+/* Sotto la descrizione: la causale dell'incasso; sul telefono, davanti, anche data, voce e cassa che lì non hanno la loro colonna. */
+.sg-sotto-movimento { display: flex; flex-direction: column; font-size: 13px; color: var(--sec); font-weight: 400; overflow-wrap: anywhere; }
+.sg-solo-telefono { display: none; }
+/* Una descrizione lunga senza spazi va a capo invece di uscire dallo schermo. */
+.sg-riga-movimento .sg-riga-apri, .sg-riquadro-titolo { overflow-wrap: anywhere; }
 .sg-riga-pagamento-tab { display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; }
 .sg-riga-residuo { display: grid; grid-template-columns: minmax(0, 1.2fr) 100px 110px 110px 110px 160px; gap: 14px; align-items: center; }
+/* L'amministrazione non vede i contatti: una colonna in meno. */
+.sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1.2fr) 100px 110px 110px 110px; }
 /* In regola o no: il certificato e il pagamento, in un bollino ciascuno. */
 .sg-in-regola { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 0; }
 .sg-segno-regola {
@@ -2248,11 +2278,11 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-personale { width: 100%; min-height: 60px; padding: 6px 14px; border-bottom: 1px solid var(--surface-2); text-align: left; }
 .sg-personale:hover { background: var(--surface); }
 .sg-personale[data-spento='true'] { opacity: 0.5; }
-.sg-permessi { display: grid; grid-template-columns: 1fr 110px 110px; gap: 8px 12px; align-items: center; }
-/* Sul telefono le colonne dei permessi prendono quanto serve, il resto va al testo. */
+.sg-permessi { display: grid; grid-template-columns: minmax(0, 1fr) 110px 110px 170px; gap: 8px 12px; align-items: center; }
+/* Sul telefono quattro colonne non entrano: la tabella scorre di lato e il testo del permesso resta leggibile. */
+.sg-permessi-scorre { overflow-x: auto; }
 @media (max-width: 560px) {
-  .sg-permessi { grid-template-columns: minmax(0, 1fr) auto auto; column-gap: 10px; }
-  .sg-permessi [role='columnheader'] { font-size: 10px; letter-spacing: 0.06em; }
+  .sg-permessi { min-width: 500px; grid-template-columns: 210px 90px 90px 110px; column-gap: 10px; }
 }
 /* Quello che si legge solo quando le intestazioni delle colonne sono nascoste. */
 .sg-solo-stretto { display: none; }
@@ -2375,7 +2405,11 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto { grid-template-columns: 1fr auto 70px; }
   .sg-riga-iscritto > :nth-child(2), .sg-riga-iscritto > :nth-child(3) { display: none; }
   /* Sul telefono: chi con sotto il resto, e l'importo. */
-  .sg-riga-pagamento-tab, .sg-riga-residuo { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-movimento { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-movimento > :not(:nth-child(2)):not(:last-child) { display: none; }
+  .sg-solo-telefono { display: inline; }
+  .sg-lista-testa.sg-riga-movimento { display: none; }
   .sg-riga-pagamento-tab > :not(:nth-child(2)):not(:last-child), .sg-riga-residuo > :not(:first-child):not(:nth-child(5)) { display: none; }
   .sg-sotto-nome { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
   .sg-pagamento { margin-left: 12px; }
@@ -2571,3 +2605,119 @@ label.sg-btn { cursor: pointer; }
   .sg-calendario { padding: 4px; }
   .sg-cal-griglia { gap: 0; }
 }
+
+/* SITO (segreteria): le pagine del sito della palestra, il loro testo e il menu. */
+.sito-due { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+@media (max-width: 1000px) { .sito-due { grid-template-columns: minmax(0, 1fr); } }
+.sito-barra { gap: 6px; flex-wrap: wrap; }
+.sito-tasto { min-width: 44px; min-height: 44px; }
+.sito-testo { min-height: 420px; padding: 24px 28px; background: var(--surface); border: 2px solid var(--line); font-size: 17px; line-height: 1.5; color: var(--text); }
+.sito-testo:focus { outline: 2px solid var(--text); outline-offset: 2px; }
+.sito-testo > * + * { margin-top: 14px; }
+.sito-testo p, .sito-testo ul, .sito-testo ol, .sito-testo blockquote { margin-top: 0; margin-bottom: 0; }
+.sito-testo h2, .sito-testo h3 { margin: 0; font-family: var(--cond); font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; line-height: 1.1; }
+.sito-testo h2 { font-size: 28px; }
+.sito-testo h3 { font-size: 22px; }
+.sito-testo ul, .sito-testo ol { padding-left: 24px; }
+.sito-testo blockquote { padding-left: 14px; border-left: 4px solid var(--line); color: var(--sec); }
+.sito-testo a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.sito-testo a.pulsante, .sito-testo a[data-pulsante='true'] { display: inline-block; padding: 10px 18px; background: var(--text); color: var(--bg); text-decoration: none; font-family: var(--cond); font-weight: 700; letter-spacing: 0.1em; }
+.sito-elenco { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 2px solid var(--line); background: var(--surface); }
+.sito-riga { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr) 210px 100px; width: 100%; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; border: 0; border-top: 2px solid var(--line-soft); background: transparent; color: var(--text); text-align: left; font: inherit; cursor: pointer; }
+.sito-riga:hover { background: var(--surface-2); }
+.sito-riga:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
+.sito-riga[data-spenta] { color: var(--dim); }
+.sito-riga-testa { min-height: 40px; border-top: 0; color: var(--dim); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; cursor: default; }
+.sito-riga-testa:hover { background: transparent; }
+.sito-nome { font-size: 17px; font-weight: 600; }
+@media (max-width: 1000px) { .sito-riga { grid-template-columns: 1fr; gap: 4px; padding: 12px 16px; } .sito-riga-testa { display: none; } }
+.sito-voci { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 2px solid var(--line); background: var(--surface); }
+.sito-voce { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; border-top: 2px solid var(--line-soft); }
+.sito-voce:first-child { border-top: 0; }
+.sito-sposta { min-width: 44px; padding: 0; }
+.sito-immagini { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.sito-immagine { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; width: 100%; padding: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--text); font: inherit; text-align: left; }
+.sito-immagine img { width: 100%; height: 160px; object-fit: cover; background: var(--surface-2); }
+button.sito-immagine { cursor: pointer; }
+button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shadow: inset 0 0 0 2px var(--text); }
+.sito-scegli { width: min(760px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow-y: auto; }
+.sito-immagini-scelta { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.sito-immagini-scelta img { height: 110px; }
+.sito-testo img { display: block; max-width: 100%; height: auto; }
+@media (max-width: 767px) { .sito-immagini-scelta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sito-voce > .sg-campo { flex: 1 1 240px; min-width: 0; }
+.sito-voce-n { width: 28px; font-size: 20px; font-weight: 700; color: var(--dim); }
+
+/* Le cifre grandi delle casse, a telefono, una per riga: affiancate toccavano il bordo. */
+@media (max-width: 480px) { .sg-numeri { grid-template-columns: minmax(0, 1fr); } }
+
+/* Il modulo di iscrizione con l'aspetto del sito pubblico (tatami blu e giallo,
+   `docs/design-canvas/iscrizione-sito/`). Sempre chiaro: lo accende
+   `lib/aspettoModulo.ts` finché il modulo è aperto, anche aperto dall'area
+   iscritti. I colori sono i cinque del sito più i toni degli stati del tema
+   bianco; `--dim` è l'inchiostro attenuato, perché sul fondo e sulla tessera
+   chiara nessun colore del sito arriva a 4,5:1 (`prova:iscrizione-sito` li calcola). */
+:root[data-modulo='sito'] {
+  --bg: #eef5fa;
+  --surface: #ffffff;
+  --surface-2: #cfe6f4;
+  --line: #cfe6f4;
+  --line-soft: #cfe6f4;
+  --riga-campo: #14709f;
+  --text: #0d2a3d;
+  --sec: #0d2a3d;
+  --dim: #46606f;
+  --faint: #46606f;
+
+  --blu: #14709f;
+  --rosso: #e4292a;
+  --giallo: #f4c31b;
+  --verde: #12913f;
+  --giallo-testo: #8f6a00;
+  --verde-testo: #0b7a33;
+  --rosso-testo: #b81d1d;
+  --su-colore: #0d2a3d;
+  --su-rosso: #ffffff;
+  --tasto: #0d2a3d;
+  --tratteggio: #14709f;
+  --menu: #cfe6f4;
+
+  --cond: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;
+  --body: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  color-scheme: light;
+}
+/* Il carattere di Big Shoulders è dritto e ha un solo peso: niente obliquo finto. */
+:root[data-modulo='sito'] .btn,
+:root[data-modulo='sito'] .ob,
+:root[data-modulo='sito'] .testata-nome { font-style: normal; }
+:root[data-modulo='sito'] .btn { font-size: 22px; letter-spacing: 0.06em; }
+:root[data-modulo='sito'] .modulo-etichetta { font-size: 15px; letter-spacing: 0.08em; }
+:root[data-modulo='sito'] .rule-label { font-size: 26px; letter-spacing: 0.04em; }
+/* I tasti principali del modulo (MANDA LA RICHIESTA, RIPROVA) sono il giallo del sito con l'inchiostro sopra. */
+:root[data-modulo='sito'] .btn-primary { background: var(--giallo); color: var(--su-colore); }
+/* La firma a schermo intero: bordo dei controlli come i campi, non il filo decorativo; FATTO resta rosso. */
+:root[data-modulo='sito'] .firma-intera-tasto { font-style: normal; border-color: var(--riga-campo); }
+:root[data-modulo='sito'] .firma-intera-fatto { border-color: var(--rosso); }
+:root[data-modulo='sito'] .firma-intera-fatto:disabled { border-color: var(--line); }
+/* Il raggio del sito. */
+:root[data-modulo='sito'] .campo,
+:root[data-modulo='sito'] .modulo-corso,
+:root[data-modulo='sito'] .btn,
+:root[data-modulo='sito'] .modulo-file,
+:root[data-modulo='sito'] .card { border-radius: 6px; }
+:root[data-modulo='sito'] .modulo-spunta { border-radius: 4px; }
+/* Il bordo di un file non caricato non è quello decorativo `--line` (1,2:1): è il bordo dei campi. */
+:root[data-modulo='sito'] .modulo-file,
+:root[data-modulo='sito'] .btn-ghost { border-color: var(--riga-campo); }
+:root[data-modulo='sito'] .modulo-file[data-fatto='true'] { border-color: var(--verde); }
+:root[data-modulo='sito'] :focus-visible,
+:root[data-modulo='sito'] .modulo-file:focus-within .modulo-scegli { outline: 3px solid var(--blu); outline-offset: 3px; }
+/* A 320px l'etichetta di un file («RICEVUTA DEL PAGAMENTO · PUOI PAGARE IN SEGRETERIA») è più larga della sua colonna: va a capo, non sotto SCEGLI. */
+:root[data-modulo='sito'] .modulo-file-testo,
+:root[data-modulo='sito'] .modulo-file .modulo-etichetta { min-width: 0; overflow-wrap: anywhere; }
+/* Codice fiscale, CAP e telefono in Big Shoulders confondono 1 e I: si leggono e si controllano in Inter. */
+:root[data-modulo='sito'] .campo.campo-codice,
+:root[data-modulo='sito'] .campo.num { font-family: var(--body); font-variant-numeric: tabular-nums; }
+/* L'invio chiude il modulo: largo quanto i campi, non a inizio riga come gli altri tasti. */
+:root[data-modulo='sito'] .modulo-piede .passo-btn { align-self: stretch; }

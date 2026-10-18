@@ -5,7 +5,7 @@
 -- si scrive una volta sola. (Chi è iscritto senza la tessera del corso lo conta
 -- l'app, in `src/lib/tessere.ts`: `scripts/prova-tessere.mjs`.)
 -- Si lancia dopo finto-supabase.sql, i file dello schema,
--- 18-anagrafiche.sql, 29-unisci-doppioni.sql e 55-tessere.sql.
+-- 18-anagrafiche.sql, 29-unisci-doppioni.sql e 61-tessere.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -248,7 +248,7 @@ insert into corsi (id, nome) values
   ('cccccccc-0000-0000-0000-000000000019', 'Giocomotricità'),
   ('cccccccc-0000-0000-0000-00000000001a', 'Psicomotricità'),
   ('cccccccc-0000-0000-0000-00000000001b', 'Prepugilistica');
-\i supabase/55-tessere.sql
+\i supabase/61-tessere.sql
 select atteso('FIJLKAM: Judo, Lotta, Aikido, MGA, Avviamento',
   (select string_agg(nome, ', ' order by nome) from corsi where ente_tessera = 'FIJLKAM'),
   'Aikido 2, Avviamento arti marziali 1, Judo adulti, Lotta 3, MGA ragazzi');
@@ -260,6 +260,6 @@ select atteso('nessuna: Giocomotricità, Psicomotricità, Prepugilistica',
   'Giocomotricità, Prepugilistica, Psicomotricità');
 -- La segreteria toglie la tessera a Judo adulti; un secondo lancio del file non la rimette.
 update corsi set ente_tessera = null where nome = 'Judo adulti';
-\i supabase/55-tessere.sql
+\i supabase/61-tessere.sql
 select atteso('rilanciato il file, la scelta della segreteria resta',
   (select ente_tessera is null from corsi where nome = 'Judo adulti')::text, 'true');

@@ -277,7 +277,7 @@ function Scheda({
   const sale = useCarica(() => d.sale(), [d])
   const istruttori = useCarica(() => d.istruttori(), [d])
   const attivita = useCarica(() => d.attivita(), [d])
-  // Il campo c'è solo se il database ha le tessere (55-tessere.sql): se no la colonna non esiste e non si scrive.
+  // Il campo c'è solo se il database ha le tessere (61-tessere.sql): se no la colonna non esiste e non si scrive.
   const tessereDelDb = useCarica(() => d.tessere(), [d])
   const [bozza, setBozza] = useState<DatiCorso>(() => ({
     id: corso?.id,

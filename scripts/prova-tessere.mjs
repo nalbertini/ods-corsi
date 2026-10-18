@@ -160,7 +160,7 @@ ok('senza tessera nessuna scheda è tolta dal conto per errore: Sara (corso senz
   ok('il corso scritto una volta sola', r.find((x) => x.personaId === 'doppia').corsi, 'Lotta 2')
 }
 ok('una tessera da sola: l\'ultimo giorno è in scadenza, il giorno dopo scaduta', [m.statoDiUna({ al: '2026-12-31' }, '2026-12-31'), m.statoDiUna({ al: '2026-12-31' }, '2027-01-01')], ['in_scadenza', 'scaduta'])
-ok('database senza 55-tessere.sql: lo riconosce', [m.mancaTessere({ code: '42P01', message: 'relation "tessere" does not exist' }), m.mancaTessere({ code: '42P01', message: 'relation "altro" does not exist' }), m.mancaTessere(null)], [true, false, false])
+ok('database senza 61-tessere.sql: lo riconosce', [m.mancaTessere({ code: '42P01', message: 'relation "tessere" does not exist' }), m.mancaTessere({ code: '42P01', message: 'relation "altro" does not exist' }), m.mancaTessere(null)], [true, false, false])
 ok('il conto per COSA MANCA: manca + scaduta, non l\'in scadenza né i non iscritti',
   m.contaTessere(m.incrocioTessere(persone, corsi, '2026-11-01')), 3)
 

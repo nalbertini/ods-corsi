@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { anni, anniScritti, certificatoDaPortare, chiFirma, dataDaCf, controlla, domandaUscita, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -563,6 +563,83 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     ok('elimina: se i file non vanno via, la riga resta (un file senza riga non lo ritrova nessuno)', [await errore(() => rotto.v.elimina('r-1')), rotto.reg.some((x) => x[0] === 'delete')], ['down', false])
     ok('elimina: senza permesso sulla riga', await errore(() => finto({ cancella: ERR('42501') }).v.elimina('r-1')), PERMESSO)
   }
+}
+
+console.log('\n11. il riquadro rosso in fondo: il primo messaggio che blocca, a ogni modifica')
+{
+  // Lo stato del modulo: `firma` è l'esito di «cosa manca per firmare» (null = firmato), `obbligatori` i file che
+  // servono. Il passo del riquadro è tutto qui: la schermata lo richiama a ogni modifica dopo il primo invio.
+  const REG = 'Serve accettare il Regolamento Sociale'
+  const PRIVACY = "Serve la conferma di aver letto l'informativa privacy"
+  const pronto = (cambi = {}) => ({ dati: adulto(), privacy: true, come: 'foto', firma: null, file: { modulo: {}, documento: {} }, obbligatori: ['modulo', 'documento'], ...cambi })
+  const manca = (cambi) => m.mancaPerInviare(pronto(cambi))
+  ok('tutto a posto: nessun messaggio', manca(), null)
+  ok('regolamento non accettato', manca({ dati: adulto({ regolamento: false }) }), REG)
+  ok('messa la spunta, il messaggio sparisce', manca({ dati: adulto({ regolamento: true }) }), null)
+  ok('tolta la spunta, torna', manca({ dati: adulto({ regolamento: false }) }), REG)
+  ok('privacy non confermata', manca({ privacy: false }), PRIVACY)
+  ok('messa la spunta alla privacy, sparisce', manca({ privacy: true }), null)
+  ok('campo obbligatorio mancante', manca({ dati: adulto({ cognome: '' }) }), 'Mancano: cognome')
+  ok('compilato il campo, sparisce', manca({ dati: adulto({ cognome: 'Rossi' }) }), null)
+  // Due blocchi insieme: sistemato il primo si vede il secondo, poi più niente.
+  const due = { dati: adulto({ regolamento: false }), privacy: false }
+  ok('due blocchi: prima il regolamento', manca(due), REG)
+  ok('sistemato il regolamento, resta la privacy', manca({ ...due, dati: adulto() }), PRIVACY)
+  ok('sistemata anche la privacy, nessuno', manca({ ...due, dati: adulto(), privacy: true }), null)
+  // L'ordine: campi, poi firma, poi file, poi privacy.
+  const tutti = { dati: adulto({ cognome: '' }), come: 'qui', firma: 'Manca la firma sul modulo', file: {}, privacy: false }
+  ok('ordine: prima i campi', manca(tutti), 'Mancano: cognome')
+  ok('ordine: poi la firma', manca({ ...tutti, dati: adulto() }), 'Manca la firma sul modulo')
+  ok('ordine: poi i file', manca({ ...tutti, dati: adulto(), firma: null }), 'Manca: carta d\'identità')
+  ok('ordine: infine la privacy', manca({ ...tutti, dati: adulto(), firma: null, file: { documento: {} } }), PRIVACY)
+  ok('con la firma qui il modulo non si chiede come file', manca({ come: 'qui', file: { documento: {} } }), null)
+  ok('con la foto la firma non conta', manca({ come: 'foto', firma: 'Manca la firma sul modulo' }), null)
+  ok('con la foto il modulo si chiede', manca({ file: { documento: {} } }), 'Manca: modulo firmato')
+  // Un minore senza genitore: i dati del genitore mancano, e spariscono se la data diventa quella di un maggiorenne.
+  const minoreSenza = adulto({ natoIl: '2017-03-01', codiceFiscale: 'RSSGLI17C41L219G' })
+  ok('minore senza dati del genitore', manca({ dati: minoreSenza }), 'Per un minore servono nome, cognome e codice fiscale del genitore')
+  ok('la data cambia a maggiorenne: il blocco sparisce', manca({ dati: adulto({ natoIl: '1996-01-01' }) }), null)
+}
+
+console.log('\n12. il campo precompilato: al primo tocco si seleziona tutto')
+{
+  // Il modulo aperto da «aggiungi una persona» parte coi dati del nucleo: toccando il campo la prima lettera
+  // deve sostituire il testo, non attaccarsi. Se la persona l'ha già cambiato, il tocco mette il cursore.
+  ok('precompilato e non toccato: si seleziona', m.daSelezionare('Rossi', 'Rossi'), true)
+  ok('vuoto: niente da selezionare', m.daSelezionare('', 'Rossi'), false)
+  ok('vuoto anche all\'apertura: niente da selezionare', m.daSelezionare('', ''), false)
+  ok('cambiato dalla persona: il cursore va dove si tocca', m.daSelezionare('Rossini', 'Rossi'), false)
+  ok('cambiato e riportato uguale: si seleziona di nuovo', m.daSelezionare('Rossi', 'Rossi'), true)
+  ok('solo spazi: niente da selezionare', m.daSelezionare('   ', '   '), false)
+}
+
+console.log('\n13. Le scelte tesseramento e foto: obbligatorie, ma «non autorizzo» vale')
+{
+  ok('nessuna risposta: manca prima il tesseramento', m.sceltaMancante({}), 'tesseramento')
+  ok('dato il tesseramento, mancano le foto', m.sceltaMancante({ tesseramento: true }), 'foto')
+  ok('«non acconsento» al tesseramento è una risposta: mancano le foto', m.sceltaMancante({ tesseramento: false }), 'foto')
+  ok('date le foto e non il tesseramento, manca il tesseramento', m.sceltaMancante({ foto: true }), 'tesseramento')
+  ok('«non autorizzo» a tutte e due è una risposta: non manca niente', m.sceltaMancante({ tesseramento: false, foto: false }), null)
+  ok('autorizzo a tutte e due: non manca niente', m.sceltaMancante({ tesseramento: true, foto: true }), null)
+  ok('testi di ciò che manca', m.MANCA_SCELTA, {
+    tesseramento: 'Nel modulo: scegli se acconsenti al tesseramento alla FIJLKAM e/o FIPE',
+    foto: 'Nel modulo: scegli se autorizzi le foto',
+  })
+  ok('aiuto tesseramento, maggiorenne', m.aiutoScelta('tesseramento', false), 'Devi scegliere una delle due. Anche se non acconsenti, l\'iscrizione va avanti.')
+  ok('aiuto tesseramento, minore', m.aiutoScelta('tesseramento', true), 'Devi scegliere una delle due. Anche se non autorizzi, l\'iscrizione va avanti.')
+  ok('aiuto foto, maggiorenne', m.aiutoScelta('foto', false), 'Devi scegliere una delle due. Anche se non autorizzi, l\'iscrizione non cambia e non compari nelle foto.')
+  ok('la nota sotto la scelta non ha il «Nel modulo:»', [m.NOTA_SCELTA.tesseramento, m.NOTA_SCELTA.foto], ['Scegli una risposta per il tesseramento alla FIJLKAM e/o FIPE', 'Scegli una risposta per le foto'])
+  ok('aiuto foto, minore', m.aiutoScelta('foto', true), 'Devi scegliere una delle due. Anche se non autorizzi, l\'iscrizione non cambia e il minore non compare nelle foto.')
+}
+
+console.log('\n14. L\'avviso del certificato: una frase sola, serve per partecipare')
+{
+  // L'avviso del certificato è una frase sola: serve per partecipare, si carica o si porta. Né «obbligatorio» né il tag «PUOI PORTARLO DOPO».
+  const avvisi = { normale: m.avvisoCertificato('normale'), agonistico: m.avvisoCertificato('agonistico') }
+  ok('avviso certificato normale, testo esatto', avvisi.normale, 'Dai 6 anni serve il certificato medico per partecipare alle lezioni. Caricalo qui sotto o portalo in segreteria.')
+  ok('avviso certificato agonistico, testo esatto', avvisi.agonistico, 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico per partecipare alle lezioni. Caricalo qui sotto o portalo in segreteria.')
+  ok('avviso certificato: nessuno dei due dice «obbligatorio» o «PUOI PORTARLO DOPO»', Object.values(avvisi).map((t) => /obbligatori|PUOI PORTARLO DOPO/i.test(t)), [false, false])
+  ok('avviso certificato: entrambi dicono «per partecipare alle lezioni» e «portalo in segreteria»', Object.values(avvisi).map((t) => t.includes('per partecipare alle lezioni') && t.includes('portalo in segreteria')), [true, true])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
