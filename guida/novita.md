@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.99.0 — 18 ottobre 2026
+
+### Novità
+
+- ISCRITTI con tre filtri e gli altri a portata di mano
+- Porta una pagina del sito dal vecchio editor di testo all'editor a pezzi, senza cambiare quello che c'è scritto
+
 ## 0.98.0 — 18 ottobre 2026
 
 ### Novità
