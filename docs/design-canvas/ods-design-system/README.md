@@ -281,7 +281,7 @@ I valori e i rapporti di contrasto calcolati stanno in `../iscrizione-sito/token
 ## Il sito pubblico: i pezzi della home
 
 COSTRUITA nella Home del sito (`src/lib/sitoHome.ts`, regole in `src/lib/sitoGenera.ts`, testo da incollare in `docs/sito/home.md`): la testata (due pulsanti, tasto MENU sul telefono) e il piede valgono per tutte le pagine; le altre pagine potranno chiedere gli stessi pezzi. Differenze del costruito: nel menu aperto sul telefono il pulsante di prova è la prima voce; il fuoco delle foto delle schede segue il corso (`FOCI_SCHEDE`), non il file; la voce attiva del menu ha il fondo giallo. I componenti `Sito*` riproducono nell'aspetto del sito (Big Shoulders Display + Inter, colori A2 di
-`../sito-rebrand/token-proposta.md`) i pezzi della home proposta in `../home-miglioramenti/`. Non hanno la prop `tema`: sono già
+`../sito-approvato/token-proposta.md`) i pezzi della home proposta in `../home-miglioramenti/`. Non hanno la prop `tema`: sono già
 del sito. `piccolo` li porta alla misura del telefono (375px). `nota="DA CONFERMARE …"` li marca con contorno rosso e cartellino.
 
 | File | Cosa è |

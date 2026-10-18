@@ -15,7 +15,7 @@ Proposta da approvare prima di toccare il sito. Parte dai quattro report di
 I pezzi nuovi stanno in `../ods-design-system/` (`SitoTestata`, `SitoPulsante`,
 `SitoTessera`, `SitoTitolo`, `SitoSchedaCorso`, `SitoPerche`, `SitoCitazione`,
 `SitoRecensione`, `SitoInBreve`, `SitoDomanda`, `SitoCta`, `SitoPiede`), con le
-righe nel README della libreria. Valori copiati da `sito-rebrand/TatamiBlu.dc.html`
+righe nel README della libreria. Valori copiati da `sito-approvato/TatamiBlu.dc.html`
 (colori A2, Big Shoulders Display + Inter). `verifica.mjs`: «tutto in regola».
 Le foto: hero, istruttori, sala e cubi sono di `proposte-home/foto/approvate/` (LightCraft); judo, lotta e aikido sono il mix scelto da `proposte-home/alternative/` (sezione «Foto scelte»). Tutte in `img/`.
 

@@ -2,7 +2,7 @@
 
 Data: 2026-10-18. Sito pubblico non toccato. Misure a 1440, 768 e 375 px (Chrome, tema chiaro), screenshot in `img/`: pagina intera `istruttori-1440-full.png`, `istruttori-768-full.png`, `istruttori-375-full.png`; fette da 1400 px `d-N` (1440), `t-N` (768), `m-N` (375).
 
-**Stato della pagina oggi.** `/istruttori/` esiste (301 da `/istruttori`, 200): una testata, 13 tessere e il piede. **Non esiste nessuna scheda singola** (`/istruttori/maurizio/` e simili danno 404) e nessuna tessera è un link: la frase «Ogni istruttore ha la sua pagina» di `docs/sito/istruttori.md` non è sulla pagina pubblicata. Nessuna foto: il cerchio mostra l'iniziale. Perciò l'audit della «scheda singola» è sul solo canvas esistente (`sito-rebrand/TatamiBlu-Istruttore.dc.html`), non sul sito.
+**Stato della pagina oggi.** `/istruttori/` esiste (301 da `/istruttori`, 200): una testata, 13 tessere e il piede. **Non esiste nessuna scheda singola** (`/istruttori/maurizio/` e simili danno 404) e nessuna tessera è un link: la frase «Ogni istruttore ha la sua pagina» di `docs/sito/istruttori.md` non è sulla pagina pubblicata. Nessuna foto: il cerchio mostra l'iniziale. Perciò l'audit della «scheda singola» è sul solo canvas esistente (`sito-approvato/TatamiBlu-Istruttore.dc.html`), non sul sito.
 
 ## Cosa funziona (da non toccare)
 

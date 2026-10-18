@@ -5,7 +5,7 @@ Solo proposta. Niente scritto sul sito, nel database o in `src/`. Misure con `co
 ## Cosa so e cosa no
 
 - **Dal database** (`docs/sito/istruttori.html`): nome, cognome e corsi di 13 persone. Nient'altro.
-- **Da un canvas** (`sito-rebrand/TatamiBlu-Istruttore`): una scheda completa per Maurizio Innella (ruolo, titoli, orari, studi, cariche, vita fuori dal tatami). Non è nel database né sul sito: è un testo del design, tutto da riconfermare con lui.
+- **Da un canvas** (`sito-approvato/TatamiBlu-Istruttore`): una scheda completa per Maurizio Innella (ruolo, titoli, orari, studi, cariche, vita fuori dal tatami). Non è nel database né sul sito: è un testo del design, tutto da riconfermare con lui.
 - **Per gli altri dodici non esiste nient'altro.** Non ho scritto qualifiche, cinture, anni di esperienza, brevetti o «storie» per nessuno: sarebbero fatti su persone vere.
 
 ## 1. Elenco: la lunghezza non si pareggia con le parole, si pareggia con la forma

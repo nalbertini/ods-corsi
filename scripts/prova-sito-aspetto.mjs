@@ -7,7 +7,7 @@
 // piede del sito generato. Il CSS si legge come testo: si trovano le regole, si
 // risolvono le variabili (`var(--x)`) e si guarda quel che vale davvero, così la
 // prova non dipende dai nomi che il codice dà ai token. Token: sezione A2 di
-// docs/design-canvas/sito-rebrand/token-proposta.md.
+// docs/design-canvas/sito-approvato/token-proposta.md.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'

@@ -1,6 +1,6 @@
 # La pagina di un corso
 
-Design: `docs/design-canvas/sito-rebrand/TatamiBlu-Corso.dc.html` (desktop) e `TatamiBluM-Corso.dc.html` (telefono).
+Design: `docs/design-canvas/sito-approvato/TatamiBlu-Corso.dc.html` (desktop) e `TatamiBluM-Corso.dc.html` (telefono).
 Prova: `npm run prova:sito-corso`. Tutto lo stile sta dentro `main.corso`: le altre pagine non cambiano.
 
 ## Come si scrive nel pannello SITO

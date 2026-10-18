@@ -103,7 +103,7 @@ const GRIGLIE_LUNGHE = Array.from({ length: GRIGLIA_MASSIMA - 7 }, (_, i) => i +
   .join('\n')
 
 /**
- * L'aspetto «A2 · Tatami blu e giallo» (docs/design-canvas/sito-rebrand/, token in
+ * L'aspetto «A2 · Tatami blu e giallo» (docs/design-canvas/sito-approvato/, token in
  * token-proposta.md): tessere a filo con angoli di 6px, titoli in Big Shoulders
  * Display maiuscolo, testo in Inter. I colori sono cinque e il bianco: non se ne
  * aggiungono senza cambiare prima il design. Regola dei colori: il giallo è uno

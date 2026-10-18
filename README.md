@@ -175,7 +175,7 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   (`src/lib/sitoGenera.ts`, `scripts/genera-sito.mjs`): file statici senza codice né servizi esterni (c'è solo un blocco di dati strutturati JSON-LD per Google e gli assistenti AI:
   sede, corsi, domande frequenti, briciole, in `src/lib/sitoDati.ts`; per le condivisioni, le meta Open Graph e Twitter con l'immagine `sito/risorse/social.png`, 1200×630; e `llms.txt` alla radice, che racconta il sito agli assistenti AI), con
   carattere (Big Shoulders Display e Inter, licenza OFL accanto) e logo propri in `sito/risorse/`, nell'aspetto «tatami blu e giallo»
-  (i colori e le regole sono in `docs/design-canvas/sito-rebrand/token-proposta.md`, A2); il testo si ripulisce un'altra volta quando si genera, perché
+  (i colori e le regole sono in `docs/design-canvas/sito-approvato/token-proposta.md`, A2); il testo si ripulisce un'altra volta quando si genera, perché
   è la pulizia di cui ci si fida. Il sito sta su www.officinedellosport.it con GitHub Pages, nel
   repository `nalbertini/officinedellosport-sito` (file generati, non si toccano a mano): il workflow
   `.github/workflows/sito.yml` lo rigenera ogni cinque minuti e a ogni cambio del generatore, e manda
