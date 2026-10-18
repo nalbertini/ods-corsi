@@ -23,8 +23,8 @@ TABLET**.
 
 Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
 **ISTRUTTORI E ACCESSI** in alto torna all'elenco. Con una modifica, un PIN o
-un kanji scritti e non confermati chiede prima: **TORNA A FINIRE** o **ESCI
-SENZA SALVARE**.
+un kanji scritti e non confermati chiede prima: **Torna a finire** o **Esci
+senza salvare**.
 
 - **MODIFICA** — nome, cognome ed email. Chi è già entrato non cambia email da
   qui: è quella con cui fa l'accesso.
@@ -110,12 +110,13 @@ parte.
 
 Chi ha più ruoli può quello che può ciascuno. Con **ISTRUTTORE** gli si danno
 dei corsi, il PIN sul tablet gli segna la presenza come a un istruttore, e nel
-calendario vede le sue lezioni. All'accesso chi ha più aree sceglie dove andare
-(**SEGRETERIA**, **AMMINISTRAZIONE**, **ISTRUTTORI**), e poi passa dall'una
-all'altra dal menu senza uscire.
+calendario vede le sue lezioni. All'accesso chi insegna anche sceglie dove andare
+(il menu o **ISTRUTTORI**), e poi passa dall'uno all'altro dal menu senza uscire.
+Segreteria e amministrazione sono due autorizzazioni: il menu è uno, con le voci di
+tutte le autorizzazioni che si hanno.
 
-L'**amministrazione** è per chi cura i conti: ha la sua area, `amministrazione/`
-([la guida](../amministrazione/README.md)), e non vede le persone. Se insegna
+L'**amministrazione** è per chi cura i conti: vede il gruppo **I CONTI** del menu
+([la guida](../amministrazione/README.md)), e senza la segreteria non vede le persone. Se insegna
 anche (spunta **ISTRUTTORE**) vede l'elenco delle persone come un istruttore. Nei pagamenti
 vede il nome, a cosa servono, come e quanto: non il telefono, l'email o il codice
 fiscale. Account, ruoli, PIN e backup restano alla segreteria. Col database, il

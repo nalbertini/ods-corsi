@@ -107,7 +107,7 @@ export function CalendarioSettimana({
       <div className="sg-cal-piede">
         <span className="sg-cal-aiuto">Tocca un giorno: si apre la sua settimana.</span>
         <button type="button" className="sg-chip" onClick={() => onScegli(new Date())}>
-          OGGI
+          Oggi
         </button>
       </div>
     </div>

@@ -1,0 +1,29 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Menu · icone e sezioni · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Main.dc.html",
+   "title": "Oggi e proposta, affiancati",
+   "x": 0,
+   "y": 300,
+   "w": 700,
+   "h": 1120,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1000,
+   "text": "Menu della segreteria: sezioni più chiare, icone alle voci"
+  }
+ ]
+}
