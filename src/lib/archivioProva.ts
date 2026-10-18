@@ -2,7 +2,7 @@ import type { Segnalata } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 import type { StatoSito } from './sitoProva'
 import type { ImmagineSito } from './sitoImmagini'
-import type { Cassa, ChiusuraCassa, MovimentoManuale, VoceContabile } from './contabilita'
+import type { Cassa, CambioVoce, ChiusuraCassa, MovimentoManuale, VoceContabile } from './contabilita'
 import type { Ruolo, StatoSessione } from './sala'
 import type { PagamentoDiretto } from './pagamenti'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
@@ -157,6 +157,8 @@ export interface Archivio {
   movimenti?: MovimentoManuale[]
   /** Le chiusure della Cassa Contanti (60-chiusura-cassa.sql). */
   chiusure?: ChiusuraCassa[]
+  /** I cambi di voce dei movimenti (67-cambia-voce.sql), dal più vecchio. */
+  cambiVoce?: Array<CambioVoce & { movimentoId: string }>
   /** I dati dell'associazione per le ricevute, se la segreteria li ha cambiati. */
   enteRicevute?: EnteRicevuta
   /** Nascita, residenza e genitore degli iscritti importati, per persona (18-anagrafiche.sql). */

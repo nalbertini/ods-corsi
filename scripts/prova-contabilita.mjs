@@ -810,5 +810,77 @@ console.log('\n33. ChiudiCassa non mostra il previsto prima di aver contato')
   ok('i movimenti del periodo hanno importi solo dietro `visibile`', corpo.lastIndexOf('{visibile', corpo.indexOf('importoPerCassa(r, cassa.id)')) > 0, true)
 }
 
+console.log('\n34. cambiare la voce: cosa si può e cosa no (le stesse parole di supabase/67-cambia-voce.sql)')
+{
+  const vv = [
+    ...voci,
+    { id: 'v-dc', nome: 'Da classificare', tipo: 'uscita', diSistema: false, attiva: true },
+    { id: 'v-dcE', nome: 'Da classificare', tipo: 'entrata', diSistema: false, attiva: true },
+    { id: 'v-en', nome: 'Energia', tipo: 'uscita', diSistema: false, attiva: true },
+    { id: 'v-difU', nome: 'Differenza di cassa', tipo: 'uscita', diSistema: true, attiva: true },
+    { id: 'v-difE', nome: 'Differenza di cassa', tipo: 'entrata', diSistema: true, attiva: true },
+  ]
+  const mv = (id, o) => ({ id, tipo: 'uscita', data: '2019-03-14', importo: 8400, voceId: 'v-dc', cassaId: 'c2', descrizione: 'BONIFICO SIAE', creatoIl: '2019-03-14T10:00:00Z', ...o })
+  const manuali = [
+    mv('a1'),
+    mv('a2', { descrizione: 'BONIFICO ENEL', importo: 31240 }),
+    mv('a3', { descrizione: 'GIÀ A POSTO', voceId: 'v-en' }),
+    mv('a4', { descrizione: 'DONAZIONE', tipo: 'entrata', voceId: 'v-dcE', importo: 5000 }),
+    mv('an', { descrizione: 'DA DISFARE', data: '2019-02-10', annullatoIl: '2019-02-11T00:00:00Z' }),
+    mv('g1', { tipo: 'giroconto', voceId: undefined, cassaAId: 'c1', descrizione: 'Giroconto' }),
+    mv('d1', { descrizione: 'Differenza di cassa', data: '2026-09-07', voceId: 'v-difU' }),
+  ]
+  const righe = m.righeMovimenti([{ id: 'incasso:1', origine: 'ricevuta', tipo: 'entrata', data: '2026-09-01', importo: 100, descrizione: 'Rossi', voce: 'Quota associativa', cassaId: 'c2', annullato: false }], manuali, vv)
+  const no = (ids, voce) => prova(() => m.cosaNonVaCambioVoce(ids, righe, vv, voce))
+  ok('il limite è 500 (come il database)', m.LIMITE_CAMBIO_VOCE, 500)
+  ok('un lotto buono: niente da dire', no(['a1', 'a2', 'a3'], 'v-en'), null)
+  ok('nessun movimento', no([], 'v-en'), 'Scegli almeno un movimento')
+  ok('501 movimenti', no(Array.from({ length: 501 }, (_, i) => `x${i}`), 'v-en'), 'Troppi movimenti in una volta: al massimo 500')
+  ok('lo stesso id due volte conta una', no(['a1', 'a1'], 'v-en'), null)
+  ok('senza voce', no(['a1'], ''), 'Scegli la voce')
+  ok('una voce che non c\'è', no(['a1'], 'zz'), 'Scegli la voce')
+  ok('una voce spenta', no(['a1'], 'v-vecchia'), 'La voce non è più in uso: scegline un’altra')
+  ok('«Differenza di cassa» come arrivo', no(['a1'], 'v-difU'), 'La «Differenza di cassa» si scrive da sola chiudendo la cassa')
+  ok('un movimento che non c\'è', no(['nulla'], 'v-en'), 'Il movimento non c’è')
+  ok('un incasso di un iscritto non è un movimento', no(['incasso:1'], 'v-aff'), 'Il movimento non c’è')
+  ok('un annullato', no(['an'], 'v-en'), 'Il movimento del 10/02/2019 (DA DISFARE) è annullato: non si cambia')
+  ok('un giroconto', no(['g1'], 'v-en'), 'Un giroconto non ha voce')
+  ok('la differenza di una chiusura', no(['d1'], 'v-en'), 'Il movimento del 07/09/2026 (Differenza di cassa) è scritto dalla chiusura di cassa: non si cambia')
+  ok('una voce di entrata a un\'uscita', no(['a1'], 'v-don'), 'La voce scelta non va con questo tipo di movimento')
+  ok('entrate e uscite insieme', no(['a4', 'a1'], 'v-en'), 'La voce scelta non va con questo tipo di movimento')
+  ok('uno cattivo in mezzo ferma il lotto e dice quale', no(['a1', 'a2', 'an'], 'v-en'), 'Il movimento del 10/02/2019 (DA DISFARE) è annullato: non si cambia')
+  ok('cambiabile: sì per un movimento a mano in uscita o entrata', righe.filter(m.cambiabile).map((r) => r.id).sort(), ['a1', 'a2', 'a3', 'a4'])
+  ok('…no per incassi, annullati, giroconti e la differenza', righe.filter((r) => !m.cambiabile(r)).map((r) => r.id).sort(), ['an', 'd1', 'g1', 'incasso:1'])
+
+  console.log('   il riepilogo e i pacchetti')
+  const r1 = prova(() => m.riepilogoCambioVoce(['a1', 'a2', 'a3'], righe, 'v-en', vv))
+  ok('3 uscite: quante, di che tipo, quanto, da quali voci, quante già così', r1, { quanti: 3, tipo: 'uscita', totale: 8400 + 31240 + 8400, daVoci: [{ voce: 'Da classificare', quanti: 2 }, { voce: 'Energia', quanti: 1 }], giaCosi: 1 })
+  ok('entrate e uscite insieme: il tipo è «misto»', prova(() => m.riepilogoCambioVoce(['a1', 'a4'], righe, 'v-en', vv)).tipo, 'misto')
+  ok('pacchetti da 500: 1.200 → 500, 500, 200', m.pacchetti(Array.from({ length: 1200 }, (_, i) => i)).map((p) => p.length), [500, 500, 200])
+  ok('…e uno solo se ci sta', m.pacchetti([1, 2, 3]).length, 1)
+  ok('…nessuno se non c\'è niente', m.pacchetti([]), [])
+  ok('l\'esito', [m.esitoCambioVoce(12, 3), m.esitoCambioVoce(1, 0), m.esitoCambioVoce(0, 3), m.esitoCambioVoce(2, 1)], ['12 cambiati, 3 erano già così', '1 cambiato', '3 erano già così: non è cambiato niente', '2 cambiati, 1 era già così'])
+  ok('la scelta è di un tipo solo? vale l\'elenco dei trovati', prova(() => m.vociPerLaScelta(['a1', 'a2'], righe, vv)).map((v) => v.nome), ['Affitto sala', 'Da classificare', 'Energia'])
+  ok('…con entrate e uscite insieme non se ne offre nessuna', prova(() => m.vociPerLaScelta(['a1', 'a4'], righe, vv)), [])
+  ok('…senza scelta nemmeno', prova(() => m.vociPerLaScelta([], righe, vv)), [])
+}
+
+console.log('\n35. Contabilita.tsx cambia la voce dopo il riepilogo, a pacchetti, e mai per un incasso')
+{
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  const da = tsx.indexOf('function CambiaVoce(')
+  const fino = tsx.indexOf('function NuovoMovimento(')
+  const corpo = da >= 0 && fino > da ? tsx.slice(da, fino) : ''
+  ok('due chiamate a cambiaVoceMovimenti: il riepilogo e il movimento aperto', tsx.split('cambiaVoceMovimenti(').length - 1, 2)
+  ok('il riepilogo scrive a pacchetti', [corpo.includes('pacchetti('), /await d\.cambiaVoceMovimenti\(/.test(corpo)], [true, true])
+  ok('…e dice com\'è andata con esitoCambioVoce', corpo.includes('esitoCambioVoce('), true)
+  ok('…il sì resta spento finché cosaNonVaCambioVoce ha qualcosa da dire', /disabled=\{[^}]*guaio/.test(corpo), true)
+  ok('…le voci offerte sono quelle di vociPerLaScelta (entrate e uscite insieme: nessuna)', corpo.includes('vociPerLaScelta('), true)
+  ok('la casella c\'è solo per le righe che cambiabile() ammette', /cambiabile\(r\) &&/.test(tsx), true)
+  ok('cambiando i filtri la scelta si svuota', /setScelti\(new Set\(\)\)[\s\S]{0,80}\[chiave\]/.test(tsx), true)
+  ok('l\'elenco mostra le righe a pezzi: MOSTRA ALTRE', tsx.includes('Mostra altre'), true)
+  ok('il movimento aperto legge la traccia', tsx.includes('cambiVoceMovimento('), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

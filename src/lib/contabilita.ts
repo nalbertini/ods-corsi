@@ -251,6 +251,81 @@ export function avvisoCassaChiusa(pagamenti: Array<{ data: string; metodo: strin
 export const rettificheMancanti = (voci: VoceContabile[]): Array<'entrata' | 'uscita'> =>
   (['entrata', 'uscita'] as const).filter((tipo) => !voci.some((v) => v.tipo === tipo && v.nome.trim().toLowerCase() === 'rettifica'))
 
+/** Quanti movimenti per volta cambiano voce: lo stesso limite di `cambia_voce_movimenti` (67-cambia-voce.sql). */
+export const LIMITE_CAMBIO_VOCE = 500
+
+/** Un cambio di voce nella traccia di un movimento: chi, quando, la voce di prima e quella di dopo. */
+export interface CambioVoce {
+  quando: string
+  chi: string
+  prima: string
+  dopo: string
+}
+
+/** Si sceglie per cambiarle la voce solo un movimento a mano, in uso, con una voce: non un incasso, un annullato, un giroconto o la differenza di una chiusura. */
+export const cambiabile = (r: RigaMovimento): boolean => r.origine === 'movimento' && r.tipo !== 'giroconto' && !r.annullato && r.voce !== VOCE_DIFFERENZA
+
+/**
+ * Cosa non va in un cambio di voce, con le parole di `cambia_voce_movimenti`. Cambia solo la voce, quindi i giorni
+ * chiusi non contano. `righe` è l'elenco intero; il primo movimento che non va, in ordine di id, dà il messaggio.
+ */
+export function cosaNonVaCambioVoce(ids: string[], righe: RigaMovimento[], voci: VoceContabile[], voceId: string): string | null {
+  const scelte = [...new Set(ids)].sort()
+  if (!scelte.length) return 'Scegli almeno un movimento'
+  if (scelte.length > LIMITE_CAMBIO_VOCE) return `Troppi movimenti in una volta: al massimo ${LIMITE_CAMBIO_VOCE}`
+  const voce = voci.find((v) => v.id === voceId)
+  if (!voce) return 'Scegli la voce'
+  if (!voce.attiva) return 'La voce non è più in uso: scegline un’altra'
+  if (voce.nome === VOCE_DIFFERENZA) return 'La «Differenza di cassa» si scrive da sola chiudendo la cassa'
+  const trovate = scelte.map((id) => righe.find((r) => r.id === id && r.origine === 'movimento'))
+  if (trovate.some((r) => !r)) return 'Il movimento non c’è'
+  for (const r of trovate) {
+    if (!r) continue
+    const quale = `Il movimento del ${dataRicevuta(r.data)} (${r.descrizione})`
+    if (r.annullato) return `${quale} è annullato: non si cambia`
+    if (r.tipo === 'giroconto') return 'Un giroconto non ha voce'
+    if (r.voce === VOCE_DIFFERENZA) return `${quale} è scritto dalla chiusura di cassa: non si cambia`
+    if (r.tipo !== voce.tipo) return 'La voce scelta non va con questo tipo di movimento'
+  }
+  return null
+}
+
+/** Il riepilogo prima di scrivere: quanti, di che tipo, quanto, da quali voci e quanti hanno già la voce di arrivo. */
+export function riepilogoCambioVoce(ids: string[], righe: RigaMovimento[], voceId: string, voci: VoceContabile[]) {
+  const voce = voci.find((v) => v.id === voceId)
+  const scelte = righe.filter((r) => new Set(ids).has(r.id) && r.origine === 'movimento')
+  const tipi = new Set(scelte.map((r) => r.tipo))
+  const per = new Map<string, number>()
+  for (const r of scelte) per.set(r.voce ?? '—', (per.get(r.voce ?? '—') ?? 0) + 1)
+  return {
+    quanti: scelte.length,
+    tipo: (tipi.size === 1 ? [...tipi][0] : 'misto') as 'entrata' | 'uscita' | 'giroconto' | 'misto',
+    totale: scelte.reduce((s, r) => s + r.importo, 0),
+    daVoci: [...per].map(([nome, quanti]) => ({ voce: nome, quanti })).sort((a, b) => b.quanti - a.quanti || a.voce.localeCompare(b.voce, 'it')),
+    giaCosi: voce ? scelte.filter((r) => r.voce === voce.nome && r.tipo === voce.tipo).length : 0,
+  }
+}
+
+/** Una lista a pacchetti: ognuno entra tutto o niente. */
+export function pacchetti<T>(elementi: T[], per = LIMITE_CAMBIO_VOCE): T[][] {
+  const fuori: T[][] = []
+  for (let i = 0; i < elementi.length; i += per) fuori.push(elementi.slice(i, i + per))
+  return fuori
+}
+
+/** L'esito a lavoro fatto: «12 cambiati, 3 erano già così». */
+export function esitoCambioVoce(cambiati: number, giaCosi: number): string {
+  if (!cambiati) return `${giaCosi} ${giaCosi === 1 ? 'era già così' : 'erano già così'}: non è cambiato niente`
+  return `${cambiati} ${cambiati === 1 ? 'cambiato' : 'cambiati'}${giaCosi ? `, ${giaCosi} ${giaCosi === 1 ? 'era già così' : 'erano già così'}` : ''}`
+}
+
+/** Le voci da offrire per una scelta: quelle del suo tipo; con entrate e uscite insieme, o niente scelto, nessuna. */
+export function vociPerLaScelta(ids: string[], righe: RigaMovimento[], voci: VoceContabile[]): VoceContabile[] {
+  const tipi = new Set(righe.filter((r) => new Set(ids).has(r.id) && r.origine === 'movimento').map((r) => r.tipo))
+  const tipo = tipi.size === 1 ? [...tipi][0] : undefined
+  return tipo === 'entrata' || tipo === 'uscita' ? vociOfferte(voci, tipo) : []
+}
+
 /** Si annulla solo l'ultima chiusura attiva della cassa. */
 export function cosaNonVaAnnulloChiusura(id: string, chiusure: ChiusuraCassa[]): string | null {
   const k = chiusure.find((x) => x.id === id)
