@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.92.0 — 18 ottobre 2026
+
+### Novità
+
+- La Home del sito con i due pulsanti per provare, schede dei corsi con foto, citazioni con «Leggi tutto» e il tasto MENU sul telefono
+
 ## 0.91.0 — 18 ottobre 2026
 
 ### Novità
