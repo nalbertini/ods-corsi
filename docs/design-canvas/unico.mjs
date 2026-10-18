@@ -55,7 +55,8 @@ const SEZIONI = [
   { id: 'storico-pagamenti', nome: 'Storico pagamenti · proposta', cartella: 'storico-pagamenti' },
   { id: 'sito-pannello', nome: 'Sito · pannello · proposta', cartella: 'sito-pannello' },
   { id: 'sito-pubblico', nome: 'Sito pubblico · proposta', cartella: 'sito-pubblico' },
-  { id: 'sito-rebrand', nome: 'Sito pubblico · tre rebrand', cartella: 'sito-rebrand' },
+  { id: 'sito-rebrand', nome: 'Sito pubblico · tre rebrand (scartati)', cartella: 'sito-rebrand' },
+  { id: 'sito-approvato', nome: 'Sito pubblico · approvato', cartella: 'sito-approvato' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')
