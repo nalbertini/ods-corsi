@@ -267,8 +267,13 @@ export function CaricaFile({
       <span className="stack grow modulo-file-testo">
         <span className="modulo-etichetta">
           {etichetta}
-          {/* Si va a capo solo dopo il «·»: «PUOI PORTARLO DOPO» resta intero. */}
-          {seManca && ` · ${seManca.replaceAll(' ', '\u00a0')}`}
+          {/* Sempre su una riga sua, senza «·»: a capo non resta un puntino solo in fondo alla prima riga. */}
+          {seManca && (
+            <>
+              <br />
+              {seManca}
+            </>
+          )}
         </span>
         {/* Il nome del file sta su una riga; la spiegazione no: a 65 anni serve intera. */}
         <span className={file ? 'passo-dettaglio una-riga' : 'passo-dettaglio'}>{file ? `${file.nome} · ${Math.max(1, Math.round(file.byte / 1024))} KB` : dettaglio}</span>
