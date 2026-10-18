@@ -74,9 +74,10 @@ export function StrisciaTimer({ stato, onApri, onFerma }: { stato: StatoTimer; o
   const s = statoStriscia(stato, ora)
   const finito = stato.status === 'done'
   // In pausa il colore dell'intervallo lascia il posto al grigio, come nel design.
-  const colori = stato.status === 'paused' ? { background: 'var(--surface-2)', borderColor: 'var(--line)', color: 'var(--text)' } : { background: s.colore, borderColor: s.colore, color: 'var(--su-colore)' }
+  const pausa = stato.status === 'paused'
+  // I colori li decide il CSS (look del sito), da questi attributi; la fase dà il fondo, lo stato la riga.
   return (
-    <div className="striscia-timer" style={colori}>
+    <div className="striscia-timer" data-stato={finito ? 'finito' : pausa ? 'pausa' : 'in-corso'} data-fase={stato.kind ?? undefined}>
       <button type="button" className="striscia-apri" onClick={onApri} aria-label={`Torna al timer: ${s.testo} ${s.tempo}`}>
         <span className="stack" style={{ gap: 2, minWidth: 0 }}>
           <span className="ob striscia-testo">{s.testo}</span>
@@ -176,7 +177,7 @@ export function PaginaTimer({
         </div>
       )}
       <Suspense fallback={<p className="pad" style={{ color: 'var(--dim)' }}>Un attimo…</p>}>
-        <TimerSala incorporato={conScheda} visibile={visibile} />
+        <TimerSala incorporato={conScheda} visibile={visibile} scuro />
       </Suspense>
       {musica}
     </div>

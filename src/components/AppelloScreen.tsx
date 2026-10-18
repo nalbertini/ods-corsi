@@ -9,6 +9,7 @@ import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, TogliProva } from './Prove'
 import { CercaPersona } from './CercaPersona'
+import { codaAppello, NON_ANCORA_COMINCIATA, proveInPiu, statoAppello, tastoAppello } from '../lib/etichetteAppello'
 import { DueTocchi, EtichettaAttivita } from './ds'
 import { vociAttivita } from '../lib/segreteria'
 import type { SegnalataVista } from '../lib/segnalate'
@@ -367,6 +368,7 @@ export function AppelloScreen({
   // Fuori finestra l'istruttore vede i segni e basta: il server rifiuterebbe ogni tocco.
   const finestra = appelloAperto(d.sessione.inizio, senzaLimiti)
   const soloLettura = finestra !== 'aperta' || rifiutata
+  const stato = statoAppello({ soloLettura, tuttiSegnati, tuttiAssenti, mancano, proveMancano, haChiudi: !!onChiudi })
   const assentiDetti = `${mancano === 1 ? 'UN ASSENTE' : `${mancano} ASSENTI`}${proveMancano ? ` · +${proveMancano} PROVA` : ''}`
   // Quando chiudere vuole un secondo tocco, e cosa chiede: prima di tutto
   // quanti diventerebbero assenti, che è il fatto che conta.
@@ -410,7 +412,7 @@ export function AppelloScreen({
             {/* Il nome intero, qui c'è posto: nel calendario si accorcia. */}
             <EtichettaAttivita nome={d.sessione.attivita} intera />
             {/* Si può già segnare (chi lo sa prima, un recupero), ma si vede. */}
-            {futura && !soloLettura && <span className="num appello-futura">NON ANCORA COMINCIATA</span>}
+            {futura && !soloLettura && <span className="num appello-futura">{NON_ANCORA_COMINCIATA}</span>}
           </span>
           {/* Il timer della lezione: si apre con i timer del corso in cima. */}
           {/* Dentro l'app: l'appello resta montato sotto, e tornando è dov'era. */}
@@ -423,26 +425,24 @@ export function AppelloScreen({
 
         <div className="row pad" style={{ gap: 10, paddingTop: 12, alignItems: 'baseline' }}>
           <span className="num conto-appello">{presentiIscritti}</span>
-          <span className="num" style={{ fontSize: 22, color: 'var(--dim)' }}>/ {iscritti.length}</span>
-          {presentiProve > 0 && <span className="num appello-prove">+{presentiProve} PROVA</span>}
+          <span className="num" style={{ fontSize: 22, color: 'var(--dim)', whiteSpace: 'nowrap' }}>/ {iscritti.length}</span>
+          {presentiProve > 0 && <span className="num appello-prove">{proveInPiu(presentiProve)}</span>}
           <span className="grow" />
           <span className="stack" style={{ alignItems: 'flex-end', gap: 2, alignSelf: 'center' }}>
             {/* Con tutti segnati il tasto qui sotto lo dice già: qui il passo dopo. */}
-            {soloLettura ? (
-              <span className="num appello-stato" data-fatto="false">SOLO LETTURA</span>
-            ) : tuttiSegnati && !tuttiAssenti && onChiudi ? (
+            {stato.tasto ? (
               // Si legge come un invito, e allora si tocca: porta al tasto in fondo.
               <button type="button" className="num appello-stato appello-vai" data-fatto="true" onClick={vaiAChiudere}>
-                CHIUDI IN FONDO ↓
+                {stato.testo}
               </button>
             ) : (
-              <span className="num appello-stato" data-fatto={tuttiSegnati && !tuttiAssenti} data-manca={tuttiAssenti || undefined}>
-                {tuttiAssenti ? 'TUTTI ASSENTI' : tuttiSegnati ? '✓ TUTTI SEGNATI' : mancano ? `${mancano} DA SEGNARE` : `${proveMancano} PROVA DA SEGNARE`}
+              <span className="num appello-stato" data-fatto={stato.tono === 'fatto'} data-manca={stato.tono === 'manca' || undefined}>
+                {stato.testo}
               </span>
             )}
             {/* Sempre al suo posto, anche vuota: la testa non cambia altezza. */}
             <span className="num appello-coda" role="status">
-              {inCoda > 0 ? `${inCoda} DA INVIARE` : ''}
+              {codaAppello(inCoda)}
             </span>
           </span>
         </div>
@@ -453,11 +453,12 @@ export function AppelloScreen({
               segno: è l'appello chiuso per sbaglio, riaperto. */}
           <button
             className="btn btn-go grow"
+            data-fatto={(tuttiSegnati && !tuttiAssenti) || undefined}
             style={{ fontSize: 17, padding: '0 10px', letterSpacing: '0.1em' }}
             disabled={!d.elenco.length || (tuttiSegnati && !tuttiAssenti)}
             onClick={tuttiGliAltri}
           >
-            {segnatiIscritti === 0 || tuttiAssenti ? 'TUTTI PRESENTI' : tuttiSegnati ? '✓ TUTTI SEGNATI' : 'GLI ALTRI PRESENTI'}
+            {tastoAppello({ segnatiIscritti, tuttiAssenti, tuttiSegnati })}
           </button>
           <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO?" onFai={azzera}>
             AZZERA

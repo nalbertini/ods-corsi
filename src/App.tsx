@@ -78,8 +78,11 @@ function Aree() {
   return <Scelta />
 }
 
-/** `guida` è la pagina della guida da aprire col tasto «?», se c'è. */
-function Testata({ luogo, guida, children }: { luogo: string; guida?: string; children?: ReactNode }) {
+/**
+ * `guida` è la pagina della guida da aprire col tasto «?», se c'è. `senzaTema`
+ * per le aree sempre chiare (istruttori): il tasto non avrebbe cosa cambiare.
+ */
+function Testata({ luogo, guida, senzaTema, children }: { luogo: string; guida?: string; senzaTema?: boolean; children?: ReactNode }) {
   return (
     <header className="testata">
       <Logo />
@@ -92,7 +95,7 @@ function Testata({ luogo, guida, children }: { luogo: string; guida?: string; ch
           ?
         </a>
       )}
-      <TastoTema />
+      {!senzaTema && <TastoTema />}
       {children}
     </header>
   )
@@ -361,7 +364,7 @@ function Istruttori() {
     <Porta
       cornice={(x) => (
         <div className="app">
-          <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
+          <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} senzaTema />
           <main className="scroll">{x}</main>
         </div>
       )}
@@ -396,7 +399,7 @@ function Istruttori() {
           {largo ? (
             <MenuIstruttori chi={chi} onEsci={onEsci} voci={voci} pagina={pagina} onPagina={dalMenu} />
           ) : (
-            <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
+            <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} senzaTema />
           )}
           {!largo && striscia}
           <main ref={corpo} className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}>
@@ -483,7 +486,6 @@ function MenuIstruttori({
         <a className="icon-btn tasto-guida" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener" title="La guida" aria-label="Apri la guida">
           ?
         </a>
-        <TastoTema />
       </div>
       <div className="sg-chi">
         <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : `${ISTRUTTORE_PROVA.nome} · di prova`}</span>

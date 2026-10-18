@@ -41,3 +41,12 @@ export function perLaSala(css: string): string {
       })
   )
 }
+
+/**
+ * Il `data-tema` dell'host del timer incorporato: quello di `<html>`, tranne dove il cronometro resta scuro
+ * (la pagina TIMER dell'app istruttori, dove `<html>` è sempre chiaro): lì è `scuro`, che non ha regole e dà il
+ * tema scuro di base. Il tablet di sala e il timer fuori dall'app seguono il tema.
+ */
+export function temaDelTimer(temaHtml: string | undefined, scuro: boolean): string | undefined {
+  return scuro ? 'scuro' : temaHtml
+}

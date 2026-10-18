@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Gli stati che si leggono nel calendario e nell'appello, uno sotto l'altro: lo stato di una lezione (RigaCalendario), la testa dell'appello (N DA SEGNARE con N DA INVIARE, CHIUDI IN FONDO, TUTTI ASSENTI, SOLO LETTURA) e le spie sopra il calendario (DA INVIARE, RIFIUTATE). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #eef5fa; color: #0d2a3d">
+  <main style="display: flex; flex-direction: column; flex: 1; padding-bottom: 28px">
+    <dc-import name="Titoletto" tema="sito" label="NEL CALENDARIO" lato="16px" hint-size="100%,50px"></dc-import>
+    <p style="margin: 0 0 8px; padding: 0 16px; font-size: 13px; line-height: 1.4; color: #46606f">Il conto a destra e sotto la parola che dice come sta la lezione.</p>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 16px">
+      <dc-import name="RigaCalendario" tema="sito" ora="20:00" corso="Judo adulti" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="9" stato="iscritti" hint-size="100%,76px"></dc-import>
+      <dc-import name="RigaCalendario" tema="sito" ora="18:30" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="in-corso" presenti="7" quando="ADESSO" hint-size="100%,96px"></dc-import>
+      <dc-import name="RigaCalendario" tema="sito" ora="17:30" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="fatto" presenti="12" hint-size="100%,96px"></dc-import>
+      <dc-import name="RigaCalendario" tema="sito" ora="17:00" corso="Judo ragazzi" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="8" stato="nessun-presente" presenti="0" hint-size="100%,96px"></dc-import>
+      <dc-import name="RigaCalendario" tema="sito" ora="16:30" corso="Judo ragazzi" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="8" stato="da-chiudere" presenti="3" hint-size="100%,96px"></dc-import>
+      <dc-import name="RigaCalendario" tema="sito" ora="10:00" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="iscritti" prove="2" hint-size="100%,100px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="IN CIMA ALL’APPELLO" lato="16px" hint-size="100%,50px"></dc-import>
+    <p style="margin: 0 0 8px; padding: 0 16px; font-size: 13px; line-height: 1.4; color: #46606f">Con la rete che non c’è: N DA INVIARE sotto lo stato. Tutti segnati: CHIUDI IN FONDO. Lezione vecchia o lontana: SOLO LETTURA.</p>
+    <dc-import name="TestaAppello" tema="sito" corso="Judo kids" kanji="柔" quando="Martedì 17:30 · Sala 1" presenti="2" iscritti="5" prove="1" mancano="2" coda="2 DA INVIARE" tasto="GLI ALTRI PRESENTI" stato="mancano" hint-size="100%,224px"></dc-import>
+    <div style="height: 12px"></div>
+    <dc-import name="TestaAppello" tema="sito" corso="Judo kids" kanji="柔" quando="Martedì 17:30 · Sala 1" presenti="4" iscritti="5" prove="1" tasto="✓ TUTTI SEGNATI" tastoSpento="{{ true }}" stato="chiudi" hint-size="100%,224px"></dc-import>
+    <div style="height: 12px"></div>
+    <dc-import name="TestaAppello" tema="sito" corso="Judo kids" kanji="柔" quando="Martedì 17:30 · Sala 1" presenti="0" iscritti="5" tasto="TUTTI PRESENTI" stato="assenti" hint-size="100%,224px"></dc-import>
+    <div style="height: 12px"></div>
+    <dc-import name="TestaAppello" tema="sito" corso="Judo kids" kanji="柔" quando="Lunedì 14 settembre 17:30 · Sala 1" presenti="4" iscritti="5" prove="1" stato="lettura" hint-size="100%,150px"></dc-import>
+    <dc-import name="Titoletto" tema="sito" label="SOPRA IL CALENDARIO" lato="16px" hint-size="100%,50px"></dc-import>
+    <p style="margin: 0 0 8px; padding: 0 16px; font-size: 13px; line-height: 1.4; color: #46606f">Scritture che non sono arrivate al server: partono da sole quando torna la rete.</p>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 16px">
+      <dc-import name="SpiaCoda" tema="sito" titolo="2 PRESENZE DA INVIARE" testo="Sono salvati sul telefono: partono da soli appena c’è rete." hint-size="100%,92px"></dc-import>
+      <dc-import name="SpiaCoda" tema="sito" titolo="UNA PRESENZA RIFIUTATA" testo="Il server non le ha accettate e non le riprova: avvisa la segreteria." tono="guaio" hint-size="100%,92px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

@@ -72,6 +72,7 @@ const SEZIONI = [
   { id: 'menu-unico', nome: 'Segreteria · menu unico', cartella: 'menu-unico' },
   { id: 'istruttore', nome: 'Istruttori · sezione', cartella: 'istruttore' },
   { id: 'istruttore-collega', nome: 'Istruttori · insegna con te', cartella: 'istruttore-collega' },
+  { id: 'istruttore-sito', nome: 'Istruttori · look del sito · proposta', cartella: 'istruttore-sito' },
   { id: 'tablet-sala', nome: 'Tablet di sala', cartella: 'tablet-sala' },
   { id: 'timer-desktop', nome: 'Timer · desktop', cartella: 'timer-desktop' },
   { id: 'timer-istruttori', nome: 'Timer · app istruttori', cartella: 'timer-istruttori' },
@@ -100,7 +101,7 @@ const GRUPPI = {
   'segreteria-certificati': { nome: 'Segreteria · certificati', sezioni: ['certificati-online', 'certificato-piccoli'] },
   'segreteria-strumenti': { nome: 'Segreteria · strumenti', sezioni: ['segreteria-tatami', 'banco', 'cerca-universale', 'menu-icone', 'importa-fogli'] },
   'segreteria-conti': { nome: 'Segreteria · conti e ruoli', sezioni: ['contabilita', 'cambia-voce', 'movimenti-persona', 'movimenti-filtri', 'chiusura-cassa', 'bilancio-anno', 'ruolo-amministrazione', 'menu-unico', 'email-contatto'] },
-  'istruttori': { nome: 'Istruttori', sezioni: ['istruttore', 'istruttore-collega'] },
+  'istruttori': { nome: 'Istruttori', sezioni: ['istruttore', 'istruttore-collega', 'istruttore-sito'] },
   'timer': { nome: 'Timer', sezioni: ['timer-desktop', 'timer-istruttori', 'timer-musica', 'timer-youtube'] },
 }
 const gruppoDi = (id) => Object.keys(GRUPPI).find((g) => GRUPPI[g].sezioni.includes(id))

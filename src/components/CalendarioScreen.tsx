@@ -3,6 +3,7 @@ import type { Dati } from '../lib/dati'
 import type { SessioneVista } from '../lib/sala'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
 import { Kanji } from './Kanji'
+import { proveInPiu, statoLezione } from '../lib/etichetteAppello'
 import { EtichettaAttivita } from './ds'
 import type { Conto } from './AppelloScreen'
 
@@ -232,6 +233,7 @@ export function CalendarioScreen({
     const iniziato = presentiIscritti > 0 || (l.prove ?? 0) > 0 || (l.daSegnare !== undefined && l.daSegnare < l.iscritti)
     const tra = quando(l, adesso)
     const manca = daChiudere(l)
+    const stato = statoLezione({ manca, iniziato, fatto, presentiIscritti })
     return (
       <button
         key={l.id}
@@ -261,14 +263,14 @@ export function CalendarioScreen({
             <span>{[l.sala, l.istruttore].filter(Boolean).join(' · ')}</span>
           </span>
         </span>
-        <span className="stack" style={{ gap: 2, alignItems: 'flex-end' }}>
+        <span className="stack lezione-destra" style={{ gap: 2, alignItems: 'flex-end' }}>
           <span className="num lezione-conto" data-fatto={fatto && presentiIscritti > 0}>
             {iniziato ? `${presentiIscritti}/${l.iscritti}` : l.iscritti}
           </span>
           <span className="num lezione-stato" data-fatto={fatto && presentiIscritti > 0} data-vuoto={(fatto && presentiIscritti === 0) || undefined} data-manca={manca || undefined}>
-            {manca ? 'DA CHIUDERE' : !iniziato ? 'ISCRITTI' : fatto ? (presentiIscritti > 0 ? '✓ FATTO' : 'NESSUN PRESENTE') : 'IN CORSO'}
+            {stato.testo}
           </span>
-          {(l.prove ?? 0) > 0 && <span className="num lezione-stato lezione-prove">+{l.prove} PROVA</span>}
+          {(l.prove ?? 0) > 0 && <span className="num lezione-stato lezione-prove">{proveInPiu(l.prove ?? 0)}</span>}
         </span>
       </button>
     )

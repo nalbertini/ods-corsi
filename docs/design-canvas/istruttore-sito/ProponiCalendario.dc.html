@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il calendario dell'istruttore sul telefono (390px): testata, striscia dell'allenamento in corso (LAVORO) sotto la testata, ChiSei, la lezione di adesso, la settimana a elenco e la barra delle pagine in basso. Nell'app la barra sta ferma in fondo allo schermo; qui e' in flusso dopo l'ultima lezione. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #eef5fa; color: #0d2a3d">
+  <dc-import name="BarraTelefono" tema="sito" luogo="ISTRUTTORI" senza-menu="{{ true }}" senza-impostazioni="{{ true }}" da-fare="0" hint-size="100%,62px"></dc-import>
+  <dc-import name="TimerStriscia" tema="sito" stato="lavoro" nome="Tabata brucia grassi" tempo="00:14" hint-size="100%,60px"></dc-import>
+  <main style="display: flex; flex-direction: column; flex: 1">
+    <dc-import name="ChiSei" tema="sito" chi="MARCO ROSSI · ISTRUTTORE" hint-size="100%,54px"></dc-import>
+    <dc-import name="Titoletto" tema="sito" label="ADESSO" giallo="{{ true }}" lato="16px" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 16px">
+      <dc-import name="RigaCalendario" tema="sito" ora="18:30" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="in-corso" presenti="7" prove="1" quando="ADESSO" hint-size="100%,110px"></dc-import>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 14px 16px 0">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="‹" variante="linea" alto="44px" larghezza="44px" corpo="22px" spazio="0" hint-size="44px,44px"></dc-import>
+      <span style="flex-grow: 1; text-align: center; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 700">6 OTT – 12 OTT</span>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="›" variante="linea" alto="44px" larghezza="44px" corpo="22px" spazio="0" hint-size="44px,44px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="OGGI · MARTEDÌ 6 OTTOBRE" conto="2" giallo="{{ true }}" lato="16px" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 16px">
+      <dc-import name="RigaCalendario" tema="sito" ora="16:30" corso="Judo ragazzi" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="8" stato="da-chiudere" presenti="3" hint-size="100%,88px"></dc-import>
+      <dc-import name="RigaCalendario" tema="sito" ora="20:00" corso="Judo adulti" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="9" stato="iscritti" hint-size="100%,76px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="GIOVEDÌ 8 OTTOBRE" conto="1" lato="16px" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 16px">
+      <dc-import name="RigaCalendario" tema="sito" ora="17:30" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="iscritti" hint-size="100%,76px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="SABATO 10 OTTOBRE" conto="1" lato="16px" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 16px; padding-bottom: 28px">
+      <dc-import name="RigaCalendario" tema="sito" ora="10:00" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="iscritti" prove="2" hint-size="100%,100px"></dc-import>
+    </div>
+  </main>
+  <div style="margin-top: auto">
+    <dc-import name="BarraNavigazione" tema="sito" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="CALENDARIO" hint-size="100%,66px"></dc-import>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

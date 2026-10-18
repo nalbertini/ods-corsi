@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.127.0 — 18 ottobre 2026
+
+### Novità
+
+- L'area degli istruttori ha l'aspetto del sito, sempre chiaro
+
 ## 0.126.0 — 18 ottobre 2026
 
 ### Novità
