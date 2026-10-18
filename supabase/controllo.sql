@@ -338,6 +338,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('65-elimina-presenza-rifiutata.sql', 'la presenza di un istruttore rifiutata si può eliminare',
     exists (select 1 from dentro where nome = 'elimina_presenza_istruttore')),
   ('66-elimina-segreteria.sql', 'eliminare anche la segreteria, se non ha storia nei registri',
-    exists (select 1 from dentro where nome = 'elimina_istruttore' and corpo like '%ha già lavorato nei registri%'))
+    exists (select 1 from dentro where nome = 'elimina_istruttore' and corpo like '%ha già lavorato nei registri%')),
+  ('67-cambia-voce.sql', 'cambiare la voce dei movimenti, con la traccia di chi l''ha fatto',
+    exists (select 1 from dentro where nome = 'cambia_voce_movimenti') and to_regclass('public.cambi_voce') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;
