@@ -964,14 +964,14 @@ export function presentaCertificato(c: CertificatoSeg, natoIl: string | undefine
   const verde = stato === 'valido' || stato === 'file_vecchio' || stato === 'valido_senza_file'
   const tasto =
     c.conFile && !c.scade
-      ? 'SCRIVI LA DATA'
+      ? 'Scrivi la data'
       : stato === 'nessuno'
-        ? 'CARICA IL CERTIFICATO'
+        ? 'Carica il certificato'
         : stato === 'scaduto_senza_file'
-          ? 'CARICA IL NUOVO'
+          ? 'Carica il nuovo'
           : stato === 'valido_senza_file'
-            ? 'CARICA IL FILE'
-            : 'SOSTITUISCI'
+            ? 'Carica il file'
+            : 'Sostituisci'
   return {
     ...(nonServe
       ? {

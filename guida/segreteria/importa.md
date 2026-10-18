@@ -33,8 +33,8 @@ corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
 
 ## I tre passi
 
-1. **I FOGLI** — **SCEGLI IL FOGLIO** per ognuno, poi **CONTROLLA** (o
-   **AVANTI**).
+1. **I FOGLI** — **SCEGLI IL FOGLIO** per ognuno, poi **Controlla** (o
+   **Avanti**).
    - Per le risposte del modulo Google compaiono **LE COLONNE DEL MODULO** (quale
      domanda dice il nome, il cognome, l'email…) e **LE SCELTE DEI CORSI**
      (quale risposta corrisponde a quale corso). L'app prova a indovinarle; si
@@ -93,17 +93,17 @@ corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
    - **DA SISTEMARE**: le righe che non si capiscono, col perché;
    - **I NOMI NUOVI**: sale, istruttori e corsi che non c'erano. Attenzione: un
      nome scritto in modo diverso («Lotta 2» e «Lotta2») vale come un corso
-     nuovo. Se è un errore, correggerlo nel foglio e **CARICA DI NUOVO**.
+     nuovo. Se è un errore, correggerlo nel foglio e **Carica di nuovo**.
    Sopra i tasti c'è il promemoria del **backup**: dice quando è stato fatto
    l'ultimo, e in giallo se non c'è, non è riuscito o è di più di ieri. L'import
-   scrive e non si disfa: in quel caso conviene fare **FAI UN BACKUP ORA** in
+   scrive e non si disfa: in quel caso conviene fare **Fai un backup ora** in
    IMPOSTAZIONI › IL BACKUP prima di importare.
 3. **NELL'APP** — **IMPORTA LE N RIGHE BUONE** (senza quelle da sistemare e
    quelle che aspettano una scelta). Una riga che non va non ferma le altre.
    A fine import il titolo dice **FATTO, N righe da sistemare**, e sotto c'è
    l'elenco «foglio, riga N: nome — motivo», con **COPIA L'ELENCO** per
-   correggere il foglio. Poi **VAI ALLA SETTIMANA** per vedere il calendario,
-   o **IMPORTA DI NUOVO**.
+   correggere il foglio. Poi **Vai alla settimana** per vedere il calendario,
+   o **Importa di nuovo**.
 
 **Da quando è iscritto.** Dalle risposte del modulo Google, la colonna
 «Informazioni cronologiche» si propone da sola come **DATA DELLA RISPOSTA**: le
