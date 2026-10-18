@@ -430,7 +430,7 @@ ${GRIGLIE_LUNGHE}
 .numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
 .ritratti{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .ritratti article{grid-column:auto}
-.ritratti-sezione .ritratti article.ritratto{position:relative;display:flex;flex-direction:column;gap:14px;min-height:484px;padding:0 0 24px;overflow:hidden}
+.ritratti-sezione .ritratti article.ritratto{position:relative;display:flex;flex-direction:column;justify-content:flex-start;gap:14px;min-height:484px;padding:0 0 24px;overflow:hidden}
 .ritratto-foto{display:flex;align-items:center;justify-content:center;flex:none;width:100%;height:300px;overflow:hidden;background:var(--chiara);color:var(--inchiostro);font-family:var(--display);font-weight:800;font-size:140px;line-height:1;text-transform:uppercase}
 .ritratto-foto img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;border-radius:0}
 .ritratto-testo{display:flex;flex-direction:column;gap:14px;min-width:0;padding:0 24px}
@@ -451,8 +451,9 @@ ${GRIGLIE_LUNGHE}
 .ritratto-invito .frase{margin:0;max-width:560px;font-size:20px;line-height:1.5}
 .azioni{display:flex;flex-wrap:wrap;gap:12px}
 .azioni .pulsante{min-height:60px;padding:0 28px}
+.ritratto-invito .pulsante{text-decoration:none}
 .ritratto-invito .pulsante.primario{background:var(--giallo);color:var(--inchiostro)}
-.ritratto-invito .pulsante.secondario{background:#fff;color:var(--inchiostro)}
+.ritratto-invito .pulsante.secondario{background:#fff;border-color:#fff;color:var(--inchiostro)}
 .interna.elenco-tecnici h1{font-size:156px}
 .scheda-scarna .scheda-persona{padding:12px var(--margine) 0}
 .indietro{display:inline-flex;align-items:center;min-height:48px;color:inherit;font-size:17px;font-weight:600;text-decoration:none}
@@ -465,7 +466,7 @@ ${GRIGLIE_LUNGHE}
 .scheda-nome h1 span{display:block}
 .scheda-nome .pulsante.primario{background:var(--giallo);color:var(--inchiostro)}
 .scheda-nome .pulsante.secondario{background:var(--inchiostro);color:#fff}
-.dati-persona{margin-top:48px}
+.dati-persona{margin-top:48px;grid-template-columns:repeat(4,1fr)}
 .ritratti-sezione:last-child{padding-bottom:0}
 .ritratti-sezione + .testo{padding:0 var(--margine);max-width:calc(900px + var(--margine) * 2);font-size:24px;line-height:1.4}
 .non-trovata{padding:40px var(--margine) 96px}
@@ -723,7 +724,9 @@ h1{font-size:84px;line-height:.84}
 .scheda-ritratto{height:320px}
 .scheda-ritratto.senza-foto{font-size:140px}
 .scheda-nome h1{font-size:84px}
-.dati-persona{margin-top:24px}
+.dati-persona{margin-top:24px;grid-template-columns:1fr}
+.scheda-nome .azioni,.ritratto-invito .azioni{flex-direction:column}
+.scheda-nome .pulsante,.ritratto-invito .pulsante{width:100%}
 .ritratti-sezione + .testo{font-size:17px}
 
 }

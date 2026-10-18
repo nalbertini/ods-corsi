@@ -24,7 +24,7 @@ export interface Cornice {
 
 /** I colori dei ritratti, come nel design (tredici tessere disegnate a mano); oltre la tredicesima si riparte. */
 const COLORI_RITRATTI = ['giallo', 'blu', 'inchiostro', 'blu', 'inchiostro', 'giallo', 'inchiostro', 'giallo', 'blu', 'blu', 'inchiostro', 'blu', 'inchiostro'] as const
-const COLORI_DATI = ['giallo', 'blu', 'inchiostro', 'giallo'] as const
+const COLORI_DATI = ['chiara', 'blu', 'inchiostro', 'giallo'] as const
 const COLONNE = 4
 /** Una tessera d'invito più stretta di due colonne non ha spazio per il titolo: meglio l'invito di fondo pagina. */
 const INVITO_MIN = 2
