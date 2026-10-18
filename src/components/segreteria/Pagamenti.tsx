@@ -108,7 +108,7 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
       {soloNomi && registrando && <RegistraDaPagamenti d={d} fai={fai} onFatto={rileggi} onChiudi={() => setRegistrando(false)} />}
       {soloNomi && aperto && <PagamentoAperto d={d} riga={aperto} fai={fai} onChiudi={() => setAperto(null)} onFatto={rileggi} />}
 
-      <div className="sg-numeri">
+      <div className="sg-numeri sg-numeri-conti">
         <Numero titolo="INCASSATO" valore={`${euro(n.totale)} €`} sotto={periodo === 'tutto' ? 'in tutto' : 'nel periodo scelto'} />
         <Numero titolo="PAGAMENTI" valore={n.pagamenti} sotto={`${n.senzaRicevuta} senza ricevuta`} />
         <Numero titolo="CONTANTI" valore={`${euro(n.contanti)} €`} sotto={`altri modi ${euro(n.totale - n.contanti)} €`} />
