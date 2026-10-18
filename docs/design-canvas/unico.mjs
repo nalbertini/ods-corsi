@@ -44,6 +44,7 @@ const SEZIONI = [
   { id: 'sito-approvato', nome: 'Sito · design approvato', cartella: 'sito-approvato' },
   { id: 'barra-prova', nome: 'Sito · barra Prova a 5 € / Chiama', cartella: 'barra-prova-chiama' },
   { id: 'corsi-eta', nome: 'Sito · corsi per età', cartella: 'corsi-per-eta' },
+  { id: 'fatti-recensioni', nome: 'Sito · fatti e recensioni', cartella: 'fatti-recensioni' },
   { id: 'segreteria-tatami', nome: 'Segreteria · tema Tatami', cartella: 'segreteria-tatami' },
   { id: 'segreteria-sito', nome: 'Segreteria · look del sito', cartella: 'segreteria-sito' },
   { id: 'banco', nome: 'Segreteria · il Banco, ridisegnata', cartella: 'banco' },
