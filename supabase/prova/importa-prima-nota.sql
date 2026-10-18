@@ -174,16 +174,27 @@ select atteso('di tutti questi rifiuti non è entrato niente: le prime due righe
 update casse set dal = '2026-09-01', saldo_iniziale = 0 where nome = 'Cassa Contanti';
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
+select atteso('un movimento dei contanti del 5 settembre, prima della chiusura, entra', (select importa_prima_nota(jsonb_build_array(riga('g0', '2026-09-05', 'contanti', 'entrata', 100, 'prima', 'Da classificare')))::text), '1');
 select atteso('si chiude la cassa fino al 10 settembre', esito(format('select chiudi_cassa(%L::jsonb)', jsonb_build_object('cassa_id', id_cassa('Cassa Contanti'), 'data', '2026-09-10', 'contato', 0))), 'ok');
 select atteso('un movimento dei contanti del 5 settembre non entra, e dice quale riga', esito(format('select importa_prima_nota(jsonb_build_array(riga(%L, %L, %L, %L, 100, %L, %L), riga(%L, %L, %L, %L, 100, %L, %L)))',
   'g1', '2026-09-11', 'contanti', 'entrata', 'dopo', 'Da classificare', 'g2', '2026-09-05', 'contanti', 'entrata', 'dentro', 'Da classificare')), '22023 La riga 2: quel giorno la cassa è già chiusa');
 select atteso('…e nemmeno la prima riga, che era buona, è rimasta', (select count(*)::text from movimenti where origine_import in ('g1', 'g2')), '0');
 select atteso('il conto non è chiuso: lì si importa', (select importa_prima_nota(jsonb_build_array(riga('g3', '2026-09-05', 'conto', 'entrata', 100, 'sul conto', 'Da classificare')))::text), '1');
+select atteso('rilanciare lo stesso pacchetto dopo la chiusura non è un errore: quella riga c''è già', (select importa_prima_nota(jsonb_build_array(riga('g0', '2026-09-05', 'contanti', 'entrata', 100, 'prima', 'Da classificare')))::text), '0');
 select atteso('i contanti dopo la chiusura si importano', (select importa_prima_nota(jsonb_build_array(riga('g4', '2026-09-11', 'contanti', 'entrata', 100, 'dopo', 'Da classificare')))::text), '1');
 reset role;
 
 \echo ''
-\echo '--- 6. il file si rilancia senza danni ---'
+\echo '--- 6. la voce «Da classificare» scritta a mano con altre maiuscole va bene lo stesso ---'
+update voci_contabili set nome = 'DA CLASSIFICARE ' where nome = 'Da classificare' and tipo = 'entrata';
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('l''import la trova e non fallisce', (select importa_prima_nota(jsonb_build_array(riga('v1', '2026-09-12', 'conto', 'entrata', 100, 'una voce con altre maiuscole', 'Da classificare')))::text), '1');
+reset role;
+select atteso('…e non ne ha create due', (select count(*)::text from voci_contabili where lower(trim(nome)) = 'da classificare' and tipo = 'entrata'), '1');
+
+\echo ''
+\echo '--- 7. il file si rilancia senza danni ---'
 select impronta() as prima \gset
 \i supabase/63-importa-prima-nota.sql
 select atteso('rilanciato, i dati sono gli stessi', impronta(), :'prima');

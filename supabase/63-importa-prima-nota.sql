@@ -59,10 +59,13 @@ begin
     if char_length(descr) > 200 then raise exception 'La riga %: la descrizione è troppo lunga', n using errcode = '22023'; end if;
     nome_voce := riga->>'voce';
     -- Le voci di sistema sono solo di entrata: un'uscita può andare solo su «Da classificare».
+    -- Il nome si confronta come l'indice unico delle voci (senza maiuscole né spazi ai bordi): «Da classificare» scritta a mano va bene.
     select * into voce from voci_contabili v
-      where v.nome = nome_voce and v.tipo = tipo_riga and v.nome in ('Quota associativa', 'Corsi e altri pagamenti', 'Da classificare');
+      where lower(trim(v.nome)) = lower(trim(nome_voce)) and v.tipo = tipo_riga
+        and lower(trim(v.nome)) in ('quota associativa', 'corsi e altri pagamenti', 'da classificare');
     if not found then raise exception 'La riga %: la voce non va bene', n using errcode = '22023'; end if;
-    if cassa_giorno_chiuso(cassa.id, giorno) then raise exception 'La riga %: quel giorno la cassa è già chiusa', n using errcode = '22023'; end if;
+    -- Una riga già importata prima della chiusura non è un errore se si rilancia il pacchetto: non si riscrive.
+    if cassa_giorno_chiuso(cassa.id, giorno) and not exists (select 1 from movimenti m where m.origine_import = chiave) then raise exception 'La riga %: quel giorno la cassa è già chiusa', n using errcode = '22023'; end if;
 
     insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, origine_import)
     values (tipo_riga, giorno, importo::integer, voce.id, cassa.id, descr, chiave)

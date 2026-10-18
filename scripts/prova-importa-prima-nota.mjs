@@ -139,5 +139,33 @@ console.log('\n6. la cartella dei dati non può stare nel repository')
   ok('con i «..» in mezzo si guarda dove arriva', dentro('/tmp/../repo/dati', '/repo'), true)
 }
 
+console.log('\n7. quel che il database rifiuterebbe si scarta prima, con la riga del file')
+{
+  const t = [
+    '31/02/2020   Cassa Contanti   Uscita   data impossibile                   €10,00   €10,00',
+    '01/01/1999   Cassa Contanti   Uscita   troppo vecchia                      €10,00   €10,00',
+    '01/01/2099   Cassa Contanti   Uscita   nel futuro                          €10,00   €10,00',
+    '05/05/2020   Cassa Contanti   Uscita   troppo alta                    €100.000,01   €100.000,01',
+    '05/05/2020   Cassa Contanti   Uscita   al limite                      €100.000,00   €100.000,00',
+    '01/01/2000   Cassa Contanti   Entrata  il primo giorno                    €10,00   €10,00',
+  ].join('\n')
+  const l = prova(() => m.scartaImpossibili(m.leggiPrimaNota(t), '2026-10-18'))
+  ok('restano il limite e il primo giorno', prova(() => l.righe.map((x) => x.causale)), ['al limite', 'il primo giorno'])
+  ok('le altre quattro si scartano, con la riga del file e il motivo', prova(() => l.scartate.map((x) => [x.posizione, x.motivo])), [[1, 'Data non valida'], [2, 'Data non valida'], [3, 'Data non valida'], [4, 'Importo troppo alto']])
+  ok('oggi si può, domani no', prova(() => [m.scartaImpossibili(m.leggiPrimaNota('18/10/2026 Cassa Contanti Uscita x €1,00 €1,00'), '2026-10-18').righe.length, m.scartaImpossibili(m.leggiPrimaNota('19/10/2026 Cassa Contanti Uscita x €1,00 €1,00'), '2026-10-18').righe.length]), [1, 0])
+  ok('contano ancora nel numero dei movimenti del piede', prova(() => m.totaliDelleRighe(l).conteggio), 6)
+}
+
+console.log('\n8. la causale con caratteri strani e il pacchetto SQL')
+{
+  const riga = (causale) => ({ posizione: 1, data: '2020-01-01', cassa: 'conto', tipo: 'uscita', importo: 100, causale })
+  ok('una causale lunga non spezza una coppia di caratteri', prova(() => { const d = m.datiImport([riga('x'.repeat(199) + '😀' + 'y'.repeat(20))])[0].descrizione; return [Array.from(d).length <= 200, /[\ud800-\udbff](?![\udc00-\udfff])/.test(d)] }), [true, false])
+  ok('il carattere nullo si toglie (il database non lo prende)', prova(() => m.datiImport([riga('a\u0000b')])[0].descrizione), 'ab')
+  const sql = (causale) => prova(() => m.istruzioneImport(m.datiImport([riga(causale)])))
+  ok('il pacchetto è una chiamata a importa_prima_nota con il JSON fra due tag uguali', prova(() => /^select importa_prima_nota\(\$(\w+)\$.*\$\1\$::jsonb\);$/s.test(sql('affitto'))), true)
+  const strana = sql('Cliente A per $json$ e $json$; drop table movimenti; $json$')
+  ok('un testo con $json$ dentro non chiude il tag a metà', prova(() => { const tag = /^select importa_prima_nota\(\$(\w+)\$/.exec(strana)[1]; return [tag !== 'json', strana.split(`$${tag}$`).length === 3] }), [true, true])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

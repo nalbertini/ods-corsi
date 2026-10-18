@@ -71,7 +71,8 @@ if (m.staDentro(veroPercorso(uscita), radici)) {
   process.exit(1)
 }
 
-const lettura = m.leggiPrimaNota(testo)
+const oggi = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' }).format(new Date())
+const lettura = m.scartaImpossibili(m.leggiPrimaNota(testo), oggi)
 const piede = m.totaliDelPiede(testo)
 const controllo = m.quadra(lettura, piede)
 const righe = m.senzaIncassiDopo(lettura.righe, incassiFinoAl)
@@ -105,18 +106,21 @@ const anteprima = [
   incerte.length ? `Righe senza la cassa nel file: vanno sul Conto Corrente, controlla (${incerte.length}):` : 'Tutte le righe hanno la cassa.',
   ...incerte.map((r) => `  ${r.data} ${r.tipo} ${m.euro(r.importo)} € ${r.causale}`),
   '',
-  lettura.scartate.length ? 'Righe scartate:' : '',
-  ...lettura.scartate.map((s) => `  riga ${s.posizione}: ${s.motivo}`),
+  lettura.scartate.length ? 'Righe scartate (il numero è la posizione fra le righe con la data del file):' : '',
+  ...lettura.scartate.map((s) => `  riga ${s.posizione}: ${s.motivo}${s.motivo === 'Importo zero' ? '' : ` · ${s.testo}`}`),
 ].join('\n')
 
 mkdirSync(uscita, { recursive: true })
 writeFileSync(`${uscita}/anteprima.txt`, `${anteprima}\n`)
+console.log(anteprima)
+// Se i totali non tornano i pacchetti non si scrivono: carichi solo quel che quadra con il file.
+if (!controllo.quadra) {
+  console.error('\nI totali non tornano: i pacchetti SQL NON sono stati scritti. Guarda l\'anteprima e le righe scartate.')
+  process.exit(2)
+}
 const pacchetti = m.apacchetti(dati, 1000)
 pacchetti.forEach((p, i) => {
-  // $json$ … $json$: il testo non ha bisogno di apici raddoppiati.
-  const sql = `-- Pacchetto ${i + 1} di ${pacchetti.length}: ${p.length} movimenti. Rilanciarlo non duplica niente.\nselect importa_prima_nota($json$${JSON.stringify(p)}$json$::jsonb);\n`
+  const sql = `-- Pacchetto ${i + 1} di ${pacchetti.length}: ${p.length} movimenti. Rilanciarlo non duplica niente (stesso file).\n${m.istruzioneImport(p)}\n`
   writeFileSync(`${uscita}/pacchetto-${String(i + 1).padStart(3, '0')}.sql`, sql)
 })
-console.log(anteprima)
 console.log(`\nScritti in ${resolve(uscita)}: anteprima.txt e ${pacchetti.length} pacchetti SQL. Non è stato caricato niente.`)
-process.exit(controllo.quadra ? 0 : 2)

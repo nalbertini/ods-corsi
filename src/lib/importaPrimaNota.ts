@@ -115,6 +115,26 @@ export function staDentro(cartella: string, radici: string[]): boolean {
   })
 }
 
+const MASSIMO_IMPORTO = 10_000_000
+
+/**
+ * Le righe che il database rifiuterebbe (data che non esiste, prima del 2000 o nel futuro; importo oltre i centomila euro)
+ * passano fra le scartate, con la posizione che hanno nel file: un pacchetto con una riga sola così non entrerebbe, e
+ * dal database l'errore parla della riga nel pacchetto, non nel file. Contano ancora nel numero dei movimenti del piede.
+ */
+export function scartaImpossibili(lettura: LetturaPrimaNota, oggi: string): LetturaPrimaNota {
+  const scartate = [...lettura.scartate]
+  const righe: RigaPrimaNota[] = []
+  for (const r of lettura.righe) {
+    const reale = new Date(`${r.data}T00:00:00Z`)
+    const dataBuona = !Number.isNaN(reale.getTime()) && reale.toISOString().slice(0, 10) === r.data && r.data >= '2000-01-01' && r.data <= oggi
+    const motivo = !dataBuona ? 'Data non valida' : r.importo > MASSIMO_IMPORTO ? 'Importo troppo alto' : null
+    if (motivo) scartate.push({ posizione: r.posizione, testo: `${r.data} ${r.tipo} ${euro(r.importo)} € ${r.causale}`, motivo })
+    else righe.push(r)
+  }
+  return { righe, scartate: scartate.sort((a, b) => a.posizione - b.posizione) }
+}
+
 /** Il piede del file: quanti movimenti e il totale delle entrate e delle uscite. */
 export function totaliDelPiede(testo: string): TotaliPrimaNota | null {
   const m = PIEDE.exec(testo)
@@ -168,6 +188,12 @@ export const senzaIncassiDopo = (righe: RigaPrimaNota[], data: string | null): R
 /** Le righe con la cassa mancante: l'import le mette sul conto, e l'anteprima le fa vedere. */
 export const cassaIncerta = (righe: RigaPrimaNota[]): RigaPrimaNota[] => righe.filter((r) => !r.cassa)
 
+// Il database conta i caratteri, non le unità di JavaScript: tagliare a metà una coppia (un'emoji) darebbe un JSON che rifiuta.
+const descrizioneDi = (causale: string): string => {
+  const pulita = Array.from(causale.replace(/\u0000/g, '')).slice(0, 200).join('').trim()
+  return pulita || '(senza causale)'
+}
+
 export const datiImport = (righe: RigaPrimaNota[]): DatiImport[] =>
   righe.map((r) => ({
     chiave: `prima-nota:${r.posizione}`,
@@ -175,9 +201,17 @@ export const datiImport = (righe: RigaPrimaNota[]): DatiImport[] =>
     cassa: r.cassa ?? 'conto',
     tipo: r.tipo,
     importo: r.importo,
-    descrizione: r.causale ? r.causale.slice(0, 200) : '(senza causale)',
+    descrizione: descrizioneDi(r.causale),
     voce: voceDellaCausale(r.causale, r.tipo),
   }))
+
+/** Il pacchetto come istruzione SQL; il JSON sta fra due tag che nel testo non compaiono, se no un `$json$` nella causale lo chiuderebbe a metà. */
+export function istruzioneImport(pacchetto: DatiImport[]): string {
+  const json = JSON.stringify(pacchetto)
+  let tag = 'json'
+  while (json.includes(`$${tag}$`)) tag += 'x'
+  return `select importa_prima_nota($${tag}$${json}$${tag}$::jsonb);`
+}
 
 /** A pacchetti: la funzione del database ne vuole al massimo mille per volta. */
 export function apacchetti<T>(lista: T[], grandezza: number): T[][] {
