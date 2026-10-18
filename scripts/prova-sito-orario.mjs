@@ -142,7 +142,8 @@ const ORARI = orariDel(r(A, 1, '17:00'), r(A, 3, '17:00'), r(B, 2, '16:30'), r(B
 
 console.log('\n3. Pagina non collegata: l’HTML è quello di oggi')
 // Le impronte sono dell’HTML generato PRIMA della funzione (stessa pagina, senza campi nuovi).
-const OGGI = { dati: "84eaa7b4a58846b2183d0945bee5b678e77b361930a7b6af6503639ba19acd08", foto: '76411b09efca299fb7805290664ad7a579921f709c936ffc2db71eb02860fbd0', fascia: 'c8d44d7113549af6ece82559c4fc46f221c56a7d5b8fcdb34a79d4ca37ea5d78' }
+// Impronte rifatte quando il CSS della Home ha avuto i gruppi di corsi per età: la pagina porta le regole nuove, non cambia altro.
+const OGGI = { dati: "e7237dac2572ae89defbc0b091cb14e953b5698939a4e22f21429f9457f1d98a", foto: 'df61c35bfd1c1057bc9aaa489d2363c0c3136afcb6665570173aa29ca1b08c87', fascia: 'a7e240398b7f80f40456c5aeaf02d63a6d81352ec22152c00981d573762c9bbc' }
 ok('con foto di apertura: HTML di oggi', sha(pagina(CON_FOTO)), OGGI.foto)
 ok('fascia blu: HTML di oggi', sha(pagina(FASCIA)), OGGI.fascia)
 ok('l’orario a mano si vede ancora', /09:15 – 10:15/.test(testo(main(pagina(CON_FOTO)))), true)
