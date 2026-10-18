@@ -10,6 +10,24 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.101.1 — 18 ottobre 2026
+
+### Risolto
+
+- Nella scheda iscritto i dati si distinguono dalle loro etichette
+
+## 0.101.0 — 18 ottobre 2026
+
+### Novità
+
+- Un solo menu per segreteria e amministrazione, con le voci di quello che puoi fare
+
+## 0.100.0 — 18 ottobre 2026
+
+### Novità
+
+- La settimana dice se l'appello è fatto
+
 ## 0.99.0 — 18 ottobre 2026
 
 ### Novità

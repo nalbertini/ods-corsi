@@ -318,7 +318,10 @@
 /* Inter è più larga di Saira: con la spaziatura di prima le voci lunghe andavano a capo. */
 :root[data-look='sito'] .sg-voce { letter-spacing: 0; min-height: 44px; border-radius: 6px; font-weight: 500; font-size: 15px; white-space: nowrap; }
 /* Nel menu di 240px una voce non va a capo col suo numero accanto: poco riempimento ai lati. */
-:root[data-look='sito'] #sg-menu .sg-voce { padding-left: 8px; padding-right: 4px; }
+/* Il letter-spacing di #sg-menu (sopra i 1000px) vince su quello del look e allargava Inter: con l'icona davanti le voci lunghe non ci stavano. */
+:root[data-look='sito'] #sg-menu .sg-voce { padding-left: 12px; padding-right: 4px; letter-spacing: 0;
+  /* Con l'icona davanti, «Presenze istruttori» e un numero a due cifre non ci stanno su una riga: va a capo invece di tagliarsi. */
+  white-space: normal; line-height: 1.25; }
 :root[data-look='sito'] #sg-menu .sg-voce .sg-tag { margin-left: 4px; padding: 1px 6px; }
 @media (min-width: 768px) {
   :root[data-look='sito'] .sg-menu { padding-left: 12px; padding-right: 12px; }
@@ -1883,6 +1886,11 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
    ISTRUTTORI con due cifre vuole 188 px. */
 @media (min-width: 1001px) { #sg-menu .sg-voce { letter-spacing: 0.1em; padding-right: 8px; } }
 .sg-voce:hover { color: var(--text); }
+/* L'icona davanti al testo. */
+.sg-voce { gap: 12px; }
+/* Un filetto fra un gruppo e l'altro: il solo titolo non bastava a far vedere dove finisce una sezione e comincia la successiva. */
+.sg-gruppi { gap: 14px; }
+.sg-gruppo + .sg-gruppo { padding-top: 14px; border-top: 1px solid var(--line-soft); }
 /* Il testo prende lo spazio, il numero sta a destra: una voce lunga che va a capo non lo lascia storto. */
 .sg-voce-testo { flex: 1; min-width: 0; }
 a.sg-voce { text-decoration: none; }
@@ -1931,6 +1939,8 @@ a.sg-voce { text-decoration: none; }
 .sg-titolo:focus { outline: none; }
 .sg-sotto { font-size: 14px; color: var(--dim); margin: 0; }
 .sg-etichetta { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim); }
+/* Il valore si legge più grande e più scuro dell'etichetta, che resta piccola e spenta. */
+.sg-valore { font-size: 16px; font-weight: 500; line-height: 1.3; }
 .sg-riga-titolo { display: flex; align-items: baseline; gap: 10px; }
 
 .sg-btn {
@@ -3110,3 +3120,6 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 :root[data-modulo='sito'] .modulo-piede .passo-btn { align-self: stretch; }
 /* Il modulo è sempre chiaro: il tasto del tema in testata cambierebbe solo l'icona, quindi a modulo aperto non c'è. */
 :root[data-modulo='sito'] .tasto-tema { display: none; }
+
+/* CONTABILITÀ: i totali delle casse vanno a capo sotto una certa larghezza, invece di tagliare gli importi a 40px. */
+.sg-numeri.sg-numeri-conti { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
