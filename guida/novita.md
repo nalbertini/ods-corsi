@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.115.1 — 18 ottobre 2026
+
+### Risolto
+
+- La scheda di un istruttore si vede anche con una riga vuota in fondo al testo
+
+### Modificato
+
+- Tolto il codice di scorrimento che non serve più alle schede della segreteria
+
 ## 0.115.0 — 18 ottobre 2026
 
 ### Novità
