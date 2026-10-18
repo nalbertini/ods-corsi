@@ -24,9 +24,6 @@ export interface GruppoMenu {
   voci: Array<[VoceDelMenu, string]>
 }
 
-/** Le voci che stanno nel menu: «regole» e «segnalate» sono schede dentro altre sezioni. */
-export type VoceDelMenu = Exclude<Voce, 'segnalate' | 'regole'>
-
 /**
  * Il menu della segreteria in cinque gruppi, da quello che si apre ogni giorno
  * a quello che si tocca una volta a stagione. Ogni gruppo dice cosa ci si
