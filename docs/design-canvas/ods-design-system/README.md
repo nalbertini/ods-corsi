@@ -278,6 +278,10 @@ campi, scelte, tasti e riquadri). Senza `tema="sito"` l'aspetto dei componenti �
 I valori e i rapporti di contrasto calcolati stanno in `../iscrizione-sito/token-proposta.md`; i board in
 `../iscrizione-sito/`. Il fuoco da tastiera (contorno 3px blu #14709f) non è riprodotto.
 
+## Il sito pubblico: Chi siamo
+
+COSTRUITA (`src/lib/sitoChiSiamo.ts`, testo da incollare in `docs/sito/chi-siamo.md`): usa i pezzi della home (`SitoTestata`, `SitoPulsante`, `SitoTessera`, `SitoPerche`, `SitoCta`, `SitoPiede`); slogan, due tessere, pannello con foto e fila di foto con didascalie sono `div` con gli stessi valori, senza componente (vedi `../chi-siamo-miglioramenti/`). Differenze del costruito: i titoli delle due tessere in cima sono `h2` (non `h3`, per non saltare un livello dopo l'`h1`); il pannello con foto è scuro il primo e giallo il secondo, per posizione e non per pulsante; il fuoco delle foto segue il riquadro (slogan, pannelli, quarta della fila), non il file.
+
 ## Il sito pubblico: i pezzi della home
 
 COSTRUITA nella Home del sito (`src/lib/sitoHome.ts`, regole in `src/lib/sitoGenera.ts`, testo da incollare in `docs/sito/home.md`): la testata (due pulsanti, tasto MENU sul telefono) e il piede valgono per tutte le pagine; le altre pagine potranno chiedere gli stessi pezzi. Differenze del costruito: nel menu aperto sul telefono il pulsante di prova è la prima voce; il fuoco delle foto delle schede segue il corso (`FOCI_SCHEDE`), non il file; la voce attiva del menu ha il fondo giallo. I componenti `Sito*` riproducono nell'aspetto del sito (Big Shoulders Display + Inter, colori A2 di

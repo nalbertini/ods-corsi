@@ -19,7 +19,7 @@ export const eIscrizione = (href: string, iscrizione: string) => {
   return forma(href) === forma(iscrizione)
 }
 
-interface Link { href: string; resto: string; testo: string }
+export interface Link { href: string; resto: string; testo: string }
 
 /** I link `a.pulsante` di un blocco `p` fatto solo di pulsanti (spazi a parte); altrimenti null. */
 export function pulsantiDi(b: Blocco): Link[] | null {
