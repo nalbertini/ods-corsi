@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img">
+  <title>Judo, spazzata esterna</title>
+  <circle cx="29" cy="27" r="8.5" fill="#000"/>
+  <polyline points="34,46 42,76" fill="none" stroke="#000" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="42,76 38,98 36,120" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="42,76 66,90 92,100" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="34,46 52,52 70,46" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="113" cy="37" r="8.5" fill="#000"/>
+  <polyline points="104,54 90,80" fill="none" stroke="#000" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="90,80 78,98 70,108" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="90,80 100,100 106,120" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="104,54 116,66 122,80" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="104,54 90,44 80,46" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
