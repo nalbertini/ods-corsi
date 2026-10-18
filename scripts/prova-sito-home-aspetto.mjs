@@ -162,6 +162,10 @@ console.log('\n5. Il tasto MENU senza script')
   ok('…e si apre con :target (display:block)', ultimo(R, /#menu:target$/, 'display', 375), 'block')
   ok('anche a 768px (sotto i 901)', [ultimo(R, /#menu$/, 'display', 768), ultimo(R, /#menu:target$/, 'display', 768)], ['none', 'block'])
   ok('«Chiudi» si vede solo sul telefono', [ultimo(R, /#menu [^,]*chiudi$|#menu \.chiudi$|\.chiudi$/, 'display', 1440), ultimo(R, /#menu [^,]*chiudi$|#menu \.chiudi$|\.chiudi$/, 'display', 375) !== 'none'], ['none', true])
+  // Aperto sul telefono il menu era una riga con «Chiudi» e due pulsanti insieme, prima delle voci: non si capiva cosa fosse cosa.
+  const nav = pagina(F.TESTO_NUOVO).match(/<nav id="menu"[\s\S]*?<\/nav>/)?.[0] ?? ''
+  ok('nel menu le voci vengono prima dei pulsanti, «Chiudi» è il primo', [nav.indexOf('class="chiudi"') < nav.indexOf('<ul>'), nav.indexOf('<ul>') < nav.indexOf('nel-menu')], [true, true])
+  ok('sul telefono «Chiudi» e i pulsanti del menu occupano una riga intera', [ultimo(R, /\.testata \.chiudi$/, 'display', 375), ultimo(R, /\.testata \.nel-menu$/, 'display', 375)], ['flex', 'flex'])
 }
 
 console.log('\n6. Nomi e regole')

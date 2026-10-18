@@ -996,6 +996,23 @@ Storage ricaricati a mano: quelli dei certificati sono nella cartella
 `certificati/` della copia (`<persona>/certificato-<n>.<est>`), da ricaricare
 nel contenitore `certificati` con lo stesso nome.
 
+## 11. Il sito subito
+
+Il sito pubblico lo genera `.github/workflows/sito.yml` ogni cinque minuti.
+Per non aspettare il giro, dopo **PUBBLICA** (e dopo indirizzo, nascondi,
+cancella e menu) l'app chiede alla funzione **`sito`**
+(`functions/sito/index.ts`) di far partire il workflow: il sito è aggiornato
+in un paio di minuti. Usa gli stessi segreti del backup (`GITHUB_TOKEN`, con
+«Actions: Read and write»), quindi non c'è niente da aggiungere. Si pubblica
+come le altre:
+
+```sh
+supabase functions deploy sito --project-ref <id-del-progetto>
+```
+
+o dal pannello, **Edge Functions → Deploy a new function**, col nome `sito`.
+Senza la funzione l'app funziona uguale: il sito si aggiorna col giro a tempo.
+
 ## Le cose da decidere prima di usarlo sul serio
 
 - **L'informativa privacy.** Nomi e presenze sono dati personali e la palestra

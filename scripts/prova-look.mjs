@@ -264,6 +264,127 @@ ok('src/components/segreteria/*.tsx: nessun esadecimale', filiSg.flatMap((f) => 
 const HEX_FUORI_DAI_BLOCCHI = 3
 ok(`styles.css fuori dai blocchi :root: al massimo ${HEX_FUORI_DAI_BLOCCHI} letterali #hex (quanti ne aveva)`, conta(ora) <= HEX_FUORI_DAI_BLOCCHI, true)
 
+// --- 9. forme, tasti, campi e stati -------------------------------------------
+// Solo CSS sotto il look (token-proposta.md): raggio 6, niente obliquo, tessere bianche con la barra
+// dello stato a sinistra, giallo pieno solo per il tasto principale e la voce di menu corrente,
+// tag col segno, fuoco blu (bianco nel menu). Una regola che non c'è fa fallire il caso: mai «vuoto = ok».
+console.log('\nForme, tasti, campi e stati')
+const esatto = (sel) => delLook.filter((r) => r.selettori.includes(`${LOOK} ${sel}`)).map((r) => r.corpo).join(' ; ')
+const ha = (sel, re) => re.test(esatto(sel))
+const GIALLO_PIENO = /var\(--giallo\)|#f4c31b/i
+const SENZA_BORDO = /(?<![-\w])border(-width)?:\s*(0|none)(px)?\s*(;|$)/
+
+for (const c of ['.sg-btn', '.sg-chip', '.sg-campo', '.sg-tag', '.sg-bollino', '.sg-riquadro', '.sg-dafare-riga', '.sg-scelta', '.card', '.sg-segno-regola', '.sg-dialogo', '.sg-scheda', '.sg-timbro', '.sg-lezione', '.sg-dafare-lezione'])
+  ok(`${c}: angoli da 6px`, ha(c, /border-radius:\s*6px/), true)
+ok('nessuna regola del look è obliqua', delLook.filter((r) => /font-style:\s*oblique/.test(r.corpo)).map((r) => r.selettori.join(',')), [])
+for (const c of ['.sg-btn', '.ob']) ok(`${c}: font-style normal`, ha(c, /font-style:\s*normal/), true)
+
+for (const c of ['.sg-riquadro', '.sg-dafare-riga', '.card', '.sg-mancano']) {
+  ok(`${c}: tessera senza bordo`, ha(c, SENZA_BORDO), true)
+  ok(`${c}: tessera bianca (var(--surface))`, ha(c, /background(-color)?:\s*var\(--surface\)/), true)
+}
+for (const [c, colore] of [[".sg-dafare-riga[data-livello='blocca']", 'rosso'], [".sg-dafare-riga[data-livello='presto']", 'giallo-testo'], [".sg-riquadro[data-fatto='true']", 'verde']])
+  ok(`${c}: barra a sinistra var(--${colore})`, ha(c, new RegExp(`box-shadow:\\s*inset 4px 0 0 var\\(--${colore}\\)`)), true)
+
+// Il giallo pieno è di due cose sole.
+const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`]
+ok('giallo pieno nel look: solo .sg-btn-pieno e la voce di menu corrente',
+  delLook.filter((r) => r !== bloccoLook && GIALLO_PIENO.test(r.corpo) && !r.selettori.every((s) => PIENO_AMMESSO.includes(s))).map((r) => r.selettori.join(',')), [])
+ok('.sg-btn-pieno: fondo var(--giallo), testo var(--su-colore)', ha('.sg-btn-pieno', /background(-color)?:\s*var\(--giallo\)/) && ha('.sg-btn-pieno', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
+// Ogni regola di fuori del look con un .sg- e il giallo pieno ne ha una gemella nel look col giallo scritto.
+// Tutte le regole con il giallo pieno, non solo quelle .sg-: l'appello, il Banco e il nastro di prova sono nella stessa area.
+// Restano fuori il tablet, i timer degli istruttori e il tasto del modulo di iscrizione: non sono in segreteria.
+const FUORI_DALLA_SEGRETERIA = /\.tb-|\.miei-timer|data-modulo|\.btn-primary/
+const giallePiene = rOra.filter((r) => !r.selettori.some((s) => s.includes('data-look')) && GIALLO_PIENO.test(r.corpo)).flatMap((r) => r.selettori.filter((s) => s !== ':root' && !FUORI_DALLA_SEGRETERIA.test(s)))
+for (const s of [...new Set(giallePiene)]) {
+  const g = esatto(s)
+  ok(`${s}: nel look è giallo scritto (var(--giallo-testo)), mai fondo giallo`, !!g && !GIALLO_PIENO.test(g) && /var\(--giallo-testo\)/.test(g), true)
+}
+
+for (const [t, segno, colore] of [['manca', '✕', 'rosso-testo'], ['aspetta', '…', 'giallo-testo'], ['sostituto', '…', 'giallo-testo'], ['fatto', '✓', 'verde-testo']]) {
+  const c = `.sg-tag[data-tipo='${t}']`
+  ok(`${c}::before: segno ${segno}`, new RegExp(`content:\\s*['"]${segno}`).test(esatto(c + '::before')), true)
+  ok(`${c}: fondo bianco, bordo e testo var(--${colore})`, ha(c, /background(-color)?:\s*var\(--surface\)/) && ha(c, new RegExp(`border(-color)?:[^;]*var\\(--${colore}\\)`)) && ha(c, new RegExp(`(?<![-\\w])color:\\s*var\\(--${colore}\\)`)), true)
+}
+ok(".sg-tag[data-tipo='presto'] (numero del menu): nessun segno", /content:/.test(esatto(".sg-tag[data-tipo='presto']::before")), false)
+ok(".sg-tag[data-tipo='presto']: c'è la regola, fondo bianco", ha(".sg-tag[data-tipo='presto']", /background(-color)?:\s*var\(--surface\)/), true)
+ok('.sg-tag neutro: fondo bianco, bordo e testo var(--dim)', ha('.sg-tag', /background(-color)?:\s*var\(--surface\)/) && ha('.sg-tag', /border(-color)?:[^;]*var\(--dim\)/) && ha('.sg-tag', /(?<![-\w])color:\s*var\(--dim\)/), true)
+
+ok('.sg-btn-linea: bordo var(--riga-campo), testo var(--text)', ha('.sg-btn-linea', /border(-color)?:[^;]*var\(--riga-campo\)/) && ha('.sg-btn-linea', /(?<![-\w])color:\s*var\(--text\)/), true)
+ok('.sg-chip: bordo var(--riga-campo)', ha('.sg-chip', /border(-color)?:[^;]*var\(--riga-campo\)/), true)
+for (const c of [".sg-chip[aria-pressed='true']", ".sg-chip[aria-selected='true']", '.sg-chip-pieno'])
+  ok(`${c}: fondo var(--blu), testo #ffffff`, ha(c, /background(-color)?:\s*var\(--blu\)/) && ha(c, /(?<![-\w])color:\s*#ffffff/i), true)
+ok('.sg-campo: bordo var(--riga-campo), fondo var(--surface)', ha('.sg-campo', /border(-color)?:[^;]*var\(--riga-campo\)/) && ha('.sg-campo', /background(-color)?:\s*var\(--surface\)/), true)
+
+for (const c of ['.sg-mancano-casella:hover', ".sg-iscritto[data-scelto='true']"]) {
+  ok(`${c}: c'è la regola, senza fondo var(--surface-2)`, !!esatto(c) && !/background(-color)?:\s*var\(--surface-2\)/.test(esatto(c)), true)
+  ok(`${c}: contorno var(--blu)`, ha(c, /(outline|border(-color)?|box-shadow):[^;]*var\(--blu\)/), true)
+}
+
+for (const c of ['.sg-btn', '.sg-chip', '.sg-campo', '.sg-link', '.sg-scelta'])
+  ok(`${c}:focus-visible: outline 3px solid var(--blu)`, ha(`${c}:focus-visible`, /outline:\s*3px solid var\(--blu\)/), true)
+ok('.sg-menu :focus-visible: outline var(--text) (bianco nel menu)', ha('.sg-menu :focus-visible', /outline:[^;]*var\(--text\)/), true)
+
+arriva('bianco su --blu (chip e campi pieni): 4,5:1', '#ffffff', T['--blu'], 4.5)
+arriva('#121212 su --verde (tasto «vai»): 4,5:1', '#121212', T['--verde'], 4.5)
+for (const x of ['--giallo-testo', '--rosso-testo', '--verde-testo', '--dim']) arriva(`${x} su --surface (tag bianco): 4,5:1`, T[x], T['--surface'], 4.5)
+
+const AMMESSI_LOOK = new Set([...AMMESSI, '#121212'])
+ok('colori nelle regole del look: solo i 12 del sito, #ffffff e #121212',
+  delLook.flatMap((r) => (r.corpo.match(HEX) ?? []).map((h) => h.toLowerCase())).filter((h) => !AMMESSI_LOOK.has(h)), [])
+
+
+// Il menu in cinque gruppi: il titolo resta maiuscolo per CSS (il testo è con l'iniziale maiuscola), voci da 44px.
+ok('.sg-gruppo-titolo: maiuscolo per CSS', ha('.sg-gruppo-titolo', /text-transform:\s*uppercase/), true)
+ok('.sg-gruppo-titolo: Inter (var(--body))', ha('.sg-gruppo-titolo', /font-family:\s*var\(--body\)/), true)
+ok('.sg-gruppo-titolo: 12px, peso 600', ha('.sg-gruppo-titolo', /font-size:\s*12px/) && ha('.sg-gruppo-titolo', /font-weight:\s*600/), true)
+ok('.sg-voce: altezza minima 44px', ha('.sg-voce', /min-height:\s*44px/), true)
+ok('.sg-voce: raggio 6px, peso 500', ha('.sg-voce', /border-radius:\s*6px/) && ha('.sg-voce', /font-weight:\s*500/), true)
+
+
+// --- 10. il menu e la barra del telefono, dove --dim è chiaro -----------------
+console.log('\nNel menu e nella barra del telefono')
+for (const sel of ['.sg-menu .sg-tag', '.sg-barra-tel .sg-tag'])
+  ok(`${sel}: tag neutro con l'inchiostro (--dim lì è chiaro)`, ha(sel, /(?<![-\w])color:\s*var\(--su-colore\)/) && ha(sel, /border-color:\s*var\(--su-colore\)/), true)
+ok('.sg-menu .sg-campo::placeholder: --faint (--dim nel menu è chiaro sul campo bianco)', ha('.sg-menu .sg-campo::placeholder', /(?<![-\w])color:\s*var\(--faint\)/), true)
+arriva('--faint su bianco (segnaposto del campo di ricerca): 4,5:1', T['--faint'], '#ffffff', 4.5)
+// A parità di specificità vince l'ultima: il fuoco bianco del menu deve stare dopo quello blu dei tasti.
+{
+  const dove = (sel) => rOra.findIndex((r) => r.selettori.includes(`${LOOK} ${sel}`))
+  ok('il fuoco del menu viene dopo il fuoco blu dei tasti', dove('.sg-menu :focus-visible') > dove('.sg-btn:focus-visible') && dove('.sg-btn:focus-visible') > 0, true)
+}
+
+
+// --- 11. i segni delle schede e le tessere di SETTIMANA ------------------------
+console.log('\nSegni delle schede, lezioni e righe scelte')
+for (const [t, segno] of [['rosso', '✕'], ['giallo', '…'], ['verde', '✓']])
+  ok(`.sg-segno-regola[data-tono='${t}']::before: segno ${segno}`, new RegExp(`content:\\s*['"]${segno}`).test(esatto(`.sg-segno-regola[data-tono='${t}']::before`)), true)
+ok(".sg-segno-regola[data-tono='spento']: nessun segno", /content:/.test(esatto(".sg-segno-regola[data-tono='spento']::before")), false)
+ok('.sg-lezione: senza bordo da 2px (resta la tinta in alto)', ha('.sg-lezione', /(?<![-\w])border:\s*0\s*;/) && ha('.sg-lezione', /border-top:\s*4px solid var\(--tinta\)/), true)
+ok('.sg-lezione[data-manca]: barra rossa a sinistra', ha(".sg-lezione[data-manca='true']", /inset 4px 0 0 var\(--rosso\)/), true)
+ok('.sg-lezione[data-annullata]: niente opacità (4,5:1)', ha(".sg-lezione[data-annullata='true']", /opacity:\s*1/), true)
+for (const sel of ['.sg-corso[aria-pressed=\'true\']', '.sg-lista-tasto[aria-pressed=\'true\']', '.sg-sett-titolo[aria-expanded=\'true\']'])
+  ok(`${sel}: scelto senza celeste, con contorno var(--blu)`, ha(sel, /background:\s*var\(--surface\)/) && !/--surface-2/.test(esatto(sel)) && /var\(--blu\)/.test(esatto(sel)), true)
+
+ok('la testata del Banco (.bn-alto) prende i token chiari del menu, come .sg-menu', ha('.bn-alto', /--text:\s*#ffffff/) && ha('.bn-alto', /--dim:\s*#cfe6f4/), true)
+ok('le voci del menu non vanno a capo (white-space: nowrap)', ha('.sg-voce', /white-space:\s*nowrap/), true)
+
+// --- 12. DA FARE e COSA MANCA: titoli in Inter, cinque caselle in riga ---------
+console.log('\nDA FARE e COSA MANCA')
+for (const [sel, re, cosa] of [
+  ['.sg-mancano', /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/, 'cinque caselle in una riga'],
+  [".sg-mancano-nota[data-fissa='true']", /display:\s*none/, 'senza la nota di sempre (gli avvisi sul conto si vedono)'],
+  ['.sg-mancano-n', /font-size:\s*44px/, 'numero a 44px'],
+  ['.sg-mancano-titolo', /font-family:\s*var\(--body\)/, 'titolo in Inter'],
+  ['.sg-mancano-titolo', /font-size:\s*14px/, 'titolo a 14px'],
+  ['.sg-mancano-titolo', /font-weight:\s*600/, 'titolo a 600'],
+  ['.sg-mancano-titolo', /letter-spacing:\s*0\s*;/, 'titolo senza spaziatura'],
+  ['.sg-dafare-titolo', /font-family:\s*var\(--body\)/, 'titolo della riga in Inter'],
+  ['.sg-dafare-titolo', /font-size:\s*21px/, 'titolo della riga a 21px'],
+  ['.sg-dafare-titolo', /font-weight:\s*700/, 'titolo della riga a 700'],
+  ['.sg-dafare-titolo', /letter-spacing:\s*0\s*;/, 'titolo della riga senza spaziatura'],
+]) ok(`${sel}: ${cosa}`, ha(sel, re), true)
+ok('fra 768 e 1360px le cinque caselle non prendono i bordi e lo spazio del caso a due colonne (nth-child 5 e n+3)', /grid-column:\s*auto/.test(esatto(".sg-mancano-casella:nth-child(5)")) && /border-top:\s*0/.test(esatto('.sg-mancano-casella:nth-child(n + 3)')), true)
 console.log(`\n${asserzioni} asserzioni.`)
 console.log(guai ? `${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : 'TUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -190,7 +190,9 @@ ok('ogni regola che nomina data-modulo comincia per ' + PREFISSO, rOra.filter((r
 if (prima !== null) ok('ogni regola nuova del modulo comincia per ' + PREFISSO + ' (o è un @font-face)', nuove.filter((r) => r.selettori.some((s) => s.includes('data-modulo')) && !r.selettori.every((s) => s.startsWith(PREFISSO) || s === '@font-face')).map((r) => r.selettori.join(',')), [])
 for (const sel of [':root', ":root[data-tema='chiaro']", ":root[data-tema='tatami']"])
   if (prima !== null) ok(`il blocco ${sel} non è cambiato`, rOra.filter((r) => r.selettori.includes(sel)).map(chiaveR), rPrima.filter((r) => r.selettori.includes(sel)).map(chiaveR))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', [...vecchie].filter((k) => !rOra.some((r) => chiaveR(r) === k)).length, 0)
+// Il look della segreteria (`data-look`, PR successive a questa) ha la sua prova (`prova:look`): le sue regole possono cambiare.
+const delLook = (r) => r.selettori.some((x) => x.includes('data-look'))
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !delLook(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
