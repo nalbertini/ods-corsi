@@ -89,7 +89,8 @@ export function Immagini({ d, pagine }: { d: DatiSegreteria; pagine: PaginaSito[
 }
 
 /** Il pannello dell'editor: si sceglie un'immagine, si scrive cosa si vede (o si dice che è solo decorativa) e si inserisce. */
-export function ScegliImmagine({ d, onScelta, onChiudi }: { d: DatiSegreteria; onScelta: (url: string, alt: string) => void; onChiudi: () => void }) {
+/** `perFoto`: la scelta è per un pezzo foto di una pagina a pezzi, non per il testo: cambiano le parole. */
+export function ScegliImmagine({ d, onScelta, onChiudi, perFoto = false }: { d: DatiSegreteria; onScelta: (url: string, alt: string) => void; onChiudi: () => void; perFoto?: boolean }) {
   const ref = useDialogo<HTMLDivElement>(onChiudi)
   const elenco = useCarica(() => d.sitoImmagini(), [d])
   const [scelta, setScelta] = useState<string | null>(null)
@@ -101,8 +102,8 @@ export function ScegliImmagine({ d, onScelta, onChiudi }: { d: DatiSegreteria; o
     <>
       <button type="button" className="sg-velo" tabIndex={-1} aria-label="Lascia stare" onClick={onChiudi} />
       <div ref={ref} role="dialog" aria-modal="true" aria-labelledby="sito-scegli-titolo" tabIndex={-1} className="sg-dialogo sito-scegli">
-        <span id="sito-scegli-titolo" style={{ fontFamily: 'var(--cond)', fontStyle: 'oblique 9deg', fontSize: 26, fontWeight: 700, letterSpacing: '0.04em' }}>METTI UN’IMMAGINE NEL TESTO</span>
-        <span className="sg-sotto">Scegli una di quelle già caricate. Nel testo andrà a tutta la larghezza.</span>
+        <span id="sito-scegli-titolo" style={{ fontFamily: 'var(--cond)', fontStyle: 'oblique 9deg', fontSize: 26, fontWeight: 700, letterSpacing: '0.04em' }}>{perFoto ? 'SCEGLI LA FOTO' : 'METTI UN’IMMAGINE NEL TESTO'}</span>
+        <span className="sg-sotto">{perFoto ? 'Scegli una di quelle già caricate. Sul sito andrà a tutta la larghezza.' : 'Scegli una di quelle già caricate. Nel testo andrà a tutta la larghezza.'}</span>
         {elenco.guaio ? (
           <Guaio testo={elenco.guaio} />
         ) : !elenco.dato ? (

@@ -61,6 +61,7 @@ const SEZIONI = [
   { id: 'timer-istruttori', nome: 'Timer · app istruttori', cartella: 'timer-istruttori' },
   { id: 'timer-musica', nome: 'Timer · musica', cartella: 'timer-musica' },
   { id: 'timer-youtube', nome: 'Timer · YouTube', cartella: 'timer-youtube' },
+  { id: 'sito-blocchi', nome: 'Sito · pagine a pezzi · proposta', cartella: 'sito-blocchi' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')

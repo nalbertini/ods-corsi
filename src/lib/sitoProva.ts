@@ -1,5 +1,6 @@
 import { controllaMenu, controllaSlug, MASSIMO_DESCRIZIONE, MASSIMO_TITOLO, pagineDiLeggeProtette, testoTroppoLungo, type PaginaSito, type VoceMenu } from './sitoPagine'
 import { testoSicuro } from './sitoTesto'
+import { pezziInHtml, pezziValidi, type PezziPagina } from './sitoPezzi'
 
 /**
  * Le regole di `supabase/56-sito.sql` rifatte in memoria, per la modalità
@@ -38,6 +39,7 @@ export function sitoIniziale(): StatoSito {
     titolo,
     descrizione: '',
     bozza: '',
+    pezzi: null,
     pubblicato: null,
     nascosta: false,
     diLegge: false,
@@ -68,6 +70,9 @@ export function sitoIniziale(): StatoSito {
   }
 }
 
+/** Dati di prova salvati prima dei pezzi non hanno il campo: valgono «vecchio editor» (`null`), non «database senza il 62» (`undefined`). */
+export const conPezzi = (s: StatoSito): StatoSito => ({ ...s, pagine: s.pagine.map((p) => ({ ...p, pezzi: p.pezzi ?? null })) })
+
 const trova = (s: StatoSito, id: string) => {
   const p = s.pagine.find((x) => x.id === id)
   if (!p) throw new Error(NON_C_E)
@@ -75,13 +80,16 @@ const trova = (s: StatoSito, id: string) => {
 }
 const cambia = (s: StatoSito, id: string, f: (p: PaginaSito) => PaginaSito): StatoSito => ({ ...s, pagine: s.pagine.map((p) => (p.id === id ? f(p) : p)) })
 
-export function nuovaPagina(s: StatoSito, titolo: string, slug: string): { stato: StatoSito; id: string } {
+const PEZZI_NO = 'I pezzi della pagina non sono fatti come il sito li vuole: ricarica la pagina e riprova'
+
+export function nuovaPagina(s: StatoSito, titolo: string, slug: string, pezzi?: PezziPagina): { stato: StatoSito; id: string } {
   const no = controllaSlug(slug, s.pagine.map((p) => p.slug))
   if (no) throw new Error(no)
   if ((s.rinvii ?? []).some((r) => r.da === slug)) throw new Error('Questo indirizzo era di una pagina che ha cambiato indirizzo: scegline un altro')
   if (!titolo.trim() || titolo.trim().length > MASSIMO_TITOLO) throw new Error(TITOLO_NO)
+  if (pezzi && !pezziValidi(pezzi)) throw new Error(PEZZI_NO)
   const id = nuovoId()
-  const p: PaginaSito = { id, slug, titolo: titolo.trim(), descrizione: '', bozza: '', pubblicato: null, nascosta: false, diLegge: false, versione: 1 }
+  const p: PaginaSito = { id, slug, titolo: titolo.trim(), descrizione: '', bozza: pezzi ? pezziInHtml(pezzi) : '', pezzi: pezzi ?? null, pubblicato: null, nascosta: false, diLegge: false, versione: 1 }
   return { stato: { ...s, pagine: [...s.pagine, p] }, id }
 }
 
@@ -95,6 +103,16 @@ export function salvaBozza(s: StatoSito, id: string, versione: number, dati: { t
   if (!testoSicuro(dati.bozza)) throw new Error(TESTO_NO)
   const nuova = p.versione + 1
   return { stato: cambia(s, id, (x) => ({ ...x, titolo: dati.titolo.trim(), descrizione: dati.descrizione.trim(), bozza: dati.bozza, versione: nuova })), versione: nuova }
+}
+
+/**
+ * Come `salva_bozza_pezzi_sito`: salva i pezzi e il testo piatto che ne esce, con le stesse regole di `salvaBozza`.
+ * Più severa del database, che controlla solo «oggetto non troppo grande»: la forma dei pezzi la garantisce l'app (`sitoPezzi.ts`).
+ */
+export function salvaBozzaPezzi(s: StatoSito, id: string, versione: number, dati: { titolo: string; descrizione: string; pezzi: PezziPagina }): { stato: StatoSito; versione: number } {
+  if (!pezziValidi(dati.pezzi)) throw new Error(PEZZI_NO)
+  const r = salvaBozza(s, id, versione, { titolo: dati.titolo, descrizione: dati.descrizione, bozza: pezziInHtml(dati.pezzi) })
+  return { stato: cambia(r.stato, id, (x) => ({ ...x, pezzi: dati.pezzi })), versione: r.versione }
 }
 
 export function pubblica(s: StatoSito, id: string, versione: number): { stato: StatoSito; versione: number } {

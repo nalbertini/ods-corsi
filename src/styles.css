@@ -2719,6 +2719,59 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
 .sito-testo > * + * { margin-top: 14px; }
 .sito-testo p, .sito-testo ul, .sito-testo ol, .sito-testo blockquote { margin-top: 0; margin-bottom: 0; }
 .sito-testo h2, .sito-testo h3 { margin: 0; font-family: var(--cond); font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; line-height: 1.1; }
+/* Puck ha tre pannelli: ha bisogno di tutta la larghezza, e i campi della pagina vanno sotto. */
+.sito-due-pezzi { grid-template-columns: minmax(0, 1fr); }
+.sito-due-pezzi > .stack:last-child { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); align-items: start; }
+/* L'anteprima vera segue il tema come gli altri riquadri: il fondo azzurro del sito sta dentro la pagina. */
+.sito-anteprima-pagina { width: 100%; height: 720px; border: 2px solid var(--line); background: var(--surface); }
+/* Puck: i suoi colori, i raggi e il carattere sono quelli dell'app (squadrato, token del tema), non i suoi. */
+.sito-pezzi {
+  --puck-font-family: var(--body);
+  --puck-color-surface: var(--surface);
+  --puck-color-surface-muted: var(--surface-2);
+  --puck-color-surface-subtle: var(--surface-2);
+  --puck-color-border: var(--line);
+  --puck-color-border-muted: var(--line-soft);
+  --puck-color-border-hover: var(--text);
+  --puck-color-text: var(--text);
+  --puck-color-text-secondary: var(--dim);
+  --puck-color-text-muted: var(--dim);
+  --puck-color-text-subtle: var(--dim);
+  --puck-color-text-inverse: var(--bg);
+  --puck-color-interactive: var(--text);
+  --puck-color-interactive-soft: var(--surface-2);
+  --puck-color-interactive-soft-hover: var(--line);
+  --puck-color-selection-border: var(--text);
+  --puck-color-focus-ring: var(--text);
+  --puck-radius-m: 0;
+  --puck-radius-l: 0;
+  --puck-field-radius: 0;
+  --puck-field-color-text: var(--text);
+  --puck-field-color-bg: var(--surface);
+  --puck-field-color-border: var(--riga-campo);
+  min-height: 520px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+}
+.sito-pezzi * { border-radius: 0; }
+.sito-pezzi > div { height: 720px; }
+/* I tasti sopra l'editor sono quelli della segreteria; da spenti restano leggibili. */
+.sito-pezzi .sg-chip { color: var(--text); border-color: var(--riga-campo); background: var(--surface); }
+.sito-pezzi .sg-chip:disabled { background: var(--surface-2); color: var(--dim); border-color: transparent; opacity: 1; }
+/* Una parte senza niente dentro si vede e ha l'altezza di un tocco. */
+.sito-pezzi-vuoto { display: flex; align-items: center; min-height: 44px; padding: 0 16px; border: 2px dashed var(--line); color: var(--dim); font-size: 15px; }
+/* Sotto i 1280px Puck non ha posto per tre pannelli: le parti si mettono coi tasti in alto, e l'anteprima resta larga. */
+@media (max-width: 1279px) {
+  .sito-pezzi > div { height: auto; min-height: 640px; }
+  .sito-pezzi [class*='Sidebar--left'], .sito-pezzi [class*='PuckLayout-nav'] { display: none; }
+  /* Puck riserva una colonna a ogni pannello, anche a quelli nascosti: qui la pagina sta sopra e i campi sotto, a tutta larghezza. */
+  .sito-pezzi [class*='PuckLayout-inner'] { display: flex !important; flex-direction: column; height: auto; }
+  .sito-pezzi [class*='PuckCanvas_'] { min-height: 280px; width: 100%; }
+  .sito-pezzi [class*='PuckCanvas-inner'], .sito-pezzi [class*='PuckCanvas-root'] { height: auto !important; min-height: 240px; }
+  /* Puck chiude il pannello dei campi quando il suo contenitore è stretto: qui serve sempre, sotto la pagina. */
+  .sito-pezzi [class*='Sidebar--right'] { display: flex !important; flex-direction: column; width: 100% !important; max-width: none; min-height: 200px; }
+}
 .sito-testo h2 { font-size: 28px; }
 .sito-testo h3 { font-size: 22px; }
 .sito-testo ul, .sito-testo ol { padding-left: 24px; }

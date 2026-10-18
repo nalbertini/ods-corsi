@@ -1,0 +1,37 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Sito · a pezzi"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Editor.dc.html",
+      "title": "1 · Una pagina a pezzi (schermo largo)",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "ElencoCorsi.dc.html",
+      "title": "2 · La parte ELENCO DEI CORSI",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Tablet.dc.html",
+      "title": "3 · Sul tablet: SU, GIÙ, TOGLI",
+      "x": 3120,
+      "y": 0,
+      "w": 768,
+      "h": 900,
+      "page": "page-1"
+    }
+  ]
+}
