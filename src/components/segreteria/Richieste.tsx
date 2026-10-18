@@ -9,7 +9,7 @@ import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { posizione, vicina } from '../../lib/schedaFinestra'
-import { chiedi, Campo, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, lasciare, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
 const STATI: Record<StatoRichiesta, string> = { nuova: 'Nuova', accolta: 'Accolta', rifiutata: 'Rifiutata' }
@@ -96,9 +96,13 @@ export function Richieste({
   // PRECEDENTE e SUCCESSIVA scorrono le richieste che l'elenco mostra, nel suo ordine.
   const mostrate = ordina(lista)
   const ids = mostrate.map((x) => x.id)
+  // Con la data del certificato scritta e non salvata, passare ad un'altra o chiudere chiede prima.
+  const apri = async (id: string | null) => {
+    if (await lasciare()) setScelta(id)
+  }
   const vai = (verso: 1 | -1) => {
     const id = vicina(ids, richiesta?.id ?? null, verso)
-    return id ? () => setScelta(id) : undefined
+    return id ? () => void apri(id) : undefined
   }
 
   const scheda = richiesta && r && (
@@ -134,7 +138,7 @@ export function Richieste({
           key={richiesta.id}
           etichetta={`Richiesta di ${richiesta.nome} ${richiesta.cognome}`}
           torna="Richieste"
-          onTorna={() => setScelta(null)}
+          onTorna={() => void apri(null)}
           passaggio={{ posizione: posizione(ids, richiesta.id), onPrecedente: vai(-1), onSuccessiva: vai(1) }}
         >
           {scheda}
@@ -213,7 +217,6 @@ export function Richieste({
               ))}
             </div>
           </div>
-
         </div>
       </div>
       {avviso}
@@ -264,6 +267,7 @@ function Scheda({
   // Il certificato si guarda prima di accogliere, con la data da scrivere: poi passa alla scheda.
   const certificato = x.stato === 'nuova' ? arrivati.get('certificato') : undefined
   const [scadeCert, setScadeCert] = useState('')
+  useBozza(scadeCert !== '', `${x.nome} ${x.cognome}`)
   // Accolta, la richiesta crea una persona iscritta ai corsi e non si torna
   // indietro: quello che manca si dice prima, non dopo.
   const problemi = [
@@ -282,7 +286,7 @@ function Scheda({
       void file.ricarica()
       onCambiato()
     }
-    // Solo se è andata: con la data del certificato non salvata la richiesta è già cambiata (rileggi), ma l'errore si legge qui.
+    // Riuscita: si ricarica e si chiude. Se fallisce, `fai` lascia la scheda aperta con l'errore.
     const finito = () => {
       rileggi()
       onConclusa()

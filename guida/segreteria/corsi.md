@@ -12,9 +12,11 @@ generano da quelle.
 Per ogni corso: nome, sala e istruttori, **QUANDO** («lun mer ven 17:00») e
 **ISCRITTI** (`14/20` su posti; in giallo quando è pieno). Se un giorno si fa
 in un'altra sala lo si vede sotto il nome: «Motricità · gio Tatami». Un clic
-apre la scheda: sul computer accanto all'elenco, sul tablet e sul telefono al
-suo posto. Indietro torna all'elenco, anche dal nuovo corso; un corso
-archiviato, aperto da un link vecchio, non si apre e lo si dice.
+apre la scheda in una finestra sopra l'elenco (vedi [La finestra dei
+dettagli](README.md#la-finestra-dei-dettagli)), con **Precedente** e
+**Successiva** per passare al corso accanto. **✕** o Esc chiudono, anche dal
+nuovo corso; un corso archiviato, aperto da un link vecchio, non si apre e lo si
+dice.
 
 I dati che mancano sono in **rosso**, perché vanno completati: un corso senza
 istruttore («istruttore da assegnare»), senza sala o senza giorni ha il bordo
@@ -116,10 +118,9 @@ posti `2 IN PIÙ DEI POSTI` (rosso); senza posti indicati, `16 ISCRITTI`.
 - **Ordina** toccando l'intestazione di una colonna: un secondo tocco rovescia,
   un terzo torna all'ordine per cognome. Con CERTIFICATO o QUOTA in cima ci
   sono quelli che hanno il guaio.
-- Un clic su un iscritto apre **la sua scheda** in ISCRITTI. **Indietro** torna
-  al corso, sulla scheda ISCRITTI, con la ricerca, il filtro e l'ordine che
-  avevi. Lo stesso fa **CORSO** in alto nella scheda della persona (se la
-  apri da un altro posto, dice ISCRITTI e torna all'elenco). Se nel corso hai
+- Un clic su un iscritto apre **la sua scheda** in ISCRITTI. **✕** (o Esc)
+  torna al corso, sulla scheda ISCRITTI, con la ricerca, il filtro e l'ordine
+  che avevi (se apri la persona da un altro posto, torna all'elenco). Se nel corso hai
   modifiche non salvate l'app chiede prima.
 - Il menu «Iscrivi qualcuno…» con **Iscrivi** sta in questa
   scheda. A corso pieno lo dice, ma si può iscrivere lo stesso.

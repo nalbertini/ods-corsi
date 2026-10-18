@@ -21,8 +21,8 @@ TABLET**.
 
 ## La scheda di una persona
 
-Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
-**ISTRUTTORI E ACCESSI** in alto torna all'elenco. Con una modifica, un PIN o
+Un clic su un nome apre la sua scheda in una finestra sopra l'elenco;
+**✕** o Esc tornano all'elenco. Con una modifica, un PIN o
 un kanji scritti e non confermati chiede prima: **Torna a finire** o **Esci
 senza salvare**.
 

@@ -454,7 +454,7 @@ export function SchedaPiena({
         </div>
         <div className="sg-finestra-corpo">
           {cornice ? (
-            <section aria-label={etichetta} className="sg-scheda sg-scheda-piena" style={tinta ? { ['--tinta' as string]: tinta } : undefined}>
+            <section aria-label={etichetta} className="sg-scheda sg-scheda-piena">
               {children}
             </section>
           ) : (

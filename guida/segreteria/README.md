@@ -124,6 +124,21 @@ confermare, segnalazioni da rispondere). Accanto ci sono **?** e le impostazioni
 Aperto, ha gli stessi gruppi del computer; le voci di **Il resto** sono più
 piccole, perché si fanno meglio dal computer.
 
+## La finestra dei dettagli
+
+Richiesta, corso, iscritto, persona o ordine del vestiario: un clic su una riga
+apre il dettaglio in una **finestra** sopra l'elenco. L'elenco resta dietro,
+con la ricerca, i filtri e l'ordine di prima, e il menu resta visibile, coi suoi
+numeri. Si chiude con **✕** in alto a destra o con **Esc**; un clic fuori dalla
+finestra chiude solo se non c'è niente da perdere. Con qualcosa scritto e non
+salvato, ✕ ed Esc chiedono prima e il clic fuori non fa niente. Se la scheda è
+lunga scorre dentro la finestra. Sul telefono la finestra prende tutto lo
+schermo.
+
+In **Richieste online** e **Corsi** in alto ci sono anche **‹ Precedente** e
+**Successiva ›**, con «2 DI 14»: passano alla scheda accanto, nell'ordine in cui
+vedi l'elenco, senza chiudere.
+
 ## Ordinare le tabelle
 
 Le tabelle (iscritti, richieste, presenze segnalate, presenze degli

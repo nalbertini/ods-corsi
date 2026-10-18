@@ -7,13 +7,15 @@
  * non c'è (filtrata, sparita dopo un ricarico) non ha vicine.
  */
 export function vicina(ids: readonly string[], id: string | null, verso: 1 | -1): string | null {
-  const i = id === null ? -1 : ids.indexOf(id)
+  const i = indice(ids, id)
   return i < 0 ? null : (ids[i + verso] ?? null)
 }
 
+const indice = (ids: readonly string[], id: string | null) => (id === null ? -1 : ids.indexOf(id))
+
 /** «2 DI 14», o niente se la scheda aperta non è nell'elenco. */
 export function posizione(ids: readonly string[], id: string | null): string | null {
-  const i = id === null ? -1 : ids.indexOf(id)
+  const i = indice(ids, id)
   return i < 0 ? null : `${i + 1} DI ${ids.length}`
 }
 

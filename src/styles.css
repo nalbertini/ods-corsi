@@ -2206,9 +2206,9 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   position: fixed; top: 0; right: 0; bottom: 0; left: var(--sg-finestra-sx, 0px); z-index: 10;
   display: flex; justify-content: center; padding: 24px 16px;
 }
-.sg-finestra-velo { position: absolute; inset: 0; }
+.sg-finestra-velo { position: absolute; inset: 0; z-index: 0; }
 .sg-finestra {
-  position: relative; display: flex; flex-direction: column; width: min(760px, 100%); min-height: 0;
+  position: relative; z-index: 1; display: flex; flex-direction: column; width: min(760px, 100%); min-height: 0;
   background: var(--surface); border: 2px solid var(--text); border-top: 6px solid var(--tinta, var(--text));
 }
 .sg-finestra:focus { outline: none; }
@@ -2217,11 +2217,16 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-finestra-corpo { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
 /* La scheda dentro la finestra non ha una cornice sua: la finestra ha già bordo e barra in alto. */
 .sg-finestra .sg-scheda { position: static; flex-grow: 1; border: 0; }
+/* Un campo che sta su due colonne (POSTI e TESSERA RICHIESTA) in una colonna sola ne farebbe una seconda a larghezza zero: i campi si sovrapporrebbero. */
+@media (max-width: 1000px) {
+  .sg-tre > * { grid-column: auto !important; }
+}
 /* Sul telefono la finestra è la pagina: tutto lo schermo, il menu è già dietro il tasto MENU. */
 @media (max-width: 767px) {
   .sg-finestra { width: 100%; border-left: 0; border-right: 0; border-bottom: 0; }
   .sg-finestra-radice { left: 0; padding: 0; }
-  .sg-finestra-testa { padding: 10px 14px; }
+  .sg-finestra-testa { padding: 10px 14px; flex-wrap: nowrap; gap: 6px; }
+  .sg-finestra-testa .sg-btn { min-width: 0; padding: 0 10px; letter-spacing: 0.06em; }
 }
 .sg-scheda-piena { position: static; gap: 24px; padding: 24px 28px; }
 .sg-scheda-campi { max-width: 720px; }
