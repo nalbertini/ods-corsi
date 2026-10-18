@@ -416,6 +416,43 @@ export function filtraMovimenti(righe: RigaMovimento[], f: FiltroMovimenti): Rig
   })
 }
 
+export type Periodo = 'mese' | 'scorso' | 'anno' | 'tutto'
+
+/** Il periodo con cui si apre l'elenco: tutto l'anno, non il mese, così un pagamento di qualche mese fa non resta nascosto. */
+export const PERIODO_INIZIALE: Periodo = 'anno'
+
+export interface FiltriElenco {
+  testo: string
+  periodo: Periodo
+  tipo: string
+  cassaId: string
+  voce: string
+  persona: string
+  annullati: boolean
+}
+
+/** Quanti filtri sono diversi dalla partenza: serve a dire «N filtri attivi» e a mostrare «Togli i filtri». */
+export function filtriAttivi(f: FiltriElenco): number {
+  return [f.testo.trim() !== '', f.periodo !== PERIODO_INIZIALE, f.tipo !== '', f.cassaId !== '', f.voce !== '', f.persona !== '', f.annullati].filter(Boolean).length
+}
+
+/** Il movimento appena scritto com'è nell'elenco, per sapere se i filtri lo nascondono. */
+export const rigaAppenaScritta = (r: Pick<RigaMovimento, 'tipo' | 'data' | 'importo' | 'descrizione' | 'cassaId' | 'cassaAId'> & { voce?: string | null }): RigaMovimento => ({
+  id: 'nuovo',
+  origine: 'movimento',
+  voce: null,
+  annullato: false,
+  ...r,
+})
+
+/**
+ * Un movimento appena scritto resta fuori dall'elenco se i filtri lo escludono: la schermata lo dice, se no sembra perso.
+ * Con una persona scelta non si vede mai, perché un movimento nuovo non ne ha una.
+ */
+export function nonSiVedra(r: RigaMovimento, f: Pick<FiltroMovimenti, 'testo' | 'dal' | 'al' | 'tipo' | 'cassaId' | 'voce'> & { persona?: string }): boolean {
+  return !!f.persona || filtraMovimenti([r], { ...f, annullati: false }).length === 0
+}
+
 /** I totali per voce, le entrate prima e in ciascun gruppo la più grande: senza giroconti e annullati. */
 export function perVoce(righe: RigaMovimento[]): Array<{ voce: string; tipo: 'entrata' | 'uscita'; totale: number }> {
   const gruppi = new Map<string, { voce: string; tipo: 'entrata' | 'uscita'; totale: number }>()

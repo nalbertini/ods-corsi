@@ -22,20 +22,27 @@ L'elenco unisce due cose:
 - i **movimenti che scrivi tu**: altre entrate (contributi, gare, attività
   fatturate) e le uscite.
 
-Si cerca nella descrizione, si sceglie il periodo (il mese, il mese scorso, tutto
-l'anno, tutto), si filtra per **ENTRATE**, **USCITE**, **GIROCONTI** e per cassa.
-**Raggruppa per voce** dà i totali per voce; **Annullati** mostra anche quelli
-annullati. **Esporta CSV** è un foglio per Excel e per il commercialista, senza gli
-annullati.
+Si parte da **Tutto l'anno**: l'elenco, ENTRATE, USCITE e DIFFERENZA in fondo contano l'anno in
+corso, non più il mese. I filtri sono in due righe: sopra la **ricerca** nella descrizione, il
+**periodo** (il mese, il mese scorso, tutto l'anno, tutto) e il **tipo** (**Entrate**, **Uscite**,
+**Giroconti**); sotto la **cassa**, la **voce**, la **persona** (un menu) e **Mostra annullati**.
+Sotto i filtri la riga «N trovati · N filtri attivi» dice quanti ne hai acceso, e **Togli i
+filtri** (compare solo se ne hai acceso almeno uno) ti riporta a Tutto l'anno senza altro.
+**Vista**: **Elenco** o **Per voce**, che dà i totali per voce. **Esporta CSV** è un foglio per
+Excel e per il commercialista, senza gli annullati.
 
 ### Nuovo movimento
 
-**Nuovo movimento**: entrata o uscita, data, importo, cassa, **voce** (solo quelle
+**Nuovo movimento** si apre in una **pagina intera**, al posto dell'elenco (il **Giroconto** lo
+stesso); **← I movimenti** torna all'elenco com'era, coi filtri che avevi, e se hai già scritto
+qualcosa chiede prima se lasciare. Si sceglie entrata o uscita, data, importo, cassa, **voce** (solo quelle
 del tipo giusto, non quelle disattivate), descrizione e una nota se serve. Un solo
 importo, senza IVA. La data non è nel futuro e non è prima del giorno da cui parte
 la cassa. Niente dati personali che non servono, nella descrizione e nella nota.
 Prima di scrivere, l'app mostra un **riepilogo** (importo, voce, cassa, data): **Sì,
-registra il movimento** lo scrive, **No, torna al modulo** lascia tutto com'era.
+registra il movimento** lo scrive, **No, torna al modulo** lascia tutto com'era. Se il movimento scritto è fuori dai filtri che hai
+acceso, l'elenco lo dice («Non lo vedi nell'elenco: è fuori dai filtri») e **Togli i filtri** lo
+fa comparire.
 
 Un movimento registrato **non si cambia** negli importi: toccandolo si apre in una **finestra** sopra l'elenco
 (vedi [La finestra dei dettagli](../segreteria/README.md#la-finestra-dei-dettagli)), e si può

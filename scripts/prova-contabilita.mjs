@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/contabilita'; export { righeDaRicevute, righeDirette } from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro, dataRicevuta } from './src/lib/ricevute'",
+      "export * from './src/lib/contabilita'; export { righeDaRicevute, righeDirette, intervalloDi } from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro, dataRicevuta } from './src/lib/ricevute'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -944,6 +944,51 @@ console.log('\n37. collegare alla persona: le righe dell\'elenco portano chiave 
     const incasso = m.righeMovimenti([{ id: 'incasso:1', origine: 'ricevuta', tipo: 'entrata', data: '2026-09-01', importo: 100, descrizione: 'Rossi', voce: 'Quota associativa', cassaId: 'c2', annullato: false }], [], vv)[0]
     return [incasso.origineImport, incasso.personaId, persona.cosaNonVaCollegato(incasso)]
   }), [undefined, undefined, 'Il movimento del 01/09/2026 (Rossi) non viene dal vecchio programma: non si collega'])
+}
+
+console.log('\n38. i movimenti partono da «Tutto l\'anno»; i filtri diversi dalla partenza si contano e si vedono')
+{
+  ok('il periodo di partenza è l\'anno', m.PERIODO_INIZIALE, 'anno')
+  const { dal, al } = prova(() => m.intervalloDi(m.PERIODO_INIZIALE, '2026-10-18', '', ''))
+  ok('con oggi 2026-10-18 va dal 1 gennaio al 31 dicembre', [dal, al], ['2026-01-01', '2026-12-31'])
+  const riga = (id, data) => ({ id, origine: 'movimento', tipo: 'uscita', data, importo: 100, descrizione: id, voce: 'Affitto sala', cassaId: 'c1', annullato: false })
+  const viste = m.filtraMovimenti([riga('a', '2025-12-31'), riga('b', '2026-01-01'), riga('c', '2026-12-31')], { dal, al }).map((r) => r.id)
+  ok('una riga del 31 dicembre dell\'anno scorso non c\'è, quelle dell\'anno sì', viste, ['b', 'c'])
+  const base = { testo: '', periodo: 'anno', tipo: '', cassaId: '', voce: '', persona: '', annullati: false }
+  ok('alla partenza i filtri attivi sono 0', prova(() => m.filtriAttivi(base)), 0)
+  ok('ricerca, tipo e cassa: 3', prova(() => m.filtriAttivi({ ...base, testo: 'affitto', tipo: 'uscita', cassaId: 'c1' })), 3)
+  ok('una ricerca di soli spazi non conta', prova(() => m.filtriAttivi({ ...base, testo: '   ' })), 0)
+  ok('«Tutto» al posto di «Tutto l\'anno» conta uno', prova(() => m.filtriAttivi({ ...base, periodo: 'tutto' })), 1)
+  ok('voce, persona e annullati contano', prova(() => m.filtriAttivi({ ...base, voce: 'Affitto sala', persona: 'collegati', annullati: true })), 3)
+  const f = { dal, al, persona: '' }
+  const nuovo = (o) => ({ ...riga('n', '2026-10-18'), ...o })
+  ok('un movimento dentro i filtri si vedrà', prova(() => m.nonSiVedra(nuovo({}), f)), false)
+  ok('uno dell\'anno scorso no', prova(() => m.nonSiVedra(nuovo({ data: '2025-06-01' }), f)), true)
+  ok('uno su un\'altra cassa, con la cassa filtrata, no', prova(() => m.nonSiVedra(nuovo({ cassaId: 'c2' }), { ...f, cassaId: 'c1' })), true)
+  ok('con una persona scelta un movimento nuovo non si vede (non ha persona)', prova(() => m.nonSiVedra(nuovo({}), { ...f, persona: 'collegati' })), true)
+  const g = prova(() => m.rigaAppenaScritta({ tipo: 'giroconto', data: '2026-10-18', importo: 100, descrizione: 'Giroconto da Cassa Contanti a Conto Corrente', cassaId: 'c2', cassaAId: 'c1' }))
+  ok('la riga di un giroconto appena scritto è com\'è nell\'elenco: senza voce, due casse, non annullata', [g?.origine, g?.voce, g?.cassaAId, g?.annullato], ['movimento', null, 'c1', false])
+  ok('cercando «contanti» un giroconto da Cassa Contanti si vede', prova(() => m.nonSiVedra(g, { ...f, testo: 'contanti' })), false)
+  ok('cercando «cena» no', prova(() => m.nonSiVedra(g, { ...f, testo: 'cena' })), true)
+  ok('un giroconto verso la cassa filtrata si vede', prova(() => m.nonSiVedra(nuovo({ tipo: 'giroconto', voce: null, cassaAId: 'c1', cassaId: 'c2' }), { ...f, cassaId: 'c1' })), false)
+}
+
+console.log('\n39. Contabilita.tsx: Nuovo movimento e Giroconto sono una pagina intera, e i filtri hanno il loro ordine')
+{
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  const da = tsx.indexOf('function Movimenti(')
+  const fino = tsx.indexOf('function CambiaVoce(')
+  const corpo = da >= 0 && fino > da ? tsx.slice(da, fino) : ''
+  ok('il periodo parte da PERIODO_INIZIALE', /useState<Periodo>\(PERIODO_INIZIALE\)/.test(corpo), true)
+  ok('Nuovo movimento non è più un riquadro sopra l\'elenco (`InVista`)', /<InVista><NuovoMovimento/.test(corpo), false)
+  ok('…né il Giroconto', /<InVista><NuovoGiroconto/.test(corpo), false)
+  ok('con il modulo aperto l\'elenco non c\'è: si torna con «I movimenti» chiedendo prima (`lasciare`)', /if \(scrivo\)/.test(corpo) && /I movimenti/.test(corpo) && /lasciare\(\)/.test(corpo), true)
+  ok('«Raggruppa per voce» non è più un chip dei filtri', /Raggruppa per voce/.test(corpo), false)
+  ok('c\'è la vista Elenco | Per voce', /Per voce/.test(corpo) && /VISTA/.test(corpo), true)
+  ok('c\'è «Togli i filtri»', /Togli i filtri/.test(corpo), true)
+  ok('i filtri attivi si contano con `filtriAttivi`', /filtriAttivi\(/.test(corpo), true)
+  ok('dopo la registrazione fuori dai filtri lo dice (`nonSiVedra`)', /nonSiVedra\(/.test(tsx), true)
+  ok('PERSONA è un menu, non quattro chip', /id="filtro-persona"/.test(corpo), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

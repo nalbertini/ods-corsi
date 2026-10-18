@@ -20,16 +20,20 @@ import {
   elencoMovimenti,
   esitoCambioVoce,
   filtraMovimenti,
+  filtriAttivi,
   giornoChiuso,
   giornoRoma,
   importoPerCassa,
   NOME_CASSA_CONTANTI,
+  nonSiVedra,
   oggiARoma,
+  PERIODO_INIZIALE,
   pacchetti,
   riepilogoCambioVoce,
   soloTipo,
   riepilogoGiroconto,
   riepilogoMovimento,
+  rigaAppenaScritta,
   perVoce,
   previstoCassa,
   primoMovimentoManuale,
@@ -44,6 +48,7 @@ import {
   totaleResidui,
   type Cassa,
   type ChiusuraCassa,
+  type Periodo,
   type RigaMovimento,
   type VoceContabile,
   ultimaChiusura,
@@ -60,7 +65,6 @@ import { CollegaAPersona, CollegaSicuri } from './CollegaPersona'
 import { Bilancio } from './Bilancio'
 
 type Scheda = 'movimenti' | 'bilancio' | 'voci' | 'casse'
-type Periodo = 'mese' | 'scorso' | 'anno' | 'tutto'
 type Fai = ReturnType<typeof useAvviso>['fai']
 
 /**
@@ -167,12 +171,14 @@ function InVista({ children }: { children: ReactNode }) {
 function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: DatiSegreteria; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void }) {
   const oggi = oggiARoma()
   const [testo, setTesto] = useState('')
-  const [periodo, setPeriodo] = useState<Periodo>('mese')
+  const [periodo, setPeriodo] = useState<Periodo>(PERIODO_INIZIALE)
   const [tipo, setTipo] = useState('')
   const [cassaId, setCassaId] = useState('')
   const [annullati, setAnnullati] = useState(false)
   const [perVoci, setPerVoci] = useState(false)
   const [scrivo, setScrivo] = useState<'movimento' | 'giroconto' | null>(null)
+  // Dopo aver scritto un movimento che i filtri nascondono: se no sembra perso.
+  const [appena, setAppena] = useState<RigaMovimento | null>(null)
   const [aperto, setAperto] = useState<RigaMovimento | null>(null)
   const [voce, setVoce] = useState('')
   const [viste, setViste] = useState(RIGHE_ELENCO)
@@ -241,9 +247,37 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
     setScrivo(null)
     setAperto(null)
   }
-  const fatto = () => {
+  const fatto = (nuova?: RigaMovimento) => {
     chiudi()
+    setAppena(nuova ?? null)
     onCambiato()
+    window.setTimeout(() => statoElenco.current?.focus(), 0)
+  }
+  const azzera = () => {
+    setTesto('')
+    setPeriodo(PERIODO_INIZIALE)
+    setTipo('')
+    setCassaId('')
+    setVoce('')
+    setPersona('')
+    setAnnullati(false)
+    setAppena(null)
+    window.setTimeout(() => statoElenco.current?.focus(), 0)
+  }
+  const attivi = filtriAttivi({ testo, periodo, tipo, cassaId, voce, persona, annullati })
+  // Con il modulo aperto è lui la pagina: l'elenco e i filtri restano com'erano (lo stato sta qui) e si ritrovano tornando.
+  const tornaDalModulo = async () => {
+    if (!(await lasciare())) return
+    chiudi()
+    window.setTimeout(() => statoElenco.current?.focus(), 0)
+  }
+  const fuori = !!appena && nonSiVedra(appena, { testo, dal, al, tipo, cassaId, voce, persona })
+  const apri = (cosa: 'movimento' | 'giroconto') => {
+    setAperto(null)
+    setCambio(false)
+    setCollegando(null)
+    setAppena(null)
+    setScrivo(cosa)
   }
   // Il cambio di voce rilegge da sé quando finisce: tornando all'elenco si chiude e si svuota la scelta, senza rileggere ancora.
   const cambioFinito = () => {
@@ -253,6 +287,25 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
   // Dal dettaglio si esce chiedendo prima, se c'è una correzione non salvata.
   const torna = async () => {
     if (await lasciare()) setAperto(null)
+  }
+
+  if (scrivo) {
+    return (
+      <InVista>
+      <div className="stack" style={{ gap: 18 }}>
+        <div>
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => void tornaDalModulo()}>
+            ← I movimenti
+          </button>
+        </div>
+        {scrivo === 'movimento' ? (
+          <NuovoMovimento d={d} voci={voci} casse={casse} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
+        ) : (
+          <NuovoGiroconto d={d} casse={casse} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
+        )}
+      </div>
+      </InVista>
+    )
   }
 
   return (
@@ -265,8 +318,6 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
         <Numero titolo="TOTALE" valore={soldiConSegno(totaleResidui(conti))} sotto="saldi iniziali compresi" />
       </div>
 
-      {scrivo === 'movimento' && <InVista><NuovoMovimento d={d} voci={voci} casse={casse} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={chiudi} /></InVista>}
-      {scrivo === 'giroconto' && <InVista><NuovoGiroconto d={d} casse={casse} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={chiudi} /></InVista>}
       {cambio && idScelti.length > 0 && sceltaRiep.tipo !== 'misto' && <InVista><CambiaVoce d={d} ids={idScelti} righe={righe} voci={voci} onRileggi={onCambiato} onFatto={cambioFinito} onChiudi={() => setCambio(false)} /></InVista>}
       {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); setPeriodo('tutto'); setPersona('da_decidere') }} onChiudi={chiudiCollega} /></InVista>}
       {collegando === 'mano' && sceltiRighe.length > 0 && <InVista><CollegaAPersona d={d} righe={sceltiRighe} fai={fai} onFatto={collegamentoFatto} onChiudi={chiudiCollega} /></InVista>}
@@ -285,96 +336,115 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
             Collega i casi sicuri
           </button>
         )}
-        <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setAperto(null); setScrivo('giroconto') }}>
+        <button type="button" className="sg-btn sg-btn-linea" onClick={() => apri('giroconto')}>
           Giroconto
         </button>
-        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => { setAperto(null); setScrivo('movimento') }}>
+        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => apri('movimento')}>
           Nuovo movimento
         </button>
       </div>
 
-      <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-        <label htmlFor="cerca-movimenti" className="vh">
-          Cerca nella descrizione
-        </label>
-        <input id="cerca-movimenti" className="sg-campo" type="search" placeholder="Cerca nella descrizione" style={{ width: 320, maxWidth: '100%' }} value={testo} onChange={(e) => setTesto(e.target.value)} />
-        {(
-          [
-            ['mese', mese],
-            ['scorso', 'Mese scorso'],
-            ['anno', 'Tutto l’anno'],
-            ['tutto', 'Tutto'],
-          ] as const
-        ).map(([id, etichetta]) => (
-          <button key={id} type="button" className="num sg-chip" aria-pressed={periodo === id} onClick={() => setPeriodo(id)}>
-            {etichetta}
-          </button>
-        ))}
-        {(
-          [
-            ['entrata', 'Entrate'],
-            ['uscita', 'Uscite'],
-            ['giroconto', 'Giroconti'],
-          ] as const
-        ).map(([id, etichetta]) => (
-          <button key={id} type="button" className="num sg-chip" aria-pressed={tipo === id} onClick={() => setTipo(tipo === id ? '' : id)}>
-            {etichetta}
-          </button>
-        ))}
-        {casse.map((c) => (
-          <button key={c.id} type="button" className="num sg-chip" aria-pressed={cassaId === c.id} onClick={() => setCassaId(cassaId === c.id ? '' : c.id)}>
-            {c.nome.toUpperCase()}
-          </button>
-        ))}
-        <label htmlFor="filtro-voce" className="vh">
-          Filtra per voce
-        </label>
-        <select id="filtro-voce" className="sg-campo" style={{ width: 'auto', maxWidth: '100%' }} value={voce} onChange={(e) => setVoce(e.target.value)}>
-          <option value="">Tutte le voci</option>
-          {nomiVoci.map((n) => (
-            <option key={n} value={n}>{n}</option>
-          ))}
-        </select>
-        <button type="button" className="num sg-chip" aria-pressed={perVoci} onClick={() => setPerVoci(!perVoci)}>
-          Raggruppa per voce
-        </button>
-        <button type="button" className="num sg-chip" aria-pressed={annullati} onClick={() => setAnnullati(!annullati)}>
-          Annullati
-        </button>
-      </div>
-
-      {esitiLetti.dato && (
-        <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }} role="group" aria-label="Persona collegata">
-          <span className="sg-etichetta">PERSONA</span>
-          {(
-            [
-              ['', 'Tutti'],
-              ['collegati', `Collegati · ${collegatiTutti}`],
-              ['da_decidere', `Da decidere · ${daDecidere}`],
-              ['senza_scheda', `Senza scheda · ${senzaScheda}`],
-            ] as const
-          ).map(([id, etichetta]) => (
-            // I numeri contano tutto lo storico: scegliendo un filtro il periodo diventa Tutto, se no «0 trovati» confonde.
-            <button key={id} type="button" className="num sg-chip" aria-pressed={persona === id} onClick={() => { setPersona(id); if (id) setPeriodo('tutto') }}>
-              {etichetta}
-            </button>
-          ))}
+      {fuori && (
+        <div className="row sg-riquadro" style={{ flexDirection: 'row', alignItems: 'center', gap: 14, flexWrap: 'wrap' }} role="status">
+          <span style={{ fontSize: 15, fontWeight: 600 }}>Non lo vedi nell’elenco: è fuori dai filtri.</span>
+          <button type="button" className="sg-btn sg-btn-linea" onClick={azzera}>Togli i filtri</button>
         </div>
       )}
+
+      <div className="sg-riquadro" role="group" aria-label="Filtri dei movimenti">
+        <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <label htmlFor="cerca-movimenti" className="vh">
+            Cerca nella descrizione
+          </label>
+          <input id="cerca-movimenti" className="sg-campo" type="search" placeholder="Cerca nella descrizione" style={{ width: 300, maxWidth: '100%' }} value={testo} onChange={(e) => setTesto(e.target.value)} />
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }} role="group" aria-label="Periodo">
+            <span className="sg-etichetta">PERIODO</span>
+            {(
+              [
+                ['mese', mese],
+                ['scorso', 'Mese scorso'],
+                ['anno', 'Tutto l’anno'],
+                ['tutto', 'Tutto'],
+              ] as const
+            ).map(([id, etichetta]) => (
+              <button key={id} type="button" className="num sg-chip" aria-pressed={periodo === id} onClick={() => setPeriodo(id)}>
+                {etichetta}
+              </button>
+            ))}
+          </div>
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }} role="group" aria-label="Tipo">
+            <span className="sg-etichetta">TIPO</span>
+            {(
+              [
+                ['entrata', 'Entrate'],
+                ['uscita', 'Uscite'],
+                ['giroconto', 'Giroconti'],
+              ] as const
+            ).map(([id, etichetta]) => (
+              <button key={id} type="button" className="num sg-chip" aria-pressed={tipo === id} onClick={() => setTipo(tipo === id ? '' : id)}>
+                {etichetta}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center', paddingTop: 12, borderTop: '1px solid var(--line-soft)' }}>
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }} role="group" aria-label="Cassa">
+            <span className="sg-etichetta">CASSA</span>
+            {casse.map((c) => (
+              <button key={c.id} type="button" className="num sg-chip" aria-pressed={cassaId === c.id} onClick={() => setCassaId(cassaId === c.id ? '' : c.id)}>
+                {c.nome}
+              </button>
+            ))}
+          </div>
+          <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+            <label htmlFor="filtro-voce" className="sg-etichetta">VOCE</label>
+            <select id="filtro-voce" className="sg-campo" style={{ width: 'auto', maxWidth: '100%' }} value={voce} onChange={(e) => setVoce(e.target.value)}>
+              <option value="">Tutte le voci</option>
+              {nomiVoci.map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </div>
+          {esitiLetti.dato && (
+            <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+              <label htmlFor="filtro-persona" className="sg-etichetta">PERSONA</label>
+              {/* I numeri contano tutto lo storico: scegliendo un filtro il periodo diventa Tutto, se no «0 trovati» confonde. */}
+              <select id="filtro-persona" className="sg-campo" style={{ width: 'auto', maxWidth: '100%' }} value={persona} onChange={(e) => { const v = e.target.value as FiltroPersona; setPersona(v); if (v) setPeriodo('tutto') }}>
+                <option value="">Tutte</option>
+                <option value="collegati">{`Collegati · ${collegatiTutti}`}</option>
+                <option value="da_decidere">{`Da decidere · ${daDecidere}`}</option>
+                <option value="senza_scheda">{`Senza scheda · ${senzaScheda}`}</option>
+              </select>
+            </div>
+          )}
+          <button type="button" className="num sg-chip" aria-pressed={annullati} onClick={() => setAnnullati(!annullati)}>
+            Mostra annullati
+          </button>
+        </div>
+      </div>
       {esitiLetti.guaio && <span className="sg-sotto" role="status">{esitiLetti.guaio}</span>}
 
-      {!perVoci && (
+      <div className="row" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+        <span className="sg-sotto" role="status" ref={statoElenco} tabIndex={-1}>
+          {trovate.length === 1 ? '1 trovato' : `${trovate.length} trovati`}
+          {` · ${attivi === 1 ? '1 filtro attivo' : `${attivi} filtri attivi`}`}
+          {idScelti.length > 0 && ` · ${idScelti.length} ${idScelti.length === 1 ? 'scelto' : 'scelti'}`}
+        </span>
+        {attivi > 0 && (
+          <button type="button" className="sg-btn sg-btn-linea" onClick={azzera}>Togli i filtri</button>
+        )}
+        <span style={{ flex: 1 }} />
+        <div className="row" style={{ gap: 8, alignItems: 'center' }} role="group" aria-label="Vista">
+          <span className="sg-etichetta">VISTA</span>
+          <button type="button" className="num sg-chip" aria-pressed={!perVoci} onClick={() => setPerVoci(false)}>Elenco</button>
+          <button type="button" className="num sg-chip" aria-pressed={perVoci} onClick={() => setPerVoci(true)}>Per voce</button>
+        </div>
+      </div>
+      {!perVoci && scegliibili.length > 0 && scegliibili.length > idScelti.length && (
         <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span className="sg-sotto" role="status" ref={statoElenco} tabIndex={-1}>
-            {trovate.length === 1 ? '1 trovato' : `${trovate.length} trovati`}
-            {periodo !== 'tutto' && ' nel periodo scelto: tocca Tutto per lo storico'}
-            {idScelti.length > 0 && ` · ${idScelti.length} ${idScelti.length === 1 ? 'scelto' : 'scelti'}`}
-          </span>
-          {scegliibili.length > 0 && scegliibili.length > idScelti.length && (
-            <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelti(new Set(scegliibili.map((r) => r.id)))}>
-              {scegliibili.length === trovate.length ? (scegliibili.length === 1 ? 'Scegli la trovata' : `Scegli tutte le ${scegliibili.length} trovate`) : `Scegli le ${scegliibili.length} che si possono cambiare`}
-            </button>
-          )}
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelti(new Set(scegliibili.map((r) => r.id)))}>
+            {scegliibili.length === trovate.length ? (scegliibili.length === 1 ? 'Scegli la trovata' : `Scegli tutte le ${scegliibili.length} trovate`) : `Scegli le ${scegliibili.length} che si possono cambiare`}
+          </button>
         </div>
       )}
 
@@ -612,7 +682,7 @@ function CambiaVoce({ d, ids, righe, voci, onRileggi, onFatto, onChiudi }: { d: 
   )
 }
 
-function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { d: DatiSegreteria; voci: VoceContabile[]; casse: Cassa[]; chiusure: ChiusuraCassa[]; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
+function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { d: DatiSegreteria; voci: VoceContabile[]; casse: Cassa[]; chiusure: ChiusuraCassa[]; fai: Fai; onFatto: (nuova: RigaMovimento) => void; onChiudi: () => void }) {
   const oggi = oggiARoma()
   const [tipo, setTipo] = useState<'entrata' | 'uscita'>('uscita')
   const [data, setData] = useState(oggi)
@@ -679,7 +749,7 @@ function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { 
             const dati = { tipo, data, importo: cent, voceId, cassaId, descrizione: descrizione.trim(), nota: nota.trim() || undefined }
             const riepilogo = riepilogoMovimento(dati, voci.find((v) => v.id === voceId)?.nome ?? '', casse.find((c) => c.id === cassaId)?.nome ?? '')
             if (!(await chiedi(`Registrare questo movimento?\n${riepilogo.join('\n')}`, 'Sì, registra il movimento', { no: 'No, torna al modulo' }))) return
-            void fai(() => d.registraMovimento(dati), 'Movimento registrato', onFatto)
+            void fai(() => d.registraMovimento(dati), 'Movimento registrato', () => onFatto(rigaAppenaScritta({ tipo, data, importo: cent, descrizione: dati.descrizione, voce: voci.find((v) => v.id === voceId)?.nome ?? null, cassaId })))
           }}
         >
           Registra il movimento
@@ -692,7 +762,7 @@ function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { 
   )
 }
 
-function NuovoGiroconto({ d, casse, chiusure, fai, onFatto, onChiudi }: { d: DatiSegreteria; casse: Cassa[]; chiusure: ChiusuraCassa[]; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
+function NuovoGiroconto({ d, casse, chiusure, fai, onFatto, onChiudi }: { d: DatiSegreteria; casse: Cassa[]; chiusure: ChiusuraCassa[]; fai: Fai; onFatto: (nuova: RigaMovimento) => void; onChiudi: () => void }) {
   const oggi = oggiARoma()
   const [da, setDa] = useState(casse[0]?.id ?? '')
   const [a, setA] = useState(casse[1]?.id ?? '')
@@ -742,7 +812,7 @@ function NuovoGiroconto({ d, casse, chiusure, fai, onFatto, onChiudi }: { d: Dat
             const dati = { daCassaId: da, aCassaId: a, data, importo: cent, nota: nota.trim() || undefined }
             const riepilogo = riepilogoGiroconto(dati, casse.find((c) => c.id === da)?.nome ?? '', casse.find((c) => c.id === a)?.nome ?? '')
             if (!(await chiedi(`Registrare questo giroconto?\n${riepilogo.join('\n')}`, 'Sì, registra il giroconto', { no: 'No, torna al modulo' }))) return
-            void fai(() => d.registraGiroconto(dati), 'Giroconto registrato', onFatto)
+            void fai(() => d.registraGiroconto(dati), 'Giroconto registrato', () => onFatto(rigaAppenaScritta({ tipo: 'giroconto', data, importo: cent, descrizione: `Giroconto da ${casse.find((c) => c.id === da)?.nome ?? ''} a ${casse.find((c) => c.id === a)?.nome ?? ''}`, cassaId: da, cassaAId: a })))
           }}
         >
           Registra il giroconto
