@@ -160,7 +160,7 @@ class Component extends DCLogic {
     });
     return {
       c, voci,
-      nomeArea: aut.toUpperCase(),
+      nomeArea: aut === 'segreteria e amministrazione' ? 'GESTIONE' : aut.toUpperCase(),
       conRicerca: !amm,
       conLink: !amm,
       scuro: (p.tema || 'scuro') !== 'chiaro',
