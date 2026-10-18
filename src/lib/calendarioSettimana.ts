@@ -50,6 +50,17 @@ export function giorniDellaSettimana(primo: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => piu(primo, i))
 }
 
+/**
+ * Quali giorni della griglia si stringono: sabato e domenica senza lezioni, che
+ * altrimenti tengono due colonne larghe vuote. `inizi` null = la settimana non è
+ * ancora arrivata: non si stringe niente, per non allargarli di colpo dopo.
+ */
+export function giorniStretti(giorni: Date[], inizi: string[] | null): boolean[] {
+  if (inizi === null) return giorni.map(() => false)
+  const conLezioni = new Set(inizi.map((i) => chiaveGiorno(new Date(i))))
+  return giorni.map((g) => (g.getDay() === 6 || g.getDay() === 0) && !conLezioni.has(chiaveGiorno(g)))
+}
+
 /** Il mese del giovedì: la settimana «sta» dove cadono più dei suoi giorni, e vi sta sempre per almeno quattro. */
 export function meseDellaSettimana(primo: Date): MeseDelCalendario {
   const giovedi = piu(primo, 3)
