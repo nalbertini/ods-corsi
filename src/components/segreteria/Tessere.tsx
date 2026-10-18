@@ -23,8 +23,8 @@ import { Campo, Guaio, messaggio, Riga, Testa, useAvviso, useCarica } from './co
 type Fai = ReturnType<typeof useAvviso>['fai']
 
 const TIPI: Array<[TipoTessera, string]> = [
-  ['praticante', 'Atleta praticante'],
-  ['agonista', 'Atleta agonista'],
+  ['praticante', 'Praticante'],
+  ['agonista', 'Agonista'],
   ['dirigente', 'Dirigente'],
   ['tecnico', 'Tecnico'],
   ['altro', 'Altro'],
@@ -224,7 +224,7 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
                       <span style={{ fontSize: 13, color: 'var(--sec)' }}>
                         {r.corsi ? `${r.corsi} · ` : ''}
                         {r.ente}
-                        {r.tesseraAl ? ` · fino al ${r.tesseraAl.split('-').reverse().join('/')}` : r.esito === 'manca' ? ' · mai avuta' : ''}
+                        {r.tesseraAl ? ` · ${r.esito === 'scaduta' ? 'scaduta il' : 'fino al'} ${r.tesseraAl.split('-').reverse().join('/')}` : r.esito === 'manca' ? ' · mai avuta' : ''}
                       </span>
                     </span>
                     {t ? <Segno tono={t.tono}>{t.parola}</Segno> : <Segno tono="spento">NESSUN CORSO</Segno>}
@@ -297,7 +297,7 @@ export function ImportaTessere({ d }: { d: DatiSegreteria }) {
       <ol className="sg-passi">
         {['IL FOGLIO', 'IL CONTROLLO', 'NELL’APP'].map((nome, i) => (
           <li key={nome} aria-current={passo === i + 1 ? 'step' : undefined} data-fatto={passo > i + 1}>
-            <span className="num sg-passo-num">{i + 1}</span>
+            <span className="num sg-passo-num">{passo > i + 1 ? '✓' : i + 1}</span>
             <span className="num" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.16em' }}>
               {nome}
             </span>
