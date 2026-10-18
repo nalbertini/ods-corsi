@@ -271,6 +271,7 @@ const CSS_HOME = `
  */
 const CSS_CONTATTI = `
 .contatti-nuova h1{font-size:clamp(92px,9.72vw,140px)}
+.contatti-nuova~.invito{height:auto;min-height:300px}
 .recapiti-sez{padding:48px var(--margine) 0}
 .recapiti-sez .recapiti{grid-auto-rows:minmax(270px,auto)}
 .recapiti .tessera{position:relative}
