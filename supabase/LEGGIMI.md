@@ -564,8 +564,9 @@ Cosa fa `06-iscrizioni.sql`:
 e dati dei genitori, e col database vero l'app lo mostra solo quando
 l'informativa (`informativa.html`) è approvata, cioè quando in
 `src/lib/iscrizione.ts` `INFORMATIVA_BOZZA` è `false`: lo è dal 27 settembre
-2026. Se si rimette a `true` il passo torna al modulo Google
-(`LINK_ISCRIZIONE`). In prova il modulo è sempre acceso.
+2026. Se si rimette a `true` la pagina `iscrizioni/` non mostra più il
+tasto e dice di chiamare la segreteria (`SENZA_MODULO`). In prova il modulo è
+sempre acceso.
 
 **Le domande** sono ricavate dai moduli di autorizzazione e dai passi di
 prima, non copiate dal modulo Google, che senza accesso non si legge. Se
@@ -995,6 +996,23 @@ fatti. Dopo, l'app va ripuntata sul progetto nuovo (passo 9) e i file dello
 Storage ricaricati a mano: quelli dei certificati sono nella cartella
 `certificati/` della copia (`<persona>/certificato-<n>.<est>`), da ricaricare
 nel contenitore `certificati` con lo stesso nome.
+
+## 11. Il sito subito
+
+Il sito pubblico lo genera `.github/workflows/sito.yml` ogni cinque minuti.
+Per non aspettare il giro, dopo **PUBBLICA** (e dopo indirizzo, nascondi,
+cancella e menu) l'app chiede alla funzione **`sito`**
+(`functions/sito/index.ts`) di far partire il workflow: il sito è aggiornato
+in un paio di minuti. Usa gli stessi segreti del backup (`GITHUB_TOKEN`, con
+«Actions: Read and write»), quindi non c'è niente da aggiungere. Si pubblica
+come le altre:
+
+```sh
+supabase functions deploy sito --project-ref <id-del-progetto>
+```
+
+o dal pannello, **Edge Functions → Deploy a new function**, col nome `sito`.
+Senza la funzione l'app funziona uguale: il sito si aggiorna col giro a tempo.
 
 ## Le cose da decidere prima di usarlo sul serio
 

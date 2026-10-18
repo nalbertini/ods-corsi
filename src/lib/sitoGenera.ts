@@ -331,7 +331,8 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .pannello>*:not(:has(.tondi)){justify-content:space-between}
 .pannello .tessera:has(.tondi){display:grid;grid-template-columns:1fr auto;align-items:center;gap:0 40px}
 .pannello .tessera:has(.tondi)>*{grid-column:1}
-.pannello .tessera:has(.tondi)>.tondi{grid-column:2;grid-row:1 / span 4}
+.pannello .tessera:has(.tondi)>h3{grid-column:1 / -1}
+.pannello .tessera:has(.tondi)>.tondi{grid-column:2;grid-row:2 / span 3}
 .pannello .tessera:has(.tondi) p{margin:20px 0 28px}
 .pannello .tessera:has(.tondi) p:last-child{margin:0}
 .tondi{display:flex;gap:10px}

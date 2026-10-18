@@ -3,10 +3,11 @@ name: Sito
 # Il sito pubblico (www.officinedellosport.it) si rigenera dalle pagine pubblicate
 # nel pannello SITO e si manda nel repository del sito, che GitHub Pages serve.
 #
-# Gira ogni cinque minuti (il minimo di GitHub: spesso un po' di più), a mano
-# (Actions → Sito → Run workflow) e a ogni cambio del generatore. Dopo PUBBLICA,
-# nel pannello, il sito è aggiornato entro una decina di minuti. Se non è cambiato
-# niente, non fa commit e non sposta nulla.
+# Gira dopo ogni cambio fatto dal pannello SITO (l'app chiede alla funzione
+# `sito` di Supabase di farlo partire: il sito è aggiornato in un paio di minuti),
+# ogni cinque minuti come rete di sicurezza (il minimo di GitHub: spesso un po' di
+# più), a mano (Actions → Sito → Run workflow) e a ogni cambio del generatore.
+# Se non è cambiato niente, non fa commit e non sposta nulla.
 #
 # Senza la home pubblicata (codice 2 dello script) non c'è niente da pubblicare:
 # il giro finisce bene e il sito di prima resta com'è. Un guasto vero (database

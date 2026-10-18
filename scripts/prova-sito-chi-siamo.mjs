@@ -113,6 +113,8 @@ console.log('\n9. Cerchi degli istruttori, colori dei valori, piede e pulsante d
   ok('Instagram e Facebook stanno su una riga sola', [/<li><a [^>]*>Instagram<\/a><\/li><li><a [^>]*>Facebook<\/a><\/li>/.test(piede), /\.piede \.recapiti li:nth-child\(n\+3\)\{display:inline\}/.test(html('<p>x</p>'))], [true, true])
   const css = html('<p>x</p>').match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
   ok('il pannello senza foto tonde (la missione) ha il titolo in alto e il testo in basso', /\.pannello>\*:not\(:has\(\.tondi\)\)\{justify-content:space-between\}/.test(css), true)
+  // Con la colonna del testo a 1fr e le foto tonde a destra, a 1024px il titolo («ISTRUTTORI», 85px) restava largo ~290px e si spezzava a metà parola.
+  ok('il titolo del pannello con le foto tonde ha tutta la riga, le foto stanno sotto di lui', [/\.pannello \.tessera:has\(\.tondi\)>h3\{grid-column:1 \/ -1\}/.test(css), /\.pannello \.tessera:has\(\.tondi\)>\.tondi\{grid-column:2;grid-row:2 \/ span 3\}/.test(css)], [true, true])
   ok('il nome nel piede va a capo dopo «Officine»', /\.piede \.nome\{[^}]*max-width:5\.5em/.test(css), true)
 }
 

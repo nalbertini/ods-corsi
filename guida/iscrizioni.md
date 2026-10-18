@@ -12,28 +12,42 @@ segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
 
 ## Cosa c'è nella pagina
 
-- **Prima di iscriverti**: le **prove**, una lezione (3 €) o una settimana
-  (10 €), per chi non ha ancora deciso, con il tasto CHIAMA.
-- **I passi, in ordine**, ognuno col suo tasto:
-  1. **Leggi il modulo** — per maggiorenni, o per minori (firmato dal
-     genitore). Col modulo dell'app si firma col dito nell'ultimo passo; chi
-     preferisce lo stampa, lo firma a mano e ne carica la foto.
-  2. **Il pagamento** — la quota associativa e il trimestre, oppure l'annuale,
-     con l'IBAN da copiare con un tocco e il tasto **PAGA CON SATISPAY**, che
-     apre l'app sul negozio dell'associazione (il link è
-     `PAGAMENTO.satispay` in `src/lib/iscrizione.ts`). Oppure in contanti in
-     segreteria.
-  3. **La richiesta** — con il modulo dell'app (**COMPILA LA RICHIESTA**)
-     oppure, finché quello non è acceso, con il modulo Google (**APRI IL
-     MODULO**), che ha i suoi passi: scaricare il modulo, firmarlo e caricarlo.
-- **I costi** della stagione, quelli del [listino](segreteria/listino.md)
-  della segreteria, e il foglio in PDF finché il listino non è stato
-  cambiato. Passata la data del saldo (il 31 agosto) la colonna **SALDO 31/8**
-  sparisce: quel prezzo non vale più. Il foglio in PDF da scaricare riporta i
-  costi di partenza della stagione, nel nuovo aspetto: se la segreteria li
-  cambia da LISTINO, l'app mostra quelli nuovi ma il PDF resta quello di
-  partenza, finché non lo si rigenera.
-- **I contatti**: CHIAMA, MAPPA, INSTAGRAM, FACEBOOK, IL SITO.
+La pagina ha l'aspetto del sito della palestra (blu e giallo, sempre chiaro,
+qualunque sia il tema dell'app) e si legge dall'alto, in questo ordine:
+
+1. **La frase e il tasto per cominciare**: «Iscriviti a Officine Dello Sport»,
+   **COMPILA LA RICHIESTA** (giallo) e **CHIAMA**. Sotto, che la richiesta non
+   è ancora l'iscrizione e non si salva a metà (se esci, ricominci), e il
+   link all'**informativa privacy**. La segreteria guarda la richiesta e
+   richiama: la pagina non promette un giorno né un'ora.
+2. **Cosa ti serve**: la carta d'identità (del genitore, per un minore), il
+   certificato medico se ce l'hai (se no la richiesta parte lo stesso e lo
+   porti in segreteria), la ricevuta del pagamento se hai già pagato. Per un
+   minore firma il genitore.
+3. **Non sai ancora quale corso?** Le **prove**, una lezione (3 €) o una
+   settimana (10 €), con il tasto CHIAMA.
+4. **Quanto costa**: la quota associativa e le schede dei corsi, quelle del
+   [listino](segreteria/listino.md) della segreteria, con il foglio in PDF
+   finché il listino non è stato cambiato. Passata la data del saldo (il 31
+   agosto) la colonna **SALDO 31/8** sparisce: quel prezzo non vale più. Il
+   PDF riporta i costi di partenza della stagione: se la segreteria li cambia
+   da LISTINO, l'app mostra quelli nuovi ma il PDF resta quello di partenza,
+   finché non lo si rigenera.
+5. **Come si paga**: dopo la richiesta, oppure in segreteria. L'IBAN si copia
+   con un tocco (**COPIA IBAN**) e **PAGA CON SATISPAY** apre l'app sul
+   negozio dell'associazione (il link è `PAGAMENTO.satispay` in
+   `src/lib/iscrizione.ts`). La ricevuta si può caricare nella richiesta, ma
+   non serve per mandarla.
+6. **COMPILA LA RICHIESTA** ancora una volta, per chi ha letto i costi.
+7. **Il modulo**: le autorizzazioni si firmano col dito nella richiesta; i due
+   PDF (**MAGGIORENNI** e **MINORI**) servono a leggerle o a stamparle prima.
+8. **Hai un dubbio?** Indirizzo e telefono, **CHIAMA** e **MAPPA**.
+9. In fondo **INSTAGRAM**, **FACEBOOK**, **IL SITO**, e **IL VESTIARIO** se gli
+   ordini sono aperti.
+
+Se l'informativa tornasse una bozza, il tasto non c'è, né il secondo: la
+pagina dice «Per iscriverti chiamaci o passa in palestra». Il modulo Google
+non c'è più.
 
 ## Il modulo di iscrizione dell'app
 

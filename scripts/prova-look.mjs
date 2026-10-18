@@ -334,6 +334,14 @@ ok('colori nelle regole del look: solo i 12 del sito, #ffffff e #121212',
   delLook.flatMap((r) => (r.corpo.match(HEX) ?? []).map((h) => h.toLowerCase())).filter((h) => !AMMESSI_LOOK.has(h)), [])
 
 
+// Il menu in cinque gruppi: il titolo resta maiuscolo per CSS (il testo è con l'iniziale maiuscola), voci da 44px.
+ok('.sg-gruppo-titolo: maiuscolo per CSS', ha('.sg-gruppo-titolo', /text-transform:\s*uppercase/), true)
+ok('.sg-gruppo-titolo: Inter (var(--body))', ha('.sg-gruppo-titolo', /font-family:\s*var\(--body\)/), true)
+ok('.sg-gruppo-titolo: 12px, peso 600', ha('.sg-gruppo-titolo', /font-size:\s*12px/) && ha('.sg-gruppo-titolo', /font-weight:\s*600/), true)
+ok('.sg-voce: altezza minima 44px', ha('.sg-voce', /min-height:\s*44px/), true)
+ok('.sg-voce: raggio 6px, peso 500', ha('.sg-voce', /border-radius:\s*6px/) && ha('.sg-voce', /font-weight:\s*500/), true)
+
+
 // --- 10. il menu e la barra del telefono, dove --dim è chiaro -----------------
 console.log('\nNel menu e nella barra del telefono')
 for (const sel of ['.sg-menu .sg-tag', '.sg-barra-tel .sg-tag'])
@@ -358,6 +366,25 @@ ok('.sg-lezione[data-annullata]: niente opacità (4,5:1)', ha(".sg-lezione[data-
 for (const sel of ['.sg-corso[aria-pressed=\'true\']', '.sg-lista-tasto[aria-pressed=\'true\']', '.sg-sett-titolo[aria-expanded=\'true\']'])
   ok(`${sel}: scelto senza celeste, con contorno var(--blu)`, ha(sel, /background:\s*var\(--surface\)/) && !/--surface-2/.test(esatto(sel)) && /var\(--blu\)/.test(esatto(sel)), true)
 
+ok('la testata del Banco (.bn-alto) prende i token chiari del menu, come .sg-menu', ha('.bn-alto', /--text:\s*#ffffff/) && ha('.bn-alto', /--dim:\s*#cfe6f4/), true)
+ok('le voci del menu non vanno a capo (white-space: nowrap)', ha('.sg-voce', /white-space:\s*nowrap/), true)
+
+// --- 12. DA FARE e COSA MANCA: titoli in Inter, cinque caselle in riga ---------
+console.log('\nDA FARE e COSA MANCA')
+for (const [sel, re, cosa] of [
+  ['.sg-mancano', /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/, 'cinque caselle in una riga'],
+  [".sg-mancano-nota[data-fissa='true']", /display:\s*none/, 'senza la nota di sempre (gli avvisi sul conto si vedono)'],
+  ['.sg-mancano-n', /font-size:\s*44px/, 'numero a 44px'],
+  ['.sg-mancano-titolo', /font-family:\s*var\(--body\)/, 'titolo in Inter'],
+  ['.sg-mancano-titolo', /font-size:\s*14px/, 'titolo a 14px'],
+  ['.sg-mancano-titolo', /font-weight:\s*600/, 'titolo a 600'],
+  ['.sg-mancano-titolo', /letter-spacing:\s*0\s*;/, 'titolo senza spaziatura'],
+  ['.sg-dafare-titolo', /font-family:\s*var\(--body\)/, 'titolo della riga in Inter'],
+  ['.sg-dafare-titolo', /font-size:\s*21px/, 'titolo della riga a 21px'],
+  ['.sg-dafare-titolo', /font-weight:\s*700/, 'titolo della riga a 700'],
+  ['.sg-dafare-titolo', /letter-spacing:\s*0\s*;/, 'titolo della riga senza spaziatura'],
+]) ok(`${sel}: ${cosa}`, ha(sel, re), true)
+ok('fra 768 e 1360px le cinque caselle non prendono i bordi e lo spazio del caso a due colonne (nth-child 5 e n+3)', /grid-column:\s*auto/.test(esatto(".sg-mancano-casella:nth-child(5)")) && /border-top:\s*0/.test(esatto('.sg-mancano-casella:nth-child(n + 3)')), true)
 console.log(`\n${asserzioni} asserzioni.`)
 console.log(guai ? `${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : 'TUTTO A POSTO')
 process.exit(guai ? 1 : 0)
