@@ -2203,7 +2203,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 /* La scheda di un iscritto o di un istruttore: tutta la sezione, al posto dell'elenco. */
 .sg-torna { align-self: flex-start; min-height: 40px; padding: 0 14px; font-size: 14px; }
 .sg-scheda-piena { position: static; gap: 24px; padding: 24px 28px; }
-.sg-scheda-griglia { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 40px; align-items: start; }
 .sg-scheda-campi { max-width: 720px; }
 .sg-scheda-piede { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding-top: 16px; border-top: 2px solid var(--line-soft); }
 .sg-scheda-piede > .sg-btn { flex: 0 0 auto; min-width: 180px; }
@@ -2625,7 +2624,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 
 @media (max-width: 1000px) {
   .sg-scheda-piena { padding: 20px; }
-  .sg-scheda-griglia { grid-template-columns: minmax(0, 1fr); }
   .sg-scheda-piede > .sg-btn { flex: 1 1 0; min-width: 0; }
   .sg-tre { grid-template-columns: minmax(0, 1fr); }
   .sg-ricevuta-voce { grid-template-columns: repeat(2, minmax(0, 1fr)); }
