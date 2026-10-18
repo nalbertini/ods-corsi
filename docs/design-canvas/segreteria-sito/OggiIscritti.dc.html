@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- OGGI · ISCRITTI come l’app lo mostra adesso (tema chiaro), con i componenti della libreria. -->
+<div style="display:flex;width:1440px;min-height:1100px;background:#f4f4f1">
+  <div style="width:240px;flex-shrink:0">
+    <dc-import name="Menu" tema="chiaro" attiva="ISCRITTI" numeri="RICHIESTE ONLINE:3, PRESENZE:2, PRESENZE ISTRUTTORI:14" altezza="1100px" hint-size="240px,1100px"></dc-import>
+  </div>
+  <main style="flex:1;min-width:0;padding:28px 36px 36px">
+    <dc-import name="CosaManca" tema="chiaro" colonne="2" voci="14|APPELLI NON FATTI|senza appello, ultimi 30 giorni|r; 47|CERTIFICATI SCADUTI|scaduti o mancanti|r; 37|PAGAMENTI|quote non in regola|r; 32|TESSERE|senza tessera valida|r; 3|RICHIESTE ONLINE|da accogliere|g" hint-size="100%,330px"></dc-import>
+    <h1 style="margin:0;font-family:'Saira Condensed','Helvetica Neue',Arial,sans-serif;font-style:oblique 9deg;font-size:34px;font-weight:700;letter-spacing:0.04em;line-height:1;color:#161616">ISCRITTI</h1>
+    <p style="margin:6px 0 0;font-family:Barlow,'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:#656561">198 persone attive · 47 senza certificato valido · 37 da pagare · 18 certificati non archiviati.</p>
+    <div style="margin-top:16px"><dc-import name="FiltriIscritti" tema="chiaro" attivi="DA PAGARE" hint-size="100%,110px"></dc-import></div>
+    <div style="margin-top:16px"><dc-import name="TestataTabella" tema="chiaro" hint-size="100%,40px"></dc-import></div>
+    <div style="display:flex;flex-direction:column">
+      <dc-import name="RigaIscritto" tema="chiaro" nome="Barbieri Alessandro" corsi="Giocomotricità" contatto="347 204 1404" bollini="IN REGOLA:verde" frequenza="8/8" hint-size="100%,60px"></dc-import>
+      <dc-import name="RigaIscritto" tema="chiaro" nome="Barbieri Alice" corsi="Preparazione atletica 2" contatto="338 429 8067" bollini="NO TESSERA:rosso" frequenza="6/8" hint-size="100%,60px"></dc-import>
+      <dc-import name="RigaIscritto" tema="chiaro" nome="Barbieri Aurora" corsi="Judo 3" contatto="338 435 2584" bollini="NO TESSERA:rosso" frequenza="12/12" hint-size="100%,60px"></dc-import>
+      <dc-import name="RigaIscritto" tema="chiaro" nome="Barbieri Beatrice" corsi="Prepugilistica" contatto="333 322 1790" bollini="NO CERTIFICATO:rosso|MANCA LA DATA:spento" frequenza="0/13" poco="{{ true }}" hint-size="100%,76px"></dc-import>
+      <dc-import name="RigaIscritto" tema="chiaro" nome="Barbieri Elena" corsi="Judo 2" contatto="347 118 2233" bollini="NO CERTIFICATO:rosso" frequenza="13/13" hint-size="100%,60px"></dc-import>
+      <dc-import name="RigaIscritto" tema="chiaro" nome="Bassi Marco" corsi="Lotta adulti" contatto="339 551 0072" bollini="CERTIFICATO IN SCADENZA:giallo" frequenza="5/6" hint-size="100%,60px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>
