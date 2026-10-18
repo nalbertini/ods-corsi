@@ -17,6 +17,15 @@ export const AVVISO_RICHIESTA = 'La richiesta non è ancora l’iscrizione. Non 
 /** Al posto del tasto, quando il modulo non è aperto (informativa non ancora approvata). */
 export const SENZA_MODULO = 'Per iscriverti chiamaci o passa in palestra.'
 
+/** In coda al testo della prova: nessuna promessa sullo sconto, solo come cominciare. */
+export const PROVA_CHIAMA = 'Per cominciare, passa in palestra o chiamaci.'
+
+/** In cima al riquadro dei contatti. */
+export const DUBBIO = 'Hai un dubbio? Chiamaci o passa in palestra.'
+
+/** Prima del link all'informativa, sotto il tasto per cominciare. */
+export const INFORMATIVA_FRASE = 'Come trattiamo i tuoi dati:'
+
 /** Cosa tenere pronto. Il certificato non blocca: la segreteria lo prende anche di persona. */
 export const COSA_SERVE: string[] = [
   'La carta d’identità: la tua, o quella del genitore se si iscrive un minore.',

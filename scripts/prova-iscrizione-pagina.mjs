@@ -64,6 +64,7 @@ ok('COSA_SERVE: il certificato non blocca («lo stesso»)', /certificato medico/
 ok('COSA_SERVE nomina la ricevuta', /ricevuta/.test(serve), true)
 ok('COSA_SERVE: per un minore firma il genitore', /minore firma il genitore/.test(serve), true)
 ok('COME_SI_PAGA', P.COME_SI_PAGA, { titolo: 'Dopo la richiesta, oppure in segreteria.', ricevuta: 'La ricevuta la puoi caricare nella richiesta, se hai già pagato.' })
+ok('PROVA_CHIAMA, DUBBIO, INFORMATIVA_FRASE', [P.PROVA_CHIAMA, P.DUBBIO, P.INFORMATIVA_FRASE], ['Per cominciare, passa in palestra o chiamaci.', 'Hai un dubbio? Chiamaci o passa in palestra.', 'Come trattiamo i tuoi dati:'])
 ok('MODULO_DA_LEGGERE', P.MODULO_DA_LEGGERE, { titolo: 'Si firma col dito, nella richiesta.', testo: 'Se vuoi, prima lo leggi o lo stampi: quello per maggiorenni, o quello per minori che firma il genitore.' })
 
 // --- b. la prova 3/10 € ------------------------------------------------------
@@ -88,6 +89,10 @@ ok('usa sezioniPagina( (l’ordine non è scritto a mano)', /sezioniPagina\(/.te
 ok('chiama apriAspettoModulo( (tutta la pagina ha l’aspetto del sito)', /apriAspettoModulo\(/.test(pag), true)
 ok('non nomina più «metro Fermi»', pag.includes('metro Fermi'), false)
 ok('non usa più LINK_ISCRIZIONE', pag.includes('LINK_ISCRIZIONE'), false)
+// I testi stanno in lib: una frase ritoccata nel .tsx non farebbe cadere nessuna prova.
+for (const f of ['Per cominciare', 'Hai un dubbio', 'Come trattiamo'])
+  ok(`«${f}…» non è scritta nel .tsx`, pag.includes(f), false)
+ok('il .tsx usa le frasi di lib (PROVA_CHIAMA, DUBBIO, INFORMATIVA_FRASE)', ['PROVA_CHIAMA', 'DUBBIO', 'INFORMATIVA_FRASE'].every((x) => pag.includes(x)), true)
 
 const conta = (testo, x) => testo.split(x).length - 1
 const costi = sorgente('src/components/Costi.tsx')
@@ -111,9 +116,9 @@ const aPartireDa = (cond) => {
 }
 const stretta = media.some((b) => {
   const da = aPartireDa(b.cond)
-  return da !== null && da <= 960 && [...b.corpo.matchAll(SEL)].some((r) => /max-width:\s*720px/.test(r[2]))
+  return da === 640 && [...b.corpo.matchAll(SEL)].some((r) => /max-width:\s*720px/.test(r[2]))
 })
-ok('a 960px e oltre `.scroll > .iscrizioni` ha max-width: 720px', stretta, true)
+ok('da 640px `.scroll > .iscrizioni` ha max-width: 720px (e vale anche a 960px e oltre: la regola non ha un max-width)', stretta, true)
 ok('la griglia a due colonne (\'passi costi\') non c’è più', /grid-template-areas:\s*'passi costi'/.test(css), false)
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

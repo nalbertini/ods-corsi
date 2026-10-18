@@ -862,7 +862,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 
 /* ---------- iscrizioni ---------- */
 
-.passi { list-style: none; margin: 0; }
 /* I pezzi del design system per le iscrizioni (`components/ds.tsx`). */
 .rule-conto { font-size: 15px; font-weight: 600; color: var(--dim); }
 .rule-dentro { padding: 12px 0 0; }
@@ -942,19 +941,11 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .iscrizioni-piede { padding-top: 14px; padding-bottom: 32px; }
 .iscrizioni-contatti { padding-bottom: 16px; }
 .prova-testa { gap: 10px; align-items: baseline; flex-wrap: wrap; }
-.passi { gap: 10px; padding-bottom: 16px; }
-.passo-testo { gap: 8px; min-width: 0; }
-.pagamento { gap: 8px; }
 .iscrizioni-nota { font-size: 13px; color: var(--dim); padding-bottom: 20px; }
 .costi { gap: 10px; padding-bottom: 16px; }
 .costi > a.passo-btn:last-child { margin-top: 6px; }
 .offerta-titolo { font-size: 17px; font-weight: 700; letter-spacing: 0.06em; }
 .costo-etichetta { align-self: center; }
-.passo { display: flex; align-items: flex-start; gap: 14px; padding: 14px; }
-.passo-num {
-  font-size: 26px; font-weight: 700; line-height: 1; color: var(--text);
-  min-width: 22px; text-align: center;
-}
 .passo-titolo { font-size: 17px; font-weight: 600; line-height: 1.3; }
 .passo-dettaglio { font-size: 14px; color: var(--dim); line-height: 1.4; }
 .passo-dettaglio[data-tono='testo'] { color: var(--text); }

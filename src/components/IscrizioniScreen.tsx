@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { INFORMATIVA_PUBBLICA, MODULI, MODULO_IN_APP, PAGAMENTO, PROVA } from '../lib/iscrizione'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
-import { APERTURA, AVVISO_RICHIESTA, COME_SI_PAGA, COSA_SERVE, MODULO_DA_LEGGERE, SENZA_MODULO, sezioniPagina, type Sezione } from '../lib/paginaIscrizioni'
+import { APERTURA, AVVISO_RICHIESTA, COME_SI_PAGA, COSA_SERVE, DUBBIO, INFORMATIVA_FRASE, MODULO_DA_LEGGERE, PROVA_CHIAMA, SENZA_MODULO, sezioniPagina, type Sezione } from '../lib/paginaIscrizioni'
 import { CONTATTI, SITO, chiama } from '../lib/sito'
 import { Costi } from './Costi'
 import { Dettaglio, Etichetta, Cifra, Riquadro, Tasti, Tasto, Titoletto } from './ds'
@@ -80,7 +80,7 @@ function Apertura({ onModulo }: { onModulo: () => void }) {
       {MODULO_IN_APP && <Dettaglio>{AVVISO_RICHIESTA}</Dettaglio>}
       {INFORMATIVA_PUBBLICA && (
         <Dettaglio>
-          Come trattiamo i tuoi dati:{' '}
+          {INFORMATIVA_FRASE}{' '}
           <a href={INFORMATIVA_PUBBLICA} target="_blank" rel="noreferrer" className="link-sec">
             l'informativa privacy
           </a>
@@ -108,7 +108,7 @@ function CosaServe() {
   )
 }
 
-/** Per chi non ha ancora deciso: dopo i passi dell'iscrizione nel modulo a passi, prima dei costi qui. */
+/** Per chi non ha ancora deciso. L'etichetta è un prop perché il modulo a passi (`IscrizioneAPassi`) tiene «PRIMA DI ISCRIVERTI». */
 export function Prova({ etichetta = 'PRIMA DI ISCRIVERTI' }: { etichetta?: string }) {
   return (
     <section className="pad iscrizioni-prova">
@@ -120,7 +120,7 @@ export function Prova({ etichetta = 'PRIMA DI ISCRIVERTI' }: { etichetta?: strin
             <Cifra>{c.costo}</Cifra>
           </span>
         ))}
-        <Dettaglio>{PROVA.testo} Per cominciare, passa in palestra o chiamaci.</Dettaglio>
+        <Dettaglio>{PROVA.testo} {PROVA_CHIAMA}</Dettaglio>
         <Tasto href={chiama} qui>
           CHIAMA
         </Tasto>
@@ -134,7 +134,7 @@ export function Contatti({ social = true }: { social?: boolean }) {
   return (
     <section className="pad iscrizioni-contatti">
       <Riquadro>
-        <span className="passo-titolo">Hai un dubbio? Chiamaci o passa in palestra.</span>
+        <span className="passo-titolo">{DUBBIO}</span>
         <Dettaglio>
           {CONTATTI.indirizzo}. Telefono <span className="num testo-pieno">{CONTATTI.telefono}</span>.
         </Dettaglio>
