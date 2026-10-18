@@ -270,6 +270,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.sito_pagine') is not null
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'salva_bozza_sito')
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'sito_pagine_pubbliche')),
+  ('53-codice-fiscale-stesso-nome.sql', 'accogliere aggancia dal codice fiscale solo chi ha lo stesso nome',
+    exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%lower(p.cognome) = lower(r.cognome)%')),
   ('54-pagamenti-diretti.sql', 'i pagamenti fatti a mano, senza ricevuta',
     to_regclass('public.pagamenti_diretti') is not null
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'registra_pagamento_diretto')
