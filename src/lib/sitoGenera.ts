@@ -3,7 +3,7 @@ import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
 import { GRIGLIA_MASSIMA, collage, conFila, impagina, persona, testataCorso } from './sitoLayout'
 import { elencoIstruttori, schedaScarna, type Cornice } from './sitoIstruttori'
-import { CSS_CORSI } from './sitoCorsi'
+import { CSS_CORSI, CSS_CORSI_NUOVA, corsiNuova, eCorsiNuova } from './sitoCorsi'
 import { CSS_INTERNE } from './sitoInterne'
 import { cssFoci, cssFociSchede } from './sitoFoto'
 import { eContattiNuova, contattiNuova } from './sitoContatti'
@@ -1069,10 +1069,10 @@ function social(c: Contesto, titolo: string, descrizione: string): string {
   ].join('')
 }
 
-function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssContatti?: boolean; cssCorsoNuovo?: string; dati?: string }): string {
+function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssContatti?: boolean; cssCorsoNuovo?: string; cssCorsi?: boolean; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
 }
 
 /**
@@ -1091,6 +1091,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
   if (!PAGINE_NON_CORSO.has(p.slug) && !p.diLegge && eCorsoNuovo(pulito, TESTI.iscrizione)) return paginaCorsoNuovo(p, c, conContatti, pulito)
   if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, conContatti, pulito)
+  if (p.slug === 'corsi' && !p.diLegge && eCorsiNuova(pulito, TESTI.iscrizione)) return paginaCorsiNuova(p, c, conContatti, pulito)
   if (p.slug === 'chi-siamo' && !p.diLegge && eChiSiamoNuova(pulito, TESTI.iscrizione)) return paginaChiSiamoNuova(p, c, conContatti, pulito)
   if (p.slug === 'contatti' && !p.diLegge && eContattiNuova(pulito, TESTI.iscrizione)) return paginaContattiNuova(p, c, conContatti, pulito)
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
@@ -1126,6 +1127,15 @@ function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, p
   const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati })
+}
+
+/** I corsi nuova (sitoCorsi.ts): testata col solo titolo e la frase, nove schede, chiamata finale. Senza la chiamata nel testo resta l'invito di sempre. */
+function paginaCorsiNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+  const h = corsiNuova(pulito, TESTI.iscrizione)
+  const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${h.frase ? `<p>${h.frase}</p>` : ''}</div></section>`
+  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico pagina-corsi">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsi: true, dati })
 }
 
 /** La pagina del corso rivista (sitoCorso.ts): come la Home nuova, con la foto di apertura o la fascia sotto il titolo. */
