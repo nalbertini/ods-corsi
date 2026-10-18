@@ -325,6 +325,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('62-sito-pezzi.sql', 'le pagine del sito a pezzi: la struttura salvata accanto alla bozza, scritta solo dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'sito_pagine' and column_name = 'bozza_pezzi')
-    and to_regprocedure('public.salva_bozza_pezzi_sito(uuid,integer,text,text,text,jsonb)') is not null)
+    and to_regprocedure('public.salva_bozza_pezzi_sito(uuid,integer,text,text,text,jsonb)') is not null),
+  ('63-importa-prima-nota.sql', 'l''import dello storico dei movimenti dal vecchio programma, solo per chi cura i conti',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'movimenti' and column_name = 'origine_import')
+    and to_regprocedure('public.importa_prima_nota(jsonb)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;
