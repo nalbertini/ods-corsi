@@ -167,5 +167,20 @@ console.log('\n8. la causale con caratteri strani e il pacchetto SQL')
   ok('un testo con $json$ dentro non chiude il tag a metà', prova(() => { const tag = /^select importa_prima_nota\(\$(\w+)\$/.exec(strana)[1]; return [tag !== 'json', strana.split(`$${tag}$`).length === 3] }), [true, true])
 }
 
+console.log('\n9. una riga sotto una riga non è sempre la sua causale che va a capo')
+{
+  const RIGA = '05/05/2020   Cassa Contanti   Uscita   detersivo                      €10,00   €10,00'
+  const causale = (...sotto) => prova(() => m.leggiPrimaNota([RIGA, ...sotto].join('\n')).righe[0].causale)
+  const fondo = ' '.repeat(40)
+  ok('una riga rientrata sotto si attacca (è la causale che va a capo)', causale(`${fondo}per la palestra`), 'detersivo per la palestra')
+  ok('dopo il salto pagina il «Pagina 2 di 2» rientrato non si attacca, anche senza riga vuota', causale(`\f${fondo}Pagina 2 di 2`), 'detersivo')
+  ok('l\'intestazione ripetuta in cima alla pagina non si attacca', causale(`${fondo}Elenco Movimenti Prima Nota`), 'detersivo')
+  ok('una riga con una cifra in euro (il piede) non si attacca', causale(`${fondo}€      €`), 'detersivo')
+  ok('una riga poco rientrata non è una causale', causale('     Totale'), 'detersivo')
+  ok('una riga vuota chiude la causale', causale('', `${fondo}Pagina 1 di 2`), 'detersivo')
+  const dopoScartata = prova(() => m.leggiPrimaNota([RIGA, '06/05/2020   Cassa Contanti   Uscita   a zero      €0,00   €0,00', `${fondo}resto della riga a zero`].join('\n')).righe[0].causale)
+  ok('quel che segue una riga scartata non finisce sulla riga buona di prima', dopoScartata, 'detersivo')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
