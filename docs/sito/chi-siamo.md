@@ -3,8 +3,8 @@
 Testo da incollare nel pannello SITO (PAGINE › Chi siamo) per avere la pagina
 rivista: titolo e frase, foto di gruppo con la frase grande, due tessere,
 quattro numeri, il pannello «Gli istruttori», la fila di quattro foto con il
-nome del corso, la missione con foto, i quattro valori e la chiamata finale con
-i due pulsanti. **Finché non si incolla il testo nuovo la pagina resta com'è
+nome del corso, la missione con foto, i quattro valori, le citazioni di chi studia lo sport e la
+chiamata finale con i due pulsanti. **Finché non si incolla il testo nuovo la pagina resta com'è
 oggi**: il sito riconosce quella nuova da un pulsante verso il modulo online
 (`https://app.officinedellosport.it/iscrizioni/`) in una delle sezioni. Il
 testo di prima è in [`scripts/fixture-chi-siamo-vecchia.html`](../../scripts/fixture-chi-siamo-vecchia.html).
@@ -77,6 +77,7 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
 
 - Il titolo è più piccolo (120 px) e la foto di gruppo ha la frase grande sulla destra; i due testi «Chi siamo oggi» e «Come tutto è iniziato» sono lunghi uguale e con la stessa misura.
 - I quattro numeri sono nell'ordine della Home: **35+** anni di sport, **9** attività, **300+** atleti, **13** tecnici (prima 8 attività).
+- Nuove, prima della chiamata finale: le tre citazioni di «Lo sport secondo chi lo studia», che prima stavano nella Home.
 - «Gli istruttori»: una foto grande e il pulsante «Conosci gli istruttori» (porta a `/istruttori/`); il testo non ripete più «Tredici».
 - La fila di foto ha una didascalia per foto e il pulsante «Vedi tutti i corsi»; la foto di aikido è nuova (quella di prima compariva due volte).
 - La missione ha una foto.

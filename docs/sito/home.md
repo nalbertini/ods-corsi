@@ -89,7 +89,7 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
 
 - Titolo da 156 px su tre righe, due pulsanti, foto di gruppo orizzontale; quattro numeri uguali; «Prova una settimana a 5 €» non è più un numero ma un pulsante.
 - Nove schede con foto (Judo, Lotta, Aikido, Preparazione atletica, Giocomotricità) o con l'iniziale, con testi di 12-14 parole.
-- «Perché unirti a noi?» e «Lo sport secondo chi lo studia» non stanno più nella Home: i fatti sono nei quattro numeri sotto il titolo, le citazioni sono in Chi siamo (prima della chiamata finale). Il testo di questi due blocchi non è perso: i quattro punti non hanno un dato che li provi (i «podi» non hanno un numero), le citazioni sono in `chi-siamo.html`.
+- «Perché unirti a noi?» e «Lo sport secondo chi lo studia» non stanno più nella Home: i fatti sono nei quattro numeri sotto il titolo, le citazioni sono in Chi siamo (prima della chiamata finale).
 - «Lo sport secondo chi lo studia» al posto di «Cosa dicono gli esperti»; «Cosa dicono di noi» al posto di «Cosa dicono i nostri clienti» (recensioni uguali a prima, refusi compresi).
 - Cinque domande al posto di sei (le due sulla prova sono una).
 - Menu: sul telefono un tasto MENU; in testata e nel piede «vicino alla metro Fermi».
