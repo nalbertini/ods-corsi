@@ -34,7 +34,7 @@ const P = 'https://abc.supabase.co/storage/v1/object/public/sito/'
 const img = (n) => `<img src="${P}f${n}.jpg" alt="Foto ${n}" />`
 const testo =
   '<h3>Telefono</h3><p>346 329 2786</p><h3>Instagram</h3><p>officine.dellosport</p><h3>Facebook</h3><p>Officine dello Sport</p>' +
-  '<h3>Indirizzo</h3><p>Via Sassi 26, Collegno</p><p>A pochi metri dalla metropolitana Fermi</p>' +
+  '<h3>Indirizzo</h3><p>Via Vittorio Sassi 26, Collegno</p><p>A pochi metri dalla metropolitana Fermi</p>' +
   `${img(1)}<p><a class="pulsante" href="https://maps.example/x">Ottieni indicazioni</a></p><p>A pochi metri dalla metropolitana Fermi</p>${img(2)}${img(3)}${img(4)}` +
   '<h2>Hai qualche domanda?</h2><p>Qui trovi le informazioni.</p>' + [1, 2, 3, 4, 5, 6].map((n) => `<h3>Domanda ${n}?</h3><p>Risposta ${n}</p>`).join('')
 const genera = (slug, t) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug, titolo: 'T', descrizione: 'd', testo: t }], menu: [], rinvii: [], ospitiImmagini: [P] })
@@ -55,7 +55,7 @@ console.log('\n1. I recapiti: tessere prima del primo titolo grande')
   ok('una griglia da 4 tessere «recapiti» nella sezione di apertura', conta(apertura, /<div class="tessere n-4 recapiti">/g), 1)
   ok('i colori: giallo, blu, inchiostro, chiara', [...apertura.matchAll(/<article class="tessera (\w+)/g)].map((m) => m[1]), ['giallo', 'blu', 'inchiostro', 'chiara'])
   ok('il telefono è un valore breve, l’Instagram no', [...apertura.matchAll(/<article class="tessera \w+( breve)?">/g)].map((m) => Boolean(m[1])), [true, false, false, false])
-  ok('l’indirizzo ha il valore e la nota', /<h3>Indirizzo<\/h3><p>Via Sassi 26, Collegno<\/p><p>A pochi metri dalla metropolitana Fermi<\/p>/.test(apertura), true)
+  ok('l’indirizzo ha il valore e la nota', /<h3>Indirizzo<\/h3><p>Via Vittorio Sassi 26, Collegno<\/p><p>A pochi metri dalla metropolitana Fermi<\/p>/.test(apertura), true)
   ok('l’ultima tessera non si prende la mappa', conta(apertura.split('</article></div>')[0], /<img/g), 0)
   ok('la mappa è la prima foto: larga, dopo le tessere', apertura.indexOf('tessera foto larga') > apertura.indexOf('recapiti'), true)
   ok('poi il pulsante «Ottieni indicazioni», poi la fila di 3 foto', [apertura.indexOf('Ottieni indicazioni') > apertura.indexOf('tessera foto larga'), apertura.indexOf('foto-fila') > apertura.indexOf('Ottieni indicazioni'), conta(apertura, /<div class="foto-fila">/g)], [true, true, 1])
@@ -117,7 +117,7 @@ console.log('\n5. Quel che il design ha e il sito non aveva')
   ok('piede: il nome va a capo dopo «Officine», senza titoli né riga «©»', [/<p class="nome">Officine<br>dello Sport<\/p>/.test(pie), /<h2/.test(pie), /class="fine"/.test(pie)], [true, false, false])
   ok('piede: le pagine del menu e quelle di legge sono due elenchi senza titolo', [/<nav class="piede-menu" aria-label="Pagine"><a href="\/">Home<\/a><a href="\/contatti\/"[^>]*>Contattaci<\/a><\/nav>/.test(pie), /<ul class="piede-legale"><li><a href="\/privacy\/">Privacy policy<\/a><\/li><\/ul>/.test(pie)], [true, true])
   const mappa = (apertura.match(/<figure class="tessera foto larga mappa">([\s\S]*?)<\/figure>/) || [, ''])[1]
-  ok('la mappa ha segnaposto, targhetta con nome e indirizzo, e il credito OpenStreetMap', [/<span class="segnaposto" aria-hidden="true"><\/span>/.test(mappa), /<span class="targhetta">Officine dello Sport<span>Via Sassi 26, Collegno<\/span><\/span>/.test(mappa), /<span class="credito">© OpenStreetMap contributors<\/span>/.test(mappa)], [true, true, true])
+  ok('la mappa ha segnaposto, targhetta con nome e indirizzo, e il credito OpenStreetMap', [/<span class="segnaposto" aria-hidden="true"><\/span>/.test(mappa), /<span class="targhetta">Officine dello Sport<span>Via Vittorio Sassi 26, Collegno<\/span><\/span>/.test(mappa), /<span class="credito">© OpenStreetMap contributors<\/span>/.test(mappa)], [true, true, true])
   ok('una sola mappa: le foto di dopo non l’hanno', conta(apertura, /mappa"/g), 1)
   ok('accanto al pulsante delle indicazioni c’è la nota (in una pillola bianca)', /<p>A pochi metri dalla metropolitana Fermi<\/p>/.test(apertura.split('foto-fila')[0].split('Ottieni indicazioni')[1] ?? ''), true)
   ok('mappa: segnaposto al centro (44px), targhetta a destra e in alto', [/left:\s*calc\(50% - 22px\)/.test(css('.mappa .segnaposto')), /top:\s*calc\(50% - 52px\)/.test(css('.mappa .targhetta')), /background:\s*var\(--giallo\)/.test(css('.mappa .segnaposto'))], [true, true, true])

@@ -66,7 +66,7 @@ console.log('\n1. La pagina di Maurizio ha la forma del design')
   ok('le sezioni, in ordine, con le loro tessere', sezioni.map((s) => `${s.titolo}:${s.tessere}`), ['In breve:4', 'La sua storia:3', 'Il percorso:3', 'Fuori dal tatami:1', 'Gli altri istruttori:2'])
   ok('«In breve» ha Ruolo, Corsi, Quando e Titoli', ['Ruolo', 'Corsi', 'Quando', 'Titoli'].map((t) => new RegExp(`<h3>${t}</h3>`).test(h)), [true, true, true, true])
   ok('il percorso ha i tre elenchi (federazione, scuola, titoli)', conta(h, /<article class="tessera [a-z]+"><h3>(Federazione e sport|Scuola|Titoli e studi)<\/h3><ul>/g), 3)
-  ok('la descrizione è la frase del design', campo(md, 'Descrizione'), 'Maestro di Judo, docente di Educazione Fisica e presidente di ASD Il Centro Judo.')
+  ok('la descrizione è la frase del design', campo(md, 'Descrizione'), 'Maestro di Judo, docente di Educazione Fisica e presidente di A.S.D. Il Centro Judo.')
 }
 
 console.log('\n2. Nessun recapito personale')
@@ -74,7 +74,7 @@ console.log('\n2. Nessun recapito personale')
   for (const [slug] of ISTRUTTORI) {
     const md = leggi(`${DIR}/${slug}.md`)
     const t = testo(md) + campo(md, 'Descrizione')
-    ok(`${slug}: né email, né telefono, né «via»`, [/[\w.-]+@[\w-]+\.\w+/.test(t), /(?:\+?39)?\s?3\d{2}[\s.]?\d{3}[\s.]?\d{3,4}|\b0\d{1,3}[\s.]?\d{6,8}\b/.test(t), /\b(?:via|viale|corso|piazza)\s+[A-Z]/.test(t.replace(/Via Sassi 26/g, ''))], [false, false, false])
+    ok(`${slug}: né email, né telefono, né «via»`, [/[\w.-]+@[\w-]+\.\w+/.test(t), /(?:\+?39)?\s?3\d{2}[\s.]?\d{3}[\s.]?\d{3,4}|\b0\d{1,3}[\s.]?\d{6,8}\b/.test(t), /\b(?:via|viale|corso|piazza)\s+[A-Z]/.test(t.replace(/Via Vittorio Sassi 26/g, ''))], [false, false, false])
   }
 }
 
@@ -112,6 +112,30 @@ console.log('\n5. I testi da incollare (elenco e scheda scarna) escono come nel 
   ok('la scheda di Fabio è la scheda scarna con i suoi corsi', [/<h1><span>Fabio<\/span> <span>Berta<\/span><\/h1>/.test(sito['fabio-berta/index.html']), /<h2>Corsi<\/h2><p>Aikido<\/p>/.test(sito['fabio-berta/index.html'])], [true, true])
   const senza = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [pag('istruttori', 'Gli istruttori', elenco)], menu: [], rinvii: [] })['istruttori/index.html']
   ok('senza le pagine pubblicate, nessun nome è un link (niente 404)', conta(senza, /<h3><a /g), 0)
+}
+
+console.log('\n6. I paragrafi vuoti dell\'editor non cambiano le pagine')
+{
+  // L'editor lascia sempre un «<p></p>» dopo l'ultimo elenco: la pagina deve uscire come senza.
+  const pag = (slug, titolo, testo) => ({ slug, titolo, descrizione: '', testo })
+  const scarna = testo(leggi(`${DIR}/modello-scarno.md`)).match(/<ul>[\s\S]*?<\/ul>/)?.[0] ?? ''
+  const foto = '<img src="https://x.supabase.co/storage/v1/object/public/sito/f.jpg" alt="" />'
+  const genera = (t) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [pag('istruttori', 'Gli istruttori', '<p>x</p>'), pag('fabio-berta', 'Fabio Berta', t)], menu: [], rinvii: [] })['fabio-berta/index.html']
+  const giusta = genera(foto + scarna)
+  ok('la scheda scarna esiste senza paragrafi vuoti', /scheda-ritratto/.test(giusta), true)
+  for (const vuoto of ['<p></p>', '<p><br></p>', '<p> </p>']) {
+    ok(`scheda scarna con ${vuoto} in coda`, genera(foto + scarna + vuoto), giusta)
+    ok(`scheda scarna con ${vuoto} in mezzo`, genera(foto + vuoto + scarna + vuoto), giusta)
+  }
+  ok('un paragrafo con la sola foto non è vuoto', /scheda-ritratto/.test(genera(`<p>${foto}</p>` + scarna + '<p></p>')), true)
+
+  // Tutte le pagine del sito (home, chi siamo, corsi, contatti, corso, istruttori): stessa uscita con i paragrafi vuoti.
+  const nomi = readdirSync('docs/sito').filter((f) => f.endsWith('.html') && !f.includes('-precedente'))
+  const leggiPagina = (f) => leggi(`docs/sito/${f}`).replace(/<!doctype[^>]*>|<meta[^>]*>|<title>[^<]*<\/title>/gi, '')
+  const sito = (v) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: nomi.map((f) => pag(f.replace('.html', ''), f, v(leggiPagina(f)))), menu: [], rinvii: [] })
+  const base = sito((t) => t)
+  const conVuoti = sito((t) => '<p></p>' + t.replace(/<\/h2>/g, '</h2><p><br></p>') + '<p> </p><p></p>')
+  for (const f of nomi) { const k = f === 'home.html' ? 'index.html' : `${f.replace('.html', '')}/index.html`; ok(`${f}: uguale con i paragrafi vuoti`, k in conVuoti && conVuoti[k] === base[k], true) }
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')

@@ -45,6 +45,8 @@ export interface Blocco {
 }
 
 const VUOTI = new Set(['img', 'br', 'hr'])
+/** Un `<p>` senza altro che spazi, a capo e `<br>`: con una foto o un pulsante dentro non è vuoto. */
+const PARAGRAFO_VUOTO = /^<p>(?:\s|&nbsp;|<br\s*\/?>)*<\/p>$/i
 
 /** Il testo ripulito è piatto: si spezza nei blocchi di primo livello (anche con tag dello stesso nome annidati). */
 export function blocchi(html: string): Blocco[] {
@@ -72,7 +74,8 @@ export function blocchi(html: string): Blocco[] {
       k = m.index + m[0].length
       if (profondita === 0) break
     }
-    fuori.push({ tag, html: html.slice(i, k) })
+    // L'editor lascia sempre un paragrafo vuoto dopo l'ultimo elenco: non è un blocco, e contarlo rompe i riconoscimenti per ordine e numero.
+    if (!(tag === 'p' && PARAGRAFO_VUOTO.test(html.slice(i, k)))) fuori.push({ tag, html: html.slice(i, k) })
     i = k
   }
   return fuori

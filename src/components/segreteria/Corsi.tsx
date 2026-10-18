@@ -6,7 +6,7 @@ import type { CorsoSeg, DatiCorso, DatiSegreteria, PersonaSeg, RigaIscrittoCorso
 import { avvisoPosti, cercaFraGliIscritti, COLORI, contoCorso, corsoCambiato, GIORNI_LUNGHI, iscrittiDelCorso, riepilogoCorso, ricorrenzaCambiata, ricorrenzaIniziale, soloNonInRegola, valoriIscrittoCorso, vociAttivita, type RicorrenzaNuova } from '../../lib/segreteria'
 import { chiaveGiorno } from '../../lib/sala'
 import { Croce } from '../Icons'
-import { STRETTO, useSchermo } from '../../lib/largo'
+import { posizione, vicina } from '../../lib/schedaFinestra'
 import { chiedi, Campo, dataLunga, Guaio, lasciare, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, type MemoriaOrdine } from './comune'
 
 const CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
@@ -92,11 +92,8 @@ export function Corsi({
   const attivi = (corsi.dato ?? []).filter((c) => c.attivo).sort((a, b) => a.nome.localeCompare(b.nome, 'it'))
   const vecchi = (corsi.dato ?? []).filter((c) => !c.attivo)
   const visti = ricerca ? attivi.filter((c) => ricerca.ids.includes(c.id)) : attivi
-  // Sullo schermo stretto la scheda non sta accanto all'elenco: si apre al
-  // suo posto quando si tocca un corso, e nessuno è aperto da sé.
-  const stretto = useSchermo(STRETTO)
-  const corso = nuovo ? null : (attivi.find((c) => c.id === scelto) ?? (stretto ? null : visti[0]) ?? null)
-  const piena = stretto && (nuovo || !!corso)
+  // Il corso si apre in una finestra sopra l'elenco, e nessuno è aperto da sé.
+  const corso = nuovo ? null : (attivi.find((c) => c.id === scelto) ?? null)
   // Un'altra scheda prende il posto di questa: prima si chiede di quel che non è salvato.
   const apri = async (id: string | null, comeNuovo = false) => {
     if (comeNuovo === nuovo && (comeNuovo || id === corso?.id)) return
@@ -105,6 +102,12 @@ export function Corsi({
     else onScelta(id, 'push')
   }
   const chiudi = () => void apri(null)
+  // PRECEDENTE e SUCCESSIVA scorrono i corsi che l'elenco mostra, nel suo ordine.
+  const idVisti = visti.map((c) => c.id)
+  const vai = (verso: 1 | -1) => {
+    const id = vicina(idVisti, corso?.id ?? null, verso)
+    return id ? () => void apri(id) : undefined
+  }
   const incompleti = attivi.filter((c) => mancano(c).length > 0).length
   // Un corso dell'indirizzo che non è in calendario (archiviato, un link
   // vecchio, un'altra finestra): si torna all'elenco e lo si dice. Solo
@@ -151,13 +154,21 @@ export function Corsi({
 
   return (
     <>
-      {piena && (
-        <SchedaPiena key={nuovo ? 'nuovo' : corso!.id} etichetta={corso?.nome ?? 'Nuovo corso'} torna="Corsi" onTorna={chiudi} cornice={false}>
+      {scheda && (
+        <SchedaPiena
+          key={nuovo ? 'nuovo' : corso!.id}
+          etichetta={corso?.nome ?? 'Nuovo corso'}
+          torna="Corsi"
+          onTorna={chiudi}
+          tinta={corso?.colore ?? undefined}
+          cornice={false}
+          passaggio={corso ? { posizione: posizione(idVisti, corso.id), onPrecedente: vai(-1), onSuccessiva: vai(1) } : undefined}
+        >
           {scheda}
         </SchedaPiena>
       )}
-      {/* L'elenco resta montato sotto la scheda, come negli iscritti. */}
-      <div className="stack" style={{ gap: 18 }} hidden={piena}>
+      {/* L'elenco resta com'era sotto la finestra: filtri, ricerca e ordine non si perdono. */}
+      <div className="stack" style={{ gap: 18 }}>
         <Testa titolo="CORSI" sotto="Un corso è cosa si fa; le ricorrenze dicono quando. Le lezioni si generano da quelle.">
           <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void apri(null, true)}>
             + Nuovo corso
@@ -172,8 +183,7 @@ export function Corsi({
           </span>
         )}
 
-        <div className="sg-due-colonne">
-          <div className="sg-lista">
+        <div className="sg-lista">
             <div className="sg-lista-testa sg-corsi-testa">
               <span className="sg-etichetta">CORSO</span>
               <span className="sg-etichetta sg-corso-quando">QUANDO</span>
@@ -228,9 +238,6 @@ export function Corsi({
                 </div>
               ))}
           </div>
-
-          {!stretto && scheda}
-        </div>
       </div>
       {avviso}
     </>

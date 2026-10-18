@@ -51,7 +51,7 @@ const NUOVO = [
   `<h2>I nostri corsi</h2>${img(3)}<p>Lotta</p>${img(4)}<p>Aikido</p>${img(5)}<p>Preparazione atletica</p>${img(6)}<p>Giocomotricità e psicomotricità</p><p><a class="pulsante" href="/corsi/">Vedi tutti i corsi</a></p>`,
   `<h2>Alleniamo il corpo. Coltiviamo il carattere.</h2><p>La missione.</p>${img(7)}`,
   `<h2>I nostri valori</h2><p>Introduzione.</p>${VALORI}`,
-  `<h2>Vieni a provare.</h2><p>Una settimana a 5 €.</p><p>Ti aspettiamo in Via Sassi 26, Collegno, vicino alla metro Fermi.</p><p><a class="pulsante" href="/contatti/">Scrivici</a> <a class="pulsante" href="${ISCR}">Prova una settimana a 5 €</a></p>${img(8)}`,
+  `<h2>Vieni a provare.</h2><p>Una settimana a 5 €.</p><p>Ti aspettiamo in Via Vittorio Sassi 26, Collegno, vicino alla metro Fermi.</p><p><a class="pulsante" href="/contatti/">Scrivici</a> <a class="pulsante" href="${ISCR}">Prova una settimana a 5 €</a></p>${img(8)}`,
 ].join('')
 
 console.log('\n1. Si riconosce dal link all’iscrizione; senza, la pagina è quella di prima')

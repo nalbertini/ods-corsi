@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Velo + finestra: il dettaglio di una pagina della segreteria (richiesta, corso, iscritto, persona, ordine) sopra l'elenco. -->
+<div style="position: relative; width: 100%; height: {{altezza}}; overflow: hidden">
+  <div style="position: absolute; inset: 0; background: rgba(13, 42, 61, 0.55)"></div>
+  <div style="position: absolute; left: 50%; top: 24px; bottom: 24px; transform: translateX(-50%); width: min({{larghezza}}, calc(100% - 32px)); display: flex; flex-direction: column; background: #ffffff; border: 2px solid #0d2a3d; border-top: 6px solid {{tinta}}; color: #0d2a3d">
+    <div style="display: flex; align-items: flex-start; gap: 12px; padding: 20px 28px 14px">
+      <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 4px; min-width: 0">
+        <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">{{titolo}}</span>
+        <span style="font-size: 13px; color: #46606f">{{sotto}}</span>
+      </div>
+      <sc-if value="{{haPassaggio}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <dc-import name="Bottone" label="{{etPrecedente}}" variante="linea" contesto="segreteria" tema="sito" hint-size="140px,44px"></dc-import>
+          <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; font-variant-numeric: tabular-nums; color: #46606f">{{posizione}}</span>
+          <dc-import name="Bottone" label="{{etSuccessiva}}" variante="linea" contesto="segreteria" tema="sito" hint-size="140px,44px"></dc-import>
+        </div>
+      </sc-if>
+      <dc-import name="Bottone" label="✕" variante="icona" tema="sito" hint-size="44px,44px"></dc-import>
+    </div>
+    <sc-if value="{{haAvviso}}" hint-placeholder-val="{{ false }}">
+      <div style="margin: 0 28px 10px; padding: 8px 12px; background: #f4c31b; border: 2px solid #0d2a3d; font-size: 13px; font-weight: 600">{{avviso}}</div>
+    </sc-if>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 32px; align-content: start; flex-grow: 1; min-height: 0; overflow: hidden; padding: 8px 28px 16px">
+      <sc-for list="{{campi}}" as="k" hint-placeholder-count="6">
+        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #46606f">{{k.etichetta}}</span>
+          <span style="font-size: 15px; font-weight: 500; overflow-wrap: anywhere">{{k.valore}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <!-- Il piede resta sempre visibile, anche con la scheda lunga: scorre solo il corpo. -->
+    <div style="display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 14px 28px 18px; border-top: 2px solid #cfe6f4; background: #ffffff">
+      <sc-for list="{{azioni}}" as="a" hint-placeholder-count="3">
+        <dc-import name="Bottone" label="{{a.label}}" variante="{{a.variante}}" contesto="segreteria" tema="sito" hint-size="190px,48px"></dc-import>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"DAVIDE FERRERO"},"sotto":{"editor":"text","default":"Arrivata il 17 ottobre 2026, 20:45"},"tinta":{"editor":"text","default":"#0d2a3d"},"posizione":{"editor":"text","default":"1 DI 3"},"passaggio":{"editor":"boolean","default":true},"telefono":{"editor":"boolean","default":false},"primo":{"editor":"boolean","default":false},"avviso":{"editor":"text","default":""},"campi":{"editor":"text","default":"NATO IL:12 aprile 1991|CODICE FISCALE:FRRDVD91D12L219X|RESIDENZA:Via Roma 56, 10100 Collegno|EMAIL:davide.ferrero@esempio.it|TELEFONO:347 210 5518|CORSI:Judo adulti"},"azioni":{"editor":"text","default":"ELIMINA RICHIESTA E FILE:rosso|RIFIUTA:linea|ACCOGLI:pieno"},"larghezza":{"editor":"text","default":"760px"},"altezza":{"editor":"text","default":"760px"},"$preview":{"width":1100,"height":760}}'>
+// Il dettaglio sopra l'elenco: velo `rgba(13,42,61,.55)` (il colore dell'inchiostro del look sito, al 55%), finestra bianca con bordo 2px
+// `#0d2a3d` e barra in alto di 6px nella `tinta` (come .sg-scheda), larghezza 760px o `calc(100% - 32px)`, 24px di aria sopra e sotto.
+// Testa: titolo Big Shoulders 800 30px (come .sg-titolo, ma piu' piccolo), la riga sotto 13px `#46606f`, «‹ Precedente» / «N DI M» / «Successiva ›»
+// solo dove ci sono altre schede da scorrere (Richieste, Corsi: `passaggio`), e ✕ (Bottone icona). `telefono` (sotto i 768px): i due tasti sono solo
+// le frecce ‹ e ›, il nome sta nell'aria-label, e la finestra e' tutto lo schermo; ai capi dell'elenco il tasto e' spento (`.sg-finestra-testa .sg-btn:disabled`, opacita' 0.4). `avviso` mette sotto la testa la striscia
+// gialla delle modifiche non salvate. Corpo: due colonne di `campi` («ETICHETTA:valore» separati da «|»); nell'app e' il contenuto vero della
+// scheda, qui un esempio. Piede fisso con le `azioni` («testo:variante» separate da «|»), a destra: la sicura a linea, quella che fa piena.
+// Il fuoco, Esc, il clic fuori e l'animazione non sono riprodotti: stanno nelle note del canvas `scheda-popover`.
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const dividi = (s, sep) => String(s ?? '').split(sep).map((x) => x.trim()).filter(Boolean);
+    const campi = dividi(p.campi ?? '', '|').map((x) => {
+      const i = x.indexOf(':');
+      return { etichetta: x.slice(0, i), valore: x.slice(i + 1) };
+    });
+    const azioni = dividi(p.azioni ?? '', '|').map((x) => {
+      const i = x.lastIndexOf(':');
+      return { label: x.slice(0, i), variante: x.slice(i + 1) };
+    });
+    const avviso = p.avviso ?? '';
+    return {
+      titolo: p.titolo ?? 'DAVIDE FERRERO', sotto: p.sotto ?? '', tinta: p.tinta || '#0d2a3d',
+      etPrecedente: truthy(p.telefono) ? '‹' : '‹ Precedente', etSuccessiva: truthy(p.telefono) ? '›' : 'Successiva ›',
+      haPassaggio: p.passaggio === undefined ? true : truthy(p.passaggio), posizione: p.posizione ?? '1 DI 3',
+      haAvviso: avviso !== '', avviso, campi, azioni,
+      larghezza: p.larghezza || '760px', altezza: p.altezza || '760px',
+    };
+  }
+}
+</script>
+</body>
+</html>

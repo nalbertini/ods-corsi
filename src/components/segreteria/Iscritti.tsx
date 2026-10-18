@@ -300,7 +300,7 @@ export function Iscritti({
       ) : null}
 
       {/* L'elenco resta montato sotto la scheda, con la ricerca e i filtri di prima. */}
-      <div className="stack" style={{ gap: 18 }} hidden={!!(nuovo || persona)}>
+      <div className="stack" style={{ gap: 18 }}>
         <Testa
           titolo="ISCRITTI"
           sotto={`${attiveOra.length} persone attive · ${senzaCertificato ? `${senzaCertificato} senza certificato valido` : 'tutti col certificato'}${inScadenza ? ` · ${inScadenza} in scadenza` : ''} · ${nonPagato ? `${nonPagato} da pagare` : 'tutti in regola coi pagamenti'}.${

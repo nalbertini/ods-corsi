@@ -73,7 +73,7 @@ const cosa = (conB) => `<h2></h2><h3>Cosa si fa</h3><p>Si lavora su cadute e pre
 const cosaN = (n) => T({ cosa: false, storia: false }).replace(ASP(4), `<h2></h2>${gruppi(n, 'Passo')}` + ASP(4))
 const STORIA = `<h2>La storia del judo</h2>${gruppi(4, 'Tappa')}`
 const ASP = (n) => `<h2>Cosa aspettarsi</h2>${gruppi(n, 'Aspetto')}`
-const CHIUSURA = (conC) => `<h2>Una settimana per scegliere.</h2><p>5 € e provi il corso.</p><p>Vieni in Via Sassi 26, Collegno.</p><p><a class="pulsante" href="${ISC}">Prova una settimana a 5 €</a> <a class="pulsante" href="/contatti/">Scrivici</a></p>${conC ? C : ''}`
+const CHIUSURA = (conC) => `<h2>Una settimana per scegliere.</h2><p>5 € e provi il corso.</p><p>Vieni in Via Vittorio Sassi 26, Collegno.</p><p><a class="pulsante" href="${ISC}">Prova una settimana a 5 €</a> <a class="pulsante" href="/contatti/">Scrivici</a></p>${conC ? C : ''}`
 const JUDO = { pul: PUL, a: A, voci: 4, orari: 5, cosa: true, b: true, storia: true, asp: 4, chiusura: true, c: true }
 const T = (o = {}) => {
   const x = { ...JUDO, ...o }
@@ -104,7 +104,7 @@ console.log('\n1. Quando una pagina è «corso nuovo»')
 console.log('\n2. Il testo di prima resta com’era')
 {
   const senza = pagina(T({ pul: '' }))
-  ok('lo stesso testo senza il pulsante: <main> identico a oggi (sha)', sha(main(senza)), '447af92780fbfe3beef83573e1b87efef9aada860402cd28dcd432a17ac4c070')
+  ok('lo stesso testo senza il pulsante: <main> identico a oggi (sha)', sha(main(senza)), 'cd5d1ee539daaba6f6335e8c39bffdb8d700fccdaddb38338853044dac4070db')
   ok('non porta nessuna classe del corso nuovo', rotto(senza), false)
 }
 

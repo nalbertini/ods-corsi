@@ -69,7 +69,7 @@ guardare prima di segnare il pagamento. L'elenco ha i filtri **Tutti**, **Da sal
 **Annullati**. **Da saldare** è in rosso: chi ordina ha lasciato il telefono,
 per chiamarlo.
 
-Un ordine si apre a tutta pagina:
+Un ordine si apre in una finestra sopra l'elenco:
 
 - **IL PAGAMENTO** — quando la famiglia ha pagato si sceglie come:
   **BONIFICO**, **SATISPAY** o **CONTANTI**. L'ordine diventa saldato e dice

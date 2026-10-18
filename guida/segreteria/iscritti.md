@@ -91,8 +91,8 @@ accoglie la sua richiesta (vedi [Richieste online](richieste.md)).
 
 ## La scheda di una persona
 
-Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
-**ISCRITTI** in alto torna all'elenco, con la ricerca e i filtri di prima. Se hai aperto la scheda dalla scheda di un corso, il tasto dice **CORSO** e riporta lì.
+Un clic su un nome apre la sua scheda in una finestra sopra l'elenco;
+**✕** o Esc la chiudono e l'elenco è com'era, con la ricerca e i filtri di prima. Se hai aperto la scheda dalla scheda di un corso, ✕ riporta lì.
 Anche il tasto Indietro del browser torna all'elenco, dalla scheda come dal
 modulo di un iscritto nuovo, e una scheda aperta
 resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.

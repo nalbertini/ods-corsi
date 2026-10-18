@@ -106,7 +106,7 @@ console.log('\n4. Il collage pieno della testata (design TatamiBlu)')
     '<strong>8</strong> attività',
     '<strong>300+</strong> atleti',
     '<strong>13</strong> tecnici',
-    'Via Sassi 26, Collegno<br>vicino alla metro Fermi',
+    'Via Vittorio Sassi 26, Collegno<br>vicino alla metro Fermi',
     '<strong>Il corso giusto, il gruppo giusto</strong>',
     'Armonia nel movimento, rispetto nelle relazioni.',
     '<strong>Bambini, ragazzi, adulti</strong>',
@@ -121,7 +121,7 @@ console.log('\n4. Il collage pieno della testata (design TatamiBlu)')
   const voci = tess.filter((t) => !t.classi.includes('foto'))
   ok('colori come nel design: blu, giallo, giallo, inchiostro, giallo, blu, inchiostro, giallo, blu', voci.map((t) => t.classi[0]), ['blu', 'giallo', 'giallo', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu'])
   ok('numero (grassetto + resto), titolo (solo grassetto), nota (niente grassetto)', voci.map((t) => t.classi[1]), ['numero', 'titolo', 'numero', 'numero', 'numero', 'nota', 'titolo', 'nota', 'titolo'])
-  ok('la nota tiene l’a capo dell’indirizzo', /Via Sassi 26, Collegno<br ?\/?>vicino/.test((voci[5]?.html ?? '')), true)
+  ok('la nota tiene l’a capo dell’indirizzo', /Via Vittorio Sassi 26, Collegno<br ?\/?>vicino/.test((voci[5]?.html ?? '')), true)
   ok('le foto portano gli attributi di caricamento (la prima subito)', [/fetchpriority="high"/.test((tess[0]?.html ?? '')), /loading="lazy"/.test((tess[10]?.html ?? ''))], [true, true])
   ok('nessun elenco resta nella testata', /<ul|<li/.test(h), false)
   ok('con 3 foto e 9 voci: come prima (non è «pieno»)', /collage pieno/.test(testata(`${[1, 2, 3].map(img).join('')}${elenco(VOCI)}`)), false)

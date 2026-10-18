@@ -200,7 +200,7 @@ console.log('\n8. La cornice (testata, invito, piede) con le misure del design')
 console.log('\n9. Le differenze che restavano: pulsante corto, invito, piede, testo sul telefono')
 {
   const h = pagina(dodici)
-  ok('l’invito dice anche della settimana a 5 euro, come nel design', />Vieni a provare: ti aspettiamo in Via Sassi 26, Collegno\. Una settimana a 5 euro: provi tutte le discipline e scegli\.<\/span>/.test(h), true)
+  ok('l’invito dice anche della settimana a 5 euro, come nel design', />Vieni a provare: ti aspettiamo in Via Vittorio Sassi 26, Collegno\. Una settimana a 5 euro: provi tutte le discipline e scegli\.<\/span>/.test(h), true)
   const pie = (h.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
   ok('instagram e facebook stanno su una riga, divisi da «·» (li in linea, il separatore è CSS)', [/\.recapiti li:nth-child\(n\+3\)\{[^}]*display:\s*inline/.test(CSS), /\.recapiti li:nth-child\(4\)::before\{[^}]*content:\s*" · "/.test(CSS)], [true, true])
   const voci = [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'istruttori', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy', slug: null, indirizzo: '/privacy/' }]
