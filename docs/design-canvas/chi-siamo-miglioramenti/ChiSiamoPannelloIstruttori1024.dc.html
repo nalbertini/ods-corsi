@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Chi siamo · pannello Gli istruttori (1024)</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PANNELLO «GLI ISTRUTTORI» A 1024px. La tavola 2 (1440) ha il testo accanto a una foto da 520px: a 1024 il testo resta largo ~260px e «ISTRUTTORI» a 80px si spezza a metà parola (succede anche sul sito pubblicato, a 85px). Qui il titolo ha tutta la riga; sotto, testo e pulsante a sinistra, le quattro foto già sul sito a destra. Stessi valori della tavola 2: sezione 80px, riquadro 48px, raggio 6px, spazio 96px sopra. Il pulsante è quello del codice (`href="/istruttori/"`): sul sito pubblicato oggi manca perché il testo pubblicato è più vecchio. -->
+<div style="width: 1024px; min-height: 480px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+  <section style="padding:48px 48px 48px"><div style="background:#0d2a3d;color:#ffffff;border-radius:6px;padding:48px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-areas:'titolo titolo' 'testo foto';gap:32px 48px"><h2 style="grid-area:titolo;font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;margin:0;font-size:80px;line-height:.9;text-wrap:balance">Gli istruttori</h2><div style="grid-area:testo;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:28px"><p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:20px;line-height:1.5;max-width:34ch">Chi sono, come sono arrivati al tatami e in quali gruppi li trovi.</p><dc-import name="SitoPulsante" label="Conosci gli istruttori" tono="giallo" alto="60px" larghezza="auto" hint-size="320px,60px"></dc-import></div><div style="grid-area:foto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px"><div style="aspect-ratio:3/4;overflow:hidden;border-radius:6px"><img src="https://qfejpnkryrvjubcxvuco.supabase.co/storage/v1/object/public/sito/814a717b-91a2-441c-b34c-ef376d4781c6.jpg" alt="Gli istruttori e le istruttrici con la cintura nera in posa sul tatami" style="display:block;width:100%;height:100%;object-fit:cover"></div><div style="aspect-ratio:3/4;overflow:hidden;border-radius:6px"><img src="https://qfejpnkryrvjubcxvuco.supabase.co/storage/v1/object/public/sito/12e605fc-cd00-47b8-b15d-4eb2443c3f21.jpg" alt="Una lezione di judo: gli allievi in fila sul tatami" style="display:block;width:100%;height:100%;object-fit:cover"></div><div style="aspect-ratio:3/4;overflow:hidden;border-radius:6px"><img src="https://qfejpnkryrvjubcxvuco.supabase.co/storage/v1/object/public/sito/46c39293-7092-49c1-bf6f-36927c36ecd1.jpg" alt="Una presa di judo tra due allievi sul tatami" style="display:block;width:100%;height:100%;object-fit:cover"></div><div style="aspect-ratio:3/4;overflow:hidden;border-radius:6px"><img src="https://qfejpnkryrvjubcxvuco.supabase.co/storage/v1/object/public/sito/fbfe492b-1c27-400d-bd74-983f26de7ffe.jpg" alt="Un istruttore di Aikido mostra una tecnica a una bambina" style="display:block;width:100%;height:100%;object-fit:cover"></div></div></div></section>
+</div>
+</x-dc>
+</body>
+</html>

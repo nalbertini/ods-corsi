@@ -11,6 +11,7 @@ Proposta da approvare prima di toccare il sito. Parte dai report di
 | `ChiSiamoAttuale` (1440) e `ChiSiamoAttualeTelefono` (375) | La pagina com'è oggi: schermate intere del sito vero del 18 ottobre 2026 (da `proposte-home/chi-siamo/audit`), solo per confronto |
 | `ChiSiamoProposta` (1440) | La proposta, disegnata con i componenti `Sito*` della libreria |
 | `ChiSiamoPropostaTelefono` (375) | La stessa proposta sul telefono |
+| `ChiSiamoPannelloIstruttori1024` (1024) | Il pannello «Gli istruttori» alla larghezza intermedia: titolo su tutta la riga, testo e pulsante a sinistra, le quattro foto già sul sito a destra. A 1024 la tavola 2 lascerebbe al testo ~260px e «ISTRUTTORI» si spezzerebbe a metà parola, come sul sito pubblicato |
 
 Componenti da `../ods-design-system/`: `SitoTestata`, `SitoPulsante`, `SitoTessera`, `SitoTitolo`, `SitoPerche` (i quattro valori), `SitoCta`, `SitoPiede`. Unica modifica alla libreria: `SitoCta` ha una prop `alt` per il testo della foto (prima era fisso «istruttori in judogi»). Hero, due tessere, pannello istruttori, fila di foto e missione sono pochi `div` con gli stessi valori (colori A2, Big Shoulders Display + Inter).
 Foto da `proposte-home/chi-siamo/foto/approvate/` (LightCraft), in `img/`. `verifica.mjs`: «tutto in regola».
