@@ -41,7 +41,8 @@ begin
   return new;
 end $$;
 
-revoke all on function ricorrenza_modificata() from public;
+-- Supabase dà execute ad anon e authenticated alle funzioni nuove: si toglie anche a loro.
+revoke all on function ricorrenza_modificata() from public, anon, authenticated;
 
 create or replace trigger ricorrenza_modificata
   before insert or update on ricorrenze
