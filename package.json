@@ -23,6 +23,7 @@
     "prova:pericolo": "node scripts/prova-pericolo.mjs",
     "prova:ruoli": "node scripts/prova-ruoli.mjs",
     "prova:contabilita": "node scripts/prova-contabilita.mjs",
+    "prova:bilancio": "node scripts/prova-bilancio.mjs",
     "prova:certificati": "node scripts/prova-certificati.mjs",
     "prova:campi": "node scripts/prova-campi.mjs",
     "prova:richieste": "node scripts/prova-richieste.mjs",

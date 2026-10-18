@@ -48,8 +48,9 @@ import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { Campo, chiedi, Guaio, lasciare, scaricaCsv, SchedaPiena, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { Numero } from './Presenze'
+import { Bilancio } from './Bilancio'
 
-type Scheda = 'movimenti' | 'voci' | 'casse'
+type Scheda = 'movimenti' | 'bilancio' | 'voci' | 'casse'
 type Periodo = 'mese' | 'scorso' | 'anno' | 'tutto'
 type Fai = ReturnType<typeof useAvviso>['fai']
 
@@ -98,6 +99,7 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
         {(
           [
             ['movimenti', 'Movimenti'],
+            ['bilancio', 'Bilancio'],
             ['voci', 'Voci'],
             ['casse', 'Casse'],
           ] as const
@@ -127,6 +129,7 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
       {pronto && (
         <>
           <div hidden={scheda !== 'movimenti'}><Movimenti d={d} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
+          <div hidden={scheda !== 'bilancio'}><Bilancio d={d} casse={casse.dato ?? []} righe={elenco} oggi={oggiARoma()} fai={fai} /></div>
           <div hidden={scheda !== 'voci'}><Voci d={d} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
           <div hidden={scheda !== 'casse'}><Casse d={d} casse={casse.dato ?? []} chiusure={dateChiusure} guaioChiusure={chiusure.guaio ?? undefined} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
         </>

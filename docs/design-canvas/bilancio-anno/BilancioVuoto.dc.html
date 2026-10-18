@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- BILANCIO · anno senza movimenti Parte da PaginaSito.dc.html / PaginaSitoTelefono.dc.html (segreteria nel look del sito, sempre chiara). Solo amministrazione, schermata di sola lettura:
+     nessun tasto principale giallo. Il bilancio e' PER CASSA (data del singolo pagamento). Verde e rosso solo per il segno, sempre anche in parole. -->
+<div style="display: flex; width: 1440px; min-height: 1000px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" autorizzazioni="amministrazione" attiva="CONTABILITÀ" numeri="" nome="Chiara Bianchi" ruolo="Amministrazione" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</h1>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px">
+      <dc-import name="Chip" tema="sito" label="MOVIMENTI" acceso="{{ false }}" hint-size="130px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="VOCI" acceso="{{ false }}" hint-size="90px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="CASSE" acceso="{{ false }}" hint-size="100px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="BILANCIO" acceso="{{ true }}" hint-size="130px,44px"></dc-import>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="‹" variante="linea" alto="44px" larghezza="48px" hint-size="48px,44px"></dc-import>
+      <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; min-width: 76px; text-align: center">2012</span>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="›" variante="linea" alto="44px" larghezza="48px" hint-size="48px,44px"></dc-import>
+      <span style="width: 1px; height: 28px; background: #cfe6f4; margin: 0 6px"></span><dc-import name="Chip" tema="sito" label="2026" acceso="{{ false }}" hint-size="86px,44px"></dc-import><dc-import name="Chip" tema="sito" label="2025" acceso="{{ false }}" hint-size="86px,44px"></dc-import><dc-import name="Chip" tema="sito" label="2024" acceso="{{ false }}" hint-size="86px,44px"></dc-import><dc-import name="Chip" tema="sito" label="2023" acceso="{{ false }}" hint-size="86px,44px"></dc-import><dc-import name="Chip" tema="sito" label="2022" acceso="{{ false }}" hint-size="86px,44px"></dc-import><label for="altri-anni" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Altri anni</label><select id="altri-anni" style="min-height: 44px; padding: 0 12px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 500 15px Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif"><option>Altri anni</option><option>2021</option><option>2020</option><option>2019</option></select>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">Bilancio 2012</h2>
+      <span style="font-size: 14px; color: #46606f">Entrate e uscite dell’anno, per cassa: conta il giorno in cui il denaro è entrato o uscito. Calcolato il 18 ott 2026.</span>
+    </div>
+    <div style="background: #ffffff; border-radius: 6px; padding: 48px 24px; display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center">
+      <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em">Nessun movimento in questo anno.</span>
+      <span style="font-size: 15px; color: #46606f; max-width: 520px; line-height: 1.4">Nel 2012 non c’è un’entrata né un’uscita registrata: niente da sommare, niente da esportare. Scegli un altro anno qui sopra.</span>
+    </div>
+    <span style="font-size: 13px; color: #46606f; line-height: 1.4; max-width: 900px">Senza movimenti i tasti ESPORTA CSV e ESPORTA PDF non compaiono: un foglio vuoto non serve a nessuno.</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
