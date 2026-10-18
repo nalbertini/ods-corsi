@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.117.1 — 18 ottobre 2026
+
+### Modificato
+
+- Contabilità: il dettaglio di un movimento si apre in una finestra, come quello di un iscritto
+
 ## 0.117.0 — 18 ottobre 2026
 
 ### Novità
