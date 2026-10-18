@@ -456,12 +456,12 @@ console.log('\n13. Stessi dati, stessi file; testi strani non rompono')
   ok('una voce con grassetto vuoto non crea una cifra vuota: l’elenco resta elenco (R5)', (() => { const h = pag('<ul><li><strong></strong> a</li><li><strong>2</strong> b</li></ul>'); return [numeri(h).length, /<ul/.test(dopoHero(h) + h)] })(), [0, true])
 }
 
-console.log('\n15. Il testo della Home in docs/sito/home.html fa il collage del design')
+console.log('\n15. Il testo della Home di prima (congelato in scripts/fixture-home-vecchia.html) fa ancora il collage del design')
 {
-  const html = readFileSync('docs/sito/home.html', 'utf8').replace(/^<!doctype[^>]*>\s*<meta[^>]*>\s*<title>.*?<\/title>\s*/s, '')
-  const md = readFileSync('docs/sito/home.md', 'utf8')
-  const titolo = md.match(/## Titolo\s+(.+)/)?.[1] ?? ''
-  const frase = md.match(/## Descrizione\s+(.+)/)?.[1] ?? ''
+  const html = readFileSync('scripts/fixture-home-vecchia.html', 'utf8').replace(/^<!doctype[^>]*>\s*<meta[^>]*>\s*<title>.*?<\/title>\s*/s, '')
+  // Titolo e descrizione di prima (home.md ora ha quelli della Home nuova).
+  const titolo = 'Si cresce sul tatami.'
+  const frase = 'Arti marziali e preparazione atletica a Collegno, per ogni età e livello: tecnica, disciplina e divertimento.'
   const h = (() => { const r = prova(() => g.generaSito({ dominio: DOMINIO, pagine: [{ slug: 'home', titolo, descrizione: frase, testo: html }], menu: [], rinvii: [], ospitiImmagini: ['https://qfejpnkryrvjubcxvuco.supabase.co/storage/v1/object/public/sito/'] })); return r?.['index.html'] ?? '' })()
   const e = hero(h)
   ok('il titolo è breve e sta nella testata', [titolo.length < 30, e.includes(`<h1>${titolo}</h1>`)], [true, true])

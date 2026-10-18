@@ -30,7 +30,7 @@ const COLORI_DEL_DESIGN: Record<number, string[]> = {
   4: ['giallo', 'blu', 'inchiostro', 'giallo'],
   9: ['blu', 'giallo', 'inchiostro', 'giallo', 'inchiostro', 'blu', 'inchiostro', 'blu', 'giallo'],
 }
-const coloreDi = (k: number, n: number) => COLORI_DEL_DESIGN[n]?.[k] ?? ROTAZIONE[k % ROTAZIONE.length]
+export const coloreDi = (k: number, n: number) => COLORI_DEL_DESIGN[n]?.[k] ?? ROTAZIONE[k % ROTAZIONE.length]
 /** Le citazioni alternano questi due. */
 const CITAZIONI = ['blu', 'inchiostro'] as const
 
@@ -39,7 +39,7 @@ const VOCI_MIN = 2
 const VOCI_MAX = 12
 const VOCE_LUNGA = 200
 
-interface Blocco {
+export interface Blocco {
   tag: string
   html: string
 }
@@ -47,7 +47,7 @@ interface Blocco {
 const VUOTI = new Set(['img', 'br', 'hr'])
 
 /** Il testo ripulito è piatto: si spezza nei blocchi di primo livello (anche con tag dello stesso nome annidati). */
-function blocchi(html: string): Blocco[] {
+export function blocchi(html: string): Blocco[] {
   const fuori: Blocco[] = []
   let i = 0
   while (i < html.length) {
@@ -78,11 +78,11 @@ function blocchi(html: string): Blocco[] {
   return fuori
 }
 
-const testoSolo = (h: string) => h.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-const contenuto = (b: Blocco) => b.html.replace(/^<[^>]*>/, '').replace(/<\/[^>]*>$/, '')
+export const testoSolo = (h: string) => h.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+export const contenuto = (b: Blocco) => b.html.replace(/^<[^>]*>/, '').replace(/<\/[^>]*>$/, '')
 
 /** Un'immagine da sola: `<img>` o `<p><img></p>`. Restituisce il tag. */
-function immagine(b: Blocco): string | null {
+export function immagine(b: Blocco): string | null {
   if (b.tag === 'img') return b.html
   if (b.tag === 'p') {
     const m = /^<p[^>]*>\s*(<img\b[^>]*>)\s*<\/p>$/i.exec(b.html)
@@ -92,7 +92,7 @@ function immagine(b: Blocco): string | null {
 }
 
 /** Le iniziali (al massimo due) del nome di una firma: il ruolo dopo « - » o «—» non conta. */
-function iniziali(firma: string): string {
+export function iniziali(firma: string): string {
   const nome = testoSolo(firma).replace(/^[\s—–-]+/, '').split(/\s+[-–—]\s+/)[0]
   return nome
     .split(/\s+/)
@@ -126,7 +126,7 @@ function carosello(q: Blocco[], titolo: string): string {
 export const GRIGLIA_MASSIMA = 16
 
 /** Il contenitore di N tessere: la griglia si sceglie dalla classe `n-N`. */
-function griglia(n: number, figli: string, classe = ''): string {
+export function griglia(n: number, figli: string, classe = ''): string {
   return `<div class="tessere n-${n}${classe}">${figli}</div>`
 }
 
@@ -144,7 +144,7 @@ function griglie(tessere: string[], classe = ''): string {
 
 /** Un `ul` corto (2–12 voci, al massimo 200 caratteri) si legge come tessere: il grassetto iniziale è il titolo. */
 /** Le pillole dei corsi: l'icona (Phosphor, MIT, riempita) di ogni etichetta. */
-const PILLOLE: Record<string, string> = {
+export const PILLOLE: Record<string, string> = {
   Bambini: '<path d="M92,140a12,12,0,1,1,12-12A12,12,0,0,1,92,140Zm72-24a12,12,0,1,0,12,12A12,12,0,0,0,164,116Zm-12.27,45.23a45,45,0,0,1-47.46,0,8,8,0,0,0-8.54,13.54,61,61,0,0,0,64.54,0,8,8,0,0,0-8.54-13.54ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.11,88.11,0,0,0-84.09-87.91C120.32,56.38,120,71.88,120,72a8,8,0,0,0,16,0,8,8,0,0,1,16,0,24,24,0,0,1-48,0c0-.73.13-14.3,8.46-30.63A88,88,0,1,0,216,128Z"/>',
   Adulti: '<path d="M128,80A32,32,0,1,0,96,48,32,32,0,0,0,128,80Zm0-48a16,16,0,1,1-16,16A16,16,0,0,1,128,32ZM230.86,132.12a8,8,0,0,1-11,2.74c-.35-.21-35.11-20.59-83.88-22.67V149l62,69.73a8,8,0,1,1-12,10.62L128,164,70,229.31a8,8,0,1,1-12-10.62L120,149V112.18c-49,2.08-83.52,22.46-83.88,22.68a8,8,0,1,1-8.23-13.72C29.6,120.11,70.45,96,128,96s98.4,24.11,100.12,25.14A8,8,0,0,1,230.86,132.12Z"/>',
   Anziani: '<path d="M128,80A32,32,0,1,0,96,48,32,32,0,0,0,128,80Zm0-48a16,16,0,1,1-16,16A16,16,0,0,1,128,32Zm96,72a8,8,0,0,1-8,8H136v26.72l51.15,21.93A8,8,0,0,1,192,168v48a8,8,0,0,1-16,0V173.28l-46.45-19.91L53.35,222a8,8,0,1,1-10.7-11.9L120,140.44V112H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,104Z"/>',
@@ -198,10 +198,10 @@ function tesseraOrario(colore: string, titolo: string, corpo: Blocco[]): string 
   return `<article class="tessera ${colore} orario"><h3>${titolo}</h3><p class="ora">${contenuto(corpo[0])}</p>${dettagli ? `<div class="dettagli">${dettagli}</div>` : ''}</article>`
 }
 
-type Gruppo = { titolo: string; corpo: Blocco[] }
+export type Gruppo = { titolo: string; corpo: Blocco[] }
 
 /** Un corso è un `h3` che porta a una pagina: la sezione è un elenco di corsi se lo sono tutti. */
-const sonoCorsi = (gruppi: Gruppo[]) => gruppi.length > 0 && gruppi.every((g) => /<a\b[^>]*\bhref=/i.test(g.titolo))
+export const sonoCorsi = (gruppi: Gruppo[]) => gruppi.length > 0 && gruppi.every((g) => /<a\b[^>]*\bhref=/i.test(g.titolo))
 
 /** Giallo, blu, inchiostro, sfalsati di uno a ogni riga di tre: nessun colore uguale accanto o sotto a sé (design). */
 const COLORI_CORSI = ['giallo', 'blu', 'inchiostro'] as const
@@ -352,7 +352,7 @@ const BANDA_MAX = 160
 const TITOLO_LUNGO = 30
 
 /** Le tessere di un pezzo di sezione che comincia con un `h3`: un gruppo per ogni `h3`, con quel che lo segue. */
-function gruppiDa(corpo: Blocco[]): Gruppo[] {
+export function gruppiDa(corpo: Blocco[]): Gruppo[] {
   const gruppi: Gruppo[] = []
   for (const b of corpo) {
     if (b.tag === 'h3') gruppi.push({ titolo: contenuto(b), corpo: [] })
@@ -362,7 +362,7 @@ function gruppiDa(corpo: Blocco[]): Gruppo[] {
 }
 
 /** Una sezione senza titolo (`titolo` null) non ha l'`h2`: succede per i corsi prima del primo `h2`; un `h2` vuoto, in un corso, apre la fila di foto. */
-function sezione(titolo: string | null, corpo: Blocco[], corso = false, ritratto = ''): string {
+export function sezione(titolo: string | null, corpo: Blocco[], corso = false, ritratto = ''): string {
   const nome = titolo ?? ''
   const h2 = testoSolo(nome) ? `<h2${corso && testoSolo(nome).length > TITOLO_LUNGO ? ' class="lungo"' : ''}>${nome}</h2>` : ''
   if (corso && titolo !== null && corpo.length === 1 && corpo[0].tag === 'p' && testoSolo(corpo[0].html).length <= BANDA_MAX) return `<section class="sezione banda"><div class="banda-int">${h2}${corpo[0].html}</div></section>`
@@ -562,13 +562,13 @@ const SCRITTA_LUNGA = 40
  * Le foto del collage: la prima si carica subito, le altre quando servono. Gli attributi li mette il generatore, dopo la
  * pulizia (che ammette solo `src` e `alt`): così un testo non può scriverli. Il tag esce con `>` anche se arrivava con `/>`.
  */
-function conCaricamento(tag: string, prima: boolean): string {
+export function conCaricamento(tag: string, prima: boolean): string {
   const attributi = prima ? ' fetchpriority="high" decoding="async"' : ' loading="lazy" decoding="async"'
   return tag.replace(/\s*\/?>$/, `${attributi}>`)
 }
 
 /** Un `ul` di 2–6 voci che cominciano tutte con un grassetto: il grassetto è il numero, il resto la scritta. */
-function numeriDiUnElenco(b: Blocco): Array<{ cifra: string; scritta: string }> | null {
+export function numeriDiUnElenco(b: Blocco): Array<{ cifra: string; scritta: string }> | null {
   if (b.tag !== 'ul') return null
   const li = [...b.html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1])
   if (li.length < NUMERI_MIN || li.length > NUMERI_MAX || /<(ul|ol)\b/i.test(b.html.slice(b.html.indexOf('>') + 1))) return null
