@@ -56,7 +56,7 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
   const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
   const annulla = async (r: Ricevuta) => {
     const avviso = avvisoCassaChiusa(r.voci.flatMap((v) => v.pagamenti), await d.chiusure().catch(() => []))
-    if (!(await chiedi(`${domandaAnnullaRicevuta(r)}${avviso ? ` ${avviso}` : ''}`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
+    if (!(await chiedi(`${domandaAnnullaRicevuta(r)}${avviso ? ` ${avviso}` : ''}`, 'Sì, annulla la ricevuta', { no: 'No, lasciala', pericolo: true }))) return
     const oggi = chiaveGiorno(new Date())
     const altre = (ricevute.dato ?? []).filter((x) => x.id !== r.id)
     const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
@@ -69,7 +69,7 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
   }
   const annullaPagamento = async (x: PagamentoDiretto) => {
     const avviso = avvisoCassaChiusa([x], await d.chiusure().catch(() => []))
-    if (!(await chiedi(`${domandaAnnullaPagamento(x)}${avviso ? ` ${avviso}` : ''}`, 'SÌ, ANNULLA IL PAGAMENTO', { no: 'NO, LASCIALO', pericolo: true }))) return
+    if (!(await chiedi(`${domandaAnnullaPagamento(x)}${avviso ? ` ${avviso}` : ''}`, 'Sì, annulla il pagamento', { no: 'No, lascialo', pericolo: true }))) return
     void fai(() => d.annullaPagamentoDiretto(x.id), 'Pagamento annullato', () => diretti.ricarica())
   }
 
@@ -104,8 +104,8 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
                 {/* Annullata è storia, non qualcosa che manca: barrata e in grigio, non in rosso. */}
                 <span style={{ fontSize: 15, fontWeight: 700, textDecoration: r.annullataIl ? 'line-through' : undefined, color: r.annullataIl ? 'var(--dim)' : undefined }}>
                   N. {r.numero}/{r.anno} · {dataLunga(r.data)}
-                  {manca > 0 && <span className="num sg-tag" data-tipo="presto" style={{ marginLeft: 8, textDecoration: 'none' }}>MANCA {euro(manca)} €</span>}
-                  {r.annullataIl && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8, textDecoration: 'none' }}>ANNULLATA</span>}
+                  {manca > 0 && <span className="num sg-tag" data-tipo="presto" style={{ marginLeft: 8, textDecoration: 'none' }}>Manca {euro(manca)} €</span>}
+                  {r.annullataIl && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8, textDecoration: 'none' }}>Annullata</span>}
                 </span>
                 <span style={{ fontSize: 12, color: 'var(--dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.annullataIl ? `Annullata il ${dataLunga(r.annullataIl.slice(0, 10))} · ` : ''}
@@ -119,7 +119,7 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
               {!r.annullataIl && (
                 <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
                   <button type="button" className="num sg-chip" onClick={() => annulla(r)}>
-                    ANNULLA RICEVUTA
+                    Annulla ricevuta
                   </button>
                 </div>
               )}
@@ -143,7 +143,7 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
           </span>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
             <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScoperta(null)}>
-              RESTA DA PAGARE
+              Resta da pagare
             </button>
             <button
               type="button"
@@ -159,10 +159,10 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
                 )
               }
             >
-              ERA PAGATA FUORI DALL’APP
+              Era pagata fuori dall’app
             </button>
           </div>
-          <span className="sg-sotto">Se ne fai subito un’altra giusta, scegli RESTA DA PAGARE: la nuova ricevuta la rimette pagata.</span>
+          <span className="sg-sotto">Se ne fai subito un’altra giusta, scegli «Resta da pagare»: la nuova ricevuta la rimette pagata.</span>
         </div>
       )}
       {registrando ? (
@@ -183,10 +183,10 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
         <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
           {/* Pieno se è la prima cosa da fare, o se è tutto a posto: la scheda si apre per incassare. */}
           <button type="button" className={tastoPrincipale(p, oggi) === 'quota' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo onClick={onNuova}>
-            + FAI LA RICEVUTA
+            + Fai la ricevuta
           </button>
           <button type="button" className="num sg-chip" onClick={() => setRegistrando(true)}>
-            + REGISTRA UN PAGAMENTO
+            + Registra un pagamento
           </button>
         </div>
       )}
@@ -206,7 +206,7 @@ function RigaDelloStorico({ riga, aMano, onAnnulla }: { riga: RigaPagamento; aMa
         </span>
         <span style={{ fontSize: 12, color: 'var(--dim)', overflowWrap: 'anywhere' }}>
           {[riga.voce, riga.nota].filter(Boolean).join(' · ')}
-          {aMano && <span className="num sg-tag" data-tipo={riga.annullato ? 'manca' : undefined} style={{ marginLeft: 8 }}>{riga.annullato ? 'ANNULLATO' : 'SENZA RICEVUTA'}</span>}
+          {aMano && <span className="num sg-tag" data-tipo={riga.annullato ? 'manca' : undefined} style={{ marginLeft: 8 }}>{riga.annullato ? 'Annullato' : 'Senza ricevuta'}</span>}
         </span>
       </span>
       <span className="num" style={{ fontSize: 18, fontWeight: 700, whiteSpace: 'nowrap', textDecoration: barrato, color: riga.annullato ? 'var(--dim)' : 'var(--verde-testo)' }}>
@@ -215,7 +215,7 @@ function RigaDelloStorico({ riga, aMano, onAnnulla }: { riga: RigaPagamento; aMa
       {onAnnulla && (
         <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
           <button type="button" className="num sg-chip" onClick={onAnnulla}>
-            ANNULLA PAGAMENTO
+            Annulla pagamento
           </button>
         </div>
       )}
@@ -282,10 +282,10 @@ export function RegistraPagamento({ d, p, corsi, fai, onFatto, onChiudi }: { d: 
             void fai(() => d.registraPagamentoDiretto({ personaId: p.id, data, importo: cent, metodo, voce: voce.trim(), nota: nota.trim() || undefined }), 'Pagamento registrato', onFatto)
           }}
         >
-          REGISTRA IL PAGAMENTO
+          Registra il pagamento
         </button>
         <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
-          NO, TORNA INDIETRO
+          No, torna indietro
         </button>
       </div>
     </section>
@@ -529,7 +529,7 @@ export function NuovaRicevuta({
       avvisa.length ? `\n${avvisaTesto}.` : '',
       '\nFatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.',
     ]
-    if (!(await chiedi(righe.join('\n'), 'FAI LA RICEVUTA', { no: 'TORNA A CORREGGERE', pericolo: true }))) return
+    if (!(await chiedi(righe.join('\n'), 'Fai la ricevuta', { no: 'Torna a correggere', pericolo: true }))) return
     void fai(
       async () => {
         const r = await d.emettiRicevuta(dati)
@@ -641,7 +641,7 @@ export function NuovaRicevuta({
               setAggiungi('')
             }}
           >
-            AGGIUNGI
+            Aggiungi
           </button>
         </div>
         {scontata ? (
@@ -736,10 +736,10 @@ export function NuovaRicevuta({
 
       <div className="sg-scheda-piede">
         <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
-          LASCIA STARE
+          Lascia stare
         </button>
         <button type="button" className="sg-btn sg-btn-rosso grow" disabled={!!guaio || !dati || !!bloccaTesto} aria-describedby={bloccaTesto ? 'rc-motivo' : undefined} onClick={emetti}>
-          FAI LA RICEVUTA
+          Fai la ricevuta
         </button>
       </div>
     </div>
@@ -780,7 +780,7 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
       {b && (
         <div className="row" style={{ gap: 8 }}>
           <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setB(null)}>
-            LASCIA STARE
+            Lascia stare
           </button>
           <button
             type="button"
@@ -800,7 +800,7 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
               )
             }
           >
-            SALVA
+            Salva
           </button>
         </div>
       )}

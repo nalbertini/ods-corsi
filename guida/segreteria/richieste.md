@@ -10,16 +10,16 @@ qui si guardano i dati e i file, e poi la si accoglie o la si rifiuta.
 
 In cima c'è quante sono da guardare. Per ogni richiesta: nome, **CORSI**,
 quando è **ARRIVATA**, **STATO** (**NUOVA**, **ACCOLTA**, **RIFIUTATA**), e
-**MINORE** se chi si iscrive è minorenne, **NUCLEO** se l'ha aggiunta un
+**Minore** se chi si iscrive è minorenne, **Nucleo** se l'ha aggiunta un
 iscritto per il suo nucleo familiare, dalla sua area: la scheda dice chi è
 (toccando il nome si apre la sua scheda), e accolta la persona entra nel
-suo nucleo. **DA STAMPARE** se la richiesta ha ancora la carta d'identità
-caricata. **FUORI ETÀ** se ha scelto almeno un corso
+suo nucleo. **Da stampare** se la richiesta ha ancora la carta d'identità
+caricata. **Fuori età** se ha scelto almeno un corso
 che non è per la sua età, neanche coi sei mesi di tolleranza: è da
 richiamare, ma si può accogliere lo stesso.
 
-Normalmente si vedono solo le nuove; **ANCHE QUELLE GIÀ GESTITE** mostra tutte,
-e **DA STAMPARE** (finché ce ne sono) quelle con il documento da
+Normalmente si vedono solo le nuove; **Anche quelle già gestite** mostra tutte,
+e **Da stampare** (finché ce ne sono) quelle con il documento da
 stampare.
 
 ## Guardare una richiesta
@@ -43,18 +43,18 @@ segreteria», e la richiesta si accoglie lo stesso. Le richieste mandate insieme
 (una famiglia) hanno tutte la stessa ricevuta: è un bonifico
 solo, per il totale di tutte. La carta d'identità sta in un riquadro giallo,
 perché nell'app non resta: accolta la richiesta, la si apre, si stampa, si
-mette nella cartellina e **STAMPATO, CANCELLA** la cancella per sempre. La
+mette nella cartellina e **Stampato, cancella** la cancella per sempre. La
 scheda dell'iscritto segna da sé che la copia è in segreteria.
 
 Il **certificato medico**, se è arrivato, ha il suo riquadro, **IL
-CERTIFICATO ARRIVATO DAL MODULO**, da guardare prima di accogliere: **APRI**
+CERTIFICATO ARRIVATO DAL MODULO**, da guardare prima di accogliere: **Apri**
 (il link dura 10 minuti), e **VALIDO FINO AL**, dove si scrive la data
-leggendo il foglio. Se è quello sbagliato, **RIFIUTA IL FILE** lo cancella e
+leggendo il foglio. Se è quello sbagliato, **Rifiuta il file** lo cancella e
 chi si è iscritto lo rimanda (o lo porta in segreteria). Accogliendo, il file
 passa alla scheda dell'iscritto, in **CERTIFICATO MEDICO**, con la data
 scritta qui; non va stampato né cancellato. Se il file c'è e la data no, sotto
 **PRIMA DI ACCOGLIERE** c'è «Manca la data del certificato» e il tasto è
-**ACCOGLI LO STESSO**: la data si scrive poi dalla scheda. Se la data scritta
+**Accogli lo stesso**: la data si scrive poi dalla scheda. Se la data scritta
 qui non si salva, l'app dice che la richiesta è accolta e che la data va
 scritta dalla scheda. Se la scheda aveva già un certificato scaduto, quello
 nuovo prende il posto del vecchio; se ne aveva uno ancora valido, il file della
@@ -68,7 +68,7 @@ aprono più, riaprire la richiesta.
 
 ## Decidere
 
-- **ACCOGLI** — la persona entra in elenco, iscritta ai corsi che ha scelto. Se
+- **Accogli** — la persona entra in elenco, iscritta ai corsi che ha scelto. Se
   c'era già (stessa persona), non si crea un doppione. Il codice fiscale da solo
   non basta a riconoscerla: se nome e cognome sono diversi da quelli della
   scheda, ACCOGLI ne fa una nuova (se era la stessa persona scritta in modo
@@ -76,11 +76,11 @@ aprono più, riaprire la richiesta.
   [Iscritti](iscritti.md)). Se l'email della richiesta
   è già di un'altra persona (un fratello, il genitore), la nuova scheda entra
   senza email di accesso e con quell'indirizzo come **email di contatto**: lì
-  trovate l'indirizzo da richiamare. **APRI LA SCHEDA** porta
+  trovate l'indirizzo da richiamare. **Apri la scheda** porta
   alla sua scheda in [Iscritti](iscritti.md).
-- **RIFIUTA** — chi l'ha mandata **non viene avvisato**: va chiamato o scritto
+- **Rifiuta** — chi l'ha mandata **non viene avvisato**: va chiamato o scritto
   a mano.
-- **ELIMINA RICHIESTA E FILE**, in fondo — cancella per sempre la richiesta con i suoi file. La scheda in
+- **Elimina richiesta e file**, in fondo — cancella per sempre la richiesta con i suoi file. La scheda in
   elenco, se c'è, resta.
 
 Una richiesta accolta o rifiutata resta qui, con quello che diceva, finché non
