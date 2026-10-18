@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Istruttori proposta</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA (1440px): l'elenco degli istruttori (proposte-home/istruttori: audit, foto, testi). Titolo 156px su una riga, griglia da 4 con ritratti tutti alti uguali (foto, nome in alto, corsi in pastiglie), 13º posto = invito a provare al posto della tessera sola in fondo. Bersagli >= 48px, un solo passo di sezione. Le foto sono ritagli quadrati di LightCraft/PhotoCraft (foto/approvate): l'abbinamento nome-volto NON è deciso (cartellino rosso). -->
+<div style="width: 1440px; min-height: 2725px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+  <dc-import name="SitoTestata" logo="logo.webp" attiva="Chi siamo" prova="Prova una settimana a 5 €" hint-size="100%,120px"></dc-import>
+  <section style="display:flex;flex-wrap:wrap;gap:8px;padding:0 48px"><span style="display:inline-block;background:#ffffff;color:#0d2a3d;border:2px solid #e4292a;border-radius:4px;padding:4px 8px;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:700;line-height:1.2">DA CONFERMARE I11 · «Istruttori» voce di menu o sotto «Chi siamo»?</span></section>
+  <section style="display:grid;grid-template-columns:1fr 520px;gap:48px;align-items:end;padding:36px 48px 0">
+    <h1 style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;margin:0;font-size:156px;line-height:.86;letter-spacing:-.01em">Gli istruttori</h1>
+    <div><p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:22px;line-height:1.5">Tredici tecnici sportivi che accompagnano ogni persona passo dopo passo, rispettando tempi, capacità e obiettivi.</p></div>
+  </section>
+  <section style="display:flex;flex-wrap:wrap;gap:8px;padding:36px 48px 0"><span style="display:inline-block;background:#ffffff;color:#0d2a3d;border:2px solid #e4292a;border-radius:4px;padding:4px 8px;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:700;line-height:1.2">DA CONFERMARE I8 · nomi dei corsi (MGA, Body functional, Pesistica, Mobility)</span><span style="display:inline-block;background:#ffffff;color:#0d2a3d;border:2px solid #e4292a;border-radius:4px;padding:4px 8px;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:700;line-height:1.2">DA CONFERMARE I9 · ordine alfabetico con Innella per primo</span></section>
+  <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:12px 48px 0">
+    <dc-import name="SitoRitratto" nome="Maurizio" cognome="Innella" corsi="Judo|Preparazione atletica|Pesi agonisti" tono="giallo" foto="img/p42.jpg" alt="Ritratto di Maurizio Innella"  fuoco="50% 30%" freccia="{{ true }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Diana" cognome="Ballabio" corsi="MGA|Autodifesa" tono="blu" foto=""  fuoco="50% 30%" freccia="{{ false }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Katia" cognome="Ballabio" corsi="Judo|Preparazione atletica" tono="inchiostro" foto=""  fuoco="50% 30%" freccia="{{ false }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Serena" cognome="Baravalle" corsi="Judo" tono="giallo" foto=""  fuoco="50% 30%" freccia="{{ false }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Tiziano" cognome="Bartocci" corsi="Body functional|Pesistica|Prepugilistica" tono="blu" foto=""  fuoco="50% 30%" freccia="{{ false }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Fabio" cognome="Berta" corsi="Aikido" tono="inchiostro" foto="img/p948-4.jpg" alt="Ritratto di Fabio Berta"  fuoco="50% 30%" freccia="{{ true }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Valerio" cognome="Busa" corsi="Judo" tono="giallo" foto=""  fuoco="50% 30%" freccia="{{ false }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Giulia" cognome="De Chiara" corsi="Avviamento alle arti marziali" tono="blu" foto=""  fuoco="50% 30%" freccia="{{ false }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Maura" cognome="Fornetti" corsi="Lotta|Preparazione atletica|Avviamento" tono="inchiostro" foto="img/p200.jpg" alt="Ritratto di Maura Fornetti"  fuoco="50% 30%" freccia="{{ false }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Elena" cognome="Merigo" corsi="Giocomotricità" tono="giallo" foto=""  fuoco="50% 30%" freccia="{{ false }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Aldo" cognome="Scollo" corsi="Judo agonisti" tono="blu" foto=""  fuoco="50% 30%" freccia="{{ false }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Manuel" cognome="Tagini" corsi="Preparazione atletica|Pesi|Mobility" tono="inchiostro" foto=""  fuoco="50% 30%" freccia="{{ false }}" hint-size="100%,500px"></dc-import>
+    <dc-import name="SitoRitratto" nome="Federico" cognome="Vuillermin" corsi="Judo|Lotta|Giocomotricità" tono="giallo" foto="img/p199.jpg" alt="Ritratto di Federico Vuillermin"  fuoco="50% 30%" freccia="{{ false }}" hint-size="100%,500px"></dc-import>
+    <div style="grid-column:span 3;display:flex;flex-direction:column;justify-content:center;gap:24px;background:#0d2a3d;color:#ffffff;border-radius:6px;padding:40px 48px">
+  <div style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;font-size:96px;line-height:.9">Vieni a conoscerli sul tatami.</div>
+  <p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:20px;line-height:1.5;max-width:560px">Una settimana a 5 €: provi tutte le discipline, incontri gli istruttori e scegli. Ti aspettiamo in Via Sassi 26, Collegno.</p>
+  <div style="display:flex;flex-direction:row;gap:12px;flex-wrap:wrap"><dc-import name="SitoPulsante" label="Prova una settimana a 5 €" tono="giallo" alto="60px" larghezza="auto" hint-size="320px,60px"></dc-import><span style="display:inline-flex;align-items:center;justify-content:center;min-height:60px;padding:0 28px;border-radius:6px;background:#ffffff;color:#0d2a3d;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-weight:600;font-size:16px">Scrivici</span></div>
+</div>
+  </section>
+  <section style="padding:24px 48px 48px">
+    <dc-import name="SitoPiedeContatti" hint-size="100%,260px"></dc-import>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>

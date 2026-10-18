@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts, come per Saira e Barlow. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<footer style="background: #0d2a3d; color: #ffffff; border-radius: 6px; padding: {{pad}}; display: flex; flex-direction: {{dir}}; justify-content: space-between; gap: 28px; font-family: {{inter}}; font-size: 16px; line-height: 1.5">
+  <div style="font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: {{corpo}}; line-height: .9">Officine<br>dello Sport</div>
+  <div>Via Sassi 26, Collegno<br>vicino alla metro Fermi</div>
+  <div style="display: flex; flex-direction: column">
+    <sc-for list="{{link}}" as="l" hint-placeholder-count="4"><span style="display: inline-flex; align-items: center; min-height: 48px">{{l}}</span></sc-for>
+  </div>
+  <div style="display: flex; flex-direction: column">
+    <sc-for list="{{legali}}" as="l" hint-placeholder-count="3"><span style="display: inline-flex; align-items: center; min-height: 48px">{{l}}</span></sc-for>
+  </div>
+</footer>
+</x-dc>
+<script data-dc-script data-props='{"piccolo":{"editor":"boolean","default":false},"$preview":{"width":1344,"height":260}}'>
+// PROPOSTA home del sito: il piede. Link da 48px di altezza (oggi 20-30px) e 24px di stacco dalla chiamata finale (oggi 6px).
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+// Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
+const TONI = { blu: ['#14709f', '#ffffff'], giallo: ['#f4c31b', '#0d2a3d'], inchiostro: ['#0d2a3d', '#ffffff'], chiara: ['#cfe6f4', '#0d2a3d'], bianco: ['#ffffff', '#0d2a3d'] };
+const truthy = (v) => v === true || v === 'true';
+// [DA CONFERMARE]: un dato che manca resta col testo di oggi, ma ben marcato (contorno rosso tratteggiato + cartellino).
+const segna = (nota) => ({ haNota: !!nota, nota: nota || '', contorno: nota ? '3px dashed #e4292a' : 'none' });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const pic = truthy(p.piccolo);
+    return { big: BIG, inter: INTER, dir: pic ? 'column' : 'row', pad: pic ? '28px 24px' : '40px', corpo: pic ? '44px' : '56px', link: ['Home', 'I nostri corsi', 'Chi siamo', 'Contattaci'], legali: ['Privacy', 'Cookie', 'Contributi pubblici'] };
+  }
+}
+</script>
+</body>
+</html>

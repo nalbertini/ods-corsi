@@ -17,10 +17,13 @@ import sanitizeHtml from 'sanitize-html'
 const LINK_ASSOLUTO = /^(https?:|mailto:|tel:)/i
 export const LINK_INTERNO = /^\/(?![/\\])/
 
+/** Le sole classi di un `div`: le colonne affiancate della pagina a pezzi (`sitoPezzi.ts`). */
+const CLASSI_COLONNE = ['colonne', 'c-2', 'c-3', 'colonna']
+
 const OPZIONI: sanitizeHtml.IOptions = {
-  allowedTags: ['h2', 'h3', 'p', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'br'],
-  allowedAttributes: { a: ['href', 'rel', 'target', 'class'], img: ['src', 'alt'] },
-  allowedClasses: { a: ['pulsante'] },
+  allowedTags: ['h2', 'h3', 'p', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'br', 'div'],
+  allowedAttributes: { a: ['href', 'rel', 'target', 'class'], img: ['src', 'alt'], div: ['class'] },
+  allowedClasses: { a: ['pulsante'], div: [...CLASSI_COLONNE] },
   allowedSchemes: ['http', 'https', 'mailto', 'tel'],
   allowedSchemesByTag: { img: ['http', 'https'] },
   allowProtocolRelative: false,
@@ -46,9 +49,24 @@ const OPZIONI: sanitizeHtml.IOptions = {
   },
 }
 
+/**
+ * Toglie i `div` che non sono colonne, e le loro chiusure, tenendo il contenuto.
+ * Lo fa prima di `sanitizeHtml`: rinominare un tag ammesso in uno no, dentro la libreria, lascia una chiusura orfana.
+ */
+function senzaDivEstranei(html: string): string {
+  const tenuti: boolean[] = []
+  return html.replace(/<(\/?)div\b([^>]*)>/gi, (tag, chiude: string, resto: string) => {
+    if (chiude) return tenuti.pop() ? tag : ''
+    const classi = /\bclass\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(resto)
+    const tiene = (classi?.[1] ?? classi?.[2] ?? '').split(/\s+/).some((c) => c === 'colonne' || c === 'colonna')
+    tenuti.push(tiene)
+    return tiene ? tag : ''
+  })
+}
+
 /** Il testo con solo quel che il sito ammette. */
 export function pulisciTesto(html: string): string {
-  return sanitizeHtml(html, OPZIONI)
+  return sanitizeHtml(senzaDivEstranei(html), OPZIONI)
 }
 
 /** Vero se il testo non ha niente da togliere: è già come lo vuole il sito. */

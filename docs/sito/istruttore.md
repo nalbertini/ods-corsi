@@ -1,6 +1,6 @@
 # La pagina di un istruttore
 
-Aspetto del design «tatami blu e giallo» (`docs/design-canvas/sito-rebrand/TatamiBlu-Istruttore.dc.html`
+Aspetto del design «tatami blu e giallo» (`docs/design-canvas/sito-approvato/TatamiBlu-Istruttore.dc.html`
 e `TatamiBluM-Istruttore.dc.html`). Il sito la riconosce da sola: **una pagina
 (non la Home, non di legge) il cui testo comincia con una foto e subito dopo
 una citazione** è «di persona». Il codice è `persona()` in `src/lib/sitoLayout.ts`.

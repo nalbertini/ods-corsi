@@ -1,0 +1,15 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "Istruttori · miglioramenti" }
+  ],
+  "artboards": [
+    { "file": "IstruttoriAttuale.dc.html", "title": "1 · Elenco com'è oggi (1440)", "x": 0, "y": 0, "w": 1440, "h": 3200, "page": "page-1" },
+    { "file": "IstruttoriProposta.dc.html", "title": "2 · Elenco proposto (1440)", "x": 1560, "y": 0, "w": 1440, "h": 2725, "page": "page-1" },
+    { "file": "IstruttoriAttualeTelefono.dc.html", "title": "3 · Elenco com'è oggi (375)", "x": 3120, "y": 0, "w": 375, "h": 2995, "page": "page-1" },
+    { "file": "IstruttoriPropostaTelefono.dc.html", "title": "4 · Elenco proposto (375)", "x": 3615, "y": 0, "w": 375, "h": 3590, "page": "page-1" },
+    { "file": "IstruttoreMinima.dc.html", "title": "5 · Scheda di default, Fabio (1440)", "x": 0, "y": 3700, "w": 1440, "h": 1830, "page": "page-1" },
+    { "file": "IstruttoreMinimaTelefono.dc.html", "title": "6 · Scheda di default, Fabio (375)", "x": 1560, "y": 3700, "w": 375, "h": 2255, "page": "page-1" },
+    { "file": "IstruttoreProposta.dc.html", "title": "7 · Scheda completa, Maurizio (1440)", "x": 0, "y": 6000, "w": 1440, "h": 3470, "page": "page-1" },
+    { "file": "IstruttoreTelefono.dc.html", "title": "8 · Scheda completa, Maurizio (375)", "x": 1560, "y": 6000, "w": 375, "h": 6340, "page": "page-1" }
+  ]
+}

@@ -43,6 +43,11 @@ const conta = (x, re) => (x.match(re) || []).length
 const CSS = html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
 const base = CSS.slice(0, CSS.indexOf('@media'))
 const css = (sel) => [...base.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].filter((m) => m[1].trim() === sel).map((m) => m[2]).join(';')
+// La testata ha le sue regole in coda (CSS_TESTATA): di base, sul computer (≥901px) e sul telefono.
+const coda = CSS.slice(CSS.indexOf('.tasto-menu,.testata .chiudi'))
+const codaBase = coda.slice(0, coda.indexOf('@media'))
+const codaPc = coda.slice(coda.indexOf('@media (min-width:901px)'), coda.indexOf('@media (max-width:900px)'))
+const regolaDi = (parte, sel) => [...parte.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].filter((m) => m[1].trim() === sel).map((m) => m[2]).join(';')
 const apertura = (html.match(/<section class="sezione apertura">([\s\S]*?)<\/section>/) || [, ''])[1]
 
 console.log('\n1. I recapiti: tessere prima del primo titolo grande')
@@ -89,17 +94,17 @@ console.log('\n4. Testata e piede come nel design')
 {
   const voce = (e, sl) => ({ dove: 'menu', ordine: 1, etichetta: e, slug: sl, indirizzo: null })
   const due = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [voce('Home', 'home'), { ...voce('Contattaci', 'contatti'), ordine: 2 }], rinvii: [] })
-  ok('la voce della pagina aperta è segnata (aria-current)', [/<a class="contattaci" href="\/contatti\/" aria-current="page">Contattaci<\/a>/.test(due['contatti/index.html']), /<a [^>]*aria-current/.test(due['index.html'].replace(/<a href="\/" aria-current="page">Home<\/a>/, ''))], [true, false])
-  ok('la voce segnata ha il fondo giallo', /background:\s*var\(--giallo\)/.test(css('.testata nav a[aria-current]')), true)
-  ok('testata: 22px sopra e sotto, marchio alto 110px, voci a 10px', [/padding:\s*22px var\(--margine\)/.test(css('.testata')), /height:\s*110px/.test(css('.logo img')), /gap:\s*10px/.test(css('.testata nav ul'))], [true, true, true])
-  ok('il pulsante in testata ha 26px ai lati', /padding:\s*0 26px/.test(css('.testata .pulsante')), true)
+  ok('la voce della pagina aperta è segnata (aria-current)', [/<a class="pulsante secondario" href="\/contatti\/" aria-current="page">Scrivici<\/a>/.test(due['contatti/index.html']), /<a [^>]*aria-current/.test(due['index.html'].replace(/<a href="\/" aria-current="page">Home<\/a>/, ''))], [true, false])
+  ok('la voce segnata ha il fondo giallo', /background:\s*var\(--giallo\)/.test(regolaDi(codaBase, '.testata nav a[aria-current]')), true)
+  ok('testata: 22px sopra e sotto, marchio alto 110px, voci a 36px', [/padding:\s*22px var\(--margine\)/.test(css('.testata')), /height:\s*110px/.test(css('.logo img')), /gap:\s*36px/.test(regolaDi(codaPc, '.testata nav ul'))], [true, true, true])
+  ok('i pulsanti in testata hanno 24px ai lati', /padding:\s*0 24px/.test(regolaDi(codaBase, '.testata .pulsante')), true)
   ok('titolo con interlinea .82', /line-height:\s*\.82/.test(css('.pagina-contatti h1')), true)
   ok('piede: margini come la pagina e 48px sotto, nome da 56px', [/margin:\s*0 var\(--margine\) 48px/.test(css('.piede')), /clamp\(44px,\s*3\.9vw,\s*56px\)/.test(css('.piede .nome'))], [true, true])
   const mob = CSS.slice(CSS.indexOf('@media (max-width:900px)'))
   const m = (sel) => [...mob.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].filter((x) => x[1].trim() === sel).map((x) => x[2]).join(';')
-  ok('telefono: testata 12px 16px 0, marchio alto 82px, voci a pillola chiara da 14px', [/padding:\s*12px var\(--margine\) 0/.test(m('.testata')), /height:\s*82px/.test(m('.logo img')), /background:\s*var\(--chiara\)/.test(m('.testata nav a')), /padding:\s*0 14px/.test(m('.testata nav a'))], [true, true, true, true])
-  ok('telefono: la voce segnata resta gialla (più forte della chiara)', /background:\s*var\(--giallo\)/.test(m('.testata nav a[aria-current]')), true)
-  ok('telefono: pulsante con 22px ai lati, piede con 24px di margine sotto e 24px di spazio dentro', [/padding:\s*0 22px/.test(m('.testata .pulsante')), /margin-bottom:\s*24px/.test(m('.piede')), /padding:\s*24px/.test(m('.piede'))], [true, true, true])
+  ok('telefono: testata 12px 16px, marchio alto 82px, menu aperto su fondo pieno con voci da 16px ai lati', [/padding:\s*12px var\(--margine\)(;|$)/.test(m('.testata')), /height:\s*82px/.test(m('.logo img')), /background:\s*var\(--fondo\)/.test(m('#menu:target')), /padding:\s*0 16px/.test(m('.testata nav a'))], [true, true, true, true])
+  ok('telefono: la voce segnata resta gialla', /background:\s*var\(--giallo\)/.test(regolaDi(codaBase, '.testata nav a[aria-current]')), true)
+  ok('telefono: pulsante nel menu con 24px ai lati, piede con 24px di margine sotto e 24px di spazio dentro', [/padding:\s*0 24px/.test(m('.testata .nel-menu')), /margin-bottom:\s*24px/.test(m('.piede')), /padding:\s*24px/.test(m('.piede'))], [true, true, true])
 }
 
 console.log('\n5. Quel che il design ha e il sito non aveva')
@@ -108,7 +113,7 @@ console.log('\n5. Quel che il design ha e il sito non aveva')
   const c = vuoto['contatti/index.html']
   const pie = (c.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
   ok('la pagina Contatti non ha il pulsante «Contattaci» sotto il titolo e ha l’invito «Prova» in fondo', [/<a class="pulsante" href="\/contatti\/">Contattaci<\/a>/.test(c), /class="invito"/.test(c)], [false, true])
-  ok('il pulsante in testata è «Prova» più una coda che sul telefono sparisce', /<a class="pulsante piccolo" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/" rel="noopener noreferrer">Prova<span class="estensione"> una settimana · 5 €<\/span><\/a>/.test(c), true)
+  ok('il pulsante in testata dice «Prova una settimana a 5 €», intero', /<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Prova una settimana a 5 €<\/a>/.test(c), true)
   ok('piede: il nome va a capo dopo «Officine», senza titoli né riga «©»', [/<p class="nome">Officine<br>dello Sport<\/p>/.test(pie), /<h2/.test(pie), /class="fine"/.test(pie)], [true, false, false])
   ok('piede: le pagine del menu e quelle di legge sono due elenchi senza titolo', [/<nav class="piede-menu" aria-label="Pagine"><a href="\/">Home<\/a><a href="\/contatti\/"[^>]*>Contattaci<\/a><\/nav>/.test(pie), /<ul class="piede-legale"><li><a href="\/privacy\/">Privacy policy<\/a><\/li><\/ul>/.test(pie)], [true, true])
   const mappa = (apertura.match(/<figure class="tessera foto larga mappa">([\s\S]*?)<\/figure>/) || [, ''])[1]

@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Istruttore proposta</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA (1440px): la scheda di un istruttore (esempio: Maurizio Innella; tutti i dati vengono da sito-approvato/TatamiBlu-Istruttore e vanno riconfermati da lui). Foto a sinistra, nome a 140px, quattro dati da 9-10 parole, tre blocchi da 25-36 parole (entro il 20% della media), il percorso in tre colonne. Le tessere senza dato non si mostrano. Sotto, gli altri istruttori dello stesso corso. -->
+<div style="width: 1440px; min-height: 3470px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+  <dc-import name="SitoTestata" logo="logo.webp" attiva="Chi siamo" prova="Prova una settimana a 5 €" hint-size="100%,120px"></dc-import>
+  <section style="padding:0 48px"><span style="display:inline-block;background:#ffffff;color:#0d2a3d;border:2px solid #e4292a;border-radius:4px;padding:4px 8px;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:700;line-height:1.2">DA CONFERMARE I11 · «Istruttori» voce di menu o sotto «Chi siamo»?</span></section>
+  <section style="padding:12px 48px 0"><span style="display:inline-flex;align-items:center;min-height:48px;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:17px;font-weight:600">← Gli istruttori</span></section>
+  <section style="display:grid;grid-template-columns:600px 1fr;gap:48px;align-items:stretch;padding:12px 48px 0">
+    <div style="position:relative;height:640px;overflow:hidden;border-radius:6px"><img src="img/p42.jpg" alt="Ritratto di Maurizio Innella" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% 35%"></div>
+    <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:24px">
+      <h1 style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;margin:0;font-size:140px;line-height:.86;letter-spacing:-.01em">Maurizio<br>Innella</h1>
+      <p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:24px;line-height:1.4;font-weight:600">Maestro di Judo V Dan</p><div><span style="display:inline-block;background:#ffffff;color:#0d2a3d;border:2px solid #e4292a;border-radius:4px;padding:4px 8px;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:700;line-height:1.2">DA CONFERMARE I2 · V Dan o IV livello?</span></div>
+      <p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:22px;line-height:1.5;max-width:640px">«[Una frase di Maurizio su come intende lo sport e l’allenamento.]»</p>
+      <div><span style="display:inline-block;background:#ffffff;color:#0d2a3d;border:2px solid #e4292a;border-radius:4px;padding:4px 8px;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:700;line-height:1.2">DA CONFERMARE I6 · la frase la scrive lui</span></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap"><dc-import name="SitoPulsante" label="Prova una settimana a 5 €" tono="giallo" alto="60px" larghezza="auto" hint-size="320px,60px"></dc-import><dc-import name="SitoPulsante" label="Scrivici" tono="inchiostro" alto="60px" larghezza="auto" hint-size="180px,60px"></dc-import></div>
+    </div>
+  </section>
+  <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:48px 48px 0">
+    <dc-import name="SitoDatoPersona" etichetta="Ruolo" valore="Presidente e direttore tecnico di ASD Il Centro Judo" tono="blu" nota="DA CONFERMARE I7 · ruolo dal canvas" hint-size="100%,230px"></dc-import>
+    <dc-import name="SitoDatoPersona" etichetta="Corsi" valore="Judo (tutti i gruppi), preparazione atletica e pesi agonisti" tono="giallo" nota="DA CONFERMARE I7 · «tutti i gruppi» dal canvas" hint-size="100%,230px"></dc-import>
+    <dc-import name="SitoDatoPersona" etichetta="Quando" valore="Lunedì, mercoledì e venerdì; martedì e giovedì con gli agonisti" tono="inchiostro" nota="DA CONFERMARE I4 · orari dal calendario" hint-size="100%,230px"></dc-import>
+    <dc-import name="SitoDatoPersona" etichetta="Titoli" valore="Maestro di Judo V Dan, allenatore di Lotta II livello" tono="blu" nota="DA CONFERMARE I2 · V Dan o IV livello?" hint-size="100%,230px"></dc-import>
+  </section>
+  <section style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:6px 48px 0">
+    <dc-import name="SitoBloccoPersona" titolo="Chi è" testo="Docente di Educazione Fisica e Maestro di Judo, con una lunga esperienza nella promozione dello sport e del movimento a scuola. Ha collaborato con scuole primarie e secondarie a progetti di educazione motoria, inclusione e benessere." tono="inchiostro" hint-size="100%,300px"></dc-import>
+    <dc-import name="SitoBloccoPersona" titolo="Come ha iniziato" testo="Dal 1989 è presidente e direttore tecnico di ASD Il Centro Judo, l’associazione da cui è nata Officine dello Sport. Diploma ISEF a Torino nel 1997, poi le lauree in Scienze motorie." tono="giallo" nota="DA CONFERMARE I10 · dal 1989 e «35+ anni»" hint-size="100%,300px"></dc-import>
+    <dc-import name="SitoBloccoPersona" titolo="A scuola" testo="Dal 2000 porta lo sport nelle scuole: progetti di educazione motoria con i Comuni di Collegno e Candiolo e con le scuole del territorio torinese." tono="blu" nota="DA CONFERMARE I3 · titolo (era «Come insegna»)" hint-size="100%,300px"></dc-import>
+  </section>
+  <section style="padding:96px 48px 0">
+    <dc-import name="SitoTitolo" testo="Il percorso" corpo="80px" hint-size="100%,90px"></dc-import>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:40px">
+      <dc-import name="SitoElencoPercorso" titolo="Federazione e sport" voci="Responsabile Promozione FIJLKAM Piemonte, Settore Lotta (dal 2017)|Presidente Settore Judo FIJLKAM Piemonte (2013–2016)|Responsabile Settore Scuola FIJLKAM Piemonte (2009–2016)|Docente dei corsi di aggiornamento tecnici FIJLKAM, Lotta e Judo (2025–2026)|Coordinatore progetti CONI Torino: Giocosport, Giochi della Gioventù, Educamp (2010–2012)|Segretario Scuola Regionale dello Sport CONI Piemonte (2008–2011)|Responsabile del progetto di difesa personale al Ferrante Aporti (CONI Piemonte, 2004–2007)" tono="chiara" hint-size="100%,420px"></dc-import>
+      <dc-import name="SitoElencoPercorso" titolo="Scuola" voci="Scuola Attiva Junior, MIUR–Sport e Salute (2023–2024)|Scuola e Sport, Comune di Collegno (2003–2024)|Sport a Scuola, Comune di Candiolo (2016–2023)|Esperto PON, Istituto Superiore Paolo Boselli, Torino (2010)|Responsabile tecnico Judo, Dynamic Dojo di La Loggia (2000–2019)" tono="bianco" hint-size="100%,420px"></dc-import>
+      <dc-import name="SitoElencoPercorso" titolo="Titoli e studi" voci="Maestro di Judo IV livello FIJLKAM (2017), V Dan|Allenatore di Lotta II livello|Laurea Magistrale in Scienze dell’Esercizio Fisico per il Benessere e la Salute (2021)|Laurea Triennale in Scienze delle Attività Motorie e Sportive (2019)|Diploma ISEF, Torino (1997)|Specializzazione in Posturologia Integrata, INFROP (in corso)" tono="chiara" hint-size="100%,420px"></dc-import>
+    </div>
+    <div style="margin-top:6px;position:relative;background:#0d2a3d;color:#ffffff;border-radius:6px;padding:28px 32px;outline:3px dashed #e4292a;outline-offset:-3px"><span style="position:absolute;top:8px;right:8px"><span style="display:inline-block;background:#ffffff;color:#0d2a3d;border:2px solid #e4292a;border-radius:4px;padding:4px 8px;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:700;line-height:1.2">DA CONFERMARE I5 · dato personale: lo vuole pubblicare?</span></span><div style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;font-size:40px;line-height:.95;margin-bottom:12px">Fuori dal tatami</div><p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:18px;line-height:1.5;max-width:960px">Assistente bagnanti con estensione MIP e istruttore di nuoto. Appassionato di montagna e arrampicata. Ha svolto il servizio militare nei paracadutisti, come aiuto istruttore di paracadutismo.</p></div>
+  </section>
+  <section style="padding:96px 48px 0">
+    <dc-import name="SitoTitolo" testo="Gli altri istruttori di Judo" corpo="80px" hint-size="100%,90px"></dc-import>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:40px">
+      <dc-import name="SitoRitratto" nome="Katia" cognome="Ballabio" corsi="Judo|Preparazione atletica" tono="inchiostro" foto=""  fuoco="50% 30%" freccia="{{ false }}" piccolo="{{ true }}" hint-size="100%,136px"></dc-import>
+      <dc-import name="SitoRitratto" nome="Serena" cognome="Baravalle" corsi="Judo" tono="giallo" foto=""  fuoco="50% 30%" freccia="{{ false }}" piccolo="{{ true }}" hint-size="100%,136px"></dc-import>
+      <dc-import name="SitoRitratto" nome="Valerio" cognome="Busa" corsi="Judo" tono="giallo" foto=""  fuoco="50% 30%" freccia="{{ false }}" piccolo="{{ true }}" hint-size="100%,136px"></dc-import>
+      <dc-import name="SitoRitratto" nome="Aldo" cognome="Scollo" corsi="Judo agonisti" tono="blu" foto=""  fuoco="50% 30%" freccia="{{ false }}" piccolo="{{ true }}" hint-size="100%,136px"></dc-import>
+    </div>
+  </section>
+  <section style="padding:96px 48px 0">
+    <div style="grid-column:span 3;display:flex;flex-direction:column;justify-content:center;gap:24px;background:#0d2a3d;color:#ffffff;border-radius:6px;padding:40px 48px">
+  <div style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;font-size:96px;line-height:.9">Vieni a conoscerli sul tatami.</div>
+  <p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:20px;line-height:1.5;max-width:560px">Una settimana a 5 €: provi tutte le discipline, incontri gli istruttori e scegli. Ti aspettiamo in Via Sassi 26, Collegno.</p>
+  <div style="display:flex;flex-direction:row;gap:12px;flex-wrap:wrap"><dc-import name="SitoPulsante" label="Prova una settimana a 5 €" tono="giallo" alto="60px" larghezza="auto" hint-size="320px,60px"></dc-import><span style="display:inline-flex;align-items:center;justify-content:center;min-height:60px;padding:0 28px;border-radius:6px;background:#ffffff;color:#0d2a3d;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-weight:600;font-size:16px">Scrivici</span></div>
+</div>
+  </section>
+  <section style="padding:24px 48px 48px">
+    <dc-import name="SitoPiedeContatti" hint-size="100%,260px"></dc-import>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>

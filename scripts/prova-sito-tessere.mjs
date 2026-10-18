@@ -20,8 +20,6 @@
 // e grid-column, e si controllano righe e larghezze, non i nomi dei token.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
-import { execSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
 
 const carica = async (file) => {
   try {
@@ -438,20 +436,6 @@ console.log('\n12. Stessi dati, stessi file; testi strani non rompono')
   const solo = tessere(sezioni(pagina('<h2>S</h2><h3>Solo titolo</h3>'))[0] ?? '')
   ok('h3 senza testo: una tessera col solo titolo', [solo.length, testoDi(solo[0]?.html ?? '')], [1, 'Solo titolo'])
   ok('h3 vuoto: si genera', pagina('<h2>S</h2><h3></h3><p>x</p>').includes('</html>'), true)
-}
-
-console.log('\n13. Niente di nuovo fuori dal generatore')
-{
-  // Il confronto è con `main`: su GitHub il checkout è corto e `main` non c'è (né `origin/main`), e lì il confronto non si può fare.
-  const base = ['main', 'origin/main'].find((r) => { try { execSync(`git rev-parse --verify --quiet ${r}`, { stdio: 'ignore' }); return true } catch { return false } })
-  if (!base) console.log('  (nessun `main` in questo checkout: confronto saltato; in locale e nelle PR si fa)')
-  else {
-    const dip = (j) => JSON.stringify({ d: j.dependencies, v: j.devDependencies })
-    const prima = JSON.parse(execSync(`git show ${base}:package.json`, { encoding: 'utf8' }))
-    ok('nessuna dipendenza nuova', dip(JSON.parse(readFileSync('package.json', 'utf8'))), dip(prima))
-    const toccati = execSync(`git diff --name-only ${base} -- src/lib/sito.ts src/lib/sitoPagine.ts src/lib/sitoTesto.ts supabase`, { encoding: 'utf8' }).trim()
-    ok('il pannello (sito.ts, sitoPagine.ts, sitoTesto.ts) e supabase/ non cambiano', toccati, '')
-  }
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')

@@ -4,7 +4,8 @@ import { pulisciTesto } from './sitoTesto'
 import { GRIGLIA_MASSIMA, collage, conFila, impagina, persona, ritratti, testataCorso } from './sitoLayout'
 import { CSS_CORSI } from './sitoCorsi'
 import { CSS_INTERNE } from './sitoInterne'
-import { cssFoci } from './sitoFoto'
+import { cssFoci, cssFociSchede } from './sitoFoto'
+import { eHomeNuova, homeNuova } from './sitoHome'
 import { CONTATTI } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
 
@@ -61,8 +62,9 @@ const TESTI = {
   nome: 'Officine dello Sport',
   immagineAlt: 'Officine dello Sport: il marchio con i cinque ingranaggi colorati',
   prova: 'Prova',
-  provaCoda: 'una settimana · 5 €',
-  contattaci: 'Contattaci',
+  provaIntera: 'Prova una settimana a 5 €',
+  metro: 'vicino alla metro Fermi',
+  scrivici: 'Scrivici',
   invito: 'Vieni a provare: ti aspettiamo in',
   settimana: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
   altriLink: 'Altri link',
@@ -87,7 +89,7 @@ const slugDiPagina = (s: string) => s === 'home' || slugValido(s)
 const percorso = (slug: string) => (slug === 'home' ? '/' : `/${slug}/`)
 
 /** Dove si scrive il file di una pagina. */
-const fileDi = (slug: string) => (slug === 'home' ? 'index.html' : `${slug}/index.html`)
+export const fileDi = (slug: string) => (slug === 'home' ? 'index.html' : `${slug}/index.html`)
 
 /**
  * Il marchio intero (anelli e scritta). `logo.webp` è già tagliato ai margini del disegno: width e height qui
@@ -101,7 +103,7 @@ const GRIGLIE_LUNGHE = Array.from({ length: GRIGLIA_MASSIMA - 7 }, (_, i) => i +
   .join('\n')
 
 /**
- * L'aspetto «A2 · Tatami blu e giallo» (docs/design-canvas/sito-rebrand/, token in
+ * L'aspetto «A2 · Tatami blu e giallo» (docs/design-canvas/sito-approvato/, token in
  * token-proposta.md): tessere a filo con angoli di 6px, titoli in Big Shoulders
  * Display maiuscolo, testo in Inter. I colori sono cinque e il bianco: non se ne
  * aggiungono senza cambiare prima il design. Regola dei colori: il giallo è uno
@@ -123,6 +125,146 @@ const GRUPPI_PERSONA: Array<[string, string[]]> = [
 ]
 const TINTE_PERSONA = GRUPPI_PERSONA.flatMap(([sel, colori]) => colori.map((c, i) => `${sel} .tessera:nth-child(${i + 1}){background:var(--${c});color:${c === 'giallo' || c === 'chiara' ? 'var(--inchiostro)' : '#fff'}}`)).join('\n')
 
+/** La testata e il piede di tutte le pagine: due pulsanti interi (prova e Scrivici), sul telefono il tasto MENU che apre il menu con `:target`, senza script; bersagli da 48px. */
+const CSS_TESTATA = `
+.tasto-menu,.testata .chiudi,.testata .nel-menu{display:none}
+.testata nav ul{display:flex;flex-wrap:wrap;gap:10px;margin:0;padding:0;list-style:none;font-size:17px;font-weight:500}
+.testata nav a{display:inline-flex;align-items:center;min-height:48px;padding:0 16px;border-radius:6px;text-decoration:none}
+.testata nav a:hover{background:var(--chiara)}
+.testata nav a[aria-current]{background:var(--giallo)}
+.testata .azioni{display:flex;gap:8px;align-items:center}
+.pulsante.primario{background:var(--giallo);color:var(--inchiostro)}
+.pulsante.secondario{background:transparent;color:var(--inchiostro);border:2px solid var(--inchiostro)}
+.testata .pulsante{min-height:52px;padding:0 24px;font-size:16px}
+.piede a{display:inline-flex;align-items:center;min-height:48px;min-width:48px}
+.piede-menu a{display:flex}
+.piede .metro{display:block;color:var(--chiara);font-size:15px;line-height:1.4}
+@media (min-width:901px){
+.testata nav ul{gap:36px}
+.testata nav a{padding:0}
+.testata nav a:hover{background:none;text-decoration:underline;text-underline-offset:4px}
+}
+@media (max-width:900px){
+.testata{position:relative;flex-wrap:nowrap;gap:12px;padding:12px var(--margine)}
+.testata .azioni{display:none}
+.testata .tasto-menu{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:16px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-decoration:none}
+#menu{display:none;order:0;width:auto}
+#menu:target{display:block;position:absolute;z-index:10;top:100%;left:0;right:0;padding:12px var(--margine) 24px;background:var(--fondo);box-shadow:0 14px 24px rgba(13,42,61,.2)}
+.testata nav ul{flex-direction:column;gap:6px}
+.testata nav a{min-height:48px;padding:0 16px;font-size:17px}
+.testata .chiudi{display:inline-flex;min-height:48px;margin-bottom:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.testata .nel-menu{display:inline-flex;margin-bottom:12px;padding:0 24px;font-size:16px}
+.piede-menu a{display:inline-flex}
+}
+`.replace(/\n/g, '')
+
+/**
+ * Le regole della Home nuova (sitoHome.ts), e dei pezzi che le altre pagine potranno chiedere: pulsanti, schede, citazioni
+ * con «Leggi tutto», recensioni, chiamata finale. Stanno sotto `main.passo-unico` (la pagina con un solo passo di
+ * sezione: 96px sul computer, 64px sul telefono) e la testata e il piede, uguali in tutte le pagine; la Home di prima non ha il resto.
+ * Sono scritte più specifiche delle regole di prima, che restano per le altre pagine.
+ */
+const CSS_HOME = `
+.pulsanti{display:flex;flex-wrap:wrap;gap:12px}
+.pulsanti .pulsante{min-height:60px;padding:0 28px}
+.passo-unico .pagina-hero{display:grid;grid-template-columns:600px minmax(0,1fr);gap:48px;align-items:end;padding:24px var(--margine) 0}
+.passo-unico .pagina-hero.solo{grid-template-columns:1fr}
+.passo-unico .pagina-hero .intro{display:block;max-width:none}
+.passo-unico h1{margin:0 0 32px;font-size:clamp(92px,10.83vw,156px);line-height:.86}
+.passo-unico .intro p{max-width:520px;margin:0 0 32px;font-size:22px;line-height:1.5}
+.hero-foto{margin:0;height:456px;overflow:hidden;border-radius:6px}
+.hero-foto img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 40%;border-radius:6px}
+.passo-unico .tessere.numeri{margin:48px var(--margine) 0;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-flow:row}
+.passo-unico .tessere.numeri>.tessera{grid-column:auto;justify-content:space-between}
+.passo-unico .numeri .tessera{min-height:150px}
+.passo-unico .numeri .cifra{font-size:clamp(56px,6.3vw,84px)}
+.motto{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin:48px var(--margine) 0}
+.motto h3{margin:0;font-size:64px;line-height:.92}
+.motto p{margin:0 0 12px;font-size:20px;line-height:1.5}
+.motto p:last-child{margin:0}
+.passo-unico .sezione{padding:96px var(--margine) 0}
+.passo-unico .sezione>*+*{margin-top:0}
+.passo-unico .sezione h2{margin:0;font-size:clamp(56px,5.56vw,80px);line-height:.9;text-wrap:balance}
+.passo-unico .sezione .colonna{max-width:900px;margin-top:24px;padding-bottom:0}
+.passo-unico .sezione .colonna p{font-size:20px;line-height:1.5}
+.passo-unico .sezione>.tessere,.passo-unico .sezione>.recensioni{margin-top:40px}
+.tessere.schede{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;gap:6px}
+.tessere.schede>.tessera,.recensioni>*{grid-column:auto}
+.passo-unico .tessere.schede .tessera.scheda:not(.foto){position:relative;min-height:0;padding:0;gap:0;overflow:hidden;font-size:17px}
+.scheda-foto{flex:none;height:clamp(220px,30vw,240px);overflow:hidden;border-radius:0}
+.scheda-foto img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;border-radius:0}
+.scheda-foto.senza-foto{display:flex;align-items:center;justify-content:center;background:var(--chiara);color:var(--inchiostro);font-family:var(--display);font-weight:800;line-height:1}
+.scheda-foto.senza-foto span{font-size:96px}
+.passo-unico .scheda h3{margin:24px 72px 0 24px;font-size:clamp(36px,3.6vw,52px);line-height:.95;display:block}
+.passo-unico .scheda h3 a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none}
+.passo-unico .scheda h3 a::before{content:"";position:absolute;inset:0}
+.passo-unico .scheda h3::after{content:"↗\uFE0E";position:absolute;top:16px;right:16px;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:#fff;color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:24px;font-weight:600;line-height:1}
+.passo-unico .scheda p{margin:10px 24px 0;font-size:17px;line-height:1.45;max-width:none}
+.passo-unico .scheda p.eta{margin-top:4px;font-size:16px;font-weight:700}
+.passo-unico .scheda .pastiglie{display:flex;flex-wrap:wrap;gap:6px;margin:auto 0 0;padding:20px 24px 24px;list-style:none}
+.passo-unico .scheda .pastiglie li{display:inline-flex;align-items:center;gap:6px;min-height:32px;margin:0;padding:6px 12px 6px 8px;border-radius:999px;background:var(--chiara);color:var(--inchiostro);font-size:14px;font-weight:600;line-height:1}
+.pastiglie svg{display:block;flex:none;width:20px;height:20px}
+.passo-unico .tessere.perche .tessera{position:relative;min-height:280px;padding:32px;justify-content:flex-start;gap:12px;font-size:20px;line-height:1.45}
+.passo-unico .perche h3{font-size:clamp(36px,3.6vw,52px);line-height:.95;padding-right:56px}
+.numero-perche{position:absolute;top:24px;right:28px;font-family:var(--display);font-weight:800;font-size:56px;line-height:1;opacity:.35}
+.passo-unico .tessere.estratti .tessera.citazione{min-height:400px;padding:32px;gap:20px;font-size:20px;line-height:1.45;font-weight:500}
+.citazione .estratto::before,.citazione .testo-intero p:first-child::before{content:"«"}
+.citazione .estratto::after,.citazione .testo-intero p:last-child::after{content:"»"}
+.testo-intero p+p{margin-top:12px}
+.intero summary{display:inline-flex;align-items:center;min-height:48px;font-size:16px;font-weight:700;text-decoration:underline;text-underline-offset:4px;cursor:pointer;list-style:none}
+.intero summary::-webkit-details-marker{display:none}
+.intero[open] summary::after{content:" · chiudi";white-space:pre}
+.intero summary:focus-visible{outline:3px solid currentColor;outline-offset:3px}
+.citazione:has(.intero[open]) .estratto{display:none}
+.recensioni{display:grid;grid-template-columns:1.2fr 1.2fr 1fr;gap:6px}
+.recensioni .tessera{min-height:300px;padding:32px;gap:20px;font-size:21px;line-height:1.4;font-weight:500}
+.recensioni .tessera.in-breve{font-size:18px;font-weight:400}
+.in-breve h3{font-size:44px;line-height:.95}
+.in-breve ul{margin:0;padding:0;list-style:none}
+.in-breve li{padding:12px 0;border-top:1px solid rgba(13,42,61,.25)}
+.in-breve li em{display:block;font-style:normal;font-weight:700}
+.passo-unico .sezione.cta{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:96px var(--margine) 0}
+.passo-unico .sezione.cta.solo{grid-template-columns:1fr}
+.cta-testo{display:flex;flex-direction:column;justify-content:center;gap:22px;padding:48px;background:var(--giallo);color:var(--inchiostro);border-radius:6px 0 0 6px}
+.cta.solo .cta-testo{border-radius:6px}
+.passo-unico .cta h2{font-size:clamp(48px,6.11vw,88px);line-height:.9;text-wrap:balance}
+.cta-testo p{margin:0;font-size:20px;line-height:1.45;max-width:520px}
+.cta-testo a.primario{background:var(--inchiostro);color:#fff}
+.cta-testo a.secondario{border-width:3px}
+.cta-foto{margin:0;min-height:440px;overflow:hidden;border-radius:0 6px 6px 0}
+.cta-foto img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 25%;border-radius:0}
+.passo-unico + .piede{margin-top:24px}
+@media (max-width:900px){
+.passo-unico .pagina-hero{grid-template-columns:1fr;gap:32px;padding:20px var(--margine) 0}
+.passo-unico .intro h1{margin-bottom:24px}
+.passo-unico .intro p{font-size:18px;margin-bottom:24px}
+.pulsanti .pulsante{min-height:56px;padding:0 24px;font-size:17px}
+.hero-foto{height:300px}
+.passo-unico .tessere.numeri{margin-top:32px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.passo-unico .numeri .tessera{min-height:160px}
+.motto{grid-template-columns:1fr;gap:16px;margin-top:32px}
+.motto h3{font-size:44px}
+.passo-unico .sezione{padding:64px var(--margine) 0}
+.passo-unico .sezione h2{font-size:clamp(56px,5.56vw,80px)}
+.tessere.schede{grid-template-columns:1fr;grid-auto-rows:auto}
+.passo-unico .tessere.n-5 .tessera:nth-child(n){grid-column:1 / -1}
+.tessere.n-9.schede .tessera.tessera.tessera.blu{background:var(--blu);color:#fff}
+.tessere.n-9.schede .tessera.tessera.tessera.giallo{background:var(--giallo);color:var(--inchiostro)}
+.tessere.n-9.schede .tessera.tessera.tessera.inchiostro{background:var(--inchiostro);color:#fff}
+.scheda-foto.senza-foto{height:120px}
+.scheda-foto.senza-foto span{font-size:64px}
+.passo-unico .tessere.perche .tessera{min-height:200px;padding:24px}
+.passo-unico .tessere.estratti .tessera.citazione{min-height:0;padding:24px}
+.recensioni{grid-template-columns:1fr}
+.recensioni .tessera{min-height:0;padding:24px;font-size:19px}
+.passo-unico .sezione.cta{grid-template-columns:1fr;padding-top:64px}
+.cta-testo{padding:28px 24px;border-radius:6px 6px 0 0}
+.cta.solo .cta-testo{border-radius:6px}
+.cta-foto{min-height:300px;border-radius:0 0 6px 6px}
+.passo-unico .cta h2{font-size:clamp(48px,6.11vw,88px)}
+}
+`.replace(/\n/g, '')
+
 const CSS = `
 @font-face{font-family:"Big Shoulders Display";font-weight:800;font-display:swap;src:url(/risorse/big-shoulders-display-800.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Inter";font-weight:100 900;font-display:swap;src:url(/risorse/inter-variable.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
@@ -137,16 +279,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .logo{display:block;flex-shrink:0}
 .logo img{display:block;width:112px;height:110px;mix-blend-mode:multiply}
 .testata{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:22px var(--margine)}
-.testata nav ul{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none;font-size:17px;font-weight:500}
-.testata nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:6px;text-decoration:none}
-.testata nav a:hover{background:var(--chiara)}
 .pulsante,.testo a.pulsante,.colonna a.pulsante{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 32px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:18px;font-weight:600;text-decoration:none}
-.pulsante.piccolo{min-height:48px;padding:0 26px;font-size:16px}
-.testata .pulsante{background:var(--giallo);color:var(--inchiostro)}
-.testata .estensione{margin-left:.3em}
-.testata .azioni{display:flex;gap:8px;align-items:center}
-.testata .contattaci{display:inline-flex;align-items:center;min-height:48px;padding:0 26px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:16px;font-weight:600;text-decoration:none}
-.testata .contattaci:hover{text-decoration:underline;text-underline-offset:4px}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
 h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height:.82;overflow-wrap:anywhere}
@@ -183,9 +316,6 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .piede .fine{flex-basis:100%;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;margin-top:0;font-size:14px;color:var(--chiara)}
 .testata{padding:22px var(--margine)}
 .logo img{height:110px}
-.testata nav ul{gap:10px}
-.pulsante.piccolo{padding:0 26px}
-.testata nav a[aria-current]{background:var(--giallo)}
 .invito{margin:96px var(--margine) 6px;padding:36px 40px;min-height:300px}
 .invito .frase{max-width:520px;font-size:22px}
 .invito .freccia{display:none}
@@ -213,6 +343,11 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 28px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.85;overflow-wrap:anywhere}
 .testo + .sezione{padding-top:24px}
 .colonna{max-width:calc(62ch + var(--margine) * 2);padding-bottom:24px}
+/* Dentro .testo o .sezione, che il margine laterale ce l'hanno già: qui non si raddoppia. */
+.colonne{display:grid;gap:24px;padding:0 0 24px}
+.colonne.c-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.colonne.c-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.colonne>.colonna{min-width:0;max-width:none;padding:0}
 .tessere{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .tessera{grid-column:span 2;display:flex;flex-direction:column;gap:14px;margin:0;padding:24px;border-radius:6px;font-size:clamp(17px,1.2vw,19px);line-height:1.5}
 .tessera>*{margin:0}
@@ -313,9 +448,6 @@ ${GRIGLIE_LUNGHE}
 .pagina-contatti h1{font-size:clamp(56px,13.9vw,200px);line-height:.82}
 .testata{padding:22px var(--margine)}
 .logo img{height:110px}
-.testata nav ul{gap:10px}
-.testata nav a[aria-current]{background:var(--giallo)}
-.testata .pulsante{padding:0 26px}
 .piede{margin:0 var(--margine) 48px}
 .piede .nome{font-size:clamp(44px,3.9vw,56px)}
 .piede{gap:40px;padding:40px;font-size:16px;line-height:1.9}
@@ -418,9 +550,6 @@ ${TINTE_PERSONA}
 .sezione .tessere.n-4 .tessera:not(.foto){min-height:190px}
 .sezione .tessera.chiara:not(.foto){min-height:260px}
 .sezione .tessera.tessera:not(.foto):has(h3 a){min-height:340px}
-.testata nav ul{gap:36px}
-.testata nav a{padding:0}
-.testata nav a:hover{background:none;text-decoration:underline;text-underline-offset:4px}
 .pagina-hero>.collage{align-self:start}
 .pagina-hero .collage.pieno>.tessera:nth-child(1){grid-column:1 / span 3;grid-row:1 / span 4}
 .pagina-hero .collage.pieno>.tessera:nth-child(2){grid-column:4;grid-row:1 / span 2}
@@ -440,7 +569,6 @@ ${TINTE_PERSONA}
 @media (max-width:900px){
 .corso-foto{display:block;height:150px;overflow:hidden;border-radius:6px}
 .corso-foto img{width:100%;height:100%;object-fit:cover;border-radius:0}
-.testata{flex-wrap:wrap;gap:8px 16px}
 .tessere{grid-template-columns:1fr}
 .tessere .tessera{grid-column:auto}
 .pagina-hero{flex-direction:column;align-items:stretch}
@@ -455,14 +583,8 @@ ${TINTE_PERSONA}
 .foto-citazioni .citazioni{height:auto}
 .foto-fila,.foto-fila.quattro{grid-template-columns:repeat(2,1fr)}
 .foto-fila.quattro img{aspect-ratio:3/4}
-.testata nav{order:3;width:100%}
 .testata{padding:12px var(--margine) 0;gap:10px 16px}
 .logo img{width:84px;height:82px}
-.testata .pulsante{padding:0 22px;font-size:0}
-.testata .pulsante::before{content:"Prova";font-size:16px}
-.testata .pulsante,.testata .contattaci{padding:0 16px}
-.testata nav a{background:var(--chiara);padding:0 14px;font-size:16px}
-.testata nav a[aria-current]{background:var(--giallo)}
 h1{font-size:84px;line-height:.84}
 .pagina-hero{padding:20px var(--margine) 0;gap:36px 0}
 .intro h1{margin-bottom:20px}
@@ -573,10 +695,6 @@ h1{font-size:84px;line-height:.84}
 @media (max-width:900px){
 .testata{padding:12px var(--margine) 0}
 .logo img{height:82px}
-.testata nav ul{gap:6px}
-.testata nav a{background:var(--chiara);padding:0 14px}
-.testata nav a[aria-current]{background:var(--giallo)}
-.testata .pulsante{padding:0 22px}
 .piede{display:block;margin-bottom:24px;padding:24px}
 .piede .nome{margin-bottom:14px}
 .piede-menu,.piede-legale{margin-top:12px}
@@ -588,7 +706,6 @@ h1{font-size:84px;line-height:.84}
 .invito .parola{font-size:120px}
 .piede-legale li{display:inline}
 .piede-legale li+li::before{content:" · "}
-.testata .estensione{display:none}
 .recapiti p:not(:first-of-type){display:none}
 .apertura>.tessere+.colonna p+p{display:none}
 .mappa .segnaposto{left:calc(50% - 20px);top:calc(50% - 20px);width:40px;height:40px}
@@ -617,11 +734,13 @@ h1{font-size:84px;line-height:.84}
 }
 ${CSS_CORSI}
 ${CSS_INTERNE}
+${CSS_TESTATA}
 ${cssFoci()}
 .interna h1.medio{font-size:clamp(56px,12.2vw,175px)}
 .interna h1.lungo{font-size:clamp(56px,9.2vw,132px)}
 .interna h1.lunghissimo{font-size:clamp(44px,8.7vw,125px)}
 @media (max-width:900px){.interna h1.medio{font-size:76px}}
+@media (max-width:720px){.colonne.c-2,.colonne.c-3{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
 
@@ -633,11 +752,6 @@ const CSS_CORSO = `
 /* Testata, invito e piede come nel design: solo nelle pagine di un corso (body.pagina-corso). */
 .pagina-corso .testata{padding:22px var(--margine)}
 .pagina-corso .logo img{height:110px}
-.pagina-corso .testata nav ul{gap:10px}
-.pagina-corso .testata nav a{min-height:0;padding:9px 16px;line-height:1.2}
-.pagina-corso .testata nav [aria-current]{background:var(--giallo)}
-.pagina-corso .testata .pulsante{padding:0 26px}
-.pagina-corso .pulsante .corto{display:none}
 .pagina-corso .invito{min-height:300px;padding:36px 40px;margin:96px var(--margine) 6px}
 .pagina-corso .invito .frase{max-width:520px;font-size:22px}
 .pagina-corso .invito .parola{font-size:clamp(96px,11.8vw,170px)}
@@ -681,12 +795,6 @@ const CSS_CORSO = `
 @media (max-width:900px){
 .pagina-corso .testata{gap:0 16px;padding:12px var(--margine) 0}
 .pagina-corso .logo img{height:82px}
-.pagina-corso .testata nav{margin-top:10px;padding-bottom:0}
-.pagina-corso .testata nav ul{font-size:16px}
-.pagina-corso .testata nav a{min-height:44px;padding:0 14px;background:var(--chiara)}
-.pagina-corso .testata .pulsante{padding:0 22px}
-.pagina-corso .pulsante .lungo{display:none}
-.pagina-corso .pulsante .corto{display:inline}
 .pagina-corso .invito{min-height:260px;padding:22px;margin:48px var(--margine) 6px;gap:20px}
 .pagina-corso .invito .frase{max-width:none;font-size:17px}
 .pagina-corso .invito .parola{font-size:clamp(80px,32vw,120px)}
@@ -784,14 +892,18 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
 function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
   const menu = lista(voci('menu', c).filter((v) => !conContatti || v.href !== TESTI.contatti), corrente)
   const segnata = corrente === TESTI.contatti ? ' aria-current="page"' : ''
-  const azioni = conContatti ? `<div class="azioni"><a class="contattaci" href="${TESTI.contatti}"${segnata}>${TESTI.contattaci}</a><a class="pulsante piccolo" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.prova}<span class="estensione"> ${TESTI.provaCoda}</span></a></div>` : ''
-  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${azioni}</header>`
+  const logo = `<a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>`
+  // La testata nuova: due pulsanti interi a destra; sul telefono un tasto MENU che apre il menu con `:target`, senza script.
+  const prova = `<a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.provaIntera}</a>`
+  const scrivici = `<a class="pulsante secondario" href="${TESTI.contatti}"${segnata}>${TESTI.scrivici}</a>`
+  const dentro = `<a class="chiudi" href="#">Chiudi</a>${prova.replace('class="pulsante primario"', 'class="pulsante primario nel-menu"')}${conContatti ? `<a class="pulsante secondario nel-menu" href="${TESTI.contatti}">${TESTI.scrivici}</a>` : ''}${menu ? `<ul>${menu}</ul>` : ''}`
+  return `<header class="testata">${logo}<a class="tasto-menu" href="#menu">MENU</a><nav id="menu" aria-label="Principale">${dentro}</nav><div class="azioni">${prova}${conContatti ? scrivici : ''}</div></header>`
 }
 
 function piede(c: Contesto): string {
   const f = lista(voci('footer', c))
   const m = voci('menu', c)
-  const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
+  const recapiti = `<li>${esc(CONTATTI.indirizzo)}<span class="metro"> ${TESTI.metro}</span></li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
   // Come nel design: il nome, poi tre colonne senza titolo (recapiti, pagine, legge).
   return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><ul class="recapiti-piede">${recapiti}</ul>${m.length ? `<nav class="piede-menu" aria-label="Pagine">${m.map((x) => `<a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a>`).join('')}</nav>` : ''}${f ? `<ul class="piede-legale">${f}</ul>` : ''}</footer>`
 }
@@ -819,10 +931,10 @@ function social(c: Contesto, titolo: string, descrizione: string): string {
   ].join('')
 }
 
-function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; dati?: string }): string {
+function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
 }
 
 /**
@@ -836,6 +948,7 @@ function classeTitolo(titolo: string): string {
 
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
+  if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, conContatti, pulito)
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
   // La pagina di un corso (foto, dati, presentazione prima del primo h2) ha la sua testata; le regole stanno in `main.corso`.
@@ -855,6 +968,15 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const corpo = `${t}<main${dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: c.corsi.has(p.slug) })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null, dati })
+}
+
+/** La Home nuova (sitoHome.ts): testata, hero con i due pulsanti, sezioni a passo unico. Senza la chiamata finale nel testo resta l'invito di sempre. */
+function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+  const h = homeNuova(pulito, TESTI.iscrizione)
+  const hero = `<section class="pagina-hero con-pulsanti${h.foto ? '' : ' solo'}"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div>${h.foto}</section>`
+  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati })
 }
 
 function nonTrovata(c: Contesto, conContatti: boolean): string {

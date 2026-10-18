@@ -2,7 +2,7 @@
 
 PROPOSTA di design (solo canvas, nessun codice dell'app). Il modulo vero
 (`src/components/ModuloIscrizione.tsx`) sempre chiaro come il sito pubblico
-«tatami blu e giallo» (A2, `../sito-rebrand/token-proposta.md`), qualunque sia
+«tatami blu e giallo» (A2, `../sito-approvato/token-proposta.md`), qualunque sia
 il tema dell'app. Gli stati restano rosso, verde e giallo, con segno e parola.
 Big Shoulders Display e Inter solo per il modulo.
 
