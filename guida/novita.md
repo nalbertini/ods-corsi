@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.114.1 — 18 ottobre 2026
+
+### Modificato
+
+- Il sito scrive sempre «Via Vittorio Sassi 26» e «A.S.D. Il Centro Judo»
+
 ## 0.114.0 — 18 ottobre 2026
 
 ### Novità
