@@ -11,7 +11,7 @@
 
 import { PILLOLE, blocchi, coloreDi, conCaricamento, contenuto, gruppiDa, griglia, immagine, iniziali, numeriDiUnElenco, sezione, sonoCorsi, testoSolo, type Blocco } from './sitoLayout'
 
-const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+export const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
 /** Stesso indirizzo anche scritto con http, con www o senza «/» in fondo: una svista della segreteria non deve lasciare la vecchia Home senza dirlo. */
 export const eIscrizione = (href: string, iscrizione: string) => {
