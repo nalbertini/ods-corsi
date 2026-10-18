@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.115.4 — 18 ottobre 2026
+
+### Risolto
+
+- I tasti del testo del sito si capiscono, con le parole al posto di G, C e dei simboli
+
 ## 0.115.3 — 18 ottobre 2026
 
 ### Modificato
