@@ -6,6 +6,9 @@
  * dalla forma, mai dal titolo; una forma che non torna cade in `sezione` e nessuna parola si perde. Le foto sono
  * tre ruoli facoltativi (A apertura, B accanto a «Cosa si fa», C chiusura): una foto che manca non si presta da un altro
  * corso. Senza la foto A la fascia blu prende le prime tre voci dei dati (giorno, ora, età) e l'orario non si ripete.
+ *
+ * Una pagina collegata ai corsi (sitoOrario.ts) non mostra l'orario scritto a mano: al suo posto ci sono le righe
+ * d'orario di CORSI, e nella fascia blu restano le voci che non sono giorno e ora (l'età).
  */
 
 import { ROTAZIONE_CORSO, blocchi, conCaricamento, contenuto, gruppiDa, griglia, immagine, inOrario, sezione, tesseraOrario, testoSolo, vociDiUnElenco, type Blocco, type Gruppo } from './sitoLayout'
@@ -47,17 +50,37 @@ export function cssFuochiCorso(slug: string): string {
   return `${regole(0)}@media (max-width:900px){${regole(1)}}`
 }
 
+/** Le voci della fascia blu che dicono giorno e ora: in una pagina collegata le sostituisce l'orario di CORSI. */
+const VOCE_ORARIO = /^(giorn[oi]|ora|orari?)$/i
+
+/** Le regole delle righe d'orario automatiche: solo nelle pagine collegate, così le altre restano com'erano. */
+export const CSS_ORARIO_AUTOMATICO = `
+.corso-nuovo .sezione .tessere.orari .tessera.riga:not(.foto){min-height:0;padding:22px 26px;justify-content:center}
+.corso-nuovo .riga-orario{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(24px,2.8vw,40px);line-height:1;text-transform:uppercase}
+@media (max-width:900px){
+.corso-nuovo .sezione .tessere.orari .tessera.riga:not(.foto){padding:18px 20px}
+.corso-nuovo .riga-orario{font-size:clamp(22px,6.4vw,30px)}
+}
+`.replace(/\n/g, '')
+
+/** Le righe d'orario di CORSI come tessere a tutta larghezza, l'ultima gialla come nell'orario scritto a mano. */
+function righeAutomatiche(titolo: string, testi: string[]): string {
+  const tessere = testi.map((t, k) => `<article class="tessera ${k === testi.length - 1 ? 'giallo' : 'chiara'} riga"><p class="riga-orario">${t}</p></article>`)
+  return `<section class="sezione orari"><h2>${titolo}</h2>${griglia(tessere.length, tessere.join(''), ' orari')}</section>`
+}
+
 const dato = (colore: string, etichetta: string, valore: string) => `<article class="tessera ${colore} dato"><span class="et">${etichetta}</span><p class="val">${valore}</p></article>`
 
 /** Foto di apertura, oppure la fascia blu; poi i dati che restano come tessere. Ciò che l'introduzione non usa (un paragrafo in più, una seconda foto) torna in `resto`: nessuna parola si perde. */
-function apertura(intro: Blocco[]): { html: string; resto: Blocco[] } {
+function apertura(intro: Blocco[], collegata: boolean): { html: string; resto: Blocco[] } {
   const iFoto = intro.findIndex((x) => immagine(x) !== null)
   const iDati = intro.findIndex((x) => vociDiUnElenco(x) !== null)
   const iPulsanti = intro.findIndex((x) => pulsantiDi(x) !== null)
   const foto = iFoto >= 0 ? immagine(intro[iFoto]) : null
   const voci = iDati >= 0 ? vociDiUnElenco(intro[iDati]) ?? [] : []
-  const comeFascia = foto ? [] : voci.slice(0, VOCI_FASCIA)
-  const comeTessere = foto ? voci : voci.slice(VOCI_FASCIA)
+  const comeFascia = foto ? [] : voci.slice(0, VOCI_FASCIA).filter((v) => !collegata || !VOCE_ORARIO.test(testoSolo(v.titolo)))
+  // In una pagina collegata, giorno e ora a mano non si mostrano nemmeno come tessere: c'è l'orario di CORSI.
+  const comeTessere = (foto ? voci : voci.slice(VOCI_FASCIA)).filter((v) => !collegata || !VOCE_ORARIO.test(testoSolo(v.titolo)))
   const testa = foto
     ? `<figure class="corso-apertura">${conCaricamento(foto, true)}</figure>`
     : comeFascia.length ? `<ul class="corso-fascia">${comeFascia.map((v) => `<li><span class="et">${v.titolo}</span><strong class="val">${v.testo}</strong></li>`).join('')}</ul>` : ''
@@ -105,8 +128,9 @@ const eAspettarsi = (gruppi: Gruppo[]) => (gruppi.length === 3 || gruppi.length 
 /**
  * `bottoni` e `html` vanno nella pagina: i pulsanti nella testata, il resto in `<main>` dopo il titolo.
  * `chiamata` dice se la chiusura c'è già (allora l'invito globale non si ripete).
+ * `orario` sono le righe scritte dai corsi collegati (`testiOrario`): se c'è, la pagina è collegata e l'orario a mano non si mostra.
  */
-export function corsoNuovo(testoPulito: string, iscrizione: string): { bottoni: string; html: string; chiamata: boolean } {
+export function corsoNuovo(testoPulito: string, iscrizione: string, orario?: string[]): { bottoni: string; html: string; chiamata: boolean } {
   const b = blocchi(testoPulito)
   const primoTitolo = b.findIndex((x) => x.tag === 'h2')
   const intro = b.slice(0, primoTitolo < 0 ? b.length : primoTitolo)
@@ -120,14 +144,20 @@ export function corsoNuovo(testoPulito: string, iscrizione: string): { bottoni: 
   const prima = iChiusura < 0 ? sezioni.length : iChiusura
   const forma = (s: { corpo: Blocco[] }) => (s.corpo[0]?.tag === 'h3' ? gruppiDa(s.corpo) : [])
   const iAspettarsi = prima > 0 && eAspettarsi(forma(sezioni[prima - 1])) ? prima - 1 : -1
-  const testa = apertura(intro)
+  const testa = apertura(intro, orario !== undefined)
+  // L'orario a mano è la prima sezione fatta solo di orari: le righe di CORSI prendono il suo posto, e le altre uguali spariscono.
+  const eOrari = (k: number) => k !== iChiusura && forma(sezioni[k]).length > 0 && forma(sezioni[k]).every((g) => inOrario(g.corpo))
+  const iOrari = orario ? sezioni.findIndex((_, k) => eOrari(k)) : -1
   const fuori = sezioni.map((s, k) => {
     const gruppi = forma(s)
     if (k === iChiusura) return chiusura(s.titolo, s.corpo, s.corpo.flatMap((x) => pulsantiDi(x) ?? []), iscrizione)
+    if (orario && eOrari(k)) return k === iOrari ? righeAutomatiche(s.titolo, orario) : ''
     if (haFoto && gruppi.length > 0 && gruppi.every((g) => inOrario(g.corpo))) return orari(s.titolo, gruppi)
     if (gruppi.length === 2 && gruppi.every(soloTesto)) return cosaSiFa(s.titolo, gruppi)
     if (k === iAspettarsi) return aspettarsi(s.titolo, gruppi)
     return sezione(s.titolo, s.corpo)
   })
-  return { bottoni: link.length ? pulsanti(link, iscrizione) : '', html: `${testa.html}${testa.resto.length ? sezione(null, testa.resto) : ''}${fuori.join('')}`, chiamata: iChiusura >= 0 }
+  // Senza una sezione d'orario nel testo le righe stanno dove l'orario avrebbe stato: prima della fascia blu, o dopo la foto e i dati.
+  const righe = orario && iOrari < 0 ? righeAutomatiche('Orario', orario) : ''
+  return { bottoni: link.length ? pulsanti(link, iscrizione) : '', html: `${haFoto ? '' : righe}${testa.html}${haFoto ? righe : ''}${testa.resto.length ? sezione(null, testa.resto) : ''}${fuori.join('')}`, chiamata: iChiusura >= 0 }
 }

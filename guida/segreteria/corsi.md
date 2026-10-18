@@ -57,6 +57,12 @@ Nella scheda, sotto **RICORRENZE**:
 I giorni e le ore dei corsi attivi sono anche gli orari della pagina **Orari**
 del sito: cambiano da soli in circa 5 minuti (vedi
 [Sito](sito.md#la-pagina-degli-orari)).
+Le ricorrenze alimentano anche il **sito**: se la pagina di un corso è
+collegata a questo corso (SITO, sotto **ORARIO DAI CORSI**), giorni e ore che
+scrivi qui arrivano da soli sulla sua pagina entro 5 minuti, senza premere
+Pubblica. Il sito mostra solo giorno, ora e durata, mai sala, istruttore o
+posti. Un corso senza giorni (o con i giorni finiti) lascia sulla pagina «Orario
+in arrivo».
 
 Cambiare i giorni tocca **solo le lezioni future**: quelle con un appello
 restano come sono, il passato è già nel registro. Un corso senza giorni non

@@ -256,7 +256,11 @@ begin
 end $$;
 
 -- Quello che vede il sito: solo il pubblicato, solo le pagine non nascoste.
-create or replace function sito_pagine_pubbliche()
+-- Il `drop` serve a rilanciare questo file dopo 68-sito-orario.sql, che le dà una colonna in più
+-- (`create or replace` non cambia la forma della risposta). Dopo un rilancio di questo file va
+-- rilanciato anche il 68: la funzione torna com'era senza la colonna `corsi_collegati`.
+drop function if exists sito_pagine_pubbliche();
+create function sito_pagine_pubbliche()
   returns table (slug text, titolo text, descrizione text, testo text, pubblicata_il timestamptz)
   language sql stable security definer set search_path = public as $$
   select p.slug, p.titolo_pubblicato, p.descrizione_pubblicata, p.pubblicato, p.pubblicata_il

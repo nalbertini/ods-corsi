@@ -106,6 +106,38 @@ nascondono né si cancellano.
 
 Se esci con qualcosa scritto e non salvato, l'app chiede prima.
 
+## L'orario dai corsi
+
+Nella pagina di un corso l'**orario** può venire da CORSI invece che dal testo.
+Aprendo la pagina, a destra, sotto **ORARIO DAI CORSI**:
+
+- **Collegata al corso** dice da quali corsi viene l'orario. Si sceglie dalla
+  lista (**Scegli un corso**, poi **+ Un altro corso** per aggiungerne altri,
+  per esempio i gruppi piccoli e grandi di uno stesso corso); la ✕ accanto al
+  nome scollega. Non c'è bisogno di **Salva bozza** né di **Pubblica**: il
+  collegamento vale subito, e il sito si aggiorna da solo entro 5 minuti. Se
+  non scegli nessun corso, l'orario resta quello scritto a mano, come prima.
+- **Così lo vede il sito** mostra le righe come le farà il sito: giorno, ora e
+  durata («Lunedì e mercoledì · 17:00–18:00»), i giorni con la stessa ora
+  insieme, da lunedì a domenica. Mai sala, istruttore o posti. Se cambi i giorni
+  di un corso in CORSI, cambia da solo anche qui e sul sito.
+- Con il corso collegato l'orario scritto a mano nel testo non si vede più sul
+  sito, ma non si cancella (la casella **ORARIO SUL SITO** dice «Ora vale CORSI»):
+  se scolleghi i corsi lo ritrovi.
+- Se un corso collegato non ha giorni in CORSI (o li ha tutti finiti), il
+  pannello avvisa. Se mancano gli orari di tutti i corsi collegati, **il sito
+  mostrerà «Orario in arrivo»**; se mancano solo di alcuni, il sito non mostra
+  quelli e tiene gli orari degli altri. **Apri il corso in CORSI ›** porta al
+  corso per aggiungere un giorno. Un orario vecchio non torna mai.
+- **L'età e il testo si controllano a mano.** L'età è una voce scritta a mano
+  (nelle pagine con la fascia blu, come Pre pugilistica e Autodifesa, resta
+  nella fascia; giorno e ora li sostituisce l'orario di CORSI). Frasi come «il
+  martedì alle 18» scritte in un paragrafo non le cambia nessuno.
+
+Se compare «Qui l'orario dai corsi non è ancora attivo», va lanciato
+`68-sito-orario.sql` (lo fa chi cura l'app): finché non c'è, l'orario delle
+pagine resta quello scritto a mano.
+
 ## Le immagini
 
 **Immagini** è la libreria delle immagini caricate per le pagine. **CARICA
@@ -215,7 +247,7 @@ annullate o con un sostituto: è l'orario tipo, uguale per tutto l'anno. Un cors
 archiviato, o un orario che è già finito, non ci sono.
 
 Se compare un errore su `orari_sito`, manca un aggiornamento del database
-(`68-orari-sito.sql`): va chiesto a chi cura l'app. Il sito di prima resta
+(`69-orari-sito.sql`): va chiesto a chi cura l'app. Il sito di prima resta
 com'è finché non c'è.
 
 ## Come il testo diventa tessere

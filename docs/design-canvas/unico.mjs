@@ -77,6 +77,7 @@ const SEZIONI = [
   { id: 'sito-dividi-in-parti', nome: 'Sito · dividi in parti · proposta', cartella: 'sito-dividi-in-parti' },
   { id: 'sito-pezzi-spazio', nome: 'Sito · pezzi, più spazio · proposta', cartella: 'sito-pezzi-spazio' },
   { id: 'sito-pezzi-scrivi', nome: 'Sito · scrivi nella pagina · proposta', cartella: 'sito-pezzi-scrivi-in-pagina' },
+  { id: 'orario-automatico', nome: 'Sito · orario dalla pagina CORSI · proposta', cartella: 'orario-automatico' },
   { id: 'scheda-popover', nome: 'Segreteria · dettagli in una finestra · proposta', cartella: 'scheda-popover' },
 ]
 

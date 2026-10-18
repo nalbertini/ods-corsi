@@ -606,7 +606,7 @@ begin
     grant execute on function orari_aperti() to anon, authenticated;
   end if;
 end $$;
--- Gli orari per la pagina «Orari» del sito, se 68-orari-sito.sql è già stato
+-- Gli orari per la pagina «Orari» del sito, se 69-orari-sito.sql è già stato
 -- lanciato.
 do $$
 begin

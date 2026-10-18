@@ -4,10 +4,12 @@
 //   SUPABASE_URL=… SUPABASE_ANON_KEY=… node scripts/genera-sito.mjs [cartella]
 //   node scripts/genera-sito.mjs [cartella] --da-file dati.json
 //
-// Legge solo le quattro funzioni pubbliche del database (`sito_pagine_pubbliche`,
-// `sito_menu_pubblico`, `sito_redirect_pubblici`, `orari_sito`) con la chiave
-// anon: mai le bozze, mai le pagine nascoste, degli orari solo corso, giorno,
-// ora e durata. Scrive i file in `<cartella>` (di solito
+// Legge solo funzioni pubbliche del database con la chiave anon: `sito_pagine_pubbliche`,
+// `sito_menu_pubblico`, `sito_redirect_pubblici` e `orari_sito` (la pagina «Orari»:
+// se manca o è rifiutata il giro si ferma, e il sito di prima resta com'è). Mai le
+// bozze, mai le pagine nascoste. Per le pagine collegate ai corsi legge anche
+// `orari_aperti()` (solo corso, giorno, ora, durata): se manca la funzione o la
+// colonna (48 o 68 non lanciati) le pagine restano non collegate (lo decide `datiDaRisposte`), e il giro non si ferma. Scrive i file in `<cartella>` (di solito
 // `dist-sito`), con carattere e logo da `sito/risorse/`. Se qualcosa non va non
 // tocca la cartella: i file nascono in una cartella accanto e la sostituiscono
 // solo a lavoro finito, così il sito di prima resta com'è.
@@ -17,7 +19,8 @@
 // quelle sopra, la cartella di casa, la radice).
 //
 // `--da-file` legge le stesse risposte da un file json (`{ pagine, menu,
-// rinvii, orari }`; `orari` può mancare), senza rete: per provare il sito e per i test.
+// rinvii, orari?, orariSito? }`; `orari` sono le righe di `orari_aperti()`, `orariSito` quelle
+// di `orari_sito()`, e possono mancare), senza rete: per provare il sito e per i test.
 // `SITO_DOMINIO` cambia il dominio (di norma https://www.officinedellosport.it).
 // Codici di uscita: 0 fatto; 2 la home non è ancora pubblicata (niente da pubblicare); 1 un guasto.
 // ---------------------------------------------------------------------------
@@ -81,7 +84,9 @@ async function leggi() {
   const url = process.env.SUPABASE_URL
   const chiave = process.env.SUPABASE_ANON_KEY
   if (!url || !chiave) fine('Mancano SUPABASE_URL e SUPABASE_ANON_KEY (la chiave anon, quella pubblica).')
-  const chiama = async (funzione, manca = 'manca 56-sito.sql, o va rilanciato 06-iscrizioni.sql') => {
+  // Una funzione o una colonna che il database non ha ancora: non è un guasto, la parte nuova semplicemente non c'è.
+  const MANCA = new Set(['42703', '42883', 'PGRST202'])
+  const chiama = async (funzione, { facoltativa = false, manca = 'manca 56-sito.sql, o va rilanciato 06-iscrizioni.sql' } = {}) => {
     let r
     try {
       r = await fetch(`${url.replace(/\/+$/, '')}/rest/v1/rpc/${funzione}`, {
@@ -93,6 +98,7 @@ async function leggi() {
     } catch {
       fine(`Il database non risponde (${funzione}): riprova fra poco.`)
     }
+    if (!r.ok && facoltativa && MANCA.has((await r.json().catch(() => ({}))).code)) return null
     if (!r.ok) fine(`Il database ha rifiutato ${funzione} (${r.status}): ${manca}.`)
     try {
       return await r.json()
@@ -100,19 +106,25 @@ async function leggi() {
       return fine(`Il database ha risposto una cosa che non si legge (${funzione}): riprova fra poco.`)
     }
   }
-  const [pagine, menu, rinvii, orari] = await Promise.all([chiama('sito_pagine_pubbliche'), chiama('sito_menu_pubblico'), chiama('sito_redirect_pubblici'), chiama('orari_sito', 'manca 68-orari-sito.sql, o va rilanciato 06-iscrizioni.sql')])
+  const [pagine, menu, rinvii, orari, orariSito] = await Promise.all([
+    chiama('sito_pagine_pubbliche'),
+    chiama('sito_menu_pubblico'),
+    chiama('sito_redirect_pubblici'),
+    chiama('orari_aperti', { facoltativa: true }),
+    chiama('orari_sito', { manca: 'manca 69-orari-sito.sql, o va rilanciato 06-iscrizioni.sql' }),
+  ])
   // Zero righe non è un guasto (la pagina dice «Orari in arrivo»); una risposta che non è un elenco sì.
-  if (!Array.isArray(orari)) fine('Il database ha risposto una cosa che non è un elenco (orari_sito): controlla che 68-orari-sito.sql sia stato lanciato.')
-  return { pagine, menu, rinvii, orari }
+  if (!Array.isArray(orariSito)) fine('Il database ha risposto una cosa che non è un elenco (orari_sito): controlla che 69-orari-sito.sql sia stato lanciato.')
+  return { pagine, menu, rinvii, orari, orariSito }
 }
 
 const risposte = await leggi()
 for (const nome of ['pagine', 'menu', 'rinvii']) {
   if (!Array.isArray(risposte[nome])) fine(`I dati non sono fatti come si aspetta il generatore: «${nome}» dovrebbe essere un elenco.`)
 }
-// Nei file di dati di prima `orari` non c'è: la pagina dice «Orari in arrivo».
-if (risposte.orari !== undefined && !Array.isArray(risposte.orari)) fine('I dati non sono fatti come si aspetta il generatore: «orari» dovrebbe essere un elenco.')
-const dati = datiDaRisposte(dominio, risposte.pagine, risposte.menu, risposte.rinvii, risposte.orari)
+// Nei file di dati di prima `orariSito` non c'è: la pagina dice «Orari in arrivo».
+if (risposte.orariSito !== undefined && !Array.isArray(risposte.orariSito)) fine('I dati non sono fatti come si aspetta il generatore: «orariSito» dovrebbe essere un elenco.')
+const dati = datiDaRisposte(dominio, risposte.pagine, risposte.menu, risposte.rinvii, Array.isArray(risposte.orari) ? risposte.orari : undefined, risposte.orariSito)
 // Le immagini delle pagine stanno nel contenitore «sito» del progetto: solo quelle entrano nel sito (vedi `supabase/58-sito-immagini.sql`).
 if (process.env.SUPABASE_URL) {
   let origine

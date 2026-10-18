@@ -41,6 +41,7 @@ export function sitoIniziale(): StatoSito {
     descrizione: '',
     bozza: '',
     pezzi: null,
+    corsiCollegati: [],
     pubblicato: null,
     nascosta: false,
     diLegge: false,
@@ -75,7 +76,7 @@ export function sitoIniziale(): StatoSito {
 }
 
 /** Dati di prova salvati prima dei pezzi non hanno il campo: valgono «vecchio editor» (`null`), non «database senza il 62» (`undefined`). */
-export const conPezzi = (s: StatoSito): StatoSito => ({ ...s, pagine: s.pagine.map((p) => ({ ...p, pezzi: p.pezzi ?? null })) })
+export const conPezzi = (s: StatoSito): StatoSito => ({ ...s, pagine: s.pagine.map((p) => ({ ...p, pezzi: p.pezzi ?? null, corsiCollegati: p.corsiCollegati ?? [] })) })
 
 const trova = (s: StatoSito, id: string) => {
   const p = s.pagine.find((x) => x.id === id)
@@ -93,7 +94,7 @@ export function nuovaPagina(s: StatoSito, titolo: string, slug: string, pezzi?: 
   if (!titolo.trim() || titolo.trim().length > MASSIMO_TITOLO) throw new Error(TITOLO_NO)
   if (pezzi && !pezziValidi(pezzi)) throw new Error(PEZZI_NO)
   const id = nuovoId()
-  const p: PaginaSito = { id, slug, titolo: titolo.trim(), descrizione: '', bozza: pezzi ? pezziInHtml(pezzi) : '', pezzi: pezzi ?? null, pubblicato: null, nascosta: false, diLegge: false, versione: 1 }
+  const p: PaginaSito = { id, slug, titolo: titolo.trim(), descrizione: '', bozza: pezzi ? pezziInHtml(pezzi) : '', pezzi: pezzi ?? null, corsiCollegati: [], pubblicato: null, nascosta: false, diLegge: false, versione: 1 }
   return { stato: { ...s, pagine: [...s.pagine, p] }, id }
 }
 
@@ -117,6 +118,14 @@ export function salvaBozzaPezzi(s: StatoSito, id: string, versione: number, dati
   if (!pezziValidi(dati.pezzi)) throw new Error(PEZZI_NO)
   const r = salvaBozza(s, id, versione, { titolo: dati.titolo, descrizione: dati.descrizione, bozza: pezziInHtml(dati.pezzi) })
   return { stato: cambia(r.stato, id, (x) => ({ ...x, pezzi: dati.pezzi })), versione: r.versione }
+}
+
+/** Come `salva_corsi_sito`: i corsi da cui viene l'orario, senza doppioni e nell'ordine scelto. Non è un cambio di testo: versione e bozza restano. */
+export function collegaCorsi(s: StatoSito, id: string, corsi: string[], corsiEsistenti?: string[]): StatoSito {
+  trova(s, id)
+  // Come il database: prima la pagina, poi i corsi.
+  if (corsiEsistenti && corsi.some((c) => !corsiEsistenti.includes(c))) throw new Error('Uno dei corsi scelti non c’è più: ricarica la pagina e scegli di nuovo')
+  return cambia(s, id, (x) => ({ ...x, corsiCollegati: [...new Set(corsi)] }))
 }
 
 export function pubblica(s: StatoSito, id: string, versione: number): { stato: StatoSito; versione: number } {
@@ -160,7 +169,7 @@ export function salvaMenu(s: StatoSito, dove: 'menu' | 'footer', voci: VoceMenu[
 }
 
 /**
- * Gli orari della pagina «Orari» in prova: gli stessi che darebbe `orari_sito()` (68-orari-sito.sql), corsi attivi e
+ * Gli orari della pagina «Orari» in prova: gli stessi che darebbe `orari_sito()` (69-orari-sito.sql), corsi attivi e
  * ricorrenze non finite (quella che finisce oggi c'è ancora), e nient'altro. La data di modifica è quella di oggi, fissa:
  * in prova niente la sposta, e gli stessi dati danno la stessa pagina.
  */

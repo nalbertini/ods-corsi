@@ -7,7 +7,7 @@
 -- `orari_aperti()` (48-orari-aperti.sql) resta com'è.
 -- Gli stessi orari, nella metà di prova, li dà `orariSitoProva()` di
 -- `src/lib/sitoProva.ts` (scripts/prova-sito-orari.mjs).
--- Si lancia dopo finto-supabase.sql, i file dello schema e 68-orari-sito.sql;
+-- Si lancia dopo finto-supabase.sql, i file dello schema e 69-orari-sito.sql;
 -- alla fine rilancia 06-iscrizioni.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';

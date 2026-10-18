@@ -73,7 +73,7 @@ const dati = (orari, extra = {}) => ({
   pagine: [pag('home'), pag('orari', { titolo: 'Orari', testo: testoOrari })],
   menu: [{ dove: 'menu', ordine: 1, etichetta: 'Orari', slug: 'orari', indirizzo: null }],
   rinvii: [],
-  orari,
+  orariSito: orari,
   ...extra,
 })
 const pagina = (orari, extra) => {
@@ -241,10 +241,10 @@ console.log('\nIl nome del corso: escapato')
 console.log('\nLe risposte del database')
 {
   const pagine = [{ slug: 'home', titolo: 'Casa', descrizione: null, testo: '<p>x</p>', pubblicata_il: null }]
-  const d = prova(() => g.datiDaRisposte(DOMINIO, pagine, [], [], ORARI))
-  ok('datiDaRisposte porta gli orari nei dati del sito', typeof d === 'object' ? d.orari : d, ORARI)
+  const d = prova(() => g.datiDaRisposte(DOMINIO, pagine, [], [], undefined, ORARI))
+  ok('datiDaRisposte porta gli orari nei dati del sito', typeof d === 'object' ? d.orariSito : d, ORARI)
   const senza = prova(() => g.datiDaRisposte(DOMINIO, pagine, [], []))
-  ok('senza il quinto argomento, nessun orario', typeof senza === 'object' ? senza.orari ?? [] : senza, [])
+  ok('senza il sesto argomento, nessun orario', typeof senza === 'object' ? senza.orariSito ?? [] : senza, [])
 }
 
 // ---------------------------------------------------------------------------
@@ -292,7 +292,7 @@ console.log('\nLo script scripts/genera-sito.mjs e orari_sito()')
   const elenco = readdirSync(uscita).sort().join()
 
   for (const [cosa, r] of [
-    ['manca (404, 56…/68-orari-sito.sql non lanciato)', { stato: 404, corpo: { code: 'PGRST202', message: 'non c’è' } }],
+    ['manca (404, 56…/69-orari-sito.sql non lanciato)', { stato: 404, corpo: { code: 'PGRST202', message: 'non c’è' } }],
     ['rifiutata (401/403)', { stato: 403, corpo: { code: '42501', message: 'permission denied' } }],
     ['risponde una cosa che non è un elenco', { stato: 200, corpo: { no: 1 } }],
   ]) {
@@ -307,7 +307,7 @@ console.log('\nLo script scripts/genera-sito.mjs e orari_sito()')
   ok('orari_sito() con zero righe non è un guasto: il sito si genera con «Orari in arrivo»', [vuoto.status, readFileSync(file, 'utf8').includes('Orari in arrivo')], [0, true])
   // Con --da-file: `orari` può mancare (i file di dati di prima) e può esserci.
   const dati1 = join(cartella, 'dati.json')
-  writeFileSync(dati1, JSON.stringify({ pagine: pagineDb, menu: menuDb, rinvii: [], orari: ORARI }))
+  writeFileSync(dati1, JSON.stringify({ pagine: pagineDb, menu: menuDb, rinvii: [], orariSito: ORARI }))
   const { spawnSync } = await import('node:child_process')
   const conFile = spawnSync('node', [join(process.cwd(), 'scripts/genera-sito.mjs'), join(cartella, 'f1'), '--da-file', dati1], { encoding: 'utf8', env: { PATH: process.env.PATH } })
   ok('--da-file: gli orari del file entrano nella pagina', [conFile.status, readFileSync(join(cartella, 'f1/orari/index.html'), 'utf8').includes('Preparazione atletica')], [0, true])
