@@ -59,8 +59,11 @@ export function pezziValidi(x: unknown): x is PezziPagina {
 
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;')
 
-/** Senza testo e senza foto. */
-export const vuoto = (html: string) => !/<img\b/i.test(html) && html.replace(/<[^>]*>/g, '').trim() === ''
+/** Senza testo e senza foto. Accetta anche `undefined`: Puck può dare una colonna appena aggiunta senza `html`. */
+export const vuoto = (html: string | undefined) => !html || (!/<img\b/i.test(html) && html.replace(/<[^>]*>/g, '').trim() === '')
+
+/** Cosa nasce quando la segreteria aggiunge una colonna: vuota, ma con il suo `html` (il campo array di Puck non ne mette uno da solo). */
+export const colonnaNuova = (): { html: string } => ({ html: '' })
 
 function inHtml(p: Pezzo): string {
   switch (p.type) {

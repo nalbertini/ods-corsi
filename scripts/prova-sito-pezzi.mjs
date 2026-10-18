@@ -97,6 +97,12 @@ ok('link javascript: tolto', (r => buono(r) && !r.includes('javascript'))(html([
 ok('script tolto anche dentro una colonna', html([C('a', [{ html: '<p>1</p><script>alert(1)</script>' }, { html: '<a href="javascript:x()">2</a>' }])]),
   '<div class="colonne c-2"><div class="colonna"><p>1</p></div><div class="colonna"><a>2</a></div></div>')
 
+// Il «+» sotto «Colonna 2» nell'editor aggiunge una colonna: nasce senza html se nessuno glielo dà, e l'editor andava in schermo bianco.
+console.log('\nColonne: la colonna aggiunta')
+ok('la colonna nuova è un html vuoto', prova(() => z.colonnaNuova()), { html: '' })
+ok('una colonna senza html conta come vuota', prova(() => z.vuoto(undefined)), true)
+ok('due colonne più una nuova sono valide', valido({ content: [C('a', [{ html: '<p>1</p>' }, { html: '<p>2</p>' }, z.colonnaNuova()])] }), true)
+
 console.log('\nTesto: le colonne sono le sole novità')
 const COL = '<div class="colonne c-2"><div class="colonna"><p>1</p></div><div class="colonna"><p>2</p></div></div>'
 ok('colonne c-2 restano', pulisci(COL), COL)
