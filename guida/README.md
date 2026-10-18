@@ -37,7 +37,8 @@ account.
 Chi è della segreteria e insegna anche (il ruolo **Segreteria e istruttore**)
 entra in tutte e due le parti: dopo l'accesso l'app chiede dove andare,
 **SEGRETERIA** o **ISTRUTTORI**, e poi si passa dall'una all'altra dal menu
-(**ISTRUTTORI →**, **SEGRETERIA →**) senza uscire.
+(**ISTRUTTORI →**, **SEGRETERIA →**) senza uscire. Segreteria e amministrazione sono due
+autorizzazioni di uno stesso menu: non c'è un passaggio fra le due.
 
 ## Le parti
 
@@ -51,8 +52,7 @@ d'accesso ci si arriva senza entrare.
 | `sala/` | Il tablet appeso al muro della sala | Gli allievi si segnano da soli; voi col PIN fate l'appello | [Tablet di sala](sala.md) |
 | `iscrizioni/` | Chi vuole iscriversi | Cosa serve, i costi, come si paga, il modulo | [Iscrizioni](iscrizioni.md) |
 | `iscritti/` | Chi frequenta i corsi · per ora solo in prova | Le sue lezioni, le presenze, certificato, quota e ricevute | [Iscritti](iscritti.md) |
-| `segreteria/` | La reception | Corsi, iscritti, presenze, richieste | [Segreteria](segreteria/README.md) |
-| `amministrazione/` | Chi cura i conti | I pagamenti e il listino, senza le persone | [Amministrazione](amministrazione/README.md) |
+| `segreteria/` | La reception, e chi cura i conti | Corsi, iscritti, presenze, richieste; per chi ha l'amministrazione, anche i conti (contabilità, pagamenti, listino) | [Segreteria](segreteria/README.md), [Amministrazione](amministrazione/README.md) |
 
 ## Cosa serve a voi, in pratica
 

@@ -41,6 +41,7 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
     nome: 'SOLDI',
     voci: [
       { voce: 'pagamenti', nome: 'PAGAMENTI' },
+      { voce: 'contabilita', nome: 'CONTABILITÀ' },
       { voce: 'listino', nome: 'LISTINO' },
       { voce: 'vestiario', nome: 'VESTIARIO' },
     ],
@@ -56,6 +57,10 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
     ],
   },
 ]
+
+/** I luoghi con le sole voci consentite: un luogo senza voci non c'è (chi ha solo l'amministrazione vede SOLDI e basta). */
+export const luoghiPer = (consentite: readonly Voce[]): typeof LUOGHI =>
+  LUOGHI.map((l) => ({ ...l, voci: l.voci.filter((v) => consentite.includes(v.voce)) })).filter((l) => l.voci.length > 0)
 
 /** La voce da evidenziare nella seconda riga: le segnalate sono una scheda di PRESENZE, non una voce. */
 export const voceInLista = (voce: Voce): Voce => (voce === 'segnalate' ? 'presenze' : voce)
