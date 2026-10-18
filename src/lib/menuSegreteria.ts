@@ -21,56 +21,88 @@ export interface GruppoMenu {
   voci: Array<[Voce, string]>
 }
 
-/** Il menu in gruppi, da quello che si apre ogni giorno a quello che si tocca una volta a stagione. */
+/**
+ * Il menu della segreteria in cinque gruppi, da quello che si apre ogni giorno
+ * a quello che si tocca una volta a stagione. Ogni gruppo dice cosa ci si
+ * trova: Corsi non è una «persona», e «La palestra» teneva insieme sei cose
+ * diverse. Le presenze segnalate sono una scheda di PRESENZE, non una voce.
+ * Il maiuscolo dei titoli lo fa lo stile (`.sg-gruppo-titolo`), non il testo.
+ */
+export const GRUPPI_MENU: GruppoMenu[] = [
+  {
+    titolo: 'Ogni giorno',
+    voci: [
+      ['dafare', 'Da fare'],
+      ['richieste', 'Richieste online'],
+      ['presenze', 'Presenze'],
+    ],
+  },
+  {
+    titolo: 'Iscritti e soldi',
+    voci: [
+      ['iscritti', 'Iscritti'],
+      ['tessere', 'Tessere'],
+      ['pagamenti', 'Pagamenti'],
+    ],
+  },
+  {
+    titolo: 'Corsi e orari',
+    voci: [
+      ['settimana', 'Settimana'],
+      ['corsi', 'Corsi'],
+      ['listino', 'Listino'],
+    ],
+  },
+  {
+    titolo: 'Istruttori',
+    voci: [
+      ['istruttori', 'Presenze istruttori'],
+      ['personale', 'Istruttori e accessi'],
+    ],
+  },
+  {
+    titolo: 'Il resto',
+    // Sul telefono più piccolo: sono cose da computer.
+    secondario: true,
+    voci: [
+      ['statistiche', 'Statistiche'],
+      ['vestiario', 'Vestiario'],
+      ['esercizi', 'Esercizi'],
+      ['segnalazioni', 'Segnalazioni'],
+      ['sito', 'Sito'],
+    ],
+  },
+]
+
+/** Il gruppo dei conti per chi ha l'amministrazione: la contabilità; chi ha solo i conti ha anche pagamenti e listino. */
+export const TITOLO_CONTI = 'I conti'
+
+/**
+ * Il menu: i cinque gruppi della segreteria per chi la ha; con l'amministrazione in più «I conti» con CONTABILITÀ
+ * (dopo «Iscritti e soldi»). Chi ha solo l'amministrazione vede «I conti» e basta, con pagamenti e listino ridotti.
+ * Un gruppo senza voci non c'è.
+ */
 export function menuDi(chi: Chi): GruppoMenu[] {
   const spunte = spunteDi(chi)
   const segreteria = spunte.includes('segreteria')
   const amministrazione = spunte.includes('amministrazione')
-  const contabilita: Array<[Voce, string]> = amministrazione ? [['contabilita', 'CONTABILITÀ']] : []
-  const conti: Array<[Voce, string]> = [...contabilita, ['pagamenti', 'PAGAMENTI'], ['listino', 'LISTINO']]
-  const gruppi: GruppoMenu[] = segreteria
-    ? [
-        {
-          titolo: 'OGNI GIORNO',
-          voci: [
-            ['dafare', 'DA FARE'],
-            ['settimana', 'SETTIMANA'],
-            ['richieste', 'RICHIESTE ONLINE'],
-            ['presenze', 'PRESENZE'],
-          ],
-        },
-        {
-          titolo: 'PERSONE',
-          voci: [
-            ['iscritti', 'ISCRITTI'],
-            ['tessere', 'TESSERE'],
-            ['corsi', 'CORSI'],
-          ],
-        },
-        { titolo: 'I CONTI', voci: conti },
-        {
-          titolo: 'ISTRUTTORI',
-          voci: [
-            ['istruttori', 'PRESENZE ISTRUTTORI'],
-            ['personale', 'ISTRUTTORI E ACCESSI'],
-          ],
-        },
-        {
-          titolo: 'LA PALESTRA',
-          secondario: true,
-          voci: [
-            ['statistiche', 'STATISTICHE'],
-            ['vestiario', 'VESTIARIO'],
-            ['esercizi', 'ESERCIZI'],
-            ['segnalazioni', 'SEGNALAZIONI'],
-            ['sito', 'SITO'],
-          ],
-        },
-      ]
-    : amministrazione
-      ? [{ titolo: 'I CONTI', voci: conti }]
-      : []
-  return gruppi
+  if (segreteria) {
+    if (!amministrazione) return GRUPPI_MENU
+    const conti: GruppoMenu = { titolo: TITOLO_CONTI, voci: [['contabilita', 'Contabilità']] }
+    return GRUPPI_MENU.flatMap((g) => (g.titolo === 'Iscritti e soldi' ? [g, conti] : [g]))
+  }
+  if (amministrazione)
+    return [
+      {
+        titolo: TITOLO_CONTI,
+        voci: [
+          ['contabilita', 'Contabilità'],
+          ['pagamenti', 'Pagamenti'],
+          ['listino', 'Listino'],
+        ],
+      },
+    ]
+  return []
 }
 
 /** Il titolo sotto «ODS CORSI» e sul tasto che porta qui: con tutte e due le autorizzazioni è uno solo, non due sezioni. */
@@ -79,6 +111,7 @@ export function titoloDelMenu(chi: Chi): string {
   if (spunte.includes('segreteria')) return spunte.includes('amministrazione') ? 'GESTIONE' : 'SEGRETERIA'
   return spunte.includes('amministrazione') ? 'AMMINISTRAZIONE' : 'SEGRETERIA'
 }
+
 
 /** Cosa si fa qui, detto a chi sceglie dove entrare. */
 export function descrizioneDelMenu(chi: Chi): string {

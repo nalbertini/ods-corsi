@@ -21,7 +21,7 @@ Chi ha anche **Segreteria** vede un menu solo, con tutte le voci. Chi ha anche
    in fondo al menu.
 
 Chi insegna anche, dopo **ENTRA**, sceglie dove andare (il menu o il calendario degli
-istruttori), e poi passa dall'uno all'altro dal menu (**ISTRUTTORI →**) senza uscire.
+istruttori), e poi passa dall'uno all'altro dal menu (**Istruttori →**) senza uscire.
 Tra segreteria e amministrazione non si passa: il menu è uno.
 
 ## Il menu
@@ -30,9 +30,9 @@ Il gruppo **I CONTI** (per chi ha solo Amministrazione è l'unico):
 
 | Voce | Cosa fa |
 |---|---|
-| **CONTABILITÀ** | Le entrate e le uscite in due casse: movimenti, voci, saldi iniziali. [Apri](contabilita.md) |
-| **PAGAMENTI** | Tutto quello che è stato pagato: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV. [Apri](pagamenti.md) |
-| **LISTINO** | I costi della stagione, gli stessi della [segreteria](../segreteria/listino.md): si cambiano da qui. |
+| **Contabilità** | Le entrate e le uscite in due casse: movimenti, voci, saldi iniziali. [Apri](contabilita.md) |
+| **Pagamenti** | Tutto quello che è stato pagato: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV. [Apri](pagamenti.md) |
+| **Listino** | I costi della stagione, gli stessi della [segreteria](../segreteria/listino.md): si cambiano da qui. |
 
 Da **PAGAMENTI** si registra un pagamento fatto a mano e si annulla un pagamento
 o una ricevuta, senza aprire la scheda della persona. Le ricevute nuove, per ora,

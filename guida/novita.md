@@ -10,6 +10,40 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.98.0 — 18 ottobre 2026
+
+### Novità
+
+- La pagina delle iscrizioni dice prima cosa serve e quanto costa, nell'aspetto del sito
+- Importa lo storico dei movimenti dal vecchio programma
+
+### Risolto
+
+- Il titolo «Gli istruttori» di Chi siamo non si spezza più a metà parola
+- La voce attiva del menù ha il suo spazio intorno
+
+## 0.97.0 — 18 ottobre 2026
+
+### Novità
+
+- DA FARE coi tasti che dicono cosa fanno
+
+### Modificato
+
+- Il sito si aggiorna in un paio di minuti dopo PUBBLICA, non più in una decina
+
+## 0.96.0 — 18 ottobre 2026
+
+### Novità
+
+- La pagina di Maurizio Innella e il modello per le pagine degli istruttori, da pubblicare nel pannello SITO
+
+## 0.95.0 — 18 ottobre 2026
+
+### Novità
+
+- Il menu della segreteria in cinque gruppi
+
 ## 0.94.0 — 18 ottobre 2026
 
 ### Novità

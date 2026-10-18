@@ -50,7 +50,7 @@ d'accesso ci si arriva senza entrare.
 |---|---|---|---|
 | `istruttori/` | Voi istruttori (e la segreteria) | Il calendario e l'appello, dal telefono | [Istruttori](istruttori.md) |
 | `sala/` | Il tablet appeso al muro della sala | Gli allievi si segnano da soli; voi col PIN fate l'appello | [Tablet di sala](sala.md) |
-| `iscrizioni/` | Chi vuole iscriversi | I passi, i costi, il modulo | [Iscrizioni](iscrizioni.md) |
+| `iscrizioni/` | Chi vuole iscriversi | Cosa serve, i costi, come si paga, il modulo | [Iscrizioni](iscrizioni.md) |
 | `iscritti/` | Chi frequenta i corsi · per ora solo in prova | Le sue lezioni, le presenze, certificato, quota e ricevute | [Iscritti](iscritti.md) |
 | `segreteria/` | La reception, e chi cura i conti | Corsi, iscritti, presenze, richieste; per chi ha l'amministrazione, anche i conti (contabilità, pagamenti, listino) | [Segreteria](segreteria/README.md), [Amministrazione](amministrazione/README.md) |
 

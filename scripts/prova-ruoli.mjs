@@ -116,20 +116,20 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
   }
   const gruppi = (c) => m.menuDi(chi[c]).map((g) => [g.titolo, g.voci.map(([id]) => id)])
   const DELLA_SEGRETERIA_NEL_MENU = [
-    ['OGNI GIORNO', ['dafare', 'settimana', 'richieste', 'presenze']],
-    ['PERSONE', ['iscritti', 'tessere', 'corsi']],
-    ['I CONTI', ['pagamenti', 'listino']],
-    ['ISTRUTTORI', ['istruttori', 'personale']],
-    ['LA PALESTRA', ['statistiche', 'vestiario', 'esercizi', 'segnalazioni', 'sito']],
+    ['Ogni giorno', ['dafare', 'richieste', 'presenze']],
+    ['Iscritti e soldi', ['iscritti', 'tessere', 'pagamenti']],
+    ['Corsi e orari', ['settimana', 'corsi', 'listino']],
+    ['Istruttori', ['istruttori', 'personale']],
+    ['Il resto', ['statistiche', 'vestiario', 'esercizi', 'segnalazioni', 'sito']],
   ]
-  ok('solo segreteria: i gruppi di sempre, con PAGAMENTI e LISTINO in I CONTI', gruppi('segreteria'), DELLA_SEGRETERIA_NEL_MENU)
-  ok('segreteria e amministrazione: gli stessi, e CONTABILITÀ in testa a I CONTI', gruppi('segreteria + amministrazione'), DELLA_SEGRETERIA_NEL_MENU.map(([t, v]) => [t, t === 'I CONTI' ? ['contabilita', ...v] : v]))
-  ok('solo amministrazione: solo I CONTI, tre voci', gruppi('amministrazione'), [['I CONTI', ['contabilita', 'pagamenti', 'listino']]])
+  ok('solo segreteria: i cinque gruppi, senza CONTABILITÀ', gruppi('segreteria'), DELLA_SEGRETERIA_NEL_MENU)
+  ok('segreteria e amministrazione: gli stessi, e «I conti» con CONTABILITÀ dopo «Iscritti e soldi»', gruppi('segreteria + amministrazione'), DELLA_SEGRETERIA_NEL_MENU.flatMap(([t, v]) => (t === 'Iscritti e soldi' ? [[t, v], ['I conti', ['contabilita']]] : [[t, v]])))
+  ok('solo amministrazione: solo «I conti», tre voci', gruppi('amministrazione'), [['I conti', ['contabilita', 'pagamenti', 'listino']]])
   ok('insegnare non aggiunge voci a chi ha l\'amministrazione', gruppi('amministrazione + istruttore'), gruppi('amministrazione'))
   ok('insegnare non aggiunge voci a chi ha la segreteria', gruppi('segreteria + istruttore'), gruppi('segreteria'))
   ok('un istruttore non ha il menu', gruppi('istruttore'), [])
   ok('un ruolo che l\'app non conosce nemmeno, anche col dato sporco', gruppi('strano'), [])
-  ok('LA PALESTRA è il gruppo secondario, sul telefono più piccolo', m.menuDi(chi.segreteria).filter((g) => g.secondario).map((g) => g.titolo), ['LA PALESTRA'])
+  ok('LA PALESTRA è il gruppo secondario, sul telefono più piccolo', m.menuDi(chi.segreteria).filter((g) => g.secondario).map((g) => g.titolo), ['Il resto'])
   ok('nessun gruppo è vuoto, per nessuno', Object.keys(chi).every((c) => m.menuDi(chi[c]).every((g) => g.voci.length > 0)), true)
   ok('nessuna voce due volte', Object.keys(chi).every((c) => { const v = m.vociDelMenu(chi[c]); return v.length === new Set(v).size }), true)
   ok('CONTABILITÀ solo a chi ha l\'amministrazione', Object.keys(chi).filter((c) => m.vociDelMenu(chi[c]).includes('contabilita')), ['segreteria + amministrazione', 'amministrazione', 'amministrazione + istruttore'])

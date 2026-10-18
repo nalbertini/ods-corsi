@@ -34,6 +34,7 @@ const SEZIONI = [
   { id: 'riempi-prova', nome: 'Iscrizione · riempi per prova', cartella: 'riempi-prova' },
   { id: 'esci-dalla-prova', nome: 'Iscrizione · esci dalla prova', cartella: 'esci-dalla-prova' },
   { id: 'iscrizione-sito', nome: 'Iscrizione · modulo nell\'aspetto del sito', cartella: 'iscrizione-sito' },
+  { id: 'iscrizioni-pagina', nome: 'Iscrizioni · la pagina d\'ingresso', cartella: 'iscrizioni-pagina' },
   { id: 'vestiario', nome: 'Vestiario · ordini', cartella: 'vestiario' },
   { id: 'vestiario-modulo', nome: 'Vestiario · come il modulo', cartella: 'vestiario-modulo' },
   { id: 'sito-pannello', nome: 'Sito · pannello', cartella: 'sito-pannello' },
@@ -72,7 +73,7 @@ const SEZIONI = [
 // Una sezione che non è in un gruppo ha una pagina sua.
 const MAX_PAGINE = 40
 const GRUPPI = {
-  'iscrizione-flusso': { nome: 'Iscrizione · il modulo', sezioni: ['iscrizione', 'iscrizione-nuovo', 'iscrizione-rifinitura', 'navigazione-passi', 'iscrizione-sito'] },
+  'iscrizione-flusso': { nome: 'Iscrizione · il modulo', sezioni: ['iscrizione', 'iscrizione-nuovo', 'iscrizione-rifinitura', 'navigazione-passi', 'iscrizione-sito', 'iscrizioni-pagina'] },
   'iscrizione-famiglia': { nome: 'Iscrizione · famiglia', sezioni: ['iscrizione-famiglia', 'famiglia-passo', 'famiglia-ultimo', 'anche-tu'] },
   'iscrizione-dettagli': { nome: 'Iscrizione · dettagli', sezioni: ['orari-evidenziati', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'comune-dal-cap', 'firma-schermo-intero', 'riempi-prova', 'esci-dalla-prova'] },
   'vestiario': { nome: 'Vestiario', sezioni: ['vestiario', 'vestiario-modulo'] },

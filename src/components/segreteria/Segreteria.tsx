@@ -379,8 +379,8 @@ export function Segreteria({
           cerca={d && conSegreteria && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
           link={
             <>
-              <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
-              <CopiaLink link={LINK_ORDINI} testo="COPIA LINK ORDINI" perche="Il link per ordinare il vestiario:" />
+              <CopiaLink link={LINK_PUBBLICO} testo="Copia link iscrizioni" perche="Il link per iscriversi:" />
+              <CopiaLink link={LINK_ORDINI} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" />
             </>
           }
           guida={guida}
@@ -464,13 +464,13 @@ export function Segreteria({
         <div className="sg-voci">
           {onIstruttori && (
             <button type="button" className="num sg-voce" onClick={onIstruttori}>
-              ISTRUTTORI →
+              Istruttori →
             </button>
           )}
           {conSegreteria && (
             <>
-              <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
-              <CopiaLink link={LINK_ORDINI} testo="COPIA LINK ORDINI" perche="Il link per ordinare il vestiario:" />
+              <CopiaLink link={LINK_PUBBLICO} testo="Copia link iscrizioni" perche="Il link per iscriversi:" />
+              <CopiaLink link={LINK_ORDINI} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" />
             </>
           )}
         </div>

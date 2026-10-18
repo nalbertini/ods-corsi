@@ -356,6 +356,21 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     return r.data
   }
 
+  /**
+   * Dopo un cambio al sito chiede alla funzione `sito` di far partire subito il
+   * workflow, invece di aspettare il giro a tempo. Mai un errore per la
+   * segreteria, e non si aspetta: il cambio è già fatto, e se la funzione non
+   * c'è o non risponde il giro a tempo pubblica comunque.
+   * In modalità prova (`segreteriaProva.ts`) non c'è GitHub: niente da chiamare.
+   */
+  const rigeneraSito = async () => {
+    try {
+      await db.functions.invoke('sito', { body: { azione: 'avvia' } })
+    } catch {
+      // Il giro a tempo (ogni cinque minuti) copre.
+    }
+  }
+
   /** Quante righe di una tabella hanno questa attività. */
   const quante = async (tabella: 'ricorrenze' | 'sessioni', id: string) => {
     const { count, error } = await db.from(tabella).select('id', { count: 'exact', head: true }).eq('attivita_id', id)
@@ -1874,27 +1889,33 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async pubblicaPaginaSito(id, versione) {
-      return ok(await db.rpc('pubblica_pagina_sito', { p_id: id, p_versione: versione })) as number
+      const v = ok(await db.rpc('pubblica_pagina_sito', { p_id: id, p_versione: versione })) as number
+      void rigeneraSito()
+      return v
     },
 
     async cambiaIndirizzoSito(id, slug) {
       ok(await db.rpc('cambia_indirizzo_sito', { p_id: id, p_slug: slug }))
+      void rigeneraSito()
     },
 
     async nascondiPaginaSito(id, nascosta) {
       // Senza `select`, una pagina che non c'è più (o di legge) darebbe 0 righe e nessun errore: sembrerebbe fatto.
       const fatte = ok(await db.from('sito_pagine').update({ nascosta }).eq('id', id).select('id')) as unknown as unknown[]
       if (!fatte.length) throw new Error('La pagina non c’è più')
+      void rigeneraSito()
     },
 
     async cancellaPaginaSito(id) {
       // Come sopra: una pagina di legge o già cancellata dà 0 righe, e va detto.
       const fatte = ok(await db.from('sito_pagine').delete().eq('id', id).select('id')) as unknown as unknown[]
       if (!fatte.length) throw new Error('Questa pagina non si cancella: o non c’è più, o è una pagina di legge')
+      void rigeneraSito()
     },
 
     async salvaMenuSito(dove, voci) {
       ok(await db.rpc('salva_menu_sito', { p_dove: dove, p_voci: voci.map((v) => ({ etichetta: v.etichetta, pagina_id: v.paginaId, indirizzo: v.indirizzo })) }))
+      void rigeneraSito()
     },
 
     async sitoImmagini() {

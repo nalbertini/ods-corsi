@@ -115,18 +115,19 @@ const T = {
   chiaro: { surface: '#ffffff', menu: '#ebebe7', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', tasto: '#4a4a46' },
 };
 // Un solo menu: le voci sono quelle delle autorizzazioni della persona (`autorizzazioni`), non di due aree.
-// I CONTI raccoglie CONTABILITÀ (solo con l'amministrazione), PAGAMENTI e LISTINO: chi ha la segreteria apre
-// PAGAMENTI e LISTINO completi, chi ha solo l'amministrazione quelli ridotti (nomi e importi, niente schede).
-// Un gruppo senza voci non c'è; chi ha solo l'amministrazione non ha la ricerca di iscritti ne' i link da copiare.
+// I cinque gruppi della segreteria (Segreteria.tsx, `GRUPPI_MENU` in menuSegreteria.ts); con l'amministrazione compare
+// in piu' I CONTI, con CONTABILITÀ, dopo ISCRITTI E SOLDI. Chi ha solo l'amministrazione vede I CONTI e basta, con
+// CONTABILITÀ, PAGAMENTI e LISTINO ridotti (nomi e importi, niente schede), senza ricerca di iscritti ne' link da copiare.
+// Un gruppo senza voci non c'e'. Il maiuscolo dei titoli e delle voci qui e' scritto: nell'app lo fa lo stile.
 const DI_SEGRETERIA = [
-  ['OGNI GIORNO', ['DA FARE', 'SETTIMANA', 'RICHIESTE ONLINE', 'PRESENZE']],
-  ['PERSONE', ['ISCRITTI', 'CORSI']],
-  ['I CONTI', ['PAGAMENTI', 'LISTINO']],
+  ['OGNI GIORNO', ['DA FARE', 'RICHIESTE ONLINE', 'PRESENZE']],
+  ['ISCRITTI E SOLDI', ['ISCRITTI', 'TESSERE', 'PAGAMENTI']],
+  ['CORSI E ORARI', ['SETTIMANA', 'CORSI', 'LISTINO']],
   ['ISTRUTTORI', ['PRESENZE ISTRUTTORI', 'ISTRUTTORI E ACCESSI']],
-  ['LA PALESTRA', ['STATISTICHE', 'VESTIARIO', 'ESERCIZI', 'SEGNALAZIONI', 'SITO']],
+  ['IL RESTO', ['STATISTICHE', 'VESTIARIO', 'ESERCIZI', 'SEGNALAZIONI', 'SITO']],
 ];
 const GRUPPI = DI_SEGRETERIA;
-const CON_AMMINISTRAZIONE = DI_SEGRETERIA.map(([titolo, elenco]) => [titolo, titolo === 'I CONTI' ? ['CONTABILITÀ', ...elenco] : elenco]);
+const CON_AMMINISTRAZIONE = DI_SEGRETERIA.flatMap(([titolo, elenco]) => (titolo === 'ISCRITTI E SOLDI' ? [[titolo, elenco], ['I CONTI', ['CONTABILITÀ']]] : [[titolo, elenco]]));
 // Solo amministrazione (la vecchia area="amministrazione"): il menu ridotto ai conti.
 const GRUPPI_AMMINISTRAZIONE = [
   ['I CONTI', ['CONTABILITÀ', 'PAGAMENTI', 'LISTINO']],
