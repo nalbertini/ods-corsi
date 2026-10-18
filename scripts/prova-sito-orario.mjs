@@ -141,9 +141,9 @@ const orariDel = (...x) => x.map(({ corsoId, giorno, ora, durataMin }) => ({ cor
 const ORARI = orariDel(r(A, 1, '17:00'), r(A, 3, '17:00'), r(B, 2, '16:30'), r(B, 6, '10:00'), r(B, 6, '11:15'), r(C, 5, '20:00'))
 
 console.log('\n3. Pagina non collegata: l’HTML è quello di oggi')
-// Le impronte sono dell’HTML generato PRIMA della funzione (stessa pagina, senza campi nuovi).
-// Impronte rifatte quando ogni pagina ha avuto «Salta al contenuto» in cima e il telefono del piede è diventato un link tel:: cambiano solo quei due punti.
-const OGGI = { dati: "71c0252b8b3525d4fba2202e0b58f5a7f45b794e2dc758dba7655e39119a046c", foto: 'beb958d66c5d25c2e1e2235cc64c2b322b1a93da232a3072db9846f562ec9e88', fascia: '4c2bfd79cf269c8cd7feba94487bcf30850055129e261ed74a991a5adf2637a4' }
+// Le impronte sono dell’HTML di una pagina non collegata (senza campi nuovi): cambiano se cambia la testata, il logo o il CSS, e allora si rifanno.
+// Rifatte quando ogni pagina ha avuto «Salta al contenuto» in cima e il telefono del piede è diventato un link tel:, e per le correzioni di Scrivici, logo e numeri 1-4.
+const OGGI = { dati: "87aaf2b7830af831c3267ff12c8af18553ddcb3ba6e4b4cfbb2997105b3d834b", foto: 'f9b9b66c39922546d0a155f06ebc9e8d474fe950c35de9a68c8a86490acbd663', fascia: 'a29f00d43401ced89490b182e5bc62dcee0a705f69e8a0f248d07bbf508defe4' }
 ok('con foto di apertura: HTML di oggi', sha(pagina(CON_FOTO)), OGGI.foto)
 ok('fascia blu: HTML di oggi', sha(pagina(FASCIA)), OGGI.fascia)
 ok('l’orario a mano si vede ancora', /09:15 – 10:15/.test(testo(main(pagina(CON_FOTO)))), true)

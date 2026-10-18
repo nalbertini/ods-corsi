@@ -227,7 +227,8 @@ console.log('\n9. Testata e piede di ogni pagina')
   for (const [nome, h] of [['Home', tutte['index.html']], ['Corsi', tutte['corsi/index.html']], ['Contatti', tutte['contatti/index.html']], ['404', tutte['404.html']]]) {
     const t = test(h)
     ok(`${nome}: il pulsante «Prova una settimana a 5 €» è primario e intero (niente «estensione»)`, [primario.test(t), /estensione/.test(t)], [true, false])
-    ok(`${nome}: «Scrivici» secondario verso Contatti`, /<a class="pulsante secondario" href="\/contatti\/"[^>]*>Scrivici<\/a>/.test(t), true)
+    // In Contatti il pulsante non porta alla pagina in cui sei già: resta il nome, senza link.
+    ok(`${nome}: «Scrivici» secondario${nome === 'Contatti' ? ', senza link (sei già lì)' : ' verso Contatti'}`, (nome === 'Contatti' ? /<span class="pulsante secondario" aria-current="page">Scrivici<\/span>/ : /<a class="pulsante secondario" href="\/contatti\/"[^>]*>Scrivici<\/a>/).test(t), true)
     ok(`${nome}: sul telefono MENU apre #menu, senza script`, [/<a class="tasto-menu" href="#menu">MENU<\/a>/.test(t), /<nav\b[^>]*\bid="menu"/.test(t), /<script(?![^>]*application\/ld\+json)/i.test(h)], [true, true, false])
     const nav = t.match(/<nav\b[^>]*\bid="menu"[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? ''
     ok(`${nome}: il menu aperto ha «Chiudi» e poi le voci`, /<a [^>]*href="#"[^>]*>Chiudi<\/a>/.test(nav), true)

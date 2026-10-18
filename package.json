@@ -51,6 +51,7 @@
     "prova:filtri-iscritti": "node scripts/prova-filtri-iscritti.mjs",
     "prova:sito": "node scripts/prova-sito.mjs",
     "prova:sito-aspetto": "node scripts/prova-sito-aspetto.mjs",
+    "prova:sito-fasce": "node scripts/prova-sito-fasce.mjs",
     "prova:sito-tessere": "node scripts/prova-sito-tessere.mjs",
     "prova:sito-collage": "node scripts/prova-sito-collage.mjs",
     "prova:sito-scala": "node scripts/prova-sito-scala.mjs",
