@@ -633,6 +633,8 @@ function Scheda({
           onLasciaStare={() => setUnendo(false)}
           onUnite={(resta) => {
             setUnendo(false)
+            // Se resta la stessa persona la scheda non si ricrea: si riparte da PERSONA a mano.
+            setAperta(schedaIniziale())
             onCambiato()
             onApri(resta)
           }}
