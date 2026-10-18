@@ -85,6 +85,25 @@ export function scriviTesto(p: Pezzo, html: string, colonna = 0): Pezzo {
   return p
 }
 
+/** La pagina con il testo scritto nel pezzo `id` (e nella colonna `colonna`): quello che si salva senza aspettare Puck. Un pezzo che non c'è lascia la pagina com'è. */
+export function conTestoScritto(pagina: PezziPagina, id: string, html: string, colonna = 0): PezziPagina {
+  const i = pagina.content.findIndex((p) => p.props.id === id)
+  if (i < 0) return pagina
+  return { content: pagina.content.map((p, k) => (k === i ? scriviTesto(p, html, colonna) : p)) }
+}
+
+/** Cosa fa un tasto premuto dentro il testo: annulla o rifai di Puck (Cmd o Ctrl con Z, Maiusc+Z, Y), altrimenti `null`: il tasto è del testo. */
+export function versoStoria(tasto: string, conMeta: boolean, conMaiusc: boolean, conAlt: boolean): 'indietro' | 'avanti' | null {
+  if (!conMeta || conAlt) return null
+  const k = tasto.toLowerCase()
+  if (k === 'y') return 'avanti'
+  if (k === 'z') return conMaiusc ? 'avanti' : 'indietro'
+  return null
+}
+
+/** La parte scelta dopo ANNULLA o RIFAI: la stessa di prima se c'è ancora, se no nessuna (Puck riporta la scelta di allora). */
+export const selezioneDopoStoria = <S extends { index: number }>(scelto: S | null, quanti: number): S | null => (scelto && scelto.index < quanti ? scelto : null)
+
 function inHtml(p: Pezzo): string {
   switch (p.type) {
     case 'testo':

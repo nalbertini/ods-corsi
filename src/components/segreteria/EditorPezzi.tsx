@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { createUsePuck, Puck, type ComponentData, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, colonnaNuova, nomeParte, scriviTesto, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
+import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, colonnaNuova, conTestoScritto, nomeParte, scriviTesto, selezioneDopoStoria, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import { TestoInPagina } from './TestoInPagina'
 import { ScegliImmagine } from './ImmaginiSito'
@@ -69,7 +69,8 @@ function useStoria() {
   const quanti = usePuck((s) => s.appState.data.content.length)
   const con = (passo: () => void) => () => {
     passo()
-    if (scelto && scelto.index < quanti) dispatch({ type: 'setUi', ui: { itemSelector: scelto } })
+    const resta = selezioneDopoStoria(scelto, quanti)
+    if (resta) dispatch({ type: 'setUi', ui: { itemSelector: resta } })
   }
   return { storia, indietro: con(() => storia.back()), avanti: con(() => storia.forward()) }
 }
@@ -82,13 +83,19 @@ const SPAZIO_BARRA = 116
  * scelto si vede soltanto; scelto, la colonna toccata diventa un editor vivo e la barra dei tasti sta sopra il pezzo.
  * Un editor solo alla volta: con tre colonne vive montarne tre sul telefono è pesante.
  */
+/** Dove arriva il testo scritto, subito: chi salva la pagina (`onCambia` di `EditorPezzi`), senza aspettare Puck. */
+const Cambia = createContext<(p: PezziPagina) => void>(() => {})
+
 function PezzoTesto({ d, id, colonne }: { d: DatiSegreteria; id: string; colonne: Array<{ html: string }> }) {
   const scelto = usePuck((s) => s.selectedItem?.props.id === id)
   const dispatch = usePuck((s) => s.dispatch)
   const contenuto = usePuck((s) => s.appState.data.content)
   const { indietro, avanti } = useStoria()
+  const cambia = useContext(Cambia)
   const [slot, setSlot] = useState<HTMLElement | null>(null)
-  const [viva, setViva] = useState(0)
+  const [toccata, setViva] = useState(0)
+  // Tolta una colonna, la viva non resta oltre l'ultima.
+  const viva = Math.min(toccata, colonne.length - 1)
   // In cima alla pagina sopra il pezzo non c'è posto per la barra: lì sta nel pezzo, sopra il testo, e lo spinge giù.
   const pezzo = useRef<HTMLDivElement>(null)
   const [inCima, setInCima] = useState(false)
@@ -118,7 +125,8 @@ function PezzoTesto({ d, id, colonne }: { d: DatiSegreteria; id: string; colonne
                 html={c.html}
                 etichetta={solo ? 'Testo' : `Colonna ${i + 1}`}
                 slot={slot}
-                onScrivi={scrivi(i)}
+                onCambia={(html) => cambia(conTestoScritto({ content: contenuto as unknown as Pezzo[] }, id, html, i))}
+                onPausa={scrivi(i)}
                 onStoria={(verso) => (verso === 'indietro' ? indietro() : avanti())}
               />
             ) : vuoto(c.html) ? (
@@ -303,6 +311,7 @@ export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria;
   const [scheda, setScheda] = useState<Scheda>('impostazioni')
   return (
     <div className="sito-pezzi" aria-label="Pezzi della pagina">
+      <Cambia.Provider value={onCambia}>
       <Puck
         config={config}
         data={iniziali}
@@ -322,6 +331,7 @@ export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria;
           </div>
         </div>
       </Puck>
+      </Cambia.Provider>
     </div>
   )
 }

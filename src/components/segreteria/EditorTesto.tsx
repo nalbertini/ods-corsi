@@ -164,6 +164,7 @@ export const estensioni = (senzaStoria = false) => [
     horizontalRule: false,
     link: false,
     underline: false,
+    // `as const`: per TypeScript l'opzione è `false` o le sue impostazioni, non un booleano qualunque.
     ...(senzaStoria && { undoRedo: false as const }),
   }),
   Immagine,

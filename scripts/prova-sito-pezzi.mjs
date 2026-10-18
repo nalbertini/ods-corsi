@@ -447,5 +447,36 @@ console.log('\nScrivere il testo nella pagina')
   ok('scritto: un <script> non esce', buono(uscito) && !/script|alert/i.test(uscito), true)
 }
 
+// Il testo scritto arriva subito a chi salva: la pagina con quel pezzo cambiato, senza aspettare Puck.
+{
+  const pagina = { content: [T('a', '<p>uno</p>'), C('b', [{ html: '<p>x</p>' }, { html: '<p>y</p>' }]), F('c')] }
+  const copia = JSON.stringify(pagina)
+  const r = prova(() => z.conTestoScritto(pagina, 'b', '<p>nuovo</p>', 1))
+  ok('pagina: cambia solo la colonna scritta del pezzo giusto', r?.content?.map((p) => JSON.stringify(p.props)), [JSON.stringify({ id: 'a', html: '<p>uno</p>' }), JSON.stringify({ id: 'b', colonne: [{ html: '<p>x</p>' }, { html: '<p>nuovo</p>' }] }), JSON.stringify({ id: 'c', src: 'https://x.it/a.jpg', alt: 'Un tatami' })])
+  ok('pagina: il testo scritto va nel pezzo testo', prova(() => z.conTestoScritto(pagina, 'a', '<p>due</p>').content[0].props.html), '<p>due</p>')
+  ok('pagina: la pagina ricevuta non cambia', JSON.stringify(pagina), copia)
+  ok('pagina: un pezzo che non c\'è lascia la pagina com\'è', prova(() => z.conTestoScritto(pagina, 'zzz', 'x') === pagina), true)
+  ok('pagina: resta valida', valido(r), true)
+}
+
+// ANNULLA e RIFAI dalla tastiera dentro il testo: Cmd/Ctrl+Z indietro, Cmd/Ctrl+Maiusc+Z o Cmd/Ctrl+Y avanti; il resto è del testo.
+{
+  const v = (tasto, meta = true, maiusc = false, alt = false) => prova(() => z.versoStoria(tasto, meta, maiusc, alt))
+  ok('tastiera: Cmd+Z va indietro', v('z'), 'indietro')
+  ok('tastiera: Cmd+Z maiuscola (CapsLock) va indietro', v('Z'), 'indietro')
+  ok('tastiera: Cmd+Maiusc+Z va avanti', v('z', true, true), 'avanti')
+  ok('tastiera: Cmd+Y va avanti', v('y'), 'avanti')
+  ok('tastiera: Z senza Cmd è una lettera', v('z', false), null)
+  ok('tastiera: Alt+Cmd+Z non è nostra', v('z', true, false, true), null)
+  ok('tastiera: Cmd+B non è nostra', v('b'), null)
+}
+// Dopo ANNULLA e RIFAI la parte scelta resta scelta, se c'è ancora.
+{
+  const sel = (s, n) => prova(() => z.selezioneDopoStoria(s, n))
+  ok('storia: la parte scelta resta', sel({ index: 1, zone: 'z' }, 3), { index: 1, zone: 'z' })
+  ok('storia: se la lista si è accorciata sotto di lei, nessuna', sel({ index: 3, zone: 'z' }, 3), null)
+  ok('storia: nessuna scelta, nessuna scelta', sel(null, 3), null)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

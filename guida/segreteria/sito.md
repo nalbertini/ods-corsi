@@ -43,8 +43,18 @@ Le parti si mettono dopo quella scelta, o in fondo. Per cambiare l'ordine si
 trascina la parte, oppure si sceglie e si premono **SU** o **GIÙ**; **Togli** la
 toglie dalla pagina.
 
+**Il testo si scrive nella pagina**, dove lo vedi: tocca un **TESTO** o una
+colonna e scrivi lì. Sopra la parte scelta compare la barra dei tasti (**TITOLO**,
+**SOTTOTITOLO**, **G**, **C**, elenchi, citazione, **LINK**, **IMMAGINE**,
+**PULSANTE**); se sopra non c'è posto, sta dentro la parte, in alto. Nelle
+**COLONNE** ogni colonna si scrive per conto suo: tocca quella che vuoi, la
+barra è una sola per tutte. **ANNULLA** e **RIFAI** (e Ctrl+Z) tolgono e rimettono un pezzo di testo alla
+volta, non una lettera. Per spostare una parte con un testo dentro usa **SU** e
+**GIÙ** (o l'**ELENCO**): trascinando sul testo si selezionano le parole.
+
 La pagina prende tutto lo spazio; a destra ci sono due schede. **IMPOSTAZIONI**
-mostra i campi della parte che hai toccato (se non ne hai toccata nessuna dice
+mostra i campi della parte che hai toccato, come la foto e quante colonne sono (di un testo
+dice solo di scriverlo nella pagina; se non ne hai toccata nessuna dice
 di toccarne una). **ELENCO** mostra le parti della pagina in fila: da lì le
 scegli e le trascini. Sotto i 1280 pixel di larghezza (tablet in piedi) la pagina
 sta sopra e le due schede sotto. Le tessere, le domande e le citazioni a scorrimento si
