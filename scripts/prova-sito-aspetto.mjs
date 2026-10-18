@@ -33,6 +33,8 @@ const carica = async (file) => {
 const g = await carica('src/lib/sitoGenera.ts')
 const s = await carica('src/lib/sito.ts')
 
+// L'unico <script> ammesso è il blocco dei dati strutturati (ld+json): è JSON con ogni «<» escapato, e non può contenere altri tag.
+const senzaDati = (h) => h.replace(/<script type="application\/ld\+json">[^<]*<\/script>/g, '')
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
   const va = JSON.stringify(avuto) === JSON.stringify(voluto)
@@ -148,7 +150,7 @@ console.log('\nCarattere: Big Shoulders Display e Inter, file del sito')
   ok('la licenza OFL di Big Shoulders e quella di Inter sono accanto ai file', [/Big Shoulders/i.test(ofl), /\bInter\b/.test(ofl), /SIL OPEN FONT LICENSE/i.test(ofl)], [true, true, true])
   ok('Bricolage Grotesque è uscito: né nel CSS né in sito/risorse', [/bricolage/i.test(CSS), risorse.filter((n) => /bricolage/i.test(n))], [false, []])
   ok('nessun indirizzo esterno nel CSS (niente fonts.googleapis.com, niente http)', /https?:\/\/|\/\/[a-z]/i.test(CSS.replace(/\/\*[\s\S]*?\*\//g, '')), false)
-  ok('nessun @import né <script', [/@import/i.test(home), /<script/i.test(home)], [false, false])
+  ok('nessun @import né <script', [/@import/i.test(home), /<script/i.test(senzaDati(home))], [false, false])
   const fam = (d) => d['font-family'] ?? ''
   const corpo = fam(dich(R, V, (x) => x === 'body'))
   ok('il testo è Inter, con ripiego Helvetica Neue e Arial', [/^"?inter"?\s*,/.test(corpo), /helvetica neue/.test(corpo), /\barial\b/.test(corpo)], [true, true, true])
@@ -240,7 +242,10 @@ console.log('\nTestata: logo intero, menu, pulsante «Prova»')
   const ritaglio = R.filter((r) => r.sel.some((x) => /logo/.test(x))).filter((r) => /overflow:\s*hidden|object-position|background-position|object-fit:\s*cover/.test(JSON.stringify(r.dich)) || /^-/.test(r.dich.left ?? '') || /^-/.test(r.dich.top ?? '') || /%/.test(r.dich.width ?? '') && /img/.test(r.sel.join()))
   ok('il logo non è ritagliato (niente overflow nascosto, spostamenti o larghezza oltre il 100%)', ritaglio.map((r) => r.sel.join()), [])
   ok('il menu è nella testata, senza icona a tre righe', [/<nav aria-label="Principale">/.test(t), /<button\b/.test(t), /burger|hamburger|menu-toggle/i.test(home)], [true, false, false])
-  ok('con la pagina contatti: pulsante «Prova» verso /contatti/ in testata', /<a class="[^"]*\bpulsante\b[^"]*" href="\/contatti\/">Prova<\/a>/.test(t), true)
+  ok('con la pagina contatti: pulsante «Prova una settimana · 5 €» verso il modulo di iscrizione in testata', /<a class="[^"]*\bpulsante\b[^"]*" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/" rel="noopener noreferrer">Prova<span class="estensione"> una settimana · 5 €<\/span><\/a>/.test(t), true)
+  ok('con la pagina contatti: «Contattaci» è un pulsante accanto a «Prova», non una voce del menu', [/<div class="azioni"><a class="contattaci" href="\/contatti\/">Contattaci<\/a><a class="pulsante piccolo" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"/.test(t), /\/contatti\//.test((t.match(/<nav[\s\S]*?<\/nav>/) || [''])[0])], [true, false])
+  ok('nel piede «Contatti» resta tra le pagine', /<nav class="piede-menu"[^>]*>[\s\S]*?href="\/contatti\/"/.test(piedeDi(home)), true)
+  ok('«Contattaci» in testata è inchiostro con il bianco sopra, alto 48px', [sfondo(dich(R, V, (x) => x === '.testata .contattaci')), hex(dich(R, V, (x) => x === '.testata .contattaci').color ?? ''), dich(R, V, (x) => x === '.testata .contattaci')['min-height']], [INCHIOSTRO, BIANCO, '48px'])
   ok('senza la pagina contatti: nessun pulsante «Prova» né link a /contatti/', c(senza, 'index.html') !== '' && !/\/contatti\//.test(c(senza, 'index.html')), true)
   const mob = blocco(CSS, '@media (max-width:900px)')
   const rm = mob ? regole(mob.dentro) : []
@@ -263,27 +268,51 @@ console.log('\nPiede e invito')
   const pie = dich(R, V, (x) => x === '.piede')
   ok('il piede è una tessera scura #0d2a3d', [sfondo(pie), piede !== ''], [INCHIOSTRO, true])
   ok('i recapiti di oggi: indirizzo, telefono, Instagram, Facebook', [piede.includes(C.indirizzo ?? '?'), piede.includes(C.telefono ?? '?'), piede.includes(C.instagram ?? '?'), piede.includes(C.facebook ?? '?')], [true, true, true, true])
-  ok('e niente di più: quattro voci senza voci di piede', conta(piede, /<li>/g), 4)
+  ok('e niente di più: quattro recapiti in elenco e le voci del menu come link a parte, senza voci di piede', [conta(piede, /<li>/g), conta(piede, /<nav class="piede-menu"[^>]*>(?:<a\b[^>]*>[^<]*<\/a>)+<\/nav>/g)], [4, 1])
   const inv = (t) => (t.match(/<a class="invito"[\s\S]*?<\/a>/) || [''])[0]
   const j = c(con, 'judo/index.html')
-  ok('l’invito in fondo: link a /contatti/ con «Prova», dopo il contenuto e prima del piede', [/href="\/contatti\/"/.test(inv(j)), />Prova</.test(inv(j)), j.indexOf('</main>') < j.indexOf('class="invito"'), j.indexOf('class="invito"') < j.indexOf('<footer')], [true, true, true, true])
-  ok('non c’è nella pagina contatti', inv(c(con, 'contatti/index.html')), '')
+  ok('l’invito in fondo: link al modulo di iscrizione con «Prova», dopo il contenuto e prima del piede', [/href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"/.test(inv(j)), />Prova</.test(inv(j)), j.indexOf('</main>') < j.indexOf('class="invito"'), j.indexOf('class="invito"') < j.indexOf('<footer')], [true, true, true, true])
+  ok('c’è anche nella pagina contatti (il design la ha)', /href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"/.test(inv(c(con, 'contatti/index.html'))), true)
   ok('non c’è se la pagina contatti non esiste', inv(c(senza, 'index.html')), '')
   ok('«Prova» dell’invito è grande', /clamp\(\s*\d{2,3}px|^\d{2,3}px/.test(dich(R, V, (x) => /^\.invito .*parola$/.test(x))['font-size'] ?? ''), true)
+}
+
+console.log('\nPulsante «Contattaci» sotto titolo e frase: in nessuna pagina (sta già in testata)')
+{
+  const r = genera(dati({ pagine: [pag('home'), pag('judo'), pag('chi-siamo'), pag('contatti')] }))
+  const sotto = (t) => /<a class="pulsante" href="\/contatti\/">Contattaci<\/a>/.test(t.replace(testata(t), ''))
+  ok('né la Home né Judo, Chi siamo e Contatti lo hanno', ['index.html', 'judo/index.html', 'chi-siamo/index.html', 'contatti/index.html'].map((f) => sotto(c(r, f))), [false, false, false, false])
 }
 
 console.log('\nPagine di legge: una colonna di testo')
 {
   const t = c(con, 'privacy/index.html')
-  ok('niente scena né pulsante «Contattaci» nell’intestazione', [/class="scena"/.test(t), /Contattaci/.test(t), /class="[^"]*pagina-hero/.test(t)], [false, false, false])
+  ok('niente scena né pulsante «Contattaci» nell’intestazione', [/class="scena"/.test(t), /Contattaci/.test(t.replace(testata(t), '')), /class="[^"]*pagina-hero/.test(t)], [false, false, false])
   ok('titolo e testo in una colonna: pagina-testo + .testo', [/class="pagina-testo"/.test(t), /<div class="testo">/.test(t)], [true, true])
 }
 
 console.log('\nAngoli: 6px')
 {
   const raggi = R.flatMap((r) => (r.dich['border-radius'] ? [{ sel: r.sel.join(), v: risolvi(r.dich['border-radius'], V) }] : []))
-  ok('ogni border-radius è 6px (o 0, o un cerchio al 50%)', raggi.filter((x) => !['6px', '0', '50%'].includes(x.v)).map((x) => `${x.sel}: ${x.v}`), [])
+  // Le pillole (999px) sono capsule come nel design: quelle d'età della Home (`.pillola`) e le fasce della pagina Corsi (`ul.fasce li`). Tutto il resto è 6px, 0 o un cerchio.
+  ok('ogni border-radius è 6px (o 0, o un cerchio al 50%; le pillole sono capsule, i puntini delle citazioni sono tondi)', raggi.filter((x) => !['6px', '0', '50%'].includes(x.v) && !(['.pillola', 'ul.fasce li'].includes(x.sel) && x.v === '999px') && !/::scroll-marker$/.test(x.sel)).map((x) => `${x.sel}: ${x.v}`), [])
   ok('pulsante, invito e immagini del testo hanno 6px', ['.pulsante', '.invito', '.testo img'].map((n) => dich(R, V, (x) => x === n)['border-radius']), ['6px', '6px', '6px'])
+}
+
+console.log('\nLarghezza')
+{
+  // Su uno schermo largo la pagina non si allarga senza fine: sta in una colonna centrata, e il fondo resta quello.
+  const b = dich(R, V, (x) => x === 'body')
+  ok('il body ha una larghezza massima', /^\d+px$/.test(b['max-width'] ?? ''), true)
+  ok('il body è centrato', b.margin, '0 auto')
+}
+
+console.log('\nLa freccia ↗')
+{
+  // Senza U+FE0E (variante testo) Safari su iPhone disegna ↗ come emoji, un riquadro azzurro, invece della freccia nel colore del testo.
+  const tutto = Object.values(con).filter((x) => typeof x === 'string').join('\n')
+  ok('c’è almeno una freccia nel sito', tutto.includes('↗'), true)
+  ok('ogni freccia ↗ è testo, non emoji', conta(tutto, /↗(?!\uFE0E)/g), 0)
 }
 
 console.log('\nDeterminismo')

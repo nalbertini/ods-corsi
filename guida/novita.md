@@ -10,6 +10,228 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.91.0 — 18 ottobre 2026
+
+### Novità
+
+- I fogli delle autorizzazioni si compilano al computer e hanno il nuovo aspetto
+
+## 0.90.0 — 18 ottobre 2026
+
+### Novità
+
+- Le pagine nuove del sito si scrivono a pezzi (foto, testi, colonne) e l'anteprima mostra la pagina vera
+
+### Modificato
+
+- Proposte di miglioramento per le pagine del sito della palestra
+
+## 0.89.3 — 18 ottobre 2026
+
+### Modificato
+
+- Il controllo dei moduli PDF gira a ogni modifica
+
+## 0.89.2 — 18 ottobre 2026
+
+### Modificato
+
+- Pittogrammi di Judo e Aikido e strumenti per le grafiche
+
+## 0.89.1 — 18 ottobre 2026
+
+### Modificato
+
+- Il canvas del design ha le pagine in ordine per area
+
+## 0.89.0 — 18 ottobre 2026
+
+### Novità
+
+- Scegli da IMPOSTAZIONI come vedere la segreteria, con il menu a sinistra o con «Il Banco»
+
+## 0.88.1 — 18 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione il tasto del tema non compare più, perché il modulo resta sempre chiaro
+
+## 0.88.0 — 18 ottobre 2026
+
+### Novità
+
+- Le tessere degli iscritti, con import dal RASD
+
+### Risolto
+
+- Nel modulo di iscrizione «1 altro corso» al singolare e il tag dei file su una riga sua
+
+## 0.87.2 — 18 ottobre 2026
+
+### Modificato
+
+- Pagine dei corsi: una frase sotto ogni voce di «Cosa può aspettarsi»
+
+## 0.87.1 — 18 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione il certificato medico si legge chiaro: serve per partecipare, si carica o si porta in segreteria
+
+## 0.87.0 — 18 ottobre 2026
+
+### Novità
+
+- Nel modulo di iscrizione gli altri corsi (non per la sua età) si aprono con un tasto
+
+## 0.86.0 — 18 ottobre 2026
+
+### Novità
+
+- Nel modulo di iscrizione si capisce che tesseramento e foto vanno scelti, e che dire no non ferma l'iscrizione
+
+## 0.85.9 — 18 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione il tasto «Manda la richiesta» è largo quanto i campi
+
+## 0.85.8 — 17 ottobre 2026
+
+### Modificato
+
+- Sul sito la Home non ripete «Contattaci» sotto il titolo
+
+## 0.85.7 — 17 ottobre 2026
+
+### Risolto
+
+- Sul sito, da iPhone, la freccia dei corsi non è più un'emoji azzurra
+
+## 0.85.6 — 17 ottobre 2026
+
+### Risolto
+
+- Sul telefono i corsi del sito non sono più attaccati, c'è spazio tra un riquadro e l'altro
+
+## 0.85.5 — 17 ottobre 2026
+
+### Modificato
+
+- Sul sito il pulsante «Contattaci» sotto il titolo resta solo nella Home
+
+## 0.85.4 — 17 ottobre 2026
+
+### Modificato
+
+- Sul sito «Contattaci» è un pulsante accanto a «Prova», e sul telefono il menu sta su una riga
+
+## 0.85.3 — 17 ottobre 2026
+
+### Risolto
+
+- Le foto del sito non tagliano più le teste
+
+## 0.85.2 — 17 ottobre 2026
+
+### Risolto
+
+- Il pulsante in testata del sito ha lo spazio tra «Prova» e «una settimana»
+
+## 0.85.1 — 17 ottobre 2026
+
+### Modificato
+
+- Il sito mostra l'anteprima giusta quando lo condividi e si presenta agli assistenti AI
+
+## 0.85.0 — 17 ottobre 2026
+
+### Novità
+
+- Il modulo di iscrizione ha l'aspetto del sito, in blu e giallo
+
+## 0.84.1 — 17 ottobre 2026
+
+### Modificato
+
+- Il sito pubblico dice a Google e agli assistenti AI chi siamo, dove e quali corsi
+
+## 0.84.0 — 17 ottobre 2026
+
+### Novità
+
+- Il sito pubblico ha le pagine come nel design, con il collage in Home e i testi pronti
+
+## 0.83.1 — 17 ottobre 2026
+
+### Risolto
+
+- Il pulsante Prova del sito porta al modulo di iscrizione
+
+## 0.83.0 — 17 ottobre 2026
+
+### Novità
+
+- La contabilità per chi cura i conti, con movimenti, voci e casse
+
+### Modificato
+
+- La pagina del sito resta centrata sugli schermi larghi
+
+## 0.82.0 — 17 ottobre 2026
+
+### Novità
+
+- Le tessere dei corsi hanno la fascia d'età e le pillole bambini, adulti, anziani, agonisti
+
+## 0.81.0 — 17 ottobre 2026
+
+### Novità
+
+- La Home del sito ha la foto a sinistra e il carosello dei clienti a destra
+
+## 0.80.1 — 17 ottobre 2026
+
+### Risolto
+
+- Il sito pubblico mostra l'icona nella scheda del browser
+
+## 0.80.0 — 17 ottobre 2026
+
+### Novità
+
+- La Home del sito ha quattro foto alte, avatar nelle citazioni e titoli grandi nei valori
+
+## 0.79.0 — 17 ottobre 2026
+
+### Novità
+
+- Il sito sul computer ha la scala del design, con titolo grande, collage largo e tessere alte
+
+## 0.78.0 — 17 ottobre 2026
+
+### Novità
+
+- Il testo della Home come nel design, pronto da incollare nel pannello SITO
+
+## 0.77.1 — 17 ottobre 2026
+
+### Modificato
+
+- Nomi veri dei tredici istruttori nei disegni del sito
+
+## 0.77.0 — 17 ottobre 2026
+
+### Novità
+
+- La Home del sito ha in cima un collage di foto e numeri accanto al titolo
+
+## 0.76.0 — 17 ottobre 2026
+
+### Novità
+
+- Il sito della palestra mostra i testi a tessere colorate, con titoli grandi e commenti che scorrono
+
 ## 0.75.0 — 17 ottobre 2026
 
 ### Novità

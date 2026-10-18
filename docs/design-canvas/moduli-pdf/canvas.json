@@ -1,0 +1,28 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Moduli PDF"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Autorizzazioni minori \u00b7 oggi e due pelli",
+      "x": 0,
+      "y": 0,
+      "w": 1889,
+      "h": 920,
+      "page": "page-1"
+    },
+    {
+      "file": "Costi.dc.html",
+      "title": "Costi 2026-27 \u00b7 oggi e due pelli",
+      "x": 0,
+      "y": 980,
+      "w": 1889,
+      "h": 920,
+      "page": "page-1"
+    }
+  ]
+}

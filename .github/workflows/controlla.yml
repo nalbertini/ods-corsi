@@ -53,6 +53,18 @@ jobs:
 
       - run: npm ci
 
+      # Per prova:moduli. Versione e impronta fissate: un binario cambiato in
+      # silenzio non passa. Si aggiornano insieme, da una release di PdfCraft.
+      - name: pdfcraft-cli
+        run: |
+          curl -fsSL -o pdfcraft-cli.tar.gz https://github.com/storytold/pdfcraft/releases/download/v0.8.0/pdfcraft-cli-0.8.0-linux-x86_64.tar.gz
+          echo "e57630c62e23288bacb1591ef86f0c530da1bd63743b800cae3ebc875a4708cd  pdfcraft-cli.tar.gz" | sha256sum -c -
+          mkdir -p "$HOME/.local/bin" pdfcraft-cli-estratto
+          tar -xzf pdfcraft-cli.tar.gz -C pdfcraft-cli-estratto
+          install "$(find pdfcraft-cli-estratto -name pdfcraft-cli -type f)" "$HOME/.local/bin/pdfcraft-cli"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/pdfcraft-cli" --version
+
       # Tutte, anche se una cade, per vedere in un giro solo cosa non torna.
       - name: npm run prova:*
         run: |

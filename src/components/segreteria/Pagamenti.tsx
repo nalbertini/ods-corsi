@@ -3,7 +3,7 @@ import type { DatiSegreteria } from '../../lib/segreteria'
 import { csvPagamenti, daIncassare, filtra, filtraResidui, inOrdine, intervalloDi, intervalloMese, METODI_A_MANO, righeDaRicevute, righeDirette, riepilogo, type RigaPagamento } from '../../lib/pagamenti'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { chiaveGiorno } from '../../lib/sala'
-import { Guaio, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { Guaio, scaricaCsv, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { PagamentoAperto, RegistraDaPagamenti } from './PagamentoAperto'
 import { Numero } from './Presenze'
 import type { Destinazione, Voce } from './Segreteria'
@@ -12,16 +12,6 @@ import type { Destinazione, Voce } from './Segreteria'
 const PER_PAGINA = 50
 
 type Periodo = 'mese' | 'scorso' | 'anno' | 'tutto' | 'date'
-
-/** Come il CSV di PRESENZE: col BOM, così Excel legge gli accenti. */
-function scarica(nome: string, testo: string) {
-  const url = URL.createObjectURL(new Blob(['﻿' + testo], { type: 'text/csv;charset=utf-8' }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = nome
-  a.click()
-  URL.revokeObjectURL(url)
-}
 
 /**
  * PAGAMENTI: lo storico di tutti, dai pagamenti delle ricevute e da quelli
@@ -184,7 +174,7 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
               ANNULLATI
             </button>
             <span className="grow" />
-            <button type="button" className="sg-btn sg-btn-linea" disabled={!n.pagamenti} onClick={() => scarica(`pagamenti-${oggi}.csv`, csvPagamenti(trovate))}>
+            <button type="button" className="sg-btn sg-btn-linea" disabled={!n.pagamenti} onClick={() => scaricaCsv(`pagamenti-${oggi}.csv`, csvPagamenti(trovate))}>
               ESPORTA CSV
             </button>
           </>

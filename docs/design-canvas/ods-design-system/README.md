@@ -23,7 +23,7 @@ Google, e vale solo per i mockup.
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
 | `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag` (neutro, rosso, giallo e verde `fatto`: PUBBLICATA nel SITO), `.sg-segno-regola` |
-| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): PAGAMENTI in PERSONE, VESTIARIO e SITO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` è il menu di chi cura i conti (I CONTI: PAGAMENTI, LISTINO), senza ricerca né link da copiare |
+| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): PAGAMENTI in PERSONE, VESTIARIO e SITO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` è il menu di chi cura i conti (I CONTI: CONTABILITÀ, PAGAMENTI, LISTINO), senza ricerca né link da copiare |
 | `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
@@ -51,7 +51,7 @@ Google, e vale solo per i mockup.
 | `SchedeCorso` | `Scheda` di `Corsi.tsx`: le schede DATI \| ISCRITTI in cima alla scheda di un corso (`.schede` come IL MESE \| SEGNALATE); `acceso`, `conto` n/capienza sulla scheda ISCRITTI (`tonoConto` giallo a corso pieno, rosso oltre), `daSalvare` il puntino ● giallo su DATI, `daIscrivere` su ISCRITTI, `conIscritti` falso nel corso nuovo |
 | `RigaIscrittoCorso` | `IscrittiDelCorso` di `Corsi.tsx` (`.sg-riga-iscritto-corso`): una riga del tab ISCRITTI di un corso: cognome, nome, ISCRITTO DAL (data lunga), segno del certificato e della quota, sempre a parole (NO CERTIFICATO, DA PAGARE, quelle di `paroleInRegola`); sotto i 780px della scheda va su due righe; `stato="fuoco"` per la riga scelta |
 | `RiepilogoIscrittiCorso` | `RiepilogoCorso` di `Corsi.tsx` (da `riepilogoCorso`): la riga sopra la ricerca del tab ISCRITTI, `voci` «testo:tono» separate da «\|» (conto n/capienza, SENZA CERTIFICATO e DA PAGARE rossi, CORSO PIENO giallo, TUTTO IN REGOLA verde) |
-| `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`) |
+| `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`); il quarto, `titolo="TESSERA"` (parola NO TESSERA, SCADUTA, SCADE A DICEMBRE o IN REGOLA, una riga per ente), c’è solo per chi ha un corso che chiede la tessera: la fila `.sg-timbri` passa a quattro colonne (`data-con-tessera`) |
 | `SchedaCertificato` | PROPOSTA «certificati online»: il blocco CERTIFICATO MEDICO della scheda iscritto (`Certificato` di `Iscritti.tsx`) col file online: titolo + bollino, frase di stato, riga del file con APRI, CARICA / SOSTITUISCI e TOGLI; `stato` nessuno, valido, in_scadenza, scaduto_con_file, scaduto_senza_file, valido_senza_file, file_vecchio; `gesto` apre file + VALIDO FINO AL + un solo SALVA; `telefono` mette i tasti in colonna |
 | `MenuIstruttori` | Il menu degli istruttori sullo schermo largo (`App.tsx`) |
 | `BarraTelefono` | La barra in cima al telefono con il tasto MENU (`.sg-barra-tel`); il menu aperto è `Menu` |
@@ -62,6 +62,9 @@ Google, e vale solo per i mockup.
 | `SegnalazioneListino` | Una riga di `Segnalazioni` in LISTINO: in rosso cosa manca a un corso («senza prezzo nel listino», «manca il prezzo del trimestre»…), col link «Va bene senza prezzo» che non va a capo; `rosso` falso per «…, va bene così» col link «Rimetti il rosso» |
 | `TabletTasto` | `.tb-btn`: linea, verde, rosso, grande, quadro |
 | `TabletTastiera` | I pallini e il tastierino del PIN |
+| `Cifra` | Un numero grande di OGGI nel Banco (`.bn-cifra`): titolo, numero (rosso se è un guaio), frase |
+| `RigaCoda` | Una riga della coda DA FARE AL BANCO (`.bn-riga`): titolo, frase, tasto; bordo rosso se blocca, giallo se aspetta |
+| `BloccoLezione` | Un blocco del tabellone sale × ore di OGGI (`.bn-blocco`): corso, ora, stato in parole; `stato` fatto, in_corso, appello_non_fatto, prossima, annullata |
 | `TabletTessera` | Il nome da toccare nella lista della sala |
 | `TabletFascia` | La fascia dopo un tocco: fatto, attesa, già, errore |
 | `TabletTestata`, `TabletLezione`, `TabletPiede`, `TabletRigaGiornata` | La testata, la lezione aperta, il piede e la riga della giornata del tablet di sala |
@@ -111,6 +114,7 @@ Google, e vale solo per i mockup.
 | `TimerInterruttore` | `Toggle` delle impostazioni del timer: nome, nota, acceso o spento |
 | `TabletTendina` | La tendina CORSO aperta dell'area istruttore (`.tb-select`); il `<select>` vero è del sistema |
 | `TabletProvaPannello` | `PannelloProve` con stile tablet (`Prove.tsx`): CHI VIENE A PROVARE alzato per il dito, campi su tre colonne e già venuti sotto |
+| `CosaManca` | `CosaManca` di `CosaManca.tsx` (`.sg-mancano*`): la striscia COSA MANCA in cima alle pagine di segreteria, `voci` «numero\|titolo\|nota\|tono» separate da `;` (tono r manca, g da accogliere, v a posto, n non si sa; 0 è sempre ✓ verde); `colonne` 4 come oggi, 5 o 2 per le proposte |
 | `Numero` | `Numero` di `Presenze.tsx` (`.sg-numero`): titolo, cifra da 44px e riga sotto; `allarme` col bordo rosso. Quattro in fila in `.sg-numeri`, cinque in VESTIARIO (`data-cinque`) |
 | `BarraSalva` | La barra per salvare di LISTINO (`.sg-listino-salva`): frase, BUTTA I CAMBI e SALVA, bordo giallo; `guaio` la frase in rosso e SALVA spento |
 | `VoceElenco` | Una voce chiusa di LISTINO > I CORSI (`.sg-voce-elenco`): nome, riga rossa se manca qualcosa, riassunto e il chip CAMBIA; `bollino` il `.sg-tag` giallo accanto al nome (SENZA TIPO nel catalogo del vestiario) |
@@ -128,7 +132,9 @@ Google, e vale solo per i mockup.
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 
-Tutti i componenti hanno la prop `tema` (`scuro` | `chiaro`).
+Tutti i componenti hanno la prop `tema` (`scuro` | `chiaro`). `sito` è un terzo tema, solo per il **modulo di
+iscrizione**, e ce l'hanno soltanto i componenti che il modulo vero usa (`Campo`, `Bottone`, `Titoletto`,
+`CaricaFile`, `TavolaFirma`, `RiquadroPasso`, `Testata`): vedi «Il tema sito».
 
 ## Come si riusa
 
@@ -183,7 +189,9 @@ Tutti i componenti hanno la prop `tema` (`scuro` | `chiaro`).
 ## Il canvas unico
 
 Libreria e sezioni (istruttore, tablet di sala, registrazione utente, importa
-da Excel, timer) stanno in un solo Artifact, una pagina per sezione:
+da Excel, timer) stanno in un solo Artifact. Il canvas mostra al massimo 40 pagine, quindi le sezioni vicine
+stanno sulla stessa pagina, una sotto l'altra col suo titolo (`GRUPPI` in `unico.mjs`; una sezione fuori da un
+gruppo ha una pagina sua, e lo script si ferma se le pagine superano 40):
 
 ```bash
 node docs/design-canvas/unico.mjs <cartella>
@@ -249,3 +257,63 @@ disegnati nel nero e nel bianco (`tema`). I valori del Tatami e il confronto fra
 a tre valori. I token veri sono nel blocco `:root[data-tema='tatami']` di `src/styles.css` (valori finali, un po' più
 scuri per giallo, verde, rosso e testo spento: vedi `DESIGN.md`). Il canvas della sezione conserva i valori della
 proposta, che per quei quattro colori sono precedenti ai valori finali.
+
+## Il tema sito (modulo di iscrizione)
+
+PROPOSTA, non costruita: `sito` è il tema del **modulo di iscrizione** (`ModuloIscrizione.tsx`) nell'aspetto del sito
+pubblico «tatami blu e giallo» (A2). Il modulo è sempre chiaro, qualunque sia il tema dell'app. Non è un quarto tema
+dell'app: nei componenti sopra, `tema="sito"` cambia colori, **carattere** (Big Shoulders Display 800 per titoli, etichette
+e tasti; Inter per testi e campi; il canvas li prende da Google Fonts, in app saranno file locali OFL) e **raggio** (6px su
+campi, scelte, tasti e riquadri). Senza `tema="sito"` l'aspetto dei componenti è quello di prima.
+
+| Cosa | Valore nel tema `sito` |
+|---|---|
+| Fondo, bianco, scelta scelta | #eef5fa, #ffffff, #cfe6f4 (con ✓ o ●) |
+| Inchiostro, bordo dei controlli | #0d2a3d, #14709f (4,96:1 sul fondo) |
+| Testo spento | #46606f (6,03:1 sul fondo, 5,15:1 su #cfe6f4) |
+| Tasto principale · `vai` | inchiostro con testo bianco · giallo #f4c31b con l'inchiostro sopra |
+| Stati | rosso, verde e giallo del tema chiaro, sempre con «!» o ✓ e una parola |
+| Misure | tasti 56px, campi 52px, bersagli ≥ 44px; etichette Big Shoulders 15px, 0.08em |
+
+I valori e i rapporti di contrasto calcolati stanno in `../iscrizione-sito/token-proposta.md`; i board in
+`../iscrizione-sito/`. Il fuoco da tastiera (contorno 3px blu #14709f) non è riprodotto.
+
+## Il sito pubblico: i pezzi della home (proposta)
+
+PROPOSTA, non costruita: i componenti `Sito*` riproducono nell'aspetto del sito (Big Shoulders Display + Inter, colori A2 di
+`../sito-rebrand/token-proposta.md`) i pezzi della home proposta in `../home-miglioramenti/`. Non hanno la prop `tema`: sono già
+del sito. `piccolo` li porta alla misura del telefono (375px). `nota="DA CONFERMARE …"` li marca con contorno rosso e cartellino.
+
+| File | Cosa è |
+|---|---|
+| `SitoTestata.dc.html` | La testata: marchio, voci da 48px, pulsante di prova; sul telefono marchio + MENU |
+| `SitoPulsante.dc.html` | Il pulsante del sito (giallo, inchiostro, linea), minimo 48px |
+| `SitoTessera.dc.html` | Una tessera numero (`35+`, `300+`…), tutte alte uguali |
+| `SitoTitolo.dc.html` | Titolo di sezione a 72-88px (56px sul telefono) con la frase d'apertura |
+| `SitoSchedaCorso.dc.html` | La scheda corso con foto (fuoco `object-position`), freccia e pastiglie; senza foto, fascia azzurra con l'iniziale |
+| `SitoPerche.dc.html` | Le quattro tessere di «Perché unirti a noi?», con titolo e riga di testo |
+| `SitoCitazione.dc.html` | La citazione di un esperto: estratto + «Leggi tutto», avatar con una sola iniziale |
+| `SitoRecensione.dc.html` | Una recensione per intero, carta larga |
+| `SitoInBreve.dc.html` | La carta «In breve» con le recensioni da 7 parole |
+| `SitoDomanda.dc.html` | Una domanda delle FAQ |
+| `SitoCta.dc.html` | La chiamata finale a due colonne con pulsante pieno (`alt` della foto come prop) |
+| `SitoPiede.dc.html` | Il piede, link da 48px |
+| `SitoRecapito.dc.html` | Un recapito (telefono, Instagram, Facebook, indirizzo) come tessera intera con azione da 48px; il cartellino «DA CONFERMARE» sta sopra il titolo |
+| `SitoMappa.dc.html` | La mappa OpenStreetMap con segnaposto, targhetta e pulsante «Ottieni indicazioni» da 56px; `width`/`height` dichiarati |
+| `SitoArrivo.dc.html` | Una riga di «Come arrivare» (metro, auto, navigatore): sigla da 48px, titolo e frase |
+| `SitoRitratto.dc.html` | Il ritratto dell'elenco Istruttori: foto quadrata (fuoco `object-position`), nome, cognome, corsi in pastiglie; tutti alti uguali; senza foto, fascia azzurra con l'iniziale; telefono (`piccolo`): foto a sinistra e corsi su due righe |
+| `SitoDatoPersona.dc.html` | Una tessera Ruolo / Corsi / Quando / Titoli della scheda di un istruttore, tutte alte uguali (9-10 parole); il cartellino «DA CONFERMARE» sta a cavallo del bordo alto |
+| `SitoBloccoPersona.dc.html` | Un blocco di testo della scheda (Chi è / Come ha iniziato / A scuola), 25-36 parole |
+| `SitoElencoPercorso.dc.html` | Una colonna di «Il percorso» (Federazione e sport / Scuola / Titoli e studi) con elenco puntato |
+
+## La pagina del corso (proposta)
+
+PROPOSTA, non costruita: i pezzi nuovi della pagina di un corso in `../corso-miglioramenti/`. Gli altri pezzi sono quelli della home (`SitoDatoPersona` per i quattro dati, `SitoBloccoPersona` per i testi, `SitoPerche`, `SitoPiede`).
+
+| File | Cosa è |
+|---|---|
+| `SitoCorsoTitolo.dc.html` | La testata: nome a 160px (92px sul telefono), descrizione di 12-14 parole e pulsante di prova da 60px |
+| `SitoOrarioGruppo.dc.html` | Una tessera dell'orario (nome, ora, giorni, anni di nascita), tutte alte uguali nella riga |
+| `SitoCorsoFascia.dc.html` | L'apertura di un corso senza foto: tre fatti (giorno, ora, per chi) su blu, al posto della foto |
+| `SitoCorsoCta.dc.html` | La chiamata finale della pagina corso: come `SitoCta`, con `alt` della foto come prop e `senzaFoto` (una colonna, testo a sinistra e pulsanti a destra in basso) |
+| `SitoPiedeContatti.dc.html` | Il piede di `SitoPiede` con telefono, Instagram e Facebook nella colonna dell'indirizzo, come in Contatti |

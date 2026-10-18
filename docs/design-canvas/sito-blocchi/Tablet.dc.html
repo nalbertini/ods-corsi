@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «sito a pezzi» sul tablet (768px): col dito il trascinamento sbaglia facile, quindi ogni parte ha anche i tasti
+     SU e GIÙ e TOGLI (con un sì prima di togliere), e ANNULLA è sempre in vista. Il «+» fra due parti apre la scelta delle parti. Dati inventati. -->
+<div style="display: flex; flex-direction: column; gap: 16px; width: 768px; min-height: 900px; padding: 24px; background: #121212">
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+    <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 30px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">PRE PUGILISTICA</h1>
+    <div style="display: flex; gap: 10px">
+      <dc-import name="Bottone" label="ANNULLA" variante="linea" contesto="segreteria" tema="scuro" hint-size="130px,52px"></dc-import>
+      <dc-import name="Bottone" label="SALVA BOZZA" variante="pieno" contesto="segreteria" tema="scuro" hint-size="170px,52px"></dc-import>
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 2px solid #333333; background: #1c1c1c">
+      <b style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 18px; letter-spacing: 0.1em">1 · FOTO IN CIMA</b>
+      <div style="display: flex; gap: 8px">
+        <dc-import name="Bottone" label="GIÙ ▼" variante="linea" contesto="segreteria" tema="scuro" hint-size="120px,52px"></dc-import>
+        <dc-import name="Bottone" label="TOGLI" variante="tratteggiato" contesto="segreteria" tema="scuro" hint-size="120px,52px"></dc-import>
+      </div>
+    </div>
+    <span style="display: flex; align-items: center; justify-content: center; min-height: 52px; border: 2px dashed #f4c31b; color: #f4c31b; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.1em">+ METTI UNA PARTE QUI</span>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 2px solid #f4c31b; background: #1c1c1c">
+      <b style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 18px; letter-spacing: 0.1em">2 · TESTO</b>
+      <div style="display: flex; gap: 8px">
+        <dc-import name="Bottone" label="SU ▲" variante="linea" contesto="segreteria" tema="scuro" hint-size="120px,52px"></dc-import>
+        <dc-import name="Bottone" label="GIÙ ▼" variante="linea" contesto="segreteria" tema="scuro" hint-size="120px,52px"></dc-import>
+        <dc-import name="Bottone" label="TOGLI" variante="tratteggiato" contesto="segreteria" tema="scuro" hint-size="120px,52px"></dc-import>
+      </div>
+    </div>
+    <span style="display: flex; align-items: center; justify-content: center; min-height: 52px; border: 2px dashed #333333; color: #8c8c88; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.1em">+ METTI UNA PARTE QUI</span>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 2px solid #333333; background: #1c1c1c">
+      <b style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 18px; letter-spacing: 0.1em">3 · ELENCO DEI CORSI</b>
+      <div style="display: flex; gap: 8px">
+        <dc-import name="Bottone" label="SU ▲" variante="linea" contesto="segreteria" tema="scuro" hint-size="120px,52px"></dc-import>
+        <dc-import name="Bottone" label="TOGLI" variante="tratteggiato" contesto="segreteria" tema="scuro" hint-size="120px,52px"></dc-import>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

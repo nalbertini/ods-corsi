@@ -21,7 +21,9 @@ import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } fr
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
+import { enteDaDati, fineAnno, mancaTessere, type EsitoImportTessere, type TesseraSeg } from './tessere'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
+import { pezziInHtml, pezziValidi } from './sitoPezzi'
 import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
 import { riduciFoto } from './foto'
 import { URL_SUPABASE } from './dati'
@@ -142,15 +144,21 @@ const MANCANO_PAGAMENTI_A_MANO = 'I pagamenti a mano non sono ancora attivi sul 
 /** Lo Storage risponde con errori suoi: si traducono in frasi per chi usa l'app (`cosaNonVaImmagini`). */
 const immaginiNonAttive = (e: { message: string; statusCode?: string }) => new Error(cosaNonVaImmagini(e.message, e.statusCode))
 const MANCA_SITO = 'Il pannello del sito non è ancora attivo sul database: va lanciato 56-sito.sql'
+const MANCANO_PEZZI = 'Le pagine a pezzi non sono ancora attive sul database: va lanciato 62-sito-pezzi.sql'
 const MANCANO_ALLEGATI = 'Gli allegati non sono ancora attivi sul database: va lanciato 32-segnalazioni-allegati.sql'
 
 const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `${p.nome} ${p.cognome}`.trim() : '')
 
 /** Le tabelle che arrivano dopo lo schema, col file che le crea. */
+const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
+const MANCA_CHIUSURA = 'Il database non è ancora aggiornato per la chiusura della cassa: va lanciato 60-chiusura-cassa.sql'
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   // Prima di `segnalazioni`, che le somiglia.
+  [/chiusure_cassa/, MANCA_CHIUSURA],
+  [/voci_contabili|relation "(public\.)?(casse|movimenti)"|table 'public\.(casse|movimenti)'/, MANCA_CONTABILITA],
   [/sito_pagine|sito_menu|sito_redirect|salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito/, MANCA_SITO],
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
+  [/tessere/, 'Le tessere non sono ancora attive sul database: va lanciato 61-tessere.sql'],
   [/non_doppioni/, 'Segnare due schede «non sono doppioni» non è ancora attivo sul database: va lanciato 33-non-doppioni.sql'],
   [/segnalazioni/, 'Le segnalazioni non sono ancora attive sul database: va lanciato 25-segnalazioni.sql'],
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
@@ -250,6 +258,11 @@ function guaio(e: { message?: string; code?: string } | null): Error {
     return new Error(MANCA_AMMINISTRAZIONE)
   // Le funzioni dell'amministrazione, che arrivano con lo stesso file.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /cerca_pagatori|nomi_persone/.test(e.message ?? '')) return new Error(MANCA_AMMINISTRAZIONE)
+  // Le funzioni della contabilità arrivano con 59-contabilita.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /salva_voce|rinomina_voce|imposta_voce_attiva|imposta_saldo_cassa|registra_movimento|registra_giroconto|annulla_movimento|correggi_testo_movimento/.test(e.message ?? '')) return new Error(MANCA_CONTABILITA)
+  // Le funzioni della chiusura di cassa arrivano con 60-chiusura-cassa.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /chiudi_cassa|annulla_chiusura_cassa/.test(e.message ?? '')) return new Error(MANCA_CHIUSURA)
+  if (e?.code === '42501' && /contabilità/.test(e.message ?? '')) return new Error('Non hai il permesso: la contabilità la cura l’amministrazione')
   // Il kanji arriva con 24-kanji.sql; due persone con lo stesso non si possono avere.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
   // Il file del certificato e la data insieme arrivano con 45-certificati-online.sql.
@@ -262,6 +275,10 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === '42501' && /allegato/.test(e.message ?? '')) return new Error('Un allegato lo toglie solo chi l’ha mandato')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /allegato/.test(e.message ?? '')) return new Error(MANCANO_ALLEGATI)
   // Il sito arriva con 56-sito.sql: le funzioni che mancano, il testo che il sito non ammette, la pagina ancora nel menu.
+  // I pezzi di una pagina oltre il limite del database (stessa frase del testo troppo lungo, `testoTroppoLungo`).
+  if (e?.code === '23514' && /bozza_pezzi_check/.test(e.message ?? '')) return new Error('La pagina è troppo lunga: togli qualcosa e riprova')
+  // Le pagine a pezzi arrivano con 62-sito-pezzi.sql: la colonna che non c'è (42703 leggendo e creando, PGRST204 scrivendo) o la funzione.
+  if ((e?.code === '42703' || e?.code === 'PGRST204' || e?.code === 'PGRST202' || e?.code === '42883') && /bozza_pezzi|salva_bozza_pezzi_sito/.test(e.message ?? '')) return new Error(MANCANO_PEZZI)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /(salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito)/.test(e.message ?? '')) return new Error(MANCA_SITO)
   if (e?.code === '23514' && /sito_pagine_(bozza|pubblicato)_check/.test(e.message ?? '')) return new Error('Il testo contiene cose che il sito non ammette (script, moduli, stili): toglile e riprova')
   if (e?.code === '23514' && /sito_pagine_slug_check/.test(e.message ?? '')) return new Error('Questo indirizzo non va bene: solo lettere minuscole senza accenti, numeri e trattini, e non uno che serve al sito')
@@ -605,13 +622,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     rigenera,
 
     async corsi() {
-      const leggi = (giorno: string) =>
-        db.from('corsi').select(`id, nome, colore, capienza, attivo, sala_id, istruttore_id, sale ( nome ), ricorrenze ( id, giorno, ora, durata_min, dal, al, sala_id, sale ( nome )${giorno} )`).order('nome')
-      let lette = await leggi(', attivita_id, attivita ( nome )')
+      const leggi = (giorno: string, ente: string) =>
+        db.from('corsi').select(`id, nome, colore, capienza, attivo, sala_id, istruttore_id${ente}, sale ( nome ), ricorrenze ( id, giorno, ora, durata_min, dal, al, sala_id, sale ( nome )${giorno} )`).order('nome')
+      let ente = ', ente_tessera'
+      let lette = await leggi(', attivita_id, attivita ( nome )', ente)
+      // Senza 61-tessere.sql i corsi si leggono come prima, senza la tessera richiesta.
+      if (mancaTessere(lette.error)) lette = await leggi(', attivita_id, attivita ( nome )', (ente = ''))
       // Senza 41-attivita.sql i giorni si leggono come prima, senza attività.
-      if (mancaAttivita(lette.error)) lette = await leggi('')
+      if (mancaAttivita(lette.error)) lette = await leggi('', ente)
       const righe = ok(lette) as unknown as Array<{
-        id: string; nome: string; colore: string | null; capienza: number | null; attivo: boolean; sala_id: string | null; istruttore_id: string | null
+        id: string; nome: string; colore: string | null; capienza: number | null; attivo: boolean; sala_id: string | null; istruttore_id: string | null; ente_tessera?: string | null
         sale: { nome: string } | null
         ricorrenze: Array<{ id: string; giorno: number; ora: string; durata_min: number; dal: string; al: string | null; sala_id: string | null; sale: { nome: string } | null; attivita_id?: string | null; attivita?: { nome: string } | null }>
       }>
@@ -627,6 +647,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           istruttori: [...(chi.get(r.id) ?? [])].sort((x, y) => Number(y.id === r.istruttore_id) - Number(x.id === r.istruttore_id)),
           capienza: r.capienza ?? undefined,
           attivo: r.attivo,
+          enteTessera: r.ente_tessera ?? undefined,
           ricorrenze: r.ricorrenze
             .filter((x) => !x.al || x.al >= g)
             .map((x) => ({
@@ -654,6 +675,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         istruttore_id: c.istruttori[0] ?? null,
         capienza: c.capienza ?? null,
         colore: c.colore ?? null,
+        // Solo se la scelta c'è: senza `61-tessere.sql` la schermata non la offre e la colonna non esiste.
+        ...(c.enteTessera === undefined ? {} : { ente_tessera: enteDaDati(c.enteTessera) ?? null }),
       }
       const id = c.id
         ? (ok(await db.from('corsi').update(riga).eq('id', c.id)), c.id)
@@ -731,6 +754,35 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async togliRicorrenza(ricorrenzaId) {
       ok(await db.rpc('chiudi_ricorrenza', { ricorrenza: ricorrenzaId }))
+    },
+
+    async tessere() {
+      const r = await tutteLeRighe((prima, ultima) =>
+        db.from('tessere').select('id, persona_id, ente, tipo, codice, dal, al, origine').order('persona_id').order('ente').order('dal').order('id').range(prima, ultima),
+      )
+      // Senza 61-tessere.sql: nessuna tessera, e lo si dice.
+      if (mancaTessere(r.error)) return { elenco: [], manca: true }
+      return {
+        elenco: (ok(r) as unknown as Array<{ id: string; persona_id: string; ente: string; tipo: TesseraSeg['tipo']; codice: string; dal: string; al: string; origine: 'rasd' | 'manuale' }>).map(
+          (x): TesseraSeg => ({ id: x.id, personaId: x.persona_id, ente: x.ente, tipo: x.tipo, codice: x.codice, dal: x.dal, al: x.al, origine: x.origine }),
+        ),
+      }
+    },
+
+    async importaTessere(righe, soloProva) {
+      const r = await db.rpc('importa_tessere', { righe, solo_prova: soloProva })
+      if (mancaTessere(r.error)) throw new Error('Le tessere non sono ancora attive sul database: va lanciato 61-tessere.sql')
+      return ok(r) as EsitoImportTessere
+    },
+
+    async aggiungiTessera(t) {
+      const ente = enteDaDati(t.ente)
+      if (!ente || !t.codice.trim()) throw new Error('Scrivi l’ente e il numero della tessera')
+      ok(await db.from('tessere').insert({ persona_id: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: fineAnno(t.dal), origine: t.origine ?? 'manuale' }))
+    },
+
+    async togliTessera(id) {
+      ok(await db.from('tessere').delete().eq('id', id))
     },
 
     async persone() {
@@ -1064,6 +1116,116 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         fuori.push(...(ok(await db.rpc('nomi_persone', { ids: unici.slice(i, i + 500) })) as Array<{ id: string; nome: string; cognome: string }>))
       }
       return fuori
+    },
+
+    // Le righe arrivano senza tipo dall'API: la forma è quella di 59-contabilita.sql. Per nome, così le casse e le voci
+    // escono nello stesso ordine su ogni database (gli id sono a caso) e il giroconto parte sempre da Cassa Contanti.
+    async voci() {
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('voci_contabili').select('*').order('nome').order('id').range(prima, ultima))) as Array<{ id: string; nome: string; tipo: 'entrata' | 'uscita'; di_sistema: boolean; attiva: boolean }>
+      return righe.map((r) => ({ id: r.id, nome: r.nome, tipo: r.tipo, diSistema: r.di_sistema, attiva: r.attiva }))
+    },
+
+    async casse() {
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('casse').select('*').order('nome').order('id').range(prima, ultima))) as Array<{ id: string; nome: string; saldo_iniziale: number; dal: string | null }>
+      return righe.map((r) => ({ id: r.id, nome: r.nome, saldoIniziale: r.saldo_iniziale, ...(r.dal ? { dal: r.dal } : {}) }))
+    },
+
+    async movimenti() {
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('movimenti').select('*').order('id').range(prima, ultima))) as Array<{
+        id: string; tipo: 'entrata' | 'uscita' | 'giroconto'; data: string; importo: number; voce_id: string | null; cassa_id: string; cassa_a_id: string | null
+        descrizione: string; nota: string | null; creato_il: string; annullato_il: string | null
+      }>
+      return righe.map((r) => ({
+        id: r.id,
+        tipo: r.tipo,
+        data: r.data,
+        importo: r.importo,
+        ...(r.voce_id ? { voceId: r.voce_id } : {}),
+        cassaId: r.cassa_id,
+        ...(r.cassa_a_id ? { cassaAId: r.cassa_a_id } : {}),
+        descrizione: r.descrizione,
+        ...(r.nota ? { nota: r.nota } : {}),
+        creatoIl: r.creato_il,
+        ...(r.annullato_il ? { annullatoIl: r.annullato_il } : {}),
+      }))
+    },
+
+    async salvaVoce(d) {
+      return (ok(await db.rpc('salva_voce', { dati: { nome: d.nome.trim(), tipo: d.tipo } })) as { id: string }).id
+    },
+
+    async rinominaVoce(id, nome) {
+      ok(await db.rpc('rinomina_voce', { id, nome: nome.trim() }))
+    },
+
+    async attivaVoce(id, attiva) {
+      ok(await db.rpc('imposta_voce_attiva', { id, attiva }))
+    },
+
+    async salvaSaldoCassa(id, saldo, dal) {
+      ok(await db.rpc('imposta_saldo_cassa', { id, saldo, dal: dal ?? null }))
+    },
+
+    async registraMovimento(d) {
+      const riga = ok(
+        await db.rpc('registra_movimento', {
+          dati: { tipo: d.tipo, data: d.data, importo: d.importo, voce_id: d.voceId, cassa_id: d.cassaId, descrizione: d.descrizione.trim(), nota: d.nota?.trim() || null },
+        }),
+      ) as { id: string }
+      return riga.id
+    },
+
+    async registraGiroconto(d) {
+      const riga = ok(await db.rpc('registra_giroconto', { dati: { da: d.daCassaId, a: d.aCassaId, data: d.data, importo: d.importo, nota: d.nota?.trim() || null } })) as { id: string }
+      return riga.id
+    },
+
+    async annullaMovimento(id) {
+      ok(await db.rpc('annulla_movimento', { id }))
+    },
+
+    async correggiTestoMovimento(id, descrizione, nota) {
+      ok(await db.rpc('correggi_testo_movimento', { id, descrizione: descrizione.trim(), nota: nota?.trim() || null }))
+    },
+
+    async chiusure() {
+      // Le righe arrivano senza tipo dall'API: la forma è quella di 60-chiusura-cassa.sql.
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('chiusure_cassa').select('*').order('data', { ascending: false }).order('id').range(prima, ultima))) as Array<{
+        id: string; cassa_id: string; dal: string; data: string; previsto: number; contato: number; differenza: number; nota: string | null
+        movimento_id: string | null; chiusa_da: string | null; chiusa_il: string; annullata_il: string | null; annullata_da: string | null
+      }>
+      // Chi ha chiuso (e chi ha annullato): nome e cognome, e un trattino se la persona non c'è più.
+      const ids = [...new Set(righe.flatMap((r) => [r.chiusa_da, r.annullata_da]).filter((x): x is string => !!x))]
+      const persone = ids.length ? (ok(await db.rpc('nomi_persone', { ids })) as Array<{ id: string; nome: string; cognome: string }>) : []
+      const chi = (id: string | null) => {
+        if (!id) return undefined
+        const p = persone.find((x) => x.id === id)
+        return p ? `${p.nome} ${p.cognome}` : '—'
+      }
+      return righe.map((r) => ({
+        id: r.id,
+        cassaId: r.cassa_id,
+        dal: r.dal,
+        data: r.data,
+        previsto: r.previsto,
+        contato: r.contato,
+        differenza: r.differenza,
+        ...(r.nota ? { nota: r.nota } : {}),
+        ...(r.movimento_id ? { movimentoId: r.movimento_id } : {}),
+        chiusaDa: chi(r.chiusa_da) ?? '—',
+        chiusaIl: r.chiusa_il,
+        ...(r.annullata_il ? { annullataIl: r.annullata_il } : {}),
+        ...(r.annullata_da ? { annullataDa: chi(r.annullata_da) } : {}),
+      }))
+    },
+
+    async chiudiCassa(d) {
+      const riga = ok(await db.rpc('chiudi_cassa', { dati: { cassa_id: d.cassaId, data: d.data, contato: d.contato, nota: d.nota?.trim() || null } })) as { id: string }
+      return riga.id
+    },
+
+    async annullaChiusuraCassa(id) {
+      ok(await db.rpc('annulla_chiusura_cassa', { id }))
     },
 
     async cercaPagatori(scritto) {
@@ -1638,7 +1800,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async sitoPagine() {
-      const righe = ok(await db.from('sito_pagine').select('id, slug, titolo, descrizione, titolo_pubblicato, descrizione_pubblicata, bozza, pubblicato, nascosta, di_legge, versione, pubblicata_il').order('slug')) as unknown as Array<{
+      const COLONNE = 'id, slug, titolo, descrizione, titolo_pubblicato, descrizione_pubblicata, bozza, pubblicato, nascosta, di_legge, versione, pubblicata_il'
+      type Riga = {
         id: string
         slug: string
         titolo: string
@@ -1646,12 +1809,22 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         titolo_pubblicato: string | null
         descrizione_pubblicata: string | null
         bozza: string
+        bozza_pezzi?: unknown
         pubblicato: string | null
         nascosta: boolean
         di_legge: boolean
         versione: number
         pubblicata_il: string | null
-      }>
+      }
+      // Senza `62-sito-pezzi.sql` la colonna non c'è (42703): le pagine si leggono lo stesso, tutte col vecchio editor.
+      const leggi = (colonne: string) => db.from('sito_pagine').select(colonne).order('slug')
+      let risposta = await leggi(`${COLONNE}, bozza_pezzi`)
+      let conPezzi = true
+      if (risposta.error?.code === '42703') {
+        conPezzi = false
+        risposta = await leggi(COLONNE)
+      }
+      const righe = ok(risposta) as unknown as Riga[]
       return righe.map((r): PaginaSito => ({
         id: r.id,
         slug: r.slug,
@@ -1660,6 +1833,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         titoloPubblicato: r.titolo_pubblicato,
         descrizionePubblicata: r.descrizione_pubblicata,
         bozza: r.bozza,
+        // Un valore che non è fatto come i pezzi (scritto da fuori) vale «vecchio editor»: il testo c'è, e si apre.
+        ...(conPezzi ? { pezzi: pezziValidi(r.bozza_pezzi) ? r.bozza_pezzi : null } : {}),
         pubblicato: r.pubblicato,
         nascosta: r.nascosta,
         diLegge: r.di_legge,
@@ -1679,8 +1854,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return { menu: voci('menu'), footer: voci('footer') }
     },
 
-    async nuovaPaginaSito(titolo, slug) {
-      const r = await db.from('sito_pagine').insert({ titolo: titolo.trim(), slug }).select('id').single()
+    async nuovaPaginaSito(titolo, slug, pezzi) {
+      if (pezzi && !pezziValidi(pezzi)) throw new Error('I pezzi della pagina non sono fatti come il sito li vuole: ricarica la pagina e riprova')
+      const r = await db.from('sito_pagine').insert({ titolo: titolo.trim(), slug, ...(pezzi ? { bozza_pezzi: pezzi, bozza: pezziInHtml(pezzi) } : {}) }).select('id').single()
       // Un indirizzo che è il vecchio di una pagina cambiata: la regola lo ferma come «permesso negato».
       if (r.error?.code === '42501') throw new Error('Questo indirizzo era di una pagina che ha cambiato indirizzo: scegline un altro')
       return (ok(r) as { id: string }).id
@@ -1688,6 +1864,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async salvaBozzaSito(id, versione, dati) {
       return ok(await db.rpc('salva_bozza_sito', { p_id: id, p_versione: versione, p_titolo: dati.titolo.trim(), p_descrizione: dati.descrizione.trim(), p_bozza: dati.bozza })) as number
+    },
+
+    async salvaBozzaPezziSito(id, versione, dati) {
+      if (!pezziValidi(dati.pezzi)) throw new Error('I pezzi della pagina non sono fatti come il sito li vuole: ricarica la pagina e riprova')
+      return ok(
+        await db.rpc('salva_bozza_pezzi_sito', { p_id: id, p_versione: versione, p_titolo: dati.titolo.trim(), p_descrizione: dati.descrizione.trim(), p_bozza: pezziInHtml(dati.pezzi), p_pezzi: dati.pezzi }),
+      ) as number
     },
 
     async pubblicaPaginaSito(id, versione) {

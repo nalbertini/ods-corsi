@@ -6,7 +6,7 @@
 Si riconta ogni volta che si torna su **DA FARE**.
 
 Gli stessi conti, in piccolo, stanno in cima a tutte le altre pagine, nella striscia
-**COSA MANCA** (vedi la [guida della segreteria](README.md#la-striscia-cosa-manca)): qui
+**COSA MANCA**, con le sue cinque caselle (vedi la [guida della segreteria](README.md#la-striscia-cosa-manca)): qui
 non si vede, perché c'è già tutto, più grande.
 
 Una riga per ogni cosa che aspetta, col numero grande e un tasto che porta dove

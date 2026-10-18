@@ -1,0 +1,476 @@
+import { centesimi, dataRicevuta, euro, type Ricevuta } from './ricevute'
+import { piano } from './nomi'
+import { csv } from './vestiario'
+import { righeDaRicevute, righeDirette, type PagamentoDiretto, type RigaPagamento } from './pagamenti'
+
+/**
+ * La contabilità di base, per chi cura i conti (`supabase/59-contabilita.sql`):
+ * voci, casse e movimenti, e i conti che se ne fanno. Niente browser, niente
+ * database: le schermate e i dati la chiamano, e le prove la leggono sola.
+ *
+ * Gli incassi degli iscritti non si copiano nei movimenti: si derivano qui dalle
+ * righe di PAGAMENTI (ricevute e pagamenti a mano), così un annullo si vede da sé.
+ * Importi sempre in centesimi.
+ */
+
+export interface Cassa {
+  id: string
+  nome: string
+  saldoIniziale: number
+  /** Da questa data si contano i movimenti; vuoto = tutti. */
+  dal?: string
+}
+
+export interface VoceContabile {
+  id: string
+  nome: string
+  tipo: 'entrata' | 'uscita'
+  /** Le due voci degli incassi degli iscritti: non si cambiano. */
+  diSistema: boolean
+  attiva: boolean
+}
+
+/** Un movimento scritto a mano. Un giroconto non ha voce e ha una seconda cassa. */
+export interface MovimentoManuale {
+  id: string
+  tipo: 'entrata' | 'uscita' | 'giroconto'
+  data: string
+  importo: number
+  voceId?: string
+  cassaId: string
+  cassaAId?: string
+  descrizione: string
+  nota?: string
+  creatoIl: string
+  annullatoIl?: string
+}
+
+/** Una chiusura della Cassa Contanti: il periodo da `dal` a `data`, quel che c'era «secondo i conti» e quel che si è contato. */
+export interface ChiusuraCassa {
+  id: string
+  cassaId: string
+  dal: string
+  data: string
+  previsto: number
+  contato: number
+  /** Contato meno previsto: se non è zero, `movimentoId` è il movimento «Differenza di cassa». */
+  differenza: number
+  nota?: string
+  movimentoId?: string
+  /** Il nome di chi ha chiuso, «—» se la persona non c'è più. */
+  chiusaDa?: string
+  chiusaIl: string
+  annullataIl?: string
+  annullataDa?: string
+}
+
+/** Una riga dell'elenco: un movimento a mano o un incasso di un iscritto. */
+export interface RigaMovimento {
+  id: string
+  origine: 'ricevuta' | 'pagamento' | 'movimento'
+  tipo: 'entrata' | 'uscita' | 'giroconto'
+  data: string
+  importo: number
+  descrizione: string
+  sotto?: string
+  voce: string | null
+  cassaId: string
+  cassaAId?: string
+  /** Solo dei movimenti a mano: serve a chi ne corregge il testo, per non perderla. */
+  nota?: string
+  annullato: boolean
+}
+
+export const NOME_CASSA_CONTANTI = 'Cassa Contanti'
+export const NOME_CASSA_CONTO = 'Conto Corrente'
+export const VOCE_QUOTA = 'Quota associativa'
+export const VOCE_CORSI = 'Corsi e altri pagamenti'
+/** La voce che la chiusura di cassa scrive da sola (una di entrata e una di uscita): a mano non si sceglie. */
+export const VOCE_DIFFERENZA = 'Differenza di cassa'
+/** Sopra questa differenza (in centesimi) la schermata chiede una conferma in più. */
+export const SOGLIA_DIFFERENZA = 2000
+
+/** Contanti in Cassa Contanti, tutto il resto (bonifico, POS, Satispay, assegno) in Conto Corrente. */
+export const cassaDelMetodo = (metodo: string): 'contanti' | 'conto' => (metodo.trim().toLowerCase() === 'contanti' ? 'contanti' : 'conto')
+
+/** La voce di sistema di un incasso: la quota associativa, o tutto il resto. */
+export const voceDiSistema = (voce: string) => (voce.trim().toLowerCase() === 'quota associativa' ? VOCE_QUOTA : VOCE_CORSI)
+
+/**
+ * Gli incassi degli iscritti come movimenti di entrata, uno per pagamento. Sono
+ * le righe di PAGAMENTI (`righeDaRicevute`, `righeDirette`): `pagato fino al` e
+ * l'anticipo non ci sono, e un annullo resta, segnato annullato.
+ */
+export function incassiDerivati(righe: RigaPagamento[], casse: Cassa[]): RigaMovimento[] {
+  const cassa = (nome: string) => casse.find((c) => c.nome === nome)?.id ?? ''
+  return righe.map((r) => ({
+    id: `incasso:${r.id}`,
+    origine: r.ricevuta ? 'ricevuta' : 'pagamento',
+    tipo: 'entrata',
+    data: r.data,
+    importo: r.importo,
+    descrizione: r.chi,
+    sotto: `${r.voce} · ${r.metodo}`,
+    voce: voceDiSistema(r.voce),
+    cassaId: cassa(cassaDelMetodo(r.metodo) === 'contanti' ? NOME_CASSA_CONTANTI : NOME_CASSA_CONTO),
+    annullato: r.annullato,
+  }))
+}
+
+/** L'elenco unico, dal più recente; a parità di giorno per id, così non salta da un giro all'altro. */
+export function righeMovimenti(derivati: RigaMovimento[], manuali: MovimentoManuale[], voci: VoceContabile[]): RigaMovimento[] {
+  const mie = manuali.map(
+    (x): RigaMovimento => ({
+      id: x.id,
+      origine: 'movimento',
+      tipo: x.tipo,
+      data: x.data,
+      importo: x.importo,
+      descrizione: x.descrizione,
+      voce: voci.find((v) => v.id === x.voceId)?.nome ?? null,
+      cassaId: x.cassaId,
+      cassaAId: x.cassaAId,
+      nota: x.nota,
+      annullato: !!x.annullatoIl,
+    }),
+  )
+  return [...derivati, ...mie].sort((a, b) => b.data.localeCompare(a.data) || a.id.localeCompare(b.id))
+}
+
+/** L'elenco della schermata: gli incassi (ricevute e pagamenti a mano, col nome di chi ha pagato) e i movimenti a mano. */
+export function elencoMovimenti(
+  ricevute: Ricevuta[],
+  diretti: PagamentoDiretto[],
+  nomi: Array<{ id: string; nome: string; cognome: string }>,
+  casse: Cassa[],
+  manuali: MovimentoManuale[],
+  voci: VoceContabile[],
+): RigaMovimento[] {
+  const chi = new Map(nomi.map((p) => [p.id, `${p.cognome} ${p.nome}`.trim()]))
+  const incassi = [...righeDaRicevute(ricevute), ...righeDirette(diretti, (id) => chi.get(id) ?? '—')]
+  return righeMovimenti(incassiDerivati(incassi, casse), manuali, voci)
+}
+
+/** Quanti movimenti non annullati usano una voce. */
+export const quanteUsate = (righe: RigaMovimento[], voce: VoceContabile): number =>
+  righe.filter((r) => r.voce === voce.nome && r.tipo === voce.tipo && !r.annullato).length
+
+export const totaleResidui = (conti: Array<{ residuo: number }>): number => conti.reduce((s, c) => s + c.residuo, 0)
+
+/** Il giorno dopo, come `AAAA-MM-GG`. */
+export const giornoDopo = (giorno: string): string => new Date(new Date(`${giorno}T12:00:00Z`).getTime() + 86_400_000).toISOString().slice(0, 10)
+
+/** Da dove parte il periodo di una chiusura: dal giorno dopo l'ultima, se no dall'inizio della cassa (come `chiudi_cassa`). */
+export const dalDellaChiusura = (cassa: Cassa, ultima: ChiusuraCassa | undefined): string => (ultima ? giornoDopo(ultima.data) : (cassa.dal ?? '2000-01-01'))
+
+/** Sopra questa differenza (in più o in meno) la schermata chiede una conferma. */
+export const serveConfermaDifferenza = (differenza: number): boolean => Math.abs(differenza) > SOGLIA_DIFFERENZA
+
+/** L'importo di una riga visto da una cassa: un'entrata e un versamento che arriva sono +, un'uscita e un versamento che parte sono −. */
+export const importoPerCassa = (r: RigaMovimento, cassaId: string): number => (r.tipo === 'entrata' || (r.tipo === 'giroconto' && r.cassaAId === cassaId) ? r.importo : -r.importo)
+
+/** Cosa si legge in una riga di movimento: gli incassi degli iscritti senza il loro nome (il foglio di chiusura gira di mano in mano). */
+export const descrizioneRiga = (r: RigaMovimento): string => (r.origine === 'movimento' ? r.descrizione : `Incasso iscritto · ${r.voce ?? ''}`)
+
+/** Il giorno a Roma di un istante (`2026-09-14T22:30:00Z` è già il 15). */
+export const giornoRoma = (istante: string): string => oggiARoma(new Date(istante))
+
+/** L'ultima chiusura attiva di una cassa: quella con la data più grande. */
+export function ultimaChiusura(chiusure: ChiusuraCassa[], cassaId: string): ChiusuraCassa | undefined {
+  return chiusure.filter((k) => k.cassaId === cassaId && !k.annullataIl).sort((a, b) => b.data.localeCompare(a.data))[0]
+}
+
+/** Un giorno è chiuso se è uguale o precedente all'ultima chiusura di una delle casse (un giroconto ne ha due). */
+export const giornoChiuso = (chiusure: ChiusuraCassa[], cassaIds: string[], data: string): boolean =>
+  cassaIds.some((id) => {
+    const k = ultimaChiusura(chiusure, id)
+    return !!k && data <= k.data
+  })
+
+/**
+ * Quanto c'è in una cassa «secondo i conti» fino a un giorno compreso: come `residui`, ma ferma al giorno.
+ * Le righe sono l'elenco unico (incassi dei contanti compresi, e le differenze delle chiusure di prima).
+ * La stessa regola è `previsto_cassa` in 60-chiusura-cassa.sql.
+ */
+export function previstoCassa(casse: Cassa[], righe: RigaMovimento[], cassaId: string, giorno: string): number {
+  const cassa = casse.find((c) => c.id === cassaId)
+  if (!cassa) return 0
+  return residui([cassa], righe.filter((r) => r.data <= giorno))[0].residuo
+}
+
+/** I movimenti di una cassa nel periodo di una chiusura (anche i giroconti da e verso), per giorno e poi per id: quelli che il foglio PDF elenca. */
+export const righeDelPeriodo = (righe: RigaMovimento[], chiusura: Pick<ChiusuraCassa, 'dal' | 'data'>, cassaId: string): RigaMovimento[] =>
+  righe
+    .filter((r) => !r.annullato && r.data >= chiusura.dal && r.data <= chiusura.data && (r.cassaId === cassaId || r.cassaAId === cassaId))
+    .sort((x, y) => x.data.localeCompare(y.data) || x.id.localeCompare(y.id))
+
+/** Dopo la chiusura qualche incasso è cambiato (una ricevuta annullata): il previsto di allora non torna più. */
+export function chiusuraNonPiuInRegola(chiusura: ChiusuraCassa, casse: Cassa[], righe: RigaMovimento[]): boolean {
+  if (chiusura.annullataIl) return false
+  const senzaDifferenza = righe.filter((r) => r.id !== chiusura.movimentoId)
+  return previstoCassa(casse, senzaDifferenza, chiusura.cassaId, chiusura.data) !== chiusura.previsto
+}
+
+/** «tornano», «5,00 € in più» o «5,00 € in meno». */
+export const differenzaInParole = (differenza: number): string =>
+  differenza === 0 ? 'tornano' : `${euro(Math.abs(differenza))} € ${differenza > 0 ? 'in più' : 'in meno'}`
+
+/** Le voci da offrire in «Nuovo movimento»: quelle in uso del tipo giusto, senza la differenza di cassa. */
+export const vociOfferte = (voci: VoceContabile[], tipo: 'entrata' | 'uscita'): VoceContabile[] =>
+  voci.filter((v) => v.tipo === tipo && v.attiva && v.nome !== VOCE_DIFFERENZA).sort((x, y) => x.nome.localeCompare(y.nome, 'it'))
+
+const MSG_GIORNO_CHIUSO = 'Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura'
+
+/** Un movimento a mano di un giorno chiuso non si annulla: si annulla la chiusura, o si scrive una rettifica di oggi. */
+export function cosaNonVaAnnulloMovimento(riga: RigaMovimento, chiusure: ChiusuraCassa[]): string | null {
+  if (riga.origine !== 'movimento') return null
+  const casse = riga.cassaAId ? [riga.cassaId, riga.cassaAId] : [riga.cassaId]
+  return giornoChiuso(chiusure, casse, riga.data) ? 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica con una data dopo la chiusura' : null
+}
+
+/**
+ * Annullare un incasso in contanti di un giorno già chiuso lascia la chiusura «non più in regola»: l'avviso, da dire prima di farlo.
+ * Si chiude solo la Cassa Contanti, quindi vale l'ultima chiusura attiva, qualunque cassa sia.
+ */
+export function avvisoCassaChiusa(pagamenti: Array<{ data: string; metodo: string }>, chiusure: ChiusuraCassa[]): string | null {
+  const fino = chiusure.filter((k) => !k.annullataIl).map((k) => k.data).sort().at(-1)
+  if (!fino || !pagamenti.some((p) => p.data <= fino && cassaDelMetodo(p.metodo) === 'contanti')) return null
+  return `Attenzione: la cassa contanti è chiusa fino al ${dataRicevuta(fino)} e questo incasso in contanti è di quei giorni: la chiusura non sarà più in regola e dovrai scrivere una rettifica.`
+}
+
+/** Le voci «Rettifica» (entrata e uscita) che non ci sono ancora: servono a correggere un giorno chiuso. */
+export const rettificheMancanti = (voci: VoceContabile[]): Array<'entrata' | 'uscita'> =>
+  (['entrata', 'uscita'] as const).filter((tipo) => !voci.some((v) => v.tipo === tipo && v.nome.trim().toLowerCase() === 'rettifica'))
+
+/** Si annulla solo l'ultima chiusura attiva della cassa. */
+export function cosaNonVaAnnulloChiusura(id: string, chiusure: ChiusuraCassa[]): string | null {
+  const k = chiusure.find((x) => x.id === id)
+  if (!k) return 'La chiusura non c’è'
+  if (k.annullataIl) return 'La chiusura è già annullata'
+  if (ultimaChiusura(chiusure, k.cassaId)?.id !== k.id) return 'Si annulla solo l’ultima chiusura della cassa'
+  return null
+}
+
+/** Il giorno di oggi a Roma, come lo conta il database: a mezzanotte il browser di chi è altrove può essere un giorno indietro. */
+export const oggiARoma = (adesso: Date = new Date()): string => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' }).format(adesso)
+
+/**
+ * Il residuo di ogni cassa: saldo iniziale + entrate − uscite ± giroconti, dei
+ * soli movimenti non annullati dal giorno di partenza. Un giroconto sposta i
+ * soldi e non conta come entrata né uscita.
+ */
+export function residui(casse: Cassa[], righe: RigaMovimento[]): Array<{ cassaId: string; entrate: number; uscite: number; residuo: number }> {
+  return casse.map((c) => {
+    let entrate = 0
+    let uscite = 0
+    let giroconti = 0
+    for (const r of righe) {
+      if (r.annullato || (c.dal && r.data < c.dal)) continue
+      if (r.tipo === 'giroconto') {
+        if (r.cassaId === c.id) giroconti -= r.importo
+        if (r.cassaAId === c.id) giroconti += r.importo
+      } else if (r.cassaId === c.id) {
+        if (r.tipo === 'entrata') entrate += r.importo
+        else uscite += r.importo
+      }
+    }
+    return { cassaId: c.id, entrate, uscite, residuo: c.saldoIniziale + entrate - uscite + giroconti }
+  })
+}
+
+/** Entrate, uscite e la differenza: i giroconti e gli annullati non contano. */
+export function totali(righe: RigaMovimento[]): { entrate: number; uscite: number; differenza: number } {
+  const valide = righe.filter((r) => !r.annullato)
+  const somma = (tipo: RigaMovimento['tipo']) => valide.filter((r) => r.tipo === tipo).reduce((s, r) => s + r.importo, 0)
+  const entrate = somma('entrata')
+  const uscite = somma('uscita')
+  return { entrate, uscite, differenza: entrate - uscite }
+}
+
+export interface FiltroMovimenti {
+  testo?: string
+  dal?: string
+  al?: string
+  tipo?: string
+  cassaId?: string
+  voce?: string
+  annullati?: boolean
+}
+
+/** I filtri dell'elenco. Gli annullati ci sono solo se li si chiede; un giroconto è di tutte e due le sue casse. */
+export function filtraMovimenti(righe: RigaMovimento[], f: FiltroMovimenti): RigaMovimento[] {
+  const testo = piano(f.testo ?? '').trim()
+  return righe.filter((r) => {
+    if (r.annullato && !f.annullati) return false
+    if (f.dal && r.data < f.dal) return false
+    if (f.al && r.data > f.al) return false
+    if (f.tipo && r.tipo !== f.tipo) return false
+    if (f.cassaId && r.cassaId !== f.cassaId && r.cassaAId !== f.cassaId) return false
+    if (f.voce && r.voce !== f.voce) return false
+    return !testo || piano(`${r.descrizione} ${r.sotto ?? ''}`).includes(testo)
+  })
+}
+
+/** I totali per voce, le entrate prima e in ciascun gruppo la più grande: senza giroconti e annullati. */
+export function perVoce(righe: RigaMovimento[]): Array<{ voce: string; tipo: 'entrata' | 'uscita'; totale: number }> {
+  const gruppi = new Map<string, { voce: string; tipo: 'entrata' | 'uscita'; totale: number }>()
+  for (const r of righe) {
+    if (r.annullato || r.tipo === 'giroconto' || !r.voce) continue
+    const chiave = `${r.tipo}|${r.voce}`
+    const g = gruppi.get(chiave) ?? { voce: r.voce, tipo: r.tipo, totale: 0 }
+    g.totale += r.importo
+    gruppi.set(chiave, g)
+  }
+  return [...gruppi.values()].sort((a, b) => (a.tipo === b.tipo ? b.totale - a.totale : a.tipo === 'entrata' ? -1 : 1))
+}
+
+/** Il foglio per Excel e per il commercialista: come quello di PAGAMENTI, senza gli annullati e con l'importo senza segno (il tipo dice se esce). */
+export function csvMovimenti(righe: RigaMovimento[], casse: Cassa[]): string {
+  const nome = (id?: string) => casse.find((c) => c.id === id)?.nome ?? ''
+  return csv([
+    ['data', 'tipo', 'descrizione', 'voce', 'cassa', 'importo'],
+    ...righe
+      .filter((r) => !r.annullato)
+      .map((r) => [dataRicevuta(r.data), r.tipo, r.descrizione, r.voce ?? '', r.tipo === 'giroconto' ? `${nome(r.cassaId)} → ${nome(r.cassaAId)}` : nome(r.cassaId), euro(r.importo)]),
+  ])
+}
+
+// Gli stessi rifiuti delle funzioni di 59-contabilita.sql, detti subito sotto al modulo.
+
+/** Una data vera (non il 30 febbraio) in forma `AAAA-MM-GG`. */
+const dataVera = (data: string) => {
+  const giorno = /^\d{4}-\d{2}-\d{2}$/.test(data) ? new Date(`${data}T00:00:00Z`) : null
+  return !!giorno && !Number.isNaN(giorno.getTime()) && giorno.toISOString().slice(0, 10) === data
+}
+
+/** Importo, data e nota: quello che un movimento e un giroconto hanno in comune. */
+function cosaNonVaIlComune(importo: number, data: string, nota: string | undefined, oggi: string): string | null {
+  if (!Number.isInteger(importo)) return 'L’importo non si capisce'
+  if (importo <= 0) return 'L’importo deve essere più di zero'
+  if (importo > 10_000_000) return 'L’importo è troppo alto: controlla le cifre'
+  if (!dataVera(data) || data < '2000-01-01') return 'La data non si capisce'
+  if (data > oggi) return 'La data è nel futuro: si registra quel che è già successo'
+  if ((nota ?? '').trim().length > 300) return 'La nota è troppo lunga: al massimo 300 caratteri'
+  return null
+}
+
+/** L'importo scritto in un campo: vuoto non è ancora un errore, un testo che non è un numero sì. */
+export function cosaNonVaImporto(testo: string, esempio: string): string | null {
+  if (testo === '' || centesimi(testo) !== null) return null
+  return `L’importo non si capisce: scrivi un numero, per esempio ${esempio}.`
+}
+
+export interface DatiMovimento {
+  tipo: string
+  data: string
+  importo: number
+  voceId?: string
+  cassaId: string
+  descrizione: string
+  nota?: string
+}
+
+export function cosaNonVaMovimento(d: DatiMovimento, voci: VoceContabile[], casse: Cassa[], oggi: string, chiusure: ChiusuraCassa[] = []): string | null {
+  if (d.tipo !== 'entrata' && d.tipo !== 'uscita') return 'Scegli se è un’entrata o un’uscita'
+  const comune = cosaNonVaIlComune(d.importo, d.data, d.nota, oggi)
+  if (comune) return comune
+  const voce = voci.find((v) => v.id === d.voceId)
+  if (!voce) return 'Scegli la voce'
+  if (voce.tipo !== d.tipo) return 'La voce scelta non va con questo tipo di movimento'
+  if (!voce.attiva) return 'La voce non è più in uso: scegline un’altra'
+  if (voce.diSistema && voce.nome === VOCE_DIFFERENZA) return 'La «Differenza di cassa» si scrive da sola chiudendo la cassa'
+  const cassa = casse.find((c) => c.id === d.cassaId)
+  if (!cassa) return 'Scegli la cassa'
+  if (cassa.dal && d.data < cassa.dal) return 'La data è prima dell’inizio della cassa'
+  if (giornoChiuso(chiusure, [cassa.id], d.data)) return MSG_GIORNO_CHIUSO
+  if (!d.descrizione.trim()) return 'Scrivi una descrizione'
+  if (d.descrizione.trim().length > 200) return 'La descrizione è troppo lunga: al massimo 200 caratteri'
+  return null
+}
+
+export interface DatiGiroconto {
+  daCassaId: string
+  aCassaId: string
+  data: string
+  importo: number
+  nota?: string
+}
+
+export function cosaNonVaGiroconto(d: DatiGiroconto, casse: Cassa[], oggi: string, chiusure: ChiusuraCassa[] = []): string | null {
+  const da = casse.find((c) => c.id === d.daCassaId)
+  const a = casse.find((c) => c.id === d.aCassaId)
+  if (!da || !a) return 'Scegli le due casse'
+  if (da.id === a.id) return 'Scegli due casse diverse'
+  const comune = cosaNonVaIlComune(d.importo, d.data, d.nota, oggi)
+  if (comune) return comune
+  if ((da.dal && d.data < da.dal) || (a.dal && d.data < a.dal)) return 'La data è prima dell’inizio della cassa'
+  if (giornoChiuso(chiusure, [da.id, a.id], d.data)) return MSG_GIORNO_CHIUSO
+  return null
+}
+
+/** Per rinominare una voce si passa l'elenco senza quella voce: il nome suo non è un doppione. */
+export function cosaNonVaVoce(nome: string, tipo: string | undefined, voci: VoceContabile[]): string | null {
+  const n = nome.trim()
+  if (!n) return 'Scrivi il nome della voce'
+  if (n.length > 60) return 'Il nome della voce è troppo lungo: al massimo 60 caratteri'
+  if (tipo !== 'entrata' && tipo !== 'uscita') return 'Scegli se è un’entrata o un’uscita'
+  if (voci.some((v) => v.tipo === tipo && v.nome.trim().toLowerCase() === n.toLowerCase())) return `C’è già una voce «${n}» tra le ${tipo === 'entrata' ? 'entrate' : 'uscite'}`
+  return null
+}
+
+/** Il saldo scritto è diverso da quello salvato? «100» e «100,00» sono lo stesso saldo; un testo che non è un importo conta come cambiato, così la bozza non si perde. */
+export function saldoCambiato(testo: string, saldoIniziale: number): boolean {
+  return centesimi(testo) !== saldoIniziale
+}
+
+/** Il saldo come lo scrive chi lo imposta: `centesimi` scarta il «-», e il messaggio giusto è «negativo». */
+export function cosaNonVaSaldoTesto(testo: string, dal?: string | null, contesto?: { oggi: string; primoMovimento?: string; chiusa?: boolean }): string | null {
+  const cent = centesimi(testo)
+  if (cent === null) return testo.trim().startsWith('-') ? 'Il saldo iniziale non può essere negativo' : 'Il saldo non si capisce: scrivi un numero, per esempio 500,00.'
+  return cosaNonVaSaldo(cent, dal, contesto)
+}
+
+/** Il giorno del primo movimento a mano non annullato di una cassa (anche come seconda cassa di un giroconto): gli incassi degli iscritti non contano, come nel database. */
+export function primoMovimentoManuale(righe: RigaMovimento[], cassaId: string): string | undefined {
+  return righe
+    .filter((r) => r.origine === 'movimento' && !r.annullato && (r.cassaId === cassaId || r.cassaAId === cassaId))
+    .map((r) => r.data)
+    .sort()[0]
+}
+
+/** `contesto` c'è dove si salva davvero (non basta una data vera: oggi e movimenti già registrati contano). */
+export function cosaNonVaSaldo(saldo: number, dal?: string | null, contesto?: { oggi: string; primoMovimento?: string; chiusa?: boolean }): string | null {
+  if (contesto?.chiusa) return 'La cassa ha una chiusura: annullala prima di cambiare il saldo iniziale'
+  if (!Number.isInteger(saldo)) return 'Il saldo iniziale non si capisce'
+  if (saldo < 0) return 'Il saldo iniziale non può essere negativo'
+  if (saldo > 100_000_000) return 'Il saldo iniziale è troppo alto: controlla le cifre'
+  if (dal && (!dataVera(dal) || dal < '2000-01-01')) return 'La data non si capisce'
+  if (dal && contesto) {
+    if (dal > contesto.oggi) return 'L’inizio della cassa non può essere nel futuro'
+    if (contesto.primoMovimento && contesto.primoMovimento < dal) return 'Ci sono movimenti prima di quella data: annullali o scegli una data più vecchia'
+  }
+  return null
+}
+
+/** Ricevute da cifre assurde: il previsto non torna e la chiusura non si fa (come `chiudi_cassa`). */
+export function cosaNonVaPrevisto(previsto: number, contato: number): string | null {
+  return Math.abs(contato - previsto) > 100_000_000 || Math.abs(previsto) > 1_000_000_000 ? 'Il previsto della Cassa Contanti non torna: controlla le ricevute in contanti' : null
+}
+
+/** Gli stessi rifiuti di `chiudi_cassa` (60-chiusura-cassa.sql), nello stesso ordine. */
+export function cosaNonVaChiusura(d: { cassaId: string; data: string; contato: number; nota?: string }, casse: Cassa[], chiusure: ChiusuraCassa[], oggi: string): string | null {
+  const cassa = casse.find((c) => c.id === d.cassaId)
+  if (!cassa) return 'Scegli la cassa'
+  if (cassa.nome !== NOME_CASSA_CONTANTI) return 'Si chiude solo la Cassa Contanti'
+  if (!cassa.dal) return 'Imposta prima il saldo iniziale e il giorno di partenza della Cassa Contanti'
+  if (!dataVera(d.data) || d.data < '2000-01-01') return 'La data non si capisce'
+  if (d.data > oggi) return 'La data è nel futuro: si chiude quel che è già successo'
+  const ultima = ultimaChiusura(chiusure, cassa.id)
+  if (ultima && d.data <= ultima.data) return `Quel giorno è già chiuso: scegli un giorno dopo il ${dataRicevuta(ultima.data)}`
+  if (cassa.dal && d.data < cassa.dal) return 'La data è prima dell’inizio della cassa'
+  if (!Number.isInteger(d.contato)) return 'I contanti contati non si capiscono'
+  if (d.contato < 0) return 'I contanti contati non possono essere negativi'
+  if (d.contato > 100_000_000) return 'I contanti contati sono troppi: controlla le cifre'
+  if ((d.nota ?? '').trim().length > 300) return 'La nota è troppo lunga: al massimo 300 caratteri'
+  return null
+}

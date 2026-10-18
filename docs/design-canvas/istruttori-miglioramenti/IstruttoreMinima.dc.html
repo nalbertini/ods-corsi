@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Istruttore scheda minima</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA (1440px): LA SCHEDA DI DEFAULT: chi ha solo nome, corsi (dal database) e, se c'è, la foto (esempio Fabio Berta, Aikido). Senza foto: fascia azzurra con l'iniziale grande. Niente tessere vuote né «da scrivere» a vista: si mostra solo il dato che c'è (Corsi). Quando arrivano foto, ruolo e frase, la pagina cresce fino alla scheda completa. Serve per decidere se i nomi dell'elenco diventano link subito o solo a scheda scritta. -->
+<div style="width: 1440px; min-height: 1830px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+  <dc-import name="SitoTestata" logo="logo.webp" attiva="Chi siamo" prova="Prova una settimana a 5 €" hint-size="100%,120px"></dc-import>
+  <section style="padding:0 48px"><span style="display:inline-block;background:#ffffff;color:#0d2a3d;border:2px solid #e4292a;border-radius:4px;padding:4px 8px;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:700;line-height:1.2">DA CONFERMARE I11 · «Istruttori» voce di menu o sotto «Chi siamo»?</span></section>
+  <section style="padding:12px 48px 0"><span style="display:inline-flex;align-items:center;min-height:48px;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:17px;font-weight:600">← Gli istruttori</span></section>
+  <section style="display:grid;grid-template-columns:600px 1fr;gap:48px;align-items:stretch;padding:12px 48px 0">
+    <div style="height:520px;overflow:hidden;border-radius:6px"><img src="img/p948-4.jpg" alt="Ritratto di Fabio Berta" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% 30%"></div>
+    <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:24px">
+      <h1 style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;margin:0;font-size:140px;line-height:.86;letter-spacing:-.01em">Fabio<br>Berta</h1>
+      <div style="display:flex;gap:12px;flex-wrap:wrap"><dc-import name="SitoPulsante" label="Prova una settimana a 5 €" tono="giallo" alto="60px" larghezza="auto" hint-size="320px,60px"></dc-import><dc-import name="SitoPulsante" label="Scrivici" tono="inchiostro" alto="60px" larghezza="auto" hint-size="180px,60px"></dc-import></div>
+    </div>
+  </section>
+  <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:48px 48px 0">
+    <dc-import name="SitoDatoPersona" etichetta="Corsi" valore="Aikido" tono="giallo" hint-size="100%,230px"></dc-import>
+  </section>
+  <section style="padding:96px 48px 0">
+    <div style="grid-column:span 3;display:flex;flex-direction:column;justify-content:center;gap:24px;background:#0d2a3d;color:#ffffff;border-radius:6px;padding:40px 48px">
+  <div style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;font-size:96px;line-height:.9">Vieni a conoscerli sul tatami.</div>
+  <p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:20px;line-height:1.5;max-width:560px">Una settimana a 5 €: provi tutte le discipline, incontri gli istruttori e scegli. Ti aspettiamo in Via Sassi 26, Collegno.</p>
+  <div style="display:flex;flex-direction:row;gap:12px;flex-wrap:wrap"><dc-import name="SitoPulsante" label="Prova una settimana a 5 €" tono="giallo" alto="60px" larghezza="auto" hint-size="320px,60px"></dc-import><span style="display:inline-flex;align-items:center;justify-content:center;min-height:60px;padding:0 28px;border-radius:6px;background:#ffffff;color:#0d2a3d;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-weight:600;font-size:16px">Scrivici</span></div>
+</div>
+  </section>
+  <section style="padding:24px 48px 48px">
+    <dc-import name="SitoPiedeContatti" hint-size="100%,260px"></dc-import>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>

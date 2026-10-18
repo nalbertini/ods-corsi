@@ -32,6 +32,9 @@ I corsi archiviati stanno in fondo: «N corsi archiviati · mostra», e
 - **NOME**, **SALA**, **POSTI** — il prezzo del corso sta in [LISTINO](listino.md) e
   segue il corso se ne cambi il nome (vedi lì); la sala è quella di tutti i giorni che non
   ne hanno una loro (vedi sotto);
+- **TESSERA RICHIESTA** — l'ente della tessera che chi si iscrive deve avere (**FIJLKAM**, **FIPE**…),
+  in maiuscolo; vuoto se il corso non la chiede (psicomotricità, giocomotricità…). Serve a [TESSERE](tessere.md):
+  senza, l'app non sa a chi chiederla. Il campo c'è solo se il database ha le tessere;
 - **ISTRUTTORI** — anche più d'uno: il primo che scegli è quello di
   riferimento;
 - **COLORE** — segue la disciplina (blu judo, rosso lotta, giallo pesi, verde

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img">
+  <title>Aikido, controllo del polso</title>
+  <circle cx="46" cy="23" r="8.5" fill="#000"/>
+  <polyline points="48,42 52,74" fill="none" stroke="#000" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="52,74 38,98 30,120" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="52,74 72,94 82,120" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="48,42 68,46 86,60" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="48,42 36,56 44,66" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="94" cy="66" r="8.5" fill="#000"/>
+  <polyline points="100,84 108,108" fill="none" stroke="#000" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="108,108 100,118 96,124" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="108,108 118,118 122,124" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="100,84 92,72 86,60" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="100,84 84,86 70,80" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

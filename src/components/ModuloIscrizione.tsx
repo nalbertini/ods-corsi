@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FocusEvent, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { anniScritti, certificatoDaPortare, chiFirma, controlla, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
+import { anniScritti, avvisoCertificato, certificatoDaPortare, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
+import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
-import { corsiPerEta, type CorsoPerEta, type CorsoRef } from '../lib/listino'
+import { altriAperti, corsiPerEta, testoAltriCorsi, type CorsoPerEta, type CorsoRef } from '../lib/listino'
 import { causale, stimaIscrizione, type Abbonamento } from '../lib/nucleo'
 import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
@@ -99,6 +100,8 @@ type Fase = { tipo: 'compila' } | { tipo: 'invio'; passo: string } | { tipo: 'fi
 export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZIONI' }: { onChiudi: () => void; nucleo?: PerIlNucleo; torna?: string }) {
   const [d, setD] = useState<DatiRichieste | null>(null)
   const [corsi, setCorsi] = useState<CorsoAperto[] | null>(null)
+  // Gli «altri corsi» (non per la sua età) si aprono con un tasto.
+  const [altriApertiAMano, setAltriApertiAMano] = useState(false)
   const [guaioCorsi, setGuaioCorsi] = useState<string | null>(null)
   // Com'era all'apertura: INDIETRO chiede solo se c'è qualcosa di nuovo.
   const [inizio] = useState<DatiRichiesta>(() => ({ ...VUOTO, ...nucleo?.dati }))
@@ -122,6 +125,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   // I campi già lasciati, e se si è già provato a mandare: prima, niente rosso.
   const [visti, setVisti] = useState<ReadonlySet<CampoModulo>>(new Set())
   const [provato, setProvato] = useState(false)
+
+  // Finché il modulo è aperto ha l'aspetto del sito, non quello del tema dell'app.
+  useEffect(() => apriAspettoModulo(), [])
 
   useEffect(() => {
     let vivo = true
@@ -178,6 +184,11 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const listino = useListino()?.listino
   const perEta = corsiPerEta(corsi ?? [], listino?.corsi ?? [], natoIl, listino?.senzaPrezzoVaBene)
   const fuoriEta = perEta.altri.filter((c) => b.corsi.includes(c.id)).map((c) => c.nome)
+  const altriVisibili = altriAperti(altriApertiAMano, perEta.altri, b.corsi)
+  // Aperto da un corso fuori età scelto, resta aperto anche se lo si toglie: l'elenco non si richiude sotto il dito.
+  useEffect(() => {
+    if (altriVisibili) setAltriApertiAMano(true)
+  }, [altriVisibili])
   const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined })
   const certificato = certificatoDaPortare(
     natoIl,
@@ -200,6 +211,13 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const segna = (k: CampoModulo) => {
     const n = nota(k)
     return {
+      // Con un po' di ritardo: sul telefono il tocco mette il cursore dopo il fuoco e annullerebbe la selezione.
+      onFocus: (e: FocusEvent<HTMLInputElement>) => {
+        const campo = e.currentTarget
+        const iniziale = String(inizio[k] ?? '')
+        // Si riguarda il valore a tempo scaduto: se nel frattempo si è già scritto, non si cancella niente.
+        setTimeout(() => daSelezionare(campo.value, iniziale) && campo.select(), 0)
+      },
       onBlur: () => !visti.has(k) && setVisti(new Set(visti).add(k)),
       'aria-invalid': n?.guaio || undefined,
       'aria-describedby': n ? `${ID[k]}-nota` : undefined,
@@ -210,12 +228,25 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
 
   /** Cosa manca per fare il modulo firmato; `null` se si può. */
   const mancaPerFirmare = (): string | null => {
-    if (scelte.tesseramento === undefined) return 'Nel modulo: scegli se acconsenti al tesseramento alla FIJLKAM e/o FIPE'
-    if (scelte.foto === undefined) return 'Nel modulo: scegli se autorizzi le foto'
+    const manca = sceltaMancante(scelte)
+    if (manca) return MANCA_SCELTA[manca]
     if (minore && !natoAGenitore.trim()) return 'Nel modulo: manca dove è nato il genitore'
     if (!firmaVera(tratti)) return tratti.length ? 'La firma è troppo piccola: firma per bene nel riquadro' : 'Manca la firma sul modulo'
     return null
   }
+
+  /** Cosa blocca l'invio adesso; il riquadro in fondo lo mostra dopo il primo tentativo e lo segue a ogni modifica. */
+  const blocco = mancaPerInviare({
+    dati: pronta,
+    privacy,
+    come,
+    firma: mancaPerFirmare(),
+    file,
+    obbligatori: daChiedere.filter((f) => f.obbligatorio).map((f) => f.tipo),
+  })
+  /** Le note sotto le scelte: dopo un tentativo di mandare, o di guardare il modulo. */
+  const provatoFirma = provato || guaioFirma !== null
+  const riquadro = provato ? blocco ?? guaio : null
 
   /** Il PDF del modulo, compilato coi dati di adesso e firmato. */
   const faiModulo = async (): Promise<File> => {
@@ -244,6 +275,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const guarda = async () => {
     const manca = mancaPerFirmare()
     setGuaioFirma(manca)
+    const mancata = sceltaMancante(scelte)
+    if (mancata) setTimeout(() => document.getElementById(`m-${mancata}`)?.focus(), 0)
     if (manca) return
     // La scheda si apre subito, al tocco: dopo un'attesa il telefono la bloccherebbe.
     const scheda = window.open('', '_blank')
@@ -282,12 +315,10 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     setProvato(true)
     const primo = (Object.keys(ID) as CampoModulo[]).find((k) => errori[k])
     if (primo) setTimeout(() => document.getElementById(ID[primo])?.focus(), 0)
-    const manca =
-      controlla(pronta) ??
-      (come === 'qui' ? mancaPerFirmare() : null) ??
-      FILE.filter((f) => obbligatorio(f.tipo) && !file[f.tipo] && !(f.tipo === 'modulo' && come === 'qui')).map((f) => `Manca: ${f.etichetta.toLowerCase()}`)[0]
-    if (manca) return setGuaio(manca)
-    if (!privacy) return setGuaio("Serve la conferma di aver letto l'informativa privacy")
+    // Se i campi sono a posto e manca una scelta del modulo, lo schermo va lì, non in fondo al riquadro.
+    const mancata = sceltaMancante(scelte)
+    if (!primo && come === 'qui' && mancata) setTimeout(() => document.getElementById(`m-${mancata}`)?.focus(), 0)
+    if (blocco) return
     // Il modulo firmato si fa prima di mandare le risposte: se non viene, non
     // nasce una richiesta senza modulo.
     let tutti = file
@@ -501,19 +532,24 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
               />
             </>
           )}
-          {perEta.altri.length > 0 && (
-            <>
-              <span className="modulo-etichetta modulo-altri">ALTRI CORSI</span>
-              <SceltaCorsi
-                id="m-corsi-altri"
-                etichetta="Altri corsi"
-                voci={perEta.altri.map(tasto)}
-                scelti={b.corsi}
-                onScegli={scegli}
-                descritto={nota('corsi') ? 'm-corsi-nota' : undefined}
-              />
-            </>
-          )}
+          {perEta.altri.length > 0 &&
+            (altriVisibili ? (
+              <>
+                <span className="modulo-etichetta modulo-altri">ALTRI CORSI</span>
+                <SceltaCorsi
+                  id="m-corsi-altri"
+                  etichetta="Altri corsi"
+                  voci={perEta.altri.map(tasto)}
+                  scelti={b.corsi}
+                  onScegli={scegli}
+                  descritto={nota('corsi') ? 'm-corsi-nota' : undefined}
+                />
+              </>
+            ) : (
+              <button type="button" className="btn btn-dashed passo-btn" onClick={() => setAltriApertiAMano(true)}>
+                {testoAltriCorsi(perEta.altri.length, 'sua')}
+              </button>
+            ))}
           {/* Sotto il gruppo da cui nasce, così il tasto appena toccato non scende sotto il dito; letto da chi usa un lettore di schermo. */}
           <div aria-live="polite">{fuoriEta.length > 0 && (
               <Dettaglio tono="avviso">
@@ -563,6 +599,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             scelti={[come]}
             onScegli={(c) => setCome(c as 'qui' | 'foto')}
           />
+          <Dettaglio>Firmi qui col dito, oppure carichi la foto del foglio già firmato.</Dettaglio>
         </div>
         {come === 'foto' ? (
           <SceltaFile
@@ -580,20 +617,28 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             <Casella
               id="m-tesseramento"
               etichetta="IL TESSERAMENTO ALLA FIJLKAM E/O FIPE"
-              dettaglio={`Per la stagione ${STAGIONE}.`}
+              dettaglio={`Per la stagione ${STAGIONE}. ${aiutoScelta('tesseramento', minore)}`}
+              nota={provatoFirma && scelte.tesseramento === undefined ? NOTA_SCELTA.tesseramento : undefined}
               si={minore ? 'Autorizzo' : 'Acconsento'}
               no={minore ? 'Non autorizzo' : 'Non acconsento'}
               scelta={scelte.tesseramento}
-              onScegli={(x) => setScelte({ ...scelte, tesseramento: x })}
+              onScegli={(x) => {
+                setScelte({ ...scelte, tesseramento: x })
+                setGuaioFirma(null)
+              }}
             />
             <Casella
               id="m-foto"
               etichetta={minore ? 'LE FOTO E I VIDEO DEL MINORE' : 'LE FOTO SUI SOCIAL'}
-              dettaglio={minore ? 'Sui canali social della palestra e nei volantini e manifesti dei suoi eventi.' : 'Le foto che ti ritraggono, sui social della palestra.'}
+              dettaglio={`${minore ? 'Sui canali social della palestra e nei volantini e manifesti dei suoi eventi.' : 'Le foto che ti ritraggono, sui social della palestra.'} ${aiutoScelta('foto', minore)}`}
+              nota={provatoFirma && scelte.foto === undefined ? NOTA_SCELTA.foto : undefined}
               si="Autorizzo"
               no="Non autorizzo"
               scelta={scelte.foto}
-              onScegli={(x) => setScelte({ ...scelte, foto: x })}
+              onScegli={(x) => {
+                setScelte({ ...scelte, foto: x })
+                setGuaioFirma(null)
+              }}
             />
             {minore && (
               <>
@@ -657,13 +702,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       <Sezione titolo="I FILE">
         {certificato !== 'nessuno' && (
           <div className="modulo-campo modulo-largo">
-            <span className="modulo-etichetta">{certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
-            <Dettaglio tono="avviso">
-              {certificato === 'agonistico'
-                ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico.'
-                : 'Dai 6 anni il certificato medico è obbligatorio.'}{' '}
-              Caricalo qui sotto, o consegnalo in segreteria: senza non si partecipa alle lezioni.
-            </Dettaglio>
+            <Dettaglio tono="avviso">{avvisoCertificato(certificato)}</Dettaglio>
           </div>
         )}
         {daChiedere.filter((f) => f.tipo !== 'modulo').map((f) => (
@@ -725,9 +764,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       </Sezione>
 
       <div className="pad stack modulo-piede">
-        {guaio && (
+        {riquadro && (
           <div role="alert">
-            <Riquadro tono="guaio">{guaio}</Riquadro>
+            <Riquadro tono="guaio">{riquadro}</Riquadro>
           </div>
         )}
         <Tasto variante="principale" type="submit" disabled={inVolo || !d}>
@@ -755,11 +794,14 @@ export function Casella({
   si,
   no,
   scelta,
+  nota,
   onScegli,
 }: {
   id: string
   etichetta: string
   dettaglio: string
+  /** Cosa manca, se si è già provato a mandare. */
+  nota?: string
   si: string
   no: string
   scelta?: boolean
@@ -769,6 +811,7 @@ export function Casella({
     <div className="modulo-campo modulo-largo">
       <span className="modulo-etichetta">{etichetta}</span>
       <Dettaglio>{dettaglio}</Dettaglio>
+      {nota && <Dettaglio tono="guaio">{nota}</Dettaglio>}
       <SceltaCorsi
         id={id}
         etichetta={etichetta.toLowerCase()}

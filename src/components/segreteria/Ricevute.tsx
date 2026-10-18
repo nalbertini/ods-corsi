@@ -2,6 +2,7 @@ import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { etichettaQuota, pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
+import { avvisoCassaChiusa } from '../../lib/contabilita'
 import { cosaNonVaDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, vociSuggerite, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
 import {
   centesimi,
@@ -54,7 +55,8 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
   // Annullata una ricevuta con la quota che nessun'altra copre: la quota torna da pagare, o era pagata fuori dall'app?
   const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
   const annulla = async (r: Ricevuta) => {
-    if (!(await chiedi(domandaAnnullaRicevuta(r), 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
+    const avviso = avvisoCassaChiusa(r.voci.flatMap((v) => v.pagamenti), await d.chiusure().catch(() => []))
+    if (!(await chiedi(`${domandaAnnullaRicevuta(r)}${avviso ? ` ${avviso}` : ''}`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
     const oggi = chiaveGiorno(new Date())
     const altre = (ricevute.dato ?? []).filter((x) => x.id !== r.id)
     const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
@@ -66,7 +68,8 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
     })
   }
   const annullaPagamento = async (x: PagamentoDiretto) => {
-    if (!(await chiedi(domandaAnnullaPagamento(x), 'SÌ, ANNULLA IL PAGAMENTO', { no: 'NO, LASCIALO', pericolo: true }))) return
+    const avviso = avvisoCassaChiusa([x], await d.chiusure().catch(() => []))
+    if (!(await chiedi(`${domandaAnnullaPagamento(x)}${avviso ? ` ${avviso}` : ''}`, 'SÌ, ANNULLA IL PAGAMENTO', { no: 'NO, LASCIALO', pericolo: true }))) return
     void fai(() => d.annullaPagamentoDiretto(x.id), 'Pagamento annullato', () => diretti.ricarica())
   }
 

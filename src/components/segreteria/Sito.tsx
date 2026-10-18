@@ -18,11 +18,15 @@ import {
   type VoceMenu,
 } from '../../lib/sitoPagine'
 import { pulisciTesto } from '../../lib/sitoTesto'
+import { cosaNonVaPezzi, databaseConPezzi, pezziCambiati, pezziInHtml, pezziVuoti, type PezziPagina } from '../../lib/sitoPezzi'
 import { Immagini } from './ImmaginiSito'
 import { Campo, chiedi, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
 
 // L'editor porta con sé una libreria grossa: si scarica solo quando si apre una pagina da scrivere.
 const EditorTesto = lazy(() => import('./EditorTesto').then((m) => ({ default: m.EditorTesto })))
+// Anche l'editor a pezzi e l'anteprima vera (che porta il generatore del sito) si scaricano solo quando servono.
+const EditorPezzi = lazy(() => import('./EditorPezzi'))
+const AnteprimaPagina = lazy(() => import('./AnteprimaPagina'))
 
 const TONO_STATO: Record<StatoPagina, string | undefined> = { pubblicata: 'fatto', modificata: 'presto', 'solo-bozza': undefined, nascosta: undefined }
 
@@ -51,16 +55,24 @@ function Conto({ testo, limite }: { testo: string; limite: number }) {
 function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; pagina: PaginaSito; altri: string[]; onChiudi: () => void; ricarica: () => Promise<void> }) {
   const [titolo, setTitolo] = useState(pagina.titolo)
   const [descrizione, setDescrizione] = useState(pagina.descrizione)
-  const [bozza, setBozza] = useState(pagina.bozza)
+  const [bozzaTesto, setBozza] = useState(pagina.bozza)
+  // Una pagina a pezzi (`pagina.pezzi`) si scrive coi pezzi; una col vecchio editor, col testo.
+  const [pezzi, setPezzi] = useState<PezziPagina>(pagina.pezzi ?? pezziVuoti())
+  const aPezzi = !!pagina.pezzi
   const [slug, setSlug] = useState(pagina.slug)
   const [anteprima, setAnteprima] = useState(false)
   const { avviso, fai, lavora } = useAvviso()
-  const sporca = titolo.trim() !== pagina.titolo || descrizione.trim() !== pagina.descrizione || bozzaCambiata(bozza, pagina.bozza)
+  // I pezzi si controllano e si traducono in testo solo quando cambiano, non a ogni tasto di un altro campo.
+  const noPezzi = useMemo(() => (aPezzi ? cosaNonVaPezzi(pezzi) : null), [aPezzi, pezzi])
+  const bozza = useMemo(() => (aPezzi && !noPezzi ? pezziInHtml(pezzi) : bozzaTesto), [aPezzi, noPezzi, pezzi, bozzaTesto])
+  const pezziDiversi = useMemo(() => aPezzi && pezziCambiati(pezzi, pagina.pezzi), [aPezzi, pezzi, pagina.pezzi])
+  const sporca = titolo.trim() !== pagina.titolo || descrizione.trim() !== pagina.descrizione || (aPezzi ? pezziDiversi : bozzaCambiata(bozza, pagina.bozza))
   useBozza(sporca, pagina.titolo)
   const noSlug = slug === pagina.slug ? null : controllaSlug(slug, altri)
   const noTitolo = !titolo.trim() ? 'Scrivi il titolo della pagina' : null
-  const noTesto = testoTroppoLungo(bozza)
-  const salvata = () => d.salvaBozzaSito(pagina.id, pagina.versione, { titolo, descrizione, bozza: pulisciTesto(bozza) })
+  const noTesto = noPezzi ?? testoTroppoLungo(bozza)
+  const salvata = () =>
+    aPezzi ? d.salvaBozzaPezziSito(pagina.id, pagina.versione, { titolo, descrizione, pezzi }) : d.salvaBozzaSito(pagina.id, pagina.versione, { titolo, descrizione, bozza: pulisciTesto(bozza) })
 
   const salva = () => fai(salvata, 'Bozza salvata. Il sito non è cambiato: serve PUBBLICA', ricarica)
   const pubblica = async () => {
@@ -113,14 +125,18 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
         </button>
       </div>
 
-      <div className="sito-due">
+      <div className={aPezzi ? 'sito-due sito-due-pezzi' : 'sito-due'}>
         <div className="stack" style={{ gap: 10, minWidth: 0 }}>
-          {anteprima ? (
+          {anteprima && aPezzi ? (
+            <Suspense fallback={<span className="sg-sotto">Apro l’anteprima…</span>}>
+              <AnteprimaPagina slug={pagina.slug} titolo={titolo} descrizione={descrizione} testo={bozza} />
+            </Suspense>
+          ) : anteprima ? (
             // Sicuro: è il testo ripulito dalla stessa funzione che lo ripulisce per il sito (sitoTesto.ts).
             <div className="sito-testo sito-anteprima" aria-label="Com’è sul sito" dangerouslySetInnerHTML={{ __html: pulisciTesto(bozza) }} />
           ) : (
             <Suspense fallback={<span className="sg-sotto">Apro l’editor…</span>}>
-              <EditorTesto valore={bozza} onCambia={setBozza} etichetta={`Testo di ${pagina.titolo}`} d={d} />
+              {aPezzi ? <EditorPezzi d={d} pezzi={pezzi} onCambia={setPezzi} /> : <EditorTesto valore={bozzaTesto} onCambia={setBozza} etichetta={`Testo di ${pagina.titolo}`} d={d} />}
             </Suspense>
           )}
           {noTesto && <Guaio testo={noTesto} />}
@@ -163,7 +179,8 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
   )
 }
 
-function NuovaPagina({ d, altri, finita }: { d: DatiSegreteria; altri: string[]; finita: (id?: string) => unknown }) {
+/** `aPezzi`: la pagina nasce a pezzi (serve `62-sito-pezzi.sql`); senza, nasce col vecchio editor di testo. */
+function NuovaPagina({ d, altri, aPezzi, finita }: { d: DatiSegreteria; altri: string[]; aPezzi: boolean; finita: (id?: string) => unknown }) {
   const [titolo, setTitolo] = useState('')
   const [slug, setSlug] = useState('')
   // L'indirizzo segue il titolo finché non lo si scrive a mano.
@@ -175,7 +192,7 @@ function NuovaPagina({ d, altri, finita }: { d: DatiSegreteria; altri: string[];
   const crea = async () => {
     let id: string | undefined
     const riuscito = await fai(async () => {
-      id = await d.nuovaPaginaSito(titolo, indirizzo)
+      id = await d.nuovaPaginaSito(titolo, indirizzo, aPezzi ? pezziVuoti() : undefined)
     })
     if (riuscito) finita(id)
   }
@@ -316,7 +333,7 @@ export function Sito({ d }: { d: DatiSegreteria }) {
           </div>
 
           {scheda === 'pagine' && aperta === 'nuova' && (
-            <NuovaPagina d={d} altri={tutte.map((p) => p.slug)} finita={async (id) => { if (id) await pagine.ricarica(); setAperta(id ?? null) }} />
+            <NuovaPagina d={d} altri={tutte.map((p) => p.slug)} aPezzi={databaseConPezzi(tutte)} finita={async (id) => { if (id) await pagine.ricarica(); setAperta(id ?? null) }} />
           )}
 
           {scheda === 'pagine' && aperta !== 'nuova' && (

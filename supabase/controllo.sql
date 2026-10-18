@@ -274,6 +274,17 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.pagamenti_diretti') is not null
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'registra_pagamento_diretto')
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'annulla_pagamento_diretto')),
+  ('59-contabilita.sql', 'la contabilità: voci, casse e movimenti, solo per chi cura i conti',
+    to_regclass('public.movimenti') is not null
+    and to_regclass('public.casse') is not null
+    and to_regclass('public.voci_contabili') is not null
+    and exists (select 1 from dentro where nome = 'registra_movimento' and corpo like '%contabilita_porta()%')
+    and exists (select 1 from dentro where nome = 'registra_giroconto')),
+  ('60-chiusura-cassa.sql', 'la chiusura di cassa: il contato dei contanti, la differenza e i giorni chiusi',
+    to_regclass('public.chiusure_cassa') is not null
+    and exists (select 1 from dentro where nome = 'chiudi_cassa' and corpo like '%contabilita_porta()%')
+    and exists (select 1 from dentro where nome = 'annulla_chiusura_cassa')
+    and exists (select 1 from dentro where nome = 'registra_movimento' and corpo like '%cassa_giorno_chiuso%')),
   ('55-amministrazione.sql', 'il ruolo amministrazione, per chi cura i conti',
     exists (select 1 from pg_enum e where e.enumtypid = 'ruolo'::regtype and e.enumlabel = 'amministrazione')
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'persone' and column_name = 'anche_amministrazione')
@@ -282,6 +293,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'nomi_persone')
     and exists (select 1 from dentro where nome = 'cerca_pagatori')
     and to_regclass('public.ricerche_pagatori') is not null),
+  ('61-tessere.sql', 'le tessere, e quale tessera chiede un corso',
+    to_regclass('public.tessere') is not null
+    and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'corsi' and column_name = 'ente_tessera')),
+  ('61-tessere.sql', 'l''import dal RASD e l''unione delle schede',
+    exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'importa_tessere')
+    and exists (select 1 from pg_trigger where tgname = 'tessere_unione' and not tgisinternal)),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',
@@ -304,6 +321,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from storage.buckets where id = 'sito' and public)
     and (select count(*) from pg_policies where schemaname = 'storage' and tablename = 'objects'
            and (qual like '%''sito''%' or with_check like '%''sito''%')
-           and cmd in ('INSERT', 'SELECT', 'DELETE') and roles = '{authenticated}') = 3)
+           and cmd in ('INSERT', 'SELECT', 'DELETE') and roles = '{authenticated}') = 3),
+  ('62-sito-pezzi.sql', 'le pagine del sito a pezzi: la struttura salvata accanto alla bozza, scritta solo dalla segreteria',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'sito_pagine' and column_name = 'bozza_pezzi')
+    and to_regprocedure('public.salva_bozza_pezzi_sito(uuid,integer,text,text,text,jsonb)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

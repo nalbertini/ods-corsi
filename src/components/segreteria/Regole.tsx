@@ -3,11 +3,14 @@ import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, motivoAttiv
 import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
+import { aspettoInUso, useAspetto, type Aspetto } from '../../lib/aspetto'
+import { TELEFONO, useSchermo } from '../../lib/largo'
 import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
 import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { StoricoTimer, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
 import { Importa } from './Importa'
+import { ImportaTessere } from './Tessere'
 import type { Destinazione, Voce } from './Segreteria'
 import { type Disciplina, nomeDisciplina } from '../../../timer/src/lib/discipline'
 import { SelectDisciplina } from './TimerPalestra'
@@ -38,6 +41,34 @@ function Gruppo({ id, children }: { id: IdGruppo; children: ReactNode }) {
         {GRUPPI[id]}
       </h2>
       <div className="sg-regole">{children}</div>
+    </section>
+  )
+}
+
+const ASPETTI: Array<{ id: Aspetto; nome: string; testo: string }> = [
+  { id: 'oggi', nome: 'COME OGGI', testo: 'Il menu a sinistra, con tutte le voci in vista.' },
+  { id: 'banco', nome: 'IL BANCO', testo: 'La ricerca sempre in cima e cinque luoghi: OGGI, PERSONE, CORSI, SOLDI, PALESTRA.' },
+]
+
+/** La scelta dell'aspetto: vale per questo computer, non per tutta la segreteria, e cambia subito. */
+function ScegliAspetto() {
+  const [aspetto, scegli] = useAspetto()
+  const telefono = useSchermo(TELEFONO)
+  const inUso = aspettoInUso(aspetto, telefono)
+  return (
+    <section aria-label="L'aspetto della segreteria" className="sg-riquadro">
+      <span className="ob sg-riquadro-titolo">L'ASPETTO</span>
+      <div className="row" role="radiogroup" aria-label="Aspetto della segreteria" style={{ gap: 8, flexWrap: 'wrap' }}>
+        {ASPETTI.map((a) => (
+          <button key={a.id} type="button" role="radio" aria-checked={aspetto === a.id} className="num sg-btn sg-scelta" onClick={() => scegli(a.id)}>
+            {a.nome}
+          </button>
+        ))}
+      </div>
+      <p className="sg-sotto" style={{ margin: 0 }}>
+        {ASPETTI.find((a) => a.id === aspetto)?.testo} La scelta vale solo per questo computer.
+      </p>
+      {inUso !== aspetto && <p className="sg-sotto" style={{ margin: 0 }}>Sul telefono resta il menu di sempre: Il Banco è fatto per lo schermo largo.</p>}
     </section>
   )
 }
@@ -102,10 +133,11 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
       {imp.guaio && <Guaio testo={`Le impostazioni non si leggono: ${imp.guaio}`} />}
 
       <Gruppo id="imp-schermo">
+        <ScegliAspetto />
         <section aria-label="La striscia COSA MANCA" className="sg-riquadro">
           <span className="ob sg-riquadro-titolo">LA STRISCIA COSA MANCA</span>
           <span className="sg-sotto">
-            Le quattro caselle in cima alle pagine (appelli non fatti, certificati, pagamenti, richieste). Vale solo per questo schermo: DA FARE ha sempre gli stessi conti.
+            Le cinque caselle in cima alle pagine (appelli non fatti, certificati, pagamenti, tessere, richieste). Vale solo per questo schermo: DA FARE ha sempre gli stessi conti.
           </span>
           <div role="radiogroup" aria-label="Mostra o nascondi la striscia" className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
             <button type="button" role="radio" aria-checked={strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(true)}>
@@ -228,6 +260,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
 
       <Gruppo id="imp-importa">
         <Importa d={d} onVai={onVai} />
+        <ImportaTessere d={d} />
       </Gruppo>
 
       <Gruppo id="imp-dati">

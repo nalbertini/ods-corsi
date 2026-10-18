@@ -10,6 +10,7 @@ import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, ST
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
+import { enteDaDati, fineAnno, importaTessereProva } from './tessere'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
@@ -26,6 +27,29 @@ import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { cosaNonVaDiretto, trovaPagatori, type PagamentoDiretto } from './pagamenti'
+import {
+  cosaNonVaAnnulloChiusura,
+  cosaNonVaAnnulloMovimento,
+  cosaNonVaChiusura,
+  cosaNonVaGiroconto,
+  cosaNonVaMovimento,
+  cosaNonVaPrevisto,
+  cosaNonVaSaldo,
+  cosaNonVaVoce,
+  dalDellaChiusura,
+  elencoMovimenti,
+  NOME_CASSA_CONTANTI,
+  NOME_CASSA_CONTO,
+  oggiARoma,
+  previstoCassa,
+  primoMovimentoManuale,
+  righeMovimenti,
+  ultimaChiusura,
+  VOCE_CORSI,
+  VOCE_DIFFERENZA,
+  VOCE_QUOTA,
+  type VoceContabile,
+} from './contabilita'
 import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 
 /**
@@ -75,6 +99,29 @@ export function creaSegreteriaProva(): DatiSegreteria {
   const oggi = () => chiaveGiorno(new Date())
   const ieri = () => chiaveGiorno(new Date(Date.now() - GIORNO))
   const salva = () => archivio.salva()
+  // Le casse e le voci di partenza, finché la segreteria non ne cambia: due casse a zero e le due voci degli incassi.
+  // Le voci della segreteria, o quelle di partenza; la chiusura di cassa scrive da sola «Differenza di cassa»: c'è sempre, anche in un archivio fatto prima.
+  const vociDiPartenza = (): VoceContabile[] => {
+    const base: VoceContabile[] = a().voci ?? [
+      { id: 'voce-quota', nome: VOCE_QUOTA, tipo: 'entrata', diSistema: true, attiva: true },
+      { id: 'voce-corsi', nome: VOCE_CORSI, tipo: 'entrata', diSistema: true, attiva: true },
+    ]
+    if (base.some((v) => v.nome === VOCE_DIFFERENZA)) return base
+    return [
+      ...base,
+      { id: 'voce-differenza-entrata', nome: VOCE_DIFFERENZA, tipo: 'entrata', diSistema: true, attiva: true },
+      { id: 'voce-differenza-uscita', nome: VOCE_DIFFERENZA, tipo: 'uscita', diSistema: true, attiva: true },
+    ]
+  }
+  const contabilita = () => ({
+    casse: a().casse ?? [
+      { id: 'cassa-contanti', nome: NOME_CASSA_CONTANTI, saldoIniziale: 0 },
+      { id: 'cassa-conto', nome: NOME_CASSA_CONTO, saldoIniziale: 0 },
+    ],
+    voci: vociDiPartenza(),
+    movimenti: a().movimenti ?? [],
+    chiusure: a().chiusure ?? [],
+  })
   /** Trenta giorni dopo la scadenza il file se ne va, la data resta: come `pulisci_certificati` del database. */
   const potaCertificati = () => {
     const g = oggi()
@@ -315,6 +362,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
           istruttori: c.istruttori.map((id) => ({ id, nome: nomeIstruttore(id) })),
           capienza: c.capienza,
           attivo: c.attivo,
+          enteTessera: c.enteTessera,
           ricorrenze: c.ricorrenze
             .filter((r) => !r.al || r.al >= g)
             .map(({ sala, ...r }) => ({ ...r, salaId: sala, sala, attivita: nomeAttivita(r.attivitaId ?? null) }))
@@ -330,7 +378,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         const id = a().corsi.some((c) => c.id === base) ? `${base}-${unico()}` : base
         a().corsi = [
           ...a().corsi,
-          { id, nome: dati.nome.trim(), colore: dati.colore ?? '#1b8ac4', sala: dati.salaId ?? a().sale[0], istruttori: dati.istruttori, capienza: dati.capienza, attivo: true, ricorrenze: [] },
+          { id, nome: dati.nome.trim(), colore: dati.colore ?? '#1b8ac4', sala: dati.salaId ?? a().sale[0], istruttori: dati.istruttori, capienza: dati.capienza, attivo: true, enteTessera: enteDaDati(dati.enteTessera), ricorrenze: [] },
         ]
         salva()
         return id
@@ -345,6 +393,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
               istruttori: dati.istruttori,
               capienza: dati.capienza,
               colore: dati.colore ?? x.colore,
+              enteTessera: enteDaDati(dati.enteTessera),
               // Un giorno che ora sarebbe nella sala del corso torna a seguirlo, come nel database.
               ricorrenze: x.ricorrenze.map(({ sala, ...r }) => (sala && sala !== (dati.salaId ?? x.sala) ? { ...r, sala } : r)),
             }
@@ -510,6 +559,37 @@ export function creaSegreteriaProva(): DatiSegreteria {
                 .map((r) => (r.id === ricorrenzaId ? { ...r, al: ieri() < r.dal ? r.dal : ieri() } : r)),
             },
       )
+      salva()
+    },
+
+    async tessere() {
+      return { elenco: [...(a().tessere ?? [])] }
+    },
+
+    async importaTessere(righe, soloProva) {
+      const schede = a()
+        .persone.filter((p) => p.ruolo === 'iscritto')
+        .map((p) => ({ personaId: p.id, nome: p.nome, cognome: p.cognome, codiceFiscale: a().anagrafiche?.[p.id]?.codiceFiscale }))
+      const { esito, daScrivere } = importaTessereProva(righe, schede, a().tessere ?? [])
+      if (!soloProva && daScrivere.length) {
+        a().tessere = [...(a().tessere ?? []), ...daScrivere.map((t) => ({ ...t, id: `t-${unico()}` }))]
+        salva()
+      }
+      return { ...esito, scritto: !soloProva }
+    },
+
+    async aggiungiTessera(t) {
+      const ente = t.ente.trim().toUpperCase()
+      if (!ente || !t.codice.trim()) throw new Error('Scrivi l’ente e il numero della tessera')
+      // Gli stessi limiti della tabella `tessere`.
+      if (ente.length > 40 || t.codice.trim().length > 20 || !/^(20\d\d|2100)-\d{2}-\d{2}$/.test(t.dal)) throw new Error('La tessera ha dei dati che non vanno: controlla ente, numero e data')
+      if ((a().tessere ?? []).some((x) => x.personaId === t.personaId && x.ente === ente && x.tipo === t.tipo && x.dal === t.dal)) throw new Error('Questa tessera c’è già')
+      a().tessere = [...(a().tessere ?? []), { id: `t-${unico()}`, personaId: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: fineAnno(t.dal), origine: t.origine ?? 'manuale' }]
+      salva()
+    },
+
+    async togliTessera(id) {
+      a().tessere = (a().tessere ?? []).filter((x) => x.id !== id)
       salva()
     },
 
@@ -727,7 +807,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     // Il sito: le stesse regole del database, in memoria (vedi `sitoProva.ts`).
     async sitoPagine() {
       const sito = await sitoProva()
-      return (a().sito ??= sito.sitoIniziale()).pagine
+      return sito.conPezzi((a().sito ??= sito.sitoIniziale())).pagine
     },
 
     async sitoMenu() {
@@ -736,9 +816,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return { menu, footer }
     },
 
-    async nuovaPaginaSito(titolo, slug) {
+    async nuovaPaginaSito(titolo, slug, pezzi) {
       const sito = await sitoProva()
-      const r = sito.nuovaPagina((a().sito ??= sito.sitoIniziale()), titolo, slug)
+      const r = sito.nuovaPagina((a().sito ??= sito.sitoIniziale()), titolo, slug, pezzi)
       a().sito = r.stato
       salva()
       return r.id
@@ -747,6 +827,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async salvaBozzaSito(id, versione, dati) {
       const sito = await sitoProva()
       const r = sito.salvaBozza((a().sito ??= sito.sitoIniziale()), id, versione, dati)
+      a().sito = r.stato
+      salva()
+      return r.versione
+    },
+
+    async salvaBozzaPezziSito(id, versione, dati) {
+      const sito = await sitoProva()
+      const r = sito.salvaBozzaPezzi((a().sito ??= sito.sitoIniziale()), id, versione, dati)
       a().sito = r.stato
       salva()
       return r.versione
@@ -904,6 +992,169 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async cercaPagatori(scritto) {
       return trovaPagatori(a().persone, scritto)
+    },
+
+    async casse() {
+      return contabilita().casse.map((c) => ({ ...c }))
+    },
+
+    async voci() {
+      return contabilita().voci.map((v) => ({ ...v }))
+    },
+
+    async movimenti() {
+      return contabilita().movimenti.map((m) => ({ ...m }))
+    },
+
+    async salvaVoce(d) {
+      const no = cosaNonVaVoce(d.nome, d.tipo, contabilita().voci)
+      if (no) throw new Error(no)
+      const id = `v-${unico()}`
+      a().voci = [...contabilita().voci, { id, nome: d.nome.trim(), tipo: d.tipo, diSistema: false, attiva: true }]
+      salva()
+      return id
+    },
+
+    async rinominaVoce(id, nome) {
+      const voce = contabilita().voci.find((v) => v.id === id)
+      if (!voce) throw new Error('La voce non c’è')
+      if (voce.diSistema) throw new Error('Le voci di sistema non si cambiano')
+      const no = cosaNonVaVoce(nome, voce.tipo, contabilita().voci.filter((v) => v.id !== id))
+      if (no) throw new Error(no)
+      a().voci = contabilita().voci.map((v) => (v.id === id ? { ...v, nome: nome.trim() } : v))
+      salva()
+    },
+
+    async attivaVoce(id, attiva) {
+      const voce = contabilita().voci.find((v) => v.id === id)
+      if (!voce) throw new Error('La voce non c’è')
+      if (voce.diSistema) throw new Error('Le voci di sistema non si cambiano')
+      a().voci = contabilita().voci.map((v) => (v.id === id ? { ...v, attiva } : v))
+      salva()
+    },
+
+    async salvaSaldoCassa(id, saldo, dal) {
+      if (!contabilita().casse.some((c) => c.id === id)) throw new Error('La cassa non c’è')
+      const manuali = righeMovimenti([], contabilita().movimenti, contabilita().voci)
+      const chiusa = contabilita().chiusure.some((k) => k.cassaId === id && !k.annullataIl)
+      const no = cosaNonVaSaldo(saldo, dal, { oggi: oggiARoma(), primoMovimento: primoMovimentoManuale(manuali, id), chiusa })
+      if (no) throw new Error(no)
+      a().casse = contabilita().casse.map((c) => {
+        if (c.id !== id) return c
+        const { dal: _vecchia, ...resto } = c
+        return { ...resto, saldoIniziale: saldo, ...(dal ? { dal } : {}) }
+      })
+      salva()
+    },
+
+    async registraMovimento(d) {
+      const { voci, casse, chiusure } = contabilita()
+      const no = cosaNonVaMovimento(d, voci, casse, oggiARoma(), chiusure)
+      if (no) throw new Error(no)
+      const id = `m-${unico()}`
+      a().movimenti = [
+        ...contabilita().movimenti,
+        { id, tipo: d.tipo, data: d.data, importo: d.importo, voceId: d.voceId, cassaId: d.cassaId, descrizione: d.descrizione.trim(), ...(d.nota?.trim() ? { nota: d.nota.trim() } : {}), creatoIl: new Date().toISOString() },
+      ]
+      salva()
+      return id
+    },
+
+    async registraGiroconto(d) {
+      const { casse, chiusure } = contabilita()
+      const no = cosaNonVaGiroconto(d, casse, oggiARoma(), chiusure)
+      if (no) throw new Error(no)
+      const nome = (id: string) => casse.find((c) => c.id === id)?.nome ?? ''
+      const id = `m-${unico()}`
+      a().movimenti = [
+        ...contabilita().movimenti,
+        { id, tipo: 'giroconto', data: d.data, importo: d.importo, cassaId: d.daCassaId, cassaAId: d.aCassaId, descrizione: `Giroconto da ${nome(d.daCassaId)} a ${nome(d.aCassaId)}`, ...(d.nota?.trim() ? { nota: d.nota.trim() } : {}), creatoIl: new Date().toISOString() },
+      ]
+      salva()
+      return id
+    },
+
+    async annullaMovimento(id) {
+      const m = contabilita().movimenti.find((x) => x.id === id)
+      if (!m) throw new Error('Il movimento non c’è')
+      if (m.annullatoIl) throw new Error('Il movimento è già annullato')
+      const chiuso = cosaNonVaAnnulloMovimento(righeMovimenti([], [m], contabilita().voci)[0], contabilita().chiusure)
+      if (chiuso) throw new Error(chiuso)
+      a().movimenti = contabilita().movimenti.map((x) => (x.id === id ? { ...x, annullatoIl: new Date().toISOString() } : x))
+      salva()
+    },
+
+    async chiusure() {
+      return contabilita().chiusure.map((k) => ({ ...k }))
+    },
+
+    async chiudiCassa(d) {
+      const { casse, voci, movimenti, chiusure } = contabilita()
+      const no = cosaNonVaChiusura(d, casse, chiusure, oggiARoma())
+      if (no) throw new Error(no)
+      const cassa = casse.find((c) => c.id === d.cassaId)
+      if (!cassa) throw new Error('Scegli la cassa')
+      const nota = d.nota?.trim() || undefined
+      // Gli incassi in contanti si ricavano da ricevute e pagamenti a mano, come nell'elenco della schermata.
+      const elenco = elencoMovimenti(a().ricevute ?? [], a().pagamentiDiretti ?? [], [], casse, movimenti, voci)
+      const previsto = previstoCassa(casse, elenco, cassa.id, d.data)
+      const troppo = cosaNonVaPrevisto(previsto, d.contato)
+      if (troppo) throw new Error(troppo)
+      const differenza = d.contato - previsto
+      let movimentoId: string | undefined
+      if (differenza !== 0) {
+        const tipo = differenza > 0 ? 'entrata' : 'uscita'
+        const voce = voci.find((v) => v.nome === VOCE_DIFFERENZA && v.tipo === tipo)
+        movimentoId = `m-${unico()}`
+        a().movimenti = [
+          ...movimenti,
+          { id: movimentoId, tipo, data: d.data, importo: Math.abs(differenza), voceId: voce?.id, cassaId: cassa.id, descrizione: VOCE_DIFFERENZA, ...(nota ? { nota } : {}), creatoIl: new Date().toISOString() },
+        ]
+      }
+      const ultima = ultimaChiusura(chiusure, cassa.id)
+      const id = `k-${unico()}`
+      a().chiusure = [
+        ...chiusure,
+        {
+          id,
+          cassaId: cassa.id,
+          dal: dalDellaChiusura(cassa, ultima),
+          data: d.data,
+          previsto,
+          contato: d.contato,
+          differenza,
+          ...(nota ? { nota } : {}),
+          ...(movimentoId ? { movimentoId } : {}),
+          chiusaDa: 'Amministrazione',
+          chiusaIl: new Date().toISOString(),
+        },
+      ]
+      salva()
+      return id
+    },
+
+    async annullaChiusuraCassa(id) {
+      const { chiusure, movimenti } = contabilita()
+      const no = cosaNonVaAnnulloChiusura(id, chiusure)
+      if (no) throw new Error(no)
+      const adesso = new Date().toISOString()
+      const k = chiusure.find((x) => x.id === id)
+      a().chiusure = chiusure.map((x) => (x.id === id ? { ...x, annullataIl: adesso, annullataDa: 'Amministrazione' } : x))
+      if (k?.movimentoId) a().movimenti = movimenti.map((x) => (x.id === k.movimentoId ? { ...x, annullatoIl: adesso } : x))
+      salva()
+    },
+
+    async correggiTestoMovimento(id, descrizione, nota) {
+      const m = contabilita().movimenti.find((x) => x.id === id)
+      if (!m) throw new Error('Il movimento non c’è')
+      if (m.annullatoIl) throw new Error('Un movimento annullato non si corregge')
+      const testo = descrizione.trim()
+      if (!testo) throw new Error('Scrivi una descrizione')
+      if (testo.length > 200) throw new Error('La descrizione è troppo lunga: al massimo 200 caratteri')
+      if ((nota?.trim() ?? '').length > 300) throw new Error('La nota è troppo lunga: al massimo 300 caratteri')
+      const { nota: _vecchia, ...resto } = m
+      a().movimenti = contabilita().movimenti.map((x) => (x.id === id ? { ...resto, descrizione: testo, ...(nota?.trim() ? { nota: nota.trim() } : {}) } : x))
+      salva()
     },
 
     async registraPagamentoDiretto(dati) {
@@ -1267,6 +1518,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       a().iscrizioni = [...a().iscrizioni, ...sue.filter((y) => !a().iscrizioni.some((x) => x.personaId === resta && x.corsoId === y.corsoId)).map((y) => ({ ...y, personaId: resta }))]
 
       a().ricevute = (a().ricevute ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+      // Le tessere passano a chi resta; la stessa su tutte e due resta una (quella di chi resta), come `tessere_unione`.
+      const tessere = a().tessere ?? []
+      a().tessere = tessere
+        .filter((x) => !(x.personaId === via && tessere.some((y) => y.personaId === resta && y.ente === x.ente && y.tipo === x.tipo && y.dal === x.dal)))
+        .map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
       a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
       const an = a().anagrafiche ?? {}
       if (an[via]) {

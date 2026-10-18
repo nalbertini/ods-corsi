@@ -1,6 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
+import type { Cassa, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
@@ -16,10 +17,12 @@ import { nomeProprio, paroleCercate, somiglia } from './nomi'
 import type { SegnalataVista } from './segnalate'
 import type { Categoria, Segnalazione } from './segnalazioni'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
+import type { PezziPagina } from './sitoPezzi'
 import type { ImmagineSito } from './sitoImmagini'
 
 export type { ListaMusica } from './musica'
 import type { IndiziDoppioni } from './doppioni'
+import type { EsitoImportTessere, RigaRasd, TesseraSeg, TipoTessera } from './tessere'
 
 /**
  * La segreteria: il calendario della settimana, i corsi con i loro orari, gli
@@ -70,6 +73,8 @@ export interface CorsoSeg {
   istruttori: Istruttore[]
   capienza?: number
   attivo: boolean
+  /** Quale tessera chiede il corso (FIJLKAM, FIPE…); senza, nessuna (`61-tessere.sql`). */
+  enteTessera?: string
   /** Solo quelle ancora in corso o future: quelle chiuse restano nel registro. */
   ricorrenze: RicorrenzaSeg[]
 }
@@ -141,6 +146,8 @@ export interface PersonaSeg {
   nucleo?: string
   /** `AAAA-MM-GG`, dall'anagrafica; senza, l'età non si sa e il certificato serve (vedi `serveCertificato`). */
   natoIl?: string
+  /** Le sue tessere: non le dà `persone()`, le attacca `conTessere` (vedi `tessere.ts`). */
+  tessere?: TesseraSeg[]
 }
 
 /**
@@ -250,6 +257,8 @@ export interface DatiCorso {
   istruttori: string[]
   capienza?: number
   colore?: string
+  /** In maiuscolo; vuoto o assente: il corso non chiede una tessera. */
+  enteTessera?: string
 }
 
 /** Una lezione passata con il suo appello, per il resoconto delle presenze. */
@@ -532,6 +541,18 @@ export interface DatiSegreteria {
   salvaPagamento(personaId: string, p: PagamentoSeg): Promise<void>
 
   /**
+   * Le tessere di tutti (`61-tessere.sql`). `manca` dice che il database non ha
+   * ancora il file: l'elenco è vuoto e l'app lo dice invece di mostrare «nessuna tessera».
+   */
+  tessere(): Promise<{ elenco: TesseraSeg[]; manca?: boolean }>
+  /** Il foglio del RASD: con `soloProva` dice cosa farebbe senza scrivere, se no scrive le nuove. */
+  importaTessere(righe: RigaRasd[], soloProva: boolean): Promise<EsitoImportTessere>
+  /** Una tessera scritta a mano; vale fino al 31 dicembre dell'anno di `dal`. */
+  aggiungiTessera(t: { personaId: string; ente: string; tipo: TipoTessera; codice: string; dal: string; origine?: 'rasd' | 'manuale' }): Promise<void>
+  /** Si toglie, non si cambia: l'import dell'RASD si rifà. */
+  togliTessera(id: string): Promise<void>
+
+  /**
    * Il nucleo familiare (vedi `nucleo.ts`): mette una persona nel nucleo di
    * un titolare, la toglie, o la fa titolare al posto di quello di prima.
    * Solo in prova, per ora: col database rispondono che non c'è ancora.
@@ -558,10 +579,12 @@ export interface DatiSegreteria {
   sitoPagine(): Promise<PaginaSito[]>
   /** Il menu in alto e il footer del sito. */
   sitoMenu(): Promise<{ menu: VoceMenu[]; footer: VoceMenu[] }>
-  /** Una pagina nuova, solo bozza; dice il suo id. */
-  nuovaPaginaSito(titolo: string, slug: string): Promise<string>
+  /** Una pagina nuova, solo bozza; dice il suo id. Con `pezzi` nasce a pezzi (serve `62-sito-pezzi.sql`). */
+  nuovaPaginaSito(titolo: string, slug: string, pezzi?: PezziPagina): Promise<string>
   /** Salva la bozza; `versione` è quella che si aveva in mano, e dice la nuova. Se nel frattempo è cambiata lancia un errore. */
   salvaBozzaSito(id: string, versione: number, dati: { titolo: string; descrizione: string; bozza: string }): Promise<number>
+  /** Come `salvaBozzaSito` per una pagina a pezzi: salva i pezzi e il testo piatto che ne esce. */
+  salvaBozzaPezziSito(id: string, versione: number, dati: { titolo: string; descrizione: string; pezzi: PezziPagina }): Promise<number>
   /** La bozza diventa il testo del sito. Dice la nuova versione. */
   pubblicaPaginaSito(id: string, versione: number): Promise<number>
   /** Cambia l'indirizzo; il vecchio porta al nuovo. */
@@ -613,6 +636,28 @@ export interface DatiSegreteria {
   nomiPersone(ids: string[]): Promise<Array<{ id: string; nome: string; cognome: string }>>
   /** Chi ha pagato, cercato per nome: almeno tre lettere, al massimo otto, solo nome e cognome (`cerca_pagatori`). */
   cercaPagatori(scritto: string): Promise<Array<{ id: string; nome: string; cognome: string }>>
+  /** Le casse con il loro saldo iniziale (`59-contabilita.sql`). Solo per l'amministrazione, come tutto quello che segue. */
+  casse(): Promise<Cassa[]>
+  voci(): Promise<VoceContabile[]>
+  /** I movimenti scritti a mano, anche gli annullati; gli incassi degli iscritti si ricavano da `ricevute` e `pagamentiDiretti`. */
+  movimenti(): Promise<MovimentoManuale[]>
+  salvaVoce(d: { nome: string; tipo: 'entrata' | 'uscita' }): Promise<string>
+  rinominaVoce(id: string, nome: string): Promise<void>
+  /** Una voce usata non si cancella: si disattiva e non si offre più per i movimenti nuovi. */
+  attivaVoce(id: string, attiva: boolean): Promise<void>
+  salvaSaldoCassa(id: string, saldo: number, dal?: string): Promise<void>
+  registraMovimento(d: Omit<DatiMovimento, 'tipo'> & { tipo: 'entrata' | 'uscita' }): Promise<string>
+  registraGiroconto(d: DatiGiroconto): Promise<string>
+  /** Un movimento non si modifica né si cancella: si annulla e si rifà. */
+  annullaMovimento(id: string): Promise<void>
+  /** Solo la descrizione e la nota si correggono sul posto. */
+  correggiTestoMovimento(id: string, descrizione: string, nota?: string): Promise<void>
+  /** Le chiusure della Cassa Contanti, anche le annullate (`60-chiusura-cassa.sql`). */
+  chiusure(): Promise<ChiusuraCassa[]>
+  /** Chiude la Cassa Contanti fino a un giorno: il previsto lo calcola il database, la differenza si scrive da sé. Rende l'id. */
+  chiudiCassa(d: { cassaId: string; data: string; contato: number; nota?: string }): Promise<string>
+  /** Si annulla solo l'ultima chiusura, con il suo movimento di differenza. */
+  annullaChiusuraCassa(id: string): Promise<void>
   /** Registra un pagamento fatto a mano, senza ricevuta. */
   registraPagamentoDiretto(d: DatiPagamentoDiretto): Promise<PagamentoDiretto>
   /** Lo annulla: resta in elenco, segnato annullato. */
@@ -1446,13 +1491,16 @@ export function corsoCambiato(corso: CorsoSeg | null, bozza: DatiCorso, salaIniz
     istruttori: corso?.istruttori.map((i) => i.id) ?? [],
     capienza: corso?.capienza,
     colore: corso?.colore ?? COLORI[0].hex,
+    enteTessera: corso?.enteTessera ?? '',
   }
   return (
     bozza.nome.trim() !== salvato.nome.trim() ||
     (bozza.salaId ?? '') !== (salvato.salaId ?? '') ||
     istruttoriDetti(bozza.istruttori) !== istruttoriDetti(salvato.istruttori) ||
     bozza.capienza !== salvato.capienza ||
-    (bozza.colore ?? COLORI[0].hex) !== salvato.colore
+    (bozza.colore ?? COLORI[0].hex) !== salvato.colore ||
+    // Senza tessera è vuota o assente, lo stesso.
+    (bozza.enteTessera ?? '') !== salvato.enteTessera
   )
 }
 

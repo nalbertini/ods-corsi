@@ -225,6 +225,14 @@ export interface CorsoPerEta {
   prezzoDaConfermare?: true
 }
 
+/** Gli «altri corsi» restano chiusi dietro un tasto, ma un corso fuori età già scelto non si nasconde. */
+export const altriAperti = (aperti: boolean, altri: ReadonlyArray<{ id: string }>, scelti: readonly string[]): boolean =>
+  aperti || altri.some((c) => scelti.includes(c.id))
+
+/** Il tasto che apre gli «altri corsi». */
+export const testoAltriCorsi = (n: number, eta: 'tua' | 'sua'): string =>
+  `+ ${n === 1 ? '1 ALTRO CORSO' : `ALTRI ${n} CORSI`}, NON PER LA ${eta.toUpperCase()} ETÀ`
+
 /**
  * I corsi del modulo di iscrizione, divisi per l'anno di nascita: prima
  * quelli che vanno bene, poi gli altri, che si possono scegliere lo stesso.
