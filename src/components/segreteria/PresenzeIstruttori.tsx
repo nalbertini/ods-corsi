@@ -71,7 +71,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
   }, [])
   const periodi = useMemo(() => [...elencoMesi, ...anni], [elencoMesi, anni])
   // '' è «tutti i mesi»: i dodici del menu.
-  const [periodo, setPeriodo] = useState(periodi[0].chiave)
+  const [periodo, setPeriodo] = useState('')
   const [corso, setCorso] = useState('')
   const [istruttore, setIstruttore] = useState('')
   const [stato, setStato] = useState<StatoPresenzaIstruttore | ''>('')
