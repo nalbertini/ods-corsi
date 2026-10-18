@@ -29,12 +29,13 @@ Il testo sta in [`giocomotricita-e-psicomotricita.html`](giocomotricita-e-psicom
 - In cima la foto grande e le quattro tessere dei dati: frasi prese dal testo di oggi e dal design (Dove, Per iniziare: via Sassi 26 e settimana di prova a 5 euro, già nelle domande frequenti).
 - «Cos’è il corso», «Cosa si fa durante le lezioni», «Per chi è pensato» diventano tre tessere sotto le tessere dei dati, non più titoli grandi.
 - L’orario di oggi, scritto in un solo paragrafo, diventa una tessera per gruppo: nome, ora, giorni, anni di nascita.
-- «Cosa può aspettarsi un genitore»: le stesse frasi di oggi, una per tessera.
+- «Cosa può aspettarsi un genitore»: i titoli di oggi, una tessera ciascuno, con una frase nuova sotto.
 - «Perché sceglierlo» diventa la banda blu.
 - Il resto è identico al testo pubblicato.
 
 ## Da controllare prima di pubblicare
 
+- Le frasi sotto le tessere «Cosa può aspettarsi» sono nuove (lealtà, crescita insieme, fair play, divertimento, disciplina): le rilegga chi insegna, perché dicono come si lavora davvero.
 - Il testo di oggi dice «oppure» tra i due turni del venerdì (17:00 o 18:00): ho fatto due tessere, la segreteria conferma se il genitore sceglie uno dei due.
 - «Dai 3 ai 5 anni» viene dalla Home; l’orario dice «Psicomotricità (3/4/5 anni)» e «Giocomotricità (2023-2022)»: i nati 2023-2022 hanno 3-4 anni nel 2026.
 - Nessuna fila di foto: ne servirebbero 2 o 3 (FOTO DA SCEGLIERE: psicomotricità, oltre alla foto grande).

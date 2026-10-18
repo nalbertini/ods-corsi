@@ -29,12 +29,13 @@ Il testo sta in [`mga-metodo-globale-di-autodifesa.html`](mga-metodo-globale-di-
 - In cima la foto grande e le quattro tessere dei dati: frasi prese dal testo di oggi e dal design (Dove, Per iniziare: via Sassi 26 e settimana di prova a 5 euro, già nelle domande frequenti).
 - «Cos’è il corso», «Cosa si fa durante le lezioni», «Per chi è pensato» diventano tre tessere sotto le tessere dei dati, non più titoli grandi.
 - L’orario di oggi, scritto in un solo paragrafo, diventa una tessera per gruppo: nome, ora, giorni, anni di nascita.
-- «Cosa può aspettarsi un partecipante»: le stesse frasi di oggi, una per tessera.
+- «Cosa può aspettarsi un partecipante»: i titoli di oggi, una tessera ciascuno, con una frase nuova sotto.
 - «Perché sceglierlo» diventa la banda blu.
 - Il resto è identico al testo pubblicato.
 
 ## Da controllare prima di pubblicare
 
+- Le frasi sotto le tessere «Cosa può aspettarsi» sono nuove (lealtà, crescita insieme, fair play, divertimento, disciplina): le rilegga chi insegna, perché dicono come si lavora davvero.
 - CONTRADDIZIONE sull’età: Home e Corsi (design) dicono «Dai 15 anni · Adulti»; la pagina di oggi dice «adulti» e, nell’orario, «da 2015 in poi». Nella tessera dell’orario ho lasciato «da 2015 in poi» come oggi; la segreteria dice quale è giusto.
 - La slug online è /mga-metodo-globale-di-autodifesa/: Home e Corsi del design usano /mga/. Non la cambio.
 - FOTO DA SCEGLIERE: metodo globale di autodifesa. Provvisoria la foto degli istruttori in judogi.
