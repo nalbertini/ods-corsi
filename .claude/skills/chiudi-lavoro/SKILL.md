@@ -67,4 +67,4 @@ quelle lanciate e il loro esito; **Guida**, le pagine toccate.
 Dopo la PR: legarla alla sessione e accendere l'Auto-fix. Appena le prove su
 GitHub sono verdi e non ci sono conflitti, unirla con `gh pr merge --merge`
 (l'auto-merge di GitHub è spento nel repo). Se la PR cambia `supabase/`, si
-unisce solo dopo che l'utente ha detto di aver lanciato i file sul database.
+unisce solo dopo aver lanciato i file sul database vero (li lancia Claude: il sì dell'utente c'è già, vedi CLAUDE.md).
