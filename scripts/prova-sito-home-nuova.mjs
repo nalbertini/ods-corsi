@@ -250,13 +250,14 @@ console.log('\n9. Testata e piede di ogni pagina')
 console.log('\n13. Il testo pronto in docs/sito/home.html è una Home nuova completa')
 {
   const html = readFileSync('docs/sito/home.html', 'utf8').replace(/^<!doctype[^>]*>\s*<meta[^>]*>\s*<title>.*?<\/title>\s*/s, '')
+  ok('il testo pronto della Home non ha più «Perché unirti a noi?» né le citazioni accademiche (stanno in Chi siamo)', [html.includes('Perché unirti a noi'), html.includes('Lo sport secondo chi lo studia'), html.includes('<details')], [false, false, false])
   ok('le recensioni del testo pronto sono corrette: niente «x chi», la virgola di Nando, il punto di Davide', [html.includes(' x chi'), html.includes('amichevole, è ideale per chi si avvicina'), html.includes('Discretamente strutturato. Persone gentili e ben preparate.')], [false, true, true])
   const md = readFileSync('docs/sito/home.md', 'utf8')
   const titolo = md.match(/## Titolo\s+(.+)/)?.[1] ?? ''
   const frase = md.match(/## Descrizione\s+(.+)/)?.[1] ?? ''
   const h = genera({ dominio: F.DOMINIO, pagine: [{ slug: 'home', titolo, descrizione: frase, testo: html }, { slug: 'contatti', titolo: 'Contatti', descrizione: 'd', testo: '<p>x</p>' }], menu: [], rinvii: [], ospitiImmagini: [F.OSPITE_VECCHIO] })['index.html'] ?? ''
   ok('è riconosciuta come Home nuova, con il titolo e la frase di home.md', [/<main class="passo-unico">/.test(h), h.includes(`<h1>${titolo}</h1>`), h.includes(frase)], [true, true, true])
-  ok('4 numeri, 9 schede, 3 citazioni col «Leggi tutto», 5 recensioni, 5 domande, la chiamata finale', [conta(h, /tessera [a-z]+ numero/g), conta(h, /<article class="tessera [a-z]+ scheda">/g), conta(h, /<details class="intero">/g), conta(h, /citazione [a-z]+ larga/g), conta(h, /<article class="tessera chiara">/g), /<section class="sezione cta">/.test(h)], [4, 9, 3, 5, 5, true])
+  ok('4 numeri, 9 schede, nessuna citazione accademica, 5 recensioni, 5 domande, la chiamata finale', [conta(h, /tessera [a-z]+ numero/g), conta(h, /<article class="tessera [a-z]+ scheda">/g), conta(h, /<details class="intero">/g), conta(h, /citazione [a-z]+ larga/g), conta(h, /<article class="tessera chiara">/g), /<section class="sezione cta">/.test(h)], [4, 9, 0, 5, 5, true])
   ok('i due pulsanti: prova primo, Scrivici secondo, in testata, hero e chiamata finale', conta(h, /class="pulsante primario"[^>]*>Prova una settimana a 5 €<\/a><a class="pulsante secondario" href="\/contatti\/"[^>]*>Scrivici/g), 3)
   ok('tutte le foto sono del contenitore delle immagini', [...h.matchAll(/<img[^>]*src="([^"]+)"/g)].every((m) => m[1].startsWith(F.OSPITE_VECCHIO) || m[1].startsWith('/')), true)
 }

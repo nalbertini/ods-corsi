@@ -118,6 +118,27 @@ console.log('\n4b. Il testo da incollare (docs/sito/chi-siamo.html) è riconosci
   const host = 'https://qfejpnkryrvjubcxvuco.supabase.co/storage/v1/object/public/sito/'
   const m = main(g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'chi-siamo', titolo: 'Chi siamo', descrizione: 'd', testo: vero }], menu: [], rinvii: [], ospitiImmagini: [host] })['chi-siamo/index.html'])
   ok('riconosciuto, 8 foto, una chiamata finale, i 4 numeri e i 4 valori', [m.startsWith('<main class="passo-unico chi-siamo-nuova">'), conta(m, /<img /g), conta(m, /<section class="sezione cta">/g), conta(m, /class="tessera \w+ numero"/g), conta(m, /<span class="numero-perche"/g)], [true, 8, 1, 4, 4])
+  ok('il testo pronto ha le tre citazioni (Serena, Maria, Rinaldo) ognuna con estratto, testo intero e «Leggi tutto», prima della chiamata finale', [conta(m, /<blockquote class="tessera citazione /g), conta(m, /<summary>Leggi tutto<\/summary>/g), m.indexOf('Lo sport secondo chi lo studia') > 0 && m.indexOf('Lo sport secondo chi lo studia') < m.indexOf('class="sezione cta')], [3, 3, true])
+}
+
+console.log('\n4c. Le citazioni di chi studia lo sport stanno in Chi siamo, prima della chiamata finale')
+{
+  const E1 = 'Primo estratto di Serena […] con il suo seguito.'
+  const I1 = 'Primo estratto di Serena con il suo seguito, per intero.'
+  const E2 = 'Secondo estratto di Maria, senza testo intero.'
+  const CIT = `<h2>Lo sport secondo chi lo studia</h2><blockquote><p>${E1}</p><p>${I1}</p><p><em>Serena - Stud. di Medicina</em></p></blockquote><blockquote><p>${E2}</p><p><em>Maria - Psicologa</em></p></blockquote><blockquote><p>Terzo estratto di Rinaldo.</p><p>Terzo testo intero di Rinaldo.</p><p><em>Rinaldo - Prof. di Ed. Fisica</em></p></blockquote>`
+  const h = pagina(NUOVO.replace('<h2>Vieni a provare.</h2>', CIT + '<h2>Vieni a provare.</h2>'))
+  const m = main(h)
+  const sez = m.match(/<section class="sezione"><h2>Lo sport secondo chi lo studia<\/h2>([\s\S]*?)<\/section>/)?.[1] ?? ''
+  ok('tre carte «tessera citazione» in una griglia n-3 «estratti», col titolo della sezione', [/<div class="tessere n-3 estratti">/.test(sez), conta(sez, /<blockquote class="tessera citazione /g)], [true, 3])
+  ok('«Leggi tutto» c’è solo dove la segreteria ha scritto il testo intero (Serena e Rinaldo)', [...sez.matchAll(/<blockquote class="[^"]*citazione[^"]*">([\s\S]*?)<\/blockquote>/g)].map((c) => /<summary>Leggi tutto<\/summary>/.test(c[1])), [true, false, true])
+  ok('l’estratto è quello scritto, il testo intero sta dentro «Leggi tutto»', [sez.includes(E1), sez.includes(I1), sez.indexOf(I1) > sez.indexOf('<summary>')], [true, true, true])
+  ok('le firme hanno nome e ruolo', ['Serena - Stud. di Medicina', 'Maria - Psicologa', 'Rinaldo - Prof. di Ed. Fisica'].every((x) => sez.includes(x.split(' - ')[0]) && sez.includes(x.split(' - ')[1])), true)
+  ok('stanno prima della chiamata finale, che resta una sola', [m.indexOf('Lo sport secondo chi lo studia') < m.indexOf('class="sezione cta'), conta(m, /<section class="sezione cta/g)], [true, 1])
+  const c = css(h)
+  ok('la pagina porta il CSS delle citazioni e di «Leggi tutto»', [/\.tessera\.citazione/.test(c), /\.intero/.test(c)], [true, true])
+  const livelli = [...m.matchAll(/<h([1-6])\b/g)].map((x) => Number(x[1]))
+  ok('nessun salto di livello dei titoli', livelli.every((l, i) => i === 0 || l - livelli[i - 1] <= 1), true)
 }
 
 console.log('\n5. Titoli senza salti: h1, poi h2 per le sezioni, h3 per i valori')

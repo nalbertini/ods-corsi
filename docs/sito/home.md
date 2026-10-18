@@ -72,8 +72,8 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
   può cominciare, e dentro il gruppo va dal più piccolo al più grande. Se un corso non ha il
   paragrafo dell'età con un numero, o i corsi cadono in un gruppo solo, restano in un elenco unico.
 
-- **Perché unirti a noi?**: quattro titoli piccoli, ognuno col suo paragrafo.
-- **Citazioni**: più citazioni di fila. In ognuna: l'estratto (le virgolette le
+- **Perché unirti a noi?** (facoltativa, oggi non c'è): quattro titoli piccoli, ognuno col suo paragrafo.
+- **Citazioni** (oggi stanno in Chi siamo, non nella Home; la forma è la stessa): più citazioni di fila. In ognuna: l'estratto (le virgolette le
   mette il sito, non scriverle), poi il testo intero, poi la firma in corsivo.
   «Leggi tutto» apre il testo intero nella carta; senza il testo intero la
   citazione resta com'è. Il sito non accorcia mai un testo: l'estratto lo scrive chi pubblica, uguale alle parole dell'autore, con «[…]» dove si salta.
@@ -93,7 +93,7 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
 
 - Titolo da 156 px su tre righe, due pulsanti, foto di gruppo orizzontale; quattro numeri uguali; «Prova una settimana a 5 €» non è più un numero ma un pulsante.
 - Nove schede con foto (Judo, Lotta, Aikido, Preparazione atletica, Giocomotricità) o con l'iniziale, con testi di 12-14 parole.
-- «Perché unirti a noi?» ha un testo per ogni titolo e non ha più la fascia di quattro foto.
+- «Perché unirti a noi?» e «Lo sport secondo chi lo studia» non stanno più nella Home: i fatti sono nei quattro numeri sotto il titolo, le citazioni sono in Chi siamo (prima della chiamata finale).
 - «Lo sport secondo chi lo studia» al posto di «Cosa dicono gli esperti»; «Cosa dicono di noi» al posto di «Cosa dicono i nostri clienti» (recensioni uguali a prima, refusi compresi).
 - Cinque domande al posto di sei (le due sulla prova sono una).
 - Menu: sul telefono un tasto MENU; in testata e nel piede «vicino alla metro Fermi».
