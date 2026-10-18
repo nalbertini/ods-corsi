@@ -3,7 +3,7 @@ import { comeArrivata, previstiSenzaPresenza, type DatiSegreteria, type LezioneS
 import type { StatoPresenzaIstruttore } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { mesi } from '../../lib/ore'
-import { Guaio, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { chiedi, Guaio, Testa, useAvviso, useCarica, useOrdina } from './comune'
 
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 const perNome = (a: string, b: string) => a.localeCompare(b, 'it')
@@ -154,8 +154,10 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
       ricarica,
     )
 
-  const elimina = (x: PresenzaIstruttoreSeg) =>
+  const elimina = async (x: PresenzaIstruttoreSeg) => {
+    if (!(await chiedi(`Eliminare la presenza rifiutata di ${x.nome} in ${x.corso}? Sparisce dall'elenco.`, 'Elimina la presenza', { pericolo: true }))) return
     void fai(() => d.eliminaPresenzaIstruttore(x.id), `Presenza di ${x.nome} eliminata`, ricarica)
+  }
 
   return (
     <>
@@ -385,7 +387,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
                       {x.stato === 'confermata' ? 'Rifiuta' : 'Conferma'}
                     </button>
                     {x.stato === 'rifiutata' && (
-                      <button type="button" className="sg-link" disabled={lavora} onClick={() => elimina(x)}>
+                      <button type="button" className="sg-link sg-pericolo" disabled={lavora} onClick={() => void elimina(x)}>
                         Elimina
                       </button>
                     )}
