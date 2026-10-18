@@ -8,7 +8,8 @@ import { CSS_INTERNE } from './sitoInterne'
 import { cssFoci, cssFociSchede } from './sitoFoto'
 import { eContattiNuova, contattiNuova } from './sitoContatti'
 import { eHomeNuova, homeNuova } from './sitoHome'
-import { corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
+import { CSS_ORARIO_AUTOMATICO, corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
+import { testiOrario, type OrarioAperto } from './sitoOrario'
 import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
 import { CONTATTI } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
@@ -37,6 +38,8 @@ export interface PaginaGenerata {
   testo: string
   pubblicataIl?: string
   diLegge?: boolean
+  /** I corsi di CORSI da cui viene l'orario della pagina (`sito_pagine.corsi_collegati`). Vuoto o assente: l'orario resta quello scritto a mano. */
+  corsiCollegati?: string[]
 }
 
 export interface VoceGenerata {
@@ -55,6 +58,8 @@ export interface DatiSito {
   rinvii: Array<{ da: string; a: string }>
   /** Prefissi di indirizzo da cui le immagini del testo sono ammesse: il contenitore delle immagini (`…/storage/v1/object/public/sito/`). Vuoto: solo quelle del sito. */
   ospitiImmagini?: string[]
+  /** Le ricorrenze dei corsi (`orari_aperti()`): servono alle pagine collegate. Senza, una pagina collegata dice «Orario in arrivo». */
+  orari?: OrarioAperto[]
 }
 
 /**
@@ -1140,11 +1145,12 @@ function paginaCorsiNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, 
 
 /** La pagina del corso rivista (sitoCorso.ts): come la Home nuova, con la foto di apertura o la fascia sotto il titolo. */
 function paginaCorsoNuovo(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
-  const h = corsoNuovo(pulito, TESTI.iscrizione)
+  const collegata = (p.corsiCollegati?.length ?? 0) > 0
+  const h = corsoNuovo(pulito, TESTI.iscrizione, collegata ? testiOrario(p.corsiCollegati ?? [], c.d.orari ?? []) : undefined)
   const hero = `<section class="pagina-hero con-pulsanti solo"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div></section>`
   const corpo = `${testata(c, conContatti, percorso('corsi'))}<main class="passo-unico corso-nuovo" data-corso="${esc(p.slug)}">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: true })
-  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsoNuovo: cssFuochiCorso(p.slug), dati })
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsoNuovo: cssFuochiCorso(p.slug) + (collegata ? CSS_ORARIO_AUTOMATICO : ''), dati })
 }
 
 /** Contatti nuova (sitoContatti.ts): come la Home, testata, titolo con i due pulsanti, sezioni a passo unico; l'invito di sempre resta in fondo. */
@@ -1244,12 +1250,14 @@ export const PAGINE_DI_LEGGE = ['privacy', 'cookie', 'contributi-pubblici']
 /** Le risposte delle tre funzioni pubbliche del database (`sito_pagine_pubbliche`, `sito_menu_pubblico`, `sito_redirect_pubblici`) come servono al generatore. */
 export function datiDaRisposte(
   dominio: string,
-  pagine: Array<{ slug: string; titolo: string | null; descrizione: string | null; testo: string | null; pubblicata_il: string | null }>,
+  pagine: Array<{ slug: string; titolo: string | null; descrizione: string | null; testo: string | null; pubblicata_il: string | null; corsi_collegati?: string[] | null }>,
   menu: Array<{ dove: string; ordine: number; etichetta: string; slug: string | null; indirizzo: string | null }>,
   rinvii: Array<{ da: string; a: string }>,
+  orari?: Array<{ corso_id: string; giorno: number; ora: string; durata_min: number }>,
 ): DatiSito {
   return {
     dominio: dominio.replace(/\/+$/, ''),
+    // Senza `orari_aperti()` (orari assente) non si può dire «Orario in arrivo» per davvero: le pagine tornano non collegate.
     pagine: pagine.map((p) => ({
       slug: p.slug,
       titolo: p.titolo ?? '',
@@ -1257,8 +1265,10 @@ export function datiDaRisposte(
       testo: p.testo ?? '',
       pubblicataIl: p.pubblicata_il ?? undefined,
       diLegge: PAGINE_DI_LEGGE.includes(p.slug),
+      corsiCollegati: orari ? (p.corsi_collegati ?? []) : [],
     })),
     menu: menu.flatMap((v) => (v.dove === 'menu' || v.dove === 'footer' ? [{ dove: v.dove, ordine: v.ordine, etichetta: v.etichetta, slug: v.slug, indirizzo: v.indirizzo }] : [])),
     rinvii,
+    orari: (orari ?? []).map((o) => ({ corsoId: o.corso_id, giorno: o.giorno, ora: o.ora, durataMin: o.durata_min })),
   }
 }

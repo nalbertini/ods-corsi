@@ -590,6 +590,8 @@ export interface DatiSegreteria {
   /** Cambia l'indirizzo; il vecchio porta al nuovo. */
   cambiaIndirizzoSito(id: string, slug: string): Promise<void>
   nascondiPaginaSito(id: string, nascosta: boolean): Promise<void>
+  /** I corsi da cui viene l'orario della pagina (vuoto = orario scritto a mano). Non tocca la bozza: serve `68-sito-orario.sql`. */
+  collegaCorsiSito(id: string, corsi: string[]): Promise<void>
   cancellaPaginaSito(id: string): Promise<void>
   /** Riscrive il menu o il footer con queste voci, nell'ordine dato. */
   salvaMenuSito(dove: 'menu' | 'footer', voci: VoceMenu[]): Promise<void>

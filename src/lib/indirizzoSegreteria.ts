@@ -84,6 +84,9 @@ export function leggiIndirizzo(hash: string, { prova }: { prova: boolean }): Pos
   return posto
 }
 
+/** L'indirizzo completo di un posto per un link: percorso e query prima del cancelletto, o le pagine delle aree (`<base href="../">`) portano via dalla segreteria. */
+export const indirizzoCompleto = (luogo: { pathname: string; search: string }, p: Posto): string => luogo.pathname + luogo.search + scriviIndirizzo(p)
+
 /** L'indirizzo di un posto, col cancelletto: solo i campi del posto, il resto resta fuori. */
 export function scriviIndirizzo(p: Posto): string {
   if (p.voce === 'iscritti' && p.nuovo) return '#iscritti/nuovo'

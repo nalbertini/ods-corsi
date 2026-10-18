@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA, telefono 390px · pagina collegata a più corsi: anteprima, campo orario spento, promemoria. -->
+<div style="display:flex;flex-direction:column;width:390px;min-height:844px;background:#eef5fa;color:#0d2a3d">
+  <dc-import name="BarraTelefono" tema="sito" luogo="SEGRETERIA" da-fare="5" hint-size="100%,62px"></dc-import>
+  <main style="display:flex;flex-direction:column;gap:14px;padding:18px 16px 28px">
+    <div style="display:flex;flex-direction:column;gap:6px"><h1 style="margin:0;font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-size:30px;font-weight:800;letter-spacing:0.04em;line-height:1;text-transform:uppercase">Avviamento alle arti marziali</h1><div><span style="display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:6px;border:1.5px solid #0b7a33;background:#ffffff;color:#0b7a33;font-size:13px;font-weight:600;white-space:nowrap">Collegata a 2 corsi</span></div></div>
+    
+    <div style="display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:6px;background:#ffffff"><span style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#46606f">Collegata al corso</span><span style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 6px 0 12px;border-radius:6px;border:2px solid #14709f;background:#ffffff;font-size:15px;font-weight:600">Avviamento alle arti marziali<span style="font-weight:400;color:#46606f"> · 2 giorni</span><span aria-label="Scollega Avviamento alle arti marziali" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;font-size:18px">✕</span></span><span style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 6px 0 12px;border-radius:6px;border:2px solid #14709f;background:#ffffff;font-size:15px;font-weight:600">Avviamento · gruppo piccoli<span style="font-weight:400;color:#46606f"> · 2 righe</span><span aria-label="Scollega Avviamento · gruppo piccoli" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;font-size:18px">✕</span></span><span style="display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:6px;border:2px dashed #14709f;background:transparent;color:#14709f;font-size:15px;font-weight:600">+ Un altro corso</span></div>
+    <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="sola-lettura" etichetta="Orario (scritto a mano)" valore="Ora vale CORSI" hint-size="100%,60px"></dc-import>
+    <span style="font-size:14px;line-height:1.4;color:#46606f">Il testo scritto a mano resta: se scolleghi lo ritrovi.</span>
+    <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#46606f">Così lo vede il sito</span><div style="padding:12px;border-radius:6px;background:#eef5fa;border:1px solid #cfe6f4"><div style="display:flex;flex-direction:column;gap:6px"><div style="display:grid;grid-template-columns:1fr auto;gap:0 10px;align-items:start;padding:14px 16px;border-radius:6px;background:#cfe6f4;color:#0d2a3d"><span style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:24px;line-height:1;text-transform:uppercase">Lunedì e mercoledì</span><span style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:22px;line-height:1;white-space:nowrap">17:00–18:00</span></div><div style="display:grid;grid-template-columns:1fr auto;gap:0 10px;align-items:start;padding:14px 16px;border-radius:6px;background:#cfe6f4;color:#0d2a3d"><span style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:24px;line-height:1;text-transform:uppercase">Martedì e giovedì</span><span style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:22px;line-height:1;white-space:nowrap">16:30–17:30</span></div><div style="display:grid;grid-template-columns:1fr auto;gap:0 10px;align-items:start;padding:14px 16px;border-radius:6px;background:#cfe6f4;color:#0d2a3d"><span style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:24px;line-height:1;text-transform:uppercase">Sabato</span><span style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:22px;line-height:1;white-space:nowrap">10:00–11:00</span></div><div style="display:grid;grid-template-columns:1fr auto;gap:0 10px;align-items:start;padding:14px 16px;border-radius:6px;background:#f4c31b;color:#0d2a3d"><span style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:24px;line-height:1;text-transform:uppercase">Sabato</span><span style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;font-weight:800;font-size:22px;line-height:1;white-space:nowrap">11:15–12:15</span></div></div></div><span style="font-size:14px;line-height:1.4;color:#46606f">Giorno, ora e durata. Mai sala, istruttore o posti.</span></div>
+    <span style="font-size:14px;line-height:1.4;color:#46606f">Si aggiorna da solo: un cambio in CORSI arriva sul sito entro 5 minuti, senza premere Pubblica.</span><span style="font-size:14px;line-height:1.4;color:#0d2a3d"><b>Controlla a mano:</b> l’età e il testo. Frasi come «il martedì alle 18» scritte nel testo non le cambia nessuno.</span>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>
