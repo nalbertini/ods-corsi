@@ -91,7 +91,7 @@ function BarraFoto({ editor, d }: { editor: Editor; d: DatiSegreteria }) {
         <span>Solo decorativa</span>
       </label>
       <Tasto nome="Cambia foto" etichetta="CAMBIA FOTO" onClick={() => setCambia(true)} />
-      <button type="button" className="sg-btn sg-btn-linea sg-pericolo sito-tasto" onClick={() => editor.chain().focus().deleteSelection().run()}>
+      <button data-bozza type="button" className="sg-btn sg-btn-linea sg-pericolo sito-tasto" onClick={() => editor.chain().focus().deleteSelection().run()}>
         Togli la foto
       </button>
       {guaio && <span role="alert" className="modulo-nota" style={{ flexBasis: '100%' }}>{guaio}</span>}
