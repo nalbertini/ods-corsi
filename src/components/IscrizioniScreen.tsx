@@ -37,7 +37,7 @@ export function IscrizioniScreen() {
   const sezioni: Record<Sezione, () => JSX.Element> = {
     apertura: () => <Apertura onModulo={() => vai(true)} />,
     serve: () => <CosaServe />,
-    prova: () => <Prova />,
+    prova: () => <Prova etichetta={PROVA.etichetta} />,
     costi: () => <Costi />,
     paga: () => <ComeSiPaga />,
     richiesta: () => (

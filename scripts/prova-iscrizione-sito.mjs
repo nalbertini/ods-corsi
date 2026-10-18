@@ -192,7 +192,9 @@ for (const sel of [':root', ":root[data-tema='chiaro']", ":root[data-tema='tatam
   if (prima !== null) ok(`il blocco ${sel} non è cambiato`, rOra.filter((r) => r.selettori.includes(sel)).map(chiaveR), rPrima.filter((r) => r.selettori.includes(sel)).map(chiaveR))
 // Il look della segreteria (`data-look`, PR successive a questa) ha la sua prova (`prova:look`): le sue regole possono cambiare.
 const delLook = (r) => r.selettori.some((x) => x.includes('data-look'))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !delLook(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// La griglia a due colonne della pagina d'ingresso (passi | costi) è stata tolta di proposito: ora è una colonna sola (`prova:iscrizione-pagina`). Le altre regole restano tutte.
+const impaginazioneVecchia = (r) => r.selettori.some((x) => /^\.scroll > \.iscrizioni$|^\.iscrizioni-passi$|^\.iscrizioni #costi$|^\.iscrizioni-nota$/.test(x))
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !delLook(r) && !impaginazioneVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

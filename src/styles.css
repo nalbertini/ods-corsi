@@ -938,7 +938,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .iscrizioni-titolo { margin: 0; font-family: var(--cond); font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; text-transform: uppercase; }
 .iscrizioni-frase { font-size: 17px; line-height: 1.45; }
 .iscrizioni-apertura .passo-btn, .iscrizioni-richiesta .passo-btn { align-self: stretch; min-height: 56px; }
-.iscrizioni-richiesta { padding-top: 20px; padding-bottom: 6px; }
+.iscrizioni-richiesta { display: flex; flex-direction: column; padding-top: 20px; padding-bottom: 6px; }
 .iscrizioni-piede { padding-top: 14px; padding-bottom: 32px; }
 .iscrizioni-contatti { padding-bottom: 16px; }
 .prova-testa { gap: 10px; align-items: baseline; flex-wrap: wrap; }
