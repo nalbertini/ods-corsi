@@ -22,8 +22,9 @@ elenco, che compaiono negli appelli e sul tablet.
   certificato: da quel giorno serve, e conviene avvisare la famiglia prima.
 - **DA PAGARE** — chi è attivo e non ha la quota associativa pagata: nessuna ricevuta
   con la quota, pagata solo in parte, o scaduta.
-- **NON IN REGOLA** — chi è attivo e ha il certificato o la quota da sistemare. Ci arrivi
+- **NON IN REGOLA** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
   anche dal bottone **CHI NON È IN REGOLA** delle [Statistiche](statistiche.md).
+- **SENZA TESSERA** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([TESSERE](tessere.md)).
 - **SENZA DOCUMENTO** — chi non ha ancora la copia del documento d'identità in
   segreteria.
 - **NON ARCHIVIATO** — solo finché ce ne sono: chi ha un file di certificato
@@ -45,11 +46,11 @@ elenco, che compaiono negli appelli e sul tablet.
   sezione **NON SONO DOPPIONI** → **TOGLI** accanto all'altra.
 
 La colonna **IN REGOLA** dice in un colpo d'occhio cosa manca: in verde
-**IN REGOLA** se certificato e quota sono a posto (**FUORI APP**, in grigio,
+**IN REGOLA** se certificato, quota e tessera sono a posto (**FUORI APP**, in grigio,
 se la quota è pagata senza una ricevuta dell'app); altrimenti in rosso
 **NO CERTIFICATO**, **CERT. SCADUTO**, **DA PAGARE** o **QUOTA SCADUTA**, e in
 giallo **SCADE IL 14/10** (entro un mese; **SCADE OGGI** l'ultimo giorno) o
-**IN PARTE**. Sotto i 6 anni il certificato non serve: il bambino è
+**IN PARTE**. Per chi è iscritto a un corso che chiede la tessera ci sono anche **NO TESSERA** e **TESSERA SCADUTA** in rosso, e **TESSERA SCADE A DICEMBRE** in giallo (da 60 giorni prima della fine; non conta nei filtri). Sotto i 6 anni il certificato non serve: il bambino è
 **IN REGOLA** con la quota pagata, e accanto c'è **CERT. NON SERVE** in grigio;
 un mese prima del compleanno diventa **SERVE DAL 14/10** in giallo. Per
 sapere l'età serve la data di nascita: senza, il certificato serve come per
@@ -92,7 +93,7 @@ Anche il tasto Indietro del browser torna all'elenco, dalla scheda come dal
 modulo di un iscritto nuovo, e una scheda aperta
 resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 
-In cima, tre timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
+In cima, i timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
 grandi (verde a posto, giallo da guardare, rosso manca), con le parole
 dell'elenco ma la data intera: **SCADUTO IL 25/09/2026**, **VALIDO FINO
 AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
@@ -204,6 +205,10 @@ scheda è disattivata, nessuno.
   non ferma l'unione: passa a chi resta. Unite quando gli appelli del giorno sono
   arrivati: un appello fatto senza rete che arriva dopo sulla scheda che se
   ne va si perde.
+
+## Le tessere
+
+Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a quando vale (**FIJLKAM · agonista · fino al 31 dicembre 2026**), il numero, se viene dal RASD o è scritta a mano, e se è **IN REGOLA**, **SCADE A DICEMBRE** o **SCADUTA**. Senza tessera la scheda dice se il corso la chiede. **+ AGGIUNGI UNA TESSERA** serve per chi non è nel foglio del RASD; **TOGLI** la toglie, dopo una conferma, e **ANNULLA** nell'avviso la rimette com'era. In cima alla scheda c'è anche il timbro **TESSERA** (solo per chi ha un corso che la chiede). Le tessere del RASD non si cambiano: si rifà l'import ([Tessere](tessere.md)).
 
 ## Un pagamento e la sua ricevuta
 

@@ -264,7 +264,8 @@ ok('un corso scelto che non è tra gli altri: restano chiusi', prova(() => m.alt
 ok('nessun altro corso: chiusi', prova(() => m.altriAperti(false, [], ['a'])), false)
 ok('il tasto per la sua età', prova(() => m.testoAltriCorsi(3, 'sua')), '+ ALTRI 3 CORSI, NON PER LA SUA ETÀ')
 ok('il tasto per la tua età', prova(() => m.testoAltriCorsi(3, 'tua')), '+ ALTRI 3 CORSI, NON PER LA TUA ETÀ')
-ok('il tasto con un corso solo resta al plurale', prova(() => m.testoAltriCorsi(1, 'sua')), '+ ALTRI 1 CORSI, NON PER LA SUA ETÀ')
+ok('il tasto con un corso solo è al singolare', prova(() => m.testoAltriCorsi(1, 'sua')), '+ 1 ALTRO CORSO, NON PER LA SUA ETÀ')
+ok('…anche per la tua età', prova(() => m.testoAltriCorsi(1, 'tua')), '+ 1 ALTRO CORSO, NON PER LA TUA ETÀ')
 // Un corso senza voce nel listino non ha fasce: non è mai «non per la sua età».
 ok('un corso senza voce con la data: in senzaAnni, mai negli altri', prova(() => { const r = m.corsiPerEta([{ id: 'q', nome: 'Zumba' }], voci, '2018-05-10'); return [r.senzaAnni.map((c) => c.id), r.altri.map((c) => c.id)] }), [['q'], []])
 

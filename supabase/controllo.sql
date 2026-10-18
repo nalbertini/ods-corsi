@@ -293,6 +293,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'nomi_persone')
     and exists (select 1 from dentro where nome = 'cerca_pagatori')
     and to_regclass('public.ricerche_pagatori') is not null),
+  ('61-tessere.sql', 'le tessere, e quale tessera chiede un corso',
+    to_regclass('public.tessere') is not null
+    and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'corsi' and column_name = 'ente_tessera')),
+  ('61-tessere.sql', 'l''import dal RASD e l''unione delle schede',
+    exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'importa_tessere')
+    and exists (select 1 from pg_trigger where tgname = 'tessere_unione' and not tgisinternal)),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

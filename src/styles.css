@@ -1562,7 +1562,7 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 /* La striscia COSA MANCA, in cima al corpo: quattro caselle, ognuna un tasto. Il segno sotto dice lo stato col colore, il numero
    e la nota lo dicono con le parole (✓ 0, «—», «scaduti o mancanti»): non solo colore. */
 .sg-mancano {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); flex-shrink: 0;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); flex-shrink: 0;
   background: var(--surface); border: 2px solid var(--riga-campo);
 }
 .sg-mancano-casella {
@@ -1583,25 +1583,29 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-mancano-nota { font-size: 16px; color: var(--dim); }
 .sg-mancano .sg-mancano-riconta { grid-column: 1 / -1; border-width: 0; border-top: 2px solid var(--line); }
 .sg-mancano-casella:focus-visible { outline-offset: -2px; }
-/* Il menu di 240px più quattro caselle da 22px di margine non ci stanno sotto 1240px: due per due. */
-@media (max-width: 1240px) {
+/* Il menu di 240px più cinque caselle da 22px di margine non ci stanno sotto 1360px: due per due, l'ultima da sola sulla riga. */
+@media (max-width: 1360px) {
   .sg-mancano { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sg-mancano-casella:nth-child(3) { border-left: 0; }
+  .sg-mancano-casella:nth-child(odd) { border-left: 0; }
   .sg-mancano-casella:nth-child(n + 3) { border-top: 2px solid var(--tratteggio); }
+  .sg-mancano-casella:nth-child(5) { grid-column: 1 / -1; }
 }
-/* Fra 1241 e 1480px le quattro caselle ci stanno ma strette: il numero scende un po' e il resto si stringe, così i titoli vanno a capo meno. */
-@media (min-width: 1241px) and (max-width: 1480px) {
-  .sg-mancano-casella { gap: 12px; padding: 14px 14px; }
-  .sg-mancano-n { font-size: 52px; }
-  .sg-mancano-titolo { letter-spacing: 0.06em; }
+/* Fra 1361 e 1700px le cinque caselle ci stanno ma strette: il numero scende e il resto si stringe, così i titoli vanno a capo meno. */
+@media (min-width: 1361px) and (max-width: 1700px) {
+  .sg-mancano-casella { gap: 10px; padding: 14px 12px; }
+  .sg-mancano-n { font-size: 44px; }
+  .sg-mancano-titolo { letter-spacing: 0.04em; font-size: 17px; }
+  .sg-mancano-nota { font-size: 14px; }
 }
 /* Su uno schermo basso (il portatile della reception, circa 700px) la striscia a due righe lasciava alla griglia della settimana 82px:
    una riga sola, bassa, senza la nota (il nome accessibile e il segno la dicono già). */
 @media (max-height: 800px) and (min-width: 768px) {
-  .sg-mancano { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .sg-mancano { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .sg-mancano-casella { min-height: 0; padding: 8px 12px; gap: 10px; border-bottom-width: 6px; }
   .sg-mancano-casella:nth-child(n + 3) { border-top: 0; }
-  .sg-mancano-casella:nth-child(3) { border-left: 2px solid var(--tratteggio); }
+  .sg-mancano-casella:nth-child(odd) { border-left: 2px solid var(--tratteggio); }
+  .sg-mancano-casella:nth-child(1) { border-left: 0; }
+  .sg-mancano-casella:nth-child(5) { grid-column: auto; }
   .sg-mancano-n { font-size: 36px; }
   .sg-mancano-titolo { font-size: 14px; letter-spacing: 0.04em; }
   .sg-mancano-nota { display: none; }
@@ -2025,6 +2029,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-segno-regola[data-tono='spento'] { color: var(--dim); }
 /* I timbri in cima alla scheda: bordo e parola del colore dello stato, il resto si legge sul fondo. */
 .sg-timbri { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.75fr); gap: 12px; align-items: stretch; }
+.sg-timbri[data-con-tessera] { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 0.75fr); }
 .sg-timbro {
   display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 44px; min-width: 0;
   padding: 12px 14px; text-align: left; background: var(--bg); border: 2px solid var(--tono, var(--line)); border-left-width: 4px;
@@ -2051,7 +2056,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-timbri-spenta strong { margin-right: 8px; font-family: var(--cond); font-size: 19px; font-weight: 700; letter-spacing: 0.12em; color: var(--text); }
 /* Sotto i 1000px la scheda è una colonna stretta: tre timbri in fila andrebbero a capo parola per parola. */
 @media (max-width: 1000px) {
-  .sg-timbri { grid-template-columns: minmax(0, 1fr); }
+  .sg-timbri, .sg-timbri[data-con-tessera] { grid-template-columns: minmax(0, 1fr); }
 }
 .sg-iscritto {
   width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid var(--surface-2); text-align: left;
