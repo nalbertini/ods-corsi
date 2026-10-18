@@ -22,8 +22,10 @@ export interface Cornice {
   indirizzo: string
 }
 
-/** I colori dei ritratti, come nel design (tredici tessere disegnate a mano); oltre la tredicesima si riparte. */
-const COLORI_RITRATTI = ['giallo', 'blu', 'inchiostro', 'blu', 'inchiostro', 'giallo', 'inchiostro', 'giallo', 'blu', 'blu', 'inchiostro', 'blu', 'inchiostro'] as const
+/** Chi sta in testa all'elenco, in quest'ordine; gli altri seguono come scritti. */
+const IN_TESTA = ['maurizio', 'maura', 'diana', 'fabio', 'tiziano', 'valerio', 'manuel', 'federico']
+/** I colori dei ritratti: a diagonali (riga + colonna), così nessun vicino, in riga o in colonna, ha lo stesso colore. */
+const COLORI_RITRATTI = ['giallo', 'blu', 'inchiostro'] as const
 const COLORI_DATI = ['chiara', 'blu', 'inchiostro', 'giallo'] as const
 const COLONNE = 4
 /** Una tessera d'invito più stretta di due colonne non ha spazio per il titolo: meglio l'invito di fondo pagina. */
@@ -67,7 +69,7 @@ function nomeELink(h3: Blocco, slugs: ReadonlySet<string>): { nome: string; href
 export function elencoIstruttori(testoPulito: string, c: Cornice): { html: string; resto: string; conInvito: boolean } | null {
   const b = blocchi(testoPulito)
   if (b[0]?.tag !== 'h3' || b.some((x) => x.tag === 'h2')) return null
-  const tessere: string[] = []
+  const tecnici: { nome: string; scheda: (colore: string) => string }[] = []
   let i = 0
   while (i < b.length && b[i].tag === 'h3') {
     const { nome, href } = nomeELink(b[i], c.slugs)
@@ -78,9 +80,12 @@ export function elencoIstruttori(testoPulito: string, c: Cornice): { html: strin
     const titolo = `<span class="nome">${nome}</span>${cognome ? ` <span class="cognome">${cognome}</span>` : ''}`
     const ritratto = foto !== null ? `<span class="ritratto-foto">${conAlt(foto, `Ritratto di ${testoSolo(`${nome} ${cognome}`)}`)}</span>` : `<span class="ritratto-foto" aria-hidden="true">${iniziali(nome).slice(0, 1)}</span>`
     const pastiglie = corsi.length ? `<span class="pillole">${corsi.map((x) => `<span class="pillola">${x}</span>`).join('')}</span>` : ''
-    tessere.push(`<article class="tessera ritratto ${COLORI_RITRATTI[tessere.length % COLORI_RITRATTI.length]}">${ritratto}<div class="ritratto-testo"><h3>${href ? `<a href="${href}">${titolo}</a>` : titolo}</h3>${pastiglie}</div></article>`)
+    tecnici.push({ nome, scheda: (colore) => `<article class="tessera ritratto ${colore}">${ritratto}<div class="ritratto-testo"><h3>${href ? `<a href="${href}">${titolo}</a>` : titolo}</h3>${pastiglie}</div></article>` })
   }
-  if (tessere.length < 2) return null
+  if (tecnici.length < 2) return null
+  // sort è stabile: chi non è in elenco tiene l'ordine in cui è scritto.
+  const posto = (nome: string) => { const k = IN_TESTA.indexOf(nome.trim().toLowerCase()); return k < 0 ? IN_TESTA.length : k }
+  const tessere = [...tecnici].sort((a, b) => posto(a.nome) - posto(b.nome)).map((t, k) => t.scheda(COLORI_RITRATTI[(Math.floor(k / COLONNE) + (k % COLONNE)) % COLORI_RITRATTI.length]))
   const vuote = (COLONNE - (tessere.length % COLONNE)) % COLONNE
   const invito = vuote >= INVITO_MIN
     ? `<div class="tessera ritratto-invito s${vuote}"><p class="parola">Vieni a conoscerli sul tatami.</p><p class="frase">Una settimana a 5 €: provi tutte le discipline, incontri gli istruttori e scegli. Ti aspettiamo in ${esc(c.indirizzo)}.</p>${azioni(c)}</div>`

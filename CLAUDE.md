@@ -52,7 +52,9 @@ Le stesse girano su ogni PR (`.github/workflows/controlla.yml`).
   Prima della PR, la skill `chiudi-lavoro`.
 - `guida/novita.md` e `version` in `package.json` li scrive
   `scripts/versione.mjs` quando si pubblica: non si toccano.
-- Sul database vero non si lancia niente senza un sì dell'utente.
+- Sul database vero i file SQL di una PR li lancia Claude, prima di unirla: il sì dell'utente
+  c'è già (regola data il 2026-10-18). Ogni altra scrittura sul database vero
+  (dati, cancellazioni, cose fuori dalla PR) resta con il sì dell'utente.
 - Una funzione che cambia qualcosa che si vede parte dal design: proposta in
   un canvas che parte dalla libreria, discussione con l'utente, solo dopo
   prove e codice, e a fine lavoro la libreria aggiornata (skill
@@ -69,8 +71,8 @@ Le stesse girano su ogni PR (`.github/workflows/controlla.yml`).
   commit di merge.
 - Ogni PR ha l'Auto-fix acceso, e si unisce da sé appena le prove su GitHub
   sono verdi e non ci sono conflitti: il sì dell'utente c'è già. Tranne
-  quando cambia `supabase/`: lì si aspetta che l'utente abbia lanciato i file
-  sul database vero, se no l'app pubblicata cerca cose che non ci sono.
+  quando cambia `supabase/`: lì prima si lanciano i file sul database vero
+  (li lancia Claude), se no l'app pubblicata cerca cose che non ci sono.
 
 ## graphify
 

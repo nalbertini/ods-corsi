@@ -745,10 +745,11 @@ function Scheda({
                   </span>
                   <button
                     type="button"
-                    className="sg-btn sg-btn-linea"
+                    className="sg-btn sg-btn-linea sg-pericolo"
                     aria-label={`Togli il segno «non sono doppioni» con ${x.cognome} ${x.nome}`}
                     disabled={togliendo}
                     onClick={async () => {
+                      if (!(await chiedi(`Togliere il segno «non sono doppioni» con ${x.cognome} ${x.nome}? Se sembrano la stessa persona tornano fra i possibili doppioni.`, 'Togli il segno', { pericolo: true }))) return
                       // Fermo finché la scheda non si rilegge: tolta la riga, il secondo clic di un doppio clic finirebbe su MODIFICA.
                       setTogliendo(true)
                       await fai(() => d.togliNonDoppioni(p.id, x.id), 'Tolto: se sembrano la stessa persona tornano fra i possibili doppioni', onCambiato)
@@ -763,22 +764,18 @@ function Scheda({
           )}
       </div>
 
-      <div role="tabpanel" id={idPannello('documenti')} aria-labelledby={idLinguetta('documenti')} hidden={aperta !== 'documenti'} className="sg-scheda-griglia">
-        <div className="stack" style={{ gap: 20, minWidth: 0 }}>
+      <div role="tabpanel" id={idPannello('documenti')} aria-labelledby={idLinguetta('documenti')} hidden={aperta !== 'documenti'} className="stack" style={{ gap: 20, minWidth: 0 }}>
           <div id="sez-certificato">
             <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>
-        </div>
-        <div className="stack" style={{ gap: 20, minWidth: 0 }}>
           <TessereDellaPersona key={`t-${p.id}-${(tessere ?? []).length}`} d={d} p={p} tessere={tessere} corsi={corsi} oggi={chiaveGiorno(new Date())} fai={fai} avvisa={avvisa} onCambiato={onCambiato} />
           <div id="sez-documento">
             <Documento d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>
-        </div>
       </div>
 
       <div role="tabpanel" id={idPannello('quota')} aria-labelledby={idLinguetta('quota')} hidden={aperta !== 'quota'}>
-        <div id="sez-quota" className="sg-scheda-griglia">
+        <div id="sez-quota" className="stack" style={{ gap: 24, minWidth: 0 }}>
             <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
             <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
         </div>
@@ -913,9 +910,9 @@ function Scheda({
             </button>
             <button
               type="button"
-              className="sg-btn sg-btn-linea grow"
+              className="sg-btn sg-btn-linea grow sg-pericolo"
               onClick={async () => {
-                if (p.attiva && !(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'Disattiva la scheda'))) return
+                if (p.attiva && !(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'Disattiva la scheda', { pericolo: true }))) return
                 void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Scheda disattivata' : 'Scheda riattivata', onCambiato)
               }}
             >
@@ -1234,9 +1231,9 @@ function NucleoFamiliare({
           </button>
           <button
             type="button"
-            className="num sg-chip"
+            className="num sg-chip sg-pericolo"
             onClick={async () => {
-              if ((await chiedi(`Togliere ${x.nome} ${x.cognome} dal nucleo? Resta iscritto, ma il titolare non lo vede più nella sua pagina.`, 'Togli dal nucleo')))
+              if ((await chiedi(`Togliere ${x.nome} ${x.cognome} dal nucleo? Resta iscritto, ma il titolare non lo vede più nella sua pagina.`, 'Togli dal nucleo', { pericolo: true })))
                 void fai(() => d.togliDalNucleo(x.id), 'Tolto dal nucleo', onCambiato)
             }}
           >
@@ -1596,7 +1593,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
           {(c.conFile || c.scade) && (
             <button
               type="button"
-              className="sg-btn sg-btn-linea"
+              className="sg-btn sg-btn-linea sg-pericolo"
               onClick={async () => {
                 if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file si cancella per sempre.' : ''} Senza certificato non entra in sala finché non se ne carica uno nuovo.`, 'Togli il certificato', { pericolo: true })))
                   void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
@@ -1730,10 +1727,10 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
       ) : eccezione ? (
         <button
           type="button"
-          className="sg-link"
+          className="sg-link sg-pericolo"
           style={{ alignSelf: 'flex-start' }}
           onClick={async () => {
-            if ((await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'Togli l’eccezione')))
+            if ((await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'Togli l’eccezione', { pericolo: true })))
               void fai(() => d.salvaPagamento(p.id, { stato: 'da_pagare' }), 'Tolta: ora contano solo le ricevute', onCambiato)
           }}
         >

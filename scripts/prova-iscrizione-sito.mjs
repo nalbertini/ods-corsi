@@ -200,7 +200,9 @@ const impaginazioneVecchia = (r) => /grid-area:\s*nota/.test(r.corpo) || r.selet
 const pezziVecchio = (r) => r.selettori.some((x) => /^\.sito-pezzi > div$|^\.sito-pezzi \[class\*=/.test(x))
 // La scheda accanto all'elenco (`.sg-due-colonne`, `.sg-torna`, e la soglia dei 1240 px) è tolta di proposito: i dettagli della segreteria si aprono in una finestra sopra l'elenco (`prova:scheda-finestra`). `.sg-lista` e `.sg-scheda` perdono la larghezza fissa e la posizione sticky fuori dalla finestra.
 const schedaAffiancata = (r) => r.selettori.some((x) => /^\.sg-due-colonne( > \.sg-scheda)?$|^\.sg-torna$|^\.sg-lista$|^\.sg-scheda$/.test(x))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !delLook(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !schedaAffiancata(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// Le schede dell'iscritto e del personale non vanno più su due colonne: `.sg-scheda-griglia` è tolta di proposito, sia la regola sia quella dei telefoni.
+const grigliaScheda = (r) => r.selettori.includes('.sg-scheda-griglia')
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !delLook(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

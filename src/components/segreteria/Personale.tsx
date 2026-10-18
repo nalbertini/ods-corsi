@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import { personaCambiata } from '../../lib/segreteria'
-import { daSpunte, insegna, nomeDelRuolo, puo, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
+import { daSpunte, insegna, nomeDelRuolo, puo, siElimina, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
@@ -400,7 +400,7 @@ function Scheda({
   const invita = () => void fai(async () => avvisa(partito(p.nome, await d.invita(p.id))))
 
   const elimina = async () => {
-    if (!window.confirm(`Eliminare ${`${p.nome} ${p.cognome}`.trim()}? Spariscono la scheda e l'account, e non si torna indietro.`)) return
+    if (!(await chiedi(`Eliminare ${`${p.nome} ${p.cognome}`.trim()}? Spariscono la scheda e l'account, e non si torna indietro.`, 'Elimina', { pericolo: true }))) return
     const fatto = await fai(() => d.eliminaIstruttore(p.id), `${p.nome} è eliminato`, onEliminata)
     // Anche andata male la scheda può non esserci più: è l'account a non essersene andato.
     if (!fatto) await onCambiato()
@@ -420,7 +420,7 @@ function Scheda({
         </div>
       </div>
 
-      <div className="sg-scheda-griglia">
+      <div className="stack" style={{ gap: 20, minWidth: 0 }}>
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
           {modifica ? (
             <div className="sg-due">
@@ -564,20 +564,20 @@ function Scheda({
       <div className="sg-scheda-piede">
         <button
           type="button"
-          className="sg-btn sg-btn-linea"
+          className="sg-btn sg-btn-linea sg-pericolo"
           onClick={async () => {
-            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`, 'Togli l’accesso'))) return
+            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`, 'Togli l’accesso', { pericolo: true }))) return
             void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Accesso tolto' : 'Accesso ridato', onCambiato)
           }}
         >
           {p.attiva ? 'Togli l’accesso' : 'Ridai l’accesso'}
         </button>
-        {/* Solo chi insegna, anche col ruolo doppio: a chi è solo di segreteria si toglie l'accesso. Se ha corsi, lezioni o presenze il database dice di no, e perché. */}
-        {insegna(p) && (
+        {/* Chi insegna e la segreteria: a chi è solo di amministrazione si toglie l'accesso. Se ha corsi, lezioni, presenze o righe nei registri il database dice di no, e perché. */}
+        {siElimina(p) && (
           <button
             type="button"
-            className="sg-btn sg-btn-linea"
-            title="Solo per chi non ha mai insegnato: senza corsi, lezioni o presenze"
+            className="sg-btn sg-btn-linea sg-pericolo"
+            title="Solo per chi non ha storia: senza corsi, lezioni, presenze o registri a suo nome"
             onClick={() => void elimina()}
           >
             Elimina
@@ -671,7 +671,13 @@ function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: P
             Un altro kanji
           </button>
           {p.kanji && (
-            <button type="button" className="num sg-chip" onClick={() => scegli(null)}>
+            <button
+              type="button"
+              className="num sg-chip sg-pericolo"
+              onClick={async () => {
+                if (await chiedi(`Togliere il kanji a ${p.nome}?`, 'Togli il kanji', { pericolo: true })) scegli(null)
+              }}
+            >
               Togli il kanji
             </button>
           )}

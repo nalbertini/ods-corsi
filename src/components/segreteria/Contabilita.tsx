@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import {
   chiusuraNonPiuInRegola,
+  chiusuraVisibile,
   cosaNonVaAnnulloChiusura,
   cosaNonVaAnnulloMovimento,
   cosaNonVaChiusura,
@@ -21,6 +22,8 @@ import {
   importoPerCassa,
   NOME_CASSA_CONTANTI,
   oggiARoma,
+  riepilogoGiroconto,
+  riepilogoMovimento,
   perVoce,
   previstoCassa,
   primoMovimentoManuale,
@@ -375,9 +378,12 @@ function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { 
           type="button"
           className="sg-btn sg-btn-pieno"
           disabled={manca}
-          onClick={() => {
+          onClick={async () => {
             if (cent === null) return
-            void fai(() => d.registraMovimento({ tipo, data, importo: cent, voceId, cassaId, descrizione: descrizione.trim(), nota: nota.trim() || undefined }), 'Movimento registrato', onFatto)
+            const dati = { tipo, data, importo: cent, voceId, cassaId, descrizione: descrizione.trim(), nota: nota.trim() || undefined }
+            const riepilogo = riepilogoMovimento(dati, voci.find((v) => v.id === voceId)?.nome ?? '', casse.find((c) => c.id === cassaId)?.nome ?? '')
+            if (!(await chiedi(`Registrare questo movimento?\n${riepilogo.join('\n')}`, 'Sì, registra il movimento', { no: 'No, torna al modulo' }))) return
+            void fai(() => d.registraMovimento(dati), 'Movimento registrato', onFatto)
           }}
         >
           Registra il movimento
@@ -435,9 +441,12 @@ function NuovoGiroconto({ d, casse, chiusure, fai, onFatto, onChiudi }: { d: Dat
           type="button"
           className="sg-btn sg-btn-pieno"
           disabled={manca}
-          onClick={() => {
+          onClick={async () => {
             if (cent === null) return
-            void fai(() => d.registraGiroconto({ daCassaId: da, aCassaId: a, data, importo: cent, nota: nota.trim() || undefined }), 'Giroconto registrato', onFatto)
+            const dati = { daCassaId: da, aCassaId: a, data, importo: cent, nota: nota.trim() || undefined }
+            const riepilogo = riepilogoGiroconto(dati, casse.find((c) => c.id === da)?.nome ?? '', casse.find((c) => c.id === a)?.nome ?? '')
+            if (!(await chiedi(`Registrare questo giroconto?\n${riepilogo.join('\n')}`, 'Sì, registra il giroconto', { no: 'No, torna al modulo' }))) return
+            void fai(() => d.registraGiroconto(dati), 'Giroconto registrato', onFatto)
           }}
         >
           Registra il giroconto
@@ -574,7 +583,15 @@ function ColonnaVoci({ d, tipo, titolo, voci, usate, fai, onCambiato }: { d: Dat
           </span>
           <span style={{ fontSize: 13, color: 'var(--dim)' }}>{v.diSistema ? (v.nome === VOCE_DIFFERENZA ? 'scritta dalla chiusura di cassa' : 'incassi degli iscritti') : usate(v) ? `${usate(v)} ${usate(v) === 1 ? 'movimento' : 'movimenti'}` : 'mai usata'}</span>
           {!v.diSistema && (
-            <button type="button" className="sg-link" style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '0 6px' }} onClick={() => void fai(() => d.attivaVoce(v.id, !v.attiva), v.attiva ? 'Voce disattivata' : 'Voce riattivata', onCambiato)}>
+            <button
+              type="button"
+              className={v.attiva ? 'sg-link sg-pericolo' : 'sg-link'}
+              style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '0 6px' }}
+              onClick={async () => {
+                if (v.attiva && !(await chiedi(`Disattivare la voce «${v.nome}»? Non si può più scegliere nei movimenti nuovi; quelli già scritti restano.`, 'Disattiva la voce', { pericolo: true }))) return
+                void fai(() => d.attivaVoce(v.id, !v.attiva), v.attiva ? 'Voce disattivata' : 'Voce riattivata', onCambiato)
+              }}
+            >
               {v.attiva ? 'Disattiva' : 'Riattiva'}
             </button>
           )}
@@ -655,10 +672,12 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
   const [nota, setNota] = useState('')
   const [tutte, setTutte] = useState(false)
   useBozza(contati !== '' || nota !== '', 'La chiusura di cassa')
+  // Alla cieca: il previsto e la differenza compaiono solo dopo aver scritto quanto si è contato.
   const previsto = previstoCassa(casse, righe, cassa.id, data)
   const dentro = righeDelPeriodo(righe, { dal, data }, cassa.id)
   const cent = centesimi(contati)
-  const differenza = cent === null ? null : cent - previsto
+  const visibile = chiusuraVisibile(contati, previsto)
+  const differenza = visibile?.differenza ?? null
   const guaio = cosaNonVaImporto(contati, '1.235,00') ?? (cent === null ? null : cosaNonVaChiusura({ cassaId: cassa.id, data, contato: cent, nota }, casse, chiusure, oggi))
   const manca = cent === null || !!guaio
   const chiudi = async () => {
@@ -683,40 +702,46 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
           </Campo>
           <span className="sg-sotto">{ultima ? `Da ${dataRicevuta(dal)}, dopo l’ultima chiusura.` : `Dall’inizio della cassa, il ${dataRicevuta(dal)}.`} Il giorno scelto è compreso.</span>
         </div>
-        <div className="stack" style={{ gap: 4 }}>
-          <span className="sg-etichetta">IN CASSA SECONDO I CONTI</span>
-          <span className="num" style={{ fontSize: 40, fontWeight: 700 }}>{soldiConSegno(previsto)}</span>
-          {previsto < 0 && <span className="sg-sotto" style={{ color: 'var(--rosso-testo)' }}>Meno di zero: controlla prima i movimenti.</span>}
+        <div className="stack" style={{ gap: 6 }}>
+          <Campo id="ch-contati" etichetta="CONTANTI CONTATI" manca={contati === ''}>
+            <input id="ch-contati" className="sg-campo" inputMode="decimal" style={{ fontSize: 28, fontWeight: 700 }} value={contati} onChange={(e) => setContati(e.target.value)} aria-invalid={(contati !== '' && cent === null) || undefined} />
+          </Campo>
+          <span className="sg-sotto">Un solo totale, con i centesimi. Conta tutto quello che c’è nella cassa.</span>
         </div>
       </div>
-      <div className="stack" style={{ gap: 0 }}>
-        <span className="sg-etichetta">COSA C’È DENTRO · {dentro.length} {dentro.length === 1 ? 'MOVIMENTO' : 'MOVIMENTI'} IN CONTANTI</span>
-        {dentro.length === 0 && <span className="sg-sotto" style={{ paddingTop: 6 }}>Nessun movimento in contanti nel periodo{ultima ? ': il previsto è quello della chiusura di prima' : ''}.</span>}
-        {(tutte ? dentro : dentro.slice(-RIGHE_VISTE)).map((r) => {
-          const c = importoPerCassa(r, cassa.id)
-          return (
-            <div key={r.id} className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 13, color: 'var(--sec)', minWidth: 80, flexShrink: 0 }}>{dataRicevuta(r.data)}</span>
-              <span style={{ fontSize: 15, flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>{descrizioneRiga(r)}</span>
-              <span className="num" style={{ fontSize: 16, fontWeight: 700, color: c > 0 ? 'var(--verde-testo)' : undefined }}>{c < 0 ? '− ' : '+ '}{soldi(Math.abs(c))}</span>
+      {visibile && (
+        <>
+          <div className="sg-due sg-scheda-campi">
+            <div className="stack" style={{ gap: 4 }}>
+              <span className="sg-etichetta">IN CASSA SECONDO I CONTI</span>
+              <span className="num" style={{ fontSize: 40, fontWeight: 700 }}>{soldiConSegno(visibile.previsto)}</span>
+              {visibile.previsto < 0 && <span className="sg-sotto" style={{ color: 'var(--rosso-testo)' }}>Meno di zero: controlla prima i movimenti.</span>}
             </div>
-          )
-        })}
-        {dentro.length > RIGHE_VISTE && (
-          <button type="button" className="sg-link" style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start' }} onClick={() => setTutte(!tutte)}>
-            {tutte ? 'Mostra solo gli ultimi' : `${dentro.length - RIGHE_VISTE === 1 ? 'Un altro movimento' : `Altri ${dentro.length - RIGHE_VISTE} movimenti`} · Mostra tutti`}
-          </button>
-        )}
-      </div>
-      <Campo id="ch-contati" etichetta="CONTANTI CONTATI" manca={contati === ''}>
-        <input id="ch-contati" className="sg-campo" inputMode="decimal" style={{ fontSize: 28, fontWeight: 700 }} value={contati} onChange={(e) => setContati(e.target.value)} aria-invalid={(contati !== '' && cent === null) || undefined} />
-      </Campo>
-      <span className="sg-sotto">Un solo totale, con i centesimi. Conta tutto quello che c’è nella cassa.</span>
-      {differenza !== null && (
-        <div className="row" style={{ gap: 16, alignItems: 'baseline' }}>
-          <span className="sg-etichetta">DIFFERENZA</span>
-          <span className="num" style={{ fontSize: 28, fontWeight: 700, color: differenza === 0 ? 'var(--verde-testo)' : 'var(--rosso-testo)' }}>{differenza === 0 ? 'Tornano' : `${differenza < 0 ? '− ' : '+ '}${soldi(Math.abs(differenza))} · ${differenza < 0 ? 'in meno' : 'in più'}`}</span>
-        </div>
+            <div className="stack" style={{ gap: 4 }}>
+              <span className="sg-etichetta">DIFFERENZA</span>
+              <span className="num" style={{ fontSize: 28, fontWeight: 700, color: visibile.differenza === 0 ? 'var(--verde-testo)' : 'var(--rosso-testo)' }}>{visibile.differenza === 0 ? 'Tornano' : `${visibile.differenza < 0 ? '− ' : '+ '}${soldi(Math.abs(visibile.differenza))} · ${visibile.differenza < 0 ? 'in meno' : 'in più'}`}</span>
+            </div>
+          </div>
+            <div className="stack" style={{ gap: 0 }}>
+              <span className="sg-etichetta">COSA C’È DENTRO · {dentro.length} {dentro.length === 1 ? 'MOVIMENTO' : 'MOVIMENTI'} IN CONTANTI</span>
+              {dentro.length === 0 && <span className="sg-sotto" style={{ paddingTop: 6 }}>Nessun movimento in contanti nel periodo{ultima ? ': il previsto è quello della chiusura di prima' : ''}.</span>}
+              {(tutte ? dentro : dentro.slice(-RIGHE_VISTE)).map((r) => {
+                const c = importoPerCassa(r, cassa.id)
+                return (
+                  <div key={r.id} className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 13, color: 'var(--sec)', minWidth: 80, flexShrink: 0 }}>{dataRicevuta(r.data)}</span>
+                    <span style={{ fontSize: 15, flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>{descrizioneRiga(r)}</span>
+                    <span className="num" style={{ fontSize: 16, fontWeight: 700, color: c > 0 ? 'var(--verde-testo)' : undefined }}>{c < 0 ? '− ' : '+ '}{soldi(Math.abs(c))}</span>
+                  </div>
+                )
+              })}
+              {dentro.length > RIGHE_VISTE && (
+                <button type="button" className="sg-link" style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start' }} onClick={() => setTutte(!tutte)}>
+                  {tutte ? 'Mostra solo gli ultimi' : `${dentro.length - RIGHE_VISTE === 1 ? 'Un altro movimento' : `Altri ${dentro.length - RIGHE_VISTE} movimenti`} · Mostra tutti`}
+                </button>
+              )}
+            </div>
+        </>
       )}
       <Campo id="ch-nota" etichetta="NOTA · FACOLTATIVA" largo>
         <textarea id="ch-nota" className="sg-campo" rows={2} maxLength={300} value={nota} onChange={(e) => setNota(e.target.value)} />

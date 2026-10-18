@@ -18,6 +18,7 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
+import { oggiARoma } from './contabilita'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
@@ -169,6 +170,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/anagrafiche/, 'Nascita, residenza e genitore degli iscritti non sono ancora attivi sul database: va lanciato 18-anagrafiche.sql'],
   [/segna_istruttore_previsto/, 'Segnare un istruttore su una lezione già coperta non è ancora attivo sul database: va lanciato 46-istruttore-collega.sql'],
   [/lezioni_senza_istruttore|segna_istruttori_lezione/, 'Le lezioni tenute da confermare non sono ancora attive sul database: va lanciato 23-istruttori-dalle-lezioni.sql'],
+  [/elimina_presenza_istruttore/, 'Eliminare una presenza non è ancora attivo sul database: va lanciato 65-elimina-presenza-rifiutata.sql'],
   [/presenze_istruttori/, 'Le presenze degli istruttori non sono ancora attive sul database: va lanciato 15-presenze-istruttori.sql'],
 ]
 
@@ -1249,7 +1251,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async registraPagamentoDiretto(d: DatiPagamentoDiretto) {
-      const no = cosaNonVaDiretto(d)
+      // Il futuro lo ferma anche qui; il giorno chiuso lo vede solo il database (la segreteria non legge le chiusure).
+      const no = cosaNonVaDiretto(d, oggiARoma())
       if (no) throw new Error(no)
       const riga = ok(
         await db.rpc('registra_pagamento_diretto', {
@@ -1947,6 +1950,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async gestisciPresenzaIstruttore(id, conferma) {
       ok(await db.rpc('gestisci_presenza_istruttore', { presenza: id, conferma }))
+    },
+
+    async eliminaPresenzaIstruttore(id) {
+      ok(await db.rpc('elimina_presenza_istruttore', { presenza: id }))
     },
 
     async lezioniSenzaIstruttore() {

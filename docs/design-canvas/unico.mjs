@@ -71,6 +71,7 @@ const SEZIONI = [
   { id: 'sito-blocchi', nome: 'Sito · pagine a pezzi · proposta', cartella: 'sito-blocchi' },
   { id: 'sito-porta-ai-pezzi', nome: 'Sito · porta ai pezzi · proposta', cartella: 'sito-porta-ai-pezzi' },
   { id: 'sito-pezzi-spazio', nome: 'Sito · pezzi, più spazio · proposta', cartella: 'sito-pezzi-spazio' },
+  { id: 'sito-pezzi-scrivi', nome: 'Sito · scrivi nella pagina · proposta', cartella: 'sito-pezzi-scrivi-in-pagina' },
   { id: 'scheda-popover', nome: 'Segreteria · dettagli in una finestra · proposta', cartella: 'scheda-popover' },
 ]
 

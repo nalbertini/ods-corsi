@@ -63,10 +63,12 @@ non sta provando niente.
 
 ## Sul database vero
 
-Non si lancia niente sul progetto Supabase senza un sì esplicito
-dell'utente. Dopo l'unione, l'utente lancia `NN-nome.sql` (e `06` se serve)
-nel SQL Editor, poi `controllo.sql`: la riga nuova deve dire «ok». Con il MCP
-di Supabase, dopo, `get_advisors` (security) per le policy mancanti.
+I file SQL della PR li lancia Claude sul progetto Supabase, **prima di
+unire la PR** (il sì dell'utente c'è già, regola del 2026-10-18; ogni altra
+scrittura sul database vero resta con il suo sì). Con il MCP di Supabase:
+`execute_sql` col contenuto di `NN-nome.sql` (e `06` se serve), poi la riga
+nuova di `controllo.sql`: deve dire «ok». Poi `get_advisors` (security) per
+le policy mancanti. Se qualcosa non va, la PR non si unisce.
 
 ## Errori comuni
 

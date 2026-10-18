@@ -20,6 +20,15 @@ scrivono data, importo, come ha pagato, a cosa serve e una nota se serve, e
 **Registra il pagamento**. È un pagamento fatto a mano, senza ricevuta: resta
 nello storico e si può annullare.
 
+- **La data** non può essere dopo oggi: si registra quel che è già successo.
+- **I contanti** di un giorno in cui la Cassa Contanti è già chiusa non si
+  registrano: scegli una data dopo la chiusura, o annulla prima la chiusura. Carta e
+  bonifico non toccano la cassa e vanno sempre.
+- Prima di scrivere, l'app mostra un **riepilogo** (importo, come ha pagato, chi,
+  data, a cosa serve): **Sì, registra il pagamento** lo scrive, **No, torna al
+  modulo** lascia tutto com'era. Un pagamento a mano non riduce il residuo di nessuna
+  ricevuta.
+
 ## Annullare
 
 **Toccando una riga** si apre il pagamento, con il tasto per annullarlo:

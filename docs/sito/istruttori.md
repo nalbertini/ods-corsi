@@ -33,7 +33,7 @@ Compare da sola quando l'ultima riga di quattro tessere è incompleta (con 13 te
 
 - I tredici sono quelli del database a oggi; se cambia un istruttore, si cambia la pagina (e il «Tredici» di descrizione e Chi siamo).
 - **Foto**: i nomi dei volti sono quelli già assegnati in LightCraft; le liberatorie le ha dichiarate l'utente. Il ritaglio di Federico è stretto per escludere le altre persone.
-- Ordine: alfabetico per cognome con Innella per primo (domanda aperta I9).
+- Ordine: lo mette il sito, qualunque sia l'ordine del testo: Maurizio, Maura, Diana, Fabio, Tiziano, Valerio, Manuel, Federico, poi gli altri come scritti. I colori vanno a diagonali: nessun vicino, in riga o in colonna, ha lo stesso colore.
 - Nomi dei corsi (MGA, Body functional, Pesistica, Mobility): domanda aperta I8.
 
 ## La regola del sito

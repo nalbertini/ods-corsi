@@ -460,7 +460,7 @@ function RigheTabella({ righe, capi, prezzi, onCambia }: { righe: RigaScritta[];
               </span>
               <span role="cell" style={{ textAlign: 'right' }}>
                 {righe.length > 1 && (
-                  <button type="button" className="sg-link sg-link-alto" aria-label={`Togli la riga ${i + 1}`} onClick={() => onCambia(righe.filter((x) => x.chiave !== r.chiave))}>
+                  <button data-bozza type="button" className="sg-link sg-link-alto sg-pericolo" aria-label={`Togli la riga ${i + 1}`} onClick={() => onCambia(righe.filter((x) => x.chiave !== r.chiave))}>
                     Togli
                   </button>
                 )}
@@ -549,7 +549,7 @@ function SchedaOrdine({
     const avviso = avvisoSaldato(o, totale)
     const togli =
       !!avviso &&
-      (await chiedi(`Togliere il segno di saldato? ${avviso} Togli il segno per chiedere la differenza; resta saldato se è già a posto.`, 'Togli il segno', {
+      (await chiedi(`Togliere il segno di saldato? ${avviso} Togli il segno per chiedere la differenza; resta saldato se è già a posto.`, 'Togli il segno', { pericolo: true,
         no: 'Resta saldato',
       }))
     // Una chiamata sola: il già pagato resta il vecchio totale, da saldare c'è la differenza.
@@ -570,7 +570,7 @@ function SchedaOrdine({
       !(await chiedi(
         `Annullare l’ordine di ${chi}? L’ordine resta nell’elenco, segnato ANNULLATO: non va al fornitore e non conta nei numeri. Se ha già pagato, il rimborso si fa a mano.`,
         'Annulla l’ordine',
-        { no: 'Lascia stare' },
+        { pericolo: true, no: 'Lascia stare' },
       ))
     )
       return
@@ -665,7 +665,12 @@ function SchedaOrdine({
                   Saldato{o.pagatoCon ? ` ${PAGATO[o.pagatoCon]}` : ''}
                   {o.pagatoIl ? ` ${ilGiorno(o.pagatoIl)}` : ''}. Va nell’elenco per il fornitore.
                 </span>
-                <button type="button" className="sg-link sg-link-alto" disabled={lavora} onClick={() => void fai(() => d.segnaSaldato(o.id, null), 'Tolto il segno: è di nuovo da saldare', onCambiato)}>
+                <button type="button" className="sg-link sg-link-alto sg-pericolo" disabled={lavora}
+                  onClick={async () => {
+                    if (!(await chiedi(`Togliere il segno di saldato a ${chi}? L’ordine torna da saldare.`, 'Togli il segno', { pericolo: true }))) return
+                    void fai(() => d.segnaSaldato(o.id, null), 'Tolto il segno: è di nuovo da saldare', onCambiato)
+                  }}
+                >
                   Togli il segno
                 </button>
               </>
@@ -709,7 +714,7 @@ function SchedaOrdine({
               <span className="sg-sotto">Non ci sono altre raccolte a cui spostarlo.</span>
             )}
             {!o.annullato && (
-              <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} disabled={lavora} onClick={() => void annulla()}>
+              <button type="button" className="sg-btn sg-btn-linea sg-pericolo" style={{ alignSelf: 'flex-start' }} disabled={lavora} onClick={() => void annulla()}>
                 Annulla l’ordine
               </button>
             )}
@@ -922,7 +927,7 @@ function CaricaFoto({
             }}
           />
           {onTogli && (
-            <button type="button" className="sg-link sg-link-alto" onClick={onTogli}>
+            <button data-bozza type="button" className="sg-link sg-link-alto sg-pericolo" onClick={onTogli}>
               {cosa === 'foto' ? 'Togli la foto' : 'Togli la tabella'}
             </button>
           )}
@@ -1174,9 +1179,9 @@ function CatalogoChiusura({
                   </button>
                   <button
                     type="button"
-                    className="sg-link sg-link-alto"
+                    className="sg-link sg-link-alto sg-pericolo"
                     onClick={async () => {
-                      if (await chiedi(`Togliere «${c.capo || 'questo capo'}» dal catalogo? Gli ordini già fatti restano come sono.`, 'Togli dal catalogo')) cambia({ capi: b.capi.filter((x) => x.chiave !== c.chiave) })
+                      if (await chiedi(`Togliere «${c.capo || 'questo capo'}» dal catalogo? Gli ordini già fatti restano come sono.`, 'Togli dal catalogo', { pericolo: true })) cambia({ capi: b.capi.filter((x) => x.chiave !== c.chiave) })
                     }}
                   >
                     Togli dal catalogo

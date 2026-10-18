@@ -296,7 +296,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
             </span>
             <button
               type="button"
-              className="num sg-chip"
+              className="num sg-chip sg-pericolo"
               disabled={!scadute.dato || !imp.dato}
               onClick={async () => {
                 if ((await chiedi(`Cancellare ${scadute.dato === 1 ? '1 presenza più vecchia' : `${scadute.dato} presenze più vecchie`} di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`, 'Cancella le presenze', { pericolo: true }))) {
@@ -503,7 +503,7 @@ function ElencoAttivita({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
               {!motivo && (
                 <button
                   type="button"
-                  className="num sg-chip"
+                  className="num sg-chip sg-pericolo"
                   onClick={async () => {
                     if (await chiedi(`Eliminare l'attività «${a.nome}»?`, 'Elimina', { pericolo: true })) void fai(() => d.eliminaAttivita(a.id), 'Attività eliminata', att.ricarica)
                   }}
@@ -598,9 +598,9 @@ function MusicaSale({
             </button>
             <button
               type="button"
-              className="num sg-chip"
+              className="num sg-chip sg-pericolo"
               onClick={async () => {
-                if ((await chiedi(`Togliere «${l.nome}» dalla musica ${l.salaId ? `della sala ${nomeSala(l.salaId)}` : 'di tutte le sale'}?`, 'Togli la lista'))) {
+                if ((await chiedi(`Togliere «${l.nome}» dalla musica ${l.salaId ? `della sala ${nomeSala(l.salaId)}` : 'di tutte le sale'}?`, 'Togli la lista', { pericolo: true }))) {
                   void fai(() => d.togliListaMusica(l.id), 'Lista tolta', ricarica)
                 }
               }}

@@ -4,7 +4,7 @@ import { giorniConLezioni } from './calendarioSettimana'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
-import { insegna, segniDi, type RuoloPersonale } from './ruoli'
+import { insegna, segniDi, siElimina, type RuoloPersonale } from './ruoli'
 import { contattoDopoUnione, type IndiziDoppioni } from './doppioni'
 import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
@@ -1160,7 +1160,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async registraPagamentoDiretto(dati) {
       // Prima la persona, poi il resto: come `registra_pagamento_diretto`.
       if (dati.personaId && !a().persone.some((x) => x.id === dati.personaId)) throw new Error('Questa scheda non c’è più')
-      const no = cosaNonVaDiretto(dati)
+      const no = cosaNonVaDiretto(dati, oggiARoma(), contabilita().chiusure)
       if (no) throw new Error(no)
       const nuovo: PagamentoDiretto = { ...dati, metodo: dati.metodo.trim(), voce: dati.voce.trim(), nota: dati.nota?.trim() || undefined, id: `pd-${unico()}`, creatoIl: new Date().toISOString() }
       a().pagamentiDiretti = [...(a().pagamentiDiretti ?? []), nuovo]
@@ -1404,14 +1404,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async eliminaIstruttore(personaId) {
-      // Le stesse regole di `28-elimina-istruttore.sql`. In prova un corso
-      // archiviato conta come le sue lezioni passate: col database, ha
-      // insegnato.
+      // Le stesse regole di `28-elimina-istruttore.sql` e `66-elimina-segreteria.sql`.
+      // In prova un corso archiviato conta come le sue lezioni passate: col
+      // database, ha insegnato. Le ricevute e i registri non dicono chi li ha
+      // firmati: la storia di chi è solo di segreteria qui non si può avere.
       const p = persona(personaId)
       // In prova è entrata la segreteria di prova.
       if (personaId === 's-prova') throw new Error("Non ci si elimina da soli: lo fa un'altra persona di segreteria")
-      if (!insegna(p))
-        throw new Error(`Si eliminano solo gli istruttori: a ${p.nome} si toglie l'accesso`)
+      if (!siElimina(p))
+        throw new Error(`Si eliminano solo gli istruttori e la segreteria: a ${p.nome} si toglie l'accesso`)
       const nome = nomeDi(p)
       const tiene = a().corsi.filter((c) => c.attivo && c.istruttori.includes(personaId)).map((c) => c.nome).sort((x, y) => x.localeCompare(y, 'it'))
       if (tiene.length) throw new Error(`${nome} insegna ancora in ${tiene.join(', ')}: prima va tolto dai corsi`)
@@ -1720,6 +1721,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
       a().presenzeIstruttori = tutte.map((x) =>
         x.id === id ? { ...x, stato: conferma ? 'confermata' : 'rifiutata', gestitaDa: 'Segreteria di prova', gestitaIl: new Date().toISOString() } : x,
       )
+      salva()
+    },
+
+    async eliminaPresenzaIstruttore(id) {
+      const tutte = a().presenzeIstruttori ?? []
+      const x = tutte.find((p) => p.id === id)
+      if (!x) throw new Error('presenza inesistente')
+      if (x.stato !== 'rifiutata') throw new Error('si elimina solo una presenza rifiutata')
+      a().presenzeIstruttori = tutte.filter((p) => p.id !== id)
       salva()
     },
 

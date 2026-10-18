@@ -10,6 +10,64 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.114.0 — 18 ottobre 2026
+
+### Novità
+
+- Elimina anche chi è solo di segreteria, se non ha storia
+
+### Risolto
+
+- Sul sito mancavano i box dei numeri e delle fasce
+
+### Modificato
+
+- Il controllo dei file SQL ora copre anche il file 53
+
+## 0.113.1 — 18 ottobre 2026
+
+### Risolto
+
+- Presenze istruttori parte da Ultimi dodici mesi
+
+## 0.113.0 — 18 ottobre 2026
+
+### Novità
+
+- Il testo delle pagine del sito si scrive direttamente nella pagina, con la barra dei tasti sopra
+
+### Modificato
+
+- Gli istruttori del sito hanno un ordine fisso e i colori a diagonali
+
+## 0.112.0 — 18 ottobre 2026
+
+### Novità
+
+- Elimina una presenza rifiutata
+
+## 0.111.0 — 18 ottobre 2026
+
+### Novità
+
+- In Segreteria i pulsanti che tolgono sono rossi e chiedono conferma
+
+### Risolto
+
+- La scheda di Richieste online non si stringe più
+
+## 0.110.2 — 18 ottobre 2026
+
+### Risolto
+
+- Un pagamento a mano non si registra più nel futuro né in un giorno di cassa chiuso; riepilogo da confermare e cassa contata alla cieca
+
+## 0.110.1 — 18 ottobre 2026
+
+### Modificato
+
+- Le schede dell'iscritto e del personale stanno su una colonna sola
+
 ## 0.110.0 — 18 ottobre 2026
 
 ### Novità
