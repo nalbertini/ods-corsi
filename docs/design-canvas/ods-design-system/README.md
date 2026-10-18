@@ -310,6 +310,8 @@ del sito. `piccolo` li porta alla misura del telefono (375px). `nota="DA CONFERM
 | `SitoBloccoPersona.dc.html` | Un blocco di testo della scheda (Chi è / Come ha iniziato / A scuola), 25-36 parole |
 | `SitoElencoPercorso.dc.html` | Una colonna di «Il percorso» (Federazione e sport / Scuola / Titoli e studi) con elenco puntato |
 
+Costruito (`src/lib/sitoIstruttori.ts`): il ritratto dell'elenco è come `SitoRitratto` (484 px alto, nome 48, cognome 20, freccia ↗ da 48 solo se la scheda è pubblicata); la tessera d'invito che completa la riga di quattro è nera con titolo da 96 px; la scheda scarna ha l'invito giallo di fondo pagina, non la tessera nera.
+
 ## La pagina del corso (proposta)
 
 PROPOSTA, non costruita: i pezzi nuovi della pagina di un corso in `../corso-miglioramenti/`. Gli altri pezzi sono quelli della home (`SitoDatoPersona` per i quattro dati, `SitoBloccoPersona` per i testi, `SitoPerche`, `SitoPiede`).

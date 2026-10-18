@@ -1,53 +1,41 @@
-# Gli istruttori: la pagina come nel design
+# Gli istruttori: elenco rivisto e scheda di ognuno
 
-Testo da incollare nel pannello SITO (PAGINE › Istruttori, indirizzo `/istruttori/`), per avere la griglia dei ritratti del design «tatami blu e giallo» (`TatamiBlu-Istruttori`, desktop, e `TatamiBluM-Istruttori`, telefono). Oggi questa pagina **non esiste** sul sito (`/istruttori/` dà 404): va creata, e il pulsante «Conosci gli istruttori» di Chi siamo punta lì.
+Testo da incollare nel pannello SITO (PAGINE › Istruttori, indirizzo `/istruttori/`). Design approvato: `docs/design-canvas/istruttori-miglioramenti/`. **Non è stato scritto niente sul database né pubblicato.**
 
-Come si fa:
+## Come si fa
 
-1. Crea **PAGINE › Istruttori** (indirizzo `istruttori`).
-2. Nei campi a destra: **titolo** e **descrizione** qui sotto.
-3. Apri `docs/sito/istruttori.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello clicca nel testo e incolla (Cmd+V).
-4. **ANTEPRIMA** per controllare, poi **PUBBLICA**.
+1. Titolo **Gli istruttori**, descrizione: *Tredici tecnici sportivi che accompagnano ogni persona passo dopo passo, rispettando tempi, capacità e obiettivi.*
+2. Apri `docs/sito/istruttori.html` nel browser, seleziona tutto (Cmd+A), copia; nel pannello clicca nel testo e incolla.
+3. **Le quattro foto** (libreria SITO › IMMAGINI): carica `42-maurizio-photocraft.jpg`, `200-maura-lightcraft.jpg`, `948-4-fabio-lightcraft.jpg`, `199-federico-lightcraft.jpg` (sono nella cartella `docs/proposte-home/istruttori/foto/approvate/` della sessione delle foto: non stanno nel repository). Poi, nel testo, metti il cursore **tra il nome e la riga «Cognome · corsi»** e inserisci la foto dalla libreria. Il testo alternativo si può lasciare vuoto: il sito scrive «Ritratto di Nome Cognome». Gli altri nove restano senza foto: il sito mette l'iniziale.
+4. **ANTEPRIMA**, poi **PUBBLICA**.
 
-## Titolo
+## Come si scrive una riga
 
-Gli istruttori
+`Nome` (titolo piccolo), la foto se c'è, poi **«Cognome · corso, corso»**: il puntino centrale `·` (Opzione+Maiusc+9 su Mac) divide cognome e corsi, la virgola divide un corso dall'altro. Il cognome doppio va bene («De Chiara»); un nome di corso non può contenere una virgola. Senza `·`, una riga con virgole sono solo corsi, una senza sono solo il cognome.
 
-## Descrizione
+## I link ai nomi
 
-Tredici tecnici sportivi che accompagnano ogni persona passo dopo passo, rispettando tempi, capacità e obiettivi.
+Il nome diventa un link (con la freccia ↗) **solo se la pagina dell'istruttore è pubblicata**; altrimenti il sito lo scrive come testo semplice, senza dirlo. Quindi: se colleghi un nome e non vedi la freccia, controlla che la sua pagina sia pubblicata. Gli indirizzi sono piatti: `/fabio-berta/`, non `/istruttori/fabio-berta/`. Nel testo di qui sopra sono già collegati Maurizio (la sua pagina è pronta in `docs/sito/istruttori/maurizio-innella.md`) e Fabio (scheda scarna: `docs/sito/istruttori/modello-scarno.md`); per un altro istruttore, scrivi la sua pagina e poi trasforma il suo nome in link.
 
-## Testo
+## La tessera «Vieni a conoscerli sul tatami»
 
-Il testo sta in [`istruttori.html`](istruttori.html). Un `h3` col nome e un paragrafo col ruolo («Cognome · discipline») per ognuno dei tredici; in fondo la frase sulle pagine personali. Il sito li mette in una griglia di ritratti, tre per riga.
-
-I nomi, i cognomi e i corsi sono quelli letti dal database negli stessi canvas del design (`TatamiBlu-Istruttori.dc.html`): non sono scritti a mano. Non ho aggiunto né titoli né storie.
+Compare da sola quando l'ultima riga di quattro tessere è incompleta (con 13 tecnici, sì); con 12 o 16 non c'è e resta l'invito giallo in fondo alla pagina. Aggiungendo o togliendo un tecnico può comparire o sparire: è normale.
 
 ## Cosa cambia rispetto a oggi
 
-- Pagina nuova (non c’è sul sito di oggi).
-- Nessuna foto per ora: il cerchio del ritratto mostra l’iniziale del nome. Quando le foto ci sono, vanno messe subito sotto ogni nome (`<img>` col nome in `alt`), nella libreria IMMAGINI.
-- I nomi non sono link: le pagine personali (`/istruttori/<nome>/`) non ci sono ancora. Quando esistono, il nome diventa `<h3><a href="/istruttori/<nome>/">Nome</a></h3>` e compare la freccia ↗.
+- Quattro colonne sul computer, una sul telefono; foto quadrata (o fascia azzurra con l'iniziale), nome, cognome e corsi in pastiglie.
+- Il ruolo di Maurizio («Maestro di Judo V Dan») non sta più nell'elenco: sta nella sua pagina.
+- Titolo più piccolo, su una riga; i nomi con link sono tutta la tessera, bersaglio da 48 px.
+- Le schede degli istruttori ora esistono (prima `/istruttori/<nome>/` dava 404).
+- Il piede ha telefono, social e «vicino alla metro Fermi» (già pubblicato con la Home).
 
 ## Da controllare prima di pubblicare
 
-- **L’elenco dei tredici** viene dal database a oggi: se un istruttore cambia, la pagina va cambiata (e il «Tredici» della descrizione e di Chi siamo).
-- **Il ruolo di Maurizio** («Maestro di Judo V Dan») è l’unico ruolo scritto: viene dal design. Gli altri hanno solo cognome e corsi; ruoli e titoli (cinture, qualifiche) li dà solo la segreteria.
-- «Tiziano Bartocci: Body functional, pesistica, prepugilistica», «Manuel Tagini: … Mobility»: i corsi sono quelli del database, con le parole del design.
-- **Foto dei ritratti: DA SCEGLIERE.** Servono i permessi delle persone ritratte.
-- Le pagine personali (ramo `claude/sito-istruttore-d4f7dd`) hanno bisogno di testi per ognuno: non li ho scritti, sono nomi, storie e titoli di persone vere che solo loro o la segreteria possono dare.
+- I tredici sono quelli del database a oggi; se cambia un istruttore, si cambia la pagina (e il «Tredici» di descrizione e Chi siamo).
+- **Foto**: i nomi dei volti sono quelli già assegnati in LightCraft; le liberatorie le ha dichiarate l'utente. Il ritaglio di Federico è stretto per escludere le altre persone.
+- Ordine: alfabetico per cognome con Innella per primo (domanda aperta I9).
+- Nomi dei corsi (MGA, Body functional, Pesistica, Mobility): domanda aperta I8.
 
 ## La regola del sito
 
-Un testo **senza titoli grandi (`h2`)** che **comincia con un titolo piccolo (`h3`)** ed ha almeno due `h3` è una griglia di ritratti (`ritratti()` in `src/lib/sitoLayout.ts`), tre per riga sul computer e due sul telefono. Ogni ritratto è:
-
-1. un `h3`: il nome (grande, in basso nella tessera);
-2. una foto, se c'è: va nel cerchio; senza foto il cerchio ha l'iniziale del nome;
-3. un paragrafo: il ruolo («Cognome · discipline»), sotto il nome.
-
-Il primo blocco che non segue un ritratto, e tutto quel che viene dopo, resta testo sotto la griglia (sul telefono non si vede, come nel design). I colori sono quelli del design, uno per uno. Se il nome è un link, tutta la tessera è cliccabile e compare la freccia ↗.
-
-## Differenze dal design
-
-- Senza foto il cerchio ha l'iniziale del nome: la scritta «Foto» del design è il segnaposto del disegno.
-- Il ruolo di Maurizio nel design telefono è accorciato: sul sito il testo è uno solo, quindi la sua tessera è più alta di 17px.
+Codice: `src/lib/sitoIstruttori.ts` (`elencoIstruttori`, `schedaScarna`). Un testo senza `h2` che comincia con un `h3` ed ha almeno due `h3` è l'elenco. La scheda completa (foto, citazione, `h2`) è quella descritta in `istruttore.md` e non cambia.
