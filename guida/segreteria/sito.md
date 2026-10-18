@@ -117,7 +117,7 @@ L'app non ti lascia salvare se una voce non va, e dice quale:
 ## Il sito vero
 
 Il sito nuovo, su `www.officinedellosport.it`, si genera dalle pagine
-**pubblicate** e si aggiorna da solo: dopo **PUBBLICA** ci vuole una decina
+**pubblicate** e si aggiorna da solo: dopo **PUBBLICA** ci vogliono un paio
 di minuti perché compaia (non si preme niente). Quelle in bozza, nascoste o
 mai pubblicate non ci sono. Il
 passaggio dal sito di prima a quello nuovo, e le immagini, arrivano in un
@@ -141,7 +141,7 @@ aggiornamento del database: va chiesto a chi cura l'app.
 ## Come il testo diventa tessere
 
 Il sito mette in pagina da solo quello che scrivi, secondo come lo scrivi. Nell'ANTEPRIMA del pannello vedi
-il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA** e una decina di minuti.
+il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA** e un paio di minuti.
 
 - **Titolo grande** (`h2`): apre una **sezione** col titolo in grande, in maiuscolo. Quello che scrivi
   prima del primo titolo grande è l'introduzione, in colonna.

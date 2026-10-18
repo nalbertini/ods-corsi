@@ -368,6 +368,23 @@ for (const sel of ['.sg-corso[aria-pressed=\'true\']', '.sg-lista-tasto[aria-pre
 
 ok('la testata del Banco (.bn-alto) prende i token chiari del menu, come .sg-menu', ha('.bn-alto', /--text:\s*#ffffff/) && ha('.bn-alto', /--dim:\s*#cfe6f4/), true)
 ok('le voci del menu non vanno a capo (white-space: nowrap)', ha('.sg-voce', /white-space:\s*nowrap/), true)
+
+// --- 12. DA FARE e COSA MANCA: titoli in Inter, cinque caselle in riga ---------
+console.log('\nDA FARE e COSA MANCA')
+for (const [sel, re, cosa] of [
+  ['.sg-mancano', /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/, 'cinque caselle in una riga'],
+  [".sg-mancano-nota[data-fissa='true']", /display:\s*none/, 'senza la nota di sempre (gli avvisi sul conto si vedono)'],
+  ['.sg-mancano-n', /font-size:\s*44px/, 'numero a 44px'],
+  ['.sg-mancano-titolo', /font-family:\s*var\(--body\)/, 'titolo in Inter'],
+  ['.sg-mancano-titolo', /font-size:\s*14px/, 'titolo a 14px'],
+  ['.sg-mancano-titolo', /font-weight:\s*600/, 'titolo a 600'],
+  ['.sg-mancano-titolo', /letter-spacing:\s*0\s*;/, 'titolo senza spaziatura'],
+  ['.sg-dafare-titolo', /font-family:\s*var\(--body\)/, 'titolo della riga in Inter'],
+  ['.sg-dafare-titolo', /font-size:\s*21px/, 'titolo della riga a 21px'],
+  ['.sg-dafare-titolo', /font-weight:\s*700/, 'titolo della riga a 700'],
+  ['.sg-dafare-titolo', /letter-spacing:\s*0\s*;/, 'titolo della riga senza spaziatura'],
+]) ok(`${sel}: ${cosa}`, ha(sel, re), true)
+ok('fra 768 e 1360px le cinque caselle non prendono i bordi e lo spazio del caso a due colonne (nth-child 5 e n+3)', /grid-column:\s*auto/.test(esatto(".sg-mancano-casella:nth-child(5)")) && /border-top:\s*0/.test(esatto('.sg-mancano-casella:nth-child(n + 3)')), true)
 console.log(`\n${asserzioni} asserzioni.`)
 console.log(guai ? `${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : 'TUTTO A POSTO')
 process.exit(guai ? 1 : 0)

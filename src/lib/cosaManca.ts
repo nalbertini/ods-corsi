@@ -50,6 +50,8 @@ export interface Casella {
   numero: string
   stato: StatoCasella
   nota: string
+  /** La nota è quella di sempre («scaduti o mancanti»), non un avviso sul conto («conto delle 10:32», «non so»): quella si vede sempre. */
+  notaFissa: boolean
   /** Il nome per chi non vede lo schermo. */
   nome: string
   voce: Voce
@@ -57,11 +59,11 @@ export interface Casella {
 }
 
 const TITOLI: Record<IdCasella, string> = {
-  appelli: 'APPELLI NON FATTI',
-  certificati: 'CERTIFICATI SCADUTI',
-  pagamenti: 'PAGAMENTI',
-  tessere: 'TESSERE',
-  richieste: 'RICHIESTE ONLINE',
+  appelli: 'Appelli non fatti',
+  certificati: 'Certificati scaduti',
+  pagamenti: 'Pagamenti',
+  tessere: 'Senza tessera',
+  richieste: 'Richieste online',
 }
 
 /** Come si chiama il conto quando non si sa o lo si annuncia. */
@@ -69,7 +71,7 @@ const NOMI: Record<IdCasella, string> = {
   appelli: 'Appelli non fatti',
   certificati: 'Certificati scaduti',
   pagamenti: 'Pagamenti',
-  tessere: 'Tessere',
+  tessere: 'Senza tessera',
   richieste: 'Richieste online',
 }
 
@@ -137,6 +139,7 @@ export function caselleCosaManca(c: ContiCosaManca): Casella[] {
       numero: n === null ? '—' : n === 0 ? '✓ 0' : String(n),
       stato: statoDi(id, n),
       nota,
+      notaFissa: n !== null && !c.vecchio,
       nome: nomeAccessibile(id, n, c.contato),
       ...DESTINAZIONI[id],
     }
