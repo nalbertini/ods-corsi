@@ -26,14 +26,14 @@ export function PagamentoAperto({ d, riga, fai, onChiudi, onFatto }: { d: DatiSe
     if (!r) return
     // Dell'intera ricevuta si conosce qui solo questa riga; chi non vede le chiusure (la segreteria) non ha l'avviso.
     const avviso = avvisoCassaChiusa([riga], await d.chiusure().catch(() => []))
-    if (!(await chiedi(`${domandaAnnullaRicevuta(r)}${avviso ? ` ${avviso}` : ''}`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
+    if (!(await chiedi(`${domandaAnnullaRicevuta(r)}${avviso ? ` ${avviso}` : ''}`, 'Sì, annulla la ricevuta', { no: 'No, lasciala', pericolo: true }))) return
     void fai(() => d.annullaRicevuta(r.id), 'Ricevuta annullata', onFatto)
   }
   const annullaPagamento = async () => {
     const id = riga.direttoId
     if (!id) return
     const avviso = avvisoCassaChiusa([riga], await d.chiusure().catch(() => []))
-    if (!(await chiedi(`${domandaAnnullaPagamento(riga)}${avviso ? ` ${avviso}` : ''}`, 'SÌ, ANNULLA IL PAGAMENTO', { no: 'NO, LASCIALO', pericolo: true }))) return
+    if (!(await chiedi(`${domandaAnnullaPagamento(riga)}${avviso ? ` ${avviso}` : ''}`, 'Sì, annulla il pagamento', { no: 'No, lascialo', pericolo: true }))) return
     void fai(() => d.annullaPagamentoDiretto(id), 'Pagamento annullato', onFatto)
   }
   const dettaglio: Array<[string, string]> = [
@@ -59,26 +59,26 @@ export function PagamentoAperto({ d, riga, fai, onChiudi, onFatto }: { d: DatiSe
       </div>
       {riga.annullato ? (
         <span className="sg-sotto">
-          <span className="num sg-tag" data-tipo="manca">ANNULLATO</span> Resta in elenco e non si conta più.
+          <span className="num sg-tag" data-tipo="manca">Annullato</span> Resta in elenco e non si conta più.
         </span>
       ) : riga.ricevuta ? (
-        <span className="sg-sotto">Il pagamento sta nella ricevuta {riga.ricevuta.numero}/{riga.ricevuta.anno}. Non si annulla da solo: si annulla la ricevuta intera, che resta in elenco col suo numero e dice ANNULLATA.</span>
+        <span className="sg-sotto">Il pagamento sta nella ricevuta {riga.ricevuta.numero}/{riga.ricevuta.anno}. Non si annulla da solo: si annulla la ricevuta intera, che resta in elenco col suo numero e dice «Annullata».</span>
       ) : (
         <span className="sg-sotto">Pagamento fatto a mano, senza ricevuta. Annullato, resta in elenco e non si conta più.</span>
       )}
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
         {come === 'ricevuta' && riga.ricevuta && (
           <button type="button" className="sg-btn sg-btn-rosso" onClick={() => void annullaRicevuta()}>
-            ANNULLA LA RICEVUTA {riga.ricevuta.numero}/{riga.ricevuta.anno}
+            Annulla la ricevuta {riga.ricevuta.numero}/{riga.ricevuta.anno}
           </button>
         )}
         {come === 'pagamento' && (
           <button type="button" className="sg-btn sg-btn-rosso" onClick={() => void annullaPagamento()}>
-            ANNULLA IL PAGAMENTO
+            Annulla il pagamento
           </button>
         )}
         <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
-          CHIUDI
+          Chiudi
         </button>
       </div>
     </section>
@@ -126,7 +126,7 @@ export function RegistraDaPagamenti({ d, fai, onFatto, onChiudi }: { d: DatiSegr
         <RegistraPagamento d={d} p={scelto} corsi={[]} fai={fai} onFatto={onFatto} onChiudi={onChiudi} />
         <div className="row">
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelto(null)}>
-            NON È {scelto.cognome.toUpperCase()} {scelto.nome.toUpperCase()}: SCEGLI UN’ALTRA PERSONA
+            Non è {scelto.cognome.toUpperCase()} {scelto.nome.toUpperCase()}: scegli un’altra persona
           </button>
         </div>
       </div>
@@ -154,7 +154,7 @@ export function RegistraDaPagamenti({ d, fai, onFatto, onChiudi }: { d: DatiSegr
       </span>
       <div className="row">
         <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
-          NO, TORNA INDIETRO
+          No, torna indietro
         </button>
       </div>
     </section>

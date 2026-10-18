@@ -14,16 +14,16 @@ non si cambia qualcosa.
 
 1. **LISTINO** nel menu.
 2. Si cambia quello che serve. I cambi restano in una bozza: in fondo compare
-   una barra gialla con **BUTTA I CAMBI** e **SALVA**, e fino a **SALVA** la
+   una barra gialla con **Butta i cambi** e **Salva**, e fino a **Salva** la
    pagina di iscrizione mostra ancora quello di prima. Uscendo dal listino con
-   la barra aperta l'app chiede: **TORNA A FINIRE** o **ESCI SENZA SALVARE**.
+   la barra aperta l'app chiede: **Torna a finire** o **Esci senza salvare**.
    Rimesso tutto com'era, la barra sparisce e non chiede più niente.
-   **BUTTA I CAMBI** prima chiede, e dice cosa si perde (la quota, i corsi
+   **Butta i cambi** prima chiede, e dice cosa si perde (la quota, i corsi
    cambiati, quelli nuovi o tolti); confermato, il listino torna com'è
    salvato. Non è «Rimetti il listino del foglio originale», che torna ai
    prezzi del foglio.
-3. **SALVA**. Se qualcosa non va (un prezzo che non si capisce, due corsi con lo
-   stesso nome), la barra lo dice in rosso e **SALVA** resta spento.
+3. **Salva**. Se qualcosa non va (un prezzo che non si capisce, due corsi con lo
+   stesso nome), la barra lo dice in rosso e **Salva** resta spento.
 
 **VEDI LA PAGINA ↗** apre la pagina di iscrizione in un'altra scheda, per
 controllare com'è venuta.
@@ -39,7 +39,7 @@ controllare com'è venuta.
 
 ## I corsi
 
-Ogni corso è una riga col nome e i prezzi; **CAMBIA** la apre:
+Ogni corso è una riga col nome e i prezzi; **Cambia** la apre:
 
 - **CORSO** — si sceglie da un elenco dei corsi di **CORSI**, non si scrive.
   Ogni corso ha una voce sola (le righe di prezzo stanno dentro la voce), e
@@ -70,8 +70,8 @@ Ogni corso è una riga col nome e i prezzi; **CAMBIA** la apre:
 - **NOTA** — in rosso sotto i prezzi: «Solo in aggiunta a Judo 3».
 
 **↑ SU** e **↓ GIÙ** cambiano l'ordine della pagina di iscrizione, **Togli dal
-listino** toglie la voce (dal listino, non da **CORSI**), **CHIUDI** richiude
-la riga. **+ AGGIUNGI UN CORSO** in fondo ne aggiunge uno nuovo.
+listino** toglie la voce (dal listino, non da **CORSI**), **Chiudi** richiude
+la riga. **+ Aggiungi un corso** in fondo ne aggiunge uno nuovo.
 
 ### Quello che manca, in rosso
 
@@ -87,7 +87,7 @@ Sopra l'elenco dei corsi, a parole:
   formula: chi la sceglie nel modulo trova il prezzo da confermare. Il prezzo
   **A SALDO** vale come annuale fino a **SALDO FINO AL**: dopo, un corso che ha
   solo quello comincia a mancare dell'annuale. Si scrive il prezzo in
-  **CAMBIA**; se va bene così, **Va bene senza prezzo** spegne anche questo.
+  **Cambia**; se va bene così, **Va bene senza prezzo** spegne anche questo.
 
 Gli stessi corsi li conta [DA FARE](da-fare.md), in giallo.
 - **«senza corso: scegli il suo corso da CAMBIA»** — una voce di un listino

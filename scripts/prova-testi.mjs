@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs'
 
 const D = 'src/components/segreteria/'
-const FILE = ['Settimana', 'CalendarioSettimana', 'Presenze', 'PresenzeIstruttori', 'PresenzeSegnalate'].map((f) => `${D}${f}.tsx`)
+const FILE = ['Settimana', 'CalendarioSettimana', 'Presenze', 'PresenzeIstruttori', 'PresenzeSegnalate', 'Richieste', 'Corsi', 'Tessere', 'Listino', 'Pagamenti', 'PagamentoAperto', 'Ricevute'].map((f) => `${D}${f}.tsx`)
 const SIGLE = new Set(['CSV', 'PDF', 'PIN', 'RASD', 'IBAN', 'FIJLKAM', 'FIPE'])
 
 // Fine di un tag aperto che comincia in i: salta {…} e apici (c'è «=>» negli attributi).
@@ -71,11 +71,13 @@ export function trovaMaiuscole(src) {
     const apertura = src.slice(m.index, fine + 1)
     if (apertura.endsWith('/>')) continue
     const classe = /class(Name)?=("[^"]*"|\{[^}]*\})/.exec(apertura)?.[2] ?? ''
-    if (m[1] !== 'button' && !/sg-(tag|chip|bollino)/.test(classe)) continue
+    if (m[1] !== 'button' && !/sg-(tag|chip|bollino|btn)/.test(classe)) continue
     const chiusura = src.indexOf(`</${m[1]}>`, fine)
     if (chiusura > 0) testi.push(testo(src.slice(fine + 1, chiusura)))
   }
   testi.push(...etichetteChiedi(src))
+  // L'altra etichetta di una conferma (`no: 'NO, LASCIALA'`) e l'azione di un avviso (`etichetta: 'ANNULLA'`).
+  for (const m of src.matchAll(/\b(?:no|etichetta):\s*(['"])([^'"\n]*)\1/g)) testi.push(m[2])
   const parole = new Set()
   for (const t of testi) for (const w of t.matchAll(/(?<![\p{L}\p{N}_])\p{Lu}{4,}(?![\p{L}\p{N}_])/gu)) if (w[0] === w[0].toUpperCase() && !SIGLE.has(w[0])) parole.add(w[0])
   return [...parole]
@@ -95,6 +97,8 @@ ok('un tasto con onClick a freccia e più righe', trovaMaiuscole('<button onClic
 ok('le stringhe dentro le graffe di un tasto', trovaMaiuscole("<button>{x ? 'FATTO' : 'NON ANCORA'}</button>"), ['FATTO', 'ANCORA'])
 ok('un tag sg-tag, con l\'attributo data-tipo', trovaMaiuscole('<span className="num sg-tag" data-tipo="manca">SENZA APPELLO</span>'), ['SENZA', 'APPELLO'])
 ok('la conferma: il secondo argomento di chiedi', trovaMaiuscole("chiedi(`Togli ${nome}?`, 'TOGLI', { x: 1 })"), ['TOGLI'])
+ok('un tasto fatto con una label sg-btn', trovaMaiuscole('<label className="sg-btn sg-btn-linea">SCEGLI IL FOGLIO</label>'), ['SCEGLI', 'FOGLIO'])
+ok('l\'altra etichetta di una conferma e l\'azione di un avviso', trovaMaiuscole("chiedi(`Togli?`, 'Togli', { no: 'NO, LASCIALA' }) avviso({ etichetta: 'ANNULLA' })"), ['LASCIALA', 'ANNULLA'])
 ok('iniziale maiuscola e sigle vanno bene', trovaMaiuscole('<button>Segna tutti</button><span className="sg-chip">CSV</span><button>Apri PDF</button>'), [])
 ok('il testo fuori dai tasti non conta', trovaMaiuscole('<p>ATTENZIONE</p> chiedi(`Togli?`, \'Togli\', {})'), [])
 
