@@ -10,6 +10,40 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.111.0 — 18 ottobre 2026
+
+### Novità
+
+- In Segreteria i pulsanti che tolgono sono rossi e chiedono conferma
+
+### Risolto
+
+- La scheda di Richieste online non si stringe più
+
+## 0.110.2 — 18 ottobre 2026
+
+### Risolto
+
+- Un pagamento a mano non si registra più nel futuro né in un giorno di cassa chiuso; riepilogo da confermare e cassa contata alla cieca
+
+## 0.110.1 — 18 ottobre 2026
+
+### Modificato
+
+- Le schede dell'iscritto e del personale stanno su una colonna sola
+
+## 0.110.0 — 18 ottobre 2026
+
+### Novità
+
+- La scheda dell'iscritto è divisa in Persona, Documenti, Quota e pagamenti, Corsi
+
+## 0.109.2 — 18 ottobre 2026
+
+### Modificato
+
+- La libreria di design descrive la segreteria nel look del sito
+
 ## 0.109.1 — 18 ottobre 2026
 
 ### Risolto

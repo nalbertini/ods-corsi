@@ -34,6 +34,8 @@ annullati.
 del tipo giusto, non quelle disattivate), descrizione e una nota se serve. Un solo
 importo, senza IVA. La data non è nel futuro e non è prima del giorno da cui parte
 la cassa. Niente dati personali che non servono, nella descrizione e nella nota.
+Prima di scrivere, l'app mostra un **riepilogo** (importo, voce, cassa, data): **Sì,
+registra il movimento** lo scrive, **No, torna al modulo** lascia tutto com'era.
 
 Un movimento registrato **non si cambia**: toccandolo si apre, e si può **annullare**
 (resta in elenco, annullato, e non si conta più) oppure correggere la descrizione e
@@ -45,6 +47,7 @@ cassa si annulla e si rifà.
 **Giroconto** sposta soldi da una cassa all'altra, per esempio il versamento dei
 contanti in banca: da Cassa Contanti a Conto Corrente. Non è un'entrata né
 un'uscita: non entra nei totali, né nei totali per voce. Si annulla come un movimento.
+Anche qui, prima di scrivere c'è il riepilogo da confermare.
 
 ### Rimborsi e errori in periodi passati
 
@@ -76,12 +79,13 @@ Ogni tanto (a fine settimana, per esempio) si conta il denaro nella **Cassa Cont
 controlla che torni. In **CASSE**, **Chiudi la cassa**:
 
 1. Scegli **FINO AL** (di solito oggi). Il periodo parte dal giorno dopo l'ultima chiusura.
-2. L'app dice **IN CASSA SECONDO I CONTI**: il saldo iniziale, i contanti incassati dagli
-   iscritti, le entrate e le uscite scritte a mano, i versamenti in banca. Sotto, **COSA
-   C'È DENTRO**: l'elenco dei movimenti in contanti del periodo, per vedere da dove viene il numero.
-3. Scrivi i **CONTANTI CONTATI**, un solo totale. L'app dice la **DIFFERENZA**: «Tornano»,
-   «in più» o «in meno». Una nota facoltativa dice perché. Se la differenza è sopra 20,00 €,
-   chiede una conferma in più.
+2. Conta il denaro e scrivi i **CONTANTI CONTATI**, un solo totale. La cassa si conta **alla
+   cieca**: finché non scrivi quanto hai contato, l'app non mostra quanto dovrebbe esserci.
+3. Solo allora compaiono **IN CASSA SECONDO I CONTI** (il saldo iniziale, i contanti incassati
+   dagli iscritti, le entrate e le uscite scritte a mano, i versamenti in banca), la
+   **DIFFERENZA** («Tornano», «in più» o «in meno») e **COSA C'È DENTRO**: l'elenco dei
+   movimenti in contanti del periodo, per vedere da dove viene il numero. Una nota facoltativa
+   dice perché. Se la differenza è sopra 20,00 €, chiede una conferma in più.
 4. **Chiudi la cassa**. Se i conti non tornano, la differenza si scrive da sola nei conti, come
    movimento «Differenza di cassa» di quel giorno (un'entrata se c'erano più soldi, un'uscita se meno),
    così a fine giorno «in cassa» è quanto hai contato. Non si sceglie a mano in NUOVO MOVIMENTO.

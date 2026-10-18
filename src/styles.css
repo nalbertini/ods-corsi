@@ -1935,7 +1935,8 @@ a.sg-voce { text-decoration: none; }
   font-family: var(--cond); font-style: oblique 9deg; font-size: 15px; font-weight: 700; letter-spacing: 0.14em;
 }
 /* Il tasto principale è pieno del colore del testo; rosso solo quando quello
-   che fa non si annulla (una ricevuta, un file cancellato, un import). Sul
+   che fa non si annulla (una ricevuta, un file cancellato, un import); i
+   pulsanti che aprono quelle azioni sono a linea rossa (`sg-pericolo`). Sul
    rosso il testo è bianco: il nero arriva a 4,1:1, il bianco a 4,5:1. */
 .sg-btn-pieno { background: var(--text); color: var(--bg); }
 .sg-btn-rosso { background: var(--rosso); color: var(--su-rosso); }
@@ -2203,7 +2204,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 /* La scheda di un iscritto o di un istruttore: tutta la sezione, al posto dell'elenco. */
 .sg-torna { align-self: flex-start; min-height: 40px; padding: 0 14px; font-size: 14px; }
 .sg-scheda-piena { position: static; gap: 24px; padding: 24px 28px; }
-.sg-scheda-griglia { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 40px; align-items: start; }
 .sg-scheda-campi { max-width: 720px; }
 .sg-scheda-piede { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding-top: 16px; border-top: 2px solid var(--line-soft); }
 .sg-scheda-piede > .sg-btn { flex: 0 0 auto; min-width: 180px; }
@@ -2226,6 +2226,10 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-riga-iscritto-corso .sg-segno-regola { white-space: normal; }
 /* La scheda di un corso accanto all'elenco è stretta, sul telefono pure: le colonne vanno su due righe e «iscritto dal» sotto, le intestazioni restano e ordinano. */
 .sg-scheda { container-type: inline-size; }
+/* Affiancata all'elenco la scheda non scende sotto la misura in cui si legge; sotto 1240 px è a tutta larghezza (`STRETTO`). */
+@media (min-width: 1241px) {
+  .sg-due-colonne > .sg-scheda { min-width: 420px; }
+}
 @container (max-width: 780px) {
   .sg-riga-iscritto-corso { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 14px; padding-block: 8px; }
   .sg-lista-testa.sg-riga-iscritto-corso { display: flex; flex-wrap: wrap; gap: 6px 16px; padding-block: 0 6px; }
@@ -2625,7 +2629,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 
 @media (max-width: 1000px) {
   .sg-scheda-piena { padding: 20px; }
-  .sg-scheda-griglia { grid-template-columns: minmax(0, 1fr); }
   .sg-scheda-piede > .sg-btn { flex: 1 1 0; min-width: 0; }
   .sg-tre { grid-template-columns: minmax(0, 1fr); }
   .sg-ricevuta-voce { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -3109,6 +3112,28 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* Il modulo è sempre chiaro: il tasto del tema in testata cambierebbe solo l'icona, quindi a modulo aperto non c'è. */
 :root[data-modulo='sito'] .tasto-tema { display: none; }
 
+/* La scheda iscritto a schede: la linguetta dice a parole se c'è qualcosa da sistemare, e il piede resta in vista. */
+.sg-schede-scheda .scheda { white-space: nowrap; gap: 8px; }
+.sg-scheda-segno { font-size: 11px; letter-spacing: 0.1em; }
+.sg-scheda-segno[data-tono='giallo'] { color: var(--giallo-testo); }
+.sg-scheda-segno[data-tono='rosso'] { color: var(--rosso-testo); }
+/* Sulla linguetta accesa (fondo surface-2) il giallo scuro non arriva a 4,5:1: lì vale il testo; il puntino e la parola dicono comunque il segno. */
+.sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno[data-tono='giallo'] { color: var(--text); }
+.sg-scheda-corta { display: none; }
+.sg-scheda-piede-fisso { position: sticky; bottom: 0; z-index: 2; padding-bottom: 12px; background: var(--surface); }
+/* Stretto: i timbri due per due (una colonna sola spingerebbe le schede sotto lo scorrimento; questa regola sta dopo quella a una colonna e vince) e le quattro linguette stanno tutte nella larghezza, il segno va sotto il nome (niente scorrimento nascosto). */
+@media (max-width: 1000px) {
+  .sg-timbri, .sg-timbri[data-con-tessera] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-schede-scheda { grid-auto-columns: minmax(0, 1fr); align-self: stretch; width: 100%; }
+  .sg-schede-scheda .scheda { flex-direction: column; gap: 2px; padding: 4px; white-space: normal; text-align: center; letter-spacing: 0.08em; font-size: 13px; }
+  .sg-schede-scheda .sg-scheda-segno { letter-spacing: 0.04em; }
+  .sg-scheda-lunga { display: none; }
+  .sg-scheda-corta { display: inline; }
+}
+@media (max-width: 480px) {
+  .sg-scheda-piede-fisso > .sg-btn { padding: 0 6px; letter-spacing: 0.08em; font-size: 14px; }
+}
+
 /* CONTABILITÀ: i totali delle casse vanno a capo sotto una certa larghezza, invece di tagliare gli importi a 40px. */
 .sg-numeri.sg-numeri-conti { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 
@@ -3134,3 +3159,11 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   .sito-pezzi-pagina { padding: 8px; }
   .sito-pezzo .sito-testo { padding: 16px 14px; }
 }
+/* Quello che toglie qualcosa (cancella, elimina, annulla, disattiva) è rosso
+   in ogni pulsante, a linea, chip o link: il rosso pieno resta al «sì» della
+   conferma. In coda al file e con `:root[data-look='sito']` per battere i colori del
+   tasto a linea in entrambe le grafiche. */
+.sg-pericolo:not(:disabled),
+.sg-pericolo:not(:disabled):hover { color: var(--rosso-testo); border-color: var(--rosso-testo); }
+:root[data-look='sito'] .sg-pericolo:not(:disabled),
+:root[data-look='sito'] .sg-pericolo:not(:disabled):hover { color: var(--rosso-testo); border-color: var(--rosso-testo); }

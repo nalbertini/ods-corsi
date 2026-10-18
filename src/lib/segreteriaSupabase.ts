@@ -18,6 +18,7 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
+import { oggiARoma } from './contabilita'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
@@ -1249,7 +1250,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async registraPagamentoDiretto(d: DatiPagamentoDiretto) {
-      const no = cosaNonVaDiretto(d)
+      // Il futuro lo ferma anche qui; il giorno chiuso lo vede solo il database (la segreteria non legge le chiusure).
+      const no = cosaNonVaDiretto(d, oggiARoma())
       if (no) throw new Error(no)
       const riga = ok(
         await db.rpc('registra_pagamento_diretto', {

@@ -272,7 +272,7 @@ function Comandi({ onNuova }: { onNuova: () => void }) {
       <button type="button" className="sg-chip num" disabled={!storia.hasFuture} onClick={avanti}>Rifai</button>
       <button type="button" className="sg-chip num" disabled={!scelto || scelto.index === 0} onClick={() => vai(-1)}>Su ▲</button>
       <button type="button" className="sg-chip num" disabled={!scelto || scelto.index >= quanti - 1} onClick={() => vai(1)}>Giù ▼</button>
-      <button type="button" className="sg-chip num" disabled={!scelto} onClick={togli}>Togli</button>
+      <button data-bozza type="button" className="sg-chip num sg-pericolo" disabled={!scelto} onClick={togli}>Togli</button>
     </div>
   )
 }

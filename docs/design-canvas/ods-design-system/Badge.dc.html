@@ -9,14 +9,16 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <!-- Tema sito: Inter (qui da Google Fonts, in app file locale OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<span style="display: inline-block; padding: {{s.padding}}; border: {{s.border}}; background: {{s.bg}}; color: {{s.fg}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: {{s.fontSize}}; font-weight: 700; letter-spacing: {{s.spacing}}; line-height: {{s.lineHeight}}; white-space: nowrap">{{label}}</span>
+<span style="display: inline-block; padding: {{s.padding}}; border: {{s.border}}; background: {{s.bg}}; color: {{s.fg}}; border-radius: {{s.radius}}; font-family: {{s.family}}; font-size: {{s.fontSize}}; font-weight: 700; letter-spacing: {{s.spacing}}; line-height: {{s.lineHeight}}; white-space: nowrap">{{label}}</span>
 </x-dc>
-<script data-dc-script data-props='{"label":{"editor":"text","default":"PROVA"},"tipo":{"editor":"enum","options":["prova","bollino","tag","segno"],"default":"prova"},"tono":{"editor":"enum","options":["neutro","rosso","giallo","verde","spento"],"default":"neutro"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":140,"height":40}}'>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"PROVA"},"tipo":{"editor":"enum","options":["prova","bollino","tag","segno"],"default":"prova"},"tono":{"editor":"enum","options":["neutro","rosso","giallo","verde","spento"],"default":"neutro"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":140,"height":40}}'>
 // Riproduzione 1:1 dei piccoli segni di stato di src/styles.css:
 // - prova   = .prova-marchio (riga 457): 11px, 0.12em, testo giallo-testo, bordo 2px giallo, padding 1px 6px.
 // - bollino = .sg-bollino (riga 1250): 11px, 0.18em, fondo giallo, testo su-colore, padding 2px 6px (DATI DI PROVA).
@@ -26,19 +28,34 @@
 //             nell'elenco delle pagine del SITO). E' il numero giallo accanto alle voci del menu di segreteria.
 // - segno   = .sg-segno-regola (riga 1509): 12px, 0.12em, bordo 1.5px del colore del testo, padding 2px 6px;
 //             tono rosso / giallo / verde / spento. E' il segno IN REGOLA della lista iscritti.
+// tema sito (look del sito della segreteria, `:root[data-look='sito']` in src/styles.css): ogni segno e' un tag bianco con bordo
+// e testo dello stesso colore, raggio 6px, Inter, e il segno prima della parola: ✕ manca, … aspetta, ✓ fatto. Il giallo pieno non c'e'
+// piu': 'aspetta' e' giallo scuro #8f6a00 su bianco. Il neutro e' #46606f. Il bollino diventa un tag giallo scuro.
 // Tutti hanno la classe `num` nel codice (Saira Condensed).
 const T = {
   scuro: { bg: '#121212', dim: '#8c8c88', giallo: '#f4c31b', rosso: '#e4292a', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
   chiaro: { bg: '#f4f4f1', dim: '#656561', giallo: '#f4c31b', rosso: '#e4292a', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+  sito: { bg: '#ffffff', dim: '#46606f', giallo: '#f4c31b', rosso: '#e4292a', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#0d2a3d', suRosso: '#ffffff' },
 };
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
     const tipo = p.tipo || 'prova';
     const tono = p.tono || 'neutro';
+    const sito = p.tema === 'sito';
     let s;
-    if (tipo === 'bollino') {
+    let segno = '';
+    if (sito) {
+      // Ogni stato e' un tag bianco col bordo e il testo del suo colore; il segno prima della parola.
+      const SEGNI = { rosso: '✕ ', giallo: '… ', verde: '✓ ' };
+      const fg = tipo === 'bollino' || tipo === 'prova' ? c.gialloTesto : tono === 'rosso' ? c.rossoTesto : tono === 'giallo' ? c.gialloTesto : tono === 'verde' ? c.verdeTesto : c.dim;
+      if (tipo === 'tag' || tipo === 'segno') segno = SEGNI[tono] || '';
+      const bordo = tipo === 'prova' ? '2px' : '1.5px';
+      s = { padding: tipo === 'tag' ? '1px 8px' : tipo === 'segno' ? '2px 8px' : '2px 6px', border: bordo + ' solid ' + fg, bg: c.bg, fg, fontSize: tipo === 'tag' || tipo === 'segno' ? '12px' : '11px', spacing: '0.02em', lineHeight: 'normal' };
+    } else if (tipo === 'bollino') {
       s = { padding: '2px 6px', border: '0', bg: c.giallo, fg: c.suColore, fontSize: '11px', spacing: '0.18em', lineHeight: 'normal' };
     } else if (tipo === 'tag') {
       const [bg, fg] = tono === 'rosso' ? [c.rosso, c.suRosso] : tono === 'giallo' ? [c.giallo, c.suColore] : tono === 'verde' ? [c.verde, c.suColore] : [c.dim, c.bg];
@@ -49,7 +66,9 @@ class Component extends DCLogic {
     } else {
       s = { padding: '1px 6px', border: '2px solid ' + c.giallo, bg: 'transparent', fg: c.gialloTesto, fontSize: '11px', spacing: '0.12em', lineHeight: 'normal' };
     }
-    return { label: p.label ?? 'PROVA', s };
+    s.family = sito ? INTER : COND;
+    s.radius = sito ? '6px' : '0';
+    return { label: segno + (p.label ?? 'PROVA'), s };
   }
 }
 </script>

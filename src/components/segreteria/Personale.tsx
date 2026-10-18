@@ -400,7 +400,7 @@ function Scheda({
   const invita = () => void fai(async () => avvisa(partito(p.nome, await d.invita(p.id))))
 
   const elimina = async () => {
-    if (!window.confirm(`Eliminare ${`${p.nome} ${p.cognome}`.trim()}? Spariscono la scheda e l'account, e non si torna indietro.`)) return
+    if (!(await chiedi(`Eliminare ${`${p.nome} ${p.cognome}`.trim()}? Spariscono la scheda e l'account, e non si torna indietro.`, 'Elimina', { pericolo: true }))) return
     const fatto = await fai(() => d.eliminaIstruttore(p.id), `${p.nome} è eliminato`, onEliminata)
     // Anche andata male la scheda può non esserci più: è l'account a non essersene andato.
     if (!fatto) await onCambiato()
@@ -420,7 +420,7 @@ function Scheda({
         </div>
       </div>
 
-      <div className="sg-scheda-griglia">
+      <div className="stack" style={{ gap: 20, minWidth: 0 }}>
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
           {modifica ? (
             <div className="sg-due">
@@ -564,9 +564,9 @@ function Scheda({
       <div className="sg-scheda-piede">
         <button
           type="button"
-          className="sg-btn sg-btn-linea"
+          className="sg-btn sg-btn-linea sg-pericolo"
           onClick={async () => {
-            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`, 'Togli l’accesso'))) return
+            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`, 'Togli l’accesso', { pericolo: true }))) return
             void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Accesso tolto' : 'Accesso ridato', onCambiato)
           }}
         >
@@ -576,7 +576,7 @@ function Scheda({
         {insegna(p) && (
           <button
             type="button"
-            className="sg-btn sg-btn-linea"
+            className="sg-btn sg-btn-linea sg-pericolo"
             title="Solo per chi non ha mai insegnato: senza corsi, lezioni o presenze"
             onClick={() => void elimina()}
           >
@@ -671,7 +671,13 @@ function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: P
             Un altro kanji
           </button>
           {p.kanji && (
-            <button type="button" className="num sg-chip" onClick={() => scegli(null)}>
+            <button
+              type="button"
+              className="num sg-chip sg-pericolo"
+              onClick={async () => {
+                if (await chiedi(`Togliere il kanji a ${p.nome}?`, 'Togli il kanji', { pericolo: true })) scegli(null)
+              }}
+            >
               Togli il kanji
             </button>
           )}

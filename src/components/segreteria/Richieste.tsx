@@ -531,7 +531,7 @@ function Scheda({
       <div className="row" style={{ justifyContent: 'flex-end', marginTop: 24 }}>
         <button
           type="button"
-          className="sg-btn sg-btn-linea"
+          className="sg-btn sg-btn-linea sg-pericolo"
           onClick={async () => {
             if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`, 'Elimina per sempre', { pericolo: true })))
               void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)

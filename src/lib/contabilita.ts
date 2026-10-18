@@ -211,6 +211,15 @@ export function chiusuraNonPiuInRegola(chiusura: ChiusuraCassa, casse: Cassa[], 
   return previstoCassa(casse, senzaDifferenza, chiusura.cassaId, chiusura.data) !== chiusura.previsto
 }
 
+/**
+ * La chiusura di cassa si fa alla cieca: il previsto e la differenza si vedono solo dopo aver scritto quanto si è contato
+ * (zero è un importo valido, il vuoto no).
+ */
+export function chiusuraVisibile(contati: string, previsto: number): { previsto: number; differenza: number } | null {
+  const c = centesimi(contati)
+  return c === null ? null : { previsto, differenza: c - previsto }
+}
+
 /** «tornano», «5,00 € in più» o «5,00 € in meno». */
 export const differenzaInParole = (differenza: number): string =>
   differenza === 0 ? 'tornano' : `${euro(Math.abs(differenza))} € ${differenza > 0 ? 'in più' : 'in meno'}`
@@ -388,6 +397,15 @@ export function cosaNonVaMovimento(d: DatiMovimento, voci: VoceContabile[], cass
   return null
 }
 
+/** Le righe del riepilogo da confermare prima di scrivere un movimento. */
+export const riepilogoMovimento = (d: DatiMovimento, nomeVoce: string, nomeCassa: string): string[] => [
+  `${d.tipo === 'entrata' ? 'Entrata' : 'Uscita'} di ${euro(d.importo)} €`,
+  `${nomeVoce} · ${nomeCassa}`,
+  dataRicevuta(d.data),
+  d.descrizione.trim(),
+  ...(d.nota?.trim() ? [d.nota.trim()] : []),
+]
+
 export interface DatiGiroconto {
   daCassaId: string
   aCassaId: string
@@ -395,6 +413,14 @@ export interface DatiGiroconto {
   importo: number
   nota?: string
 }
+
+/** Le righe del riepilogo da confermare prima di scrivere un giroconto: la cassa di partenza prima di quella di arrivo. */
+export const riepilogoGiroconto = (d: DatiGiroconto, nomeDa: string, nomeA: string): string[] => [
+  `Giroconto di ${euro(d.importo)} €`,
+  `Da ${nomeDa} a ${nomeA}`,
+  dataRicevuta(d.data),
+  ...(d.nota?.trim() ? [d.nota.trim()] : []),
+]
 
 export function cosaNonVaGiroconto(d: DatiGiroconto, casse: Cassa[], oggi: string, chiusure: ChiusuraCassa[] = []): string | null {
   const da = casse.find((c) => c.id === d.daCassaId)

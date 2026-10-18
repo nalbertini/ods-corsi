@@ -92,12 +92,14 @@ const semplice = (t: string) => piano(t).trim()
 export const METODI_A_MANO = [...METODI, 'Satispay']
 
 /** Gli stessi rifiuti di `registra_pagamento_diretto`, per dirli subito sotto al modulo. */
-export function cosaNonVaDiretto(d: DatiPagamentoDiretto): string | null {
+export function cosaNonVaDiretto(d: DatiPagamentoDiretto, oggi?: string, chiusure: ReadonlyArray<{ data: string; annullataIl?: string | null }> = []): string | null {
   if (!d.personaId) return 'Manca la persona'
   // Una data vera (non il 30 febbraio) fra il 2000 e il 2100, come `registra_pagamento_diretto`.
   const giorno = /^\d{4}-\d{2}-\d{2}$/.test(d.data) ? new Date(`${d.data}T00:00:00Z`) : null
   if (!giorno || Number.isNaN(giorno.getTime()) || giorno.toISOString().slice(0, 10) !== d.data) return 'La data del pagamento non si capisce'
   if (d.data < '2000-01-01' || d.data > '2100-12-31') return 'La data del pagamento non torna'
+  // `oggi` è il giorno di Roma (`oggiARoma`): senza, il controllo spetta al database.
+  if (oggi && d.data > oggi) return 'La data è nel futuro: si registra quel che è già successo'
   if (!Number.isInteger(d.importo)) return 'L’importo non si capisce'
   if (d.importo <= 0) return 'L’importo deve essere più di zero'
   if (d.importo > 10_000_000) return 'L’importo è troppo alto: controlla le cifre'
@@ -106,11 +108,26 @@ export function cosaNonVaDiretto(d: DatiPagamentoDiretto): string | null {
   if (!d.voce.trim()) return 'Scrivi a cosa serve il pagamento'
   if (d.voce.trim().length > 120) return 'La voce è troppo lunga'
   if ((d.nota ?? '').length > 300) return 'La nota è troppo lunga: al massimo 300 caratteri'
+  // I contanti entrano nella Cassa Contanti: in un giorno già chiuso romperebbero la chiusura. Si chiude solo quella cassa, vale l'ultima chiusura attiva.
+  const fino = chiusure.filter((k) => !k.annullataIl).map((k) => k.data).sort().at(-1)
+  if (fino && d.data <= fino && d.metodo.trim().toLowerCase() === 'contanti') return 'Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura'
   return null
 }
 
+/** Le righe del riepilogo da confermare prima di scrivere un pagamento a mano. */
+export const riepilogoPagamentoDiretto = (d: DatiPagamentoDiretto, chi: string): string[] => [
+  `${euro(d.importo)} € · ${d.metodo.trim()}`,
+  chi,
+  dataLunga(d.data),
+  d.voce.trim(),
+  ...(d.nota?.trim() ? [d.nota.trim()] : []),
+  ...(d.metodo.trim().toLowerCase() === 'contanti' ? ['Va nella Cassa Contanti'] : []),
+  'Senza ricevuta: resta nello storico e si può annullare',
+  'Non riduce il residuo di nessuna ricevuta',
+]
+
 /** Il guaio è dell'importo? Se con un importo buono il rifiuto sparisce, sì: gli altri campi non si segnano a torto. */
-export const importoNonVa = (d: DatiPagamentoDiretto) => cosaNonVaDiretto(d) !== null && cosaNonVaDiretto({ ...d, importo: 100 }) === null
+export const importoNonVa = (d: DatiPagamentoDiretto, oggi?: string, chiusure?: ReadonlyArray<{ data: string; annullataIl?: string | null }>) => cosaNonVaDiretto(d, oggi, chiusure) !== null && cosaNonVaDiretto({ ...d, importo: 100 }, oggi, chiusure) === null
 
 const nomeIntestatario = (r: Ricevuta) => `${r.intestatario.cognome} ${r.intestatario.nome}`.trim()
 

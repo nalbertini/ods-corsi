@@ -192,7 +192,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
                 <button type="button" className="sg-btn sg-btn-tratteggio" disabled={lavora} onClick={() => void nascondi()}>
                   {pagina.nascosta ? 'Mostra sul sito' : 'Nascondi dal sito'}
                 </button>
-                <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void cancella()}>
+                <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={lavora} onClick={() => void cancella()}>
                   Cancella la pagina
                 </button>
               </>
@@ -283,7 +283,7 @@ function ElencoVoci({ d, dove, titolo, voci, pagine, ricarica }: { d: DatiSegret
             {diLegge(v) ? (
               <span className="sg-tag">Di legge</span>
             ) : (
-              <button type="button" className="sg-chip num" onClick={() => setModifica((m) => m.filter((_, j) => j !== i))}>Togli</button>
+              <button type="button" className="sg-chip num sg-pericolo" data-bozza onClick={() => setModifica((m) => m.filter((_, j) => j !== i))}>Togli</button>
             )}
           </li>
         ))}
