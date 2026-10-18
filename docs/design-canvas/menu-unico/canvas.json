@@ -1,0 +1,27 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Menu unico · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "MenuUnico.dc.html",
+   "title": "Il menu: una sola colonna, le voci delle tue autorizzazioni",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Menu unico: segreteria e amministrazione sono autorizzazioni, non sezioni"
+  }
+ ]
+}
