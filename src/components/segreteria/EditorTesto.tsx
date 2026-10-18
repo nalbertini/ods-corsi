@@ -57,7 +57,7 @@ function Tasto({ nome, etichetta, acceso, onClick, larghezzaPiena }: { nome: str
   )
 }
 
-function Barra({ editor, d }: { editor: Editor; d: DatiSegreteria }) {
+export function Barra({ editor, d }: { editor: Editor; d: DatiSegreteria }) {
   const [immagine, setImmagine] = useState(false)
   const [link, setLink] = useState<{ indirizzo: string; pulsante: boolean; guaio?: string } | null>(null)
   // La barra segue il cursore: i tasti accesi dicono come è scritto il punto dove si è.
@@ -150,22 +150,30 @@ function Barra({ editor, d }: { editor: Editor; d: DatiSegreteria }) {
   )
 }
 
+/**
+ * Le estensioni di TipTap: solo quello che il sito ammette. `senzaStoria` toglie annulla e rifai di TipTap: nella
+ * pagina a pezzi la storia è una sola, quella di Puck (ANNULLA e RIFAI in alto), se no i due si contraddicono.
+ */
+export const estensioni = (senzaStoria = false) => [
+  StarterKit.configure({
+    heading: { levels: [2, 3] },
+    // Quel che il sito non ammette non si può scrivere.
+    code: false,
+    codeBlock: false,
+    strike: false,
+    horizontalRule: false,
+    link: false,
+    underline: false,
+    // `as const`: per TypeScript l'opzione è `false` o le sue impostazioni, non un booleano qualunque.
+    ...(senzaStoria && { undoRedo: false as const }),
+  }),
+  Immagine,
+  LinkPulsante.configure({ openOnClick: false, autolink: false, HTMLAttributes: { rel: null, target: null } }),
+]
+
 export function EditorTesto({ valore, onCambia, etichetta, d }: { valore: string; onCambia: (html: string) => void; etichetta: string; d: DatiSegreteria }) {
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [2, 3] },
-        // Quel che il sito non ammette non si può scrivere.
-        code: false,
-        codeBlock: false,
-        strike: false,
-        horizontalRule: false,
-        link: false,
-        underline: false,
-      }),
-      Immagine,
-      LinkPulsante.configure({ openOnClick: false, autolink: false, HTMLAttributes: { rel: null, target: null } }),
-    ],
+    extensions: estensioni(),
     content: valore,
     editorProps: { attributes: { class: 'sito-testo', role: 'textbox', 'aria-multiline': 'true', 'aria-label': etichetta } },
     onUpdate: ({ editor: e }) => onCambia(e.getHTML()),

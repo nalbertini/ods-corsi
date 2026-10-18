@@ -1,0 +1,73 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Sito · scrivi nella pagina"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Oggi.dc.html",
+      "title": "1 · Oggi, schermo largo: il testo si scrive a destra",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiA.dc.html",
+      "title": "2 · Proposta A · barra sopra il pezzo",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiB.dc.html",
+      "title": "3 · Proposta B · barra fissa in alto",
+      "x": 3120,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiColonne.dc.html",
+      "title": "4 · Proposta A · colonne affiancate, ognuna con il suo editor",
+      "x": 0,
+      "y": 1020,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiLink.dc.html",
+      "title": "5 · Proposta A · LINK aperto",
+      "x": 1560,
+      "y": 1020,
+      "w": 1440,
+      "h": 1000,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiTablet.dc.html",
+      "title": "6 · Proposta · tablet 768px",
+      "x": 3120,
+      "y": 1020,
+      "w": 768,
+      "h": 1100,
+      "page": "page-1"
+    },
+    {
+      "file": "ProponiTelefono.dc.html",
+      "title": "7 · Proposta · telefono 390px, tastiera aperta",
+      "x": 4008,
+      "y": 1020,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    }
+  ]
+}

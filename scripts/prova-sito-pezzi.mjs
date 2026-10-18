@@ -400,5 +400,92 @@ console.log('\nPorta ai pezzi: in modalità prova la pagina converte senza cambi
   ok('elenco: tre colonne', nome(col(3)), 'Tre colonne')
 }
 
+// SCRIVERE NELLA PAGINA: il testo e le colonne si scrivono nel pezzo, senza toccare il resto.
+console.log('\nScrivere il testo nella pagina')
+{
+  const scrivi = (p, h, c) => prova(() => (c === undefined ? z.scriviTesto(p, h) : z.scriviTesto(p, h, c)))
+  const copia = (x) => JSON.parse(JSON.stringify(x))
+
+  const t0 = T('t1', '<p>vecchio</p>')
+  const t1 = scrivi(t0, '<p>nuovo</p>')
+  ok('testo: l’html è quello scritto', t1?.props?.html, '<p>nuovo</p>')
+  ok('testo: restano id e tipo', [t1?.props?.id, t1?.type], ['t1', 'testo'])
+
+  for (const n of [2, 3]) {
+    const cols = Array.from({ length: n }, (_, i) => ({ html: `<p>${i}</p>` }))
+    const c0 = C('c1', cols)
+    const c1 = scrivi(c0, '<p>scritta</p>', 1)
+    const voluto = cols.map((c, i) => (i === 1 ? { html: '<p>scritta</p>' } : c))
+    ok(`${n} colonne: cambia solo la seconda`, c1?.props?.colonne, voluto)
+    ok(`${n} colonne: restano id, tipo e numero di colonne`, [c1?.props?.id, c1?.type, c1?.props?.colonne?.length], ['c1', 'colonne', n])
+  }
+  ok('colonne: senza indicarla si scrive la prima', scrivi(C('c1', [{ html: 'a' }, { html: 'b' }]), 'x')?.props?.colonne, [{ html: 'x' }, { html: 'b' }])
+
+  for (const [cosa, p, h, c] of [
+    ['testo', T('t1', '<p>a</p>'), '<p>b</p>'],
+    ['colonne', C('c1', [{ html: 'a' }, { html: 'b' }, { html: 'c' }]), '<p>x</p>', 2],
+  ]) {
+    const prima = copia(p)
+    scrivi(p, h, c)
+    ok(`${cosa}: l’oggetto ricevuto non cambia`, p, prima)
+  }
+
+  const f = F('f1'), cima = CIMA('k1')
+  ok('foto: restituisce lo stesso oggetto', scrivi(f, '<p>x</p>') === f, true)
+  ok('foto in cima: restituisce lo stesso oggetto', scrivi(cima, '<p>x</p>') === cima, true)
+  ok('foto: l’oggetto ricevuto non cambia', f, F('f1'))
+  const c2 = C('c2', [{ html: 'a' }, { html: 'b' }])
+  ok('colonne: colonna -1 restituisce lo stesso oggetto', scrivi(c2, 'x', -1) === c2, true)
+  ok('colonne: colonna oltre il numero restituisce lo stesso oggetto', scrivi(c2, 'x', 2) === c2, true)
+  ok('colonne: nessuna colonna cambia se fuori misura', c2, C('c2', [{ html: 'a' }, { html: 'b' }]))
+
+  const sporco = '<p>ciao</p><script>alert(1)</script>'
+  const pagina = { content: [scrivi(T('t1', ''), sporco), scrivi(C('c1', [{ html: '' }, { html: '' }]), sporco, 1)] }
+  ok('scritto: la pagina resta valida', valido(pagina), true)
+  const uscito = html(pagina.content)
+  ok('scritto: nell’html finale c’è il testo', buono(uscito) && uscito.includes('ciao'), true)
+  ok('scritto: un <script> non esce', buono(uscito) && !/script|alert/i.test(uscito), true)
+}
+
+// Il testo scritto arriva subito a chi salva: la pagina con quel pezzo cambiato, senza aspettare Puck.
+{
+  const pagina = { content: [T('a', '<p>uno</p>'), C('b', [{ html: '<p>x</p>' }, { html: '<p>y</p>' }]), F('c')] }
+  const copia = JSON.stringify(pagina)
+  const r = prova(() => z.conTestoScritto(pagina, 'b', '<p>nuovo</p>', 1))
+  ok('pagina: cambia solo la colonna scritta del pezzo giusto', r?.content?.map((p) => JSON.stringify(p.props)), [JSON.stringify({ id: 'a', html: '<p>uno</p>' }), JSON.stringify({ id: 'b', colonne: [{ html: '<p>x</p>' }, { html: '<p>nuovo</p>' }] }), JSON.stringify({ id: 'c', src: 'https://x.it/a.jpg', alt: 'Un tatami' })])
+  ok('pagina: il testo scritto va nel pezzo testo', prova(() => z.conTestoScritto(pagina, 'a', '<p>due</p>').content[0].props.html), '<p>due</p>')
+  ok('pagina: la pagina ricevuta non cambia', JSON.stringify(pagina), copia)
+  ok('pagina: un pezzo che non c\'è lascia la pagina com\'è', prova(() => z.conTestoScritto(pagina, 'zzz', 'x') === pagina), true)
+  ok('pagina: resta valida', valido(r), true)
+}
+
+// ANNULLA e RIFAI dalla tastiera dentro il testo: Cmd/Ctrl+Z indietro, Cmd/Ctrl+Maiusc+Z o Cmd/Ctrl+Y avanti; il resto è del testo.
+{
+  const v = (tasto, meta = true, maiusc = false, alt = false) => prova(() => z.versoStoria(tasto, meta, maiusc, alt))
+  ok('tastiera: Cmd+Z va indietro', v('z'), 'indietro')
+  ok('tastiera: Cmd+Z maiuscola (CapsLock) va indietro', v('Z'), 'indietro')
+  ok('tastiera: Cmd+Maiusc+Z va avanti', v('z', true, true), 'avanti')
+  ok('tastiera: Cmd+Y va avanti', v('y'), 'avanti')
+  ok('tastiera: Z senza Cmd è una lettera', v('z', false), null)
+  ok('tastiera: Alt+Cmd+Z non è nostra', v('z', true, false, true), null)
+  ok('tastiera: Cmd+B non è nostra', v('b'), null)
+}
+// Dopo ANNULLA e RIFAI la parte scelta resta scelta, se c'è ancora.
+{
+  const sel = (s, n) => prova(() => z.selezioneDopoStoria(s, n))
+  ok('storia: la parte scelta resta', sel({ index: 1, zone: 'z' }, 3), { index: 1, zone: 'z' })
+  ok('storia: se la lista si è accorciata sotto di lei, nessuna', sel({ index: 3, zone: 'z' }, 3), null)
+  ok('storia: nessuna scelta, nessuna scelta', sel(null, 3), null)
+}
+
+// Puck registra un passo nella storia 250ms dopo l'ultima scrittura: annullare prima toglierebbe il passo di prima.
+{
+  const a = (ultima, ora) => prova(() => z.attesaStoria(ultima, ora))
+  ok('storia: appena scritto, si aspetta quasi tutta la finestra', a(1000, 1010), 290)
+  ok('storia: a metà finestra si aspetta il resto', a(1000, 1150), 150)
+  ok('storia: passata la finestra non si aspetta', a(1000, 1400), 0)
+  ok('storia: mai scritto, non si aspetta', a(0, 5000), 0)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
