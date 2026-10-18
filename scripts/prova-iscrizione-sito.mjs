@@ -212,5 +212,9 @@ ok('FATTO resta rosso, spento torna al filo', [/border-color:\s*var\(--rosso\)/.
 ok('fuoco su link e caselle: la regola del modulo batte quelle di base (0,3,0)', delModulo.some((r) => r.selettori.includes(PREFISSO + ' :focus-visible')), true)
 ok('fuoco da tastiera: contorno 3px var(--blu)', delModulo.some((r) => r.selettori.some((s) => s.includes(':focus')) && /outline:\s*3px solid var\(--blu\)/.test(r.corpo)), true)
 
+// Il tasto del tema, a modulo aperto: il modulo è sempre chiaro, il tasto cambierebbe solo l'icona. Sparisce con una regola sotto il prefisso.
+ok('a modulo aperto il tasto del tema non si vede', delModulo.some((r) => r.selettori.includes(`${PREFISSO} .tasto-tema`) && /display:\s*none/.test(r.corpo)), true)
+ok('il tasto del tema porta la classe che il modulo nasconde', /className="[^"]*(?<![\w-])tasto-tema(?![\w-])/.test(readFileSync('src/components/TastoTema.tsx', 'utf8')), true)
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

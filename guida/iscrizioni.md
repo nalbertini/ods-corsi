@@ -121,7 +121,7 @@ La richiesta **non è ancora un'iscrizione**: arriva in segreteria, in
 [RICHIESTE ONLINE](segreteria/richieste.md), dove qualcuno guarda i file e la
 accoglie.
 
-Il modulo ha l'aspetto del sito della palestra: sfondo chiaro, blu e giallo, anche se il telefono è in tema scuro. Il tasto del tema in alto c'è ancora: cambia il tema dell'app per quando si torna indietro, non il modulo.
+Il modulo ha l'aspetto del sito della palestra: sfondo chiaro, blu e giallo, anche se il telefono è in tema scuro. Il tasto del tema in alto, a modulo aperto, non c'è: il modulo resta chiaro in ogni caso; ricompare quando si chiude.
 
 ## Il modulo a passi (solo in prova)
 
