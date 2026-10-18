@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.110.1 — 18 ottobre 2026
+
+### Modificato
+
+- Le schede dell'iscritto e del personale stanno su una colonna sola
+
 ## 0.110.0 — 18 ottobre 2026
 
 ### Novità
