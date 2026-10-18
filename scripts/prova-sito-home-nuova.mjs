@@ -13,6 +13,7 @@
 //  4. Perché: quattro tessere numerate. 5. Citazioni: estratto + «Leggi tutto».
 //  6. Recensioni: due carte larghe e «In breve». 7. Domande. 8. Chiamata finale.
 //  9. Testata (pulsante, MENU senza script) e piede (indirizzo, metro Fermi) di ogni pagina.
+// 15. Titoli senza salti di livello, «Salta al contenuto», fuoco da tastiera.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { createHash } from 'node:crypto'
@@ -107,9 +108,9 @@ console.log('\n2. Introduzione: pulsanti, foto, numeri, motto')
   ok('1 voce: resta un elenco', [tessereDi(main(conUl(voci(1)))).some((c) => c.includes('numeri')), /<ul>/.test(main(conUl(voci(1))))], [false, true])
   ok('senza il grassetto: resta un elenco', [tessereDi(main(conUl(voci(4, false)))).some((c) => c.includes('numeri')), /<ul>/.test(main(conUl(voci(4, false))))], [false, true])
 
-  const motto = M.match(/class="motto">([\s\S]*?)(?=<h2|<section)/)?.[1] ?? ''
-  ok('il motto è una fascia: il titolo, poi la frase e il motto', [motto.indexOf('<h3>Il corso giusto, il gruppo giusto</h3>') >= 0, testo(motto)], [true, 'Il corso giusto, il gruppo giusto Professionisti dello sport, da oltre 35 anni accanto a bambini, ragazzi e adulti. Armonia nel movimento, rispetto nelle relazioni, costanza nel tempo.'])
-  ok('la frase e il motto sono due paragrafi, dopo il titolo', [conta(motto, /<p>/g), motto.indexOf('<h3>') < motto.indexOf('<p>')], [2, true])
+  const motto = M.match(/class="motto">([\s\S]*?)(?=<\/section>)/)?.[1] ?? ''
+  ok('il motto è una fascia: il titolo, poi la frase e il motto', [motto.indexOf('<h2>Il corso giusto, il gruppo giusto</h2>') >= 0, testo(motto)], [true, 'Il corso giusto, il gruppo giusto Professionisti dello sport, da oltre 35 anni accanto a bambini, ragazzi e adulti. Armonia nel movimento, rispetto nelle relazioni, costanza nel tempo.'])
+  ok('la frase e il motto sono due paragrafi, dopo il titolo', [conta(motto, /<p>/g), motto.indexOf('<h2>') < motto.indexOf('<p>')], [2, true])
   ok('il motto non resta anche fuori dalla fascia', conta(M, /Il corso giusto, il gruppo giusto/g), 1)
 }
 
@@ -270,6 +271,20 @@ console.log('\n14. Niente testo si perde in silenzio')
   ok('un elenco prima dei quattro motivi non sparisce', testo(home(ulInIntro)).includes('Voce dell’elenco'), true)
 }
 
+console.log('\n15. Titoli in ordine, «Salta al contenuto» e fuoco da tastiera')
+{
+  const livelli = (h) => [...h.matchAll(/<h([1-6])[\s>]/g)].map((m) => Number(m[1]))
+  const saltiDiLivello = (ls) => ls.map((l, i) => (i > 0 && l > ls[i - 1] + 1 ? `h${ls[i - 1]}→h${l}` : null)).filter(Boolean)
+  const corpoDi = (h) => h.match(/<body[^>]*>([\s\S]*)<\/body>/)?.[1] ?? ''
+  const pagine = Object.entries(genera(F.datiVecchi())).filter(([, h]) => typeof h === 'string' && /<main[\s>]/.test(h))
+  ok('nella Home nuova nessun titolo salta un livello (niente h1→h3)', saltiDiLivello(livelli(H)), [])
+  ok('in nessuna pagina del sito i titoli saltano un livello', pagine.filter(([, h]) => saltiDiLivello(livelli(h)).length).map(([k, h]) => `${k}: ${saltiDiLivello(livelli(h))}`), [])
+  ok('ogni pagina con un <main> comincia con il link «Salta al contenuto»', pagine.filter(([, h]) => !corpoDi(h).startsWith('<a class="salta" href="#contenuto">Salta al contenuto</a>')).map(([k]) => k), [])
+  ok('ogni pagina ha una sola destinazione #contenuto, subito prima del <main>', pagine.filter(([, h]) => conta(h, /id="contenuto"/g) !== 1 || !/<span id="contenuto"><\/span><main[\s>]/.test(h)).map(([k]) => k), [])
+  ok('il link è nascosto finché non prende il fuoco, poi si vede', [/\.salta\{[^}]*(left:-9999px|clip)/.test(H), /\.salta:focus\{[^}]*left:/.test(H)], [true, true])
+  ok('il fuoco da tastiera ha un contorno di 3px su link e pulsanti', /a:focus-visible,button:focus-visible\{outline:3px solid/.test(H), true)
+  ok('la scheda del corso è tutta cliccabile: il contorno del fuoco è sulla scheda intera, non sul solo titolo', [/\.scheda:has\(a:focus-visible\)\{[^}]*outline:3px solid/.test(H), /\.scheda h3 a:focus-visible,\.passo-unico \.scheda h4 a:focus-visible\{outline:none/.test(H)], [true, true])}
+
 console.log('\n17. Corsi per età: senza l’età resta l’elenco di prima, la scheda compatta sul telefono')
 {
   const senzaEta = F.TESTO_NUOVO.replace(/<p class="eta">[^<]*<\/p>/g, '').replace(/<p>(Dai 7 anni agli adulti|Dai 7 anni|Dai 18 anni|Dai 15 anni|Dai 14 anni|Da 3 a 5 anni|5-6 anni|Dagli 11 anni)<\/p>/g, '')
@@ -279,7 +294,7 @@ console.log('\n17. Corsi per età: senza l’età resta l’elenco di prima, la 
   const tel = css.match(/@media \(max-width:900px\)\{([^@]*(?:@[^m][^@]*)*)/g)?.join('') ?? ''
   ok('sul telefono la scheda del gruppo è una riga: foto a sinistra da 96px, testo a destra, pastiglie nascoste', [/\.passo-unico \.gruppo-corsi \.tessere\.schede \.tessera\.scheda:not\(\.foto\)\{[^}]*display:grid[^}]*grid-template-columns:96px/.test(tel), /\.passo-unico \.gruppo-corsi \.tessere\.schede \.tessera\.scheda:not\(\.foto\) \.pastiglie\{display:none\}/.test(tel)], [true, true])
   ok('la descrizione si ferma a due righe e l’iniziale senza foto è da 48px', [/\.passo-unico \.gruppo-corsi \.tessere\.schede \.tessera\.scheda:not\(\.foto\) p:not\(\.eta\)\{[^}]*-webkit-line-clamp:2/.test(tel), /\.passo-unico \.gruppo-corsi \.scheda-foto\.senza-foto span\{font-size:48px\}/.test(tel)], [true, true])
-  ok('la scheda del telefono è alta almeno 104px e tutta cliccabile (il titolo copre la riga)', [/\.passo-unico \.gruppo-corsi \.tessere\.schede \.tessera\.scheda:not\(\.foto\)\{[^}]*min-height:104px/.test(tel), /\.passo-unico \.scheda :is\(h3,h4\) a::before\{content:"";position:absolute;inset:0\}/.test(css)], [true, true])
+  ok('la scheda del telefono è alta almeno 104px e tutta cliccabile (il titolo copre la riga)', [/\.passo-unico \.gruppo-corsi \.tessere\.schede \.tessera\.scheda:not\(\.foto\)\{[^}]*min-height:104px/.test(tel), /\.passo-unico \.scheda h3 a::before,\.passo-unico \.scheda h4 a::before\{content:"";position:absolute;inset:0\}/.test(css)], [true, true])
   ok('dal computer ogni gruppo ha tre colonne e le schede grandi di oggi', /\.gruppo-corsi \.tessere\.schede\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)\}/.test(css), true)
   ok('le ancore sono chip da 48px', /\.ancore-corsi \.ancora\{[^}]*min-height:48px/.test(css), true)
   ok('la pagina Corsi non cambia: schede grandi, titoli h3, nessun gruppo', [/class="gruppo-corsi"/.test(genera(F.datiVecchi())['corsi/index.html']), /<h4>/.test(genera(F.datiVecchi())['corsi/index.html'])], [false, false])
