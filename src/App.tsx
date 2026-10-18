@@ -222,7 +222,7 @@ function Iscrizioni() {
         {/* Il flusso a passi è solo in prova e solo con #nuova: il vecchio resta com'è. */}
         {vestiario ? <OrdinaVestiario /> : flussoNuovoAcceso(haUnServer, hash) ? <IscrizioneAPassi /> : (
           <>
-            <IscrizioniScreen pubblica />
+            <IscrizioniScreen />
             {/* Qui e non dentro: la pagina di oggi non cambia finché c'è il flusso a passi (prova:iscrizione-passi). */}
             <RiquadroVestiario />
           </>

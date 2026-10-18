@@ -179,7 +179,7 @@ const ha = (css, sel, dich) => new RegExp(`(^|;)${dich.replace(/[.*+?^${}()|[\]\
 console.log('\n7. Desktop: le misure del design')
 {
   ok('testata: padding 22px sui lati del margine', ha(base, '.testata', 'padding:22px var(--margine)'), true)
-  ok('testata: le voci del menu stanno a 36px una dall’altra, senza imbottitura', [ha(scrivaniaTutte, '.testata nav ul', 'gap:36px'), ha(scrivaniaTutte, '.testata nav a', 'padding:0')], [true, true])
+  ok('testata: le voci del menu tengono 16px di imbottitura (la voce attiva è un riquadro) e il passo di 36px', [ha(scrivaniaTutte, '.testata nav ul', 'gap:4px'), ha(scrivaniaTutte, '.testata nav a', 'padding:0')], [true, false])
   ok('testata: i pulsanti hanno 24px di imbottitura e sono alti 52px', [ha(base, '.testata .pulsante', 'padding:0 24px'), ha(base, '.testata .pulsante', 'min-height:52px')], [true, true])
   ok('titolo grande: interlinea .82', ha(base, 'h1', 'line-height:.82'), true)
   ok('testata: il collage non si allunga con la colonna del titolo', ha(scrivania, '.pagina-hero>.collage', 'align-self:start'), true)
