@@ -45,8 +45,8 @@ toglie dalla pagina.
 
 **Il testo si scrive nella pagina**, dove lo vedi: tocca un **TESTO** o una
 colonna e scrivi lì. Sopra la parte scelta compare la barra dei tasti (**TITOLO**,
-**SOTTOTITOLO**, **G**, **C**, elenchi, citazione, **LINK**, **IMMAGINE**,
-**PULSANTE**); se sopra non c'è posto, sta dentro la parte, in alto. Nelle
+**SOTTOTITOLO**, **GRASSETTO**, **CORSIVO**, **ELENCO**, **ELENCO 1, 2, 3**, **CITAZIONE**,
+**LINK**, **IMMAGINE**, **PULSANTE**); se sopra non c'è posto, sta dentro la parte, in alto. Nelle
 **COLONNE** ogni colonna si scrive per conto suo: tocca quella che vuoi, la
 barra è una sola per tutte. **ANNULLA** e **RIFAI** (e Ctrl+Z) tolgono e rimettono un pezzo di testo alla
 volta, non una lettera. Per spostare una parte con un testo dentro usa **SU** e
@@ -68,8 +68,8 @@ nuove si scrivono col testo solo.
 
 Toccando una pagina si apre per scriverla:
 
-- Il testo ha i tasti **TITOLO**, **SOTTOTITOLO**, **G** (grassetto), **C**
-  (corsivo), gli elenchi, la citazione, **LINK**, **IMMAGINE** e **PULSANTE**. **LINK** e
+- Il testo ha i tasti **TITOLO**, **SOTTOTITOLO**, **GRASSETTO**, **CORSIVO**,
+  **ELENCO**, **ELENCO 1, 2, 3**, **CITAZIONE**, **LINK**, **IMMAGINE** e **PULSANTE**. **LINK** e
   **PULSANTE** chiedono dove portano: un indirizzo che comincia con `https://`,
   `mailto:`, `tel:` o con `/` per una pagina del sito. Altro non si può
   scrivere: se incolli un testo da Word o da un altro sito, quello che il sito

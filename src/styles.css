@@ -2963,6 +2963,8 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
 @media (max-width: 1000px) { .sito-due { grid-template-columns: minmax(0, 1fr); } }
 .sito-barra { gap: 6px; flex-wrap: wrap; }
 .sito-tasto { min-width: 44px; min-height: 44px; }
+/* Separa i gruppi di tasti (titoli, stile, elenchi, inserimenti) */
+.sito-sep { align-self: stretch; width: 2px; margin: 0 4px; background: var(--text); opacity: 0.25; }
 .sito-testo { min-height: 420px; padding: 24px 28px; background: var(--surface); border: 2px solid var(--line); font-size: 17px; line-height: 1.5; color: var(--text); }
 .sito-testo:focus { outline: 2px solid var(--text); outline-offset: 2px; }
 .sito-testo > * + * { margin-top: 14px; }

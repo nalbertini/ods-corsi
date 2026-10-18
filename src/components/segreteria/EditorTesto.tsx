@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { EditorContent, Node, useEditor, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
@@ -49,7 +49,7 @@ const Immagine = Node.create({
 // `getAttributes` dà un oggetto senza tipo: qui si legge solo quello che il link porta (`pulsante` lo aggiunge `LinkPulsante`).
 const attributiLink = (editor: Editor) => editor.getAttributes('link') as { href?: string; pulsante?: boolean }
 
-function Tasto({ nome, etichetta, acceso, onClick, larghezzaPiena }: { nome: string; etichetta: string; acceso?: boolean; onClick: () => void; larghezzaPiena?: boolean }) {
+function Tasto({ nome, etichetta, acceso, onClick, larghezzaPiena }: { nome: string; etichetta: ReactNode; acceso?: boolean; onClick: () => void; larghezzaPiena?: boolean }) {
   return (
     <button type="button" className="sg-chip num sito-tasto" aria-pressed={acceso} aria-label={nome} title={nome} data-larga={larghezzaPiena || undefined} onClick={onClick}>
       {etichetta}
@@ -87,11 +87,14 @@ export function Barra({ editor, d }: { editor: Editor; d: DatiSegreteria }) {
       <div className="row sito-barra" role="toolbar" aria-label="Come è scritto il testo">
         <Tasto nome="Titolo" etichetta="TITOLO" acceso={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} />
         <Tasto nome="Sottotitolo" etichetta="SOTTOTITOLO" acceso={editor.isActive('heading', { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} />
-        <Tasto nome="Grassetto" etichetta="G" acceso={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()} />
-        <Tasto nome="Corsivo" etichetta="C" acceso={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()} />
-        <Tasto nome="Elenco puntato" etichetta="•" acceso={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} />
-        <Tasto nome="Elenco numerato" etichetta="1." acceso={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} />
-        <Tasto nome="Citazione" etichetta="“" acceso={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} />
+        <span className="sito-sep" aria-hidden="true" />
+        <Tasto nome="Grassetto" etichetta={<b>GRASSETTO</b>} acceso={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()} />
+        <Tasto nome="Corsivo" etichetta={<i>CORSIVO</i>} acceso={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()} />
+        <span className="sito-sep" aria-hidden="true" />
+        <Tasto nome="Elenco puntato" etichetta="ELENCO •" acceso={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} />
+        <Tasto nome="Elenco numerato" etichetta="ELENCO 1, 2, 3" acceso={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} />
+        <Tasto nome="Citazione" etichetta="CITAZIONE" acceso={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} />
+        <span className="sito-sep" aria-hidden="true" />
         <Tasto nome="Link" etichetta="LINK" acceso={editor.isActive('link') && !attributiLink(editor).pulsante} onClick={apriLink} />
         <Tasto nome="Immagine" etichetta="IMMAGINE" onClick={() => setImmagine(true)} />
         <Tasto nome="Pulsante" etichetta="PULSANTE" acceso={editor.isActive('link') && !!attributiLink(editor).pulsante} onClick={() => { apriLink(); setLink((l) => (l ? { ...l, pulsante: true } : l)) }} />
