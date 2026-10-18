@@ -1,44 +1,33 @@
-# Sollevamento pesi: la pagina del corso come nel design
+# Sollevamento pesi: la pagina del corso rivista
 
-Testo da incollare nel pannello SITO (PAGINE › Sollevamento pesi, indirizzo `/sollevamenti-pesi/`), per avere la pagina di un corso del design «tatami blu e giallo»
-(`TatamiBlu-Corso`, desktop, e `TatamiBluM-Corso`, telefono). Il design disegna il Judo; le altre discipline seguono la stessa forma
-(regole in `corso.md` del ramo `claude/sito-corso-83a32b`). Il testo di oggi è sul sito: ogni fatto vero è stato conservato.
+Testo da incollare nel pannello SITO (PAGINE › Sollevamento pesi) per avere la pagina rivista: titolo con i due pulsanti, foto di apertura, dati, orario a tessere, «Cosa si fa» e «A chi è rivolto», «Cosa aspettarsi» numerato e chiusura «Una settimana per scegliere.».
+**Finché non si incolla il testo nuovo la pagina resta com'è oggi**: il sito riconosce quella nuova da un pulsante verso il modulo online prima del primo titolo grande. Il testo di prima è in [`sollevamenti-pesi-precedente.html`](sollevamenti-pesi-precedente.html). Regole in [`corso.md`](corso.md).
 
-Come si fa:
+## Prima di incollare: le foto
+
+Nella libreria IMMAGINI vanno caricate (le versioni sviluppate sono in `docs/proposte-home/corso/foto/approvate/`, non nel repository):
+
+| File | Ruolo |
+|---|---|
+| `pesi-A.jpg` | A |
+| `pesi-B.jpg` | B |
+
+In `sollevamenti-pesi.html` i nomi sono segnaposto (`DA-CARICARE-<file>.jpg`): dopo il caricamento si sostituiscono con i nomi veri prima di copiare. Il punto da tenere al centro lo sceglie il sito dal corso, non dal nome del file. Ruoli: A apertura (sotto il titolo), B accanto a «Cosa si fa», C nella chiusura.
+
+## Come si fa
 
 1. Apri **PAGINE › Sollevamento pesi**.
-2. Nei campi a destra: **titolo** e **descrizione** qui sotto.
-3. Apri `docs/sito/sollevamenti-pesi.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello clicca nel testo, cancella tutto e incolla (Cmd+V).
+2. Nel campo **descrizione** scrivi quella qui sotto; il titolo resta com'è.
+3. Apri `docs/sito/sollevamenti-pesi.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello cancella **tutto** il testo vecchio e incolla (Cmd+V).
 4. **ANTEPRIMA** per controllare, poi **PUBBLICA**.
-
-## Titolo
-
-Sollevamento pesi
 
 ## Descrizione
 
-Percorso dedicato all’apprendimento e al perfezionamento del sollevamento pesi.
-
-## Testo
-
-Il testo sta in [`sollevamenti-pesi.html`](sollevamenti-pesi.html): è quello che va incollato. Ordine, come vuole il sito per la pagina di un corso: foto grande, quattro tessere dei dati (Per chi, Quando, Dove, Per iniziare), tre tessere di presentazione, orario a tessere, cosa aspettarsi, «Perché sceglierlo» (banda blu, al massimo 160 caratteri).
-
-## Cosa cambia rispetto a oggi
-
-- Titolo e descrizione: come oggi.
-- In cima la foto grande e le quattro tessere dei dati: frasi prese dal testo di oggi e dal design (Dove, Per iniziare: via Sassi 26 e settimana di prova a 5 euro, già nelle domande frequenti).
-- «Cos’è il corso», «Cosa si fa durante le lezioni», «Per chi è pensato» diventano tre tessere sotto le tessere dei dati, non più titoli grandi.
-- L’orario di oggi, scritto in un solo paragrafo, diventa una tessera per gruppo: nome, ora, giorni, anni di nascita.
-- «Cosa può aspettarsi un atleta»: i titoli di oggi, una tessera ciascuno, con una frase nuova sotto.
-- «Perché sceglierlo» diventa la banda blu.
-- Il resto è identico al testo pubblicato.
+Un percorso per imparare e perfezionare il sollevamento pesi, dai ragazzi agli adulti.
 
 ## Da controllare prima di pubblicare
 
-- Le frasi sotto le tessere «Cosa può aspettarsi» sono nuove (lealtà, crescita insieme, fair play, divertimento, disciplina): le rilegga chi insegna, perché dicono come si lavora davvero.
-- FOTO DA SCEGLIERE: sollevamento pesi. Provvisoria la foto della sala attrezzata, la stessa della preparazione atletica.
-- «Dagli 11 anni» (Home e Corsi) corrisponde ai nati 2015 di «Pesi 1»: ogni anno l’età cresce.
-- La slug online è /sollevamenti-pesi/ (con la «i»): Home e Corsi la usano così, non la cambio. Nelle tessere di Home e Corsi il corso mostra «Bambini · Adulti · Agonisti».
-- «Pesi agonisti» nel testo di oggi non ha anni di nascita: ho scritto i corsi di provenienza.
-- **FOTO DA SCEGLIERE: sollevamento pesi.** La foto in cima è provvisoria (serve una foto vera del corso: vedi `docs/sito/foto.md`). Per il layout la pagina deve avere una foto in cima.
-- Le foto ritraggono minori: servono i permessi dei genitori (quelle di gruppo e di lezione sono già pubbliche sul sito).
+- Domande aperte che toccano questa pagina (`docs/proposte-home/corso/testi/REPORT.md`): Q12.
+- Le frasi nuove o accorciate (descrizione, «Cosa si fa», titoli di «Cosa aspettarsi») le rilegga chi insegna: nei sorgenti prima/dopo, riga «Tolto», sta in `docs/proposte-home/corso/testi/REPORT.md`.
+- Non c'è la quota dopo la prova né il certificato medico: nessun testo di oggi li dice (Q3, Q4).
+- Le età sull'anno 2026 invecchiano ogni settembre (Q9).
