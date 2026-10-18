@@ -204,7 +204,9 @@ const schedaAffiancata = (r) => r.selettori.some((x) => /^\.sg-due-colonne( > \.
 const grigliaScheda = (r) => r.selettori.includes('.sg-scheda-griglia')
 // La griglia della SETTIMANA ha ora una linea per fascia e niente tratteggio nelle caselle vuote: le cinque regole di prima (griglia, ora, casella, casella vuota, tessera chiusa) sono cambiate di proposito.
 const settimanaVecchia = (r) => r.selettori.some((x) => /^\.sg-griglia$|^\.sg-ora$|^\.sg-casella$|^\.sg-casella\[data-vuota='true'\]$|^\.sg-lezione\[data-chiusa='true'\]$/.test(x))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !delLook(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// La riga dei movimenti ha ora la colonna della casella per scegliere (44px davanti, anche sul telefono): le tre regole di prima di `.sg-riga-movimento` (griglia, telefono: colonne e colonne nascoste) sono cambiate di proposito.
+const rigaMovimentoConCasella = (r) => r.selettori.some((x) => /^\.sg-riga-movimento$|^\.sg-riga-movimento > :not\(:nth-child\(2\)\):not\(:last-child\)$/.test(x))
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !delLook(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

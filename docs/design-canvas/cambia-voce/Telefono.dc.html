@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 40px; width: 860px; padding: 28px; background: #121212; align-items: flex-start">
+  <div style="display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · ELENCO SUL TELEFONO</span>
+  <div style="position: relative; display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; border: 1px solid #333333">
+    <dc-import name="Testata" luogo="CONTABILITÀ" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 20px">
+      <div style="display: flex; align-items: center; height: 48px; padding: 0 12px; border: 2px solid #f2f2f0; font-size: 16px">bonifico</div>
+      <div style="display: flex; gap: 8px; overflow: hidden"><dc-import name="Chip" label="TUTTO" acceso="{{ true }}"  hint-size="90px,44px"></dc-import><dc-import name="Chip" label="USCITE" acceso="{{ true }}"  hint-size="100px,44px"></dc-import><dc-import name="Chip" label="VOCE: DA CLASSIFICARE ▾" acceso="{{ true }}"  hint-size="230px,44px"></dc-import></div>
+      <span style="font-size: 13px; color: #c9c9c4">214 trovati · 2 scelti</span>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center; min-height: 64px; padding: 8px 20px; border-bottom: 1px solid #242424; background: #1c1c1c; box-shadow: inset 4px 0 0 #f4c31b; "><span role="checkbox" aria-checked="true" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: -10px -10px -10px -10px; flex: none"><span style="width: 24px; height: 24px; border: 2px solid #f2f2f0; background: #f2f2f0; color: #121212; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center">✓</span></span><div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">BONIFICO A FAVORE DI SIAE</div><div style="font-size: 12px; color: #f4c31b">14 mar 2019 · Da classificare</div></div><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 16px; font-weight: 700; color: #f2f2f0">− 84,00</span></div><div style="display: flex; gap: 12px; align-items: center; min-height: 64px; padding: 8px 20px; border-bottom: 1px solid #242424; background: #1c1c1c; box-shadow: inset 4px 0 0 #f4c31b; "><span role="checkbox" aria-checked="true" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: -10px -10px -10px -10px; flex: none"><span style="width: 24px; height: 24px; border: 2px solid #f2f2f0; background: #f2f2f0; color: #121212; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center">✓</span></span><div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">BONIFICO ENEL ENERGIA SPA</div><div style="font-size: 12px; color: #f4c31b">02 mar 2019 · Da classificare</div></div><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 16px; font-weight: 700; color: #f2f2f0">− 312,40</span></div><div style="display: flex; gap: 12px; align-items: center; min-height: 64px; padding: 8px 20px; border-bottom: 1px solid #242424;  "><span role="checkbox" aria-checked="false" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: -10px -10px -10px -10px; flex: none"><span style="width: 24px; height: 24px; border: 2px solid #8c8c88; background: transparent; color: #121212; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center"></span></span><div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">BONIFICO AFFITTO PALESTRA FEBBRAIO</div><div style="font-size: 12px; color: #f4c31b">28 feb 2019 · Da classificare</div></div><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 16px; font-weight: 700; color: #f2f2f0">− 1.800,00</span></div><div style="display: flex; gap: 12px; align-items: center; min-height: 64px; padding: 8px 20px; border-bottom: 1px solid #242424;  "><span style="width: 24px; flex: none"></span><div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Rossi Giulia · incasso iscritto</div><div style="font-size: 12px; color: #8c8c88">27 feb 2019 · Corsi e altri pagamenti</div></div><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 16px; font-weight: 700; color: #16a54a">+ 310,00</span></div>
+    <div style="padding: 14px 20px"><dc-import name="Bottone" label="MOSTRA ALTRE 50 RIGHE" variante="linea" contesto="segreteria"  hint-size="350px,48px"></dc-import></div>
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: 8px; padding: 12px 20px 20px; background: #1c1c1c; border-top: 2px solid #f4c31b">
+      <div style="display: flex; align-items: baseline; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 22px; font-weight: 700">2 SCELTI</span><span style="font-size: 13px; color: #c9c9c4">uscite · − 396,40 €</span></div>
+      <div style="display: flex; gap: 8px"><dc-import name="Bottone" label="TUTTE LE 214" variante="linea" contesto="segreteria"  hint-size="150px,48px"></dc-import><dc-import name="Bottone" label="CAMBIA VOCE" variante="pieno" contesto="segreteria"  hint-size="192px,48px"></dc-import></div>
+    </div>
+  </div></div>
+  <div style="display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · IL RIEPILOGO SUL TELEFONO</span>
+  <div style="position: relative; display: flex; flex-direction: column; justify-content: flex-end; width: 390px; min-height: 844px; background: #121212; border: 1px solid #333333">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,.6)"></div>
+    <section style="position: relative; display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #1c1c1c; border-top: 2px solid #f4c31b">
+      <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">CAMBIA LA VOCE A 214 MOVIMENTI</span>
+      <span style="font-size: 14px; color: #c9c9c4">214 uscite · − 38.420,00 €<br>ora: Da classificare</span>
+      <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="NUOVA VOCE" valore="Energia elettrica" hint-size="100%,80px"></dc-import>
+      <span style="font-size: 13px; color: #c9c9c4; line-height: 1.4">Cambia solo la voce: importi e casse restano come sono. A pacchetti da 500, ognuno tutto o niente.</span>
+      <dc-import name="Bottone" label="SÌ, CAMBIA LA VOCE" variante="pieno" contesto="segreteria"  hint-size="350px,48px"></dc-import><dc-import name="Bottone" label="NO, TORNA ALL’ELENCO" variante="linea" contesto="segreteria"  hint-size="350px,48px"></dc-import>
+    </section>
+  </div></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":860,"height":940}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

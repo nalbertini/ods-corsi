@@ -273,6 +273,42 @@ export function htmlInPezzi(html: string): PezziPagina {
   return (pezziValidi(candidato) || pezzi.length > MASSIMO_PEZZI) && pezziInHtml(candidato) === t ? candidato : unico(t)
 }
 
+/**
+ * Il tasto «Dividi in parti»: ogni TESTO di una pagina già a pezzi si divide come `htmlInPezzi` divide una pagina vecchia
+ * (un titolo apre una parte, una foto tra i paragrafi è una FOTO). Foto, foto in cima e colonne restano dove sono; un testo che
+ * non si divide, o che conterrebbe colonne, resta com'è. Se il testo ricomposto cambiasse, la pagina resta quella di prima.
+ * Oltre `MASSIMO_PEZZI` il risultato resta com'è: lo mostra l'avviso di `cosaNonVaPezzi`, e la schermata non lo applica.
+ */
+export function dividiInParti(p: PezziPagina): PezziPagina {
+  const usati = new Set(p.content.map((x) => x.props.id))
+  let n = Math.max(0, ...p.content.map((x) => Number(/^p(\d+)$/.exec(x.props.id)?.[1] ?? 0)))
+  const idNuovo = () => {
+    do n++
+    while (usati.has(`p${n}`))
+    usati.add(`p${n}`)
+    return `p${n}`
+  }
+  const content = p.content.flatMap((x): Pezzo[] => {
+    if (x.type !== 'testo') return [x]
+    const parti = htmlInPezzi(x.props.html).content
+    if (parti.length < 2 || parti.some((q) => q.type === 'colonne')) return [x]
+    return parti.flatMap((q, i): Pezzo[] => {
+      if (q.type === 'colonne') return [] // già escluso sopra: serve solo a restringere il tipo
+      // La prima parte tiene l'id del testo; la foto in cima di una divisione è una foto qualunque: in cima ce n'è una sola.
+      const id = i === 0 && q.type === 'testo' ? x.props.id : idNuovo()
+      return [q.type === 'testo' ? { type: 'testo', props: { id, html: q.props.html } } : { type: 'foto', props: { id, src: q.props.src, alt: q.props.alt } }]
+    })
+  })
+  const nuova: PezziPagina = { content }
+  return (content.length > MASSIMO_PEZZI || pezziValidi(nuova)) && pezziInHtml(nuova) === pezziInHtml(p) ? nuova : p
+}
+
+/** Il tasto «Dividi in parti» c'è solo se dividere dà più parti di adesso. */
+export const divisibileInParti = (p: PezziPagina): boolean => dividiInParti(p).content.length > p.content.length
+
+/** Cosa dice la pagina subito dopo la divisione: quante parti ci sono e come tenerle o scartarle. */
+export const frasePartiNuove = (n: number): string => `Ora ci sono ${n} parti, nell'ELENCO. Il testo è lo stesso. Per tenerle premi SALVA BOZZA; per lasciare tutto com'era, premi TUTTE LE PAGINE e scegli TORNA ALLE PAGINE.`
+
 /** Il tasto «Porta ai pezzi»: solo per una pagina col vecchio editor (`null`; `undefined` = database senza il 62) e che non è di legge. */
 export const portabileAiPezzi = (p: { pezzi?: PezziPagina | null; diLegge: boolean }): boolean => p.pezzi === null && !p.diLegge
 

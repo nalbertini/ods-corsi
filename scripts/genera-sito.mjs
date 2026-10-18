@@ -100,9 +100,9 @@ async function leggi() {
       return fine(`Il database ha risposto una cosa che non si legge (${funzione}): riprova fra poco.`)
     }
   }
-  const [pagine, menu, rinvii, orari] = await Promise.all([chiama('sito_pagine_pubbliche'), chiama('sito_menu_pubblico'), chiama('sito_redirect_pubblici'), chiama('orari_sito', 'manca 67-orari-sito.sql, o va rilanciato 06-iscrizioni.sql')])
+  const [pagine, menu, rinvii, orari] = await Promise.all([chiama('sito_pagine_pubbliche'), chiama('sito_menu_pubblico'), chiama('sito_redirect_pubblici'), chiama('orari_sito', 'manca 68-orari-sito.sql, o va rilanciato 06-iscrizioni.sql')])
   // Zero righe non è un guasto (la pagina dice «Orari in arrivo»); una risposta che non è un elenco sì.
-  if (!Array.isArray(orari)) fine('Il database ha risposto una cosa che non è un elenco (orari_sito): controlla che 67-orari-sito.sql sia stato lanciato.')
+  if (!Array.isArray(orari)) fine('Il database ha risposto una cosa che non è un elenco (orari_sito): controlla che 68-orari-sito.sql sia stato lanciato.')
   return { pagine, menu, rinvii, orari }
 }
 

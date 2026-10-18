@@ -418,6 +418,8 @@
 /* Passando sopra o scegliendo una riga non si cambia il fondo: sotto un testo giallo scuro o verde il celeste non arriva a 4,5:1. */
 :root[data-look='sito'] .sg-mancano-casella:hover { background: var(--surface); box-shadow: inset 0 0 0 2px var(--blu); }
 :root[data-look='sito'] .sg-iscritto[data-scelto='true'] { background: var(--surface); outline: 2px solid var(--blu); outline-offset: -2px; }
+:root[data-look='sito'] .sg-riga-movimento[data-scelta='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
+:root[data-look='sito'] .sg-barra-scelta { border-color: var(--giallo-testo); }
 /* Il fuoco da tastiera: contorno blu sulla pagina, bianco nel menu scuro. */
 :root[data-look='sito'] .sg-btn:focus-visible,
 :root[data-look='sito'] .sg-chip:focus-visible,
@@ -2264,8 +2266,14 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto-corso > :nth-child(3) { order: 5; grid-column: 1 / -1; }
   .sg-riga-iscritto:not(.sg-lista-testa) > :nth-child(3)::before { content: 'Iscritto dal '; color: var(--dim); }
 }
-.sg-riga-movimento { display: grid; grid-template-columns: 100px minmax(0, 1.6fr) minmax(0, 1fr) 150px 130px; gap: 14px; align-items: center; }
+.sg-riga-movimento { display: grid; grid-template-columns: 44px 100px minmax(0, 1.6fr) minmax(0, 1fr) 150px 130px; gap: 14px; align-items: center; }
 .sg-riga-movimento[data-spento='true'] { opacity: 0.55; }
+.sg-riga-movimento[data-scelta='true'] { background: var(--surface); box-shadow: inset 4px 0 0 var(--giallo); }
+/* La casella per scegliere una riga: 24px da vedere, 44px da toccare (il margine negativo non allarga la riga). */
+.sg-scelta-riga { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: -10px 0; }
+.sg-scelta-riga input { width: 24px; height: 24px; margin: 0; accent-color: var(--text); cursor: pointer; }
+/* Chi ha scelto delle righe: il conto e il tasto restano in vista in fondo allo schermo, mentre si scorre. */
+.sg-barra-scelta { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; background: var(--surface); border: 2px solid var(--giallo); }
 /* Sotto la descrizione: la causale dell'incasso; sul telefono, davanti, anche data, voce e cassa che lì non hanno la loro colonna. */
 .sg-sotto-movimento { display: flex; flex-direction: column; font-size: 13px; color: var(--sec); font-weight: 400; overflow-wrap: anywhere; }
 .sg-solo-telefono { display: none; }
@@ -2657,8 +2665,11 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto > :nth-child(2), .sg-riga-iscritto > :nth-child(3) { display: none; }
   /* Sul telefono: chi con sotto il resto, e l'importo. */
   .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
-  .sg-riga-movimento { grid-template-columns: minmax(0, 1fr) auto; }
-  .sg-riga-movimento > :not(:nth-child(2)):not(:last-child) { display: none; }
+  .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; }
+  .sg-riga-movimento > :not(:first-child):not(:nth-child(3)):not(:last-child) { display: none; }
+  /* Senza casella (un incasso, un annullato) niente fascia vuota a sinistra. */
+  .sg-riga-movimento[data-senza-casella='true'] { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-movimento[data-senza-casella='true'] > :first-child { display: none; }
   .sg-solo-telefono { display: inline; }
   .sg-lista-testa.sg-riga-movimento { display: none; }
   .sg-riga-pagamento-tab > :not(:nth-child(2)):not(:last-child), .sg-riga-residuo > :not(:first-child):not(:nth-child(5)) { display: none; }
@@ -3200,3 +3211,14 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-pericolo:not(:disabled):hover { color: var(--rosso-testo); border-color: var(--rosso-testo); }
 :root[data-look='sito'] .sg-pericolo:not(:disabled),
 :root[data-look='sito'] .sg-pericolo:not(:disabled):hover { color: var(--rosso-testo); border-color: var(--rosso-testo); }
+
+/* CONTABILITÀ > BILANCIO: la tabella per voce (voce, anno, anno prima, differenza). Sul telefono le cifre vanno sotto il nome. */
+.sg-riga-bilancio { display: grid; grid-template-columns: minmax(0, 1fr) 150px 150px 150px; gap: 14px; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--line-soft); }
+.sg-riga-bilancio-gruppo { padding: 14px 14px 4px; }
+.sg-riga-bilancio[data-totale='true'] { border-bottom: 2px solid var(--line-soft); background: var(--surface); }
+.sg-riga-bilancio[data-sospesa='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
+.sg-lista-testa.sg-riga-bilancio { padding-block: 0 6px; background: none; }
+@media (max-width: 780px) {
+  .sg-riga-bilancio { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; }
+  .sg-riga-bilancio > :first-child { grid-column: 1 / -1; }
+}

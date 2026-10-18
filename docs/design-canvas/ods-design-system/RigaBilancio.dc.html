@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 150px 150px 150px; gap: 14px; align-items: center; width: 100%; padding: 8px 14px; border-bottom: {{bordoSotto}}; background: {{fondo}}; box-shadow: {{barra}}; color: {{c.text}}; font-family: {{corpo}}">
+  <span style="display: flex; flex-direction: column; font-size: 15px; font-weight: {{pesoNome}}">{{nome}}<span style="display: {{mostraNota}}; font-size: 13px; color: {{c.dim}}; font-weight: 400">{{nota}}</span></span>
+  <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; text-align: right">{{anno}}</span>
+  <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 15px; text-align: right; color: {{c.dim}}">{{prima}}</span>
+  <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 15px; text-align: right; color: {{c.dim}}">{{differenza}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Corsi e altri pagamenti"},"nota":{"editor":"text","default":""},"anno":{"editor":"text","default":"43.280,00 €"},"prima":{"editor":"text","default":"40.210,00 €"},"differenza":{"editor":"text","default":"+3.070,00 €"},"variante":{"editor":"enum","options":["normale","totale","daclassificare"],"default":"normale"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":720,"height":48}}'>
+// Riproduzione 1:1 di `RigaVoce` di src/components/segreteria/Bilancio.tsx con .sg-riga-bilancio di src/styles.css (righe 3205-3213):
+// griglia `minmax(0,1fr) 150px 150px 150px`, gap 14px, padding 8px 14px, filo `line-soft` sotto. Nome 15px (600; 700 nelle varianti
+// totale e daclassificare) con la nota sotto (.sg-sotto-movimento, 13px `dim`); le tre cifre .num 15px: «anno» 700, «prima» e
+// «differenza» in `dim` (nell'app var(--sec): niente verde/rosso, il segno e' nel testo). Le cifre arrivano gia' scritte come le fa
+// euro() («52.370,00 €», «+ » solo nel testo della differenza, zero senza segno: «0,00 €», mai «− 0,00 €»; oltre 999%: «oltre +999%»).
+// totale: filo sotto 2px e fondo `surface` (nel tema sito il fondo pagina, come la tabella bianca). daclassificare: barra gialla
+// a sinistra (inset 4px `giallo-testo`) e nome in grassetto, nota «N movimenti senza voce». Sotto 780px l'app mette le tre cifre su
+// tre colonne uguali e il nome a tutta riga: nei canvas telefono si usa il blocco a parte di BilancioTelefono.
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#2a2a2a', text: '#f2f2f0', dim: '#8c8c88', gialloTesto: '#f4c31b', pagina: '#1c1c1c' },
+  chiaro: { surface: '#ffffff', line: '#e2e2dd', text: '#161616', dim: '#656561', gialloTesto: '#8f6a00', pagina: '#ffffff' },
+  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', gialloTesto: '#8f6a00', pagina: '#eef5fa' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const CORPO = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.sito;
+    const totale = p.variante === 'totale';
+    const sospesa = p.variante === 'daclassificare';
+    const nota = p.nota ?? '';
+    return {
+      c, cond: COND, corpo: CORPO,
+      nome: p.nome ?? '', nota, mostraNota: nota ? 'block' : 'none',
+      anno: p.anno ?? '', prima: p.prima ?? '', differenza: p.differenza ?? '',
+      pesoNome: totale || sospesa ? 700 : 600,
+      bordoSotto: (totale ? '2px' : '1px') + ' solid ' + c.line,
+      fondo: totale ? (p.tema === 'sito' ? c.pagina : c.surface) : 'transparent',
+      barra: sospesa ? 'inset 4px 0 0 ' + c.gialloTesto : 'none',
+    };
+  }
+}
+</script>
+</body>
+</html>

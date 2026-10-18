@@ -339,7 +339,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'elimina_presenza_istruttore')),
   ('66-elimina-segreteria.sql', 'eliminare anche la segreteria, se non ha storia nei registri',
     exists (select 1 from dentro where nome = 'elimina_istruttore' and corpo like '%ha già lavorato nei registri%')),
-  ('67-orari-sito.sql', 'gli orari dei corsi per la pagina Orari del sito, con la data di modifica scritta dal database',
+  ('67-cambia-voce.sql', 'cambiare la voce dei movimenti, con la traccia di chi l''ha fatto',
+    exists (select 1 from dentro where nome = 'cambia_voce_movimenti') and to_regclass('public.cambi_voce') is not null),
+  ('68-orari-sito.sql', 'gli orari dei corsi per la pagina Orari del sito, con la data di modifica scritta dal database',
     exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'orari_sito'
             and has_function_privilege('anon', p.oid, 'execute'))
     and exists (select 1 from pg_trigger where tgname = 'ricorrenza_modificata' and not tgisinternal))

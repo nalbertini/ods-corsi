@@ -4,7 +4,7 @@
 
 Le entrate e le uscite della palestra, in due casse: **Cassa Contanti** e
 **Conto Corrente**. La vede solo chi ha il ruolo di amministrazione: la segreteria
-semplice, gli istruttori e il tablet no. Ha tre schede: **MOVIMENTI**, **VOCI**, **CASSE**.
+semplice, gli istruttori e il tablet no. Ha quattro schede: **MOVIMENTI**, **BILANCIO**, **VOCI**, **CASSE**.
 
 ## Movimenti
 
@@ -37,11 +37,36 @@ la cassa. Niente dati personali che non servono, nella descrizione e nella nota.
 Prima di scrivere, l'app mostra un **riepilogo** (importo, voce, cassa, data): **Sì,
 registra il movimento** lo scrive, **No, torna al modulo** lascia tutto com'era.
 
-Un movimento registrato **non si cambia**: toccandolo si apre in una **finestra** sopra l'elenco (vedi
-[La finestra dei dettagli](../segreteria/README.md#la-finestra-dei-dettagli)), e si può **annullare**
-(resta in elenco, annullato, e non si conta più) oppure correggere la descrizione e
-la nota (di un giroconto, solo la nota). Per correggere importo, data, voce o
-cassa si annulla e si rifà.
+Un movimento registrato **non si cambia** negli importi: toccandolo si apre in una **finestra** sopra l'elenco
+(vedi [La finestra dei dettagli](../segreteria/README.md#la-finestra-dei-dettagli)), e si può
+**annullare** (resta in elenco, annullato, e non si conta più), correggere la descrizione e
+la nota (di un giroconto, solo la nota) o **cambiare la voce** (vedi sotto). Per correggere
+importo, data o cassa si annulla e si rifà.
+
+### Cambiare la voce
+
+La voce di un movimento si cambia **senza annullare e rifare**: importo, data, cassa e testo
+restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi sono gli stessi).
+
+- **Uno solo**: apri il movimento, scegli la **voce** nuova e tocca **Cambia la voce**. In fondo, **Cosa è
+  cambiato** dice chi l'ha cambiata, quando e da quale voce veniva.
+- **Tanti insieme**: nell'elenco scrivi nella ricerca una parte della causale (per esempio «enel»),
+  scegli la **voce** da cui partire (per esempio «Da classificare») e, se serve, il periodo
+  **Tutto**. L'elenco dice quanti ne ha trovati. Spunta le righe, oppure tocca **Scegli tutte le N
+  trovate**. In fondo compare la barra **N scelti**: **Cambia voce** apre il riepilogo (quanti sono,
+  di che tipo, quanto fanno, da quali voci vengono). Scegli la **nuova voce** e tocca **Sì, cambia la
+  voce**: finché non lo dici, non cambia niente. Se cambi la ricerca o i filtri, la scelta si svuota.
+  Si fa anche dal telefono.
+- Le righe vanno a **pacchetti da 500**, ognuno **tutto o niente**: se uno si ferma, l'app dice
+  quanti ne ha cambiati e perché, e quelli dopo non cambiano. Quelli che avevano già la voce non
+  vengono toccati e il riepilogo li conta a parte.
+- Non hanno la casella e non si cambiano da qui: gli **incassi degli iscritti** (si correggono in
+  PAGAMENTI), i **movimenti annullati**, i **giroconti** (non hanno voce) e la **Differenza di cassa**
+  scritta da una chiusura. La voce nuova deve essere in uso e dello stesso tipo: una voce di entrata
+  per le entrate, di uscita per le uscite. Con entrate e uscite scelte insieme, **Cambia voce** resta
+  spento: tocca **Solo le entrate** o **Solo le uscite**.
+- Un cambio sbagliato si rimedia scegliendo di nuovo le righe e assegnando la voce giusta: la traccia
+  non si cancella.
 
 ### Giroconto
 
@@ -55,6 +80,45 @@ Anche qui, prima di scrivere c'è il riepilogo da confermare.
 Un rimborso a un iscritto è un'uscita, con una voce tua. Un errore trovato dopo si
 corregge annullando e rifacendo, oppure, se il giorno è già chiuso (vedi sotto), con un movimento
 con una data dopo la chiusura e una voce «Rettifica» (in VOCI si crea con un tocco).
+
+## Bilancio
+
+Il bilancio di un anno solare, da gennaio a dicembre: ogni anno ha il suo e niente
+si mescola da un anno all'altro. Si sceglie l'anno con le frecce **‹ ›**, con i
+chip degli ultimi cinque anni o con **Altri anni** (si va indietro fino al primo anno
+con movimenti).
+
+È **per cassa**: conta il giorno in cui il denaro è entrato o uscito (per gli incassi
+degli iscritti, il giorno del singolo pagamento), non l'anno a cui la quota si
+riferisce. Una quota pagata a dicembre per l'anno dopo sta nell'anno in cui l'hai incassata.
+Non è un bilancio fiscale: è il riepilogo di cassa da dare al commercialista.
+
+Si vede:
+
+- **Entrate**, **uscite** e **risultato** dell'anno, ognuno col confronto con
+  l'anno prima («nessun dato» se l'anno prima è vuoto). L'anno in corso è **parziale**:
+  va dal 1 gennaio a oggi e si confronta con lo stesso periodo dell'anno prima.
+- Il dettaglio **per voce**, con l'anno prima e la differenza. La
+  **Differenza di cassa** della chiusura sta a parte, nelle uscite o nelle entrate
+  secondo il segno.
+- Il riquadro giallo **Da classificare**: i movimenti senza una voce (quasi tutte le
+  uscite dello storico dal vecchio programma). Se sono più di metà delle uscite, il
+  risultato è segnato **provvisorio**: non è affidabile finché non si classificano.
+- L'avviso **Possibile doppio conteggio**, se nell'anno ci sono incassi dello storico importato
+  oltre il primo incasso registrato nell'app: in quei giorni lo stesso incasso può
+  comparire due volte. Si controlla in MOVIMENTI.
+- I **saldi delle casse** al 1 gennaio e a fine anno. Per gli anni prima che la cassa
+  partisse c'è scritto «saldo non disponibile», mai uno zero.
+
+**Esporta CSV** e **Esporta PDF** danno il foglio per il commercialista: le voci con
+l'anno prima, i totali e i saldi, con «per cassa» e la data di calcolo. Non
+portano nomi di iscritti né movimenti singoli.
+
+Un movimento con la data di domani non c'è ancora in nessun anno (non si può scrivere).
+Si legge e basta: non scrive niente e non blocca niente. Se si annulla un incasso dopo,
+il bilancio dell'anno in cui era cambia (l'incasso non c'è mai stato): per questo il foglio
+porta la data di calcolo. Una rettifica in un periodo chiuso va nell'anno in cui la
+scrivi, non nell'anno vecchio.
 
 ## Voci
 
@@ -117,8 +181,10 @@ più coi conti, e la correzione è una rettifica con una data dopo la chiusura.
 I movimenti del vecchio programma (la «Prima Nota» dal 2011) sono stati caricati una volta sola
 come **movimenti** normali, con la voce scelta dalla causale: i pagamenti dei clienti sulle voci
 «Quota associativa» e «Corsi e altri pagamenti», tutto il resto su **«Da classificare»**. Si
-riconoscono perché nessuno risulta averli scritti qui. Si annullano come ogni movimento. Una voce
-di un movimento, per ora, non si cambia: si annulla e si rifà con la voce giusta. Un movimento dello storico che annulli non torna da solo se lo storico venisse ricaricato.
+riconoscono perché nessuno risulta averli scritti qui. Per sistemarli si cambia la voce (vedi
+**Cambiare la voce**): cerca per causale, scegli le righe e assegna la voce giusta, senza annullare.
+Si annullano come ogni movimento. Un movimento dello storico che annulli non torna da solo se lo storico
+venisse ricaricato; e una voce già sistemata non torna a «Da classificare» se lo storico venisse ricaricato.
 
 I saldi iniziali delle casse non cambiano per questo: lo storico entra nei conti dal giorno di
 ogni movimento. Se la cassa parte da una certa data (**DAL**), i movimenti più vecchi restano
@@ -128,9 +194,9 @@ nell'elenco ma non contano nel «in cassa».
 
 - L'IVA e la fattura elettronica: restano nel software a parte.
 - Allegati di fatture e scontrini: la carta resta carta.
-- Il rendiconto di fine anno e il collegamento al RASD.
+- Un bilancio per competenza, la chiusura di un anno (si può leggere, non bloccare) e il collegamento al RASD.
 - Il backup scaricato dalla segreteria contiene anche i conti, ma è cifrato: la
   password non è della segreteria.
 
-Se compare «Il database non è ancora aggiornato per la contabilità» o «…per la chiusura
-della cassa», manca un aggiornamento del database: va chiesto a chi cura l'app.
+Se compare «Il database non è ancora aggiornato per la contabilità», «…per la chiusura
+della cassa» o «…per cambiare la voce dei movimenti», manca un aggiornamento del database: va chiesto a chi cura l'app.

@@ -1,0 +1,48 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Cambia voce · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Elenco.dc.html",
+   "title": "MOVIMENTI · scegli e cambia voce",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Riepilogo.dc.html",
+   "title": "Il riepilogo e gli esiti",
+   "x": 1520,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Telefono.dc.html",
+   "title": "Sul telefono",
+   "x": 0,
+   "y": 1700,
+   "page": "page-1"
+  },
+  {
+   "file": "MovimentoAperto.dc.html",
+   "title": "Movimento aperto e traccia",
+   "x": 1520,
+   "y": 1700,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Cambia voce: un movimento o tanti insieme"
+  }
+ ]
+}

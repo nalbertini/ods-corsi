@@ -1,7 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
-import type { Cassa, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
+import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
@@ -655,6 +655,13 @@ export interface DatiSegreteria {
   annullaMovimento(id: string): Promise<void>
   /** Solo la descrizione e la nota si correggono sul posto. */
   correggiTestoMovimento(id: string, descrizione: string, nota?: string): Promise<void>
+  /**
+   * Cambia solo la voce di un lotto di movimenti scritti qui o importati (al massimo `LIMITE_CAMBIO_VOCE`): tutti o nessuno,
+   * anche nei giorni chiusi (`67-cambia-voce.sql`). Rende quanti sono cambiati e quanti avevano già la voce.
+   */
+  cambiaVoceMovimenti(ids: string[], voceId: string): Promise<{ cambiati: number; giaCosi: number }>
+  /** I cambi di voce di un movimento, dal più vecchio: chi, quando, la voce di prima e quella di dopo. */
+  cambiVoceMovimento(id: string): Promise<CambioVoce[]>
   /** Le chiusure della Cassa Contanti, anche le annullate (`60-chiusura-cassa.sql`). */
   chiusure(): Promise<ChiusuraCassa[]>
   /** Chiude la Cassa Contanti fino a un giorno: il previsto lo calcola il database, la differenza si scrive da sé. Rende l'id. */

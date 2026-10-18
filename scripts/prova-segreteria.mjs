@@ -3750,6 +3750,74 @@ await sezione('si annulla solo l\'ultima, e i giorni si riaprono', async () => {
   ok('…la chiusura del 21 è annullata, con la sua differenza', [!!dopo1?.annullataIl, !!(await s.movimenti()).find((x) => x.id === dopo1?.movimentoId)?.annullatoIl], [true, true])
 })
 
+await sezione('cambiare la voce di un movimento (67-cambia-voce.sql): stesse regole del database', async () => {
+  const dc = await s.salvaVoce({ nome: 'Da classificare', tipo: 'uscita' })
+  const en = await s.salvaVoce({ nome: 'Energia', tipo: 'uscita' })
+  const spenta = await s.salvaVoce({ nome: 'Vecchia due', tipo: 'uscita' })
+  await s.attivaVoce(spenta, false)
+  const ev = await s.salvaVoce({ nome: 'Eventi', tipo: 'entrata' })
+  const nuovo = async (descrizione, cambio = {}) => {
+    await s.registraMovimento({ tipo: 'uscita', data: '2026-09-12', importo: 8400, voceId: dc, cassaId: cx.conto, descrizione, ...cambio })
+    return (await s.movimenti()).find((x) => x.descrizione === descrizione).id
+  }
+  const uno = await nuovo('BONIFICO UNO')
+  const due = await nuovo('BONIFICO DUE', { nota: 'da guardare' })
+  const tre = await nuovo('BONIFICO TRE')
+  const gia = await nuovo('GIÀ A POSTO', { voceId: en })
+  const don = await nuovo('BONIFICO DONAZ', { tipo: 'entrata', voceId: cx.don })
+  await s.registraGiroconto({ daCassaId: cx.conto, aCassaId: cx.contanti, data: '2026-09-18', importo: 700 })
+  const giro = (await s.movimenti()).find((x) => x.tipo === 'giroconto' && !x.annullatoIl && x.importo === 700).id
+  const disfare = await nuovo('DA DISFARE')
+  await s.annullaMovimento(disfare)
+  const per = async (id) => (await s.movimenti()).find((x) => x.id === id)
+  const senzaVoce = async (id) => { const { voceId: _v, ...resto } = await per(id); return stabile(resto) }
+  const prima = await senzaVoce(due)
+  const tutto = async () => stabile(await s.movimenti())
+
+  ok('un lotto di uno: cambiato 1', stabile(await s.cambiaVoceMovimenti([uno], en)), stabile({ cambiati: 1, giaCosi: 0 }))
+  ok('…la voce è la nuova', (await per(uno)).voceId, en)
+  ok('un lotto: due da cambiare, uno già così, il doppione conta una volta', stabile(await s.cambiaVoceMovimenti([due, tre, gia, due], en)), stabile({ cambiati: 2, giaCosi: 1 }))
+  ok('importo, data, cassa, nota, testo: tutto com\'era', await senzaVoce(due), prima)
+  ok('il residuo delle casse non si muove', (await s.movimenti()).filter((x) => [uno, due, tre].includes(x.id)).map((x) => [x.cassaId === cx.conto, x.importo]), [[true, 8400], [true, 8400], [true, 8400]])
+  ok('rifatto uguale: niente da cambiare', stabile(await s.cambiaVoceMovimenti([due], en)), stabile({ cambiati: 0, giaCosi: 1 }))
+  const traccia = await s.cambiVoceMovimento(due)
+  ok('la traccia: una riga, chi, quando, voce di prima e di dopo', stabile(traccia.map((c) => [typeof c.quando, c.chi, c.prima, c.dopo])), stabile([['string', 'Amministrazione', 'Da classificare', 'Energia']]))
+  ok('…chi è già a posto non ne ha', await s.cambiVoceMovimento(gia), [])
+
+  const prima2 = await tutto()
+  const rifiuti = [
+    ['nessun movimento', [], en, 'Scegli almeno un movimento'],
+    ['501 movimenti', Array.from({ length: 501 }, (_, i) => `x${i}`), en, 'Troppi movimenti in una volta: al massimo 500'],
+    ['senza voce', [uno], '', 'Scegli la voce'],
+    ['una voce che non c\'è', [uno], 'non-c-e', 'Scegli la voce'],
+    ['una voce spenta', [uno], spenta, 'La voce non è più in uso: scegline un’altra'],
+    ['«Differenza di cassa» come arrivo', [uno], cx.difU, 'La «Differenza di cassa» si scrive da sola chiudendo la cassa'],
+    ['un movimento che non c\'è', ['non-c-e'], en, 'Il movimento non c’è'],
+    ['un annullato', [disfare], en, 'Il movimento del 12/09/2026 (DA DISFARE) è annullato: non si cambia'],
+    ['un giroconto', [giro], en, 'Un giroconto non ha voce'],
+    ['una voce di uscita a un\'entrata', [don], en, 'La voce scelta non va con questo tipo di movimento'],
+    ['entrate e uscite insieme', [don, uno], en, 'La voce scelta non va con questo tipo di movimento'],
+    ['un annullato in fondo: nessuno dei primi cambia', [uno, due, tre, disfare], dc, 'Il movimento del 12/09/2026 (DA DISFARE) è annullato: non si cambia'],
+  ]
+  for (const [cosa, ids, voce, messaggio] of rifiuti) ok(cosa, await errore(() => s.cambiaVoceMovimenti(ids, voce)), messaggio)
+  ok('dei rifiuti non è cambiato niente, nemmeno la traccia', [await tutto(), (await s.cambiVoceMovimento(uno)).length], [prima2, 1])
+  ok('una voce di entrata a un\'entrata va', await errore(() => s.cambiaVoceMovimenti([don], ev)), 'nessun errore')
+
+  // Un giorno chiuso: la voce si cambia, la chiusura non se ne accorge.
+  await nuovo('OFFERTA IN CONTANTI', { tipo: 'entrata', voceId: cx.don, cassaId: cx.contanti })
+  const offerta = (await s.movimenti()).find((x) => x.descrizione === 'OFFERTA IN CONTANTI').id
+  const k = await s.chiudiCassa({ cassaId: cx.contanti, data: '2026-09-20', contato: 100 })
+  const chiusura = async () => stabile((await s.chiusure()).find((x) => x.id === k))
+  const dopoChiusura = await chiusura()
+  ok('un movimento di un giorno chiuso: la voce cambia', await errore(() => s.cambiaVoceMovimenti([offerta], ev)), 'nessun errore')
+  ok('…ora ha la voce nuova', (await per(offerta)).voceId, ev)
+  ok('…la chiusura è quella di prima (previsto, contato, differenza)', await chiusura(), dopoChiusura)
+  ok('…il giorno è ancora chiuso', await errore(() => s.registraMovimento({ tipo: 'uscita', data: '2026-09-19', importo: 100, voceId: en, cassaId: cx.contanti, descrizione: 'No' })), MSG_CHIUSO)
+  const dif = (await s.chiusure()).find((x) => x.id === k)?.movimentoId
+  ok('la differenza scritta dalla chiusura non cambia voce', await errore(() => s.cambiaVoceMovimenti([dif], en)), `Il movimento del 20/09/2026 (Differenza di cassa) è scritto dalla chiusura di cassa: non si cambia`)
+  await s.annullaChiusuraCassa(k)
+})
+
 // ---- Il database vero: le chiamate giuste, e il file 59 che può mancare.
 const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
 const tabelleContab = {
@@ -3839,6 +3907,42 @@ await sezione('la contabilità sul database (client finto): senza 59-contabilita
     for (const [nome, chiama] of Object.entries(scritture)) ok(`senza 59: ${nome} (${codice}) dice quale file lanciare`, await errore(() => chiama(senzaFunzioni(codice, messaggio))), MANCA_CONTABILITA)
   for (const [codice, messaggio] of [['PGRST205', (t) => `Could not find the table 'public.${t}' in the schema cache`], ['42P01', (t) => `relation "${t}" does not exist`]])
     for (const [nome, chiama] of Object.entries(letture)) ok(`senza 59: ${nome} (${codice}) dice quale file lanciare`, await errore(() => chiama(senzaTabelle(codice, messaggio))), MANCA_CONTABILITA)
+})
+
+// ---- Cambiare la voce sul database vero: le chiamate giuste, e il file 67 che può mancare.
+const MANCA_CAMBIA_VOCE = 'Il database non è ancora aggiornato per cambiare la voce dei movimenti: va lanciato 67-cambia-voce.sql'
+// Come le dà il database: dal più vecchio (il client finto non ordina).
+const righeCambi = [
+  { id: 'x1', movimento_id: 'm1', voce_prima_id: null, voce_dopo_id: 'v2', cambiato_il: '2026-09-17T10:00:00+00:00', cambiato_da: null },
+  { id: 'x2', movimento_id: 'm1', voce_prima_id: 'v2', voce_dopo_id: 'v1', cambiato_il: '2026-09-18T10:00:00+00:00', cambiato_da: null },
+]
+
+await sezione('cambiare la voce sul database (client finto): la funzione giusta coi parametri giusti', async () => {
+  const { db, chiamate } = clientContab({ funzione: () => ({ data: { cambiati: 2, gia_cosi: 1 }, error: null }) })
+  const r = await db.cambiaVoceMovimenti(['m1', 'm2', 'm3'], 'v2')
+  ok('manda gli id e la voce, e rende cambiati e già così', [stabile(r), stabile(chiamate.at(-1))], [stabile({ cambiati: 2, giaCosi: 1 }), stabile(['cambia_voce_movimenti', { ids: ['m1', 'm2', 'm3'], voce: 'v2' }])])
+})
+
+await sezione('cambiare la voce sul database (client finto): la traccia', async () => {
+  const { db } = clientContab({ lettura: (t) => ({ data: t === 'cambi_voce' ? righeCambi : tabelleContab[t] ?? [], error: null }) })
+  ok('dal più vecchio; la voce che non c\'era è un trattino; chi non c\'è più pure', stabile((await db.cambiVoceMovimento('m1')).map((c) => [c.prima, c.dopo, c.chi])), stabile([['—', 'Affitto sala', '—'], ['Affitto sala', 'Quota associativa', '—']]))
+})
+
+await sezione('cambiare la voce sul database (client finto): gli errori', async () => {
+  const guasto = (error) => clientContab({ funzione: () => ({ data: null, error }) }).db
+  ok('un rifiuto del database arriva com\'è', await errore(() => guasto({ code: '22023', message: 'Il movimento del 12/03/2019 (BONIFICO) è annullato: non si cambia' }).cambiaVoceMovimenti(['m1'], 'v2')), 'Il movimento del 12/03/2019 (BONIFICO) è annullato: non si cambia')
+  const vietato = await errore(() => guasto({ code: '42501', message: 'la contabilità la cura l’amministrazione' }).cambiaVoceMovimenti(['m1'], 'v2'))
+  ok('chi non è amministrazione sente dire amministrazione, non segreteria', [/amministrazione/.test(vietato), /segreteria/.test(vietato)], [true, false])
+})
+
+await sezione('cambiare la voce sul database (client finto): senza 67-cambia-voce.sql', async () => {
+  const senzaFunzione = (codice, messaggio) => clientContab({ funzione: (f) => ({ data: null, error: { code: codice, message: messaggio(f) } }) }).db
+  const senzaTabella = (codice, messaggio) => clientContab({ lettura: (t) => ({ data: null, error: { code: codice, message: messaggio(t) } }) }).db
+  for (const [codice, messaggio] of [['PGRST202', (f) => `Could not find the function public.${f}(ids, voce) in the schema cache`], ['42883', (f) => `function ${f}(uuid[], uuid) does not exist`]])
+    ok(`senza 67: cambiaVoceMovimenti (${codice}) dice quale file lanciare`, await errore(() => senzaFunzione(codice, messaggio).cambiaVoceMovimenti(['m1'], 'v2')), MANCA_CAMBIA_VOCE)
+  for (const [codice, messaggio] of [['PGRST205', (t) => `Could not find the table 'public.${t}' in the schema cache`], ['42P01', (t) => `relation "${t}" does not exist`]])
+    ok(`senza 67: la traccia (${codice}) dice quale file lanciare`, await errore(() => senzaTabella(codice, messaggio).cambiVoceMovimento('m1')), MANCA_CAMBIA_VOCE)
+  ok('senza 59 il messaggio resta quello della contabilità', await errore(() => clientContab({ funzione: (f) => ({ data: null, error: { code: 'PGRST202', message: `Could not find the function public.${f} in the schema cache` } }) }).db.annullaMovimento('m1')), MANCA_CONTABILITA)
 })
 
 // ---- La chiusura di cassa sul database vero: le chiamate giuste, e il file 60 che può mancare.

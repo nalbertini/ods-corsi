@@ -411,7 +411,8 @@ select atteso('le otto funzioni le chiama authenticated', (select string_agg(p.p
 select atteso('anon non ne chiama nessuna', (select coalesce(string_agg(p.proname, ', ' order by p.proname), 'nessuna') from pg_proc p where p.pronamespace = 'public'::regnamespace and has_function_privilege('anon', p.oid, 'execute')
   and p.proname in ('salva_voce', 'rinomina_voce', 'imposta_voce_attiva', 'imposta_saldo_cassa', 'registra_movimento', 'registra_giroconto', 'annulla_movimento', 'correggi_testo_movimento')), 'nessuna');
 select atteso('non ci sono funzioni di lettura: si legge dalle tabelle', (select coalesce(string_agg(p.proname, ', ' order by p.proname), 'nessuna') from pg_proc p where p.pronamespace = 'public'::regnamespace
-  and p.proname ~ '(movimenti|voci|casse)'), 'nessuna');
+  -- cambia_voce_movimenti (67-cambia-voce.sql) scrive, non legge: la prova è cambia-voce.sql
+  and p.proname ~ '(movimenti|voci|casse)' and p.proname <> 'cambia_voce_movimenti'), 'nessuna');
 
 \echo ''
 \echo '--- 8. i vincoli delle tabelle tengono anche a mano ---'

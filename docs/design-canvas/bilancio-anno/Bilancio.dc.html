@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- BILANCIO · anno passato (2025) Parte da PaginaSito.dc.html / PaginaSitoTelefono.dc.html (segreteria nel look del sito, sempre chiara). Solo amministrazione, schermata di sola lettura:
+     nessun tasto principale giallo. Il bilancio e' PER CASSA (data del singolo pagamento). Verde e rosso solo per il segno, sempre anche in parole. -->
+<div style="display: flex; width: 1440px; min-height: 1000px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" autorizzazioni="amministrazione" attiva="CONTABILITÀ" numeri="" nome="Chiara Bianchi" ruolo="Amministrazione" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</h1>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px">
+      <dc-import name="Chip" tema="sito" label="MOVIMENTI" acceso="{{ false }}" hint-size="130px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="VOCI" acceso="{{ false }}" hint-size="90px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="CASSE" acceso="{{ false }}" hint-size="100px,44px"></dc-import>
+      <dc-import name="Chip" tema="sito" label="BILANCIO" acceso="{{ true }}" hint-size="130px,44px"></dc-import>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="‹" variante="linea" alto="44px" larghezza="48px" hint-size="48px,44px"></dc-import>
+      <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; min-width: 76px; text-align: center">2025</span>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="›" variante="linea" alto="44px" larghezza="48px" hint-size="48px,44px"></dc-import>
+      <span style="width: 1px; height: 28px; background: #cfe6f4; margin: 0 6px"></span><dc-import name="Chip" tema="sito" label="2026" acceso="{{ false }}" hint-size="86px,44px"></dc-import><dc-import name="Chip" tema="sito" label="2025" acceso="{{ true }}" hint-size="86px,44px"></dc-import><dc-import name="Chip" tema="sito" label="2024" acceso="{{ false }}" hint-size="86px,44px"></dc-import><dc-import name="Chip" tema="sito" label="2023" acceso="{{ false }}" hint-size="86px,44px"></dc-import><dc-import name="Chip" tema="sito" label="2022" acceso="{{ false }}" hint-size="86px,44px"></dc-import><label for="altri-anni" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Altri anni</label><select id="altri-anni" style="min-height: 44px; padding: 0 12px; border: 2px solid #14709f; border-radius: 6px; background: #ffffff; color: #0d2a3d; font: 500 15px Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif"><option>Altri anni</option><option>2021</option><option>2020</option><option>2019</option></select>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">Bilancio 2025</h2>
+      <span style="font-size: 14px; color: #46606f">Entrate e uscite dell’anno, per cassa: conta il giorno in cui il denaro è entrato o uscito. Calcolato il 18 ott 2026.</span>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 6px; background: #ffffff; border-radius: 6px; padding: 14px 18px; box-shadow: inset 4px 0 0 #f4c31b; padding-left: 22px">
+      <span style="font-size: 15px; color: #0d2a3d; line-height: 1.4"><b style="color: #8f6a00">DA CLASSIFICARE</b> · 31 movimenti (4.200,00 € di uscite, 9% delle uscite) non hanno una voce: il dettaglio per voce non è completo.</span>
+      
+      <span style="font-size: 14px; color: #46606f">Si classificano da MOVIMENTI.</span>
+    </div>
+    <div style="display: flex;  gap: 14px">
+      <div style="flex: 1; min-width: 0; background: #ffffff; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">ENTRATE</span></div>
+        <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 44px; font-weight: 800; letter-spacing: 0.02em; line-height: 1; color: #0d2a3d">52.370,00 €</span>
+        
+        <span style="font-size: 14px; color: #46606f">2024: 48.390,00 € · +8%</span>
+      </div>
+      <div style="flex: 1; min-width: 0; background: #ffffff; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">USCITE</span></div>
+        <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 44px; font-weight: 800; letter-spacing: 0.02em; line-height: 1; color: #0d2a3d">47.185,00 €</span>
+        
+        <span style="font-size: 14px; color: #46606f">2024: 45.570,00 € · +4%</span>
+      </div>
+      <div style="flex: 1; min-width: 0; background: #ffffff; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">RISULTATO</span></div>
+        <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 44px; font-weight: 800; letter-spacing: 0.02em; line-height: 1; color: #0b7a33">+5.185,00 €</span>
+        <span style="font-size: 15px; font-weight: 700; color: #0b7a33">In avanzo</span>
+        <span style="font-size: 14px; color: #46606f">2024: 2.820,00 € · +84%</span>
+      </div>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="PER VOCE" hint-size="100%,44px"></dc-import>
+    <div style="display: flex; flex-direction: column; background: #ffffff; border-radius: 6px; overflow: hidden">
+      <dc-import name="TestataTabella" tema="sito" colonne="VOCE|2025|2024|DIFFERENZA" griglia="1fr 150px 150px 150px" ordinata="" verso="niente" hint-size="100%,40px"></dc-import>
+      <div style="padding: 14px 16px 6px; background: #eef5fa"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">ENTRATE</span></div><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Corsi e altri pagamenti" nota="" anno="43.280,00 €" prima="40.210,00 €" differenza="+3.070,00 €" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Quota associativa" nota="" anno="6.150,00 €" prima="5.800,00 €" differenza="+350,00 €" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Vestiario" nota="" anno="2.140,00 €" prima="1.980,00 €" differenza="+160,00 €" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Sponsor e donazioni" nota="" anno="800,00 €" prima="400,00 €" differenza="+400,00 €" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="totale" nome="Totale entrate" nota="" anno="52.370,00 €" prima="48.390,00 €" differenza="+3.980,00 €" hint-size="100%,48px"></dc-import>
+      <div style="padding: 14px 16px 6px; background: #eef5fa"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">USCITE</span></div><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Pagamento istruttori" nota="" anno="24.300,00 €" prima="23.100,00 €" differenza="+1.200,00 €" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Affitto sala" nota="" anno="12.000,00 €" prima="11.400,00 €" differenza="+600,00 €" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Tasse" nota="" anno="1.850,00 €" prima="1.700,00 €" differenza="+150,00 €" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Pulizie" nota="" anno="1.440,00 €" prima="1.380,00 €" differenza="+60,00 €" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Attrezzatura" nota="" anno="1.260,00 €" prima="—" differenza="—" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Spese ufficio" nota="" anno="1.120,00 €" prima="1.290,00 €" differenza="−170,00 €" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Assicurazioni" nota="" anno="980,00 €" prima="950,00 €" differenza="+30,00 €" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Corsi di formazione" nota="" anno="—" prima="600,00 €" differenza="—" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="daclassificare" nome="Da classificare" nota="31 movimenti senza voce" anno="4.200,00 €" prima="5.150,00 €" differenza="−950,00 €" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Differenza di cassa" nota="Chiusura di cassa, a parte dalle voci" anno="35,00 €" prima="—" differenza="—" hint-size="100%,48px"></dc-import><dc-import name="RigaBilancio" tema="sito" variante="totale" nome="Totale uscite" nota="" anno="47.185,00 €" prima="45.570,00 €" differenza="+1.615,00 €" hint-size="100%,48px"></dc-import>
+      <div style="padding: 14px 16px 6px; background: #eef5fa"><span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f;">RISULTATO</span></div><dc-import name="RigaBilancio" tema="sito" variante="normale" nome="Entrate meno uscite" nota="In avanzo" anno="5.185,00 €" prima="2.820,00 €" differenza="+2.365,00 €" hint-size="100%,48px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="SALDI DELLE CASSE" hint-size="100%,44px"></dc-import>
+    <div style="display: flex;  gap: 14px"><div style="flex: 1; min-width: 0"><dc-import name="SaldoCassa" tema="sito" nome="CASSA CONTANTI" testoInizio="Saldo al 1 gen 2025" inizio="1.250,00 €" entrate="+ 19.400,00 €" uscite="− 7.285,00 €" giroconti="− 12.000,00 €" testoFine="Saldo al 31 dic 2025" fine="1.365,00 €" hint-size="100%,200px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="SaldoCassa" tema="sito" nome="CONTO CORRENTE" testoInizio="Saldo al 1 gen 2025" inizio="6.800,00 €" entrate="+ 32.970,00 €" uscite="− 39.900,00 €" giroconti="+ 12.000,00 €" testoFine="Saldo al 31 dic 2025" fine="11.870,00 €" hint-size="100%,200px"></dc-import></div></div>
+    <div style="display: flex;  gap: 10px; align-items: flex-start">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Esporta CSV" variante="linea" alto="48px" larghezza="180px" hint-size="180px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Esporta PDF" variante="linea" alto="48px" larghezza="180px" hint-size="180px,48px"></dc-import>
+    </div>
+    <span style="font-size: 13px; color: #46606f; line-height: 1.4">CSV e PDF dicono «per cassa» e la data di calcolo; non portano nomi di iscritti né movimenti singoli.</span>
+    <span style="font-size: 13px; color: #46606f; line-height: 1.4; max-width: 900px">Si legge e basta, solo amministrazione. Giroconti e movimenti annullati non contano. Se qualcosa si annulla dopo, il bilancio di un anno vecchio cambia: per questo c’è la data di calcolo.</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

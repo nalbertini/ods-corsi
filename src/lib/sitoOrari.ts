@@ -1,6 +1,6 @@
 /**
  * La pagina «Orari» del sito (docs/design-canvas/orari-sito/): dagli orari tipo dei corsi attivi, come li dà `orari_sito()`
- * (`supabase/67-orari-sito.sql`), a una tessera per giorno. Le regole le prova `scripts/prova-sito-orari.mjs`.
+ * (`supabase/68-orari-sito.sql`), a una tessera per giorno. Le regole le prova `scripts/prova-sito-orari.mjs`.
  *
  * La pagina si riconosce dallo slug «orari» e da un paragrafo che dice solo «[orari]»: il testo prima è l'introduzione, quello
  * dopo la riga «Per variazioni contatta…». Senza il segnaposto la pagina resta com'è scritta, e gli orari scritti a mano restano.

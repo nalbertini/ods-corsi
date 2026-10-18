@@ -97,9 +97,9 @@ export const CSS_CORSI_NUOVA = `
 .passo-unico.pagina-corsi h1{font-size:120px;line-height:.9;margin:0 0 24px}
 .pagina-corsi .intro p{max-width:760px}
 .pagina-corsi .pagina-hero{padding-bottom:0}
-.pagina-corsi .sezione:first-of-type{padding-top:40px}
+.pagina-corsi .pagina-hero+.sezione{padding-top:40px}
 @media (max-width:900px){
 .passo-unico.pagina-corsi h1{font-size:56px}
-.pagina-corsi .sezione:first-of-type{padding-top:32px}
+.pagina-corsi .pagina-hero+.sezione{padding-top:32px}
 }
 `

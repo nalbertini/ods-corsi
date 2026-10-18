@@ -8,7 +8,7 @@ import type { OrarioSito } from '../../lib/sitoOrari'
  * senza codice. Carattere e logo sono file del sito e qui non ci sono: si vedono con il carattere di riserva.
  */
 export default function AnteprimaPagina({ d, slug, titolo, descrizione, testo }: { d: DatiSegreteria; slug: string; titolo: string; descrizione: string; testo: string }) {
-  // Gli orari servono solo alla pagina «orari»; se non si leggono (database senza 67-orari-sito.sql) l'anteprima dice «Orari in arrivo».
+  // Gli orari servono solo alla pagina «orari»; se non si leggono (database senza 68-orari-sito.sql) l'anteprima dice «Orari in arrivo».
   const [orari, setOrari] = useState<OrarioSito[]>([])
   useEffect(() => {
     if (slug !== 'orari') return

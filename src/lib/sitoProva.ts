@@ -48,9 +48,12 @@ export function sitoIniziale(): StatoSito {
     ...o,
   })
   const pre = '<h2>Cos’è il corso</h2><p>Un percorso introduttivo ai fondamentali della boxe: guardia, spostamenti e colpi base.</p>'
+  const judo = '<p>Un percorso educativo e sportivo.</p><img alt="Due judoka sul tatami" src="https://example.test/judo-1.jpg" /><ul><li><strong>Quando</strong> Lunedì e venerdì</li></ul><h2>Orario delle lezioni</h2><h3>Judo 2</h3><p>17:00 – 18:00</p><h2>Cosa aspettarsi</h2><p>Si procede un passo alla volta.</p><img alt="Tre ragazzi sorridono" src="https://example.test/judo-2.jpg" /><h2>Una settimana per scegliere.</h2><p>1 settimana di prova a 5 euro.</p>'
   const pagine = [
     pagina('home', 'Home', { bozza: '<p>Benvenuti alle Officine Dello Sport.</p>', pubblicato: '<p>Benvenuti alle Officine Dello Sport.</p>', pubblicataIl: '2026-10-03T09:00:00.000Z' }),
     pagina('pre-pugilistica', 'Pre pugilistica', { descrizione: 'Guardia, spostamenti e colpi base per ragazze e ragazzi.', bozza: `${pre}<p>Nuove date in arrivo.</p>`, pubblicato: pre, pubblicataIl: '2026-10-03T09:00:00.000Z' }),
+    // Una pagina già a pezzi ma con un solo TESTO lungo: serve a provare «Dividi in parti».
+    pagina('judo', 'Judo', { bozza: judo, pezzi: { content: [{ type: 'testo', props: { id: 'p1', html: judo } }] } }),
     pagina('chi-siamo', 'Chi siamo', { bozza: '<p>La palestra di Collegno.</p>' }),
     pagina('privacy', 'Privacy policy', { diLegge: true, bozza: '<p>Informativa.</p>', pubblicato: '<p>Informativa.</p>', pubblicataIl: '2026-10-02T09:00:00.000Z' }),
     pagina('cookie', 'Cookie policy', { diLegge: true, bozza: '<p>Il sito non usa cookie.</p>', pubblicato: '<p>Il sito non usa cookie.</p>', pubblicataIl: '2026-10-02T09:00:00.000Z' }),
@@ -157,7 +160,7 @@ export function salvaMenu(s: StatoSito, dove: 'menu' | 'footer', voci: VoceMenu[
 }
 
 /**
- * Gli orari della pagina «Orari» in prova: gli stessi che darebbe `orari_sito()` (67-orari-sito.sql), corsi attivi e
+ * Gli orari della pagina «Orari» in prova: gli stessi che darebbe `orari_sito()` (68-orari-sito.sql), corsi attivi e
  * ricorrenze non finite (quella che finisce oggi c'è ancora), e nient'altro. La data di modifica è quella di oggi, fissa:
  * in prova niente la sposta, e gli stessi dati danno la stessa pagina.
  */

@@ -292,7 +292,7 @@ console.log('\nLo script scripts/genera-sito.mjs e orari_sito()')
   const elenco = readdirSync(uscita).sort().join()
 
   for (const [cosa, r] of [
-    ['manca (404, 56…/67-orari-sito.sql non lanciato)', { stato: 404, corpo: { code: 'PGRST202', message: 'non c’è' } }],
+    ['manca (404, 56…/68-orari-sito.sql non lanciato)', { stato: 404, corpo: { code: 'PGRST202', message: 'non c’è' } }],
     ['rifiutata (401/403)', { stato: 403, corpo: { code: '42501', message: 'permission denied' } }],
     ['risponde una cosa che non è un elenco', { stato: 200, corpo: { no: 1 } }],
   ]) {

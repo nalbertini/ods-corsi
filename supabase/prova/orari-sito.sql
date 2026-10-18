@@ -7,7 +7,7 @@
 -- `orari_aperti()` (48-orari-aperti.sql) resta com'è.
 -- Gli stessi orari, nella metà di prova, li dà `orariSitoProva()` di
 -- `src/lib/sitoProva.ts` (scripts/prova-sito-orari.mjs).
--- Si lancia dopo finto-supabase.sql, i file dello schema e 67-orari-sito.sql;
+-- Si lancia dopo finto-supabase.sql, i file dello schema e 68-orari-sito.sql;
 -- alla fine rilancia 06-iscrizioni.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
@@ -168,7 +168,7 @@ reset role;
 
 \echo ''
 \echo '--- 6. dopo aver rilanciato 06-iscrizioni.sql ---'
--- 06 toglie ad `anon` le funzioni che non conosce: se il 67 c'è già, deve
+-- 06 toglie ad `anon` le funzioni che non conosce: se il 68 c'è già, deve
 -- ridargli orari_sito(), come fa per orari_aperti().
 \ir ../06-iscrizioni.sql
 -- 06 toglie ad `anon` anche gli aiuti della prova, che stanno in `public`:
