@@ -253,7 +253,8 @@ for (const [k, f] of Object.entries(FILE_CSS)) {
   arriva('--su-rosso sul --rosso: 4,5:1', vale('--su-rosso'), vale('--rosso'), 4.5)
 
   // Dentro il menu i token di testo tornano chiari, sul verde muschio.
-  const contenitori = k === 'app' ? ['.sg-menu', '.barra-nav', '.sg-barra-tel'] : ['.sidebar', '.tabbar']
+  // La segreteria ha il suo aspetto (`data-look`): il menu di Tatami resta solo per la barra degli istruttori.
+  const contenitori = k === 'app' ? ['.barra-nav'] : ['.sidebar', '.tabbar']
   for (const c of contenitori) {
     const regola = r.find((q) => q.selettori.some((s) => s.startsWith(TATAMI + ' ') && s.endsWith(' ' + c)) && /--text\s*:/.test(q.corpo))
     const m = regola ? dichiarazioni(regola.corpo) : {}
@@ -263,16 +264,8 @@ for (const [k, f] of Object.entries(FILE_CSS)) {
   }
 
   if (k === 'app') {
-    // L'elenco della ricerca sta DENTRO il menu verde ma ha il fondo chiaro (--surface): se eredita i token
-    // chiari del menu il testo sparisce (chiaro su chiaro). Deve riportarli ai valori della pagina.
-    const elenco = r.find((q) => q.selettori.some((s) => s.startsWith(TATAMI + ' ') && s.endsWith('.sg-cerca-elenco')) && /--text\s*:/.test(q.corpo))
-    const e = elenco ? dichiarazioni(elenco.corpo) : {}
-    for (const x of ['--text', '--sec', '--dim']) {
-      ok(`.sg-cerca-elenco: ${x} torna a quello della pagina`, e[x], t[x])
-      arriva(`.sg-cerca-elenco: ${x} su --surface: 4,5:1`, e[x], t['--surface'], 4.5)
-      arriva(`.sg-cerca-elenco: ${x} su --surface-2 (riga scelta): 4,5:1`, e[x], t['--surface-2'], 4.5)
-    }
-    ok('.sg-cerca-elenco: il testo non eredita il chiaro del menu', /(^|;)\s*color\s*:/.test(elenco?.corpo ?? ''), true)
+    // La segreteria è sempre nel look del sito (`lib/aspettoSegreteria.ts`): una regola di Tatami per le sue classi non si raggiunge mai.
+    ok('nessuna regola di Tatami nomina le classi della segreteria (.sg-*)', r.filter((q) => q.selettori.some((s) => s.startsWith(TATAMI + ' ') && /\.sg-/.test(s))).map((q) => q.selettori.join(',')), [])
 
     ok('.tb-fascia ha l\'ombra anche per tatami', r.some((q) => q.selettori.some((s) => /^:root\[data-tema=('?)tatami\1\] \.tb-fascia$/.test(s)) && /box-shadow/.test(q.corpo)), true)
     // Quella dell'ombra leggera è la stessa del chiaro, non quella nera del tema scuro.

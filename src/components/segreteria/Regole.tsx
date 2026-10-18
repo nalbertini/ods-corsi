@@ -17,12 +17,12 @@ import { SelectDisciplina } from './TimerPalestra'
 
 /** I gruppi della pagina, da quello che si tocca a inizio stagione a quello che si tocca quasi mai. */
 const GRUPPI = {
-  'imp-schermo': 'QUESTO SCHERMO',
-  'imp-stagione': 'LA STAGIONE',
-  'imp-sale': 'LE SALE E I TABLET',
-  'imp-ricevute': 'LE RICEVUTE',
-  'imp-importa': 'IMPORTA DA EXCEL',
-  'imp-dati': 'DATI E PRIVACY',
+  'imp-schermo': 'Questo schermo',
+  'imp-stagione': 'La stagione',
+  'imp-sale': 'Le sale e i tablet',
+  'imp-ricevute': 'Le ricevute',
+  'imp-importa': 'Importa da Excel',
+  'imp-dati': 'Dati e privacy',
 } as const
 
 type IdGruppo = keyof typeof GRUPPI
@@ -38,7 +38,7 @@ function Gruppo({ id, children }: { id: IdGruppo; children: ReactNode }) {
   return (
     <section aria-labelledby={id} className="sg-regole-gruppo">
       <h2 id={id} tabIndex={-1} className="ob sg-regole-titolo">
-        {GRUPPI[id]}
+        {GRUPPI[id].toUpperCase()}
       </h2>
       <div className="sg-regole">{children}</div>
     </section>
@@ -46,8 +46,8 @@ function Gruppo({ id, children }: { id: IdGruppo; children: ReactNode }) {
 }
 
 const ASPETTI: Array<{ id: Aspetto; nome: string; testo: string }> = [
-  { id: 'oggi', nome: 'COME OGGI', testo: 'Il menu a sinistra, con tutte le voci in vista.' },
-  { id: 'banco', nome: 'IL BANCO', testo: 'La ricerca sempre in cima e cinque luoghi: OGGI, PERSONE, CORSI, SOLDI, PALESTRA.' },
+  { id: 'oggi', nome: 'Come oggi', testo: 'Il menu a sinistra, con tutte le voci in vista.' },
+  { id: 'banco', nome: 'Il banco', testo: 'La ricerca sempre in cima e cinque luoghi: OGGI, PERSONE, CORSI, SOLDI, PALESTRA.' },
 ]
 
 /** La scelta dell'aspetto: vale per questo computer, non per tutta la segreteria, e cambia subito. */
@@ -208,7 +208,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
             Rigenera adesso
           </button>
           <ComeFunziona>
-            Prima dell'inizio non nascono lezioni. Le date sono facoltative. SALVA LE DATE toglie le lezioni da domani in poi fuori dalle date, tranne quelle con l’appello o una prova. Rigenerare non duplica e non
+            Prima dell'inizio non nascono lezioni. Le date sono facoltative. «Salva le date» toglie le lezioni da domani in poi fuori dalle date, tranne quelle con l’appello o una prova. Rigenerare non duplica e non
             tocca le lezioni che hanno già un appello, anche a cavallo del cambio d'ora.
           </ComeFunziona>
         </section>

@@ -38,7 +38,7 @@ function CampoFoto({ d, id, src }: { d: DatiSegreteria; id: string; src: string 
     <div className="stack" style={{ gap: 8 }}>
       {src && <img src={src} alt="" style={{ width: '100%', height: 120, objectFit: 'cover' }} />}
       <button type="button" className="sg-btn sg-btn-linea" onClick={() => setApri(true)}>
-        {src ? 'CAMBIA FOTO' : 'SCEGLI LA FOTO'}
+        {src ? 'Cambia foto' : 'Scegli la foto'}
       </button>
       {apri && (
         <ScegliImmagine
@@ -159,11 +159,11 @@ function Comandi({ onNuova }: { onNuova: () => void }) {
         </button>
       ))}
       <span className="grow" />
-      <button type="button" className="sg-chip num" disabled={!storia.hasPast} onClick={() => storia.back()}>ANNULLA</button>
-      <button type="button" className="sg-chip num" disabled={!storia.hasFuture} onClick={() => storia.forward()}>RIFAI</button>
-      <button type="button" className="sg-chip num" disabled={!scelto || scelto.index === 0} onClick={() => vai(-1)}>SU ▲</button>
-      <button type="button" className="sg-chip num" disabled={!scelto || scelto.index >= quanti - 1} onClick={() => vai(1)}>GIÙ ▼</button>
-      <button type="button" className="sg-chip num" disabled={!scelto} onClick={togli}>TOGLI</button>
+      <button type="button" className="sg-chip num" disabled={!storia.hasPast} onClick={() => storia.back()}>Annulla</button>
+      <button type="button" className="sg-chip num" disabled={!storia.hasFuture} onClick={() => storia.forward()}>Rifai</button>
+      <button type="button" className="sg-chip num" disabled={!scelto || scelto.index === 0} onClick={() => vai(-1)}>Su ▲</button>
+      <button type="button" className="sg-chip num" disabled={!scelto || scelto.index >= quanti - 1} onClick={() => vai(1)}>Giù ▼</button>
+      <button type="button" className="sg-chip num" disabled={!scelto} onClick={togli}>Togli</button>
     </div>
   )
 }
@@ -197,7 +197,7 @@ function Destra({ scheda, setScheda }: { scheda: Scheda; setScheda: (k: Scheda) 
       <div role="tablist" aria-label="Pannello della parte" className="schede sg-schede">
         {(['impostazioni', 'elenco'] as const).map((k) => (
           <button key={k} type="button" role="tab" aria-selected={scheda === k} data-on={scheda === k} className="scheda" onClick={() => setScheda(k)}>
-            {k === 'impostazioni' ? 'IMPOSTAZIONI' : 'ELENCO'}
+            {k === 'impostazioni' ? 'Impostazioni' : 'Elenco'}
           </button>
         ))}
       </div>
@@ -246,7 +246,7 @@ export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria;
         <div className="sito-pezzi-corpo">
           <Comandi onNuova={() => setScheda('impostazioni')} />
           <div className="sito-pezzi-colonne">
-            {/* Toccare una parte nella pagina porta alle sue impostazioni; dall'ELENCO si resta lì, per spostarla con SU e GIÙ. */}
+            {/* Toccare una parte nella pagina porta alle sue impostazioni; dall'elenco si resta lì, per spostarla con «Su» e «Giù». */}
             <div className="sito-pezzi-pagina" onClickCapture={() => setScheda('impostazioni')}><Puck.Preview /></div>
             <Destra scheda={scheda} setScheda={setScheda} />
           </div>
