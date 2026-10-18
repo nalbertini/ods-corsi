@@ -1,5 +1,5 @@
-import type { Posto, Voce } from './indirizzoSegreteria'
-import { spunteDi } from './ruoli'
+import { leggiIndirizzo, scriviIndirizzo, type Posto, type Voce } from './indirizzoSegreteria'
+import { spunteDi, type AreaDiAccount } from './ruoli'
 
 /**
  * Il menu di chi lavora in segreteria o in amministrazione: un menu solo, con le
@@ -26,7 +26,8 @@ export function menuDi(chi: Chi): GruppoMenu[] {
   const spunte = spunteDi(chi)
   const segreteria = spunte.includes('segreteria')
   const amministrazione = spunte.includes('amministrazione')
-  const conti: Array<[Voce, string]> = [...(amministrazione ? ([['contabilita', 'CONTABILITÀ']] as Array<[Voce, string]>) : []), ['pagamenti', 'PAGAMENTI'], ['listino', 'LISTINO']]
+  const contabilita: Array<[Voce, string]> = amministrazione ? [['contabilita', 'CONTABILITÀ']] : []
+  const conti: Array<[Voce, string]> = [...contabilita, ['pagamenti', 'PAGAMENTI'], ['listino', 'LISTINO']]
   const gruppi: GruppoMenu[] = segreteria
     ? [
         {
@@ -94,8 +95,10 @@ export const primaVoce = (chi: Chi): Voce | undefined => vociDelMenu(chi)[0]
 
 /** La segreteria ha in più le impostazioni (che non sono nel menu) e, in prova, le presenze segnalate. */
 export function vociConsentite(chi: Chi, { prova }: { prova: boolean }): Voce[] {
-  const segreteria = spunteDi(chi).includes('segreteria')
-  return [...vociDelMenu(chi), ...(segreteria ? (['regole'] as Voce[]) : []), ...(segreteria && prova ? (['segnalate'] as Voce[]) : [])]
+  const segreteria = leggeLaSegreteria(chi)
+  const impostazioni: Voce[] = segreteria ? ['regole'] : []
+  const segnalate: Voce[] = segreteria && prova ? ['segnalate'] : []
+  return [...vociDelMenu(chi), ...impostazioni, ...segnalate]
 }
 
 /** Il posto, o la prima voce del menu se la voce non spetta: un indirizzo scritto a mano non apre quel che il menu non offre. */
@@ -104,8 +107,32 @@ export function postoConsentito(posto: Posto, chi: Chi, o: { prova: boolean }): 
   return { voce: primaVoce(chi) ?? 'dafare' }
 }
 
+/** Chi ha la segreteria legge le persone, le richieste e il resto; chi ha solo l'amministrazione, i conti e basta. */
+export const leggeLaSegreteria = (chi: Chi): boolean => spunteDi(chi).includes('segreteria')
+
+/**
+ * L'indirizzo da scrivere al posto di `hash` quando porta a una voce che il menu non offre a questa persona
+ * (`#iscritti` a chi cura solo i conti): quello della sua prima voce. `null` se va bene com'è, se non c'è o se
+ * è degli altri (la guida, il ritorno di Supabase).
+ */
+export function indirizzoConsentito(hash: string, chi: Chi, o: { prova: boolean }): string | null {
+  const letto = leggiIndirizzo(hash, o)
+  if (!letto || hash.length <= 1) return null
+  const giusto = scriviIndirizzo(postoConsentito(letto, chi, o))
+  return giusto === hash ? null : giusto
+}
+
+/** Il vecchio `amministrazione/` porta al menu unico, con la sua query (`?adesso=…` serve alle prove) e il suo cancelletto. */
+export const rimandaAmministrazione = (search: string, hash: string): string => `segreteria/${search}${hash}`
+
+/** Come si chiama un posto per chi ci passa dal calendario o lo sceglie all'accesso: segreteria e amministrazione sono un posto solo. */
+export function nomeDellArea(area: AreaDiAccount, chi: Chi): string {
+  if (area === 'segreteria' || area === 'amministrazione') return titoloDelMenu(chi)
+  return area === 'istruttori' ? 'ISTRUTTORI' : 'SALA'
+}
+
 /** PAGAMENTI mostra solo nomi e importi a chi ha solo l'amministrazione: le persone non le legge. */
-export const pagamentiRidotti = (chi: Chi): boolean => !spunteDi(chi).includes('segreteria')
+export const pagamentiRidotti = (chi: Chi): boolean => !leggeLaSegreteria(chi)
 
 /** La pagina della guida di ogni voce: il tasto «?» apre quella della voce aperta. */
 export function guidaDellaVoce(voce: Voce, chi: Chi): string {

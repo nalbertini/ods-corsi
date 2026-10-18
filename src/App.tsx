@@ -16,6 +16,7 @@ import { Conferme, chiedi } from './components/segreteria/comune'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
 import { indirizzo, INDIRIZZI, useArea } from './lib/aree'
+import { nomeDellArea, rimandaAmministrazione } from './lib/menuSegreteria'
 import { account, altreAree, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
@@ -169,7 +170,7 @@ function PortaUnica() {
 function TutteLeAree() {
   const voci: [keyof typeof INDIRIZZI, string, string][] = [
     ['istruttori', 'ISTRUTTORI', 'Il calendario e l’appello.'],
-    ['segreteria', 'SEGRETERIA E CONTI', 'Corsi, iscritti, presenze e richieste, e per chi ha l’amministrazione i conti: pagamenti, listino e contabilità. Dal computer della reception.'],
+    ['segreteria', 'GESTIONE', 'Corsi, iscritti, presenze e richieste, e per chi ha l’amministrazione i conti: pagamenti, listino e contabilità. Dal computer della reception.'],
     ['iscrizioni', 'ISCRIZIONI', 'Come ci si iscrive, i costi e il modulo: la pagina da mandare a chi vuole iscriversi.'],
     ['iscritti', 'ISCRITTI', 'La pagina di chi frequenta i corsi: le sue lezioni, le presenze, il certificato e le ricevute. Il pilota.'],
     ['sala', 'SALA', 'Il tablet appeso al muro della sala. Da qui il dispositivo resta un tablet.'],
@@ -474,7 +475,7 @@ function MenuIstruttori({
         {chi &&
           altreAree(chi, 'istruttori').map((a) => (
             <button key={a} type="button" className="num sg-voce" onClick={() => passaA(a)}>
-              {a.toUpperCase()} →
+              {nomeDellArea(a, chi)} →
             </button>
           ))}
       </div>
@@ -521,7 +522,7 @@ function AreaGuida() {
  */
 function AreaAmministrazione() {
   useEffect(() => {
-    window.location.replace(indirizzo(INDIRIZZI.segreteria) + window.location.hash)
+    window.location.replace(indirizzo(rimandaAmministrazione(window.location.search, window.location.hash)))
   }, [])
   return <UnAttimo />
 }

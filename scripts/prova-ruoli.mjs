@@ -7,6 +7,7 @@
 // lista di `puo` qui e le policy là devono dire le stesse cose.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
+import { existsSync } from 'node:fs'
 
 const { outputFiles } = await build({
   stdin: {
@@ -133,7 +134,7 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
   ok('nessuna voce due volte', Object.keys(chi).every((c) => { const v = m.vociDelMenu(chi[c]); return v.length === new Set(v).size }), true)
   ok('CONTABILITÀ solo a chi ha l\'amministrazione', Object.keys(chi).filter((c) => m.vociDelMenu(chi[c]).includes('contabilita')), ['segreteria + amministrazione', 'amministrazione', 'amministrazione + istruttore'])
   ok('ogni voce del menu è una voce che l\'indirizzo conosce', Object.keys(chi).every((c) => m.vociDelMenu(chi[c]).every((v) => m.VOCI.includes(v))), true)
-  ok('la guida di ogni voce c\'è', m.vociDelMenu(chi['segreteria + amministrazione']).every((v) => /^(segreteria|amministrazione)\/[a-z-]+$/.test(m.guidaDellaVoce(v, chi['segreteria + amministrazione']))), true)
+  ok('la guida di ogni voce è una pagina che esiste', ['segreteria', 'amministrazione', 'segreteria + amministrazione'].every((c) => [...m.vociConsentite(chi[c], { prova: true })].every((v) => existsSync(`guida/${m.guidaDellaVoce(v, chi[c])}.md`))), true)
   ok('CONTABILITÀ ha la guida dell\'amministrazione', m.guidaDellaVoce('contabilita', chi.amministrazione), 'amministrazione/contabilita')
   ok('PAGAMENTI: la guida ridotta per chi ha solo l\'amministrazione, quella completa per la segreteria', [m.guidaDellaVoce('pagamenti', chi.amministrazione), m.guidaDellaVoce('pagamenti', chi['segreteria + amministrazione'])], ['amministrazione/pagamenti', 'segreteria/pagamenti'])
   ok('PAGAMENTI ridotto (solo nomi) solo senza la segreteria', Object.keys(chi).filter((c) => m.pagamentiRidotti(chi[c])), ['amministrazione', 'amministrazione + istruttore', 'istruttore', 'strano'])
@@ -148,7 +149,38 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
   ok('l\'id della scheda aperta resta, se la voce spetta', m.postoConsentito({ voce: 'iscritti', persona: 'p1' }, chi.segreteria, { prova: false }), { voce: 'iscritti', persona: 'p1' })
   ok('e non resta se la voce non spetta', m.postoConsentito({ voce: 'iscritti', persona: 'p1' }, chi.amministrazione, { prova: false }), { voce: 'contabilita' })
   ok('il titolo del posto: uno solo, non due sezioni', Object.keys(chi).map((c) => m.titoloDelMenu(chi[c])), ['SEGRETERIA', 'GESTIONE', 'AMMINISTRAZIONE', 'AMMINISTRAZIONE', 'SEGRETERIA', 'SEGRETERIA', 'SEGRETERIA'])
-  ok('la modalità prova non cambia le voci (stessa funzione)', JSON.stringify(m.menuDi(chi.segreteria)), JSON.stringify(m.menuDi({ ...chi.segreteria })))
+}
+
+console.log('\nil menu e i permessi dicono la stessa cosa')
+{
+  // Ogni voce del menu ha il suo permesso in `puo`: se qualcuno cambia l'uno senza l'altro, qui si vede.
+  const PERMESSO = { contabilita: 'contabilita', pagamenti: 'pagina-pagamenti', listino: 'listino' }
+  const permessoDi = (v) => PERMESSO[v] ?? 'persone'
+  const persone = [p('staff'), p('staff', false, true), p('amministrazione'), p('amministrazione', true), p('staff', true), p('istruttore'), { ruolo: 'contabile', ancheIstruttore: true, ancheAmministrazione: true }]
+  for (const x of persone) {
+    const nome = `${x.ruolo}${x.ancheAmministrazione ? ' + amministrazione' : ''}${x.ancheIstruttore ? ' + istruttore' : ''}`
+    const nelMenu = m.vociDelMenu(x)
+    ok(`${nome}: ogni voce del menu la può usare`, nelMenu.filter((v) => !m.puo(x, permessoDi(v))), [])
+    ok(`${nome}: le voci dei conti che può usare ci sono tutte`, ['contabilita', 'pagamenti', 'listino'].filter((v) => m.puo(x, permessoDi(v)) && !nelMenu.includes(v)), [])
+  }
+  ok('chi legge la segreteria: la segreteria sì, i soli conti no', [m.leggeLaSegreteria(p('staff')), m.leggeLaSegreteria(p('staff', false, true)), m.leggeLaSegreteria(p('amministrazione')), m.leggeLaSegreteria(p('istruttore'))], [true, true, false, false])
+}
+
+console.log('\nl\'indirizzo scritto a mano e il vecchio indirizzo dell\'amministrazione')
+{
+  const amm = p('amministrazione')
+  const seg = p('staff')
+  const segAmm = p('staff', false, true)
+  const corretto = (hash, c, prova = false) => m.indirizzoConsentito(hash, c, { prova })
+  ok('chi cura solo i conti: una voce che non c\'è porta a CONTABILITÀ, e l\'indirizzo lo dice', [corretto('#foo', amm), corretto('#iscritti/', amm), corretto('#iscritti/p1', amm)], ['#contabilita', '#contabilita', '#contabilita'])
+  ok('…anche le impostazioni e le segnalate', [corretto('#regole', amm), corretto('#segnalate', amm, true)], ['#contabilita', '#contabilita'])
+  ok('…e una sua voce va bene com\'è', [corretto('#contabilita', amm), corretto('#pagamenti', amm), corretto('#listino', amm)], [null, null, null])
+  ok('la segreteria senza amministrazione: CONTABILITÀ porta alla prima voce', corretto('#contabilita', seg), '#dafare')
+  ok('la segreteria con tutte e due apre la contabilità', corretto('#contabilita', segAmm), null)
+  ok('una voce e una scheda della segreteria vanno bene', [corretto('#iscritti', seg), corretto('#iscritti/p1', seg), corretto('#regole', seg)], [null, null, null])
+  ok('senza cancelletto o col cancelletto degli altri non si tocca niente', [corretto('', amm), corretto('#', amm), corretto('#access_token=x', amm), corretto('#guida/sala', amm)], [null, null, null, null])
+  ok('il vecchio indirizzo dell\'amministrazione va a quello nuovo, con la query e il cancelletto', [m.rimandaAmministrazione('', ''), m.rimandaAmministrazione('?adesso=2026-10-01', '#pagamenti'), m.rimandaAmministrazione('', '#contabilita')], ['segreteria/', 'segreteria/?adesso=2026-10-01#pagamenti', 'segreteria/#contabilita'])
+  ok('il passaggio dal calendario: il nome del posto, uno solo', [m.nomeDellArea('segreteria', p('staff')), m.nomeDellArea('segreteria', p('staff', true, true)), m.nomeDellArea('segreteria', amm), m.nomeDellArea('istruttori', amm), m.nomeDellArea('sala', amm)], ['SEGRETERIA', 'GESTIONE', 'AMMINISTRAZIONE', 'ISTRUTTORI', 'SALA'])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

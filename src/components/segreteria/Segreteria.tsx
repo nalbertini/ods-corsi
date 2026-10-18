@@ -44,8 +44,7 @@ import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 import { cambiaVoce, scorre } from '../../lib/scorri'
-import { guidaDellaVoce, menuDi, pagamentiRidotti, postoConsentito, primaVoce, titoloDelMenu, vociConsentite } from '../../lib/menuSegreteria'
-import { spunteDi } from '../../lib/ruoli'
+import { guidaDellaVoce, indirizzoConsentito, leggeLaSegreteria, menuDi, pagamentiRidotti, postoConsentito, primaVoce, titoloDelMenu, vociConsentite } from '../../lib/menuSegreteria'
 
 export type { Voce }
 
@@ -130,7 +129,7 @@ export function Segreteria({
   const gruppi = menuDi(chi)
   const consentite = vociConsentite(chi, { prova })
   // La segreteria legge le persone, le richieste e il resto; chi ha solo l'amministrazione vede i conti e basta.
-  const conSegreteria = spunteDi(chi).includes('segreteria')
+  const conSegreteria = leggeLaSegreteria(chi)
   const consenti = (p: Posto): Posto => postoConsentito(p, chi, { prova })
   const etichetta = titoloDelMenu(chi)
   const [d, setD] = useState<DatiSegreteria | null>(null)
@@ -193,11 +192,10 @@ export function Segreteria({
   useEffect(() => {
     // Un indirizzo che non si capisce diventa quello giusto; quello degli altri si lascia stare.
     const correggi = () => {
-      const h = indirizzoCorretto(window.location.hash, { prova })
-      if (h) return scrivi(h, 'replace')
-      // Una voce che il menu non offre a questa persona (`#iscritti` a chi cura solo i conti) porta alla sua prima voce.
-      const letto = leggiIndirizzo(window.location.hash, { prova })
-      if (letto && window.location.hash.length > 1 && scriviIndirizzo(consenti(letto)) !== scriviIndirizzo(letto)) scrivi(scriviIndirizzo(consenti(letto)), 'replace')
+      // Un indirizzo che non si capisce, o una voce che il menu non offre a questa persona (`#iscritti` a chi cura solo i conti).
+      // `chi` non cambia finché la segreteria è aperta: l'effetto resta quello del primo giro.
+      const h = indirizzoCorretto(window.location.hash, { prova }) ?? indirizzoConsentito(window.location.hash, chi, { prova })
+      if (h) scrivi(indirizzoConsentito(h, chi, { prova }) ?? h, 'replace')
     }
     correggi()
     // Mentre si chiede della bozza, un altro Indietro non fa una seconda domanda:
@@ -246,9 +244,8 @@ export function Segreteria({
   const telefono = useSchermo(TELEFONO)
   // Sul telefono Il Banco non c'è ancora: resta l'aspetto di sempre, anche se è scelto (vedi `aspettoInUso`).
   const [scelto] = useAspetto()
-  const aspetto = aspettoInUso(scelto, telefono)
-  // Il Banco è la segreteria al banco: chi cura solo i conti ha il menu di sempre.
-  const banco = conSegreteria && aspetto === 'banco'
+  const aspetto = aspettoInUso(scelto, telefono, conSegreteria)
+  const banco = aspetto === 'banco'
   useEffect(() => {
     const corpo = document.getElementById('sg-contenuto')
     corpo?.toggleAttribute('inert', aperto && telefono)

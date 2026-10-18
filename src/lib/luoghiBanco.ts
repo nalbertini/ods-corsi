@@ -40,8 +40,8 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
     id: 'soldi',
     nome: 'SOLDI',
     voci: [
-      { voce: 'contabilita', nome: 'CONTABILITÀ' },
       { voce: 'pagamenti', nome: 'PAGAMENTI' },
+      { voce: 'contabilita', nome: 'CONTABILITÀ' },
       { voce: 'listino', nome: 'LISTINO' },
       { voce: 'vestiario', nome: 'VESTIARIO' },
     ],

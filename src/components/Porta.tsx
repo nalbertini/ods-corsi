@@ -1,5 +1,5 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
-import { descrizioneDelMenu, titoloDelMenu } from '../lib/menuSegreteria'
+import { descrizioneDelMenu, nomeDellArea } from '../lib/menuSegreteria'
 import {
   accedi,
   account,
@@ -103,7 +103,7 @@ export function ChiSei({ chi, onEsci }: { chi: Personale; onEsci?: () => void })
       {areaDelPercorso() === 'istruttori' &&
         altreAree(chi, 'istruttori').map((a) => (
           <button key={a} type="button" className="chi-esci" onClick={() => passaA(a)}>
-            {a === 'segreteria' ? titoloDelMenu(chi) : AREE[a][0]}
+            {nomeDellArea(a, chi)}
           </button>
         ))}
       <button type="button" className="chi-esci" onClick={onEsci}>
@@ -140,7 +140,7 @@ export function SceltaArea({ persona, aree, onScelta }: { persona: Personale; ar
         </span>
         {aree.map((a) => (
           <button key={a} type="button" className="card stack scelta-area" style={{ textAlign: 'left' }} onClick={() => onScelta(a)}>
-            <span className="scelta-titolo">{a === 'segreteria' ? titoloDelMenu(persona) : AREE[a][0]}</span>
+            <span className="scelta-titolo">{nomeDellArea(a, persona)}</span>
             <span className="passo-dettaglio" style={{ fontSize: 15 }}>{a === 'segreteria' ? descrizioneDelMenu(persona) : AREE[a][1]}</span>
           </button>
         ))}

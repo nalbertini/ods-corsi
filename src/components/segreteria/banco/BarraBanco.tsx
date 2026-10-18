@@ -3,7 +3,6 @@ import { Logo } from '../../Logo'
 import { Bollino } from '../../ds'
 import type { Voce } from '../../../lib/indirizzoSegreteria'
 import { luoghiPer, luogoDi, voceInLista } from '../../../lib/luoghiBanco'
-import { VOCI } from '../../../lib/indirizzoSegreteria'
 
 /** Il numero da mostrare accanto a una voce: cose che aspettano, con la parola per chi non vede il colore. */
 const Segno = ({ n, detto }: { n: number; detto: string }) =>
@@ -37,8 +36,8 @@ export function BarraBanco({
   prova: boolean
   nome: string
   ruolo: string
-  /** Le voci che la persona può aprire: le altre non ci sono, e un luogo senza voci nemmeno. Senza, tutte. */
-  consentite?: readonly Voce[]
+  /** Le voci che la persona può aprire: le altre non ci sono, e un luogo senza voci nemmeno. */
+  consentite: readonly Voce[]
   /** Le cose che aspettano, per voce: la somma dà il numero del luogo. */
   segni: Partial<Record<Voce, { n: number; detto: string }>>
   cerca: ReactNode
@@ -69,7 +68,7 @@ export function BarraBanco({
       document.removeEventListener('keydown', esc)
     }
   }, [linkAperto])
-  const luoghi = luoghiPer(consentite ?? VOCI)
+  const luoghi = luoghiPer(consentite)
   const luogo = luoghi.find((l) => l.id === luogoDi(voce)) ?? luoghi[0]
   const inLista = voceInLista(voce)
   return (
