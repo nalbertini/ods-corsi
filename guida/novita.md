@@ -10,6 +10,30 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.105.0 — 18 ottobre 2026
+
+### Novità
+
+- La pagina Istruttori con l'elenco a tessere e la scheda di ogni istruttore
+
+## 0.104.0 — 18 ottobre 2026
+
+### Novità
+
+- La pagina Chi siamo con foto di gruppo, istruttori, fila dei corsi e i due pulsanti per provare
+
+## 0.103.0 — 18 ottobre 2026
+
+### Novità
+
+- Richieste, Corsi, Tessere, Listino e Pagamenti con i testi in parole
+
+## 0.102.0 — 18 ottobre 2026
+
+### Novità
+
+- Il menù della segreteria ha un'icona per ogni voce e un filetto fra i gruppi
+
 ## 0.101.1 — 18 ottobre 2026
 
 ### Risolto
