@@ -10,6 +10,20 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.114.0 — 18 ottobre 2026
+
+### Novità
+
+- Elimina anche chi è solo di segreteria, se non ha storia
+
+### Risolto
+
+- Sul sito mancavano i box dei numeri e delle fasce
+
+### Modificato
+
+- Il controllo dei file SQL ora copre anche il file 53
+
 ## 0.113.1 — 18 ottobre 2026
 
 ### Risolto
