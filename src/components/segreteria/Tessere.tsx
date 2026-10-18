@@ -105,7 +105,7 @@ export function TessereDellaPersona({
             className="sg-btn sg-btn-linea"
             aria-label={`Togli la tessera ${t.ente} n. ${t.codice}`}
             onClick={async () => {
-              if (!(await chiedi(`Togliere la tessera ${t.ente} n. ${t.codice} di ${p.nome} ${p.cognome}?`, 'Sì, toglila'))) return
+              if (!(await chiedi(`Togliere la tessera ${t.ente} n. ${t.codice} di ${p.nome} ${p.cognome}?`, 'Sì, toglila', { pericolo: true }))) return
               // ANNULLA la rimette com'era, anche «dal RASD».
               void fai(() => d.togliTessera(t.id ?? ''), undefined, async () => {
                 onCambiato()

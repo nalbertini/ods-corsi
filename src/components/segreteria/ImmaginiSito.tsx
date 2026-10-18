@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { controllaAlt, MASSIMO_BYTE, pagineCheUsano, pulisciAlt, TIPI_AMMESSI, type ImmagineSito } from '../../lib/sitoImmagini'
 import type { PaginaSito } from '../../lib/sitoPagine'
-import { Campo, Guaio, useAvviso, useCarica, useDialogo } from './comune'
+import { Campo, chiedi, Guaio, useAvviso, useCarica, useDialogo } from './comune'
 
 /**
  * Le immagini delle pagine del sito: la libreria (SITO › IMMAGINI) e il pannello
@@ -74,7 +74,12 @@ export function Immagini({ d, pagine }: { d: DatiSegreteria; pagine: PaginaSito[
                 {usata.length ? (
                   <span className="sg-tag">In uso: non si cancella</span>
                 ) : (
-                  <button type="button" className="sg-chip num" disabled={lavora} onClick={() => void fai(() => d.cancellaImmagineSito(im.nome), 'Immagine tolta', () => elenco.ricarica())}>
+                  <button type="button" className="sg-chip num sg-pericolo" disabled={lavora}
+                    onClick={async () => {
+                      if (!(await chiedi('Togliere questa immagine? Non si può rimettere: andrà caricata di nuovo.', 'Togli l’immagine', { pericolo: true }))) return
+                      void fai(() => d.cancellaImmagineSito(im.nome), 'Immagine tolta', () => elenco.ricarica())
+                    }}
+                  >
                     Togli
                   </button>
                 )}

@@ -583,7 +583,15 @@ function ColonnaVoci({ d, tipo, titolo, voci, usate, fai, onCambiato }: { d: Dat
           </span>
           <span style={{ fontSize: 13, color: 'var(--dim)' }}>{v.diSistema ? (v.nome === VOCE_DIFFERENZA ? 'scritta dalla chiusura di cassa' : 'incassi degli iscritti') : usate(v) ? `${usate(v)} ${usate(v) === 1 ? 'movimento' : 'movimenti'}` : 'mai usata'}</span>
           {!v.diSistema && (
-            <button type="button" className="sg-link" style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '0 6px' }} onClick={() => void fai(() => d.attivaVoce(v.id, !v.attiva), v.attiva ? 'Voce disattivata' : 'Voce riattivata', onCambiato)}>
+            <button
+              type="button"
+              className={v.attiva ? 'sg-link sg-pericolo' : 'sg-link'}
+              style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '0 6px' }}
+              onClick={async () => {
+                if (v.attiva && !(await chiedi(`Disattivare la voce «${v.nome}»? Non si può più scegliere nei movimenti nuovi; quelli già scritti restano.`, 'Disattiva la voce', { pericolo: true }))) return
+                void fai(() => d.attivaVoce(v.id, !v.attiva), v.attiva ? 'Voce disattivata' : 'Voce riattivata', onCambiato)
+              }}
+            >
               {v.attiva ? 'Disattiva' : 'Riattiva'}
             </button>
           )}

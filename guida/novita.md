@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.111.0 — 18 ottobre 2026
+
+### Novità
+
+- In Segreteria i pulsanti che tolgono sono rossi e chiedono conferma
+
+### Risolto
+
+- La scheda di Richieste online non si stringe più
+
 ## 0.110.2 — 18 ottobre 2026
 
 ### Risolto
