@@ -135,8 +135,9 @@ await sezione('1b. cosa dice la scheda e cosa si può salvare', async () => {
   ok('valido col file: Sostituisci, non è il primo gesto', riga(p({ scade: '2027-03-14', conFile: true })), ['VALIDO', 'verde', 'Sostituisci', false])
   ok('… e la frase', p({ scade: '2027-03-14', conFile: true }).frase, 'Valido fino al 14 marzo 2027.')
   ok('il file di prima è un valido come gli altri', riga(p({ scade: '2027-03-14', conFile: true, vecchio: true })), ['VALIDO', 'verde', 'Sostituisci', false])
-  ok('valido senza file: Carica il file, e lo dice', [riga(p({ scade: '2027-03-14', conFile: false })), p({ scade: '2027-03-14', conFile: false }).frase],
-    [['VALIDO', 'verde', 'Carica il file', true], 'Valido fino al 14 marzo 2027, ma il file non c’è: la data è segnata, il foglio no.'])
+  // Una frase sola: il riquadro «Nessun file caricato» ripeteva la stessa cosa.
+  ok('valido senza file: Carica il file, lo dice una volta sola', [riga(p({ scade: '2027-03-14', conFile: false })), p({ scade: '2027-03-14', conFile: false }).frase, p({ scade: '2027-03-14', conFile: false }).nota],
+    [['VALIDO', 'verde', 'Carica il file', true], 'Valido fino al 14 marzo 2027. Il file non c’è: carica la copia.', undefined])
   ok('in scadenza: giallo, fra quanti giorni', [riga(p({ scade: '2026-10-08', conFile: true })), p({ scade: '2026-10-08', conFile: true }).frase],
     [['IN SCADENZA', 'giallo', 'Sostituisci', false], 'Scade il 8 ottobre 2026, fra 12 giorni.'])
   ok('scade domani e oggi', [p({ scade: '2026-09-27', conFile: true }).frase, p({ scade: oggi, conFile: true }).frase], ['Scade il 27 settembre 2026, domani.', 'Scade il 26 settembre 2026, oggi.'])
@@ -150,7 +151,9 @@ await sezione('1b. cosa dice la scheda e cosa si può salvare', async () => {
   // Disattivata: il file è andato alla disattivazione, e non c'è più niente da cambiare.
   const dis = f('presentaCertificato', { scade: '2027-03-14', conFile: false, caricatoIl: '2026-02-03' }, undefined, oggi, false)
   ok('disattivata: file cancellato alla disattivazione, né SOSTITUISCI né TOGLI', [dis.nota, dis.puoCambiare, p({ scade: '2027-03-14', conFile: true }).puoCambiare], ['File cancellato alla disattivazione.', false, true])
-  ok('disattivata con la sola data: nessuna parola sul file cancellato', f('presentaCertificato', { scade: '2027-03-14', conFile: false }, undefined, oggi, false).nota, 'Nessun file caricato: la data l’ha scritta la segreteria.')
+  // Disattivata non si carica più: la frase non invita, e la nota dice del file.
+  const disData = f('presentaCertificato', { scade: '2027-03-14', conFile: false }, undefined, oggi, false)
+  ok('disattivata con la sola data: nessuna parola sul file cancellato', [disData.frase, disData.nota], ['Valido fino al 14 marzo 2027.', 'Nessun file caricato: la data l’ha scritta la segreteria.'])
   ok('disattivata, ma il file era già andato 30 giorni dopo la scadenza: dice così', f('presentaCertificato', { scade: '2026-08-01', conFile: false, caricatoIl: '2026-02-03' }, undefined, oggi, false).nota, 'Il file è stato cancellato 30 giorni dopo la scadenza, come previsto.')
 
   // Gli avvisi sotto il gesto, per testo.

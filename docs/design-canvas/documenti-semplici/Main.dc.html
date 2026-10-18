@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «DOCUMENTI più semplici»: nessun colore né componente nuovo, tutto dalla libreria col tema sito.
+     Certificato: bollino + una frase + i tasti; via il riquadro tratteggiato che ripeteva la frase, e TOGLI diventa un
+     link rosso piccolo (si fa di rado, e chiede conferma). Documento: il bollino già dice «in segreteria», via la frase;
+     il tasto per cambiare diventa un link. Tessere: com'è. -->
+<div style="display: grid; grid-template-columns: 760px 760px; gap: 24px 56px; width: 1640px; padding: 28px 36px 40px; align-items: start">
+  <span style="grid-column: 1 / -1; font-size: 14px; line-height: 1.45; color: #46606f; max-width: 1100px">PROPOSTA · DOCUMENTI PIÙ SEMPLICI. A sinistra com’è oggi, a destra la proposta: stesse informazioni, ognuna una volta sola. Il certificato scrive la frase una volta (prima ci sono la frase e il riquadro tratteggiato che dicono la stessa cosa), «Togli il certificato» smette di stare accanto a «Carica il file» alla stessa altezza e col bordo rosso, e il documento non ripete il bollino in una frase.</span>
+
+  <div style="display:flex;flex-direction:column;gap:10px"><span style="font-size:14px;font-weight:700">1 · Oggi</span>
+    <div style="display:flex;flex-direction:column;gap:18px;padding:20px;background:#fff;border:2px solid #cfe6f4">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:12px"><div style="flex:1"><dc-import name="Titoletto" label="CERTIFICATO MEDICO" tema="sito" hint-size="560px,30px"></dc-import></div><dc-import name="Badge" tipo="segno" tono="verde" label="VALIDO" tema="sito" hint-size="90px,28px"></dc-import></div>
+        <span style="font-size:14px">Valido fino al 29 dicembre 2026, ma il file non c’è: la data è segnata, il foglio no.</span>
+        <div style="padding:10px 12px;border:2px dashed #14709f;font-size:14px;color:#46606f">Nessun file caricato: la data l’ha scritta la segreteria.</div>
+        <div style="display:flex;justify-content:space-between"><dc-import name="Bottone" label="Carica il file" variante="pieno" contesto="segreteria" tema="sito" hint-size="150px,48px"></dc-import><dc-import name="Bottone" label="Togli il certificato" variante="pericolo" contesto="segreteria" tema="sito" hint-size="230px,48px"></dc-import></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <dc-import name="Titoletto" label="TESSERE" tema="sito" hint-size="720px,30px"></dc-import>
+        <span style="font-size:14px;color:#b81d1d">Nessuna tessera. Judo adulti chiede la tessera FIJLKAM.</span>
+        <div><dc-import name="Bottone" label="+ Aggiungi una tessera" variante="tratteggiato" contesto="segreteria" tema="sito" hint-size="220px,48px"></dc-import></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:12px"><div style="flex:1"><dc-import name="Titoletto" label="DOCUMENTO D’IDENTITÀ" tema="sito" hint-size="520px,30px"></dc-import></div><dc-import name="Badge" tipo="segno" tono="verde" label="IN SEGRETERIA" tema="sito" hint-size="150px,28px"></dc-import></div>
+        <span style="font-size:14px">La copia è nella cartellina.</span>
+        <div><dc-import name="Bottone" label="La copia non c’è più" variante="linea" contesto="segreteria" tema="sito" hint-size="210px,48px"></dc-import></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px"><span style="font-size:14px;font-weight:700">2 · Proposta</span>
+    <div style="display:flex;flex-direction:column;gap:18px;padding:20px;background:#fff;border:2px solid #cfe6f4">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:12px"><div style="flex:1"><dc-import name="Titoletto" label="CERTIFICATO MEDICO" tema="sito" hint-size="560px,30px"></dc-import></div><dc-import name="Badge" tipo="segno" tono="verde" label="VALIDO" tema="sito" hint-size="90px,28px"></dc-import></div>
+        <span style="font-size:14px">Valido fino al 29 dicembre 2026. Il file non c’è: carica la copia.</span>
+        <div style="display:flex;align-items:center;gap:20px"><dc-import name="Bottone" label="Carica il file" variante="pieno" contesto="segreteria" tema="sito" hint-size="150px,48px"></dc-import><span style="font-size:15px;font-weight:600;color:#b81d1d;text-decoration:underline;text-underline-offset:3px">Togli il certificato</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <dc-import name="Titoletto" label="TESSERE" tema="sito" hint-size="720px,30px"></dc-import>
+        <span style="font-size:14px;color:#b81d1d">Nessuna tessera. Judo adulti chiede la tessera FIJLKAM.</span>
+        <div><dc-import name="Bottone" label="+ Aggiungi una tessera" variante="tratteggiato" contesto="segreteria" tema="sito" hint-size="220px,48px"></dc-import></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:12px"><div style="flex:1"><dc-import name="Titoletto" label="DOCUMENTO D’IDENTITÀ" tema="sito" hint-size="420px,30px"></dc-import></div><dc-import name="Badge" tipo="segno" tono="verde" label="IN SEGRETERIA" tema="sito" hint-size="150px,28px"></dc-import></div>
+        <span style="font-size:15px;font-weight:600;color:#46606f;text-decoration:underline;text-underline-offset:3px">La copia non c’è più</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1640,"height":640}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
