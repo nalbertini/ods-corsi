@@ -642,13 +642,13 @@ function Scheda({
           ) : (
             <div className="sg-due">
               <Campo etichetta="EMAIL">
-                <span style={{ fontSize: 14, wordBreak: 'break-all', color: p.email ? 'var(--text)' : 'var(--dim)' }}>{p.email ?? '—'}</span>
+                <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.email ? 'var(--text)' : 'var(--dim)' }}>{p.email ?? '—'}</span>
               </Campo>
               <Campo etichetta="EMAIL DI CONTATTO">
-                <span style={{ fontSize: 14, wordBreak: 'break-all', color: p.emailContatto ? 'var(--text)' : 'var(--dim)' }}>{p.emailContatto ?? '—'}</span>
+                <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.emailContatto ? 'var(--text)' : 'var(--dim)' }}>{p.emailContatto ?? '—'}</span>
               </Campo>
               <Campo etichetta="TELEFONO">
-                <span style={{ fontSize: 14, color: p.telefono ? 'var(--text)' : 'var(--dim)' }}>{p.telefono ?? '—'}</span>
+                <span className="sg-valore" style={{ color: p.telefono ? 'var(--text)' : 'var(--dim)' }}>{p.telefono ?? '—'}</span>
               </Campo>
             </div>
           )}
@@ -1241,9 +1241,9 @@ function DatiAnagrafici({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: Perso
   const an = useCarica(async () => ({ di: await d.anagraficaDi(p.id) }), [d, p.id])
   const [modifica, setModifica] = useState<Anagrafica | null>(null)
   const x = an.dato?.di?.dati
-  const valore = (testo?: string) => <span style={{ fontSize: 14, color: testo ? 'var(--text)' : 'var(--dim)', overflowWrap: 'anywhere' }}>{testo || '—'}</span>
+  const valore = (testo?: string) => <span className="sg-valore" style={{ color: testo ? 'var(--text)' : 'var(--dim)', overflowWrap: 'anywhere' }}>{testo || '—'}</span>
   const codice = (testo?: string) => (
-    <span className="num" style={{ fontSize: 14, color: testo ? 'var(--text)' : 'var(--dim)', letterSpacing: '0.04em' }}>{testo ?? '—'}</span>
+    <span className="num sg-valore" style={{ color: testo ? 'var(--text)' : 'var(--dim)', letterSpacing: '0.04em' }}>{testo ?? '—'}</span>
   )
   const residenza = x && [x.indirizzo, [x.cap, x.comune].filter(Boolean).join(' ')].filter(Boolean).join(', ')
   const genitore = x && [x.genitoreCognome, x.genitoreNome].filter(Boolean).join(' ')
