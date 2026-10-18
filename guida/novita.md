@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.116.0 — 18 ottobre 2026
+
+### Novità
+
+- Con una foto scelta nel testo si vede cosa fare (testo alternativo, cambia, togli)
+
+### Modificato
+
+- Scheda iscritto: certificato e documento più semplici da leggere
+
 ## 0.115.4 — 18 ottobre 2026
 
 ### Risolto
