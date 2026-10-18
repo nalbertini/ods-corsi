@@ -102,6 +102,7 @@
     "prova:tema": "node scripts/prova-tema.mjs",
     "prova:iscrizione-sito": "node scripts/prova-iscrizione-sito.mjs",
     "prova:look": "node scripts/prova-look.mjs",
+    "prova:istruttori-look": "node scripts/prova-istruttori-look.mjs",
     "prova:sql": "bash scripts/prova-sql.sh",
     "prova:comune-cap": "node scripts/prova-comune-cap.mjs",
     "prova:tessere": "node scripts/prova-tessere.mjs",

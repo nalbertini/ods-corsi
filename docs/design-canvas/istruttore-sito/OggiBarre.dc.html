@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La striscia dell'allenamento nei suoi quattro stati e, sotto, il caso in cui in fondo c'e' tutto: striscia in cima, barra della musica e barra delle pagine. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+  <main style="display: flex; flex-direction: column; flex: 1">
+    <dc-import name="Titoletto" label="L’ALLENAMENTO IN CORSO" hint-size="100%,50px"></dc-import>
+    <p style="margin: 0 0 8px; padding: 0 20px; font-size: 13px; line-height: 1.4; color: #8c8c88">La striscia sta sotto la testata, in flusso, su ogni pagina tranne TIMER. Toccandola si torna al timer; STOP lo ferma senza aprirlo.</p>
+    <dc-import name="TimerStriscia" stato="lavoro" nome="Tabata brucia grassi" tempo="00:14" hint-size="100%,56px"></dc-import>
+    <div style="height: 8px"></div>
+    <dc-import name="TimerStriscia" stato="recupero" nome="Tabata brucia grassi" tempo="00:08" hint-size="100%,56px"></dc-import>
+    <div style="height: 8px"></div>
+    <dc-import name="TimerStriscia" stato="pausa" nome="Tabata brucia grassi" tempo="00:14" hint-size="100%,56px"></dc-import>
+    <div style="height: 8px"></div>
+    <dc-import name="TimerStriscia" stato="finito" nome="Tabata brucia grassi" tempo="00:14" hint-size="100%,56px"></dc-import>
+    <dc-import name="Titoletto" label="TUTTO INSIEME" hint-size="100%,50px"></dc-import>
+    <p style="margin: 0 0 8px; padding: 0 20px; font-size: 13px; line-height: 1.4; color: #8c8c88">Il caso peggiore: striscia in cima, musica accesa e barra delle pagine in fondo. La musica sta sopra la barra, la striscia sotto la testata: non si toccano.</p>
+    <div style="display: flex; flex-direction: column; width: 390px; height: 620px; margin: 0 0 28px; background: #121212; border-top: 2px solid #2a2a2a; border-bottom: 2px solid #2a2a2a">
+      <dc-import name="Testata" luogo="ISTRUTTORI" hint-size="100%,72px"></dc-import>
+      <dc-import name="TimerStriscia" stato="pausa" nome="Tabata brucia grassi" tempo="00:14" hint-size="100%,56px"></dc-import>
+      <div style="flex: 1; min-height: 0">
+        <dc-import name="ChiSei" chi="MARCO ROSSI · ISTRUTTORE" hint-size="100%,54px"></dc-import>
+        <p style="margin: 0; padding: 12px 20px; font-size: 13px; color: #8c8c88">(la pagina)</p>
+      </div>
+      <dc-import name="MusicaMini" musica="suona" titolo="Riscaldamento" hint-size="100%,56px"></dc-import>
+      <dc-import name="BarraNavigazione" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="CALENDARIO" hint-size="100%,66px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

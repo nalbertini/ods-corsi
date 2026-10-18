@@ -97,6 +97,8 @@ const ambiente = ({ salvato = null, luce: chiaro = false, look = false } = {}) =
 }
 
 // --- 1. lookDellArea ---------------------------------------------------------
+// Le aree col look: segreteria, amministrazione e (dal «look del sito» dell'istruttore) istruttori.
+const LOOK_AREE = ['segreteria', 'amministrazione', 'istruttori']
 const AREE = ['segreteria', 'amministrazione', 'iscrizioni', 'iscritti', 'istruttori', 'sala', 'guida', 'scelta']
 console.log('\nL\'aspetto per area (src/lib/aspettoSegreteria.ts)')
 let asp
@@ -105,14 +107,14 @@ try {
 } catch (e) {
   ok('src/lib/aspettoSegreteria.ts si carica', e.errors?.[0]?.text ?? e.message, 'ok')
 }
-for (const a of AREE) ok(`lookDellArea('${a}')`, asp ? vedi(() => asp.lookDellArea(a)) : 'manca', a === 'segreteria' || a === 'amministrazione' ? 'sito' : null)
+for (const a of AREE) ok(`lookDellArea('${a}')`, asp ? vedi(() => asp.lookDellArea(a)) : 'manca', LOOK_AREE.includes(a) ? 'sito' : null)
 
 // --- 2. accendi e spegni su un documento finto -------------------------------
 console.log('\nAccendere e spegnere data-look')
 for (const a of AREE) {
   const e = ambiente()
   vedi(() => asp.applicaLook(a, e.doc))
-  ok(`area ${a}: data-look su <html>`, e.look(), a === 'segreteria' || a === 'amministrazione' ? 'sito' : null)
+  ok(`area ${a}: data-look su <html>`, e.look(), LOOK_AREE.includes(a) ? 'sito' : null)
 }
 {
   const e = ambiente()
@@ -191,7 +193,8 @@ let prima = null
 if (base) prima = pulisci(execSync(`git show ${base}:src/styles.css`, { encoding: 'utf8', maxBuffer: 1 << 26 }))
 if (prima === null) console.log('  - confronto con main saltato: senza un ramo main con cui confrontare')
 const rPrima = prima === null ? [] : regole(prima)
-const esatta = (r) => r.selettori.join(',') + '{' + r.corpo + '}' // byte per byte, spazi compresi
+// `.faccia-timer` sta ora tra i selettori del blocco :root (il cronometro in allenamento resta scuro nell'area chiara degli istruttori, `prova:istruttori-look`): i valori del blocco sono gli stessi, e qui non lo si conta.
+const esatta = (r) => r.selettori.filter((s) => s !== '.faccia-timer').join(',') + '{' + r.corpo + '}' // byte per byte, spazi compresi
 
 const bloccoLook = rOra.find((r) => r.selettori.length === 1 && r.selettori[0] === LOOK)
 const bloccoModulo = rOra.find((r) => r.selettori.length === 1 && r.selettori[0] === MODULO)
@@ -286,15 +289,16 @@ for (const c of ['.sg-riquadro', '.sg-dafare-riga', '.card', '.sg-mancano']) {
 for (const [c, colore] of [[".sg-dafare-riga[data-livello='blocca']", 'rosso'], [".sg-dafare-riga[data-livello='presto']", 'giallo-testo'], [".sg-riquadro[data-fatto='true']", 'verde']])
   ok(`${c}: barra a sinistra var(--${colore})`, ha(c, new RegExp(`box-shadow:\\s*inset 4px 0 0 var\\(--${colore}\\)`)), true)
 
-// Il giallo pieno è di due cose sole.
-const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`]
-ok('giallo pieno nel look: solo .sg-btn-pieno e la voce di menu corrente',
+// Il giallo pieno è di quattro cose sole: il tasto principale della segreteria e quello dell'appello (TUTTI PRESENTI),
+// la voce di menu corrente e la voce corrente della barra in basso dell'istruttore.
+const PIENO_AMMESSO = [`${LOOK} .sg-btn-pieno`, `${LOOK} .sg-voce[aria-current='page']`, `${LOOK} .barra-voce[aria-current='page']`, `${LOOK} .appello-testa .btn-go`]
+ok('giallo pieno nel look: solo .sg-btn-pieno, .appello-testa .btn-go e le due voci di menu correnti',
   delLook.filter((r) => r !== bloccoLook && GIALLO_PIENO.test(r.corpo) && !r.selettori.every((s) => PIENO_AMMESSO.includes(s))).map((r) => r.selettori.join(',')), [])
 ok('.sg-btn-pieno: fondo var(--giallo), testo var(--su-colore)', ha('.sg-btn-pieno', /background(-color)?:\s*var\(--giallo\)/) && ha('.sg-btn-pieno', /(?<![-\w])color:\s*var\(--su-colore\)/), true)
 // Ogni regola di fuori del look con un .sg- e il giallo pieno ne ha una gemella nel look col giallo scritto.
 // Tutte le regole con il giallo pieno, non solo quelle .sg-: l'appello, il Banco e il nastro di prova sono nella stessa area.
-// Restano fuori il tablet, i timer degli istruttori e il tasto del modulo di iscrizione: non sono in segreteria.
-const FUORI_DALLA_SEGRETERIA = /\.tb-|\.miei-timer|data-modulo|\.btn-primary/
+// Restano fuori il tablet, la pagina TIMER (scura, i token del tema scuro: ha il suo giallo del marchio), i timer degli istruttori e il tasto del modulo di iscrizione: non sono in segreteria.
+const FUORI_DALLA_SEGRETERIA = /\.tb-|\.faccia-timer|\.miei-timer|data-modulo|\.btn-primary/
 const giallePiene = rOra.filter((r) => !r.selettori.some((s) => s.includes('data-look')) && GIALLO_PIENO.test(r.corpo)).flatMap((r) => r.selettori.filter((s) => s !== ':root' && !FUORI_DALLA_SEGRETERIA.test(s)))
 for (const s of [...new Set(giallePiene)]) {
   const g = esatto(s)

@@ -23,11 +23,11 @@ Google, e vale solo per i mockup.
 | `LezioneSettimana.dc.html` | La lezione nella SETTIMANA (`Tessera` di `Settimana.tsx`) col look del sito: tinta in alto, barra rossa se manca l'appello, tag in parole (`etichetteLezione.ts`) |
 | `Bottone.dc.html` | `.btn`, `.sg-btn`, `.icon-btn`: principale, vai, linea, tratteggiato, pieno, rosso, pericolo (contorno e testo rossi: cancella, elimina, annulla, togli, disattiva), icona; app e segreteria; `bordo="riga-campo"` per i tasti che sono scelte (i tipi di TI SERVE ALTRO?) |
 | `SchedaCorso.dc.html` | `Costo` di `ds.tsx`: la scheda di un corso nel listino; col `tema="sito"` (pagina `iscrizioni/`) bianca, filo `#cfe6f4`, corso e prezzi in Big Shoulders |
-| `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
-| `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
+| `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato; `tema="sito"` (area istruttore, costruito): tessera bianca, tinta in una barra in alto, stato in testo col segno davanti (✕ DA CHIUDERE, ✓ FATTO, … IN CORSO), nessun tag e nessuna barra a sinistra |
+| `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova; `tema="sito"` (costruito): tessera bianca, barra di 4px verde/rossa, segno ✓/✕, quadratino vuoto col bordo blu per il non segnato; `lettura` per la sola lettura (la riga non si tocca, il quadratino resta) |
 | `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag` (neutro, rosso, giallo e verde `fatto`: PUBBLICATA nel SITO), `.sg-segno-regola` |
 | `Menu.dc.html` | Il menu unico (`.sg-menu`), con l'icona davanti a ogni voce (`ICONE_MENU`) e un filetto fra i gruppi; `tema="sito"`: inchiostro, voci in parole con l'iniziale maiuscola, voce corrente gialla: le voci sono quelle delle autorizzazioni della persona (`autorizzazioni`: `segreteria`, `segreteria e amministrazione`, `amministrazione`), non di due aree. I cinque gruppi della segreteria (OGNI GIORNO, ISCRITTI E SOLDI, CORSI E ORARI, ISTRUTTORI, IL RESTO); con l'amministrazione in più I CONTI con CONTABILITÀ, e con solo l'amministrazione I CONTI e basta (CONTABILITÀ, PAGAMENTI, LISTINO), senza ricerca né link da copiare; VESTIARIO e SITO in IL RESTO, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` resta come alias di `autorizzazioni="amministrazione"` |
-| `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
+| `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`); `tema="sito"` (costruito): caselle bianche, giorno scelto con contorno blu, oggi con riga gialla scura |
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
 | `TimerLinea.dc.html` | `LineaDelTempo`: un blocco per passo, che si colora via via |
@@ -37,15 +37,15 @@ Google, e vale solo per i mockup.
 | `RigaStoricoIscritto.dc.html` | COSTRUITA (`PagatoPrima.tsx`, `.sg-riga-prima`; `../filtro-storico-pagamenti/`): una riga dell'elenco ISCRITTI filtrato su «Pagato nel vecchio programma», tema sito, trasparente sul fondo azzurro con filetto `line-soft` (niente riquadro bianco): nome (bottone da 44px), bollino della quota (DA PAGARE / SCADUTA), «data · importo · voce» dell'incasso, `collegato` («incasso del genitore <nome>»), PARZIALE?, `casella` vuota / scelta (barra laterale 4px `giallo-testo`) / senza (senza: nota e «Apri la scheda ›»), `errore` per l'esito |
 | `BarraSegna.dc.html` | COSTRUITA (`.sg-barra-scelta`): la barra in fondo dell'elenco filtrato, solo con almeno una scelta; look sito: bianca, bordo 2px `giallo-testo`; «N SCELTE», «Seleziona tutte», «Deseleziona» e il tasto giallo «Segna N come pagate senza ricevuta dell'app» (16px 600, non in maiuscolo); `telefono` mette il tasto a tutta larghezza |
 | `DialogoSegna.dc.html` | COSTRUITA (`Conferma` in `PagatoPrima.tsx`, `.sg-dialogo`): il pannello di conferma del segnare in blocco (senza velo): «SEGNA N PERSONE», elenco con «✕ Escludi» per riga, VALE FINO AL e NOTA, la frase sulla correzione dalla scheda, Annulla e Segna |
-| `Titoletto.dc.html` | `Titoletto` di `ds.tsx`: l'etichetta spaziata con la riga |
-| `Testata.dc.html` | `Testata` di `App.tsx`: marchio, luogo, guida e tema (misura del telefono) |
+| `Titoletto.dc.html` | `Titoletto` di `ds.tsx`: l'etichetta spaziata con la riga. Il `tema="sito"` è quello del modulo di iscrizione; nell'area istruttore nel look del sito il titoletto non cambia forma (15px, 0.24em, margini di 20px): prende solo Big Shoulders e `dim` #46606f dai token |
+| `Testata.dc.html` | `Testata` di `App.tsx`: marchio, luogo, guida e tema (misura del telefono); `istruttori` (con `tema="sito"`, costruito): la testata dell'area istruttore sul telefono, senza tasto del tema |
 | `Passi.dc.html` | `.sg-passi` di `Importa.tsx`: I FOGLI, IL CONTROLLO, NELL'APP, con quello corrente acceso |
 | `FoglioLetto.dc.html` | Il riquadro (`.sg-riquadro`) di un foglio letto: nome, conto delle righe, «tutte lette» o «N saltate» |
 | `CosaEntra.dc.html` | Il riquadro COSA ENTRA: `Riga` di `comune.tsx` + i conti (`.sg-cosa-entra`) + la frase sotto |
 | `RigaPerRiga.dc.html` | Il riquadro RIGA PER RIGA: sommario, le righe dubbie con la loro select (`.sg-campo`) e VEDI TUTTE LE RIGHE chiuso (`.sg-spiega`) |
 | `NomiNuovi.dc.html` | Il riquadro I NOMI NUOVI: gruppi di nomi con l'etichetta (`Elenco`) |
 | `Resoconto.dc.html` | Il resoconto di fine import: riquadro a bordo giallo o verde, elenco monospazio e i tre tasti |
-| `TestaAppello` | La testa dell'appello (`.appello-testa`): indietro, titolo con kanji, conto, TUTTI PRESENTI e AZZERA |
+| `TestaAppello` | La testa dell'appello (`.appello-testa`): indietro, titolo con kanji, conto, TUTTI PRESENTI e AZZERA; stato `lettura` (SOLO LETTURA, senza tasti); `tema="sito"` (costruito): stato in testo col segno (non in tag), TUTTI PRESENTI giallo (il tasto principale), AZZERA a linea blu, conto in Inter 800 |
 | `Riquadro` | `Riquadro`, `Etichetta`, `Cifra`, `Dettaglio` di `ds.tsx` e `.sg-riquadro`; toni normale, prova, guaio |
 | `Campo` | I campi del modulo e di segreteria: testo, select, area, sola lettura, scelta, spunta, con nota ed errore. Bordo `riga-campo`; con `una` la scelta è un segmento pieno, senza quadratino; `avviso` mette sotto la riga di una scelta la frase in `giallo-testo` («non è più alla stessa ora di …»); `orario` aggiunge alla riga l'orario a pezzi, coi pezzi fra asterischi in evidenza |
 | `Dialogo` | Il pannello sul velo: conferma, dialogo (lezione straordinaria) e cassetto della lezione |
@@ -64,9 +64,9 @@ Google, e vale solo per i mockup.
 | `RiepilogoIscrittiCorso` | `RiepilogoCorso` di `Corsi.tsx` (da `riepilogoCorso`): la riga sopra la ricerca del tab ISCRITTI, `voci` «testo:tono» separate da «\|» (conto n/capienza, SENZA CERTIFICATO e DA PAGARE rossi, CORSO PIENO giallo, TUTTO IN REGOLA verde) |
 | `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`); il quarto, `titolo="TESSERA"` (parola NO TESSERA, SCADUTA, SCADE A DICEMBRE o IN REGOLA, una riga per ente), c’è solo per chi ha un corso che chiede la tessera: la fila `.sg-timbri` passa a quattro colonne (`data-con-tessera`) |
 | `SchedaCertificato` | PROPOSTA «certificati online»: il blocco CERTIFICATO MEDICO della scheda iscritto (`Certificato` di `Iscritti.tsx`) col file online: titolo + bollino, frase di stato, riga del file con APRI, CARICA / SOSTITUISCI e TOGLI; `stato` nessuno, valido, in_scadenza, scaduto_con_file, scaduto_senza_file, valido_senza_file, file_vecchio; `gesto` apre file + VALIDO FINO AL + un solo SALVA; `telefono` mette i tasti in colonna |
-| `MenuIstruttori` | Il menu degli istruttori sullo schermo largo (`App.tsx`) |
-| `BarraTelefono` | La barra in cima al telefono con il tasto MENU (`.sg-barra-tel`); il menu aperto è `Menu` |
-| `BarraNavigazione` | PROPOSTA, scelta la variante B: la barra in basso del telefono istruttori (CALENDARIO, TIMER, I MIEI, ORE; due voci per la segreteria che non insegna): icona a linea, etichetta, voce corrente con barra, fondo e testo. `MenuIstruttori` ha la prop `elenco` per le stesse voci a sinistra |
+| `MenuIstruttori` | Il menu degli istruttori sullo schermo largo (`App.tsx`); `tema="sito"` (costruito): inchiostro, senza icone, voce corrente gialla, niente tasto del tema |
+| `BarraTelefono` | La barra in cima al telefono con il tasto MENU (`.sg-barra-tel`); il menu aperto è `Menu`. L'area istruttore sul telefono non la usa: ha la `Testata` (`istruttori`) e la barra delle pagine in basso |
+| `BarraNavigazione` | COSTRUITA (variante B): la barra in basso del telefono istruttori (CALENDARIO, TIMER, I MIEI, ORE; due voci per la segreteria che non insegna): icona a linea, etichetta, voce corrente con barra, fondo e testo; `tema="sito"`: inchiostro, Inter 12px che va a capo, voce corrente gialla. `MenuIstruttori` ha la prop `elenco` per le stesse voci a sinistra |
 | `SchedeTimer` | Variante A scartata: le schede DA FARE / I MIEI in cima alla pagina TIMER: tasti da 52px, quella attiva con bordo, quadratino e bordo sotto spesso |
 | `TimerRiga` | La riga di un timer nell'elenco (tipo, durata, nome, nota, ▶), per le sezioni CREATI DA TE e le copie; `TimerPagina` ha `conTitolo`, `conBarra`, `tutti` e `cronometro`: nella B la pagina TIMER è `conBarra` falso, `tutti="LIBRERIA"`, `cronometro` vero |
 | `RigaDaFare` | Una riga di DA FARE (`.sg-dafare-riga`): numero grande rosso (`blocca`) o giallo (`presto`), titolo, frase e tasto VEDI CHI |
@@ -84,11 +84,11 @@ Google, e vale solo per i mockup.
 | `MieiTimerRiga` | La riga di I MIEI TIMER, per un corso o una lezione |
 | `TimerComandi`, `TimerTestata`, `TimerCella` | I comandi, la testata e la cella dell'editor del timer (`timer/src/`) |
 | `GuidaTesto` | La colonna di testo della guida dentro l'app |
-| `ChiSei` | La riga «NOME COGNOME · RUOLO» con ESCI (e SEGRETERIA per chi ha due aree) sopra il calendario del telefono (`ChiSei` di `Porta.tsx`) |
+| `ChiSei` | La riga «NOME COGNOME · RUOLO» con ESCI (e SEGRETERIA per chi ha due aree) sopra il calendario del telefono (`ChiSei` di `Porta.tsx`); `tema="sito"` (costruito): stessa riga, Big Shoulders e #46606f dai token |
 | `TabletTestataIstruttore` | `TabletTestata` col bollino blu AREA ISTRUTTORE · nome (`Tablet.tsx`) |
 | `TabletSchede`, `TabletLezioneIstr` | Le schede OGGI / PER CORSO (con la tendina) e una lezione nell'elenco dell'area istruttore (`.tb-schede`, `.tb-lezione-istr`) |
 | `TabletRigaAppello`, `TabletTestaAppello`, `TabletRiquadro` | La riga dell'appello del tablet (DAL TABLET, SEGNATO DOPO, PROVA), la sua testa con i tre tasti, e il riquadro LA TUA PRESENZA |
-| `Arretrato` | `Arretrato` di `CalendarioScreen.tsx` (`.arretrato*`): la riga delle cose rimaste indietro sotto la lezione di adesso, in giallo (presenze segnalate) o rosso (appelli da chiudere), chiusa o aperta con le righe `primo:secondo|...` |
+| `Arretrato` | `Arretrato` di `CalendarioScreen.tsx` (`.arretrato*`): la riga delle cose rimaste indietro sotto la lezione di adesso, in giallo (presenze segnalate) o rosso (appelli da chiudere), chiusa o aperta con le righe `primo:secondo|...`; `tema="sito"` (costruito): tessera bianca senza bordo, il tono nel colore del titolo, senza barra né segno |
 | `TabletScelta` | Le scelte di TI SEI DIMENTICATO DI SEGNARTI? (`.tb-scelta`): `variante="corso"` (barra nella tinta, nome, giorni) o `"lezione"` (giorno, ora, «N su M») |
 | `TabletTestaAppelloPassato` | `TabletTestaAppello` per una lezione passata: col primo tocco il tasto diventa «CONFERMA: N PRESENTI» e compare la frase gialla |
 | `PassoIscrizione` | Un passo della pagina ISCRIZIONI (`.passo` di `IscrizioniScreen.tsx`): numero, titolo, frasi, IBAN e tasti |
@@ -99,7 +99,9 @@ Google, e vale solo per i mockup.
 | `Riepilogo` | `Riepilogo` di `ds.tsx` (`.riepilogo`): una riga per cosa col segno ✓ verde, – giallo (facoltativa non data), ! rosso o il numero, e il tasto MODIFICA o CARICA da 44px |
 | `RiquadroPasso` | Il riquadro con titolo da 17px, righe `Titolo:cifra`, frasi e tasti (`Riquadro` di `ds.tsx`): PRIMA DI ISCRIVERTI, contatti, nucleo, il guaio sopra MANDA LA RICHIESTA |
 | `MusicaTelefono` | la barra della musica nella pagina TIMER del telefono, su due righe (brano e volume; ⏮ ▶ ⏭ ☰ ✕); `musica` suona, pausa, ferma, errore, spenta |
-| `MusicaMini` | la barra piccola della musica fuori dal TIMER, sopra la barra delle pagine: titolo, MUSICA scritto e ⏸/▶ |
+| `MusicaMini` | la barra piccola della musica fuori dal TIMER, sopra la barra delle pagine: titolo, MUSICA scritto e ⏸/▶; `tema="sito"` (costruito): bianca, tasto con filo celeste |
+| `SpiaCoda` | `.spia-coda` e `.spia-coda-quante`: N PRESENZE DA INVIARE, PRESENZE RIFIUTATE (`tono="guaio"`) e la frase della SOLA LETTURA nell'appello; `tema="sito"` (costruito): bianca, bordo e titolo giallo scuro (rosso con guaio), segno «… » / «✕ » |
+| `TimerStriscia` | La striscia dell'allenamento in corso, visibile fuori dal TIMER (`StrisciaTimer`): PREPARATI, LAVORO, RECUPERO, RIPOSO, DEFATICAMENTO, IN PAUSA, FINITO; `tema="sito"` (costruito): fondi pieni con ▶ (LAVORO rosso scuro, RECUPERO verde scuro, RIPOSO e DEFATICAMENTO blu), bianca con riga e «… » / «✓ » per PREPARATI, IN PAUSA e FINITO |
 | `MusicaYoutubeTelefono` | con YouTube il video 200×200 dentro la barra, a destra, e i comandi in una colonna accanto |
 | `CaricaFile` | La riga di un file del modulo (`CaricaFile` di `ds.tsx`): SCEGLI o CAMBIA, file scelto in verde, errore |
 | `TavolaFirma` | Il riquadro della firma (`TavolaFirma.tsx`): vuoto con FIRMA QUI COL DITO, o firmato |
@@ -323,7 +325,25 @@ blocco `:root[data-look='sito']` di `src/styles.css`. Il tema è uno solo e semp
 - **ISCRITTI** (`filtriIscritti.ts`): ricerca, corso e tre filtri in vista (Senza certificato valido, Da pagare, Non in regola), poi «Altri filtri (N) ▾».
 - **SETTIMANA** (`etichetteLezione.ts`): i tag della lezione sono in parole (Senza appello, Appello fatto, Manca l’istruttore, Sostituto, ✎ Cambiata a mano, Straordinaria, Annullata).
 - **COSA MANCA**: cinque caselle in una riga, cifra Big Shoulders 44px, titolo Inter 14px, senza la nota.
-- **Non è nel look**: `RigaCalendario`, `RigaAppello` e l'area degli istruttori restano nei temi nero/bianco/Tatami. Il fuoco da tastiera (contorno 3px blu, bianco nel menu) non è riprodotto.
+- **Fuori dal look**: il fuoco da tastiera (contorno 3px blu, bianco nel menu) non è riprodotto. L'area degli istruttori ora è nel look (vedi sotto, «L'area istruttore nel look del sito»): il cronometro della pagina TIMER resta scuro, e I MIEI e ORE ereditano i token ma non sono ridisegnati (PR 2).
+
+## L'area istruttore nel look del sito
+
+COSTRUITA (PR 1: menu, CALENDARIO e APPELLO; `lookDellArea('istruttori')` è `'sito'` in `src/lib/aspettoSegreteria.ts`, regole in `src/styles.css` sotto «L'area istruttore nel look del sito», parole di stato in `src/lib/etichetteAppello.ts`). TIMER resta scuro (il cronometro in allenamento ha i token del tema scuro: `.faccia-timer`, `temaDelTimer`); I MIEI e ORE ereditano i token del look ma non sono ridisegnati (PR 2). Il design approvato sta in `../istruttore-sito/` (storia: «oggi» e proposta affiancati, e in fondo al suo README le differenze del costruito). Stessi valori della tabella «La segreteria nel look del sito»; tema unico e sempre chiaro, il tasto del tema non c'è (`senzaTema` in `Testata`, niente `TastoTema` nel menu). Col `tema="sito"` hanno il look: `MenuIstruttori`, `BarraNavigazione`, `Testata` (`istruttori`), `ChiSei`, `RigaCalendario`, `RigaAppello`, `StrisciaGiorni`, `TestaAppello`, `Arretrato`, `TimerStriscia`, `MusicaMini`, `SpiaCoda`. `Titoletto` e `BarraTelefono` non cambiano.
+
+| Cosa | Valore (come costruito) |
+|---|---|
+| Stati | Sono **testo** col segno davanti, mai tag: `.num` nel look è Inter. ✕ DA CHIUDERE rosso #b81d1d, ✓ FATTO verde #0b7a33, … NESSUN PRESENTE giallo scuro, … IN CORSO e ISCRITTI spenti (#46606f); nell'appello … N DA SEGNARE e … SOLO LETTURA in inchiostro, ✓ TUTTI SEGNATI verde, ✕ TUTTI ASSENTI rosso, CHIUDI IN FONDO ↓ verde e sottolineato; +N PROVA, … N DA INVIARE e … NON ANCORA COMINCIATA giallo scuro |
+| Lezione nel calendario | tessera bianca, raggio 6px, tinta del corso in una barra di 4px in alto; nome Big Shoulders 800 19px; ora, conto e stato Inter; nessuna barra a sinistra per DA CHIUDERE; la colonna di destra non si stringe (margine 8px, al massimo 45%, stato che va a capo) e i nomi vanno a capo; la lezione aperta ha il contorno blu #14709f da 2px |
+| `SpiaCoda` | `.spia-coda`: N PRESENZE DA INVIARE, PRESENZE RIFIUTATE e la frase della SOLA LETTURA. Bianca, bordo e titolo #8f6a00 (mai riempimento giallo; rosso #b81d1d con `tono="guaio"`), segno «… » / «✕ »; la frase 14px #46606f |
+| Testa dell'appello | fondo #eef5fa, margini di 20px; titolo Big Shoulders 800 26px; conto Inter 800 52px, che non va a capo; il sottotitolo (giorno, ora, sala) va a capo invece di tagliarsi; «?», indietro, timer e frecce della settimana con bordo 2px blu #14709f |
+| Tasto principale dell'appello | TUTTI PRESENTI / GLI ALTRI PRESENTI giallo #f4c31b con l'inchiostro, raggio 6px, Big Shoulders 700 17px, 0.1em; spento: bianco con testo e bordo 2px verde #0b7a33 per ✓ TUTTI SEGNATI, #cfe6f4 con testo #46606f per elenco vuoto. CHIUDI IN FONDO ↓ alto 44px. AZZERA: bordo 2px blu, senza raggio e senza fondo, Big Shoulders 700 16px. CHIUDI L'APPELLO resta verde o rosso (stato, non giallo) |
+| Riga dell'appello | tessera bianca, barra di 4px verde o rossa, segno ✓ / ✕; non segnato = quadratino vuoto da 22px, raggio 4px, bordo blu |
+| Barra in basso | inchiostro #0d2a3d, voci Inter 12px 600 senza spaziatura e che vanno a capo, la corrente gialla #f4c31b con l'inchiostro e in grassetto |
+| Menu largo | inchiostro, voci Inter 15px senza icone, la corrente gialla; ODS CORSI Big Shoulders 700 |
+| Striscia dell'allenamento | LAVORO fondo #b81d1d, RECUPERO #0b7a33, RIPOSO e DEFATICAMENTO blu #14709f (testo bianco, ▶ davanti); PREPARATI e IN PAUSA bianca con riga #8f6a00 e «… »; FINITO bianca con riga #0b7a33 e «✓ »; sul bianco il testo è inchiostro (la riga porta il colore). Tempo Big Shoulders 800 36px |
+| Musica | barra bianca sopra la barra delle pagine, tasto ⏸/▶ con filo celeste #cfe6f4 (non blu) |
+| Titoletti, `ChiSei`, `Arretrato` | senza regole proprie: Big Shoulders e `dim` dai token; `Arretrato` è una tessera bianca col tono nel colore del titolo, senza barra né segno |
 
 ## Il sito pubblico: Chi siamo
 

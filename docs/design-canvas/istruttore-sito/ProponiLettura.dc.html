@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'appello di una lezione fuori finestra (piu' vecchia di 14 giorni) in SOLA LETTURA: i segni com'erano, nessun tasto per segnare, aggiungere chi prova o chiudere; il riquadro con la frase di `fraseFuoriFinestra` (src/lib/finestra.ts) sta subito sotto la testa. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1180px; background: #eef5fa; color: #0d2a3d">
+  <dc-import name="BarraTelefono" tema="sito" luogo="ISTRUTTORI" senza-menu="{{ true }}" senza-impostazioni="{{ true }}" da-fare="0" hint-size="100%,62px"></dc-import>
+  <main style="display: flex; flex-direction: column; flex: 1">
+    <dc-import name="ChiSei" tema="sito" chi="MARCO ROSSI · ISTRUTTORE" hint-size="100%,54px"></dc-import>
+    <dc-import name="TestaAppello" tema="sito" corso="Judo kids" kanji="柔" quando="Lunedì 14 settembre 17:30 · Sala 1" presenti="4" iscritti="5" prove="1" stato="lettura" hint-size="100%,150px"></dc-import>
+    <div style="padding: 12px 16px 0">
+      <dc-import name="SpiaCoda" tema="sito" titolo="LEZIONE TROPPO VECCHIA" testo="Questa lezione è troppo vecchia per cambiare le presenze: scrivete alla segreteria." hint-size="100%,110px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 16px 0">
+      <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="ATTIVITÀ DI QUESTA LEZIONE" valore="Nessuna attività" nota="" hint-size="100%,86px"></dc-import>
+      <span style="font-size: 13px; color: #46606f">Cambia solo questa lezione.</span>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="ISCRITTI" conto="5" lato="16px" hint-size="100%,50px"></dc-import>
+    <div style="padding: 0 16px 10px">
+      <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="CERCA PER NOME O COGNOME" hint-size="100%,88px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 16px; padding-bottom: 20px">
+      <dc-import name="RigaAppello" tema="sito" nome="Bianchi Sofia" stato="presente" lettura="{{ true }}" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" tema="sito" nome="Ferrari Matteo" stato="presente" lettura="{{ true }}" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" tema="sito" nome="Greco Luca" stato="assente" lettura="{{ true }}" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" tema="sito" nome="Marino Anna" stato="presente" lettura="{{ true }}" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" tema="sito" nome="Rossi Giulia" stato="presente" lettura="{{ true }}" hint-size="100%,56px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" tema="sito" label="PROVE" conto="1" lato="16px" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 16px; padding-bottom: 20px">
+      <dc-import name="RigaAppello" tema="sito" nome="Colombo Davide" stato="presente" prova="{{ true }}" lettura="{{ true }}" hint-size="100%,56px"></dc-import>
+    </div>
+    <div style="padding-bottom: 28px"></div>
+  </main>
+  <div style="margin-top: auto">
+    <dc-import name="BarraNavigazione" tema="sito" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="CALENDARIO" hint-size="100%,66px"></dc-import>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

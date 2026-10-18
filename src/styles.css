@@ -121,6 +121,7 @@
 }
 
 /* I colori del marchio Officine Dello Sport. */
+.faccia-timer,
 :root {
   --bg: #121212;
   --surface: #1c1c1c;
@@ -474,6 +475,95 @@
 :root[data-look='sito'] .bn-riga { border-left: 8px solid var(--giallo-testo); }
 :root[data-look='sito'] .bn-riga[data-livello='blocca'] { border-left-color: var(--rosso); }
 :root[data-look='sito'] .bn-blocca { border: 2px solid var(--giallo-testo); border-left: 8px solid var(--giallo-testo); }
+
+/* L'area istruttore nel look del sito (PR 1: calendario, appello, barre, menu). Valori da
+   docs/design-canvas/istruttore-sito e dalla libreria. Lo stato si legge dal segno e dalla
+   parola, mai dal solo colore; il giallo pieno è del tasto principale e della voce corrente.
+   Il tablet di sala e i timer fuori dall'app non passano di qui. */
+:root[data-look='sito'] .testata-nome { font-family: var(--cond); font-style: normal; font-weight: 800; }
+:root[data-look='sito'] .striscia-giorni { padding-left: 16px; padding-right: 16px; }
+:root[data-look='sito'] .striscia-giorni .giorno { background: var(--surface); border: 0; border-radius: 6px; font-family: var(--body); }
+:root[data-look='sito'] .striscia-giorni .giorno-nome { font-family: var(--body); font-weight: 600; letter-spacing: 0.04em; }
+:root[data-look='sito'] .striscia-giorni .giorno[data-on='true'] { box-shadow: inset 0 0 0 2px var(--blu); }
+:root[data-look='sito'] .striscia-giorni .giorno[data-oggi='true'] { box-shadow: inset 0 -3px 0 var(--giallo-testo); }
+:root[data-look='sito'] .striscia-giorni .giorno[data-on='true'][data-oggi='true'] { box-shadow: inset 0 0 0 2px var(--blu), inset 0 -3px 0 var(--giallo-testo); }
+
+/* La tinta del corso è una barra in alto; quella a sinistra è dello stato. */
+:root[data-look='sito'] .lezione { background: var(--surface); border: 0; border-top: 4px solid var(--tinta); border-radius: 6px; }
+:root[data-look='sito'] .lezione[aria-current='true'] { box-shadow: inset 0 0 0 2px var(--blu); }
+:root[data-look='sito'] .lezione-nome { font-weight: 800; letter-spacing: 0.02em; }
+:root[data-look='sito'] .lezione-destra { flex-shrink: 0; margin-left: 8px; max-width: 45%; }
+:root[data-look='sito'] .lezione .chi-kanji > span:last-child { overflow-wrap: anywhere; min-width: 0; }
+:root[data-look='sito'] .lezione-destra .lezione-stato { white-space: normal; }
+:root[data-look='sito'] .lezione-stato { letter-spacing: 0.04em; font-weight: 700; }
+
+:root[data-look='sito'] .appello-testa { background: var(--bg); border-bottom-color: var(--line); }
+:root[data-look='sito'] .testata .icon-btn,
+:root[data-look='sito'] .btn-ghost { border-color: var(--blu); }
+:root[data-look='sito'] .appello-testa .icon-btn { background: var(--surface); border: 2px solid var(--blu); border-radius: 6px; color: var(--text); }
+:root[data-look='sito'] .appello-titolo { font-size: 26px; font-weight: 800; letter-spacing: 0.05em; }
+:root[data-look='sito'] .appello-testa .btn-go[data-fatto]:disabled { background: var(--surface); color: var(--verde-testo); border: 2px solid var(--verde-testo); opacity: 1; }
+:root[data-look='sito'] .appello-vai { display: inline-flex; align-items: center; min-height: 44px; }
+/* NON LO TROVO: SCRIVI IL NOME sta su una riga a 375px dentro il bordo tratteggiato. */
+:root[data-look='sito'] .btn-dashed { white-space: nowrap; letter-spacing: 0; padding-left: 8px; padding-right: 8px; }
+:root[data-look='sito'] .conto-appello { font-size: 52px; font-weight: 800; }
+:root[data-look='sito'] .appello-stato { letter-spacing: 0.04em; white-space: normal; text-align: right; }
+/* Il sottotitolo (giorno, ora, sala) va a capo invece di tagliarsi dietro il tasto del timer; il conto no. */
+:root[data-look='sito'] .appello-testa .chi-kanji > span:last-child { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+:root[data-look='sito'] .conto-appello { white-space: nowrap; }
+:root[data-look='sito'] .appello-coda { letter-spacing: 0.04em; }
+/* Il tasto principale della schermata: sempre in vista, perché la testa resta ferma. */
+:root[data-look='sito'] .appello-testa .btn-go { background: var(--giallo); color: var(--su-colore); border-radius: 6px; letter-spacing: 0.04em; }
+:root[data-look='sito'] .appello-testa .btn-go:disabled { background: var(--line); color: var(--dim); opacity: 1; }
+
+:root[data-look='sito'] .riga-appello { background: var(--surface); border: 0; border-radius: 6px; box-shadow: inset 4px 0 0 transparent; }
+:root[data-look='sito'] .riga-appello[data-stato='presente'] { box-shadow: inset 4px 0 0 var(--verde); }
+:root[data-look='sito'] .riga-appello[data-stato='assente'] { box-shadow: inset 4px 0 0 var(--rosso); }
+/* Non segnato: un quadratino vuoto dice «qui si tocca». */
+:root[data-look='sito'] .riga-appello[data-stato='niente'] .segno { border: 2px solid var(--blu); border-radius: 4px; width: 22px; height: 22px; margin: 0 2px; }
+:root[data-look='sito'] .riga-appello .segno { font-family: var(--body); font-size: 22px; }
+
+:root[data-look='sito'] .spia-coda { background: var(--surface); border-radius: 6px; }
+:root[data-look='sito'] .spia-coda-quante { color: var(--giallo-testo); letter-spacing: 0.02em; }
+:root[data-look='sito'] .spia-coda-quante::before { content: '… '; }
+:root[data-look='sito'] .spia-coda[data-tono='guaio'] { border-color: var(--rosso-testo); }
+:root[data-look='sito'] .spia-coda[data-tono='guaio'] .spia-coda-quante { color: var(--rosso-testo); }
+:root[data-look='sito'] .spia-coda[data-tono='guaio'] .spia-coda-quante::before { content: '✕ '; }
+
+/* La barra in basso è inchiostro dentro una pagina chiara: lì dentro il testo è chiaro. */
+:root[data-look='sito'] .barra-nav {
+  --text: #ffffff;
+  --sec: #cfe6f4;
+  --dim: #cfe6f4;
+  --tasto: #cfe6f4;
+  --line-soft: #46606f;
+  background: var(--menu);
+  color: #ffffff;
+}
+:root[data-look='sito'] .barra-voce { font-family: var(--body); font-size: 12px; letter-spacing: 0; font-weight: 600; padding: 0 2px; white-space: normal; overflow-wrap: anywhere; text-align: center; }
+:root[data-look='sito'] .barra-voce[aria-current='page'] { border-top-color: var(--giallo); background: var(--giallo); color: var(--su-colore); font-weight: 700; }
+
+/* La striscia dell'allenamento (i colori sono qui, non in linea): LAVORO e RECUPERO su fondi scuri con il testo bianco
+   (--rosso-testo e --verde-testo del look valgono 5:1 con --su-rosso, il rosso e il verde pieni no); IN PAUSA e FINITO
+   bianche con le righe «aspetta» e «fatto». Il colore non basta: c'è il segno davanti alla parola. */
+:root[data-look='sito'] .striscia-timer { background: var(--rosso-testo); border-color: var(--rosso-testo); color: var(--su-rosso); min-height: 60px; font-family: var(--body); }
+:root[data-look='sito'] .striscia-timer[data-fase='rest'] { background: var(--verde-testo); border-color: var(--verde-testo); }
+:root[data-look='sito'] .striscia-timer[data-fase='setRest'],
+:root[data-look='sito'] .striscia-timer[data-fase='cooldown'] { background: var(--blu); border-color: var(--blu); }
+:root[data-look='sito'] .striscia-timer[data-fase='prepare'],
+:root[data-look='sito'] .striscia-timer[data-stato='pausa'] { background: var(--surface); border-color: var(--giallo-testo); border-top: 2px solid var(--giallo-testo); color: var(--text); }
+:root[data-look='sito'] .striscia-timer[data-stato='finito'] { background: var(--surface); border-color: var(--verde-testo); border-top: 2px solid var(--verde-testo); color: var(--text); }
+:root[data-look='sito'] .striscia-testo { font-family: var(--body); letter-spacing: 0.04em; font-size: 16px; }
+:root[data-look='sito'] .striscia-testo::before { content: '▶ '; }
+:root[data-look='sito'] .striscia-timer[data-fase='prepare'] .striscia-testo::before,
+:root[data-look='sito'] .striscia-timer[data-stato='pausa'] .striscia-testo::before { content: '… '; }
+:root[data-look='sito'] .striscia-timer[data-stato='finito'] .striscia-testo::before { content: '✓ '; }
+:root[data-look='sito'] .striscia-tempo { font-family: var(--cond); font-size: 36px; font-weight: 800; }
+:root[data-look='sito'] .striscia-stop { font-family: var(--body); font-style: normal; border-radius: 6px; letter-spacing: 0.04em; margin-top: 8px; margin-bottom: 8px; }
+
+/* Il cronometro in allenamento resta scuro dentro l'area chiara: `.faccia-timer` ha i token del tema scuro
+   (primo blocco `:root`), e dipinge il suo fondo. Il look non lo nomina. */
+.faccia-timer { background: var(--bg); color: var(--text); }
 
 * { box-sizing: border-box; }
 
