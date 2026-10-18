@@ -189,7 +189,9 @@ iscrizione**, e ce l'hanno soltanto i componenti che il modulo vero usa (`Campo`
 ## Il canvas unico
 
 Libreria e sezioni (istruttore, tablet di sala, registrazione utente, importa
-da Excel, timer) stanno in un solo Artifact, una pagina per sezione:
+da Excel, timer) stanno in un solo Artifact. Il canvas mostra al massimo 40 pagine, quindi le sezioni vicine
+stanno sulla stessa pagina, una sotto l'altra col suo titolo (`GRUPPI` in `unico.mjs`; una sezione fuori da un
+gruppo ha una pagina sua, e lo script si ferma se le pagine superano 40):
 
 ```bash
 node docs/design-canvas/unico.mjs <cartella>

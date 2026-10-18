@@ -64,6 +64,24 @@ const SEZIONI = [
   { id: 'moduli-pdf', nome: 'Moduli PDF · carta (proposta)', cartella: 'moduli-pdf' },
 ]
 
+// Il canvas mostra al massimo 40 pagine: le sezioni vicine stanno sulla stessa pagina, una sotto l'altra, ognuna col suo titolo.
+// Una sezione che non è in un gruppo ha una pagina sua.
+const MAX_PAGINE = 40
+const GRUPPI = {
+  'iscrizione-flusso': { nome: 'Iscrizione · il modulo', sezioni: ['iscrizione', 'iscrizione-nuovo', 'iscrizione-rifinitura', 'navigazione-passi', 'iscrizione-sito'] },
+  'iscrizione-famiglia': { nome: 'Iscrizione · famiglia', sezioni: ['iscrizione-famiglia', 'famiglia-passo', 'famiglia-ultimo', 'anche-tu'] },
+  'iscrizione-dettagli': { nome: 'Iscrizione · dettagli', sezioni: ['orari-evidenziati', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'comune-dal-cap', 'firma-schermo-intero', 'riempi-prova', 'esci-dalla-prova'] },
+  'vestiario': { nome: 'Vestiario', sezioni: ['vestiario', 'vestiario-modulo'] },
+  'sito': { nome: 'Sito', sezioni: ['sito-pannello', 'sito-pubblico', 'sito-rebrand'] },
+  'segreteria-iscritti': { nome: 'Segreteria · iscritti e prezzi', sezioni: ['iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'tessere', 'prezzi-mancanti'] },
+  'segreteria-certificati': { nome: 'Segreteria · certificati', sezioni: ['certificati-online', 'certificato-piccoli'] },
+  'segreteria-strumenti': { nome: 'Segreteria · strumenti', sezioni: ['segreteria-tatami', 'banco', 'cerca-universale', 'importa-fogli'] },
+  'segreteria-conti': { nome: 'Segreteria · conti e ruoli', sezioni: ['contabilita', 'chiusura-cassa', 'ruolo-amministrazione', 'email-contatto'] },
+  'istruttori': { nome: 'Istruttori', sezioni: ['istruttore', 'istruttore-collega'] },
+  'timer': { nome: 'Timer', sezioni: ['timer-desktop', 'timer-istruttori', 'timer-musica', 'timer-youtube'] },
+}
+const gruppoDi = (id) => Object.keys(GRUPPI).find((g) => GRUPPI[g].sezioni.includes(id))
+
 const stem = (f) => f.replace(/\.dc\.html$/, '')
 const leggi = (p) => readFileSync(p, 'utf8')
 const dcHtml = (cartella) => readdirSync(cartella).filter((f) => f.endsWith('.dc.html'))
@@ -96,6 +114,7 @@ const boards = {}
 const order = []
 const pages = []
 const notes = {}
+const cursori = new Map() // pagina → fondo dell'ultima sezione messa, per i gruppi
 const nomiLibreria = new Set(dcHtml(join(base, LIBRERIA)).map(stem))
 
 function copia(da, nome, riscrivi) {
@@ -154,17 +173,27 @@ for (const s of SEZIONI) {
   } else {
     posti = griglia(cartella, propri)
   }
-  pages.push({ id: s.id, name: s.nome })
+  const g = gruppoDi(s.id)
+  const pagina = g ?? s.id
+  if (!pages.some((p) => p.id === pagina)) pages.push({ id: pagina, name: g ? GRUPPI[g].nome : s.nome })
+  // In un gruppo ogni sezione parte sotto la precedente, con un titolo sopra (≥ 223 px sopra la prima riga).
+  let dy = 0
+  if (g) {
+    const sx = Math.min(...posti.map((a) => a.x)), larg = Math.max(...posti.map((a) => a.x + a.w)) - sx
+    dy = (cursori.get(pagina) ?? 0) + 300
+    notes[`${s.id}-titolo`] = { x: sx, y: dy - 260, text: s.nome, kind: 'title1', maxW: Math.min(Math.max(larg, 600), 1840), page: pagina }
+    cursori.set(pagina, dy + Math.max(...posti.map((a) => a.y + a.h)))
+  }
   for (const a of posti) {
     const nome = `${s.id}-${a.file}`
-    boards[nome] = { x: a.x, y: a.y, w: a.w, h: a.h, page: s.id, title: a.title ?? stem(a.file) }
+    boards[nome] = { x: a.x, y: a.y + dy, w: a.w, h: a.h, page: pagina, title: a.title ?? stem(a.file) }
     order.push(nome)
     copia(join(cartella, a.file), nome, nuovo)
   }
   for (const n of c?.annotations ?? []) {
     if (n.page && n.page !== 'page-1') continue
     // Un titolo (`kind`) resta titolo: un post-it largo si allunga a 4/3 e copre le tavole sotto.
-    notes[`${s.id}-${n.id}`] = { x: n.x, y: n.y, w: n.w, text: n.text, page: s.id, ...(n.kind && { kind: n.kind, maxW: n.maxW }) }
+    notes[`${s.id}-${n.id}`] = { x: n.x, y: n.y + dy, w: n.w, text: n.text, page: pagina, ...(n.kind && { kind: n.kind, maxW: n.maxW }) }
   }
 }
 
@@ -188,6 +217,7 @@ const indice = {
   notes,
   designSystems: [],
 }
+if (pages.length > MAX_PAGINE) { console.error(`${pages.length} pagine: il canvas ne mostra ${MAX_PAGINE}. Raggruppa altre sezioni in GRUPPI.`); errori++ }
 writeFileSync(join(uscita, 'project', 'canvas.json'), JSON.stringify(indice, null, 1))
 writeFileSync(join(uscita, 'files.json'), JSON.stringify(['project/canvas.json', ...order.map((f) => `project/${f}`)]))
 console.log(`${order.length} artboard in ${pages.length} pagine → ${uscita}`)
