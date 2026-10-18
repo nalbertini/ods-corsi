@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { createUsePuck, Puck, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, nomeParte, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
+import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, colonnaNuova, nomeParte, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import { EditorTesto } from './EditorTesto'
 import { ScegliImmagine } from './ImmaginiSito'
@@ -98,7 +98,7 @@ function configura(d: DatiSegreteria): Config<Props> {
       },
       colonne: {
         label: 'COLONNE',
-        fields: { colonne: { type: 'array', label: 'COLONNE (da 2 a 3)', min: 2, max: 3, arrayFields: { html: campoTesto('Colonna') }, getItemSummary: (_, i) => `Colonna ${(i ?? 0) + 1}` } },
+        fields: { colonne: { type: 'array', label: 'COLONNE (da 2 a 3)', min: 2, max: 3, arrayFields: { html: campoTesto('Colonna') }, defaultItemProps: colonnaNuova(), getItemSummary: (_, i) => `Colonna ${(i ?? 0) + 1}` } },
         defaultProps: { colonne: [{ html: '' }, { html: '' }] },
         render: ({ colonne }) => (
           <div style={{ display: 'grid', gap: 16, gridTemplateColumns: `repeat(${colonne.length}, minmax(0, 1fr))` }}>
