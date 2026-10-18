@@ -745,10 +745,11 @@ function Scheda({
                   </span>
                   <button
                     type="button"
-                    className="sg-btn sg-btn-linea"
+                    className="sg-btn sg-btn-linea sg-pericolo"
                     aria-label={`Togli il segno «non sono doppioni» con ${x.cognome} ${x.nome}`}
                     disabled={togliendo}
                     onClick={async () => {
+                      if (!(await chiedi(`Togliere il segno «non sono doppioni» con ${x.cognome} ${x.nome}? Se sembrano la stessa persona tornano fra i possibili doppioni.`, 'Togli il segno', { pericolo: true }))) return
                       // Fermo finché la scheda non si rilegge: tolta la riga, il secondo clic di un doppio clic finirebbe su MODIFICA.
                       setTogliendo(true)
                       await fai(() => d.togliNonDoppioni(p.id, x.id), 'Tolto: se sembrano la stessa persona tornano fra i possibili doppioni', onCambiato)
@@ -909,9 +910,9 @@ function Scheda({
             </button>
             <button
               type="button"
-              className="sg-btn sg-btn-linea grow"
+              className="sg-btn sg-btn-linea grow sg-pericolo"
               onClick={async () => {
-                if (p.attiva && !(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'Disattiva la scheda'))) return
+                if (p.attiva && !(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'Disattiva la scheda', { pericolo: true }))) return
                 void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Scheda disattivata' : 'Scheda riattivata', onCambiato)
               }}
             >
@@ -1230,9 +1231,9 @@ function NucleoFamiliare({
           </button>
           <button
             type="button"
-            className="num sg-chip"
+            className="num sg-chip sg-pericolo"
             onClick={async () => {
-              if ((await chiedi(`Togliere ${x.nome} ${x.cognome} dal nucleo? Resta iscritto, ma il titolare non lo vede più nella sua pagina.`, 'Togli dal nucleo')))
+              if ((await chiedi(`Togliere ${x.nome} ${x.cognome} dal nucleo? Resta iscritto, ma il titolare non lo vede più nella sua pagina.`, 'Togli dal nucleo', { pericolo: true })))
                 void fai(() => d.togliDalNucleo(x.id), 'Tolto dal nucleo', onCambiato)
             }}
           >
@@ -1592,7 +1593,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
           {(c.conFile || c.scade) && (
             <button
               type="button"
-              className="sg-btn sg-btn-linea"
+              className="sg-btn sg-btn-linea sg-pericolo"
               onClick={async () => {
                 if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file si cancella per sempre.' : ''} Senza certificato non entra in sala finché non se ne carica uno nuovo.`, 'Togli il certificato', { pericolo: true })))
                   void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
@@ -1726,10 +1727,10 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
       ) : eccezione ? (
         <button
           type="button"
-          className="sg-link"
+          className="sg-link sg-pericolo"
           style={{ alignSelf: 'flex-start' }}
           onClick={async () => {
-            if ((await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'Togli l’eccezione')))
+            if ((await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'Togli l’eccezione', { pericolo: true })))
               void fai(() => d.salvaPagamento(p.id, { stato: 'da_pagare' }), 'Tolta: ora contano solo le ricevute', onCambiato)
           }}
         >

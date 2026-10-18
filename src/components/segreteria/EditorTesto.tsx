@@ -133,7 +133,7 @@ function Barra({ editor, d }: { editor: Editor; d: DatiSegreteria }) {
           <button type="button" className="sg-btn sg-btn-pieno" onClick={() => mettiLink(link.pulsante)}>
             Metti
           </button>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => { editor.chain().focus().extendMarkRange('link').unsetLink().run(); setLink(null) }}>
+          <button data-bozza type="button" className="sg-btn sg-btn-linea sg-pericolo" onClick={() => { editor.chain().focus().extendMarkRange('link').unsetLink().run(); setLink(null) }}>
             Togli
           </button>
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => setLink(null)}>

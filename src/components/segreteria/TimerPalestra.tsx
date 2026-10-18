@@ -262,9 +262,9 @@ function VoceIncisa({
                       </button>
                       <button
                         type="button"
-                        className="num sg-chip"
+                        className="num sg-chip sg-pericolo"
                         onClick={async () => {
-                          if ((await chiedi(`Togliere la clip «${c.text}»? I tablet torneranno alla voce di sistema.`, 'Togli la clip'))) void fai(() => d.togliClip(c.key), 'Clip tolta', ricarica)
+                          if ((await chiedi(`Togliere la clip «${c.text}»? I tablet torneranno alla voce di sistema.`, 'Togli la clip', { pericolo: true }))) void fai(() => d.togliClip(c.key), 'Clip tolta', ricarica)
                         }}
                       >
                         Togli
@@ -412,10 +412,10 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                       {!libero(aperto.nome, e.id) && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>C'è già un esercizio con questo nome.</span>}
                       <button
                         type="button"
-                        className="num sg-chip"
+                        className="num sg-chip sg-pericolo"
                         style={{ minHeight: 44 }}
                         onClick={async () => {
-                          if ((await chiedi(`Togliere «${e.nome}» dal catalogo? I timer che lo usano restano come sono.`, 'Togli l’esercizio')))
+                          if ((await chiedi(`Togliere «${e.nome}» dal catalogo? I timer che lo usano restano come sono.`, 'Togli l’esercizio', { pericolo: true })))
                             salva(lista.filter((x) => x.id !== e.id), 'Esercizio tolto', () => setAperto(null))
                         }}
                       >
@@ -593,10 +593,10 @@ function DisciplinePalestra({ d, lista, ricarica }: { d: DatiSegreteria; lista: 
                 </button>
                 <button
                   type="button"
-                  className="num sg-chip"
+                  className="num sg-chip sg-pericolo"
                   style={{ minHeight: 44 }}
                   onClick={async () => {
-                    if (await chiedi(`Togliere «${x.nome}»? Gli esercizi, i timer e le liste che la nominano restano, senza categoria.`, 'Togli la categoria'))
+                    if (await chiedi(`Togliere «${x.nome}»? Gli esercizi, i timer e le liste che la nominano restano, senza categoria.`, 'Togli la categoria', { pericolo: true }))
                       salva(lista.filter((y) => y.id !== x.id), 'Categoria tolta', () => setAperta(null))
                   }}
                 >

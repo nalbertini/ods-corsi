@@ -466,6 +466,7 @@ function Lezione({
                     !(await chiedi(
                       `Annullare ${l.corso} di ${giornoPerEsteso(chiaveGiorno(new Date(l.inizio))).toLowerCase()} alle ${oraDi(l.inizio)}? Calendario e tablet la mostrano annullata, ma gli iscritti non vengono avvisati: vanno chiamati o scritti. Si rimette con Prevista.`,
                       'Annulla la lezione',
+                      { pericolo: true },
                     ))
                   )
                     return
@@ -531,14 +532,14 @@ function Lezione({
         {l.straordinaria && (
           <button
             type="button"
-            className="sg-btn sg-btn-linea"
-            style={{ borderColor: 'var(--rosso)' }}
-            onClick={() =>
+            className="sg-btn sg-btn-linea sg-pericolo"
+            onClick={async () => {
+              if (!(await chiedi(`Togliere questa lezione straordinaria? Sparisce dal calendario e dal tablet.`, 'Togli la lezione', { pericolo: true }))) return
               void fai(() => d.togliLezione(l.id), 'Lezione tolta', () => {
                 onChiudi()
                 onCambiato()
               })
-            }
+            }}
           >
             Togli questa lezione straordinaria
           </button>
@@ -745,7 +746,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
             <button type="button" className="sg-btn sg-btn-verde grow" onClick={tutti}>
               Tutti presenti
             </button>
-            <button type="button" className="sg-btn sg-btn-linea" onClick={azzera} disabled={!segnati}>
+            <button type="button" className="sg-btn sg-btn-linea sg-pericolo" onClick={azzera} disabled={!segnati}>
               Azzera
             </button>
           </div>
