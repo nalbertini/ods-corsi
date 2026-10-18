@@ -18,6 +18,7 @@ export const CSS_INTERNE = `
 .interna .intro{display:contents}
 .interna h1{grid-row:1 / span 2;grid-column:1;font-size:200px;margin:0}
 .interna .intro p,.interna .intro>div{grid-column:2}
+.pagina-hero.interna.elenco-tecnici{grid-template-columns:1fr 480px}
 }
 .invito{margin:96px var(--margine) 6px;min-height:300px;padding:36px 40px}
 .invito .frase{max-width:520px;font-size:22px}
