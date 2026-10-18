@@ -2665,6 +2665,9 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
   .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; }
   .sg-riga-movimento > :not(:first-child):not(:nth-child(3)):not(:last-child) { display: none; }
+  /* Senza casella (un incasso, un annullato) niente fascia vuota a sinistra. */
+  .sg-riga-movimento[data-senza-casella='true'] { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-movimento[data-senza-casella='true'] > :first-child { display: none; }
   .sg-solo-telefono { display: inline; }
   .sg-lista-testa.sg-riga-movimento { display: none; }
   .sg-riga-pagamento-tab > :not(:nth-child(2)):not(:last-child), .sg-riga-residuo > :not(:first-child):not(:nth-child(5)) { display: none; }

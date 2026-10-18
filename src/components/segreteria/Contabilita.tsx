@@ -310,7 +310,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
       ) : (
         <div role="table" aria-label="Movimenti" className="sg-tabella">
           <div role="row" className="sg-lista-testa sg-riga-movimento">
-            <span role="columnheader" className="vh">Scelta</span>
+            <span role="columnheader" aria-label="Scelta" />
             <span role="columnheader" className="sg-etichetta">DATA</span>
             <span role="columnheader" className="sg-etichetta">DESCRIZIONE</span>
             <span role="columnheader" className="sg-etichetta">VOCE</span>
@@ -324,7 +324,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
               </p>
             )}
             {trovate.slice(0, viste).map((r) => (
-              <div key={r.id} role="row" className="sg-riga-movimento sg-iscritto" data-spento={r.annullato} data-scelto={aperto?.id === r.id} data-scelta={scelti.has(r.id)} onClick={() => { setScrivo(null); setAperto(r) }}>
+              <div key={r.id} role="row" className="sg-riga-movimento sg-iscritto" data-spento={r.annullato} data-scelto={aperto?.id === r.id} data-scelta={scelti.has(r.id)} data-senza-casella={!cambiabile(r)} onClick={() => { setScrivo(null); setAperto(r) }}>
                 <span role="cell" className="sg-scelta-riga" onClick={(e) => e.stopPropagation()}>
                   {cambiabile(r) && <input type="checkbox" checked={scelti.has(r.id)} onChange={() => alterna(r.id)} aria-label={`Scegli ${r.descrizione} del ${dataRicevuta(r.data)}`} />}
                 </span>
@@ -659,7 +659,7 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
   const dettaglio: Array<[string, string]> = [
     ['DATA', dataRicevuta(riga.data)],
     ['TIPO', riga.tipo === 'giroconto' ? 'GIROCONTO' : riga.tipo === 'entrata' ? 'ENTRATA' : 'USCITA'],
-    ['VOCE', riga.voce ?? '—'],
+    ...(cambiabile(riga) ? [] : ([['VOCE', riga.voce ?? '—']] as Array<[string, string]>)),
     ['CASSA', riga.tipo === 'giroconto' ? `${cassa} → ${cassaA}` : cassa],
     ['IMPORTO', soldi(riga.importo)],
   ]
