@@ -122,7 +122,7 @@ function Allega({ f, id }: { f: ReturnType<typeof useFile>; id: string }) {
     <div className="stack" style={{ gap: 6 }}>
       <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <button type="button" className="sg-btn sg-btn-linea" disabled={pieno} onClick={() => sel.current?.click()} aria-describedby={`${id}-avviso`}>
-          ALLEGA UN FILE
+          Allega un file
         </button>
         <input ref={sel} id={id} type="file" className="vh" tabIndex={-1} accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf" multiple onChange={scegli} />
         <span className="sg-nota">{pieno ? `Basta file: al massimo ${MAX_ALLEGATI}, toglierne uno per aggiungerne un altro.` : 'Oppure incolla uno screenshot nel testo.'}</span>
@@ -142,7 +142,7 @@ function Allega({ f, id }: { f: ReturnType<typeof useFile>; id: string }) {
             {x.name}
           </span>
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => f.togli(i)} aria-label={`Non allegare ${x.name}`}>
-            TOGLI
+            Togli
           </button>
         </span>
       ))}
@@ -169,7 +169,7 @@ function RigaAllegato({ a, d, fai, poi, lavora }: { a: Allegato; d: DatiSegreter
   }, [d, a.id, immagine, tentativi])
   const apri = () => void fai(async () => void window.open(await d.linkAllegato(a.id), '_blank', 'noopener'))
   const togli = async () => {
-    if (!(await chiedi(`Togliere «${a.nome}»? Non si torna indietro.`, 'SÌ, TOGLILO', { pericolo: true }))) return
+    if (!(await chiedi(`Togliere «${a.nome}»? Non si torna indietro.`, 'Sì, toglilo', { pericolo: true }))) return
     void fai(() => d.togliAllegato(a.id), 'Allegato tolto', poi)
   }
   return (
@@ -180,11 +180,11 @@ function RigaAllegato({ a, d, fai, poi, lavora }: { a: Allegato; d: DatiSegreter
         {a.nome}
       </span>
       <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={apri} aria-label={`Apri ${a.nome}`}>
-        APRI
+        Apri
       </button>
       {a.mio && (
         <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={togli} aria-label={`Togli ${a.nome}`}>
-          TOGLI
+          Togli
         </button>
       )}
     </span>
@@ -267,7 +267,7 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
     svuota()
     if (t.trim() || x.trim() || c)
       avvisa('Segnalazione buttata via', false, {
-        etichetta: 'RIPRENDI',
+        etichetta: 'Riprendi',
         fa: () => {
           setTitolo(t)
           setTesto(x)
@@ -302,11 +302,11 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
         sotto={`${aperte === 1 ? 'Una aperta' : aperte ? `${aperte} aperte` : 'Nessuna aperta'}${daRispondere ? `, ${daRispondere === 1 ? 'una aspetta' : `${daRispondere} aspettano`} una risposta` : ''}.`}
       >
         <button type="button" className="num sg-chip sg-chip-dopo" aria-pressed={chiuse} onClick={() => setChiuse(!chiuse)}>
-          ANCHE LE CHIUSE
+          Anche le chiuse
         </button>
         {/* Col modulo aperto passa da pieno a linea: si vede che è già premuto. */}
         <button type="button" className={`sg-btn ${nuova ? 'sg-btn-linea' : 'sg-btn-pieno'}`} onClick={() => setNuova(!nuova)} aria-expanded={nuova}>
-          NUOVA SEGNALAZIONE
+          Nuova segnalazione
         </button>
       </Testa>
 
@@ -371,10 +371,10 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
           )}
           <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
             <button type="submit" className="sg-btn sg-btn-verde" disabled={!pronto} aria-describedby={motivo ? 'sz-motivo' : undefined}>
-              MANDA
+              Manda
             </button>
             <button type="button" className="sg-btn sg-btn-linea" onClick={lasciaStare}>
-              LASCIA STARE
+              Lascia stare
             </button>
           </div>
         </form>
@@ -459,7 +459,7 @@ function Filo({
     setRisposta('')
     // Una chiusa in vista solo per la bozza non sparisce sotto il dito: resta come le appena chiuse.
     onTieni()
-    avvisa('Risposta buttata via', false, { etichetta: 'RIPRENDI', fa: () => (setRisposta(vecchia), avvisa('Risposta ripresa')) })
+    avvisa('Risposta buttata via', false, { etichetta: 'Riprendi', fa: () => (setRisposta(vecchia), avvisa('Risposta ripresa')) })
     testa.current?.focus()
   }
   // Chiude senza buttare la risposta scritta (vedi `chiudiConRisposta`). Il
@@ -475,7 +475,7 @@ function Filo({
       async () => {
         if (esito.mandata) setRisposta('')
         if (esito.chiusa) onTieni()
-        avvisa(avvisoChiusura(esito), !esito.chiusa, esito.chiusa ? { etichetta: 'RIAPRI', fa: riapri } : undefined)
+        avvisa(avvisoChiusura(esito), !esito.chiusa, esito.chiusa ? { etichetta: 'Riapri', fa: riapri } : undefined)
         await poi()
         testa.current?.focus()
       },
@@ -491,14 +491,14 @@ function Filo({
         </span>
         {s.categoria && <span className="num sg-tag">{nomeCategoria(s.categoria)}</span>}
         {/* Una risposta scritta e non mandata si vede anche a filo chiuso a fisarmonica. */}
-        {risposta.trim() && !aperto && <span className="num sg-tag">BOZZA</span>}
-        {s.messaggi.some((m) => m.allegati?.length) && <span className="num sg-tag">ALLEGATO</span>}
+        {risposta.trim() && !aperto && <span className="num sg-tag">Bozza</span>}
+        {s.messaggi.some((m) => m.allegati?.length) && <span className="num sg-tag">Allegato</span>}
         {s.chiusaIl ? (
-          <span className="num sg-tag">CHIUSA</span>
+          <span className="num sg-tag">Chiusa</span>
         ) : (
           tocca(s) && (
             <span className="num sg-tag" data-tipo="aspetta">
-              DA RISPONDERE
+              Da rispondere
             </span>
           )
         )}
@@ -565,7 +565,7 @@ function Filo({
               )}
               <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 <button type="submit" className="sg-btn sg-btn-verde" disabled={!pronta} aria-describedby={motivo ? `sz-r-${s.id}-motivo` : undefined}>
-                  RISPONDI
+                  Rispondi
                 </button>
                 <button type="button" className="sg-btn sg-btn-linea" disabled={lavora || !!rispostaLunga} onClick={chiudi}>
                   {/* I due nomi occupano lo stesso posto: cambiando non spostano il tasto accanto. */}
@@ -578,7 +578,7 @@ function Filo({
                   </span>
                 </button>
                 <a className="sg-btn sg-btn-linea" href={avvisoWhatsApp(s)} target="_blank" rel="noreferrer">
-                  AVVISA SU WHATSAPP
+                  Avvisa su WhatsApp
                 </a>
               </div>
             </form>
@@ -594,11 +594,11 @@ function Filo({
               )}
               <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
                 <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={riapri}>
-                  RIAPRI
+                  Riapri
                 </button>
                 {risposta.trim() && (
                   <button type="button" className="sg-btn sg-btn-linea" onClick={buttaVia}>
-                    BUTTA VIA
+                    Butta via
                   </button>
                 )}
               </div>

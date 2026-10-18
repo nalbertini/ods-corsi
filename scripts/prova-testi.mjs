@@ -12,7 +12,9 @@
 import { readFileSync } from 'node:fs'
 
 const D = 'src/components/segreteria/'
-const FILE = ['Settimana', 'CalendarioSettimana', 'Presenze', 'PresenzeIstruttori', 'PresenzeSegnalate', 'Richieste', 'Corsi', 'Tessere', 'Listino', 'Pagamenti', 'PagamentoAperto', 'Ricevute'].map((f) => `${D}${f}.tsx`)
+const FILE = ['Settimana', 'CalendarioSettimana', 'Presenze', 'PresenzeIstruttori', 'PresenzeSegnalate', 'Richieste', 'Corsi', 'Tessere', 'Listino', 'Pagamenti', 'PagamentoAperto', 'Ricevute', 'Contabilita', 'Vestiario', 'Importa', 'Iscritti', 'Sito', 'EditorTesto', 'ImmaginiSito', 'Statistiche', 'Segnalazioni', 'TimerPalestra', 'Personale', 'Regole', 'Segreteria', 'CosaManca', 'comune', 'DaFare', 'CercaIscritto', 'FiltroRicerca'].map((f) => `${D}${f}.tsx`)
+// Parole che restano maiuscole per scelta, per file: il tasto MENU/CHIUDI della barra del telefono e il bollino DATI DI PROVA (una sigla di stato).
+const ECCEZIONI = { Segreteria: ['MENU', 'CHIUDI', 'DATI', 'PROVA'] }
 const SIGLE = new Set(['CSV', 'PDF', 'PIN', 'RASD', 'IBAN', 'FIJLKAM', 'FIPE'])
 
 // Fine di un tag aperto che comincia in i: salta {…} e apici (c'è «=>» negli attributi).
@@ -102,9 +104,15 @@ ok('l\'altra etichetta di una conferma e l\'azione di un avviso', trovaMaiuscole
 ok('iniziale maiuscola e sigle vanno bene', trovaMaiuscole('<button>Segna tutti</button><span className="sg-chip">CSV</span><button>Apri PDF</button>'), [])
 ok('il testo fuori dai tasti non conta', trovaMaiuscole('<p>ATTENZIONE</p> chiedi(`Togli?`, \'Togli\', {})'), [])
 
+// Il tasto di conferma comincia con la maiuscola («Sì, annulla…»), non con «sì, annulla…».
+export const conferme = (src) => etichetteChiedi(src).map((t) => t.trim()).filter((t) => /^\p{Ll}/u.test(t))
+ok('una conferma che comincia minuscola si vede', conferme("chiedi(`Togli?`, 'togli il giorno', {})"), ['togli il giorno'])
+ok('una conferma con la maiuscola va bene', conferme("chiedi(`Togli?`, 'Sì, togli', {})"), [])
+
 if (process.argv[1]?.endsWith('prova-testi.mjs')) {
   console.log('\nI testi dei file controllati')
-  for (const f of FILE) ok(`${f.replace(D, '')}: nessuna parola tutta maiuscola`, trovaMaiuscole(readFileSync(f, 'utf8')), [])
+  for (const f of FILE) ok(`${f.replace(D, '')}: nessuna parola tutta maiuscola`, trovaMaiuscole(readFileSync(f, 'utf8')).filter((w) => !(ECCEZIONI[f.replace(D, '').replace('.tsx', '')] ?? []).includes(w)), [])
+  for (const f of FILE) ok(`${f.replace(D, '')}: i tasti di conferma cominciano con la maiuscola`, conferme(readFileSync(f, 'utf8')), [])
   console.log(guai ? `\n${guai} da sistemare` : '\ntutto a posto')
   process.exit(guai ? 1 : 0)
 }

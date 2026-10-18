@@ -147,7 +147,7 @@ export function motivoSpento(o: { titolo?: string; testo: string; lavora: boolea
 export const segnapostoTesto = (c?: Categoria) => (c === 'idea' ? 'Cosa servirebbe, e per fare cosa' : 'Dove, cosa hai fatto, cosa ti aspettavi')
 
 /** Come si chiama una categoria nell'app: l'etichetta e la scelta del modulo. */
-export const nomeCategoria = (c: Categoria) => (c === 'idea' ? 'IDEA' : 'CORREZIONE')
+export const nomeCategoria = (c: Categoria) => (c === 'idea' ? 'Idea' : 'Correzione')
 
 /** Come la si dice in una frase: «un'idea», «sull'idea». */
 const PAROLE: Record<Categoria, { una: string; sulla: string }> = {

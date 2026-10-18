@@ -17,7 +17,7 @@ medie: si conta a parte.
   dell'anno sportivo. Si parte sempre dal primo del mese, così ogni colonna è
   un mese intero; il mese in corso è tratteggiato, perché non è finito;
 - **Tutti i corsi**, o un corso solo: vale per tutto, tranne gli incassi;
-- **SCARICA CSV** — una riga per lezione, con iscritti, presenti, assenti,
+- **Scarica CSV** — una riga per lezione, con iscritti, presenti, assenti,
   giustificati e prove, da aprire con Excel.
 
 ## I quattro numeri
@@ -50,7 +50,7 @@ medie: si conta a parte.
   tutti e due.
 - **IN REGOLA OGGI** — il certificato medico e il pagamento di chi è
   iscritto oggi; chi ha meno di 6 anni non ha l'obbligo del certificato e non
-  si conta. **CHI NON È IN REGOLA** apre [Iscritti](iscritti.md) già filtrato su chi ha il certificato o la quota da sistemare.
+  si conta. **Chi non è in regola** apre [Iscritti](iscritti.md) già filtrato su chi ha il certificato o la quota da sistemare.
 - **PROVE MESE PER MESE** — quante persone sono venute a provare, ognuna
   contata una volta, nel mese della sua prima prova (chi fa la settimana di
   prova non conta tre volte). Col mouse sopra dice anche le lezioni di prova

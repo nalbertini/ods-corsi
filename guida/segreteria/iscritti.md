@@ -27,7 +27,7 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
 - **Da pagare** — chi è attivo e non ha la quota associativa pagata: nessuna ricevuta
   con la quota, pagata solo in parte, o scaduta.
 - **Non in regola** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
-  anche dal bottone **CHI NON È IN REGOLA** delle [Statistiche](statistiche.md).
+  anche dal bottone **Chi non è in regola** delle [Statistiche](statistiche.md).
 - **Senza tessera** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([TESSERE](tessere.md)).
 - **Senza documento** — chi non ha ancora la copia del documento d'identità in
   segreteria.
@@ -44,10 +44,10 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   vedono nascita, codice fiscale, contatto e corsi. Con nome e cognome
   scambiati, in UNISCI… guardate quale nome resta (**TIENI L'ALTRA** se è
   quello al contrario): **UNISCI…** apre la
-  prima scheda con l'unione già pronta sull'altra; **NON SONO DOPPIONI** la
-  toglie dall'elenco (due omonimi veri). Toccato per sbaglio: **ANNULLA**
+  prima scheda con l'unione già pronta sull'altra; **Non sono doppioni** la
+  toglie dall'elenco (due omonimi veri). Toccato per sbaglio: **Annulla**
   nell'avviso, subito dopo; o, più tardi, nella scheda di una delle due,
-  sezione **NON SONO DOPPIONI** → **TOGLI** accanto all'altra.
+  sezione **Non sono doppioni** → **Togli** accanto all'altra.
 
 La colonna **IN REGOLA?** dice in un colpo d'occhio cosa manca: in verde
 **In regola** se certificato, quota e tessera sono a posto (**Fuori app**, in grigio,
@@ -73,7 +73,7 @@ manca tutto c'è scritto «nessun contatto».
 ## Nuovo iscritto
 
 **+ Nuovo iscritto** → nome, cognome, email, email di contatto e telefono
-(facoltativi), **ISCRIVI A** un corso → **SALVA**.
+(facoltativi), **ISCRIVI A** un corso → **Salva**.
 
 Le email sono due, e servono a cose diverse:
 
@@ -108,7 +108,7 @@ giallo, **SERVE DAL 14/10/2026**, sotto **FRA 14 GIORNI**. Senza certificato e s
 **DOCUMENTO D'IDENTITÀ** più piccolo, perché non serve per entrare. Un clic su
 un timbro porta alla sua parte della scheda. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
-**RIATTIVA**.
+**Riattiva**.
 
 In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
 **CARICA IL CERTIFICATO**, **CARICA IL NUOVO**, **CARICA IL FILE** o
@@ -116,14 +116,14 @@ In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
 certificato in scadenza. Sotto i 6 anni il tasto del certificato non è quello in evidenza. Se è tutto a posto, **+ REGISTRA UN PAGAMENTO**. Se la
 scheda è disattivata, nessuno.
 
-- **MODIFICA** — nome, cognome, email, email di contatto, telefono. Chi ha lo
+- **Modifica** — nome, cognome, email, email di contatto, telefono. Chi ha lo
   stesso contatto di altri vede in lettura **STESSO CONTATTO DI** con i loro
   nomi: sono parenti, non doppioni.
 - **DATI ANAGRAFICI** — nascita, codice fiscale, residenza e, per un minore,
   il genitore. Vengono dal modulo di iscrizione dell'app o dall'import delle
   risposte del modulo Google, e accanto al titolo c'è scritto da dove. Sono
-  quelli che una ricevuta nuova prende da sola. **MODIFICA** (o **AGGIUNGI**,
-  se non ce ne sono) → si correggono → **SALVA**: da lì valgono i nuovi, e un reimport
+  quelli che una ricevuta nuova prende da sola. **Modifica** (o **Aggiungi**,
+  se non ce ne sono) → si correggono → **Salva**: da lì valgono i nuovi, e un reimport
   delle risposte del modulo non li cambia (riempie solo i campi vuoti). Una
   ricevuta nuova parte dai dati dell'ultima ricevuta, e quel che lì è vuoto
   (per esempio il codice fiscale) lo prende da qui; quelle già fatte restano
@@ -136,19 +136,19 @@ scheda è disattivata, nessuno.
   vuoto; se il CAP è di più comuni, sotto compaiono i comuni da toccare o una
   tendina. Un comune già scritto non si tocca, e si corregge sempre a mano.
 - **CERTIFICATO MEDICO** — il file e fino a quando vale. Il file sta
-  nell'app e lo vede **solo la segreteria**: **APRI** lo apre con un link che
+  nell'app e lo vede **solo la segreteria**: **Apri** lo apre con un link che
   dura 10 minuti (se scade, si riapre con APRI), e nessun altro, né un
   istruttore né l'iscritto, sa nemmeno se c'è. In cima il bollino dice com'è:
   **MANCA**, **VALIDO**, **IN SCADENZA**, **SCADUTO**, e sotto una frase con
   la data. La data la scrive la segreteria leggendo il foglio.
   Per caricarlo, un gesto solo: **CARICA IL CERTIFICATO** (o **SOSTITUISCI**
-  se c'è già) → **SCEGLI** il file, una foto o un PDF fino a 10 MB → la data
-  in **VALIDO FINO AL** → **SALVA**, che resta spento finché non c'è la data e
+  se c'è già) → **Scegli** il file, una foto o un PDF fino a 10 MB → la data
+  in **VALIDO FINO AL** → **Salva**, che resta spento finché non c'è la data e
   qualcosa da salvare: un file scelto, o una data diversa da quella in scheda. Il file nuovo prende il posto del vecchio, che si cancella (la scheda
-  lo avvisa prima): per ogni persona c'è un file solo. **LASCIA STARE** non
+  lo avvisa prima): per ogni persona c'è un file solo. **Lascia stare** non
   cambia niente. Se il file è arrivato col modulo di iscrizione, c'è già ma
-  senza data: **SCRIVI LA DATA** → **SALVA**, senza scegliere un altro file.
-  **TOGLI IL CERTIFICATO** toglie file e data. Una data più di tre anni avanti
+  senza data: **SCRIVI LA DATA** → **Salva**, senza scegliere un altro file.
+  **Togli il certificato** toglie file e data. Una data più di tre anni avanti
   non si salva («La data è troppo lontana: controlla l'anno»), e con una
   scadenza di più di 30 giorni fa l'app avvisa che il file verrà cancellato
   subito. Una scheda disattivata non offre né SOSTITUISCI né TOGLI IL
@@ -161,12 +161,12 @@ scheda è disattivata, nessuno.
   il bollino dice **NON SERVE**, e chi ha meno di 6 anni non conta fra chi è
   senza certificato valido.
 - **Un certificato non archiviato** (file caricato quando il certificato
-  stava su carta) si apre con **APRI** come gli altri, e la scheda lo dice in
+  stava su carta) si apre con **Apri** come gli altri, e la scheda lo dice in
   giallo; in elenco c'è **Non archiviato** accanto al nome (il filtro
   **Non archiviato** li mostra tutti, finché ce ne sono). Si cancella
-  da solo come gli altri, o con **TOGLI IL CERTIFICATO**.
+  da solo come gli altri, o con **Togli il certificato**.
 - **DOCUMENTO D'IDENTITÀ** — se la copia è in segreteria, su carta (per un
-  minore, quella del genitore). **LA COPIA È IN SEGRETERIA** lo segna, **LA
+  minore, quella del genitore). **La copia è in segreteria** lo segna, **LA
   COPIA NON C'È PIÙ** lo toglie. **Senza documento**, sotto «Altri filtri», mostra chi non ce
   l'ha ancora.
 - **QUOTA** — se ha pagato lo dicono le ricevute: **PAGATA** se c'è una
@@ -179,15 +179,15 @@ scheda è disattivata, nessuno.
   Per chi ha pagato la quota fuori dall'app (prima dell'app, con una ricevuta
   di carta) c'è **PAGATA SENZA RICEVUTA DELL'APP**: **VALE FINO AL** (di
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
-  PAGATA**. In elenco si vede **Fuori app** e nella scheda **FUORI APP**; alla sua data
+  PAGATA**. In elenco si vede **Fuori app** e nella scheda **Fuori app**; alla sua data
   scade da sola, e **Togli «pagata fuori dall'app»** la toglie prima.
 - **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima **PAGATO**, **MANCA** e **QUOTA**; poi ogni ricevuta con i suoi pagamenti sotto, e dopo **SENZA RICEVUTA** quelli registrati a mano. Quelli di tutti sono in [PAGAMENTI](pagamenti.md).
-- **ISCRIZIONI** — i corsi che fa. **TERMINA** la toglie da un corso: da
+- **ISCRIZIONI** — i corsi che fa. **Termina** la toglie da un corso: da
   domani non è più nell'appello, il registro resta. «Iscrivi a un corso…» +
-  **ISCRIVI** la aggiunge a un altro.
+  **Iscrivi** la aggiunge a un altro.
 - **ULTIME 12 LEZIONI** — presente o assente, lezione per lezione: ✓ presente, ✕ assente, G giustificato, vuoto non segnato.
-- **DISATTIVA** — sparisce da tutti gli appelli e dal tablet (chi smette del
-  tutto). **RIATTIVA** la rimette.
+- **Disattiva** — sparisce da tutti gli appelli e dal tablet (chi smette del
+  tutto). **Riattiva** la rimette.
 - **UNISCI…** — due schede della stessa persona diventano una: succede
   quando all'appello qualcuno non ritrova chi è già venuto a provare e lo
   aggiunge di nuovo. Scegliete l'altra scheda (in cima chi ha lo stesso
@@ -212,7 +212,7 @@ scheda è disattivata, nessuno.
 
 ## Le tessere
 
-Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a quando vale (**FIJLKAM · agonista · fino al 31 dicembre 2026**), il numero, se viene dal RASD o è scritta a mano, e se è **IN REGOLA**, **SCADE A DICEMBRE** o **SCADUTA**. Senza tessera la scheda dice se il corso la chiede. **+ AGGIUNGI UNA TESSERA** serve per chi non è nel foglio del RASD; **TOGLI** la toglie, dopo una conferma, e **ANNULLA** nell'avviso la rimette com'era. In cima alla scheda c'è anche il timbro **TESSERA** (solo per chi ha un corso che la chiede). Le tessere del RASD non si cambiano: si rifà l'import ([Tessere](tessere.md)).
+Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a quando vale (**FIJLKAM · agonista · fino al 31 dicembre 2026**), il numero, se viene dal RASD o è scritta a mano, e se è **IN REGOLA**, **SCADE A DICEMBRE** o **SCADUTA**. Senza tessera la scheda dice se il corso la chiede. **+ AGGIUNGI UNA TESSERA** serve per chi non è nel foglio del RASD; **Togli** la toglie, dopo una conferma, e **Annulla** nell'avviso la rimette com'era. In cima alla scheda c'è anche il timbro **TESSERA** (solo per chi ha un corso che la chiede). Le tessere del RASD non si cambiano: si rifà l'import ([Tessere](tessere.md)).
 
 ## Un pagamento e la sua ricevuta
 
@@ -316,10 +316,10 @@ gli altri vedono solo sé stessi. Toccando un nome si apre la sua scheda.
 
 - **Aggiungi al nucleo**, dalla scheda del titolare o di chi non è in un
   nucleo: si sceglie la persona (prima chi ha lo stesso cognome) e
-  **AGGIUNGI**. Chi non era in un nucleo ne diventa titolare.
-- **TITOLARE**, accanto a una persona del nucleo: il nucleo passa a lei, e
+  **Aggiungi**. Chi non era in un nucleo ne diventa titolare.
+- **Titolare**, accanto a una persona del nucleo: il nucleo passa a lei, e
   il titolare di prima ci resta dentro.
-- **TOGLI**: la persona esce dal nucleo e resta iscritta.
+- **Togli**: la persona esce dal nucleo e resta iscritta.
 
 Il nucleo è uno solo: chi è già nel nucleo di un altro, o ne ha uno suo con
 altri dentro, va prima tolto. Le richieste aggiunte da un titolare dalla sua

@@ -77,7 +77,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
 
   const salva = () => fai(salvata, 'Bozza salvata. Il sito non è cambiato: serve PUBBLICA', ricarica)
   const pubblica = async () => {
-    if (!(await chiedi(`Pubblicare «${titolo.trim() || pagina.titolo}»? Il sito mostrerà il testo nuovo al prossimo aggiornamento.`, 'PUBBLICA'))) return
+    if (!(await chiedi(`Pubblicare «${titolo.trim() || pagina.titolo}»? Il sito mostrerà il testo nuovo al prossimo aggiornamento.`, 'Pubblica'))) return
     await fai(
       async () => {
         const versione = sporca ? await salvata() : pagina.versione
@@ -98,7 +98,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
   const portaAiPezzi = async () => {
     const no = cosaNonVaPortare(pagina.bozza)
     if (no) return avvisa(no, true)
-    if (!(await chiedi(`Portare «${pagina.titolo}» ai pezzi? Non si torna più al vecchio editor di testo. Il testo resta com’è e il sito non cambia finché non pubblichi.`, 'PORTA AI PEZZI', { no: 'LASCIA STARE' }))) return
+    if (!(await chiedi(`Portare «${pagina.titolo}» ai pezzi? Non si torna più al vecchio editor di testo. Il testo resta com’è e il sito non cambia finché non pubblichi.`, 'Porta ai pezzi', { no: 'Lascia stare' }))) return
     const nuovi = htmlInPezzi(pagina.bozza)
     await fai(
       async () => {
@@ -111,11 +111,11 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
   }
   const cambiaSlug = () => fai(() => d.cambiaIndirizzoSito(pagina.id, slug), 'Indirizzo cambiato', ricarica)
   const nascondi = async () => {
-    if (!pagina.nascosta && !(await chiedi(`Nascondere «${pagina.titolo}»? Sparisce dal sito alla prossima pubblicazione, ma resta qui.`, 'NASCONDI', { pericolo: true }))) return
+    if (!pagina.nascosta && !(await chiedi(`Nascondere «${pagina.titolo}»? Sparisce dal sito alla prossima pubblicazione, ma resta qui.`, 'Nascondi', { pericolo: true }))) return
     await fai(() => d.nascondiPaginaSito(pagina.id, !pagina.nascosta), pagina.nascosta ? 'Di nuovo sul sito' : 'Nascosta', ricarica)
   }
   const cancella = async () => {
-    if (!(await chiedi(`Cancellare «${pagina.titolo}»? Non si può rimettere.`, 'CANCELLA LA PAGINA', { pericolo: true }))) return
+    if (!(await chiedi(`Cancellare «${pagina.titolo}»? Non si può rimettere.`, 'Cancella la pagina', { pericolo: true }))) return
     await fai(() => d.cancellaPaginaSito(pagina.id), 'Pagina cancellata', async () => {
       await ricarica()
       onChiudi()
@@ -125,20 +125,20 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
   return (
     <>
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-        <button type="button" className="sg-btn sg-btn-linea" onClick={async () => { if (sporca && !(await chiedi('Ci sono modifiche non salvate. Se torni alle pagine si perdono.', 'TORNA ALLE PAGINE', { no: 'RESTA QUI', restare: true }))) return; onChiudi() }}>
-          ‹ TUTTE LE PAGINE
+        <button type="button" className="sg-btn sg-btn-linea" onClick={async () => { if (sporca && !(await chiedi('Ci sono modifiche non salvate. Se torni alle pagine si perdono.', 'Torna alle pagine', { no: 'Resta qui', restare: true }))) return; onChiudi() }}>
+          ‹ Tutte le pagine
         </button>
         <Stato p={pagina} />
-        {sporca && <span className="sg-tag" data-tipo="presto">DA SALVARE</span>}
+        {sporca && <span className="sg-tag" data-tipo="presto">Da salvare</span>}
         <span className="grow" />
         <button type="button" className="sg-btn sg-btn-verde" disabled={lavora || !!noTitolo || !!noSlug || !!noTesto || conteggio(titolo, LIMITE_TITOLO).troppo} onClick={() => void pubblica()}>
-          PUBBLICA
+          Pubblica
         </button>
         <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || !sporca || !!noTitolo || !!noTesto} onClick={() => void salva()}>
-          SALVA BOZZA
+          Salva bozza
         </button>
         <button type="button" className="sg-btn sg-btn-linea" aria-pressed={anteprima} onClick={() => setAnteprima((x) => !x)}>
-          {anteprima ? 'TORNA A SCRIVERE' : 'ANTEPRIMA'}
+          {anteprima ? 'Torna a scrivere' : 'Anteprima'}
         </button>
       </div>
 
@@ -172,14 +172,14 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
           </Campo>
           {slug !== pagina.slug && (
             <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || !!noSlug} onClick={() => void cambiaSlug()}>
-              CAMBIA INDIRIZZO
+              Cambia indirizzo
             </button>
           )}
           {portabileAiPezzi(pagina) && (
             <div className="stack" style={{ gap: 10, paddingTop: 8, borderTop: '2px solid var(--line)' }}>
               <Titoletto>EDITOR A PEZZI</Titoletto>
               <button type="button" className="sg-btn sg-btn-linea" disabled={lavora || sporca} onClick={() => void portaAiPezzi()}>
-                PORTA AI PEZZI
+                Porta ai pezzi
               </button>
               <span className="sg-sotto">{sporca ? 'Salva la bozza prima di passare ai pezzi.' : 'Il testo resta com’è: lo trovi in foto, testo e colonne da trascinare. Sul sito non cambia niente finché non pubblichi.'}</span>
             </div>
@@ -190,10 +190,10 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
             ) : (
               <>
                 <button type="button" className="sg-btn sg-btn-tratteggio" disabled={lavora} onClick={() => void nascondi()}>
-                  {pagina.nascosta ? 'MOSTRA SUL SITO' : 'NASCONDI DAL SITO'}
+                  {pagina.nascosta ? 'Mostra sul sito' : 'Nascondi dal sito'}
                 </button>
                 <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void cancella()}>
-                  CANCELLA LA PAGINA
+                  Cancella la pagina
                 </button>
               </>
             )}
@@ -232,10 +232,10 @@ function NuovaPagina({ d, altri, aPezzi, finita }: { d: DatiSegreteria; altri: s
       </Campo>
       <div className="row" style={{ gap: 8 }}>
         <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || !titolo.trim() || !!no} onClick={() => void crea()}>
-          CREA LA PAGINA
+          Crea la pagina
         </button>
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => finita()}>
-          ANNULLA
+          Annulla
         </button>
       </div>
       {avviso}
@@ -281,16 +281,16 @@ function ElencoVoci({ d, dove, titolo, voci, pagine, ricarica }: { d: DatiSegret
             <button type="button" className="sg-chip num sito-sposta" aria-label={`Sposta su «${v.etichetta}»`} disabled={i === 0} onClick={() => setModifica((m) => spostaVoce(m, i, i - 1))}>↑</button>
             <button type="button" className="sg-chip num sito-sposta" aria-label={`Sposta giù «${v.etichetta}»`} disabled={i === modifica.length - 1} onClick={() => setModifica((m) => spostaVoce(m, i, i + 1))}>↓</button>
             {diLegge(v) ? (
-              <span className="sg-tag">DI LEGGE</span>
+              <span className="sg-tag">Di legge</span>
             ) : (
-              <button type="button" className="sg-chip num" onClick={() => setModifica((m) => m.filter((_, j) => j !== i))}>TOGLI</button>
+              <button type="button" className="sg-chip num" onClick={() => setModifica((m) => m.filter((_, j) => j !== i))}>Togli</button>
             )}
           </li>
         ))}
       </ul>
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
         <button type="button" className="sg-btn sg-btn-tratteggio" onClick={() => setModifica((m) => [...m, { etichetta: '', paginaId: pagine[0]?.id ?? null, indirizzo: pagine[0] ? null : '' }])}>
-          + AGGIUNGI UNA VOCE
+          + Aggiungi una voce
         </button>
       </div>
       {problemi.length > 0 && (
@@ -300,8 +300,8 @@ function ElencoVoci({ d, dove, titolo, voci, pagine, ricarica }: { d: DatiSegret
       )}
       {cambiata && (
         <div className="row" style={{ gap: 8 }}>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => setModifica(voci)}>BUTTA I CAMBI</button>
-          <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || problemi.length > 0} onClick={() => void fai(() => d.salvaMenuSito(dove, modifica.map((v) => ({ ...v, etichetta: v.etichetta.trim() }))), `${titolo} salvato`, ricarica)}>SALVA</button>
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => setModifica(voci)}>Butta i cambi</button>
+          <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || problemi.length > 0} onClick={() => void fai(() => d.salvaMenuSito(dove, modifica.map((v) => ({ ...v, etichetta: v.etichetta.trim() }))), `${titolo} salvato`, ricarica)}>Salva</button>
         </div>
       )}
       {avviso}
@@ -343,7 +343,7 @@ export function Sito({ d }: { d: DatiSegreteria }) {
       <Testa titolo={lei ? lei.titolo.toUpperCase() : 'SITO'} sotto={lei ? 'SITO · PAGINE' : 'Le pagine del sito della palestra, il menu, il footer e le immagini'}>
         {!lei && scheda === 'pagine' && aperta !== 'nuova' && (
           <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setAperta('nuova')}>
-            NUOVA PAGINA
+            Nuova pagina
           </button>
         )}
       </Testa>
@@ -353,9 +353,9 @@ export function Sito({ d }: { d: DatiSegreteria }) {
       ) : (
         <>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-            <button type="button" className="sg-chip num" aria-pressed={scheda === 'pagine'} onClick={() => void cambiaScheda('pagine')}>PAGINE</button>
-            <button type="button" className="sg-chip num" aria-pressed={scheda === 'menu'} onClick={() => void cambiaScheda('menu')}>MENU E FOOTER</button>
-            <button type="button" className="sg-chip num" aria-pressed={scheda === 'immagini'} onClick={() => void cambiaScheda('immagini')}>IMMAGINI</button>
+            <button type="button" className="sg-chip num" aria-pressed={scheda === 'pagine'} onClick={() => void cambiaScheda('pagine')}>Pagine</button>
+            <button type="button" className="sg-chip num" aria-pressed={scheda === 'menu'} onClick={() => void cambiaScheda('menu')}>Menu e footer</button>
+            <button type="button" className="sg-chip num" aria-pressed={scheda === 'immagini'} onClick={() => void cambiaScheda('immagini')}>Immagini</button>
           </div>
 
           {scheda === 'pagine' && aperta === 'nuova' && (

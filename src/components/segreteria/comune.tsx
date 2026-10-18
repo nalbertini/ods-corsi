@@ -116,7 +116,7 @@ export interface Domanda {
 let mostra: ((d: Domanda) => void) | null = null
 
 /**
- * Chiede conferma prima di un'azione, col verbo sui tasti: «SÌ, ANNULLA LA
+ * Chiede conferma prima di un'azione, col verbo sui tasti: «Sì, annulla la
  * RICEVUTA» e «No, lascia stare», non OK e Annulla, che su «Annullare la
  * ricevuta?» dicevano il contrario. Il fuoco parte dal no; ESC è no.
  * `pericolo`: quello che non si annulla, col tasto rosso. Serve `<Conferme />`
@@ -269,7 +269,7 @@ export function useAvviso() {
         </>
       ) : (
         <button type="button" className="sg-avviso-chiudi" onClick={() => setTesto(null)}>
-          CHIUDI
+          Chiudi
         </button>
       )}
     </div>

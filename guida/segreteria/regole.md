@@ -17,10 +17,10 @@ segreteria intera: restano su questo dispositivo, come il tema.
 - **L'ASPETTO** — **COME OGGI**, col menu a sinistra, o **IL BANCO**, con la ricerca in
   cima e cinque luoghi ([la guida](il-banco.md)). Cambia subito, senza ricaricare. Sul
   telefono resta sempre il menu di sempre.
-- **LA STRISCIA COSA MANCA** — **MOSTRALA** (com'è all'inizio) o **NASCONDILA**: le cinque
+- **LA STRISCIA COSA MANCA** — **Mostrala** (com'è all'inizio) o **Nascondila**: le cinque
   caselle in cima alle pagine ([guida](README.md#la-striscia-cosa-manca)) spariscono da
   tutte le pagine. **DA FARE** ha sempre gli stessi conti, quindi non si perde niente: ci si
-  torna quando si vuole. Per rimetterla basta **MOSTRALA**.
+  torna quando si vuole. Per rimetterla basta **Mostrala**.
 
 ## La stagione
 
@@ -35,7 +35,7 @@ segreteria intera: restano su questo dispositivo, come il tema.
 - **INIZIO CORSI** e **FINE CORSI** — le date della stagione, facoltative. Con
   la fine, le lezioni si preparano tutte e subito fino a quel giorno (per
   esempio da settembre a fine giugno in un colpo solo), e dopo non ne nascono;
-  prima dell'inizio non ne nascono. **SALVA LE DATE** le salva, toglie le
+  prima dell'inizio non ne nascono. **Salva le date** le salva, toglie le
   lezioni da domani in poi rimaste fuori dalle date, anche annullate o col
   sostituto, e allunga subito il calendario. Restano solo quelle con l'appello
   (almeno una persona segnata) o qualcuno venuto a provare: l'avviso dice quante ne
@@ -47,14 +47,14 @@ segreteria intera: restano su questo dispositivo, come il tema.
 - «Senza la fine dei corsi, genera le lezioni per i prossimi **30 / 60 / 90 /
   180 giorni**» — quanto avanti preparare il calendario quando la fine dei
   corsi non è scritta. Vale dal prossimo rigenera.
-- **RIGENERA ADESSO** — lo allunga subito. Non duplica e non tocca le lezioni
+- **Rigenera adesso** — lo allunga subito. Non duplica e non tocca le lezioni
   che hanno già un appello, anche a cavallo del cambio d'ora.
 
 ## Le sale e i tablet
 
 ### Le sale
 
-L'elenco delle sale con i loro posti: **CAMBIA** per il nome o i posti,
+L'elenco delle sale con i loro posti: **Cambia** per il nome o i posti,
 **AGGIUNGI UNA SALA** per una nuova.
 
 ### Le attività
@@ -64,11 +64,11 @@ la segreteria e **parte vuoto**. Ogni attività si sceglie poi per un giorno di
 un corso (vedi [Corsi](corsi.md)) e il tablet di sala la
 scrive accanto all'orario.
 
-- **AGGIUNGI UN'ATTIVITÀ** per una nuova; **CAMBIA** per il nome: il nome nuovo
+- **AGGIUNGI UN'ATTIVITÀ** per una nuova; **Cambia** per il nome: il nome nuovo
   si vede ovunque, perché è sempre la stessa attività.
-- **NON PIÙ IN USO** la toglie dai menu ma la lascia dov'è già: le lezioni che
-  l'hanno restano com'erano. **RIMETTI IN USO** la riporta nei menu.
-- **ELIMINA** solo per una mai usata. Se è su un giorno o su una lezione, sotto
+- **Non più in uso** la toglie dai menu ma la lascia dov'è già: le lezioni che
+  l'hanno restano com'erano. **Rimetti in uso** la riporta nei menu.
+- **Elimina** solo per una mai usata. Se è su un giorno o su una lezione, sotto
   il nome si legge dove, e cosa fare.
 
 Se compare «Le attività non sono ancora attive sul database», va lanciato
@@ -90,7 +90,7 @@ Le liste che il tablet di sala fa partire dalla sua barra in basso (vedi
 - **la categoria** (Judo, Lotta, Core…; la lista si cura in [ESERCIZI](esercizi.md)),
   o **Tutte** per quelle comuni, o nessuna: sul tablet si filtrano per quella.
 
-**CAMBIA** per correggerla, **TOGLI** per toglierla. Il tablet le rilegge ogni
+**Cambia** per correggerla, **Togli** per toglierla. Il tablet le rilegge ogni
 cinque minuti. Le liste di Spotify suonano solo se sul tablet è collegato un
 account Spotify Premium, dalle impostazioni del timer.
 
@@ -104,14 +104,14 @@ qualunque, e valgono per tutti (vedi [Il tablet di sala](../sala.md#il-timer)).
   mette il dispositivo, non l'app: qui ci sono quelle di questo computer, e
   toccarne una la fa sentire e la sceglie. Il tablet usa la voce con lo
   stesso nome, se ce l'ha, altrimenti la sua prima voce italiana (come con
-  **LA PRIMA ITALIANA DEL TABLET**). Se il tablet ha una voce che il computer
+  **La prima italiana del tablet**). Se il tablet ha una voce che il computer
   non ha, se ne scrive il nome nel campo sotto. Sui tasti i nomi si leggono senza la
   lingua («GRANDMA», non «GRANDMA (ITALIANO (ITALIA))»): sono tutte italiane.
 - **VOCE INCISA** — le frasi del timer registrate con una voce vera: gli
   stati («Lavoro», «Recupero»…), il conto alla rovescia, le battute di
-  Maurizio e i nomi degli esercizi della palestra. **REGISTRA** accende il
-  microfono del computer, **FERMA** salva la clip, che va sul server e arriva
-  a tutti i tablet; **ASCOLTA**, **RIFAI** e **TOGLI** per le altre. Dove
+  Maurizio e i nomi degli esercizi della palestra. **Registra** accende il
+  microfono del computer, **Ferma** salva la clip, che va sul server e arriva
+  a tutti i tablet; **Ascolta**, **Rifai** e **Togli** per le altre. Dove
   manca una clip, il tablet usa la voce di sistema. Il tablet le usa se nelle
   impostazioni del suo timer è acceso **Usa le clip incise**. Conviene
   registrare con lo stesso browser dei tablet: Safari e Chrome registrano in
@@ -130,7 +130,7 @@ andare indietro.
 CAP, comune, codice fiscale e, se c'è, la partita IVA e il numero di iscrizione
 al RASD (il registro delle attività sportive dilettantistiche); e la **DICITURA IN
 FONDO**, quella dell'esenzione da IVA e bollo. Si parte con quelli di Asd Il
-Centro Judo. **SALVA** compare quando si cambia qualcosa, e vale per le
+Centro Judo. **Salva** compare quando si cambia qualcosa, e vale per le
 ricevute che si fanno da lì in poi: quelle già fatte restano come erano. Le
 ricevute si fanno dalla scheda di un iscritto (vedi
 [Iscritti](iscritti.md#un-pagamento-e-la-sua-ricevuta)).
@@ -161,21 +161,21 @@ conferma col numero: «Accorciare a 12 mesi? Il primo del mese si cancellano
 periodo di prima.
 
 Sotto c'è quante presenze sono già scadute. Si cancellano da sé il primo di
-ogni mese, oppure subito con **CANCELLA ORA** (chiede conferma: non si
+ogni mese, oppure subito con **Cancella ora** (chiede conferma: non si
 recuperano). In prova non c'è il giro del primo del mese: si cancellano solo
 con CANCELLA ORA.
 
 ### Il backup
 
 Una copia di tutto il database si fa da sé ogni lunedì notte; **FAI UN BACKUP
-ORA** ne fa una subito, prima di un cambiamento grosso. **SCARICA** prende una
+ORA** ne fa una subito, prima di un cambiamento grosso. **Scarica** prende una
 copia per metterla su Drive: è cifrata, si apre solo con la password del
 backup.
 
 ### Privacy
 
 - **L'informativa** — lo stato dell'informativa privacy che vede chi si
-  iscrive. Finché è una **BOZZA DA APPROVARE**, va letta e fatta propria dalla
+  iscrive. Finché è una **Bozza da approvare**, va letta e fatta propria dalla
   palestra, che è titolare del trattamento.
 - **DATI SANITARI: SOLO IL CERTIFICATO** — il file del certificato medico
   sta nell'app, nella scheda dell'iscritto (vedi [Iscritti](iscritti.md)),
@@ -187,5 +187,5 @@ backup.
   richiesta; per email o WhatsApp, da lì. Patologie, allergie e simili non
   vanno scritte da nessuna parte nell'app, nemmeno nelle note.
 - **ESPORTA I DATI DI UNA PERSONA** — si sceglie chi li ha chiesti e si preme
-  **ESPORTA**: un file con anagrafica, iscrizioni, presenze, la scadenza del certificato (non il file), pagamento e ricevute. È quello che una
+  **Esporta**: un file con anagrafica, iscrizioni, presenze, la scadenza del certificato (non il file), pagamento e ricevute. È quello che una
   persona ha diritto di chiedere.

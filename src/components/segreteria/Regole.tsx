@@ -141,10 +141,10 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
           </span>
           <div role="radiogroup" aria-label="Mostra o nascondi la striscia" className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
             <button type="button" role="radio" aria-checked={strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(true)}>
-              MOSTRALA
+              Mostrala
             </button>
             <button type="button" role="radio" aria-checked={!strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(false)}>
-              NASCONDILA
+              Nascondila
             </button>
           </div>
         </section>
@@ -205,7 +205,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
               )
             }
           >
-            RIGENERA ADESSO
+            Rigenera adesso
           </button>
           <ComeFunziona>
             Prima dell'inizio non nascono lezioni. Le date sono facoltative. SALVA LE DATE toglie le lezioni da domani in poi fuori dalle date, tranne quelle con l’appello o una prova. Rigenerare non duplica e non
@@ -228,7 +228,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
                 <span className="grow" style={{ fontSize: 15, fontWeight: 600 }}>{s.nome}</span>
                 <span className="num" style={{ fontSize: 14, color: 'var(--sec)' }}>{s.capienza ? `${s.capienza} posti` : 'posti non detti'}</span>
                 <button type="button" className="num sg-chip" onClick={() => setSala({ id: s.id, nome: s.nome, capienza: s.capienza })}>
-                  CAMBIA
+                  Cambia
                 </button>
               </div>
             ),
@@ -240,7 +240,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
             })} />
           ) : (
             <button type="button" className="sg-btn sg-btn-tratteggio" onClick={() => setSala({ nome: '' })}>
-              + AGGIUNGI UNA SALA
+              + Aggiungi una sala
             </button>
           )}
         </section>
@@ -299,12 +299,12 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
               className="num sg-chip"
               disabled={!scadute.dato || !imp.dato}
               onClick={async () => {
-                if ((await chiedi(`Cancellare ${scadute.dato === 1 ? '1 presenza più vecchia' : `${scadute.dato} presenze più vecchie`} di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`, 'CANCELLA LE PRESENZE', { pericolo: true }))) {
+                if ((await chiedi(`Cancellare ${scadute.dato === 1 ? '1 presenza più vecchia' : `${scadute.dato} presenze più vecchie`} di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`, 'Cancella le presenze', { pericolo: true }))) {
                   void fai(() => d.pulisci(), 'Presenze scadute cancellate', scadute.ricarica)
                 }
               }}
             >
-              CANCELLA ORA
+              Cancella ora
             </button>
           </div>
           <ComeFunziona>
@@ -319,7 +319,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
           <div className="row" style={{ gap: 10 }}>
             <span className="ob sg-riquadro-titolo grow">PRIVACY</span>
             <span className="num sg-tag" data-tipo={INFORMATIVA && !INFORMATIVA_BOZZA ? undefined : 'manca'} style={{ fontSize: 11, padding: '2px 6px' }}>
-              {!INFORMATIVA ? 'DA FARE PRIMA DI PARTIRE' : INFORMATIVA_BOZZA ? 'BOZZA DA APPROVARE' : 'INFORMATIVA COLLEGATA'}
+              {!INFORMATIVA ? 'Da fare prima di partire' : INFORMATIVA_BOZZA ? 'Bozza da approvare' : 'Informativa collegata'}
             </span>
           </div>
           <div className="stack" style={{ gap: 6 }}>
@@ -370,7 +370,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
                   ))}
               </select>
               <button type="button" className="num sg-chip sg-chip-pieno" disabled={!chi} onClick={() => void fai(esporta, 'File scaricato')}>
-                ESPORTA
+                Esporta
               </button>
             </div>
             <span style={{ fontSize: 13, color: 'var(--dim)', lineHeight: 1.5 }}>
@@ -414,7 +414,7 @@ function FormSala({
         onChange={(e) => setSala({ ...sala, capienza: e.target.value ? Number(e.target.value) : undefined })}
       />
       <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setSala(null)}>
-        LASCIA STARE
+        Lascia stare
       </button>
       <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} aria-label="Salva la sala">
         <Spunta size={18} />
@@ -471,7 +471,7 @@ function ElencoAttivita({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
             onBlur={() => !b.id && !b.nome && setBozza(null)}
           />
           <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setBozza(null)}>
-            LASCIA STARE
+            Lascia stare
           </button>
           <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} aria-label="Salva l'attività" disabled={!!errore}>
             <Spunta size={18} />
@@ -493,22 +493,22 @@ function ElencoAttivita({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
           <div key={a.id} className="stack sg-voce-elenco" style={{ gap: 4, alignItems: 'stretch' }}>
             <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
               <span className="grow" style={{ fontSize: 15, fontWeight: 600, minWidth: 0, overflowWrap: 'anywhere', opacity: a.attiva ? 1 : 0.6 }}>{a.nome}</span>
-              {!a.attiva && <span className="num sg-tag" style={{ fontSize: 11, padding: '2px 6px' }}>NON PIÙ IN USO</span>}
+              {!a.attiva && <span className="num sg-tag" style={{ fontSize: 11, padding: '2px 6px' }}>Non più in uso</span>}
               <button type="button" className="num sg-chip" onClick={() => setBozza({ id: a.id, nome: a.nome })}>
-                CAMBIA
+                Cambia
               </button>
               <button type="button" className="num sg-chip" onClick={() => void fai(() => d.attivaAttivita(a.id, !a.attiva), a.attiva ? 'Non più in uso' : 'Rimessa in uso', att.ricarica)}>
-                {a.attiva ? 'NON PIÙ IN USO' : 'RIMETTI IN USO'}
+                {a.attiva ? 'Non più in uso' : 'Rimetti in uso'}
               </button>
               {!motivo && (
                 <button
                   type="button"
                   className="num sg-chip"
                   onClick={async () => {
-                    if (await chiedi(`Eliminare l'attività «${a.nome}»?`, 'ELIMINA', { pericolo: true })) void fai(() => d.eliminaAttivita(a.id), 'Attività eliminata', att.ricarica)
+                    if (await chiedi(`Eliminare l'attività «${a.nome}»?`, 'Elimina', { pericolo: true })) void fai(() => d.eliminaAttivita(a.id), 'Attività eliminata', att.ricarica)
                   }}
                 >
-                  ELIMINA
+                  Elimina
                 </button>
               )}
             </div>
@@ -521,7 +521,7 @@ function ElencoAttivita({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
         form(bozza)
       ) : (
         <button type="button" className="sg-btn sg-btn-tratteggio" disabled={!att.dato || !!manca} onClick={() => setBozza({ nome: '' })}>
-          + AGGIUNGI UN'ATTIVITÀ
+          + Aggiungi un'attività
         </button>
       )}
       <ComeFunziona>
@@ -594,18 +594,18 @@ function MusicaSale({
               {[nomeSala(l.salaId), nomeDisciplina(l.disciplina, discipline)].filter(Boolean).join(' · ')}
             </span>
             <button type="button" className="num sg-chip" onClick={() => setBozza({ ...l })}>
-              CAMBIA
+              Cambia
             </button>
             <button
               type="button"
               className="num sg-chip"
               onClick={async () => {
-                if ((await chiedi(`Togliere «${l.nome}» dalla musica ${l.salaId ? `della sala ${nomeSala(l.salaId)}` : 'di tutte le sale'}?`, 'TOGLI LA LISTA'))) {
+                if ((await chiedi(`Togliere «${l.nome}» dalla musica ${l.salaId ? `della sala ${nomeSala(l.salaId)}` : 'di tutte le sale'}?`, 'Togli la lista'))) {
                   void fai(() => d.togliListaMusica(l.id), 'Lista tolta', ricarica)
                 }
               }}
             >
-              TOGLI
+              Togli
             </button>
           </div>
         ),
@@ -615,7 +615,7 @@ function MusicaSale({
         <FormLista bozza={bozza} sale={sale} discipline={discipline} setBozza={setBozza} onSalva={salva} />
       ) : (
         <button type="button" className="sg-btn sg-btn-tratteggio" disabled={!liste} onClick={() => setBozza({ nome: '', link: '', salaId: null })}>
-          + AGGIUNGI UNA LISTA
+          + Aggiungi una lista
         </button>
       )}
       <ComeFunziona>
@@ -694,7 +694,7 @@ function FormLista({
                 : (erroreDelLink(bozza.link) ?? 'Questo link non è di YouTube né di Spotify, e non sembra l’indirizzo di una radio.')}
         </span>
         <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setBozza(null)}>
-          LASCIA STARE
+          Lascia stare
         </button>
         <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!fonte} aria-label="Salva la lista">
           <Spunta size={18} />
@@ -760,7 +760,7 @@ function Stagione({ d, imp, avvisa, fai, poi }: {
       </div>
       {cambiate && (
         <button type="button" className="sg-btn" style={{ alignSelf: 'flex-start' }} onClick={() => void salva()}>
-          SALVA LE DATE
+          Salva le date
         </button>
       )}
       <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
@@ -828,7 +828,7 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
             {c.byte < 1_000_000 ? `${Math.max(1, Math.round(c.byte / 1000))} kB` : `${(c.byte / 1_000_000).toFixed(1).replace('.', ',')} MB`}
           </span>
           <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(c.id), 'Copia scaricata: si mette su Drive così com’è')}>
-            SCARICA
+            Scarica
           </button>
         </div>
       ))}
@@ -846,7 +846,7 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
           })
         }
       >
-        {inCorso ? 'BACKUP IN CORSO…' : 'FAI UN BACKUP ORA'}
+        {inCorso ? 'Backup in corso…' : 'Fai un backup ora'}
       </button>
       <ComeFunziona>
         Una copia di tutto il database si fa da sé ogni lunedì notte, e da qui quando serve: prima di un cambiamento grosso, o per averne una da mettere su

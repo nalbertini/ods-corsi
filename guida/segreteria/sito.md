@@ -4,11 +4,11 @@
 
 Le pagine del sito della palestra si scrivono qui: i testi, il menu in alto e
 il footer in fondo. Quello che scrivi resta **bozza** finché non premi
-**PUBBLICA**: salvare la bozza non cambia il sito.
+**Pubblica**: salvare la bozza non cambia il sito.
 
 ## Le pagine
 
-**PAGINE** è l'elenco. Ogni pagina ha il suo stato:
+**Pagine** è l'elenco. Ogni pagina ha il suo stato:
 
 - **PUBBLICATA**: il sito mostra quello che c'è scritto qui.
 - **MODIFICHE NON PUBBLICATE**: la bozza è diversa dal sito. Il sito mostra
@@ -16,20 +16,20 @@ il footer in fondo. Quello che scrivi resta **bozza** finché non premi
 - **SOLO BOZZA**: non è mai stata pubblicata, il sito non la mostra.
 - **NASCOSTA**: pubblicata o no, il sito non la mostra. Resta qui.
 
-**NUOVA PAGINA** chiede il titolo e propone l'indirizzo (senza accenti, con i
+**Nuova pagina** chiede il titolo e propone l'indirizzo (senza accenti, con i
 trattini: «Chi siamo» diventa `chi-siamo`). Si può cambiare. Un indirizzo già
 usato, o uno che serve al sito (`admin`, `api`, `privacy`…), non va.
 
-**NUOVA PAGINA** crea una pagina **a pezzi**. Le pagine che c'erano prima (la
+**Nuova pagina** crea una pagina **a pezzi**. Le pagine che c'erano prima (la
 Home, i corsi) si scrivono ancora come ti ricordi, con il testo solo; le pagine
 di legge restano così.
 
 Per portare una pagina vecchia ai pezzi, aprila e, sotto i tasti, premi **PORTA
 AI PEZZI** (sotto «EDITOR A PEZZI»). Il testo resta com'è: la foto messa in cima
 diventa **FOTO IN CIMA**, le colonne diventano **COLONNE**, il resto un
-**TESTO**. Il sito non cambia finché non premi **PUBBLICA**. **Non si torna al
+**TESTO**. Il sito non cambia finché non premi **Pubblica**. **Non si torna al
 vecchio editor.** Il tasto è spento finché ci sono modifiche non salvate: prima
-**SALVA BOZZA**. Se la pagina è troppo lunga, un avviso dice di togliere qualcosa.
+**Salva bozza**. Se la pagina è troppo lunga, un avviso dice di togliere qualcosa.
 
 Una pagina a pezzi si compone con le parti che metti in fila:
 
@@ -40,7 +40,7 @@ Una pagina a pezzi si compone con le parti che metti in fila:
   si mettono una sotto l'altra. Una colonna lasciata vuota non compare sul sito.
 
 Le parti si mettono dopo quella scelta, o in fondo. Per cambiare l'ordine si
-trascina la parte, oppure si sceglie e si premono **SU** o **GIÙ**; **TOGLI** la
+trascina la parte, oppure si sceglie e si premono **SU** o **GIÙ**; **Togli** la
 toglie dalla pagina.
 
 La pagina prende tutto lo spazio; a destra ci sono due schede. **IMPOSTAZIONI**
@@ -49,7 +49,7 @@ di toccarne una). **ELENCO** mostra le parti della pagina in fila: da lì le
 scegli e le trascini. Sotto i 1280 pixel di larghezza (tablet in piedi) la pagina
 sta sopra e le due schede sotto. Le tessere, le domande e le citazioni a scorrimento si
 formano da sole dal testo, come per ogni pagina (vedi «Come il testo diventa
-tessere»). **ANTEPRIMA** mostra la pagina come il sito la farà, con le
+tessere»). **Anteprima** mostra la pagina come il sito la farà, con le
 tessere; il carattere del sito e il logo si vedono solo sul sito vero.
 
 Se compare «Le pagine a pezzi non sono ancora attive sul database», va
@@ -65,20 +65,20 @@ Toccando una pagina si apre per scriverla:
   scrivere: se incolli un testo da Word o da un altro sito, quello che il sito
   non ammette sparisce da solo.
 - **LINK** e **PULSANTE** non mettono un indirizzo che il sito non ammette: se è sbagliato dicono cosa scrivere.
-- Il testo di una pagina arriva a 200.000 caratteri: oltre, **SALVA BOZZA** e **PUBBLICA** aspettano e una riga dice di quanto.
+- Il testo di una pagina arriva a 200.000 caratteri: oltre, **Salva bozza** e **Pubblica** aspettano e una riga dice di quanto.
 - A destra il **titolo per Google** (al massimo 60 lettere), la
   **descrizione** (160) e l'**indirizzo della pagina**. Il numero sotto dice a
   quanto sei; diventa rosso se superi il limite. Cambiando l'indirizzo di una
   pagina pubblicata, il vecchio porta al nuovo.
   Titolo e descrizione compaiono anche nell'anteprima di quando qualcuno
   condivide la pagina (WhatsApp, Facebook, Instagram), con l'immagine del sito.
-- **SALVA BOZZA** salva senza cambiare il sito. **ANTEPRIMA** mostra com'è
-  scritta (nelle pagine a pezzi, com'è sul sito); **TORNA A SCRIVERE** la richiude.
-- **PUBBLICA** salva la bozza, se serve, e la rende il testo del sito. Se
+- **Salva bozza** salva senza cambiare il sito. **Anteprima** mostra com'è
+  scritta (nelle pagine a pezzi, com'è sul sito); **Torna a scrivere** la richiude.
+- **Pubblica** salva la bozza, se serve, e la rende il testo del sito. Se
   nel frattempo qualcun altro ha cambiato la pagina, non scrive niente e lo
   dice: ricaricala per vedere le sue modifiche, poi rifai la tua.
-- **NASCONDI DAL SITO** toglie la pagina dal sito senza cancellarla;
-  **MOSTRA SUL SITO** la rimette. **CANCELLA LA PAGINA** la toglie per sempre;
+- **Nascondi dal sito** toglie la pagina dal sito senza cancellarla;
+  **Mostra sul sito** la rimette. **Cancella la pagina** la toglie per sempre;
   non si cancella finché è nel menu o nel footer.
 
 Le pagine di legge (**privacy, cookie, contributi pubblici**) non si
@@ -88,31 +88,31 @@ Se esci con qualcosa scritto e non salvato, l'app chiede prima.
 
 ## Le immagini
 
-**IMMAGINI** è la libreria delle immagini caricate per le pagine. **CARICA
+**Immagini** è la libreria delle immagini caricate per le pagine. **CARICA
 UN'IMMAGINE** prende uno o più file JPEG, PNG o WebP; una foto che pesa più di
 1 MB si rimpicciolisce da sola, una piccola resta com'è (una PNG con la
 trasparenza non la perde). Ogni immagine dice in quali pagine è usata, anche
-nella bozza: finché è usata non si cancella; se non lo è, **TOGLI** la toglie.
+nella bozza: finché è usata non si cancella; se non lo è, **Togli** la toglie.
 
 Per metterne una nel testo, in una pagina tocca **IMMAGINE**: scegli una di
 quelle caricate (o **+ CARICA UN'IMMAGINE NUOVA**, che la sceglie da sola),
 scrivi nel **testo alternativo** cosa si vede, per chi non la vede, oppure
-spunta **solo decorativa**; poi **INSERISCI**. Senza testo e senza la spunta
+spunta **solo decorativa**; poi **Inserisci**. Senza testo e senza la spunta
 non si inserisce. Nel testo l'immagine va a tutta la larghezza e si sposta o si
 cancella come un paragrafo.
 
 Le immagini sono **pubbliche**: chiunque conosca l'indirizzo le vede, anche se
 la pagina è nascosta. Niente foto di persone senza il loro permesso, per i
 minorenni quello dei genitori; niente documenti. Finché sul database non c'è
-`58-sito-immagini.sql`, **IMMAGINI** dice che non sono ancora attive e le
+`58-sito-immagini.sql`, **Immagini** dice che non sono ancora attive e le
 pagine si scrivono come prima.
 
 ## Menu e footer
 
-**MENU E FOOTER** ha due elenchi: **MENU IN ALTO** e **FOOTER**. Ogni voce ha
+**Menu e footer** ha due elenchi: **MENU IN ALTO** e **FOOTER**. Ogni voce ha
 un nome e dice dove porta: una pagina del sito o un indirizzo. Il nome arriva a 60 lettere. Le frecce
-**↑** e **↓** la spostano, **TOGLI** la toglie, **+ AGGIUNGI UNA VOCE**
-ne aggiunge una. **SALVA** salva, **BUTTA I CAMBI** torna a prima. Se passi da **PAGINE** a **MENU E FOOTER** con voci a metà, l'app chiede prima.
+**↑** e **↓** la spostano, **Togli** la toglie, **+ Aggiungi una voce**
+ne aggiunge una. **Salva** salva, **Butta i cambi** torna a prima. Se passi da **Pagine** a **Menu e footer** con voci a metà, l'app chiede prima.
 
 Sul sito la voce che porta ai contatti non sta nel menu in alto: diventa il
 pulsante scuro **CONTATTACI**, accanto a **PROVA**. Nel piede resta tra le
@@ -130,11 +130,11 @@ L'app non ti lascia salvare se una voce non va, e dice quale:
 ## Il sito vero
 
 Il sito nuovo, su `www.officinedellosport.it`, si genera dalle pagine
-**pubblicate** e si aggiorna da solo: dopo **PUBBLICA** ci vogliono un paio
+**pubblicate** e si aggiorna da solo: dopo **Pubblica** ci vogliono un paio
 di minuti perché compaia (non si preme niente). Quelle in bozza, nascoste o
 mai pubblicate non ci sono. Il
 passaggio dal sito di prima a quello nuovo, e le immagini, arrivano in un
-secondo momento: finché non è fatto, **PUBBLICA** prepara il testo ma il sito
+secondo momento: finché non è fatto, **Pubblica** prepara il testo ma il sito
 che si vede è ancora quello vecchio.
 
 Il sito nuovo ha sempre una **Home**: senza una Home pubblicata non si genera.
@@ -154,7 +154,7 @@ aggiornamento del database: va chiesto a chi cura l'app.
 ## Come il testo diventa tessere
 
 Il sito mette in pagina da solo quello che scrivi, secondo come lo scrivi. Nell'ANTEPRIMA del pannello vedi
-il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA** e un paio di minuti.
+il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **Pubblica** e un paio di minuti.
 
 - **Titolo grande** (`h2`): apre una **sezione** col titolo in grande, in maiuscolo. Quello che scrivi
   prima del primo titolo grande è l'introduzione, in colonna.
@@ -185,7 +185,8 @@ il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA
   rispetta la regola, restano nel testo. Vale solo per la Home. La foto grande è più larga che alta: scegli
   foto con spazio sopra e ai lati, e senza minori riconoscibili senza il permesso dei genitori.
 - **Collage pieno** (Home): con **4 foto** e **un elenco di 9 voci** prima del primo titolo grande, la testata ha le 13 tessere del design. Le voci seguono l'ordine: i **numeri** (grassetto + scritta, come «**35+** anni di sport»), i **titoli** (solo grassetto, scritta grande), le **note** (niente grassetto, scritta piccola, per l'indirizzo e il motto). Con altre quantità resta il collage di prima.
-- **La Home nuova** (testo pronto in `docs/sito/home.md` e `home.html`): si riconosce da un paragrafo con due pulsanti, **«Prova una settimana a 5 €»** (verso `https://app.officinedellosport.it/iscrizioni/`) e **«Scrivici»** (verso `/contatti/`), prima del primo titolo grande. Senza il pulsante verso il modulo online la Home resta come prima, senza avvisi: se dopo **PUBBLICA** non cambia niente, controlla quell'indirizzo. Da lì il sito riconosce ogni sezione dalla forma: i **numeri** (elenco di 2–6 voci col grassetto), i **corsi** (sottotitoli col link: foto facoltativa, età, descrizione, fasce in corsivo), i **quattro motivi** (quattro sottotitoli con un paragrafo), le **citazioni con «LEGGI TUTTO»** (primo paragrafo l'estratto, poi il testo intero, poi la firma in corsivo; le virgolette non si scrivono), le **recensioni** (due citazioni e un sottotitolo «In breve» con un elenco), le **domande** e la **chiamata finale** (l'ultima sezione, con i due pulsanti e la foto). Prima di incollare il testo nuovo cancella tutto il vecchio.
+- **La Home nuova** (testo pronto in `docs/sito/home.md` e `home.html`): si riconosce da un paragrafo con due pulsanti, **«Prova una settimana a 5 €»** (verso `https://app.officinedellosport.it/iscrizioni/`) e **«Scrivici»** (verso `/contatti/`), prima del primo titolo grande. Senza il pulsante verso il modulo online la Home resta come prima, senza avvisi: se dopo **Pubblica** non cambia niente, controlla quell'indirizzo. Da lì il sito riconosce ogni sezione dalla forma: i **numeri** (elenco di 2–6 voci col grassetto), i **corsi** (sottotitoli col link: foto facoltativa, età, descrizione, fasce in corsivo), i **quattro motivi** (quattro sottotitoli con un paragrafo), le **citazioni con «LEGGI TUTTO»** (primo paragrafo l'estratto, poi il testo intero, poi la firma in corsivo; le virgolette non si scrivono), le **recensioni** (due citazioni e un sottotitolo «In breve» con un elenco), le **domande** e la **chiamata finale** (l'ultima sezione, con i due pulsanti e la foto). Prima di incollare il testo nuovo cancella tutto il vecchio.
+- **Gli istruttori** (testi pronti in `docs/sito/istruttori.md` e `istruttori.html`): per ogni tecnico si scrive il **nome** (titolo piccolo), la **foto** (facoltativa) e una riga **«Cognome · corso, corso»** (il puntino `·` divide il cognome dai corsi, la virgola un corso dall'altro). Il sito fa le tessere a quattro colonne con i corsi in pastiglie, e scrive da solo il testo alternativo delle foto. Il **nome diventa un link (con la freccia ↗) solo se la pagina di quell'istruttore è pubblicata**: se colleghi un nome e la freccia non compare, controlla che la sua pagina sia pubblicata (l'indirizzo è piatto, `/fabio-berta/`). Se l'ultima riga di quattro è incompleta, compare da sola la tessera «Vieni a conoscerli sul tatami»: aggiungendo o togliendo un tecnico può comparire o sparire. La **scheda scarna** di un istruttore (foto facoltativa e un elenco con la sola voce **Corsi**; modello in `docs/sito/istruttori/modello-scarno.md`) mostra nome, foto o iniziale, corsi, i due pulsanti e l'invito.
 - **La Chi siamo nuova** (testo pronto in `docs/sito/chi-siamo.md` e `chi-siamo.html`): si riconosce da un pulsante verso il modulo online (**«Prova una settimana a 5 €»**, `https://app.officinedellosport.it/iscrizioni/`) in una delle sezioni, di norma la chiamata finale. Senza quel pulsante la pagina resta come prima, senza avvisi. Il sito riconosce ogni fascia dalla forma: foto con citazione (la frase grande), due titoli piccoli (le tessere), l'elenco coi numeri, **una foto con un paragrafo** sotto un titolo grande (pannello: il primo scuro, il secondo giallo), **più foto ognuna col suo paragrafo** (la fila con i nomi dei corsi, più un pulsante «Vedi tutti i corsi»), i quattro valori e la chiamata finale con i due pulsanti. Prima di incollare il testo nuovo cancella tutto il vecchio.
 - Nelle **pagine di un corso**, di **Chi siamo**, di **Contatti**, degli **istruttori** (elenco e singola persona) e nell'elenco **I nostri corsi** le regole di scrittura sono nei testi pronti di `docs/sito/<pagina>.md`: ogni pagina ha il suo testo da incollare e le sue foto proposte in `docs/sito/foto.md`.
 - Il paragrafo scritto **dopo l'ultimo sottotitolo** finisce nell'ultima tessera: per chiudere la griglia e
