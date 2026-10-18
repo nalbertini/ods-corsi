@@ -2600,6 +2600,109 @@ html.firma-aperta, html.firma-aperta body { overflow: hidden; overscroll-behavio
 label.sg-btn { cursor: pointer; }
 .sg-carica-foto:has(input:focus-visible) label.sg-btn { outline: 2px solid var(--text); outline-offset: 2px; }
 
+/* ---------------------------------------------------------------------------
+   Il Banco: la segreteria con la ricerca in cima e cinque luoghi, al posto del
+   menu a sinistra. Si sceglie da IMPOSTAZIONI (src/lib/aspetto.ts). Stessi
+   token di sempre; la proposta è in docs/design-canvas/banco/.
+   --------------------------------------------------------------------------- */
+.sg[data-aspetto='banco'] { flex-direction: column; }
+.sg[data-aspetto='banco'] > .sg-corpo { padding-top: 24px; }
+.bn-barra { flex-shrink: 0; background: var(--bg); border-bottom: 2px solid var(--line); }
+.bn-alto { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: calc(var(--safe-t) + 10px) 28px 10px; background: var(--menu); border-bottom: 2px solid var(--line-soft); }
+.bn-marchio { display: flex; align-items: center; gap: 10px; min-width: 170px; }
+.bn-cerca { flex: 1 1 320px; max-width: 560px; }
+.bn-cerca .sg-cerca { padding: 0; }
+.bn-chi { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.bn-marchio .bn-sotto-marchio { font-size: 12px; font-weight: 600; letter-spacing: 0.22em; color: var(--dim); }
+.bn-alto > .sg-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; }
+.bn-link { position: relative; }
+.bn-link-voci { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 240px; padding: 4px; background: var(--surface); border: 2px solid var(--text); }
+.bn-luoghi, .bn-voci { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; padding: 0 28px; }
+.bn-luoghi { background: var(--surface); border-bottom: 2px solid var(--line-soft); }
+.bn-luogo {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 18px; border-bottom: 4px solid transparent;
+  font-size: 19px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim);
+}
+.bn-luogo:hover { color: var(--text); }
+.bn-luogo[aria-current='page'] { border-bottom-color: var(--text); color: var(--text); }
+.bn-voci { align-items: center; min-height: 52px; background: var(--surface-2); }
+.bn-voce {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 2px solid var(--line);
+  font-size: 15px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec);
+}
+.bn-voce:hover { color: var(--text); border-color: var(--dim); }
+.bn-voce[aria-current='page'] { background: var(--text); border-color: var(--text); color: var(--bg); }
+.bn-voce[aria-current='page'] .sg-tag { outline: 2px solid var(--bg); }
+
+.bn-cifre { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.bn-cifra {
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-height: 110px; padding: 14px 16px; text-align: left;
+  background: var(--surface); border: 2px solid var(--line);
+}
+button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
+.bn-cifra[data-guaio='true'] .bn-cifra-n { color: var(--rosso-testo); }
+.bn-cifra-n { font-size: 44px; font-weight: 700; line-height: 1; }
+.bn-cifra-sotto { font-size: 13px; color: var(--dim); }
+.bn-oggi { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 28px; align-items: start; }
+.bn-sale { display: grid; gap: 0; padding-bottom: 6px; border-bottom: 2px solid var(--line); }
+.bn-sale .sg-etichetta { padding: 0 12px; letter-spacing: 0.24em; }
+.bn-griglia {
+  position: relative; display: grid;
+  background-image: linear-gradient(var(--line-soft) 2px, transparent 2px); background-size: 100% var(--ora-px);
+}
+.bn-ore { display: flex; flex-direction: column; }
+.bn-ore span { font-size: 14px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.bn-colonna { position: relative; }
+.bn-blocco {
+  position: absolute; left: 5px; right: 5px; display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; text-align: left; overflow: hidden;
+  background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--tinta);
+}
+.bn-blocco:hover { border-color: var(--dim); border-left-color: var(--tinta); }
+.bn-blocco-testa { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 20px; font-weight: 700; line-height: 1.05; }
+.bn-blocco-testa .num { font-size: 14px; font-weight: 500; color: var(--dim); }
+.bn-blocco-sotto { font-size: 13px; color: var(--sec); }
+.bn-blocco-stato { margin-top: auto; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+.bn-blocco[data-stato='fatto'] { border-color: var(--verde); }
+.bn-blocco[data-stato='fatto'] .bn-blocco-stato, .bn-blocco[data-stato='in_corso'] .bn-blocco-stato { color: var(--verde-testo); }
+.bn-blocco[data-stato='appello_non_fatto'] { border-color: var(--rosso); }
+.bn-blocco[data-stato='appello_non_fatto'] .bn-blocco-stato { color: var(--rosso-testo); }
+.bn-blocco[data-stato='annullata'] { background: transparent; border-color: var(--line-soft); border-left-color: var(--tinta); }
+.bn-blocco[data-stato='annullata'] .bn-blocco-testa { color: var(--sec); }
+/* In un blocco corto la riga di mezzo sparisce: la parola dello stato, in fondo, deve restare in vista. */
+.bn-blocco[data-corto='true'] .bn-blocco-sotto { display: none; }
+.bn-adesso { position: absolute; left: 0; right: 0; height: 0; border-top: 3px solid var(--giallo); pointer-events: none; }
+.bn-adesso .num { position: absolute; left: 0; top: -11px; padding: 0 5px; background: var(--giallo); color: var(--su-colore); font-size: 13px; font-weight: 700; }
+.bn-coda { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.bn-coda-testa { padding-bottom: 8px; border-bottom: 2px solid var(--line); letter-spacing: 0.18em; }
+.bn-riga { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--giallo); }
+.bn-riga[data-livello='blocca'] { border-left-color: var(--rosso); }
+.bn-riga .sg-btn { white-space: nowrap; flex-shrink: 0; }
+.bn-riga-titolo { font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.1; }
+.bn-riga-sotto { font-size: 13px; line-height: 1.35; color: var(--sec); }
+.bn-altro { margin-top: 8px; }
+.bn-altro > summary { list-style: none; display: inline-flex; align-items: center; cursor: pointer; }
+.bn-altro > summary::-webkit-details-marker { display: none; }
+.bn-altro[open] > summary { margin-bottom: 18px; }
+
+.bn-persona { display: flex; flex-direction: column; gap: 14px; }
+.bn-blocca { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 18px; background: var(--surface); border: 2px solid var(--giallo); border-left: 8px solid var(--giallo); }
+.bn-blocca[data-blocca='true'] { border-color: var(--rosso); }
+.bn-blocca-titolo { font-size: 22px; font-weight: 700; letter-spacing: 0.04em; color: var(--giallo-testo); }
+.bn-blocca[data-blocca='true'] .bn-blocca-titolo { color: var(--rosso-testo); }
+.bn-famiglia { margin: 0; font-size: 15px; }
+
+.bn-tabella { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.bn-tabella-testa, .bn-tabella-riga { display: grid; gap: 12px; align-items: center; padding: 6px 14px; }
+.bn-tabella-testa { border-bottom: 2px solid var(--line); padding-top: 8px; padding-bottom: 8px; }
+.bn-tabella-riga { min-height: 64px; background: var(--surface); border: 2px solid var(--line); border-top: 0; font-size: 16px; }
+
+@media (max-width: 1100px) {
+  .bn-oggi { grid-template-columns: minmax(0, 1fr); }
+  /* La coda è il lavoro del banco: sullo schermo stretto viene prima del tabellone, non dopo. */
+  .bn-coda { order: -1; }
+  .bn-chi { display: none; }
+  .bn-cifre { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 /* A 320px sette colonne da 44px entrano solo senza spazi fra le celle: il bordo di ognuna fa da separatore. */
 @media (max-width: 359px) {
   .sg-calendario { padding: 4px; }

@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- RICERCA: un campo solo cerca persone, corsi e azioni; ogni riga porta il suo stato (certificato, quota) senza aprire la scheda. È il gesto più frequente del banco, a due tasti. Proposta «Il Banco»: tema chiaro, niente menu a sinistra, ricerca sempre in cima. Cornice nuova (non Pagina.dc.html), componenti dalla libreria con tema="chiaro"; dati inventati. -->
+<div style="position: relative; width: 1440px; min-height: 960px; background: #f4f4f1">
+  <div style="display: flex; align-items: center; gap: 24px; height: 72px; padding: 0 28px; background: #121212; color: #f2f2f0">
+    <div style="display: flex; flex-direction: column; gap: 2px; width: 170px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 26px; letter-spacing: 0.06em; line-height: 1">ODS CORSI</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 11px; letter-spacing: 0.24em; color: #8c8c88">SEGRETERIA</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; max-width: 560px; height: 48px; padding: 0 16px; background: #ffffff; border: 2px solid #e4292a; color: #161616">
+      <span style="flex-grow: 1; font-size: 17px; font-weight: 500; color: #161616">bia</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; padding: 2px 8px; border: 2px solid #8a8a85; color: #656561">/</span>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <dc-import name="Badge" label="DATI DI PROVA" tipo="bollino" hint-size="110px,24px"></dc-import>
+    <span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">LINK ▾</span><span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">GUIDA</span><span style="display: flex; align-items: center; height: 44px; padding: 0 14px; border: 2px solid #4a4a46; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #b8b8b2">TEMA</span>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+      <span style="font-size: 15px; font-weight: 600">Marco Rossi</span>
+      <span style="font-size: 13px; color: #8c8c88">Segreteria</span>
+    </div>
+  </div>
+  <div style="display: flex; align-items: stretch; gap: 8px; height: 52px; padding: 0 28px; background: #ffffff; border-bottom: 2px solid #e2e2dd">
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">OGGI<dc-import name="Badge" label="7" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid #e4292a; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #161616">PERSONE<dc-import name="Badge" label="4" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">CORSI</div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">SOLDI<dc-import name="Badge" label="37" tipo="tag" tono="rosso" tema="chiaro" hint-size="30px,22px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 4px solid transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 19px; letter-spacing: 0.12em; color: #656561">PALESTRA</div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 28px; background: #e9e9e5; border-bottom: 2px solid #d4d4ce">
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; background: #161616; color: #f4f4f1">ISCRITTI</span>
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #3d3d3a; border: 2px solid #d4d4ce">RICHIESTE ONLINE  4</span>
+    <span style="display: flex; align-items: center; height: 36px; padding: 0 16px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.12em; color: #3d3d3a; border: 2px solid #d4d4ce">ISTRUTTORI</span>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; top: 124px; bottom: 0; background: rgba(22, 22, 22, 0.55)"></div>
+  <div style="position: absolute; left: 340px; top: 68px; width: 760px; display: flex; flex-direction: column; background: #ffffff; border: 2px solid #161616">
+      <span style="padding: 10px 18px 4px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 13px; letter-spacing: 0.24em; color: #656561; background: #ffffff">PERSONE</span>
+      <div style="display: flex; align-items: center; gap: 14px; height: 60px; padding: 0 18px; background: #e9e9e5; border-left: 6px solid #e4292a">
+        <span style="flex-grow: 1"><span style="font-size: 17px; font-weight: 600">Bianchi Luca</span> <span style="font-size: 14px; color: #656561">12 anni · Judo kids</span></span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #b81d1d">CERTIFICATO SCADUTO</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; height: 60px; padding: 0 18px; background: #ffffff; border-left: 6px solid transparent">
+        <span style="flex-grow: 1"><span style="font-size: 17px; font-weight: 600">Bianchi Marta</span> <span style="font-size: 14px; color: #656561">9 anni · Giocomotricità</span></span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #0b7a33">IN REGOLA</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; height: 60px; padding: 0 18px; background: #ffffff; border-left: 6px solid transparent">
+        <span style="flex-grow: 1"><span style="font-size: 17px; font-weight: 600">Bianchi Roberto</span> <span style="font-size: 14px; color: #656561">genitore di Luca e Marta</span></span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #656561"></span>
+      </div>
+      <span style="padding: 10px 18px 4px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 13px; letter-spacing: 0.24em; color: #656561; background: #ffffff">AZIONI</span>
+      <div style="display: flex; align-items: center; gap: 14px; height: 60px; padding: 0 18px; background: #ffffff; border-left: 6px solid transparent">
+        <span style="flex-grow: 1"><span style="font-size: 17px; font-weight: 600">Fai la ricevuta a Bianchi Luca</span> <span style="font-size: 14px; color: #656561"></span></span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #656561">TASTO ↵</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; height: 60px; padding: 0 18px; background: #ffffff; border-left: 6px solid transparent">
+        <span style="flex-grow: 1"><span style="font-size: 17px; font-weight: 600">Aggiungi chi viene a provare</span> <span style="font-size: 14px; color: #656561"></span></span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #656561"></span>
+      </div>
+      <span style="padding: 10px 18px 4px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 13px; letter-spacing: 0.24em; color: #656561; background: #ffffff">VAI A</span>
+      <div style="display: flex; align-items: center; gap: 14px; height: 60px; padding: 0 18px; background: #ffffff; border-left: 6px solid transparent">
+        <span style="flex-grow: 1"><span style="font-size: 17px; font-weight: 600">Corso Bianchi · Judo kids</span> <span style="font-size: 14px; color: #656561">12 iscritti</span></span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #656561"></span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; height: 60px; padding: 0 18px; background: #ffffff; border-left: 6px solid transparent">
+        <span style="flex-grow: 1"><span style="font-size: 17px; font-weight: 600">Richieste online</span> <span style="font-size: 14px; color: #656561">4 nuove</span></span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.12em; color: #b81d1d"></span>
+      </div>
+    <div style="display: flex; gap: 22px; padding: 10px 18px; background: #e9e9e5; border-top: 2px solid #d4d4ce; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 13px; letter-spacing: 0.12em; color: #3d3d3a"><span>↑ ↓ SCEGLI</span><span>↵ APRI</span><span>ESC CHIUDI</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -21,6 +21,8 @@ con **ISTRUTTORI →** nel menu, senza uscire.
 
 ## Il menu
 
+Questo è l'aspetto di sempre. Da **IMPOSTAZIONI** si può scegliere **Il Banco**, con la ricerca in cima e cinque luoghi al posto del menu: la [guida](il-banco.md).
+
 In cima al menu c'è **Cerca**: si scrive e i risultati escono a gruppi,
 nell'ordine **ISCRITTI**, **RICHIESTE ONLINE**, **CORSI**, **ISTRUTTORI**. Un
 gruppo senza risultati non compare. Si sceglie con le frecce (o col mouse) e

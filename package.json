@@ -73,6 +73,7 @@
     "prova:aggiornamento": "node scripts/prova-aggiornamento.mjs",
     "prova:vestiario": "node scripts/prova-vestiario.mjs",
     "prova:backup": "node scripts/prova-backup.mjs",
+    "prova:banco": "node scripts/prova-banco.mjs",
     "prova:tema": "node scripts/prova-tema.mjs",
     "prova:iscrizione-sito": "node scripts/prova-iscrizione-sito.mjs",
     "prova:sql": "bash scripts/prova-sql.sh",
