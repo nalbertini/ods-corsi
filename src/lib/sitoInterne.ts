@@ -10,13 +10,13 @@ export const CSS_INTERNE = `
 .testata{padding:22px var(--margine)}
 .logo img{height:110px}
 .pagina-hero.interna{display:block;padding:40px var(--margine) 72px}
-.interna h1{font-size:clamp(84px,13.9vw,200px);line-height:.82;margin:0 0 20px}
+.interna h1{font-size:120px;line-height:.82;margin:0 0 20px}
 .interna .intro{display:block;max-width:none}
 .interna .intro p{margin:0 0 28px;font-size:22px;line-height:1.45}
 @media (min-width:1280px){
 .pagina-hero.interna{display:grid;grid-template-columns:1fr 520px;gap:0 56px;align-items:end}
 .interna .intro{display:contents}
-.interna h1{grid-row:1 / span 2;grid-column:1;font-size:200px;margin:0}
+.interna h1{grid-row:1 / span 2;grid-column:1;font-size:120px;margin:0}
 .interna .intro p,.interna .intro>div{grid-column:2}
 .pagina-hero.interna.elenco-tecnici{grid-template-columns:1fr 480px}
 }
@@ -35,7 +35,7 @@ export const CSS_INTERNE = `
 .testata{padding:12px var(--margine) 0;gap:10px 16px}
 .logo img{height:82px}
 .pagina-hero.interna{padding:20px var(--margine) 36px}
-.interna h1{font-size:84px;line-height:.84}
+.interna h1{font-size:56px;line-height:.84}
 .interna .intro p{margin:0 0 22px;font-size:18px}
 .invito{margin-top:48px;min-height:260px;padding:22px}
 .invito .frase{font-size:17px}

@@ -130,7 +130,7 @@ export const CSS_CHI_SIAMO = `
 .chi-siamo-nuova .sezione{padding-top:96px}
 .chi-siamo-nuova .pagina-hero{display:block;padding:24px var(--margine) 0}
 .chi-siamo-nuova .pagina-hero .intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,520px);gap:0 48px;align-items:end;max-width:none}
-.chi-siamo-nuova h1{font-size:clamp(84px,8.33vw,120px);line-height:.9}
+.chi-siamo-nuova h1{font-size:120px;line-height:.9}
 .chi-siamo-nuova .intro h1{margin:0}
 .chi-siamo-nuova .intro p{max-width:520px;margin:0 0 8px;font-size:22px;line-height:1.5}
 .slogan-fascia{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:6px;margin:48px var(--margine) 0}
@@ -168,6 +168,7 @@ export const CSS_CHI_SIAMO = `
 .chi-siamo-nuova .tessere.perche>.tessera{grid-column:auto}
 ${fuochi(1)}
 @media (max-width:900px){
+.chi-siamo-nuova h1{font-size:56px}
 .chi-siamo-nuova .sezione{padding-top:64px}
 .chi-siamo-nuova .pagina-hero{padding-top:20px}
 .chi-siamo-nuova .pagina-hero .intro{grid-template-columns:1fr;gap:16px}

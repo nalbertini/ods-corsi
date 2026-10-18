@@ -243,8 +243,8 @@ const W = [1440, 768, 375]
 
 console.log('\n9. Le misure (CSS) a 1440, 768 e 375 px')
 {
-  ok('h1: clamp(92px,9.72vw,140px) = 140px a 1440; 92px a 768 e 375 (82px solo dal telefono in giù, ≤900)', [ultimo(R, /^\.contatti-nuova h1$/, 'font-size', 1440), px(ultimo(R, /^\.contatti-nuova h1$/, 'font-size', 1440), 1440)], ['clamp(92px,9.72vw,140px)', 140])
-  ok('h1 a ≤900px: 82px', [768, 375].map((w) => px(ultimo(R, /^\.contatti-nuova h1$/, 'font-size', w), w)), [82, 82])
+  ok('h1: 120px a 1440 e a 768, come I corsi', [ultimo(R, /^\.contatti-nuova h1$/, 'font-size', 1440), px(ultimo(R, /^\.contatti-nuova h1$/, 'font-size', 1440), 1440)], ['120px', 120])
+  ok('h1 a ≤900px: 56px', [768, 375].map((w) => px(ultimo(R, /^\.contatti-nuova h1$/, 'font-size', w), w)), [56, 56])
   ok('.recapiti-sez: padding-top 48px a 1440', [1440].map((w) => px(ultimo(R, /^\.recapiti-sez$/, 'padding-top', w) ?? ultimo(R, /^\.recapiti-sez$/, 'padding', w)?.split(/\s+/)[0], w)), [48])
   ok('il link dell’azione è alto almeno 48px, a 1440 e a 375', [1440, 375].map((w) => px(ultimo(R, /^\.recapiti-sez \.azione a$/, 'min-height', w), w)), [48, 48])
   ok('…e un ::after lo allarga su tutta la tessera (position:absolute, inset 0), a 1440 e a 375', [1440, 375].map((w) => [valori(R, /^\.recapiti-sez \.azione a::after$/, 'content', w).length > 0, ultimo(R, /^\.recapiti-sez \.azione a::after$/, 'position', w), ultimo(R, /^\.recapiti-sez \.azione a::after$/, 'inset', w) ?? ultimo(R, /^\.recapiti-sez \.azione a::after$/, 'top', w)]), [[true, 'absolute', '0'], [true, 'absolute', '0']])
