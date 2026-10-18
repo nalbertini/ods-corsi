@@ -75,8 +75,8 @@ function useStoria() {
   return { storia, indietro: con(() => storia.back()), avanti: con(() => storia.forward()) }
 }
 
-/** L'altezza della barra su due righe di tasti, più il suo respiro: meno spazio di così sopra il pezzo e la barra non ci sta. */
-const SPAZIO_BARRA = 116
+/** L'altezza della barra (una riga di tasti da 44px, il bordo e il respiro): meno spazio di così sopra il pezzo e la barra non ci sta. Misura a occhio, non provata senza browser. */
+const SPAZIO_BARRA = 72
 
 /**
  * Un pezzo di testo (TESTO: una colonna sola; COLONNE: due o tre affiancate) scritto nella pagina. Finché il pezzo non è
@@ -190,7 +190,7 @@ function FotoDelPezzo({ d, src }: { d: DatiSegreteria; src: string }) {
   return typeof id === 'string' ? <CampoFoto d={d} id={id} src={src} /> : null
 }
 
-const FRASE_TESTO_IN_PAGINA = 'Il testo si scrive direttamente nella pagina, a sinistra.'
+const FRASE_TESTO_IN_PAGINA = 'Il testo si scrive direttamente nella pagina.'
 
 const PARTI: Array<{ tipo: keyof Props; nome: string }> = [
   { tipo: 'fotoInCima', nome: 'FOTO IN CIMA' },

@@ -3120,8 +3120,17 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sito-colonne { display: grid; gap: 16px; }
 .sito-colonna { min-width: 0; }
 .sito-pezzo[data-scelto] .sito-colonne .sito-colonna { outline: 2px dashed var(--riga-campo); outline-offset: -2px; }
-.sito-pezzo[data-scelto] .sito-colonne .sito-colonna[data-viva='true'] { outline: 2px solid var(--text); }
+.sito-pezzo[data-scelto] .sito-colonne .sito-colonna[data-viva='true'] { outline: 3px solid var(--blu); background: var(--surface); }
 /* Il posto della barra prende la sua altezza (`--hb`, la misura la barra) e si tira su di altrettanto: il pezzo non si muove; scorrendo, la barra resta agganciata in alto. */
 .sito-barra-flotta { position: sticky; top: 0; z-index: 5; height: var(--hb, 0px); margin: calc(-1 * var(--hb, 0px) - 6px) 0 6px; }
 .sito-barra-flotta[data-in-cima] { margin: 0 0 6px; }
 .sito-barra-caja { display: flex; flex-direction: column; gap: 6px; padding: 6px; border: 2px solid var(--text); background: var(--surface); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); }
+/* La barra è una riga sola che scorre di lato: due o tre righe coprirebbero il pezzo di sopra, e sul telefono mezzo schermo. */
+.sito-barra-caja .sito-barra { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 6px; }
+.sito-barra-caja .sito-tasto { flex-shrink: 0; }
+/* La linguetta di Puck (nome, copia, togli) è una sola, sul bordo alto del pezzo scelto, e coprirebbe la barra: con un testo scelto Togli, Su e Giù sono già in alto. */
+.sito-pezzi:has(.sito-pezzo[data-scelto]) [class*='DraggableComponent-actionsOverlay'] { display: none; }
+@media (max-width: 600px) {
+  .sito-pezzi-pagina { padding: 8px; }
+  .sito-pezzo .sito-testo { padding: 16px 14px; }
+}
