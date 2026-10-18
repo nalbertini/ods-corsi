@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.120.0 — 18 ottobre 2026
+
+### Novità
+
+- Contabilità, il bilancio di un anno (da gennaio a dicembre), con il confronto e il foglio per il commercialista
+- «Dividi in parti» per le pagine del sito a pezzi con un solo testo lungo
+
 ## 0.119.0 — 18 ottobre 2026
 
 ### Novità
