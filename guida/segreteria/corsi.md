@@ -121,7 +121,7 @@ posti `2 IN PIÙ DEI POSTI` (rosso); senza posti indicati, `16 ISCRITTI`.
   avevi. Lo stesso fa **CORSO** in alto nella scheda della persona (se la
   apri da un altro posto, dice ISCRITTI e torna all'elenco). Se nel corso hai
   modifiche non salvate l'app chiede prima.
-- Il menu «Iscrivi qualcuno…» con **ISCRIVI** sta in questa
+- Il menu «Iscrivi qualcuno…» con **Iscrivi** sta in questa
   scheda. A corso pieno lo dice, ma si può iscrivere lo stesso.
 - Se l'app non riesce a leggere le persone lo dice, invece di mostrare zero
   iscritti.

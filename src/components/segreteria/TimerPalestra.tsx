@@ -83,7 +83,7 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
         {voce.guaio && <Guaio testo={`La voce non si legge: ${voce.guaio}`} />}
         <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
           <button type="button" className="num sg-chip" aria-pressed={letta && scelta === null} disabled={!letta} onClick={() => salvaVoce(null)}>
-            LA PRIMA ITALIANA DEL TABLET
+            La prima italiana del tablet
           </button>
           {voci.map((v) => (
             <button
@@ -232,7 +232,7 @@ function VoceIncisa({
       {problema && <Guaio testo={problema} />}
 
       <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} disabled={!chiavi} onClick={() => setAperte((a) => !a)}>
-        {aperte ? 'CHIUDI LE FRASI' : 'APRI LE FRASI DA INCIDERE'}
+        {aperte ? 'Chiudi le frasi' : 'Apri le frasi da incidere'}
       </button>
 
       {aperte && gruppi.map(([titolo, frasi]) => (
@@ -258,16 +258,16 @@ function VoceIncisa({
                   {incisa && !inCorso && (
                     <>
                       <button type="button" className="num sg-chip" onClick={() => void ascolta(c.key)}>
-                        ASCOLTA
+                        Ascolta
                       </button>
                       <button
                         type="button"
                         className="num sg-chip"
                         onClick={async () => {
-                          if ((await chiedi(`Togliere la clip «${c.text}»? I tablet torneranno alla voce di sistema.`, 'TOGLI LA CLIP'))) void fai(() => d.togliClip(c.key), 'Clip tolta', ricarica)
+                          if ((await chiedi(`Togliere la clip «${c.text}»? I tablet torneranno alla voce di sistema.`, 'Togli la clip'))) void fai(() => d.togliClip(c.key), 'Clip tolta', ricarica)
                         }}
                       >
-                        TOGLI
+                        Togli
                       </button>
                     </>
                   )}
@@ -278,7 +278,7 @@ function VoceIncisa({
                     disabled={!formato || !chiavi || (attiva !== null && !inCorso)}
                     onClick={() => (inCorso ? registratore.current?.stop() : void registra(c.key))}
                   >
-                    {inCorso ? 'FERMA' : incisa ? 'RIFAI' : 'REGISTRA'}
+                    {inCorso ? 'Ferma' : incisa ? 'Rifai' : 'Registra'}
                   </button>
                 </div>
               )
@@ -350,10 +350,10 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
           <span style={{ fontSize: 14, color: 'var(--sec)' }}>Non c'è ancora: ogni tablet usa l'elenco che ha.</span>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
             <button type="button" className="sg-btn sg-btn-linea" onClick={() => salva(catalogoDiPartenza(), 'Catalogo creato: i tablet lo prendono al prossimo giro')}>
-              PARTI DA QUELLO DI BASE
+              Parti da quello di base
             </button>
             <button type="button" className="sg-btn sg-btn-linea" onClick={() => salva([], 'Catalogo vuoto creato')}>
-              PARTI DA ZERO
+              Parti da zero
             </button>
           </div>
         </div>
@@ -415,14 +415,14 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                         className="num sg-chip"
                         style={{ minHeight: 44 }}
                         onClick={async () => {
-                          if ((await chiedi(`Togliere «${e.nome}» dal catalogo? I timer che lo usano restano come sono.`, 'TOGLI L’ESERCIZIO')))
+                          if ((await chiedi(`Togliere «${e.nome}» dal catalogo? I timer che lo usano restano come sono.`, 'Togli l’esercizio')))
                             salva(lista.filter((x) => x.id !== e.id), 'Esercizio tolto', () => setAperto(null))
                         }}
                       >
-                        TOGLI
+                        Togli
                       </button>
                       <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setAperto(null)}>
-                        LASCIA STARE
+                        Lascia stare
                       </button>
                       <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!aperto.nome.trim() || !libero(aperto.nome, e.id)} aria-label="Salva l'esercizio">
                         <Spunta size={18} />
@@ -452,13 +452,13 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
             <SelectDisciplina discipline={discipline} valore={nuovo.disciplina} etichetta="Categoria del nuovo esercizio" onCambia={(x) => setNuovo({ ...nuovo, disciplina: x })} />
             {nuovo.nome.trim() && !libero(nuovo.nome) && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>C'è già.</span>}
             <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!nuovo.nome.trim() || !libero(nuovo.nome)}>
-              AGGIUNGI
+              Aggiungi
             </button>
           </form>
 
           {incolla === null ? (
             <button type="button" className="sg-btn sg-btn-tratteggio" onClick={() => setIncolla('')}>
-              + INCOLLA UN ELENCO
+              + Incolla un elenco
             </button>
           ) : (
             <form
@@ -489,10 +489,10 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                   {nuovo.disciplina ? `Vanno in «${nomeDisciplina(nuovo.disciplina, discipline)}», scelta qui sopra.` : 'Vanno senza categoria.'} Quelli che ci sono già si saltano.
                 </span>
                 <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setIncolla(null)}>
-                  LASCIA STARE
+                  Lascia stare
                 </button>
                 <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!nomiDaTesto(incolla).length}>
-                  AGGIUNGI {nomiDaTesto(incolla).length || ''}
+                  Aggiungi {nomiDaTesto(incolla).length || ''}
                 </button>
               </div>
             </form>
@@ -596,14 +596,14 @@ function DisciplinePalestra({ d, lista, ricarica }: { d: DatiSegreteria; lista: 
                   className="num sg-chip"
                   style={{ minHeight: 44 }}
                   onClick={async () => {
-                    if (await chiedi(`Togliere «${x.nome}»? Gli esercizi, i timer e le liste che la nominano restano, senza categoria.`, 'TOGLI LA CATEGORIA'))
+                    if (await chiedi(`Togliere «${x.nome}»? Gli esercizi, i timer e le liste che la nominano restano, senza categoria.`, 'Togli la categoria'))
                       salva(lista.filter((y) => y.id !== x.id), 'Categoria tolta', () => setAperta(null))
                   }}
                 >
-                  TOGLI
+                  Togli
                 </button>
                 <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setAperta(null)}>
-                  LASCIA STARE
+                  Lascia stare
                 </button>
                 <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!!nomeDisciplinaValido(aperta.nome, lista, x.id)} aria-label="Salva la categoria">
                   <Spunta size={18} />
@@ -628,7 +628,7 @@ function DisciplinePalestra({ d, lista, ricarica }: { d: DatiSegreteria; lista: 
           <input className="sg-campo grow" aria-label="Nuova categoria" placeholder="una categoria nuova" maxLength={30} value={nuova} onChange={(e) => setNuova(e.target.value)} />
           {erroreNuova && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{erroreNuova}</span>}
           <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!nuova.trim() || !!erroreNuova}>
-            AGGIUNGI
+            Aggiungi
           </button>
         </form>
       </section>
@@ -693,7 +693,7 @@ export function StoricoTimer({ d }: { d: DatiSegreteria }) {
                 {durata(r.secondi)}
               </span>
               <span className="num sg-tag" data-tipo={r.completato ? undefined : 'sostituto'} style={{ fontSize: 11, padding: '2px 6px', minWidth: 82, textAlign: 'center' }}>
-                {r.completato ? 'COMPLETATO' : 'FERMATO PRIMA'}
+                {r.completato ? 'Completato' : 'Fermato prima'}
               </span>
             </div>
           ))}
@@ -701,7 +701,7 @@ export function StoricoTimer({ d }: { d: DatiSegreteria }) {
       )}
       {righe.length >= quanti && (
         <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => setQuanti((q) => q + QUANTI)}>
-          ALTRI {QUANTI}
+          Altri {QUANTI}
         </button>
       )}
     </section>

@@ -29,7 +29,7 @@ gruppo senza risultati non compare. Si sceglie con le frecce (o col mouse) e
 Invio apre: la scheda di un iscritto o di un corso, oppure la voce delle
 richieste o degli istruttori. Di ogni gruppo si vedono tre righe; **ALTRI 14**
 apre ISCRITTI, CORSI o RICHIESTE ONLINE già filtrati su quelli trovati («Cercato
-«gio»: 17 trovati»), e **MOSTRA TUTTI** toglie il filtro. Il tasto **/** porta il fuoco nel campo, senza mouse. Il
+«gio»: 17 trovati»), e **Mostra tutti** toglie il filtro. Il tasto **/** porta il fuoco nel campo, senza mouse. Il
 testo resta scritto anche dopo aver aperto un risultato, così se ne guardano
 due o tre di fila; **Esc** lo svuota.
 
@@ -66,7 +66,7 @@ scaduti** (scaduti o mancanti), **Pagamenti** (quote non in regola), **Senza tes
 online** (da accogliere). Sono gli stessi numeri di [DA FARE](da-fare.md). Il segno
 sotto dice lo stato: rosso, qualcosa manca; giallo, c'è da accogliere; verde con **✓ 0**,
 a posto. Se il numero non si sa (la lettura non è riuscita) c'è «—», mai uno zero verde, e
-un tasto **RICONTA**; se una lettura fallisce dopo una riuscita resta l'ultimo numero,
+un tasto **Riconta**; se una lettura fallisce dopo una riuscita resta l'ultimo numero,
 con scritto a che ora era. Toccando una casella si va alla pagina giusta, già filtrata.
 I conti si rileggono quando si segna un appello, si accoglie una richiesta o si cambia
 una scheda, e cambiando voce solo se l'ultima lettura ha più di due minuti. Sul computer le cinque caselle stanno in una riga; sul telefono due per riga, e la
@@ -153,7 +153,7 @@ cambia voce del menu, anche aprendo una scheda e tornando.
    stato a una lezione e non risulta → [Presenze segnalate](presenze-segnalate.md)
    → **PRESENTE** o **RIFIUTA**.
 6. **A fine mese**: [Presenze](presenze.md) → chi si sta perdendo, e
-   **SCARICA CSV** se serve un resoconto.
+   **Scarica CSV** se serve un resoconto.
 
 Ogni cambio si salva subito: non c'è un tasto «salva» generale. In basso
 compare un avviso che dice cosa è stato fatto.
@@ -163,7 +163,7 @@ compare un avviso che dice cosa è stato fatto.
 Prima di un'azione che pesa (annullare una ricevuta o una lezione, accogliere o
 rifiutare una richiesta, cancellare un file) l'app chiede conferma con una
 finestra sua: il tasto di sinistra lascia stare, quello di destra dice cosa fa
-(«SÌ, ANNULLA LA RICEVUTA»). È rosso quando non si torna indietro. ESC, o un
+(«Sì, annulla la ricevuta»). È rosso quando non si torna indietro. ESC, o un
 clic fuori, lascia stare.
 
 Se si esce da qualcosa scritto e non salvato (una ricevuta, un iscritto nuovo,

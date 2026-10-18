@@ -168,7 +168,7 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
           ))}
         </select>
         <button type="button" className="sg-btn sg-btn-linea" disabled={!lezioni.length} onClick={() => scaricaCsv(lezioni, `${nomeCorso ?? 'tutti'} ${nomePeriodo}`)}>
-          SCARICA CSV
+          Scarica CSV
         </button>
       </Testa>
 
@@ -677,7 +677,7 @@ function InRegola({ persone, oggi, onVai }: { persone: PersonaSeg[]; oggi: strin
         ]}
       />
       <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => onVai('iscritti', { filtro: 'fuori-regola' })}>
-        CHI NON È IN REGOLA
+        Chi non è in regola
       </button>
     </div>
   )

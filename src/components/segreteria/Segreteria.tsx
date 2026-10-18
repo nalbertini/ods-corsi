@@ -97,7 +97,7 @@ function CopiaLink({ link, testo, perche }: { link: string; testo: string; perch
   return (
     <button type="button" className="num sg-voce" onClick={copia} title={link}>
       <ICONE_MENU.link />
-      <span className="sg-voce-testo">{copiato ? 'LINK COPIATO ✓' : testo}</span>
+      <span className="sg-voce-testo">{copiato ? 'Link copiato ✓' : testo}</span>
     </button>
   )
 }
@@ -491,7 +491,7 @@ export function Segreteria({
               onClick={async () => {
                 // Prima la bozza aperta, con la domanda di sempre; poi quella dei dati di prova.
                 if (!(await lasciare())) return
-                if (!(await chiedi("Rimettere l'orario vero e togliere i cambi, le presenze, le richieste e gli ordini fatti in prova su questo dispositivo?", 'RIPARTI DALL’ORARIO VERO', { pericolo: true }))) return
+                if (!(await chiedi("Rimettere l'orario vero e togliere i cambi, le presenze, le richieste e gli ordini fatti in prova su questo dispositivo?", 'Riparti dall’orario vero', { pericolo: true }))) return
                 void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva'), import('../../lib/listino'), import('../../lib/vestiarioDati'), import('../../lib/vestiarioProva')]).then(([a, p, r, e, l, vd, vp]) => {
                   a.archivio.azzera()
                   l.scordaListinoProva()
@@ -528,7 +528,7 @@ export function Segreteria({
           <div className="stack" style={{ gap: 12, alignItems: 'flex-start' }}>
             <Guaio testo="La segreteria non si è caricata: controlla la connessione." />
             <button type="button" className="sg-btn sg-btn-linea" onClick={() => setTentativo((t) => t + 1)}>
-              RIPROVA
+              Riprova
             </button>
           </div>
         )}
@@ -576,10 +576,10 @@ export function Segreteria({
         {d && inPresenze && conSegnalate && (
           <div role="tablist" aria-label="Presenze" className="schede sg-schede">
             <button type="button" role="tab" aria-selected={voce === 'presenze'} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>
-              IL MESE
+              Il mese
             </button>
             <button type="button" role="tab" aria-selected={voce === 'segnalate'} className="scheda" data-on={voce === 'segnalate'} onClick={() => vai('segnalate')}>
-              SEGNALATE{segno(segnalateDaVedere, 'da vedere')}
+              Segnalate{segno(segnalateDaVedere, 'da vedere')}
             </button>
           </div>
         )}

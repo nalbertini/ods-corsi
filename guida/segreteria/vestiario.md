@@ -9,7 +9,7 @@ fornitore va solo quello che è **saldato**.
 
 ## Aprire gli ordini
 
-1. **VESTIARIO** nel menu, poi **CATALOGO E CHIUSURA**.
+1. **VESTIARIO** nel menu, poi **Catalogo e chiusura**.
 2. **CHIUDE IL**: l'ultimo giorno in cui le famiglie possono ordinare,
    compreso.
 3. I capi, uno per voce:
@@ -23,7 +23,7 @@ fornitore va solo quello che è **saldato**.
    - il **TIPO**: **JUDOGI**, **COSTUMINI LOTTA** o **VESTIARIO LOGATO**. È il
      passo «che tipo di capi ti serve?» della pagina. Finché anche un solo
      capo è senza tipo, le famiglie vedono tutti i capi in una pagina sola:
-     la riga del capo lo dice con **SENZA TIPO**, e prima di **SALVA** un
+     la riga del capo lo dice con **Senza tipo**, e prima di **Salva** un
      avviso giallo elenca i capi senza tipo;
    - la **FOTO**, con **CARICA FOTO**: va bene anche quella del telefono,
      l'app la rimpicciolisce da sola. Solo il capo, niente persone: la foto è
@@ -31,9 +31,9 @@ fornitore va solo quello che è **saldato**.
 4. **LE TABELLE DELLE TAGLIE**: un'immagine per tipo, in cima alla pagina
    di quel tipo. Una tabella in PDF va prima fotografata o salvata come
    immagine.
-5. **SALVA**. Come nel listino, i cambi restano in una bozza finché non si
+5. **Salva**. Come nel listino, i cambi restano in una bozza finché non si
    salva, e se qualcosa non va la barra lo dice in rosso. Le foto nuove vanno
-   sulla pagina solo con **SALVA**; quelle sostituite o tolte si cancellano,
+   sulla pagina solo con **Salva**; quelle sostituite o tolte si cancellano,
    e la barra lo dice prima. **VEDI LA PAGINA** apre la pagina come la vede
    la famiglia, con quello che è salvato.
 6. **Copia link ordini**, in fondo al menu, copia il link da mandare nel gruppo
@@ -64,9 +64,9 @@ contano.
 
 Sotto c'è l'elenco, dal più recente: ogni ordine dice quando è arrivato e da
 dove, **dal link** o **dal banco**. Due ordini con lo stesso telefono nella
-stessa raccolta hanno il bollino **STESSO TELEFONO**: spesso è un doppione, da
-guardare prima di segnare il pagamento. L'elenco ha i filtri **TUTTI**, **DA SALDARE**, **SALDATI** e
-**ANNULLATI**. **DA SALDARE** è in rosso: chi ordina ha lasciato il telefono,
+stessa raccolta hanno il bollino **Stesso telefono**: spesso è un doppione, da
+guardare prima di segnare il pagamento. L'elenco ha i filtri **Tutti**, **Da saldare**, **Saldati** e
+**Annullati**. **Da saldare** è in rosso: chi ordina ha lasciato il telefono,
 per chiamarlo.
 
 Un ordine si apre a tutta pagina:
@@ -79,7 +79,7 @@ Un ordine si apre a tutta pagina:
 - **Le righe** — per chi è il capo, capo, taglia e quantità. Si correggono
   quando una famiglia chiama per cambiare una taglia; il totale si ricalcola.
   Una riga che c'era tiene il suo prezzo, una nuova prende quello di adesso.
-  Fino a **SALVA** è una bozza. Se l'ordine è già saldato e il totale sale,
+  Fino a **Salva** è una bozza. Se l'ordine è già saldato e il totale sale,
   prima di salvare l'app lo dice e chiede: **RESTA SALDATO** (la differenza
   è già sistemata) o **TOGLI IL SEGNO** (la famiglia deve ancora pagare la
   differenza). Se il totale scende, l'ordine resta saldato: un rimborso si fa
@@ -87,7 +87,7 @@ Un ordine si apre a tutta pagina:
   pagato: l'ordine dice «Pagati 63 € · mancano 7 €», e nei numeri in cima
   manca solo la differenza.
   Un ordine annullato non si corregge: prima si rimette.
-- **SPOSTA** — porta l'ordine in un'altra raccolta, per esempio chi ha pagato
+- **Sposta** — porta l'ordine in un'altra raccolta, per esempio chi ha pagato
   dopo la chiusura e va nel giro dopo.
 - **ANNULLA L'ORDINE** — per un doppione o un ripensamento. Chiede conferma.
   L'ordine resta nell'elenco come ANNULLATO e non va al fornitore; si rimette
@@ -99,7 +99,7 @@ prezzo di quando è arrivata.
 
 ## Un ordine dal banco
 
-**NUOVO ORDINE** scrive un ordine per chi telefona o passa in segreteria, anche
+**Nuovo ordine** scrive un ordine per chi telefona o passa in segreteria, anche
 a raccolta chiusa. **SALVA, GIÀ SALDATO** è per chi paga subito: si sceglie
 come (contanti, se non si cambia). Se c'è già un ordine con lo stesso telefono,
 prima di salvare l'app lo dice e propone di aprire quello.
@@ -108,9 +108,9 @@ prima di salvare l'app lo dice e propone di aprire quello.
 
 In fondo a VESTIARIO ci sono due scarichi, che si aprono con Excel:
 
-- **ELENCO PER IL FORNITORE** — capo, taglia e quantità, solo degli ordini
+- **Elenco per il fornitore** — capo, taglia e quantità, solo degli ordini
   saldati e non annullati.
-- **ELENCO PER PERSONA** — per chi è ogni capo, con chi ha ordinato e il
+- **Elenco per persona** — per chi è ogni capo, con chi ha ordinato e il
   telefono: serve a distribuire quando arriva il pacco.
 
 Un nome che comincia con `=`, `+`, `-` o `@` esce nel file con un apostrofo

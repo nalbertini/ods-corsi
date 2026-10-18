@@ -58,9 +58,9 @@ type Filtro = 'tutti' | StatoOrdine
 type Pagina = { a: 'elenco' } | { a: 'ordine'; id: string } | { a: 'nuovo' } | { a: 'catalogo' }
 
 const SEGNO: Record<StatoOrdine, { testo: string; tono: string }> = {
-  'da saldare': { testo: 'DA SALDARE', tono: 'rosso' },
-  saldato: { testo: 'SALDATO', tono: 'verde' },
-  annullato: { testo: 'ANNULLATO', tono: 'spento' },
+  'da saldare': { testo: 'Da saldare', tono: 'rosso' },
+  saldato: { testo: 'Saldato', tono: 'verde' },
+  annullato: { testo: 'Annullato', tono: 'spento' },
 }
 
 /** DA SALDARE in rosso con la parola, SALDATO verde, ANNULLATO grigio: il colore non è l'unico segno. */
@@ -148,19 +148,19 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
 
   const vedi = (
     <a className="sg-btn sg-btn-linea" href={LINK_ORDINI} target="_blank" rel="noopener">
-      VEDI LA PAGINA ↗
+      Vedi la pagina ↗
     </a>
   )
 
   return (
     <>
       {d && pagina.a === 'ordine' && aperto && raccolte.dato && (
-        <SchedaPiena key={aperto.id} etichetta={`Ordine di ${aperto.nome} ${aperto.cognome}`} torna="GLI ORDINI" onTorna={() => void torna()} cornice={false}>
+        <SchedaPiena key={aperto.id} etichetta={`Ordine di ${aperto.nome} ${aperto.cognome}`} torna="Gli ordini" onTorna={() => void torna()} cornice={false}>
           <SchedaOrdine d={d} o={aperto} capi={capi} raccolte={raccolte.dato} oggi={oggi} fai={fai} lavora={lavora} onCambiato={dopo} onSpostato={() => setPagina({ a: 'elenco' })} />
         </SchedaPiena>
       )}
       {d && pagina.a === 'nuovo' && (
-        <SchedaPiena etichetta="Nuovo ordine" torna="GLI ORDINI" onTorna={() => void torna()} cornice={false}>
+        <SchedaPiena etichetta="Nuovo ordine" torna="Gli ordini" onTorna={() => void torna()} cornice={false}>
           <NuovoOrdine
             d={d}
             capi={capi}
@@ -184,7 +184,7 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
         </SchedaPiena>
       )}
       {d && pagina.a === 'catalogo' && catalogo.dato && (
-        <SchedaPiena etichetta="Catalogo e chiusura" torna="GLI ORDINI" onTorna={() => void torna()} cornice={false}>
+        <SchedaPiena etichetta="Catalogo e chiusura" torna="Gli ordini" onTorna={() => void torna()} cornice={false}>
           <CatalogoChiusura
             d={d}
             salvato={catalogo.dato.c}
@@ -226,11 +226,11 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
               </div>
             )}
             <button type="button" className="sg-btn sg-btn-linea" disabled={!catalogo.dato} onClick={() => setPagina({ a: 'catalogo' })}>
-              CATALOGO E CHIUSURA
+              Catalogo e chiusura
             </button>
             <span className="grow" />
             <button type="button" className="sg-btn sg-btn-pieno" disabled={!raccolta} onClick={() => setPagina({ a: 'nuovo' })}>
-              NUOVO ORDINE
+              Nuovo ordine
             </button>
           </div>
         )}
@@ -264,7 +264,7 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
               <input id="ve-cerca" className="sg-campo" type="search" placeholder="Cerca per nome o telefono" style={{ width: 320, maxWidth: '100%' }} value={cerca} onChange={(e) => setCerca(e.target.value)} />
               {(['tutti', 'da saldare', 'saldato', 'annullato'] as const).map((f) => (
                 <button key={f} type="button" className="num sg-chip" aria-pressed={filtro === f} onClick={() => setFiltro(f)}>
-                  {{ tutti: 'TUTTI', 'da saldare': 'DA SALDARE', saldato: 'SALDATI', annullato: 'ANNULLATI' }[f]}{' '}
+                  {{ tutti: 'Tutti', 'da saldare': 'Da saldare', saldato: 'Saldati', annullato: 'Annullati' }[f]}{' '}
                   <span className="num sg-tag" data-tipo={f === 'da saldare' && quanti(f) > 0 ? 'manca' : undefined}>
                     {quanti(f)}
                   </span>
@@ -302,7 +302,7 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
                         <>
                           {' '}
                           <span className="num sg-tag" data-tipo="presto">
-                            STESSO TELEFONO
+                            Stesso telefono
                           </span>
                         </>
                       )}
@@ -335,7 +335,7 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
                     scarica(nome, csvFornitore(tutti, capi))
                     avvisa(`Elenco scaricato: ${nome}`)
                   }}>
-                  ELENCO PER IL FORNITORE · CSV
+                  Elenco per il fornitore · CSV
                 </button>
                 <span className="sg-sotto">
                   Solo gli ordini saldati e non annullati, contati per capo e taglia.
@@ -348,7 +348,7 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
                     scarica(nome, csvPersone(tutti))
                     avvisa(`Elenco scaricato: ${nome}`)
                   }}>
-                  ELENCO PER PERSONA · CSV
+                  Elenco per persona · CSV
                 </button>
                 <span className="sg-sotto">Una riga per capo, con per chi è, chi l’ha ordinato e lo stato: per distribuire. Gli annullati non ci sono.</span>
               </div>
@@ -470,7 +470,7 @@ function RigheTabella({ righe, capi, prezzi, onCambia }: { righe: RigaScritta[];
         })}
       </div>
       <button type="button" className="sg-btn sg-btn-tratteggio" style={{ alignSelf: 'flex-start' }} disabled={righe.length >= MAX_RIGHE} onClick={() => onCambia([...righe, rigaVuota(righe[righe.length - 1]?.perChi)])}>
-        + AGGIUNGI UNA RIGA
+        + Aggiungi una riga
       </button>
       {righe.length >= MAX_RIGHE && <span className="sg-sotto">{MAX_RIGHE_DETTO}</span>}
     </>
@@ -549,8 +549,8 @@ function SchedaOrdine({
     const avviso = avvisoSaldato(o, totale)
     const togli =
       !!avviso &&
-      (await chiedi(`Togliere il segno di saldato? ${avviso} Togli il segno per chiedere la differenza; resta saldato se è già a posto.`, 'TOGLI IL SEGNO', {
-        no: 'RESTA SALDATO',
+      (await chiedi(`Togliere il segno di saldato? ${avviso} Togli il segno per chiedere la differenza; resta saldato se è già a posto.`, 'Togli il segno', {
+        no: 'Resta saldato',
       }))
     // Una chiamata sola: il già pagato resta il vecchio totale, da saldare c'è la differenza.
     void fai(
@@ -563,14 +563,14 @@ function SchedaOrdine({
     )
   }
   const butta = async () => {
-    if (await chiedi(`Buttare i cambi alle righe di ${chi}? L’ordine torna com’è salvato.`, 'BUTTA I CAMBI', { pericolo: true })) setBozza(null)
+    if (await chiedi(`Buttare i cambi alle righe di ${chi}? L’ordine torna com’è salvato.`, 'Butta i cambi', { pericolo: true })) setBozza(null)
   }
   const annulla = async () => {
     if (
       !(await chiedi(
         `Annullare l’ordine di ${chi}? L’ordine resta nell’elenco, segnato ANNULLATO: non va al fornitore e non conta nei numeri. Se ha già pagato, il rimborso si fa a mano.`,
-        'ANNULLA L’ORDINE',
-        { no: 'LASCIA STARE' },
+        'Annulla l’ordine',
+        { no: 'Lascia stare' },
       ))
     )
       return
@@ -622,10 +622,10 @@ function SchedaOrdine({
                   `Righe cambiate: il totale ${totale === o.totale ? `resta ${inEuro(totale)}` : `passa da ${inEuro(o.totale)} a ${inEuro(totale)}`}. Fino a SALVA l’ordine resta com’era.`}
               </span>
               <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void butta()}>
-                BUTTA I CAMBI
+                Butta i cambi
               </button>
               <button type="button" className="sg-btn sg-btn-pieno" disabled={!!guaio || lavora} onClick={() => void salva()}>
-                SALVA
+                Salva
               </button>
             </div>
           )}
@@ -700,7 +700,7 @@ function SchedaOrdine({
                       onSpostato()
                       await onCambiato()
                     })}>
-                    SPOSTA
+                    Sposta
                   </button>
                 </div>
                 <span className="sg-sotto">Per chi paga dopo la chiusura: l’ordine passa alla raccolta scelta, coi suoi prezzi.</span>
@@ -710,7 +710,7 @@ function SchedaOrdine({
             )}
             {!o.annullato && (
               <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} disabled={lavora} onClick={() => void annulla()}>
-                ANNULLA L’ORDINE
+                Annulla l’ordine
               </button>
             )}
           </section>
@@ -766,7 +766,7 @@ function NuovoOrdine({
     if (!letti) return
     if (
       gia &&
-      !(await chiedi(`C’è già un ordine di ${gia.nome} ${gia.cognome} con questo telefono, ${arrivo(gia).replace(/^Arrivato/, 'arrivato')}. Salvarne un altro?`, 'SALVA LO STESSO', { no: 'APRI QUELLO' }))
+      !(await chiedi(`C’è già un ordine di ${gia.nome} ${gia.cognome} con questo telefono, ${arrivo(gia).replace(/^Arrivato/, 'arrivato')}. Salvarne un altro?`, 'Salva lo stesso', { no: 'Apri quello' }))
     )
       return onApri(gia.id)
     void fai(() => d.scriviOrdine(ordine, pagato), pagato ? `Ordine salvato, già saldato ${PAGATO[pagato]}` : 'Ordine salvato: è da saldare', async () => {
@@ -802,7 +802,7 @@ function NuovoOrdine({
               Prima metti i capi in CATALOGO E CHIUSURA.
             </span>
             <button type="button" className="sg-btn sg-btn-linea" onClick={onCatalogo}>
-              CATALOGO E CHIUSURA
+              Catalogo e chiusura
             </button>
           </div>
         )}
@@ -812,11 +812,11 @@ function NuovoOrdine({
       {guaio && <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
         <button type="button" className="sg-btn sg-btn-pieno" disabled={!!guaio || lavora} onClick={() => void salva(null)}>
-          SALVA L’ORDINE
+          Salva l’ordine
         </button>
         <span className="row" style={{ gap: 6 }}>
           <button type="button" className="sg-btn sg-btn-verde" disabled={!!guaio || lavora} onClick={() => void salva(come)}>
-            SALVA, GIÀ SALDATO
+            Salva, già saldato
           </button>
           <label htmlFor="ve-come" className="vh">
             Come ha pagato
@@ -830,7 +830,7 @@ function NuovoOrdine({
           </select>
         </span>
         <button type="button" className="sg-btn sg-btn-linea" onClick={onLascia}>
-          LASCIA STARE
+          Lascia stare
         </button>
       </div>
     </div>
@@ -879,7 +879,7 @@ function CaricaFoto({
   url,
   frase,
   nuova,
-  cosa = 'FOTO',
+  cosa = 'foto',
   avviso,
   errore,
   onFile,
@@ -888,7 +888,7 @@ function CaricaFoto({
   id: string
   etichetta: string
   /** La parola sui tasti e nel riquadro vuoto: FOTO per un capo, TABELLA per un tipo. */
-  cosa?: 'FOTO' | 'TABELLA'
+  cosa?: 'foto' | 'tabella'
   url: string
   frase: string
   nuova: boolean
@@ -900,15 +900,15 @@ function CaricaFoto({
   return (
     <div className="sg-carica-foto">
       <span className="sg-carica-foto-mini" data-vuota={!url || undefined}>
-        {url ? <img src={url} alt="" /> : <span>NESSUNA {cosa}</span>}
-        {nuova && <span className="num sg-carica-foto-nuova">NUOVA</span>}
+        {url ? <img src={url} alt="" /> : <span>Nessuna {cosa}</span>}
+        {nuova && <span className="num sg-carica-foto-nuova">Nuova</span>}
       </span>
       <span className="stack grow" style={{ gap: 6, minWidth: 0 }}>
         <span className="sg-etichetta">{etichetta}</span>
         <span style={{ fontSize: 14, color: 'var(--sec)', overflowWrap: 'anywhere' }}>{frase}</span>
         <span className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
           <label className="sg-btn sg-btn-linea" htmlFor={id}>
-            {url ? 'SOSTITUISCI' : cosa === 'FOTO' ? 'CARICA FOTO' : 'CARICA LA TABELLA'}
+            {url ? 'Sostituisci' : cosa === 'foto' ? 'Carica foto' : 'Carica la tabella'}
           </label>
           <input
             id={id}
@@ -923,7 +923,7 @@ function CaricaFoto({
           />
           {onTogli && (
             <button type="button" className="sg-link sg-link-alto" onClick={onTogli}>
-              {cosa === 'FOTO' ? 'Togli la foto' : 'Togli la tabella'}
+              {cosa === 'foto' ? 'Togli la foto' : 'Togli la tabella'}
             </button>
           )}
         </span>
@@ -1048,7 +1048,7 @@ function CatalogoChiusura({
   const salva = async () => {
     if (!('catalogo' in pronto)) return
     const nuovo = pronto.catalogo
-    if (effetto.avviso && !(await chiedi(`Salvare il catalogo? ${effetto.avviso}`, 'SALVA LO STESSO', { no: 'TORNA A CORREGGERE' }))) return
+    if (effetto.avviso && !(await chiedi(`Salvare il catalogo? ${effetto.avviso}`, 'Salva lo stesso', { no: 'Torna a correggere' }))) return
     // L'avviso dice cosa è successo alle raccolte, con la data: è lì che si sbaglia.
     const fatto =
       effetto.cosa === 'proroga' && nuovo.chiude
@@ -1069,7 +1069,7 @@ function CatalogoChiusura({
     )
   }
   const butta = async () => {
-    if (!(await chiedi('Buttare i cambi al catalogo? Torna com’è salvato, quello che vede la pagina degli ordini.', 'BUTTA I CAMBI', { pericolo: true }))) return
+    if (!(await chiedi('Buttare i cambi al catalogo? Torna com’è salvato, quello che vede la pagina degli ordini.', 'Butta i cambi', { pericolo: true }))) return
     rilascia(new Set())
     setGuaiFoto({})
     setBozza(null)
@@ -1081,7 +1081,7 @@ function CatalogoChiusura({
       <Testa titolo="CATALOGO E CHIUSURA" sotto="Quello che vede chi ordina dal link. Si cambia in una bozza e si salva tutto insieme, come il listino.">
         {vedi}
       </Testa>
-      {cambiato && <span className="sg-sotto" style={{ color: 'var(--giallo-testo)' }}>VEDI LA PAGINA mostra quello salvato: i cambi e le foto nuove si vedono dopo SALVA.</span>}
+      {cambiato && <span className="sg-sotto" style={{ color: 'var(--giallo-testo)' }}>«Vedi la pagina» mostra quello salvato: i cambi e le foto nuove si vedono dopo «Salva».</span>}
       <div className="stack sg-listino" style={{ gap: 20 }}>
         {!conFoto && (
           <section aria-label="Tipi e foto" className="sg-riquadro">
@@ -1167,23 +1167,23 @@ function CatalogoChiusura({
                 )}
                 <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
                   <button type="button" className="num sg-chip" disabled={i === 0} onClick={() => sposta(i, -1)} aria-label="Più su">
-                    ↑ SU
+                    ↑ su
                   </button>
                   <button type="button" className="num sg-chip" disabled={i === b.capi.length - 1} onClick={() => sposta(i, 1)} aria-label="Più giù">
-                    ↓ GIÙ
+                    ↓ giù
                   </button>
                   <button
                     type="button"
                     className="sg-link sg-link-alto"
                     onClick={async () => {
-                      if (await chiedi(`Togliere «${c.capo || 'questo capo'}» dal catalogo? Gli ordini già fatti restano come sono.`, 'TOGLI DAL CATALOGO')) cambia({ capi: b.capi.filter((x) => x.chiave !== c.chiave) })
+                      if (await chiedi(`Togliere «${c.capo || 'questo capo'}» dal catalogo? Gli ordini già fatti restano come sono.`, 'Togli dal catalogo')) cambia({ capi: b.capi.filter((x) => x.chiave !== c.chiave) })
                     }}
                   >
                     Togli dal catalogo
                   </button>
                   <span className="grow" />
                   <button type="button" className="sg-btn sg-btn-linea" onClick={() => setAperto(null)}>
-                    CHIUDI
+                    Chiudi
                   </button>
                 </div>
               </div>
@@ -1197,7 +1197,7 @@ function CatalogoChiusura({
                       <>
                         {' '}
                         <span className="num sg-tag" data-tipo="presto">
-                          SENZA TIPO
+                          Senza tipo
                         </span>
                       </>
                     )}
@@ -1208,7 +1208,7 @@ function CatalogoChiusura({
                   </span>
                 </span>
                 <button type="button" className="num sg-chip" onClick={() => setAperto(c.chiave)}>
-                  CAMBIA
+                  Cambia
                 </button>
               </div>
             )
@@ -1223,7 +1223,7 @@ function CatalogoChiusura({
               setAperto(nuovo.chiave)
             }}
           >
-            + AGGIUNGI UN CAPO
+            + Aggiungi un capo
           </button>
         </section>
 
@@ -1248,7 +1248,7 @@ function CatalogoChiusura({
                   nuova={!!(file && nuove[file])}
                   frase={file && nuove[file] ? `${nuove[file].nomeFile} · va sulla pagina con SALVA` : file ? 'La tabella che vede chi ordina' : prima ? 'Tolta: il file si cancella con SALVA' : 'Nessuna tabella'}
                   errore={guaiFoto[`tabella-${t.id}`]}
-                  cosa="TABELLA"
+                  cosa="tabella"
                   onFile={(f) => void scegliFoto(`tabella-${t.id}`, f, metti, file)}
                   onTogli={
                     file
@@ -1276,10 +1276,10 @@ function CatalogoChiusura({
                 `Ci sono cambi da salvare: fino ad allora la pagina degli ordini mostra il catalogo di prima.${siCancella ? ` ${siCancella}` : ''}`}
             </span>
             <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void butta()}>
-              BUTTA I CAMBI
+              Butta i cambi
             </button>
             <button type="button" className="sg-btn sg-btn-pieno" disabled={!!guaio || lavora} onClick={() => void salva()}>
-              SALVA
+              Salva
             </button>
           </div>
         )}

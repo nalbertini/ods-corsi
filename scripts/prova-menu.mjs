@@ -7,7 +7,6 @@
 // dà a ognuno le voci delle sue autorizzazioni; Segreteria.tsx lo importa. Amministrazione non è più
 // un'area a sé (vedi prova-ruoli.mjs): con l'amministrazione compare in più il gruppo «I conti».
 // ---------------------------------------------------------------------------
-import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { build } from 'esbuild'
 
@@ -87,26 +86,16 @@ ok('«DATI DI PROVA» resta maiuscolo (è una sigla di stato)', />DATI DI PROVA<
 if (existsSync('src/components/banco/BarraBanco.tsx'))
   ok('BarraBanco.tsx: niente COPIA LINK in maiuscolo', /COPIA LINK/.test(readFileSync('src/components/banco/BarraBanco.tsx', 'utf8')), false)
 
-console.log('\nIl menu del Banco non cambia')
-const ora = await impacchetta("export { LUOGHI } from './src/lib/luoghiBanco'")
-let prima = null
-try {
-  // Il punto in cui il ramo è partito da main: se main cambia i luoghi del Banco dopo, non è colpa di questo ramo.
-  const base = execSync('git merge-base origin/main HEAD', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
-  prima = execSync(`git show ${base}:src/lib/luoghiBanco.ts`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
-} catch {
-  console.log('  - confronto con origin/main saltato: il ramo non c\'è')
-}
-if (prima !== null) {
-  const { outputFiles } = await build({
-    stdin: { contents: prima.replace(/^import type .*$/m, ''), loader: 'ts' },
-    format: 'esm', write: false, logLevel: 'error',
-  })
-  const vecchio = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
-  // L'unica differenza voluta: CONTABILITÀ in SOLDI (menu unico), che solo chi ha l'amministrazione vede (`luoghiPer`).
-  const senzaContabilita = ora.LUOGHI.map((l) => ({ ...l, voci: l.voci.filter((v) => v.voce !== 'contabilita') }))
-  ok('LUOGHI identico a quello da cui il ramo è partito, tolta CONTABILITÀ', senzaContabilita, vecchio.LUOGHI)
-}
+console.log('\nIl menu del Banco')
+// I cinque luoghi e le voci che portano (gli id, non i nomi): la serie «segreteria nel look del sito» non li sposta.
+const luoghi = await impacchetta("export { LUOGHI } from './src/lib/luoghiBanco'")
+ok('LUOGHI: i cinque luoghi con le loro voci', (luoghi.LUOGHI ?? []).map((l) => [l.id, l.voci.map((v) => v.voce)]), [
+  ['oggi', ['dafare', 'settimana', 'presenze']],
+  ['persone', ['iscritti', 'tessere', 'richieste', 'istruttori', 'personale']],
+  ['corsi', ['corsi', 'esercizi']],
+  ['soldi', ['pagamenti', 'contabilita', 'listino', 'vestiario']],
+  ['palestra', ['statistiche', 'segnalazioni', 'sito', 'regole']],
+])
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

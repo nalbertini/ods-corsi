@@ -94,10 +94,10 @@ export const bozzaCambiata = (locale: string, salvata: string) => pulisciTesto(l
 
 /** Le parole sul tag di una pagina nell'elenco. */
 export const PAROLE_STATO: Record<StatoPagina, string> = {
-  pubblicata: 'PUBBLICATA',
-  modificata: 'MODIFICHE NON PUBBLICATE',
-  'solo-bozza': 'SOLO BOZZA',
-  nascosta: 'NASCOSTA',
+  pubblicata: 'Pubblicata',
+  modificata: 'Modifiche non pubblicate',
+  'solo-bozza': 'Solo bozza',
+  nascosta: 'Nascosta',
 }
 
 // Un indirizzo che il sito e il database ammettono: assoluto (https, http, mailto, tel) con qualcosa dopo, oppure interno
