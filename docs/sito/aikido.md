@@ -1,42 +1,34 @@
-# Aikido: la pagina del corso come nel design
+# Aikido: la pagina del corso rivista
 
-Testo da incollare nel pannello SITO (PAGINE › Aikido, indirizzo `/aikido/`), per avere la pagina di un corso del design «tatami blu e giallo»
-(`TatamiBlu-Corso`, desktop, e `TatamiBluM-Corso`, telefono). Il design disegna il Judo; le altre discipline seguono la stessa forma
-(regole in `corso.md` del ramo `claude/sito-corso-83a32b`). Il testo di oggi è sul sito: ogni fatto vero è stato conservato.
+Testo da incollare nel pannello SITO (PAGINE › Aikido) per avere la pagina rivista: titolo con i due pulsanti, foto di apertura, dati, orario a tessere, «Cosa si fa» e «A chi è rivolto», «Cosa aspettarsi» numerato e chiusura «Una settimana per scegliere.».
+**Finché non si incolla il testo nuovo la pagina resta com'è oggi**: il sito riconosce quella nuova da un pulsante verso il modulo online prima del primo titolo grande. Il testo di prima è in [`aikido-precedente.html`](aikido-precedente.html). Regole in [`corso.md`](corso.md).
 
-Come si fa:
+## Prima di incollare: le foto
+
+Nella libreria IMMAGINI vanno caricate (le versioni sviluppate sono in `docs/proposte-home/corso/foto/approvate/`, non nel repository):
+
+| File | Ruolo |
+|---|---|
+| `aikido-A.jpg` | A |
+| `aikido-B.jpg` | B |
+| `aikido-C.jpg` | C |
+
+In `aikido.html` i nomi sono segnaposto (`DA-CARICARE-<file>.jpg`): dopo il caricamento si sostituiscono con i nomi veri prima di copiare. Il punto da tenere al centro lo sceglie il sito dal corso, non dal nome del file. Ruoli: A apertura (sotto il titolo), B accanto a «Cosa si fa», C nella chiusura.
+
+## Come si fa
 
 1. Apri **PAGINE › Aikido**.
-2. Nei campi a destra: **titolo** e **descrizione** qui sotto.
-3. Apri `docs/sito/aikido.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello clicca nel testo, cancella tutto e incolla (Cmd+V).
+2. Nel campo **descrizione** scrivi quella qui sotto; il titolo resta com'è.
+3. Apri `docs/sito/aikido.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello cancella **tutto** il testo vecchio e incolla (Cmd+V).
 4. **ANTEPRIMA** per controllare, poi **PUBBLICA**.
-
-## Titolo
-
-Aikido
 
 ## Descrizione
 
-Armonia, equilibrio, difesa.
-
-## Testo
-
-Il testo sta in [`aikido.html`](aikido.html): è quello che va incollato. Ordine, come vuole il sito per la pagina di un corso: foto grande, quattro tessere dei dati (Per chi, Quando, Dove, Per iniziare), tre tessere di presentazione, orario a tessere, cosa aspettarsi, «Perché sceglierlo» (banda blu, al massimo 160 caratteri).
-
-## Cosa cambia rispetto a oggi
-
-- Titolo e descrizione: come oggi.
-- In cima la foto grande e le quattro tessere dei dati: frasi prese dal testo di oggi e dal design (Dove, Per iniziare: via Sassi 26 e settimana di prova a 5 euro, già nelle domande frequenti).
-- «Cos’è il corso», «Cosa si fa durante le lezioni», «Per chi è pensato» diventano tre tessere sotto le tessere dei dati, non più titoli grandi.
-- L’orario di oggi, scritto in un solo paragrafo, diventa una tessera per gruppo: nome, ora, giorni, anni di nascita.
-- «Cosa può aspettarsi un atleta»: i titoli di oggi, una tessera ciascuno, con una frase nuova sotto.
-- «Perché sceglierlo» diventa la banda blu.
-- Il resto è identico al testo pubblicato.
+Armonia, equilibrio e difesa, in una disciplina adatta anche a chi ha più anni.
 
 ## Da controllare prima di pubblicare
 
-- Le frasi sotto le tessere «Cosa può aspettarsi» sono nuove (lealtà, crescita insieme, fair play, divertimento, disciplina): le rilegga chi insegna, perché dicono come si lavora davvero.
-- «Dai 7 anni agli adulti»: età dalla tessera di Home e Corsi; la pagina di oggi dice solo «ragazzi e adulti» e gli anni di nascita (Aikido 2: 2019-2017).
-- Home e Corsi mostrano la fascia «Anziani» per l’aikido: nel testo di oggi non c’è. Qui non l’ho scritta.
-- FOTO DA SCEGLIERE: una seconda foto di aikido per la fila (ora solo la foto grande).
-- Le foto ritraggono minori: servono i permessi dei genitori (quelle di gruppo e di lezione sono già pubbliche sul sito).
+- Domande aperte che toccano questa pagina (`docs/proposte-home/corso/testi/REPORT.md`): Q8 (la tessera diceva «dai 7 anni», il testo «ragazzi e adulti»).
+- Le frasi nuove o accorciate (descrizione, «Cosa si fa», titoli di «Cosa aspettarsi») le rilegga chi insegna: nei sorgenti prima/dopo, riga «Tolto», sta in `docs/proposte-home/corso/testi/REPORT.md`.
+- Non c'è la quota dopo la prova né il certificato medico: nessun testo di oggi li dice (Q3, Q4).
+- Le età sull'anno 2026 invecchiano ogni settembre (Q9).

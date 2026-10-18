@@ -6,6 +6,7 @@ import { CSS_CORSI } from './sitoCorsi'
 import { CSS_INTERNE } from './sitoInterne'
 import { cssFoci, cssFociSchede } from './sitoFoto'
 import { eHomeNuova, homeNuova } from './sitoHome'
+import { corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
 import { CONTATTI } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
 
@@ -154,6 +155,56 @@ const CSS_TESTATA = `
 .testata .chiudi{display:flex;width:max-content;margin-left:auto;align-items:center;min-height:48px;margin-bottom:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
 .testata .nel-menu{display:flex;justify-content:center;margin-top:12px;padding:0 24px;font-size:16px}
 .piede-menu a{display:inline-flex}
+}
+`.replace(/\n/g, '')
+
+/**
+ * La pagina del corso rivista (sitoCorso.ts), in aggiunta alle regole della Home (CSS_HOME): foto di apertura o fascia,
+ * dati, orario a tessere, «Cosa si fa» con la foto accanto. Tutto sotto `.corso-nuovo`: le altre pagine non cambiano.
+ * Le larghezze delle tessere dell'orario (6 colonne, nessun buco) vengono dalle regole `n-N` di sempre.
+ */
+const CSS_CORSO_NUOVO = `
+.corso-nuovo .corso-apertura{margin:48px var(--margine) 0;height:clamp(240px,43vw,619px);overflow:hidden;border-radius:6px}
+.corso-nuovo .corso-apertura img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 40%;border-radius:0}
+.corso-nuovo .corso-fascia{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px;margin:48px var(--margine) 0;padding:48px;list-style:none;border-radius:6px;background:var(--blu);color:#fff}
+.corso-nuovo .corso-fascia li{margin:0;padding-top:14px;border-top:3px solid #fff}
+.corso-nuovo .et{display:block;margin-bottom:8px;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.corso-nuovo .corso-fascia .val{display:block;font-family:var(--display);font-weight:800;font-size:clamp(40px,4.4vw,64px);line-height:.95;text-transform:uppercase}
+.corso-nuovo .tessere.dati{display:grid;gap:6px;margin:6px var(--margine) 0;grid-template-columns:repeat(4,minmax(0,1fr))}
+.corso-nuovo .tessere.dati.n-1{grid-template-columns:1fr}
+.corso-nuovo .tessere.dati.n-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.corso-nuovo .tessere.dati.n-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.corso-nuovo .tessere.dati>.tessera{grid-column:auto;min-height:150px;padding:24px 26px;justify-content:space-between;gap:12px}
+.corso-nuovo .dato .val{margin:0;font-size:20px;font-weight:600;line-height:1.35}
+.corso-nuovo .tessera.orario{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr;align-items:start;gap:0 12px;min-height:170px;padding:24px 26px;font-size:17px;line-height:1.45}
+.corso-nuovo .orario h3{font-size:clamp(28px,3.2vw,46px)}
+.corso-nuovo .orario .ora{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(26px,2.8vw,40px);line-height:1;text-transform:uppercase}
+.corso-nuovo .orario .dettagli{grid-column:1 / -1;align-self:end;display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 12px}
+.corso-nuovo .numero-perche{opacity:.6}
+.corso-nuovo .orario .dettagli p{margin:0}
+.corso-nuovo .cosa-griglia{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.corso-nuovo .cosa-si-fa.con-foto .cosa-griglia{grid-template-columns:minmax(0,1fr) 440px}
+.corso-nuovo .tessere.testi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0}
+.corso-nuovo .cosa-si-fa.con-foto .tessere.testi{grid-template-columns:minmax(0,1fr)}
+.corso-nuovo .tessere.testi>.tessera{grid-column:auto;min-height:220px;padding:32px;justify-content:flex-start;gap:12px;font-size:20px;line-height:1.45}
+.corso-nuovo .testi h3{font-size:clamp(36px,3.6vw,52px);line-height:.95}
+.corso-nuovo .corso-interna{margin:0;min-height:440px;overflow:hidden;border-radius:6px}
+.corso-nuovo .corso-interna img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;border-radius:0}
+.corso-nuovo .tessere.perche.n-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.corso-nuovo .tessere.perche.n-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.corso-nuovo .tessere.perche>.tessera{grid-column:auto}
+@media (max-width:900px){
+.corso-nuovo h1.medio{font-size:16vw}
+.corso-nuovo h1.lungo{font-size:13vw}
+.corso-nuovo h1.lunghissimo{font-size:11vw}
+.corso-nuovo .corso-apertura{margin-top:32px}
+.corso-nuovo .corso-fascia{grid-template-columns:1fr;gap:24px;margin-top:32px;padding:28px 24px}
+.corso-nuovo .tessere.dati,.corso-nuovo .tessere.dati.n-3,.corso-nuovo .tessere.dati.n-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.corso-nuovo .tessere.dati>.tessera{min-height:130px;padding:20px}
+.corso-nuovo .tessere.orari>.tessera{grid-column:1 / -1}
+.corso-nuovo .cosa-si-fa.con-foto .cosa-griglia,.corso-nuovo .tessere.testi{grid-template-columns:minmax(0,1fr)}
+.corso-nuovo .corso-interna{min-height:300px}
+.corso-nuovo .tessere.perche.n-3,.corso-nuovo .tessere.perche.n-4{grid-template-columns:minmax(0,1fr)}
 }
 `.replace(/\n/g, '')
 
@@ -931,10 +982,10 @@ function social(c: Contesto, titolo: string, descrizione: string): string {
   ].join('')
 }
 
-function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; dati?: string }): string {
+function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssCorsoNuovo?: string; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
 }
 
 /**
@@ -946,8 +997,12 @@ function classeTitolo(titolo: string): string {
   return peso >= 14 ? ' class="lunghissimo"' : peso >= 12 ? ' class="lungo"' : peso >= 10.3 ? ' class="medio"' : ''
 }
 
+/** Le pagine che non sono mai la pagina di un corso, anche se hanno i due pulsanti. */
+const PAGINE_NON_CORSO = new Set(['home', 'corsi', 'contatti', 'chi-siamo'])
+
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
+  if (!PAGINE_NON_CORSO.has(p.slug) && !p.diLegge && eCorsoNuovo(pulito, TESTI.iscrizione)) return paginaCorsoNuovo(p, c, conContatti, pulito)
   if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, conContatti, pulito)
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
@@ -977,6 +1032,15 @@ function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, p
   const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati })
+}
+
+/** La pagina del corso rivista (sitoCorso.ts): come la Home nuova, con la foto di apertura o la fascia sotto il titolo. */
+function paginaCorsoNuovo(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+  const h = corsoNuovo(pulito, TESTI.iscrizione)
+  const hero = `<section class="pagina-hero con-pulsanti solo"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div></section>`
+  const corpo = `${testata(c, conContatti, percorso('corsi'))}<main class="passo-unico corso-nuovo" data-corso="${esc(p.slug)}">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: true })
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsoNuovo: cssFuochiCorso(p.slug), dati })
 }
 
 function nonTrovata(c: Contesto, conContatti: boolean): string {

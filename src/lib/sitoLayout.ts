@@ -164,7 +164,7 @@ function pilloleDiUnaVoce(x: string): { testo: string; pillole: string } {
   return { testo: m[1], pillole: `<span class="pillole">${html}</span>` }
 }
 
-function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string; pillole: string }> | null {
+export function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string; pillole: string }> | null {
   if (b.tag !== 'ul') return null
   const li = [...b.html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1])
   if (li.length < VOCI_MIN || li.length > VOCI_MAX) return null
@@ -188,12 +188,12 @@ const tessera = (colore: string, titolo: string, resto: string, prima = '') =>
   `<article class="tessera ${colore}">${prima}${titolo.trim() ? `<h3>${titolo}</h3>` : ''}${resto}</article>`
 
 /** Nella pagina di un corso i colori ripartono dal giallo e la quarta tessera torna al giallo (docs/sito/corso.md). */
-const ROTAZIONE_CORSO = ['giallo', 'blu', 'inchiostro'] as const
+export const ROTAZIONE_CORSO = ['giallo', 'blu', 'inchiostro'] as const
 
 /** Un orario: il primo paragrafo è solo un grassetto (l'ora), i paragrafi dopo sono i dettagli (giorni, età). */
 const ORA = /^<p[^>]*>\s*<strong>[\s\S]*<\/strong>\s*<\/p>$/i
-const inOrario = (corpo: Blocco[]) => corpo.length > 0 && ORA.test(corpo[0].html)
-function tesseraOrario(colore: string, titolo: string, corpo: Blocco[]): string {
+export const inOrario = (corpo: Blocco[]) => corpo.length > 0 && ORA.test(corpo[0].html)
+export function tesseraOrario(colore: string, titolo: string, corpo: Blocco[]): string {
   const dettagli = corpo.slice(1).map((b) => b.html).join('')
   return `<article class="tessera ${colore} orario"><h3>${titolo}</h3><p class="ora">${contenuto(corpo[0])}</p>${dettagli ? `<div class="dettagli">${dettagli}</div>` : ''}</article>`
 }
