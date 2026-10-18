@@ -1,6 +1,7 @@
 import type { Dati } from './dati'
 import type { Persona, SessioneVista, StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, contiDellAppello, perCognome } from './sala'
+import { contaPresenze, ordinaPerPresenze, type PresenzaStorico, type SessioneStorico } from './frequenza'
 import { archivio, nomeDi, type CorsoProva, type PresenzaIstruttoreProva, type RicorrenzaProva } from './archivioProva'
 import { ISTRUTTORE_PROVA } from './dati'
 import { MESSAGGIO_FUORI_FINESTRA, accreditaOraIstruttore, appelloAperto } from './finestra'
@@ -321,9 +322,23 @@ export function proveDi(sessioneId: string): Persona[] {
 
 /** L'appello di una lezione: gli iscritti di quel giorno, poi le prove. */
 function appelloDi(t: LezioneTrovata): Array<Persona & { prova?: boolean }> {
-  const iscritti = iscrittiIl(t.corso.id, chiaveGiorno(t.inizio)).sort(perCognome)
+  const iscritti = iscrittiIl(t.corso.id, chiaveGiorno(t.inizio))
   const qui = new Set(iscritti.map((p) => p.id))
-  return [...iscritti, ...proveDi(t.id).filter((p) => !qui.has(p.id)).map((p) => ({ ...p, prova: true }))]
+  const elenco = [...iscritti, ...proveDi(t.id).filter((p) => !qui.has(p.id)).map((p) => ({ ...p, prova: true }))]
+  return ordinaPerPresenze(elenco, presenzeDi(t))
+}
+
+/** Lo storico di quella lezione, dalle presenze segnate: le stesse regole del database (`contaPresenze`). */
+function presenzeDi(t: LezioneTrovata) {
+  const sessioni: SessioneStorico[] = []
+  const presenze: PresenzaStorico[] = []
+  for (const [id, segni] of Object.entries(memoria.segnate)) {
+    const l = trovaLezione(id)
+    if (!l) continue
+    sessioni.push({ id, corsoId: l.corso.id, inizio: l.inizio.toISOString(), stato: archivio.dati.lezioni[id]?.stato === 'annullata' ? 'annullata' : 'svolta' })
+    for (const [personaId, stato] of Object.entries(segni)) presenze.push({ sessioneId: id, personaId, stato })
+  }
+  return contaPresenze({ id: t.id, corsoId: t.corso.id, inizio: t.inizio.toISOString() }, sessioni, presenze)
 }
 
 const GIORNO = 24 * 60 * 60_000
