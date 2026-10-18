@@ -131,13 +131,13 @@ function Barra({ editor, d }: { editor: Editor; d: DatiSegreteria }) {
             }}
           />
           <button type="button" className="sg-btn sg-btn-pieno" onClick={() => mettiLink(link.pulsante)}>
-            METTI
+            Metti
           </button>
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => { editor.chain().focus().extendMarkRange('link').unsetLink().run(); setLink(null) }}>
-            TOGLI
+            Togli
           </button>
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => setLink(null)}>
-            ANNULLA
+            Annulla
           </button>
           {link.guaio && (
             <span id="sito-link-guaio" role="alert" className="modulo-nota" style={{ flexBasis: '100%' }}>

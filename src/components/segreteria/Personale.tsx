@@ -28,9 +28,9 @@ const PERMESSI: Array<[string, Permesso]> = [
 
 /** Le tre cose che si scelgono, col nome che hanno sui tasti. */
 const SPUNTE: Array<[Spunta, string]> = [
-  ['segreteria', 'SEGRETERIA'],
-  ['amministrazione', 'AMMINISTRAZIONE'],
-  ['istruttore', 'ISTRUTTORE'],
+  ['segreteria', 'Segreteria'],
+  ['amministrazione', 'Amministrazione'],
+  ['istruttore', 'Istruttore'],
 ]
 
 /**
@@ -87,7 +87,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
   return (
     <>
       {nuovo ? (
-        <SchedaPiena etichetta="Aggiungi una persona" torna="ISTRUTTORI E ACCESSI" onTorna={() => void torna()}>
+        <SchedaPiena etichetta="Aggiungi una persona" torna="Istruttori e accessi" onTorna={() => void torna()}>
           <Aggiungi
             d={d}
             fai={fai}
@@ -102,7 +102,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
           />
         </SchedaPiena>
       ) : persona ? (
-        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`.trim()} torna="ISTRUTTORI E ACCESSI" onTorna={() => void torna()}>
+        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`.trim()} torna="Istruttori e accessi" onTorna={() => void torna()}>
           <Scheda
             d={d}
             p={persona}
@@ -123,7 +123,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
       <div className="stack" style={{ gap: 18 }} hidden={!!(nuovo || persona)}>
         <Testa titolo="ISTRUTTORI E ACCESSI" sotto="Chi entra nell'app e cosa può fare. Gli iscritti non sono qui: non hanno un accesso.">
           <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuovo(true)}>
-            + AGGIUNGI UNA PERSONA
+            + Aggiungi una persona
           </button>
         </Testa>
 
@@ -335,14 +335,14 @@ function Aggiungi({
       <span className="sg-scheda-campi" style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
         {d.modo === 'prova'
           ? 'In prova l’account non serve e nessuna email parte: la persona compare subito negli istruttori dei corsi.'
-          : 'Con l’invito le arriva una mail con un link: lo apre, sceglie la sua password ed entra. Il link scade dopo un’ora; se scade, «MANDA L’INVITO» nella sua scheda ne manda un altro. Se la persona è già in elenco come iscritta, diventa istruttore invece di un doppione.'}
+          : 'Con l’invito le arriva una mail con un link: lo apre, sceglie la sua password ed entra. Il link scade dopo un’ora; se scade, «Manda l’invito» nella sua scheda ne manda un altro. Se la persona è già in elenco come iscritta, diventa istruttore invece di un doppione.'}
       </span>
       <div className="sg-scheda-piede">
         <button type="button" className="sg-btn sg-btn-linea" onClick={onLasciaStare}>
-          LASCIA STARE
+          Lascia stare
         </button>
         <button type="submit" className="sg-btn sg-btn-pieno">
-          AGGIUNGI
+          Aggiungi
         </button>
       </div>
     </form>
@@ -443,7 +443,7 @@ function Scheda({
               </Campo>
               <div className="sg-scheda-piede" style={{ gridColumn: 'span 2' }}>
                 <button type="button" className="sg-btn sg-btn-linea" onClick={() => setModifica(null)}>
-                  LASCIA STARE
+                  Lascia stare
                 </button>
                 <button
                   type="button"
@@ -456,7 +456,7 @@ function Scheda({
                     })
                   }
                 >
-                  SALVA
+                  Salva
                 </button>
               </div>
             </div>
@@ -472,7 +472,7 @@ function Scheda({
               </div>
               <div className="row">
                 <button type="button" className="num sg-chip" onClick={() => setModifica({ nome: p.nome, cognome: p.cognome, email: p.email ?? '' })}>
-                  MODIFICA
+                  Modifica
                 </button>
               </div>
             </div>
@@ -503,7 +503,7 @@ function Scheda({
             {p.attiva && !p.collegato && p.email && (
               <div className="row">
                 <button type="button" className="num sg-chip sg-chip-pieno" onClick={invita} title={`Manda a ${p.email} la mail per scegliere la password`}>
-                  MANDA L’INVITO
+                  Manda l’invito
                 </button>
               </div>
             )}
@@ -550,7 +550,7 @@ function Scheda({
               ) : (
                 <div className="row">
                   <button type="button" className="num sg-chip" onClick={() => setPin('')}>
-                    {p.haPin ? 'CAMBIA IL PIN' : 'IMPOSTA IL PIN'}
+                    {p.haPin ? 'Cambia il PIN' : 'Imposta il PIN'}
                   </button>
                 </div>
               )}
@@ -566,11 +566,11 @@ function Scheda({
           type="button"
           className="sg-btn sg-btn-linea"
           onClick={async () => {
-            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`, 'TOGLI L’ACCESSO'))) return
+            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`, 'Togli l’accesso'))) return
             void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Accesso tolto' : 'Accesso ridato', onCambiato)
           }}
         >
-          {p.attiva ? 'TOGLI L’ACCESSO' : 'RIDAI L’ACCESSO'}
+          {p.attiva ? 'Togli l’accesso' : 'Ridai l’accesso'}
         </button>
         {/* Solo chi insegna, anche col ruolo doppio: a chi è solo di segreteria si toglie l'accesso. Se ha corsi, lezioni o presenze il database dice di no, e perché. */}
         {insegna(p) && (
@@ -580,7 +580,7 @@ function Scheda({
             title="Solo per chi non ha mai insegnato: senza corsi, lezioni o presenze"
             onClick={() => void elimina()}
           >
-            ELIMINA
+            Elimina
           </button>
         )}
       </div>
@@ -668,11 +668,11 @@ function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: P
       ) : (
         <div className="row" style={{ gap: 8 }}>
           <button type="button" className="num sg-chip" onClick={() => setAMano('')}>
-            UN ALTRO KANJI
+            Un altro kanji
           </button>
           {p.kanji && (
             <button type="button" className="num sg-chip" onClick={() => scegli(null)}>
-              TOGLI IL KANJI
+              Togli il kanji
             </button>
           )}
         </div>
@@ -733,7 +733,7 @@ function PresenzeDelMese({ d, p }: { d: DatiSegreteria; p: PersonaleSeg }) {
           ))}
         </select>
         <button type="button" className="num sg-chip" disabled={!fatte.length} onClick={() => scaricaCsv(fatte, `${p.nome} ${p.cognome}`.trim(), m.nome)}>
-          SCARICA
+          Scarica
         </button>
       </Riga>
       <span style={{ fontSize: 14, color: 'var(--sec)' }}>

@@ -8,7 +8,7 @@ export function FiltroRicerca({ ricerca, onTogli }: { ricerca: Ricercata; onTogl
         Cercato «{ricerca.testo}»: {ricerca.ids.length} {ricerca.ids.length === 1 ? 'trovato' : 'trovati'}.
       </span>
       <button type="button" className="sg-chip" onClick={onTogli}>
-        MOSTRA TUTTI
+        Mostra tutti
       </button>
     </div>
   )

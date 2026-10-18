@@ -94,9 +94,9 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
       <div className="row" style={{ gap: 10 }} role="tablist" aria-label="Contabilità">
         {(
           [
-            ['movimenti', 'MOVIMENTI'],
-            ['voci', 'VOCI'],
-            ['casse', 'CASSE'],
+            ['movimenti', 'Movimenti'],
+            ['voci', 'Voci'],
+            ['casse', 'Casse'],
           ] as const
         ).map(([id, testo]) => (
           <button key={id} type="button" role="tab" aria-selected={scheda === id} className="num sg-chip" onClick={() => setScheda(id)}>
@@ -112,7 +112,7 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
           {scheda !== 'casse' && (
             <div>
               <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScheda('casse')}>
-                VAI ALLE CASSE
+                Vai alle casse
               </button>
             </div>
           )}
@@ -162,7 +162,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
   const trovate = filtraMovimenti(righe, { testo, dal, al, tipo, cassaId, annullati })
   const somme = totali(trovate)
   const conti = residui(casse, righe)
-  const mese = new Date(`${oggi}T12:00:00`).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase()
+  const mese = new Date(`${oggi}T12:00:00`).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }).replace(/^./, (c) => c.toUpperCase())
   const nomeCassa = (id?: string) => casse.find((c) => c.id === id)?.nome ?? ''
   const chiudi = () => {
     setScrivo(null)
@@ -189,13 +189,13 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
 
       <div className="row" style={{ gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         <button type="button" className="sg-btn sg-btn-linea" disabled={!trovate.length} onClick={() => scaricaCsv(`movimenti-${oggi}.csv`, csvMovimenti(trovate, casse))}>
-          ESPORTA CSV
+          Esporta CSV
         </button>
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setAperto(null); setScrivo('giroconto') }}>
-          GIROCONTO
+          Giroconto
         </button>
         <button type="button" className="sg-btn sg-btn-pieno" onClick={() => { setAperto(null); setScrivo('movimento') }}>
-          NUOVO MOVIMENTO
+          Nuovo movimento
         </button>
       </div>
 
@@ -207,9 +207,9 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
         {(
           [
             ['mese', mese],
-            ['scorso', 'MESE SCORSO'],
-            ['anno', 'TUTTO L’ANNO'],
-            ['tutto', 'TUTTO'],
+            ['scorso', 'Mese scorso'],
+            ['anno', 'Tutto l’anno'],
+            ['tutto', 'Tutto'],
           ] as const
         ).map(([id, etichetta]) => (
           <button key={id} type="button" className="num sg-chip" aria-pressed={periodo === id} onClick={() => setPeriodo(id)}>
@@ -218,9 +218,9 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
         ))}
         {(
           [
-            ['entrata', 'ENTRATE'],
-            ['uscita', 'USCITE'],
-            ['giroconto', 'GIROCONTI'],
+            ['entrata', 'Entrate'],
+            ['uscita', 'Uscite'],
+            ['giroconto', 'Giroconti'],
           ] as const
         ).map(([id, etichetta]) => (
           <button key={id} type="button" className="num sg-chip" aria-pressed={tipo === id} onClick={() => setTipo(tipo === id ? '' : id)}>
@@ -233,10 +233,10 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
           </button>
         ))}
         <button type="button" className="num sg-chip" aria-pressed={perVoci} onClick={() => setPerVoci(!perVoci)}>
-          RAGGRUPPA PER VOCE
+          Raggruppa per voce
         </button>
         <button type="button" className="num sg-chip" aria-pressed={annullati} onClick={() => setAnnullati(!annullati)}>
-          ANNULLATI
+          Annullati
         </button>
       </div>
 
@@ -273,9 +273,9 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{dataRicevuta(r.data)}</span>
                 <span role="cell" style={{ fontSize: 15, fontWeight: 600, textDecoration: r.annullato ? 'line-through' : undefined }}>
                   <button type="button" className="sg-riga-apri">{r.descrizione}</button>
-                  {r.origine !== 'movimento' && <span className="num sg-tag" style={{ marginLeft: 8 }}>INCASSO ISCRITTO</span>}
-                  {r.tipo === 'giroconto' && <span className="num sg-tag" style={{ marginLeft: 8 }}>GIROCONTO</span>}
-                  {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>ANNULLATO</span>}
+                  {r.origine !== 'movimento' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Incasso iscritto</span>}
+                  {r.tipo === 'giroconto' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Giroconto</span>}
+                  {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
                   <span className="sg-sotto-movimento">
                     <span className="sg-solo-telefono">{[dataRicevuta(r.data), r.voce, r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)].filter(Boolean).join(' · ')}</span>
                     {r.sotto && <span>{r.sotto}</span>}
@@ -380,10 +380,10 @@ function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { 
             void fai(() => d.registraMovimento({ tipo, data, importo: cent, voceId, cassaId, descrizione: descrizione.trim(), nota: nota.trim() || undefined }), 'Movimento registrato', onFatto)
           }}
         >
-          REGISTRA IL MOVIMENTO
+          Registra il movimento
         </button>
         <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
-          NO, TORNA INDIETRO
+          No, torna indietro
         </button>
       </div>
     </section>
@@ -440,10 +440,10 @@ function NuovoGiroconto({ d, casse, chiusure, fai, onFatto, onChiudi }: { d: Dat
             void fai(() => d.registraGiroconto({ daCassaId: da, aCassaId: a, data, importo: cent, nota: nota.trim() || undefined }), 'Giroconto registrato', onFatto)
           }}
         >
-          REGISTRA IL GIROCONTO
+          Registra il giroconto
         </button>
         <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
-          NO, TORNA INDIETRO
+          No, torna indietro
         </button>
       </div>
     </section>
@@ -463,7 +463,7 @@ function MovimentoAperto({ d, riga, chiusure, cassa, cassaA, fai, onChiudi, onFa
     if (chiedendo) return
     setChiedendo(true)
     const domanda = `Annullare «${riga.descrizione}» da ${soldi(riga.importo)} del ${dataRicevuta(riga.data)}? Resta in elenco, annullato, e non si conta più.`
-    const si = await chiedi(domanda, 'SÌ, ANNULLA IL MOVIMENTO', { no: 'NO, LASCIALO', pericolo: true })
+    const si = await chiedi(domanda, 'Sì, annulla il movimento', { no: 'No, lascialo', pericolo: true })
     setChiedendo(false)
     if (!si) return
     void fai(() => d.annullaMovimento(riga.id), 'Movimento annullato', onFatto)
@@ -488,7 +488,7 @@ function MovimentoAperto({ d, riga, chiusure, cassa, cassaA, fai, onChiudi, onFa
         ))}
       </div>
       {!manuale && <span className="sg-sotto">Si cambia in PAGAMENTI, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
-      {manuale && riga.annullato && <span className="sg-sotto"><span className="num sg-tag" data-tipo="manca">ANNULLATO</span> Resta in elenco e non si conta più.</span>}
+      {manuale && riga.annullato && <span className="sg-sotto"><span className="num sg-tag" data-tipo="manca">Annullato</span> Resta in elenco e non si conta più.</span>}
       {manuale && !riga.annullato && (
         <>
           <div className="sg-due sg-scheda-campi">
@@ -509,17 +509,17 @@ function MovimentoAperto({ d, riga, chiusure, cassa, cassaA, fai, onChiudi, onFa
         {manuale && !riga.annullato && (
           <>
             <button type="button" className="sg-btn sg-btn-pieno" disabled={!descrizione.trim()} onClick={() => void fai(() => d.correggiTestoMovimento(riga.id, descrizione, nota.trim() || undefined), 'Testo corretto', onFatto)}>
-              SALVA IL TESTO
+              Salva il testo
             </button>
             {!chiuso && (
               <button type="button" className="sg-btn sg-btn-rosso" disabled={chiedendo} onClick={() => void annulla()}>
-                ANNULLA IL MOVIMENTO
+                Annulla il movimento
               </button>
             )}
           </>
         )}
         <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
-          CHIUDI
+          Chiudi
         </button>
       </div>
     </section>
@@ -541,7 +541,7 @@ function Voci({ d, voci, chiusure, righe, fai, onCambiato }: { d: DatiSegreteria
           <span style={{ fontSize: 15 }}>Dopo la chiusura della cassa uno sbaglio si corregge con un movimento che ha una voce di rettifica: ne manca una {mancano.length === 2 ? 'di entrata e una di uscita' : `di ${mancano[0] === 'entrata' ? 'entrata' : 'uscita'}`}.</span>
           <div>
             <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void fai(async () => { for (const tipo of mancano) await d.salvaVoce({ nome: 'Rettifica', tipo }) }, 'Voce «Rettifica» creata', onCambiato)}>
-              CREA LA VOCE «RETTIFICA»
+              Crea la voce «rettifica»
             </button>
           </div>
         </section>
@@ -569,13 +569,13 @@ function ColonnaVoci({ d, tipo, titolo, voci, usate, fai, onCambiato }: { d: Dat
         <div key={v.id} className="sg-voce-elenco" style={{ opacity: v.attiva ? 1 : 0.55 }}>
           <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>
             {v.nome}
-            {v.diSistema && <span className="num sg-tag" style={{ marginLeft: 8 }}>SISTEMA</span>}
-            {!v.attiva && <span className="num sg-tag" style={{ marginLeft: 8 }}>NON IN USO</span>}
+            {v.diSistema && <span className="num sg-tag" style={{ marginLeft: 8 }}>Sistema</span>}
+            {!v.attiva && <span className="num sg-tag" style={{ marginLeft: 8 }}>Non in uso</span>}
           </span>
           <span style={{ fontSize: 13, color: 'var(--dim)' }}>{v.diSistema ? (v.nome === VOCE_DIFFERENZA ? 'scritta dalla chiusura di cassa' : 'incassi degli iscritti') : usate(v) ? `${usate(v)} ${usate(v) === 1 ? 'movimento' : 'movimenti'}` : 'mai usata'}</span>
           {!v.diSistema && (
             <button type="button" className="sg-link" style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '0 6px' }} onClick={() => void fai(() => d.attivaVoce(v.id, !v.attiva), v.attiva ? 'Voce disattivata' : 'Voce riattivata', onCambiato)}>
-              {v.attiva ? 'DISATTIVA' : 'RIATTIVA'}
+              {v.attiva ? 'Disattiva' : 'Riattiva'}
             </button>
           )}
         </div>
@@ -595,7 +595,7 @@ function ColonnaVoci({ d, tipo, titolo, voci, usate, fai, onCambiato }: { d: Dat
         <label htmlFor={`nuova-voce-${tipo}`} className="vh">Nome della nuova voce di {tipo}</label>
         <input id={`nuova-voce-${tipo}`} className="sg-campo grow" placeholder="Nome della voce" maxLength={60} value={nome} onChange={(e) => setNome(e.target.value)} aria-invalid={!!guaio || undefined} />
         <button type="submit" className="sg-btn sg-btn-linea" disabled={!nome.trim() || !!guaio}>
-          NUOVA VOCE
+          Nuova voce
         </button>
       </form>
       {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
@@ -668,7 +668,7 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
     const domanda = sopra
       ? `Differenza di ${differenzaInParole(differenza)}, sopra i ${soldi(SOGLIA_DIFFERENZA)}. ${nota.trim() ? '' : 'Scrivi nella nota perché. '}Chiudo la cassa fino al ${dataRicevuta(data)}, contati ${soldi(cent)}?`
       : `Chiudo la cassa fino al ${dataRicevuta(data)}: contati ${soldi(cent)}, ${differenza === 0 ? 'i conti tornano' : differenzaInParole(differenza)}?`
-    if (!(await chiedi(domanda, 'SÌ, CHIUDI LA CASSA', { no: 'NO, CONTROLLO ANCORA' }))) return
+    if (!(await chiedi(domanda, 'Sì, chiudi la cassa', { no: 'No, controllo ancora' }))) return
     // Se la risposta si perde ma la chiusura è stata scritta, rileggere l'elenco la mostra: il riprova non sembra un errore a vuoto.
     void fai(() => d.chiudiCassa({ cassaId: cassa.id, data, contato: cent, nota: nota.trim() || undefined }), 'Cassa chiusa', onFatto).then((fatto) => !fatto && onRileggi())
   }
@@ -704,7 +704,7 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
         })}
         {dentro.length > RIGHE_VISTE && (
           <button type="button" className="sg-link" style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start' }} onClick={() => setTutte(!tutte)}>
-            {tutte ? 'MOSTRA SOLO GLI ULTIMI' : `E ${dentro.length - RIGHE_VISTE === 1 ? 'UN ALTRO MOVIMENTO' : `ALTRI ${dentro.length - RIGHE_VISTE} MOVIMENTI`} · MOSTRA TUTTI`}
+            {tutte ? 'Mostra solo gli ultimi' : `${dentro.length - RIGHE_VISTE === 1 ? 'Un altro movimento' : `Altri ${dentro.length - RIGHE_VISTE} movimenti`} · Mostra tutti`}
           </button>
         )}
       </div>
@@ -727,10 +727,10 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
       {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
         <button type="button" className="sg-btn sg-btn-pieno" disabled={manca} onClick={() => void chiudi()}>
-          CHIUDI LA CASSA
+          Chiudi la cassa
         </button>
         <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
-          NO, TORNA INDIETRO
+          No, torna indietro
         </button>
       </div>
     </section>
@@ -747,7 +747,7 @@ function ElencoChiusure({ d, cassa, casse, chiusure, righe, fai, onCambiato }: {
   }
   const annulla = async (k: ChiusuraCassa) => {
     const domanda = `Annullare la chiusura del ${dataRicevuta(k.data)}? Si toglie anche la sua «Differenza di cassa» e i giorni tornano aperti. Il foglio PDF già stampato non vale più.`
-    if (!(await chiedi(domanda, 'SÌ, ANNULLA LA CHIUSURA', { no: 'NO, LASCIALA', pericolo: true }))) return
+    if (!(await chiedi(domanda, 'Sì, annulla la chiusura', { no: 'No, lasciala', pericolo: true }))) return
     void fai(() => d.annullaChiusuraCassa(k.id), 'Chiusura annullata', onCambiato).then((fatto) => !fatto && onCambiato())
   }
   return (
@@ -757,7 +757,7 @@ function ElencoChiusure({ d, cassa, casse, chiusure, righe, fai, onCambiato }: {
         <div key={k.id} className="row" style={{ gap: 14, padding: '10px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'center', flexWrap: 'wrap', color: k.annullataIl ? 'var(--dim)' : undefined }}>
           <span style={{ fontSize: 15, fontWeight: 600, minWidth: 190, whiteSpace: 'nowrap' }}>
             {dataRicevuta(k.dal)} → {dataRicevuta(k.data)}
-            {k.annullataIl && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>ANNULLATA</span>}
+            {k.annullataIl && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullata</span>}
           </span>
           <span style={{ fontSize: 14, color: 'var(--sec)', flex: 1, minWidth: 220 }}>
             Contati {soldi(k.contato)} · {differenzaInParole(k.differenza)} · {k.chiusaDa ?? '—'}, {dataRicevuta(giornoRoma(k.chiusaIl))}
@@ -769,7 +769,7 @@ function ElencoChiusure({ d, cassa, casse, chiusure, righe, fai, onCambiato }: {
           </button>
           {cosaNonVaAnnulloChiusura(k.id, chiusure) === null && (
             <button type="button" className="sg-btn sg-btn-rosso" onClick={() => void annulla(k)}>
-              ANNULLA
+              Annulla
             </button>
           )}
         </div>
@@ -798,7 +798,7 @@ function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiud
       {onChiudi && (
         <div>
           <button type="button" className="sg-btn sg-btn-pieno" disabled={!!nonSiChiude} onClick={onChiudi}>
-            CHIUDI LA CASSA
+            Chiudi la cassa
           </button>
           {nonSiChiude && <span className="sg-sotto" style={{ display: 'block', paddingTop: 6 }}>{nonSiChiude}</span>}
         </div>
@@ -816,7 +816,7 @@ function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiud
       {chiusura && <span className="sg-sotto">La cassa ha una chiusura: per cambiare il saldo iniziale annullala prima.</span>}
       <div>
         <button type="button" className="sg-btn sg-btn-linea" disabled={!!guaio || cent === null || !!chiusura} onClick={() => cent !== null && void fai(() => d.salvaSaldoCassa(cassa.id, cent, dal || undefined), 'Saldo iniziale salvato', onCambiato)}>
-          SALVA IL SALDO INIZIALE
+          Salva il saldo iniziale
         </button>
       </div>
     </section>
