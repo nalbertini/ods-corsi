@@ -106,7 +106,7 @@ const intro = (b: Blocco[]) => {
   return p ? `<div class="colonna">${p}</div>` : ''
 }
 
-function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, iscrizione: string): string {
+export function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, iscrizione: string): string {
   const h2 = `<h2>${titolo}</h2>`
   const primo = corpo.findIndex((x) => x.tag === 'h3')
   const citazioni = corpo.filter((x) => x.tag === 'blockquote')

@@ -201,7 +201,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
 
   const butta = async () => {
     if (!b || !base) return
-    if (!(await chiedi(domandaButta(cambiNellaBozza(base, b)), 'BUTTA I CAMBI', { pericolo: true }))) return
+    if (!(await chiedi(domandaButta(cambiNellaBozza(base, b)), 'Butta i cambi', { pericolo: true }))) return
     setBozza(null)
     setAperto(null)
     avvisa('Listino tornato com’è salvato')
@@ -211,7 +211,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
   }
 
   const rimetti = async () => {
-    if (!(await chiedi('Rimettere il listino del foglio originale? I cambi fatti qui si perdono.', 'RIMETTI IL LISTINO DEL FOGLIO', { pericolo: true }))) return
+    if (!(await chiedi('Rimettere il listino del foglio originale? I cambi fatti qui si perdono.', 'Rimetti il listino del foglio', { pericolo: true }))) return
     void fai(() => d.salvaListino(null), 'Rimesso il listino del foglio', async () => {
       await letto.ricarica()
       setBozza(null)
@@ -223,7 +223,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
     <>
       <Testa titolo="LISTINO" sotto={`I costi della stagione ${STAGIONE}: quelli della pagina di iscrizione e delle voci pronte delle ricevute.`}>
         <a className="sg-btn sg-btn-linea" href={indirizzo(INDIRIZZI.iscrizioni)} target="_blank" rel="noopener">
-          VEDI LA PAGINA ↗
+          Vedi la pagina ↗
         </a>
       </Testa>
 
@@ -276,7 +276,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
                   onCambia={(x) => cambiaCorso(c.chiave, x)}
                   onSposta={(v) => sposta(i, v)}
                   onTogli={async () => {
-                    if ((await chiedi(`Togliere «${c.corso || 'questo corso'}» dal listino?`, 'TOGLI DAL LISTINO'))) cambia({ corsi: b.corsi.filter((x) => x.chiave !== c.chiave) })
+                    if ((await chiedi(`Togliere «${c.corso || 'questo corso'}» dal listino?`, 'Togli dal listino'))) cambia({ corsi: b.corsi.filter((x) => x.chiave !== c.chiave) })
                   }}
                   onChiudi={() => setAperto(null)}
                 />
@@ -284,11 +284,11 @@ export function Listino({ d }: { d: DatiSegreteria }) {
                 <div key={c.chiave} className="sg-voce-elenco">
                   <span className="stack grow" style={{ minWidth: 0 }}>
                     <span style={{ fontSize: 15, fontWeight: 700 }}>{(c.corsoId && corsiDi.find((x) => x.id === c.corsoId)?.nome) || c.corso || 'Senza nome'}</span>
-                    {!c.corsoId && senza.senzaCorso.includes(c.corso) && <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>Senza corso: scegli il corso da CAMBIA</span>}
+                    {!c.corsoId && senza.senzaCorso.includes(c.corso) && <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>Senza corso: scegli il corso da «Cambia»</span>}
                     <span style={{ fontSize: 12, color: 'var(--dim)' }}>{riassunto(c) || 'Nessun prezzo'}</span>
                   </span>
                   <button type="button" className="num sg-chip" onClick={() => setAperto(c.chiave)}>
-                    CAMBIA
+                    Cambia
                   </button>
                 </div>
               ),
@@ -303,7 +303,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
                 setAperto(nuovo.chiave)
               }}
             >
-              + AGGIUNGI UN CORSO
+              + Aggiungi un corso
             </button>
           </section>
 
@@ -348,7 +348,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
               disabled={b.offerte.length >= LIMITI.offerte}
               onClick={() => cambia({ offerte: [...b.offerte, { chiave: nuovaChiave(), titolo: '', testo: '' }] })}
             >
-              + AGGIUNGI UN’OFFERTA
+              + Aggiungi un’offerta
             </button>
           </section>
 
@@ -358,10 +358,10 @@ export function Listino({ d }: { d: DatiSegreteria }) {
                 {guaio ?? 'Ci sono cambi da salvare: fino ad allora la pagina di iscrizione mostra quello di prima.'}
               </span>
               <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void butta()}>
-                BUTTA I CAMBI
+                Butta i cambi
               </button>
               <button type="button" className="sg-btn sg-btn-pieno" disabled={!!guaio || lavora} onClick={salva}>
-                SALVA
+                Salva
               </button>
             </div>
           )}
@@ -396,7 +396,7 @@ function Segnalazioni({ l, vaBene, corsi, onCambia }: { l: DatiListino; vaBene: 
       ))}
       {tolti.map((nome) => (
         <span key={nome} style={{ color: 'var(--rosso-testo)', fontSize: 14, minHeight: 44, display: 'flex', alignItems: 'center' }}>
-          {nome}: il corso non c’è più in CORSI. Toglila da CAMBIA.
+          {nome}: il corso non c’è più in «Corsi». Toglila da «Cambia».
         </span>
       ))}
       {scelti.map((c) => (
@@ -526,17 +526,17 @@ function SchedaCorso({
 
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
         <button type="button" className="num sg-chip" disabled={primo} onClick={() => onSposta(-1)} aria-label="Più su">
-          ↑ SU
+          ↑ Su
         </button>
         <button type="button" className="num sg-chip" disabled={ultimo} onClick={() => onSposta(1)} aria-label="Più giù">
-          ↓ GIÙ
+          ↓ Giù
         </button>
         <button type="button" className="sg-link" onClick={onTogli}>
           Togli dal listino
         </button>
         <span className="grow" />
         <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>
-          CHIUDI
+          Chiudi
         </button>
       </div>
     </div>
