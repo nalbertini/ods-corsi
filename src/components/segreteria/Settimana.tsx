@@ -378,6 +378,8 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
       style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}
       onClick={onApri}
     >
+      {/* Le lezioni della stessa fascia si impilano: senza l'orario sulla tessera non si capisce quando finiscono. */}
+      <span className="num sg-lezione-orario">{oraDi(l.inizio)}–{oraDi(l.fine)}</span>
       <span className="ob sg-lezione-nome">{l.corso}</span>
       <span className="sg-lezione-dove">
         {[l.sala ?? <span key="s" className="sg-forse">sala?</span>, ...(l.istruttori ? [l.istruttori] : []), ...(l.attivita ? [l.attivita] : [])].map((x, i) => (

@@ -15,6 +15,7 @@
   </style>
 </helmet>
 <div style="display: flex; flex-direction: column; gap: 2px; width: 100%; min-height: 64px; padding: 6px 9px; background: {{sfondo}}; border-top: 4px solid {{tintaMostrata}}; border-radius: 6px; box-shadow: {{barra}}; text-align: left">
+  <span style="font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #46606f">{{orario}}</span>
   <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05; color: {{coloreNome}}; text-decoration: {{taglio}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{corso}}</span>
   <span style="font-size: 11px; color: #46606f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{dove}}</span>
   <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: auto">
@@ -25,12 +26,13 @@
   </span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"dove":{"editor":"text","default":"Sala 1 · Marco R."},"conto":{"editor":"text","default":"12/16"},"fatto":{"editor":"boolean","default":false},"tinta":{"editor":"text","default":"#1b8ac4"},"tag":{"editor":"text","default":"manca:Senza appello"},"stato":{"editor":"enum","options":["normale","manca","chiusa","annullata"],"default":"normale"},"$preview":{"width":180,"height":96}}'>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"orario":{"editor":"text","default":"17:00–18:00"},"dove":{"editor":"text","default":"Sala 1 · Marco R."},"conto":{"editor":"text","default":"12/16"},"fatto":{"editor":"boolean","default":false},"tinta":{"editor":"text","default":"#1b8ac4"},"tag":{"editor":"text","default":"manca:Senza appello"},"stato":{"editor":"enum","options":["normale","manca","chiusa","annullata"],"default":"normale"},"$preview":{"width":180,"height":96}}'>
 // Riproduzione 1:1 di `Tessera` in src/components/segreteria/Settimana.tsx (righe 362-405) col look del sito
 // (`:root[data-look='sito']` in src/styles.css, righe ~410-422): la lezione nella SETTIMANA della segreteria. Tessera bianca senza il bordo da 2px,
 // raggio 6px, la tinta del corso in una barra di 4px in alto (sempre una barra, mai un fondo); se manca l'appello la barra rossa a sinistra
-// (`stato="manca"`); passata e con l'appello fatto (`chiusa`) si fa da parte: fondo trasparente, tinta al 55%, nome in `sec`; annullata:
+// (`stato="manca"`); passata e con l'appello fatto (`chiusa`) si fa da parte: fondo bianco, tinta al 55%, nome in `sec`; annullata:
 // niente opacita' (sotto il 50% il testo non arriva a 4,5:1), il nome e' barrato e il tag lo dice.
+// orario: inizio–fine, sopra il nome (le lezioni della stessa fascia si impilano).
 // conto: iscritti/capienza, o presenti/iscritti in verde se `fatto`. tag: «tipo:Testo» separati da | (`etichetteLezione.ts`): manca = rosso ✕,
 // fatto = verde ✓, aspetta e sostituto = giallo scuro …, senza tipo = neutro; i tag vanno a capo e restano dentro la tessera.
 // Nome in Big Shoulders 800 (e' un titolo), il resto in Inter.
@@ -48,8 +50,8 @@ class Component extends DCLogic {
       return { tono: TONO[tipo] || 'neutro', testo: tipo ? s.slice(i + 1).trim() : s };
     });
     return {
-      corso: p.corso ?? 'Judo kids', dove: p.dove ?? 'Sala 1 · Marco R.', conto: p.conto ?? '12/16', tag,
-      sfondo: chiusa ? 'transparent' : '#ffffff',
+      corso: p.corso ?? 'Judo kids', orario: p.orario ?? '17:00–18:00', dove: p.dove ?? 'Sala 1 · Marco R.', conto: p.conto ?? '12/16', tag,
+      sfondo: '#ffffff',
       tintaMostrata: chiusa ? 'color-mix(in srgb, ' + tinta + ' 55%, #eef5fa)' : tinta,
       barra: stato === 'manca' ? 'inset 4px 0 0 #e4292a' : 'none',
       coloreNome: '#0d2a3d',
