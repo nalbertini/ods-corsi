@@ -23,7 +23,7 @@ export interface Cornice {
 }
 
 /** Chi sta in testa all'elenco, in quest'ordine; gli altri seguono come scritti. */
-const IN_TESTA = ['maurizio', 'maura', 'diana', 'fabio', 'tiziano', 'valerio', 'manuel', 'federico']
+const IN_TESTA = ['maurizio', 'maura', 'katia', 'fabio', 'tiziano', 'valerio', 'manuel', 'federico']
 /** I colori dei ritratti: a diagonali (riga + colonna), così nessun vicino, in riga o in colonna, ha lo stesso colore. */
 const COLORI_RITRATTI = ['giallo', 'blu', 'inchiostro'] as const
 const COLORI_DATI = ['chiara', 'blu', 'inchiostro', 'giallo'] as const

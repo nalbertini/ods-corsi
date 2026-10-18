@@ -8,7 +8,7 @@
 //  1. Un testo senza `h2` che comincia con un `h3` è una griglia di ritratti:
 //     ogni `h3` (il nome) con la foto, se c'è, e il paragrafo che lo segue (il ruolo).
 //     Quel che viene dopo l'ultimo ritratto resta testo, sotto la griglia.
-//  2. L'ordine è fisso per i primi otto (Maurizio, Maura, Diana, Fabio, Tiziano, Valerio, Manuel, Federico), poi gli altri
+//  2. L'ordine è fisso per i primi otto (Maurizio, Maura, Katia, Fabio, Tiziano, Valerio, Manuel, Federico), poi gli altri
 //     come scritti. I colori vanno a diagonali: nessun vicino, in riga o in colonna, ha lo stesso colore.
 //  3. Senza foto il cerchio porta l’iniziale; col link nel nome la tessera è tutta cliccabile.
 //  4. La testata delle pagine senza collage: titolo a sinistra, descrizione e pulsante a destra.
@@ -78,7 +78,7 @@ console.log('\n1. Un testo che comincia con un h3 è l’elenco dei tecnici')
 console.log('\n2. L’ordine è fisso e i colori vanno a diagonali')
 {
   const nomi = (h) => tessere(h).map((x) => x.html.match(/class="nome">([^<]*)</)?.[1])
-  ok('prima gli otto in ordine, poi gli altri come scritti', nomi(pagina(tredici)), ['Maurizio', 'Maura', 'Diana', 'Fabio', 'Tiziano', 'Valerio', 'Manuel', 'Federico', 'Katia', 'Serena', 'Giulia', 'Elena', 'Aldo'])
+  ok('prima gli otto in ordine, poi gli altri come scritti', nomi(pagina(tredici)), ['Maurizio', 'Maura', 'Katia', 'Fabio', 'Tiziano', 'Valerio', 'Manuel', 'Federico', 'Diana', 'Serena', 'Giulia', 'Elena', 'Aldo'])
   ok('maiuscole e link nel nome non contano', nomi(pagina('<h3>x</h3><h3>MAURA</h3><h3><a href="/m/">maurizio</a></h3>')), ['maurizio', 'MAURA', 'x'])
   const colori = tessere(pagina(tredici)).map((x) => x.colore)
   ok('colori a diagonali (riga + colonna) su quattro colonne', colori, ['giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo'])
