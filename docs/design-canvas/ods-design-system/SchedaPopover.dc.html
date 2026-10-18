@@ -25,9 +25,9 @@
       </div>
       <sc-if value="{{haPassaggio}}" hint-placeholder-val="{{ true }}">
         <div style="display: flex; align-items: center; gap: 8px">
-          <dc-import name="Bottone" label="‹ PRECEDENTE" variante="linea" contesto="segreteria" tema="sito" hint-size="140px,44px"></dc-import>
+          <dc-import name="Bottone" label="{{etPrecedente}}" variante="linea" contesto="segreteria" tema="sito" hint-size="140px,44px"></dc-import>
           <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; font-variant-numeric: tabular-nums; color: #46606f">{{posizione}}</span>
-          <dc-import name="Bottone" label="SUCCESSIVA ›" variante="linea" contesto="segreteria" tema="sito" hint-size="140px,44px"></dc-import>
+          <dc-import name="Bottone" label="{{etSuccessiva}}" variante="linea" contesto="segreteria" tema="sito" hint-size="140px,44px"></dc-import>
         </div>
       </sc-if>
       <dc-import name="Bottone" label="✕" variante="icona" tema="sito" hint-size="44px,44px"></dc-import>
@@ -52,11 +52,12 @@
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"titolo":{"editor":"text","default":"DAVIDE FERRERO"},"sotto":{"editor":"text","default":"Arrivata il 17 ottobre 2026, 20:45"},"tinta":{"editor":"text","default":"#0d2a3d"},"posizione":{"editor":"text","default":"1 DI 3"},"passaggio":{"editor":"boolean","default":true},"avviso":{"editor":"text","default":""},"campi":{"editor":"text","default":"NATO IL:12 aprile 1991|CODICE FISCALE:FRRDVD91D12L219X|RESIDENZA:Via Roma 56, 10100 Collegno|EMAIL:davide.ferrero@esempio.it|TELEFONO:347 210 5518|CORSI:Judo adulti"},"azioni":{"editor":"text","default":"ELIMINA RICHIESTA E FILE:rosso|RIFIUTA:linea|ACCOGLI:pieno"},"larghezza":{"editor":"text","default":"760px"},"altezza":{"editor":"text","default":"760px"},"$preview":{"width":1100,"height":760}}'>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"DAVIDE FERRERO"},"sotto":{"editor":"text","default":"Arrivata il 17 ottobre 2026, 20:45"},"tinta":{"editor":"text","default":"#0d2a3d"},"posizione":{"editor":"text","default":"1 DI 3"},"passaggio":{"editor":"boolean","default":true},"telefono":{"editor":"boolean","default":false},"primo":{"editor":"boolean","default":false},"avviso":{"editor":"text","default":""},"campi":{"editor":"text","default":"NATO IL:12 aprile 1991|CODICE FISCALE:FRRDVD91D12L219X|RESIDENZA:Via Roma 56, 10100 Collegno|EMAIL:davide.ferrero@esempio.it|TELEFONO:347 210 5518|CORSI:Judo adulti"},"azioni":{"editor":"text","default":"ELIMINA RICHIESTA E FILE:rosso|RIFIUTA:linea|ACCOGLI:pieno"},"larghezza":{"editor":"text","default":"760px"},"altezza":{"editor":"text","default":"760px"},"$preview":{"width":1100,"height":760}}'>
 // Il dettaglio sopra l'elenco: velo `rgba(13,42,61,.55)` (il colore dell'inchiostro del look sito, al 55%), finestra bianca con bordo 2px
 // `#0d2a3d` e barra in alto di 6px nella `tinta` (come .sg-scheda), larghezza 760px o `calc(100% - 32px)`, 24px di aria sopra e sotto.
-// Testa: titolo Big Shoulders 800 30px (come .sg-titolo, ma piu' piccolo), la riga sotto 13px `#46606f`, PRECEDENTE / «N DI M» / SUCCESSIVA
-// solo dove ci sono altre schede da scorrere (Richieste, Corsi: `passaggio`), e ✕ (Bottone icona). `avviso` mette sotto la testa la striscia
+// Testa: titolo Big Shoulders 800 30px (come .sg-titolo, ma piu' piccolo), la riga sotto 13px `#46606f`, «‹ Precedente» / «N DI M» / «Successiva ›»
+// solo dove ci sono altre schede da scorrere (Richieste, Corsi: `passaggio`), e ✕ (Bottone icona). `telefono` (sotto i 768px): i due tasti sono solo
+// le frecce ‹ e ›, il nome sta nell'aria-label, e la finestra e' tutto lo schermo; ai capi dell'elenco il tasto e' spento (`.sg-finestra-testa .sg-btn:disabled`, opacita' 0.4). `avviso` mette sotto la testa la striscia
 // gialla delle modifiche non salvate. Corpo: due colonne di `campi` («ETICHETTA:valore» separati da «|»); nell'app e' il contenuto vero della
 // scheda, qui un esempio. Piede fisso con le `azioni` («testo:variante» separate da «|»), a destra: la sicura a linea, quella che fa piena.
 // Il fuoco, Esc, il clic fuori e l'animazione non sono riprodotti: stanno nelle note del canvas `scheda-popover`.
@@ -76,6 +77,7 @@ class Component extends DCLogic {
     const avviso = p.avviso ?? '';
     return {
       titolo: p.titolo ?? 'DAVIDE FERRERO', sotto: p.sotto ?? '', tinta: p.tinta || '#0d2a3d',
+      etPrecedente: truthy(p.telefono) ? '‹' : '‹ Precedente', etSuccessiva: truthy(p.telefono) ? '›' : 'Successiva ›',
       haPassaggio: p.passaggio === undefined ? true : truthy(p.passaggio), posizione: p.posizione ?? '1 DI 3',
       haAvviso: avviso !== '', avviso, campi, azioni,
       larghezza: p.larghezza || '760px', altezza: p.altezza || '760px',
