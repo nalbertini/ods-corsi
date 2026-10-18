@@ -16,7 +16,7 @@ L'app ha sei indirizzi veri, ognuno con il suo accesso
 
 | | |
 |---|---|
-| `istruttori/` | Il calendario e l'appello, per istruttori e segreteria. |
+| `istruttori/` | Il calendario e l'appello, per istruttori e segreteria, nell'aspetto del sito (blu e giallo, sempre chiaro; il cronometro resta scuro). |
 | `segreteria/` | L'area della reception, solo per chi ha il ruolo di segreteria (anche insieme a quello di istruttore o di amministrazione). |
 | `amministrazione/` | L'area dei conti: PAGAMENTI e LISTINO, per chi ha il ruolo di amministrazione. Non vede le persone (`supabase/55-amministrazione.sql`). |
 | `iscrizioni/` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
@@ -497,6 +497,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:ricerca` | La ricerca universale di «Cerca iscritto» (`cercaTutto`): i gruppi nell'ordine e solo quelli con risultati; gli iscritti per nome come `trovaIscritti`, per telefono (comunque scritto) ed email, con il perché; il minore trovato dal genitore senza mai mostrarne i dati; corsi per nome, sala e giorno; richieste online con lo stato e le da accogliere prima; istruttori coi corsi; tre righe per gruppo col totale vero; testo vuoto; lettura fallita distinta da «nessun risultato»; i dati della modalità prova, senza rete. |
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome (sul tablet al massimo venti, cercate scrivendo), tolte per sbaglio, e l'elenco della segreteria. |
 | `npm run prova:timer-istruttori` | Il timer nell'app istruttori: le voci di navigazione per ruolo (CALENDARIO, TIMER, I MIEI, ORE), il timer aperto dall'appello con la lezione, lo stato dell'allenamento per la striscia (calcolato dall'orologio), la domanda prima di sostituire un allenamento in corso, l'avviso senza rete. |
+| `npm run prova:istruttori-look` | L'area istruttore col look del sito: sempre chiara anche con scuro o Tatami salvato (la scelta non si cancella e torna fuori dall'area), niente tasto del tema, passare da segreteria a istruttori senza passare dallo scuro, le parole di stato dell'appello e del calendario col segno davanti (`src/lib/etichetteAppello.ts`), le regole del CSS (giallo solo su tasto principale e voce corrente, sola lettura in giallo scuro su bianco, striscia chiara) e la guida. |
 | `npm run prova:informativa` | Per quanto si tengono le presenze nell'informativa: solo un numero di mesi valido dal database cambia il testo; un errore, il tempo scaduto o l'app senza database lasciano quello della pagina, che non dice un numero. |
 | `npm run prova:tema` | I tre temi (nero, bianco, Tatami): quale resta dopo l'avvio, un valore salvato che non si conosce, il tasto che passa al successivo, il colore della barra del browser, il timer già pubblicato che trova un tema che non conosce, i contrasti dei colori del Tatami (anche nel menu verde) e i blocchi uguali fra app e timer. |
 | `npm run prova:appello-liste` | L'appello della segreteria a tre tasti: chi sta in DA SEGNARE, PRESENTI o ASSENTI (il giustificato fra gli assenti, le prove fuori), i conti che tornano sempre, il tasto con cui si apre, la riga che prende il posto dopo un tocco, TUTTI PRESENTI solo sui non segnati e l'annuncio per chi non vede lo schermo. |

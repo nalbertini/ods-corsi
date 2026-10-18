@@ -3,7 +3,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import TimerApp from '../../../timer/src/App'
 import type { Incorporato } from '../../../timer/src/lib/incorporato'
 import cssTimer from '../../../timer/src/styles.css?inline'
-import { perLaSala } from '../../lib/timerNelRiquadro'
+import { perLaSala, temaDelTimer } from '../../lib/timerNelRiquadro'
 
 /** Il riquadro, in cima al foglio del timer. */
 const RIQUADRO = `
@@ -23,7 +23,8 @@ const CSS = RIQUADRO + perLaSala(cssTimer)
  * Ha una sua radice React dentro l'ombra: gli eventi di React non
  * attraversano bene il confine di un'ombra montata da fuori.
  */
-export function TimerSala({ incorporato, visibile }: { incorporato: Incorporato; visibile: boolean }) {
+/** `scuro`: il cronometro resta scuro anche se l'app è chiara (vedi `temaDelTimer`). */
+export function TimerSala({ incorporato, visibile, scuro = false }: { incorporato: Incorporato; visibile: boolean; scuro?: boolean }) {
   const host = useRef<HTMLDivElement>(null)
   const radice = useRef<Root | null>(null)
 
@@ -57,7 +58,7 @@ export function TimerSala({ incorporato, visibile }: { incorporato: Incorporato;
     const h = host.current
     if (!h) return
     const copia = () => {
-      const t = document.documentElement.dataset.tema
+      const t = temaDelTimer(document.documentElement.dataset.tema, scuro)
       if (t) h.dataset.tema = t
       else delete h.dataset.tema
     }
@@ -65,7 +66,7 @@ export function TimerSala({ incorporato, visibile }: { incorporato: Incorporato;
     const o = new MutationObserver(copia)
     o.observe(document.documentElement, { attributes: true, attributeFilter: ['data-tema'] })
     return () => o.disconnect()
-  }, [])
+  }, [scuro])
 
   return <div ref={host} className="tb-timer" hidden={!visibile} />
 }

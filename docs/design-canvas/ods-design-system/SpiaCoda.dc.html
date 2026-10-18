@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <!-- Tema sito: Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="status" style="display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 10px 14px; background: {{c.sfondo}}; border: 2px solid {{bordo}}; border-radius: {{raggio}}; font-family: {{fam}}; font-size: {{corpo}}; line-height: 1.4; color: {{c.testo}}">
+  <span style="font-family: {{famTitolo}}; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: {{spazio}}; color: {{coloreTitolo}}">{{segno}}{{titolo}}</span>
+  <span>{{testo}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"LEZIONE TROPPO VECCHIA"},"testo":{"editor":"text","default":"Questa lezione è troppo vecchia per cambiare le presenze: scrivete alla segreteria."},"tono":{"editor":"enum","options":["attesa","guaio"],"default":"attesa"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":358,"height":100}}'>
+// Riproduzione 1:1 di `.spia-coda` e `.spia-coda-quante` (src/styles.css righe 870-874 e 791-792), usata per N PRESENZE DA INVIARE (Sala.tsx, `SpiaCoda`), PRESENZE RIFIUTATE
+// (data-tono="guaio") e, nell'appello, per la frase di una lezione in SOLA LETTURA (AppelloScreen.tsx, `etichettaFuoriFinestra` + `fraseFuoriFinestra` di src/lib/finestra.ts).
+// Una colonna: il titolo in maiuscolo (cond 15px 700 0.12em, `giallo-testo`; rosso-testo con guaio) e la frase (14px, interlinea 1.4, `dim`); padding 10px 14px, bordo 2px `giallo` (`rosso` con guaio).
+// tema sito (COSTRUITO, `:root[data-look='sito'] .spia-coda` in src/styles.css): «aspetta», cioe' bordo e titolo giallo scuro #8f6a00 su BIANCO, mai un riempimento giallo; raggio 6px; titolo in Inter 15px 700 con 0.02em e «… » davanti
+// (✕ con guaio, bordo e titolo #b81d1d), la frase resta quella di sempre: 14px, #46606f (`dim`), interlinea 1.4. Il riquadro sta subito sotto la testa dell'appello, sotto lo stato «… SOLO LETTURA».
+const T = {
+  scuro: { sfondo: 'transparent', testo: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52' },
+  chiaro: { sfondo: 'transparent', testo: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d' },
+  sito: { sfondo: '#ffffff', testo: '#46606f', giallo: '#8f6a00', gialloTesto: '#8f6a00', rosso: '#b81d1d', rossoTesto: '#b81d1d' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const sito = p.tema === 'sito';
+    const guaio = p.tono === 'guaio';
+    return {
+      c, fam: sito ? INTER : 'inherit', famTitolo: sito ? INTER : COND, corpo: '14px', raggio: sito ? '6px' : '0',
+      spazio: sito ? '0.02em' : '0.12em', bordo: guaio ? c.rosso : c.giallo, coloreTitolo: guaio ? c.rossoTesto : c.gialloTesto,
+      segno: sito ? (guaio ? '✕ ' : '… ') : '',
+      titolo: p.titolo ?? 'LEZIONE TROPPO VECCHIA',
+      testo: p.testo ?? 'Questa lezione è troppo vecchia per cambiare le presenze: scrivete alla segreteria.',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -62,11 +62,11 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
   giorno dicono quante sono).
 - A destra di ogni lezione c'è il conto, e sotto cosa vuol dire:
   - **ISCRITTI** (es. `16`) → nessuno è ancora segnato;
-  - **IN CORSO** (es. `9/16`) → iscritti presenti su iscritti, qualcuno è
+  - **… IN CORSO** (es. `9/16`) → iscritti presenti su iscritti, qualcuno è
     ancora da segnare;
   - **✓ FATTO**, in verde → tutti gli iscritti hanno un segno;
-  - **NESSUN PRESENTE**, in grigio → tutti segnati, ma nessuno c'era;
-  - **DA CHIUDERE**, in rosso → la lezione è finita e qualcuno è ancora da
+  - **… NESSUN PRESENTE**, in grigio → tutti segnati, ma nessuno c'era;
+  - **✕ DA CHIUDERE**, in rosso → la lezione è finita e qualcuno è ancora da
     segnare;
   - **+1 PROVA**, in giallo → chi è venuto a provare, contato a parte.
 
@@ -82,8 +82,9 @@ Le pagine sono quattro, con lo stesso nome ovunque: **CALENDARIO**, **TIMER**,
 telefono stanno nella barra in basso; la pagina in cui siete ha una riga sopra
 ed è scritta più chiara, non solo di un altro colore. Sul computer e sul tablet
 in orizzontale sono nel menu a sinistra, che ha la stessa faccia della
-segreteria, e in fondo il tasto **?** della guida, quello del tema e, sotto il
-vostro nome, **Esci**. Chi è della segreteria e non insegna non ha **ORE**: non
+segreteria, e in fondo il tasto **?** della guida e, sotto il vostro nome, **Esci**. Questa
+area è sempre chiara, a prescindere dal tema scelto altrove: qui il tasto del
+tema non c'è. Chi è della segreteria e non insegna non ha **ORE**: non
 ha ore sue.
 
 ## L'appello
@@ -93,7 +94,7 @@ il conto grande degli iscritti presenti (`18 / 20`, con **+1 PROVA** a parte) e
 quanti iscritti restano da segnare; quando hanno tutti un segno, **CHIUDI IN
 FONDO ↓**, che si tocca e porta al tasto per chiudere. Tutti i conti sono degli iscritti: chi prova è sempre detto a
 parte. Se la lezione non è ancora
-cominciata c'è scritto **NON ANCORA COMINCIATA**: si può segnare da mezz'ora
+cominciata c'è scritto **… NON ANCORA COMINCIATA**: si può segnare da mezz'ora
 prima dell'inizio. Le presenze si correggono fino a 14 giorni dopo la lezione.
 Una lezione più vecchia, o che comincia fra più di mezz'ora, si apre in **SOLA
 LETTURA**: vedete i segni com'erano, e un riquadro giallo dice di scrivere alla
@@ -389,7 +390,7 @@ ORE NON LETTE**: premete **RIPROVA** quando la rete c'è.
 
 L'appello funziona anche senza rete. I tocchi si vedono subito e aspettano sul
 telefono. Dentro la lezione, sotto quanti restano da segnare, compare in giallo
-**N DA INVIARE**; fuori, sopra il calendario, **N PRESENZE DA INVIARE**.
+**… N DA INVIARE**; fuori, sopra il calendario, **N PRESENZE DA INVIARE**.
 Spariscono quando è tutto arrivato. Se toccate più volte la stessa persona
 mentre la rete non c'è, parte solo l'ultimo segno.
 

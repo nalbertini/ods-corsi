@@ -2,9 +2,11 @@ import type { Area } from './aree'
 import { riapplicaTema } from './tema'
 
 /**
- * La segreteria e l'amministrazione hanno l'aspetto del sito della palestra
- * (blu e giallo, sempre chiaro), qualunque sia il tema scelto: le altre aree
- * (istruttori, tablet di sala, iscritti, timer) restano come sono. I colori e
+ * La segreteria, l'amministrazione e gli istruttori hanno l'aspetto del sito
+ * della palestra (blu e giallo, sempre chiaro), qualunque sia il tema scelto:
+ * chi è in due ruoli passa dall'una all'altra area senza cambiare faccia. Le
+ * altre aree (tablet di sala, iscritti, timer) restano come sono. Il tema
+ * salvato non si tocca: vale ancora fuori da queste aree. I colori e
  * i caratteri stanno in `styles.css` sotto `:root[data-look='sito']`; qui si
  * decide quando l'attributo c'è.
  *
@@ -13,7 +15,7 @@ import { riapplicaTema } from './tema'
 export type Look = 'sito'
 
 export function lookDellArea(area: Area): Look | null {
-  return area === 'segreteria' || area === 'amministrazione' ? 'sito' : null
+  return area === 'segreteria' || area === 'amministrazione' || area === 'istruttori' ? 'sito' : null
 }
 
 /**

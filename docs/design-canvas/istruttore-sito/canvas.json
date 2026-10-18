@@ -1,0 +1,267 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Istruttore · oggi e proposta"
+  },
+  {
+   "id": "page-2",
+   "name": "Libreria"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "OggiLargo.dc.html",
+   "title": "1 · Schermo largo · oggi",
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 1380,
+   "page": "page-1"
+  },
+  {
+   "file": "ProponiLargo.dc.html",
+   "title": "1 · Schermo largo · proposta",
+   "x": 1560,
+   "y": 0,
+   "w": 1440,
+   "h": 1380,
+   "page": "page-1"
+  },
+  {
+   "file": "OggiCalendario.dc.html",
+   "title": "2 · Calendario telefono · oggi",
+   "x": 0,
+   "y": 1640,
+   "w": 390,
+   "h": 1003,
+   "page": "page-1"
+  },
+  {
+   "file": "ProponiCalendario.dc.html",
+   "title": "2 · Calendario telefono · proposta",
+   "x": 510,
+   "y": 1640,
+   "w": 390,
+   "h": 1053,
+   "page": "page-1"
+  },
+  {
+   "file": "OggiAppello.dc.html",
+   "title": "3 · Appello telefono · oggi",
+   "x": 0,
+   "y": 2953,
+   "w": 390,
+   "h": 1603,
+   "page": "page-1"
+  },
+  {
+   "file": "ProponiAppello.dc.html",
+   "title": "3 · Appello telefono · proposta",
+   "x": 510,
+   "y": 2953,
+   "w": 390,
+   "h": 1600,
+   "page": "page-1"
+  },
+  {
+   "file": "OggiLettura.dc.html",
+   "title": "4 · Appello in sola lettura · oggi",
+   "x": 0,
+   "y": 4816,
+   "w": 390,
+   "h": 1161,
+   "page": "page-1"
+  },
+  {
+   "file": "ProponiLettura.dc.html",
+   "title": "4 · Appello in sola lettura · proposta",
+   "x": 510,
+   "y": 4816,
+   "w": 390,
+   "h": 1161,
+   "page": "page-1"
+  },
+  {
+   "file": "OggiStati.dc.html",
+   "title": "5 · Stati dell’appello · oggi",
+   "x": 0,
+   "y": 6237,
+   "w": 390,
+   "h": 1835,
+   "page": "page-1"
+  },
+  {
+   "file": "ProponiStati.dc.html",
+   "title": "5 · Stati dell’appello · proposta",
+   "x": 510,
+   "y": 6237,
+   "w": 390,
+   "h": 2022,
+   "page": "page-1"
+  },
+  {
+   "file": "OggiBarre.dc.html",
+   "title": "6 · Striscia e barre · oggi",
+   "x": 0,
+   "y": 8519,
+   "w": 390,
+   "h": 1133,
+   "page": "page-1"
+  },
+  {
+   "file": "ProponiBarre.dc.html",
+   "title": "6 · Striscia e barre · proposta",
+   "x": 510,
+   "y": 8519,
+   "w": 390,
+   "h": 1177,
+   "page": "page-1"
+  },
+  {
+   "file": "Bottone.dc.html",
+   "title": "Bottone (libreria, anche tema sito)",
+   "x": 0,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "Campo.dc.html",
+   "title": "Campo (libreria, anche tema sito)",
+   "x": 520,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "Badge.dc.html",
+   "title": "Badge (libreria, anche tema sito)",
+   "x": 1040,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "ChiSei.dc.html",
+   "title": "ChiSei (libreria, anche tema sito)",
+   "x": 1560,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "MenuIstruttori.dc.html",
+   "title": "MenuIstruttori (libreria, anche tema sito)",
+   "x": 2080,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "BarraNavigazione.dc.html",
+   "title": "BarraNavigazione (libreria, anche tema sito)",
+   "x": 2600,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "BarraTelefono.dc.html",
+   "title": "BarraTelefono (libreria, anche tema sito)",
+   "x": 3120,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "RigaCalendario.dc.html",
+   "title": "RigaCalendario (libreria, anche tema sito)",
+   "x": 3640,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "RigaAppello.dc.html",
+   "title": "RigaAppello (libreria, anche tema sito)",
+   "x": 4160,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "TestaAppello.dc.html",
+   "title": "TestaAppello (libreria, anche tema sito)",
+   "x": 4680,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "Titoletto.dc.html",
+   "title": "Titoletto (libreria, anche tema sito)",
+   "x": 5200,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "TimerStriscia.dc.html",
+   "title": "TimerStriscia (libreria, anche tema sito)",
+   "x": 5720,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "MusicaMini.dc.html",
+   "title": "MusicaMini (libreria, anche tema sito)",
+   "x": 6240,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "SpiaCoda.dc.html",
+   "title": "SpiaCoda (libreria, anche tema sito)",
+   "x": 6760,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "Arretrato.dc.html",
+   "title": "Arretrato (libreria, anche tema sito)",
+   "x": 7280,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "StrisciaGiorni.dc.html",
+   "title": "StrisciaGiorni (libreria, anche tema sito)",
+   "x": 7800,
+   "y": 0,
+   "w": 400,
+   "h": 200,
+   "page": "page-2"
+  }
+ ],
+ "annotations": []
+}
