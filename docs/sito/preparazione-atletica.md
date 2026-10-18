@@ -29,12 +29,13 @@ Il testo sta in [`preparazione-atletica.html`](preparazione-atletica.html): è q
 - In cima la foto grande e le quattro tessere dei dati: frasi prese dal testo di oggi e dal design (Dove, Per iniziare: via Sassi 26 e settimana di prova a 5 euro, già nelle domande frequenti).
 - «Cos’è il corso», «Cosa si fa durante le lezioni», «Per chi è pensato» diventano tre tessere sotto le tessere dei dati, non più titoli grandi.
 - L’orario di oggi, scritto in un solo paragrafo, diventa una tessera per gruppo: nome, ora, giorni, anni di nascita.
-- «Cosa può aspettarsi un atleta»: le stesse frasi di oggi, una per tessera.
+- «Cosa può aspettarsi un atleta»: i titoli di oggi, una tessera ciascuno, con una frase nuova sotto.
 - «Perché sceglierlo» diventa la banda blu.
 - Il resto è identico al testo pubblicato.
 
 ## Da controllare prima di pubblicare
 
+- Le frasi sotto le tessere «Cosa può aspettarsi» sono nuove (lealtà, crescita insieme, fair play, divertimento, disciplina): le rilegga chi insegna, perché dicono come si lavora davvero.
 - Il testo di oggi ha in fondo, sotto «Perché sceglierlo», tre righe di troppo copiate dai pesi («Supervisione costante», «Attenzione alla tecnica», «Progressioni sicure», «Per costruire forza partendo da basi solide»). Le ho tolte: errore di impaginazione, non un fatto.
 - «Dai 14 anni» (Home e Corsi) contro «da 2012 in poi» (orario di oggi, cioè dai 14 anni nel 2026): coerenti, ma l’età cresce ogni anno.
 - Home e Corsi mostrano «Anziani» per questo corso; la pagina di oggi non lo dice. Non l’ho scritto.

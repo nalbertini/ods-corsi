@@ -10,6 +10,46 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.89.1 — 18 ottobre 2026
+
+### Modificato
+
+- Il canvas del design ha le pagine in ordine per area
+
+## 0.89.0 — 18 ottobre 2026
+
+### Novità
+
+- Scegli da IMPOSTAZIONI come vedere la segreteria, con il menu a sinistra o con «Il Banco»
+
+## 0.88.1 — 18 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione il tasto del tema non compare più, perché il modulo resta sempre chiaro
+
+## 0.88.0 — 18 ottobre 2026
+
+### Novità
+
+- Le tessere degli iscritti, con import dal RASD
+
+### Risolto
+
+- Nel modulo di iscrizione «1 altro corso» al singolare e il tag dei file su una riga sua
+
+## 0.87.2 — 18 ottobre 2026
+
+### Modificato
+
+- Pagine dei corsi: una frase sotto ogni voce di «Cosa può aspettarsi»
+
+## 0.87.1 — 18 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione il certificato medico si legge chiaro: serve per partecipare, si carica o si porta in segreteria
+
 ## 0.87.0 — 18 ottobre 2026
 
 ### Novità

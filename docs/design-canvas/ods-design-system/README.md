@@ -51,7 +51,7 @@ Google, e vale solo per i mockup.
 | `SchedeCorso` | `Scheda` di `Corsi.tsx`: le schede DATI \| ISCRITTI in cima alla scheda di un corso (`.schede` come IL MESE \| SEGNALATE); `acceso`, `conto` n/capienza sulla scheda ISCRITTI (`tonoConto` giallo a corso pieno, rosso oltre), `daSalvare` il puntino ● giallo su DATI, `daIscrivere` su ISCRITTI, `conIscritti` falso nel corso nuovo |
 | `RigaIscrittoCorso` | `IscrittiDelCorso` di `Corsi.tsx` (`.sg-riga-iscritto-corso`): una riga del tab ISCRITTI di un corso: cognome, nome, ISCRITTO DAL (data lunga), segno del certificato e della quota, sempre a parole (NO CERTIFICATO, DA PAGARE, quelle di `paroleInRegola`); sotto i 780px della scheda va su due righe; `stato="fuoco"` per la riga scelta |
 | `RiepilogoIscrittiCorso` | `RiepilogoCorso` di `Corsi.tsx` (da `riepilogoCorso`): la riga sopra la ricerca del tab ISCRITTI, `voci` «testo:tono» separate da «\|» (conto n/capienza, SENZA CERTIFICATO e DA PAGARE rossi, CORSO PIENO giallo, TUTTO IN REGOLA verde) |
-| `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`) |
+| `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`); il quarto, `titolo="TESSERA"` (parola NO TESSERA, SCADUTA, SCADE A DICEMBRE o IN REGOLA, una riga per ente), c’è solo per chi ha un corso che chiede la tessera: la fila `.sg-timbri` passa a quattro colonne (`data-con-tessera`) |
 | `SchedaCertificato` | PROPOSTA «certificati online»: il blocco CERTIFICATO MEDICO della scheda iscritto (`Certificato` di `Iscritti.tsx`) col file online: titolo + bollino, frase di stato, riga del file con APRI, CARICA / SOSTITUISCI e TOGLI; `stato` nessuno, valido, in_scadenza, scaduto_con_file, scaduto_senza_file, valido_senza_file, file_vecchio; `gesto` apre file + VALIDO FINO AL + un solo SALVA; `telefono` mette i tasti in colonna |
 | `MenuIstruttori` | Il menu degli istruttori sullo schermo largo (`App.tsx`) |
 | `BarraTelefono` | La barra in cima al telefono con il tasto MENU (`.sg-barra-tel`); il menu aperto è `Menu` |
@@ -62,6 +62,9 @@ Google, e vale solo per i mockup.
 | `SegnalazioneListino` | Una riga di `Segnalazioni` in LISTINO: in rosso cosa manca a un corso («senza prezzo nel listino», «manca il prezzo del trimestre»…), col link «Va bene senza prezzo» che non va a capo; `rosso` falso per «…, va bene così» col link «Rimetti il rosso» |
 | `TabletTasto` | `.tb-btn`: linea, verde, rosso, grande, quadro |
 | `TabletTastiera` | I pallini e il tastierino del PIN |
+| `Cifra` | Un numero grande di OGGI nel Banco (`.bn-cifra`): titolo, numero (rosso se è un guaio), frase |
+| `RigaCoda` | Una riga della coda DA FARE AL BANCO (`.bn-riga`): titolo, frase, tasto; bordo rosso se blocca, giallo se aspetta |
+| `BloccoLezione` | Un blocco del tabellone sale × ore di OGGI (`.bn-blocco`): corso, ora, stato in parole; `stato` fatto, in_corso, appello_non_fatto, prossima, annullata |
 | `TabletTessera` | Il nome da toccare nella lista della sala |
 | `TabletFascia` | La fascia dopo un tocco: fatto, attesa, già, errore |
 | `TabletTestata`, `TabletLezione`, `TabletPiede`, `TabletRigaGiornata` | La testata, la lezione aperta, il piede e la riga della giornata del tablet di sala |
@@ -111,6 +114,7 @@ Google, e vale solo per i mockup.
 | `TimerInterruttore` | `Toggle` delle impostazioni del timer: nome, nota, acceso o spento |
 | `TabletTendina` | La tendina CORSO aperta dell'area istruttore (`.tb-select`); il `<select>` vero è del sistema |
 | `TabletProvaPannello` | `PannelloProve` con stile tablet (`Prove.tsx`): CHI VIENE A PROVARE alzato per il dito, campi su tre colonne e già venuti sotto |
+| `CosaManca` | `CosaManca` di `CosaManca.tsx` (`.sg-mancano*`): la striscia COSA MANCA in cima alle pagine di segreteria, `voci` «numero\|titolo\|nota\|tono» separate da `;` (tono r manca, g da accogliere, v a posto, n non si sa; 0 è sempre ✓ verde); `colonne` 4 come oggi, 5 o 2 per le proposte |
 | `Numero` | `Numero` di `Presenze.tsx` (`.sg-numero`): titolo, cifra da 44px e riga sotto; `allarme` col bordo rosso. Quattro in fila in `.sg-numeri`, cinque in VESTIARIO (`data-cinque`) |
 | `BarraSalva` | La barra per salvare di LISTINO (`.sg-listino-salva`): frase, BUTTA I CAMBI e SALVA, bordo giallo; `guaio` la frase in rosso e SALVA spento |
 | `VoceElenco` | Una voce chiusa di LISTINO > I CORSI (`.sg-voce-elenco`): nome, riga rossa se manca qualcosa, riassunto e il chip CAMBIA; `bollino` il `.sg-tag` giallo accanto al nome (SENZA TIPO nel catalogo del vestiario) |

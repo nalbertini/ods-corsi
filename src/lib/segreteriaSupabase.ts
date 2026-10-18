@@ -21,6 +21,7 @@ import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } fr
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
+import { enteDaDati, fineAnno, mancaTessere, type EsitoImportTessere, type TesseraSeg } from './tessere'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
 import { pezziInHtml, pezziValidi } from './sitoPezzi'
 import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
@@ -157,6 +158,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/voci_contabili|relation "(public\.)?(casse|movimenti)"|table 'public\.(casse|movimenti)'/, MANCA_CONTABILITA],
   [/sito_pagine|sito_menu|sito_redirect|salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito/, MANCA_SITO],
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
+  [/tessere/, 'Le tessere non sono ancora attive sul database: va lanciato 61-tessere.sql'],
   [/non_doppioni/, 'Segnare due schede «non sono doppioni» non è ancora attivo sul database: va lanciato 33-non-doppioni.sql'],
   [/segnalazioni/, 'Le segnalazioni non sono ancora attive sul database: va lanciato 25-segnalazioni.sql'],
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
@@ -620,13 +622,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     rigenera,
 
     async corsi() {
-      const leggi = (giorno: string) =>
-        db.from('corsi').select(`id, nome, colore, capienza, attivo, sala_id, istruttore_id, sale ( nome ), ricorrenze ( id, giorno, ora, durata_min, dal, al, sala_id, sale ( nome )${giorno} )`).order('nome')
-      let lette = await leggi(', attivita_id, attivita ( nome )')
+      const leggi = (giorno: string, ente: string) =>
+        db.from('corsi').select(`id, nome, colore, capienza, attivo, sala_id, istruttore_id${ente}, sale ( nome ), ricorrenze ( id, giorno, ora, durata_min, dal, al, sala_id, sale ( nome )${giorno} )`).order('nome')
+      let ente = ', ente_tessera'
+      let lette = await leggi(', attivita_id, attivita ( nome )', ente)
+      // Senza 61-tessere.sql i corsi si leggono come prima, senza la tessera richiesta.
+      if (mancaTessere(lette.error)) lette = await leggi(', attivita_id, attivita ( nome )', (ente = ''))
       // Senza 41-attivita.sql i giorni si leggono come prima, senza attività.
-      if (mancaAttivita(lette.error)) lette = await leggi('')
+      if (mancaAttivita(lette.error)) lette = await leggi('', ente)
       const righe = ok(lette) as unknown as Array<{
-        id: string; nome: string; colore: string | null; capienza: number | null; attivo: boolean; sala_id: string | null; istruttore_id: string | null
+        id: string; nome: string; colore: string | null; capienza: number | null; attivo: boolean; sala_id: string | null; istruttore_id: string | null; ente_tessera?: string | null
         sale: { nome: string } | null
         ricorrenze: Array<{ id: string; giorno: number; ora: string; durata_min: number; dal: string; al: string | null; sala_id: string | null; sale: { nome: string } | null; attivita_id?: string | null; attivita?: { nome: string } | null }>
       }>
@@ -642,6 +647,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           istruttori: [...(chi.get(r.id) ?? [])].sort((x, y) => Number(y.id === r.istruttore_id) - Number(x.id === r.istruttore_id)),
           capienza: r.capienza ?? undefined,
           attivo: r.attivo,
+          enteTessera: r.ente_tessera ?? undefined,
           ricorrenze: r.ricorrenze
             .filter((x) => !x.al || x.al >= g)
             .map((x) => ({
@@ -669,6 +675,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         istruttore_id: c.istruttori[0] ?? null,
         capienza: c.capienza ?? null,
         colore: c.colore ?? null,
+        // Solo se la scelta c'è: senza `61-tessere.sql` la schermata non la offre e la colonna non esiste.
+        ...(c.enteTessera === undefined ? {} : { ente_tessera: enteDaDati(c.enteTessera) ?? null }),
       }
       const id = c.id
         ? (ok(await db.from('corsi').update(riga).eq('id', c.id)), c.id)
@@ -746,6 +754,35 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async togliRicorrenza(ricorrenzaId) {
       ok(await db.rpc('chiudi_ricorrenza', { ricorrenza: ricorrenzaId }))
+    },
+
+    async tessere() {
+      const r = await tutteLeRighe((prima, ultima) =>
+        db.from('tessere').select('id, persona_id, ente, tipo, codice, dal, al, origine').order('persona_id').order('ente').order('dal').order('id').range(prima, ultima),
+      )
+      // Senza 61-tessere.sql: nessuna tessera, e lo si dice.
+      if (mancaTessere(r.error)) return { elenco: [], manca: true }
+      return {
+        elenco: (ok(r) as unknown as Array<{ id: string; persona_id: string; ente: string; tipo: TesseraSeg['tipo']; codice: string; dal: string; al: string; origine: 'rasd' | 'manuale' }>).map(
+          (x): TesseraSeg => ({ id: x.id, personaId: x.persona_id, ente: x.ente, tipo: x.tipo, codice: x.codice, dal: x.dal, al: x.al, origine: x.origine }),
+        ),
+      }
+    },
+
+    async importaTessere(righe, soloProva) {
+      const r = await db.rpc('importa_tessere', { righe, solo_prova: soloProva })
+      if (mancaTessere(r.error)) throw new Error('Le tessere non sono ancora attive sul database: va lanciato 61-tessere.sql')
+      return ok(r) as EsitoImportTessere
+    },
+
+    async aggiungiTessera(t) {
+      const ente = enteDaDati(t.ente)
+      if (!ente || !t.codice.trim()) throw new Error('Scrivi l’ente e il numero della tessera')
+      ok(await db.from('tessere').insert({ persona_id: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: fineAnno(t.dal), origine: t.origine ?? 'manuale' }))
+    },
+
+    async togliTessera(id) {
+      ok(await db.from('tessere').delete().eq('id', id))
     },
 
     async persone() {

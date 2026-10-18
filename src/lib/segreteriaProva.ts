@@ -10,6 +10,7 @@ import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, ST
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
+import { enteDaDati, fineAnno, importaTessereProva } from './tessere'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
@@ -361,6 +362,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
           istruttori: c.istruttori.map((id) => ({ id, nome: nomeIstruttore(id) })),
           capienza: c.capienza,
           attivo: c.attivo,
+          enteTessera: c.enteTessera,
           ricorrenze: c.ricorrenze
             .filter((r) => !r.al || r.al >= g)
             .map(({ sala, ...r }) => ({ ...r, salaId: sala, sala, attivita: nomeAttivita(r.attivitaId ?? null) }))
@@ -376,7 +378,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         const id = a().corsi.some((c) => c.id === base) ? `${base}-${unico()}` : base
         a().corsi = [
           ...a().corsi,
-          { id, nome: dati.nome.trim(), colore: dati.colore ?? '#1b8ac4', sala: dati.salaId ?? a().sale[0], istruttori: dati.istruttori, capienza: dati.capienza, attivo: true, ricorrenze: [] },
+          { id, nome: dati.nome.trim(), colore: dati.colore ?? '#1b8ac4', sala: dati.salaId ?? a().sale[0], istruttori: dati.istruttori, capienza: dati.capienza, attivo: true, enteTessera: enteDaDati(dati.enteTessera), ricorrenze: [] },
         ]
         salva()
         return id
@@ -391,6 +393,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
               istruttori: dati.istruttori,
               capienza: dati.capienza,
               colore: dati.colore ?? x.colore,
+              enteTessera: enteDaDati(dati.enteTessera),
               // Un giorno che ora sarebbe nella sala del corso torna a seguirlo, come nel database.
               ricorrenze: x.ricorrenze.map(({ sala, ...r }) => (sala && sala !== (dati.salaId ?? x.sala) ? { ...r, sala } : r)),
             }
@@ -556,6 +559,37 @@ export function creaSegreteriaProva(): DatiSegreteria {
                 .map((r) => (r.id === ricorrenzaId ? { ...r, al: ieri() < r.dal ? r.dal : ieri() } : r)),
             },
       )
+      salva()
+    },
+
+    async tessere() {
+      return { elenco: [...(a().tessere ?? [])] }
+    },
+
+    async importaTessere(righe, soloProva) {
+      const schede = a()
+        .persone.filter((p) => p.ruolo === 'iscritto')
+        .map((p) => ({ personaId: p.id, nome: p.nome, cognome: p.cognome, codiceFiscale: a().anagrafiche?.[p.id]?.codiceFiscale }))
+      const { esito, daScrivere } = importaTessereProva(righe, schede, a().tessere ?? [])
+      if (!soloProva && daScrivere.length) {
+        a().tessere = [...(a().tessere ?? []), ...daScrivere.map((t) => ({ ...t, id: `t-${unico()}` }))]
+        salva()
+      }
+      return { ...esito, scritto: !soloProva }
+    },
+
+    async aggiungiTessera(t) {
+      const ente = t.ente.trim().toUpperCase()
+      if (!ente || !t.codice.trim()) throw new Error('Scrivi l’ente e il numero della tessera')
+      // Gli stessi limiti della tabella `tessere`.
+      if (ente.length > 40 || t.codice.trim().length > 20 || !/^(20\d\d|2100)-\d{2}-\d{2}$/.test(t.dal)) throw new Error('La tessera ha dei dati che non vanno: controlla ente, numero e data')
+      if ((a().tessere ?? []).some((x) => x.personaId === t.personaId && x.ente === ente && x.tipo === t.tipo && x.dal === t.dal)) throw new Error('Questa tessera c’è già')
+      a().tessere = [...(a().tessere ?? []), { id: `t-${unico()}`, personaId: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: fineAnno(t.dal), origine: t.origine ?? 'manuale' }]
+      salva()
+    },
+
+    async togliTessera(id) {
+      a().tessere = (a().tessere ?? []).filter((x) => x.id !== id)
       salva()
     },
 
@@ -1484,6 +1518,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       a().iscrizioni = [...a().iscrizioni, ...sue.filter((y) => !a().iscrizioni.some((x) => x.personaId === resta && x.corsoId === y.corsoId)).map((y) => ({ ...y, personaId: resta }))]
 
       a().ricevute = (a().ricevute ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+      // Le tessere passano a chi resta; la stessa su tutte e due resta una (quella di chi resta), come `tessere_unione`.
+      const tessere = a().tessere ?? []
+      a().tessere = tessere
+        .filter((x) => !(x.personaId === via && tessere.some((y) => y.personaId === resta && y.ente === x.ente && y.tipo === x.tipo && y.dal === x.dal)))
+        .map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
       a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
       const an = a().anagrafiche ?? {}
       if (an[via]) {

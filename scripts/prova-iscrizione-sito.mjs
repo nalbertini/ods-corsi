@@ -186,7 +186,8 @@ ok(':root --body resta Barlow', /Barlow/.test(radice['--body'] ?? ''), true)
 console.log('\nIl confinamento')
 ok('ci sono regole del modulo', delModulo.length > 0, true)
 ok('ogni regola che nomina data-modulo comincia per ' + PREFISSO, rOra.filter((r) => r.selettori.some((x) => x.includes('data-modulo')) && !r.selettori.every((x) => x.startsWith(PREFISSO))).map((r) => r.selettori.join(',')), [])
-if (prima !== null) ok('ogni regola nuova comincia per ' + PREFISSO + ' (o è un @font-face)', nuove.filter((r) => !r.selettori.every((s) => s.startsWith(PREFISSO) || s === '@font-face')).map((r) => r.selettori.join(',')), [])
+// Solo le regole che nominano il modulo: un'altra PR può aggiungere il suo CSS (la segreteria, il timer…), purché il modulo resti confinato.
+if (prima !== null) ok('ogni regola nuova del modulo comincia per ' + PREFISSO + ' (o è un @font-face)', nuove.filter((r) => r.selettori.some((s) => s.includes('data-modulo')) && !r.selettori.every((s) => s.startsWith(PREFISSO) || s === '@font-face')).map((r) => r.selettori.join(',')), [])
 for (const sel of [':root', ":root[data-tema='chiaro']", ":root[data-tema='tatami']"])
   if (prima !== null) ok(`il blocco ${sel} non è cambiato`, rOra.filter((r) => r.selettori.includes(sel)).map(chiaveR), rPrima.filter((r) => r.selettori.includes(sel)).map(chiaveR))
 if (prima !== null) ok('le regole di prima ci sono ancora tutte', [...vecchie].filter((k) => !rOra.some((r) => chiaveR(r) === k)).length, 0)
@@ -211,6 +212,10 @@ ok('FATTO resta rosso, spento torna al filo', [/border-color:\s*var\(--rosso\)/.
 // Il fuoco di link e caselle: le regole di base (.costo-link:focus-visible, 2px var(--text)) hanno specificità 0,2,0; quella del modulo deve vincere (0,3,0).
 ok('fuoco su link e caselle: la regola del modulo batte quelle di base (0,3,0)', delModulo.some((r) => r.selettori.includes(PREFISSO + ' :focus-visible')), true)
 ok('fuoco da tastiera: contorno 3px var(--blu)', delModulo.some((r) => r.selettori.some((s) => s.includes(':focus')) && /outline:\s*3px solid var\(--blu\)/.test(r.corpo)), true)
+
+// Il tasto del tema, a modulo aperto: il modulo è sempre chiaro, il tasto cambierebbe solo l'icona. Sparisce con una regola sotto il prefisso.
+ok('a modulo aperto il tasto del tema non si vede', delModulo.some((r) => r.selettori.includes(`${PREFISSO} .tasto-tema`) && /display:\s*none/.test(r.corpo)), true)
+ok('il tasto del tema porta la classe che il modulo nasconde', /className="[^"]*(?<![\w-])tasto-tema(?![\w-])/.test(readFileSync('src/components/TastoTema.tsx', 'utf8')), true)
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

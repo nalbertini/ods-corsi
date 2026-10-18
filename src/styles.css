@@ -1562,7 +1562,7 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 /* La striscia COSA MANCA, in cima al corpo: quattro caselle, ognuna un tasto. Il segno sotto dice lo stato col colore, il numero
    e la nota lo dicono con le parole (✓ 0, «—», «scaduti o mancanti»): non solo colore. */
 .sg-mancano {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); flex-shrink: 0;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); flex-shrink: 0;
   background: var(--surface); border: 2px solid var(--riga-campo);
 }
 .sg-mancano-casella {
@@ -1583,25 +1583,29 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-mancano-nota { font-size: 16px; color: var(--dim); }
 .sg-mancano .sg-mancano-riconta { grid-column: 1 / -1; border-width: 0; border-top: 2px solid var(--line); }
 .sg-mancano-casella:focus-visible { outline-offset: -2px; }
-/* Il menu di 240px più quattro caselle da 22px di margine non ci stanno sotto 1240px: due per due. */
-@media (max-width: 1240px) {
+/* Il menu di 240px più cinque caselle da 22px di margine non ci stanno sotto 1360px: due per due, l'ultima da sola sulla riga. */
+@media (max-width: 1360px) {
   .sg-mancano { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sg-mancano-casella:nth-child(3) { border-left: 0; }
+  .sg-mancano-casella:nth-child(odd) { border-left: 0; }
   .sg-mancano-casella:nth-child(n + 3) { border-top: 2px solid var(--tratteggio); }
+  .sg-mancano-casella:nth-child(5) { grid-column: 1 / -1; }
 }
-/* Fra 1241 e 1480px le quattro caselle ci stanno ma strette: il numero scende un po' e il resto si stringe, così i titoli vanno a capo meno. */
-@media (min-width: 1241px) and (max-width: 1480px) {
-  .sg-mancano-casella { gap: 12px; padding: 14px 14px; }
-  .sg-mancano-n { font-size: 52px; }
-  .sg-mancano-titolo { letter-spacing: 0.06em; }
+/* Fra 1361 e 1700px le cinque caselle ci stanno ma strette: il numero scende e il resto si stringe, così i titoli vanno a capo meno. */
+@media (min-width: 1361px) and (max-width: 1700px) {
+  .sg-mancano-casella { gap: 10px; padding: 14px 12px; }
+  .sg-mancano-n { font-size: 44px; }
+  .sg-mancano-titolo { letter-spacing: 0.04em; font-size: 17px; }
+  .sg-mancano-nota { font-size: 14px; }
 }
 /* Su uno schermo basso (il portatile della reception, circa 700px) la striscia a due righe lasciava alla griglia della settimana 82px:
    una riga sola, bassa, senza la nota (il nome accessibile e il segno la dicono già). */
 @media (max-height: 800px) and (min-width: 768px) {
-  .sg-mancano { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .sg-mancano { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .sg-mancano-casella { min-height: 0; padding: 8px 12px; gap: 10px; border-bottom-width: 6px; }
   .sg-mancano-casella:nth-child(n + 3) { border-top: 0; }
-  .sg-mancano-casella:nth-child(3) { border-left: 2px solid var(--tratteggio); }
+  .sg-mancano-casella:nth-child(odd) { border-left: 2px solid var(--tratteggio); }
+  .sg-mancano-casella:nth-child(1) { border-left: 0; }
+  .sg-mancano-casella:nth-child(5) { grid-column: auto; }
   .sg-mancano-n { font-size: 36px; }
   .sg-mancano-titolo { font-size: 14px; letter-spacing: 0.04em; }
   .sg-mancano-nota { display: none; }
@@ -2025,6 +2029,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-segno-regola[data-tono='spento'] { color: var(--dim); }
 /* I timbri in cima alla scheda: bordo e parola del colore dello stato, il resto si legge sul fondo. */
 .sg-timbri { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.75fr); gap: 12px; align-items: stretch; }
+.sg-timbri[data-con-tessera] { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 0.75fr); }
 .sg-timbro {
   display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 44px; min-width: 0;
   padding: 12px 14px; text-align: left; background: var(--bg); border: 2px solid var(--tono, var(--line)); border-left-width: 4px;
@@ -2051,7 +2056,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-timbri-spenta strong { margin-right: 8px; font-family: var(--cond); font-size: 19px; font-weight: 700; letter-spacing: 0.12em; color: var(--text); }
 /* Sotto i 1000px la scheda è una colonna stretta: tre timbri in fila andrebbero a capo parola per parola. */
 @media (max-width: 1000px) {
-  .sg-timbri { grid-template-columns: minmax(0, 1fr); }
+  .sg-timbri, .sg-timbri[data-con-tessera] { grid-template-columns: minmax(0, 1fr); }
 }
 .sg-iscritto {
   width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid var(--surface-2); text-align: left;
@@ -2595,6 +2600,109 @@ html.firma-aperta, html.firma-aperta body { overflow: hidden; overscroll-behavio
 label.sg-btn { cursor: pointer; }
 .sg-carica-foto:has(input:focus-visible) label.sg-btn { outline: 2px solid var(--text); outline-offset: 2px; }
 
+/* ---------------------------------------------------------------------------
+   Il Banco: la segreteria con la ricerca in cima e cinque luoghi, al posto del
+   menu a sinistra. Si sceglie da IMPOSTAZIONI (src/lib/aspetto.ts). Stessi
+   token di sempre; la proposta è in docs/design-canvas/banco/.
+   --------------------------------------------------------------------------- */
+.sg[data-aspetto='banco'] { flex-direction: column; }
+.sg[data-aspetto='banco'] > .sg-corpo { padding-top: 24px; }
+.bn-barra { flex-shrink: 0; background: var(--bg); border-bottom: 2px solid var(--line); }
+.bn-alto { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: calc(var(--safe-t) + 10px) 28px 10px; background: var(--menu); border-bottom: 2px solid var(--line-soft); }
+.bn-marchio { display: flex; align-items: center; gap: 10px; min-width: 170px; }
+.bn-cerca { flex: 1 1 320px; max-width: 560px; }
+.bn-cerca .sg-cerca { padding: 0; }
+.bn-chi { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.bn-marchio .bn-sotto-marchio { font-size: 12px; font-weight: 600; letter-spacing: 0.22em; color: var(--dim); }
+.bn-alto > .sg-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; }
+.bn-link { position: relative; }
+.bn-link-voci { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 240px; padding: 4px; background: var(--surface); border: 2px solid var(--text); }
+.bn-luoghi, .bn-voci { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; padding: 0 28px; }
+.bn-luoghi { background: var(--surface); border-bottom: 2px solid var(--line-soft); }
+.bn-luogo {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 18px; border-bottom: 4px solid transparent;
+  font-size: 19px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim);
+}
+.bn-luogo:hover { color: var(--text); }
+.bn-luogo[aria-current='page'] { border-bottom-color: var(--text); color: var(--text); }
+.bn-voci { align-items: center; min-height: 52px; background: var(--surface-2); }
+.bn-voce {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 2px solid var(--line);
+  font-size: 15px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec);
+}
+.bn-voce:hover { color: var(--text); border-color: var(--dim); }
+.bn-voce[aria-current='page'] { background: var(--text); border-color: var(--text); color: var(--bg); }
+.bn-voce[aria-current='page'] .sg-tag { outline: 2px solid var(--bg); }
+
+.bn-cifre { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.bn-cifra {
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-height: 110px; padding: 14px 16px; text-align: left;
+  background: var(--surface); border: 2px solid var(--line);
+}
+button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
+.bn-cifra[data-guaio='true'] .bn-cifra-n { color: var(--rosso-testo); }
+.bn-cifra-n { font-size: 44px; font-weight: 700; line-height: 1; }
+.bn-cifra-sotto { font-size: 13px; color: var(--dim); }
+.bn-oggi { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 28px; align-items: start; }
+.bn-sale { display: grid; gap: 0; padding-bottom: 6px; border-bottom: 2px solid var(--line); }
+.bn-sale .sg-etichetta { padding: 0 12px; letter-spacing: 0.24em; }
+.bn-griglia {
+  position: relative; display: grid;
+  background-image: linear-gradient(var(--line-soft) 2px, transparent 2px); background-size: 100% var(--ora-px);
+}
+.bn-ore { display: flex; flex-direction: column; }
+.bn-ore span { font-size: 14px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.bn-colonna { position: relative; }
+.bn-blocco {
+  position: absolute; left: 5px; right: 5px; display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; text-align: left; overflow: hidden;
+  background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--tinta);
+}
+.bn-blocco:hover { border-color: var(--dim); border-left-color: var(--tinta); }
+.bn-blocco-testa { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 20px; font-weight: 700; line-height: 1.05; }
+.bn-blocco-testa .num { font-size: 14px; font-weight: 500; color: var(--dim); }
+.bn-blocco-sotto { font-size: 13px; color: var(--sec); }
+.bn-blocco-stato { margin-top: auto; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+.bn-blocco[data-stato='fatto'] { border-color: var(--verde); }
+.bn-blocco[data-stato='fatto'] .bn-blocco-stato, .bn-blocco[data-stato='in_corso'] .bn-blocco-stato { color: var(--verde-testo); }
+.bn-blocco[data-stato='appello_non_fatto'] { border-color: var(--rosso); }
+.bn-blocco[data-stato='appello_non_fatto'] .bn-blocco-stato { color: var(--rosso-testo); }
+.bn-blocco[data-stato='annullata'] { background: transparent; border-color: var(--line-soft); border-left-color: var(--tinta); }
+.bn-blocco[data-stato='annullata'] .bn-blocco-testa { color: var(--sec); }
+/* In un blocco corto la riga di mezzo sparisce: la parola dello stato, in fondo, deve restare in vista. */
+.bn-blocco[data-corto='true'] .bn-blocco-sotto { display: none; }
+.bn-adesso { position: absolute; left: 0; right: 0; height: 0; border-top: 3px solid var(--giallo); pointer-events: none; }
+.bn-adesso .num { position: absolute; left: 0; top: -11px; padding: 0 5px; background: var(--giallo); color: var(--su-colore); font-size: 13px; font-weight: 700; }
+.bn-coda { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.bn-coda-testa { padding-bottom: 8px; border-bottom: 2px solid var(--line); letter-spacing: 0.18em; }
+.bn-riga { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--giallo); }
+.bn-riga[data-livello='blocca'] { border-left-color: var(--rosso); }
+.bn-riga .sg-btn { white-space: nowrap; flex-shrink: 0; }
+.bn-riga-titolo { font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.1; }
+.bn-riga-sotto { font-size: 13px; line-height: 1.35; color: var(--sec); }
+.bn-altro { margin-top: 8px; }
+.bn-altro > summary { list-style: none; display: inline-flex; align-items: center; cursor: pointer; }
+.bn-altro > summary::-webkit-details-marker { display: none; }
+.bn-altro[open] > summary { margin-bottom: 18px; }
+
+.bn-persona { display: flex; flex-direction: column; gap: 14px; }
+.bn-blocca { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 18px; background: var(--surface); border: 2px solid var(--giallo); border-left: 8px solid var(--giallo); }
+.bn-blocca[data-blocca='true'] { border-color: var(--rosso); }
+.bn-blocca-titolo { font-size: 22px; font-weight: 700; letter-spacing: 0.04em; color: var(--giallo-testo); }
+.bn-blocca[data-blocca='true'] .bn-blocca-titolo { color: var(--rosso-testo); }
+.bn-famiglia { margin: 0; font-size: 15px; }
+
+.bn-tabella { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.bn-tabella-testa, .bn-tabella-riga { display: grid; gap: 12px; align-items: center; padding: 6px 14px; }
+.bn-tabella-testa { border-bottom: 2px solid var(--line); padding-top: 8px; padding-bottom: 8px; }
+.bn-tabella-riga { min-height: 64px; background: var(--surface); border: 2px solid var(--line); border-top: 0; font-size: 16px; }
+
+@media (max-width: 1100px) {
+  .bn-oggi { grid-template-columns: minmax(0, 1fr); }
+  /* La coda è il lavoro del banco: sullo schermo stretto viene prima del tabellone, non dopo. */
+  .bn-coda { order: -1; }
+  .bn-chi { display: none; }
+  .bn-cifre { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 /* A 320px sette colonne da 44px entrano solo senza spazi fra le celle: il bordo di ognuna fa da separatore. */
 @media (max-width: 359px) {
   .sg-calendario { padding: 4px; }
@@ -2768,3 +2876,5 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 :root[data-modulo='sito'] .campo.num { font-family: var(--body); font-variant-numeric: tabular-nums; }
 /* L'invio chiude il modulo: largo quanto i campi, non a inizio riga come gli altri tasti. */
 :root[data-modulo='sito'] .modulo-piede .passo-btn { align-self: stretch; }
+/* Il modulo è sempre chiaro: il tasto del tema in testata cambierebbe solo l'icona, quindi a modulo aperto non c'è. */
+:root[data-modulo='sito'] .tasto-tema { display: none; }

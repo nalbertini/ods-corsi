@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -630,6 +630,16 @@ console.log('\n13. Le scelte tesseramento e foto: obbligatorie, ma «non autoriz
   ok('aiuto foto, maggiorenne', m.aiutoScelta('foto', false), 'Devi scegliere una delle due. Anche se non autorizzi, l\'iscrizione non cambia e non compari nelle foto.')
   ok('la nota sotto la scelta non ha il «Nel modulo:»', [m.NOTA_SCELTA.tesseramento, m.NOTA_SCELTA.foto], ['Scegli una risposta per il tesseramento alla FIJLKAM e/o FIPE', 'Scegli una risposta per le foto'])
   ok('aiuto foto, minore', m.aiutoScelta('foto', true), 'Devi scegliere una delle due. Anche se non autorizzi, l\'iscrizione non cambia e il minore non compare nelle foto.')
+}
+
+console.log('\n14. L\'avviso del certificato: una frase sola, serve per partecipare')
+{
+  // L'avviso del certificato è una frase sola: serve per partecipare, si carica o si porta. Né «obbligatorio» né il tag «PUOI PORTARLO DOPO».
+  const avvisi = { normale: m.avvisoCertificato('normale'), agonistico: m.avvisoCertificato('agonistico') }
+  ok('avviso certificato normale, testo esatto', avvisi.normale, 'Dai 6 anni serve il certificato medico per partecipare alle lezioni. Caricalo qui sotto o portalo in segreteria.')
+  ok('avviso certificato agonistico, testo esatto', avvisi.agonistico, 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico per partecipare alle lezioni. Caricalo qui sotto o portalo in segreteria.')
+  ok('avviso certificato: nessuno dei due dice «obbligatorio» o «PUOI PORTARLO DOPO»', Object.values(avvisi).map((t) => /obbligatori|PUOI PORTARLO DOPO/i.test(t)), [false, false])
+  ok('avviso certificato: entrambi dicono «per partecipare alle lezioni» e «portalo in segreteria»', Object.values(avvisi).map((t) => t.includes('per partecipare alle lezioni') && t.includes('portalo in segreteria')), [true, true])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
