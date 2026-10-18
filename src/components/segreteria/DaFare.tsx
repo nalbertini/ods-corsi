@@ -6,6 +6,7 @@ import { prezziMancanti, prezziMancantiInBreve } from '../../lib/listino'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { contaTessere, conTessere, incrocioTessere } from '../../lib/tessere'
 import { appelliSenzaSegni, certificatiDaSistemare, contiDaRileggere, contiDellaStriscia, GIORNI_APPELLI, mantieniIPrecedenti, pagamentiNonInRegola, type ContiCosaManca } from '../../lib/cosaManca'
+import { classeTastoDaFare, TESTI_DA_FARE } from '../../lib/daFareTesti'
 import { dataLunga, Testa } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
@@ -120,7 +121,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
           segnalate: d.segnalate ? (segn ? segn.filter((x) => x.stato === 'da_vedere').length : null) : undefined,
           // Senza `tutto` restano i conti di prima: tornando a DA FARE non lampeggiano.
           appelli: pesante ? appelliMancanti : prima.appelli,
-          // Contati come i filtri di ISCRITTI che apre VEDI CHI: il numero è quello delle righe che si vedono.
+          // Contati come i filtri di ISCRITTI che apre «Vedi chi»: il numero è quello delle righe che si vedono.
           certificati: pesante ? (pers ? certificatiDaSistemare(pers, oggi) : null) : prima.certificati,
           scadenza: pesante ? (attive ? attive.filter((p) => certificatoInScadenza(p, oggi)).length : null) : prima.scadenza,
           arrivo: pesante ? (attive ? attive.filter((p) => certificatoInArrivo(p, oggi)).length : null) : prima.arrivo,
@@ -188,29 +189,29 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
     {
       chiave: 'appelli',
       n: appelli ? appelli.length : null,
-      titolo: (n) => uno(n, 'lezione senza appello', 'lezioni senza appello'),
+      titolo: (n) => uno(n, TESTI_DA_FARE.appelli.singolare, TESTI_DA_FARE.appelli.plurale),
       sotto: `Negli ultimi ${GIORNI_APPELLI} giorni: passate, e nessuno ha segnato. Si apre la lezione e si fa l’appello, o si annulla se non c’è stata.`,
       aPosto: 'appelli',
-      tasto: 'TUTTE IN PRESENZE',
+      tasto: TESTI_DA_FARE.appelli.tasto,
       voce: 'presenze',
       dove: { filtro: 'senza-appello' },
     },
     {
       chiave: 'richieste',
       n: conti.richieste,
-      titolo: (n) => uno(n, 'richiesta online nuova', 'richieste online nuove'),
+      titolo: (n) => uno(n, TESTI_DA_FARE.richieste.singolare, TESTI_DA_FARE.richieste.plurale),
       sotto: 'Iscrizioni arrivate dal modulo, da accogliere o rifiutare.',
       aPosto: 'richieste online',
-      tasto: 'APRI LE RICHIESTE',
+      tasto: TESTI_DA_FARE.richieste.tasto,
       voce: 'richieste',
     },
     {
       chiave: 'istruttori',
       n: conti.istruttori,
-      titolo: (n) => uno(n, 'presenza istruttore da confermare', 'presenze istruttori da confermare'),
+      titolo: (n) => uno(n, TESTI_DA_FARE.istruttori.singolare, TESTI_DA_FARE.istruttori.plurale),
       sotto: 'Istruttori segnati dove non erano previsti, e lezioni tenute in cui scegliere chi c’era.',
       aPosto: 'presenze istruttori',
-      tasto: 'APRI LE PRESENZE ISTRUTTORI',
+      tasto: TESTI_DA_FARE.istruttori.tasto,
       voce: 'istruttori',
     },
     ...(conti.segnalate !== undefined
@@ -218,10 +219,10 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
           {
             chiave: 'segnalate',
             n: conti.segnalate,
-            titolo: (n: number) => uno(n, 'presenza segnalata da vedere', 'presenze segnalate da vedere'),
+            titolo: (n: number) => uno(n, TESTI_DA_FARE.segnalate.singolare, TESTI_DA_FARE.segnalate.plurale),
             sotto: 'Iscritti che dicono di esserci stati e nell’appello non risultano.',
             aPosto: 'presenze segnalate',
-            tasto: 'APRI LE SEGNALATE',
+            tasto: TESTI_DA_FARE.segnalate.tasto,
             voce: 'segnalate' as Voce,
           },
         ]
@@ -229,69 +230,69 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
     {
       chiave: 'certificati',
       n: conti.certificati,
-      titolo: (n) => uno(n, 'iscritto senza certificato valido', 'iscritti senza certificato valido'),
+      titolo: (n) => uno(n, TESTI_DA_FARE.certificati.singolare, TESTI_DA_FARE.certificati.plurale),
       sotto: 'Il certificato medico manca o è scaduto: senza, in sala non si entra. Sotto i 6 anni non serve.',
       aPosto: 'certificati',
-      tasto: 'VEDI CHI',
+      tasto: TESTI_DA_FARE.certificati.tasto,
       voce: 'iscritti',
       dove: { filtro: 'certificato' },
     },
     {
       chiave: 'scadenza',
       n: conti.scadenza,
-      titolo: (n) => uno(n, 'certificato in scadenza', 'certificati in scadenza'),
+      titolo: (n) => uno(n, TESTI_DA_FARE.scadenza.singolare, TESTI_DA_FARE.scadenza.plurale),
       sotto: 'Scadono entro un mese: da ricordare prima che scadano.',
       aPosto: 'certificati in scadenza',
-      tasto: 'VEDI CHI',
+      tasto: TESTI_DA_FARE.scadenza.tasto,
       voce: 'iscritti',
       dove: { filtro: 'scadenza' },
     },
     {
       chiave: 'arrivo',
       n: conti.arrivo,
-      titolo: (n) => uno(n, 'iscritto compie 6 anni senza certificato', 'iscritti compiono 6 anni senza certificato'),
+      titolo: (n) => uno(n, TESTI_DA_FARE.arrivo.singolare, TESTI_DA_FARE.arrivo.plurale),
       sotto: 'Dal compleanno il certificato serve: nel prossimo mese, da avvisare alla famiglia.',
       aPosto: 'compleanni dei 6 anni',
-      tasto: 'VEDI CHI',
+      tasto: TESTI_DA_FARE.arrivo.tasto,
       voce: 'iscritti',
       dove: { filtro: 'arrivo' },
     },
     {
       chiave: 'pagare',
       n: conti.pagare,
-      titolo: (n) => uno(n, 'iscritto da pagare', 'iscritti da pagare'),
+      titolo: (n) => uno(n, TESTI_DA_FARE.pagare.singolare, TESTI_DA_FARE.pagare.plurale),
       sotto: 'Da pagare, pagato in parte, o pagato fino a una data passata.',
       aPosto: 'pagamenti',
-      tasto: 'VEDI CHI',
+      tasto: TESTI_DA_FARE.pagare.tasto,
       voce: 'iscritti',
       dove: { filtro: 'pagare' },
     },
     {
       chiave: 'listino',
       n: conti.listino ? conti.listino.length : null,
-      titolo: (n) => uno(n, 'corso con un prezzo mancante', 'corsi con un prezzo mancante'),
+      titolo: (n) => uno(n, TESTI_DA_FARE.listino.singolare, TESTI_DA_FARE.listino.plurale),
       sotto: `${prezziMancantiInBreve(conti.listino ?? [])} Nel conto del modulo il prezzo resta da confermare.`,
       aPosto: 'listino',
-      tasto: 'APRI LISTINO',
+      tasto: TESTI_DA_FARE.listino.tasto,
       voce: 'listino',
     },
     {
       chiave: 'file-di-prima',
       n: conti.certificatiDaStampare,
-      titolo: (n) => uno(n, 'certificato non archiviato', 'certificati non archiviati'),
+      titolo: (n) => uno(n, TESTI_DA_FARE['file-di-prima'].singolare, TESTI_DA_FARE['file-di-prima'].plurale),
       sotto: 'Caricati nell’app prima della nuova gestione: si aprono dalla scheda come gli altri, e si cancellano da soli 30 giorni dopo la scadenza.',
       aPosto: 'certificati non archiviati',
-      tasto: 'VEDI QUALI',
+      tasto: TESTI_DA_FARE['file-di-prima'].tasto,
       voce: 'iscritti',
       dove: { filtro: 'file-di-prima' },
     },
     {
       chiave: 'documenti-stampa',
       n: conti.documentiDaStampare,
-      titolo: (n) => uno(n, 'richiesta con documenti da stampare', 'richieste con documenti da stampare'),
+      titolo: (n) => uno(n, TESTI_DA_FARE['documenti-stampa'].singolare, TESTI_DA_FARE['documenti-stampa'].plurale),
       sotto: 'Documento d’identità arrivato col modulo: accolta la richiesta, si stampa e si cancella.',
       aPosto: 'richieste da stampare',
-      tasto: 'VEDI QUALI',
+      tasto: TESTI_DA_FARE['documenti-stampa'].tasto,
       voce: 'richieste',
       dove: { filtro: 'stampare' },
     },
@@ -325,7 +326,7 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
 
       {daFare.length > 0 && (
         <ul className="sg-dafare" aria-label="Da fare">
-          {daFare.map((c) => (
+          {daFare.map((c, i) => (
             <li key={c.chiave} className="sg-dafare-riga" data-livello={LIVELLO[c.chiave]}>
               <span className="num sg-dafare-n">{c.n}</span>
               <div className="stack grow" style={{ gap: 4, minWidth: 0 }}>
@@ -351,7 +352,7 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
                   </div>
                 )}
               </div>
-              <button type="button" className="sg-btn sg-btn-linea sg-dafare-tasto" onClick={() => onVai(c.voce, c.dove)}>
+              <button type="button" className={`sg-btn ${classeTastoDaFare(i)} sg-dafare-tasto`} onClick={() => onVai(c.voce, c.dove)}>
                 {c.tasto}
               </button>
             </li>
@@ -366,7 +367,8 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
             <span key={c.chiave}>
               {i > 0 && ' · '}
               <button type="button" className="sg-link" onClick={() => onVai(c.voce, c.dove)}>
-                {c.n} {c.titolo(c.n!)}
+                {/* In mezzo alla frase: «18 certificati non archiviati», senza l'iniziale maiuscola del titolo di riga. */}
+                {c.n} {c.titolo(c.n!).toLowerCase()}
               </button>
             </span>
           ))}

@@ -44,7 +44,7 @@ export function CosaManca({
           </span>
           <span className="sg-mancano-testi" aria-hidden="true">
             <span className="sg-mancano-titolo">{c.titolo}</span>
-            <span className="sg-mancano-nota">{c.nota}</span>
+            <span className="sg-mancano-nota" data-fissa={c.notaFissa}>{c.nota}</span>
           </span>
         </button>
       ))}

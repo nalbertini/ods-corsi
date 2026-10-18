@@ -57,7 +57,7 @@ const alle1032 = Date.UTC(2026, 9, 16, 8, 32)
 console.log('Le caselle')
 ok('CASELLE: cinque, in questo ordine', m.CASELLE, ID)
 ok('caselleCosaManca: cinque, nell\'ordine di CASELLE', m.caselleCosaManca(conti(1, 2, 3, 4)).map((x) => x.id), ID)
-ok('i titoli', m.caselleCosaManca(conti(1, 2, 3, 4)).map((x) => x.titolo), ['APPELLI NON FATTI', 'CERTIFICATI SCADUTI', 'PAGAMENTI', 'TESSERE', 'RICHIESTE ONLINE'])
+ok('i titoli', m.caselleCosaManca(conti(1, 2, 3, 4)).map((x) => x.titolo), ['Appelli non fatti', 'Certificati scaduti', 'Pagamenti', 'Senza tessera', 'Richieste online'])
 ok('GIORNI_APPELLI è 30, SECONDI_RILETTURA è 120', [m.GIORNI_APPELLI, m.SECONDI_RILETTURA], [30, 120])
 
 console.log('\nNumero e stato')
@@ -90,6 +90,11 @@ ok('conto vecchio ma un conto null: vale la nota del null', casella('pagamenti',
 ok('non vecchio: la nota è quella normale anche con aggiornato', casella('pagamenti', 4, { vecchio: false, aggiornato: alle1032 }).nota, 'quote non in regola')
 ok('il numero del conto vecchio resta quello di prima', casella('pagamenti', 4, { vecchio: true, aggiornato: alle1032 }).numero, '4')
 
+console.log('\nLa nota fissa e gli avvisi sul conto')
+ok('con un numero buono la nota è quella di sempre (nascondibile)', ID.map((id) => casella(id, 3, { contato: true }).notaFissa), [true, true, true, true, true])
+ok('conto vecchio o numero non noto: la nota è un avviso, si vede sempre', [casella('appelli', 3, { vecchio: true, aggiornato: alle1032 }).notaFissa, casella('appelli', null, { contato: true }).notaFissa], [false, false])
+ok('il nome per lo screen reader comincia col titolo che si legge', ID.map((id) => casella(id, 3, { contato: true }).nome.toLowerCase().includes(casella(id, 3, { contato: true }).titolo.toLowerCase().split(' ')[0])), [true, true, true, true, true])
+
 console.log('\nIl nome per chi usa lo screen reader')
 const nomi = (n, contato = true) => ID.map((id) => casella(id, n, { contato }).nome)
 ok('uno', nomi(1), [
@@ -117,14 +122,14 @@ ok('non so', nomi(null), [
   'Appelli non fatti: non so, non si è riusciti a contare',
   'Certificati scaduti: non so, non si è riusciti a contare',
   'Pagamenti: non so, non si è riusciti a contare',
-  'Tessere: non so, non si è riusciti a contare',
+  'Senza tessera: non so, non si è riusciti a contare',
   'Richieste online: non so, non si è riusciti a contare',
 ])
 ok('sto contando', nomi(null, false), [
   'Appelli non fatti: sto contando',
   'Certificati scaduti: sto contando',
   'Pagamenti: sto contando',
-  'Tessere: sto contando',
+  'Senza tessera: sto contando',
   'Richieste online: sto contando',
 ])
 
