@@ -91,9 +91,9 @@ ok('telefono: menu aperto (#menu:target) su fondo pieno, voci con 16px di paddin
 console.log('\n2. Testata della pagina (hero) delle pagine interne')
 ok('solo le pagine interne hanno la classe «interna», la Home no', [conta(h, /class="pagina-hero interna( solo)?"/g), conta(pagina('home'), /class="pagina-hero interna/g)], [1, 0])
 ok('desktop: padding 40 e 72px sotto, titolo a sinistra e colonna da 520px a destra', [D('.pagina-hero.interna', 'padding'), D('.pagina-hero.interna', 'grid-template-columns'), D('.pagina-hero.interna', 'align-items')], ['40px var(--margine) 72px', '1fr 520px', 'end'])
-ok('titolo da 200px, interlinea .82', [D('.interna h1', 'font-size'), D('.interna h1', 'line-height')], ['200px', '.82'])
+ok('titolo da 120px (come I corsi), interlinea .82', [D('.interna h1', 'font-size'), D('.interna h1', 'line-height')], ['120px', '.82'])
 ok('frase da 22px con 28px sotto', [D('.interna .intro p', 'font-size'), D('.interna .intro p', 'margin')], ['22px', '0 0 28px'])
-ok('telefono: padding 20 e 36px sotto; titolo da 84px; frase 18px', [T('.pagina-hero.interna', 'padding'), T('.interna h1', 'font-size'), T('.interna .intro p', 'font-size')], ['20px var(--margine) 36px', '84px', '18px'])
+ok('telefono: padding 20 e 36px sotto; titolo da 56px (come I corsi); frase 18px', [T('.pagina-hero.interna', 'padding'), T('.interna h1', 'font-size'), T('.interna .intro p', 'font-size')], ['20px var(--margine) 36px', '56px', '18px'])
 
 console.log('\n3. Invito «Prova»')
 ok('desktop: 96px sopra, margini della pagina, alto 300px, padding 36px 40px', [D('.invito', 'margin'), D('.invito', 'min-height'), D('.invito', 'padding')], ['96px var(--margine) 6px', '300px', '36px 40px'])
@@ -123,7 +123,7 @@ console.log('\n9. Titoli con una parola lunga non si spezzano a metà')
   ok('14 lettere o più: classe «lunghissimo» («Giocomotricità e psicomotricità»)', titolo('Giocomotricità e psicomotricità'), ' class="lunghissimo"')
   ok('una parola da 10 lettere larghe (M, W contano di più) è «medio»: scende a 175px sul desktop e a 76px sul telefono («Avviamento»)', titolo('Avviamento alle arti marziali'), ' class="medio"')
   const css = pagina().match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
-  ok('«lungo» scende a 132px sul desktop, «lunghissimo» a 125px (mai sotto 56 e 44px), «medio» a 175px sul desktop e 76px sul telefono', [/\.interna h1\.medio\{font-size:clamp\(56px,12\.2vw,175px\)\}/.test(css), /\.interna h1\.lungo\{font-size:clamp\(56px,9\.2vw,132px\)\}/.test(css), /\.interna h1\.lunghissimo\{font-size:clamp\(44px,8\.7vw,125px\)\}/.test(css), /@media \(max-width:900px\)\{\.interna h1\.medio\{font-size:76px\}\}/.test(css)], [true, true, true, true])
+  ok('una parola lunga non rimpicciolisce il titolo: tutte le pagine hanno la stessa misura', /\.interna h1\.(medio|lungo|lunghissimo)\{/.test(css), false)
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')

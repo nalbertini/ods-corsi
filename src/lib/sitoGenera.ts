@@ -357,7 +357,7 @@ const CSS_HOME = `
  * passi numerati e domande (`main.passo-unico`). I recapiti riusano le misure di `.recapiti` della pagina di prima.
  */
 const CSS_CONTATTI = `
-.contatti-nuova h1{font-size:clamp(92px,9.72vw,140px)}
+.contatti-nuova h1{font-size:120px}
 .contatti-nuova~.invito{height:auto;min-height:300px}
 .recapiti-sez{padding:48px var(--margine) 0}
 .recapiti-sez .recapiti{grid-auto-rows:minmax(270px,auto)}
@@ -387,7 +387,7 @@ const CSS_CONTATTI = `
 .foto-contatti figure{margin:0;height:360px;overflow:hidden;border-radius:6px}
 .foto-contatti img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 45%;border-radius:6px}
 @media (max-width:900px){
-.contatti-nuova h1{font-size:82px}
+.contatti-nuova h1{font-size:56px}
 .recapiti-sez{padding-top:32px}
 .recapiti-sez .recapiti{grid-auto-rows:minmax(215px,auto)}
 .contatti-nuova .arrivo{grid-template-columns:1fr;margin-top:24px}
@@ -425,7 +425,7 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .intro h1{margin-bottom:auto}
 .intro p{margin:0 0 28px;font-size:clamp(18px,1.6vw,22px);line-height:1.45;max-width:520px}
 .pagina-testo{padding:40px var(--margine) 24px}
-.pagina-testo h1{font-size:clamp(48px,8vw,120px);max-width:14em}
+.pagina-testo h1{font-size:120px;max-width:14em}
 .testo{padding:24px var(--margine) 40px;max-width:calc(62ch + var(--margine) * 2)}
 .pagina-testo + .testo{padding-top:8px}
 .testo>*+*,.colonna>*+*{margin-top:16px}
@@ -591,7 +591,7 @@ ${GRIGLIE_LUNGHE}
 .ritratto-invito .pulsante{text-decoration:none}
 .ritratto-invito .pulsante.primario{background:var(--giallo);color:var(--inchiostro)}
 .ritratto-invito .pulsante.secondario{background:#fff;border-color:#fff;color:var(--inchiostro)}
-.interna.elenco-tecnici h1{font-size:156px}
+.interna.elenco-tecnici h1{font-size:120px}
 .scheda-scarna .scheda-persona{padding:12px var(--margine) 0}
 .indietro{display:inline-flex;align-items:center;min-height:48px;color:inherit;font-size:17px;font-weight:600;text-decoration:none}
 .scheda-testata{display:grid;grid-template-columns:600px 1fr;gap:48px;align-items:stretch;margin-top:12px}
@@ -749,6 +749,7 @@ ${TINTE_PERSONA}
 .testata{padding:12px var(--margine) 0;gap:10px 16px}
 .logo img{width:84px;height:82px}
 h1{font-size:84px;line-height:.84}
+.pagina-testo h1{font-size:56px}
 .pagina-hero{padding:20px var(--margine) 0;gap:36px 0}
 .intro h1{margin-bottom:20px}
 .intro p{font-size:18px;margin-bottom:22px}
@@ -855,7 +856,7 @@ h1{font-size:84px;line-height:.84}
 .ritratto:has(h3 a)::after{display:none}
 .ritratti .ritratto-invito{grid-column:auto;padding:24px}
 .ritratto-invito .parola{font-size:56px}
-.interna.elenco-tecnici h1{font-size:84px}
+.interna.elenco-tecnici h1{font-size:56px}
 .scheda-scarna .scheda-persona{padding-top:0}
 .scheda-testata{grid-template-columns:1fr;gap:16px}
 .scheda-ritratto{height:320px}
@@ -911,10 +912,6 @@ ${CSS_CORSI}
 ${CSS_INTERNE}
 ${CSS_TESTATA}
 ${cssFoci()}
-.interna h1.medio{font-size:clamp(56px,12.2vw,175px)}
-.interna h1.lungo{font-size:clamp(56px,9.2vw,132px)}
-.interna h1.lunghissimo{font-size:clamp(44px,8.7vw,125px)}
-@media (max-width:900px){.interna h1.medio{font-size:76px}}
 @media (max-width:720px){.colonne.c-2,.colonne.c-3{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')

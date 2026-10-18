@@ -132,7 +132,7 @@ console.log('\n6. Misure e fuochi del CSS')
 {
   const c = css(pagina(NUOVO))
   const sotto = c.slice(c.indexOf('@media (max-width:900px){', c.indexOf('.chi-siamo-nuova')))
-  ok('titolo da 120px a 1440 (84px sul telefono), sezioni 80/56, tessere 40/32', [/\.chi-siamo-nuova h1\{[^}]*font-size:clamp\(84px,8\.33vw,120px\)/.test(c), /\.chi-siamo-nuova \.oggi h2\{[^}]*font-size:clamp\(32px,2\.78vw,40px\)/.test(c)], [true, true])
+  ok('titolo da 120px a 1440 (56px sul telefono), sezioni 80/56, tessere 40/32', [/\.chi-siamo-nuova h1\{[^}]*font-size:120px/.test(c), /\.chi-siamo-nuova \.oggi h2\{[^}]*font-size:clamp\(32px,2\.78vw,40px\)/.test(c)], [true, true])
   ok('la frase dello slogan è 56px, in equilibrio, e sul telefono si impila', [/\.slogan-frase\{[^}]*font-size:clamp\(44px,3\.89vw,56px\)[^}]*text-wrap:balance/.test(c), /\.slogan-fascia\{[^}]*grid-template-columns:1fr/.test(sotto)], [true, true])
   ok('la fila: 4 colonne, riquadro 420px, sul telefono 2×2 e nessuna foto nascosta', [/\.fila-foto\{[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/.test(c), /\.fila-foto figure img\{[^}]*height:420px/.test(c), /\.fila-foto\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/.test(sotto), /\.fila-foto[^{]*\{[^}]*display:none/.test(c)], [true, true, true, false])
   ok('il titolo nascosto resta per chi usa lo screen reader', /\.chi-siamo-nuova \.nascosto\{[^}]*clip:rect\(0,0,0,0\)/.test(c), true)

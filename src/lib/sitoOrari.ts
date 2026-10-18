@@ -80,7 +80,7 @@ export function orariHtml(dopo: string, righe: OrarioSito[]): string {
 
 /** Sotto `main.pagina-orari` (che ha già le regole della Home): le misure sono quelle del design a 1440px e a 375px. */
 export const CSS_ORARI = `
-.pagina-orari h1{font-size:clamp(92px,13.9vw,200px);line-height:.84;letter-spacing:-.01em}
+.pagina-orari h1{font-size:120px;line-height:.84;letter-spacing:-.01em}
 .pagina-orari .intro p{max-width:760px}
 .orari-giorni{padding:56px var(--margine) 0}
 .orari{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
@@ -101,7 +101,7 @@ export const CSS_ORARI = `
 .orari-nota .pulsante{flex:none;min-height:56px;padding:0 28px;font-size:17px}
 .orari-nota .aggiornato{margin:16px 0 0;font-size:16px;font-weight:500;line-height:1.5}
 @media (max-width:900px){
-.pagina-orari h1{font-size:84px}
+.pagina-orari h1{font-size:56px}
 .orari-giorni{padding-top:32px}
 .orari{grid-template-columns:1fr}
 .orari .giorno{padding:20px 20px 8px}
