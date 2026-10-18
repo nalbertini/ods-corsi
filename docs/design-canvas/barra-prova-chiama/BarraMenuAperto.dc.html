@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Barra e menu aperto</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA: con il MENU aperto il pannello sta sopra la barra (z-index più alto): la barra resta sotto e non copre nessuna voce. -->
+<div style="width: 375px; height: 812px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+<dc-import name="SitoTestata" logo="logo.webp" attiva="Home" prova="Prova una settimana a 5 €" piccolo="{{ true }}" hint-size="100%%,96px"></dc-import><div style="position:absolute;left:0;right:0;top:96px;z-index:10;padding:12px 16px 24px;background:#eef5fa;box-shadow:0 14px 24px rgba(13,42,61,.2);display:grid;gap:6px"><span style="display:inline-flex;align-items:center;min-height:56px;padding:0 16px;border-radius:6px;background:#cfe6f4;font:500 17px Inter,Arial,sans-serif">Home</span><span style="display:inline-flex;align-items:center;min-height:56px;padding:0 16px;border-radius:6px;background:#cfe6f4;font:500 17px Inter,Arial,sans-serif">I corsi</span><span style="display:inline-flex;align-items:center;min-height:56px;padding:0 16px;border-radius:6px;background:#cfe6f4;font:500 17px Inter,Arial,sans-serif">Chi siamo</span><span style="display:inline-flex;align-items:center;min-height:56px;padding:0 16px;border-radius:6px;background:#cfe6f4;font:500 17px Inter,Arial,sans-serif">Contattaci</span><span style="display:inline-flex;align-items:center;min-height:56px;padding:0 16px;border-radius:6px;background:#cfe6f4;font:500 17px Inter,Arial,sans-serif">Istruttori</span></div><div style="position:absolute;left:0;right:0;bottom:0;z-index:5"><dc-import name="SitoBarraProva" principale="Prova a 5 €" secondario="Chiama" hint-size="100%%,80px"></dc-import></div>
+</div>
+</x-dc>
+</body>
+</html>

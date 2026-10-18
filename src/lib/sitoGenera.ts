@@ -12,7 +12,7 @@ import { eHomeNuova, homeNuova } from './sitoHome'
 import { CSS_ORARIO_AUTOMATICO, corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
 import { testiOrario, type OrarioAperto } from './sitoOrario'
 import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
-import { CONTATTI } from './sito'
+import { CONTATTI, chiama } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
 
 /**
@@ -297,7 +297,12 @@ const CSS_HOME = `
 .cta-foto{margin:0;min-height:440px;overflow:hidden;border-radius:0 6px 6px 0}
 .cta-foto img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 25%;border-radius:0}
 .passo-unico + .piede{margin-top:24px}
+.barra-prova{display:none}
 @media (max-width:900px){
+.barra-prova{display:flex;gap:8px;position:sticky;bottom:0;z-index:5;margin-top:48px;padding:12px var(--margine) calc(12px + env(safe-area-inset-bottom));background:var(--inchiostro);box-shadow:0 -6px 18px rgba(13,42,61,.22)}
+.barra-prova .pulsante{min-height:56px;padding:0 16px;font-size:17px}
+.barra-prova .primario{flex:3}
+.barra-prova .secondario{flex:2;color:#fff;border-color:#fff}
 .passo-unico .pagina-hero{grid-template-columns:1fr;gap:32px;padding:20px var(--margine) 0}
 .passo-unico .intro h1{margin-bottom:24px}
 .passo-unico .intro p{font-size:18px;margin-bottom:24px}
@@ -1053,9 +1058,14 @@ function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
 function piede(c: Contesto): string {
   const f = lista(voci('footer', c))
   const m = voci('menu', c)
-  const recapiti = `<li>${esc(CONTATTI.indirizzo)}<span class="metro"> ${TESTI.metro}</span></li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
+  const recapiti = `<li>${esc(CONTATTI.indirizzo)}<span class="metro"> ${TESTI.metro}</span></li><li><a href="${esc(chiama)}">${esc(CONTATTI.telefono)}</a></li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
   // Come nel design: il nome, poi tre colonne senza titolo (recapiti, pagine, legge).
   return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><ul class="recapiti-piede">${recapiti}</ul>${m.length ? `<nav class="piede-menu" aria-label="Pagine">${m.map((x) => `<a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a>`).join('')}</nav>` : ''}${f ? `<ul class="piede-legale">${f}</ul>` : ''}</footer>`
+}
+
+/** La barra del telefono in fondo alla Home: «Prova a 5 €» verso il modulo e «Chiama». Il nome accessibile dice «una settimana»: sulla pagina ci sono altri pulsanti di prova. */
+function barraProva(): string {
+  return `<nav class="barra-prova" aria-label="Prova o chiama"><a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer" aria-label="Prova una settimana a 5 euro">Prova a 5 €</a><a class="pulsante secondario" href="${esc(chiama)}">Chiama</a></nav>`
 }
 
 function invito(conContatti: boolean): string {
@@ -1143,7 +1153,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
 
 /** La Home nuova (sitoHome.ts): testata, hero con i due pulsanti, sezioni a passo unico. Senza la chiamata finale nel testo resta l'invito di sempre. */
 function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
-  const h = homeNuova(pulito, TESTI.iscrizione)
+  const h = homeNuova(pulito, TESTI.iscrizione, barraProva())
   const hero = `<section class="pagina-hero con-pulsanti${h.foto ? '' : ' solo'}"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div>${h.foto}</section>`
   const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
