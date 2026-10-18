@@ -208,6 +208,48 @@ fondo, l'invito giallo e una tessera scura con i recapiti.
 Se compare «Il pannello del sito non è ancora attivo sul database», manca un
 aggiornamento del database: va chiesto a chi cura l'app.
 
+## La pagina degli orari
+
+La pagina **Orari** del sito mostra gli orari dei corsi senza che tu li scriva:
+li prende da **CORSI**. Cambi un orario in CORSI e il sito si aggiorna da solo in
+circa 5 minuti, **senza premere Pubblica**.
+
+Per avere la pagina:
+
+1. In **Sito**, **Nuova pagina**, con titolo «Orari»: l'indirizzo deve restare
+   `orari`.
+2. Nel testo scrivi tre righe, una per riga (premi Invio fra l'una e l'altra):
+   - una frase di introduzione;
+   - `[orari]`, da solo, con le parentesi quadre: lì compaiono gli orari;
+   - la riga per le variazioni, per esempio «Per variazioni contatta la
+     segreteria: 346 329 2786.».
+3. **Pubblica**, poi in **Menu e footer** aggiungi la voce **Orari** e scegli
+   questa pagina.
+
+Attenzione a `[orari]`: se lo scrivi diverso (`[orario]`, parentesi tonde, un
+altro indirizzo della pagina) non c'è nessun avviso, e la pagina esce con le
+tue righe e senza orari. Guarda sempre l'**Anteprima** prima di Pubblica.
+
+Come si presenta: una tessera per ogni giorno, da lunedì a domenica (un giorno
+senza lezioni non c'è), con ora di inizio e fine e nome del corso. In fondo, la
+tua riga delle variazioni e il pulsante giallo **Scrivici su WhatsApp**: il
+pulsante c'è sempre e usa il numero dei contatti del sito, non si scrive nella
+pagina. Sotto, «Aggiornato al…»: il giorno dell'ultima volta che hai cambiato
+giorno, ora, durata, fine o corso di una lezione (cambiare la sala non lo
+sposta).
+
+Finché nessun corso ha un orario, la pagina dice «Orari in arrivo» e, sotto il
+titolo, «L'orario della settimana comparirà qui.» al posto della tua
+introduzione.
+
+Sul sito **non** compaiono la sala, l'istruttore, gli iscritti, né le lezioni
+annullate o con un sostituto: è l'orario tipo, uguale per tutto l'anno. Un corso
+archiviato, o un orario che è già finito, non ci sono.
+
+Se compare un errore su `orari_sito`, manca un aggiornamento del database
+(`69-orari-sito.sql`): va chiesto a chi cura l'app. Il sito di prima resta
+com'è finché non c'è.
+
 ## Come il testo diventa tessere
 
 Il sito mette in pagina da solo quello che scrivi, secondo come lo scrivi. Nell'ANTEPRIMA del pannello vedi

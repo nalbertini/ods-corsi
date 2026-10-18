@@ -54,6 +54,9 @@ Nella scheda, sotto **RICORRENZE**:
 - **+ Aggiungi un giorno** → giorno, ora, minuti, sala → **Aggiungi**;
 - la ✕ accanto a un giorno lo toglie (chiede conferma).
 
+I giorni e le ore dei corsi attivi sono anche gli orari della pagina **Orari**
+del sito: cambiano da soli in circa 5 minuti (vedi
+[Sito](sito.md#la-pagina-degli-orari)).
 Le ricorrenze alimentano anche il **sito**: se la pagina di un corso è
 collegata a questo corso (SITO, sotto **ORARIO DAI CORSI**), giorni e ore che
 scrivi qui arrivano da soli sulla sua pagina entro 5 minuti, senza premere

@@ -346,6 +346,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
             where table_schema = 'public' and table_name = 'sito_pagine' and column_name = 'corsi_collegati')
     and to_regprocedure('public.salva_corsi_sito(uuid,uuid[])') is not null
     -- Rilanciare 56 dopo 68 rimette la funzione pubblica senza la colonna: la riga torna «da lanciare».
-    and exists (select 1 from pg_proc p where p.oid = to_regprocedure('public.sito_pagine_pubbliche()') and 'corsi_collegati' = any(p.proargnames)))
+    and exists (select 1 from pg_proc p where p.oid = to_regprocedure('public.sito_pagine_pubbliche()') and 'corsi_collegati' = any(p.proargnames))),
+  ('69-orari-sito.sql', 'gli orari dei corsi per la pagina Orari del sito, con la data di modifica scritta dal database',
+    exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'orari_sito'
+            and has_function_privilege('anon', p.oid, 'execute'))
+    and exists (select 1 from pg_trigger where tgname = 'ricorrenza_modificata' and not tgisinternal))
 ) as x(file, cosa, c)
 order by file, cosa;

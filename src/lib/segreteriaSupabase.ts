@@ -24,6 +24,7 @@ import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scor
 import { kanjiScritto } from './kanji'
 import { enteDaDati, fineAnno, mancaTessere, type EsitoImportTessere, type TesseraSeg } from './tessere'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
+import type { OrarioSito } from './sitoOrari'
 import { pezziInHtml, pezziValidi } from './sitoPezzi'
 import { ORARIO_NON_ATTIVO } from './sitoOrario'
 import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
@@ -1970,6 +1971,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const { data, error } = await db.storage.from(CONTENITORE_SITO).list('', { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } })
       if (error) throw immaginiNonAttive(error)
       return (data ?? []).filter((f) => eNomeDelContenitore(f.name)).map((f) => ({ nome: f.name, url: urlImmagine(URL_SUPABASE ?? '', f.name) }))
+    },
+
+    async orariSito() {
+      // as: il client non conosce le colonne di orari_sito(); la forma la dà 69-orari-sito.sql.
+      return ok(await db.rpc('orari_sito')) as OrarioSito[]
     },
 
     async caricaImmagineSito(file) {

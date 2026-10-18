@@ -169,7 +169,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
         <div className="stack" style={{ gap: 10, minWidth: 0 }}>
           {anteprima && aPezzi ? (
             <Suspense fallback={<span className="sg-sotto">Apro l’anteprima…</span>}>
-              <AnteprimaPagina slug={pagina.slug} titolo={titolo} descrizione={descrizione} testo={bozza} />
+              <AnteprimaPagina d={d} slug={pagina.slug} titolo={titolo} descrizione={descrizione} testo={bozza} />
             </Suspense>
           ) : anteprima ? (
             // Sicuro: è il testo ripulito dalla stessa funzione che lo ripulisce per il sito (sitoTesto.ts).

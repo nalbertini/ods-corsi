@@ -19,6 +19,7 @@ import type { Categoria, Segnalazione } from './segnalazioni'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
 import type { PezziPagina } from './sitoPezzi'
 import type { ImmagineSito } from './sitoImmagini'
+import type { OrarioSito } from './sitoOrari'
 
 export type { ListaMusica } from './musica'
 import type { IndiziDoppioni } from './doppioni'
@@ -600,6 +601,8 @@ export interface DatiSegreteria {
   /** Carica un'immagine (JPEG, PNG o WebP; se pesa troppo la rimpicciolisce); il nome lo decide l'app. */
   caricaImmagineSito(file: File): Promise<ImmagineSito>
   cancellaImmagineSito(nome: string): Promise<void>
+  /** Gli orari che la pagina «Orari» del sito mostra (`orari_sito()`, vedi `sitoOrari.ts`): in prova, quelli del calendario di prova. */
+  orariSito(): Promise<OrarioSito[]>
 
   mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
   togliDalNucleo(personaId: string): Promise<void>

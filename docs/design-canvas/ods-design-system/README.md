@@ -363,6 +363,7 @@ PROPOSTA, non costruita: i pezzi nuovi della pagina di un corso in `../corso-mig
 | `SitoCorsoFascia.dc.html` | L'apertura di un corso senza foto: tre fatti (giorno, ora, per chi) su blu, al posto della foto |
 | `SitoCorsoCta.dc.html` | La chiamata finale della pagina corso: come `SitoCta`, con `alt` della foto come prop e `senzaFoto` (una colonna, testo a sinistra e pulsanti a destra in basso) |
 | `SitoPiedeContatti.dc.html` | Il piede di `SitoPiede` con telefono, Instagram e Facebook nella colonna dell'indirizzo, come in Contatti |
+| `SitoOrarioGiorno.dc.html` | PROPOSTA pagina Orari (`../orari-sito/`): un giorno dell'orario tipo, tessera `#cfe6f4` con il giorno in Big Shoulders e una riga per lezione (`voci` = «ora\|corso» separate da «;»); schermo largo ora sopra e nome sotto, telefono (`piccolo`) ora a sinistra; il nome va a capo, mai tagliato. `SitoTestata` e `SitoPiede` hanno `conOrari` (voce «Orari» fra «I nostri corsi» e «Chi siamo») |
 
 ## Orario dai corsi (pannello SITO)
 

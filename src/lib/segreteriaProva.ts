@@ -883,6 +883,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return a().sitoImmagini ?? []
     },
 
+    async orariSito() {
+      return (await sitoProva()).orariSitoProva(a().corsi, oggi())
+    },
+
     async caricaImmagineSito(file) {
       // In prova niente riduzione (nel canvas non c'è): un file sopra 1 MB si rifiuta, nel database si rimpicciolisce.
       const no = controllaImmagine(file)

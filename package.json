@@ -70,6 +70,7 @@
     "prova:sito-istruttori": "node scripts/prova-sito-istruttori.mjs",
     "prova:sito-istruttori-pagine": "node scripts/prova-sito-istruttori-pagine.mjs",
     "prova:sito-foto": "node scripts/prova-sito-foto.mjs",
+    "prova:sito-orari": "node scripts/prova-sito-orari.mjs",
     "prova:sito-genera": "node scripts/prova-sito-genera.mjs",
     "prova:sito-dati": "node scripts/prova-sito-dati.mjs",
     "prova:sito-social": "node scripts/prova-sito-social.mjs",

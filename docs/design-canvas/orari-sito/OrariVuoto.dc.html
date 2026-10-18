@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Orari vuoto</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA pagina Orari (1440px): l’orario tipo da lunedì a domenica; la riempie il generatore del sito da orari_aperti() + corsi_aperti(). Gli orari qui sono d’esempio. -->
+<div style="width:1440px;min-height:1100px;position:relative;overflow:hidden;background:#eef5fa;color:#0d2a3d">
+  <dc-import name="SitoTestata" logo="logo.webp" attiva="Orari" con-orari="{{ true }}" prova="Prova una settimana a 5 €" hint-size="100%,120px"></dc-import>
+  <section style="padding:24px 48px 0"><h1 style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;margin:0 0 24px;font-size:200px;line-height:.84;letter-spacing:-.01em">Orari</h1><p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:22px;line-height:1.5;max-width:760px">L’orario della settimana comparirà qui.</p></section>
+  <section style="padding:56px 48px 0"><div style="background:#cfe6f4;border-radius:6px;padding:56px 48px;min-height:280px;display:flex;flex-direction:column;justify-content:center"><div style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;font-size:96px;line-height:.9">Orari in arrivo</div></div><div style="height:6px"></div><section style="background:#0d2a3d;color:#ffffff;border-radius:6px;padding:32px 40px;display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:20px"><p style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;margin:0;font-size:22px;line-height:1.45;max-width:760px">Per variazioni contatta la segreteria: 346 329 2786, anche su WhatsApp.</p><span style="font-family:'Inter','Helvetica Neue',Arial,sans-serif;display:inline-flex;align-items:center;min-height:56px;padding:0 28px;border-radius:6px;background:#f4c31b;color:#0d2a3d;font-weight:600;font-size:17px;flex:none">Scrivici su WhatsApp</span></section></section>
+  <section style="padding:72px 48px 48px"><dc-import name="SitoPiede" con-orari="{{ true }}" hint-size="100%,260px"></dc-import></section>
+</div>
+</x-dc>
+</body>
+</html>

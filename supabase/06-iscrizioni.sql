@@ -606,6 +606,14 @@ begin
     grant execute on function orari_aperti() to anon, authenticated;
   end if;
 end $$;
+-- Gli orari per la pagina «Orari» del sito, se 69-orari-sito.sql è già stato
+-- lanciato.
+do $$
+begin
+  if to_regprocedure('public.orari_sito()') is not null then
+    grant execute on function orari_sito() to anon, authenticated;
+  end if;
+end $$;
 -- Le tabelle restano chiuse, anche quelle che verranno: Supabase per default
 -- le dà ad `anon`, e l'RLS da sola è una porta sola invece di due.
 revoke all on all tables in schema public from anon;
