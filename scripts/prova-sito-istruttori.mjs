@@ -126,7 +126,7 @@ console.log('\n6. Le misure del design: computer (1440px)')
   ok('la freccia è un cerchio bianco da 48px, in alto a destra', [px(/^\s*\.ritratto:has\(h3 a\)::after\s*$/, 'top'), px(/^\s*\.ritratto:has\(h3 a\)::after\s*$/, 'right'), px(/^\s*\.ritratto:has\(h3 a\)::after\s*$/, 'width')], [12, 12, 48])
   ok('la pastiglia ha il bersaglio da 32px', px(/^\s*\.ritratto \.pillola\s*$/, 'min-height'), 32)
   ok('l’invito: sfondo inchiostro, titolo 96px', [/background:\s*var\(--inchiostro\)/.test(dentro(/^\s*\.ritratti \.ritratto-invito\s*$/)), px(/^\s*\.ritratto-invito \.parola\s*$/, 'font-size')], [true, 96])
-  ok('il titolo della pagina è su una riga, 156px', px(/^\s*\.interna\.elenco-tecnici h1\s*$/, 'font-size') === 156, true)
+  ok('il titolo della pagina è su una riga, 120px come Chi siamo e Corsi', px(/^\s*\.interna\.elenco-tecnici h1\s*$/, 'font-size') === 120, true)
 }
 
 console.log('\n7. Le misure del design: telefono')

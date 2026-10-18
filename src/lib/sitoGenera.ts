@@ -592,7 +592,7 @@ ${GRIGLIE_LUNGHE}
 .ritratto-invito .pulsante{text-decoration:none}
 .ritratto-invito .pulsante.primario{background:var(--giallo);color:var(--inchiostro)}
 .ritratto-invito .pulsante.secondario{background:#fff;border-color:#fff;color:var(--inchiostro)}
-.interna.elenco-tecnici h1{font-size:156px}
+.interna.elenco-tecnici h1{font-size:120px}
 .scheda-scarna .scheda-persona{padding:12px var(--margine) 0}
 .indietro{display:inline-flex;align-items:center;min-height:48px;color:inherit;font-size:17px;font-weight:600;text-decoration:none}
 .scheda-testata{display:grid;grid-template-columns:600px 1fr;gap:48px;align-items:stretch;margin-top:12px}
