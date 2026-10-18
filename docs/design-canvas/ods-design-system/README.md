@@ -18,12 +18,15 @@ Google, e vale solo per i mockup.
 | `Main.dc.html` | Foundations: colori del marchio, neutri e testo (scuro e chiaro affiancati), colori dei corsi, tipografia, raggi, bordi, ombre, spaziature e misure del tocco |
 | `Pagina.dc.html` | Cornice dello schermo largo: menu di segreteria (240px) + corpo, con PRESENZE come schermata d'esempio. Una schermata nuova si copia da qui |
 | `PaginaTelefono.dc.html` | Cornice del telefono (390px): testata col marchio + scorrimento, con ISCRIZIONI > COSTI d'esempio. È la faccia che l'app mostra per prima |
+| `PaginaSito.dc.html`, `PaginaSitoTelefono.dc.html` | Le cornici della **segreteria nel look del sito**: menu inchiostro con le icone (240px) o barra del telefono, titolo, COSA MANCA a cinque caselle e le righe di DA FARE; per una schermata nuova della segreteria si copia una di queste, non `Pagina.dc.html` |
+| `TemaSito.dc.html` | Tutti i componenti della segreteria col `tema="sito"` uno accanto all'altro: la tavola da guardare per capire il look |
+| `LezioneSettimana.dc.html` | La lezione nella SETTIMANA (`Tessera` di `Settimana.tsx`) col look del sito: tinta in alto, barra rossa se manca l'appello, tag in parole (`etichetteLezione.ts`) |
 | `Bottone.dc.html` | `.btn`, `.sg-btn`, `.icon-btn`: principale, vai, linea, tratteggiato, pieno, rosso, icona; app e segreteria; `bordo="riga-campo"` per i tasti che sono scelte (i tipi di TI SERVE ALTRO?) |
 | `SchedaCorso.dc.html` | `Costo` di `ds.tsx`: la scheda di un corso nel listino; col `tema="sito"` (pagina `iscrizioni/`) bianca, filo `#cfe6f4`, corso e prezzi in Big Shoulders |
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
 | `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag` (neutro, rosso, giallo e verde `fatto`: PUBBLICATA nel SITO), `.sg-segno-regola` |
-| `Menu.dc.html` | Il menu unico (`.sg-menu`): le voci sono quelle delle autorizzazioni della persona (`autorizzazioni`: `segreteria`, `segreteria e amministrazione`, `amministrazione`), non di due aree. I cinque gruppi della segreteria (OGNI GIORNO, ISCRITTI E SOLDI, CORSI E ORARI, ISTRUTTORI, IL RESTO); con l'amministrazione in più I CONTI con CONTABILITÀ, e con solo l'amministrazione I CONTI e basta (CONTABILITÀ, PAGAMENTI, LISTINO), senza ricerca né link da copiare; VESTIARIO e SITO in IL RESTO, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` resta come alias di `autorizzazioni="amministrazione"` |
+| `Menu.dc.html` | Il menu unico (`.sg-menu`), con l'icona davanti a ogni voce (`ICONE_MENU`) e un filetto fra i gruppi; `tema="sito"`: inchiostro, voci in parole con l'iniziale maiuscola, voce corrente gialla: le voci sono quelle delle autorizzazioni della persona (`autorizzazioni`: `segreteria`, `segreteria e amministrazione`, `amministrazione`), non di due aree. I cinque gruppi della segreteria (OGNI GIORNO, ISCRITTI E SOLDI, CORSI E ORARI, ISTRUTTORI, IL RESTO); con l'amministrazione in più I CONTI con CONTABILITÀ, e con solo l'amministrazione I CONTI e basta (CONTABILITÀ, PAGAMENTI, LISTINO), senza ricerca né link da copiare; VESTIARIO e SITO in IL RESTO, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` resta come alias di `autorizzazioni="amministrazione"` |
 | `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
@@ -49,6 +52,7 @@ Google, e vale solo per i mockup.
 | `CercaIscritto` | La ricerca in cima al menu di segreteria (campo da 216px) con l'elenco aperto, da 368px, a gruppi ISCRITTI / RICHIESTE ONLINE / CORSI / ISTRUTTORI (`gruppi` = `TITOLO:totale=nome~sotto~nota\|…;…`, tre righe e «ALTRI N ›», nota in maiuscole = bollino giallo), riga scelta con la barra a sinistra, `leggo`, `offline` |
 | `FiltroRicerca` | La riga sopra ISCRITTI, CORSI e RICHIESTE ONLINE aperti da «ALTRI N» della ricerca (`.sg-filtro-ricerca`): «Cercato «gio»: 17 trovati.» e il chip MOSTRA TUTTI |
 | `SchedeCorso` | `Scheda` di `Corsi.tsx`: le schede DATI \| ISCRITTI in cima alla scheda di un corso (`.schede` come IL MESE \| SEGNALATE); `acceso`, `conto` n/capienza sulla scheda ISCRITTI (`tonoConto` giallo a corso pieno, rosso oltre), `daSalvare` il puntino ● giallo su DATI, `daIscrivere` su ISCRITTI, `conIscritti` falso nel corso nuovo |
+| `SchedeIscritto` | La scheda iscritto a schede: le schede PERSONA \| DOCUMENTI \| QUOTA E PAGAMENTI \| CORSI sotto i timbri di `Scheda` (`Iscritti.tsx`), stesso pattern di `SchedeCorso`; `acceso`, il segno d'avviso ● + parola (`segnoDocumenti` / `segnoQuota` giallo o rosso, `parolaDocumenti` / `parolaQuota`), `inModifica` mette ● IN MODIFICA su PERSONA quando si guarda un'altra scheda, `telefono` accorcia a QUOTA (nome intero nell'`aria-label`) e fa scorrere la riga |
 | `RigaIscrittoCorso` | `IscrittiDelCorso` di `Corsi.tsx` (`.sg-riga-iscritto-corso`): una riga del tab ISCRITTI di un corso: cognome, nome, ISCRITTO DAL (data lunga), segno del certificato e della quota, sempre a parole (NO CERTIFICATO, DA PAGARE, quelle di `paroleInRegola`); sotto i 780px della scheda va su due righe; `stato="fuoco"` per la riga scelta |
 | `RiepilogoIscrittiCorso` | `RiepilogoCorso` di `Corsi.tsx` (da `riepilogoCorso`): la riga sopra la ricerca del tab ISCRITTI, `voci` «testo:tono» separate da «\|» (conto n/capienza, SENZA CERTIFICATO e DA PAGARE rossi, CORSO PIENO giallo, TUTTO IN REGOLA verde) |
 | `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`); il quarto, `titolo="TESSERA"` (parola NO TESSERA, SCADUTA, SCADE A DICEMBRE o IN REGOLA, una riga per ente), c’è solo per chi ha un corso che chiede la tessera: la fila `.sg-timbri` passa a quattro colonne (`data-con-tessera`) |
@@ -132,9 +136,10 @@ Google, e vale solo per i mockup.
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 
-Tutti i componenti hanno la prop `tema` (`scuro` | `chiaro`). `sito` è un terzo tema, solo per il **modulo di
-iscrizione**, e ce l'hanno soltanto i componenti che il modulo e la pagina veri usano (`Campo`, `Bottone`, `Titoletto`,
-`CaricaFile`, `TavolaFirma`, `RiquadroPasso`, `Testata`, `SchedaCorso`): vedi «Il tema sito».
+Tutti i componenti hanno la prop `tema` (`scuro` | `chiaro`). `sito` è un terzo tema e ha **due usi**: il **modulo di
+iscrizione** (`Campo`, `Bottone`, `Titoletto`, `CaricaFile`, `TavolaFirma`, `RiquadroPasso`, `Testata`, `SchedaCorso`: vedi «Il tema sito»)
+e la **segreteria nel look del sito** (con `contesto="segreteria"` dove c'è: `Bottone`, `Campo`, `Riquadro`, `Badge`, `Chip`, `Menu`,
+`BarraTelefono`, `CosaManca`, `RigaDaFare`, `RigaIscritto`, `FiltriIscritti`, `TestataTabella`; vedi «La segreteria nel look del sito»).
 
 ## Come si riusa
 
@@ -277,6 +282,33 @@ campi, scelte, tasti e riquadri). Senza `tema="sito"` l'aspetto dei componenti �
 
 I valori e i rapporti di contrasto calcolati stanno in `../iscrizione-sito/token-proposta.md`; i board in
 `../iscrizione-sito/`. Il fuoco da tastiera (contorno 3px blu #14709f) non è riprodotto.
+
+## La segreteria nel look del sito
+
+COSTRUITA (PR #446, #448, #449, #451, #458, #460, #463, #470): `<html data-look="sito">` per la segreteria e l'amministrazione (`src/lib/aspettoSegreteria.ts`), con il
+blocco `:root[data-look='sito']` di `src/styles.css`. Il tema è uno solo e sempre chiaro (il tasto del tema non c'è). Il design approvato sta in
+`../segreteria-sito/` (`token-proposta.md`, `Proponi*.dc.html`); i componenti di questa libreria lo riproducono col `tema="sito"`.
+
+| Cosa | Valore |
+|---|---|
+| Fondo, tessera, filo | #eef5fa, #ffffff, #cfe6f4 |
+| Inchiostro, testo spento | #0d2a3d, #46606f |
+| Blu (bordo di campi, tasti a linea e filtri; filtro acceso) | #14709f |
+| Giallo del marchio | #f4c31b, **solo** il tasto principale (uno per schermata) e la voce corrente del menu |
+| «Aspetta» | testo e bordo #8f6a00 su bianco, mai un riempimento giallo |
+| Manca, fatto | #b81d1d (barra #e4292a), #0b7a33 |
+| Caratteri | Big Shoulders Display 800 solo per titoli e cifre grandi; Inter per tutto il resto (menu, tasti, tabelle, tag, cifre di telefono e conti) |
+| Forme | raggio 6px; tessere bianche senza bordo; lo stato sta in una barra di 4px a sinistra (o in alto, nella lezione) |
+| Stati | tag bianco, bordo e testo dello stesso colore, segno davanti: ✕ manca, … aspetta, ✓ fatto |
+| Tasti e filtri | in parole con l'iniziale maiuscola, Inter 15-16px 600, senza spaziatura; il filtro acceso è blu pieno con ✓ |
+
+- **Menu** (`menuSegreteria.ts`): inchiostro, cinque gruppi (Ogni giorno, Iscritti e soldi, Corsi e orari, Istruttori, Il resto) con «I conti» per chi ha l'amministrazione;
+  un'icona per voce e un filetto fra i gruppi. I titoli dei gruppi sono maiuscoli per stile, Inter 12px 600.
+- **DA FARE** (`daFareTesti.ts`): il tasto dice il gesto («Fai gli appelli», «Chiedi i certificati»), e solo quello della prima riga è giallo.
+- **ISCRITTI** (`filtriIscritti.ts`): ricerca, corso e tre filtri in vista (Senza certificato valido, Da pagare, Non in regola), poi «Altri filtri (N) ▾».
+- **SETTIMANA** (`etichetteLezione.ts`): i tag della lezione sono in parole (Senza appello, Appello fatto, Manca l’istruttore, Sostituto, ✎ Cambiata a mano, Straordinaria, Annullata).
+- **COSA MANCA**: cinque caselle in una riga, cifra Big Shoulders 44px, titolo Inter 14px, senza la nota.
+- **Non è nel look**: `RigaCalendario`, `RigaAppello` e l'area degli istruttori restano nei temi nero/bianco/Tatami. Il fuoco da tastiera (contorno 3px blu, bianco nel menu) non è riprodotto.
 
 ## Il sito pubblico: Chi siamo
 

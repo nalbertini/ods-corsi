@@ -15,7 +15,7 @@ if (!process.argv[2]) {
 }
 
 const LIBRERIA = 'ods-design-system'
-const FONDAMENTA = new Set(['Main', 'Pagina', 'PaginaTelefono'])
+const FONDAMENTA = new Set(['Main', 'Pagina', 'PaginaTelefono', 'PaginaSito', 'PaginaSitoTelefono', 'TemaSito'])
 const SEZIONI = [
   { id: 'iscrizione', nome: 'Iscrizione · modulo attuale', cartella: 'iscrizione' },
   { id: 'iscrizione-nuovo', nome: 'Iscrizione · nuovo flusso a passi', cartella: 'iscrizione-nuovo' },
@@ -42,7 +42,7 @@ const SEZIONI = [
   { id: 'sito-rebrand', nome: 'Sito · tre rebrand (scartati)', cartella: 'sito-rebrand' },
   { id: 'sito-approvato', nome: 'Sito · design approvato', cartella: 'sito-approvato' },
   { id: 'segreteria-tatami', nome: 'Segreteria · tema Tatami', cartella: 'segreteria-tatami' },
-  { id: 'segreteria-sito', nome: 'Segreteria · look del sito (ipotesi)', cartella: 'segreteria-sito' },
+  { id: 'segreteria-sito', nome: 'Segreteria · look del sito', cartella: 'segreteria-sito' },
   { id: 'banco', nome: 'Segreteria · il Banco, ridisegnata', cartella: 'banco' },
   { id: 'cerca-universale', nome: 'Segreteria · ricerca universale', cartella: 'cerca-universale' },
   { id: 'menu-icone', nome: 'Segreteria · menu con icone', cartella: 'menu-icone' },
@@ -51,6 +51,7 @@ const SEZIONI = [
   { id: 'iscritti-riepilogo', nome: 'Segreteria · iscritti, riepilogo', cartella: 'iscritti-riepilogo' },
   { id: 'storico-pagamenti', nome: 'Segreteria · storico pagamenti', cartella: 'storico-pagamenti' },
   { id: 'tessere', nome: 'Segreteria · tessere e incrocio', cartella: 'tessere' },
+  { id: 'scheda-iscritto-schede', nome: 'Segreteria · scheda iscritto a schede', cartella: 'scheda-iscritto-schede' },
   { id: 'prezzi-mancanti', nome: 'Segreteria · prezzi mancanti', cartella: 'prezzi-mancanti' },
   { id: 'certificati-online', nome: 'Segreteria · certificati online', cartella: 'certificati-online' },
   { id: 'certificato-piccoli', nome: 'Segreteria · certificato sotto i 6 anni', cartella: 'certificato-piccoli' },
@@ -81,7 +82,7 @@ const GRUPPI = {
   'iscrizione-dettagli': { nome: 'Iscrizione · dettagli', sezioni: ['orari-evidenziati', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'comune-dal-cap', 'firma-schermo-intero', 'riempi-prova', 'esci-dalla-prova'] },
   'vestiario': { nome: 'Vestiario', sezioni: ['vestiario', 'vestiario-modulo'] },
   'sito': { nome: 'Sito', sezioni: ['sito-pannello', 'sito-pubblico', 'sito-rebrand', 'sito-approvato'] },
-  'segreteria-iscritti': { nome: 'Segreteria · iscritti e prezzi', sezioni: ['iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'tessere', 'prezzi-mancanti'] },
+  'segreteria-iscritti': { nome: 'Segreteria · iscritti e prezzi', sezioni: ['iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'tessere', 'scheda-iscritto-schede', 'prezzi-mancanti'] },
   'segreteria-certificati': { nome: 'Segreteria · certificati', sezioni: ['certificati-online', 'certificato-piccoli'] },
   'segreteria-strumenti': { nome: 'Segreteria · strumenti', sezioni: ['segreteria-tatami', 'banco', 'cerca-universale', 'menu-icone', 'importa-fogli'] },
   'segreteria-conti': { nome: 'Segreteria · conti e ruoli', sezioni: ['contabilita', 'chiusura-cassa', 'ruolo-amministrazione', 'menu-unico', 'email-contatto'] },

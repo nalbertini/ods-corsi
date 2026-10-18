@@ -29,6 +29,8 @@
 // alto / corpo / spazio / larghezza: gli style inline del codice (es. il tasto ‹ del calendario: minHeight 44,
 // minWidth 44, fontSize 22, padding 0).
 // bordo = "riga-campo": il bordo dei campi e delle scelte del modulo (i tipi di TI SERVE ALTRO?, .vestiario-tasto.btn-ghost).
+// tema sito + contesto segreteria: Inter 16px 600 senza spaziatura, raggio 6px, `pieno` giallo #f4c31b con l'inchiostro (il tasto principale, uno per schermata),
+// `vai` verde con #121212 (l'inchiostro sul verde non arriva a 4,5:1), `linea` e `tratteggiato` blu #14709f.
 // disabled: nell'app opacita' 0.4; in segreteria un blocco `surface-2` senza bordo, testo `dim`.
 // Il fuoco e il passaggio del mouse non sono riprodotti (stati dinamici).
 const T = {
@@ -51,6 +53,8 @@ class Component extends DCLogic {
     const c = T[p.tema] || T.scuro;
     const sito = p.tema === 'sito';
     const sg = p.contesto === 'segreteria';
+    // `sito` con contesto segreteria e' il look del sito della segreteria (:root[data-look='sito']), diverso dal modulo di iscrizione (sito senza contesto).
+    const sgSito = sito && sg;
     const label = p.label ?? 'SEGNA LA PRESENZA';
     let v = p.variante || 'principale';
     if (sg && v === 'principale') v = 'pieno';
@@ -62,10 +66,11 @@ class Component extends DCLogic {
       : { minHeight: '56px', padding: '0 22px', fontSize: '19px', spacing: '0.16em', gap: '10px' };
     s.minWidth = '0'; s.width = 'auto'; s.family = COND; s.fontStyle = 'oblique 9deg'; s.weight = 700; s.radius = '0';
     // Tasti del sito: Big Shoulders 800 dritto (non obliquo), piu' grande perche' stretto, raggio 6px, minimo 56px come .pulsante.
-    if (sito) { s.family = BIG; s.fontStyle = 'normal'; s.weight = 800; s.fontSize = '22px'; s.spacing = '0.06em'; s.radius = '6px'; }
+    if (sgSito) { s.family = INTER; s.fontStyle = 'normal'; s.weight = 600; s.fontSize = '16px'; s.spacing = '0'; s.radius = '6px'; }
+    else if (sito) { s.family = BIG; s.fontStyle = 'normal'; s.weight = 800; s.fontSize = '22px'; s.spacing = '0.06em'; s.radius = '6px'; }
 
     const FILL = sg
-      ? { pieno: [c.text, c.bg], rosso: [c.rosso, c.suRosso], vai: [c.verde, c.suColore] }
+      ? { pieno: sgSito ? [c.principale[0], c.principale[1]] : [c.text, c.bg], rosso: [c.rosso, c.suRosso], vai: [c.verde, sgSito ? '#121212' : c.suColore] }
       : { principale: c.principale || [c.rosso, c.suRosso], vai: c.vai || [c.verde, c.suColore] };
     const fg0 = sg ? c.sec : c.tasto;
     const LINE = { linea: ['solid', c.line], tratteggiato: ['dashed', c.tratteggio] };

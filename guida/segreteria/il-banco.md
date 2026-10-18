@@ -61,5 +61,5 @@ sempre.
 Da ISCRITTI, o dalla ricerca, si apre la scheda di sempre. Nel Banco in cima c'è
 in più una riga che dice **cosa blocca quella persona**: in rosso **NON PUÒ
 ENTRARE IN SALA** se manca il certificato o è scaduto; in giallo **QUOTA DA
-SISTEMARE** se la quota non è in regola. Il tasto porta alla scheda, dove si
+SISTEMARE** se la quota non è in regola. Il tasto apre la scheda del problema (**QUOTA E PAGAMENTI** o **DOCUMENTI**), dove si
 sistema. Sotto, le presenze degli ultimi trenta giorni e la famiglia.

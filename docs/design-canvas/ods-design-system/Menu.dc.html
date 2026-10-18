@@ -9,12 +9,14 @@
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <!-- Tema sito: Big Shoulders Display e Inter (qui da Google Fonts, in app file locali OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<nav style="display: flex; flex-direction: column; gap: 28px; width: 240px; height: {{altezza}}; overflow: hidden; padding: 28px 12px 24px; background: {{c.menu}}; border-right: 2px solid {{c.lineSoft}}; color: {{c.text}}">
+<nav style="display: flex; flex-direction: column; gap: 28px; width: 240px; height: {{altezza}}; overflow: hidden; padding: 28px 12px 24px; background: {{c.menu}}; border-right: 2px solid {{c.lineSoft}}; color: {{c.text}}; font-family: {{fam}}">
   <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
     <svg width="46" height="31.6" viewBox="0 0 160 110" role="img" aria-label="Officine Dello Sport">
       <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
@@ -33,13 +35,14 @@
       </g>
     </svg>
     <span style="display: flex; flex-direction: column; gap: 2px">
-      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">ODS CORSI</span>
+      <span style="font-family: {{cond}}; font-style: {{inclina}}; font-size: 20px; font-weight: {{titoloPeso}}; letter-spacing: 0.04em; line-height: 1">ODS CORSI</span>
       <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.22em; color: {{c.dim}}">{{nomeArea}}</span>
     </span>
   </div>
 
   <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
-    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700">?</span>
+    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-size: 20px; font-weight: {{titoloPeso}}">?</span>
+    <sc-if value="{{conTema}}" hint-placeholder-val="{{ true }}">
     <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}">
       <sc-if value="{{scuro}}" hint-placeholder-val="{{ true }}">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
@@ -48,6 +51,7 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
       </sc-if>
     </span>
+    </sc-if>
     <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{impBordo}}; color: {{impColore}}">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9M14 17H4"></path><circle cx="7" cy="7" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg>
     </span>
@@ -58,16 +62,19 @@
 
   <sc-if value="{{conRicerca}}" hint-placeholder-val="{{ true }}">
   <div style="padding: 0 4px">
-    <div style="display: flex; align-items: center; width: 100%; height: 44px; padding: 0 12px; background: {{c.surface}}; border: 2px solid {{c.line}}; font-size: 15px; color: {{c.dim}}">Cerca iscritto</div>
+    <div style="display: flex; align-items: center; width: 100%; height: 44px; padding: 0 12px; background: {{c.campo}}; border: 2px solid {{c.campoBordo}}; border-radius: {{raggio}}; font-size: 15px; color: {{c.campoTesto}}">Cerca iscritto</div>
   </div>
   </sc-if>
 
   <div style="display: flex; flex-direction: column">
     <sc-for list="{{voci}}" as="v" hint-placeholder-count="12">
-      <div style="display: flex; align-items: center; min-height: {{v.altezza}}; margin-top: {{v.sopra}}; margin-bottom: {{v.sotto}}; padding: {{v.padding}}; border-left: 4px solid {{v.barra}}; background: {{v.sfondo}}; color: {{v.colore}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: {{v.corpo}}; font-weight: 700; letter-spacing: {{v.spazio}}; text-align: left">
+      <div style="display: flex; align-items: center; gap: {{v.vuoto}}; min-height: {{v.altezza}}; margin-top: {{v.sopra}}; margin-bottom: {{v.sotto}}; padding: {{v.padding}}; padding-top: {{v.paddingSopra}}; border-top: {{v.filetto}}; border-left: 4px solid {{v.barra}}; border-radius: {{v.raggio}}; background: {{v.sfondo}}; color: {{v.colore}}; font-family: {{v.fam}}; font-variant-numeric: tabular-nums; font-size: {{v.corpo}}; font-weight: {{v.peso}}; letter-spacing: {{v.spazio}}; text-align: left">
+        <sc-if value="{{v.haIcona}}" hint-placeholder-val="{{ false }}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none" aria-hidden="true"><path d="{{v.icona}}"></path></svg>
+        </sc-if>
         <span style="flex: 1; min-width: 0">{{v.testo}}</span>
         <sc-if value="{{v.haNumero}}" hint-placeholder-val="{{ false }}">
-          <span style="margin-left: 8px; padding: 0 4px; background: #f4c31b; color: #121212; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap">{{v.numero}}</span>
+          <span style="margin-left: 8px; padding: {{c.numRiemp}}; border: {{c.numBordo}}; border-radius: {{raggio}}; background: {{c.numSfondo}}; color: {{c.numColore}}; font-size: 12px; font-weight: 700; letter-spacing: {{c.numSpazio}}; white-space: nowrap">{{v.numero}}</span>
         </sc-if>
       </div>
     </sc-for>
@@ -77,8 +84,12 @@
 
   <sc-if value="{{conLink}}" hint-placeholder-val="{{ true }}">
   <div style="display: flex; flex-direction: column; gap: 2px">
-    <div style="display: flex; align-items: center; min-height: 44px; padding: 0 8px 0 12px; border-left: 4px solid transparent; color: {{c.sec}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; letter-spacing: 0.1em">COPIA LINK ISCRIZIONI</div>
-    <div style="display: flex; align-items: center; min-height: 44px; padding: 0 8px 0 12px; border-left: 4px solid transparent; color: {{c.sec}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; letter-spacing: 0.1em">COPIA LINK ORDINI</div>
+    <sc-for list="{{link}}" as="v" hint-placeholder-count="2">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 8px 0 12px; border-left: 4px solid transparent; border-radius: {{raggio}}; color: {{c.sec}}; font-family: {{vocePrimo.fam}}; font-variant-numeric: tabular-nums; font-size: {{vocePrimo.corpo}}; font-weight: {{vocePrimo.peso}}; letter-spacing: {{vocePrimo.spazio}}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none" aria-hidden="true"><path d="{{iconaLink}}"></path></svg>
+      <span>{{v}}</span>
+    </div>
+    </sc-for>
   </div>
   </sc-if>
 
@@ -92,7 +103,7 @@
   </div>
 </nav>
 </x-dc>
-<script data-dc-script data-props='{"attiva":{"editor":"text","default":"PRESENZE"},"numeri":{"editor":"text","default":"RICHIESTE ONLINE:3, PRESENZE:2"},"prova":{"editor":"boolean","default":false},"impostazioni":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Marco Rossi"},"ruolo":{"editor":"text","default":"Segreteria"},"area":{"editor":"enum","options":["segreteria","amministrazione"],"default":"segreteria"},"autorizzazioni":{"editor":"enum","options":["segreteria","segreteria e amministrazione","amministrazione"],"default":"segreteria"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
+<script data-dc-script data-props='{"attiva":{"editor":"text","default":"PRESENZE"},"numeri":{"editor":"text","default":"RICHIESTE ONLINE:3, PRESENZE:2"},"prova":{"editor":"boolean","default":false},"impostazioni":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Marco Rossi"},"ruolo":{"editor":"text","default":"Segreteria"},"area":{"editor":"enum","options":["segreteria","amministrazione"],"default":"segreteria"},"autorizzazioni":{"editor":"enum","options":["segreteria","segreteria e amministrazione","amministrazione"],"default":"segreteria"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
 // Riproduzione 1:1 del menu di segreteria: src/components/segreteria/Segreteria.tsx (righe 402-494, GRUPPI alle
 // righe 50-86) con .sg-menu, .sg-voce, .sg-gruppo, .sg-chi e figli di src/styles.css (righe 1201-1270).
 // Misure del computer (da 1001px): colonna di 240px su `menu`, padding 28px 12px 24px, gap 28px, bordo destro
@@ -109,11 +120,24 @@
 // SITO e' l'ultima voce di LA PALESTRA, dopo SEGNALAZIONI (Segreteria.tsx, GRUPPI). VESTIARIO sta in LA PALESTRA dopo LISTINO: il suo numero (in `numeri`, "VESTIARIO:6") sono gli ordini da saldare della raccolta di
 // adesso, giallo come gli altri. In fondo COPIA LINK ISCRIZIONI e COPIA LINK ORDINI (`CopiaLink`, righe 453-454).
 // PAGAMENTI sta in PERSONE, dopo ISCRITTI (Segreteria.tsx, GRUPPI).
+// ICONE: una per voce (`ICONE_MENU` di src/components/Icons.tsx, tratto 1,75, 20px, davanti al testo, gap 12px), qui riscritte come un tracciato solo; fra un gruppo
+// e il successivo un filetto di 1px `line-soft` con 14px sopra e sotto (`.sg-gruppo + .sg-gruppo`).
+// tema sito (`:root[data-look='sito']`): menu inchiostro #0d2a3d con testo bianco (`sec` e `dim` #cfe6f4, filetti #46606f); Inter 15px 500, voci alte 44px
+// con raggio 6px, in parole con l'iniziale maiuscola (i titoli dei gruppi restano maiuscoli: lo fa lo stile, Inter 12px 600, 0.12em); la voce corrente
+// ha il giallo del marchio pieno col testo inchiostro e in grassetto; il numero e' un tag bianco col bordo giallo scuro #8f6a00; il campo di ricerca e'
+// bianco; il tasto del tema non c'e' (il tema e' uno solo). Titolo e tasto «?» in Big Shoulders 800.
 // Non riprodotti: l'elenco della ricerca aperto, ISTRUTTORI →, il passaggio del mouse.
+const ICONE = {"dafare": "M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11", "richieste": "M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2z M3,7 L12,13 L21,7", "presenze": "M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2 M10 3h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1z M9,14 L11,16 L15,12", "iscritti": "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75", "tessere": "M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-16a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2z M6 11a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M5.5 16c.5-1.5 1.5-2 2.5-2s2 .5 2.5 2 M14 10h4M14 14h4", "pagamenti": "M18 7c-1.2-1.3-3-2-5-2a7 7 0 0 0 0 14c2 0 3.8-.7 5-2 M4 10h9M4 14h9", "settimana": "M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2z M16 2v4M8 2v4M3 10h18", "corsi": "M6 8a6 6 0 1 0 12 0a6 6 0 1 0 -12 0 M15.5 12.9 17 22l-5-3-5 3 1.5-9.1", "listino": "M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z M6 7a1 1 0 1 0 2 0a1 1 0 1 0 -2 0", "istruttori": "M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M12,6 L12,12 L16,14", "personale": "M3 15.5a4.5 4.5 0 1 0 9 0a4.5 4.5 0 1 0 -9 0 M10.7 12.3 21 2M16 7l3 3M14 9l2 2", "statistiche": "M12 20V10M18 20V4M6 20v-4", "vestiario": "M20.4 3.5 16 2a4 4 0 0 1-8 0L3.6 3.5a2 2 0 0 0-1.3 2.2l.6 3.5a1 1 0 0 0 1 .8H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.2a1 1 0 0 0 1-.8l.6-3.5a2 2 0 0 0-1.4-2.2z", "esercizi": "M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11", "segnalazioni": "M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z M4 22v-7", "sito": "M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M2 12h20 M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z", "contabilita": "M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3", "areaIstruttori": "M8 8a4 4 0 1 0 8 0a4 4 0 1 0 -8 0 M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1", "link": "M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7 M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"};
 const T = {
   scuro: { surface: '#1c1c1c', menu: '#161616', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', tasto: '#b8b8b2' },
   chiaro: { surface: '#ffffff', menu: '#ebebe7', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', tasto: '#4a4a46' },
+  sito: { surface: '#ffffff', menu: '#0d2a3d', line: '#46606f', lineSoft: '#46606f', text: '#ffffff', sec: '#cfe6f4', dim: '#cfe6f4', tasto: '#cfe6f4', giallo: '#f4c31b', ink: '#0d2a3d', gialloTesto: '#8f6a00', faint: '#46606f' },
 };
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const IDENT = { 'DA FARE': 'dafare', 'RICHIESTE ONLINE': 'richieste', 'PRESENZE': 'presenze', 'ISCRITTI': 'iscritti', 'TESSERE': 'tessere', 'PAGAMENTI': 'pagamenti', 'SETTIMANA': 'settimana', 'CORSI': 'corsi', 'LISTINO': 'listino', 'PRESENZE ISTRUTTORI': 'istruttori', 'ISTRUTTORI E ACCESSI': 'personale', 'STATISTICHE': 'statistiche', 'VESTIARIO': 'vestiario', 'ESERCIZI': 'esercizi', 'SEGNALAZIONI': 'segnalazioni', 'SITO': 'sito', 'CONTABILITÀ': 'contabilita' };
+const cap = (s) => s.charAt(0) + s.slice(1).toLowerCase();
 // Un solo menu: le voci sono quelle delle autorizzazioni della persona (`autorizzazioni`), non di due aree.
 // I cinque gruppi della segreteria (Segreteria.tsx, `GRUPPI_MENU` in menuSegreteria.ts); con l'amministrazione compare
 // in piu' I CONTI, con CONTABILITÀ, dopo ISCRITTI E SOLDI. Chi ha solo l'amministrazione vede I CONTI e basta, con
@@ -136,7 +160,11 @@ const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c0 = T[p.tema] || T.scuro;
+    const sito = p.tema === 'sito';
+    const c = sito
+      ? { ...c0, campo: '#ffffff', campoBordo: '#ffffff', campoTesto: c0.faint, numSfondo: '#ffffff', numColore: c0.ink, numBordo: '1.5px solid ' + c0.gialloTesto, numRiemp: '1px 6px', numSpazio: '0.02em' }
+      : { ...c0, campo: c0.surface, campoBordo: c0.line, campoTesto: c0.dim, numSfondo: '#f4c31b', numColore: '#121212', numBordo: '0', numRiemp: '0 4px', numSpazio: '0.12em' };
     const numeri = {};
     for (const s of String(p.numeri ?? 'RICHIESTE ONLINE:3, PRESENZE:2').split(',')) {
       const i = s.lastIndexOf(':');
@@ -146,26 +174,32 @@ class Component extends DCLogic {
     const aut = p.autorizzazioni || (p.area === 'amministrazione' ? 'amministrazione' : 'segreteria');
     const amm = aut === 'amministrazione';
     (amm ? GRUPPI_AMMINISTRAZIONE : aut === 'segreteria e amministrazione' ? CON_AMMINISTRAZIONE : GRUPPI).forEach(([titolo, elenco], g) => {
+      // Il filetto fra i gruppi: 14px sopra, 14px dentro, 1px `line-soft`. Il titolo e' una riga, le voci sono tasti.
       voci.push({
-        testo: titolo, haNumero: false, numero: '', altezza: '0', padding: '0 12px 0 16px', barra: 'transparent', sfondo: 'transparent', colore: c.dim,
-        corpo: '12px', spazio: '0.22em', sopra: g === 0 ? '0' : '18px', sotto: '4px',
+        testo: titolo, haNumero: false, numero: '', haIcona: false, icona: '', altezza: '0', padding: '0 12px 0 16px', barra: 'transparent', sfondo: 'transparent', colore: c.dim,
+        fam: sito ? INTER : COND, peso: sito ? 600 : 700, corpo: '12px', spazio: sito ? '0.12em' : '0.22em', sopra: g === 0 ? '0' : '14px', sotto: '4px', vuoto: '0', raggio: '0',
+        filetto: g === 0 ? '0' : '1px solid ' + c.lineSoft, paddingSopra: g === 0 ? '0' : '14px',
       });
       elenco.forEach((testo, i) => {
-        const corrente = testo === p.attiva;
+        const corrente = testo === String(p.attiva ?? '').toUpperCase();
         voci.push({
-          testo, haNumero: !!numeri[testo], numero: numeri[testo] ?? '', altezza: '44px', padding: '0 8px 0 12px',
-          barra: corrente ? c.text : 'transparent', sfondo: corrente ? c.surface : 'transparent', colore: corrente ? c.text : c.sec,
-          corpo: '16px', spazio: '0.1em', sopra: i === 0 ? '0' : '2px', sotto: '0',
+          testo: sito ? cap(testo) : testo, haNumero: !!numeri[testo], numero: numeri[testo] ?? '', haIcona: !!IDENT[testo], icona: ICONE[IDENT[testo]] ?? '',
+          altezza: '44px', padding: sito ? '0 4px 0 12px' : '0 8px 0 12px', paddingSopra: '0', filetto: '0', vuoto: '12px',
+          barra: corrente ? (sito ? c.giallo : c.text) : 'transparent', sfondo: corrente ? (sito ? c.giallo : c.surface) : 'transparent', colore: corrente ? (sito ? c.ink : c.text) : c.sec,
+          fam: sito ? INTER : COND, peso: sito ? (corrente ? 700 : 500) : 700, corpo: sito ? '15px' : '16px', spazio: sito ? '0' : '0.1em', raggio: sito ? '6px' : '0', sopra: i === 0 ? '0' : '2px', sotto: '0',
         });
       });
     });
+    const vocePrimo = { fam: sito ? INTER : COND, corpo: sito ? '15px' : '16px', peso: sito ? 500 : 700, spazio: sito ? '0' : '0.1em' };
     return {
-      c, voci,
+      c, voci, sito, vocePrimo, fam: sito ? INTER : 'inherit', cond: sito ? BIG : COND, inclina: sito ? 'normal' : 'oblique 9deg', titoloPeso: sito ? 800 : 700,
+      raggio: sito ? '6px' : '0', conTema: !sito, iconaLink: ICONE.link,
+      link: sito ? ['Copia link iscrizioni', 'Copia link ordini'] : ['COPIA LINK ISCRIZIONI', 'COPIA LINK ORDINI'],
       nomeArea: aut === 'segreteria e amministrazione' ? 'GESTIONE' : aut.toUpperCase(),
       conRicerca: !amm,
       conLink: !amm,
-      scuro: (p.tema || 'scuro') !== 'chiaro',
-      chiaro: p.tema === 'chiaro',
+      scuro: (p.tema || 'scuro') === 'scuro',
+      chiaro: p.tema !== 'scuro' && p.tema !== undefined,
       prova: truthy(p.prova),
       impBordo: truthy(p.impostazioni) ? c.text : c.line,
       impColore: truthy(p.impostazioni) ? c.text : c.tasto,

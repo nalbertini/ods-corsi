@@ -1,10 +1,15 @@
 import type { DatiSegreteria } from '../../../lib/segreteria'
 import { chiaveGiorno } from '../../../lib/sala'
 import { cosaBlocca } from '../../../lib/cosaBlocca'
+import { APRI_SCHEDA, schedaPerApertura } from '../../../lib/schedaSezioni'
 import { Guaio, useCarica } from '../comune'
 
 // La scheda di sempre è l'elemento che segue questo riquadro.
-const allaScheda = () => document.querySelector('.bn-persona')?.nextElementSibling?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+// La scheda sotto si apre su quella del problema (quota, certificato), poi scorre.
+const allaScheda = (tasto: 'certificato' | 'quota') => {
+  window.dispatchEvent(new CustomEvent(APRI_SCHEDA, { detail: schedaPerApertura(tasto) }))
+  document.querySelector('.bn-persona')?.nextElementSibling?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 /**
  * La scheda PERSONA de «Il Banco»: in cima quello che serve a chi sta al banco,
@@ -30,8 +35,8 @@ export function PersonaBanco({ d, id, giro }: { d: DatiSegreteria; id: string; /
         <div className="bn-blocca" data-blocca={blocca.blocca} role="status">
           <span className="ob bn-blocca-titolo">{blocca.titolo}</span>
           <span className="grow">{blocca.frase}</span>
-          {/* Fa solo scorrere: il certificato e la ricevuta si sistemano nella scheda, qui sotto. */}
-          <button type="button" className="num sg-btn sg-btn-pieno" onClick={allaScheda}>
+          {/* Apre la scheda del problema e scorre: il certificato e la ricevuta si sistemano nella scheda, qui sotto. */}
+          <button type="button" className="num sg-btn sg-btn-pieno" onClick={() => allaScheda(blocca.tasto)}>
             Vai alla scheda
           </button>
         </div>
