@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.89.1 — 18 ottobre 2026
+
+### Modificato
+
+- Il canvas del design ha le pagine in ordine per area
+
+## 0.89.0 — 18 ottobre 2026
+
+### Novità
+
+- Scegli da IMPOSTAZIONI come vedere la segreteria, con il menu a sinistra o con «Il Banco»
+
 ## 0.88.1 — 18 ottobre 2026
 
 ### Risolto
