@@ -24,7 +24,15 @@ due pulsanti da 56 px: «Prova a 5 €» giallo, «Chiama» col filo bianco; alt
 - Sotto la pagina c'è spazio per 80 px (più l'area sicura dell'iPhone): la barra non
   copre il testo né il piede. Il MENU aperto sta sopra.
 
-## Da decidere
+## Com'è stata costruita
+
+Senza script: la barra sta in fondo al blocco che segue l'hero (`.dopo-hero`) con
+`position: sticky; bottom: 0`. Resta in basso mentre si scorre quel blocco; finito il
+blocco, sale via con la pagina e la chiamata finale resta libera. Occupa i suoi 80 px
+nella pagina, quindi prima della chiamata finale si vede per un tratto come fascia scura.
+Decisioni dell'utente: testo «Prova a 5 €», fondo inchiostro (approvati il 18 ottobre).
+
+## Era da decidere
 
 - Il testo del primo pulsante: «Prova a 5 €» (corto, entra a 375 px) o intero «Prova una settimana a 5 €» (non entra a fianco di «Chiama»).
 - Il fondo: inchiostro (proposto, stacca dal giallo delle schede) o chiaro con filo.
