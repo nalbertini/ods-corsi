@@ -13,6 +13,7 @@
 //  4. Perché: quattro tessere numerate. 5. Citazioni: estratto + «Leggi tutto».
 //  6. Recensioni: due carte larghe e «In breve». 7. Domande. 8. Chiamata finale.
 //  9. Testata (pulsante, MENU senza script) e piede (indirizzo, metro Fermi) di ogni pagina.
+// 15. Titoli senza salti di livello, «Salta al contenuto», fuoco da tastiera.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { createHash } from 'node:crypto'
@@ -107,27 +108,36 @@ console.log('\n2. Introduzione: pulsanti, foto, numeri, motto')
   ok('1 voce: resta un elenco', [tessereDi(main(conUl(voci(1)))).some((c) => c.includes('numeri')), /<ul>/.test(main(conUl(voci(1))))], [false, true])
   ok('senza il grassetto: resta un elenco', [tessereDi(main(conUl(voci(4, false)))).some((c) => c.includes('numeri')), /<ul>/.test(main(conUl(voci(4, false))))], [false, true])
 
-  const motto = M.match(/class="motto">([\s\S]*?)(?=<h2|<section)/)?.[1] ?? ''
-  ok('il motto è una fascia: il titolo, poi la frase e il motto', [motto.indexOf('<h3>Il corso giusto, il gruppo giusto</h3>') >= 0, testo(motto)], [true, 'Il corso giusto, il gruppo giusto Professionisti dello sport, da oltre 35 anni accanto a bambini, ragazzi e adulti. Armonia nel movimento, rispetto nelle relazioni, costanza nel tempo.'])
-  ok('la frase e il motto sono due paragrafi, dopo il titolo', [conta(motto, /<p>/g), motto.indexOf('<h3>') < motto.indexOf('<p>')], [2, true])
+  const motto = M.match(/class="motto">([\s\S]*?)(?=<\/section>)/)?.[1] ?? ''
+  ok('il motto è una fascia: il titolo, poi la frase e il motto', [motto.indexOf('<h2>Il corso giusto, il gruppo giusto</h2>') >= 0, testo(motto)], [true, 'Il corso giusto, il gruppo giusto Professionisti dello sport, da oltre 35 anni accanto a bambini, ragazzi e adulti. Armonia nel movimento, rispetto nelle relazioni, costanza nel tempo.'])
+  ok('la frase e il motto sono due paragrafi, dopo il titolo', [conta(motto, /<p>/g), motto.indexOf('<h2>') < motto.indexOf('<p>')], [2, true])
   ok('il motto non resta anche fuori dalla fascia', conta(M, /Il corso giusto, il gruppo giusto/g), 1)
 }
 
-console.log('\n3. I corsi: schede con foto o iniziale')
+console.log('\n3. I corsi: tre gruppi per età, schede con foto o iniziale')
 {
   const s = sezDi(H, 'I nostri corsi')
   const art = [...(s?.html ?? '').matchAll(/<article class="([^"]*)">([\s\S]*?)<\/article>/g)].map((m) => ({ cl: m[1].split(/\s+/), html: m[2] }))
-  ok('9 schede «tessera COLORE scheda» in una griglia n-9', [art.length, art.every((a) => a.cl[0] === 'tessera' && a.cl.includes('scheda')), tessereDi(s?.html ?? '').some((c) => c.includes('n-9'))], [9, true, true])
-  ok('colori: blu giallo inchiostro giallo inchiostro blu inchiostro blu giallo', art.map((a) => colore(a.cl)), ['blu', 'giallo', 'inchiostro', 'giallo', 'inchiostro', 'blu', 'inchiostro', 'blu', 'giallo'])
-  ok('la prima ha la foto nel riquadro, caricata in ritardo', /<div class="scheda-foto"><img\b[^>]*loading="lazy"[^>]*>/.test(art[0]?.html ?? ''), true)
-  ok('la foto è quella scritta', (art[0]?.html ?? '').includes(F.FOTO.judo), true)
-  ok('le schede con foto sono 5 (Judo, Lotta, Aikido, Prep. atletica, Giocomotricità) e ognuna ne ha una sola', art.map((a) => conta(a.html, /<img\b/g)), [1, 1, 1, 0, 0, 1, 1, 0, 0])
+  const corso = (nome) => art.find((a) => a.html.includes(`>${nome}</a>`))
+  const gruppi = [...(s?.html ?? '').matchAll(/<div class="gruppo-corsi" id="([a-z]+)"><h3>([^<]*)<span>([^<]*)<\/span><\/h3>([\s\S]*?)<\/div><\/div>/g)].map((m) => ({ id: m[1], nome: m[2].trim(), eta: m[3], html: m[4] }))
+  const titoliDi = (g) => [...g.html.matchAll(/<h4><a href="[^"]*"[^>]*>([^<]*)<\/a><\/h4>/g)].map((m) => m[1])
+  ok('9 schede «tessera COLORE scheda», ognuna una volta sola', [art.length, art.every((a) => a.cl[0] === 'tessera' && a.cl.includes('scheda'))], [9, true])
+  ok('tre gruppi per età d’inizio: Piccoli 3-6 anni, Ragazzi 7-14 anni, Dai 14 anni', gruppi.map((g) => [g.id, g.nome, g.eta]), [['piccoli', 'Piccoli', '3-6 anni'], ['ragazzi', 'Ragazzi', '7-14 anni'], ['adulti', 'Dai 14 anni', 'Giovani e adulti']])
+  ok('in ogni gruppo i corsi nell’ordine scritto', gruppi.map(titoliDi), [['Giocomotricità e psicomotricità', 'Avviamento alle arti marziali'], ['Judo', 'Lotta', 'Aikido', 'Sollevamento pesi'], ['Preparazione atletica', 'Metodo Globale di Autodifesa', 'Pre pugilistica']])
+  ok('ogni gruppo ha la sua griglia di schede (n-2, n-4, n-3)', gruppi.map((g) => g.html.match(/<div class="tessere (n-\d) schede">/)?.[1]), ['n-2', 'n-4', 'n-3'])
+  const ancore = [...(s?.html ?? '').matchAll(/<a class="ancora" href="#([a-z]+)">([^<]*)<\/a>/g)].map((m) => [m[1], m[2]])
+  ok('una riga di ancore, link veri, sopra i gruppi: ognuna porta a un gruppo che c’è', [ancore, /<nav class="ancore-corsi" aria-label="Corsi per età">/.test(s?.html ?? ''), (s?.html ?? '').indexOf('class="ancore-corsi"') < (s?.html ?? '').indexOf('class="gruppo-corsi"')], [[['piccoli', 'Piccoli 3-6'], ['ragazzi', 'Ragazzi 7-14'], ['adulti', 'Dai 14 anni']], true, true])
+  ok('non c’è più il vecchio elenco unico n-9', tessereDi(s?.html ?? '').some((c) => c.includes('n-9')), false)
+  ok('colore per gruppo: giallo i piccoli, blu i ragazzi, inchiostro dai 14 anni', gruppi.map((g) => [...new Set([...g.html.matchAll(/<article class="([^"]*)">/g)].map((m) => colore(m[1].split(/\s+/))))]), [['giallo'], ['blu'], ['inchiostro']])
+  ok('Judo ha la foto nel riquadro, caricata in ritardo', /<div class="scheda-foto"><img\b[^>]*loading="lazy"[^>]*>/.test(corso('Judo')?.html ?? ''), true)
+  ok('la foto è quella scritta', (corso('Judo')?.html ?? '').includes(F.FOTO.judo), true)
+  ok('le schede con foto sono 5 (Judo, Lotta, Aikido, Prep. atletica, Giocomotricità) e ognuna ne ha una sola', art.map((a) => conta(a.html, /<img\b/g)), [1, 0, 1, 1, 1, 0, 1, 0, 0])
   const senza = art.filter((a) => conta(a.html, /<img\b/g) === 0)
-  ok('senza foto: riquadro «scheda-foto senza-foto» con l’iniziale nascosta a chi legge', senza.map((a) => a.html.match(/<div class="scheda-foto senza-foto"><span aria-hidden="true">([^<]*)<\/span><\/div>/)?.[1]), ['P', 'M', 'A', 'S'])
-  ok('il titolo è un link verso la pagina del corso', art.map((a) => a.html.match(/<h3><a href="([^"]*)"[^>]*>([^<]*)<\/a><\/h3>/)?.slice(1)).slice(0, 3), [['/judo/', 'Judo'], ['/lotta/', 'Lotta'], ['/aikido/', 'Aikido']])
-  ok('età e descrizione sono due paragrafi', [/<p class="eta">Dai 7 anni agli adulti<\/p>\s*<p>Tecnica, disciplina e rispetto per crescere sul tatami, dai primi passi fino alle gare\.<\/p>/.test(art[0]?.html ?? ''), /<p class="eta">Da 3 a 5 anni<\/p>/.test(art[6]?.html ?? '')], [true, true])
+  ok('senza foto: riquadro «scheda-foto senza-foto» con l’iniziale nascosta a chi legge', senza.map((a) => a.html.match(/<div class="scheda-foto senza-foto"><span aria-hidden="true">([^<]*)<\/span><\/div>/)?.[1]), ['A', 'S', 'M', 'P'])
+  ok('il titolo è un link verso la pagina del corso', art.map((a) => a.html.match(/<h4><a href="([^"]*)"[^>]*>([^<]*)<\/a><\/h4>/)?.slice(1)).slice(2, 5), [['/judo/', 'Judo'], ['/lotta/', 'Lotta'], ['/aikido/', 'Aikido']])
+  ok('età e descrizione sono due paragrafi', [/<p class="eta">Dai 7 anni agli adulti<\/p>\s*<p>Tecnica, disciplina e rispetto per crescere sul tatami, dai primi passi fino alle gare\.<\/p>/.test(corso('Judo')?.html ?? ''), /<p class="eta">Da 3 a 5 anni<\/p>/.test(corso('Giocomotricità e psicomotricità')?.html ?? '')], [true, true])
   const past = (a) => [...((a?.html ?? '').match(/<ul class="pastiglie">([\s\S]*?)<\/ul>/)?.[1] ?? '').matchAll(/<li>([\s\S]*?)<\/li>/g)].map((m) => testo(m[1]))
-  ok('le pastiglie sono le fasce, nell’ordine scritto', [past(art[0]), past(art[2]), past(art[3])], [['Bambini', 'Adulti', 'Agonisti'], ['Bambini', 'Adulti', 'Anziani'], ['Adulti']])
+  ok('le pastiglie sono le fasce, nell’ordine scritto', [past(corso('Judo')), past(corso('Aikido')), past(corso('Pre pugilistica'))], [['Bambini', 'Adulti', 'Agonisti'], ['Bambini', 'Adulti', 'Anziani'], ['Adulti']])
   ok('il corsivo delle fasce non resta nel testo', art.some((a) => /<em>/.test(a.html)), false)
   const dueFoto = home(F.TESTO_NUOVO.replace(`<p>Dai 7 anni agli adulti</p><p>Tecnica`, `<p>Dai 7 anni agli adulti</p><img src="${F.P}${F.FOTO.lotta}" alt="x" /><p>Tecnica`))
   ok('con due foto nella scheda se ne tiene una: la prima', conta((sezDi(dueFoto, 'I nostri corsi')?.html ?? '').match(/<article[\s\S]*?<\/article>/)?.[0] ?? '', /<img\b/g), 1)
@@ -260,6 +270,67 @@ console.log('\n14. Niente testo si perde in silenzio')
   ok('un paragrafo prima delle citazioni non sparisce', testo(home(pPrima)).includes('Una frase prima delle citazioni.'), true)
   const ulInIntro = F.TESTO_NUOVO.replace('<h2>Perché unirti a noi?</h2>', '<h2>Perché unirti a noi?</h2><ul><li>Voce dell’elenco</li><li>Altra voce</li></ul>')
   ok('un elenco prima dei quattro motivi non sparisce', testo(home(ulInIntro)).includes('Voce dell’elenco'), true)
+}
+
+console.log('\n15. Titoli in ordine, «Salta al contenuto» e fuoco da tastiera')
+{
+  const livelli = (h) => [...h.matchAll(/<h([1-6])[\s>]/g)].map((m) => Number(m[1]))
+  const saltiDiLivello = (ls) => ls.map((l, i) => (i > 0 && l > ls[i - 1] + 1 ? `h${ls[i - 1]}→h${l}` : null)).filter(Boolean)
+  const corpoDi = (h) => h.match(/<body[^>]*>([\s\S]*)<\/body>/)?.[1] ?? ''
+  const pagine = Object.entries(genera(F.datiVecchi())).filter(([, h]) => typeof h === 'string' && /<main[\s>]/.test(h))
+  ok('nella Home nuova nessun titolo salta un livello (niente h1→h3)', saltiDiLivello(livelli(H)), [])
+  ok('in nessuna pagina del sito i titoli saltano un livello', pagine.filter(([, h]) => saltiDiLivello(livelli(h)).length).map(([k, h]) => `${k}: ${saltiDiLivello(livelli(h))}`), [])
+  ok('ogni pagina con un <main> comincia con il link «Salta al contenuto»', pagine.filter(([, h]) => !corpoDi(h).startsWith('<a class="salta" href="#contenuto">Salta al contenuto</a>')).map(([k]) => k), [])
+  ok('ogni pagina ha una sola destinazione #contenuto, subito prima del <main>', pagine.filter(([, h]) => conta(h, /id="contenuto"/g) !== 1 || !/<span id="contenuto"><\/span><main[\s>]/.test(h)).map(([k]) => k), [])
+  ok('il link è nascosto finché non prende il fuoco, poi si vede', [/\.salta\{[^}]*(left:-9999px|clip)/.test(H), /\.salta:focus\{[^}]*left:/.test(H)], [true, true])
+  ok('il fuoco da tastiera ha un contorno di 3px su link e pulsanti', /a:focus-visible,button:focus-visible\{outline:3px solid/.test(H), true)
+  ok('la scheda del corso è tutta cliccabile: il contorno del fuoco è sulla scheda intera, non sul solo titolo', [/\.scheda:has\(a:focus-visible\)\{[^}]*outline:3px solid/.test(H), /\.scheda h3 a:focus-visible,\.passo-unico \.scheda h4 a:focus-visible\{outline:none/.test(H)], [true, true])
+}
+
+console.log('\n16. Barra «Prova a 5 € / Chiama» sul telefono')
+{
+  const TEL = 'tel:+393463292786'
+  const barra = (h) => h.match(/<nav class="barra-prova"[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? ''
+  const link = (b) => [...b.matchAll(/<a class="pulsante (\w+)" href="([^"]*)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], m[2], m[3]])
+  ok('la Home nuova ha una barra sola, con due pulsanti: «Prova a 5 €» giallo verso il modulo e «Chiama» verso tel:', [conta(H, /class="barra-prova"/g), link(barra(H))], [1, [['primario', F.ISCRIZIONE, 'Prova a 5 €'], ['secondario', TEL, 'Chiama']]])
+  ok('il pulsante di prova ha il nome accessibile intero (le altre prove dicono «una settimana»)', /class="pulsante primario"[^>]*aria-label="Prova una settimana a 5 euro"/.test(barra(H)), true)
+  const iBarra = H.indexOf('class="barra-prova"')
+  ok('la barra sta dopo l’hero e prima della chiamata finale, nel suo blocco «dopo-hero»', [H.indexOf('class="pagina-hero') < iBarra, iBarra < H.indexOf('class="sezione cta'), /<div class="dopo-hero">[\s\S]*<nav class="barra-prova"[\s\S]*<\/nav><\/div><section class="sezione cta/.test(M)], [true, true, true])
+  const senzaCta = home(F.TESTO_NUOVO.replace(F.CTA(), ''))
+  ok('senza la chiamata finale nel testo la barra c’è ancora, ultima nel blocco, e resta l’invito', [conta(senzaCta, /class="barra-prova"/g), /<\/nav><\/div><\/main>/.test(senzaCta), /class="invito"/.test(senzaCta)], [1, true, true])
+  const vecchia = genera(F.datiVecchi())
+  ok('la Home di prima, Corsi e Contatti non hanno la barra', [vecchia['index.html'], vecchia['corsi/index.html'], vecchia['contatti/index.html']].map((h) => conta(h, /barra-prova/g)), [0, 0, 0])
+  ok('c’è solo sul telefono: nascosta di base, sotto i 901px resta appiccicata in basso, sotto il menu aperto', [/\.barra-prova\{display:none\}/.test(H), /@media \(max-width:900px\)\{[^@]*\.barra-prova\{[^}]*display:flex[^}]*position:sticky[^}]*bottom:0/.test(H.replace(/\n/g, ''))], [true, true])
+  const z = Number(H.match(/\.barra-prova\{[^}]*z-index:(\d+)/)?.[1] ?? 99)
+  ok('sta sotto il menu aperto (z-index del menu: 10)', z < 10, true)
+  ok('i pulsanti della barra sono alti 56px (almeno 48) e il secondario ha il filo bianco', [/\.barra-prova \.pulsante\{[^}]*min-height:56px/.test(H), /\.barra-prova \.secondario\{[^}]*border-color:#fff/.test(H)], [true, true])
+  ok('nessuno script: la barra sta in fondo al suo blocco e si ferma lì', /<script/i.test(H.replace(/<script type="application\/ld\+json">[^<]*<\/script>/g, '')), false)
+  const piedi = Object.entries(vecchia).filter(([, h]) => typeof h === 'string' && /<footer class="piede"/.test(h))
+  ok('in ogni pagina il telefono del piede è un link tel:', piedi.filter(([, h]) => !h.includes(`<li><a href="${TEL}">346 329 2786</a></li>`)).map(([k]) => k), [])
+}
+
+console.log('\n17. Corsi per età: senza l’età resta l’elenco di prima, la scheda compatta sul telefono')
+{
+  const senzaEta = F.TESTO_NUOVO.replace(/<p class="eta">[^<]*<\/p>/g, '').replace(/<p>(Dai 7 anni agli adulti|Dai 7 anni|Dai 18 anni|Dai 15 anni|Dai 14 anni|Da 3 a 5 anni|5-6 anni|Dagli 11 anni)<\/p>/g, '')
+  const H2 = home(senzaEta)
+  ok('se le schede non dicono l’età non si può raggruppare: elenco unico come prima, nessuna ancora, nessun corso perso', [/class="gruppo-corsi"/.test(H2), /class="ancore-corsi"/.test(H2), conta(sezDi(H2, 'I nostri corsi')?.html ?? '', /<article class="tessera [a-z]+ scheda">/g)], [false, false, 9])
+  const conEta = (cambi) => home(cambi.reduce((x, [da, a]) => x.replace(da, a), F.TESTO_NUOVO))
+  const gruppoDi = (h, nome) => [...(sezDi(h, 'I nostri corsi')?.html ?? '').matchAll(/<div class="gruppo-corsi" id="([a-z]+)">([\s\S]*?)<\/div><\/div>/g)].find((m) => m[2].includes(`>${nome}</a>`))?.[1]
+  const conf = conEta([['<p>Dai 7 anni agli adulti</p><p>Tecnica', '<p>Dai 6 anni agli adulti</p><p>Tecnica'], ['<p>Dai 7 anni agli adulti</p><p>Gioco', '<p>Dai 13 anni agli adulti</p><p>Gioco'], ['<p>Dai 7 anni agli adulti</p><p>Armonia', '<p>Dai 14 anni agli adulti</p><p>Armonia']])
+  ok('i confini: a 6 anni sta tra i piccoli, a 7 e a 13 tra i ragazzi, a 14 in «Dai 14 anni»', [gruppoDi(conf, 'Judo'), gruppoDi(conf, 'Lotta'), gruppoDi(conf, 'Aikido')], ['piccoli', 'ragazzi', 'adulti'])
+  const tuttiUguali = home(F.TESTO_NUOVO.replace(/<p>(Dai|Da|Dagli|5-6)[^<]*<\/p>/g, '<p>Dai 8 anni</p>'))
+  ok('se tutti i corsi cadono in un gruppo solo restano nell’elenco unico, senza ancore', [/class="gruppo-corsi"/.test(tuttiUguali), /class="ancore-corsi"/.test(tuttiUguali), conta(sezDi(tuttiUguali, 'I nostri corsi')?.html ?? '', /<article class="tessera [a-z]+ scheda">/g)], [false, false, 9])
+  const css = H.replace(/\n/g, '')
+  const tel = css.match(/@media \(max-width:900px\)\{([^@]*(?:@[^m][^@]*)*)/g)?.join('') ?? ''
+  ok('sul telefono la scheda del gruppo è una riga: foto a sinistra da 80px, testo a destra, pastiglie nascoste', [/\.passo-unico \.gruppo-corsi \.tessere\.schede \.tessera\.scheda:not\(\.foto\)\{[^}]*display:grid[^}]*grid-template-columns:80px/.test(tel), /\.passo-unico \.gruppo-corsi \.tessere\.schede \.tessera\.scheda:not\(\.foto\) \.pastiglie\{display:none\}/.test(tel)], [true, true])
+  ok('la descrizione si ferma a due righe e l’iniziale senza foto è da 48px', [/\.passo-unico \.gruppo-corsi \.tessere\.schede \.tessera\.scheda:not\(\.foto\) p:not\(\.eta\)\{[^}]*-webkit-line-clamp:2/.test(tel), /\.passo-unico \.gruppo-corsi \.scheda-foto\.senza-foto span\{font-size:48px\}/.test(tel)], [true, true])
+  ok('la scheda del telefono è alta almeno 104px e tutta cliccabile (il titolo copre la riga)', [/\.passo-unico \.gruppo-corsi \.tessere\.schede \.tessera\.scheda:not\(\.foto\)\{[^}]*min-height:104px/.test(tel), /\.passo-unico \.scheda h3 a::before,\.passo-unico \.scheda h4 a::before\{content:"";position:absolute;inset:0\}/.test(css)], [true, true])
+  ok('gli spazi del design reggono: 24px sopra le ancore, 48px tra i gruppi (32px sul telefono), più forti della regola che azzera i figli della sezione', [/\.passo-unico \.sezione>\.ancore-corsi\{margin-top:24px\}/.test(css), /\.passo-unico \.sezione>\.gruppo-corsi\{margin-top:48px\}/.test(css), /\.passo-unico \.sezione>\.gruppo-corsi\{margin-top:32px\}/.test(tel)], [true, true, true])
+  ok('il titolo della scheda del telefono è da 22px: «Giocomotricità» sta su una riga e la scheda resta intorno a 104px', [/\.passo-unico \.gruppo-corsi \.tessere\.schede \.tessera\.scheda:not\(\.foto\) h3,[^{]*h4\{[^}]*font-size:22px/.test(tel)], [true])
+  ok('sul telefono i gruppi vanno a una colonna sola', /\.gruppo-corsi \.tessere\.schede\{grid-template-columns:1fr\}/.test(tel), true)
+  ok('dal computer ogni gruppo ha tre colonne e le schede grandi di oggi', /\.gruppo-corsi \.tessere\.schede\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)\}/.test(css), true)
+  ok('le ancore sono chip da 48px', /\.ancore-corsi \.ancora\{[^}]*min-height:48px/.test(css), true)
+  ok('la pagina Corsi non cambia: schede grandi, titoli h3, nessun gruppo', [/class="gruppo-corsi"/.test(genera(F.datiVecchi())['corsi/index.html']), /<h4>/.test(genera(F.datiVecchi())['corsi/index.html'])], [false, false])
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')

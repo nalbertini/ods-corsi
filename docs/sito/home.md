@@ -66,6 +66,12 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
   paragrafo con l'età, uno con la descrizione e un ultimo tutto in corsivo con
   le fasce separate da « · » (Bambini · Adulti · Anziani · Agonisti). Solo la
   prima foto di una scheda conta.
+  Il sito li divide da solo in tre gruppi per età, dal primo numero del paragrafo
+  dell'età: fino a 6 «Piccoli 3-6 anni», da 7 a 13 «Ragazzi 7-14 anni», da 14 «Dai
+  14 anni», con una riga di link ai gruppi in cima. Un corso sta in un gruppo solo, quello da cui si
+  può cominciare, e dentro il gruppo va dal più piccolo al più grande. Se un corso non ha il
+  paragrafo dell'età con un numero, o i corsi cadono in un gruppo solo, restano in un elenco unico.
+
 - **Perché unirti a noi?**: quattro titoli piccoli, ognuno col suo paragrafo.
 - **Citazioni**: più citazioni di fila. In ognuna: l'estratto (le virgolette le
   mette il sito, non scriverle), poi il testo intero, poi la firma in corsivo.

@@ -12,7 +12,7 @@ import { eHomeNuova, homeNuova } from './sitoHome'
 import { CSS_ORARIO_AUTOMATICO, corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
 import { testiOrario, type OrarioAperto } from './sitoOrario'
 import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
-import { CONTATTI } from './sito'
+import { CONTATTI, chiama } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
 
 /**
@@ -240,7 +240,7 @@ const CSS_HOME = `
 .passo-unico .numeri .tessera{min-height:150px}
 .passo-unico .numeri .cifra{font-size:clamp(56px,6.3vw,84px)}
 .motto{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin:48px var(--margine) 0}
-.motto h3{margin:0;font-size:64px;line-height:.92}
+.motto h2{margin:0;font-size:64px;line-height:.92}
 .motto p{margin:0 0 12px;font-size:20px;line-height:1.5}
 .motto p:last-child{margin:0}
 .passo-unico .sezione{padding:96px var(--margine) 0}
@@ -256,10 +256,12 @@ const CSS_HOME = `
 .scheda-foto img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;border-radius:0}
 .scheda-foto.senza-foto{display:flex;align-items:center;justify-content:center;background:var(--chiara);color:var(--inchiostro);font-family:var(--display);font-weight:800;line-height:1}
 .scheda-foto.senza-foto span{font-size:96px}
-.passo-unico .scheda h3{margin:24px 72px 0 24px;font-size:clamp(36px,3.6vw,52px);line-height:.95;display:block}
-.passo-unico .scheda h3 a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none}
-.passo-unico .scheda h3 a::before{content:"";position:absolute;inset:0}
-.passo-unico .scheda h3::after{content:"↗\uFE0E";position:absolute;top:16px;right:16px;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:#fff;color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:24px;font-weight:600;line-height:1}
+.passo-unico .scheda h3,.passo-unico .scheda h4{margin:24px 72px 0 24px;font-size:clamp(36px,3.6vw,52px);line-height:.95;display:block}
+.passo-unico .scheda h3 a,.passo-unico .scheda h4 a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none}
+.passo-unico .scheda h3 a::before,.passo-unico .scheda h4 a::before{content:"";position:absolute;inset:0}
+.passo-unico .scheda h3 a:focus-visible,.passo-unico .scheda h4 a:focus-visible{outline:none}
+.passo-unico .scheda:has(a:focus-visible){outline:3px solid var(--blu);outline-offset:3px}
+.passo-unico .scheda h3::after,.passo-unico .scheda h4::after{content:"↗\uFE0E";position:absolute;top:16px;right:16px;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:#fff;color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:24px;font-weight:600;line-height:1}
 .passo-unico .scheda p{margin:10px 24px 0;font-size:17px;line-height:1.45;max-width:none}
 .passo-unico .scheda p.eta{margin-top:4px;font-size:16px;font-weight:700}
 .passo-unico .scheda .pastiglie{display:flex;flex-wrap:wrap;gap:6px;margin:auto 0 0;padding:20px 24px 24px;list-style:none}
@@ -295,7 +297,32 @@ const CSS_HOME = `
 .cta-foto{margin:0;min-height:440px;overflow:hidden;border-radius:0 6px 6px 0}
 .cta-foto img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 25%;border-radius:0}
 .passo-unico + .piede{margin-top:24px}
+.ancore-corsi{display:flex;flex-wrap:wrap;gap:6px}
+.passo-unico .sezione>.ancore-corsi{margin-top:24px}
+.ancore-corsi .ancora{display:inline-flex;align-items:center;min-height:48px;padding:0 16px;border-radius:999px;background:var(--chiara);color:var(--inchiostro);font-size:16px;font-weight:600;text-decoration:none}
+.gruppo-corsi{scroll-margin-top:16px}
+.passo-unico .sezione>.gruppo-corsi{margin-top:48px}
+.gruppo-corsi>h3{margin:0 0 20px;font-size:clamp(40px,4.4vw,64px);line-height:.9}
+.gruppo-corsi>h3 span{font-family:Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:clamp(16px,1.4vw,20px);font-weight:600;text-transform:none}
+.gruppo-corsi .tessere.schede{grid-template-columns:repeat(3,minmax(0,1fr))}
+.barra-prova{display:none}
 @media (max-width:900px){
+.barra-prova{display:flex;gap:8px;position:sticky;bottom:0;z-index:5;margin-top:48px;padding:12px var(--margine) calc(12px + env(safe-area-inset-bottom));background:var(--inchiostro);box-shadow:0 -6px 18px rgba(13,42,61,.22)}
+.barra-prova .pulsante{min-height:56px;padding:0 16px;font-size:17px}
+.barra-prova .primario{flex:3}
+.barra-prova .secondario{flex:2;color:#fff;border-color:#fff}
+.passo-unico .sezione>.gruppo-corsi{margin-top:32px}
+.gruppo-corsi>h3{margin-bottom:12px}
+.gruppo-corsi .tessere.schede{grid-template-columns:1fr}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto){display:grid;grid-template-columns:80px minmax(0,1fr);align-content:center;min-height:104px}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) .scheda-foto{grid-column:1;grid-row:1 / span 3;height:auto;min-height:104px;position:relative}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) .scheda-foto img{position:absolute;inset:0}
+.passo-unico .gruppo-corsi .scheda-foto.senza-foto span{font-size:48px}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) h3,.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) h4{grid-column:2;margin:12px 56px 0 16px;font-size:22px}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) h3::after,.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) h4::after{top:50%;right:12px;width:40px;height:40px;margin-top:-20px;font-size:20px}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) p.eta{grid-column:2;margin:4px 56px 0 16px;font-size:15px}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) p:not(.eta){grid-column:2;margin:2px 56px 12px 16px;font-size:15px;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.passo-unico .gruppo-corsi .tessere.schede .tessera.scheda:not(.foto) .pastiglie{display:none}
 .passo-unico .pagina-hero{grid-template-columns:1fr;gap:32px;padding:20px var(--margine) 0}
 .passo-unico .intro h1{margin-bottom:24px}
 .passo-unico .intro p{font-size:18px;margin-bottom:24px}
@@ -304,7 +331,7 @@ const CSS_HOME = `
 .passo-unico .tessere.numeri{margin-top:32px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .passo-unico .numeri .tessera{min-height:160px}
 .motto{grid-template-columns:1fr;gap:16px;margin-top:32px}
-.motto h3{font-size:44px}
+.motto h2{font-size:44px}
 .passo-unico .sezione{padding:64px var(--margine) 0}
 .passo-unico .sezione h2{font-size:clamp(56px,5.56vw,80px)}
 .tessere.schede{grid-template-columns:1fr;grid-auto-rows:auto}
@@ -382,6 +409,8 @@ html{-webkit-text-size-adjust:100%}
 body{margin:0 auto;max-width:1440px;background:var(--fondo);color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:clamp(17px,1rem + .25vw,19px);line-height:1.55;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset:3px}
+.salta{position:absolute;left:-9999px;top:0}
+.salta:focus{left:16px;top:16px;z-index:100;display:inline-flex;align-items:center;min-height:48px;padding:0 20px;background:var(--giallo);color:var(--inchiostro);font-weight:700;text-decoration:none}
 .invito:focus-visible{outline-color:var(--inchiostro)}
 .piede a:focus-visible{outline-color:var(--giallo)}
 .logo{display:block;flex-shrink:0}
@@ -1055,9 +1084,14 @@ function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
 function piede(c: Contesto): string {
   const f = lista(voci('footer', c))
   const m = voci('menu', c)
-  const recapiti = `<li>${esc(CONTATTI.indirizzo)}<span class="metro"> ${TESTI.metro}</span></li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
+  const recapiti = `<li>${esc(CONTATTI.indirizzo)}<span class="metro"> ${TESTI.metro}</span></li><li><a href="${esc(chiama)}">${esc(CONTATTI.telefono)}</a></li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
   // Come nel design: il nome, poi tre colonne senza titolo (recapiti, pagine, legge).
   return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><ul class="recapiti-piede">${recapiti}</ul>${m.length ? `<nav class="piede-menu" aria-label="Pagine">${m.map((x) => `<a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a>`).join('')}</nav>` : ''}${f ? `<ul class="piede-legale">${f}</ul>` : ''}</footer>`
+}
+
+/** La barra del telefono in fondo alla Home: «Prova a 5 €» verso il modulo e «Chiama». Il nome accessibile dice «una settimana»: sulla pagina ci sono altri pulsanti di prova. */
+function barraProva(): string {
+  return `<nav class="barra-prova" aria-label="Prova o chiama"><a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer" aria-label="Prova una settimana a 5 euro">Prova a 5 €</a><a class="pulsante secondario" href="${esc(chiama)}">Chiama</a></nav>`
 }
 
 function invito(conContatti: boolean): string {
@@ -1083,10 +1117,16 @@ function social(c: Contesto, titolo: string, descrizione: string): string {
   ].join('')
 }
 
+// Chi naviga da tastiera o con lo screen reader salta la testata: il link porta al <main>.
+const conSalto = (corpo: string) => {
+  const conDestinazione = corpo.replace(/<main[\s>]/, (m) => `<span id="contenuto"></span>${m}`)
+  return conDestinazione === corpo ? corpo : `<a class="salta" href="#contenuto">Salta al contenuto</a>${conDestinazione}`
+}
+
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssContatti?: boolean; cssCorsoNuovo?: string; cssCorsi?: boolean; cssOrari?: boolean; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}${o.cssOrari ? `<style>${CSS_ORARI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}${o.cssOrari ? `<style>${CSS_ORARI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${conSalto(o.corpo)}</body></html>`
 }
 
 /**
@@ -1139,7 +1179,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
 
 /** La Home nuova (sitoHome.ts): testata, hero con i due pulsanti, sezioni a passo unico. Senza la chiamata finale nel testo resta l'invito di sempre. */
 function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
-  const h = homeNuova(pulito, TESTI.iscrizione)
+  const h = homeNuova(pulito, TESTI.iscrizione, barraProva())
   const hero = `<section class="pagina-hero con-pulsanti${h.foto ? '' : ' solo'}"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div>${h.foto}</section>`
   const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })

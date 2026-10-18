@@ -1,0 +1,46 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Barra Prova a 5 € / Chiama"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "BarraOggi.dc.html",
+      "title": "1 · Barra oggi (375)",
+      "x": 0,
+      "y": 0,
+      "w": 375,
+      "h": 812,
+      "page": "page-1"
+    },
+    {
+      "file": "BarraProposta.dc.html",
+      "title": "2 · Barra proposta (375)",
+      "x": 495,
+      "y": 0,
+      "w": 375,
+      "h": 812,
+      "page": "page-1"
+    },
+    {
+      "file": "BarraInFondo.dc.html",
+      "title": "3 · Barra in fondo (375)",
+      "x": 990,
+      "y": 0,
+      "w": 375,
+      "h": 812,
+      "page": "page-1"
+    },
+    {
+      "file": "BarraMenuAperto.dc.html",
+      "title": "4 · Barra e menu aperto (375)",
+      "x": 1485,
+      "y": 0,
+      "w": 375,
+      "h": 812,
+      "page": "page-1"
+    }
+  ]
+}

@@ -85,7 +85,7 @@ function fasceDi(corpo: Blocco[]): { nomi: string[]; resto: Blocco[] } {
   return nomi.length && nomi.every((x) => note.includes(x.toLowerCase())) ? { nomi, resto: corpo.slice(0, -1) } : { nomi: [], resto: corpo }
 }
 
-export function scheda(g: { titolo: string; corpo: Blocco[] }, k: number, n: number): string {
+export function scheda(g: { titolo: string; corpo: Blocco[] }, k: number, n: number, colore = coloreDi(k, n), titoloH: 'h3' | 'h4' = 'h3'): string {
   const foto = g.corpo.map(immagine).find((x): x is string => x !== null)
   const { nomi, resto } = fasceDi(g.corpo.filter((x) => immagine(x) === null))
   const testi = resto.filter((x) => x.tag === 'p')
@@ -98,7 +98,37 @@ export function scheda(g: { titolo: string; corpo: Blocco[] }, k: number, n: num
   const corso = /\/([a-z0-9-]+)\/?"/i.exec(g.titolo)?.[1]?.toLowerCase()
   const dentro = foto ? conCaricamento(foto, false).replace(/^<img/, `<img${corso ? ` data-corso="${corso}"` : ''}`) : ''
   const f = foto ? `<div class="scheda-foto">${dentro}</div>` : `<div class="scheda-foto senza-foto"><span aria-hidden="true">${iniziale}</span></div>`
-  return `<article class="tessera ${coloreDi(k, n)} scheda">${f}<h3>${g.titolo}</h3>${eta}${descrizione}${pastiglie}</article>`
+  return `<article class="tessera ${colore} scheda">${f}<${titoloH}>${g.titolo}</${titoloH}>${eta}${descrizione}${pastiglie}</article>`
+}
+
+/** Il primo numero della riga dell'età («Dai 7 anni agli adulti», «Da 3 a 5 anni», «5-6 anni»): da quando si può cominciare. */
+function etaDiInizio(g: { corpo: Blocco[] }): number | null {
+  const { resto } = fasceDi(g.corpo.filter((x) => immagine(x) === null))
+  const testi = resto.filter((x) => x.tag === 'p')
+  return testi.length > 1 ? Number(/\d+/.exec(testoSolo(testi[0].html))?.[0] ?? NaN) || null : null
+}
+
+/** I gruppi dei corsi per età d'inizio: ogni corso sta in uno solo, dal più piccolo al più grande (a parità, nell'ordine scritto). «Agonisti» non è un'età: resta una pastiglia. */
+const GRUPPI_ETA = [
+  { id: 'piccoli', nome: 'Piccoli', eta: '3-6 anni', ancora: 'Piccoli 3-6', colore: 'giallo', fino: 6 },
+  { id: 'ragazzi', nome: 'Ragazzi', eta: '7-14 anni', ancora: 'Ragazzi 7-14', colore: 'blu', fino: 13 },
+  { id: 'adulti', nome: 'Dai 14 anni', eta: 'Giovani e adulti', ancora: 'Dai 14 anni', colore: 'inchiostro', fino: Infinity },
+] as const
+
+/** I corsi in gruppi con le ancore; senza l'età di ogni scheda, o con un gruppo solo, resta l'elenco unico (null). */
+function corsiPerEta(gruppi: { titolo: string; corpo: Blocco[] }[]): string | null {
+  const conEta: { c: { titolo: string; corpo: Blocco[] }; e: number }[] = []
+  for (const c of gruppi) {
+    const e = etaDiInizio(c)
+    if (e === null) return null
+    conEta.push({ c, e })
+  }
+  // «Ragazzi 7-14 anni» dice fino a che età sono ragazzi; chi comincia a 14 sta già in «Dai 14 anni» (`fino: 13`).
+  const dentro = GRUPPI_ETA.map((g, i) => ({ ...g, corsi: conEta.filter(({ e }) => e <= g.fino && e > (GRUPPI_ETA[i - 1]?.fino ?? -1)).sort((a, b) => a.e - b.e).map(({ c }) => c) })).filter((g) => g.corsi.length)
+  if (dentro.length < 2) return null
+  const ancore = `<nav class="ancore-corsi" aria-label="Corsi per età">${dentro.map((g) => `<a class="ancora" href="#${g.id}">${g.ancora}</a>`).join('')}</nav>`
+  const blocchi = dentro.map((g) => `<div class="gruppo-corsi" id="${g.id}"><h3>${g.nome} <span>${g.eta}</span></h3>${griglia(g.corsi.length, g.corsi.map((c, k) => scheda(c, k, g.corsi.length, g.colore, 'h4')).join(''), ' schede')}</div>`)
+  return ancore + blocchi.join('')
 }
 
 const intro = (b: Blocco[]) => {
@@ -133,7 +163,7 @@ export function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, i
   }
   if (primo >= 0 && corpo.slice(0, primo).every((x) => x.tag === 'p')) {
     const gruppi = gruppiDa(dopoH3)
-    if (sonoCorsi(gruppi)) return `<section class="sezione">${h2}${intro(corpo.slice(0, primo))}${griglia(gruppi.length, gruppi.map((g, k) => scheda(g, k, gruppi.length)).join(''), ' schede')}</section>`
+    if (sonoCorsi(gruppi)) return `<section class="sezione">${h2}${intro(corpo.slice(0, primo))}${corsiPerEta(gruppi) ?? griglia(gruppi.length, gruppi.map((g, k) => scheda(g, k, gruppi.length)).join(''), ' schede')}</section>`
     // Perché unirti: quattro titoli, ognuno con il suo testo.
     if (gruppi.length === 4 && gruppi.every((g) => g.corpo.length === 1 && g.corpo[0].tag === 'p')) {
       const t = gruppi.map((g, k) => `<article class="tessera ${coloreDi(k, 4)}"><span class="numero-perche" aria-hidden="true">${k + 1}</span><h3>${g.titolo}</h3>${g.corpo[0].html}</article>`).join('')
@@ -147,7 +177,7 @@ export function sezioneNuova(titolo: string, corpo: Blocco[], ultima: boolean, i
  * La Home nuova: `html` va in `<main>` dopo il titolo (che sta nella testata della pagina), `foto` e `bottoni` stanno
  * nella testata della pagina; `chiamata` dice se la chiamata finale c'è già (allora l'invito globale non si ripete).
  */
-export function homeNuova(testoPulito: string, iscrizione: string): { bottoni: string; foto: string; html: string; chiamata: boolean } {
+export function homeNuova(testoPulito: string, iscrizione: string, barra: string): { bottoni: string; foto: string; html: string; chiamata: boolean } {
   const b = blocchi(testoPulito)
   const primoTitolo = b.findIndex((x) => x.tag === 'h2')
   const testa = b.slice(0, primoTitolo < 0 ? b.length : primoTitolo)
@@ -159,11 +189,15 @@ export function homeNuova(testoPulito: string, iscrizione: string): { bottoni: s
   const usatiNumeri = testa.findIndex((x) => x.tag === 'ul' && numeriDiUnElenco(x))
   const resto = testa.filter((x, i) => pulsantiDi(x) === null && immagine(x) === null && i !== usatiNumeri && !(iM >= 0 && i >= iM))
   const tNumeri = numeri ? `<div class="tessere n-${numeri.length} numeri">${numeri.map((n, k) => `<article class="tessera ${COLORI_NUMERI[k % COLORI_NUMERI.length]} numero"><strong class="cifra">${n.cifra}</strong>${n.scritta ? ` <span class="scritta">${n.scritta}</span>` : ''}</article>`).join('')}</div>` : ''
-  const tMotto = motto ? `<section class="motto"><h3>${motto.titolo}</h3><div>${motto.righe.map((x) => x.html).join('')}</div></section>` : ''
+  const tMotto = motto ? `<section class="motto"><h2>${motto.titolo}</h2><div>${motto.righe.map((x) => x.html).join('')}</div></section>` : ''
   const tResto = resto.length ? `<div class="testo">${resto.map((x) => x.html).join('')}</div>` : ''
   const sezioni: string[] = []
   const titoli = b.map((x, i) => (x.tag === 'h2' ? i : -1)).filter((i) => i >= 0)
   titoli.forEach((i, k) => sezioni.push(sezioneNuova(contenuto(b[i]), b.slice(i + 1, titoli[k + 1] ?? b.length), k === titoli.length - 1, iscrizione)))
-  const html = `${tNumeri}${tMotto}${tResto}${sezioni.join('')}`
-  return { bottoni: bottoni ? pulsanti(bottoni, iscrizione) : '', foto: foto ? `<figure class="hero-foto">${conCaricamento(foto, true)}</figure>` : '', html, chiamata: sezioni.some((s) => s.startsWith('<section class="sezione cta')) }
+  // La barra sta in fondo al blocco che segue l'hero, prima della chiamata finale: `position: sticky` la tiene in basso
+  // mentre si scorre quel blocco, e finito il blocco se ne va con la pagina, senza script (il sito non ne usa).
+  const chiamata = sezioni.length > 0 && sezioni[sezioni.length - 1].startsWith('<section class="sezione cta')
+  const dopoHero = chiamata ? sezioni.slice(0, -1) : sezioni
+  const html = `<div class="dopo-hero">${tNumeri}${tMotto}${tResto}${dopoHero.join('')}${barra}</div>${chiamata ? sezioni[sezioni.length - 1] : ''}`
+  return { bottoni: bottoni ? pulsanti(bottoni, iscrizione) : '', foto: foto ? `<figure class="hero-foto">${conCaricamento(foto, true)}</figure>` : '', html, chiamata }
 }
