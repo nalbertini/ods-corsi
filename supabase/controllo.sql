@@ -328,6 +328,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.salva_bozza_pezzi_sito(uuid,integer,text,text,text,jsonb)') is not null),
   ('63-importa-prima-nota.sql', 'l''import dello storico dei movimenti dal vecchio programma, solo per chi cura i conti',
     exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'movimenti' and column_name = 'origine_import')
-    and to_regprocedure('public.importa_prima_nota(jsonb)') is not null)
+    and to_regprocedure('public.importa_prima_nota(jsonb)') is not null),
+  ('64-pagamenti-non-nel-futuro.sql', 'il pagamento a mano non nel futuro e i contanti non in un giorno di cassa chiuso',
+    exists (select 1 from pg_trigger where tgname = 'pagamenti_diretti_non_nel_futuro' and not tgisinternal)
+    and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'registra_pagamento_diretto'
+                and pg_get_functiondef(p.oid) like '%cassa_giorno_chiuso%' and pg_get_functiondef(p.oid) like '%contabilita_oggi()%'))
 ) as x(file, cosa, c)
 order by file, cosa;

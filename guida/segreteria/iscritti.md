@@ -290,8 +290,10 @@ Non tutto passa da una ricevuta: si paga in palestra, in contanti, o si è
 pagato prima dell'app. **+ REGISTRA UN PAGAMENTO** (sotto lo storico) apre un
 modulo: **DATA**, **IMPORTO**, **COME HA PAGATO**, **A COSA SERVE** (la quota
 associativa, un corso, altro: si sceglie dai suggerimenti o si scrive) e una
-**NOTA** facoltativa («pagato direttamente in palestra»). **REGISTRA IL
-PAGAMENTO** lo mette nello storico, sotto **SENZA RICEVUTA**, e lo conta in
+**NOTA** facoltativa («pagato direttamente in palestra»). La data non può
+essere dopo oggi. **REGISTRA IL PAGAMENTO** mostra prima un riepilogo da
+confermare («Sì, registra il pagamento»: «No, torna al modulo» lascia il modulo
+com'era), poi lo mette nello storico, sotto **SENZA RICEVUTA**, e lo conta in
 **PAGATO**. Come una ricevuta, non si cambia e non si cancella: se è sbagliato,
 **ANNULLA PAGAMENTO** (chiede conferma) e se ne registra un altro; l'annullato
 resta in elenco, barrato, e non si conta.

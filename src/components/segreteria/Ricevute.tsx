@@ -2,8 +2,8 @@ import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { etichettaQuota, pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
-import { avvisoCassaChiusa } from '../../lib/contabilita'
-import { cosaNonVaDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, vociSuggerite, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
+import { avvisoCassaChiusa, oggiARoma, type ChiusuraCassa } from '../../lib/contabilita'
+import { cosaNonVaDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, riepilogoPagamentoDiretto, vociSuggerite, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
 import {
   centesimi,
   conti,
@@ -230,7 +230,11 @@ function RigaDelloStorico({ riga, aMano, onAnnulla }: { riga: RigaPagamento; aMa
  * (l'amministrazione).
  */
 export function RegistraPagamento({ d, p, corsi, fai, onFatto, onChiudi }: { d: DatiSegreteria; p: { id: string; nome: string; cognome: string }; corsi: string[]; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
-  const [data, setData] = useState(chiaveGiorno(new Date()))
+  const oggi = oggiARoma()
+  const [data, setData] = useState(oggi)
+  const [chiusure, setChiusure] = useState<ChiusuraCassa[]>([])
+  // Chi non vede le chiusure (la segreteria) non ha l'avviso qui: il database rifiuta lo stesso.
+  useEffect(() => { void d.chiusure().then(setChiusure).catch(() => undefined) }, [d])
   const [importo, setImporto] = useState('')
   const [metodo, setMetodo] = useState(METODI_A_MANO[0])
   const [voce, setVoce] = useState('')
@@ -238,7 +242,7 @@ export function RegistraPagamento({ d, p, corsi, fai, onFatto, onChiudi }: { d: 
   // Lasciarlo a metà chiede prima di perderlo, come il resto della scheda.
   useBozza(importo !== '' || nota !== '', 'Il pagamento a mano')
   const cent = centesimi(importo)
-  const guaio = importo === '' ? null : cent === null ? 'L’importo non si capisce: scrivi un numero, per esempio 40,00.' : cosaNonVaDiretto({ personaId: p.id, data, importo: cent, metodo, voce, nota })
+  const guaio = importo === '' ? null : cent === null ? 'L’importo non si capisce: scrivi un numero, per esempio 40,00.' : cosaNonVaDiretto({ personaId: p.id, data, importo: cent, metodo, voce, nota }, oggi, chiusure)
   const manca = cent === null || !!guaio || !voce.trim()
   return (
     <section aria-label="Pagamento fatto a mano" className="sg-riquadro">
@@ -247,10 +251,10 @@ export function RegistraPagamento({ d, p, corsi, fai, onFatto, onChiudi }: { d: 
       <span className="sg-sotto">Per un pagamento già avvenuto senza ricevuta: in palestra, in contanti, prima dell’app. Resta nello storico e si può annullare.</span>
       <div className="sg-due sg-scheda-campi">
         <Campo id="pd-data" etichetta="DATA">
-          <input id="pd-data" className="sg-campo" type="date" value={data} onChange={(e) => setData(e.target.value)} />
+          <input id="pd-data" className="sg-campo" type="date" max={oggi} value={data} onChange={(e) => setData(e.target.value)} />
         </Campo>
         <Campo id="pd-importo" etichetta="IMPORTO" manca={importo === ''}>
-          <input id="pd-importo" className="sg-campo" inputMode="decimal" placeholder="40,00" value={importo} onChange={(e) => setImporto(e.target.value)} aria-invalid={(cent === null || importoNonVa({ personaId: p.id, data, importo: cent, metodo, voce, nota })) || undefined} />
+          <input id="pd-importo" className="sg-campo" inputMode="decimal" placeholder="40,00" value={importo} onChange={(e) => setImporto(e.target.value)} aria-invalid={(cent === null || importoNonVa({ personaId: p.id, data, importo: cent, metodo, voce, nota }, oggi, chiusure)) || undefined} />
         </Campo>
         <Campo id="pd-metodo" etichetta="COME HA PAGATO">
           <select id="pd-metodo" className="sg-campo" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
@@ -277,9 +281,11 @@ export function RegistraPagamento({ d, p, corsi, fai, onFatto, onChiudi }: { d: 
           type="button"
           className="sg-btn sg-btn-pieno"
           disabled={manca}
-          onClick={() => {
+          onClick={async () => {
             if (cent === null) return
-            void fai(() => d.registraPagamentoDiretto({ personaId: p.id, data, importo: cent, metodo, voce: voce.trim(), nota: nota.trim() || undefined }), 'Pagamento registrato', onFatto)
+            const dati = { personaId: p.id, data, importo: cent, metodo, voce: voce.trim(), nota: nota.trim() || undefined }
+            if (!(await chiedi(`Registrare questo pagamento?\n${riepilogoPagamentoDiretto(dati, `${p.cognome} ${p.nome}`).join('\n')}`, 'Sì, registra il pagamento', { no: 'No, torna al modulo' }))) return
+            void fai(() => d.registraPagamentoDiretto(dati), 'Pagamento registrato', onFatto)
           }}
         >
           Registra il pagamento

@@ -1160,7 +1160,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async registraPagamentoDiretto(dati) {
       // Prima la persona, poi il resto: come `registra_pagamento_diretto`.
       if (dati.personaId && !a().persone.some((x) => x.id === dati.personaId)) throw new Error('Questa scheda non c’è più')
-      const no = cosaNonVaDiretto(dati)
+      const no = cosaNonVaDiretto(dati, oggiARoma(), contabilita().chiusure)
       if (no) throw new Error(no)
       const nuovo: PagamentoDiretto = { ...dati, metodo: dati.metodo.trim(), voce: dati.voce.trim(), nota: dati.nota?.trim() || undefined, id: `pd-${unico()}`, creatoIl: new Date().toISOString() }
       a().pagamentiDiretti = [...(a().pagamentiDiretti ?? []), nuovo]

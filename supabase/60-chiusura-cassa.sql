@@ -12,8 +12,9 @@
 -- Il 59 non si tocca: le sue funzioni che ora sanno dei giorni chiusi sono
 -- ridefinite qui sotto con `create or replace`. Rilanciare il 59 dopo il 60 rimette le
 -- versioni vecchie: va rilanciato anche il 60 (controllo.sql lo dice).
--- Le ricevute e i pagamenti a mano in contanti non seguono i giorni chiusi (sono documenti):
--- se ne cambia uno di quei giorni, l'app avvisa che la chiusura non è più in regola.
+-- Le ricevute in contanti non seguono i giorni chiusi (sono documenti): se ne annulli una di quei
+-- giorni, l'app avvisa che la chiusura non è più in regola. Un pagamento a mano in contanti
+-- invece in un giorno chiuso non si registra più (64-pagamenti-non-nel-futuro.sql).
 
 create table if not exists chiusure_cassa (
   id          uuid primary key default gen_random_uuid(),
