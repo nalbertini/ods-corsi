@@ -177,7 +177,7 @@ console.log('\n6. le ricevute degli esempi')
   // Gli esempi fanno vedere tutte le parole della colonna IN REGOLA.
   const parole = async (giorno) => (await s.persone()).filter((p) => p.attiva).map((p) => m.paroleInRegola(p, giorno).map((b) => b.parola))
   const oggiParole = (await parole(g(oggi))).flat()
-  for (const x of ['QUOTA SCADUTA', 'FUORI APP', 'IN PARTE']) ok(`gli esempi mostrano almeno un ${x}`, oggiParole.includes(x), true)
+  for (const x of ['Quota scaduta', 'Fuori app', 'Pagata in parte']) ok(`gli esempi mostrano almeno un ${x}`, oggiParole.includes(x), true)
 
   // Dopo il 13/12 (novanta giorni dalla stagione) non scade la quota di mezza palestra.
   // Seminati da capo quel giorno, come su un dispositivo nuovo.
@@ -186,7 +186,7 @@ console.log('\n6. le ricevute degli esempi')
   localStorage.removeItem(DOVE)
   m.seminaEsempi(new Date('2026-12-20T12:00:00'))
   const dopo = await parole('2026-12-20')
-  const scadute = dopo.filter((x) => x.includes('QUOTA SCADUTA')).length
+  const scadute = dopo.filter((x) => x.includes('Quota scaduta')).length
   ok('il 20/12/2026 le QUOTA SCADUTA sono poche (meno di una su dieci)', scadute > 0 && scadute < dopo.length / 10, true)
   senzaEsempi()
   localStorage.removeItem(DOVE)
