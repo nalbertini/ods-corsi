@@ -140,8 +140,7 @@ const CSS_TESTATA = `
 .piede-menu a{display:flex}
 .piede .metro{display:block;color:var(--chiara);font-size:15px;line-height:1.4}
 @media (min-width:901px){
-.testata nav ul{gap:36px}
-.testata nav a{padding:0}
+.testata nav ul{gap:4px}
 .testata nav a:hover{background:none;text-decoration:underline;text-underline-offset:4px}
 }
 @media (max-width:900px){
