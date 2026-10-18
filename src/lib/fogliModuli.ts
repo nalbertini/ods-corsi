@@ -385,7 +385,7 @@ export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uin
     // Indirizzo, IBAN e stagione.
     const y0 = f.y + 16
     const riga = (t: string, y: number) => f.testo(t, { font: b.corpo, corpo: 10.5, x: MARGINE, y, colore: COL.inchiostro })
-    riga('Via Sassi 26, Collegno', y0)
+    riga('Via Vittorio Sassi 26, Collegno', y0)
     riga(`IBAN ${PAGAMENTO.iban}`, y0 + 15)
     riga(`intestato: ${PAGAMENTO.intestatario}`, y0 + 30)
     f.testo(`STAGIONE ${STAGIONE.replace('/', '-20')}`, { font: b.titoloFont, corpo: 24, destra, y: y0 + 8, tracking: 1.2, colore: COL.inchiostro })

@@ -12,14 +12,14 @@ Maurizio Innella
 
 ## Descrizione
 
-Maestro di Judo, docente di Educazione Fisica e presidente di ASD Il Centro Judo.
+Maestro di Judo, docente di Educazione Fisica e presidente di A.S.D. Il Centro Judo.
 
 ## Testo
 
 ```html
 <h2>In breve</h2>
 <ul>
-<li><strong>Ruolo</strong> Presidente e direttore tecnico di ASD Il Centro Judo</li>
+<li><strong>Ruolo</strong> Presidente e direttore tecnico di A.S.D. Il Centro Judo</li>
 <li><strong>Corsi</strong> Judo (tutti i gruppi), preparazione atletica e pesi agonisti</li>
 <li><strong>Quando</strong> Lun, mer e ven; mar e gio con gli agonisti</li>
 <li><strong>Titoli</strong> Maestro di Judo V Dan, allenatore di Lotta II livello</li>
@@ -28,7 +28,7 @@ Maestro di Judo, docente di Educazione Fisica e presidente di ASD Il Centro Judo
 <h3>Chi è</h3>
 <p>Docente di Educazione Fisica e Maestro di Judo, con una lunga esperienza nella promozione dello sport e del movimento a scuola. Ha collaborato con scuole primarie e secondarie a progetti di educazione motoria, inclusione e benessere.</p>
 <h3>Come ha iniziato</h3>
-<p>Dal 1989 è presidente e direttore tecnico di ASD Il Centro Judo, l’associazione da cui è nata Officine dello Sport. Diploma ISEF a Torino nel 1997, poi le lauree in Scienze motorie.</p>
+<p>Dal 1989 è presidente e direttore tecnico di A.S.D. Il Centro Judo, l’associazione da cui è nata Officine dello Sport. Diploma ISEF a Torino nel 1997, poi le lauree in Scienze motorie.</p>
 <h3>Come insegna</h3>
 <p>Dal 2000 porta lo sport nelle scuole: progetti di educazione motoria con i Comuni di Collegno e Candiolo e con le scuole del territorio torinese.</p>
 <h2>Il percorso</h2>

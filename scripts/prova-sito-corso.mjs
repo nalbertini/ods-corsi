@@ -35,7 +35,7 @@ const classi = (h) => h.match(/<main([^>]*)>/)?.[1] ?? ''
 const colori = (h) => [...h.matchAll(/<article class="tessera (\w+)/g)].map((m) => m[1])
 
 const IMG = '<img src="/foto/a.png" alt="Lezione">'
-const DATI = '<ul><li><strong>Per chi</strong> Dai 7 anni</li><li><strong>Quando</strong> Lun, mer e ven</li><li><strong>Dove</strong> Via Sassi 26</li><li><strong>Per iniziare</strong> 1 settimana a 5 euro</li></ul>'
+const DATI = '<ul><li><strong>Per chi</strong> Dai 7 anni</li><li><strong>Quando</strong> Lun, mer e ven</li><li><strong>Dove</strong> Via Vittorio Sassi 26</li><li><strong>Per iniziare</strong> 1 settimana a 5 euro</li></ul>'
 const PRES = '<h3>Cos’è il corso</h3><p>Un percorso.</p><h3>Cosa si fa</h3><p>Si lavora.</p><h3>Per chi è pensato</h3><p>Per tutti.</p>'
 const TESTA = IMG + DATI + PRES
 

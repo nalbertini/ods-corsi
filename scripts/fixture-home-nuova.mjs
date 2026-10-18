@@ -71,7 +71,7 @@ export const DOMANDE = [
 ]
 export const FAQ = `<h2>Hai qualche domanda?</h2><p>Qui trovi le informazioni principali su corsi, iscrizioni e attività.</p>${DOMANDE.map(([d, r]) => `<h3>${d}</h3><p>${r}</p>`).join('')}`
 
-export const CTA = (foto = true) => `<h2>Una settimana per scegliere.</h2><p>5 € e provi tutte le discipline. Ti aspettiamo in Via Sassi 26, Collegno, vicino alla metro Fermi.</p><p><a class="pulsante" href="${ISCRIZIONE}">Prova una settimana a 5 €</a> <a class="pulsante" href="/contatti/">Scrivici</a></p>${foto ? img(FOTO.istruttori, 'Gli istruttori con la cintura nera in posa sul tatami') : ''}`
+export const CTA = (foto = true) => `<h2>Una settimana per scegliere.</h2><p>5 € e provi tutte le discipline. Ti aspettiamo in Via Vittorio Sassi 26, Collegno, vicino alla metro Fermi.</p><p><a class="pulsante" href="${ISCRIZIONE}">Prova una settimana a 5 €</a> <a class="pulsante" href="/contatti/">Scrivici</a></p>${foto ? img(FOTO.istruttori, 'Gli istruttori con la cintura nera in posa sul tatami') : ''}`
 
 export const TESTO_NUOVO = INTRO + CORSI + PERCHE + CITAZIONI + RECENSIONI + FAQ + CTA()
 /** Come sopra, senza i due paragrafi di pulsanti: la Home di oggi (nessun link all'iscrizione nell'introduzione). */

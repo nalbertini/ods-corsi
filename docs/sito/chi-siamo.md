@@ -86,7 +86,7 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
 ## Da controllare prima di pubblicare
 
 - **«Conosci gli istruttori» porta a `/istruttori/`**: va pubblicata prima (o si toglie il pulsante dal testo; il pannello resta).
-- Il nome «A.s.d. il Centro Judo» è com'era nel testo pubblicato (da confermare se è ancora quello ufficiale).
+- Il nome «A.S.D. Il Centro Judo» è com'era nel testo pubblicato (da confermare se è ancora quello ufficiale).
 - L'ordine dei numeri (come la Home) e i valori (frasi che ripetono il titolo) sono rimasti come nella proposta; si cambiano scrivendo il testo.
 - Le foto: le liberatorie ci sono per tutte quelle proposte; nessun cognome leggibile sul dorso.
 - Nella Home c'è ancora «8 attività»: la Home e Chi siamo vanno allineate a 9 (decisione D2).

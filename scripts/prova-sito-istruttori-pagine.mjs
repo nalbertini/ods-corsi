@@ -66,7 +66,7 @@ console.log('\n1. La pagina di Maurizio ha la forma del design')
   ok('le sezioni, in ordine, con le loro tessere', sezioni.map((s) => `${s.titolo}:${s.tessere}`), ['In breve:4', 'La sua storia:3', 'Il percorso:3', 'Fuori dal tatami:1', 'Gli altri istruttori:2'])
   ok('«In breve» ha Ruolo, Corsi, Quando e Titoli', ['Ruolo', 'Corsi', 'Quando', 'Titoli'].map((t) => new RegExp(`<h3>${t}</h3>`).test(h)), [true, true, true, true])
   ok('il percorso ha i tre elenchi (federazione, scuola, titoli)', conta(h, /<article class="tessera [a-z]+"><h3>(Federazione e sport|Scuola|Titoli e studi)<\/h3><ul>/g), 3)
-  ok('la descrizione è la frase del design', campo(md, 'Descrizione'), 'Maestro di Judo, docente di Educazione Fisica e presidente di ASD Il Centro Judo.')
+  ok('la descrizione è la frase del design', campo(md, 'Descrizione'), 'Maestro di Judo, docente di Educazione Fisica e presidente di A.S.D. Il Centro Judo.')
 }
 
 console.log('\n2. Nessun recapito personale')
@@ -74,7 +74,7 @@ console.log('\n2. Nessun recapito personale')
   for (const [slug] of ISTRUTTORI) {
     const md = leggi(`${DIR}/${slug}.md`)
     const t = testo(md) + campo(md, 'Descrizione')
-    ok(`${slug}: né email, né telefono, né «via»`, [/[\w.-]+@[\w-]+\.\w+/.test(t), /(?:\+?39)?\s?3\d{2}[\s.]?\d{3}[\s.]?\d{3,4}|\b0\d{1,3}[\s.]?\d{6,8}\b/.test(t), /\b(?:via|viale|corso|piazza)\s+[A-Z]/.test(t.replace(/Via Sassi 26/g, ''))], [false, false, false])
+    ok(`${slug}: né email, né telefono, né «via»`, [/[\w.-]+@[\w-]+\.\w+/.test(t), /(?:\+?39)?\s?3\d{2}[\s.]?\d{3}[\s.]?\d{3,4}|\b0\d{1,3}[\s.]?\d{6,8}\b/.test(t), /\b(?:via|viale|corso|piazza)\s+[A-Z]/.test(t.replace(/Via Vittorio Sassi 26/g, ''))], [false, false, false])
   }
 }
 

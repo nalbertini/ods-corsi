@@ -199,7 +199,7 @@ console.log('\n8. La chiamata finale')
   const tutte = sezioni(M)
   const ultima = tutte[tutte.length - 1]
   ok('l’ultima sezione è «sezione cta»; è l’unica', [ultima?.classi.includes('sezione'), ultima?.classi.includes('cta'), tutte.filter((s) => s.classi.includes('cta')).length], [true, true, 1])
-  ok('titolo, testo con l’indirizzo e la metro', [testo(ultima?.html.match(/<h2[^>]*>[\s\S]*?<\/h2>/)?.[0] ?? ''), testo(ultima?.html ?? '').includes('Via Sassi 26, Collegno, vicino alla metro Fermi')], ['Una settimana per scegliere.', true])
+  ok('titolo, testo con l’indirizzo e la metro', [testo(ultima?.html.match(/<h2[^>]*>[\s\S]*?<\/h2>/)?.[0] ?? ''), testo(ultima?.html ?? '').includes('Via Vittorio Sassi 26, Collegno, vicino alla metro Fermi')], ['Una settimana per scegliere.', true])
   const pul = [...(ultima?.html.match(/<div class="pulsanti">([\s\S]*?)<\/div>/)?.[1] ?? '').matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => [classi(m[1]), m[1].match(/href="([^"]*)"/)?.[1], testo(m[2])])
   ok('i pulsanti: il primario verso l’iscrizione, poi Scrivici', pul, [[['pulsante', 'primario'], F.ISCRIZIONE, 'Prova una settimana a 5 €'], [['pulsante', 'secondario'], '/contatti/', 'Scrivici']])
   ok('la foto degli istruttori sta nella sezione', [conta(ultima?.html ?? '', /<img\b/g), (ultima?.html ?? '').includes(F.FOTO.istruttori)], [1, true])
@@ -227,7 +227,7 @@ console.log('\n9. Testata e piede di ogni pagina')
   ok('senza la pagina Contatti non c’è «Scrivici» in testata', [/Scrivici/.test(test(senzaContatti)), primario.test(test(senzaContatti))], [false, true])
   const piede = (h) => h.match(/<footer class="piede">[\s\S]*<\/footer>/)?.[0] ?? ''
   const pi = piede(tutte['index.html'])
-  ok('il piede ha l’indirizzo e il riferimento alla metro, senza minuti', [pi.includes('Via Sassi 26, Collegno'), pi.includes('vicino alla metro Fermi'), /minut/i.test(pi)], [true, true, false])
+  ok('il piede ha l’indirizzo e il riferimento alla metro, senza minuti', [pi.includes('Via Vittorio Sassi 26, Collegno'), pi.includes('vicino alla metro Fermi'), /minut/i.test(pi)], [true, true, false])
   ok('il piede ha lo stesso numero di voci di prima', conta(pi, /<li/g), snapshot.piedeLi)
   ok('il piede ha l’indirizzo anche nelle altre pagine', piede(tutte['corsi/index.html']).includes('vicino alla metro Fermi'), true)
 }
