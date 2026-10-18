@@ -79,7 +79,11 @@ Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordin
   citazione resta com'è. Il sito non accorcia mai un testo: l'estratto lo scrive chi pubblica, uguale alle parole dell'autore, con «[…]» dove si salta.
 - **Recensioni**: due citazioni (testo e firma in corsivo), poi un titolo
   piccolo «In breve» con un elenco di frasi brevi, ognuna col nome in corsivo.
-  Senza il titolo e l'elenco le recensioni sono carte uguali.
+  Sul sito sono tutte carte uguali (testo e nome): il titolo «In breve» non si
+  vede e ogni frase dell'elenco diventa una carta. Senza il titolo e l'elenco
+  le citazioni sono carte uguali. Il sito non corregge i testi: sono citazioni
+  di chi le ha scritte, e le correzioni (solo punteggiatura e «x» → «per») si
+  fanno qui.
 - **Domande**: titoli piccoli che finiscono con «?», ognuno col suo paragrafo.
 - **Chiamata finale** (l'ultima sezione): titolo, paragrafo con l'indirizzo e
   «vicino alla metro Fermi», i due pulsanti, la foto degli istruttori. Senza,

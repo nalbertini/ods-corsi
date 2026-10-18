@@ -11,7 +11,7 @@
 //  2. Introduzione: pulsanti (il primario, giallo, sempre primo), foto, numeri, motto.
 //  3. Corsi: schede con foto o iniziale, età, descrizione, pastiglie.
 //  4. Perché: quattro tessere numerate. 5. Citazioni: estratto + «Leggi tutto».
-//  6. Recensioni: due carte larghe e «In breve». 7. Domande. 8. Chiamata finale.
+//  6. Recensioni: carte uguali, anche quelle di «In breve». 7. Domande. 8. Chiamata finale.
 //  9. Testata (pulsante, MENU senza script) e piede (indirizzo, metro Fermi) di ogni pagina.
 // 15. Titoli senza salti di livello, «Salta al contenuto», fuoco da tastiera.
 // ---------------------------------------------------------------------------
@@ -176,22 +176,26 @@ console.log('\n5. Citazioni: estratto e «Leggi tutto»')
   ok('una sola citazione non è una fila di estratti', /estratti/.test(sezDi(una, 'Lo sport secondo chi lo studia')?.html ?? ''), false)
 }
 
-console.log('\n6. Recensioni: due carte larghe e «In breve»')
+console.log('\n6. Recensioni: carte uguali, anche quelle di «In breve»')
 {
   const s = sezDi(H, 'Cosa dicono di noi')
   const div = s?.html.match(/<div class="([^"]*\brecensioni\b[^"]*)">([\s\S]*)<\/div>/)
   const cit = [...(div?.[2] ?? '').matchAll(/<(blockquote|article) class="([^"]*\bcitazione\b[^"]*)">([\s\S]*?)<\/\1>/g)].map((m) => ({ cl: m[2].split(/\s+/), html: m[3] }))
   ok('un contenitore «recensioni»', Boolean(div), true)
-  ok('due carte «tessera citazione larga», col testo intero e la firma', [cit.length, cit.every((c) => ['tessera', 'citazione', 'larga'].every((k) => c.cl.includes(k))), cit.map((c) => testo(c.html.match(/<p>([\s\S]*?)<\/p>/)?.[1] ?? ''))], [2, true, [F.NICOLA, F.NANDO]])
-  ok('la firma ha una iniziale: N e N (Nicola A., Nando)', cit.map((c) => c.html.match(/<span class="avatar" aria-hidden="true">([^<]*)<\/span>/)?.[1]), ['N', 'N'])
-  const breve = (div?.[2] ?? '').match(/<(div|aside|article|section) class="([^"]*\bin-breve\b[^"]*)">([\s\S]*?)<\/\1>/)
-  ok('una scheda «in-breve» con le tre frasi e i tre nomi, nell’ordine scritto', [...(breve?.[3] ?? '').matchAll(/<li>([\s\S]*?)<\/li>/g)].map((m) => testo(m[1])), F.IN_BREVE.map(([f, n]) => `${f} ${n}`))
-  ok('«In breve» viene dopo le due carte larghe', (div?.[2] ?? '').indexOf('in-breve') > (div?.[2] ?? '').lastIndexOf('larga'), true)
+  ok('cinque carte «tessera citazione larga»: le due scritte per intero e le tre di «In breve»', [cit.length, cit.every((c) => ['tessera', 'citazione', 'larga'].every((k) => c.cl.includes(k)))], [5, true])
+  ok('il testo di ogni carta è quello scritto, nell’ordine', cit.map((c) => testo(c.html.match(/<p>([\s\S]*?)<\/p>/)?.[1] ?? '')), [F.NICOLA, F.NANDO, ...F.IN_BREVE.map(([f]) => f)])
+  ok('la firma di ogni carta ha la sua iniziale: N, N, S, B, D', cit.map((c) => c.html.match(/<span class="avatar" aria-hidden="true">([^<]*)<\/span>/)?.[1]), ['N', 'N', 'S', 'B', 'D'])
+  ok('i nomi nelle firme: Nicola A., Nando, Stefano G., Blorida K., Davide R.', cit.map((c) => testo(c.html.match(/<p class="firma">([\s\S]*?)<\/p>/)?.[1] ?? '').replace(/^[A-Z]\s+/, '')), ['Nicola A.', 'Nando', 'Stefano G.', 'Blorida K.', 'Davide R.'])
+  ok('colori alternati blu e inchiostro, tutte uguali nella forma', cit.map((c) => colore(c.cl)), ['blu', 'inchiostro', 'blu', 'inchiostro', 'blu'])
+  ok('niente tessera «In breve» né il suo titolo', [/in-breve/.test(s?.html ?? ''), />In breve</.test(s?.html ?? '')], [false, false])
   ok('nessuna stella né fonte inventate', /★|☆|stell|google|facebook|⭐/i.test(s?.html ?? ''), false)
   ok('niente «Leggi tutto» né estratti nelle recensioni', /<details|estratti/.test(s?.html ?? ''), false)
-  ok('refusi lasciati come sono («x chi»)', (s?.html ?? '').includes('è ideale x chi si avvicina'), true)
+  ok('il sito non corregge i testi: «x chi» resta se la segreteria lo lascia scritto', (s?.html ?? '').includes('è ideale x chi si avvicina'), true)
+  const senzaNome = sezDi(home(F.TESTO_NUOVO.replace('<li>Insegnanti molto preparati e posto molto accogliente. <em>Blorida K.</em></li>', '<li>Insegnanti molto preparati e posto molto accogliente.</li>')), 'Cosa dicono di noi')
+  const carteSenzaNome = [...(senzaNome?.html ?? '').matchAll(/<blockquote class="[^"]*\bcitazione\b[^"]*">([\s\S]*?)<\/blockquote>/g)].map((m) => m[1])
+  ok('una voce di «In breve» senza nome diventa una carta con la frase intera e senza firma', [carteSenzaNome.length, testo(carteSenzaNome[3] ?? ''), /class="firma"/.test(carteSenzaNome[3] ?? '')], [5, 'Insegnanti molto preparati e posto molto accogliente.', false])
   const sole = sezDi(home(F.TESTO_NUOVO.replace(F.RECENSIONI, F.RECENSIONI_SOLE)), 'Cosa dicono di noi')
-  ok('senza «In breve» sono carte normali: niente «recensioni» né «in-breve»', [/recensioni|in-breve/.test(sole?.html ?? ''), conta(sole?.html ?? '', /<blockquote|<article[^>]*citazione/g)], [false, 2])
+  ok('senza «In breve» sono carte normali: niente «recensioni», due citazioni', [/recensioni|in-breve/.test(sole?.html ?? ''), conta(sole?.html ?? '', /<blockquote|<article[^>]*citazione/g)], [false, 2])
 }
 
 console.log('\n7. Le domande')
@@ -247,12 +251,13 @@ console.log('\n13. Il testo pronto in docs/sito/home.html è una Home nuova comp
 {
   const html = readFileSync('docs/sito/home.html', 'utf8').replace(/^<!doctype[^>]*>\s*<meta[^>]*>\s*<title>.*?<\/title>\s*/s, '')
   ok('il testo pronto della Home non ha più «Perché unirti a noi?» né le citazioni accademiche (stanno in Chi siamo)', [html.includes('Perché unirti a noi'), html.includes('Lo sport secondo chi lo studia'), html.includes('<details')], [false, false, false])
+  ok('le recensioni del testo pronto sono corrette: niente «x chi», la virgola di Nando, il punto di Davide', [html.includes(' x chi'), html.includes('amichevole, è ideale per chi si avvicina'), html.includes('Discretamente strutturato. Persone gentili e ben preparate.')], [false, true, true])
   const md = readFileSync('docs/sito/home.md', 'utf8')
   const titolo = md.match(/## Titolo\s+(.+)/)?.[1] ?? ''
   const frase = md.match(/## Descrizione\s+(.+)/)?.[1] ?? ''
   const h = genera({ dominio: F.DOMINIO, pagine: [{ slug: 'home', titolo, descrizione: frase, testo: html }, { slug: 'contatti', titolo: 'Contatti', descrizione: 'd', testo: '<p>x</p>' }], menu: [], rinvii: [], ospitiImmagini: [F.OSPITE_VECCHIO] })['index.html'] ?? ''
   ok('è riconosciuta come Home nuova, con il titolo e la frase di home.md', [/<main class="passo-unico">/.test(h), h.includes(`<h1>${titolo}</h1>`), h.includes(frase)], [true, true, true])
-  ok('4 numeri, 9 schede, nessuna citazione accademica, 2 recensioni, 5 domande, la chiamata finale', [conta(h, /tessera [a-z]+ numero/g), conta(h, /<article class="tessera [a-z]+ scheda">/g), conta(h, /<details class="intero">/g), conta(h, /citazione [a-z]+ larga/g), conta(h, /<article class="tessera chiara">/g), /<section class="sezione cta">/.test(h)], [4, 9, 0, 2, 5, true])
+  ok('4 numeri, 9 schede, nessuna citazione accademica, 5 recensioni, 5 domande, la chiamata finale', [conta(h, /tessera [a-z]+ numero/g), conta(h, /<article class="tessera [a-z]+ scheda">/g), conta(h, /<details class="intero">/g), conta(h, /citazione [a-z]+ larga/g), conta(h, /<article class="tessera chiara">/g), /<section class="sezione cta">/.test(h)], [4, 9, 0, 5, 5, true])
   ok('i due pulsanti: prova primo, Scrivici secondo, in testata, hero e chiamata finale', conta(h, /class="pulsante primario"[^>]*>Prova una settimana a 5 €<\/a><a class="pulsante secondario" href="\/contatti\/"[^>]*>Scrivici/g), 3)
   ok('tutte le foto sono del contenitore delle immagini', [...h.matchAll(/<img[^>]*src="([^"]+)"/g)].every((m) => m[1].startsWith(F.OSPITE_VECCHIO) || m[1].startsWith('/')), true)
 }
