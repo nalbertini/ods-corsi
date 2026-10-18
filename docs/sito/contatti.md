@@ -1,13 +1,41 @@
-# Contatti: la pagina come nel design
+# Contatti: la pagina rivista
 
-Testo da incollare nel pannello SITO (PAGINE › Contatti), per avere la pagina del design «tatami blu e giallo» (`TatamiBlu-Contatti`, desktop, e `TatamiBluM-Contatti`, telefono). Le regole del layout sono in `contatti.md` del ramo `claude/sito-contatti-955302`.
+Testo da incollare nel pannello SITO (PAGINE › Contatti) per avere la pagina Contatti del design
+(`docs/design-canvas/contatti-miglioramenti/`): due pulsanti in cima, quattro recapiti, «Come arrivare»
+con la mappa, «Una settimana per scegliere» in tre passi, due foto, cinque domande.
+**Finché non si incolla il testo nuovo la pagina resta com'è oggi**: il sito riconosce quella nuova da un
+pulsante verso il modulo online prima del primo titolo grande (come la Home).
 
-Come si fa:
+## Prima di incollare: i segnaposto
+
+Nel testo ci sono due cose da decidere. Finché non sono risolte, vanno scelte a mano:
+
+| Dove | Oggi nel testo | Cosa serve |
+|---|---|---|
+| **C5**, «In auto» | `[C5: dove si parcheggia]` | Dove si parcheggia. Se non si sa, togli tutto il blocco «In auto» (titolo e riga): le altre due righe restano. Se lo lasci, il segnaposto si vede sul sito |
+| **C3**, Facebook | `facebook.com/ilCentroJudo` | La pagina è quella giusta? Il nome è «Officine dello Sport» ma l'indirizzo è del Centro Judo |
+| **C7**, via | «Via Sassi 26» | Via Sassi o Via Vittorio Sassi? Il testo dice la prima, il navigatore (Google Maps) la seconda. Se cambia, cambia anche in `src/lib/sito.ts` (`CONTATTI.indirizzo`) |
+
+## Prima di incollare: le foto
+
+Nella libreria IMMAGINI vanno caricate due foto (versioni sviluppate: `lezione.jpg` e `sala.jpg` in
+`docs/design-canvas/contatti-miglioramenti/img/`, non nel repository):
+
+| Foto | Segnaposto nel testo |
+|---|---|
+| Lezione di judo, gli allievi in fila | `DA-CARICARE-contatti-lezione.jpg` |
+| Sala della preparazione atletica | `DA-CARICARE-contatti-sala.jpg` |
+
+Dopo il caricamento sostituisci i due segnaposto in `contatti.html` con i nomi veri, prima di copiare.
+La mappa è `sito/risorse/mappa.webp`: c'è già, non va caricata. **Non c'è la foto dell'ingresso** (C6): il layout è a due foto;
+se ne metti una o tre, la fila si adatta.
+
+## Come si fa
 
 1. Apri **PAGINE › Contatti**.
 2. Nei campi a destra: **titolo** e **descrizione** qui sotto.
-3. Apri `docs/sito/contatti.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello clicca nel testo, cancella tutto e incolla (Cmd+V).
-4. **ANTEPRIMA** per controllare, poi **PUBBLICA**.
+3. Apri `docs/sito/contatti.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello clicca nel testo, cancella **tutto** e incolla (Cmd+V).
+4. **ANTEPRIMA** per controllare, poi **PUBBLICA**. L'anteprima del pannello mostra solo il testo: i riquadri si vedono sul sito pubblicato.
 
 ## Titolo
 
@@ -15,26 +43,38 @@ Contattaci
 
 ## Descrizione
 
-Siamo qui per accompagnarti nella scelta giusta. Scrivici senza impegno: ti aiutiamo a capire quale percorso è più adatto a te o alla tua famiglia.
+Chiamaci, scrivici o passa in sede. Ti aiutiamo a scegliere il corso più adatto a te o alla tua famiglia.
 
-## Testo
+## Come è scritto il testo (per chi lo modifica)
 
-Il testo sta in [`contatti.html`](contatti.html). Ordine: quattro recapiti (telefono, Instagram, Facebook, indirizzo), la mappa, il pulsante «Ottieni indicazioni», tre foto, «Hai qualche domanda?» con le sei risposte.
+Il sito legge la forma, non i titoli: si possono cambiare le parole, non l'ordine.
+
+- **Pulsanti** (prima dei recapiti): un paragrafo con «Prova una settimana a 5 €» → `https://app.officinedellosport.it/iscrizioni/`
+  e «Scrivici» → `https://wa.me/393463292786` (WhatsApp). Il pulsante del modulo online fa riconoscere la pagina nuova: se lo togli,
+  la pagina torna come prima. Il primo è sempre il giallo. L'indirizzo di WhatsApp si scrive **con `https://`**: senza, il sito toglie il link.
+- **Recapiti**: quattro titoli piccoli (Telefono, Instagram, Facebook, Indirizzo), ognuno con il valore e, in un paragrafo che è solo un link,
+  l'azione («Chiama ora →», …). La tessera intera è un bersaglio da toccare. Il telefono usa `tel:`.
+- **Come arrivare**: un paragrafo, la **mappa** (immagine), il pulsante «Ottieni indicazioni» e tre titoli piccoli con una riga ciascuno
+  (In metro, In auto, Col navigatore). La lettera nel quadratino è l'iniziale dell'ultima parola del titolo.
+- **Una settimana per scegliere**: un paragrafo e **tre** titoli piccoli, ognuno con un paragrafo (numerati 1-2-3). Con due o quattro, o con un titolo che finisce con «?», diventano tessere come le altre. Le **foto** subito dopo l'ultimo passo escono in fila sotto la sezione (una, due o tre).
+- **Domande**: titoli piccoli che finiscono con «?», ognuno col suo paragrafo (sono anche i dati per Google).
+- **Orari**: nessuno in pagina. Quando ci sono, aggiungili con la segreteria (e ai dati per Google).
 
 ## Cosa cambia rispetto a oggi
 
-- La descrizione di oggi (la lunga frase sui corsi) diventa la frase «Siamo qui per accompagnarti…», che oggi sta nel testo. Titolo uguale: «Contattaci».
-- «Come trovarci» sparisce come titolo: i quattro recapiti sono quattro tessere, con gli stessi link di oggi (telefono, Instagram, Facebook, indicazioni).
-- Nuova mappa (`/risorse/mappa.webp`, nel sito dal ramo `claude/sito-contatti-955302`), con il pulsante «Ottieni indicazioni» sopra.
-- Nuova frase «A pochi metri dalla metropolitana Fermi» (nota dell’indirizzo e pillola sulla mappa), dal design.
-- Tre foto di fila prima delle domande.
-- Le sei domande e risposte hanno le stesse informazioni di oggi, con parole più brevi (come nel design): «Sì», «1 settimana di prova al costo di 5 euro», «lezione di prova senza impegno». Corretto «Si,» in «Sì:».
+- Titolo da 140 px (era 200), con due pulsanti: prova una settimana a 5 € e Scrivici su WhatsApp.
+- Quattro recapiti tutti toccabili per intero (prima solo il testo sottolineato, 39 px), con l'azione scritta.
+- «Come arrivare»: mappa con segnaposto e tre modi; sparisce «A pochi metri dalla metropolitana Fermi» (ripetuta due volte), resta «vicino alla metro Fermi, Linea 1», senza minuti.
+- «Una settimana per scegliere»: i tre modi per cominciare; la prova vale per tutte le età dai 3 anni, solo la settimana.
+- Due foto invece di tre, più larghe; sul telefono si vedono tutte.
+- Cinque domande al posto di sei (le due sulla prova diventano una; nuova «Posso provare una sola lezione?», risposta «No»).
+- Un solo passo tra le sezioni: 96 px sul computer, 64 sul telefono.
+- Il telefono dice «Chiama ora →» (il design diceva «Chiama o scrivi su WhatsApp →», ma il tocco apre la chiamata: WhatsApp è il pulsante «Scrivici»).
 
-## Da controllare prima di pubblicare
+## Da chiedere alla segreteria (la lista che il cliente si aspetta)
 
-- **«A pochi metri dalla metropolitana Fermi»**: viene dal design, non dal testo di oggi. La distanza («pochi metri») va confermata dalla segreteria.
-- Il link di Facebook è quello di oggi (`facebook.com/ilCentroJudo`): il nome è «Officine dello Sport» ma la pagina è del Centro Judo. Conferma che sia quella giusta.
-- Il numero di telefono, Instagram e l’indirizzo sono quelli di oggi (346 329 2786, officine.dellosport, Via Sassi 26).
-- La mappa è di OpenStreetMap: il credito «© OpenStreetMap contributors» resta sopra la mappa (lo mette il sito).
-- «Posso fare una prova…» e «Posso provare un corso…» dicono quasi la stessa cosa (una settimana a 5 euro, una lezione di prova senza impegno): oggi sono due domande, le ho tenute. La segreteria dice se sono due offerte diverse.
-- Le foto (lezione di judo, psicomotricità, preparazione atletica): ritraggono minori, servono i permessi. FOTO DA SCEGLIERE: la sessione «sito-foto» può proporne di meglio.
+- Quando si può passare in sede senza appuntamento? (Oggi la pagina dice «chiamaci e ti diciamo quando».)
+- Dopo il modulo online: chi richiama, entro quando?
+- Per la settimana di prova serve il certificato medico? Cosa portare? Si sceglie una disciplina o si provano tutte (anche a 3-5 anni)?
+- Quanti minuti a piedi dalla metro Fermi? (Si scrive solo se arriva un numero.)
+- Il numero risponde su WhatsApp a tutte le ore?

@@ -5,6 +5,7 @@ import { GRIGLIA_MASSIMA, collage, conFila, impagina, persona, ritratti, testata
 import { CSS_CORSI } from './sitoCorsi'
 import { CSS_INTERNE } from './sitoInterne'
 import { cssFoci, cssFociSchede } from './sitoFoto'
+import { eContattiNuova, contattiNuova } from './sitoContatti'
 import { eHomeNuova, homeNuova } from './sitoHome'
 import { CONTATTI } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
@@ -261,6 +262,52 @@ const CSS_HOME = `
 .cta.solo .cta-testo{border-radius:6px}
 .cta-foto{min-height:300px;border-radius:0 0 6px 6px}
 .passo-unico .cta h2{font-size:clamp(48px,6.11vw,88px)}
+}
+`.replace(/\n/g, '')
+
+/**
+ * Le regole della pagina Contatti nuova (sitoContatti.ts): vengono dopo quelle della Home, di cui usa pulsanti, titoli di sezione,
+ * passi numerati e domande (`main.passo-unico`). I recapiti riusano le misure di `.recapiti` della pagina di prima.
+ */
+const CSS_CONTATTI = `
+.contatti-nuova h1{font-size:clamp(92px,9.72vw,140px)}
+.recapiti-sez{padding:48px var(--margine) 0}
+.recapiti-sez .recapiti{grid-auto-rows:minmax(270px,auto)}
+.recapiti .tessera{position:relative}
+.recapiti-sez .azione{margin-top:10px;padding-top:4px;border-top:2px solid currentColor}
+.recapiti-sez .azione a{display:flex;align-items:center;min-height:48px;font-size:17px;font-weight:600;text-decoration:none}
+.recapiti-sez .azione a::after{content:"";position:absolute;inset:0;border-radius:6px}
+.recapiti-sez .azione a:focus-visible{outline:none}
+.recapiti-sez .azione a:focus-visible::after{outline:3px solid currentColor;outline-offset:-6px}
+.contatti-nuova .arrivo{display:grid;grid-template-columns:780px 1fr;gap:6px;margin-top:40px}
+.contatti-nuova .arrivo>*{grid-column:auto}
+.arrivare .mappa{height:500px;margin:0;padding:0;overflow:hidden;display:block}
+.arrivare .mappa img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;border-radius:0}
+.mappa-azioni{position:absolute;left:16px;bottom:28px;display:flex;gap:8px}
+.mappa-azioni .pulsante{min-height:56px;padding:0 28px;font-size:18px}
+.arrivi{display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:6px}
+.sezione .arrivi .tessera.arrivo-riga:not(.foto){min-height:0}
+.arrivi .arrivo-riga{display:grid;grid-template-columns:48px minmax(0,1fr);gap:8px 16px;align-content:start;padding:24px}
+.arrivo-riga .sigla{grid-row:1 / span 2;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border:3px solid currentColor;border-radius:6px;font-family:var(--display);font-weight:800;font-size:36px;line-height:1}
+.arrivo-riga h3,.arrivo-riga p{grid-column:2}
+.arrivo-riga h3{font-size:clamp(30px,2.5vw,36px);line-height:.95}
+.arrivo-riga p{font-size:17px;line-height:1.45}
+.foto-contatti{display:grid;gap:6px;margin:96px var(--margine) 0}
+.foto-contatti.n-1{grid-template-columns:1fr}
+.foto-contatti.n-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.foto-contatti.n-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.foto-contatti figure{margin:0;height:360px;overflow:hidden;border-radius:6px}
+.foto-contatti img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 45%;border-radius:6px}
+@media (max-width:900px){
+.contatti-nuova h1{font-size:82px}
+.recapiti-sez{padding-top:32px}
+.recapiti-sez .recapiti{grid-auto-rows:minmax(215px,auto)}
+.contatti-nuova .arrivo{grid-template-columns:1fr;margin-top:24px}
+.arrivare .mappa{height:380px}
+.arrivi{grid-template-rows:none}
+.foto-contatti{margin-top:64px}
+.foto-contatti.n-2,.foto-contatti.n-3{grid-template-columns:1fr}
+.foto-contatti figure{height:220px}
 }
 `.replace(/\n/g, '')
 
@@ -931,10 +978,10 @@ function social(c: Contesto, titolo: string, descrizione: string): string {
   ].join('')
 }
 
-function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; dati?: string }): string {
+function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssContatti?: boolean; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
 }
 
 /**
@@ -949,6 +996,7 @@ function classeTitolo(titolo: string): string {
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
   if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, conContatti, pulito)
+  if (p.slug === 'contatti' && !p.diLegge && eContattiNuova(pulito, TESTI.iscrizione)) return paginaContattiNuova(p, c, conContatti, pulito)
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
   // La pagina di un corso (foto, dati, presentazione prima del primo h2) ha la sua testata; le regole stanno in `main.corso`.
@@ -977,6 +1025,15 @@ function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, p
   const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati })
+}
+
+/** Contatti nuova (sitoContatti.ts): come la Home, testata, titolo con i due pulsanti, sezioni a passo unico; l'invito di sempre resta in fondo. */
+function paginaContattiNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+  const h = contattiNuova(pulito, TESTI.iscrizione, NOME, CONTATTI.indirizzo)
+  const hero = `<section class="pagina-hero con-pulsanti solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div></section>`
+  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="contatti-nuova passo-unico">${hero}${h.html}</main>${invito(conContatti)}${piede(c)}`
+  const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssContatti: true, dati })
 }
 
 function nonTrovata(c: Contesto, conContatti: boolean): string {
