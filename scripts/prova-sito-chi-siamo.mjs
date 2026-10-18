@@ -87,7 +87,7 @@ console.log('\n7. Testata e invito come nel design')
   ok('«Prova» a 170px a 1440px', /\.invito \.parola\{font-size:clamp\(96px,11\.8vw,170px\)\}/.test(css), true)
   ok('logo alto 110px e testata con 22px sopra e sotto', [/\.logo img\{height:110px\}/.test(css), /\.testata\{padding:22px var\(--margine\)\}/.test(css)], [true, true])
   ok('la pagina aperta è gialla', /\.testata nav a\[aria-current\]\{background:var\(--giallo\)\}/.test(css), true)
-  ok('sul telefono le voci sono tessere azzurre da 44px con 14px ai lati e il logo è alto 82px', [/\.testata nav a\{background:var\(--chiara\);padding:0 14px\}/.test(css), /\.logo img\{height:82px\}/.test(css)], [true, true])
+  ok('sul telefono le voci del menu aperto sono alte 48px con 16px ai lati e il logo è alto 82px', [/\.testata nav a\{min-height:48px;padding:0 16px;font-size:17px\}/.test(css), /\.logo img\{height:82px\}/.test(css)], [true, true])
 }
 
 console.log('\n8. Valori, invito e piede come nel design')
@@ -95,7 +95,7 @@ console.log('\n8. Valori, invito e piede come nel design')
   const css = html('<p>x</p>').match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
   ok('il paragrafo prima delle tessere è da 24px a 1440px, largo 900px al massimo', [/\.colonna:has\(\+\.tessere\) p\{font-size:clamp\(19px,1\.67vw,24px\);line-height:1\.4\}/.test(css), /\.colonna:has\(\+\.tessere\)\{max-width:900px\}/.test(css)], [true, true])
   ok('le tessere dopo quel paragrafo hanno 26px 30px dentro, sul telefono 20px e titolo da 36px', [/\.colonna:has\(\+\.tessere\)\+\.tessere>\*\{padding:26px 30px;/.test(css), /\.colonna:has\(\+\.tessere\)\+\.tessere>\*\{padding:20px;font-size:16px;min-height:150px\}/.test(css), /\.colonna:has\(\+\.tessere\)\+\.tessere h3\{font-size:36px\}/.test(css)], [true, true, true])
-  ok('sul telefono il pulsante della testata sta accanto al logo (come «Prova», 22px ai lati)', /\.testata \.pulsante\{padding:0 22px;font-size:0\}/.test(css), true)
+  ok('sul telefono il tasto MENU della testata sta accanto al logo (22px ai lati, alto 48px)', /\.testata \.tasto-menu\{display:inline-flex;align-items:center;min-height:48px;padding:0 22px/.test(css), true)
   ok('l’invito non ha spazio tra frase e «Prova» oltre a quello che li separa', /\.invito\{gap:0\}/.test(css), true)
   ok('il nome nel piede è 56px a 1440px e 44px sul telefono', /\.piede \.nome\{[^}]*font-size:clamp\(44px,3\.9vw,56px\)/.test(css), true)
 }

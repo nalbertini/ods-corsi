@@ -119,7 +119,9 @@ console.log('\n7. Le differenze che restavano: menu, ruolo, «Fuori dal tatami»
 {
   const T = tel()
   ok('le altre pagine non hanno voci attive', /class="attiva"/.test(file('home', TESTO)['index.html']), false)
-  ok('sul telefono il pulsante sta a fianco del logo: il menu va sotto e il pulsante è corto', [/\.testata nav\{[^}]*order:\s*3/.test(T), /\.testata\{[^}]*flex-wrap:\s*wrap/.test(T)], [true, true])
+  // La testata ha le sue regole in coda al CSS (CSS_TESTATA): non nel primo blocco @media del telefono.
+  const TT = CSS.slice(CSS.indexOf('.tasto-menu,.testata .chiudi'))
+  ok('sul telefono il tasto MENU sta a fianco del logo: il menu è chiuso e la testata non va a capo', [/\.testata \.tasto-menu\{[^}]*display:\s*inline-flex/.test(TT) && /#menu\{[^}]*display:\s*none/.test(TT), /\.testata\{[^}]*flex-wrap:\s*nowrap/.test(TT)], [true, true])
   const ruolo = pagina(TESTO.replace('alt="Maurizio Innella"', 'alt="Maurizio Innella — Maestro di Judo V Dan"'))
   ok('l’alt «Nome — ruolo»: il nome grande e il ruolo sotto, a 16px', [/<figcaption><span class="nome">Maurizio Innella<\/span><span class="ruolo">Maestro di Judo V Dan<\/span><\/figcaption>/.test(ruolo), px(proprieta('.persona .ritratto figcaption .ruolo', 'font-size'))], [true, 16])
   ok('la didascalia ha l’angolo in alto a destra a 6px', proprieta('.persona .ritratto figcaption', 'border-top-right-radius'), '6px')

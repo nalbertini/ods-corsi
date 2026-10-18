@@ -278,9 +278,9 @@ campi, scelte, tasti e riquadri). Senza `tema="sito"` l'aspetto dei componenti �
 I valori e i rapporti di contrasto calcolati stanno in `../iscrizione-sito/token-proposta.md`; i board in
 `../iscrizione-sito/`. Il fuoco da tastiera (contorno 3px blu #14709f) non è riprodotto.
 
-## Il sito pubblico: i pezzi della home (proposta)
+## Il sito pubblico: i pezzi della home
 
-PROPOSTA, non costruita: i componenti `Sito*` riproducono nell'aspetto del sito (Big Shoulders Display + Inter, colori A2 di
+COSTRUITA nella Home del sito (`src/lib/sitoHome.ts`, regole in `src/lib/sitoGenera.ts`, testo da incollare in `docs/sito/home.md`): la testata (due pulsanti, tasto MENU sul telefono) e il piede valgono per tutte le pagine; le altre pagine potranno chiedere gli stessi pezzi. Differenze del costruito: nel menu aperto sul telefono il pulsante di prova è la prima voce; il fuoco delle foto delle schede segue il corso (`FOCI_SCHEDE`), non il file; la voce attiva del menu ha il fondo giallo. I componenti `Sito*` riproducono nell'aspetto del sito (Big Shoulders Display + Inter, colori A2 di
 `../sito-rebrand/token-proposta.md`) i pezzi della home proposta in `../home-miglioramenti/`. Non hanno la prop `tema`: sono già
 del sito. `piccolo` li porta alla misura del telefono (375px). `nota="DA CONFERMARE …"` li marca con contorno rosso e cartellino.
 
