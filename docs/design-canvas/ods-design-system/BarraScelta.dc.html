@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; background: #1c1c1c; border: 2px solid #f4c31b">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 22px; font-weight: 700; color: #f2f2f0">{{titolo}}</span>
+  <span style="font-size: 14px; color: #c9c9c4">{{sotto}}</span>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-left: auto">
+    <sc-if value="{{misto}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Bottone" label="{{soloPrima}}" variante="linea" contesto="segreteria" hint-size="170px,48px"></dc-import>
+      <dc-import name="Bottone" label="{{soloSeconda}}" variante="linea" contesto="segreteria" hint-size="170px,48px"></dc-import>
+    </sc-if>
+    <sc-if value="{{pieno}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="Bottone" label="CAMBIA VOCE" variante="pieno" contesto="segreteria" hint-size="170px,48px"></dc-import>
+    </sc-if>
+    <dc-import name="Bottone" label="SVUOTA" variante="linea" contesto="segreteria" hint-size="120px,48px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"2 SCELTI"},"sotto":{"editor":"text","default":"uscite · − 396,40 €"},"misto":{"editor":"boolean","default":false},"soloPrima":{"editor":"text","default":"SOLO LE 4 ENTRATE"},"soloSeconda":{"editor":"text","default":"SOLO LE 2 USCITE"},"$preview":{"width":720,"height":80}}'>
+// Riproduzione di `.sg-barra-scelta` (src/styles.css) e della barra «N scelti» di `Movimenti` (Contabilita.tsx): sticky in fondo
+// all'elenco, bordo 2px `giallo`, fondo `surface`, padding 12px 14px. Titolo Saira 22px 700 (oblique come `.ob`), la frase sotto
+// 14px `sec`, i tasti a destra. Con entrate e uscite scelte insieme CAMBIA VOCE non c'è: ci sono SOLO LE N ENTRATE / SOLO LE N USCITE.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const misto = p.misto === true || p.misto === 'true';
+    return { titolo: p.titolo ?? '2 SCELTI', sotto: misto ? 'Scegli solo entrate o solo uscite' : (p.sotto ?? ''), misto, pieno: !misto, soloPrima: p.soloPrima ?? '', soloSeconda: p.soloSeconda ?? '' };
+  }
+}
+</script>
+</body>
+</html>

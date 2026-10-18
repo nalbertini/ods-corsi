@@ -258,5 +258,6 @@ select atteso('…e le voci nuove restano', voce_di('BONIFICO SIAE') || '/' || v
 \echo ''
 \echo '--- 9. come è fatta ---'
 select atteso('prende i blocchi in ordine: for update sulle righe', (select (prosrc ~* 'for update')::text from pg_proc where proname = 'cambia_voce_movimenti' and pronamespace = 'public'::regnamespace), 'true');
+select atteso('blocca la voce di arrivo (for share): chi la spegne nello stesso momento aspetta', (select (prosrc ~* 'for share')::text from pg_proc where proname = 'cambia_voce_movimenti' and pronamespace = 'public'::regnamespace), 'true');
 select atteso('è security definer con il suo search_path', (select (prosecdef and proconfig::text like '%search_path=public%')::text from pg_proc where proname = 'cambia_voce_movimenti' and pronamespace = 'public'::regnamespace), 'true');
 select atteso('la traccia ha la riga di sicurezza accesa', (select relrowsecurity::text from pg_class where oid = 'public.cambi_voce'::regclass), 'true');
