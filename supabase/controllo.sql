@@ -336,6 +336,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'registra_pagamento_diretto'
                 and pg_get_functiondef(p.oid) like '%cassa_giorno_chiuso%' and pg_get_functiondef(p.oid) like '%contabilita_oggi()%')),
   ('65-elimina-presenza-rifiutata.sql', 'la presenza di un istruttore rifiutata si può eliminare',
-    exists (select 1 from dentro where nome = 'elimina_presenza_istruttore'))
+    exists (select 1 from dentro where nome = 'elimina_presenza_istruttore')),
+  ('66-elimina-segreteria.sql', 'eliminare anche la segreteria, se non ha storia nei registri',
+    exists (select 1 from dentro where nome = 'elimina_istruttore' and corpo like '%ha già lavorato nei registri%'))
 ) as x(file, cosa, c)
 order by file, cosa;

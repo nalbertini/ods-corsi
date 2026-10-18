@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
-// Eliminare un istruttore: la scheda e l'account.
+// Eliminare un istruttore o una persona di segreteria: la scheda e l'account.
 //
 // La scheda la cancella il database, con `elimina_istruttore()`
 // (`28-elimina-istruttore.sql`), chiamata col token di chi chiama: è lì che si
-// controlla che sia della segreteria, che la persona sia un istruttore e che
-// non abbia mai insegnato. Solo dopo, con la chiave `service_role` che non
+// controlla che sia della segreteria, che la persona sia un istruttore o della
+// segreteria e che non abbia storia (`66-elimina-segreteria.sql`). Solo dopo, con la chiave `service_role` che non
 // lascia mai il progetto, si toglie l'account: dal browser non si può.
 //
 // Prima la scheda e poi l'account, non il contrario: se il database dice di

@@ -689,9 +689,11 @@ export interface DatiSegreteria {
    */
   invita(personaId: string): Promise<'invito' | 'password'>
   /**
-   * Elimina un istruttore che non ha mai insegnato: la scheda e l'account. Chi
-   * ha corsi, lezioni in calendario o presenze da istruttore non si elimina
-   * (`28-elimina-istruttore.sql`). Va chiesto dalla funzione `elimina`.
+   * Elimina un istruttore o una persona di segreteria senza storia: la scheda
+   * e l'account. Chi ha corsi, lezioni in calendario, presenze da istruttore o
+   * righe nei registri (ricevute, pagamenti, cassa…) non si elimina
+   * (`28-elimina-istruttore.sql`, `66-elimina-segreteria.sql`). Va chiesto
+   * dalla funzione `elimina`.
    */
   eliminaIstruttore(personaId: string): Promise<void>
   /**
