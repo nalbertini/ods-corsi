@@ -420,7 +420,7 @@ function Scheda({
         </div>
       </div>
 
-      <div className="sg-scheda-griglia">
+      <div className="stack" style={{ gap: 20, minWidth: 0 }}>
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
           {modifica ? (
             <div className="sg-due">

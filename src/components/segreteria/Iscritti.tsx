@@ -763,22 +763,18 @@ function Scheda({
           )}
       </div>
 
-      <div role="tabpanel" id={idPannello('documenti')} aria-labelledby={idLinguetta('documenti')} hidden={aperta !== 'documenti'} className="sg-scheda-griglia">
-        <div className="stack" style={{ gap: 20, minWidth: 0 }}>
+      <div role="tabpanel" id={idPannello('documenti')} aria-labelledby={idLinguetta('documenti')} hidden={aperta !== 'documenti'} className="stack" style={{ gap: 20, minWidth: 0 }}>
           <div id="sez-certificato">
             <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>
-        </div>
-        <div className="stack" style={{ gap: 20, minWidth: 0 }}>
           <TessereDellaPersona key={`t-${p.id}-${(tessere ?? []).length}`} d={d} p={p} tessere={tessere} corsi={corsi} oggi={chiaveGiorno(new Date())} fai={fai} avvisa={avvisa} onCambiato={onCambiato} />
           <div id="sez-documento">
             <Documento d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>
-        </div>
       </div>
 
       <div role="tabpanel" id={idPannello('quota')} aria-labelledby={idLinguetta('quota')} hidden={aperta !== 'quota'}>
-        <div id="sez-quota" className="sg-scheda-griglia">
+        <div id="sez-quota" className="stack" style={{ gap: 24, minWidth: 0 }}>
             <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
             <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
         </div>
