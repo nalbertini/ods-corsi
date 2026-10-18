@@ -350,6 +350,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('69-orari-sito.sql', 'gli orari dei corsi per la pagina Orari del sito, con la data di modifica scritta dal database',
     exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'orari_sito'
             and has_function_privilege('anon', p.oid, 'execute'))
-    and exists (select 1 from pg_trigger where tgname = 'ricorrenza_modificata' and not tgisinternal))
+    and exists (select 1 from pg_trigger where tgname = 'ricorrenza_modificata' and not tgisinternal)),
+  ('70-movimenti-persona.sql', 'lo storico dei movimenti collegato alla persona, con la traccia di chi l''ha fatto',
+    exists (select 1 from dentro where nome = 'collega_movimenti_persona') and to_regclass('public.collegamenti_persona') is not null
+    and exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'movimenti' and column_name = 'persona_id'))
 ) as x(file, cosa, c)
 order by file, cosa;

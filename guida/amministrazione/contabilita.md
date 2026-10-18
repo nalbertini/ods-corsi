@@ -68,6 +68,37 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
 - Un cambio sbagliato si rimedia scegliendo di nuovo le righe e assegnando la voce giusta: la traccia
   non si cancella.
 
+### Collegare lo storico alla persona
+
+Nei movimenti dello storico il nome di chi ha pagato sta solo nella causale («Cliente NOME per …»).
+Si può **collegare il movimento alla persona**: è solo un'etichetta, «di chi è questo pagamento».
+Importo, data, cassa e voce non cambiano, e i saldi, il bilancio e le chiusure restano uguali, anche
+nei giorni già chiusi. Non è un incasso in più: lo storico collegato compare nella scheda della persona
+in un blocco a parte, **Dal vecchio programma**, e non si somma ai suoi pagamenti.
+
+Si collegano solo le **entrate dello storico** su «Quota associativa» e «Corsi e altri pagamenti».
+Non si collegano i movimenti scritti qui, i giroconti, la «Differenza di cassa» e gli annullati.
+
+- **I casi sicuri, in blocco**: **Collega i casi sicuri** apre il riepilogo (quanti movimenti, a quante
+  persone, quanto fanno, un campione di nomi). Sono sicuri i movimenti con nome e cognome della causale
+  uguali a quelli di **una sola scheda**, in qualunque ordine e senza badare a maiuscole e accenti.
+  Niente si scrive finché non dici **Sì, collega**. Vanno a pacchetti da 500, ognuno tutto o niente; se uno
+  si ferma, l'app dice quanti ne ha collegati e **Rifai il collegamento** riparte dagli altri. A fine
+  lavoro **Togli questo lotto** scollega solo quelli appena collegati: quelli cambiati a mano dopo non si toccano.
+- **Chi ha più schede dello stesso nome** (omonimi) non si collega mai da sé: il tag **Omonimi** e il
+  filtro **Da decidere** li mostrano. Scegli i movimenti e tocca **Collega a una persona**: l'app offre
+  le persone con quel nome e quel che le distingue (anno di nascita, corsi, iscrizione). Se non basta,
+  si cerca per nome.
+- **Chi non ha più la scheda** (un ex iscritto): il movimento resta com'è, con il tag **Senza scheda** e il
+  nome nella causale. Non si creano schede per lo storico.
+- **Per correggere**: scegli i movimenti e tocca **Scollega**, o **Collega a una persona** per spostarli
+  su un'altra. Ogni collegamento resta scritto: chi, quando, a quale persona.
+- Se una scheda viene eliminata, i suoi movimenti restano, senza persona; se due schede si uniscono,
+  il collegamento passa a chi resta.
+
+Il filtro **Persona** sopra l'elenco ha **Collegati**, **Da decidere** e **Senza scheda**, con il numero
+di ognuno sull'intero storico.
+
 ### Giroconto
 
 **Giroconto** sposta soldi da una cassa all'altra, per esempio il versamento dei
@@ -199,4 +230,4 @@ nell'elenco ma non contano nel «in cassa».
   password non è della segreteria.
 
 Se compare «Il database non è ancora aggiornato per la contabilità», «…per la chiusura
-della cassa» o «…per cambiare la voce dei movimenti», manca un aggiornamento del database: va chiesto a chi cura l'app.
+della cassa» o «…per cambiare la voce dei movimenti» o «…per collegare i movimenti alle persone», manca un aggiornamento del database: va chiesto a chi cura l'app.

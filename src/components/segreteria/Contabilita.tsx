@@ -51,10 +51,12 @@ import {
   vociOfferte,
   vociPerLaScelta,
 } from '../../lib/contabilita'
+import { filtraPerPersona, cosaNonVaCollegato, type FiltroPersona } from '../../lib/movimentiPersona'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { Campo, chiedi, Guaio, lasciare, messaggio, scaricaCsv, SchedaPiena, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { Numero } from './Presenze'
+import { CollegaAPersona, CollegaSicuri } from './CollegaPersona'
 import { Bilancio } from './Bilancio'
 
 type Scheda = 'movimenti' | 'bilancio' | 'voci' | 'casse'
@@ -176,20 +178,59 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
   const [viste, setViste] = useState(RIGHE_ELENCO)
   const [scelti, setScelti] = useState<Set<string>>(new Set())
   const [cambio, setCambio] = useState(false)
+  // Lo storico collegato alla persona (70-movimenti-persona.sql): cosa si può dire di ogni movimento senza persona, e i nomi dei collegati.
+  const [persona, setPersona] = useState<FiltroPersona>('')
+  const [collegando, setCollegando] = useState<'sicuri' | 'mano' | null>(null)
+  const statoElenco = useRef<HTMLSpanElement>(null)
+  const esitiLetti = useCarica(() => d.esitiCollegamentiPersona(), [d])
+  const esiti = useMemo(() => Object.fromEntries((esitiLetti.dato ?? []).map((e) => [e.id, e.esito] as const)), [esitiLetti.dato])
+  const idPersone = useMemo(() => [...new Set(righe.map((r) => r.personaId).filter((x): x is string => !!x))].sort().join(','), [righe])
+  const nomiLetti = useCarica(() => (idPersone ? d.nomiPersone(idPersone.split(',')) : Promise.resolve([])), [d, idPersone])
+  const nomiPersone = useMemo(() => new Map((nomiLetti.dato ?? []).map((p) => [p.id, `${p.cognome} ${p.nome}`] as const)), [nomiLetti.dato])
+  const daDecidere = (esitiLetti.dato ?? []).filter((e) => e.esito === 'omonimi').length
+  const senzaScheda = (esitiLetti.dato ?? []).filter((e) => e.esito === 'nessuna').length
+  const collegatiTutti = righe.filter((r) => r.personaId).length
 
   const { dal, al } = intervalloDi(periodo, oggi, '', '')
-  const trovate = filtraMovimenti(righe, { testo, dal, al, tipo, cassaId, voce, annullati })
+  const trovate = filtraPerPersona(filtraMovimenti(righe, { testo, dal, al, tipo, cassaId, voce, annullati }), persona, esiti)
   // Cambiando i filtri la scelta si svuota e l'elenco riparte dalle prime righe: quel che si è scelto non si perde di vista.
-  const chiave = [testo, periodo, tipo, cassaId, voce, annullati].join('|')
+  const chiave = [testo, periodo, tipo, cassaId, voce, annullati, persona].join('|')
   useEffect(() => {
     setScelti(new Set())
     setViste(RIGHE_ELENCO)
     setCambio(false)
+    setCollegando(null)
   }, [chiave])
   const scegliibili = trovate.filter(cambiabile)
   const idScelti = righe.filter((r) => scelti.has(r.id) && cambiabile(r)).map((r) => r.id)
   const sceltiDelTipo = (t: 'entrata' | 'uscita') => righe.filter((r) => scelti.has(r.id) && r.tipo === t).map((r) => r.id)
   const sceltaRiep = riepilogoCambioVoce(idScelti, righe, '', voci)
+  const sceltiRighe = righe.filter((r) => scelti.has(r.id) && cambiabile(r))
+  const collegabili = sceltiRighe.length > 0 && sceltiRighe.every((r) => !cosaNonVaCollegato(r))
+  const dellaPersona = sceltiRighe.filter((r) => r.personaId).map((r) => r.id)
+  const scollega = async () => {
+    const quanti = dellaPersona.length
+    const si = await chiedi(
+      `Togli la persona ${quanti === 1 ? 'al movimento scelto' : `ai ${quanti} movimenti scelti`}? Importi e casse non cambiano; per ricollegarli serve scegliere di nuovo la persona.`,
+      quanti === 1 ? 'Sì, scollega' : `Sì, scollega i ${quanti}`,
+    )
+    if (!si) return
+    void fai(async () => { for (const lotto of pacchetti(dellaPersona)) await d.scollegaMovimentiPersona(lotto) }, quanti === 1 ? 'Movimento scollegato' : `${quanti} movimenti scollegati`, collegamentoFatto)
+  }
+  // Dopo un collegamento: l'elenco si rilegge, gli esiti e i nomi pure, e la scelta si svuota.
+  const collegamentoFatto = () => {
+    setCollegando(null)
+    setScelti(new Set())
+    onCambiato()
+    void esitiLetti.ricarica()
+    // Il tasto premuto sparisce: il fuoco passa alla riga «N trovati», se no da tastiera si riparte dall'inizio della pagina.
+    window.setTimeout(() => statoElenco.current?.focus(), 0)
+  }
+  const chiudiCollega = () => {
+    setCollegando(null)
+    window.setTimeout(() => statoElenco.current?.focus(), 0)
+  }
+  const nonSiCollega = sceltiRighe.map((r) => cosaNonVaCollegato(r)).find(Boolean) ?? null
   const alterna = (id: string) => setScelti((x) => { const y = new Set(x); if (y.has(id)) y.delete(id); else y.add(id); return y })
   const nomiVoci = [...new Set(voci.map((v) => v.nome))].sort((x, y) => Number(y === 'Da classificare') - Number(x === 'Da classificare') || x.localeCompare(y, 'it'))
   const somme = totali(trovate)
@@ -227,6 +268,8 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
       {scrivo === 'movimento' && <InVista><NuovoMovimento d={d} voci={voci} casse={casse} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={chiudi} /></InVista>}
       {scrivo === 'giroconto' && <InVista><NuovoGiroconto d={d} casse={casse} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={chiudi} /></InVista>}
       {cambio && idScelti.length > 0 && sceltaRiep.tipo !== 'misto' && <InVista><CambiaVoce d={d} ids={idScelti} righe={righe} voci={voci} onRileggi={onCambiato} onFatto={cambioFinito} onChiudi={() => setCambio(false)} /></InVista>}
+      {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); setPeriodo('tutto'); setPersona('da_decidere') }} onChiudi={chiudiCollega} /></InVista>}
+      {collegando === 'mano' && sceltiRighe.length > 0 && <InVista><CollegaAPersona d={d} righe={sceltiRighe} fai={fai} onFatto={collegamentoFatto} onChiudi={chiudiCollega} /></InVista>}
       {aperto && (
         <SchedaPiena key={aperto.id} etichetta={`Movimento: ${aperto.descrizione}`} torna="I movimenti" onTorna={() => void torna()}>
           <MovimentoAperto d={d} voci={voci} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} fai={fai} onChiudi={() => void torna()} onFatto={fatto} />
@@ -237,6 +280,11 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
         <button type="button" className="sg-btn sg-btn-linea" disabled={!trovate.length} onClick={() => scaricaCsv(`movimenti-${oggi}.csv`, csvMovimenti(trovate, casse))}>
           Esporta CSV
         </button>
+        {!esitiLetti.guaio && (
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setAperto(null); setScrivo(null); setCambio(false); setCollegando('sicuri') }}>
+            Collega i casi sicuri
+          </button>
+        )}
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setAperto(null); setScrivo('giroconto') }}>
           Giroconto
         </button>
@@ -295,9 +343,29 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
         </button>
       </div>
 
+      {esitiLetti.dato && (
+        <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }} role="group" aria-label="Persona collegata">
+          <span className="sg-etichetta">PERSONA</span>
+          {(
+            [
+              ['', 'Tutti'],
+              ['collegati', `Collegati · ${collegatiTutti}`],
+              ['da_decidere', `Da decidere · ${daDecidere}`],
+              ['senza_scheda', `Senza scheda · ${senzaScheda}`],
+            ] as const
+          ).map(([id, etichetta]) => (
+            // I numeri contano tutto lo storico: scegliendo un filtro il periodo diventa Tutto, se no «0 trovati» confonde.
+            <button key={id} type="button" className="num sg-chip" aria-pressed={persona === id} onClick={() => { setPersona(id); if (id) setPeriodo('tutto') }}>
+              {etichetta}
+            </button>
+          ))}
+        </div>
+      )}
+      {esitiLetti.guaio && <span className="sg-sotto" role="status">{esitiLetti.guaio}</span>}
+
       {!perVoci && (
         <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span className="sg-sotto" role="status">
+          <span className="sg-sotto" role="status" ref={statoElenco} tabIndex={-1}>
             {trovate.length === 1 ? '1 trovato' : `${trovate.length} trovati`}
             {periodo !== 'tutto' && ' nel periodo scelto: tocca Tutto per lo storico'}
             {idScelti.length > 0 && ` · ${idScelti.length} ${idScelti.length === 1 ? 'scelto' : 'scelti'}`}
@@ -329,6 +397,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
             <span role="columnheader" aria-label="Scelta" />
             <span role="columnheader" className="sg-etichetta">DATA</span>
             <span role="columnheader" className="sg-etichetta">DESCRIZIONE</span>
+            <span role="columnheader" className="sg-etichetta">PERSONA</span>
             <span role="columnheader" className="sg-etichetta">VOCE</span>
             <span role="columnheader" className="sg-etichetta">CASSA</span>
             <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>IMPORTO</span>
@@ -350,10 +419,27 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
                   {r.origine !== 'movimento' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Incasso iscritto</span>}
                   {r.tipo === 'giroconto' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Giroconto</span>}
                   {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
+                  {/* Sul tablet e sul telefono la colonna PERSONA non c'è: lo stato resta accanto alla descrizione. */}
+                  {!r.personaId && esiti[r.id] === 'omonimi' && <span className="num sg-tag sg-solo-telefono" data-tipo="aspetta" style={{ marginLeft: 8 }}>Omonimi</span>}
+                  {!r.personaId && esiti[r.id] === 'nessuna' && <span className="num sg-tag sg-solo-telefono" style={{ marginLeft: 8 }}>Senza scheda</span>}
                   <span className="sg-sotto-movimento">
-                    <span className="sg-solo-telefono">{[dataRicevuta(r.data), r.voce, r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)].filter(Boolean).join(' · ')}</span>
+                    <span className="sg-solo-telefono">{[dataRicevuta(r.data), r.voce, r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId), r.personaId ? nomiPersone.get(r.personaId) : ''].filter(Boolean).join(' · ')}</span>
                     {r.sotto && <span>{r.sotto}</span>}
                   </span>
+                </span>
+                <span role="cell" className="sg-persona-riga">
+                  {r.personaId ? (
+                    <>
+                      <span style={{ fontWeight: 600 }}>{nomiPersone.get(r.personaId) ?? 'Persona collegata'}</span>
+                      <span className="num sg-tag" data-tipo="fatto">Collegato</span>
+                    </>
+                  ) : esiti[r.id] === 'omonimi' ? (
+                    <span className="num sg-tag" data-tipo="aspetta">Omonimi</span>
+                  ) : esiti[r.id] === 'nessuna' ? (
+                    <span className="num sg-tag">Senza scheda</span>
+                  ) : esiti[r.id] === 'sicuro' ? (
+                    <span className="num sg-tag">Da collegare</span>
+                  ) : null}
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{r.voce ?? '—'}</span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)}</span>
@@ -374,12 +460,15 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
         </div>
       )}
 
-      {idScelti.length > 0 && !aperto && !cambio && (
+      {idScelti.length > 0 && !aperto && !cambio && !collegando && (
         <div className="sg-barra-scelta" role="region" aria-label="Movimenti scelti">
           <span className="ob" style={{ fontSize: 22, fontWeight: 700 }}>{idScelti.length} {idScelti.length === 1 ? 'SCELTO' : 'SCELTI'}</span>
           <span className="sg-sotto">
             {sceltaRiep.tipo === 'misto' ? 'Scegli solo entrate o solo uscite' : `${sceltaRiep.tipo === 'entrata' ? 'entrate' : 'uscite'} · ${sceltaRiep.tipo === 'entrata' ? '+ ' : '− '}${soldi(sceltaRiep.totale)}`}
           </span>
+          {sceltaRiep.tipo !== 'misto' && !collegabili && nonSiCollega && esitiLetti.dato && (
+            <span className="sg-sotto" role="note">Non si collega a una persona: {nonSiCollega.charAt(0).toLowerCase()}{nonSiCollega.slice(1)}</span>
+          )}
           <div className="row" style={{ gap: 10, flexWrap: 'wrap', marginLeft: 'auto' }}>
             {sceltaRiep.tipo === 'misto' ? (
               <>
@@ -387,7 +476,21 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
                 <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelti(new Set(sceltiDelTipo('uscita')))}>{soloTipo(sceltiDelTipo('uscita').length, 'uscita')}</button>
               </>
             ) : (
-              <button type="button" className="sg-btn sg-btn-pieno" onClick={() => { setScrivo(null); setAperto(null); setCambio(true) }}>Cambia voce</button>
+              <>
+                <button type="button" className="sg-btn sg-btn-pieno" onClick={() => { setScrivo(null); setAperto(null); setCambio(true) }}>Cambia voce</button>
+                {esitiLetti.dato && collegabili && (
+                  <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setScrivo(null); setAperto(null); setCambio(false); setCollegando('mano') }}>Collega a una persona</button>
+                )}
+                {esitiLetti.dato && dellaPersona.length > 0 && (
+                  <button
+                    type="button"
+                    className="sg-btn sg-btn-linea"
+                    onClick={() => void scollega()}
+                  >
+                    Scollega
+                  </button>
+                )}
+              </>
             )}
             <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setScelti(new Set()); setCambio(false) }}>Deseleziona</button>
           </div>

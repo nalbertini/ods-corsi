@@ -17,6 +17,7 @@ import { kanjiScritto } from './kanji'
 const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
+import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
 import { richiesteDi, spostaRichieste } from './richiesteProva'
 import { ESTENSIONI } from './richieste'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
@@ -31,6 +32,7 @@ import {
   cosaNonVaAnnulloChiusura,
   cosaNonVaAnnulloMovimento,
   cosaNonVaCambioVoce,
+  LIMITE_CAMBIO_VOCE,
   cosaNonVaChiusura,
   cosaNonVaGiroconto,
   cosaNonVaMovimento,
@@ -123,6 +125,25 @@ export function creaSegreteriaProva(): DatiSegreteria {
     movimenti: a().movimenti ?? [],
     chiusure: a().chiusure ?? [],
   })
+  // Lo storico collegato alle persone: le righe dei movimenti scritti qui o importati, e le schede per nome.
+  const righeDelloStorico = () => righeMovimenti([], contabilita().movimenti, contabilita().voci)
+  const personePerNome = (): PersonaPerNome[] => a().persone.map((p) => ({ id: p.id, nome: p.nome, cognome: p.cognome }))
+  /** I movimenti scelti per id, nell'ordine dato; basta uno che non c'è per fermare tutto, come nel database. */
+  const righeScelte = (ids: string[]) => {
+    const righe = righeDelloStorico()
+    return ids.map((id) => {
+      const r = righe.find((x) => x.id === id && x.origine === 'movimento')
+      if (!r) throw new Error('Il movimento non c’è')
+      return r
+    })
+  }
+  /** Cambia solo l'etichetta e scrive la traccia: importo, data, cassa, voce e testo restano quelli di prima. */
+  const scriviCollegamento = (movimentoId: string, dopo: string | undefined, lotto?: string) => {
+    const movimenti = contabilita().movimenti
+    const prima = movimenti.find((x) => x.id === movimentoId)?.personaId
+    a().movimenti = movimenti.map((x) => (x.id === movimentoId ? { ...x, personaId: dopo } : x))
+    a().collegamentiPersona = [...(a().collegamentiPersona ?? []), { movimentoId, prima, dopo, lotto, quando: new Date().toISOString() }]
+  }
   /** Trenta giorni dopo la scadenza il file se ne va, la data resta: come `pulisci_certificati` del database. */
   const potaCertificati = () => {
     const g = oggi()
@@ -1124,6 +1145,126 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return (a().cambiVoce ?? []).filter((c) => c.movimentoId === id).map(({ movimentoId: _m, ...c }) => c)
     },
 
+    // Lo storico del vecchio programma collegato alla persona (70-movimenti-persona.sql): le stesse regole del database.
+    async riepilogoCollegamentiPersona() {
+      return riepilogoCollegamenti(righeDelloStorico(), personePerNome())
+    },
+
+    async esitiCollegamentiPersona() {
+      return esitiCollegamenti(righeDelloStorico(), personePerNome())
+    },
+
+    async collegaSicuriPersona(lotto, quanti = LIMITE_CAMBIO_VOCE) {
+      if (!Number.isInteger(quanti) || quanti < 1) throw new Error('Scegli almeno un movimento')
+      if (quanti > LIMITE_CAMBIO_VOCE) throw new Error(`Troppi movimenti in una volta: al massimo ${LIMITE_CAMBIO_VOCE}`)
+      if (!lotto) throw new Error('Manca il lotto')
+      const persone = personePerNome()
+      const sicuri = () =>
+        righeDelloStorico()
+          .filter((r) => !cosaNonVaCollegato(r) && !r.personaId && abbinaPersone(nomeDallaCausale(r.descrizione), persone).esito === 'sicuro')
+          .sort((x, y) => x.id.localeCompare(y.id))
+      const daFare = sicuri().slice(0, quanti)
+      for (const r of daFare) scriviCollegamento(r.id, abbinaPersone(nomeDallaCausale(r.descrizione), persone).ids[0], lotto)
+      salva()
+      return { collegati: daFare.length, restano: sicuri().length }
+    },
+
+    async collegaMovimentiPersona(ids, persona) {
+      const elenco = [...new Set(ids)].sort()
+      if (!elenco.length) throw new Error('Scegli almeno un movimento')
+      if (elenco.length > LIMITE_CAMBIO_VOCE) throw new Error(`Troppi movimenti in una volta: al massimo ${LIMITE_CAMBIO_VOCE}`)
+      if (!persona || !a().persone.some((p) => p.id === persona)) throw new Error('Scegli la persona')
+      const scelte = righeScelte(elenco)
+      for (const r of scelte) {
+        const no = cosaNonVaCollegato(r)
+        if (no) throw new Error(no)
+      }
+      let collegati = 0
+      let giaCosi = 0
+      for (const r of scelte) {
+        if (r.personaId === persona) giaCosi++
+        else {
+          scriviCollegamento(r.id, persona)
+          collegati++
+        }
+      }
+      salva()
+      return { collegati, giaCosi }
+    },
+
+    async scollegaMovimentiPersona(ids) {
+      const elenco = [...new Set(ids)].sort()
+      if (!elenco.length) throw new Error('Scegli almeno un movimento')
+      if (elenco.length > LIMITE_CAMBIO_VOCE) throw new Error(`Troppi movimenti in una volta: al massimo ${LIMITE_CAMBIO_VOCE}`)
+      let scollegati = 0
+      let giaSenza = 0
+      for (const r of righeScelte(elenco)) {
+        if (!r.personaId) giaSenza++
+        else {
+          scriviCollegamento(r.id, undefined)
+          scollegati++
+        }
+      }
+      salva()
+      return { scollegati, giaSenza }
+    },
+
+    async togliLottoCollegamenti(lotto) {
+      // Un collegamento a mano non ha lotto: senza lotto non c'è niente da togliere (nel database null non è uguale a null).
+      if (!lotto) return { tolti: 0 }
+      const tracce = a().collegamentiPersona ?? []
+      const daTogliere = righeDelloStorico().filter((r) => {
+        if (!r.personaId) return false
+        const ultima = [...tracce].reverse().find((t) => t.movimentoId === r.id)
+        return !!ultima && ultima.lotto === lotto && ultima.dopo === r.personaId
+      })
+      for (const r of daTogliere) scriviCollegamento(r.id, undefined)
+      salva()
+      return { tolti: daTogliere.length }
+    },
+
+    async candidatiPersonaMovimento(movimento) {
+      const m = contabilita().movimenti.find((x) => x.id === movimento)
+      if (!m) throw new Error('Il movimento non c’è')
+      // Come il database: solo un movimento che si può collegare, se no sarebbe una ricerca per nome sulle schede di chiunque.
+      const no = cosaNonVaCollegato(righeScelte([movimento])[0])
+      if (no) throw new Error(no)
+      const { ids } = abbinaPersone(nomeDallaCausale(m.descrizione), personePerNome())
+      return a()
+        .persone.filter((p) => ids.includes(p.id))
+        .sort((x, y) => x.cognome.localeCompare(y.cognome) || x.nome.localeCompare(y.nome) || x.id.localeCompare(y.id))
+        .map((p) => {
+          // Anno di nascita, corsi e iscrizione servono a distinguere due omonimi: con una persona sola non escono.
+          if (ids.length < 2) return { id: p.id, nome: p.nome, cognome: p.cognome, corsi: [] as string[] }
+          const nato = a().anagrafiche?.[p.id]?.natoIl
+          const iscrizioni = a().iscrizioni.filter((i) => i.personaId === p.id)
+          const dal = iscrizioni.map((i) => i.dal).sort()[0]
+          return {
+            id: p.id,
+            nome: p.nome,
+            cognome: p.cognome,
+            ...(nato ? { annoNascita: Number(nato.slice(0, 4)) } : {}),
+            corsi: iscrizioni.map((i) => a().corsi.find((c) => c.id === i.corsoId)?.nome ?? '').filter(Boolean).sort(),
+            ...(dal ? { iscrittoDal: dal } : {}),
+          }
+        })
+    },
+
+    async storicoPersona(persona) {
+      const { casse, voci, movimenti } = contabilita()
+      return movimenti
+        .filter((x) => x.personaId === persona && !x.annullatoIl)
+        .sort((x, y) => y.data.localeCompare(x.data) || x.id.localeCompare(y.id))
+        .map((x) => ({
+          id: x.id,
+          data: x.data,
+          descrizione: x.descrizione,
+          importo: x.importo,
+          voce: voci.find((v) => v.id === x.voceId)?.nome ?? '—',
+          cassa: casse.find((c) => c.id === x.cassaId)?.nome ?? '—',
+        }))
+    },
+
     async chiusure() {
       return contabilita().chiusure.map((k) => ({ ...k }))
     },
@@ -1466,6 +1607,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if ((a().pagamentiDiretti ?? []).some((x) => x.personaId === personaId))
         throw new Error(`${nome} ha dei pagamenti registrati: non si elimina, gli si toglie l'accesso`)
       a().persone = a().persone.filter((x) => x.id !== personaId)
+      // Come `on delete set null` del database: lo storico collegato resta, senza persona, e la traccia non nomina più nessuno.
+      a().movimenti = (a().movimenti ?? []).map((x) => (x.personaId === personaId ? { ...x, personaId: undefined } : x))
+      a().collegamentiPersona = (a().collegamentiPersona ?? []).map((x) => ({ ...x, prima: x.prima === personaId ? undefined : x.prima, dopo: x.dopo === personaId ? undefined : x.dopo }))
       if (a().pin) {
         const { [personaId]: _, ...altri } = a().pin!
         a().pin = altri
@@ -1565,6 +1709,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
         .filter((x) => !(x.personaId === via && tessere.some((y) => y.personaId === resta && y.ente === x.ente && y.tipo === x.tipo && y.dal === x.dal)))
         .map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
       a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+      // Lo storico collegato passa a chi resta, e con lui la traccia: come `unisci_persone`, che sposta ogni tabella che punta a `persone`.
+      a().movimenti = (a().movimenti ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+      a().collegamentiPersona = (a().collegamentiPersona ?? []).map((x) => ({ ...x, prima: x.prima === via ? resta : x.prima, dopo: x.dopo === via ? resta : x.dopo }))
       const an = a().anagrafiche ?? {}
       if (an[via]) {
         const { [via]: suaA, ...altre } = an

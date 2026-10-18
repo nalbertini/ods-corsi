@@ -1,0 +1,48 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Movimenti e persona · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Elenco.dc.html",
+   "title": "MOVIMENTI · di chi è ogni pagamento",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Riepilogo.dc.html",
+   "title": "Collega i casi sicuri, i dubbi, gli esiti",
+   "x": 1520,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Scheda.dc.html",
+   "title": "La scheda: quota e pagamenti, con lo storico",
+   "x": 0,
+   "y": 1700,
+   "page": "page-1"
+  },
+  {
+   "file": "Telefono.dc.html",
+   "title": "Sul telefono",
+   "x": 1520,
+   "y": 1700,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Movimenti dello storico collegati alla persona"
+  }
+ ]
+}

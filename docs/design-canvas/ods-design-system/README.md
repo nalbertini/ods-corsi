@@ -31,7 +31,9 @@ Google, e vale solo per i mockup.
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
 | `TimerLinea.dc.html` | `LineaDelTempo`: un blocco per passo, che si colora via via |
-| `BarraScelta.dc.html` | La barra dei movimenti scelti in CONTABILITÀ → MOVIMENTI (`.sg-barra-scelta`): «N SCELTI», uscite o entrate e il totale, CAMBIA VOCE e DESELEZIONA; con scelta mista SOLO LE N ENTRATE / SOLO LE N USCITE al posto di CAMBIA VOCE (`misto`) |
+| `BarraScelta.dc.html` | La barra dei movimenti scelti in CONTABILITÀ → MOVIMENTI (`.sg-barra-scelta`): «N SCELTI», uscite o entrate e il totale, CAMBIA VOCE e DESELEZIONA; con scelta mista SOLO LE N ENTRATE / SOLO LE N USCITE al posto di CAMBIA VOCE (`misto`); `collega` aggiunge COLLEGA A UNA PERSONA (entrate dello storico) e `scollega` SCOLLEGA (almeno uno già collegato) |
+| `SceltaPersona.dc.html` | Una persona da scegliere fra due omonimi (`SchedaCandidata`, `.sg-scelta-persona`): cerchietto, cognome e nome, e sotto anno di nascita, corsi e iscrizione; `scelta` mette bordo `text` e fondo `surface-2` |
+| `RigaStorico.dc.html` | Una riga del blocco «Dal vecchio programma» nella scheda di una persona (`.sg-riga-storico`): data, causale con voce e cassa sotto, importo; lo storico non si somma ai pagamenti dell'app |
 | `Titoletto.dc.html` | `Titoletto` di `ds.tsx`: l'etichetta spaziata con la riga |
 | `Testata.dc.html` | `Testata` di `App.tsx`: marchio, luogo, guida e tema (misura del telefono) |
 | `Passi.dc.html` | `.sg-passi` di `Importa.tsx`: I FOGLI, IL CONTROLLO, NELL'APP, con quello corrente acceso |

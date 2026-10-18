@@ -897,5 +897,54 @@ console.log('\n36. Contabilita.tsx cambia la voce dopo il riepilogo, a pacchetti
   ok('il movimento aperto legge la traccia', tsx.includes('cambiVoceMovimento('), true)
 }
 
+console.log('\n37. collegare alla persona: le righe dell\'elenco portano chiave dell\'import e persona, e cosaNonVaCollegato le legge (supabase/70-movimenti-persona.sql)')
+{
+  // Un build a parte: se il modulo non c'è ancora, fallisce questa sezione e non le altre.
+  const persona = await build({
+    stdin: { contents: "export { cosaNonVaCollegato } from './src/lib/movimentiPersona'", resolveDir: '.', loader: 'ts' },
+    bundle: true,
+    format: 'esm',
+    platform: 'node',
+    write: false,
+    logLevel: 'silent',
+    define: { 'import.meta.env': '{}' },
+  }).then(
+    (r) => import('data:text/javascript;base64,' + Buffer.from(r.outputFiles[0].text).toString('base64')),
+    (e) => ({ errore: e.errors?.[0]?.text ?? e.message }),
+  )
+  ok('il modulo src/lib/movimentiPersona.ts c\'è', persona.errore ?? 'c\'è', 'c\'è')
+  const vv = [
+    ...voci,
+    { id: 'v-dc', nome: 'Da classificare', tipo: 'entrata', diSistema: false, attiva: true },
+    { id: 'v-difE', nome: 'Differenza di cassa', tipo: 'entrata', diSistema: true, attiva: true },
+  ]
+  const mv = (id, o) => ({ id, tipo: 'entrata', data: '2025-03-04', importo: 3000, voceId: 'v-corsi', cassaId: 'c2', descrizione: 'Cliente Giulia Verdelli per extra', creatoIl: '2025-03-04T10:00:00Z', origineImport: 'prima-nota:1', ...o })
+  const manuali = [
+    mv('s1'),
+    mv('s2', { personaId: 'p1', voceId: 'v-quota' }),
+    mv('s3', { origineImport: undefined, descrizione: 'Cliente Giulia Verdelli per mano' }),
+    mv('s4', { voceId: 'v-dc' }),
+    mv('s5', { tipo: 'uscita', voceId: 'v-aff' }),
+    mv('s6', { annullatoIl: '2025-03-05T00:00:00Z' }),
+    mv('s7', { tipo: 'giroconto', voceId: undefined, cassaAId: 'c1', origineImport: undefined, descrizione: 'Giroconto' }),
+    mv('s8', { voceId: 'v-difE', origineImport: undefined, descrizione: 'Differenza di cassa', data: '2026-09-07' }),
+  ]
+  const righe = m.righeMovimenti([], manuali, vv)
+  const riga = (id) => righe.find((r) => r.id === id)
+  ok('una riga porta la chiave dell\'import e la persona dei movimenti', [riga('s1')?.origineImport, riga('s2')?.personaId, riga('s3')?.origineImport], ['prima-nota:1', 'p1', undefined])
+  const no = (id) => prova(() => persona.cosaNonVaCollegato(riga(id)))
+  ok('l\'entrata dello storico su una voce di sistema, con o senza persona: niente da dire', [no('s1'), no('s2')], [null, null])
+  ok('una voce che non è un incasso', no('s4'), 'Il movimento del 04/03/2025 (Cliente Giulia Verdelli per extra) è su «Da classificare»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»')
+  ok('un\'uscita', no('s5'), 'Il movimento del 04/03/2025 (Cliente Giulia Verdelli per extra) è un’uscita: si collegano solo le entrate')
+  ok('a mano', no('s3'), 'Il movimento del 04/03/2025 (Cliente Giulia Verdelli per mano) non viene dal vecchio programma: non si collega')
+  ok('un annullato', no('s6'), 'Il movimento del 04/03/2025 (Cliente Giulia Verdelli per extra) è annullato: non si collega')
+  ok('un giroconto', no('s7'), 'Un giroconto non ha una persona')
+  ok('la differenza di una chiusura', no('s8'), 'Il movimento del 07/09/2026 (Differenza di cassa) è scritto dalla chiusura di cassa: non si collega')
+  ok('gli incassi degli iscritti non sono movimenti: nessuna chiave, nessuna persona', prova(() => {
+    const incasso = m.righeMovimenti([{ id: 'incasso:1', origine: 'ricevuta', tipo: 'entrata', data: '2026-09-01', importo: 100, descrizione: 'Rossi', voce: 'Quota associativa', cassaId: 'c2', annullato: false }], [], vv)[0]
+    return [incasso.origineImport, incasso.personaId, persona.cosaNonVaCollegato(incasso)]
+  }), [undefined, undefined, 'Il movimento del 01/09/2026 (Rossi) non viene dal vecchio programma: non si collega'])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

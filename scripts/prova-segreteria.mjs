@@ -3818,6 +3818,224 @@ await sezione('cambiare la voce di un movimento (67-cambia-voce.sql): stesse reg
   await s.annullaChiusuraCassa(k)
 })
 
+await sezione('collegare lo storico alla persona (70-movimenti-persona.sql): stesse regole del database', async () => {
+  const L = ['11111111-aaaa-0000-0000-000000000001', '11111111-aaaa-0000-0000-000000000002', '11111111-aaaa-0000-0000-000000000003']
+  const ent = await s.salvaVoce({ nome: 'Non classificato', tipo: 'entrata' })
+  const usc = await s.salvaVoce({ nome: 'Spese vecchie', tipo: 'uscita' })
+  const nuova = (nome, cognome) => s.salvaPersona({ nome, cognome })
+  const giulia = await nuova('Giulia', 'Verdelli')
+  const marco = await nuova('Marco', 'Biancardi')
+  const sara1 = await nuova('Sara', 'Nerini')
+  const sara2 = await nuova('Sara', 'Nerini')
+  const elena = await nuova('Elena', 'D\'Angelo')
+  const mgrazia = await nuova('Maria Grazia', 'Fontanelli')
+  const jose = await nuova('José', 'Ferraresi')
+  const anna = await nuova('Anna', 'Altra')
+  // Anno di nascita e corso: servono a scegliere fra due omonime.
+  const corso = (await s.corsi()).find((c) => c.id === 'lotta-2')
+  m.archivio.dati.anagrafiche[sara1] = { natoIl: '2010-02-03' }
+  m.archivio.dati.anagrafiche[sara2] = { natoIl: '2012-07-09' }
+  // Giulia è minorenne e iscritta a un corso: se è la sola candidata, di lei non si dice né l'anno né il corso.
+  m.archivio.dati.anagrafiche[giulia] = { natoIl: '2016-05-04' }
+  m.archivio.dati.iscrizioni = [...m.archivio.dati.iscrizioni, { corsoId: 'lotta-2', personaId: giulia, dal: '2022-09-05' }]
+  m.archivio.dati.iscrizioni = [...m.archivio.dati.iscrizioni, { corsoId: 'lotta-2', personaId: sara1, dal: '2024-09-10' }]
+  // Lo storico del vecchio programma: la modalità prova non ha l'import, lo si semina nell'archivio con la sua chiave.
+  const st = (n, data, importo, descrizione, o = {}) => ({ id: `st${n}`, tipo: 'entrata', data, importo, voceId: cx.corsi, cassaId: cx.conto, descrizione, creatoIl: `${data}T10:00:00.000Z`, origineImport: `prima-nota:${n}`, ...o })
+  m.archivio.dati.movimenti = [
+    ...(m.archivio.dati.movimenti ?? []),
+    st(1, '2025-09-02', 31000, 'Cliente Giulia Verdelli per annuale judo kids'),
+    st(2, '2025-09-03', 3000, 'Cliente VERDELLI GIULIA per quota associativa', { voceId: cx.quota }),
+    st(3, '2026-09-03', 4700, 'Cliente Marco Biancardi per mensile judo', { cassaId: cx.contanti }),
+    st(4, '2025-10-05', 4500, 'Cliente Sara Nerini per mensile judo'),
+    st(5, '2025-11-05', 4500, 'Cliente Nerini Sara per mensile judo'),
+    st(6, '2024-10-10', 6000, 'Cliente Paolo Gialloni per quota associativa', { voceId: cx.quota }),
+    st(7, '2024-10-15', 5200, 'Cliente Elena D\'Angelo per corso danza'),
+    st(8, '2025-01-20', 5500, 'Cliente Maria Grazia Fontanelli per corso'),
+    st(9, '2023-11-05', 2000, 'Cliente Jose Ferraresi per quota associativa', { voceId: cx.quota }),
+    st(10, '2025-03-01', 1500, 'Bonifico anonimo per quota', { voceId: cx.quota }),
+    st(11, '2025-03-02', 7000, 'Cliente Giulia Verdelli per regalo', { voceId: ent }),
+    st(12, '2025-03-03', 8000, 'Cliente Giulia Verdelli per rimborso', { tipo: 'uscita', voceId: usc }),
+    st(13, '2025-03-04', 1000, 'Cliente Giulia Verdelli per extra', { annullatoIl: '2025-03-05T10:00:00.000Z' }),
+    st(14, '2026-05-10', 2500, 'Cliente\nJOSÈ  FERRARESI\nper mensile'),
+  ]
+  await s.registraMovimento({ tipo: 'entrata', data: '2026-09-10', importo: 3000, voceId: cx.quota, cassaId: cx.conto, descrizione: 'Cliente Giulia Verdelli per mano' })
+  await s.registraGiroconto({ daCassaId: cx.contanti, aCassaId: cx.conto, data: '2026-09-06', importo: 1000 })
+  const k = await s.chiudiCassa({ cassaId: cx.contanti, data: '2026-09-07', contato: 100 })
+  const per = async (id) => (await s.movimenti()).find((x) => x.id === id)
+  const di = async (n) => (await per(`st${n}`)).personaId
+  const stato = async () => stabile(await Promise.all([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(di)))
+  const idsGiro = (await s.movimenti()).find((x) => x.tipo === 'giroconto' && !x.annullatoIl)?.id
+  const idMano = (await s.movimenti()).find((x) => x.descrizione === 'Cliente Giulia Verdelli per mano').id
+  const idDiff = (await s.movimenti()).find((x) => x.descrizione === 'Differenza di cassa' && !x.annullatoIl)?.id
+  const senzaPersona = async () => stabile((await s.movimenti()).map(({ personaId: _p, ...r }) => r))
+  const chiusura = async () => stabile((await s.chiusure()).find((x) => x.id === k))
+  const dopoChiusura = await chiusura()
+  const prima = await senzaPersona()
+  const senzaCampione = ({ campione: _c, ...r }) => stabile(r)
+
+  const r0 = await s.riepilogoCollegamentiPersona()
+  ok('il riepilogo: 7 sicuri di 5 persone, 2 omonimi da decidere, 2 senza scheda, nessuno già collegato', senzaCampione(r0), stabile({
+    sicuri: { movimenti: 7, persone: 5, centesimi: 53900, dal: '2023-11-05', al: '2026-09-03' },
+    daDecidere: { movimenti: 2, centesimi: 9000 },
+    senzaScheda: { movimenti: 2, centesimi: 7500 },
+    giaCollegati: 0,
+  }))
+  ok('…il campione ha cinque esempi con causale e persona', [r0.campione.length, r0.campione.every((c) => typeof c.causale === 'string' && typeof c.persona === 'string')], [5, true])
+  ok('il riepilogo non scrive niente', [await stato(), await senzaPersona()], [stabile(Array(14).fill(null).map(() => undefined)), prima])
+
+  console.log('   gli esiti per riga (i tag dell\'elenco)')
+  const esiti = async () => (await s.esitiCollegamentiPersona()).map((e) => `${e.id}:${e.esito}`).sort()
+  const conta = async () => {
+    const e = await s.esitiCollegamentiPersona()
+    return ['sicuro', 'omonimi', 'nessuna'].map((x) => e.filter((y) => y.esito === x).length)
+  }
+  const dalRiepilogo = async () => {
+    const r = await s.riepilogoCollegamentiPersona()
+    return [r.sicuri.movimenti, r.daDecidere.movimenti, r.senzaScheda.movimenti]
+  }
+  ok('gli esiti: sicuri, omonimi e senza scheda; non ci sono uscite, giroconti, annullati, il movimento a mano né la differenza', await esiti(), [
+    'st1:sicuro', 'st10:nessuna', 'st14:sicuro', 'st2:sicuro', 'st3:sicuro', 'st4:omonimi', 'st5:omonimi', 'st6:nessuna', 'st7:sicuro', 'st8:sicuro', 'st9:sicuro',
+  ].sort())
+  ok('…gli stessi numeri del riepilogo', await conta(), await dalRiepilogo())
+
+  console.log('   a mano: una persona sola, correggere, scollegare')
+  ok('un movimento a una persona (per sbaglio, apposta)', stabile(await s.collegaMovimentiPersona(['st2'], marco)), stabile({ collegati: 1, giaCosi: 0 }))
+  const rMano = await s.riepilogoCollegamentiPersona()
+  ok('…il riepilogo ora: sei sicuri, uno già collegato', [stabile(rMano.sicuri), rMano.giaCollegati], [stabile({ movimenti: 6, persone: 5, centesimi: 50900, dal: '2023-11-05', al: '2026-09-03' }), 1])
+
+  console.log('   il blocco dei sicuri')
+  ok('collega i sei sicuri, ne restano zero', stabile(await s.collegaSicuriPersona(L[0], 500)), stabile({ collegati: 6, restano: 0 }))
+  ok('…ognuno alla sua scheda (cognome e nome, accento, apostrofo, nome doppio, a capo); gli omonimi, Paolo e l\'anonimo no; il «VERDELLI» di Marco non si sposta',
+    [await di(1), await di(2), await di(3), await di(4), await di(5), await di(6), await di(7), await di(8), await di(9), await di(10), await di(11), await di(12), await di(13), await di(14)],
+    [giulia, marco, marco, undefined, undefined, undefined, elena, mgrazia, jose, undefined, undefined, undefined, undefined, jose])
+  ok('…importi, date, casse, voci e testi sono quelli di prima', await senzaPersona(), prima)
+  ok('…la chiusura è quella di prima (il giorno chiuso si è collegato lo stesso)', await chiusura(), dopoChiusura)
+  ok('dopo il blocco restano negli esiti solo omonimi e senza scheda (e il «VERDELLI» collegato a mano è uscito)', [await esiti(), await conta(), await dalRiepilogo()], [['st10:nessuna', 'st4:omonimi', 'st5:omonimi', 'st6:nessuna'], [0, 2, 2], [0, 2, 2]])
+  ok('rilanciato con un lotto nuovo: niente da collegare', stabile(await s.collegaSicuriPersona(L[1])), stabile({ collegati: 0, restano: 0 }))
+  const r1 = await s.riepilogoCollegamentiPersona()
+  ok('…il riepilogo: nessun sicuro, sette già collegati, campione vuoto', [stabile(r1.sicuri), r1.giaCollegati, r1.campione], [stabile({ movimenti: 0, persone: 0, centesimi: 0, dal: null, al: null }), 7, []])
+  ok('quanti = 0', await errore(() => s.collegaSicuriPersona(L[2], 0)), 'Scegli almeno un movimento')
+  ok('cinquecentouno in un colpo', await errore(() => s.collegaSicuriPersona(L[2], 501)), 'Troppi movimenti in una volta: al massimo 500')
+  ok('senza lotto (vuoto o mancante)', [await errore(() => s.collegaSicuriPersona('')), await errore(() => s.collegaSicuriPersona(undefined))], ['Manca il lotto', 'Manca il lotto'])
+  ok('togliere un lotto vuoto o mancante: niente da togliere, nessun errore', [stabile(await s.togliLottoCollegamenti('')), stabile(await s.togliLottoCollegamenti(undefined))], [stabile({ tolti: 0 }), stabile({ tolti: 0 })])
+
+  console.log('   correggere, gli omonimi, scollegare, il giorno chiuso')
+  ok('«VERDELLI GIULIA»: da Marco a Giulia', stabile(await s.collegaMovimentiPersona(['st2'], giulia)), stabile({ collegati: 1, giaCosi: 0 }))
+  ok('rifatto uguale: già così', stabile(await s.collegaMovimentiPersona(['st2'], giulia)), stabile({ collegati: 0, giaCosi: 1 }))
+  ok('i candidati di una causale con due omonime: le due, con anno di nascita e corso della prima', stabile((await s.candidatiPersonaMovimento('st4')).sort((a, b) => a.annoNascita - b.annoNascita).map((c) => [c.id, c.nome, c.cognome, c.annoNascita, c.corsi, c.iscrittoDal ?? '-'])), stabile([
+    [sara1, 'Sara', 'Nerini', 2010, [corso.nome], '2024-09-10'],
+    [sara2, 'Sara', 'Nerini', 2012, [], '-'],
+  ]))
+  ok('…anche scritta alla rovescia', (await s.candidatiPersonaMovimento('st5')).map((c) => c.id).sort(), [sara1, sara2].sort())
+  ok('…una sola per Giulia, con la causale a capo e l\'accento José, nessuna per Paolo o l\'anonimo', [(await s.candidatiPersonaMovimento('st1')).map((c) => c.id), (await s.candidatiPersonaMovimento('st14')).map((c) => c.id), await s.candidatiPersonaMovimento('st6'), await s.candidatiPersonaMovimento('st10')], [[giulia], [jose], [], []])
+  ok('i candidati di un movimento che non c\'è', await errore(() => s.candidatiPersonaMovimento('non-c-e')), 'Il movimento non c’è')
+  ok('con una candidata sola: id, nome e cognome; anno di nascita, corsi e iscritta dal restano vuoti', (await s.candidatiPersonaMovimento('st1')).map((c) => [c.id, c.nome, c.cognome, c.annoNascita ?? null, c.corsi, c.iscrittoDal ?? null]), [[giulia, 'Giulia', 'Verdelli', null, [], null]])
+  const frasiCandidati = [
+    ['un movimento a mano col nome di una minorenne', idMano, 'Il movimento del 10/09/2026 (Cliente Giulia Verdelli per mano) non viene dal vecchio programma: non si collega'],
+    ['un\'uscita', 'st12', 'Il movimento del 03/03/2025 (Cliente Giulia Verdelli per rimborso) è un’uscita: si collegano solo le entrate'],
+    ['un annullato', 'st13', 'Il movimento del 04/03/2025 (Cliente Giulia Verdelli per extra) è annullato: non si collega'],
+    ['un\'entrata su un\'altra voce', 'st11', 'Il movimento del 02/03/2025 (Cliente Giulia Verdelli per regalo) è su «Non classificato»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»'],
+    ['un giroconto', idsGiro, 'Un giroconto non ha una persona'],
+    ['la differenza di una chiusura', idDiff, 'Il movimento del 07/09/2026 (Differenza di cassa) è scritto dalla chiusura di cassa: non si collega'],
+  ]
+  for (const [cosa, id, frase] of frasiCandidati) ok(`candidati, ${cosa}: rifiutati con la frase del collegamento`, await errore(() => s.candidatiPersonaMovimento(id)), frase)
+  ok('…e di una minorenne non esce l\'anno di nascita', /2016/.test(await errore(() => s.candidatiPersonaMovimento(idMano))), false)
+  ok('la prima Sara Nerini; lo stesso id due volte conta una', stabile(await s.collegaMovimentiPersona(['st4', 'st4'], sara1)), stabile({ collegati: 1, giaCosi: 0 }))
+  ok('la seconda all\'altra', stabile(await s.collegaMovimentiPersona(['st5'], sara2)), stabile({ collegati: 1, giaCosi: 0 }))
+  ok('un movimento ha una persona sola: spostato sull\'altra', [stabile(await s.collegaMovimentiPersona(['st4'], sara2)), await di(4)], [stabile({ collegati: 1, giaCosi: 0 }), sara2])
+  await s.collegaMovimentiPersona(['st4'], sara1)
+  ok('scollegare: il quinto sì, il sesto non aveva nessuno', stabile(await s.scollegaMovimentiPersona(['st5', 'st6'])), stabile({ scollegati: 1, giaSenza: 1 }))
+  ok('…rifatto: nessuno da scollegare', stabile(await s.scollegaMovimentiPersona(['st5', 'st6'])), stabile({ scollegati: 0, giaSenza: 2 }))
+  ok('…scollegato, il quinto rientra negli esiti come omonimo', [(await esiti()).includes('st5:omonimi'), await conta(), await dalRiepilogo()], [true, [0, 1, 2], [0, 1, 2]])
+  ok('il giorno chiuso (3 settembre, chiusa al 7) cambia scheda', [stabile(await s.collegaMovimentiPersona(['st3'], giulia)), await di(3)], [stabile({ collegati: 1, giaCosi: 0 }), giulia])
+  ok('…la chiusura è quella di prima', await chiusura(), dopoChiusura)
+  ok('…il giorno è ancora chiuso', await errore(() => s.registraMovimento({ tipo: 'entrata', data: '2026-09-06', importo: 100, voceId: cx.quota, cassaId: cx.contanti, descrizione: 'No' })), MSG_CHIUSO)
+  ok('niente di questo ha toccato un importo, una data, una cassa, una voce', await senzaPersona(), prima)
+
+  console.log('   quel che non va si rifiuta, tutto o niente')
+  const tutto = async () => stabile(await s.movimenti())
+  const stato0 = await tutto()
+  const rifiuti = [
+    ['nessun movimento', [], giulia, 'Scegli almeno un movimento'],
+    ['cinquecentouno movimenti', Array.from({ length: 501 }, (_, i) => `x${i}`), giulia, 'Troppi movimenti in una volta: al massimo 500'],
+    ['senza persona', ['st6'], '', 'Scegli la persona'],
+    ['una persona che non c\'è', ['st6'], 'non-c-e', 'Scegli la persona'],
+    ['un movimento che non c\'è', ['non-c-e'], giulia, 'Il movimento non c’è'],
+    ['un annullato', ['st13'], giulia, 'Il movimento del 04/03/2025 (Cliente Giulia Verdelli per extra) è annullato: non si collega'],
+    ['un giroconto', [idsGiro], giulia, 'Un giroconto non ha una persona'],
+    ['un\'uscita', ['st12'], giulia, 'Il movimento del 03/03/2025 (Cliente Giulia Verdelli per rimborso) è un’uscita: si collegano solo le entrate'],
+    ['la differenza di una chiusura', [idDiff], giulia, 'Il movimento del 07/09/2026 (Differenza di cassa) è scritto dalla chiusura di cassa: non si collega'],
+    ['un movimento a mano, anche su «Quota associativa» e con un nome nel testo', [idMano], giulia, 'Il movimento del 10/09/2026 (Cliente Giulia Verdelli per mano) non viene dal vecchio programma: non si collega'],
+    ['un\'entrata su un\'altra voce', ['st11'], giulia, 'Il movimento del 02/03/2025 (Cliente Giulia Verdelli per regalo) è su «Non classificato»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»'],
+    ['uno cattivo in fondo ferma tutto e dice quale', ['st5', 'st6', 'st11'], sara2, 'Il movimento del 02/03/2025 (Cliente Giulia Verdelli per regalo) è su «Non classificato»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»'],
+  ]
+  for (const [cosa, ids, persona, messaggio] of rifiuti) ok(cosa, await errore(() => s.collegaMovimentiPersona(ids, persona)), messaggio)
+  ok('scollegare: nessun movimento', await errore(() => s.scollegaMovimentiPersona([])), 'Scegli almeno un movimento')
+  ok('scollegare: cinquecentouno', await errore(() => s.scollegaMovimentiPersona(Array.from({ length: 501 }, (_, i) => `x${i}`))), 'Troppi movimenti in una volta: al massimo 500')
+  ok('scollegare: un movimento che non c\'è', await errore(() => s.scollegaMovimentiPersona(['non-c-e'])), 'Il movimento non c’è')
+  ok('dei rifiuti non è rimasto niente', await tutto(), stato0)
+
+  console.log('   TOGLI QUESTO LOTTO')
+  await s.collegaMovimentiPersona(['st8'], anna)
+  ok('si toglie il lotto: tornano senza persona solo i quattro che nessuno ha toccato', stabile(await s.togliLottoCollegamenti(L[0])), stabile({ tolti: 4 }))
+  ok('…quelli ricollegati a mano restano dove li ha messi la mano', await stato(), stabile([undefined, giulia, giulia, sara1, undefined, undefined, undefined, anna, undefined, undefined, undefined, undefined, undefined, undefined]))
+  ok('togliere due volte lo stesso lotto, o un lotto che non c\'è: niente da togliere', [stabile(await s.togliLottoCollegamenti(L[0])), stabile(await s.togliLottoCollegamenti('11111111-aaaa-0000-0000-000000000099'))], [stabile({ tolti: 0 }), stabile({ tolti: 0 })])
+  ok('…tolto il lotto, i conti sono uguali', await senzaPersona(), prima)
+  const r2 = await s.riepilogoCollegamentiPersona()
+  ok('gli esiti ritrovano i quattro sicuri, come il riepilogo', [await conta(), await dalRiepilogo()], [[4, 1, 2], [4, 1, 2]])
+  ok('il riepilogo ritrova i quattro sicuri (Giulia, Elena, José)', [stabile(r2.sicuri), r2.giaCollegati], [stabile({ movimenti: 4, persone: 3, centesimi: 40700, dal: '2023-11-05', al: '2026-05-10' }), 4])
+  ok('un altro blocco: i quattro tornano, i due di un\'altra persona non si spostano', [stabile(await s.collegaSicuriPersona(L[2])), (await di(3)) === giulia, (await di(8)) === anna], [stabile({ collegati: 4, restano: 0 }), true, true])
+  await s.collegaMovimentiPersona(['st3'], marco)
+  await s.collegaMovimentiPersona(['st8'], mgrazia)
+  // Un lotto collega, poi si scollega e si ricollega a mano alla STESSA persona: togliere il lotto non lo tocca.
+  const tullia = await nuova('Tullia', 'Bruni')
+  m.archivio.dati.movimenti = [...m.archivio.dati.movimenti, st(29, '2025-05-05', 2800, 'Cliente Tullia Bruni per quota', { voceId: cx.quota })]
+  ok('il lotto 4 collega Tullia (è l\'unico sicuro rimasto)', stabile(await s.collegaSicuriPersona('11111111-aaaa-0000-0000-000000000004')), stabile({ collegati: 1, restano: 0 }))
+  await s.scollegaMovimentiPersona(['st29'])
+  await s.collegaMovimentiPersona(['st29'], tullia)
+  ok('togliere il lotto 4: niente, l\'ultima parola è della mano; Tullia resta collegata', [stabile(await s.togliLottoCollegamenti('11111111-aaaa-0000-0000-000000000004')), (await di(29)) === tullia], [stabile({ tolti: 0 }), true])
+
+  console.log('   lo storico di una scheda')
+  const sto = async (p) => (await s.storicoPersona(p)).map((r) => `${r.data}|${r.descrizione}|${r.importo}|${r.voce}|${r.cassa}`)
+  ok('lo storico di Giulia: due movimenti, dal più recente, con voce e cassa', await sto(giulia), [
+    '2025-09-03|Cliente VERDELLI GIULIA per quota associativa|3000|Quota associativa|Conto Corrente',
+    '2025-09-02|Cliente Giulia Verdelli per annuale judo kids|31000|Corsi e altri pagamenti|Conto Corrente',
+  ])
+  ok('lo storico di Marco: il giorno chiuso, in contanti', await sto(marco), ['2026-09-03|Cliente Marco Biancardi per mensile judo|4700|Corsi e altri pagamenti|Cassa Contanti'])
+  ok('una scheda senza storico, o che non c\'è: nessuno', [await sto(sara2), await sto('non-c-e')], [[], []])
+  ok('un movimento annullato dopo il collegamento: l\'etichetta resta, esce dallo storico', await (async () => {
+    await s.collegaMovimentiPersona(['st7'], elena)
+    const prima = (await sto(elena)).length
+    await s.annullaMovimento('st7')
+    return [prima, (await sto(elena)).length, (await di(7)) === elena]
+  })(), [1, 0, true])
+
+  console.log('   due schede che sono la stessa persona')
+  const carlo1 = await nuova('Carlo', 'Salvi')
+  const carlo2 = await nuova('Carlo', 'Salvi')
+  m.archivio.dati.movimenti = [...m.archivio.dati.movimenti, st(16, '2025-04-01', 3500, 'Cliente Carlo Salvi per mensile'), st(17, '2025-04-02', 3000, 'Cliente Salvi Carlo per quota', { voceId: cx.quota })]
+  const r3 = await s.riepilogoCollegamentiPersona()
+  ok('con due Carlo Salvi gli esiti dicono omonimi, come il riepilogo', [(await esiti()).filter((e) => /^st1[67]:/.test(e)), await conta(), await dalRiepilogo()], [['st16:omonimi', 'st17:omonimi'], [0, 3, 2], [0, 3, 2]])
+  ok('con due Carlo Salvi il blocco non decide: da decidere, mai in blocco', [stabile(r3.sicuri.movimenti), stabile(r3.daDecidere), stabile(await s.collegaSicuriPersona(L[2]))], [stabile(0), stabile({ movimenti: 3, centesimi: 11000 }), stabile({ collegati: 0, restano: 0 })])
+  await s.collegaMovimentiPersona(['st16'], carlo1)
+  await s.collegaMovimentiPersona(['st17'], carlo2)
+  await s.unisciPersone(carlo1, carlo2)
+  ok('unite le schede, i movimenti di chi se ne va sono di chi resta', [await di(16), await di(17)], [carlo1, carlo1])
+  ok('…lo storico di chi resta li ha tutti e due', (await sto(carlo1)).length, 2)
+  ok('…e la scheda che se ne va non c\'è più', (await s.persone()).some((p) => p.id === carlo2), false)
+
+  console.log('   un istruttore eliminato: come «on delete set null»')
+  const ugo = await s.salvaPersonale({ nome: 'Ugo', cognome: 'Tirocinante', email: 'ugo.tirocinante@esempio.it', ruolo: 'istruttore' })
+  await s.collegaMovimentiPersona(['st10'], ugo)
+  const traccia = () => m.archivio.dati.collegamentiPersona ?? []
+  ok('prima: il movimento è suo e la traccia lo nomina', [await di(10), traccia().some((x) => x.movimentoId === 'st10' && x.dopo === ugo)], [ugo, true])
+  await s.eliminaIstruttore(ugo)
+  ok('eliminato: il movimento resta, senza persona', [(await per('st10')) !== undefined, await di(10)], [true, undefined])
+  ok('…e la traccia non nomina più la sua scheda (né prima né dopo), ma la riga c\'è ancora', [traccia().some((x) => x.prima === ugo || x.dopo === ugo), traccia().some((x) => x.movimentoId === 'st10')], [false, true])
+
+  await s.annullaChiusuraCassa(k)
+})
+
 // ---- Il database vero: le chiamate giuste, e il file 59 che può mancare.
 const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
 const tabelleContab = {
@@ -3943,6 +4161,69 @@ await sezione('cambiare la voce sul database (client finto): senza 67-cambia-voc
   for (const [codice, messaggio] of [['PGRST205', (t) => `Could not find the table 'public.${t}' in the schema cache`], ['42P01', (t) => `relation "${t}" does not exist`]])
     ok(`senza 67: la traccia (${codice}) dice quale file lanciare`, await errore(() => senzaTabella(codice, messaggio).cambiVoceMovimento('m1')), MANCA_CAMBIA_VOCE)
   ok('senza 59 il messaggio resta quello della contabilità', await errore(() => clientContab({ funzione: (f) => ({ data: null, error: { code: 'PGRST202', message: `Could not find the function public.${f} in the schema cache` } }) }).db.annullaMovimento('m1')), MANCA_CONTABILITA)
+})
+
+// ---- Collegare lo storico alla persona sul database vero: le chiamate giuste, e il file 70 che può mancare.
+const MANCA_MOVIMENTI_PERSONA = 'Il database non è ancora aggiornato per collegare i movimenti alle persone: va lanciato 70-movimenti-persona.sql'
+const LOTTO = '11111111-aaaa-0000-0000-000000000001'
+
+await sezione('collegare lo storico alla persona sul database (client finto): le funzioni giuste coi parametri giusti', async () => {
+  const chiama = async (risposta, f) => {
+    const { db, chiamate } = clientContab({ funzione: () => ({ data: risposta, error: null }) })
+    const r = await f(db)
+    return [r, chiamate.at(-1)]
+  }
+  const [rie, cRie] = await chiama({ sicuri: { movimenti: 7, persone: 5, centesimi: 53900, dal: '2023-11-05', al: '2026-09-03' }, da_decidere: { movimenti: 2, centesimi: 9000 }, senza_scheda: { movimenti: 2, centesimi: 7500 }, gia_collegati: 1, campione: [{ causale: 'Cliente Giulia Verdelli per quota', persona: 'Giulia Verdelli' }] }, (db) => db.riepilogoCollegamentiPersona())
+  ok('il riepilogo: la funzione, e i nomi del database in camelCase', [cRie[0], stabile(rie)], ['riepilogo_collegamenti_persona', stabile({
+    sicuri: { movimenti: 7, persone: 5, centesimi: 53900, dal: '2023-11-05', al: '2026-09-03' },
+    daDecidere: { movimenti: 2, centesimi: 9000 },
+    senzaScheda: { movimenti: 2, centesimi: 7500 },
+    giaCollegati: 1,
+    campione: [{ causale: 'Cliente Giulia Verdelli per quota', persona: 'Giulia Verdelli' }],
+  })])
+  const [sic, cSic] = await chiama({ collegati: 3, restano: 4 }, (db) => db.collegaSicuriPersona(LOTTO, 3))
+  ok('il blocco: lotto e quanti, collegati e restano', [stabile(sic), stabile(cSic)], [stabile({ collegati: 3, restano: 4 }), stabile(['collega_sicuri_persona', { lotto: LOTTO, quanti: 3 }])])
+  const [man, cMan] = await chiama({ collegati: 2, gia_cosi: 1 }, (db) => db.collegaMovimentiPersona(['m1', 'm2', 'm3'], 'p1'))
+  ok('a mano: gli id e la persona, collegati e già così', [stabile(man), stabile(cMan)], [stabile({ collegati: 2, giaCosi: 1 }), stabile(['collega_movimenti_persona', { ids: ['m1', 'm2', 'm3'], persona: 'p1' }])])
+  const [scol, cScol] = await chiama({ scollegati: 1, gia_senza: 1 }, (db) => db.scollegaMovimentiPersona(['m1', 'm2']))
+  ok('scollegare: gli id, scollegati e già senza', [stabile(scol), stabile(cScol)], [stabile({ scollegati: 1, giaSenza: 1 }), stabile(['scollega_movimenti_persona', { ids: ['m1', 'm2'] }])])
+  const [tolti, cTolti] = await chiama({ tolti: 4 }, (db) => db.togliLottoCollegamenti(LOTTO))
+  ok('togli questo lotto: il lotto, quanti tolti', [stabile(tolti), stabile(cTolti)], [stabile({ tolti: 4 }), stabile(['togli_lotto_collegamenti', { lotto: LOTTO }])])
+  const [cand, cCand] = await chiama([{ id: 'p1', nome: 'Sara', cognome: 'Nerini', anno_nascita: 2010, corsi: ['Judo kids'], iscritto_dal: '2024-09-10' }, { id: 'p2', nome: 'Sara', cognome: 'Nerini', anno_nascita: null, corsi: [], iscritto_dal: null }], (db) => db.candidatiPersonaMovimento('m4'))
+  ok('i candidati: il movimento, le persone con i nomi in camelCase', [stabile(cand.map((c) => [c.id, c.nome, c.cognome, c.annoNascita ?? null, c.corsi, c.iscrittoDal ?? null])), stabile(cCand)], [stabile([['p1', 'Sara', 'Nerini', 2010, ['Judo kids'], '2024-09-10'], ['p2', 'Sara', 'Nerini', null, [], null]]), stabile(['candidati_persona_movimento', { movimento: 'm4' }])])
+  const [sto, cSto] = await chiama([{ id: 'm1', data: '2025-09-03', descrizione: 'Cliente Giulia Verdelli per quota', importo: 3000, voce: 'Quota associativa', cassa: 'Conto Corrente' }], (db) => db.storicoPersona('p1'))
+  ok('lo storico di una scheda: la persona, le righe com\'erano', [stabile(sto), stabile(cSto)], [stabile([{ id: 'm1', data: '2025-09-03', descrizione: 'Cliente Giulia Verdelli per quota', importo: 3000, voce: 'Quota associativa', cassa: 'Conto Corrente' }]), stabile(['storico_persona', { persona: 'p1' }])])
+  ok('senza righe: lista vuota (il database può rendere null)', (await chiama(null, (db) => db.storicoPersona('p1')))[0], [])
+  const [esi, cEsi] = await chiama([{ id: 'm1', esito: 'sicuro' }, { id: 'm2', esito: 'omonimi' }, { id: 'm3', esito: 'nessuna' }], (db) => db.esitiCollegamentiPersona())
+  ok('gli esiti per riga: la funzione senza parametri, le righe com\'erano', [cEsi[0], cEsi[1] ?? null, stabile(esi)], ['esiti_collegamenti_persona', null, stabile([{ id: 'm1', esito: 'sicuro' }, { id: 'm2', esito: 'omonimi' }, { id: 'm3', esito: 'nessuna' }])])
+  ok('…senza righe (null): lista vuota', (await chiama(null, (db) => db.esitiCollegamentiPersona()))[0], [])
+})
+
+await sezione('collegare lo storico alla persona sul database (client finto): gli errori', async () => {
+  const guasto = (error) => clientContab({ funzione: () => ({ data: null, error }) }).db
+  ok('un rifiuto del database arriva com\'è', await errore(() => guasto({ code: '22023', message: 'Il movimento del 12/03/2019 (BONIFICO) è annullato: non si collega' }).collegaMovimentiPersona(['m1'], 'p1')), 'Il movimento del 12/03/2019 (BONIFICO) è annullato: non si collega')
+  const vietato = await errore(() => guasto({ code: '42501', message: 'la contabilità la cura l’amministrazione' }).collegaMovimentiPersona(['m1'], 'p1'))
+  ok('chi non è amministrazione sente dire amministrazione, non segreteria', [/amministrazione/.test(vietato), /segreteria/.test(vietato)], [true, false])
+  const vietatoBlocco = await errore(() => guasto({ code: '42501', message: 'la contabilità la cura l’amministrazione' }).collegaSicuriPersona(LOTTO))
+  ok('…anche per il blocco', [/amministrazione/.test(vietatoBlocco), /segreteria/.test(vietatoBlocco)], [true, false])
+  const vietatoEsiti = await errore(() => guasto({ code: '42501', message: 'la contabilità la cura l’amministrazione' }).esitiCollegamentiPersona())
+  ok('…e per gli esiti per riga', [/amministrazione/.test(vietatoEsiti), /segreteria/.test(vietatoEsiti)], [true, false])
+})
+
+await sezione('collegare lo storico alla persona sul database (client finto): senza 70-movimenti-persona.sql', async () => {
+  const senzaFunzione = (codice, messaggio) => clientContab({ funzione: (f) => ({ data: null, error: { code: codice, message: messaggio(f) } }) }).db
+  const chiamate = {
+    riepilogoCollegamentiPersona: (db) => db.riepilogoCollegamentiPersona(),
+    collegaSicuriPersona: (db) => db.collegaSicuriPersona(LOTTO, 3),
+    collegaMovimentiPersona: (db) => db.collegaMovimentiPersona(['m1'], 'p1'),
+    scollegaMovimentiPersona: (db) => db.scollegaMovimentiPersona(['m1']),
+    togliLottoCollegamenti: (db) => db.togliLottoCollegamenti(LOTTO),
+    candidatiPersonaMovimento: (db) => db.candidatiPersonaMovimento('m1'),
+    storicoPersona: (db) => db.storicoPersona('p1'),
+    esitiCollegamentiPersona: (db) => db.esitiCollegamentiPersona(),
+  }
+  for (const [codice, messaggio] of [['PGRST202', (f) => `Could not find the function public.${f}(ids, persona) in the schema cache`], ['42883', (f) => `function ${f}(uuid[], uuid) does not exist`]])
+    for (const [nome, chiama] of Object.entries(chiamate)) ok(`senza 70: ${nome} (${codice}) dice quale file lanciare`, await errore(() => chiama(senzaFunzione(codice, messaggio))), MANCA_MOVIMENTI_PERSONA)
 })
 
 // ---- La chiusura di cassa sul database vero: le chiamate giuste, e il file 60 che può mancare.
