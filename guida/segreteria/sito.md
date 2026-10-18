@@ -21,8 +21,15 @@ trattini: «Chi siamo» diventa `chi-siamo`). Si può cambiare. Un indirizzo gi�
 usato, o uno che serve al sito (`admin`, `api`, `privacy`…), non va.
 
 **NUOVA PAGINA** crea una pagina **a pezzi**. Le pagine che c'erano prima (la
-Home, i corsi, le pagine di legge) si scrivono ancora come ti ricordi, con il
-testo solo: passeranno ai pezzi più avanti.
+Home, i corsi) si scrivono ancora come ti ricordi, con il testo solo; le pagine
+di legge restano così.
+
+Per portare una pagina vecchia ai pezzi, aprila e, sotto i tasti, premi **PORTA
+AI PEZZI** (sotto «EDITOR A PEZZI»). Il testo resta com'è: la foto messa in cima
+diventa **FOTO IN CIMA**, le colonne diventano **COLONNE**, il resto un
+**TESTO**. Il sito non cambia finché non premi **PUBBLICA**. **Non si torna al
+vecchio editor.** Il tasto è spento finché ci sono modifiche non salvate: prima
+**SALVA BOZZA**. Se la pagina è troppo lunga, un avviso dice di togliere qualcosa.
 
 Una pagina a pezzi si compone con le parti che metti in fila:
 

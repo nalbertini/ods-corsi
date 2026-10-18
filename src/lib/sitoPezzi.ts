@@ -1,3 +1,4 @@
+import { testoTroppoLungo } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
 
 /**
@@ -98,10 +99,87 @@ export function cosaNonVaPezzi(x: unknown): string | null {
 }
 
 /** I pezzi di ora sono diversi da quelli salvati (anche solo nell'ordine). */
-export const pezziCambiati = (locali: PezziPagina, salvati: PezziPagina | null | undefined): boolean => JSON.stringify(locali) !== JSON.stringify(salvati)
+// Il database (jsonb) rimette le chiavi in un altro ordine: i pezzi appena salvati, riletti, non sono una modifica.
+const chiaviInOrdine = (_: string, v: unknown) => (oggetto(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => (a < b ? -1 : 1))) : v)
+export const pezziCambiati = (locali: PezziPagina, salvati: PezziPagina | null | undefined): boolean => JSON.stringify(locali, chiaviInOrdine) !== JSON.stringify(salvati, chiaviInOrdine)
 
 /**
  * Il database sa i pezzi (c'è `62-sito-pezzi.sql`) se almeno una pagina arriva col campo, anche vuoto (`null`):
  * senza il file la colonna non c'è e nessuna pagina lo porta. Con nessuna pagina non si sa, e vale «no».
  */
 export const databaseConPezzi = (pagine: ReadonlyArray<{ pezzi?: PezziPagina | null }>): boolean => pagine.some((p) => p.pezzi !== undefined)
+
+const disesc = (t: string) => t.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+const attributo = (tag: string, nome: string) => {
+  const m = new RegExp(`\\b${nome}\\s*=\\s*"([^"]*)"`, 'i').exec(tag)
+  return m ? disesc(m[1]) : null
+}
+
+/** I `div` di primo livello di `html` che hanno una delle classi, con il loro contenuto: serve a spezzare il testo senza DOM. */
+function divDi(html: string, classe: RegExp): Array<{ da: number; a: number; dentro: string }> {
+  const trovati: Array<{ da: number; a: number; dentro: string }> = []
+  let profondita = 0
+  let aperto: { da: number; apertura: number } | null = null
+  for (const m of html.matchAll(/<(\/?)div\b[^>]*>/gi)) {
+    const fine = m.index + m[0].length
+    if (m[1]) {
+      if (profondita > 0 && --profondita === 0 && aperto) {
+        trovati.push({ da: aperto.da, a: fine, dentro: html.slice(aperto.apertura, m.index) })
+        aperto = null
+      }
+    } else if (profondita++ === 0 && classe.test(m[0])) aperto = { da: m.index, apertura: fine }
+  }
+  return trovati
+}
+
+/** Tutto il testo in un pezzo solo: quando dividerlo rischierebbe di cambiare quello che c'è scritto. */
+const unico = (t: string): PezziPagina => ({ content: [{ type: 'testo', props: { id: 'p1', html: t } }] })
+
+/**
+ * Il testo piatto di una pagina vecchia, spezzato nei pezzi dell'editor: foto iniziale, colonne, testo.
+ * Non si fida di sé: se i pezzi non rifanno esattamente il testo (`pezziInHtml`), la pagina resta un solo
+ * pezzo di testo, così «Porta ai pezzi» non cambia mai quello che c'è scritto.
+ */
+export function htmlInPezzi(html: string): PezziPagina {
+  const t = pulisciTesto(html)
+  if (t.trim() === '') return pezziVuoti()
+  const pezzi: Pezzo[] = []
+  const aggiungi = (nuovo: (id: string) => Pezzo) => pezzi.push(nuovo(`p${pezzi.length + 1}`))
+  const testo = (h: string) => {
+    if (h !== '') aggiungi((id) => ({ type: 'testo', props: { id, html: h } }))
+  }
+  let da = 0
+  for (const b of divDi(t, /\bcolonne\b/)) {
+    testo(t.slice(da, b.da))
+    const colonne = divDi(b.dentro, /\bcolonna\b/).map((c) => ({ html: c.dentro }))
+    // Colonne dentro una colonna non si riaprono nell'editor: si lasciano come testo.
+    if (colonne.some((c) => /<div\b/i.test(c.html))) return unico(t)
+    aggiungi((id) => ({ type: 'colonne', props: { id, colonne } }))
+    da = b.a
+  }
+  testo(t.slice(da))
+  const primo = pezzi[0]
+  const foto = primo?.type === 'testo' ? /^<img\b[^>]*>/i.exec(primo.props.html) : null
+  if (primo?.type === 'testo' && foto) {
+    const src = attributo(foto[0], 'src')
+    const alt = attributo(foto[0], 'alt')
+    if (src && alt !== null) {
+      const resto = primo.props.html.slice(foto[0].length)
+      pezzi.splice(0, 1, { type: 'fotoInCima', props: { id: 'p0', src, alt } }, ...(resto === '' ? [] : [{ type: 'testo' as const, props: { id: primo.props.id, html: resto } }]))
+    }
+  }
+  const candidato: PezziPagina = { content: pezzi }
+  return pezziValidi(candidato) && pezziInHtml(candidato) === t ? candidato : unico(t)
+}
+
+/** Il tasto «Porta ai pezzi»: solo per una pagina col vecchio editor (`null`; `undefined` = database senza il 62) e che non è di legge. */
+export const portabileAiPezzi = (p: { pezzi?: PezziPagina | null; diLegge: boolean }): boolean => p.pezzi === null && !p.diLegge
+
+/**
+ * Perché una pagina vecchia non si può portare ai pezzi, a parole; `null` se si può. Da chiedere prima della conferma:
+ * il testo ripulito e il suo JSON devono stare nei limiti, o il salvataggio fallirebbe con una frase che non dice cosa fare.
+ */
+export function cosaNonVaPortare(bozza: string): string | null {
+  const pezzi = htmlInPezzi(bozza)
+  return cosaNonVaPezzi(pezzi) ?? testoTroppoLungo(pezziInHtml(pezzi))
+}
