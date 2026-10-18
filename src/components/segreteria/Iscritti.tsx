@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { altriAperti, altriFiltri, FILTRI_VISIBILI, ID_FILTRI, TESTI_FILTRI, type IdFiltro } from '../../lib/filtriIscritti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
@@ -9,6 +9,7 @@ import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFisc
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { conTessere, incrocioTessere, paroleConTessera, senzaTessera, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
+import { APRI_SCHEDA, idLinguetta, idPannello, schedaDellaSezione, schedaIniziale, SCHEDE, segniSchede, serveCambiare, tastoScheda, type IdScheda } from '../../lib/schedaSezioni'
 import { TessereDellaPersona } from './Tessere'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
@@ -572,6 +573,20 @@ function Scheda({
   const [togliendo, setTogliendo] = useState(false)
   // Dopo una ricevuta nuova l'elenco delle ricevute si rilegge da capo.
   const [giroRicevute, setGiroRicevute] = useState(0)
+  // La scheda con la persona si ricrea (key): ogni persona riparte da PERSONA.
+  const [aperta, setAperta] = useState<IdScheda>(schedaIniziale())
+  // Un timbro cliccato: scorre e mette il fuoco solo dopo che la sua scheda si vede (un nascosto non prende il fuoco).
+  const [vai, setVai] = useState<{ id: string } | null>(null)
+  useEffect(() => {
+    if (vai) vaiA(vai.id)
+  }, [vai])
+  // Il Banco («VAI ALLA SCHEDA») apre la scheda del problema.
+  useEffect(() => {
+    // Il detail lo mette solo PersonaBanco, sempre un IdScheda.
+    const apri = (e: Event) => setAperta((e as CustomEvent<IdScheda>).detail)
+    window.addEventListener(APRI_SCHEDA, apri)
+    return () => window.removeEventListener(APRI_SCHEDA, apri)
+  }, [])
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
   const correnti = p.iscrizioni.filter((i) => inCorso(i, oggi))
   const liberi = attivi.filter((c) => !correnti.some((i) => i.corsoId === c.id))
@@ -580,6 +595,22 @@ function Scheda({
   const titolare = p.nucleo ? tutti.find((x) => x.id === p.nucleo) : p
   const nucleo = titolare ? [titolare, ...tutti.filter((x) => x.nucleo === titolare.id && x.attiva)].filter((x) => x.id !== p.id) : []
   const parenti = stessoContatto(p, tutti)
+  const tessereDi = tessere ? tessere.filter((t) => t.personaId === p.id) : undefined
+  const segni = segniSchede({ ...p, tessere: tessereDi }, [...corsi.values()], oggi, { aperta, inModifica: !!modifica })
+  const tastiera = (e: KeyboardEvent) => {
+    const dove = tastoScheda(aperta, e.key)
+    if (!dove) return
+    e.preventDefault()
+    setAperta(dove)
+    // Il fuoco segue la scheda: la prossima Tab entra nel suo pannello.
+    document.getElementById(idLinguetta(dove))?.focus()
+  }
+  /** Un timbro porta alla scheda della sua sezione; se è già aperta, solo scorre. */
+  const vaiAlTimbro = (id: string) => {
+    const dove = schedaDellaSezione(id)
+    if (dove && serveCambiare(aperta, dove)) setAperta(dove)
+    setVai({ id })
+  }
 
   return (
     <>
@@ -590,7 +621,7 @@ function Scheda({
         <span style={{ fontSize: 13, color: 'var(--dim)' }}>{`In elenco dal ${dataLunga(p.creataIl)} · nessun accesso`}</span>
       </div>
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
-      {!unendo && !pagando && <Timbri p={p} oggi={oggi} tessera={tessere ? timbroTessera({ ...p, tessere: tessere.filter((t) => t.personaId === p.id) }, [...corsi.values()], oggi) : null} />}
+      {!unendo && !pagando && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -617,6 +648,7 @@ function Scheda({
           onLasciaStare={() => setPagando(false)}
           onFatta={() => {
             setPagando(false)
+            setAperta(schedaIniziale(true))
             setGiroRicevute((g) => g + 1)
             onCambiato()
           }}
@@ -624,8 +656,38 @@ function Scheda({
         </Bozza>
       ) : (
       <>
-      <div className="sg-scheda-griglia">
-        <div className="stack" style={{ gap: 20, minWidth: 0 }}>
+      <div className="schede sg-schede sg-schede-scheda" role="tablist" aria-label="Parti della scheda" onKeyDown={tastiera}>
+        {SCHEDE.map((s) => {
+          const segno = segni[s.id]
+          return (
+            <button
+              key={s.id}
+              type="button"
+              role="tab"
+              id={idLinguetta(s.id)}
+              aria-controls={idPannello(s.id)}
+              aria-selected={aperta === s.id}
+              // Il nome intero e il segno a voce: gli span dentro sono aria-hidden (sul telefono la linguetta è corta).
+              aria-label={segno ? `${s.nome}, ${segno.parola.toLowerCase()}` : s.nome}
+              tabIndex={aperta === s.id ? 0 : -1}
+              className="scheda"
+              data-on={aperta === s.id}
+              onClick={() => setAperta(s.id)}
+            >
+              <span aria-hidden="true" className="sg-scheda-lunga">{s.etichetta}</span>
+              <span aria-hidden="true" className="sg-scheda-corta">{s.etichettaTelefono}</span>
+              {segno && (
+                <span aria-hidden="true" className="sg-scheda-segno" data-tono={segno.tono}>
+                  ● {segno.parola}
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Le schede lasciate si nascondono, non si smontano: quello che si sta scrivendo resta. */}
+      <div role="tabpanel" id={idPannello('persona')} aria-labelledby={idLinguetta('persona')} hidden={aperta !== 'persona'} className="stack" style={{ gap: 20, minWidth: 0 }}>
           {modifica ? (
             <div className="sg-due">
               <Campo id="m-nome" etichetta="NOME">
@@ -666,17 +728,6 @@ function Scheda({
           )}
 
           <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
-          <div id="sez-certificato">
-            <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
-          </div>
-          <TessereDellaPersona key={`t-${p.id}-${(tessere ?? []).length}`} d={d} p={p} tessere={tessere} corsi={corsi} oggi={chiaveGiorno(new Date())} fai={fai} avvisa={avvisa} onCambiato={onCambiato} />
-          <div id="sez-documento">
-            <Documento d={d} p={p} fai={fai} onCambiato={onCambiato} />
-          </div>
-          <div id="sez-quota" className="stack" style={{ gap: 20 }}>
-            <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
-            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
-          </div>
           {d.modo === 'prova' && <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />}
           {nonDoppioni.length > 0 && (
             <div className="stack" style={{ gap: 8 }}>
@@ -708,9 +759,30 @@ function Scheda({
               ))}
             </div>
           )}
-        </div>
+      </div>
 
+      <div role="tabpanel" id={idPannello('documenti')} aria-labelledby={idLinguetta('documenti')} hidden={aperta !== 'documenti'} className="sg-scheda-griglia">
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
+          <div id="sez-certificato">
+            <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
+          </div>
+        </div>
+        <div className="stack" style={{ gap: 20, minWidth: 0 }}>
+          <TessereDellaPersona key={`t-${p.id}-${(tessere ?? []).length}`} d={d} p={p} tessere={tessere} corsi={corsi} oggi={chiaveGiorno(new Date())} fai={fai} avvisa={avvisa} onCambiato={onCambiato} />
+          <div id="sez-documento">
+            <Documento d={d} p={p} fai={fai} onCambiato={onCambiato} />
+          </div>
+        </div>
+      </div>
+
+      <div role="tabpanel" id={idPannello('quota')} aria-labelledby={idLinguetta('quota')} hidden={aperta !== 'quota'}>
+        <div id="sez-quota" className="sg-scheda-griglia">
+            <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
+            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
+        </div>
+      </div>
+
+      <div role="tabpanel" id={idPannello('corsi')} aria-labelledby={idLinguetta('corsi')} hidden={aperta !== 'corsi'} className="stack" style={{ gap: 20, minWidth: 0 }}>
           <div className="stack" style={{ gap: 8 }}>
             <span className="sg-etichetta" style={{ fontSize: 13, letterSpacing: '0.2em' }}>ISCRIZIONI</span>
             {correnti.length === 0 && <span className="sg-sotto">Nessuna iscrizione in corso.</span>}
@@ -795,10 +867,9 @@ function Scheda({
               </span>
             )}
           </div>
-        </div>
       </div>
 
-      <div className="sg-scheda-piede">
+      <div className="sg-scheda-piede sg-scheda-piede-fisso">
         {modifica ? (
           <>
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setModifica(null)}>
@@ -814,6 +885,8 @@ function Scheda({
                   () =>
                     d.salvaPersona(modifica).catch((e: unknown) => {
                       setGuaio(messaggio(e))
+                      // L'errore sta sotto il campo, in PERSONA: da un'altra scheda non si vedrebbe.
+                      setAperta('persona')
                       throw e
                     }),
                   'Scheda salvata',
@@ -831,6 +904,7 @@ function Scheda({
           <>
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => {
                 setGuaio('')
+                setAperta('persona')
                 setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, emailContatto: p.emailContatto, telefono: p.telefono })
               }}>
               MODIFICA
@@ -872,10 +946,10 @@ function vaiA(id: string) {
  * In cima alla scheda: certificato, quota e documento in un colpo d'occhio,
  * con le parole dell'elenco (`timbriScheda`). Ognuno porta alla sua sezione.
  */
-function Timbri({ p, oggi, tessera }: { p: PersonaSeg; oggi: string; tessera: ReturnType<typeof timbroTessera> }) {
+function Timbri({ p, oggi, tessera, onVai }: { p: PersonaSeg; oggi: string; tessera: ReturnType<typeof timbroTessera>; onVai: (id: string) => void }) {
   const t = timbriScheda(p, oggi)
   const uno = (titolo: string, x: Timbro, id: string, piccolo?: boolean) => (
-    <button type="button" className="sg-timbro" data-tono={x.tono} data-piccolo={piccolo} onClick={() => vaiA(id)}>
+    <button type="button" className="sg-timbro" data-tono={x.tono} data-piccolo={piccolo} onClick={() => onVai(id)}>
       <span className="sg-timbro-titolo">{titolo}</span>
       <span className="sg-timbro-parola">{x.parola}</span>
       {x.righe.map((r) => (
