@@ -200,7 +200,9 @@ const impaginazioneVecchia = (r) => /grid-area:\s*nota/.test(r.corpo) || r.selet
 const pezziVecchio = (r) => r.selettori.some((x) => /^\.sito-pezzi > div$|^\.sito-pezzi \[class\*=/.test(x))
 // Le schede dell'iscritto e del personale non vanno più su due colonne: `.sg-scheda-griglia` è tolta di proposito, sia la regola sia quella dei telefoni.
 const grigliaScheda = (r) => r.selettori.includes('.sg-scheda-griglia')
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !delLook(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !grigliaScheda(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// La griglia della SETTIMANA ha ora una linea per fascia e niente tratteggio nelle caselle vuote: le cinque regole di prima (griglia, ora, casella, casella vuota, tessera chiusa) sono cambiate di proposito.
+const settimanaVecchia = (r) => r.selettori.some((x) => /^\.sg-griglia$|^\.sg-ora$|^\.sg-casella$|^\.sg-casella\[data-vuota='true'\]$|^\.sg-lezione\[data-chiusa='true'\]$/.test(x))
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !delLook(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

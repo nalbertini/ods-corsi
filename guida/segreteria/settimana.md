@@ -3,12 +3,12 @@
 ← [Torna alla segreteria](README.md)
 
 La prima cosa che si vede entrando in segreteria: tutta la settimana in una
-griglia, da lunedì a domenica, con una riga per ogni orario.
+griglia, da lunedì a domenica, con una fascia per ogni orario, separata dalla successiva da una linea.
 
 ## Leggere la griglia
 
-In ogni casella ci sono le lezioni che cominciano a quell'ora, con il colore
-della disciplina, la sala e l'istruttore. Il numero in basso dice:
+In ogni casella ci sono le lezioni che cominciano a quell'ora, ognuna con il suo
+orario (es. 17:00–18:00), il colore della disciplina, la sala e l'istruttore. Il numero in basso dice:
 
 | Si vede | Significa |
 |---|---|
