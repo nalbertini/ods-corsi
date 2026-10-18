@@ -180,6 +180,7 @@ console.log('\nl\'indirizzo scritto a mano e il vecchio indirizzo dell\'amminist
   ok('una voce e una scheda della segreteria vanno bene', [corretto('#iscritti', seg), corretto('#iscritti/p1', seg), corretto('#regole', seg)], [null, null, null])
   ok('senza cancelletto o col cancelletto degli altri non si tocca niente', [corretto('', amm), corretto('#', amm), corretto('#access_token=x', amm), corretto('#guida/sala', amm)], [null, null, null, null])
   ok('il vecchio indirizzo dell\'amministrazione va a quello nuovo, con la query e il cancelletto', [m.rimandaAmministrazione('', ''), m.rimandaAmministrazione('?adesso=2026-10-01', '#pagamenti'), m.rimandaAmministrazione('', '#contabilita')], ['segreteria/', 'segreteria/?adesso=2026-10-01#pagamenti', 'segreteria/#contabilita'])
+  ok('l\'area «amministrazione», ancora nel tipo, ha lo stesso nome del menu e non diventa SALA', [m.nomeDellArea('amministrazione', amm), m.nomeDellArea('amministrazione', p('staff', false, true))], ['AMMINISTRAZIONE', 'GESTIONE'])
   ok('il passaggio dal calendario: il nome del posto, uno solo', [m.nomeDellArea('segreteria', p('staff')), m.nomeDellArea('segreteria', p('staff', true, true)), m.nomeDellArea('segreteria', amm), m.nomeDellArea('istruttori', amm), m.nomeDellArea('sala', amm)], ['SEGRETERIA', 'GESTIONE', 'AMMINISTRAZIONE', 'ISTRUTTORI', 'SALA'])
 }
 
