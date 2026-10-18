@@ -1,9 +1,9 @@
 -- Le tessere: chi è tesserato, con quale ente e fino a quando. Le legge e le
 -- scrive solo la segreteria; l'import dal RASD aggancia per codice fiscale E
--- stesso nome, non crea persone e non fa doppioni; l'incrocio dice chi, fra gli
--- iscritti a un corso che chiede la tessera, non ce l'ha valida, e chi è
--- tesserato senza un corso; l'unione di due schede porta le tessere con sé
--- anche quando la stessa è su tutte e due.
+-- stesso nome, non crea persone e non fa doppioni; l'unione di due schede porta
+-- le tessere con sé anche quando la stessa è su tutte e due; la mappa dei corsi
+-- si scrive una volta sola. (Chi è iscritto senza la tessera del corso lo conta
+-- l'app, in `src/lib/tessere.ts`: `scripts/prova-tessere.mjs`.)
 -- Si lancia dopo finto-supabase.sql, i file dello schema,
 -- 18-anagrafiche.sql, 29-unisci-doppioni.sql e 55-tessere.sql.
 \set ON_ERROR_STOP on
@@ -94,13 +94,6 @@ begin
 end $$;
 grant execute on function tenta(text), codice(text), atteso(text, text, text), chi(text) to anon, authenticated;
 
--- L'incrocio in una riga leggibile: «persona/ente/esito», in ordine.
-create or replace function incrocio(oggi date) returns text language sql as $$
-  select coalesce(string_agg(p.cognome || '/' || i.ente || '/' || i.esito, ', ' order by p.cognome, i.ente, i.esito), '')
-    from incrocio_tessere(oggi) i join persone p on p.id = i.persona_id
-$$;
-grant execute on function incrocio(date) to authenticated;
-
 -- Il foglio del RASD, già tradotto come lo manda l'app (una riga per tessera).
 create or replace function foglio() returns jsonb language sql as $$
 select '[
@@ -150,13 +143,11 @@ set role authenticated;
 select atteso('un istruttore non legge le tessere', (select count(*)::text from tessere), '0');
 select atteso('non ne scrive', tenta($$insert into tessere (persona_id, ente, tipo, codice, dal, al) values ('aaaaaaaa-0000-0000-0000-000000000012', 'FIJLKAM', 'praticante', 'x', '2026-09-01', '2026-12-31')$$), 'NEGATO: …');
 select atteso('non importa', codice($$select importa_tessere('[]'::jsonb, true)$$), '42501');
-select atteso('non fa l''incrocio', codice($$select * from incrocio_tessere('2026-10-17')$$), '42501');
 reset role;
 select chi('33333333-3333-3333-3333-333333333333');
 set role authenticated;
 select atteso('un iscritto non le legge', (select count(*)::text from tessere), '0');
 select atteso('non importa', codice($$select importa_tessere('[]'::jsonb, true)$$), '42501');
-select atteso('non fa l''incrocio', codice($$select * from incrocio_tessere('2026-10-17')$$), '42501');
 reset role;
 select chi('66666666-6666-6666-6666-666666666666');
 set role authenticated;
@@ -167,10 +158,8 @@ select chi('');
 set role anon;
 select atteso('anon non legge la tabella', codice($$select count(*) from tessere$$), '42501');
 select atteso('anon non importa', codice($$select importa_tessere('[]'::jsonb, true)$$), '42501');
-select atteso('anon non fa l''incrocio', codice($$select * from incrocio_tessere('2026-10-17')$$), '42501');
 reset role;
 select atteso('anon non esegue importa', has_function_privilege('anon', 'importa_tessere(jsonb, boolean)', 'execute')::text, 'false');
-select atteso('anon non esegue incrocio', has_function_privilege('anon', 'incrocio_tessere(date)', 'execute')::text, 'false');
 select atteso('anon non legge la tabella (permessi)', has_table_privilege('anon', 'tessere', 'select')::text, 'false');
 
 \echo ''
@@ -184,6 +173,7 @@ select atteso('l''ente in minuscolo no', tenta($$insert into tessere (persona_id
 select atteso('un tipo che non c''è no', tenta($$insert into tessere (persona_id, ente, tipo, codice, dal, al) values ('aaaaaaaa-0000-0000-0000-000000000014', 'FIPE', 'arbitro', 'M-4', '2026-09-01', '2026-12-31')$$), 'NEGATO: …');
 select atteso('una fine prima dell''inizio no', tenta($$insert into tessere (persona_id, ente, tipo, codice, dal, al) values ('aaaaaaaa-0000-0000-0000-000000000014', 'FIPE', 'agonista', 'M-5', '2026-09-01', '2026-08-31')$$), 'NEGATO: …');
 select atteso('un codice vuoto no', tenta($$insert into tessere (persona_id, ente, tipo, codice, dal, al) values ('aaaaaaaa-0000-0000-0000-000000000014', 'FIPE', 'agonista', '  ', '2026-09-01', '2026-12-31')$$), 'NEGATO: …');
+select atteso('praticante e agonista dello stesso ente nello stesso giorno sì (la chiave ha il tipo)', tenta($$insert into tessere (persona_id, ente, tipo, codice, dal, al) values ('aaaaaaaa-0000-0000-0000-000000000014', 'FIPE', 'agonista', 'M-6', '2026-09-01', '2026-12-31')$$), 'FATTO (1 righe)');
 select atteso('la toglie', tenta($$delete from tessere where codice = 'M-1'$$), 'FATTO (1 righe)');
 select atteso('un corso chiede una tessera', tenta($$update corsi set ente_tessera = 'FIJLKAM' where nome = 'Psicomotricità'$$), 'FATTO (1 righe)');
 select atteso('in minuscolo no', tenta($$update corsi set ente_tessera = 'fipe' where nome = 'Psicomotricità'$$), 'NEGATO: …');
@@ -191,58 +181,7 @@ select atteso('e la toglie', tenta($$update corsi set ente_tessera = null where 
 reset role;
 
 \echo ''
-\echo '--- 4. l''incrocio ---'
-select chi('11111111-1111-1111-1111-111111111111');
-set role authenticated;
--- 17 ottobre: Mario e Anna (FIJLKAM, scadenza 31/12 oltre i 60 giorni) sono a posto.
--- Anna ha la tessera nuova; Luigi non ha mai avuto niente; Marco Tesserato è
--- tesserato senza un corso; Teo (Pesi, FIPE) non ha una tessera FIPE.
-select atteso('il 17 ottobre', incrocio('2026-10-17'),
-  'Doppio/FIPE/manca, Tesserato/FIJLKAM/non_iscritto, Verdi/FIJLKAM/manca');
-select atteso('Luigi manca per Lotta 2', (select corsi from incrocio_tessere('2026-10-17') i join persone p on p.id = i.persona_id where p.cognome = 'Verdi'), 'Lotta 2');
-select atteso('una prova non è un''iscrizione: Elena non si segnala', (select count(*)::text from incrocio_tessere('2026-10-17') i where i.persona_id = 'aaaaaaaa-0000-0000-0000-000000000015'), '0');
-select atteso('un corso senza tessera non segnala: Sara no', (select count(*)::text from incrocio_tessere('2026-10-17') i where i.persona_id = 'aaaaaaaa-0000-0000-0000-000000000013'), '0');
-select atteso('una scheda archiviata no: Piero', (select count(*)::text from incrocio_tessere('2026-10-17') i where i.persona_id = 'aaaaaaaa-0000-0000-0000-000000000014'), '0');
-select atteso('chi si iscrive fra qualche giorno no: Dario', (select count(*)::text from incrocio_tessere('2026-10-17') i where i.persona_id = 'aaaaaaaa-0000-0000-0000-000000000017'), '0');
-select atteso('dal 20 ottobre Dario manca anche lui', incrocio('2026-10-20'),
-  'Doppio/FIPE/manca, Prossimo/FIJLKAM/manca, Tesserato/FIJLKAM/non_iscritto, Verdi/FIJLKAM/manca');
-select atteso('esattamente 60 giorni prima della fine: già in scadenza', incrocio('2026-11-01'),
-  'Doppio/FIPE/manca, Gullì/FIJLKAM/in_scadenza, Prossimo/FIJLKAM/manca, Rossi/FIJLKAM/in_scadenza, Tesserato/FIJLKAM/non_iscritto, Verdi/FIJLKAM/manca');
--- 10 novembre: mancano meno di 60 giorni al 31/12 (oggi + 60 = 9 gennaio).
-select atteso('il 10 novembre le due che finiscono a dicembre sono in scadenza', incrocio('2026-11-10'),
-  'Doppio/FIPE/manca, Gullì/FIJLKAM/in_scadenza, Prossimo/FIJLKAM/manca, Rossi/FIJLKAM/in_scadenza, Tesserato/FIJLKAM/non_iscritto, Verdi/FIJLKAM/manca');
-select atteso('il 31 ottobre ancora no (60 giorni dopo è il 30 dicembre)', incrocio('2026-10-31'), 'Doppio/FIPE/manca, Prossimo/FIJLKAM/manca, Tesserato/FIJLKAM/non_iscritto, Verdi/FIJLKAM/manca');
--- 15 gennaio 2027: la tessera dell'anno scorso è scaduta.
-select atteso('a gennaio: scadute', incrocio('2027-01-15'),
-  'Doppio/FIPE/manca, Gullì/FIJLKAM/scaduta, Prossimo/FIJLKAM/manca, Rossi/FIJLKAM/scaduta, Verdi/FIJLKAM/manca');
--- Un rinnovo già fatto (tessera dell'anno dopo) basta, anche se non è ancora cominciata.
-reset role;
-insert into tessere (persona_id, ente, tipo, codice, dal, al, origine) values
-  ('aaaaaaaa-0000-0000-0000-000000000010', 'FIJLKAM', 'agonista', '2027-0001', '2027-01-01', '2027-12-31', 'manuale');
-select chi('11111111-1111-1111-1111-111111111111');
-set role authenticated;
-select atteso('il rinnovo già fatto: a novembre Mario non è più in scadenza', incrocio('2026-11-10'),
-  'Doppio/FIPE/manca, Gullì/FIJLKAM/in_scadenza, Prossimo/FIJLKAM/manca, Tesserato/FIJLKAM/non_iscritto, Verdi/FIJLKAM/manca');
-reset role;
-delete from tessere where codice = '2027-0001';
--- Una tessera da dirigente non copre chi pratica, e un dirigente senza corso non è un errore.
-insert into persone (id, nome, cognome, ruolo) values
-  ('aaaaaaaa-0000-0000-0000-000000000030', 'Dina', 'Dirigente', 'iscritto'),
-  ('aaaaaaaa-0000-0000-0000-000000000031', 'Tullio', 'Tecnico', 'iscritto');
-insert into iscrizioni (corso_id, persona_id, dal) values ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000030', '2026-09-14');
-insert into tessere (persona_id, ente, tipo, codice, dal, al) values
-  ('aaaaaaaa-0000-0000-0000-000000000030', 'FIJLKAM', 'dirigente', 'D-1', '2026-09-01', '2026-12-31'),
-  ('aaaaaaaa-0000-0000-0000-000000000031', 'FIJLKAM', 'tecnico', 'D-2', '2026-09-01', '2026-12-31');
-select chi('11111111-1111-1111-1111-111111111111');
-set role authenticated;
-select atteso('una tessera da dirigente non copre chi si iscrive a Judo: manca', (select string_agg(esito, ',') from incrocio_tessere('2026-10-17') where persona_id = 'aaaaaaaa-0000-0000-0000-000000000030'), 'manca');
-select atteso('un tecnico senza corso non è un «non iscritto»', (select count(*)::text from incrocio_tessere('2026-10-17') where persona_id = 'aaaaaaaa-0000-0000-0000-000000000031'), '0');
-reset role;
-delete from tessere where codice in ('D-1', 'D-2');
-delete from persone where id in ('aaaaaaaa-0000-0000-0000-000000000030', 'aaaaaaaa-0000-0000-0000-000000000031');
-
-\echo ''
-\echo '--- 4b. gli stessi casi della prova dell''app ---'
+\echo '--- 4. l''import: i nomi con le lettere accentate, le date, i ruoli ---'
 insert into persone (id, nome, cognome, ruolo) values
   ('aaaaaaaa-0000-0000-0000-000000000040', 'Hans', 'Müller', 'iscritto'),
   ('aaaaaaaa-0000-0000-0000-000000000041', 'José', 'Núñez', 'iscritto'),
@@ -266,32 +205,28 @@ select atteso('una data che non c''è, o scritta all''italiana, non entra',
   (select string_agg(e ->> 'esito', ',') from jsonb_array_elements(importa_tessere('[
     {"ente":"FIJLKAM","nome":"MULLER HANS","codice_fiscale":"MLLHNS85A01L219X","tipo":"praticante","codice":"U-5","dal":"2026-02-30","al":"2026-12-31"},
     {"ente":"FIJLKAM","nome":"MULLER HANS","codice_fiscale":"MLLHNS85A01L219X","tipo":"praticante","codice":"U-6","dal":"01/09/2026","al":"2026-12-31"}]'::jsonb, true) -> 'non_abbinate') e), 'riga_non_valida,riga_non_valida');
+select atteso('un codice vuoto nel foglio è una riga da guardare, non un errore che ferma tutto',
+  (select string_agg(e ->> 'esito', ',') from jsonb_array_elements(importa_tessere('[
+    {"ente":"FIJLKAM","nome":"MULLER HANS","codice_fiscale":"MLLHNS85A01L219X","tipo":"praticante","codice":"  ","dal":"2026-09-01","al":"2026-12-31"}]'::jsonb, true) -> 'non_abbinate') e), 'riga_non_valida');
 reset role;
--- Una scheda archiviata con una tessera che vale: non è un «tesserato senza corso».
-update persone set attiva = false where id = 'aaaaaaaa-0000-0000-0000-000000000040';
-insert into tessere (persona_id, ente, tipo, codice, dal, al) values ('aaaaaaaa-0000-0000-0000-000000000040', 'FIJLKAM', 'praticante', 'U-7', '2026-09-01', '2026-12-31');
-select chi('11111111-1111-1111-1111-111111111111');
-set role authenticated;
-select atteso('una scheda archiviata con la tessera valida non è «non iscritto»', (select count(*)::text from incrocio_tessere('2026-10-17') where persona_id = 'aaaaaaaa-0000-0000-0000-000000000040'), '0');
-reset role;
-delete from tessere where codice = 'U-7';
-
 \echo ''
 \echo '--- 5. unire due schede porta le tessere, anche la stessa su tutte e due ---'
 -- Teo ha la stessa tessera FIJLKAM sulle due schede; la seconda ha anche una FIPE.
 insert into tessere (id, persona_id, ente, tipo, codice, dal, al, origine) values
   ('99999999-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000020', 'FIJLKAM', 'praticante', 'T-1', '2026-09-01', '2026-12-31', 'rasd'),
   ('99999999-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000021', 'FIJLKAM', 'praticante', 'T-1', '2026-09-01', '2026-12-31', 'rasd'),
-  ('99999999-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000021', 'FIPE', 'praticante', 'T-2', '2026-09-01', '2026-12-31', 'manuale');
+  ('99999999-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000021', 'FIPE', 'praticante', 'T-2', '2026-09-01', '2026-12-31', 'manuale'),
+  -- Stesso ente e stesso giorno ma un altro tipo: non è la stessa tessera, non si butta.
+  ('99999999-0000-0000-0000-000000000004', 'aaaaaaaa-0000-0000-0000-000000000021', 'FIJLKAM', 'agonista', 'T-3', '2026-09-01', '2026-12-31', 'rasd');
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('l''unione va in porto', codice($$select unisci_persone('aaaaaaaa-0000-0000-0000-000000000020', 'aaaaaaaa-0000-0000-0000-000000000021')$$), 'nessun errore');
 reset role;
 select atteso('la scheda che se ne va non c''è più', (select count(*)::text from persone where id = 'aaaaaaaa-0000-0000-0000-000000000021'), '0');
-select atteso('restano due tessere, tutte di chi resta',
-  (select string_agg(ente || ' ' || tipo, ', ' order by ente) from tessere where persona_id = 'aaaaaaaa-0000-0000-0000-000000000020'), 'FIJLKAM praticante, FIPE praticante');
+select atteso('restano tre tessere, tutte di chi resta (il tipo diverso non è un doppione)',
+  (select string_agg(ente || ' ' || tipo, ', ' order by ente, tipo) from tessere where persona_id = 'aaaaaaaa-0000-0000-0000-000000000020'), 'FIJLKAM agonista, FIJLKAM praticante, FIPE praticante');
 select atteso('e quella doppia è la prima, non la seconda',
-  (select id::text from tessere where persona_id = 'aaaaaaaa-0000-0000-0000-000000000020' and ente = 'FIJLKAM'), '99999999-0000-0000-0000-000000000001');
+  (select id::text from tessere where persona_id = 'aaaaaaaa-0000-0000-0000-000000000020' and ente = 'FIJLKAM' and tipo = 'praticante'), '99999999-0000-0000-0000-000000000001');
 select atteso('nessuna tessera è rimasta orfana', (select count(*)::text from tessere where persona_id not in (select id from persone)), '0');
 delete from persone where id = 'aaaaaaaa-0000-0000-0000-000000000020';
 select atteso('cancellata la scheda, via le tessere', (select count(*)::text from tessere where id::text like '99999999%'), '0');

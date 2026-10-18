@@ -3,8 +3,9 @@
  * chi è iscritto a un corso che ne chiede una. Tutto quello che si decide senza
  * schermo sta qui: il foglio del RASD, lo stato di una persona per ente, le
  * parole nella tabella ISCRITTI, l'incrocio con le iscrizioni e i motivi di
- * un'import che non si può fare. Le stesse regole di `55-tessere.sql`
- * (`incrocio_tessere`, `importa_tessere`): se cambia una, cambia l'altra.
+ * un'import che non si può fare. L'import ha le stesse regole di `importa_tessere`
+ * in `55-tessere.sql` (in prova: `importaTessereProva`): se cambia una, cambia l'altra.
+ * L'incrocio sta solo qui: il database non ne ha una copia.
  */
 
 import { leggiData, leggiTabella, piatto } from './importa'
@@ -174,7 +175,7 @@ export interface RigaIncrocio {
 type PersonaPerTessere = Pick<PersonaSeg, 'id' | 'attiva' | 'iscrizioni'> & { tessere?: TesseraSeg[] }
 
 /**
- * L'incrocio fra iscrizioni e tessere, come `incrocio_tessere`: una riga per
+ * L'incrocio fra iscrizioni e tessere: una riga per
  * persona ed ente. Chi è iscritto a un corso che chiede la tessera di un ente
  * e non ce l'ha (manca, scaduta, in scadenza a 60 giorni), e chi ha una tessera
  * da atleta che vale oggi ma nessun corso. Le prove gratuite non sono

@@ -7,8 +7,7 @@
 // «valido dal» in data, fine al 31 dicembre); le righe che non si possono
 // leggere si dicono in italiano; lo stato di una persona per ente (manca,
 // scaduta, in scadenza a 60 giorni, valida) e le sue parole nella tabella
-// ISCRITTI; l'incrocio dell'app in prova, che deve dire le stesse cose di
-// `incrocio_tessere` (supabase/prova/tessere.sql, stessi dati e stessi esiti).
+// ISCRITTI; l'incrocio fra iscrizioni e tessere (solo qui: il database non ne ha una copia).
 // Le prove gratuite non sono iscrizioni. I motivi delle righe non abbinate
 // non sono mai il testo grezzo dell'API.
 // La quinta casella di COSA MANCA (scelta A, confermata dall'utente) è la sezione 6:
@@ -94,8 +93,9 @@ ok('valida: niente, IN REGOLA lo dice già', m.parolaTessera('valida', '2026-12-
 ok('la frase nella scheda: valida', m.fraseTessera(T('FIJLKAM', '2026-09-01', '2026-12-31', 'agonista'), OGGI), 'FIJLKAM · agonista · fino al 31 dicembre 2026')
 ok('la frase nella scheda: scaduta', m.fraseTessera(T('FIPE', '2025-09-01', '2025-12-31'), OGGI), 'FIPE · praticante · scaduta il 31 dicembre 2025')
 ok('la frase nella scheda: scade presto', m.fraseTessera(T('FIJLKAM', '2026-09-01', '2026-12-31'), '2026-11-10'), 'FIJLKAM · praticante · fino al 31 dicembre 2026 · scade fra 51 giorni')
+ok('la frase di un dirigente non dice «scade fra»: non è la sua tessera da atleta', m.fraseTessera(T('FIJLKAM', '2026-09-01', '2026-12-31', 'dirigente'), '2026-11-10'), 'FIJLKAM · dirigente · fino al 31 dicembre 2026')
 
-console.log('\nL\'incrocio in prova: come il database')
+console.log('\nL\'incrocio fra iscrizioni e tessere')
 // Gli stessi dati di supabase/prova/tessere.sql.
 const corsi = [
   { id: 'judo', nome: 'Judo 3', enteTessera: 'FIJLKAM' },
@@ -132,6 +132,19 @@ ok('senza tessera nessuna scheda è tolta dal conto per errore: Sara (corso senz
   ok('un dirigente iscritto a Judo senza una tessera da atleta: manca', r.filter((x) => x.personaId === 'dina').map((x) => x.esito), ['manca'])
   ok('un tecnico senza corso non è un «non iscritto»', r.filter((x) => x.personaId === 'tullio').length, 0)
 }
+{
+  const t = [T('FIJLKAM', '2026-09-01', '2026-12-31')]
+  const r = m.incrocioTessere([
+    P('fine', 'Finito', [{ corsoId: 'judo', dal: '2025-09-14', al: '2026-06-30' }], t), // il corso è finito, la tessera vale: non è più iscritto
+    P('rinnovo', 'Rinnovo', [], [T('FIJLKAM', '2027-01-01', '2027-12-31')]), // la tessera comincia l'anno dopo: oggi non è tesserato
+    P('doppia', 'Doppia', [{ corsoId: 'lotta', dal: '2026-09-14' }, { corsoId: 'lotta', dal: '2026-09-20' }]), // due iscrizioni allo stesso corso: il nome una volta sola
+  ], corsi, OGGI)
+  ok('iscrizione finita + tessera che vale: «non iscritto»', r.filter((x) => x.personaId === 'fine').map((x) => x.esito), ['non_iscritto'])
+  ok('una tessera che comincia l\'anno dopo non fa «non iscritto» oggi', r.filter((x) => x.personaId === 'rinnovo').length, 0)
+  ok('il corso scritto una volta sola', r.find((x) => x.personaId === 'doppia').corsi, 'Lotta 2')
+}
+ok('una tessera da sola: l\'ultimo giorno è in scadenza, il giorno dopo scaduta', [m.statoDiUna({ al: '2026-12-31' }, '2026-12-31'), m.statoDiUna({ al: '2026-12-31' }, '2027-01-01')], ['in_scadenza', 'scaduta'])
+ok('database senza 55-tessere.sql: lo riconosce', [m.mancaTessere({ code: '42P01', message: 'relation "tessere" does not exist' }), m.mancaTessere({ code: '42P01', message: 'relation "altro" does not exist' }), m.mancaTessere(null)], [true, false, false])
 ok('il conto per COSA MANCA: manca + scaduta, non l\'in scadenza né i non iscritti',
   m.contaTessere(m.incrocioTessere(persone, corsi, '2026-11-01')), 3)
 

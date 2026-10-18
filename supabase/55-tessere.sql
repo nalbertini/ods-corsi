@@ -22,10 +22,10 @@
 -- crea mai persone, si può rilanciare senza doppioni, e con `solo_prova` dice
 -- cosa farebbe senza scrivere (l'anteprima).
 --
--- `incrocio_tessere(oggi)`: una riga per persona ed ente, solo quelle da
--- guardare: iscritti a un corso che chiede la tessera ma senza una valida
--- (manca, scaduta, in scadenza entro 60 giorni) e tesserati senza corso. Le
--- prove gratuite non sono iscrizioni (stanno in `prove`): non contano.
+-- Chi è iscritto a un corso che chiede la tessera senza averne una valida lo conta
+-- l'app (`src/lib/tessere.ts`, `incrocioTessere`): le iscrizioni e le tessere le
+-- ha già lette, e un secondo conto nel database sarebbe una seconda regola da
+-- tenere uguale. Le prove gratuite non sono iscrizioni (stanno in `prove`).
 --
 -- L'unione di due schede (`unisci_persone`, 29/45) sposta già ogni tabella
 -- che punta a `persone`. Se la stessa tessera è su tutte e due la chiave unica
@@ -209,55 +209,10 @@ begin
                             'non_abbinate', esiti, 'scritto', not solo_prova);
 end $$;
 
--- L'incrocio tra iscrizioni e tessere: una riga per persona ed ente.
---   manca         iscritto a un corso che chiede la tessera di un ente, e non ne ha mai avuta
---   scaduta       l'ha avuta, ma è finita
---   in_scadenza   vale ancora, ma finisce entro 60 giorni
---   non_iscritto  ha una tessera che vale oggi, ma nessun corso attivo
--- «Iscritto» = iscrizione in corso oggi, persona attiva. Una tessera che
--- comincia più avanti conta come valida (è un rinnovo già fatto). Contano solo
--- le tessere da praticante e da agonista: chi pratica ha quelle, un dirigente o
--- un tecnico può non avere nessun corso, e non è un errore.
-create or replace function incrocio_tessere(oggi date default (now() at time zone 'Europe/Rome')::date)
-  returns table (persona_id uuid, ente text, esito text, corsi text, tessera_al date)
-  language plpgsql stable security definer set search_path = public, extensions as $$
-begin
-  if not e_staff() then raise exception 'solo la segreteria' using errcode = '42501'; end if;
-  return query
-    with richieste as (
-      select i.persona_id, c.ente_tessera as ente, string_agg(distinct c.nome, ', ' order by c.nome) as corsi
-        from iscrizioni i
-        join corsi c on c.id = i.corso_id
-        join persone p on p.id = i.persona_id and p.attiva
-       where c.ente_tessera is not null and i.dal <= oggi and (i.al is null or i.al >= oggi)
-       group by i.persona_id, c.ente_tessera
-    ), ultima as (
-      select t.persona_id, t.ente, max(t.al) as al,
-             bool_or(t.dal <= oggi and t.al >= oggi) as vale_oggi
-        from tessere t where t.tipo in ('praticante', 'agonista') group by t.persona_id, t.ente
-    )
-    select r.persona_id, r.ente,
-           case when u.al is null then 'manca'
-                when u.al < oggi then 'scaduta'
-                else 'in_scadenza' end,
-           r.corsi, u.al
-      from richieste r left join ultima u on u.persona_id = r.persona_id and u.ente = r.ente
-     where u.al is null or u.al <= oggi + 60
-    union all
-    select u.persona_id, u.ente, 'non_iscritto', null::text, u.al
-      from ultima u
-     where u.vale_oggi
-       and exists (select 1 from persone q where q.id = u.persona_id and q.attiva)
-       and not exists (select 1 from iscrizioni i join persone p on p.id = i.persona_id and p.attiva
-                        where i.persona_id = u.persona_id and i.dal <= oggi and (i.al is null or i.al >= oggi));
-end $$;
-
 revoke all on function parole_nome(text) from public, anon;
 revoke all on function tessere_unione() from public, anon, authenticated;
 revoke all on function importa_tessere(jsonb, boolean) from public, anon;
-revoke all on function incrocio_tessere(date) from public, anon;
 grant execute on function parole_nome(text) to authenticated;
 grant execute on function importa_tessere(jsonb, boolean) to authenticated;
-grant execute on function incrocio_tessere(date) to authenticated;
 
 notify pgrst, 'reload schema';
