@@ -43,7 +43,6 @@ import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
-import { cambiaVoce, scorre } from '../../lib/scorri'
 import { guidaDellaVoce, indirizzoConsentito, leggeLaSegreteria, menuDi, pagamentiRidotti, postoConsentito, primaVoce, titoloDelMenu, vociConsentite } from '../../lib/menuSegreteria'
 
 export type { Voce }
@@ -272,12 +271,9 @@ export function Segreteria({
   const conSegnalate = d?.modo === 'prova' && !!d.segnalate
   const inPresenze = voce === 'presenze' || voce === 'segnalate'
   // Il menu è più alto di uno schermo da reception: la voce aperta (anche dopo
-  // una ricarica, o con Indietro) si porta in vista. E una voce nuova si legge
-  // dall'alto, non da dove era scesa quella di prima.
+  // una ricarica, o con Indietro) si porta in vista.
   useEffect(() => {
     document.querySelector('#sg-menu .sg-voce[aria-current="page"]')?.scrollIntoView({ block: 'nearest' })
-    const corpo = document.getElementById('sg-contenuto')
-    if (corpo) cambiaVoce(corpo)
   }, [voce])
   const segno = (n: number, detto: string) =>
     n > 0 && (
@@ -522,7 +518,7 @@ export function Segreteria({
         </>
       )}
 
-      <main className="sg-corpo" id="sg-contenuto" tabIndex={-1} onScroll={(e) => scorre(e.currentTarget)}>
+      <main className="sg-corpo" id="sg-contenuto" tabIndex={-1}>
         {!d && !guaio && <p className="sg-sotto">Un attimo…</p>}
         {!d && guaio && (
           <div className="stack" style={{ gap: 12, alignItems: 'flex-start' }}>
