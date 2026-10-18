@@ -59,6 +59,7 @@ const SEZIONI = [
   { id: 'email-contatto', nome: 'Segreteria · email di contatto', cartella: 'email-contatto' },
   { id: 'ruolo-amministrazione', nome: 'Segreteria · ruolo amministrazione', cartella: 'ruolo-amministrazione' },
   { id: 'contabilita', nome: 'Segreteria · contabilità', cartella: 'contabilita' },
+  { id: 'cambia-voce', nome: 'Segreteria · cambia voce', cartella: 'cambia-voce' },
   { id: 'chiusura-cassa', nome: 'Segreteria · chiusura di cassa', cartella: 'chiusura-cassa' },
   { id: 'bilancio-anno', nome: 'Segreteria · bilancio di un anno', cartella: 'bilancio-anno' },
   { id: 'menu-unico', nome: 'Segreteria · menu unico', cartella: 'menu-unico' },
@@ -89,7 +90,7 @@ const GRUPPI = {
   'segreteria-iscritti': { nome: 'Segreteria · iscritti e prezzi', sezioni: ['iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'tessere', 'scheda-iscritto-schede', 'prezzi-mancanti'] },
   'segreteria-certificati': { nome: 'Segreteria · certificati', sezioni: ['certificati-online', 'certificato-piccoli'] },
   'segreteria-strumenti': { nome: 'Segreteria · strumenti', sezioni: ['segreteria-tatami', 'banco', 'cerca-universale', 'menu-icone', 'importa-fogli'] },
-  'segreteria-conti': { nome: 'Segreteria · conti e ruoli', sezioni: ['contabilita', 'chiusura-cassa', 'bilancio-anno', 'ruolo-amministrazione', 'menu-unico', 'email-contatto'] },
+  'segreteria-conti': { nome: 'Segreteria · conti e ruoli', sezioni: ['contabilita', 'cambia-voce', 'chiusura-cassa', 'bilancio-anno', 'ruolo-amministrazione', 'menu-unico', 'email-contatto'] },
   'istruttori': { nome: 'Istruttori', sezioni: ['istruttore', 'istruttore-collega'] },
   'timer': { nome: 'Timer', sezioni: ['timer-desktop', 'timer-istruttori', 'timer-musica', 'timer-youtube'] },
 }

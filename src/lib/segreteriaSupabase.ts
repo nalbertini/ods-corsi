@@ -153,9 +153,11 @@ const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `
 /** Le tabelle che arrivano dopo lo schema, col file che le crea. */
 const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
 const MANCA_CHIUSURA = 'Il database non è ancora aggiornato per la chiusura della cassa: va lanciato 60-chiusura-cassa.sql'
+const MANCA_CAMBIA_VOCE = 'Il database non è ancora aggiornato per cambiare la voce dei movimenti: va lanciato 67-cambia-voce.sql'
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   // Prima di `segnalazioni`, che le somiglia.
   [/chiusure_cassa/, MANCA_CHIUSURA],
+  [/cambi_voce/, MANCA_CAMBIA_VOCE],
   [/voci_contabili|relation "(public\.)?(casse|movimenti)"|table 'public\.(casse|movimenti)'/, MANCA_CONTABILITA],
   [/sito_pagine|sito_menu|sito_redirect|salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito/, MANCA_SITO],
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
@@ -264,6 +266,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /salva_voce|rinomina_voce|imposta_voce_attiva|imposta_saldo_cassa|registra_movimento|registra_giroconto|annulla_movimento|correggi_testo_movimento/.test(e.message ?? '')) return new Error(MANCA_CONTABILITA)
   // Le funzioni della chiusura di cassa arrivano con 60-chiusura-cassa.sql.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /chiudi_cassa|annulla_chiusura_cassa/.test(e.message ?? '')) return new Error(MANCA_CHIUSURA)
+  // Cambiare la voce dei movimenti arriva con 67-cambia-voce.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /cambia_voce_movimenti/.test(e.message ?? '')) return new Error(MANCA_CAMBIA_VOCE)
   if (e?.code === '42501' && /contabilità/.test(e.message ?? '')) return new Error('Non hai il permesso: la contabilità la cura l’amministrazione')
   // Il kanji arriva con 24-kanji.sql; due persone con lo stesso non si possono avere.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
@@ -1203,6 +1207,28 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async correggiTestoMovimento(id, descrizione, nota) {
       ok(await db.rpc('correggi_testo_movimento', { id, descrizione: descrizione.trim(), nota: nota?.trim() || null }))
+    },
+
+    async cambiaVoceMovimenti(ids, voceId) {
+      // La risposta arriva senza tipo dall'API: la forma è quella di 67-cambia-voce.sql.
+      const r = ok(await db.rpc('cambia_voce_movimenti', { ids, voce: voceId })) as { cambiati: number; gia_cosi: number }
+      return { cambiati: r.cambiati, giaCosi: r.gia_cosi }
+    },
+
+    async cambiVoceMovimento(id) {
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('cambi_voce').select('*').eq('movimento_id', id).order('cambiato_il').order('id').range(prima, ultima))) as Array<{
+        voce_prima_id: string | null; voce_dopo_id: string | null; cambiato_il: string; cambiato_da: string | null
+      }>
+      if (!righe.length) return []
+      const voci = ok(await tutteLeRighe((prima, ultima) => db.from('voci_contabili').select('id, nome').order('id').range(prima, ultima))) as Array<{ id: string; nome: string }>
+      const ids = [...new Set(righe.map((r) => r.cambiato_da).filter((x): x is string => !!x))]
+      const persone = ids.length ? (ok(await db.rpc('nomi_persone', { ids })) as Array<{ id: string; nome: string; cognome: string }>) : []
+      const voce = (v: string | null) => voci.find((x) => x.id === v)?.nome ?? '—'
+      const chi = (v: string | null) => {
+        const p = persone.find((x) => x.id === v)
+        return p ? `${p.nome} ${p.cognome}` : '—'
+      }
+      return righe.map((r) => ({ quando: r.cambiato_il, chi: chi(r.cambiato_da), prima: voce(r.voce_prima_id), dopo: voce(r.voce_dopo_id) }))
     },
 
     async chiusure() {

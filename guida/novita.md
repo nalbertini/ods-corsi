@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.119.0 — 18 ottobre 2026
+
+### Novità
+
+- In Contabilità si cambia la voce dei movimenti, anche tanti insieme
+
+### Risolto
+
+- Nella pagina I nostri corsi c'era troppo spazio prima delle schede
+
 ## 0.118.0 — 18 ottobre 2026
 
 ### Novità

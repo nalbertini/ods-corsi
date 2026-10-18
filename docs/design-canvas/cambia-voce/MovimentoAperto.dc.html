@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 32px; width: 1440px; padding: 28px 36px 36px; background: #121212; align-items: flex-start">
+<div style="width: 680px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · MOVIMENTO APERTO, LA VOCE SI CAMBIA</span><section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; ">IL MOVIMENTO</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">BONIFICO ENEL ENERGIA SPA</span>
+  <div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; width: 130px; flex-shrink: 0">DATA</span><span style="font-size: 15px">02/03/2019</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; width: 130px; flex-shrink: 0">TIPO</span><span style="font-size: 15px">USCITA</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; width: 130px; flex-shrink: 0">CASSA</span><span style="font-size: 15px">Conto Corrente</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; width: 130px; flex-shrink: 0">IMPORTO</span><span style="font-size: 15px">312,40 €</span></div>
+  <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="VOCE" valore="Energia elettrica" nota="Era: Da classificare. Solo le voci di uscita." hint-size="100%,90px"></dc-import>
+  <dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="DESCRIZIONE" valore="BONIFICO ENEL ENERGIA SPA" hint-size="100%,80px"></dc-import>
+  <dc-import name="Campo" contesto="segreteria" tipo="area" etichetta="NOTA" valore="" hint-size="100%,80px"></dc-import>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">Importo, data e cassa non si cambiano: si annulla e si rifà. La voce sì, anche se il giorno è già chiuso: i soldi non cambiano.</span>
+  <div style="display: flex; gap: 10px"><dc-import name="Bottone" label="CAMBIA LA VOCE" variante="pieno" contesto="segreteria"  hint-size="220px,48px"></dc-import><dc-import name="Bottone" label="SALVA IL TESTO" variante="linea" contesto="segreteria"  hint-size="200px,48px"></dc-import><dc-import name="Bottone" label="ANNULLA IL MOVIMENTO" variante="rosso" contesto="segreteria"  hint-size="240px,48px"></dc-import></div></section></div>
+<div style="width: 680px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · LA TRACCIA, SOTTO IL MOVIMENTO</span><section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; ">COSA È CAMBIATO</span>
+  <div style="display: flex; flex-direction: column; gap: 6px; font-size: 15px; line-height: 1.4">
+    <span>18/10/2026 · Chiara Bianchi: <span style="color: #8c8c88">Da classificare</span> → Energia elettrica</span>
+    <span>18/10/2026 · Chiara Bianchi: <span style="color: #8c8c88">Energia elettrica</span> → Spese ufficio</span>
+    <span style="color: #8c8c88">Un movimento dello storico mai cambiato non ha righe qui.</span>
+  </div>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">Per rimediare a un lotto sbagliato: si scelgono di nuovo le righe e si assegna la voce giusta. La traccia non si cancella.</span></section></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":760}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

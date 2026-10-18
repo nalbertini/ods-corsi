@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; gap: 32px; width: 1440px; padding: 28px 36px 36px; background: #121212; align-items: flex-start">
+<div style="width: 680px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · IL RIEPILOGO, PRIMA DI SCRIVERE</span><section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; ">NIENTE SI SCRIVE FINCHÉ NON DICI SÌ</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">CAMBIA LA VOCE A 214 MOVIMENTI</span>
+  <div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; width: 130px; flex-shrink: 0">MOVIMENTI</span><span style="font-size: 15px">214 uscite · − 38.420,00 €</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; width: 130px; flex-shrink: 0">ORA</span><span style="font-size: 15px">Da classificare (214)</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; width: 130px; flex-shrink: 0">CASSE</span><span style="font-size: 15px">non cambiano: i saldi restano uguali</span></div>
+  <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="NUOVA VOCE" valore="Energia elettrica" nota="Solo le voci di uscita. Non c’è la voce? Si crea in VOCI." hint-size="100%,90px"></dc-import>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">Cambia solo la voce: importo, data, cassa e testo restano come sono, anche nei giorni già chiusi (la chiusura non cambia). 3 hanno già questa voce: restano come sono. Vanno a pacchetti da 500, ognuno tutto o niente.</span>
+  <div style="display: flex; gap: 10px"><dc-import name="Bottone" label="SÌ, CAMBIA LA VOCE" variante="pieno" contesto="segreteria"  hint-size="260px,48px"></dc-import><dc-import name="Bottone" label="NO, TORNA ALL’ELENCO" variante="linea" contesto="segreteria"  hint-size="240px,48px"></dc-import></div></section></div>
+<div style="width: 680px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · A LAVORO FATTO</span><section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; ">FATTO</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">211 CAMBIATI, 3 ERANO GIÀ COSÌ</span>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">I totali per voce sono già aggiornati. Ogni cambio resta nel movimento: chi, quando, la voce di prima.</span>
+  <div style="display: flex; gap: 10px"><dc-import name="Bottone" label="TORNA ALL’ELENCO" variante="pieno" contesto="segreteria"  hint-size="240px,48px"></dc-import></div></section></div>
+<div style="width: 680px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · SE UN PACCHETTO SI FERMA</span><section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; color: #e4292a">NON È FINITO</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">CAMBIATI 1.000 SU 2.100</span>
+  <div style="padding: 12px 14px; border: 2px solid #e4292a; font-size: 15px; line-height: 1.4">Il movimento del 12/03/2019 (BONIFICO ASD ROMA) è annullato: non si cambia. Quel pacchetto (da 1.001 a 1.500) non è cambiato; i primi 1.000 sì. Togli quel movimento dalla scelta e riprova.</div>
+  <div style="display: flex; gap: 10px"><dc-import name="Bottone" label="TORNA ALL’ELENCO" variante="pieno" contesto="segreteria"  hint-size="240px,48px"></dc-import></div></section></div>
+<div style="width: 680px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · SCELTA MISTA</span><section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; ">SCEGLI SOLO ENTRATE O SOLO USCITE</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">CAMBIA VOCE</span>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">Hai scelto 4 entrate e 2 uscite. Una voce è o di entrata o di uscita: scegli solo le une o le altre.</span>
+  <div style="display: flex; gap: 10px"><dc-import name="Bottone" label="CAMBIA VOCE" variante="pieno" contesto="segreteria" disabled="{{ true }}" hint-size="200px,48px"></dc-import><dc-import name="Bottone" label="SOLO LE 4 ENTRATE" variante="linea" contesto="segreteria"  hint-size="220px,48px"></dc-import><dc-import name="Bottone" label="SOLO LE 2 USCITE" variante="linea" contesto="segreteria"  hint-size="220px,48px"></dc-import></div></section></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
