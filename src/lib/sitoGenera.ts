@@ -584,6 +584,7 @@ ${GRIGLIE_LUNGHE}
 .scheda-nome .pulsante.secondario{background:var(--inchiostro);color:#fff}
 .dati-persona{margin-top:48px;grid-template-columns:repeat(4,1fr)}
 .ritratti-sezione:last-child{padding-bottom:0}
+main:has(.ritratto-invito) + .piede{margin-top:6px}
 .ritratti-sezione + .testo{padding:0 var(--margine);max-width:calc(900px + var(--margine) * 2);font-size:24px;line-height:1.4}
 .non-trovata{padding:40px var(--margine) 96px}
 .non-trovata p{max-width:34em}

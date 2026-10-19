@@ -208,6 +208,8 @@ console.log('\n9. Le differenze che restavano: pulsante corto, invito, piede, te
   const pi = dentro(/^\s*\.piede\s*$/)
   ok('sul telefono il testo sotto la griglia non c’è (il design telefono non lo ha)', /\.ritratti-sezione \+ \.testo\{[^}]*display:\s*none/.test(TELEFONO), true)
   ok('e allora la griglia non lascia i 96px sotto: l’invito sta a 48px', /\.ritratti-sezione\{[^}]*padding-bottom:\s*0/.test(TELEFONO), true)
+  // Con l'invito dentro la griglia il piede viene subito dopo i ritratti: senza margine ci si attaccava.
+  ok('con l’invito nella griglia il piede sta 6px sotto, come sotto l’invito giallo', [/ritratto-invito[\s\S]*<\/main><footer class="piede">/.test(pagina(tredici)),/main:has\(\.ritratto-invito\) \+ \.piede\{[^}]*margin-top:\s*6px/.test(CSS)], [true, true])
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
