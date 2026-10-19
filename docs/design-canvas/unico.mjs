@@ -89,23 +89,13 @@ const SEZIONI = [
   { id: 'scheda-popover', nome: 'Segreteria · dettagli in una finestra · proposta', cartella: 'scheda-popover' },
 ]
 
-// Il canvas mostra al massimo 40 pagine: le sezioni vicine stanno sulla stessa pagina, una sotto l'altra, ognuna col suo titolo.
-// Una sezione che non è in un gruppo ha una pagina sua.
-const MAX_PAGINE = 40
-const GRUPPI = {
-  'iscrizione-flusso': { nome: 'Iscrizione · il modulo', sezioni: ['iscrizione', 'iscrizione-nuovo', 'iscrizione-rifinitura', 'navigazione-passi', 'iscrizione-sito', 'iscrizioni-pagina'] },
-  'iscrizione-famiglia': { nome: 'Iscrizione · famiglia', sezioni: ['iscrizione-famiglia', 'famiglia-passo', 'famiglia-ultimo', 'anche-tu'] },
-  'iscrizione-dettagli': { nome: 'Iscrizione · dettagli', sezioni: ['orari-evidenziati', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'comune-dal-cap', 'firma-schermo-intero', 'riempi-prova', 'carta-atleta', 'esci-dalla-prova'] },
-  'vestiario': { nome: 'Vestiario', sezioni: ['vestiario', 'vestiario-modulo'] },
-  'sito': { nome: 'Sito', sezioni: ['sito-pannello', 'sito-pubblico', 'orari-sito', 'sito-rebrand', 'sito-approvato'] },
-  'segreteria-iscritti': { nome: 'Segreteria · iscritti e prezzi', sezioni: ['iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'filtro-storico-pagamenti', 'tessere', 'scheda-iscritto-schede', 'prezzi-mancanti'] },
-  'segreteria-certificati': { nome: 'Segreteria · certificati', sezioni: ['certificati-online', 'certificato-piccoli'] },
-  'segreteria-strumenti': { nome: 'Segreteria · strumenti', sezioni: ['segreteria-tatami', 'banco', 'cerca-universale', 'menu-icone', 'importa-fogli'] },
-  'segreteria-conti': { nome: 'Segreteria · conti e ruoli', sezioni: ['contabilita', 'cambia-voce', 'movimenti-persona', 'movimenti-filtri', 'chiusura-cassa', 'bilancio-anno', 'ruolo-amministrazione', 'menu-unico', 'email-contatto'] },
-  'istruttori': { nome: 'Istruttori', sezioni: ['istruttore', 'istruttore-collega', 'istruttore-sito'] },
-  'timer': { nome: 'Timer', sezioni: ['timer-desktop', 'timer-istruttori', 'timer-musica', 'timer-youtube'] },
-}
-const gruppoDi = (id) => Object.keys(GRUPPI).find((g) => GRUPPI[g].sezioni.includes(id))
+// Tutti i design già fatti stanno in una pagina sola, «Archivio», per area (la parte del nome prima di « · »,
+// nell'ordine in cui compare in SEZIONI) e dentro l'area per riferimento, una sezione sotto l'altra col suo titolo.
+// Le pagine di lavoro sono solo Design System e Libreria: una sezione nuova si aggiunge a SEZIONI e finisce qui.
+const AREA = (s) => s.nome.split(' · ')[0]
+const aree = [...new Set(SEZIONI.map(AREA))]
+SEZIONI.sort((a, b) => aree.indexOf(AREA(a)) - aree.indexOf(AREA(b)))
+const ARCHIVIO = 'archivio'
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')
 const leggi = (p) => readFileSync(p, 'utf8')
@@ -139,7 +129,7 @@ const boards = {}
 const order = []
 const pages = []
 const notes = {}
-const cursori = new Map() // pagina → fondo dell'ultima sezione messa, per i gruppi
+let fondo = 900 // fondo dell'ultima sezione messa nell'archivio; sopra c'è l'indice
 const nomiLibreria = new Set(dcHtml(join(base, LIBRERIA)).map(stem))
 
 function copia(da, nome, riscrivi) {
@@ -198,17 +188,13 @@ for (const s of SEZIONI) {
   } else {
     posti = griglia(cartella, propri)
   }
-  const g = gruppoDi(s.id)
-  const pagina = g ?? s.id
-  if (!pages.some((p) => p.id === pagina)) pages.push({ id: pagina, name: g ? GRUPPI[g].nome : s.nome })
-  // In un gruppo ogni sezione parte sotto la precedente, con un titolo sopra (≥ 223 px sopra la prima riga).
-  let dy = 0
-  if (g) {
-    const sx = Math.min(...posti.map((a) => a.x)), larg = Math.max(...posti.map((a) => a.x + a.w)) - sx
-    dy = (cursori.get(pagina) ?? 0) + 300
-    notes[`${s.id}-titolo`] = { x: sx, y: dy - 260, text: s.nome, kind: 'title1', maxW: Math.min(Math.max(larg, 600), 1840), page: pagina }
-    cursori.set(pagina, dy + Math.max(...posti.map((a) => a.y + a.h)))
-  }
+  if (!pages.some((p) => p.id === ARCHIVIO)) pages.push({ id: ARCHIVIO, name: 'Archivio' })
+  // Ogni sezione parte sotto la precedente, con un titolo sopra (≥ 223 px sopra la prima riga).
+  const sx = Math.min(...posti.map((a) => a.x)), larg = Math.max(...posti.map((a) => a.x + a.w)) - sx
+  const dy = fondo + 300
+  notes[`${s.id}-titolo`] = { x: sx, y: dy - 260, text: s.nome, kind: 'title1', maxW: Math.min(Math.max(larg, 600), 1840), page: ARCHIVIO }
+  fondo = dy + Math.max(...posti.map((a) => a.y + a.h))
+  const pagina = ARCHIVIO
   for (const a of posti) {
     const nome = `${s.id}-${a.file}`
     boards[nome] = { x: a.x, y: a.y + dy, w: a.w, h: a.h, page: pagina, title: a.title ?? stem(a.file) }
@@ -220,6 +206,13 @@ for (const s of SEZIONI) {
     // Un titolo (`kind`) resta titolo: un post-it largo si allunga a 4/3 e copre le tavole sotto.
     notes[`${s.id}-${n.id}`] = { x: n.x, y: n.y + dy, w: n.w, text: n.text, page: pagina, ...(n.kind && { kind: n.kind, maxW: n.maxW }) }
   }
+}
+
+// L'indice dell'archivio: le aree e, sotto, le sezioni nell'ordine in cui compaiono.
+notes['archivio-indice-titolo'] = { x: 0, y: 0, text: 'Archivio dei design', kind: 'title1', maxW: 1280, page: ARCHIVIO }
+notes['archivio-indice'] = {
+  x: 0, y: 300, w: 1400, page: ARCHIVIO,
+  text: aree.map((a) => `${a.toUpperCase()}: ${SEZIONI.filter((s) => AREA(s) === a && order.some((f) => f.startsWith(`${s.id}-`))).map((s) => s.nome.split(' · ').slice(1).join(' · ') || s.nome).join(' · ')}`).join('\n\n'),
 }
 
 // Ogni <dc-import> deve avere il suo file nel canvas.
@@ -242,7 +235,6 @@ const indice = {
   notes,
   designSystems: [],
 }
-if (pages.length > MAX_PAGINE) { console.error(`${pages.length} pagine: il canvas ne mostra ${MAX_PAGINE}. Raggruppa altre sezioni in GRUPPI.`); errori++ }
 writeFileSync(join(uscita, 'project', 'canvas.json'), JSON.stringify(indice, null, 1))
 writeFileSync(join(uscita, 'files.json'), JSON.stringify(['project/canvas.json', ...order.map((f) => `project/${f}`)]))
 console.log(`${order.length} artboard in ${pages.length} pagine → ${uscita}`)
