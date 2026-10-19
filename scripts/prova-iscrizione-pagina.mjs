@@ -52,8 +52,9 @@ ok('APERTURA', P.APERTURA, { titolo: 'Iscriviti a Officine Dello Sport', frase: 
 ok('nessun tempo promesso sul richiamo: niente cifre, «entro», «ore», «giorni»', typeof P.APERTURA?.frase === 'string' && !/\d|\bentro\b|\bore\b|\bgiorni?\b/i.test(P.APERTURA.frase), true)
 ok('AVVISO_RICHIESTA', P.AVVISO_RICHIESTA, 'La richiesta non è ancora l’iscrizione. Non si salva a metà: se esci, ricominci.')
 ok('SENZA_MODULO (al posto del tasto)', P.SENZA_MODULO, 'Per iscriverti chiamaci o passa in palestra.')
-ok('COSA_SERVE', P.COSA_SERVE, [
-  'La carta d’identità: la tua, o quella del genitore se si iscrive un minore.',
+// La carta è di chi si iscrive, dai 6 anni: la prima riga non manda più a quella del genitore.
+ok('COSA_SERVE: la carta di chi si iscrive, dai 6 anni, senza il genitore', [/^La carta d’identità/.test(P.COSA_SERVE?.[0] ?? ''), /6 anni/.test(P.COSA_SERVE?.[0] ?? ''), /genitore/i.test(P.COSA_SERVE?.[0] ?? '')], [true, true, false])
+ok('COSA_SERVE: le altre righe', P.COSA_SERVE?.slice(1), [
   'Il certificato medico, se ce l’hai. Se no, mandi la richiesta lo stesso e lo porti in segreteria.',
   'La ricevuta del pagamento, se hai già pagato.',
   'Per un minore firma il genitore.',

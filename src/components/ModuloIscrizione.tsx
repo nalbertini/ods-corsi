@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FocusEvent, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { anniScritti, avvisoCertificato, certificatoDaPortare, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante } from '../lib/richieste'
+import { anniScritti, avvisoCertificato, certificatoDaPortare, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante, tipiDaChiedere } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { riduciFoto } from '../lib/foto'
@@ -35,8 +35,7 @@ import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
  * Con `nucleo` è una persona in più nel nucleo familiare di un iscritto,
  * dalla sua area (vedi `nucleo.ts`): il modulo parte coi dati che il titolare
  * ha già dato (cognome, residenza, contatti, e lui come genitore), dice
- * quanto costa con lo sconto famiglia e come pagarlo, e per un minore il
- * documento del genitore non serve: la segreteria ha già il suo.
+ * quanto costa con lo sconto famiglia e come pagarlo.
  *
  * Il documento d'identità e il certificato medico si caricano qui, per
  * comodità: la segreteria li stampa, li tiene su carta e li cancella
@@ -195,10 +194,12 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
   )
 
-  /** Per un minore del nucleo il documento è quello del genitore, che la segreteria ha già. */
-  const documento = !(nucleo && minore)
-  /** I file da chiedere: il documento solo se serve, il certificato solo dai 6 anni. */
-  const daChiedere = FILE.filter((f) => (documento || !f.tipo.startsWith('documento')) && (certificato !== 'nessuno' || f.tipo !== 'certificato'))
+  /** I file da chiedere: la carta d'identità e il certificato solo dai 6 anni. */
+  const tipiChiesti = tipiDaChiedere(
+    natoIl,
+    (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
+  )
+  const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo))
   const obbligatorio = (t: TipoFile) => daChiedere.some((f) => f.tipo === t && f.obbligatorio)
 
   const errori = problemi(pronta)

@@ -41,7 +41,8 @@ Sotto, **I FILE**: modulo firmato e ricevuta. La ricevuta non è obbligatoria:
 se non c'è, una riga dice «Nessuna ricevuta: il pagamento si fa in
 segreteria», e la richiesta si accoglie lo stesso. Le richieste mandate insieme
 (una famiglia) hanno tutte la stessa ricevuta: è un bonifico
-solo, per il totale di tutte. La carta d'identità sta in un riquadro giallo,
+solo, per il totale di tutte. La carta d'identità è quella di chi si iscrive (anche un minore, dai 6
+anni: non più quella del genitore) e sta in un riquadro giallo,
 perché nell'app non resta: accolta la richiesta, la si apre, si stampa, si
 mette nella cartellina e **Stampato, cancella** la cancella per sempre. La
 scheda dell'iscritto segna da sé che la copia è in segreteria.

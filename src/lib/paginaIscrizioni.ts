@@ -28,7 +28,7 @@ export const INFORMATIVA_FRASE = 'Come trattiamo i tuoi dati:'
 
 /** Cosa tenere pronto. Il certificato non blocca: la segreteria lo prende anche di persona. */
 export const COSA_SERVE: string[] = [
-  'La carta d’identità: la tua, o quella del genitore se si iscrive un minore.',
+  'La carta d’identità di chi si iscrive, dai 6 anni.',
   'Il certificato medico, se ce l’hai. Se no, mandi la richiesta lo stesso e lo porti in segreteria.',
   'La ricevuta del pagamento, se hai già pagato.',
   'Per un minore firma il genitore.',
