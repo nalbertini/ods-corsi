@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COM'È OGGI (produzione, 2026-10-19): per un minorenne, scritta la data di nascita: compare IL GENITORE, e i contatti sono i suoi. Testi e campi da src/components/IscrizioniScreen.tsx, ModuloIscrizione.tsx e src/lib/richieste.ts. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1300px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" tema="sito" label="CHI SI ISCRIVE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 8px"><dc-import name="Campo" tema="sito" tipo="testo" etichetta="NOME" valore="Luca" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="COGNOME" valore="Bianchi" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="CODICE FISCALE" valore="BNCLCU16E10L219X" codice="{{ true }}" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="DATA DI NASCITA" valore="10/05/2016" nota="10 anni: lo dice il codice fiscale" notaTono="avviso" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="LUOGO DI NASCITA" valore="Torino" hint-size="100%,88px"></dc-import><span style="font-size: 15px; line-height: 1.45; color: #8f6a00">È minorenne: servono i dati del genitore qui sotto, e il modulo per minori, che firma il genitore.</span></div>
+<dc-import name="Titoletto" tema="sito" label="IL GENITORE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 8px"><dc-import name="Campo" tema="sito" tipo="testo" etichetta="NOME" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="COGNOME" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="CODICE FISCALE DEL GENITORE" valore="" codice="{{ true }}" hint-size="100%,88px"></dc-import></div>
+<dc-import name="Titoletto" tema="sito" label="COME RAGGIUNGERE IL GENITORE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 8px"><span style="font-size: 15px; line-height: 1.45; color: #46606f">Email, telefono e telefono 2, come per un adulto.</span></div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

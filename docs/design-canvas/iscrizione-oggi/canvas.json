@@ -1,0 +1,115 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Iscrizione · com'è oggi"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "P1-Pagina.dc.html",
+      "title": "1 · La pagina iscrizioni/",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 3000,
+      "page": "page-1"
+    },
+    {
+      "file": "P2-Chi.dc.html",
+      "title": "2 · Il modulo · chi si iscrive",
+      "x": 510,
+      "y": 0,
+      "w": 390,
+      "h": 780,
+      "page": "page-1"
+    },
+    {
+      "file": "P3-Residenza.dc.html",
+      "title": "3 · Il modulo · residenza e contatti",
+      "x": 1020,
+      "y": 0,
+      "w": 390,
+      "h": 760,
+      "page": "page-1"
+    },
+    {
+      "file": "P4-Corsi.dc.html",
+      "title": "4 · Il modulo · i corsi e come paghi",
+      "x": 1530,
+      "y": 0,
+      "w": 390,
+      "h": 820,
+      "page": "page-1"
+    },
+    {
+      "file": "P5-Firma.dc.html",
+      "title": "5 · Il modulo · la firma",
+      "x": 2040,
+      "y": 0,
+      "w": 390,
+      "h": 1450,
+      "page": "page-1"
+    },
+    {
+      "file": "P6-File.dc.html",
+      "title": "6 · Il modulo · file, altro e invio",
+      "x": 2550,
+      "y": 0,
+      "w": 390,
+      "h": 1250,
+      "page": "page-1"
+    },
+    {
+      "file": "P7-Arrivata.dc.html",
+      "title": "7 · Richiesta arrivata",
+      "x": 3060,
+      "y": 0,
+      "w": 390,
+      "h": 560,
+      "page": "page-1"
+    },
+    {
+      "file": "M2-Chi.dc.html",
+      "title": "Minorenne · chi si iscrive e il genitore",
+      "x": 510,
+      "y": 3300,
+      "w": 390,
+      "h": 1300,
+      "page": "page-1"
+    },
+    {
+      "file": "M5-Firma.dc.html",
+      "title": "Minorenne · il modulo e i file",
+      "x": 1020,
+      "y": 3300,
+      "w": 390,
+      "h": 1700,
+      "page": "page-1"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "n1",
+      "x": 0,
+      "y": -260,
+      "text": "Iscrizione · com'è oggi: la pagina e il modulo, in ordine",
+      "kind": "title1",
+      "maxW": 3500,
+      "page": "page-1"
+    },
+    {
+      "id": "n2",
+      "x": 0,
+      "y": 3040,
+      "text": "Se si iscrive un minorenne · cosa cambia",
+      "kind": "title1",
+      "maxW": 1500,
+      "page": "page-1"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  }
+}

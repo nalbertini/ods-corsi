@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COM'È OGGI (produzione, 2026-10-19): IL MODULO: come si firma, le due scelte che partono vuote, il riquadro della firma. Testi e campi da src/components/IscrizioniScreen.tsx, ModuloIscrizione.tsx e src/lib/richieste.ts. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1450px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" tema="sito" label="IL MODULO" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 8px"><span style="font-size: 15px; line-height: 1.45; color: #0d2a3d">Le autorizzazioni per maggiorenni: il tesseramento, le foto e la privacy. <span style="color: #0d2a3d; text-decoration: underline">Leggi il modulo</span>.</span><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Firmo qui" scelto="{{ true }}" hint-size="100%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Ho il foglio firmato" hint-size="100%,52px"></dc-import></div></div><span style="font-size: 15px; line-height: 1.45; color: #46606f">Firmi qui col dito, oppure carichi la foto del foglio già firmato.</span><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">IL TESSERAMENTO ALLA FIJLKAM E/O FIPE</span><span style="font-size: 15px; line-height: 1.45; color: #46606f">Per la stagione 2026/27. Devi scegliere una delle due. Anche se non acconsenti, l’iscrizione va avanti.</span><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Acconsento" hint-size="100%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Non acconsento" hint-size="100%,52px"></dc-import></div></div><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">LE FOTO SUI SOCIAL</span><span style="font-size: 15px; line-height: 1.45; color: #46606f">Le foto che ti ritraggono, sui social della palestra. Devi scegliere una delle due. Anche se non autorizzi, l’iscrizione non cambia e non compari nelle foto.</span><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Autorizzo" hint-size="100%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Non autorizzo" hint-size="100%,52px"></dc-import></div></div><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">LA FIRMA</span><dc-import name="TavolaFirma" tema="sito" hint-size="100%,170px"></dc-import><dc-import name="Bottone" tema="sito" label="FIRMA A SCHERMO INTERO" variante="vai" larghezza="100%" alto="56px" hint-size="100%,56px"></dc-import><span style="font-size: 15px; line-height: 1.45; color: #46606f">In orizzontale firmi meglio: gira il telefono quando apri la firma.</span><span style="font-size: 15px; line-height: 1.45; color: #46606f">I dati delle domande, le caselle scelte, la data e la firma si scrivono sul modulo, e la firma va in ogni riga dove serve.</span><div style="display: flex; gap: 8px; flex-wrap: wrap"><dc-import name="Bottone" tema="sito" label="CANCELLA LA FIRMA" variante="linea" larghezza="190px" alto="48px" hint-size="190px,48px"></dc-import><dc-import name="Bottone" tema="sito" label="GUARDA IL MODULO" variante="linea" larghezza="170px" alto="48px" hint-size="170px,48px"></dc-import></div></div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

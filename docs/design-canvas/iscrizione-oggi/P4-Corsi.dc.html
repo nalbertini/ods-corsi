@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COM'È OGGI (produzione, 2026-10-19): I CORSI dopo la data di nascita di un adulto: prima quelli per la sua età, poi quelli senza fascia, gli altri chiusi dietro il tasto. Senza data sono tutti in un elenco solo. Nessun prezzo qui. Testi e campi da src/components/IscrizioniScreen.tsx, ModuloIscrizione.tsx e src/lib/richieste.ts. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 820px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" tema="sito" label="I CORSI" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 8px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">PER LA SUA ETÀ</span><dc-import name="Campo" tema="sito" tipo="scelta" etichetta="" valore="Judo adulti" riga="nati nel 2012 o prima · lunedì, mercoledì e venerdì 19.00-20.30" hint-size="100%,72px"></dc-import><dc-import name="Campo" tema="sito" tipo="scelta" etichetta="" valore="Preparazione atletica, pesi e Mobility" riga="nati nel 2012 o prima · lunedì, mercoledì e venerdì 18.00-19.00" hint-size="100%,72px"></dc-import><dc-import name="Campo" tema="sito" tipo="scelta" etichetta="" valore="MGA · metodo globale autodifesa" riga="dal 2011 · venerdì 19.00-20.00" hint-size="100%,72px"></dc-import><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">SENZA FASCIA D’ETÀ</span><dc-import name="Campo" tema="sito" tipo="scelta" etichetta="" valore="Body functional" riga="prezzo da confermare" hint-size="100%,72px"></dc-import><dc-import name="Bottone" tema="sito" label="+ ALTRI 12 CORSI, NON PER LA SUA ETÀ" variante="tratteggiato" larghezza="100%" alto="52px" hint-size="100%,52px"></dc-import><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">COME PAGHI</span><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Annuale" hint-size="100%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tema="sito" tipo="scelta" una="{{ true }}" etichetta="" valore="Trimestre" hint-size="100%,52px"></dc-import></div></div></div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>
