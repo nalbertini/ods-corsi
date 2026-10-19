@@ -17,9 +17,6 @@ if (!process.argv[2]) {
 const LIBRERIA = 'ods-design-system'
 const FONDAMENTA = new Set(['Main', 'Pagina', 'PaginaTelefono', 'PaginaSito', 'PaginaSitoTelefono', 'TemaSito'])
 const SEZIONI = [
-  { id: 'iscrizione', nome: 'Iscrizione · modulo attuale', cartella: 'iscrizione' },
-  { id: 'iscrizione-nuovo', nome: 'Iscrizione · nuovo flusso a passi', cartella: 'iscrizione-nuovo' },
-  { id: 'iscrizione-rifinitura', nome: 'Iscrizione · passi, rifinitura', cartella: 'iscrizione-rifinitura' },
   { id: 'navigazione-passi', nome: 'Iscrizione · testa dei passi (ipotesi)', cartella: 'navigazione-passi' },
   { id: 'iscrizione-famiglia', nome: 'Iscrizione · famiglia', cartella: 'iscrizione-famiglia' },
   { id: 'famiglia-passo', nome: 'Iscrizione · famiglia, un passo a sé', cartella: 'famiglia-passo' },
@@ -36,17 +33,14 @@ const SEZIONI = [
   { id: 'esci-dalla-prova', nome: 'Iscrizione · esci dalla prova', cartella: 'esci-dalla-prova' },
   { id: 'iscrizione-sito', nome: 'Iscrizione · modulo nell\'aspetto del sito', cartella: 'iscrizione-sito' },
   { id: 'iscrizioni-pagina', nome: 'Iscrizioni · la pagina d\'ingresso', cartella: 'iscrizioni-pagina' },
-  { id: 'vestiario', nome: 'Vestiario · ordini', cartella: 'vestiario' },
   { id: 'vestiario-modulo', nome: 'Vestiario · come il modulo', cartella: 'vestiario-modulo' },
   { id: 'sito-pannello', nome: 'Sito · pannello', cartella: 'sito-pannello' },
   { id: 'sito-pubblico', nome: 'Sito · pagine pubbliche', cartella: 'sito-pubblico' },
   { id: 'orari-sito', nome: 'Sito · pagina orari', cartella: 'orari-sito' },
-  { id: 'sito-rebrand', nome: 'Sito · tre rebrand (scartati)', cartella: 'sito-rebrand' },
   { id: 'sito-approvato', nome: 'Sito · design approvato', cartella: 'sito-approvato' },
   { id: 'barra-prova', nome: 'Sito · barra Prova a 5 € / Chiama', cartella: 'barra-prova-chiama' },
   { id: 'corsi-eta', nome: 'Sito · corsi per età', cartella: 'corsi-per-eta' },
   { id: 'fatti-recensioni', nome: 'Sito · fatti e recensioni', cartella: 'fatti-recensioni' },
-  { id: 'segreteria-tatami', nome: 'Segreteria · tema Tatami', cartella: 'segreteria-tatami' },
   { id: 'segreteria-sito', nome: 'Segreteria · look del sito', cartella: 'segreteria-sito' },
   { id: 'banco', nome: 'Segreteria · il Banco, ridisegnata', cartella: 'banco' },
   { id: 'cerca-universale', nome: 'Segreteria · ricerca universale', cartella: 'cerca-universale' },
@@ -71,7 +65,6 @@ const SEZIONI = [
   { id: 'chiusura-cassa', nome: 'Segreteria · chiusura di cassa', cartella: 'chiusura-cassa' },
   { id: 'bilancio-anno', nome: 'Segreteria · bilancio di un anno', cartella: 'bilancio-anno' },
   { id: 'menu-unico', nome: 'Segreteria · menu unico', cartella: 'menu-unico' },
-  { id: 'istruttore', nome: 'Istruttori · sezione', cartella: 'istruttore' },
   { id: 'istruttore-collega', nome: 'Istruttori · insegna con te', cartella: 'istruttore-collega' },
   { id: 'istruttore-sito', nome: 'Istruttori · look del sito · proposta', cartella: 'istruttore-sito' },
   { id: 'tablet-sala', nome: 'Tablet di sala', cartella: 'tablet-sala' },
@@ -96,6 +89,9 @@ const AREA = (s) => s.nome.split(' · ')[0]
 const aree = [...new Set(SEZIONI.map(AREA))]
 SEZIONI.sort((a, b) => aree.indexOf(AREA(a)) - aree.indexOf(AREA(b)))
 const ARCHIVIO = 'archivio'
+// Le proposte ancora aperte stanno in una pagina a parte, sopra l'Archivio: lì si discute, il resto è storia.
+const DISCUSSIONE = 'in-discussione'
+const APERTE = new Set(['orari-evidenziati', 'esci-dalla-prova', 'moduli-pdf', 'istruttore-collega', 'sito-pezzi-spazio', 'sito-pezzi-scrivi'])
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')
 const leggi = (p) => readFileSync(p, 'utf8')
@@ -129,7 +125,7 @@ const boards = {}
 const order = []
 const pages = []
 const notes = {}
-let fondo = 900 // fondo dell'ultima sezione messa nell'archivio; sopra c'è l'indice
+const fondi = { [ARCHIVIO]: 900, [DISCUSSIONE]: 0 } // fondo dell'ultima sezione di ogni pagina; nell'archivio sopra c'è l'indice
 const nomiLibreria = new Set(dcHtml(join(base, LIBRERIA)).map(stem))
 
 function copia(da, nome, riscrivi) {
@@ -147,7 +143,7 @@ function copia(da, nome, riscrivi) {
   const extra = griglia(cartella, mancanti)
   const yBase = Math.max(0, ...c.artboards.filter((a) => a.page === 'page-2').map((a) => a.y + a.h)) + 160
   for (const e of extra) posti.set(e.file, { ...e, y: e.y + yBase, page: 'page-2' })
-  pages.push({ id: 'design-system', name: 'Design System' }, { id: 'libreria', name: 'Libreria' })
+  pages.push({ id: 'design-system', name: 'Oggi · Design System' }, { id: 'libreria', name: 'Oggi · Libreria' }, { id: DISCUSSIONE, name: 'In discussione · proposte aperte' })
   for (const [file, a] of posti) {
     const fond = FONDAMENTA.has(stem(file))
     boards[file] = { x: a.x, y: a.y, w: a.w, h: a.h, page: fond ? 'design-system' : 'libreria', title: a.title ?? stem(file) }
@@ -188,13 +184,12 @@ for (const s of SEZIONI) {
   } else {
     posti = griglia(cartella, propri)
   }
-  if (!pages.some((p) => p.id === ARCHIVIO)) pages.push({ id: ARCHIVIO, name: 'Archivio' })
   // Ogni sezione parte sotto la precedente, con un titolo sopra (≥ 223 px sopra la prima riga).
   const sx = Math.min(...posti.map((a) => a.x)), larg = Math.max(...posti.map((a) => a.x + a.w)) - sx
-  const dy = fondo + 300
-  notes[`${s.id}-titolo`] = { x: sx, y: dy - 260, text: s.nome, kind: 'title1', maxW: Math.min(Math.max(larg, 600), 1840), page: ARCHIVIO }
-  fondo = dy + Math.max(...posti.map((a) => a.y + a.h))
-  const pagina = ARCHIVIO
+  const pagina = APERTE.has(s.id) ? DISCUSSIONE : ARCHIVIO
+  const dy = fondi[pagina] + 300
+  notes[`${s.id}-titolo`] = { x: sx, y: dy - 260, text: s.nome, kind: 'title1', maxW: Math.min(Math.max(larg, 600), 1840), page: pagina }
+  fondi[pagina] = dy + Math.max(...posti.map((a) => a.y + a.h))
   for (const a of posti) {
     const nome = `${s.id}-${a.file}`
     boards[nome] = { x: a.x, y: a.y + dy, w: a.w, h: a.h, page: pagina, title: a.title ?? stem(a.file) }
@@ -208,11 +203,12 @@ for (const s of SEZIONI) {
   }
 }
 
+pages.push({ id: ARCHIVIO, name: 'Storia · Archivio' })
 // L'indice dell'archivio: le aree e, sotto, le sezioni nell'ordine in cui compaiono.
 notes['archivio-indice-titolo'] = { x: 0, y: 0, text: 'Archivio dei design', kind: 'title1', maxW: 1280, page: ARCHIVIO }
 notes['archivio-indice'] = {
   x: 0, y: 300, w: 1400, page: ARCHIVIO,
-  text: aree.map((a) => `${a.toUpperCase()}: ${SEZIONI.filter((s) => AREA(s) === a && order.some((f) => f.startsWith(`${s.id}-`))).map((s) => s.nome.split(' · ').slice(1).join(' · ') || s.nome).join(' · ')}`).join('\n\n'),
+  text: aree.map((a) => `${a.toUpperCase()}: ${SEZIONI.filter((s) => AREA(s) === a && !APERTE.has(s.id) && order.some((f) => f.startsWith(`${s.id}-`))).map((s) => s.nome.split(' · ').slice(1).join(' · ') || s.nome).join(' · ')}`).join('\n\n'),
 }
 
 // Ogni <dc-import> deve avere il suo file nel canvas.
