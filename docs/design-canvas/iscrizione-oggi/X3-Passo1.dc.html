@@ -14,7 +14,7 @@
     body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<!-- PROPOSTA (2026-10-19, commento sulla tavola 3): il modulo a passi. Il primo passo tiene insieme chi si iscrive, la residenza e i contatti, e finisce con ← INDIETRO e AVANTI. Testi e campi come oggi. -->
+<!-- PROPOSTA (2026-10-19, commento sulla tavola 3): il modulo a passi. Il primo passo tiene insieme chi si iscrive, la residenza e i contatti, e finisce con il tasto indietro (solo la freccia, 56×56, staccato) e AVANTI. Testi e campi come oggi. -->
 <div style="display: flex; flex-direction: column; width: 390px; min-height: 1500px; background: #eef5fa; color: #0d2a3d">
 <dc-import name="Testata" tema="sito" luogo="ISCRIZIONI" guida="{{ false }}" senzaTema="{{ true }}" hint-size="100%,72px"></dc-import>
 <main style="display: flex; flex-direction: column">
@@ -26,7 +26,7 @@
 <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 8px"><dc-import name="Campo" tema="sito" tipo="testo" etichetta="VIA E NUMERO" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="CAP" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="COMUNE" valore="" hint-size="100%,88px"></dc-import></div>
 <dc-import name="Titoletto" tema="sito" label="COME RAGGIUNGERTI" hint-size="100%,50px"></dc-import>
 <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 8px"><dc-import name="Campo" tema="sito" tipo="testo" etichetta="EMAIL" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="TELEFONO" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="TELEFONO 2 · FACOLTATIVO" valore="" hint-size="100%,88px"></dc-import></div>
-<div style="display: flex; align-items: center; gap: 10px; padding: 20px 20px 32px; border-top: 2px solid #cfe6f4; margin-top: 16px"><div style="width: 104px"><dc-import name="Bottone" tema="sito" label="← INDIETRO" variante="linea" larghezza="104px" alto="44px" corpo="14px" hint-size="104px,44px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Bottone" tema="sito" label="AVANTI" variante="vai" larghezza="100%" alto="56px" hint-size="100%,56px"></dc-import></div></div>
+<div style="display: flex; align-items: center; gap: 20px; padding: 20px 20px 32px; border-top: 2px solid #cfe6f4; margin-top: 16px"><div style="width: 56px" title="Indietro" aria-label="Indietro"><dc-import name="Bottone" tema="sito" label="←" variante="linea" larghezza="56px" alto="56px" corpo="26px" hint-size="56px,56px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Bottone" tema="sito" label="AVANTI" variante="vai" larghezza="100%" alto="56px" hint-size="100%,56px"></dc-import></div></div>
 </main>
 </div>
 </x-dc>
