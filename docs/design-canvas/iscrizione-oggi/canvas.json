@@ -7,15 +7,6 @@
   ],
   "artboards": [
     {
-      "file": "P1-Pagina.dc.html",
-      "title": "1 · La pagina iscrizioni/",
-      "x": 0,
-      "y": 0,
-      "w": 390,
-      "h": 3000,
-      "page": "page-1"
-    },
-    {
       "file": "P2-Chi.dc.html",
       "title": "2 · Il modulo · chi si iscrive",
       "x": 510,
@@ -89,18 +80,18 @@
     },
     {
       "file": "X1-PaginaSenzaCosti.dc.html",
-      "title": "Proposta · la pagina senza QUANTO COSTA",
+      "title": "1 · La pagina iscrizioni/",
       "x": 0,
-      "y": 5100,
+      "y": 0,
       "w": 390,
       "h": 1850,
       "page": "page-1"
     },
     {
       "file": "X2-Prezzi.dc.html",
-      "title": "Proposta · i prezzi, pagina a parte",
+      "title": "1b · Prezzi e pagamento (iscrizioni/#prezzi)",
       "x": 510,
-      "y": 5100,
+      "y": 0,
       "w": 390,
       "h": 1400,
       "page": "page-1"
