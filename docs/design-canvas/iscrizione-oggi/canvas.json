@@ -86,6 +86,24 @@
       "w": 390,
       "h": 1700,
       "page": "page-1"
+    },
+    {
+      "file": "X1-PaginaSenzaCosti.dc.html",
+      "title": "Proposta · la pagina senza QUANTO COSTA",
+      "x": 0,
+      "y": 5100,
+      "w": 390,
+      "h": 1850,
+      "page": "page-1"
+    },
+    {
+      "file": "X2-Prezzi.dc.html",
+      "title": "Proposta · i prezzi, pagina a parte",
+      "x": 510,
+      "y": 5100,
+      "w": 390,
+      "h": 1400,
+      "page": "page-1"
     }
   ],
   "annotations": [
@@ -105,6 +123,15 @@
       "text": "Se si iscrive un minorenne · cosa cambia",
       "kind": "title1",
       "maxW": 1500,
+      "page": "page-1"
+    },
+    {
+      "id": "n3",
+      "x": 0,
+      "y": 4840,
+      "text": "Proposta · i prezzi in una pagina a parte",
+      "kind": "title1",
+      "maxW": 1000,
       "page": "page-1"
     }
   ],
