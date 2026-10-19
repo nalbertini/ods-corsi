@@ -104,6 +104,15 @@
       "w": 390,
       "h": 1400,
       "page": "page-1"
+    },
+    {
+      "file": "X3-Passo1.dc.html",
+      "title": "Proposta · passo 1: chi si iscrive, residenza e contatti",
+      "x": 510,
+      "y": 1000,
+      "w": 390,
+      "h": 1500,
+      "page": "page-1"
     }
   ],
   "annotations": [

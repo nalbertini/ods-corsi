@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA (2026-10-19, commento sulla tavola 3): il modulo a passi. Il primo passo tiene insieme chi si iscrive, la residenza e i contatti, e finisce con ← INDIETRO e AVANTI. Testi e campi come oggi. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1500px; background: #eef5fa; color: #0d2a3d">
+<dc-import name="Testata" tema="sito" luogo="ISCRIZIONI" guida="{{ false }}" senzaTema="{{ true }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" tema="sito" label="RICHIESTA DI ISCRIZIONE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 4px 20px 0"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">PASSO 1 · I TUOI DATI</span></div>
+<dc-import name="Titoletto" tema="sito" label="CHI SI ISCRIVE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 8px"><dc-import name="Campo" tema="sito" tipo="testo" etichetta="NOME" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="COGNOME" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="CODICE FISCALE" valore="" codice="{{ true }}" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="DATA DI NASCITA" valore="" segnaposto="gg/mm/aaaa" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="LUOGO DI NASCITA" valore="" segnaposto="Lo dice il codice fiscale" hint-size="100%,88px"></dc-import></div>
+<dc-import name="Titoletto" tema="sito" label="RESIDENZA" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 8px"><dc-import name="Campo" tema="sito" tipo="testo" etichetta="VIA E NUMERO" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="CAP" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="COMUNE" valore="" hint-size="100%,88px"></dc-import></div>
+<dc-import name="Titoletto" tema="sito" label="COME RAGGIUNGERTI" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 8px"><dc-import name="Campo" tema="sito" tipo="testo" etichetta="EMAIL" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="TELEFONO" valore="" hint-size="100%,88px"></dc-import><dc-import name="Campo" tema="sito" tipo="testo" etichetta="TELEFONO 2 · FACOLTATIVO" valore="" hint-size="100%,88px"></dc-import></div>
+<div style="display: flex; gap: 10px; padding: 20px 20px 32px; border-top: 2px solid #cfe6f4; margin-top: 16px"><div style="width: 140px"><dc-import name="Bottone" tema="sito" label="← INDIETRO" variante="linea" larghezza="140px" alto="56px" hint-size="140px,56px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Bottone" tema="sito" label="AVANTI" variante="vai" larghezza="100%" alto="56px" hint-size="100%,56px"></dc-import></div></div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>
