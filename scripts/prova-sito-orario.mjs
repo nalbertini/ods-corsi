@@ -143,7 +143,7 @@ const ORARI = orariDel(r(A, 1, '17:00'), r(A, 3, '17:00'), r(B, 2, '16:30'), r(B
 console.log('\n3. Pagina non collegata: l’HTML è quello di oggi')
 // Le impronte sono dell’HTML di una pagina non collegata (senza campi nuovi): cambiano se cambia la testata, il logo o il CSS, e allora si rifanno.
 // Rifatte quando ogni pagina ha avuto «Salta al contenuto» in cima e il telefono del piede è diventato un link tel:, , per le correzioni di Scrivici, logo e numeri 1-4, e per le recensioni a carte uguali (via il CSS di «In breve»).
-const OGGI = { dati: "af6c945292cc71bd17eba761c786cfb7351cd83081bd8096d4dc4217f24cd71d", foto: '7093e1e8787bf77083e08b038ec06fc7d3c0d7bd29173da79b719a9670c8fc48', fascia: '66b780bf5ac03ab573f61cf1dfbdc35b2134377ca4dbc98fb9d0d9b049de9b3d' }
+const OGGI = { dati: "6432e22dc886a16f28f751638fbe4338671c25bc7a7efc97aacdfecc14c77431", foto: '1a3615a096069fce5cc3f3febf8bd2c1a8ccf6dd164589ecb1e47658c1186ba9', fascia: '920f155130bc073a4711e4b95ae8d5e73da6f92539118c0b55562f53db6370ce' }
 ok('con foto di apertura: HTML di oggi', sha(pagina(CON_FOTO)), OGGI.foto)
 ok('fascia blu: HTML di oggi', sha(pagina(FASCIA)), OGGI.fascia)
 ok('l’orario a mano si vede ancora', /09:15 – 10:15/.test(testo(main(pagina(CON_FOTO)))), true)

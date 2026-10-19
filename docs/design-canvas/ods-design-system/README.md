@@ -357,7 +357,7 @@ del sito. `piccolo` li porta alla misura del telefono (375px). `nota="DA CONFERM
 
 | File | Cosa è |
 |---|---|
-| `SitoTestata.dc.html` | La testata: marchio, voci da 48px, pulsante di prova; sul telefono marchio + MENU |
+| `SitoTestata.dc.html` | COSTRUITA (`testata()` di `sitoGenera.ts`): marchio, voci da 48px (la corrente è una pillola gialla, Contatti è una voce come le altre), il solo pulsante «Iscriviti»; sul telefono marchio + MENU. `conScrivici` e `conVoceContatti` mostrano com'era prima (`../senza-scrivici/`) |
 | `SitoPulsante.dc.html` | Il pulsante del sito (giallo, inchiostro, linea), minimo 48px |
 | `SitoTessera.dc.html` | Una tessera numero (`35+`, `300+`…), tutte alte uguali |
 | `SitoTitolo.dc.html` | Titolo di sezione a 72-88px (56px sul telefono) con la frase d'apertura |

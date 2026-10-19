@@ -76,7 +76,7 @@ const TESTI = {
   prova: 'Iscriviti',
   provaIntera: 'Iscriviti',
   metro: 'vicino alla metro Fermi',
-  scrivici: 'Scrivici',
+  nomeContatti: 'Contatti',
   invito: 'Vieni a provare: ti aspettiamo in',
   settimana: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
   altriLink: 'Altri link',
@@ -138,7 +138,7 @@ const GRUPPI_PERSONA: Array<[string, string[]]> = [
 ]
 const TINTE_PERSONA = GRUPPI_PERSONA.flatMap(([sel, colori]) => colori.map((c, i) => `${sel} .tessera:nth-child(${i + 1}){background:var(--${c});color:${c === 'giallo' || c === 'chiara' ? 'var(--inchiostro)' : '#fff'}}`)).join('\n')
 
-/** La testata e il piede di tutte le pagine: due pulsanti interi (prova e Scrivici), sul telefono il tasto MENU che apre il menu con `:target`, senza script; bersagli da 48px. */
+/** La testata e il piede di tutte le pagine: un pulsante intero («Iscriviti»), sul telefono il tasto MENU che apre il menu con `:target`, senza script; bersagli da 48px. */
 const CSS_TESTATA = `
 .tasto-menu,.testata .chiudi,.testata .nel-menu{display:none}
 .testata nav ul{display:flex;flex-wrap:wrap;gap:10px;margin:0;padding:0;list-style:none;font-size:17px;font-weight:500}
@@ -417,7 +417,6 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .testata{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:22px var(--margine)}
 .pulsante,.testo a.pulsante,.colonna a.pulsante{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 32px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:18px;font-weight:600;text-decoration:none}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
-span.pulsante{pointer-events:none}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
 h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height:.82;overflow-wrap:anywhere}
 .pagina-hero{padding:40px var(--margine) 96px;display:flex;flex-wrap:wrap;align-items:stretch;gap:28px 56px}
@@ -1031,8 +1030,8 @@ function voci(dove: 'menu' | 'footer', c: Contesto): Array<{ etichetta: string; 
     .sort((a, b) => a.ordine - b.ordine)
     .flatMap((v) => {
       const href = indirizzoVoce(v, c)
-      // La pagina Contatti ha un solo nome, qualunque etichetta abbia scritto la segreteria: «Scrivici», come il pulsante in testata.
-      return href === null ? [] : [{ etichetta: href === TESTI.contatti ? TESTI.scrivici : v.etichetta.trim(), href }]
+      // La pagina Contatti ha un solo nome, qualunque etichetta abbia scritto la segreteria.
+      return href === null ? [] : [{ etichetta: href === TESTI.contatti ? TESTI.nomeContatti : v.etichetta.trim(), href }]
     })
 }
 
@@ -1061,20 +1060,14 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
   })
 }
 
-/** «Scrivici» sta accanto a «Prova», non nel menu: così sul telefono il menu entra in una riga. Nel piede resta tra le pagine. */
-function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
-  const menu = lista(voci('menu', c).filter((v) => !conContatti || v.href !== TESTI.contatti), corrente)
-  // In Contatti il pulsante non porta alla pagina in cui sei già: resta il nome, senza link.
-  const inContatti = corrente === TESTI.contatti
+/** In testata c'è un solo pulsante, «Iscriviti»; Contatti è una voce del menu come le altre (sul telefono il menu entra in una riga). */
+function testata(c: Contesto, corrente = ''): string {
+  const menu = lista(voci('menu', c), corrente)
   const logo = `<a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>`
-  // La testata nuova: due pulsanti interi a destra; sul telefono un tasto MENU che apre il menu con `:target`, senza script.
+  // La testata nuova: il pulsante intero a destra; sul telefono un tasto MENU che apre il menu con `:target`, senza script.
   const prova = `<a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.provaIntera}</a>`
-  const scriviciPulsante = (extra: string) => inContatti
-    ? `<span class="pulsante secondario${extra}" aria-current="page">${TESTI.scrivici}</span>`
-    : `<a class="pulsante secondario${extra}" href="${TESTI.contatti}">${TESTI.scrivici}</a>`
-  const scrivici = scriviciPulsante('')
-  const dentro = `<a class="chiudi" href="#">Chiudi</a>${menu ? `<ul>${menu}</ul>` : ''}${prova.replace('class="pulsante primario"', 'class="pulsante primario nel-menu"')}${conContatti ? scriviciPulsante(' nel-menu') : ''}`
-  return `<header class="testata">${logo}<a class="tasto-menu" href="#menu">MENU</a><nav id="menu" aria-label="Principale">${dentro}</nav><div class="azioni">${prova}${conContatti ? scrivici : ''}</div></header>`
+  const dentro = `<a class="chiudi" href="#">Chiudi</a>${menu ? `<ul>${menu}</ul>` : ''}${prova.replace('class="pulsante primario"', 'class="pulsante primario nel-menu"')}`
+  return `<header class="testata">${logo}<a class="tasto-menu" href="#menu">MENU</a><nav id="menu" aria-label="Principale">${dentro}</nav><div class="azioni">${prova}</div></header>`
 }
 
 function piede(c: Contesto): string {
@@ -1134,14 +1127,30 @@ function classeTitolo(titolo: string): string {
   return peso >= 14 ? ' class="lunghissimo"' : peso >= 12 ? ' class="lungo"' : peso >= 10.3 ? ' class="medio"' : ''
 }
 
+/**
+ * Sul sito Contatti è una voce del menu, non un pulsante: un `a.pulsante` verso /contatti/ scritto dalla segreteria nel testo
+ * (il vecchio «Scrivici») non esce. Un paragrafo rimasto vuoto sparisce, così non resta spazio né un riquadro di pulsanti vuoto.
+ */
+export function senzaPulsantiContatti(html: string, dominio: string): string {
+  const sito = dominio.replace(/\/+$/, '').toLowerCase()
+  const contatti = /^\/contatti\/?([?#].*)?$/
+  const eContatti = (href: string) => {
+    const h = href.trim().toLowerCase()
+    return contatti.test(h) || (h.startsWith(sito + '/') && contatti.test(h.slice(sito.length)))
+  }
+  return html
+    .replace(/<a\b([^>]*)>[\s\S]*?<\/a>/gi, (a, attr: string) => /\bclass="(?:[^"]*\s)?pulsante(?:\s[^"]*)?"/i.test(attr) && eContatti(/\bhref="([^"]*)"/i.exec(attr)?.[1] ?? '') ? '' : a)
+    .replace(/<p\b[^>]*>(?:\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, '')
+}
+
 /** Le pagine che non sono mai la pagina di un corso, anche se hanno i due pulsanti. */
 const PAGINE_NON_CORSO = new Set(['home', 'corsi', 'contatti', 'chi-siamo'])
 
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
-  const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
+  const pulito = senzaPulsantiContatti(testoDellaPagina(p.testo, c.d.ospitiImmagini ?? []), c.d.dominio)
   // La pagina «orari» col segnaposto [orari]: gli orari veri dei corsi. Senza il segnaposto è una pagina come le altre.
   const orari = p.slug === 'orari' && !p.diLegge ? dividiOrari(pulito) : null
-  if (orari) return paginaOrari(p, c, conContatti, orari)
+  if (orari) return paginaOrari(p, c, orari)
   if (!PAGINE_NON_CORSO.has(p.slug) && !p.diLegge && eCorsoNuovo(pulito, TESTI.iscrizione)) return paginaCorsoNuovo(p, c, conContatti, pulito)
   if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, conContatti, pulito)
   if (p.slug === 'corsi' && !p.diLegge && eCorsiNuova(pulito, TESTI.iscrizione)) return paginaCorsiNuova(p, c, conContatti, pulito)
@@ -1153,14 +1162,13 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   // Una pagina di persona (foto e citazione in apertura) ha il suo ritratto; vedi `persona` in sitoLayout.ts. «Chi siamo» comincia allo stesso modo ma è la sua introduzione a fasce, non un ritratto.
   const dellaPersona = p.slug !== 'home' && p.slug !== 'chi-siamo' && !p.diLegge ? persona(pulito) : null
   // La scheda scarna di un istruttore (nome, foto se c'è, corsi): sitoIstruttori.ts. Mai la Home, Chi siamo, un corso o una pagina di legge.
-  const cornice: Cornice = { slugs: c.slugs, iscrizione: TESTI.iscrizione, prova: TESTI.provaIntera, scrivici: TESTI.scrivici, contatti: conContatti ? TESTI.contatti : null, indirizzo: CONTATTI.indirizzo }
+  const cornice: Cornice = { slugs: c.slugs, iscrizione: TESTI.iscrizione, prova: TESTI.provaIntera, indirizzo: CONTATTI.indirizzo }
   const scheda = p.slug !== 'home' && p.slug !== 'chi-siamo' && !p.diLegge && !dellaPersona && !c.corsi.has(p.slug) ? schedaScarna(pulito, p.titolo, cornice) : null
   const corso = p.slug !== 'home' && !p.diLegge && !dellaPersona && !scheda ? testataCorso(pulito) : null
   // Una pagina che comincia con più `h3` (e senza `h2`) è l'elenco dei tecnici degli istruttori.
   const tecnici = !p.diLegge && !dellaPersona && !scheda && !corso && !/<h2[\s>]/i.test(inTestata.resto) ? elencoIstruttori(inTestata.resto, cornice) : null
   const testo = scheda ? '' : dellaPersona ? dellaPersona.resto : corso ? corso.resto : tecnici ? tecnici.resto : inTestata.resto
-  const t = testata(c, conContatti, dellaPersona || scheda ? percorso('chi-siamo') : corso ? percorso('corsi') : percorso(p.slug))
-  // «Scrivici» sta in testata, accanto a «Prova»: sotto titolo e frase non si ripete.
+  const t = testata(c, dellaPersona || scheda ? percorso('chi-siamo') : corso ? percorso('corsi') : percorso(p.slug))
   const intro = scheda
     ? `<section class="scheda-persona">${scheda}</section>`
     : dellaPersona
@@ -1177,17 +1185,17 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
 function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
   const h = homeNuova(pulito, TESTI.iscrizione, barraProva())
   const hero = `<section class="pagina-hero con-pulsanti${h.foto ? '' : ' solo'}"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div>${h.foto}</section>`
-  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati })
 }
 
 /** Gli orari (sitoOrari.ts): titolo e introduzione della segreteria, una tessera per giorno, la riga «Per variazioni…» e la data. Senza l'invito: nel design la pagina finisce con le variazioni. */
-function paginaOrari(p: PaginaGenerata, c: Contesto, conContatti: boolean, { prima, dopo }: { prima: string; dopo: string }): string {
+function paginaOrari(p: PaginaGenerata, c: Contesto, { prima, dopo }: { prima: string; dopo: string }): string {
   // Senza orari la pagina non ha niente da introdurre: la frase del design al posto dell'introduzione della segreteria.
   const intro = (c.d.orariSito ?? []).length ? prima || (p.descrizione ? `<p>${esc(p.descrizione)}</p>` : '') : '<p>L’orario della settimana comparirà qui.</p>'
   const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${intro}</div></section>`
-  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico pagina-orari">${hero}${orariHtml(dopo, c.d.orariSito ?? [])}</main>${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-orari">${hero}${orariHtml(dopo, c.d.orariSito ?? [])}</main>${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: '', titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssOrari: true, dati })
 }
@@ -1196,7 +1204,7 @@ function paginaOrari(p: PaginaGenerata, c: Contesto, conContatti: boolean, { pri
 function paginaCorsiNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
   const h = corsiNuova(pulito, TESTI.iscrizione)
   const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${h.frase ? `<p>${h.frase}</p>` : ''}</div></section>`
-  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico pagina-corsi">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-corsi">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsi: true, dati })
 }
@@ -1206,7 +1214,7 @@ function paginaCorsoNuovo(p: PaginaGenerata, c: Contesto, conContatti: boolean, 
   const collegata = (p.corsiCollegati?.length ?? 0) > 0
   const h = corsoNuovo(pulito, TESTI.iscrizione, collegata ? testiOrario(p.corsiCollegati ?? [], c.d.orari ?? []) : undefined)
   const hero = `<section class="pagina-hero con-pulsanti solo"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div></section>`
-  const corpo = `${testata(c, conContatti, percorso('corsi'))}<main class="passo-unico corso-nuovo" data-corso="${esc(p.slug)}">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const corpo = `${testata(c, percorso('corsi'))}<main class="passo-unico corso-nuovo" data-corso="${esc(p.slug)}">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: true })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsoNuovo: cssFuochiCorso(p.slug) + (collegata ? CSS_ORARIO_AUTOMATICO : ''), dati })
 }
@@ -1215,7 +1223,7 @@ function paginaCorsoNuovo(p: PaginaGenerata, c: Contesto, conContatti: boolean, 
 function paginaContattiNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
   const h = contattiNuova(pulito, TESTI.iscrizione, NOME, CONTATTI.indirizzo)
   const hero = `<section class="pagina-hero con-pulsanti solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div></section>`
-  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="contatti-nuova passo-unico">${hero}${h.html}</main>${invito(conContatti)}${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="contatti-nuova passo-unico">${hero}${h.html}</main>${invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssContatti: true, dati })
 }
@@ -1224,14 +1232,14 @@ function paginaContattiNuova(p: PaginaGenerata, c: Contesto, conContatti: boolea
 function paginaChiSiamoNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
   const h = chiSiamoNuova(pulito, TESTI.iscrizione)
   const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div></section>`
-  const corpo = `${testata(c, conContatti, percorso(p.slug))}<main class="passo-unico chi-siamo-nuova">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico chi-siamo-nuova">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   // Le regole della pagina vanno in coda al CSS della Home, senza toccare `documento` (condiviso con le altre pagine).
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati }).replace('</head>', () => `<style>${CSS_CHI_SIAMO}</style></head>`)
 }
 
-function nonTrovata(c: Contesto, conContatti: boolean): string {
-  const corpo = `${testata(c, conContatti)}<main><section class="non-trovata"><h1>Pagina non trovata</h1><p>Errore 404: l’indirizzo che hai aperto non c’è, o la pagina è cambiata.</p><p><a class="pulsante" href="/">Torna alla pagina iniziale</a></p></section></main>${piede(c)}`
+function nonTrovata(c: Contesto): string {
+  const corpo = `${testata(c)}<main><section class="non-trovata"><h1>Pagina non trovata</h1><p>Errore 404: l’indirizzo che hai aperto non c’è, o la pagina è cambiata.</p><p><a class="pulsante" href="/">Torna alla pagina iniziale</a></p></section></main>${piede(c)}`
   return documento(c, { titolo: 'Pagina non trovata', descrizione: '', percorso: '/404.html', corpo, noindex: true })
 }
 
@@ -1291,7 +1299,7 @@ export function generaSito(d: DatiSito): Record<string, string> {
   const conContatti = c.slugs.has('contatti')
   const file: Record<string, string> = {}
   for (const p of pagine) file[fileDi(p.slug)] = pagina(p, c, conContatti)
-  file['404.html'] = nonTrovata(c, conContatti)
+  file['404.html'] = nonTrovata(c)
   file['sitemap.xml'] = mappa(c, pagine)
   file['llms.txt'] = llms(c, pagine)
   file['robots.txt'] = `User-agent: *\nAllow: /\n\nSitemap: ${d.dominio}/sitemap.xml\n`

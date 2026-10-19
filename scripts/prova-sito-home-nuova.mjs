@@ -70,6 +70,16 @@ console.log('\n1. Quando una Home è «nuova», e quando resta com’era')
   ok('il link all’iscrizione solo in fondo (non nell’introduzione): non è Home nuova', classi(mainTag(home(soloPulsanteInfondo))).includes('passo-unico'), false)
   const altroLink = F.TESTO_NUOVO.replace(`<p><a class="pulsante" href="/contatti/">Scrivici</a> <a class="pulsante" href="${F.ISCRIZIONE}">Prova una settimana a 5 €</a></p>`, '<p><a class="pulsante" href="/contatti/">Scrivici</a></p>')
   ok('un pulsante verso un altro indirizzo non basta', classi(mainTag(home(altroLink))).includes('passo-unico'), false)
+  // Il generatore toglie ogni a.pulsante verso /contatti/ dal testo; il resto resta.
+  const ISC = `<a class="pulsante" href="${F.ISCRIZIONE}">Prova una settimana a 5 €</a>`
+  const SCR = '<a class="pulsante" href="/contatti/">Scrivici</a>'
+  const WAP = '<a class="pulsante" href="https://wa.me/393463292786">Scrivici su WhatsApp</a>'
+  const conPul = (p) => home(F.TESTO_NUOVO.replace(`<p>${SCR} ${ISC}</p>`, p))
+  const mu = (h) => main(h)
+  ok('un paragrafo «Scrivici» + «Iscriviti»: resta solo «Iscriviti», e la Home è ancora nuova', [classi(mainTag(conPul(`<p>${SCR} ${ISC}</p>`))).includes('passo-unico'), /<a [^>]*>Scrivici<\/a>/.test(mu(conPul(`<p>${SCR} ${ISC}</p>`)))], [true, false])
+  ok('un paragrafo di solo «Scrivici» (dopo l’iscrizione) sparisce intero, senza <p> né div.pulsanti vuoti', [/<p>\s*<\/p>|<div class="pulsanti">\s*<\/div>/.test(mu(conPul(`<p>${ISC}</p><p>${SCR}</p>`))), /<a [^>]*>Scrivici<\/a>/.test(mu(conPul(`<p>${ISC}</p><p>${SCR}</p>`)))], [false, false])
+  ok('un pulsante verso WhatsApp resta, uno verso /contatti/ no', [mu(conPul(`<p>${SCR} ${ISC} ${WAP}</p>`)).includes('Scrivici su WhatsApp'), /<a [^>]*href="\/contatti\/"[^>]*>Scrivici<\/a>/.test(mu(conPul(`<p>${SCR} ${ISC} ${WAP}</p>`)))], [true, false])
+  ok('un link in linea (non pulsante) verso /contatti/ resta', mu(home(F.TESTO_NUOVO.replace('<p>Dai 7 anni', '<p>Scrivi in <a href="/contatti/">Contatti</a>. Dai 7 anni'))).includes('<a href="/contatti/">Contatti</a>'), true)
   const diLegge = genera({ ...F.dati(F.TESTO_NUOVO), pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: F.TESTO_NUOVO, diLegge: true }] })['index.html']
   ok('una pagina di legge non è Home nuova', classi(mainTag(diLegge)).includes('passo-unico'), false)
   const altra = genera({ ...F.dati(F.TESTO_NUOVO), pagine: [{ slug: 'corsi', titolo: 'Corsi', descrizione: 'd', testo: F.TESTO_NUOVO }] })['corsi/index.html']
@@ -91,7 +101,7 @@ console.log('\n2. Introduzione: pulsanti, foto, numeri, motto')
   const link = [...pul.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({ cl: classi(m[1]), href: m[1].match(/href="([^"]*)"/)?.[1], t: testo(m[2]) }))
   ok('i pulsanti stanno in un <div class="pulsanti"> della testata, non in un paragrafo', [Boolean(pul), /<p><a class="pulsante"/.test(hero?.html ?? '')], [true, false])
   ok('il primario (giallo) è il link all’iscrizione ed è primo, anche se la segreteria l’ha scritto per secondo', [link[0]?.cl, link[0]?.href, link[0]?.t], [['pulsante', 'primario'], F.ISCRIZIONE, 'Iscriviti'])
-  ok('l’altro è secondario (a linea) e porta a Contatti', [link[1]?.cl, link[1]?.href, link[1]?.t, link.length], [['pulsante', 'secondario'], '/contatti/', 'Scrivici', 2])
+  ok('il «Scrivici» verso Contatti scritto dalla segreteria non esce: in testata resta il solo primario', [link.map((l) => l.cl), link.some((l) => l.href === '/contatti/'), /Scrivici/.test(hero?.html ?? '')], [[['pulsante', 'primario']], false, false])
   ok('la foto è nella testata, nella seconda colonna; la testata non è «solo»', [conta(hero?.html ?? '', /<img\b/g), hero?.classi.includes('solo')], [1, false])
   const senzaFoto = sezioni(main(home(F.TESTO_NUOVO.replace(/<img [^>]*gruppo[^>]*>|<img [^>]*18c88f1d[^>]*>/, '')))).find((s) => s.classi.includes('pagina-hero'))
   ok('senza foto la testata è «solo»', [senzaFoto?.classi.includes('solo'), conta(senzaFoto?.html ?? '', /<img\b/g)], [true, 0])
@@ -215,7 +225,7 @@ console.log('\n8. La chiamata finale')
   ok('l’ultima sezione è «sezione cta»; è l’unica', [ultima?.classi.includes('sezione'), ultima?.classi.includes('cta'), tutte.filter((s) => s.classi.includes('cta')).length], [true, true, 1])
   ok('titolo, testo con l’indirizzo e la metro', [testo(ultima?.html.match(/<h2[^>]*>[\s\S]*?<\/h2>/)?.[0] ?? ''), testo(ultima?.html ?? '').includes('Via Vittorio Sassi 26, Collegno, vicino alla metro Fermi')], ['Una settimana per scegliere.', true])
   const pul = [...(ultima?.html.match(/<div class="pulsanti">([\s\S]*?)<\/div>/)?.[1] ?? '').matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => [classi(m[1]), m[1].match(/href="([^"]*)"/)?.[1], testo(m[2])])
-  ok('i pulsanti: il primario verso l’iscrizione, poi Scrivici', pul, [[['pulsante', 'primario'], F.ISCRIZIONE, 'Iscriviti'], [['pulsante', 'secondario'], '/contatti/', 'Scrivici']])
+  ok('i pulsanti: solo il primario verso l’iscrizione, niente Scrivici', pul, [[['pulsante', 'primario'], F.ISCRIZIONE, 'Iscriviti']])
   ok('la foto degli istruttori sta nella sezione', [conta(ultima?.html ?? '', /<img\b/g), (ultima?.html ?? '').includes(F.FOTO.istruttori)], [1, true])
   const senza = sezioni(main(home(F.TESTO_NUOVO.replace(F.CTA(), F.CTA(false))))).pop()
   ok('senza la foto resta «cta», a una colonna', [senza?.classi.includes('cta'), senza?.classi.includes('solo'), conta(senza?.html ?? '', /<img\b/g)], [true, true, 0])
@@ -231,15 +241,15 @@ console.log('\n9. Testata e piede di ogni pagina')
   for (const [nome, h] of [['Home', tutte['index.html']], ['Corsi', tutte['corsi/index.html']], ['Contatti', tutte['contatti/index.html']], ['404', tutte['404.html']]]) {
     const t = test(h)
     ok(`${nome}: il pulsante «Iscriviti» è primario e intero (niente «estensione»)`, [primario.test(t), /estensione/.test(t)], [true, false])
-    // In Contatti il pulsante non porta alla pagina in cui sei già: resta il nome, senza link.
-    ok(`${nome}: «Scrivici» secondario${nome === 'Contatti' ? ', senza link (sei già lì)' : ' verso Contatti'}`, (nome === 'Contatti' ? /<span class="pulsante secondario" aria-current="page">Scrivici<\/span>/ : /<a class="pulsante secondario" href="\/contatti\/"[^>]*>Scrivici<\/a>/).test(t), true)
+    // Niente «Scrivici»: «Contatti» è una voce del menu, segnata nella sua pagina.
+    ok(`${nome}: niente «Scrivici» né pulsanti secondari; il menu ha «Contatti»${nome === 'Contatti' ? ' segnata come pagina corrente' : ''}`, [/Scrivici|pulsante secondario/.test(t), (t.match(/<div class="azioni">([\s\S]*?)<\/div>/)?.[1].match(/<a /g) || []).length, (nome === 'Contatti' ? /<a [^>]*href="\/contatti\/"[^>]*aria-current="page"[^>]*>Contatti<\/a>|<a [^>]*aria-current="page"[^>]*href="\/contatti\/"[^>]*>Contatti<\/a>/ : /<a [^>]*href="\/contatti\/"[^>]*>Contatti<\/a>/).test(t)], [false, 1, true])
     ok(`${nome}: sul telefono MENU apre #menu, senza script`, [/<a class="tasto-menu" href="#menu">MENU<\/a>/.test(t), /<nav\b[^>]*\bid="menu"/.test(t), /<script(?![^>]*application\/ld\+json)/i.test(h)], [true, true, false])
     const nav = t.match(/<nav\b[^>]*\bid="menu"[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? ''
     ok(`${nome}: il menu aperto ha «Chiudi» e poi le voci`, /<a [^>]*href="#"[^>]*>Chiudi<\/a>/.test(nav), true)
     ok(`${nome}: nel menu aperto il pulsante primario viene dopo le voci (con tutto in una riga non si capiva cosa fosse cosa)`, nav.indexOf('>Corsi<') >= 0 && nav.indexOf('>Corsi<') < nav.indexOf('pulsante primario'), true)
   }
   const senzaContatti = genera(F.dati(F.TESTO_NUOVO, { conContatti: false }))['index.html']
-  ok('senza la pagina Contatti non c’è «Scrivici» in testata', [/Scrivici/.test(test(senzaContatti)), primario.test(test(senzaContatti))], [false, true])
+  ok('senza la pagina Contatti non c’è nessun link a /contatti/ in testata e resta il primario', [/\/contatti\//.test(test(senzaContatti)), primario.test(test(senzaContatti))], [false, true])
   const piede = (h) => h.match(/<footer class="piede">[\s\S]*<\/footer>/)?.[0] ?? ''
   const pi = piede(tutte['index.html'])
   ok('il piede ha l’indirizzo e il riferimento alla metro, senza minuti', [pi.includes('Via Vittorio Sassi 26, Collegno'), pi.includes('vicino alla metro Fermi'), /minut/i.test(pi)], [true, true, false])
@@ -258,7 +268,7 @@ console.log('\n13. Il testo pronto in docs/sito/home.html è una Home nuova comp
   const h = genera({ dominio: F.DOMINIO, pagine: [{ slug: 'home', titolo, descrizione: frase, testo: html }, { slug: 'contatti', titolo: 'Contatti', descrizione: 'd', testo: '<p>x</p>' }], menu: [], rinvii: [], ospitiImmagini: [F.OSPITE_VECCHIO] })['index.html'] ?? ''
   ok('è riconosciuta come Home nuova, con il titolo e la frase di home.md', [/<main class="passo-unico">/.test(h), h.includes(`<h1>${titolo}</h1>`), h.includes(frase)], [true, true, true])
   ok('4 numeri, 9 schede, nessuna citazione accademica, 5 recensioni, 5 domande, la chiamata finale', [conta(h, /tessera [a-z]+ numero/g), conta(h, /<article class="tessera [a-z]+ scheda">/g), conta(h, /<details class="intero">/g), conta(h, /citazione [a-z]+ larga/g), conta(h, /<article class="tessera chiara">/g), /<section class="sezione cta">/.test(h)], [4, 9, 0, 5, 5, true])
-  ok('i due pulsanti: prova primo, Scrivici secondo, in testata, hero e chiamata finale', conta(h, /class="pulsante primario"[^>]*>Iscriviti<\/a><a class="pulsante secondario" href="\/contatti\/"[^>]*>Scrivici/g), 3)
+  ok('«Iscriviti» in testata, nel menu del telefono, hero e chiamata finale (4), nessun pulsante «Scrivici» né secondario', [conta(h, /class="pulsante primario"[^>]*>Iscriviti<\/a>/g), /<a [^>]*>Scrivici<\/a>/.test(h)], [4, false])
   ok('tutte le foto sono del contenitore delle immagini', [...h.matchAll(/<img[^>]*src="([^"]+)"/g)].every((m) => m[1].startsWith(F.OSPITE_VECCHIO) || m[1].startsWith('/')), true)
 }
 

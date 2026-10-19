@@ -94,16 +94,22 @@ console.log('\n4. Testata e piede come nel design')
 {
   const voce = (e, sl) => ({ dove: 'menu', ordine: 1, etichetta: e, slug: sl, indirizzo: null })
   const due = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [voce('Home', 'home'), { ...voce('Contattaci', 'contatti'), ordine: 2 }], rinvii: [] })
-  // In /contatti/ la testata non rimanda a se stessa: «Scrivici» è un elemento non cliccabile, anche nel menu del telefono.
+  // Niente pulsante «Scrivici»: «Contatti» è solo una voce del menu, con questa etichetta qualunque cosa scriva la segreteria; in /contatti/ è la voce segnata.
   const testataDi = (h) => (h.match(/<header class="testata">[\s\S]*?<\/header>/) || [''])[0]
   const tc = testataDi(due['contatti/index.html'])
   const th = testataDi(due['index.html'])
-  ok('in Contatti la testata non ha link a /contatti/ (nemmeno nel menu del telefono)', /<a [^>]*href="\/contatti\/"/.test(tc), false)
-  ok('in Contatti la testata dice «Scrivici» in un elemento non cliccabile', /<span [^>]*>Scrivici<\/span>/.test(tc), true)
-  ok('il «Scrivici» senza link non reagisce al mouse (niente sottolineatura al passaggio)', /pointer-events:\s*none/.test(css('span.pulsante')), true)
-  ok('nelle altre pagine la testata ha il link «Scrivici», nel pulsante e nel menu del telefono', [(th.match(/<a [^>]*href="\/contatti\/"[^>]*>Scrivici<\/a>/g) || []).length, /nel-menu[^>]*href="\/contatti\/"/.test(th)], [2, true])
+  ok('in Contatti la voce del menu è «Contatti» con aria-current="page", anche se la segreteria ha scritto «Contattaci»', /<nav id="menu"[\s\S]*?<a [^>]*href="\/contatti\/"[^>]*aria-current="page"[^>]*>Contatti<\/a>/.test(tc) || /<a [^>]*aria-current="page"[^>]*href="\/contatti\/"[^>]*>Contatti<\/a>/.test(tc), true)
+  ok('in Contatti la testata non ha nessun «Scrivici»', /Scrivici/.test(tc), false)
+  ok('in Contatti la testata non ha pulsanti segnati come pagina corrente', /<span class="pulsante/.test(tc), false)
+  ok('nelle altre pagine la testata ha un solo link a /contatti/ (la voce «Contatti» del menu), nessun «Scrivici» e il menu del telefono ha solo «Iscriviti» come pulsante', [(th.match(/<a [^>]*href="\/contatti\/"[^>]*>Contatti<\/a>/g) || []).length, (th.match(/href="\/contatti\/"/g) || []).length, /Scrivici/.test(th), /nel-menu[^>]*href="\/contatti\/"/.test(th)], [1, 1, false, false])
   ok('nessun <a> dice «Contattaci», anche se la segreteria ha scritto così nel menu', [due['index.html'], due['contatti/index.html']].map((h) => /<a [^>]*>\s*Contattaci\s*<\/a>/.test(h)), [false, false])
-  ok('il piede di ogni pagina mostra «Scrivici» verso /contatti/', [due['index.html'], due['contatti/index.html']].map((h) => /<footer[\s\S]*<a href="\/contatti\/"[^>]*>Scrivici<\/a>[\s\S]*<\/footer>/.test(h)), [true, true])
+  ok('il piede di ogni pagina mostra «Contatti» verso /contatti/, mai «Scrivici»', [due['index.html'], due['contatti/index.html']].map((h) => [/<footer[\s\S]*<a href="\/contatti\/"[^>]*>Contatti<\/a>[\s\S]*<\/footer>/.test(h), /Scrivici/.test(h)]), [[true, false], [true, false]])
+  // Etichetta sempre «Contatti» e posto scelto dalla segreteria in MENU (non più tolta dall'elenco).
+  const ordinato = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'corsi', titolo: 'Co', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [voce('Home', 'home'), { ...voce('Parlaci', 'contatti'), ordine: 2 }, { ...voce('Corsi', 'corsi'), ordine: 3 }], rinvii: [] })
+  const elenco = ((ordinato['corsi/index.html'].match(/<nav id="menu"[\s\S]*?<\/nav>/) || [''])[0].match(/<a [^>]*>[^<]*<\/a>/g) || []).map((x) => x.replace(/<[^>]*>/g, ''))
+  ok('«Parlaci» scritto dalla segreteria diventa «Contatti», al posto scelto nel menu', [elenco.filter((x) => /Home|Parlaci|Contatti|Corsi/.test(x)), /Parlaci|Scrivici/.test(ordinato['corsi/index.html'])], [['Home', 'Contatti', 'Corsi'], false])
+  const senzaC = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }], menu: [voce('Home', 'home')], rinvii: [] })
+  ok('senza la pagina Contatti pubblicata: nessuna voce, nessun link a /contatti/', /\/contatti\/|Contatti/.test(senzaC['index.html']), false)
   ok('il titolo della pagina dato dal database non si tocca', /<h1[^>]*>[\s\S]*C[\s\S]*<\/h1>/.test(due['contatti/index.html']) && /<title>C\b/.test(due['contatti/index.html']), true)
   ok('la voce segnata ha il fondo giallo', /background:\s*var\(--giallo\)/.test(regolaDi(codaBase, '.testata nav a[aria-current]')), true)
   ok('testata: 22px sopra e sotto, marchio alto 110px, voci a 4px (più 16px di imbottitura)', [/padding:\s*22px var\(--margine\)/.test(css('.testata')), /height:\s*110px/.test(css('.logo img')), /gap:\s*4px/.test(regolaDi(codaPc, '.testata nav ul'))], [true, true, true])
@@ -125,7 +131,7 @@ console.log('\n5. Quel che il design ha e il sito non aveva')
   ok('la pagina Contatti non ha il pulsante «Contattaci» sotto il titolo e ha l’invito «Prova» in fondo', [/<a class="pulsante" href="\/contatti\/">Contattaci<\/a>/.test(c), /class="invito"/.test(c)], [false, true])
   ok('il pulsante in testata dice «Iscriviti», intero', /<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(c), true)
   ok('piede: il nome va a capo dopo «Officine», senza titoli né riga «©»', [/<p class="nome">Officine<br>dello Sport<\/p>/.test(pie), /<h2/.test(pie), /class="fine"/.test(pie)], [true, false, false])
-  ok('piede: le pagine del menu e quelle di legge sono due elenchi senza titolo', [/<nav class="piede-menu" aria-label="Pagine"><a href="\/">Home<\/a><a href="\/contatti\/"[^>]*>Scrivici<\/a><\/nav>/.test(pie), /<ul class="piede-legale"><li><a href="\/privacy\/">Privacy policy<\/a><\/li><\/ul>/.test(pie)], [true, true])
+  ok('piede: le pagine del menu e quelle di legge sono due elenchi senza titolo', [/<nav class="piede-menu" aria-label="Pagine"><a href="\/">Home<\/a><a href="\/contatti\/"[^>]*>Contatti<\/a><\/nav>/.test(pie), /<ul class="piede-legale"><li><a href="\/privacy\/">Privacy policy<\/a><\/li><\/ul>/.test(pie)], [true, true])
   const mappa = (apertura.match(/<figure class="tessera foto larga mappa">([\s\S]*?)<\/figure>/) || [, ''])[1]
   ok('la mappa ha segnaposto, targhetta con nome e indirizzo, e il credito OpenStreetMap', [/<span class="segnaposto" aria-hidden="true"><\/span>/.test(mappa), /<span class="targhetta">Officine dello Sport<span>Via Vittorio Sassi 26, Collegno<\/span><\/span>/.test(mappa), /<span class="credito">© OpenStreetMap contributors<\/span>/.test(mappa)], [true, true, true])
   ok('una sola mappa: le foto di dopo non l’hanno', conta(apertura, /mappa"/g), 1)
@@ -156,6 +162,17 @@ console.log('\n7. La mappa del sito')
 {
   const { existsSync, statSync } = await import('node:fs')
   ok('sito/risorse/mappa.webp c’è ed è sotto i 200 KB', existsSync('sito/risorse/mappa.webp') && statSync('sito/risorse/mappa.webp').size < 200 * 1024, true)
+}
+
+console.log('\n8. Il filtro dei pulsanti verso Contatti scritti nel testo')
+{
+  const D = 'https://officinedellosport.it'
+  const f = (h) => g.senzaPulsantiContatti(h, D)
+  const SCR = (href) => `<a class="pulsante" href="${href}">Scrivici</a>`
+  ok('relativo, con o senza «/», con ? o #', [f(`<p>${SCR('/contatti/')}</p>`), f(`<p>${SCR('/contatti')}</p>`), f(`<p>${SCR('/contatti/?a=1')}</p>`), f(`<p>${SCR('/contatti/#mappa')}</p>`)], ['', '', '', ''])
+  ok('assoluto sul dominio del sito sì, su un altro sito no', [f(`<p>${SCR(D + '/contatti/')}</p>`), f(`<p>${SCR('https://altrosito.it/contatti/')}</p>`)], ['', `<p>${SCR('https://altrosito.it/contatti/')}</p>`])
+  ok('«Iscriviti» accanto resta; il paragrafo vuoto (anche con attributi o &nbsp;) sparisce', [f(`<p><a class="pulsante" href="/x/">Iscriviti</a> ${SCR('/contatti/')}</p>`), f(`<p class="x">${SCR('/contatti/')}&nbsp;</p>`)], ['<p><a class="pulsante" href="/x/">Iscriviti</a> </p>', ''])
+  ok('un link in linea, un’altra classe e un altro indirizzo restano', [f('<p>Vai ai <a href="/contatti/">contatti</a></p>'), f('<p><a class="pulsante-x" href="/contatti/">A</a></p>'), f(`<p>${SCR('https://wa.me/39346')}</p>`)], ['<p>Vai ai <a href="/contatti/">contatti</a></p>', '<p><a class="pulsante-x" href="/contatti/">A</a></p>', `<p>${SCR('https://wa.me/39346')}</p>`])
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')

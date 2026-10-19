@@ -221,7 +221,7 @@ console.log('\n11. I pulsanti: l’iscrizione prima e primaria')
   const bottoni = (h) => [...main(h).matchAll(/<a\b([^>]*class="pulsante[^"]*"[^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({ cl: classi(m[1]), href: m[1].match(/href="([^"]*)"/)?.[1] }))
   const h = pagina(F.TESTO_NUOVO.replace(/<p><a class="pulsante" href="[^"]*">Prova[^]*?<\/p>/, `<p><a class="pulsante" href="/contatti/">Scrivici</a> ${F.PULSANTE}</p>`))
   const b = bottoni(h)
-  ok('in ordine inverso: primo primario verso l’iscrizione, poi secondario /contatti/', [b[0]?.cl, b[0]?.href, b[1]?.cl, b[1]?.href, b.length], [['pulsante', 'primario'], F.ISCRIZIONE, ['pulsante', 'secondario'], '/contatti/', 2])
+  ok('in ordine inverso il primario verso l’iscrizione resta, e il «Scrivici» verso /contatti/ non esce', [b[0]?.cl, b[0]?.href, b.length], [['pulsante', 'primario'], F.ISCRIZIONE, 1])
   for (const u of ['http://app.officinedellosport.it/iscrizioni/', 'https://www.app.officinedellosport.it/iscrizioni', 'https://app.officinedellosport.it/iscrizioni']) {
     ok(`iscrizione scritta ${u}: href normalizzato`, bottoni(pagina(F.TESTO_NUOVO.replaceAll(F.ISCRIZIONE, u)))[0]?.href, F.ISCRIZIONE)
   }
@@ -235,6 +235,7 @@ console.log('\n12. La chiamata finale')
   ok('l’ultima sezione è «sezione cta», con testo, pulsanti e foto', [ultima?.classi, /<h2>Una settimana per scegliere\.<\/h2>/.test(ultima?.html ?? ''), /class="pulsanti"/.test(ultima?.html ?? ''), conta(ultima?.html ?? '', /<img\b/g)], [['sezione', 'cta'], true, true, 1])
   const senzaFoto = sezioni(main(pagina(`<p>${F.FRASE}</p>${F.SCHEDE_HOME}${F.CTA(false)}`))).at(-1)
   ok('senza foto: «cta solo», nessun img', [senzaFoto?.classi, conta(senzaFoto?.html ?? '', /<img\b/g)], [['sezione', 'cta', 'solo'], 0])
+  ok('la chiamata finale ha solo «Iscriviti»: il «Scrivici» verso /contatti/ scritto dalla segreteria non esce', [/<a [^>]*>Scrivici<\/a>/.test(ultima?.html ?? ''), conta(ultima?.html ?? '', /<a\b[^>]*class="pulsante/g)], [false, 1])
 }
 
 console.log('\n13. L’invito globale')
