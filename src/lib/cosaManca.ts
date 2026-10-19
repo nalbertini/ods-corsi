@@ -176,9 +176,14 @@ export function strisciaVisibile(voce: string, telefono: boolean, schedaAperta: 
   return voluta && voce !== 'dafare' && !(telefono && schedaAperta)
 }
 
-/** La striscia si vede finché non la si nasconde: un valore salvato che non è «nascosta» (vuoto, vecchio, sconosciuto) non la toglie. */
-export function leggiPreferenzaStriscia(valore: unknown): boolean {
-  return valore !== 'nascosta'
+/**
+ * Sul computer la striscia si vede finché non la si nasconde; sul telefono parte spenta e la accende solo chi la sceglie.
+ * Un valore salvato che non è «mostrata» né «nascosta» (vuoto, vecchio, sconosciuto) lascia quello di partenza.
+ */
+export function leggiPreferenzaStriscia(valore: unknown, telefono = false): boolean {
+  if (valore === 'nascosta') return false
+  if (valore === 'mostrata') return true
+  return !telefono
 }
 
 /**
@@ -186,8 +191,8 @@ export function leggiPreferenzaStriscia(valore: unknown): boolean {
  * (quota piena, navigazione privata) il salvato resta quello di prima, e senza questa regola IMPOSTAZIONI e il resto della
  * segreteria vedrebbero due cose diverse.
  */
-export function preferenzaStriscia(salvato: unknown, scelta: boolean | null): boolean {
-  return scelta ?? leggiPreferenzaStriscia(salvato)
+export function preferenzaStriscia(salvato: unknown, scelta: boolean | null, telefono = false): boolean {
+  return scelta ?? leggiPreferenzaStriscia(salvato, telefono)
 }
 
 export function valorePreferenzaStriscia(voluta: boolean): string {

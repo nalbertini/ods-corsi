@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { TELEFONO } from './largo'
 import { preferenzaStriscia, valorePreferenzaStriscia } from './cosaManca'
 
 /**
@@ -15,9 +16,9 @@ function attuale(): boolean {
   try {
     salvato = localStorage.getItem(DOVE)
   } catch {
-    // niente: vale quella in memoria, o la striscia visibile
+    // niente: vale quella in memoria, o quella di partenza (visibile sul computer, spenta sul telefono)
   }
-  return preferenzaStriscia(salvato, inMemoria)
+  return preferenzaStriscia(salvato, inMemoria, window.matchMedia(TELEFONO).matches)
 }
 
 function scegli(voluta: boolean) {

@@ -322,6 +322,11 @@ console.log('\nNascondere la striscia da IMPOSTAZIONI (la scelta sta sul disposi
   // Cosa si vede quando il salvataggio non riesce (quota piena, navigazione privata): la scelta fatta in questa pagina vince su
   // quello che c'è salvato, se no Impostazioni e il resto della segreteria vedrebbero due cose diverse.
   ok('niente salvato e niente scelto: si vede', prova('preferenzaStriscia', null, null), true)
+  // Sul telefono la striscia parte spenta: solo chi l'ha accesa da IMPOSTAZIONI la vede.
+  ok('telefono, niente salvato: spenta', [prova('leggiPreferenzaStriscia', null, true), prova('leggiPreferenzaStriscia', 'valore vecchio', true), prova('preferenzaStriscia', null, null, true)], [false, false, false])
+  ok('telefono, accesa a mano: si vede', [prova('leggiPreferenzaStriscia', 'mostrata', true), prova('preferenzaStriscia', null, true, true)], [true, true])
+  ok('telefono, spenta a mano: spenta', prova('leggiPreferenzaStriscia', 'nascosta', true), false)
+  ok('computer, niente salvato: si vede', prova('leggiPreferenzaStriscia', null, false), true)
   ok('salvata nascosta: nascosta', prova('preferenzaStriscia', 'nascosta', null), false)
   ok('scelta in questa pagina senza poter salvare: vince lei', [prova('preferenzaStriscia', null, false), prova('preferenzaStriscia', 'mostrata', false), prova('preferenzaStriscia', 'nascosta', true)], [false, false, true])
   ok('salvato e scelto uguali: lo stesso', [prova('preferenzaStriscia', 'nascosta', false), prova('preferenzaStriscia', 'mostrata', true)], [false, true])
