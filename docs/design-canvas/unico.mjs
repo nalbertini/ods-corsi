@@ -94,8 +94,15 @@ const STORIA = [
   { id: 'segreteria-tatami', nome: 'Segreteria · tema Tatami', cartella: 'segreteria-tatami', superata: 'da «Segreteria · look del sito»' },
   { id: 'sito-rebrand', nome: 'Sito · tre rebrand (scartati)', cartella: 'sito-rebrand', superata: 'scartati, vale il design approvato del sito' },
 ]
+// Funzioni già costruite: la libreria dice com'è l'app adesso, i loro canvas passano in Storia.
+const COSTRUITE = new Set(['famiglia-passo', 'famiglia-ultimo-passo', 'iscrizione-famiglia', 'anche-tu-stessa-ora', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'riempi-prova', 'firma-schermo-intero', 'navigazione-passi', 'carta-atleta', 'banco', 'cerca-universale', 'menu-icone', 'menu-unico', 'import-fogli', 'iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'tessere', 'scheda-iscritto-schede', 'documenti-semplici', 'prezzi-mancanti', 'ruolo-amministrazione', 'contabilita', 'cambia-voce', 'movimenti-persona', 'movimenti-filtri', 'filtro-storico-pagamenti', 'chiusura-cassa', 'bilancio-anno', 'scheda-popover', 'email-contatto', 'sito-pannello', 'sito-pubblico', 'orari-sito', 'orario-automatico', 'barra-prova-chiama', 'corsi-per-eta', 'fatti-recensioni'])
+// Singole tavole «Oggi» superate dentro sezioni che restano nel principale: vanno in Storia, il resto resta.
+const OGGI_SUPERATE = { 'iscrizioni-pagina': ['Oggi', 'OggiCosti'], 'segreteria-sito': ['OggiDaFare', 'OggiIscritti', 'OggiMenu', 'OggiSettimana', 'TatamiSettimana'] }
 const MODO_STORIA = process.argv[3] === 'storia'
-const SEZIONI = MODO_STORIA ? STORIA : PRINCIPALE
+const SEZIONI = MODO_STORIA
+  ? [...STORIA, ...PRINCIPALE.filter((s) => COSTRUITE.has(s.cartella)).map((s) => ({ ...s, superata: 'costruita, ora la descrive la libreria' })),
+    ...Object.entries(OGGI_SUPERATE).map(([c, solo]) => ({ ...PRINCIPALE.find((s) => s.cartella === c), solo, superata: 'tavole «Oggi» superate dalla versione costruita' }))]
+  : PRINCIPALE.filter((s) => !COSTRUITE.has(s.cartella)).map((s) => (OGGI_SUPERATE[s.cartella] ? { ...s, senza: OGGI_SUPERATE[s.cartella].filter((f) => f !== 'TatamiSettimana') } : s))
 
 // Tutti i design già fatti stanno in una pagina sola, «Archivio», per area (la parte del nome prima di « · »,
 // nell'ordine in cui compare in SEZIONI) e dentro l'area per riferimento, una sezione sotto l'altra col suo titolo.
@@ -176,7 +183,7 @@ order.sort((a, b) => (a === 'Main.dc.html' ? -1 : b === 'Main.dc.html' ? 1 : 0))
 for (const s of SEZIONI) {
   const cartella = join(base, s.cartella)
   if (!existsSync(cartella)) { console.error(`${s.cartella}: manca, salto`); continue }
-  const propri = dcHtml(cartella)
+  const propri = dcHtml(cartella).filter((f) => (!s.solo || s.solo.includes(stem(f))) && !s.senza?.includes(stem(f)))
   if (!propri.length) { console.error(`${s.cartella}: nessun .dc.html, salto`); continue }
   const nuovo = new Map(propri.map((f) => [stem(f), `${s.id}-${stem(f)}`]))
   let posti
