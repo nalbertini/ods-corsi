@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.129.6 — 19 ottobre 2026
+
+### Modificato
+
+- I corsi della Home del sito tornano in un elenco unico, senza gruppi per età
+
 ## 0.129.5 — 19 ottobre 2026
 
 ### Modificato

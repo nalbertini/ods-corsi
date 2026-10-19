@@ -142,8 +142,8 @@ const ORARI = orariDel(r(A, 1, '17:00'), r(A, 3, '17:00'), r(B, 2, '16:30'), r(B
 
 console.log('\n3. Pagina non collegata: l’HTML è quello di oggi')
 // Le impronte sono dell’HTML di una pagina non collegata (senza campi nuovi): cambiano se cambia la testata, il logo o il CSS, e allora si rifanno.
-// Rifatte quando ogni pagina ha avuto «Salta al contenuto» in cima e il telefono del piede è diventato un link tel:, , per le correzioni di Scrivici, logo e numeri 1-4, e per le recensioni a carte uguali (via il CSS di «In breve»).
-const OGGI = { dati: "6432e22dc886a16f28f751638fbe4338671c25bc7a7efc97aacdfecc14c77431", foto: '1a3615a096069fce5cc3f3febf8bd2c1a8ccf6dd164589ecb1e47658c1186ba9', fascia: '920f155130bc073a4711e4b95ae8d5e73da6f92539118c0b55562f53db6370ce' }
+// Rifatte quando ogni pagina ha avuto «Salta al contenuto» in cima e il telefono del piede è diventato un link tel:, , per le correzioni di Scrivici, logo e numeri 1-4, e per le recensioni a carte uguali (via il CSS di «In breve»), e quando i corsi della Home sono tornati un elenco unico (via il CSS dei gruppi per età).
+const OGGI = { dati: "0a46d90e7cc36370afa5bf2a10aa9739d06ff7c4fcb4769b700efbf5dff1f5c2", foto: '347f973206af829c58cbf209950faeac6b58411d1fe094d5196f2bdd275cbb04', fascia: '7e7c4a866fc96324062925db0d0d4311109b94386587aca23a77afd8cdadce9e' }
 ok('con foto di apertura: HTML di oggi', sha(pagina(CON_FOTO)), OGGI.foto)
 ok('fascia blu: HTML di oggi', sha(pagina(FASCIA)), OGGI.fascia)
 ok('l’orario a mano si vede ancora', /09:15 – 10:15/.test(testo(main(pagina(CON_FOTO)))), true)
