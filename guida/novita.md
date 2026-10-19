@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.129.0 — 19 ottobre 2026
+
+### Novità
+
+- La carta d'identità è quella di chi si iscrive, dai 6 anni, non più quella del genitore
+
 ## 0.128.0 — 18 ottobre 2026
 
 ### Novità
