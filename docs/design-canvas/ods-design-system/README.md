@@ -211,9 +211,9 @@ e la **segreteria nel look del sito** (con `contesto="segreteria"` dove c'è: `B
 ## Il canvas unico
 
 Libreria e sezioni (istruttore, tablet di sala, registrazione utente, importa
-da Excel, timer) stanno in un solo Artifact. Il canvas mostra al massimo 40 pagine, quindi le sezioni vicine
-stanno sulla stessa pagina, una sotto l'altra col suo titolo (`GRUPPI` in `unico.mjs`; una sezione fuori da un
-gruppo ha una pagina sua, e lo script si ferma se le pagine superano 40):
+da Excel, timer) stanno in un solo Artifact, con tre pagine: Design System, Libreria e Archivio. L'Archivio
+tiene tutti i design già fatti, ordinati per area e per riferimento, una sezione sotto l'altra col suo titolo e
+un indice in cima:
 
 ```bash
 node docs/design-canvas/unico.mjs <cartella>

@@ -52,7 +52,7 @@ Poi `verifica.mjs` e si ripubblica il canvas unico. Il canvas della funzione
 resta come storia; quello che vale è la libreria.
 
 **Il canvas unico.** La libreria e tutte le sezioni stanno in un solo Artifact,
-una pagina per sezione, per consultarle insieme. Lo costruisce
+le sezioni nella pagina Archivio, ordinate per area, per consultarle insieme. Lo costruisce
 `node docs/design-canvas/unico.mjs <cartella>` (una sezione nuova si aggiunge
 a `SEZIONI` nello script) e si pubblica sullo stesso Artifact di sempre, con
 `files.json` come elenco dei file.

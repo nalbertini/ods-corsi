@@ -149,7 +149,7 @@ lavoro arretrato).
 
 Passo 3 — Canvas unico e controllo a occhio
 - Copia `docs/design-canvas/unico.mjs`: mette libreria e sezioni in UN solo
-  Artifact «Design», una pagina per sezione; ogni file proprio di una sezione
+  Artifact «Design»: Design System, Libreria e una pagina Archivio con tutte le sezioni; ogni file proprio di una sezione
   prende il prefisso `<sezione>-` perché i nomi sono unici nel canvas. Una
   sezione nuova si aggiunge a `SEZIONI`.
 - Pubblica con l'Artifact di tipo Design: `canvas.json` e tutti i file, sulla
