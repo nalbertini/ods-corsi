@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.129.4 — 19 ottobre 2026
+
+### Modificato
+
+- Il canvas dei design sostituiti ha il suo file di generazione: «ODS Corsi · Design · Storia»
+
 ## 0.129.3 — 19 ottobre 2026
 
 ### Modificato
