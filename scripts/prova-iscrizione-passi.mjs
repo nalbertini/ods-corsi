@@ -135,14 +135,15 @@ const figlio = (cambi = {}, sul = {}) => ({
 })
 /**
  * Chi compila un bambino e si iscrive anche lui: un familiare come gli altri, legato al bambino 0. Nome, codice,
- * residenza, contatti, carta, firma e ok li prende dal bambino (`conDatiDellaFamiglia`); corso, formula, caselle
- * e certificato sono suoi.
+ * residenza, contatti, firma e ok li prende dal bambino (`conDatiDellaFamiglia`); corso, formula, caselle,
+ * certificato e la sua carta d'identità sono suoi.
  */
 const io = (cambi = {}, sul = {}) => ({
   ...m.nuovoStato('adulto'),
   io: true,
   risposte: { ...m.nuovoStato('adulto').risposte, corsi: ['judo-adulti'], formula: 'annuale', ...cambi },
   scelte: { tesseramento: true, foto: true },
+  file: { documento: F('documento-lei.jpg') },
   ...sul,
 })
 /** La richiesta di Paola, la mamma di Matteo che si iscrive con lui: quella che oggi fa `richiestaDelGenitore`, scritta a mano. */
@@ -237,8 +238,22 @@ console.log('\n5. ogni AVANTI guarda solo il suo passo')
   ok('figlio, passo 2: dove sei nato, se il luogo non si ricava dal codice', nomi(figlio({}, { natoAGenitore: ' ' }), 2), ['DOVE SEI NATO'])
   ok('figlio, passo 4 (il modulo): dove è nato il genitore non manca più', nomi(figlio({}, { natoAGenitore: ' ' }), 4), [])
   ok('figlio, passo 4 (il modulo): la carta d’identità non lo ferma', nomi(figlio({}, { file: {} }), 4), [])
-  ok('figlio, passo 5 (i documenti): manca la carta del genitore', nomi(figlio({}, { file: {} }), 5), ["CARTA D'IDENTITÀ"])
+  ok('figlio, passo 5 (i documenti): manca la carta di Matteo', nomi(figlio({}, { file: {} }), 5), ["CARTA D'IDENTITÀ"])
   ok('figlio, passo 5 (i documenti): retro, certificato e ricevuta non fermano', nomi(figlio(), 5), [])
+  // --- la carta è dell'atleta, obbligatoria dai 6 anni ---
+  // Oggi è il 26 settembre 2026: nato il 26/09/2020 compie 6 anni oggi, il 27/09/2020 ne ha 5 e 364 giorni.
+  const seiOggi = figlio({ natoIl: '2020-09-26' }, { file: {} })
+  const quasiSei = figlio({ natoIl: '2020-09-27' }, { file: {} })
+  ok('compie 6 anni oggi: senza la sua carta il passo dei documenti ferma', nomi(seiOggi, 5), ["CARTA D'IDENTITÀ"])
+  ok('5 anni e 364 giorni: la carta non si chiede', nomi(quasiSei, 5), [])
+  ok('4 anni: il passo dei documenti non manca niente', nomi(figlio({ natoIl: '2022-03-01' }, { file: {} }), 5), [])
+  ok('sotto i 6 anni l’ultimo passo non chiede la carta', m.mancaNelPasso(quasiSei, 8).includes("CARTA D'IDENTITÀ"), false)
+  ok('senza data di nascita il bambino non decide: la carta non si chiede', nomi(figlio({ natoIl: '' }, { file: {} }), 5), [])
+  ok('con la carta di Matteo il passo avanza', m.avanti(figlio({ natoIl: '2020-09-26' }, { file: { documento: F('d.jpg') } }), 5).manca, [])
+  ok('senza la carta di Matteo il passo non avanza', m.avanti(seiOggi, 5).manca, ["CARTA D'IDENTITÀ"])
+  ok('il retro resta facoltativo: la sola carta di Matteo basta', nomi(figlio({}, { file: { documento: F('d.jpg') } }), 5), [])
+  ok('la carta di Paola non basta per Matteo (chi manca è la sua)', lista(() => m.mancantiFamiglia([adulto(), figlio({}, { file: {} })])).map((x) => x.nome), ["CARTA D'IDENTITÀ DI MATTEO"])
+  ok('con la carta di Matteo avanza anche se manca quella di Paola', lista(() => m.mancantiFamiglia([adulto({}, { file: {} }), figlio()])).map((x) => x.nome), ["CARTA D'IDENTITÀ DI LUCA"])
   ok('figlio con il genitore col codice del bambino: ferma', nomi(figlio({ genitoreCodiceFiscale: CF_MATTEO }), 2), ['CODICE FISCALE DEL GENITORE'])
 
   const sotto = (e, provato, visto) => m.notaSottoIlCampo(e, provato, visto)
@@ -369,13 +384,15 @@ console.log('\n11. i file da chiedere')
 {
   const tipi = (x) => x.file.map((f) => f.tipo)
   const cinque = m.fileDaChiedere('2021-09-26', ['Judo bambini'])
-  ok('5 anni: nessun certificato', [cinque.certificato, tipi(cinque)], ['nessuno', ['modulo', 'documento', 'documento-retro', 'ricevuta']])
+  ok('5 anni: nessuna carta d’identità, né il retro', [cinque.certificato, tipi(cinque)], ['nessuno', ['modulo', 'ricevuta']])
   const sei = m.fileDaChiedere('2020-09-26', ['Judo bambini'])
   ok('6 anni oggi: certificato normale', [sei.certificato, tipi(sei)], ['normale', ['modulo', 'documento', 'documento-retro', 'certificato', 'ricevuta']])
   const dodici = m.fileDaChiedere('2014-09-26', ['Judo ragazzi'])
   ok('12 anni a judo: agonistico', dodici.certificato, 'agonistico')
   ok('12 anni a pilates: normale', m.fileDaChiedere('2014-09-26', ['Pilates']).certificato, 'normale')
   ok('senza data: nessun certificato', m.fileDaChiedere('', ['Judo']).certificato, 'nessuno')
+  ok('senza data: nemmeno la carta (non decide)', tipi(m.fileDaChiedere('', ['Judo'])).includes('documento'), false)
+  ok('5 anni e 364 giorni: niente carta; 6 anni oggi: la carta e il retro', [tipi(m.fileDaChiedere('2020-09-27', ['Judo'])).includes('documento'), tipi(m.fileDaChiedere('2020-09-26', ['Judo'])).filter((t) => t.startsWith('documento'))], [false, ['documento', 'documento-retro']])
   const ob = (x, t) => x.file.find((f) => f.tipo === t).obbligatorio
   ok('il documento è obbligatorio', ob(dodici, 'documento'), true)
   ok('il modulo è obbligatorio', ob(dodici, 'modulo'), true)
@@ -480,10 +497,9 @@ console.log('\n12. mandare: il PDF, le richieste, i file')
   const duePersone = (d) => {
     const bambino = m.risposteDaiPassi(figlio())
     const lui = richiestaDiPaola()
-    const doc = F('d.jpg')
     return [
-      { dati: bambino, file: { documento: doc, ricevuta: F('r.jpg') }, faiPdf: pdf(d.log, 'Matteo') },
-      { dati: lui, file: { documento: doc, certificato: F('c.pdf'), ricevuta: F('r.jpg') }, faiPdf: pdf(d.log, 'Paola') },
+      { dati: bambino, file: { documento: F('d-matteo.jpg'), ricevuta: F('r.jpg') }, faiPdf: pdf(d.log, 'Matteo') },
+      { dati: lui, file: { documento: F('d-paola.jpg'), certificato: F('c.pdf'), ricevuta: F('r.jpg') }, faiPdf: pdf(d.log, 'Paola') },
     ]
   }
   {
@@ -640,11 +656,17 @@ console.log('\n13. bambino e mamma (l’io): il conto, il corso parallelo, la ri
   }
   const doc = F('d.jpg'), retro = F('retro.jpg'), ric = F('ric.jpg')
   const bimbo = figlio({}, { file: { documento: doc, 'documento-retro': retro, ricevuta: ric, certificato: F('c-bimbo.pdf') } })
-  const mamma = io({ formula: 'trimestre' }, { scelte: { tesseramento: false, foto: true }, file: { certificato: F('c-lui.pdf') } })
+  const mamma = io({ formula: 'trimestre' }, { scelte: { tesseramento: false, foto: true }, file: { documento: F('d-lei.jpg'), 'documento-retro': F('retro-lei.jpg'), certificato: F('c-lui.pdf') } })
   const due = lista(() => m.richiesteDelModulo(m.conDatiDellaFamiglia([bimbo, mamma]), (p) => m.richiesteDaMandare(p, 'TO', faiPdf)))
   ok('bambino e io: due richieste', due.length, 2)
   ok('il bambino: documento, retro, ricevuta e il suo certificato', Object.entries(due[0]?.file ?? {}).map(([k, f]) => `${k}=${f.name}`).sort(), ['certificato=c-bimbo.pdf', 'documento-retro=retro.jpg', 'documento=d.jpg', 'ricevuta=ric.jpg'].sort())
-  ok('il genitore: stessa carta d’identità e ricevuta, ma il certificato è suo', Object.entries(due[1]?.file ?? {}).map(([k, f]) => `${k}=${f.name}`).sort(), ['certificato=c-lui.pdf', 'documento-retro=retro.jpg', 'documento=d.jpg', 'ricevuta=ric.jpg'].sort())
+  ok('il genitore: la sua carta d’identità (non quella del bambino), la ricevuta e il suo certificato', Object.entries(due[1]?.file ?? {}).map(([k, f]) => `${k}=${f.name}`).sort(), ['certificato=c-lui.pdf', 'documento-retro=retro-lei.jpg', 'documento=d-lei.jpg', 'ricevuta=ric.jpg'].sort())
+  // Una carta caricata prima di cambiare la data non parte se la persona non ha 6 anni: non serve e non si deve tenere.
+  const conCarte = { documento: F('d.jpg'), 'documento-retro': F('r.jpg'), ricevuta: F('ric.jpg') }
+  const chiavi = (natoIl) => Object.keys(lista(() => m.richiesteDaMandare(figlio({ natoIl, codiceFiscale: '' }, { file: conCarte }), 'TO', faiPdf))[0]?.file ?? {}).sort()
+  ok('5 anni con la carta caricata prima: la richiesta non la porta', chiavi('2021-03-10'), ['ricevuta'])
+  ok('10 anni: la carta parte, fronte e retro', chiavi('2016-03-10'), ['documento', 'documento-retro', 'ricevuta'])
+  ok('l’io senza la sua carta: la richiesta non porta quella del bambino', lista(() => m.richiesteDelModulo(m.conDatiDellaFamiglia([bimbo, io({}, { file: {} })]), (p) => m.richiesteDaMandare(p, 'TO', faiPdf)))[1]?.file.documento, undefined)
   ok('il genitore non porta il foglio in foto: il PDF lo fa l’app', [typeof due[1]?.faiPdf, due[1]?.file.modulo], ['function', undefined])
   ok('la richiesta del genitore: lui, il suo corso e la sua formula', [due[1]?.dati.nome, due[1]?.dati.corsi, due[1]?.dati.formula, due[1]?.dati.natoA], ['Paola', ['judo-adulti'], 'trimestre', 'Torino (TO)'])
   ok('la richiesta del bambino è quella delle risposte', due[0]?.dati, m.risposteDaiPassi(bimbo))
@@ -879,16 +901,15 @@ console.log('\n16b. le parole per il genitore, nel flusso del figlio')
 {
   const t = (chi, tipo, nome, firma = 'Paola') => m.testoFile(chi, tipo, nome, firma)
   const adultoDoc = m.FILE.find((f) => f.tipo === 'documento')
-  ok('figlio: la carta d’identità dice di chi è, col nome di chi firma', t('figlio', 'documento', 'Matteo').etichetta, 'LA CARTA D’IDENTITÀ DI PAOLA')
-  ok('figlio: il fronte lo firma il genitore, col suo nome', t('figlio', 'documento', 'Matteo').dettaglio, 'Il fronte. È Paola che firma: serve la sua carta, non quella di Matteo.')
-  // «di il bambino» non è italiano: senza nome si dice «del bambino».
-  ok('figlio senza nome: «non quella del bambino»', t('figlio', 'documento', ' ').dettaglio, 'Il fronte. È Paola che firma: serve la sua carta, non quella del bambino.')
-  ok('figlio: il retro è della carta di chi firma', t('figlio', 'documento-retro', 'Matteo').etichetta, 'IL RETRO DELLA CARTA DI PAOLA')
-  // Senza il nome di chi firma (non scritto, o cancellato dopo): «del genitore», mai «DI » e niente.
-  ok('genitore senza nome: la carta è del genitore', t('figlio', 'documento', 'Matteo', ' ').etichetta, 'LA CARTA D’IDENTITÀ DEL GENITORE')
-  ok('genitore senza nome: il retro è del genitore', t('figlio', 'documento-retro', 'Matteo', '').etichetta, 'IL RETRO DELLA CARTA DEL GENITORE')
-  ok('genitore senza nome: il fronte dice «il genitore»', t('figlio', 'documento', 'Matteo', '').dettaglio, 'Il fronte. È il genitore che firma: serve la sua carta, non quella di Matteo.')
-  ok('il nome di chi firma senza spazi intorno', t('figlio', 'documento', 'Matteo', ' Paola ').etichetta, 'LA CARTA D’IDENTITÀ DI PAOLA')
+  ok('figlio: la carta d’identità è di Matteo', t('figlio', 'documento', 'Matteo').etichetta, 'LA CARTA D’IDENTITÀ DI MATTEO')
+  ok('figlio: il nome senza spazi intorno e in maiuscolo', t('figlio', 'documento', ' Matteo ').etichetta, 'LA CARTA D’IDENTITÀ DI MATTEO')
+  ok('figlio: il fronte non nomina più il genitore né dice «tua»', /genitore|\bsua\b|\btua\b|\bfirma\b/i.test(t('figlio', 'documento', 'Matteo').dettaglio), false)
+  ok('figlio: il fronte dice ancora cosa caricare', /^Il fronte\./.test(t('figlio', 'documento', 'Matteo').dettaglio), true)
+  ok('figlio: il retro è della carta di Matteo', t('figlio', 'documento-retro', 'Matteo').etichetta, 'IL RETRO DELLA CARTA DI MATTEO')
+  // Senza il nome: «del bambino», mai «DI » e niente.
+  ok('figlio senza nome: la carta è del bambino', t('figlio', 'documento', ' ').etichetta, 'LA CARTA D’IDENTITÀ DEL BAMBINO')
+  ok('figlio senza nome: il retro è del bambino', t('figlio', 'documento-retro', '').etichetta, 'IL RETRO DELLA CARTA DEL BAMBINO')
+  ok('la firma non cambia più le parole della carta', [m.testoFile('figlio', 'documento', 'Matteo', 'Nicola'), m.testoFile('figlio', 'documento', 'Matteo', undefined)], [m.testoFile('figlio', 'documento', 'Matteo', 'Paola'), m.testoFile('figlio', 'documento', 'Matteo', 'Paola')])
   ok('nessuna etichetta dice più «TUA»', ['documento', 'documento-retro', 'certificato'].flatMap((x) => [t('figlio', x, 'Matteo'), t('figlio', x, '', '')]).some((x) => /\bTU[AOE]?\b|\btua\b|\btu\b/i.test(x.etichetta + ' ' + x.dettaglio)), false)
   ok('«di chi firma»: col nome e senza', [m.diChiFirma('Paola'), m.diChiFirma(' '), m.diChiFirma(undefined)], ['di Paola', 'del genitore', 'del genitore'])
   ok('figlio: il retro, cosa caricare', t('figlio', 'documento-retro', 'Matteo').dettaglio, 'Il retro. Una foto o il PDF.')
@@ -897,9 +918,10 @@ console.log('\n16b. le parole per il genitore, nel flusso del figlio')
   ok('figlio: il certificato, cosa succede se manca', t('figlio', 'certificato', 'Matteo').dettaglio, 'Lo porti in segreteria prima della prima lezione: senza, Matteo non può partecipare.')
   ok('figlio senza nome: il certificato dice «il bambino»', t('figlio', 'certificato', '').dettaglio, 'Lo porti in segreteria prima della prima lezione: senza, il bambino non può partecipare.')
   ok('adulto: i testi di oggi, documento', t('adulto', 'documento', 'Luca'), { etichetta: adultoDoc.etichetta, dettaglio: adultoDoc.dettaglio })
+  ok('il dettaglio di FILE non manda più alla carta del genitore', /genitore/i.test(adultoDoc.dettaglio), false)
   const cert = m.FILE.find((f) => f.tipo === 'certificato')
   ok('adulto: i testi di oggi, certificato', t('adulto', 'certificato', 'Luca'), { etichetta: cert.etichetta, dettaglio: cert.dettaglio })
-  ok('i testi di FILE non cambiano', [adultoDoc.etichetta, adultoDoc.dettaglio], ["CARTA D'IDENTITÀ", 'Il fronte. Per un minore, quella del genitore.'])
+  ok('i testi di FILE: la carta non nomina il genitore', [adultoDoc.etichetta, /^Il fronte\./.test(adultoDoc.dettaglio), /genitore|minore/i.test(adultoDoc.dettaglio)], ["CARTA D'IDENTITÀ", true, false])
 
   // «Dove sei nato» si chiede solo se il codice del genitore non lo dice.
   const luoghi = { L219: [['TORINO', 'TO']] }
@@ -1875,7 +1897,7 @@ console.log('\n37. chi firma, col nome: in famiglia «tu» non è sempre chi com
   // Il nome di chi firma il bambino arriva da conDatiDellaFamiglia, quando il suo campo è vuoto.
   const vera = m.conDatiDellaFamiglia([nicola, paola, figlio({ nome: 'Manuela', genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '' }, { firmatario: 1 })])
   ok('il bambino prende il nome di chi firma dalla famiglia', chiama(() => m.chiFirma(vera, 2)), 'Paola')
-  ok('…e la carta porta quel nome', m.testoFile('figlio', 'documento', 'Manuela', vera[2].risposte.genitoreNome).etichetta, 'LA CARTA D’IDENTITÀ DI PAOLA')
+  ok('…e la carta è di Manuela, non di chi firma', m.testoFile('figlio', 'documento', 'Manuela', vera[2].risposte.genitoreNome).etichetta, 'LA CARTA D’IDENTITÀ DI MANUELA')
   // Il genitore mette per primo il bambino, poi aggiunge sé stesso: firma lui, quindi «tu».
   const primaIlBambino = m.conDatiDellaFamiglia([figlio({ nome: 'Manuela', genitoreNome: 'Nicola' }), nicola, figlio({ genitoreNome: '' }, { firmatario: 1 })])
   ok('persona 0 bambina, chi compila si aggiunge: «tu» per lui e per chi firma lui', [1, 2].map((i) => m.chiFirma(primaIlBambino, i)), [undefined, undefined])
@@ -1892,7 +1914,8 @@ console.log('\n37. chi firma, col nome: in famiglia «tu» non è sempre chi com
   ok('passo del genitore, un altro adulto senza nome: «il genitore»', chiama(() => m.fraseDelGenitore('')), 'Firma il genitore, che è maggiorenne. I suoi dati servono anche per il modulo.')
 
   ok('le foto del genitore, col nome e senza', [m.etichettaSueFoto('Nicola'), m.etichettaSueFoto('')], ['LE FOTO E I VIDEO DI NICOLA', 'LE FOTO E I VIDEO DEL GENITORE'])
-  ok('la carta nel riepilogo: di chi firma, del genitore, o di un adulto', [m.cartaNelRiepilogo('figlio', 'Nicola'), m.cartaNelRiepilogo('figlio', ' '), m.cartaNelRiepilogo('adulto', 'Nicola')], ['Carta d’identità di Nicola', 'Carta d’identità del genitore', 'Carta d’identità'])
+  // Il secondo argomento è il nome della persona di cui è la carta, non di chi firma.
+  ok('la carta nel riepilogo: del bambino col suo nome, senza nome del bambino, o di un adulto', [m.cartaNelRiepilogo('figlio', 'Matteo'), m.cartaNelRiepilogo('figlio', ' '), m.cartaNelRiepilogo('adulto', 'Nicola')], ['Carta d’identità di Matteo', 'Carta d’identità del bambino', 'Carta d’identità'])
   ok('il titolo dell’ok, chi compila: IL TUO OK', chiama(() => m.titoloDellOk(undefined)), 'IL TUO OK')
   ok('il titolo dell’ok, un altro adulto: col suo nome', chiama(() => m.titoloDellOk('Paola')), 'L’OK DI PAOLA')
   ok('il titolo dell’ok, senza nome: di chi firma', chiama(() => m.titoloDellOk(' ')), 'L’OK DI CHI FIRMA')
@@ -1932,7 +1955,8 @@ console.log('\n38. QUANTO PAGHI')
   ok('il passo del pagamento non ferma mai: nemmeno con tutto vuoto', m.mancaNelPasso(m.nuovoStato('adulto'), PAGA.adulto), [])
   ok('il passo del pagamento non ferma mai: figlio', m.mancaNelPasso(m.nuovoStato('figlio'), PAGA.figlio), [])
   ok('il passo del pagamento: la barra non ha voci', m.mancanti(m.nuovoStato('adulto'), PAGA.adulto), [])
-  ok('quanto manca non cambia: 17 cose a un adulto vuoto, 18 a un figlio vuoto (non più «anche te?»), 0 a chi ha fatto tutto', [m.quantoManca(m.nuovoStato('adulto')), m.quantoManca(m.nuovoStato('figlio')), m.quantoManca(adulto())], [17, 18, 0])
+  // Un figlio vuoto non ha ancora la data: l'età non c'è e la carta (dai 6 anni) non si conta, quindi una cosa in meno di prima.
+  ok('quanto manca: 17 cose a un adulto vuoto, 17 a un figlio vuoto (senza data la carta non si conta), 0 a chi ha fatto tutto', [m.quantoManca(m.nuovoStato('adulto')), m.quantoManca(m.nuovoStato('figlio')), m.quantoManca(adulto())], [17, 17, 0])
   ok('l’ultimo passo è il riepilogo, dopo QUANTO PAGHI', [m.passiDi('adulto').at(-2), m.passiDi('adulto').at(-1)], ['PAGAMENTO', 'INVIO'])
   ok('la riga della ricevuta nel riepilogo porta a QUANTO PAGHI, caricata o no', [adulto(), adulto({}, { file: { documento: F('d.jpg'), ricevuta: F('r.jpg') } })].map((s) => m.righeRiepilogo(s, corsi).find((r) => r.cosa === 'ricevuta')?.passo), ['pagamento', 'pagamento'])
   ok('la carta e la firma del riepilogo restano ai documenti e al modulo', [m.passoDelRiepilogo('carta'), m.passoDelRiepilogo('firma')], ['documenti', 'modulo'])
@@ -2141,12 +2165,13 @@ console.log('\n40. LA FAMIGLIA')
   // --- cosa l'io prende dal bambino 0, al momento ---
   const doc = F('carta.jpg'), retro = F('retro.jpg')
   const bimbo = figlio({}, { tratti: 7, privacy: true, file: { documento: doc, 'documento-retro': retro } })
-  const lei = lista(() => m.conDatiDellaFamiglia([bimbo, io({}, { file: { certificato: F('cert.pdf') } })]))[1]
+  const lei = lista(() => m.conDatiDellaFamiglia([bimbo, io({}, { file: { documento: F('documento-lei.jpg'), certificato: F('cert.pdf') } })]))[1]
   const r = lei?.risposte ?? {}
   ok('l’io prende chi è dal bambino 0: nome, cognome, codice e luogo del genitore', [r.nome, r.cognome, r.codiceFiscale, r.natoA], ['Paola', 'Rossi', CF_PAOLA, 'Torino'])
   ok('l’io prende residenza e contatti', [r.indirizzo, r.cap, r.comune, r.email, r.telefono], ['Via Roma 1', '10093', 'Collegno', 'paola@esempio.it', '347 111 2233'])
   ok('l’io riusa la firma, il regolamento e la privacy', [lei?.tratti, r.regolamento, lei?.privacy], [7, true, true])
-  ok('l’io riusa la carta, fronte e retro; il certificato resta suo', [lei?.file.documento === doc, lei?.file['documento-retro'] === retro, lei?.file.certificato?.name], [true, true, 'cert.pdf'])
+  ok('l’io non prende la carta del bambino: ha la sua, e il certificato è suo', [lei?.file.documento === doc, lei?.file['documento-retro'] === retro, lei?.file.documento?.name, lei?.file.certificato?.name], [false, false, 'documento-lei.jpg', 'cert.pdf'])
+  ok('l’io senza la sua carta non ne riceve una dal bambino', chiama(() => m.conDatiDellaFamiglia([bimbo, io({}, { file: {} })])[1].file.documento), undefined)
   ok('corso, formula e caselle dell’io sono suoi', [r.corsi, r.formula, lei?.scelte], [['judo-adulti'], 'annuale', { tesseramento: true, foto: true }])
   const corretto = lista(() => m.conDatiDellaFamiglia([{ ...bimbo, tratti: 0, risposte: { ...bimbo.risposte, genitoreNome: 'Paolina' } }, io()]))[1]
   ok('una correzione nel bambino 0 si vede nell’io', [corretto?.risposte.nome, corretto?.tratti], ['Paolina', 0])
@@ -2157,7 +2182,10 @@ console.log('\n40. LA FAMIGLIA')
   // --- cosa manca all'io ---
   ok('l’io, il modulo (3): niente firma, regolamento né privacy', nomi(io(), 3), [])
   ok('l’io, il modulo (3): tesseramento e foto, se non li ha scelti', nomi(io({}, { scelte: {} }), 3), ['FOTO', 'TESSERAMENTO'])
-  ok('l’io, i documenti (4): la carta non si chiede', nomi(io(), 4), [])
+  ok('l’io, i documenti (4): la sua carta si chiede', nomi(io({}, { file: {} }), 4), ["CARTA D'IDENTITÀ"])
+  ok('l’io, i documenti (4): con la sua carta non manca niente', nomi(io(), 4), [])
+  ok('l’io senza la sua carta: quantoManca lo conta anche se il bambino ha la sua', chiama(() => m.quantoManca(m.conDatiDellaFamiglia([figlio(), io({}, { file: {} })])[1])), 1)
+  ok('bambino e io senza carta: ferma, con chi manca', chiama(() => m.mancantiFamiglia(m.conDatiDellaFamiglia([figlio(), io({}, { file: {} })])).map((x) => x.nome)), ["CARTA D'IDENTITÀ DI PAOLA"])
   ok('l’io coi dati del bambino: non gli manca niente', chiama(() => m.quantoManca(m.conDatiDellaFamiglia([figlio(), io()])[1])), 0)
   ok('bambino e io: nessun fermo', chiama(() => m.fermoDellaFamiglia([figlio(), io()])), undefined)
   const fermo = chiama(() => m.fermoDellaFamiglia([m.cambiaScelta(figlio(), 'adulto'), io()]))
@@ -2243,7 +2271,7 @@ console.log('\n40. LA FAMIGLIA')
   ok('la richiesta del bambino è quella delle sue risposte', daMandare[0]?.dati, m.risposteDaiPassi(bimboRic))
   ok('la richiesta dell’io è quella di oggi del genitore, campo per campo', ordinato(daMandare[1]?.dati), ordinato(richiestaDiPaola({ natoA: 'Torino (TO)' })))
   ok('la ricevuta in tutte e due', daMandare.map((x) => x.file.ricevuta === ric), [true, true])
-  ok('l’io porta la carta del bambino, fronte e retro', [daMandare[1]?.file.documento === doc, daMandare[1]?.file['documento-retro'] === retro], [true, true])
+  ok('l’io porta la sua carta, non quella del bambino', [daMandare[1]?.file.documento?.name, daMandare[0]?.file.documento === doc, daMandare[1]?.file['documento-retro']], ['documento-lei.jpg', true, undefined])
   const inviati = []
   const e = await m.mandaRichieste({ modo: 'prova', async invia(x) { inviati.push(x); return `r${inviati.length}` }, async caricaFile() {} }, daMandare)
   ok('arrivano tutte e due, ognuna legata all’altra', [e.esito, inviati.map((x) => x.note)], ['fatto', ['mandata insieme alla richiesta di Paola Rossi, sconto famiglia da applicare', 'mandata insieme alla richiesta di Matteo Rossi, sconto famiglia da applicare']])
@@ -2325,10 +2353,11 @@ console.log('\n41. LA FAMIGLIA: le regole scoperte nelle revisioni')
   const zero = figlio({}, { file: { documento: doc, 'documento-retro': retro } })
   const lei = conCf('Lucia', '2017-06-06', true, { corsi: ['judo-2'], regolamento: false }, { privacy: false, natoAGenitore: '', file: {} })
   const l = lista(() => m.conDatiDellaFamiglia([zero, lei]))[1]
-  ok('il fratello: la carta del genitore, fronte e retro', [l?.file.documento === doc, l?.file['documento-retro'] === retro], [true, true])
+  ok('il fratello non prende la carta dal bambino 0: la sua si carica', [l?.file.documento, l?.file['documento-retro']], [undefined, undefined])
   ok('il fratello: regolamento, privacy e dove è nato il genitore', [l?.risposte.regolamento, l?.privacy, l?.natoAGenitore], [true, true, 'Torino'])
   ok('il fratello: la firma resta sua', l?.tratti, 5)
-  ok('il fratello: a CONTROLLA E INVIA non gli si chiedono di nuovo', chiama(() => m.mancantiFamiglia(m.conDatiDellaFamiglia([zero, lei])).filter((x) => x.chiave.startsWith('1:')).map((x) => x.chiave)), [])
+  ok('il fratello: a CONTROLLA E INVIA gli manca solo la sua carta', chiama(() => m.mancantiFamiglia(m.conDatiDellaFamiglia([zero, lei])).filter((x) => x.chiave.startsWith('1:')).map((x) => x.chiave)), ['1:documento'])
+  ok('…e con la sua carta non gli manca niente', chiama(() => m.mancantiFamiglia(m.conDatiDellaFamiglia([zero, { ...lei, file: { documento: F('lucia.jpg') } }])).filter((x) => x.chiave.startsWith('1:'))), [])
 
   // 9. La persona 0 passa da adulto a bambino: chi firma il fratello è ora chi compila, che scrive il genitore.
   const luca2 = adulto({ nome: 'Luca' })
@@ -2880,6 +2909,22 @@ console.log('\n45. RIEMPI, solo in prova')
   ok('a PAGAMENTO RIEMPI non c’è, e la ricevuta resta vuota', chiama(() => scritto(S(r([d0], 0, 'pagamento')))), scritto(d0))
   for (const tipo of ['famiglia', 'riepilogo']) ok(`a ${tipo.toUpperCase()} lo stato resta com’è`, chiama(() => scritto(S(r([d0], 0, tipo)))), scritto(d0))
 
+  // --- 8b. la carta finta c'è per chi ha 6 anni o più, e solo per lui ---
+  const oggiProva = new Date()
+  const natoDa = (anni, giorni = 0) => {
+    const d = new Date(oggiProva.getFullYear() - anni, oggiProva.getMonth(), oggiProva.getDate() - giorni)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+  const conEta = (natoIl) => figlio({ natoIl }, { file: {} })
+  const finta = (natoIl) => chiama(() => S(r([conEta(natoIl)], 0, 'documenti')).file.documento instanceof File)
+  ok('10 anni: RIEMPI mette la carta', finta(natoDa(10)), true)
+  ok('compie 6 anni oggi: RIEMPI mette la carta', finta(natoDa(6)), true)
+  ok('5 anni e 364 giorni: niente carta finta', finta(natoDa(6, -1)), false)
+  ok('4 anni: niente carta finta', finta(natoDa(4)), false)
+  ok('4 anni: dopo RIEMPI il passo dei documenti non manca niente', chiama(() => manca(S(r([conEta(natoDa(4))], 0, 'documenti')), 'documenti')), [])
+  const sorelle = [figlio(), { ...conEta(natoDa(4)), firmatario: 0 }, { ...conEta(natoDa(9)), firmatario: 0 }]
+  ok('in famiglia ognuno la sua: la carta finta solo a chi ha 6 anni o più', chiama(() => [1, 2].map((i) => S(r(sorelle, i, 'documenti')).file.documento instanceof File)), [false, true])
+
   // --- 9. il fratello firmato da chi compila: prende dalla famiglia, non si copia ---
   let fam = lista(() => m.aggiungiFamiliare([figlio()], 'figlio', 0))
   for (const tipo of RIEMPIBILI) {
@@ -2887,16 +2932,18 @@ console.log('\n45. RIEMPI, solo in prova')
     if (vero(x)) fam = fam.map((p, k) => (k === 1 ? x : p))
   }
   const fratello = fam[1]
-  ok('fratello: nel grezzo genitore, indirizzo e carta restano vuoti', chiama(() => [fratello.risposte.genitoreNome, fratello.risposte.genitoreCognome, fratello.risposte.genitoreCodiceFiscale, fratello.risposte.indirizzo, fratello.risposte.cap, fratello.risposte.comune, fratello.file.documento]), ['', '', '', '', '', '', undefined])
+  ok('fratello: nel grezzo genitore e indirizzo restano vuoti, la carta è sua (finta)', chiama(() => [fratello.risposte.genitoreNome, fratello.risposte.genitoreCognome, fratello.risposte.genitoreCodiceFiscale, fratello.risposte.indirizzo, fratello.risposte.cap, fratello.risposte.comune, fratello.file.documento instanceof File]), ['', '', '', '', '', '', true])
   const visto = lista(() => m.conDatiDellaFamiglia(fam))[1]
-  ok('…e la famiglia gli dà quelli di Matteo', chiama(() => [visto.risposte.genitoreNome, visto.risposte.indirizzo, visto.file.documento === fam[0].file.documento]), ['Paola', 'Via Roma 1', true])
+  ok('…e la famiglia gli dà il genitore e l’indirizzo di Matteo, ma non la sua carta', chiama(() => [visto.risposte.genitoreNome, visto.risposte.indirizzo, visto.file.documento === fam[0].file.documento]), ['Paola', 'Via Roma 1', false])
   ok('fratello: nessun passo riempito ha mancanze', chiama(() => RIEMPIBILI.map((t) => manca(visto, t))), RIEMPIBILI.map(() => []))
   ok('il fratello ha un nome suo', chiama(() => fratello.risposte.nome.trim() !== '' && fratello.risposte.nome !== 'Matteo'), true)
 
   // --- 10. l'io: è già scritto nel bambino 0 ---
   const conIo = [figlio(), io({}, { scelte: {} })]
   ok('io, DATI: lo stato non cambia', chiama(() => scritto(S(r(conIo, 1, 'dati')))), scritto(conIo[1]))
-  ok('io, DOCUMENTI: lo stato non cambia', chiama(() => scritto(S(r(conIo, 1, 'documenti')))), scritto(conIo[1]))
+  const ioSenzaCarta = [figlio(), io({}, { scelte: {}, file: {} })]
+  ok('io, DOCUMENTI: la sua carta finta, e non gli manca niente', chiama(() => [S(r(ioSenzaCarta, 1, 'documenti')).file.documento instanceof File, manca(S(r(ioSenzaCarta, 1, 'documenti')), 'documenti')]), [true, []])
+  ok('io con la carta già caricata, DOCUMENTI: lo stato non cambia', chiama(() => scritto(S(r(conIo, 1, 'documenti')))), scritto(conIo[1]))
   // Per l'io mancaNelPasso chiede solo tesseramento e foto: firma, ok e foglio sono del bambino 0.
   const ioFirma = r(conIo, 1, 'modulo')
   ok('io, FIRMA: cambiano solo le scelte', chiama(() => scritto(S(ioFirma))), scritto({ ...conIo[1], scelte: { tesseramento: true, foto: true } }))

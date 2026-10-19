@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -110,6 +110,15 @@ console.log('\n2. cosa passa e cosa no: gli stessi messaggi del database')
   ok('diciotto anni domani: minore', m.minorenne('2008-09-27'), true)
   const oggi = new Date(2026, 9, 2)
   ok('certificato: senza data, nessuno', m.certificatoDaPortare('', ['Judo'], oggi), 'nessuno')
+  // La carta d'identità è dell'atleta, dai 6 anni: anche per un minore del nucleo (non è più «quella del genitore»).
+  const tipi = (nato, corsi = ['Judo']) => m.tipiDaChiedere(nato, corsi, oggi)
+  ok('carta: 6 anni oggi, fronte e retro', tipi('2020-10-02').filter((t) => t.startsWith('documento')), ['documento', 'documento-retro'])
+  ok('carta: 5 anni e 364 giorni, nessuna', tipi('2020-10-03').filter((t) => t.startsWith('documento')), [])
+  ok('carta: un adulto, fronte e retro', tipi('1990-05-05').filter((t) => t.startsWith('documento')), ['documento', 'documento-retro'])
+  ok('carta: senza data non decide, nessuna', tipi('').filter((t) => t.startsWith('documento')), [])
+  ok('un minore di 10 anni: carta e certificato, modulo e ricevuta', tipi('2016-01-01'), ['modulo', 'documento', 'documento-retro', 'certificato', 'ricevuta'])
+  ok('4 anni: solo modulo e ricevuta', tipi('2022-01-01'), ['modulo', 'ricevuta'])
+  ok('il testo del documento in FILE non manda più al genitore', /genitore/i.test(m.FILE.find((f) => f.tipo === 'documento').dettaglio), false)
   ok('certificato: 5 anni, nessuno', m.certificatoDaPortare('2021-01-01', ['Judo bambini'], oggi), 'nessuno')
   ok('certificato: 6 anni oggi, normale', m.certificatoDaPortare('2020-10-02', ['Judo bambini'], oggi), 'normale')
   ok('certificato: 11 anni a judo, normale', m.certificatoDaPortare('2015-01-01', ['Judo ragazzi'], oggi), 'normale')

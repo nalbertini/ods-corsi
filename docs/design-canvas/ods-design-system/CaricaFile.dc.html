@@ -27,7 +27,7 @@
   <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 48px; padding: 0 16px; border: 2px solid {{bordoTasto}}; border-radius: {{raggio}}; color: {{c.tasto}}; font-family: {{cond}}; font-style: {{inclina}}; font-size: {{tastoCorpo}}; font-weight: {{etichettaPeso}}; letter-spacing: {{tastoSpazio}}">{{tasto}}</span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"CARTA D IDENTITÀ"},"seManca":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":"Il fronte. Per un minore, quella del genitore."},"nome":{"editor":"text","default":""},"kb":{"editor":"text","default":"412"},"errore":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":100}}'>
+<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"CARTA D IDENTITÀ"},"seManca":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":"Il fronte. Una foto o il PDF."},"nome":{"editor":"text","default":""},"kb":{"editor":"text","default":"412"},"errore":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":100}}'>
 // Riproduzione 1:1 di CaricaFile di src/components/ds.tsx (righe 207-245) con .modulo-file, .modulo-file-testo, .modulo-etichetta,
 // .passo-dettaglio, .una-riga e .modulo-scegli di src/styles.css (righe 633-636, 598, 585, 560). E' la riga di ogni file del modulo
 // di iscrizione (carta d'identita', certificato, ricevuta, foto del modulo firmato): una scheda `surface` con a sinistra l'etichetta
@@ -68,7 +68,7 @@ const nome = p.nome ?? '';
       tastoCorpo: sito ? '20px' : '16px', tastoSpazio: sito ? '0.06em' : '0.16em',
       bordo: fatto ? c.verde : c.line,
       etichetta, coloreEtichetta: fatto ? c.verdeTesto : c.dim,
-      frase: fatto ? nome + ' · ' + kb + ' KB' : (p.dettaglio ?? 'Il fronte. Per un minore, quella del genitore.'),
+      frase: fatto ? nome + ' · ' + kb + ' KB' : (p.dettaglio ?? 'Il fronte. Una foto o il PDF.'),
       unaRiga: fatto ? 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap' : '',
       errore, haErrore: errore !== '',
       tasto: fatto ? 'CAMBIA' : 'SCEGLI',

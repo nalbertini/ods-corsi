@@ -34,8 +34,7 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * alla scheda dell'iscritto.
  *
  * Una richiesta mandata dall'area degli iscritti per il nucleo familiare di
- * qualcuno lo dice (NUCLEO): accolta, la persona entra nel suo nucleo, e per
- * un minore il documento è quello del genitore, che la segreteria ha già.
+ * qualcuno lo dice (NUCLEO): accolta, la persona entra nel suo nucleo.
  *
  * Se in elenco c'è già qualcuno con lo stesso nome e cognome la scheda lo
  * mostra, e lo si sceglie con È LUI / È LEI: la richiesta mandata dalla mamma
@@ -343,7 +342,7 @@ function Scheda({
             <button type="button" className="sg-link" onClick={() => onApri(x.nucleoDi!)}>
               {titolare}
             </button>{' '}
-            dalla sua area: accolto, entra nel suo nucleo.{minore && ' Il documento è quello del genitore, già in segreteria.'}
+            dalla sua area: accolto, entra nel suo nucleo.
           </Dato>
         )}
         <Dato etichetta="NATO IL">{dataLunga(x.natoIl)}{minore && ' · minorenne'}</Dato>

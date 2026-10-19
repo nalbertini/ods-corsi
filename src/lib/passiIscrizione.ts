@@ -4,7 +4,7 @@ import type { VoceCosto } from './costi'
 import type { Abbonamento, RigaStima } from './nucleo'
 import { causale, SCONTO_FAMIGLIA, stimaIscrizione } from './nucleo'
 import type { CampoModulo, DatiRichiesta, DatiRichieste, Formula, OrarioAperto, TipoFile } from './richieste'
-import { certificatoDaPortare, dataDaCf, NOTE_NEL_DATABASE, domandaUscita, ETICHETTA_FILE, FILE, firmaDaRifare, minorenne, problemi, pulisciCf } from './richieste'
+import { certificatoDaPortare, compiuti, dataDaCf, NOTE_NEL_DATABASE, domandaUscita, ETICHETTA_FILE, FILE, firmaDaRifare, minorenne, problemi, pulisciCf, tipiDaChiedere } from './richieste'
 import type { Luoghi } from './codiceFiscale'
 import { cfValido, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { nomeProprio } from './nomi'
@@ -190,8 +190,12 @@ function moduloEFile(s: StatoPassi): Pastiglia[] {
   return m
 }
 
-/** I documenti che ferma la richiesta: la carta d'identità. Il retro, il certificato e la ricevuta non fermano. */
-function documenti(s: StatoPassi): Pastiglia[] {
+/**
+ * I documenti che ferma la richiesta: la carta d'identità di chi si iscrive, dai 6 anni. Il retro, il certificato e la
+ * ricevuta non fermano. Un adulto la porta sempre (anche prima della data); un bambino senza data non decide.
+ */
+function documenti(s: StatoPassi, oggi: Date): Pastiglia[] {
+  if (s.chi !== 'adulto' && !compiuti(s.risposte.natoIl, 6, oggi)) return []
   return FILE.filter((f) => f.obbligatorio && f.tipo !== 'modulo' && !s.file[f.tipo]).map((f) => ({ chiave: f.tipo, nome: f.etichetta }))
 }
 
@@ -218,8 +222,7 @@ function sezione(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
     case 'modulo':
       return s.io ? caselleDellIo(s) : moduloEFile(s)
     case 'documenti':
-      // La carta dell'io è quella caricata per il bambino 0.
-      return s.io ? [] : documenti(s)
+      return documenti(s, oggi)
     default:
       return []
   }
@@ -267,8 +270,8 @@ export function chiFirma(persone: StatoPassi[], i: number): string | undefined {
 /** Nel passo del modulo dell’io, la casella delle sue foto: col suo nome. */
 export const etichettaSueFoto = (nome: string | undefined): string => `LE FOTO E I VIDEO ${diChiFirma(nome).toUpperCase()}`
 
-/** La riga della carta d'identità nel riepilogo: di chi firma per un bambino, senza nome per un adulto. */
-export const cartaNelRiepilogo = (chi: Chi, genitoreNome: string | undefined): string => (chi === 'figlio' ? `Carta d’identità ${diChiFirma(genitoreNome)}` : 'Carta d’identità')
+/** La riga della carta d'identità nel riepilogo: del bambino col suo nome, senza nome per un adulto. */
+export const cartaNelRiepilogo = (chi: Chi, nome: string | undefined): string => (chi === 'figlio' ? `Carta d’identità ${nome?.trim() ? `di ${nome.trim()}` : 'del bambino'}` : 'Carta d’identità')
 
 /** La frase in cima al passo del genitore: «tu» se firma chi compila, se no il nome di chi firma. */
 export function fraseDelGenitore(chi: string | undefined): string {
@@ -475,7 +478,7 @@ function datiDiChiFirma(persone: StatoPassi[], s: StatoPassi): { nome: string; c
 
 /**
  * L'io prende dal bambino 0, sempre (anche quello che ha scritto lui: il suo passo dei dati non c'è): chi è, dove è
- * nato, la residenza, i contatti, la carta, la firma e l'ok. Se la persona 0 non è più un bambino, niente.
+ * nato, la residenza, i contatti, la firma e l'ok. Se la persona 0 non è più un bambino, niente.
  */
 function conDatiDelBambino(s: StatoPassi, bambino: StatoPassi): StatoPassi {
   if (bambino.chi !== 'figlio') return s
@@ -501,7 +504,6 @@ function conDatiDelBambino(s: StatoPassi, bambino: StatoPassi): StatoPassi {
     },
     tratti: bambino.tratti,
     privacy: bambino.privacy,
-    file: { ...s.file, documento: bambino.file.documento, 'documento-retro': bambino.file['documento-retro'] },
   }
 }
 
@@ -527,7 +529,6 @@ export function conDatiDellaFamiglia(persone: StatoPassi[]): StatoPassi[] {
       ...(genitore0 && {
         privacy: s.privacy || genitore0.privacy,
         natoAGenitore: oppure(s.natoAGenitore, genitore0.natoAGenitore),
-        file: { ...s.file, documento: s.file.documento ?? genitore0.file.documento, 'documento-retro': s.file['documento-retro'] ?? genitore0.file['documento-retro'] },
       }),
       risposte: {
         ...r,
@@ -676,13 +677,12 @@ export const uscitaDellaFamiglia = (persone: StatoPassi[]): string | undefined =
  * Etichetta e dettaglio di un file nel flusso a passi. Per chi iscrive il figlio parlano al genitore
  * («il certificato di Luca», «la tua carta»); per l'adulto restano quelli di `FILE`, come nel modulo di oggi.
  */
-export function testoFile(chi: Chi, tipo: TipoFile, nome: string, firma: string | undefined): { etichetta: string; dettaglio: string } {
+export function testoFile(chi: Chi, tipo: TipoFile, nome: string): { etichetta: string; dettaglio: string } {
   const f = FILE.find((x) => x.tipo === tipo)!
   const n = nome.trim()
-  // La carta è di chi firma, che non sempre è chi compila (in famiglia): il suo nome, non «tua».
-  const di = diChiFirma(firma).toUpperCase()
+  const di = n ? `DI ${n.toUpperCase()}` : 'DEL BAMBINO'
   if (chi === 'figlio') {
-    if (tipo === 'documento') return { etichetta: `LA CARTA D’IDENTITÀ ${di}`, dettaglio: `Il fronte. È ${firma?.trim() || 'il genitore'} che firma: serve la sua carta, non quella ${n ? `di ${n}` : 'del bambino'}.` }
+    if (tipo === 'documento') return { etichetta: `LA CARTA D’IDENTITÀ ${di}`, dettaglio: 'Il fronte. Serve per gli stage e le trasferte.' }
     if (tipo === 'documento-retro') return { etichetta: `IL RETRO DELLA CARTA ${di}`, dettaglio: 'Il retro. Una foto o il PDF.' }
     if (tipo === 'certificato') {
       return {
@@ -801,12 +801,12 @@ export function fraseContatti(email: string, telefono: string): string | undefin
   return `La segreteria ${come}, se manca qualcosa.`
 }
 
-/** I file da chiedere: il certificato solo dai 6 anni, e quale lo dice l'età e il corso. */
+/** I file da chiedere: carta e certificato solo dai 6 anni, e quale certificato lo dice l'età e il corso. */
 export function fileDaChiedere(natoIl: string, nomiCorsi: string[], oggi = new Date()) {
   const certificato = certificatoDaPortare(natoIl, nomiCorsi, oggi)
   return {
     certificato,
-    file: FILE.filter((f) => certificato !== 'nessuno' || f.tipo !== 'certificato').map((f) => ({ tipo: f.tipo, etichetta: f.etichetta, obbligatorio: f.obbligatorio })),
+    file: FILE.filter((f) => tipiDaChiedere(natoIl, nomiCorsi, oggi).includes(f.tipo)).map((f) => ({ tipo: f.tipo, etichetta: f.etichetta, obbligatorio: f.obbligatorio })),
   }
 }
 
@@ -1415,7 +1415,10 @@ export function richiesteDaMandare(s: StatoPassi, provincia: string, faiPdf: (c:
   const luogo = r.natoA.trim()
   const conProvincia = s.io && luogo && provincia && !/\([A-Z]{2}\)$/i.test(luogo)
   const dati = conProvincia ? { ...r, natoA: scriviLuogo({ nome: luogo, sigla: provincia }) } : r
-  return [{ dati, file: s.file, faiPdf: s.file.modulo ? undefined : () => faiPdf({ dati, minore: s.chi === 'figlio', scelte: s.scelte, natoA: s.natoAGenitore, provincia }) }]
+  // La carta non parte per chi non ha 6 anni (caricata prima di cambiare la data): non serve e non si tiene.
+  const { documento: _d, 'documento-retro': _r, ...senzaCarta } = s.file
+  const file = s.chi === 'adulto' || compiuti(r.natoIl, 6, oggi) ? s.file : senzaCarta
+  return [{ dati, file, faiPdf: s.file.modulo ? undefined : () => faiPdf({ dati, minore: s.chi === 'figlio', scelte: s.scelte, natoA: s.natoAGenitore, provincia }) }]
 }
 
 /** La ricevuta del modulo va in ogni richiesta: un bonifico solo per tutti, e nessuna richiesta dice «nessuna ricevuta». */

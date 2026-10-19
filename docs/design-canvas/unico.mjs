@@ -32,6 +32,7 @@ const SEZIONI = [
   { id: 'comune-dal-cap', nome: 'Iscrizione · comune dal CAP', cartella: 'comune-dal-cap' },
   { id: 'firma-schermo-intero', nome: 'Iscrizione · firma a schermo intero', cartella: 'firma-schermo-intero' },
   { id: 'riempi-prova', nome: 'Iscrizione · riempi per prova', cartella: 'riempi-prova' },
+  { id: 'carta-atleta', nome: 'Iscrizione · carta d\'identità dell\'atleta', cartella: 'carta-atleta' },
   { id: 'esci-dalla-prova', nome: 'Iscrizione · esci dalla prova', cartella: 'esci-dalla-prova' },
   { id: 'iscrizione-sito', nome: 'Iscrizione · modulo nell\'aspetto del sito', cartella: 'iscrizione-sito' },
   { id: 'iscrizioni-pagina', nome: 'Iscrizioni · la pagina d\'ingresso', cartella: 'iscrizioni-pagina' },
@@ -94,7 +95,7 @@ const MAX_PAGINE = 40
 const GRUPPI = {
   'iscrizione-flusso': { nome: 'Iscrizione · il modulo', sezioni: ['iscrizione', 'iscrizione-nuovo', 'iscrizione-rifinitura', 'navigazione-passi', 'iscrizione-sito', 'iscrizioni-pagina'] },
   'iscrizione-famiglia': { nome: 'Iscrizione · famiglia', sezioni: ['iscrizione-famiglia', 'famiglia-passo', 'famiglia-ultimo', 'anche-tu'] },
-  'iscrizione-dettagli': { nome: 'Iscrizione · dettagli', sezioni: ['orari-evidenziati', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'comune-dal-cap', 'firma-schermo-intero', 'riempi-prova', 'esci-dalla-prova'] },
+  'iscrizione-dettagli': { nome: 'Iscrizione · dettagli', sezioni: ['orari-evidenziati', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'comune-dal-cap', 'firma-schermo-intero', 'riempi-prova', 'carta-atleta', 'esci-dalla-prova'] },
   'vestiario': { nome: 'Vestiario', sezioni: ['vestiario', 'vestiario-modulo'] },
   'sito': { nome: 'Sito', sezioni: ['sito-pannello', 'sito-pubblico', 'orari-sito', 'sito-rebrand', 'sito-approvato'] },
   'segreteria-iscritti': { nome: 'Segreteria · iscritti e prezzi', sezioni: ['iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'filtro-storico-pagamenti', 'tessere', 'scheda-iscritto-schede', 'prezzi-mancanti'] },

@@ -129,7 +129,7 @@ export interface DatiRichieste {
 /** I file da caricare, nell'ordine in cui si chiedono. */
 export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string; obbligatorio: boolean; seManca?: string }> = [
   { tipo: 'modulo', etichetta: 'MODULO FIRMATO', dettaglio: 'Una foto, o il PDF firmato dal telefono.', obbligatorio: true },
-  { tipo: 'documento', etichetta: "CARTA D'IDENTITÀ", dettaglio: 'Il fronte. Per un minore, quella del genitore.', obbligatorio: true },
+  { tipo: 'documento', etichetta: "CARTA D'IDENTITÀ", dettaglio: 'Il fronte. Una foto o il PDF.', obbligatorio: true },
   { tipo: 'documento-retro', etichetta: 'RETRO DEL DOCUMENTO', dettaglio: 'Se il fronte non basta.', obbligatorio: false },
   // Si chiede dai 6 anni ma non ferma la richiesta: «facoltativo» direbbe che non serve.
   { tipo: 'certificato', etichetta: 'CERTIFICATO MEDICO', dettaglio: 'Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria.', obbligatorio: false, seManca: 'PUOI PORTARLO DOPO' },
@@ -294,6 +294,17 @@ export const avvisoCertificato = (tipo: 'normale' | 'agonistico'): string =>
 export function certificatoDaPortare(natoIl: string, nomiCorsi: string[], oggi = new Date()): 'nessuno' | 'normale' | 'agonistico' {
   if (!compiuti(natoIl, 6, oggi)) return 'nessuno'
   return compiuti(natoIl, 12, oggi) && nomiCorsi.some((n) => AGONISTICI.test(n)) ? 'agonistico' : 'normale'
+}
+
+/**
+ * I file da chiedere a una persona, nell'ordine di `FILE`. La carta d'identità è sua, dai 6 anni (serve per
+ * stage e trasferte senza genitori; quella del genitore non serve), il certificato lo dice `certificatoDaPortare`.
+ * Senza data di nascita non si decide: né carta né certificato.
+ */
+export function tipiDaChiedere(natoIl: string, nomiCorsi: string[], oggi = new Date()): TipoFile[] {
+  const carta = compiuti(natoIl, 6, oggi)
+  const certificato = certificatoDaPortare(natoIl, nomiCorsi, oggi) !== 'nessuno'
+  return FILE.filter((f) => (carta || !f.tipo.startsWith('documento')) && (certificato || f.tipo !== 'certificato')).map((f) => f.tipo)
 }
 
 /** I campi del modulo che possono non andare, per segnarli uno per uno. */

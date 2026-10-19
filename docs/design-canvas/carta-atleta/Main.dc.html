@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- CARTA D'IDENTITA' DELL'ATLETA: la riga e' CaricaFile della libreria, cambiano solo le parole. Oggi per un minore si chiede la carta
+     del genitore che firma (e l'io e i fratelli la ereditano); con la proposta ogni persona carica la sua, dai 6 anni. Sotto i 6 anni
+     il passo DOCUMENTI non chiede la carta. -->
+<div style="display: flex; flex-direction: column; width: 420px; padding: 28px 24px 36px; gap: 12px">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">OGGI · BAMBINO DI 8 ANNI, SI CHIEDE QUELLA DEL GENITORE</span>
+  <dc-import name="CaricaFile" tema="sito" etichetta="LA CARTA D’IDENTITÀ DI PAOLA" dettaglio="Il fronte. È Paola che firma: serve la sua carta, non quella di Matteo." hint-size="100%,100px"></dc-import>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00; margin-top: 20px">PROPOSTA · BAMBINO DI 8 ANNI: LA SUA CARTA</span>
+  <dc-import name="CaricaFile" tema="sito" etichetta="LA CARTA D’IDENTITÀ DI MATTEO" dettaglio="Il fronte. Serve per gli stage e le trasferte." hint-size="100%,100px"></dc-import>
+  <dc-import name="CaricaFile" tema="sito" etichetta="IL RETRO DELLA CARTA DI MATTEO" dettaglio="Se il fronte non basta." seManca="FACOLTATIVO" hint-size="100%,100px"></dc-import>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00; margin-top: 20px">PROPOSTA · PAOLA, IL GENITORE, SI ISCRIVE ANCHE LEI (IO): CARICA LA SUA</span>
+  <dc-import name="CaricaFile" tema="sito" etichetta="CARTA D’IDENTITÀ" dettaglio="Il fronte. Una foto o il PDF." hint-size="100%,100px"></dc-import>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00; margin-top: 20px">PROPOSTA · BAMBINO DI 5 ANNI: IL PASSO NON CHIEDE LA CARTA</span>
+  <span style="font-size: 16px; line-height: 1.5; color: #46606f; padding: 14px 16px; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 8px">Sotto i 6 anni non serve niente: né la carta d’identità né il certificato medico.</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":420,"height":780}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

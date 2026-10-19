@@ -20,7 +20,8 @@ qualunque sia il tema dell'app) e si legge dall'alto, in questo ordine:
    è ancora l'iscrizione e non si salva a metà (se esci, ricominci), e il
    link all'**informativa privacy**. La segreteria guarda la richiesta e
    richiama: la pagina non promette un giorno né un'ora.
-2. **Cosa ti serve**: la carta d'identità (del genitore, per un minore), il
+2. **Cosa ti serve**: la carta d'identità di chi si iscrive (dai 6 anni; quella del
+   genitore non serve), il
    certificato medico se ce l'hai (se no la richiesta parte lo stesso e lo
    porti in segreteria), la ricevuta del pagamento se hai già pagato. Per un
    minore firma il genitore.
@@ -105,9 +106,10 @@ Chi si iscrive risponde alle domande dal telefono:
   Se si cambia la data di nascita e chi si iscrive diventa minore (o non lo è
   più), il foglio è un altro: firma, crocette e foto del foglio si azzerano, e
   un avviso giallo dice «Firma e autorizzazioni vanno rifatte».
-- **I file**: la foto della **carta d'identità** (per un minore, quella del
-  genitore; non si chiede per un minore aggiunto dal nucleo, perché la
-  segreteria ha già quella del genitore), il retro se serve, il **certificato
+- **I file**: la foto della **carta d'identità** di chi si iscrive, dai 6
+  anni, anche per un minore aggiunto dal nucleo (serve per stage e trasferte
+  senza genitori; quella del genitore non serve, e sotto i 6 anni non si
+  chiede), il retro se serve, il **certificato
   medico** se ce l'ha già (lo vede solo la segreteria), e la **ricevuta del pagamento** se ha già pagato:
   chi paga in contanti al banco la lascia vuota (accanto c'è **PUOI PAGARE IN
   SEGRETERIA**). Il certificato si
@@ -181,11 +183,11 @@ Quali giorni vanno lo dice l'etichetta:
 In verde quanto si risparmia con l'annuale, col primo corso della carta.
 Il tasto tratteggiato aggiunge la persona: per un adulto, chi iscrive un
 bambino sceglie fra **IO** col suo nome (**IO, PAOLO**: si iscrive anche lui, e nome, codice
-fiscale, residenza, contatti, carta d'identità e firma sono quelli già scritti
-per il bambino, e restano da dare solo il corso, come paga, il tesseramento,
+fiscale, residenza, contatti e firma sono quelli già scritti
+per il bambino, e restano da dare la sua carta d'identità, il corso, come paga, il tesseramento,
 le foto e il certificato) e **UN ALTRO ADULTO**; per un bambino, se può
 firmare più di un adulto, si sceglie chi firma per lui. Un fratello che firmi tu ha già
-la tua carta d'identità, il tuo ok e dove sei nato: si firma solo il suo modulo. Nessuno da
+il tuo ok e dove sei nato: si firma il suo modulo e si carica la sua carta d'identità (dai 6 anni). Nessuno da
 aggiungere? **AVANTI, SOLO IO** (o **AVANTI**) e si va a PAGAMENTO.
 
 Chi si aggiunge parte dal suo primo passo. Al suo passo del corso, in cima,
@@ -237,7 +239,7 @@ Quando c'è da scegliere fra due cose (**IO, SONO ADULTO** o **MIO FIGLIO**, **T
 
 I corsi per grandi (quelli che la segreteria segna con un'età minima in **LISTINO**, per esempio la Pesistica dai 16 anni) non compaiono per un bambino troppo piccolo: sotto l'elenco una frase dice quali e di chiamare la segreteria. Per chi ha l'età compare fra i corsi per lui, con scritto «dai 16 anni».
 
-Chi iscrive un figlio trova scritto di chi è ogni cosa: **LA CARTA D'IDENTITÀ DI** e **IL RETRO DELLA CARTA DI** col nome di chi firma (la sua, non quella del bambino; finché il nome non c'è, **DEL GENITORE**), **IL CERTIFICATO DI** e il nome del bambino (con cosa succede se manca), e l'errore sul codice fiscale dice «Metti il tuo codice fiscale, non quello di» e il nome. Il luogo di nascita del genitore (**DOVE SEI NATO**, **PROVINCIA**) si chiede solo nei suoi dati e solo se il suo codice fiscale non lo dice da sé.
+Chi iscrive un figlio trova scritto di chi è ogni cosa: **LA CARTA D'IDENTITÀ DI** e **IL RETRO DELLA CARTA DI** col nome del bambino (finché il nome non c'è, **DEL BAMBINO**; sotto i 6 anni la carta non si chiede), **IL CERTIFICATO DI** e il nome del bambino (con cosa succede se manca), e l'errore sul codice fiscale dice «Metti il tuo codice fiscale, non quello di» e il nome. Il luogo di nascita del genitore (**DOVE SEI NATO**, **PROVINCIA**) si chiede solo nei suoi dati e solo se il suo codice fiscale non lo dice da sé.
 
 In fondo a ogni passo, sopra INDIETRO e AVANTI, «Hai bisogno di aiuto? Chiama o scrivi.»: **CHIAMA** telefona alla segreteria, **SCRIVI** apre WhatsApp allo stesso numero col messaggio già scritto, che dice a che passo si è («Ciao, sto compilando l'iscrizione e ho un dubbio sul passo DOCUMENTI»). A ogni passo nuovo il cursore va al titolo, così chi usa uno screen reader sente dove si trova. Se si esce o si ricarica la pagina dopo aver scritto qualcosa, il browser chiede conferma. Alla fine, **RICHIESTA ARRIVATA** dice dove la segreteria ti scrive o ti chiama, e se non hai caricato la ricevuta quanto devi pagare e come (l'IBAN, e per una persona sola anche la causale), con **CHIAMA LA SEGRETERIA** a portata di mano.
 
@@ -252,7 +254,7 @@ nastro giallo **PROVA · LE RICHIESTE NON ARRIVANO IN SEGRETERIA**, con
 
 Cosa arriva in **RICHIESTE ONLINE**: una richiesta per persona (anche per chi
 iscrive il bambino e si è aggiunto con **IO**: la sua ha i suoi dati, la sua
-carta d'identità e il suo modulo, con la firma data per il bambino). Sono
+carta d'identità e il suo modulo, con la firma data per il bambino; ogni persona ha la sua carta). Sono
 separate, e nelle note di ognuna c'è una riga che dice «mandata insieme alla
 richiesta di…, sconto famiglia da applicare», così la segreteria le lega. La ricevuta del
 bonifico, se c'è, arriva in ognuna: è un pagamento solo per tutte. Le note che scrive chi
