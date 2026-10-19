@@ -225,7 +225,7 @@ console.log('\n8. il registro e chi ha il PIN')
 console.log('\n9. sale e regole')
 {
   await s.salvaSala({ id: 'Pesi', nome: 'Sala pesi', capienza: 12 })
-  ok('la sala cambia nome ovunque', [(await s.corsi()).find((c) => c.id === 'pesi-1').sala, (await s.sale()).find((x) => x.nome === 'Sala pesi').capienza], ['Sala pesi', 12])
+  ok('la sala cambia nome ovunque', [(await s.corsi()).find((c) => c.id === 'pesistica').sala, (await s.sale()).find((x) => x.nome === 'Sala pesi').capienza], ['Sala pesi', 12])
   ok('due sale con lo stesso nome no', await errore(() => s.salvaSala({ nome: 'lotta' })), 'C’è già una sala con questo nome')
   // Le date contano da oggi: una data fissa, col tempo, passerebbe il limite da sola.
   const mesiFa = (n) => {
@@ -1428,8 +1428,8 @@ console.log('\nunire due schede')
     { corsoId: 'lotta-2', personaId: resta, dal: '2026-01-10', al: '2026-06-30' },
     { corsoId: 'lotta-2', personaId: via, dal: '2025-09-01' },
     { corsoId: 'judo-2', personaId: via, dal: '2026-09-14', al: '2027-06-30' },
-    { corsoId: 'pesi-1', personaId: resta, dal: '2026-02-01', al: '2026-03-31' },
-    { corsoId: 'pesi-1', personaId: via, dal: '2026-03-01', al: '2026-12-31' },
+    { corsoId: 'pesistica', personaId: resta, dal: '2026-02-01', al: '2026-03-31' },
+    { corsoId: 'pesistica', personaId: via, dal: '2026-03-01', al: '2026-12-31' },
   ]
   await s.salvaCertificato(resta, '2026-12-31')
   await s.salvaCertificato(via, '2027-05-31')
@@ -1470,7 +1470,7 @@ console.log('\nunire due schede')
   ok('la prova passa', (m.archivio.dati.prove ?? []).filter((x) => x.sessioneId === l3.id).map((x) => x.personaId), [resta])
   ok('le iscrizioni: una per corso, dalla più vecchia alla fine più lontana',
     r.iscrizioni.map((i) => [i.corsoId, i.dal, i.al ?? null]).sort((x, y) => x[0].localeCompare(y[0])),
-    [['judo-2', '2026-09-14', '2027-06-30'], ['lotta-2', '2025-09-01', null], ['pesi-1', '2026-02-01', '2026-12-31']])
+    [['judo-2', '2026-09-14', '2027-06-30'], ['lotta-2', '2025-09-01', null], ['pesistica', '2026-02-01', '2026-12-31']])
   const sue = await s.ricevute(resta)
   ok('la ricevuta passa, con lo stesso numero e lo stesso intestatario', sue.map((x) => [x.numero, x.intestatario.cognome]), [[ricevuta.numero, 'Damico']])
   ok('e chi resta ha pagato la quota', m.pagamentoDi(r, oggi).come, 'pagato')
@@ -2583,12 +2583,12 @@ console.log('\nl’«Attività» di ogni giorno dei corsi: la segreteria di prov
 try {
   const elenco = async () => (await s.attivita()).elenco
   const nomiElenco = async () => (await elenco()).map((a) => a.nome)
-  const bf = async (g) => (await s.settimana(...giorno(g))).find((l) => l.corsoId === 'body-functional')
-  // Body functional è il mercoledì alle 18: due lezioni passate, e dopo oggi (sabato 26 settembre) 30 settembre,
+  const bf = async (g) => (await s.settimana(...giorno(g))).find((l) => l.corsoId === 'pre-pugilistica')
+  // Prepugilistica è il mercoledì alle 19: due lezioni passate, e dopo oggi (sabato 26 settembre) 30 settembre,
   // 7, 14, 21 e 28 ottobre e 4 novembre.
   const DATE = [[8, 16], [8, 23], [8, 30], [9, 7], [9, 14], [9, 21], [9, 28], [10, 4]]
   const etichette = async () => Promise.all(DATE.map(async (g) => (await bf(g)).attivita ?? '-'))
-  const giornoBf = async () => (await s.corsi()).find((c) => c.id === 'body-functional').ricorrenze[0]
+  const giornoBf = async () => (await s.corsi()).find((c) => c.id === 'pre-pugilistica').ricorrenze[0]
   const sulGiorno = async (id) => s.attivitaRicorrenza((await giornoBf()).id, id)
   const gia = "C'è già un'attività con questo nome"
 
@@ -2625,8 +2625,8 @@ try {
     // Anche quella con la prova (l'ultima) ha un appello: il giorno non la segue.
     await Promise.all(DATE.map(async (g) => (await bf(g)).attivitaCambiata)), [false, false, false, true, false, false, false, false])
   ok('il giorno dice «Sacco»', (await giornoBf()).attivita, 'Sacco')
-  ok('anche l\'app degli istruttori', (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'body-functional').attivita, 'Sacco')
-  ok('e quella a mano sul suo', (await app.calendario(...giorno([9, 7]))).find((x) => x.corsoId === 'body-functional').attivita, 'Sparring')
+  ok('anche l\'app degli istruttori', (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'pre-pugilistica').attivita, 'Sacco')
+  ok('e quella a mano sul suo', (await app.calendario(...giorno([9, 7]))).find((x) => x.corsoId === 'pre-pugilistica').attivita, 'Sparring')
   await sulGiorno(angoli)
   ok('da «Sacco» ad «Angoli»: le stesse tre', await etichette(), ['-', '-', '-', 'Sparring', 'Angoli', 'Angoli', 'Angoli', '-'])
   await sulGiorno(null)
@@ -2638,10 +2638,10 @@ try {
   ok('RIGENERA non cambia le attività', await etichette(), ['-', '-', '-', 'Sparring', 'Angoli', 'Angoli', 'Angoli', '-'])
 
   // Un giorno nuovo con la sua attività: le lezioni nascono con quella.
-  await s.aggiungiRicorrenza('body-functional', { giorno: 6, ora: '10:00', durata: 60, attivitaId: sacco })
-  const sabato = (await s.settimana(...giorno([9, 3]))).find((x) => x.corsoId === 'body-functional')
+  await s.aggiungiRicorrenza('pre-pugilistica', { giorno: 6, ora: '10:00', durata: 60, attivitaId: sacco })
+  const sabato = (await s.settimana(...giorno([9, 3]))).find((x) => x.corsoId === 'pre-pugilistica')
   ok('il giorno nuovo con «Sacco»: la sua lezione nasce con «Sacco»', sabato?.attivita, 'Sacco')
-  await s.togliRicorrenza((await s.corsi()).find((c) => c.id === 'body-functional').ricorrenze.find((r) => r.giorno === 6).id)
+  await s.togliRicorrenza((await s.corsi()).find((c) => c.id === 'pre-pugilistica').ricorrenze.find((r) => r.giorno === 6).id)
 
   // Una lezione sola.
   const l14 = await bf([9, 14])
@@ -2659,8 +2659,8 @@ try {
   await sulGiorno(sacco)
 
   // Una straordinaria.
-  await s.straordinaria('body-functional', new Date(2026, 9, 3, 10, 0), 60)
-  const extra = (await s.settimana(...giorno([9, 3]))).find((x) => x.corsoId === 'body-functional' && x.straordinaria)
+  await s.straordinaria('pre-pugilistica', new Date(2026, 9, 3, 10, 0), 60)
+  const extra = (await s.settimana(...giorno([9, 3]))).find((x) => x.corsoId === 'pre-pugilistica' && x.straordinaria)
   await s.aggiornaLezione(extra.id, { attivitaId: sparring })
   const extraDopo = async () => (await s.settimana(...giorno([9, 3]))).find((x) => x.id === extra.id)
   ok('la straordinaria ha la sua attività, e non è mai cambiata a mano', [(await extraDopo()).attivita, (await extraDopo()).attivitaCambiata], ['Sparring', false])
@@ -2716,9 +2716,9 @@ try {
   })(), ['Sparring', true])
   await app.cambiaAttivita((await judo()).id, null)
   ok('anche «Nessuna attività»', (await judo()).attivita, undefined)
-  const altrui = (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'body-functional')
+  const altrui = (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'pre-pugilistica')
   ok('quella di un altro no', eMessaggio(await errore(() => app.cambiaAttivita(altrui.id, sparring))), true)
-  ok('e non è cambiata', (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'body-functional').attivita, 'Sacco')
+  ok('e non è cambiata', (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'pre-pugilistica').attivita, 'Sacco')
   // Come la policy sessioni_aggiorna: chi la fa (il sostituto) o chi insegna il corso, anche se c'è un sostituto.
   await s.aggiornaLezione((await judo()).id, { sostitutoId: 'i-fabio' })
   await app.cambiaAttivita((await judo()).id, sparring)
@@ -2727,7 +2727,7 @@ try {
   await app.cambiaAttivita((await judo()).id, null)
   await s.aggiornaLezione(altrui.id, { sostitutoId: 'i-maurizio' })
   await app.cambiaAttivita(altrui.id, sparring)
-  ok('il sostituto cambia quella della lezione che fa', (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'body-functional').attivita, 'Sparring')
+  ok('il sostituto cambia quella della lezione che fa', (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'pre-pugilistica').attivita, 'Sparring')
   await s.aggiornaLezione(altrui.id, { sostitutoId: null })
   await s.aggiornaLezione(altrui.id, { attivitaId: sacco })
   ok('un\'attività che non c\'è: errore, e non cambia niente', [
@@ -2745,8 +2745,8 @@ try {
   const s2 = m2.creaSegreteriaProva()
   const prova2 = (f) => Promise.resolve().then(f).catch((e) => `ERRORE: ${e.message}`)
   ok('archivio di prima: elenco vuoto', await prova2(() => s2.attivita().then((x) => x.elenco)), [])
-  const l2 = (await s2.settimana(...giorno([9, 14]))).find((x) => x.corsoId === 'body-functional')
-  ok('le lezioni si leggono come prima, senza attività', [l2?.corso, l2?.attivita], ['Body functional', undefined])
+  const l2 = (await s2.settimana(...giorno([9, 14]))).find((x) => x.corsoId === 'pre-pugilistica')
+  ok('le lezioni si leggono come prima, senza attività', [l2?.corso, l2?.attivita], ['Prepugilistica', undefined])
   await s2.salvaAttivita({ nome: 'Nuova' })
   ok('e si può cominciare a scrivere', (await s2.attivita()).elenco.map((a) => a.nome), ['Nuova'])
   memoria.delete('ods-corsi:prova-archivio')

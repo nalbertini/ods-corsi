@@ -882,7 +882,7 @@ export type CorsoParallelo = CorsoPerEta & { stessaOra: true; giorni?: number[] 
 
 /**
  * I corsi da proporre a chi ha l'età `natoIl`: quelli per la sua età e, senza fascia d'età, solo quelli che il
- * listino non ha (Preparazione atletica 1, 2, 3): una voce senza anni di nascita ha l'età scritta a parole, spesso
+ * listino non ha (un corso nuovo, non ancora a listino): una voce senza anni di nascita ha l'età scritta a parole, spesso
  * dei piccoli («3-4-5 anni»).
  */
 function candidatiPerEta(corsi: CorsoRef[], voci: VoceCosto[], natoIl: string): CorsoPerEta[] {

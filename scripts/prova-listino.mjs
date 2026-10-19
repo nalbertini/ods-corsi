@@ -12,7 +12,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/listino'; export { COSTI, QUOTA_ASSOCIATIVA, SALDO_ENTRO, VALIDITA, saldoAperto } from './src/lib/costi'; export { vociDelCorso, vociPronte } from './src/lib/ricevute'; export { stimaIscrizione } from './src/lib/nucleo'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'",
+      "export * from './src/lib/listino'; export { COSTI, QUOTA_ASSOCIATIVA, SALDO_ENTRO, VALIDITA, saldoAperto } from './src/lib/costi'; export { vociDelCorso, vociPronte } from './src/lib/ricevute'; export { stimaIscrizione } from './src/lib/nucleo'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -332,6 +332,17 @@ console.log('\n11. DA FARE e LISTINO: i corsi a cui manca un prezzo')
   ok('in breve: un solo corso', inBreve([{ nome: 'Psicomotricità', frase: 'manca il prezzo del trimestre' }]), 'Manca il prezzo del trimestre: Psicomotricità.')
   ok('in breve: nessun corso, nessuna frase', inBreve([]), '')
   ok('l’ordine è quello dei corsi', manca(lista(voce('Judo 3', 'c-judo3', [{ annuale: 300 }])), [pa, judo3, lotta]).map?.((x) => x.nome), ['Preparazione atletica', 'Judo 3', 'Lotta 3'])
+}
+
+console.log('\n12. in prova i corsi sono quelli del listino')
+{
+  // Chi prova il modulo d'iscrizione non deve trovare corsi che la pagina dei prezzi non ha.
+  m.archivio.azzera()
+  const corsi = await m.creaSegreteriaProva().corsi()
+  const attivi = corsi.filter((c) => c.attivo)
+  const { adatti, senzaAnni, altri } = m.corsiPerEta(attivi, m.LISTINO_PREDEFINITO.corsi, '')
+  ok('nessun corso di prova «prezzo da confermare» nel modulo', [...adatti, ...senzaAnni, ...altri].filter((c) => c.prezzoDaConfermare).map((c) => c.nome), [])
+  ok('a DA FARE manca solo il trimestre di Psicomotricità, come sul database', m.prezziMancanti(m.LISTINO_PREDEFINITO, attivi, GIORNO).map((x) => x.nome), ['Psicomotricità'])
 }
 
 if (guai) {
