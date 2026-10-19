@@ -6,17 +6,18 @@
 // scontrarsi (ogni sezione ha il suo Main); quelli della libreria restano col loro nome.
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, copyFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { execFileSync } from 'node:child_process'
 
 const base = import.meta.dirname
 const uscita = resolve(process.argv[2] ?? '')
 if (!process.argv[2]) {
-  console.error('Uso: node docs/design-canvas/unico.mjs <cartella-di-uscita>')
+  console.error('Uso: node docs/design-canvas/unico.mjs <cartella-di-uscita> [storia]')
   process.exit(1)
 }
 
 const LIBRERIA = 'ods-design-system'
 const FONDAMENTA = new Set(['Main', 'Pagina', 'PaginaTelefono', 'PaginaSito', 'PaginaSitoTelefono', 'TemaSito'])
-const SEZIONI = [
+const PRINCIPALE = [
   { id: 'navigazione-passi', nome: 'Iscrizione · testa dei passi (ipotesi)', cartella: 'navigazione-passi' },
   { id: 'iscrizione-famiglia', nome: 'Iscrizione · famiglia', cartella: 'iscrizione-famiglia' },
   { id: 'famiglia-passo', nome: 'Iscrizione · famiglia, un passo a sé', cartella: 'famiglia-passo' },
@@ -82,6 +83,20 @@ const SEZIONI = [
   { id: 'scheda-popover', nome: 'Segreteria · dettagli in una finestra · proposta', cartella: 'scheda-popover' },
 ]
 
+// Il canvas «ODS Corsi · Design · Storia» (modalità `storia`): i design sostituiti, spostati qui dal principale e non cancellati.
+// `superata` dice da cosa sono stati sostituiti; la data è quella dell'ultima modifica della cartella.
+const STORIA = [
+  { id: 'iscrizione', nome: 'Iscrizione · modulo attuale', cartella: 'iscrizione', superata: 'dal flusso a passi e poi dal modulo nell\'aspetto del sito' },
+  { id: 'iscrizione-nuovo', nome: 'Iscrizione · nuovo flusso a passi', cartella: 'iscrizione-nuovo', superata: 'dal modulo nell\'aspetto del sito' },
+  { id: 'iscrizione-rifinitura', nome: 'Iscrizione · passi, rifinitura', cartella: 'iscrizione-rifinitura', superata: 'dal modulo nell\'aspetto del sito' },
+  { id: 'vestiario', nome: 'Vestiario · ordini', cartella: 'vestiario', superata: 'da «Vestiario · come il modulo»' },
+  { id: 'istruttore', nome: 'Istruttori · sezione', cartella: 'istruttore', superata: 'da «Istruttori · look del sito»' },
+  { id: 'segreteria-tatami', nome: 'Segreteria · tema Tatami', cartella: 'segreteria-tatami', superata: 'da «Segreteria · look del sito»' },
+  { id: 'sito-rebrand', nome: 'Sito · tre rebrand (scartati)', cartella: 'sito-rebrand', superata: 'scartati, vale il design approvato del sito' },
+]
+const MODO_STORIA = process.argv[3] === 'storia'
+const SEZIONI = MODO_STORIA ? STORIA : PRINCIPALE
+
 // Tutti i design già fatti stanno in una pagina sola, «Archivio», per area (la parte del nome prima di « · »,
 // nell'ordine in cui compare in SEZIONI) e dentro l'area per riferimento, una sezione sotto l'altra col suo titolo.
 // Le pagine di lavoro sono solo Design System e Libreria: una sezione nuova si aggiunge a SEZIONI e finisce qui.
@@ -93,6 +108,7 @@ const ARCHIVIO = 'archivio'
 const DISCUSSIONE = 'in-discussione'
 const APERTE = new Set(['orari-evidenziati', 'esci-dalla-prova', 'moduli-pdf', 'istruttore-collega', 'sito-pezzi-spazio', 'sito-pezzi-scrivi'])
 
+const ultima = (cartella) => execFileSync('git', ['log', '-1', '--format=%ad', '--date=short', '--', join(base, cartella)], { encoding: 'utf8' }).trim()
 const stem = (f) => f.replace(/\.dc\.html$/, '')
 const leggi = (p) => readFileSync(p, 'utf8')
 const dcHtml = (cartella) => readdirSync(cartella).filter((f) => f.endsWith('.dc.html'))
@@ -143,7 +159,7 @@ function copia(da, nome, riscrivi) {
   const extra = griglia(cartella, mancanti)
   const yBase = Math.max(0, ...c.artboards.filter((a) => a.page === 'page-2').map((a) => a.y + a.h)) + 160
   for (const e of extra) posti.set(e.file, { ...e, y: e.y + yBase, page: 'page-2' })
-  pages.push({ id: 'design-system', name: 'Oggi · Design System' }, { id: 'libreria', name: 'Oggi · Libreria' }, { id: DISCUSSIONE, name: 'In discussione · proposte aperte' })
+  pages.push({ id: 'design-system', name: MODO_STORIA ? 'Fondamenti (copia di oggi)' : 'Oggi · Design System' }, { id: 'libreria', name: MODO_STORIA ? 'Libreria (copia di oggi)' : 'Oggi · Libreria' }, ...(MODO_STORIA ? [] : [{ id: DISCUSSIONE, name: 'In discussione · proposte aperte' }]))
   for (const [file, a] of posti) {
     const fond = FONDAMENTA.has(stem(file))
     boards[file] = { x: a.x, y: a.y, w: a.w, h: a.h, page: fond ? 'design-system' : 'libreria', title: a.title ?? stem(file) }
@@ -188,7 +204,7 @@ for (const s of SEZIONI) {
   const sx = Math.min(...posti.map((a) => a.x)), larg = Math.max(...posti.map((a) => a.x + a.w)) - sx
   const pagina = APERTE.has(s.id) ? DISCUSSIONE : ARCHIVIO
   const dy = fondi[pagina] + 300
-  notes[`${s.id}-titolo`] = { x: sx, y: dy - 260, text: s.nome, kind: 'title1', maxW: Math.min(Math.max(larg, 600), 1840), page: pagina }
+  notes[`${s.id}-titolo`] = { x: sx, y: dy - 260, text: s.superata ? `${s.nome} · superata: ${s.superata} · ultima modifica ${ultima(s.cartella)}` : s.nome, kind: 'title1', maxW: Math.min(Math.max(larg, 600), 1840), page: pagina }
   fondi[pagina] = dy + Math.max(...posti.map((a) => a.y + a.h))
   for (const a of posti) {
     const nome = `${s.id}-${a.file}`
@@ -205,7 +221,7 @@ for (const s of SEZIONI) {
 
 pages.push({ id: ARCHIVIO, name: 'Storia · Archivio' })
 // L'indice dell'archivio: le aree e, sotto, le sezioni nell'ordine in cui compaiono.
-notes['archivio-indice-titolo'] = { x: 0, y: 0, text: 'Archivio dei design', kind: 'title1', maxW: 1280, page: ARCHIVIO }
+notes['archivio-indice-titolo'] = { x: 0, y: 0, text: MODO_STORIA ? 'Storia dei design sostituiti' : 'Archivio dei design', kind: 'title1', maxW: 1280, page: ARCHIVIO }
 notes['archivio-indice'] = {
   x: 0, y: 300, w: 1400, page: ARCHIVIO,
   text: aree.map((a) => `${a.toUpperCase()}: ${SEZIONI.filter((s) => AREA(s) === a && !APERTE.has(s.id) && order.some((f) => f.startsWith(`${s.id}-`))).map((s) => s.nome.split(' · ').slice(1).join(' · ') || s.nome).join(' · ')}`).join('\n\n'),
@@ -223,7 +239,7 @@ for (const f of order) {
 const indice = {
   v: 3,
   createdOnFiles: { v: 1, at: new Date().toISOString().replace(/\.\d+Z$/, 'Z') },
-  title: 'ODS Corsi · Design',
+  title: MODO_STORIA ? 'ODS Corsi · Design · Storia' : 'ODS Corsi · Design',
   launch: { view: 'canvas', page: 'design-system' },
   pages,
   boards,
