@@ -16,9 +16,6 @@ export interface Cornice {
   slugs: ReadonlySet<string>
   iscrizione: string
   prova: string
-  scrivici: string
-  /** L'indirizzo della pagina Contatti se è pubblicata, altrimenti null: senza, «Scrivici» non c'è. */
-  contatti: string | null
   indirizzo: string
 }
 
@@ -37,10 +34,9 @@ function conAlt(img: string, alt: string): string {
   return img.replace(/\salt=(?:"[^"]*"|'[^']*')/i, '').replace(/^<img\b/i, `<img alt="${esc(alt)}"`)
 }
 
-/** I pulsanti di prova: il modulo online per primo, «Scrivici» solo se la pagina Contatti c'è. */
+/** Il pulsante di prova: il modulo online. Contatti è nel menu, non un pulsante. */
 function azioni(c: Cornice): string {
-  const scrivici = c.contatti ? `<a class="pulsante secondario" href="${esc(c.contatti)}">${c.scrivici}</a>` : ''
-  return `<div class="azioni"><a class="pulsante primario" href="${esc(c.iscrizione)}" rel="noopener noreferrer">${c.prova}</a>${scrivici}</div>`
+  return `<div class="azioni"><a class="pulsante primario" href="${esc(c.iscrizione)}" rel="noopener noreferrer">${c.prova}</a></div>`
 }
 
 /** La riga sotto il nome: «Cognome · corso, corso». Senza «·» una riga con virgole sono i corsi, una senza è il cognome. */

@@ -82,7 +82,7 @@ const T = (o = {}) => {
 const H = pagina(T())
 const M = main(H)
 const frasi = (t) => [...t.matchAll(/>([^<]+)</g)].map((m) => m[1].trim()).filter(Boolean)
-const perse = (t, h) => { const tt = testo(main(h)); return frasi(t.replace(PUL, '').replace(/Prova una settimana a 5 €/g, '')).filter((f) => !tt.includes(f.replace(/\s+/g, ' '))) }
+const perse = (t, h) => { const tt = testo(main(h)); return frasi(t.replace(PUL, '').replace(/Prova una settimana a 5 €/g, '').replace(/<a class="pulsante" href="\/contatti\/">Scrivici<\/a>/g, '')).filter((f) => !tt.includes(f.replace(/\s+/g, ' '))) }
 const rotto = (h) => /corso-nuovo|corso-apertura|corso-fascia|cosa-si-fa|class="[^"]*\borari\b|class="[^"]*\bperche\b|class="[^"]*\bcta\b/.test(main(h)) || nuova(h)
 
 console.log('\n1. Quando una pagina è «corso nuovo»')
@@ -104,7 +104,7 @@ console.log('\n1. Quando una pagina è «corso nuovo»')
 console.log('\n2. Il testo di prima resta com’era')
 {
   const senza = pagina(T({ pul: '' }))
-  ok('lo stesso testo senza il pulsante: <main> identico a oggi (sha)', sha(main(senza)), 'cd5d1ee539daaba6f6335e8c39bffdb8d700fccdaddb38338853044dac4070db')
+  ok('lo stesso testo senza il pulsante: <main> identico a oggi (sha)', sha(main(senza)), '488555f30008f5c1aaccdd22627ecd6d98e9ccdd85e2b0d22b7352708b7fbf73')
   ok('non porta nessuna classe del corso nuovo', rotto(senza), false)
 }
 
@@ -129,9 +129,9 @@ console.log('\n4. La testata: pulsanti, titolo, descrizione')
   const link = [...(hero?.html.match(/<div class="pulsanti">([\s\S]*?)<\/div>/)?.[1] ?? '').matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({ cl: classi(m[1]), href: m[1].match(/href="([^"]*)"/)?.[1], t: testo(m[2]) }))
   ok('la testata è «pagina-hero con-pulsanti solo»', hero?.classi, ['pagina-hero', 'con-pulsanti', 'solo'])
   ok('il giallo (primario) porta all’iscrizione ed è primo, anche se nel testo è dopo', [link[0]?.cl, link[0]?.href, link[0]?.t], [['pulsante', 'primario'], ISC, 'Iscriviti'])
-  ok('Scrivici è secondario e porta a /contatti/', [link[1]?.cl, link[1]?.href, link[1]?.t, link.length], [['pulsante', 'secondario'], '/contatti/', 'Scrivici', 2])
+  ok('in testata resta il solo «Iscriviti»: il «Scrivici» verso /contatti/ scritto dalla segreteria non esce', [link.length, link.some((l) => l.href === '/contatti/')], [1, false])
   ok('h1 dal titolo e descrizione dal campo', [hero?.html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1], hero?.html.match(/<p>([^<]*)<\/p>/)?.[1]], ['Judo', DESC])
-  ok('il paragrafo dei pulsanti del testo non resta fuori dalla testata', conta(M, /Scrivici<\/a>/g), 2) // testata + chiusura
+  ok('il paragrafo dei pulsanti del testo non resta fuori dalla testata e «Scrivici» non esce nemmeno nella chiusura', conta(M, /Scrivici<\/a>/g), 0)
 }
 
 console.log('\n5. Il Judo pieno')
@@ -152,7 +152,7 @@ console.log('\n5. Il Judo pieno')
   const asp = sezDi(H, 'Cosa aspettarsi')
   ok('Cosa aspettarsi: tessere perche n-4 con 4 numeri 1-4', [(tessereDi(asp?.html ?? '')[0] ?? []).slice().sort(), [...(asp?.html ?? '').matchAll(/numero-perche"[^>]*>\s*(\d)\s*</g)].map((m) => m[1])], [['n-4', 'perche', 'tessere'], ['1', '2', '3', '4']])
   const cta = conClasse(H, 'cta')
-  ok('la chiusura è <section class="sezione cta"> con la foto C e i due pulsanti', [cta?.classi, /foto-c\.jpg/.test(cta?.html ?? ''), conta(cta?.html ?? '', /class="pulsante/g)], [['sezione', 'cta'], true, 2])
+  ok('la chiusura è <section class="sezione cta"> con la foto C e un solo pulsante', [cta?.classi, /foto-c\.jpg/.test(cta?.html ?? ''), conta(cta?.html ?? '', /class="pulsante/g)], [['sezione', 'cta'], true, 1])
   ok('con la chiusura non c’è l’invito «PROVA» del piede', /class="invito"/.test(H), false)
   ok('ogni foto compare una volta sola', ['foto-a', 'foto-b', 'foto-c'].map((f) => conta(H, new RegExp(`${f}\\.jpg`, 'g'))), [1, 1, 1])
   const pos = ['Orario delle lezioni', 'Cosa si fa', 'La storia del judo', 'Cosa aspettarsi', 'Una settimana per scegliere'].map((x) => M.indexOf(x))

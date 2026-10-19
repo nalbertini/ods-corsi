@@ -302,8 +302,8 @@ console.log('\n5. Focus, link e pulsanti nelle tessere')
   const pul = (c) => unaDichiarazione(css.base, css.V, (x) => /pulsante/.test(x) && !/:hover|:focus/.test(x) && /\.tessera\b/.test(x) && dellaTinta(c)(x))
   ok('a.pulsante su tessera blu e inchiostro: giallo con inchiostro', ['blu', 'inchiostro'].map((c) => [sfondoDi(pul(c)), hex(pul(c).color ?? '')]), [[GIALLO, INCHIOSTRO], [GIALLO, INCHIOSTRO]])
   ok('a.pulsante su tessera gialla e chiara: inchiostro con bianco', ['giallo', 'chiara'].map((c) => [sfondoDi(pul(c)), hex(pul(c).color ?? '')]), [[INCHIOSTRO, BIANCO], [INCHIOSTRO, BIANCO]])
-  const h = pagina('<h2>S</h2><h3>A</h3><p><a class="pulsante" href="/contatti/">Scrivici</a></p>')
-  ok('il pulsante della segreteria resta, dentro la tessera', /<a class="pulsante" href="\/contatti\/">Scrivici<\/a>/.test(tessere(sezioni(h)[0] ?? '')[0]?.html ?? ''), true)
+  const h = pagina('<h2>S</h2><h3>A</h3><p><a class="pulsante" href="/contatti/">Scrivici</a> <a class="pulsante" href="https://wa.me/393463292786">Scrivici su WhatsApp</a></p>')
+  ok('dentro la tessera il pulsante verso /contatti/ non esce, quello verso WhatsApp resta', [/<a class="pulsante" href="\/contatti\/">/.test(tessere(sezioni(h)[0] ?? '')[0]?.html ?? ''), /<a class="pulsante" href="https:\/\/wa\.me\/393463292786"[^>]*>Scrivici su WhatsApp<\/a>/.test(tessere(sezioni(h)[0] ?? '')[0]?.html ?? '')], [false, true])
 }
 
 console.log('\n6. h2 senza h3: paragrafi in colonna, elenchi corti a tessere')

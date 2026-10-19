@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Telefono oggi</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- OGGI (telefono): il MENU aperto ha le voci, poi due pulsanti pieni: «Iscriviti» giallo e «Scrivici» a linea. Contatti non è una voce. -->
+<div style="width: 375px; height: 812px; position: relative; overflow: hidden; background: #eef5fa; color: #0d2a3d">
+<dc-import name="SitoTestata" logo="logo.webp" attiva="Home" prova="Iscriviti" piccolo="{{ true }}" hint-size="100%%,96px"></dc-import><div style="position:absolute;left:0;right:0;top:96px;z-index:10;padding:12px 16px 24px;background:#eef5fa;box-shadow:0 14px 24px rgba(13,42,61,.2)"><span style="display:flex;width:max-content;margin-left:auto;align-items:center;min-height:48px;margin-bottom:12px;font:600 16px Inter,Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase">Chiudi</span><div style="display:grid;gap:6px"><span style="display:inline-flex;align-items:center;min-height:48px;padding:0 16px;border-radius:6px;font:500 17px Inter,Arial,sans-serif;background:#f4c31b">Home</span><span style="display:inline-flex;align-items:center;min-height:48px;padding:0 16px;border-radius:6px;font:500 17px Inter,Arial,sans-serif;background:transparent">I corsi</span><span style="display:inline-flex;align-items:center;min-height:48px;padding:0 16px;border-radius:6px;font:500 17px Inter,Arial,sans-serif;background:transparent">Chi siamo</span><span style="display:inline-flex;align-items:center;min-height:48px;padding:0 16px;border-radius:6px;font:500 17px Inter,Arial,sans-serif;background:transparent">Istruttori</span></div><span style="display:flex;align-items:center;justify-content:center;min-height:52px;margin-top:12px;padding:0 24px;border-radius:6px;font:600 16px Inter,Arial,sans-serif;background:#f4c31b;color:#0d2a3d">Iscriviti</span><span style="display:flex;align-items:center;justify-content:center;min-height:52px;margin-top:12px;padding:0 24px;border-radius:6px;font:600 16px Inter,Arial,sans-serif;border:2px solid #0d2a3d;color:#0d2a3d">Scrivici</span></div>
+</div>
+</x-dc>
+</body>
+</html>

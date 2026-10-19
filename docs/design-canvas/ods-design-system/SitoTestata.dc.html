@@ -16,14 +16,14 @@
 </helmet>
 <header style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: {{pad}}; color: #0d2a3d">
   <div style="width: {{lw}}; height: {{lh}}; flex: none; background-image: url({{logo}}); background-repeat: no-repeat; background-size: {{ls}}; background-position: {{lp}}; mix-blend-mode: multiply" role="img" aria-label="Officine dello Sport"></div>
-  <sc-if value="{{largo}}" hint-placeholder-val="{{ true }}"><nav style="display: flex; gap: 8px; font-family: {{inter}}; font-size: 17px; font-weight: 500">
-    <sc-for list="{{voci}}" as="v" hint-placeholder-count="4"><span style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 14px; border-bottom: {{v.riga}}; font-weight: {{v.peso}}">{{v.nome}}</span></sc-for>
+  <sc-if value="{{largo}}" hint-placeholder-val="{{ true }}"><nav style="display: flex; gap: 4px; font-family: {{inter}}; font-size: 17px; font-weight: 500">
+    <sc-for list="{{voci}}" as="v" hint-placeholder-count="4"><span style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 16px; border-radius: 6px; background: {{v.fondo}}">{{v.nome}}</span></sc-for>
   </nav></sc-if>
-  <sc-if value="{{largo}}" hint-placeholder-val="{{ true }}"><span style="display: flex; gap: 8px"><span style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 16px">{{prova}}</span><span style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; border-radius: 6px; border: 3px solid #0d2a3d; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 16px">Scrivici</span></span></sc-if>
-  <sc-if value="{{stretto}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border-radius: 6px; background: #0d2a3d; color: #ffffff; font-family: {{inter}}; font-weight: 600; font-size: 16px">Menu <span aria-hidden="true">☰</span></span></sc-if>
+  <sc-if value="{{largo}}" hint-placeholder-val="{{ true }}"><span style="display: flex; align-items: center; gap: 8px"><span style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 24px; border-radius: 6px; background: #f4c31b; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 16px">{{prova}}</span><span style="display: {{scrivici}}; align-items: center; min-height: 52px; padding: 0 24px; border-radius: 6px; border: 2px solid #0d2a3d; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 16px">Scrivici</span></span></sc-if>
+  <sc-if value="{{stretto}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 6px; background: #0d2a3d; color: #ffffff; font-family: {{inter}}; font-weight: 600; font-size: 16px; letter-spacing: .06em; text-transform: uppercase">Menu</span></sc-if>
 </header>
 </x-dc>
-<script data-dc-script data-props='{"logo":{"editor":"text","default":"logo.webp"},"attiva":{"editor":"text","default":"Home"},"prova":{"editor":"text","default":"Prova una settimana a 5 €"},"piccolo":{"editor":"boolean","default":false},"conOrari":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":120}}'>
+<script data-dc-script data-props='{"logo":{"editor":"text","default":"logo.webp"},"attiva":{"editor":"text","default":"Home"},"prova":{"editor":"text","default":"Iscriviti"},"piccolo":{"editor":"boolean","default":false},"conOrari":{"editor":"boolean","default":false},"conScrivici":{"editor":"boolean","default":false},"voceContatti":{"editor":"text","default":"Contatti"},"conVoceContatti":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":120}}'>
 // PROPOSTA home del sito: la testata. Voci di menu con bersaglio da 48px (oggi 39px), il pulsante di prova col verbo e il prezzo (porta al modulo online) e «Scrivici» (porta a Contatti; il 346 329 2786 risponde anche su WhatsApp).
 // Sul telefono: marchio + tasto MENU da 48px (oggi due righe di voci schiacciate contro il titolo). Il marchio e' ritagliato come sul sito (logo.webp, 207px, scostamento -47 -43).
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
@@ -38,9 +38,11 @@ class Component extends DCLogic {
     const p = this.props;
     const pic = truthy(p.piccolo);
     const attiva = p.attiva || 'Home';
-    return { inter: INTER, logo: p.logo || 'logo.webp', prova: p.prova ?? '', largo: !pic, stretto: pic,
+    const voceContatti = p.voceContatti || 'Contatti';
+    const conVoce = p.conVoceContatti === undefined || truthy(p.conVoceContatti);
+    return { scrivici: (p.conScrivici !== undefined && truthy(p.conScrivici)) ? 'inline-flex' : 'none', inter: INTER, logo: p.logo || 'logo.webp', prova: p.prova ?? '', largo: !pic, stretto: pic,
       pad: pic ? '12px 16px 0' : '22px 48px', lw: pic ? '84px' : '112px', lh: pic ? '82px' : '110px', ls: pic ? '156px 156px' : '207px 207px', lp: pic ? '-36px -33px' : '-47px -43px',
-      voci: (truthy(p.conOrari) ? ['Home', 'I nostri corsi', 'Orari', 'Chi siamo', 'Contattaci'] : ['Home', 'I nostri corsi', 'Chi siamo', 'Contattaci']).map((nome) => ({ nome, riga: nome === attiva ? '3px solid #14709f' : '3px solid transparent', peso: nome === attiva ? 700 : 500 })) };
+      voci: [...(truthy(p.conOrari) ? ['Home', 'I nostri corsi', 'Orari', 'Chi siamo'] : ['Home', 'I nostri corsi', 'Chi siamo']), ...(conVoce ? [voceContatti] : [])].map((nome) => ({ nome, fondo: nome === attiva ? '#f4c31b' : 'transparent' })) };
   }
 }
 </script>
