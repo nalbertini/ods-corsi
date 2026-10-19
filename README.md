@@ -66,6 +66,8 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   famiglia; l'app non ci manda mai mail. L'import e il modulo online ci mettono
   da soli l'indirizzo già di altri, la scheda mostra chi lo condivide
   (`supabase/44-email-contatto.sql`).
+- **La pagina delle iscrizioni** è corta: cosa preparare, quanto costa in breve, la prova e i dubbi, e il tasto
+  per cominciare in fondo; i prezzi di ogni corso e come si paga stanno a `iscrizioni/#prezzi`.
 - **Il vestiario**: judogi, costumini e vestiario si ordinano da `iscrizioni/#vestiario`,
   al posto del modulo Google; la segreteria tiene catalogo e chiusura, segna chi ha
   pagato e scarica l'elenco per il fornitore, solo coi capi saldati (`supabase/47-vestiario.sql`).
