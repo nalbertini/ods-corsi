@@ -235,7 +235,7 @@ ok('‹ TORNA ALLE ISCRIZIONI', prezzi.includes('TORNA ALLE ISCRIZIONI'), true)
 ok('in fondo lo stesso fondo: fondoDellaPagina(MODULO_IN_APP), COMPILA LA RICHIESTA una volta', [/fondoDellaPagina\(MODULO_IN_APP\)/.test(prezzi), conta(prezzi, 'COMPILA LA RICHIESTA')], [true, 1])
 ok('chiama apriAspettoModulo(', /apriAspettoModulo\(/.test(prezzi), true)
 ok('COMPILA LA RICHIESTA sostituisce #prezzi con #richiesta (location.replace, senza una voce in più nella cronologia), senza un modulo suo', [/location\.replace\([^)]*INDIRIZZO_RICHIESTA/.test(prezzi), prezzi.includes('<ModuloIscrizione')], [true, false])
-ok('la pagina apre il modulo da moduloDalCancelletto( e poi toglie il cancelletto (replaceState)', [/moduloDalCancelletto\(/.test(tsx), /history\.replaceState\(/.test(tsx)], [true, true])
+ok('la pagina parte col modulo aperto se arriva da #richiesta, e poi toglie il cancelletto', [/useState\(\(\)\s*=>\s*moduloDalCancelletto\(window\.location\.hash\)\)/.test(tsx), /if\s*\(moduloDalCancelletto\(window\.location\.hash\)\)\s*history\.replaceState\(null,/.test(tsx)], [true, true])
 
 const costi = sorgente('src/components/Costi.tsx')
 ok('la validità della quota una volta sola (pagina + Costi + prezzi)', conta(tsx, 'PAGAMENTO.validaFino') + conta(costi, 'PAGAMENTO.validaFino') + conta(prezzi, 'PAGAMENTO.validaFino'), 1)
