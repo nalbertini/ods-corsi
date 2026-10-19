@@ -1,65 +1,57 @@
 import { useEffect, useState } from 'react'
 import { INFORMATIVA_PUBBLICA, MODULO_IN_APP, PAGAMENTO } from '../lib/iscrizione'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
+import { INDIRIZZO_RICHIESTA } from '../lib/cancelletti'
 import { COME_SI_PAGA, fondoDellaPagina, INFORMATIVA_FRASE } from '../lib/paginaIscrizioni'
 import { Costi } from './Costi'
 import { Dettaglio, Riquadro, Tasti, Tasto, Titoletto } from './ds'
-import { ModuloIscrizione } from './ModuloIscrizione'
 
 /**
  * La pagina dei prezzi e del pagamento (`iscrizioni/#prezzi`), che si apre da
  * PREZZI E PAGAMENTO: il listino intero, come si paga e il tasto per
  * cominciare. Ha il suo indirizzo, così l'indietro del browser riporta alla
- * pagina e il link si può mandare. Chiuso il modulo aperto da qui, si torna in
- * cima a `iscrizioni/` (scelta dell'utente).
+ * pagina e il link si può mandare. Il tasto per cominciare apre il modulo sulla
+ * pagina: chiuso, si è in cima a `iscrizioni/` (scelta dell'utente).
  */
 export function PrezziIscrizione() {
-  const [modulo, setModulo] = useState(false)
-  // Come la pagina: il modulo, chiudendosi, spegne l'aspetto del sito.
-  useEffect(() => apriAspettoModulo(), [modulo])
-  const vai = (aperto: boolean) => {
-    setModulo(aperto)
-    document.querySelector('.scroll')?.scrollTo(0, 0)
-  }
+  useEffect(() => apriAspettoModulo(), [])
   const torna = () => {
-    // Senza cancelletto si torna alla pagina; replaceState non lascerebbe l'evento che App ascolta.
-    window.location.hash = ''
+    // Arrivati dalla pagina si torna indietro, così l'indietro del telefono non gira in tondo.
+    // Da un link mandato non c'è una pagina prima: si toglie il cancelletto (replaceState non darebbe l'evento che App ascolta).
+    // history.state non ha tipo: lo scrive solo PREZZI E PAGAMENTO, con questa forma.
+    if ((history.state as { daPagina?: boolean } | null)?.daPagina) history.back()
+    else window.location.hash = ''
   }
+  // Il modulo si apre sulla pagina, al posto di #prezzi nella cronologia: l'indietro del browser esce
+  // dalle iscrizioni come dalla pagina, invece di smontare il modulo senza la domanda di ← INDIETRO.
+  // L'indirizzo intero: con <base href="../"> un «#richiesta» da solo porterebbe alla radice.
+  const compila = () => window.location.replace(window.location.pathname + window.location.search + INDIRIZZO_RICHIESTA)
 
-  if (!modulo) {
-    const f = fondoDellaPagina(MODULO_IN_APP)
-    return (
-      <div className="iscrizioni">
-        <div className="pad iscrizioni-torna">
-          <Tasto onClick={torna}>‹ TORNA ALLE ISCRIZIONI</Tasto>
-        </div>
-        <Costi />
-        <ComeSiPaga />
-        <section className="pad stack iscrizioni-richiesta">
-          {f.tasto && (
-            <Tasto variante="principale" onClick={() => vai(true)}>
-              COMPILA LA RICHIESTA
-            </Tasto>
-          )}
-          <Dettaglio tono={f.tasto ? undefined : 'testo'}>{f.frase}</Dettaglio>
-          {f.tasto && INFORMATIVA_PUBBLICA && (
-            <Dettaglio>
-              {INFORMATIVA_FRASE}{' '}
-              <a href={INFORMATIVA_PUBBLICA} target="_blank" rel="noreferrer" className="link-sec">
-                l'informativa privacy
-              </a>
-              .
-            </Dettaglio>
-          )}
-        </section>
-      </div>
-    )
-  }
-
+  const f = fondoDellaPagina(MODULO_IN_APP)
   return (
-    <div className="iscrizioni-modulo">
-      <Titoletto>RICHIESTA DI ISCRIZIONE</Titoletto>
-      <ModuloIscrizione onChiudi={torna} />
+    <div className="iscrizioni">
+      <div className="pad iscrizioni-torna">
+        <Tasto onClick={torna}>‹ TORNA ALLE ISCRIZIONI</Tasto>
+      </div>
+      <Costi />
+      <ComeSiPaga />
+      <section className="pad stack iscrizioni-richiesta">
+        {f.tasto && (
+          <Tasto variante="principale" onClick={compila}>
+            COMPILA LA RICHIESTA
+          </Tasto>
+        )}
+        <Dettaglio tono={f.tasto ? undefined : 'testo'}>{f.frase}</Dettaglio>
+        {INFORMATIVA_PUBBLICA && (
+          <Dettaglio>
+            {INFORMATIVA_FRASE}{' '}
+            <a href={INFORMATIVA_PUBBLICA} target="_blank" rel="noreferrer" className="link-sec">
+              l'informativa privacy
+            </a>
+            .
+          </Dettaglio>
+        )}
+      </section>
     </div>
   )
 }

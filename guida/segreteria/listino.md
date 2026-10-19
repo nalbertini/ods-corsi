@@ -102,11 +102,16 @@ prezzo.
 
 ## Le offerte
 
-Titolo e testo, sotto i corsi nella pagina di iscrizione: lo sconto famiglia,
-il prezzo per più corsi. Sono solo da leggere: cambiare il testo non cambia i
+Titolo e testo, sotto i corsi nella pagina dei prezzi delle iscrizioni
+(**PREZZI E PAGAMENTO**): lo sconto famiglia, il prezzo per più corsi. Sono solo da leggere: cambiare il testo non cambia i
 conti. La ricevuta calcola da sé solo lo **sconto famiglia**, sempre del 20%
 (vedi [Iscritti](iscritti.md)); le altre offerte si scrivono nel prezzo della
 voce.
+
+La pagina delle iscrizioni, nel riquadro **QUANTO COSTA** in breve, ripete le
+due offerte con una cifra: **−20%** e **660 €**. Quelle due cifre non vengono
+da qui: sono nell'app, e per cambiarle serve un aggiornamento. Se cambi il
+prezzo di più corsi, o togli un'offerta, dillo a chi cura l'app.
 
 ## Tornare al foglio
 

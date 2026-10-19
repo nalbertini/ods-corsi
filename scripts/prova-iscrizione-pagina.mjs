@@ -62,6 +62,7 @@ ok('nessun tempo promesso sul richiamo: niente cifre, «entro», «ore», «gior
 ok('AVVISO_RICHIESTA', P.AVVISO_RICHIESTA, 'La richiesta non è ancora l’iscrizione. Non si salva a metà: se esci, ricominci.')
 ok('SENZA_MODULO', P.SENZA_MODULO, 'Per iscriverti chiamaci o passa in palestra.')
 ok('INFORMATIVA_FRASE', P.INFORMATIVA_FRASE, 'Come trattiamo i tuoi dati:')
+ok('COME_SI_PAGA (nella pagina dei prezzi)', P.COME_SI_PAGA, { titolo: 'Dopo la richiesta, oppure in segreteria.', ricevuta: 'La ricevuta la puoi caricare nella richiesta, se hai già pagato.' })
 
 // --- 2. il fondo, uguale nelle due pagine -------------------------------------
 console.log('\nIl fondo (fondoDellaPagina)')
@@ -127,6 +128,12 @@ ok('#vestiario: il vestiario, con la testata', V(true, '#vestiario'), { vista: '
 ok('#nuova in prova: il flusso a passi, con la testata', V(false, '#nuova'), { vista: 'passi', testata: true })
 ok('#nuova col database vero: la pagina', V(true, '#nuova'), { vista: 'pagina', testata: false })
 ok('un hash sconosciuto: la pagina', V(true, '#altro'), { vista: 'pagina', testata: false })
+// COMPILA LA RICHIESTA della pagina dei prezzi apre il modulo sulla pagina, al posto di #prezzi nella cronologia:
+// l'indietro del browser esce dalle iscrizioni come dalla pagina, invece di smontare il modulo senza domanda.
+const can = await caricaLib('cancelletti')
+ok('INDIRIZZO_RICHIESTA = #richiesta', can.INDIRIZZO_RICHIESTA, '#richiesta')
+ok('#richiesta: la pagina, senza testata', V(true, '#richiesta'), { vista: 'pagina', testata: false })
+ok('moduloDalCancelletto: #richiesta apre il modulo, il resto no', ['#richiesta', '', '#prezzi', '#vestiario'].map((h) => prova(() => P.moduloDalCancelletto(h))), [true, false, false, false])
 
 // --- 9. la prova 3/10 € e il cancello ------------------------------------------
 console.log('\nLa prova e il cancello (src/lib/iscrizione.ts)')
@@ -227,6 +234,8 @@ ok('mostra <Costi e ComeSiPaga', [prezzi.includes('<Costi'), prezzi.includes('<C
 ok('‹ TORNA ALLE ISCRIZIONI', prezzi.includes('TORNA ALLE ISCRIZIONI'), true)
 ok('in fondo lo stesso fondo: fondoDellaPagina(MODULO_IN_APP), COMPILA LA RICHIESTA una volta', [/fondoDellaPagina\(MODULO_IN_APP\)/.test(prezzi), conta(prezzi, 'COMPILA LA RICHIESTA')], [true, 1])
 ok('chiama apriAspettoModulo(', /apriAspettoModulo\(/.test(prezzi), true)
+ok('COMPILA LA RICHIESTA sostituisce #prezzi con #richiesta (location.replace, senza una voce in più nella cronologia), senza un modulo suo', [/location\.replace\([^)]*INDIRIZZO_RICHIESTA/.test(prezzi), prezzi.includes('<ModuloIscrizione')], [true, false])
+ok('la pagina apre il modulo da moduloDalCancelletto( e poi toglie il cancelletto (replaceState)', [/moduloDalCancelletto\(/.test(tsx), /history\.replaceState\(/.test(tsx)], [true, true])
 
 const costi = sorgente('src/components/Costi.tsx')
 ok('la validità della quota una volta sola (pagina + Costi + prezzi)', conta(tsx, 'PAGAMENTO.validaFino') + conta(costi, 'PAGAMENTO.validaFino') + conta(prezzi, 'PAGAMENTO.validaFino'), 1)

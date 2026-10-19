@@ -1052,8 +1052,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .iscrizioni-titolo { margin: 0; font-family: var(--cond); font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: 0.02em; text-transform: uppercase; }
 .iscrizioni-frase { font-size: 17px; line-height: 1.45; }
 .iscrizioni-apertura .passo-btn, .iscrizioni-richiesta .passo-btn { align-self: stretch; min-height: 56px; }
-.iscrizioni-richiesta { display: flex; flex-direction: column; padding-top: 20px; padding-bottom: 6px; }
-.iscrizioni-piede { padding-top: 14px; padding-bottom: 32px; }
+.iscrizioni-richiesta { display: flex; flex-direction: column; gap: 12px; padding-top: 20px; padding-bottom: 32px; }
 .iscrizioni-contatti { padding-bottom: 16px; }
 .prova-testa { gap: 10px; align-items: baseline; flex-wrap: wrap; }
 /* La pagina corta: il marchio sopra il titolo, cosa preparare in una lista con le caselle da spuntare a mente. */
@@ -1070,6 +1069,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .iscrizioni-riga .cifra { flex: none; white-space: nowrap; }
 .iscrizioni-costi-breve, .iscrizioni-torna { padding-top: 14px; padding-bottom: 6px; }
 .iscrizioni-torna { display: flex; }
+.iscrizioni-torna .passo-btn { flex: 1; }
 .iscrizioni-nota { font-size: 13px; color: var(--dim); padding-bottom: 20px; }
 .costi { gap: 10px; padding-bottom: 16px; }
 .costi > a.passo-btn:last-child { margin-top: 6px; }
@@ -1361,9 +1361,8 @@ a.btn { text-decoration: none; }
 
 
 @media (min-width: 640px) {
-  /* La pagina pubblica delle iscrizioni è una colonna sola, da leggere dall'alto: il tasto per cominciare sta in cima. */
+  /* La pagina pubblica delle iscrizioni, e quella dei prezzi, sono una colonna sola, da leggere dall'alto: il tasto per cominciare sta in fondo. */
   .scroll > .iscrizioni { max-width: 720px; margin: 0 auto; }
-  /* Il riquadro IL VESTIARIO sta sotto la pagina, fuori dalla sua colonna: stessa larghezza. */
 }
 
 @media (min-width: 960px) {
@@ -3262,6 +3261,8 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 :root[data-modulo='sito'] .btn { font-size: 22px; letter-spacing: 0.06em; }
 :root[data-modulo='sito'] .modulo-etichetta { font-size: 15px; letter-spacing: 0.08em; }
 :root[data-modulo='sito'] .rule-label { font-size: 26px; letter-spacing: 0.04em; }
+/* L'etichetta dentro un riquadro (QUANTO COSTA, la prova) resta sotto il titolo di sezione: 15px come le etichette del modulo. */
+:root[data-modulo='sito'] .etichetta-riquadro { font-size: 15px; letter-spacing: 0.08em; }
 /* I tasti principali del modulo (MANDA LA RICHIESTA, RIPROVA) sono il giallo del sito con l'inchiostro sopra. */
 :root[data-modulo='sito'] .btn-primary { background: var(--giallo); color: var(--su-colore); }
 /* La firma a schermo intero: bordo dei controlli come i campi, non il filo decorativo; FATTO resta rosso. */

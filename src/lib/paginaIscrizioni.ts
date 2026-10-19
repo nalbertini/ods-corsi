@@ -5,7 +5,7 @@
  * contatti, prove) stanno in `iscrizione.ts`, `sito.ts`, `costi.ts` e nel
  * listino: qui solo le frasi e dove vanno.
  */
-import { INDIRIZZO_PREZZI, INDIRIZZO_VESTIARIO } from './cancelletti'
+import { INDIRIZZO_PREZZI, INDIRIZZO_RICHIESTA, INDIRIZZO_VESTIARIO } from './cancelletti'
 import { PIU_CORSI, STAGIONE } from './costi'
 import { SCONTO_FAMIGLIA } from './nucleo'
 import { flussoNuovoAcceso } from './passiIscrizione'
@@ -110,3 +110,10 @@ export function vistaIscrizioni(haUnServer: boolean, hash: string): { vista: Vis
   if (flussoNuovoAcceso(haUnServer, hash)) return { vista: 'passi', testata: true }
   return { vista: 'pagina', testata: false }
 }
+
+/**
+ * La pagina si apre col modulo già aperto se arriva da COMPILA LA RICHIESTA
+ * della pagina dei prezzi: così il modulo vive sulla pagina, come sempre, e
+ * l'indietro del browser non lo smonta senza la domanda di ← INDIETRO.
+ */
+export const moduloDalCancelletto = (hash: string) => hash === INDIRIZZO_RICHIESTA

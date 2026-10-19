@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { INFORMATIVA_PUBBLICA, MODULO_IN_APP, PAGAMENTO, PROVA } from '../lib/iscrizione'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { INDIRIZZO_PREZZI } from '../lib/cancelletti'
-import { APERTURA, COSA_SERVE, costiBreve, DUBBIO, fondoDellaPagina, INFORMATIVA_FRASE, PROVA_CHIAMA, provaEDubbi, sezioniPagina, type Sezione } from '../lib/paginaIscrizioni'
+import { APERTURA, COSA_SERVE, costiBreve, DUBBIO, fondoDellaPagina, INFORMATIVA_FRASE, moduloDalCancelletto, PROVA_CHIAMA, provaEDubbi, sezioniPagina, type Sezione } from '../lib/paginaIscrizioni'
 import { CONTATTI, SITO, chiama } from '../lib/sito'
 import { useListino } from './Costi'
 import { Dettaglio, Etichetta, Cifra, Riquadro, Tasti, Tasto, Titoletto } from './ds'
@@ -21,7 +21,12 @@ import { ModuloIscrizione } from './ModuloIscrizione'
  * testata dell'app qui non c'è (`vistaIscrizioni`): il marchio sta sopra il titolo.
  */
 export function IscrizioniScreen() {
-  const [modulo, setModulo] = useState(false)
+  // Dal tasto per cominciare della pagina dei prezzi si arriva col modulo già aperto.
+  const [modulo, setModulo] = useState(() => moduloDalCancelletto(window.location.hash))
+  useEffect(() => {
+    // Il cancelletto ha fatto il suo: via, così chiudere il modulo lascia la pagina pulita.
+    if (moduloDalCancelletto(window.location.hash)) history.replaceState(null, '', window.location.pathname + window.location.search)
+  }, [])
   // Dipende da `modulo`: il modulo, chiudendosi, spegne l'aspetto, e la pagina lo deve rimettere.
   useEffect(() => apriAspettoModulo(), [modulo])
   const vai = (aperto: boolean) => {
@@ -115,7 +120,15 @@ function InBreve() {
         ))}
         <Dettaglio>{c.testo}</Dettaglio>
         {/* Il cancelletto a mano: un href «#prezzi», con <base href="../">, porterebbe alla radice. */}
-        <Tasto onClick={() => (window.location.hash = INDIRIZZO_PREZZI)}>{c.tasto}</Tasto>
+        <Tasto
+          onClick={() => {
+            window.location.hash = INDIRIZZO_PREZZI
+            // Segna che si arriva dalla pagina: TORNA ALLE ISCRIZIONI torna indietro invece di aggiungere un passo.
+            history.replaceState({ daPagina: true }, '')
+          }}
+        >
+          {c.tasto}
+        </Tasto>
       </Riquadro>
     </section>
   )
@@ -158,7 +171,7 @@ function Fondo({ onModulo }: { onModulo: () => void }) {
         </Tasto>
       )}
       <Dettaglio tono={f.tasto ? undefined : 'testo'}>{f.frase}</Dettaglio>
-      {f.tasto && INFORMATIVA_PUBBLICA && (
+      {INFORMATIVA_PUBBLICA && (
         <Dettaglio>
           {INFORMATIVA_FRASE}{' '}
           <a href={INFORMATIVA_PUBBLICA} target="_blank" rel="noreferrer" className="link-sec">

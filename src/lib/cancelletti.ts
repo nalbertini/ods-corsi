@@ -14,3 +14,6 @@ export const INDIRIZZO_VESTIARIO = '#vestiario'
 
 /** I prezzi e il pagamento, dentro `iscrizioni/`: la pagina a parte che si apre da PREZZI E PAGAMENTO. */
 export const INDIRIZZO_PREZZI = '#prezzi'
+
+/** Il modulo aperto sulla pagina `iscrizioni/`, quando lo si apre dalla pagina dei prezzi: il cancelletto si toglie appena letto. */
+export const INDIRIZZO_RICHIESTA = '#richiesta'
