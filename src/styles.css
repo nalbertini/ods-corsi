@@ -1056,6 +1056,20 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .iscrizioni-piede { padding-top: 14px; padding-bottom: 32px; }
 .iscrizioni-contatti { padding-bottom: 16px; }
 .prova-testa { gap: 10px; align-items: baseline; flex-wrap: wrap; }
+/* La pagina corta: il marchio sopra il titolo, cosa preparare in una lista con le caselle da spuntare a mente. */
+.iscrizioni-apertura svg { display: block; }
+.iscrizioni-serve { list-style: none; margin: 0; padding: 4px 16px; }
+.iscrizioni-serve-voce { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; }
+.iscrizioni-serve-voce + .iscrizioni-serve-voce { border-top: 2px solid var(--line-soft); }
+.iscrizioni-casella { flex: none; width: 22px; height: 22px; margin-top: 1px; border: 2px solid var(--riga-campo); border-radius: 4px; background: var(--surface); }
+.iscrizioni-serve-testo { gap: 2px; min-width: 0; }
+.iscrizioni-quando { font-family: var(--cond); font-size: 13px; font-weight: 800; letter-spacing: 0.08em; color: var(--dim); }
+/* Le offerte in breve: la frase a sinistra, la cifra a destra sulla stessa riga. */
+.iscrizioni-riga { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.iscrizioni-riga > :first-child { min-width: 0; }
+.iscrizioni-riga .cifra { flex: none; white-space: nowrap; }
+.iscrizioni-costi-breve, .iscrizioni-torna { padding-top: 14px; padding-bottom: 6px; }
+.iscrizioni-torna { display: flex; }
 .iscrizioni-nota { font-size: 13px; color: var(--dim); padding-bottom: 20px; }
 .costi { gap: 10px; padding-bottom: 16px; }
 .costi > a.passo-btn:last-child { margin-top: 6px; }
@@ -1350,7 +1364,6 @@ a.btn { text-decoration: none; }
   /* La pagina pubblica delle iscrizioni è una colonna sola, da leggere dall'alto: il tasto per cominciare sta in cima. */
   .scroll > .iscrizioni { max-width: 720px; margin: 0 auto; }
   /* Il riquadro IL VESTIARIO sta sotto la pagina, fuori dalla sua colonna: stessa larghezza. */
-  .scroll > .iscrizioni-contatti { max-width: 720px; margin: 0 auto; }
 }
 
 @media (min-width: 960px) {

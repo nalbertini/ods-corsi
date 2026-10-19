@@ -11,3 +11,6 @@ export const INDIRIZZO_AREE = '#aree'
 
 /** Gli ordini del vestiario, dentro `iscrizioni/`: il link di COPIA LINK ORDINI. */
 export const INDIRIZZO_VESTIARIO = '#vestiario'
+
+/** I prezzi e il pagamento, dentro `iscrizioni/`: la pagina a parte che si apre da PREZZI E PAGAMENTO. */
+export const INDIRIZZO_PREZZI = '#prezzi'

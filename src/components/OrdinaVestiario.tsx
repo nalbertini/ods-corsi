@@ -1,5 +1,4 @@
 import { type ReactNode, useEffect, useState } from 'react'
-import { INDIRIZZO_VESTIARIO } from '../lib/cancelletti'
 import { INFORMATIVA_PUBBLICA, PAGAMENTO } from '../lib/iscrizione'
 import { CONTATTI, chiama } from '../lib/sito'
 import { chiaveGiorno } from '../lib/sala'
@@ -839,39 +838,5 @@ function Chiusi({ chiuso }: { chiuso: string | null }) {
         VAI ALLE ISCRIZIONI
       </Tasto>
     </div>
-  )
-}
-
-/**
- * Nella pagina ISCRIZIONI, sotto, e non uno dei passi: il rimando agli ordini del vestiario,
- * solo mentre sono aperti. Se non si legge, non c'è: non ferma l'iscrizione.
- */
-export function RiquadroVestiario() {
-  const [chiude, setChiude] = useState<string | null>(null)
-  useEffect(() => {
-    let vivo = true
-    datiVestiario()
-      .then((d) => d.catalogo())
-      .then(
-        (c) => vivo && setChiude(c?.chiude && statoPagina(c, apertiLetti(), chiaveGiorno(new Date())) === 'aperti' ? c.chiude : null),
-        () => {},
-      )
-    return () => {
-      vivo = false
-    }
-  }, [])
-  if (!chiude) return null
-  return (
-    <section className="pad iscrizioni-contatti">
-      <Riquadro>
-        <Etichetta>IL VESTIARIO</Etichetta>
-        <span className="passo-titolo">Judogi, costumini e felpe della palestra</span>
-        <Dettaglio>Ordini aperti {finoA(chiude)}. Li paghi dopo, con bonifico, Satispay o in segreteria.</Dettaglio>
-        {/* Il cancelletto a mano: un href «#vestiario», con <base href="../">, porterebbe alla radice. */}
-        <Tasto onClick={() => (window.location.hash = INDIRIZZO_VESTIARIO)}>
-          ORDINA IL VESTIARIO
-        </Tasto>
-      </Riquadro>
-    </section>
   )
 }
