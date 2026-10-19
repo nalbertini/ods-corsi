@@ -206,6 +206,9 @@ export const COSTI: VoceCosto[] = [
   },
 ]
 
+/** Il costo di più corsi insieme: lo dice l'offerta PIÙ CORSI e lo ripete, in breve, la pagina iscrizioni/. */
+export const PIU_CORSI = 660
+
 export const OFFERTE: Array<{ titolo: string; testo: string }> = [
   {
     titolo: 'SCONTO FAMIGLIA',
@@ -213,6 +216,6 @@ export const OFFERTE: Array<{ titolo: string; testo: string }> = [
   },
   {
     titolo: 'PIÙ CORSI',
-    testo: 'Il costo totale per partecipare a più corsi nella struttura è di 660 €.',
+    testo: `Il costo totale per partecipare a più corsi nella struttura è di ${PIU_CORSI} €.`,
   },
 ]

@@ -1,23 +1,32 @@
 import { useEffect, useState } from 'react'
-import { INFORMATIVA_PUBBLICA, MODULI, MODULO_IN_APP, PAGAMENTO, PROVA } from '../lib/iscrizione'
+import { INFORMATIVA_PUBBLICA, MODULO_IN_APP, PAGAMENTO, PROVA } from '../lib/iscrizione'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
-import { aperturaDellaPagina, APERTURA, AVVISO_RICHIESTA, COME_SI_PAGA, COSA_SERVE, DUBBIO, INFORMATIVA_FRASE, MODULO_DA_LEGGERE, PROVA_CHIAMA, SENZA_MODULO, sezioniPagina, type Sezione } from '../lib/paginaIscrizioni'
+import { INDIRIZZO_PREZZI } from '../lib/cancelletti'
+import { APERTURA, COSA_SERVE, costiBreve, DUBBIO, fondoDellaPagina, INFORMATIVA_FRASE, moduloDalCancelletto, PROVA_CHIAMA, provaEDubbi, sezioniPagina, type Sezione } from '../lib/paginaIscrizioni'
 import { CONTATTI, SITO, chiama } from '../lib/sito'
-import { Costi } from './Costi'
+import { useListino } from './Costi'
 import { Dettaglio, Etichetta, Cifra, Riquadro, Tasti, Tasto, Titoletto } from './ds'
+import { Logo } from './Logo'
 import { ModuloIscrizione } from './ModuloIscrizione'
 
 /**
- * La pagina pubblica delle iscrizioni (`iscrizioni/`): chi arriva dal sito
- * trova subito il tasto per cominciare, cosa tenere pronto, quanto costa e
- * come si paga. L'ordine delle sezioni è in `sezioniPagina`; il tasto apre il
- * modulo di iscrizione al posto della pagina.
+ * La pagina pubblica delle iscrizioni (`iscrizioni/`), corta: cosa preparare,
+ * quanto costa in breve, la prova e i dubbi, e in fondo il tasto per
+ * cominciare. I prezzi di ogni corso e come si paga stanno nella pagina a
+ * parte (`PrezziIscrizione`, a `#prezzi`). L'ordine delle sezioni è in
+ * `sezioniPagina`; il tasto apre il modulo di iscrizione al posto della pagina.
  *
  * Ha l'aspetto del sito (`apriAspettoModulo`) per tutta la pagina e non solo
- * per il modulo: chi arriva dal sito non deve vedere il tema dell'app.
+ * per il modulo: chi arriva dal sito non deve vedere il tema dell'app. La
+ * testata dell'app qui non c'è (`vistaIscrizioni`): il marchio sta sopra il titolo.
  */
 export function IscrizioniScreen() {
-  const [modulo, setModulo] = useState(false)
+  // Dal tasto per cominciare della pagina dei prezzi si arriva col modulo già aperto.
+  const [modulo, setModulo] = useState(() => moduloDalCancelletto(window.location.hash))
+  useEffect(() => {
+    // Il cancelletto ha fatto il suo: via, così chiudere il modulo lascia la pagina pulita.
+    if (moduloDalCancelletto(window.location.hash)) history.replaceState(null, '', window.location.pathname + window.location.search)
+  }, [])
   // Dipende da `modulo`: il modulo, chiudendosi, spegne l'aspetto, e la pagina lo deve rimettere.
   useEffect(() => apriAspettoModulo(), [modulo])
   const vai = (aperto: boolean) => {
@@ -35,21 +44,11 @@ export function IscrizioniScreen() {
   }
 
   const sezioni: Record<Sezione, () => JSX.Element> = {
-    apertura: () => <Apertura onModulo={() => vai(true)} />,
+    apertura: () => <Apertura />,
     serve: () => <CosaServe />,
-    prova: () => <Prova etichetta={PROVA.etichetta} />,
-    costi: () => <Costi />,
-    paga: () => <ComeSiPaga />,
-    richiesta: () => (
-      <div className="pad iscrizioni-richiesta">
-        <Tasto variante="principale" onClick={() => vai(true)}>
-          COMPILA LA RICHIESTA
-        </Tasto>
-      </div>
-    ),
-    modulo: () => <ModuloDaLeggere />,
-    aiuto: () => <Contatti social={false} />,
-    piede: () => <Piede />,
+    costiBreve: () => <InBreve />,
+    provaDubbi: () => <ProvaEDubbi />,
+    richiesta: () => <Fondo onModulo={() => vai(true)} />,
   }
 
   return (
@@ -61,23 +60,117 @@ export function IscrizioniScreen() {
   )
 }
 
-/** La frase, il tasto per cominciare e quel che serve sapere prima: la richiesta non chiude l'iscrizione, e l'informativa. */
-function Apertura({ onModulo }: { onModulo: () => void }) {
-  const a = aperturaDellaPagina(MODULO_IN_APP)
+/** Una sola intestazione: il marchio, il titolo e la frase. Nessun tasto in cima: il tasto per cominciare sta in fondo. */
+function Apertura() {
   return (
     <section className="pad stack iscrizioni-apertura">
+      <Logo width={64} />
       <h1 className="iscrizioni-titolo">{APERTURA.titolo}</h1>
       <span className="iscrizioni-frase">{APERTURA.frase}</span>
-      {a.tasto && (
+    </section>
+  )
+}
+
+/** Cosa preparare, una cosa per riga: la casella si spunta a mente, la pagina non salva niente. */
+function CosaServe() {
+  return (
+    <section>
+      <Titoletto>COSA TI SERVE</Titoletto>
+      <div className="pad">
+        <ul className="card iscrizioni-serve">
+          {COSA_SERVE.map((v) => (
+            <li key={v.titolo} className="iscrizioni-serve-voce">
+              <span className="iscrizioni-casella" aria-hidden="true" />
+              <span className="stack iscrizioni-serve-testo">
+                <span className="passo-titolo">{v.titolo}</span>
+                {v.quando && <span className="iscrizioni-quando">{v.quando}</span>}
+                <Dettaglio>{v.nota}</Dettaglio>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
+/** Quanto costa, in breve: la quota del listino che vale e le offerte; il resto con PREZZI E PAGAMENTO. */
+function InBreve() {
+  const letto = useListino()
+  if (!letto) {
+    return (
+      <section className="pad iscrizioni-costi-breve">
+        <Riquadro>
+          <Dettaglio>Un attimo…</Dettaglio>
+        </Riquadro>
+      </section>
+    )
+  }
+  const c = costiBreve(letto.listino.quota, !!PAGAMENTO.satispay)
+  return (
+    <section className="pad iscrizioni-costi-breve">
+      <Riquadro>
+        <Etichetta>{c.etichetta}</Etichetta>
+        <span className="passo-titolo">{c.titolo}</span>
+        {c.righe.map((r) => (
+          <span key={r.testo} className="iscrizioni-riga">
+            <span>{r.testo}</span>
+            <Cifra>{r.cifra}</Cifra>
+          </span>
+        ))}
+        <Dettaglio>{c.testo}</Dettaglio>
+        {/* Il cancelletto a mano: un href «#prezzi», con <base href="../">, porterebbe alla radice. */}
+        <Tasto
+          onClick={() => {
+            window.location.hash = INDIRIZZO_PREZZI
+            // Segna che si arriva dalla pagina: TORNA ALLE ISCRIZIONI torna indietro invece di aggiungere un passo.
+            history.replaceState({ daPagina: true }, '')
+          }}
+        >
+          {c.tasto}
+        </Tasto>
+      </Riquadro>
+    </section>
+  )
+}
+
+/** La prova e i dubbi in un riquadro solo: è l'unico posto della pagina con CHIAMA. */
+function ProvaEDubbi() {
+  const t = provaEDubbi(CONTATTI)
+  return (
+    <section className="pad iscrizioni-prova">
+      <Riquadro tono="prova">
+        <Etichetta>{t.etichetta.toUpperCase()}</Etichetta>
+        {PROVA.costi.map((c) => (
+          <span key={c.cosa} className="row prova-testa">
+            <span className="passo-titolo">{c.cosa} di prova</span>
+            <Cifra>{c.costo}</Cifra>
+          </span>
+        ))}
+        <Dettaglio>{PROVA.testo}</Dettaglio>
+        <Dettaglio tono="testo">{t.frase}</Dettaglio>
+        <Tasti>
+          <Tasto href={chiama} qui>
+            CHIAMA
+          </Tasto>
+          <Tasto href={CONTATTI.mappa}>MAPPA</Tasto>
+        </Tasti>
+      </Riquadro>
+    </section>
+  )
+}
+
+/** In fondo, una volta sola: il tasto per cominciare con l'avviso e l'informativa, o l'invito a chiamare. */
+function Fondo({ onModulo }: { onModulo: () => void }) {
+  const f = fondoDellaPagina(MODULO_IN_APP)
+  return (
+    <section className="pad stack iscrizioni-richiesta">
+      {f.tasto && (
         <Tasto variante="principale" onClick={onModulo}>
           COMPILA LA RICHIESTA
         </Tasto>
       )}
-      {a.senzaModulo && <Dettaglio tono="testo">{SENZA_MODULO}</Dettaglio>}
-      <Tasto href={chiama} qui>
-        CHIAMA
-      </Tasto>
-      {a.avviso && <Dettaglio>{AVVISO_RICHIESTA}</Dettaglio>}
+      <Dettaglio tono={f.tasto ? undefined : 'testo'}>{f.frase}</Dettaglio>
       {INFORMATIVA_PUBBLICA && (
         <Dettaglio>
           {INFORMATIVA_FRASE}{' '}
@@ -87,23 +180,6 @@ function Apertura({ onModulo }: { onModulo: () => void }) {
           .
         </Dettaglio>
       )}
-    </section>
-  )
-}
-
-function CosaServe() {
-  return (
-    <section>
-      <Titoletto>COSA TI SERVE</Titoletto>
-      <div className="pad">
-        <Riquadro>
-          {COSA_SERVE.map((riga) => (
-            <Dettaglio key={riga} tono="testo">
-              {riga}
-            </Dettaglio>
-          ))}
-        </Riquadro>
-      </div>
     </section>
   )
 }
@@ -148,75 +224,6 @@ export function Contatti({ social = true }: { social?: boolean }) {
           {social && <Tasto href={SITO}>IL SITO</Tasto>}
         </Tasti>
       </Riquadro>
-    </section>
-  )
-}
-
-function Piede() {
-  return (
-    <section className="pad iscrizioni-piede">
-      <Tasti>
-        <Tasto href={CONTATTI.instagram}>INSTAGRAM</Tasto>
-        <Tasto href={CONTATTI.facebook}>FACEBOOK</Tasto>
-        <Tasto href={SITO}>IL SITO</Tasto>
-      </Tasti>
-    </section>
-  )
-}
-
-function ModuloDaLeggere() {
-  return (
-    <section>
-      <Titoletto>IL MODULO</Titoletto>
-      <div className="pad">
-        <Riquadro>
-          <span className="passo-titolo">{MODULO_DA_LEGGERE.titolo}</span>
-          <Dettaglio>{MODULO_DA_LEGGERE.testo}</Dettaglio>
-          <Tasti>
-            {MODULI.map((m) => (
-              <Tasto key={m.file} href={m.file} scarica>
-                {m.etichetta}
-              </Tasto>
-            ))}
-          </Tasti>
-        </Riquadro>
-      </div>
-    </section>
-  )
-}
-
-/** Dove si paga: l'IBAN da copiare e Satispay se c'è. La quota e la sua validità sono già nei costi. */
-function ComeSiPaga() {
-  const [copiato, setCopiato] = useState(false)
-  const iban = PAGAMENTO.iban
-
-  const copia = () => {
-    // Senza spazi: è così che lo vogliono i campi delle app della banca.
-    navigator.clipboard?.writeText(iban.replace(/\s/g, '')).then(
-      () => {
-        setCopiato(true)
-        setTimeout(() => setCopiato(false), 2000)
-      },
-      () => {},
-    )
-  }
-
-  return (
-    <section>
-      <Titoletto>COME SI PAGA</Titoletto>
-      <div className="pad">
-        <Riquadro>
-          <span className="passo-titolo">{COME_SI_PAGA.titolo}</span>
-          <Dettaglio>Bonifico a {PAGAMENTO.intestatario}:</Dettaglio>
-          <span className="num iban">{iban}</span>
-          {PAGAMENTO.satispay && <Dettaglio>Oppure con Satispay, dall'app.</Dettaglio>}
-          <Dettaglio>{COME_SI_PAGA.ricevuta}</Dettaglio>
-          <Tasti>
-            <Tasto onClick={copia}>{copiato ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
-            {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
-          </Tasti>
-        </Riquadro>
-      </div>
     </section>
   )
 }

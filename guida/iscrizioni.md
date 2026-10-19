@@ -13,42 +13,56 @@ segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
 ## Cosa c'è nella pagina
 
 La pagina ha l'aspetto del sito della palestra (blu e giallo, sempre chiaro,
-qualunque sia il tema dell'app) e si legge dall'alto, in questo ordine:
+qualunque sia il tema dell'app) ed è corta: si legge dall'alto, in questo
+ordine.
 
-1. **La frase e il tasto per cominciare**: «Iscriviti a Officine Dello Sport»,
-   **COMPILA LA RICHIESTA** (giallo) e **CHIAMA**. Sotto, che la richiesta non
-   è ancora l'iscrizione e non si salva a metà (se esci, ricominci), e il
-   link all'**informativa privacy**. La segreteria guarda la richiesta e
-   richiama: la pagina non promette un giorno né un'ora.
-2. **Cosa ti serve**: la carta d'identità di chi si iscrive (dai 6 anni; quella del
-   genitore non serve), il
-   certificato medico se ce l'hai (se no la richiesta parte lo stesso e lo
-   porti in segreteria), la ricevuta del pagamento se hai già pagato. Per un
-   minore firma il genitore.
-3. **Non sai ancora quale corso?** Le **prove**, una lezione (3 €) o una
-   settimana (10 €), con il tasto CHIAMA.
-4. **Quanto costa**: la quota associativa e le schede dei corsi, quelle del
-   [listino](segreteria/listino.md) della segreteria, con il foglio in PDF
-   finché il listino non è stato cambiato. Passata la data del saldo (il 31
-   agosto) la colonna **SALDO 31/8** sparisce: quel prezzo non vale più. Il
-   PDF riporta i costi di partenza della stagione: se la segreteria li cambia
-   da LISTINO, l'app mostra quelli nuovi ma il PDF resta quello di partenza,
-   finché non lo si rigenera.
-5. **Come si paga**: dopo la richiesta, oppure in segreteria. L'IBAN si copia
-   con un tocco (**COPIA IBAN**) e **PAGA CON SATISPAY** apre l'app sul
-   negozio dell'associazione (il link è `PAGAMENTO.satispay` in
-   `src/lib/iscrizione.ts`). La ricevuta si può caricare nella richiesta, ma
-   non serve per mandarla.
-6. **COMPILA LA RICHIESTA** ancora una volta, per chi ha letto i costi.
-7. **Il modulo**: le autorizzazioni si firmano col dito nella richiesta; i due
-   PDF (**MAGGIORENNI** e **MINORI**) servono a leggerle o a stamparle prima.
-8. **Hai un dubbio?** Indirizzo e telefono, **CHIAMA** e **MAPPA**.
-9. In fondo **INSTAGRAM**, **FACEBOOK**, **IL SITO**, e **IL VESTIARIO** se gli
-   ordini sono aperti.
+1. **Il titolo**: il marchio della palestra, «Iscriviti a Officine Dello
+   Sport» e la frase «Compili la richiesta dal telefono. La segreteria la
+   guarda e ti richiama.». In cima non c'è la testata dell'app né un tasto: la
+   pagina non promette un giorno né un'ora.
+2. **Cosa ti serve**: una lista di cosa preparare, una cosa per riga con una
+   casella da spuntare a mente (la pagina non salva niente):
+   - il **codice fiscale** di chi si iscrive, e il tuo se iscrivi un figlio;
+   - la **carta d'identità** di chi si iscrive, dai 6 anni (quella del
+     genitore non serve);
+   - il **certificato medico**, **SE CE L'HAI**: se no lo porti in segreteria
+     prima della prima lezione;
+   - la **ricevuta del pagamento**, **SE HAI GIÀ PAGATO**: se no paghi dopo o
+     in segreteria.
+3. **Quanto costa**, in breve: la quota associativa (quella del
+   [listino](segreteria/listino.md)), lo sconto famiglia e il costo di più
+   corsi, come si paga in una riga e il tasto **PREZZI E PAGAMENTO**.
+4. **Non sai ancora quale corso? Hai un dubbio?** Un riquadro solo: le
+   **prove**, una lezione (3 €) o una settimana (10 €), indirizzo e telefono,
+   e i tasti **CHIAMA** e **MAPPA**.
+5. **COMPILA LA RICHIESTA**, una volta sola, in fondo. Sotto, che la richiesta
+   non è ancora l'iscrizione e non si salva a metà (se esci, ricominci), e il
+   link all'**informativa privacy**.
 
-Se l'informativa tornasse una bozza, il tasto non c'è, né il secondo: la
-pagina dice «Per iscriverti chiamaci o passa in palestra». Il modulo Google
-non c'è più.
+Se l'informativa tornasse una bozza, il tasto non c'è: al suo posto la pagina
+dice «Per iscriverti chiamaci o passa in palestra». Il modulo Google non c'è
+più.
+
+### Prezzi e pagamento
+
+**PREZZI E PAGAMENTO** apre una pagina a parte, con un indirizzo suo
+(<https://app.officinedellosport.it/iscrizioni/#prezzi>): l'indietro del
+telefono riporta alla pagina, e il link si può mandare a chi chiede solo i
+prezzi. In cima c'è **‹ TORNA ALLE ISCRIZIONI**, poi:
+
+- **Quanto costa**: la quota associativa e le schede dei corsi del listino,
+  con il foglio in PDF finché il listino non è stato cambiato. Passata la data
+  del saldo (il 31 agosto) la colonna **SALDO 31/8** sparisce: quel prezzo non
+  vale più. Il PDF riporta i costi di partenza della stagione: se la segreteria
+  li cambia da LISTINO, l'app mostra quelli nuovi ma il PDF resta quello di
+  partenza, finché non lo si rigenera. Poi le **offerte**.
+- **Come si paga**: dopo la richiesta, oppure in segreteria. L'IBAN si copia
+  con un tocco (**COPIA IBAN**) e **PAGA CON SATISPAY** apre l'app sul negozio
+  dell'associazione (il link è `PAGAMENTO.satispay` in
+  `src/lib/iscrizione.ts`). La ricevuta si può caricare nella richiesta, ma
+  non serve per mandarla.
+- **COMPILA LA RICHIESTA**: apre lo stesso modulo. Chiuso il modulo, si torna
+  in cima alla pagina delle iscrizioni.
 
 ## Il modulo di iscrizione dell'app
 
@@ -265,9 +279,8 @@ compila sono al massimo 900 caratteri, per fare posto a quella riga.
 Judogi, costumini da lotta e vestiario della palestra si ordinano da una pagina
 pubblica, al posto del modulo Google. L'indirizzo è
 <https://app.officinedellosport.it/iscrizioni/#vestiario>: in segreteria
-si copia con **COPIA LINK ORDINI**, in fondo al menu. Finché gli ordini sono
-aperti, anche la pagina delle iscrizioni ha in fondo il riquadro **IL
-VESTIARIO** con **ORDINA IL VESTIARIO**.
+si copia con **COPIA LINK ORDINI**, in fondo al menu. La pagina delle iscrizioni non lo nomina: gli ordini si aprono solo dal
+loro link.
 
 I passi sono quelli del vecchio modulo Google:
 
@@ -307,8 +320,10 @@ APERTI**.
 
 ## Cosa dire a chi chiede
 
-- «Ti mando il link: ci sono i passi, i costi e il modulo.»
+- «Ti mando il link: c'è cosa preparare e il tasto per la richiesta. I prezzi
+  sono in PREZZI E PAGAMENTO.» Per chi chiede solo i prezzi c'è il link
+  `iscrizioni/#prezzi`.
 - «Quando hai mandato la richiesta la guardiamo noi e ti iscriviamo ai corsi
   che hai scelto.»
-- Per i dubbi: telefono o passare in palestra, come dice il fondo della
-  pagina.
+- Per i dubbi: telefono o passare in palestra, come dice il riquadro della
+  prova.

@@ -5,8 +5,10 @@ import { Sala } from './components/Sala'
 import { NastroProva } from './components/ds'
 import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
+import { vistaIscrizioni } from './lib/paginaIscrizioni'
 import { IscrizioneAPassi } from './components/IscrizioneAPassi'
-import { OrdinaVestiario, RiquadroVestiario } from './components/OrdinaVestiario'
+import { OrdinaVestiario } from './components/OrdinaVestiario'
+import { PrezziIscrizione } from './components/PrezziIscrizione'
 import { AreaIscritti, IscrittiChiusa } from './components/AreaIscritti'
 import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
@@ -22,8 +24,6 @@ import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
 import { ISTRUTTORE_PROVA, dati as caricaDati, haUnServer, inProvaScelta, scegliProva, type Dati } from './lib/dati'
-import { flussoNuovoAcceso } from './lib/passiIscrizione'
-import { INDIRIZZO_VESTIARIO } from './lib/cancelletti'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
 import { chiediPrimaDiSostituire, esciConMusica, incorporatoIstruttori, lezioneDelTimer, mostraMusicaMini, mostraStriscia, statoCambiato, tastoImpostazioni, timerAperto, videoNellaBarraPiccola, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
 import type { Incorporato, StatoTimer } from '../timer/src/lib/incorporato'
@@ -205,7 +205,7 @@ function TutteLeAree() {
 }
 
 function Iscrizioni() {
-  // Gli ordini del vestiario stanno qui, a `#vestiario`: il riquadro IL VESTIARIO ci porta senza ricaricare.
+  // La pagina, i prezzi (`#prezzi`) e gli ordini del vestiario (`#vestiario`) stanno qui: i tasti ci portano senza ricaricare.
   const [hash, setHash] = useState(window.location.hash)
   useEffect(() => {
     const segui = () => {
@@ -215,20 +215,15 @@ function Iscrizioni() {
     window.addEventListener('hashchange', segui)
     return () => window.removeEventListener('hashchange', segui)
   }, [])
-  const vestiario = hash === INDIRIZZO_VESTIARIO
+  const { vista, testata } = vistaIscrizioni(haUnServer, hash)
   return (
     <div className="app">
-      <Testata luogo={vestiario ? 'VESTIARIO' : 'ISCRIZIONI'} />
+      {/* La pagina ha il marchio sopra il titolo: una sola intestazione. */}
+      {testata && <Testata luogo={vista === 'vestiario' ? 'VESTIARIO' : 'ISCRIZIONI'} />}
       {inProvaScelta && <NastroProva testo="PROVA · LE RICHIESTE NON ARRIVANO IN SEGRETERIA" onEsci={() => scegliProva(false)} />}
       <main className="scroll">
         {/* Il flusso a passi è solo in prova e solo con #nuova: il vecchio resta com'è. */}
-        {vestiario ? <OrdinaVestiario /> : flussoNuovoAcceso(haUnServer, hash) ? <IscrizioneAPassi /> : (
-          <>
-            <IscrizioniScreen />
-            {/* Qui e non dentro: la pagina di oggi non cambia finché c'è il flusso a passi (prova:iscrizione-passi). */}
-            <RiquadroVestiario />
-          </>
-        )}
+        {vista === 'vestiario' ? <OrdinaVestiario /> : vista === 'passi' ? <IscrizioneAPassi /> : vista === 'prezzi' ? <PrezziIscrizione /> : <IscrizioniScreen />}
       </main>
     </div>
   )
