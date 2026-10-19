@@ -98,7 +98,7 @@ console.log('\n2. La testata: prova (primario) e Scrivici (secondario)')
   const pul = hero?.html.match(/<div class="pulsanti">([\s\S]*?)<\/div>/)?.[1] ?? ''
   const l = links(pul)
   ok('sezione «pagina-hero con-pulsanti solo» con h1 e descrizione', [hero?.classi, /<h1>Contatti<\/h1>/.test(hero?.html ?? ''), (hero?.html ?? '').includes('Dove siamo e come scriverci.')], [['pagina-hero', 'con-pulsanti', 'solo'], true, true])
-  ok('due pulsanti: primario verso il modulo, poi Scrivici secondario verso WhatsApp', l.map((x) => [x.cl, x.href, x.t]), [[['pulsante', 'primario'], MODULO, 'Prova una settimana a 5 €'], [['pulsante', 'secondario'], WA, 'Scrivici']])
+  ok('due pulsanti: primario verso il modulo, poi Scrivici secondario verso WhatsApp', l.map((x) => [x.cl, x.href, x.t]), [[['pulsante', 'primario'], MODULO, 'Iscriviti'], [['pulsante', 'secondario'], WA, 'Scrivici']])
   ok('Scrivici apre in sicurezza: rel noopener noreferrer', l[1]?.rel?.split(/\s+/).sort(), ['noopener', 'noreferrer'])
   const scambiati = pag(NUOVO.replace(/^<p>.*?<\/p>/, `<p><a class="pulsante" href="${WA}">Scrivici</a> <a class="pulsante" href="${MODULO}">Prova una settimana a 5 €</a></p>`))
   const ls = links(main(scambiati).match(/<div class="pulsanti">([\s\S]*?)<\/div>/)?.[1] ?? '')

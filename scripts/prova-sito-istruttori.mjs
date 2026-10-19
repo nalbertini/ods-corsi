@@ -106,7 +106,7 @@ console.log('\n3b. La tessera «Vieni a conoscerli» completa la riga di quattro
   ok('con 14 tecnici è larga 2', /ritratto-invito s2/.test(invitoTessera(pagina(unElenco(13) + R('Z', 'x · Judo')))), true)
   ok('con 12 tecnici non c’è: la riga è piena, resta l’invito di fondo pagina', [inv(12), conta(pagina(dodici), /<a class="invito"/g)], ['', 1])
   const t = inv(13)
-  ok('ha i due pulsanti: prova una settimana (modulo) e Scrivici (contatti)', [/<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Prova una settimana a 5 €<\/a>/.test(t), /<a class="pulsante secondario" href="\/contatti\/">Scrivici<\/a>/.test(t)], [true, true])
+  ok('ha i due pulsanti: prova una settimana (modulo) e Scrivici (contatti)', [/<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(t), /<a class="pulsante secondario" href="\/contatti\/">Scrivici<\/a>/.test(t)], [true, true])
   ok('senza la pagina Contatti, niente «Scrivici»', /Scrivici/.test(invitoTessera(pagina(tredici, 'istruttori', [], false))), false)
   ok('non è un tecnico: non ha la classe «ritratto» delle tessere', tessere(pagina(tredici)).length, 13)
 }
@@ -146,7 +146,7 @@ console.log('\n10. La scheda scarna di un istruttore (nome, foto o iniziale, cor
   ok('il nome è il titolo grande, nome e cognome su due righe', /<h1><span>Fabio<\/span> <span>Berta<\/span><\/h1>/.test(m), true)
   ok('la foto c’è, col suo «alt»', /<div class="scheda-ritratto"><img [^>]*alt="Fabio ai tatami"/.test(m), true)
   ok('i corsi sono una tessera «Corsi» con il testo scritto', /<h2>Corsi<\/h2><p>Aikido<\/p>/.test(m), true)
-  ok('due pulsanti: prova (modulo) e Scrivici (contatti)', [/<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Prova una settimana a 5 €<\/a>/.test(m), /<a class="pulsante secondario" href="\/contatti\/">Scrivici<\/a>/.test(m)], [true, true])
+  ok('due pulsanti: prova (modulo) e Scrivici (contatti)', [/<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(m), /<a class="pulsante secondario" href="\/contatti\/">Scrivici<\/a>/.test(m)], [true, true])
   ok('c’è l’invito di fondo pagina e nessuna tessera vuota', [conta(h, /<a class="invito"/g), /da scrivere|<article class="tessera[^"]*">\s*<\/article>/i.test(m)], [1, false])
   ok('il ritorno «Gli istruttori» c’è se la pagina esiste', /<a class="indietro" href="\/istruttori\/">/.test(m), true)
   ok('e non c’è se non esiste (sarebbe un 404)', /class="indietro"/.test(main(scheda(`${FA}<ul><li><strong>Corsi</strong> Aikido</li></ul>`))), false)

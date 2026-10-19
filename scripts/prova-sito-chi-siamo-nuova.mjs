@@ -99,7 +99,7 @@ console.log('\n3. Sezioni')
   const senzaDidascalia = main(pagina(NUOVO.replace('<p>Aikido</p>', '')))
   ok('una foto senza didascalia resta, senza figcaption vuota', [conta(senzaDidascalia, /<figure><img /g), conta(senzaDidascalia, /<figcaption><\/figcaption>/g)], [4, 0])
   ok('valori: quattro tessere uguali con il numero decorativo', [conta(m, /<div class="tessere n-4 perche">/g), conta(m, /<span class="numero-perche" aria-hidden="true">/g)], [1, 4])
-  ok('chiamata finale: «Prova» giallo e per primo, «Scrivici» a linea, foto, «vicino alla metro Fermi»', [m.indexOf('Prova una settimana a 5 €</a>') < m.indexOf('Scrivici</a>'), conta(m, /<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Prova/g), conta(m, /<a class="pulsante secondario" href="\/contatti\/">Scrivici/g), conta(m, /<figure class="cta-foto"><img [^>]*f8\.jpg/g), m.includes('vicino alla metro Fermi')], [true, 1, 1, 1, true])
+  ok('chiamata finale: «Iscriviti» giallo e per primo, «Scrivici» a linea, foto, «vicino alla metro Fermi»', [m.indexOf('Iscriviti</a>') < m.indexOf('Scrivici</a>'), conta(m, /<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti/g), conta(m, /<a class="pulsante secondario" href="\/contatti\/">Scrivici/g), conta(m, /<figure class="cta-foto"><img [^>]*f8\.jpg/g), m.includes('vicino alla metro Fermi')], [true, 1, 1, 1, true])
 }
 
 console.log('\n4. Forme che non tornano: il testo c’è lo stesso')

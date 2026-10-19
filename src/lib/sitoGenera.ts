@@ -73,8 +73,8 @@ export interface DatiSito {
 const TESTI = {
   nome: 'Officine dello Sport',
   immagineAlt: 'Officine dello Sport: il marchio con i cinque ingranaggi colorati',
-  prova: 'Prova',
-  provaIntera: 'Prova una settimana a 5 €',
+  prova: 'Iscriviti',
+  provaIntera: 'Iscriviti',
   metro: 'vicino alla metro Fermi',
   scrivici: 'Scrivici',
   invito: 'Vieni a provare: ti aspettiamo in',
@@ -1085,9 +1085,9 @@ function piede(c: Contesto): string {
   return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><ul class="recapiti-piede">${recapiti}</ul>${m.length ? `<nav class="piede-menu" aria-label="Pagine">${m.map((x) => `<a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a>`).join('')}</nav>` : ''}${f ? `<ul class="piede-legale">${f}</ul>` : ''}</footer>`
 }
 
-/** La barra del telefono in fondo alla Home: «Prova a 5 €» verso il modulo e «Chiama». Il nome accessibile dice «una settimana»: sulla pagina ci sono altri pulsanti di prova. */
+/** La barra del telefono in fondo alla Home: «Iscriviti» verso il modulo e «Chiama». Il nome accessibile dice anche «una settimana a 5 euro»: è la prova che costa così. */
 function barraProva(): string {
-  return `<nav class="barra-prova" aria-label="Prova o chiama"><a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer" aria-label="Prova una settimana a 5 euro">Prova a 5 €</a><a class="pulsante secondario" href="${esc(chiama)}">Chiama</a></nav>`
+  return `<nav class="barra-prova" aria-label="Prova o chiama"><a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer" aria-label="Iscriviti: una settimana di prova a 5 euro">Iscriviti</a><a class="pulsante secondario" href="${esc(chiama)}">Chiama</a></nav>`
 }
 
 function invito(conContatti: boolean): string {
