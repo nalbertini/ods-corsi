@@ -26,15 +26,16 @@ import { conti, ENTE_PREDEFINITO, voceQuota, vociDelCorso, type Ricevuta, type V
  */
 
 const DOVE = 'ods-corsi:prova-esempi'   // vedi la nota in coda.ts
-const VERSIONE = '1'
+// 2: va con la versione 3 dell'archivio (i corsi del listino), che si rifà da capo e gli esempi con lui.
+const VERSIONE = '2'
 /**
  * Le ricevute sono venute dopo, con l'area degli iscritti: hanno il loro
  * segno, così arrivano anche su un dispositivo che gli altri esempi li ha già.
  * Il segno ha la sua versione: quando cambia, le ricevute di esempio si
- * rifanno (la 2 fa vedere QUOTA SCADUTA e FUORI APP).
+ * rifanno (la 2 fa vedere QUOTA SCADUTA e FUORI APP, la 3 va coi corsi del listino).
  */
 const DOVE_RICEVUTE = 'ods-corsi:prova-esempi-ricevute'
-const VERSIONE_RICEVUTE = '2'
+const VERSIONE_RICEVUTE = '3'
 /** I nuclei familiari, venuti ancora dopo: anche loro col segno loro. */
 const DOVE_NUCLEI = 'ods-corsi:prova-esempi-nuclei'
 /** Le presenze segnalate dagli iscritti, venute dopo ancora. */
@@ -183,9 +184,9 @@ function pinIstruttori(recenti: LezioneTrovata[]) {
   }
   const ultima = (corsoId: string, prima = 0) => recenti.filter((l) => l.corso.id === corsoId).at(-1 - prima)
   const gestita = (l: LezioneTrovata | undefined) => ({ gestitaDa: 'Segreteria di prova', gestitaIl: new Date((l?.fine.getTime() ?? Date.now()) + GIORNO).toISOString() })
-  entra(ultima('pesi-1'), 'i-maurizio', { stato: 'da_confermare', prevista: false })
-  entra(ultima('body-functional'), 'i-fabio', { stato: 'da_confermare', prevista: false })
-  const pugilistica = ultima('pre-pugilistica', 3)
+  entra(ultima('pesistica'), 'i-maurizio', { stato: 'da_confermare', prevista: false })
+  entra(ultima('pre-pugilistica'), 'i-fabio', { stato: 'da_confermare', prevista: false })
+  const pugilistica = ultima('pre-pugilistica', 1)
   entra(pugilistica, 'i-maurizio', { stato: 'confermata', prevista: false, ...gestita(pugilistica) })
   const gioco = ultima('giocomotricita', 1)
   entra(gioco, 'i-maura', { stato: 'rifiutata', prevista: false, ...gestita(gioco) })
@@ -260,7 +261,7 @@ function richieste(adesso: Date): Richiesta[] {
       cap: '10095',
       email: 'simone.actis@esempio.it',
       telefono: '340 118 7702',
-      corsi: ['pesi-1', 'prep-atletica-1'],
+      corsi: ['prep-atletica', 'mga'],
       formula: 'annuale',
     },
     {
@@ -278,7 +279,7 @@ function richieste(adesso: Date): Richiesta[] {
       ...collegno,
       email: 'elisa.chiado@esempio.it',
       telefono: '335 662 0931',
-      corsi: ['body-functional'],
+      corsi: ['mga'],
       formula: 'trimestre',
       note: 'Mandata due volte per sbaglio.',
     },

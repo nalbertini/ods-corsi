@@ -698,11 +698,10 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
 
   // R1/R2/R11: Judo 3 (lun, mer, ven 18-19) e Judo agonisti (mar, gio 18-19.30).
   const due = paralleli(['judo-3', 'judo-agonisti'])
-  ok('Judo 3 + agonisti: c’è Preparazione atletica 3 (lun, mer, ven 18-19)', ids(due).includes('prep-atletica-3'), true)
-  ok('Judo 3 + agonisti: c’è Preparazione atletica 1, che nel listino non ha una voce sua', ids(due).includes('prep-atletica-1'), true)
-  ok('Judo 3 + agonisti: non Preparazione atletica 2, che comincia alle 19.30 quando agonisti finisce', ids(due).includes('prep-atletica-2'), false)
+  ok('Judo 3 + agonisti: c’è Preparazione atletica (da lunedì a venerdì alle 18)', ids(due).includes('prep-atletica'), true)
+  ok('Judo 3 + agonisti: non Prepugilistica, che comincia alle 19 quando Judo 3 finisce', ids(due).includes('pre-pugilistica'), false)
   ok('Judo 3 + agonisti: non Judo adulti, che comincia alle 19 quando Judo 3 finisce', ids(due).includes('judo-adulti'), false)
-  ok('Judo 3 + agonisti: tutti e soli i corsi del genitore che si sovrappongono, nell’ordine dei corsi per età', ids(due), ['aikido-3', 'lotta-3', 'body-functional', 'pesi-2', 'prep-atletica-1', 'prep-atletica-3'])
+  ok('Judo 3 + agonisti: tutti e soli i corsi del genitore che si sovrappongono, nell’ordine dei corsi per età', ids(due), ['aikido-3', 'lotta-3', 'prep-atletica'])
   // Psicomotricità (venerdì 18.10) ha nel listino «3-4-5 anni» scritto, senza anni di nascita: è dei piccoli, non si propone.
   ok('Judo 3 + agonisti: non Psicomotricità, che il listino dice per 3-5 anni senza anni di nascita', ids(due).includes('psicomotricita'), false)
   ok('ognuno è «stessa ora», e nessuno ha giorni a parte (si sovrappongono tutti i giorni)', [...new Set(due.map((c) => `${c.stessaOra}/${c.giorni ?? '-'}`))], ['true/-'])
@@ -712,24 +711,26 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
 
   // Solo Judo 3: i corsi del martedì e giovedì non ci sono più.
   const solo = paralleli(['judo-3'])
-  ok('solo Judo 3: Preparazione atletica 3 sì', ids(solo).includes('prep-atletica-3'), true)
-  ok('solo Judo 3: Preparazione atletica 1 (mar, gio) no', ids(solo).includes('prep-atletica-1'), false)
+  ok('solo Judo 3: Pesi agonisti (mar, gio) no', ids(solo).includes('pesi-agonisti'), false)
+  ok('solo Judo 3: Preparazione atletica sì, ma solo lunedì, mercoledì e venerdì', solo.find((c) => c.id === 'prep-atletica')?.giorni, [1, 3, 5])
   // Giorni in parte: Aikido 3 è lun e gio, Judo 3 il lunedì sì e il giovedì no.
-  ok('solo Judo 3: prima quelli con tutti i giorni, poi quelli in parte', ids(solo), ['body-functional', 'pesi-2', 'prep-atletica-3', 'aikido-3', 'lotta-3'])
+  // Preparazione atletica senza il martedì e il giovedì: tutti i suoi giorni sono con Judo 3, e va in cima.
+  const soloLMV = paralleli(['judo-3'], orari.filter((o) => !(o.corsoId === 'prep-atletica' && [2, 4].includes(o.giorno))))
+  ok('solo Judo 3: prima quelli con tutti i giorni, poi quelli in parte', ids(soloLMV), ['prep-atletica', 'aikido-3', 'lotta-3'])
   ok('giorni in parte: Aikido 3 (lun, gio) col figlio solo il lunedì → [1]', solo.find((c) => c.id === 'aikido-3').giorni, [1])
   ok('giorni in parte: Lotta 3 (lun, mar, mer, ven) → [1, 3, 5]', solo.find((c) => c.id === 'lotta-3').giorni, [1, 3, 5])
-  ok('tutti i giorni: niente «giorni»', 'giorni' in solo.find((c) => c.id === 'prep-atletica-3'), false)
+  ok('tutti i giorni: niente «giorni»', 'giorni' in soloLMV.find((c) => c.id === 'prep-atletica'), false)
 
   // R3: mai fuori età, mai nascosto per età minima, mai un corso del figlio.
   const fuori = [
-    { corso: 'Pesistica 2', corsoId: 'pesi-2', eta: '', orari: [], natiDal: 2010, natiAl: 2012, prezzi: [{ annuale: 300, trimestre: 120 }] },
-    { corso: 'Body functional', corsoId: 'body-functional', eta: '', orari: [], etaMinima: 50, prezzi: [{ annuale: 300, trimestre: 120 }] },
-    ...voci,
+    ...voci.map((v) => (v.corso === 'Aikido 3' ? { ...v, natiDal: 2010, natiAl: 2012 } : v)),
+    { corso: 'Yoga', corsoId: 'yoga', eta: '', orari: [], etaMinima: 50, prezzi: [{ annuale: 300, trimestre: 120 }] },
   ]
-  const r3 = paralleli(['judo-3', 'prep-atletica-3'], orari, corsi, fuori)
-  ok('non propone un corso fuori età per il genitore (altri)', ids(r3).includes('pesi-2'), false)
-  ok('non propone un corso nascosto per età minima', ids(r3).includes('body-functional'), false)
-  ok('non propone un corso già scelto per il figlio', ids(r3).includes('prep-atletica-3'), false)
+  const conYoga = [...corsi, { id: 'yoga', nome: 'Yoga' }]
+  const r3 = paralleli(['judo-3', 'prep-atletica'], [...orari, { corsoId: 'yoga', giorno: 1, ora: '18:00', durata: 60 }], conYoga, fuori)
+  ok('non propone un corso fuori età per il genitore (altri)', ids(r3).includes('aikido-3'), false)
+  ok('non propone un corso nascosto per età minima', ids(r3).includes('yoga'), false)
+  ok('non propone un corso già scelto per il figlio', ids(r3).includes('prep-atletica'), false)
   ok('gli altri alla stessa ora restano', ids(r3).includes('lotta-3'), true)
 
   // R4: senza orari non c'è stessa ora.
@@ -765,14 +766,11 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   ok('riga, tre giorni: la riga del listino, e lunedì, mercoledì e venerdì', [riga('lotta-3'), giorni('lotta-3')], [rigaListino('lotta-3'), [1, 3, 5]])
   // Con Judo 3 e agonisti, Aikido 3 (lun, gio) ha tutti i giorni in comune.
   ok('riga, tutti i giorni e una riga del listino: quella, senza «stessa ora di»', conOra(['judo-3', 'judo-agonisti']).stessaOra.find((c) => c.id === 'aikido-3')?.riga, rigaListino('aikido-3'))
-  ok('riga, senza voce nel listino: l’orario del calendario', riga('prep-atletica-3'), 'lunedì, mercoledì e venerdì 18.00-19.00')
-  ok('riga, un giorno solo dal calendario', riga('body-functional'), 'mercoledì 18.00-19.00')
+  ok('riga, giorni in parte e più orari nel listino: la riga del listino', riga('prep-atletica'), rigaListino('prep-atletica'))
   ok('nessuna riga ripete «stessa ora di Matteo»', ep.stessaOra.some((c) => c.riga?.includes('stessa ora di')), false)
-  const ep2 = conOra(['judo-3', 'judo-agonisti'])
-  ok('riga, mar e gio dal calendario', ep2.stessaOra.find((c) => c.id === 'prep-atletica-1')?.riga, 'martedì e giovedì 18.00-19.00')
 
   // Corsi inventati, senza voce nel listino: orari diversi fra i giorni, e due giorni in parte.
-  const inventati = [...corsi, { id: 'yoga', nome: 'Yoga' }, { id: 'pilates', nome: 'Pilates' }]
+  const inventati = [...corsi, { id: 'yoga', nome: 'Yoga' }, { id: 'pilates', nome: 'Pilates' }, { id: 'kendo', nome: 'Kendo' }, { id: 'karate', nome: 'Karate' }]
   const orariInventati = [
     ...orari,
     { corsoId: 'yoga', giorno: 5, ora: '18:30', durata: 60 },
@@ -781,12 +779,17 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
     { corsoId: 'pilates', giorno: 1, ora: '18:00', durata: 60 },
     { corsoId: 'pilates', giorno: 4, ora: '18:00', durata: 60 },
     { corsoId: 'pilates', giorno: 6, ora: '18:00', durata: 60 },
+    { corsoId: 'kendo', giorno: 3, ora: '18:00', durata: 60 },
+    { corsoId: 'karate', giorno: 2, ora: '18:00', durata: 60 },
+    { corsoId: 'karate', giorno: 4, ora: '18:00', durata: 60 },
   ]
   const ep3 = conOra(['judo-3', 'judo-agonisti'], orariInventati, inventati)
   const riga3 = (id) => ep3.stessaOra.find((c) => c.id === id)?.riga
   ok('orari diversi fra i giorni: un pezzo per orario, dal lunedì', riga3('yoga'), 'lunedì e mercoledì 18.00-19.00 · venerdì 18.30-19.30')
   ok('due giorni in parte: l’orario del calendario, e il lunedì e il giovedì in comune', [riga3('pilates'), ep3.stessaOra.find((c) => c.id === 'pilates')?.vicinanza?.giorni], ['lunedì, giovedì e sabato 18.00-19.00', [1, 4]])
   ok('il corso coi giorni in parte: nell’ordine dei giorni in comune', inOrdine(ep3.stessaOra), true)
+  ok('riga, senza voce nel listino: l’orario del calendario', riga3('karate'), 'martedì e giovedì 18.00-19.00')
+  ok('riga, un giorno solo dal calendario', riga3('kendo'), 'mercoledì 18.00-19.00')
 
   ok('senza orari: stessaOra vuoto', conOra(['judo-3'], []).stessaOra, [])
   const senzaOrari = conOra(['judo-3'], [])
@@ -797,10 +800,12 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   // B e C, col figlio solo in Judo agonisti (mar, gio 18-19.30).
   const ag = conOra(['judo-agonisti'])
   const rigaDi = (elenco, id) => elenco.find((c) => c.id === id)?.riga
-  ok('Body functional (mer) non è alla stessa ora: resta nei senza anni', [ag.stessaOra.some((c) => c.id === 'body-functional'), ag.senzaAnni.some((c) => c.id === 'body-functional')], [false, true])
-  ok('senza riga del listino, la riga è l’orario del calendario', rigaDi(ag.senzaAnni, 'body-functional'), 'mercoledì 18.00-19.00')
-  ok('e così per gli altri senza voce: Pesistica 1', rigaDi(ag.senzaAnni, 'pesi-1'), 'lunedì, mercoledì e venerdì 17.00-18.00')
-  ok('«prezzo da confermare» non sta nella riga: lo dice la schermata', ag.senzaAnni.some((c) => c.riga?.includes('prezzo da confermare')), false)
+  // I corsi senza voce nel listino sono inventati: in prova ogni corso ha la sua.
+  const agi = conOra(['judo-agonisti'], orariInventati, inventati)
+  ok('Kendo (mer) non è alla stessa ora: resta nei senza anni', [agi.stessaOra.some((c) => c.id === 'kendo'), agi.senzaAnni.some((c) => c.id === 'kendo')], [false, true])
+  ok('senza riga del listino, la riga è l’orario del calendario', rigaDi(agi.senzaAnni, 'kendo'), 'mercoledì 18.00-19.00')
+  ok('e così per gli altri senza voce: Yoga', rigaDi(agi.senzaAnni, 'yoga'), 'lunedì e mercoledì 18.00-19.00 · venerdì 18.30-19.30')
+  ok('«prezzo da confermare» non sta nella riga: lo dice la schermata', agi.senzaAnni.some((c) => c.riga?.includes('prezzo da confermare')), false)
   ok('gli adatti tengono la riga del listino', rigaDi(ag.adatti, 'judo-adulti'), rigaDi(perEta.adatti, 'judo-adulti'))
   ok('senza anni: tolti quelli proposti in cima e quelli del figlio', ag.senzaAnni.map((c) => c.id), perEta.senzaAnni.map((c) => c.id).filter((id) => !proposti(ag).includes(id) && id !== 'judo-agonisti'))
   // Il listino non dice per che anni è Psicomotricità («3-4-5 anni» scritto): resta dov'è, non si propone e basta.
