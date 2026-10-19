@@ -90,7 +90,7 @@ console.log('\n2. Introduzione: pulsanti, foto, numeri, motto')
   const pul = hero?.html.match(/<div class="pulsanti">([\s\S]*?)<\/div>/)?.[1] ?? ''
   const link = [...pul.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({ cl: classi(m[1]), href: m[1].match(/href="([^"]*)"/)?.[1], t: testo(m[2]) }))
   ok('i pulsanti stanno in un <div class="pulsanti"> della testata, non in un paragrafo', [Boolean(pul), /<p><a class="pulsante"/.test(hero?.html ?? '')], [true, false])
-  ok('il primario (giallo) è il link all’iscrizione ed è primo, anche se la segreteria l’ha scritto per secondo', [link[0]?.cl, link[0]?.href, link[0]?.t], [['pulsante', 'primario'], F.ISCRIZIONE, 'Prova una settimana a 5 €'])
+  ok('il primario (giallo) è il link all’iscrizione ed è primo, anche se la segreteria l’ha scritto per secondo', [link[0]?.cl, link[0]?.href, link[0]?.t], [['pulsante', 'primario'], F.ISCRIZIONE, 'Iscriviti'])
   ok('l’altro è secondario (a linea) e porta a Contatti', [link[1]?.cl, link[1]?.href, link[1]?.t, link.length], [['pulsante', 'secondario'], '/contatti/', 'Scrivici', 2])
   ok('la foto è nella testata, nella seconda colonna; la testata non è «solo»', [conta(hero?.html ?? '', /<img\b/g), hero?.classi.includes('solo')], [1, false])
   const senzaFoto = sezioni(main(home(F.TESTO_NUOVO.replace(/<img [^>]*gruppo[^>]*>|<img [^>]*18c88f1d[^>]*>/, '')))).find((s) => s.classi.includes('pagina-hero'))
@@ -215,7 +215,7 @@ console.log('\n8. La chiamata finale')
   ok('l’ultima sezione è «sezione cta»; è l’unica', [ultima?.classi.includes('sezione'), ultima?.classi.includes('cta'), tutte.filter((s) => s.classi.includes('cta')).length], [true, true, 1])
   ok('titolo, testo con l’indirizzo e la metro', [testo(ultima?.html.match(/<h2[^>]*>[\s\S]*?<\/h2>/)?.[0] ?? ''), testo(ultima?.html ?? '').includes('Via Vittorio Sassi 26, Collegno, vicino alla metro Fermi')], ['Una settimana per scegliere.', true])
   const pul = [...(ultima?.html.match(/<div class="pulsanti">([\s\S]*?)<\/div>/)?.[1] ?? '').matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => [classi(m[1]), m[1].match(/href="([^"]*)"/)?.[1], testo(m[2])])
-  ok('i pulsanti: il primario verso l’iscrizione, poi Scrivici', pul, [[['pulsante', 'primario'], F.ISCRIZIONE, 'Prova una settimana a 5 €'], [['pulsante', 'secondario'], '/contatti/', 'Scrivici']])
+  ok('i pulsanti: il primario verso l’iscrizione, poi Scrivici', pul, [[['pulsante', 'primario'], F.ISCRIZIONE, 'Iscriviti'], [['pulsante', 'secondario'], '/contatti/', 'Scrivici']])
   ok('la foto degli istruttori sta nella sezione', [conta(ultima?.html ?? '', /<img\b/g), (ultima?.html ?? '').includes(F.FOTO.istruttori)], [1, true])
   const senza = sezioni(main(home(F.TESTO_NUOVO.replace(F.CTA(), F.CTA(false))))).pop()
   ok('senza la foto resta «cta», a una colonna', [senza?.classi.includes('cta'), senza?.classi.includes('solo'), conta(senza?.html ?? '', /<img\b/g)], [true, true, 0])
@@ -227,10 +227,10 @@ console.log('\n9. Testata e piede di ogni pagina')
 {
   const tutte = genera(F.datiVecchi())
   const test = (h) => h.match(/<header class="testata">[\s\S]*?<\/header>/)?.[0] ?? ''
-  const primario = new RegExp(`<a class="pulsante primario" href="${F.ISCRIZIONE.replace(/[./]/g, '\\$&')}"[^>]*>Prova una settimana a 5 €</a>`)
+  const primario = new RegExp(`<a class="pulsante primario" href="${F.ISCRIZIONE.replace(/[./]/g, '\\$&')}"[^>]*>Iscriviti</a>`)
   for (const [nome, h] of [['Home', tutte['index.html']], ['Corsi', tutte['corsi/index.html']], ['Contatti', tutte['contatti/index.html']], ['404', tutte['404.html']]]) {
     const t = test(h)
-    ok(`${nome}: il pulsante «Prova una settimana a 5 €» è primario e intero (niente «estensione»)`, [primario.test(t), /estensione/.test(t)], [true, false])
+    ok(`${nome}: il pulsante «Iscriviti» è primario e intero (niente «estensione»)`, [primario.test(t), /estensione/.test(t)], [true, false])
     // In Contatti il pulsante non porta alla pagina in cui sei già: resta il nome, senza link.
     ok(`${nome}: «Scrivici» secondario${nome === 'Contatti' ? ', senza link (sei già lì)' : ' verso Contatti'}`, (nome === 'Contatti' ? /<span class="pulsante secondario" aria-current="page">Scrivici<\/span>/ : /<a class="pulsante secondario" href="\/contatti\/"[^>]*>Scrivici<\/a>/).test(t), true)
     ok(`${nome}: sul telefono MENU apre #menu, senza script`, [/<a class="tasto-menu" href="#menu">MENU<\/a>/.test(t), /<nav\b[^>]*\bid="menu"/.test(t), /<script(?![^>]*application\/ld\+json)/i.test(h)], [true, true, false])
@@ -258,7 +258,7 @@ console.log('\n13. Il testo pronto in docs/sito/home.html è una Home nuova comp
   const h = genera({ dominio: F.DOMINIO, pagine: [{ slug: 'home', titolo, descrizione: frase, testo: html }, { slug: 'contatti', titolo: 'Contatti', descrizione: 'd', testo: '<p>x</p>' }], menu: [], rinvii: [], ospitiImmagini: [F.OSPITE_VECCHIO] })['index.html'] ?? ''
   ok('è riconosciuta come Home nuova, con il titolo e la frase di home.md', [/<main class="passo-unico">/.test(h), h.includes(`<h1>${titolo}</h1>`), h.includes(frase)], [true, true, true])
   ok('4 numeri, 9 schede, nessuna citazione accademica, 5 recensioni, 5 domande, la chiamata finale', [conta(h, /tessera [a-z]+ numero/g), conta(h, /<article class="tessera [a-z]+ scheda">/g), conta(h, /<details class="intero">/g), conta(h, /citazione [a-z]+ larga/g), conta(h, /<article class="tessera chiara">/g), /<section class="sezione cta">/.test(h)], [4, 9, 0, 5, 5, true])
-  ok('i due pulsanti: prova primo, Scrivici secondo, in testata, hero e chiamata finale', conta(h, /class="pulsante primario"[^>]*>Prova una settimana a 5 €<\/a><a class="pulsante secondario" href="\/contatti\/"[^>]*>Scrivici/g), 3)
+  ok('i due pulsanti: prova primo, Scrivici secondo, in testata, hero e chiamata finale', conta(h, /class="pulsante primario"[^>]*>Iscriviti<\/a><a class="pulsante secondario" href="\/contatti\/"[^>]*>Scrivici/g), 3)
   ok('tutte le foto sono del contenitore delle immagini', [...h.matchAll(/<img[^>]*src="([^"]+)"/g)].every((m) => m[1].startsWith(F.OSPITE_VECCHIO) || m[1].startsWith('/')), true)
 }
 
@@ -293,13 +293,13 @@ console.log('\n15. Titoli in ordine, «Salta al contenuto» e fuoco da tastiera'
   ok('la scheda del corso è tutta cliccabile: il contorno del fuoco è sulla scheda intera, non sul solo titolo', [/\.scheda:has\(a:focus-visible\)\{[^}]*outline:3px solid/.test(H), /\.scheda h3 a:focus-visible,\.passo-unico \.scheda h4 a:focus-visible\{outline:none/.test(H)], [true, true])
 }
 
-console.log('\n16. Barra «Prova a 5 € / Chiama» sul telefono')
+console.log('\n16. Barra «Iscriviti / Chiama» sul telefono')
 {
   const TEL = 'tel:+393463292786'
   const barra = (h) => h.match(/<nav class="barra-prova"[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? ''
   const link = (b) => [...b.matchAll(/<a class="pulsante (\w+)" href="([^"]*)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], m[2], m[3]])
-  ok('la Home nuova ha una barra sola, con due pulsanti: «Prova a 5 €» giallo verso il modulo e «Chiama» verso tel:', [conta(H, /class="barra-prova"/g), link(barra(H))], [1, [['primario', F.ISCRIZIONE, 'Prova a 5 €'], ['secondario', TEL, 'Chiama']]])
-  ok('il pulsante di prova ha il nome accessibile intero (le altre prove dicono «una settimana»)', /class="pulsante primario"[^>]*aria-label="Prova una settimana a 5 euro"/.test(barra(H)), true)
+  ok('la Home nuova ha una barra sola, con due pulsanti: «Iscriviti» giallo verso il modulo e «Chiama» verso tel:', [conta(H, /class="barra-prova"/g), link(barra(H))], [1, [['primario', F.ISCRIZIONE, 'Iscriviti'], ['secondario', TEL, 'Chiama']]])
+  ok('il pulsante ha il nome accessibile che dice anche la prova da 5 euro', /class="pulsante primario"[^>]*aria-label="Iscriviti: una settimana di prova a 5 euro"/.test(barra(H)), true)
   const iBarra = H.indexOf('class="barra-prova"')
   ok('la barra sta dopo l’hero e prima della chiamata finale, nel suo blocco «dopo-hero»', [H.indexOf('class="pagina-hero') < iBarra, iBarra < H.indexOf('class="sezione cta'), /<div class="dopo-hero">[\s\S]*<nav class="barra-prova"[\s\S]*<\/nav><\/div><section class="sezione cta/.test(M)], [true, true, true])
   const senzaCta = home(F.TESTO_NUOVO.replace(F.CTA(), ''))

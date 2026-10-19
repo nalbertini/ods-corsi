@@ -82,7 +82,7 @@ const T = (o = {}) => {
 const H = pagina(T())
 const M = main(H)
 const frasi = (t) => [...t.matchAll(/>([^<]+)</g)].map((m) => m[1].trim()).filter(Boolean)
-const perse = (t, h) => { const tt = testo(main(h)); return frasi(t.replace(PUL, '')).filter((f) => !tt.includes(f.replace(/\s+/g, ' '))) }
+const perse = (t, h) => { const tt = testo(main(h)); return frasi(t.replace(PUL, '').replace(/Prova una settimana a 5 €/g, '')).filter((f) => !tt.includes(f.replace(/\s+/g, ' '))) }
 const rotto = (h) => /corso-nuovo|corso-apertura|corso-fascia|cosa-si-fa|class="[^"]*\borari\b|class="[^"]*\bperche\b|class="[^"]*\bcta\b/.test(main(h)) || nuova(h)
 
 console.log('\n1. Quando una pagina è «corso nuovo»')
@@ -128,7 +128,7 @@ console.log('\n4. La testata: pulsanti, titolo, descrizione')
   const hero = sezioni(M).find((s) => s.classi.includes('pagina-hero'))
   const link = [...(hero?.html.match(/<div class="pulsanti">([\s\S]*?)<\/div>/)?.[1] ?? '').matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({ cl: classi(m[1]), href: m[1].match(/href="([^"]*)"/)?.[1], t: testo(m[2]) }))
   ok('la testata è «pagina-hero con-pulsanti solo»', hero?.classi, ['pagina-hero', 'con-pulsanti', 'solo'])
-  ok('il giallo (primario) porta all’iscrizione ed è primo, anche se nel testo è dopo', [link[0]?.cl, link[0]?.href, link[0]?.t], [['pulsante', 'primario'], ISC, 'Prova una settimana a 5 €'])
+  ok('il giallo (primario) porta all’iscrizione ed è primo, anche se nel testo è dopo', [link[0]?.cl, link[0]?.href, link[0]?.t], [['pulsante', 'primario'], ISC, 'Iscriviti'])
   ok('Scrivici è secondario e porta a /contatti/', [link[1]?.cl, link[1]?.href, link[1]?.t, link.length], [['pulsante', 'secondario'], '/contatti/', 'Scrivici', 2])
   ok('h1 dal titolo e descrizione dal campo', [hero?.html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1], hero?.html.match(/<p>([^<]*)<\/p>/)?.[1]], ['Judo', DESC])
   ok('il paragrafo dei pulsanti del testo non resta fuori dalla testata', conta(M, /Scrivici<\/a>/g), 2) // testata + chiusura

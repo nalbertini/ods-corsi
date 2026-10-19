@@ -31,11 +31,11 @@ export function pulsantiDi(b: Blocco): Link[] | null {
   return fuori.every((x) => x.href && x.resto) ? fuori : null
 }
 
-/** Il pulsante di prova per primo (giallo), gli altri a linea: l'ordine con cui li ha scritti la segreteria non conta. */
+/** Il pulsante verso il modulo per primo (giallo) e sempre «Iscriviti», qualunque cosa abbia scritto la segreteria; gli altri a linea: l'ordine con cui li ha scritti non conta. */
 export function pulsanti(l: Link[], iscrizione: string): string {
   const prova = l.filter((x) => eIscrizione(x.href, iscrizione))
   const altri = l.filter((x) => !eIscrizione(x.href, iscrizione))
-  const a = (x: Link, classe: string, href: string) => `<a class="pulsante ${classe}" href="${esc(href)}"${/^https?:/i.test(href) ? ' rel="noopener noreferrer"' : ''}>${x.testo}</a>`
+  const a = (x: Link, classe: string, href: string) => `<a class="pulsante ${classe}" href="${esc(href)}"${/^https?:/i.test(href) ? ' rel="noopener noreferrer"' : ''}>${classe === 'primario' ? 'Iscriviti' : x.testo}</a>`
   return `<div class="pulsanti">${prova.slice(0, 1).map((x) => a(x, 'primario', iscrizione)).join('')}${[...prova.slice(1), ...altri].map((x) => a(x, 'secondario', x.href)).join('')}</div>`
 }
 

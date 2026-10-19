@@ -123,7 +123,7 @@ console.log('\n5. Quel che il design ha e il sito non aveva')
   const c = vuoto['contatti/index.html']
   const pie = (c.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
   ok('la pagina Contatti non ha il pulsante «Contattaci» sotto il titolo e ha l’invito «Prova» in fondo', [/<a class="pulsante" href="\/contatti\/">Contattaci<\/a>/.test(c), /class="invito"/.test(c)], [false, true])
-  ok('il pulsante in testata dice «Prova una settimana a 5 €», intero', /<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Prova una settimana a 5 €<\/a>/.test(c), true)
+  ok('il pulsante in testata dice «Iscriviti», intero', /<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(c), true)
   ok('piede: il nome va a capo dopo «Officine», senza titoli né riga «©»', [/<p class="nome">Officine<br>dello Sport<\/p>/.test(pie), /<h2/.test(pie), /class="fine"/.test(pie)], [true, false, false])
   ok('piede: le pagine del menu e quelle di legge sono due elenchi senza titolo', [/<nav class="piede-menu" aria-label="Pagine"><a href="\/">Home<\/a><a href="\/contatti\/"[^>]*>Scrivici<\/a><\/nav>/.test(pie), /<ul class="piede-legale"><li><a href="\/privacy\/">Privacy policy<\/a><\/li><\/ul>/.test(pie)], [true, true])
   const mappa = (apertura.match(/<figure class="tessera foto larga mappa">([\s\S]*?)<\/figure>/) || [, ''])[1]

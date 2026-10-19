@@ -14,7 +14,7 @@
 //  3. Le tessere che hanno solo il titolo (i valori) lo tengono in basso, grande.
 //  4. Il collage pieno della testata: 4 foto e un elenco di 9 voci sono le 13 tessere
 //     del design (foto grande, 9 voci, 3 foto), ognuna al suo posto sulla griglia a 6x6.
-//  5. Il pulsante in testata dice «Prova una settimana a 5 €» (l'invito in fondo resta «Prova»).
+//  5. Il pulsante in testata dice «Iscriviti» (anche l'invito in fondo).
 //  6. Il piede è una scheda scura in riga: nome a sinistra, poi gli elenchi.
 //
 // Il CSS si legge come testo e i `clamp()` si calcolano a 1440px.
@@ -148,8 +148,8 @@ console.log('\n4. Il collage pieno della testata (design TatamiBlu)')
 console.log('\n6. Il pulsante in testata')
 {
   const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [], rinvii: [] })['index.html'] ?? ''
-  ok('in testata: «Prova una settimana a 5 €» (pulsante primario, intero) verso il modulo di iscrizione', /<header class="testata">[\s\S]*<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Prova una settimana a 5 €<\/a>/.test(h), true)
-  ok('l’invito in fondo resta «Prova»', /class="parola">Prova</.test(h), true)
+  ok('in testata: «Iscriviti» (pulsante primario, intero) verso il modulo di iscrizione', /<header class="testata">[\s\S]*<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(h), true)
+  ok('l’invito in fondo dice «Iscriviti»', /class="parola">Iscriviti</.test(h), true)
   // Il pulsante non ha più la coda «una settimana · 5 €» da nascondere sul telefono: l'etichetta è una sola.
   ok('l’etichetta è intera: niente «estensione» in testata', /class="estensione"/.test(h), false)
 }
