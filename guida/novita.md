@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.131.1 — 19 ottobre 2026
+
+### Risolto
+
+- Sul sito, nella pagina Istruttori il piede non è più attaccato ai ritratti
+
 ## 0.131.0 — 19 ottobre 2026
 
 ### Novità
