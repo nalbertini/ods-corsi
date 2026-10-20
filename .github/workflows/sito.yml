@@ -67,6 +67,8 @@ jobs:
         env:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          # Il codice del sito su GoatCounter (il contatore delle visite, senza cookie). Senza, il sito non conta niente.
+          SITO_STATISTICHE: ${{ vars.SITO_STATISTICHE }}
         run: |
           set +e
           node scripts/genera-sito.mjs dist-sito

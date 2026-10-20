@@ -24,10 +24,14 @@ import { corsiDa, datiStrutturati } from './sitoDati'
  * Qui si pulisce il testo un'altra volta (`pulisciTesto`): è la pulizia di cui
  * ci si fida, perché chi scrive all'API salta il pannello e il filtro del
  * database è solo una difesa in più. Titolo, descrizione ed etichette si
- * scrivono sempre escapati. Il sito non ha codice (l'unico `<script>` è il blocco di dati strutturati di `sitoDati.ts`, che è JSON) né
+ * scrivono sempre escapati. Il sito non ha codice suo (l'unico `<script>` scritto qui è il blocco di dati strutturati di `sitoDati.ts`, che è JSON) né
  * richieste a servizi esterni: carattere e logo sono file suoi, in `/risorse/`
  * (la cartella `sito/risorse/`), e un'immagine nel testo entra solo se è del
  * sito o del contenitore delle immagini dichiarato (`ospitiImmagini`).
+ * L'unica eccezione è il contatore delle visite (GoatCounter, senza cookie), e
+ * solo se c'è il codice del sito (`statistiche`, da `SITO_STATISTICHE`): uno
+ * script esterno nella `<head>` delle pagine e della 404, mai nei rinvii (vedi
+ * `conStatistiche`).
  *
  * Nessuna data di oggi nei file: gli stessi dati danno gli stessi file.
  */
@@ -63,6 +67,11 @@ export interface DatiSito {
   ospitiImmagini?: string[]
   /** Le ricorrenze dei corsi (`orari_aperti()`): servono alle pagine collegate. Senza, una pagina collegata dice «Orario in arrivo». */
   orari?: OrarioAperto[]
+  /**
+   * Il codice del sito su GoatCounter (`SITO_STATISTICHE`, lo passa solo `scripts/genera-sito.mjs`): con un codice buono le
+   * pagine contano le visite. Assente o fuori forma: i file sono quelli di sempre, byte per byte (l'anteprima del pannello non lo passa mai).
+   */
+  statistiche?: string
 }
 
 /**
@@ -1224,6 +1233,41 @@ function nonTrovata(c: Contesto): string {
   return documento(c, { titolo: 'Pagina non trovata', descrizione: '', percorso: '/404.html', corpo, noindex: true })
 }
 
+/**
+ * Il codice di GoatCounter, se è buono. Finisce in un indirizzo dentro un attributo: per questo solo minuscole, cifre e
+ * trattini (niente virgolette, barre, punti o a capo), e se non va non entra niente.
+ */
+export const codiceStatistiche = (valore: string | undefined): string | null => (valore !== undefined && /^[a-z0-9-]{2,50}$/.test(valore) ? valore : null)
+
+/**
+ * I clic che si contano, per tipo di link: un nome solo, mai il testo del link né la pagina da cui parte. Il modulo
+ * solo al suo indirizzo: un altro sito con /iscrizioni/ non è un'iscrizione.
+ */
+const CLIC: Array<[(href: string) => boolean, string]> = [
+  [(href) => href.toLowerCase().startsWith(TESTI.iscrizione), 'iscriviti'],
+  [(href) => /^tel:/i.test(href), 'chiama'],
+  [(href) => /^https:\/\/wa\.me\//i.test(href), 'scrivici'],
+]
+
+/**
+ * Il contatore delle visite su una pagina già fatta, in un passaggio solo alla fine: così le regole delle pagine non
+ * cambiano, e senza codice non si passa di qui. Lo script è quello ufficiale di GoatCounter (`async`: non rallenta la
+ * pagina). Sui link da contare il titolo è il nome stesso: senza, GoatCounter manderebbe il testo del link.
+ * La 404 si conta col titolo «404» e senza canonical: il canonical è il percorso che GoatCounter conta, e con
+ * /404.html si perderebbe l'indirizzo chiesto (GitHub Pages serve la 404 a quell'indirizzo).
+ */
+function conStatistiche(html: string, codice: string, e404: boolean): string {
+  const conta = `<script data-goatcounter="https://${codice}.goatcounter.com/count"${e404 ? ` data-goatcounter-settings='{"title":"404"}'` : ''} async src="https://gc.zgo.at/count.js"></script>`
+  const testa = e404 ? html.replace(/<link rel="canonical" href="[^"]*">/, '') : html
+  return testa
+    .replace('</head>', () => `${conta}</head>`)
+    .replace(/<a\b([^>]*)>/gi, (a, attr: string) => {
+      const href = /\shref="([^"]*)"/i.exec(attr)?.[1]?.trim() ?? ''
+      const nome = CLIC.find(([vale]) => vale(href))?.[1]
+      return nome ? `<a${attr} data-goatcounter-click="${nome}" data-goatcounter-title="${nome}">` : a
+    })
+}
+
 function rinvio(c: Contesto, a: string): string {
   const dove = percorso(a)
   const corpo = `<main><p>La pagina si è spostata: <a href="${esc(dove)}">vai a ${esc(dove)}</a></p></main>`
@@ -1281,6 +1325,8 @@ export function generaSito(d: DatiSito): Record<string, string> {
   const file: Record<string, string> = {}
   for (const p of pagine) file[fileDi(p.slug)] = pagina(p, c, conContatti)
   file['404.html'] = nonTrovata(c)
+  const codice = codiceStatistiche(d.statistiche)
+  if (codice) for (const f of [...pagine.map((p) => fileDi(p.slug)), '404.html']) file[f] = conStatistiche(file[f], codice, f === '404.html')
   file['sitemap.xml'] = mappa(c, pagine)
   file['llms.txt'] = llms(c, pagine)
   file['robots.txt'] = `User-agent: *\nAllow: /\n\nSitemap: ${d.dominio}/sitemap.xml\n`
