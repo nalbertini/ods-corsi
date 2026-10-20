@@ -208,6 +208,16 @@ i pulsanti verso WhatsApp o altri indirizzi restano.
 titoli neri stretti in maiuscolo, pulsante «Iscriviti» giallo in alto a destra, il logo intero in cima e, in
 fondo, l'invito giallo e una tessera scura con i recapiti.
 
+**Le visite** al sito si contano senza cookie, con GoatCounter, da quando chi
+cura l'app accende il contatore: niente banner, e niente si salva sul telefono o
+sul computer di chi visita. Si conta quante volte si apre ogni pagina (anche gli
+indirizzi che non esistono, col titolo «404»), da quale sito si arriva, in
+totale browser, tipo di dispositivo e paese, e quanti tocchi hanno avuto i
+pulsanti per iscriversi («iscriviti»), per telefonare («chiama») e per scrivere
+su WhatsApp («scrivici»), un totale per tipo. Non si sa chi è la
+persona, e il modulo di iscrizione, che sta nell'app, non è contato. I numeri li
+legge chi ha l'account GoatCounter della palestra: nel pannello non si vedono.
+
 Se compare «Il pannello del sito non è ancora attivo sul database», manca un
 aggiornamento del database: va chiesto a chi cura l'app.
 

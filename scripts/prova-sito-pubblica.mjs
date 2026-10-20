@@ -92,6 +92,21 @@ console.log('\nIl primo giro')
   ok('il CNAME c\'è ancora (senza, il dominio si perde)', m.nelRemoto('CNAME'), 'www.officinedellosport.it\n')
 }
 
+console.log('\nIl contatore delle visite acceso e poi spento')
+{
+  // Con SITO_STATISTICHE il generatore mette lo script di GoatCounter; tolta la variabile, il sito pubblicato non deve tenerlo.
+  const m = nuovoMondo()
+  const conta = '<script data-goatcounter="https://ods-prova.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>'
+  scrivi(m.generato, 'index.html', `<html><head>${conta}</head>home</html>`)
+  scrivi(m.generato, '404.html', `<html><head>${conta}</head>404</html>`)
+  ok('acceso: finisce bene', lancia(m.generato, m.repo).status, 0)
+  ok('acceso: lo script è nel sito pubblicato', m.nelRemoto('index.html').includes('gc.zgo.at'), true)
+  scrivi(m.generato, 'index.html', '<html><head></head>home</html>')
+  scrivi(m.generato, '404.html', '<html><head></head>404</html>')
+  ok('spento: finisce bene', lancia(m.generato, m.repo).status, 0)
+  ok('spento: nessun file del sito pubblicato nomina più goatcounter', ['index.html', '404.html', 'judo/index.html'].filter((f) => /goatcounter|gc\.zgo\.at/.test(m.nelRemoto(f))), [])
+}
+
 console.log('\nCosa non si pubblica mai')
 {
   const m = nuovoMondo()

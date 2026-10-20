@@ -82,6 +82,7 @@
     "prova:sito-pezzi": "node scripts/prova-sito-pezzi.mjs",
     "prova:sito-pubblica": "node scripts/prova-sito-pubblica.mjs",
     "prova:sito-avvia": "node scripts/prova-sito-avvia.mjs",
+    "prova:sito-statistiche": "node scripts/prova-sito-statistiche.mjs",
     "prova:indirizzi": "node scripts/prova-indirizzi.mjs",
     "prova:informativa": "node scripts/prova-informativa.mjs",
     "prova:ore": "node scripts/prova-ore.mjs",
