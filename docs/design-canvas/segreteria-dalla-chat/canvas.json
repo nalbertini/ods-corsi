@@ -1,0 +1,42 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Segreteria dalla chat · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Consenso.dc.html",
+   "title": "Nell'app: collegare Claude, secondo chi sei",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Chat.dc.html",
+   "title": "In Claude: cosa risponde alla segreteria",
+   "x": 0,
+   "y": 1400,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Segreteria dalla chat: chiedi a Claude certificati, quote, presenze e chi si sta perdendo. Dei minori solo numeri"
+  },
+  {
+   "id": "spenta",
+   "kind": "note",
+   "x": 0,
+   "y": 120,
+   "maxW": 1280,
+   "text": "Si costruisce ma resta spenta: si accende solo dopo il sì di chi segue la privacy della palestra e con l'informativa che nomina Anthropic. Finché è spenta, la segreteria vede NON SI PUÒ come oggi."
+  }
+ ]
+}

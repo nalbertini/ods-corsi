@@ -883,7 +883,11 @@ export function dalCertificato(natoIl: string): string {
  */
 export function serveCertificato(natoIl: string | undefined, oggi: string): 'serve' | 'in_arrivo' | 'non_serve' {
   if (!natoIl || !/^\d{4}-\d{2}-\d{2}$/.test(natoIl)) return 'serve'
-  const dal = dalCertificato(natoIl)
+  return serveCertificatoDal(dalCertificato(natoIl), oggi)
+}
+
+/** `serveCertificato` dal giorno dei 6 anni: la chat della segreteria ha quello, mai la data di nascita di un minore. */
+export function serveCertificatoDal(dal: string, oggi: string): 'serve' | 'in_arrivo' | 'non_serve' {
   if (dal <= oggi) return 'serve'
   return dal <= spostaGiorno(oggi, AVVISO_CERTIFICATO) ? 'in_arrivo' : 'non_serve'
 }
@@ -918,8 +922,8 @@ export type StatoCertificato = ComeCertificato | 'non_serve' | 'in_arrivo'
  * segreteria ne ha segnato uno; a un mese dal compleanno, senza certificato,
  * è `in_arrivo`.
  */
-export function statoCertificato(p: { certificato: Pick<CertificatoSeg, 'scade'>; natoIl?: string }, oggi: string): StatoCertificato {
-  const serve = serveCertificato(p.natoIl, oggi)
+export function statoCertificato(p: { certificato: Pick<CertificatoSeg, 'scade'>; natoIl?: string; seiAnni?: string }, oggi: string): StatoCertificato {
+  const serve = p.seiAnni ? serveCertificatoDal(p.seiAnni, oggi) : serveCertificato(p.natoIl, oggi)
   if (serve === 'serve') return comeCertificato(p.certificato, oggi)
   if (serve === 'in_arrivo' && !p.certificato.scade) return 'in_arrivo'
   return 'non_serve'
@@ -1392,7 +1396,7 @@ export function avvisoPosti(n: number | null, capienza?: number): string | null 
 }
 
 /** Un giorno `AAAA-MM-GG` spostato di tanti giorni, senza passare dai fusi. */
-function spostaGiorno(g: string, giorni: number) {
+export function spostaGiorno(g: string, giorni: number) {
   const [a, m, d] = g.split('-').map(Number)
   const x = new Date(Date.UTC(a, m - 1, d + giorni))
   return x.toISOString().slice(0, 10)

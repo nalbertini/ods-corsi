@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    /* L'interfaccia di Claude non è nostra: neutra e indicativa, come in fatture-dalla-chat/Chat.dc.html.
+       Nostro è il TESTO che gli strumenti restituiscono: qui sotto, in grigio, quello che Claude riceve. */
+    .chat { display: flex; flex-direction: column; gap: 14px; padding: 20px; background: #f4f4f1; color: #161616; border: 1px solid #333333; font-size: 15px; line-height: 1.45; }
+    .io { align-self: flex-end; max-width: 80%; padding: 10px 14px; background: #e9e9e5; border-radius: 14px; }
+    .ai { max-width: 94%; }
+    .ai ul { margin: 6px 0; padding-left: 20px; }
+    .tool { padding: 10px 12px; background: #ffffff; border: 1px dashed #8a8a85; border-radius: 10px; font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; line-height: 1.5; color: #3d3d3a; white-space: pre-wrap; }
+    .tool b { font-family: Barlow, sans-serif; color: #656561; font-weight: 600; }
+    .min { color: #8f6a00; font-weight: 600; }
+    .nota { font-size: 14px; color: #8c8c88; line-height: 1.4; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 40px; width: 1350px; padding: 28px 36px 36px; background: #121212; align-items: flex-start">
+
+<div style="display: flex; flex-direction: column; gap: 10px; width: 620px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · CERTIFICATI E QUOTE</span>
+  <span class="nota">Interfaccia di Claude, indicativa. Nostri sono i testi degli strumenti (riquadri tratteggiati) e le regole.</span>
+  <div class="chat">
+    <div class="io">Chi ha il certificato scaduto o in scadenza?</div>
+    <div class="tool"><b>certificati</b>
+Fra chi è attivo, al 20/10/2026:
+Scaduto (2):
+- Paolo Neri · Karate adulti · scaduto il 01/10/2026
+- Giulia Sala · Pilates · scaduto il 12/09/2026
+Manca (1):
+- Andrea Fumagalli · Kickboxing
+In scadenza entro 30 giorni (1):
+- Sara Conti · Pilates · scade il 05/11/2026
+Minori: 3 senza certificato valido, 2 in scadenza. Senza data di nascita: 1 senza certificato.
+Non si dicono i nomi dei minori: si vedono in DA FARE nell’app.</div>
+    <div class="ai">Fra gli adulti, il certificato è scaduto a <b>Paolo Neri</b> (Karate adulti, dal 1° ottobre) e <b>Giulia Sala</b> (Pilates, dal 12 settembre); <b>Andrea Fumagalli</b> non l’ha mai portato. <b>Sara Conti</b> scade il 5 novembre.
+      <br><span class="min">Ci sono anche 3 minori senza certificato valido, 2 in scadenza e una persona senza data di nascita: i nomi li trovi in DA FARE.</span></div>
+    <div class="io">E chi deve ancora pagare?</div>
+    <div class="tool"><b>quote</b>
+Fra chi è attivo, al 20/10/2026:
+- Paolo Neri · scaduta il 30/09/2026
+- Marta Galli · in parte · mancano 120,00 € · fino al 31/12/2026
+- Luca Ferri · da pagare
+Minori: 4 da pagare o scaduta, 1 in parte. Senza data di nascita: nessuno.</div>
+    <div class="ai">Tre adulti: <b>Paolo Neri</b> (quota scaduta il 30 settembre), <b>Marta Galli</b> (le mancano 120 € del trimestre) e <b>Luca Ferri</b> (non ha ancora pagato). In più 5 minori: 4 da pagare e 1 in parte.</div>
+  </div>
+  <span class="nota">Le stesse regole e soglie di DA FARE (30 giorni, sotto i 6 anni non serve). Un genitore iscritto compare per la sua quota; i figli solo nel conto dei minori.</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px; width: 620px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · PRESENZE, CHI SI STA PERDENDO, ISCRITTI</span>
+  <span class="nota">Il corso si sceglie per nome: lo strumento corsi dà l’elenco.</span>
+  <div class="chat">
+    <div class="io">Chi si sta perdendo nel Karate adulti?</div>
+    <div class="tool"><b>chi_manca</b> · Karate adulti
+3 o più assenze di fila negli ultimi 60 giorni (appelli arrivati, giustificati esclusi):
+- Davide Ricci · 4 assenze di fila · ultima presenza il 15/09/2026
+Minori: nessuno.</div>
+    <div class="ai"><b>Davide Ricci</b>: 4 assenze di fila, l’ultima volta è venuto il 15 settembre.</div>
+    <div class="io">Le presenze di Judo ragazzi questo mese?</div>
+    <div class="tool"><b>presenze</b> · Judo ragazzi · dal 1 al 20 ottobre 2026
+6 lezioni con l’appello, 1 senza appello (14/10).
+Adulti: nessuno.
+Minori: 14, in media 10 presenti a lezione. Prove: 2.
+Contano gli appelli arrivati: uno ancora sul tablet senza rete non c’è.</div>
+    <div class="ai">Judo ragazzi è un corso di minori, quindi solo numeri: 6 lezioni con l’appello, in media 10 presenti su 14, e 2 prove. Il 14 ottobre manca l’appello.</div>
+    <div class="io">Chi è iscritto al Pilates?</div>
+    <div class="tool"><b>iscritti</b> · Pilates · oggi
+12 adulti: Sara Conti, Giulia Sala, Marta Galli, …
+Minori: nessuno. Senza data di nascita: 1.</div>
+  </div>
+  <span class="nota">CHI SI STA PERDENDO è la stessa regola della schermata PRESENZE. Chi è venuto a provare è sempre e solo un numero.</span>
+</div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1350,"height":1300}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

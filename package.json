@@ -115,6 +115,7 @@
     "prova:scheda": "node scripts/prova-scheda.mjs",
     "prova:sito-orario": "node scripts/prova-sito-orario.mjs",
     "prova:mcp": "node scripts/prova-mcp.mjs",
+    "prova:frequenza": "node scripts/prova-frequenza.mjs",
     "prova:statistiche-sito": "node scripts/prova-statistiche-sito.mjs"
   },
   "dependencies": {

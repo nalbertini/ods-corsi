@@ -101,6 +101,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 72. `72-movimenti-dalla-chat.sql` — i movimenti registrati da Claude col server MCP (vedi «Claude e la contabilità»): le colonne `movimenti.chiave_chat` (la chiave che Claude manda con ogni registrazione, unica dove c'è: riprovare non scrive due volte) e `movimenti.dalla_chat` (il segno «Dalla chat» nel movimento aperto), `registra_movimento_dalla_chat(dati)`, con le regole di `registra_movimento` e niente incassi degli iscritti, e `movimenti_simili(testo)`, al più cinque uscite non annullate con quel testo nella descrizione, senza persone collegate, nomi «Cliente … per», voci di sistema né autori. Una chiave già usata vale solo per chi l'ha scritta, con gli stessi dati, e non supera i 100 caratteri. Solo per l'amministrazione. Si lancia dopo `60-chiusura-cassa.sql` e `70-movimenti-persona.sql`.
 73. `73-satispay.sql` — il pagamento con Satispay dal modulo di iscrizione (vedi «Satispay nel modulo di iscrizione»): la tabella `pagamenti_satispay` (un pagamento vivo per richiesta, il nome e la scheda che restano se la richiesta si cancella), `importo_iscrizione` (quota e corso dal listino, solo un corso con una riga di prezzo), le funzioni che usa la Edge Function `satispay` (`satispay_prepara`, `satispay_stato`, `satispay_creato`, `satispay_esito`, solo `service_role`) ed `emetti_ricevuta_satispay`, la ricevuta col pagamento dentro una volta sola. Legge la segreteria e l'amministrazione; non scrive nessuno direttamente. Si lancia dopo `55-amministrazione.sql`.
 74. `74-provenienza-richieste.sql` — da dove arrivano le richieste di iscrizione: le colonne `richieste_iscrizione.provenienza` (l'etichetta del link, `?da=`: minuscole, cifre e trattini, al più 90 caratteri) e `richieste_iscrizione.conosciuto` (una delle otto risposte a «Come ci hai conosciuto?»), con i loro vincoli; `invia_iscrizione` rifatta con le regole di `06-iscrizioni.sql` e in più le due chiavi, pulite (`pulisci_provenienza`, `pulisci_conosciuto`: spazi ai lati via, minuscolo) o scartate senza fermare la richiesta; la tabella `richieste_contate` (giorno, etichetta, risposta, corsi e stato, nessun dato personale), scritta solo dal trigger della richiesta, letta solo dalla segreteria (ruolo `staff`), da cui una richiesta eliminata da nuova (lo spam) si toglie, mentre una accolta o rifiutata eliminata resta (`on delete set null`); `richieste_da_dove(da, a)`, le righe del periodo raggruppate, per il riquadro di STATISTICHE, solo per la segreteria. Si lancia dopo `06-iscrizioni.sql` e `49-richieste-per-email.sql`; rilanciando `06` va rilanciato anche questo.
+75. `75-chat-segreteria.sql` — le letture per le domande della segreteria a Claude (vedi «Claude e la contabilità», «La segreteria dalla chat»): `chat_iscritti(sale)` (gli iscritti attivi con certificato, quota, quote delle ricevute senza anno né numero e corsi in corso oggi), `chat_registro(dal, al, sale)` (una riga per lezione e iscritto con la sua presenza, giorni di Roma, mai dopo adesso) e `chat_prove(dal, al)` (quante prove per lezione, mai chi). Nome e cognome solo degli adulti di oggi, mai la data di nascita (dei minori sotto i 6 anni solo il giorno in cui li compiono); dei minori, e di chi non ha la data di nascita, niente nome e una chiave che vale per una sola domanda (`md5` dell'id col «sale» che il server sceglie a caso). Mai telefono, email, codice fiscale, note o file. Solo la segreteria (`e_staff()`), nessuna scrittura. Si lancia dopo `27-pagamento-dalle-ricevute.sql`.
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -1093,6 +1094,36 @@ personalizzato**, con l'indirizzo
 `https://<id-del-progetto>.supabase.co/functions/v1/mcp`. Claude apre la pagina
 `collega/` dell'app: si entra, si legge cosa potrà fare e si dice CONSENTI. Il
 collegamento si toglie da lì, dai Connettori di Claude.
+
+### La segreteria dalla chat (costruita, spenta)
+
+La segreteria potrà chiedere a Claude certificati, quote, iscritti e presenze di un
+corso e chi si sta perdendo (strumenti `corsi`, `certificati`, `quote`, `iscritti`,
+`presenze`, `chi_manca`, tutti di sola lettura; regole in `src/lib/chatSegreteria.ts`,
+le stesse di DA FARE e PRESENZE). Degli adulti esce il nome; dei minori, di chi non ha
+la data di nascita e di chi è venuto a provare solo numeri. Il taglio lo fa il database
+(`75-chat-segreteria.sql`), non solo il server. Gli strumenti dipendono dal ruolo:
+l'amministrazione vede la contabilità, la segreteria i suoi, chi ha tutti e due li vede
+tutti.
+
+È **spenta** (`CHAT_SEGRETERIA_ACCESA = false` in `src/lib/chatSegreteria.ts`): la
+segreteria non può collegare Claude e non vede gli strumenti. Per accenderla:
+
+0. le tabelle con i dati delle persone chiuse ai token che Claude riceve (quelli dell'OAuth
+   Server portano `client_id`): oggi un token di chi ha anche la segreteria legge da
+   PostgREST tutto quello che legge lei, e il taglio dei minori fatto qui sarebbe solo una
+   protezione in più. È il lavoro che viene dopo questo;
+1. il sì di chi segue la privacy della palestra (la scadenza del certificato è un dato
+   sulla salute?) e l'informativa (`informativa.html`) che nomina Anthropic fra i
+   fornitori, come responsabile del trattamento, col trasferimento fuori dall'UE e cosa
+   vede; la data dell'informativa e il principio 4 in `PRODUCT.md`;
+2. `75-chat-segreteria.sql` sul database;
+3. `CHAT_SEGRETERIA_ACCESA = true`, la guida della segreteria, e la funzione `mcp`
+   ripubblicata (`node scripts/costruisci-mcp.mjs`, poi il deploy).
+
+Chi ha già collegato Claude per la contabilità e ha anche la segreteria, dopo
+l'accensione vede gli strumenti nuovi senza un nuovo CONSENTI: va avvisato, o si toglie e
+si rimette il connettore.
 
 ## 13. Satispay nel modulo di iscrizione
 
