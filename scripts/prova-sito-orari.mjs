@@ -181,21 +181,15 @@ console.log('\nSenza orari: «Orari in arrivo»')
   ok('il sito si genera lo stesso: home, 404, sitemap', (() => { const r = prova(() => g.generaSito(dati([]))); return typeof r === 'object' ? ['index.html', '404.html', 'sitemap.xml'].every((f) => typeof r[f] === 'string') : false })(), true)
 }
 
-console.log('\nIl tasto WhatsApp nella fascia delle variazioni')
+console.log('\nIn fondo l’invito «Iscriviti» come nelle altre pagine, niente WhatsApp')
 {
-  const si = await carica('src/lib/sito.ts')
-  const numero = `39${String(si.CONTATTI?.telefono ?? '').replace(/\s/g, '')}`
-  for (const [cosa, h] of [['con gli orari', pagina(ORARI)], ['senza orari', pagina([])]]) {
-    const tasto = h.match(/<a[^>]*href="https:\/\/wa\.me\/[^"]*"[^>]*>[^<]*<\/a>/)?.[0] ?? ''
-    ok(`${cosa}: il tasto «Scrivici su WhatsApp» porta al numero dei CONTATTI`, [tasto.includes(`wa.me/${numero}`), numero.length > 5, /Scrivici su WhatsApp/.test(tasto)], [true, true, true])
-    ok(`${cosa}: è il tasto giallo (.pulsante.primario) dentro la fascia`, /class="pulsante primario"/.test(tasto) && /<div class="variazioni">[\s\S]*wa\.me[\s\S]*<\/div>/.test(h), true)
+  const conContatti = { pagine: [pag('home'), pag('contatti'), pag('orari', { titolo: 'Orari', testo: testoOrari })] }
+  for (const [cosa, h] of [['con gli orari', pagina(ORARI, conContatti)], ['senza orari', pagina([], conContatti)]]) {
+    ok(`${cosa}: nessun tasto «Scrivici su WhatsApp»`, [/wa\.me/.test(h), /WhatsApp/.test(h)], [false, false])
+    ok(`${cosa}: dopo il <main> l’invito giallo «Iscriviti», come nelle altre pagine`, /<\/main><a class="invito"[^>]*>[\s\S]*Iscriviti/.test(h), true)
+    ok(`${cosa}: la riga «Per variazioni contatta…» resta nella fascia`, /<div class="variazioni">[\s\S]*Per variazioni contatta/.test(h), true)
   }
-  const css = pagina(ORARI).match(/<style>([^<]*orari-nota[^<]*)<\/style>/)?.[1] ?? ''
-  const alto = css.match(/\.orari-nota[^{}]*\.pulsante[^{}]*\{[^}]*min-height:(\d+)px/)
-  ok('il tasto è alto almeno 48px (56px nel design)', alto ? Number(alto[1]) >= 48 : 'nessuna regola', true)
-  ok('riga accanto alla frase sul largo', /\.orari-nota \.variazioni\{[^}]*display:flex[^}]*justify-content:space-between/.test(css), true)
-  ok('colonna sotto i 900px', /@media \(max-width:900px\)\{[\s\S]*\.orari-nota \.variazioni\{[^}]*flex-direction:column/.test(css), true)
-  ok('il numero non è scritto a mano in sitoOrari.ts', (await import('node:fs')).readFileSync('src/lib/sitoOrari.ts', 'utf8').includes('346'), false)
+  ok('senza la pagina Contatti niente invito, come nelle altre pagine', /class="invito"/.test(pagina(ORARI)), false)
 }
 
 console.log('\nSenza orari: la frase del design sotto il titolo')

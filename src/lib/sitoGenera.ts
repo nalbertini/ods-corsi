@@ -1142,7 +1142,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = senzaPulsantiContatti(testoDellaPagina(p.testo, c.d.ospitiImmagini ?? []), c.d.dominio)
   // La pagina «orari» col segnaposto [orari]: gli orari veri dei corsi. Senza il segnaposto è una pagina come le altre.
   const orari = p.slug === 'orari' && !p.diLegge ? dividiOrari(pulito) : null
-  if (orari) return paginaOrari(p, c, orari)
+  if (orari) return paginaOrari(p, c, conContatti, orari)
   if (!PAGINE_NON_CORSO.has(p.slug) && !p.diLegge && eCorsoNuovo(pulito, TESTI.iscrizione)) return paginaCorsoNuovo(p, c, conContatti, pulito)
   if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, conContatti, pulito)
   if (p.slug === 'corsi' && !p.diLegge && eCorsiNuova(pulito, TESTI.iscrizione)) return paginaCorsiNuova(p, c, conContatti, pulito)
@@ -1183,11 +1183,11 @@ function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, p
 }
 
 /** Gli orari (sitoOrari.ts): titolo e introduzione della segreteria, una tessera per giorno, la riga «Per variazioni…» e la data. Senza l'invito: nel design la pagina finisce con le variazioni. */
-function paginaOrari(p: PaginaGenerata, c: Contesto, { prima, dopo }: { prima: string; dopo: string }): string {
+function paginaOrari(p: PaginaGenerata, c: Contesto, conContatti: boolean, { prima, dopo }: { prima: string; dopo: string }): string {
   // Senza orari la pagina non ha niente da introdurre: la frase del design al posto dell'introduzione della segreteria.
   const intro = (c.d.orariSito ?? []).length ? prima || (p.descrizione ? `<p>${esc(p.descrizione)}</p>` : '') : '<p>L’orario della settimana comparirà qui.</p>'
   const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${intro}</div></section>`
-  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-orari">${hero}${orariHtml(dopo, c.d.orariSito ?? [])}</main>${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-orari">${hero}${orariHtml(dopo, c.d.orariSito ?? [])}</main>${invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: '', titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssOrari: true, dati })
 }

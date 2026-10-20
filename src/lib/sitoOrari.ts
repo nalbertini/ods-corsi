@@ -9,7 +9,6 @@
 
 import { blocchi, testoSolo } from './sitoLayout'
 import { esc } from './sitoHome'
-import { scrivi } from './sito'
 
 /** Una riga di `orari_sito()`: `ora` è un «time» di Postgres («HH:MM:SS»), `modificata_il` un istante con fuso. */
 export interface OrarioSito {
@@ -67,14 +66,13 @@ export function dividiOrari(testoPulito: string): { prima: string; dopo: string 
 
 /** Le tessere dei giorni (o «Orari in arrivo»), la fascia con le variazioni e la data. `html` va in `<main>` dopo la testata. */
 export function orariHtml(dopo: string, righe: OrarioSito[]): string {
-  // Il numero è quello dei recapiti del sito (`CONTATTI`), mai scritto qui.
   const giorni = giorniOrari(righe)
   const data = giorni.length ? aggiornatoAl(righe) : null
   const tessere = giorni.length
     ? `<div class="orari">${giorni.map((g) => `<article class="giorno"><h2>${g.giorno}</h2><ul>${g.voci.map((v) => `<li><span class="ora">${v.ora}</span><span class="corso">${esc(v.corso)}</span></li>`).join('')}</ul></article>`).join('')}</div>`
     : '<div class="orari-vuoto"><p>Orari in arrivo</p></div>'
-  const tasto = `<a class="pulsante primario" href="${esc(scrivi('Ciao, vorrei informazioni sugli orari.'))}" rel="noopener noreferrer">Scrivici su WhatsApp</a>`
-  const nota = `<section class="orari-nota"><div class="variazioni">${dopo ? `<div class="testo-variazioni">${dopo}</div>` : ''}${tasto}</div>${data ? `<p class="aggiornato">Aggiornato al ${data}</p>` : ''}</section>`
+  // L'iscrizione la propone l'invito in fondo, come nelle altre pagine: qui solo le variazioni.
+  const nota = `<section class="orari-nota">${dopo ? `<div class="variazioni"><div class="testo-variazioni">${dopo}</div></div>` : ''}${data ? `<p class="aggiornato">Aggiornato al ${data}</p>` : ''}</section>`
   return `<section class="orari-giorni">${tessere}</section>${nota}`
 }
 
@@ -98,7 +96,6 @@ export const CSS_ORARI = `
 .orari-nota .testo-variazioni>*{margin:0}
 .orari-nota .testo-variazioni>*+*{margin-top:12px}
 .orari-nota .testo-variazioni a{color:inherit}
-.orari-nota .pulsante{flex:none;min-height:56px;padding:0 28px;font-size:17px}
 .orari-nota .aggiornato{margin:16px 0 0;font-size:16px;font-weight:500;line-height:1.5}
 @media (max-width:900px){
 .pagina-orari h1{font-size:56px}
@@ -112,7 +109,6 @@ export const CSS_ORARI = `
 .orari-vuoto{min-height:200px;padding:32px 24px}
 .orari-vuoto p{font-size:56px}
 .orari-nota .variazioni{flex-direction:column;align-items:flex-start;padding:24px 20px;font-size:18px}
-.orari-nota .pulsante{width:100%}
 .orari-nota .aggiornato{font-size:15px}
 }
 `
