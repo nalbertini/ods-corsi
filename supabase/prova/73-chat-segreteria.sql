@@ -14,7 +14,9 @@
 -- Le stesse regole lato app: scripts/prova-mcp.mjs (sezioni 24-34) e scripts/prova-frequenza.mjs.
 -- Si lancia dopo finto-supabase.sql e i file dello schema, su un database suo.
 \set ON_ERROR_STOP on
-set timezone = 'Europe/Rome';
+-- In UTC, come Supabase: i giorni di Roma devono venire da `at time zone 'Europe/Rome'`, non dal fuso della sessione.
+-- Con 'Europe/Rome' qui, un `s.inizio::date` passerebbe lo stesso.
+set timezone = 'UTC';
 
 create or replace function atteso(cosa text, avuto text, voluto text) returns text language plpgsql as $$
 begin
@@ -384,7 +386,36 @@ select atteso('fuori dai giorni chiesti, niente', (select coalesce(sum(prove), 0
 reset role;
 
 \echo ''
-\echo '--- 8. le funzioni non hanno scritto niente ---'
+\echo '--- 8. il giorno della lezione: l''iscrizione di quel giorno, il giorno di Roma, mai dopo adesso ---'
+-- Dati solo per questa sezione, buttati via alla fine: i conti delle sezioni 6, 7 e 9 restano quelli.
+begin;
+-- Karate, 3 giorni fa, appello fatto: Carlo c'è da 60 giorni ed è presente; Mario ci entra fra 5 giorni.
+insert into iscrizioni (corso_id, persona_id, dal, al) values
+  ('cccccccc-0000-0000-0000-000000000004', 'eeeeeeee-0000-0000-0000-000000000006', giorno(60), null);
+insert into sessioni (id, corso_id, inizio, fine, stato) values
+  ('abababab-0000-0000-0000-000000000010', 'cccccccc-0000-0000-0000-000000000004', alle(3, '18:00'), alle(3, '19:00'), 'svolta');
+insert into presenze (sessione_id, persona_id, stato) values
+  ('abababab-0000-0000-0000-000000000010', 'eeeeeeee-0000-0000-0000-000000000006', 'presente');
+-- Una prova sulla lezione di Pilates a mezzanotte e mezza di 8 giorni fa, e una su quella di Judo fra un minuto.
+insert into prove (sessione_id, persona_id) values
+  ('abababab-0000-0000-0000-000000000008', 'eeeeeeee-0000-0000-0000-000000000015'),
+  ('abababab-0000-0000-0000-000000000006', 'eeeeeeee-0000-0000-0000-000000000015');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('il Karate di 3 giorni fa: c''è Carlo, presente; Mario no, entra fra 5 giorni',
+  (select string_agg(concat_ws('|', nome, presenza), ',') from chat_registro(giorno(60), giorno(0), 'sale-di-prova-1234') where sessione_id = 'abababab-0000-0000-0000-000000000010'), 'Carlo|presente');
+select atteso('…Mario nel registro solo per il Judo', (select string_agg(distinct corso, ',') from chat_registro(giorno(60), giorno(0), 'sale-di-prova-1234') where nome = 'Mario'), 'Judo');
+select atteso('la prova a mezzanotte e mezza è del suo giorno di Roma',
+  (select string_agg(sessione_id::text || '|' || prove, ',') from chat_prove(giorno(8), giorno(8))), 'abababab-0000-0000-0000-000000000008|1');
+select atteso('…e non del giorno prima (in UTC lo sarebbe)',
+  (select coalesce(string_agg(sessione_id::text, ','), 'nessuna') from chat_prove(giorno(9), giorno(9))), 'nessuna');
+select atteso('la prova sulla lezione fra un minuto non conta ancora',
+  (select count(*)::text from chat_prove(giorno(1), giorno(-1)) where sessione_id = 'abababab-0000-0000-0000-000000000006'), '0');
+reset role;
+rollback;
+
+\echo ''
+\echo '--- 9. le funzioni non hanno scritto niente ---'
 select atteso('persone, presenze, prove, schede come prima',
   (select concat_ws('|', (select count(*) from persone), (select count(*) from presenze), (select count(*) from prove), (select count(*) from schede_iscritti), (select count(*) from anagrafiche))),
   '23|6|2|3|16');
