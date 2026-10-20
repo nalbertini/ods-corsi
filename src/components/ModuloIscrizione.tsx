@@ -14,7 +14,7 @@ import type { SceltaModulo } from '../lib/firma'
 import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
 import { chiedeRicevuta, comePuoiPagare, modoPagamento, senzaVoceDelCorso, soldi, type Pago } from '../lib/satispay'
-import { PagamentoOnline } from './PagamentoOnline'
+import { PagamentoOnline, ricordaPromemoria } from './PagamentoOnline'
 
 /**
  * Il modulo di iscrizione: le domande che prima stavano su Google Form, e i
@@ -369,6 +369,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     const u = new URL(window.location.href)
     u.searchParams.set('pagamento', id)
     history.replaceState(null, '', u)
+    if (promemoriaCertificato) ricordaPromemoria(id, [promemoriaCertificato])
     try {
       const r = await x.paga(id)
       if (r && 'link' in r) return window.location.assign(r.link)
@@ -381,7 +382,22 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     }
   }
 
-  if (fase.tipo === 'paga') return <PagamentoOnline richiestaId={fase.id} chi={`${b.nome.trim()} ${b.cognome.trim()}`} guaioIniziale={fase.guaio} onChiudi={onChiudi} />
+  // Il certificato da portare: lo dice la pagina finale, con o senza Satispay.
+  const promemoriaCertificato =
+    certificato !== 'nessuno' && !file.certificato
+      ? `Ricorda di consegnare in segreteria il certificato medico${certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.`
+      : null
+
+  if (fase.tipo === 'paga')
+    return (
+      <PagamentoOnline
+        richiestaId={fase.id}
+        chi={`${b.nome.trim()} ${b.cognome.trim()}`}
+        guaioIniziale={fase.guaio}
+        promemoria={promemoriaCertificato ? [promemoriaCertificato] : []}
+        onChiudi={onChiudi}
+      />
+    )
 
   if (fase.tipo === 'fatto') {
     return (
@@ -390,11 +406,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         <span className="esito-testo">
           Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
         </span>
-        {certificato !== 'nessuno' && !file.certificato && (
-          <span className="esito-testo">
-            Ricorda di consegnare in segreteria il certificato medico{certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.
-          </span>
-        )}
+        {promemoriaCertificato && <span className="esito-testo">{promemoriaCertificato}</span>}
         {!file.ricevuta && modo !== 'segreteria' && <span className="esito-testo">Non hai caricato la ricevuta: paga in segreteria, o portala lì se hai già pagato.</span>}
         {modo === 'segreteria' && <span className="esito-testo">Paghi in segreteria quando vieni.</span>}
         <Tasto onClick={onChiudi}>{torna}</Tasto>
@@ -1043,7 +1055,7 @@ function IlPagamento({ stima, modo, puoi, onModo, causale: testo, ricevuta }: { 
             onScegli={(m) => onModo(m as Pago)}
           />
         </div>
-        {!puoi.satispay && puoi.perche && <Dettaglio>Satispay: {puoi.perche.charAt(0).toLowerCase() + puoi.perche.slice(1)}.</Dettaglio>}
+        {!puoi.satispay && puoi.perche && <Dettaglio>{puoi.perche}.</Dettaglio>}
         {modo === 'satispay' && <Dettaglio>Quando mandi la richiesta si apre Satispay con {soldi(stima.totale)}. Confermi lì e torni qui.</Dettaglio>}
         {modo === 'segreteria' && <Dettaglio>Paghi quando vieni in segreteria: non serve caricare niente.</Dettaglio>}
       </div>

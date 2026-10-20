@@ -49,7 +49,7 @@ export function comePuoiPagare(senzaPrezzo: string[], attivo: boolean): { satisp
   if (senzaPrezzo.length)
     return {
       satispay: false,
-      perche: `Non ancora: il prezzo di ${elenco(senzaPrezzo)} lo conferma la segreteria`,
+      perche: `Niente Satispay per ora: il prezzo di ${elenco(senzaPrezzo)} lo conferma la segreteria`,
     }
   return { satispay: true }
 }
@@ -188,3 +188,15 @@ export const chiedeRicevuta = (modo: Pago | null) => !modo || modo === 'bonifico
  */
 export const senzaVoceDelCorso = (corsi: CorsoRef[], listino: Listino): string[] =>
   corsi.filter((c) => !listino.corsi.some((v) => v.corsoId === c.id)).map((c) => c.nome)
+
+/**
+ * Una ricevuta della persona con un Satispay arrivato e non ancora in una
+ * ricevuta: col metodo «Satispay» lo prende dentro; con un altro metodo
+ * quei soldi si conterebbero due volte, nella ricevuta e fra i pagamenti.
+ */
+export const cosaNonVaMetodo = (metodo: string, p: PagamentoSatispay | undefined): string | null =>
+  p && metodo !== 'Satispay' ? `Con Satispay sono già arrivati ${soldi(p.importo)}: scegli PAGATO CON «Satispay», se no si contano due volte` : null
+
+/** Cosa dire prima di rifiutare o eliminare una richiesta pagata: i soldi restano, e vanno restituiti. */
+export const daRestituire = (p: PagamentoSatispay | undefined): string | null =>
+  p?.stato === 'pagato' && !p.ricevutaId ? `I ${soldi(p.importo)} pagati con Satispay restano in PAGAMENTI: vanno restituiti dall’app Satispay Business.` : null

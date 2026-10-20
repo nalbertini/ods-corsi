@@ -3,6 +3,27 @@ import { datiRichieste, type DatiRichieste } from '../lib/richieste'
 import { ERRORE_SATISPAY, esitoPagamento, soldi, type StatoSatispay } from '../lib/satispay'
 import { Dettaglio, Tasto, TitoloEsito } from './ds'
 
+/**
+ * Il promemoria della pagina finale, tenuto per la scheda mentre si va
+ * nell'app Satispay e si torna: la pagina di ritorno non ha più il modulo.
+ */
+const PROMEMORIA = (id: string) => `ods-corsi:promemoria-pagamento:${id}`
+export function ricordaPromemoria(richiestaId: string, testi: string[]) {
+  try {
+    if (testi.length) sessionStorage.setItem(PROMEMORIA(richiestaId), JSON.stringify(testi))
+  } catch {
+    /* senza, al ritorno non si ripete: l'avviso c'era già nel modulo */
+  }
+}
+function promemoriaRicordato(richiestaId: string): string[] {
+  try {
+    const x: unknown = JSON.parse(sessionStorage.getItem(PROMEMORIA(richiestaId)) ?? '[]')
+    return Array.isArray(x) ? x.filter((t): t is string => typeof t === 'string') : []
+  } catch {
+    return []
+  }
+}
+
 /** Ogni quanto si richiede lo stato mentre il pagamento aspetta, e per quanto: poi lo si chiede col tasto. */
 const OGNI = 4000
 const VOLTE = 30
@@ -14,11 +35,25 @@ const VOLTE = 30
  * tornarci e pagare dopo. Lo stato lo scrive la Edge Function dopo averlo
  * chiesto a Satispay, non questa pagina.
  */
-export function PagamentoOnline({ richiestaId, chi, guaioIniziale, onChiudi }: { richiestaId: string; chi?: string; guaioIniziale?: string; onChiudi: () => void }) {
+export function PagamentoOnline({
+  richiestaId,
+  chi,
+  guaioIniziale,
+  promemoria = [],
+  onChiudi,
+}: {
+  richiestaId: string
+  chi?: string
+  guaioIniziale?: string
+  /** Quello che la pagina RICHIESTA ARRIVATA ricorda anche senza Satispay: il certificato da portare. */
+  promemoria?: string[]
+  onChiudi: () => void
+}) {
   const [d, setD] = useState<DatiRichieste | null>(null)
   const [p, setP] = useState<{ stato: StatoSatispay; importo: number; pagatoIl?: string } | null | undefined>(undefined)
   const [guaio, setGuaio] = useState<string | null>(guaioIniziale ?? null)
   const [vado, setVado] = useState(false)
+  const [ricordati] = useState(() => (promemoria.length ? promemoria : promemoriaRicordato(richiestaId)))
 
   useEffect(() => {
     let vivo = true
@@ -73,6 +108,9 @@ export function PagamentoOnline({ richiestaId, chi, guaioIniziale, onChiudi }: {
         <span key={t} className="esito-testo">{t}</span>
       ))}
       {guaio && <Dettaglio tono="guaio">{guaio}</Dettaglio>}
+      {ricordati.map((t) => (
+        <span key={t} className="esito-testo">{t}</span>
+      ))}
       {p?.stato === 'pagato' ? (
         <>
           <span className="esito-testo">La segreteria controlla il modulo e il documento, e ti scrive se manca qualcosa. La ricevuta della palestra te la dà la segreteria.</span>

@@ -5,7 +5,7 @@ import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
 import { accogliConCertificato, DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
-import { segnoRichiesta, type PagamentoSatispay } from '../../lib/satispay'
+import { daRestituire, segnoRichiesta, type PagamentoSatispay } from '../../lib/satispay'
 import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
@@ -275,6 +275,7 @@ function Scheda({
 }) {
   const file = useCarica(() => r.file(x.id), [r, x.id])
   const segno = segnoRichiesta(satispay, x.stato)
+  const restituire = daRestituire(satispay)
   const voci = useListino()?.listino.corsi
   const minore = minorenne(x.natoIl)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
@@ -554,7 +555,7 @@ function Scheda({
               type="button"
               className="sg-btn sg-btn-linea"
               onClick={async () => {
-                if ((await chiedi(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.`, 'Rifiuta la richiesta', { pericolo: true })))
+                if ((await chiedi(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.${restituire ? `\n\n${restituire}` : ''}`, 'Rifiuta la richiesta', { pericolo: true })))
                   void fai(() => r.rifiuta(x.id), 'Richiesta rifiutata', () => {
                     onCambiato()
                     onConclusa()
@@ -578,7 +579,7 @@ function Scheda({
           type="button"
           className="sg-btn sg-btn-linea sg-pericolo"
           onClick={async () => {
-            if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`, 'Elimina per sempre', { pericolo: true })))
+            if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.${restituire ? `\n\n${restituire} Eliminata la richiesta, in RICHIESTE ONLINE non si vede più.` : ''}`, 'Elimina per sempre', { pericolo: true })))
               void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)
           }}
         >

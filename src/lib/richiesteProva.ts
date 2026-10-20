@@ -190,8 +190,9 @@ export function creaRichiesteProva(): DatiRichieste {
     },
 
     async paga(richiestaId) {
-      const r = una(richiestaId)
-      if (r.stato !== 'nuova') throw new Error('Questa richiesta non si può più pagare online: paga in segreteria')
+      // Come `satispay_prepara`: un link sbagliato o vecchio dice la stessa cosa di una richiesta già gestita.
+      const r = tutte.find((x) => x.id === richiestaId)
+      if (r?.stato !== 'nuova') throw new Error('Questa richiesta non si può più pagare online: paga in segreteria')
       const tutti = pagamentiSatispayProva()
       if (!tutti.some((p) => p.richiestaId === richiestaId && p.stato === 'pagato')) {
         // Nessuna rete in prova: Satispay «approva» subito, con l'importo che darebbe il database.

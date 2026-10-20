@@ -1,4 +1,4 @@
-import { cosaNonVaSatispay, satispayDaUsare, soldi } from '../../lib/satispay'
+import { cosaNonVaMetodo, cosaNonVaSatispay, satispayDaUsare, soldi } from '../../lib/satispay'
 import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
@@ -501,7 +501,7 @@ export function NuovaRicevuta({
       ? null
       : { data, personaId: p.id, numero: n, ente, intestatario: socio, voci: fatte, anticipo: anticipoCent, note: note.trim() || undefined }
   const guaio =
-    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null)) : null
+    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null)) : null
   const c = dati ? conti(dati) : null
 
   // Lo sconto famiglia: dove è, o perché non è qui.
