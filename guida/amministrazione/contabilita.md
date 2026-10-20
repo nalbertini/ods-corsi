@@ -23,7 +23,8 @@ L'elenco unisce due cose:
   fatturate) e le uscite.
 
 Si parte da **Tutto l'anno**: l'elenco, ENTRATE, USCITE e DIFFERENZA in fondo contano l'anno in
-corso, non più il mese. I filtri sono in due righe: sopra la **ricerca** nella descrizione, il
+corso, non più il mese. I filtri sono in due righe: sopra la **ricerca** nella descrizione (non bada a maiuscole, accenti
+e spazi in più), il
 **periodo** (il mese, il mese scorso, tutto l'anno, tutto) e il **tipo** (**Entrate**, **Uscite**,
 **Giroconti**); sotto la **cassa**, la **voce**, la **persona** (un menu) e **Mostra annullati**.
 Sotto i filtri la riga «N trovati · N filtri attivi» dice quanti ne hai acceso, e **Togli i

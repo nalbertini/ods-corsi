@@ -640,6 +640,8 @@ const ricevuteConti = [
 const direttiConti = [
   { id: 'd1', personaId: 'p-rossi', data: '2026-10-16', importo: 4000, metodo: 'Satispay', voce: 'ANNUALE BIMBI', nota: 'Pagato per Rossi Luca', creatoIl: '2026-10-16T10:00:00Z' },
   { id: 'd2', personaId: 'p-verdi', data: '2025-10-10', importo: 10000, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA', creatoIl: '2025-10-10T10:00:00Z' },
+  // Un pagamento a mano annullato: non conta né nell'app né in chat.
+  { id: 'd3', personaId: 'p-rossi', data: '2026-10-17', importo: 7700, metodo: 'POS', voce: 'TRIMESTRE BIMBI', creatoIl: '2026-10-17T10:00:00Z', annullatoIl: '2026-10-18T10:00:00Z' },
 ]
 const nomiConti = [{ id: 'p-rossi', nome: 'Luca', cognome: 'Rossi' }, { id: 'p-verdi', nome: 'Anna', cognome: 'Verdi' }]
 // L'elenco dell'app, coi nomi: quello su cui BILANCIO e MOVIMENTI fanno i conti.

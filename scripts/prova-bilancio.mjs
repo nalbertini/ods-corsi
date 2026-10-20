@@ -415,6 +415,8 @@ console.log('\n17. le uscite da classificare, a gruppi')
     u('2026-02-01', 800, 'Manutenzione', 'Ferramenta Bianchi'),
     u('2026-09-01', 800, 'Varie', 'ferramenta bianchi'),
     u('2026-01-15', 300, 'Telefono', 'TIM'),
+    // Una «Differenza di cassa» con la descrizione di un gruppo, più recente: la voce proposta non è mai una di sistema.
+    u('2026-09-15', 100, 'Differenza di cassa', 'Lavori palestra'),
   ]
   const g = prova(() => m.gruppiDaClassificare(righe, vociG))
   const breve = (x) => `${x.cerca}:${x.movimenti}:${x.totale}:${x.primo}:${x.ultimo}`
