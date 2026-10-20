@@ -215,9 +215,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const complicato = attivo && listino && !senzaPrezzo.length ? nonSemplice(scelti, listino, fuoriEta) : null
   const puoi = complicato ? ({ satispay: false, perche: complicato } as const) : comePuoiPagare(senzaPrezzo, attivo)
   const modo = modoPagamento(pago, puoi, !!nucleo)
-  const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo) && (f.tipo !== 'ricevuta' || chiedeRicevuta(modo)))
+  const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo) && (f.tipo !== 'ricevuta' || chiedeRicevuta(modo, !!nucleo)))
   // I file di I FILE: il modulo ha la sua sezione, e la ricevuta del bonifico sta in IL PAGAMENTO (dal nucleo, qui come prima).
-  const fileQui = daChiedere.filter((f) => f.tipo !== 'modulo' && (f.tipo !== 'ricevuta' || !modo))
+  const fileQui = daChiedere.filter((f) => f.tipo !== 'modulo' && (f.tipo !== 'ricevuta' || !!nucleo))
   // Col bonifico la ricevuta è obbligatoria (con Satispay non si chiede): come vuole anche `fileObbligatori` per la pagina pubblica.
   const obbligatori = fileObbligatori(daChiedere, modo === 'bonifico')
 

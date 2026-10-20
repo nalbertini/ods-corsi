@@ -178,8 +178,12 @@ export type Pago = 'satispay' | 'bonifico'
 export const modoPagamento = (scelto: Pago | null, puoi: { satispay: boolean }, nucleo: boolean): Pago | null =>
   nucleo || !scelto ? null : scelto === 'satispay' && !puoi.satispay ? 'bonifico' : scelto
 
-/** La ricevuta del bonifico si chiede solo a chi paga col bonifico; dal nucleo resta fra i file, come prima. */
-export const chiedeRicevuta = (modo: Pago | null) => !modo || modo === 'bonifico'
+/**
+ * La ricevuta del bonifico si chiede solo a chi paga col bonifico; dal nucleo
+ * resta fra i file, come prima. Dalla pagina pubblica, finché non si sceglie
+ * come pagare, non si chiede: la chiederà il bonifico.
+ */
+export const chiedeRicevuta = (modo: Pago | null, nucleo: boolean) => nucleo || modo === 'bonifico'
 
 /**
  * I corsi che per il database non hanno prezzo: `importo_iscrizione` trova la
