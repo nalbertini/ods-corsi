@@ -1203,7 +1203,8 @@ function paginaCorsiNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, 
 function paginaCorsoNuovo(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
   const collegata = (p.corsiCollegati?.length ?? 0) > 0
   const h = corsoNuovo(pulito, TESTI.iscrizione, collegata ? testiOrario(p.corsiCollegati ?? [], c.d.orari ?? []) : undefined)
-  const hero = `<section class="pagina-hero con-pulsanti solo"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div></section>`
+  // Sotto il titolo nessun pulsante: «Iscriviti» sta già nella barra in alto e nella chiamata finale.
+  const hero = `<section class="pagina-hero solo"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div></section>`
   const corpo = `${testata(c, percorso('corsi'))}<main class="passo-unico corso-nuovo" data-corso="${esc(p.slug)}">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: true })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsoNuovo: cssFuochiCorso(p.slug) + (collegata ? CSS_ORARIO_AUTOMATICO : ''), dati })
