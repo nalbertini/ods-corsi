@@ -1239,11 +1239,14 @@ function nonTrovata(c: Contesto): string {
  */
 export const codiceStatistiche = (valore: string | undefined): string | null => (valore !== undefined && /^[a-z0-9-]{2,50}$/.test(valore) ? valore : null)
 
-/** I clic che si contano, per tipo di link: un nome solo, mai il testo del link né la pagina da cui parte. */
-const CLIC: Array<[RegExp, string]> = [
-  [/\/iscrizioni\//i, 'iscriviti'],
-  [/^tel:/i, 'chiama'],
-  [/^https:\/\/wa\.me\//i, 'scrivici'],
+/**
+ * I clic che si contano, per tipo di link: un nome solo, mai il testo del link né la pagina da cui parte. Il modulo
+ * solo al suo indirizzo: un altro sito con /iscrizioni/ non è un'iscrizione.
+ */
+const CLIC: Array<[(href: string) => boolean, string]> = [
+  [(href) => href.toLowerCase().startsWith(TESTI.iscrizione), 'iscriviti'],
+  [(href) => /^tel:/i.test(href), 'chiama'],
+  [(href) => /^https:\/\/wa\.me\//i.test(href), 'scrivici'],
 ]
 
 /**
@@ -1260,7 +1263,7 @@ function conStatistiche(html: string, codice: string, e404: boolean): string {
     .replace('</head>', () => `${conta}</head>`)
     .replace(/<a\b([^>]*)>/gi, (a, attr: string) => {
       const href = /\shref="([^"]*)"/i.exec(attr)?.[1]?.trim() ?? ''
-      const nome = CLIC.find(([re]) => re.test(href))?.[1]
+      const nome = CLIC.find(([vale]) => vale(href))?.[1]
       return nome ? `<a${attr} data-goatcounter-click="${nome}" data-goatcounter-title="${nome}">` : a
     })
 }

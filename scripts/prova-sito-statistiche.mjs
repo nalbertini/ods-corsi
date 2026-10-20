@@ -62,7 +62,11 @@ const LINK = [
   `<p><a href="${ISCRIZIONE}?corso=judo">Iscrivi Mario Rossi al judo</a></p>`,
   '<p><a href="tel:+393463292786">Chiama</a> o <a href="https://wa.me/393463292786?text=Ciao">WhatsApp</a></p>',
   '<p><a href="https://www.instagram.com/officine.dellosport/">Instagram</a> <a href="mailto:asdilcentrojudo@gmail.com">Email</a> <a href="/judo/">Judo</a> <a href="https://esempio.it/pagina">Altro</a></p>',
+  // Somigliano ai link da contare ma non lo sono: un altro sito con /iscrizioni/, un tel: dentro un indirizzo, WhatsApp da un altro indirizzo.
+  '<p><a href="https://esempio.it/iscrizioni/">Un altro sito</a> <a href="https://esempio.it/?x=tel:123">Non è un telefono</a> <a href="https://api.whatsapp.com/send?phone=39">Non è wa.me</a></p>',
 ].join('')
+// Scritti a mano, non con le regole del codice: se le regole si allargano, la prova se ne accorge.
+const NON_CONTATI = ['https://esempio.it/iscrizioni/', 'https://esempio.it/?x=tel:123', 'https://api.whatsapp.com/send?phone=39']
 const dati = (o = {}) => ({
   dominio: 'https://www.officinedellosport.it',
   pagine: [pag('home', `<p>Benvenuti</p>${LINK}`), pag('contatti', `<p>Dove siamo</p>${LINK}`), pag('judo', `<p>Judo</p>${LINK}`), pag('privacy', '<p>Testo di legge</p>', { diLegge: true })],
@@ -80,7 +84,7 @@ const script = (h) => [...h.matchAll(/<script\b[^>]*>/gi)].map((m) => m[0])
 const esterni = (h) => script(h).filter((s) => /\ssrc=/i.test(s))
 const link = (h) => [...h.matchAll(/<a\b[^>]*>/gi)].map((m) => m[0])
 const href = (a) => /\shref="([^"]*)"/i.exec(a)?.[1] ?? ''
-const nomeAtteso = (a) => (/\/iscrizioni\//i.test(href(a)) ? 'iscriviti' : /^tel:/i.test(href(a)) ? 'chiama' : /^https:\/\/wa\.me\//i.test(href(a)) ? 'scrivici' : null)
+const nomeAtteso = (a) => (href(a).startsWith(ISCRIZIONE) ? 'iscriviti' : /^tel:/i.test(href(a)) ? 'chiama' : /^https:\/\/wa\.me\//i.test(href(a)) ? 'scrivici' : null)
 const clic = (a) => /\sdata-goatcounter-click="([^"]*)"/.exec(a)?.[1] ?? null
 const conGoat = (r) => Object.keys(r).filter((f) => /goatcounter|gc\.zgo\.at/i.test(r[f]))
 
@@ -119,6 +123,8 @@ console.log('\nCon un codice buono')
   ok('ognuno ha il suo nome nel clic', daContare.filter(([, a]) => clic(a) !== nomeAtteso(a)).map(([f, a]) => `${f}: ${a}`), [])
   ok('e lo stesso nome come titolo (GoatCounter altrimenti manda il testo del link)', daContare.filter(([, a]) => !a.includes(` data-goatcounter-title="${nomeAtteso(a)}"`)).map(([f, a]) => `${f}: ${a}`), [])
   ok('un attributo solo per link, mai due', tutti.filter(([, a]) => (a.match(/data-goatcounter-click=/g) ?? []).length > 1).length, 0)
+  ok('i link che somigliano a quelli da contare non si contano', tutti.filter(([, a]) => NON_CONTATI.includes(href(a)) && /data-goatcounter/.test(a)).map(([f, a]) => `${f}: ${a}`), [])
+  ok('e ci sono davvero, in ogni pagina col testo', tutti.filter(([, a]) => NON_CONTATI.includes(href(a))).length > 0, true)
   ok('nessun altro link è contato (menu, Instagram, email, pagine, siti altri)', tutti.filter(([, a]) => !nomeAtteso(a) && /data-goatcounter/.test(a)).map(([f, a]) => `${f}: ${a}`), [])
   ok('il link «Iscrivi Mario Rossi» non porta il suo testo nel clic', /data-goatcounter-[a-z]+="[^"]*Mario/.test(r['index.html'] ?? ''), false)
   ok('il testo e l\'indirizzo dei link restano com\'erano', (r['judo/index.html'] ?? '').includes(`href="${ISCRIZIONE}?corso=judo"`) && (r['judo/index.html'] ?? '').includes('>Iscrivi Mario Rossi al judo</a>'), true)
