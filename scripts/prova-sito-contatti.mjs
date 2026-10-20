@@ -23,6 +23,10 @@ const { outputFiles } = await build({
   banner: { js: "import { createRequire as __cr } from 'node:module'; const require = __cr(process.cwd() + '/');" },
 })
 const g = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+// Ogni link al modulo porta l'etichetta della sua pagina (`?da=home`…, provata in prova-sito-genera.mjs): qui si guarda
+// l'impaginazione, che non cambia, e la si confronta senza l'etichetta con quella di prima.
+const senzaDa = (r) => (r && typeof r === 'object' ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/(\?|&amp;|&)da=[a-z0-9-]+/g, '') : v])) : r)
+const generaSito = (d) => senzaDa(g.generaSito(d))
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -37,7 +41,7 @@ const testo =
   '<h3>Indirizzo</h3><p>Via Vittorio Sassi 26, Collegno</p><p>A pochi metri dalla metropolitana Fermi</p>' +
   `${img(1)}<p><a class="pulsante" href="https://maps.example/x">Ottieni indicazioni</a></p><p>A pochi metri dalla metropolitana Fermi</p>${img(2)}${img(3)}${img(4)}` +
   '<h2>Hai qualche domanda?</h2><p>Qui trovi le informazioni.</p>' + [1, 2, 3, 4, 5, 6].map((n) => `<h3>Domanda ${n}?</h3><p>Risposta ${n}</p>`).join('')
-const genera = (slug, t) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug, titolo: 'T', descrizione: 'd', testo: t }], menu: [], rinvii: [], ospitiImmagini: [P] })
+const genera = (slug, t) => generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug, titolo: 'T', descrizione: 'd', testo: t }], menu: [], rinvii: [], ospitiImmagini: [P] })
 const html = genera('contatti', testo)['contatti/index.html']
 const conta = (x, re) => (x.match(re) || []).length
 const CSS = html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
@@ -62,7 +66,7 @@ console.log('\n1. I recapiti: tessere prima del primo titolo grande')
   ok('le domande sono una sezione a parte con 6 tessere', conta(html.split('Hai qualche domanda?')[1], /<article class="tessera/g), 6)
   ok('senza foto dopo i recapiti la sezione è solo le tessere', (genera('contatti', '<h3>Telefono</h3><p>1</p><h3>Mail</h3><p>2</p>')['contatti/index.html'].match(/<section class="sezione apertura">([\s\S]*?)<\/section>/) || [, ''])[1].replace(/<article[\s\S]*?<\/article>/g, '').replace(/<\/?div[^>]*>/g, ''), '')
   ok('altre pagine: i titoli prima del primo grande restano un testo in colonna', /class="apertura"|sezione apertura/.test(genera('altra', testo)['altra/index.html']), false)
-  ok('la pagina ha la sua classe su main, la Home no', [/<main class="pagina-contatti">/.test(html), /<main>/.test(g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }], menu: [], rinvii: [] })['index.html'])], [true, true])
+  ok('la pagina ha la sua classe su main, la Home no', [/<main class="pagina-contatti">/.test(html), /<main>/.test(generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }], menu: [], rinvii: [] })['index.html'])], [true, true])
 }
 
 console.log('\n2. Le misure del design a 1440px')
@@ -93,7 +97,7 @@ console.log('\n3. Il telefono (≤900px)')
 console.log('\n4. Testata e piede come nel design')
 {
   const voce = (e, sl) => ({ dove: 'menu', ordine: 1, etichetta: e, slug: sl, indirizzo: null })
-  const due = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [voce('Home', 'home'), { ...voce('Contattaci', 'contatti'), ordine: 2 }], rinvii: [] })
+  const due = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [voce('Home', 'home'), { ...voce('Contattaci', 'contatti'), ordine: 2 }], rinvii: [] })
   // Niente pulsante «Scrivici»: «Contatti» è solo una voce del menu, con questa etichetta qualunque cosa scriva la segreteria; in /contatti/ è la voce segnata.
   const testataDi = (h) => (h.match(/<header class="testata">[\s\S]*?<\/header>/) || [''])[0]
   const tc = testataDi(due['contatti/index.html'])
@@ -105,10 +109,10 @@ console.log('\n4. Testata e piede come nel design')
   ok('nessun <a> dice «Contattaci», anche se la segreteria ha scritto così nel menu', [due['index.html'], due['contatti/index.html']].map((h) => /<a [^>]*>\s*Contattaci\s*<\/a>/.test(h)), [false, false])
   ok('il piede di ogni pagina mostra «Contatti» verso /contatti/, mai «Scrivici»', [due['index.html'], due['contatti/index.html']].map((h) => [/<footer[\s\S]*<a href="\/contatti\/"[^>]*>Contatti<\/a>[\s\S]*<\/footer>/.test(h), /Scrivici/.test(h)]), [[true, false], [true, false]])
   // Etichetta sempre «Contatti» e posto scelto dalla segreteria in MENU (non più tolta dall'elenco).
-  const ordinato = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'corsi', titolo: 'Co', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [voce('Home', 'home'), { ...voce('Parlaci', 'contatti'), ordine: 2 }, { ...voce('Corsi', 'corsi'), ordine: 3 }], rinvii: [] })
+  const ordinato = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'corsi', titolo: 'Co', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [voce('Home', 'home'), { ...voce('Parlaci', 'contatti'), ordine: 2 }, { ...voce('Corsi', 'corsi'), ordine: 3 }], rinvii: [] })
   const elenco = ((ordinato['corsi/index.html'].match(/<nav id="menu"[\s\S]*?<\/nav>/) || [''])[0].match(/<a [^>]*>[^<]*<\/a>/g) || []).map((x) => x.replace(/<[^>]*>/g, ''))
   ok('«Parlaci» scritto dalla segreteria diventa «Contatti», al posto scelto nel menu', [elenco.filter((x) => /Home|Parlaci|Contatti|Corsi/.test(x)), /Parlaci|Scrivici/.test(ordinato['corsi/index.html'])], [['Home', 'Contatti', 'Corsi'], false])
-  const senzaC = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }], menu: [voce('Home', 'home')], rinvii: [] })
+  const senzaC = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }], menu: [voce('Home', 'home')], rinvii: [] })
   ok('senza la pagina Contatti pubblicata: nessuna voce, nessun link a /contatti/', /\/contatti\/|Contatti/.test(senzaC['index.html']), false)
   ok('il titolo della pagina dato dal database non si tocca', /<h1[^>]*>[\s\S]*C[\s\S]*<\/h1>/.test(due['contatti/index.html']) && /<title>C\b/.test(due['contatti/index.html']), true)
   ok('la voce segnata ha il fondo giallo', /background:\s*var\(--giallo\)/.test(regolaDi(codaBase, '.testata nav a[aria-current]')), true)
@@ -125,7 +129,7 @@ console.log('\n4. Testata e piede come nel design')
 
 console.log('\n5. Quel che il design ha e il sito non aveva')
 {
-  const vuoto = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contattaci', slug: 'contatti', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy policy', slug: null, indirizzo: '/privacy/' }], rinvii: [] })
+  const vuoto = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contattaci', slug: 'contatti', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy policy', slug: null, indirizzo: '/privacy/' }], rinvii: [] })
   const c = vuoto['contatti/index.html']
   const pie = (c.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
   ok('la pagina Contatti non ha il pulsante «Contattaci» sotto il titolo e ha l’invito «Prova» in fondo', [/<a class="pulsante" href="\/contatti\/">Contattaci<\/a>/.test(c), /class="invito"/.test(c)], [false, true])

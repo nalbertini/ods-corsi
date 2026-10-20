@@ -26,6 +26,7 @@ import { mancaPagatoPrima, type IncassoPrima } from './pagatoPrima'
 import { enteDaDati, fineAnno, mancaTessere, type EsitoImportTessere, type TesseraSeg } from './tessere'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
 import type { OrarioSito } from './sitoOrari'
+import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { pezziInHtml, pezziValidi } from './sitoPezzi'
 import { ORARIO_NON_ATTIVO } from './sitoOrario'
 import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
@@ -1486,6 +1487,30 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           iscritto: iscritti.has(x.persona_id),
         }))
         .sort((p, q) => q.inizio.localeCompare(p.inizio))
+    },
+
+    async richiesteDaDove(da, a) {
+      const r = await db.rpc('richieste_da_dove', { da: chiaveGiorno(da), a: chiaveGiorno(a) })
+      // Senza 73-provenienza-richieste.sql la funzione non c'è: il riquadro lo dice, il resto delle statistiche va.
+      if (r.error && (r.error.code === 'PGRST202' || r.error.code === '42883')) return null
+      // Le righe di richieste_da_dove() in 73-provenienza-richieste.sql: il client non le conosce.
+      const x = ok(r) as { dal: string | null; righe: Array<{ provenienza: string | null; conosciuto: string | null; corsi: string[]; stato: RigaDaDove['stato']; n: number }> }
+      return {
+        dal: x.dal ?? undefined,
+        righe: x.righe.map((y) => ({ ...(y.provenienza ? { provenienza: y.provenienza } : {}), ...(y.conosciuto ? { conosciuto: y.conosciuto } : {}), corsi: y.corsi ?? [], stato: y.stato, n: y.n })),
+      }
+    },
+
+    async titoliSito() {
+      // Mai un errore: senza 56-sito.sql (o senza rete) i nomi restano le parole delle etichette.
+      try {
+        const [p, r] = await Promise.all([db.from('sito_pagine').select('slug, titolo, titolo_pubblicato'), db.from('sito_redirect').select('da, a')])
+        if (p.error || !Array.isArray(p.data)) return {}
+        const pagine = (p.data as Array<{ slug: string; titolo: string; titolo_pubblicato: string | null }>).map((x) => ({ slug: x.slug, titolo: x.titolo_pubblicato || x.titolo }))
+        return titoliDelSito(pagine, !r.error && Array.isArray(r.data) ? (r.data as Array<{ da: string; a: string }>) : [])
+      } catch {
+        return {}
+      }
     },
 
     async statistiche(da, a) {

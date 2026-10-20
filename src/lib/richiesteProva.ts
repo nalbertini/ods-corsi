@@ -5,6 +5,7 @@ import { archivio, certificatiProva, scordaCertificato } from './archivioProva'
 import { nomeProprio } from './nomi'
 import { chiaveGiorno } from './sala'
 import { MASSIMO_PERSONE } from './passiIscrizione'
+import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 
 /**
  * Le richieste di iscrizione senza server.
@@ -47,15 +48,31 @@ export function spostaRichieste(da: string, a: string) {
   }
 }
 
+/**
+ * Il conteggio della richiesta, come il trigger di `73-provenienza-richieste.sql`:
+ * sta nell'archivio di prova, non qui, perché resta quando la richiesta si elimina.
+ * Una richiesta già contata si aggiorna (lo stato, accolta o rifiutata).
+ */
+function conta(r: Richiesta) {
+  const contate = archivio.dati.richiesteContate ?? []
+  const riga = { giorno: chiaveGiorno(new Date(r.creataIl)), provenienza: r.provenienza, conosciuto: r.conosciuto, corsi: r.corsi, stato: r.stato }
+  archivio.dati.richiesteContate = contate.some((x) => x.richiestaId === r.id)
+    ? contate.map((x) => (x.richiestaId === r.id ? { ...x, ...riga } : x))
+    : [...contate, { richiestaId: r.id, ...riga }]
+  archivio.salva()
+}
+
 /** Gli esempi di `esempiProva`: si aggiungono, e una richiesta che c'è già resta com'è. */
 export function aggiungiRichiesteProva(nuove: Richiesta[]) {
   const tutte = leggi()
   const ci = new Set(tutte.map((r) => r.id))
+  const davvero = nuove.filter((r) => !ci.has(r.id))
   try {
-    localStorage.setItem(DOVE, JSON.stringify([...tutte, ...nuove.filter((r) => !ci.has(r.id))]))
+    localStorage.setItem(DOVE, JSON.stringify([...tutte, ...davvero]))
   } catch {
     /* niente esempi, pazienza */
   }
+  davvero.forEach(conta)
 }
 
 export function scordaRichiesteProva() {
@@ -84,6 +101,8 @@ export function creaRichiesteProva(): DatiRichieste {
   const cambia = (id: string, cambi: Partial<Richiesta>) => {
     tutte = tutte.map((r) => (r.id === id ? { ...r, ...cambi } : r))
     salva()
+    const r = tutte.find((x) => x.id === id)
+    if (r) conta(r)
   }
 
   return {
@@ -135,9 +154,13 @@ export function creaRichiesteProva(): DatiRichieste {
         telefono2: dati.telefono2?.trim() || undefined,
         note: dati.note?.trim() || undefined,
         nucleoDi: dati.nucleoDi || undefined,
+        // Come il database: pulite, o scartate senza fermare la richiesta.
+        provenienza: pulisciProvenienza(dati.provenienza),
+        conosciuto: pulisciConosciuto(dati.conosciuto),
       }
       tutte = [r, ...tutte]
       salva()
+      conta(r)
       return r.id
     },
 
@@ -258,6 +281,11 @@ export function creaRichiesteProva(): DatiRichieste {
       file.delete(richiestaId)
       tutte = tutte.filter((r) => r.id !== richiestaId)
       salva()
+      // Come `on delete set null`: il conteggio resta, senza più il legame.
+      if (archivio.dati.richiesteContate?.some((x) => x.richiestaId === richiestaId)) {
+        archivio.dati.richiesteContate = archivio.dati.richiesteContate.map(({ richiestaId: id, ...x }) => (id === richiestaId ? x : { richiestaId: id, ...x }))
+        archivio.salva()
+      }
     },
   }
 }

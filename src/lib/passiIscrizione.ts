@@ -9,6 +9,7 @@ import type { Luoghi } from './codiceFiscale'
 import { cfValido, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { nomeProprio } from './nomi'
 import { elenco } from './ricevute'
+import { pulisciConosciuto, type Conosciuto } from './provenienza'
 
 /**
  * L'iscrizione a passi (`iscrizioni/#nuova`, solo in prova): le regole di
@@ -1614,6 +1615,27 @@ export const notaDelModulo = (persone: StatoPassi[]): string | undefined => pers
 /** La nota scritta all'invio: nella persona 0 e in nessun'altra, così si rilegge uguale chiunque sia attivo. */
 export const conLaNota = (persone: StatoPassi[], nota: string): StatoPassi[] =>
   persone.map((p, i) => ({ ...p, risposte: { ...p.risposte, note: i === 0 ? nota : '' } }))
+
+/** «Come ci avete conosciuto?», una risposta per tutto il modulo come la nota: sta nella persona 0. */
+export const conosciutoDelModulo = (persone: StatoPassi[]): Conosciuto | undefined => pulisciConosciuto(persone[0]?.risposte.conosciuto)
+
+/** La risposta scelta all'invio: nella persona 0 e in nessun'altra. Vuota, non c'è. */
+export const conIlConosciuto = (persone: StatoPassi[], scelta: string): StatoPassi[] =>
+  persone.map((p, i) => {
+    const { conosciuto: _, ...risposte } = p.risposte
+    const c = i === 0 ? pulisciConosciuto(scelta) : undefined
+    return { ...p, risposte: c ? { ...risposte, conosciuto: c } : risposte }
+  })
+
+/**
+ * L'etichetta del link e la risposta del modulo in ogni richiesta, le stesse per tutta la famiglia: quella che una
+ * persona aveva da prima non parte. Senza, nessuna delle due.
+ */
+export const conLaProvenienza = (daMandare: DaMandare[], origine: { provenienza?: string; conosciuto?: Conosciuto }): DaMandare[] =>
+  daMandare.map(({ dati: { provenienza: _p, conosciuto: _c, ...dati }, ...x }) => ({
+    ...x,
+    dati: { ...dati, ...(origine.provenienza ? { provenienza: origine.provenienza } : {}), ...(origine.conosciuto ? { conosciuto: origine.conosciuto } : {}) },
+  }))
 
 /**
  * La ricevuta caricata (o tolta) a QUANTO PAGHI: sta nella prima persona e in nessun'altra, col totale e quante

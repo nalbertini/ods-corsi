@@ -21,6 +21,7 @@ import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sito
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
 import { richiesteDi, spostaRichieste } from './richiesteProva'
+import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
@@ -1473,6 +1474,29 @@ export function creaSegreteriaProva(): DatiSegreteria {
         })
         .filter((x): x is ProvaSeg => !!x)
         .sort((p, q) => q.inizio.localeCompare(p.inizio))
+    },
+
+    async richiesteDaDove(da, fino) {
+      // Come richieste_da_dove() di 73-provenienza-richieste.sql: le righe del periodo raggruppate, e da quando si conta.
+      const contate = a().richiesteContate ?? []
+      const dal = chiaveGiorno(da)
+      const al = chiaveGiorno(fino)
+      const per = new Map<string, RigaDaDove>()
+      for (const x of contate) {
+        if (x.giorno < dal || x.giorno > al) continue
+        const k = JSON.stringify([x.provenienza ?? null, x.conosciuto ?? null, x.corsi, x.stato])
+        const r = per.get(k) ?? { ...(x.provenienza ? { provenienza: x.provenienza } : {}), ...(x.conosciuto ? { conosciuto: x.conosciuto } : {}), corsi: x.corsi, stato: x.stato, n: 0 }
+        r.n++
+        per.set(k, r)
+      }
+      const primo = contate.reduce<string | undefined>((m, x) => (m === undefined || x.giorno < m ? x.giorno : m), undefined)
+      return { dal: primo, righe: [...per.values()] }
+    },
+
+    async titoliSito() {
+      const sito = a().sito
+      if (!sito) return {}
+      return titoliDelSito(sito.pagine.map((p) => ({ slug: p.slug, titolo: p.titoloPubblicato || p.titolo })), sito.rinvii ?? [])
     },
 
     async statistiche(da, fino): Promise<Statistiche> {

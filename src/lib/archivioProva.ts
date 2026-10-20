@@ -180,6 +180,23 @@ export interface Archivio {
   sito?: StatoSito
   /** Le immagini del sito (vedi `sitoImmagini.ts`); nascono al primo uso. */
   sitoImmagini?: ImmagineSito[]
+  /**
+   * I conteggi di da dove arrivano le richieste, come `richieste_contate` di
+   * `73-provenienza-richieste.sql`: niente dati personali, e restano quando la
+   * richiesta si elimina (allora `richiestaId` non c'è più).
+   */
+  richiesteContate?: RichiestaContata[]
+}
+
+/** Come una riga di `richieste_contate` (73-provenienza-richieste.sql). */
+export interface RichiestaContata {
+  richiestaId?: string
+  /** `AAAA-MM-GG`. */
+  giorno: string
+  provenienza?: string
+  conosciuto?: string
+  corsi: string[]
+  stato: 'nuova' | 'accolta' | 'rifiutata'
 }
 
 /** Come una riga di `prove` (21-prove.sql). */

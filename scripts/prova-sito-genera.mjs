@@ -486,6 +486,42 @@ ok('il dominio giusto va', typeof prova(() => g.generaSito(dati({ dominio: 'http
   ok('lanciato da un\'altra cartella funziona lo stesso (sanitize-html si trova)', lancia(altrove, join(altrove, 'sito'), '--da-file', buoni).status, 0)
 }
 
+console.log('\nDa dove arriva chi si iscrive: ogni link al modulo dice la sua pagina (?da=)')
+{
+  const h = await carica('src/lib/sitoHome.ts')
+  const ISCR = 'https://app.officinedellosport.it/iscrizioni/'
+  const bottone = (href) => `<p><a class="pulsante" href="${href}">Iscriviti</a></p>`
+  const d = dati({
+    pagine: [
+      pag('home', { testo: `<p>Benvenuti.</p>${bottone(ISCR)}<h2>Corsi</h2><p>Vieni a provare: <a href="${ISCR}">iscriviti qui</a>.</p>` }),
+      pag('corsi', { testo: '<p><a href="/karate/">Karate</a></p>' }),
+      pag('karate', { testo: `<p>Il karate.</p><p>Per iscriverti <a href="${ISCR}">compila il modulo</a>.</p>` }),
+      pag('orari', { testo: `<p>Gli orari. <a href="${ISCR}">Iscriviti</a></p>` }),
+      // Il pulsante sta in una sezione, non in apertura: in apertura farebbe della pagina quella di un corso, che sotto il titolo non ha pulsanti.
+      pag('volantino', { testo: `<p>Dal volantino.</p><h2>Vieni a provare</h2><p>Una settimana a 5 euro.</p>${bottone(`${ISCR}?da=volantino-ottobre`)}` }),
+    ],
+  })
+  const r = genera(d)
+  const link = (f) => [...c(r, f).matchAll(/href="([^"]*)"/g)].map((x) => x[1]).filter((x) => x.toLowerCase().startsWith(ISCR))
+  const tutti = (f, voluto) => link(f).length > 0 && link(f).every((x) => x === voluto)
+  ok('la Home: ogni link al modulo con ?da=home', tutti('index.html', `${ISCR}?da=home`), true)
+  ok('la pagina di un corso: ?da=corso-karate', tutti('karate/index.html', `${ISCR}?da=corso-karate`), true)
+  ok('un\'altra pagina: il suo indirizzo', tutti('orari/index.html', `${ISCR}?da=orari`), true)
+  ok('un ?da= scritto a mano resta', link('volantino/index.html').includes(`${ISCR}?da=volantino-ottobre`), true)
+  ok('e gli altri link della pagina hanno quello della pagina', link('volantino/index.html').filter((x) => x !== `${ISCR}?da=volantino-ottobre`).every((x) => x === `${ISCR}?da=volantino`), true)
+  ok('nessun link al modulo resta senza etichetta', html(r).filter((f) => f !== '404.html').flatMap(link).filter((x) => !/[?&]da=/.test(x)), [])
+  // Il pulsante scritto a mano con ?da= è ancora il pulsante del modulo: la Home nuova si riconosce lo stesso, e si impagina uguale.
+  const conMano = genera(dati({ pagine: [pag('home', { testo: `<p>Benvenuti.</p>${bottone(`${ISCR}?da=volantino`)}<h2>Corsi</h2><p>Testo.</p>` })] }))
+  const senzaMano = genera(dati({ pagine: [pag('home', { testo: `<p>Benvenuti.</p>${bottone(ISCR)}<h2>Corsi</h2><p>Testo.</p>` })] }))
+  const via = (t) => t.replace(/\?da=[a-z0-9-]+/g, '')
+  ok('col ?da= a mano la Home ha la stessa impaginazione', via(c(conMano, 'index.html')) === via(c(senzaMano, 'index.html')) && c(conMano, 'index.html').length > 0, true)
+  ok('e il pulsante tiene il suo ?da=', c(conMano, 'index.html').includes(`href="${ISCR}?da=volantino"`), true)
+  ok('eIscrizione ignora la parte dopo ?', prova(() => h.eIscrizione(`${ISCR}?da=home`, ISCR)), true)
+  ok('eIscrizione ignora anche il cancelletto', prova(() => h.eIscrizione(`${ISCR}#prezzi`, ISCR)), true)
+  ok('eIscrizione: un\'altra pagina dell\'app no', prova(() => h.eIscrizione(`${ISCR}altro`, ISCR)), false)
+  ok('eIscrizione: un altro sito con ?da= no', prova(() => h.eIscrizione('https://esempio.it/iscrizioni/?da=home', ISCR)), false)
+}
+
 console.log('\nIl logo: una variante piccola per lo schermo normale')
 {
   const { existsSync, statSync } = await import('node:fs')

@@ -33,6 +33,10 @@ const carica = async (file) => {
 }
 const o = await carica('src/lib/sitoOrario.ts')
 const g = await carica('src/lib/sitoGenera.ts')
+// Ogni link al modulo porta l'etichetta della sua pagina (`?da=home`…, provata in prova-sito-genera.mjs): qui si guarda
+// l'impaginazione, che non cambia, e la si confronta senza l'etichetta con quella di prima.
+const senzaDa = (r) => (r && typeof r === 'object' ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/(\?|&amp;|&)da=[a-z0-9-]+/g, '') : v])) : r)
+const generaSito = (d) => senzaDa(g.generaSito(d))
 const sp = await carica('src/lib/sitoProva.ts')
 const sb = await carica('src/lib/segreteriaSupabase.ts')
 const ind = await carica('src/lib/indirizzoSegreteria.ts')
@@ -124,7 +128,7 @@ const A_MANO = '<h2>Orario delle lezioni</h2><h3>Gruppo piccoli</h3><p><strong>0
 const CON_FOTO = PUL + FOTO + VOCI(['Giorni', 'Lun e mer'], ['Età', 'Dal 2012'], ['Costo', 'Da 30 €'], ['Sala', 'Tatami']) + A_MANO
 // Senza foto di apertura la fascia blu prende le prime tre voci: giorno, ora, età.
 const FASCIA = PUL + VOCI(['Giorno', 'Martedì'], ['Ora', '20:00'], ['Età', 'Dal 2012'], ['Costo', 'Da 30 €'])
-const pagina = (testo, extra = {}, dati = {}) => g.generaSito({
+const pagina = (testo, extra = {}, dati = {}) => generaSito({
   dominio: 'https://officinedellosport.it',
   pagine: [{ slug: 'avviamento', titolo: 'Avviamento', descrizione: 'Per iniziare.', testo, ...extra }, { slug: 'corsi', titolo: 'Corsi', descrizione: '', testo: '<p>c</p>' }, { slug: 'contatti', titolo: 'Contatti', descrizione: '', testo: '<p>c</p>' }],
   menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }],
@@ -188,7 +192,7 @@ console.log('\n6. Dal database al generatore, e senza 68-sito-orario.sql')
 {
   const riga = (extra = {}) => ({ slug: 'avviamento', titolo: 'Avviamento', descrizione: 'Per iniziare.', testo: CON_FOTO, pubblicata_il: null, ...extra })
   const dati = (pagine, orari) => prova(() => g.datiDaRisposte('https://officinedellosport.it/', pagine, [], [], orari))
-  const html = (d) => prova(() => g.generaSito({ ...d, pagine: [...d.pagine, { slug: 'corsi', titolo: 'Corsi', descrizione: '', testo: '<p>c</p>' }], ospitiImmagini: [P] })['avviamento/index.html'])
+  const html = (d) => prova(() => generaSito({ ...d, pagine: [...d.pagine, { slug: 'corsi', titolo: 'Corsi', descrizione: '', testo: '<p>c</p>' }], ospitiImmagini: [P] })['avviamento/index.html'])
   const riceve = dati([riga({ corsi_collegati: [A] })], [{ corso_id: A, giorno: 1, ora: '17:00:00', durata_min: 60 }])
   ok('i corsi collegati della pagina arrivano al generatore', riceve.pagine?.[0]?.corsiCollegati, [A])
   ok('gli orari arrivano con le chiavi del generatore', riceve.orari, [{ corsoId: A, giorno: 1, ora: '17:00:00', durataMin: 60 }])

@@ -9,13 +9,17 @@
  * l'estratto che la segreteria ha scritto prima del testo intero.
  */
 
+import { haProvenienza } from './provenienza'
 import { PILLOLE, blocchi, coloreDi, conCaricamento, contenuto, gruppiDa, griglia, immagine, iniziali, numeriDiUnElenco, sezione, sonoCorsi, testoSolo, type Blocco } from './sitoLayout'
 
 export const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
-/** Stesso indirizzo anche scritto con http, con www o senza «/» in fondo: una svista della segreteria non deve lasciare la vecchia Home senza dirlo. */
+/**
+ * Stesso indirizzo anche scritto con http, con www o senza «/» in fondo: una svista della segreteria non deve lasciare la vecchia Home senza dirlo.
+ * La parte dopo «?» o «#» non conta: un `?da=volantino` scritto a mano (vedi `provenienza.ts`) è sempre il modulo, e l'impaginazione non cambia.
+ */
 export const eIscrizione = (href: string, iscrizione: string) => {
-  const forma = (u: string) => u.trim().toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '')
+  const forma = (u: string) => u.trim().toLowerCase().replace(/[?#].*$/, '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '')
   return forma(href) === forma(iscrizione)
 }
 
@@ -31,12 +35,17 @@ export function pulsantiDi(b: Blocco): Link[] | null {
   return fuori.every((x) => x.href && x.resto) ? fuori : null
 }
 
-/** Il pulsante verso il modulo per primo (giallo) e sempre «Iscriviti», qualunque cosa abbia scritto la segreteria; gli altri a linea: l'ordine con cui li ha scritti non conta. */
+/**
+ * Il pulsante verso il modulo per primo (giallo) e sempre «Iscriviti», qualunque cosa abbia scritto la segreteria; gli altri a linea: l'ordine con cui li ha scritti non conta.
+ * Il suo indirizzo è quello del modulo, tranne un `?da=` scritto a mano, che resta (l'etichetta della pagina la mette `generaSito`).
+ */
 export function pulsanti(l: Link[], iscrizione: string): string {
   const prova = l.filter((x) => eIscrizione(x.href, iscrizione))
   const altri = l.filter((x) => !eIscrizione(x.href, iscrizione))
+  // L'href viene dal testo già scritto in HTML: «&amp;» torna «&», poi `esc` lo riscrive una volta sola.
+  const daMano = (x: Link) => (haProvenienza(x.href) ? x.href.replace(/&amp;/g, '&') : iscrizione)
   const a = (x: Link, classe: string, href: string) => `<a class="pulsante ${classe}" href="${esc(href)}"${/^https?:/i.test(href) ? ' rel="noopener noreferrer"' : ''}>${classe === 'primario' ? 'Iscriviti' : x.testo}</a>`
-  return `<div class="pulsanti">${prova.slice(0, 1).map((x) => a(x, 'primario', iscrizione)).join('')}${[...prova.slice(1), ...altri].map((x) => a(x, 'secondario', x.href)).join('')}</div>`
+  return `<div class="pulsanti">${prova.slice(0, 1).map((x) => a(x, 'primario', daMano(x))).join('')}${[...prova.slice(1), ...altri].map((x) => a(x, 'secondario', x.href)).join('')}</div>`
 }
 
 export const introduzione = (b: Blocco[]) => b.slice(0, Math.max(0, b.findIndex((x) => x.tag === 'h2') < 0 ? b.length : b.findIndex((x) => x.tag === 'h2')))

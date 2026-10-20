@@ -29,6 +29,10 @@ const { outputFiles } = await build({
   banner: { js: "import { createRequire as __cr } from 'node:module'; const require = __cr(process.cwd() + '/');" },
 })
 const g = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+// Ogni link al modulo porta l'etichetta della sua pagina (`?da=home`…, provata in prova-sito-genera.mjs): qui si guarda
+// l'impaginazione, che non cambia, e la si confronta senza l'etichetta con quella di prima.
+const senzaDa = (r) => (r && typeof r === 'object' ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/(\?|&amp;|&)da=[a-z0-9-]+/g, '') : v])) : r)
+const generaSito = (d) => senzaDa(g.generaSito(d))
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -41,7 +45,7 @@ const P = 'https://abc.supabase.co/storage/v1/object/public/sito/'
 const ISC = 'https://app.officinedellosport.it/iscrizioni/'
 const DESC = 'Il judo a Collegno, dai 7 anni agli adulti.'
 const pagina = (testo, { slug = 'judo', titolo = 'Judo', descrizione = DESC, diLegge = false, ospiti = [P] } = {}) =>
-  g.generaSito({
+  generaSito({
     dominio: 'https://officinedellosport.it',
     pagine: [{ slug, titolo, descrizione, testo, ...(diLegge ? { diLegge: true } : {}) }, { slug: 'corsi', titolo: 'Corsi', descrizione: '', testo: '<p>c</p>' }, { slug: 'contatti', titolo: 'Contatti', descrizione: '', testo: '<p>c</p>' }],
     menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'I nostri corsi', slug: 'corsi', indirizzo: null }],
