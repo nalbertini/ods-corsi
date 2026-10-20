@@ -862,7 +862,7 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
     <div className="stack" style={{ gap: 14 }}>
       <div className="row" style={{ gap: 10, alignItems: 'center' }}>
         <span className="sg-etichetta">{manuale ? 'IL MOVIMENTO' : 'INCASSO DI UN ISCRITTO'}</span>
-        {riga.dallaChat && <span className="num sg-tag">DALLA CHAT</span>}
+        {riga.dallaChat && <span className="num sg-tag">Dalla chat</span>}
       </div>
       <span className="sg-riquadro-titolo ob">{riga.descrizione}</span>
       <div className="stack" style={{ gap: 0 }}>
