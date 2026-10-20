@@ -60,6 +60,11 @@ export function pulisciConosciuto(x: unknown): Conosciuto | undefined {
   return t !== undefined && eConosciuto(t) ? t : undefined
 }
 
+/** La domanda del modulo: con più persone, «avete». */
+export const domandaConosciuto = (famiglia: boolean) => `COME CI ${famiglia ? 'AVETE' : 'HAI'} CONOSCIUTO? · FACOLTATIVA`
+/** La prima voce della tendina: vuota, non si manda niente. */
+export const SCEGLI_SE_VUOI = 'Scegli, se vuoi'
+
 /** L'etichetta di un indirizzo (`location.search`): la prima `da`, pulita. */
 export function provenienzaDaIndirizzo(search: string): string | undefined {
   return pulisciProvenienza(new URLSearchParams(search).get('da') ?? undefined)

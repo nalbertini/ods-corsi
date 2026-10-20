@@ -203,7 +203,7 @@ function telefoni() {
   })
 }
 
-/** Le richieste online: tre da guardare, un minore col genitore, e una già rifiutata. */
+/** Le richieste online: tre da guardare, un minore col genitore, e una già rifiutata. Alcune dicono da dove arrivano, una no (Simone). */
 function richieste(adesso: Date): Richiesta[] {
   const fa = (ore: number) => new Date(adesso.getTime() - ore * 60 * MIN).toISOString()
   const aperti = new Set(archivio.dati.corsi.filter((c) => c.attivo).map((c) => c.id))
@@ -226,6 +226,9 @@ function richieste(adesso: Date): Richiesta[] {
       corsi: ['judo-adulti'],
       formula: 'annuale',
       note: 'Ho fatto judo da ragazzo, fino alla cintura verde.',
+      // Da dove arrivano: dalla Home del sito, conosciuti su Instagram.
+      provenienza: 'home',
+      conosciuto: 'instagram',
     },
     {
       id: 'r-esempio-bertola',
@@ -246,6 +249,8 @@ function richieste(adesso: Date): Richiesta[] {
       corsi: ['lotta-2'],
       formula: 'trimestre',
       note: 'Viene con la sua amica Sofia, già iscritta.',
+      // Dalla pagina del corso sul sito; il genitore non ha risposto alla domanda: «Non si sa».
+      provenienza: 'corso-judo',
     },
     {
       id: 'r-esempio-actis',
@@ -282,6 +287,8 @@ function richieste(adesso: Date): Richiesta[] {
       corsi: ['mga'],
       formula: 'trimestre',
       note: 'Mandata due volte per sbaglio.',
+      provenienza: 'segreteria',
+      conosciuto: 'amici-parenti',
     },
   ].map((r) => soloAperti(r as Richiesta))
 }

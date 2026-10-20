@@ -1494,9 +1494,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async titoliSito() {
-      const sito = a().sito
-      if (!sito) return {}
-      return titoliDelSito(sito.pagine.map((p) => ({ slug: p.slug, titolo: p.titoloPubblicato || p.titolo })), sito.rinvii ?? [])
+      // Il sito di prova nasce al primo uso: finché la segreteria non apre SITO, i titoli sono quelli di partenza.
+      const st = a().sito ?? (await sitoProva()).sitoIniziale()
+      return titoliDelSito(st.pagine.map((p) => ({ slug: p.slug, titolo: p.titoloPubblicato || p.titolo })), st.rinvii ?? [])
     },
 
     async statistiche(da, fino): Promise<Statistiche> {

@@ -26,7 +26,7 @@
 -- chiede di rilanciarli. Rilanciare `06` rimette la `invia_iscrizione` di
 -- prima (che ignora le due chiavi): dopo va rilanciato anche questo. Finché
 -- non c'è, il modulo manda le chiavi e il database le ignora; il dettaglio
--- della richiesta non ha le due righe e il riquadro di STATISTICHE dice di
+-- della richiesta dice «Non si sa» alle due righe e il riquadro di STATISTICHE dice di
 -- lanciare questo file.
 -- ---------------------------------------------------------------------------
 

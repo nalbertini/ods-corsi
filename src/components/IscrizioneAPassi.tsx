@@ -13,7 +13,8 @@ import { useListino } from './Costi'
 import { Avanzamento, BarraPasso, Bollino, CaricaFile, Campo, Chip, Dettaglio, NotaCampo, Riepilogo, Riquadro, SceltaCorsi, Tasti, Tasto, TestoAPezzi, TitoloEsito, Titoletto, type Nota, type RigaRiepilogo } from './ds'
 import { Contatti, Prova } from './IscrizioniScreen'
 import { useDialogo } from './segreteria/comune'
-import { Casella, QuantoCosta, SceltaFile } from './ModuloIscrizione'
+import { Casella, ComeCiHaiConosciuto, QuantoCosta, SceltaFile } from './ModuloIscrizione'
+import { provenienzaDellaVisita } from '../lib/provenienza'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../lib/comuneDalCap'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
 
@@ -661,8 +662,12 @@ function Flusso({
     setFase({ tipo: 'invio' })
     // Ogni persona ha la sua richiesta, e il suo modulo con la sua firma: quella dell'io è la firma data per il bambino 0.
     // La ricevuta è una per tutto il modulo: richiesteDelModulo la mette in ogni richiesta.
-    const daMandare = P.richiesteDelModulo(tutte, (p, i) =>
-      P.richiesteDaMandare(p, P.siglaDelGenitore(p, luoghi, provincia), (c) => faiModulo(c.dati, c.minore, c.scelte, c.natoA, c.provincia, trattiDi[p.io ? 0 : i])),
+    // L'etichetta del link della visita e la risposta del modulo: le stesse in ogni richiesta della famiglia.
+    const daMandare = P.conLaProvenienza(
+      P.richiesteDelModulo(tutte, (p, i) =>
+        P.richiesteDaMandare(p, P.siglaDelGenitore(p, luoghi, provincia), (c) => faiModulo(c.dati, c.minore, c.scelte, c.natoA, c.provincia, trattiDi[p.io ? 0 : i])),
+      ),
+      { provenienza: provenienzaDellaVisita(), conosciuto: P.conosciutoDelModulo(tutte) },
     )
     try {
       gestisci(await P.mandaRichieste(d, daMandare))
@@ -1403,6 +1408,7 @@ function Flusso({
           </Riquadro>
         )}
         {senzaCertificato && <Dettaglio tono="avviso">Il certificato medico si porta in segreteria prima della prima lezione: senza non si partecipa.</Dettaglio>}
+        <ComeCiHaiConosciuto id="n-conosciuto" famiglia={famiglia} valore={P.conosciutoDelModulo(tutte)} onScegli={(c) => setPersone((ps) => P.conIlConosciuto(ps, c ?? ''))} />
         <Campo id="n-note" etichetta="NOTE PER LA SEGRETERIA · FACOLTATIVE" largo>
           <textarea
             id="n-note"

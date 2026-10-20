@@ -75,6 +75,9 @@ console.log('\n2. «come ci hai conosciuto»: otto scelte, in quest\'ordine, e n
 {
   ok('le scelte, coi nomi del modulo', (m.CONOSCIUTO ?? []).map((x) => x.nome), ['Amici o parenti', 'Sito', 'Instagram', 'Facebook', 'Google', 'Volantino', 'Passando davanti', 'Altro'])
   ok('le chiavi, quelle del database', (m.CONOSCIUTO ?? []).map((x) => x.chiave), ['amici-parenti', 'sito', 'instagram', 'facebook', 'google', 'volantino', 'passando-davanti', 'altro'])
+  ok('la domanda, da soli', vedi(() => m.domandaConosciuto(false)), 'COME CI HAI CONOSCIUTO? · FACOLTATIVA')
+  ok('la domanda, in famiglia', vedi(() => m.domandaConosciuto(true)), 'COME CI AVETE CONOSCIUTO? · FACOLTATIVA')
+  ok('la prima voce, vuota', m.SCEGLI_SE_VUOI, 'Scegli, se vuoi')
   const c = (x) => vedi(() => m.pulisciConosciuto(x)) ?? '—'
   ok('Instagram', c('instagram'), 'instagram')
   ok('con gli spazi e le maiuscole', c(' Passando-Davanti '), 'passando-davanti')

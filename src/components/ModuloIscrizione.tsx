@@ -3,6 +3,7 @@ import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile }
 import { anniScritti, avvisoCertificato, certificatoDaPortare, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, DETTAGLIO_RICEVUTA, domandaUscita, ESTENSIONI, FILE, fileObbligatori, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante, tipiDaChiedere } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
+import { CONOSCIUTO, domandaConosciuto, origineDellaRichiesta, pulisciConosciuto, SCEGLI_SE_VUOI, type Conosciuto } from '../lib/provenienza'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
 import { altriAperti, corsiPerEta, testoAltriCorsi, type CorsoPerEta, type CorsoRef } from '../lib/listino'
@@ -337,7 +338,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     setFase({ tipo: 'invio', passo: 'Mando le risposte…' })
     let id: string
     try {
-      id = await d!.invia(pronta)
+      // Da dove arriva: l'etichetta del link della visita e la risposta; dall'area iscritti «area-iscritti», senza domanda.
+      const { conosciuto, ...risposte } = pronta
+      id = await d!.invia({ ...risposte, ...origineDellaRichiesta(!!nucleo, conosciuto) })
     } catch (e) {
       setFase({ tipo: 'compila' })
       return setGuaio(e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco')
@@ -719,6 +722,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       </Sezione>
 
       <Sezione titolo="ALTRO">
+        {/* Dall'area iscritti no: la palestra la conoscono già. */}
+        {!nucleo && <ComeCiHaiConosciuto id="m-conosciuto" valore={b.conosciuto} onScegli={(conosciuto) => setB({ ...b, conosciuto })} />}
         <Campo id="m-note" etichetta="NOTE PER LA SEGRETERIA · FACOLTATIVE" largo>
           <textarea id="m-note" className="campo campo-note" rows={3} maxLength={1000} placeholder="Niente dati sulla salute: quelli si portano in segreteria." value={b.note} onChange={metti('note')} />
         </Campo>
@@ -932,5 +937,24 @@ export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { no
         </Tasti>
       </Riquadro>
     </div>
+  )
+}
+
+/**
+ * «Come ci hai conosciuto?»: una tendina facoltativa, otto scelte chiuse e nessun testo libero (`provenienza.ts`).
+ * La prima voce è vuota: lasciata lì, non si manda niente. Con più persone la domanda dice «avete».
+ */
+export function ComeCiHaiConosciuto({ id, valore, onScegli, famiglia = false }: { id: string; valore: Conosciuto | undefined; onScegli: (c: Conosciuto | undefined) => void; famiglia?: boolean }) {
+  return (
+    <Campo id={id} etichetta={domandaConosciuto(famiglia)}>
+      <select id={id} className="campo" value={valore ?? ''} onChange={(e) => onScegli(pulisciConosciuto(e.target.value))}>
+        <option value="">{SCEGLI_SE_VUOI}</option>
+        {CONOSCIUTO.map((c) => (
+          <option key={c.chiave} value={c.chiave}>
+            {c.nome}
+          </option>
+        ))}
+      </select>
+    </Campo>
   )
 }
