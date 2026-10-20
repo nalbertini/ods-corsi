@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<section style="display: flex; flex-direction: column; gap: 12px; width: 100%; min-width: 0; padding: {{padding}}; background: #ffffff; border-radius: 6px; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <div style="display: flex; flex-wrap: {{avvolgi}}; align-items: baseline; gap: 4px 10px">
+    <h3 style="margin: 0; white-space: nowrap; font-size: 14px; font-weight: 700; letter-spacing: 0.22em; color: #46606f">{{titolo}}</h3>
+    <div style="display: {{mostraFilo}}; flex-grow: 1; height: 2px; background: #cfe6f4"></div>
+    <span style="flex-basis: {{baseNota}}; font-size: 12px; color: #46606f">{{nota}}</span>
+  </div>
+  <div style="display: grid; grid-template-columns: {{colonneElenchi}}; gap: 20px 32px; align-items: start">
+    <sc-for list="{{elenchi}}" as="e" hint-placeholder-count="2">
+      <div role="table" style="display: grid; grid-template-columns: {{e.griglia}}; min-width: 0; overflow-x: auto; font-size: 14px">
+        <sc-for list="{{e.celle}}" as="x" hint-placeholder-count="12">
+          <span style="grid-column: {{x.colonna}}; display: flex; align-items: center; justify-content: {{x.lato}}; gap: 4px; min-width: {{x.minimo}}; padding: {{x.padding}}; border-bottom: {{x.filo}}; border-top: {{x.sopra}}; white-space: {{x.avvolgi}}; font-size: {{x.corpo}}; font-weight: {{x.peso}}; letter-spacing: {{x.spazio}}; font-variant-numeric: tabular-nums; color: {{x.colore}}; box-shadow: {{x.tinta}}">{{x.testo}}<span style="display: {{x.mostraSegno}}; font-size: 0.85em; letter-spacing: 0; opacity: 0.35">↕</span><span style="display: {{x.mostraBarra}}; flex-grow: 1; align-items: center; gap: 8px"><span style="position: relative; flex-grow: 1; min-width: 70px; height: 10px; background: #cfe6f4"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: {{x.pc}}; background: #14709f; border-radius: 0 4px 4px 0"></span></span><span style="width: 40px; text-align: right; font-size: 14px; font-weight: 700">{{x.pcTesto}}</span></span></span>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+  <span style="display: {{mostraFrase}}; font-size: 12px; line-height: 1.4; color: #46606f">{{frase}}</span>
+</section>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"ISTRUTTORI"},"nota":{"editor":"text","default":"le lezioni svolte, da titolare o da sostituto"},"colonne":{"editor":"text","default":"ISTRUTTORE|LEZIONI|DA SOSTITUTO|A LEZIONE|SUGLI ISCRITTI"},"righe":{"editor":"text","default":"Marco Rossi|38|4|9,2|%74;Giulia Ferrero|31|—|8,1|%68;Luca Bianco|12|6|7,4|%61"},"totale":{"editor":"text","default":""},"colonne2":{"editor":"text","default":""},"righe2":{"editor":"text","default":""},"totale2":{"editor":"text","default":""},"griglia":{"editor":"text","default":"minmax(120px, 1fr) auto auto auto minmax(160px, 1.2fr)"},"affiancati":{"editor":"boolean","default":true},"ordina":{"editor":"boolean","default":true},"telefono":{"editor":"boolean","default":false},"frase":{"editor":"text","default":""},"$preview":{"width":640,"height":260}}'>
+// Un riquadro di STATISTICHE nel look del sito (src/components/segreteria/Statistiche.tsx): `.sg-riquadro` (src/styles.css riga 2565:
+// padding 18px 20px, gap 12px; nel look sito righe 384-387: tessera bianca senza bordo, raggio 6px) con dentro `Riga` di comune.tsx
+// (righe 338-349: titolo h3 .sg-etichetta 14px 700 0.22em `dim`, in Inter nel look sito riga 302, il filo .rule-line 2px `line-soft`
+// riga 692, la nota 12px `dim` accanto) e una o due tabelle .sg-stat-tabella (righe 2643-2653): 14px, celle padding 8px 10px e filo
+// 1px `surface-2` sotto, testata 11px 700 0.14em `dim` col filo 2px `line`, cifre .num 15px 600 a destra, il nome (th di riga) 600.
+// Le intestazioni ordinano (`colonna` di useOrdina, comune.tsx righe 514-530): la ↕ al 35% (.sg-ordina-segno, riga 2269); `ordina`
+// la mostra. Una cella «%74» e' la Barretta (righe 2651-2653): binario 10px `surface-2`, pieno `blu` col raggio a destra, la cifra
+// 14px 700 in 40px. Una riga che comincia con «!» e' spenta (NON SI SA: nome e cifre in `dim`); «#rrggbb!nome» mette davanti la tinta
+// del corso (.sg-stat-corso riga 2649: bordo sinistro 4px). La frase sotto e' la .sg-sotto 12px della tabella CORSI.
+// righe: righe separate da «;», celle da «|». totale: le cifre della riga IN TUTTO (filo 2px sopra, grassetto). colonne2/righe2/totale2:
+// un secondo elenco nello stesso riquadro, accanto (affiancati) o sotto. griglia: grid-template-columns di ogni elenco.
+// telefono (sotto i 640px, righe 2292-2294): la nota va sotto il titolo, gli elenchi uno sotto l'altro, padding 16px; e ogni riga
+// diventa a due piani (PROPOSTA, non c'e' ancora nell'app: oggi le tabelle scorrono di lato col nome fermo, righe 2296-2297):
+// il nome a tutta riga, sotto le cifre nelle colonne della testata.
+// Ogni elenco scorre di lato se non ci sta (.sg-orari-scorre). Non riprodotti: il passaggio del mouse, la freccia piena della colonna ordinata, lo scorrimento di lato.
+const truthy = (v) => v === true || v === 'true';
+const DIM = '#46606f';
+const TESTO = '#0d2a3d';
+function elenco(colonne, righe, totale, griglia, ordina, telefono) {
+  const testa = String(colonne).split('|').map((x) => x.trim());
+  const n = testa.length;
+  const celle = [];
+  const filo = '1px solid #cfe6f4';
+  const intestazione = (testo, i) => ({
+    testo, colonna: telefono ? (i === 0 ? '1 / -1' : 'auto') : 'auto', lato: i === 0 ? 'flex-start' : 'flex-end',
+    padding: telefono && i === 0 ? '0 0 4px' : '8px 10px', filo: telefono && i === 0 ? '0' : '2px solid #cfe6f4', sopra: '0', avvolgi: 'nowrap',
+    corpo: '11px', peso: 700, minimo: i === 0 ? '0' : 'max-content', spazio: '0.14em', colore: DIM, tinta: 'none',
+    mostraSegno: ordina ? 'inline' : 'none', mostraBarra: 'none', pc: '0%', pcTesto: '',
+  });
+  testa.forEach((t, i) => celle.push(intestazione(t, i)));
+  const riga = (pezzi, tipo) => {
+    let nome = pezzi[0];
+    let tinta = 'none';
+    let spenta = false;
+    if (nome.startsWith('!')) { spenta = true; nome = nome.slice(1); }
+    const m = /^(#[0-9a-fA-F]{6})!(.*)$/.exec(nome);
+    if (m) { tinta = 'inset 4px 0 0 ' + m[1]; nome = m[2]; }
+    const totaleRiga = tipo === 'totale';
+    pezzi.forEach((testo, i) => {
+      const barra = i > 0 && testo.startsWith('%');
+      const primo = i === 0;
+      celle.push({
+        testo: barra ? '' : primo ? nome : testo,
+        colonna: telefono && primo ? '1 / -1' : 'auto',
+        lato: primo ? 'flex-start' : 'flex-end',
+        padding: telefono && primo ? '10px 0 0' : primo && tinta !== 'none' ? '8px 10px 8px 14px' : '8px 10px',
+        filo: telefono && primo ? '0' : filo,
+        sopra: totaleRiga && !(telefono && !primo) ? '2px solid #cfe6f4' : '0',
+        avvolgi: primo ? 'normal' : 'nowrap',
+        corpo: primo ? '14px' : '15px',
+        minimo: primo || barra ? '0' : 'max-content',
+        peso: totaleRiga ? 700 : 600,
+        spazio: '0',
+        colore: spenta ? DIM : TESTO,
+        tinta: primo ? tinta : 'none',
+        mostraSegno: 'none',
+        mostraBarra: barra ? 'flex' : 'none',
+        pc: barra ? testo.slice(1) + '%' : '0%',
+        pcTesto: barra ? testo.slice(1) + '%' : '',
+      });
+    });
+  };
+  String(righe ?? '').split(';').map((r) => r.trim()).filter(Boolean).forEach((r) => riga(r.split('|').map((x) => x.trim()), 'riga'));
+  if (totale) riga(['In tutto', ...String(totale).split('|').map((x) => x.trim())], 'totale');
+  return { griglia: telefono ? `repeat(${n - 1}, minmax(0, 1fr))` : griglia, celle };
+}
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const telefono = truthy(p.telefono);
+    const ordina = p.ordina === undefined ? true : truthy(p.ordina);
+    const griglia = p.griglia || 'minmax(0, 1fr) auto auto auto';
+    const elenchi = [elenco(p.colonne ?? 'ISTRUTTORE|LEZIONI', p.righe ?? '', p.totale ?? '', griglia, ordina, telefono)];
+    if (p.righe2) elenchi.push(elenco(p.colonne2 || p.colonne, p.righe2, p.totale2 ?? '', griglia, ordina, telefono));
+    const accanto = !telefono && elenchi.length > 1 && (p.affiancati === undefined ? true : truthy(p.affiancati));
+    const frase = p.frase ?? '';
+    return {
+      titolo: p.titolo ?? 'ISTRUTTORI', nota: p.nota ?? '',
+      padding: telefono ? '16px' : '18px 20px',
+      avvolgi: telefono ? 'wrap' : 'nowrap', baseNota: telefono ? '100%' : 'auto', mostraFilo: 'block',
+      colonneElenchi: accanto ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)',
+      elenchi, frase, mostraFrase: frase ? 'block' : 'none',
+    };
+  }
+}
+</script>
+</body>
+</html>

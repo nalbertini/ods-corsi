@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Sul telefono, col filtro su Judo kids: il riquadro e' lo stesso, i due elenchi uno sotto l'altro e ogni riga a due piani (il nome sopra, le tre cifre sotto le loro colonne): con tre colonne di cifre non serve scorrere di lato. Contano le richieste che chiedono Judo kids, anche se chiedono un altro corso. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 390px; min-height: 1640px; background: #eef5fa">
+  <dc-import name="BarraTelefono" tema="sito" luogo="SEGRETERIA" da-fare="5" hint-size="100%,62px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 16px; flex: 1; min-width: 0; padding: 20px 16px 24px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">STATISTICHE</h1>
+      <span style="font-size: 14px; color: #46606f">Come va la palestra, mese per mese: chi viene, quando, in quali corsi, quanto entra.</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 12px">
+      <div style="flex: 1 1 140px"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="" valore="Ultimi 3 mesi" hint-size="100%,44px"></dc-import></div>
+      <div style="flex: 1 1 140px"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="" valore="Judo kids" hint-size="100%,44px"></dc-import></div>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Scarica CSV" variante="linea" hint-size="140px,44px"></dc-import>
+    </div>
+    <div style="padding: 14px 20px; border: 2px dashed #cfe6f4; border-radius: 6px; font-size: 13px; color: #46606f">I quattro numeri e i riquadri fino a PROVE MESE PER MESE: come oggi</div>
+    <dc-import name="RiquadroStatistica" titolo="DA DOVE ARRIVANO LE RICHIESTE" nota="le richieste che chiedono Judo kids, arrivate nel periodo, per persona, e come stanno oggi" colonne="ARRIVATE DA|ARRIVATE|ACCOLTE|RIFIUTATE" righe="Judo kids|14|12|—;Home del sito|9|7|1;Link della segreteria|4|4|—;Area iscritti|2|2|—;!NON SI SA|2|2|—" totale="31|27|1" colonne2="COME CI HANNO CONOSCIUTO|ARRIVATE|ACCOLTE|RIFIUTATE" righe2="Amici o parenti|12|10|—;Passando davanti|5|5|—;Instagram|4|3|1;Google|3|3|—;Volantino|2|2|—;Sito|1|1|—;!NON SI SA|4|3|—" totale2="31|27|1" griglia="minmax(0, 1fr) 96px 92px 104px" affiancati="{{ true }}" telefono="{{ true }}" frase="Si conta dal 4 novembre 2026: per persona (una famiglia di tre conta tre), arrivate nel periodo e come stanno oggi; le altre aspettano. Chi chiede due corsi conta in tutti e due col filtro per corso." hint-size="100%,1220px"></dc-import>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1640}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
