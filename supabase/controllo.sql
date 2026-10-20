@@ -363,6 +363,18 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regprocedure('public.registra_movimento_dalla_chat(jsonb)') is not null
     and to_regprocedure('public.movimenti_simili(text)') is not null
     and exists (select 1 from information_schema.columns
-                where table_schema = 'public' and table_name = 'movimenti' and column_name = 'chiave_chat'))
+                where table_schema = 'public' and table_name = 'movimenti' and column_name = 'chiave_chat')),
+  ('73-satispay.sql', 'il pagamento con Satispay dal modulo di iscrizione: importo dal listino, esito e ricevuta',
+    to_regclass('public.pagamenti_satispay') is not null
+    and to_regprocedure('public.emetti_ricevuta_satispay(jsonb,uuid)') is not null
+    and exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'pagamenti_satispay' and column_name = 'persona_id')),
+  ('74-provenienza-richieste.sql', 'da dove arrivano le richieste: l''etichetta del link, «come ci hai conosciuto» e i conteggi',
+    to_regclass('public.richieste_contate') is not null
+    and to_regprocedure('public.richieste_da_dove(date,date)') is not null
+    and exists (select 1 from pg_trigger where tgname = 'richieste_contate_nuova' and not tgisinternal)
+    and exists (select 1 from pg_trigger where tgname = 'richieste_contate_scorda' and not tgisinternal)
+    -- Rilanciare 06 dopo 74 rimette la invia_iscrizione che ignora le due chiavi: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pulisci_provenienza%'))
 ) as x(file, cosa, c)
 order by file, cosa;

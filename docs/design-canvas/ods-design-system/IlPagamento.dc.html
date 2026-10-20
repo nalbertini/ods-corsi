@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 14px; width: 100%; color: #0d2a3d">
+  <span style="font-family: {{cond}}; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">QUANTO PAGHI</span>
+  <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px">
+    <sc-for list="{{righe}}" as="r" hint-placeholder-count="2">
+      <div style="display: flex; gap: 12px; font-size: 15px"><span style="flex-grow: 1">{{r.testo}}</span><span style="font-variant-numeric: tabular-nums">{{r.importo}}</span></div>
+    </sc-for>
+    <div style="display: flex; gap: 12px; padding-top: 6px; border-top: 2px solid #14709f; font-size: 17px; font-weight: 700"><span style="flex-grow: 1">Totale</span><span style="font-variant-numeric: tabular-nums">{{totale}}</span></div>
+  </div>
+  <span style="font-family: {{cond}}; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">PAGHI CON</span>
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <sc-for list="{{scelte}}" as="s" hint-placeholder-count="3">
+      <div style="display: flex; align-items: flex-start; gap: 12px; min-height: 56px; padding: 12px 14px; background: {{s.fondo}}; border: 2px solid #14709f; border-radius: 6px">
+        <span style="flex-shrink: 0; width: 22px; height: 22px; margin-top: 1px; border: 2px solid #14709f; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px">{{s.segno}}</span>
+        <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 600">{{s.testo}}</span><span style="font-size: 13px; color: #46606f">{{s.riga}}</span></span>
+      </div>
+    </sc-for>
+  </div>
+  <span style="font-size: 14px; line-height: 1.4; color: #46606f">{{frase}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"righe":{"editor":"text","default":"Quota associativa:50 €|Annuale Judo adulti:400 €"},"totale":{"editor":"text","default":"450 €"},"modo":{"editor":"enum","options":["satispay","bonifico"],"default":"satispay"},"satispay":{"editor":"boolean","default":true},"perche":{"editor":"text","default":"Niente Satispay per ora: con più corsi il prezzo lo conferma la segreteria"},"$preview":{"width":350,"height":480}}'>
+// Riproduzione di IlPagamento di src/components/ModuloIscrizione.tsx (modulo pubblico, tema sito): QUANTO PAGHI (il `Conto`: righe .stima e
+// totale nel Riquadro stretto) e PAGHI CON, Satispay o Bonifico (`SceltaCorsi` una, in colonna sotto i 560px: `.scelta-pago`), con la frase sotto. Satispay c'e'
+// solo nei casi semplici (`nonSemplice`, `comePuoiPagare` in src/lib/satispay.ts): senza, non compare e la frase dice perche'.
+// Col bonifico, sotto, vengono IBAN, causale e la ricevuta, obbligatoria (`Bonifico`, `SceltaFile`). «In segreteria» non c'è (decisione del 2026-10-20).
+// righe = `Voce:importo` separate da `|`; modo = la scelta accesa (#cfe6f4, ●); satispay = se la scelta c'e'; perche = la frase senza Satispay.
+const COND = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+const MODI = [
+  { id: 'satispay', testo: 'Satispay', riga: 'Paghi subito, dall’app: l’importo è già scritto' },
+  { id: 'bonifico', testo: 'Bonifico', riga: 'Carichi la ricevuta del bonifico' },
+];
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const si = truthy(p.satispay ?? true);
+    const modo = p.modo === 'satispay' && !si ? 'bonifico' : (p.modo ?? 'satispay');
+    const totale = p.totale ?? '450 €';
+    const righe = String(p.righe ?? '').split('|').filter(Boolean).map((x) => { const [testo, importo] = x.split(':'); return { testo, importo }; });
+    const scelte = MODI.filter((m) => m.id !== 'satispay' || si).map((m) => ({ ...m, fondo: m.id === modo ? '#cfe6f4' : '#ffffff', segno: m.id === modo ? '●' : '' }));
+    const frase = !si ? `${p.perche ?? ''}.` : modo === 'satispay' ? `Quando mandi la richiesta si apre Satispay con ${totale}. Confermi lì e torni qui.` : '';
+    return { cond: COND, righe, totale, scelte, frase };
+  }
+}
+</script>
+</body>
+</html>

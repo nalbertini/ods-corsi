@@ -10,6 +10,48 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.137.5 — 21 ottobre 2026
+
+### Modificato
+
+- Le funzioni nuove arrivano con meno giri di prova
+
+## 0.137.4 — 21 ottobre 2026
+
+### Modificato
+
+- Sul sito la pagina Orari chiude con l'invito «Iscriviti», come le altre
+
+## 0.137.3 — 21 ottobre 2026
+
+### Modificato
+
+- Privacy, cookie e contributi pubblici sul sito senza l'invito «Iscriviti» in fondo
+
+## 0.137.2 — 21 ottobre 2026
+
+### Modificato
+
+- La settimana di prova sul sito costa 10 €
+
+## 0.137.1 — 20 ottobre 2026
+
+### Risolto
+
+- Il modulo non mostra più «PUOI PAGARE IN SEGRETERIA» prima di scegliere come pagare
+
+## 0.137.0 — 20 ottobre 2026
+
+### Novità
+
+- L'iscrizione si paga con Satispay nel modulo, e il pagamento si segna da solo
+
+## 0.136.0 — 20 ottobre 2026
+
+### Novità
+
+- Claude legge i conti: totali per periodo, saldo del conto e spese da classificare
+
 ## 0.135.0 — 20 ottobre 2026
 
 ### Novità

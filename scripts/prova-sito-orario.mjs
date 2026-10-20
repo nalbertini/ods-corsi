@@ -33,6 +33,10 @@ const carica = async (file) => {
 }
 const o = await carica('src/lib/sitoOrario.ts')
 const g = await carica('src/lib/sitoGenera.ts')
+// Ogni link al modulo porta l'etichetta della sua pagina (`?da=home`…, provata in prova-sito-genera.mjs): qui si guarda
+// l'impaginazione, che non cambia, e la si confronta senza l'etichetta con quella di prima.
+const senzaDa = (r) => (r && typeof r === 'object' ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/(\?|&amp;|&)da=[a-z0-9-]+/g, '') : v])) : r)
+const generaSito = (d) => senzaDa(g.generaSito(d))
 const sp = await carica('src/lib/sitoProva.ts')
 const sb = await carica('src/lib/segreteriaSupabase.ts')
 const ind = await carica('src/lib/indirizzoSegreteria.ts')
@@ -124,7 +128,7 @@ const A_MANO = '<h2>Orario delle lezioni</h2><h3>Gruppo piccoli</h3><p><strong>0
 const CON_FOTO = PUL + FOTO + VOCI(['Giorni', 'Lun e mer'], ['Età', 'Dal 2012'], ['Costo', 'Da 30 €'], ['Sala', 'Tatami']) + A_MANO
 // Senza foto di apertura la fascia blu prende le prime tre voci: giorno, ora, età.
 const FASCIA = PUL + VOCI(['Giorno', 'Martedì'], ['Ora', '20:00'], ['Età', 'Dal 2012'], ['Costo', 'Da 30 €'])
-const pagina = (testo, extra = {}, dati = {}) => g.generaSito({
+const pagina = (testo, extra = {}, dati = {}) => generaSito({
   dominio: 'https://officinedellosport.it',
   pagine: [{ slug: 'avviamento', titolo: 'Avviamento', descrizione: 'Per iniziare.', testo, ...extra }, { slug: 'corsi', titolo: 'Corsi', descrizione: '', testo: '<p>c</p>' }, { slug: 'contatti', titolo: 'Contatti', descrizione: '', testo: '<p>c</p>' }],
   menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }],
@@ -142,8 +146,8 @@ const ORARI = orariDel(r(A, 1, '17:00'), r(A, 3, '17:00'), r(B, 2, '16:30'), r(B
 
 console.log('\n3. Pagina non collegata: l’HTML è quello di oggi')
 // Le impronte sono dell’HTML di una pagina non collegata (senza campi nuovi): cambiano se cambia la testata, il logo o il CSS, e allora si rifanno.
-// Rifatte quando ogni pagina ha avuto «Salta al contenuto» in cima e il telefono del piede è diventato un link tel:, , per le correzioni di Scrivici, logo e numeri 1-4, e per le recensioni a carte uguali (via il CSS di «In breve»), e quando i corsi della Home sono tornati un elenco unico (via il CSS dei gruppi per età), e quando il piede degli Istruttori si è staccato dalla griglia.
-const OGGI = { dati: "6561c53384adf2d00e676f663b71f6b32c8da87fdfcb8b794933512dc1fa1f75", foto: '06c15953b1a0080816998ced157de9487027db7d09946da756532d2f624dec67', fascia: '3d508e712c867a0902540939c22f6b5daf5ad40c8a1dc31677ed61637c649cf6' }
+// Rifatte quando ogni pagina ha avuto «Salta al contenuto» in cima e il telefono del piede è diventato un link tel:, , per le correzioni di Scrivici, logo e numeri 1-4, e per le recensioni a carte uguali (via il CSS di «In breve»), e quando i corsi della Home sono tornati un elenco unico (via il CSS dei gruppi per età), e quando il piede degli Istruttori si è staccato dalla griglia, e per la settimana di prova a 10 euro.
+const OGGI = { dati: "6561c53384adf2d00e676f663b71f6b32c8da87fdfcb8b794933512dc1fa1f75", foto: 'a98365ce4b7c1d3ee79fc38cd85d753ecd40b8ad606e14b8df18f656475e7247', fascia: '7fdd531174c88e244f1b7be8fd5b451b914afa01658381568590b67a1f3c9351' }
 ok('con foto di apertura: HTML di oggi', sha(pagina(CON_FOTO)), OGGI.foto)
 ok('fascia blu: HTML di oggi', sha(pagina(FASCIA)), OGGI.fascia)
 ok('l’orario a mano si vede ancora', /09:15 – 10:15/.test(testo(main(pagina(CON_FOTO)))), true)
@@ -188,7 +192,7 @@ console.log('\n6. Dal database al generatore, e senza 68-sito-orario.sql')
 {
   const riga = (extra = {}) => ({ slug: 'avviamento', titolo: 'Avviamento', descrizione: 'Per iniziare.', testo: CON_FOTO, pubblicata_il: null, ...extra })
   const dati = (pagine, orari) => prova(() => g.datiDaRisposte('https://officinedellosport.it/', pagine, [], [], orari))
-  const html = (d) => prova(() => g.generaSito({ ...d, pagine: [...d.pagine, { slug: 'corsi', titolo: 'Corsi', descrizione: '', testo: '<p>c</p>' }], ospitiImmagini: [P] })['avviamento/index.html'])
+  const html = (d) => prova(() => generaSito({ ...d, pagine: [...d.pagine, { slug: 'corsi', titolo: 'Corsi', descrizione: '', testo: '<p>c</p>' }], ospitiImmagini: [P] })['avviamento/index.html'])
   const riceve = dati([riga({ corsi_collegati: [A] })], [{ corso_id: A, giorno: 1, ora: '17:00:00', durata_min: 60 }])
   ok('i corsi collegati della pagina arrivano al generatore', riceve.pagine?.[0]?.corsiCollegati, [A])
   ok('gli orari arrivano con le chiavi del generatore', riceve.orari, [{ corsoId: A, giorno: 1, ora: '17:00:00', durataMin: 60 }])

@@ -21,7 +21,9 @@ const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
-import { richiesteDi, spostaRichieste } from './richiesteProva'
+import { cosaNonVaSatispay, satispayPerPersona } from './satispay'
+import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
+import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
@@ -644,6 +646,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async persone() {
       potaCertificati()
+      const conSatispay = satispayPerPersona(pagamentiSatispayProva())
       return a()
         .persone.filter((p) => p.ruolo === 'iscritto')
         .map(
@@ -663,6 +666,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             documento: !!p.documento,
             pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
+            satispay: conSatispay.get(p.id),
             nucleo: p.nucleo,
             natoIl: anagraficaDi(p.id)?.dati.natoIl,
           }),
@@ -1009,7 +1013,16 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
-    async emettiRicevuta(dati) {
+    async emettiRicevuta(dati, satispayId) {
+      // Come `emetti_ricevuta_satispay`, prima della ricevuta: un pagamento arrivato, una ricevuta sola, gli stessi soldi.
+      if (satispayId) {
+        const sp = pagamentiSatispayProva().find((x) => x.id === satispayId)
+        if (sp?.stato !== 'pagato') throw new Error('Questo pagamento Satispay non è arrivato')
+        if (sp.ricevutaId) throw new Error('Questo pagamento Satispay è già in una ricevuta')
+        if (!sp.personaId || sp.personaId !== dati.personaId) throw new Error('Il pagamento Satispay è di un’altra persona: accogli prima la sua richiesta')
+        const no = cosaNonVaSatispay(dati.voci, sp)
+        if (no) throw new Error(no)
+      }
       if (dati.personaId) persona(dati.personaId)
       const r = { ...dati, intestatario: pulisciIntestatario(dati.intestatario), note: dati.note?.trim() || undefined }
       const no = cosaNonVa(r)
@@ -1027,7 +1040,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const nuova: Ricevuta = { ...resto, voci, id: `r-${unico()}`, anno, numero, totale: c.totale, pagato: c.pagato, creataIl: new Date().toISOString() }
       a().ricevute = [...tutte, nuova]
       salva()
+      if (satispayId) salvaSatispay(pagamentiSatispayProva().map((x) => (x.id === satispayId ? { ...x, ricevutaId: nuova.id } : x)))
       return nuova
+    },
+
+    async pagamentiSatispay() {
+      return pagamentiSatispayProva()
     },
 
     async annullaRicevuta(id) {
@@ -1304,7 +1322,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (!cassa) throw new Error('Scegli la cassa')
       const nota = d.nota?.trim() || undefined
       // Gli incassi in contanti si ricavano da ricevute e pagamenti a mano, come nell'elenco della schermata.
-      const elenco = elencoMovimenti(a().ricevute ?? [], a().pagamentiDiretti ?? [], [], casse, movimenti, voci)
+      const elenco = elencoMovimenti(a().ricevute ?? [], a().pagamentiDiretti ?? [], [], casse, movimenti, voci, pagamentiSatispayProva())
       const previsto = previstoCassa(casse, elenco, cassa.id, d.data)
       const troppo = cosaNonVaPrevisto(previsto, d.contato)
       if (troppo) throw new Error(troppo)
@@ -1479,6 +1497,30 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async statisticheSito(da, a) {
       // In prova il sito vero non si chiama: numeri inventati, sempre gli stessi.
       return { numeri: numeriDiProva(da, a) }
+    },
+
+    async richiesteDaDove(da, fino) {
+      // Come richieste_da_dove() di 74-provenienza-richieste.sql: le righe del periodo raggruppate, e da quando si conta.
+      const contate = richiesteContateProva()
+      const dal = chiaveGiorno(da)
+      const al = chiaveGiorno(fino)
+      if (al < dal) throw new Error('il periodo è al contrario')
+      const per = new Map<string, RigaDaDove>()
+      for (const x of contate) {
+        if (x.giorno < dal || x.giorno > al) continue
+        const k = JSON.stringify([x.provenienza ?? null, x.conosciuto ?? null, x.corsi, x.stato])
+        const r = per.get(k) ?? { ...(x.provenienza ? { provenienza: x.provenienza } : {}), ...(x.conosciuto ? { conosciuto: x.conosciuto } : {}), corsi: x.corsi, stato: x.stato, n: 0 }
+        r.n++
+        per.set(k, r)
+      }
+      const primo = contate.reduce<string | undefined>((m, x) => (m === undefined || x.giorno < m ? x.giorno : m), undefined)
+      return { dal: primo, righe: [...per.values()] }
+    },
+
+    async titoliSito() {
+      // Il sito di prova nasce al primo uso: finché la segreteria non apre SITO, i titoli sono quelli di partenza.
+      const st = a().sito ?? (await sitoProva()).sitoIniziale()
+      return titoliDelSito(st.pagine.map((p) => ({ slug: p.slug, titolo: p.titoloPubblicato || p.titolo })), st.rinvii ?? [])
     },
 
     async statistiche(da, fino): Promise<Statistiche> {

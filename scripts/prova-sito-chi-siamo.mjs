@@ -81,7 +81,7 @@ console.log('\n7. Testata e invito come nel design')
 {
   const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'chi-siamo', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Chi siamo', slug: 'chi-siamo', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contattaci', slug: 'contatti', indirizzo: null }], rinvii: [] })['chi-siamo/index.html']
   ok('nella testata la pagina aperta è segnata (aria-current) e una sola', [conta(h, /aria-current="page"/g), /<a href="\/chi-siamo\/" aria-current="page">/.test(h)], [1, true])
-  ok('l’invito dice anche della settimana a 5 euro', h.includes('Collegno. Una settimana a 5 euro: provi tutte le discipline e scegli.'), true)
+  ok('l’invito dice anche della settimana a 10 euro', h.includes('Collegno. Una settimana a 10 euro: provi tutte le discipline e scegli.'), true)
   const css = h.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
   ok('l’invito alto 300px, con margini della pagina e 36px 40px dentro', /\.invito\{margin:96px var\(--margine\) 6px;padding:36px 40px;min-height:300px\}/.test(css), true)
   ok('«Prova» a 170px a 1440px', /\.invito \.parola\{font-size:clamp\(96px,11\.8vw,170px\)\}/.test(css), true)

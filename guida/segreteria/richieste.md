@@ -16,7 +16,10 @@ iscritto per il suo nucleo familiare, dalla sua area: la scheda dice chi è
 suo nucleo. **Da stampare** se la richiesta ha ancora la carta d'identità
 caricata. **Fuori età** se ha scelto almeno un corso
 che non è per la sua età, neanche coi sei mesi di tolleranza: è da
-richiamare, ma si può accogliere lo stesso.
+richiamare, ma si può accogliere lo stesso. Se ha pagato col modulo:
+**Pagata** (Satispay arrivato), **Satispay in attesa** (non ancora
+confermato) o, rossa, **Da restituire** (pagata e poi rifiutata). Nella
+richiesta la stessa cosa è scritta per intero, con l'importo e il giorno.
 
 Normalmente si vedono solo le nuove; **Anche quelle già gestite** mostra tutte,
 e **Da stampare** (finché ce ne sono) quelle con il documento da
@@ -28,6 +31,22 @@ Un clic apre la richiesta in una finestra sopra l'elenco ([come funziona](README
 un minore), email, telefono e l'eventuale telefono 2, corsi (con «fuori età: nati 2017–2019, richiama» — gli anni del corso —
 accanto a un corso che non è per la sua età, secondo
 **NATI DAL / AL** del [listino](listino.md) coi sei mesi di tolleranza), come paga (trimestre o annuale), note.
+
+In fondo ai dati, due righe che vede solo la segreteria:
+
+- **ARRIVATA DA** — da quale link è arrivata: **Home del sito**, il titolo
+  della pagina del sito da cui è partita (la pagina di un corso, Orari…,
+  anche se nel frattempo ha cambiato indirizzo), **Link della segreteria**
+  (quello di COPIA LINK ISCRIZIONI), **Area iscritti** (una persona aggiunta da
+  un iscritto al suo nucleo), o la parola del link com'è scritta
+  (`volantino-ottobre`, per un link fatto a mano: vedi [Sito](sito.md#un-link-per-i-social-o-un-volantino));
+- **CI HA CONOSCIUTO** — la risposta a «Come ci hai conosciuto?».
+
+**Non si sa** quando manca: chi non ha risposto, un link senza etichetta, le
+richieste arrivate prima. Le due righe non passano alla scheda dell'iscritto
+accolto; i numeri sono in [Statistiche](statistiche.md): le richieste eliminate da
+nuove, come lo spam, non contano; quelle accolte o rifiutate sì, anche
+eliminate.
 
 Una famiglia può iscriversi in più persone insieme, fino a sei: ognuna ha la
 sua richiesta, e nelle note di ognuna c'è una riga che le lega, «mandata
@@ -82,9 +101,12 @@ Accolta o rifiutata, la finestra si chiude da sola e si torna all'elenco, alla p
   trovate l'indirizzo da richiamare. **Apri la scheda** porta
   alla sua scheda in [Iscritti](iscritti.md).
 - **Rifiuta** — chi l'ha mandata **non viene avvisato**: va chiamato o scritto
-  a mano.
+  a mano. Se aveva già pagato con Satispay, la conferma lo dice: i soldi
+  restano in [PAGAMENTI](pagamenti.md) e vanno restituiti dall'app Satispay
+  Business, poi registrati in CONTABILITÀ.
 - **Elimina richiesta e file**, in fondo — cancella per sempre la richiesta con i suoi file. La scheda in
-  elenco, se c'è, resta.
+  elenco, se c'è, resta. Anche il pagamento Satispay resta, col nome di chi
+  l'ha fatto.
 
 Una richiesta accolta o rifiutata resta qui, con quello che diceva, finché non
 la si elimina.

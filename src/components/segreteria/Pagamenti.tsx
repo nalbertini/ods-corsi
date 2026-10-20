@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
+import { righeSatispay } from '../../lib/satispay'
 import { csvPagamenti, daIncassare, filtra, filtraResidui, inOrdine, intervalloDi, intervalloMese, METODI_A_MANO, righeDaRicevute, righeDirette, riepilogo, type RigaPagamento } from '../../lib/pagamenti'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { chiaveGiorno } from '../../lib/sala'
@@ -27,14 +28,16 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
   const ricevute = useCarica(() => d.ricevute(), [d])
   // Senza 54-pagamenti-diretti.sql restano le ricevute, e il guaio si dice.
   const diretti = useCarica(() => d.pagamentiDiretti(), [d])
+  // Satispay dal modulo: arrivati e non ancora in una ricevuta (`righeSatispay`). Senza 73-satispay.sql, nessuno.
+  const satispay = useCarica(() => d.pagamentiSatispay(), [d])
   const persone = useCarica(() => (soloNomi ? Promise.resolve([]) : d.persone()), [d, soloNomi])
   // L'amministrazione non legge le persone: di chi ha pagato ha il nome e il cognome, e nient'altro (`nomi_persone`).
   const soloIlNome = useCarica(
     async () => {
       if (!soloNomi || !ricevute.dato || !diretti.dato) return []
-      return d.nomiPersone([...ricevute.dato, ...diretti.dato].map((x) => x.personaId).filter((x): x is string => !!x))
+      return d.nomiPersone([...ricevute.dato, ...diretti.dato, ...(satispay.dato ?? [])].map((x) => x.personaId).filter((x): x is string => !!x))
     },
-    [d, soloNomi, ricevute.dato, diretti.dato],
+    [d, soloNomi, ricevute.dato, diretti.dato, satispay.dato],
   )
   // Solo per l'amministrazione, che non apre le schede: il pagamento di una riga (da annullare) e il modulo per registrarne uno.
   const { avviso, fai } = useAvviso()
@@ -45,6 +48,7 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
     setRegistrando(false)
     void ricevute.ricarica()
     void diretti.ricarica()
+    void satispay.ricarica()
   }
   const [cerca, setCerca] = useState('')
   const [periodo, setPeriodo] = useState<Periodo>('anno')
@@ -71,7 +75,7 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
     return p ? `${p.cognome} ${p.nome}` : '—'
   }
   const intervallo = intervalloDi(periodo, oggi, dal, al)
-  const righe = inOrdine([...righeDaRicevute(ricevute.dato ?? []), ...righeDirette(diretti.dato ?? [], nomeDi)])
+  const righe = inOrdine([...righeDaRicevute(ricevute.dato ?? []), ...righeDirette(diretti.dato ?? [], nomeDi), ...righeSatispay(satispay.dato ?? [], nomeDi)])
   const trovate = filtra(righe, { testo: cerca, dal: intervallo.dal, al: intervallo.al, metodo, soloSenzaRicevuta: senzaRicevuta, annullati })
   const residui = filtraResidui(daIncassare(ricevute.dato ?? []), cerca)
 

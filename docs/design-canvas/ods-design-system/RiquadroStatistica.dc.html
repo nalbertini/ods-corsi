@@ -50,9 +50,13 @@
 // del corso (.sg-stat-corso riga 2649: bordo sinistro 4px). La frase sotto e' la .sg-sotto 12px della tabella CORSI.
 // righe: righe separate da «;», celle da «|». totale: le cifre della riga IN TUTTO (filo 2px sopra, grassetto). colonne2/righe2/totale2:
 // un secondo elenco nello stesso riquadro, accanto (affiancati) o sotto. griglia: grid-template-columns di ogni elenco.
-// telefono (sotto i 640px, righe 2292-2294): la nota va sotto il titolo, gli elenchi uno sotto l'altro, padding 16px; e ogni riga
-// diventa a due piani (PROPOSTA, non c'e' ancora nell'app: oggi le tabelle scorrono di lato col nome fermo, righe 2296-2297):
-// il nome a tutta riga, sotto le cifre nelle colonne della testata.
+// telefono (sotto i 560px, src/styles.css nel blocco `@media (max-width: 560px)`): la nota va sotto il titolo, gli elenchi uno
+// sotto l'altro, padding 16px. Nel riquadro DA DOVE ARRIVANO LE RICHIESTE (`.sg-da-dove`, ElencoDaDove in Statistiche.tsx) ogni
+// riga e' a due piani: il nome a tutta riga (padding 10px 0 0, senza filo; nella testata 0 0 4px), sotto le cifre nelle colonne
+// della testata; celle con 4px ai lati, testata con spaziatura 0.08em, e il titolo del riquadro che va a capo (a 360px non sta).
+// Nello stesso riquadro, sopra il telefono: il nome (e la testata «COME CI HANNO CONOSCIUTO») va a capo, le cifre hanno 6px ai lati,
+// e sotto i 1200px i due elenchi vanno uno sotto l'altro (`.sg-da-dove-due`): affiancati, RIFIUTATE usciva a 1280.
+// Le altre tabelle delle statistiche, con piu' colonne, scorrono ancora di lato col nome fermo.
 // mesi: il riquadro «mese per mese» (PRESENZE, ISCRITTI, PROVE, INCASSI MESE PER MESE): al posto delle tabelle le colonne di Colonne.dc.html
 // («etichetta:valore|...», l'ultimo e' il mese in corso), con `euro`, `sopra` e `dettaglio` che passano a lei; `somma` e `sommaDopo` sono la riga
 // sopra le colonne di INCASSI (`Incassi`, Statistiche.tsx righe 728-736: cifra .num 22px 700, il resto 14px). Con `mesi` le righe non si vedono.

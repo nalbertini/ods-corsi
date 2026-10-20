@@ -26,6 +26,10 @@ const { outputFiles } = await build({
   banner: { js: "import { createRequire as __cr } from 'node:module'; const require = __cr(process.cwd() + '/');" },
 })
 const g = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+// Ogni link al modulo porta l'etichetta della sua pagina (`?da=home`…, provata in prova-sito-genera.mjs): qui si guarda
+// l'impaginazione, che non cambia, e la si confronta senza l'etichetta con quella di prima.
+const senzaDa = (r) => (r && typeof r === 'object' ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/(\?|&amp;|&)da=[a-z0-9-]+/g, '') : v])) : r)
+const generaSito = (d) => senzaDa(g.generaSito(d))
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -34,7 +38,7 @@ const ok = (cosa, avuto, voluto) => {
   if (!va) guai++
 }
 
-const pagina = (t, slug = 'corsi') => g.generaSito(F.dati(t, slug))[slug === 'home' ? 'index.html' : `${slug}/index.html`] ?? ''
+const pagina = (t, slug = 'corsi') => generaSito(F.dati(t, slug))[slug === 'home' ? 'index.html' : `${slug}/index.html`] ?? ''
 const main = (h) => h.match(/<main([^>]*)>([\s\S]*)<\/main>/)?.[2] ?? ''
 const mainTag = (h) => h.match(/<main([^>]*)>/)?.[1] ?? ''
 const sha = (t) => createHash('sha256').update(t).digest('hex')
@@ -105,7 +109,7 @@ console.log('\n1. Quando la pagina è «nuova», e quando resta com’era')
   ok('il pulsante da solo non basta: senza h3 con link è la pagina di prima', nuova(pagina(`<p>${F.FRASE}</p>${F.CTA()}`)), false)
   const altreSlug = ['home', 'chi-siamo'].map((s) => nuova(pagina(F.TESTO_NUOVO, s)))
   ok('lo stesso testo su home e chi-siamo non è Corsi nuova', altreSlug, [false, false])
-  const diLegge = g.generaSito(F.dati(F.TESTO_NUOVO, 'corsi', { pagine: [{ slug: 'corsi', titolo: 'T', descrizione: 'd', testo: F.TESTO_NUOVO, diLegge: true }] }))['corsi/index.html'] ?? ''
+  const diLegge = generaSito(F.dati(F.TESTO_NUOVO, 'corsi', { pagine: [{ slug: 'corsi', titolo: 'T', descrizione: 'd', testo: F.TESTO_NUOVO, diLegge: true }] }))['corsi/index.html'] ?? ''
   ok('una pagina di legge non è Corsi nuova', nuova(diLegge), false)
   ok('il testo della Home nuova su «corsi» (h3 senza link) resta com’era', nuova(pagina(readFileSync(new URL('../docs/sito/home.html', import.meta.url), 'utf8').replace(/^[\s\S]*?<p>/, '<p>'))), false)
   ok('il pulsante in un punto qualunque del testo basta (anche prima delle schede)', nuova(pagina(`<p>${F.PULSANTE}</p><p>${F.FRASE}</p>${F.SCHEDE_HOME}`)), true)

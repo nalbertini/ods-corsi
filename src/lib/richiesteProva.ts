@@ -1,10 +1,14 @@
-import type { DatiRichieste, FileRichiesta, Richiesta, TipoFile } from './richieste'
+import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
 import { controlla, DA_STAMPARE, pulisciCf, minorenne } from './richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { archivio, certificatiProva, scordaCertificato } from './archivioProva'
 import { nomeProprio } from './nomi'
 import { chiaveGiorno } from './sala'
 import { MASSIMO_PERSONE } from './passiIscrizione'
+import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
+import { caricaListino } from './listino'
+import { stimaIscrizione } from './nucleo'
+import { nonSemplice, senzaVoceDelCorso, type PagamentoSatispay } from './satispay'
 
 /**
  * Le richieste di iscrizione senza server.
@@ -33,6 +37,38 @@ function leggi(): Richiesta[] {
 
 const file = new Map<string, Map<TipoFile, FileRichiesta>>()
 
+const DOVE_SATISPAY = 'ods-corsi:prova-satispay'   // vedi la nota in coda.ts
+
+/**
+ * I pagamenti Satispay di prova, come `pagamenti_satispay`: li legge anche la
+ * segreteria di prova, con la scheda della richiesta quando è stata accolta.
+ * `ricevutaId` c'è solo se quella ricevuta vale: annullata, i soldi tornano
+ * liberi, come in `emetti_ricevuta_satispay`.
+ */
+export function pagamentiSatispayProva(): PagamentoSatispay[] {
+  try {
+    const p: PagamentoSatispay[] = JSON.parse(localStorage.getItem(DOVE_SATISPAY) ?? '[]')
+    if (!Array.isArray(p)) return []
+    const richieste = leggi()
+    const valide = new Set((archivio.dati.ricevute ?? []).filter((r) => !r.annullataIl).map((r) => r.id))
+    return p.map((x) => ({
+      ...x,
+      personaId: richieste.find((r) => r.id === x.richiestaId && r.stato === 'accolta')?.personaId,
+      ricevutaId: x.ricevutaId && valide.has(x.ricevutaId) ? x.ricevutaId : undefined,
+    }))
+  } catch {
+    return []
+  }
+}
+
+export function salvaSatispay(p: PagamentoSatispay[]) {
+  try {
+    localStorage.setItem(DOVE_SATISPAY, JSON.stringify(p))
+  } catch {
+    /* resta per questa sessione */
+  }
+}
+
 /** Le richieste di prova, per l'esportazione dei dati di una persona. */
 export function richiesteDi(personaId: string): Richiesta[] {
   return leggi().filter((r) => r.personaId === personaId)
@@ -47,20 +83,74 @@ export function spostaRichieste(da: string, a: string) {
   }
 }
 
+/** Come una riga di `richieste_contate` (74-provenienza-richieste.sql): niente dati personali. */
+export interface RichiestaContata {
+  /** Solo per seguire lo stato: tolta quando la richiesta si elimina accolta o rifiutata. */
+  richiestaId?: string
+  /** `AAAA-MM-GG`. */
+  giorno: string
+  provenienza?: string
+  conosciuto?: string
+  corsi: string[]
+  stato: StatoRichiesta
+}
+
+// I conteggi in una chiave loro, rilette a ogni uso come le richieste: con il
+// modulo e la segreteria aperti in due schede, nessuna delle due scrive sopra
+// i conteggi dell'altra con una copia vecchia (vedi la nota in coda.ts).
+const DOVE_CONTATE = 'ods-corsi:prova-richieste-contate'
+
+/** I conteggi della prova, letti adesso: per `richiesteDaDove` della segreteria di prova. */
+export function richiesteContateProva(): RichiestaContata[] {
+  try {
+    const r = JSON.parse(localStorage.getItem(DOVE_CONTATE) ?? '[]')
+    return Array.isArray(r) ? r : []
+  } catch {
+    return []
+  }
+}
+
+function cambiaContate(f: (c: RichiestaContata[]) => RichiestaContata[]) {
+  try {
+    localStorage.setItem(DOVE_CONTATE, JSON.stringify(f(richiesteContateProva())))
+  } catch {
+    /* senza spazio il conteggio si perde: è la prova */
+  }
+}
+
+/** Una richiesta che nasce, come il trigger after insert: una riga, una volta sola. */
+function conta(r: Richiesta) {
+  cambiaContate((c) => (c.some((x) => x.richiestaId === r.id) ? c : [...c, { richiestaId: r.id, giorno: chiaveGiorno(new Date(r.creataIl)), provenienza: r.provenienza, conosciuto: r.conosciuto, corsi: r.corsi, stato: r.stato }]))
+}
+
+/** Una richiesta che cambia, come il trigger after update: solo la riga che c'è; una richiesta di prima non ne ha. */
+function aggiornaConteggio(r: Richiesta) {
+  cambiaContate((c) => c.map((x) => (x.richiestaId === r.id ? { ...x, provenienza: r.provenienza, conosciuto: r.conosciuto, corsi: r.corsi, stato: r.stato } : x)))
+}
+
+/** Una richiesta eliminata, come il trigger before delete e `on delete set null`: da nuova (lo spam) non conta più; accolta o rifiutata resta, senza legame. */
+function scordaConteggio(id: string) {
+  cambiaContate((c) => c.filter((x) => !(x.richiestaId === id && x.stato === 'nuova')).map(({ richiestaId, ...x }) => (richiestaId === id ? x : { richiestaId, ...x })))
+}
+
 /** Gli esempi di `esempiProva`: si aggiungono, e una richiesta che c'è già resta com'è. */
 export function aggiungiRichiesteProva(nuove: Richiesta[]) {
   const tutte = leggi()
   const ci = new Set(tutte.map((r) => r.id))
+  const davvero = nuove.filter((r) => !ci.has(r.id))
   try {
-    localStorage.setItem(DOVE, JSON.stringify([...tutte, ...nuove.filter((r) => !ci.has(r.id))]))
+    localStorage.setItem(DOVE, JSON.stringify([...tutte, ...davvero]))
   } catch {
     /* niente esempi, pazienza */
   }
+  davvero.forEach(conta)
 }
 
 export function scordaRichiesteProva() {
   try {
     localStorage.removeItem(DOVE)
+    localStorage.removeItem(DOVE_CONTATE)
+    localStorage.removeItem(DOVE_SATISPAY)
   } catch {
     /* pazienza */
   }
@@ -84,6 +174,8 @@ export function creaRichiesteProva(): DatiRichieste {
   const cambia = (id: string, cambi: Partial<Richiesta>) => {
     tutte = tutte.map((r) => (r.id === id ? { ...r, ...cambi } : r))
     salva()
+    const r = tutte.find((x) => x.id === id)
+    if (r) aggiornaConteggio(r)
   }
 
   return {
@@ -135,9 +227,13 @@ export function creaRichiesteProva(): DatiRichieste {
         telefono2: dati.telefono2?.trim() || undefined,
         note: dati.note?.trim() || undefined,
         nucleoDi: dati.nucleoDi || undefined,
+        // Come il database: pulite, o scartate senza fermare la richiesta.
+        provenienza: pulisciProvenienza(dati.provenienza),
+        conosciuto: pulisciConosciuto(dati.conosciuto),
       }
       tutte = [r, ...tutte]
       salva()
+      conta(r)
       return r.id
     },
 
@@ -151,6 +247,32 @@ export function creaRichiesteProva(): DatiRichieste {
       const url = typeof URL.createObjectURL === 'function' ? URL.createObjectURL(f) : ''
       suoi.set(tipo, { tipo, url, pdf: f.type === 'application/pdf' })
       file.set(richiestaId, suoi)
+    },
+
+    async paga(richiestaId) {
+      // Come `satispay_prepara`: un link sbagliato o vecchio dice la stessa cosa di una richiesta già gestita.
+      const r = tutte.find((x) => x.id === richiestaId)
+      if (r?.stato !== 'nuova') throw new Error('Questa richiesta non si può più pagare online: scrivi alla segreteria')
+      const tutti = pagamentiSatispayProva()
+      if (!tutti.some((p) => p.richiestaId === richiestaId && p.stato === 'pagato')) {
+        // Nessuna rete in prova: Satispay «approva» subito, con l'importo che darebbe il database.
+        const { listino } = await caricaListino()
+        const corsi = r.corsi.map((id) => archivio.dati.corsi.find((c) => c.id === id) ?? { id, nome: id })
+        const s = stimaIscrizione({ chi: `${r.cognome} ${r.nome}`, corsi, formula: r.formula }, [], chiaveGiorno(new Date()), listino)
+        if (s.senzaPrezzo.length || senzaVoceDelCorso(corsi, listino).length || nonSemplice(corsi, listino)) throw new Error('Un corso non ha ancora il prezzo: paga col bonifico')
+        const ora = new Date().toISOString()
+        salvaSatispay([...tutti, { id: `sp-${Date.now().toString(36)}`, richiestaId, chi: `${r.cognome} ${r.nome}`, importo: s.totale, stato: 'pagato', creatoIl: ora, pagatoIl: ora }])
+      }
+      return { link: `${location.pathname}?prova&pagamento=${encodeURIComponent(richiestaId)}` }
+    },
+
+    async satispayAttivo() {
+      return true
+    },
+
+    async statoPagamento(richiestaId) {
+      const p = pagamentiSatispayProva().find((x) => x.richiestaId === richiestaId && x.stato !== 'non-andato')
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagatoIl } : null
     },
 
     async richieste() {
@@ -258,6 +380,7 @@ export function creaRichiesteProva(): DatiRichieste {
       file.delete(richiestaId)
       tutte = tutte.filter((r) => r.id !== richiestaId)
       salva()
+      scordaConteggio(richiestaId)
     },
   }
 }

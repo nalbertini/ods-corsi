@@ -31,6 +31,10 @@ const { outputFiles } = await build({
   banner: { js: "import { createRequire as __cr } from 'node:module'; const require = __cr(process.cwd() + '/');" },
 })
 const g = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+// Ogni link al modulo porta l'etichetta della sua pagina (`?da=home`…, provata in prova-sito-genera.mjs): qui si guarda
+// l'impaginazione, che non cambia, e la si confronta senza l'etichetta con quella di prima.
+const senzaDa = (r) => (r && typeof r === 'object' ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/(\?|&amp;|&)da=[a-z0-9-]+/g, '') : v])) : r)
+const generaSito = (d) => senzaDa(g.generaSito(d))
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -39,7 +43,7 @@ const ok = (cosa, avuto, voluto) => {
   if (!va) guai++
 }
 
-const genera = (d) => g.generaSito(d)
+const genera = (d) => generaSito(d)
 const home = (testo, opz) => genera(F.dati(testo, opz))['index.html'] ?? ''
 const main = (h) => h.match(/<main([^>]*)>([\s\S]*)<\/main>/)?.[2] ?? ''
 const mainTag = (h) => h.match(/<main([^>]*)>/)?.[1] ?? ''
@@ -302,7 +306,7 @@ console.log('\n16. Barra «Iscriviti / Chiama» sul telefono')
   const barra = (h) => h.match(/<nav class="barra-prova"[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? ''
   const link = (b) => [...b.matchAll(/<a class="pulsante (\w+)" href="([^"]*)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], m[2], m[3]])
   ok('la Home nuova ha una barra sola, con due pulsanti: «Iscriviti» giallo verso il modulo e «Chiama» verso tel:', [conta(H, /class="barra-prova"/g), link(barra(H))], [1, [['primario', F.ISCRIZIONE, 'Iscriviti'], ['secondario', TEL, 'Chiama']]])
-  ok('il pulsante ha il nome accessibile che dice anche la prova da 5 euro', /class="pulsante primario"[^>]*aria-label="Iscriviti: una settimana di prova a 5 euro"/.test(barra(H)), true)
+  ok('il pulsante ha il nome accessibile che dice anche la prova da 10 euro', /class="pulsante primario"[^>]*aria-label="Iscriviti: una settimana di prova a 10 euro"/.test(barra(H)), true)
   const iBarra = H.indexOf('class="barra-prova"')
   ok('la barra sta dopo l’hero e prima della chiamata finale, nel suo blocco «dopo-hero»', [H.indexOf('class="pagina-hero') < iBarra, iBarra < H.indexOf('class="sezione cta'), /<div class="dopo-hero">[\s\S]*<nav class="barra-prova"[\s\S]*<\/nav><\/div><section class="sezione cta/.test(M)], [true, true, true])
   const senzaCta = home(F.TESTO_NUOVO.replace(F.CTA(), ''))

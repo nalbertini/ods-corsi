@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere, fileObbligatori, MANCA_RICEVUTA, DETTAGLIO_RICEVUTA } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere, fileObbligatori, MANCA_RICEVUTA, DETTAGLIO_RICEVUTA } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'; export { archivio } from './src/lib/archivioProva'; export { aggiungiRichiesteProva, scordaRichiesteProva, richiesteContateProva } from './src/lib/richiesteProva'; export { seminaEsempi } from './src/lib/esempiProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -645,9 +645,10 @@ console.log('\n11b. la ricevuta obbligatoria nel modulo della pagina pubblica (n
   ok('la firma viene prima della ricevuta', manca({ come: 'qui', firma: 'Manca la firma sul modulo', file: { documento: {} } }), 'Manca la firma sul modulo')
   ok('gli altri file dicono ancora «Manca: …»', manca({ file: { modulo: {}, ricevuta: {} } }), "Manca: carta d'identità")
   ok('senza ricevuta fra gli obbligatori, non si chiede', manca({ obbligatori: ['modulo', 'documento'] }), null)
-  // Il legame sta nel modulo: senza `nucleo` (pagina pubblica) la ricevuta è obbligatoria, e la lista arriva a `mancaPerInviare`.
+  // Il legame sta nel modulo: dalla pagina pubblica col bonifico la ricevuta è obbligatoria, e la lista arriva a
+  // `mancaPerInviare`. Con Satispay non si chiede (decisione del 2026-10-20: `modoPagamento`, `cosaNonVaModo` in prova:satispay).
   const moduloSorgente = readFileSync('src/components/ModuloIscrizione.tsx', 'utf8')
-  ok('il modulo chiede la ricevuta senza nucleo', moduloSorgente.includes('fileObbligatori(daChiedere, !nucleo)'), true)
+  ok('il modulo chiede la ricevuta col bonifico', moduloSorgente.includes("fileObbligatori(daChiedere, modo === 'bonifico')"), true)
   ok('il modulo passa quella lista a mancaPerInviare', /mancaPerInviare\(\{[^}]*\bobbligatori,/.test(moduloSorgente), true)
 }
 
@@ -690,6 +691,131 @@ console.log('\n14. L\'avviso del certificato: una frase sola, serve per partecip
   ok('avviso certificato agonistico, testo esatto', avvisi.agonistico, 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico per partecipare alle lezioni. Caricalo qui sotto o portalo in segreteria.')
   ok('avviso certificato: nessuno dei due dice «obbligatorio» o «PUOI PORTARLO DOPO»', Object.values(avvisi).map((t) => /obbligatori|PUOI PORTARLO DOPO/i.test(t)), [false, false])
   ok('avviso certificato: entrambi dicono «per partecipare alle lezioni» e «portalo in segreteria»', Object.values(avvisi).map((t) => t.includes('per partecipare alle lezioni') && t.includes('portalo in segreteria')), [true, true])
+}
+
+console.log('\n15. da dove arriva la richiesta: la prova pulisce e scarta come 74-provenienza-richieste.sql')
+{
+  let n = 0
+  // Ogni richiesta con un'email sua: il limite per email non c'entra.
+  const manda = async (cambi) => {
+    const id = await r.invia(adulto({ email: `da${++n}@esempio.it`, ...cambi }))
+    const x = (await r.richieste()).find((y) => y.id === id)
+    return `${x.provenienza ?? '—'}|${x.conosciuto ?? '—'}`
+  }
+  ok('dalla pagina di un corso', await manda({ provenienza: 'corso-karate' }), 'corso-karate|—')
+  ok('spazi ai lati e maiuscole: puliti', await manda({ provenienza: '  Instagram ' }), 'instagram|—')
+  ok('91 caratteri: la richiesta arriva, senza etichetta', await manda({ provenienza: 'a'.repeat(91) }), '—|—')
+  ok('90 caratteri vanno', await manda({ provenienza: 'a'.repeat(90) }), `${'a'.repeat(90)}|—`)
+  ok('un pezzo di codice: senza etichetta', await manda({ provenienza: '<script>alert(1)</script>' }), '—|—')
+  ok('una barra: senza etichetta', await manda({ provenienza: 'a/b' }), '—|—')
+  ok('una formula da foglio di calcolo: senza etichetta', await manda({ provenienza: '=1+1' }), '—|—')
+  ok('vuota: senza etichetta', await manda({ provenienza: '' }), '—|—')
+  ok('uno spazio in mezzo: senza etichetta', await manda({ provenienza: 'volantino ottobre' }), '—|—')
+  ok('un numero invece del testo: senza etichetta', await manda({ provenienza: 12 }), '—|—')
+  ok('un elenco invece del testo: senza etichetta', await manda({ provenienza: ['home'] }), '—|—')
+  ok('Instagram fra le scelte', await manda({ conosciuto: 'instagram' }), '—|instagram')
+  ok('Passando davanti, con gli spazi', await manda({ conosciuto: ' Passando-Davanti ' }), '—|passando-davanti')
+  ok('una scelta inventata: si scarta', await manda({ conosciuto: 'tiktok' }), '—|—')
+  ok('un testo libero: si scarta', await manda({ conosciuto: "me l'ha detto Mario" }), '—|—')
+  ok('le due insieme', await manda({ provenienza: 'home', conosciuto: 'google' }), 'home|google')
+  ok('un\'etichetta sbagliata non cambia l\'errore di un campo sbagliato', await errore(() => r.invia(adulto({ email: 'da-cap@esempio.it', provenienza: 'a/b', cap: '1009' }))), 'Un campo non va: il CAP ha 5 cifre')
+
+  // Accolta, la persona non porta l'etichetta: resta nella richiesta.
+  const id = (await r.richieste()).find((x) => x.provenienza === 'home' && x.conosciuto === 'google').id
+  const persona = await r.accogli(id)
+  const scheda = m.archivio.dati.persone.find((p) => p.id === persona)
+  ok('accolta: la scheda della persona non ha né etichetta né «come ci ha conosciuto»', ['provenienza', 'conosciuto'].filter((k) => k in scheda), [])
+  ok('accolta: la richiesta le tiene', (await r.richieste()).find((x) => x.id === id).provenienza, 'home')
+
+  // I conteggi della prova: una riga per richiesta, senza dati personali, che resta quando la richiesta si elimina.
+  const conteggi = async () => (typeof s.richiesteDaDove === 'function' ? s.richiesteDaDove(new Date(2026, 8, 1), new Date(2026, 8, 26)) : { righe: [] })
+  const quante = (d, dove) => d.righe.filter((x) => x.provenienza === dove).reduce((t, x) => t + x.n, 0)
+  const prima = await conteggi()
+  ok('i conteggi: la richiesta da corso-karate c\'è', quante(prima, 'corso-karate'), 1)
+  ok('i conteggi: home accolta', prima.righe.filter((x) => x.provenienza === 'home').map((x) => x.stato), ['accolta'])
+  ok('i conteggi: le chiavi di ogni riga, niente nomi né email', [...new Set(prima.righe.flatMap((x) => Object.keys(x)))].sort(), ['conosciuto', 'corsi', 'n', 'provenienza', 'stato'])
+  ok('i conteggi: da quando si conta, oggi', prima.dal, '2026-09-26')
+  const daEliminare = (await r.richieste()).find((x) => x.provenienza === 'corso-karate').id
+  await r.elimina(daEliminare)
+  // Eliminata quando è ancora nuova (lo spam) non conta più; accolta o rifiutata, eliminata, resta contata.
+  ok('una richiesta eliminata da nuova non conta più', quante(await conteggi(), 'corso-karate'), 0)
+  await r.elimina(id)
+  ok('una richiesta accolta, eliminata, resta contata', quante(await conteggi(), 'home'), 1)
+  ok('fuori dal periodo non conta', typeof s.richiesteDaDove === 'function' && (await s.richiesteDaDove(new Date(2026, 7, 1), new Date(2026, 7, 31))).righe.length, 0)
+  const rif = (await r.richieste()).find((x) => x.provenienza === 'instagram').id
+  await r.rifiuta(rif)
+  ok('rifiutata: il conteggio segue lo stato', (await conteggi()).righe.filter((x) => x.provenienza === 'instagram').map((x) => x.stato), ['rifiutata'])
+}
+
+console.log('\n16. la metà vera: le due chiavi partono, e si rileggono')
+{
+  const reg = []
+  const db = {
+    rpc: async (nome, args) => (reg.push([nome, args]), { data: 'r-1', error: null }),
+  }
+  const v = m.creaRichiesteSupabase(db)
+  await v.invia(adulto({ provenienza: 'corso-karate', conosciuto: 'instagram' }))
+  ok('invia: provenienza e conosciuto, coi nomi del database', [reg[0][1].dati.provenienza, reg[0][1].dati.conosciuto], ['corso-karate', 'instagram'])
+  const riga = { id: 'r-2', creata_il: '2026-09-26T10:00:00Z', stato: 'nuova', nome: 'Luca', cognome: 'Rossi', nato_il: '1996-01-01', nato_a: 'Torino', codice_fiscale: 'RSSLCU96A01L219K', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'l@e.it', telefono: '347', telefono_2: null, genitore_nome: null, genitore_cognome: null, genitore_codice_fiscale: null, corsi: [], formula: 'annuale', note: null, regolamento: true, persona_id: null, gestita_il: null, gestore: null }
+  const leggi = (righe) => {
+    const c = { select: () => c, order: () => c, range: (a) => (a ? { then: (bene) => bene({ data: [], error: null }) } : { then: (bene) => bene({ data: righe, error: null }) }) }
+    return m.creaRichiesteSupabase({ from: () => c }).richieste()
+  }
+  const [con] = await leggi([{ ...riga, provenienza: 'home', conosciuto: 'google' }])
+  ok('richieste: le due colonne si leggono', [con.provenienza, con.conosciuto], ['home', 'google'])
+  const [senza] = await leggi([riga])
+  ok('richieste: senza 74-provenienza-richieste.sql le colonne non ci sono, e la richiesta si legge lo stesso', [senza.id, senza.provenienza, senza.conosciuto], ['r-2', undefined, undefined])
+}
+
+console.log('\n17. i conteggi della prova: una chiave loro, riletta a ogni uso, come il database')
+{
+  const DOVE_CONTE = 'ods-corsi:prova-richieste-contate'
+  const conte = () => JSON.parse(localStorage.getItem(DOVE_CONTE) ?? '[]')
+  let n = 0
+  const manda = (cambi = {}) => r.invia(adulto({ email: `conte${++n}@esempio.it`, ...cambi }))
+  const id1 = await manda({ provenienza: 'volantino' })
+  ok('i conteggi stanno nella loro chiave', conte().some((x) => x.richiestaId === id1 && x.provenienza === 'volantino'), true)
+  ok('e non nell\'archivio di prova', 'richiesteContate' in m.archivio.dati, false)
+  // Un'altra scheda (la segreteria, aperta prima) salva il suo archivio: i conteggi non si perdono.
+  m.archivio.salva()
+  ok('due schede: la segreteria salva l\'archivio, il conteggio del modulo resta', conte().some((x) => x.richiestaId === id1), true)
+  // Un'altra scheda (il modulo) scrive un conteggio nella chiave: questa scheda non lo cancella alla scrittura dopo.
+  localStorage.setItem(DOVE_CONTE, JSON.stringify([...conte(), { richiestaId: 'r-altra-scheda', giorno: '2026-09-26', corsi: ['judo-adulti'], stato: 'nuova' }]))
+  await manda({ provenienza: 'festa' })
+  ok('due schede: il conteggio scritto dall\'altra scheda resta', conte().some((x) => x.richiestaId === 'r-altra-scheda'), true)
+  ok('e lo legge anche la segreteria', (await s.richiesteDaDove(new Date(2026, 8, 1), new Date(2026, 8, 26))).righe.some((x) => x.provenienza === undefined && x.corsi.includes('judo-adulti')), true)
+
+  // Una richiesta di prima (senza conteggio), rifiutata o accolta: il conteggio non nasce, come nel database.
+  const vecchie = JSON.parse(localStorage.getItem('ods-corsi:prova-richieste'))
+  localStorage.setItem('ods-corsi:prova-richieste', JSON.stringify([...vecchie, { ...adulto({ email: 'vecchia@esempio.it', codiceFiscale: 'RSSLCU96A01L219K' }), id: 'r-vecchia', creataIl: '2026-05-01T10:00:00Z', stato: 'nuova' }]))
+  const r2 = m.creaRichiesteProva()
+  await r2.rifiuta('r-vecchia')
+  ok('una richiesta senza conteggio, rifiutata, resta senza conteggio', conte().some((x) => x.richiestaId === 'r-vecchia'), false)
+
+  // La regola del database: eliminata da nuova non conta più, accolta o rifiutata sì.
+  const id3 = await manda({ provenienza: 'spam' })
+  await r.elimina(id3)
+  ok('eliminata da nuova: il conteggio va via', conte().some((x) => x.provenienza === 'spam'), false)
+  const id4 = await manda({ provenienza: 'rifiutata-poi' })
+  await r.rifiuta(id4)
+  await r.elimina(id4)
+  ok('rifiutata e poi eliminata: resta contata, senza legame', conte().filter((x) => x.provenienza === 'rifiutata-poi').map((x) => [x.stato, x.richiestaId ?? '—']), [['rifiutata', '—']])
+
+  // Ricominciare la prova toglie anche i conteggi.
+  m.scordaRichiesteProva()
+  ok('scordaRichiesteProva toglie anche i conteggi', localStorage.getItem(DOVE_CONTE), null)
+  ok('e la funzione esportata li legge vuoti', m.richiesteContateProva(), [])
+
+  // Gli esempi: almeno una richiesta con l'etichetta e una senza, contate una volta sola anche caricandoli due volte.
+  m.seminaEsempi(new Date())
+  const esempi = (await r2.richieste()).filter((x) => x.id.startsWith('r-esempio-'))
+  ok('gli esempi: almeno uno con l\'etichetta e uno senza', [esempi.some((x) => x.provenienza), esempi.some((x) => !x.provenienza)], [true, true])
+  const righe = (await s.richiesteDaDove(new Date(2026, 0, 1), new Date(2026, 11, 31))).righe
+  ok('gli esempi nel riquadro: una riga con l\'etichetta e una senza', [righe.some((x) => x.provenienza), righe.some((x) => !x.provenienza)], [true, true])
+  const prima = m.richiesteContateProva().length
+  m.aggiungiRichiesteProva(esempi)
+  ok('gli esempi caricati due volte contano una volta sola', [m.richiesteContateProva().length, prima], [esempi.length, esempi.length])
+  ok('il periodo al contrario: lo stesso errore del database', await errore(() => s.richiesteDaDove(new Date(2026, 8, 26), new Date(2026, 8, 1))), 'il periodo è al contrario')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

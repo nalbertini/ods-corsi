@@ -7,6 +7,10 @@
 // (1 gen - 31 dic), calcolato dalle righe dell'elenco movimenti, col confronto con
 // l'anno prima, i saldi delle casse a inizio e fine anno, il foglio CSV e il foglio
 // PDF per il commercialista (senza nomi di iscritti). Con una cartella ci lascia il PDF.
+// Poi i conti che legge la chat (strumenti `conti` e `da_classificare` di
+// `src/lib/mcp.ts`, provati da scripts/prova-mcp.mjs): un periodo qualunque con
+// lo stesso tratto dell'anno prima, il periodo detto a parole, le voci «da
+// sistemare» e i gruppi di uscite ancora senza una voce vera.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { writeFileSync } from 'node:fs'
@@ -296,6 +300,148 @@ console.log('\n13. il foglio PDF')
     ok('nessun nome di iscritto', /Rossi|Giulia/.test(tutto), false)
     if (cartella) writeFileSync(`${cartella}/bilancio-2025.pdf`, bytes)
   }
+}
+
+// ---------------------------------------------------------------------------
+// I conti di un periodo qualunque (strumento `conti` della chat).
+// contiPeriodo(righe, { dal, al, voce?, tipo? }, oggi): stesse regole di bilancioAnno.
+// ---------------------------------------------------------------------------
+console.log('\n14. i conti di un periodo: gli stessi del bilancio')
+{
+  const righe = [
+    entrata('2025-01-10', 5000, 'Quota associativa'),
+    entrata('2025-02-10', 7000, 'Corsi e altri pagamenti'),
+    uscita('2025-04-10', 4000, 'Affitto sala'),
+    uscita('2025-05-10', 2500, null),
+    uscita('2025-05-11', 1500, 'Da classificare'),
+    entrata('2025-05-12', 300, 'Differenza di cassa'),
+    uscita('2025-05-13', 9999, 'Affitto sala', { annullato: true }),
+    riga('2025-05-14', 'giroconto', 20000, null, { cassaId: 'c1', cassaAId: 'c2' }),
+    entrata('2024-03-01', 6000, 'Quota associativa'),
+    uscita('2024-03-02', 1000, 'Affitto sala'),
+    entrata('2026-03-03', 800, 'Quota associativa'),
+    uscita('2026-10-19', 200, 'Affitto sala'),
+  ]
+  const p = prova(() => m.contiPeriodo(righe, { dal: '2025-01-01', al: '2025-12-31' }, OGGI))
+  const b = prova(() => m.bilancioAnno(righe, casse, 2025, OGGI))
+  ok('un anno finito: entrate, uscite e risultato uguali al centesimo a bilancioAnno', prova(() => [p.entrate, p.uscite, p.risultato]), prova(() => [b.entrate, b.uscite, b.risultato]))
+  ok('…e uguali ai totali dell\'elenco movimenti nello stesso periodo', prova(() => [p.entrate, p.uscite]), prova(() => { const t = m.totali(m.filtraMovimenti(righe, { dal: '2025-01-01', al: '2025-12-31' })); return [t.entrate, t.uscite] }))
+  ok('…le stesse voci, col confronto', prova(() => p.voci), prova(() => b.voci))
+  ok('…lo stesso anno prima', prova(() => [p.prima, p.confrontoDal, p.confrontoAl]), prova(() => [b.prima, b.confrontoDal, b.confrontoAl]))
+  ok('annullati e giroconti fuori', prova(() => [p.entrate, p.uscite]), [12300, 8000])
+  ok('il movimento senza voce sta sotto «Da classificare»', prova(() => p.voci.filter((v) => v.daClassificare).map((v) => `${v.tipo}:${v.voce}:${v.totale}:${v.movimenti}`)), ['uscita:Da classificare:4000:2'])
+  ok('la «Differenza di cassa» conta nel totale ma è segnata a parte', prova(() => p.voci.filter((v) => v.aParte).map((v) => `${v.tipo}:${v.voce}:${v.totale}`)), ['entrata:Differenza di cassa:300'])
+  const corso = prova(() => m.contiPeriodo(righe, { dal: '2026-01-01', al: '2026-12-31' }, OGGI))
+  const b26 = prova(() => m.bilancioAnno(righe, casse, 2026, OGGI))
+  ok('l\'anno in corso fino al 31 dicembre: si ferma a oggi ed è parziale, come bilancioAnno', prova(() => [corso.al, corso.parziale, corso.entrate, corso.uscite, corso.confrontoAl]), prova(() => [b26.al, b26.parziale, b26.entrate, b26.uscite, b26.confrontoAl]))
+}
+
+console.log('\n15. il periodo, l\'anno prima e i filtri')
+{
+  const righe = [
+    entrata('2026-10-02', 10000, 'Donazioni'),
+    uscita('2026-10-03', 4000, 'Utenze'),
+    uscita('2026-10-04', 1000, null),
+    uscita('2026-10-05', 700, 'Da classificare'),
+    uscita('2026-10-06', 600, 'Varie'),
+    uscita('2026-10-07', 500, 'VARIE'),
+    entrata('2026-10-08', 900, 'Da classificare'),
+    uscita('2026-10-09', 8888, 'Varie', { annullato: true }),
+    entrata('2025-10-05', 8000, 'Donazioni'),
+    entrata('2025-10-25', 99999, 'Donazioni'),
+  ]
+  const p = prova(() => m.contiPeriodo(righe, { dal: '2026-10-01', al: '2026-10-31' }, OGGI))
+  ok('«al» nel futuro diventa oggi, ed è parziale', prova(() => [p.dal, p.al, p.parziale]), ['2026-10-01', OGGI, true])
+  ok('si confronta con lo stesso tratto dell\'anno prima', prova(() => [p.confrontoDal, p.confrontoAl]), ['2025-10-01', '2025-10-18'])
+  ok('…il 25 ottobre 2025 è fuori dal tratto', prova(() => p.prima), { entrate: 8000, uscite: 0, risultato: 8000 })
+  ok('«al» che è oggi: non è parziale', prova(() => m.contiPeriodo(righe, { dal: '2026-10-01', al: OGGI }, OGGI).parziale), false)
+  ok('l\'anno prima vuoto in quel tratto: nessun dato, non zero', prova(() => m.contiPeriodo(righe, { dal: '2026-10-01', al: '2026-10-04' }, OGGI).prima), null)
+  ok('il 29 febbraio diventa il 28 dell\'anno prima', prova(() => { const x = m.contiPeriodo([], { dal: '2028-02-29', al: '2028-02-29' }, '2028-03-10'); return [x.confrontoDal, x.confrontoAl] }), ['2027-02-28', '2027-02-28'])
+  ok('…anche in fondo a un periodo', prova(() => m.contiPeriodo([], { dal: '2028-02-01', al: '2028-02-29' }, '2028-03-10').confrontoAl), '2027-02-28')
+  console.log('   da sistemare: «Da classificare», «Varie» (in qualunque modo scritta) e senza voce, solo uscite')
+  ok('voceDaSistemare', prova(() => [null, 'Da classificare', 'da classificare', 'Varie', 'VARIE', ' varie ', 'Utenze', 'Varie spese'].map(m.voceDaSistemare)), [true, true, true, true, true, true, false, false])
+  ok('le uscite da sistemare del periodo: quante e quanto (annullati e entrate fuori)', prova(() => p.daSistemare), { movimenti: 4, uscite: 2800 })
+  ok('nessuna uscita da sistemare: null', prova(() => m.contiPeriodo([uscita('2026-10-03', 4000, 'Utenze')], { dal: '2026-10-01', al: OGGI }, OGGI).daSistemare), null)
+  console.log('   i filtri')
+  const u = prova(() => m.contiPeriodo(righe, { dal: '2026-10-01', al: OGGI, tipo: 'uscita' }, OGGI))
+  ok('solo le uscite: le entrate sono zero, e nelle voci non ci sono', prova(() => [u.entrate, u.uscite, u.voci.every((v) => v.tipo === 'uscita')]), [0, 6800, true])
+  ok('…anche nel confronto', prova(() => u.prima), null)
+  const d = prova(() => m.contiPeriodo(righe, { dal: '2026-10-01', al: OGGI, voce: 'donazioni' }, OGGI))
+  ok('una voce, scritta senza badare alle maiuscole: solo lei, anche nel confronto', prova(() => [d.entrate, d.uscite, d.prima?.entrate, d.voci.map((v) => v.voce)]), [10000, 0, 8000, ['Donazioni']])
+  const dc = prova(() => m.contiPeriodo(righe, { dal: '2026-10-01', al: OGGI, voce: 'Da classificare', tipo: 'uscita' }, OGGI))
+  ok('la voce «Da classificare» comprende i movimenti senza voce', prova(() => [dc.uscite, dc.voci.map((v) => `${v.voce}:${v.movimenti}`)]), [1700, ['Da classificare:2']])
+}
+
+console.log('\n16. il periodo a parole')
+{
+  ok('nello stesso mese', prova(() => m.periodoInParole('2026-10-01', '2026-10-20')), 'dal 1 al 20 ottobre 2026')
+  ok('nello stesso anno', prova(() => m.periodoInParole('2026-01-01', '2026-10-20')), 'dal 1 gennaio al 20 ottobre 2026')
+  ok('a cavallo di due anni', prova(() => m.periodoInParole('2025-12-01', '2026-01-31')), 'dal 1 dicembre 2025 al 31 gennaio 2026')
+  ok('un giorno solo', prova(() => m.periodoInParole('2026-10-05', '2026-10-05')), 'il 5 ottobre 2026')
+}
+
+// ---------------------------------------------------------------------------
+// Le uscite ancora da classificare, a gruppi (strumento `da_classificare`).
+// gruppiDaClassificare(righe, voci, massimo = 20) → { gruppi, gruppiTotali, movimentiTotali }
+// ---------------------------------------------------------------------------
+console.log('\n17. le uscite da classificare, a gruppi')
+{
+  const vociG = [
+    { id: 'v-dc', nome: 'Da classificare', tipo: 'uscita', diSistema: false, attiva: true },
+    { id: 'v-var', nome: 'Varie', tipo: 'uscita', diSistema: false, attiva: true },
+    { id: 'v-man', nome: 'Manutenzione', tipo: 'uscita', diSistema: false, attiva: true },
+    { id: 'v-ut', nome: 'Utenze', tipo: 'uscita', diSistema: false, attiva: true },
+    { id: 'v-tel', nome: 'Telefono', tipo: 'uscita', diSistema: false, attiva: false },
+    { id: 'v-difu', nome: 'Differenza di cassa', tipo: 'uscita', diSistema: true, attiva: true },
+    { id: 'v-dce', nome: 'Da classificare', tipo: 'entrata', diSistema: false, attiva: true },
+  ]
+  const u = (data, importo, voce, descrizione, extra = {}) => uscita(data, importo, voce, { descrizione, ...extra })
+  const righe = [
+    u('2026-03-01', 1000, 'Da classificare', 'Ferramenta Bianchi'),
+    u('2026-05-01', 2000, 'Varie', 'FERRAMENTA   bianchi '),
+    u('2026-04-01', 500, null, 'ferramenta bianchi'),
+    u('2026-06-01', 9000, 'Da classificare', 'Lavori palestra'),
+    u('2026-07-01', 700, 'VARIE', 'Amazon ordine'),
+    u('2026-07-02', 300, 'Da classificare', 'Tim'),
+    // quelli che non entrano mai
+    u('2026-08-01', 50000, 'Da classificare', 'Annullato grosso', { annullato: true }),
+    riga('2026-08-02', 'giroconto', 40000, null, { descrizione: 'Versamento', cassaId: 'c1', cassaAId: 'c2' }),
+    entrata('2026-08-03', 30000, 'Da classificare', { descrizione: 'Entrata misteriosa' }),
+    u('2026-08-04', 20000, 'Da classificare', 'Rimborso Rossi Luca', { personaId: 'p-rossi' }),
+    u('2026-08-05', 15000, 'Da classificare', 'Cliente Rossi Luca per rimborso corso'),
+    u('2026-08-06', 12000, 'Differenza di cassa', 'Differenza di cassa'),
+    u('2026-08-07', 11000, 'Utenze', 'Enel'),
+    // i simili già classificati, per la voce proposta
+    u('2026-02-01', 800, 'Manutenzione', 'Ferramenta Bianchi'),
+    u('2026-09-01', 800, 'Varie', 'ferramenta bianchi'),
+    u('2026-01-15', 300, 'Telefono', 'TIM'),
+    // Una «Differenza di cassa» con la descrizione di un gruppo, più recente: la voce proposta non è mai una di sistema.
+    u('2026-09-15', 100, 'Differenza di cassa', 'Lavori palestra'),
+  ]
+  const g = prova(() => m.gruppiDaClassificare(righe, vociG))
+  const breve = (x) => `${x.cerca}:${x.movimenti}:${x.totale}:${x.primo}:${x.ultimo}`
+  ok('un gruppo per descrizione (minuscole, spazi), dal più grosso in euro', prova(() => g.gruppi.map(breve)), [
+    'lavori palestra:1:9000:2026-06-01:2026-06-01',
+    'ferramenta bianchi:4:4300:2026-03-01:2026-09-01',
+    'amazon ordine:1:700:2026-07-01:2026-07-01',
+    'tim:1:300:2026-07-02:2026-07-02',
+  ])
+  ok('in testa quanti gruppi e quanti movimenti in tutto', prova(() => [g.gruppiTotali, g.movimentiTotali]), [4, 7])
+  ok('mai annullati, giroconti, entrate, collegati a una persona, «Cliente … per», voci di sistema, voci vere', prova(() => g.gruppi.some((x) => /annullato|versamento|misteriosa|rossi|differenza|enel/.test(x.cerca))), false)
+  const fb = prova(() => g.gruppi.find((x) => x.cerca === 'ferramenta bianchi'))
+  ok('le voci di partenza del gruppo, e se c\'è chi non ha voce', prova(() => [fb.voci, fb.senzaVoce]), [['Da classificare', 'Varie'], true])
+  ok('la voce proposta: dal simile già classificato, mai «Varie»', prova(() => [fb.proposta, fb.avviso]), [{ id: 'v-man', nome: 'Manutenzione' }, null])
+  const tim = prova(() => g.gruppi.find((x) => x.cerca === 'tim'))
+  ok('se quella voce non è più in uso non la propone, e lo dice', prova(() => [tim.proposta, tim.avviso?.includes('«Telefono»')]), [null, true])
+  ok('senza simili classificati, niente', prova(() => { const x = g.gruppi.find((y) => y.cerca === 'lavori palestra'); return [x.proposta, x.avviso] }), [null, null])
+  const lp = prova(() => g.gruppi.find((x) => x.cerca === 'amazon ordine'))
+  ok('il testo da cercare ritrova nell\'elenco (periodo «Tutto», voce di partenza) i movimenti del gruppo', prova(() => m.filtraMovimenti(righe, { testo: lp.cerca, voce: lp.voci[0] }).map((r) => r.descrizione)), ['Amazon ordine'])
+  const tanti = Array.from({ length: 25 }, (_, i) => u('2026-02-02', 100 + i, 'Da classificare', `Fornitore ${i}`))
+  const t = prova(() => m.gruppiDaClassificare([...tanti, u('2026-02-03', 1, 'Varie', 'fornitore 0')], vociG))
+  ok('al massimo 20 gruppi, i più grossi', prova(() => [t.gruppi.length, t.gruppi[0].cerca, t.gruppi.at(-1).cerca]), [20, 'fornitore 24', 'fornitore 5'])
+  ok('…ma in testa il conto di tutti', prova(() => [t.gruppiTotali, t.movimentiTotali]), [25, 26])
+  ok('si può chiederne meno', prova(() => m.gruppiDaClassificare(tanti, vociG, 3).gruppi.length), 3)
+  ok('niente da classificare: nessun gruppo', prova(() => { const x = m.gruppiDaClassificare([u('2026-02-02', 100, 'Utenze', 'Enel')], vociG); return [x.gruppi, x.gruppiTotali, x.movimentiTotali] }), [[], 0, 0])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

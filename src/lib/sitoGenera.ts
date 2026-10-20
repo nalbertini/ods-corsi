@@ -8,7 +8,8 @@ import { CSS_INTERNE } from './sitoInterne'
 import { cssFoci, cssFociSchede } from './sitoFoto'
 import { eContattiNuova, contattiNuova } from './sitoContatti'
 import { CSS_ORARI, dividiOrari, orariHtml, type OrarioSito } from './sitoOrari'
-import { eHomeNuova, homeNuova } from './sitoHome'
+import { eHomeNuova, eIscrizione, homeNuova } from './sitoHome'
+import { conProvenienza, etichettaPagina, haProvenienza } from './provenienza'
 import { CSS_ORARIO_AUTOMATICO, corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
 import { testiOrario, type OrarioAperto } from './sitoOrario'
 import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
@@ -87,12 +88,12 @@ const TESTI = {
   metro: 'vicino alla metro Fermi',
   nomeContatti: 'Contatti',
   invito: 'Vieni a provare: ti aspettiamo in',
-  settimana: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
+  settimana: 'Una settimana a 10 euro: provi tutte le discipline e scegli.',
   altriLink: 'Altri link',
   pagine: 'Pagine',
   trovarci: 'Vieni a trovarci',
   menu: 'Menu',
-  inpiu: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
+  inpiu: 'Una settimana a 10 euro: provi tutte le discipline e scegli.',
   contatti: '/contatti/',
   // Il modulo sta nell'app (stesso indirizzo della guida), non nel sito: «Prova» porta a chi vuole iscriversi.
   iscrizione: 'https://app.officinedellosport.it/iscrizioni/',
@@ -1069,9 +1070,9 @@ function piede(c: Contesto): string {
   return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><ul class="recapiti-piede">${recapiti}</ul>${m.length ? `<nav class="piede-menu" aria-label="Pagine">${m.map((x) => `<a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a>`).join('')}</nav>` : ''}${f ? `<ul class="piede-legale">${f}</ul>` : ''}</footer>`
 }
 
-/** La barra del telefono in fondo alla Home: «Iscriviti» verso il modulo e «Chiama». Il nome accessibile dice anche «una settimana a 5 euro»: è la prova che costa così. */
+/** La barra del telefono in fondo alla Home: «Iscriviti» verso il modulo e «Chiama». Il nome accessibile dice anche «una settimana a 10 euro»: è la prova che costa così. */
 function barraProva(): string {
-  return `<nav class="barra-prova" aria-label="Prova o chiama"><a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer" aria-label="Iscriviti: una settimana di prova a 5 euro">Iscriviti</a><a class="pulsante secondario" href="${esc(chiama)}">Chiama</a></nav>`
+  return `<nav class="barra-prova" aria-label="Prova o chiama"><a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer" aria-label="Iscriviti: una settimana di prova a 10 euro">Iscriviti</a><a class="pulsante secondario" href="${esc(chiama)}">Chiama</a></nav>`
 }
 
 function invito(conContatti: boolean): string {
@@ -1137,11 +1138,12 @@ export function senzaPulsantiContatti(html: string, dominio: string): string {
 /** Le pagine che non sono mai la pagina di un corso, anche se hanno i due pulsanti. */
 const PAGINE_NON_CORSO = new Set(['home', 'corsi', 'contatti', 'chi-siamo'])
 
+// Le pagine di legge sono informative: niente invito «Iscriviti» in fondo.
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = senzaPulsantiContatti(testoDellaPagina(p.testo, c.d.ospitiImmagini ?? []), c.d.dominio)
   // La pagina «orari» col segnaposto [orari]: gli orari veri dei corsi. Senza il segnaposto è una pagina come le altre.
   const orari = p.slug === 'orari' && !p.diLegge ? dividiOrari(pulito) : null
-  if (orari) return paginaOrari(p, c, orari)
+  if (orari) return paginaOrari(p, c, conContatti, orari)
   if (!PAGINE_NON_CORSO.has(p.slug) && !p.diLegge && eCorsoNuovo(pulito, TESTI.iscrizione)) return paginaCorsoNuovo(p, c, conContatti, pulito)
   if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, conContatti, pulito)
   if (p.slug === 'corsi' && !p.diLegge && eCorsiNuova(pulito, TESTI.iscrizione)) return paginaCorsiNuova(p, c, conContatti, pulito)
@@ -1167,7 +1169,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
     : p.diLegge
       ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
       : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}${inTestata.html ? '' : ' solo'}${tecnici ? ' elenco-tecnici' : ''}"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main${scheda ? ' class="scheda-scarna"' : dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${tecnici?.conInvito ? '' : invito(conContatti)}${piede(c)}`
+  const corpo = `${t}<main${scheda ? ' class="scheda-scarna"' : dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${tecnici?.conInvito || p.diLegge ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: c.corsi.has(p.slug) })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null, dati })
 }
@@ -1182,11 +1184,11 @@ function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, p
 }
 
 /** Gli orari (sitoOrari.ts): titolo e introduzione della segreteria, una tessera per giorno, la riga «Per variazioni…» e la data. Senza l'invito: nel design la pagina finisce con le variazioni. */
-function paginaOrari(p: PaginaGenerata, c: Contesto, { prima, dopo }: { prima: string; dopo: string }): string {
+function paginaOrari(p: PaginaGenerata, c: Contesto, conContatti: boolean, { prima, dopo }: { prima: string; dopo: string }): string {
   // Senza orari la pagina non ha niente da introdurre: la frase del design al posto dell'introduzione della segreteria.
   const intro = (c.d.orariSito ?? []).length ? prima || (p.descrizione ? `<p>${esc(p.descrizione)}</p>` : '') : '<p>L’orario della settimana comparirà qui.</p>'
   const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${intro}</div></section>`
-  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-orari">${hero}${orariHtml(dopo, c.d.orariSito ?? [])}</main>${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-orari">${hero}${orariHtml(dopo, c.d.orariSito ?? [])}</main>${invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: '', titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssOrari: true, dati })
 }
@@ -1270,6 +1272,18 @@ function conStatistiche(html: string, codice: string, e404: boolean): string {
     })
 }
 
+/**
+ * Ogni link al modulo di una pagina già fatta porta l'etichetta della pagina (`?da=home`, `?da=corso-karate`, `?da=orari`):
+ * così la segreteria sa da quale pagina arriva una richiesta (`provenienza.ts`). Un `?da=` scritto a mano resta. Un passaggio
+ * solo alla fine, come il contatore: le regole delle pagine non cambiano, e il modulo si riconosce comunque (`eIscrizione`
+ * ignora la query).
+ */
+function conEtichetta(html: string, etichetta: string): string {
+  return html.replace(/(<a\b[^>]*?\shref=")([^"]*)(")/gi, (a, prima: string, href: string, dopo: string) =>
+    eIscrizione(href, TESTI.iscrizione) && !haProvenienza(href) ? `${prima}${conProvenienza(href.replace(/&amp;/g, '&'), etichetta).replace(/&/g, '&amp;')}${dopo}` : a,
+  )
+}
+
 function rinvio(c: Contesto, a: string): string {
   const dove = percorso(a)
   const corpo = `<main><p>La pagina si è spostata: <a href="${esc(dove)}">vai a ${esc(dove)}</a></p></main>`
@@ -1325,7 +1339,7 @@ export function generaSito(d: DatiSito): Record<string, string> {
   const c: Contesto = { d, slugs, corsi }
   const conContatti = c.slugs.has('contatti')
   const file: Record<string, string> = {}
-  for (const p of pagine) file[fileDi(p.slug)] = pagina(p, c, conContatti)
+  for (const p of pagine) file[fileDi(p.slug)] = conEtichetta(pagina(p, c, conContatti), etichettaPagina(p.slug, c.corsi.has(p.slug)))
   file['404.html'] = nonTrovata(c)
   const codice = codiceStatistiche(d.statistiche)
   if (codice) for (const f of [...pagine.map((p) => fileDi(p.slug)), '404.html']) file[f] = conStatistiche(file[f], codice, f === '404.html')
