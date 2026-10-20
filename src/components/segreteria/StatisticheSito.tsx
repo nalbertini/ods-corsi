@@ -73,7 +73,7 @@ export function StatisticheSito({ d, da, a, corso }: { d: DatiSegreteria; da: st
       </Riga>
       <div className="sg-sito-testa">
         <span className="sg-sito-indicativi">
-          Numeri indicativi, dal contatore del sito (GoatCounter): conta le visite, non le pagine viste. La stessa persona entro 8 ore è una visita sola.
+          Numeri indicativi, dal contatore del sito: conta le visite, non le pagine viste. La stessa persona entro 8 ore è una visita sola.
         </span>
         <div className="sg-sito-aggiorna">
           <span role="status" className="num">
@@ -99,7 +99,7 @@ export function StatisticheSito({ d, da, a, corso }: { d: DatiSegreteria; da: st
       {corso && <div className="sg-sito-frase">Il sito è di tutta la palestra: il corso scelto qui non conta.</div>}
       {numeri?.stimati && (
         <div className="sg-sito-frase">
-          Per qualche tocco GoatCounter ha dato solo il totale: nei mesi è spartito come le visite, quindi è una stima.
+          Per qualche tocco il contatore ha dato solo il totale: nei mesi è spartito come le visite, quindi è una stima.
         </div>
       )}
 

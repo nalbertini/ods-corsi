@@ -39,7 +39,7 @@ export const TESTI_GUAI: Record<TipoGuaioSito, { titolo: string; frase: string }
     frase: 'Troppe letture in poco tempo. Riprova fra qualche minuto con Aggiorna.',
   },
   'non-risponde': {
-    titolo: 'GoatCounter non risponde',
+    titolo: 'Il contatore non risponde',
     frase: 'Il contatore del sito non ha risposto. Gli altri numeri della pagina sono a posto: riprova più tardi con Aggiorna.',
   },
   accesso: {
