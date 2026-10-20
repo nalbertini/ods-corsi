@@ -1054,5 +1054,13 @@ console.log('\n91. i saldi delle casse per la chat')
   ok('le casse nell\'ordine in cui arrivano, col nome', prova(() => s.map((c) => c.nome)), ['Cassa Contanti', 'Conto Corrente', 'Cassa eventi'])
 }
 
+console.log('\n92. la ricerca di MOVIMENTI non bada agli spazi in più')
+{
+  const r = (id, descrizione) => ({ id, origine: 'movimento', tipo: 'uscita', data: '2026-10-01', importo: 100, descrizione, voce: null, cassaId: 'c2', annullato: false })
+  const righe = [r('a', 'FERRAMENTA   bianchi'), r('b', 'ferramenta bianchi'), r('c', 'ferramentabianchi')]
+  ok('«ferramenta bianchi» trova anche quella con tre spazi in mezzo, non quella attaccata', m.filtraMovimenti(righe, { testo: 'ferramenta bianchi' }).map((x) => x.id), ['a', 'b'])
+  ok('…e scritta con due spazi trova le stesse', m.filtraMovimenti(righe, { testo: 'ferramenta  bianchi' }).map((x) => x.id), ['a', 'b'])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

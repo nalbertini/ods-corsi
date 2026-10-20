@@ -15,7 +15,7 @@
 // ---------------------------------------------------------------------------
 import { createClient } from 'npm:@supabase/supabase-js@2'
 // Generato da scripts/costruisci-mcp.mjs prima di pubblicare.
-import { metadatiRisorsa, nonAutorizzato, oggiARoma, rispondiMcp, tutteLeRighe } from './regole.js'
+import { chiusuraDaRiga, incassiDaRighe, metadatiRisorsa, nonAutorizzato, oggiARoma, rispondiMcp, tutteLeRighe } from './regole.js'
 
 // Supabase le mette sempre in ogni funzione: senza, la funzione non serve a niente e lo dice subito.
 const url = Deno.env.get('SUPABASE_URL') ?? ''
@@ -51,11 +51,9 @@ function apri(token: string, utente: string) {
       return righe.map((r) => ({ id: r.id, nome: r.nome, saldoIniziale: r.saldo_iniziale, ...(r.dal ? { dal: r.dal } : {}) }))
     },
     async chiusure() {
-      const righe = ok(await db.from('chiusure_cassa').select('id, cassa_id, dal, data, previsto, contato, differenza, chiusa_il, annullata_il'))
-      return (righe as Array<{ id: string; cassa_id: string; dal: string; data: string; previsto: number; contato: number; differenza: number; chiusa_il: string; annullata_il: string | null }>).map((r) => ({
-        id: r.id, cassaId: r.cassa_id, dal: r.dal, data: r.data, previsto: r.previsto, contato: r.contato, differenza: r.differenza, chiusaIl: r.chiusa_il,
-        ...(r.annullata_il ? { annullataIl: r.annullata_il } : {}),
-      }))
+      // Con `movimento_id`: la differenza della chiusura non conta nel ricalcolo di «non più in regola».
+      const righe = ok(await db.from('chiusure_cassa').select('id, cassa_id, dal, data, previsto, contato, differenza, movimento_id, chiusa_il, annullata_il')) as Parameters<typeof chiusuraDaRiga>[0][]
+      return righe.map(chiusuraDaRiga)
     },
     async simili(testo: string) {
       const righe = ok(await db.rpc('movimenti_simili', { testo })) as Array<{ id: string; data: string; tipo: string; importo: number; descrizione: string; voce: string; voce_id: string; voce_attiva: boolean; cassa: string }>
@@ -72,6 +70,7 @@ function apri(token: string, utente: string) {
       return ok(await db.from('movimenti').select(COLONNE).eq('chiave_chat', chiave).eq('creato_da', chi.id).is('annullato_il', null).maybeSingle()) as MovimentoScritto | null
     },
     // Le letture dei conti: tutte le righe (lo storico supera le 1000 di una pagina), con le sole colonne che servono.
+    // Le righe arrivano senza tipo dall'API: la forma è quella di 59-contabilita.sql.
     async movimenti() {
       const righe = ok(await tutteLeRighe((da: number, a: number) => db.from('movimenti').select('id, tipo, data, importo, voce_id, cassa_id, cassa_a_id, descrizione, creato_il, annullato_il, origine_import, persona_id').order('id').range(da, a))) as Array<{
         id: string; tipo: 'entrata' | 'uscita' | 'giroconto'; data: string; importo: number; voce_id: string | null; cassa_id: string; cassa_a_id: string | null
@@ -87,17 +86,13 @@ function apri(token: string, utente: string) {
       }))
     },
     // Gli incassi degli iscritti: mai intestatario, ente, note o persona; delle ricevute solo le voci coi loro pagamenti.
+    // Le righe arrivano senza tipo dall'API: la forma è quella di 16-ricevute.sql e 54-pagamenti-diretti.sql.
     async incassi() {
       const [ricevute, diretti] = await Promise.all([
         tutteLeRighe((da: number, a: number) => db.from('ricevute').select('id, voci, annullata_il').order('id').range(da, a)),
         tutteLeRighe((da: number, a: number) => db.from('pagamenti_diretti').select('id, data, importo, metodo, voce, annullato_il').order('id').range(da, a)),
       ])
-      const r = ok(ricevute) as Array<{ voci: Array<{ descrizione: string; pagamenti: Array<{ data: string; importo: number; metodo: string }> }>; annullata_il: string | null }>
-      const d = ok(diretti) as Array<{ data: string; importo: number; metodo: string; voce: string; annullato_il: string | null }>
-      return [
-        ...r.flatMap((x) => x.voci.flatMap((v) => v.pagamenti.map((p) => ({ data: p.data, importo: p.importo, metodo: p.metodo, voce: v.descrizione, annullato: x.annullata_il !== null })))),
-        ...d.map((x) => ({ data: x.data, importo: x.importo, metodo: x.metodo, voce: x.voce, annullato: x.annullato_il !== null })),
-      ]
+      return incassiDaRighe(ok(ricevute) as Parameters<typeof incassiDaRighe>[0], ok(diretti) as Parameters<typeof incassiDaRighe>[1])
     },
     registra: async (dati: Record<string, unknown>) => {
       const r = ok(await db.rpc('registra_movimento_dalla_chat', { dati })) as MovimentoScritto

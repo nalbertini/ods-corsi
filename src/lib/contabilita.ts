@@ -100,6 +100,8 @@ export const VOCE_QUOTA = 'Quota associativa'
 export const VOCE_CORSI = 'Corsi e altri pagamenti'
 /** La voce che la chiusura di cassa scrive da sola (una di entrata e una di uscita): a mano non si sceglie. */
 export const VOCE_DIFFERENZA = 'Differenza di cassa'
+/** La voce dove lo storico ha messo le spese sparse: per i conti della chat è da sistemare, come «Da classificare». */
+export const VOCE_VARIE = 'Varie'
 /** Sopra questa differenza (in centesimi) la schermata chiede una conferma in più. */
 export const SOGLIA_DIFFERENZA = 2000
 
@@ -408,9 +410,12 @@ export interface FiltroMovimenti {
   annullati?: boolean
 }
 
+/** Un testo come lo confronta la ricerca: senza accenti né maiuscole, e gli spazi in più contano come uno (lo storico ne ha). */
+export const cercabile = (s: string) => piano(s).replace(/\s+/g, ' ').trim()
+
 /** I filtri dell'elenco. Gli annullati ci sono solo se li si chiede; un giroconto è di tutte e due le sue casse. */
 export function filtraMovimenti(righe: RigaMovimento[], f: FiltroMovimenti): RigaMovimento[] {
-  const testo = piano(f.testo ?? '').trim()
+  const testo = cercabile(f.testo ?? '')
   return righe.filter((r) => {
     if (r.annullato && !f.annullati) return false
     if (f.dal && r.data < f.dal) return false
@@ -418,7 +423,7 @@ export function filtraMovimenti(righe: RigaMovimento[], f: FiltroMovimenti): Rig
     if (f.tipo && r.tipo !== f.tipo) return false
     if (f.cassaId && r.cassaId !== f.cassaId && r.cassaAId !== f.cassaId) return false
     if (f.voce && r.voce !== f.voce) return false
-    return !testo || piano(`${r.descrizione} ${r.sotto ?? ''}`).includes(testo)
+    return !testo || cercabile(`${r.descrizione} ${r.sotto ?? ''}`).includes(testo)
   })
 }
 
@@ -486,7 +491,7 @@ export function csvMovimenti(righe: RigaMovimento[], casse: Cassa[]): string {
 // Gli stessi rifiuti delle funzioni di 59-contabilita.sql, detti subito sotto al modulo.
 
 /** Una data vera (non il 30 febbraio) in forma `AAAA-MM-GG`. */
-const dataVera = (data: string) => {
+export const dataVera = (data: string) => {
   const giorno = /^\d{4}-\d{2}-\d{2}$/.test(data) ? new Date(`${data}T00:00:00Z`) : null
   return !!giorno && !Number.isNaN(giorno.getTime()) && giorno.toISOString().slice(0, 10) === data
 }
@@ -652,9 +657,44 @@ export interface IncassoPerConti {
   annullato: boolean
 }
 
-/** Le stesse righe di `incassiDerivati`, senza chi ha pagato: la descrizione dice solo la voce. */
+/**
+ * Le stesse righe di `incassiDerivati`, senza chi ha pagato: la descrizione dice solo la voce di sistema, e `sotto`
+ * (la voce scritta sulla ricevuta, testo libero che può avere un nome) non c'è.
+ */
 export const incassiPerConti = (incassi: IncassoPerConti[], casse: Cassa[]): RigaMovimento[] =>
-  incassiDerivati(incassi.map((x, i) => ({ ...x, id: String(i), chi: '' })), casse).map((r) => ({ ...r, descrizione: `Incasso iscritto · ${r.voce}` }))
+  incassiDerivati(incassi.map((x, i) => ({ ...x, id: String(i), chi: '' })), casse).map(({ sotto: _, ...r }) => ({ ...r, descrizione: `Incasso iscritto · ${r.voce}` }))
+
+/**
+ * Gli incassi per i conti dalle righe del database: una per ogni pagamento di ogni voce di una ricevuta (annullato se
+ * lo è la ricevuta) e una per ogni pagamento a mano, come `righeDaRicevute` e `righeDirette`. Le righe arrivano senza
+ * intestatario, note né persona: il server non li legge nemmeno.
+ */
+export function incassiDaRighe(
+  ricevute: Array<{ voci: Array<{ descrizione: string; pagamenti: Array<{ data: string; importo: number; metodo: string }> }>; annullata_il: string | null }>,
+  diretti: Array<{ data: string; importo: number; metodo: string; voce: string; annullato_il: string | null }>,
+): IncassoPerConti[] {
+  return [
+    ...ricevute.flatMap((r) => r.voci.flatMap((v) => v.pagamenti.map((p) => ({ data: p.data, importo: p.importo, metodo: p.metodo, voce: v.descrizione, annullato: r.annullata_il !== null })))),
+    ...diretti.map((d) => ({ data: d.data, importo: d.importo, metodo: d.metodo, voce: d.voce, annullato: d.annullato_il !== null })),
+  ]
+}
+
+/** Una chiusura come la dà il database (60-chiusura-cassa.sql), col movimento della sua differenza. */
+export const chiusuraDaRiga = (r: {
+  id: string; cassa_id: string; dal: string; data: string; previsto: number; contato: number; differenza: number
+  movimento_id: string | null; chiusa_il: string; annullata_il: string | null
+}): ChiusuraCassa => ({
+  id: r.id,
+  cassaId: r.cassa_id,
+  dal: r.dal,
+  data: r.data,
+  previsto: r.previsto,
+  contato: r.contato,
+  differenza: r.differenza,
+  chiusaIl: r.chiusa_il,
+  ...(r.movimento_id ? { movimentoId: r.movimento_id } : {}),
+  ...(r.annullata_il ? { annullataIl: r.annullata_il } : {}),
+})
 
 /** Il saldo di una cassa a un giorno, per la chat: `null` se non si dice (vedi `saldiCasse`). */
 export interface SaldoPerChat {

@@ -1,5 +1,5 @@
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
-import { VOCE_CORSI, VOCE_DIFFERENZA, VOCE_QUOTA, filtraMovimenti, residui, totali, type Cassa, type RigaMovimento, type VoceContabile } from './contabilita'
+import { VOCE_CORSI, VOCE_DIFFERENZA, VOCE_QUOTA, VOCE_VARIE, cercabile, filtraMovimenti, residui, totali, type Cassa, type RigaMovimento, type VoceContabile } from './contabilita'
 import { voceProposta, type Simile } from './movimentiDallaChat'
 import { nomeDallaCausale } from './movimentiPersona'
 import { dataRicevuta, euro } from './ricevute'
@@ -266,7 +266,7 @@ export function csvBilancio(b: Bilancio, oggi: string): string {
 export const voceDaSistemare = (voce: string | null): boolean => {
   if (voce === null) return true
   const v = voce.trim().toLowerCase()
-  return v === VOCE_DA_CLASSIFICARE.toLowerCase() || v === 'varie'
+  return v === VOCE_DA_CLASSIFICARE.toLowerCase() || v === VOCE_VARIE.toLowerCase()
 }
 
 /**
@@ -300,6 +300,7 @@ export function contiPeriodo(righe: RigaMovimento[], p: { dal: string; al: strin
     prima: haPrima ? { entrate: tPrima.entrate, uscite: tPrima.uscite, risultato: tPrima.differenza } : null,
     voci: vociConConfronto(delPeriodo, delConfronto, haPrima),
     daSistemare: sospese.length ? { movimenti: sospese.length, uscite: sospese.reduce((s, r) => s + r.importo, 0) } : null,
+    sovrapposizione: sovrapposizioneStorico(filtraMovimenti(righe, { dal: p.dal, al })),
   }
 }
 
@@ -325,7 +326,8 @@ export interface GruppoDaClassificare {
   avviso: string | null
 }
 
-const chiaveDescrizione = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim()
+// Come la ricerca di MOVIMENTI (`cercabile`): il testo di un gruppo, cercato lì, ritrova tutte le sue righe.
+const chiaveDescrizione = cercabile
 
 /**
  * Le uscite ancora da sistemare raggruppate per descrizione, le più pesanti in euro prima, al più `massimo`;

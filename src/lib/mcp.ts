@@ -1,5 +1,8 @@
 import { bilancioAnno, contiPeriodo, gruppiDaClassificare, importoConMeno, periodoInParole, variazione } from './bilancio'
 import {
+  chiusuraDaRiga,
+  dataVera,
+  incassiDaRighe,
   incassiPerConti,
   oggiARoma,
   righeMovimenti,
@@ -38,7 +41,7 @@ import { dataRicevuta, euro } from './ricevute'
  */
 
 // Il server Deno li prende da qui, col resto delle regole: un «oggi a Roma» solo, e la lettura a pagine dell'app.
-export { oggiARoma, tutteLeRighe }
+export { chiusuraDaRiga, incassiDaRighe, oggiARoma, tutteLeRighe }
 
 /** Un movimento come lo restituisce il database dopo averlo scritto. */
 export interface MovimentoScritto {
@@ -290,8 +293,6 @@ async function strumentoRegistra(db: DatabaseChat, a: Argomenti, oggi: string) {
   return registrato(r, voci, casse)
 }
 
-const dataVera = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(`${d}T00:00:00Z`)) && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d
-
 /** L'elenco unico dell'app (`righeMovimenti`), con gli incassi degli iscritti senza nomi. */
 async function elenco(db: DatabaseChat) {
   const [voci, casse, manuali, incassi] = await Promise.all([db.voci(), db.casse(), db.movimenti(), db.incassi()])
@@ -306,33 +307,28 @@ const confronto = (adesso: number, prima: number | undefined) => {
 }
 
 async function strumentoConti(db: DatabaseChat, a: Argomenti, oggi: string) {
-  const tipo = a.tipo
-  if (tipo !== undefined && tipo !== 'entrata' && tipo !== 'uscita') return testo('Scegli se è un’entrata o un’uscita', true)
+  if (a.tipo !== undefined && a.tipo !== 'entrata' && a.tipo !== 'uscita') return testo('Scegli se è un’entrata o un’uscita', true)
+  const tipo = a.tipo === 'entrata' || a.tipo === 'uscita' ? a.tipo : undefined
   const dal = stringa(a.dal)
   const al = stringa(a.al)
   if ((dal !== undefined && !dataVera(dal)) || (al !== undefined && !dataVera(al))) return testo('La data non si capisce', true)
+  const anno = a.anno === undefined ? Number(oggi.slice(0, 4)) : a.anno
+  if (!dal && (typeof anno !== 'number' || !Number.isInteger(anno))) return testo('L’anno non si capisce', true)
+  if (!dal && Number(anno) > Number(oggi.slice(0, 4))) return testo(`L’anno ${anno} non è ancora cominciato`, true)
   const { voci, casse, righe } = await elenco(db)
   const voce = stringa(a.voce)?.trim()
   const voceEsiste = (n: string) => n.toLowerCase() === VOCE_DA_CLASSIFICARE.toLowerCase() || voci.some((v) => v.nome.toLowerCase() === n.toLowerCase())
   if (voce && !voceEsiste(voce)) return testo(`Non c’è una voce «${voce}»: vedi lo strumento voci`, true)
-  const filtro = { voce, tipo: tipo as 'entrata' | 'uscita' | undefined }
-  const righeTesto: string[] = []
-  let c
-  if (dal) {
-    const fine = al ?? oggi
-    if (dal > fine) return testo('La data di inizio è dopo quella di fine', true)
-    if (dal > oggi) return testo('Il periodo comincia dopo oggi: non ci sono ancora movimenti', true)
-    c = contiPeriodo(righe, { dal, al: fine, ...filtro }, oggi)
-    righeTesto.push(`Conti ${periodoInParole(c.dal, c.al)}${c.parziale ? ' (parziale: fino a oggi)' : ''}, confronto ${periodoInParole(c.confrontoDal, c.confrontoAl)}`)
-  } else {
-    // Il riepilogo dell'anno solare, come BILANCIO: gli avvisi vengono da lì, i numeri (anche filtrati) da contiPeriodo.
-    const anno = typeof a.anno === 'number' && Number.isInteger(a.anno) ? a.anno : Number(oggi.slice(0, 4))
-    const b = bilancioAnno(righe, casse, anno, oggi)
-    c = contiPeriodo(righe, { dal: b.dal, al: b.al, ...filtro }, oggi)
-    righeTesto.push(`Anno ${anno}, ${periodoInParole(b.dal, b.al)}${b.parziale ? ' (parziale: fino a oggi)' : ''}, confronto ${periodoInParole(b.confrontoDal, b.confrontoAl)}`)
-    if (b.provvisorio) righeTesto.push('Risultato provvisorio: più di metà delle uscite è da classificare')
-    if (b.sovrapposizione) righeTesto.push(`Attenzione, possibile doppio conteggio degli incassi ${periodoInParole(b.sovrapposizione.dal, b.sovrapposizione.al)}: lo storico importato si sovrappone agli incassi dell’app`)
-  }
+  if (dal && dal > (al ?? oggi)) return testo('La data di inizio è dopo quella di fine', true)
+  if (dal && dal > oggi) return testo('Il periodo comincia dopo oggi: non ci sono ancora movimenti', true)
+  // Senza dal: l'anno solare, come BILANCIO, che dà anche il «provvisorio».
+  const b = dal ? null : bilancioAnno(righe, casse, Number(anno), oggi)
+  const c = contiPeriodo(righe, { dal: dal ?? b?.dal ?? oggi, al: dal ? (al ?? oggi) : (b?.al ?? oggi), voce, tipo }, oggi)
+  const righeTesto = [
+    `${b ? `Anno ${anno}, ` : 'Conti '}${periodoInParole(c.dal, c.al)}${c.parziale || b?.parziale ? ' (parziale: fino a oggi)' : ''}, confronto ${periodoInParole(c.confrontoDal, c.confrontoAl)}`,
+  ]
+  if (b?.provvisorio) righeTesto.push('Risultato provvisorio: più di metà delle uscite è da classificare')
+  if (c.sovrapposizione) righeTesto.push(`Attenzione, possibile doppio conteggio degli incassi ${periodoInParole(c.sovrapposizione.dal, c.sovrapposizione.al)}: lo storico importato si sovrappone agli incassi dell’app`)
   righeTesto.push(`Entrate: ${importoConMeno(c.entrate)}${confronto(c.entrate, c.prima?.entrate)}`)
   righeTesto.push(`Uscite: ${importoConMeno(c.uscite)}${confronto(c.uscite, c.prima?.uscite)}`)
   righeTesto.push(`Risultato: ${importoConMeno(c.risultato)}${c.prima ? ` · anno prima ${importoConMeno(c.prima.risultato)}` : ''}`)
@@ -340,7 +336,7 @@ async function strumentoConti(db: DatabaseChat, a: Argomenti, oggi: string) {
     if (v.totale === null) continue
     righeTesto.push(`- ${v.tipo === 'entrata' ? 'Entrata' : 'Uscita'} · ${v.voce}: ${importoConMeno(v.totale)}${v.aParte ? ' (nel totale, ma è la differenza di una chiusura di cassa)' : ''}`)
   }
-  if (c.daSistemare) righeTesto.push(`${c.daSistemare.movimenti} movimenti per ${euro(c.daSistemare.uscite)} € ancora da classificare: i totali per voce possono essere più alti`)
+  if (c.daSistemare) righeTesto.push(`${c.daSistemare.movimenti} movimenti per ${euro(c.daSistemare.uscite)} € ancora da sistemare (Da classificare, Varie o senza voce): i totali per voce possono essere più alti`)
   return testo(righeTesto.join('\n'))
 }
 
@@ -370,10 +366,11 @@ async function strumentoDaClassificare(db: DatabaseChat) {
     [
       `${g.gruppiTotali} gruppi, ${g.movimentiTotali} movimenti da classificare${g.gruppiTotali > g.gruppi.length ? ` (qui i ${g.gruppi.length} più pesanti)` : ''}. In MOVIMENTI: cerca il testo, voce di partenza, periodo «Tutto».`,
       ...g.gruppi.map((x) => {
-        const da = [...x.voci, ...(x.senzaVoce ? ['senza voce'] : [])].join(', ')
+        // Il filtro voce di MOVIMENTI va per nome: un gruppo tutto senza voce si ritrova col testo e basta.
+        const da = x.voci.length ? `ora su ${x.voci.join(', ')}${x.senzaVoce ? ' o senza voce' : ''}` : 'senza voce'
         const quando = x.primo === x.ultimo ? dataRicevuta(x.primo) : `dal ${dataRicevuta(x.primo)} al ${dataRicevuta(x.ultimo)}`
         const voce = x.proposta ? `voce proposta ${x.proposta.nome}` : (x.avviso ?? 'nessuna proposta')
-        return `- cerca «${x.cerca}» · ${x.movimenti} movimenti · ${euro(x.totale)} € · ${quando} · ora su ${da} · periodo «Tutto» · ${voce}`
+        return `- cerca «${x.cerca}» · ${x.movimenti} movimenti · ${euro(x.totale)} € · ${quando} · ${da} · periodo «Tutto» · ${voce}`
       }),
     ].join('\n'),
   )
