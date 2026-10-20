@@ -1137,6 +1137,7 @@ export function senzaPulsantiContatti(html: string, dominio: string): string {
 /** Le pagine che non sono mai la pagina di un corso, anche se hanno i due pulsanti. */
 const PAGINE_NON_CORSO = new Set(['home', 'corsi', 'contatti', 'chi-siamo'])
 
+// Le pagine di legge sono informative: niente invito «Iscriviti» in fondo.
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = senzaPulsantiContatti(testoDellaPagina(p.testo, c.d.ospitiImmagini ?? []), c.d.dominio)
   // La pagina «orari» col segnaposto [orari]: gli orari veri dei corsi. Senza il segnaposto è una pagina come le altre.
@@ -1167,7 +1168,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
     : p.diLegge
       ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
       : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}${inTestata.html ? '' : ' solo'}${tecnici ? ' elenco-tecnici' : ''}"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main${scheda ? ' class="scheda-scarna"' : dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${tecnici?.conInvito ? '' : invito(conContatti)}${piede(c)}`
+  const corpo = `${t}<main${scheda ? ' class="scheda-scarna"' : dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${tecnici?.conInvito || p.diLegge ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: c.corsi.has(p.slug) })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null, dati })
 }
