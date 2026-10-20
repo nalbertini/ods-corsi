@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<section style="display: flex; flex-direction: column; gap: 12px; width: 100%; min-width: 0; padding: 18px 20px; background: {{c.surface}}; border: {{bordo}}; border-radius: {{raggio}}; color: {{c.text}}; font-family: {{testo}}">
+  <div style="display: flex; flex-wrap: {{aCapo}}; align-items: baseline; gap: 4px 10px">
+    <h3 style="margin: 0; font-family: {{eti}}; font-size: 14px; font-weight: 700; letter-spacing: 0.22em; color: {{c.dim}}; white-space: nowrap">{{titolo}}</h3>
+    <div style="flex-grow: 1; height: 2px; background: {{c.lineSoft}}"></div>
+    <span style="font-size: 12px; color: {{c.dim}}; flex-basis: {{baseNota}}">{{nota}}</span>
+  </div>
+  <sc-if value="{{haTotale}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 14px; color: {{c.sec}}"><span style="font-family: {{num}}; font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700; color: {{c.text}}">{{totale}}</span> {{totaleDopo}}</span>
+  </sc-if>
+  <dc-import name="Colonne" mesi="{{mesi}}" euro="{{euro}}" sopra="{{sopra}}" dettaglio="{{dettaglio}}" tema="{{tema}}" hint-size="100%,206px"></dc-import>
+</section>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"INCASSI MESE PER MESE"},"nota":{"editor":"text","default":"quanto è stato pagato con le ricevute, tutti i corsi insieme"},"mesi":{"editor":"text","default":"mag:4120|giu:3380|lug:910|ago:240|set:9850|ott:6420"},"euro":{"editor":"boolean","default":false},"totale":{"editor":"text","default":""},"totaleDopo":{"editor":"text","default":""},"sopra":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":""},"telefono":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":560,"height":300}}'>
+// Un riquadro «mese per mese» di STATISTICHE (src/components/segreteria/Statistiche.tsx): la <section className="sg-riquadro"> con `Riga`
+// (comune.tsx righe 338-349) e `Colonne` (Statistiche.tsx righe 342-389); PRESENZE, ISCRITTI, PROVE e INCASSI MESE PER MESE sono tutti cosi'.
+// Riga: h3 .sg-etichetta 14px 700 spaziatura 0.22em `dim`, poi .rule-line (2px `line-soft`, cresce) e la nota 12px `dim`; sotto i 768px la nota
+// va a capo a tutta riga (`telefono`, src/styles.css righe 2297-2299). Il totale sopra le colonne e' quello di `Incassi` (righe 728-736): cifra
+// .num 22px 700 `text` e il resto 14px `sec`.
+// Le colonne sono Colonne.dc.html: `mesi`, `euro`, `sopra` e `dettaglio` passano a lei (vedi li').
+// tema sito (`:root[data-look='sito']`): .sg-riquadro e' una tessera bianca senza bordo, raggio 6px; etichetta e numeri (.num) in Inter.
+const T = {
+  scuro: { surface: '#1c1c1c', bg: '#121212', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', blu: '#1b8ac4' },
+  chiaro: { surface: '#ffffff', bg: '#f4f4f1', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', blu: '#1b8ac4' },
+  sito: { surface: '#ffffff', bg: '#eef5fa', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', blu: '#14709f' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const BARLOW = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const tema = p.tema || 'sito';
+    const c = T[tema] || T.sito;
+    const sito = tema === 'sito';
+    const tel = truthy(p.telefono);
+    return {
+      c, tema, titolo: p.titolo ?? '', nota: p.nota ?? '',
+      eti: sito ? INTER : COND, num: sito ? INTER : COND, testo: sito ? INTER : BARLOW,
+      bordo: sito ? '0' : '2px solid ' + c.line, raggio: sito ? '6px' : '0',
+      aCapo: tel ? 'wrap' : 'nowrap', baseNota: tel ? '100%' : 'auto',
+      haTotale: !!p.totale, totale: p.totale ?? '', totaleDopo: p.totaleDopo ?? '',
+      mesi: p.mesi ?? '', euro: truthy(p.euro), sopra: p.sopra ?? '', dettaglio: p.dettaglio ?? '',
+    };
+  }
+}
+</script>
+</body>
+</html>

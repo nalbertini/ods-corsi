@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 100%; min-width: 0; color: {{c.text}}; font-family: {{testo}}">
+  <sc-if value="{{vuoto}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 14px; color: {{c.dim}}">Niente da contare in questo periodo.</span>
+  </sc-if>
+  <sc-if value="{{pieno}}" hint-placeholder-val="{{ true }}">
+    <div style="display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px">
+      <div style="display: flex; flex-direction: column; justify-content: space-between; height: 180px; font-family: {{num}}; font-variant-numeric: tabular-nums; font-size: 11px; color: {{c.dim}}; text-align: right">
+        <span style="line-height: 1">{{scala.tutto}}</span><span style="line-height: 1">{{scala.meta}}</span><span style="line-height: 1">0</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat({{n}}, minmax(0, 1fr)); gap: 2px; align-items: end; background: linear-gradient({{c.lineSoft}}, {{c.lineSoft}}) top / 100% 1px no-repeat, linear-gradient({{c.lineSoft}}, {{c.lineSoft}}) 0 90px / 100% 1px no-repeat">
+        <sc-for list="{{colonne}}" as="x" hint-placeholder-count="6">
+          <div style="display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; padding: 0 2px">
+            <div style="position: relative; height: 180px; display: flex; align-items: flex-end; border-bottom: 2px solid {{c.line}}">
+              <div style="width: 100%; max-width: 44px; height: {{x.alto}}; margin: 0 auto; background: {{x.fondo}}; border-radius: 4px 4px 0 0"></div>
+              <sc-if value="{{x.sopra}}" hint-placeholder-val="{{ false }}">
+                <span style="position: absolute; bottom: calc(100% + 6px); {{x.lato}}: 0; z-index: 3; display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; background: {{c.text}}; color: {{c.bg}}; font-family: {{body}}; font-size: 12px; font-weight: 500; text-align: left; white-space: nowrap">
+                  <sc-for list="{{x.righe}}" as="r" hint-placeholder-count="3"><span style="font-weight: {{r.peso}}">{{r.testo}}</span></sc-for>
+                </span>
+              </sc-if>
+            </div>
+            <span style="font-family: {{num}}; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: {{c.dim}}; text-align: center; white-space: nowrap; overflow: hidden">{{x.etichetta}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"mesi":{"editor":"text","default":"mag:4120|giu:3380|lug:910|ago:240|set:9850|ott:6420"},"euro":{"editor":"boolean","default":false},"sopra":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":520,"height":210}}'>
+// `Colonne` di src/components/segreteria/Statistiche.tsx (righe 342-389): le colonne di un valore solo, mese per mese, dentro i riquadri di STATISTICHE
+// (RiquadroStatistica le mette sotto il titolo). Valori da src/styles.css (righe 2609-2631): la scala a sinistra (tetto, meta' e 0; 11px `dim`, alta
+// 180px), il piano con due fili `line-soft` (in cima e a 90px), una colonna per mese col binario alto 180px e il filo sotto 2px `line`; il pieno largo al
+// massimo 44px, `blu`, raggio 4px in alto; il mese in corso (l'ultimo) e' tratteggiato: repeating-linear-gradient 135deg, `blu` 0-6px e blu al 55% sul
+// bianco 6-10px. Etichetta del mese 11px 600 0.08em `dim`, in maiuscolo. `tetto` (righe 333-340) da' il numero tondo sopra il massimo.
+// mesi: "etichetta:valore|..." dal piu' vecchio; l'ultimo e' il mese in corso. Tutti a 0 = «Niente da contare in questo periodo.» (.sg-sotto).
+// sopra: l'indice (da 0) della colonna col suggerimento aperto (sotto il dito o il mouse), con `dettaglio` le righe separate da «|» (la prima in
+// grassetto), come .sg-colonna-suggerimento: fondo `text`, testo `bg`, 12px 500; dalla meta' in poi si apre verso sinistra.
+// tema sito (`:root[data-look='sito']`): i numeri (.num) sono in Inter.
+const T = {
+  scuro: { surface: '#1c1c1c', bg: '#121212', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', blu: '#1b8ac4' },
+  chiaro: { surface: '#ffffff', bg: '#f4f4f1', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', blu: '#1b8ac4' },
+  sito: { surface: '#ffffff', bg: '#eef5fa', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', blu: '#14709f' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const BARLOW = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+// tetto di Statistiche.tsx: con pochi un numero pari, se no 1, 2, 2,5, 5 o 10 per la potenza di dieci.
+function tetto(x) {
+  if (x <= 0) return 1;
+  if (x <= 10) return Math.max(2, Math.ceil(x / 2) * 2);
+  const p = 10 ** Math.floor(Math.log10(x));
+  return [1, 2, 2.5, 5, 10].map((k) => k * p).find((k) => k >= x) ?? 10 * p;
+}
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const tema = p.tema || 'sito';
+    const c = T[tema] || T.sito;
+    const sito = tema === 'sito';
+    const euro = truthy(p.euro);
+    const fmt = (n) => euro ? Math.round(n).toLocaleString('it-IT') + ' €' : n.toLocaleString('it-IT', { maximumFractionDigits: 1 });
+    const mesi = String(p.mesi ?? '').split('|').filter(Boolean).map((s) => { const [e, v] = s.split(':'); return { e, v: Number(v) || 0 }; });
+    const max = tetto(Math.max(0, ...mesi.map((m) => m.v)));
+    const sopra = p.sopra === '' || p.sopra === undefined ? -1 : Number(p.sopra);
+    const righe = String(p.dettaglio ?? '').split('|').filter(Boolean).map((t, k) => ({ testo: t, peso: k === 0 ? 700 : 500 }));
+    const tratteggio = 'repeating-linear-gradient(135deg, ' + c.blu + ' 0 6px, color-mix(in srgb, ' + c.blu + ' 55%, ' + c.surface + ') 6px 10px)';
+    const colonne = mesi.map((m, i) => ({
+      etichetta: m.e.toUpperCase(),
+      alto: m.v > 0 ? (100 * m.v / max) + '%' : '0',
+      fondo: i === mesi.length - 1 ? tratteggio : c.blu,
+      sopra: i === sopra, righe, lato: i >= mesi.length / 2 ? 'right' : 'left',
+    }));
+    const vuoto = mesi.every((m) => m.v === 0);
+    const tel = truthy(p.telefono);
+    return {
+      c, titolo: p.titolo ?? '', nota: p.nota ?? '',
+      eti: sito ? INTER : COND, num: sito ? INTER : COND, testo: sito ? INTER : BARLOW, body: sito ? INTER : BARLOW,
+      bordo: sito ? '0' : '2px solid ' + c.line, raggio: sito ? '6px' : '0',
+      aCapo: tel ? 'wrap' : 'nowrap', baseNota: tel ? '100%' : 'auto',
+      haTotale: !!p.totale, totale: p.totale ?? '', totaleDopo: p.totaleDopo ?? '',
+      vuoto, pieno: !vuoto, n: mesi.length, colonne,
+      scala: { tutto: fmt(max), meta: fmt(max / 2) },
+    };
+  }
+}
+</script>
+</body>
+</html>

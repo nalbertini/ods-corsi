@@ -1,0 +1,31 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Il sito in Statistiche · proposta"
+  }
+ ],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "OGGI · STATISTICHE, schermo largo (finisce con INCASSI)", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Proposta.dc.html", "title": "PROPOSTA · IL SITO in fondo, ultimi 3 mesi, tutti i corsi", "x": 1560, "y": 300, "page": "page-1" },
+  { "file": "OggiTelefono.dc.html", "title": "OGGI · sul telefono", "x": 3120, "y": 300, "page": "page-1" },
+  { "file": "PropostaTelefono.dc.html", "title": "PROPOSTA · sul telefono", "x": 3630, "y": 300, "page": "page-1" },
+  { "file": "ProponiCorso.dc.html", "title": "PROPOSTA · con un corso scelto: la frase", "x": 0, "y": 4520, "page": "page-1" },
+  { "file": "ProponiDal.dc.html", "title": "PROPOSTA · periodo che comincia prima del 20 ottobre: «si conta dal»", "x": 1560, "y": 4520, "page": "page-1" },
+  { "file": "ProponiErrore.dc.html", "title": "PROPOSTA · GoatCounter non risponde: gli altri riquadri restano", "x": 3120, "y": 4520, "page": "page-1" },
+  { "file": "ErroreTelefono.dc.html", "title": "PROPOSTA · errore sul telefono", "x": 4680, "y": 4520, "page": "page-1" },
+  { "file": "Stati.dc.html", "title": "PROPOSTA · Letti alle, Aggiorna, prova e le sei frasi d'errore", "x": 0, "y": 7260, "page": "page-1" },
+  { "file": "RiquadroSito.dc.html", "title": "Componente della proposta · RiquadroSito", "x": 1560, "y": 7260, "page": "page-1" },
+  { "file": "StatisticheSopra.dc.html", "title": "Nel canvas soltanto · STATISTICHE sopra il riquadro", "x": 1560, "y": 8460, "page": "page-1" }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1840,
+   "text": "Il sito in Statistiche: quanta gente guarda il sito e quante volte tocca Iscriviti, Chiama o Scrivici"
+  }
+ ]
+}

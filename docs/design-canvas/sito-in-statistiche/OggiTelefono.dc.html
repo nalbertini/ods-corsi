@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI sul telefono (390px): la striscia COSA MANCA parte spenta, i numeri vanno uno sotto l'altro, i riquadri in colonna. Finisce con INCASSI. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 2260px; background: #eef5fa">
+  <dc-import name="BarraTelefono" tema="sito" luogo="SEGRETERIA" da-fare="5" hint-size="100%,62px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 18px; padding: 20px 16px 28px">
+    <dc-import name="StatisticheSopra" variante="tre" telefono="{{ true }}" hint-size="100%,2000px"></dc-import>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>
