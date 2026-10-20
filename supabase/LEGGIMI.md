@@ -1058,6 +1058,54 @@ personalizzato**, con l'indirizzo
 `collega/` dell'app: si entra, si legge cosa potrà fare e si dice CONSENTI. Il
 collegamento si toglie da lì, dai Connettori di Claude.
 
+## 13. Satispay nel modulo di iscrizione
+
+Chi si iscrive sceglie Satispay, manda la richiesta e paga dall'app Satispay
+l'importo che calcola il database dal listino (`73-satispay.sql`). Satispay
+avvisa la funzione `satispay`, che rilegge lo stato da Satispay e lo scrive:
+la richiesta risulta pagata da sola, e la ricevuta dalla scheda prende quel
+pagamento. Finché la funzione non c'è, o non ha le chiavi, il modulo propone
+bonifico e segreteria come prima.
+
+1. **Il database**: si lancia `73-satispay.sql`.
+2. **Le chiavi**: una coppia RSA, che resta solo nei segreti della funzione.
+
+   ```sh
+   openssl genrsa -out satispay.pem 4096
+   openssl rsa -in satispay.pem -pubout -out satispay.pub
+   ```
+
+   Dalla dashboard di Satispay Business (o dalla mail della sandbox) si prende
+   il **codice di attivazione** e si chiede il KeyId, una volta sola. Prima in
+   sandbox (`staging.authservices.satispay.com`), poi in produzione
+   (`authservices.satispay.com`), ognuno col suo codice:
+
+   ```sh
+   curl -s https://staging.authservices.satispay.com/g_business/v1/authentication_keys \
+     -H 'Content-Type: application/json' \
+     -d "{\"public_key\": $(jq -Rs . < satispay.pub), \"token\": \"<codice di attivazione>\"}"
+   ```
+
+3. **I segreti e la funzione**: la callback di Satispay arriva senza token,
+   quindi la funzione si pubblica senza il controllo di Supabase (le scritture
+   le fanno solo le funzioni di `73`, con la chiave che non esce dal server).
+
+   ```sh
+   supabase secrets set --project-ref <id-del-progetto> \
+     SATISPAY_KEY_ID=<key_id> SATISPAY_CHIAVE="$(cat satispay.pem)" \
+     SATISPAY_HOST=staging.authservices.satispay.com \
+     APP_URL=https://<indirizzo-dell-app>/iscrizioni/
+   supabase functions deploy satispay --no-verify-jwt --project-ref <id-del-progetto>
+   ```
+
+   In produzione `SATISPAY_HOST=authservices.satispay.com`, col KeyId di
+   produzione. `satispay.pem` poi si cancella dal computer.
+
+Il prezzo vale solo per i corsi agganciati alla loro voce in LISTINO: con un
+corso senza voce (o col listino del foglio) Satispay non compare. Commissioni e
+rimborsi si registrano a mano in CONTABILITÀ; un rimborso si fa dalla
+dashboard di Satispay.
+
 ## Le cose da decidere prima di usarlo sul serio
 
 - **L'informativa privacy.** Nomi e presenze sono dati personali e la palestra

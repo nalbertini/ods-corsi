@@ -175,6 +175,9 @@ select atteso('satispay_stato: quello in attesa, non quello andato male', satisp
 select atteso('satispay_stato: Paolo è pagato', satispay_stato('eeeeeeee-0000-0000-0000-000000000001')->>'stato', 'pagato');
 select atteso('satispay_stato: senza pagamenti, niente', coalesce(satispay_stato('eeeeeeee-0000-0000-0000-000000000003')::text, 'niente'), 'niente');
 reset role;
+set role service_role;
+select atteso('ACCEPTED dopo CANCELED: errore che si vede, non un pagato in silenzio', (rifiuto($$select satispay_esito('SP-2', 'ACCEPTED')$$) <> 'nessun errore')::text, 'true');
+reset role;
 select atteso('Sara ha due righe: una non andata, una in attesa',
   (select string_agg(stato, ', ' order by creato_il, stato) from pagamenti_satispay where richiesta_id = 'eeeeeeee-0000-0000-0000-000000000002'), 'non-andato, attesa');
 select atteso('due righe in attesa per la stessa richiesta: il database non le tiene',
@@ -257,6 +260,39 @@ select atteso('il pagamento sa in quale ricevuta è entrato',
 select atteso('una seconda volta: no',
   tenta(format($$select emetti_ricevuta_satispay(%L::jsonb, %L::uuid)::text$$, ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000005'), :'pagato_paolo')), 'NEGATO: …');
 select atteso('e la ricevuta resta una', (select count(*)::text from ricevute), '1');
+reset role;
+
+\echo ''
+\echo '--- 7. la ricevuta annullata e la richiesta cancellata non bloccano i soldi ---'
+select atteso('accolta: il pagamento sa di quale scheda è',
+  (select persona_id::text from pagamenti_satispay where id = :'pagato_paolo'), 'aaaaaaaa-0000-0000-0000-000000000005');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select annulla_ricevuta((:'fatta'::jsonb->>'id')::uuid);
+select emetti_ricevuta_satispay(ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000005'), :'pagato_paolo') as rifatta \gset
+select atteso('ricevuta annullata: il pagamento entra in quella nuova',
+  (select ricevuta_id::text from pagamenti_satispay where id = :'pagato_paolo'), :'rifatta'::jsonb->>'id');
+reset role;
+
+-- Gino paga, è accolto, e la sua richiesta poi si cancella: i soldi restano suoi.
+set role service_role;
+select satispay_creato((:'gino'::jsonb->>'id')::uuid, 'SP-3', 'https://online.satispay.com/pay/SP-3');
+select satispay_esito('SP-3', 'ACCEPTED');
+reset role;
+update richieste_iscrizione set stato = 'accolta', persona_id = 'aaaaaaaa-0000-0000-0000-000000000006'
+  where id = 'eeeeeeee-0000-0000-0000-000000000003';
+delete from richieste_iscrizione where id = 'eeeeeeee-0000-0000-0000-000000000003';
+select importo as importo_gino from pagamenti_satispay where satispay_id = 'SP-3' \gset
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('richiesta cancellata: la ricevuta di Gino col suo pagamento si fa lo stesso',
+  tenta(format($$select (emetti_ricevuta_satispay(%L::jsonb, %L::uuid)->>'pagato')$$,
+    jsonb_build_object('data', '2026-10-20', 'persona_id', 'aaaaaaaa-0000-0000-0000-000000000006',
+      'ente', jsonb_build_object('nome', 'Asd Il Centro Judo'), 'intestatario', jsonb_build_object('nome', 'Gino', 'cognome', 'Neri'),
+      'voci', jsonb_build_array(jsonb_build_object('descrizione', 'Iscrizione', 'quantita', 1, 'prezzo', :importo_gino,
+        'pagamenti', jsonb_build_array(jsonb_build_object('data', '2026-10-20', 'importo', :importo_gino, 'metodo', 'Satispay')))),
+      'anticipo', 0),
+    (select id from pagamenti_satispay where satispay_id = 'SP-3'))), :'importo_gino');
 reset role;
 
 \echo ''

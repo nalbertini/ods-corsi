@@ -113,7 +113,7 @@ export interface DatiRichieste {
    * quello in attesa) e torna dove mandare chi paga. `null` se il servizio
    * non è attivo. In prova finge l'approvazione.
    */
-  paga(richiestaId: string): Promise<{ link: string } | null>
+  paga(richiestaId: string): Promise<{ link: string } | { pagato: true } | null>
   /** Se il modulo può offrire Satispay: mai un errore, senza servizio o senza rete è `false`. */
   satispayAttivo(): Promise<boolean>
   /** Lo stato del pagamento Satispay della richiesta, riletto da Satispay se è in attesa; `null` se non ce n'è. */

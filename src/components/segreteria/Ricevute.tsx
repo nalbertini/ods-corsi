@@ -447,7 +447,8 @@ export function NuovaRicevuta({
   useEffect(() => {
     if (sp) setMetodo('Satispay')
   }, [sp?.id])
-  const conSatispay = !!sp && metodo === 'Satispay'
+  // Il pagamento da mettere in questa ricevuta: c'è, e si paga con Satispay.
+  const conSatispay = metodo === 'Satispay' ? sp : undefined
 
   const listino = partenza.dato?.[3].listino
   const gruppi = listino ? vociInDueGruppi(corsi, data, listino) : { primi: [], altri: [] }
@@ -500,7 +501,7 @@ export function NuovaRicevuta({
       ? null
       : { data, personaId: p.id, numero: n, ente, intestatario: socio, voci: fatte, anticipo: anticipoCent, note: note.trim() || undefined }
   const guaio =
-    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? (sp && conSatispay ? cosaNonVaSatispay(dati.voci, sp) : null)) : null
+    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null)) : null
   const c = dati ? conti(dati) : null
 
   // Lo sconto famiglia: dove è, o perché non è qui.
@@ -547,7 +548,7 @@ export function NuovaRicevuta({
     if (!(await chiedi(righe.join('\n'), 'Fai la ricevuta', { no: 'Torna a correggere', pericolo: true }))) return
     void fai(
       async () => {
-        const r = await d.emettiRicevuta(dati, conSatispay ? sp?.id : undefined)
+        const r = await d.emettiRicevuta(dati, conSatispay?.id)
         await scarica(r)
         return r
       },
@@ -576,14 +577,14 @@ export function NuovaRicevuta({
         </Campo>
         <Campo id="rc-metodo" etichetta="PAGATO CON">
           <select id="rc-metodo" className="sg-campo" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
-            {[...METODI, ...(sp ? ['Satispay'] : [])].map((m) => (
+            {(sp ? METODI_A_MANO : METODI).map((m) => (
               <option key={m}>{m}</option>
             ))}
           </select>
         </Campo>
       </div>
       {sp && (
-        <span style={{ fontSize: 13, color: 'var(--verde-testo)', marginTop: -12 }}>
+        <span className="sg-sotto" data-tono="fatto" style={{ marginTop: -12 }}>
           Arrivati {soldi(sp.importo)} con Satispay dal modulo di iscrizione. Con PAGATO CON «Satispay» entrano in questa ricevuta, una volta sola.
         </span>
       )}

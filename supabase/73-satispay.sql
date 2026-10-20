@@ -28,8 +28,11 @@ create table if not exists pagamenti_satispay (
   link         text,
   creato_il    timestamptz not null default now(),
   pagato_il    timestamptz,
-  ricevuta_id  uuid references ricevute on delete set null
+  ricevuta_id  uuid references ricevute on delete set null,
+  -- La scheda della richiesta accolta: resta anche se poi la richiesta si cancella, e la legge anche l'amministrazione.
+  persona_id   uuid references persone on delete set null
 );
+alter table pagamenti_satispay add column if not exists persona_id uuid references persone on delete set null;
 -- Mai due pagamenti vivi per la stessa richiesta: due tocchi, o due callback insieme, non fanno pagare due volte.
 create unique index if not exists pagamenti_satispay_uno on pagamenti_satispay (richiesta_id) where stato in ('attesa', 'pagato');
 
@@ -39,6 +42,17 @@ create policy pagamenti_satispay_legge on pagamenti_satispay for select to authe
 -- Su Supabase anche `service_role` ha la tabella di suo: si toglie, e scrive solo dalle funzioni.
 revoke all on pagamenti_satispay from public, anon, authenticated, service_role;
 grant select on pagamenti_satispay to authenticated;
+
+-- Accolta la richiesta, i suoi pagamenti sanno di quale scheda sono: `accogli_iscrizione` non si tocca.
+create or replace function satispay_alla_persona() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  update pagamenti_satispay set persona_id = new.persona_id where richiesta_id = new.id;
+  return new;
+end $$;
+revoke all on function satispay_alla_persona() from public, anon, authenticated;
+drop trigger if exists richieste_satispay_persona on richieste_iscrizione;
+create trigger richieste_satispay_persona after update of persona_id on richieste_iscrizione
+  for each row when (new.persona_id is distinct from old.persona_id) execute function satispay_alla_persona();
 
 -- Il prezzo di un corso dal listino, in centesimi, come `stimaIscrizione` (src/lib/nucleo.ts): della voce del corso
 -- vale la prima riga di `prezzi` che ha quel prezzo; il saldo solo se è ancora in tempo e diverso dall'annuale.
@@ -127,7 +141,7 @@ $$;
 -- Satispay ha creato il pagamento: il suo id, per riconoscere la callback, e il link, per riaprirlo.
 create or replace function satispay_creato(id uuid, satispay_id text, link text) returns void
   language sql security definer set search_path = public as $$
-  update pagamenti_satispay p set satispay_id = $2, link = $3 where p.id = $1 and p.stato = 'attesa'
+  update pagamenti_satispay p set satispay_id = $2, link = $3 where p.id = $1 and p.stato = 'attesa' and p.satispay_id is null
 $$;
 
 -- Lo stato come lo dice Satispay, riletto dal server con una richiesta firmata: mai dal corpo della callback, che
@@ -139,13 +153,23 @@ declare
 begin
   select * into p from pagamenti_satispay x where x.satispay_id = $1 for update;
   if p.id is null then raise exception 'Pagamento Satispay sconosciuto' using errcode = 'P0002'; end if;
-  if stato_satispay = 'ACCEPTED' and p.stato <> 'pagato' then
+  -- Pagato dopo che Satispay l'aveva dato per annullato: non dovrebbe succedere (CANCELED è definitivo). Se succede,
+  -- l'errore resta nel log della Edge Function invece di sparire: quei soldi vanno restituiti a mano.
+  if stato_satispay = 'ACCEPTED' and p.stato = 'non-andato' then
+    raise exception 'Satispay dà pagato un pagamento annullato (%): va restituito dalla dashboard', p.satispay_id using errcode = '22023';
+  end if;
+  if stato_satispay = 'ACCEPTED' and p.stato = 'attesa' then
     update pagamenti_satispay set stato = 'pagato', pagato_il = now() where id = p.id returning * into p;
   elsif stato_satispay = 'CANCELED' and p.stato = 'attesa' then
     update pagamenti_satispay set stato = 'non-andato' where id = p.id returning * into p;
   end if;
   return jsonb_build_object('stato', p.stato, 'importo', p.importo, 'pagato_il', p.pagato_il);
 end $$;
+
+-- «230», «12,50»: come `soldi` di src/lib/satispay.ts, per i messaggi.
+create or replace function soldi_sql(cent int) returns text language sql immutable set search_path = public as $$
+  select case when cent % 100 = 0 then (cent / 100)::text else replace(to_char(cent / 100.0, 'FM999999990.00'), '.', ',') end
+$$;
 
 -- La ricevuta col pagamento Satispay già dentro, nella stessa transazione: o tutte e due, o nessuna. I pagamenti con
 -- metodo «Satispay» devono fare esattamente l'importo arrivato, e la ricevuta è della persona della richiesta accolta.
@@ -161,11 +185,11 @@ begin
   if p.id is null or p.stato <> 'pagato' then
     raise exception 'Questo pagamento Satispay non è arrivato' using errcode = '22023';
   end if;
-  if p.ricevuta_id is not null then
+  -- In una ricevuta annullata i soldi non contano più: possono entrare in quella giusta.
+  if exists (select 1 from ricevute r where r.id = p.ricevuta_id and r.annullata_il is null) then
     raise exception 'Questo pagamento Satispay è già in una ricevuta' using errcode = '22023';
   end if;
-  if not exists (select 1 from richieste_iscrizione q where q.id = p.richiesta_id and q.stato = 'accolta'
-                   and q.persona_id = nullif(dati->>'persona_id', '')::uuid) then
+  if p.persona_id is null or p.persona_id is distinct from nullif(dati->>'persona_id', '')::uuid then
     raise exception 'Il pagamento Satispay è di un’altra persona: accogli prima la sua richiesta' using errcode = '22023';
   end if;
   select coalesce(sum((pg->>'importo')::int), 0) into somma
@@ -173,7 +197,8 @@ begin
          jsonb_array_elements(coalesce(v->'pagamenti', '[]'::jsonb)) pg
     where pg->>'metodo' = 'Satispay';
   if somma <> p.importo then
-    raise exception 'Con Satispay sono arrivati % €: nella ricevuta devono essere gli stessi', to_char(p.importo / 100.0, 'FM999990D00')
+    -- Lo stesso testo di `cosaNonVaSatispay` (src/lib/satispay.ts): i centesimi solo se ci sono.
+    raise exception 'Con Satispay sono arrivati % €: nel pagato di questa ricevuta ce ne sono % €', soldi_sql(p.importo), soldi_sql(somma)
       using errcode = '22023';
   end if;
   nuova := emetti_ricevuta(dati);
@@ -181,7 +206,7 @@ begin
   return nuova;
 end $$;
 
-revoke all on function prezzo_dal_listino(jsonb, text, date, date), importo_iscrizione(uuid, date), satispay_prepara(uuid),
+revoke all on function soldi_sql(int), prezzo_dal_listino(jsonb, text, date, date), importo_iscrizione(uuid, date), satispay_prepara(uuid),
   satispay_stato(uuid), satispay_creato(uuid, text, text), satispay_esito(text, text), emetti_ricevuta_satispay(jsonb, uuid)
   from public, anon, authenticated;
 grant execute on function importo_iscrizione(uuid, date), satispay_prepara(uuid), satispay_stato(uuid), satispay_creato(uuid, text, text),

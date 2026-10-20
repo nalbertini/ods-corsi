@@ -20,6 +20,7 @@ const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
+import { cosaNonVaSatispay } from './satispay'
 import { pagamentiSatispayProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { ESTENSIONI } from './richieste'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
@@ -55,7 +56,7 @@ import {
   VOCE_QUOTA,
   type VoceContabile,
 } from './contabilita'
-import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, euro, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
+import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
@@ -1009,16 +1010,16 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async emettiRicevuta(dati, satispayId) {
-      if (dati.personaId) persona(dati.personaId)
-      // Come `emetti_ricevuta_satispay`: un pagamento arrivato, una ricevuta sola, gli stessi soldi.
-      const sp = satispayId ? pagamentiSatispayProva().find((x) => x.id === satispayId) : undefined
+      // Come `emetti_ricevuta_satispay`, prima della ricevuta: un pagamento arrivato, una ricevuta sola, gli stessi soldi.
       if (satispayId) {
+        const sp = pagamentiSatispayProva().find((x) => x.id === satispayId)
         if (sp?.stato !== 'pagato') throw new Error('Questo pagamento Satispay non è arrivato')
         if (sp.ricevutaId) throw new Error('Questo pagamento Satispay è già in una ricevuta')
-        if (sp.personaId !== dati.personaId) throw new Error('Il pagamento Satispay è di un’altra persona: accogli prima la sua richiesta')
-        const somma = dati.voci.flatMap((v) => v.pagamenti).filter((p) => p.metodo === 'Satispay').reduce((s, p) => s + p.importo, 0)
-        if (somma !== sp.importo) throw new Error(`Con Satispay sono arrivati ${euro(sp.importo)} €: nella ricevuta devono essere gli stessi`)
+        if (!sp.personaId || sp.personaId !== dati.personaId) throw new Error('Il pagamento Satispay è di un’altra persona: accogli prima la sua richiesta')
+        const no = cosaNonVaSatispay(dati.voci, sp)
+        if (no) throw new Error(no)
       }
+      if (dati.personaId) persona(dati.personaId)
       const r = { ...dati, intestatario: pulisciIntestatario(dati.intestatario), note: dati.note?.trim() || undefined }
       const no = cosaNonVa(r)
       if (no) throw new Error(no)

@@ -127,6 +127,8 @@ Deno.serve(async (req) => {
   if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: detto(error) }, 409)
   const p = data as { stato: string; id?: string; importo: number; satispay_id?: string | null; link?: string | null }
   if (p.stato === 'pagato') return risposta({ pagato: true })
+  // In attesa `satispay_prepara` dà sempre l'id del nostro pagamento.
+  const nostro = p.id ?? ''
   if (p.satispay_id && p.link) return risposta({ link: p.link })
 
   const ritorno = new URL(app)
@@ -139,15 +141,20 @@ Deno.serve(async (req) => {
       amount_unit: p.importo,
       currency: 'EUR',
       // Si legge nell'app Satispay di chi paga: niente nomi, solo un riferimento per la segreteria.
-      external_code: `ISCRIZIONE ${p.id!.slice(0, 8).toUpperCase()}`,
+      external_code: `ISCRIZIONE ${nostro.slice(0, 8).toUpperCase()}`,
       callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/satispay?payment_id={uuid}`,
       redirect_url: ritorno.toString(),
     }),
     // Lo stesso pagamento nostro non diventa mai due pagamenti Satispay, anche se la risposta si perde.
-    { 'Idempotency-Key': p.id! },
+    { 'Idempotency-Key': nostro },
   )
   if (!nuovo?.redirect_url) return risposta({ guaio: NON_RISPONDE }, 502)
-  const scritto = await admin.rpc('satispay_creato', { id: p.id, satispay_id: nuovo.id, link: nuovo.redirect_url })
-  if (scritto.error) console.error('satispay_creato', scritto.error)
+  const scritto = await admin.rpc('satispay_creato', { id: nostro, satispay_id: nuovo.id, link: nuovo.redirect_url })
+  if (scritto.error) {
+    // Senza l'id di Satispay nel database la callback non si riconoscerebbe: niente link, si riprova. Il tentativo
+    // dopo ha la stessa Idempotency-Key e riceve lo stesso pagamento Satispay, non uno nuovo.
+    console.error('satispay_creato', scritto.error)
+    return risposta({ guaio: NON_RISPONDE }, 502)
+  }
   return risposta({ link: nuovo.redirect_url })
 })

@@ -19,6 +19,14 @@ const ORDINE_STATI: Record<StatoRichiesta, number> = { nuova: 0, accolta: 1, rif
 const CON_ARTICOLO: Partial<Record<string, string>> = { modulo: 'il modulo firmato' }
 const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 
+/** Il colore del segno Satispay nell'elenco: le classi dei bollini che ci sono già. */
+const TIPO_TAG = { aspetta: 'aspetta', fatto: 'fatto', guaio: 'manca' } as const
+
+/** Il bollino del pagamento Satispay nella riga dell'elenco. */
+function SegnoSatispay({ segno }: { segno: ReturnType<typeof segnoRichiesta> }) {
+  return segno && <span className="num sg-tag" data-tipo={TIPO_TAG[segno.tono]}>{segno.tag}</span>
+}
+
 /**
  * Le richieste arrivate dal modulo di iscrizione.
  *
@@ -42,9 +50,6 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * con la sua email non ha niente che la leghi all'iscritto che aveva dato la
  * propria, e da sola diventerebbe un doppione.
  */
-/** Il colore del segno Satispay nell'elenco: le classi dei bollini che ci sono già. */
-const TIPO_TAG = { aspetta: 'aspetta', fatto: 'fatto', guaio: 'manca' } as const
-
 export function Richieste({
   d,
   onVai,
@@ -74,7 +79,7 @@ export function Richieste({
   const corsi = useCarica(() => d.corsi(), [d])
   const persone = useCarica(() => d.persone(), [d])
   const conDocumento = useCarica(async () => (await datiRichieste()).conDocumento(), [])
-  // Il pagamento Satispay di ogni richiesta: quello vivo, o l'ultimo (`73-satispay.sql`; senza il file, nessuno).
+  // Il pagamento Satispay vivo di ogni richiesta, in attesa o pagato: uno non andato non si dice (`73-satispay.sql`; senza il file, nessuno).
   const satispay = useCarica(() => d.pagamentiSatispay(), [d])
   const pagamentoDi = (id: string) => (satispay.dato ?? []).find((p) => p.richiestaId === id && p.stato !== 'non-andato')
   const [tutte, setTutte] = useState(false)
@@ -207,10 +212,7 @@ export function Richieste({
                     {minorenne(x.natoIl) && <span className="num sg-tag">Minore</span>}
                     {x.nucleoDi && <span className="num sg-tag">Nucleo</span>}
                     {doc.has(x.id) && <span className="num sg-tag">Da stampare</span>}
-                    {(() => {
-                      const s = segnoRichiesta(pagamentoDi(x.id), x.stato)
-                      return s && <span className="num sg-tag" data-tipo={TIPO_TAG[s.tono]}>{s.tag}</span>
-                    })()}
+                    <SegnoSatispay segno={segnoRichiesta(pagamentoDi(x.id), x.stato)} />
                     {/* La si richiama: meglio saperlo prima di aprirla. */}
                     {voci && x.corsi.some((c) => {
                       const nome = nomi.get(c)
@@ -272,6 +274,7 @@ function Scheda({
   onApri: (personaId: string) => void
 }) {
   const file = useCarica(() => r.file(x.id), [r, x.id])
+  const segno = segnoRichiesta(satispay, x.stato)
   const voci = useListino()?.listino.corsi
   const minore = minorenne(x.natoIl)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
@@ -451,11 +454,11 @@ function Scheda({
             </div>
           )}
           {/* Non è un guaio: la ricevuta non è obbligatoria, si paga anche al banco. */}
-          {(() => {
-            const s = segnoRichiesta(satispay, x.stato)
-            if (s) return <span className="sg-sotto" style={{ color: `var(--${s.tono === 'fatto' ? 'verde' : s.tono === 'guaio' ? 'rosso' : 'giallo'}-testo)` }}>{s.testo}</span>
-            return file.dato.length > 0 && !arrivati.has('ricevuta') && <span className="sg-sotto">Nessuna ricevuta: il pagamento si fa in segreteria.</span>
-          })()}
+          {segno ? (
+            <span className="sg-sotto" data-tono={segno.tono}>{segno.testo}</span>
+          ) : (
+            file.dato.length > 0 && !arrivati.has('ricevuta') && <span className="sg-sotto">Nessuna ricevuta: il pagamento si fa in segreteria.</span>
+          )}
           {documenti.length > 0 && (
             <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
               <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>

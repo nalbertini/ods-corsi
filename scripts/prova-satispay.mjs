@@ -12,6 +12,7 @@
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 
 // Oggi, per la prova, è martedì 20 ottobre 2026 a mezzogiorno: il saldo è chiuso.
 const OGGI = new Date(2026, 9, 20, 12, 0).getTime()
@@ -54,7 +55,7 @@ const s = await carica("export * from './src/lib/satispay'")
 const c = await carica("export * from './src/lib/contabilita'; export { ENTE_PREDEFINITO } from './src/lib/ricevute'")
 const f = await carica("export * from './supabase/functions/satispay/firma'")
 const p = await carica(
-  "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { stimaIscrizione } from './src/lib/nucleo'",
+  "export { creaRichiesteProva, pagamentiSatispayProva } from './src/lib/richiesteProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { stimaIscrizione } from './src/lib/nucleo'",
 )
 
 let guai = 0
@@ -96,26 +97,52 @@ console.log('\n2. quando il modulo offre Satispay')
   ok('tre: virgola e «e»', prova(() => s.comePuoiPagare(['Judo 3', 'Lotta 3', 'Zumba'], true)), { satispay: false, perche: 'Non ancora: il prezzo di Judo 3, Lotta 3 e Zumba lo conferma la segreteria' })
 }
 
+console.log('\n2c. il prezzo che vale per Satispay: solo una voce del listino agganciata al corso')
+{
+  const listino = { quota: 50, saldoEntro: '2026-08-31', offerte: [], corsi: [
+    { corso: 'Judo 3', corsoId: 'c1', prezzi: [{ annuale: 400 }] },
+    { corso: 'Karate', prezzi: [{ annuale: 300 }] },
+  ] }
+  ok('agganciato per id: ha il prezzo', prova(() => s.senzaVoceDelCorso([{ id: 'c1', nome: 'Judo 3' }], listino)), [])
+  ok('voce col solo nome: per il database non ha prezzo', prova(() => s.senzaVoceDelCorso([{ id: 'c2', nome: 'Karate' }], listino)), ['Karate'])
+}
+
+console.log('\n2b. come si paga dal modulo, e quali file si chiedono')
+{
+  const si = { satispay: true }
+  const no = { satispay: false, perche: '' }
+  ok('Satispay scelto e possibile: Satispay', prova(() => s.modoPagamento('satispay', si, false)), 'satispay')
+  ok('Satispay scelto ma spento: in segreteria', prova(() => s.modoPagamento('satispay', no, false)), 'segreteria')
+  ok('bonifico resta bonifico anche senza Satispay', prova(() => s.modoPagamento('bonifico', no, false)), 'bonifico')
+  ok('dal nucleo nessuna scelta: come prima', prova(() => s.modoPagamento('satispay', si, true)), null)
+  ok('la ricevuta del bonifico: col bonifico sì', prova(() => s.chiedeRicevuta('bonifico')), true)
+  ok('con Satispay no', prova(() => s.chiedeRicevuta('satispay')), false)
+  ok('in segreteria no', prova(() => s.chiedeRicevuta('segreteria')), false)
+  ok('dal nucleo sì, come prima', prova(() => s.chiedeRicevuta(null)), true)
+}
+
 console.log('\n3. cosa vede chi ha mandato la richiesta')
 {
   ok('in attesa', prova(() => s.esitoPagamento({ stato: 'attesa', importo: 23000 })), {
     titolo: 'RICHIESTA ARRIVATA',
     tono: 'avviso',
-    testi: ['Manca il pagamento: 230 € con Satispay.', 'Se hai chiuso Satispay senza confermare, riaprilo da qui: è lo stesso pagamento, non paghi due volte.'],
+    testi: ['Manca il pagamento: 230\u00a0€ con Satispay.', 'Se hai chiuso Satispay senza confermare, riaprilo da qui: è lo stesso pagamento, non paghi due volte.'],
   })
-  ok('in attesa, coi centesimi', prova(() => s.esitoPagamento({ stato: 'attesa', importo: 1250 }).testi[0]), 'Manca il pagamento: 12,50 € con Satispay.')
+  ok('in attesa, coi centesimi', prova(() => s.esitoPagamento({ stato: 'attesa', importo: 1250 }).testi[0]), 'Manca il pagamento: 12,50\u00a0€ con Satispay.')
   ok('pagato, per chi', prova(() => s.esitoPagamento({ stato: 'pagato', importo: 23000, pagatoIl: '2026-10-20T10:00:00Z', chi: 'Paolo Bianchi' })), {
     titolo: 'RICHIESTA ARRIVATA · PAGATO',
     tono: 'fatto',
-    testi: ['Hai pagato 230 € con Satispay il 20 ottobre, per Paolo Bianchi.'],
+    testi: ['Hai pagato 230\u00a0€ con Satispay il 20 ottobre, per Paolo Bianchi.'],
   })
-  ok('pagato, senza chi', prova(() => s.esitoPagamento({ stato: 'pagato', importo: 1250, pagatoIl: '2026-10-20T10:00:00Z' }).testi[0]), 'Hai pagato 12,50 € con Satispay il 20 ottobre.')
-  ok('pagato alle 23:30 UTC: a Roma è già il giorno dopo', prova(() => s.esitoPagamento({ stato: 'pagato', importo: 23000, pagatoIl: '2026-10-19T23:30:00Z' }).testi[0]), 'Hai pagato 230 € con Satispay il 20 ottobre.')
+  ok('pagato, senza chi', prova(() => s.esitoPagamento({ stato: 'pagato', importo: 1250, pagatoIl: '2026-10-20T10:00:00Z' }).testi[0]), 'Hai pagato 12,50\u00a0€ con Satispay il 20 ottobre.')
+  ok('pagato alle 23:30 UTC: a Roma è già il giorno dopo', prova(() => s.esitoPagamento({ stato: 'pagato', importo: 23000, pagatoIl: '2026-10-19T23:30:00Z' }).testi[0]), 'Hai pagato 230\u00a0€ con Satispay il 20 ottobre.')
   const nonAndato = prova(() => s.esitoPagamento({ stato: 'non-andato', importo: 23000, chi: 'Paolo Bianchi' }))
   ok('non andato: titolo e tono', prova(() => [nonAndato.titolo, nonAndato.tono]), ['IL PAGAMENTO NON È ANDATO', 'avviso'])
-  ok('non andato: dice quanto', prova(() => nonAndato.testi[0].startsWith('La richiesta è arrivata, ma i 230 € non sono stati pagati: ')), true)
-  ok('non andato, coi centesimi', prova(() => s.esitoPagamento({ stato: 'non-andato', importo: 1250 }).testi[0].startsWith('La richiesta è arrivata, ma i 12,50 € non sono stati pagati: ')), true)
+  ok('non andato: dice quanto', prova(() => nonAndato.testi[0].startsWith('La richiesta è arrivata, ma i 230\u00a0€ non sono stati pagati: ')), true)
+  ok('non andato, coi centesimi', prova(() => s.esitoPagamento({ stato: 'non-andato', importo: 1250 }).testi[0].startsWith('La richiesta è arrivata, ma i 12,50\u00a0€ non sono stati pagati: ')), true)
   ok('l’errore è per chi usa l’app, mai quello grezzo', s.ERRORE_SATISPAY, 'Satispay non risponde: riprova o paga in segreteria')
+  const funzione = readFileSync('supabase/functions/satispay/index.ts', 'utf8')
+  ok('la Edge Function dice lo stesso errore dell’app', funzione.includes(`const NON_RISPONDE = '${s.ERRORE_SATISPAY}'`), true)
 }
 
 // I pagamenti come li legge la segreteria.
@@ -123,6 +150,7 @@ const pagato = { id: 'sp1', richiestaId: 'r1', chi: 'Bianchi Paolo', importo: 23
 const inAttesa = { id: 'sp2', richiestaId: 'r2', chi: 'Verdi Sara', importo: 20000, stato: 'attesa', creatoIl: '2026-10-19T10:00:00Z' }
 const nonAndato = { id: 'sp3', richiestaId: 'r3', chi: 'Neri Gino', importo: 20000, stato: 'non-andato', creatoIl: '2026-10-19T10:00:00Z' }
 const inRicevuta = { ...pagato, id: 'sp4', ricevutaId: 'ric1', personaId: 'p-Bianchi' }
+// Gli importi nei testi hanno lo spazio che non va a capo prima di «€» (`soldi`).
 const nomeDi = (id) => ({ 'p-Bianchi': 'Bianchi Paolo Maria' })[id] ?? '—'
 const lette = (righe) => righe.map((r) => ({ data: r.data, importo: r.importo, metodo: r.metodo, chi: r.chi, annullato: r.annullato }))
 
@@ -139,10 +167,10 @@ console.log('\n4b. in RICHIESTE ONLINE: il segno e cosa fare')
 {
   ok('nessun pagamento: niente', prova(() => s.segnoRichiesta(undefined, 'nuova')), null)
   ok('non andato: niente, si paga in segreteria come prima', prova(() => s.segnoRichiesta(nonAndato, 'nuova')), null)
-  ok('in attesa', prova(() => s.segnoRichiesta(inAttesa, 'nuova')), { tag: 'Satispay in attesa', testo: 'Pagamento Satispay di 200 € in attesa: chi si iscrive non l’ha ancora confermato.', tono: 'aspetta' })
-  ok('pagata', prova(() => s.segnoRichiesta(pagato, 'nuova')), { tag: 'Pagata', testo: 'Pagata con Satispay il 20 ottobre: 230 €. Nella ricevuta dalla scheda il pagamento è già dentro: non segnarlo di nuovo.', tono: 'fatto' })
-  ok('pagata e già in ricevuta', prova(() => s.segnoRichiesta(inRicevuta, 'accolta').testo), 'Pagata con Satispay il 20 ottobre: 230 €, già nella ricevuta.')
-  ok('pagata e rifiutata: da restituire', prova(() => s.segnoRichiesta(pagato, 'rifiutata')), { tag: 'Da restituire', testo: 'Pagata con Satispay il 20 ottobre: 230 € da restituire dall’app Satispay Business, e poi da registrare in CONTABILITÀ.', tono: 'guaio' })
+  ok('in attesa', prova(() => s.segnoRichiesta(inAttesa, 'nuova')), { tag: 'Satispay in attesa', testo: 'Pagamento Satispay di 200\u00a0€ in attesa: chi si iscrive non l’ha ancora confermato.', tono: 'aspetta' })
+  ok('pagata', prova(() => s.segnoRichiesta(pagato, 'nuova')), { tag: 'Pagata', testo: 'Pagata con Satispay il 20 ottobre: 230\u00a0€. Nella ricevuta dalla scheda il pagamento è già dentro: non segnarlo di nuovo.', tono: 'fatto' })
+  ok('pagata e già in ricevuta', prova(() => s.segnoRichiesta(inRicevuta, 'accolta').testo), 'Pagata con Satispay il 20 ottobre: 230\u00a0€, già nella ricevuta.')
+  ok('pagata e rifiutata: da restituire', prova(() => s.segnoRichiesta(pagato, 'rifiutata')), { tag: 'Da restituire', testo: 'Pagata con Satispay il 20 ottobre: 230\u00a0€ da restituire dall’app Satispay Business, e poi da registrare in CONTABILITÀ.', tono: 'guaio' })
 }
 
 console.log('\n4c. la ricevuta col pagamento Satispay dentro')
@@ -152,8 +180,8 @@ console.log('\n4c. la ricevuta col pagamento Satispay dentro')
   ok('nessuno da usare', prova(() => s.satispayDaUsare([inAttesa, inRicevuta], 'p-Bianchi')), undefined)
   const voce = (importo, metodo) => ({ descrizione: 'Annuale Judo adulti', quantita: 1, prezzo: 23000, pagamenti: importo ? [{ data: '2026-10-20', importo, metodo }] : [] })
   ok('pagato con Satispay quanto è arrivato: va', prova(() => s.cosaNonVaSatispay([voce(5000, 'Satispay'), voce(18000, 'Satispay')], suo)), null)
-  ok('meno di quanto è arrivato: lo dice', prova(() => s.cosaNonVaSatispay([voce(20000, 'Satispay')], suo)), 'Con Satispay sono arrivati 230 €: nel pagato di questa ricevuta ce ne sono 200 €')
-  ok('niente pagato: lo dice', prova(() => s.cosaNonVaSatispay([voce(0, 'Satispay')], suo)), 'Con Satispay sono arrivati 230 €: nel pagato di questa ricevuta ce ne sono 0 €')
+  ok('meno di quanto è arrivato: lo dice', prova(() => s.cosaNonVaSatispay([voce(20000, 'Satispay')], suo)), 'Con Satispay sono arrivati 230\u00a0€: nel pagato di questa ricevuta ce ne sono 200\u00a0€')
+  ok('niente pagato: lo dice', prova(() => s.cosaNonVaSatispay([voce(0, 'Satispay')], suo)), 'Con Satispay sono arrivati 230\u00a0€: nel pagato di questa ricevuta ce ne sono 0\u00a0€')
 }
 
 console.log('\n5. in CONTABILITÀ: il lordo, nel Conto Corrente, una volta sola')
@@ -200,6 +228,8 @@ console.log('\n7. in prova: paga finge l’approvazione, con l’importo della s
     corsi: ['judo-adulti'], formula: 'annuale', regolamento: true,
   }))
   ok('la richiesta di prova è partita', typeof id === 'string' && !id.startsWith('ERRORE') ? 'partita' : id, 'partita')
+  // Come in produzione: il listino salvato dalla segreteria, con le voci agganciate ai corsi (senza, il database non dà un prezzo).
+  await aspetta(async () => seg.salvaListino((await seg.listino()).listino))
   const corsi = await aspetta(async () => (await seg.corsi()).filter((x) => x.id === 'judo-adulti'))
   const listino = await aspetta(async () => (await seg.listino()).listino)
   const stima = prova(() => p.stimaIscrizione({ chi: 'Rossi Luca', corsi, formula: 'annuale' }, [], '2026-10-20', listino))
@@ -210,6 +240,20 @@ console.log('\n7. in prova: paga finge l’approvazione, con l’importo della s
   ok('dopo paga: pagata, con l’importo della stima', prova(() => ({ stato: dopo.stato, importo: dopo.importo })), { stato: 'pagato', importo: stima.totale })
   await aspetta(() => r.paga(id))
   ok('pagare due volte non cambia niente', await aspetta(async () => (await r.statoPagamento(id)).importo), stima.totale)
+
+  // Accolta, la segreteria fa la ricevuta col pagamento dentro: una volta sola.
+  const personaId = await aspetta(() => r.accogli(id))
+  const sp = (await aspetta(() => seg.pagamentiSatispay())).find?.((x) => x.richiestaId === id)
+  ok('accolta: il pagamento è della sua scheda', sp?.personaId, personaId)
+  const ricevuta = (pagato) => ({
+    data: '2026-10-20', personaId, ente: c.ENTE_PREDEFINITO, intestatario: { nome: 'Luca', cognome: 'Rossi', codiceFiscale: 'RSSLCU96A01L219K' },
+    voci: [{ descrizione: 'Annuale', quantita: 1, prezzo: stima.totale, pagamenti: [{ data: '2026-10-20', importo: pagato, metodo: 'Satispay' }] }], anticipo: 0,
+  })
+  ok('con un pagato diverso: no', await aspetta(async () => { await seg.emettiRicevuta(ricevuta(stima.totale - 100), sp.id); return 'fatta' }), `ERRORE: Con Satispay sono arrivati ${s.soldi(stima.totale)}: nel pagato di questa ricevuta ce ne sono ${s.soldi(stima.totale - 100)}`)
+  ok('di un’altra persona: no', await aspetta(async () => { await seg.emettiRicevuta({ ...ricevuta(stima.totale), personaId: 'p-altra' }, sp.id); return 'fatta' }), 'ERRORE: Il pagamento Satispay è di un’altra persona: accogli prima la sua richiesta')
+  ok('quella giusta: fatta', await aspetta(async () => typeof (await seg.emettiRicevuta(ricevuta(stima.totale), sp.id)).id), 'string')
+  ok('e il pagamento ora è nella ricevuta: non è più un incasso a parte', prova(() => s.righeSatispay(p.pagamentiSatispayProva(), () => '').length), 0)
+  ok('una seconda volta: no', await aspetta(async () => { await seg.emettiRicevuta(ricevuta(stima.totale), sp.id); return 'fatta' }), 'ERRORE: Questo pagamento Satispay è già in una ricevuta')
 }
 
 if (guai) {

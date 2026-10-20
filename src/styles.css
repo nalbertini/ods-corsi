@@ -3380,3 +3380,10 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   .sg-riga-bilancio { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; }
   .sg-riga-bilancio > :first-child { grid-column: 1 / -1; }
 }
+
+/* Satispay nel modulo di iscrizione: le tre scelte di PAGHI CON una sotto l'altra sul telefono, come quelle di chi si iscrive. */
+@media (max-width: 560px) { .scelta-pago .modulo-scelte-una { flex-direction: column; } }
+/* Una frase di stato sotto una scheda della segreteria (il pagamento Satispay): il colore dice com'è, la parola lo ripete. */
+.sg-sotto[data-tono='fatto'] { color: var(--verde-testo); }
+.sg-sotto[data-tono='aspetta'] { color: var(--giallo-testo); }
+.sg-sotto[data-tono='guaio'] { color: var(--rosso-testo); }

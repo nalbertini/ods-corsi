@@ -1148,7 +1148,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const r = await tutteLeRighe((prima, ultima) =>
         db
           .from('pagamenti_satispay')
-          .select('id, richiesta_id, chi, importo, stato, creato_il, pagato_il, ricevuta_id, richiesta:richieste_iscrizione ( persona_id )')
+          .select('id, richiesta_id, chi, importo, stato, creato_il, pagato_il, ricevuta_id, persona_id')
           .order('creato_il', { ascending: false })
           .order('id')
           .range(prima, ultima),
@@ -1156,7 +1156,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Prima di 73-satispay.sql non c'è niente da mostrare.
       if (r.error && (r.error.code === '42P01' || r.error.code === 'PGRST205' || r.error.code === 'PGRST200')) return []
       // `as`: Supabase tipa la riga a modo suo, la forma è quella della select.
-      return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; richiesta: { persona_id: string | null } | null }>).map(
+      return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null }>).map(
         (x): PagamentoSatispay => ({
           id: x.id,
           richiestaId: x.richiesta_id ?? undefined,
@@ -1166,7 +1166,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           creatoIl: x.creato_il,
           pagatoIl: x.pagato_il ?? undefined,
           ricevutaId: x.ricevuta_id ?? undefined,
-          personaId: x.richiesta?.persona_id ?? undefined,
+          personaId: x.persona_id ?? undefined,
         }),
       )
     },

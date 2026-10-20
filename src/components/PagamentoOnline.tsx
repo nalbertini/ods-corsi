@@ -14,10 +14,10 @@ const VOLTE = 30
  * tornarci e pagare dopo. Lo stato lo scrive la Edge Function dopo averlo
  * chiesto a Satispay, non questa pagina.
  */
-export function PagamentoOnline({ richiestaId, chi, onChiudi }: { richiestaId: string; chi?: string; onChiudi: () => void }) {
+export function PagamentoOnline({ richiestaId, chi, guaioIniziale, onChiudi }: { richiestaId: string; chi?: string; guaioIniziale?: string; onChiudi: () => void }) {
   const [d, setD] = useState<DatiRichieste | null>(null)
   const [p, setP] = useState<{ stato: StatoSatispay; importo: number; pagatoIl?: string } | null | undefined>(undefined)
-  const [guaio, setGuaio] = useState<string | null>(null)
+  const [guaio, setGuaio] = useState<string | null>(guaioIniziale ?? null)
   const [vado, setVado] = useState(false)
 
   useEffect(() => {
@@ -34,11 +34,14 @@ export function PagamentoOnline({ richiestaId, chi, onChiudi }: { richiestaId: s
         },
         (e) => vivo && setGuaio(e instanceof Error ? e.message : ERRORE_SATISPAY),
       )
-    void datiRichieste().then((x) => {
-      if (!vivo) return
-      setD(x)
-      void leggi(x)
-    })
+    void datiRichieste().then(
+      (x) => {
+        if (!vivo) return
+        setD(x)
+        void leggi(x)
+      },
+      () => vivo && setGuaio(ERRORE_SATISPAY),
+    )
     return () => {
       vivo = false
       clearTimeout(timer)
@@ -51,7 +54,7 @@ export function PagamentoOnline({ richiestaId, chi, onChiudi }: { richiestaId: s
     setVado(true)
     try {
       const r = await d.paga(richiestaId)
-      if (r?.link) return window.location.assign(r.link)
+      if (r && 'link' in r) return window.location.assign(r.link)
       setP(await d.statoPagamento(richiestaId))
     } catch (e) {
       setGuaio(e instanceof Error ? e.message : ERRORE_SATISPAY)
@@ -64,7 +67,8 @@ export function PagamentoOnline({ richiestaId, chi, onChiudi }: { richiestaId: s
   const esito = p ? esitoPagamento({ ...p, chi }) : null
   return (
     <div className="pad stack esito">
-      {esito ? <TitoloEsito tono={esito.tono}>{esito.titolo}</TitoloEsito> : <TitoloEsito tono="avviso">RICHIESTA ARRIVATA</TitoloEsito>}
+      {/* Senza pagamento e senza il modulo appena mandato (un link vecchio o sbagliato) non si sa se la richiesta c'è. */}
+      <TitoloEsito tono={esito?.tono ?? 'avviso'}>{esito?.titolo ?? (chi ? 'RICHIESTA ARRIVATA' : 'PAGAMENTO')}</TitoloEsito>
       {(esito?.testi ?? ['Il pagamento con Satispay non è ancora partito.']).map((t) => (
         <span key={t} className="esito-testo">{t}</span>
       ))}
@@ -79,11 +83,8 @@ export function PagamentoOnline({ richiestaId, chi, onChiudi }: { richiestaId: s
           <Tasto variante="principale" disabled={vado || !d} onClick={() => void paga()}>
             {vado ? 'APRO SATISPAY…' : p?.stato === 'non-andato' ? 'RIPROVA CON SATISPAY' : p ? `PAGA ${soldi(p.importo)} CON SATISPAY` : 'PAGA CON SATISPAY'}
           </Tasto>
-          {p?.stato === 'non-andato' ? (
-            <Tasto onClick={onChiudi}>PAGO IN SEGRETERIA</Tasto>
-          ) : (
-            <Dettaglio>Puoi pagare anche più tardi da questa pagina: salva il link o tienila aperta. Oppure paga in segreteria.</Dettaglio>
-          )}
+          {p?.stato !== 'non-andato' && <Dettaglio>Puoi pagare anche più tardi da questa pagina: salva il link o tienila aperta.</Dettaglio>}
+          <Tasto onClick={onChiudi}>PAGO IN SEGRETERIA</Tasto>
         </>
       )}
     </div>

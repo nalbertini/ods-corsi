@@ -13,7 +13,7 @@ import { useListino } from './Costi'
 import type { SceltaModulo } from '../lib/firma'
 import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
-import { comePuoiPagare, soldi } from '../lib/satispay'
+import { chiedeRicevuta, comePuoiPagare, modoPagamento, senzaVoceDelCorso, soldi, type Pago } from '../lib/satispay'
 import { PagamentoOnline } from './PagamentoOnline'
 
 /**
@@ -96,10 +96,7 @@ const ID: Record<CampoModulo, string> = {
 /** Le caselle del foglio: finché non si sceglie, nessuna. */
 type Scelte = { [K in keyof SceltaModulo]?: boolean }
 
-/** Come si paga dal modulo pubblico: con Satispay subito, col bonifico (e la sua ricevuta) o in segreteria. */
-type Pago = 'satispay' | 'bonifico' | 'segreteria'
-
-type Fase = { tipo: 'compila' } | { tipo: 'invio'; passo: string } | { tipo: 'file'; id: string; mancati: TipoFile[]; perche: string } | { tipo: 'fatto' } | { tipo: 'paga'; id: string }
+type Fase = { tipo: 'compila' } | { tipo: 'invio'; passo: string } | { tipo: 'file'; id: string; mancati: TipoFile[]; perche: string } | { tipo: 'fatto' } | { tipo: 'paga'; id: string; guaio?: string }
 
 export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZIONI' }: { onChiudi: () => void; nucleo?: PerIlNucleo; torna?: string }) {
   const [d, setD] = useState<DatiRichieste | null>(null)
@@ -189,7 +186,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const firmatario = minore ? `${(b.genitoreNome ?? '').trim()} ${(b.genitoreCognome ?? '').trim()}`.trim() : `${b.nome.trim()} ${b.cognome.trim()}`.trim()
   const foglio = MODULI[minore ? 1 : 0]
   // I corsi giusti per l'anno di nascita prima, gli altri dopo: si sceglie senza tornare al listino.
-  const listino = useListino()?.listino
+  const letto = useListino()
+  const listino = letto?.listino
   const perEta = corsiPerEta(corsi ?? [], listino?.corsi ?? [], natoIl, listino?.senzaPrezzoVaBene)
   const fuoriEta = perEta.altri.filter((c) => b.corsi.includes(c.id)).map((c) => c.nome)
   const altriVisibili = altriAperti(altriApertiAMano, perEta.altri, b.corsi)
@@ -211,11 +209,13 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const scelti = (corsi ?? []).filter((c) => b.corsi.includes(c.id))
   // Quanto si paga, come lo calcolerà il database (`importo_iscrizione`): la stessa regola, lo stesso listino.
   const stima = listino && !nucleo ? stimaIscrizione({ chi: b.nome, corsi: scelti, formula: b.formula }, [], chiaveGiorno(new Date()), listino) : null
-  const puoi = comePuoiPagare(stima?.senzaPrezzo ?? [], satispayAttivo && !!stima)
-  // Satispay scelto ma non possibile (un corso senza prezzo, il servizio spento): si paga in segreteria.
-  const modo: Pago | null = nucleo ? null : pago === 'satispay' && !puoi.satispay ? 'segreteria' : pago
-  // La ricevuta del bonifico serve solo a chi paga col bonifico; dal nucleo resta fra i file, come prima.
-  const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo) && (f.tipo !== 'ricevuta' || !modo || modo === 'bonifico'))
+  // Satispay solo col listino della segreteria: con quello del foglio il database non ha un prezzo da chiedere.
+  const senzaPrezzo = stima && listino ? [...new Set([...stima.senzaPrezzo, ...senzaVoceDelCorso(scelti, listino)])] : []
+  const puoi = comePuoiPagare(senzaPrezzo, satispayAttivo && !!stima && !!letto?.cambiato)
+  const modo = modoPagamento(pago, puoi, !!nucleo)
+  const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo) && (f.tipo !== 'ricevuta' || chiedeRicevuta(modo)))
+  // I file di I FILE: il modulo ha la sua sezione, e la ricevuta del bonifico sta in IL PAGAMENTO (dal nucleo, qui come prima).
+  const fileQui = daChiedere.filter((f) => f.tipo !== 'modulo' && (f.tipo !== 'ricevuta' || !modo))
   const obbligatorio = (t: TipoFile) => daChiedere.some((f) => f.tipo === t && f.obbligatorio)
 
   const errori = problemi(pronta)
@@ -359,22 +359,29 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       return setGuaio(e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco')
     }
     const tuttiArrivati = await carica(id, daChiedere.map((f) => f.tipo), tutti)
-    if (modo === 'satispay' && tuttiArrivati) await vaiASatispay(id)
+    if (modo === 'satispay' && tuttiArrivati && d) await vaiASatispay(d, id)
   }
 
-  /** Dopo l'invio: il pagamento Satispay, e via nell'app. Se non parte, la pagina del pagamento lo fa riprovare. */
-  const vaiASatispay = async (id: string) => {
+  /** Dopo l'invio: il pagamento Satispay, e via nell'app. Se non parte, la pagina del pagamento dice perché e fa riprovare. */
+  const vaiASatispay = async (x: DatiRichieste, id: string) => {
     setFase({ tipo: 'invio', passo: 'Apro Satispay…' })
+    // L'indirizzo per tornare a pagare dopo: la pagina del pagamento lo apre da sola.
+    const u = new URL(window.location.href)
+    u.searchParams.set('pagamento', id)
+    history.replaceState(null, '', u)
     try {
-      const r = await d!.paga(id)
-      if (r?.link) return window.location.assign(r.link)
-      setFase(r ? { tipo: 'paga', id } : { tipo: 'fatto' })
-    } catch {
-      setFase({ tipo: 'paga', id })
+      const r = await x.paga(id)
+      if (r && 'link' in r) return window.location.assign(r.link)
+      if (r) return setFase({ tipo: 'paga', id })
+      // Il servizio si è spento dopo l'invio: si paga in segreteria, come prima.
+      setPago('segreteria')
+      setFase({ tipo: 'fatto' })
+    } catch (e) {
+      setFase({ tipo: 'paga', id, guaio: e instanceof Error ? e.message : undefined })
     }
   }
 
-  if (fase.tipo === 'paga') return <PagamentoOnline richiestaId={fase.id} chi={`${b.nome.trim()} ${b.cognome.trim()}`} onChiudi={onChiudi} />
+  if (fase.tipo === 'paga') return <PagamentoOnline richiestaId={fase.id} chi={`${b.nome.trim()} ${b.cognome.trim()}`} guaioIniziale={fase.guaio} onChiudi={onChiudi} />
 
   if (fase.tipo === 'fatto') {
     return (
@@ -406,7 +413,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         {fase.mancati.map((t) => (
           <SceltaFile key={t} tipo={t} file={file[t]} onFile={(f) => setFile((p) => ({ ...p, [t]: f }))} />
         ))}
-        <Tasto variante="principale" onClick={() => void carica(fase.id, fase.mancati).then((ok) => (ok && modo === 'satispay' ? vaiASatispay(fase.id) : undefined))}>
+        <Tasto variante="principale" onClick={() => void carica(fase.id, fase.mancati).then((ok) => (ok && modo === 'satispay' && d ? vaiASatispay(d, fase.id) : undefined))}>
           RIPROVA
         </Tasto>
         <Dettaglio>Si può riprovare per un'ora. Se non va, porta i fogli in segreteria.</Dettaglio>
@@ -622,7 +629,14 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             onModo={setPago}
             causale={causale(b.nome.trim(), b.cognome.trim(), scelti.map((c) => c.nome))}
             ricevuta={
-              <SceltaFile tipo="ricevuta" file={file.ricevuta} dettaglio="Una foto o il PDF." onFile={(x) => setFile((p) => ({ ...p, ricevuta: x }))} facoltativo />
+              <SceltaFile
+                tipo="ricevuta"
+                file={file.ricevuta}
+                dettaglio="Una foto o il PDF."
+                seManca="FACOLTATIVA, SE HAI GIÀ FATTO IL BONIFICO"
+                onFile={(x) => setFile((p) => ({ ...p, ricevuta: x }))}
+                facoltativo
+              />
             }
           />
         </Sezione>
@@ -748,13 +762,14 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         )}
       </Sezione>
 
+      {fileQui.length > 0 || certificato !== 'nessuno' ? (
       <Sezione titolo="I FILE">
         {certificato !== 'nessuno' && (
           <div className="modulo-campo modulo-largo">
             <Dettaglio tono="avviso">{avvisoCertificato(certificato)}</Dettaglio>
           </div>
         )}
-        {daChiedere.filter((f) => f.tipo !== 'modulo' && (f.tipo !== 'ricevuta' || !modo)).map((f) => (
+        {fileQui.map((f) => (
           <SceltaFile
             key={f.tipo}
             tipo={f.tipo}
@@ -764,6 +779,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
           />
         ))}
       </Sezione>
+      ) : null}
 
       <Sezione titolo="ALTRO">
         <Campo id="m-note" etichetta="NOTE PER LA SEGRETERIA · FACOLTATIVE" largo>
@@ -883,12 +899,15 @@ export function SceltaFile({
   onFile,
   facoltativo,
   dettaglio,
+  seManca,
 }: {
   tipo: TipoFile
   file?: File
   onFile: (f: File | undefined) => void
   facoltativo?: boolean
   dettaglio?: string
+  /** La parola accanto all'etichetta quando il file è facoltativo, se quella della lista non va qui. */
+  seManca?: string
 }) {
   const f = FILE.find((x) => x.tipo === tipo)!
   const [guaio, setGuaio] = useState<string | null>(null)
@@ -907,7 +926,7 @@ export function SceltaFile({
     <CaricaFile
       id={`m-file-${tipo}`}
       etichetta={f.etichetta}
-      seManca={(facoltativo ?? !f.obbligatorio) ? (f.seManca ?? 'FACOLTATIVO') : undefined}
+      seManca={(facoltativo ?? !f.obbligatorio) ? (seManca ?? f.seManca ?? 'FACOLTATIVO') : undefined}
       dettaglio={lavoro ? 'Preparo la foto…' : (dettaglio ?? f.dettaglio)}
       file={file && !lavoro ? { nome: file.name, byte: file.size } : undefined}
       errore={guaio}
@@ -1013,7 +1032,17 @@ function IlPagamento({ stima, modo, puoi, onModo, causale: testo, ricevuta }: { 
       </div>
       <div className="modulo-campo modulo-largo">
         <span className="modulo-etichetta">PAGHI CON</span>
-        <SceltaCorsi id="m-pago" etichetta="Paghi con" una voci={MODI.filter((m) => m.id !== 'satispay' || puoi.satispay)} scelti={[modo]} onScegli={(m) => onModo(m as Pago)} />
+        <div className="scelta-pago">
+          <SceltaCorsi
+            id="m-pago"
+            etichetta="Paghi con"
+            una
+            voci={MODI.filter((m) => m.id !== 'satispay' || puoi.satispay)}
+            scelti={[modo]}
+            // `as`: SceltaCorsi rende l'id di una delle voci date, cioè un modo di MODI.
+            onScegli={(m) => onModo(m as Pago)}
+          />
+        </div>
         {!puoi.satispay && puoi.perche && <Dettaglio>Satispay: {puoi.perche.charAt(0).toLowerCase() + puoi.perche.slice(1)}.</Dettaglio>}
         {modo === 'satispay' && <Dettaglio>Quando mandi la richiesta si apre Satispay con {soldi(stima.totale)}. Confermi lì e torni qui.</Dettaglio>}
         {modo === 'segreteria' && <Dettaglio>Paghi quando vieni in segreteria: non serve caricare niente.</Dettaglio>}
