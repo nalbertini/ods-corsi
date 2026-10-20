@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: gli stati della testa del riquadro (letti alle, Aggiorna, prova) e le sei frasi d'errore, una per guaio, ognuna con cosa fare. Mai il testo grezzo di GoatCounter. -->
+<div style="display: flex; gap: 48px; width: 1216px; min-height: 2200px; padding: 32px; background: #eef5fa">
+  <div style="display: flex; flex-direction: column; gap: 28px; width: 560px">
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">MENTRE LEGGE LA PRIMA VOLTA</span>
+    <dc-import name="RiquadroSito" mesi="gen:Gennaio 2027:1580:34:17:41|feb:Febbraio 2027:1102:19:10:27|mar:Marzo 2027:698:12:6:16:fino a oggi" pagine="Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine|Ginnastica, Contatti, Chi siamo…|1090" provenienze="Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26" diretto="1030" stato="legge" letti="" aggiorna-spento="{{ true }}" hint-size="100%,200px"></dc-import>
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">DALLA MEMORIA (MENO DI 10 MINUTI): AGGIORNA RILEGGE</span>
+    <dc-import name="RiquadroSito" mesi="gen:Gennaio 2027:1580:34:17:41|feb:Febbraio 2027:1102:19:10:27|mar:Marzo 2027:698:12:6:16:fino a oggi" pagine="Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine|Ginnastica, Contatti, Chi siamo…|1090" provenienze="Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26" diretto="1030" stato="testa" letti="Letti alle 10:42" hint-size="100%,150px"></dc-import>
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">APPENA RILETTO: AGGIORNA TORNA FRA UN MINUTO</span>
+    <dc-import name="RiquadroSito" mesi="gen:Gennaio 2027:1580:34:17:41|feb:Febbraio 2027:1102:19:10:27|mar:Marzo 2027:698:12:6:16:fino a oggi" pagine="Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine|Ginnastica, Contatti, Chi siamo…|1090" provenienze="Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26" diretto="1030" stato="testa" letti="Letti alle 10:51 · di nuovo fra un minuto" aggiorna-spento="{{ true }}" hint-size="100%,150px"></dc-import>
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">MODALITÀ PROVA</span>
+    <dc-import name="RiquadroSito" mesi="gen:Gennaio 2027:1580:34:17:41|feb:Febbraio 2027:1102:19:10:27|mar:Marzo 2027:698:12:6:16:fino a oggi" pagine="Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine|Ginnastica, Contatti, Chi siamo…|1090" provenienze="Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26" diretto="1030" stato="testa" prova="{{ true }}" letti="Letti alle 10:42" hint-size="100%,200px"></dc-import>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 28px; width: 560px">
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">ERRORE 1 DI 6</span>
+    <dc-import name="RiquadroSito" mesi="gen:Gennaio 2027:1580:34:17:41|feb:Febbraio 2027:1102:19:10:27|mar:Marzo 2027:698:12:6:16:fino a oggi" pagine="Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine|Ginnastica, Contatti, Chi siamo…|1090" provenienze="Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26" diretto="1030" stato="errore" letti="Non letti" errore-titolo="Il contatore non è ancora acceso" errore-frase="Il collegamento fra l'app e il contatore del sito non c'è ancora. Chiedi a chi segue l'app di accenderlo; intanto gli altri numeri ci sono." hint-size="100%,250px"></dc-import>
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">ERRORE 2 DI 6</span>
+    <dc-import name="RiquadroSito" mesi="gen:Gennaio 2027:1580:34:17:41|feb:Febbraio 2027:1102:19:10:27|mar:Marzo 2027:698:12:6:16:fino a oggi" pagine="Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine|Ginnastica, Contatti, Chi siamo…|1090" provenienze="Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26" diretto="1030" stato="errore" letti="Non letti" errore-titolo="Manca la chiave del contatore" errore-frase="L'app non ha la chiave per leggere il contatore del sito. Chiedi a chi segue l'app di metterla." hint-size="100%,250px"></dc-import>
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">ERRORE 3 DI 6</span>
+    <dc-import name="RiquadroSito" mesi="gen:Gennaio 2027:1580:34:17:41|feb:Febbraio 2027:1102:19:10:27|mar:Marzo 2027:698:12:6:16:fino a oggi" pagine="Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine|Ginnastica, Contatti, Chi siamo…|1090" provenienze="Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26" diretto="1030" stato="errore" letti="Non letti" errore-titolo="Il contatore non accetta la chiave" errore-frase="La chiave per leggere il contatore è scaduta o è stata cambiata. Chiedi a chi segue l'app di metterne una nuova." hint-size="100%,250px"></dc-import>
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">ERRORE 4 DI 6</span>
+    <dc-import name="RiquadroSito" mesi="gen:Gennaio 2027:1580:34:17:41|feb:Febbraio 2027:1102:19:10:27|mar:Marzo 2027:698:12:6:16:fino a oggi" pagine="Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine|Ginnastica, Contatti, Chi siamo…|1090" provenienze="Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26" diretto="1030" stato="errore" letti="Non letti" errore-titolo="Il contatore chiede di aspettare" errore-frase="Troppe letture in poco tempo. Riprova fra qualche minuto con Aggiorna." hint-size="100%,250px"></dc-import>
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">ERRORE 5 DI 6</span>
+    <dc-import name="RiquadroSito" mesi="gen:Gennaio 2027:1580:34:17:41|feb:Febbraio 2027:1102:19:10:27|mar:Marzo 2027:698:12:6:16:fino a oggi" pagine="Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine|Ginnastica, Contatti, Chi siamo…|1090" provenienze="Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26" diretto="1030" stato="errore" letti="Non letti" errore-titolo="Il contatore non risponde" errore-frase="Il contatore del sito non ha risposto. Gli altri numeri della pagina sono a posto: riprova più tardi con Aggiorna." hint-size="100%,250px"></dc-import>
+    <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">ERRORE 6 DI 6</span>
+    <dc-import name="RiquadroSito" mesi="gen:Gennaio 2027:1580:34:17:41|feb:Febbraio 2027:1102:19:10:27|mar:Marzo 2027:698:12:6:16:fino a oggi" pagine="Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine|Ginnastica, Contatti, Chi siamo…|1090" provenienze="Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26" diretto="1030" stato="errore" letti="Non letti" errore-titolo="Senza rete" errore-frase="Il computer non è collegato a internet. Quando torna la rete, tocca Aggiorna." hint-size="100%,250px"></dc-import>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

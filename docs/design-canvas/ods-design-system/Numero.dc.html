@@ -18,7 +18,7 @@
 </helmet>
 <div style="display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; padding: 16px 18px; background: {{c.surface}}; border: 2px solid {{bordo}}; color: {{c.text}}">
   <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: {{coloreTitolo}}">{{titolo}}</span>
-  <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 44px; font-weight: 700; line-height: 0.95">{{valore}}</span>
+  <span style="font-family: {{cond}}; white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 44px; font-weight: 700; line-height: 0.95">{{valore}}</span>
   <span style="font-family: {{corpoFam}}; font-size: 13px; color: {{c.dim}}">{{sotto}}</span>
 </div>
 </x-dc>
@@ -29,6 +29,7 @@
 // allarme: bordo `rosso` e titolo rosso-testo (data-allarme). Nell'app stanno in .sg-numeri: quattro in una griglia, gap 14px
 // tema sito (`:root[data-look='sito']`): etichetta (riga 302) e cifra (.num, riga 297) in Inter, bordo 2px #cfe6f4 (`line`), senza raggio
 // (.sg-numero non e' nell'elenco dei raggi da 6px, righe 370-382).
+// La cifra non va a capo (.sg-numero > .num, nowrap). Sotto i 480px le quattro vanno una sotto l'altra (.sg-numeri, riga 3232).
 // (PRESENZE, STATISTICHE, ISTRUTTORI E ACCESSI, IMPOSTAZIONI); in VESTIARIO cinque (.sg-numeri[data-cinque], src/styles.css riga 2122).
 const T = {
   scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', rosso: '#e4292a', rossoTesto: '#ff5a52' },

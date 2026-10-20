@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 18px; width: 100%; min-width: 0; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <!-- Testa di comune.tsx (.sg-testa): titolo e frase, poi i due menu e Scarica CSV; sul telefono vanno a capo sotto. -->
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 {{baseTesta}}; min-width: 0">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">STATISTICHE</h1>
+      <span style="font-size: 14px; color: #46606f">Come va la palestra, mese per mese: chi viene, quando, in quali corsi, quanto entra.</span>
+    </div>
+    <div style="width: {{misuraMenu}}"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="" valore="{{periodo}}" hint-size="100%,44px"></dc-import></div>
+    <div style="width: {{misuraMenu}}"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="" valore="{{corso}}" hint-size="100%,44px"></dc-import></div>
+    <div style="width: {{misuraCsv}}"><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Scarica CSV" variante="linea" larghezza="100%" hint-size="100%,48px"></dc-import></div>
+  </div>
+
+  <!-- .sg-numeri: quattro in riga; sotto i 480px una sotto l'altra. -->
+  <div style="display: grid; grid-template-columns: {{colonneNumeri}}; gap: 14px">
+    <dc-import name="Numero" tema="sito" titolo="ISCRITTI OGGI" valore="{{n.iscritti}}" sotto="{{n.iscrittiSotto}}" hint-size="100%,108px"></dc-import>
+    <dc-import name="Numero" tema="sito" titolo="PRESENZE" valore="{{n.presenze}}" sotto="{{n.presenzeSotto}}" hint-size="100%,108px"></dc-import>
+    <dc-import name="Numero" tema="sito" titolo="SUGLI ISCRITTI" valore="{{n.pc}}" sotto="{{n.pcSotto}}" hint-size="100%,108px"></dc-import>
+    <dc-import name="Numero" tema="sito" titolo="PROVE → ISCRITTI" valore="{{n.prove}}" sotto="{{n.proveSotto}}" hint-size="100%,108px"></dc-import>
+  </div>
+
+  <!-- .sg-stat-due: due riquadri affiancati; sotto i 1000px uno sotto l'altro. -->
+  <div style="display: grid; grid-template-columns: {{colonneDue}}; gap: 20px; align-items: start">
+    <dc-import name="RiquadroStatistica" tema="sito" telefono="{{telefono}}" titolo="PRESENZE MESE PER MESE" nota="iscritti presenti e prove" mesi="{{m.presenze}}" hint-size="100%,262px"></dc-import>
+    <dc-import name="RiquadroStatistica" tema="sito" telefono="{{telefono}}" titolo="ISCRITTI MESE PER MESE" nota="a fine mese, con almeno un corso" mesi="{{m.iscritti}}" hint-size="100%,262px"></dc-import>
+  </div>
+
+  <!-- Nel canvas soltanto: i riquadri di mezzo non cambiano e qui sono tagliati. -->
+  <div style="padding: 12px 16px; border-top: 2px dashed #46606f; border-bottom: 2px dashed #46606f; font-size: 13px; line-height: 1.4; color: #46606f; text-align: center">… QUANDO SI VIENE · CORSI · ISTRUTTORI · IN REGOLA OGGI: come sono, qui tagliati …</div>
+
+  <dc-import name="RiquadroStatistica" tema="sito" telefono="{{telefono}}" titolo="PROVE MESE PER MESE" nota="chi è venuto a provare, nel mese della prima prova, e quanti oggi sono iscritti" mesi="{{m.prove}}" hint-size="100%,262px"></dc-import>
+  <dc-import name="RiquadroStatistica" tema="sito" telefono="{{telefono}}" titolo="INCASSI MESE PER MESE" nota="quanto è stato pagato con le ricevute, tutti i corsi insieme" mesi="{{m.incassi}}" euro="{{conEuro}}" somma="{{incassi.totale}}" somma-dopo="{{incassi.dopo}}" hint-size="100%,300px"></dc-import>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"variante":{"editor":"enum","options":["tre","sei","judo"],"default":"tre"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1128,"height":1240}}'>
+// Nel canvas soltanto: la parte di STATISTICHE (src/components/segreteria/Statistiche.tsx, righe 144-296) sopra il riquadro nuovo, nel look del sito,
+// con i numeri di esempio di una palestra di arti marziali a Collegno, al 17 marzo 2027. Testa, i quattro Numero, PRESENZE e ISCRITTI MESE PER MESE,
+// poi un taglio al posto di QUANDO SI VIENE, CORSI, ISTRUTTORI e IN REGOLA OGGI (non cambiano), PROVE e INCASSI MESE PER MESE.
+// variante: tre = ultimi 3 mesi, tutti i corsi; sei = ultimi 6 mesi (comincia il 1 ottobre, prima del contatore); judo = ultimi 3 mesi, corso Judo ragazzi.
+// INCASSI non dipende dal corso (lo dice la sua nota). telefono: una colonna, numeri uno sotto l'altro (sotto i 480px).
+const truthy = (v) => v === true || v === 'true';
+const DATI = {
+  tre: {
+    periodo: 'Ultimi 3 mesi', corso: 'Tutti i corsi',
+    n: { iscritti: '231', iscrittiSotto: '14 nuovi e 6 usciti nel periodo', presenze: '3760', presenzeSotto: "11,8 a lezione, in 318 lezioni con l'appello", pc: '71%', pcSotto: '4 lezioni senza appello non contano', prove: '43%', proveSotto: '18 su 42 persone venute a provare' },
+    m: { presenze: 'gen:1390|feb:1550|mar:820', iscritti: 'gen:224|feb:229|mar:231', prove: 'gen:22|feb:13|mar:7', incassi: 'gen:7420|feb:2960|mar:1380' },
+    incassi: { totale: '11.760 €', dopo: 'in 174 ricevute nel periodo' },
+  },
+  sei: {
+    periodo: 'Ultimi 6 mesi', corso: 'Tutti i corsi',
+    n: { iscritti: '231', iscrittiSotto: '37 nuovi e 15 usciti nel periodo', presenze: '7910', presenzeSotto: "12,1 a lezione, in 654 lezioni con l'appello", pc: '72%', pcSotto: '9 lezioni senza appello non contano', prove: '41%', proveSotto: '31 su 75 persone venute a provare' },
+    m: { presenze: 'ott:1480|nov:1620|dic:1050|gen:1390|feb:1550|mar:820', iscritti: 'ott:212|nov:218|dic:216|gen:224|feb:229|mar:231', prove: 'ott:18|nov:11|dic:4|gen:22|feb:13|mar:7', incassi: 'ott:9850|nov:3120|dic:1840|gen:7420|feb:2960|mar:1380' },
+    incassi: { totale: '26.570 €', dopo: 'in 391 ricevute nel periodo' },
+  },
+  judo: {
+    periodo: 'Ultimi 3 mesi', corso: 'Judo ragazzi',
+    n: { iscritti: '58', iscrittiSotto: '4 nuovi e 1 uscito nel periodo', presenze: '1020', presenzeSotto: "13,6 a lezione, in 75 lezioni con l'appello", pc: '78%', pcSotto: 'i giustificati non contano', prove: '50%', proveSotto: '6 su 12 persone venute a provare' },
+    m: { presenze: 'gen:380|feb:420|mar:220', iscritti: 'gen:56|feb:57|mar:58', prove: 'gen:5|feb:4|mar:3', incassi: 'gen:7420|feb:2960|mar:1380' },
+    incassi: { totale: '11.760 €', dopo: 'in 174 ricevute nel periodo' },
+  },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const tel = truthy(p.telefono);
+    const d = DATI[p.variante] || DATI.tre;
+    return {
+      ...d, telefono: tel, conEuro: true,
+      baseTesta: tel ? '100%' : '360px', misuraMenu: tel ? '100%' : '180px', misuraCsv: tel ? '100%' : '150px',
+      colonneNumeri: tel ? 'minmax(0, 1fr)' : 'repeat(4, minmax(0, 1fr))',
+      colonneDue: tel ? 'minmax(0, 1fr)' : 'repeat(2, minmax(0, 1fr))',
+    };
+  }
+}
+</script>
+</body>
+</html>

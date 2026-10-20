@@ -20,7 +20,13 @@
     <div style="display: {{mostraFilo}}; flex-grow: 1; height: 2px; background: #cfe6f4"></div>
     <span style="flex-basis: {{baseNota}}; font-size: 12px; color: #46606f">{{nota}}</span>
   </div>
-  <div style="display: grid; grid-template-columns: {{colonneElenchi}}; gap: 20px 32px; align-items: start">
+  <sc-if value="{{haSomma}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 14px; color: #0d2a3d"><span style="font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700">{{somma}}</span> {{sommaDopo}}</span>
+  </sc-if>
+  <sc-if value="{{haMesi}}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Colonne" tema="sito" mesi="{{mesi}}" euro="{{euro}}" sopra="{{sopra}}" dettaglio="{{dettaglio}}" hint-size="100%,206px"></dc-import>
+  </sc-if>
+  <div style="display: {{mostraElenchi}}; grid-template-columns: {{colonneElenchi}}; gap: 20px 32px; align-items: start">
     <sc-for list="{{elenchi}}" as="e" hint-placeholder-count="2">
       <div role="table" style="display: grid; grid-template-columns: {{e.griglia}}; min-width: 0; overflow-x: auto; font-size: 14px">
         <sc-for list="{{e.celle}}" as="x" hint-placeholder-count="12">
@@ -32,7 +38,7 @@
   <span style="display: {{mostraFrase}}; font-size: 12px; line-height: 1.4; color: #46606f">{{frase}}</span>
 </section>
 </x-dc>
-<script data-dc-script data-props='{"titolo":{"editor":"text","default":"ISTRUTTORI"},"nota":{"editor":"text","default":"le lezioni svolte, da titolare o da sostituto"},"colonne":{"editor":"text","default":"ISTRUTTORE|LEZIONI|DA SOSTITUTO|A LEZIONE|SUGLI ISCRITTI"},"righe":{"editor":"text","default":"Marco Rossi|38|4|9,2|%74;Giulia Ferrero|31|—|8,1|%68;Luca Bianco|12|6|7,4|%61"},"totale":{"editor":"text","default":""},"colonne2":{"editor":"text","default":""},"righe2":{"editor":"text","default":""},"totale2":{"editor":"text","default":""},"griglia":{"editor":"text","default":"minmax(120px, 1fr) auto auto auto minmax(160px, 1.2fr)"},"affiancati":{"editor":"boolean","default":true},"ordina":{"editor":"boolean","default":true},"telefono":{"editor":"boolean","default":false},"frase":{"editor":"text","default":""},"$preview":{"width":640,"height":260}}'>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"ISTRUTTORI"},"nota":{"editor":"text","default":"le lezioni svolte, da titolare o da sostituto"},"colonne":{"editor":"text","default":"ISTRUTTORE|LEZIONI|DA SOSTITUTO|A LEZIONE|SUGLI ISCRITTI"},"righe":{"editor":"text","default":"Marco Rossi|38|4|9,2|%74;Giulia Ferrero|31|—|8,1|%68;Luca Bianco|12|6|7,4|%61"},"totale":{"editor":"text","default":""},"colonne2":{"editor":"text","default":""},"righe2":{"editor":"text","default":""},"totale2":{"editor":"text","default":""},"griglia":{"editor":"text","default":"minmax(120px, 1fr) auto auto auto minmax(160px, 1.2fr)"},"affiancati":{"editor":"boolean","default":true},"ordina":{"editor":"boolean","default":true},"telefono":{"editor":"boolean","default":false},"frase":{"editor":"text","default":""},"mesi":{"editor":"text","default":""},"euro":{"editor":"boolean","default":false},"somma":{"editor":"text","default":""},"sommaDopo":{"editor":"text","default":""},"sopra":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":""},"$preview":{"width":640,"height":260}}'>
 // Un riquadro di STATISTICHE nel look del sito (src/components/segreteria/Statistiche.tsx): `.sg-riquadro` (src/styles.css riga 2565:
 // padding 18px 20px, gap 12px; nel look sito righe 384-387: tessera bianca senza bordo, raggio 6px) con dentro `Riga` di comune.tsx
 // (righe 338-349: titolo h3 .sg-etichetta 14px 700 0.22em `dim`, in Inter nel look sito riga 302, il filo .rule-line 2px `line-soft`
@@ -51,6 +57,9 @@
 // Nello stesso riquadro, sopra il telefono: il nome (e la testata «COME CI HANNO CONOSCIUTO») va a capo, le cifre hanno 6px ai lati,
 // e sotto i 1200px i due elenchi vanno uno sotto l'altro (`.sg-da-dove-due`): affiancati, RIFIUTATE usciva a 1280.
 // Le altre tabelle delle statistiche, con piu' colonne, scorrono ancora di lato col nome fermo.
+// mesi: il riquadro «mese per mese» (PRESENZE, ISCRITTI, PROVE, INCASSI MESE PER MESE): al posto delle tabelle le colonne di Colonne.dc.html
+// («etichetta:valore|...», l'ultimo e' il mese in corso), con `euro`, `sopra` e `dettaglio` che passano a lei; `somma` e `sommaDopo` sono la riga
+// sopra le colonne di INCASSI (`Incassi`, Statistiche.tsx righe 728-736: cifra .num 22px 700, il resto 14px). Con `mesi` le righe non si vedono.
 // Ogni elenco scorre di lato se non ci sta (.sg-orari-scorre). Non riprodotti: il passaggio del mouse, la freccia piena della colonna ordinata, lo scorrimento di lato.
 const truthy = (v) => v === true || v === 'true';
 const DIM = '#46606f';
@@ -107,6 +116,7 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const telefono = truthy(p.telefono);
+    const mesi = String(p.mesi ?? '');
     const ordina = p.ordina === undefined ? true : truthy(p.ordina);
     const griglia = p.griglia || 'minmax(0, 1fr) auto auto auto';
     const elenchi = [elenco(p.colonne ?? 'ISTRUTTORE|LEZIONI', p.righe ?? '', p.totale ?? '', griglia, ordina, telefono)];
@@ -119,6 +129,10 @@ class Component extends DCLogic {
       avvolgi: telefono ? 'wrap' : 'nowrap', baseNota: telefono ? '100%' : 'auto', mostraFilo: 'block',
       colonneElenchi: accanto ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)',
       elenchi, frase, mostraFrase: frase ? 'block' : 'none',
+      // Con `mesi` il riquadro e' «mese per mese»: le colonne al posto delle tabelle.
+      haMesi: mesi !== '', mesi, mostraElenchi: mesi !== '' ? 'none' : 'grid',
+      euro: truthy(p.euro), sopra: p.sopra ?? '', dettaglio: p.dettaglio ?? '',
+      haSomma: !!p.somma, somma: p.somma ?? '', sommaDopo: p.sommaDopo ?? '',
     };
   }
 }

@@ -23,6 +23,7 @@ import type { PaginaSito, VoceMenu } from './sitoPagine'
 import type { PezziPagina } from './sitoPezzi'
 import type { ImmagineSito } from './sitoImmagini'
 import type { OrarioSito } from './sitoOrari'
+import type { LetturaSito } from './sitoStatistiche'
 import type { DaDove } from './provenienza'
 
 export type { ListaMusica } from './musica'
@@ -721,6 +722,11 @@ export interface DatiSegreteria {
   prove(da: Date, a: Date): Promise<ProvaSeg[]>
   /** Le lezioni già cominciate fra due giorni in numeri, e gli incassi mese per mese. */
   statistiche(da: Date, a: Date): Promise<Statistiche>
+  /**
+   * I numeri del sito (GoatCounter) fra due giorni `AAAA-MM-GG` di Roma, per IL SITO in STATISTICHE: dalla funzione
+   * `statistiche-sito`. Un guaio non è un'eccezione: il riquadro lo dice e gli altri restano.
+   */
+  statisticheSito(da: string, a: string): Promise<LetturaSito>
   /** Da dove arrivano le richieste arrivate fra due giorni, raggruppate (`74-provenienza-richieste.sql`); `null` finché il file non c'è. */
   richiesteDaDove(da: Date, a: Date): Promise<DaDove | null>
   /** I titoli delle pagine del sito per indirizzo, anche dai vecchi indirizzi: i nomi leggibili di da dove arriva una richiesta. Mai un errore: senza sito, vuoti. */

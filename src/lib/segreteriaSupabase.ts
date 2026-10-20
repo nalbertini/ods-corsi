@@ -32,6 +32,8 @@ import { pezziInHtml, pezziValidi } from './sitoPezzi'
 import { ORARIO_NON_ATTIVO } from './sitoOrario'
 import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
 import { riduciFoto } from './foto'
+import type { NumeriSito } from './sitoNumeri'
+import { tipoDaRisposta } from './sitoStatistiche'
 import { URL_SUPABASE } from './dati'
 import { AllegatiNonPartiti, cosaNonVaSegnalazione, eCategoria, SCEGLI, type Categoria, guaioAllegati, mandaAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 
@@ -1522,6 +1524,27 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           iscritto: iscritti.has(x.persona_id),
         }))
         .sort((p, q) => q.inizio.localeCompare(p.inizio))
+    },
+
+    async statisticheSito(da, a) {
+      const { data, error } = await db.functions.invoke('statistiche-sito', { body: { da, a } })
+      if (!error) {
+        // `as`: il corpo è quello della nostra funzione, fatto da riassumi() di sitoNumeri.ts.
+        const numeri = (data as { numeri?: NumeriSito } | null)?.numeri
+        return numeri ? { numeri } : { guaio: 'non-risponde' }
+      }
+      // Come guaioFunzione, ma il riquadro vuole il tipo del guaio, non una frase: la regola sta in sitoStatistiche.ts.
+      // `as`: gli errori di functions.invoke hanno `name` e, quando la funzione ha risposto, la Response in `context`.
+      const e = error as { name?: string; context?: unknown }
+      const r = e.context instanceof Response ? e.context : null
+      let corpo: unknown = null
+      try {
+        corpo = r ? await r.clone().json() : null
+      } catch {
+        // Non è la nostra risposta: decide lo stato.
+      }
+      const rete = typeof navigator === 'undefined' || navigator.onLine
+      return { guaio: tipoDaRisposta(r?.status, corpo, e.name, rete) }
     },
 
     async richiesteDaDove(da, a) {

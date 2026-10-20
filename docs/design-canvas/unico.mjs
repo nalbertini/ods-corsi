@@ -86,6 +86,7 @@ const PRINCIPALE = [
   { id: 'orario-automatico', nome: 'Sito · orario dalla pagina CORSI · proposta', cartella: 'orario-automatico' },
   { id: 'scheda-popover', nome: 'Segreteria · dettagli in una finestra · proposta', cartella: 'scheda-popover' },
   { id: 'provenienza-richieste', nome: 'Segreteria · da dove arrivano le richieste · proposta', cartella: 'provenienza-richieste' },
+  { id: 'sito-in-statistiche', nome: 'Segreteria · il sito in Statistiche · proposta', cartella: 'sito-in-statistiche' },
 ]
 
 // Il canvas «ODS Corsi · Design · Storia» (modalità `storia`): i design sostituiti, spostati qui dal principale e non cancellati.
@@ -100,7 +101,7 @@ const STORIA = [
   { id: 'sito-rebrand', nome: 'Sito · tre rebrand (scartati)', cartella: 'sito-rebrand', superata: 'scartati, vale il design approvato del sito' },
 ]
 // Funzioni già costruite: la libreria dice com'è l'app adesso, i loro canvas passano in Storia.
-const COSTRUITE = new Set(['ricevuta-obbligatoria', 'fatture-dalla-chat', 'famiglia-passo', 'famiglia-ultimo-passo', 'iscrizione-famiglia', 'anche-tu-stessa-ora', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'riempi-prova', 'firma-schermo-intero', 'navigazione-passi', 'carta-atleta', 'banco', 'cerca-universale', 'menu-icone', 'menu-unico', 'import-fogli', 'iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'tessere', 'scheda-iscritto-schede', 'documenti-semplici', 'prezzi-mancanti', 'ruolo-amministrazione', 'contabilita', 'cambia-voce', 'movimenti-persona', 'movimenti-filtri', 'filtro-storico-pagamenti', 'chiusura-cassa', 'bilancio-anno', 'scheda-popover', 'email-contatto', 'sito-pannello', 'sito-pubblico', 'orari-sito', 'orario-automatico', 'barra-prova-chiama', 'senza-scrivici', 'corsi-per-eta', 'fatti-recensioni'])
+const COSTRUITE = new Set(['sito-in-statistiche', 'ricevuta-obbligatoria', 'fatture-dalla-chat', 'famiglia-passo', 'famiglia-ultimo-passo', 'iscrizione-famiglia', 'anche-tu-stessa-ora', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'riempi-prova', 'firma-schermo-intero', 'navigazione-passi', 'carta-atleta', 'banco', 'cerca-universale', 'menu-icone', 'menu-unico', 'import-fogli', 'iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'tessere', 'scheda-iscritto-schede', 'documenti-semplici', 'prezzi-mancanti', 'ruolo-amministrazione', 'contabilita', 'cambia-voce', 'movimenti-persona', 'movimenti-filtri', 'filtro-storico-pagamenti', 'chiusura-cassa', 'bilancio-anno', 'scheda-popover', 'email-contatto', 'sito-pannello', 'sito-pubblico', 'orari-sito', 'orario-automatico', 'barra-prova-chiama', 'senza-scrivici', 'corsi-per-eta', 'fatti-recensioni'])
 // Singole tavole «Oggi» superate dentro sezioni che restano nel principale: vanno in Storia, il resto resta.
 const OGGI_SUPERATE = { 'iscrizioni-pagina': ['Oggi', 'OggiCosti'], 'segreteria-sito': ['OggiDaFare', 'OggiIscritti', 'OggiMenu', 'OggiSettimana', 'TatamiSettimana'] }
 const MODO_STORIA = process.argv[3] === 'storia'
