@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { account, esci, serveAccesso, type Account } from '../lib/accesso'
-import { autorizzazioneDa, chiChiede, puoCollegare, rispondi } from '../lib/collega'
+import { autorizzazioneDa, chiChiede, cosaPotra, frasiConsenso, puoCollegare, rispondi } from '../lib/collega'
 import { Etichetta, Riquadro, Tasto, Titoletto } from './ds'
 import { Accesso, ChiSei, UnAttimo } from './Porta'
 
 /**
  * Dove Supabase manda chi collega Claude al suo account (Authentication → OAuth Server, «Authorization Path»
  * `collega/`): si entra, si legge cosa Claude potrà fare e si dice CONSENTI o NO, GRAZIE. Poi si torna a Claude.
- * Chi non ha l'amministrazione non può: Claude registra in CONTABILITÀ.
+ * Chi non ha né l'amministrazione né la segreteria (quando è accesa) non può. Cosa Claude potrà fare dipende dal ruolo.
  */
 export function Collega() {
   const id = autorizzazioneDa(window.location.search)
@@ -59,6 +59,8 @@ export function Collega() {
   if (!chi) return <Accesso collega onEntrato={() => void account().then(setChi, () => setChi(null))} />
   if (!nome && !errore) return <UnAttimo />
   const chiede = nome ?? 'Claude'
+  const righe = chi.persona ? cosaPotra(chi.persona) : null
+  const frasi = chi.persona ? frasiConsenso(chi.persona, chiede) : null
 
   return (
     <div className="accesso">
@@ -66,30 +68,25 @@ export function Collega() {
       {chi.persona && <ChiSei chi={chi.persona} onEsci={() => void esci(`collega/${window.location.search}`)} />}
       <Titoletto>COLLEGARE {chiede.toUpperCase()}?</Titoletto>
       <div className="pad stack" style={{ gap: 14, paddingBottom: 20 }}>
-        {puoCollegare(chi.persona) ? (
+        {puoCollegare(chi.persona) && righe && frasi ? (
           <>
             <span className="passo-dettaglio" data-tono="testo" style={{ fontSize: 15 }}>
-              <b>{chiede}</b> chiede di usare ODS Corsi con il tuo account, per registrare in CONTABILITÀ le fatture e gli
-              scontrini che gli fotografi.
+              <b>{chiede}</b> chiede di usare ODS Corsi con il tuo account, {frasi.perche}
             </span>
             <Riquadro stretto>
               <span id="collega-potra"><Etichetta>POTRÀ</Etichetta></span>
               <ul className="collega-elenco" data-tono="si" aria-labelledby="collega-potra">
-                <li>Leggere voci, totali, il saldo del Conto Corrente e le spese da classificare</li>
-                <li>Registrare un’uscita o un’entrata, solo dopo il tuo «ok» in chat</li>
+                {righe.potra.map((r) => <li key={r}>{r}</li>)}
               </ul>
             </Riquadro>
             <Riquadro stretto>
               <span id="collega-non-potra"><Etichetta>NON POTRÀ</Etichetta></span>
               <ul className="collega-elenco" data-tono="no" aria-labelledby="collega-non-potra">
-                <li>Vedere i nomi degli iscritti e il saldo della Cassa Contanti</li>
-                <li>Annullare movimenti, fare giroconti, chiudere la cassa</li>
-                <li>Cambiare voci e casse</li>
+                {righe.nonPotra.map((r) => <li key={r}>{r}</li>)}
               </ul>
             </Riquadro>
             <span className="passo-dettaglio" style={{ fontSize: 14 }}>
-              Le foto le vede {chiede}, non ODS: solo documenti di fornitori, niente compensi né ricevute di iscritti. Il
-              collegamento si toglie da {chiede}, in Impostazioni → Connettori.
+              {frasi.nota}
             </span>
             <Tasto variante="vai" disabled={aspetta || !nome} onClick={() => void decidi(true)}>
               {aspetta ? 'UN ATTIMO…' : 'CONSENTI'}

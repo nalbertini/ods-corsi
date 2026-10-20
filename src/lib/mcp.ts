@@ -30,10 +30,27 @@ import {
   type Simile,
 } from './movimentiDallaChat'
 import { dataRicevuta, euro } from './ricevute'
+import {
+  CHAT_SEGRETERIA_ACCESA,
+  corsoDa,
+  erroreSegreteria,
+  MSG_SEGRETERIA,
+  testoChiManca,
+  testoCertificati,
+  testoIscritti,
+  testoPresenze,
+  testoQuote,
+  type AppelloChat,
+  type CorsoChat,
+  type IscrittoChat,
+  type ProvaChat,
+} from './chatSegreteria'
 
 /**
  * Il server MCP di ODS Corsi (`supabase/functions/mcp`): Claude lo chiama col token della persona che si è
- * collegata, e ogni lettura e scrittura passa dalle regole del database come se fosse l'app. Il protocollo è
+ * collegata, e ogni lettura e scrittura passa dalle regole del database come se fosse l'app. Gli strumenti sono quelli
+ * del suo ruolo: la contabilità per l'amministrazione, le domande sugli iscritti per la segreteria (`chatSegreteria.ts`,
+ * finché è accesa), tutti e due per chi li ha tutti e due. Il protocollo è
  * scritto qui a mano, senza dipendenze: JSON-RPC 2.0 su HTTP, una richiesta e una risposta in JSON, senza
  * sessione. Servono solo `initialize`, `ping`, `tools/list` e `tools/call`.
  *
@@ -70,6 +87,16 @@ export interface DatabaseChat {
   /** Gli incassi degli iscritti, senza chi ha pagato. */
   incassi(): Promise<IncassoPerConti[]>
   registra(dati: { chiave: string; tipo: string; data: string; importo: number; voce_id: string; cassa_id: string; descrizione: string; nota?: string }): Promise<MovimentoScritto>
+  /** Chi ha il ruolo di segreteria (`e_staff()`). */
+  eSegreteria(): Promise<boolean>
+  /** I corsi attivi, per nome. */
+  corsi(): Promise<CorsoChat[]>
+  /** Gli iscritti attivi (`chat_iscritti`): dei minori niente nomi. */
+  iscritti(): Promise<IscrittoChat[]>
+  /** Le lezioni dal `dal` all'`al` (giorni di Roma) con l'appello di ognuno (`chat_registro`). */
+  registro(dal: string, al: string): Promise<AppelloChat[]>
+  /** Quante prove per lezione (`chat_prove`): mai chi. */
+  prove(dal: string, al: string): Promise<ProvaChat[]>
 }
 
 export interface OpzioniMcp {
@@ -77,6 +104,8 @@ export interface OpzioniMcp {
   metadati: string
   apri: (token: string) => DatabaseChat
   oggi: () => string
+  /** Gli strumenti della segreteria: di base `CHAT_SEGRETERIA_ACCESA`. */
+  segreteria?: boolean
 }
 
 const VERSIONI = ['2025-06-18', '2025-03-26', '2024-11-05']
@@ -95,6 +124,15 @@ const ISTRUZIONI = `Registri in CONTABILITÀ di ODS Corsi le spese e le entrate 
 - Dopo la registrazione di' cosa hai scritto e che si annulla da CONTABILITÀ → MOVIMENTI.
 - Per i conti (conti, saldi_casse, da_classificare) riporta i numeri come li dà lo strumento: sono quelli di BILANCIO nell'app. Della Cassa Contanti non c'è il saldo: la chiusura si conta alla cieca.
 - La voce dei gruppi da classificare si cambia nell'app (CONTABILITÀ → MOVIMENTI, «Cambiare la voce»): di' cosa cercare, la voce di partenza e il periodo «Tutto».`
+
+/** Per la segreteria: le stesse cautele dei testi, e i nomi dei minori che non ci sono. */
+const ISTRUZIONI_SEGRETERIA = `Rispondi alla segreteria di ODS Corsi su iscritti, certificati, quote e presenze, in sola lettura.
+- Dei minori, e di chi non ha la data di nascita, gli strumenti danno solo numeri: non chiedere né cercare i loro nomi. I nomi si vedono nell'app, in DA FARE.
+- Chi è venuto a provare è solo un numero.
+- Riporta i numeri come li dà lo strumento: le regole sono quelle di DA FARE e PRESENZE nell'app.
+- Il corso si sceglie per nome: lo strumento corsi dà l'elenco.
+- Le presenze contano gli appelli arrivati: uno ancora sul tablet senza rete non c'è.
+- Dalla chat non si cambia niente: iscrizioni, appelli e pagamenti si fanno nell'app.`
 
 const STRUMENTI = [
   {
@@ -174,6 +212,57 @@ const STRUMENTI = [
   },
 ]
 
+const corso = { type: 'string', description: 'Il nome del corso, come lo dà lo strumento corsi' }
+const STRUMENTI_SEGRETERIA = [
+  {
+    name: 'corsi',
+    title: 'Corsi',
+    description: 'I corsi attivi, per nome: si usano negli altri strumenti della segreteria.',
+    inputSchema: { type: 'object', properties: {} },
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: 'certificati',
+    title: 'Certificati',
+    description: 'Fra chi è attivo, i certificati scaduti, mancanti e in scadenza entro 30 giorni, come DA FARE. Gli adulti per nome, i minori solo contati.',
+    inputSchema: { type: 'object', properties: {} },
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: 'quote',
+    title: 'Quote',
+    description: 'Fra chi è attivo, le quote da pagare, scadute o pagate in parte (con quanto manca). Gli adulti per nome, i minori solo contati.',
+    inputSchema: { type: 'object', properties: {} },
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: 'iscritti',
+    title: 'Iscritti di un corso',
+    description: 'Chi è iscritto oggi a un corso: gli adulti per nome, i minori solo contati.',
+    inputSchema: { type: 'object', properties: { corso }, required: ['corso'] },
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: 'presenze',
+    title: 'Presenze di un corso',
+    description: 'Le lezioni di un corso con e senza appello e le presenze di ognuno, dagli appelli arrivati. Di base dal primo del mese a oggi.',
+    inputSchema: {
+      type: 'object',
+      properties: { corso, dal: { type: 'string', description: 'AAAA-MM-GG' }, al: { type: 'string', description: 'AAAA-MM-GG; dopo oggi vale oggi' } },
+      required: ['corso'],
+    },
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: 'chi_manca',
+    title: 'Chi si sta perdendo',
+    description: 'Chi ha 3 o più assenze di fila negli ultimi 60 giorni, come in PRESENZE, in tutti i corsi o in uno.',
+    inputSchema: { type: 'object', properties: { corso } },
+    annotations: { readOnlyHint: true },
+  },
+]
+const DELLA_SEGRETERIA = new Set(STRUMENTI_SEGRETERIA.map((s) => s.name))
+
 const LETTURA = new Set(['conti', 'saldi_casse', 'da_classificare'])
 
 type Id = string | number | null
@@ -194,7 +283,7 @@ export const metadatiRisorsa = (risorsa: string, autorizzazione: string) => ({
   resource: risorsa,
   authorization_servers: [autorizzazione],
   bearer_methods_supported: ['header'],
-  resource_name: 'ODS Corsi · contabilità',
+  resource_name: 'ODS Corsi',
 })
 
 const stringa = (x: unknown): string | undefined => (typeof x === 'string' ? x : undefined)
@@ -376,7 +465,55 @@ async function strumentoDaClassificare(db: DatabaseChat) {
   )
 }
 
+/** Il giorno `giorni` prima o dopo, `AAAA-MM-GG`. */
+const spostato = (giorno: string, giorni: number) => new Date(Date.parse(`${giorno}T12:00:00Z`) + giorni * 86_400_000).toISOString().slice(0, 10)
+
+/** Il corso chiesto, o il testo che dice che non c'è. */
+async function corsoChiesto(db: DatabaseChat, a: Argomenti): Promise<{ corso: CorsoChat; corsi: CorsoChat[] } | { no: string }> {
+  const chiesto = stringa(a.corso)?.trim() ?? ''
+  if (!chiesto) return { no: 'Scegli il corso: lo strumento corsi dà l’elenco' }
+  const corsi = await db.corsi()
+  const corso = corsoDa(corsi, chiesto)
+  return corso ? { corso, corsi } : { no: `Non c’è un corso «${chiesto}»: vedi lo strumento corsi` }
+}
+
+async function strumentoSegreteria(db: DatabaseChat, nome: string, a: Argomenti, oggi: string) {
+  if (nome === 'corsi') {
+    const corsi = await db.corsi()
+    return testo(corsi.length ? ['Corsi attivi:', ...corsi.map((c) => `- ${c.nome}`)].join('\n') : 'Nessun corso attivo.')
+  }
+  if (nome === 'certificati' || nome === 'quote') {
+    const [iscritti, corsi] = await Promise.all([db.iscritti(), db.corsi()])
+    return testo(nome === 'certificati' ? testoCertificati(iscritti, corsi, oggi) : testoQuote(iscritti, corsi, oggi))
+  }
+  if (nome === 'chi_manca') {
+    const scelto = stringa(a.corso)?.trim() ? await corsoChiesto(db, a) : null
+    if (scelto && 'no' in scelto) return testo(scelto.no, true)
+    // Le assenze di fila guardano più indietro del mese, come PRESENZE.
+    return testo(testoChiManca(await db.registro(spostato(oggi, -60), oggi), scelto?.corso ?? null))
+  }
+  const scelto = await corsoChiesto(db, a)
+  if ('no' in scelto) return testo(scelto.no, true)
+  if (nome === 'iscritti') return testo(testoIscritti(await db.iscritti(), scelto.corso, oggi))
+  const dal = stringa(a.dal)
+  const al = stringa(a.al)
+  if ((dal !== undefined && !dataVera(dal)) || (al !== undefined && !dataVera(al))) return testo('La data non si capisce', true)
+  const fino = al && al < oggi ? al : oggi
+  const da = dal ?? `${oggi.slice(0, 8)}01`
+  if (da > fino) return testo('La data di inizio è dopo quella di fine', true)
+  const [registro, prove] = await Promise.all([db.registro(da, fino), db.prove(da, fino)])
+  return testo(testoPresenze(registro, prove, scelto.corso, da, fino))
+}
+
 async function chiama(db: DatabaseChat, nome: string, a: Argomenti, oggi: string) {
+  if (DELLA_SEGRETERIA.has(nome)) {
+    try {
+      if (!(await db.eSegreteria())) return testo(MSG_SEGRETERIA, true)
+      return await strumentoSegreteria(db, nome, a, oggi)
+    } catch (e) {
+      return testo(erroreSegreteria(e), true)
+    }
+  }
   try {
     if (!(await db.eAmministrazione())) return testo(MSG_AMMINISTRAZIONE, true)
     if (nome === 'voci') return await strumentoVoci(db, a)
@@ -389,6 +526,19 @@ async function chiama(db: DatabaseChat, nome: string, a: Argomenti, oggi: string
     return testo(`Lo strumento «${nome}» non c’è`, true)
   } catch (e) {
     return testo(testoDellErrore(e, LETTURA.has(nome) ? 'leggere' : 'registrare'), true)
+  }
+}
+
+/**
+ * Chi è, per gli strumenti da mostrare. Un database che non risponde vale come l'amministrazione sola: gli strumenti di
+ * sempre, che poi diranno loro cosa non va.
+ */
+async function ruoli(db: DatabaseChat, accesa: boolean): Promise<{ amministrazione: boolean; segreteria: boolean }> {
+  try {
+    const [amministrazione, segreteria] = await Promise.all([db.eAmministrazione(), accesa ? db.eSegreteria() : false])
+    return { amministrazione, segreteria }
+  } catch {
+    return { amministrazione: true, segreteria: false }
   }
 }
 
@@ -409,20 +559,26 @@ export async function rispondiMcp(req: Request, o: OpzioniMcp): Promise<Response
   // Una notifica non ha risposta.
   if (id === undefined) return new Response(null, { status: 202 })
   if (id !== null && typeof id !== 'string' && typeof id !== 'number') return errore(null, -32600, 'L’id della richiesta non si capisce')
+  const accesa = o.segreteria ?? CHAT_SEGRETERIA_ACCESA
   if (method === 'initialize') {
     const chiesta = stringa(params?.protocolVersion)
+    const r = await ruoli(o.apri(token), accesa)
     return risultato(id, {
       protocolVersion: chiesta && VERSIONI.includes(chiesta) ? chiesta : VERSIONI[0],
       capabilities: { tools: {} },
-      serverInfo: { name: 'ods-corsi', title: 'ODS Corsi · contabilità', version: '1' },
-      instructions: ISTRUZIONI,
+      serverInfo: { name: 'ods-corsi', title: 'ODS Corsi', version: '1' },
+      // Chi non ha nessuno dei due ruoli sente le istruzioni di sempre: gli strumenti gli diranno di no.
+      instructions: [...(r.amministrazione || !r.segreteria ? [ISTRUZIONI] : []), ...(r.segreteria ? [ISTRUZIONI_SEGRETERIA] : [])].join('\n\n'),
     })
   }
   if (method === 'ping') return risultato(id, {})
-  if (method === 'tools/list') return risultato(id, { tools: STRUMENTI })
+  if (method === 'tools/list') {
+    const r = await ruoli(o.apri(token), accesa)
+    return risultato(id, { tools: [...(r.amministrazione ? STRUMENTI : []), ...(r.segreteria ? STRUMENTI_SEGRETERIA : [])] })
+  }
   if (method === 'tools/call') {
     const nome = stringa(params?.name) ?? ''
-    if (!STRUMENTI.some((s) => s.name === nome)) return errore(id, -32602, `Lo strumento «${nome}» non c’è`)
+    if (![...STRUMENTI, ...(accesa ? STRUMENTI_SEGRETERIA : [])].some((s) => s.name === nome)) return errore(id, -32602, `Lo strumento «${nome}» non c’è`)
     // Gli argomenti si leggono uno a uno (`stringa`, `movimentoDa`): basta che sia un oggetto.
     const a = typeof params?.arguments === 'object' && params.arguments !== null ? (params.arguments as Argomenti) : {}
     return risultato(id, await chiama(o.apri(token), nome, a, o.oggi()))

@@ -48,6 +48,7 @@ const conti = await carica('./src/lib/contabilita')
 const bil = await carica('./src/lib/bilancio')
 const pagamenti = await carica('./src/lib/pagamenti')
 const ricevute = await carica('./src/lib/ricevute')
+const chatSeg = await carica('./src/lib/chatSegreteria')
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -272,7 +273,10 @@ const simili = [
 // riga che il database rimanda indietro.
 // Per i conti: `movimenti` (i movimenti a mano, senza nota) e `incassi` (solo data, importo, metodo, voce,
 // annullato: né intestatario né nota); `guastoLettura` fa fallire solo quelle due letture.
-const finto = ({ amministrazione = true, guasto = null, guastoScrittura = null, guastoLettura = null, uguali = [], restituisce = null, voci: vociDb = voci, casse: casseDb = casse, chiusure: chiusureDb = chiusure, movimenti = [], incassi = [] } = {}) => {
+// Per la segreteria: `segreteria` è e_staff(); `corsiChat`, `iscrittiChat`, `registroChat`, `proveChat` sono le righe
+// come le danno `corsi`, `chat_iscritti`, `chat_registro` e `chat_prove`; `guastoSegreteria` fa fallire le tre
+// funzioni chat_*. `letture` dice cosa è stato letto, `registri` e `provati` con quali giorni.
+const finto = ({ amministrazione = true, segreteria = false, guasto = null, guastoScrittura = null, guastoLettura = null, guastoSegreteria = null, uguali = [], restituisce = null, voci: vociDb = voci, casse: casseDb = casse, chiusure: chiusureDb = chiusure, movimenti = [], incassi = [], corsiChat = [], iscrittiChat = [], registroChat = [], proveChat = [] } = {}) => {
   const scritti = []
   const cercati = []
   const perChiave = new Map()
@@ -287,6 +291,31 @@ const finto = ({ amministrazione = true, guasto = null, guastoScrittura = null, 
     chiusure_ora: chiusureDb,
     letture: [],
     eAmministrazione: () => leggi(amministrazione),
+    eSegreteria: () => leggi(segreteria),
+    registri: [],
+    provati: [],
+    corsi: () => {
+      db.letture.push('corsi')
+      return leggi(corsiChat)
+    },
+    iscritti: async () => {
+      db.letture.push('iscritti')
+      if (guastoSegreteria) throw guastoSegreteria
+      return leggi(iscrittiChat)
+    },
+    // Le lezioni fra `dal` e `al` compresi (le ore della prova sono a metà giornata: il giorno UTC è quello di Roma).
+    registro: async (dal, al) => {
+      db.letture.push('registro')
+      db.registri.push([dal, al])
+      if (guastoSegreteria) throw guastoSegreteria
+      return leggi(registroChat.filter((r) => r.inizio.slice(0, 10) >= dal && r.inizio.slice(0, 10) <= al))
+    },
+    prove: async (dal, al) => {
+      db.letture.push('prove')
+      db.provati.push([dal, al])
+      if (guastoSegreteria) throw guastoSegreteria
+      return leggi(proveChat.filter((r) => r.inizio.slice(0, 10) >= dal && r.inizio.slice(0, 10) <= al))
+    },
     voci: () => leggi(vociDb),
     casse: () => leggi(casseDb),
     chiusure: () => leggi(db.chiusure_ora),
@@ -820,6 +849,301 @@ console.log('\n23. dalle revisioni: le righe del database, il doppio conteggio, 
   ok('un gruppo con due spazi in mezzo si ritrova in MOVIMENTI cercando il suo testo', prova(() => conti.filtraMovimenti(righeSpazi, { testo: g.cerca }).length), 2)
   const [solo] = await chiedi('da_classificare', {}, finto({ voci: vociConti, casse: casseConti, movimenti: [mov('s3', 'uscita', '2026-10-01', 1000, null, 'c2', 'Idraulico Bassi')], incassi: [] }))
   ok('un gruppo tutto senza voce: non dice una voce di partenza che il filtro non ha', prova(() => [righeCon(solo, 'idraulico bassi')[0].includes('ora su'), righeCon(solo, 'idraulico bassi')[0].includes('senza voce')]), [false, true])
+}
+
+// ---------------------------------------------------------------------------
+// La segreteria dalla chat, in sola lettura: corsi, certificati, quote,
+// iscritti, presenze, chi_manca. Il database finto dà le righe come le danno
+// chat_iscritti, chat_registro e chat_prove (supabase/prova/73-chat-segreteria.sql):
+// lì nome e cognome di chi non è adulto sono già nulli. Qui alcune righe di
+// minori e di chi è senza data li hanno lo stesso, e il codice fiscale, il
+// telefono, l'email, il numero della ricevuta e la nota del pagamento: i testi
+// non li devono dire comunque. Le regole dei testi stanno in chatSegreteria.ts,
+// chi si sta perdendo in frequenza.ts (prova-frequenza.mjs).
+// ---------------------------------------------------------------------------
+const MSG_SEGRETERIA = 'Questa parte è per la segreteria'
+const MSG_SEG_INDIETRO = 'Il database non è ancora aggiornato per le domande della segreteria: va chiesto a chi cura l’app'
+const CONTABILITA = ['casse', 'conti', 'da_classificare', 'movimenti_simili', 'registra_movimento', 'saldi_casse', 'voci']
+const SEGRETERIA = ['certificati', 'chi_manca', 'corsi', 'iscritti', 'presenze', 'quote']
+const corsiChat = [
+  { id: 'c-judo', nome: 'Judo adulti' },
+  { id: 'c-bimbi', nome: 'Judo bimbi' },
+  { id: 'c-yoga', nome: 'Yoga' },
+]
+const isc = (x) => ({ nome: null, cognome: null, pagamento: { stato: 'da_pagare' }, quote: [], corsi: [], ...x })
+const QUOTA_SCADUTA = [{ dal: '2025-09-01', al: '2026-08-31', mancano: 0 }]
+const iscrittiChat = [
+  // Adulto, certificato scaduto il 1° ottobre, quota in parte (mancano 120 €) con la nota a mano: telefono, email e codice fiscale non devono uscire.
+  isc({ chiave: 'p-mario', nome: 'Mario', cognome: 'Bianchi', eta: 'adulto', certificatoScade: '2026-10-01', pagamento: { stato: 'da_pagare', nota: 'paga la zia' }, quote: [{ dal: '2026-09-01', al: '2027-08-31', mancano: 12000, anno: 2026, numero: 4242 }], corsi: ['c-judo'], telefono: '333 1234567', email: 'mario.bianchi@esempio.it', codiceFiscale: CF }),
+  // Compie 18 anni oggi: da oggi è adulto, col nome. In regola.
+  isc({ chiave: 'p-gino', nome: 'Gino', cognome: 'Neri', eta: 'adulto', certificatoScade: '2027-06-30', quote: [{ dal: '2026-09-01', al: '2027-08-31', mancano: 0 }], corsi: ['c-judo'] }),
+  // Il nucleo: Carlo, il genitore, e i due figli, tutti con la quota scaduta.
+  isc({ chiave: 'p-carlo', nome: 'Carlo', cognome: 'Russo', eta: 'adulto', certificatoScade: '2027-01-01', quote: QUOTA_SCADUTA, corsi: ['c-yoga'] }),
+  isc({ chiave: 'x-teo', nome: 'Teo', cognome: 'Russo', eta: 'minore', natoIl: '2015-03-03', quote: QUOTA_SCADUTA, corsi: ['c-bimbi'] }),
+  isc({ chiave: 'x-figlia', eta: 'minore', natoIl: '2017-05-05', certificatoScade: '2026-11-05', quote: QUOTA_SCADUTA, corsi: ['c-bimbi'] }),
+  // Una minore senza certificato e senza quota, in due corsi.
+  isc({ chiave: 'x-lia', nome: 'Lia', cognome: 'Verdi', eta: 'minore', natoIl: '2016-04-04', corsi: ['c-bimbi', 'c-judo'] }),
+  // Compie 6 anni il 10 novembre, senza certificato; la quota in parte (mancano 50 €: dei minori non si dice).
+  isc({ chiave: 'x-bimbo', eta: 'minore', natoIl: '2020-11-10', quote: [{ dal: '2026-09-01', al: '2027-08-31', mancano: 5000 }], corsi: ['c-bimbi'] }),
+  // Senza nessuna data di nascita: solo un numero.
+  isc({ chiave: 'x-sergio', nome: 'Sergio', cognome: 'Ignoto', eta: 'non_si_sa', corsi: ['c-judo'] }),
+  // Adulta, certificato in scadenza, in parte fuori dall'app (con la sua nota).
+  isc({ chiave: 'p-anna', nome: 'Anna', cognome: 'Gialli', eta: 'adulto', certificatoScade: '2026-11-10', pagamento: { stato: 'in_parte', fino: '2026-12-31', nota: 'metà in contanti' }, corsi: ['c-yoga'] }),
+  // Adulto senza certificato e da pagare.
+  isc({ chiave: 'p-paolo', nome: 'Paolo', cognome: 'Blu', eta: 'adulto', corsi: ['c-yoga'] }),
+]
+// Il registro: una riga per lezione e iscritto. Judo adulti: s1 a settembre, s2, s3, s4 con l'appello, s5 annullata,
+// s6 senza nessun segno. Yoga: y1 con l'appello, y2 senza iscritti (una riga senza chiave).
+const sess = { s1: '2026-09-29', s2: '2026-10-06', s5: '2026-10-08', s3: '2026-10-13', s4: '2026-10-15', s6: '2026-10-17', y2: '2026-10-07', y1: '2026-10-14' }
+const statoSess = { s5: 'annullata', s4: 'prevista', s6: 'prevista', y2: 'prevista' }
+const chiChat = {
+  mario: ['p-mario', 'Mario', 'Bianchi', 'adulto'],
+  gino: ['p-gino', 'Gino', 'Neri', 'adulto'],
+  lia: ['x-lia', null, null, 'minore'],
+  sergio: ['x-sergio', null, null, 'non_si_sa'],
+  carlo: ['p-carlo', 'Carlo', 'Russo', 'adulto'],
+  anna: ['p-anna', 'Anna', 'Gialli', 'adulto'],
+}
+const appelloChat = (s, segni) => {
+  const corsoId = s.startsWith('y') ? 'c-yoga' : 'c-judo'
+  const base = { sessioneId: s, corsoId, corso: corsoId === 'c-yoga' ? 'Yoga' : 'Judo adulti', inizio: `${sess[s]}T16:00:00Z`, stato: statoSess[s] ?? 'svolta' }
+  const righe = Object.entries(segni).map(([k, presenza]) => ({ ...base, chiave: chiChat[k][0], nome: chiChat[k][1], cognome: chiChat[k][2], eta: chiChat[k][3], presenza }))
+  return righe.length ? righe : [{ ...base, chiave: null, nome: null, cognome: null, eta: null, presenza: null }]
+}
+const P = 'presente'
+const A = 'assente'
+const G = 'giustificato'
+const registroChat = [
+  ...appelloChat('s1', { mario: P, gino: P, lia: P, sergio: A }),
+  ...appelloChat('s2', { mario: A, gino: A, lia: A, sergio: A }),
+  ...appelloChat('s5', { mario: null, gino: null, lia: null, sergio: null }),
+  ...appelloChat('s3', { mario: A, gino: G, lia: A, sergio: A }),
+  ...appelloChat('s4', { mario: A, gino: A, lia: A, sergio: A }),
+  ...appelloChat('s6', { mario: null, gino: null, lia: null, sergio: null }),
+  ...appelloChat('y2', {}),
+  ...appelloChat('y1', { carlo: P, anna: A }),
+]
+const proveChat = [
+  { sessioneId: 's3', corsoId: 'c-judo', inizio: `${sess.s3}T16:00:00Z`, prove: 1 },
+  { sessioneId: 'y1', corsoId: 'c-yoga', inizio: `${sess.y1}T16:00:00Z`, prove: 2 },
+]
+const dbSeg = (cambio = {}) => finto({ amministrazione: false, segreteria: true, corsiChat, iscrittiChat, registroChat, proveChat, ...cambio })
+// La segreteria è accesa, se non si dice altro; `segreteria: undefined` non passa l'opzione (vale il default).
+const mandaSeg = async (corpo, o = {}) => {
+  const db = o.db ?? dbSeg()
+  const oggi = o.oggi ?? OGGI
+  const accesa = !('segreteria' in o) ? { segreteria: true } : o.segreteria === undefined ? {} : { segreteria: o.segreteria }
+  const req = new Request(INDIRIZZO, { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream', authorization: 'Bearer token-di-anna' }, body: JSON.stringify(corpo) })
+  const r = await mcp.rispondiMcp(req, { metadati: METADATI, apri: () => db, oggi: () => oggi, ...accesa })
+  const testo = await r.text()
+  return { stato: r.status, corpo: testo ? JSON.parse(testo) : null }
+}
+// Uno strumento che non c'è ancora risponde con un errore JSON-RPC: lo si mette al posto del testo, così la prova
+// fallisce sul suo controllo e dice perché, non su un TypeError.
+const chiediSeg = async (nome, args = {}, o = {}) =>
+  provaA(async () => {
+    const r = await mandaSeg(strumento(nome, args), o)
+    return r.corpo?.result ? esito(r) : [`JSON-RPC ${r.corpo?.error?.code}: ${r.corpo?.error?.message}`, 'nessun risultato']
+  })
+const nomiStrumenti = async (db, segreteria) => provaA(async () => (await mandaSeg(richiesta('tools/list'), { db, segreteria })).corpo.result.tools.map((t) => t.name).sort())
+const istruzioni = async (db, segreteria) => provaA(async () => (await mandaSeg(richiesta('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'claude', version: '1' } }), { db, segreteria })).corpo.result.instructions)
+// Quel che non deve mai uscire: nomi di minori e di chi è senza data, contatti, codice fiscale, date di nascita, ricevuta, note.
+const MAI = /\b(Teo|Lia|Verdi|Sergio|Ignoto)\b|333 1234567|esempio\.it|RSSMRA80A01L219M|2015-03-03|03\/03\/2015|2016-04-04|04\/04\/2016|2017-05-05|05\/05\/2017|2020-11-10|10\/11\/2020|4242|paga la zia|metà in contanti/
+const rigaCon = (t, pezzo) => righeCon(t, pezzo)[0] ?? ''
+
+console.log('\n24. chi vede cosa: tools/list secondo il ruolo')
+{
+  const amm = finto({ amministrazione: true, segreteria: false })
+  const tutte = finto({ amministrazione: true, segreteria: true })
+  const seg = finto({ amministrazione: false, segreteria: true })
+  ok('la sola amministrazione: gli strumenti della contabilità, come oggi', await nomiStrumenti(amm, true), CONTABILITA)
+  ok('segreteria e amministrazione: tutti', await nomiStrumenti(tutte, true), [...CONTABILITA, ...SEGRETERIA].sort())
+  ok('la sola segreteria: solo i suoi', await nomiStrumenti(seg, true), SEGRETERIA)
+  console.log('   con la segreteria spenta')
+  ok('la segreteria non vede niente', await nomiStrumenti(seg, false), [])
+  ok('l\'amministrazione come oggi', await nomiStrumenti(amm, false), CONTABILITA)
+  ok('…e segreteria e amministrazione solo la contabilità', await nomiStrumenti(tutte, false), CONTABILITA)
+  ok('spenta è il default (CHAT_SEGRETERIA_ACCESA è false)', [chatSeg.CHAT_SEGRETERIA_ACCESA, await nomiStrumenti(seg, undefined)], [false, []])
+  const elenco = await provaA(async () => (await mandaSeg(richiesta('tools/list'), { db: tutte })).corpo.result.tools)
+  ok('ogni strumento della segreteria è di sola lettura (readOnlyHint)', prova(() => elenco.filter((t) => SEGRETERIA.includes(t.name)).map((t) => [t.name, t.annotations?.readOnlyHint]).sort()), SEGRETERIA.map((n) => [n, true]))
+  ok('…con la descrizione e lo schema degli argomenti', prova(() => elenco.filter((t) => SEGRETERIA.includes(t.name)).map((t) => typeof t.description === 'string' && t.description.length > 0 && t.inputSchema?.type === 'object')), Array(6).fill(true))
+  const schema = (n) => prova(() => { const x = elenco.find((t) => t.name === n).inputSchema; return [Object.keys(x.properties ?? {}).sort(), x.required ?? []] })
+  ok('iscritti: il corso, obbligatorio', schema('iscritti'), [['corso'], ['corso']])
+  ok('presenze: il corso, e dal e al facoltativi', schema('presenze'), [['al', 'corso', 'dal'], ['corso']])
+  ok('chi_manca: il corso, facoltativo', schema('chi_manca'), [['corso'], []])
+  ok('corsi, certificati, quote: nessun argomento', [schema('corsi'), schema('certificati'), schema('quote')], [[[], []], [[], []], [[], []]])
+  console.log('   le istruzioni')
+  const iAmm = await istruzioni(amm, true)
+  ok('la sola amministrazione: le istruzioni di oggi', iAmm, await istruzioni(amm, false))
+  const iSeg = await istruzioni(seg, true)
+  ok('la sola segreteria: istruzioni sue, che non parlano di registrare fatture', prova(() => [typeof iSeg === 'string' && iSeg.length > 0, iSeg !== iAmm, iSeg.includes('registra_movimento')]), [true, true, false])
+  const ini = await provaA(async () => (await mandaSeg(richiesta('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'claude', version: '1' } }), { db: tutte })).corpo.result.serverInfo.title)
+  ok('il nome del server è «ODS Corsi»', ini, 'ODS Corsi')
+  ok('…anche nei metadati della risorsa', prova(() => mcp.metadatiRisorsa(INDIRIZZO, 'https://progetto.supabase.co/auth/v1').resource_name), 'ODS Corsi')
+}
+
+console.log('\n25. chi non è la segreteria si sente dire di no')
+{
+  for (const nome of SEGRETERIA) {
+    const db = finto({ amministrazione: false, segreteria: false, corsiChat, iscrittiChat, registroChat, proveChat })
+    const args = nome === 'iscritti' || nome === 'presenze' ? { corso: 'Judo adulti' } : {}
+    ok(`${nome}: un istruttore riceve «per la segreteria»`, await chiediSeg(nome, args, { db }), [MSG_SEGRETERIA, true])
+    ok('…e non legge niente della segreteria', prova(() => db.letture.filter((x) => ['iscritti', 'registro', 'prove'].includes(x))), [])
+  }
+  const sola = finto({ amministrazione: true, segreteria: false, corsiChat, iscrittiChat })
+  ok('la sola amministrazione chiede certificati: «per la segreteria»', await chiediSeg('certificati', {}, { db: sola }), [MSG_SEGRETERIA, true])
+  ok('la sola segreteria chiede voci: «la cura l’amministrazione»', await chiediSeg('voci', { tipo: 'uscita' }), [MSG_AMMINISTRAZIONE, true])
+  const rifiuta = dbSeg({ guastoSegreteria: { code: '42501', message: 'Questa parte è per la segreteria' } })
+  ok('il database dice 42501: «per la segreteria»', await chiediSeg('certificati', {}, { db: rifiuta }), [MSG_SEGRETERIA, true])
+  const spenta = dbSeg()
+  const r = await provaA(() => mandaSeg(strumento('certificati', {}), { db: spenta, segreteria: false }))
+  ok('segreteria spenta: certificati non risponde coi dati', prova(() => [r.corpo.error?.code === -32602 || r.corpo.result?.isError === true, spenta.letture.includes('iscritti')]), [true, false])
+}
+
+console.log('\n26. corsi e certificati')
+{
+  const [c, ec] = await chiediSeg('corsi')
+  ok('corsi: i corsi attivi per nome', prova(() => [ec, c.includes('Judo adulti'), c.includes('Judo bimbi'), c.includes('Yoga')]), [false, true, true, true])
+  const [t, e] = await chiediSeg('certificati')
+  ok('risponde con un testo, non è un errore', [typeof t, e], ['string', false])
+  const mario = rigaCon(t, 'Mario Bianchi')
+  ok('l\'adulto col certificato scaduto: nome, corso, «scaduto il 01/10/2026»', prova(() => [mario.includes('Judo adulti'), mario.includes('scaduto il 01/10/2026')]), [true, true])
+  ok('…e nel testo né codice fiscale, né telefono, né email', prova(() => [t.includes(CF), t.includes('333 1234567'), t.includes('esempio.it')]), [false, false, false])
+  ok('l\'adulto senza certificato: «manca»', prova(() => rigaCon(t, 'Paolo Blu').includes('manca')), true)
+  ok('l\'adulta in scadenza: «scade il 10/11/2026»', prova(() => rigaCon(t, 'Anna Gialli').includes('scade il 10/11/2026')), true)
+  ok('chi è in regola non c\'è (Gino, Carlo)', prova(() => [t.includes('Gino'), t.includes('Carlo')]), [false, false])
+  // L'intestazione di ogni gruppo, col suo numero: Scaduto 1 (Mario), Manca 1 (Paolo), In scadenza 1 (Anna).
+  const testa = (inizio) => (typeof t === 'string' ? t.split('\n').filter((l) => new RegExp(`^\\W*${inizio}`, 'i').test(l.trim())) : [])
+  ok('i gruppi, coi numeri: Scaduto, Manca, In scadenza entro 30 giorni', prova(() => [testa('Scadut').some((l) => /\b1\b/.test(l)), testa('Manca').some((l) => /\b1\b/.test(l)), testa('In scadenza entro 30 giorni').some((l) => /\b1\b/.test(l.replace('30', '')))]), [true, true, true])
+  ok('i minori solo contati: «Minori: 2 senza certificato valido, 1 in scadenza»', prova(() => t.includes('Minori: 2 senza certificato valido, 1 in scadenza')), true)
+  ok('…e chi compie 6 anni entro un mese senza certificato', prova(() => /1 \w+ 6 anni entro un mese senza certificato/.test(t)), true)
+  ok('…mai il nome, il cognome o la data di nascita del minore, anche se la riga li avesse', prova(() => [/\bTeo\b/.test(t), /\bLia\b|Verdi/.test(t), MAI.test(t)]), [false, false, false])
+  ok('chi è senza data di nascita: contato a parte, senza nome', prova(() => [/Senza data di nascita:\D*1/.test(t), /Sergio|Ignoto/.test(t)]), [true, false])
+  ok('in fondo: dove si vedono i nomi dei minori', prova(() => t.includes('Non si dicono i nomi dei minori: si vedono in DA FARE nell’app.')), true)
+}
+
+console.log('\n27. quote')
+{
+  const [t, e] = await chiediSeg('quote')
+  ok('risponde con un testo, non è un errore', [typeof t, e], ['string', false])
+  const mario = rigaCon(t, 'Mario Bianchi')
+  ok('in parte da una ricevuta: «in parte · mancano 120,00 € · fino al 31/08/2027»', prova(() => [mario.includes('in parte'), mario.includes('mancano 120,00 €'), mario.includes('fino al 31/08/2027')]), [true, true, true])
+  ok('…mai la nota del pagamento né il numero della ricevuta', prova(() => [t.includes('paga la zia'), t.includes('4242')]), [false, false])
+  const anna = rigaCon(t, 'Anna Gialli')
+  ok('in parte fuori dall\'app: «in parte», senza importo e senza la nota', prova(() => [anna.includes('in parte'), anna.includes('mancano'), t.includes('metà in contanti')]), [true, false, false])
+  ok('da pagare', prova(() => rigaCon(t, 'Paolo Blu').includes('da pagare')), true)
+  console.log('   il nucleo: il genitore per la sua quota, i figli solo nel conteggio')
+  ok('Carlo: «scaduta il 31/08/2026»', prova(() => rigaCon(t, 'Carlo Russo').includes('scaduta il 31/08/2026')), true)
+  ok('«Russo» compare una volta sola, nella riga di Carlo', prova(() => righeCon(t, 'Russo').map((l) => l.includes('Carlo'))), [true])
+  ok('i minori: «Minori: 3 da pagare o scaduta, 1 in parte», senza importi', prova(() => [t.includes('Minori: 3 da pagare o scaduta, 1 in parte'), t.includes('50,00')]), [true, false])
+  ok('chi ha pagato non c\'è', prova(() => t.includes('Gino')), false)
+  ok('senza data di nascita: contato, non nominato', prova(() => [/senza data di nascita\D*1/i.test(t), /Sergio|Ignoto/.test(t)]), [true, false])
+  ok('niente di quel che non si dice', prova(() => MAI.test(t)), false)
+}
+
+console.log('\n28. iscritti di un corso')
+{
+  const [t, e] = await chiediSeg('iscritti', { corso: 'Judo adulti' })
+  ok('Judo adulti: gli adulti per nome, per cognome', prova(() => [e, t.includes('Mario Bianchi'), t.includes('Gino Neri'), t.indexOf('Mario Bianchi') < t.indexOf('Gino Neri')]), [false, true, true, true])
+  ok('chi compie 18 anni oggi c\'è col nome', prova(() => t.includes('Gino Neri')), true)
+  ok('la minore e chi è senza data: contati, senza nome', prova(() => [/minor\w*\D*1|1 minor/i.test(t), /senza data di nascita\D*1|1\D+senza data di nascita/i.test(t), MAI.test(t)]), [true, true, false])
+  ok('chi non è nel corso non c\'è', prova(() => [t.includes('Carlo'), t.includes('Anna'), t.includes('Paolo')]), [false, false, false])
+  ok('il corso senza badare alle maiuscole, o per id: lo stesso testo', [t.includes('Mario Bianchi'), await chiediSeg('iscritti', { corso: 'judo ADULTI' }), await chiediSeg('iscritti', { corso: 'c-judo' })], [true, [t, false], [t, false]])
+  const [b] = await chiediSeg('iscritti', { corso: 'Judo bimbi' })
+  ok('Judo bimbi: 4 minori, nessun nome', prova(() => [/4 minor|minor\w*\D*4/i.test(b), MAI.test(b), b.includes('Russo')]), [true, false, false])
+  ok('un corso che non c\'è', await chiediSeg('iscritti', { corso: 'Pilates' }), ['Non c’è un corso «Pilates»: vedi lo strumento corsi', true])
+  console.log('   ieri Gino aveva 17 anni: il database lo dava fra i minori')
+  const ieri = iscrittiChat.map((x) => (x.chiave === 'p-gino' ? { ...x, chiave: 'x-gino', nome: null, cognome: null, eta: 'minore', natoIl: '2008-10-20' } : x))
+  const [y] = await chiediSeg('iscritti', { corso: 'Judo adulti' }, { db: dbSeg({ iscrittiChat: ieri }), oggi: '2026-10-19' })
+  ok('…ieri non c\'era il suo nome, e i minori erano 2', prova(() => [y.includes('Gino'), /2 minor|minor\w*\D*2/i.test(y)]), [false, true])
+}
+
+console.log('\n29. presenze di un corso')
+{
+  const db = dbSeg()
+  const [t, e] = await chiediSeg('presenze', { corso: 'Judo adulti' }, { db })
+  ok('di base dal primo del mese a oggi', prova(() => [db.registri, db.provati]), [[['2026-10-01', OGGI]], [['2026-10-01', OGGI]]])
+  ok('risponde con un testo, non è un errore', [typeof t, e], ['string', false])
+  ok('le lezioni con l\'appello (3), senza appello (con la data), annullate (1)', prova(() => [/con l.appello\D*3|3\D+con l.appello/i.test(t), t.includes('17/10/2026'), /annullat\w*\D*1|1\D+annullat/i.test(t)]), [true, true, true])
+  ok('gli adulti: «Mario Bianchi · 0 su 3», Gino coi giustificati fuori «0 su 2»', prova(() => [rigaCon(t, 'Mario Bianchi').includes('0 su 3'), rigaCon(t, 'Gino Neri').includes('0 su 2')]), [true, true])
+  ok('chi è venuto a provare: «Prove: 1», nessun nome', prova(() => [t.includes('Prove: 1'), MAI.test(t)]), [true, false])
+  ok('i minori contati, senza nome', prova(() => [/minor/i.test(t), /\bLia\b/.test(t)]), [true, false])
+  ok('e la frase sugli appelli arrivati', prova(() => t.includes('Contano gli appelli arrivati: uno ancora sul tablet senza rete non c’è.')), true)
+  ok('settembre è fuori: la lezione del 29/09 non c\'è', prova(() => t.includes('29/09/2026')), false)
+  const d2 = dbSeg()
+  await chiediSeg('presenze', { corso: 'c-judo', dal: '2026-09-01', al: '2026-09-30' }, { db: d2 })
+  ok('dal e al chiesti', prova(() => d2.registri), [['2026-09-01', '2026-09-30']])
+  ok('un corso che non c\'è', await chiediSeg('presenze', { corso: 'Pilates' }), ['Non c’è un corso «Pilates»: vedi lo strumento corsi', true])
+}
+
+console.log('\n30. chi_manca: chi si sta perdendo')
+{
+  const db = dbSeg()
+  const [t, e] = await chiediSeg('chi_manca', {}, { db })
+  ok('guarda gli ultimi 60 giorni', prova(() => db.registri), [['2026-08-21', OGGI]])
+  const mario = rigaCon(t, 'Mario Bianchi')
+  ok('l\'adulto con 3 assenze di fila: «3 assenze di fila · ultima presenza il 29/09/2026», col corso', prova(() => [e, mario.includes('3 assenze di fila'), mario.includes('ultima presenza il 29/09/2026'), mario.includes('Judo adulti')]), [false, true, true, true])
+  ok('2 assenze e un giustificato in mezzo: Gino non c\'è', prova(() => t.includes('Gino')), false)
+  ok('la minore e chi è senza data: contati, senza nome', prova(() => [/minor/i.test(t), /senza data di nascita/i.test(t), MAI.test(t)]), [true, true, false])
+  ok('chi era presente all\'ultima non c\'è', prova(() => [t.includes('Carlo'), t.includes('Anna')]), [false, false])
+  const [y, ey] = await chiediSeg('chi_manca', { corso: 'yoga' })
+  ok('nello Yoga nessuno: lo dice, non è un errore', prova(() => [ey, typeof y === 'string' && y.length > 0, y.includes('Mario')]), [false, true, false])
+}
+
+console.log('\n31. il database non ancora aggiornato, e gli altri guai')
+{
+  for (const code of ['PGRST202', '42883', '42703']) {
+    const db = dbSeg({ amministrazione: true, guastoSegreteria: { code, message: 'Could not find the function public.chat_iscritti without parameters in the schema cache' } })
+    ok(`${code}: certificati dice che il database non è ancora aggiornato`, await chiediSeg('certificati', {}, { db }), [MSG_SEG_INDIETRO, true])
+    const [v, ev] = await chiediSeg('voci', { tipo: 'uscita' }, { db })
+    ok('…e voci funziona ancora', prova(() => [ev, v.includes('Utenze')]), [false, true])
+  }
+  ok('presenze col database indietro: lo stesso', await chiediSeg('presenze', { corso: 'Judo adulti' }, { db: dbSeg({ guastoSegreteria: { code: 'PGRST202', message: 'Could not find the function public.chat_registro' } }) }), [MSG_SEG_INDIETRO, true])
+  ok('il token scaduto: «Accedi di nuovo a ODS Corsi»', await chiediSeg('quote', {}, { db: dbSeg({ guastoSegreteria: { code: 'PGRST301', message: 'JWT expired' } }) }), [MSG_ACCEDI, true])
+  const [rete, er] = await chiediSeg('quote', {}, { db: dbSeg({ guastoSegreteria: new TypeError('fetch failed') }) })
+  ok('la rete che non va: un errore, mai «fetch failed»', prova(() => [er, typeof rete === 'string' && rete.length > 0, /fetch/i.test(rete)]), [true, true, false])
+}
+
+console.log('\n32. di sola lettura, e mai quel che non si dice')
+{
+  const db = dbSeg({ amministrazione: true })
+  const chiamate = [['corsi', {}], ['certificati', {}], ['quote', {}], ['iscritti', { corso: 'Judo adulti' }], ['iscritti', { corso: 'Judo bimbi' }], ['iscritti', { corso: 'Yoga' }], ['presenze', { corso: 'Judo adulti' }], ['presenze', { corso: 'Yoga' }], ['chi_manca', {}]]
+  for (const [nome, args] of chiamate) {
+    const [t, e] = await chiediSeg(nome, args, { db })
+    ok(`${nome} ${JSON.stringify(args)}: risponde, e niente nomi di minori o senza data, contatti, codice fiscale, date di nascita, ricevute, note`, prova(() => [e, typeof t === 'string' && t.length > 0, MAI.test(t)]), [false, true, false])
+  }
+  ok('nessuna scrittura, nessuna ricerca di doppioni', [db.scritti.length, db.cercati.length], [0, 0])
+}
+
+console.log('\n33. i testi, chiamati da soli (chatSegreteria.ts)')
+{
+  const t = prova(() => chatSeg.testoCertificati(iscrittiChat, corsiChat, OGGI))
+  ok('testoCertificati: Mario scaduto, i minori contati', prova(() => [rigaCon(t, 'Mario Bianchi').includes('scaduto il 01/10/2026'), t.includes('Minori: 2 senza certificato valido, 1 in scadenza'), MAI.test(t)]), [true, true, false])
+  const q = prova(() => chatSeg.testoQuote(iscrittiChat, corsiChat, OGGI))
+  ok('testoQuote: «mancano 120,00 €», mai la nota', prova(() => [rigaCon(q, 'Mario Bianchi').includes('mancano 120,00 €'), MAI.test(q)]), [true, false])
+  const i = prova(() => chatSeg.testoIscritti(iscrittiChat, corsiChat[0], OGGI))
+  ok('testoIscritti: Gino per nome, Sergio no', prova(() => [i.includes('Gino Neri'), MAI.test(i)]), [true, false])
+  const p = prova(() => chatSeg.testoPresenze(registroChat.filter((r) => r.corsoId === 'c-judo' && r.inizio >= '2026-10-01'), proveChat.filter((x) => x.corsoId === 'c-judo'), corsiChat[0], '2026-10-01', OGGI))
+  ok('testoPresenze: «Prove: 1» e «0 su 3»', prova(() => [p.includes('Prove: 1'), rigaCon(p, 'Mario Bianchi').includes('0 su 3'), MAI.test(p)]), [true, true, false])
+  const c = prova(() => chatSeg.testoChiManca(registroChat, null))
+  ok('testoChiManca: Mario con l\'ultima presenza, Gino no', prova(() => [rigaCon(c, 'Mario Bianchi').includes('ultima presenza il 29/09/2026'), c.includes('Gino'), MAI.test(c)]), [true, false, false])
+}
+
+console.log('\n34. nell\'app: chi può collegare Claude, e cosa gli si dice')
+{
+  const puo = (p, accesa) => prova(() => (accesa === undefined ? collega.puoCollegare(p) : collega.puoCollegare(p, accesa)))
+  ok('la segreteria semplice: sì solo con la segreteria accesa', [puo({ ruolo: 'staff' }, true), puo({ ruolo: 'staff' }, false)], [true, false])
+  ok('…spenta è il default', puo({ ruolo: 'staff' }), false)
+  ok('l\'amministrazione sì, accesa o spenta', [puo({ ruolo: 'amministrazione' }, true), puo({ ruolo: 'amministrazione' }, false), puo({ ruolo: 'staff', ancheAmministrazione: true }, false)], [true, true, true])
+  ok('l\'istruttore e il tablet no, nemmeno accesa', [puo({ ruolo: 'istruttore' }, true), puo({ ruolo: 'istruttore', ancheIstruttore: true }, true), puo(null, true)], [false, false, false])
+  const ISCRITTI_SI = ['Leggere nome e cognome degli iscritti adulti, con corso, certificato, quota e presenze', 'Contare i minori, senza sapere chi sono']
+  const CONTI_SI = ['Leggere voci, totali, il saldo del Conto Corrente e le spese da classificare', 'Registrare un’uscita o un’entrata, solo dopo il tuo «ok» in chat']
+  const NOMI_NO = ['Vedere i nomi dei minori e di chi è venuto a provare', 'Vedere telefono, email, codice fiscale, indirizzo, certificati e documenti']
+  // Il secondo argomento (accesa) lo ignora chi non lo prende: le righe sono quelle del design con la segreteria accesa.
+  const righe = (p) => prova(() => collega.cosaPotra(p, true))
+  ok('la segreteria: POTRÀ e NON POTRÀ del design', righe({ ruolo: 'staff' }), { potra: ISCRITTI_SI, nonPotra: [...NOMI_NO, 'Cambiare niente: iscrizioni, appelli, pagamenti'] })
+  ok('segreteria e amministrazione: tutte e due', righe({ ruolo: 'staff', ancheAmministrazione: true }), { potra: [...ISCRITTI_SI, ...CONTI_SI], nonPotra: [...NOMI_NO, 'Vedere il saldo della Cassa Contanti', 'Cambiare iscrizioni, appelli, pagamenti; annullare movimenti, chiudere la cassa'] })
+  ok('la sola amministrazione: le righe di oggi', righe({ ruolo: 'amministrazione' }), { potra: CONTI_SI, nonPotra: ['Vedere i nomi degli iscritti e il saldo della Cassa Contanti', 'Annullare movimenti, fare giroconti, chiudere la cassa', 'Cambiare voci e casse'] })
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

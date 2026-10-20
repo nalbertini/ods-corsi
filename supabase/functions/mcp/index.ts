@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------
 // Il server MCP di ODS Corsi: chi cura i conti collega Claude al suo account, e Claude registra in CONTABILITÀ
-// le spese lette su fatture e scontrini dei fornitori, dopo il suo «ok».
+// le spese lette su fatture e scontrini dei fornitori, dopo il suo «ok». Quando è accesa, la segreteria gli chiede
+// certificati, quote e presenze (73-chat-segreteria.sql): dei minori solo numeri.
 //
 // L'accesso è quello di Supabase (Authentication → OAuth Server): Claude chiede il token, la persona entra in ODS
 // e dice CONSENTI (la pagina `collega/` dell'app), e da lì ogni chiamata porta il suo token. Qui non c'è la chiave
@@ -40,6 +41,8 @@ function apri(token: string, utente: string) {
     global: { headers: { Authorization: `Bearer ${token}` } },
     auth: { persistSession: false, autoRefreshToken: false },
   })
+  // Il «sale» di questa domanda (73-chat-segreteria.sql): la chiave di un minore è la stessa fra le pagine, e solo qui.
+  const sale = crypto.randomUUID()
   return {
     eAmministrazione: async () => ok(await db.rpc('e_amministrazione')) === true,
     async voci() {
@@ -93,6 +96,38 @@ function apri(token: string, utente: string) {
         tutteLeRighe((da: number, a: number) => db.from('pagamenti_diretti').select('id, data, importo, metodo, voce, annullato_il').order('id').range(da, a)),
       ])
       return incassiDaRighe(ok(ricevute) as Parameters<typeof incassiDaRighe>[0], ok(diretti) as Parameters<typeof incassiDaRighe>[1])
+    },
+    eSegreteria: async () => ok(await db.rpc('e_staff')) === true,
+    async corsi() {
+      const righe = ok(await db.from('corsi').select('id, nome').eq('attivo', true).order('nome')) as Array<{ id: string; nome: string }>
+      return righe.map((r) => ({ id: r.id, nome: r.nome }))
+    },
+    // Le righe di 73-chat-segreteria.sql: nome e cognome dei minori sono già nulli, e non c'è altro di loro.
+    async iscritti() {
+      const righe = ok(await tutteLeRighe((da: number, a: number) => db.rpc('chat_iscritti', { sale }).order('chiave').range(da, a))) as Array<{
+        chiave: string; nome: string | null; cognome: string | null; eta: 'adulto' | 'minore' | 'non_si_sa'; nato_il: string | null
+        certificato_scade: string | null; pagamento: 'da_pagare' | 'in_parte' | 'pagato'; pagato_fino: string | null
+        quote: Array<{ dal: string | null; al: string | null; mancano: number }>; corsi: string[]
+      }>
+      return righe.map((r) => ({
+        chiave: r.chiave, nome: r.nome, cognome: r.cognome, eta: r.eta,
+        ...(r.nato_il ? { natoIl: r.nato_il } : {}),
+        ...(r.certificato_scade ? { certificatoScade: r.certificato_scade } : {}),
+        pagamento: { stato: r.pagamento, ...(r.pagato_fino ? { fino: r.pagato_fino } : {}) },
+        quote: r.quote.map((q) => ({ ...(q.dal ? { dal: q.dal } : {}), ...(q.al ? { al: q.al } : {}), mancano: q.mancano })),
+        corsi: r.corsi,
+      }))
+    },
+    async registro(dal: string, al: string) {
+      const righe = ok(await tutteLeRighe((da: number, a: number) => db.rpc('chat_registro', { dal, al, sale }).order('inizio').order('sessione_id').order('chiave').range(da, a))) as Array<{
+        sessione_id: string; corso_id: string; corso: string; inizio: string; stato: 'prevista' | 'svolta' | 'annullata'
+        chiave: string | null; nome: string | null; cognome: string | null; eta: 'adulto' | 'minore' | 'non_si_sa' | null; presenza: 'presente' | 'assente' | 'giustificato' | null
+      }>
+      return righe.map((r) => ({ sessioneId: r.sessione_id, corsoId: r.corso_id, corso: r.corso, inizio: r.inizio, stato: r.stato, chiave: r.chiave, nome: r.nome, cognome: r.cognome, eta: r.eta, presenza: r.presenza }))
+    },
+    async prove(dal: string, al: string) {
+      const righe = ok(await db.rpc('chat_prove', { dal, al })) as Array<{ sessione_id: string; corso_id: string; inizio: string; prove: number }>
+      return righe.map((r) => ({ sessioneId: r.sessione_id, corsoId: r.corso_id, inizio: r.inizio, prove: r.prove }))
     },
     registra: async (dati: Record<string, unknown>) => {
       const r = ok(await db.rpc('registra_movimento_dalla_chat', { dati })) as MovimentoScritto

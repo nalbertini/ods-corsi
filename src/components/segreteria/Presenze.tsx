@@ -4,26 +4,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
 import { Guaio, Riga, Testa, useCarica } from './comune'
 import { mesi } from '../../lib/ore'
-
-/** «Chi si sta perdendo»: tante assenze di fila, negli appelli fatti. */
-const DI_FILA = 3
-
-const conAppello = (r: RigaRegistro) => r.appello.some((p) => p.stato !== null)
-/** Presenti su lezioni dovute: i giustificati non contano né sopra né sotto. */
-function conto(righe: RigaRegistro[]) {
-  let presenti = 0
-  let dovute = 0
-  for (const r of righe) {
-    if (r.stato === 'annullata' || !conAppello(r)) continue
-    for (const p of r.appello) {
-      if (p.stato === 'giustificato') continue
-      dovute++
-      if (p.stato === 'presente') presenti++
-    }
-  }
-  return { presenti, dovute }
-}
-const percento = (x: { presenti: number; dovute: number }) => (x.dovute ? Math.round((100 * x.presenti) / x.dovute) : null)
+import { chiSiStaPerdendo, conAppello, conto, DI_FILA, percento } from '../../lib/frequenza'
 
 /** Il registro del mese in un foglio da aprire con Excel: punto e virgola e BOM, come i fogli che si importano. */
 function scaricaCsv(righe: RigaRegistro[], nome: string) {
@@ -96,28 +77,7 @@ export function Presenze({ d, onVai, senzaAppello }: { d: DatiSegreteria; onVai:
     .filter((b) => b.pc !== null)
     .sort((a, b) => b.pc! - a.pc! || a.nome.localeCompare(b.nome, 'it'))
 
-  const persi = useMemo(() => {
-    const perPersona = new Map<string, { nome: string; segni: Array<{ stato: string | null; corso: string; inizio: string }> }>()
-    for (const r of [...(recenti.dato ?? [])].sort((a, b) => a.inizio.localeCompare(b.inizio))) {
-      if (r.stato === 'annullata' || !conAppello(r)) continue
-      if (corso && r.corsoId !== corso) continue
-      for (const x of r.appello) {
-        if (x.stato === 'giustificato') continue
-        const v = perPersona.get(x.personaId) ?? { nome: `${x.cognome} ${x.nome}`, segni: [] }
-        v.segni.push({ stato: x.stato, corso: r.corso, inizio: r.inizio })
-        perPersona.set(x.personaId, v)
-      }
-    }
-    return [...perPersona.entries()]
-      .map(([id, v]) => {
-        let fila = 0
-        for (let i = v.segni.length - 1; i >= 0 && v.segni[i].stato !== 'presente'; i--) fila++
-        const ultima = [...v.segni].reverse().find((s) => s.stato === 'presente')
-        return { id, nome: v.nome, fila, corsi: [...new Set(v.segni.slice(-fila).map((s) => s.corso))], ultima: ultima?.inizio }
-      })
-      .filter((x) => x.fila >= DI_FILA)
-      .sort((a, b) => b.fila - a.fila || a.nome.localeCompare(b.nome, 'it'))
-  }, [recenti.dato, corso])
+  const persi = useMemo(() => chiSiStaPerdendo(recenti.dato ?? [], corso), [recenti.dato, corso])
 
   return (
     <>
