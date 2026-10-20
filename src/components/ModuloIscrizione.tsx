@@ -881,7 +881,7 @@ export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { no
   if (!letto) return null
   const s = stimaIscrizione({ chi: nome || 'Chi si iscrive', corsi, formula }, abbonamenti, chiaveGiorno(new Date()), letto.listino)
   // Senza nome il bonifico arriverebbe senza: la causale aspetta che lo si scriva.
-  const testo = nome ? causale(nome, cognome, corsi.map((c) => c.nome)) : null
+  const testo = nome && cognome ? causale(nome, cognome, corsi.map((c) => c.nome)) : null
   const copia = (cosa: string, valore: string) =>
     navigator.clipboard?.writeText(valore).then(
       () => {
