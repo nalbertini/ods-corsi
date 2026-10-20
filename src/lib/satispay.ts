@@ -25,7 +25,7 @@ export interface PagamentoSatispay {
   stato: StatoSatispay
   creatoIl: string
   pagatoIl?: string
-  /** La ricevuta in cui è entrato: da lì conta solo la ricevuta. */
+  /** La ricevuta valida in cui è entrato: da lì conta solo la ricevuta. Annullata, non c'è più. */
   ricevutaId?: string
   /** La scheda della richiesta accolta. */
   personaId?: string

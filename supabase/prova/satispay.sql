@@ -171,6 +171,10 @@ select satispay_prepara('eeeeeeee-0000-0000-0000-000000000002') as sara_ancora \
 select atteso('dopo un pagamento non andato: una riga nuova, in attesa',
   ((:'sara_ancora'::jsonb->>'id') <> (:'sara'::jsonb->>'id'))::text || ' ' || (:'sara_ancora'::jsonb->>'stato'), 'true attesa');
 reset role;
+select satispay_creato((:'sara_ancora'::jsonb->>'id')::uuid, 'SP-4', 'https://online.satispay.com/pay/SP-4');
+select satispay_creato((:'sara_ancora'::jsonb->>'id')::uuid, 'SP-falso', 'https://altrove');
+select atteso('satispay_creato una seconda volta non riscrive id e link',
+  (select satispay_id || ' ' || link from pagamenti_satispay where id = (:'sara_ancora'::jsonb->>'id')::uuid), 'SP-4 https://online.satispay.com/pay/SP-4');
 select atteso('satispay_stato: quello in attesa, non quello andato male', satispay_stato('eeeeeeee-0000-0000-0000-000000000002')->>'stato', 'attesa');
 select atteso('satispay_stato: Paolo è pagato', satispay_stato('eeeeeeee-0000-0000-0000-000000000001')->>'stato', 'pagato');
 select atteso('satispay_stato: senza pagamenti, niente', coalesce(satispay_stato('eeeeeeee-0000-0000-0000-000000000003')::text, 'niente'), 'niente');
@@ -252,6 +256,11 @@ select atteso('Satispay nella ricevuta per 400 € invece di 450 €: no',
   tenta(format($$select emetti_ricevuta_satispay(%L::jsonb, %L::uuid)::text$$, ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000005', 0, 40000), :'pagato_paolo')), 'NEGATO: …');
 select atteso('la ricevuta per un''altra persona: no',
   tenta(format($$select emetti_ricevuta_satispay(%L::jsonb, %L::uuid)::text$$, ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000006'), :'pagato_paolo')), 'NEGATO: …');
+select atteso('Satispay nella ricevuta per 500 € su 450 arrivati: no',
+  tenta(format($$select emetti_ricevuta_satispay(%L::jsonb, %L::uuid)::text$$, ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000005', 5000, 45000), :'pagato_paolo')), 'NEGATO: …');
+select atteso('400 € Satispay e 50 € in contanti su 450 arrivati: no',
+  tenta(format($$select emetti_ricevuta_satispay(%L::jsonb, %L::uuid)::text$$,
+    jsonb_set(ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000005', 5000, 40000), '{voci,0,pagamenti,0,metodo}', '"Contanti"'), :'pagato_paolo')), 'NEGATO: …');
 select atteso('e nessuna ricevuta fatta', (select count(*)::text from ricevute), '0');
 select emetti_ricevuta_satispay(ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000005'), :'pagato_paolo') as fatta \gset
 select atteso('la ricevuta giusta: fatta, col totale pagato', (:'fatta'::jsonb->>'pagato'), '45000');

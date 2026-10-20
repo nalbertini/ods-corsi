@@ -176,11 +176,15 @@ console.log('\n4b. in RICHIESTE ONLINE: il segno e cosa fare')
 console.log('\n4c. la ricevuta col pagamento Satispay dentro')
 {
   const suo = { ...pagato, personaId: 'p-Bianchi' }
-  ok('il pagamento da usare: arrivato, di questa persona, non ancora in ricevuta', prova(() => s.satispayDaUsare([inAttesa, { ...inRicevuta }, suo, { ...pagato, id: 'sp9', personaId: 'p-Altro' }], 'p-Bianchi')?.id), 'sp1')
+  ok('il pagamento da usare: arrivato, di questa persona, non ancora in ricevuta', prova(() => s.satispayDaUsare([{ ...pagato, id: 'sp9', personaId: 'p-Altro' }, inAttesa, { ...inRicevuta }, suo], 'p-Bianchi')?.id), 'sp1')
+  ok('quello di un altro non si propone', prova(() => s.satispayDaUsare([{ ...pagato, id: 'sp9', personaId: 'p-Altro' }], 'p-Bianchi')), undefined)
   ok('nessuno da usare', prova(() => s.satispayDaUsare([inAttesa, inRicevuta], 'p-Bianchi')), undefined)
   const voce = (importo, metodo) => ({ descrizione: 'Annuale Judo adulti', quantita: 1, prezzo: 23000, pagamenti: importo ? [{ data: '2026-10-20', importo, metodo }] : [] })
   ok('pagato con Satispay quanto è arrivato: va', prova(() => s.cosaNonVaSatispay([voce(5000, 'Satispay'), voce(18000, 'Satispay')], suo)), null)
   ok('meno di quanto è arrivato: lo dice', prova(() => s.cosaNonVaSatispay([voce(20000, 'Satispay')], suo)), 'Con Satispay sono arrivati 230\u00a0€: nel pagato di questa ricevuta ce ne sono 200\u00a0€')
+  ok('più di quanto è arrivato: lo dice', prova(() => s.cosaNonVaSatispay([voce(25000, 'Satispay')], suo)), 'Con Satispay sono arrivati 230\u00a0€: nel pagato di questa ricevuta ce ne sono 250\u00a0€')
+  ok('un po’ Satispay e un po’ contanti: contano solo i Satispay', prova(() => s.cosaNonVaSatispay([voce(20000, 'Satispay'), voce(3000, 'Contanti')], suo)), 'Con Satispay sono arrivati 230\u00a0€: nel pagato di questa ricevuta ce ne sono 200\u00a0€')
+  ok('tutto Satispay e in più contanti: va', prova(() => s.cosaNonVaSatispay([voce(23000, 'Satispay'), voce(5000, 'Contanti')], suo)), null)
   ok('niente pagato: lo dice', prova(() => s.cosaNonVaSatispay([voce(0, 'Satispay')], suo)), 'Con Satispay sono arrivati 230\u00a0€: nel pagato di questa ricevuta ce ne sono 0\u00a0€')
 }
 
@@ -254,6 +258,15 @@ console.log('\n7. in prova: paga finge l’approvazione, con l’importo della s
   ok('quella giusta: fatta', await aspetta(async () => typeof (await seg.emettiRicevuta(ricevuta(stima.totale), sp.id)).id), 'string')
   ok('e il pagamento ora è nella ricevuta: non è più un incasso a parte', prova(() => s.righeSatispay(p.pagamentiSatispayProva(), () => '').length), 0)
   ok('una seconda volta: no', await aspetta(async () => { await seg.emettiRicevuta(ricevuta(stima.totale), sp.id); return 'fatta' }), 'ERRORE: Questo pagamento Satispay è già in una ricevuta')
+
+  // La ricevuta si annulla: i soldi arrivati tornano un incasso a parte, e possono entrare in quella giusta.
+  const prima = (await aspetta(() => seg.ricevute(personaId))).find?.((x) => !x.annullataIl)
+  await aspetta(() => seg.annullaRicevuta(prima.id))
+  const libero = (await aspetta(() => seg.pagamentiSatispay())).find?.((x) => x.id === sp.id)
+  ok('ricevuta annullata: il pagamento non è più in una ricevuta', libero?.ricevutaId, undefined)
+  ok('e torna fra i pagamenti', prova(() => s.righeSatispay([libero], () => '').length), 1)
+  ok('e si propone per la ricevuta nuova', prova(() => s.satispayDaUsare([libero], personaId)?.id), sp.id)
+  ok('la ricevuta rifatta: fatta', await aspetta(async () => typeof (await seg.emettiRicevuta(ricevuta(stima.totale), sp.id)).id), 'string')
 }
 
 if (guai) {

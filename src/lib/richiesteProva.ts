@@ -41,13 +41,20 @@ const DOVE_SATISPAY = 'ods-corsi:prova-satispay'   // vedi la nota in coda.ts
 /**
  * I pagamenti Satispay di prova, come `pagamenti_satispay`: li legge anche la
  * segreteria di prova, con la scheda della richiesta quando è stata accolta.
+ * `ricevutaId` c'è solo se quella ricevuta vale: annullata, i soldi tornano
+ * liberi, come in `emetti_ricevuta_satispay`.
  */
 export function pagamentiSatispayProva(): PagamentoSatispay[] {
   try {
     const p: PagamentoSatispay[] = JSON.parse(localStorage.getItem(DOVE_SATISPAY) ?? '[]')
     if (!Array.isArray(p)) return []
     const richieste = leggi()
-    return p.map((x) => ({ ...x, personaId: richieste.find((r) => r.id === x.richiestaId && r.stato === 'accolta')?.personaId }))
+    const valide = new Set((archivio.dati.ricevute ?? []).filter((r) => !r.annullataIl).map((r) => r.id))
+    return p.map((x) => ({
+      ...x,
+      personaId: richieste.find((r) => r.id === x.richiestaId && r.stato === 'accolta')?.personaId,
+      ricevutaId: x.ricevutaId && valide.has(x.ricevutaId) ? x.ricevutaId : undefined,
+    }))
   } catch {
     return []
   }
