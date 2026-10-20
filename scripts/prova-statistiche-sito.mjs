@@ -29,6 +29,30 @@ const impacchetta = async (file) => {
   return import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 }
 const leggi = (f) => (existsSync(f) ? readFileSync(f, 'utf8') : '')
+// Il sorgente senza commenti (// e /* */), lasciando stare le stringhe: una regola commentata non deve passare.
+const senzaCommenti = (t) => {
+  let fuori = ''
+  let virgolette = null
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i]
+    if (virgolette) {
+      fuori += c
+      if (c === '\\') fuori += t[++i] ?? ''
+      else if (c === virgolette) virgolette = null
+    } else if (c === '/' && t[i + 1] === '/') {
+      while (i < t.length && t[i] !== '\n') i++
+      fuori += '\n'
+    } else if (c === '/' && t[i + 1] === '*') {
+      const fine = t.indexOf('*/', i + 2)
+      i = fine < 0 ? t.length : fine + 1
+      fuori += ' '
+    } else {
+      if (c === "'" || c === '"' || c === '`') virgolette = c
+      fuori += c
+    }
+  }
+  return fuori
+}
 const prova = (f) => {
   try {
     return f()
@@ -128,6 +152,24 @@ ok('i tocchi non vanno persi: il totale resta', st && [st.iscriviti, st.chiama],
 ok('si spartiscono sui mesi come le visite (1 a 3)', st.mesi?.map((x) => [x.iscriviti, x.chiama]), [[3, 1], [7, 2]])
 ok('e i numeri dicono che i mesi sono stimati', st.stimati, true)
 ok('con i giorni non sono stimati', r.stimati, undefined)
+// 100 e 300 visite; Iscriviti 10 → 3 e 7 (2,5 e 7,5: a parità il mese prima), Chiama 3 → 1 e 2 (0,75 e 2,25).
+ok('le visite dei mesi senza i tocchi spartiti (100−3−1, 300−7−2)', st.mesi?.map((x) => x.visite), [96, 291])
+ok('… e il totale delle visite senza i 13 tocchi', st.visite, 387)
+
+console.log('Le prime cinque, anche se GoatCounter le dà in disordine')
+const disordine = prova(() =>
+  N.riassumi(
+    {},
+    { hits: [pagina('/contatti', 'Contatti', 20), pagina('/', 'Home', 300), pagina('/chi-siamo', 'Chi siamo', 10), pagina('/orari', 'Orari', 70), pagina('/corsi', 'I corsi', 120), pagina('/corsi/karate', 'Karate', 50), pagina('/corsi/judo', 'Judo', 90)] },
+    { hits: [{ name: 'Bing', count: 8 }, { name: 'Ecosia', count: 2 }, { name: 'Google', count: 150 }, { name: 'DuckDuckGo', count: 4 }, { name: 'Facebook', count: 30 }, { name: 'Pagine Gialle', count: 6 }, { name: 'Instagram', count: 60 }] },
+    '2027-01-01',
+    '2027-01-31',
+  ),
+)
+ok('le 5 pagine escono dalla più letta', disordine.pagine?.map((p) => p.visite), [300, 120, 90, 70, 50])
+ok('«Altre pagine» prende le due più piccole', disordine.altrePagine, { quante: 2, visite: 30 })
+ok('le 5 provenienze escono dalla più grande (Google prima di Bing)', disordine.provenienze?.map((p) => p.nome), ['Google', 'Instagram', 'Facebook', 'Bing', 'Pagine Gialle'])
+ok('«Altre provenienze» prende le due più piccole', disordine.altreProvenienze, { quante: 2, visite: 6 })
 
 console.log('Più di 100 voci: le pagine seguenti')
 const pag1 = { hits: [{ ...pagina('/', 'Home', 50), path_id: 1 }, { ...pagina('/corsi', 'I corsi', 40), path_id: 2 }], more: true }
@@ -154,6 +196,10 @@ const iStaff = fn.indexOf("eq('ruolo', 'staff')")
 const i403 = fn.indexOf(', 403)')
 const iChiave = fn.indexOf("Deno.env.get('GOATCOUNTER_CHIAVE')")
 ok('prima si guarda chi chiama, poi si prende la chiave', iStaff > 0 && i403 > iStaff && iChiave > i403, true)
+const fnCodice = senzaCommenti(fn)
+ok('senza la segreteria risponde 403 (nel codice, non in un commento)', /\bif\s*\(\s*!staff\s*\)\s*return\s+no\([^)]*,\s*403\s*\)/.test(fnCodice), true)
+ok('il filtro sul ruolo staff è nel codice, non in un commento', /\.eq\(\s*'ruolo'\s*,\s*'staff'\s*\)/.test(fnCodice), true)
+ok('… e quello sulla persona attiva', /\.eq\(\s*'attiva'\s*,\s*true\s*\)/.test(fnCodice), true)
 ok('fino a 3 pagine di voci, non di più', /PAGINE_MASSIME = 3\b/.test(fn), true)
 
 console.log('Le regole dell’app')
@@ -244,6 +290,9 @@ ok('il componente c’è', existsSync('src/components/segreteria/StatisticheSito
 const comp = leggi('src/components/segreteria/StatisticheSito.tsx')
 ok('il componente non importa da Statistiche.tsx (niente giro di import)', /from '\.\/Statistiche'/.test(comp), false)
 ok('il componente non tiene regole di lettura sue', /new Map|puoAggiornare\(|MEMORIA_MS/.test(comp), false)
+const compCodice = senzaCommenti(comp)
+ok('la memoria si crea una volta sola, fuori dal componente', [(compCodice.match(/\bcreaMemoria\(/g) ?? []).length, /^const memoria = creaMemoria\(\)/m.test(compCodice), compCodice.indexOf('creaMemoria()') < compCodice.indexOf('export function StatisticheSito')], [1, true, true])
+ok('si legge solo quando la memoria dice «leggi»', /\bif\s*\(\s*cosa\.cosa\s*===\s*'leggi'\s*\)\s*\{/.test(compCodice), true)
 ok('l’errore è il Guaio di comune.tsx, col titolo', /<Guaio[^>]*titolo=/.test(comp), true)
 
 console.log(guai ? `\n${guai} prove non passano` : '\nTutto a posto')
