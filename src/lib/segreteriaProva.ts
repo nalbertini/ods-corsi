@@ -20,7 +20,8 @@ const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
-import { richiesteContateProva, richiesteDi, spostaRichieste } from './richiesteProva'
+import { cosaNonVaSatispay, satispayPerPersona } from './satispay'
+import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
@@ -644,6 +645,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async persone() {
       potaCertificati()
+      const conSatispay = satispayPerPersona(pagamentiSatispayProva())
       return a()
         .persone.filter((p) => p.ruolo === 'iscritto')
         .map(
@@ -663,6 +665,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             documento: !!p.documento,
             pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
+            satispay: conSatispay.get(p.id),
             nucleo: p.nucleo,
             natoIl: anagraficaDi(p.id)?.dati.natoIl,
           }),
@@ -1009,7 +1012,16 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
-    async emettiRicevuta(dati) {
+    async emettiRicevuta(dati, satispayId) {
+      // Come `emetti_ricevuta_satispay`, prima della ricevuta: un pagamento arrivato, una ricevuta sola, gli stessi soldi.
+      if (satispayId) {
+        const sp = pagamentiSatispayProva().find((x) => x.id === satispayId)
+        if (sp?.stato !== 'pagato') throw new Error('Questo pagamento Satispay non è arrivato')
+        if (sp.ricevutaId) throw new Error('Questo pagamento Satispay è già in una ricevuta')
+        if (!sp.personaId || sp.personaId !== dati.personaId) throw new Error('Il pagamento Satispay è di un’altra persona: accogli prima la sua richiesta')
+        const no = cosaNonVaSatispay(dati.voci, sp)
+        if (no) throw new Error(no)
+      }
       if (dati.personaId) persona(dati.personaId)
       const r = { ...dati, intestatario: pulisciIntestatario(dati.intestatario), note: dati.note?.trim() || undefined }
       const no = cosaNonVa(r)
@@ -1027,7 +1039,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const nuova: Ricevuta = { ...resto, voci, id: `r-${unico()}`, anno, numero, totale: c.totale, pagato: c.pagato, creataIl: new Date().toISOString() }
       a().ricevute = [...tutte, nuova]
       salva()
+      if (satispayId) salvaSatispay(pagamentiSatispayProva().map((x) => (x.id === satispayId ? { ...x, ricevutaId: nuova.id } : x)))
       return nuova
+    },
+
+    async pagamentiSatispay() {
+      return pagamentiSatispayProva()
     },
 
     async annullaRicevuta(id) {
@@ -1304,7 +1321,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (!cassa) throw new Error('Scegli la cassa')
       const nota = d.nota?.trim() || undefined
       // Gli incassi in contanti si ricavano da ricevute e pagamenti a mano, come nell'elenco della schermata.
-      const elenco = elencoMovimenti(a().ricevute ?? [], a().pagamentiDiretti ?? [], [], casse, movimenti, voci)
+      const elenco = elencoMovimenti(a().ricevute ?? [], a().pagamentiDiretti ?? [], [], casse, movimenti, voci, pagamentiSatispayProva())
       const previsto = previstoCassa(casse, elenco, cassa.id, d.data)
       const troppo = cosaNonVaPrevisto(previsto, d.contato)
       if (troppo) throw new Error(troppo)
@@ -1477,7 +1494,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async richiesteDaDove(da, fino) {
-      // Come richieste_da_dove() di 73-provenienza-richieste.sql: le righe del periodo raggruppate, e da quando si conta.
+      // Come richieste_da_dove() di 74-provenienza-richieste.sql: le righe del periodo raggruppate, e da quando si conta.
       const contate = richiesteContateProva()
       const dal = chiaveGiorno(da)
       const al = chiaveGiorno(fino)

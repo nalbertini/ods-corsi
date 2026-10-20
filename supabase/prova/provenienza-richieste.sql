@@ -1,4 +1,4 @@
--- Da dove arrivano le richieste di iscrizione (73-provenienza-richieste.sql).
+-- Da dove arrivano le richieste di iscrizione (74-provenienza-richieste.sql).
 --
 -- Il link al modulo porta un'etichetta (`?da=home`, `?da=corso-karate`…) e il
 -- modulo chiede, facoltativo, «Come ci hai conosciuto?» con otto scelte chiuse.
@@ -14,7 +14,7 @@
 -- Le stesse regole, nella metà di prova, le rifà `src/lib/richiesteProva.ts`
 -- (scripts/prova-richieste.mjs).
 -- Si lancia dopo finto-supabase.sql e i file dello schema; a metà rilancia
--- 73-provenienza-richieste.sql, per vedere che si può rilanciare.
+-- 74-provenienza-richieste.sql, per vedere che si può rilanciare.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -234,7 +234,7 @@ select atteso('e le loro righe non sono più legate a niente', (select count(*):
 
 \echo ''
 \echo '--- 7. si rilancia senza perdere niente ---'
-\ir ../73-provenienza-richieste.sql
+\ir ../74-provenienza-richieste.sql
 select atteso('i conteggi ci sono ancora', (select count(*)::text from richieste_contate), '5');
 select atteso('dal link della segreteria', manda('{"provenienza": "segreteria"}'), 'segreteria|—');
 select atteso('e il trigger c''è una volta sola: una richiesta nuova, una riga', (select count(*)::text from richieste_contate where provenienza = 'segreteria'), '1');

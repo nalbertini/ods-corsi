@@ -7,13 +7,15 @@ import { CONOSCIUTO, domandaConosciuto, origineDellaRichiesta, pulisciConosciuto
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
 import { altriAperti, corsiPerEta, testoAltriCorsi, type CorsoPerEta, type CorsoRef } from '../lib/listino'
-import { causale, stimaIscrizione, type Abbonamento } from '../lib/nucleo'
+import { causale, stimaIscrizione, type Abbonamento, type Stima } from '../lib/nucleo'
 import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import { useListino } from './Costi'
 import type { SceltaModulo } from '../lib/firma'
 import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
+import { chiedeRicevuta, comePuoiPagare, cosaNonVaModo, ERRORE_SATISPAY, modoPagamento, nonSemplice, senzaVoceDelCorso, soldi, type Pago } from '../lib/satispay'
+import { PagamentoOnline, ricordaPromemoria } from './PagamentoOnline'
 
 /**
  * Il modulo di iscrizione: le domande che prima stavano su Google Form, e i
@@ -95,7 +97,7 @@ const ID: Record<CampoModulo, string> = {
 /** Le caselle del foglio: finché non si sceglie, nessuna. */
 type Scelte = { [K in keyof SceltaModulo]?: boolean }
 
-type Fase = { tipo: 'compila' } | { tipo: 'invio'; passo: string } | { tipo: 'file'; id: string; mancati: TipoFile[]; perche: string } | { tipo: 'fatto' }
+type Fase = { tipo: 'compila' } | { tipo: 'invio'; passo: string } | { tipo: 'file'; id: string; mancati: TipoFile[]; perche: string } | { tipo: 'fatto' } | { tipo: 'paga'; id: string; guaio?: string }
 
 export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZIONI' }: { onChiudi: () => void; nucleo?: PerIlNucleo; torna?: string }) {
   const [d, setD] = useState<DatiRichieste | null>(null)
@@ -125,6 +127,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   // I campi già lasciati, e se si è già provato a mandare: prima, niente rosso.
   const [visti, setVisti] = useState<ReadonlySet<CampoModulo>>(new Set())
   const [provato, setProvato] = useState(false)
+  const [pago, setPago] = useState<Pago | null>(null)
+  const [satispayAttivo, setSatispayAttivo] = useState(false)
 
   // Finché il modulo è aperto ha l'aspetto del sito, non quello del tema dell'app.
   useEffect(() => apriAspettoModulo(), [])
@@ -135,6 +139,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       .then((x) => {
         if (!vivo) return
         setD(x)
+        // Dal nucleo di un iscritto si paga come prima: Satispay è del modulo pubblico.
+        if (!nucleo) void x.satispayAttivo().then((a) => vivo && setSatispayAttivo(a))
         return x.corsiAperti().then((c) => vivo && setCorsi(c))
       })
       .catch((e) => vivo && setGuaioCorsi(e instanceof Error ? e.message : 'Il server non risponde'))
@@ -181,7 +187,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const firmatario = minore ? `${(b.genitoreNome ?? '').trim()} ${(b.genitoreCognome ?? '').trim()}`.trim() : `${b.nome.trim()} ${b.cognome.trim()}`.trim()
   const foglio = MODULI[minore ? 1 : 0]
   // I corsi giusti per l'anno di nascita prima, gli altri dopo: si sceglie senza tornare al listino.
-  const listino = useListino()?.listino
+  const letto = useListino()
+  const listino = letto?.listino
   const perEta = corsiPerEta(corsi ?? [], listino?.corsi ?? [], natoIl, listino?.senzaPrezzoVaBene)
   const fuoriEta = perEta.altri.filter((c) => b.corsi.includes(c.id)).map((c) => c.nome)
   const altriVisibili = altriAperti(altriApertiAMano, perEta.altri, b.corsi)
@@ -200,9 +207,20 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     natoIl,
     (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
   )
-  const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo))
-  /** Dalla pagina pubblica (senza `nucleo`) si paga prima: la ricevuta è obbligatoria. */
-  const obbligatori = fileObbligatori(daChiedere, !nucleo)
+  const scelti = (corsi ?? []).filter((c) => b.corsi.includes(c.id))
+  // Quanto si paga, come lo calcolerà il database (`importo_iscrizione`): la stessa regola, lo stesso listino.
+  const stima = listino && !nucleo ? stimaIscrizione({ chi: b.nome, corsi: scelti, formula: b.formula }, [], chiaveGiorno(new Date()), listino) : null
+  // Satispay solo col listino della segreteria: con quello del foglio il database non ha un prezzo da chiedere.
+  const senzaPrezzo = stima && listino ? [...new Set([...stima.senzaPrezzo, ...senzaVoceDelCorso(scelti, listino)])] : []
+  const attivo = satispayAttivo && !!stima && !!letto?.cambiato
+  const complicato = attivo && listino && !senzaPrezzo.length ? nonSemplice(scelti, listino, fuoriEta) : null
+  const puoi = complicato ? ({ satispay: false, perche: complicato } as const) : comePuoiPagare(senzaPrezzo, attivo)
+  const modo = modoPagamento(pago, puoi, !!nucleo)
+  const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo) && (f.tipo !== 'ricevuta' || chiedeRicevuta(modo, !!nucleo)))
+  // I file di I FILE: il modulo ha la sua sezione, e la ricevuta del bonifico sta in IL PAGAMENTO (dal nucleo, qui come prima).
+  const fileQui = daChiedere.filter((f) => f.tipo !== 'modulo' && (f.tipo !== 'ricevuta' || !!nucleo))
+  // Col bonifico la ricevuta è obbligatoria (con Satispay non si chiede): come vuole anche `fileObbligatori` per la pagina pubblica.
+  const obbligatori = fileObbligatori(daChiedere, modo === 'bonifico')
 
   const errori = problemi(pronta)
   /** Cosa scrivere sotto un campo: «Manca» solo dopo aver provato a mandare. */
@@ -239,14 +257,15 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   }
 
   /** Cosa blocca l'invio adesso; il riquadro in fondo lo mostra dopo il primo tentativo e lo segue a ogni modifica. */
-  const blocco = mancaPerInviare({
+  const blocco =
+    mancaPerInviare({
     dati: pronta,
     privacy,
     come,
     firma: mancaPerFirmare(),
     file,
     obbligatori,
-  })
+    }) ?? (stima && scelti.length ? cosaNonVaModo(modo, !!nucleo, !!file.ricevuta) : null)
   /** Le note sotto le scelte: dopo un tentativo di mandare, o di guardare il modulo. */
   const provatoFirma = provato || guaioFirma !== null
   const riquadro = provato ? blocco ?? guaio : null
@@ -309,6 +328,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       }
     }
     setFase(mancati.length ? { tipo: 'file', id, mancati, perche } : { tipo: 'fatto' })
+    return !mancati.length
   }
 
   const manda = async (e: FormEvent) => {
@@ -345,8 +365,45 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       setFase({ tipo: 'compila' })
       return setGuaio(e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco')
     }
-    await carica(id, daChiedere.map((f) => f.tipo), tutti)
+    const tuttiArrivati = await carica(id, daChiedere.map((f) => f.tipo), tutti)
+    if (modo === 'satispay' && tuttiArrivati && d) await vaiASatispay(d, id)
   }
+
+  /** Dopo l'invio: il pagamento Satispay, e via nell'app. Se non parte, la pagina del pagamento dice perché e fa riprovare. */
+  const vaiASatispay = async (x: DatiRichieste, id: string) => {
+    setFase({ tipo: 'invio', passo: 'Apro Satispay…' })
+    // L'indirizzo per tornare a pagare dopo: la pagina del pagamento lo apre da sola.
+    const u = new URL(window.location.href)
+    u.searchParams.set('pagamento', id)
+    history.replaceState(null, '', u)
+    if (promemoriaCertificato) ricordaPromemoria(id, [promemoriaCertificato])
+    try {
+      const r = await x.paga(id)
+      if (r && 'link' in r) return window.location.assign(r.link)
+      if (r) return setFase({ tipo: 'paga', id })
+      // Il servizio si è spento dopo l'invio: la pagina del pagamento lo dice, e si riprova.
+      setFase({ tipo: 'paga', id, guaio: ERRORE_SATISPAY })
+    } catch (e) {
+      setFase({ tipo: 'paga', id, guaio: e instanceof Error ? e.message : undefined })
+    }
+  }
+
+  // Il certificato da portare: lo dice la pagina finale, con o senza Satispay.
+  const promemoriaCertificato =
+    certificato !== 'nessuno' && !file.certificato
+      ? `Ricorda di consegnare in segreteria il certificato medico${certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.`
+      : null
+
+  if (fase.tipo === 'paga')
+    return (
+      <PagamentoOnline
+        richiestaId={fase.id}
+        chi={`${b.nome.trim()} ${b.cognome.trim()}`}
+        guaioIniziale={fase.guaio}
+        promemoria={promemoriaCertificato ? [promemoriaCertificato] : []}
+        onChiudi={onChiudi}
+      />
+    )
 
   if (fase.tipo === 'fatto') {
     return (
@@ -355,12 +412,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         <span className="esito-testo">
           Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
         </span>
-        {certificato !== 'nessuno' && !file.certificato && (
-          <span className="esito-testo">
-            Ricorda di consegnare in segreteria il certificato medico{certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.
-          </span>
-        )}
-        {!file.ricevuta && <span className="esito-testo">Non hai caricato la ricevuta: paga in segreteria, o portala lì se hai già pagato.</span>}
+        {promemoriaCertificato && <span className="esito-testo">{promemoriaCertificato}</span>}
+        {!file.ricevuta && !modo && <span className="esito-testo">Non hai caricato la ricevuta: paga in segreteria, o portala lì se hai già pagato.</span>}
         <Tasto onClick={onChiudi}>{torna}</Tasto>
       </div>
     )
@@ -377,7 +430,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         {fase.mancati.map((t) => (
           <SceltaFile key={t} tipo={t} file={file[t]} onFile={(f) => setFile((p) => ({ ...p, [t]: f }))} />
         ))}
-        <Tasto variante="principale" onClick={() => void carica(fase.id, fase.mancati)}>
+        <Tasto variante="principale" onClick={() => void carica(fase.id, fase.mancati).then((ok) => (ok && modo === 'satispay' && d ? vaiASatispay(d, fase.id) : undefined))}>
           RIPROVA
         </Tasto>
         <Dettaglio>Si può riprovare per un'ora. Se non va, {nucleo ? 'porta i fogli in segreteria' : 'chiama la segreteria'}.</Dettaglio>
@@ -573,15 +626,38 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             onScegli={(f) => setB({ ...b, formula: f as DatiRichiesta['formula'] })}
           />
         </div>
-        {/* Sulla pagina pubblica la ricevuta è obbligatoria: quanto e come pagare stanno qui, non solo nella pagina dei prezzi. */}
-        <QuantoCosta
-          nome={b.nome.trim()}
-          cognome={b.cognome.trim()}
-          corsi={(corsi ?? []).filter((c) => b.corsi.includes(c.id))}
-          formula={b.formula}
-          abbonamenti={nucleo?.abbonamenti ?? []}
-        />
+        {/* Sulla pagina pubblica quanto e come pagare stanno in IL PAGAMENTO; dal nucleo, qui come prima. */}
+        {nucleo && (
+          <QuantoCosta
+            nome={b.nome.trim()}
+            cognome={b.cognome.trim()}
+            corsi={(corsi ?? []).filter((c) => b.corsi.includes(c.id))}
+            formula={b.formula}
+            abbonamenti={nucleo.abbonamenti}
+          />
+        )}
       </Sezione>
+
+      {!nucleo && stima && scelti.length > 0 && (
+        <Sezione titolo="IL PAGAMENTO">
+          <IlPagamento
+            stima={stima}
+            modo={modo}
+            puoi={puoi}
+            onModo={setPago}
+            causale={causale(b.nome.trim(), b.cognome.trim(), scelti.map((c) => c.nome))}
+            ricevuta={
+              <SceltaFile
+                tipo="ricevuta"
+                file={file.ricevuta}
+                dettaglio="Una foto, lo screenshot o il PDF."
+                onFile={(x) => setFile((p) => ({ ...p, ricevuta: x }))}
+                facoltativo={false}
+              />
+            }
+          />
+        </Sezione>
+      )}
 
       <Sezione titolo="IL MODULO">
         <div className="modulo-campo modulo-largo">
@@ -703,13 +779,14 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         )}
       </Sezione>
 
+      {fileQui.length > 0 || certificato !== 'nessuno' ? (
       <Sezione titolo="I FILE">
         {certificato !== 'nessuno' && (
           <div className="modulo-campo modulo-largo">
             <Dettaglio tono="avviso">{avvisoCertificato(certificato)}</Dettaglio>
           </div>
         )}
-        {daChiedere.filter((f) => f.tipo !== 'modulo').map((f) => (
+        {fileQui.map((f) => (
           <SceltaFile
             key={f.tipo}
             tipo={f.tipo}
@@ -720,6 +797,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
           />
         ))}
       </Sezione>
+      ) : null}
 
       <Sezione titolo="ALTRO">
         {/* Dall'area iscritti no: la palestra la conoscono già. */}
@@ -777,7 +855,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
           </div>
         )}
         <Tasto variante="principale" type="submit" disabled={inVolo || !d}>
-          {inVolo ? fase.passo.toUpperCase() : 'MANDA LA RICHIESTA'}
+          {inVolo ? fase.passo.toUpperCase() : modo === 'satispay' ? 'MANDA E PAGA CON SATISPAY' : 'MANDA LA RICHIESTA'}
         </Tasto>
       </div>
     </form>
@@ -841,12 +919,15 @@ export function SceltaFile({
   onFile,
   facoltativo,
   dettaglio,
+  seManca,
 }: {
   tipo: TipoFile
   file?: File
   onFile: (f: File | undefined) => void
   facoltativo?: boolean
   dettaglio?: string
+  /** La parola accanto all'etichetta quando il file è facoltativo, se quella della lista non va qui. */
+  seManca?: string
 }) {
   const f = FILE.find((x) => x.tipo === tipo)!
   const [guaio, setGuaio] = useState<string | null>(null)
@@ -865,7 +946,7 @@ export function SceltaFile({
     <CaricaFile
       id={`m-file-${tipo}`}
       etichetta={f.etichetta}
-      seManca={(facoltativo ?? !f.obbligatorio) ? (f.seManca ?? 'FACOLTATIVO') : undefined}
+      seManca={(facoltativo ?? !f.obbligatorio) ? (seManca ?? f.seManca ?? 'FACOLTATIVO') : undefined}
       dettaglio={lavoro ? 'Preparo la foto…' : (dettaglio ?? f.dettaglio)}
       file={file && !lavoro ? { nome: file.name, byte: file.size } : undefined}
       errore={guaio}
@@ -882,11 +963,50 @@ export function SceltaFile({
  */
 export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: CorsoRef[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
   const letto = useListino()
-  const [copiato, setCopiato] = useState<string | null>(null)
   if (!letto) return null
   const s = stimaIscrizione({ chi: nome || 'Chi si iscrive', corsi, formula }, abbonamenti, chiaveGiorno(new Date()), letto.listino)
-  // Senza nome il bonifico arriverebbe senza: la causale aspetta che lo si scriva.
-  const testo = nome && cognome ? causale(nome, cognome, corsi.map((c) => c.nome)) : null
+  return (
+    <div className="modulo-campo modulo-largo">
+      <span className="modulo-etichetta">QUANTO COSTA</span>
+      <Riquadro stretto>
+        {corsi.length === 0 && <Dettaglio>Scegli i corsi per vedere quanto costa.</Dettaglio>}
+        <Conto s={s} />
+        {s.sconto && !s.sconto.qui && (
+          <Dettaglio>
+            Lo sconto famiglia va sull’annuale che costa meno nel nucleo: {s.sconto.corso} di {s.sconto.chi}, che l’ha già avuto o lo avrà in segreteria.
+          </Dettaglio>
+        )}
+        {formula === 'trimestre' && abbonamenti.length > 0 && <Dettaglio>Lo sconto famiglia vale sugli annuali, non sul trimestre.</Dettaglio>}
+        {s.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">Senza prezzo nel listino: {s.senzaPrezzo.join(', ')}. Lo dice la segreteria.</Dettaglio>}
+        <Dettaglio>È una stima dal listino: le altre offerte e l’importo giusto li conferma la segreteria.</Dettaglio>
+        {/* Senza nome il bonifico arriverebbe senza: la causale aspetta che lo si scriva. */}
+        <Bonifico causale={nome && cognome ? causale(nome, cognome, corsi.map((c) => c.nome)) : null} satispay />
+      </Riquadro>
+    </div>
+  )
+}
+
+/** Le righe del conto e il totale. */
+function Conto({ s }: { s: Stima }) {
+  return (
+    <ul className="stack stima">
+      {s.righe.map((r) => (
+        <li key={r.testo} className="row stima-riga" data-sconto={r.importo < 0 || undefined}>
+          <span className="grow">{r.testo}</span>
+          <span className="num">{r.importo < 0 ? '−' : ''}{euro(Math.abs(r.importo))} €</span>
+        </li>
+      ))}
+      <li className="row stima-riga stima-totale">
+        <span className="grow">Totale</span>
+        <span className="num">{euro(s.totale)} €</span>
+      </li>
+    </ul>
+  )
+}
+
+/** L'IBAN e la causale col nome, da copiare; col link fisso di Satispay dove il pagamento non si segna da solo. */
+function Bonifico({ causale: testo, satispay }: { causale: string | null; satispay?: boolean }) {
+  const [copiato, setCopiato] = useState<string | null>(null)
   const copia = (cosa: string, valore: string) =>
     navigator.clipboard?.writeText(valore).then(
       () => {
@@ -896,47 +1016,70 @@ export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { no
       () => {},
     )
   return (
-    <div className="modulo-campo modulo-largo">
-      <span className="modulo-etichetta">QUANTO COSTA</span>
-      <Riquadro stretto>
-        {corsi.length === 0 && <Dettaglio>Scegli i corsi per vedere quanto costa.</Dettaglio>}
-        <ul className="stack stima">
-          {s.righe.map((r) => (
-            <li key={r.testo} className="row stima-riga" data-sconto={r.importo < 0 || undefined}>
-              <span className="grow">{r.testo}</span>
-              <span className="num">{r.importo < 0 ? '−' : ''}{euro(Math.abs(r.importo))} €</span>
-            </li>
-          ))}
-          <li className="row stima-riga stima-totale">
-            <span className="grow">Totale</span>
-            <span className="num">{euro(s.totale)} €</span>
-          </li>
-        </ul>
-        {s.sconto && !s.sconto.qui && (
-          <Dettaglio>
-            Lo sconto famiglia va sull’annuale che costa meno nel nucleo: {s.sconto.corso} di {s.sconto.chi}, che l’ha già avuto o lo avrà in segreteria.
-          </Dettaglio>
-        )}
-        {formula === 'trimestre' && abbonamenti.length > 0 && <Dettaglio>Lo sconto famiglia vale sugli annuali, non sul trimestre.</Dettaglio>}
-        {s.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">Senza prezzo nel listino: {s.senzaPrezzo.join(', ')}. Lo dice la segreteria.</Dettaglio>}
+    <>
+      <Dettaglio>Bonifico a {PAGAMENTO.intestatario}:</Dettaglio>
+      <span className="num iban">{PAGAMENTO.iban}</span>
+      {testo ? (
         <Dettaglio>
-          È una stima dal listino: le altre offerte e l’importo giusto li conferma la segreteria. Bonifico a {PAGAMENTO.intestatario}:
+          Causale: <span className="testo-pieno">{testo}</span>
         </Dettaglio>
-        <span className="num iban">{PAGAMENTO.iban}</span>
-        {testo ? (
-          <Dettaglio>
-            Causale: <span className="testo-pieno">{testo}</span>
-          </Dettaglio>
-        ) : (
-          <Dettaglio tono="avviso">Scrivi nome e cognome per la causale.</Dettaglio>
-        )}
-        <Tasti>
-          <Tasto onClick={() => void copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
-          {testo && <Tasto onClick={() => void copia('causale', testo)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>}
-          {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
-        </Tasti>
-      </Riquadro>
-    </div>
+      ) : (
+        <Dettaglio tono="avviso">Scrivi nome e cognome per la causale.</Dettaglio>
+      )}
+      <Tasti>
+        <Tasto onClick={() => void copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
+        {testo && <Tasto onClick={() => void copia('causale', testo)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>}
+        {satispay && PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
+      </Tasti>
+    </>
+  )
+}
+
+const MODI: Array<{ id: Pago; testo: string; riga: string }> = [
+  { id: 'satispay', testo: 'Satispay', riga: 'Paghi subito, dall’app: l’importo è già scritto' },
+  { id: 'bonifico', testo: 'Bonifico', riga: 'Carichi la ricevuta del bonifico' },
+]
+
+/**
+ * Il modulo pubblico: quanto si paga e come. Con Satispay l'importo è quello
+ * che calcola il database, e il tasto in fondo apre l'app dopo l'invio; col
+ * bonifico IBAN, causale e la sua ricevuta stanno qui insieme.
+ */
+function IlPagamento({ stima, modo, puoi, onModo, causale: testo, ricevuta }: { stima: Stima; modo: Pago | null; puoi: ReturnType<typeof comePuoiPagare>; onModo: (m: Pago) => void; causale: string; ricevuta: ReactNode }) {
+  return (
+    <>
+      <div className="modulo-campo modulo-largo">
+        <span className="modulo-etichetta">QUANTO PAGHI</span>
+        <Riquadro stretto>
+          <Conto s={stima} />
+          {stima.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">Senza prezzo nel listino: {stima.senzaPrezzo.join(', ')}. Lo dice la segreteria.</Dettaglio>}
+        </Riquadro>
+      </div>
+      <div className="modulo-campo modulo-largo">
+        <span className="modulo-etichetta">PAGHI CON</span>
+        <div className="scelta-pago">
+          <SceltaCorsi
+            id="m-pago"
+            etichetta="Paghi con"
+            una
+            voci={MODI.filter((m) => m.id !== 'satispay' || puoi.satispay)}
+            scelti={modo ? [modo] : []}
+            // `as`: SceltaCorsi rende l'id di una delle voci date, cioè un modo di MODI.
+            onScegli={(m) => onModo(m as Pago)}
+          />
+        </div>
+        {!puoi.satispay && puoi.perche && <Dettaglio>{puoi.perche}.</Dettaglio>}
+        {modo === 'satispay' && <Dettaglio>Quando mandi la richiesta si apre Satispay con {soldi(stima.totale)}. Confermi lì e torni qui.</Dettaglio>}
+      </div>
+      {modo === 'bonifico' && (
+        <>
+          <div className="modulo-campo modulo-largo">
+            <Bonifico causale={testo} />
+          </div>
+          {ricevuta}
+        </>
+      )}
+    </>
   )
 }
 

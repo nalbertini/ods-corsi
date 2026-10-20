@@ -11,7 +11,7 @@ import { dataLunga } from './sala'
  * conosciuto?» con otto scelte chiuse, una volta per tutto il modulo.
  *
  * Un'etichetta sbagliata non ferma mai una richiesta: si pulisce come la
- * pulisce `invia_iscrizione` (`supabase/73-provenienza-richieste.sql`) e se
+ * pulisce `invia_iscrizione` (`supabase/74-provenienza-richieste.sql`) e se
  * non va si lascia fuori, senza dire niente. Non si salva sul telefono: si
  * legge dall'indirizzo con cui si è aperta la pagina.
  *
@@ -134,7 +134,7 @@ export interface RigaDaDove {
 }
 
 export interface DaDove {
-  /** Il primo giorno contato, `AAAA-MM-GG`: prima di `73-provenienza-richieste.sql` non si contava. */
+  /** Il primo giorno contato, `AAAA-MM-GG`: prima di `74-provenienza-richieste.sql` non si contava. */
   dal?: string
   righe: RigaDaDove[]
 }
@@ -199,4 +199,4 @@ export function fraseDaDove(dal: string | undefined, vuoto = false): string {
 export const notaDaDove = (corso: string | undefined) =>
   corso ? `le richieste che chiedono ${corso}, arrivate nel periodo, per persona, e come stanno oggi` : 'le richieste arrivate nel periodo, per persona, e come stanno oggi'
 
-export const MANCA_PROVENIENZA = 'Per contare da dove arrivano le richieste va lanciato 73-provenienza-richieste.sql: il resto delle statistiche funziona.'
+export const MANCA_PROVENIENZA = 'Per contare da dove arrivano le richieste va lanciato 74-provenienza-richieste.sql: il resto delle statistiche funziona.'

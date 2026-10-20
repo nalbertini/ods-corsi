@@ -8,6 +8,7 @@ import { useListino } from './Costi'
 import { Dettaglio, Etichetta, Cifra, Riquadro, Tasti, Tasto, Titoletto } from './ds'
 import { Logo } from './Logo'
 import { ModuloIscrizione } from './ModuloIscrizione'
+import { PagamentoOnline } from './PagamentoOnline'
 
 /**
  * La pagina pubblica delle iscrizioni (`iscrizioni/`), corta: cosa preparare,
@@ -32,6 +33,23 @@ export function IscrizioniScreen() {
   const vai = (aperto: boolean) => {
     setModulo(aperto)
     document.querySelector('.scroll')?.scrollTo(0, 0)
+  }
+
+  // Il ritorno dall'app di pagamento, o il link salvato per pagare dopo.
+  const [pagamento, setPagamento] = useState(() => new URLSearchParams(window.location.search).get('pagamento'))
+  if (pagamento) {
+    const chiudi = () => {
+      const u = new URLSearchParams(window.location.search)
+      u.delete('pagamento')
+      history.replaceState(null, '', window.location.pathname + (u.size ? `?${u}` : ''))
+      setPagamento(null)
+    }
+    return (
+      <div className="iscrizioni-modulo">
+        <Titoletto>RICHIESTA DI ISCRIZIONE</Titoletto>
+        <PagamentoOnline richiestaId={pagamento} onChiudi={chiudi} />
+      </div>
+    )
   }
 
   if (modulo) {

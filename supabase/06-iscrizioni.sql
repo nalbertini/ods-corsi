@@ -23,9 +23,9 @@
 --
 -- Si lancia dopo i cinque file prima. Rilanciarne uno di quelli rimette i
 -- permessi di default alle sue funzioni: dopo, va rilanciato anche questo.
--- `invia_iscrizione` la rifà `73-provenienza-richieste.sql` (con l'etichetta
+-- `invia_iscrizione` la rifà `74-provenienza-richieste.sql` (con l'etichetta
 -- del link e «come ci hai conosciuto»): rilanciando questo, va rilanciato
--- anche il 73, se no il modulo torna a ignorarle.
+-- anche il 74, se no il modulo torna a ignorarle.
 -- ---------------------------------------------------------------------------
 
 do $$ begin create type stato_richiesta as enum ('nuova', 'accolta', 'rifiutata'); exception when duplicate_object then null; end $$;

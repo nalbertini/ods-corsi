@@ -108,6 +108,7 @@ Google, e vale solo per i mockup.
 | `FirmaSchermoIntero` | La firma a schermo intero (`FirmaSchermoIntero` in `TavolaFirma.tsx`, `.firma-intera*`): ANNULLA, nome e FATTO in cima, il riquadro con la riga a un quarto dal fondo, la frase e CANCELLA E RIFAI; `orientamento` verticale o orizzontale, `firmata` |
 | `StimaCosto` | QUANTO COSTA di una persona del nucleo: righe, sconto famiglia, totale, IBAN, causale, tasti; `etichetta` e `stima` cambiano il titolo e la frase prima dell'IBAN; `tema="sito"` è quello del modulo di iscrizione |
 | `CartaFamiglia` | Il passo LA FAMIGLIA del modulo a passi (`.famiglia-*`): `tipo=sconto` il riquadro −20% SCONTO FAMIGLIA a bordo verde; `tipo=carta` una carta di `carteDellaFamiglia` con titolo, frase, «In grassetto i giorni che vanno col tuo orario.», le righe (STESSA ORA, SUBITO PRIMA…) con l'orario a pezzi, risparmio in verde e il tasto tratteggiato |
+| `IlPagamento` | IL PAGAMENTO del modulo pubblico (tema sito): QUANTO PAGHI e PAGHI CON (Satispay o Bonifico, con la ricevuta obbligatoria) con la frase sotto; `satispay` falso toglie la scelta e mostra `perche` |
 | `TitoloEsito` | `TitoloEsito` di `ds.tsx` con le frasi `.esito-testo`: RICHIESTA ARRIVATA e MANCA QUALCHE FILE |
 | `MembroNucleo` | Una persona del nucleo (`.mio-membro`): IN REGOLA, DA SISTEMARE, in attesa o rifiutata |
 | `RigaNucleoPagamento` | Una riga di PAGAMENTI DEL NUCLEO, con la variante «Tutto il nucleo» |

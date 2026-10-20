@@ -88,12 +88,12 @@ const TESTI = {
   metro: 'vicino alla metro Fermi',
   nomeContatti: 'Contatti',
   invito: 'Vieni a provare: ti aspettiamo in',
-  settimana: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
+  settimana: 'Una settimana a 10 euro: provi tutte le discipline e scegli.',
   altriLink: 'Altri link',
   pagine: 'Pagine',
   trovarci: 'Vieni a trovarci',
   menu: 'Menu',
-  inpiu: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
+  inpiu: 'Una settimana a 10 euro: provi tutte le discipline e scegli.',
   contatti: '/contatti/',
   // Il modulo sta nell'app (stesso indirizzo della guida), non nel sito: «Prova» porta a chi vuole iscriversi.
   iscrizione: 'https://app.officinedellosport.it/iscrizioni/',
@@ -1070,9 +1070,9 @@ function piede(c: Contesto): string {
   return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><ul class="recapiti-piede">${recapiti}</ul>${m.length ? `<nav class="piede-menu" aria-label="Pagine">${m.map((x) => `<a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a>`).join('')}</nav>` : ''}${f ? `<ul class="piede-legale">${f}</ul>` : ''}</footer>`
 }
 
-/** La barra del telefono in fondo alla Home: «Iscriviti» verso il modulo e «Chiama». Il nome accessibile dice anche «una settimana a 5 euro»: è la prova che costa così. */
+/** La barra del telefono in fondo alla Home: «Iscriviti» verso il modulo e «Chiama». Il nome accessibile dice anche «una settimana a 10 euro»: è la prova che costa così. */
 function barraProva(): string {
-  return `<nav class="barra-prova" aria-label="Prova o chiama"><a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer" aria-label="Iscriviti: una settimana di prova a 5 euro">Iscriviti</a><a class="pulsante secondario" href="${esc(chiama)}">Chiama</a></nav>`
+  return `<nav class="barra-prova" aria-label="Prova o chiama"><a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer" aria-label="Iscriviti: una settimana di prova a 10 euro">Iscriviti</a><a class="pulsante secondario" href="${esc(chiama)}">Chiama</a></nav>`
 }
 
 function invito(conContatti: boolean): string {

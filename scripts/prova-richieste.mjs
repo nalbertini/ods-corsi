@@ -645,9 +645,10 @@ console.log('\n11b. la ricevuta obbligatoria nel modulo della pagina pubblica (n
   ok('la firma viene prima della ricevuta', manca({ come: 'qui', firma: 'Manca la firma sul modulo', file: { documento: {} } }), 'Manca la firma sul modulo')
   ok('gli altri file dicono ancora «Manca: …»', manca({ file: { modulo: {}, ricevuta: {} } }), "Manca: carta d'identità")
   ok('senza ricevuta fra gli obbligatori, non si chiede', manca({ obbligatori: ['modulo', 'documento'] }), null)
-  // Il legame sta nel modulo: senza `nucleo` (pagina pubblica) la ricevuta è obbligatoria, e la lista arriva a `mancaPerInviare`.
+  // Il legame sta nel modulo: dalla pagina pubblica col bonifico la ricevuta è obbligatoria, e la lista arriva a
+  // `mancaPerInviare`. Con Satispay non si chiede (decisione del 2026-10-20: `modoPagamento`, `cosaNonVaModo` in prova:satispay).
   const moduloSorgente = readFileSync('src/components/ModuloIscrizione.tsx', 'utf8')
-  ok('il modulo chiede la ricevuta senza nucleo', moduloSorgente.includes('fileObbligatori(daChiedere, !nucleo)'), true)
+  ok('il modulo chiede la ricevuta col bonifico', moduloSorgente.includes("fileObbligatori(daChiedere, modo === 'bonifico')"), true)
   ok('il modulo passa quella lista a mancaPerInviare', /mancaPerInviare\(\{[^}]*\bobbligatori,/.test(moduloSorgente), true)
 }
 
@@ -692,7 +693,7 @@ console.log('\n14. L\'avviso del certificato: una frase sola, serve per partecip
   ok('avviso certificato: entrambi dicono «per partecipare alle lezioni» e «portalo in segreteria»', Object.values(avvisi).map((t) => t.includes('per partecipare alle lezioni') && t.includes('portalo in segreteria')), [true, true])
 }
 
-console.log('\n15. da dove arriva la richiesta: la prova pulisce e scarta come 73-provenienza-richieste.sql')
+console.log('\n15. da dove arriva la richiesta: la prova pulisce e scarta come 74-provenienza-richieste.sql')
 {
   let n = 0
   // Ogni richiesta con un'email sua: il limite per email non c'entra.
@@ -763,7 +764,7 @@ console.log('\n16. la metà vera: le due chiavi partono, e si rileggono')
   const [con] = await leggi([{ ...riga, provenienza: 'home', conosciuto: 'google' }])
   ok('richieste: le due colonne si leggono', [con.provenienza, con.conosciuto], ['home', 'google'])
   const [senza] = await leggi([riga])
-  ok('richieste: senza 73-provenienza-richieste.sql le colonne non ci sono, e la richiesta si legge lo stesso', [senza.id, senza.provenienza, senza.conosciuto], ['r-2', undefined, undefined])
+  ok('richieste: senza 74-provenienza-richieste.sql le colonne non ci sono, e la richiesta si legge lo stesso', [senza.id, senza.provenienza, senza.conosciuto], ['r-2', undefined, undefined])
 }
 
 console.log('\n17. i conteggi della prova: una chiave loro, riletta a ogni uso, come il database')

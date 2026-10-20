@@ -75,5 +75,5 @@ medie: si conta a parte.
 
 Col database vero le statistiche vogliono `supabase/22-statistiche.sql`:
 finché non c'è, la pagina dice che va lanciato. Il riquadro DA DOVE ARRIVANO
-LE RICHIESTE vuole `supabase/73-provenienza-richieste.sql`: finché non c'è,
+LE RICHIESTE vuole `supabase/74-provenienza-richieste.sql`: finché non c'è,
 dice di lanciarlo e il resto funziona.

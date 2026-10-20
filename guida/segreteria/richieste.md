@@ -16,7 +16,10 @@ iscritto per il suo nucleo familiare, dalla sua area: la scheda dice chi è
 suo nucleo. **Da stampare** se la richiesta ha ancora la carta d'identità
 caricata. **Fuori età** se ha scelto almeno un corso
 che non è per la sua età, neanche coi sei mesi di tolleranza: è da
-richiamare, ma si può accogliere lo stesso.
+richiamare, ma si può accogliere lo stesso. Se ha pagato col modulo:
+**Pagata** (Satispay arrivato), **Satispay in attesa** (non ancora
+confermato) o, rossa, **Da restituire** (pagata e poi rifiutata). Nella
+richiesta la stessa cosa è scritta per intero, con l'importo e il giorno.
 
 Normalmente si vedono solo le nuove; **Anche quelle già gestite** mostra tutte,
 e **Da stampare** (finché ce ne sono) quelle con il documento da
@@ -98,9 +101,12 @@ Accolta o rifiutata, la finestra si chiude da sola e si torna all'elenco, alla p
   trovate l'indirizzo da richiamare. **Apri la scheda** porta
   alla sua scheda in [Iscritti](iscritti.md).
 - **Rifiuta** — chi l'ha mandata **non viene avvisato**: va chiamato o scritto
-  a mano.
+  a mano. Se aveva già pagato con Satispay, la conferma lo dice: i soldi
+  restano in [PAGAMENTI](pagamenti.md) e vanno restituiti dall'app Satispay
+  Business, poi registrati in CONTABILITÀ.
 - **Elimina richiesta e file**, in fondo — cancella per sempre la richiesta con i suoi file. La scheda in
-  elenco, se c'è, resta.
+  elenco, se c'è, resta. Anche il pagamento Satispay resta, col nome di chi
+  l'ha fatto.
 
 Una richiesta accolta o rifiutata resta qui, con quello che diceva, finché non
 la si elimina.

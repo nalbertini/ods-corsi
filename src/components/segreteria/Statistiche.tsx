@@ -127,7 +127,7 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
   const stat = useCarica(() => d.statistiche(da, oggi), [d, da, oggi])
   const persone = useCarica(() => d.persone(), [d])
   const prove = useCarica(() => d.prove(da, oggi), [d, da, oggi])
-  // In una scatola: `null` vuol dire che 73-provenienza-richieste.sql non c'è, non che si sta leggendo.
+  // In una scatola: `null` vuol dire che 74-provenienza-richieste.sql non c'è, non che si sta leggendo.
   const daDove = useCarica(async () => ({ conti: await d.richiesteDaDove(da, oggi) }), [d, da, oggi])
   const titoli = useCarica(() => d.titoliSito(), [d])
 

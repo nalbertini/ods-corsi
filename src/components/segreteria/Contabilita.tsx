@@ -84,8 +84,9 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
   // Senza 60-chiusura-cassa.sql la chiusura non c'è, ma i conti restano usabili: il guaio si dice nella scheda CASSE.
   const chiusure = useCarica(() => d.chiusure(), [d])
   const incassi = useCarica(async () => {
-    const [ricevute, diretti] = await Promise.all([d.ricevute(), d.pagamentiDiretti()])
-    return { ricevute, diretti, nomi: diretti.length ? await d.nomiPersone(diretti.map((x) => x.personaId)) : [] }
+    const [ricevute, diretti, satispay] = await Promise.all([d.ricevute(), d.pagamentiDiretti(), d.pagamentiSatispay()])
+    const chi = [...diretti.map((x) => x.personaId), ...satispay.flatMap((x) => (x.personaId ? [x.personaId] : []))]
+    return { ricevute, diretti, satispay, nomi: chi.length ? await d.nomiPersone(chi) : [] }
   }, [d])
   const { avviso, fai } = useAvviso()
 
@@ -101,7 +102,7 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
   const dateChiusure = chiusure.dato ?? []
 
   const elenco: RigaMovimento[] = pronto
-    ? elencoMovimenti(incassi.dato?.ricevute ?? [], incassi.dato?.diretti ?? [], incassi.dato?.nomi ?? [], casse.dato ?? [], manuali.dato ?? [], voci.dato ?? [])
+    ? elencoMovimenti(incassi.dato?.ricevute ?? [], incassi.dato?.diretti ?? [], incassi.dato?.nomi ?? [], casse.dato ?? [], manuali.dato ?? [], voci.dato ?? [], incassi.dato?.satispay)
     : []
   // Una ricevuta in contanti annullata dopo la chiusura: il foglio già stampato non torna più coi conti.
   const nonInRegola = pronto ? dateChiusure.filter((k) => chiusuraNonPiuInRegola(k, casse.dato ?? [], elenco)) : []

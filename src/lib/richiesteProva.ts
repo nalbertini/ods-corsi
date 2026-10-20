@@ -6,6 +6,9 @@ import { nomeProprio } from './nomi'
 import { chiaveGiorno } from './sala'
 import { MASSIMO_PERSONE } from './passiIscrizione'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
+import { caricaListino } from './listino'
+import { stimaIscrizione } from './nucleo'
+import { nonSemplice, senzaVoceDelCorso, type PagamentoSatispay } from './satispay'
 
 /**
  * Le richieste di iscrizione senza server.
@@ -34,6 +37,38 @@ function leggi(): Richiesta[] {
 
 const file = new Map<string, Map<TipoFile, FileRichiesta>>()
 
+const DOVE_SATISPAY = 'ods-corsi:prova-satispay'   // vedi la nota in coda.ts
+
+/**
+ * I pagamenti Satispay di prova, come `pagamenti_satispay`: li legge anche la
+ * segreteria di prova, con la scheda della richiesta quando è stata accolta.
+ * `ricevutaId` c'è solo se quella ricevuta vale: annullata, i soldi tornano
+ * liberi, come in `emetti_ricevuta_satispay`.
+ */
+export function pagamentiSatispayProva(): PagamentoSatispay[] {
+  try {
+    const p: PagamentoSatispay[] = JSON.parse(localStorage.getItem(DOVE_SATISPAY) ?? '[]')
+    if (!Array.isArray(p)) return []
+    const richieste = leggi()
+    const valide = new Set((archivio.dati.ricevute ?? []).filter((r) => !r.annullataIl).map((r) => r.id))
+    return p.map((x) => ({
+      ...x,
+      personaId: richieste.find((r) => r.id === x.richiestaId && r.stato === 'accolta')?.personaId,
+      ricevutaId: x.ricevutaId && valide.has(x.ricevutaId) ? x.ricevutaId : undefined,
+    }))
+  } catch {
+    return []
+  }
+}
+
+export function salvaSatispay(p: PagamentoSatispay[]) {
+  try {
+    localStorage.setItem(DOVE_SATISPAY, JSON.stringify(p))
+  } catch {
+    /* resta per questa sessione */
+  }
+}
+
 /** Le richieste di prova, per l'esportazione dei dati di una persona. */
 export function richiesteDi(personaId: string): Richiesta[] {
   return leggi().filter((r) => r.personaId === personaId)
@@ -48,7 +83,7 @@ export function spostaRichieste(da: string, a: string) {
   }
 }
 
-/** Come una riga di `richieste_contate` (73-provenienza-richieste.sql): niente dati personali. */
+/** Come una riga di `richieste_contate` (74-provenienza-richieste.sql): niente dati personali. */
 export interface RichiestaContata {
   /** Solo per seguire lo stato: tolta quando la richiesta si elimina accolta o rifiutata. */
   richiestaId?: string
@@ -115,6 +150,7 @@ export function scordaRichiesteProva() {
   try {
     localStorage.removeItem(DOVE)
     localStorage.removeItem(DOVE_CONTATE)
+    localStorage.removeItem(DOVE_SATISPAY)
   } catch {
     /* pazienza */
   }
@@ -211,6 +247,32 @@ export function creaRichiesteProva(): DatiRichieste {
       const url = typeof URL.createObjectURL === 'function' ? URL.createObjectURL(f) : ''
       suoi.set(tipo, { tipo, url, pdf: f.type === 'application/pdf' })
       file.set(richiestaId, suoi)
+    },
+
+    async paga(richiestaId) {
+      // Come `satispay_prepara`: un link sbagliato o vecchio dice la stessa cosa di una richiesta già gestita.
+      const r = tutte.find((x) => x.id === richiestaId)
+      if (r?.stato !== 'nuova') throw new Error('Questa richiesta non si può più pagare online: scrivi alla segreteria')
+      const tutti = pagamentiSatispayProva()
+      if (!tutti.some((p) => p.richiestaId === richiestaId && p.stato === 'pagato')) {
+        // Nessuna rete in prova: Satispay «approva» subito, con l'importo che darebbe il database.
+        const { listino } = await caricaListino()
+        const corsi = r.corsi.map((id) => archivio.dati.corsi.find((c) => c.id === id) ?? { id, nome: id })
+        const s = stimaIscrizione({ chi: `${r.cognome} ${r.nome}`, corsi, formula: r.formula }, [], chiaveGiorno(new Date()), listino)
+        if (s.senzaPrezzo.length || senzaVoceDelCorso(corsi, listino).length || nonSemplice(corsi, listino)) throw new Error('Un corso non ha ancora il prezzo: paga col bonifico')
+        const ora = new Date().toISOString()
+        salvaSatispay([...tutti, { id: `sp-${Date.now().toString(36)}`, richiestaId, chi: `${r.cognome} ${r.nome}`, importo: s.totale, stato: 'pagato', creatoIl: ora, pagatoIl: ora }])
+      }
+      return { link: `${location.pathname}?prova&pagamento=${encodeURIComponent(richiestaId)}` }
+    },
+
+    async satispayAttivo() {
+      return true
+    },
+
+    async statoPagamento(richiestaId) {
+      const p = pagamentiSatispayProva().find((x) => x.richiestaId === richiestaId && x.stato !== 'non-andato')
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagatoIl } : null
     },
 
     async richieste() {

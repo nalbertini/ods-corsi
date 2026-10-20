@@ -108,6 +108,7 @@ console.log('\n3b. La tessera «Vieni a conoscerli» completa la riga di quattro
   const inv = (n) => invitoTessera(pagina(unElenco(n)))
   ok('con 13 tecnici c’è, larga 3 colonne, e sostituisce l’invito di fondo pagina', [/ritratto-invito s3/.test(inv(13)), conta(pagina(tredici), /<a class="invito"/g)], [true, 0])
   ok('con 14 tecnici è larga 2', /ritratto-invito s2/.test(invitoTessera(pagina(unElenco(13) + R('Z', 'x · Judo')))), true)
+  ok('la tessera invita alla settimana a 10 €', inv(13).includes('Una settimana a 10 €: provi tutte le discipline, incontri gli istruttori e scegli.'), true)
   ok('con 12 tecnici non c’è: la riga è piena, resta l’invito di fondo pagina', [inv(12), conta(pagina(dodici), /<a class="invito"/g)], ['', 1])
   const t = inv(13)
   ok('ha il solo pulsante «Iscriviti» (modulo): niente «Scrivici», né pulsanti verso /contatti/, in nessun punto della pagina', [/<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(t), /pulsante secondario/.test(t), /Scrivici/.test(pagina(tredici)), /<a class="pulsante[^"]*" href="\/contatti\/"/.test(pagina(tredici))], [true, false, false, false])
@@ -204,7 +205,7 @@ console.log('\n8. La cornice (testata, invito, piede) con le misure del design')
 console.log('\n9. Le differenze che restavano: pulsante corto, invito, piede, testo sul telefono')
 {
   const h = pagina(dodici)
-  ok('l’invito dice anche della settimana a 5 euro, come nel design', />Vieni a provare: ti aspettiamo in Via Vittorio Sassi 26, Collegno\. Una settimana a 5 euro: provi tutte le discipline e scegli\.<\/span>/.test(h), true)
+  ok('l’invito dice anche della settimana a 10 euro, come nel design', />Vieni a provare: ti aspettiamo in Via Vittorio Sassi 26, Collegno\. Una settimana a 10 euro: provi tutte le discipline e scegli\.<\/span>/.test(h), true)
   const pie = (h.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
   ok('instagram e facebook stanno su una riga, divisi da «·» (li in linea, il separatore è CSS)', [/\.recapiti li:nth-child\(n\+3\)\{[^}]*display:\s*inline/.test(CSS), /\.recapiti li:nth-child\(4\)::before\{[^}]*content:\s*" · "/.test(CSS)], [true, true])
   const voci = [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'istruttori', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy', slug: null, indirizzo: '/privacy/' }]

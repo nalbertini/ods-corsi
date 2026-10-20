@@ -306,7 +306,7 @@ console.log('\n16. Barra «Iscriviti / Chiama» sul telefono')
   const barra = (h) => h.match(/<nav class="barra-prova"[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? ''
   const link = (b) => [...b.matchAll(/<a class="pulsante (\w+)" href="([^"]*)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], m[2], m[3]])
   ok('la Home nuova ha una barra sola, con due pulsanti: «Iscriviti» giallo verso il modulo e «Chiama» verso tel:', [conta(H, /class="barra-prova"/g), link(barra(H))], [1, [['primario', F.ISCRIZIONE, 'Iscriviti'], ['secondario', TEL, 'Chiama']]])
-  ok('il pulsante ha il nome accessibile che dice anche la prova da 5 euro', /class="pulsante primario"[^>]*aria-label="Iscriviti: una settimana di prova a 5 euro"/.test(barra(H)), true)
+  ok('il pulsante ha il nome accessibile che dice anche la prova da 10 euro', /class="pulsante primario"[^>]*aria-label="Iscriviti: una settimana di prova a 10 euro"/.test(barra(H)), true)
   const iBarra = H.indexOf('class="barra-prova"')
   ok('la barra sta dopo l’hero e prima della chiamata finale, nel suo blocco «dopo-hero»', [H.indexOf('class="pagina-hero') < iBarra, iBarra < H.indexOf('class="sezione cta'), /<div class="dopo-hero">[\s\S]*<nav class="barra-prova"[\s\S]*<\/nav><\/div><section class="sezione cta/.test(M)], [true, true, true])
   const senzaCta = home(F.TESTO_NUOVO.replace(F.CTA(), ''))

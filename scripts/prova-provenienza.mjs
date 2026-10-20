@@ -5,7 +5,7 @@
 //
 // `src/lib/provenienza.ts`: l'etichetta del link (`?da=`), letta dall'indirizzo
 // con cui si è aperta la pagina e mai salvata sul telefono, pulita come la
-// pulisce `73-provenienza-richieste.sql` (provato da
+// pulisce `74-provenienza-richieste.sql` (provato da
 // `supabase/prova/provenienza-richieste.sql`); «come ci hai conosciuto», una
 // volta per modulo; i nomi leggibili della segreteria; i conti del riquadro DA
 // DOVE ARRIVANO LE RICHIESTE di STATISTICHE, per persona e per corso.
@@ -226,7 +226,7 @@ console.log('\n8. le frasi del riquadro')
   ok('niente nel periodo, ma si contava già', vedi(() => m.fraseDaDove('2026-11-04', true)), 'Nessuna richiesta in questo periodo. Si conta dal 4 novembre 2026: per persona (una famiglia di tre conta tre), arrivate nel periodo e come stanno oggi; le altre aspettano. Chi chiede due corsi conta in tutti e due col filtro per corso.')
   ok('la nota, tutti i corsi', vedi(() => m.notaDaDove(undefined)), 'le richieste arrivate nel periodo, per persona, e come stanno oggi')
   ok('la nota, un corso', vedi(() => m.notaDaDove('Judo kids')), 'le richieste che chiedono Judo kids, arrivate nel periodo, per persona, e come stanno oggi')
-  ok('senza il file SQL, il riquadro dice cosa lanciare', m.MANCA_PROVENIENZA, 'Per contare da dove arrivano le richieste va lanciato 73-provenienza-richieste.sql: il resto delle statistiche funziona.')
+  ok('senza il file SQL, il riquadro dice cosa lanciare', m.MANCA_PROVENIENZA, 'Per contare da dove arrivano le richieste va lanciato 74-provenienza-richieste.sql: il resto delle statistiche funziona.')
 }
 
 console.log('\n9. la metà vera: il riquadro e i titoli, anche senza il file SQL')
@@ -244,7 +244,7 @@ console.log('\n9. la metà vera: il riquadro e i titoli, anche senza il file SQL
   const d = await vedi(() => s.richiesteDaDove(new Date(2026, 8, 1), new Date(2026, 8, 26)))
   ok('chiede richieste_da_dove coi due giorni', reg[0], ['richieste_da_dove', { da: '2026-09-01', a: '2026-09-26' }])
   ok('e torna le righe com\'erano, senza i null', d, { dal: '2026-09-01', righe: [{ provenienza: 'home', corsi: ['k'], stato: 'nuova', n: 2 }] })
-  ok('senza 73-provenienza-richieste.sql: null, e nessun errore', await vedi(() => finto({ data: null, error: { code: 'PGRST202', message: 'x' } }).s.richiesteDaDove(new Date(2026, 8, 1), new Date(2026, 8, 26))), null)
+  ok('senza 74-provenienza-richieste.sql: null, e nessun errore', await vedi(() => finto({ data: null, error: { code: 'PGRST202', message: 'x' } }).s.richiesteDaDove(new Date(2026, 8, 1), new Date(2026, 8, 26))), null)
   const t = finto(null, {
     sito_pagine: { data: [{ slug: 'karate', titolo: 'Karate (bozza)', titolo_pubblicato: 'Karate ragazzi' }, { slug: 'orari', titolo: 'Orari', titolo_pubblicato: null }], error: null },
     sito_redirect: { data: [{ da: 'karate-bimbi', a: 'karate' }], error: null },
