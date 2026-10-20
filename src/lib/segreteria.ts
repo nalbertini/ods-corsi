@@ -12,6 +12,7 @@ import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
 import { euro } from './ricevute'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
+import type { PagamentoSatispay } from './satispay'
 import { VALIDITA } from './costi'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import type { Listino, ListinoLetto } from './listino'
@@ -145,6 +146,8 @@ export interface PersonaSeg {
   pagamento: PagamentoSeg
   /** Le quote associative delle sue ricevute non annullate: da qui si sa se ha pagato. */
   quote?: QuotaRicevuta[]
+  /** Centesimi pagati con Satispay dal modulo e non ancora in una ricevuta (`73-satispay.sql`). */
+  satispay?: number
   /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`). Solo in prova, per ora. */
   nucleo?: string
   /** `AAAA-MM-GG`, dall'anagrafica; senza, l'età non si sa e il certificato serve (vedi `serveCertificato`). */
@@ -636,7 +639,13 @@ export interface DatiSegreteria {
    */
   anagraficaDi(personaId: string): Promise<AnagraficaDi | null>
   /** Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). */
-  emettiRicevuta(r: DatiRicevuta): Promise<Ricevuta>
+  emettiRicevuta(r: DatiRicevuta, satispayId?: string): Promise<Ricevuta>
+  /**
+   * I pagamenti Satispay dal modulo di iscrizione, anche in attesa e non
+   * andati (`73-satispay.sql`); vuoto senza il file. Con `satispayId`,
+   * `emettiRicevuta` fa la ricevuta col pagamento già dentro, una volta sola.
+   */
+  pagamentiSatispay(): Promise<PagamentoSatispay[]>
   /** La annulla: resta, col suo numero, e il PDF dice ANNULLATA. */
   annullaRicevuta(id: string): Promise<void>
   /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
@@ -1083,7 +1092,7 @@ export type ComePaga = StatoPagamento | 'scaduto'
 /** Com'è messo coi pagamenti, e perché: la ricevuta, o l'eccezione fuori dall'app. */
 export interface StatoPaga {
   come: ComePaga
-  fonte?: 'ricevuta' | 'fuori_app'
+  fonte?: 'ricevuta' | 'fuori_app' | 'satispay'
   /** Fin quando è pagato; per `scaduto`, fin quando lo era. */
   fino?: string
   /** Centesimi che mancano, per `in_parte` da una ricevuta. */
@@ -1091,6 +1100,8 @@ export interface StatoPaga {
   /** «12/2026», la ricevuta da cui viene. */
   ricevuta?: string
   nota?: string
+  /** Centesimi arrivati con Satispay, per `fonte: 'satispay'`. */
+  importo?: number
 }
 
 /**
@@ -1099,7 +1110,7 @@ export interface StatoPaga {
  * guardano a parte. Senza ricevuta conta l'eccezione scritta a mano, fino
  * alla sua data. Una quota scaduta, o un'eccezione scaduta, è `scaduto`.
  */
-export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: string): StatoPaga {
+export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay'>, oggi: string): StatoPaga {
   const quote = p.quote ?? []
   const valgono = quote.filter((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
   const numero = (q: QuotaRicevuta) => `${q.numero}/${q.anno}`
@@ -1110,6 +1121,8 @@ export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: st
   const fino = m.fino || VALIDITA.quota.al
   const eccezione = m.stato !== 'da_pagare' && fino >= oggi
   if (eccezione && m.stato === 'pagato') return { come: 'pagato', fonte: 'fuori_app', fino, nota: m.nota }
+  // Pagata dal modulo con Satispay, quota compresa: manca solo la ricevuta, e non è da chiamare.
+  if (p.satispay) return { come: 'pagato', fonte: 'satispay', fino: VALIDITA.quota.al, importo: p.satispay }
   const parte = [...valgono].sort((a, b) => a.mancano - b.mancano)[0]
   if (parte) return { come: 'in_parte', fonte: 'ricevuta', fino: parte.al, mancano: parte.mancano, ricevuta: numero(parte) }
   if (eccezione) return { come: 'in_parte', fonte: 'fuori_app', fino, nota: m.nota }
@@ -1121,10 +1134,10 @@ export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: st
 /** La quota in una parola, per il riquadro QUOTA della scheda. */
 export const etichettaQuota = (come: ComePaga) => (come === 'pagato' ? 'PAGATA' : come === 'in_parte' ? 'IN PARTE' : come === 'scaduto' ? 'SCADUTA' : 'DA PAGARE')
 
-export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: string): ComePaga => pagamentoDi(p, oggi).come
+export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay'>, oggi: string): ComePaga => pagamentoDi(p, oggi).come
 
 /** In regola: certificato valido (anche se in scadenza) e quota pagata. */
-export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string) =>
+export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string) =>
   !['manca', 'scaduto'].includes(statoCertificato(p, oggi)) && comePaga(p, oggi) === 'pagato'
 
 /** Chi è attivo e ha il certificato o la quota da sistemare: il bottone CHI NON È IN REGOLA delle statistiche. */
@@ -1258,7 +1271,7 @@ export function tastoPrincipale(p: Pick<PersonaSeg, 'attiva' | 'certificato' | '
  * IN REGOLA; poi FUORI APP, perché prima o poi va una ricevuta. Il
  * certificato in scadenza si vede, anche se è ancora in regola.
  */
-export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string): ParolaStato[] {
+export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string): ParolaStato[] {
   const s = pagamentoDi(p, oggi)
   const cert = timbroCertificato(p.certificato, oggi, p.natoIl)
   // Sotto i 6 anni, senza un certificato valido: non è un guaio, ma si dice perché non c'è.

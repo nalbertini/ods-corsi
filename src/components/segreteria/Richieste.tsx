@@ -5,6 +5,7 @@ import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
 import { accogliConCertificato, DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
+import { daRestituire, segnoRichiesta, type PagamentoSatispay } from '../../lib/satispay'
 import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
@@ -17,6 +18,14 @@ const STATI: Record<StatoRichiesta, string> = { nuova: 'Nuova', accolta: 'Accolt
 const ORDINE_STATI: Record<StatoRichiesta, number> = { nuova: 0, accolta: 1, rifiutata: 2 }
 const CON_ARTICOLO: Partial<Record<string, string>> = { modulo: 'il modulo firmato' }
 const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
+
+/** Il colore del segno Satispay nell'elenco: le classi dei bollini che ci sono già. */
+const TIPO_TAG = { aspetta: 'aspetta', fatto: 'fatto', guaio: 'manca' } as const
+
+/** Il bollino del pagamento Satispay nella riga dell'elenco. */
+function SegnoSatispay({ segno }: { segno: ReturnType<typeof segnoRichiesta> }) {
+  return segno && <span className="num sg-tag" data-tipo={TIPO_TAG[segno.tono]}>{segno.tag}</span>
+}
 
 /**
  * Le richieste arrivate dal modulo di iscrizione.
@@ -70,6 +79,9 @@ export function Richieste({
   const corsi = useCarica(() => d.corsi(), [d])
   const persone = useCarica(() => d.persone(), [d])
   const conDocumento = useCarica(async () => (await datiRichieste()).conDocumento(), [])
+  // Il pagamento Satispay vivo di ogni richiesta, in attesa o pagato: uno non andato non si dice (`73-satispay.sql`; senza il file, nessuno).
+  const satispay = useCarica(() => d.pagamentiSatispay(), [d])
+  const pagamentoDi = (id: string) => (satispay.dato ?? []).find((p) => p.richiestaId === id && p.stato !== 'non-andato')
   const [tutte, setTutte] = useState(false)
   const [daStampare, setDaStampare] = useState(!!stampareIniziale)
   const [scelta, setScelta] = useState<string | null>(aperta ?? null)
@@ -110,6 +122,7 @@ export function Richieste({
       d={d}
       r={r}
       x={richiesta}
+      satispay={pagamentoDi(richiesta.id)}
       nomi={nomi}
       titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
       omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
@@ -199,6 +212,7 @@ export function Richieste({
                     {minorenne(x.natoIl) && <span className="num sg-tag">Minore</span>}
                     {x.nucleoDi && <span className="num sg-tag">Nucleo</span>}
                     {doc.has(x.id) && <span className="num sg-tag">Da stampare</span>}
+                    <SegnoSatispay segno={segnoRichiesta(pagamentoDi(x.id), x.stato)} />
                     {/* La si richiama: meglio saperlo prima di aprirla. */}
                     {voci && x.corsi.some((c) => {
                       const nome = nomi.get(c)
@@ -229,6 +243,7 @@ function Scheda({
   d,
   r,
   x,
+  satispay,
   nomi,
   titolare,
   omonimi,
@@ -242,6 +257,8 @@ function Scheda({
   d: DatiSegreteria
   r: DatiRichieste
   x: Richiesta
+  /** Il pagamento Satispay dal modulo, se c'è. */
+  satispay?: PagamentoSatispay
   nomi: Map<string, string>
   /** Il titolare del nucleo da cui arriva, se arriva dall'area degli iscritti. */
   titolare?: string
@@ -257,6 +274,8 @@ function Scheda({
   onApri: (personaId: string) => void
 }) {
   const file = useCarica(() => r.file(x.id), [r, x.id])
+  const segno = segnoRichiesta(satispay, x.stato)
+  const restituire = daRestituire(satispay)
   const voci = useListino()?.listino.corsi
   const minore = minorenne(x.natoIl)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
@@ -436,7 +455,11 @@ function Scheda({
             </div>
           )}
           {/* Non è un guaio: la ricevuta non è obbligatoria, si paga anche al banco. */}
-          {file.dato.length > 0 && !arrivati.has('ricevuta') && <span className="sg-sotto">Nessuna ricevuta: il pagamento si fa in segreteria.</span>}
+          {segno ? (
+            <span className="sg-sotto" data-tono={segno.tono}>{segno.testo}</span>
+          ) : (
+            file.dato.length > 0 && !arrivati.has('ricevuta') && <span className="sg-sotto">Nessuna ricevuta: il pagamento si fa in segreteria.</span>
+          )}
           {documenti.length > 0 && (
             <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
               <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>
@@ -532,7 +555,7 @@ function Scheda({
               type="button"
               className="sg-btn sg-btn-linea"
               onClick={async () => {
-                if ((await chiedi(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.`, 'Rifiuta la richiesta', { pericolo: true })))
+                if ((await chiedi(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.${restituire ? `\n\n${restituire}` : ''}`, 'Rifiuta la richiesta', { pericolo: true })))
                   void fai(() => r.rifiuta(x.id), 'Richiesta rifiutata', () => {
                     onCambiato()
                     onConclusa()
@@ -556,7 +579,7 @@ function Scheda({
           type="button"
           className="sg-btn sg-btn-linea sg-pericolo"
           onClick={async () => {
-            if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`, 'Elimina per sempre', { pericolo: true })))
+            if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.${restituire ? `\n\n${restituire} Eliminata la richiesta, in RICHIESTE ONLINE non si vede più.` : ''}`, 'Elimina per sempre', { pericolo: true })))
               void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)
           }}
         >

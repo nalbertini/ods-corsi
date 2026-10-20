@@ -252,7 +252,16 @@ Quando qualcuno paga, nella sua scheda **+ FAI LA RICEVUTA** prepara la
 ricevuta, la stessa «ricevuta semplice» di prima: due copie uguali su un
 foglio A4 in orizzontale, una per il socio e una per l'associazione.
 
-- **DATA**, **NUMERO** e **PAGATO CON** (bonifico, contanti, POS, assegno). Il
+Chi ha pagato con Satispay dal modulo di iscrizione ha già pagato: QUOTA dice
+**PAGATA** con **Senza ricevuta** e «Pagata con Satispay dal modulo: manca la
+ricevuta», e non conta fra chi deve pagare. La ricevuta parte già con
+**PAGATO CON** Satispay e quei soldi dentro: entrano una volta sola. Con un
+altro modo di pagare l'app non la fa (si conterebbero due volte), e il pagato
+con Satispay deve essere esattamente quello arrivato. Annullata la ricevuta, il
+pagamento torna libero per quella giusta.
+
+- **DATA**, **NUMERO** e **PAGATO CON** (bonifico, contanti, POS, assegno; e
+  **Satispay** se ha pagato col modulo). Il
   numero si lascia vuoto: prende da solo il primo libero dell'anno, e a
   gennaio si riparte da 1. Si scrive solo la prima volta, per continuare la
   numerazione del programma di prima (se l'ultima era la 115, si scrive 116).

@@ -645,9 +645,10 @@ console.log('\n11b. la ricevuta obbligatoria nel modulo della pagina pubblica (n
   ok('la firma viene prima della ricevuta', manca({ come: 'qui', firma: 'Manca la firma sul modulo', file: { documento: {} } }), 'Manca la firma sul modulo')
   ok('gli altri file dicono ancora «Manca: …»', manca({ file: { modulo: {}, ricevuta: {} } }), "Manca: carta d'identità")
   ok('senza ricevuta fra gli obbligatori, non si chiede', manca({ obbligatori: ['modulo', 'documento'] }), null)
-  // Il legame sta nel modulo: senza `nucleo` (pagina pubblica) la ricevuta è obbligatoria, e la lista arriva a `mancaPerInviare`.
+  // Il legame sta nel modulo: dalla pagina pubblica col bonifico la ricevuta è obbligatoria, e la lista arriva a
+  // `mancaPerInviare`. Con Satispay non si chiede (decisione del 2026-10-20: `modoPagamento`, `cosaNonVaModo` in prova:satispay).
   const moduloSorgente = readFileSync('src/components/ModuloIscrizione.tsx', 'utf8')
-  ok('il modulo chiede la ricevuta senza nucleo', moduloSorgente.includes('fileObbligatori(daChiedere, !nucleo)'), true)
+  ok('il modulo chiede la ricevuta col bonifico', moduloSorgente.includes("fileObbligatori(daChiedere, modo === 'bonifico')"), true)
   ok('il modulo passa quella lista a mancaPerInviare', /mancaPerInviare\(\{[^}]*\bobbligatori,/.test(moduloSorgente), true)
 }
 

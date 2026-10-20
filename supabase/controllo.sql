@@ -363,6 +363,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regprocedure('public.registra_movimento_dalla_chat(jsonb)') is not null
     and to_regprocedure('public.movimenti_simili(text)') is not null
     and exists (select 1 from information_schema.columns
-                where table_schema = 'public' and table_name = 'movimenti' and column_name = 'chiave_chat'))
+                where table_schema = 'public' and table_name = 'movimenti' and column_name = 'chiave_chat')),
+  ('73-satispay.sql', 'il pagamento con Satispay dal modulo di iscrizione: importo dal listino, esito e ricevuta',
+    to_regclass('public.pagamenti_satispay') is not null
+    and to_regprocedure('public.emetti_ricevuta_satispay(jsonb,uuid)') is not null
+    and exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'pagamenti_satispay' and column_name = 'persona_id'))
 ) as x(file, cosa, c)
 order by file, cosa;

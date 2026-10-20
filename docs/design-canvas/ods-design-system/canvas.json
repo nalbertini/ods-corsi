@@ -819,6 +819,15 @@
       "w": 1200,
       "h": 1500,
       "page": "page-1"
+    },
+    {
+      "file": "IlPagamento.dc.html",
+      "title": "IlPagamento",
+      "x": 2280,
+      "y": 10100,
+      "w": 350,
+      "h": 480,
+      "page": "page-2"
     }
   ],
   "annotations": [
