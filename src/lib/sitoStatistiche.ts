@@ -7,6 +7,7 @@
 // ---------------------------------------------------------------------------
 import { SITO_DAL, mesiDelPeriodo, primoGiorno } from './sitoNumeri'
 import type { NumeriSito } from './sitoNumeri'
+import { dataLunga } from './sala'
 
 /** I numeri restano buoni 10 minuti: STATISTICHE si apre e si chiude, GoatCounter non si richiama a ogni giro. */
 export const MEMORIA_MS = 10 * 60_000
@@ -14,7 +15,7 @@ export const MEMORIA_MS = 10 * 60_000
 export const AGGIORNA_MS = 60_000
 
 /** Perché i numeri del sito non ci sono. */
-export type TipoGuaioSito = 'non-pubblicata' | 'chiave-manca' | 'chiave-rifiutata' | 'aspetta' | 'non-risponde' | 'senza-rete'
+export type TipoGuaioSito = 'non-pubblicata' | 'chiave-manca' | 'chiave-rifiutata' | 'aspetta' | 'non-risponde' | 'senza-rete' | 'accesso'
 
 /** Quello che dice `statisticheSito` di DatiSegreteria: i numeri, o il guaio (il riquadro lo dice, gli altri restano). */
 export type LetturaSito = { numeri: NumeriSito } | { guaio: TipoGuaioSito }
@@ -23,7 +24,7 @@ export type LetturaSito = { numeri: NumeriSito } | { guaio: TipoGuaioSito }
 export const TESTI_GUAI: Record<TipoGuaioSito, { titolo: string; frase: string }> = {
   'non-pubblicata': {
     titolo: 'Il contatore non è ancora acceso',
-    frase: 'Il collegamento fra l’app e il contatore del sito non c’è ancora. Chiedi a chi segue l’app di accenderlo; intanto gli altri numeri ci sono.',
+    frase: 'Il collegamento fra l’app e il contatore del sito non c’è ancora, o la rete è debole: riprova con Aggiorna. Se non cambia, chiedi a chi segue l’app di accenderlo; intanto gli altri numeri ci sono.',
   },
   'chiave-manca': {
     titolo: 'Manca la chiave del contatore',
@@ -41,6 +42,10 @@ export const TESTI_GUAI: Record<TipoGuaioSito, { titolo: string; frase: string }
     titolo: 'GoatCounter non risponde',
     frase: 'Il contatore del sito non ha risposto. Gli altri numeri della pagina sono a posto: riprova più tardi con Aggiorna.',
   },
+  accesso: {
+    titolo: 'L’app non ti riconosce',
+    frase: 'Per leggere i numeri del sito serve l’accesso da segreteria, e il tuo è scaduto o non c’è: esci e rientra, poi tocca Aggiorna.',
+  },
   'senza-rete': {
     titolo: 'Senza rete',
     frase: 'Il computer non è collegato a internet. Quando torna la rete, tocca Aggiorna.',
@@ -50,38 +55,38 @@ export const TESTI_GUAI: Record<TipoGuaioSito, { titolo: string; frase: string }
 const TIPI_FUNZIONE: TipoGuaioSito[] = ['chiave-manca', 'chiave-rifiutata', 'aspetta', 'non-risponde']
 
 /**
- * Il guaio dalla risposta della funzione: `stato` HTTP e `tipo` del suo corpo, se ha risposto; `rete` falso senza
- * rete; `irraggiungibile` quando la chiamata non è arrivata (di solito: la funzione non è pubblicata).
+ * Il guaio da quello che è tornato chiamando la funzione: lo `stato` HTTP e il `corpo` (già letto come JSON, se la
+ * funzione ha risposto), il `nome` dell'errore (FunctionsHttpError, FunctionsFetchError…) e se il computer ha la rete.
+ * Come guaioFunzione di segreteriaSupabase.ts, ma dà il tipo: la frase la sceglie TESTI_GUAI.
  */
-export function tipoGuaio(x: { stato?: number; tipo?: unknown; rete?: boolean; irraggiungibile?: boolean }): TipoGuaioSito {
-  if (x.rete === false) return 'senza-rete'
-  const detto = TIPI_FUNZIONE.find((t) => t === x.tipo)
+export function tipoDaRisposta(stato: number | undefined, corpo: unknown, nome: string | undefined, rete: boolean): TipoGuaioSito {
+  if (!rete) return 'senza-rete'
+  const tipo = corpo && typeof corpo === 'object' && 'tipo' in corpo ? corpo.tipo : undefined
+  const detto = TIPI_FUNZIONE.find((t) => t === tipo)
   if (detto) return detto
-  if (x.stato === 404 || x.irraggiungibile) return 'non-pubblicata'
+  if (stato === 401 || stato === 403) return 'accesso'
+  // Non raggiunta con la rete accesa: di solito non è pubblicata, a volte è la rete debole (la frase dice tutte e due).
+  if (stato === 404 || nome === 'FunctionsFetchError') return 'non-pubblicata'
   return 'non-risponde'
 }
 
-const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
-
 /** «Si conta dal 20 ottobre 2026» quando il periodo comincia prima; se no niente. */
 export function contaDal(da: string): string | null {
-  if (da >= SITO_DAL) return null
-  const [a, m, g] = SITO_DAL.split('-').map(Number)
-  return `${g} ${MESI[m - 1]} ${a}`
+  return da < SITO_DAL ? dataLunga(SITO_DAL) : null
 }
 
 /** Il mese per le colonne (`ott`) e per la tabella (`Ottobre 2026`). */
 export function nomeMeseSito(mese: string): { corto: string; lungo: string } {
-  const [a, m] = mese.split('-').map(Number)
-  const nome = MESI[m - 1]
-  return { corto: nome.slice(0, 3), lungo: `${nome[0].toUpperCase()}${nome.slice(1)} ${a}` }
+  // dataLunga dà «1 ottobre 2026»: il giorno si toglie.
+  const lungo = dataLunga(`${mese}-01`).replace(/^1 /, '')
+  return { corto: lungo.slice(0, 3), lungo: `${lungo[0].toUpperCase()}${lungo.slice(1)}` }
 }
 
-/** La nota accanto al mese nella tabella: «dal 20» se comincia a metà, «fino a oggi» se è quello di oggi. */
-export function notaMese(mese: string, da: string, a: string, oggi = a): string {
+/** La nota accanto al mese nella tabella: «dal 20» se comincia a metà, «fino a oggi» se è l'ultimo (il periodo finisce oggi). */
+export function notaMese(mese: string, da: string, a: string): string {
   const primo = primoGiorno(da)
   if (primo.slice(0, 7) === mese && primo.slice(8) !== '01') return `dal ${Number(primo.slice(8))}`
-  if (a.slice(0, 7) === mese && oggi === a) return 'fino a oggi'
+  if (a.slice(0, 7) === mese) return 'fino a oggi'
   return ''
 }
 
@@ -99,16 +104,44 @@ export function puoAggiornare(letti: number | null, adesso: number): boolean {
 /** La chiave della memoria: un periodo. Il corso scelto non c'entra: il sito è di tutta la palestra. */
 export const chiaveSito = (da: string, a: string) => `${da}|${a}`
 
+/** Quello che il riquadro mostra di un periodo: i numeri o il guaio, con l'ora della lettura. */
+export type StatoSito = ({ numeri: NumeriSito } | { guaio: TipoGuaioSito }) & { letti: number }
+
+/** Cosa fare aprendo un periodo: mostrare la memoria, leggere, o mostrare il guaio di prima e aspettare il minuto. */
+export type DaLeggere = { cosa: 'memoria'; stato: StatoSito } | { cosa: 'leggi' } | { cosa: 'aspetta'; stato: StatoSito }
+
 /**
- * La memoria dei numeri letti, per periodo: dentro i 10 minuti si ridanno quelli, poi si rileggono. Il tempo si
- * passa da fuori, così la regola si prova senza aspettare.
+ * La memoria delle letture, per periodo. Tiene i numeri 10 minuti e i guai fino al minuto dopo (riaprire STATISTICHE
+ * dopo un errore non richiama subito). Ogni lettura arrivata si salva per il suo periodo, anche se intanto se ne
+ * guarda un altro. Il tempo si passa da fuori, così la regola si prova senza aspettare.
  */
 export function creaMemoria() {
-  const dentro = new Map<string, { numeri: NumeriSito; letti: number }>()
+  const dentro = new Map<string, StatoSito>()
   return {
+    /** Cosa fare aprendo il periodo `chiave` adesso. */
+    daLeggere(chiave: string, adesso: number): DaLeggere {
+      const x = dentro.get(chiave)
+      if (!x) return { cosa: 'leggi' }
+      if ('numeri' in x) return adesso - x.letti < MEMORIA_MS ? { cosa: 'memoria', stato: x } : { cosa: 'leggi' }
+      return puoAggiornare(x.letti, adesso) ? { cosa: 'leggi' } : { cosa: 'aspetta', stato: x }
+    },
+    /** Una lettura arrivata: i numeri o il guaio, per il periodo per cui era partita. */
+    ricevuto(chiave: string, lettura: LetturaSito, adesso: number) {
+      dentro.set(chiave, { ...lettura, letti: adesso })
+    },
+    /** L'ultima lettura del periodo, riuscita o no: AGGIORNA aspetta un minuto da lì. */
+    ultima(chiave: string): number | null {
+      return dentro.get(chiave)?.letti ?? null
+    },
+    /** Quanti millisecondi mancano perché AGGIORNA si possa toccare: 0 se si può già. */
+    aggiornaFra(chiave: string, adesso: number): number {
+      const x = dentro.get(chiave)?.letti
+      return x === undefined || puoAggiornare(x, adesso) ? 0 : x + AGGIORNA_MS - adesso
+    },
+    /** I numeri ancora buoni del periodo, se ci sono. */
     leggi(chiave: string, adesso: number): { numeri: NumeriSito; letti: number } | undefined {
       const x = dentro.get(chiave)
-      return x && adesso - x.letti < MEMORIA_MS ? x : undefined
+      return x && 'numeri' in x && adesso - x.letti < MEMORIA_MS ? { numeri: x.numeri, letti: x.letti } : undefined
     },
     salva(chiave: string, numeri: NumeriSito, adesso: number) {
       dentro.set(chiave, { numeri, letti: adesso })

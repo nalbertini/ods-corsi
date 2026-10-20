@@ -3,7 +3,7 @@ import type { DatiSegreteria, LezioneStat, PersonaSeg, ProvaSeg } from '../../li
 import { comePaga, contaCertificati, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
-import { Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
+import { Colonne, Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
 import { StatisticheSito } from './StatisticheSito'
 
@@ -296,7 +296,7 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
       )}
 
       {/* In fondo e fuori dal blocco delle lezioni: i numeri del sito non dipendono da quelli della palestra. */}
-      <StatisticheSito d={d} da={chiaveGiorno(da)} a={g} oggi={g} corso={!!corso} />
+      <StatisticheSito d={d} da={chiaveGiorno(da)} a={g} corso={!!corso} />
     </>
   )
 }
@@ -325,71 +325,6 @@ function contaIscritti(persone: PersonaSeg[], corso: string, mesi: string[], ogg
       return { mese: m, iscritti: persone.filter((p) => vale(p, fine)).length, nuovi: nuoviFra(`${m}-01`, fine), usciti: uscitiFra(`${m}-01`, fine) }
     }),
   }
-}
-
-export interface Colonna {
-  chiave: string
-  etichetta: string
-  valore: number
-  dettaglio: string[]
-}
-
-/** Un numero più tondo sopra il massimo, per la scala: 0, metà, tutto. */
-function tetto(x: number) {
-  if (x <= 0) return 1
-  // Con pochi (le prove, un corso piccolo) un numero pari: la metà resta una persona intera.
-  if (x <= 10) return Math.max(2, Math.ceil(x / 2) * 2)
-  const p = 10 ** Math.floor(Math.log10(x))
-  return ([1, 2, 2.5, 5, 10].map((k) => k * p).find((k) => k >= x) ?? 10 * p)
-}
-
-/**
- * Le colonne di un valore solo, mese per mese: una tinta sola, la scala a
- * sinistra, il numero esatto sotto il dito o il mouse. Il mese in corso non è
- * finito, e si vede: è tratteggiato.
- */
-export function Colonne({ nome, colonne, formato = (n: number) => n.toLocaleString('it-IT') }: { nome: string; colonne: Colonna[]; formato?: (n: number) => string }) {
-  const [sopra, setSopra] = useState<string | null>(null)
-  const max = tetto(Math.max(0, ...colonne.map((c) => c.valore)))
-  if (colonne.every((c) => c.valore === 0)) return <span className="sg-sotto">Niente da contare in questo periodo.</span>
-  return (
-    <div className="sg-colonne" role="group" aria-label={nome}>
-      <div className="sg-colonne-scala num" aria-hidden="true">
-        <span>{formato(max)}</span>
-        <span>{formato(max / 2)}</span>
-        <span>0</span>
-      </div>
-      <div className="sg-colonne-piano" style={{ gridTemplateColumns: `repeat(${colonne.length}, minmax(0, 1fr))` }}>
-        {colonne.map((c, i) => (
-          <button
-            key={c.chiave}
-            type="button"
-            className="sg-colonna"
-            aria-label={c.dettaglio.join(', ')}
-            data-in-corso={i === colonne.length - 1}
-            onMouseEnter={() => setSopra(c.chiave)}
-            onMouseLeave={() => setSopra(null)}
-            onFocus={() => setSopra(c.chiave)}
-            onBlur={() => setSopra(null)}
-          >
-            <span className="sg-colonna-binario">
-              {c.valore > 0 && <span className="sg-colonna-pieno" style={{ height: `${(100 * c.valore) / max}%` }} />}
-              {sopra === c.chiave && (
-                <span className="sg-colonna-suggerimento" role="tooltip" data-lato={i >= colonne.length / 2 ? 'destra' : 'sinistra'}>
-                  {c.dettaglio.map((t, k) => (
-                    <span key={k} style={k === 0 ? { fontWeight: 700 } : undefined}>
-                      {t}
-                    </span>
-                  ))}
-                </span>
-              )}
-            </span>
-            <span className="sg-colonna-etichetta num">{c.etichetta.toUpperCase()}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
 }
 
 /**

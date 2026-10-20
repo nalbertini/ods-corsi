@@ -31,7 +31,7 @@ import { ORARIO_NON_ATTIVO } from './sitoOrario'
 import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
 import { riduciFoto } from './foto'
 import type { NumeriSito } from './sitoNumeri'
-import { tipoGuaio } from './sitoStatistiche'
+import { tipoDaRisposta } from './sitoStatistiche'
 import { URL_SUPABASE } from './dati'
 import { AllegatiNonPartiti, cosaNonVaSegnalazione, eCategoria, SCEGLI, type Categoria, guaioAllegati, mandaAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 
@@ -1497,21 +1497,18 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         const numeri = (data as { numeri?: NumeriSito } | null)?.numeri
         return numeri ? { numeri } : { guaio: 'non-risponde' }
       }
-      // Come guaioFunzione, ma il riquadro vuole il tipo del guaio, non una frase: la frase la sceglie sitoStatistiche.ts.
+      // Come guaioFunzione, ma il riquadro vuole il tipo del guaio, non una frase: la regola sta in sitoStatistiche.ts.
       // `as`: gli errori di functions.invoke hanno `name` e, quando la funzione ha risposto, la Response in `context`.
       const e = error as { name?: string; context?: unknown }
       const r = e.context instanceof Response ? e.context : null
-      let tipo: unknown
-      if (r) {
-        try {
-          // `as`: un no della funzione è `{ guaio, tipo }`; il tipo lo controlla tipoGuaio.
-          tipo = ((await r.clone().json()) as { tipo?: unknown }).tipo
-        } catch {
-          // Non è la nostra risposta: decide lo stato.
-        }
+      let corpo: unknown = null
+      try {
+        corpo = r ? await r.clone().json() : null
+      } catch {
+        // Non è la nostra risposta: decide lo stato.
       }
       const rete = typeof navigator === 'undefined' || navigator.onLine
-      return { guaio: tipoGuaio({ stato: r?.status, tipo, rete, irraggiungibile: e.name === 'FunctionsFetchError' }) }
+      return { guaio: tipoDaRisposta(r?.status, corpo, e.name, rete) }
     },
 
     async statistiche(da, a) {

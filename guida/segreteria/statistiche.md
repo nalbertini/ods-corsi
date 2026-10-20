@@ -87,7 +87,9 @@ I numeri si leggono quando apri la pagina e restano buoni 10 minuti per lo
 stesso periodo; accanto c'è l'ora in cui sono stati letti. **Aggiorna** li
 rilegge subito, ma non più di una volta al minuto. Se il contatore non
 risponde, il riquadro lo dice e cosa fare (di solito: riprova più tardi con
-Aggiorna); gli altri riquadri restano. Non vanno nel CSV.
+Aggiorna; se dice «L'app non ti riconosce», esci e rientra); gli altri riquadri
+restano. Se per qualche tocco il contatore dà solo il totale, il riquadro lo
+spartisce sui mesi come le visite e dice che è una stima. Non vanno nel CSV.
 
 Col database vero il riquadro vuole la funzione `statistiche-sito` pubblicata
 su Supabase, con la chiave di GoatCounter (vedi `supabase/LEGGIMI.md`, «I

@@ -13,8 +13,8 @@
 // Chi la chiama deve essere della segreteria (`ruolo = 'staff'`, attiva):
 // l'amministrazione e gli istruttori non la vedono.
 //
-// Tre chiamate a GoatCounter insieme (total, hits, toprefs): sotto il limite
-// di 4 al secondo.
+// Tre chiamate a GoatCounter insieme (total, hits, toprefs), sotto il limite
+// di 4 al secondo; oltre 100 voci, al massimo due pagine in più di hits.
 //
 // Segreto (Edge Functions → Secrets):
 //   GOATCOUNTER_CHIAVE  una chiave di API di GoatCounter con la sola lettura
@@ -25,7 +25,7 @@
 // Si pubblica con `supabase functions deploy statistiche-sito` (vedi `LEGGIMI.md`).
 // ---------------------------------------------------------------------------
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { giornoValido, intervalloSito, riassumi } from './numeri.ts'
+import { ancoraVoci, giaViste, giornoValido, intervalloSito, riassumi } from './numeri.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -34,6 +34,9 @@ const CORS = {
 }
 
 const BASE = 'https://ods.goatcounter.com/api/v0'
+/** Oltre 100 voci di /stats/hits si chiedono le pagine dopo, ma non più di tre in tutto: il sito ne ha una ventina. */
+const PAGINE_MASSIME = 3
+
 /** Un anno e poco più: il periodo più lungo di STATISTICHE è di 12 mesi. */
 const GIORNI_MASSIMI = 400
 
@@ -73,6 +76,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (req.method !== 'POST') return no('Solo POST', 405)
 
+  // `!`: SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY li mette Supabase in ogni funzione, come nelle altre.
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
@@ -108,11 +112,17 @@ Deno.serve(async (req) => {
   if (!chiave) return no('Manca la chiave di GoatCounter fra i segreti della funzione: vedi supabase/LEGGIMI.md, «I numeri del sito»', 501, 'chiave-manca')
 
   try {
-    const [totale, hits, refs] = await Promise.all([
+    const [totale, prima, refs] = await Promise.all([
       chiedi(chiave, '/stats/total', intervallo),
       chiedi(chiave, '/stats/hits', { ...intervallo, limit: '100' }),
       chiedi(chiave, '/stats/toprefs', { ...intervallo, limit: '100' }),
     ])
+    const hits = [prima]
+    // Le pagine dopo una alla volta, con una pausa: tre chiamate sono appena partite e il limite è 4 al secondo.
+    while (hits.length < PAGINE_MASSIME && ancoraVoci(hits[hits.length - 1])) {
+      await new Promise((fatto) => setTimeout(fatto, 400))
+      hits.push(await chiedi(chiave, '/stats/hits', { ...intervallo, limit: '100', exclude_paths: giaViste(hits) }))
+    }
     return risposta({ numeri: riassumi(totale, hits, refs, da, a) })
   } catch (e) {
     if (e instanceof NoGoat) return no(e.message, 502, e.tipo)

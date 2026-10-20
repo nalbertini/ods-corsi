@@ -1,75 +1,75 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { AltreSito, NumeriSito } from '../../lib/sitoNumeri'
-import type { TipoGuaioSito } from '../../lib/sitoStatistiche'
-import { AGGIORNA_MS, TESTI_GUAI, chiaveSito, contaDal, creaMemoria, lettiAlle, nomeMeseSito, notaMese, puoAggiornare } from '../../lib/sitoStatistiche'
-import { Riga } from './comune'
-import { Colonne } from './Statistiche'
+import type { LetturaSito, StatoSito } from '../../lib/sitoStatistiche'
+import { TESTI_GUAI, chiaveSito, contaDal, creaMemoria, lettiAlle, nomeMeseSito, notaMese } from '../../lib/sitoStatistiche'
+import { Colonne, Guaio, Riga } from './comune'
 
-/** Fuori dal componente: STATISTICHE si chiude e si riapre, i numeri restano i loro 10 minuti. */
+/** Fuori dal componente: STATISTICHE si chiude e si riapre, e la memoria (numeri, guai, ultima lettura) resta. */
 const memoria = creaMemoria()
-/** L'ultima lettura vera di ogni periodo, anche andata male: AGGIORNA aspetta il suo minuto. */
-const ultime = new Map<string, number>()
 
 const it = (n: number) => n.toLocaleString('it-IT')
 
-type Stato = { numeri: NumeriSito; letti: number } | { guaio: TipoGuaioSito } | null
-
 /**
  * IL SITO, in fondo a STATISTICHE: quanta gente guarda il sito e quante volte tocca Iscriviti, Chiama o Scrivici,
- * da GoatCounter (funzione `statistiche-sito`). Le regole stanno in sitoStatistiche.ts e sitoNumeri.ts; qui si
- * mostra. Un guaio sta dentro il riquadro: gli altri riquadri restano. Il corso scelto non conta.
+ * da GoatCounter (funzione `statistiche-sito`). Le regole (quando leggere, AGGIORNA, le frasi) stanno in
+ * sitoStatistiche.ts e sitoNumeri.ts; qui si mostra. Un guaio sta dentro il riquadro: gli altri riquadri restano.
+ * Il corso scelto non conta. `a` è oggi: il periodo di STATISTICHE finisce sempre oggi.
  */
-export function StatisticheSito({ d, da, a, oggi, corso }: { d: DatiSegreteria; da: string; a: string; oggi: string; corso: boolean }) {
+export function StatisticheSito({ d, da, a, corso }: { d: DatiSegreteria; da: string; a: string; corso: boolean }) {
   const chiave = chiaveSito(da, a)
-  const [stato, setStato] = useState<Stato>(null)
+  const [stato, setStato] = useState<StatoSito | null>(null)
   const [legge, setLegge] = useState(false)
   const [, setGiro] = useState(0)
-  const mio = useRef(0)
+  /** Il periodo che si guarda adesso: una lettura di un altro periodo va in memoria ma non si mostra. */
+  const guardato = useRef(chiave)
+  guardato.current = chiave
 
   const leggi = useCallback(async () => {
-    const n = ++mio.current
+    const per = chiave
     setLegge(true)
-    const r = await d.statisticheSito(da, a)
+    let r: LetturaSito
+    try {
+      r = await d.statisticheSito(da, a)
+    } catch {
+      // Una rottura che la chiamata non ha previsto: per chi usa l'app è un contatore che non risponde.
+      r = { guaio: 'non-risponde' }
+    }
     const adesso = Date.now()
-    ultime.set(chiave, adesso)
-    if (n !== mio.current) return
-    if ('numeri' in r) {
-      memoria.salva(chiave, r.numeri, adesso)
-      setStato({ numeri: r.numeri, letti: adesso })
-    } else setStato({ guaio: r.guaio })
+    memoria.ricevuto(per, r, adesso)
+    if (guardato.current !== per) return
+    setStato({ ...r, letti: adesso })
     setLegge(false)
   }, [d, da, a, chiave])
 
   useEffect(() => {
-    const giaLetti = memoria.leggi(chiave, Date.now())
-    if (giaLetti) {
-      mio.current++
-      setLegge(false)
-      setStato(giaLetti)
-    } else {
+    const cosa = memoria.daLeggere(chiave, Date.now())
+    if (cosa.cosa === 'leggi') {
       setStato(null)
       void leggi()
+    } else {
+      setLegge(false)
+      setStato(cosa.stato)
     }
   }, [chiave, leggi])
 
   // AGGIORNA si riaccende da sé quando passa il minuto.
-  const ultima = ultime.get(chiave) ?? null
-  const acceso = !legge && puoAggiornare(ultima, Date.now())
+  const fra = legge ? 0 : memoria.aggiornaFra(chiave, Date.now())
   useEffect(() => {
-    if (acceso || ultima === null) return
-    const t = setTimeout(() => setGiro((g) => g + 1), Math.max(0, ultima + AGGIORNA_MS - Date.now()) + 50)
+    if (!fra) return
+    const t = setTimeout(() => setGiro((g) => g + 1), fra + 50)
     return () => clearTimeout(t)
-  }, [acceso, ultima])
+  }, [fra, stato])
+  const acceso = !legge && fra === 0
 
   const dal = contaDal(da)
   const numeri = stato && 'numeri' in stato ? stato.numeri : null
-  const letti = stato && 'numeri' in stato ? lettiAlle(stato.letti) : stato ? 'Non letti' : ''
+  const letti = stato ? (numeri ? lettiAlle(stato.letti) : 'Non letti') : ''
 
   return (
     <section aria-label="Il sito" className="sg-riquadro">
       <Riga titolo="IL SITO">
-        <span style={{ fontSize: 12, color: 'var(--dim)' }}>visite e tocchi su Iscriviti, Chiama e Scrivici · tutta la palestra</span>
+        <span className="sg-sito-nota-titolo">visite e tocchi su Iscriviti, Chiama e Scrivici · tutta la palestra</span>
       </Riga>
       <div className="sg-sito-testa">
         <span className="sg-sito-indicativi">
@@ -97,21 +97,24 @@ export function StatisticheSito({ d, da, a, oggi, corso }: { d: DatiSegreteria; 
         </div>
       )}
       {corso && <div className="sg-sito-frase">Il sito è di tutta la palestra: il corso scelto qui non conta.</div>}
+      {numeri?.stimati && (
+        <div className="sg-sito-frase">
+          Per qualche tocco GoatCounter ha dato solo il totale: nei mesi è spartito come le visite, quindi è una stima.
+        </div>
+      )}
 
       {stato === null && <span className="sg-sotto">Sto leggendo i numeri del sito…</span>}
       {stato && 'guaio' in stato && (
         <div role="alert" className="sg-sito-guaio">
-          <span className="sg-sito-guaio-segno">✕ NON LETTO</span>
-          <span style={{ fontSize: 16, fontWeight: 700 }}>{TESTI_GUAI[stato.guaio].titolo}</span>
-          <span style={{ fontSize: 14, lineHeight: 1.45, color: 'var(--dim)' }}>{TESTI_GUAI[stato.guaio].frase}</span>
+          <Guaio titolo={TESTI_GUAI[stato.guaio].titolo} testo={TESTI_GUAI[stato.guaio].frase} />
         </div>
       )}
-      {numeri && <Numeri numeri={numeri} da={da} a={a} oggi={oggi} />}
+      {numeri && <Numeri numeri={numeri} da={da} a={a} />}
     </section>
   )
 }
 
-function Numeri({ numeri, da, a, oggi }: { numeri: NumeriSito; da: string; a: string; oggi: string }) {
+function Numeri({ numeri, da, a }: { numeri: NumeriSito; da: string; a: string }) {
   const totali: Array<[number, string]> = [
     [numeri.visite, 'visite nel periodo'],
     [numeri.iscriviti, 'su Iscriviti'],
@@ -124,13 +127,13 @@ function Numeri({ numeri, da, a, oggi }: { numeri: NumeriSito; da: string; a: st
       <div className="sg-sito-totali">
         {totali.map(([n, cosa]) => (
           <span key={cosa}>
-            <span className="num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)' }}>{it(n)}</span> {cosa}
+            <span className="num sg-sito-cifra">{it(n)}</span> {cosa}
           </span>
         ))}
       </div>
 
       <div className="sg-sito-due">
-        <div className="stack" style={{ gap: 8, minWidth: 0 }}>
+        <div className="sg-sito-blocco">
           <span className="sg-etichetta">VISITE MESE PER MESE</span>
           <Colonne
             nome="Visite al sito"
@@ -142,7 +145,7 @@ function Numeri({ numeri, da, a, oggi }: { numeri: NumeriSito; da: string; a: st
             }))}
           />
         </div>
-        <div className="stack sg-orari-scorre" style={{ gap: 8, minWidth: 0 }}>
+        <div className="sg-sito-blocco sg-orari-scorre">
           <span className="sg-etichetta">HANNO TOCCATO</span>
           <table className="sg-stat-tabella sg-sito-tabella">
             <thead>
@@ -157,10 +160,10 @@ function Numeri({ numeri, da, a, oggi }: { numeri: NumeriSito; da: string; a: st
             <tbody>
               {numeri.mesi.map((m) => {
                 const nome = nomeMeseSito(m.mese)
-                const nota = notaMese(m.mese, da, a, oggi)
+                const nota = notaMese(m.mese, da, a)
                 return (
                   <tr key={m.mese}>
-                    <th scope="row" style={{ fontWeight: 600 }}>
+                    <th scope="row" className="sg-sito-mese">
                       <span className="sg-sito-mese-lungo">{nome.lungo}</span>
                       <span className="sg-sito-mese-corto">
                         {nome.corto.toUpperCase()} {m.mese.slice(0, 4)}
@@ -183,7 +186,7 @@ function Numeri({ numeri, da, a, oggi }: { numeri: NumeriSito; da: string; a: st
               </tr>
             </tbody>
           </table>
-          <span className="sg-sotto" style={{ fontSize: 12 }}>
+          <span className="sg-sito-piccola">
             Scrivici è il tasto di WhatsApp. Un tocco conta anche se poi la persona non chiama o non scrive.
           </span>
         </div>
@@ -227,13 +230,13 @@ function Barre({ titolo, righe, altre, parola, sotto, diretto }: { titolo: strin
     </div>
   )
   return (
-    <div className="stack" style={{ gap: 10, minWidth: 0 }}>
+    <div className="sg-sito-blocco" data-largo="true">
       <span className="sg-etichetta">{titolo}</span>
       {!tutte.length && diretto === undefined && <span className="sg-sotto">Ancora niente in questo periodo.</span>}
       {tutte.map((r, i) => riga(r, i))}
       {diretto !== undefined && riga({ nome: 'Diretto o non si sa', sotto: 'indirizzo scritto a mano, link da WhatsApp, app che non lo dicono', n: diretto }, tutte.length, true)}
       {sotto && (
-        <span className="sg-sotto" style={{ fontSize: 12 }}>
+        <span className="sg-sito-piccola">
           {sotto}
         </span>
       )}

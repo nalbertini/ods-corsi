@@ -2677,13 +2677,20 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-sito-frase { padding: 10px 14px; border-radius: 6px; background: var(--bg); font-size: 14px; line-height: 1.45; }
 .sg-sito-frase[data-prova='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 .sg-sito-frase[data-prova='true'] > b { color: var(--giallo-testo); }
-/* Il guaio sta dentro il riquadro: come Guaio di comune.tsx (NON LETTO, rosso), con la barra a sinistra del look. */
-.sg-sito-guaio { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 6px; background: var(--bg); box-shadow: inset 4px 0 0 var(--rosso); }
-.sg-sito-guaio-segno { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: var(--rosso-testo); }
+/* Il guaio sta dentro il riquadro: il Guaio di comune.tsx col titolo, sul colore del fondo e con la barra rossa a sinistra del look. */
+.sg-sito-guaio > .card { padding: 14px 16px; border: 0; border-radius: 6px; background: var(--bg); box-shadow: inset 4px 0 0 var(--rosso); }
+.sg-sito-nota-titolo { font-size: 12px; color: var(--dim); }
+.sg-sito-cifra { font-size: 22px; font-weight: 700; color: var(--text); }
+.sg-sito-blocco { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.sg-sito-blocco[data-largo='true'] { gap: 10px; }
+.sg-sito-piccola { font-size: 12px; color: var(--dim); }
 .sg-sito-totali { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; font-size: 14px; color: var(--sec); }
 .sg-sito-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; align-items: start; }
 .sg-sito-tabella .sg-sito-mese-corto { display: none; }
-.sg-sito-nota { font-size: 12px; font-weight: 400; color: var(--dim); }
+/* Il mese va a capo e la nota («dal 20», «fino a oggi») sta sotto: così SCRIVICI resta dentro anche a 1024px. */
+.sg-sito-tabella tbody tr > :first-child { white-space: normal; }
+.sg-sito-mese { font-weight: 600; }
+.sg-sito-nota { display: block; font-size: 12px; font-weight: 400; color: var(--dim); }
 .sg-sito-totale > * { border-top: 2px solid var(--line); font-weight: 700; }
 .sg-sito-totale > th { font-size: 11px; letter-spacing: 0.14em; color: var(--dim); }
 .sg-sito-barra { display: grid; grid-template-columns: 190px minmax(0, 1fr) 56px; grid-template-areas: 'nome barra n'; gap: 4px 12px; align-items: center; min-height: 34px; }
@@ -2693,7 +2700,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-sito-barra-sotto { font-size: 12px; font-weight: 400; line-height: 1.35; color: var(--dim); }
 .sg-sito-barra > .sg-barra-binario { grid-area: barra; }
 .sg-sito-barra-n { grid-area: n; font-size: 15px; font-weight: 600; text-align: right; }
-@media (max-width: 1000px) {
+/* Fino a 1200px colonne e tabella una sotto l'altra: affiancate, la tabella non ci sta. */
+@media (max-width: 1200px) {
   .sg-sito-due { grid-template-columns: minmax(0, 1fr); }
 }
 /* Sul telefono: Aggiorna a tutta riga, il nome e il numero sopra la barra, la tabella stretta col mese corto. */
@@ -2701,8 +2709,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-sito-aggiorna { flex: 1 1 100%; }
   .sg-sito-aggiorna > .sg-btn { flex: 1 1 auto; }
   .sg-sito-barra { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'nome n' 'barra barra'; }
-  .sg-sito-tabella th, .sg-sito-tabella td { padding-left: 5px; padding-right: 5px; }
-  .sg-sito-tabella thead th { letter-spacing: 0.04em; }
+  .sg-sito-tabella th, .sg-sito-tabella td { padding-left: 4px; padding-right: 4px; }
+  .sg-sito-tabella thead th { letter-spacing: 0; }
   .sg-sito-tabella .sg-sito-mese-lungo, .sg-sito-tabella .sg-sito-nota { display: none; }
   .sg-sito-tabella .sg-sito-mese-corto { display: inline; }
   /* Il mese corto ci sta: niente colonna larga e ferma come nelle altre tabelle, così le cinque colonne stanno nello schermo. */

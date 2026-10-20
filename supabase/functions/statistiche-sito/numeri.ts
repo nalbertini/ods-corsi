@@ -59,6 +59,8 @@ export interface NumeriSito {
   diretto: number
   /** Numeri inventati della modalità prova. */
   prova?: boolean
+  /** GoatCounter ha dato solo il totale di qualche clic: i mesi di quei clic sono spartiti come le visite. */
+  stimati?: boolean
 }
 
 /** Un giorno `AAAA-MM-GG` che esiste davvero. */
@@ -126,7 +128,8 @@ export function mesiDelPeriodo(da: string, a: string): string[] {
 const oggetto = (x: unknown): Record<string, unknown> => (x && typeof x === 'object' ? (x as Record<string, unknown>) : {})
 const elenco = (x: unknown): Record<string, unknown>[] => (Array.isArray(x) ? x.map(oggetto) : [])
 const numero = (x: unknown) => (typeof x === 'number' && Number.isFinite(x) && x > 0 ? x : 0)
-const testo = (x: unknown) => (typeof x === 'string' ? x : '')
+// L'indirizzo che conta le visite è pubblico: chiunque può mandare un titolo lungo. All'app arrivano al massimo 120 caratteri.
+const testo = (x: unknown) => (typeof x === 'string' ? x.slice(0, 120) : '')
 
 /** I giorni di una statistica (`stats` di GoatCounter): `day` e `daily`, o la somma di `hourly`. */
 function giorni(x: unknown): Array<{ giorno: string; n: number }> {
@@ -134,6 +137,40 @@ function giorni(x: unknown): Array<{ giorno: string; n: number }> {
     const ore = Array.isArray(s.hourly) ? s.hourly.reduce<number>((t, h) => t + numero(h), 0) : 0
     return { giorno: testo(s.day), n: typeof s.daily === 'number' ? numero(s.daily) : ore }
   })
+}
+
+/** Le voci di /stats/hits, anche su più pagine: `hits` è una risposta o l'elenco delle risposte, nell'ordine. */
+const vociDi = (hits: unknown) => (Array.isArray(hits) ? hits : [hits]).flatMap((r) => elenco(oggetto(r).hits))
+
+/** Se GoatCounter ha altre voci oltre quelle date (`more`). */
+export const ancoraVoci = (risposta: unknown) => oggetto(risposta).more === true
+
+/** Le voci già lette, da escludere nella pagina dopo (`exclude_paths`, gli id dei percorsi separati da virgole). */
+export const giaViste = (risposte: unknown[]) =>
+  risposte
+    .flatMap((r) => elenco(oggetto(r).hits))
+    .map((h) => h.path_id)
+    .filter((x): x is number => typeof x === 'number' && Number.isInteger(x))
+    .join(',')
+
+/**
+ * `n` spartito sui mesi in proporzione ai pesi, a numeri interi che fanno sempre `n` (i resti più grandi prendono
+ * uno in più, a parità il mese prima). Senza pesi va tutto nell'ultimo mese.
+ */
+function spartisci(n: number, pesi: number[]): number[] {
+  const tot = pesi.reduce((s, x) => s + x, 0)
+  if (!pesi.length) return []
+  if (!tot) return pesi.map((_, i) => (i === pesi.length - 1 ? n : 0))
+  const esatti = pesi.map((x) => (n * x) / tot)
+  const parti = esatti.map(Math.floor)
+  let resto = n - parti.reduce((s, x) => s + x, 0)
+  const ordine = esatti.map((x, i) => [x - Math.floor(x), i]).sort((p, q) => q[0] - p[0] || p[1] - q[1])
+  for (const [, i] of ordine) {
+    if (resto <= 0) break
+    parti[i]++
+    resto--
+  }
+  return parti
 }
 
 /** La 404 del sito si conta col titolo «404» (sitoGenera.ts): non è una pagina da mostrare. */
@@ -149,7 +186,7 @@ function primeCinque<T extends { visite: number }>(x: T[]): { prime: T[]; altre:
 const DIRETTO = new Set(['', '(unknown)', '(no data)', 'unknown'])
 
 /**
- * Il riassunto per la segreteria. `totale` è la risposta di /stats/total, `hits` quella di /stats/hits (pagine e clic),
+ * Il riassunto per la segreteria. `totale` è la risposta di /stats/total, `hits` quella di /stats/hits (pagine e clic; o l'elenco delle sue pagine),
  * `refs` quella di /stats/toprefs; `da` e `a` i giorni del periodo, a Roma. Le visite di un mese sono quelle di
  * GoatCounter meno i clic (che GoatCounter conta insieme); i giorni sono quelli di GoatCounter, in UTC: a cavallo
  * di due mesi una visita di mezzanotte può finire nel mese accanto, ed è il motivo per cui i numeri sono indicativi.
@@ -163,11 +200,23 @@ export function riassumi(totale: unknown, hits: unknown, refs: unknown, da: stri
     const m = nel(giorno)
     if (m) m.visite += n
   }
-  const tutte = elenco(oggetto(hits).hits)
+  const tutte = vociDi(hits)
+  const pesi = [...mesi.values()].map((m) => m.visite)
+  let stimati = false
   for (const h of tutte.filter((x) => x.event === true)) {
     const nome = testo(h.path).replace(/^\//, '').toLowerCase()
     const tasto = eTasto(nome) ? nome : null
-    for (const { giorno, n } of giorni(h.stats)) {
+    const giorniClic = giorni(h.stats)
+    // Senza i giorni c'è solo il totale: piuttosto che perderlo, si spartisce sui mesi come le visite, e lo si dice.
+    const parti = giorniClic.length ? null : spartisci(numero(h.count), pesi)
+    if (parti) {
+      stimati = true
+      ;[...mesi.values()].forEach((m, i) => {
+        m.visite -= parti[i]
+        if (tasto) m[tasto] += parti[i]
+      })
+    }
+    for (const { giorno, n } of giorniClic) {
       const m = nel(giorno)
       if (!m) continue
       m.visite -= n
@@ -195,5 +244,6 @@ export function riassumi(totale: unknown, hits: unknown, refs: unknown, da: stri
     provenienze: provenienze.prime,
     altreProvenienze: provenienze.altre,
     diretto: voci.filter((r) => DIRETTO.has(r.nome.toLowerCase())).reduce((s, r) => s + r.visite, 0),
+    ...(stimati && { stimati }),
   }
 }

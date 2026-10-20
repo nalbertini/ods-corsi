@@ -41,6 +41,9 @@
     <div style="padding: 10px 14px; border-radius: 6px; background: #eef5fa; font-size: 14px; line-height: 1.45">Il sito è di tutta la palestra: il corso scelto qui non conta.</div>
   </sc-if>
 
+  <sc-if value="{{haStimati}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 10px 14px; border-radius: 6px; background: #eef5fa; font-size: 14px; line-height: 1.45">Per qualche tocco GoatCounter ha dato solo il totale: nei mesi è spartito come le visite, quindi è una stima.</div>
+  </sc-if>
   <sc-if value="{{legge}}" hint-placeholder-val="{{ false }}">
     <span style="font-size: 14px; color: #46606f">Sto leggendo i numeri del sito…</span>
   </sc-if>
@@ -49,9 +52,9 @@
   </sc-if>
 
   <sc-if value="{{errore}}" hint-placeholder-val="{{ false }}">
-    <!-- L'errore sta dentro il riquadro: gli altri riquadri restano. Come Guaio di comune.tsx (NON LETTO, rosso), con la barra a sinistra del look. -->
+    <!-- L'errore sta dentro il riquadro: gli altri riquadri restano. E' Guaio di comune.tsx col titolo (NON LETTO, rosso), sul fondo e con la barra a sinistra del look. -->
     <div role="alert" style="display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 6px; background: #eef5fa; box-shadow: inset 4px 0 0 #e4292a">
-      <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: #b81d1d">✕ NON LETTO</span>
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: #b81d1d">NON LETTO</span>
       <span style="font-size: 16px; font-weight: 700">{{erroreTitolo}}</span>
       <span style="font-size: 14px; line-height: 1.45; color: #46606f">{{erroreFrase}}</span>
     </div>
@@ -88,7 +91,7 @@
           <tbody>
             <sc-for list="{{mesi}}" as="m" hint-placeholder-count="3">
               <tr>
-                <th scope="row" style="padding: 8px {{cella}}; border-bottom: 1px solid #cfe6f4; text-align: left; font-weight: 600; white-space: nowrap">{{m.nome}} <span style="display: {{notaMese}}; font-weight: 400; font-size: 12px; color: #46606f">{{m.nota}}</span></th>
+                <th scope="row" style="padding: 8px {{cella}}; border-bottom: 1px solid #cfe6f4; text-align: left; font-weight: 600; white-space: nowrap">{{m.nome}}<span style="display: {{notaMese}}; font-weight: 400; font-size: 12px; color: #46606f">{{m.nota}}</span></th>
                 <td style="padding: 8px {{cella}}; border-bottom: 1px solid #cfe6f4; text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600">{{m.visite}}</td>
                 <td style="padding: 8px {{cella}}; border-bottom: 1px solid #cfe6f4; text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600">{{m.iscriviti}}</td>
                 <td style="padding: 8px {{cella}}; border-bottom: 1px solid #cfe6f4; text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600">{{m.chiama}}</td>
@@ -151,11 +154,13 @@
   </sc-if>
 </section>
 </x-dc>
-<script data-dc-script data-props='{"stato":{"editor":"enum","options":["pieno","errore","legge","testa"],"default":"pieno"},"telefono":{"editor":"boolean","default":false},"letti":{"editor":"text","default":"Letti alle 10:42"},"aggiornaSpento":{"editor":"boolean","default":false},"dal":{"editor":"text","default":""},"corso":{"editor":"boolean","default":false},"prova":{"editor":"boolean","default":false},"mesi":{"editor":"text","default":"gen:gennaio:1580:34:17:41|feb:febbraio:1102:19:10:27|mar:marzo:698:12:6:16:fino a oggi"},"pagine":{"editor":"text","default":"Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine||1090"},"provenienze":{"editor":"text","default":"Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26"},"diretto":{"editor":"text","default":"1030"},"sopra":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":""},"erroreTitolo":{"editor":"text","default":"GoatCounter non risponde"},"erroreFrase":{"editor":"text","default":"Il contatore del sito non ha risposto. Gli altri numeri della pagina sono a posto: riprova più tardi con Aggiorna."},"$preview":{"width":1124,"height":900}}'>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["pieno","errore","legge","testa"],"default":"pieno"},"telefono":{"editor":"boolean","default":false},"letti":{"editor":"text","default":"Letti alle 10:42"},"aggiornaSpento":{"editor":"boolean","default":false},"dal":{"editor":"text","default":""},"corso":{"editor":"boolean","default":false},"prova":{"editor":"boolean","default":false},"stimati":{"editor":"boolean","default":false},"mesi":{"editor":"text","default":"gen:gennaio:1580:34:17:41|feb:febbraio:1102:19:10:27|mar:marzo:698:12:6:16:fino a oggi"},"pagine":{"editor":"text","default":"Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine||1090"},"provenienze":{"editor":"text","default":"Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26"},"diretto":{"editor":"text","default":"1030"},"sopra":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":""},"erroreTitolo":{"editor":"text","default":"GoatCounter non risponde"},"erroreFrase":{"editor":"text","default":"Il contatore del sito non ha risposto. Gli altri numeri della pagina sono a posto: riprova più tardi con Aggiorna."},"$preview":{"width":1124,"height":900}}'>
 // COSTRUITO: il riquadro IL SITO, in fondo a STATISTICHE della segreteria, nel look del sito (src/components/segreteria/StatisticheSito.tsx,
 // classi .sg-sito-* di src/styles.css; regole in src/lib/sitoStatistiche.ts e sitoNumeri.ts). Il design approvato sta in ../sito-in-statistiche/.
 // Come costruito: «Altre N pagine» senza i nomi sotto (GoatCounter da' solo i conti); «· di nuovo fra un minuto» accanto all'ora finche' Aggiorna
-// e' spento, anche dopo la prima lettura; sotto i 1000px una colonna, sotto i 768px le barre col nome sopra e la tabella col mese corto.
+// e' spento, anche dopo la prima lettura; la nota del mese sotto il nome; `stimati` la fascia dei tocchi spartiti sui mesi; l'errore e' Guaio col
+// titolo (anche «L'app non ti riconosce», 401/403); sotto i 1200px colonne e tabella una sotto l'altra, sotto i 768px le barre col nome sopra e la
+// tabella col mese corto e celle da 4px.
 // Il guscio e' quello degli altri riquadri (.sg-riquadro col look: tessera bianca senza bordo, raggio 6px, padding 18px 20px) con la testa di `Riga`
 // (comune.tsx: h3 14px 700 0.22em `dim`, .rule-line 2px, nota 12px). Le colonne sono Colonne.dc.html della libreria (le stesse di PRESENZE, PROVE,
 // INCASSI); la tabella ripete .sg-stat-tabella (src/styles.css righe 2648-2652); le barre ripetono .sg-barra (righe 2595-2599) con il nome su due righe.
@@ -189,9 +194,9 @@ class Component extends DCLogic {
       aCapo: tel ? 'wrap' : 'nowrap', baseNota: tel ? '100%' : 'auto',
       flessoAggiorna: tel ? '1 1 100%' : '0 0 auto', flessoTasto: tel ? '1 1 auto' : '0 0 120px',
       // Sul telefono la tabella sta nei 318px: celle strette, testata meno spaziata, il mese corto (GEN 2027) senza la nota.
-      cella: tel ? '5px' : '10px', spazioTesta: tel ? '0.04em' : '0.14em', notaMese: tel ? 'none' : 'inline',
+      cella: tel ? '4px' : '10px', spazioTesta: tel ? '0' : '0.14em', notaMese: tel ? 'none' : 'block',
       letti: p.letti ?? '', aggiornaSpento: truthy(p.aggiornaSpento),
-      haDal: !!p.dal && stato !== 'errore', dal: p.dal ?? '', haCorso: truthy(p.corso), haProva: truthy(p.prova),
+      haDal: !!p.dal && stato !== 'errore', dal: p.dal ?? '', haCorso: truthy(p.corso), haStimati: truthy(p.stimati), haProva: truthy(p.prova),
       legge: stato === 'legge', errore: stato === 'errore', pieno: stato === 'pieno', soloTesta: stato === 'testa',
       erroreTitolo: p.erroreTitolo ?? '', erroreFrase: p.erroreFrase ?? '',
       tot: { visite: it(somma('visite')), iscriviti: it(somma('iscriviti')), chiama: it(somma('chiama')), scrivici: it(somma('scrivici')) },
