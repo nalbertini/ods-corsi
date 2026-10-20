@@ -1854,6 +1854,10 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
      stessa colonna, staccato, e non una griglia larga quanto lo schermo. */
   .porta-altro { max-width: 460px; margin: 24px auto 0; padding-inline: 0; }
 }
+/* Cosa potrà e non potrà fare Claude, nella pagina del consenso (`Collega.tsx`). */
+.collega-elenco { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 12px 14px; list-style: none; background: var(--surface); border: 1px solid var(--line); font-size: 15px; line-height: 1.4; }
+.collega-elenco[data-tono='si'] li::before { content: '✓ '; color: var(--verde-testo); font-weight: 700; }
+.collega-elenco[data-tono='no'] li::before { content: '✕ '; color: var(--rosso-testo); font-weight: 700; }
 .chi-esci { font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); text-decoration: underline; min-height: 44px; display: inline-flex; align-items: center; }
 
 /* Per chi legge lo schermo, non per chi lo guarda. */

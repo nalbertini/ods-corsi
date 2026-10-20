@@ -215,7 +215,7 @@ export type Entrato = { persona: Personale | null; scegli?: undefined } | { pers
  * resta, e torna la persona entrata; se no si va nell'area giusta (vedi
  * `passaA`) e la pagina cambia, e la promessa non torna più.
  */
-export async function accedi(utente: string, password: string): Promise<Entrato> {
+export async function accedi(utente: string, password: string, restaQui = false): Promise<Entrato> {
   const c = await db()
   const { error } = await c.auth.signInWithPassword({ email: emailDellaSala(utente), password })
   if (error) throw new Error(perché(error))
@@ -231,6 +231,8 @@ export async function accedi(utente: string, password: string): Promise<Entrato>
     throw new Error('Questo account non è di un istruttore, della segreteria, dell’amministrazione o del tablet di una sala: chiedi alla segreteria, o aggiorna l’app se il ruolo è nuovo')
   }
   if (id) ricorda(id, a)
+  // Chi collega Claude (`collega/`) resta sulla pagina del consenso, qualunque sia la sua area.
+  if (restaQui) return { persona: a.persona }
   if (a.persona && a.aree.length > 1) return { persona: a.persona, scegli: a.aree }
   if (a.area === areaDelPercorso()) return { persona: a.persona }
   passaA(a.area)

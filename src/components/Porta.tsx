@@ -162,8 +162,11 @@ export function UnAttimo() {
  * (vedi `accedi`): se è questa, `onEntrato` riceve la persona; se no la pagina
  * cambia. Una scelta dell'area c'è solo per chi ne ha più d'una (vedi
  * `SceltaArea`): per gli altri la sceglie l'account.
+ *
+ * `collega` è la porta della pagina del consenso a Claude (`Collega.tsx`): chi entra resta lì, con la
+ * frase che dice perché, e senza la prova, che lì non serve.
  */
-export function Accesso({ onEntrato }: { onEntrato?: (p: Personale) => void }) {
+export function Accesso({ onEntrato, collega }: { onEntrato?: (p: Personale) => void; collega?: boolean }) {
   const [scelta, setScelta] = useState<{ persona: Personale; aree: AreaDiAccount[] } | null>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -192,7 +195,7 @@ export function Accesso({ onEntrato }: { onEntrato?: (p: Personale) => void }) {
     setErrore(null)
     setDetto(null)
     try {
-      const e = await accedi(email.trim(), password)
+      const e = await accedi(email.trim(), password, collega)
       if (e.scegli) setScelta({ persona: e.persona, aree: e.scegli })
       else if (e.persona) onEntrato?.(e.persona)
     } catch (x) {
@@ -212,9 +215,9 @@ export function Accesso({ onEntrato }: { onEntrato?: (p: Personale) => void }) {
       </div>
       <form className="pad stack" style={{ gap: 12, paddingBottom: 16 }} onSubmit={(e) => void invia(e)}>
         <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-          Entra con l’account che ti ha dato la palestra, e l’app ti porta da sola nella tua area: la segreteria alla
-          reception, gli istruttori al calendario e all’appello, il tablet di una sala nella sua sala. Resti collegato
-          finché non premi «Esci».
+          {collega
+            ? 'Claude chiede di collegarsi a ODS Corsi. Entra con il tuo account: dopo ti diciamo cosa potrà fare, e decidi tu.'
+            : 'Entra con l’account che ti ha dato la palestra, e l’app ti porta da sola nella tua area: la segreteria alla reception, gli istruttori al calendario e all’appello, il tablet di una sala nella sua sala. Resti collegato finché non premi «Esci».'}
         </span>
         <label className="stack" style={{ gap: 4 }}>
           <span className="modulo-etichetta">EMAIL, O NOME UTENTE DELLA SALA</span>
@@ -259,7 +262,7 @@ export function Accesso({ onEntrato }: { onEntrato?: (p: Personale) => void }) {
           </span>
         )}
       </form>
-      <div className="pad stack" style={{ gap: 8, paddingBottom: 16 }}>
+      {!collega && <div className="pad stack" style={{ gap: 8, paddingBottom: 16 }}>
         <span className="passo-dettaglio" style={{ fontSize: 15 }}>
           Senza account si può guardare l’app in prova: l’orario vero, iscritti inventati, e niente di quel che si
           tocca arriva al database.
@@ -267,7 +270,7 @@ export function Accesso({ onEntrato }: { onEntrato?: (p: Personale) => void }) {
         <button type="button" className="btn btn-ghost" onClick={() => scegliProva(true)}>
           PROVA CON DATI INVENTATI
         </button>
-      </div>
+      </div>}
     </div>
   )
 }
