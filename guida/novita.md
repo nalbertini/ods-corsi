@@ -10,6 +10,36 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.135.0 — 20 ottobre 2026
+
+### Novità
+
+- Dalla pagina delle iscrizioni si paga prima, e la ricevuta del pagamento è obbligatoria
+
+## 0.134.0 — 20 ottobre 2026
+
+### Novità
+
+- Registrare una spesa dalla foto della fattura, chattando con Claude
+
+## 0.133.0 — 20 ottobre 2026
+
+### Novità
+
+- Un editor nuovo per le pagine del sito, da provare accanto a quello di sempre
+
+## 0.132.1 — 20 ottobre 2026
+
+### Modificato
+
+- Le pagine dei corsi senza «Iscriviti» sotto il titolo
+
+## 0.132.0 — 20 ottobre 2026
+
+### Novità
+
+- Le visite al sito si contano, senza cookie
+
 ## 0.131.2 — 19 ottobre 2026
 
 ### Modificato

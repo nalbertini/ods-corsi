@@ -18,7 +18,7 @@ import {
   type VoceMenu,
 } from '../../lib/sitoPagine'
 import { pulisciTesto } from '../../lib/sitoTesto'
-import { cosaNonVaPezzi, databaseConPezzi, cosaNonVaPortare, dividiInParti, divisibileInParti, frasePartiNuove, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
+import { cosaNonVaPezzi, databaseConPezzi, siProvaNuovoEditor, cosaNonVaPortare, dividiInParti, divisibileInParti, frasePartiNuove, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
 import { Immagini } from './ImmaginiSito'
 import { OrarioSito } from './OrarioSito'
 import { Campo, chiedi, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
@@ -29,6 +29,8 @@ const EditorTesto = lazy(() => import('./EditorTesto').then((m) => ({ default: m
 // Anche l'editor a pezzi e l'anteprima vera (che porta il generatore del sito) si scaricano solo quando servono.
 const EditorPezzi = lazy(() => import('./EditorPezzi'))
 const AnteprimaPagina = lazy(() => import('./AnteprimaPagina'))
+// Il nuovo editor (Puck completo), da provare accanto a quello di oggi.
+const EditorPuck = lazy(() => import('./EditorPuck'))
 
 const TONO_STATO: Record<StatoPagina, string | undefined> = { pubblicata: 'fatto', modificata: 'presto', 'solo-bozza': undefined, nascosta: undefined }
 
@@ -66,6 +68,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
   const [appenaDivisa, setAppenaDivisa] = useState(false)
   const [slug, setSlug] = useState(pagina.slug)
   const [anteprima, setAnteprima] = useState(false)
+  const [nuovo, setNuovo] = useState(false)
   const { avviso, avvisa, fai, lavora } = useAvviso()
   // I pezzi si controllano e si traducono in testo solo quando cambiano, non a ogni tasto di un altro campo.
   const noPezzi = useMemo(() => (aPezzi ? cosaNonVaPezzi(pezzi) : null), [aPezzi, pezzi])
@@ -78,7 +81,8 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
   useEffect(() => {
     if (!sporca) setAppenaDivisa(false)
   }, [sporca])
-  useBozza(sporca, pagina.titolo)
+  // Col nuovo editor aperto le modifiche le tiene lui (e il suo useBozza): questo non deve avvisare a torto.
+  useBozza(sporca && !nuovo, pagina.titolo)
   const noSlug = slug === pagina.slug ? null : controllaSlug(slug, altri)
   const noTitolo = !titolo.trim() ? 'Scrivi il titolo della pagina' : null
   const noTesto = noPezzi ?? testoTroppoLungo(bozza)
@@ -144,6 +148,15 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
     })
   }
 
+  // Col nuovo editor aperto sotto non resta questo: niente tasti nascosti da raggiungere col Tab.
+  // Chiuso si torna alle pagine: questo editor ha ancora i pezzi di prima, e salvandoli si perderebbe il lavoro fatto di là.
+  if (nuovo)
+    return (
+      <Suspense fallback={<span className="sg-sotto">Apro il nuovo editor…</span>}>
+        <EditorPuck d={d} pagina={pagina} onChiudi={onChiudi} ricarica={ricarica} />
+      </Suspense>
+    )
+
   return (
     <>
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
@@ -163,6 +176,11 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
         <button type="button" className="sg-btn sg-btn-linea" aria-pressed={anteprima} onClick={() => setAnteprima((x) => !x)}>
           {anteprima ? 'Torna a scrivere' : 'Anteprima'}
         </button>
+        {siProvaNuovoEditor(pagina) && (
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => (sporca || slug !== pagina.slug ? avvisa('Salva o annulla le modifiche, poi prova il nuovo editor', true) : setNuovo(true))}>
+            Prova il nuovo editor
+          </button>
+        )}
       </div>
 
       <div className={aPezzi ? 'sito-due sito-due-pezzi' : 'sito-due'}>

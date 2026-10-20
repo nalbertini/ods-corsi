@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    .nota { font-size: 14px; color: #8c8c88; line-height: 1.4; }
+  </style>
+</helmet>
+<!-- Il movimento aperto di CONTABILITÀ → MOVIMENTI (contabilita/MovimentoAperto e cambia-voce/MovimentoAperto): a sinistra com'è,
+     a destra col segno DALLA CHAT (`.sg-tag` neutro di Badge). Nell'elenco dei movimenti non cambia niente. -->
+<div style="display: flex; gap: 32px; width: 1440px; padding: 28px 36px 36px; background: #121212; align-items: flex-start">
+<div style="width: 680px; display: flex; flex-direction: column; gap: 10px"><span class="et" style="color: #8c8c88">OGGI · MOVIMENTO APERTO</span>
+<section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333">
+  <div style="display: flex; gap: 12px; align-items: center"><span class="et" style="color: #8c8c88">IL MOVIMENTO</span></div>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">Enel · bolletta n. 123 · set 2026</span>
+  <div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span class="et" style="color: #8c8c88; width: 130px; flex-shrink: 0">DATA</span><span style="font-size: 15px">14/10/2026</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span class="et" style="color: #8c8c88; width: 130px; flex-shrink: 0">TIPO</span><span style="font-size: 15px">USCITA</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span class="et" style="color: #8c8c88; width: 130px; flex-shrink: 0">CASSA</span><span style="font-size: 15px">Conto Corrente</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span class="et" style="color: #8c8c88; width: 130px; flex-shrink: 0">IMPORTO</span><span style="font-size: 15px">312,40 €</span></div>
+  <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="VOCE" valore="Utenze" nota="" hint-size="100%,80px"></dc-import>
+  <dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="DESCRIZIONE" valore="Enel · bolletta n. 123 · set 2026" hint-size="100%,80px"></dc-import>
+  <dc-import name="Campo" contesto="segreteria" tipo="area" etichetta="NOTA" valore="" hint-size="100%,80px"></dc-import>
+  
+  <div style="display: flex; gap: 10px"><dc-import name="Bottone" label="CAMBIA LA VOCE" variante="pieno" contesto="segreteria" hint-size="200px,48px"></dc-import><dc-import name="Bottone" label="SALVA IL TESTO" variante="linea" contesto="segreteria" hint-size="180px,48px"></dc-import><dc-import name="Bottone" label="ANNULLA IL MOVIMENTO" variante="rosso" contesto="segreteria" hint-size="230px,48px"></dc-import></div>
+</section></div>
+<div style="width: 680px; display: flex; flex-direction: column; gap: 10px"><span class="et" style="color: #f4c31b">COSTRUITO · CON IL SEGNO DALLA CHAT</span>
+<section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333">
+  <div style="display: flex; gap: 12px; align-items: center"><span class="et" style="color: #8c8c88">IL MOVIMENTO</span><dc-import name="Badge" tipo="tag" tono="neutro" label="DALLA CHAT" hint-size="96px,22px"></dc-import></div>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">Enel · bolletta n. 123 · set 2026</span>
+  <div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span class="et" style="color: #8c8c88; width: 130px; flex-shrink: 0">DATA</span><span style="font-size: 15px">14/10/2026</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span class="et" style="color: #8c8c88; width: 130px; flex-shrink: 0">TIPO</span><span style="font-size: 15px">USCITA</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span class="et" style="color: #8c8c88; width: 130px; flex-shrink: 0">CASSA</span><span style="font-size: 15px">Conto Corrente</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span class="et" style="color: #8c8c88; width: 130px; flex-shrink: 0">IMPORTO</span><span style="font-size: 15px">312,40 €</span></div>
+  <dc-import name="Campo" contesto="segreteria" tipo="select" etichetta="VOCE" valore="Utenze" nota="" hint-size="100%,80px"></dc-import>
+  <dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="DESCRIZIONE" valore="Enel · bolletta n. 123 · set 2026" hint-size="100%,80px"></dc-import>
+  <dc-import name="Campo" contesto="segreteria" tipo="area" etichetta="NOTA" valore="" hint-size="100%,80px"></dc-import>
+  <span class="nota">Registrato dalla chat con Claude il 20/10/2026.</span>
+  <div style="display: flex; gap: 10px"><dc-import name="Bottone" label="CAMBIA LA VOCE" variante="pieno" contesto="segreteria" hint-size="200px,48px"></dc-import><dc-import name="Bottone" label="SALVA IL TESTO" variante="linea" contesto="segreteria" hint-size="180px,48px"></dc-import><dc-import name="Bottone" label="ANNULLA IL MOVIMENTO" variante="rosso" contesto="segreteria" hint-size="230px,48px"></dc-import></div>
+</section>
+<span class="nota">Il segno c’è solo nel movimento aperto, per sapere da dove viene quando si controlla. Nell’elenco, nel bilancio e nel PDF della chiusura il movimento è uguale agli altri.</span></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":820}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

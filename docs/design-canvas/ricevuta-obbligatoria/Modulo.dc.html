@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA, solo il modulo della pagina pubblica (app.officinedellosport.it/iscrizioni/, IscrizioniScreen.tsx); UNA PERSONA IN PIU' dell'area iscritti resta com'e'. Il modulo dice come pagare nella pagina in cui chiede la ricevuta: QUANTO COSTA (QuantoCosta di ModuloIscrizione.tsx, StimaCosto tema sito, testi invariati) compare sotto COME PAGHI anche qui, senza sconto famiglia. La RICEVUTA DEL PAGAMENTO non ha piu' la parola accanto (niente PUOI PAGARE IN SEGRETERIA ne' FACOLTATIVO): e' obbligatoria come la carta d'identita'; la frase dice bonifico o Satispay, e che va bene lo screenshot. Dopo MANDA LA RICHIESTA senza ricevuta, il riquadro rosso in fondo (RiquadroPasso guaio, come ModuloErrori) dice cosa fare; il file mostra la stessa frase in rosso. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1500px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" tema="sito" label="I CORSI" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="StimaCosto" tema="sito" righe="Quota associativa:50 €|Judo kids · trimestre:105 €|Ginnastica dolce · trimestre:—" totale="155 €" frasi="" avviso="Senza prezzo nel listino: Ginnastica dolce. Lo dice la segreteria." causale="Iscrizione Giulia Rossi · Judo kids, Ginnastica dolce" hint-size="100%,470px"></dc-import>
+</div>
+<dc-import name="Titoletto" tema="sito" label="I FILE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="CaricaFile" tema="sito" etichetta="CARTA D’IDENTITÀ" nome="carta-identita-giulia.jpg" kb="412" hint-size="100%,84px"></dc-import>
+<dc-import name="CaricaFile" tema="sito" etichetta="RETRO DEL DOCUMENTO" seManca="FACOLTATIVO" dettaglio="Se il fronte non basta." hint-size="100%,84px"></dc-import>
+<dc-import name="CaricaFile" tema="sito" etichetta="CERTIFICATO MEDICO" seManca="PUOI PORTARLO DOPO" dettaglio="Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria." hint-size="100%,100px"></dc-import>
+<dc-import name="CaricaFile" tema="sito" etichetta="RICEVUTA DEL PAGAMENTO" dettaglio="Del bonifico o di Satispay: una foto, lo screenshot o il PDF." hint-size="100%,100px"></dc-import>
+</div>
+<dc-import name="Titoletto" tema="sito" label="ALTRO" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 28px">
+<dc-import name="Campo" tema="sito" tipo="spunta" etichetta="" valore="Ho letto l’informativa privacy e so che questi dati li legge solo la segreteria della palestra." scelto="{{ true }}" hint-size="100%,90px"></dc-import>
+<dc-import name="RiquadroPasso" tema="sito" tono="guaio" titolo="" testo="Manca la ricevuta del pagamento: paga con bonifico o Satispay e carica la foto, lo screenshot o il PDF." tonoTesto="testo" tasti="" hint-size="100%,100px"></dc-import>
+<dc-import name="Bottone" tema="sito" label="MANDA LA RICHIESTA" variante="vai" hint-size="100%,56px"></dc-import>
+</div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Fatture dalla chat · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Chat.dc.html",
+   "title": "In Claude: dalla foto al movimento, e i casi che si fermano",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Consenso.dc.html",
+   "title": "Nell'app: collegare Claude al tuo account",
+   "x": 0,
+   "y": 1900,
+   "page": "page-1"
+  },
+  {
+   "file": "MovimentoAperto.dc.html",
+   "title": "CONTABILITÀ · il movimento aperto col segno DALLA CHAT",
+   "x": 0,
+   "y": 3000,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Fatture dalla chat: fotografi la fattura a Claude, lui la registra in CONTABILITÀ dopo il tuo ok"
+  }
+ ]
+}

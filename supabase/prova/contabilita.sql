@@ -413,7 +413,8 @@ select atteso('anon non ne chiama nessuna', (select coalesce(string_agg(p.pronam
 select atteso('non ci sono funzioni di lettura: si legge dalle tabelle', (select coalesce(string_agg(p.proname, ', ' order by p.proname), 'nessuna') from pg_proc p where p.pronamespace = 'public'::regnamespace
   -- cambia_voce_movimenti (67-cambia-voce.sql) scrive, non legge: la prova è cambia-voce.sql
   -- collega_movimenti_persona e scollega_movimenti_persona (70-movimenti-persona.sql) scrivono un'etichetta: la prova è movimenti-persona.sql
-  and p.proname ~ '(movimenti|voci|casse)' and p.proname not in ('cambia_voce_movimenti', 'collega_movimenti_persona', 'scollega_movimenti_persona')), 'nessuna');
+  -- movimenti_simili (72-movimenti-dalla-chat.sql) legge per Claude senza persone né autori, che dalle tabelle uscirebbero: la prova è movimenti-dalla-chat.sql
+  and p.proname ~ '(movimenti|voci|casse)' and p.proname not in ('cambia_voce_movimenti', 'collega_movimenti_persona', 'scollega_movimenti_persona', 'movimenti_simili')), 'nessuna');
 
 \echo ''
 \echo '--- 8. i vincoli delle tabelle tengono anche a mano ---'

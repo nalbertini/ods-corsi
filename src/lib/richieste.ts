@@ -133,7 +133,7 @@ export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string;
   { tipo: 'documento-retro', etichetta: 'RETRO DEL DOCUMENTO', dettaglio: 'Se il fronte non basta.', obbligatorio: false },
   // Si chiede dai 6 anni ma non ferma la richiesta: «facoltativo» direbbe che non serve.
   { tipo: 'certificato', etichetta: 'CERTIFICATO MEDICO', dettaglio: 'Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria.', obbligatorio: false, seManca: 'PUOI PORTARLO DOPO' },
-  // Non ferma la richiesta: chi vuole paga in contanti al banco.
+  // Non ferma la richiesta da «una persona in più»: lì chi vuole paga in contanti al banco. Dalla pagina pubblica sì, vedi `fileObbligatori`.
   {
     tipo: 'ricevuta',
     etichetta: 'RICEVUTA DEL PAGAMENTO',
@@ -142,6 +142,20 @@ export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string;
     seManca: 'PUOI PAGARE IN SEGRETERIA',
   },
 ]
+
+/**
+ * I file senza i quali il modulo non parte. Dalla pagina pubblica anche la
+ * ricevuta: lì si paga prima, con bonifico o Satispay. «Una persona in più»
+ * dall'area iscritti la lascia facoltativa, come `FILE`.
+ */
+export const fileObbligatori = (chiesti: Array<{ tipo: TipoFile; obbligatorio: boolean }>, ricevuta: boolean): TipoFile[] =>
+  chiesti.filter((f) => f.obbligatorio || (ricevuta && f.tipo === 'ricevuta')).map((f) => f.tipo)
+
+/** Sotto la ricevuta, quando è obbligatoria. */
+export const DETTAGLIO_RICEVUTA = 'Del bonifico o di Satispay: una foto, lo screenshot o il PDF.'
+
+/** Nel riquadro in fondo, quando la ricevuta obbligatoria manca: dice cosa fare, non solo cosa manca. */
+export const MANCA_RICEVUTA = 'Manca la ricevuta del pagamento: paga con bonifico o Satispay e carica la foto, lo screenshot o il PDF.'
 
 /** I file che non restano nell'app: la segreteria li stampa, li tiene su carta e li cancella. Il certificato no: passa alla scheda. */
 export const DA_STAMPARE: TipoFile[] = ['documento', 'documento-retro']
@@ -451,7 +465,7 @@ export function mancaPerInviare(
   return (
     controlla(s.dati, oggi) ??
     (s.come === 'qui' ? s.firma : null) ??
-    (fileMancante ? `Manca: ${fileMancante.etichetta.toLowerCase()}` : null) ??
+    (fileMancante ? (fileMancante.tipo === 'ricevuta' ? MANCA_RICEVUTA : `Manca: ${fileMancante.etichetta.toLowerCase()}`) : null) ??
     (s.privacy ? null : "Serve la conferma di aver letto l'informativa privacy")
   )
 }

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    /* L'interfaccia di Claude non è nostra: qui è neutra e indicativa, coi grigi del tema chiaro. Il nostro è il TESTO
+       che gli strumenti restituiscono e le regole su cosa la chat fa e non fa. */
+    .chat { display: flex; flex-direction: column; gap: 14px; padding: 20px; background: #f4f4f1; color: #161616; border: 1px solid #333333; font-size: 15px; line-height: 1.45; }
+    .io { align-self: flex-end; max-width: 80%; padding: 10px 14px; background: #e9e9e5; border-radius: 14px; }
+    .ai { max-width: 94%; }
+    .foto { align-self: flex-end; width: 150px; height: 190px; display: flex; align-items: center; justify-content: center; background: #ffffff; border: 1px solid #d4d4ce; border-radius: 10px; color: #656561; font-size: 13px; text-align: center; padding: 10px; }
+    .riep { margin-top: 8px; padding: 12px 14px; background: #ffffff; border: 1px solid #d4d4ce; border-radius: 10px; display: flex; flex-direction: column; gap: 4px; }
+    .riep .r { display: grid; grid-template-columns: 96px 1fr; gap: 8px; }
+    .riep .k { color: #656561; font-size: 13px; }
+    .avv { margin-top: 8px; padding: 8px 12px; border-left: 4px solid #8f6a00; background: #ffffff; color: #3d3d3a; font-size: 14px; }
+    .tool { padding: 12px 14px; background: #ffffff; border: 1px solid #8a8a85; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+    .tool .t { color: #656561; font-size: 13px; }
+    .tasti { display: flex; gap: 8px; }
+    .tasti span { padding: 6px 12px; border: 1px solid #8a8a85; border-radius: 8px; font-size: 13px; }
+    .tasti span.su { background: #161616; color: #ffffff; border-color: #161616; }
+    .fatto { color: #0b7a33; font-weight: 600; }
+    .no { color: #b81d1d; font-weight: 600; }
+    .nota { font-size: 14px; color: #8c8c88; line-height: 1.4; }
+    .caso { display: flex; flex-direction: column; gap: 6px; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 40px; width: 1440px; padding: 28px 36px 36px; background: #121212; align-items: flex-start">
+
+<div style="display: flex; flex-direction: column; gap: 10px; width: 600px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · UNA BOLLETTA, DALLA FOTO AL MOVIMENTO</span>
+  <span class="nota">Interfaccia di Claude, indicativa. Nostri sono i testi e le regole.</span>
+  <div class="chat">
+    <div class="foto">[foto]<br>Bolletta Enel<br>n. 123, settembre</div>
+    <div class="io">Mettila nel bilancio</div>
+    <div class="ai">Ho letto la bolletta e controllato in ODS. Ti propongo:
+      <div class="riep">
+        <div class="r"><span class="k">TIPO</span><b>USCITA</b></div>
+        <div class="r"><span class="k">DATA</span><span>14/10/2026 · il giorno dell’addebito</span></div>
+        <div class="r"><span class="k">IMPORTO</span><b>312,40 €</b></div>
+        <div class="r"><span class="k">VOCE</span><span>Utenze · l’ultima volta Enel era su Utenze</span></div>
+        <div class="r"><span class="k">CASSA</span><span>Conto Corrente · addebito diretto</span></div>
+        <div class="r"><span class="k">DESCRIZIONE</span><span>Enel · bolletta n. 123 · set 2026</span></div>
+      </div>
+      <div class="avv">Sulla bolletta c’è solo la scadenza (16/10). Ho messo il 14/10 perché me l’hai detto tu: se è stata addebitata un altro giorno, dimmelo.</div>
+      Va bene così?
+    </div>
+    <div class="io">Ok</div>
+    <div class="tool"><span class="t">ODS Corsi vuole usare lo strumento <b>registra_movimento</b></span><span>Uscita · 14/10/2026 · 312,40 € · Utenze · Conto Corrente</span><div class="tasti"><span class="su">Consenti</span><span>Nega</span></div></div>
+    <div class="ai"><span class="fatto">Registrato.</span> Uscita di 312,40 € del 14/10/2026 su Utenze, Conto Corrente: «Enel · bolletta n. 123 · set 2026». Se c’è un errore si annulla da CONTABILITÀ → MOVIMENTI e si rifà.</div>
+  </div>
+  <span class="nota">Due passi: prima il riepilogo, poi la scrittura di quel riepilogo e di nient’altro. L’approvazione di Claude si chiede sempre; chi sceglie «consenti sempre» salta solo il riquadro, non il riepilogo.</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 22px; width: 720px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · I CASI CHE SI FERMANO O CHIEDONO</span>
+
+  <div class="caso"><span class="et" style="color: #8c8c88">C’È GIÀ</span>
+  <div class="chat"><div class="ai">Ti propongo un’uscita di 312,40 € del 14/10 su Utenze.
+    <div class="avv">C’è già un’uscita uguale: 312,40 € del 02/10, «Enel bolletta settembre», Conto Corrente, scritta dall’app. È la stessa bolletta?</div>
+    Se è un’altra, dimmi «registrala lo stesso».</div></div>
+  <span class="nota">Avviso, non blocco: stesso tipo e importo, e stessa data oppure stesso fornitore negli ultimi 60 giorni.</span></div>
+
+  <div class="caso"><span class="et" style="color: #8c8c88">DISTINTA DI VERSAMENTO</span>
+  <div class="chat"><div class="ai"><span class="no">Non la registro.</span> È un versamento in banca: i soldi passano dalla Cassa Contanti al Conto Corrente, non escono dalla palestra. Si fa da CONTABILITÀ → MOVIMENTI → Giroconto.</div></div></div>
+
+  <div class="caso"><span class="et" style="color: #8c8c88">COMPENSO DI UN ISTRUTTORE, RICEVUTA DI UN ISCRITTO</span>
+  <div class="chat"><div class="ai"><span class="no">Non la registro.</span> È il compenso di un istruttore: ha dati personali e dalla chat passano solo i documenti dei fornitori. Registralo da CONTABILITÀ → NUOVO MOVIMENTO.</div>
+  <div class="ai"><span class="no">Non la registro.</span> È una ricevuta della palestra a un iscritto: è un incasso, e si registra in PAGAMENTI.</div></div></div>
+
+  <div class="caso"><span class="et" style="color: #8c8c88">NON DICE COME È STATO PAGATO</span>
+  <div class="chat"><div class="ai">Ferramenta Bianchi, 18/10/2026, 23,80 €. Lo scontrino non dice come hai pagato: <b>Cassa Contanti</b> o <b>Conto Corrente</b>?
+    <div class="avv">Ci sono due voci: detersivi 15,90 € (Pulizie) e una lampadina 7,90 € (Manutenzione). Te li propongo come due movimenti, da confermare insieme.</div></div></div></div>
+
+  <div class="caso"><span class="et" style="color: #8c8c88">NON ANCORA PAGATA · GIORNO CHIUSO</span>
+  <div class="chat"><div class="ai">La fattura scade il 30/11 e non risulta pagata: non la registro. Rifammela vedere quando la paghi.</div>
+  <div class="ai"><span class="no">Il 15/10 la Cassa Contanti è già chiusa.</span> Si registra con una data dopo la chiusura e la voce «Rettifica», con «scontrino del 15/10» nella nota. Te lo preparo così?</div></div></div>
+</div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

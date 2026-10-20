@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FocusEvent, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { anniScritti, avvisoCertificato, certificatoDaPortare, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante, tipiDaChiedere } from '../lib/richieste'
+import { anniScritti, avvisoCertificato, certificatoDaPortare, aiutoScelta, chiFirma, daSelezionare, dataDaCf, datiRichieste, DETTAGLIO_RICEVUTA, domandaUscita, ESTENSIONI, FILE, fileObbligatori, firmaDaRifare, FORMULE, mancaPerInviare, MANCA_SCELTA, MASSIMO_FILE, NOTA_SCELTA, problemi, pulisciCf, sceltaMancante, tipiDaChiedere } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { riduciFoto } from '../lib/foto'
@@ -200,7 +200,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
   )
   const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo))
-  const obbligatorio = (t: TipoFile) => daChiedere.some((f) => f.tipo === t && f.obbligatorio)
+  /** Dalla pagina pubblica (senza `nucleo`) si paga prima: la ricevuta è obbligatoria. */
+  const obbligatori = fileObbligatori(daChiedere, !nucleo)
 
   const errori = problemi(pronta)
   /** Cosa scrivere sotto un campo: «Manca» solo dopo aver provato a mandare. */
@@ -243,7 +244,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     come,
     firma: mancaPerFirmare(),
     file,
-    obbligatori: daChiedere.filter((f) => f.obbligatorio).map((f) => f.tipo),
+    obbligatori,
   })
   /** Le note sotto le scelte: dopo un tentativo di mandare, o di guardare il modulo. */
   const provatoFirma = provato || guaioFirma !== null
@@ -376,7 +377,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         <Tasto variante="principale" onClick={() => void carica(fase.id, fase.mancati)}>
           RIPROVA
         </Tasto>
-        <Dettaglio>Si può riprovare per un'ora. Se non va, porta i fogli in segreteria.</Dettaglio>
+        <Dettaglio>Si può riprovare per un'ora. Se non va, {nucleo ? 'porta i fogli in segreteria' : 'chiama la segreteria'}.</Dettaglio>
       </div>
     )
   }
@@ -569,15 +570,14 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             onScegli={(f) => setB({ ...b, formula: f as DatiRichiesta['formula'] })}
           />
         </div>
-        {nucleo && (
-          <QuantoCosta
-            nome={b.nome.trim() || 'Chi si iscrive'}
-            cognome={b.cognome.trim()}
-            corsi={(corsi ?? []).filter((c) => b.corsi.includes(c.id))}
-            formula={b.formula}
-            abbonamenti={nucleo.abbonamenti}
-          />
-        )}
+        {/* Sulla pagina pubblica la ricevuta è obbligatoria: quanto e come pagare stanno qui, non solo nella pagina dei prezzi. */}
+        <QuantoCosta
+          nome={b.nome.trim()}
+          cognome={b.cognome.trim()}
+          corsi={(corsi ?? []).filter((c) => b.corsi.includes(c.id))}
+          formula={b.formula}
+          abbonamenti={nucleo?.abbonamenti ?? []}
+        />
       </Sezione>
 
       <Sezione titolo="IL MODULO">
@@ -712,7 +712,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             tipo={f.tipo}
             file={file[f.tipo]}
             onFile={(x) => setFile((p) => ({ ...p, [f.tipo]: x }))}
-            facoltativo={!obbligatorio(f.tipo)}
+            facoltativo={!obbligatori.includes(f.tipo)}
+            dettaglio={f.tipo === 'ricevuta' && obbligatori.includes('ricevuta') ? DETTAGLIO_RICEVUTA : undefined}
           />
         ))}
       </Sezione>
@@ -869,16 +870,18 @@ export function SceltaFile({
 }
 
 /**
- * Quanto costa una persona in più nel nucleo, con lo sconto famiglia, e come
- * pagarlo: l'IBAN e la causale col suo nome, da copiare. La ricevuta del
- * bonifico si carica qui sotto, fra i file, se si paga prima.
+ * Quanto costa una persona in più nel nucleo, con lo sconto famiglia, o chi si
+ * iscrive dalla pagina pubblica, e come pagarlo: l'IBAN e la causale col suo
+ * nome, da copiare. La ricevuta si carica qui sotto, fra i file: dalla pagina
+ * pubblica è obbligatoria, dal nucleo no.
  */
 export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: CorsoRef[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
   const letto = useListino()
   const [copiato, setCopiato] = useState<string | null>(null)
   if (!letto) return null
-  const s = stimaIscrizione({ chi: nome, corsi, formula }, abbonamenti, chiaveGiorno(new Date()), letto.listino)
-  const testo = causale(nome, cognome, corsi.map((c) => c.nome))
+  const s = stimaIscrizione({ chi: nome || 'Chi si iscrive', corsi, formula }, abbonamenti, chiaveGiorno(new Date()), letto.listino)
+  // Senza nome il bonifico arriverebbe senza: la causale aspetta che lo si scriva.
+  const testo = nome && cognome ? causale(nome, cognome, corsi.map((c) => c.nome)) : null
   const copia = (cosa: string, valore: string) =>
     navigator.clipboard?.writeText(valore).then(
       () => {
@@ -915,12 +918,16 @@ export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { no
           È una stima dal listino: le altre offerte e l’importo giusto li conferma la segreteria. Bonifico a {PAGAMENTO.intestatario}:
         </Dettaglio>
         <span className="num iban">{PAGAMENTO.iban}</span>
-        <Dettaglio>
-          Causale: <span className="testo-pieno">{testo}</span>
-        </Dettaglio>
+        {testo ? (
+          <Dettaglio>
+            Causale: <span className="testo-pieno">{testo}</span>
+          </Dettaglio>
+        ) : (
+          <Dettaglio tono="avviso">Scrivi nome e cognome per la causale.</Dettaglio>
+        )}
         <Tasti>
           <Tasto onClick={() => void copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
-          <Tasto onClick={() => void copia('causale', testo)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>
+          {testo && <Tasto onClick={() => void copia('causale', testo)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>}
           {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
         </Tasti>
       </Riquadro>

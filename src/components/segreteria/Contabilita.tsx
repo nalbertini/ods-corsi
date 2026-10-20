@@ -57,6 +57,7 @@ import {
   vociPerLaScelta,
 } from '../../lib/contabilita'
 import { filtraPerPersona, cosaNonVaCollegato, type FiltroPersona } from '../../lib/movimentiPersona'
+import { fraseDallaChat } from '../../lib/collega'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { Campo, chiedi, Guaio, lasciare, messaggio, scaricaCsv, SchedaPiena, Testa, useAvviso, useBozza, useCarica } from './comune'
@@ -830,6 +831,7 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
   const manuale = riga.origine === 'movimento'
   const giro = riga.tipo === 'giroconto'
   const chiuso = cosaNonVaAnnulloMovimento(riga, chiusure)
+  const dallaChat = fraseDallaChat(riga)
   const [descrizione, setDescrizione] = useState(riga.descrizione)
   const [nota, setNota] = useState(riga.nota ?? '')
   const [chiedendo, setChiedendo] = useState(false)
@@ -858,7 +860,10 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
   ]
   return (
     <div className="stack" style={{ gap: 14 }}>
-      <span className="sg-etichetta">{manuale ? 'IL MOVIMENTO' : 'INCASSO DI UN ISCRITTO'}</span>
+      <div className="row" style={{ gap: 10, alignItems: 'center' }}>
+        <span className="sg-etichetta">{manuale ? 'IL MOVIMENTO' : 'INCASSO DI UN ISCRITTO'}</span>
+        {riga.dallaChat && <span className="num sg-tag">Dalla chat</span>}
+      </div>
       <span className="sg-riquadro-titolo ob">{riga.descrizione}</span>
       <div className="stack" style={{ gap: 0 }}>
         {dettaglio.map(([k, v]) => (
@@ -895,6 +900,7 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
           </div>
           {chiuso && <span className="sg-sotto">{chiuso}</span>}
           {voceGuaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{voceGuaio}</span>}
+          {dallaChat && <span className="sg-sotto">{dallaChat}</span>}
           <span className="sg-sotto">Importo, data e cassa non si cambiano: si annulla e si rifà.{giro ? ' La descrizione di un giroconto la scrive il sistema.' : ' La voce sì, anche se il giorno è già chiuso: i soldi non cambiano.'}</span>
         </>
       )}

@@ -1,0 +1,47 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Ricevuta obbligatoria nel modulo"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi \u00b7 I FILE, ricevuta facoltativa",
+   "x": 0,
+   "y": 300,
+   "w": 390,
+   "h": 1400,
+   "page": "page-1"
+  },
+  {
+   "file": "Modulo.dc.html",
+   "title": "Proposta \u00b7 QUANTO COSTA nel modulo, ricevuta obbligatoria",
+   "x": 510,
+   "y": 300,
+   "w": 390,
+   "h": 1500,
+   "page": "page-1"
+  },
+  {
+   "file": "Testi.dc.html",
+   "title": "Proposta \u00b7 le frasi che cambiano",
+   "x": 1020,
+   "y": 300,
+   "w": 390,
+   "h": 1300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1410,
+   "text": "La ricevuta del pagamento obbligatoria nel modulo d'iscrizione"
+  }
+ ]
+}

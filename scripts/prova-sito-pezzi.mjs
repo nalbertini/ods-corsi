@@ -679,5 +679,38 @@ console.log('\nDividi in parti: una pagina già a pezzi con un solo testo lungo'
   regge('11', due)
 }
 
+console.log('\nIl nuovo editor (Puck completo): con cosa si apre, quando c\'è da salvare, cosa non fa salvare')
+{
+  const vecchia = { titolo: 'Judo', descrizione: 'Per tutti', bozza: '<h2>Il corso</h2><p>Si impara a cadere.</p>', pezzi: null }
+  const aPezzi = { titolo: 'Judo', descrizione: 'Per tutti', bozza: '<p>a</p>', pezzi: { content: [T('t1', '<p>a</p>')] } }
+  const aperti = prova(() => z.pezziDaAprire(vecchia))
+  ok('1: una pagina del vecchio editor si apre già a pezzi, col testo identico', prova(() => z.pezziInHtml(aperti)), vecchia.bozza)
+  ok('2: una pagina a pezzi si apre coi suoi pezzi', prova(() => z.pezziDaAprire(aPezzi)), aPezzi.pezzi)
+  const dati = (p, pezzi = z.pezziDaAprire(p)) => ({ titolo: p.titolo, descrizione: p.descrizione, pezzi })
+  ok('3: aperta e non toccata, una pagina del vecchio editor non ha niente da salvare', prova(() => z.daSalvare(vecchia, dati(vecchia))), false)
+  ok('4: aperta e non toccata, una pagina a pezzi non ha niente da salvare', prova(() => z.daSalvare(aPezzi, dati(aPezzi))), false)
+  ok('5: cambiato il titolo, c\'è da salvare', prova(() => z.daSalvare(aPezzi, { ...dati(aPezzi), titolo: 'Judo adulti' })), true)
+  ok('6: cambiata la descrizione, c\'è da salvare', prova(() => z.daSalvare(aPezzi, { ...dati(aPezzi), descrizione: 'Per grandi' })), true)
+  ok('7: cambiato un pezzo, c\'è da salvare', prova(() => z.daSalvare(aPezzi, dati(aPezzi, { content: [T('t1', '<p>b</p>')] }))), true)
+  ok('8: spazi in più intorno al titolo non sono un cambio', prova(() => z.daSalvare(aPezzi, { ...dati(aPezzi), titolo: ' Judo ' })), false)
+  ok('9: senza titolo non si salva', prova(() => z.cosaNonVaSalvare({ ...dati(aPezzi), titolo: '  ' })), 'Scrivi il titolo della pagina')
+  ok('10: una foto senza immagine non si salva, e la frase dice cosa fare', prova(() => z.cosaNonVaSalvare(dati(aPezzi, { content: [F('f1', '')] }))), 'Ogni foto ha bisogno della sua immagine: scegline una o togli la foto')
+  ok('11: la foto in cima non in alto non si salva', prova(() => z.cosaNonVaSalvare(dati(aPezzi, { content: [T('t1', '<p>a</p>'), CIMA('c1')] }))), 'La foto in cima è una sola e sta in alto')
+  ok('12: oltre 100 parti non si salva', prova(() => z.cosaNonVaSalvare(dati(aPezzi, { content: Array.from({ length: 101 }, (_, i) => T(`t${i}`, '<p>a</p>')) }))), 'La pagina ha troppe parti: al massimo 100')
+  ok('13: una pagina che va si salva', prova(() => z.cosaNonVaSalvare(dati(aPezzi))), null)
+  ok('14: spazi in più intorno alla descrizione non sono un cambio', prova(() => z.daSalvare(aPezzi, { ...dati(aPezzi), descrizione: ' Per tutti ' })), false)
+  ok('15: un testo troppo lungo non si salva, e la frase dice quanto', prova(() => z.cosaNonVaSalvare(dati(aPezzi, { content: [T('t1', `<p>${'a'.repeat(200001)}</p>`)] })))?.startsWith?.('Il testo è troppo lungo') ?? false, true)
+  ok('16: il nuovo editor c\'è per una pagina a pezzi', prova(() => z.siProvaNuovoEditor({ diLegge: false, pezzi: aPezzi.pezzi })), true)
+  ok('17: il nuovo editor c\'è per una pagina del vecchio editor', prova(() => z.siProvaNuovoEditor({ diLegge: false, pezzi: null })), true)
+  ok('18: il nuovo editor non c\'è per una pagina di legge', prova(() => z.siProvaNuovoEditor({ diLegge: true, pezzi: null })), false)
+  ok('19: il nuovo editor non c\'è senza 62-sito-pezzi.sql', prova(() => z.siProvaNuovoEditor({ diLegge: false })), false)
+  // Il testo del nuovo editor ha solo quel che il sito tiene: le parti spente non ci sono, e il sito toglie i loro segni.
+  const spente = ['underline', 'strike', 'code', 'codeBlock', 'horizontalRule', 'textAlign']
+  ok('20: sottolineato, barrato, codice, righe e allineamenti sono spenti', spente.filter((k) => z.TESTO_DEL_SITO?.[k] !== false), [])
+  ok('21: dei titoli solo Titolo e Sottotitolo (h2, h3)', z.TESTO_DEL_SITO?.heading?.levels, [2, 3])
+  ok('22: il sito toglie i segni delle parti spente', pulisci('<p><u>a</u><s>b</s><code>c</code></p><pre>d</pre><hr><p style="text-align:center">e</p><h1>f</h1>'), '<p>abc</p>d<p>e</p>f')
+  ok('23: il sito tiene i segni delle parti accese', pulisci('<h2>a</h2><h3>b</h3><p><strong>c</strong><em>d</em></p><ul><li>e</li></ul><ol><li>f</li></ol><blockquote>g</blockquote>'), '<h2>a</h2><h3>b</h3><p><strong>c</strong><em>d</em></p><ul><li>e</li></ul><ol><li>f</li></ol><blockquote>g</blockquote>')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

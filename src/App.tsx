@@ -4,6 +4,7 @@ import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
 import { NastroProva } from './components/ds'
 import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
+import { Collega } from './components/Collega'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { vistaIscrizioni } from './lib/paginaIscrizioni'
 import { IscrizioneAPassi } from './components/IscrizioneAPassi'
@@ -75,6 +76,15 @@ function Aree() {
   if (area === 'istruttori') return <Istruttori />
   if (area === 'sala') return <Tablet />
   if (area === 'guida') return <AreaGuida />
+  if (area === 'collega')
+    return (
+      <div className="app">
+        <Testata luogo="CONTABILITÀ" />
+        <main className="scroll">
+          <Collega />
+        </main>
+      </div>
+    )
   return <Scelta />
 }
 
