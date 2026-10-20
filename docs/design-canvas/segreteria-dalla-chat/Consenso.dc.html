@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    /* Come la porta (`.accesso` di Porta.tsx) e il consenso di oggi (fatture-dalla-chat/Consenso.dc.html). */
+    .frase { font-size: 15px; line-height: 1.45; color: #c9c9c4; }
+    .elenco { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 12px 14px; background: #1c1c1c; border: 1px solid #333333; font-size: 15px; line-height: 1.4; }
+    .elenco .si::before { content: '✓ '; color: #16a54a; font-weight: 700; }
+    .elenco .no::before { content: '✕ '; color: #ff5a52; font-weight: 700; }
+    .nota { font-size: 14px; color: #8c8c88; line-height: 1.4; }
+    .tel { display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; border: 1px solid #333333; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 40px; width: 1350px; padding: 28px 36px 36px; background: #121212; align-items: flex-start">
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+  <span class="et" style="color: #8c8c88">OGGI · LA SEGRETERIA</span>
+  <div class="tel" style="min-height: 520px">
+    <dc-import name="Testata" luogo="SEGRETERIA" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+    <dc-import name="ChiSei" chi="MARCO ROSSI · SEGRETERIA" hint-size="100%,60px"></dc-import>
+    <dc-import name="Titoletto" label="COLLEGARE CLAUDE?" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 16px">
+      <dc-import name="Riquadro" tono="guaio" etichetta="NON SI PUÒ" testo="Claude registra in CONTABILITÀ, e la contabilità la cura l’amministrazione: il tuo account non ce l’ha. Se serve, chiedi a chi cura l’app." tono-testo="testo" hint-size="100%,120px"></dc-import>
+      <dc-import name="Bottone" label="TORNA A CLAUDE" variante="linea" hint-size="100%,56px"></dc-import>
+    </div>
+  </div>
+  <span class="nota" style="width: 390px">Resta così finché la funzione è spenta.</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · LA SEGRETERIA</span>
+  <div class="tel">
+    <dc-import name="Testata" luogo="SEGRETERIA" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+    <dc-import name="ChiSei" chi="MARCO ROSSI · SEGRETERIA" hint-size="100%,60px"></dc-import>
+    <dc-import name="Titoletto" label="COLLEGARE CLAUDE?" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 16px">
+      <span class="frase" style="color: #f2f2f0"><b>Claude</b> chiede di usare ODS Corsi con il tuo account, per rispondere alle tue domande sugli iscritti: certificati, quote, presenze.</span>
+      <span class="et" style="color: #8c8c88">POTRÀ</span>
+      <div class="elenco">
+        <span class="si">Leggere nome e cognome degli iscritti adulti, con corso, certificato, quota e presenze</span>
+        <span class="si">Contare i minori, senza sapere chi sono</span>
+      </div>
+      <span class="et" style="color: #8c8c88">NON POTRÀ</span>
+      <div class="elenco">
+        <span class="no">Vedere i nomi dei minori e di chi è venuto a provare</span>
+        <span class="no">Vedere telefono, email, codice fiscale, indirizzo, certificati e documenti</span>
+        <span class="no">Cambiare niente: iscrizioni, appelli, pagamenti</span>
+      </div>
+      <span class="nota">Chi non ha la data di nascita conta come un minore. Il collegamento si toglie da Claude, in Impostazioni → Connettori.</span>
+      <dc-import name="Bottone" label="CONSENTI" variante="vai" hint-size="100%,56px"></dc-import>
+      <dc-import name="Bottone" label="NO, GRAZIE" variante="linea" hint-size="100%,56px"></dc-import>
+    </div>
+  </div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · SEGRETERIA E AMMINISTRAZIONE</span>
+  <div class="tel">
+    <dc-import name="Testata" luogo="SEGRETERIA" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+    <dc-import name="ChiSei" chi="CHIARA BIANCHI · SEGRETERIA E AMMINISTRAZIONE" hint-size="100%,60px"></dc-import>
+    <dc-import name="Titoletto" label="COLLEGARE CLAUDE?" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 16px">
+      <span class="frase" style="color: #f2f2f0"><b>Claude</b> chiede di usare ODS Corsi con il tuo account, per rispondere sugli iscritti e per registrare in CONTABILITÀ le fatture che gli fotografi.</span>
+      <span class="et" style="color: #8c8c88">POTRÀ</span>
+      <div class="elenco">
+        <span class="si">Leggere nome e cognome degli iscritti adulti, con corso, certificato, quota e presenze</span>
+        <span class="si">Contare i minori, senza sapere chi sono</span>
+        <span class="si">Leggere voci, totali, il saldo del Conto Corrente e le spese da classificare</span>
+        <span class="si">Registrare un’uscita o un’entrata, solo dopo il tuo «ok» in chat</span>
+      </div>
+      <span class="et" style="color: #8c8c88">NON POTRÀ</span>
+      <div class="elenco">
+        <span class="no">Vedere i nomi dei minori e di chi è venuto a provare</span>
+        <span class="no">Vedere telefono, email, codice fiscale, indirizzo, certificati e documenti</span>
+        <span class="no">Vedere il saldo della Cassa Contanti</span>
+        <span class="no">Cambiare iscrizioni, appelli, pagamenti; annullare movimenti, chiudere la cassa</span>
+      </div>
+      <span class="nota">Le foto le vede Claude, non ODS: solo documenti di fornitori. Il collegamento si toglie da Claude, in Impostazioni → Connettori.</span>
+      <dc-import name="Bottone" label="CONSENTI" variante="vai" hint-size="100%,56px"></dc-import>
+      <dc-import name="Bottone" label="NO, GRAZIE" variante="linea" hint-size="100%,56px"></dc-import>
+    </div>
+  </div>
+  <span class="nota" style="width: 390px">Solo l’amministrazione: resta il consenso di oggi, senza le righe degli iscritti. Istruttori e tablet: NON SI PUÒ.</span>
+</div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1350,"height":960}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
