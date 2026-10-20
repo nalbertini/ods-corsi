@@ -106,7 +106,7 @@ Google, e vale solo per i mockup.
 | `CaricaFile` | La riga di un file del modulo (`CaricaFile` di `ds.tsx`): SCEGLI o CAMBIA, file scelto in verde, errore |
 | `TavolaFirma` | Il riquadro della firma (`TavolaFirma.tsx`): vuoto con FIRMA QUI COL DITO, o firmato |
 | `FirmaSchermoIntero` | La firma a schermo intero (`FirmaSchermoIntero` in `TavolaFirma.tsx`, `.firma-intera*`): ANNULLA, nome e FATTO in cima, il riquadro con la riga a un quarto dal fondo, la frase e CANCELLA E RIFAI; `orientamento` verticale o orizzontale, `firmata` |
-| `StimaCosto` | QUANTO COSTA di una persona del nucleo: righe, sconto famiglia, totale, IBAN, causale, tasti; `etichetta` e `stima` cambiano il titolo e la frase prima dell'IBAN |
+| `StimaCosto` | QUANTO COSTA di una persona del nucleo: righe, sconto famiglia, totale, IBAN, causale, tasti; `etichetta` e `stima` cambiano il titolo e la frase prima dell'IBAN; `tema="sito"` è quello del modulo di iscrizione |
 | `CartaFamiglia` | Il passo LA FAMIGLIA del modulo a passi (`.famiglia-*`): `tipo=sconto` il riquadro −20% SCONTO FAMIGLIA a bordo verde; `tipo=carta` una carta di `carteDellaFamiglia` con titolo, frase, «In grassetto i giorni che vanno col tuo orario.», le righe (STESSA ORA, SUBITO PRIMA…) con l'orario a pezzi, risparmio in verde e il tasto tratteggiato |
 | `TitoloEsito` | `TitoloEsito` di `ds.tsx` con le frasi `.esito-testo`: RICHIESTA ARRIVATA e MANCA QUALCHE FILE |
 | `MembroNucleo` | Una persona del nucleo (`.mio-membro`): IN REGOLA, DA SISTEMARE, in attesa o rifiutata |
