@@ -19,14 +19,16 @@ insert into persone (id, nome, cognome, ruolo, email, utente_id) values
 insert into corsi (id, nome) values
   ('cccccccc-0000-0000-0000-000000000001', 'Judo 3'),
   ('cccccccc-0000-0000-0000-000000000002', 'Lotta 3'),
-  ('cccccccc-0000-0000-0000-000000000003', 'Corso nuovo');
+  ('cccccccc-0000-0000-0000-000000000003', 'Corso nuovo'),
+  ('cccccccc-0000-0000-0000-000000000004', 'Pesi');
 
 -- Il listino in euro, come lo salva LISTINO. «Corso nuovo» non c'è: è senza prezzo.
 update impostazioni set listino = '{
   "quota": 50, "saldoEntro": "2026-08-31", "offerte": [],
   "corsi": [
     {"corso": "Judo 3", "corsoId": "cccccccc-0000-0000-0000-000000000001", "eta": "", "orari": [], "prezzi": [{"saldo": 350, "annuale": 400, "trimestre": 150}]},
-    {"corso": "Lotta 3", "corsoId": "cccccccc-0000-0000-0000-000000000002", "eta": "", "orari": [], "prezzi": [{"annuale": 368, "trimestre": 140}]}
+    {"corso": "Lotta 3", "corsoId": "cccccccc-0000-0000-0000-000000000002", "eta": "", "orari": [], "prezzi": [{"annuale": 368, "trimestre": 140}]},
+    {"corso": "Pesi", "corsoId": "cccccccc-0000-0000-0000-000000000004", "eta": "", "orari": [], "prezzi": [{"etichetta": "1 GIORNO", "annuale": 340}, {"etichetta": "2 GIORNI", "annuale": 450}]}
   ]}' where id;
 
 -- Le richieste, come le lascia invia_iscrizione().
@@ -36,7 +38,9 @@ create or replace function richiesta(id uuid, nome text, cognome text, corsi uui
 $$;
 select richiesta('eeeeeeee-0000-0000-0000-000000000001', 'Paolo', 'Bianchi', array['cccccccc-0000-0000-0000-000000000001']::uuid[], 'annuale');
 select richiesta('eeeeeeee-0000-0000-0000-000000000002', 'Sara', 'Verdi', array['cccccccc-0000-0000-0000-000000000001']::uuid[], 'trimestre');
-select richiesta('eeeeeeee-0000-0000-0000-000000000003', 'Gino', 'Neri', array['cccccccc-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000002']::uuid[], 'annuale');
+select richiesta('eeeeeeee-0000-0000-0000-000000000003', 'Gino', 'Neri', array['cccccccc-0000-0000-0000-000000000002']::uuid[], 'annuale');
+select richiesta('eeeeeeee-0000-0000-0000-000000000007', 'Teo', 'Due', array['cccccccc-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000002']::uuid[], 'annuale');
+select richiesta('eeeeeeee-0000-0000-0000-000000000008', 'Pia', 'Pesi', array['cccccccc-0000-0000-0000-000000000004']::uuid[], 'annuale');
 select richiesta('eeeeeeee-0000-0000-0000-000000000004', 'Ugo', 'Gialli', array['cccccccc-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000003']::uuid[], 'annuale');
 select richiesta('eeeeeeee-0000-0000-0000-000000000005', 'Ada', 'Accolta', array['cccccccc-0000-0000-0000-000000000001']::uuid[], 'annuale', 'accolta');
 select richiesta('eeeeeeee-0000-0000-0000-000000000006', 'Ivo', 'Rifiutato', array['cccccccc-0000-0000-0000-000000000001']::uuid[], 'annuale', 'rifiutata');
@@ -92,8 +96,13 @@ select atteso('quota + annuale pieno, il giorno dopo',
   importo_iscrizione('eeeeeeee-0000-0000-0000-000000000001', '2026-09-01')::text, (5000 + 40000)::text);
 select atteso('quota + trimestre',
   importo_iscrizione('eeeeeeee-0000-0000-0000-000000000002', '2026-10-20')::text, (5000 + 15000)::text);
-select atteso('due annuali: sconto famiglia del 20% su quello che costa meno (Lotta 3, 368 €)',
-  importo_iscrizione('eeeeeeee-0000-0000-0000-000000000003', '2026-10-20')::text, (5000 + 40000 + 36800 - 7360)::text);
+select atteso('un corso a riga sola: quota + annuale (Lotta 3, 368 €)',
+  importo_iscrizione('eeeeeeee-0000-0000-0000-000000000003', '2026-10-20')::text, (5000 + 36800)::text);
+-- Solo i casi semplici (decisione del 2026-10-20): con più corsi valgono le offerte, con più righe i giorni; li conferma la segreteria.
+select atteso('due corsi: nessun importo, lo conferma la segreteria',
+  coalesce(importo_iscrizione('eeeeeeee-0000-0000-0000-000000000007', '2026-10-20')::text, 'null'), 'null');
+select atteso('un corso con più righe di prezzo: nessun importo',
+  coalesce(importo_iscrizione('eeeeeeee-0000-0000-0000-000000000008', '2026-10-20')::text, 'null'), 'null');
 select atteso('un corso senza prezzo: nessun importo',
   coalesce(importo_iscrizione('eeeeeeee-0000-0000-0000-000000000004', '2026-10-20')::text, 'null'), 'null');
 reset role;
@@ -106,7 +115,8 @@ update impostazioni set listino = '{
   "quota": 50, "saldoEntro": "2026-08-31", "offerte": [],
   "corsi": [
     {"corso": "Judo 3", "corsoId": "cccccccc-0000-0000-0000-000000000001", "eta": "", "orari": [], "prezzi": [{"saldo": 350, "annuale": 400, "trimestre": 150}]},
-    {"corso": "Lotta 3", "corsoId": "cccccccc-0000-0000-0000-000000000002", "eta": "", "orari": [], "prezzi": [{"annuale": 368, "trimestre": 140}]}
+    {"corso": "Lotta 3", "corsoId": "cccccccc-0000-0000-0000-000000000002", "eta": "", "orari": [], "prezzi": [{"annuale": 368, "trimestre": 140}]},
+    {"corso": "Pesi", "corsoId": "cccccccc-0000-0000-0000-000000000004", "eta": "", "orari": [], "prezzi": [{"etichetta": "1 GIORNO", "annuale": 340}, {"etichetta": "2 GIORNI", "annuale": 450}]}
   ]}' where id;
 
 \echo ''

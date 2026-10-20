@@ -7,7 +7,7 @@ import { chiaveGiorno } from './sala'
 import { MASSIMO_PERSONE } from './passiIscrizione'
 import { caricaListino } from './listino'
 import { stimaIscrizione } from './nucleo'
-import { senzaVoceDelCorso, type PagamentoSatispay } from './satispay'
+import { nonSemplice, senzaVoceDelCorso, type PagamentoSatispay } from './satispay'
 
 /**
  * Le richieste di iscrizione senza server.
@@ -199,7 +199,7 @@ export function creaRichiesteProva(): DatiRichieste {
         const { listino } = await caricaListino()
         const corsi = r.corsi.map((id) => archivio.dati.corsi.find((c) => c.id === id) ?? { id, nome: id })
         const s = stimaIscrizione({ chi: `${r.cognome} ${r.nome}`, corsi, formula: r.formula }, [], chiaveGiorno(new Date()), listino)
-        if (s.senzaPrezzo.length || senzaVoceDelCorso(corsi, listino).length) throw new Error('Un corso non ha ancora il prezzo: paga col bonifico o in segreteria')
+        if (s.senzaPrezzo.length || senzaVoceDelCorso(corsi, listino).length || nonSemplice(corsi, listino)) throw new Error('Un corso non ha ancora il prezzo: paga col bonifico o in segreteria')
         const ora = new Date().toISOString()
         salvaSatispay([...tutti, { id: `sp-${Date.now().toString(36)}`, richiestaId, chi: `${r.cognome} ${r.nome}`, importo: s.totale, stato: 'pagato', creatoIl: ora, pagatoIl: ora }])
       }

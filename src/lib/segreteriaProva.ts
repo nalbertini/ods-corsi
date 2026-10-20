@@ -20,7 +20,7 @@ const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
-import { cosaNonVaSatispay } from './satispay'
+import { cosaNonVaSatispay, satispayPerPersona } from './satispay'
 import { pagamentiSatispayProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { ESTENSIONI } from './richieste'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
@@ -644,6 +644,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async persone() {
       potaCertificati()
+      const conSatispay = satispayPerPersona(pagamentiSatispayProva())
       return a()
         .persone.filter((p) => p.ruolo === 'iscritto')
         .map(
@@ -663,6 +664,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             documento: !!p.documento,
             pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
+            satispay: conSatispay.get(p.id),
             nucleo: p.nucleo,
             natoIl: anagraficaDi(p.id)?.dati.natoIl,
           }),

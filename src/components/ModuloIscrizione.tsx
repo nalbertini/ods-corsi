@@ -13,7 +13,7 @@ import { useListino } from './Costi'
 import type { SceltaModulo } from '../lib/firma'
 import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
-import { chiedeRicevuta, comePuoiPagare, modoPagamento, senzaVoceDelCorso, soldi, type Pago } from '../lib/satispay'
+import { chiedeRicevuta, comePuoiPagare, modoPagamento, nonSemplice, senzaVoceDelCorso, soldi, type Pago } from '../lib/satispay'
 import { PagamentoOnline, ricordaPromemoria } from './PagamentoOnline'
 
 /**
@@ -211,7 +211,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const stima = listino && !nucleo ? stimaIscrizione({ chi: b.nome, corsi: scelti, formula: b.formula }, [], chiaveGiorno(new Date()), listino) : null
   // Satispay solo col listino della segreteria: con quello del foglio il database non ha un prezzo da chiedere.
   const senzaPrezzo = stima && listino ? [...new Set([...stima.senzaPrezzo, ...senzaVoceDelCorso(scelti, listino)])] : []
-  const puoi = comePuoiPagare(senzaPrezzo, satispayAttivo && !!stima && !!letto?.cambiato)
+  const attivo = satispayAttivo && !!stima && !!letto?.cambiato
+  const complicato = attivo && listino && !senzaPrezzo.length ? nonSemplice(scelti, listino) : null
+  const puoi = complicato ? ({ satispay: false, perche: complicato } as const) : comePuoiPagare(senzaPrezzo, attivo)
   const modo = modoPagamento(pago, puoi, !!nucleo)
   const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo) && (f.tipo !== 'ricevuta' || chiedeRicevuta(modo)))
   // I file di I FILE: il modulo ha la sua sezione, e la ricevuta del bonifico sta in IL PAGAMENTO (dal nucleo, qui come prima).

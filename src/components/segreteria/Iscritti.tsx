@@ -1,3 +1,4 @@
+import { soldi } from '../../lib/satispay'
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { altriAperti, altriFiltri, FILTRI_VISIBILI, ID_FILTRI, TESTI_FILTRI, type IdFiltro } from '../../lib/filtriIscritti'
 import type { Destinazione } from './Segreteria'
@@ -1695,7 +1696,9 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
     s.come === 'pagato'
       ? s.fonte === 'ricevuta'
         ? `Pagata${fino ? ` fino al ${fino}` : ''} · ricevuta ${s.ricevuta}.`
-        : `Pagata fuori dall’app${fino ? `, fino al ${fino}` : ''}.`
+        : s.fonte === 'satispay'
+          ? `Pagata con Satispay dal modulo (${soldi(s.importo ?? 0)}): manca la ricevuta, con PAGATO CON «Satispay».`
+          : `Pagata fuori dall’app${fino ? `, fino al ${fino}` : ''}.`
       : s.come === 'in_parte'
         ? s.fonte === 'ricevuta'
           ? `Mancano ${euro(s.mancano ?? 0)} € della quota · ricevuta ${s.ricevuta}.`
@@ -1709,6 +1712,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
       <Riga titolo="QUOTA">
         <Bollino tono={t.tono}>{t.parola}</Bollino>
         {s.fonte === 'fuori_app' && <Bollino tono="spento">Fuori app</Bollino>}
+        {s.fonte === 'satispay' && <Bollino tono="spento">Senza ricevuta</Bollino>}
       </Riga>
       <span style={{ fontSize: 14, color: s.come === 'pagato' ? 'var(--sec)' : s.come === 'in_parte' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{detto}</span>
       {s.fonte === 'fuori_app' && s.nota && <span style={{ fontSize: 14, color: 'var(--sec)' }}>{s.nota}</span>}

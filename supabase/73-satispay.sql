@@ -72,8 +72,9 @@ create or replace function prezzo_dal_listino(voce jsonb, formula text, giorno d
   end
 $$;
 
--- Quanto paga una richiesta il giorno `giorno`: la quota e i corsi, con lo sconto famiglia del 20% sull'annuale che
--- costa meno se ce ne sono due. `null` se il listino non c'è o un corso non ha il prezzo: allora niente Satispay.
+-- Quanto paga una richiesta il giorno `giorno`: la quota e il corso. Solo i casi semplici (decisione del 2026-10-20):
+-- un corso solo, con una sola riga di prezzo. Con più corsi valgono le offerte del listino («più corsi»), con più
+-- righe i giorni scelti: li conferma la segreteria, e il risultato è `null`, come senza listino o senza prezzo.
 create or replace function importo_iscrizione(richiesta uuid, giorno date) returns int
   language plpgsql stable security definer set search_path = public as $$
 declare
@@ -83,22 +84,18 @@ declare
   v jsonb;
   p int;
   tot int;
-  annuali int[] := '{}';
 begin
   select listino into l from impostazioni limit 1;
   select * into r from richieste_iscrizione where id = richiesta;
-  if l is null or r.id is null then return null; end if;
+  if l is null or r.id is null or cardinality(r.corsi) <> 1 then return null; end if;
   tot := round((l->>'quota')::numeric * 100)::int;
   foreach c in array r.corsi loop
     select x into v from jsonb_array_elements(l->'corsi') x where x->>'corsoId' = c::text limit 1;
+    if jsonb_array_length(coalesce(v->'prezzi', '[]'::jsonb)) <> 1 then return null; end if;
     p := prezzo_dal_listino(v, r.formula, giorno, (l->>'saldoEntro')::date);
     if p is null then return null; end if;
     tot := tot + p;
-    if r.formula = 'annuale' then annuali := annuali || p; end if;
   end loop;
-  if cardinality(annuali) >= 2 then
-    tot := tot - round((select min(a) from unnest(annuali) a) * 0.2)::int;
-  end if;
   return tot;
 end $$;
 

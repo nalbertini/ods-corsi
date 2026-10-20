@@ -52,6 +52,7 @@ const carica = async (contents) => {
   }
 }
 const s = await carica("export * from './src/lib/satispay'")
+const g = await carica("export { pagamentoDi } from './src/lib/segreteria'; export { VALIDITA } from './src/lib/costi'")
 const c = await carica("export * from './src/lib/contabilita'; export { ENTE_PREDEFINITO } from './src/lib/ricevute'")
 const f = await carica("export * from './supabase/functions/satispay/firma'")
 const p = await carica(
@@ -105,6 +106,11 @@ console.log('\n2c. il prezzo che vale per Satispay: solo una voce del listino ag
   ] }
   ok('agganciato per id: ha il prezzo', prova(() => s.senzaVoceDelCorso([{ id: 'c1', nome: 'Judo 3' }], listino)), [])
   ok('voce col solo nome: per il database non ha prezzo', prova(() => s.senzaVoceDelCorso([{ id: 'c2', nome: 'Karate' }], listino)), ['Karate'])
+  // Solo i casi semplici: un corso, una riga di prezzo. Il resto (offerte, giorni) lo conferma la segreteria.
+  const conRighe = { ...listino, corsi: [...listino.corsi, { corso: 'Pesi', corsoId: 'c3', prezzi: [{ etichetta: '1 GIORNO', annuale: 340 }, { etichetta: '2 GIORNI', annuale: 450 }] }] }
+  ok('un corso a riga sola: semplice', prova(() => s.nonSemplice([{ id: 'c1', nome: 'Judo 3' }], conRighe)), null)
+  ok('due corsi: no, valgono le offerte', prova(() => s.nonSemplice([{ id: 'c1', nome: 'Judo 3' }, { id: 'c3', nome: 'Pesi' }], conRighe)), 'Niente Satispay per ora: con più corsi il prezzo lo conferma la segreteria')
+  ok('un corso con più righe: no, dipende dai giorni', prova(() => s.nonSemplice([{ id: 'c3', nome: 'Pesi' }], conRighe)), 'Niente Satispay per ora: il prezzo di Pesi dipende dai giorni, lo conferma la segreteria')
 }
 
 console.log('\n2b. come si paga dal modulo, e quali file si chiedono')
@@ -171,6 +177,15 @@ console.log('\n4b. in RICHIESTE ONLINE: il segno e cosa fare')
   ok('pagata', prova(() => s.segnoRichiesta(pagato, 'nuova')), { tag: 'Pagata', testo: 'Pagata con Satispay il 20 ottobre: 230\u00a0€. Nella ricevuta dalla scheda il pagamento è già dentro: non segnarlo di nuovo.', tono: 'fatto' })
   ok('pagata e già in ricevuta', prova(() => s.segnoRichiesta(inRicevuta, 'accolta').testo), 'Pagata con Satispay il 20 ottobre: 230\u00a0€, già nella ricevuta.')
   ok('pagata e rifiutata: da restituire', prova(() => s.segnoRichiesta(pagato, 'rifiutata')), { tag: 'Da restituire', testo: 'Pagata con Satispay il 20 ottobre: 230\u00a0€ da restituire dall’app Satispay Business, e poi da registrare in CONTABILITÀ.', tono: 'guaio' })
+}
+
+console.log('\n4d. la quota nella scheda: col Satispay arrivato non è «da pagare»')
+{
+  const nessuno = { pagamento: { stato: 'da_pagare' }, quote: [] }
+  ok('senza Satispay: da pagare', prova(() => g.pagamentoDi(nessuno, '2026-10-20').come), 'da_pagare')
+  ok('Satispay arrivato, senza ricevuta: pagata, con Satispay', prova(() => g.pagamentoDi({ ...nessuno, satispay: 23000 }, '2026-10-20')), { come: 'pagato', fonte: 'satispay', fino: g.VALIDITA.quota.al, importo: 23000 })
+  const conRicevuta = { ...nessuno, satispay: 23000, quote: [{ anno: 2026, numero: 7, dal: '2026-09-01', al: g.VALIDITA.quota.al, mancano: 0 }] }
+  ok('con la ricevuta della quota vale la ricevuta', prova(() => g.pagamentoDi(conRicevuta, '2026-10-20').fonte), 'ricevuta')
 }
 
 console.log('\n4c. la ricevuta col pagamento Satispay dentro')
@@ -256,6 +271,7 @@ console.log('\n7. in prova: paga finge l’approvazione, con l’importo della s
   const personaId = await aspetta(() => r.accogli(id))
   const sp = (await aspetta(() => seg.pagamentiSatispay())).find?.((x) => x.richiestaId === id)
   ok('accolta: il pagamento è della sua scheda', sp?.personaId, personaId)
+  ok('e la scheda sa che ha pagato con Satispay', (await aspetta(() => seg.persone())).find?.((x) => x.id === personaId)?.satispay, stima.totale)
   const ricevuta = (pagato) => ({
     data: '2026-10-20', personaId, ente: c.ENTE_PREDEFINITO, intestatario: { nome: 'Luca', cognome: 'Rossi', codiceFiscale: 'RSSLCU96A01L219K' },
     voci: [{ descrizione: 'Annuale', quantita: 1, prezzo: stima.totale, pagamenti: [{ data: '2026-10-20', importo: pagato, metodo: 'Satispay' }] }], anticipo: 0,
@@ -265,6 +281,7 @@ console.log('\n7. in prova: paga finge l’approvazione, con l’importo della s
   ok('quella giusta: fatta', await aspetta(async () => typeof (await seg.emettiRicevuta(ricevuta(stima.totale), sp.id)).id), 'string')
   ok('e il pagamento ora è nella ricevuta: non è più un incasso a parte', prova(() => s.righeSatispay(p.pagamentiSatispayProva(), () => '').length), 0)
   ok('una seconda volta: no', await aspetta(async () => { await seg.emettiRicevuta(ricevuta(stima.totale), sp.id); return 'fatta' }), 'ERRORE: Questo pagamento Satispay è già in una ricevuta')
+  ok('fatta la ricevuta, la scheda non lo conta più a parte', (await aspetta(() => seg.persone())).find?.((x) => x.id === personaId)?.satispay, undefined)
 
   // La ricevuta si annulla: i soldi arrivati tornano un incasso a parte, e possono entrare in quella giusta.
   const prima = (await aspetta(() => seg.ricevute(personaId))).find?.((x) => !x.annullataIl)

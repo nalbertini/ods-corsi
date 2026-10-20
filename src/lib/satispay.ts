@@ -200,3 +200,22 @@ export const cosaNonVaMetodo = (metodo: string, p: PagamentoSatispay | undefined
 /** Cosa dire prima di rifiutare o eliminare una richiesta pagata: i soldi restano, e vanno restituiti. */
 export const daRestituire = (p: PagamentoSatispay | undefined): string | null =>
   p?.stato === 'pagato' && !p.ricevutaId ? `I ${soldi(p.importo)} pagati con Satispay restano in PAGAMENTI: vanno restituiti dall’app Satispay Business.` : null
+
+/**
+ * Perché Satispay non c'è anche se ogni corso ha il prezzo: solo i casi
+ * semplici, come `importo_iscrizione` (decisione del 2026-10-20). Con più
+ * corsi valgono le offerte del listino, con più righe di prezzo i giorni
+ * scelti: li conferma la segreteria. `null` se è semplice.
+ */
+export function nonSemplice(corsi: CorsoRef[], listino: Listino): string | null {
+  if (corsi.length > 1) return 'Niente Satispay per ora: con più corsi il prezzo lo conferma la segreteria'
+  const conRighe = corsi.find((c) => (listino.corsi.find((v) => v.corsoId === c.id)?.prezzi.length ?? 0) > 1)
+  return conRighe ? `Niente Satispay per ora: il prezzo di ${conRighe.nome} dipende dai giorni, lo conferma la segreteria` : null
+}
+
+/** Per ogni scheda, i centesimi arrivati con Satispay e non ancora in una ricevuta: la quota non è da pagare. */
+export function satispayPerPersona(pagamenti: PagamentoSatispay[]): Map<string, number> {
+  const m = new Map<string, number>()
+  for (const p of pagamenti) if (p.stato === 'pagato' && !p.ricevutaId && p.personaId) m.set(p.personaId, (m.get(p.personaId) ?? 0) + p.importo)
+  return m
+}
