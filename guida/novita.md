@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.139.0 — 21 ottobre 2026
+
+### Novità
+
+- In Statistiche quanta gente guarda il sito e quante volte tocca Iscriviti, Chiama o Scrivici
+
 ## 0.138.0 — 21 ottobre 2026
 
 ### Novità
