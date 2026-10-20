@@ -572,7 +572,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         </div>
         {/* Sulla pagina pubblica la ricevuta è obbligatoria: quanto e come pagare stanno qui, non solo nella pagina dei prezzi. */}
         <QuantoCosta
-          nome={b.nome.trim() || 'Chi si iscrive'}
+          nome={b.nome.trim()}
           cognome={b.cognome.trim()}
           corsi={(corsi ?? []).filter((c) => b.corsi.includes(c.id))}
           formula={b.formula}
@@ -879,8 +879,9 @@ export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { no
   const letto = useListino()
   const [copiato, setCopiato] = useState<string | null>(null)
   if (!letto) return null
-  const s = stimaIscrizione({ chi: nome, corsi, formula }, abbonamenti, chiaveGiorno(new Date()), letto.listino)
-  const testo = causale(nome, cognome, corsi.map((c) => c.nome))
+  const s = stimaIscrizione({ chi: nome || 'Chi si iscrive', corsi, formula }, abbonamenti, chiaveGiorno(new Date()), letto.listino)
+  // Senza nome il bonifico arriverebbe senza: la causale aspetta che lo si scriva.
+  const testo = nome ? causale(nome, cognome, corsi.map((c) => c.nome)) : null
   const copia = (cosa: string, valore: string) =>
     navigator.clipboard?.writeText(valore).then(
       () => {
@@ -917,12 +918,16 @@ export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { no
           È una stima dal listino: le altre offerte e l’importo giusto li conferma la segreteria. Bonifico a {PAGAMENTO.intestatario}:
         </Dettaglio>
         <span className="num iban">{PAGAMENTO.iban}</span>
-        <Dettaglio>
-          Causale: <span className="testo-pieno">{testo}</span>
-        </Dettaglio>
+        {testo ? (
+          <Dettaglio>
+            Causale: <span className="testo-pieno">{testo}</span>
+          </Dettaglio>
+        ) : (
+          <Dettaglio tono="avviso">Scrivi nome e cognome per la causale.</Dettaglio>
+        )}
         <Tasti>
           <Tasto onClick={() => void copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
-          <Tasto onClick={() => void copia('causale', testo)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>
+          {testo && <Tasto onClick={() => void copia('causale', testo)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>}
           {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
         </Tasti>
       </Riquadro>
