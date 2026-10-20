@@ -84,7 +84,7 @@ export function elencoIstruttori(testoPulito: string, c: Cornice): { html: strin
   const tessere = [...tecnici].sort((a, b) => posto(a.nome) - posto(b.nome)).map((t, k) => t.scheda(COLORI_RITRATTI[(Math.floor(k / COLONNE) + (k % COLONNE)) % COLORI_RITRATTI.length]))
   const vuote = (COLONNE - (tessere.length % COLONNE)) % COLONNE
   const invito = vuote >= INVITO_MIN
-    ? `<div class="tessera ritratto-invito s${vuote}"><p class="parola">Vieni a conoscerli sul tatami.</p><p class="frase">Una settimana a 5 €: provi tutte le discipline, incontri gli istruttori e scegli. Ti aspettiamo in ${esc(c.indirizzo)}.</p>${azioni(c)}</div>`
+    ? `<div class="tessera ritratto-invito s${vuote}"><p class="parola">Vieni a conoscerli sul tatami.</p><p class="frase">Una settimana a 10 €: provi tutte le discipline, incontri gli istruttori e scegli. Ti aspettiamo in ${esc(c.indirizzo)}.</p>${azioni(c)}</div>`
     : ''
   return { html: `<section class="sezione ritratti-sezione"><div class="ritratti">${tessere.join('')}${invito}</div></section>`, resto: b.slice(i).map((x) => x.html).join(''), conInvito: invito !== '' }
 }
