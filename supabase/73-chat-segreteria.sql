@@ -18,7 +18,7 @@
 --
 -- La data di nascita è quella di `nascitaDelleFonti` (src/lib/segreteria.ts): fra la scheda (`anagrafiche`) e la
 -- richiesta accolta vince la più recente, a parità la scheda; se la più recente non ce l'ha, non c'è. L'età è quella
--- di `etaDi` (src/lib/chatSegreteria.ts). Le prove: supabase/prova/73-chat-segreteria.sql e scripts/prova-mcp.mjs.
+-- di `minorenne` (src/lib/richieste.ts). Le prove: supabase/prova/73-chat-segreteria.sql e scripts/prova-mcp.mjs.
 --
 -- Chi può: solo `e_staff()`; gli altri ricevono «Questa parte è per la segreteria» (42501). Nessuna scrittura.
 --
