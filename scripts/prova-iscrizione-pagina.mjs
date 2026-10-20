@@ -62,7 +62,8 @@ ok('nessun tempo promesso sul richiamo: niente cifre, «entro», «ore», «gior
 ok('AVVISO_RICHIESTA', P.AVVISO_RICHIESTA, 'La richiesta non è ancora l’iscrizione. Non si salva a metà: se esci, ricominci.')
 ok('SENZA_MODULO', P.SENZA_MODULO, 'Per iscriverti chiamaci o passa in palestra.')
 ok('INFORMATIVA_FRASE', P.INFORMATIVA_FRASE, 'Come trattiamo i tuoi dati:')
-ok('COME_SI_PAGA (nella pagina dei prezzi)', P.COME_SI_PAGA, { titolo: 'Dopo la richiesta, oppure in segreteria.', ricevuta: 'La ricevuta la puoi caricare nella richiesta, se hai già pagato.' })
+// Capovolta: la ricevuta è obbligatoria nella richiesta della pagina pubblica, si paga prima di mandarla.
+ok('COME_SI_PAGA (nella pagina dei prezzi): si paga prima, la ricevuta serve', P.COME_SI_PAGA, { titolo: 'Prima di mandare la richiesta.', ricevuta: 'La ricevuta si carica nella richiesta: senza, la richiesta non parte.' })
 
 // --- 2. il fondo, uguale nelle due pagine -------------------------------------
 console.log('\nIl fondo (fondoDellaPagina)')
@@ -78,8 +79,9 @@ ok('COSA_SERVE: quattro voci, titolo, quando e nota', P.COSA_SERVE, [
   { titolo: 'Il codice fiscale', nota: 'Di chi si iscrive. Se iscrivi un figlio, anche il tuo.' },
   { titolo: 'La carta d’identità', nota: 'Di chi si iscrive, dai 6 anni. Una foto o il PDF.' },
   { titolo: 'Il certificato medico', quando: 'SE CE L’HAI', nota: 'Se non ce l’hai, lo porti in segreteria prima della prima lezione.' },
-  { titolo: 'La ricevuta del pagamento', quando: 'SE HAI GIÀ PAGATO', nota: 'Se no, paghi dopo o in segreteria.' },
+  { titolo: 'La ricevuta del pagamento', nota: 'Paghi con bonifico o Satispay mentre compili: quanto pagare te lo dice il modulo.' },
 ])
+ok('la ricevuta non ha «quando»: non è più facoltativa', P.COSA_SERVE?.find((v) => v.titolo === 'La ricevuta del pagamento')?.quando, undefined)
 ok('nessuna voce dice «firma il genitore»', JSON.stringify(P.COSA_SERVE ?? '').includes('firma il genitore'), false)
 
 // --- 5 e 6. il riquadro breve dei costi ----------------------------------------
@@ -92,10 +94,15 @@ ok('con Satispay', prova(() => P.costiBreve(50, true)), {
   etichetta: 'QUANTO COSTA · 2026/27',
   titolo: 'Quota associativa 50 €, più il corso.',
   righe: RIGHE,
-  testo: 'I prezzi di ogni corso e come si paga: bonifico o Satispay, dopo la richiesta o in segreteria.',
+  testo: 'I prezzi di ogni corso e come si paga: bonifico o Satispay, prima di mandare la richiesta.',
   tasto: 'PREZZI E PAGAMENTO',
 })
-ok('senza Satispay la frase non lo nomina', prova(() => P.costiBreve(50, false).testo), 'I prezzi di ogni corso e come si paga: bonifico, dopo la richiesta o in segreteria.')
+ok('senza Satispay la frase non lo nomina', prova(() => P.costiBreve(50, false).testo), 'I prezzi di ogni corso e come si paga: bonifico, prima di mandare la richiesta.')
+// Il pagamento non si rimanda più: nessun testo della pagina dice di pagare in segreteria o dopo la richiesta.
+// Il certificato «lo porti in segreteria» resta: la sua voce si toglie prima di cercare.
+const testiPagamento = JSON.stringify([(P.COSA_SERVE ?? []).filter((v) => v.titolo !== 'Il certificato medico'), P.COME_SI_PAGA, prova(() => P.costiBreve(50, true)), prova(() => P.costiBreve(50, false))])
+ok('nessun testo del pagamento dice «in segreteria»', /in segreteria/i.test(testiPagamento), false)
+ok('nessun testo del pagamento dice «dopo la richiesta»', /dopo la richiesta/i.test(testiPagamento), false)
 ok('la quota è quella passata (dal listino), non scritta: 55 → «55 €»', prova(() => P.costiBreve(55, true).titolo), 'Quota associativa 55 €, più il corso.')
 
 const lib = sorgente('src/lib/paginaIscrizioni.ts')

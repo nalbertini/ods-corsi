@@ -27,11 +27,12 @@ ordine.
      genitore non serve);
    - il **certificato medico**, **SE CE L'HAI**: se no lo porti in segreteria
      prima della prima lezione;
-   - la **ricevuta del pagamento**, **SE HAI GIÀ PAGATO**: se no paghi dopo o
-     in segreteria.
+   - la **ricevuta del pagamento**: paghi con bonifico o Satispay mentre
+     compili, e quanto pagare te lo dice il modulo.
 3. **Quanto costa**, in breve: la quota associativa (quella del
    [listino](segreteria/listino.md)), lo sconto famiglia e il costo di più
-   corsi, come si paga in una riga e il tasto **PREZZI E PAGAMENTO**.
+   corsi, come si paga in una riga (bonifico o Satispay, prima di mandare la
+   richiesta) e il tasto **PREZZI E PAGAMENTO**.
 4. **Non sai ancora quale corso? Hai un dubbio?** Un riquadro solo: le
    **prove**, una lezione (3 €) o una settimana (10 €), indirizzo e telefono,
    e i tasti **CHIAMA** e **MAPPA**.
@@ -56,11 +57,11 @@ prezzi. In cima c'è **‹ TORNA ALLE ISCRIZIONI**, poi:
   vale più. Il PDF riporta i costi di partenza della stagione: se la segreteria
   li cambia da LISTINO, l'app mostra quelli nuovi ma il PDF resta quello di
   partenza, finché non lo si rigenera. Poi le **offerte**.
-- **Come si paga**: dopo la richiesta, oppure in segreteria. L'IBAN si copia
+- **Come si paga**: prima di mandare la richiesta. L'IBAN si copia
   con un tocco (**COPIA IBAN**) e **PAGA CON SATISPAY** apre l'app sul negozio
   dell'associazione (il link è `PAGAMENTO.satispay` in
-  `src/lib/iscrizione.ts`). La ricevuta si può caricare nella richiesta, ma
-  non serve per mandarla.
+  `src/lib/iscrizione.ts`). La ricevuta si carica nella richiesta: senza, la
+  richiesta non parte.
 - **COMPILA LA RICHIESTA**: apre lo stesso modulo. Chiuso il modulo, si torna
   in cima alla pagina delle iscrizioni.
 
@@ -88,6 +89,11 @@ Chi si iscrive risponde alle domande dal telefono:
   quali sono e che la segreteria richiama. Un corso che il listino non ha
   ancora (senza prezzo) si sceglie lo stesso, e sotto il nome c'è scritto
   «prezzo da confermare».
+  Sotto c'è **QUANTO COSTA**: la stima dal listino (la quota associativa, i
+  corsi scelti, il totale), l'IBAN, la causale col nome e i tasti **COPIA
+  IBAN**, **COPIA CAUSALE** e **PAGA CON SATISPAY**. Un corso senza prezzo è
+  scritto in giallo: si paga il totale che si vede, il resto lo sistema la
+  segreteria.
 - **Il modulo**: le autorizzazioni si firmano **qui, col dito** (o col mouse
   dal computer). Si sceglie come sul foglio se si acconsente al
   **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**: le
@@ -124,8 +130,10 @@ Chi si iscrive risponde alle domande dal telefono:
   anni, anche per un minore aggiunto dal nucleo (serve per stage e trasferte
   senza genitori; quella del genitore non serve, e sotto i 6 anni non si
   chiede), il retro se serve, il **certificato
-  medico** se ce l'ha già (lo vede solo la segreteria), e la **ricevuta del pagamento** se ha già pagato:
-  chi paga in contanti al banco la lascia vuota (accanto c'è **PUOI PAGARE IN
+  medico** se ce l'ha già (lo vede solo la segreteria), e la **ricevuta del
+  pagamento**, del bonifico o di Satispay (una foto, lo screenshot o il PDF): è
+  obbligatoria, e senza la richiesta non parte. Da **UNA PERSONA IN PIÙ**
+  nell'area iscritti resta facoltativa (accanto c'è **PUOI PAGARE IN
   SEGRETERIA**). Il certificato si
   chiede solo quando serve: dai 6 anni quello normale, dai 12 quello
   agonistico se tra i corsi scelti c'è judo, aikido o lotta (lo dice il nome
@@ -154,7 +162,8 @@ più niente, senza premere di nuovo il tasto.
 
 Premuto **MANDA LA RICHIESTA**, compare **RICHIESTA ARRIVATA**. Se un file non
 è partito compare **MANCA QUALCHE FILE**, con il tasto per riprovare (per
-un'ora); altrimenti i fogli si portano in segreteria.
+un'ora); se non va, chiama la segreteria (da **UNA PERSONA IN PIÙ**: i fogli
+si portano in segreteria).
 
 La richiesta **non è ancora un'iscrizione**: arriva in segreteria, in
 [RICHIESTE ONLINE](segreteria/richieste.md), dove qualcuno guarda i file e la
