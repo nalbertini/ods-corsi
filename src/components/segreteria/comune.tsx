@@ -348,11 +348,81 @@ export function Riga({ titolo, children }: { titolo: string; children?: ReactNod
   )
 }
 
-export function Guaio({ testo }: { testo: string }) {
+/** Una cosa che non si è letta. Con `titolo`, il guaio in una riga sopra la frase che dice cosa fare (IL SITO di STATISTICHE). */
+export function Guaio({ testo, titolo }: { testo: string; titolo?: string }) {
   return (
     <div className="card stack" style={{ padding: 14, gap: 6, borderColor: 'var(--rosso)' }}>
       <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso-testo)' }}>NON LETTO</span>
+      {titolo && <span style={{ fontSize: 16, fontWeight: 700 }}>{titolo}</span>}
       <span style={{ fontSize: 14, color: 'var(--dim)' }}>{testo}</span>
+    </div>
+  )
+}
+
+/**
+ * Le colonne di STATISTICHE, mese per mese (Statistiche.tsx e StatisticheSito.tsx).
+ */
+export interface Colonna {
+  chiave: string
+  etichetta: string
+  valore: number
+  dettaglio: string[]
+}
+
+/** Un numero più tondo sopra il massimo, per la scala: 0, metà, tutto. */
+function tetto(x: number) {
+  if (x <= 0) return 1
+  // Con pochi (le prove, un corso piccolo) un numero pari: la metà resta una persona intera.
+  if (x <= 10) return Math.max(2, Math.ceil(x / 2) * 2)
+  const p = 10 ** Math.floor(Math.log10(x))
+  return ([1, 2, 2.5, 5, 10].map((k) => k * p).find((k) => k >= x) ?? 10 * p)
+}
+
+/**
+ * Le colonne di un valore solo, mese per mese: una tinta sola, la scala a
+ * sinistra, il numero esatto sotto il dito o il mouse. Il mese in corso non è
+ * finito, e si vede: è tratteggiato.
+ */
+export function Colonne({ nome, colonne, formato = (n: number) => n.toLocaleString('it-IT') }: { nome: string; colonne: Colonna[]; formato?: (n: number) => string }) {
+  const [sopra, setSopra] = useState<string | null>(null)
+  const max = tetto(Math.max(0, ...colonne.map((c) => c.valore)))
+  if (colonne.every((c) => c.valore === 0)) return <span className="sg-sotto">Niente da contare in questo periodo.</span>
+  return (
+    <div className="sg-colonne" role="group" aria-label={nome}>
+      <div className="sg-colonne-scala num" aria-hidden="true">
+        <span>{formato(max)}</span>
+        <span>{formato(max / 2)}</span>
+        <span>0</span>
+      </div>
+      <div className="sg-colonne-piano" style={{ gridTemplateColumns: `repeat(${colonne.length}, minmax(0, 1fr))` }}>
+        {colonne.map((c, i) => (
+          <button
+            key={c.chiave}
+            type="button"
+            className="sg-colonna"
+            aria-label={c.dettaglio.join(', ')}
+            data-in-corso={i === colonne.length - 1}
+            onMouseEnter={() => setSopra(c.chiave)}
+            onMouseLeave={() => setSopra(null)}
+            onFocus={() => setSopra(c.chiave)}
+            onBlur={() => setSopra(null)}
+          >
+            <span className="sg-colonna-binario">
+              {c.valore > 0 && <span className="sg-colonna-pieno" style={{ height: `${(100 * c.valore) / max}%` }} />}
+              {sopra === c.chiave && (
+                <span className="sg-colonna-suggerimento" role="tooltip" data-lato={i >= colonne.length / 2 ? 'destra' : 'sinistra'}>
+                  {c.dettaglio.map((t, k) => (
+                    <span key={k} style={k === 0 ? { fontWeight: 700 } : undefined}>
+                      {t}
+                    </span>
+                  ))}
+                </span>
+              )}
+            </span>
+            <span className="sg-colonna-etichetta num">{c.etichetta.toUpperCase()}</span>
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

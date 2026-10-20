@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Il server MCP di ODS Corsi: chi cura i conti collega Claude al suo account, e Claude registra in CONTABILITÀ
 // le spese lette su fatture e scontrini dei fornitori, dopo il suo «ok». Quando è accesa, la segreteria gli chiede
-// certificati, quote e presenze (73-chat-segreteria.sql): dei minori solo numeri.
+// certificati, quote e presenze (75-chat-segreteria.sql): dei minori solo numeri.
 //
 // L'accesso è quello di Supabase (Authentication → OAuth Server): Claude chiede il token, la persona entra in ODS
 // e dice CONSENTI (la pagina `collega/` dell'app), e da lì ogni chiamata porta il suo token. Qui non c'è la chiave
@@ -41,7 +41,7 @@ function apri(token: string, utente: string) {
     global: { headers: { Authorization: `Bearer ${token}` } },
     auth: { persistSession: false, autoRefreshToken: false },
   })
-  // Il «sale» di questa domanda (73-chat-segreteria.sql): la chiave di un minore è la stessa fra le pagine, e solo qui.
+  // Il «sale» di questa domanda (75-chat-segreteria.sql): la chiave di un minore è la stessa fra le pagine, e solo qui.
   const sale = crypto.randomUUID()
   return {
     eAmministrazione: async () => ok(await db.rpc('e_amministrazione')) === true,
@@ -102,7 +102,7 @@ function apri(token: string, utente: string) {
       const righe = ok(await db.from('corsi').select('id, nome').eq('attivo', true).order('nome')) as Array<{ id: string; nome: string }>
       return righe.map((r) => ({ id: r.id, nome: r.nome }))
     },
-    // Le righe di 73-chat-segreteria.sql: nome e cognome dei minori sono già nulli, e non c'è altro di loro.
+    // Le righe di 75-chat-segreteria.sql: nome e cognome dei minori sono già nulli, e non c'è altro di loro.
     async iscritti() {
       const righe = ok(await tutteLeRighe((da: number, a: number) => db.rpc('chat_iscritti', { sale }).order('chiave').range(da, a))) as Array<{
         chiave: string; nome: string | null; cognome: string | null; eta: 'adulto' | 'minore' | 'non_si_sa'; sei_anni: string | null

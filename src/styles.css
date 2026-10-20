@@ -2300,6 +2300,17 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   /* Le tabelle delle statistiche scorrono di lato: il nome resta fermo. */
   .sg-stat-tabella tr > :first-child { position: sticky; left: 0; z-index: 1; background: var(--surface); }
   .sg-stat-tabella tbody tr > :first-child { white-space: normal; min-width: 120px; max-width: 140px; }
+  /* DA DOVE ARRIVANO LE RICHIESTE ha tre colonne di cifre: ogni riga va su due piani, il nome sopra e le cifre sotto
+     le loro colonne, e non serve scorrere di lato. */
+  .sg-da-dove, .sg-da-dove thead, .sg-da-dove tbody, .sg-da-dove tfoot { display: block; }
+  .sg-da-dove tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* `.sg-stat-tabella.sg-da-dove`: le regole della tabella vengono dopo nel file, e qui devono vincere. */
+  .sg-stat-tabella.sg-da-dove th, .sg-stat-tabella.sg-da-dove td { padding-inline: 4px; }
+  .sg-stat-tabella.sg-da-dove thead th { letter-spacing: 0.08em; }
+  .sg-da-dove tr > :first-child { grid-column: 1 / -1; position: static; max-width: none; min-width: 0; border-bottom: 0; padding: 10px 0 0; }
+  .sg-da-dove thead tr > :first-child { padding: 0 0 4px; }
+  /* «DA DOVE ARRIVANO LE RICHIESTE» non sta in 360px: qui il titolo va a capo. */
+  .sg-da-dove-riquadro .sg-riga-titolo > .sg-etichetta { white-space: normal; }
 }
 /* Un dato che manca e va completato: si vede rosso, ovunque. */
 .sg-manca { color: var(--rosso-testo); font-weight: 600; }
@@ -2651,6 +2662,14 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-stat-tabella .num-col { text-align: right; }
 .sg-stat-tabella td.num { font-size: 15px; font-weight: 600; }
 .sg-stat-tabella tr[data-spenta='true'] > * { opacity: 0.4; }
+/* DA DOVE ARRIVANO LE RICHIESTE: NON SI SA spenta in fondo, In tutto col filo pieno sopra. */
+.sg-da-dove tr[data-non-si-sa='true'] > * { color: var(--dim); }
+.sg-da-dove tfoot th, .sg-da-dove tfoot td { border-top: 2px solid var(--line); border-bottom: 0; font-weight: 700; }
+/* Il nome (e «COME CI HANNO CONOSCIUTO») va a capo, le cifre stanno strette: le tre colonne entrano senza scorrere.
+   Sotto i 1200px i due elenchi vanno uno sotto l'altro: affiancati, RIFIUTATE uscirebbe. */
+.sg-da-dove tr > :first-child, .sg-da-dove tr > :first-child .sg-ordina { white-space: normal; }
+.sg-da-dove .num-col { padding-inline: 6px; }
+@media (max-width: 1200px) { .sg-da-dove-due { grid-template-columns: minmax(0, 1fr); } }
 .sg-stat-corso { padding: 2px 0 2px 10px; border-left: 4px solid var(--tinta); font-size: 15px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); text-align: left; }
 .sg-stat-corso[aria-pressed='true'] { text-decoration: underline; text-underline-offset: 4px; }
 .sg-barretta { display: grid; grid-template-columns: minmax(70px, 1fr) 40px; gap: 8px; align-items: center; min-width: 120px; }
@@ -2667,6 +2686,54 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-parte-segno { width: 10px; height: 10px; border-radius: 2px; }
 @media (max-width: 1000px) {
   .sg-stat-due { grid-template-columns: minmax(0, 1fr); }
+}
+/* IL SITO in STATISTICHE (StatisticheSito.tsx; design: docs/design-canvas/sito-in-statistiche). */
+.sg-sito-testa { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.sg-sito-indicativi { flex: 1 1 360px; min-width: 0; font-size: 13px; line-height: 1.45; color: var(--dim); }
+.sg-sito-aggiorna { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--dim); }
+.sg-sito-aggiorna > .sg-btn { min-width: 120px; }
+/* Le frasi (si conta dal, corso scelto) non sono guai: una fascia del colore del fondo, senza segno. */
+.sg-sito-frase { padding: 10px 14px; border-radius: 6px; background: var(--bg); font-size: 14px; line-height: 1.45; }
+.sg-sito-frase[data-prova='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
+.sg-sito-frase[data-prova='true'] > b { color: var(--giallo-testo); }
+/* Il guaio sta dentro il riquadro: il Guaio di comune.tsx col titolo, sul colore del fondo e con la barra rossa a sinistra del look. */
+.sg-sito-guaio > .card { padding: 14px 16px; border: 0; border-radius: 6px; background: var(--bg); box-shadow: inset 4px 0 0 var(--rosso); }
+.sg-sito-nota-titolo { font-size: 12px; color: var(--dim); }
+.sg-sito-cifra { font-size: 22px; font-weight: 700; color: var(--text); }
+.sg-sito-blocco { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.sg-sito-blocco[data-largo='true'] { gap: 10px; }
+.sg-sito-piccola { font-size: 12px; color: var(--dim); }
+.sg-sito-totali { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; font-size: 14px; color: var(--sec); }
+.sg-sito-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; align-items: start; }
+.sg-sito-tabella .sg-sito-mese-corto { display: none; }
+/* Il mese va a capo e la nota («dal 20», «fino a oggi») sta sotto: così SCRIVICI resta dentro anche a 1024px. */
+.sg-sito-tabella tbody tr > :first-child { white-space: normal; }
+.sg-sito-mese { font-weight: 600; }
+.sg-sito-nota { display: block; font-size: 12px; font-weight: 400; color: var(--dim); }
+.sg-sito-totale > * { border-top: 2px solid var(--line); font-weight: 700; }
+.sg-sito-totale > th { font-size: 11px; letter-spacing: 0.14em; color: var(--dim); }
+.sg-sito-barra { display: grid; grid-template-columns: 190px minmax(0, 1fr) 56px; grid-template-areas: 'nome barra n'; gap: 4px 12px; align-items: center; min-height: 34px; }
+.sg-sito-barra[data-filo='true'] { padding-top: 10px; border-top: 1px solid var(--line-soft); }
+.sg-sito-barra-nome { grid-area: nome; display: flex; flex-direction: column; min-width: 0; font-size: 15px; font-weight: 600; }
+.sg-sito-barra-nome > span { overflow-wrap: anywhere; }
+.sg-sito-barra-sotto { font-size: 12px; font-weight: 400; line-height: 1.35; color: var(--dim); }
+.sg-sito-barra > .sg-barra-binario { grid-area: barra; }
+.sg-sito-barra-n { grid-area: n; font-size: 15px; font-weight: 600; text-align: right; }
+/* Fino a 1200px colonne e tabella una sotto l'altra: affiancate, la tabella non ci sta. */
+@media (max-width: 1200px) {
+  .sg-sito-due { grid-template-columns: minmax(0, 1fr); }
+}
+/* Sul telefono: Aggiorna a tutta riga, il nome e il numero sopra la barra, la tabella stretta col mese corto. */
+@media (max-width: 767px) {
+  .sg-sito-aggiorna { flex: 1 1 100%; }
+  .sg-sito-aggiorna > .sg-btn { flex: 1 1 auto; }
+  .sg-sito-barra { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'nome n' 'barra barra'; }
+  .sg-sito-tabella th, .sg-sito-tabella td { padding-left: 4px; padding-right: 4px; }
+  .sg-sito-tabella thead th { letter-spacing: 0; }
+  .sg-sito-tabella .sg-sito-mese-lungo, .sg-sito-tabella .sg-sito-nota { display: none; }
+  .sg-sito-tabella .sg-sito-mese-corto { display: inline; }
+  /* Il mese corto ci sta: niente colonna larga e ferma come nelle altre tabelle, così le cinque colonne stanno nello schermo. */
+  .sg-sito-tabella.sg-sito-tabella tbody tr > :first-child { min-width: 0; white-space: nowrap; }
 }
 
 .sg-passi { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
@@ -3380,3 +3447,10 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   .sg-riga-bilancio { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; }
   .sg-riga-bilancio > :first-child { grid-column: 1 / -1; }
 }
+
+/* Satispay nel modulo di iscrizione: le tre scelte di PAGHI CON una sotto l'altra sul telefono, come quelle di chi si iscrive. */
+@media (max-width: 560px) { .scelta-pago .modulo-scelte-una { flex-direction: column; } }
+/* Una frase di stato sotto una scheda della segreteria (il pagamento Satispay): il colore dice com'è, la parola lo ripete. */
+.sg-sotto[data-tono='fatto'] { color: var(--verde-testo); }
+.sg-sotto[data-tono='aspetta'] { color: var(--giallo-testo); }
+.sg-sotto[data-tono='guaio'] { color: var(--rosso-testo); }

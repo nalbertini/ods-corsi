@@ -55,9 +55,62 @@ medie: si conta a parte.
   contata una volta, nel mese della sua prima prova (chi fa la settimana di
   prova non conta tre volte). Col mouse sopra dice anche le lezioni di prova
   del mese e quanti di loro oggi sono iscritti.
+- **DA DOVE ARRIVANO LE RICHIESTE** — le richieste di iscrizione arrivate
+  nel periodo, in due elenchi: **ARRIVATE DA** (da quale link: Home del
+  sito, la pagina di un corso, Link della segreteria, Area iscritti, o la
+  parola di un link fatto a mano) e **COME CI HANNO CONOSCIUTO** (la risposta
+  del modulo). Per ognuno quante sono **ARRIVATE**, quante oggi sono
+  **ACCOLTE** e quante **RIFIUTATE** (le altre aspettano in
+  [Richieste online](richieste.md)). Si conta per persona: una famiglia di tre
+  conta tre. **NON SI SA** sta sempre in fondo, poi **In tutto**; le colonne si
+  ordinano con un tocco. Con un corso scelto in cima contano le richieste che
+  lo chiedono: chi ne chiede due conta in tutti e due. Le richieste eliminate
+  da nuove, come lo spam, non contano; quelle accolte o rifiutate sì, anche
+  eliminate. I numeri non hanno nomi. La frase sotto dice da quando
+  si conta (prima i link non avevano l'etichetta). Sul telefono ogni riga va
+  su due piani: il nome sopra, le cifre sotto.
 - **INCASSI MESE PER MESE** — quanto è stato pagato con le
   [ricevute](iscritti.md) del mese, per la data della ricevuta, senza le
   annullate. È di tutti i corsi insieme: una ricevuta può averne più d'uno.
 
+## Il sito
+
+In fondo alla pagina, **IL SITO** dice quanta gente guarda il sito della
+palestra e quante volte tocca i pulsanti **Iscriviti**, **Chiama** e
+**Scrivici** (quello di WhatsApp). Lo vede solo la segreteria. I numeri
+vengono dal contatore del sito (GoatCounter) e sono **indicativi**: si contano
+le visite, non le pagine viste, e la stessa persona che torna entro 8 ore è
+una visita sola. Un tocco conta anche se poi la persona non chiama o non
+scrive.
+
+- il totale del periodo e, mese per mese, le **visite** in colonne e una
+  tabella con visite, Iscriviti, Chiama e Scrivici, più il totale;
+- **LE PAGINE PIÙ LETTE**: le cinque con più visite, col titolo e
+  l'indirizzo, e le altre insieme. Gli indirizzi sbagliati (la pagina «404»)
+  non ci sono: si vedono su GoatCounter;
+- **DA DOVE ARRIVANO**: Google, Instagram, Facebook… le cinque più grandi e le
+  altre insieme, e a parte **Diretto o non si sa**: chi scrive l'indirizzo a
+  mano, chi apre un link da WhatsApp, le app che non lo dicono.
+
+Il **corso** scelto in alto qui non conta: il sito è di tutta la palestra, e
+il riquadro lo dice. Il contatore è acceso dal **20 ottobre 2026**: se il
+periodo comincia prima, il riquadro dice «Si conta dal 20 ottobre 2026» e i
+mesi prima non ci sono.
+
+I numeri si leggono quando apri la pagina e restano buoni 10 minuti per lo
+stesso periodo; accanto c'è l'ora in cui sono stati letti. **Aggiorna** li
+rilegge subito, ma non più di una volta al minuto. Se il contatore non
+risponde, il riquadro lo dice e cosa fare (di solito: riprova più tardi con
+Aggiorna; se dice «L'app non ti riconosce», esci e rientra); gli altri riquadri
+restano. Se per qualche tocco il contatore dà solo il totale, il riquadro lo
+spartisce sui mesi come le visite e dice che è una stima. Non vanno nel CSV.
+
+Col database vero il riquadro vuole la funzione `statistiche-sito` pubblicata
+su Supabase, con la chiave di GoatCounter (vedi `supabase/LEGGIMI.md`, «I
+numeri del sito»): finché manca, dice «Il contatore non è ancora acceso». In
+prova i numeri sono inventati, sempre gli stessi.
+
 Col database vero le statistiche vogliono `supabase/22-statistiche.sql`:
-finché non c'è, la pagina dice che va lanciato.
+finché non c'è, la pagina dice che va lanciato. Il riquadro DA DOVE ARRIVANO
+LE RICHIESTE vuole `supabase/74-provenienza-richieste.sql`: finché non c'è,
+dice di lanciarlo e il resto funziona.

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Un riquadro nuovo, DA DOVE ARRIVANO LE RICHIESTE, dopo PROVE MESE PER MESE (anche quello parla di chi arriva) e prima di INCASSI: una tessera bianca come le altre, con due elenchi affiancati (ARRIVATE DA e COME CI HANNO CONOSCIUTO), ognuno con arrivate, accolte e rifiutate per persona, NON SI SA sempre in fondo, la riga IN TUTTO e la frase che dice da quando si conta. Si ordina come le altre tabelle. Segue il periodo e il corso scelti in cima. -->
+<div style="position: relative; display: flex; width: 1440px; min-height: 1500px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="STATISTICHE" numeri="RICHIESTE ONLINE:3" nome="Marco Rossi" ruolo="Segreteria" altezza="1500px" hint-size="240px,1500px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 20px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+      <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+        <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">STATISTICHE</h1>
+        <span style="font-size: 14px; color: #46606f">Come va la palestra, mese per mese: chi viene, quando, in quali corsi, quanto entra.</span>
+      </div>
+      <div style="width: 180px"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="" valore="Ultimi 3 mesi" hint-size="180px,44px"></dc-import></div>
+      <div style="width: 200px"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="" valore="Tutti i corsi" hint-size="200px,44px"></dc-import></div>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Scarica CSV" variante="linea" hint-size="140px,44px"></dc-import>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+      <dc-import name="Numero" tema="sito" titolo="ISCRITTI OGGI" valore="214" sotto="38 nuovi e 11 usciti nel periodo" hint-size="100%,112px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="PRESENZE" valore="2.874" sotto="9,6 a lezione, in 299 lezioni con l'appello" hint-size="100%,112px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="SUGLI ISCRITTI" valore="73%" sotto="i giustificati non contano" hint-size="100%,112px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="PROVE → ISCRITTI" valore="56%" sotto="19 su 34 persone venute a provare" hint-size="100%,112px"></dc-import>
+    </div>
+    <div style="padding: 14px 20px; border: 2px dashed #cfe6f4; border-radius: 6px; font-size: 13px; color: #46606f">PRESENZE MESE PER MESE · ISCRITTI MESE PER MESE · QUANDO SI VIENE · CORSI · ISTRUTTORI · IN REGOLA OGGI · PROVE MESE PER MESE: come oggi</div>
+    <dc-import name="RiquadroStatistica" titolo="DA DOVE ARRIVANO LE RICHIESTE" nota="le richieste arrivate nel periodo, per persona, e come stanno oggi" colonne="ARRIVATE DA|ARRIVATE|ACCOLTE|RIFIUTATE" righe="Home del sito|38|29|3;Judo kids|21|17|1;Link della segreteria|17|15|—;Karate ragazzi|12|9|1;Ginnastica artistica|9|6|2;Orari|7|5|—;Area iscritti|6|6|—;volantino-ottobre|4|3|—;!NON SI SA|11|9|1" totale="125|99|8" colonne2="COME CI HANNO CONOSCIUTO|ARRIVATE|ACCOLTE|RIFIUTATE" righe2="Amici o parenti|41|34|2;Instagram|19|14|1;Google|16|12|2;Passando davanti|12|10|—;Sito|9|7|1;Volantino|6|5|—;Facebook|4|3|—;Altro|3|2|—;!NON SI SA|15|12|2" totale2="125|99|8" griglia="minmax(0, 1fr) 96px 92px 104px" affiancati="{{ true }}" telefono="{{ false }}" frase="Si conta dal 4 novembre 2026: per persona (una famiglia di tre conta tre), arrivate nel periodo e come stanno oggi; le altre aspettano. Chi chiede due corsi conta in tutti e due col filtro per corso." hint-size="100%,560px"></dc-import>
+    <div style="padding: 14px 20px; border: 2px dashed #cfe6f4; border-radius: 6px; font-size: 13px; color: #46606f">INCASSI MESE PER MESE: come oggi</div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

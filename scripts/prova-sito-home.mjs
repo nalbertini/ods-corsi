@@ -32,6 +32,10 @@ const { outputFiles } = await build({
   banner: { js: "import { createRequire as __cr } from 'node:module'; const require = __cr(process.cwd() + '/');" },
 })
 const g = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+// Ogni link al modulo porta l'etichetta della sua pagina (`?da=home`…, provata in prova-sito-genera.mjs): qui si guarda
+// l'impaginazione, che non cambia, e la si confronta senza l'etichetta con quella di prima.
+const senzaDa = (r) => (r && typeof r === 'object' ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/(\?|&amp;|&)da=[a-z0-9-]+/g, '') : v])) : r)
+const generaSito = (d) => senzaDa(g.generaSito(d))
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -41,7 +45,7 @@ const ok = (cosa, avuto, voluto) => {
 }
 const P = 'https://abc.supabase.co/storage/v1/object/public/sito/'
 const img = (n) => `<img src="${P}f${n}.jpg" alt="Foto ${n}" />`
-const pagina = (testo) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo }], menu: [], rinvii: [], ospitiImmagini: [P] })['index.html'] ?? ''
+const pagina = (testo) => generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo }], menu: [], rinvii: [], ospitiImmagini: [P] })['index.html'] ?? ''
 const main = (h) => h.match(/<main>([\s\S]*)<\/main>/)?.[1] ?? ''
 const dopo = (h) => main(h).split('</section>').slice(1).join('</section>')
 const conta = (x, re) => (x.match(re) || []).length
@@ -147,7 +151,7 @@ console.log('\n4. Il collage pieno della testata (design TatamiBlu)')
 
 console.log('\n6. Il pulsante in testata')
 {
-  const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [], rinvii: [] })['index.html'] ?? ''
+  const h = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [], rinvii: [] })['index.html'] ?? ''
   ok('in testata: «Iscriviti» (pulsante primario, intero) verso il modulo di iscrizione', /<header class="testata">[\s\S]*<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(h), true)
   ok('l’invito in fondo dice «Iscriviti»', /class="parola">Iscriviti</.test(h), true)
   // Il pulsante non ha più la coda «una settimana · 5 €» da nascondere sul telefono: l'etichetta è una sola.
@@ -218,7 +222,7 @@ console.log('\n9. Telefono: le misure del design')
   ok('citazioni: larghe 300px, alte almeno 300px, testo da 19px', [ha(mobile, '.citazioni .tessera', 'flex:0 0 300px'), ha(mobile, '.tessera.citazione', 'min-height:300px'), ha(mobile, '.tessera.citazione', 'font-size:19px')], [true, true, true])
   ok('invito: alto almeno 260px, parola da 120px', [ha(mobile, '.invito', 'min-height:260px'), ha(mobile, '.invito .parola', 'font-size:120px')], [true, true])
   ok('piede: nome da 44px, 24px di imbottitura', [ha(mobile, '.piede .nome', 'font-size:44px'), ha(mobile, '.piede', 'padding:24px')], [true, true])
-  const m = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contatti', slug: 'contatti', indirizzo: null }], rinvii: [] })
+  const m = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contatti', slug: 'contatti', indirizzo: null }], rinvii: [] })
   ok('domande: una gialla e una chiara, a turno', ha(mobile, '.tessere .tessera.chiara:nth-child(odd)', 'background:var(--giallo)'), true)
   ok('la voce della pagina aperta ha aria-current="page", solo quella', [/<a href="\/" aria-current="page">Home/.test(m['index.html']), /<a [^>]*href="\/contatti\/"[^>]*aria-current="page"|<a [^>]*aria-current="page"[^>]*href="\/contatti\/"/.test((m['contatti/index.html'].match(/<header class="testata">[\s\S]*?<\/header>/) ?? [''])[0]), (m['index.html'].match(/aria-current="page"/g) ?? []).length], [true, true, 1])
 }
@@ -239,7 +243,7 @@ console.log('\n11. Dettagli visibili: firme, virgolette, invito, piede')
   ok('la firma non è in corsivo', ha(base, '.firma em', 'font-style:normal'), true)
   ok('le citazioni hanno le virgolette « » (si aggiungono nel CSS, il testo non cambia)', [/\.citazione>p:first-child::before\{content:"«"/.test(cssPagina), /\.citazione>p:first-child::after\{content:"»"/.test(cssPagina)], [true, true])
   ok('l’invito non ha la freccia', ha(base, '.invito .freccia', 'display:none'), true)
-  const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy', slug: null, indirizzo: '/privacy/' }], rinvii: [] })['index.html'] ?? ''
+  const h = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy', slug: null, indirizzo: '/privacy/' }], rinvii: [] })['index.html'] ?? ''
   const piede = h.match(/<footer class="piede">[\s\S]*<\/footer>/)?.[0] ?? ''
   ok('il piede ha recapiti, menu e voci di legge, senza titoli (come nel design)', [/<ul class="recapiti-piede">/.test(piede), /<nav class="piede-menu"/.test(piede), /<h2/.test(piede)], [true, true, false])
   ok('il menu del piede ripete le voci del menu', /<a href="\/"[^>]*>Home<\/a>/.test(piede), true)
@@ -268,7 +272,7 @@ console.log('\n12. Schede dei corsi, marchio ritagliato, puntini, pulsante breve
   ok('le citazioni hanno i puntini (scroll-marker)', [/scroll-marker-group:\s*after/.test(cssPagina), /\.citazioni \.tessera::scroll-marker\{/.test(cssPagina)], [true, true])
   ok('sul telefono le foto della fascia sono due', ha(mobile, '.foto-fila.quattro .foto:nth-child(n+3)', 'display:none'), true)
   const piede = pagina('<p>x</p>')
-  ok('il piede ripete le voci del menu', /<footer class="piede">[\s\S]*Chi siamo/.test(g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'chi-siamo', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Chi siamo', slug: 'chi-siamo', indirizzo: null }], rinvii: [] })['index.html']?.match(/<footer[\s\S]*<\/footer>/)?.[0] ?? ''), true)
+  ok('il piede ripete le voci del menu', /<footer class="piede">[\s\S]*Chi siamo/.test(generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'chi-siamo', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Chi siamo', slug: 'chi-siamo', indirizzo: null }], rinvii: [] })['index.html']?.match(/<footer[\s\S]*<\/footer>/)?.[0] ?? ''), true)
 }
 
 console.log('\n13. Una foto e il carosello dei clienti: affiancati')

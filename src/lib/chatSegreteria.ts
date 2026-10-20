@@ -7,7 +7,7 @@ import type { StatoPresenza, StatoSessione } from './sala'
 import { pagamentoDi, statoCertificato, type PagamentoSeg } from './segreteria'
 
 /**
- * La segreteria dalla chat (`mcp.ts`, `supabase/73-chat-segreteria.sql`): Claude legge, per chi ha il ruolo di
+ * La segreteria dalla chat (`mcp.ts`, `supabase/75-chat-segreteria.sql`): Claude legge, per chi ha il ruolo di
  * segreteria, certificati, quote, iscritti e presenze, con le regole di DA FARE e PRESENZE. Il database dà già nulli
  * nome e cognome di chi non è adulto; qui i testi contano i minori e chi non ha la data di nascita, e nominano solo
  * gli adulti. Mai contatti, codice fiscale, date di nascita, note del pagamento o numeri di ricevuta.

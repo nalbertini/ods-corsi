@@ -1,5 +1,7 @@
 import { haUnServer } from './dati'
+import type { Conosciuto } from './provenienza'
 import { cfNatoIl, cfTornaColNome, cfTornaConLaData, cfValido } from './codiceFiscale'
+import type { StatoSatispay } from './satispay'
 
 // Le forme di email e telefono, le stesse del database: le usano anche gli ordini del vestiario.
 export const FORMA_EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
@@ -61,6 +63,14 @@ export interface DatiRichiesta {
    * prova, per ora (vedi `nucleo.ts`).
    */
   nucleoDi?: string
+  /**
+   * L'etichetta del link da cui si è arrivati (`?da=`) e la risposta a «Come ci
+   * hai conosciuto?», le stesse per tutte le richieste di un modulo. Le pulisce
+   * il database (`74-provenienza-richieste.sql`): una sbagliata si scarta e la
+   * richiesta parte lo stesso. Le vede solo la segreteria (`provenienza.ts`).
+   */
+  provenienza?: string
+  conosciuto?: Conosciuto
 }
 
 export interface Richiesta extends DatiRichiesta {
@@ -107,6 +117,16 @@ export interface DatiRichieste {
   invia(dati: DatiRichiesta): Promise<string>
   /** Un file alla volta, così se uno non passa si riprova solo quello. */
   caricaFile(richiestaId: string, tipo: TipoFile, file: File): Promise<void>
+  /**
+   * Il pagamento Satispay della richiesta appena mandata: lo crea (o riapre
+   * quello in attesa) e torna dove mandare chi paga. `null` se il servizio
+   * non è attivo. In prova finge l'approvazione.
+   */
+  paga(richiestaId: string): Promise<{ link: string } | { pagato: true } | null>
+  /** Se il modulo può offrire Satispay: mai un errore, senza servizio o senza rete è `false`. */
+  satispayAttivo(): Promise<boolean>
+  /** Lo stato del pagamento Satispay della richiesta, riletto da Satispay se è in attesa; `null` se non ce n'è. */
+  statoPagamento(richiestaId: string): Promise<{ stato: StatoSatispay; importo: number; pagatoIl?: string } | null>
 
   // Per la segreteria.
   richieste(): Promise<Richiesta[]>
@@ -322,7 +342,7 @@ export function tipiDaChiedere(natoIl: string, nomiCorsi: string[], oggi = new D
 }
 
 /** I campi del modulo che possono non andare, per segnarli uno per uno. */
-export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi'>
+export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'provenienza' | 'conosciuto'>
 
 /**
  * Una cosa che non va: `messaggio` è quello del server, `testo` quello corto

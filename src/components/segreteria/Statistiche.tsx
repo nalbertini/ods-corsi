@@ -3,8 +3,10 @@ import type { DatiSegreteria, LezioneStat, PersonaSeg, ProvaSeg } from '../../li
 import { comePaga, contaCertificati, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
-import { Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
+import { Colonne, Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
+import { StatisticheSito } from './StatisticheSito'
+import { conNonSiSaInFondo, contaDaDove, fraseDaDove, MANCA_PROVENIENZA, notaDaDove, type VoceDaDove } from '../../lib/provenienza'
 
 const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
 const MESI_LUNGHI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
@@ -126,6 +128,9 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
   const stat = useCarica(() => d.statistiche(da, oggi), [d, da, oggi])
   const persone = useCarica(() => d.persone(), [d])
   const prove = useCarica(() => d.prove(da, oggi), [d, da, oggi])
+  // In una scatola: `null` vuol dire che 74-provenienza-richieste.sql non c'è, non che si sta leggendo.
+  const daDove = useCarica(async () => ({ conti: await d.richiesteDaDove(da, oggi) }), [d, da, oggi])
+  const titoli = useCarica(() => d.titoliSito(), [d])
 
   const tutte = stat.dato?.lezioni ?? []
   const corsi = [...new Map(tutte.map((l) => [l.corsoId, l.corso])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'it'))
@@ -281,6 +286,19 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
             {prove.guaio ? <Guaio testo={prove.guaio} /> : prove.dato && <ProveMese mesi={mesi} prove={provati} />}
           </section>
 
+          <section aria-label="Da dove arrivano le richieste" className="sg-riquadro sg-da-dove-riquadro">
+            <Riga titolo="DA DOVE ARRIVANO LE RICHIESTE">
+              <span style={{ fontSize: 12, color: 'var(--dim)' }}>{notaDaDove(nomeCorso)}</span>
+            </Riga>
+            {daDove.guaio ? (
+              <Guaio testo={daDove.guaio} />
+            ) : daDove.dato?.conti === null ? (
+              <span className="sg-sotto">{MANCA_PROVENIENZA}</span>
+            ) : (
+              daDove.dato?.conti && <DaDove conti={contaDaDove(daDove.dato.conti.righe, corso, titoli.dato ?? {})} dal={daDove.dato.conti.dal} />
+            )}
+          </section>
+
           <section aria-label="Incassi mese per mese" className="sg-riquadro">
             <Riga titolo="INCASSI MESE PER MESE">
               <span style={{ fontSize: 12, color: 'var(--dim)' }}>quanto è stato pagato con le ricevute, tutti i corsi insieme</span>
@@ -293,6 +311,9 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
           </section>
         </>
       )}
+
+      {/* In fondo e fuori dal blocco delle lezioni: i numeri del sito non dipendono da quelli della palestra. */}
+      <StatisticheSito d={d} da={chiaveGiorno(da)} a={g} corso={!!corso} />
     </>
   )
 }
@@ -321,71 +342,6 @@ function contaIscritti(persone: PersonaSeg[], corso: string, mesi: string[], ogg
       return { mese: m, iscritti: persone.filter((p) => vale(p, fine)).length, nuovi: nuoviFra(`${m}-01`, fine), usciti: uscitiFra(`${m}-01`, fine) }
     }),
   }
-}
-
-interface Colonna {
-  chiave: string
-  etichetta: string
-  valore: number
-  dettaglio: string[]
-}
-
-/** Un numero più tondo sopra il massimo, per la scala: 0, metà, tutto. */
-function tetto(x: number) {
-  if (x <= 0) return 1
-  // Con pochi (le prove, un corso piccolo) un numero pari: la metà resta una persona intera.
-  if (x <= 10) return Math.max(2, Math.ceil(x / 2) * 2)
-  const p = 10 ** Math.floor(Math.log10(x))
-  return ([1, 2, 2.5, 5, 10].map((k) => k * p).find((k) => k >= x) ?? 10 * p)
-}
-
-/**
- * Le colonne di un valore solo, mese per mese: una tinta sola, la scala a
- * sinistra, il numero esatto sotto il dito o il mouse. Il mese in corso non è
- * finito, e si vede: è tratteggiato.
- */
-function Colonne({ nome, colonne, formato = (n: number) => n.toLocaleString('it-IT') }: { nome: string; colonne: Colonna[]; formato?: (n: number) => string }) {
-  const [sopra, setSopra] = useState<string | null>(null)
-  const max = tetto(Math.max(0, ...colonne.map((c) => c.valore)))
-  if (colonne.every((c) => c.valore === 0)) return <span className="sg-sotto">Niente da contare in questo periodo.</span>
-  return (
-    <div className="sg-colonne" role="group" aria-label={nome}>
-      <div className="sg-colonne-scala num" aria-hidden="true">
-        <span>{formato(max)}</span>
-        <span>{formato(max / 2)}</span>
-        <span>0</span>
-      </div>
-      <div className="sg-colonne-piano" style={{ gridTemplateColumns: `repeat(${colonne.length}, minmax(0, 1fr))` }}>
-        {colonne.map((c, i) => (
-          <button
-            key={c.chiave}
-            type="button"
-            className="sg-colonna"
-            aria-label={c.dettaglio.join(', ')}
-            data-in-corso={i === colonne.length - 1}
-            onMouseEnter={() => setSopra(c.chiave)}
-            onMouseLeave={() => setSopra(null)}
-            onFocus={() => setSopra(c.chiave)}
-            onBlur={() => setSopra(null)}
-          >
-            <span className="sg-colonna-binario">
-              {c.valore > 0 && <span className="sg-colonna-pieno" style={{ height: `${(100 * c.valore) / max}%` }} />}
-              {sopra === c.chiave && (
-                <span className="sg-colonna-suggerimento" role="tooltip" data-lato={i >= colonne.length / 2 ? 'destra' : 'sinistra'}>
-                  {c.dettaglio.map((t, k) => (
-                    <span key={k} style={k === 0 ? { fontWeight: 700 } : undefined}>
-                      {t}
-                    </span>
-                  ))}
-                </span>
-              )}
-            </span>
-            <span className="sg-colonna-etichetta num">{c.etichetta.toUpperCase()}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
 }
 
 /**
@@ -722,6 +678,70 @@ function ProveMese({ mesi, prove }: { mesi: string[]; prove: ProvaSeg[] }) {
         }
       })}
     />
+  )
+}
+
+/**
+ * Da dove arrivano le richieste: due elenchi affiancati, per etichetta del link e per «come ci hanno conosciuto».
+ * Le righe si ordinano come le altre tabelle; NON SI SA resta in fondo, sotto c'è In tutto. I conti li fa `contaDaDove`.
+ */
+function DaDove({ conti, dal }: { conti: ReturnType<typeof contaDaDove>; dal: string | undefined }) {
+  const frase = fraseDaDove(dal, !conti.totale.arrivate)
+  if (!conti.totale.arrivate) return <span className="sg-sotto">{frase}</span>
+  return (
+    <div className="stack" style={{ gap: 12 }}>
+      <div className="sg-stat-due sg-da-dove-due">
+        <ElencoDaDove titolo="ARRIVATE DA" voci={conti.arrivateDa} totale={conti.totale} />
+        <ElencoDaDove titolo="COME CI HANNO CONOSCIUTO" voci={conti.conosciuto} totale={conti.totale} />
+      </div>
+      <span className="sg-sotto" style={{ fontSize: 12 }}>
+        {frase}
+      </span>
+    </div>
+  )
+}
+
+function ElencoDaDove({ titolo, voci, totale }: { titolo: string; voci: VoceDaDove[]; totale: { arrivate: number; accolte: number; rifiutate: number } }) {
+  const { ordina, colonna } = useOrdina<VoceDaDove, 'nome' | 'arrivate' | 'accolte' | 'rifiutate'>({
+    nome: (r) => r.nome,
+    arrivate: (r) => r.arrivate,
+    accolte: (r) => r.accolte,
+    rifiutate: (r) => r.rifiutate,
+  })
+  const cifra = (n: number) => (n ? n.toLocaleString('it-IT') : '—')
+  return (
+    <div className="sg-orari-scorre">
+      <table className="sg-stat-tabella sg-da-dove">
+        <thead>
+          <tr>
+            {colonna('nome', titolo, { th: true, className: '' })}
+            {colonna('arrivate', 'ARRIVATE', { th: true, numeri: true, className: 'num-col' })}
+            {colonna('accolte', 'ACCOLTE', { th: true, numeri: true, className: 'num-col' })}
+            {colonna('rifiutate', 'RIFIUTATE', { th: true, numeri: true, className: 'num-col' })}
+          </tr>
+        </thead>
+        <tbody>
+          {conNonSiSaInFondo(voci, ordina).map((v) => (
+            <tr key={v.nome} data-non-si-sa={v.nonSiSa || undefined}>
+              <th scope="row" style={{ fontWeight: 600 }}>
+                {v.nonSiSa ? 'NON SI SA' : v.nome}
+              </th>
+              <td className="num num-col">{cifra(v.arrivate)}</td>
+              <td className="num num-col">{cifra(v.accolte)}</td>
+              <td className="num num-col">{cifra(v.rifiutate)}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">In tutto</th>
+            <td className="num num-col">{cifra(totale.arrivate)}</td>
+            <td className="num num-col">{cifra(totale.accolte)}</td>
+            <td className="num num-col">{cifra(totale.rifiutate)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
   )
 }
 

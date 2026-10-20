@@ -41,6 +41,7 @@ import { CercaIscritto } from './CercaIscritto'
 import type { Ricercata } from '../../lib/ricerca'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
+import { linkDellaSegreteria } from '../../lib/provenienza'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 import { guidaDellaVoce, indirizzoConsentito, leggeLaSegreteria, menuDi, pagamentiRidotti, postoConsentito, primaVoce, titoloDelMenu, vociConsentite } from '../../lib/menuSegreteria'
@@ -75,7 +76,8 @@ function scrivi(hash: string, passo: 'push' | 'replace') {
 const nelMenu = () => (window.history.state as { menu?: boolean } | null)?.menu === true
 
 /** L'indirizzo della pagina pubblica per iscriversi, quello da mandare su WhatsApp. */
-const LINK_PUBBLICO = indirizzo(INDIRIZZI.iscrizioni)
+// Con ?da=segreteria: le richieste che arrivano da qui si contano come «Link della segreteria» (provenienza.ts).
+const LINK_PUBBLICO = linkDellaSegreteria(indirizzo(INDIRIZZI.iscrizioni))
 
 function CopiaLink({ link, testo, perche }: { link: string; testo: string; perche: string }) {
   const [copiato, setCopiato] = useState(false)

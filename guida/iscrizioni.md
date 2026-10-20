@@ -8,7 +8,11 @@
 lista di passi scritta ogni volta su WhatsApp. Non chiede nessun accesso.
 
 L'indirizzo è <https://app.officinedellosport.it/iscrizioni/>. In
-segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
+segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu:
+il link copiato finisce con `?da=segreteria`, così le richieste che arrivano
+da lì si contano come «Link della segreteria» (vedi
+[Statistiche](segreteria/statistiche.md)). Chi lo apre non vede niente di
+diverso.
 
 ## Cosa c'è nella pagina
 
@@ -27,8 +31,8 @@ ordine.
      genitore non serve);
    - il **certificato medico**, **SE CE L'HAI**: se no lo porti in segreteria
      prima della prima lezione;
-   - la **ricevuta del pagamento**: paghi con bonifico o Satispay mentre
-     compili, e quanto pagare te lo dice il modulo.
+   - **come paghi**, **NELLA RICHIESTA**: con Satispay, oppure col bonifico,
+     e allora serve la sua ricevuta.
 3. **Quanto costa**, in breve: la quota associativa (quella del
    [listino](segreteria/listino.md)), lo sconto famiglia e il costo di più
    corsi, come si paga in una riga (bonifico o Satispay, prima di mandare la
@@ -57,11 +61,11 @@ prezzi. In cima c'è **‹ TORNA ALLE ISCRIZIONI**, poi:
   vale più. Il PDF riporta i costi di partenza della stagione: se la segreteria
   li cambia da LISTINO, l'app mostra quelli nuovi ma il PDF resta quello di
   partenza, finché non lo si rigenera. Poi le **offerte**.
-- **Come si paga**: prima di mandare la richiesta. L'IBAN si copia
-  con un tocco (**COPIA IBAN**) e **PAGA CON SATISPAY** apre l'app sul negozio
-  dell'associazione (il link è `PAGAMENTO.satispay` in
-  `src/lib/iscrizione.ts`). La ricevuta si carica nella richiesta: senza, la
-  richiesta non parte.
+- **Come si paga**: nella richiesta, con Satispay o col bonifico. L'IBAN si
+  copia con un tocco (**COPIA IBAN**) e **PAGA CON SATISPAY** apre l'app sul
+  negozio dell'associazione (il link è `PAGAMENTO.satispay` in
+  `src/lib/iscrizione.ts`: questo pagamento la segreteria lo segna a mano).
+  Col bonifico, la sua ricevuta si carica nella richiesta.
 - **COMPILA LA RICHIESTA**: apre lo stesso modulo. Chiuso il modulo, si torna
   in cima alla pagina delle iscrizioni.
 
@@ -130,11 +134,7 @@ Chi si iscrive risponde alle domande dal telefono:
   anni, anche per un minore aggiunto dal nucleo (serve per stage e trasferte
   senza genitori; quella del genitore non serve, e sotto i 6 anni non si
   chiede), il retro se serve, il **certificato
-  medico** se ce l'ha già (lo vede solo la segreteria), e la **ricevuta del
-  pagamento**, del bonifico o di Satispay (una foto, lo screenshot o il PDF): è
-  obbligatoria, e senza la richiesta non parte. Da **UNA PERSONA IN PIÙ**
-  nell'area iscritti resta facoltativa (accanto c'è **PUOI PAGARE IN
-  SEGRETERIA**). Il certificato si
+  medico** se ce l'ha già (lo vede solo la segreteria). Il certificato si
   chiede solo quando serve: dai 6 anni quello normale, dai 12 quello
   agonistico se tra i corsi scelti c'è judo, aikido o lotta (lo dice il nome
   del corso). Sopra c'è una frase sola: serve per partecipare alle lezioni,
@@ -144,11 +144,43 @@ Chi si iscrive risponde alle domande dal telefono:
   ARRIVATA**. Il documento la segreteria lo stampa, lo tiene su carta e lo
   cancella dall'app; il certificato resta nell'app e lo vede solo la
   segreteria.
-- **Altro**: le note per la segreteria (facoltative, e **mai dati sulla
+- **Il pagamento**, dopo aver scelto un corso: **QUANTO PAGHI**, quota e
+  corso dal listino, e **PAGHI CON**, da scegliere fra **Satispay** e
+  **Bonifico** (nessuno è già scelto).
+  - Con **Satispay** il tasto in fondo diventa **MANDA E PAGA CON SATISPAY**:
+    manda la richiesta e apre Satispay con l'importo già scritto, quello che
+    calcola il database dal listino. Si conferma nell'app e si torna alla
+    pagina del pagamento, che dice **RICHIESTA ARRIVATA · PAGATO** (quanto e
+    quando), oppure che il pagamento manca (**PAGA … CON SATISPAY** lo riapre:
+    è lo stesso pagamento, non si paga due volte) o non è andato (**RIPROVA
+    CON SATISPAY**). La pagina ha un indirizzo suo
+    (`iscrizioni/?pagamento=…`): si può tornare a pagare più tardi.
+  - Satispay c'è solo nei casi semplici: un corso della sua età, con una sola
+    riga di prezzo nel listino della segreteria. Con più corsi (valgono le
+    offerte), con un corso a giorni, senza prezzo o fuori età non c'è, e una
+    frase dice perché: si paga col bonifico.
+  - Col **Bonifico**: IBAN e causale da copiare e la **ricevuta del bonifico**,
+    obbligatoria (una foto, lo screenshot o il PDF).
+
+  Dal nucleo dell'area iscritti (**UNA PERSONA IN PIÙ**) resta **QUANTO
+  COSTA** come prima, con la ricevuta fra i file.
+- **Altro**: **COME CI HAI CONOSCIUTO?**, facoltativa, una tendina con otto
+  scelte (Amici o parenti, Sito, Instagram, Facebook, Google, Volantino,
+  Passando davanti, Altro; lasciata su «Scegli, se vuoi» non si manda
+  niente, e non si scrive a parole); le note per la segreteria (facoltative, e **mai dati sulla
   salute**: quelli si portano in segreteria), la casella obbligatoria
   «Accetto il Regolamento Sociale» (col link al regolamento, quando c'è:
   `REGOLAMENTO` in `src/lib/iscrizione.ts`) e la casella «Ho letto
   l'informativa privacy».
+
+Da dove si è arrivati lo sa il link: quelli del sito della palestra
+finiscono con `?da=` e la pagina da cui partono (`?da=home`,
+`?da=corso-judo`…), quello della segreteria con `?da=segreteria`. Non si
+vede, non si salva sul telefono e non ferma mai la richiesta: un'etichetta
+sbagliata si lascia fuori. La risposta e il link li vede solo la segreteria,
+nella richiesta: non in **RICHIESTA ARRIVATA** né nel modulo firmato. Dall'area
+degli iscritti (una persona in più nel nucleo) la domanda non c'è: la palestra
+la conoscono già.
 
 Nel modulo non resta niente sul telefono: chiuso, si riparte da capo. Per
 questo **← INDIETRO**, se c'è già qualcosa di scritto, firmato o scelto, al
@@ -253,7 +285,9 @@ tutti, per passare dall'uno all'altro. FAMIGLIA, PAGAMENTO e INVIO invece sono
 uno solo per tutti, senza PER: per tornare ai dati di qualcuno si tocca
 **MODIFICA** accanto al suo nome in **NEL MODULO** (o nell'elenco di INVIO). Le
 note per la segreteria sono una per tutto il modulo e arrivano in ogni
-richiesta. Per aggiungerne un altro si torna a FAMIGLIA, non all'ultimo passo. Quando chi firma non è chi compila (un altro adulto, o il bambino
+richiesta; lo stesso **COME CI AVETE CONOSCIUTO?**, facoltativa, a INVIO sopra
+le note (con una persona sola dice «hai»): una risposta per tutta la famiglia,
+in ogni richiesta, come l'etichetta del link. Per aggiungerne un altro si torna a FAMIGLIA, non all'ultimo passo. Quando chi firma non è chi compila (un altro adulto, o il bambino
 firmato da un altro adulto), il modulo lo chiama per nome: «Firma Paola, che è
 maggiorenne», **L'OK DI PAOLA**, **LA CARTA D'IDENTITÀ DI PAOLA**. Per chi si è aggiunto con **IO**, la
 casella delle foto porta il suo nome (**LE FOTO E I VIDEO DI NICOLA**).

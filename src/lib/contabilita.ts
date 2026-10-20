@@ -2,6 +2,7 @@ import { centesimi, dataRicevuta, euro, type Ricevuta } from './ricevute'
 import { piano } from './nomi'
 import { csv } from './vestiario'
 import { righeDaRicevute, righeDirette, type PagamentoDiretto, type RigaPagamento } from './pagamenti'
+import { righeSatispay, type PagamentoSatispay } from './satispay'
 
 /**
  * La contabilità di base, per chi cura i conti (`supabase/59-contabilita.sql`):
@@ -163,9 +164,11 @@ export function elencoMovimenti(
   casse: Cassa[],
   manuali: MovimentoManuale[],
   voci: VoceContabile[],
+  satispay: PagamentoSatispay[] = [],
 ): RigaMovimento[] {
   const chi = new Map(nomi.map((p) => [p.id, `${p.cognome} ${p.nome}`.trim()]))
-  const incassi = [...righeDaRicevute(ricevute), ...righeDirette(diretti, (id) => chi.get(id) ?? '—')]
+  const nomeDi = (id: string) => chi.get(id) ?? '—'
+  const incassi = [...righeDaRicevute(ricevute), ...righeDirette(diretti, nomeDi), ...righeSatispay(satispay, nomeDi)]
   return righeMovimenti(incassiDerivati(incassi, casse), manuali, voci)
 }
 

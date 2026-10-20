@@ -29,6 +29,7 @@ Per ognuno: c'entra o no, e se c'entra cosa succede.
 ## Cosa restituisci
 
 ```
+CORSIA      piccola · media · grande (vedi `nuova-funzione`), con il perché in una riga
 RICHIESTA   una riga, con le parole della palestra
 PER CHI     aree e ruoli
 REGOLE      numerate, ognuna verificabile («la segreteria può…», «il tablet non…»)

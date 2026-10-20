@@ -9,7 +9,7 @@
 //   Il risultato deve essere lo stesso di prima: qui sotto c'è la copia della
 //   logica di Presenze.tsx com'era, e si confronta con quella.
 // · `GIORNI_RECENTI`: quanto indietro guarda `chi_manca` (prova-mcp.mjs, sezione 30).
-// L'età per la chat è di `chat_eta`, nel database: supabase/prova/73-chat-segreteria.sql.
+// L'età per la chat è di `chat_eta`, nel database: supabase/prova/75-chat-segreteria.sql.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 

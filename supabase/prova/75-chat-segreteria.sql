@@ -1,4 +1,4 @@
--- La segreteria dalla chat (73-chat-segreteria.sql): il server MCP (supabase/functions/mcp) legge, col token
+-- La segreteria dalla chat (75-chat-segreteria.sql): il server MCP (supabase/functions/mcp) legge, col token
 -- di chi ha la segreteria, iscritti, certificati, quote e presenze. Qui il lato database:
 --   · `chat_iscritti(sale)`: gli iscritti attivi; nome e cognome solo degli adulti; mai la data di nascita, solo
 --     il giorno dei 6 anni (`sei_anni`) dei minori che non li hanno ancora compiuti; la chiave di chi non è adulto
@@ -30,7 +30,7 @@ select (to_regprocedure('public.chat_iscritti(text)') is not null
     and to_regprocedure('public.chat_prove(date, date)') is not null
     and to_regprocedure('public.chat_nato_il(uuid)') is not null
     and to_regprocedure('public.chat_eta(date, date)') is not null)::text as c73 \gset
-select atteso('73-chat-segreteria.sql è stato lanciato: chat_iscritti, chat_registro, chat_prove, chat_nato_il, chat_eta', :'c73', 'true');
+select atteso('75-chat-segreteria.sql è stato lanciato: chat_iscritti, chat_registro, chat_prove, chat_nato_il, chat_eta', :'c73', 'true');
 
 create or replace function chi(u text) returns void language plpgsql as $$
 begin perform set_config('prova.utente', u, false); end $$;

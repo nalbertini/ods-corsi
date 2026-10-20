@@ -856,7 +856,7 @@ console.log('\n23. dalle revisioni: le righe del database, il doppio conteggio, 
 // ---------------------------------------------------------------------------
 // La segreteria dalla chat, in sola lettura: corsi, certificati, quote,
 // iscritti, presenze, chi_manca. Il database finto dà le righe come le danno
-// chat_iscritti, chat_registro e chat_prove (supabase/prova/73-chat-segreteria.sql):
+// chat_iscritti, chat_registro e chat_prove (supabase/prova/75-chat-segreteria.sql):
 // lì nome e cognome di chi non è adulto sono già nulli. Qui alcune righe di
 // minori e di chi è senza data li hanno lo stesso, e il codice fiscale, il
 // telefono, l'email, il numero della ricevuta e la nota del pagamento: i testi

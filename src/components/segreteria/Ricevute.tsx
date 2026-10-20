@@ -1,3 +1,4 @@
+import { cosaNonVaMetodo, cosaNonVaSatispay, satispayDaUsare, soldi } from '../../lib/satispay'
 import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
@@ -92,7 +93,12 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
           <Numero titolo="QUOTA" valore={etichettaQuota(stato.come)} sotto={stato.fino ? `fino al ${dataLunga(stato.fino)}` : 'ricevute e pagamenti a mano non cambiano la quota'} />
         </div>
       )}
-      {vuoto && <span className="sg-sotto">Nessun pagamento registrato. Fai la ricevuta quando paga, o registra un pagamento già fatto: lo trovi qui.</span>}
+      {vuoto &&
+        (p.satispay ? (
+          <span className="sg-sotto" data-tono="fatto">Ha pagato {soldi(p.satispay)} con Satispay dal modulo: fai la ricevuta, con PAGATO CON «Satispay».</span>
+        ) : (
+          <span className="sg-sotto">Nessun pagamento registrato. Fai la ricevuta quando paga, o registra un pagamento già fatto: lo trovi qui.</span>
+        ))}
       {tutteRicevute.map((r) => {
         const manca = r.annullataIl ? 0 : conti(r).netto
         const righe = righeDaRicevute([r])
@@ -440,6 +446,14 @@ export function NuovaRicevuta({
   // li apre e chiude chi scrive. Se si chiudessero da sé appena è tutto a
   // posto, si chiuderebbero sotto le dita, col fuoco e le lettere dopo persi.
   const [socioAperto, setSocioAperto] = useState(false)
+  // Pagata dal modulo con Satispay: quei soldi entrano in questa ricevuta, una volta sola (`emetti_ricevuta_satispay`).
+  const satispay = useCarica(() => d.pagamentiSatispay(), [d])
+  const sp = satispayDaUsare(satispay.dato ?? [], p.id)
+  useEffect(() => {
+    if (sp) setMetodo('Satispay')
+  }, [sp?.id])
+  // Il pagamento da mettere in questa ricevuta: c'è, e si paga con Satispay.
+  const conSatispay = metodo === 'Satispay' ? sp : undefined
 
   const listino = partenza.dato?.[3].listino
   const gruppi = listino ? vociInDueGruppi(corsi, data, listino) : { primi: [], altri: [] }
@@ -491,7 +505,8 @@ export function NuovaRicevuta({
     typeof fatte === 'string' || anticipoCent === null
       ? null
       : { data, personaId: p.id, numero: n, ente, intestatario: socio, voci: fatte, anticipo: anticipoCent, note: note.trim() || undefined }
-  const guaio = typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? cosaNonVa(dati) : null
+  const guaio =
+    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null)) : null
   const c = dati ? conti(dati) : null
 
   // Lo sconto famiglia: dove è, o perché non è qui.
@@ -538,7 +553,7 @@ export function NuovaRicevuta({
     if (!(await chiedi(righe.join('\n'), 'Fai la ricevuta', { no: 'Torna a correggere', pericolo: true }))) return
     void fai(
       async () => {
-        const r = await d.emettiRicevuta(dati)
+        const r = await d.emettiRicevuta(dati, conSatispay?.id)
         await scarica(r)
         return r
       },
@@ -567,12 +582,17 @@ export function NuovaRicevuta({
         </Campo>
         <Campo id="rc-metodo" etichetta="PAGATO CON">
           <select id="rc-metodo" className="sg-campo" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
-            {METODI.map((m) => (
+            {(sp ? METODI_A_MANO : METODI).map((m) => (
               <option key={m}>{m}</option>
             ))}
           </select>
         </Campo>
       </div>
+      {sp && (
+        <span className="sg-sotto" data-tono="fatto" style={{ marginTop: -12 }}>
+          Arrivati {soldi(sp.importo)} con Satispay dal modulo di iscrizione. Con PAGATO CON «Satispay» entrano in questa ricevuta, una volta sola.
+        </span>
+      )}
       <span style={{ fontSize: 12, color: 'var(--dim)', marginTop: -12 }}>
         Il numero si lascia vuoto: prende il primo libero del {anno}. Si scrive solo per continuare la numerazione di un altro programma.
       </span>

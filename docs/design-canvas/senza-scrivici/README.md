@@ -13,7 +13,7 @@ COSTRUITO (approvato dall'utente, ora lo descrive la libreria: `SitoTestata`). L
 
 - Sul sito pubblico non c'è più nessun pulsante «Scrivici»: né in testata, né nel menu del telefono, né nelle schede degli istruttori, né nei testi delle pagine (il generatore toglie i pulsanti che portano a `/contatti/`; nel pannello SITO il testo resta com'è).
 - Contatti è una voce del menu, nel posto scelto in MENU, e si chiama sempre «Contatti» (anche nel piede), qualunque etichetta abbia scritto la segreteria.
-- Restano i pulsanti «Scrivici su WhatsApp» di Orari e di Contatti: aprono WhatsApp, non portano a Contatti.
+- Resta il pulsante «Scrivici su WhatsApp» di Contatti: apre WhatsApp, non porta a Contatti. Orari chiude con l'invito «Iscriviti» come le altre pagine.
 - Il pulsante giallo è già «Iscriviti» in testata e nel menu del telefono: non cambia; l'invito giallo e la barra del telefono non cambiano.
 - Senza la pagina Contatti pubblicata non c'è la voce e nessun link a `/contatti/`.
 

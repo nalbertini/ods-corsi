@@ -22,7 +22,7 @@ riesce a lavorare** (accesso, appello, iscrizione, pagamento, backup).
 
 ## Quando
 
-1. **A fine funzione o correzione** (dopo il 9 di `nuova-funzione`), con il
+1. **A fine funzione o correzione** (insieme alle revisioni del passo 8 di `nuova-funzione`), con il
    diff in mano: `git diff origin/main... --stat`.
 2. **Audit completo**, a richiesta o a ogni tanto: tutta l'app contro il
    registro.

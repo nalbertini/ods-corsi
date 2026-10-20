@@ -18,6 +18,7 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
+import { satispayPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
@@ -26,10 +27,13 @@ import { mancaPagatoPrima, type IncassoPrima } from './pagatoPrima'
 import { enteDaDati, fineAnno, mancaTessere, type EsitoImportTessere, type TesseraSeg } from './tessere'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
 import type { OrarioSito } from './sitoOrari'
+import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { pezziInHtml, pezziValidi } from './sitoPezzi'
 import { ORARIO_NON_ATTIVO } from './sitoOrario'
 import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
 import { riduciFoto } from './foto'
+import type { NumeriSito } from './sitoNumeri'
+import { tipoDaRisposta } from './sitoStatistiche'
 import { URL_SUPABASE } from './dati'
 import { AllegatiNonPartiti, cosaNonVaSegnalazione, eCategoria, SCEGLI, type Categoria, guaioAllegati, mandaAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 
@@ -529,6 +533,35 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     return ok(await db.rpc('materializza_sessioni', { da_giorno: da, a_giorno: fino > tetto ? tetto : fino })) as number
   }
 
+  /** I pagamenti Satispay (`73-satispay.sql`), anche per le schede in `persone`; senza il file, nessuno. */
+  const leggiSatispay = async (): Promise<PagamentoSatispay[]> => {
+    const r = await tutteLeRighe((prima, ultima) =>
+      db
+        .from('pagamenti_satispay')
+        .select('id, richiesta_id, chi, importo, stato, creato_il, pagato_il, ricevuta_id, persona_id, ricevuta:ricevute ( annullata_il )')
+        .order('creato_il', { ascending: false })
+        .order('id')
+        .range(prima, ultima),
+    )
+    // Prima di 73-satispay.sql non c'è niente da mostrare.
+    if (r.error && (r.error.code === '42P01' || r.error.code === 'PGRST205' || r.error.code === 'PGRST200')) return []
+    // `as`: Supabase tipa la riga a modo suo, la forma è quella della select.
+    return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null; ricevuta: { annullata_il: string | null } | null }>).map(
+      (x): PagamentoSatispay => ({
+        id: x.id,
+        richiestaId: x.richiesta_id ?? undefined,
+        chi: x.chi,
+        importo: x.importo,
+        stato: x.stato,
+        creatoIl: x.creato_il,
+        pagatoIl: x.pagato_il ?? undefined,
+        // In una ricevuta annullata i soldi non contano più: tornano liberi, come in `emetti_ricevuta_satispay`.
+        ricevutaId: x.ricevuta_id && !x.ricevuta?.annullata_il ? x.ricevuta_id : undefined,
+        personaId: x.persona_id ?? undefined,
+      }),
+    )
+  }
+
   return {
     modo: 'supabase',
 
@@ -904,6 +937,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       }>
       const pagate = await quote
       const natiIl = await nati
+      const conSatispay = satispayPerPersona(await leggiSatispay().catch(() => []))
       return righe.map((r): PersonaSeg => {
         // Una a una con la persona: PostgREST la dà come oggetto, ma meglio non contarci.
         const s = Array.isArray(r.schede_iscritti) ? r.schede_iscritti[0] : r.schede_iscritti
@@ -927,6 +961,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           documento: !!s?.documento_in_segreteria,
           pagamento: { stato: s?.pagamento ?? 'da_pagare', fino: s?.pagato_fino ?? undefined, nota: s?.pagamento_nota ?? undefined },
           quote: pagate.get(r.id) ?? [],
+          satispay: conSatispay.get(r.id),
           natoIl: natiIl.get(r.id),
         }
       })
@@ -1117,12 +1152,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.from('anagrafiche').upsert({ persona_id: personaId, ...riga }, { onConflict: 'persona_id' }))
     },
 
-    async emettiRicevuta(r) {
+    async emettiRicevuta(r, satispayId) {
       const dati = { ...r, intestatario: pulisciIntestatario(r.intestatario) }
       const no = cosaNonVa(dati)
       if (no) throw new Error(no)
       const riga = ok(
-        await db.rpc('emetti_ricevuta', {
+        await db.rpc(satispayId ? 'emetti_ricevuta_satispay' : 'emetti_ricevuta', {
+          ...(satispayId ? { pagamento: satispayId } : {}),
           dati: {
             data: dati.data,
             persona_id: dati.personaId ?? null,
@@ -1141,6 +1177,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async annullaRicevuta(id) {
       ok(await db.rpc('annulla_ricevuta', { ricevuta: id }))
     },
+
+    pagamentiSatispay: leggiSatispay,
 
     async pagamentiDiretti(personaId) {
       const leggi = (prima: number, ultima: number) => {
@@ -1486,6 +1524,52 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           iscritto: iscritti.has(x.persona_id),
         }))
         .sort((p, q) => q.inizio.localeCompare(p.inizio))
+    },
+
+    async statisticheSito(da, a) {
+      const { data, error } = await db.functions.invoke('statistiche-sito', { body: { da, a } })
+      if (!error) {
+        // `as`: il corpo è quello della nostra funzione, fatto da riassumi() di sitoNumeri.ts.
+        const numeri = (data as { numeri?: NumeriSito } | null)?.numeri
+        return numeri ? { numeri } : { guaio: 'non-risponde' }
+      }
+      // Come guaioFunzione, ma il riquadro vuole il tipo del guaio, non una frase: la regola sta in sitoStatistiche.ts.
+      // `as`: gli errori di functions.invoke hanno `name` e, quando la funzione ha risposto, la Response in `context`.
+      const e = error as { name?: string; context?: unknown }
+      const r = e.context instanceof Response ? e.context : null
+      let corpo: unknown = null
+      try {
+        corpo = r ? await r.clone().json() : null
+      } catch {
+        // Non è la nostra risposta: decide lo stato.
+      }
+      const rete = typeof navigator === 'undefined' || navigator.onLine
+      return { guaio: tipoDaRisposta(r?.status, corpo, e.name, rete) }
+    },
+
+    async richiesteDaDove(da, a) {
+      const r = await db.rpc('richieste_da_dove', { da: chiaveGiorno(da), a: chiaveGiorno(a) })
+      // Senza 74-provenienza-richieste.sql la funzione non c'è: il riquadro lo dice, il resto delle statistiche va.
+      if (r.error && (r.error.code === 'PGRST202' || r.error.code === '42883')) return null
+      // Le righe di richieste_da_dove() in 74-provenienza-richieste.sql: il client non le conosce.
+      const x = ok(r) as { dal: string | null; righe: Array<{ provenienza: string | null; conosciuto: string | null; corsi: string[]; stato: RigaDaDove['stato']; n: number }> }
+      return {
+        dal: x.dal ?? undefined,
+        righe: x.righe.map((y) => ({ ...(y.provenienza ? { provenienza: y.provenienza } : {}), ...(y.conosciuto ? { conosciuto: y.conosciuto } : {}), corsi: y.corsi ?? [], stato: y.stato, n: y.n })),
+      }
+    },
+
+    async titoliSito() {
+      // Mai un errore: senza 56-sito.sql (o senza rete) i nomi restano le parole delle etichette.
+      try {
+        const [p, r] = await Promise.all([db.from('sito_pagine').select('slug, titolo, titolo_pubblicato'), db.from('sito_redirect').select('da, a')])
+        if (p.error || !Array.isArray(p.data)) return {}
+        // Le colonne di sito_pagine e sito_redirect in 56-sito.sql: il client non le conosce.
+        const pagine = (p.data as Array<{ slug: string; titolo: string; titolo_pubblicato: string | null }>).map((x) => ({ slug: x.slug, titolo: x.titolo_pubblicato || x.titolo }))
+        return titoliDelSito(pagine, !r.error && Array.isArray(r.data) ? (r.data as Array<{ da: string; a: string }>) : [])
+      } catch {
+        return {}
+      }
     },
 
     async statistiche(da, a) {

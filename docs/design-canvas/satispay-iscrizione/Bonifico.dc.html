@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COSTRUITO (2026-10-20), era la proposta. COME PAGHI = BONIFICO: IBAN e causale da copiare e la ricevuta da caricare, nello stesso posto (oggi stanno in due sezioni lontane). Il tasto in fondo resta MANDA LA RICHIESTA. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1150px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" tema="sito" label="IL PAGAMENTO" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 8px"><dc-import name="IlPagamento" righe="Quota associativa:50 €|Annuale Judo 3:400 €" totale="450 €" modo="bonifico" satispay="{{ true }}" perche="Niente Satispay per ora: con più corsi il prezzo lo conferma la segreteria" hint-size="100%,520px"></dc-import><span style="font-size: 14px; line-height: 1.4; color: #46606f">Bonifico a ASD Il Centro Judo:</span><span style="padding: 8px 10px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 600">IT03 D076 0101 0000 0007 6350 339</span><span style="font-size: 14px; line-height: 1.4; color: #46606f">Causale: <span style="color: #0d2a3d">Iscrizione Paolo Bianchi · Judo adulti</span></span><div style="display: flex; flex-wrap: wrap; gap: 8px"><dc-import name="Bottone" tema="sito" label="COPIA IBAN" variante="linea" hint-size="130px,48px"></dc-import><dc-import name="Bottone" tema="sito" label="COPIA CAUSALE" variante="linea" hint-size="150px,48px"></dc-import></div><dc-import name="CaricaFile" tema="sito" etichetta="RICEVUTA DEL PAGAMENTO" dettaglio="Una foto o il PDF." hint-size="100%,120px"></dc-import></div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 20px 32px"><dc-import name="Bottone" tema="sito" label="MANDA LA RICHIESTA" variante="vai" larghezza="100%" alto="56px" hint-size="100%,56px"></dc-import></div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

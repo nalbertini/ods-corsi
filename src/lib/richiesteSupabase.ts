@@ -1,7 +1,9 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { tutteLeRighe } from './tutteLeRighe'
+import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
+import { ERRORE_SATISPAY, type StatoSatispay } from './satispay'
 
 /**
  * Le richieste di iscrizione col database vero (`supabase/06-iscrizioni.sql`).
@@ -40,6 +42,9 @@ interface Riga {
   persona_id: string | null
   gestita_il: string | null
   gestore: { nome: string; cognome: string } | null
+  /** Da `74-provenienza-richieste.sql`: prima le colonne non ci sono. */
+  provenienza?: string | null
+  conosciuto?: string | null
 }
 
 function guaio(e: { message?: string; code?: string } | null): Error {
@@ -67,6 +72,19 @@ function guaioFile(e: { message?: string; statusCode?: string } | null): Error {
 }
 
 export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
+  /** La Edge Function `satispay`: i suoi errori sono già scritti per chi paga; senza rete, quello di sempre. */
+  const satispay = async (corpo: Record<string, string>): Promise<Record<string, unknown>> => {
+    const { data, error } = await db.functions.invoke('satispay', { body: corpo })
+    // `as`: la risposta è il JSON della funzione (supabase/functions/satispay), letto campo per campo da chi chiama.
+    if (!error) return (data ?? {}) as Record<string, unknown>
+    if (!(error instanceof FunctionsHttpError)) throw new Error(ERRORE_SATISPAY)
+    // La funzione non c'è ancora sul progetto: si paga come prima.
+    if (error.context.status === 404) return { attivo: false }
+    const detto: unknown = await error.context.json().catch(() => null)
+    const guaio = typeof detto === 'object' && detto !== null && 'guaio' in detto ? detto.guaio : null
+    throw new Error(typeof guaio === 'string' ? guaio : ERRORE_SATISPAY)
+  }
+
   const vista = (r: Riga): Richiesta => ({
     id: r.id,
     creataIl: r.creata_il,
@@ -92,6 +110,8 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
     personaId: r.persona_id ?? undefined,
     gestitaIl: r.gestita_il ?? undefined,
     gestitaDa: r.gestore ? `${r.gestore.nome} ${r.gestore.cognome}`.trim() : undefined,
+    provenienza: pulisciProvenienza(r.provenienza),
+    conosciuto: pulisciConosciuto(r.conosciuto),
   })
 
   const nomi = async (richiestaId: string) => {
@@ -146,6 +166,9 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             formula: d.formula,
             note: d.note,
             regolamento: d.regolamento === true,
+            // Il database le pulisce e scarta quelle che non vanno; senza 74-provenienza-richieste.sql le ignora.
+            provenienza: d.provenienza,
+            conosciuto: d.conosciuto,
           },
         }),
       ) as string
@@ -160,6 +183,29 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       // risposta (una rete da telefono): per chi riprova è andata.
       if (error && /exists|duplicate/i.test(error.message ?? '')) return
       if (error) throw guaioFile(error)
+    },
+
+    async paga(richiestaId) {
+      const r = await satispay({ azione: 'paga', richiesta: richiestaId })
+      if (r.attivo === false) return null
+      if (r.pagato) return { pagato: true }
+      if (typeof r.link !== 'string') throw new Error(ERRORE_SATISPAY)
+      return { link: r.link }
+    },
+
+    async satispayAttivo() {
+      try {
+        return (await satispay({ azione: 'attivo' })).attivo === true
+      } catch {
+        return false
+      }
+    },
+
+    async statoPagamento(richiestaId) {
+      const r = await satispay({ azione: 'stato', richiesta: richiestaId })
+      // `as`: la forma è quella di `satispay_stato` (73-satispay.sql), riletta dalla funzione.
+      const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null } | null | undefined
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined } : null
     },
 
     async richieste() {
