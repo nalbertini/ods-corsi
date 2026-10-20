@@ -303,8 +303,8 @@ function perchéPassword(e: { message?: string; code?: string }): string {
   return `La password non è stata salvata${testo ? `: ${testo}` : ''}`
 }
 
-/** Esce, e torna alla porta: l'area la sceglie il prossimo account. */
-export async function esci(): Promise<void> {
+/** Esce, e torna alla porta: l'area la sceglie il prossimo account. `dove` è per chi resta sulla sua pagina (il consenso a Claude). */
+export async function esci(dove = './'): Promise<void> {
   // Le scritture non ancora arrivate non passano al prossimo account: vedi `uscita.ts`.
   await uscita(async () => {
     // Le bozze delle segnalazioni restano nella scheda: al banco il computer è
@@ -316,7 +316,7 @@ export async function esci(): Promise<void> {
     smettiTablet()
     // Un tocco arrivato mentre si usciva non deve restare al prossimo account.
     svuotaTutte()
-    window.location.assign(indirizzo('./'))
+    window.location.assign(indirizzo(dove))
   })
 }
 

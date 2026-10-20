@@ -24,17 +24,17 @@ const MSG_NON_RIUSCITO = 'Il collegamento non è riuscito: riprova da Claude, da
 
 /** Il nome di chi chiede (di solito «Claude»), o l'indirizzo dove tornare se il consenso c'è già. */
 export async function chiChiede(id: string): Promise<{ nome: string } | { torna: string }> {
-  const { data, error } = await (await db()).auth.oauth.getAuthorizationDetails(id)
+  // Anche il client che non si carica (rete, versione nuova) è «non riuscito»: mai il testo del browser.
+  const { data, error } = await db().then((c) => c.auth.oauth.getAuthorizationDetails(id)).catch(() => ({ data: null, error: true }))
   if (error || !data) throw new Error(MSG_NON_RIUSCITO)
   return 'authorization_id' in data ? { nome: data.client.name || 'Claude' } : { torna: data.redirect_url }
 }
 
 /** CONSENTI o NO, GRAZIE: Supabase risponde con l'indirizzo di Claude dove tornare. */
 export async function rispondi(id: string, consenti: boolean): Promise<string> {
-  const c = await db()
-  const { data, error } = consenti
-    ? await c.auth.oauth.approveAuthorization(id, { skipBrowserRedirect: true })
-    : await c.auth.oauth.denyAuthorization(id, { skipBrowserRedirect: true })
+  const { data, error } = await db()
+    .then((c) => (consenti ? c.auth.oauth.approveAuthorization(id, { skipBrowserRedirect: true }) : c.auth.oauth.denyAuthorization(id, { skipBrowserRedirect: true })))
+    .catch(() => ({ data: null, error: true }))
   if (error || !data) throw new Error(MSG_NON_RIUSCITO)
   return data.redirect_url
 }

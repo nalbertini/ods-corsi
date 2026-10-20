@@ -3,7 +3,7 @@
 // le spese lette su fatture e scontrini dei fornitori, dopo il suo «ok».
 //
 // L'accesso è quello di Supabase (Authentication → OAuth Server): Claude chiede il token, la persona entra in ODS
-// e dice CONSENTI (`/oauth/consent` nell'app), e da lì ogni chiamata porta il suo token. Qui non c'è la chiave
+// e dice CONSENTI (la pagina `collega/` dell'app), e da lì ogni chiamata porta il suo token. Qui non c'è la chiave
 // `service_role`: il server legge e scrive col token di chi chiama, quindi valgono le stesse regole dell'app
 // (`e_amministrazione()`, le funzioni di 59, 60 e 72). Le regole e il protocollo sono in src/lib/mcp.ts e
 // src/lib/movimentiDallaChat.ts, provate da scripts/prova-mcp.mjs; qui solo Supabase.
@@ -17,8 +17,10 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 // Generato da scripts/costruisci-mcp.mjs prima di pubblicare.
 import { metadatiRisorsa, nonAutorizzato, rispondiMcp } from './regole.js'
 
-const url = Deno.env.get('SUPABASE_URL')!
-const pubblica = Deno.env.get('SUPABASE_ANON_KEY')!
+// Supabase le mette sempre in ogni funzione: senza, la funzione non serve a niente e lo dice subito.
+const url = Deno.env.get('SUPABASE_URL') ?? ''
+const pubblica = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+if (!url || !pubblica) throw new Error('Mancano SUPABASE_URL e SUPABASE_ANON_KEY')
 const risorsa = `${url}/functions/v1/mcp`
 const METADATI = `${risorsa}/.well-known/oauth-protected-resource`
 
@@ -47,10 +49,8 @@ function apri(token: string) {
       return righe.map((r) => ({ id: r.id, nome: r.nome, saldoIniziale: r.saldo_iniziale, ...(r.dal ? { dal: r.dal } : {}) }))
     },
     async chiusure() {
-      // Senza 60-chiusura-cassa.sql non ci sono giorni chiusi: il database lo ricontrolla comunque scrivendo.
-      const { data, error } = await db.from('chiusure_cassa').select('id, cassa_id, dal, data, previsto, contato, differenza, chiusa_il, annullata_il')
-      if (error) return []
-      return (data as Array<{ id: string; cassa_id: string; dal: string; data: string; previsto: number; contato: number; differenza: number; chiusa_il: string; annullata_il: string | null }>).map((r) => ({
+      const righe = ok(await db.from('chiusure_cassa').select('id, cassa_id, dal, data, previsto, contato, differenza, chiusa_il, annullata_il'))
+      return (righe as Array<{ id: string; cassa_id: string; dal: string; data: string; previsto: number; contato: number; differenza: number; chiusa_il: string; annullata_il: string | null }>).map((r) => ({
         id: r.id, cassaId: r.cassa_id, dal: r.dal, data: r.data, previsto: r.previsto, contato: r.contato, differenza: r.differenza, chiusaIl: r.chiusa_il,
         ...(r.annullata_il ? { annullataIl: r.annullata_il } : {}),
       }))

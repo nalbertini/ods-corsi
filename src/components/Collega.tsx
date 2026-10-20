@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { account, serveAccesso, type Account } from '../lib/accesso'
+import { account, esci, serveAccesso, type Account } from '../lib/accesso'
 import { autorizzazioneDa, chiChiede, puoCollegare, rispondi } from '../lib/collega'
-import { Riquadro, Titoletto } from './ds'
+import { Etichetta, Riquadro, Tasto, Titoletto } from './ds'
 import { Accesso, ChiSei, UnAttimo } from './Porta'
 
 /**
@@ -12,7 +12,8 @@ import { Accesso, ChiSei, UnAttimo } from './Porta'
 export function Collega() {
   const id = autorizzazioneDa(window.location.search)
   const [chi, setChi] = useState<Account | null | undefined>(undefined)
-  const [nome, setNome] = useState('Claude')
+  // Chi chiede, da Supabase: finché non si sa, «un attimo» e niente tasti.
+  const [nome, setNome] = useState<string | null>(null)
   const [errore, setErrore] = useState<string | null>(null)
   const [aspetta, setAspetta] = useState(false)
 
@@ -23,9 +24,11 @@ export function Collega() {
 
   // Chi ha già consentito torna subito a Claude.
   useEffect(() => {
-    if (!id || !chi || !puoCollegare(chi.persona)) return
+    if (!id || !chi) return
+    if (!puoCollegare(chi.persona)) return setNome('Claude')
     chiChiede(id).then(
       (r) => ('torna' in r ? window.location.replace(r.torna) : setNome(r.nome)),
+      // `chiChiede` lancia solo messaggi per chi usa l'app.
       (x: Error) => setErrore(x.message),
     )
   }, [id, chi])
@@ -44,8 +47,8 @@ export function Collega() {
 
   if (!serveAccesso || !id)
     return (
-      <div className="pad" style={{ paddingTop: 20 }}>
-        <Riquadro tono="guaio">
+      <div className="accesso pad" style={{ paddingTop: 20, paddingBottom: 20 }}>
+        <Riquadro>
           <span style={{ fontSize: 15, lineHeight: 1.45 }}>
             Questa pagina si apre da Claude, quando lo colleghi a ODS Corsi dalle sue impostazioni (Connettori).
           </span>
@@ -54,52 +57,59 @@ export function Collega() {
     )
   if (chi === undefined) return <UnAttimo />
   if (!chi) return <Accesso collega onEntrato={() => void account().then(setChi, () => setChi(null))} />
+  if (!nome && !errore) return <UnAttimo />
+  const chiede = nome ?? 'Claude'
 
   return (
     <div className="accesso">
-      {chi.persona && <ChiSei chi={chi.persona} />}
-      <Titoletto>COLLEGARE {nome.toUpperCase()}?</Titoletto>
+      {/* Uscendo si resta qui, con l'autorizzazione: chi è entrato con l'account sbagliato rientra con quello giusto. */}
+      {chi.persona && <ChiSei chi={chi.persona} onEsci={() => void esci(`collega/${window.location.search}`)} />}
+      <Titoletto>COLLEGARE {chiede.toUpperCase()}?</Titoletto>
       <div className="pad stack" style={{ gap: 14, paddingBottom: 20 }}>
         {puoCollegare(chi.persona) ? (
           <>
-            <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-              <b>{nome}</b> chiede di usare ODS Corsi con il tuo account, per registrare in CONTABILITÀ le fatture e gli
+            <span className="passo-dettaglio" data-tono="testo" style={{ fontSize: 15 }}>
+              <b>{chiede}</b> chiede di usare ODS Corsi con il tuo account, per registrare in CONTABILITÀ le fatture e gli
               scontrini che gli fotografi.
             </span>
-            <span className="modulo-etichetta">POTRÀ</span>
-            <ul className="collega-elenco" data-tono="si">
-              <li>Leggere le voci, le casse e i movimenti che somigliano a quello nuovo</li>
-              <li>Registrare un’uscita o un’entrata, solo dopo il tuo «ok» in chat</li>
-            </ul>
-            <span className="modulo-etichetta">NON POTRÀ</span>
-            <ul className="collega-elenco" data-tono="no">
-              <li>Vedere iscritti, pagamenti e ricevute</li>
-              <li>Annullare movimenti, fare giroconti, chiudere la cassa</li>
-              <li>Cambiare voci e casse</li>
-            </ul>
+            <Riquadro stretto>
+              <span id="collega-potra"><Etichetta>POTRÀ</Etichetta></span>
+              <ul className="collega-elenco" data-tono="si" aria-labelledby="collega-potra">
+                <li>Leggere le voci, le casse e i movimenti che somigliano a quello nuovo</li>
+                <li>Registrare un’uscita o un’entrata, solo dopo il tuo «ok» in chat</li>
+              </ul>
+            </Riquadro>
+            <Riquadro stretto>
+              <span id="collega-non-potra"><Etichetta>NON POTRÀ</Etichetta></span>
+              <ul className="collega-elenco" data-tono="no" aria-labelledby="collega-non-potra">
+                <li>Vedere iscritti, pagamenti e ricevute</li>
+                <li>Annullare movimenti, fare giroconti, chiudere la cassa</li>
+                <li>Cambiare voci e casse</li>
+              </ul>
+            </Riquadro>
             <span className="passo-dettaglio" style={{ fontSize: 14 }}>
-              Le foto le vede {nome}, non ODS: solo documenti di fornitori, niente compensi né ricevute di iscritti. Il
-              collegamento si toglie da {nome}, in Impostazioni → Connettori.
+              Le foto le vede {chiede}, non ODS: solo documenti di fornitori, niente compensi né ricevute di iscritti. Il
+              collegamento si toglie da {chiede}, in Impostazioni → Connettori.
             </span>
-            <button type="button" className="btn btn-go" disabled={aspetta} onClick={() => void decidi(true)}>
+            <Tasto variante="vai" disabled={aspetta || !nome} onClick={() => void decidi(true)}>
               {aspetta ? 'UN ATTIMO…' : 'CONSENTI'}
-            </button>
-            <button type="button" className="btn btn-ghost" disabled={aspetta} onClick={() => void decidi(false)}>
+            </Tasto>
+            <Tasto variante="linea" disabled={aspetta} onClick={() => void decidi(false)}>
               NO, GRAZIE
-            </button>
+            </Tasto>
           </>
         ) : (
           <>
             <Riquadro tono="guaio">
-              <span className="modulo-etichetta">NON SI PUÒ</span>
+              <Etichetta>NON SI PUÒ</Etichetta>
               <span style={{ fontSize: 15, lineHeight: 1.45 }}>
-                {nome} registra in CONTABILITÀ, e la contabilità la cura l’amministrazione: il tuo account non ce l’ha. Se
+                {chiede} registra in CONTABILITÀ, e la contabilità la cura l’amministrazione: il tuo account non ce l’ha. Se
                 serve, chiedi a chi cura l’app.
               </span>
             </Riquadro>
-            <button type="button" className="btn btn-ghost" disabled={aspetta} onClick={() => void decidi(false)}>
-              TORNA A {nome.toUpperCase()}
-            </button>
+            <Tasto variante="linea" disabled={aspetta} onClick={() => void decidi(false)}>
+              TORNA A {chiede.toUpperCase()}
+            </Tasto>
           </>
         )}
         {errore && (
