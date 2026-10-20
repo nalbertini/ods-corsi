@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.137.4 — 21 ottobre 2026
+
+### Modificato
+
+- Sul sito la pagina Orari chiude con l'invito «Iscriviti», come le altre
+
 ## 0.137.3 — 21 ottobre 2026
 
 ### Modificato
