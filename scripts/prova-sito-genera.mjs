@@ -304,6 +304,8 @@ console.log('\nPagine vuote e modelli')
   ok('pagina di legge: classe pagina-testo, non pagina-hero', [/class="[^"]*\bpagina-testo\b/.test(c(r, 'privacy/index.html')), /class="[^"]*\bpagina-hero\b/.test(c(r, 'privacy/index.html'))], [true, false])
   ok('pagina normale: pagina-hero', [/class="[^"]*\bpagina-hero\b/.test(c(r, 'judo/index.html')), /class="[^"]*\bpagina-testo\b/.test(c(r, 'judo/index.html'))], [true, false])
   ok('home: pagina-hero', /class="[^"]*\bpagina-hero\b/.test(c(r, 'index.html')), true)
+  const l = genera(dati({ pagine: [pag('contatti'), pag('privacy', { diLegge: true }), pag('judo')] }))
+  ok('pagina di legge: è informativa, niente ISCRIVITI grande in fondo; le altre pagine sì', [/class="invito"/.test(c(l, 'privacy/index.html')), /class="invito"/.test(c(l, 'judo/index.html'))], [false, true])
   const h1 = c(r, 'index.html').match(/<h1[^>]*>([\s\S]*?)<\/h1>/)
   ok('home: h1 è il titolo', h1 ? h1[1].replace(/<[^>]*>/g, '').trim() : null, 'Titolo home')
 }

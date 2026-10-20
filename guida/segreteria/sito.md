@@ -222,7 +222,7 @@ Il sito nuovo ha sempre una **Home**: senza una Home pubblicata non si genera.
 Le pagine di legge (privacy, cookie, contributi pubblici) hanno l'impaginazione
 solo testo; le altre hanno in cima il titolo grande (in maiuscolo) e, sotto, la frase della
 **descrizione**. In alto a destra c'è il solo pulsante «Iscriviti»; l'invito giallo in fondo
-compare se esiste una pagina pubblicata con indirizzo `contatti`. **Contatti è una voce del
+compare se esiste una pagina pubblicata con indirizzo `contatti`, tranne nelle pagine di legge, che sono informative. **Contatti è una voce del
 menu**, non un pulsante: nel menu e nel piede si chiama sempre «Contatti», qualunque
 etichetta scrivi, e sta nel posto che le dai in **MENU**. Un pulsante «Scrivici» verso
 `/contatti/` scritto nel testo di una pagina il sito non lo mostra (il testo qui resta com'è);
