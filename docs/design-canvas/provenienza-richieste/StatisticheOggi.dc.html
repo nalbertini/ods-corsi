@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI. STATISTICHE nel look del sito (Statistiche.tsx): la testa coi filtri, i quattro numeri e due dei riquadri con le tabelle (CORSI, ISTRUTTORI). Le richieste online non ci sono. -->
+<div style="position: relative; display: flex; width: 1440px; min-height: 1500px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="STATISTICHE" numeri="RICHIESTE ONLINE:3" nome="Marco Rossi" ruolo="Segreteria" altezza="1500px" hint-size="240px,1500px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 20px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+      <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+        <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">STATISTICHE</h1>
+        <span style="font-size: 14px; color: #46606f">Come va la palestra, mese per mese: chi viene, quando, in quali corsi, quanto entra.</span>
+      </div>
+      <div style="width: 180px"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="" valore="Ultimi 3 mesi" hint-size="180px,44px"></dc-import></div>
+      <div style="width: 200px"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="" valore="Tutti i corsi" hint-size="200px,44px"></dc-import></div>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Scarica CSV" variante="linea" hint-size="140px,44px"></dc-import>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+      <dc-import name="Numero" tema="sito" titolo="ISCRITTI OGGI" valore="214" sotto="38 nuovi e 11 usciti nel periodo" hint-size="100%,112px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="PRESENZE" valore="2.874" sotto="9,6 a lezione, in 299 lezioni con l'appello" hint-size="100%,112px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="SUGLI ISCRITTI" valore="73%" sotto="i giustificati non contano" hint-size="100%,112px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="PROVE → ISCRITTI" valore="56%" sotto="19 su 34 persone venute a provare" hint-size="100%,112px"></dc-import>
+    </div>
+    <div style="padding: 14px 20px; border: 2px dashed #cfe6f4; border-radius: 6px; font-size: 13px; color: #46606f">PRESENZE MESE PER MESE · ISCRITTI MESE PER MESE · QUANDO SI VIENE: come oggi, non ridisegnati qui</div>
+    <dc-import name="RiquadroStatistica" titolo="CORSI" nota="un tocco sul nome per guardare solo quello" colonne="CORSO|LEZIONI|A LEZIONE|SUGLI ISCRITTI|SUI POSTI|PROVE|ANNULLATE|SENZA APPELLO" righe="#1b8ac4!JUDO KIDS|48|14,2|%81|%71|9|—|—;#e4292a!KARATE RAGAZZI|36|11,5|%76|%58|6|1|—;#f4c31b!GINNASTICA ARTISTICA|36|10,9|%72|%55|11|—|2;#16a54a!JUDO ADULTI|24|9,8|%69|%49|3|—|—;#1b8ac4!LOTTA 2|24|7,1|%64|—|2|2|1" griglia="minmax(0, 1fr) auto auto minmax(150px, 1fr) minmax(150px, 1fr) auto auto auto" frase="A lezione: iscritti presenti e prove, dove c'è l'appello. Sui posti: rispetto ai posti del corso, quando sono scritti." hint-size="100%,330px"></dc-import>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start">
+      <dc-import name="RiquadroStatistica" titolo="ISTRUTTORI" nota="le lezioni svolte, da titolare o da sostituto" colonne="ISTRUTTORE|LEZIONI|DA SOSTITUTO|A LEZIONE|SUGLI ISCRITTI" righe="Marco Rossi|72|4|12,1|%77;Elena Gallo|60|—|10,4|%72;Paolo Ferri|36|6|8,9|%66;Sara Villa|24|2|7,1|%64" griglia="minmax(120px, 1fr) auto auto auto minmax(140px, 1fr)" hint-size="100%,280px"></dc-import>
+    <div style="padding: 14px 20px; border: 2px dashed #cfe6f4; border-radius: 6px; font-size: 13px; color: #46606f">IN REGOLA OGGI: come oggi</div>
+    </div>
+    <div style="padding: 14px 20px; border: 2px dashed #cfe6f4; border-radius: 6px; font-size: 13px; color: #46606f">PROVE MESE PER MESE · INCASSI MESE PER MESE: come oggi</div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

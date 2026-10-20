@@ -44,7 +44,7 @@
   <div style="padding: 12px 16px; border-top: 2px dashed #46606f; border-bottom: 2px dashed #46606f; font-size: 13px; line-height: 1.4; color: #46606f; text-align: center">… QUANDO SI VIENE · CORSI · ISTRUTTORI · IN REGOLA OGGI: come sono, qui tagliati …</div>
 
   <dc-import name="RiquadroStatistica" tema="sito" telefono="{{telefono}}" titolo="PROVE MESE PER MESE" nota="chi è venuto a provare, nel mese della prima prova, e quanti oggi sono iscritti" mesi="{{m.prove}}" hint-size="100%,262px"></dc-import>
-  <dc-import name="RiquadroStatistica" tema="sito" telefono="{{telefono}}" titolo="INCASSI MESE PER MESE" nota="quanto è stato pagato con le ricevute, tutti i corsi insieme" mesi="{{m.incassi}}" euro="{{conEuro}}" totale="{{incassi.totale}}" totaleDopo="{{incassi.dopo}}" hint-size="100%,300px"></dc-import>
+  <dc-import name="RiquadroStatistica" tema="sito" telefono="{{telefono}}" titolo="INCASSI MESE PER MESE" nota="quanto è stato pagato con le ricevute, tutti i corsi insieme" mesi="{{m.incassi}}" euro="{{conEuro}}" somma="{{incassi.totale}}" somma-dopo="{{incassi.dopo}}" hint-size="100%,300px"></dc-import>
 </div>
 </x-dc>
 <script data-dc-script data-props='{"variante":{"editor":"enum","options":["tre","sei","judo"],"default":"tre"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1128,"height":1240}}'>
