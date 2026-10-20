@@ -8,7 +8,7 @@
 //  1. Si riconosce dal pulsante verso l'iscrizione prima del primo h2.
 //  2. Senza, il <main> è identico a prima (sha fissato).
 //  3. Forma sbagliata: impaginazione di sempre, nessuna parola persa.
-//  4. Testata: pulsanti (il giallo per primo), titolo e descrizione dai campi.
+//  4. Testata: titolo e descrizione dai campi, senza pulsanti.
 //  5. Judo pieno. 6. Foto: solo B, solo C, nessuna.
 //  7. Senza foto A: fascia di dati. 8. Orario da 1 a 7 gruppi.
 //  9. «Cosa si fa» e «Cosa aspettarsi»: quanti gruppi. 10. Senza chiusura l'invito c'è.
@@ -123,13 +123,12 @@ console.log('\n3. Forma che non torna: impaginazione di sempre, nessuna parola p
   }
 }
 
-console.log('\n4. La testata: pulsanti, titolo, descrizione')
+console.log('\n4. La testata: titolo e descrizione, senza pulsanti')
 {
   const hero = sezioni(M).find((s) => s.classi.includes('pagina-hero'))
-  const link = [...(hero?.html.match(/<div class="pulsanti">([\s\S]*?)<\/div>/)?.[1] ?? '').matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({ cl: classi(m[1]), href: m[1].match(/href="([^"]*)"/)?.[1], t: testo(m[2]) }))
-  ok('la testata è «pagina-hero con-pulsanti solo»', hero?.classi, ['pagina-hero', 'con-pulsanti', 'solo'])
-  ok('il giallo (primario) porta all’iscrizione ed è primo, anche se nel testo è dopo', [link[0]?.cl, link[0]?.href, link[0]?.t], [['pulsante', 'primario'], ISC, 'Iscriviti'])
-  ok('in testata resta il solo «Iscriviti»: il «Scrivici» verso /contatti/ scritto dalla segreteria non esce', [link.length, link.some((l) => l.href === '/contatti/')], [1, false])
+  ok('la testata è «pagina-hero solo»', hero?.classi, ['pagina-hero', 'solo'])
+  // L'iscrizione resta nella barra in alto e nella chiamata finale: sotto il titolo non serve più.
+  ok('sotto titolo e descrizione nessun pulsante, nemmeno «Iscriviti»', [/class="pulsanti"/.test(hero?.html ?? ''), /<a\b/.test(hero?.html ?? '')], [false, false])
   ok('h1 dal titolo e descrizione dal campo', [hero?.html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1], hero?.html.match(/<p>([^<]*)<\/p>/)?.[1]], ['Judo', DESC])
   ok('il paragrafo dei pulsanti del testo non resta fuori dalla testata e «Scrivici» non esce nemmeno nella chiusura', conta(M, /Scrivici<\/a>/g), 0)
 }
