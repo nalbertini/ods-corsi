@@ -31,7 +31,8 @@ ordine.
      e allora serve la sua ricevuta.
 3. **Quanto costa**, in breve: la quota associativa (quella del
    [listino](segreteria/listino.md)), lo sconto famiglia e il costo di più
-   corsi, come si paga in una riga e il tasto **PREZZI E PAGAMENTO**.
+   corsi, come si paga in una riga (bonifico o Satispay, prima di mandare la
+   richiesta) e il tasto **PREZZI E PAGAMENTO**.
 4. **Non sai ancora quale corso? Hai un dubbio?** Un riquadro solo: le
    **prove**, una lezione (3 €) o una settimana (10 €), indirizzo e telefono,
    e i tasti **CHIAMA** e **MAPPA**.
@@ -88,6 +89,11 @@ Chi si iscrive risponde alle domande dal telefono:
   quali sono e che la segreteria richiama. Un corso che il listino non ha
   ancora (senza prezzo) si sceglie lo stesso, e sotto il nome c'è scritto
   «prezzo da confermare».
+  Sotto c'è **QUANTO COSTA**: la stima dal listino (la quota associativa, i
+  corsi scelti, il totale), l'IBAN, la causale col nome e i tasti **COPIA
+  IBAN**, **COPIA CAUSALE** e **PAGA CON SATISPAY**. Un corso senza prezzo è
+  scritto in giallo («Lo dice la segreteria»): si paga il totale che si vede, il
+  resto lo sistema la segreteria.
 - **Il modulo**: le autorizzazioni si firmano **qui, col dito** (o col mouse
   dal computer). Si sceglie come sul foglio se si acconsente al
   **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**: le
@@ -172,7 +178,8 @@ più niente, senza premere di nuovo il tasto.
 
 Premuto **MANDA LA RICHIESTA**, compare **RICHIESTA ARRIVATA**. Se un file non
 è partito compare **MANCA QUALCHE FILE**, con il tasto per riprovare (per
-un'ora); altrimenti i fogli si portano in segreteria.
+un'ora); se non va, chiama la segreteria (da **UNA PERSONA IN PIÙ**: i fogli
+si portano in segreteria).
 
 La richiesta **non è ancora un'iscrizione**: arriva in segreteria, in
 [RICHIESTE ONLINE](segreteria/richieste.md), dove qualcuno guarda i file e la

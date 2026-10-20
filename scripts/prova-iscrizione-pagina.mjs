@@ -80,6 +80,7 @@ ok('COSA_SERVE: quattro voci, titolo, quando e nota', P.COSA_SERVE, [
   { titolo: 'Il certificato medico', quando: 'SE CE L’HAI', nota: 'Se non ce l’hai, lo porti in segreteria prima della prima lezione.' },
   { titolo: 'Come paghi', quando: 'NELLA RICHIESTA', nota: 'Con Satispay, oppure col bonifico: allora serve la sua ricevuta.' },
 ])
+ok('la ricevuta non ha «quando»: non è più facoltativa', P.COSA_SERVE?.find((v) => v.titolo === 'La ricevuta del pagamento')?.quando, undefined)
 ok('nessuna voce dice «firma il genitore»', JSON.stringify(P.COSA_SERVE ?? '').includes('firma il genitore'), false)
 
 // --- 5 e 6. il riquadro breve dei costi ----------------------------------------
@@ -96,6 +97,11 @@ ok('con Satispay', prova(() => P.costiBreve(50, true)), {
   tasto: 'PREZZI E PAGAMENTO',
 })
 ok('senza Satispay la frase non lo nomina', prova(() => P.costiBreve(50, false).testo), 'I prezzi di ogni corso e come si paga: bonifico, nella richiesta.')
+// Il pagamento non si rimanda più: nessun testo della pagina dice di pagare in segreteria o dopo la richiesta.
+// Il certificato «lo porti in segreteria» resta: la sua voce si toglie prima di cercare.
+const testiPagamento = JSON.stringify([(P.COSA_SERVE ?? []).filter((v) => v.titolo !== 'Il certificato medico'), P.COME_SI_PAGA, prova(() => P.costiBreve(50, true)), prova(() => P.costiBreve(50, false))])
+ok('nessun testo del pagamento dice «in segreteria»', /in segreteria/i.test(testiPagamento), false)
+ok('nessun testo del pagamento dice «dopo la richiesta»', /dopo la richiesta/i.test(testiPagamento), false)
 ok('la quota è quella passata (dal listino), non scritta: 55 → «55 €»', prova(() => P.costiBreve(55, true).titolo), 'Quota associativa 55 €, più il corso.')
 
 const lib = sorgente('src/lib/paginaIscrizioni.ts')

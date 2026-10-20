@@ -1,6 +1,9 @@
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
-import { VOCE_CORSI, VOCE_DIFFERENZA, VOCE_QUOTA, filtraMovimenti, residui, totali, type Cassa, type RigaMovimento } from './contabilita'
+import { VOCE_CORSI, VOCE_DIFFERENZA, VOCE_QUOTA, VOCE_VARIE, cercabile, filtraMovimenti, residui, totali, type Cassa, type RigaMovimento, type VoceContabile } from './contabilita'
+import { voceProposta, type Simile } from './movimentiDallaChat'
+import { nomeDallaCausale } from './movimentiPersona'
 import { dataRicevuta, euro } from './ricevute'
+import { dataLunga } from './sala'
 import { csv } from './vestiario'
 
 /**
@@ -81,7 +84,7 @@ export function anniDelBilancio(righe: RigaMovimento[], oggi: string): number[] 
 }
 
 /** Lo stesso giorno dell'anno prima; il 29 febbraio diventa 28. */
-const giornoAnnoPrima = (data: string) => {
+export const giornoAnnoPrima = (data: string) => {
   const g = data.slice(5) === '02-29' ? '02-28' : data.slice(5)
   return `${annoDi(data) - 1}-${g}`
 }
@@ -105,6 +108,23 @@ function vociDelPeriodo(righe: RigaMovimento[]) {
     gruppi.set(chiave, g)
   }
   return gruppi
+}
+
+/** Le righe per voce di un periodo col loro confronto: le entrate prima; in ciascun gruppo la più grande, le voci senza importo nel periodo in fondo, poi «Da classificare» e la differenza di cassa. */
+function vociConConfronto(delPeriodo: RigaMovimento[], delConfronto: RigaMovimento[], haPrima: boolean): RigaVoceBilancio[] {
+  const attuali = vociDelPeriodo(delPeriodo)
+  const precedenti = vociDelPeriodo(delConfronto)
+  const chiavi = new Set([...attuali.keys(), ...(haPrima ? precedenti.keys() : [])])
+  const voci: RigaVoceBilancio[] = [...chiavi].map((chiave) => {
+    const a = attuali.get(chiave)
+    const p = haPrima ? precedenti.get(chiave) : undefined
+    // Una chiave c'è perché sta in almeno una delle due mappe.
+    const { tipo, voce } = (a ?? p)!
+    return { voce, tipo, totale: a?.totale ?? null, prima: p?.totale ?? null, movimenti: a?.movimenti ?? 0, daClassificare: voce === VOCE_DA_CLASSIFICARE, aParte: voce === VOCE_DIFFERENZA }
+  })
+  const coda = (v: RigaVoceBilancio) => (v.aParte ? 2 : v.daClassificare ? 1 : 0)
+  voci.sort((x, y) => (x.tipo === y.tipo ? coda(x) - coda(y) || (y.totale ?? -1) - (x.totale ?? -1) || (y.prima ?? 0) - (x.prima ?? 0) : x.tipo === 'entrata' ? -1 : 1))
+  return voci
 }
 
 /** Il saldo di una cassa a inizio e fine del periodo, con lo stesso conto di `residui`. */
@@ -149,18 +169,7 @@ export function bilancioAnno(righe: RigaMovimento[], casse: Cassa[], anno: numbe
   const tPrima = totali(delConfronto)
   const haPrima = soloMovimenti(delConfronto).length > 0
 
-  const attuali = vociDelPeriodo(delPeriodo)
-  const precedenti = vociDelPeriodo(delConfronto)
-  const chiavi = new Set([...attuali.keys(), ...(haPrima ? precedenti.keys() : [])])
-  const voci: RigaVoceBilancio[] = [...chiavi].map((chiave) => {
-    const a = attuali.get(chiave)
-    const p = haPrima ? precedenti.get(chiave) : undefined
-    const { tipo, voce } = (a ?? p)!
-    return { voce, tipo, totale: a?.totale ?? null, prima: p?.totale ?? null, movimenti: a?.movimenti ?? 0, daClassificare: voce === VOCE_DA_CLASSIFICARE, aParte: voce === VOCE_DIFFERENZA }
-  })
-  // Le entrate prima; in ciascun gruppo la più grande, le voci senza importo quest'anno in fondo, poi «Da classificare» e la differenza di cassa.
-  const coda = (v: RigaVoceBilancio) => (v.aParte ? 2 : v.daClassificare ? 1 : 0)
-  voci.sort((x, y) => (x.tipo === y.tipo ? coda(x) - coda(y) || (y.totale ?? -1) - (x.totale ?? -1) || (y.prima ?? 0) - (x.prima ?? 0) : x.tipo === 'entrata' ? -1 : 1))
+  const voci = vociConConfronto(delPeriodo, delConfronto, haPrima)
 
   const sospese = soloMovimenti(delPeriodo).filter((r) => nomeVoce(r) === VOCE_DA_CLASSIFICARE)
   const usciteSospese = sospese.filter((r) => r.tipo === 'uscita').reduce((s, r) => s + r.importo, 0)
@@ -246,4 +255,110 @@ export function csvBilancio(b: Bilancio, oggi: string): string {
   righe.push(['Risultato', '', cifra(b.risultato), cifra(b.prima?.risultato ?? null)], [], ['cassa', 'saldo a inizio', 'entrate', 'uscite', 'giroconti', 'saldo a fine'])
   for (const s of b.saldi) righe.push([s.nome, cifra(s.inizio), cifra(s.entrate), cifra(s.uscite), cifra(s.giroconti), cifra(s.fine)])
   return csv(righe)
+}
+
+// ---------------------------------------------------------------------------
+// I conti letti dalla chat (`mcp.ts`, strumenti `conti` e `da_classificare`): gli stessi numeri di BILANCIO,
+// per un periodo qualunque.
+// ---------------------------------------------------------------------------
+
+/** Una voce da sistemare: senza voce, «Da classificare» o «Varie» (per nome, senza badare a maiuscole). */
+export const voceDaSistemare = (voce: string | null): boolean => {
+  if (voce === null) return true
+  const v = voce.trim().toLowerCase()
+  return v === VOCE_DA_CLASSIFICARE.toLowerCase() || v === VOCE_VARIE.toLowerCase()
+}
+
+/**
+ * I conti di un periodo, col confronto sullo stesso tratto dell'anno prima: un `al` dopo oggi diventa oggi
+ * (periodo «parziale»). `voce` e `tipo` restringono le righe; «Da classificare» comprende quelle senza voce.
+ * `daSistemare` dice quante uscite stanno ancora su una voce da sistemare: i totali per voce possono essere più alti.
+ */
+export function contiPeriodo(righe: RigaMovimento[], p: { dal: string; al: string; voce?: string; tipo?: 'entrata' | 'uscita' }, oggi: string) {
+  const parziale = p.al > oggi
+  const al = parziale ? oggi : p.al
+  const confrontoDal = giornoAnnoPrima(p.dal)
+  const confrontoAl = giornoAnnoPrima(al)
+  const voce = p.voce?.trim().toLowerCase()
+  const filtra = (rr: RigaMovimento[]) => rr.filter((r) => (!p.tipo || r.tipo === p.tipo) && (!voce || nomeVoce(r).toLowerCase() === voce))
+  const delPeriodo = filtra(filtraMovimenti(righe, { dal: p.dal, al }))
+  const delConfronto = filtra(filtraMovimenti(righe, { dal: confrontoDal, al: confrontoAl }))
+  const t = totali(delPeriodo)
+  const tPrima = totali(delConfronto)
+  const haPrima = soloMovimenti(delConfronto).length > 0
+  const sospese = soloMovimenti(delPeriodo).filter((r) => r.tipo === 'uscita' && voceDaSistemare(r.voce))
+  return {
+    dal: p.dal,
+    al,
+    parziale,
+    confrontoDal,
+    confrontoAl,
+    vuoto: soloMovimenti(delPeriodo).length === 0,
+    entrate: t.entrate,
+    uscite: t.uscite,
+    risultato: t.differenza,
+    prima: haPrima ? { entrate: tPrima.entrate, uscite: tPrima.uscite, risultato: tPrima.differenza } : null,
+    voci: vociConConfronto(delPeriodo, delConfronto, haPrima),
+    daSistemare: sospese.length ? { movimenti: sospese.length, uscite: sospese.reduce((s, r) => s + r.importo, 0) } : null,
+    sovrapposizione: sovrapposizioneStorico(filtraMovimenti(righe, { dal: p.dal, al })),
+  }
+}
+
+/** «dal 1 al 20 ottobre 2026», «dal 1 gennaio al 20 ottobre 2026», «dal 1 dicembre 2025 al 31 gennaio 2026», «il 5 ottobre 2026». */
+export function periodoInParole(dal: string, al: string): string {
+  if (dal === al) return `il ${dataLunga(dal)}`
+  if (dal.slice(0, 7) === al.slice(0, 7)) return `dal ${Number(dal.slice(8))} al ${dataLunga(al)}`
+  if (dal.slice(0, 4) === al.slice(0, 4)) return `dal ${dataLunga(dal, false)} al ${dataLunga(al)}`
+  return `dal ${dataLunga(dal)} al ${dataLunga(al)}`
+}
+
+export interface GruppoDaClassificare {
+  /** La descrizione in minuscolo: il testo da cercare in MOVIMENTI. */
+  cerca: string
+  movimenti: number
+  totale: number
+  primo: string
+  ultimo: string
+  /** Le voci da sistemare su cui stanno ora («Da classificare», «Varie»). */
+  voci: string[]
+  senzaVoce: boolean
+  proposta: { id: string; nome: string } | null
+  avviso: string | null
+}
+
+// Come la ricerca di MOVIMENTI (`cercabile`): il testo di un gruppo, cercato lì, ritrova tutte le sue righe.
+const chiaveDescrizione = cercabile
+
+/**
+ * Le uscite ancora da sistemare raggruppate per descrizione, le più pesanti in euro prima, al più `massimo`;
+ * per ognuna la voce delle stesse descrizioni già classificate. Mai annullati, giroconti, entrate, voci di
+ * sistema, movimenti collegati a una persona o causali «Cliente <nome> per»: escono verso Claude.
+ */
+export function gruppiDaClassificare(righe: RigaMovimento[], voci: VoceContabile[], massimo = 20) {
+  const diSistema = new Set(voci.filter((v) => v.diSistema && v.tipo === 'uscita').map((v) => v.nome))
+  const buone = righe.filter((r) => !r.annullato && r.tipo === 'uscita' && !r.personaId && !nomeDallaCausale(r.descrizione) && !(r.voce && diSistema.has(r.voce)))
+  const gruppi = new Map<string, GruppoDaClassificare>()
+  for (const r of buone.filter((x) => voceDaSistemare(x.voce))) {
+    const cerca = chiaveDescrizione(r.descrizione)
+    const g = gruppi.get(cerca) ?? { cerca, movimenti: 0, totale: 0, primo: r.data, ultimo: r.data, voci: [], senzaVoce: false, proposta: null, avviso: null }
+    g.movimenti += 1
+    g.totale += r.importo
+    if (r.data < g.primo) g.primo = r.data
+    if (r.data > g.ultimo) g.ultimo = r.data
+    if (r.voce === null) g.senzaVoce = true
+    else if (!g.voci.includes(r.voce)) g.voci.push(r.voce)
+    gruppi.set(cerca, g)
+  }
+  for (const g of gruppi.values()) {
+    g.voci.sort((a, b) => a.localeCompare(b, 'it'))
+    const simili: Simile[] = buone
+      .filter((r) => !voceDaSistemare(r.voce) && chiaveDescrizione(r.descrizione) === g.cerca)
+      .map((r) => {
+        const v = voci.find((x) => x.nome === r.voce && x.tipo === 'uscita')
+        return { id: r.id, data: r.data, tipo: r.tipo, importo: r.importo, descrizione: r.descrizione, voce: r.voce ?? '', voceId: v?.id ?? '', voceAttiva: v?.attiva ?? false, cassa: '' }
+      })
+    Object.assign(g, voceProposta(simili))
+  }
+  const tutti = [...gruppi.values()].sort((a, b) => b.totale - a.totale)
+  return { gruppi: tutti.slice(0, massimo), gruppiTotali: tutti.length, movimentiTotali: tutti.reduce((s, g) => s + g.movimenti, 0) }
 }

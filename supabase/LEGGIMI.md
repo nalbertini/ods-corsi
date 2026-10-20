@@ -1033,7 +1033,10 @@ Senza la funzione l'app funziona uguale: il sito si aggiorna col giro a tempo.
 Chi cura i conti può collegare Claude al suo account e fotografargli fatture,
 ricevute e scontrini dei fornitori: Claude propone il movimento e lo registra in
 CONTABILITÀ dopo il suo «ok» (vedi la guida, `guida/amministrazione/contabilita.md`).
-Claude parla con la funzione **`mcp`** (`functions/mcp/index.ts`), un server MCP
+Claude legge anche i conti (strumenti `conti`, `saldi_casse`, `da_classificare`): gli stessi
+numeri di BILANCIO, dalle tabelle con le sole colonne che servono (delle ricevute le voci coi
+pagamenti, mai intestatario, ente o note; dei pagamenti a mano mai persona o nota), senza file SQL
+in più. Della Cassa Contanti non dice il previsto. Claude parla con la funzione **`mcp`** (`functions/mcp/index.ts`), un server MCP
 che legge e scrive col token di chi si è collegato, mai con la chiave
 `service_role`: valgono le stesse regole dell'app. Servono tre cose, una volta:
 
