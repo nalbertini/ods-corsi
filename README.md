@@ -174,6 +174,8 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   stagione e risulta ancora da pagare: chi ha pagato la quota si segna in blocco «pagata senza ricevuta dell'app», gli altri
   (solo corsi, sotto 50 €, incasso del genitore) si guardano dalla scheda
   (`supabase/71-pagato-vecchio-programma.sql`, `src/lib/pagatoPrima.ts`).
+- **Il nuovo editor delle pagine, da provare** (voce SITO, PROVA IL NUOVO EDITOR): Puck completo a tutto schermo, accanto
+  all'editor di oggi; salva solo la bozza, si pubblica dall'editor di sempre (`src/components/segreteria/EditorPuck.tsx`, regole in `src/lib/sitoPezzi.ts`).
 - **L'orario delle pagine corso del sito** (voce SITO, ORARIO DAI CORSI): una pagina si collega a uno o più corsi e il suo
   orario viene dalle ricorrenze di CORSI (solo giorno, ora e durata), senza riscriverlo a mano né premere Pubblica: il sito
   si aggiorna da solo entro 5 minuti. Un corso senza giorni dà «Orario in arrivo», mai un orario vecchio

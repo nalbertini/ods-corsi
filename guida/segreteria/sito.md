@@ -106,6 +106,30 @@ nascondono né si cancellano.
 
 Se esci con qualcosa scritto e non salvato, l'app chiede prima.
 
+### Il nuovo editor, da provare
+
+Accanto ai tasti di una pagina c'è **Prova il nuovo editor**: lo stesso lavoro,
+in un editor solo, a tutto schermo. Non c'è per le pagine di legge, e si apre
+solo se la pagina è salvata.
+
+- A sinistra, in **Parti**, le quattro parti (foto in cima, testo, foto,
+  colonne): si trascinano nella pagina dove le vuoi. In **Struttura** c'è
+  l'elenco delle parti della pagina: trascinando una riga la sposti.
+- Al centro la pagina, coi caratteri e i colori del sito, come sul tablet.
+  Sopra, i tasti per vederla come sul telefono o sul computer.
+- A destra i campi di quel che hai scelto. Senza niente di scelto ci sono
+  **Titolo** (anche su Google) e **Descrizione**; scelto un testo, lo scrivi lì o
+  direttamente nella pagina. **Pagina**, in cima, riporta a titolo e descrizione.
+- **Com'è sul sito** mostra la pagina com'è dopo la pubblicazione, con tessere e
+  orari.
+- **Salva bozza** salva senza cambiare il sito; resta spento finché non cambi
+  qualcosa, o se manca qualcosa (una foto senza immagine, il titolo): accanto c'è
+  scritto cosa, in fondo allo schermo. Anche le pagine scritte col testo solo si
+  aprono a parti, ma restano come prima finché non salvi: la prima volta l'app
+  chiede, perché salvata la pagina resta a parti.
+- Per **pubblicare** chiudi il nuovo editor (**Chiudi**: torni alle pagine),
+  riapri la pagina e premi **Pubblica**.
+
 ## L'orario dai corsi
 
 Nella pagina di un corso l'**orario** può venire da CORSI invece che dal testo.

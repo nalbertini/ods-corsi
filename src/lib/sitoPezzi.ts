@@ -320,3 +320,37 @@ export function cosaNonVaPortare(bozza: string): string | null {
   const pezzi = htmlInPezzi(bozza)
   return cosaNonVaPezzi(pezzi) ?? testoTroppoLungo(pezziInHtml(pezzi))
 }
+
+/**
+ * Il nuovo editor (Puck completo, `EditorPuck.tsx`) apre ogni pagina a pezzi: quelle del vecchio editor si dividono
+ * col testo identico (`htmlInPezzi`), ma sul database restano com'erano finché non si salva.
+ */
+export const pezziDaAprire = (p: { bozza: string; pezzi?: PezziPagina | null }): PezziPagina => p.pezzi ?? htmlInPezzi(p.bozza)
+
+/** Quel che il nuovo editor salva: titolo, descrizione e pezzi. */
+export interface BozzaPezzi {
+  titolo: string
+  descrizione: string
+  pezzi: PezziPagina
+}
+
+/** C'è da salvare: aprire e richiudere una pagina, anche del vecchio editor, non lo è. */
+export const daSalvare = (p: { titolo: string; descrizione: string; bozza: string; pezzi?: PezziPagina | null }, b: BozzaPezzi): boolean =>
+  b.titolo.trim() !== p.titolo || b.descrizione.trim() !== p.descrizione || pezziCambiati(b.pezzi, pezziDaAprire(p))
+
+/** Perché non si può salvare, per chi scrive; `null` se si può. Le stesse regole dell'editor di oggi. */
+export function cosaNonVaSalvare(b: BozzaPezzi): string | null {
+  if (!b.titolo.trim()) return 'Scrivi il titolo della pagina'
+  return cosaNonVaPezzi(b.pezzi) ?? testoTroppoLungo(pezziInHtml(b.pezzi))
+}
+
+/** Il nuovo editor si prova sulle pagine che possono essere a pezzi: non quelle di legge, e non senza `62-sito-pezzi.sql` (`pezzi` assente). */
+export const siProvaNuovoEditor = (p: { diLegge: boolean; pezzi?: PezziPagina | null }): boolean => !p.diLegge && p.pezzi !== undefined
+
+/**
+ * Le opzioni del testo nel nuovo editor (campo `richtext` di Puck): solo quel che il sito tiene (`pulisciTesto`).
+ * Sottolineato, barrato, codice, righe e allineamenti sparirebbero pubblicando; dei titoli, Titolo (h2) e Sottotitolo (h3).
+ */
+export const TESTO_DEL_SITO: { underline: false; strike: false; code: false; codeBlock: false; horizontalRule: false; textAlign: false; heading: { levels: Array<2 | 3> } } = {
+  underline: false, strike: false, code: false, codeBlock: false, horizontalRule: false, textAlign: false, heading: { levels: [2, 3] },
+}
