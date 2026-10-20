@@ -1,3 +1,4 @@
+import { cosaNonVaSatispay, satispayDaUsare, soldi } from '../../lib/satispay'
 import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
@@ -440,6 +441,13 @@ export function NuovaRicevuta({
   // li apre e chiude chi scrive. Se si chiudessero da sé appena è tutto a
   // posto, si chiuderebbero sotto le dita, col fuoco e le lettere dopo persi.
   const [socioAperto, setSocioAperto] = useState(false)
+  // Pagata dal modulo con Satispay: quei soldi entrano in questa ricevuta, una volta sola (`emetti_ricevuta_satispay`).
+  const satispay = useCarica(() => d.pagamentiSatispay(), [d])
+  const sp = satispayDaUsare(satispay.dato ?? [], p.id)
+  useEffect(() => {
+    if (sp) setMetodo('Satispay')
+  }, [sp?.id])
+  const conSatispay = !!sp && metodo === 'Satispay'
 
   const listino = partenza.dato?.[3].listino
   const gruppi = listino ? vociInDueGruppi(corsi, data, listino) : { primi: [], altri: [] }
@@ -491,7 +499,8 @@ export function NuovaRicevuta({
     typeof fatte === 'string' || anticipoCent === null
       ? null
       : { data, personaId: p.id, numero: n, ente, intestatario: socio, voci: fatte, anticipo: anticipoCent, note: note.trim() || undefined }
-  const guaio = typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? cosaNonVa(dati) : null
+  const guaio =
+    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? (sp && conSatispay ? cosaNonVaSatispay(dati.voci, sp) : null)) : null
   const c = dati ? conti(dati) : null
 
   // Lo sconto famiglia: dove è, o perché non è qui.
@@ -538,7 +547,7 @@ export function NuovaRicevuta({
     if (!(await chiedi(righe.join('\n'), 'Fai la ricevuta', { no: 'Torna a correggere', pericolo: true }))) return
     void fai(
       async () => {
-        const r = await d.emettiRicevuta(dati)
+        const r = await d.emettiRicevuta(dati, conSatispay ? sp?.id : undefined)
         await scarica(r)
         return r
       },
@@ -567,12 +576,17 @@ export function NuovaRicevuta({
         </Campo>
         <Campo id="rc-metodo" etichetta="PAGATO CON">
           <select id="rc-metodo" className="sg-campo" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
-            {METODI.map((m) => (
+            {[...METODI, ...(sp ? ['Satispay'] : [])].map((m) => (
               <option key={m}>{m}</option>
             ))}
           </select>
         </Campo>
       </div>
+      {sp && (
+        <span style={{ fontSize: 13, color: 'var(--verde-testo)', marginTop: -12 }}>
+          Arrivati {soldi(sp.importo)} con Satispay dal modulo di iscrizione. Con PAGATO CON «Satispay» entrano in questa ricevuta, una volta sola.
+        </span>
+      )}
       <span style={{ fontSize: 12, color: 'var(--dim)', marginTop: -12 }}>
         Il numero si lascia vuoto: prende il primo libero del {anno}. Si scrive solo per continuare la numerazione di un altro programma.
       </span>

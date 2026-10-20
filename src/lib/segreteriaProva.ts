@@ -20,7 +20,7 @@ const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
-import { richiesteDi, spostaRichieste } from './richiesteProva'
+import { pagamentiSatispayProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { ESTENSIONI } from './richieste'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
@@ -55,7 +55,7 @@ import {
   VOCE_QUOTA,
   type VoceContabile,
 } from './contabilita'
-import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
+import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, euro, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
@@ -1008,8 +1008,17 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
-    async emettiRicevuta(dati) {
+    async emettiRicevuta(dati, satispayId) {
       if (dati.personaId) persona(dati.personaId)
+      // Come `emetti_ricevuta_satispay`: un pagamento arrivato, una ricevuta sola, gli stessi soldi.
+      const sp = satispayId ? pagamentiSatispayProva().find((x) => x.id === satispayId) : undefined
+      if (satispayId) {
+        if (sp?.stato !== 'pagato') throw new Error('Questo pagamento Satispay non è arrivato')
+        if (sp.ricevutaId) throw new Error('Questo pagamento Satispay è già in una ricevuta')
+        if (sp.personaId !== dati.personaId) throw new Error('Il pagamento Satispay è di un’altra persona: accogli prima la sua richiesta')
+        const somma = dati.voci.flatMap((v) => v.pagamenti).filter((p) => p.metodo === 'Satispay').reduce((s, p) => s + p.importo, 0)
+        if (somma !== sp.importo) throw new Error(`Con Satispay sono arrivati ${euro(sp.importo)} €: nella ricevuta devono essere gli stessi`)
+      }
       const r = { ...dati, intestatario: pulisciIntestatario(dati.intestatario), note: dati.note?.trim() || undefined }
       const no = cosaNonVa(r)
       if (no) throw new Error(no)
@@ -1026,7 +1035,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const nuova: Ricevuta = { ...resto, voci, id: `r-${unico()}`, anno, numero, totale: c.totale, pagato: c.pagato, creataIl: new Date().toISOString() }
       a().ricevute = [...tutte, nuova]
       salva()
+      if (satispayId) salvaSatispay(pagamentiSatispayProva().map((x) => (x.id === satispayId ? { ...x, ricevutaId: nuova.id } : x)))
       return nuova
+    },
+
+    async pagamentiSatispay() {
+      return pagamentiSatispayProva()
     },
 
     async annullaRicevuta(id) {
@@ -1303,7 +1317,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (!cassa) throw new Error('Scegli la cassa')
       const nota = d.nota?.trim() || undefined
       // Gli incassi in contanti si ricavano da ricevute e pagamenti a mano, come nell'elenco della schermata.
-      const elenco = elencoMovimenti(a().ricevute ?? [], a().pagamentiDiretti ?? [], [], casse, movimenti, voci)
+      const elenco = elencoMovimenti(a().ricevute ?? [], a().pagamentiDiretti ?? [], [], casse, movimenti, voci, pagamentiSatispayProva())
       const previsto = previstoCassa(casse, elenco, cassa.id, d.data)
       const troppo = cosaNonVaPrevisto(previsto, d.contato)
       if (troppo) throw new Error(troppo)

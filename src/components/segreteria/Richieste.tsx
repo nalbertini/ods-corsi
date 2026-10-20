@@ -5,6 +5,7 @@ import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
 import { accogliConCertificato, DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
+import { segnoRichiesta, type PagamentoSatispay } from '../../lib/satispay'
 import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
@@ -41,6 +42,9 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * con la sua email non ha niente che la leghi all'iscritto che aveva dato la
  * propria, e da sola diventerebbe un doppione.
  */
+/** Il colore del segno Satispay nell'elenco: le classi dei bollini che ci sono già. */
+const TIPO_TAG = { aspetta: 'aspetta', fatto: 'fatto', guaio: 'manca' } as const
+
 export function Richieste({
   d,
   onVai,
@@ -70,6 +74,9 @@ export function Richieste({
   const corsi = useCarica(() => d.corsi(), [d])
   const persone = useCarica(() => d.persone(), [d])
   const conDocumento = useCarica(async () => (await datiRichieste()).conDocumento(), [])
+  // Il pagamento Satispay di ogni richiesta: quello vivo, o l'ultimo (`73-satispay.sql`; senza il file, nessuno).
+  const satispay = useCarica(() => d.pagamentiSatispay(), [d])
+  const pagamentoDi = (id: string) => (satispay.dato ?? []).find((p) => p.richiestaId === id && p.stato !== 'non-andato')
   const [tutte, setTutte] = useState(false)
   const [daStampare, setDaStampare] = useState(!!stampareIniziale)
   const [scelta, setScelta] = useState<string | null>(aperta ?? null)
@@ -110,6 +117,7 @@ export function Richieste({
       d={d}
       r={r}
       x={richiesta}
+      satispay={pagamentoDi(richiesta.id)}
       nomi={nomi}
       titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
       omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
@@ -199,6 +207,10 @@ export function Richieste({
                     {minorenne(x.natoIl) && <span className="num sg-tag">Minore</span>}
                     {x.nucleoDi && <span className="num sg-tag">Nucleo</span>}
                     {doc.has(x.id) && <span className="num sg-tag">Da stampare</span>}
+                    {(() => {
+                      const s = segnoRichiesta(pagamentoDi(x.id), x.stato)
+                      return s && <span className="num sg-tag" data-tipo={TIPO_TAG[s.tono]}>{s.tag}</span>
+                    })()}
                     {/* La si richiama: meglio saperlo prima di aprirla. */}
                     {voci && x.corsi.some((c) => {
                       const nome = nomi.get(c)
@@ -229,6 +241,7 @@ function Scheda({
   d,
   r,
   x,
+  satispay,
   nomi,
   titolare,
   omonimi,
@@ -242,6 +255,8 @@ function Scheda({
   d: DatiSegreteria
   r: DatiRichieste
   x: Richiesta
+  /** Il pagamento Satispay dal modulo, se c'è. */
+  satispay?: PagamentoSatispay
   nomi: Map<string, string>
   /** Il titolare del nucleo da cui arriva, se arriva dall'area degli iscritti. */
   titolare?: string
@@ -436,7 +451,11 @@ function Scheda({
             </div>
           )}
           {/* Non è un guaio: la ricevuta non è obbligatoria, si paga anche al banco. */}
-          {file.dato.length > 0 && !arrivati.has('ricevuta') && <span className="sg-sotto">Nessuna ricevuta: il pagamento si fa in segreteria.</span>}
+          {(() => {
+            const s = segnoRichiesta(satispay, x.stato)
+            if (s) return <span className="sg-sotto" style={{ color: `var(--${s.tono === 'fatto' ? 'verde' : s.tono === 'guaio' ? 'rosso' : 'giallo'}-testo)` }}>{s.testo}</span>
+            return file.dato.length > 0 && !arrivati.has('ricevuta') && <span className="sg-sotto">Nessuna ricevuta: il pagamento si fa in segreteria.</span>
+          })()}
           {documenti.length > 0 && (
             <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
               <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>

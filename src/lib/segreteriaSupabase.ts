@@ -18,6 +18,7 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
+import type { PagamentoSatispay, StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
@@ -1117,12 +1118,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.from('anagrafiche').upsert({ persona_id: personaId, ...riga }, { onConflict: 'persona_id' }))
     },
 
-    async emettiRicevuta(r) {
+    async emettiRicevuta(r, satispayId) {
       const dati = { ...r, intestatario: pulisciIntestatario(r.intestatario) }
       const no = cosaNonVa(dati)
       if (no) throw new Error(no)
       const riga = ok(
-        await db.rpc('emetti_ricevuta', {
+        await db.rpc(satispayId ? 'emetti_ricevuta_satispay' : 'emetti_ricevuta', {
+          ...(satispayId ? { pagamento: satispayId } : {}),
           dati: {
             data: dati.data,
             persona_id: dati.personaId ?? null,
@@ -1140,6 +1142,33 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async annullaRicevuta(id) {
       ok(await db.rpc('annulla_ricevuta', { ricevuta: id }))
+    },
+
+    async pagamentiSatispay() {
+      const r = await tutteLeRighe((prima, ultima) =>
+        db
+          .from('pagamenti_satispay')
+          .select('id, richiesta_id, chi, importo, stato, creato_il, pagato_il, ricevuta_id, richiesta:richieste_iscrizione ( persona_id )')
+          .order('creato_il', { ascending: false })
+          .order('id')
+          .range(prima, ultima),
+      )
+      // Prima di 73-satispay.sql non c'è niente da mostrare.
+      if (r.error && (r.error.code === '42P01' || r.error.code === 'PGRST205' || r.error.code === 'PGRST200')) return []
+      // `as`: Supabase tipa la riga a modo suo, la forma è quella della select.
+      return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; richiesta: { persona_id: string | null } | null }>).map(
+        (x): PagamentoSatispay => ({
+          id: x.id,
+          richiestaId: x.richiesta_id ?? undefined,
+          chi: x.chi,
+          importo: x.importo,
+          stato: x.stato,
+          creatoIl: x.creato_il,
+          pagatoIl: x.pagato_il ?? undefined,
+          ricevutaId: x.ricevuta_id ?? undefined,
+          personaId: x.richiesta?.persona_id ?? undefined,
+        }),
+      )
     },
 
     async pagamentiDiretti(personaId) {

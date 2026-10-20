@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { tutteLeRighe } from './tutteLeRighe'
+import { ERRORE_SATISPAY, type StatoSatispay } from './satispay'
 
 /**
  * Le richieste di iscrizione col database vero (`supabase/06-iscrizioni.sql`).
@@ -67,6 +68,16 @@ function guaioFile(e: { message?: string; statusCode?: string } | null): Error {
 }
 
 export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
+  /** La Edge Function `satispay`: i suoi errori sono già scritti per chi paga; senza rete, quello di sempre. */
+  const satispay = async (corpo: Record<string, string>): Promise<Record<string, unknown>> => {
+    const { data, error } = await db.functions.invoke('satispay', { body: corpo })
+    if (!error) return (data ?? {}) as Record<string, unknown>
+    // La funzione non c'è ancora sul progetto: si paga come prima.
+    if ((error as { context?: Response }).context?.status === 404) return { attivo: false }
+    const detto = await (error as { context?: Response }).context?.json?.().catch(() => null)
+    throw new Error(typeof detto?.guaio === 'string' ? detto.guaio : ERRORE_SATISPAY)
+  }
+
   const vista = (r: Riga): Richiesta => ({
     id: r.id,
     creataIl: r.creata_il,
@@ -160,6 +171,28 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       // risposta (una rete da telefono): per chi riprova è andata.
       if (error && /exists|duplicate/i.test(error.message ?? '')) return
       if (error) throw guaioFile(error)
+    },
+
+    async paga(richiestaId) {
+      const r = await satispay({ azione: 'paga', richiesta: richiestaId })
+      if (r.attivo === false) return null
+      if (r.pagato) return { link: '' }
+      if (typeof r.link !== 'string') throw new Error(ERRORE_SATISPAY)
+      return { link: r.link }
+    },
+
+    async satispayAttivo() {
+      try {
+        return (await satispay({ azione: 'attivo' })).attivo === true
+      } catch {
+        return false
+      }
+    },
+
+    async statoPagamento(richiestaId) {
+      const r = await satispay({ azione: 'stato', richiesta: richiestaId })
+      const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null } | null | undefined
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined } : null
     },
 
     async richieste() {

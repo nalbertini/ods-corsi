@@ -1,0 +1,19 @@
+{
+  "pages": [{ "id": "page-1", "name": "Iscrizione · Satispay" }],
+  "artboards": [
+    { "file": "Oggi.dc.html", "title": "Oggi · quanto costa, link fisso Satispay e ricevuta", "x": 0, "y": 0, "w": 390, "h": 1100, "page": "page-1" },
+    { "file": "Satispay.dc.html", "title": "Proposta · come paghi: Satispay", "x": 510, "y": 0, "w": 390, "h": 980, "page": "page-1" },
+    { "file": "Bonifico.dc.html", "title": "Proposta · come paghi: bonifico", "x": 1020, "y": 0, "w": 390, "h": 1150, "page": "page-1" },
+    { "file": "SenzaPrezzo.dc.html", "title": "Proposta · corso con prezzo da confermare", "x": 1530, "y": 0, "w": 390, "h": 900, "page": "page-1" },
+    { "file": "Attesa.dc.html", "title": "Proposta · arrivata, manca il pagamento", "x": 510, "y": 1300, "w": 390, "h": 620, "page": "page-1" },
+    { "file": "Pagato.dc.html", "title": "Proposta · arrivata e pagata", "x": 1020, "y": 1300, "w": 390, "h": 560, "page": "page-1" },
+    { "file": "NonAndato.dc.html", "title": "Proposta · il pagamento non è andato", "x": 1530, "y": 1300, "w": 390, "h": 620, "page": "page-1" },
+    { "file": "Segreteria.dc.html", "title": "Proposta · segreteria, richiesta pagata", "x": 0, "y": 2200, "w": 1440, "h": 900, "page": "page-1" }
+  ],
+  "annotations": [
+    { "id": "n1", "x": 0, "y": -260, "text": "Iscrizione · pagare con Satispay: com'è oggi e la proposta", "kind": "title1", "maxW": 2000, "page": "page-1" },
+    { "id": "n2", "x": 510, "y": 1040, "text": "Dopo MANDA E PAGA CON SATISPAY", "kind": "title1", "maxW": 1500, "page": "page-1" },
+    { "id": "n3", "x": 0, "y": 1940, "text": "La segreteria", "kind": "title1", "maxW": 1500, "page": "page-1" }
+  ],
+  "launch": { "view": "canvas", "page": "page-1" }
+}

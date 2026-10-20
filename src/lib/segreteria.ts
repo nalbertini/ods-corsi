@@ -12,6 +12,7 @@ import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
 import { euro } from './ricevute'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
+import type { PagamentoSatispay } from './satispay'
 import { VALIDITA } from './costi'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import type { Listino, ListinoLetto } from './listino'
@@ -636,7 +637,13 @@ export interface DatiSegreteria {
    */
   anagraficaDi(personaId: string): Promise<AnagraficaDi | null>
   /** Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). */
-  emettiRicevuta(r: DatiRicevuta): Promise<Ricevuta>
+  emettiRicevuta(r: DatiRicevuta, satispayId?: string): Promise<Ricevuta>
+  /**
+   * I pagamenti Satispay dal modulo di iscrizione, anche in attesa e non
+   * andati (`73-satispay.sql`); vuoto senza il file. Con `satispayId`,
+   * `emettiRicevuta` fa la ricevuta col pagamento già dentro, una volta sola.
+   */
+  pagamentiSatispay(): Promise<PagamentoSatispay[]>
   /** La annulla: resta, col suo numero, e il PDF dice ANNULLATA. */
   annullaRicevuta(id: string): Promise<void>
   /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
