@@ -16,3 +16,4 @@ dist-sito/
 dist-sito.nuovo/
 dist-sito.vecchio/
 .taste-skill/
+supabase/functions/mcp/regole.js

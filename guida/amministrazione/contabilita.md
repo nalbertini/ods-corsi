@@ -113,6 +113,37 @@ contanti in banca: da Cassa Contanti a Conto Corrente. Non è un'entrata né
 un'uscita: non entra nei totali, né nei totali per voce. Si annulla come un movimento.
 Anche qui, prima di scrivere c'è il riepilogo da confermare.
 
+### Dalla chat, con Claude
+
+Le fatture, le ricevute e gli scontrini dei **fornitori** si possono registrare fotografandoli
+a Claude, invece di ricopiarli in **Nuovo movimento**. Claude legge data, importo e fornitore,
+propone la voce (quella usata l'ultima volta per lo stesso fornitore) e la cassa, e mostra il
+riepilogo: registra solo dopo il tuo «ok», e poi dice cosa ha scritto.
+
+- **Collegarlo, una volta**: in Claude, Impostazioni → Connettori, si aggiunge ODS Corsi.
+  Si apre una pagina dell'app: entri col tuo account, leggi cosa potrà fare e tocchi
+  **Consenti**. Lo può fare solo chi ha l'amministrazione. Il collegamento si toglie da lì,
+  dai Connettori di Claude.
+- **Cosa può fare**: leggere voci, casse e i movimenti simili, e registrare un'entrata o
+  un'uscita. Non vede iscritti né pagamenti, non annulla, non fa giroconti, non chiude la cassa.
+- **Solo fornitori**: le foto le vede Claude, non l'app. Compensi degli istruttori e ricevute
+  degli iscritti si registrano qui, come sempre: gli incassi degli iscritti in PAGAMENTI.
+- **La data** è il giorno in cui i soldi sono usciti o entrati, non quella della fattura: per
+  una bolletta con l'addebito Claude chiede quando è stata addebitata. Una fattura non ancora
+  pagata si registra quando si paga.
+- **L'importo** è quello pagato: con la ritenuta d'acconto è il netto, e la ritenuta si
+  registra a parte quando si paga l'F24.
+- **La cassa**: contanti nella Cassa Contanti, il resto (POS, bonifico, addebito) nel Conto
+  Corrente; se il documento non lo dice, Claude chiede. Un versamento in banca è un
+  **Giroconto**, e si fa qui.
+- **Lo stesso movimento due volte**: se c'è già un movimento con lo stesso importo lo stesso
+  giorno, o dello stesso fornitore nei 60 giorni prima, Claude si ferma e chiede se è un altro.
+- **La descrizione** è «Fornitore · documento n. · mese», per esempio «Enel · bolletta n. 123 ·
+  set 2026», senza codice fiscale né IBAN.
+
+Un movimento registrato così ha il segno **Dalla chat** quando lo apri. Per il resto è uguale
+agli altri: la voce e il testo si correggono qui, il resto annullando e rifacendo.
+
 ### Rimborsi e errori in periodi passati
 
 Un rimborso a un iscritto è un'uscita, con una voce tua. Un errore trovato dopo si
@@ -231,10 +262,11 @@ nell'elenco ma non contano nel «in cassa».
 ## Cosa non c'è
 
 - L'IVA e la fattura elettronica: restano nel software a parte.
-- Allegati di fatture e scontrini: la carta resta carta.
+- Allegati di fatture e scontrini: la carta resta carta, anche quando la si fotografa a Claude.
 - Un bilancio per competenza, la chiusura di un anno (si può leggere, non bloccare) e il collegamento al RASD.
 - Il backup scaricato dalla segreteria contiene anche i conti, ma è cifrato: la
   password non è della segreteria.
 
 Se compare «Il database non è ancora aggiornato per la contabilità», «…per la chiusura
-della cassa» o «…per cambiare la voce dei movimenti» o «…per collegare i movimenti alle persone», manca un aggiornamento del database: va chiesto a chi cura l'app.
+della cassa» o «…per cambiare la voce dei movimenti» o «…per collegare i movimenti alle persone», o se Claude dice «Il database non è ancora aggiornato per
+registrare dalla chat», manca un aggiornamento del database: va chiesto a chi cura l'app.

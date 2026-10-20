@@ -47,6 +47,8 @@ export interface MovimentoManuale {
   origineImport?: string
   /** La persona a cui lo storico è collegato (`70-movimenti-persona.sql`): un'etichetta, non cambia i conti. */
   personaId?: string
+  /** Registrato da Claude col server MCP (`72-movimenti-dalla-chat.sql`): il segno DALLA CHAT nel movimento aperto. */
+  dallaChat?: boolean
 }
 
 /** Una chiusura della Cassa Contanti: il periodo da `dal` a `data`, quel che c'era «secondo i conti» e quel che si è contato. */
@@ -87,6 +89,9 @@ export interface RigaMovimento {
   origineImport?: string
   /** Solo dei movimenti a mano: la persona collegata allo storico. */
   personaId?: string
+  /** Solo dei movimenti a mano: registrato dalla chat con Claude, e quando. */
+  dallaChat?: boolean
+  creatoIl?: string
 }
 
 export const NOME_CASSA_CONTANTI = 'Cassa Contanti'
@@ -142,6 +147,7 @@ export function righeMovimenti(derivati: RigaMovimento[], manuali: MovimentoManu
       annullato: !!x.annullatoIl,
       origineImport: x.origineImport,
       personaId: x.personaId,
+      ...(x.dallaChat ? { dallaChat: true, creatoIl: x.creatoIl } : {}),
     }),
   )
   return [...derivati, ...mie].sort((a, b) => b.data.localeCompare(a.data) || a.id.localeCompare(b.id))

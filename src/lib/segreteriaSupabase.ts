@@ -1177,7 +1177,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const righe = ok(await tutteLeRighe((prima, ultima) => db.from('movimenti').select('*').order('id').range(prima, ultima))) as Array<{
         id: string; tipo: 'entrata' | 'uscita' | 'giroconto'; data: string; importo: number; voce_id: string | null; cassa_id: string; cassa_a_id: string | null
         descrizione: string; nota: string | null; creato_il: string; annullato_il: string | null
-        origine_import?: string | null; persona_id?: string | null
+        origine_import?: string | null; persona_id?: string | null; dalla_chat?: boolean
       }>
       return righe.map((r) => ({
         id: r.id,
@@ -1193,6 +1193,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         ...(r.annullato_il ? { annullatoIl: r.annullato_il } : {}),
         ...(r.origine_import ? { origineImport: r.origine_import } : {}),
         ...(r.persona_id ? { personaId: r.persona_id } : {}),
+        ...(r.dalla_chat ? { dallaChat: true } : {}),
       }))
     },
 

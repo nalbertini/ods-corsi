@@ -16,7 +16,9 @@ import { eIndirizzoGuida, INDIRIZZO_AREE } from './cancelletti'
  *   presenze, il certificato e le ricevute; per ora solo in prova (vedi
  *   `iscritto.ts`);
  * - `istruttori/`: il calendario e l'appello, per istruttori e segreteria;
- * - `sala/`: il tablet appeso al muro.
+ * - `sala/`: il tablet appeso al muro;
+ * - `collega/`: dove Supabase manda chi collega Claude al suo account, per dire
+ *   CONSENTI (vedi `collega.ts`); non ha link, ci si arriva solo da Claude.
  *
  * Sono cartelle vere del sito (`…/ods-corsi/segreteria/`): GitHub Pages non sa
  * rimandare un indirizzo qualunque all'app, quindi la compilazione mette in
@@ -40,7 +42,7 @@ import { eIndirizzoGuida, INDIRIZZO_AREE } from './cancelletti'
  * portano i link «tutte le aree». Con la radice e basta, un dispositivo che
  * una volta ha aperto `sala/` tornerebbe al tablet.
  */
-export type Area = 'segreteria' | 'amministrazione' | 'iscrizioni' | 'iscritti' | 'istruttori' | 'sala' | 'guida' | 'scelta'
+export type Area = 'segreteria' | 'amministrazione' | 'iscrizioni' | 'iscritti' | 'istruttori' | 'sala' | 'collega' | 'guida' | 'scelta'
 
 export type AreaConIndirizzo = Exclude<Area, 'scelta' | 'guida'>
 
@@ -51,6 +53,7 @@ export const INDIRIZZI: Record<AreaConIndirizzo, string> = {
   iscritti: 'iscritti/',
   istruttori: 'istruttori/',
   sala: 'sala/',
+  collega: 'collega/',
 }
 
 /** La pagina con tutte le aree, anche su un dispositivo che si ricorda di essere un tablet. */

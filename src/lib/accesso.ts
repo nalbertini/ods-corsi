@@ -215,7 +215,7 @@ export type Entrato = { persona: Personale | null; scegli?: undefined } | { pers
  * resta, e torna la persona entrata; se no si va nell'area giusta (vedi
  * `passaA`) e la pagina cambia, e la promessa non torna più.
  */
-export async function accedi(utente: string, password: string): Promise<Entrato> {
+export async function accedi(utente: string, password: string, restaQui = false): Promise<Entrato> {
   const c = await db()
   const { error } = await c.auth.signInWithPassword({ email: emailDellaSala(utente), password })
   if (error) throw new Error(perché(error))
@@ -231,6 +231,8 @@ export async function accedi(utente: string, password: string): Promise<Entrato>
     throw new Error('Questo account non è di un istruttore, della segreteria, dell’amministrazione o del tablet di una sala: chiedi alla segreteria, o aggiorna l’app se il ruolo è nuovo')
   }
   if (id) ricorda(id, a)
+  // Chi collega Claude (`collega/`) resta sulla pagina del consenso, qualunque sia la sua area.
+  if (restaQui) return { persona: a.persona }
   if (a.persona && a.aree.length > 1) return { persona: a.persona, scegli: a.aree }
   if (a.area === areaDelPercorso()) return { persona: a.persona }
   passaA(a.area)
@@ -301,8 +303,8 @@ function perchéPassword(e: { message?: string; code?: string }): string {
   return `La password non è stata salvata${testo ? `: ${testo}` : ''}`
 }
 
-/** Esce, e torna alla porta: l'area la sceglie il prossimo account. */
-export async function esci(): Promise<void> {
+/** Esce, e torna alla porta: l'area la sceglie il prossimo account. `dove` è per chi resta sulla sua pagina (il consenso a Claude). */
+export async function esci(dove = './'): Promise<void> {
   // Le scritture non ancora arrivate non passano al prossimo account: vedi `uscita.ts`.
   await uscita(async () => {
     // Le bozze delle segnalazioni restano nella scheda: al banco il computer è
@@ -314,7 +316,7 @@ export async function esci(): Promise<void> {
     smettiTablet()
     // Un tocco arrivato mentre si usciva non deve restare al prossimo account.
     svuotaTutte()
-    window.location.assign(indirizzo('./'))
+    window.location.assign(indirizzo(dove))
   })
 }
 
