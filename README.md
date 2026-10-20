@@ -22,6 +22,7 @@ L'app ha sei indirizzi veri, ognuno con il suo accesso
 | `iscrizioni/` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
 | `iscritti/` | La pagina di chi frequenta i corsi. Il pilota, per ora solo in prova. |
 | `sala/` | Il tablet di sala. |
+| `collega/` | Dove chi cura i conti dice CONSENTI quando collega Claude al suo account (vedi «Le fatture dalla chat»). Ci si arriva solo da Claude. |
 
 I vecchi indirizzi col cancelletto (`#segreteria`, `#sala`, `#tablet`…)
 portano da soli a quelli nuovi, così i tablet già appesi e i link già mandati
@@ -42,6 +43,9 @@ dell'allenamento in corso sempre in vista; resta anche l'app a sé in `timer/`
 (`app.officinedellosport.it/timer/`). Nel timer del telefono c'è anche la musica del tablet di sala:
 le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefono.
 
+- **Le fatture dalla chat**: chi cura i conti fotografa a Claude fatture e scontrini dei fornitori, e Claude
+  li registra in CONTABILITÀ dopo il suo «ok», col segno DALLA CHAT (server MCP `supabase/functions/mcp`,
+  `supabase/72-movimenti-dalla-chat.sql`; come si accende in `supabase/LEGGIMI.md`, «Claude e la contabilità»).
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello
   scelto, in ordine di orario, con sala, istruttore e iscritti.
 - **L'attività**: ogni giorno di un corso può avere la sua attività (Tecnica,
