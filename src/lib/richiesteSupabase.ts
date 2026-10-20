@@ -2,6 +2,7 @@ import { FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { tutteLeRighe } from './tutteLeRighe'
+import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { ERRORE_SATISPAY, type StatoSatispay } from './satispay'
 
 /**
@@ -41,6 +42,9 @@ interface Riga {
   persona_id: string | null
   gestita_il: string | null
   gestore: { nome: string; cognome: string } | null
+  /** Da `74-provenienza-richieste.sql`: prima le colonne non ci sono. */
+  provenienza?: string | null
+  conosciuto?: string | null
 }
 
 function guaio(e: { message?: string; code?: string } | null): Error {
@@ -106,6 +110,8 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
     personaId: r.persona_id ?? undefined,
     gestitaIl: r.gestita_il ?? undefined,
     gestitaDa: r.gestore ? `${r.gestore.nome} ${r.gestore.cognome}`.trim() : undefined,
+    provenienza: pulisciProvenienza(r.provenienza),
+    conosciuto: pulisciConosciuto(r.conosciuto),
   })
 
   const nomi = async (richiestaId: string) => {
@@ -160,6 +166,9 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             formula: d.formula,
             note: d.note,
             regolamento: d.regolamento === true,
+            // Il database le pulisce e scarta quelle che non vanno; senza 74-provenienza-richieste.sql le ignora.
+            provenienza: d.provenienza,
+            conosciuto: d.conosciuto,
           },
         }),
       ) as string

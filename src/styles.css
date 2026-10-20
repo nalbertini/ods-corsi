@@ -2300,6 +2300,17 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   /* Le tabelle delle statistiche scorrono di lato: il nome resta fermo. */
   .sg-stat-tabella tr > :first-child { position: sticky; left: 0; z-index: 1; background: var(--surface); }
   .sg-stat-tabella tbody tr > :first-child { white-space: normal; min-width: 120px; max-width: 140px; }
+  /* DA DOVE ARRIVANO LE RICHIESTE ha tre colonne di cifre: ogni riga va su due piani, il nome sopra e le cifre sotto
+     le loro colonne, e non serve scorrere di lato. */
+  .sg-da-dove, .sg-da-dove thead, .sg-da-dove tbody, .sg-da-dove tfoot { display: block; }
+  .sg-da-dove tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* `.sg-stat-tabella.sg-da-dove`: le regole della tabella vengono dopo nel file, e qui devono vincere. */
+  .sg-stat-tabella.sg-da-dove th, .sg-stat-tabella.sg-da-dove td { padding-inline: 4px; }
+  .sg-stat-tabella.sg-da-dove thead th { letter-spacing: 0.08em; }
+  .sg-da-dove tr > :first-child { grid-column: 1 / -1; position: static; max-width: none; min-width: 0; border-bottom: 0; padding: 10px 0 0; }
+  .sg-da-dove thead tr > :first-child { padding: 0 0 4px; }
+  /* «DA DOVE ARRIVANO LE RICHIESTE» non sta in 360px: qui il titolo va a capo. */
+  .sg-da-dove-riquadro .sg-riga-titolo > .sg-etichetta { white-space: normal; }
 }
 /* Un dato che manca e va completato: si vede rosso, ovunque. */
 .sg-manca { color: var(--rosso-testo); font-weight: 600; }
@@ -2651,6 +2662,14 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-stat-tabella .num-col { text-align: right; }
 .sg-stat-tabella td.num { font-size: 15px; font-weight: 600; }
 .sg-stat-tabella tr[data-spenta='true'] > * { opacity: 0.4; }
+/* DA DOVE ARRIVANO LE RICHIESTE: NON SI SA spenta in fondo, In tutto col filo pieno sopra. */
+.sg-da-dove tr[data-non-si-sa='true'] > * { color: var(--dim); }
+.sg-da-dove tfoot th, .sg-da-dove tfoot td { border-top: 2px solid var(--line); border-bottom: 0; font-weight: 700; }
+/* Il nome (e «COME CI HANNO CONOSCIUTO») va a capo, le cifre stanno strette: le tre colonne entrano senza scorrere.
+   Sotto i 1200px i due elenchi vanno uno sotto l'altro: affiancati, RIFIUTATE uscirebbe. */
+.sg-da-dove tr > :first-child, .sg-da-dove tr > :first-child .sg-ordina { white-space: normal; }
+.sg-da-dove .num-col { padding-inline: 6px; }
+@media (max-width: 1200px) { .sg-da-dove-due { grid-template-columns: minmax(0, 1fr); } }
 .sg-stat-corso { padding: 2px 0 2px 10px; border-left: 4px solid var(--tinta); font-size: 15px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); text-align: left; }
 .sg-stat-corso[aria-pressed='true'] { text-decoration: underline; text-underline-offset: 4px; }
 .sg-barretta { display: grid; grid-template-columns: minmax(70px, 1fr) 40px; gap: 8px; align-items: center; min-width: 120px; }

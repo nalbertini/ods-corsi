@@ -5,6 +5,7 @@ import { chiaveGiorno, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
 import { Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
+import { conNonSiSaInFondo, contaDaDove, fraseDaDove, MANCA_PROVENIENZA, notaDaDove, type VoceDaDove } from '../../lib/provenienza'
 
 const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
 const MESI_LUNGHI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
@@ -126,6 +127,9 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
   const stat = useCarica(() => d.statistiche(da, oggi), [d, da, oggi])
   const persone = useCarica(() => d.persone(), [d])
   const prove = useCarica(() => d.prove(da, oggi), [d, da, oggi])
+  // In una scatola: `null` vuol dire che 74-provenienza-richieste.sql non c'è, non che si sta leggendo.
+  const daDove = useCarica(async () => ({ conti: await d.richiesteDaDove(da, oggi) }), [d, da, oggi])
+  const titoli = useCarica(() => d.titoliSito(), [d])
 
   const tutte = stat.dato?.lezioni ?? []
   const corsi = [...new Map(tutte.map((l) => [l.corsoId, l.corso])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'it'))
@@ -279,6 +283,19 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
               <span style={{ fontSize: 12, color: 'var(--dim)' }}>chi è venuto a provare, nel mese della prima prova, e quanti oggi sono iscritti</span>
             </Riga>
             {prove.guaio ? <Guaio testo={prove.guaio} /> : prove.dato && <ProveMese mesi={mesi} prove={provati} />}
+          </section>
+
+          <section aria-label="Da dove arrivano le richieste" className="sg-riquadro sg-da-dove-riquadro">
+            <Riga titolo="DA DOVE ARRIVANO LE RICHIESTE">
+              <span style={{ fontSize: 12, color: 'var(--dim)' }}>{notaDaDove(nomeCorso)}</span>
+            </Riga>
+            {daDove.guaio ? (
+              <Guaio testo={daDove.guaio} />
+            ) : daDove.dato?.conti === null ? (
+              <span className="sg-sotto">{MANCA_PROVENIENZA}</span>
+            ) : (
+              daDove.dato?.conti && <DaDove conti={contaDaDove(daDove.dato.conti.righe, corso, titoli.dato ?? {})} dal={daDove.dato.conti.dal} />
+            )}
           </section>
 
           <section aria-label="Incassi mese per mese" className="sg-riquadro">
@@ -722,6 +739,70 @@ function ProveMese({ mesi, prove }: { mesi: string[]; prove: ProvaSeg[] }) {
         }
       })}
     />
+  )
+}
+
+/**
+ * Da dove arrivano le richieste: due elenchi affiancati, per etichetta del link e per «come ci hanno conosciuto».
+ * Le righe si ordinano come le altre tabelle; NON SI SA resta in fondo, sotto c'è In tutto. I conti li fa `contaDaDove`.
+ */
+function DaDove({ conti, dal }: { conti: ReturnType<typeof contaDaDove>; dal: string | undefined }) {
+  const frase = fraseDaDove(dal, !conti.totale.arrivate)
+  if (!conti.totale.arrivate) return <span className="sg-sotto">{frase}</span>
+  return (
+    <div className="stack" style={{ gap: 12 }}>
+      <div className="sg-stat-due sg-da-dove-due">
+        <ElencoDaDove titolo="ARRIVATE DA" voci={conti.arrivateDa} totale={conti.totale} />
+        <ElencoDaDove titolo="COME CI HANNO CONOSCIUTO" voci={conti.conosciuto} totale={conti.totale} />
+      </div>
+      <span className="sg-sotto" style={{ fontSize: 12 }}>
+        {frase}
+      </span>
+    </div>
+  )
+}
+
+function ElencoDaDove({ titolo, voci, totale }: { titolo: string; voci: VoceDaDove[]; totale: { arrivate: number; accolte: number; rifiutate: number } }) {
+  const { ordina, colonna } = useOrdina<VoceDaDove, 'nome' | 'arrivate' | 'accolte' | 'rifiutate'>({
+    nome: (r) => r.nome,
+    arrivate: (r) => r.arrivate,
+    accolte: (r) => r.accolte,
+    rifiutate: (r) => r.rifiutate,
+  })
+  const cifra = (n: number) => (n ? n.toLocaleString('it-IT') : '—')
+  return (
+    <div className="sg-orari-scorre">
+      <table className="sg-stat-tabella sg-da-dove">
+        <thead>
+          <tr>
+            {colonna('nome', titolo, { th: true, className: '' })}
+            {colonna('arrivate', 'ARRIVATE', { th: true, numeri: true, className: 'num-col' })}
+            {colonna('accolte', 'ACCOLTE', { th: true, numeri: true, className: 'num-col' })}
+            {colonna('rifiutate', 'RIFIUTATE', { th: true, numeri: true, className: 'num-col' })}
+          </tr>
+        </thead>
+        <tbody>
+          {conNonSiSaInFondo(voci, ordina).map((v) => (
+            <tr key={v.nome} data-non-si-sa={v.nonSiSa || undefined}>
+              <th scope="row" style={{ fontWeight: 600 }}>
+                {v.nonSiSa ? 'NON SI SA' : v.nome}
+              </th>
+              <td className="num num-col">{cifra(v.arrivate)}</td>
+              <td className="num num-col">{cifra(v.accolte)}</td>
+              <td className="num num-col">{cifra(v.rifiutate)}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">In tutto</th>
+            <td className="num num-col">{cifra(totale.arrivate)}</td>
+            <td className="num num-col">{cifra(totale.accolte)}</td>
+            <td className="num num-col">{cifra(totale.rifiutate)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
   )
 }
 

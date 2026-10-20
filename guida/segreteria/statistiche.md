@@ -55,9 +55,25 @@ medie: si conta a parte.
   contata una volta, nel mese della sua prima prova (chi fa la settimana di
   prova non conta tre volte). Col mouse sopra dice anche le lezioni di prova
   del mese e quanti di loro oggi sono iscritti.
+- **DA DOVE ARRIVANO LE RICHIESTE** — le richieste di iscrizione arrivate
+  nel periodo, in due elenchi: **ARRIVATE DA** (da quale link: Home del
+  sito, la pagina di un corso, Link della segreteria, Area iscritti, o la
+  parola di un link fatto a mano) e **COME CI HANNO CONOSCIUTO** (la risposta
+  del modulo). Per ognuno quante sono **ARRIVATE**, quante oggi sono
+  **ACCOLTE** e quante **RIFIUTATE** (le altre aspettano in
+  [Richieste online](richieste.md)). Si conta per persona: una famiglia di tre
+  conta tre. **NON SI SA** sta sempre in fondo, poi **In tutto**; le colonne si
+  ordinano con un tocco. Con un corso scelto in cima contano le richieste che
+  lo chiedono: chi ne chiede due conta in tutti e due. Le richieste eliminate
+  da nuove, come lo spam, non contano; quelle accolte o rifiutate sì, anche
+  eliminate. I numeri non hanno nomi. La frase sotto dice da quando
+  si conta (prima i link non avevano l'etichetta). Sul telefono ogni riga va
+  su due piani: il nome sopra, le cifre sotto.
 - **INCASSI MESE PER MESE** — quanto è stato pagato con le
   [ricevute](iscritti.md) del mese, per la data della ricevuta, senza le
   annullate. È di tutti i corsi insieme: una ricevuta può averne più d'uno.
 
 Col database vero le statistiche vogliono `supabase/22-statistiche.sql`:
-finché non c'è, la pagina dice che va lanciato.
+finché non c'è, la pagina dice che va lanciato. Il riquadro DA DOVE ARRIVANO
+LE RICHIESTE vuole `supabase/74-provenienza-richieste.sql`: finché non c'è,
+dice di lanciarlo e il resto funziona.

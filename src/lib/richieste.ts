@@ -1,4 +1,5 @@
 import { haUnServer } from './dati'
+import type { Conosciuto } from './provenienza'
 import { cfNatoIl, cfTornaColNome, cfTornaConLaData, cfValido } from './codiceFiscale'
 import type { StatoSatispay } from './satispay'
 
@@ -62,6 +63,14 @@ export interface DatiRichiesta {
    * prova, per ora (vedi `nucleo.ts`).
    */
   nucleoDi?: string
+  /**
+   * L'etichetta del link da cui si è arrivati (`?da=`) e la risposta a «Come ci
+   * hai conosciuto?», le stesse per tutte le richieste di un modulo. Le pulisce
+   * il database (`74-provenienza-richieste.sql`): una sbagliata si scarta e la
+   * richiesta parte lo stesso. Le vede solo la segreteria (`provenienza.ts`).
+   */
+  provenienza?: string
+  conosciuto?: Conosciuto
 }
 
 export interface Richiesta extends DatiRichiesta {
@@ -333,7 +342,7 @@ export function tipiDaChiedere(natoIl: string, nomiCorsi: string[], oggi = new D
 }
 
 /** I campi del modulo che possono non andare, per segnarli uno per uno. */
-export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi'>
+export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'provenienza' | 'conosciuto'>
 
 /**
  * Una cosa che non va: `messaggio` è quello del server, `testo` quello corto

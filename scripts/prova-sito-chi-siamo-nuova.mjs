@@ -26,6 +26,10 @@ const { outputFiles } = await build({
   banner: { js: "import { createRequire as __cr } from 'node:module'; const require = __cr(process.cwd() + '/');" },
 })
 const g = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+// Ogni link al modulo porta l'etichetta della sua pagina (`?da=home`…, provata in prova-sito-genera.mjs): qui si guarda
+// l'impaginazione, che non cambia, e la si confronta senza l'etichetta con quella di prima.
+const senzaDa = (r) => (r && typeof r === 'object' ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/(\?|&amp;|&)da=[a-z0-9-]+/g, '') : v])) : r)
+const generaSito = (d) => senzaDa(g.generaSito(d))
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -38,7 +42,7 @@ const ISCR = 'https://app.officinedellosport.it/iscrizioni/'
 const img = (n) => `<img src="${P}f${n}.jpg" alt="Foto ${n}" />`
 const conta = (x, re) => (x.match(re) || []).length
 const pagina = (testo, slug = 'chi-siamo') =>
-  g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug, titolo: 'Chi siamo', descrizione: 'La frase.', testo }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }], menu: [], rinvii: [], ospitiImmagini: [P] })[`${slug}/index.html`] ?? ''
+  generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug, titolo: 'Chi siamo', descrizione: 'La frase.', testo }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }], menu: [], rinvii: [], ospitiImmagini: [P] })[`${slug}/index.html`] ?? ''
 const main = (h) => h.match(/<main[\s\S]*<\/main>/)?.[0] ?? ''
 const css = (h) => [...h.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('')
 
@@ -62,7 +66,7 @@ console.log('\n1. Si riconosce dal link all’iscrizione; senza, la pagina è qu
   // L'impronta è del <main> del testo di oggi, calcolata prima di toccare il codice (con le foto del sito vero).
   // Se cambia con ragione (un'altra pagina tocca impagina/testata), si ricalcola: stampa `createHash('sha256').update(main(hh)).digest('hex').slice(0, 16)`.
   const veroV = readFileSync('scripts/fixture-chi-siamo-vecchia.html', 'utf8')
-  const hh = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'chi-siamo', titolo: 'Chi siamo', descrizione: 'd', testo: veroV }], menu: [], rinvii: [], ospitiImmagini: ['https://qfejpnkryrvjubcxvuco.supabase.co/storage/v1/object/public/sito/'] })['chi-siamo/index.html']
+  const hh = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'chi-siamo', titolo: 'Chi siamo', descrizione: 'd', testo: veroV }], menu: [], rinvii: [], ospitiImmagini: ['https://qfejpnkryrvjubcxvuco.supabase.co/storage/v1/object/public/sito/'] })['chi-siamo/index.html']
   ok('<main> del testo di oggi identico a prima', createHash('sha256').update(main(hh)).digest('hex').slice(0, 16), '7b2dca792c69fa0a')
   const h = pagina(NUOVO)
   ok('il testo nuovo: <main class="passo-unico chi-siamo-nuova">', main(h).startsWith('<main class="passo-unico chi-siamo-nuova">'), true)
@@ -70,7 +74,7 @@ console.log('\n1. Si riconosce dal link all’iscrizione; senza, la pagina è qu
   ok('lo stesso testo su un’altra pagina non ha le classi nuove', /chi-siamo-nuova/.test(pagina(NUOVO, 'contatti')), false)
   const senza = NUOVO.replace(ISCR, '/contatti/')
   ok('senza il link all’iscrizione torna la pagina di prima', /chi-siamo-nuova/.test(pagina(senza)), false)
-  const home = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: '', testo: '<p>x</p>' }], menu: [], rinvii: [] })['index.html']
+  const home = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: '', testo: '<p>x</p>' }], menu: [], rinvii: [] })['index.html']
   ok('la Home non riceve le regole della Chi siamo', home.includes('chi-siamo-nuova'), false)
 }
 
@@ -116,7 +120,7 @@ console.log('\n4b. Il testo da incollare (docs/sito/chi-siamo.html) è riconosci
 {
   const vero = readFileSync('docs/sito/chi-siamo.html', 'utf8').replace(/^<!doctype html>\s*<meta charset="utf-8">\s*<title>[^<]*<\/title>\s*/, '')
   const host = 'https://qfejpnkryrvjubcxvuco.supabase.co/storage/v1/object/public/sito/'
-  const m = main(g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'chi-siamo', titolo: 'Chi siamo', descrizione: 'd', testo: vero }], menu: [], rinvii: [], ospitiImmagini: [host] })['chi-siamo/index.html'])
+  const m = main(generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'chi-siamo', titolo: 'Chi siamo', descrizione: 'd', testo: vero }], menu: [], rinvii: [], ospitiImmagini: [host] })['chi-siamo/index.html'])
   ok('riconosciuto, 8 foto, una chiamata finale, i 4 numeri e i 4 valori', [m.startsWith('<main class="passo-unico chi-siamo-nuova">'), conta(m, /<img /g), conta(m, /<section class="sezione cta">/g), conta(m, /class="tessera \w+ numero"/g), conta(m, /<span class="numero-perche"/g)], [true, 8, 1, 4, 4])
   ok('il testo pronto ha le tre citazioni (Serena, Maria, Rinaldo) ognuna con estratto, testo intero e «Leggi tutto», prima della chiamata finale', [conta(m, /<blockquote class="tessera citazione /g), conta(m, /<summary>Leggi tutto<\/summary>/g), m.indexOf('Lo sport secondo chi lo studia') > 0 && m.indexOf('Lo sport secondo chi lo studia') < m.indexOf('class="sezione cta')], [3, 3, true])
 }

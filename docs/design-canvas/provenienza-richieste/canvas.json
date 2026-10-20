@@ -1,0 +1,20 @@
+{
+ "pages": [{ "id": "page-1", "name": "Da dove arrivano le richieste" }],
+ "artboards": [
+  { "file": "ModuloOggi.dc.html", "title": "1 · Modulo di iscrizione · OGGI (390)", "x": 0, "y": 400, "page": "page-1" },
+  { "file": "ModuloProposta.dc.html", "title": "1 · Modulo di iscrizione · PROPOSTA: la domanda in ALTRO, una tendina", "x": 510, "y": 400, "page": "page-1" },
+  { "file": "PassiOggi.dc.html", "title": "1b · Modulo a passi (solo in prova), INVIO in famiglia · OGGI", "x": 1140, "y": 400, "page": "page-1" },
+  { "file": "PassiProposta.dc.html", "title": "1b · Modulo a passi, INVIO in famiglia · PROPOSTA: una volta per tutti", "x": 1650, "y": 400, "page": "page-1" },
+  { "file": "RichiestaOggi.dc.html", "title": "2 · RICHIESTE ONLINE, il dettaglio · OGGI", "x": 0, "y": 1900, "page": "page-1" },
+  { "file": "RichiestaProposta.dc.html", "title": "2 · RICHIESTE ONLINE, il dettaglio · PROPOSTA: ARRIVATA DA e CI HA CONOSCIUTO", "x": 1560, "y": 1900, "page": "page-1" },
+  { "file": "RichiestaNonSiSa.dc.html", "title": "2 · PROPOSTA: dalla pagina di un corso, senza risposta («Non si sa»)", "x": 3120, "y": 1900, "page": "page-1" },
+  { "file": "StatisticheOggi.dc.html", "title": "3 · STATISTICHE · OGGI (1440)", "x": 0, "y": 3000, "page": "page-1" },
+  { "file": "StatisticheProposta.dc.html", "title": "3 · STATISTICHE · PROPOSTA: DA DOVE ARRIVANO LE RICHIESTE (1440)", "x": 1560, "y": 3000, "page": "page-1" },
+  { "file": "StatisticheTelefonoOggi.dc.html", "title": "3 · STATISTICHE sul telefono · OGGI (390)", "x": 3120, "y": 3000, "page": "page-1" },
+  { "file": "StatisticheTelefonoProposta.dc.html", "title": "3 · STATISTICHE sul telefono · PROPOSTA, filtro Judo kids (390)", "x": 3630, "y": 3000, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1800, "text": "Da dove arrivano le richieste di iscrizione" },
+  { "id": "regole", "kind": "note", "x": 0, "y": 120, "maxW": 1800, "text": "Il link al modulo porta un'etichetta (?da=home, ?da=corso-judo-kids, ?da=segreteria…): non si vede e non ferma mai la richiesta. Il modulo chiede, facoltativo, «Come ci hai conosciuto?» con otto scelte chiuse, una volta per modulo. La segreteria vede le due cose nel dettaglio della richiesta (non nella scheda della persona) e le conta in STATISTICHE, per persona, anche dopo che la richiesta si elimina. «Non si sa» quando manca." }
+ ]
+}

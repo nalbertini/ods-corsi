@@ -27,6 +27,10 @@ const { outputFiles } = await build({
   banner: { js: "import { createRequire as __cr } from 'node:module'; const require = __cr(process.cwd() + '/');" },
 })
 const g = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+// Ogni link al modulo porta l'etichetta della sua pagina (`?da=home`…, provata in prova-sito-genera.mjs): qui si guarda
+// l'impaginazione, che non cambia, e la si confronta senza l'etichetta con quella di prima.
+const senzaDa = (r) => (r && typeof r === 'object' ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/(\?|&amp;|&)da=[a-z0-9-]+/g, '') : v])) : r)
+const generaSito = (d) => senzaDa(g.generaSito(d))
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -36,7 +40,7 @@ const ok = (cosa, avuto, voluto) => {
 }
 const P = 'https://abc.supabase.co/storage/v1/object/public/sito/'
 const pagineDi = (testo, slug, extra) => [{ slug, titolo: slug === 'fabio-berta' ? 'Fabio Berta' : 'Gli istruttori', descrizione: 'd', testo }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }, ...extra.map((s) => ({ slug: s, titolo: s, descrizione: '', testo: '' }))]
-const pagina = (testo, slug = 'istruttori', extra = [], contatti = true) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: pagineDi(testo, slug, extra).filter((p) => contatti || p.slug !== 'contatti'), menu: [], rinvii: [], ospitiImmagini: [P] })[slug === 'home' ? 'index.html' : `${slug}/index.html`] ?? ''
+const pagina = (testo, slug = 'istruttori', extra = [], contatti = true) => generaSito({ dominio: 'https://officinedellosport.it', pagine: pagineDi(testo, slug, extra).filter((p) => contatti || p.slug !== 'contatti'), menu: [], rinvii: [], ospitiImmagini: [P] })[slug === 'home' ? 'index.html' : `${slug}/index.html`] ?? ''
 const main = (h) => h.match(/<main[^>]*>([\s\S]*)<\/main>/)?.[1] ?? ''
 const conta = (x, re) => (x.match(re) || []).length
 const CSS = pagina('<p>x</p>').match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
@@ -155,7 +159,7 @@ console.log('\n10. La scheda scarna di un istruttore (nome, foto o iniziale, cor
   const s = main(scheda('<ul><li><strong>Corsi</strong> Aikido</li></ul>'))
   ok('senza foto: fascia con l’iniziale, che non si legge', /<div class="scheda-ritratto senza-foto"><span aria-hidden="true">F<\/span><\/div>/.test(s), true)
   ok('la foto senza «alt»: lo scrive il sito, «Ritratto di Fabio Berta»', /alt="Ritratto di Fabio Berta"/.test(main(scheda(`<img src="${P}f.jpg"><ul><li><strong>Corsi</strong> Aikido</li></ul>`))), true)
-  ok('un titolo di una parola sola: una riga', /<h1><span>Fabio<\/span><\/h1>/.test(main(g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'fabio', titolo: 'Fabio', descrizione: '', testo: '<ul><li><strong>Corsi</strong> Aikido</li></ul>' }], menu: [], rinvii: [] })['fabio/index.html'])), true)
+  ok('un titolo di una parola sola: una riga', /<h1><span>Fabio<\/span><\/h1>/.test(main(generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'fabio', titolo: 'Fabio', descrizione: '', testo: '<ul><li><strong>Corsi</strong> Aikido</li></ul>' }], menu: [], rinvii: [] })['fabio/index.html'])), true)
   ok('la voce del menu evidenziata è «Chi siamo», come per le altre schede', /aria-current="page"/.test(scheda('<ul><li><strong>Corsi</strong> Aikido</li></ul>')), false)
   ok('non è una scheda: un elenco senza «Corsi»', /<div class="scheda-ritratto/.test(scheda(`${FA}<ul><li><strong>Orari</strong> Lunedì</li></ul>`)), false)
   ok('non è una scheda: con un h2', /<div class="scheda-ritratto/.test(scheda(`${FA}<ul><li><strong>Corsi</strong> Aikido</li></ul><h2>Storia</h2><p>x</p>`)), false)
@@ -190,7 +194,7 @@ console.log('\n8. La cornice (testata, invito, piede) con le misure del design')
   ok('sul telefono le voci sono alte 48px, 16px di fianco, nel menu aperto su fondo pieno, con 6px tra loro', [/\.testata nav a\{[^}]*min-height:\s*48px/.test(TELEFONO), /\.testata nav a\{[^}]*padding:\s*0 16px/.test(TELEFONO), /#menu:target\{[^}]*background:\s*var\(--fondo\)/.test(TELEFONO), /\.testata nav ul\{[^}]*gap:\s*6px/.test(TELEFONO)], [true, true, true, true])
   ok('pulsanti in testata: 24px di fianco; sul telefono il tasto MENU ne ha 22', [/padding:\s*0 24px/.test(ri(/^\s*\.testata \.pulsante\s*$/)), /\.testata \.tasto-menu\{[^}]*padding:\s*0 22px/.test(TELEFONO)], [true, true])
   const h = pagina(tredici)
-  const conMenu = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'istruttori', titolo: 'T', descrizione: '', testo: '' }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Chi siamo', slug: 'istruttori', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contattaci', slug: 'contatti', indirizzo: null }], rinvii: [] })['istruttori/index.html']
+  const conMenu = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'istruttori', titolo: 'T', descrizione: '', testo: '' }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Chi siamo', slug: 'istruttori', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contattaci', slug: 'contatti', indirizzo: null }], rinvii: [] })['istruttori/index.html']
   ok('la voce del menu della pagina aperta ha aria-current, le altre no', [conta(conMenu, /<a [^>]*aria-current="page"/g), /<a href="\/istruttori\/" aria-current="page">Chi siamo<\/a>/.test(conMenu)], [1, true])
   const inv = ri(/^\s*\.invito\s*$/)
   ok('invito sul telefono: 22px di padding, alto 260px, frase 17px', [/\.invito\{[^}]*padding:\s*22px/.test(TELEFONO), /\.invito\{[^}]*min-height:\s*260px/.test(TELEFONO), /\.invito \.frase\{[^}]*font-size:\s*17px/.test(TELEFONO)], [true, true, true])
@@ -205,7 +209,7 @@ console.log('\n9. Le differenze che restavano: pulsante corto, invito, piede, te
   const pie = (h.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
   ok('instagram e facebook stanno su una riga, divisi da «·» (li in linea, il separatore è CSS)', [/\.recapiti li:nth-child\(n\+3\)\{[^}]*display:\s*inline/.test(CSS), /\.recapiti li:nth-child\(4\)::before\{[^}]*content:\s*" · "/.test(CSS)], [true, true])
   const voci = [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'istruttori', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy', slug: null, indirizzo: '/privacy/' }]
-  const conVoci = (g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'istruttori', titolo: 'T', descrizione: '', testo: '' }], menu: voci, rinvii: [] })['istruttori/index.html'].match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
+  const conVoci = (generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'istruttori', titolo: 'T', descrizione: '', testo: '' }], menu: voci, rinvii: [] })['istruttori/index.html'].match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
   const pi = dentro(/^\s*\.piede\s*$/)
   ok('sul telefono il testo sotto la griglia non c’è (il design telefono non lo ha)', /\.ritratti-sezione \+ \.testo\{[^}]*display:\s*none/.test(TELEFONO), true)
   ok('e allora la griglia non lascia i 96px sotto: l’invito sta a 48px', /\.ritratti-sezione\{[^}]*padding-bottom:\s*0/.test(TELEFONO), true)

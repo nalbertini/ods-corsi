@@ -5,6 +5,7 @@ import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
 import { accogliConCertificato, DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
+import { nomeConosciuto, nomeProvenienza } from '../../lib/provenienza'
 import { daRestituire, segnoRichiesta, type PagamentoSatispay } from '../../lib/satispay'
 import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
@@ -78,6 +79,8 @@ export function Richieste({
   }, [])
   const corsi = useCarica(() => d.corsi(), [d])
   const persone = useCarica(() => d.persone(), [d])
+  // I titoli delle pagine del sito, per dire da dove arriva una richiesta col suo nome («Judo kids» e non «corso-judo-kids»).
+  const titoli = useCarica(() => d.titoliSito(), [d])
   const conDocumento = useCarica(async () => (await datiRichieste()).conDocumento(), [])
   // Il pagamento Satispay vivo di ogni richiesta, in attesa o pagato: uno non andato non si dice (`73-satispay.sql`; senza il file, nessuno).
   const satispay = useCarica(() => d.pagamentiSatispay(), [d])
@@ -124,6 +127,7 @@ export function Richieste({
       x={richiesta}
       satispay={pagamentoDi(richiesta.id)}
       nomi={nomi}
+      titoli={titoli.dato ?? {}}
       titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
       omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
       fai={fai}
@@ -245,6 +249,7 @@ function Scheda({
   x,
   satispay,
   nomi,
+  titoli,
   titolare,
   omonimi,
   fai,
@@ -260,6 +265,8 @@ function Scheda({
   /** Il pagamento Satispay dal modulo, se c'è. */
   satispay?: PagamentoSatispay
   nomi: Map<string, string>
+  /** I titoli delle pagine del sito per indirizzo (`titoliSito`). */
+  titoli: Record<string, string>
   /** Il titolare del nucleo da cui arriva, se arriva dall'area degli iscritti. */
   titolare?: string
   /** Chi in elenco ha già lo stesso nome e cognome. */
@@ -404,6 +411,9 @@ function Scheda({
         <Dato etichetta="PAGA">{x.formula === 'annuale' ? 'L’annuale' : 'Il trimestre'}</Dato>
         {x.note && <Dato etichetta="NOTE">{x.note}</Dato>}
         <Dato etichetta="REGOLAMENTO">{x.regolamento ? 'Accettato' : 'Non accettato (richiesta di prima della casella)'}</Dato>
+        {/* Solo qui, per la segreteria: chi si iscrive non lo vede, e accolta non passa alla scheda. */}
+        <Dato etichetta="ARRIVATA DA">{nomeProvenienza(x.provenienza, titoli)}</Dato>
+        <Dato etichetta="CI HA CONOSCIUTO">{nomeConosciuto(x.conosciuto)}</Dato>
       </div>
 
       <Riga titolo="I FILE" />

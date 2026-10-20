@@ -31,6 +31,10 @@ const carica = async (file) => {
   }
 }
 const g = await carica('src/lib/sitoGenera.ts')
+// Ogni link al modulo porta l'etichetta della sua pagina (`?da=home`…, provata in prova-sito-genera.mjs): qui si guarda
+// l'impaginazione, che non cambia, e la si confronta senza l'etichetta con quella di prima.
+const senzaDa = (r) => (r && typeof r === 'object' ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/(\?|&amp;|&)da=[a-z0-9-]+/g, '') : v])) : r)
+const generaSito = (d) => senzaDa(g.generaSito(d))
 const s = await carica('src/lib/sito.ts')
 
 // L'unico <script> ammesso è il blocco dei dati strutturati (ld+json): è JSON con ogni «<» escapato, e non può contenere altri tag.
@@ -60,7 +64,7 @@ const dati = (o = {}) => ({
   ...o,
 })
 const genera = (d) => {
-  const r = prova(() => g.generaSito(d))
+  const r = prova(() => generaSito(d))
   return typeof r === 'object' && r !== null ? r : {}
 }
 const c = (r, f) => (typeof r[f] === 'string' ? r[f] : '')

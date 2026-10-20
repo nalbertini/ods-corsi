@@ -8,7 +8,8 @@ import { CSS_INTERNE } from './sitoInterne'
 import { cssFoci, cssFociSchede } from './sitoFoto'
 import { eContattiNuova, contattiNuova } from './sitoContatti'
 import { CSS_ORARI, dividiOrari, orariHtml, type OrarioSito } from './sitoOrari'
-import { eHomeNuova, homeNuova } from './sitoHome'
+import { eHomeNuova, eIscrizione, homeNuova } from './sitoHome'
+import { conProvenienza, etichettaPagina, haProvenienza } from './provenienza'
 import { CSS_ORARIO_AUTOMATICO, corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
 import { testiOrario, type OrarioAperto } from './sitoOrario'
 import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
@@ -1271,6 +1272,18 @@ function conStatistiche(html: string, codice: string, e404: boolean): string {
     })
 }
 
+/**
+ * Ogni link al modulo di una pagina già fatta porta l'etichetta della pagina (`?da=home`, `?da=corso-karate`, `?da=orari`):
+ * così la segreteria sa da quale pagina arriva una richiesta (`provenienza.ts`). Un `?da=` scritto a mano resta. Un passaggio
+ * solo alla fine, come il contatore: le regole delle pagine non cambiano, e il modulo si riconosce comunque (`eIscrizione`
+ * ignora la query).
+ */
+function conEtichetta(html: string, etichetta: string): string {
+  return html.replace(/(<a\b[^>]*?\shref=")([^"]*)(")/gi, (a, prima: string, href: string, dopo: string) =>
+    eIscrizione(href, TESTI.iscrizione) && !haProvenienza(href) ? `${prima}${conProvenienza(href.replace(/&amp;/g, '&'), etichetta).replace(/&/g, '&amp;')}${dopo}` : a,
+  )
+}
+
 function rinvio(c: Contesto, a: string): string {
   const dove = percorso(a)
   const corpo = `<main><p>La pagina si è spostata: <a href="${esc(dove)}">vai a ${esc(dove)}</a></p></main>`
@@ -1326,7 +1339,7 @@ export function generaSito(d: DatiSito): Record<string, string> {
   const c: Contesto = { d, slugs, corsi }
   const conContatti = c.slugs.has('contatti')
   const file: Record<string, string> = {}
-  for (const p of pagine) file[fileDi(p.slug)] = pagina(p, c, conContatti)
+  for (const p of pagine) file[fileDi(p.slug)] = conEtichetta(pagina(p, c, conContatti), etichettaPagina(p.slug, c.corsi.has(p.slug)))
   file['404.html'] = nonTrovata(c)
   const codice = codiceStatistiche(d.statistiche)
   if (codice) for (const f of [...pagine.map((p) => fileDi(p.slug)), '404.html']) file[f] = conStatistiche(file[f], codice, f === '404.html')

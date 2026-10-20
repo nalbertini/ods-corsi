@@ -127,7 +127,10 @@ console.log('\nCon un codice buono')
   ok('e ci sono davvero, in ogni pagina col testo', tutti.filter(([, a]) => NON_CONTATI.includes(href(a))).length > 0, true)
   ok('nessun altro link è contato (menu, Instagram, email, pagine, siti altri)', tutti.filter(([, a]) => !nomeAtteso(a) && /data-goatcounter/.test(a)).map(([f, a]) => `${f}: ${a}`), [])
   ok('il link «Iscrivi Mario Rossi» non porta il suo testo nel clic', /data-goatcounter-[a-z]+="[^"]*Mario/.test(r['index.html'] ?? ''), false)
-  ok('il testo e l\'indirizzo dei link restano com\'erano', (r['judo/index.html'] ?? '').includes(`href="${ISCRIZIONE}?corso=judo"`) && (r['judo/index.html'] ?? '').includes('>Iscrivi Mario Rossi al judo</a>'), true)
+  // Il contatore non tocca gli indirizzi: quelli del modulo hanno l'etichetta della pagina (?da=) anche senza codice, e restano quelli.
+  const senzaCodice = genera(dati())
+  ok('il testo e l\'indirizzo dei link restano com\'erano', PAGINE.every((f) => JSON.stringify(link(r[f] ?? '').map(href)) === JSON.stringify(link(senzaCodice[f] ?? '').map(href))) && (r['judo/index.html'] ?? '').includes(`href="${ISCRIZIONE}?corso=judo&amp;da=`) && (r['judo/index.html'] ?? '').includes('>Iscrivi Mario Rossi al judo</a>'), true)
+  ok('un link al modulo con l\'etichetta si conta lo stesso', tutti.filter(([, a]) => /[?&;]da=/.test(href(a)) && href(a).startsWith(ISCRIZIONE)).every(([, a]) => clic(a) === 'iscriviti') && tutti.some(([, a]) => /[?&;]da=/.test(href(a))), true)
 
   console.log('\nQuello che non cambia')
   const senza = genera(dati())

@@ -28,6 +28,7 @@
     "prova:certificati": "node scripts/prova-certificati.mjs",
     "prova:campi": "node scripts/prova-campi.mjs",
     "prova:richieste": "node scripts/prova-richieste.mjs",
+    "prova:provenienza": "node scripts/prova-provenienza.mjs",
     "prova:iscrizione-passi": "node scripts/prova-iscrizione-passi.mjs",
     "prova:iscrizione-pagina": "node scripts/prova-iscrizione-pagina.mjs",
     "prova:firma": "node scripts/prova-firma.mjs",
