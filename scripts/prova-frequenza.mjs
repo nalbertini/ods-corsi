@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Chi viene e chi si sta perdendo, e l'età per la chat, senza browser.
+// Chi viene e chi si sta perdendo, senza browser.
 //
 //   node scripts/prova-frequenza.mjs
 //
@@ -8,8 +8,8 @@
 //   (PRESENZE e lo strumento `chi_manca` della chat li usano tutti e due).
 //   Il risultato deve essere lo stesso di prima: qui sotto c'è la copia della
 //   logica di Presenze.tsx com'era, e si confronta con quella.
-// · `src/lib/chatSegreteria.ts`: `etaDi`, la stessa regola di `chat_eta`
-//   (supabase/prova/73-chat-segreteria.sql) e di `minorenne` di richieste.ts.
+// · `GIORNI_RECENTI`: quanto indietro guarda `chi_manca` (prova-mcp.mjs, sezione 30).
+// L'età per la chat è di `chat_eta`, nel database: supabase/prova/73-chat-segreteria.sql.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 
@@ -32,8 +32,6 @@ const carica = async (percorso) => {
   }
 }
 const f = await carica('./src/lib/frequenza')
-const chat = await carica('./src/lib/chatSegreteria')
-const richieste = await carica('./src/lib/richieste')
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -123,6 +121,7 @@ const righe = [
 console.log('1. conto, percento, conAppello')
 {
   ok('DI_FILA è 3', f.DI_FILA, 3)
+  ok('GIORNI_RECENTI è 60: chi si sta perdendo, negli ultimi 60 giorni', f.GIORNI_RECENTI, 60)
   ok('una lezione senza nessun segno non ha l\'appello', prova(() => f.conAppello(lezione('c-judo', '2026-09-29', { mario: null, gino: null }))), false)
   ok('…con un segno sì', prova(() => f.conAppello(lezione('c-judo', '2026-09-29', { mario: null, gino: A }))), true)
   const una = [lezione('c-judo', '2026-10-06', { mario: P, gino: A, lia: G, ada: null })]
@@ -152,22 +151,6 @@ console.log('\n2. chi si sta perdendo')
   console.log('   il caso della chat: 3 assenze di fila, o 2 con un giustificato in mezzo')
   const tre = [lezione('c-judo', '2026-09-22', { mario: P, gino: P }), lezione('c-judo', '2026-09-29', { mario: A, gino: A }), lezione('c-judo', '2026-10-06', { mario: A, gino: G }), lezione('c-judo', '2026-10-13', { mario: A, gino: A })]
   ok('Mario con 3 assenze di fila c\'è, con l\'ultima presenza; Gino (2 e un giustificato) no', prova(() => f.chiSiStaPerdendo(tre).map((x) => [x.id, x.fila, x.ultima])), [['p-mario', 3, '2026-09-22T16:00:00Z']])
-}
-
-console.log('\n3. l\'età per la chat: adulto, minore, non si sa')
-{
-  const eta = (nato, oggi) => prova(() => chat.etaDi(nato, oggi))
-  ok('compie 18 anni oggi: adulto', eta('2008-10-20', '2026-10-20'), 'adulto')
-  ok('…ieri era minore', eta('2008-10-20', '2026-10-19'), 'minore')
-  ok('li compie domani: minore', eta('2008-10-21', '2026-10-20'), 'minore')
-  ok('nato il 29 febbraio: il 28 febbraio di un anno non bisestile ancora minore', eta('2008-02-29', '2026-02-28'), 'minore')
-  ok('…adulto dal 1° marzo', eta('2008-02-29', '2026-03-01'), 'adulto')
-  ok('un bambino di 10 anni: minore', eta('2016-04-04', '2026-10-20'), 'minore')
-  ok('un adulto di 46 anni', eta('1980-05-10', '2026-10-20'), 'adulto')
-  ok('senza data: non si sa', eta(undefined, '2026-10-20'), 'non_si_sa')
-  ok('…anche vuota', eta('', '2026-10-20'), 'non_si_sa')
-  const casi = [['2008-10-20', '2026-10-20'], ['2008-10-20', '2026-10-19'], ['2008-02-29', '2026-02-28'], ['2008-02-29', '2026-03-01'], ['2016-04-04', '2026-10-20']]
-  ok('la stessa regola di minorenne (richieste.ts)', prova(() => casi.map(([n, o]) => chat.etaDi(n, o) === 'minore')), prova(() => casi.map(([n, o]) => richieste.minorenne(n, new Date(`${o}T12:00:00`)))))
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

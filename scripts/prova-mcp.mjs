@@ -49,6 +49,8 @@ const bil = await carica('./src/lib/bilancio')
 const pagamenti = await carica('./src/lib/pagamenti')
 const ricevute = await carica('./src/lib/ricevute')
 const chatSeg = await carica('./src/lib/chatSegreteria')
+const seg = await carica('./src/lib/segreteria')
+const freq = await carica('./src/lib/frequenza')
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -858,8 +860,10 @@ console.log('\n23. dalle revisioni: le righe del database, il doppio conteggio, 
 // lì nome e cognome di chi non è adulto sono già nulli. Qui alcune righe di
 // minori e di chi è senza data li hanno lo stesso, e il codice fiscale, il
 // telefono, l'email, il numero della ricevuta e la nota del pagamento: i testi
-// non li devono dire comunque. Le regole dei testi stanno in chatSegreteria.ts,
-// chi si sta perdendo in frequenza.ts (prova-frequenza.mjs).
+// non li devono dire comunque. Dei minori la data di nascita non arriva mai: solo
+// `seiAnni`, il giorno dei 6 anni di chi non li ha ancora compiuti. Le regole dei
+// testi stanno in chatSegreteria.ts, chi si sta perdendo in frequenza.ts
+// (prova-frequenza.mjs), il certificato dai 6 anni in segreteria.ts.
 // ---------------------------------------------------------------------------
 const MSG_SEGRETERIA = 'Questa parte è per la segreteria'
 const MSG_SEG_INDIETRO = 'Il database non è ancora aggiornato per le domande della segreteria: va chiesto a chi cura l’app'
@@ -879,12 +883,13 @@ const iscrittiChat = [
   isc({ chiave: 'p-gino', nome: 'Gino', cognome: 'Neri', eta: 'adulto', certificatoScade: '2027-06-30', quote: [{ dal: '2026-09-01', al: '2027-08-31', mancano: 0 }], corsi: ['c-judo'] }),
   // Il nucleo: Carlo, il genitore, e i due figli, tutti con la quota scaduta.
   isc({ chiave: 'p-carlo', nome: 'Carlo', cognome: 'Russo', eta: 'adulto', certificatoScade: '2027-01-01', quote: QUOTA_SCADUTA, corsi: ['c-yoga'] }),
-  isc({ chiave: 'x-teo', nome: 'Teo', cognome: 'Russo', eta: 'minore', natoIl: '2015-03-03', quote: QUOTA_SCADUTA, corsi: ['c-bimbi'] }),
-  isc({ chiave: 'x-figlia', eta: 'minore', natoIl: '2017-05-05', certificatoScade: '2026-11-05', quote: QUOTA_SCADUTA, corsi: ['c-bimbi'] }),
+  // I minori di 6 anni o più: nessuna data (chat_iscritti non la dà).
+  isc({ chiave: 'x-teo', nome: 'Teo', cognome: 'Russo', eta: 'minore', quote: QUOTA_SCADUTA, corsi: ['c-bimbi'] }),
+  isc({ chiave: 'x-figlia', eta: 'minore', certificatoScade: '2026-11-05', quote: QUOTA_SCADUTA, corsi: ['c-bimbi'] }),
   // Una minore senza certificato e senza quota, in due corsi.
-  isc({ chiave: 'x-lia', nome: 'Lia', cognome: 'Verdi', eta: 'minore', natoIl: '2016-04-04', corsi: ['c-bimbi', 'c-judo'] }),
-  // Compie 6 anni il 10 novembre, senza certificato; la quota in parte (mancano 50 €: dei minori non si dice).
-  isc({ chiave: 'x-bimbo', eta: 'minore', natoIl: '2020-11-10', quote: [{ dal: '2026-09-01', al: '2027-08-31', mancano: 5000 }], corsi: ['c-bimbi'] }),
+  isc({ chiave: 'x-lia', nome: 'Lia', cognome: 'Verdi', eta: 'minore', corsi: ['c-bimbi', 'c-judo'] }),
+  // Compie 6 anni il 10 novembre (`seiAnni`), senza certificato; la quota in parte (mancano 50 €: dei minori non si dice).
+  isc({ chiave: 'x-bimbo', eta: 'minore', seiAnni: '2026-11-10', quote: [{ dal: '2026-09-01', al: '2027-08-31', mancano: 5000 }], corsi: ['c-bimbi'] }),
   // Senza nessuna data di nascita: solo un numero.
   isc({ chiave: 'x-sergio', nome: 'Sergio', cognome: 'Ignoto', eta: 'non_si_sa', corsi: ['c-judo'] }),
   // Adulta, certificato in scadenza, in parte fuori dall'app (con la sua nota).
@@ -978,6 +983,10 @@ console.log('\n24. chi vede cosa: tools/list secondo il ruolo')
   const iSeg = await istruzioni(seg, true)
   ok('la sola segreteria: istruzioni sue, che non parlano di registrare fatture', prova(() => [typeof iSeg === 'string' && iSeg.length > 0, iSeg !== iAmm, iSeg.includes('registra_movimento')]), [true, true, false])
   const ini = await provaA(async () => (await mandaSeg(richiesta('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'claude', version: '1' } }), { db: tutte })).corpo.result.serverInfo.title)
+  console.log('   il database che non risponde a chi sei (eAmministrazione lancia)')
+  const muto = () => finto({ guasto: new TypeError('fetch failed') })
+  ok('tools/list: gli strumenti della contabilità, che poi diranno loro cosa non va', await nomiStrumenti(muto(), true), CONTABILITA)
+  ok('initialize: le istruzioni di sempre', await istruzioni(muto(), true), iAmm)
   ok('il nome del server è «ODS Corsi»', ini, 'ODS Corsi')
   ok('…anche nei metadati della risorsa', prova(() => mcp.metadatiRisorsa(INDIRIZZO, 'https://progetto.supabase.co/auth/v1').resource_name), 'ODS Corsi')
 }
@@ -1053,7 +1062,7 @@ console.log('\n28. iscritti di un corso')
   ok('Judo bimbi: 4 minori, nessun nome', prova(() => [/4 minor|minor\w*\D*4/i.test(b), MAI.test(b), b.includes('Russo')]), [true, false, false])
   ok('un corso che non c\'è', await chiediSeg('iscritti', { corso: 'Pilates' }), ['Non c’è un corso «Pilates»: vedi lo strumento corsi', true])
   console.log('   ieri Gino aveva 17 anni: il database lo dava fra i minori')
-  const ieri = iscrittiChat.map((x) => (x.chiave === 'p-gino' ? { ...x, chiave: 'x-gino', nome: null, cognome: null, eta: 'minore', natoIl: '2008-10-20' } : x))
+  const ieri = iscrittiChat.map((x) => (x.chiave === 'p-gino' ? { ...x, chiave: 'x-gino', nome: null, cognome: null, eta: 'minore' } : x))
   const [y] = await chiediSeg('iscritti', { corso: 'Judo adulti' }, { db: dbSeg({ iscrittiChat: ieri }), oggi: '2026-10-19' })
   ok('…ieri non c\'era il suo nome, e i minori erano 2', prova(() => [y.includes('Gino'), /2 minor|minor\w*\D*2/i.test(y)]), [false, true])
 }
@@ -1074,6 +1083,29 @@ console.log('\n29. presenze di un corso')
   await chiediSeg('presenze', { corso: 'c-judo', dal: '2026-09-01', al: '2026-09-30' }, { db: d2 })
   ok('dal e al chiesti', prova(() => d2.registri), [['2026-09-01', '2026-09-30']])
   ok('un corso che non c\'è', await chiediSeg('presenze', { corso: 'Pilates' }), ['Non c’è un corso «Pilates»: vedi lo strumento corsi', true])
+  console.log('   il periodo: al massimo un anno, mai dopo oggi')
+  const periodo = async (dal, al) => {
+    const db = dbSeg()
+    const args = { corso: 'Judo adulti', ...(dal === undefined ? {} : { dal }), ...(al === undefined ? {} : { al }) }
+    const [t, e] = await chiediSeg('presenze', args, { db })
+    return { t, e, letto: prova(() => db.registri) }
+  }
+  const lungo = await periodo('2025-10-17', '2026-10-19')
+  ok('367 giorni: «Al massimo un anno alla volta», senza leggere il registro', [lungo.t, lungo.e, lungo.letto], ['Al massimo un anno alla volta', true, []])
+  const anno = await periodo('2025-10-18', '2026-10-19')
+  ok('366 giorni si leggono', [anno.e, anno.letto], [false, [['2025-10-18', '2026-10-19']]])
+  const strana = await periodo('2026-13-01', undefined)
+  ok('una data che non si capisce: «La data non si capisce», senza leggere', [strana.t, strana.e, strana.letto], ['La data non si capisce', true, []])
+  const rovescio = await periodo('2026-10-10', '2026-10-01')
+  ok('dal dopo al: «La data di inizio è dopo quella di fine»', [rovescio.t, rovescio.e, rovescio.letto], ['La data di inizio è dopo quella di fine', true, []])
+  const futuro = await periodo('2026-10-25', undefined)
+  ok('dal dopo oggi: «Il periodo comincia dopo oggi: non ci sono ancora lezioni», senza leggere', [futuro.t, futuro.letto], ['Il periodo comincia dopo oggi: non ci sono ancora lezioni', []])
+  const futuro2 = await periodo('2026-10-25', '2026-10-30')
+  ok('…anche con al chiesto', [futuro2.t, futuro2.letto], ['Il periodo comincia dopo oggi: non ci sono ancora lezioni', []])
+  const oltre = await periodo('2026-10-01', '2026-12-31')
+  ok('al dopo oggi: il registro letto fino a oggi', [oltre.e, oltre.letto], [false, [['2026-10-01', OGGI]]])
+  const db22 = dbSeg({ guastoSegreteria: { code: '22023', message: 'Al massimo un anno alla volta' } })
+  ok('un 22023 del database col suo messaggio arriva com\'è', await chiediSeg('presenze', { corso: 'Judo adulti' }, { db: db22 }), ['Al massimo un anno alla volta', true])
 }
 
 console.log('\n30. chi_manca: chi si sta perdendo')
@@ -1081,6 +1113,8 @@ console.log('\n30. chi_manca: chi si sta perdendo')
   const db = dbSeg()
   const [t, e] = await chiediSeg('chi_manca', {}, { db })
   ok('guarda gli ultimi 60 giorni', prova(() => db.registri), [['2026-08-21', OGGI]])
+  const da = prova(() => new Date(Date.parse(`${OGGI}T12:00:00Z`) - freq.GIORNI_RECENTI * 86_400_000).toISOString().slice(0, 10))
+  ok('…cioè da oggi meno GIORNI_RECENTI (frequenza.ts)', prova(() => db.registri), [[da, OGGI]])
   const mario = rigaCon(t, 'Mario Bianchi')
   ok('l\'adulto con 3 assenze di fila: «3 assenze di fila · ultima presenza il 29/09/2026», col corso', prova(() => [e, mario.includes('3 assenze di fila'), mario.includes('ultima presenza il 29/09/2026'), mario.includes('Judo adulti')]), [false, true, true, true])
   ok('2 assenze e un giustificato in mezzo: Gino non c\'è', prova(() => t.includes('Gino')), false)
@@ -1144,6 +1178,41 @@ console.log('\n34. nell\'app: chi può collegare Claude, e cosa gli si dice')
   ok('la segreteria: POTRÀ e NON POTRÀ del design', righe({ ruolo: 'staff' }), { potra: ISCRITTI_SI, nonPotra: [...NOMI_NO, 'Cambiare niente: iscrizioni, appelli, pagamenti'] })
   ok('segreteria e amministrazione: tutte e due', righe({ ruolo: 'staff', ancheAmministrazione: true }), { potra: [...ISCRITTI_SI, ...CONTI_SI], nonPotra: [...NOMI_NO, 'Vedere il saldo della Cassa Contanti', 'Cambiare iscrizioni, appelli, pagamenti; annullare movimenti, chiudere la cassa'] })
   ok('la sola amministrazione: le righe di oggi', righe({ ruolo: 'amministrazione' }), { potra: CONTI_SI, nonPotra: ['Vedere i nomi degli iscritti e il saldo della Cassa Contanti', 'Annullare movimenti, fare giroconti, chiudere la cassa', 'Cambiare voci e casse'] })
+  console.log('   le frasi attorno alle righe (frasiConsenso), col nome di chi chiede')
+  const frasi = (p, chiede, accesa) => prova(() => collega.frasiConsenso(p, chiede, accesa))
+  const togli = (chi) => `Il collegamento si toglie da ${chi}, in Impostazioni → Connettori.`
+  const SOLO_CONTI = (chi) => ({ perche: 'per registrare in CONTABILITÀ le fatture e gli scontrini che gli fotografi.', nota: `Le foto le vede ${chi}, non ODS: solo documenti di fornitori, niente compensi né ricevute di iscritti. ${togli(chi)}` })
+  ok('la sola segreteria, accesa', frasi({ ruolo: 'staff' }, 'Claude', true), { perche: 'per rispondere alle tue domande sugli iscritti: certificati, quote, presenze.', nota: `Chi non ha la data di nascita conta come un minore. ${togli('Claude')}` })
+  ok('segreteria e amministrazione, accesa', frasi({ ruolo: 'staff', ancheAmministrazione: true }, 'Claude', true), { perche: 'per rispondere sugli iscritti e per registrare in CONTABILITÀ le fatture che gli fotografi.', nota: `Le foto le vede Claude, non ODS: solo documenti di fornitori. ${togli('Claude')}` })
+  ok('la sola amministrazione, accesa', frasi({ ruolo: 'amministrazione' }, 'Claude', true), SOLO_CONTI('Claude'))
+  ok('spenta: segreteria e amministrazione sentono le frasi dei conti', frasi({ ruolo: 'staff', ancheAmministrazione: true }, 'Claude', false), SOLO_CONTI('Claude'))
+  ok('…e la sola amministrazione pure', frasi({ ruolo: 'amministrazione' }, 'Claude', false), SOLO_CONTI('Claude'))
+  ok('il nome di chi chiede nella nota', [frasi({ ruolo: 'staff' }, 'Claude Desktop', true).nota, frasi({ ruolo: 'staff', ancheAmministrazione: true }, 'Claude Desktop', true).nota, frasi({ ruolo: 'amministrazione' }, 'Claude Desktop', false).nota],
+    [`Chi non ha la data di nascita conta come un minore. ${togli('Claude Desktop')}`, `Le foto le vede Claude Desktop, non ODS: solo documenti di fornitori. ${togli('Claude Desktop')}`, SOLO_CONTI('Claude Desktop').nota])
+}
+
+console.log('\n35. il certificato dei minori dal giorno dei 6 anni (seiAnni), senza la data di nascita')
+{
+  const dal = (giorno) => prova(() => seg.serveCertificatoDal(giorno, OGGI))
+  ok('serveCertificatoDal: il bimbo che compie 6 anni il 10/11/2026 è «in arrivo»', dal('2026-11-10'), 'in_arrivo')
+  ok('…fra 30 giorni in arrivo, fra 31 non serve, dal giorno stesso serve', [dal('2026-11-19'), dal('2026-11-20'), dal(OGGI), dal('2026-10-01')], ['in_arrivo', 'non_serve', 'serve', 'serve'])
+  ok('…lontano: non serve', dal('2029-01-01'), 'non_serve')
+  const stato = (x) => prova(() => seg.statoCertificato({ certificato: {}, ...x }, OGGI))
+  ok('statoCertificato con seiAnni: il bimbo del 10 novembre senza certificato è «in arrivo»', stato({ seiAnni: '2026-11-10' }), 'in_arrivo')
+  ok('…uno coi 6 anni lontani: «non serve», anche col certificato', [stato({ seiAnni: '2029-01-01' }), stato({ seiAnni: '2029-01-01', certificato: { scade: '2027-01-01' } })], ['non_serve', 'non_serve'])
+  ok('…senza seiAnni né natoIl il certificato serve: manca', stato({}), 'manca')
+  ok('…con natoIl come prima', [stato({ natoIl: '2020-11-10' }), stato({ natoIl: '2015-03-03' })], ['in_arrivo', 'manca'])
+  const date = ['2020-10-20', '2020-10-21', '2020-11-19', '2020-11-20', '2015-03-03', '1990-01-01', '2020-02-29', '2024-02-29']
+  const oggi = ['2026-10-20', '2026-02-28', '2026-03-01', '2030-02-28', '2030-03-01']
+  const casi = date.flatMap((n) => oggi.map((o) => [n, o]))
+  ok('serveCertificato è serveCertificatoDal del giorno dei 6 anni (dalCertificato): le stesse risposte', prova(() => casi.filter(([n, o]) => seg.serveCertificato(n, o) !== seg.serveCertificatoDal(seg.dalCertificato(n), o))), [])
+  ok('…e senza data serve, come prima', prova(() => [seg.serveCertificato(undefined, OGGI), seg.serveCertificato('', OGGI), seg.serveCertificato('20-10-2020', OGGI)]), ['serve', 'serve', 'serve'])
+  console.log('   nei testi della chat')
+  const paolo = iscrittiChat.find((x) => x.chiave === 'p-paolo')
+  const lontano = isc({ chiave: 'x-piccolo', eta: 'minore', seiAnni: '2029-01-01', corsi: ['c-bimbi'] })
+  ok('un minore coi 6 anni lontani e senza certificato non conta nei certificati', prova(() => chatSeg.testoCertificati([paolo, lontano], corsiChat, OGGI)), prova(() => chatSeg.testoCertificati([paolo], corsiChat, OGGI)))
+  const t = prova(() => chatSeg.testoCertificati(iscrittiChat, corsiChat, OGGI))
+  ok('il bimbo del 10 novembre: fra chi compie 6 anni entro un mese, non fra chi è senza certificato', prova(() => [/1 \w+ 6 anni entro un mese senza certificato/.test(t), t.includes('Minori: 2 senza certificato valido, 1 in scadenza')]), [true, true])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

@@ -66,6 +66,8 @@ export type LezioneRegistro = Pick<RigaRegistro, 'corsoId' | 'corso' | 'inizio' 
 
 /** «Chi si sta perdendo»: tante assenze di fila, negli appelli fatti. */
 export const DI_FILA = 3
+/** Quanti giorni indietro guarda «chi si sta perdendo»: più del mese, perché la fila non si ferma al primo. */
+export const GIORNI_RECENTI = 60
 
 export const conAppello = (r: Pick<RigaRegistro, 'appello'>) => r.appello.some((p) => p.stato !== null)
 

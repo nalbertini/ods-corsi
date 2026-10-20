@@ -16,6 +16,8 @@ import {
 } from './contabilita'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { tutteLeRighe } from './tutteLeRighe'
+import { GIORNI_RECENTI } from './frequenza'
+import { spostaGiorno } from './segreteria'
 import {
   cosaNonVaDallaChat,
   doppioneDi,
@@ -465,16 +467,13 @@ async function strumentoDaClassificare(db: DatabaseChat) {
   )
 }
 
-/** Il giorno `giorni` prima o dopo, `AAAA-MM-GG`. */
-const spostato = (giorno: string, giorni: number) => new Date(Date.parse(`${giorno}T12:00:00Z`) + giorni * 86_400_000).toISOString().slice(0, 10)
-
 /** Il corso chiesto, o il testo che dice che non c'è. */
-async function corsoChiesto(db: DatabaseChat, a: Argomenti): Promise<{ corso: CorsoChat; corsi: CorsoChat[] } | { no: string }> {
+async function corsoChiesto(db: DatabaseChat, a: Argomenti): Promise<{ corso: CorsoChat } | { no: string }> {
   const chiesto = stringa(a.corso)?.trim() ?? ''
   if (!chiesto) return { no: 'Scegli il corso: lo strumento corsi dà l’elenco' }
   const corsi = await db.corsi()
   const corso = corsoDa(corsi, chiesto)
-  return corso ? { corso, corsi } : { no: `Non c’è un corso «${chiesto}»: vedi lo strumento corsi` }
+  return corso ? { corso } : { no: `Non c’è un corso «${chiesto}»: vedi lo strumento corsi` }
 }
 
 async function strumentoSegreteria(db: DatabaseChat, nome: string, a: Argomenti, oggi: string) {
@@ -490,7 +489,7 @@ async function strumentoSegreteria(db: DatabaseChat, nome: string, a: Argomenti,
     const scelto = stringa(a.corso)?.trim() ? await corsoChiesto(db, a) : null
     if (scelto && 'no' in scelto) return testo(scelto.no, true)
     // Le assenze di fila guardano più indietro del mese, come PRESENZE.
-    return testo(testoChiManca(await db.registro(spostato(oggi, -60), oggi), scelto?.corso ?? null))
+    return testo(testoChiManca(await db.registro(spostaGiorno(oggi, -GIORNI_RECENTI), oggi), scelto?.corso ?? null))
   }
   const scelto = await corsoChiesto(db, a)
   if ('no' in scelto) return testo(scelto.no, true)
@@ -498,9 +497,12 @@ async function strumentoSegreteria(db: DatabaseChat, nome: string, a: Argomenti,
   const dal = stringa(a.dal)
   const al = stringa(a.al)
   if ((dal !== undefined && !dataVera(dal)) || (al !== undefined && !dataVera(al))) return testo('La data non si capisce', true)
-  const fino = al && al < oggi ? al : oggi
   const da = dal ?? `${oggi.slice(0, 8)}01`
-  if (da > fino) return testo('La data di inizio è dopo quella di fine', true)
+  if (da > oggi) return testo('Il periodo comincia dopo oggi: non ci sono ancora lezioni', true)
+  if (al !== undefined && da > al) return testo('La data di inizio è dopo quella di fine', true)
+  const fino = al && al < oggi ? al : oggi
+  // Lo stesso tetto di `chat_registro`: oltre, il database direbbe di no.
+  if (fino > spostaGiorno(da, 366)) return testo('Al massimo un anno alla volta', true)
   const [registro, prove] = await Promise.all([db.registro(da, fino), db.prove(da, fino)])
   return testo(testoPresenze(registro, prove, scelto.corso, da, fino))
 }

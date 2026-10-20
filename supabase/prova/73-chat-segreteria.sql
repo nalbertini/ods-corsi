@@ -1,13 +1,16 @@
 -- La segreteria dalla chat (73-chat-segreteria.sql): il server MCP (supabase/functions/mcp) legge, col token
 -- di chi ha la segreteria, iscritti, certificati, quote e presenze. Qui il lato database:
---   · `chat_iscritti(sale)`: gli iscritti attivi; nome e cognome solo degli adulti, la data di nascita solo dei
---     minori, la chiave di chi non è adulto che non si riconduce alla persona; le quote senza anno né numero
---     della ricevuta; i corsi in corso oggi; mai telefono, email, nota del pagamento;
---   · `chat_registro(dal, al, sale)`: una riga per lezione e iscritto attivo con l'iscrizione valida quel giorno,
---     giorni di Roma, mai dopo adesso; l'età è quella di oggi (chi compie 18 anni oggi ha il nome anche prima);
+--   · `chat_iscritti(sale)`: gli iscritti attivi; nome e cognome solo degli adulti; mai la data di nascita, solo
+--     il giorno dei 6 anni (`sei_anni`) dei minori che non li hanno ancora compiuti; la chiave di chi non è adulto
+--     che non si riconduce alla persona; le quote senza anno né numero della ricevuta, in ordine; i corsi in corso
+--     oggi; mai telefono, email, nota del pagamento;
+--   · `chat_registro(dal, al, sale)`: una riga per lezione e persona attiva con l'iscrizione valida quel giorno
+--     (anche dello staff, come il registro dell'app), giorni di Roma, mai dopo adesso, al massimo un anno; l'età è
+--     quella di oggi (chi compie 18 anni oggi ha il nome anche prima);
 --   · `chat_prove(dal, al)`: quante prove per lezione, mai chi;
 --   · `chat_nato_il(persona)` e `chat_eta(nato, oggi)`: la data della fonte più recente, l'età col 29 febbraio.
--- Solo e_staff(): gli altri «Questa parte è per la segreteria» (42501); anon niente; nessuna scrittura.
+-- Solo e_staff(): gli altri, il tablet di sala compreso, «Questa parte è per la segreteria» (42501); anon niente;
+-- nessuna scrittura. I minori si riconoscono dalla chiave ricalcolata qui (`chiave_di`), mai da una data.
 -- Le stesse regole lato app: scripts/prova-mcp.mjs (sezioni 24-34) e scripts/prova-frequenza.mjs.
 -- Si lancia dopo finto-supabase.sql e i file dello schema, su un database suo.
 \set ON_ERROR_STOP on
@@ -49,7 +52,12 @@ create or replace function giorno(indietro int) returns date language sql stable
 -- Una lezione di un'ora, il giorno `indietro` giorni fa all'ora `ora` di Roma.
 create or replace function alle(indietro int, ora text) returns timestamptz language sql stable as $$
   select ((giorno(indietro)::text || ' ' || ora)::timestamp at time zone 'Europe/Rome') $$;
-grant execute on function atteso(text, text, text), chi(text), esito(text), giorno(int), alle(int, text) to anon, authenticated;
+-- La chiave di chi non è adulto, ricalcolata come la fa chat_iscritti: così la prova sa chi è chi senza la data.
+create or replace function chiave_di(persona text, sale text default 'sale-di-prova-1234') returns text language sql immutable as $$
+  select 'x' || md5(persona || sale) $$;
+grant execute on function atteso(text, text, text), chi(text), esito(text), giorno(int), alle(int, text), chiave_di(text, text) to anon, authenticated;
+-- L'ultimo 29 febbraio prima di oggi: chi è nato quel giorno ha meno di 6 anni.
+select max(d)::date as bisesto from generate_series(giorno(0) - interval '4 years', giorno(0), interval '1 day') d where to_char(d, 'MMDD') = '0229' \gset
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'anna@ods.it'),
@@ -57,7 +65,12 @@ insert into auth.users (id, email) values
   ('33333333-3333-3333-3333-333333333333', 'ada@ods.it'),
   ('44444444-4444-4444-4444-444444444444', 'sandro@ods.it'),
   ('55555555-5555-5555-5555-555555555555', 'luca@ods.it'),
-  ('66666666-6666-6666-6666-666666666666', 'senza@ods.it');
+  ('66666666-6666-6666-6666-666666666666', 'senza@ods.it'),
+  ('77777777-7777-7777-7777-777777777777', 'tablet@ods.it');
+-- Il tablet della sala grande: un suo utente, nessuna persona.
+insert into sale (id, nome) values ('bbbbbbbb-0000-0000-0000-000000000001', 'Sala del tablet');
+insert into postazioni (id, nome, sala_id, utente_id) values
+  ('dddddddd-0000-0000-0000-000000000001', 'Tablet sala grande', 'bbbbbbbb-0000-0000-0000-000000000001', '77777777-7777-7777-7777-777777777777');
 -- Anna: segreteria. Maura: istruttore. Ada: solo amministrazione. Sandro: segreteria e amministrazione.
 -- Luca: iscritto con l'accesso. «senza» ha un accesso ma nessuna scheda.
 insert into persone (id, nome, cognome, ruolo, anche_amministrazione, email, telefono, utente_id, attiva) values
@@ -81,7 +94,11 @@ insert into persone (id, nome, cognome, ruolo, anche_amministrazione, email, tel
   ('eeeeeeee-0000-0000-0000-000000000012', 'Rita', 'Nonaccolta', 'iscritto', false, null, null, null, true),
   ('eeeeeeee-0000-0000-0000-000000000013', 'Pari', 'Tempo', 'iscritto', false, null, null, null, true),
   ('eeeeeeee-0000-0000-0000-000000000014', 'Cara', 'Creata', 'iscritto', false, null, null, null, true),
-  ('eeeeeeee-0000-0000-0000-000000000015', 'Tizio', 'Provante', 'iscritto', false, null, '3330000000', null, true);
+  ('eeeeeeee-0000-0000-0000-000000000015', 'Tizio', 'Provante', 'iscritto', false, null, '3330000000', null, true),
+-- I piccoli: Bimbo compie 6 anni fra 20 giorni, Bisesto è nato il 29 febbraio, Seienne li compie oggi.
+  ('eeeeeeee-0000-0000-0000-000000000016', 'Bimbo', 'Piccolo', 'iscritto', false, null, null, null, true),
+  ('eeeeeeee-0000-0000-0000-000000000017', 'Bisesto', 'Febbraio', 'iscritto', false, null, null, null, true),
+  ('eeeeeeee-0000-0000-0000-000000000018', 'Seienne', 'Oggi', 'iscritto', false, null, null, null, true);
 
 -- Le date di nascita, con l'ora in cui sono state scritte (il trigger la metterebbe a adesso).
 alter table anagrafiche disable trigger anagrafiche_cambiata;
@@ -102,7 +119,10 @@ insert into anagrafiche (persona_id, nato_il, codice_fiscale, cambiata_il) value
   -- Pari: scheda e richiesta nello stesso istante: vince la segreteria.
   ('eeeeeeee-0000-0000-0000-000000000013', '1980-08-08', null, '2026-01-10 10:00:00+01'),
   -- Cara: la scheda 5 giorni fa; la richiesta accolta senza gestita_il, creata 2 giorni fa.
-  ('eeeeeeee-0000-0000-0000-000000000014', '1980-09-09', null, now() - interval '5 days');
+  ('eeeeeeee-0000-0000-0000-000000000014', '1980-09-09', null, now() - interval '5 days'),
+  ('eeeeeeee-0000-0000-0000-000000000016', (giorno(-20) - interval '6 years')::date, null, now()),
+  ('eeeeeeee-0000-0000-0000-000000000017', :'bisesto', null, now()),
+  ('eeeeeeee-0000-0000-0000-000000000018', (giorno(0) - interval '6 years')::date, null, now());
 alter table anagrafiche enable trigger anagrafiche_cambiata;
 
 create or replace function richiesta(persona uuid, nato date, st text, gestita timestamptz, creata timestamptz) returns void
@@ -128,13 +148,20 @@ insert into ricevute (anno, numero, data, persona_id, ente, intestatario, voci, 
   (2026, 4242, giorno(30), 'eeeeeeee-0000-0000-0000-000000000001', '{}', '{"nome": "Mario", "cognome": "Bianchi"}',
    '[{"descrizione": "QUOTA ASSOCIATIVA", "quantita": 1, "prezzo": 15000, "dal": "2026-09-01", "al": "2027-08-31",
       "pagamenti": [{"data": "2026-09-20", "importo": 3000, "metodo": "Contanti"}]}]', 15000, 3000, 0, 'ricevuta segreta');
+-- La quota dell'anno prima, pagata tutta, scritta dopo: nelle quote viene prima (anno, numero, dal, al).
+insert into ricevute (anno, numero, data, persona_id, ente, intestatario, voci, totale, pagato, anticipo) values
+  (2025, 17, giorno(300), 'eeeeeeee-0000-0000-0000-000000000001', '{}', '{"nome": "Mario", "cognome": "Bianchi"}',
+   '[{"descrizione": "QUOTA ASSOCIATIVA", "quantita": 1, "prezzo": 15000, "dal": "2025-09-01", "al": "2026-08-31",
+      "pagamenti": [{"data": "2025-09-10", "importo": 15000, "metodo": "Contanti"}]}]', 15000, 15000, 0);
 
--- I corsi: Judo, Yoga, Pilates (senza iscritti), Karate (Mario ci entra fra 5 giorni).
+-- I corsi: Judo, Yoga, Pilates (senza iscritti), Karate (Mario ci entra fra 5 giorni), Danza (c'è Anna, della
+-- segreteria: il registro dell'app la mostra, e così quello della chat).
 insert into corsi (id, nome) values
   ('cccccccc-0000-0000-0000-000000000001', 'Judo'),
   ('cccccccc-0000-0000-0000-000000000002', 'Yoga'),
   ('cccccccc-0000-0000-0000-000000000003', 'Pilates'),
-  ('cccccccc-0000-0000-0000-000000000004', 'Karate');
+  ('cccccccc-0000-0000-0000-000000000004', 'Karate'),
+  ('cccccccc-0000-0000-0000-000000000005', 'Danza');
 insert into iscrizioni (corso_id, persona_id, dal, al) values
   ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000001', giorno(60), null),
   ('cccccccc-0000-0000-0000-000000000002', 'eeeeeeee-0000-0000-0000-000000000001', giorno(60), giorno(10)),
@@ -144,10 +171,12 @@ insert into iscrizioni (corso_id, persona_id, dal, al) values
   ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000004', giorno(60), giorno(4)),
   ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000005', giorno(60), null),
   ('cccccccc-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000009', giorno(60), null),
-  ('cccccccc-0000-0000-0000-000000000002', 'eeeeeeee-0000-0000-0000-000000000006', giorno(60), null);
+  ('cccccccc-0000-0000-0000-000000000002', 'eeeeeeee-0000-0000-0000-000000000006', giorno(60), null),
+  ('cccccccc-0000-0000-0000-000000000005', 'aaaaaaaa-0000-0000-0000-000000000001', giorno(60), null);
 
 -- Le lezioni. Judo: 9, 6 e 3 giorni fa, una 70 giorni fa, una fra 2 giorni, una fra un minuto.
 -- Pilates: 5 giorni fa alle 18, e 8 giorni fa a mezzanotte e mezza (a Roma è già quel giorno, in UTC no).
+-- Danza: 4 giorni fa.
 insert into sessioni (id, corso_id, inizio, fine, stato) values
   ('abababab-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000001', alle(9, '18:00'), alle(9, '19:00'), 'svolta'),
   ('abababab-0000-0000-0000-000000000002', 'cccccccc-0000-0000-0000-000000000001', alle(6, '18:00'), alle(6, '19:00'), 'svolta'),
@@ -156,7 +185,8 @@ insert into sessioni (id, corso_id, inizio, fine, stato) values
   ('abababab-0000-0000-0000-000000000005', 'cccccccc-0000-0000-0000-000000000001', alle(-2, '18:00'), alle(-2, '19:00'), 'prevista'),
   ('abababab-0000-0000-0000-000000000006', 'cccccccc-0000-0000-0000-000000000001', now() + interval '1 minute', now() + interval '61 minutes', 'prevista'),
   ('abababab-0000-0000-0000-000000000007', 'cccccccc-0000-0000-0000-000000000003', alle(5, '18:00'), alle(5, '19:00'), 'svolta'),
-  ('abababab-0000-0000-0000-000000000008', 'cccccccc-0000-0000-0000-000000000003', alle(8, '00:30'), alle(8, '01:30'), 'svolta');
+  ('abababab-0000-0000-0000-000000000008', 'cccccccc-0000-0000-0000-000000000003', alle(8, '00:30'), alle(8, '01:30'), 'svolta'),
+  ('abababab-0000-0000-0000-000000000009', 'cccccccc-0000-0000-0000-000000000005', alle(4, '18:00'), alle(4, '19:00'), 'svolta');
 insert into presenze (sessione_id, persona_id, stato) values
   ('abababab-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000001', 'presente'),
   ('abababab-0000-0000-0000-000000000002', 'eeeeeeee-0000-0000-0000-000000000001', 'assente'),
@@ -180,6 +210,9 @@ select atteso('…e per le prove', da('22222222-2222-2222-2222-222222222222', 'a
 select atteso('la sola amministrazione: no', da('33333333-3333-3333-3333-333333333333', 'authenticated', 'select count(*) from chat_iscritti(''sale-di-prova-1234'')'), '42501 Questa parte è per la segreteria');
 select atteso('un iscritto: no', da('55555555-5555-5555-5555-555555555555', 'authenticated', 'select count(*) from chat_iscritti(''sale-di-prova-1234'')'), '42501 Questa parte è per la segreteria');
 select atteso('un accesso senza scheda: no', da('66666666-6666-6666-6666-666666666666', 'authenticated', 'select count(*) from chat_iscritti(''sale-di-prova-1234'')'), '42501 Questa parte è per la segreteria');
+select atteso('il tablet di sala, col suo utente: «Questa parte è per la segreteria»', da('77777777-7777-7777-7777-777777777777', 'authenticated', 'select count(*) from chat_iscritti(''sale-di-prova-1234'')'), '42501 Questa parte è per la segreteria');
+select atteso('…anche per il registro', da('77777777-7777-7777-7777-777777777777', 'authenticated', format('select count(*) from chat_registro(%L, %L, ''sale-di-prova-1234'')', giorno(60), giorno(0))), '42501 Questa parte è per la segreteria');
+select atteso('…e per le prove', da('77777777-7777-7777-7777-777777777777', 'authenticated', format('select count(*) from chat_prove(%L, %L)', giorno(60), giorno(0))), '42501 Questa parte è per la segreteria');
 select atteso('chi non ha fatto l''accesso non la chiama nemmeno', da('', 'anon', 'select count(*) from chat_iscritti(''sale-di-prova-1234'')'), '42501 permission denied for function chat_iscritti');
 select atteso('…né chat_registro', da('', 'anon', format('select count(*) from chat_registro(%L, %L, ''sale-di-prova-1234'')', giorno(60), giorno(0))), '42501 permission denied for function chat_registro');
 select atteso('…né chat_prove', da('', 'anon', format('select count(*) from chat_prove(%L, %L)', giorno(60), giorno(0))), '42501 permission denied for function chat_prove');
@@ -194,17 +227,19 @@ select atteso('anon non ha execute su nessuna delle sei',
 select atteso('authenticated ha execute solo sulle tre della chat',
   (select string_agg(f, ',' order by f) from unnest(array['chat_iscritti(text)', 'chat_registro(date,date,text)', 'chat_prove(date,date)', 'chat_nato_il(uuid)', 'chat_eta(date,date)', 'chat_sale(text)']) f
     where has_function_privilege('authenticated', f, 'execute')), 'chat_iscritti(text),chat_prove(date,date),chat_registro(date,date,text)');
-select atteso('le tre sono security definer, stable, con search_path = public',
+select atteso('le tre sono security definer, stable, con search_path = public, extensions',
   (select string_agg(p.proname || ':' || p.prosecdef::text || ':' || p.provolatile::text || ':' || coalesce(array_to_string(p.proconfig, ';'), ''), ',' order by p.proname)
      from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('chat_iscritti', 'chat_registro', 'chat_prove')),
-  'chat_iscritti:true:s:search_path=public,chat_prove:true:s:search_path=public,chat_registro:true:s:search_path=public');
+  'chat_iscritti:true:s:search_path=public, extensions,chat_prove:true:s:search_path=public, extensions,chat_registro:true:s:search_path=public, extensions');
 select atteso('anche le interne non scrivono (stable o immutable)',
   (select string_agg(p.proname || ':' || (p.provolatile in ('s', 'i'))::text, ',' order by p.proname)
      from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('chat_nato_il', 'chat_eta', 'chat_sale')),
   'chat_eta:true,chat_nato_il:true,chat_sale:true');
+select atteso('chat_eta è stable (legge il fuso di oggi), non immutable',
+  (select p.provolatile::text from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'chat_eta'), 's');
 select atteso('chat_iscritti: le colonne della specifica, niente di più',
   pg_get_function_result('chat_iscritti(text)'::regprocedure),
-  'TABLE(chiave text, nome text, cognome text, eta text, nato_il date, certificato_scade date, pagamento text, pagato_fino date, quote jsonb, corsi uuid[])');
+  'TABLE(chiave text, nome text, cognome text, eta text, sei_anni date, certificato_scade date, pagamento text, pagato_fino date, quote jsonb, corsi uuid[])');
 select atteso('chat_registro: le colonne della specifica',
   pg_get_function_result('chat_registro(date,date,text)'::regprocedure),
   'TABLE(sessione_id uuid, corso_id uuid, corso text, inizio timestamp with time zone, stato text, chiave text, nome text, cognome text, eta text, presenza text)');
@@ -235,61 +270,78 @@ select atteso('nessuna fonte', coalesce(chat_nato_il('eeeeeeee-0000-0000-0000-00
 \echo '--- 5. chat_iscritti, come la vede la segreteria ---'
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
-select atteso('gli iscritti attivi, e solo loro (non Dario, disattivato; non lo staff)', (select count(*)::text from chat_iscritti('sale-di-prova-1234')), '15');
+select atteso('gli iscritti attivi, e solo loro (non Dario, disattivato; non lo staff)', (select count(*)::text from chat_iscritti('sale-di-prova-1234')), '18');
 select atteso('Dario, disattivato col certificato scaduto, non c''è', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where cognome = 'Spento' or certificato_scade = '2026-09-01'), '0');
 select atteso('nessuno dello staff', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where nome in ('Anna', 'Maura', 'Ada', 'Sandro')), '0');
-select atteso('Mario, adulto: nome, cognome, la sua chiave è il suo id, niente data di nascita',
-  (select concat_ws('|', nome, cognome, eta, chiave, coalesce(nato_il::text, '-')) from chat_iscritti('sale-di-prova-1234') where nome = 'Mario'),
+select atteso('…nemmeno Anna, che pure è iscritta alla Danza (lei non ha la data: avrebbe una chiave «x»)',
+  (select count(*)::text from chat_iscritti('sale-di-prova-1234') where chiave = chiave_di('aaaaaaaa-0000-0000-0000-000000000001')), '0');
+select atteso('Mario, adulto: nome, cognome, la sua chiave è il suo id, nessun giorno dei 6 anni',
+  (select concat_ws('|', nome, cognome, eta, chiave, coalesce(sei_anni::text, '-')) from chat_iscritti('sale-di-prova-1234') where nome = 'Mario'),
   'Mario|Bianchi|adulto|eeeeeeee-0000-0000-0000-000000000001|-');
 select atteso('…il certificato scaduto il 1° ottobre e il pagamento scritto a mano, senza la nota',
   (select concat_ws('|', certificato_scade, pagamento, coalesce(pagato_fino::text, '-')) from chat_iscritti('sale-di-prova-1234') where nome = 'Mario'), '2026-10-01|da_pagare|-');
 select atteso('…la quota: dal, al, quanto manca; mai anno né numero della ricevuta',
-  (select string_agg(k, ',' order by k) from chat_iscritti('sale-di-prova-1234') c, jsonb_array_elements(c.quote) q, jsonb_object_keys(q) k where c.nome = 'Mario'), 'al,dal,mancano');
-select atteso('…mancano 120,00 €', (select (q->>'mancano') from chat_iscritti('sale-di-prova-1234') c, jsonb_array_elements(c.quote) q where c.nome = 'Mario'), '12000');
+  (select string_agg(distinct k, ',' order by k) from chat_iscritti('sale-di-prova-1234') c, jsonb_array_elements(c.quote) q, jsonb_object_keys(q) k where c.nome = 'Mario'), 'al,dal,mancano');
+select atteso('…mancano 120,00 €', (select (q->>'mancano') from chat_iscritti('sale-di-prova-1234') c, jsonb_array_elements(c.quote) q where c.nome = 'Mario' and q->>'dal' = '2026-09-01'), '12000');
+select atteso('…le quote in ordine come nell''app (anno, numero, dal, al): prima quella del 2025, scritta dopo',
+  (select string_agg(concat_ws('~', q->>'dal', q->>'al', q->>'mancano'), ',' order by n) from chat_iscritti('sale-di-prova-1234') c, jsonb_array_elements(c.quote) with ordinality as e(q, n) where c.nome = 'Mario'),
+  '2025-09-01~2026-08-31~0,2026-09-01~2027-08-31~12000');
 select atteso('…i corsi in corso oggi: il Judo, non lo Yoga finito né il Karate che comincia fra 5 giorni',
   (select corsi::text from chat_iscritti('sale-di-prova-1234') where nome = 'Mario'), '{cccccccc-0000-0000-0000-000000000001}');
 select atteso('mai telefono, email, codice fiscale, nota del pagamento, ricevuta',
   (select count(*)::text from chat_iscritti('sale-di-prova-1234') c
-    where concat_ws('|', c.nome, c.cognome, c.eta, c.nato_il, c.certificato_scade, c.pagamento, c.pagato_fino, c.quote, c.corsi)
+    where concat_ws('|', c.nome, c.cognome, c.eta, c.sei_anni, c.certificato_scade, c.pagamento, c.pagato_fino, c.quote, c.corsi)
           ~* '(esempio\.it|3331234567|3339876543|3330000000|BNCMRA|VRDLIA|zia|segreta|4242)'), '0');
 select atteso('Gino compie 18 anni oggi: c''è col nome', (select concat_ws('|', nome, eta) from chat_iscritti('sale-di-prova-1234') where cognome = 'Diciottoggi'), 'Gino|adulto');
-select atteso('Pia li compie domani: minore, senza nome, con la data di nascita',
-  (select concat_ws('|', coalesce(nome, '-'), coalesce(cognome, '-'), eta) from chat_iscritti('sale-di-prova-1234') where nato_il = (giorno(-1) - interval '18 years')::date), '-|-|minore');
-select atteso('Lia, minore: nome e cognome nulli, la data di nascita c''è',
-  (select concat_ws('|', coalesce(nome, '-'), coalesce(cognome, '-'), eta) from chat_iscritti('sale-di-prova-1234') where nato_il = (giorno(0) - interval '10 years')::date), '-|-|minore');
-select atteso('…la sua chiave non è il suo id: «x» e 32 caratteri',
-  (select (chiave like 'x%' and length(chiave) = 33 and chiave not like '%eeeeeeee%')::text from chat_iscritti('sale-di-prova-1234') where nato_il = (giorno(0) - interval '10 years')::date), 'true');
+select atteso('Pia li compie domani: minore, senza nome, nessuna data (i 6 anni li ha da un pezzo)',
+  (select concat_ws('|', coalesce(nome, '-'), coalesce(cognome, '-'), eta, coalesce(sei_anni::text, '-')) from chat_iscritti('sale-di-prova-1234') where chiave = chiave_di('eeeeeeee-0000-0000-0000-000000000003')), '-|-|minore|-');
+select atteso('Lia, 10 anni: nome e cognome nulli, nessuna data',
+  (select concat_ws('|', coalesce(nome, '-'), coalesce(cognome, '-'), eta, coalesce(sei_anni::text, '-')) from chat_iscritti('sale-di-prova-1234') where chiave = chiave_di('eeeeeeee-0000-0000-0000-000000000004')), '-|-|minore|-');
+select atteso('…la chiave di chi non è adulto non è il suo id: «x» e 32 caratteri',
+  (select bool_and(chiave like 'x%' and length(chiave) = 33 and chiave not like '%eeeeeeee%')::text from chat_iscritti('sale-di-prova-1234') where eta <> 'adulto'), 'true');
 select atteso('nessun nome di chi non è adulto', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where eta <> 'adulto' and (nome is not null or cognome is not null)), '0');
-select atteso('…e nessuna data di nascita di un adulto o di chi non si sa', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where eta <> 'minore' and nato_il is not null), '0');
+select atteso('Bimbo compie 6 anni fra 20 giorni: il giorno dei 6 anni, senza nome',
+  (select concat_ws('|', coalesce(nome, '-'), eta, sei_anni) from chat_iscritti('sale-di-prova-1234') where chiave = chiave_di('eeeeeeee-0000-0000-0000-000000000016')),
+  '-|minore|' || giorno(-20)::text);
+select atteso('Bisesto, nato il 29 febbraio: i 6 anni li compie il 1° marzo (l''anno dei 6 anni non è bisestile)',
+  (select sei_anni::text from chat_iscritti('sale-di-prova-1234') where chiave = chiave_di('eeeeeeee-0000-0000-0000-000000000017')),
+  make_date(extract(year from :'bisesto'::date)::int + 6, 3, 1)::text);
+select atteso('Seienne li compie oggi: li ha compiuti, nessuna data',
+  (select concat_ws('|', eta, coalesce(sei_anni::text, '-')) from chat_iscritti('sale-di-prova-1234') where chiave = chiave_di('eeeeeeee-0000-0000-0000-000000000018')), 'minore|-');
+select atteso('il giorno dei 6 anni solo per i due che non li hanno compiuti, e sempre dopo oggi',
+  (select count(*)::text || '|' || bool_and(eta = 'minore' and sei_anni > giorno(0))::text from chat_iscritti('sale-di-prova-1234') where sei_anni is not null), '2|true');
+select atteso('…mai per un adulto o per chi non si sa', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where eta <> 'minore' and sei_anni is not null), '0');
 select atteso('senza data di nascita (Sergio, Nadia, Rita, Tizio che è venuto a provare): non si sa, senza nome',
-  (select count(*)::text from chat_iscritti('sale-di-prova-1234') where eta = 'non_si_sa' and nome is null and cognome is null and nato_il is null), '4');
-select atteso('Franca: vince la richiesta accolta, è minore', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where nato_il = '2015-03-03' and eta = 'minore' and nome is null), '1');
+  (select count(*)::text from chat_iscritti('sale-di-prova-1234') where eta = 'non_si_sa' and nome is null and cognome is null and sei_anni is null), '4');
+select atteso('Franca: vince la richiesta accolta, è minore', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where chiave = chiave_di('eeeeeeee-0000-0000-0000-000000000010') and eta = 'minore' and nome is null), '1');
 select atteso('Pari: a parità vince la scheda, è adulto col nome', (select concat_ws('|', nome, eta) from chat_iscritti('sale-di-prova-1234') where cognome = 'Tempo'), 'Pari|adulto');
-select atteso('Cara: la richiesta senza gestita_il, creata dopo la scheda, vince', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where nato_il = '2014-07-07' and eta = 'minore'), '1');
+select atteso('Cara: la richiesta senza gestita_il, creata dopo la scheda, vince', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where chiave = chiave_di('eeeeeeee-0000-0000-0000-000000000014') and eta = 'minore'), '1');
 select atteso('il nucleo: di «Russo» solo Carlo, il genitore', (select string_agg(nome, ',') from chat_iscritti('sale-di-prova-1234') where cognome = 'Russo'), 'Carlo');
-select atteso('…i due figli ci sono, come minori', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where eta = 'minore' and nato_il in ((giorno(0) - interval '11 years')::date, (giorno(0) - interval '9 years')::date)), '2');
+select atteso('…i due figli ci sono, come minori', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where eta = 'minore' and chiave in (chiave_di('eeeeeeee-0000-0000-0000-000000000007'), chiave_di('eeeeeeee-0000-0000-0000-000000000008'))), '2');
 select atteso('chi è venuto a provare non c''è per nome', (select count(*)::text from chat_iscritti('sale-di-prova-1234') where nome = 'Tizio' or cognome = 'Provante'), '0');
 reset role;
 select chi('11111111-1111-1111-1111-111111111111');
-select chiave as chiave_lia_1 from chat_iscritti('sale-di-prova-1234') where nato_il = (giorno(0) - interval '10 years')::date \gset
-select chiave as chiave_lia_2 from chat_iscritti('un-altro-sale-5678') where nato_il = (giorno(0) - interval '10 years')::date \gset
+select string_agg(chiave, ',' order by chiave) as chiavi_1 from chat_iscritti('sale-di-prova-1234') where eta <> 'adulto' \gset
+select string_agg(chiave, ',' order by chiave) as chiavi_2 from chat_iscritti('un-altro-sale-5678') where eta <> 'adulto' \gset
 -- La chiave di chi non è adulto è md5 dell'id col «sale» che il server sceglie a caso per ogni domanda: la stessa in
 -- tutte le pagine di una risposta (il server legge a pagine), diversa da una domanda all'altra.
-select atteso('la chiave di un minore cambia col sale (da una domanda all''altra)', (:'chiave_lia_1' <> :'chiave_lia_2')::text, 'true');
-select chiave as chiave_lia_3 from chat_iscritti('sale-di-prova-1234') where nato_il = (giorno(0) - interval '10 years')::date \gset
-select atteso('…e con lo stesso sale è la stessa, anche in un''altra transazione (un''altra pagina)', (:'chiave_lia_1' = :'chiave_lia_3')::text, 'true');
+select atteso('le chiavi dei minori cambiano col sale (da una domanda all''altra): nessuna in comune',
+  (select count(*)::text from unnest(string_to_array(:'chiavi_1', ',')) a join unnest(string_to_array(:'chiavi_2', ',')) b on a = b), '0');
+select atteso('…e sono md5 dell''id col sale', (select chiave from chat_iscritti('un-altro-sale-5678') where chiave = chiave_di('eeeeeeee-0000-0000-0000-000000000004', 'un-altro-sale-5678')), chiave_di('eeeeeeee-0000-0000-0000-000000000004', 'un-altro-sale-5678'));
+select string_agg(chiave, ',' order by chiave) as chiavi_3 from chat_iscritti('sale-di-prova-1234') where eta <> 'adulto' \gset
+select atteso('…e con lo stesso sale sono le stesse, anche in un''altra transazione (un''altra pagina)', (:'chiavi_1' = :'chiavi_3')::text, 'true');
 select atteso('senza sale: no', esito('select count(*) from chat_iscritti('''')'), '22023 Manca il sale della domanda');
 select atteso('…né col sale nullo', esito('select count(*) from chat_registro(current_date, current_date, null)'), '22023 Manca il sale della domanda');
-select atteso('…dentro una chiamata è la stessa (registro e iscritti insieme)',
+select atteso('…dentro una chiamata è la stessa (registro e iscritti insieme): Pia e Lia del Judo',
   (select count(distinct r.chiave)::text from chat_registro(giorno(60), giorno(0), 'sale-di-prova-1234') r
-     where r.chiave in (select i.chiave from chat_iscritti('sale-di-prova-1234') i where i.nato_il = (giorno(0) - interval '10 years')::date)), '1');
+     where r.eta = 'minore' and r.chiave in (select i.chiave from chat_iscritti('sale-di-prova-1234') i where i.eta = 'minore')), '2');
 
 \echo ''
-\echo '--- 6. chat_registro: lezioni e iscritti, giorni di Roma, mai dopo adesso ---'
+\echo '--- 6. chat_registro: lezioni e iscritti (anche dello staff), giorni di Roma, mai dopo adesso, al massimo un anno ---'
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
-select atteso('ultimi 60 giorni: le 3 lezioni di Judo e le 2 di Pilates (non quella di 70 giorni fa, né quelle che vengono)',
-  (select count(distinct sessione_id)::text from chat_registro(giorno(60), giorno(0), 'sale-di-prova-1234')), '5');
+select atteso('ultimi 60 giorni: le 3 lezioni di Judo, le 2 di Pilates e quella di Danza (non quella di 70 giorni fa, né quelle che vengono)',
+  (select count(distinct sessione_id)::text from chat_registro(giorno(60), giorno(0), 'sale-di-prova-1234')), '6');
 select atteso('la lezione di 9 giorni fa: Mario, Gino, Pia, Lia, Sergio (non Dario, disattivato)',
   (select count(*)::text from chat_registro(giorno(60), giorno(0), 'sale-di-prova-1234') where sessione_id = 'abababab-0000-0000-0000-000000000001'), '5');
 select atteso('3 giorni fa Lia non era più iscritta', (select count(*)::text from chat_registro(giorno(60), giorno(0), 'sale-di-prova-1234') where sessione_id = 'abababab-0000-0000-0000-000000000003'), '4');
@@ -314,6 +366,13 @@ select atteso('…e non del giorno prima (in UTC lo sarebbe)',
 select atteso('oggi e i giorni che vengono: niente dopo adesso',
   (select count(*)::text from chat_registro(giorno(0), giorno(-5), 'sale-di-prova-1234')), '0');
 select atteso('chi è venuto a provare non c''è', (select count(*)::text from chat_registro(giorno(60), giorno(0), 'sale-di-prova-1234') where nome = 'Tizio' or cognome = 'Provante'), '0');
+select atteso('Anna, della segreteria, iscritta alla Danza: c''è, come nel registro dell''app; senza data, quindi senza nome',
+  (select string_agg(concat_ws('|', (chiave = chiave_di('aaaaaaaa-0000-0000-0000-000000000001'))::text, coalesce(nome, '-'), coalesce(cognome, '-'), eta, coalesce(presenza, '-')), ',')
+     from chat_registro(giorno(60), giorno(0), 'sale-di-prova-1234') where sessione_id = 'abababab-0000-0000-0000-000000000009'),
+  'true|-|-|non_si_sa|-');
+select atteso('un anno e un giorno (366 giorni) si legge', esito(format('select count(*) from chat_registro(%L, %L, ''sale-di-prova-1234'')', giorno(366), giorno(0))), 'ok');
+select atteso('…più di così no: «Al massimo un anno alla volta»', esito(format('select count(*) from chat_registro(%L, %L, ''sale-di-prova-1234'')', giorno(367), giorno(0))), '22023 Al massimo un anno alla volta');
+select atteso('…né per tre anni', esito(format('select count(*) from chat_registro(%L, %L, ''sale-di-prova-1234'')', giorno(1100), giorno(0))), '22023 Al massimo un anno alla volta');
 
 \echo ''
 \echo '--- 7. chat_prove: quante, mai chi ---'
@@ -328,4 +387,4 @@ reset role;
 \echo '--- 8. le funzioni non hanno scritto niente ---'
 select atteso('persone, presenze, prove, schede come prima',
   (select concat_ws('|', (select count(*) from persone), (select count(*) from presenze), (select count(*) from prove), (select count(*) from schede_iscritti), (select count(*) from anagrafiche))),
-  '20|6|2|3|13');
+  '23|6|2|3|16');

@@ -4,7 +4,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
 import { Guaio, Riga, Testa, useCarica } from './comune'
 import { mesi } from '../../lib/ore'
-import { chiSiStaPerdendo, conAppello, conto, DI_FILA, percento } from '../../lib/frequenza'
+import { chiSiStaPerdendo, conAppello, conto, DI_FILA, GIORNI_RECENTI, percento } from '../../lib/frequenza'
 
 /** Il registro del mese in un foglio da aprire con Excel: punto e virgola e BOM, come i fogli che si importano. */
 function scaricaCsv(righe: RigaRegistro[], nome: string) {
@@ -57,7 +57,7 @@ export function Presenze({ d, onVai, senzaAppello }: { d: DatiSegreteria; onVai:
   }, [senzaAppello, arrivato])
   const prove = useCarica(() => d.prove(p.da, p.a), [d, p])
   // Chi si sta perdendo guarda più indietro del mese: le assenze di fila non si fermano al primo.
-  const recenti = useCarica(() => d.registro(new Date(Date.now() - 60 * 24 * 60 * 60_000), new Date()), [d])
+  const recenti = useCarica(() => d.registro(new Date(Date.now() - GIORNI_RECENTI * 24 * 60 * 60_000), new Date()), [d])
 
   const tutte = registro.dato ?? []
   const righe = tutte.filter((r) => !corso || r.corsoId === corso)

@@ -1,6 +1,7 @@
 import { periodoInParole } from './bilancio'
 import { giornoRoma } from './contabilita'
-import { chiSiStaPerdendo, conAppello, DI_FILA, type LezioneRegistro } from './frequenza'
+import { chiSiStaPerdendo, conAppello, DI_FILA, GIORNI_RECENTI, type LezioneRegistro } from './frequenza'
+import { MSG_ACCEDI } from './movimentiDallaChat'
 import { dataRicevuta, euro } from './ricevute'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { pagamentoDi, statoCertificato, type PagamentoSeg } from './segreteria'
@@ -20,25 +21,18 @@ export const CHAT_SEGRETERIA_ACCESA = false
 
 export const MSG_SEGRETERIA = 'Questa parte è per la segreteria'
 const MSG_SEG_INDIETRO = 'Il database non è ancora aggiornato per le domande della segreteria: va chiesto a chi cura l’app'
-const MSG_ACCEDI = 'Accedi di nuovo a ODS Corsi'
 const MSG_GUASTO = 'Qualcosa non è andato: riprova tra poco, o guarda nell’app'
 
 export type Eta = 'adulto' | 'minore' | 'non_si_sa'
 
-/** L'età di `oggi` a parole: maggiorenne dal compleanno (chi è nato il 29 febbraio, dal 1° marzo). Come `chat_eta`. */
-export function etaDi(natoIl: string | undefined, oggi: string): Eta {
-  if (!natoIl || !/^\d{4}-\d{2}-\d{2}$/.test(natoIl)) return 'non_si_sa'
-  const anni = Number(oggi.slice(0, 4)) - Number(natoIl.slice(0, 4)) - (oggi.slice(5) < natoIl.slice(5) ? 1 : 0)
-  return anni >= 18 ? 'adulto' : 'minore'
-}
-
-/** Un iscritto attivo come lo dà `chat_iscritti`: nome e cognome solo per gli adulti, la nascita solo per i minori. */
+/** Un iscritto attivo come lo dà `chat_iscritti`: nome e cognome solo per gli adulti, mai la data di nascita. */
 export interface IscrittoChat {
   chiave: string
   nome: string | null
   cognome: string | null
   eta: Eta
-  natoIl?: string
+  /** Il giorno dei 6 anni, solo per chi non li ha ancora compiuti: la regola del certificato. */
+  seiAnni?: string
   certificatoScade?: string
   pagamento: PagamentoSeg
   quote: Array<{ dal?: string; al?: string; mancano: number }>
@@ -77,6 +71,8 @@ export function erroreSegreteria(e: unknown): string {
   // Un errore qualunque: si leggono solo `code` e `message`, se ci sono, e restano `unknown` finché non si guardano.
   const { code, message } = (typeof e === 'object' && e !== null ? e : {}) as { code?: unknown; message?: unknown }
   if (code === '42501') return MSG_SEGRETERIA
+  // I rifiuti del database con le loro parole («Al massimo un anno alla volta»).
+  if (code === '22023' && typeof message === 'string' && message) return message
   if (code === 'PGRST202' || code === '42883' || code === '42703') return MSG_SEG_INDIETRO
   if (code === 'PGRST301' || code === 'PGRST303' || (typeof message === 'string' && /JWT/i.test(message))) return MSG_ACCEDI
   return MSG_GUASTO
@@ -106,8 +102,8 @@ const MINORI_IN_APP = 'Non si dicono i nomi dei minori: si vedono in DA FARE nel
 
 /** I certificati da sistemare fra chi è attivo, come DA FARE: gli adulti per nome, gli altri contati. */
 export function testoCertificati(iscritti: IscrittoChat[], corsi: CorsoChat[], oggi: string): string {
-  // Il certificato con l'età: un adulto, e chi non ha la data, ce l'ha sempre da portare; un minore sotto i 6 anni no.
-  const stato = (x: IscrittoChat) => statoCertificato({ certificato: { scade: x.certificatoScade }, natoIl: x.eta === 'minore' ? x.natoIl : undefined }, oggi)
+  // Il certificato con l'età: un adulto, e chi non ha la data, ce l'ha sempre da portare; chi non ha 6 anni no.
+  const stato = (x: IscrittoChat) => statoCertificato({ certificato: { scade: x.certificatoScade }, seiAnni: x.eta === 'minore' ? x.seiAnni : undefined }, oggi)
   const adulti = iscritti.filter(eAdulto).sort(perCognome)
   const gruppo = (titolo: string, come: string, riga: (x: IscrittoChat & Adulto) => string) => {
     const chi = adulti.filter((x) => stato(x) === come)
@@ -195,7 +191,8 @@ function lezioni(appelli: AppelloChat[]): Array<LezioneRegistro & { sessioneId: 
   return [...perSessione.values()].sort((a, b) => a.inizio.localeCompare(b.inizio))
 }
 
-const persone = (appelli: AppelloChat[]) => new Map(appelli.filter((r) => r.chiave !== null).map((r) => [r.chiave as string, r]))
+type ConChiave = AppelloChat & { chiave: string }
+const persone = (appelli: AppelloChat[]) => new Map(appelli.filter((r): r is ConChiave => r.chiave !== null).map((r) => [r.chiave, r]))
 
 /** Le presenze di un corso nel periodo, dagli appelli arrivati: gli adulti per nome, gli altri contati. */
 export function testoPresenze(appelli: AppelloChat[], prove: ProvaChat[], corso: CorsoChat, dal: string, al: string): string {
@@ -220,7 +217,7 @@ export function testoPresenze(appelli: AppelloChat[], prove: ProvaChat[], corso:
       ...(annullate ? [`${annullate} ${annullate === 1 ? 'annullata' : 'annullate'}`] : []),
     ].join(', ') + '.',
     ...(fatte.length ? [`In media ${Math.round(presenti / fatte.length)} presenti a lezione, contando tutti.`] : []),
-    ...(adulti.length ? ['Adulti, presenti su lezioni dovute (i giustificati non contano):', ...adulti.map((a) => `- ${nomeDi(a)} · ${di(a.chiave as string)}`)] : ['Adulti: nessuno.']),
+    ...(adulti.length ? ['Adulti, presenti su lezioni dovute (i giustificati non contano):', ...adulti.map((a) => `- ${nomeDi(a)} · ${di(a.chiave)}`)] : ['Adulti: nessuno.']),
     ...contati([...chi.values()].map((x) => x.eta)),
     `Prove: ${numeroProve}.`,
     'Contano gli appelli arrivati: uno ancora sul tablet senza rete non c’è.',
@@ -233,15 +230,15 @@ export function testoChiManca(appelli: AppelloChat[], corso: CorsoChat | null): 
   const persi = chiSiStaPerdendo(lezioni(appelli), corso?.id)
   const adulti = persi
     .map((x) => ({ ...x, p: chi.get(x.id) }))
-    .filter((x): x is typeof x & { p: AppelloChat & Adulto } => !!x.p && eAdulto(x.p))
+    .filter((x): x is typeof x & { p: ConChiave & Adulto } => !!x.p && eAdulto(x.p))
     .sort((a, b) => b.fila - a.fila || perCognome(a.p, b.p))
   const righe = adulti.map(
     (x) =>
-      `- ${nomeDi(x.p)} · ${x.fila} assenze di fila · ${x.ultima ? `ultima presenza il ${dataRicevuta(giornoRoma(x.ultima))}` : 'nessuna presenza negli ultimi 60 giorni'}${corso ? '' : ` · ${x.corsi.join(', ')}`}`,
+      `- ${nomeDi(x.p)} · ${x.fila} assenze di fila · ${x.ultima ? `ultima presenza il ${dataRicevuta(giornoRoma(x.ultima))}` : `nessuna presenza negli ultimi ${GIORNI_RECENTI} giorni`}${corso ? '' : ` · ${x.corsi.join(', ')}`}`,
   )
   const altri = contati(persi.map((x) => chi.get(x.id)?.eta ?? null))
   return [
-    `${corso ? `${corso.nome}: ` : ''}${DI_FILA} o più assenze di fila negli ultimi 60 giorni (appelli arrivati, giustificati esclusi).`,
+    `${corso ? `${corso.nome}: ` : ''}${DI_FILA} o più assenze di fila negli ultimi ${GIORNI_RECENTI} giorni (appelli arrivati, giustificati esclusi).`,
     ...(righe.length || altri.length ? [...righe, ...altri] : ['Nessuno: chi è iscritto viene.']),
   ].join('\n')
 }

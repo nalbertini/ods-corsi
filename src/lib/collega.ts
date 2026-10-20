@@ -37,7 +37,7 @@ export function cosaPotra(p: ChiCollega, accesa = CHAT_SEGRETERIA_ACCESA): { pot
 }
 
 /** Le frasi del consenso attorno alle righe: per cosa Claude chiede l'account, e la nota in fondo. */
-export function frasiConsenso(p: ChiCollega, chiede = 'Claude', accesa = CHAT_SEGRETERIA_ACCESA): { perche: string; nota: string } {
+export function frasiConsenso(p: ChiCollega, chiede: string, accesa = CHAT_SEGRETERIA_ACCESA): { perche: string; nota: string } {
   const conti = spunteDi(p).includes('amministrazione')
   const iscritti = accesa && spunteDi(p).includes('segreteria')
   const togli = `Il collegamento si toglie da ${chiede}, in Impostazioni → Connettori.`

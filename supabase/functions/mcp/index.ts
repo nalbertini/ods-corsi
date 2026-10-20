@@ -105,13 +105,13 @@ function apri(token: string, utente: string) {
     // Le righe di 73-chat-segreteria.sql: nome e cognome dei minori sono già nulli, e non c'è altro di loro.
     async iscritti() {
       const righe = ok(await tutteLeRighe((da: number, a: number) => db.rpc('chat_iscritti', { sale }).order('chiave').range(da, a))) as Array<{
-        chiave: string; nome: string | null; cognome: string | null; eta: 'adulto' | 'minore' | 'non_si_sa'; nato_il: string | null
+        chiave: string; nome: string | null; cognome: string | null; eta: 'adulto' | 'minore' | 'non_si_sa'; sei_anni: string | null
         certificato_scade: string | null; pagamento: 'da_pagare' | 'in_parte' | 'pagato'; pagato_fino: string | null
         quote: Array<{ dal: string | null; al: string | null; mancano: number }>; corsi: string[]
       }>
       return righe.map((r) => ({
         chiave: r.chiave, nome: r.nome, cognome: r.cognome, eta: r.eta,
-        ...(r.nato_il ? { natoIl: r.nato_il } : {}),
+        ...(r.sei_anni ? { seiAnni: r.sei_anni } : {}),
         ...(r.certificato_scade ? { certificatoScade: r.certificato_scade } : {}),
         pagamento: { stato: r.pagamento, ...(r.pagato_fino ? { fino: r.pagato_fino } : {}) },
         quote: r.quote.map((q) => ({ ...(q.dal ? { dal: q.dal } : {}), ...(q.al ? { al: q.al } : {}), mancano: q.mancano })),
