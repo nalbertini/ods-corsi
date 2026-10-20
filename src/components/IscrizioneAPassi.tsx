@@ -1408,7 +1408,7 @@ function Flusso({
           </Riquadro>
         )}
         {senzaCertificato && <Dettaglio tono="avviso">Il certificato medico si porta in segreteria prima della prima lezione: senza non si partecipa.</Dettaglio>}
-        <ComeCiHaiConosciuto id="n-conosciuto" famiglia={famiglia} valore={P.conosciutoDelModulo(tutte)} onScegli={(c) => setPersone((ps) => P.conIlConosciuto(ps, c ?? ''))} />
+        <ComeCiHaiConosciuto id="n-conosciuto" famiglia={famiglia} valore={P.conosciutoDelModulo(tutte)} onScegli={(c) => setPersone((ps) => P.conIlConosciuto(ps, c))} />
         <Campo id="n-note" etichetta="NOTE PER LA SEGRETERIA · FACOLTATIVE" largo>
           <textarea
             id="n-note"

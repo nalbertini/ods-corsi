@@ -20,14 +20,14 @@ import { dataLunga } from './sala'
  * STATISTICHE (`contaDaDove`).
  */
 
-export const MASSIMO_PROVENIENZA = 90
+const MASSIMO_PROVENIENZA = 90
 const FORMA = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 /** Le etichette che non vengono dal sito. */
-export const DA_SEGRETERIA = 'segreteria'
-export const DA_AREA_ISCRITTI = 'area-iscritti'
+const DA_SEGRETERIA = 'segreteria'
+const DA_AREA_ISCRITTI = 'area-iscritti'
 
-export const NON_SI_SA = 'Non si sa'
+const NON_SI_SA = 'Non si sa'
 
 /** Come `btrim(…, ' \t\r\n')` del database: solo gli spazi ai lati. */
 const pulito = (x: unknown) => (typeof x === 'string' ? x.replace(/^[ \t\r\n]+|[ \t\r\n]+$/g, '').toLowerCase() : undefined)
@@ -70,15 +70,13 @@ export function provenienzaDaIndirizzo(search: string): string | undefined {
   return pulisciProvenienza(new URLSearchParams(search).get('da') ?? undefined)
 }
 
-// La prima letta in questa visita: passando da #prezzi la pagina si ricarica con
-// la stessa query, e qui resta quella con cui si è aperta. Nessun localStorage
-// né cookie: chi torna un altro giorno da un altro link conta per quel link.
-let dellaVisita: { e: string | undefined } | undefined
-
-/** L'etichetta con cui si è aperta la pagina delle iscrizioni, in questa visita. */
+/**
+ * L'etichetta con cui si è aperta la pagina delle iscrizioni, in questa visita: si rilegge ogni volta dall'indirizzo,
+ * che passando da #prezzi e da «compila» cambia solo il cancelletto e tiene la query. Nessuna copia, né in memoria né
+ * in localStorage o in un cookie: chi torna un altro giorno da un altro link conta per quel link.
+ */
 export function provenienzaDellaVisita(): string | undefined {
-  dellaVisita ??= { e: typeof window === 'undefined' ? undefined : provenienzaDaIndirizzo(window.location.search) }
-  return dellaVisita.e
+  return typeof window === 'undefined' ? undefined : provenienzaDaIndirizzo(window.location.search)
 }
 
 /** Cosa porta una richiesta: dal modulo pubblico l'etichetta della visita e la risposta; dall'area iscritti la sua etichetta, e la domanda non c'è. */
@@ -187,6 +185,9 @@ export function contaDaDove(righe: RigaDaDove[], corso: string, titoli: Readonly
     totale,
   }
 }
+
+/** Le voci di un elenco ordinate come vuole chi guarda (`ordina`), con NON SI SA sempre in fondo. */
+export const conNonSiSaInFondo = (voci: VoceDaDove[], ordina: (v: VoceDaDove[]) => VoceDaDove[]): VoceDaDove[] => [...ordina(voci.filter((v) => !v.nonSiSa)), ...voci.filter((v) => v.nonSiSa)]
 
 /** La frase sotto il riquadro: da quando si conta, e come; `vuoto` se nel periodo non ne è arrivata nessuna. */
 export function fraseDaDove(dal: string | undefined, vuoto = false): string {

@@ -368,6 +368,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.richieste_contate') is not null
     and to_regprocedure('public.richieste_da_dove(date,date)') is not null
     and exists (select 1 from pg_trigger where tgname = 'richieste_contate_nuova' and not tgisinternal)
+    and exists (select 1 from pg_trigger where tgname = 'richieste_contate_scorda' and not tgisinternal)
     -- Rilanciare 06 dopo 73 rimette la invia_iscrizione che ignora le due chiavi: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pulisci_provenienza%'))
 ) as x(file, cosa, c)

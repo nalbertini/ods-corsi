@@ -1620,7 +1620,7 @@ export const conLaNota = (persone: StatoPassi[], nota: string): StatoPassi[] =>
 export const conosciutoDelModulo = (persone: StatoPassi[]): Conosciuto | undefined => pulisciConosciuto(persone[0]?.risposte.conosciuto)
 
 /** La risposta scelta all'invio: nella persona 0 e in nessun'altra. Vuota, non c'è. */
-export const conIlConosciuto = (persone: StatoPassi[], scelta: string): StatoPassi[] =>
+export const conIlConosciuto = (persone: StatoPassi[], scelta: Conosciuto | undefined): StatoPassi[] =>
   persone.map((p, i) => {
     const { conosciuto: _, ...risposte } = p.risposte
     const c = i === 0 ? pulisciConosciuto(scelta) : undefined

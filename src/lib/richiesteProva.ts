@@ -1,4 +1,4 @@
-import type { DatiRichieste, FileRichiesta, Richiesta, TipoFile } from './richieste'
+import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
 import { controlla, DA_STAMPARE, pulisciCf, minorenne } from './richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { archivio, certificatiProva, scordaCertificato } from './archivioProva'
@@ -48,18 +48,54 @@ export function spostaRichieste(da: string, a: string) {
   }
 }
 
-/**
- * Il conteggio della richiesta, come il trigger di `73-provenienza-richieste.sql`:
- * sta nell'archivio di prova, non qui, perché resta quando la richiesta si elimina.
- * Una richiesta già contata si aggiorna (lo stato, accolta o rifiutata).
- */
+/** Come una riga di `richieste_contate` (73-provenienza-richieste.sql): niente dati personali. */
+export interface RichiestaContata {
+  /** Solo per seguire lo stato: tolta quando la richiesta si elimina accolta o rifiutata. */
+  richiestaId?: string
+  /** `AAAA-MM-GG`. */
+  giorno: string
+  provenienza?: string
+  conosciuto?: string
+  corsi: string[]
+  stato: StatoRichiesta
+}
+
+// I conteggi in una chiave loro, rilette a ogni uso come le richieste: con il
+// modulo e la segreteria aperti in due schede, nessuna delle due scrive sopra
+// i conteggi dell'altra con una copia vecchia (vedi la nota in coda.ts).
+const DOVE_CONTATE = 'ods-corsi:prova-richieste-contate'
+
+/** I conteggi della prova, letti adesso: per `richiesteDaDove` della segreteria di prova. */
+export function richiesteContateProva(): RichiestaContata[] {
+  try {
+    const r = JSON.parse(localStorage.getItem(DOVE_CONTATE) ?? '[]')
+    return Array.isArray(r) ? r : []
+  } catch {
+    return []
+  }
+}
+
+function cambiaContate(f: (c: RichiestaContata[]) => RichiestaContata[]) {
+  try {
+    localStorage.setItem(DOVE_CONTATE, JSON.stringify(f(richiesteContateProva())))
+  } catch {
+    /* senza spazio il conteggio si perde: è la prova */
+  }
+}
+
+/** Una richiesta che nasce, come il trigger after insert: una riga, una volta sola. */
 function conta(r: Richiesta) {
-  const contate = archivio.dati.richiesteContate ?? []
-  const riga = { giorno: chiaveGiorno(new Date(r.creataIl)), provenienza: r.provenienza, conosciuto: r.conosciuto, corsi: r.corsi, stato: r.stato }
-  archivio.dati.richiesteContate = contate.some((x) => x.richiestaId === r.id)
-    ? contate.map((x) => (x.richiestaId === r.id ? { ...x, ...riga } : x))
-    : [...contate, { richiestaId: r.id, ...riga }]
-  archivio.salva()
+  cambiaContate((c) => (c.some((x) => x.richiestaId === r.id) ? c : [...c, { richiestaId: r.id, giorno: chiaveGiorno(new Date(r.creataIl)), provenienza: r.provenienza, conosciuto: r.conosciuto, corsi: r.corsi, stato: r.stato }]))
+}
+
+/** Una richiesta che cambia, come il trigger after update: solo la riga che c'è; una richiesta di prima non ne ha. */
+function aggiornaConteggio(r: Richiesta) {
+  cambiaContate((c) => c.map((x) => (x.richiestaId === r.id ? { ...x, provenienza: r.provenienza, conosciuto: r.conosciuto, corsi: r.corsi, stato: r.stato } : x)))
+}
+
+/** Una richiesta eliminata, come il trigger before delete e `on delete set null`: da nuova (lo spam) non conta più; accolta o rifiutata resta, senza legame. */
+function scordaConteggio(id: string) {
+  cambiaContate((c) => c.filter((x) => !(x.richiestaId === id && x.stato === 'nuova')).map(({ richiestaId, ...x }) => (richiestaId === id ? x : { richiestaId, ...x })))
 }
 
 /** Gli esempi di `esempiProva`: si aggiungono, e una richiesta che c'è già resta com'è. */
@@ -78,6 +114,7 @@ export function aggiungiRichiesteProva(nuove: Richiesta[]) {
 export function scordaRichiesteProva() {
   try {
     localStorage.removeItem(DOVE)
+    localStorage.removeItem(DOVE_CONTATE)
   } catch {
     /* pazienza */
   }
@@ -102,7 +139,7 @@ export function creaRichiesteProva(): DatiRichieste {
     tutte = tutte.map((r) => (r.id === id ? { ...r, ...cambi } : r))
     salva()
     const r = tutte.find((x) => x.id === id)
-    if (r) conta(r)
+    if (r) aggiornaConteggio(r)
   }
 
   return {
@@ -281,11 +318,7 @@ export function creaRichiesteProva(): DatiRichieste {
       file.delete(richiestaId)
       tutte = tutte.filter((r) => r.id !== richiestaId)
       salva()
-      // Come `on delete set null`: il conteggio resta, senza più il legame.
-      if (archivio.dati.richiesteContate?.some((x) => x.richiestaId === richiestaId)) {
-        archivio.dati.richiesteContate = archivio.dati.richiesteContate.map(({ richiestaId: id, ...x }) => (id === richiestaId ? x : { richiestaId: id, ...x }))
-        archivio.salva()
-      }
+      scordaConteggio(richiestaId)
     },
   }
 }

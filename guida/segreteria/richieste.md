@@ -41,8 +41,9 @@ In fondo ai dati, due righe che vede solo la segreteria:
 
 **Non si sa** quando manca: chi non ha risposto, un link senza etichetta, le
 richieste arrivate prima. Le due righe non passano alla scheda dell'iscritto
-accolto; i numeri sono in [Statistiche](statistiche.md), e restano anche
-eliminando la richiesta.
+accolto; i numeri sono in [Statistiche](statistiche.md): le richieste eliminate da
+nuove, come lo spam, non contano; quelle accolte o rifiutate sì, anche
+eliminate.
 
 Una famiglia può iscriversi in più persone insieme, fino a sei: ognuna ha la
 sua richiesta, e nelle note di ognuna c'è una riga che le lega, «mandata

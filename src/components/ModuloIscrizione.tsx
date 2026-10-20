@@ -946,7 +946,7 @@ export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { no
  */
 export function ComeCiHaiConosciuto({ id, valore, onScegli, famiglia = false }: { id: string; valore: Conosciuto | undefined; onScegli: (c: Conosciuto | undefined) => void; famiglia?: boolean }) {
   return (
-    <Campo id={id} etichetta={domandaConosciuto(famiglia)}>
+    <Campo id={id} etichetta={domandaConosciuto(famiglia)} largo>
       <select id={id} className="campo" value={valore ?? ''} onChange={(e) => onScegli(pulisciConosciuto(e.target.value))}>
         <option value="">{SCEGLI_SE_VUOI}</option>
         {CONOSCIUTO.map((c) => (

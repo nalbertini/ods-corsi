@@ -16,9 +16,10 @@
 --
 -- I numeri per STATISTICHE stanno in `richieste_contate`: giorno, etichetta,
 -- scelta, corsi e stato, nessun dato personale. La scrive solo il trigger
--- della richiesta (nessun grant di scrittura), la legge solo la segreteria,
--- e resta quando la richiesta si elimina (`on delete set null`: il legame
--- serve solo a seguirne lo stato). Si conta da quando questo file c'è: le
+-- della richiesta (nessun grant di scrittura), la legge solo la segreteria.
+-- Una richiesta eliminata quando è ancora nuova (lo spam, una doppia) non conta
+-- più; una accolta o rifiutata eliminata resta contata (`on delete set null`:
+-- il legame serve solo a seguirne lo stato). Si conta da quando questo file c'è: le
 -- richieste di prima non hanno etichetta. `richieste_da_dove(da, a)` dà le
 -- righe del periodo, raggruppate, al riquadro DA DOVE ARRIVANO LE RICHIESTE.
 --
@@ -57,7 +58,7 @@ $$;
 -- ---------------------------------------------------------------------------
 create table if not exists richieste_contate (
   id           uuid primary key default gen_random_uuid(),
-  -- Solo per seguire lo stato della richiesta: eliminata, il conteggio resta.
+  -- Solo per seguire lo stato della richiesta: eliminata accolta o rifiutata, il conteggio resta (da nuova si toglie).
   richiesta_id uuid unique references richieste_iscrizione on delete set null,
   giorno       date not null,
   provenienza  text check (provenienza ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and length(provenienza) <= 90),
@@ -83,8 +84,10 @@ begin
     values (new.id, (new.creata_il at time zone 'Europe/Rome')::date, new.provenienza, new.conosciuto, new.corsi, new.stato)
     on conflict (richiesta_id) do nothing;
   else
+    -- Solo la riga che c'è: una richiesta arrivata prima di questo file non ne ha, e non ne prende.
     update richieste_contate
-      set provenienza = new.provenienza, conosciuto = new.conosciuto, corsi = new.corsi, stato = new.stato
+      set giorno = (new.creata_il at time zone 'Europe/Rome')::date,
+          provenienza = new.provenienza, conosciuto = new.conosciuto, corsi = new.corsi, stato = new.stato
       where richiesta_id = new.id;
   end if;
   return null;
@@ -92,8 +95,21 @@ end $$;
 revoke all on function conta_richiesta() from public, anon, authenticated;
 create or replace trigger richieste_contate_nuova after insert on richieste_iscrizione
   for each row execute function conta_richiesta();
-create or replace trigger richieste_contate_cambia after update of stato, provenienza, conosciuto, corsi on richieste_iscrizione
+create or replace trigger richieste_contate_cambia after update of stato, provenienza, conosciuto, corsi, creata_il on richieste_iscrizione
   for each row execute function conta_richiesta();
+
+-- Eliminata da nuova non conta più: chi riempie il modulo di richieste finte
+-- non deve lasciare i suoi numeri in STATISTICHE dopo che la segreteria le ha
+-- tolte. Accolte e rifiutate restano (la riga perde solo il legame).
+create or replace function scorda_richiesta_nuova() returns trigger
+  language plpgsql security definer set search_path = public, extensions as $$
+begin
+  delete from richieste_contate where richiesta_id = old.id and stato = 'nuova';
+  return old;
+end $$;
+revoke all on function scorda_richiesta_nuova() from public, anon, authenticated;
+create or replace trigger richieste_contate_scorda before delete on richieste_iscrizione
+  for each row execute function scorda_richiesta_nuova();
 
 /**
  * Le richieste arrivate fra `da` e `a` (giorni, compresi), raggruppate:

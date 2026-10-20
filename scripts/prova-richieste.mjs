@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere, fileObbligatori, MANCA_RICEVUTA, DETTAGLIO_RICEVUTA } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'; export { archivio } from './src/lib/archivioProva'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere, fileObbligatori, MANCA_RICEVUTA, DETTAGLIO_RICEVUTA } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'; export { archivio } from './src/lib/archivioProva'; export { aggiungiRichiesteProva, scordaRichiesteProva, richiesteContateProva } from './src/lib/richiesteProva'; export { seminaEsempi } from './src/lib/esempiProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -736,7 +736,10 @@ console.log('\n15. da dove arriva la richiesta: la prova pulisce e scarta come 7
   ok('i conteggi: da quando si conta, oggi', prima.dal, '2026-09-26')
   const daEliminare = (await r.richieste()).find((x) => x.provenienza === 'corso-karate').id
   await r.elimina(daEliminare)
-  ok('una richiesta eliminata resta contata', quante(await conteggi(), 'corso-karate'), 1)
+  // Eliminata quando è ancora nuova (lo spam) non conta più; accolta o rifiutata, eliminata, resta contata.
+  ok('una richiesta eliminata da nuova non conta più', quante(await conteggi(), 'corso-karate'), 0)
+  await r.elimina(id)
+  ok('una richiesta accolta, eliminata, resta contata', quante(await conteggi(), 'home'), 1)
   ok('fuori dal periodo non conta', typeof s.richiesteDaDove === 'function' && (await s.richiesteDaDove(new Date(2026, 7, 1), new Date(2026, 7, 31))).righe.length, 0)
   const rif = (await r.richieste()).find((x) => x.provenienza === 'instagram').id
   await r.rifiuta(rif)
@@ -761,6 +764,57 @@ console.log('\n16. la metà vera: le due chiavi partono, e si rileggono')
   ok('richieste: le due colonne si leggono', [con.provenienza, con.conosciuto], ['home', 'google'])
   const [senza] = await leggi([riga])
   ok('richieste: senza 73-provenienza-richieste.sql le colonne non ci sono, e la richiesta si legge lo stesso', [senza.id, senza.provenienza, senza.conosciuto], ['r-2', undefined, undefined])
+}
+
+console.log('\n17. i conteggi della prova: una chiave loro, riletta a ogni uso, come il database')
+{
+  const DOVE_CONTE = 'ods-corsi:prova-richieste-contate'
+  const conte = () => JSON.parse(localStorage.getItem(DOVE_CONTE) ?? '[]')
+  let n = 0
+  const manda = (cambi = {}) => r.invia(adulto({ email: `conte${++n}@esempio.it`, ...cambi }))
+  const id1 = await manda({ provenienza: 'volantino' })
+  ok('i conteggi stanno nella loro chiave', conte().some((x) => x.richiestaId === id1 && x.provenienza === 'volantino'), true)
+  ok('e non nell\'archivio di prova', 'richiesteContate' in m.archivio.dati, false)
+  // Un'altra scheda (la segreteria, aperta prima) salva il suo archivio: i conteggi non si perdono.
+  m.archivio.salva()
+  ok('due schede: la segreteria salva l\'archivio, il conteggio del modulo resta', conte().some((x) => x.richiestaId === id1), true)
+  // Un'altra scheda (il modulo) scrive un conteggio nella chiave: questa scheda non lo cancella alla scrittura dopo.
+  localStorage.setItem(DOVE_CONTE, JSON.stringify([...conte(), { richiestaId: 'r-altra-scheda', giorno: '2026-09-26', corsi: ['judo-adulti'], stato: 'nuova' }]))
+  await manda({ provenienza: 'festa' })
+  ok('due schede: il conteggio scritto dall\'altra scheda resta', conte().some((x) => x.richiestaId === 'r-altra-scheda'), true)
+  ok('e lo legge anche la segreteria', (await s.richiesteDaDove(new Date(2026, 8, 1), new Date(2026, 8, 26))).righe.some((x) => x.provenienza === undefined && x.corsi.includes('judo-adulti')), true)
+
+  // Una richiesta di prima (senza conteggio), rifiutata o accolta: il conteggio non nasce, come nel database.
+  const vecchie = JSON.parse(localStorage.getItem('ods-corsi:prova-richieste'))
+  localStorage.setItem('ods-corsi:prova-richieste', JSON.stringify([...vecchie, { ...adulto({ email: 'vecchia@esempio.it', codiceFiscale: 'RSSLCU96A01L219K' }), id: 'r-vecchia', creataIl: '2026-05-01T10:00:00Z', stato: 'nuova' }]))
+  const r2 = m.creaRichiesteProva()
+  await r2.rifiuta('r-vecchia')
+  ok('una richiesta senza conteggio, rifiutata, resta senza conteggio', conte().some((x) => x.richiestaId === 'r-vecchia'), false)
+
+  // La regola del database: eliminata da nuova non conta più, accolta o rifiutata sì.
+  const id3 = await manda({ provenienza: 'spam' })
+  await r.elimina(id3)
+  ok('eliminata da nuova: il conteggio va via', conte().some((x) => x.provenienza === 'spam'), false)
+  const id4 = await manda({ provenienza: 'rifiutata-poi' })
+  await r.rifiuta(id4)
+  await r.elimina(id4)
+  ok('rifiutata e poi eliminata: resta contata, senza legame', conte().filter((x) => x.provenienza === 'rifiutata-poi').map((x) => [x.stato, x.richiestaId ?? '—']), [['rifiutata', '—']])
+
+  // Ricominciare la prova toglie anche i conteggi.
+  m.scordaRichiesteProva()
+  ok('scordaRichiesteProva toglie anche i conteggi', localStorage.getItem(DOVE_CONTE), null)
+  ok('e la funzione esportata li legge vuoti', m.richiesteContateProva(), [])
+
+  // Gli esempi: almeno una richiesta con l'etichetta e una senza, contate una volta sola anche caricandoli due volte.
+  m.seminaEsempi(new Date())
+  const esempi = (await r2.richieste()).filter((x) => x.id.startsWith('r-esempio-'))
+  ok('gli esempi: almeno uno con l\'etichetta e uno senza', [esempi.some((x) => x.provenienza), esempi.some((x) => !x.provenienza)], [true, true])
+  const righe = (await s.richiesteDaDove(new Date(2026, 0, 1), new Date(2026, 11, 31))).righe
+  ok('gli esempi nel riquadro: una riga con l\'etichetta e una senza', [righe.some((x) => x.provenienza), righe.some((x) => !x.provenienza)], [true, true])
+  const prima = m.richiesteContateProva().length
+  m.aggiungiRichiesteProva(esempi)
+  ok('gli esempi caricati due volte contano una volta sola', [m.richiesteContateProva().length, prima], [esempi.length, esempi.length])
+  ok('il periodo al contrario: lo stesso errore del database', await errore(() => s.richiesteDaDove(new Date(2026, 8, 26), new Date(2026, 8, 1))), 'il periodo è al contrario')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

@@ -1506,6 +1506,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       try {
         const [p, r] = await Promise.all([db.from('sito_pagine').select('slug, titolo, titolo_pubblicato'), db.from('sito_redirect').select('da, a')])
         if (p.error || !Array.isArray(p.data)) return {}
+        // Le colonne di sito_pagine e sito_redirect in 56-sito.sql: il client non le conosce.
         const pagine = (p.data as Array<{ slug: string; titolo: string; titolo_pubblicato: string | null }>).map((x) => ({ slug: x.slug, titolo: x.titolo_pubblicato || x.titolo }))
         return titoliDelSito(pagine, !r.error && Array.isArray(r.data) ? (r.data as Array<{ da: string; a: string }>) : [])
       } catch {

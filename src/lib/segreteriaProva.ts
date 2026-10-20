@@ -20,7 +20,7 @@ const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
-import { richiesteDi, spostaRichieste } from './richiesteProva'
+import { richiesteContateProva, richiesteDi, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
@@ -1478,9 +1478,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async richiesteDaDove(da, fino) {
       // Come richieste_da_dove() di 73-provenienza-richieste.sql: le righe del periodo raggruppate, e da quando si conta.
-      const contate = a().richiesteContate ?? []
+      const contate = richiesteContateProva()
       const dal = chiaveGiorno(da)
       const al = chiaveGiorno(fino)
+      if (al < dal) throw new Error('il periodo è al contrario')
       const per = new Map<string, RigaDaDove>()
       for (const x of contate) {
         if (x.giorno < dal || x.giorno > al) continue

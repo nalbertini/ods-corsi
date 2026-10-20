@@ -47,7 +47,10 @@
 // telefono (sotto i 560px, src/styles.css nel blocco `@media (max-width: 560px)`): la nota va sotto il titolo, gli elenchi uno
 // sotto l'altro, padding 16px. Nel riquadro DA DOVE ARRIVANO LE RICHIESTE (`.sg-da-dove`, ElencoDaDove in Statistiche.tsx) ogni
 // riga e' a due piani: il nome a tutta riga (padding 10px 0 0, senza filo; nella testata 0 0 4px), sotto le cifre nelle colonne
-// della testata. Le altre tabelle delle statistiche, con piu' colonne, scorrono ancora di lato col nome fermo.
+// della testata; celle con 4px ai lati, testata con spaziatura 0.08em, e il titolo del riquadro che va a capo (a 360px non sta).
+// Nello stesso riquadro, sopra il telefono: il nome (e la testata «COME CI HANNO CONOSCIUTO») va a capo, le cifre hanno 6px ai lati,
+// e sotto i 1200px i due elenchi vanno uno sotto l'altro (`.sg-da-dove-due`): affiancati, RIFIUTATE usciva a 1280.
+// Le altre tabelle delle statistiche, con piu' colonne, scorrono ancora di lato col nome fermo.
 // Ogni elenco scorre di lato se non ci sta (.sg-orari-scorre). Non riprodotti: il passaggio del mouse, la freccia piena della colonna ordinata, lo scorrimento di lato.
 const truthy = (v) => v === true || v === 'true';
 const DIM = '#46606f';

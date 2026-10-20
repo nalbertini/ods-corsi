@@ -97,9 +97,13 @@ console.log('\n3. l\'etichetta si legge dall\'indirizzo della visita, e non rest
   ok('sbagliata: niente', d('?da=a/b'), '—')
   ok('senza etichetta: niente', d(''), '—')
   ok('la visita aperta con ?da=home', vedi(() => m.provenienzaDellaVisita()) ?? '—', 'home')
-  // Passando da #prezzi la pagina si ricarica con la stessa query; un altro ?da= nella stessa visita non cambia la prima.
+  // Passando da #prezzi e da «compila» la pagina cambia solo il cancelletto (o si ricarica con la stessa query):
+  // l'etichetta si rilegge ogni volta dall'indirizzo, senza tenerla da nessuna parte.
+  window.location.hash = '#prezzi'
+  ok('passando da #prezzi resta', vedi(() => m.provenienzaDellaVisita()) ?? '—', 'home')
   window.location.search = '?da=volantino'
-  ok('nella stessa visita resta la prima', vedi(() => m.provenienzaDellaVisita()) ?? '—', 'home')
+  ok('si legge dall\'indirizzo di adesso, niente copie tenute in memoria', vedi(() => m.provenienzaDellaVisita()) ?? '—', 'volantino')
+  window.location.search = '?da=home'
   ok('niente in localStorage', [...memoria.keys()], [])
   ok('niente in sessionStorage', [...sessione.keys()], [])
   ok('niente cookie', document.cookie, '')
@@ -112,6 +116,7 @@ console.log('\n4. la richiesta: dal modulo l\'etichetta della visita, dall\'area
   ok('dall\'area iscritti: la sua etichetta, e la risposta non c\'è', vedi(() => m.origineDellaRichiesta(true, 'instagram')), { provenienza: 'area-iscritti' })
   // Una famiglia di tre: la stessa etichetta e la stessa risposta in tutte e tre le richieste.
   const persone = [0, 1, 2].map((i) => ({ risposte: { nome: `P${i}`, note: '' } }))
+  ok('nessuna risposta: non c\'è in nessuno', vedi(() => m.conIlConosciuto(persone, undefined).map((p) => 'conosciuto' in p.risposte)), [false, false, false])
   const conRisposta = vedi(() => m.conIlConosciuto(persone, 'amici-parenti'))
   ok('la risposta sta nella persona 0 e in nessun\'altra', Array.isArray(conRisposta) ? conRisposta.map((p) => p.risposte.conosciuto ?? '—') : conRisposta, ['amici-parenti', '—', '—'])
   ok('si rilegge uguale', vedi(() => m.conosciutoDelModulo(conRisposta)), 'amici-parenti')
@@ -198,6 +203,19 @@ console.log('\n7. i conti del riquadro: per persona, arrivate nel periodo e come
     { provenienza: 'volantino', conosciuto: 'sito', corsi: [K], stato: 'nuova', n: 1 },
     { provenienza: 'home', conosciuto: 'altro', corsi: [K], stato: 'nuova', n: 1 },
   ]).arrivateDa?.map((x) => x.nome), ['Home del sito', 'volantino'])
+}
+
+console.log('\n7b. NON SI SA resta in fondo, comunque si ordini')
+{
+  const voci = [
+    { nome: 'Home del sito', arrivate: 2, accolte: 1, rifiutate: 0, nonSiSa: false },
+    { nome: 'Non si sa', arrivate: 9, accolte: 0, rifiutate: 0, nonSiSa: true },
+    { nome: 'instagram', arrivate: 1, accolte: 0, rifiutate: 1, nonSiSa: false },
+  ]
+  const perArrivate = (v) => [...v].sort((a, b) => b.arrivate - a.arrivate)
+  ok('ordinate per arrivate: NON SI SA, la più grande, in fondo', vedi(() => m.conNonSiSaInFondo(voci, perArrivate).map((x) => x.nome)), ['Home del sito', 'instagram', 'Non si sa'])
+  ok('al contrario: sempre in fondo', vedi(() => m.conNonSiSaInFondo(voci, (v) => perArrivate(v).reverse()).map((x) => x.nome)), ['instagram', 'Home del sito', 'Non si sa'])
+  ok('senza NON SI SA: com\'erano ordinate', vedi(() => m.conNonSiSaInFondo(voci.filter((x) => !x.nonSiSa), (v) => v).map((x) => x.nome)), ['Home del sito', 'instagram'])
 }
 
 console.log('\n8. le frasi del riquadro')

@@ -64,8 +64,9 @@ medie: si conta a parte.
   [Richieste online](richieste.md)). Si conta per persona: una famiglia di tre
   conta tre. **NON SI SA** sta sempre in fondo, poi **In tutto**; le colonne si
   ordinano con un tocco. Con un corso scelto in cima contano le richieste che
-  lo chiedono: chi ne chiede due conta in tutti e due. I numeri restano anche
-  se una richiesta si elimina, e non hanno nomi. La frase sotto dice da quando
+  lo chiedono: chi ne chiede due conta in tutti e due. Le richieste eliminate
+  da nuove, come lo spam, non contano; quelle accolte o rifiutate sì, anche
+  eliminate. I numeri non hanno nomi. La frase sotto dice da quando
   si conta (prima i link non avevano l'etichetta). Sul telefono ogni riga va
   su due piani: il nome sopra, le cifre sotto.
 - **INCASSI MESE PER MESE** — quanto è stato pagato con le

@@ -5,7 +5,7 @@ import { chiaveGiorno, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
 import { Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
-import { contaDaDove, fraseDaDove, MANCA_PROVENIENZA, notaDaDove, type VoceDaDove } from '../../lib/provenienza'
+import { conNonSiSaInFondo, contaDaDove, fraseDaDove, MANCA_PROVENIENZA, notaDaDove, type VoceDaDove } from '../../lib/provenienza'
 
 const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
 const MESI_LUNGHI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
@@ -285,7 +285,7 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
             {prove.guaio ? <Guaio testo={prove.guaio} /> : prove.dato && <ProveMese mesi={mesi} prove={provati} />}
           </section>
 
-          <section aria-label="Da dove arrivano le richieste" className="sg-riquadro">
+          <section aria-label="Da dove arrivano le richieste" className="sg-riquadro sg-da-dove-riquadro">
             <Riga titolo="DA DOVE ARRIVANO LE RICHIESTE">
               <span style={{ fontSize: 12, color: 'var(--dim)' }}>{notaDaDove(nomeCorso)}</span>
             </Riga>
@@ -751,7 +751,7 @@ function DaDove({ conti, dal }: { conti: ReturnType<typeof contaDaDove>; dal: st
   if (!conti.totale.arrivate) return <span className="sg-sotto">{frase}</span>
   return (
     <div className="stack" style={{ gap: 12 }}>
-      <div className="sg-stat-due">
+      <div className="sg-stat-due sg-da-dove-due">
         <ElencoDaDove titolo="ARRIVATE DA" voci={conti.arrivateDa} totale={conti.totale} />
         <ElencoDaDove titolo="COME CI HANNO CONOSCIUTO" voci={conti.conosciuto} totale={conti.totale} />
       </div>
@@ -782,7 +782,7 @@ function ElencoDaDove({ titolo, voci, totale }: { titolo: string; voci: VoceDaDo
           </tr>
         </thead>
         <tbody>
-          {[...ordina(voci.filter((v) => !v.nonSiSa)), ...voci.filter((v) => v.nonSiSa)].map((v) => (
+          {conNonSiSaInFondo(voci, ordina).map((v) => (
             <tr key={v.nome} data-non-si-sa={v.nonSiSa || undefined}>
               <th scope="row" style={{ fontWeight: 600 }}>
                 {v.nonSiSa ? 'NON SI SA' : v.nome}

@@ -26,6 +26,9 @@ export interface Operazione {
 // conta. Con lo stesso nome una si leggerebbe i dati dell'altra. Il timer usa
 // questa stessa coda, sotto la sua chiave: una coda che trovasse le
 // operazioni dell'altra app non saprebbe eseguirle, e si fermerebbe lì.
+// Le chiavi `ods-corsi:prova-…` (archivio, richieste, `prova-richieste-contate`
+// coi conteggi di da dove arrivano le richieste) sono i dati della modalità
+// prova sul dispositivo: non tracciano nessuno, e si tolgono ripartendo.
 const DOVE = 'ods-corsi:coda'
 
 const leggi = (dove: string): Operazione[] => {
