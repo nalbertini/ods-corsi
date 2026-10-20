@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.136.0 — 20 ottobre 2026
+
+### Novità
+
+- Claude legge i conti: totali per periodo, saldo del conto e spese da classificare
+
 ## 0.135.0 — 20 ottobre 2026
 
 ### Novità
