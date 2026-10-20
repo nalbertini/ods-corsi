@@ -5,6 +5,7 @@ import { chiaveGiorno, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
 import { Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
+import { StatisticheSito } from './StatisticheSito'
 
 const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
 const MESI_LUNGHI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
@@ -293,6 +294,9 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
           </section>
         </>
       )}
+
+      {/* In fondo e fuori dal blocco delle lezioni: i numeri del sito non dipendono da quelli della palestra. */}
+      <StatisticheSito d={d} da={chiaveGiorno(da)} a={g} oggi={g} corso={!!corso} />
     </>
   )
 }
@@ -323,7 +327,7 @@ function contaIscritti(persone: PersonaSeg[], corso: string, mesi: string[], ogg
   }
 }
 
-interface Colonna {
+export interface Colonna {
   chiave: string
   etichetta: string
   valore: number
@@ -344,7 +348,7 @@ function tetto(x: number) {
  * sinistra, il numero esatto sotto il dito o il mouse. Il mese in corso non è
  * finito, e si vede: è tratteggiato.
  */
-function Colonne({ nome, colonne, formato = (n: number) => n.toLocaleString('it-IT') }: { nome: string; colonne: Colonna[]; formato?: (n: number) => string }) {
+export function Colonne({ nome, colonne, formato = (n: number) => n.toLocaleString('it-IT') }: { nome: string; colonne: Colonna[]; formato?: (n: number) => string }) {
   const [sopra, setSopra] = useState<string | null>(null)
   const max = tetto(Math.max(0, ...colonne.map((c) => c.valore)))
   if (colonne.every((c) => c.valore === 0)) return <span className="sg-sotto">Niente da contare in questo periodo.</span>

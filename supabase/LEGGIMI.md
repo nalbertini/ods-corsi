@@ -1027,6 +1027,37 @@ supabase functions deploy sito --project-ref <id-del-progetto>
 o dal pannello, **Edge Functions → Deploy a new function**, col nome `sito`.
 Senza la funzione l'app funziona uguale: il sito si aggiorna col giro a tempo.
 
+### I numeri del sito
+
+Il riquadro **IL SITO** di STATISTICHE legge le visite e i tocchi su
+Iscriviti, Chiama e Scrivici da GoatCounter con la funzione
+**`statistiche-sito`** (`functions/statistiche-sito/index.ts`). La chiave di
+GoatCounter sta solo nella funzione, mai nell'app; all'app tornano solo i
+conti. La usa solo la segreteria (`ruolo = 'staff'`, attiva).
+
+1. Su <https://ods.goatcounter.com>: in alto a destra il tuo utente → **API**
+   → nuova chiave. Dagli un nome («app ODS Corsi») e lascia **solo** il
+   permesso di leggere le statistiche: niente che scriva, conti visite o
+   cambi le impostazioni (i nomi dei permessi li dice la pagina, GoatCounter
+   non li documenta). Copia la chiave: la vedi una volta sola.
+2. Su Supabase, **Edge Functions → Secrets**, aggiungi `GOATCOUNTER_CHIAVE`
+   con quella chiave.
+3. Pubblica la funzione:
+
+```sh
+supabase functions deploy statistiche-sito --project-ref <id-del-progetto>
+```
+
+o dal pannello, **Edge Functions → Deploy a new function**, col nome
+`statistiche-sito` e i due file della cartella (`index.ts` e `numeri.ts`).
+`numeri.ts` è una copia di `src/lib/sitoNumeri.ts`: si cambia là e si
+ricopia (`npm run prova:statistiche-sito` controlla che siano uguali).
+
+Senza la funzione il riquadro dice «Il contatore non è ancora acceso»;
+senza la chiave «Manca la chiave del contatore»; con una chiave scaduta o
+senza permesso «Il contatore non accetta la chiave». Il resto delle
+statistiche funziona uguale.
+
 ## 12. Claude e la contabilità
 
 Chi cura i conti può collegare Claude al suo account e fotografargli fatture,

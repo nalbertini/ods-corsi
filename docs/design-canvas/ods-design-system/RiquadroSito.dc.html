@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<section aria-label="Il sito" style="display: flex; flex-direction: column; gap: 14px; width: 100%; min-width: 0; padding: 18px 20px; background: #ffffff; border-radius: 6px; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <!-- La testa: come Riga di comune.tsx (titolo, filo, nota); sul telefono la nota va sotto. -->
+  <div style="display: flex; flex-wrap: {{aCapo}}; align-items: baseline; gap: 4px 10px">
+    <h3 style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.22em; color: #46606f; white-space: nowrap">IL SITO</h3>
+    <div style="flex-grow: 1; height: 2px; background: #cfe6f4"></div>
+    <span style="font-size: 12px; color: #46606f; flex-basis: {{baseNota}}">visite e tocchi su Iscriviti, Chiama e Scrivici · tutta la palestra</span>
+  </div>
+
+  <!-- Quando sono stati letti e AGGIORNA: a destra sullo schermo largo, sotto la nota sul telefono. -->
+  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px">
+    <span style="flex: 1 1 360px; min-width: 0; font-size: 13px; line-height: 1.45; color: #46606f">Numeri indicativi, dal contatore del sito (GoatCounter): conta le visite, non le pagine viste. La stessa persona entro 8 ore è una visita sola.</span>
+    <div style="display: flex; align-items: center; gap: 12px; flex: {{flessoAggiorna}}">
+      <span style="font-size: 13px; color: #46606f; font-variant-numeric: tabular-nums; white-space: nowrap" role="status">{{letti}}</span>
+      <div style="flex: {{flessoTasto}}"><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Aggiorna" variante="linea" disabled="{{aggiornaSpento}}" larghezza="100%" hint-size="100%,48px"></dc-import></div>
+    </div>
+  </div>
+
+  <sc-if value="{{haProva}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 10px 14px; border-radius: 6px; background: #eef5fa; box-shadow: inset 4px 0 0 #8f6a00; font-size: 14px; line-height: 1.45"><b style="color: #8f6a00">… Prova</b> · numeri inventati, sempre gli stessi: il sito vero non si chiama.</div>
+  </sc-if>
+  <sc-if value="{{haDal}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 10px 14px; border-radius: 6px; background: #eef5fa; font-size: 14px; line-height: 1.45">Si conta dal <b>{{dal}}</b>, quando sul sito è stato acceso il contatore: i mesi prima non ci sono.</div>
+  </sc-if>
+  <sc-if value="{{haCorso}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 10px 14px; border-radius: 6px; background: #eef5fa; font-size: 14px; line-height: 1.45">Il sito è di tutta la palestra: il corso scelto qui non conta.</div>
+  </sc-if>
+
+  <sc-if value="{{legge}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 14px; color: #46606f">Sto leggendo i numeri del sito…</span>
+  </sc-if>
+  <sc-if value="{{soloTesta}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 13px; color: #46606f; font-style: italic">(nel canvas soltanto: qui sotto i numeri, come nella pagina)</span>
+  </sc-if>
+
+  <sc-if value="{{errore}}" hint-placeholder-val="{{ false }}">
+    <!-- L'errore sta dentro il riquadro: gli altri riquadri restano. Come Guaio di comune.tsx (NON LETTO, rosso), con la barra a sinistra del look. -->
+    <div role="alert" style="display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 6px; background: #eef5fa; box-shadow: inset 4px 0 0 #e4292a">
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: #b81d1d">✕ NON LETTO</span>
+      <span style="font-size: 16px; font-weight: 700">{{erroreTitolo}}</span>
+      <span style="font-size: 14px; line-height: 1.45; color: #46606f">{{erroreFrase}}</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{pieno}}" hint-placeholder-val="{{ true }}">
+    <!-- Il totale del periodo, come INCASSI: la cifra grande e il resto in parole. -->
+    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; font-size: 14px">
+      <span><span style="font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700">{{tot.visite}}</span> visite nel periodo</span>
+      <span><span style="font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700">{{tot.iscriviti}}</span> su Iscriviti</span>
+      <span><span style="font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700">{{tot.chiama}}</span> su Chiama</span>
+      <span><span style="font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700">{{tot.scrivici}}</span> su Scrivici</span>
+    </div>
+
+    <!-- Mese per mese: le colonne delle visite (le stesse di PRESENZE, PROVE, INCASSI) e accanto la tabella con i tre tasti. -->
+    <div style="display: grid; grid-template-columns: {{colonneMese}}; gap: 18px 28px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">VISITE MESE PER MESE</span>
+        <dc-import name="Colonne" tema="sito" mesi="{{mesiColonne}}" sopra="{{sopra}}" dettaglio="{{dettaglio}}" hint-size="100%,206px"></dc-import>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0; overflow-x: auto">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">HANNO TOCCATO</span>
+        <!-- .sg-stat-tabella: testata 11px 700 0.14em, righe 8px 10px col filo surface-2, numeri a destra 15px 600. -->
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px">
+          <thead>
+            <tr>
+              <th style="padding: 8px {{cella}}; border-bottom: 2px solid #cfe6f4; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: {{spazioTesta}}; color: #46606f">MESE</th>
+              <th style="padding: 8px {{cella}}; border-bottom: 2px solid #cfe6f4; text-align: right; font-size: 11px; font-weight: 700; letter-spacing: {{spazioTesta}}; color: #46606f">VISITE</th>
+              <th style="padding: 8px {{cella}}; border-bottom: 2px solid #cfe6f4; text-align: right; font-size: 11px; font-weight: 700; letter-spacing: {{spazioTesta}}; color: #46606f">ISCRIVITI</th>
+              <th style="padding: 8px {{cella}}; border-bottom: 2px solid #cfe6f4; text-align: right; font-size: 11px; font-weight: 700; letter-spacing: {{spazioTesta}}; color: #46606f">CHIAMA</th>
+              <th style="padding: 8px {{cella}}; border-bottom: 2px solid #cfe6f4; text-align: right; font-size: 11px; font-weight: 700; letter-spacing: {{spazioTesta}}; color: #46606f">SCRIVICI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{mesi}}" as="m" hint-placeholder-count="3">
+              <tr>
+                <th scope="row" style="padding: 8px {{cella}}; border-bottom: 1px solid #cfe6f4; text-align: left; font-weight: 600; white-space: nowrap">{{m.nome}} <span style="display: {{notaMese}}; font-weight: 400; font-size: 12px; color: #46606f">{{m.nota}}</span></th>
+                <td style="padding: 8px {{cella}}; border-bottom: 1px solid #cfe6f4; text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600">{{m.visite}}</td>
+                <td style="padding: 8px {{cella}}; border-bottom: 1px solid #cfe6f4; text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600">{{m.iscriviti}}</td>
+                <td style="padding: 8px {{cella}}; border-bottom: 1px solid #cfe6f4; text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600">{{m.chiama}}</td>
+                <td style="padding: 8px {{cella}}; border-bottom: 1px solid #cfe6f4; text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600">{{m.scrivici}}</td>
+              </tr>
+            </sc-for>
+            <tr>
+              <th scope="row" style="padding: 8px {{cella}}; border-top: 2px solid #cfe6f4; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: {{spazioTesta}}; color: #46606f">TOTALE</th>
+              <td style="padding: 8px {{cella}}; border-top: 2px solid #cfe6f4; text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700">{{tot.visite}}</td>
+              <td style="padding: 8px {{cella}}; border-top: 2px solid #cfe6f4; text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700">{{tot.iscriviti}}</td>
+              <td style="padding: 8px {{cella}}; border-top: 2px solid #cfe6f4; text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700">{{tot.chiama}}</td>
+              <td style="padding: 8px {{cella}}; border-top: 2px solid #cfe6f4; text-align: right; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700">{{tot.scrivici}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <span style="font-size: 12px; color: #46606f">Scrivici è il tasto di WhatsApp. Un tocco conta anche se poi la persona non chiama o non scrive.</span>
+      </div>
+    </div>
+
+    <!-- Le pagine e le provenienze: barre di un valore solo, come .sg-barra di PRESENZE (binario 14px surface-2, pieno blu, numero a destra);
+         il nome in Inter 15px 600 con l'indirizzo sotto, perche' il titolo da solo non dice sempre quale pagina e'. -->
+    <div style="display: grid; grid-template-columns: {{colonneListe}}; gap: 22px 28px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">LE PAGINE PIÙ LETTE</span>
+        <sc-for list="{{pagine}}" as="x" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: {{grigliaBarra}}; gap: 4px 12px; align-items: center; min-height: 34px">
+            <span style="display: flex; flex-direction: column; min-width: 0; grid-area: nome">
+              <span style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{x.nome}}</span>
+              <span style="font-size: 12px; color: #46606f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{x.sotto}}</span>
+            </span>
+            <span style="position: relative; height: 14px; background: #cfe6f4; grid-area: barra"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: {{x.pc}}; background: #14709f; border-radius: 0 4px 4px 0"></span></span>
+            <span style="font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600; text-align: right; grid-area: n">{{x.n}}</span>
+          </div>
+        </sc-for>
+        <span style="font-size: 12px; color: #46606f">Visite per pagina: in una visita si leggono anche più pagine, quindi la somma è più delle visite.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">DA DOVE ARRIVANO</span>
+        <sc-for list="{{provenienze}}" as="x" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: {{grigliaBarra}}; gap: 4px 12px; align-items: center; min-height: 34px">
+            <span style="display: flex; flex-direction: column; min-width: 0; grid-area: nome">
+              <span style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{x.nome}}</span>
+              <span style="font-size: 12px; color: #46606f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{x.sotto}}</span>
+            </span>
+            <span style="position: relative; height: 14px; background: #cfe6f4; grid-area: barra"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: {{x.pc}}; background: #14709f; border-radius: 0 4px 4px 0"></span></span>
+            <span style="font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600; text-align: right; grid-area: n">{{x.n}}</span>
+          </div>
+        </sc-for>
+        <!-- «Diretto o non si sa» non e' una provenienza come le altre: a parte, sotto un filo, con la spiegazione. -->
+        <div style="display: grid; grid-template-columns: {{grigliaBarra}}; gap: 4px 12px; align-items: center; min-height: 34px; padding-top: 10px; border-top: 1px solid #cfe6f4">
+          <span style="display: flex; flex-direction: column; min-width: 0; grid-area: nome">
+            <span style="font-size: 15px; font-weight: 600">Diretto o non si sa</span>
+            <span style="font-size: 12px; line-height: 1.35; color: #46606f">indirizzo scritto a mano, link da WhatsApp, app che non lo dicono</span>
+          </span>
+          <span style="position: relative; height: 14px; background: #cfe6f4; grid-area: barra"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: {{diretto.pc}}; background: #14709f; border-radius: 0 4px 4px 0"></span></span>
+          <span style="font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600; text-align: right; grid-area: n">{{diretto.n}}</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</section>
+</x-dc>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["pieno","errore","legge","testa"],"default":"pieno"},"telefono":{"editor":"boolean","default":false},"letti":{"editor":"text","default":"Letti alle 10:42"},"aggiornaSpento":{"editor":"boolean","default":false},"dal":{"editor":"text","default":""},"corso":{"editor":"boolean","default":false},"prova":{"editor":"boolean","default":false},"mesi":{"editor":"text","default":"gen:gennaio:1580:34:17:41|feb:febbraio:1102:19:10:27|mar:marzo:698:12:6:16:fino a oggi"},"pagine":{"editor":"text","default":"Home|/|2140;I corsi|/corsi|1020;Judo|/corsi/judo|742;Orari|/orari|615;Karate|/corsi/karate|488;Altre 9 pagine||1090"},"provenienze":{"editor":"text","default":"Google|ricerca e mappe|1410;Instagram||520;Facebook||310;Bing||46;Pagine Gialle||38;Altre 7||26"},"diretto":{"editor":"text","default":"1030"},"sopra":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":""},"erroreTitolo":{"editor":"text","default":"GoatCounter non risponde"},"erroreFrase":{"editor":"text","default":"Il contatore del sito non ha risposto. Gli altri numeri della pagina sono a posto: riprova più tardi con Aggiorna."},"$preview":{"width":1124,"height":900}}'>
+// COSTRUITO: il riquadro IL SITO, in fondo a STATISTICHE della segreteria, nel look del sito (src/components/segreteria/StatisticheSito.tsx,
+// classi .sg-sito-* di src/styles.css; regole in src/lib/sitoStatistiche.ts e sitoNumeri.ts). Il design approvato sta in ../sito-in-statistiche/.
+// Come costruito: «Altre N pagine» senza i nomi sotto (GoatCounter da' solo i conti); «· di nuovo fra un minuto» accanto all'ora finche' Aggiorna
+// e' spento, anche dopo la prima lettura; sotto i 1000px una colonna, sotto i 768px le barre col nome sopra e la tabella col mese corto.
+// Il guscio e' quello degli altri riquadri (.sg-riquadro col look: tessera bianca senza bordo, raggio 6px, padding 18px 20px) con la testa di `Riga`
+// (comune.tsx: h3 14px 700 0.22em `dim`, .rule-line 2px, nota 12px). Le colonne sono Colonne.dc.html della libreria (le stesse di PRESENZE, PROVE,
+// INCASSI); la tabella ripete .sg-stat-tabella (src/styles.css righe 2648-2652); le barre ripetono .sg-barra (righe 2595-2599) con il nome su due righe.
+// Il tasto Aggiorna e' Bottone a linea (contesto segreteria, look sito: bordo #14709f, 48px). Tutti i colori sono token del look (src/styles.css :root[data-look='sito']).
+// mesi: "corto:nome:visite:iscriviti:chiama:scrivici[:nota]" dal piu' vecchio; l'ultimo e' il mese in corso (tratteggiato nelle colonne).
+// pagine e provenienze: "nome|sotto|n" separati da «;»; la barra e' in proporzione al piu' grande della lista (Diretto compreso, per le provenienze).
+// stato: pieno (i numeri), errore (`erroreTitolo`, `erroreFrase`: il riquadro dice cosa fare, gli altri riquadri restano), legge (la prima lettura),
+// testa (nel canvas soltanto: la testa e le frasi, senza i numeri, per la tavola degli stati).
+// dal: la data da cui si conta, quando il periodo comincia prima (20 ottobre 2026); corso: c'e' un corso scelto in alto; prova: modalita' prova.
+// telefono: una colonna sola, la nota sotto il titolo, le barre col nome sopra e Aggiorna a tutta riga.
+const truthy = (v) => v === true || v === 'true';
+const it = (n) => Number(n).toLocaleString('it-IT');
+const lista = (s) => String(s ?? '').split(';').filter(Boolean).map((r) => { const [nome, sotto, n] = r.split('|'); return { nome, sotto: sotto ?? '', n: Number(n) || 0 }; });
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const tel = truthy(p.telefono);
+    const stato = p.stato || 'pieno';
+    const mesi = String(p.mesi ?? '').split('|').filter(Boolean).map((s) => {
+      const [corto, nome, v, i, c, w, nota] = s.split(':');
+      return { corto, nome, visite: Number(v) || 0, iscriviti: Number(i) || 0, chiama: Number(c) || 0, scrivici: Number(w) || 0, nota: nota ?? '' };
+    });
+    const somma = (k) => mesi.reduce((s, m) => s + m[k], 0);
+    const pagine = lista(p.pagine);
+    const prov = lista(p.provenienze);
+    const diretto = Number(p.diretto) || 0;
+    const maxP = Math.max(1, ...pagine.map((x) => x.n));
+    const maxV = Math.max(1, diretto, ...prov.map((x) => x.n));
+    const conPc = (xs, max) => xs.map((x) => ({ ...x, pc: (100 * x.n / max).toFixed(1) + '%', n: it(x.n) }));
+    return {
+      aCapo: tel ? 'wrap' : 'nowrap', baseNota: tel ? '100%' : 'auto',
+      flessoAggiorna: tel ? '1 1 100%' : '0 0 auto', flessoTasto: tel ? '1 1 auto' : '0 0 120px',
+      // Sul telefono la tabella sta nei 318px: celle strette, testata meno spaziata, il mese corto (GEN 2027) senza la nota.
+      cella: tel ? '5px' : '10px', spazioTesta: tel ? '0.04em' : '0.14em', notaMese: tel ? 'none' : 'inline',
+      letti: p.letti ?? '', aggiornaSpento: truthy(p.aggiornaSpento),
+      haDal: !!p.dal && stato !== 'errore', dal: p.dal ?? '', haCorso: truthy(p.corso), haProva: truthy(p.prova),
+      legge: stato === 'legge', errore: stato === 'errore', pieno: stato === 'pieno', soloTesta: stato === 'testa',
+      erroreTitolo: p.erroreTitolo ?? '', erroreFrase: p.erroreFrase ?? '',
+      tot: { visite: it(somma('visite')), iscriviti: it(somma('iscriviti')), chiama: it(somma('chiama')), scrivici: it(somma('scrivici')) },
+      mesi: mesi.map((m) => ({ nome: tel ? m.corto.toUpperCase() + ' ' + m.nome.split(' ')[1] : m.nome, nota: m.nota, visite: it(m.visite), iscriviti: it(m.iscriviti), chiama: it(m.chiama), scrivici: it(m.scrivici) })),
+      mesiColonne: mesi.map((m) => m.corto + ':' + m.visite).join('|'),
+      sopra: p.sopra ?? '', dettaglio: p.dettaglio ?? '',
+      colonneMese: tel ? 'minmax(0, 1fr)' : 'minmax(0, 1fr) minmax(0, 1fr)',
+      colonneListe: tel ? 'minmax(0, 1fr)' : 'minmax(0, 1fr) minmax(0, 1fr)',
+      // Sullo schermo largo nome | barra | numero (come .sg-barra, 190px per il nome); sul telefono il nome e il numero sopra, la barra sotto.
+      grigliaBarra: tel ? "minmax(0, 1fr) auto; grid-template-areas: 'nome n' 'barra barra'" : "190px minmax(0, 1fr) 56px; grid-template-areas: 'nome barra n'",
+      pagine: conPc(pagine, maxP), provenienze: conPc(prov, maxV), diretto: { n: it(diretto), pc: (100 * diretto / maxV).toFixed(1) + '%' },
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@ import { giorniConLezioni } from './calendarioSettimana'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
+import { numeriDiProva } from './sitoStatistiche'
 import { insegna, segniDi, siElimina, type RuoloPersonale } from './ruoli'
 import { contattoDopoUnione, type IndiziDoppioni } from './doppioni'
 import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
@@ -1473,6 +1474,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
         })
         .filter((x): x is ProvaSeg => !!x)
         .sort((p, q) => q.inizio.localeCompare(p.inizio))
+    },
+
+    async statisticheSito(da, a) {
+      // In prova il sito vero non si chiama: numeri inventati, sempre gli stessi.
+      return { numeri: numeriDiProva(da, a) }
     },
 
     async statistiche(da, fino): Promise<Statistiche> {

@@ -37,3 +37,11 @@ Le scelte:
   rossa del look e una frase che dice cosa fare.
 - Sul telefono una colonna: nelle barre il nome e il numero sopra, la barra
   sotto; la tabella stringe le celle e scrive il mese corto (GEN 2027).
+
+## Come è stato costruito
+
+Approvato e costruito (`StatisticheSito.tsx`): ora lo descrive la libreria,
+`ods-design-system/RiquadroSito.dc.html`; queste tavole restano come storia.
+Le differenze dal disegno: «Altre N pagine» senza i nomi sotto (GoatCounter
+dà solo i conti), e «· di nuovo fra un minuto» accanto all'ora finché
+Aggiorna è spento, anche subito dopo la prima lettura.

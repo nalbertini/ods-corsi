@@ -22,6 +22,7 @@ import type { PaginaSito, VoceMenu } from './sitoPagine'
 import type { PezziPagina } from './sitoPezzi'
 import type { ImmagineSito } from './sitoImmagini'
 import type { OrarioSito } from './sitoOrari'
+import type { LetturaSito } from './sitoStatistiche'
 
 export type { ListaMusica } from './musica'
 import type { IndiziDoppioni } from './doppioni'
@@ -711,6 +712,11 @@ export interface DatiSegreteria {
   prove(da: Date, a: Date): Promise<ProvaSeg[]>
   /** Le lezioni già cominciate fra due giorni in numeri, e gli incassi mese per mese. */
   statistiche(da: Date, a: Date): Promise<Statistiche>
+  /**
+   * I numeri del sito (GoatCounter) fra due giorni `AAAA-MM-GG` di Roma, per IL SITO in STATISTICHE: dalla funzione
+   * `statistiche-sito`. Un guaio non è un'eccezione: il riquadro lo dice e gli altri restano.
+   */
+  statisticheSito(da: string, a: string): Promise<LetturaSito>
 
   personale(): Promise<PersonaleSeg[]>
   salvaPersonale(p: DatiPersona & RuoloPersonale): Promise<string>

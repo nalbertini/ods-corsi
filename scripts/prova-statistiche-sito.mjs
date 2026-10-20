@@ -128,7 +128,7 @@ ok('il segreto è GOATCOUNTER_CHIAVE', fn.includes("Deno.env.get('GOATCOUNTER_CH
 ok('il sito è fisso: ods', fn.includes('https://ods.goatcounter.com/api/v0'), true)
 ok('solo la segreteria attiva', ["eq('ruolo', 'staff')", "eq('attiva', true)"].every((x) => fn.includes(x)), true)
 ok('tre chiamate: total, hits, toprefs', [...fn.matchAll(/\/stats\/[a-z]+/g)].map((m) => m[0]).sort(), ['/stats/hits', '/stats/toprefs', '/stats/total'])
-ok('risponde 401, 403, 400, 501, 502', [401, 403, 400, 501, 502].every((s) => new RegExp(`,\\s*${s}\\)`).test(fn)), true)
+ok('risponde 401, 403, 400, 501, 502', [401, 403, 400, 501, 502].every((s) => new RegExp(`,\\s*${s}[,)]`).test(fn)), true)
 ok('la chiave non torna mai all’app', /risposta\([^)]*chiave/.test(fn), false)
 
 console.log('Le regole dell’app')

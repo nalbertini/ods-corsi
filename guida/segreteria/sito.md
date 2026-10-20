@@ -239,8 +239,11 @@ indirizzi che non esistono, col titolo «404»), da quale sito si arriva, in
 totale browser, tipo di dispositivo e paese, e quanti tocchi hanno avuto i
 pulsanti per iscriversi («iscriviti»), per telefonare («chiama») e per scrivere
 su WhatsApp («scrivici»), un totale per tipo. Non si sa chi è la
-persona, e il modulo di iscrizione, che sta nell'app, non è contato. I numeri li
-legge chi ha l'account GoatCounter della palestra: nel pannello non si vedono.
+persona, e il modulo di iscrizione, che sta nell'app, non è contato. Nel pannello
+non si vedono: le visite, i tocchi su Iscriviti, Chiama e Scrivici, le pagine più
+lette e da dove si arriva si leggono in [Statistiche](statistiche.md#il-sito), in
+fondo; il resto (browser, dispositivi, paesi, la 404) lo legge chi ha l'account
+GoatCounter della palestra.
 
 Se compare «Il pannello del sito non è ancora attivo sul database», manca un
 aggiornamento del database: va chiesto a chi cura l'app.
