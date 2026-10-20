@@ -9,7 +9,6 @@
  * l'estratto che la segreteria ha scritto prima del testo intero.
  */
 
-import { haProvenienza } from './provenienza'
 import { PILLOLE, blocchi, coloreDi, conCaricamento, contenuto, gruppiDa, griglia, immagine, iniziali, numeriDiUnElenco, sezione, sonoCorsi, testoSolo, type Blocco } from './sitoLayout'
 
 export const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
@@ -37,13 +36,14 @@ export function pulsantiDi(b: Blocco): Link[] | null {
 
 /**
  * Il pulsante verso il modulo per primo (giallo) e sempre «Iscriviti», qualunque cosa abbia scritto la segreteria; gli altri a linea: l'ordine con cui li ha scritti non conta.
- * Il suo indirizzo è quello del modulo, tranne un `?da=` scritto a mano, che resta (l'etichetta della pagina la mette `generaSito`).
+ * Il suo indirizzo è quello del modulo, scritto giusto, con la query e il cancelletto che aveva: un `?da=` scritto a mano resta
+ * (l'etichetta della pagina, se manca, la mette `generaSito`).
  */
 export function pulsanti(l: Link[], iscrizione: string): string {
   const prova = l.filter((x) => eIscrizione(x.href, iscrizione))
   const altri = l.filter((x) => !eIscrizione(x.href, iscrizione))
   // L'href viene dal testo già scritto in HTML: «&amp;» torna «&», poi `esc` lo riscrive una volta sola.
-  const daMano = (x: Link) => (haProvenienza(x.href) ? x.href.replace(/&amp;/g, '&') : iscrizione)
+  const daMano = (x: Link) => iscrizione + (/[?#][\s\S]*$/.exec(x.href.trim())?.[0] ?? '').replace(/&amp;/g, '&')
   const a = (x: Link, classe: string, href: string) => `<a class="pulsante ${classe}" href="${esc(href)}"${/^https?:/i.test(href) ? ' rel="noopener noreferrer"' : ''}>${classe === 'primario' ? 'Iscriviti' : x.testo}</a>`
   return `<div class="pulsanti">${prova.slice(0, 1).map((x) => a(x, 'primario', daMano(x))).join('')}${[...prova.slice(1), ...altri].map((x) => a(x, 'secondario', x.href)).join('')}</div>`
 }

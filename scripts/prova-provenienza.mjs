@@ -205,6 +205,7 @@ console.log('\n8. le frasi del riquadro')
   ok('da quando si conta', vedi(() => m.fraseDaDove('2026-11-04')),
     'Si conta dal 4 novembre 2026: per persona (una famiglia di tre conta tre), arrivate nel periodo e come stanno oggi; le altre aspettano. Chi chiede due corsi conta in tutti e due col filtro per corso.')
   ok('niente ancora contato', vedi(() => m.fraseDaDove(undefined)), 'Non è ancora arrivata nessuna richiesta da contare: si comincia dalla prossima.')
+  ok('niente nel periodo, ma si contava già', vedi(() => m.fraseDaDove('2026-11-04', true)), 'Nessuna richiesta in questo periodo. Si conta dal 4 novembre 2026: per persona (una famiglia di tre conta tre), arrivate nel periodo e come stanno oggi; le altre aspettano. Chi chiede due corsi conta in tutti e due col filtro per corso.')
   ok('la nota, tutti i corsi', vedi(() => m.notaDaDove(undefined)), 'le richieste arrivate nel periodo, per persona, e come stanno oggi')
   ok('la nota, un corso', vedi(() => m.notaDaDove('Judo kids')), 'le richieste che chiedono Judo kids, arrivate nel periodo, per persona, e come stanno oggi')
   ok('senza il file SQL, il riquadro dice cosa lanciare', m.MANCA_PROVENIENZA, 'Per contare da dove arrivano le richieste va lanciato 73-provenienza-richieste.sql: il resto delle statistiche funziona.')

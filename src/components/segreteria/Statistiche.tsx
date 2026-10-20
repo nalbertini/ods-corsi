@@ -294,7 +294,7 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
             ) : daDove.dato?.conti === null ? (
               <span className="sg-sotto">{MANCA_PROVENIENZA}</span>
             ) : (
-              daDove.dato?.conti && <DaDove conti={contaDaDove(daDove.dato.conti.righe, corso, titoli.dato ?? {})} frase={fraseDaDove(daDove.dato.conti.dal)} />
+              daDove.dato?.conti && <DaDove conti={contaDaDove(daDove.dato.conti.righe, corso, titoli.dato ?? {})} dal={daDove.dato.conti.dal} />
             )}
           </section>
 
@@ -746,8 +746,9 @@ function ProveMese({ mesi, prove }: { mesi: string[]; prove: ProvaSeg[] }) {
  * Da dove arrivano le richieste: due elenchi affiancati, per etichetta del link e per «come ci hanno conosciuto».
  * Le righe si ordinano come le altre tabelle; NON SI SA resta in fondo, sotto c'è In tutto. I conti li fa `contaDaDove`.
  */
-function DaDove({ conti, frase }: { conti: ReturnType<typeof contaDaDove>; frase: string }) {
-  if (!conti.totale.arrivate) return <span className="sg-sotto">{frase.startsWith('Si conta') ? `Nessuna richiesta in questo periodo. ${frase}` : frase}</span>
+function DaDove({ conti, dal }: { conti: ReturnType<typeof contaDaDove>; dal: string | undefined }) {
+  const frase = fraseDaDove(dal, !conti.totale.arrivate)
+  if (!conti.totale.arrivate) return <span className="sg-sotto">{frase}</span>
   return (
     <div className="stack" style={{ gap: 12 }}>
       <div className="sg-stat-due">

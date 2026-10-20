@@ -188,10 +188,10 @@ export function contaDaDove(righe: RigaDaDove[], corso: string, titoli: Readonly
   }
 }
 
-/** La frase sotto il riquadro: da quando si conta, e come. */
-export function fraseDaDove(dal: string | undefined): string {
+/** La frase sotto il riquadro: da quando si conta, e come; `vuoto` se nel periodo non ne è arrivata nessuna. */
+export function fraseDaDove(dal: string | undefined, vuoto = false): string {
   if (!dal) return 'Non è ancora arrivata nessuna richiesta da contare: si comincia dalla prossima.'
-  return `Si conta dal ${dataLunga(dal)}: per persona (una famiglia di tre conta tre), arrivate nel periodo e come stanno oggi; le altre aspettano. Chi chiede due corsi conta in tutti e due col filtro per corso.`
+  return `${vuoto ? 'Nessuna richiesta in questo periodo. ' : ''}Si conta dal ${dataLunga(dal)}: per persona (una famiglia di tre conta tre), arrivate nel periodo e come stanno oggi; le altre aspettano. Chi chiede due corsi conta in tutti e due col filtro per corso.`
 }
 
 /** La nota accanto al titolo del riquadro. */

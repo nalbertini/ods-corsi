@@ -2304,8 +2304,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
      le loro colonne, e non serve scorrere di lato. */
   .sg-da-dove, .sg-da-dove thead, .sg-da-dove tbody, .sg-da-dove tfoot { display: block; }
   .sg-da-dove tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .sg-da-dove tr > :first-child { grid-column: 1 / -1; position: static; max-width: none; min-width: 0; border-bottom: 0; padding-bottom: 0; }
-  .sg-da-dove thead tr > :first-child { padding-bottom: 4px; }
+  .sg-da-dove tr > :first-child { grid-column: 1 / -1; position: static; max-width: none; min-width: 0; border-bottom: 0; padding: 10px 0 0; }
+  .sg-da-dove thead tr > :first-child { padding: 0 0 4px; }
 }
 /* Un dato che manca e va completato: si vede rosso, ovunque. */
 .sg-manca { color: var(--rosso-testo); font-weight: 600; }

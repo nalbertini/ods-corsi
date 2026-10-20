@@ -29,6 +29,21 @@ un minore), email, telefono e l'eventuale telefono 2, corsi (con «fuori età: n
 accanto a un corso che non è per la sua età, secondo
 **NATI DAL / AL** del [listino](listino.md) coi sei mesi di tolleranza), come paga (trimestre o annuale), note.
 
+In fondo ai dati, due righe che vede solo la segreteria:
+
+- **ARRIVATA DA** — da quale link è arrivata: **Home del sito**, il titolo
+  della pagina del sito da cui è partita (la pagina di un corso, Orari…,
+  anche se nel frattempo ha cambiato indirizzo), **Link della segreteria**
+  (quello di COPIA LINK ISCRIZIONI), **Area iscritti** (una persona aggiunta da
+  un iscritto al suo nucleo), o la parola del link com'è scritta
+  (`volantino-ottobre`, per un link fatto a mano: vedi [Sito](sito.md#un-link-per-i-social-o-un-volantino));
+- **CI HA CONOSCIUTO** — la risposta a «Come ci hai conosciuto?».
+
+**Non si sa** quando manca: chi non ha risposto, un link senza etichetta, le
+richieste arrivate prima. Le due righe non passano alla scheda dell'iscritto
+accolto; i numeri sono in [Statistiche](statistiche.md), e restano anche
+eliminando la richiesta.
+
 Una famiglia può iscriversi in più persone insieme, fino a sei: ognuna ha la
 sua richiesta, e nelle note di ognuna c'è una riga che le lega, «mandata
 insieme alla richiesta di…» se sono due, i nomi delle altre se sono di più, o

@@ -516,6 +516,10 @@ console.log('\nDa dove arriva chi si iscrive: ogni link al modulo dice la sua pa
   const via = (t) => t.replace(/\?da=[a-z0-9-]+/g, '')
   ok('col ?da= a mano la Home ha la stessa impaginazione', via(c(conMano, 'index.html')) === via(c(senzaMano, 'index.html')) && c(conMano, 'index.html').length > 0, true)
   ok('e il pulsante tiene il suo ?da=', c(conMano, 'index.html').includes(`href="${ISCR}?da=volantino"`), true)
+  // Ora che il modulo si riconosce anche con la query, il pulsante giallo non deve perderla, e l'indirizzo resta quello giusto.
+  const home = (href) => c(genera(dati({ pagine: [pag('home', { testo: `<p>Benvenuti.</p>${bottone(href)}<h2>Corsi</h2><p>Testo.</p>` })] })), 'index.html')
+  ok('un pulsante con un\'altra query la tiene, e prende anche l\'etichetta', home(`${ISCR}?corso=judo`).includes(`href="${ISCR}?corso=judo&amp;da=home"`), true)
+  ok('scritto con http e www, l\'indirizzo è quello giusto e il ?da= a mano resta', home('http://www.app.officinedellosport.it/iscrizioni?da=volantino').includes(`href="${ISCR}?da=volantino"`), true)
   ok('eIscrizione ignora la parte dopo ?', prova(() => h.eIscrizione(`${ISCR}?da=home`, ISCR)), true)
   ok('eIscrizione ignora anche il cancelletto', prova(() => h.eIscrizione(`${ISCR}#prezzi`, ISCR)), true)
   ok('eIscrizione: un\'altra pagina dell\'app no', prova(() => h.eIscrizione(`${ISCR}altro`, ISCR)), false)

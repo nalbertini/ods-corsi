@@ -242,6 +242,30 @@ su WhatsApp («scrivici»), un totale per tipo. Non si sa chi è la
 persona, e il modulo di iscrizione, che sta nell'app, non è contato. I numeri li
 legge chi ha l'account GoatCounter della palestra: nel pannello non si vedono.
 
+**Da dove arrivano le richieste**: ogni link del sito verso il modulo di
+iscrizione porta, da sé, il nome della pagina da cui parte: `?da=home` dalla
+Home, `?da=corso-` e l'indirizzo dalla pagina di un corso (`?da=corso-judo`),
+l'indirizzo per le altre pagine (`?da=orari`). Chi lo apre non vede niente;
+la segreteria lo ritrova nella richiesta (**ARRIVATA DA**, col titolo della
+pagina) e in [Statistiche](statistiche.md). Non serve scriverlo nel testo.
+
+### Un link per i social o un volantino
+
+Per sapere quante richieste arrivano da un post, una storia o un volantino,
+si dà loro un link con la sua etichetta: l'indirizzo del modulo, poi `?da=` e
+una parola scelta da te, per esempio
+
+`https://app.officinedellosport.it/iscrizioni/?da=instagram-ottobre`
+
+La parola si scrive con lettere minuscole senza accenti, cifre e trattini
+(niente spazi né altri segni), al massimo 90 caratteri: `volantino-ottobre`,
+`instagram-storia`, `festa-2026`. Se è scritta male la richiesta arriva lo
+stesso, solo senza etichetta («Non si sa»). Nella richiesta e nelle
+statistiche compare com'è scritta. Lo stesso indirizzo si può mettere anche
+in un pulsante del testo di una pagina: un `?da=` scritto a mano resta, e la
+pagina si impagina come con l'indirizzo senza etichetta (il pulsante è
+sempre quello per iscriversi).
+
 Se compare «Il pannello del sito non è ancora attivo sul database», manca un
 aggiornamento del database: va chiesto a chi cura l'app.
 

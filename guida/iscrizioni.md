@@ -8,7 +8,11 @@
 lista di passi scritta ogni volta su WhatsApp. Non chiede nessun accesso.
 
 L'indirizzo è <https://app.officinedellosport.it/iscrizioni/>. In
-segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
+segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu:
+il link copiato finisce con `?da=segreteria`, così le richieste che arrivano
+da lì si contano come «Link della segreteria» (vedi
+[Statistiche](segreteria/statistiche.md)). Chi lo apre non vede niente di
+diverso.
 
 ## Cosa c'è nella pagina
 
@@ -144,11 +148,23 @@ Chi si iscrive risponde alle domande dal telefono:
   ARRIVATA**. Il documento la segreteria lo stampa, lo tiene su carta e lo
   cancella dall'app; il certificato resta nell'app e lo vede solo la
   segreteria.
-- **Altro**: le note per la segreteria (facoltative, e **mai dati sulla
+- **Altro**: **COME CI HAI CONOSCIUTO?**, facoltativa, una tendina con otto
+  scelte (Amici o parenti, Sito, Instagram, Facebook, Google, Volantino,
+  Passando davanti, Altro; lasciata su «Scegli, se vuoi» non si manda
+  niente, e non si scrive a parole); le note per la segreteria (facoltative, e **mai dati sulla
   salute**: quelli si portano in segreteria), la casella obbligatoria
   «Accetto il Regolamento Sociale» (col link al regolamento, quando c'è:
   `REGOLAMENTO` in `src/lib/iscrizione.ts`) e la casella «Ho letto
   l'informativa privacy».
+
+Da dove si è arrivati lo sa il link: quelli del sito della palestra
+finiscono con `?da=` e la pagina da cui partono (`?da=home`,
+`?da=corso-judo`…), quello della segreteria con `?da=segreteria`. Non si
+vede, non si salva sul telefono e non ferma mai la richiesta: un'etichetta
+sbagliata si lascia fuori. La risposta e il link li vede solo la segreteria,
+nella richiesta: non in **RICHIESTA ARRIVATA** né nel modulo firmato. Dall'area
+degli iscritti (una persona in più nel nucleo) la domanda non c'è: la palestra
+la conoscono già.
 
 Nel modulo non resta niente sul telefono: chiuso, si riparte da capo. Per
 questo **← INDIETRO**, se c'è già qualcosa di scritto, firmato o scelto, al
@@ -253,7 +269,9 @@ tutti, per passare dall'uno all'altro. FAMIGLIA, PAGAMENTO e INVIO invece sono
 uno solo per tutti, senza PER: per tornare ai dati di qualcuno si tocca
 **MODIFICA** accanto al suo nome in **NEL MODULO** (o nell'elenco di INVIO). Le
 note per la segreteria sono una per tutto il modulo e arrivano in ogni
-richiesta. Per aggiungerne un altro si torna a FAMIGLIA, non all'ultimo passo. Quando chi firma non è chi compila (un altro adulto, o il bambino
+richiesta; lo stesso **COME CI AVETE CONOSCIUTO?**, facoltativa, a INVIO sopra
+le note (con una persona sola dice «hai»): una risposta per tutta la famiglia,
+in ogni richiesta, come l'etichetta del link. Per aggiungerne un altro si torna a FAMIGLIA, non all'ultimo passo. Quando chi firma non è chi compila (un altro adulto, o il bambino
 firmato da un altro adulto), il modulo lo chiama per nome: «Firma Paola, che è
 maggiorenne», **L'OK DI PAOLA**, **LA CARTA D'IDENTITÀ DI PAOLA**. Per chi si è aggiunto con **IO**, la
 casella delle foto porta il suo nome (**LE FOTO E I VIDEO DI NICOLA**).
