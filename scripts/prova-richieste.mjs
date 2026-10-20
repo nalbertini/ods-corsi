@@ -9,11 +9,12 @@
 // accolta che diventa un iscritto visto dalla segreteria e dall'appello.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
+import { readFileSync } from 'node:fs'
 
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere, fileObbligatori, MANCA_RICEVUTA, DETTAGLIO_RICEVUTA } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -608,6 +609,46 @@ console.log('\n11. il riquadro rosso in fondo: il primo messaggio che blocca, a 
   const minoreSenza = adulto({ natoIl: '2017-03-01', codiceFiscale: 'RSSGLI17C41L219G' })
   ok('minore senza dati del genitore', manca({ dati: minoreSenza }), 'Per un minore servono nome, cognome e codice fiscale del genitore')
   ok('la data cambia a maggiorenne: il blocco sparisce', manca({ dati: adulto({ natoIl: '1996-01-01' }) }), null)
+}
+
+console.log('\n11b. la ricevuta obbligatoria nel modulo della pagina pubblica (non in «una persona in più»)')
+{
+  const RICEVUTA = 'Manca la ricevuta del pagamento: paga con bonifico o Satispay e carica la foto, lo screenshot o il PDF.'
+  const PRIVACY = "Serve la conferma di aver letto l'informativa privacy"
+  ok('MANCA_RICEVUTA, il testo', m.MANCA_RICEVUTA, RICEVUTA)
+  ok('DETTAGLIO_RICEVUTA, il testo', m.DETTAGLIO_RICEVUTA, 'Del bonifico o di Satispay: una foto, lo screenshot o il PDF.')
+  // I file chiesti come li costruisce il modulo: i tipi di tipiDaChiedere, con l'«obbligatorio» di FILE.
+  const oggi = new Date(2026, 9, 2)
+  const chiesti = (nato) => m.tipiDaChiedere(nato, ['Judo'], oggi).map((tipo) => m.FILE.find((f) => f.tipo === tipo))
+  const obbl = (nato, ricevuta) => {
+    try {
+      return m.fileObbligatori(chiesti(nato), ricevuta)
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  ok('adulto, pagina pubblica: modulo, documento e ricevuta', obbl('1990-05-05', true), ['modulo', 'documento', 'ricevuta'])
+  ok('adulto, una persona in più: modulo e documento, la ricevuta no', obbl('1990-05-05', false), ['modulo', 'documento'])
+  ok('4 anni, pagina pubblica (chiesti solo modulo e ricevuta): modulo e ricevuta', obbl('2022-01-01', true), ['modulo', 'ricevuta'])
+  ok('la ricevuta si aggiunge solo se è fra i chiesti', (() => { try { return m.fileObbligatori([{ tipo: 'modulo', obbligatorio: true }], true) } catch (e) { return `ERRORE: ${e.message}` } })(), ['modulo'])
+
+  const OBBL = ['modulo', 'documento', 'ricevuta']
+  const pronto = (cambi = {}) => ({ dati: adulto(), privacy: true, come: 'foto', firma: null, file: { modulo: {}, documento: {} }, obbligatori: OBBL, ...cambi })
+  const manca = (cambi) => m.mancaPerInviare(pronto(cambi))
+  ok('firmato qui, senza ricevuta: il messaggio della ricevuta', manca({ come: 'qui', file: { documento: {} } }), RICEVUTA)
+  ok('firmato qui, con la ricevuta: nessun messaggio', manca({ come: 'qui', file: { documento: {}, ricevuta: {} } }), null)
+  ok('modulo in foto, senza ricevuta: il messaggio della ricevuta', manca(), RICEVUTA)
+  ok('modulo in foto, con la ricevuta: nessun messaggio', manca({ file: { modulo: {}, documento: {}, ricevuta: {} } }), null)
+  ok('senza privacy e senza ricevuta: prima la ricevuta (i file vengono prima della privacy)', manca({ privacy: false }), RICEVUTA)
+  ok('con la ricevuta e senza privacy: la privacy', manca({ privacy: false, file: { modulo: {}, documento: {}, ricevuta: {} } }), PRIVACY)
+  ok('i campi vengono prima della ricevuta', manca({ dati: adulto({ cognome: '' }) }), 'Mancano: cognome')
+  ok('la firma viene prima della ricevuta', manca({ come: 'qui', firma: 'Manca la firma sul modulo', file: { documento: {} } }), 'Manca la firma sul modulo')
+  ok('gli altri file dicono ancora «Manca: …»', manca({ file: { modulo: {}, ricevuta: {} } }), "Manca: carta d'identità")
+  ok('senza ricevuta fra gli obbligatori, non si chiede', manca({ obbligatori: ['modulo', 'documento'] }), null)
+  // Il legame sta nel modulo: senza `nucleo` (pagina pubblica) la ricevuta è obbligatoria, e la lista arriva a `mancaPerInviare`.
+  const moduloSorgente = readFileSync('src/components/ModuloIscrizione.tsx', 'utf8')
+  ok('il modulo chiede la ricevuta senza nucleo', moduloSorgente.includes('fileObbligatori(daChiedere, !nucleo)'), true)
+  ok('il modulo passa quella lista a mancaPerInviare', /mancaPerInviare\(\{[^}]*\bobbligatori,/.test(moduloSorgente), true)
 }
 
 console.log('\n12. il campo precompilato: al primo tocco si seleziona tutto')

@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: le frasi che cambiano, solo nella pagina pubblica delle iscrizioni e nel suo modulo (l'area iscritti e la segreteria restano come sono). Barrato = com'e' oggi, sotto = la proposta. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1300px; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<main style="display: flex; flex-direction: column">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 16px 20px; border-bottom: 2px solid #cfe6f4"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">MANCA QUALCHE FILE · PAGINA PUBBLICA</span><span style="font-size: 15px; line-height: 1.45; color: #46606f"><s>Si può riprovare per un’ora. Se non va, porta i fogli in segreteria.</s></span><span style="font-size: 15px; line-height: 1.45; color: #0d2a3d">Si può riprovare per un’ora. Se non va, chiama la segreteria.</span></div><div style="display: flex; flex-direction: column; gap: 8px; padding: 16px 20px; border-bottom: 2px solid #cfe6f4"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">PAGINA ISCRIZIONI · COSA TI SERVE</span><span style="font-size: 15px; line-height: 1.45; color: #46606f"><s>La ricevuta del pagamento · SE HAI GIÀ PAGATO — Se no, paghi dopo o in segreteria.</s></span><span style="font-size: 15px; line-height: 1.45; color: #0d2a3d"><b>La ricevuta del pagamento</b> — Paghi con bonifico o Satispay mentre compili: quanto pagare te lo dice il modulo.</span></div><div style="display: flex; flex-direction: column; gap: 8px; padding: 16px 20px; border-bottom: 2px solid #cfe6f4"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">PAGINA ISCRIZIONI · QUANTO COSTA</span><span style="font-size: 15px; line-height: 1.45; color: #46606f"><s>I prezzi di ogni corso e come si paga: bonifico o Satispay, dopo la richiesta o in segreteria.</s></span><span style="font-size: 15px; line-height: 1.45; color: #0d2a3d">I prezzi di ogni corso e come si paga: bonifico o Satispay, prima di mandare la richiesta.</span></div><div style="display: flex; flex-direction: column; gap: 8px; padding: 16px 20px; border-bottom: 2px solid #cfe6f4"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; color: #46606f">PREZZI E PAGAMENTO · COME SI PAGA</span><span style="font-size: 15px; line-height: 1.45; color: #46606f"><s>Dopo la richiesta, oppure in segreteria. — La ricevuta la puoi caricare nella richiesta, se hai già pagato.</s></span><span style="font-size: 15px; line-height: 1.45; color: #0d2a3d">Prima di mandare la richiesta. — La ricevuta si carica nella richiesta: senza, la richiesta non parte.</span></div></main>
+</div>
+</x-dc>
+</body>
+</html>

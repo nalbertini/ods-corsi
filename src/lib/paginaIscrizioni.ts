@@ -41,13 +41,13 @@ export const COSA_SERVE: Array<{ titolo: string; quando?: string; nota: string }
   { titolo: 'Il codice fiscale', nota: 'Di chi si iscrive. Se iscrivi un figlio, anche il tuo.' },
   { titolo: 'La carta d’identità', nota: 'Di chi si iscrive, dai 6 anni. Una foto o il PDF.' },
   { titolo: 'Il certificato medico', quando: 'SE CE L’HAI', nota: 'Se non ce l’hai, lo porti in segreteria prima della prima lezione.' },
-  { titolo: 'La ricevuta del pagamento', quando: 'SE HAI GIÀ PAGATO', nota: 'Se no, paghi dopo o in segreteria.' },
+  { titolo: 'La ricevuta del pagamento', nota: 'Paghi con bonifico o Satispay mentre compili: quanto pagare te lo dice il modulo.' },
 ]
 
-/** Il pagamento non è un passo da fare prima: la ricevuta nel modulo è facoltativa. */
+/** Si paga prima di mandare: senza la ricevuta la richiesta dalla pagina pubblica non parte. */
 export const COME_SI_PAGA = {
-  titolo: 'Dopo la richiesta, oppure in segreteria.',
-  ricevuta: 'La ricevuta la puoi caricare nella richiesta, se hai già pagato.',
+  titolo: 'Prima di mandare la richiesta.',
+  ricevuta: 'La ricevuta si carica nella richiesta: senza, la richiesta non parte.',
 }
 
 /**
@@ -64,7 +64,7 @@ export function costiBreve(quota: number, satispay: boolean) {
       { testo: 'Sconto famiglia, sull’annuale che costa meno', cifra: `−${Math.round(SCONTO_FAMIGLIA * 100)}%` },
       { testo: 'Più corsi nella struttura, in tutto', cifra: `${PIU_CORSI} €` },
     ],
-    testo: `I prezzi di ogni corso e come si paga: ${satispay ? 'bonifico o Satispay' : 'bonifico'}, dopo la richiesta o in segreteria.`,
+    testo: `I prezzi di ogni corso e come si paga: ${satispay ? 'bonifico o Satispay' : 'bonifico'}, prima di mandare la richiesta.`,
     tasto: 'PREZZI E PAGAMENTO',
   }
 }
