@@ -34,14 +34,14 @@ export interface PagamentoSatispay {
 /** Lo stato come lo dice Satispay. Quello che non si conosce è ancora in attesa: mai pagato per sbaglio. */
 export const statoDa = (status: string): StatoSatispay => (status === 'ACCEPTED' ? 'pagato' : status === 'CANCELED' ? 'non-andato' : 'attesa')
 
-export const ERRORE_SATISPAY = 'Satispay non risponde: riprova o paga in segreteria'
+export const ERRORE_SATISPAY = 'Satispay non risponde: riprova fra qualche minuto'
 
 /** «Judo 3», «Judo 3 e Lotta 3», «Judo 3, Lotta 3 e Zumba». */
 const elenco = (x: string[]) => (x.length < 2 ? x.join('') : `${x.slice(0, -1).join(', ')} e ${x[x.length - 1]}`)
 
 /**
  * Se il modulo offre Satispay. Senza il servizio attivo non lo dice nemmeno: si
- * paga col bonifico o in segreteria come prima. Con un corso senza prezzo
+ * paga col bonifico, con la sua ricevuta. Con un corso senza prezzo
  * l'importo non si sa, e lo dice.
  */
 export function comePuoiPagare(senzaPrezzo: string[], attivo: boolean): { satispay: true } | { satispay: false; perche: string } {
@@ -82,7 +82,7 @@ export function esitoPagamento(p: { stato: StatoSatispay; importo: number; pagat
       tono: 'avviso',
       testi: [
         `La richiesta è arrivata, ma i ${quanto} non sono stati pagati: in Satispay il pagamento è stato annullato o è rimasto troppo a lungo senza conferma.`,
-        'Puoi riprovare, oppure pagare in segreteria.',
+        'Puoi riprovare con Satispay.',
       ],
     }
   return {
@@ -120,7 +120,7 @@ export const righeSatispay = (pagamenti: PagamentoSatispay[], nomeDi: (personaId
 
 /**
  * Il segno di una richiesta in RICHIESTE ONLINE e la frase nella sua scheda.
- * Un pagamento non andato non si dice: si paga in segreteria, come senza
+ * Un pagamento non andato non si dice: si riprova, come senza
  * Satispay. Pagata e rifiutata: i soldi sono arrivati e vanno restituiti.
  */
 export function segnoRichiesta(
@@ -167,16 +167,16 @@ export function cosaNonVaSatispay(voci: Array<{ pagamenti: Array<{ importo: numb
   return qui === p.importo ? null : `Con Satispay sono arrivati ${soldi(p.importo)}: nel pagato di questa ricevuta ce ne sono ${soldi(qui)}`
 }
 
-/** Come si paga dal modulo pubblico: con Satispay subito, col bonifico (e la sua ricevuta) o in segreteria. */
-export type Pago = 'satispay' | 'bonifico' | 'segreteria'
+/** Come si paga dal modulo pubblico: con Satispay subito, o col bonifico e la sua ricevuta (decisione del 2026-10-20). */
+export type Pago = 'satispay' | 'bonifico'
 
 /**
  * Il modo che vale davvero. Satispay scelto ma non possibile (un corso senza
- * prezzo, il servizio spento) è in segreteria. Dal nucleo di un iscritto non
- * si sceglie: si paga come prima (`null`).
+ * prezzo, il servizio spento) è il bonifico. Dal nucleo di un iscritto non
+ * si sceglie: si paga come prima (`null`); `null` anche finché non si sceglie.
  */
-export const modoPagamento = (scelto: Pago, puoi: { satispay: boolean }, nucleo: boolean): Pago | null =>
-  nucleo ? null : scelto === 'satispay' && !puoi.satispay ? 'segreteria' : scelto
+export const modoPagamento = (scelto: Pago | null, puoi: { satispay: boolean }, nucleo: boolean): Pago | null =>
+  nucleo || !scelto ? null : scelto === 'satispay' && !puoi.satispay ? 'bonifico' : scelto
 
 /** La ricevuta del bonifico si chiede solo a chi paga col bonifico; dal nucleo resta fra i file, come prima. */
 export const chiedeRicevuta = (modo: Pago | null) => !modo || modo === 'bonifico'
@@ -207,8 +207,10 @@ export const daRestituire = (p: PagamentoSatispay | undefined): string | null =>
  * corsi valgono le offerte del listino, con più righe di prezzo i giorni
  * scelti: li conferma la segreteria. `null` se è semplice.
  */
-export function nonSemplice(corsi: CorsoRef[], listino: Listino): string | null {
+export function nonSemplice(corsi: CorsoRef[], listino: Listino, fuoriEta: string[] = []): string | null {
   if (corsi.length > 1) return 'Niente Satispay per ora: con più corsi il prezzo lo conferma la segreteria'
+  // Fuori età la segreteria richiama, e il corso può cambiare: niente soldi da restituire.
+  if (fuoriEta.length) return `Niente Satispay per ora: ${fuoriEta.join(', ')} non è della sua età, la segreteria ti richiama`
   const conRighe = corsi.find((c) => (listino.corsi.find((v) => v.corsoId === c.id)?.prezzi.length ?? 0) > 1)
   return conRighe ? `Niente Satispay per ora: il prezzo di ${conRighe.nome} dipende dai giorni, lo conferma la segreteria` : null
 }
@@ -218,4 +220,16 @@ export function satispayPerPersona(pagamenti: PagamentoSatispay[]): Map<string, 
   const m = new Map<string, number>()
   for (const p of pagamenti) if (p.stato === 'pagato' && !p.ricevutaId && p.personaId) m.set(p.personaId, (m.get(p.personaId) ?? 0) + p.importo)
   return m
+}
+
+/**
+ * Il modo si sceglie: niente già scelto, così nessuno paga una cosa che non
+ * ha guardato. Col bonifico la ricevuta è obbligatoria: senza, non si sa se
+ * ha pagato. Dal nucleo non si sceglie, e si paga come prima.
+ */
+export function cosaNonVaModo(modo: Pago | null, nucleo: boolean, conRicevuta: boolean): string | null {
+  if (nucleo) return null
+  if (!modo) return 'Manca come paghi: Satispay o bonifico'
+  if (modo === 'bonifico' && !conRicevuta) return 'Manca la ricevuta del bonifico: una foto, lo screenshot o il PDF'
+  return null
 }

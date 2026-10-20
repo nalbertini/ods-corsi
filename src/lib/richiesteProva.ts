@@ -192,14 +192,14 @@ export function creaRichiesteProva(): DatiRichieste {
     async paga(richiestaId) {
       // Come `satispay_prepara`: un link sbagliato o vecchio dice la stessa cosa di una richiesta già gestita.
       const r = tutte.find((x) => x.id === richiestaId)
-      if (r?.stato !== 'nuova') throw new Error('Questa richiesta non si può più pagare online: paga in segreteria')
+      if (r?.stato !== 'nuova') throw new Error('Questa richiesta non si può più pagare online: scrivi alla segreteria')
       const tutti = pagamentiSatispayProva()
       if (!tutti.some((p) => p.richiestaId === richiestaId && p.stato === 'pagato')) {
         // Nessuna rete in prova: Satispay «approva» subito, con l'importo che darebbe il database.
         const { listino } = await caricaListino()
         const corsi = r.corsi.map((id) => archivio.dati.corsi.find((c) => c.id === id) ?? { id, nome: id })
         const s = stimaIscrizione({ chi: `${r.cognome} ${r.nome}`, corsi, formula: r.formula }, [], chiaveGiorno(new Date()), listino)
-        if (s.senzaPrezzo.length || senzaVoceDelCorso(corsi, listino).length || nonSemplice(corsi, listino)) throw new Error('Un corso non ha ancora il prezzo: paga col bonifico o in segreteria')
+        if (s.senzaPrezzo.length || senzaVoceDelCorso(corsi, listino).length || nonSemplice(corsi, listino)) throw new Error('Un corso non ha ancora il prezzo: paga col bonifico')
         const ora = new Date().toISOString()
         salvaSatispay([...tutti, { id: `sp-${Date.now().toString(36)}`, richiestaId, chi: `${r.cognome} ${r.nome}`, importo: s.totale, stato: 'pagato', creatoIl: ora, pagatoIl: ora }])
       }

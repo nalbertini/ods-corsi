@@ -13,7 +13,7 @@ import { useListino } from './Costi'
 import type { SceltaModulo } from '../lib/firma'
 import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
-import { chiedeRicevuta, comePuoiPagare, modoPagamento, nonSemplice, senzaVoceDelCorso, soldi, type Pago } from '../lib/satispay'
+import { chiedeRicevuta, comePuoiPagare, cosaNonVaModo, ERRORE_SATISPAY, modoPagamento, nonSemplice, senzaVoceDelCorso, soldi, type Pago } from '../lib/satispay'
 import { PagamentoOnline, ricordaPromemoria } from './PagamentoOnline'
 
 /**
@@ -126,7 +126,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   // I campi già lasciati, e se si è già provato a mandare: prima, niente rosso.
   const [visti, setVisti] = useState<ReadonlySet<CampoModulo>>(new Set())
   const [provato, setProvato] = useState(false)
-  const [pago, setPago] = useState<Pago>('satispay')
+  const [pago, setPago] = useState<Pago | null>(null)
   const [satispayAttivo, setSatispayAttivo] = useState(false)
 
   // Finché il modulo è aperto ha l'aspetto del sito, non quello del tema dell'app.
@@ -212,7 +212,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   // Satispay solo col listino della segreteria: con quello del foglio il database non ha un prezzo da chiedere.
   const senzaPrezzo = stima && listino ? [...new Set([...stima.senzaPrezzo, ...senzaVoceDelCorso(scelti, listino)])] : []
   const attivo = satispayAttivo && !!stima && !!letto?.cambiato
-  const complicato = attivo && listino && !senzaPrezzo.length ? nonSemplice(scelti, listino) : null
+  const complicato = attivo && listino && !senzaPrezzo.length ? nonSemplice(scelti, listino, fuoriEta) : null
   const puoi = complicato ? ({ satispay: false, perche: complicato } as const) : comePuoiPagare(senzaPrezzo, attivo)
   const modo = modoPagamento(pago, puoi, !!nucleo)
   const daChiedere = FILE.filter((f) => tipiChiesti.includes(f.tipo) && (f.tipo !== 'ricevuta' || chiedeRicevuta(modo)))
@@ -255,14 +255,15 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   }
 
   /** Cosa blocca l'invio adesso; il riquadro in fondo lo mostra dopo il primo tentativo e lo segue a ogni modifica. */
-  const blocco = mancaPerInviare({
+  const blocco =
+    mancaPerInviare({
     dati: pronta,
     privacy,
     come,
     firma: mancaPerFirmare(),
     file,
     obbligatori: daChiedere.filter((f) => f.obbligatorio).map((f) => f.tipo),
-  })
+    }) ?? (stima && scelti.length ? cosaNonVaModo(modo, !!nucleo, !!file.ricevuta) : null)
   /** Le note sotto le scelte: dopo un tentativo di mandare, o di guardare il modulo. */
   const provatoFirma = provato || guaioFirma !== null
   const riquadro = provato ? blocco ?? guaio : null
@@ -376,9 +377,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       const r = await x.paga(id)
       if (r && 'link' in r) return window.location.assign(r.link)
       if (r) return setFase({ tipo: 'paga', id })
-      // Il servizio si è spento dopo l'invio: si paga in segreteria, come prima.
-      setPago('segreteria')
-      setFase({ tipo: 'fatto' })
+      // Il servizio si è spento dopo l'invio: la pagina del pagamento lo dice, e si riprova.
+      setFase({ tipo: 'paga', id, guaio: ERRORE_SATISPAY })
     } catch (e) {
       setFase({ tipo: 'paga', id, guaio: e instanceof Error ? e.message : undefined })
     }
@@ -409,8 +409,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
           Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
         </span>
         {promemoriaCertificato && <span className="esito-testo">{promemoriaCertificato}</span>}
-        {!file.ricevuta && modo !== 'segreteria' && <span className="esito-testo">Non hai caricato la ricevuta: paga in segreteria, o portala lì se hai già pagato.</span>}
-        {modo === 'segreteria' && <span className="esito-testo">Paghi in segreteria quando vieni.</span>}
+        {!file.ricevuta && !modo && <span className="esito-testo">Non hai caricato la ricevuta: paga in segreteria, o portala lì se hai già pagato.</span>}
         <Tasto onClick={onChiudi}>{torna}</Tasto>
       </div>
     )
@@ -634,7 +633,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         )}
       </Sezione>
 
-      {modo && stima && (
+      {!nucleo && stima && scelti.length > 0 && (
         <Sezione titolo="IL PAGAMENTO">
           <IlPagamento
             stima={stima}
@@ -647,9 +646,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
                 tipo="ricevuta"
                 file={file.ricevuta}
                 dettaglio="Una foto o il PDF."
-                seManca="FACOLTATIVA, SE HAI GIÀ FATTO IL BONIFICO"
                 onFile={(x) => setFile((p) => ({ ...p, ricevuta: x }))}
-                facoltativo
+                facoltativo={false}
               />
             }
           />
@@ -1026,7 +1024,6 @@ function Bonifico({ causale: testo, satispay }: { causale: string; satispay?: bo
 const MODI: Array<{ id: Pago; testo: string; riga: string }> = [
   { id: 'satispay', testo: 'Satispay', riga: 'Paghi subito, dall’app: l’importo è già scritto' },
   { id: 'bonifico', testo: 'Bonifico', riga: 'Carichi la ricevuta del bonifico' },
-  { id: 'segreteria', testo: 'In segreteria', riga: 'Contanti, POS o assegno, quando vieni' },
 ]
 
 /**
@@ -1034,7 +1031,7 @@ const MODI: Array<{ id: Pago; testo: string; riga: string }> = [
  * che calcola il database, e il tasto in fondo apre l'app dopo l'invio; col
  * bonifico IBAN, causale e la sua ricevuta stanno qui insieme.
  */
-function IlPagamento({ stima, modo, puoi, onModo, causale: testo, ricevuta }: { stima: Stima; modo: Pago; puoi: ReturnType<typeof comePuoiPagare>; onModo: (m: Pago) => void; causale: string; ricevuta: ReactNode }) {
+function IlPagamento({ stima, modo, puoi, onModo, causale: testo, ricevuta }: { stima: Stima; modo: Pago | null; puoi: ReturnType<typeof comePuoiPagare>; onModo: (m: Pago) => void; causale: string; ricevuta: ReactNode }) {
   return (
     <>
       <div className="modulo-campo modulo-largo">
@@ -1052,14 +1049,13 @@ function IlPagamento({ stima, modo, puoi, onModo, causale: testo, ricevuta }: { 
             etichetta="Paghi con"
             una
             voci={MODI.filter((m) => m.id !== 'satispay' || puoi.satispay)}
-            scelti={[modo]}
+            scelti={modo ? [modo] : []}
             // `as`: SceltaCorsi rende l'id di una delle voci date, cioè un modo di MODI.
             onScegli={(m) => onModo(m as Pago)}
           />
         </div>
         {!puoi.satispay && puoi.perche && <Dettaglio>{puoi.perche}.</Dettaglio>}
         {modo === 'satispay' && <Dettaglio>Quando mandi la richiesta si apre Satispay con {soldi(stima.totale)}. Confermi lì e torni qui.</Dettaglio>}
-        {modo === 'segreteria' && <Dettaglio>Paghi quando vieni in segreteria: non serve caricare niente.</Dettaglio>}
       </div>
       {modo === 'bonifico' && (
         <>

@@ -93,7 +93,12 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
           <Numero titolo="QUOTA" valore={etichettaQuota(stato.come)} sotto={stato.fino ? `fino al ${dataLunga(stato.fino)}` : 'ricevute e pagamenti a mano non cambiano la quota'} />
         </div>
       )}
-      {vuoto && <span className="sg-sotto">Nessun pagamento registrato. Fai la ricevuta quando paga, o registra un pagamento già fatto: lo trovi qui.</span>}
+      {vuoto &&
+        (p.satispay ? (
+          <span className="sg-sotto" data-tono="fatto">Ha pagato {soldi(p.satispay)} con Satispay dal modulo: fai la ricevuta, con PAGATO CON «Satispay».</span>
+        ) : (
+          <span className="sg-sotto">Nessun pagamento registrato. Fai la ricevuta quando paga, o registra un pagamento già fatto: lo trovi qui.</span>
+        ))}
       {tutteRicevute.map((r) => {
         const manca = r.annullataIl ? 0 : conti(r).netto
         const righe = righeDaRicevute([r])

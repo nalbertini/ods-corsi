@@ -15,7 +15,7 @@
 --   · `emetti_ricevuta_satispay`: chi fa le ricevute.
 --
 -- Si lancia dopo `55-amministrazione.sql` (`emetti_ricevuta`). Non tocca nessuna funzione di prima. Finché non c'è,
--- la Edge Function risponde «non attivo» e il modulo propone bonifico e segreteria, come prima.
+-- la Edge Function risponde «non attivo» e il modulo propone il bonifico con la sua ricevuta.
 -- ---------------------------------------------------------------------------
 
 create table if not exists pagamenti_satispay (
@@ -109,7 +109,7 @@ declare
 begin
   select * into r from richieste_iscrizione where id = richiesta for update;
   if r.id is null or r.stato <> 'nuova' then
-    raise exception 'Questa richiesta non si può più pagare online: paga in segreteria' using errcode = '22023';
+    raise exception 'Questa richiesta non si può più pagare online: scrivi alla segreteria' using errcode = '22023';
   end if;
   select * into p from pagamenti_satispay where richiesta_id = richiesta and stato in ('attesa', 'pagato');
   if p.stato = 'pagato' then
@@ -119,7 +119,7 @@ begin
   end if;
   quanto := importo_iscrizione(richiesta, (now() at time zone 'Europe/Rome')::date);
   if quanto is null then
-    raise exception 'Un corso non ha ancora il prezzo: paga col bonifico o in segreteria' using errcode = '22023';
+    raise exception 'Un corso non ha ancora il prezzo: paga col bonifico' using errcode = '22023';
   end if;
   insert into pagamenti_satispay (richiesta_id, chi, importo, stato)
     values (richiesta, btrim(r.cognome) || ' ' || btrim(r.nome), quanto, 'attesa')

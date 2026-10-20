@@ -113,7 +113,7 @@ export function PagamentoOnline({
       ))}
       {p?.stato === 'pagato' ? (
         <>
-          <span className="esito-testo">La segreteria controlla il modulo e il documento, e ti scrive se manca qualcosa. La ricevuta della palestra te la dà la segreteria.</span>
+          <span className="esito-testo">La segreteria controlla la richiesta e ti scrive se manca qualcosa. La ricevuta della palestra te la dà la segreteria.</span>
           <Tasto onClick={onChiudi}>TORNA ALLE ISCRIZIONI</Tasto>
         </>
       ) : (
@@ -122,7 +122,6 @@ export function PagamentoOnline({
             {vado ? 'APRO SATISPAY…' : p?.stato === 'non-andato' ? 'RIPROVA CON SATISPAY' : p ? `PAGA ${soldi(p.importo)} CON SATISPAY` : 'PAGA CON SATISPAY'}
           </Tasto>
           {p?.stato !== 'non-andato' && <Dettaglio>Puoi pagare anche più tardi da questa pagina: salva il link o tienila aperta.</Dettaglio>}
-          <Tasto onClick={onChiudi}>PAGO IN SEGRETERIA</Tasto>
         </>
       )}
     </div>

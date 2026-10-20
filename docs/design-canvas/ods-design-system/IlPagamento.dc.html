@@ -34,28 +34,27 @@
   <span style="font-size: 14px; line-height: 1.4; color: #46606f">{{frase}}</span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"righe":{"editor":"text","default":"Quota associativa:50 €|Annuale Judo adulti:400 €"},"totale":{"editor":"text","default":"450 €"},"modo":{"editor":"enum","options":["satispay","bonifico","segreteria"],"default":"satispay"},"satispay":{"editor":"boolean","default":true},"perche":{"editor":"text","default":"Niente Satispay per ora: con più corsi il prezzo lo conferma la segreteria"},"$preview":{"width":350,"height":480}}'>
+<script data-dc-script data-props='{"righe":{"editor":"text","default":"Quota associativa:50 €|Annuale Judo adulti:400 €"},"totale":{"editor":"text","default":"450 €"},"modo":{"editor":"enum","options":["satispay","bonifico"],"default":"satispay"},"satispay":{"editor":"boolean","default":true},"perche":{"editor":"text","default":"Niente Satispay per ora: con più corsi il prezzo lo conferma la segreteria"},"$preview":{"width":350,"height":480}}'>
 // Riproduzione di IlPagamento di src/components/ModuloIscrizione.tsx (modulo pubblico, tema sito): QUANTO PAGHI (il `Conto`: righe .stima e
-// totale nel Riquadro stretto) e PAGHI CON (`SceltaCorsi` una, in colonna sotto i 560px: `.scelta-pago`), con la frase sotto. Satispay c'e'
+// totale nel Riquadro stretto) e PAGHI CON, Satispay o Bonifico (`SceltaCorsi` una, in colonna sotto i 560px: `.scelta-pago`), con la frase sotto. Satispay c'e'
 // solo nei casi semplici (`nonSemplice`, `comePuoiPagare` in src/lib/satispay.ts): senza, non compare e la frase dice perche'.
-// Col bonifico, sotto, vengono IBAN, causale e la ricevuta (`Bonifico`, `SceltaFile` con «FACOLTATIVA, SE HAI GIÀ FATTO IL BONIFICO»).
+// Col bonifico, sotto, vengono IBAN, causale e la ricevuta, obbligatoria (`Bonifico`, `SceltaFile`). «In segreteria» non c'è (decisione del 2026-10-20).
 // righe = `Voce:importo` separate da `|`; modo = la scelta accesa (#cfe6f4, ●); satispay = se la scelta c'e'; perche = la frase senza Satispay.
 const COND = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
 const MODI = [
   { id: 'satispay', testo: 'Satispay', riga: 'Paghi subito, dall’app: l’importo è già scritto' },
   { id: 'bonifico', testo: 'Bonifico', riga: 'Carichi la ricevuta del bonifico' },
-  { id: 'segreteria', testo: 'In segreteria', riga: 'Contanti, POS o assegno, quando vieni' },
 ];
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const si = truthy(p.satispay ?? true);
-    const modo = p.modo === 'satispay' && !si ? 'segreteria' : (p.modo ?? 'satispay');
+    const modo = p.modo === 'satispay' && !si ? 'bonifico' : (p.modo ?? 'satispay');
     const totale = p.totale ?? '450 €';
     const righe = String(p.righe ?? '').split('|').filter(Boolean).map((x) => { const [testo, importo] = x.split(':'); return { testo, importo }; });
     const scelte = MODI.filter((m) => m.id !== 'satispay' || si).map((m) => ({ ...m, fondo: m.id === modo ? '#cfe6f4' : '#ffffff', segno: m.id === modo ? '●' : '' }));
-    const frase = !si ? `${p.perche ?? ''}.` : modo === 'satispay' ? `Quando mandi la richiesta si apre Satispay con ${totale}. Confermi lì e torni qui.` : modo === 'segreteria' ? 'Paghi quando vieni in segreteria: non serve caricare niente.' : '';
+    const frase = !si ? `${p.perche ?? ''}.` : modo === 'satispay' ? `Quando mandi la richiesta si apre Satispay con ${totale}. Confermi lì e torni qui.` : '';
     return { cond: COND, righe, totale, scelte, frase };
   }
 }

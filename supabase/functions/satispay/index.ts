@@ -16,7 +16,7 @@
 //     la può chiamare: lo stato si rilegge da Satispay con una chiamata firmata.
 //
 // Senza i segreti (SATISPAY_KEY_ID, SATISPAY_CHIAVE) o senza 73-satispay.sql
-// risponde { attivo: false }: il modulo propone bonifico e segreteria.
+// risponde { attivo: false }: il modulo propone il bonifico con la sua ricevuta.
 //
 // Si pubblica con `supabase functions deploy satispay --no-verify-jwt` (la
 // callback di Satispay arriva senza token): vedi `LEGGIMI.md`.
@@ -34,7 +34,7 @@ const risposta = (corpo: Record<string, unknown>, stato = 200) =>
   new Response(JSON.stringify(corpo), { status: stato, headers: { ...CORS, 'Content-Type': 'application/json' } })
 
 // Il testo per chi paga, mai quello grezzo di Satispay o del database: è lo stesso di ERRORE_SATISPAY (src/lib/satispay.ts).
-const NON_RISPONDE = 'Satispay non risponde: riprova o paga in segreteria'
+const NON_RISPONDE = 'Satispay non risponde: riprova fra qualche minuto'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const keyId = Deno.env.get('SATISPAY_KEY_ID') ?? ''

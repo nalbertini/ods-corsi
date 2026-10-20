@@ -123,13 +123,13 @@ update impostazioni set listino = '{
 \echo '--- 2. satispay_prepara: un pagamento per richiesta ---'
 set role service_role;
 select atteso('una richiesta che non c''è',
-  tenta($$select satispay_prepara('eeeeeeee-0000-0000-0000-0000000000ff')::text$$), 'NEGATO: Questa richiesta non si può più pagare online: paga in segreteria');
+  tenta($$select satispay_prepara('eeeeeeee-0000-0000-0000-0000000000ff')::text$$), 'NEGATO: Questa richiesta non si può più pagare online: scrivi alla segreteria');
 select atteso('una richiesta già accolta',
-  tenta($$select satispay_prepara('eeeeeeee-0000-0000-0000-000000000005')::text$$), 'NEGATO: Questa richiesta non si può più pagare online: paga in segreteria');
+  tenta($$select satispay_prepara('eeeeeeee-0000-0000-0000-000000000005')::text$$), 'NEGATO: Questa richiesta non si può più pagare online: scrivi alla segreteria');
 select atteso('una richiesta rifiutata',
-  tenta($$select satispay_prepara('eeeeeeee-0000-0000-0000-000000000006')::text$$), 'NEGATO: Questa richiesta non si può più pagare online: paga in segreteria');
-select atteso('un corso senza prezzo: col bonifico o in segreteria',
-  tenta($$select satispay_prepara('eeeeeeee-0000-0000-0000-000000000004')::text$$), 'NEGATO: Un corso non ha ancora il prezzo: paga col bonifico o in segreteria');
+  tenta($$select satispay_prepara('eeeeeeee-0000-0000-0000-000000000006')::text$$), 'NEGATO: Questa richiesta non si può più pagare online: scrivi alla segreteria');
+select atteso('un corso senza prezzo: col bonifico',
+  tenta($$select satispay_prepara('eeeeeeee-0000-0000-0000-000000000004')::text$$), 'NEGATO: Un corso non ha ancora il prezzo: paga col bonifico');
 reset role;
 select atteso('e niente scritto', (select count(*)::text from pagamenti_satispay), '0');
 

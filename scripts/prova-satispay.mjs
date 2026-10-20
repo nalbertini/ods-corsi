@@ -110,6 +110,7 @@ console.log('\n2c. il prezzo che vale per Satispay: solo una voce del listino ag
   const conRighe = { ...listino, corsi: [...listino.corsi, { corso: 'Pesi', corsoId: 'c3', prezzi: [{ etichetta: '1 GIORNO', annuale: 340 }, { etichetta: '2 GIORNI', annuale: 450 }] }] }
   ok('un corso a riga sola: semplice', prova(() => s.nonSemplice([{ id: 'c1', nome: 'Judo 3' }], conRighe)), null)
   ok('due corsi: no, valgono le offerte', prova(() => s.nonSemplice([{ id: 'c1', nome: 'Judo 3' }, { id: 'c3', nome: 'Pesi' }], conRighe)), 'Niente Satispay per ora: con più corsi il prezzo lo conferma la segreteria')
+  ok('un corso fuori età: no, la segreteria richiama e magari lo cambia', prova(() => s.nonSemplice([{ id: 'c1', nome: 'Judo 3' }], conRighe, ['Judo 3'])), 'Niente Satispay per ora: Judo 3 non è della sua età, la segreteria ti richiama')
   ok('un corso con più righe: no, dipende dai giorni', prova(() => s.nonSemplice([{ id: 'c3', nome: 'Pesi' }], conRighe)), 'Niente Satispay per ora: il prezzo di Pesi dipende dai giorni, lo conferma la segreteria')
 }
 
@@ -118,12 +119,18 @@ console.log('\n2b. come si paga dal modulo, e quali file si chiedono')
   const si = { satispay: true }
   const no = { satispay: false, perche: '' }
   ok('Satispay scelto e possibile: Satispay', prova(() => s.modoPagamento('satispay', si, false)), 'satispay')
-  ok('Satispay scelto ma spento: in segreteria', prova(() => s.modoPagamento('satispay', no, false)), 'segreteria')
+  // Solo Satispay o il bonifico con la ricevuta (decisione del 2026-10-20): niente «in segreteria».
+  ok('Satispay scelto ma non possibile: il bonifico', prova(() => s.modoPagamento('satispay', no, false)), 'bonifico')
   ok('bonifico resta bonifico anche senza Satispay', prova(() => s.modoPagamento('bonifico', no, false)), 'bonifico')
   ok('dal nucleo nessuna scelta: come prima', prova(() => s.modoPagamento('satispay', si, true)), null)
+  ok('nessuna scelta già fatta: si sceglie', prova(() => s.modoPagamento(null, si, false)), null)
+  ok('senza scelta il modulo non parte', prova(() => s.cosaNonVaModo(null, false, false)), 'Manca come paghi: Satispay o bonifico')
+  ok('Satispay: va, senza ricevuta', prova(() => s.cosaNonVaModo('satispay', false, false)), null)
+  ok('bonifico senza ricevuta: non parte', prova(() => s.cosaNonVaModo('bonifico', false, false)), 'Manca la ricevuta del bonifico: una foto, lo screenshot o il PDF')
+  ok('bonifico con la ricevuta: va', prova(() => s.cosaNonVaModo('bonifico', false, true)), null)
+  ok('dal nucleo non si sceglie', prova(() => s.cosaNonVaModo(null, true, false)), null)
   ok('la ricevuta del bonifico: col bonifico sì', prova(() => s.chiedeRicevuta('bonifico')), true)
   ok('con Satispay no', prova(() => s.chiedeRicevuta('satispay')), false)
-  ok('in segreteria no', prova(() => s.chiedeRicevuta('segreteria')), false)
   ok('dal nucleo sì, come prima', prova(() => s.chiedeRicevuta(null)), true)
 }
 
@@ -146,7 +153,7 @@ console.log('\n3. cosa vede chi ha mandato la richiesta')
   ok('non andato: titolo e tono', prova(() => [nonAndato.titolo, nonAndato.tono]), ['IL PAGAMENTO NON È ANDATO', 'avviso'])
   ok('non andato: dice quanto', prova(() => nonAndato.testi[0].startsWith('La richiesta è arrivata, ma i 230\u00a0€ non sono stati pagati: ')), true)
   ok('non andato, coi centesimi', prova(() => s.esitoPagamento({ stato: 'non-andato', importo: 1250 }).testi[0].startsWith('La richiesta è arrivata, ma i 12,50\u00a0€ non sono stati pagati: ')), true)
-  ok('l’errore è per chi usa l’app, mai quello grezzo', s.ERRORE_SATISPAY, 'Satispay non risponde: riprova o paga in segreteria')
+  ok('l’errore è per chi usa l’app, mai quello grezzo', s.ERRORE_SATISPAY, 'Satispay non risponde: riprova fra qualche minuto')
   const funzione = readFileSync('supabase/functions/satispay/index.ts', 'utf8')
   ok('la Edge Function dice lo stesso errore dell’app', funzione.includes(`const NON_RISPONDE = '${s.ERRORE_SATISPAY}'`), true)
 }
@@ -172,7 +179,7 @@ console.log('\n4. in PAGAMENTI: solo i pagati non ancora in una ricevuta')
 console.log('\n4b. in RICHIESTE ONLINE: il segno e cosa fare')
 {
   ok('nessun pagamento: niente', prova(() => s.segnoRichiesta(undefined, 'nuova')), null)
-  ok('non andato: niente, si paga in segreteria come prima', prova(() => s.segnoRichiesta(nonAndato, 'nuova')), null)
+  ok('non andato: niente, si riprova', prova(() => s.segnoRichiesta(nonAndato, 'nuova')), null)
   ok('in attesa', prova(() => s.segnoRichiesta(inAttesa, 'nuova')), { tag: 'Satispay in attesa', testo: 'Pagamento Satispay di 200\u00a0€ in attesa: chi si iscrive non l’ha ancora confermato.', tono: 'aspetta' })
   ok('pagata', prova(() => s.segnoRichiesta(pagato, 'nuova')), { tag: 'Pagata', testo: 'Pagata con Satispay il 20 ottobre: 230\u00a0€. Nella ricevuta dalla scheda il pagamento è già dentro: non segnarlo di nuovo.', tono: 'fatto' })
   ok('pagata e già in ricevuta', prova(() => s.segnoRichiesta(inRicevuta, 'accolta').testo), 'Pagata con Satispay il 20 ottobre: 230\u00a0€, già nella ricevuta.')
@@ -259,7 +266,7 @@ console.log('\n7. in prova: paga finge l’approvazione, con l’importo della s
   const listino = await aspetta(async () => (await seg.listino()).listino)
   const stima = prova(() => p.stimaIscrizione({ chi: 'Rossi Luca', corsi, formula: 'annuale' }, [], '2026-10-20', listino))
   ok('la stima ha un prezzo (altrimenti la prova non dice niente)', prova(() => [stima.senzaPrezzo, stima.totale > 0]), [[], true])
-  ok('un link con una richiesta che non c’è: la frase di chi paga', await aspetta(() => r.paga('r-che-non-ce')), 'ERRORE: Questa richiesta non si può più pagare online: paga in segreteria')
+  ok('un link con una richiesta che non c’è: la frase di chi paga', await aspetta(() => r.paga('r-che-non-ce')), 'ERRORE: Questa richiesta non si può più pagare online: scrivi alla segreteria')
   ok('prima di pagare non risulta pagata', await aspetta(async () => (await r.statoPagamento(id))?.stato !== 'pagato'), true)
   await aspetta(() => r.paga(id))
   const dopo = await aspetta(() => r.statoPagamento(id))
