@@ -269,11 +269,9 @@ tue righe e senza orari. Guarda sempre l'**Anteprima** prima di Pubblica.
 
 Come si presenta: una tessera per ogni giorno, da lunedì a domenica (un giorno
 senza lezioni non c'è), con ora di inizio e fine e nome del corso. In fondo, la
-tua riga delle variazioni e il pulsante giallo **Scrivici su WhatsApp**: il
-pulsante c'è sempre e usa il numero dei contatti del sito, non si scrive nella
-pagina. Sotto, «Aggiornato al…»: il giorno dell'ultima volta che hai cambiato
+tua riga delle variazioni e, sotto, «Aggiornato al…»: il giorno dell'ultima volta che hai cambiato
 giorno, ora, durata, fine o corso di una lezione (cambiare la sala non lo
-sposta).
+sposta). La pagina chiude con l'invito giallo **Iscriviti**, come le altre.
 
 Finché nessun corso ha un orario, la pagina dice «Orari in arrivo» e, sotto il
 titolo, «L'orario della settimana comparirà qui.» al posto della tua
