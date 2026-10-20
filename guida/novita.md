@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.137.2 — 21 ottobre 2026
+
+### Modificato
+
+- La settimana di prova sul sito costa 10 €
+
 ## 0.137.1 — 20 ottobre 2026
 
 ### Risolto
