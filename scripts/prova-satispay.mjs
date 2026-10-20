@@ -129,9 +129,11 @@ console.log('\n2b. come si paga dal modulo, e quali file si chiedono')
   ok('bonifico senza ricevuta: non parte', prova(() => s.cosaNonVaModo('bonifico', false, false)), 'Manca la ricevuta del bonifico: una foto, lo screenshot o il PDF')
   ok('bonifico con la ricevuta: va', prova(() => s.cosaNonVaModo('bonifico', false, true)), null)
   ok('dal nucleo non si sceglie', prova(() => s.cosaNonVaModo(null, true, false)), null)
-  ok('la ricevuta del bonifico: col bonifico sì', prova(() => s.chiedeRicevuta('bonifico')), true)
-  ok('con Satispay no', prova(() => s.chiedeRicevuta('satispay')), false)
-  ok('dal nucleo sì, come prima', prova(() => s.chiedeRicevuta(null)), true)
+  ok('la ricevuta del bonifico: col bonifico sì', prova(() => s.chiedeRicevuta('bonifico', false)), true)
+  ok('con Satispay no', prova(() => s.chiedeRicevuta('satispay', false)), false)
+  // Il vecchio campo «PUOI PAGARE IN SEGRETERIA» compariva nel modulo pubblico prima di scegliere come pagare.
+  ok('dalla pagina pubblica, prima di scegliere come pagare: no', prova(() => s.chiedeRicevuta(null, false)), false)
+  ok('dal nucleo sì, come prima', prova(() => s.chiedeRicevuta(null, true)), true)
 }
 
 console.log('\n3. cosa vede chi ha mandato la richiesta')
