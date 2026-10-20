@@ -20,7 +20,10 @@ La stessa pagina la vede anche chi ha il ruolo di [amministrazione](../amministr
 ## La tabella
 
 Una riga per **pagamento**: data, chi, a cosa serve, come, numero della ricevuta
-(o **Senza ricevuta** se è stato registrato a mano) e importo. Dal più recente.
+(o **Senza ricevuta** se è stato registrato a mano, o pagato con Satispay dal
+modulo e non ancora in una ricevuta) e importo. Dal più recente. Un Satispay
+arrivato compare da solo, anche prima di accogliere la richiesta; fatta la
+ricevuta conta solo lei, mai due volte gli stessi soldi.
 Si può ordinare toccando il nome di una colonna. Toccando una riga si apre la
 scheda della persona. Gli elenchi lunghi vanno a pagine di 50: il **TOTALE DEL
 PERIODO** sotto vale su tutti i pagamenti trovati, non solo sulla pagina.

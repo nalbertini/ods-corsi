@@ -62,7 +62,7 @@ ok('nessun tempo promesso sul richiamo: niente cifre, «entro», «ore», «gior
 ok('AVVISO_RICHIESTA', P.AVVISO_RICHIESTA, 'La richiesta non è ancora l’iscrizione. Non si salva a metà: se esci, ricominci.')
 ok('SENZA_MODULO', P.SENZA_MODULO, 'Per iscriverti chiamaci o passa in palestra.')
 ok('INFORMATIVA_FRASE', P.INFORMATIVA_FRASE, 'Come trattiamo i tuoi dati:')
-ok('COME_SI_PAGA (nella pagina dei prezzi)', P.COME_SI_PAGA, { titolo: 'Dopo la richiesta, oppure in segreteria.', ricevuta: 'La ricevuta la puoi caricare nella richiesta, se hai già pagato.' })
+ok('COME_SI_PAGA (nella pagina dei prezzi)', P.COME_SI_PAGA, { titolo: 'Nella richiesta: con Satispay o col bonifico.', ricevuta: 'Col bonifico, la sua ricevuta si carica nella richiesta.' })
 
 // --- 2. il fondo, uguale nelle due pagine -------------------------------------
 console.log('\nIl fondo (fondoDellaPagina)')
@@ -78,7 +78,7 @@ ok('COSA_SERVE: quattro voci, titolo, quando e nota', P.COSA_SERVE, [
   { titolo: 'Il codice fiscale', nota: 'Di chi si iscrive. Se iscrivi un figlio, anche il tuo.' },
   { titolo: 'La carta d’identità', nota: 'Di chi si iscrive, dai 6 anni. Una foto o il PDF.' },
   { titolo: 'Il certificato medico', quando: 'SE CE L’HAI', nota: 'Se non ce l’hai, lo porti in segreteria prima della prima lezione.' },
-  { titolo: 'La ricevuta del pagamento', quando: 'SE HAI GIÀ PAGATO', nota: 'Se no, paghi dopo o in segreteria.' },
+  { titolo: 'Come paghi', quando: 'NELLA RICHIESTA', nota: 'Con Satispay, oppure col bonifico: allora serve la sua ricevuta.' },
 ])
 ok('nessuna voce dice «firma il genitore»', JSON.stringify(P.COSA_SERVE ?? '').includes('firma il genitore'), false)
 
@@ -92,10 +92,10 @@ ok('con Satispay', prova(() => P.costiBreve(50, true)), {
   etichetta: 'QUANTO COSTA · 2026/27',
   titolo: 'Quota associativa 50 €, più il corso.',
   righe: RIGHE,
-  testo: 'I prezzi di ogni corso e come si paga: bonifico o Satispay, dopo la richiesta o in segreteria.',
+  testo: 'I prezzi di ogni corso e come si paga: Satispay o bonifico, nella richiesta.',
   tasto: 'PREZZI E PAGAMENTO',
 })
-ok('senza Satispay la frase non lo nomina', prova(() => P.costiBreve(50, false).testo), 'I prezzi di ogni corso e come si paga: bonifico, dopo la richiesta o in segreteria.')
+ok('senza Satispay la frase non lo nomina', prova(() => P.costiBreve(50, false).testo), 'I prezzi di ogni corso e come si paga: bonifico, nella richiesta.')
 ok('la quota è quella passata (dal listino), non scritta: 55 → «55 €»', prova(() => P.costiBreve(55, true).titolo), 'Quota associativa 55 €, più il corso.')
 
 const lib = sorgente('src/lib/paginaIscrizioni.ts')

@@ -13,12 +13,15 @@ meno le uscite.
 
 L'elenco unisce due cose:
 
-- gli **incassi degli iscritti**: le ricevute e i pagamenti a mano di
-  [PAGAMENTI](pagamenti.md) entrano da soli, uno per pagamento, col segno
+- gli **incassi degli iscritti**: le ricevute, i pagamenti a mano e i
+  pagamenti Satispay dal modulo di iscrizione (finché non sono in una
+  ricevuta, poi conta la ricevuta) di [PAGAMENTI](pagamenti.md) entrano da soli, uno per pagamento, col segno
   **Incasso iscritto**. Non si ricopiano e non si cambiano da qui: se una ricevuta
   o un pagamento si annulla, cambia da sé anche qui. Contanti vanno in Cassa
   Contanti, tutto il resto (bonifico, POS, Satispay, assegno) in Conto Corrente.
-  Il «pagato fino al» non è un incasso e qui non compare;
+  Il «pagato fino al» non è un incasso e qui non compare. Satispay entra per
+  l'importo pagato dalla famiglia: le commissioni e i rimborsi fatti dall'app
+  Satispay Business si registrano a mano;
 - i **movimenti che scrivi tu**: altre entrate (contributi, gare, attività
   fatturate) e le uscite.
 

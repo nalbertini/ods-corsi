@@ -209,3 +209,5 @@ revoke all on function soldi_sql(int), prezzo_dal_listino(jsonb, text, date, dat
 grant execute on function importo_iscrizione(uuid, date), satispay_prepara(uuid), satispay_stato(uuid), satispay_creato(uuid, text, text),
   satispay_esito(text, text) to service_role;
 grant execute on function emetti_ricevuta_satispay(jsonb, uuid) to authenticated;
+
+notify pgrst, 'reload schema';
