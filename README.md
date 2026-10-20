@@ -178,6 +178,8 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   stagione e risulta ancora da pagare: chi ha pagato la quota si segna in blocco «pagata senza ricevuta dell'app», gli altri
   (solo corsi, sotto 50 €, incasso del genitore) si guardano dalla scheda
   (`supabase/71-pagato-vecchio-programma.sql`, `src/lib/pagatoPrima.ts`).
+- **Il nuovo editor delle pagine, da provare** (voce SITO, PROVA IL NUOVO EDITOR): Puck completo a tutto schermo, accanto
+  all'editor di oggi; salva solo la bozza, si pubblica dall'editor di sempre (`src/components/segreteria/EditorPuck.tsx`, regole in `src/lib/sitoPezzi.ts`).
 - **L'orario delle pagine corso del sito** (voce SITO, ORARIO DAI CORSI): una pagina si collega a uno o più corsi e il suo
   orario viene dalle ricorrenze di CORSI (solo giorno, ora e durata), senza riscriverlo a mano né premere Pubblica: il sito
   si aggiorna da solo entro 5 minuti. Un corso senza giorni dà «Orario in arrivo», mai un orario vecchio
@@ -195,7 +197,7 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   (`src/lib/sitoTesto.ts`, `src/lib/sitoPagine.ts`). Le pagine di legge (privacy, cookie, contributi pubblici)
   restano sempre sul sito. Le scrive solo la segreteria; chi non ha l'accesso legge solo il pubblicato
   (`supabase/56-sito.sql`). Le pagine pubblicate diventano il sito vero con `npm run sito:genera`
-  (`src/lib/sitoGenera.ts`, `scripts/genera-sito.mjs`): file statici senza codice né servizi esterni (c'è solo un blocco di dati strutturati JSON-LD per Google e gli assistenti AI:
+  (`src/lib/sitoGenera.ts`, `scripts/genera-sito.mjs`): file statici senza codice né servizi esterni, a parte il contatore delle visite qui sotto (c'è solo un blocco di dati strutturati JSON-LD per Google e gli assistenti AI:
   sede, corsi, domande frequenti, briciole, in `src/lib/sitoDati.ts`; per le condivisioni, le meta Open Graph e Twitter con l'immagine `sito/risorse/social.png`, 1200×630; e `llms.txt` alla radice, che racconta il sito agli assistenti AI), con
   carattere (Big Shoulders Display e Inter, licenza OFL accanto) e logo propri in `sito/risorse/`, nell'aspetto «tatami blu e giallo»
   (i colori e le regole sono in `docs/design-canvas/sito-approvato/token-proposta.md`, A2); il testo si ripulisce un'altra volta quando si genera, perché
@@ -211,6 +213,14 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   quel repository e se ne fa una nuova (`SITO_DEPLOY_KEY`). I giri programmati si fermano dopo 60 giorni
   senza attività nel repository: un lancio a mano (Actions → Sito → Run workflow) li riaccende. Il dominio e l'app su app.officinedellosport.it, le immagini e i rinvii dai vecchi
   indirizzi arrivano dopo.
+  **Le visite al sito** si contano con [GoatCounter](https://www.goatcounter.com/), senza cookie: la variabile del
+  repository `SITO_STATISTICHE` è il codice del sito su GoatCounter (quello di `https://<codice>.goatcounter.com`,
+  solo minuscole, cifre e trattini). Con la variabile, ogni pagina e la 404 hanno nella `<head>` lo script ufficiale
+  (`https://gc.zgo.at/count.js`, `async`), e i link a iscrizione, telefono e WhatsApp contano un clic come «iscriviti»,
+  «chiama» e «scrivici» (solo un totale, mai il testo del link); la 404 si conta col titolo «404» e l'indirizzo chiesto.
+  I rinvii, la sitemap, `robots.txt`, `llms.txt` e l'anteprima del pannello non cambiano. Senza la variabile (o vuota)
+  il sito è identico a prima; con un codice fuori forma pure, e il giro mette un avviso senza fermarsi. **La variabile si
+  accende solo dopo aver pubblicato le pagine cookie e privacy nuove**, che dicono del contatore: prima i testi, poi il codice.
 - **La pagina Orari del sito**: l'orario settimanale dei corsi (corso, giorno, ora) preso da CORSI, non scritto a mano.
   La segreteria crea la pagina `orari` con un paragrafo `[orari]` e il sito la riempie da solo a ogni giro
   (`src/lib/sitoOrari.ts`, `orari_sito()` in `supabase/69-orari-sito.sql`): niente sala, istruttore o iscritti.
@@ -487,7 +497,8 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:sito-home-aspetto` | Le misure della Home rivista a 1440, 768 e 375px lette dal CSS: titoli con `clamp()`, passo di 96px (64 sul telefono), stacchi, numeri, foto delle schede, colonne, bersagli di almeno 48px e il tasto MENU che apre `#menu` con `:target`. |
 | `npm run prova:sito-scala` | Il sito sul computer ha la scala del design a 1440px, senza browser: titolo da 228px, collage largo 640px con righe da 128px, 96px sotto ogni sezione, tessere alte almeno 190px solo dal computer in su; sul telefono la testata non si allunga. |
 | `npm run prova:sito-social` | Le anteprime di condivisione e `llms.txt`: meta Open Graph e Twitter su ogni pagina indicizzabile con indirizzi assoluti e testo escapato, nessuna sul 404 né sui rinvii, l'immagine 1200×630, e `llms.txt` fatto solo dalle pagine pubblicate (corsi, pagine, legge, contatti), su una riga per voce, senza date e uguale a ogni generazione. |
-| `npm run prova:sito-genera` | Il sito generato e lo script che lo scrive: un file per pagina, mai codice né servizi esterni, titolo e voci sempre escapati anche se arrivano dall'API, indirizzi strani scartati, sitemap, robots, rinvii e 404, le stesse pagine due volte danno gli stessi file, e lo script non cancella mai una cartella che non è sua né tocca il sito di prima se qualcosa non va. |
+| `npm run prova:sito-statistiche` | Il contatore delle visite (GoatCounter, senza cookie), senza browser: senza `SITO_STATISTICHE` (o vuota) il sito è identico byte per byte; con un codice buono un solo script esterno, quello ufficiale, nella `<head>` di ogni pagina e della 404 (titolo «404», senza canonical), niente codice in linea, e i clic contati solo su iscrizione («iscriviti»), telefono («chiama») e WhatsApp («scrivici») col nome come titolo, mai il testo del link; rinvii, sitemap, robots e llms uguali; un codice fuori forma (virgolette, spazi, indirizzi, `../`, troppo lungo, a capo) non entra mai, `generaSito` non si ferma e lo script finisce bene con un `::warning::` che non ripete il valore; la variabile la legge solo `scripts/genera-sito.mjs` e il giro del sito la passa. |
+| `npm run prova:sito-genera` | Il sito generato e lo script che lo scrive: un file per pagina, mai codice né servizi esterni (a parte il contatore delle visite, vedi `prova:sito-statistiche`), titolo e voci sempre escapati anche se arrivano dall'API, indirizzi strani scartati, sitemap, robots, rinvii e 404, le stesse pagine due volte danno gli stessi file, e lo script non cancella mai una cartella che non è sua né tocca il sito di prima se qualcosa non va. |
 | `npm run prova:sito-orari` | La pagina Orari del sito: la voce «Martedì 19:00–20:00 · corso» (fine anche oltre la mezzanotte), l'ordine da lunedì a domenica e per ora, solo corso, giorno, ora e durata (mai sala, istruttore, iscritti), nome del corso escapato, «Orari in arrivo» senza orari, «Aggiornato al» dai dati e mai da oggi, il giro del sito che si ferma se `orari_sito()` manca e lascia il sito di prima, la gemella della modalità prova e la voce di menu solo verso una pagina pubblicata. Il filtro sul database sta in `supabase/prova/orari-sito.sql`. |
 | `npm run prova:sito-pubblica` | La pubblicazione del sito, senza GitHub: un repository finto e il suo remoto. Il primo giro copia i file e fa un commit, lo stesso sito due volte non ne fa un altro, quello che sparisce dalle pagine sparisce dal sito, il dominio (`CNAME`) resta, e un sito vuoto, senza la home o in una cartella sbagliata non si pubblica mai. |
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. L'«Attività» di ogni giorno scelta da un elenco: nomi, rinomina, eliminazione, NON PIÙ IN USO, giorno e lezioni, l'istruttore che cambia la sua, il database senza `41-attivita.sql`. SALVA LE DATE che toglie le lezioni fuori dalle date dei corsi, tranne quelle con l'appello o una prova: la conferma prima, col conto, e l'avviso dopo, con corso e ora di quelle rimaste. I pagamenti a mano della prova rifiutano il futuro e, in contanti, un giorno chiuso. |

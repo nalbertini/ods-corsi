@@ -106,6 +106,30 @@ nascondono né si cancellano.
 
 Se esci con qualcosa scritto e non salvato, l'app chiede prima.
 
+### Il nuovo editor, da provare
+
+Accanto ai tasti di una pagina c'è **Prova il nuovo editor**: lo stesso lavoro,
+in un editor solo, a tutto schermo. Non c'è per le pagine di legge, e si apre
+solo se la pagina è salvata.
+
+- A sinistra, in **Parti**, le quattro parti (foto in cima, testo, foto,
+  colonne): si trascinano nella pagina dove le vuoi. In **Struttura** c'è
+  l'elenco delle parti della pagina: trascinando una riga la sposti.
+- Al centro la pagina, coi caratteri e i colori del sito, come sul tablet.
+  Sopra, i tasti per vederla come sul telefono o sul computer.
+- A destra i campi di quel che hai scelto. Senza niente di scelto ci sono
+  **Titolo** (anche su Google) e **Descrizione**; scelto un testo, lo scrivi lì o
+  direttamente nella pagina. **Pagina**, in cima, riporta a titolo e descrizione.
+- **Com'è sul sito** mostra la pagina com'è dopo la pubblicazione, con tessere e
+  orari.
+- **Salva bozza** salva senza cambiare il sito; resta spento finché non cambi
+  qualcosa, o se manca qualcosa (una foto senza immagine, il titolo): accanto c'è
+  scritto cosa, in fondo allo schermo. Anche le pagine scritte col testo solo si
+  aprono a parti, ma restano come prima finché non salvi: la prima volta l'app
+  chiede, perché salvata la pagina resta a parti.
+- Per **pubblicare** chiudi il nuovo editor (**Chiudi**: torni alle pagine),
+  riapri la pagina e premi **Pubblica**.
+
 ## L'orario dai corsi
 
 Nella pagina di un corso l'**orario** può venire da CORSI invece che dal testo.
@@ -208,6 +232,16 @@ i pulsanti verso WhatsApp o altri indirizzi restano.
 titoli neri stretti in maiuscolo, pulsante «Iscriviti» giallo in alto a destra, il logo intero in cima e, in
 fondo, l'invito giallo e una tessera scura con i recapiti.
 
+**Le visite** al sito si contano senza cookie, con GoatCounter, da quando chi
+cura l'app accende il contatore: niente banner, e niente si salva sul telefono o
+sul computer di chi visita. Si conta quante volte si apre ogni pagina (anche gli
+indirizzi che non esistono, col titolo «404»), da quale sito si arriva, in
+totale browser, tipo di dispositivo e paese, e quanti tocchi hanno avuto i
+pulsanti per iscriversi («iscriviti»), per telefonare («chiama») e per scrivere
+su WhatsApp («scrivici»), un totale per tipo. Non si sa chi è la
+persona, e il modulo di iscrizione, che sta nell'app, non è contato. I numeri li
+legge chi ha l'account GoatCounter della palestra: nel pannello non si vedono.
+
 Se compare «Il pannello del sito non è ancora attivo sul database», manca un
 aggiornamento del database: va chiesto a chi cura l'app.
 
@@ -289,7 +323,7 @@ il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **Pubblica
 - **Collage pieno** (Home): con **4 foto** e **un elenco di 9 voci** prima del primo titolo grande, la testata ha le 13 tessere del design. Le voci seguono l'ordine: i **numeri** (grassetto + scritta, come «**35+** anni di sport»), i **titoli** (solo grassetto, scritta grande), le **note** (niente grassetto, scritta piccola, per l'indirizzo e il motto). Con altre quantità resta il collage di prima.
 - **La Home nuova** (testo pronto in `docs/sito/home.md` e `home.html`): si riconosce da un paragrafo col pulsante **«Prova una settimana a 5 €»** (verso `https://app.officinedellosport.it/iscrizioni/`), prima del primo titolo grande; un «Scrivici» verso `/contatti/` accanto non esce. Senza il pulsante verso il modulo online la Home resta come prima, senza avvisi: se dopo **PUBBLICA** non cambia niente, controlla quell'indirizzo. Da lì il sito riconosce ogni sezione dalla forma: i **numeri** (elenco di 2–6 voci col grassetto), i **corsi** (sottotitoli col link: foto facoltativa, età, descrizione, fasce in corsivo), i **quattro motivi** (quattro sottotitoli con un paragrafo), le **citazioni con «LEGGI TUTTO»** (primo paragrafo l'estratto, poi il testo intero, poi la firma in corsivo; le virgolette non si scrivono), le **recensioni** (due citazioni e un sottotitolo «In breve» con un elenco), le **domande** e la **chiamata finale** (l'ultima sezione, con i due pulsanti e la foto). Prima di incollare il testo nuovo cancella tutto il vecchio.
 - **I nostri corsi, nella nuova veste** (testo pronto in `docs/sito/corsi.md` e `corsi.html`): come la Home, parte solo se nel testo c'è il pulsante **«Prova una settimana a 5 €»** (verso `https://app.officinedellosport.it/iscrizioni/`) **e** ogni corso è un sottotitolo con il link alla sua pagina; altrimenti la pagina resta come prima, senza avvisi. Il **primo paragrafo** (prima dei corsi) è la frase sotto il titolo: non è la descrizione. Ogni corso ha la foto subito sotto il titolo (facoltativa: senza, la scheda ha una fascia con l'iniziale), l'età, la descrizione e le fasce in corsivo; **le foto messe dopo l'ultimo corso non si usano**. In fondo, sotto un titolo grande, la chiamata con i due pulsanti e una foto. Prima di incollare cancella tutto il vecchio.
-- **La pagina di un corso nuova** (testi pronti in `docs/sito/<corso>.md` e `<corso>.html`, quello di prima in `<corso>-precedente.html`): si riconosce dallo stesso paragrafo con i due pulsanti della Home nuova, prima del primo titolo grande. Senza, la pagina resta com'era, senza avvisi: se dopo **PUBBLICA** non cambia niente, controlla l'indirizzo del pulsante «Prova una settimana a 5 €». Con la **foto** in apertura il sito mette subito dopo i quattro dati e l'orario a tessere. **Senza foto** (Pre pugilistica, Autodifesa) la pagina non ne presta una: al suo posto c'è una fascia blu con le prime tre voci dell'elenco (nei testi pronti: Quando, Ora, Per chi), Dove e Per iniziare restano tessere e l'orario non si ripete. Poi «Cosa si fa» e «A chi è rivolto» (due sottotitoli sotto un titolo vuoto; una foto nel primo sta accanto al testo), le sezioni libere (la storia del judo), «Cosa aspettarsi» (3 o 4 sottotitoli con un paragrafo, numerati: deve essere la sezione subito prima della chiusura) e la chiusura (l'ultima sezione con i pulsanti; una foto in fondo sta a destra).
+- **La pagina di un corso nuova** (testi pronti in `docs/sito/<corso>.md` e `<corso>.html`, quello di prima in `<corso>-precedente.html`): si riconosce dallo stesso paragrafo con i due pulsanti della Home nuova, prima del primo titolo grande. Senza, la pagina resta com'era, senza avvisi: se dopo **PUBBLICA** non cambia niente, controlla l'indirizzo del pulsante «Prova una settimana a 5 €». Quel paragrafo serve solo a riconoscerla: sotto il titolo e la descrizione la pagina non mostra pulsanti, «Iscriviti» resta nella barra in alto e nella chiusura. Con la **foto** in apertura il sito mette subito dopo i quattro dati e l'orario a tessere. **Senza foto** (Pre pugilistica, Autodifesa) la pagina non ne presta una: al suo posto c'è una fascia blu con le prime tre voci dell'elenco (nei testi pronti: Quando, Ora, Per chi), Dove e Per iniziare restano tessere e l'orario non si ripete. Poi «Cosa si fa» e «A chi è rivolto» (due sottotitoli sotto un titolo vuoto; una foto nel primo sta accanto al testo), le sezioni libere (la storia del judo), «Cosa aspettarsi» (3 o 4 sottotitoli con un paragrafo, numerati: deve essere la sezione subito prima della chiusura) e la chiusura (l'ultima sezione con i pulsanti; una foto in fondo sta a destra).
 - **La Home nuova** (testo pronto in `docs/sito/home.md` e `home.html`): si riconosce da un paragrafo col pulsante **«Prova una settimana a 5 €»** (verso `https://app.officinedellosport.it/iscrizioni/`), prima del primo titolo grande; un «Scrivici» verso `/contatti/` accanto non esce. Senza il pulsante verso il modulo online la Home resta come prima, senza avvisi: se dopo **Pubblica** non cambia niente, controlla quell'indirizzo. Da lì il sito riconosce ogni sezione dalla forma: i **numeri** (elenco di 2–6 voci col grassetto), i **corsi** (sottotitoli col link: foto facoltativa, età, descrizione, fasce in corsivo), i **quattro motivi** (quattro sottotitoli con un paragrafo), le **citazioni con «LEGGI TUTTO»** (primo paragrafo l'estratto, poi il testo intero, poi la firma in corsivo; le virgolette non si scrivono), le **recensioni** (due citazioni e un sottotitolo «In breve» con un elenco), le **domande** e la **chiamata finale** (l'ultima sezione, con i due pulsanti e la foto). Prima di incollare il testo nuovo cancella tutto il vecchio.
 - **Gli istruttori** (testi pronti in `docs/sito/istruttori.md` e `istruttori.html`): per ogni tecnico si scrive il **nome** (titolo piccolo), la **foto** (facoltativa) e una riga **«Cognome · corso, corso»** (il puntino `·` divide il cognome dai corsi, la virgola un corso dall'altro). Il sito fa le tessere a quattro colonne con i corsi in pastiglie, mette per primi Maurizio, Maura, Diana, Fabio, Tiziano, Valerio, Manuel e Federico (poi gli altri come scritti) e alterna i colori a diagonali, e scrive da solo il testo alternativo delle foto. Il **nome diventa un link (con la freccia ↗) solo se la pagina di quell'istruttore è pubblicata**: se colleghi un nome e la freccia non compare, controlla che la sua pagina sia pubblicata (l'indirizzo è piatto, `/fabio-berta/`). Se l'ultima riga di quattro è incompleta, compare da sola la tessera «Vieni a conoscerli sul tatami»: aggiungendo o togliendo un tecnico può comparire o sparire. La **scheda scarna** di un istruttore (foto facoltativa e un elenco con la sola voce **Corsi**; modello in `docs/sito/istruttori/modello-scarno.md`) mostra nome, foto o iniziale, corsi, i due pulsanti e l'invito.
 - **La Chi siamo nuova** (testo pronto in `docs/sito/chi-siamo.md` e `chi-siamo.html`): si riconosce da un pulsante verso il modulo online (**«Prova una settimana a 5 €»**, `https://app.officinedellosport.it/iscrizioni/`) in una delle sezioni, di norma la chiamata finale. Senza quel pulsante la pagina resta come prima, senza avvisi. Il sito riconosce ogni fascia dalla forma: foto con citazione (la frase grande), due titoli piccoli (le tessere), l'elenco coi numeri, **una foto con un paragrafo** sotto un titolo grande (pannello: il primo scuro, il secondo giallo), **più foto ognuna col suo paragrafo** (la fila con i nomi dei corsi, più un pulsante «Vedi tutti i corsi»), i quattro valori e la chiamata finale con i due pulsanti. Prima di incollare il testo nuovo cancella tutto il vecchio.

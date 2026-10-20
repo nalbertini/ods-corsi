@@ -24,10 +24,14 @@ import { corsiDa, datiStrutturati } from './sitoDati'
  * Qui si pulisce il testo un'altra volta (`pulisciTesto`): è la pulizia di cui
  * ci si fida, perché chi scrive all'API salta il pannello e il filtro del
  * database è solo una difesa in più. Titolo, descrizione ed etichette si
- * scrivono sempre escapati. Il sito non ha codice (l'unico `<script>` è il blocco di dati strutturati di `sitoDati.ts`, che è JSON) né
+ * scrivono sempre escapati. Il sito non ha codice suo (l'unico `<script>` scritto qui è il blocco di dati strutturati di `sitoDati.ts`, che è JSON) né
  * richieste a servizi esterni: carattere e logo sono file suoi, in `/risorse/`
  * (la cartella `sito/risorse/`), e un'immagine nel testo entra solo se è del
  * sito o del contenitore delle immagini dichiarato (`ospitiImmagini`).
+ * L'unica eccezione è il contatore delle visite (GoatCounter, senza cookie), e
+ * solo se c'è il codice del sito (`statistiche`, da `SITO_STATISTICHE`): uno
+ * script esterno nella `<head>` delle pagine e della 404, mai nei rinvii (vedi
+ * `conStatistiche`).
  *
  * Nessuna data di oggi nei file: gli stessi dati danno gli stessi file.
  */
@@ -63,6 +67,11 @@ export interface DatiSito {
   ospitiImmagini?: string[]
   /** Le ricorrenze dei corsi (`orari_aperti()`): servono alle pagine collegate. Senza, una pagina collegata dice «Orario in arrivo». */
   orari?: OrarioAperto[]
+  /**
+   * Il codice del sito su GoatCounter (`SITO_STATISTICHE`, lo passa solo `scripts/genera-sito.mjs`): con un codice buono le
+   * pagine contano le visite. Assente o fuori forma: i file sono quelli di sempre, byte per byte (l'anteprima del pannello non lo passa mai).
+   */
+  statistiche?: string
 }
 
 /**
@@ -379,7 +388,8 @@ const CSS_CONTATTI = `
 }
 `.replace(/\n/g, '')
 
-const CSS = `
+/** Il CSS di ogni pagina del sito: lo usa anche il nuovo editor delle pagine, per mostrarle coi caratteri e i colori del sito. */
+export const CSS_SITO = `
 @font-face{font-family:"Big Shoulders Display";font-weight:800;font-display:swap;src:url(/risorse/big-shoulders-display-800.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Inter";font-weight:100 900;font-display:swap;src:url(/risorse/inter-variable.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 :root{--display:"Big Shoulders Display","Arial Narrow",Arial,sans-serif;--fondo:#eef5fa;--inchiostro:#0d2a3d;--blu:#14709f;--chiara:#cfe6f4;--giallo:#f4c31b;--margine:clamp(16px,3.4vw,48px)}
@@ -1096,7 +1106,7 @@ const conSalto = (corpo: string) => {
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; cssHome?: boolean; cssContatti?: boolean; cssCorsoNuovo?: string; cssCorsi?: boolean; cssOrari?: boolean; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}${o.cssOrari ? `<style>${CSS_ORARI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${conSalto(o.corpo)}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS_SITO}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}${o.cssHome ? `<style>${CSS_HOME}${o.cssCorsoNuovo !== undefined ? CSS_CORSO_NUOVO + o.cssCorsoNuovo : ''}${o.cssCorsi ? CSS_CORSI_NUOVA : ''}${cssFociSchede().replace(/\n/g, '')}</style>` : ''}${o.cssContatti ? `<style>${CSS_CONTATTI}</style>` : ''}${o.cssOrari ? `<style>${CSS_ORARI}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${conSalto(o.corpo)}</body></html>`
 }
 
 /**
@@ -1194,7 +1204,8 @@ function paginaCorsiNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, 
 function paginaCorsoNuovo(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
   const collegata = (p.corsiCollegati?.length ?? 0) > 0
   const h = corsoNuovo(pulito, TESTI.iscrizione, collegata ? testiOrario(p.corsiCollegati ?? [], c.d.orari ?? []) : undefined)
-  const hero = `<section class="pagina-hero con-pulsanti solo"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div></section>`
+  // Sotto il titolo nessun pulsante: «Iscriviti» sta già nella barra in alto e nella chiamata finale.
+  const hero = `<section class="pagina-hero solo"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div></section>`
   const corpo = `${testata(c, percorso('corsi'))}<main class="passo-unico corso-nuovo" data-corso="${esc(p.slug)}">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: true })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsoNuovo: cssFuochiCorso(p.slug) + (collegata ? CSS_ORARIO_AUTOMATICO : ''), dati })
@@ -1222,6 +1233,41 @@ function paginaChiSiamoNuova(p: PaginaGenerata, c: Contesto, conContatti: boolea
 function nonTrovata(c: Contesto): string {
   const corpo = `${testata(c)}<main><section class="non-trovata"><h1>Pagina non trovata</h1><p>Errore 404: l’indirizzo che hai aperto non c’è, o la pagina è cambiata.</p><p><a class="pulsante" href="/">Torna alla pagina iniziale</a></p></section></main>${piede(c)}`
   return documento(c, { titolo: 'Pagina non trovata', descrizione: '', percorso: '/404.html', corpo, noindex: true })
+}
+
+/**
+ * Il codice di GoatCounter, se è buono. Finisce in un indirizzo dentro un attributo: per questo solo minuscole, cifre e
+ * trattini (niente virgolette, barre, punti o a capo), e se non va non entra niente.
+ */
+export const codiceStatistiche = (valore: string | undefined): string | null => (valore !== undefined && /^[a-z0-9-]{2,50}$/.test(valore) ? valore : null)
+
+/**
+ * I clic che si contano, per tipo di link: un nome solo, mai il testo del link né la pagina da cui parte. Il modulo
+ * solo al suo indirizzo: un altro sito con /iscrizioni/ non è un'iscrizione.
+ */
+const CLIC: Array<[(href: string) => boolean, string]> = [
+  [(href) => href.toLowerCase().startsWith(TESTI.iscrizione), 'iscriviti'],
+  [(href) => /^tel:/i.test(href), 'chiama'],
+  [(href) => /^https:\/\/wa\.me\//i.test(href), 'scrivici'],
+]
+
+/**
+ * Il contatore delle visite su una pagina già fatta, in un passaggio solo alla fine: così le regole delle pagine non
+ * cambiano, e senza codice non si passa di qui. Lo script è quello ufficiale di GoatCounter (`async`: non rallenta la
+ * pagina). Sui link da contare il titolo è il nome stesso: senza, GoatCounter manderebbe il testo del link.
+ * La 404 si conta col titolo «404» e senza canonical: il canonical è il percorso che GoatCounter conta, e con
+ * /404.html si perderebbe l'indirizzo chiesto (GitHub Pages serve la 404 a quell'indirizzo).
+ */
+function conStatistiche(html: string, codice: string, e404: boolean): string {
+  const conta = `<script data-goatcounter="https://${codice}.goatcounter.com/count"${e404 ? ` data-goatcounter-settings='{"title":"404"}'` : ''} async src="https://gc.zgo.at/count.js"></script>`
+  const testa = e404 ? html.replace(/<link rel="canonical" href="[^"]*">/, '') : html
+  return testa
+    .replace('</head>', () => `${conta}</head>`)
+    .replace(/<a\b([^>]*)>/gi, (a, attr: string) => {
+      const href = /\shref="([^"]*)"/i.exec(attr)?.[1]?.trim() ?? ''
+      const nome = CLIC.find(([vale]) => vale(href))?.[1]
+      return nome ? `<a${attr} data-goatcounter-click="${nome}" data-goatcounter-title="${nome}">` : a
+    })
 }
 
 function rinvio(c: Contesto, a: string): string {
@@ -1281,6 +1327,8 @@ export function generaSito(d: DatiSito): Record<string, string> {
   const file: Record<string, string> = {}
   for (const p of pagine) file[fileDi(p.slug)] = pagina(p, c, conContatti)
   file['404.html'] = nonTrovata(c)
+  const codice = codiceStatistiche(d.statistiche)
+  if (codice) for (const f of [...pagine.map((p) => fileDi(p.slug)), '404.html']) file[f] = conStatistiche(file[f], codice, f === '404.html')
   file['sitemap.xml'] = mappa(c, pagine)
   file['llms.txt'] = llms(c, pagine)
   file['robots.txt'] = `User-agent: *\nAllow: /\n\nSitemap: ${d.dominio}/sitemap.xml\n`

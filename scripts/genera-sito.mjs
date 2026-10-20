@@ -22,6 +22,8 @@
 // rinvii, orari?, orariSito? }`; `orari` sono le righe di `orari_aperti()`, `orariSito` quelle
 // di `orari_sito()`, e possono mancare), senza rete: per provare il sito e per i test.
 // `SITO_DOMINIO` cambia il dominio (di norma https://www.officinedellosport.it).
+// `SITO_STATISTICHE` è il codice del sito su GoatCounter: con un codice buono le pagine contano le visite (senza cookie);
+// assente o vuota il sito è quello di sempre; fuori forma pure, con un avviso `::warning::` (il giro non si ferma).
 // Codici di uscita: 0 fatto; 2 la home non è ancora pubblicata (niente da pubblicare); 1 un guasto.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
@@ -71,7 +73,7 @@ const { outputFiles } = await build({
   define: { 'import.meta.env': '{}' },
   banner: { js: `import { createRequire as __cr } from 'node:module'; const require = __cr(${JSON.stringify(`${radice}/`)});` },
 })
-const { generaSito, datiDaRisposte, prefissoImmagini } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+const { generaSito, datiDaRisposte, prefissoImmagini, codiceStatistiche } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 
 async function leggi() {
   if (daFile) {
@@ -134,6 +136,14 @@ if (process.env.SUPABASE_URL) {
     fine('SUPABASE_URL non è un indirizzo valido (deve cominciare con https://).')
   }
   dati.ospitiImmagini = [prefissoImmagini(origine)]
+}
+// Il contatore delle visite (GoatCounter): la variabile si legge solo qui, così l'anteprima del pannello non conta mai niente.
+// Un codice sbagliato non ferma la pubblicazione: il sito esce senza contatore e il giro lo dice. Il valore non si stampa:
+// finirebbe nei comandi di GitHub (un a capo ne aprirebbe un altro).
+const statistiche = process.env.SITO_STATISTICHE ?? ''
+if (statistiche.trim()) {
+  if (codiceStatistiche(statistiche)) dati.statistiche = statistiche
+  else console.log('::warning::SITO_STATISTICHE non è un codice di GoatCounter (solo lettere minuscole, cifre e trattini, da 2 a 50, senza spazi né a capo): il sito esce senza contatore delle visite. Correggila in Settings → Secrets and variables → Actions → Variables.')
 }
 if (!dati.pagine.some((p) => p.slug === 'home')) {
   // Codice 2: «non c'è ancora niente da pubblicare». Chi pubblica il sito lo distingue da un guasto (codice 1).
