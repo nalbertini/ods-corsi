@@ -92,8 +92,8 @@ Chi si iscrive risponde alle domande dal telefono:
   Sotto c'è **QUANTO COSTA**: la stima dal listino (la quota associativa, i
   corsi scelti, il totale), l'IBAN, la causale col nome e i tasti **COPIA
   IBAN**, **COPIA CAUSALE** e **PAGA CON SATISPAY**. Un corso senza prezzo è
-  scritto in giallo: si paga il totale che si vede, il resto lo sistema la
-  segreteria.
+  scritto in giallo («Lo dice la segreteria»): si paga il totale che si vede, il
+  resto lo sistema la segreteria.
 - **Il modulo**: le autorizzazioni si firmano **qui, col dito** (o col mouse
   dal computer). Si sceglie come sul foglio se si acconsente al
   **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**: le

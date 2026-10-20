@@ -713,7 +713,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             file={file[f.tipo]}
             onFile={(x) => setFile((p) => ({ ...p, [f.tipo]: x }))}
             facoltativo={!obbligatori.includes(f.tipo)}
-            dettaglio={f.tipo === 'ricevuta' && !nucleo ? DETTAGLIO_RICEVUTA : undefined}
+            dettaglio={f.tipo === 'ricevuta' && obbligatori.includes('ricevuta') ? DETTAGLIO_RICEVUTA : undefined}
           />
         ))}
       </Sezione>

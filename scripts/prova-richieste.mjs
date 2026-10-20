@@ -9,6 +9,7 @@
 // accolta che diventa un iscritto visto dalla segreteria e dall'appello.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
+import { readFileSync } from 'node:fs'
 
 const { outputFiles } = await build({
   stdin: {
@@ -644,6 +645,10 @@ console.log('\n11b. la ricevuta obbligatoria nel modulo della pagina pubblica (n
   ok('la firma viene prima della ricevuta', manca({ come: 'qui', firma: 'Manca la firma sul modulo', file: { documento: {} } }), 'Manca la firma sul modulo')
   ok('gli altri file dicono ancora «Manca: …»', manca({ file: { modulo: {}, ricevuta: {} } }), "Manca: carta d'identità")
   ok('senza ricevuta fra gli obbligatori, non si chiede', manca({ obbligatori: ['modulo', 'documento'] }), null)
+  // Il legame sta nel modulo: senza `nucleo` (pagina pubblica) la ricevuta è obbligatoria, e la lista arriva a `mancaPerInviare`.
+  const moduloSorgente = readFileSync('src/components/ModuloIscrizione.tsx', 'utf8')
+  ok('il modulo chiede la ricevuta senza nucleo', moduloSorgente.includes('fileObbligatori(daChiedere, !nucleo)'), true)
+  ok('il modulo passa quella lista a mancaPerInviare', /mancaPerInviare\(\{[^}]*\bobbligatori,/.test(moduloSorgente), true)
 }
 
 console.log('\n12. il campo precompilato: al primo tocco si seleziona tutto')

@@ -133,7 +133,7 @@ export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string;
   { tipo: 'documento-retro', etichetta: 'RETRO DEL DOCUMENTO', dettaglio: 'Se il fronte non basta.', obbligatorio: false },
   // Si chiede dai 6 anni ma non ferma la richiesta: «facoltativo» direbbe che non serve.
   { tipo: 'certificato', etichetta: 'CERTIFICATO MEDICO', dettaglio: 'Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria.', obbligatorio: false, seManca: 'PUOI PORTARLO DOPO' },
-  // Non ferma la richiesta: chi vuole paga in contanti al banco.
+  // Non ferma la richiesta da «una persona in più»: lì chi vuole paga in contanti al banco. Dalla pagina pubblica sì, vedi `fileObbligatori`.
   {
     tipo: 'ricevuta',
     etichetta: 'RICEVUTA DEL PAGAMENTO',
