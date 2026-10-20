@@ -1,5 +1,6 @@
 import { cfValido } from './codiceFiscale'
 import { cosaNonVaMovimento, vociOfferte, VOCE_DIFFERENZA, type Cassa, type ChiusuraCassa, type VoceContabile } from './contabilita'
+import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
 import { centesimi } from './ricevute'
 
 /**
@@ -10,7 +11,6 @@ import { centesimi } from './ricevute'
  * sembra lo stesso si fa confermare.
  */
 
-export const VOCE_DA_CLASSIFICARE = 'Da classificare'
 export const MSG_INCASSI = 'Gli incassi degli iscritti si registrano in PAGAMENTI'
 export const MSG_PRIVATI = 'Togli codice fiscale e IBAN dalla descrizione'
 export const MSG_AMMINISTRAZIONE = 'La contabilità la cura l’amministrazione'
@@ -42,7 +42,8 @@ export interface MovimentoEsistente {
   data: string
   importo: number
   descrizione: string
-  cassaId: string
+  voceId: string
+  personaId: string | null
   annullato: boolean
 }
 
@@ -111,20 +112,30 @@ export function cosaNonVaDallaChat(
   return null
 }
 
+/** I giorni in cui cercare la stessa fattura: i 60 prima, compreso, fino al giorno del movimento. */
+export const finestraDoppione = (data: string): { dal: string; al: string } => ({
+  dal: new Date(Date.parse(`${data}T12:00:00Z`) - GIORNI_DOPPIONE * 86_400_000).toISOString().slice(0, 10),
+  al: data,
+})
+
 const giorni = (da: string, a: string) => Math.round((Date.parse(`${a}T12:00:00Z`) - Date.parse(`${da}T12:00:00Z`)) / 86_400_000)
 
 /**
  * Un movimento non annullato che sembra la stessa fattura: stesso tipo e importo, e lo stesso giorno, o lo stesso
  * fornitore nella descrizione nei 60 giorni prima (la fattura registrata con la sua data, poi col giorno del pagamento).
+ * Mai un incasso di un iscritto (collegato a una persona, o su una voce di sistema): la sua descrizione andrebbe a Claude.
  */
 export function doppioneDi(
   nuovo: { tipo: string; data: string; importo: number; fornitore?: string },
   esistenti: MovimentoEsistente[],
+  voci: VoceContabile[],
 ): MovimentoEsistente | null {
   const fornitore = nuovo.fornitore?.trim().toLowerCase() ?? ''
+  const diSistema = new Set(voci.filter((v) => v.diSistema).map((v) => v.id))
   return (
     esistenti.find((e) => {
-      if (e.annullato || e.tipo !== nuovo.tipo || e.importo !== nuovo.importo) return false
+      if (e.annullato || e.personaId || diSistema.has(e.voceId)) return false
+      if (e.tipo !== nuovo.tipo || e.importo !== nuovo.importo) return false
       if (e.data === nuovo.data) return true
       const prima = giorni(e.data, nuovo.data)
       return fornitore !== '' && prima >= 0 && prima <= GIORNI_DOPPIONE && e.descrizione.toLowerCase().includes(fornitore)
@@ -142,6 +153,7 @@ export function voceProposta(simili: Simile[]): { proposta: { id: string; nome: 
 
 /** L'errore di Supabase detto per chi usa l'app: i rifiuti del database con le loro parole, il resto mai grezzo. */
 export function testoDellErrore(e: unknown): string {
+  // Un errore qualunque: si leggono solo `code` e `message`, se ci sono, e restano `unknown` finché non si guardano.
   const { code, message } = (typeof e === 'object' && e !== null ? e : {}) as { code?: unknown; message?: unknown }
   const testo = typeof message === 'string' ? message : ''
   if (code === '22023' && testo) return testo

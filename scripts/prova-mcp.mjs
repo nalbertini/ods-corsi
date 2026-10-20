@@ -12,7 +12,8 @@
 //     doppione, la voce proposta dai movimenti simili e l'errore detto per chi
 //     usa l'app;
 //   · `src/lib/mcp.ts`: il protocollo (JSON-RPC su HTTP), gli strumenti e chi
-//     li può usare, con un database finto al posto di Supabase.
+//     li può usare, la stessa chiave mandata di nuovo dopo una registrazione
+//     riuscita, con un database finto al posto di Supabase.
 // Lo stesso lato database è `supabase/prova/movimenti-dalla-chat.sql`.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
@@ -175,8 +176,9 @@ console.log('\n3. cosa non va in un movimento dalla chat')
 console.log('\n4. il doppione: un avviso, non un blocco')
 {
   const nuovo = { tipo: 'uscita', data: '2026-10-14', importo: 31240, fornitore: 'Enel' }
-  const es = (id, tipo, data, importo, descrizione, annullato = false) => ({ id, tipo, data, importo, descrizione, cassaId: 'c2', annullato })
-  const di = (esistenti, cambio = {}) => prova(() => m.doppioneDi({ ...nuovo, ...cambio }, esistenti)?.id ?? null)
+  // Adattata alla regola nuova: l'esistente porta voceId e personaId (non più cassaId), e doppioneDi riceve le voci.
+  const es = (id, tipo, data, importo, descrizione, annullato = false, altro = {}) => ({ id, tipo, data, importo, descrizione, voceId: tipo === 'uscita' ? 'v-ut' : 'v-don', personaId: null, annullato, ...altro })
+  const di = (esistenti, cambio = {}) => prova(() => m.doppioneDi({ ...nuovo, ...cambio }, esistenti, voci)?.id ?? null)
   ok('stesso tipo, importo e data: doppione, qualunque sia la descrizione', di([es('a', 'uscita', '2026-10-14', 31240, 'Bolletta luce')]), 'a')
   ok('stesso tipo e importo, il fornitore nella descrizione 12 giorni prima: doppione', di([es('b', 'uscita', '2026-10-02', 31240, 'Enel bolletta settembre')]), 'b')
   ok('…il fornitore scritto con altre maiuscole', di([es('b', 'uscita', '2026-10-02', 31240, 'ENEL ENERGIA SPA')]), 'b')
@@ -189,6 +191,19 @@ console.log('\n4. il doppione: un avviso, non un blocco')
   ok('un altro fornitore in un altro giorno: no', di([es('h', 'uscita', '2026-10-02', 31240, 'Ferramenta Bianchi')]), null)
   ok('senza fornitore conta solo la stessa data', [di([es('b', 'uscita', '2026-10-02', 31240, 'Enel bolletta')], { fornitore: undefined }), di([es('a', 'uscita', '2026-10-14', 31240, 'Bolletta')], { fornitore: undefined })], [null, 'a'])
   ok('senza movimenti, niente', di([]), null)
+  console.log('   mai le persone né le voci di sistema')
+  ok('un movimento collegato a una persona, stesso giorno e importo: no', di([es('p', 'uscita', '2026-10-14', 31240, 'Enel bolletta', false, { personaId: 'aaaaaaaa-0000-0000-0000-000000000007' })]), null)
+  ok('…nemmeno col fornitore nella descrizione', di([es('p', 'uscita', '2026-10-02', 31240, 'Enel bolletta', false, { personaId: 'aaaaaaaa-0000-0000-0000-000000000007' })]), null)
+  ok('una «Differenza di cassa» uguale lo stesso giorno: no', di([es('k', 'uscita', '2026-10-14', 31240, 'Differenza Enel', false, { voceId: 'v-difu' })]), null)
+  ok('un incasso degli iscritti uguale lo stesso giorno: no', di([es('q', 'entrata', '2026-10-14', 31240, 'Quota Enel', false, { voceId: 'v-quota' })], { tipo: 'entrata' }), null)
+  ok('…«Corsi e altri pagamenti» pure', di([es('q', 'entrata', '2026-10-14', 31240, 'Corso Enel', false, { voceId: 'v-corsi' })], { tipo: 'entrata' }), null)
+  ok('un\'entrata uguale su una voce a mano sì', di([es('d', 'entrata', '2026-10-14', 31240, 'Contributo')], { tipo: 'entrata' }), 'd')
+  console.log('   i giorni in cui si cerca')
+  ok('GIORNI_DOPPIONE è 60', m.GIORNI_DOPPIONE, 60)
+  ok('finestraDoppione: dai 60 giorni prima, compreso, al giorno stesso', prova(() => m.finestraDoppione('2026-10-14')), { dal: '2026-08-15', al: '2026-10-14' })
+  ok('…attraverso l\'anno', prova(() => m.finestraDoppione('2026-01-10')), { dal: '2025-11-11', al: '2026-01-10' })
+  ok('…con febbraio bisestile', prova(() => m.finestraDoppione('2028-03-01')), { dal: '2028-01-01', al: '2028-03-01' })
+  ok('…col cambio d\'ora di marzo in mezzo', prova(() => m.finestraDoppione('2026-04-15')), { dal: '2026-02-14', al: '2026-04-15' })
 }
 
 console.log('\n5. la voce proposta dai movimenti simili')
@@ -233,28 +248,47 @@ const METADATI = 'https://progetto.supabase.co/functions/v1/mcp/.well-known/oaut
 const simili = [
   { id: 's1', data: '2026-09-14', tipo: 'uscita', importo: 29870, descrizione: 'Enel · bolletta agosto', voce: 'Utenze', voceId: 'v-ut', voceAttiva: true, cassa: 'Conto Corrente' },
 ]
-// Il database visto da chi ha il token: `scritti` è quel che è arrivato a registra_movimento_dalla_chat.
-const finto = ({ amministrazione = true, guasto = null, guastoScrittura = null, uguali = [] } = {}) => {
+// Il database visto da chi ha il token: `scritti` è quel che è arrivato a registra_movimento_dalla_chat
+// (ogni chiamata, anche con una chiave già vista), `cercati` quel che è arrivato a `uguali`. Ricorda i
+// movimenti scritti per chiave (`perChiave`), come la colonna chiave_chat. `uguali` e `chiusure` si
+// cambiano fra una chiamata e l'altra (`db.uguali_ora`, `db.chiusure_ora`); `restituisce` cambia la
+// riga che il database rimanda indietro.
+const finto = ({ amministrazione = true, guasto = null, guastoScrittura = null, uguali = [], restituisce = null } = {}) => {
   const scritti = []
+  const cercati = []
+  const perChiave = new Map()
   const leggi = async (x) => {
     if (guasto) throw guasto
     return x
   }
-  return {
+  const db = {
     scritti,
+    cercati,
+    uguali_ora: uguali,
+    chiusure_ora: chiusure,
     eAmministrazione: () => leggi(amministrazione),
     voci: () => leggi(voci),
     casse: () => leggi(casse),
-    chiusure: () => leggi(chiusure),
+    chiusure: () => leggi(db.chiusure_ora),
     simili: () => leggi(simili),
-    uguali: () => leggi(uguali),
+    uguali: (cerca) => {
+      cercati.push(cerca)
+      return leggi(db.uguali_ora)
+    },
+    perChiave: async (chiave) => {
+      if (guasto) throw guasto
+      return perChiave.get(chiave) ?? null
+    },
     registra: async (dati) => {
       if (guasto) throw guasto
       if (guastoScrittura) throw guastoScrittura
       scritti.push(dati)
-      return { id: 'm-nuovo', tipo: dati.tipo, data: dati.data, importo: dati.importo, descrizione: dati.descrizione, voce_id: dati.voce_id, cassa_id: dati.cassa_id, dalla_chat: true }
+      const riga = perChiave.get(dati.chiave) ?? { id: `m-${scritti.length}`, tipo: dati.tipo, data: dati.data, importo: dati.importo, descrizione: dati.descrizione, voce_id: dati.voce_id, cassa_id: dati.cassa_id, ...(restituisce ?? {}) }
+      perChiave.set(dati.chiave, riga)
+      return riga
     },
   }
+  return db
 }
 let n = 0
 const manda = async (corpo, { token = 'token-di-ada', db = finto() } = {}) => {
@@ -270,6 +304,19 @@ const manda = async (corpo, { token = 'token-di-ada', db = finto() } = {}) => {
     json = testo
   }
   return { stato: r.status, header: r.headers, corpo: json, testo }
+}
+// Una richiesta HTTP com'è, per i corpi che non sono JSON e i metodi che non sono POST.
+const mandaGrezzo = async (metodo, corpo, { db = finto() } = {}) => {
+  const req = new Request(INDIRIZZO, { method: metodo, headers: { 'content-type': 'application/json', authorization: 'Bearer token-di-ada' }, ...(corpo === undefined ? {} : { body: corpo }) })
+  const r = await mcp.rispondiMcp(req, { metadati: METADATI, apri: () => db, oggi: () => OGGI })
+  const testo = await r.text()
+  let json = null
+  try {
+    json = testo ? JSON.parse(testo) : null
+  } catch {
+    json = testo
+  }
+  return { stato: r.status, corpo: json }
 }
 const richiesta = (method, params) => ({ jsonrpc: '2.0', id: ++n, method, ...(params ? { params } : {}) })
 const strumento = (name, args) => richiesta('tools/call', { name, arguments: args })
@@ -302,6 +349,25 @@ console.log('\n7. il protocollo')
   ok('tools/list: esattamente voci, casse, movimenti_simili, registra_movimento', prova(() => tools.map((t) => t.name).sort()), ['casse', 'movimenti_simili', 'registra_movimento', 'voci'])
   ok('solo registra_movimento non è di sola lettura (readOnlyHint)', prova(() => tools.map((t) => [t.name, t.annotations?.readOnlyHint]).sort()), [['casse', true], ['movimenti_simili', true], ['registra_movimento', false], ['voci', true]])
   ok('ognuno ha la descrizione e lo schema degli argomenti', prova(() => tools.map((t) => typeof t.description === 'string' && t.description.length > 0 && t.inputSchema?.type === 'object')), [true, true, true, true])
+  console.log('   le richieste che non vanno')
+  const get = await provaA(() => mandaGrezzo('GET'))
+  ok('GET: 405', prova(() => get.stato), 405)
+  const rotto = await provaA(() => mandaGrezzo('POST', '{"jsonrpc": "2.0", "id": 1, '))
+  ok('un corpo che non è JSON: -32700, id null', prova(() => [rotto.corpo.error.code, rotto.corpo.id]), [-32700, null])
+  const lotto = await provaA(() => mandaGrezzo('POST', JSON.stringify([richiesta('ping'), richiesta('ping')])))
+  ok('un array di richieste: -32600', prova(() => [lotto.corpo.error.code, lotto.corpo.id]), [-32600, null])
+  const idStrano = await provaA(() => manda({ jsonrpc: '2.0', id: { a: 1 }, method: 'ping' }))
+  ok('un id che è un oggetto: -32600, id null', prova(() => [idStrano.corpo.error?.code ?? null, idStrano.corpo.id, idStrano.corpo.result ?? null]), [-32600, null, null])
+  const idLista = await provaA(() => manda({ jsonrpc: '2.0', id: [1], method: 'ping' }))
+  ok('…o una lista: -32600', prova(() => idLista.corpo.error?.code ?? null), -32600)
+  const idVero = await provaA(() => manda({ jsonrpc: '2.0', id: true, method: 'ping' }))
+  ok('…o un booleano: -32600', prova(() => idVero.corpo.error?.code ?? null), -32600)
+  const idTesto = await provaA(() => manda({ jsonrpc: '2.0', id: 'abc', method: 'ping' }))
+  ok('un id di testo va, e torna uguale', prova(() => [idTesto.corpo.id, idTesto.corpo.error ?? null]), ['abc', null])
+  const idNull = await provaA(() => manda({ jsonrpc: '2.0', id: null, method: 'ping' }))
+  ok('…anche null', prova(() => [idNull.stato, idNull.corpo.id, idNull.corpo.error ?? null]), [200, null, null])
+  const nessuno = await provaA(() => manda(strumento('cancella_tutto', {})))
+  ok('tools/call con uno strumento che non c\'è: -32602', prova(() => nessuno.corpo.error.code), -32602)
   ok('registra_movimento vuole la chiave, e accetta confermo_doppione', prova(() => { const s = tools.find((t) => t.name === 'registra_movimento').inputSchema; return [s.required.includes('chiave'), 'confermo_doppione' in s.properties] }), [true, true])
 }
 
@@ -326,6 +392,10 @@ console.log('\n9. gli strumenti di lettura')
   ok('…mai le disattivate né quelle di sistema', prova(() => [t.includes('Vecchia'), t.includes('Differenza di cassa')]), [false, false])
   const entrate = await provaA(() => manda(strumento('voci', { tipo: 'entrata' })))
   ok('voci delle entrate: mai gli incassi degli iscritti', prova(() => { const x = esito(entrate)[0]; return [x.includes('Donazioni'), x.includes('Quota associativa'), x.includes('Corsi e altri pagamenti')] }), [true, false, false])
+  for (const [cosa, args] of [['senza tipo', {}], ['con un tipo strano', { tipo: 'giroconto' }]]) {
+    const r = await provaA(() => manda(strumento('voci', args)))
+    ok(`voci ${cosa}: chiede se è un'entrata o un'uscita`, prova(() => esito(r)), ['Scegli se è un’entrata o un’uscita', true])
+  }
   const cc = await provaA(() => manda(strumento('casse', {})))
   ok('casse: le due casse', prova(() => { const x = esito(cc)[0]; return [x.includes('Cassa Contanti'), x.includes('Conto Corrente')] }), [true, true])
   const sim = await provaA(() => manda(strumento('movimenti_simili', { testo: 'enel' })))
@@ -363,7 +433,8 @@ console.log('\n10. registra_movimento')
   await ferma('un IBAN nella nota', { nota: `bonifico su ${IBAN}` }, MSG_PRIVATI)
 
   console.log('   il doppione')
-  const settembre = { id: 'm-set', tipo: 'uscita', data: '2026-10-02', importo: 31240, descrizione: 'Enel bolletta settembre', cassaId: 'c2', annullato: false }
+  // Adattata alla regola nuova: voceId e personaId al posto di cassaId.
+  const settembre = { id: 'm-set', tipo: 'uscita', data: '2026-10-02', importo: 31240, descrizione: 'Enel bolletta settembre', voceId: 'v-ut', personaId: null, annullato: false }
   const d1 = finto({ uguali: [settembre] })
   const r1 = await provaA(() => manda(strumento('registra_movimento', bolletta), { db: d1 }))
   ok('c\'è già un\'uscita uguale dello stesso fornitore: non scrive', d1.scritti.length, 0)
@@ -374,6 +445,61 @@ console.log('\n10. registra_movimento')
   const d3 = finto({ uguali: [{ ...settembre, annullato: true }] })
   await provaA(() => manda(strumento('registra_movimento', bolletta), { db: d3 }))
   ok('se quello uguale è annullato scrive senza chiedere', d3.scritti.length, 1)
+  const d4 = finto({ uguali: [{ ...settembre, data: '2026-10-14', personaId: 'aaaaaaaa-0000-0000-0000-000000000007' }] })
+  await provaA(() => manda(strumento('registra_movimento', bolletta), { db: d4 }))
+  ok('se quello uguale è collegato a una persona scrive senza chiedere', d4.scritti.length, 1)
+  const d5 = finto({ uguali: [{ ...settembre, data: '2026-10-14', voceId: 'v-difu' }] })
+  await provaA(() => manda(strumento('registra_movimento', bolletta), { db: d5 }))
+  ok('…e se è una «Differenza di cassa»', d5.scritti.length, 1)
+  const d6 = finto()
+  await provaA(() => manda(strumento('registra_movimento', bolletta), { db: d6 }))
+  ok('uguali riceve tipo, importo e i giorni in cui cercare (finestraDoppione), non la data',
+    prova(() => d6.cercati.map((c) => [Object.keys(c).sort(), c.tipo, c.importo, c.dal, c.al])), [[['al', 'dal', 'importo', 'tipo'], 'uscita', 31240, '2026-08-15', '2026-10-14']])
+
+  console.log('   la chiave')
+  const d7 = finto()
+  const senzaChiave = await provaA(() => manda(strumento('registra_movimento', { ...bolletta, chiave: undefined }), { db: d7 }))
+  ok('senza chiave: «Manca la chiave della registrazione: riprova dalla chat»', prova(() => esito(senzaChiave)), ['Manca la chiave della registrazione: riprova dalla chat', true])
+  ok('…e non scrive', d7.scritti.length, 0)
+
+  console.log('   la stessa chiave dopo una registrazione riuscita (la risposta si era persa)')
+  const ripeti = async (cosa, cambia) => {
+    const d = finto()
+    const prima = await provaA(() => manda(strumento('registra_movimento', bolletta), { db: d }))
+    cambia(d)
+    const dopo = await provaA(() => manda(strumento('registra_movimento', bolletta), { db: d }))
+    const id = (r) => prova(() => /\(id ([^)]+)\)/.exec(esito(r)[0])?.[1] ?? null)
+    ok(`${cosa}: «Registrato», non un errore`, prova(() => { const x = esito(dopo); return [x[1], x[0].startsWith('Registrato')] }), [false, true])
+    ok('…con lo stesso id della prima', [id(dopo), id(prima)], ['m-1', 'm-1'])
+    ok('…e al database è arrivata una scrittura sola', d.scritti.length, 1)
+  }
+  await ripeti('riprova subito', () => {})
+  await ripeti('riprova quando uguali vede la prima come doppione', (d) => {
+    d.uguali_ora = [{ id: 'm-1', tipo: 'uscita', data: '2026-10-14', importo: 31240, descrizione: bolletta.descrizione, voceId: 'v-ut', personaId: null, annullato: false }]
+  })
+  await ripeti('riprova quando nel frattempo il giorno si è chiuso', (d) => {
+    d.chiusure_ora = [...chiusure, { id: 'k14', cassaId: 'c2', dal: '2026-10-01', data: '2026-10-15', previsto: 0, contato: 0, differenza: 0, chiusaIl: '2026-10-15T19:00:00Z' }]
+  })
+
+  console.log('   «Registrato» dice quel che il database ha scritto, non quel che è stato mandato')
+  const d8 = finto({ restituisce: { descrizione: 'Enel Energia · bolletta 123', importo: 31241, data: '2026-10-13', voce_id: 'v-aff', cassa_id: 'c1' } })
+  const scritto = await provaA(() => manda(strumento('registra_movimento', bolletta), { db: d8 }))
+  const [ts] = prova(() => esito(scritto))
+  ok('la descrizione restituita, non quella mandata', prova(() => [ts.includes('Enel Energia · bolletta 123'), ts.includes(bolletta.descrizione)]), [true, false])
+  ok('…l\'importo, la data, la voce e la cassa restituiti', prova(() => [ts.includes('312,41'), ts.includes('13/10/2026'), ts.includes('Affitto sala'), ts.includes('Cassa Contanti')]), [true, true, true, true])
+
+  console.log('   l\'importo mandato come numero')
+  const numero = async (importo) => {
+    const d = finto()
+    const r = await provaA(() => manda(strumento('registra_movimento', { ...bolletta, importo }), { db: d }))
+    return [prova(() => d.scritti.map((x) => x.importo)), prova(() => esito(r)[1])]
+  }
+  ok('12.34 sono 1234 centesimi', await numero(12.34), [[1234], false])
+  ok('1234.5 sono 123450', await numero(1234.5), [[123450], false])
+  const d9 = finto()
+  const tre = await provaA(() => manda(strumento('registra_movimento', { ...bolletta, importo: 12.345 }), { db: d9 }))
+  ok('12.345 non si capisce (non sono 12.345 euro)', prova(() => esito(tre)), ['L’importo non si capisce', true])
+  ok('…e non scrive', d9.scritti.length, 0)
 }
 
 console.log('\n11. quando qualcosa va storto')
@@ -402,6 +528,15 @@ console.log('\n12. nell\'app: il consenso a Claude e il segno DALLA CHAT')
   ok('…gli altri no', prova(() => riga(manuale).dallaChat ?? false), false)
   ok('la frase sotto il movimento aperto, col giorno di Roma', prova(() => collega.fraseDallaChat(riga({ ...manuale, dallaChat: true }))), 'Registrato dalla chat con Claude il 20/10/2026.')
   ok('…e niente per un movimento scritto nell\'app', prova(() => collega.fraseDallaChat(riga(manuale))), null)
+}
+
+console.log('\n13. oggiARoma anche da mcp.ts (per il file Deno), la stessa di contabilita.ts')
+{
+  ok('mcp.ts la esporta', typeof mcp.oggiARoma, 'function')
+  const quando = ['2026-10-20T21:59:00Z', '2026-10-20T22:30:00Z', '2026-12-31T23:30:00Z', '2026-03-29T00:30:00Z']
+  ok('alle 23:59, a mezzanotte e mezza, a capodanno, col cambio d\'ora: il giorno di Roma',
+    prova(() => quando.map((q) => mcp.oggiARoma(new Date(q)))), ['2026-10-20', '2026-10-21', '2027-01-01', '2026-03-29'])
+  ok('…come contabilita.ts', prova(() => quando.map((q) => mcp.oggiARoma(new Date(q)))), prova(() => quando.map((q) => conti.oggiARoma(new Date(q)))))
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

@@ -4,8 +4,10 @@
 --   · `movimenti.chiave_chat` (unica dove c'è) e `movimenti.dalla_chat` (falso per tutto il resto);
 --   · `registra_movimento_dalla_chat(dati)`: le stesse regole di `registra_movimento` (59 e 60),
 --     niente incassi degli iscritti, e la stessa chiave due volte scrive una volta sola;
---   · `movimenti_simili(testo)`: al più cinque movimenti a mano non annullati, mai una persona,
---     una voce di sistema o chi li ha scritti.
+--     e la stessa chiave con altri dati (un'altra persona, un movimento annullato, tipo, importo o
+--     descrizione diversi) è rifiutata; una chiave oltre 100 caratteri pure;
+--   · `movimenti_simili(testo)`: al più cinque uscite a mano non annullate, mai una persona (né
+--     collegata né scritta nella descrizione), una voce di sistema o chi le ha scritte.
 -- Solo `e_amministrazione()`. Le stesse regole lato app: scripts/prova-mcp.mjs.
 -- Si lancia dopo finto-supabase.sql e i file dello schema, su un database suo.
 \set ON_ERROR_STOP on
@@ -216,3 +218,65 @@ select atteso('…né il suo nome o il suo id da qualche parte',
   (select count(*)::text from movimenti_simili('enel') s
     where to_jsonb(s)::text ~* 'Ragionieri|aaaaaaaa-0000-0000-0000-000000000002|Rossi'), '0');
 reset role;
+
+\echo ''
+\echo '--- 5. movimenti_simili: solo uscite, e mai una descrizione col nome di una persona ---'
+-- Un incasso del vecchio programma non ancora collegato: il nome della persona c'è, persona_id no.
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, origine_import)
+  values ('entrata', giorno(2)::date, 6000, id_voce('Da classificare', 'entrata'), id_cassa('Conto Corrente'), 'Cliente Bianchi Giulia per corso bimbi', 'prima-nota:99');
+-- Un'uscita scritta «Cliente … per …»: il nome c'è anche qui.
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione)
+  values ('uscita', giorno(2)::date, 2500, id_voce('Utenze', 'uscita'), id_cassa('Conto Corrente'), 'Cliente Verdi Marta per rimborso iscrizione');
+-- Un'entrata a mano, senza nomi, su una voce che non è di sistema; e un'uscita con lo stesso testo.
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione)
+  values ('entrata', giorno(2)::date, 15000, id_voce('Donazioni', 'entrata'), id_cassa('Conto Corrente'), 'Contributo Pro Loco');
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione)
+  values ('uscita', giorno(3)::date, 8000, id_voce('Utenze', 'uscita'), id_cassa('Conto Corrente'), 'Pro Loco affitto sala');
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('un incasso non collegato «Cliente Bianchi Giulia per …» non esce cercando «cliente»', simili('cliente'), '—');
+select atteso('…né cercando un pezzo del nome («ul»)', simili('ul'), '—');
+select atteso('un''uscita con un nome di persona («Cliente Verdi Marta per …») non esce', simili('verdi'), '—');
+select atteso('un''entrata a mano non esce: solo le uscite', simili('pro loco'), 'Pro Loco affitto sala');
+reset role;
+
+\echo ''
+\echo '--- 6. la chiave riusata con altri dati: rifiutata, niente scritto ---'
+select atteso('K1 c''è, scritta da Ada', (select creato_da::text from movimenti where chiave_chat = 'K1'), 'aaaaaaaa-0000-0000-0000-000000000002');
+select impronta() as prima \gset
+select atteso('un''altra persona con la stessa chiave e gli stessi dati no',
+  da('33333333-3333-3333-3333-333333333333', 'authenticated', format('select registra_movimento_dalla_chat(%L)', chat('K1', 'uscita', giorno(6), 31240, 'Utenze', 'Conto Corrente', 'Enel · bolletta n. 123'))),
+  '22023 Questa registrazione c’è già con altri dati: riprova dalla chat');
+select atteso('la stessa persona con un altro importo no',
+  da('22222222-2222-2222-2222-222222222222', 'authenticated', format('select registra_movimento_dalla_chat(%L)', chat('K1', 'uscita', giorno(6), 31241, 'Utenze', 'Conto Corrente', 'Enel · bolletta n. 123'))),
+  '22023 Questa registrazione c’è già con altri dati: riprova dalla chat');
+select atteso('…con un altro tipo no',
+  da('22222222-2222-2222-2222-222222222222', 'authenticated', format('select registra_movimento_dalla_chat(%L)', chat('K1', 'entrata', giorno(6), 31240, 'Donazioni', 'Conto Corrente', 'Enel · bolletta n. 123'))),
+  '22023 Questa registrazione c’è già con altri dati: riprova dalla chat');
+select atteso('…con un''altra descrizione no',
+  da('22222222-2222-2222-2222-222222222222', 'authenticated', format('select registra_movimento_dalla_chat(%L)', chat('K1', 'uscita', giorno(6), 31240, 'Utenze', 'Conto Corrente', 'Enel · bolletta n. 124'))),
+  '22023 Questa registrazione c’è già con altri dati: riprova dalla chat');
+select atteso('nessuno dei rifiutati ha scritto', impronta(), :'prima');
+select atteso('con gli stessi dati e la stessa persona: il movimento di prima',
+  da('22222222-2222-2222-2222-222222222222', 'authenticated', format('select registra_movimento_dalla_chat(%L)', chat('K1', 'uscita', giorno(6), 31240, 'Utenze', 'Conto Corrente', 'Enel · bolletta n. 123'))), 'ok');
+select atteso('…e K1 resta una', quanti('K1'), '1');
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select (registra_movimento_dalla_chat(chat('K-ann', 'uscita', giorno(6), 4400, 'Utenze', 'Conto Corrente', 'Iren · bolletta n. 9'))).id as annullando \gset
+select atteso('si annulla il movimento K-ann', esito(format('select annulla_movimento(id => %L)', :'annullando')), 'ok');
+reset role;
+select impronta() as prima \gset
+select atteso('un movimento annullato non torna con la stessa chiave, nemmeno con gli stessi dati',
+  da('22222222-2222-2222-2222-222222222222', 'authenticated', format('select registra_movimento_dalla_chat(%L)', chat('K-ann', 'uscita', giorno(6), 4400, 'Utenze', 'Conto Corrente', 'Iren · bolletta n. 9'))),
+  '22023 Questa registrazione c’è già con altri dati: riprova dalla chat');
+select atteso('…e niente scritto', impronta(), :'prima');
+
+\echo ''
+\echo '--- 7. la chiave troppo lunga ---'
+select impronta() as prima \gset
+select atteso('una chiave di 101 caratteri no',
+  da('22222222-2222-2222-2222-222222222222', 'authenticated', format('select registra_movimento_dalla_chat(%L)', chat(repeat('x', 101), 'uscita', giorno(5), 1700, 'Utenze', 'Conto Corrente', 'Cartoleria Neri'))),
+  '22023 La chiave della registrazione è troppo lunga: riprova dalla chat');
+select atteso('…e niente scritto', impronta(), :'prima');
+select atteso('una di 100 sì',
+  da('22222222-2222-2222-2222-222222222222', 'authenticated', format('select registra_movimento_dalla_chat(%L)', chat(repeat('y', 100), 'uscita', giorno(5), 1700, 'Utenze', 'Conto Corrente', 'Cartoleria Neri'))), 'ok');

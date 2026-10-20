@@ -15,7 +15,7 @@
 // ---------------------------------------------------------------------------
 import { createClient } from 'npm:@supabase/supabase-js@2'
 // Generato da scripts/costruisci-mcp.mjs prima di pubblicare.
-import { metadatiRisorsa, nonAutorizzato, rispondiMcp } from './regole.js'
+import { metadatiRisorsa, nonAutorizzato, oggiARoma, rispondiMcp } from './regole.js'
 
 // Supabase le mette sempre in ogni funzione: senza, la funzione non serve a niente e lo dice subito.
 const url = Deno.env.get('SUPABASE_URL') ?? ''
@@ -24,8 +24,6 @@ if (!url || !pubblica) throw new Error('Mancano SUPABASE_URL e SUPABASE_ANON_KEY
 const risorsa = `${url}/functions/v1/mcp`
 const METADATI = `${risorsa}/.well-known/oauth-protected-resource`
 
-const oggiARoma = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' }).format(new Date())
-const giorniPrima = (giorno: string, n: number) => new Date(Date.parse(`${giorno}T12:00:00Z`) - n * 86_400_000).toISOString().slice(0, 10)
 
 // Un errore di Supabase si lancia così com'è: lo traduce `testoDellErrore`, che non lo fa mai uscire grezzo.
 const ok = <T>({ data, error }: { data: T; error: unknown }): T => {
@@ -33,7 +31,11 @@ const ok = <T>({ data, error }: { data: T; error: unknown }): T => {
   return data
 }
 
-function apri(token: string) {
+// `utente` è l'account del token: la chiave di una registrazione vale solo per i suoi movimenti.
+type MovimentoScritto = { id: string; tipo: string; data: string; importo: number; descrizione: string; voce_id: string; cassa_id: string }
+const COLONNE = 'id, tipo, data, importo, descrizione, voce_id, cassa_id'
+
+function apri(token: string, utente: string) {
   const db = createClient(url, pubblica, {
     global: { headers: { Authorization: `Bearer ${token}` } },
     auth: { persistSession: false, autoRefreshToken: false },
@@ -59,12 +61,20 @@ function apri(token: string) {
       const righe = ok(await db.rpc('movimenti_simili', { testo })) as Array<{ id: string; data: string; tipo: string; importo: number; descrizione: string; voce: string; voce_id: string; voce_attiva: boolean; cassa: string }>
       return righe.map((r) => ({ id: r.id, data: r.data, tipo: r.tipo, importo: r.importo, descrizione: r.descrizione, voce: r.voce, voceId: r.voce_id, voceAttiva: r.voce_attiva, cassa: r.cassa }))
     },
-    async uguali(c: { tipo: string; importo: number; data: string }) {
-      const righe = ok(await db.from('movimenti').select('id, tipo, data, importo, descrizione, cassa_id, annullato_il')
-        .eq('tipo', c.tipo).eq('importo', c.importo).gte('data', giorniPrima(c.data, 60)).lte('data', c.data)) as Array<{ id: string; tipo: string; data: string; importo: number; descrizione: string; cassa_id: string; annullato_il: string | null }>
-      return righe.map((r) => ({ id: r.id, tipo: r.tipo, data: r.data, importo: r.importo, descrizione: r.descrizione, cassaId: r.cassa_id, annullato: r.annullato_il !== null }))
+    async uguali(c: { tipo: string; importo: number; dal: string; al: string }) {
+      const righe = ok(await db.from('movimenti').select('id, tipo, data, importo, descrizione, voce_id, persona_id, annullato_il')
+        .eq('tipo', c.tipo).eq('importo', c.importo).gte('data', c.dal).lte('data', c.al)) as Array<{ id: string; tipo: string; data: string; importo: number; descrizione: string; voce_id: string | null; persona_id: string | null; annullato_il: string | null }>
+      return righe.map((r) => ({ id: r.id, tipo: r.tipo, data: r.data, importo: r.importo, descrizione: r.descrizione, voceId: r.voce_id ?? '', personaId: r.persona_id, annullato: r.annullato_il !== null }))
     },
-    registra: async (dati: Record<string, unknown>) => ok(await db.rpc('registra_movimento_dalla_chat', { dati })) as { id: string },
+    async perChiave(chiave: string) {
+      const chi = ok(await db.from('persone').select('id').eq('utente_id', utente).maybeSingle()) as { id: string } | null
+      if (!chi) return null
+      return ok(await db.from('movimenti').select(COLONNE).eq('chiave_chat', chiave).eq('creato_da', chi.id).is('annullato_il', null).maybeSingle()) as MovimentoScritto | null
+    },
+    registra: async (dati: Record<string, unknown>) => {
+      const r = ok(await db.rpc('registra_movimento_dalla_chat', { dati })) as MovimentoScritto
+      return { id: r.id, tipo: r.tipo, data: r.data, importo: r.importo, descrizione: r.descrizione, voce_id: r.voce_id, cassa_id: r.cassa_id }
+    },
   }
 }
 
@@ -74,9 +84,11 @@ Deno.serve(async (req) => {
   }
   // Un token scaduto o revocato è un 401, non un errore dello strumento: così Claude lo rinnova da solo.
   const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s*/i, '').trim()
+  let utente = ''
   if (token) {
     const { data } = await createClient(url, pubblica, { auth: { persistSession: false, autoRefreshToken: false } }).auth.getUser(token)
     if (!data.user) return nonAutorizzato(METADATI)
+    utente = data.user.id
   }
-  return rispondiMcp(req, { metadati: METADATI, apri, oggi: oggiARoma })
+  return rispondiMcp(req, { metadati: METADATI, apri: (t: string) => apri(t, utente), oggi: () => oggiARoma() })
 })

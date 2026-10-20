@@ -1,7 +1,8 @@
-import { ultimaChiusura, type Cassa, type ChiusuraCassa, type VoceContabile } from './contabilita'
+import { oggiARoma, ultimaChiusura, type Cassa, type ChiusuraCassa, type VoceContabile } from './contabilita'
 import {
   cosaNonVaDallaChat,
   doppioneDi,
+  finestraDoppione,
   importoInCentesimi,
   MSG_AMMINISTRAZIONE,
   testoDellErrore,
@@ -22,6 +23,20 @@ import { dataRicevuta, euro } from './ricevute'
  * Il database arriva da fuori (`apri`), così le prove (scripts/prova-mcp.mjs) lo fingono senza Deno né rete.
  */
 
+// Il server Deno lo prende da qui, col resto delle regole: un «oggi a Roma» solo.
+export { oggiARoma }
+
+/** Un movimento come lo restituisce il database dopo averlo scritto. */
+export interface MovimentoScritto {
+  id: string
+  tipo: string
+  data: string
+  importo: number
+  descrizione: string
+  voce_id: string
+  cassa_id: string
+}
+
 /** Quel che il server legge e scrive, col token di chi chiama. */
 export interface DatabaseChat {
   eAmministrazione(): Promise<boolean>
@@ -29,9 +44,11 @@ export interface DatabaseChat {
   casse(): Promise<Cassa[]>
   chiusure(): Promise<ChiusuraCassa[]>
   simili(testo: string): Promise<Simile[]>
-  /** I movimenti dello stesso tipo e importo nei giorni prima di `data` (vedi `doppioneDi`). */
-  uguali(cerca: { tipo: string; importo: number; data: string }): Promise<MovimentoEsistente[]>
-  registra(dati: { chiave: string; tipo: string; data: string; importo: number; voce_id: string; cassa_id: string; descrizione: string; nota?: string }): Promise<{ id: string }>
+  /** I movimenti dello stesso tipo e importo da `dal` ad `al` compresi (vedi `finestraDoppione`). */
+  uguali(cerca: { tipo: string; importo: number; dal: string; al: string }): Promise<MovimentoEsistente[]>
+  /** Il movimento non annullato che chi chiama ha già scritto con questa chiave, se c'è. */
+  perChiave(chiave: string): Promise<MovimentoScritto | null>
+  registra(dati: { chiave: string; tipo: string; data: string; importo: number; voce_id: string; cassa_id: string; descrizione: string; nota?: string }): Promise<MovimentoScritto>
 }
 
 export interface OpzioniMcp {
@@ -126,12 +143,16 @@ export const metadatiRisorsa = (risorsa: string, autorizzazione: string) => ({
 
 const stringa = (x: unknown): string | undefined => (typeof x === 'string' ? x : undefined)
 
+/** Un importo mandato come numero (12.34) diventa il testo all'italiana («12,34»): «12.345» si leggerebbe 12.345 euro. */
+const importoDaNumero = (n: number): string =>
+  Number.isFinite(n) && Math.abs(n * 100 - Math.round(n * 100)) < 1e-6 ? (Math.round(n * 100) / 100).toFixed(2).replace('.', ',') : 'non è un importo'
+
 function movimentoDa(a: Argomenti): MovimentoDallaChat {
   return {
     chiave: stringa(a.chiave),
     tipo: stringa(a.tipo),
     data: stringa(a.data),
-    importo: typeof a.importo === 'number' ? String(a.importo) : stringa(a.importo),
+    importo: typeof a.importo === 'number' ? importoDaNumero(a.importo) : stringa(a.importo),
     voce_id: stringa(a.voce_id),
     cassa_id: stringa(a.cassa_id),
     descrizione: stringa(a.descrizione),
@@ -142,13 +163,10 @@ function movimentoDa(a: Argomenti): MovimentoDallaChat {
 }
 
 async function strumentoVoci(db: DatabaseChat, a: Argomenti) {
-  const tipi: Array<'entrata' | 'uscita'> = a.tipo === 'entrata' || a.tipo === 'uscita' ? [a.tipo] : ['uscita', 'entrata']
-  const voci = await db.voci()
-  const righe = tipi.flatMap((tipo) => [
-    `${tipo === 'uscita' ? 'Uscite' : 'Entrate'}:`,
-    ...vociPerLaChat(voci, tipo).map((v) => `- ${v.nome} (id ${v.id})${v.soloSeLaChiedi ? ' · solo se la chiedi' : ''}`),
-  ])
-  return testo(righe.join('\n'))
+  const tipo = a.tipo
+  if (tipo !== 'entrata' && tipo !== 'uscita') return testo('Scegli se è un’entrata o un’uscita', true)
+  const righe = vociPerLaChat(await db.voci(), tipo).map((v) => `- ${v.nome} (id ${v.id})${v.soloSeLaChiedi ? ' · solo se la chiedi' : ''}`)
+  return testo([`${tipo === 'uscita' ? 'Uscite' : 'Entrate'}:`, ...righe].join('\n'))
 }
 
 async function strumentoCasse(db: DatabaseChat) {
@@ -172,17 +190,35 @@ async function strumentoSimili(db: DatabaseChat, a: Argomenti) {
   )
 }
 
+/** Cosa è stato scritto, dal movimento che il database restituisce: non da quel che Claude ha mandato. */
+function registrato(r: MovimentoScritto, voci: VoceContabile[], casse: Cassa[]) {
+  const voce = voci.find((v) => v.id === r.voce_id)?.nome ?? ''
+  const cassa = casse.find((c) => c.id === r.cassa_id)?.nome ?? ''
+  return testo(
+    `Registrato: ${r.tipo === 'entrata' ? 'entrata' : 'uscita'} di ${euro(r.importo)} € del ${dataRicevuta(r.data)}, ${voce}, ${cassa}, «${r.descrizione}» (id ${r.id}). Se è sbagliato si annulla da CONTABILITÀ → MOVIMENTI.`,
+  )
+}
+
 async function strumentoRegistra(db: DatabaseChat, a: Argomenti, oggi: string) {
   const m = movimentoDa(a)
-  const [voci, casse, chiusure] = await Promise.all([db.voci(), db.casse(), db.chiusure()])
-  const guaio = cosaNonVaDallaChat(m, { voci, casse, chiusure, oggi })
+  const chiave = m.chiave?.trim() ?? ''
+  if (!chiave) return testo('Manca la chiave della registrazione: riprova dalla chat', true)
+  const [voci, casse] = await Promise.all([db.voci(), db.casse()])
+  // Claude riprova con la stessa chiave quando la risposta si è persa: era già registrato, e lo si dice,
+  // prima dei controlli (adesso quel movimento è un doppione di sé stesso, o il giorno si è chiuso).
+  const gia = await db.perChiave(chiave)
+  if (gia) {
+    const importo = importoInCentesimi(m.importo ?? '')
+    const stesso = gia.tipo === m.tipo && 'centesimi' in importo && gia.importo === importo.centesimi && gia.descrizione === m.descrizione?.trim()
+    return stesso ? registrato(gia, voci, casse) : testo('Questa registrazione c’è già con altri dati: riprova dalla chat', true)
+  }
+  const guaio = cosaNonVaDallaChat(m, { voci, casse, chiusure: await db.chiusure(), oggi })
   if (guaio) return testo(guaio, true)
-  if (!m.chiave?.trim()) return testo('Manca la chiave della registrazione: riprova dalla chat', true)
   const importo = importoInCentesimi(m.importo ?? '')
   if ('errore' in importo) return testo(importo.errore, true)
   const base = { tipo: m.tipo ?? '', data: m.data ?? '', importo: importo.centesimi }
   if (!m.confermo_doppione) {
-    const gia = doppioneDi({ ...base, fornitore: m.fornitore }, await db.uguali(base))
+    const gia = doppioneDi({ ...base, fornitore: m.fornitore }, await db.uguali({ tipo: base.tipo, importo: base.importo, ...finestraDoppione(base.data) }), voci)
     if (gia)
       return testo(
         `Non ho registrato: c’è già un movimento che sembra lo stesso, ${dataRicevuta(gia.data)} · ${euro(gia.importo)} € · ${gia.descrizione}. Chiedi se è un altro: se sì, riprova con confermo_doppione.`,
@@ -191,18 +227,14 @@ async function strumentoRegistra(db: DatabaseChat, a: Argomenti, oggi: string) {
   }
   const nota = m.nota?.trim()
   const r = await db.registra({
-    chiave: m.chiave.trim(),
+    chiave,
     ...base,
     voce_id: m.voce_id ?? '',
     cassa_id: m.cassa_id ?? '',
     descrizione: (m.descrizione ?? '').trim(),
     ...(nota ? { nota } : {}),
   })
-  const voce = voci.find((v) => v.id === m.voce_id)?.nome ?? ''
-  const cassa = casse.find((c) => c.id === m.cassa_id)?.nome ?? ''
-  return testo(
-    `Registrato: ${m.tipo === 'entrata' ? 'entrata' : 'uscita'} di ${euro(importo.centesimi)} € del ${dataRicevuta(base.data)}, ${voce}, ${cassa}, «${(m.descrizione ?? '').trim()}» (id ${r.id}). Se è sbagliato si annulla da CONTABILITÀ → MOVIMENTI.`,
-  )
+  return registrato(r, voci, casse)
 }
 
 async function chiama(db: DatabaseChat, nome: string, a: Argomenti, oggi: string) {
@@ -211,7 +243,8 @@ async function chiama(db: DatabaseChat, nome: string, a: Argomenti, oggi: string
     if (nome === 'voci') return await strumentoVoci(db, a)
     if (nome === 'casse') return await strumentoCasse(db)
     if (nome === 'movimenti_simili') return await strumentoSimili(db, a)
-    return await strumentoRegistra(db, a, oggi)
+    if (nome === 'registra_movimento') return await strumentoRegistra(db, a, oggi)
+    return testo(`Lo strumento «${nome}» non c’è`, true)
   } catch (e) {
     return testo(testoDellErrore(e), true)
   }
@@ -229,9 +262,11 @@ export async function rispondiMcp(req: Request, o: OpzioniMcp): Promise<Response
     return errore(null, -32700, 'Richiesta che non si capisce')
   }
   if (typeof msg !== 'object' || msg === null || Array.isArray(msg)) return errore(null, -32600, 'Una richiesta alla volta')
-  const { id, method, params } = msg as { id?: Id; method?: unknown; params?: Argomenti }
+  // Un oggetto JSON: i campi si guardano uno a uno qui sotto, e restano `unknown` finché non si guardano.
+  const { id, method, params } = msg as { id?: unknown; method?: unknown; params?: Argomenti }
   // Una notifica non ha risposta.
   if (id === undefined) return new Response(null, { status: 202 })
+  if (id !== null && typeof id !== 'string' && typeof id !== 'number') return errore(null, -32600, 'L’id della richiesta non si capisce')
   if (method === 'initialize') {
     const chiesta = stringa(params?.protocolVersion)
     return risultato(id, {
@@ -246,6 +281,7 @@ export async function rispondiMcp(req: Request, o: OpzioniMcp): Promise<Response
   if (method === 'tools/call') {
     const nome = stringa(params?.name) ?? ''
     if (!STRUMENTI.some((s) => s.name === nome)) return errore(id, -32602, `Lo strumento «${nome}» non c’è`)
+    // Gli argomenti si leggono uno a uno (`stringa`, `movimentoDa`): basta che sia un oggetto.
     const a = typeof params?.arguments === 'object' && params.arguments !== null ? (params.arguments as Argomenti) : {}
     return risultato(id, await chiama(o.apri(token), nome, a, o.oggi()))
   }
