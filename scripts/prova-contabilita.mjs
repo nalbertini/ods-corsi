@@ -7,6 +7,9 @@
 // ricevute e pagamenti (mai copiati), i movimenti fatti a mano, il residuo di
 // ogni cassa, i totali, i filtri, il foglio CSV e gli stessi rifiuti di
 // `supabase/59-contabilita.sql` (provato da supabase/prova/contabilita.sql).
+// In fondo quel che legge la chat (strumenti `conti` e `saldi_casse` di
+// `src/lib/mcp.ts`): gli incassi senza nomi e i saldi delle casse, mai il
+// previsto della Cassa Contanti.
 // ---------------------------------------------------------------------------
 import { readFileSync } from 'node:fs'
 import { build } from 'esbuild'
@@ -989,6 +992,74 @@ console.log('\n39. Contabilita.tsx: Nuovo movimento e Giroconto sono una pagina 
   ok('i filtri attivi si contano con `filtriAttivi`', /filtriAttivi\(/.test(corpo), true)
   ok('dopo la registrazione fuori dai filtri lo dice (`nonSiVedra`)', /nonSiVedra\(/.test(tsx), true)
   ok('PERSONA è un menu, non quattro chip', /id="filtro-persona"/.test(corpo), true)
+}
+
+// ---------------------------------------------------------------------------
+// Quel che legge la chat (src/lib/mcp.ts, provato da scripts/prova-mcp.mjs).
+// incassiPerConti(incassi, casse): gli incassi con solo data, importo, metodo, voce, annullato.
+// saldiCasse(casse, righe, chiusure, giorno): il saldo di ogni cassa, mai il previsto della Cassa Contanti.
+// ---------------------------------------------------------------------------
+console.log('\n90. gli incassi per i conti della chat, senza nomi')
+{
+  const r1 = ricevuta(40, 'Luca', 'Rossi', [voce('QUOTA ASSOCIATIVA', 3000, [pag('2026-09-05', 3000)]), voce('TRIMESTRE BIMBI', 12000, [pag('2026-09-15', 6000, 'POS'), pag('2026-10-15', 6000, 'POS')])], { note: 'Luca Rossi, corso bimbi' })
+  const r2 = ricevuta(41, 'Giulia', 'Bianchi', [voce('ALTRO', 8000, [pag('2026-10-11', 8000)])], { annullataIl: '2026-10-12T10:00:00Z' })
+  const d1 = diretto('d40', 'p-Rossi', '2026-10-16', 4000, { metodo: 'Satispay', voce: 'ANNUALE BIMBI', nota: 'Pagato per Rossi Luca' })
+  const pagamenti = [...m.righeDaRicevute([r1, r2]), ...m.righeDirette([d1], nomeDi)]
+  const incassi = pagamenti.map((r) => ({ data: r.data, importo: r.importo, metodo: r.metodo, voce: r.voce, annullato: r.annullato }))
+  const conNomi = prova(() => m.incassiDerivati(pagamenti, casse))
+  const senza = prova(() => m.incassiPerConti(incassi, casse))
+  ok('una riga per pagamento: la rata conta nel giorno del suo pagamento', prova(() => senza.map((r) => [r.tipo, r.data, r.importo, r.voce, r.cassaId, r.annullato])), prova(() => conNomi.map((r) => [r.tipo, r.data, r.importo, r.voce, r.cassaId, r.annullato])))
+  ok('gli stessi residui delle casse degli incassi con i nomi', prova(() => m.residui(casse, senza)), prova(() => m.residui(casse, conNomi)))
+  ok('gli stessi totali per voce', prova(() => m.perVoce(senza)), prova(() => m.perVoce(conNomi)))
+  ok('ogni riga ha un id suo', prova(() => [new Set(senza.map((r) => r.id)).size, senza.length]), [5, 5])
+  ok('nessun testo contiene un nome', prova(() => (Array.isArray(senza) && senza.length ? JSON.stringify(senza).match(/Rossi|Luca|Bianchi|Giulia/g) : 'nessuna riga')), null)
+  ok('non sono movimenti a mano: lo storico importato si riconosce ancora (sovrapposizione del bilancio)', prova(() => senza.every((r) => r.origine !== 'movimento')), true)
+}
+
+console.log('\n91. i saldi delle casse per la chat')
+{
+  const tre = [
+    { id: 'c1', nome: 'Cassa Contanti', saldoIniziale: 10000, dal: '2026-09-01' },
+    { id: 'c2', nome: 'Conto Corrente', saldoIniziale: 50000 },
+    { id: 'c3', nome: 'Cassa eventi', saldoIniziale: 2000, dal: '2026-10-15' },
+  ]
+  const r = (id, data, tipo, importo, cassaId, extra = {}) => ({ id, origine: 'movimento', tipo, data, importo, descrizione: 'x', voce: tipo === 'giroconto' ? null : 'Varie', cassaId, annullato: false, ...extra })
+  const righe = [
+    r('a', '2026-09-10', 'entrata', 3000, 'c1'),
+    r('b', '2026-09-20', 'uscita', 1200, 'c2'),
+    r('c', '2026-10-05', 'giroconto', 2000, 'c1', { cassaAId: 'c2' }),
+    r('k', '2026-10-10', 'entrata', 300, 'c1', { voce: 'Differenza di cassa' }),
+    r('d', '2026-10-13', 'uscita', 1800, 'c1'),
+    r('e', '2026-10-16', 'entrata', 700, 'c3'),
+    r('f', '2026-10-17', 'uscita', 400, 'c2', { annullato: true }),
+  ]
+  // In regola: il previsto scritto è quello che torna ancora, senza la differenza della chiusura.
+  const previsto = prova(() => m.previstoCassa(tre, righe.filter((x) => x.id !== 'k'), 'c1', '2026-10-10'))
+  const k = { id: 'k1', cassaId: 'c1', dal: '2026-09-01', data: '2026-10-10', previsto, contato: previsto + 300, differenza: 300, movimentoId: 'k', chiusaIl: '2026-10-10T19:00:00Z' }
+  const s = prova(() => m.saldiCasse(tre, righe, [k], '2026-10-20'))
+  const di = (id, x = s) => prova(() => x.find((c) => c.cassaId === id))
+  ok('il Conto Corrente: il saldo secondo i conti al giorno chiesto', prova(() => di('c2').saldo), prova(() => m.previstoCassa(tre, righe, 'c2', '2026-10-20')))
+  ok('…cioè saldo iniziale + entrate − uscite ± giroconti, annullati fuori', prova(() => di('c2').saldo), 50000 - 1200 + 2000)
+  ok('la Cassa Contanti: mai il previsto, la chiusura è alla cieca', prova(() => di('c1').saldo), null)
+  ok('…solo l\'ultima chiusura: il giorno e quanto si è contato, in regola', prova(() => { const u = di('c1').ultimaChiusura; return [u.data, u.contato, u.nonPiuInRegola] }), prova(() => ['2026-10-10', previsto + 300, false]))
+  const storta = prova(() => m.saldiCasse(tre, righe, [{ ...k, previsto: previsto - 1000 }], '2026-10-20'))
+  ok('…«non più in regola» se il previsto di allora non torna più', prova(() => di('c1', storta).ultimaChiusura.nonPiuInRegola), true)
+  ok('senza chiusure: niente, e nessun importo', prova(() => { const c = di('c1', m.saldiCasse(tre, righe, [], '2026-10-20')); return [c.saldo, c.ultimaChiusura] }), [null, null])
+  ok('una chiusura annullata non conta', prova(() => di('c1', m.saldiCasse(tre, righe, [{ ...k, annullataIl: '2026-10-11T08:00:00Z' }], '2026-10-20')).ultimaChiusura), null)
+  ok('una chiusura dopo il giorno chiesto non c\'è ancora', prova(() => di('c1', m.saldiCasse(tre, righe, [k], '2026-10-08')).ultimaChiusura), null)
+  ok('una cassa partita: il suo saldo', prova(() => di('c3').saldo), 2700)
+  const prima = prova(() => di('c3', m.saldiCasse(tre, righe, [k], '2026-10-10')))
+  ok('una cassa non ancora partita al giorno chiesto: da quando, mai un importo', prova(() => [prima.saldo, prima.parteIl]), [null, '2026-10-15'])
+  ok('al giorno chiesto: i movimenti dopo non contano', prova(() => di('c2', m.saldiCasse(tre, righe, [k], '2026-09-30')).saldo), 50000 - 1200)
+  ok('le casse nell\'ordine in cui arrivano, col nome', prova(() => s.map((c) => c.nome)), ['Cassa Contanti', 'Conto Corrente', 'Cassa eventi'])
+}
+
+console.log('\n92. la ricerca di MOVIMENTI non bada agli spazi in più')
+{
+  const r = (id, descrizione) => ({ id, origine: 'movimento', tipo: 'uscita', data: '2026-10-01', importo: 100, descrizione, voce: null, cassaId: 'c2', annullato: false })
+  const righe = [r('a', 'FERRAMENTA   bianchi'), r('b', 'ferramenta bianchi'), r('c', 'ferramentabianchi')]
+  ok('«ferramenta bianchi» trova anche quella con tre spazi in mezzo, non quella attaccata', m.filtraMovimenti(righe, { testo: 'ferramenta bianchi' }).map((x) => x.id), ['a', 'b'])
+  ok('…e scritta con due spazi trova le stesse', m.filtraMovimenti(righe, { testo: 'ferramenta  bianchi' }).map((x) => x.id), ['a', 'b'])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
