@@ -62,11 +62,11 @@ const LINK = [
   `<p><a href="${ISCRIZIONE}?corso=judo">Iscrivi Mario Rossi al judo</a></p>`,
   '<p><a href="tel:+393463292786">Chiama</a> o <a href="https://wa.me/393463292786?text=Ciao">WhatsApp</a></p>',
   '<p><a href="https://www.instagram.com/officine.dellosport/">Instagram</a> <a href="mailto:asdilcentrojudo@gmail.com">Email</a> <a href="/judo/">Judo</a> <a href="https://esempio.it/pagina">Altro</a></p>',
-  // Somigliano ai link da contare ma non lo sono: un altro sito con /iscrizioni/, un tel: dentro un indirizzo, WhatsApp da un altro indirizzo.
-  '<p><a href="https://esempio.it/iscrizioni/">Un altro sito</a> <a href="https://esempio.it/?x=tel:123">Non è un telefono</a> <a href="https://api.whatsapp.com/send?phone=39">Non è wa.me</a></p>',
+  // Somigliano ai link da contare ma non lo sono: un altro sito con /iscrizioni/, un tel: dentro un indirizzo, WhatsApp da un altro indirizzo, wa.me dentro un indirizzo.
+  '<p><a href="https://esempio.it/iscrizioni/">Un altro sito</a> <a href="https://esempio.it/?x=tel:123">Non è un telefono</a> <a href="https://api.whatsapp.com/send?phone=39">Non è wa.me</a> <a href="https://esempio.it/?x=https://wa.me/39">wa.me dentro un indirizzo</a></p>',
 ].join('')
 // Scritti a mano, non con le regole del codice: se le regole si allargano, la prova se ne accorge.
-const NON_CONTATI = ['https://esempio.it/iscrizioni/', 'https://esempio.it/?x=tel:123', 'https://api.whatsapp.com/send?phone=39']
+const NON_CONTATI = ['https://esempio.it/iscrizioni/', 'https://esempio.it/?x=tel:123', 'https://api.whatsapp.com/send?phone=39', 'https://esempio.it/?x=https://wa.me/39']
 const dati = (o = {}) => ({
   dominio: 'https://www.officinedellosport.it',
   pagine: [pag('home', `<p>Benvenuti</p>${LINK}`), pag('contatti', `<p>Dove siamo</p>${LINK}`), pag('judo', `<p>Judo</p>${LINK}`), pag('privacy', '<p>Testo di legge</p>', { diLegge: true })],
