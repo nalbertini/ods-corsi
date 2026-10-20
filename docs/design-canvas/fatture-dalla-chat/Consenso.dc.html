@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    /* Come la porta (`.accesso` di Porta.tsx): testata, titoletto, blocchi in `.pad` (20px), frasi `.passo-dettaglio` 15px. */
+    .frase { font-size: 15px; line-height: 1.45; color: #c9c9c4; }
+    .elenco { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 12px 14px; background: #1c1c1c; border: 1px solid #333333; font-size: 15px; line-height: 1.4; }
+    .elenco .si::before { content: '✓ '; color: #16a54a; font-weight: 700; }
+    .elenco .no::before { content: '✕ '; color: #ff5a52; font-weight: 700; }
+    .nota { font-size: 14px; color: #8c8c88; line-height: 1.4; }
+    .tel { display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; border: 1px solid #333333; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 40px; width: 1440px; padding: 28px 36px 36px; background: #121212; align-items: flex-start">
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · IL CONSENSO, SUL TELEFONO</span>
+  <div class="tel">
+    <dc-import name="Testata" luogo="CONTABILITÀ" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+    <dc-import name="ChiSei" chi="CHIARA BIANCHI · AMMINISTRAZIONE" hint-size="100%,60px"></dc-import>
+    <dc-import name="Titoletto" label="COLLEGARE CLAUDE?" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 16px">
+      <span class="frase" style="color: #f2f2f0"><b>Claude</b> chiede di usare ODS Corsi con il tuo account, per registrare in CONTABILITÀ le fatture e gli scontrini che gli fotografi.</span>
+      <span class="et" style="color: #8c8c88">POTRÀ</span>
+      <div class="elenco">
+        <span class="si">Leggere le voci, le casse e i movimenti che somigliano a quello nuovo</span>
+        <span class="si">Registrare un’uscita o un’entrata, solo dopo il tuo «ok» in chat</span>
+      </div>
+      <span class="et" style="color: #8c8c88">NON POTRÀ</span>
+      <div class="elenco">
+        <span class="no">Vedere iscritti, pagamenti e ricevute</span>
+        <span class="no">Annullare movimenti, fare giroconti, chiudere la cassa</span>
+        <span class="no">Cambiare voci e casse</span>
+      </div>
+      <span class="nota">Le foto le vede Claude, non ODS: solo documenti di fornitori, niente compensi né ricevute di iscritti. Il collegamento si toglie da Claude, in Impostazioni → Connettori.</span>
+      <dc-import name="Bottone" label="CONSENTI" variante="vai" hint-size="100%,56px"></dc-import>
+      <dc-import name="Bottone" label="NO, GRAZIE" variante="linea" hint-size="100%,56px"></dc-import>
+    </div>
+  </div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · SENZA L’AMMINISTRAZIONE</span>
+  <div class="tel" style="min-height: 520px">
+    <dc-import name="Testata" luogo="CONTABILITÀ" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+    <dc-import name="ChiSei" chi="MARCO ROSSI · SEGRETERIA" hint-size="100%,60px"></dc-import>
+    <dc-import name="Titoletto" label="COLLEGARE CLAUDE?" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 16px">
+      <dc-import name="Riquadro" tono="guaio" etichetta="NON SI PUÒ" testo="Claude registra in CONTABILITÀ, e la contabilità la cura l’amministrazione: il tuo account non ce l’ha. Se serve, chiedi a chi cura l’app." tono-testo="testo" hint-size="100%,120px"></dc-import>
+      <dc-import name="Bottone" label="TORNA A CLAUDE" variante="linea" hint-size="100%,56px"></dc-import>
+    </div>
+  </div>
+  <span class="nota" style="width: 390px">Niente CONSENTI: Claude riceve un «no» e in chat dice «La contabilità la cura l’amministrazione».</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+  <span class="et" style="color: #f4c31b">PROPOSTA · PRIMA, SE NON SEI DENTRO</span>
+  <div class="tel" style="min-height: 520px">
+    <dc-import name="Testata" luogo="CONTABILITÀ" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+    <dc-import name="Titoletto" label="ACCESSO" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 16px">
+      <span class="frase">Claude chiede di collegarsi a ODS Corsi. Entra con il tuo account: dopo ti diciamo cosa potrà fare, e decidi tu.</span>
+      <dc-import name="Campo" etichetta="EMAIL, O NOME UTENTE DELLA SALA" valore="chiara@esempio.it" hint-size="100%,80px"></dc-import>
+      <dc-import name="Campo" etichetta="PASSWORD" valore="••••••••••" hint-size="100%,80px"></dc-import>
+      <dc-import name="Bottone" label="ENTRA" variante="vai" hint-size="100%,56px"></dc-import>
+    </div>
+  </div>
+  <span class="nota" style="width: 390px">È la porta di oggi con una frase in più in cima; senza PROVA CON DATI INVENTATI, che qui non serve.</span>
+</div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

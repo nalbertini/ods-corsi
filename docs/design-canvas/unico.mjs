@@ -66,6 +66,7 @@ const PRINCIPALE = [
   { id: 'filtro-storico-pagamenti', nome: 'Segreteria · filtro storico pagamenti', cartella: 'filtro-storico-pagamenti' },
   { id: 'chiusura-cassa', nome: 'Segreteria · chiusura di cassa', cartella: 'chiusura-cassa' },
   { id: 'bilancio-anno', nome: 'Segreteria · bilancio di un anno', cartella: 'bilancio-anno' },
+  { id: 'fatture-dalla-chat', nome: 'Segreteria · fatture dalla chat · proposta', cartella: 'fatture-dalla-chat' },
   { id: 'menu-unico', nome: 'Segreteria · menu unico', cartella: 'menu-unico' },
   { id: 'istruttore-collega', nome: 'Istruttori · insegna con te', cartella: 'istruttore-collega' },
   { id: 'istruttore-sito', nome: 'Istruttori · look del sito · proposta', cartella: 'istruttore-sito' },
@@ -114,7 +115,7 @@ SEZIONI.sort((a, b) => aree.indexOf(AREA(a)) - aree.indexOf(AREA(b)))
 const ARCHIVIO = 'archivio'
 // Le proposte ancora aperte stanno in una pagina a parte, sopra l'Archivio: lì si discute, il resto è storia.
 const DISCUSSIONE = 'in-discussione'
-const APERTE = new Set(['orari-evidenziati', 'esci-dalla-prova', 'moduli-pdf', 'istruttore-collega', 'sito-pezzi-spazio', 'sito-pezzi-scrivi'])
+const APERTE = new Set(['orari-evidenziati', 'esci-dalla-prova', 'moduli-pdf', 'istruttore-collega', 'sito-pezzi-spazio', 'sito-pezzi-scrivi', 'fatture-dalla-chat'])
 
 const ultima = (cartella) => execFileSync('git', ['log', '-1', '--format=%ad', '--date=short', '--', join(base, cartella)], { encoding: 'utf8' }).trim()
 const stem = (f) => f.replace(/\.dc\.html$/, '')
