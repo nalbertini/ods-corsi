@@ -639,3 +639,47 @@ export function cosaNonVaChiusura(d: { cassaId: string; data: string; contato: n
   if ((d.nota ?? '').trim().length > 300) return 'La nota è troppo lunga: al massimo 300 caratteri'
   return null
 }
+
+/**
+ * Un incasso di un iscritto come lo legge la chat (`mcp.ts`): solo quanto, quando, come e su che voce. Nessun
+ * nome, nessuna nota: i conti non ne hanno bisogno, e da qui escono verso Claude.
+ */
+export interface IncassoPerConti {
+  data: string
+  importo: number
+  metodo: string
+  voce: string
+  annullato: boolean
+}
+
+/** Le stesse righe di `incassiDerivati`, senza chi ha pagato: la descrizione dice solo la voce. */
+export const incassiPerConti = (incassi: IncassoPerConti[], casse: Cassa[]): RigaMovimento[] =>
+  incassiDerivati(incassi.map((x, i) => ({ ...x, id: String(i), chi: '' })), casse).map((r) => ({ ...r, descrizione: `Incasso iscritto · ${r.voce}` }))
+
+/** Il saldo di una cassa a un giorno, per la chat: `null` se non si dice (vedi `saldiCasse`). */
+export interface SaldoPerChat {
+  cassaId: string
+  nome: string
+  saldo: number | null
+  /** La cassa parte dopo il giorno chiesto: da quando. */
+  parteIl?: string
+  /** Solo della Cassa Contanti: l'ultima chiusura attiva fino al giorno chiesto, o `null` se non ce n'è. */
+  ultimaChiusura?: { data: string; contato: number; nonPiuInRegola: boolean } | null
+}
+
+/**
+ * Quanto c'è nelle casse «secondo i conti» a un giorno. Della Cassa Contanti mai il previsto: la chiusura si
+ * conta alla cieca, e chi conta potrebbe chiederlo prima; se ne dicono l'ultima chiusura e se è ancora in regola.
+ * Una cassa che parte dopo quel giorno non ha un saldo, nemmeno zero.
+ */
+export function saldiCasse(casse: Cassa[], righe: RigaMovimento[], chiusure: ChiusuraCassa[], giorno: string): SaldoPerChat[] {
+  return casse.map((c) => {
+    const base = { cassaId: c.id, nome: c.nome }
+    if (c.nome === NOME_CASSA_CONTANTI) {
+      const k = ultimaChiusura(chiusure.filter((x) => x.data <= giorno), c.id)
+      return { ...base, saldo: null, ultimaChiusura: k ? { data: k.data, contato: k.contato, nonPiuInRegola: chiusuraNonPiuInRegola(k, casse, righe) } : null }
+    }
+    if (c.dal && c.dal > giorno) return { ...base, saldo: null, parteIl: c.dal }
+    return { ...base, saldo: previstoCassa(casse, righe, c.id, giorno) }
+  })
+}

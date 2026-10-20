@@ -75,14 +75,14 @@ export function Collega() {
             <Riquadro stretto>
               <span id="collega-potra"><Etichetta>POTRÀ</Etichetta></span>
               <ul className="collega-elenco" data-tono="si" aria-labelledby="collega-potra">
-                <li>Leggere le voci, le casse e i movimenti che somigliano a quello nuovo</li>
+                <li>Leggere voci, totali, il saldo del Conto Corrente e le spese da classificare</li>
                 <li>Registrare un’uscita o un’entrata, solo dopo il tuo «ok» in chat</li>
               </ul>
             </Riquadro>
             <Riquadro stretto>
               <span id="collega-non-potra"><Etichetta>NON POTRÀ</Etichetta></span>
               <ul className="collega-elenco" data-tono="no" aria-labelledby="collega-non-potra">
-                <li>Vedere iscritti, pagamenti e ricevute</li>
+                <li>Vedere i nomi degli iscritti e il saldo della Cassa Contanti</li>
                 <li>Annullare movimenti, fare giroconti, chiudere la cassa</li>
                 <li>Cambiare voci e casse</li>
               </ul>

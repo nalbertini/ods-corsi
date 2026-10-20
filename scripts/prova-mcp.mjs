@@ -13,7 +13,12 @@
 //     usa l'app;
 //   · `src/lib/mcp.ts`: il protocollo (JSON-RPC su HTTP), gli strumenti e chi
 //     li può usare, la stessa chiave mandata di nuovo dopo una registrazione
-//     riuscita, con un database finto al posto di Supabase.
+//     riuscita, con un database finto al posto di Supabase;
+//   · gli strumenti di sola lettura `conti`, `saldi_casse` e `da_classificare`:
+//     gli stessi conti dell'app (bilancioAnno, totali) sullo stesso elenco,
+//     mai il previsto della Cassa Contanti, mai il nome di un iscritto. Le loro
+//     regole stanno in bilancio.ts e contabilita.ts (prova-bilancio.mjs,
+//     prova-contabilita.mjs).
 // Lo stesso lato database è `supabase/prova/movimenti-dalla-chat.sql`.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
@@ -40,6 +45,9 @@ const m = await carica('./src/lib/movimentiDallaChat')
 const mcp = await carica('./src/lib/mcp')
 const collega = await carica('./src/lib/collega')
 const conti = await carica('./src/lib/contabilita')
+const bil = await carica('./src/lib/bilancio')
+const pagamenti = await carica('./src/lib/pagamenti')
+const ricevute = await carica('./src/lib/ricevute')
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -240,6 +248,13 @@ console.log('\n6. l\'errore detto per chi usa l\'app')
     const t = di(e)
     ok(`mai il testo grezzo: ${JSON.stringify(e.message ?? e)}`, [typeof t === 'string' && t.length > 0 && !t.startsWith('ERRORE'), /fetch|relation|PGRST|schema|duplicate|constraint|boh|undefined/i.test(String(t))], [true, false])
   }
+  console.log('   per gli strumenti di lettura: testoDellErrore(e, \'leggere\')')
+  const indietro = { code: '42703', message: 'column movimenti.persona_id does not exist' }
+  ok('per registrare il database indietro si dice come prima', di(indietro), m.MSG_DATABASE_INDIETRO)
+  const lettura = prova(() => m.testoDellErrore(indietro, 'leggere'))
+  ok('per leggere il database indietro non parla di registrare, e dice a chi chiedere', prova(() => [lettura !== m.MSG_DATABASE_INDIETRO, /registra/i.test(lettura), lettura.includes('chi cura l’app'), /column|persona_id|42703/.test(lettura)]), [true, false, true, false])
+  ok('…anche una funzione che manca (PGRST202)', prova(() => m.testoDellErrore({ code: 'PGRST202', message: 'Could not find the function' }, 'leggere')), lettura)
+  ok('per leggere il resto è lo stesso: token scaduto, porta della contabilità', prova(() => [m.testoDellErrore({ code: 'PGRST301', message: 'JWT expired' }, 'leggere'), m.testoDellErrore({ code: '42501', message: 'x' }, 'leggere')]), [MSG_ACCEDI, MSG_AMMINISTRAZIONE])
 }
 
 // ---------------------------------------------------------------------------
@@ -255,7 +270,9 @@ const simili = [
 // movimenti scritti per chiave (`perChiave`), come la colonna chiave_chat. `uguali` e `chiusure` si
 // cambiano fra una chiamata e l'altra (`db.uguali_ora`, `db.chiusure_ora`); `restituisce` cambia la
 // riga che il database rimanda indietro.
-const finto = ({ amministrazione = true, guasto = null, guastoScrittura = null, uguali = [], restituisce = null } = {}) => {
+// Per i conti: `movimenti` (i movimenti a mano, senza nota) e `incassi` (solo data, importo, metodo, voce,
+// annullato: né intestatario né nota); `guastoLettura` fa fallire solo quelle due letture.
+const finto = ({ amministrazione = true, guasto = null, guastoScrittura = null, guastoLettura = null, uguali = [], restituisce = null, voci: vociDb = voci, casse: casseDb = casse, chiusure: chiusureDb = chiusure, movimenti = [], incassi = [] } = {}) => {
   const scritti = []
   const cercati = []
   const perChiave = new Map()
@@ -267,12 +284,24 @@ const finto = ({ amministrazione = true, guasto = null, guastoScrittura = null, 
     scritti,
     cercati,
     uguali_ora: uguali,
-    chiusure_ora: chiusure,
+    chiusure_ora: chiusureDb,
+    letture: [],
     eAmministrazione: () => leggi(amministrazione),
-    voci: () => leggi(voci),
-    casse: () => leggi(casse),
+    voci: () => leggi(vociDb),
+    casse: () => leggi(casseDb),
     chiusure: () => leggi(db.chiusure_ora),
-    simili: () => leggi(simili),
+    simili: (t) => {
+      db.letture.push(`simili:${t}`)
+      return leggi(simili)
+    },
+    movimenti: async () => {
+      if (guastoLettura) throw guastoLettura
+      return leggi(movimenti)
+    },
+    incassi: async () => {
+      if (guastoLettura) throw guastoLettura
+      return leggi(incassi)
+    },
     uguali: (cerca) => {
       cercati.push(cerca)
       return leggi(db.uguali_ora)
@@ -348,9 +377,12 @@ console.log('\n7. il protocollo')
 
   const elenco = await provaA(() => manda(richiesta('tools/list')))
   const tools = prova(() => elenco.corpo.result.tools)
-  ok('tools/list: esattamente voci, casse, movimenti_simili, registra_movimento', prova(() => tools.map((t) => t.name).sort()), ['casse', 'movimenti_simili', 'registra_movimento', 'voci'])
-  ok('solo registra_movimento non è di sola lettura (readOnlyHint)', prova(() => tools.map((t) => [t.name, t.annotations?.readOnlyHint]).sort()), [['casse', true], ['movimenti_simili', true], ['registra_movimento', false], ['voci', true]])
-  ok('ognuno ha la descrizione e lo schema degli argomenti', prova(() => tools.map((t) => typeof t.description === 'string' && t.description.length > 0 && t.inputSchema?.type === 'object')), [true, true, true, true])
+  // Cambiata con la richiesta dei conti in lettura: ai 4 di prima si aggiungono conti, saldi_casse e da_classificare.
+  ok('tools/list: i 4 di prima più conti, saldi_casse, da_classificare', prova(() => tools.map((t) => t.name).sort()), ['casse', 'conti', 'da_classificare', 'movimenti_simili', 'registra_movimento', 'saldi_casse', 'voci'])
+  ok('solo registra_movimento non è di sola lettura (readOnlyHint)', prova(() => tools.map((t) => [t.name, t.annotations?.readOnlyHint]).sort()), [['casse', true], ['conti', true], ['da_classificare', true], ['movimenti_simili', true], ['registra_movimento', false], ['saldi_casse', true], ['voci', true]])
+  ok('ognuno ha la descrizione e lo schema degli argomenti', prova(() => tools.map((t) => typeof t.description === 'string' && t.description.length > 0 && t.inputSchema?.type === 'object')), Array(7).fill(true))
+  ok('conti: dal, al, anno, voce, tipo, nessuno obbligatorio', prova(() => { const x = tools.find((t) => t.name === 'conti').inputSchema; return [Object.keys(x.properties).sort(), x.required ?? []] }), [['al', 'anno', 'dal', 'tipo', 'voce'], []])
+  ok('saldi_casse: al, facoltativo', prova(() => { const x = tools.find((t) => t.name === 'saldi_casse').inputSchema; return [Object.keys(x.properties), x.required ?? []] }), [['al'], []])
   console.log('   le richieste che non vanno')
   const get = await provaA(() => mandaGrezzo('GET'))
   ok('GET: 405', prova(() => get.stato), 405)
@@ -375,7 +407,7 @@ console.log('\n7. il protocollo')
 
 console.log('\n8. solo chi ha l\'amministrazione')
 {
-  for (const [nome, args] of [['voci', { tipo: 'uscita' }], ['casse', {}], ['movimenti_simili', { testo: 'enel' }], ['registra_movimento', bolletta]]) {
+  for (const [nome, args] of [['voci', { tipo: 'uscita' }], ['casse', {}], ['movimenti_simili', { testo: 'enel' }], ['registra_movimento', bolletta], ['conti', { anno: 2026 }], ['saldi_casse', {}], ['da_classificare', {}]]) {
     const db = finto({ amministrazione: false })
     const r = await provaA(() => manda(strumento(nome, args), { db }))
     ok(`${nome}: la segreteria semplice, un istruttore, un tablet, un iscritto si sentono dire di no`, prova(() => esito(r)), [MSG_AMMINISTRAZIONE, true])
@@ -554,6 +586,214 @@ console.log('\n13. oggiARoma anche da mcp.ts (per il file Deno), la stessa di co
   ok('alle 23:59, a mezzanotte e mezza, a capodanno, col cambio d\'ora: il giorno di Roma',
     prova(() => quando.map((q) => mcp.oggiARoma(new Date(q)))), ['2026-10-20', '2026-10-21', '2027-01-01', '2026-03-29'])
   ok('…come contabilita.ts', prova(() => quando.map((q) => mcp.oggiARoma(new Date(q)))), prova(() => quando.map((q) => conti.oggiARoma(new Date(q)))))
+}
+
+// ---------------------------------------------------------------------------
+// I conti in sola lettura: conti, saldi_casse, da_classificare.
+// Il database finto dà i movimenti a mano (senza nota) e gli incassi con solo
+// data, importo, metodo, voce, annullato. Il confronto è con l'elenco dell'app
+// (elencoMovimenti: ricevute, pagamenti a mano coi nomi, movimenti a mano).
+// ---------------------------------------------------------------------------
+const vociConti = [
+  ...voci,
+  { id: 'v-var', nome: 'VARIE', tipo: 'uscita', diSistema: false, attiva: true },
+  { id: 'v-man', nome: 'Manutenzione', tipo: 'uscita', diSistema: false, attiva: true },
+]
+const casseConti = [
+  { id: 'c1', nome: 'Cassa Contanti', saldoIniziale: 10000, dal: '2026-09-01' },
+  { id: 'c2', nome: 'Conto Corrente', saldoIniziale: 500000 },
+  { id: 'c3', nome: 'Cassa eventi', saldoIniziale: 2000, dal: '2026-10-15' },
+]
+const mov = (id, tipo, data, importo, voceId, cassaId, descrizione, extra = {}) => ({ id, tipo, data, importo, ...(voceId ? { voceId } : {}), cassaId, descrizione, creatoIl: `${data}T10:00:00Z`, ...extra })
+const manuali = [
+  mov('m01', 'uscita', '2026-10-14', 31240, 'v-ut', 'c2', 'Enel · bolletta n. 123 · set 2026'),
+  mov('m02', 'uscita', '2026-10-02', 50000, 'v-aff', 'c2', 'Affitto ottobre'),
+  mov('m03', 'uscita', '2026-10-05', 4500, 'v-dc', 'c1', 'Ferramenta Bianchi'),
+  mov('m04', 'uscita', '2026-10-06', 2000, null, 'c2', 'Amazon ordine'),
+  mov('m05', 'uscita', '2026-10-07', 1500, 'v-var', 'c2', 'AMAZON ordine '),
+  mov('m06', 'uscita', '2026-10-08', 9999, 'v-dc', 'c2', 'Spesa annullata', { annullatoIl: '2026-10-09T08:00:00Z' }),
+  mov('m07', 'giroconto', '2026-10-09', 5000, null, 'c1', 'Versamento in banca', { cassaAId: 'c2' }),
+  mov('m08', 'entrata', '2026-10-10', 300, 'v-dife', 'c1', 'Differenza di cassa'),
+  mov('m09', 'entrata', '2026-10-12', 25000, 'v-don', 'c2', 'Contributo del Comune'),
+  mov('m11', 'uscita', '2026-09-30', 12000, 'v-ut', 'c2', 'Enel · bolletta agosto'),
+  mov('m12', 'entrata', '2026-10-03', 5000, 'v-dce', 'c2', 'Cliente Rossi Luca per corso bimbi', { origineImport: 'prima-nota:1', personaId: 'p-rossi' }),
+  mov('m13', 'uscita', '2026-10-04', 3000, 'v-dc', 'c2', 'Rimborso Rossi Luca', { personaId: 'p-rossi' }),
+  mov('m14', 'uscita', '2026-10-04', 2500, 'v-dc', 'c2', 'Cliente Rossi Luca per rimborso'),
+  mov('m15', 'entrata', '2026-09-20', 3500, 'v-quota', 'c2', 'Quote settembre', { origineImport: 'prima-nota:7' }),
+  mov('m16', 'uscita', '2026-10-13', 1765, 'v-dc', 'c1', 'Cancelleria'),
+  mov('m17', 'entrata', '2026-10-01', 7000, 'v-dce', 'c2', 'Rimborso assicurazione'),
+  mov('m18', 'uscita', '2026-08-10', 2200, 'v-man', 'c2', 'ferramenta bianchi'),
+  mov('m19', 'uscita', '2025-03-01', 900, 'v-vecchia', 'c2', 'amazon ordine'),
+  mov('p01', 'uscita', '2025-10-15', 30000, 'v-ut', 'c2', 'Enel ottobre 2025'),
+  mov('p02', 'entrata', '2025-10-18', 20000, 'v-don', 'c2', 'Contributo'),
+  mov('p03', 'uscita', '2025-10-25', 7000, 'v-aff', 'c2', 'Affitto'),
+  mov('q01', 'uscita', '2024-05-01', 80000, 'v-dc', 'c2', 'Lavori palestra'),
+  mov('q02', 'uscita', '2024-06-01', 10000, 'v-ut', 'c2', 'Enel 2024'),
+]
+// Un minore, Rossi Luca: la ricevuta col suo nome e una nota, una rata a settembre e una a ottobre, e un pagamento a mano con la nota.
+const ric = (id, numero, nome, cognome, vv, extra = {}) => ({ id, anno: 2026, numero, data: '2026-09-01', personaId: `p-${cognome.toLowerCase()}`, intestatario: { nome, cognome }, voci: vv, anticipo: 0, totale: 0, pagato: 0, creataIl: '2026-09-01T10:00:00Z', ...extra })
+const vr = (descrizione, pagamenti) => ({ descrizione, quantita: 1, prezzo: pagamenti.reduce((x, p) => x + p.importo, 0), pagamenti })
+const ricevuteConti = [
+  ric('r1', 40, 'Luca', 'Rossi', [vr('QUOTA ASSOCIATIVA', [{ data: '2026-10-05', importo: 3000, metodo: 'Contanti' }]), vr('TRIMESTRE BIMBI', [{ data: '2026-09-15', importo: 6000, metodo: 'POS' }, { data: '2026-10-15', importo: 6000, metodo: 'POS' }])], { note: 'Luca Rossi, corso bimbi' }),
+  ric('r2', 41, 'Giulia', 'Neri', [vr('ALTRO', [{ data: '2026-10-11', importo: 8000, metodo: 'Contanti' }])], { annullataIl: '2026-10-12T10:00:00Z' }),
+]
+const direttiConti = [
+  { id: 'd1', personaId: 'p-rossi', data: '2026-10-16', importo: 4000, metodo: 'Satispay', voce: 'ANNUALE BIMBI', nota: 'Pagato per Rossi Luca', creatoIl: '2026-10-16T10:00:00Z' },
+  { id: 'd2', personaId: 'p-verdi', data: '2025-10-10', importo: 10000, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA', creatoIl: '2025-10-10T10:00:00Z' },
+]
+const nomiConti = [{ id: 'p-rossi', nome: 'Luca', cognome: 'Rossi' }, { id: 'p-verdi', nome: 'Anna', cognome: 'Verdi' }]
+// L'elenco dell'app, coi nomi: quello su cui BILANCIO e MOVIMENTI fanno i conti.
+const elencoApp = prova(() => conti.elencoMovimenti(ricevuteConti, direttiConti, nomiConti, casseConti, manuali, vociConti))
+// Gli incassi come li legge il server: niente intestatario, niente nota, niente persona.
+const incassiConti = prova(() =>
+  [...pagamenti.righeDaRicevute(ricevuteConti), ...pagamenti.righeDirette(direttiConti, () => '')].map((r) => ({ data: r.data, importo: r.importo, metodo: r.metodo, voce: r.voce, annullato: r.annullato })),
+)
+// La chiusura della Cassa Contanti del 10 ottobre, in regola: il previsto di allora senza la sua differenza (m08), contato 3 € in più.
+const previstoChiusura = prova(() => conti.previstoCassa(casseConti, elencoApp.filter((r) => r.id !== 'm08'), 'c1', '2026-10-10'))
+const chiusuraConti = { id: 'k10', cassaId: 'c1', dal: '2026-09-01', data: '2026-10-10', previsto: previstoChiusura, contato: previstoChiusura + 300, differenza: 300, movimentoId: 'm08', chiusaIl: '2026-10-10T19:00:00Z' }
+const dbConti = (cambio = {}) => finto({ voci: vociConti, casse: casseConti, chiusure: [chiusuraConti], movimenti: manuali, incassi: incassiConti, ...cambio })
+const chiedi = async (nome, args = {}, db = dbConti()) => provaA(async () => esito(await manda(strumento(nome, args), { db })))
+// Senza una risposta di testo (lo strumento che non c'è) le righe sono vuote: la prova fallisce sul suo controllo, non su un TypeError.
+const rigaDi = (t, inizio) => (typeof t === 'string' ? (t.split('\n').find((l) => l.trim().startsWith(inizio)) ?? '') : '')
+const righeCon = (t, ...pezzi) => (typeof t === 'string' ? t.split('\n').filter((l) => pezzi.every((p) => l.includes(p))) : [])
+const eur = (cent) => prova(() => `${ricevute.euro(cent)} €`)
+
+console.log('\n14. i dati della prova sono quelli giusti')
+{
+  ok('il database finto dà gli incassi con solo data, importo, metodo, voce, annullato', prova(() => [...new Set(incassiConti.map((x) => Object.keys(x).sort().join(',')))]), ['annullato,data,importo,metodo,voce'])
+  ok('…e i movimenti a mano senza nota', prova(() => manuali.some((x) => 'nota' in x)), false)
+  ok('l\'elenco dell\'app ha i nomi (il server non deve)', prova(() => elencoApp.some((r) => r.descrizione.includes('Rossi Luca'))), true)
+  ok('la chiusura del 10 ottobre è in regola', prova(() => conti.chiusuraNonPiuInRegola(chiusuraConti, casseConti, elencoApp)), false)
+}
+
+console.log('\n15. conti: gli stessi numeri dell\'app')
+{
+  const t = prova(() => conti.totali(conti.filtraMovimenti(elencoApp, { dal: '2026-10-01', al: OGGI })))
+  const [ott, errOtt] = await chiedi('conti', { dal: '2026-10-01', al: '2026-10-31' })
+  ok('ottobre: risponde con un testo, non è un errore', [typeof ott, errOtt], ['string', false])
+  ok('le entrate uguali al centesimo all\'elenco dell\'app (annullati e giroconti fuori, rata nel giorno del pagamento)', prova(() => rigaDi(ott, 'Entrate').includes(eur(t.entrate))), true)
+  ok('…le uscite', prova(() => rigaDi(ott, 'Uscite').includes(eur(t.uscite))), true)
+  ok('…il risultato, col meno', prova(() => rigaDi(ott, 'Risultato').includes(bil.importoConMeno(t.differenza))), true)
+  ok('…sono 503,00, 965,05 e − 462,05', prova(() => [t.entrate, t.uscite, t.differenza]), [50300, 96505, -46205])
+  ok('il periodo per intero: «al» nel futuro è oggi, ed è detto parziale', prova(() => [ott.includes('dal 1 al 20 ottobre 2026'), /parziale/i.test(ott)]), [true, true])
+  ok('il movimento senza voce sta sotto «Da classificare» delle uscite', righeCon(ott, 'Da classificare', eur(13765)).length, 1)
+  ok('la «Differenza di cassa» è detta a parte, e conta nel totale', prova(() => righeCon(ott, 'Differenza di cassa', eur(300)).some((l) => /nel totale/i.test(l))), true)
+  ok('l\'annullato e il giroconto non ci sono', prova(() => [ott.includes(eur(9999)), ott.includes('Versamento')]), [false, false])
+  ok('le uscite da sistemare (Da classificare, VARIE, senza voce) lo dice', prova(() => ott.includes('6 movimenti per 152,65 € ancora da classificare: i totali per voce possono essere più alti')), true)
+  const [set] = await chiedi('conti', { dal: '2026-09-01', al: '2026-09-30' })
+  const tSet = prova(() => conti.totali(conti.filtraMovimenti(elencoApp, { dal: '2026-09-01', al: '2026-09-30' })))
+  ok('settembre: la rata del 15 settembre conta lì, quella del 15 ottobre no', prova(() => [tSet.entrate, rigaDi(set, 'Entrate').includes(eur(tSet.entrate))]), [9500, true])
+  ok('…un periodo finito non è parziale, ed è scritto per intero', prova(() => [/parziale/i.test(set), set.includes('dal 1 al 30 settembre 2026')]), [false, true])
+}
+
+console.log('\n16. conti: l\'anno prima')
+{
+  const [ott] = await chiedi('conti', { dal: '2026-10-01', al: '2026-10-31' })
+  ok('lo stesso tratto dell\'anno prima (1-20 ottobre 2025), con la variazione', prova(() => [rigaDi(ott, 'Entrate').includes(bil.variazione(50300, 30000)), rigaDi(ott, 'Uscite').includes(bil.variazione(96505, 30000))]), [true, true])
+  ok('…il 25 ottobre 2025 è fuori dal tratto', prova(() => rigaDi(ott, 'Uscite').includes(eur(37000))), false)
+  const [base] = await chiedi('conti', { dal: '2026-10-09', al: '2026-10-14' })
+  ok('niente percentuale con base zero: nel 2025 in quei giorni nessuna uscita', prova(() => [rigaDi(base, 'Uscite').includes('%'), rigaDi(base, 'Entrate').includes('%')]), [false, true])
+  const [vuoto] = await chiedi('conti', { dal: '2024-05-01', al: '2024-05-31' })
+  ok('l\'anno prima vuoto: «nessun dato», e nessuna percentuale', prova(() => [vuoto.includes('nessun dato'), vuoto.includes('%')]), [true, false])
+}
+
+console.log('\n17. conti: i filtri e le richieste che non vanno')
+{
+  const [ut] = await chiedi('conti', { dal: '2026-10-01', al: '2026-10-31', voce: 'utenze' })
+  ok('una voce, senza badare alle maiuscole: solo lei', prova(() => [rigaDi(ut, 'Uscite').includes(eur(31240)), ut.includes(eur(50000))]), [true, false])
+  const [en] = await chiedi('conti', { dal: '2026-10-01', al: '2026-10-31', tipo: 'entrata' })
+  ok('solo le entrate', prova(() => [rigaDi(en, 'Entrate').includes(eur(50300)), en.includes(eur(96505)), en.includes('Affitto sala')]), [true, false, false])
+  const sbaglia = async (cosa, args, voluto) => ok(cosa, await chiedi('conti', args), [voluto, true])
+  await sbaglia('una voce che non c\'è', { voce: 'Pippo' }, 'Non c’è una voce «Pippo»: vedi lo strumento voci')
+  await sbaglia('un tipo strano', { tipo: 'giroconto' }, 'Scegli se è un’entrata o un’uscita')
+  await sbaglia('una data che non c\'è', { dal: '2026-02-30', al: '2026-03-10' }, 'La data non si capisce')
+  await sbaglia('«dal» dopo «al»', { dal: '2026-10-10', al: '2026-10-01' }, 'La data di inizio è dopo quella di fine')
+  await sbaglia('un periodo tutto nel futuro', { dal: '2026-11-01', al: '2026-11-30' }, 'Il periodo comincia dopo oggi: non ci sono ancora movimenti')
+}
+
+console.log('\n18. conti: il riepilogo dell\'anno (per il direttivo)')
+{
+  const b = prova(() => bil.bilancioAnno(elencoApp, casseConti, 2026, OGGI))
+  const [a26, e26] = await chiedi('conti', { anno: 2026 })
+  ok('2026: entrate, uscite, risultato come bilancioAnno', prova(() => [e26, rigaDi(a26, 'Entrate').includes(eur(b.entrate)), rigaDi(a26, 'Uscite').includes(eur(b.uscite)), rigaDi(a26, 'Risultato').includes(bil.importoConMeno(b.risultato))]), [false, true, true, true])
+  ok('…parziale, scritto per intero', prova(() => [/parziale/i.test(a26), a26.includes('dal 1 gennaio al 20 ottobre 2026')]), [true, true])
+  ok('…lo storico importato dopo il primo incasso dell\'app: «possibile doppio conteggio»', prova(() => [b.sovrapposizione !== null, a26.includes('possibile doppio conteggio')]), [true, true])
+  ok('…non è provvisorio', prova(() => [b.provvisorio, /provvisori/i.test(a26)]), [false, false])
+  ok('…e le uscite da sistemare', prova(() => a26.includes('6 movimenti per 152,65 € ancora da classificare')), true)
+  const [senza] = await chiedi('conti', {})
+  ok('senza periodo: l\'anno in corso', senza, a26)
+  const [a24] = await chiedi('conti', { anno: 2024 })
+  ok('2024: più di metà delle uscite da classificare, «provvisorio»; il 2023 è vuoto, «nessun dato»', prova(() => [/provvisorio/i.test(a24), a24.includes('nessun dato'), a24.includes('possibile doppio conteggio')]), [true, true, false])
+  const [a25] = await chiedi('conti', { anno: 2025 })
+  ok('2025: finito, niente avvisi', prova(() => [/parziale|provvisorio/i.test(a25), a25.includes('possibile doppio conteggio'), a25.includes('ancora da classificare')]), [false, false, false])
+}
+
+console.log('\n19. saldi_casse')
+{
+  const cc = prova(() => conti.previstoCassa(casseConti, elencoApp, 'c2', OGGI))
+  const contantiOggi = prova(() => conti.previstoCassa(casseConti, elencoApp, 'c1', OGGI))
+  ok('i dati: il previsto dei contanti oggi non è né il contato né il previsto della chiusura', prova(() => [contantiOggi, previstoChiusura, chiusuraConti.contato]), [2035, 3500, 3800])
+  const [s, e] = await chiedi('saldi_casse')
+  ok('risponde con un testo, non è un errore', [typeof s, e], ['string', false])
+  ok('il Conto Corrente: il saldo secondo i conti a oggi', prova(() => rigaDi(s, `- ${'Conto Corrente'}`).includes(eur(cc))), true)
+  const contanti = rigaDi(s, '- Cassa Contanti')
+  ok('la Cassa Contanti: l\'ultima chiusura, il giorno e quanto si è contato', prova(() => [contanti.includes('10/10/2026'), contanti.includes(eur(3800))]), [true, true])
+  ok('…MAI il previsto: né di oggi né di allora, in nessuna riga', prova(() => [s.includes(ricevute.euro(contantiOggi)), contanti.includes(ricevute.euro(previstoChiusura))]), [false, false])
+  ok('…in regola: niente avviso', /non più in regola/i.test(s), false)
+  const [storta] = await chiedi('saldi_casse', {}, dbConti({ chiusure: [{ ...chiusuraConti, previsto: previstoChiusura - 1000 }] }))
+  ok('una chiusura che non torna più: «non più in regola», sempre senza previsto', prova(() => [rigaDi(storta, '- Cassa Contanti').includes('non più in regola'), storta.includes(ricevute.euro(contantiOggi)), storta.includes(ricevute.euro(previstoChiusura - 1000))]), [true, false, false])
+  const [mai] = await chiedi('saldi_casse', {}, dbConti({ chiusure: [] }))
+  ok('nessuna chiusura: lo dice, e nessun importo per i contanti', prova(() => { const l = rigaDi(mai, '- Cassa Contanti'); return [/nessuna chiusura/i.test(l), l.includes('€')] }), [true, false])
+  const [dieci] = await chiedi('saldi_casse', { al: '2026-10-10' })
+  ok('una cassa non ancora partita al giorno chiesto: «non ancora partita dal …», mai un importo', prova(() => { const l = rigaDi(dieci, '- Cassa eventi'); return [l.includes('non ancora partita dal 15/10/2026'), l.includes('€')] }), [true, false])
+  const [fine] = await chiedi('saldi_casse', { al: '2026-09-30' })
+  ok('al giorno chiesto: il Conto Corrente al 30 settembre', prova(() => rigaDi(fine, '- Conto Corrente').includes(eur(conti.previstoCassa(casseConti, elencoApp, 'c2', '2026-09-30')))), true)
+  ok('…e la chiusura del 10 ottobre allora non c\'era', prova(() => fine.includes('10/10/2026')), false)
+  const [futuro] = await chiedi('saldi_casse', { al: '2026-12-31' })
+  ok('un giorno nel futuro vale oggi', futuro, s)
+  ok('una data che non c\'è', await chiedi('saldi_casse', { al: '2026-02-30' }), ['La data non si capisce', true])
+}
+
+console.log('\n20. da_classificare')
+{
+  const [t, e] = await chiedi('da_classificare')
+  ok('risponde con un testo, non è un errore', [typeof t, e], ['string', false])
+  ok('in testa quanti gruppi e quanti movimenti in tutto', prova(() => [t.split('\n')[0].includes('4 gruppi'), t.split('\n')[0].includes('5 movimenti')]), [true, true])
+  const ordine = prova(() => ['lavori palestra', 'ferramenta bianchi', 'amazon ordine', 'cancelleria'].map((x) => t.indexOf(x)))
+  ok('i gruppi dal più grosso in euro', prova(() => ordine.every((x, i) => x >= 0 && (i === 0 || x > ordine[i - 1]))), true)
+  const amazon = righeCon(t, 'amazon ordine')
+  ok('«Amazon ordine» e «AMAZON ordine »: un gruppo, 2 movimenti, 35,00 €, dal 6 al 7 ottobre', prova(() => [amazon.length, amazon[0].includes(eur(3500)), amazon[0].includes('06/10/2026'), amazon[0].includes('07/10/2026')]), [1, true, true, true])
+  ok('…come ritrovarli nell\'app: il testo, la voce di partenza, periodo «Tutto»', prova(() => [amazon[0].includes('«amazon ordine»'), amazon[0].includes('VARIE'), amazon[0].includes('«Tutto»')]), [true, true, true])
+  ok('…la voce dell\'ultima volta non è più in uso: lo dice', prova(() => amazon[0].includes('«Vecchia»')), true)
+  ok('la voce proposta dai simili già classificati', prova(() => righeCon(t, 'ferramenta bianchi')[0].includes('Manutenzione')), true)
+  ok('mai annullati, giroconti, entrate, collegati a una persona, «Cliente … per»', prova(() => /annullata|versamento|assicurazione|comune|rimborso|cliente/i.test(t)), false)
+  const pulito = finto({ voci: vociConti, casse: casseConti, movimenti: [manuali[0], manuali[1]], incassi: incassiConti })
+  const [niente, en] = await chiedi('da_classificare', {}, pulito)
+  ok('niente da classificare: lo dice, non è un errore', prova(() => [niente.startsWith('Niente da classificare'), en]), [true, false])
+}
+
+console.log('\n21. nessun nome di iscritto, mai')
+{
+  const chiamate = [['conti', { anno: 2026 }], ['conti', { dal: '2026-10-01', al: '2026-10-31' }], ['conti', { voce: 'Corsi e altri pagamenti' }], ['conti', { voce: 'Quota associativa', anno: 2026 }], ['conti', { voce: 'Da classificare', tipo: 'entrata' }], ['saldi_casse', {}], ['da_classificare', {}]]
+  for (const [nome, args] of chiamate) {
+    const [t, e] = await chiedi(nome, args)
+    ok(`${nome} ${JSON.stringify(args)}: risponde, e né «Rossi» né «Luca» (né altri nomi)`, prova(() => [e, typeof t === 'string' && t.length > 0, /\b(rossi|luca|neri|giulia|verdi|anna)\b/i.test(t)]), [false, true, false])
+  }
+}
+
+console.log('\n22. di sola lettura, e gli errori mai grezzi')
+{
+  const db = dbConti()
+  for (const [nome, args] of [['conti', { anno: 2026 }], ['saldi_casse', {}], ['da_classificare', {}]]) await chiedi(nome, args, db)
+  ok('nessuna scrittura, nessuna ricerca di doppioni', [db.scritti.length, db.cercati.length], [0, 0])
+  const scaduto = await chiedi('conti', { anno: 2026 }, dbConti({ guasto: { code: 'PGRST301', message: 'JWT expired' } }))
+  ok('il token scaduto: «Accedi di nuovo a ODS Corsi»', scaduto, [MSG_ACCEDI, true])
+  for (const nome of ['conti', 'saldi_casse', 'da_classificare']) {
+    const [t, e] = await chiedi(nome, {}, dbConti({ guastoLettura: { code: '42703', message: 'column movimenti.persona_id does not exist' } }))
+    ok(`${nome} col database indietro: un errore per chi legge, non «per registrare», mai il testo grezzo`, prova(() => [e, t === m.testoDellErrore({ code: '42703' }, 'leggere'), /registra|column|persona_id/i.test(t)]), [true, true, false])
+  }
+  const [rete, er] = await chiedi('saldi_casse', {}, dbConti({ guastoLettura: new TypeError('fetch failed') }))
+  ok('la rete che non va: un errore, mai «fetch failed»', prova(() => [er, /fetch/i.test(rete)]), [true, false])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

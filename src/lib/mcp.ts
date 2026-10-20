@@ -1,4 +1,18 @@
-import { oggiARoma, ultimaChiusura, type Cassa, type ChiusuraCassa, type VoceContabile } from './contabilita'
+import { bilancioAnno, contiPeriodo, gruppiDaClassificare, importoConMeno, periodoInParole, variazione } from './bilancio'
+import {
+  incassiPerConti,
+  oggiARoma,
+  righeMovimenti,
+  saldiCasse,
+  ultimaChiusura,
+  type Cassa,
+  type ChiusuraCassa,
+  type IncassoPerConti,
+  type MovimentoManuale,
+  type VoceContabile,
+} from './contabilita'
+import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
+import { tutteLeRighe } from './tutteLeRighe'
 import {
   cosaNonVaDallaChat,
   doppioneDi,
@@ -23,8 +37,8 @@ import { dataRicevuta, euro } from './ricevute'
  * Il database arriva da fuori (`apri`), così le prove (scripts/prova-mcp.mjs) lo fingono senza Deno né rete.
  */
 
-// Il server Deno lo prende da qui, col resto delle regole: un «oggi a Roma» solo.
-export { oggiARoma }
+// Il server Deno li prende da qui, col resto delle regole: un «oggi a Roma» solo, e la lettura a pagine dell'app.
+export { oggiARoma, tutteLeRighe }
 
 /** Un movimento come lo restituisce il database dopo averlo scritto. */
 export interface MovimentoScritto {
@@ -48,6 +62,10 @@ export interface DatabaseChat {
   uguali(cerca: { tipo: string; importo: number; dal: string; al: string }): Promise<MovimentoEsistente[]>
   /** Il movimento non annullato che chi chiama ha già scritto con questa chiave, se c'è. */
   perChiave(chiave: string): Promise<MovimentoScritto | null>
+  /** I movimenti scritti a mano, senza la nota (per i conti non serve, e uscirebbe verso Claude). */
+  movimenti(): Promise<MovimentoManuale[]>
+  /** Gli incassi degli iscritti, senza chi ha pagato. */
+  incassi(): Promise<IncassoPerConti[]>
   registra(dati: { chiave: string; tipo: string; data: string; importo: number; voce_id: string; cassa_id: string; descrizione: string; nota?: string }): Promise<MovimentoScritto>
 }
 
@@ -71,7 +89,9 @@ const ISTRUZIONI = `Registri in CONTABILITÀ di ODS Corsi le spese e le entrate 
 - Uno scontrino con spese di voci diverse: un movimento per voce, da confermare insieme.
 - Descrizione: «Fornitore · documento n. · mese», per esempio «Enel · bolletta n. 123 · set 2026». Mai codice fiscale o IBAN.
 - Prima di scegliere la voce chiama movimenti_simili col nome del fornitore. «Da classificare» solo se la persona la chiede.
-- Dopo la registrazione di' cosa hai scritto e che si annulla da CONTABILITÀ → MOVIMENTI.`
+- Dopo la registrazione di' cosa hai scritto e che si annulla da CONTABILITÀ → MOVIMENTI.
+- Per i conti (conti, saldi_casse, da_classificare) riporta i numeri come li dà lo strumento: sono quelli di BILANCIO nell'app. Della Cassa Contanti non c'è il saldo: la chiusura si conta alla cieca.
+- La voce dei gruppi da classificare si cambia nell'app (CONTABILITÀ → MOVIMENTI, «Cambiare la voce»): di' cosa cercare, la voce di partenza e il periodo «Tutto».`
 
 const STRUMENTI = [
   {
@@ -118,7 +138,40 @@ const STRUMENTI = [
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
   },
+  {
+    name: 'conti',
+    title: 'Conti',
+    description:
+      'Entrate, uscite, risultato e voci di un periodo, col confronto sullo stesso tratto dell’anno prima: gli stessi numeri di BILANCIO. Senza dal/al, l’anno (solare) chiesto o quello in corso, col riepilogo per il direttivo. Gli incassi degli iscritti sono solo importi.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        dal: { type: 'string', description: 'AAAA-MM-GG' },
+        al: { type: 'string', description: 'AAAA-MM-GG; dopo oggi vale oggi' },
+        anno: { type: 'number', description: 'Anno solare, se non c’è dal' },
+        voce: { type: 'string', description: 'Solo questa voce' },
+        tipo: { type: 'string', enum: ['entrata', 'uscita'] },
+      },
+    },
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: 'saldi_casse',
+    title: 'Saldi delle casse',
+    description: 'Il saldo «secondo i conti» del Conto Corrente (da confrontare con la banca). Della Cassa Contanti solo l’ultima chiusura e il contato, mai il previsto.',
+    inputSchema: { type: 'object', properties: { al: { type: 'string', description: 'AAAA-MM-GG; di base oggi' } } },
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: 'da_classificare',
+    title: 'Da classificare',
+    description: 'Le uscite ancora su «Da classificare», «Varie» o senza voce, raggruppate per descrizione (le più pesanti in euro), con la voce proposta e come ritrovarle nell’app.',
+    inputSchema: { type: 'object', properties: {} },
+    annotations: { readOnlyHint: true },
+  },
 ]
+
+const LETTURA = new Set(['conti', 'saldi_casse', 'da_classificare'])
 
 type Id = string | number | null
 type Argomenti = Record<string, unknown>
@@ -237,6 +290,95 @@ async function strumentoRegistra(db: DatabaseChat, a: Argomenti, oggi: string) {
   return registrato(r, voci, casse)
 }
 
+const dataVera = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(`${d}T00:00:00Z`)) && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d
+
+/** L'elenco unico dell'app (`righeMovimenti`), con gli incassi degli iscritti senza nomi. */
+async function elenco(db: DatabaseChat) {
+  const [voci, casse, manuali, incassi] = await Promise.all([db.voci(), db.casse(), db.movimenti(), db.incassi()])
+  return { voci, casse, righe: righeMovimenti(incassiPerConti(incassi, casse), manuali, voci) }
+}
+
+/** «· anno prima 300,00 € · +68%», o «nessun dato» se l'anno prima è vuoto. */
+const confronto = (adesso: number, prima: number | undefined) => {
+  if (prima === undefined) return ' · anno prima: nessun dato'
+  const v = variazione(adesso, prima)
+  return ` · anno prima ${importoConMeno(prima)}${v ? ` · ${v}` : ''}`
+}
+
+async function strumentoConti(db: DatabaseChat, a: Argomenti, oggi: string) {
+  const tipo = a.tipo
+  if (tipo !== undefined && tipo !== 'entrata' && tipo !== 'uscita') return testo('Scegli se è un’entrata o un’uscita', true)
+  const dal = stringa(a.dal)
+  const al = stringa(a.al)
+  if ((dal !== undefined && !dataVera(dal)) || (al !== undefined && !dataVera(al))) return testo('La data non si capisce', true)
+  const { voci, casse, righe } = await elenco(db)
+  const voce = stringa(a.voce)?.trim()
+  const voceEsiste = (n: string) => n.toLowerCase() === VOCE_DA_CLASSIFICARE.toLowerCase() || voci.some((v) => v.nome.toLowerCase() === n.toLowerCase())
+  if (voce && !voceEsiste(voce)) return testo(`Non c’è una voce «${voce}»: vedi lo strumento voci`, true)
+  const filtro = { voce, tipo: tipo as 'entrata' | 'uscita' | undefined }
+  const righeTesto: string[] = []
+  let c
+  if (dal) {
+    const fine = al ?? oggi
+    if (dal > fine) return testo('La data di inizio è dopo quella di fine', true)
+    if (dal > oggi) return testo('Il periodo comincia dopo oggi: non ci sono ancora movimenti', true)
+    c = contiPeriodo(righe, { dal, al: fine, ...filtro }, oggi)
+    righeTesto.push(`Conti ${periodoInParole(c.dal, c.al)}${c.parziale ? ' (parziale: fino a oggi)' : ''}, confronto ${periodoInParole(c.confrontoDal, c.confrontoAl)}`)
+  } else {
+    // Il riepilogo dell'anno solare, come BILANCIO: gli avvisi vengono da lì, i numeri (anche filtrati) da contiPeriodo.
+    const anno = typeof a.anno === 'number' && Number.isInteger(a.anno) ? a.anno : Number(oggi.slice(0, 4))
+    const b = bilancioAnno(righe, casse, anno, oggi)
+    c = contiPeriodo(righe, { dal: b.dal, al: b.al, ...filtro }, oggi)
+    righeTesto.push(`Anno ${anno}, ${periodoInParole(b.dal, b.al)}${b.parziale ? ' (parziale: fino a oggi)' : ''}, confronto ${periodoInParole(b.confrontoDal, b.confrontoAl)}`)
+    if (b.provvisorio) righeTesto.push('Risultato provvisorio: più di metà delle uscite è da classificare')
+    if (b.sovrapposizione) righeTesto.push(`Attenzione, possibile doppio conteggio degli incassi ${periodoInParole(b.sovrapposizione.dal, b.sovrapposizione.al)}: lo storico importato si sovrappone agli incassi dell’app`)
+  }
+  righeTesto.push(`Entrate: ${importoConMeno(c.entrate)}${confronto(c.entrate, c.prima?.entrate)}`)
+  righeTesto.push(`Uscite: ${importoConMeno(c.uscite)}${confronto(c.uscite, c.prima?.uscite)}`)
+  righeTesto.push(`Risultato: ${importoConMeno(c.risultato)}${c.prima ? ` · anno prima ${importoConMeno(c.prima.risultato)}` : ''}`)
+  for (const v of c.voci) {
+    if (v.totale === null) continue
+    righeTesto.push(`- ${v.tipo === 'entrata' ? 'Entrata' : 'Uscita'} · ${v.voce}: ${importoConMeno(v.totale)}${v.aParte ? ' (nel totale, ma è la differenza di una chiusura di cassa)' : ''}`)
+  }
+  if (c.daSistemare) righeTesto.push(`${c.daSistemare.movimenti} movimenti per ${euro(c.daSistemare.uscite)} € ancora da classificare: i totali per voce possono essere più alti`)
+  return testo(righeTesto.join('\n'))
+}
+
+async function strumentoSaldi(db: DatabaseChat, a: Argomenti, oggi: string) {
+  const al = stringa(a.al)
+  if (al !== undefined && !dataVera(al)) return testo('La data non si capisce', true)
+  const giorno = al && al < oggi ? al : oggi
+  const [{ casse, righe }, chiusure] = await Promise.all([elenco(db), db.chiusure()])
+  const righeTesto = saldiCasse(casse, righe, chiusure, giorno).map((s) => {
+    if (s.ultimaChiusura !== undefined) {
+      const k = s.ultimaChiusura
+      return k
+        ? `- ${s.nome}: ultima chiusura il ${dataRicevuta(k.data)}, contati ${euro(k.contato)} €${k.nonPiuInRegola ? ' · non più in regola: qualche incasso è cambiato dopo' : ''} (il saldo dei contanti non si dice: la chiusura si conta alla cieca)`
+        : `- ${s.nome}: nessuna chiusura (il saldo dei contanti non si dice: la chiusura si conta alla cieca)`
+    }
+    if (s.saldo === null) return `- ${s.nome}: non ancora partita dal ${dataRicevuta(s.parteIl ?? '')}`
+    return `- ${s.nome}: ${importoConMeno(s.saldo)} secondo i conti`
+  })
+  return testo([`Al ${dataRicevuta(giorno)}:`, ...righeTesto].join('\n'))
+}
+
+async function strumentoDaClassificare(db: DatabaseChat) {
+  const { voci, righe } = await elenco(db)
+  const g = gruppiDaClassificare(righe, voci)
+  if (!g.gruppiTotali) return testo('Niente da classificare: ogni uscita ha la sua voce.')
+  return testo(
+    [
+      `${g.gruppiTotali} gruppi, ${g.movimentiTotali} movimenti da classificare${g.gruppiTotali > g.gruppi.length ? ` (qui i ${g.gruppi.length} più pesanti)` : ''}. In MOVIMENTI: cerca il testo, voce di partenza, periodo «Tutto».`,
+      ...g.gruppi.map((x) => {
+        const da = [...x.voci, ...(x.senzaVoce ? ['senza voce'] : [])].join(', ')
+        const quando = x.primo === x.ultimo ? dataRicevuta(x.primo) : `dal ${dataRicevuta(x.primo)} al ${dataRicevuta(x.ultimo)}`
+        const voce = x.proposta ? `voce proposta ${x.proposta.nome}` : (x.avviso ?? 'nessuna proposta')
+        return `- cerca «${x.cerca}» · ${x.movimenti} movimenti · ${euro(x.totale)} € · ${quando} · ora su ${da} · periodo «Tutto» · ${voce}`
+      }),
+    ].join('\n'),
+  )
+}
+
 async function chiama(db: DatabaseChat, nome: string, a: Argomenti, oggi: string) {
   try {
     if (!(await db.eAmministrazione())) return testo(MSG_AMMINISTRAZIONE, true)
@@ -244,9 +386,12 @@ async function chiama(db: DatabaseChat, nome: string, a: Argomenti, oggi: string
     if (nome === 'casse') return await strumentoCasse(db)
     if (nome === 'movimenti_simili') return await strumentoSimili(db, a)
     if (nome === 'registra_movimento') return await strumentoRegistra(db, a, oggi)
+    if (nome === 'conti') return await strumentoConti(db, a, oggi)
+    if (nome === 'saldi_casse') return await strumentoSaldi(db, a, oggi)
+    if (nome === 'da_classificare') return await strumentoDaClassificare(db)
     return testo(`Lo strumento «${nome}» non c’è`, true)
   } catch (e) {
-    return testo(testoDellErrore(e), true)
+    return testo(testoDellErrore(e, LETTURA.has(nome) ? 'leggere' : 'registrare'), true)
   }
 }
 

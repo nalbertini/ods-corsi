@@ -17,6 +17,7 @@ export const MSG_PRIVATI = 'Togli codice fiscale e IBAN dalla descrizione'
 export const MSG_AMMINISTRAZIONE = 'La contabilità la cura l’amministrazione'
 export const MSG_ACCEDI = 'Accedi di nuovo a ODS Corsi'
 export const MSG_DATABASE_INDIETRO = 'Il database non è ancora aggiornato per registrare dalla chat: va chiesto a chi cura l’app'
+const MSG_DATABASE_INDIETRO_LETTURA = 'Il database non è ancora aggiornato per leggere i conti dalla chat: va chiesto a chi cura l’app'
 const MSG_GUASTO = 'Qualcosa non è andato: riprova tra poco, o fallo da CONTABILITÀ nell’app'
 
 /** Quanti giorni indietro una spesa uguale dello stesso fornitore fa pensare alla stessa fattura. */
@@ -153,8 +154,11 @@ export function voceProposta(simili: Simile[]): { proposta: { id: string; nome: 
   return { proposta: { id: ultimo.voceId, nome: ultimo.voce }, avviso: null }
 }
 
-/** L'errore di Supabase detto per chi usa l'app: i rifiuti del database con le loro parole, il resto mai grezzo. */
-export function testoDellErrore(e: unknown): string {
+/**
+ * L'errore di Supabase detto per chi usa l'app: i rifiuti del database con le loro parole, il resto mai grezzo.
+ * `per` dice cosa si stava facendo, perché il database indietro si spiega diversamente a chi legge e a chi registra.
+ */
+export function testoDellErrore(e: unknown, per: 'registrare' | 'leggere' = 'registrare'): string {
   // Un errore qualunque: si leggono solo `code` e `message`, se ci sono, e restano `unknown` finché non si guardano.
   const { code, message } = (typeof e === 'object' && e !== null ? e : {}) as { code?: unknown; message?: unknown }
   const testo = typeof message === 'string' ? message : ''
@@ -162,6 +166,6 @@ export function testoDellErrore(e: unknown): string {
   if (code === '42501') return MSG_AMMINISTRAZIONE
   if (code === 'PGRST301' || code === 'PGRST303' || /JWT/i.test(testo)) return MSG_ACCEDI
   // La funzione o la colonna del 72 che non ci sono ancora.
-  if (code === 'PGRST202' || code === '42883' || code === '42703') return MSG_DATABASE_INDIETRO
+  if (code === 'PGRST202' || code === '42883' || code === '42703') return per === 'leggere' ? MSG_DATABASE_INDIETRO_LETTURA : MSG_DATABASE_INDIETRO
   return MSG_GUASTO
 }

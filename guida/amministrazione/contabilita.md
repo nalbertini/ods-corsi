@@ -125,7 +125,18 @@ riepilogo: registra solo dopo il tuo «ok», e poi dice cosa ha scritto.
   **Consenti**. Lo può fare solo chi ha l'amministrazione. Il collegamento si toglie da lì,
   dai Connettori di Claude.
 - **Cosa può fare**: leggere voci, casse e i movimenti simili, e registrare un'entrata o
-  un'uscita. Non vede iscritti né pagamenti, non annulla, non fa giroconti, non chiude la cassa.
+  un'uscita. Non annulla, non fa giroconti, non chiude la cassa.
+- **Leggere i conti**: «quanto abbiamo speso di utenze quest'anno?», «ottobre rispetto a
+  ottobre scorso», «il riepilogo dell'anno per il direttivo». I numeri sono quelli di
+  **Bilancio**, per anno solare; un periodo in corso si confronta con lo stesso tratto dell'anno
+  prima, e Claude dice se ci sono ancora spese da classificare che possono cambiare i totali.
+  Gli incassi degli iscritti sono solo importi: Claude non vede i nomi.
+- **Il saldo**: del Conto Corrente, secondo i conti, da confrontare con la banca. Della Cassa
+  Contanti dice solo l'ultima chiusura e quanto si è contato, mai il previsto: la chiusura si
+  conta alla cieca.
+- **Le spese da classificare**: le uscite su «Da classificare», «Varie» o senza voce,
+  raggruppate per descrizione, le più pesanti prima, con la voce proposta. La voce si cambia qui,
+  da **Cambiare la voce**: Claude dice cosa cercare, la voce di partenza e il periodo **Tutto**.
 - **Solo fornitori**: le foto le vede Claude, non l'app. Compensi degli istruttori e ricevute
   degli iscritti si registrano qui, come sempre: gli incassi degli iscritti in PAGAMENTI.
 - **La data** è il giorno in cui i soldi sono usciti o entrati, non quella della fattura: per
