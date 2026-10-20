@@ -1,6 +1,7 @@
 import { cfValido } from './codiceFiscale'
 import { cosaNonVaMovimento, vociOfferte, VOCE_DIFFERENZA, type Cassa, type ChiusuraCassa, type VoceContabile } from './contabilita'
 import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
+import { nomeDallaCausale } from './movimentiPersona'
 import { centesimi } from './ricevute'
 
 /**
@@ -123,7 +124,8 @@ const giorni = (da: string, a: string) => Math.round((Date.parse(`${a}T12:00:00Z
 /**
  * Un movimento non annullato che sembra la stessa fattura: stesso tipo e importo, e lo stesso giorno, o lo stesso
  * fornitore nella descrizione nei 60 giorni prima (la fattura registrata con la sua data, poi col giorno del pagamento).
- * Mai un incasso di un iscritto (collegato a una persona, o su una voce di sistema): la sua descrizione andrebbe a Claude.
+ * Mai un incasso di un iscritto (collegato a una persona, su una voce di sistema, o «Cliente <nome> per …» dello storico):
+ * la sua descrizione andrebbe a Claude.
  */
 export function doppioneDi(
   nuovo: { tipo: string; data: string; importo: number; fornitore?: string },
@@ -134,7 +136,7 @@ export function doppioneDi(
   const diSistema = new Set(voci.filter((v) => v.diSistema).map((v) => v.id))
   return (
     esistenti.find((e) => {
-      if (e.annullato || e.personaId || diSistema.has(e.voceId)) return false
+      if (e.annullato || e.personaId || diSistema.has(e.voceId) || nomeDallaCausale(e.descrizione)) return false
       if (e.tipo !== nuovo.tipo || e.importo !== nuovo.importo) return false
       if (e.data === nuovo.data) return true
       const prima = giorni(e.data, nuovo.data)

@@ -198,6 +198,9 @@ insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione)
   values ('uscita', giorno(1)::date, 300, id_voce('Differenza di cassa', 'uscita'), id_cassa('Conto Corrente'), 'Differenza Enel');
 insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione)
   values ('uscita', giorno(1)::date, 4000, id_voce('Utenze', 'uscita'), id_cassa('Conto Corrente'), 'Acqua SMAT');
+-- Un'uscita collegata a una persona, senza nome nella descrizione: non esce lo stesso (se uscisse, sarebbe la prima di «enel»).
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, persona_id)
+  values ('uscita', giorno(0)::date, 7000, id_voce('Utenze', 'uscita'), id_cassa('Conto Corrente'), 'Enel rimborso anticipato', 'aaaaaaaa-0000-0000-0000-000000000007');
 -- Telefono smette di essere in uso: il simile su quella voce resta, la voce si legge spenta.
 update voci_contabili set attiva = false where nome = 'Telefono';
 
@@ -272,8 +275,14 @@ select atteso('un movimento annullato non torna con la stessa chiave, nemmeno co
 select atteso('…e niente scritto', impronta(), :'prima');
 
 \echo ''
-\echo '--- 7. la chiave troppo lunga ---'
+\echo '--- 7. la chiave troppo lunga, o che manca ---'
 select impronta() as prima \gset
+select atteso('una chiave vuota no',
+  da('22222222-2222-2222-2222-222222222222', 'authenticated', format('select registra_movimento_dalla_chat(%L)', chat('', 'uscita', giorno(5), 1700, 'Utenze', 'Conto Corrente', 'Cartoleria Neri'))),
+  '22023 Manca la chiave della registrazione: riprova dalla chat');
+select atteso('…né senza la chiave',
+  da('22222222-2222-2222-2222-222222222222', 'authenticated', format('select registra_movimento_dalla_chat(%L)', chat(null, 'uscita', giorno(5), 1700, 'Utenze', 'Conto Corrente', 'Cartoleria Neri'))),
+  '22023 Manca la chiave della registrazione: riprova dalla chat');
 select atteso('una chiave di 101 caratteri no',
   da('22222222-2222-2222-2222-222222222222', 'authenticated', format('select registra_movimento_dalla_chat(%L)', chat(repeat('x', 101), 'uscita', giorno(5), 1700, 'Utenze', 'Conto Corrente', 'Cartoleria Neri'))),
   '22023 La chiave della registrazione è troppo lunga: riprova dalla chat');
