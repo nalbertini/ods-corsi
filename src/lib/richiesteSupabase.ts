@@ -3,7 +3,7 @@ import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile 
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { tutteLeRighe } from './tutteLeRighe'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
-import { ERRORE_SATISPAY, type StatoSatispay } from './satispay'
+import { ERRORE_SATISPAY, SATISPAY_SPENTO, type StatoSatispay } from './satispay'
 
 /**
  * Le richieste di iscrizione col database vero (`supabase/06-iscrizioni.sql`).
@@ -169,6 +169,8 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             // Il database le pulisce e scarta quelle che non vanno; senza 74-provenienza-richieste.sql le ignora.
             provenienza: d.provenienza,
             conosciuto: d.conosciuto,
+            // Il pagamento fatto in fondo al modulo: senza 81-satispay-prima.sql la chiave si ignora.
+            pagamento_satispay: d.pagamentoSatispay,
           },
         }),
       ) as string
@@ -191,6 +193,23 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       if (r.pagato) return { pagato: true }
       if (typeof r.link !== 'string') throw new Error(ERRORE_SATISPAY)
       return { link: r.link }
+    },
+
+    async prepara(x) {
+      const r = await satispay({ azione: 'prepara', corso: x.corso, formula: x.formula, nome: x.nome, cognome: x.cognome, email: x.email })
+      // Senza 81-satispay-prima.sql la funzione dice che il servizio non c'è: si paga col bonifico.
+      if (r.attivo === false) throw new Error(SATISPAY_SPENTO)
+      if (typeof r.id !== 'string' || typeof r.importo !== 'number') throw new Error(ERRORE_SATISPAY)
+      if (r.stato === 'pagato') return { stato: 'pagato', id: r.id, importo: r.importo, pagatoIl: typeof r.pagato_il === 'string' ? r.pagato_il : undefined }
+      if (typeof r.link !== 'string') throw new Error(ERRORE_SATISPAY)
+      return { stato: 'attesa', id: r.id, importo: r.importo, link: r.link }
+    },
+
+    async statoSatispay(pagamentoId) {
+      const r = await satispay({ azione: 'stato_pagamento', pagamento: pagamentoId })
+      // `as`: la forma è quella di `satispay_stato_pagamento` (81-satispay-prima.sql), riletta dalla funzione.
+      const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null; collegato?: boolean } | null | undefined
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined, collegato: p.collegato === true } : null
     },
 
     async satispayAttivo() {

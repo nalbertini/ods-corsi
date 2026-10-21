@@ -340,6 +340,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // Province e IBAN dei tecnici arrivano con 78-tariffe-tecnici.sql: 42703 leggendo, PGRST204 scrivendo.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /provincia_nascita|provincia|iban/.test(e.message ?? '')) return new Error(MANCA_TARIFFE)
   if (e?.code === '42703' && /ricevute/.test(e.message ?? '')) return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
+  // Il pagamento Satispay fatto prima di mandare la richiesta arriva con 81-satispay-prima.sql.
+  if (e?.code === '42703' && /pagamenti_satispay\.(email|corso_id|formula)/.test(e.message ?? ''))
+    return new Error('Satispay prima di mandare non è ancora attivo sul database: va lanciato 81-satispay-prima.sql')
   // Il listino arriva con 19-listino.sql: 42703 leggendo, PGRST204 scrivendo.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /listino/.test(e.message ?? ''))
     return new Error('Il listino non si può ancora cambiare sul database: va lanciato 19-listino.sql')
@@ -622,7 +625,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     const r = await tutteLeRighe((prima, ultima) =>
       db
         .from('pagamenti_satispay')
-        .select('id, richiesta_id, chi, importo, stato, creato_il, pagato_il, ricevuta_id, persona_id, ricevuta:ricevute ( annullata_il )')
+        // `email`, `corso_id`, `formula`: 81-satispay-prima.sql, per il pagato senza richiesta da richiamare.
+        .select('id, richiesta_id, chi, importo, stato, creato_il, pagato_il, ricevuta_id, persona_id, email, corso_id, formula, ricevuta:ricevute ( annullata_il ), corso:corsi ( nome )')
         .order('creato_il', { ascending: false })
         .order('id')
         .range(prima, ultima),
@@ -630,7 +634,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     // Prima di 73-satispay.sql non c'è niente da mostrare.
     if (r.error && (r.error.code === '42P01' || r.error.code === 'PGRST205' || r.error.code === 'PGRST200')) return []
     // `as`: Supabase tipa la riga a modo suo, la forma è quella della select.
-    return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null; ricevuta: { annullata_il: string | null } | null }>).map(
+    return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null; email: string | null; corso_id: string | null; formula: 'annuale' | 'trimestre' | null; ricevuta: { annullata_il: string | null } | null; corso: { nome: string } | null }>).map(
       (x): PagamentoSatispay => ({
         id: x.id,
         richiestaId: x.richiesta_id ?? undefined,
@@ -642,6 +646,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         // In una ricevuta annullata i soldi non contano più: tornano liberi, come in `emetti_ricevuta_satispay`.
         ricevutaId: x.ricevuta_id && !x.ricevuta?.annullata_il ? x.ricevuta_id : undefined,
         personaId: x.persona_id ?? undefined,
+        email: x.email ?? undefined,
+        corsoId: x.corso_id ?? undefined,
+        corso: x.corso?.nome,
+        formula: x.formula ?? undefined,
       }),
     )
   }

@@ -12,6 +12,12 @@
 //     secondo. Torna il link della pagina di Satispay;
 //   · POST { azione: 'stato', richiesta }: com'è andata, chiedendolo a
 //     Satispay se è ancora in attesa (la callback può essersi persa);
+//   · POST { azione: 'prepara', corso, formula, nome, cognome, email }: il
+//     pagamento da fare in fondo al modulo, prima di mandare la richiesta
+//     (`satispay_prepara_prima`, 81-satispay-prima.sql): quello in attesa per
+//     la stessa scelta, o uno nuovo. Torna l'id, il link e l'importo;
+//   · POST { azione: 'stato_pagamento', pagamento }: com'è andato quel
+//     pagamento, per id, chiedendolo a Satispay se è ancora in attesa;
 //   · GET ?payment_id=…: la callback di Satispay. Non dice lo stato e chiunque
 //     la può chiamare: lo stato si rilegge da Satispay con una chiamata firmata.
 //
@@ -70,6 +76,34 @@ async function satispay(metodo: 'GET' | 'POST', percorso: string, corpo = '', ex
   }
 }
 
+/** Crea il pagamento in Satispay per il nostro `nostro`, e ne scrive l'id e il link; `null` se non va. */
+async function creaInSatispay(nostro: string, importo: number, ritorno: URL) {
+  const nuovo = await satispay(
+    'POST',
+    '/g_business/v1/payments',
+    JSON.stringify({
+      flow: 'MATCH_CODE',
+      amount_unit: importo,
+      currency: 'EUR',
+      // Si legge nell'app Satispay di chi paga: niente nomi, solo un riferimento per la segreteria.
+      external_code: `ISCRIZIONE ${nostro.slice(0, 8).toUpperCase()}`,
+      callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/satispay?payment_id={uuid}`,
+      redirect_url: ritorno.toString(),
+    }),
+    // Lo stesso pagamento nostro non diventa mai due pagamenti Satispay, anche se la risposta si perde.
+    { 'Idempotency-Key': nostro },
+  )
+  if (!nuovo?.redirect_url) return null
+  const scritto = await admin.rpc('satispay_creato', { id: nostro, satispay_id: nuovo.id, link: nuovo.redirect_url })
+  if (scritto.error) {
+    // Senza l'id di Satispay nel database la callback non si riconoscerebbe: niente link, si riprova. Il tentativo
+    // dopo ha la stessa Idempotency-Key e riceve lo stesso pagamento Satispay, non uno nuovo.
+    console.error('satispay_creato', scritto.error)
+    return null
+  }
+  return nuovo.redirect_url
+}
+
 /** Rilegge lo stato da Satispay e lo scrive nel database. */
 async function aggiorna(satispayId: string) {
   const p = await satispay('GET', `/g_business/v1/payments/${encodeURIComponent(satispayId)}`)
@@ -99,17 +133,51 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return risposta({ guaio: 'Solo GET e POST' }, 405)
   if (!attivo) return risposta({ attivo: false })
 
-  let corpo: { azione?: unknown; richiesta?: unknown }
+  let corpo: { azione?: unknown; richiesta?: unknown; pagamento?: unknown; corso?: unknown; formula?: unknown; nome?: unknown; cognome?: unknown; email?: unknown }
   try {
     corpo = await req.json()
   } catch {
     return risposta({ guaio: 'Richiesta storta' }, 400)
   }
   if (corpo.azione === 'attivo') {
-    // Il servizio c'è se c'è anche 73-satispay.sql: PGRST202 vuol dire che non è stato lanciato.
-    const { error } = await admin.rpc('satispay_stato', { richiesta: '00000000-0000-0000-0000-000000000000' })
+    // Il servizio c'è se c'è anche 81-satispay-prima.sql (e quindi 73): PGRST202 vuol dire che non è stato lanciato.
+    // L'app di prima chiede solo 73, ma 81 si lancia prima che la nuova vada in linea.
+    const { error } = await admin.rpc('satispay_stato_pagamento', { pagamento: '00000000-0000-0000-0000-000000000000' })
     return risposta({ attivo: error?.code !== 'PGRST202' })
   }
+  if (corpo.azione === 'prepara') {
+    // Oltre le misure delle colonne il database direbbe un vincolo, non una frase: 80 per nome e cognome, 254 per l'email.
+    const testo = (x: unknown, quanto = 80) => (typeof x === 'string' ? x.slice(0, quanto) : '')
+    const corso = typeof corpo.corso === 'string' && UUID.test(corpo.corso) ? corpo.corso : null
+    if (!corso) return risposta({ guaio: 'Manca il corso' }, 400)
+    const { data, error } = await admin.rpc('satispay_prepara_prima', {
+      corso,
+      formula: testo(corpo.formula),
+      nome: testo(corpo.nome),
+      cognome: testo(corpo.cognome),
+      email: testo(corpo.email, 254),
+    })
+    // PGRST202: 81-satispay-prima.sql non c'è ancora.
+    if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: detto(error) }, 409)
+    const p = data as { stato: string; id: string; importo: number; satispay_id?: string | null; link?: string | null; pagato_il?: string | null }
+    // Già pagato e non ancora preso da una richiesta (la pagina ricaricata dopo aver pagato): non si paga due volte.
+    if (p.stato === 'pagato') return risposta({ stato: 'pagato', id: p.id, importo: p.importo, pagato_il: p.pagato_il })
+    if (p.satispay_id && p.link) return risposta({ stato: 'attesa', id: p.id, link: p.link, importo: p.importo })
+    const ritorno = new URL(app)
+    ritorno.searchParams.set('satispay', p.id)
+    const link = await creaInSatispay(p.id, p.importo, ritorno)
+    return link ? risposta({ stato: 'attesa', id: p.id, link, importo: p.importo }) : risposta({ guaio: NON_RISPONDE }, 502)
+  }
+  if (corpo.azione === 'stato_pagamento') {
+    const pagamento = typeof corpo.pagamento === 'string' && UUID.test(corpo.pagamento) ? corpo.pagamento : null
+    if (!pagamento) return risposta({ guaio: 'Manca il pagamento' }, 400)
+    const { data, error } = await admin.rpc('satispay_stato_pagamento', { pagamento })
+    if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: NON_RISPONDE }, 502)
+    const s = data as { stato: string; importo: number; pagato_il?: string; satispay_id?: string } | null
+    if (s?.stato === 'attesa' && s.satispay_id) return risposta({ pagamento: (await aggiorna(s.satispay_id)) ?? s })
+    return risposta({ pagamento: s })
+  }
+
   const richiesta = typeof corpo.richiesta === 'string' && UUID.test(corpo.richiesta) ? corpo.richiesta : null
   if (!richiesta) return risposta({ guaio: 'Manca la richiesta' }, 400)
 
@@ -133,28 +201,6 @@ Deno.serve(async (req) => {
 
   const ritorno = new URL(app)
   ritorno.searchParams.set('pagamento', richiesta)
-  const nuovo = await satispay(
-    'POST',
-    '/g_business/v1/payments',
-    JSON.stringify({
-      flow: 'MATCH_CODE',
-      amount_unit: p.importo,
-      currency: 'EUR',
-      // Si legge nell'app Satispay di chi paga: niente nomi, solo un riferimento per la segreteria.
-      external_code: `ISCRIZIONE ${nostro.slice(0, 8).toUpperCase()}`,
-      callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/satispay?payment_id={uuid}`,
-      redirect_url: ritorno.toString(),
-    }),
-    // Lo stesso pagamento nostro non diventa mai due pagamenti Satispay, anche se la risposta si perde.
-    { 'Idempotency-Key': nostro },
-  )
-  if (!nuovo?.redirect_url) return risposta({ guaio: NON_RISPONDE }, 502)
-  const scritto = await admin.rpc('satispay_creato', { id: nostro, satispay_id: nuovo.id, link: nuovo.redirect_url })
-  if (scritto.error) {
-    // Senza l'id di Satispay nel database la callback non si riconoscerebbe: niente link, si riprova. Il tentativo
-    // dopo ha la stessa Idempotency-Key e riceve lo stesso pagamento Satispay, non uno nuovo.
-    console.error('satispay_creato', scritto.error)
-    return risposta({ guaio: NON_RISPONDE }, 502)
-  }
-  return risposta({ link: nuovo.redirect_url })
+  const link = await creaInSatispay(nostro, p.importo, ritorno)
+  return link ? risposta({ link }) : risposta({ guaio: NON_RISPONDE }, 502)
 })

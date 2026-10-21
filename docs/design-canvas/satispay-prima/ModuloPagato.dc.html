@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo sono file locali OFL; un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA 2. Tornati da Satispay sullo stesso modulo, con tutto ancora compilato: il riquadro e' verde e il tasto giallo diventa MANDA LA RICHIESTA. -->
+<div style="display: flex; flex-direction: column; width: 375px; min-height: 760px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 20px">
+<div style="display: flex; align-items: center; gap: 12px; margin-top: 8px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; color: #46606f">ALTRO</span><span style="flex-grow: 1; height: 2px; background: #cfe6f4"></span></div><span style="font-size: 14px; line-height: 1.4; color: #46606f">… «Come ci hai conosciuto?» e le note, come oggi …</span><div style="display: flex; gap: 14px; align-items: flex-start"><span style="flex-shrink: 0; width: 22px; height: 22px; border: 2px solid #14709f; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700">✓</span><span style="font-size: 15px; line-height: 1.4; color: #0d2a3d">Accetto il Regolamento Sociale dell’associazione.</span></div><div style="display: flex; gap: 14px; align-items: flex-start"><span style="flex-shrink: 0; width: 22px; height: 22px; border: 2px solid #14709f; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700">✓</span><span style="font-size: 15px; line-height: 1.4; color: #0d2a3d">Ho letto l’informativa privacy e so che questi dati li legge solo la segreteria della palestra.</span></div><div style="display: flex; align-items: center; gap: 12px; margin-top: 8px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; color: #46606f">PAGA</span><span style="flex-grow: 1; height: 2px; background: #cfe6f4"></span></div><div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #ffffff; border: 2px solid #0b7a33; border-radius: 6px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; color: #0b7a33">180,00 €</span><span style="font-size: 15px; line-height: 1.4; color: #0b7a33">✓ Pagati con Satispay alle 15.12. Ora manda la richiesta.</span></div><a href="#" style="display: flex; align-items: center; justify-content: center; min-height: 56px; border-radius: 6px; text-decoration: none; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.06em; background: #f4c31b; color: #0d2a3d">MANDA LA RICHIESTA</a>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":375,"height":760}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

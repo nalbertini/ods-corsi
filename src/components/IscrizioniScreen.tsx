@@ -8,7 +8,7 @@ import { useListino } from './Costi'
 import { Dettaglio, Etichetta, Cifra, Riquadro, Tasti, Tasto, Titoletto } from './ds'
 import { Logo } from './Logo'
 import { ModuloIscrizione } from './ModuloIscrizione'
-import { PagamentoOnline } from './PagamentoOnline'
+import { PagamentoOnline, RitornoDalPagamento } from './PagamentoOnline'
 
 /**
  * La pagina pubblica delle iscrizioni (`iscrizioni/`), corta: cosa preparare,
@@ -35,15 +35,29 @@ export function IscrizioniScreen() {
     document.querySelector('.scroll')?.scrollTo(0, 0)
   }
 
-  // Il ritorno dall'app di pagamento, o il link salvato per pagare dopo.
+  // Il ritorno dall'app di pagamento dopo aver pagato in fondo al modulo: la richiesta si manda dal modulo.
+  const [ritorno, setRitorno] = useState(() => new URLSearchParams(window.location.search).get('satispay'))
+  // Il ritorno dall'app di pagamento del flusso di prima, o il link salvato per pagare dopo.
   const [pagamento, setPagamento] = useState(() => new URLSearchParams(window.location.search).get('pagamento'))
+  // Via dall'indirizzo il parametro della pagina di ritorno, e si torna alle iscrizioni.
+  const togli = (chiave: string, metti: (x: null) => void) => () => {
+    const u = new URLSearchParams(window.location.search)
+    u.delete(chiave)
+    history.replaceState(null, '', window.location.pathname + (u.size ? `?${u}` : ''))
+    metti(null)
+  }
+  if (ritorno) {
+    const chiudi = togli('satispay', setRitorno)
+    return (
+      <div className="iscrizioni-modulo">
+        <Titoletto>RICHIESTA DI ISCRIZIONE</Titoletto>
+        <RitornoDalPagamento pagamentoId={ritorno} onChiudi={chiudi} />
+      </div>
+    )
+  }
+
   if (pagamento) {
-    const chiudi = () => {
-      const u = new URLSearchParams(window.location.search)
-      u.delete('pagamento')
-      history.replaceState(null, '', window.location.pathname + (u.size ? `?${u}` : ''))
-      setPagamento(null)
-    }
+    const chiudi = togli('pagamento', setPagamento)
     return (
       <div className="iscrizioni-modulo">
         <Titoletto>RICHIESTA DI ISCRIZIONE</Titoletto>

@@ -8,7 +8,7 @@ import { MASSIMO_PERSONE } from './passiIscrizione'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { caricaListino } from './listino'
 import { stimaIscrizione } from './nucleo'
-import { nonSemplice, senzaVoceDelCorso, type PagamentoSatispay } from './satispay'
+import { NOME_TROPPO_LUNGO, nonSemplice, PAGAMENTO_ALTRA_PERSONA, PAGAMENTO_ALTRA_SCELTA, PAGAMENTO_NON_ARRIVATO, PAGAMENTO_NON_VALE, senzaVoceDelCorso, type PagamentoSatispay } from './satispay'
 
 /**
  * Le richieste di iscrizione senza server.
@@ -67,6 +67,15 @@ export function salvaSatispay(p: PagamentoSatispay[]) {
   } catch {
     /* resta per questa sessione */
   }
+}
+
+/**
+ * In prova Satispay non c'è: aprire il link del pagamento fatto prima di
+ * mandare (`prepara`) lo «approva», come farebbe chi conferma nell'app.
+ */
+export function pagaSatispayProva(pagamentoId: string) {
+  const ora = new Date().toISOString()
+  salvaSatispay(pagamentiSatispayProva().map((p) => (p.id === pagamentoId && p.stato === 'attesa' ? { ...p, stato: 'pagato', pagatoIl: ora } : p)))
 }
 
 /** Le richieste di prova, per l'esportazione dei dati di una persona. */
@@ -196,7 +205,7 @@ export function creaRichiesteProva(): DatiRichieste {
         .flatMap((c) => c.ricorrenze.filter((x) => !x.al || x.al >= oggi).map((x) => ({ corsoId: c.id, giorno: x.giorno, ora: x.ora, durata: x.durata })))
     },
 
-    async invia(dati) {
+    async invia({ pagamentoSatispay, ...dati }) {
       const guaio = controlla(dati)
       if (guaio) throw new Error(guaio)
       const aperti = new Set(archivio.dati.corsi.filter((c) => c.attivo).map((c) => c.id))
@@ -204,9 +213,24 @@ export function creaRichiesteProva(): DatiRichieste {
       if (dati.nucleoDi && !archivio.dati.persone.some((p) => p.id === dati.nucleoDi && p.ruolo === 'iscritto' && p.attiva && !p.nucleo))
         throw new Error('Il nucleo per cui iscrivi non c’è più: ricarica la pagina')
       const email = dati.email.trim().toLowerCase()
+      const pagato = pagamentoSatispay ? pagamentiSatispayProva().find((p) => p.id === pagamentoSatispay) : undefined
+      // Come `invia_iscrizione` in 81-satispay-prima.sql: lo stesso invio rimandato dopo una risposta persa ritrova
+      // la sua richiesta (stesso codice fiscale, email e scelta), senza contare nei limiti.
+      const sua = pagato?.richiestaId ? tutte.find((x) => x.id === pagato.richiestaId) : undefined
+      if (sua && sua.codiceFiscale === pulisciCf(dati.codiceFiscale) && sua.email === email && sua.formula === dati.formula && [...new Set(dati.corsi)].join() === sua.corsi.join())
+        return sua.id
       const ieri = Date.now() - 24 * 60 * 60_000
       if (tutte.filter((r) => r.email === email && new Date(r.creataIl).getTime() > ieri).length >= PER_EMAIL_AL_GIORNO)
         throw new Error(`Da questa email sono già arrivate ${PER_EMAIL_AL_GIORNO} richieste oggi: se serve, scrivi alla segreteria`)
+      // Come `invia_iscrizione` in 81-satispay-prima.sql: il pagamento fatto prima, solo se è arrivato, mai preso,
+      // per questa scelta e pagato da chi si iscrive.
+      if (pagamentoSatispay) {
+        if (!pagato || pagato.richiestaId || pagato.presoIl || !pagato.corsoId) throw new Error(PAGAMENTO_NON_VALE)
+        if (pagato.stato !== 'pagato') throw new Error(PAGAMENTO_NON_ARRIVATO)
+        if (new Set(dati.corsi).size !== 1 || dati.corsi[0] !== pagato.corsoId || dati.formula !== pagato.formula) throw new Error(PAGAMENTO_ALTRA_SCELTA)
+        const uguale = (a = '', b = '') => a.trim().toLowerCase() === b.trim().toLowerCase()
+        if (!uguale(pagato.email, email) || !uguale(pagato.nome, dati.nome) || !uguale(pagato.cognome, dati.cognome)) throw new Error(PAGAMENTO_ALTRA_PERSONA)
+      }
       const minore = minorenne(dati.natoIl)
       // Come il database: il luogo di nascita, se l'elenco lo conosce, è quello del codice.
       const luogo = luogoDaCf(await caricaLuoghi(), pulisciCf(dati.codiceFiscale), dati.natoIl)
@@ -234,6 +258,7 @@ export function creaRichiesteProva(): DatiRichieste {
       tutte = [r, ...tutte]
       salva()
       conta(r)
+      if (pagato) salvaSatispay(pagamentiSatispayProva().map((p) => (p.id === pagato.id ? { ...p, richiestaId: r.id, presoIl: r.creataIl } : p)))
       return r.id
     },
 
@@ -268,6 +293,37 @@ export function creaRichiesteProva(): DatiRichieste {
 
     async satispayAttivo() {
       return true
+    },
+
+    async prepara(x) {
+      // Come `satispay_prepara_prima`: quello vivo per la stessa scelta e persona (anche già pagato e non ancora
+      // preso: chi ricarica la pagina non paga due volte), o uno nuovo con l'importo del listino.
+      const nome = x.nome.trim()
+      const cognome = x.cognome.trim()
+      const email = x.email.trim().toLowerCase()
+      if (!nome || !cognome || !email) throw new Error('Scrivi nome, cognome ed email prima di pagare')
+      if (nome.length > 80 || cognome.length > 80 || email.length > 254) throw new Error(NOME_TROPPO_LUNGO)
+      const corso = archivio.dati.corsi.find((c) => c.id === x.corso && c.attivo)
+      if (!corso) throw new Error("Uno dei corsi scelti non c'è più: ricarica la pagina")
+      const tutti = pagamentiSatispayProva()
+      // Col percorso della pagina, come `?pagamento=` di `paga`: la `<base href="../">` porterebbe un link relativo fuori da iscrizioni/.
+      const link = (id: string) => `${window.location.pathname}?prova&satispay=${encodeURIComponent(id)}`
+      const vivi = tutti.filter((p) => !p.richiestaId && !p.presoIl && p.stato !== 'non-andato' && p.corsoId === x.corso && p.formula === x.formula && p.nome === nome && p.cognome === cognome && p.email === email)
+      const vivo = vivi.find((p) => p.stato === 'pagato') ?? vivi[0]
+      if (vivo?.stato === 'pagato') return { stato: 'pagato', id: vivo.id, importo: vivo.importo, pagatoIl: vivo.pagatoIl }
+      if (vivo) return { stato: 'attesa', id: vivo.id, importo: vivo.importo, link: link(vivo.id) }
+      const { listino } = await caricaListino()
+      const corsi = [{ id: corso.id, nome: corso.nome }]
+      const s = stimaIscrizione({ chi: `${cognome} ${nome}`, corsi, formula: x.formula }, [], chiaveGiorno(new Date()), listino)
+      if (s.senzaPrezzo.length || senzaVoceDelCorso(corsi, listino).length || nonSemplice(corsi, listino)) throw new Error('Un corso non ha ancora il prezzo: paga col bonifico')
+      const id = `sp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+      salvaSatispay([...tutti, { id, chi: `${cognome} ${nome}`, importo: s.totale, stato: 'attesa', creatoIl: new Date().toISOString(), corsoId: x.corso, corso: corso.nome, formula: x.formula, nome, cognome, email }])
+      return { stato: 'attesa', id, importo: s.totale, link: link(id) }
+    },
+
+    async statoSatispay(pagamentoId) {
+      const p = pagamentiSatispayProva().find((x) => x.id === pagamentoId)
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagatoIl, collegato: !!p.presoIl } : null
     },
 
     async statoPagamento(richiestaId) {

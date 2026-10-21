@@ -41,6 +41,8 @@ export interface RigaPagamento {
   ricevuta?: { id: string; anno: number; numero: number }
   direttoId?: string
   nota?: string
+  /** Satispay pagato in fondo al modulo e la richiesta non è partita: da richiamare o restituire. */
+  senzaRichiesta?: boolean
   annullato: boolean
 }
 
