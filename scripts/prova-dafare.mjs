@@ -36,13 +36,14 @@ const VOLUTI = {
   scadenza: ['Certificato in scadenza', 'Certificati in scadenza', 'Vedi chi'],
   arrivo: ['Iscritto compie 6 anni senza certificato', 'Iscritti compiono 6 anni senza certificato', 'Vedi chi'],
   pagare: ['Iscritto da pagare', 'Iscritti da pagare', 'Vedi chi deve pagare'],
+  corsi: ['Iscritto con un corso scaduto', 'Iscritti con un corso scaduto', 'Vedi chi'],
   listino: ['Corso con un prezzo mancante', 'Corsi con un prezzo mancante', 'Apri listino'],
   'file-di-prima': ['Certificato non archiviato', 'Certificati non archiviati', 'Vedi quali'],
   'documenti-stampa': ['Richiesta con documenti da stampare', 'Richieste con documenti da stampare', 'Vedi quali'],
 }
 
 console.log('\nI testi')
-ok('le undici cose, e nessun\'altra', typeof T === 'object' ? Object.keys(T).sort() : T, Object.keys(VOLUTI).sort())
+ok('le dodici cose, e nessun\'altra', typeof T === 'object' ? Object.keys(T).sort() : T, Object.keys(VOLUTI).sort())
 for (const [k, [singolare, plurale, tasto]] of Object.entries(VOLUTI))
   ok(`${k}: singolare, plurale, tasto`, [T[k]?.singolare, T[k]?.plurale, T[k]?.tasto], [singolare, plurale, tasto])
 ok('nessun testo è tutto maiuscolo', typeof T === 'object'
@@ -50,7 +51,7 @@ ok('nessun testo è tutto maiuscolo', typeof T === 'object'
 
 console.log('\nIl tasto principale')
 ok('il primo tasto è pieno', m.classeTastoDaFare?.(0), 'sg-btn-pieno')
-ok('gli altri dieci sono a linea', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => m.classeTastoDaFare?.(i)), Array(10).fill('sg-btn-linea'))
+ok('gli altri undici sono a linea', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => m.classeTastoDaFare?.(i)), Array(11).fill('sg-btn-linea'))
 
 console.log('\nDaFare.tsx')
 const tsx = readFileSync('src/components/segreteria/DaFare.tsx', 'utf8')
@@ -61,6 +62,9 @@ console.log('\nI titoli di COSA MANCA')
 const cm = await impacchetta("export * from './src/lib/cosaManca'")
 ok('i titoli delle cinque caselle', cm.caselleCosaManca({ appelli: 1, certificati: 2, pagamenti: 3, tessere: 4, richieste: 5, contato: true }).map((x) => x.titolo),
   ['Appelli non fatti', 'Certificati scaduti', 'Pagamenti', 'Senza tessera', 'Richieste online'])
+
+ok('con il conto dei corsi le caselle diventano sei, «Corsi scaduti» dopo «Pagamenti»', cm.caselleCosaManca({ appelli: 1, certificati: 2, pagamenti: 3, corsi: 6, tessere: 4, richieste: 5, contato: true }).map((x) => x.titolo),
+  ['Appelli non fatti', 'Certificati scaduti', 'Pagamenti', 'Corsi scaduti', 'Senza tessera', 'Richieste online'])
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

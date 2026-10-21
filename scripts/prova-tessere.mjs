@@ -276,7 +276,7 @@ console.log('\nTogliere una tessera e rimetterla com\'era (ANNULLA)')
 console.log('\nLa quinta casella di COSA MANCA (scelta A del canvas, confermata)')
 {
   const C = m.cosaManca
-  ok('CASELLE: cinque, TESSERE prima delle richieste', C.CASELLE, ['appelli', 'certificati', 'pagamenti', 'tessere', 'richieste'])
+  ok('CASELLE: sei, CORSI dopo i pagamenti, TESSERE prima delle richieste', C.CASELLE, ['appelli', 'certificati', 'pagamenti', 'corsi', 'tessere', 'richieste'])
   const conti = (tessere) => ({ appelli: 0, certificati: 0, pagamenti: 0, tessere, richieste: 0, contato: true })
   const c = (n) => C.caselleCosaManca(conti(n)).find((x) => x.id === 'tessere')
   ok('titolo e nota', [c(14).titolo, c(14).nota], ['Senza tessera', 'senza tessera valida'])

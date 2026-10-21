@@ -27,6 +27,7 @@ import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } fr
 import { satispayPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
 import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { vociCorsiDi } from './corsiDaPagare'
 import { motivoDaErrore, type InvioRicevuta } from './ricevuteEmail'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
@@ -998,6 +999,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async persone() {
       // Se ha pagato lo dicono le quote delle ricevute (27-pagamento-dalle-ricevute.sql);
       // finché quel file non è passato, le stesse righe si ricavano dalle ricevute qui.
+      // Le ricevute servono per le voci dei corsi, e per le quote se la vista non c'è. null: non si sono lette.
+      const leRicevute = (async () => {
+        const r = await tutteLeRighe((prima, ultima) => db.from('ricevute').select('persona_id, anno, numero, voci, anticipo').is('annullata_il', null).not('persona_id', 'is', null).order('id').range(prima, ultima))
+        // as: le righe sono quelle del select qui sopra, con i campi che leggono `conti` e `quoteDi`.
+        return r.error ? null : (r.data as unknown as Array<Ricevuta & { persona_id: string }>)
+      })()
       const quote = (async (): Promise<Map<string, QuotaRicevuta[]>> => {
         const perPersona = new Map<string, QuotaRicevuta[]>()
         const metti = (id: string, q: QuotaRicevuta) => perPersona.set(id, [...(perPersona.get(id) ?? []), q])
@@ -1007,11 +1014,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             metti(q.persona_id, { anno: q.anno, numero: q.numero, dal: q.dal ?? undefined, al: q.al ?? undefined, mancano: q.mancano })
           return perPersona
         }
-        const r = await tutteLeRighe((prima, ultima) => db.from('ricevute').select('persona_id, anno, numero, voci, anticipo').is('annullata_il', null).not('persona_id', 'is', null).order('id').range(prima, ultima))
         // Senza ricevute sul database (16-ricevute.sql) resta l'eccezione scritta a mano.
-        if (r.error) return perPersona
-        for (const x of r.data as Array<{ persona_id: string; anno: number; numero: number; voci: VoceRicevuta[]; anticipo: number }>)
-          for (const q of quoteDi([{ ...x, voci: x.voci } as unknown as Ricevuta])) metti(x.persona_id, q)
+        for (const x of (await leRicevute) ?? []) for (const q of quoteDi([x])) metti(x.persona_id, q)
         return perPersona
       })()
       // La data di nascita decide se il certificato serve (sotto i 6 anni no). Senza queste tabelle, o senza il permesso,
@@ -1070,6 +1074,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         schede_iscritti?: Scheda | Scheda[] | null
       }>
       const pagate = await quote
+      const ricevute = await leRicevute
+      const perPersona = new Map<string, Ricevuta[]>()
+      for (const x of ricevute ?? []) perPersona.set(x.persona_id, [...(perPersona.get(x.persona_id) ?? []), x])
       const natiIl = await nati
       const conSatispay = satispayPerPersona(await leggiSatispay().catch(() => []))
       return righe.map((r): PersonaSeg => {
@@ -1095,6 +1102,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           documento: !!s?.documento_in_segreteria,
           pagamento: { stato: s?.pagamento ?? 'da_pagare', fino: s?.pagato_fino ?? undefined, nota: s?.pagamento_nota ?? undefined },
           quote: pagate.get(r.id) ?? [],
+          // Senza le ricevute lette i corsi non si giudicano: nessuno «da pagare» per sbaglio.
+          vociCorsi: ricevute ? vociCorsiDi(perPersona.get(r.id) ?? []) : undefined,
           satispay: conSatispay.get(r.id),
           natoIl: natiIl.get(r.id),
         }

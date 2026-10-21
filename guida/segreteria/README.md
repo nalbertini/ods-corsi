@@ -59,9 +59,10 @@ sua guida:
 
 ## La striscia COSA MANCA
 
-In cima a ogni pagina, tranne **Da fare**, ci sono cinque caselle con un numero grande:
+In cima a ogni pagina, tranne **Da fare**, ci sono sei caselle con un numero grande:
 **Appelli non fatti** (lezioni degli ultimi 30 giorni senza appello), **Certificati
-scaduti** (scaduti o mancanti), **Pagamenti** (quote non in regola), **Senza tessera**
+scaduti** (scaduti o mancanti), **Pagamenti** (quote non in regola), **Corsi scaduti**
+(chi ha un trimestre o un annuale finito o non pagato), **Senza tessera**
 (iscritti a un corso che chiede la tessera e non ne hanno una valida) e **Richieste
 online** (da accogliere). Sono gli stessi numeri di [DA FARE](da-fare.md). Il segno
 sotto dice lo stato: rosso, qualcosa manca; giallo, c'è da accogliere; verde con **✓ 0**,
@@ -69,7 +70,7 @@ a posto. Se il numero non si sa (la lettura non è riuscita) c'è «—», mai u
 un tasto **Riconta**; se una lettura fallisce dopo una riuscita resta l'ultimo numero,
 con scritto a che ora era. Toccando una casella si va alla pagina giusta, già filtrata.
 I conti si rileggono quando si segna un appello, si accoglie una richiesta o si cambia
-una scheda, e cambiando voce solo se l'ultima lettura ha più di due minuti. Sul computer le cinque caselle stanno in una riga; sul telefono due per riga, e la
+una scheda, e cambiando voce solo se l'ultima lettura ha più di due minuti. Sul computer le caselle stanno in righe da cinque; sul telefono due per riga, e la
 striscia si nasconde quando c'è una scheda aperta. Chi non la vuole
 la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scelta resta su quel dispositivo.
 

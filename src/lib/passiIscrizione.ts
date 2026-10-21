@@ -9,7 +9,7 @@ import { certificatoDaPortare, compiuti, dataDaCf, NOTE_NEL_DATABASE, domandaUsc
 import type { Luoghi } from './codiceFiscale'
 import { cfValido, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { nomeProprio } from './nomi'
-import { elenco } from './ricevute'
+import { elenco, euroBreve } from './ricevute'
 import { pulisciConosciuto, type Conosciuto } from './provenienza'
 
 /**
@@ -717,9 +717,6 @@ export function fraseCorsiNascosti(nascosti: string[], nomeBambino: string): str
 
 /** A quale passo manda MODIFICA nelle righe fisse del riepilogo: la carta d'identità sta nei documenti, la firma nel modulo. */
 export const passoDelRiepilogo = (riga: 'carta' | 'firma'): TipoPasso => (riga === 'carta' ? 'documenti' : 'modulo')
-
-/** Una cifra in centesimi per la riga del totale: «50 €», «50,50 €», lo sconto con il meno. */
-const euroBreve = (cent: number) => `${cent < 0 ? '−' : ''}${Math.abs(cent) % 100 === 0 ? Math.abs(cent) / 100 : (Math.abs(cent) / 100).toFixed(2).replace('.', ',')} €`
 
 /**
  * Il totale che sta sempre nella barra al passo del corso, dove ogni scelta lo cambia: la stessa stima del

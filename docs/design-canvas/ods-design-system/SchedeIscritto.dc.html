@@ -27,7 +27,7 @@
 // `surface-2`, bordo e testo `text`.
 // Il SEGNO d'avviso e' sempre puntino ● + parola, mai solo colore (DESIGN.md): `segnoDocumenti` e `segnoQuota` ne scelgono il
 // tono (giallo o rosso, nei colori-testo del tema) e solo su DOCUMENTI e QUOTA E PAGAMENTI; vuoto = nessun segno. `parolaDocumenti`
-// e `parolaQuota` sono le parole. `inModifica` mette ● IN MODIFICA (giallo) su PERSONA, ma solo se non e' la scheda accesa:
+// e `parolaQuota` sono le parole: sulla QUOTA «DA PAGARE», o «CORSO SCADUTO» (rosso) quando la quota e' a posto ma un corso no. `inModifica` mette ● IN MODIFICA (giallo) su PERSONA, ma solo se non e' la scheda accesa:
 // una modifica aperta non si perde di vista guardando un'altra scheda.
 // `telefono`: l'etichetta di QUOTA E PAGAMENTI diventa QUOTA (il nome intero resta nell'aria-label, per il lettore schermo),
 // il segno va sotto il nome in 11px, e le quattro schede stanno tutte nella larghezza, in colonne uguali (`@media (max-width: 1000px)` di styles.css), senza scorrere. Sulla scheda accesa il segno giallo e' del colore `text`, per il contrasto.

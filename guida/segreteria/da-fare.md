@@ -6,7 +6,7 @@
 Si riconta ogni volta che si torna su **Da fare**.
 
 Gli stessi conti, in piccolo, stanno in cima a tutte le altre pagine, nella striscia
-**Cosa manca**, con le sue cinque caselle (vedi la [guida della segreteria](README.md#la-striscia-cosa-manca)): qui
+**Cosa manca**, con le sue sei caselle (vedi la [guida della segreteria](README.md#la-striscia-cosa-manca)): qui
 non si vede, perché c'è già tutto, più grande.
 
 Una riga per ogni cosa che aspetta, col numero grande e un tasto che dice cosa
@@ -34,6 +34,10 @@ fare; il primo, giallo, è la cosa più urgente:
   contate qui. Gli stessi numeri li dice la testata di ISCRITTI. Il filtro, e
   la ricerca scritta sopra, restano finché si resta negli iscritti, anche
   aprendo una scheda e tornando dal menu.
+- **Iscritti con un corso scaduto**: chi ha la quota in regola o no, ma il
+  trimestre o l'annuale di un corso finito, o non pagato del tutto. In sala si
+  entra lo stesso. **Vedi chi** apre gli [iscritti](iscritti.md) col filtro
+  **Corsi scaduti**.
 - **Corsi con un prezzo mancante**: i corsi attivi senza la voce nel
   [listino](listino.md), o senza il prezzo dell'annuale o del trimestre. Nel
   modulo d'iscrizione, chi li sceglie trova il prezzo da confermare. Sotto

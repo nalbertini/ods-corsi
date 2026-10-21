@@ -17,7 +17,7 @@ segreteria intera: restano su questo dispositivo, come il tema.
 - **L'ASPETTO** — **COME OGGI**, col menu a sinistra, o **IL BANCO**, con la ricerca in
   cima e cinque luoghi ([la guida](il-banco.md)). Cambia subito, senza ricaricare. Sul
   telefono resta sempre il menu di sempre.
-- **LA STRISCIA COSA MANCA** — **Mostrala** o **Nascondila** (sul computer all'inizio è mostrata, sul telefono nascosta): le cinque
+- **LA STRISCIA COSA MANCA** — **Mostrala** o **Nascondila** (sul computer all'inizio è mostrata, sul telefono nascosta): le sei
   caselle in cima alle pagine ([guida](README.md#la-striscia-cosa-manca)) spariscono da
   tutte le pagine. **DA FARE** ha sempre gli stessi conti, quindi non si perde niente: ci si
   torna quando si vuole. Per rimetterla basta **Mostrala**.

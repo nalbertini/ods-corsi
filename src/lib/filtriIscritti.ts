@@ -1,20 +1,20 @@
 /**
- * I filtri sopra l'elenco ISCRITTI. Al banco servono tre ricerche (senza
- * certificato, da pagare, non in regola): quelle stanno sempre in vista; le
+ * I filtri sopra l'elenco ISCRITTI. Al banco servono quattro ricerche (senza
+ * certificato, da pagare, corsi scaduti, non in regola): quelle stanno sempre in vista; le
  * altre stanno dietro «Altri filtri» e si aprono da sole se una è accesa, così
  * un filtro acceso non resta mai nascosto.
  */
 export type IdFiltro =
   | 'senza-email' | 'poco' | 'certificato' | 'scadenza' | 'arrivo' | 'pagare'
-  | 'fuori' | 'senza-tessera' | 'senza-documento' | 'file-di-prima' | 'doppioni' | 'pagato-prima'
+  | 'corsi-scaduti' | 'fuori' | 'senza-tessera' | 'senza-documento' | 'file-di-prima' | 'doppioni' | 'pagato-prima'
 
 /** Tutti i filtri, per sapere quali sono accesi anche se il loro chip adesso non c'è. */
 export const ID_FILTRI: IdFiltro[] = [
   'senza-email', 'poco', 'certificato', 'scadenza', 'arrivo', 'pagare',
-  'fuori', 'senza-tessera', 'senza-documento', 'file-di-prima', 'doppioni', 'pagato-prima',
+  'corsi-scaduti', 'fuori', 'senza-tessera', 'senza-documento', 'file-di-prima', 'doppioni', 'pagato-prima',
 ]
 
-export const FILTRI_VISIBILI: IdFiltro[] = ['certificato', 'pagare', 'fuori']
+export const FILTRI_VISIBILI: IdFiltro[] = ['certificato', 'pagare', 'corsi-scaduti', 'fuori']
 
 export const TESTI_FILTRI: Record<IdFiltro, string> = {
   'senza-email': 'Solo senza email',
@@ -29,6 +29,7 @@ export const TESTI_FILTRI: Record<IdFiltro, string> = {
   'file-di-prima': 'Non archiviato',
   doppioni: 'Possibili doppioni',
   'pagato-prima': 'Pagato nel vecchio programma',
+  'corsi-scaduti': 'Corsi scaduti',
 }
 
 /** I filtri nascosti che ci sono adesso: quattro compaiono solo se c'è qualcosa da filtrare. */
@@ -52,7 +53,7 @@ export function altriAperti(accesi: IdFiltro[], scelto: boolean): boolean {
 }
 
 /** I filtri di chi ha qualcosa da sistemare: con uno acceso l'elenco ha il tasto del sollecito su WhatsApp. */
-export const FILTRI_SOLLECITO: IdFiltro[] = ['certificato', 'scadenza', 'arrivo', 'pagare', 'fuori']
+export const FILTRI_SOLLECITO: IdFiltro[] = ['certificato', 'scadenza', 'arrivo', 'pagare', 'corsi-scaduti', 'fuori']
 
 /** «Pagato nel vecchio programma» e «Possibili doppioni» accesi mostrano una vista loro, senza la tabella: lì la colonna non c'è. */
 export const conSollecito = (accesi: IdFiltro[]) =>

@@ -55,9 +55,11 @@ const ID = ['appelli', 'certificati', 'pagamenti', 'tessere', 'richieste']
 const alle1032 = Date.UTC(2026, 9, 16, 8, 32)
 
 console.log('Le caselle')
-ok('CASELLE: cinque, in questo ordine', m.CASELLE, ID)
-ok('caselleCosaManca: cinque, nell\'ordine di CASELLE', m.caselleCosaManca(conti(1, 2, 3, 4)).map((x) => x.id), ID)
+ok('CASELLE: sei, «corsi» subito dopo «pagamenti»', m.CASELLE, ['appelli', 'certificati', 'pagamenti', 'corsi', 'tessere', 'richieste'])
+ok('caselleCosaManca: senza il conto dei corsi (lettura delle ricevute fallita) la casella non c\'è', m.caselleCosaManca(conti(1, 2, 3, 4)).map((x) => x.id), ID)
+ok('caselleCosaManca: col conto dei corsi sono sei, nell\'ordine di CASELLE', m.caselleCosaManca(conti(1, 2, 3, 4, { corsi: 5 })).map((x) => x.id), m.CASELLE)
 ok('i titoli', m.caselleCosaManca(conti(1, 2, 3, 4)).map((x) => x.titolo), ['Appelli non fatti', 'Certificati scaduti', 'Pagamenti', 'Senza tessera', 'Richieste online'])
+ok('titolo di «corsi»', m.caselleCosaManca(conti(1, 2, 3, 4, { corsi: 5 })).find((x) => x.id === 'corsi')?.titolo, 'Corsi scaduti')
 ok('GIORNI_APPELLI è 30, SECONDI_RILETTURA è 120', [m.GIORNI_APPELLI, m.SECONDI_RILETTURA], [30, 120])
 
 console.log('\nNumero e stato')
@@ -142,6 +144,29 @@ ok('destinazioni', m.caselleCosaManca(conti(1, 1, 1, 1)).map((x) => [x.voce, x.f
   ['richieste', undefined],
 ])
 ok('richieste: nessun filtro', 'filtro' in casella('richieste', 1) && casella('richieste', 1).filtro !== undefined, false)
+
+console.log('\nLa casella «Corsi scaduti»')
+{
+  const conCorsi = (n, extra) => m.caselleCosaManca({ ...conti(0, 0, 0, 0), corsi: n, ...extra }).find((x) => x.id === 'corsi')
+  ok('0 → «✓ 0», a posto', [conCorsi(0)?.numero, conCorsi(0)?.stato], ['✓ 0', 'aposto'])
+  ok('3 → «3», manca', [conCorsi(3)?.numero, conCorsi(3)?.stato], ['3', 'manca'])
+  ok('non si sa (null) → «—», non so, mai a posto', [conCorsi(null)?.numero, conCorsi(null)?.stato, conCorsi(null)?.n], ['—', 'nonso', null])
+  ok('la nota', conCorsi(3)?.nota, 'trimestre o annuale finito')
+  ok('i nomi per lo screen reader', [conCorsi(0)?.nome, conCorsi(1)?.nome, conCorsi(7)?.nome], ['Nessun corso scaduto: a posto', '1 iscritto con un corso scaduto', '7 iscritti con un corso scaduto'])
+  ok('dove porta un tocco', [conCorsi(1)?.voce, conCorsi(1)?.filtro], ['iscritti', 'corsi-scaduti'])
+  ok('annuncio: da 2 a 5', m.annuncioCambio(conti(0, 0, 0, 0, { corsi: 2 }), conti(0, 0, 0, 0, { corsi: 5 })), 'Corsi scaduti: 5')
+  ok('annuncio: dopo «Pagamenti», prima di «Richieste online»', m.annuncioCambio(conti(0, 0, 1, 1, { corsi: 2 }), conti(0, 0, 2, 2, { corsi: 5 })), 'Pagamenti: 2. Corsi scaduti: 5. Richieste online: 2')
+  ok('annuncio: il conto dei corsi che compare dopo la prima lettura non si annuncia', m.annuncioCambio(conti(0, 0, 0, 0), conti(0, 0, 0, 0, { corsi: 5 })), null)
+  ok('annuncio: un conto null non si annuncia', m.annuncioCambio(conti(0, 0, 0, 0, { corsi: 2 }), conti(0, 0, 0, 0, { corsi: null })), null)
+  const prima = conti(1, 2, 3, 4, { aggiornato: 1000, vecchio: false, corsi: 2 })
+  const letti = { appelli: 1, certificati: 2, pagamenti: 3, tessere: 0, richieste: 4 }
+  ok('mantieniIPrecedenti: un numero nuovo dei corsi lo prende', m.mantieniIPrecedenti(prima, { ...letti, corsi: 6 }, 5000).corsi, 6)
+  const fallita = m.mantieniIPrecedenti(prima, { ...letti, corsi: null }, 5000)
+  ok('mantieniIPrecedenti: corsi fallito dopo un successo: tiene il 2 e il conto è vecchio', [fallita.corsi, fallita.vecchio], [2, true])
+  ok('mantieniIPrecedenti: senza lettura dei corsi la casella resta assente', 'corsi' in m.mantieniIPrecedenti(conti(1, 2, 3, 4), letti, 5000) && m.mantieniIPrecedenti(conti(1, 2, 3, 4), letti, 5000).corsi !== undefined, false)
+  ok('contiDellaStriscia: restituisce il conto dei corsi', [4, 0, null].map((corsi) => m.contiDellaStriscia({ persone: [], lezioni: [], richieste: 0, corsi }, Date.UTC(2026, 9, 16, 8, 32), '2026-10-16').corsi), [4, 0, null])
+  ok('contiDellaStriscia: senza il campo, non c\'è (non diventa null né 0)', m.contiDellaStriscia({ persone: [], lezioni: [], richieste: 0 }, Date.UTC(2026, 9, 16, 8, 32), '2026-10-16').corsi, undefined)
+}
 
 console.log('\nL\'annuncio quando un conto cambia')
 ok('due → tre richieste', m.annuncioCambio(conti(0, 0, 0, 2), conti(0, 0, 0, 3)), 'Richieste online: 3')

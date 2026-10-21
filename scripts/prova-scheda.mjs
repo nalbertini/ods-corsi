@@ -88,6 +88,13 @@ ok('tessera valida: nessun segno', segni({ ...senzaTessera, tessere: [{ ente: 'F
 ok('disattivata con tessera mancante: nessun segno (il timbro tessera è grigio)', segni({ ...senzaTessera, attiva: false }), SENZA)
 ok('disattivata (timbri grigi): nessun segno di timbro', segni({ ...inRegola, attiva: false, certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' } }), SENZA)
 
+console.log('\nI corsi scaduti sulla QUOTA')
+const scoperti = (p, sc) => f('segniSchede', p, corsi, OGGI, { aperta: 'persona', inModifica: false }, sc).quota
+ok('quota a posto e un corso scaduto: QUOTA rossa, «CORSO SCADUTO»', scoperti(inRegola, [{ corsoId: 'judo', corso: 'Judo 3', come: 'scaduto' }]), { parola: 'CORSO SCADUTO', tono: 'rosso' })
+ok('quota a posto e un corso pagato in parte: QUOTA gialla', scoperti(inRegola, [{ corsoId: 'judo', corso: 'Judo 3', come: 'in_parte', mancano: 4000 }]), { parola: 'CORSO SCADUTO', tono: 'giallo' })
+ok('quota da pagare e corso scaduto: vale «DA PAGARE»', scoperti({ ...inRegola, pagamento: { stato: 'da_pagare' } }, [{ corsoId: 'judo', corso: 'Judo 3', come: 'scaduto' }]), { parola: 'DA PAGARE', tono: 'rosso' })
+ok('nessun corso scoperto: nessun segno', scoperti(inRegola, []), null)
+
 console.log('\nIN MODIFICA su PERSONA')
 ok('modifica aperta e un’altra scheda aperta: PERSONA «IN MODIFICA»', segni(inRegola, 'quota', true).persona?.parola, 'IN MODIFICA')
 ok('modifica aperta ma PERSONA è quella aperta: niente segno', segni(inRegola, 'persona', true).persona, null)

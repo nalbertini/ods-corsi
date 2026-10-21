@@ -10,8 +10,8 @@ elenco, che compaiono negli appelli e sul tablet.
 
 - **Cerca per nome o email**, di accesso o di contatto.
 - **Tutti i corsi** → uno solo, per vedere chi fa quel corso.
-Tre filtri stanno sempre in vista: **Senza certificato valido**, **Da pagare** e
-**Non in regola**. Gli altri sono dietro **Altri filtri (N)**, col numero di quelli
+Quattro filtri stanno sempre in vista: **Senza certificato valido**, **Da pagare**,
+**Corsi scaduti** e **Non in regola**. Gli altri sono dietro **Altri filtri (N)**, col numero di quelli
 che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
 
 - **Solo senza email** — chi non ha l'email di accesso in scheda (quella di
@@ -25,7 +25,12 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
 - **Compiono 6 anni** — chi è attivo, compie 6 anni entro un mese e non ha il
   certificato: da quel giorno serve, e conviene avvisare la famiglia prima.
 - **Da pagare** — chi è attivo e non ha la quota associativa pagata: nessuna ricevuta
-  con la quota, pagata solo in parte, o scaduta.
+  con la quota, pagata solo in parte, o scaduta. Guarda solo la quota, non i corsi.
+- **Corsi scaduti** — chi è attivo e ha un corso a pagamento non coperto: il
+  trimestre o l'annuale è finito, è pagato solo in parte, o non c'è nessuna
+  ricevuta con «Trimestre» o «Annuale» e il nome del corso. Conta anche chi ha
+  la quota a posto. In sala si entra lo stesso. Con questo filtro la colonna
+  **CORSI** dice cosa manca per ogni corso (**Judo: scaduto il 31 dicembre**).
 - **Non in regola** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
   anche dal bottone **Chi non è in regola** delle [Statistiche](statistiche.md).
 - **Senza tessera** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([TESSERE](tessere.md)).
@@ -126,9 +131,15 @@ un timbro apre la scheda che lo contiene (sotto) e porta alla sua parte. Se la s
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
 **Riattiva**.
 
-Sotto i timbri, se la quota o il certificato sono da sistemare, c'è
+Se la quota è a posto ma un corso no, il timbro **QUOTA** dice **CORSO SCADUTO**,
+in rosso. Nella scheda **QUOTA E PAGAMENTI**, sotto la quota, **CORSI** dice
+corso per corso fin quando è pagato, quando è scaduto, o quanto manca; sotto,
+quale voce mettere nella ricevuta nuova («Trimestre Judo» o «Annuale Judo»)
+per rimetterlo a posto.
+
+Sotto i timbri, se la quota, un corso o il certificato sono da sistemare, c'è
 **SOLLECITO SU WHATSAPP**: cosa manca (la quota da pagare, scaduta o pagata in
-parte; il certificato mancante, scaduto, in scadenza nei prossimi 30 giorni, o
+parte; il corso scaduto o da pagare, col suo nome; il certificato mancante, scaduto, in scadenza nei prossimi 30 giorni, o
 che servirà al compimento dei 6 anni), il messaggio già scritto e **Apri
 WhatsApp**. Il tasto apre WhatsApp col messaggio pronto, al telefono della
 scheda: lo puoi cambiare, poi premi invio in WhatsApp. L'app non manda niente da
