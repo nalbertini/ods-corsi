@@ -184,17 +184,19 @@ function PezzoTesto({ d, id, colonne }: { d: DatiSegreteria; id: string; colonne
 /** Sotto una parte che spezza le tessere degli istruttori, la frase che dice cosa fare (`avvisoIstruttori`). */
 function AvvisoIstruttori({ id }: { id: string }) {
   const frase = usePuck((s) => { const c = s.appState.data.content; return avvisoIstruttori(c, c.findIndex((x) => x.props.id === id)) })
-  return frase ? <p className="sito-pezzi-avviso" role="note">! {frase}</p> : null
+  return frase ? <p className="sito-pezzi-avviso sotto-parte" role="note"><span aria-hidden="true">! </span>{frase}</p> : null
 }
 
 /** Un istruttore come lo vede chi scrive: foto (o iniziale), nome e cognome, corsi in pastiglie. La tessera vera la mostra «Com'è sul sito». */
 function PezzoIstruttore({ nome, cognome, corsi, src, alt }: Props['istruttore']) {
   const pastiglie = corsiDa(corsi)
+  // Appena messa, come le altre parti vuote: il tratteggio dice cosa manca.
+  if (nome.trim() === '') return <span className="sito-pezzi-vuoto">Istruttore: scrivi il nome a destra</span>
   return (
     <div className="sito-pezzo-istruttore">
       {src ? <img src={src} alt={alt} /> : <span className="iniziale" aria-hidden="true">{nome.trim().slice(0, 1).toUpperCase()}</span>}
       <span className="stack" style={{ gap: 6, minWidth: 0 }}>
-        <span className="nome">{nome.trim() || 'Istruttore senza nome'} {cognome && <span className="cognome">{cognome}</span>}</span>
+        <span className="nome">{nome.trim()} {cognome && <span className="cognome">{cognome}</span>}</span>
         {pastiglie.length > 0 && <span className="row" style={{ gap: 6, flexWrap: 'wrap' }}>{pastiglie.map((c, i) => <span key={i} className="pillola">{c}</span>)}</span>}
       </span>
     </div>
