@@ -194,24 +194,25 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   stagione e risulta ancora da pagare: chi ha pagato la quota si segna in blocco «pagata senza ricevuta dell'app», gli altri
   (solo corsi, sotto 50 €, incasso del genitore) si guardano dalla scheda
   (`supabase/71-pagato-vecchio-programma.sql`, `src/lib/pagatoPrima.ts`).
-- **Il nuovo editor delle pagine, da provare** (voce SITO, PROVA IL NUOVO EDITOR): Puck completo a tutto schermo, accanto
-  all'editor di oggi; salva solo la bozza, si pubblica dall'editor di sempre (`src/components/segreteria/EditorPuck.tsx`, regole in `src/lib/sitoPezzi.ts`).
-  Ha in più le parti PULSANTI (da 1 a 3, il modulo sempre «Iscriviti» per primo, senza cambiare impaginazione) e DOMANDE
+- **L'editor delle pagine** (voce SITO, toccando una pagina): Puck completo a tutto schermo, col suo aspetto, per ogni pagina
+  (`src/components/segreteria/EditorPuck.tsx`, regole in `src/lib/sitoPezzi.ts`). In alto Salva bozza e Pubblica; nel pannello della
+  pagina titolo e descrizione col conteggio, indirizzo, orario dai corsi, Dividi in parti, nascondi e cancella. Le pagine di legge hanno
+  solo la parte Testo (`parteAmmessa`). Ha le parti PULSANTI (da 1 a 3, il modulo sempre «Iscriviti» per primo, senza cambiare impaginazione) e DOMANDE
   (tessere chiare e domande frequenti per Google), disegnate da `conPartiPulsanti` e `impagina` di `src/lib/sitoGenera.ts`.
 - **L'orario delle pagine corso del sito** (voce SITO, ORARIO DAI CORSI): una pagina si collega a uno o più corsi e il suo
   orario viene dalle ricorrenze di CORSI (solo giorno, ora e durata), senza riscriverlo a mano né premere Pubblica: il sito
   si aggiorna da solo entro 5 minuti. Un corso senza giorni dà «Orario in arrivo», mai un orario vecchio
   (`src/lib/sitoOrario.ts`, `supabase/68-sito-orario.sql`).
 - **Le pagine del sito a pezzi** (voce SITO, NUOVA PAGINA): una pagina nuova si compone con foto in cima, testi, foto e
-  colonne affiancate (da due a tre; una sotto l'altra sul telefono), con l'editor Puck (`src/components/segreteria/EditorPezzi.tsx`):
-  i pezzi si mettono coi tasti o si trascinano, si spostano, si tolgono e si annullano; ANTEPRIMA mostra la pagina come il generatore la scrive.
+  colonne affiancate (da due a tre; una sotto l'altra sul telefono), con l'editor Puck (`src/components/segreteria/EditorPuck.tsx`):
+  i pezzi si trascinano, si spostano, si tolgono e si annullano; COM'È SUL SITO mostra la pagina come il generatore la scrive.
   I pezzi si conservano in `sito_pagine.bozza_pezzi` (`supabase/62-sito-pezzi.sql`) e il testo piatto che ne esce (`src/lib/sitoPezzi.ts`) è la
-  bozza di sempre: il sito resta statico e le tessere si formano da sole. Le pagine che c'erano prima restano col vecchio editor,
-  finché non si preme PORTA AI PEZZI (non per le pagine di legge): `htmlInPezzi` spezza il testo senza cambiarlo e non si torna indietro.
+  bozza di sempre: il sito resta statico e le tessere si formano da sole. Le pagine che c'erano prima, scritte col testo solo, si aprono
+  già a parti (`pezziDaAprire`: `htmlInPezzi` spezza il testo senza cambiarlo) e restano com'erano finché non si salvano; da lì non si torna indietro.
   La parte ISCRIVITI è l'invito giallo in fondo alla pagina (`invito()` di `src/lib/sitoGenera.ts`: prove da 3 € e 10 €, poi i riquadri Iscriviti,
   Chiama, Scrivici e Vieni a trovarci), con titolo e frase della segreteria: una sola, sempre in fondo, e prende il posto dell'invito di sempre.
   Nella pagina Istruttori la parte ISTRUTTORE è un tecnico (nome, cognome, corsi, foto, la sua pagina): le tessere del sito seguono l'ordine
-  delle parti (`elencoIstruttori` di `src/lib/sitoIstruttori.ts`), e un testo messo prima di un istruttore porta l'avviso giallo.
+  delle parti (`elencoIstruttori` di `src/lib/sitoIstruttori.ts`), e un testo messo prima di un istruttore porta l'avviso col «!».
 - **Il sito della palestra** (voce SITO della segreteria): le pagine del sito, il menu in alto e il footer si
   scrivono nell'app, senza WordPress. Ogni pagina ha una **bozza**, che non cambia il sito, e un testo
   **pubblicato**, che cambia solo con PUBBLICA; il testo ricco passa da un editor che ammette solo titoli,

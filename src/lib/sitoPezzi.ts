@@ -1,4 +1,4 @@
-import { indirizzoValido, percorsoPagina, slugValido, testoTroppoLungo } from './sitoPagine'
+import { conteggio, indirizzoValido, LIMITE_TITOLO, percorsoPagina, slugValido, testoTroppoLungo } from './sitoPagine'
 import { ISCRIZIONE, chiama, whatsapp } from './sito'
 import { pulisciTesto } from './sitoTesto'
 
@@ -60,8 +60,11 @@ export const pezziVuoti = (): PezziPagina => ({ content: [] })
 /** L'unica pagina dove si mette la parte ISTRUTTORE: le sue parti diventano le tessere (`elencoIstruttori` di sitoIstruttori.ts). */
 export const PAGINA_ISTRUTTORI = 'istruttori'
 
-/** La parte ISTRUTTORE si mette solo nella pagina degli istruttori: altrove non diventa tessera e confonde. */
-export const parteAmmessa = (tipo: string, slug: string): boolean => tipo !== 'istruttore' || slug === PAGINA_ISTRUTTORI
+/**
+ * La parte ISTRUTTORE si mette solo nella pagina degli istruttori: altrove non diventa tessera e confonde.
+ * Una pagina di legge è solo testo: il sito non le dà invito, foto in cima né tessere.
+ */
+export const parteAmmessa = (tipo: string, slug: string, diLegge = false): boolean => (diLegge ? tipo === 'testo' : tipo !== 'istruttore' || slug === PAGINA_ISTRUTTORI)
 
 /** Le pagine fra cui scegliere quella di un istruttore: non la Home (è «/»), non Istruttori stessa, non quelle di legge. */
 export const pagineIstruttore = <P extends { slug: string; diLegge: boolean }>(pagine: ReadonlyArray<P>): P[] => pagine.filter((p) => !p.diLegge && p.slug !== 'home' && p.slug !== PAGINA_ISTRUTTORI)
@@ -392,7 +395,7 @@ export function parteIscriviti(html: string): { resto: string; parte: ParteIscri
 /**
  * Il testo piatto di una pagina vecchia, spezzato nei pezzi dell'editor: foto iniziale, colonne, foto tra i
  * paragrafi, testo che comincia a ogni titolo. Non si fida di sé: se i pezzi non rifanno esattamente il testo
- * (`pezziInHtml`), la pagina resta un solo pezzo di testo, così «Porta ai pezzi» non cambia mai quello che c'è scritto.
+ * (`pezziInHtml`), la pagina resta un solo pezzo di testo, così aprire nell'editor una pagina scritta col testo solo non cambia mai quello che c'è scritto.
  */
 export function htmlInPezzi(html: string): PezziPagina {
   const t = pulisciTesto(html)
@@ -475,48 +478,49 @@ export const divisibileInParti = (p: PezziPagina): boolean => dividiInParti(p).c
 /** Cosa dice la pagina subito dopo la divisione: quante parti ci sono e come tenerle o scartarle. */
 export const frasePartiNuove = (n: number): string => `Ora ci sono ${n} parti, nell'ELENCO. Il testo è lo stesso. Per tenerle premi SALVA BOZZA; per lasciare tutto com'era, premi TUTTE LE PAGINE e scegli TORNA ALLE PAGINE.`
 
-/** Il tasto «Porta ai pezzi»: solo per una pagina col vecchio editor (`null`; `undefined` = database senza il 62) e che non è di legge. */
-export const portabileAiPezzi = (p: { pezzi?: PezziPagina | null; diLegge: boolean }): boolean => p.pezzi === null && !p.diLegge
-
 /**
- * Perché una pagina vecchia non si può portare ai pezzi, a parole; `null` se si può. Da chiedere prima della conferma:
- * il testo ripulito e il suo JSON devono stare nei limiti, o il salvataggio fallirebbe con una frase che non dice cosa fare.
- */
-export function cosaNonVaPortare(bozza: string): string | null {
-  const pezzi = htmlInPezzi(bozza)
-  return cosaNonVaPezzi(pezzi) ?? testoTroppoLungo(pezziInHtml(pezzi))
-}
-
-/**
- * Il nuovo editor (Puck completo, `EditorPuck.tsx`) apre ogni pagina a pezzi: quelle del vecchio editor si dividono
+ * L'editor (Puck, `EditorPuck.tsx`) apre ogni pagina a pezzi: quelle scritte col testo solo si dividono
  * col testo identico (`htmlInPezzi`), ma sul database restano com'erano finché non si salva.
  */
-export const pezziDaAprire = (p: { bozza: string; pezzi?: PezziPagina | null }): PezziPagina => p.pezzi ?? htmlInPezzi(p.bozza)
+export const pezziDaAprire = (p: { bozza: string; pezzi?: PezziPagina | null; diLegge?: boolean }): PezziPagina =>
+  // Una pagina di legge ammette solo il Testo (`parteAmmessa`): resta un testo solo, foto e colonne comprese.
+  p.pezzi ?? (p.diLegge ? { content: [{ type: 'testo', props: { id: 'p1', html: pulisciTesto(p.bozza) } }] } : htmlInPezzi(p.bozza))
 
-/** Quel che il nuovo editor salva: titolo, descrizione e pezzi. */
+/** Salvata a parti, una pagina scritta col testo solo resta a parti per sempre: la prima volta si chiede. */
+export const salvaAParti = (p: { pezzi?: PezziPagina | null }): boolean => p.pezzi === null
+
+/** Quel che l'editor salva: titolo, descrizione e pezzi. */
 export interface BozzaPezzi {
   titolo: string
   descrizione: string
   pezzi: PezziPagina
 }
 
-/** C'è da salvare: aprire e richiudere una pagina, anche del vecchio editor, non lo è. */
-export const daSalvare = (p: { titolo: string; descrizione: string; bozza: string; pezzi?: PezziPagina | null }, b: BozzaPezzi): boolean =>
+/** C'è da salvare: aprire e richiudere una pagina, anche scritta col testo solo, non lo è. */
+export const daSalvare = (p: { titolo: string; descrizione: string; bozza: string; pezzi?: PezziPagina | null; diLegge?: boolean }, b: BozzaPezzi): boolean =>
   b.titolo.trim() !== p.titolo || b.descrizione.trim() !== p.descrizione || pezziCambiati(b.pezzi, pezziDaAprire(p))
 
-/** Perché non si può salvare, per chi scrive; `null` se si può. Le stesse regole dell'editor di oggi. */
+/** Perché non si può salvare, per chi scrive; `null` se si può. Le stesse regole del database. */
 export function cosaNonVaSalvare(b: BozzaPezzi): string | null {
   if (!b.titolo.trim()) return 'Scrivi il titolo della pagina'
   return cosaNonVaPezzi(b.pezzi) ?? testoTroppoLungo(pezziInHtml(b.pezzi))
 }
 
-/** Il nuovo editor si prova sulle pagine che possono essere a pezzi: non quelle di legge, e non senza `62-sito-pezzi.sql` (`pezzi` assente). */
-export const siProvaNuovoEditor = (p: { diLegge: boolean; pezzi?: PezziPagina | null }): boolean => !p.diLegge && p.pezzi !== undefined
+/** Perché non si può pubblicare; `null` se si può. Quel che ferma Salva bozza, e il titolo oltre il limite di Google. */
+export function cosaNonVaPubblicare(b: BozzaPezzi): string | null {
+  const { n, troppo } = conteggio(b.titolo.trim(), LIMITE_TITOLO)
+  return cosaNonVaSalvare(b) ?? (troppo ? `Accorcia il titolo: per pubblicare al massimo ${LIMITE_TITOLO} lettere (ora ${n})` : null)
+}
+
+/** Senza `62-sito-pezzi.sql` (`databaseConPezzi` falso) le pagine non si aprono per scrivere: l'unico editor salva a pezzi. */
+export const FRASE_SENZA_PEZZI = 'Le pagine non si possono scrivere: il database non è ancora aggiornato. Chiedi a chi cura l’app.'
 
 /**
- * Le opzioni del testo nel nuovo editor (campo `richtext` di Puck): solo quel che il sito tiene (`pulisciTesto`).
+ * Le opzioni del testo nell'editor (campo `richtext` di Puck): solo quel che il sito tiene (`pulisciTesto`).
  * Sottolineato, barrato, codice, righe e allineamenti sparirebbero pubblicando; dei titoli, Titolo (h2) e Sottotitolo (h3).
  */
-export const TESTO_DEL_SITO: { underline: false; strike: false; code: false; codeBlock: false; horizontalRule: false; textAlign: false; heading: { levels: Array<2 | 3> } } = {
+export const TESTO_DEL_SITO: { underline: false; strike: false; code: false; codeBlock: false; horizontalRule: false; textAlign: false; link: false; heading: { levels: Array<2 | 3> } } = {
   underline: false, strike: false, code: false, codeBlock: false, horizontalRule: false, textAlign: false, heading: { levels: [2, 3] },
+  // Il link di Puck apre in un'altra scheda: al suo posto quello di `sitoTiptap.ts`.
+  link: false,
 }
