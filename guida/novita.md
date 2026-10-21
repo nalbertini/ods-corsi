@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.155.2 — 21 ottobre 2026
+
+### Risolto
+
+- Un pagamento già in una ricevuta, o già arrivato con Satispay, non si registra due volte
+
 ## 0.155.1 — 21 ottobre 2026
 
 ### Modificato
