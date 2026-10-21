@@ -274,7 +274,8 @@ ok('due richieste: vince la più recente', genitori([riga('p2', '2026-08-01', 'A
 ok('la segreteria più recente della richiesta: la segreteria', genitori([riga('p3', '2026-09-01', 'Laura', 'Rossi')], [riga('p3', '2026-10-01', 'Marta', 'Rossi')])?.p3?.genitoreNome, 'Marta')
 ok('la richiesta più recente della segreteria: la richiesta', genitori([riga('p3', '2026-09-01', 'Laura', 'Rossi')], [riga('p3', '2026-08-01', 'Marta', 'Rossi')])?.p3?.genitoreNome, 'Laura')
 ok('stessa data: la segreteria', genitori([riga('p3', '2026-09-01', 'Laura', 'Rossi')], [riga('p3', '2026-09-01', 'Marta', 'Rossi')])?.p3?.genitoreNome, 'Marta')
-ok('la segreteria più recente senza genitore: vince lo stesso, come nella scheda', genitori([riga('p4', '2026-09-01', 'Laura', 'Rossi')], [{ personaId: 'p4', quando: '2026-10-01' }])?.p4, {})
+ok('la segreteria più recente senza genitore (ma con altri dati): vince lo stesso, come nella scheda', genitori([riga('p4', '2026-09-01', 'Laura', 'Rossi')], [{ personaId: 'p4', quando: '2026-10-01' }])?.p4, {})
+ok('una riga della segreteria tutta vuota non conta: vince la richiesta, come nella scheda', genitori([riga('p6', '2026-09-01', 'Laura', 'Rossi')], [{ personaId: 'p6', quando: '2026-10-01', vuota: true }])?.p6, { genitoreNome: 'Laura', genitoreCognome: 'Rossi' })
 const vuota = genitori([], [])
 ok('nessuna riga: la persona non c\'è', typeof vuota === 'object' && vuota !== null ? 'p5' in vuota : vuota, false)
 
@@ -315,6 +316,20 @@ for (const p of attive) {
 ok('in prova c\'è un minorenne col genitore nei dati anagrafici', !!minorenne, true)
 if (minorenne)
   ok('genitori() dà lo stesso nome di anagraficaDi()', tuttiGenitori instanceof Map ? tuttiGenitori.get(minorenne.id)?.genitoreNome : tuttiGenitori, minorenne.genitoreNome)
+
+console.log('\n25. chi ha la quota nel vecchio programma: solo chi l\'ha pagata, non chi ha pagato solo corsi')
+const quotaNelVecchioDi = typeof sol.quotaNelVecchioDi === 'function' ? sol.quotaNelVecchioDi : () => 'manca quotaNelVecchioDi'
+const delVecchio = { quota: [{ personaId: 'p-quota' }], daGuardare: [{ personaId: 'p-corsi', motivo: 'solo-corsi' }, { personaId: 'p-sotto', motivo: 'sotto-quota' }, { personaId: 'p-nucleo', motivo: 'altra-persona' }], nonCollegati: 0 }
+const nv = quotaNelVecchioDi(delVecchio)
+ok('quota pagata nel vecchio: sì', nv instanceof Set ? nv.has('p-quota') : nv, true)
+ok('solo corsi, o quota sotto i 50 €: no (decide la segreteria)', nv instanceof Set ? [nv.has('p-corsi'), nv.has('p-sotto')] : nv, [false, false])
+ok('incasso del titolare del nucleo: no (decide la segreteria)', nv instanceof Set ? nv.has('p-nucleo') : nv, false)
+{
+  const opz = { quotaNelVecchio: true }
+  const p = persona({ certificato: { scade: '2026-03-12', conFile: false } })
+  ok('scheda e riga, con la quota nel vecchio: lo stesso testo', typeof sol.cellaSollecito === 'function' ? sol.cellaSollecito(p, undefined, QUOTA, OGGI, opz)?.sollecito?.testo : 'manca cellaSollecito', sollecitoDi(p, undefined, QUOTA, OGGI, opz)?.testo)
+}
+ok('senza la lettura del vecchio programma: nessuno', quotaNelVecchioDi(null) instanceof Set ? quotaNelVecchioDi(null).size : 'non è un Set', 0)
 
 console.log(guai ? `\n${guai} prove non passano.` : '\nTutte le prove passano.')
 process.exit(guai ? 1 : 0)

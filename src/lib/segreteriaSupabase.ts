@@ -1458,18 +1458,20 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async togliSollecito(personaId) {
       const r = await db.rpc('togli_sollecito', { persona: personaId })
-      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return false
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) throw new Error('«Annulla» non c’è ancora sul database: va lanciato 86-solleciti-elenco.sql.')
       // `as`: togli_sollecito() in 86-solleciti-elenco.sql rende un boolean.
       return ok(r) as boolean
     },
 
     async genitori() {
-      const tutte = async (r: Promise<{ data: unknown[]; error: unknown }>) => {
+      // Senza 18-anagrafiche.sql vale la richiesta, come in `anagrafica()`; ogni altro guaio si dice (una fonte persa cambierebbe chi vince).
+      const tutte = async (r: Promise<{ data: unknown[]; error: { code?: string } | null }>) => {
         const { data, error } = await r
+        if (error && !['PGRST205', '42P01'].includes(error.code ?? '')) throw new Error('I genitori non si sono letti: controlla la connessione e riprova.')
         return error ? [] : data
       }
       const [an, rich] = await Promise.all([
-        tutte(tutteLeRighe((prima, ultima) => db.from('anagrafiche').select('persona_id, genitore_nome, genitore_cognome, cambiata_il').order('persona_id').range(prima, ultima))),
+        tutte(tutteLeRighe((prima, ultima) => db.from('anagrafiche').select(`persona_id, ${CAMPI_ANAGRAFICA}, cambiata_il`).order('persona_id').range(prima, ultima))),
         tutte(
           tutteLeRighe((prima, ultima) =>
             db.from('richieste_iscrizione').select('id, persona_id, genitore_nome, genitore_cognome, gestita_il, creata_il').eq('stato', 'accolta').not('persona_id', 'is', null).order('id').range(prima, ultima),
@@ -1481,7 +1483,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const riga = (x: Riga, quando: string): RigaGenitore => ({ personaId: x.persona_id, genitoreNome: x.genitore_nome ?? undefined, genitoreCognome: x.genitore_cognome ?? undefined, quando })
       return genitoriDa(
         (rich as Array<Riga & { gestita_il: string | null; creata_il: string }>).map((x) => riga(x, x.gestita_il ?? x.creata_il)),
-        (an as Array<Riga & { cambiata_il: string }>).map((x) => riga(x, x.cambiata_il)),
+        // Una riga della segreteria senza nessun dato non conta, come in `anagrafica()`.
+        (an as Array<Riga & RigaAnagrafica & { cambiata_il: string }>).map((x) => ({ ...riga(x, x.cambiata_il), vuota: !Object.keys(daRigaAnagrafica(x) ?? {}).length })),
       )
     },
 

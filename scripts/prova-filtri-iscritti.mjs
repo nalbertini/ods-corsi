@@ -76,6 +76,8 @@ console.log('\nIl sollecito nell\'elenco: solo coi filtri di chi ha qualcosa da 
   ok('«Solo senza email» e «Vengono poco»: niente sollecito', con(['senza-email', 'poco']), false)
   for (const f of ['certificato', 'scadenza', 'arrivo', 'pagare', 'fuori']) ok(`acceso «${f}»: il sollecito c'è`, con([f]), true)
   ok('«Vengono poco» insieme a «Da pagare»: il sollecito c\'è', con(['poco', 'pagare']), true)
+  ok('«Pagato nel vecchio programma» ha la sua vista: niente colonna, anche con «Da pagare»', con(['pagare', 'pagato-prima']), false)
+  ok('«Possibili doppioni» ha la sua vista: niente colonna', con(['fuori', 'doppioni']), false)
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

@@ -150,8 +150,9 @@ L'avviso in basso ha **Annulla**, per togliere il segno se il messaggio non è
 partito: vale per un quarto d'ora, e solo per chi l'ha segnato. Sulla riga senza
 tasto c'è il perché: **Manca il telefono**, **Telefono da correggere** (un clic
 sulla riga apre la scheda), **Solo la tessera** (con **Non in regola**: il
-sollecito non parla di tessera) o **Pagato nel vecchio programma** (la quota non
-si sollecita finché non è segnata da **Pagato nel vecchio programma**). Un fisso
+sollecito non parla di tessera) o **Quota pagata nel vecchio programma: da
+segnare** (la quota non si sollecita finché non è segnata da **Pagato nel vecchio
+programma**; chi ha pagato solo corsi si sollecita). Un fisso
 ha il tasto, con **Sembra un fisso**. Lo stesso **Annulla** c'è anche nella
 scheda.
 

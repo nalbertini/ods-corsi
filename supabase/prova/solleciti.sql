@@ -152,6 +152,21 @@ select atteso('e torna quello di prima (senza nome: la scheda di chi l''ha segna
   come('11111111-1111-1111-1111-111111111111', $$select coalesce(string_agg(da, ','), 'nessuno') from ultimi_solleciti() where persona_id = 'cccccccc-0000-0000-0000-000000000001'$$), '');
 select atteso('il sollecito di un altro non si toglie',
   come('11111111-1111-1111-1111-111111111111', $$select togli_sollecito('cccccccc-0000-0000-0000-000000000001')::text$$), 'false');
+-- Bea, una seconda segreteria: il suo sollecito appena segnato Anna non lo toglie, nemmeno dopo aver tolto il proprio.
+insert into auth.users (id, email) values ('88888888-8888-8888-8888-888888888888', 'bea@ods.it');
+insert into persone (id, nome, cognome, ruolo, email, utente_id) values
+  ('aaaaaaaa-0000-0000-0000-000000000008', 'Bea', 'Seconda', 'staff', 'bea@ods.it', '88888888-8888-8888-8888-888888888888');
+select come('88888888-8888-8888-8888-888888888888', $$select segna_sollecito('cccccccc-0000-0000-0000-000000000001')::text$$);
+select atteso('il sollecito appena segnato da un''altra segreteria non si toglie',
+  come('11111111-1111-1111-1111-111111111111', $$select togli_sollecito('cccccccc-0000-0000-0000-000000000001')::text$$), 'false');
+update solleciti set creato_il = now() - interval '1 minute' where creato_da = 'aaaaaaaa-0000-0000-0000-000000000008';
+select come('11111111-1111-1111-1111-111111111111', $$select segna_sollecito('cccccccc-0000-0000-0000-000000000001')::text$$);
+select atteso('Anna toglie il suo, sopra quello di Bea',
+  come('11111111-1111-1111-1111-111111111111', $$select togli_sollecito('cccccccc-0000-0000-0000-000000000001')::text$$), 'true');
+select atteso('e ritogliendo non arriva a quello di Bea',
+  come('11111111-1111-1111-1111-111111111111', $$select togli_sollecito('cccccccc-0000-0000-0000-000000000001')::text$$), 'false');
+select atteso('il sollecito di Bea resta, ed è l''ultimo',
+  come('88888888-8888-8888-8888-888888888888', $$select da from ultimi_solleciti() where persona_id = 'cccccccc-0000-0000-0000-000000000001'$$), 'Bea Seconda');
 select atteso('una persona mai sollecitata: niente da togliere',
   come('11111111-1111-1111-1111-111111111111', $$select togli_sollecito('cccccccc-0000-0000-0000-000000000003')::text$$), 'false');
 -- Dopo un quarto d'ora non è più un tasto sbagliato: resta.

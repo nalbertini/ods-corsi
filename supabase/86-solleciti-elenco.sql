@@ -21,7 +21,7 @@
 -- Si lancia dopo `85-solleciti.sql`. Non chiede di rilanciare
 -- `06-iscrizioni.sql` e non tocca nessuna funzione di prima. Finché non c'è,
 -- il tasto nell'elenco c'è lo stesso, senza la riga «Sollecitato il …», e
--- «Annulla» non compare.
+-- «Annulla» dice di lanciare questo file.
 -- ---------------------------------------------------------------------------
 
 create or replace function ultimi_solleciti() returns table (persona_id uuid, creato_il timestamptz, da text)
@@ -31,7 +31,7 @@ begin
   return query
     select distinct on (s.persona_id) s.persona_id, s.creato_il, coalesce(trim(p.nome || ' ' || p.cognome), '')
       from solleciti s left join persone p on p.id = s.creato_da
-     order by s.persona_id, s.creato_il desc;
+     order by s.persona_id, s.creato_il desc, s.id desc;
 end $$;
 
 create or replace function togli_sollecito(persona uuid) returns boolean
@@ -40,7 +40,7 @@ declare
   ultimo solleciti;
 begin
   if not e_staff() then raise exception 'i solleciti li toglie la segreteria' using errcode = '42501'; end if;
-  select * into ultimo from solleciti where persona_id = togli_sollecito.persona order by creato_il desc limit 1;
+  select * into ultimo from solleciti where persona_id = togli_sollecito.persona order by creato_il desc, id desc limit 1;
   if not found or ultimo.creato_da is distinct from persona_corrente() or ultimo.creato_il < now() - interval '15 minutes' then
     return false;
   end if;

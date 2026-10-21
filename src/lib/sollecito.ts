@@ -2,6 +2,7 @@ import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import { anni, telefonoGiusto } from './richieste'
 import { cifreTelefono } from './vestiario'
 import { euro } from './ricevute'
+import type { PagatoNelVecchio } from './pagatoPrima'
 import { dalCertificato, pagamentoDi, statoCertificato, type Anagrafica, type PersonaSeg, type UltimoSollecito } from './segreteria'
 
 /**
@@ -153,6 +154,8 @@ export interface RigaGenitore {
   genitoreNome?: string
   genitoreCognome?: string
   quando: string
+  /** Una riga della segreteria senza nessun dato: non conta, come in `anagraficaDi`. */
+  vuota?: boolean
 }
 
 /**
@@ -161,16 +164,19 @@ export interface RigaGenitore {
  * pari data la segreteria), anche se lì il genitore non c'è.
  */
 export function genitoriDa(richieste: RigaGenitore[], segreteria: RigaGenitore[]): Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome'>> {
-  const vince = new Map<string, RigaGenitore & { da: 'modulo' | 'segreteria' }>()
+  const vince = new Map<string, RigaGenitore>()
   for (const r of richieste) {
     const c = vince.get(r.personaId)
-    if (!c || r.quando > c.quando) vince.set(r.personaId, { ...r, da: 'modulo' })
+    if (!c || r.quando > c.quando) vince.set(r.personaId, r)
   }
   for (const r of segreteria) {
     const c = vince.get(r.personaId)
-    if (!c || r.quando >= c.quando) vince.set(r.personaId, { ...r, da: 'segreteria' })
+    if (!r.vuota && (!c || r.quando >= c.quando)) vince.set(r.personaId, r)
   }
   return new Map(
     [...vince].map(([id, r]) => [id, Object.fromEntries(Object.entries({ genitoreNome: r.genitoreNome, genitoreCognome: r.genitoreCognome }).filter(([, v]) => v))]),
   )
 }
+
+/** Chi ha la quota pagata nel vecchio programma (da segnare): solo corsi o quota sotto i 50 € li decide la segreteria, e si sollecitano. */
+export const quotaNelVecchioDi = (g: PagatoNelVecchio | null): Set<string> => new Set(g ? g.quota.map((r) => r.personaId) : [])

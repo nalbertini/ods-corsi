@@ -54,4 +54,6 @@ export function altriAperti(accesi: IdFiltro[], scelto: boolean): boolean {
 /** I filtri di chi ha qualcosa da sistemare: con uno acceso l'elenco ha il tasto del sollecito su WhatsApp. */
 export const FILTRI_SOLLECITO: IdFiltro[] = ['certificato', 'scadenza', 'arrivo', 'pagare', 'fuori']
 
-export const conSollecito = (accesi: IdFiltro[]) => accesi.some((id) => FILTRI_SOLLECITO.includes(id))
+/** «Pagato nel vecchio programma» e «Possibili doppioni» accesi mostrano una vista loro, senza la tabella: lì la colonna non c'è. */
+export const conSollecito = (accesi: IdFiltro[]) =>
+  accesi.some((id) => FILTRI_SOLLECITO.includes(id)) && !accesi.includes('pagato-prima') && !accesi.includes('doppioni')
