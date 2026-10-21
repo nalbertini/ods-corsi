@@ -163,6 +163,22 @@ console.log('\n4. le ricevute da pagare di un tecnico')
   ok('chi non ne ha: nessuna', sicuro(() => c.pagabili(ricevute, 'Z')), [])
 }
 
+console.log('\n4 bis. cosa non va nel pagamento, prima di premere')
+{
+  const casse = [{ id: 'cc', nome: 'Conto Corrente', saldoIniziale: 0 }, { id: 'cx', nome: 'Cassa Contanti', saldoIniziale: 0, dal: '2026-09-01' }]
+  const chiusure = [{ id: 'k1', cassaId: 'cx', data: '2026-10-31', previsto: 0, contato: 0 }]
+  const base = { ricevute: [{ id: 'r1' }], data: '2026-11-05', cassaId: 'cc', casse, chiusure, oggi: '2026-11-06' }
+  const p = (x) => sicuro(() => c.cosaNonVaPagamento({ ...base, ...x }))
+  ok('tutto giusto: niente', p({}), null)
+  ok('nessuna ricevuta', p({ ricevute: [] }), 'Scegli almeno una ricevuta da pagare')
+  ok('senza data', p({ data: '' }), 'Scrivi il giorno del pagamento')
+  ok('domani', p({ data: '2026-11-07' }), 'La data del pagamento non può essere nel futuro')
+  ok('senza cassa', p({ cassaId: '' }), 'Scegli la cassa')
+  ok("prima dell'inizio della cassa", p({ cassaId: 'cx', data: '2026-08-31' }), 'La data è prima dell’inizio della cassa')
+  ok('un giorno già chiuso', p({ cassaId: 'cx', data: '2026-10-30' }), 'Quel giorno la cassa è già chiusa: scegli un altro giorno o annulla la chiusura')
+  ok('dopo la chiusura sì', p({ cassaId: 'cx', data: '2026-11-01' }), null)
+}
+
 console.log('\n5. la segreteria di prova paga, rifiuta, e annullato il movimento tornano da pagare')
 {
   const s = m.creaSegreteriaProva()

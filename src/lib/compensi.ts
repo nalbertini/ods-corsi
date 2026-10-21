@@ -19,6 +19,7 @@ import { delMese, type MiaPresenza } from './ore'
 import { euro } from './ricevute'
 import { QUALIFICHE, stagioneDi, type Lettera, type TecnicoLettera } from './lettere'
 import type { LezioneSenzaIstruttore, Tariffa } from './segreteria'
+import { giornoChiuso, type Cassa, type ChiusuraCassa } from './contabilita'
 
 export interface RigaCompenso {
   corso: string
@@ -96,7 +97,7 @@ export function compensoDelMese<P extends MiaPresenza>(presenze: P[], senzaIstru
  * adesso torna con quello di quando è stata fatta (il calcolato, non
  * l'importo, che può essere cambiato a mano): una presenza decisa dopo si vede.
  */
-export function statoCompenso({ conto, ricevuta, manca }: { conto: ContoCompenso; ricevuta?: Pick<RicevutaCompenso, 'calcolato' | 'annullataIl'> & { pagataIl?: string | null } | null; manca?: string | null }): StatoCompenso {
+export function statoCompenso({ conto, ricevuta, manca }: { conto: ContoCompenso; ricevuta?: Pick<RicevutaCompenso, 'calcolato' | 'annullataIl' | 'pagataIl'> | null; manca?: string | null }): StatoCompenso {
   // Pagata è pagata, anche se dopo è cambiata una presenza: i soldi sono usciti.
   if (ricevuta && !ricevuta.annullataIl && ricevuta.pagataIl) return 'pagata'
   if (ricevuta && !ricevuta.annullataIl) return ricevuta.calcolato === conto.calcolato ? 'fatta' : 'non-torna'
@@ -305,3 +306,33 @@ export const pagabili = <R extends Pick<RicevutaCompenso, 'personaId' | 'mese' |
 
 /** La voce di sistema dei pagamenti dei tecnici in CONTABILITÀ (`81-compensi-pagati.sql`). */
 export const VOCE_COMPENSI = 'Compensi istruttori'
+
+/**
+ * Perché il pagamento non si può segnare; `null` se va. Le stesse regole di
+ * `paga_compensi`, dette prima di premere: almeno una ricevuta, il giorno non
+ * nel futuro, la cassa, non prima del suo inizio, non in un giorno chiuso.
+ */
+export function cosaNonVaPagamento({
+  ricevute,
+  data,
+  cassaId,
+  casse,
+  chiusure,
+  oggi,
+}: {
+  ricevute: unknown[]
+  data: string
+  cassaId: string
+  casse: Cassa[]
+  chiusure: ChiusuraCassa[]
+  oggi: string
+}): string | null {
+  if (!ricevute.length) return 'Scegli almeno una ricevuta da pagare'
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return 'Scrivi il giorno del pagamento'
+  if (data > oggi) return 'La data del pagamento non può essere nel futuro'
+  const cassa = casse.find((c) => c.id === cassaId)
+  if (!cassa) return 'Scegli la cassa'
+  if (cassa.dal && data < cassa.dal) return 'La data è prima dell’inizio della cassa'
+  if (giornoChiuso(chiusure, [cassa.id], data)) return 'Quel giorno la cassa è già chiusa: scegli un altro giorno o annulla la chiusura'
+  return null
+}

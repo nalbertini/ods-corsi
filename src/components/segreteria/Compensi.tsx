@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import type { DatiSegreteria, Tariffa } from '../../lib/segreteria'
-import type { Cassa } from '../../lib/contabilita'
+import { NOME_CASSA_CONTO, oggiARoma, type Cassa, type ChiusuraCassa } from '../../lib/contabilita'
 import { insegna } from '../../lib/ruoli'
 import { chiaveGiorno, dataLunga } from '../../lib/sala'
 import { euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
-import { centesimiDaImporto, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, descrizionePagamento, esitoDelMese, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type StatoCompenso } from '../../lib/compensi'
+import { centesimiDaImporto, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, esitoDelMese, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type StatoCompenso } from '../../lib/compensi'
 import { chiedi, Guaio, Testa, useAvviso, useCarica } from './comune'
 import { Numero } from './Presenze'
 
@@ -268,8 +268,8 @@ export function Compensi({ d, puoPagare }: { d: DatiSegreteria; puoPagare: boole
       Promise.all(tecnici.map(async (t) => [t.id, mancaPerRicevuta((await d.anagraficaDi(t.id))?.dati ?? null)] as const)).then((x): Record<string, string | null> => Object.fromEntries(x)),
     ])
     // Le casse le legge solo chi cura la contabilità: serve per pagare.
-    const casse = puoPagare ? await d.casse() : []
-    return { tecnici, presenze, senzaIstruttore, ricevute, tariffe, mancano, casse }
+    const [casse, chiusure] = puoPagare ? await Promise.all([d.casse(), d.chiusure()]) : [[], []]
+    return { tecnici, presenze, senzaIstruttore, ricevute, tariffe, mancano, casse, chiusure }
   }, [d, giorni])
 
   const righe = dati.dato ? righeCompensi({ ...dati.dato, mese: m }) : []
@@ -389,10 +389,12 @@ export function Compensi({ d, puoPagare }: { d: DatiSegreteria; puoPagare: boole
           </div>
           {paga && dati.dato && (
             <PannelloPaga
+              key={paga.id}
               d={d}
               p={paga}
               ricevute={pagabili(dati.dato.ricevute, paga.id)}
               casse={dati.dato.casse}
+              chiusure={dati.dato.chiusure}
               fai={fai}
               onFatto={async () => {
                 setPaga(null)
@@ -417,6 +419,7 @@ function PannelloPaga({
   p,
   ricevute,
   casse,
+  chiusure,
   fai,
   onFatto,
 }: {
@@ -424,17 +427,19 @@ function PannelloPaga({
   p: Persona
   ricevute: RicevutaCompenso[]
   casse: Cassa[]
+  chiusure: ChiusuraCassa[]
   fai: Fai
   onFatto: () => Promise<void>
 }) {
   const [scelte, setScelte] = useState<string[]>(ricevute.map((r) => r.id))
-  const [data, setData] = useState(chiaveGiorno(new Date()))
-  const conto = casse.find((c) => c.nome === 'Conto Corrente')
+  const oggi = oggiARoma()
+  const [data, setData] = useState(oggi)
+  const conto = casse.find((c) => c.nome === NOME_CASSA_CONTO)
   const [cassaId, setCassaId] = useState(conto?.id ?? casse[0]?.id ?? '')
   const pagate = ricevute.filter((r) => scelte.includes(r.id))
   const totale = pagate.reduce((s, r) => s + r.importo, 0)
   const cassa = casse.find((c) => c.id === cassaId)
-  const no = !pagate.length ? 'Scegli almeno una ricevuta' : !data ? 'Scrivi il giorno del pagamento' : data > chiaveGiorno(new Date()) ? 'La data del pagamento non può essere nel futuro' : !cassa ? 'Scegli la cassa' : null
+  const no = cosaNonVaPagamento({ ricevute: pagate, data, cassaId, casse, chiusure, oggi })
   return (
     <section className="stack" style={{ gap: 14, maxWidth: 820, padding: '22px 24px', border: '2px solid var(--text)' }} aria-label={`Segna pagato ${nomeDi(p)}`}>
       <span className="sg-etichetta" style={{ fontSize: 15 }}>
@@ -459,7 +464,7 @@ function PannelloPaga({
       <div className="sg-due sg-scheda-campi">
         <label className="stack" style={{ gap: 6 }}>
           <span className="sg-etichetta">DATA DEL PAGAMENTO</span>
-          <input type="date" className="sg-campo" value={data} max={chiaveGiorno(new Date())} onChange={(e) => setData(e.target.value)} />
+          <input type="date" className="sg-campo" value={data} max={oggi} onChange={(e) => setData(e.target.value)} />
         </label>
         <div className="stack" style={{ gap: 6 }}>
           <span className="sg-etichetta">CASSA</span>
@@ -505,7 +510,7 @@ function PannelloPaga({
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => void onFatto()}>
           Lascia stare
         </button>
-        <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no} onClick={() => void fai(() => d.pagaCompensi(scelte, data, cassaId), `Pagato: ${euro(totale)} € in CONTABILITÀ`, onFatto)}>
+        <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no} onClick={() => void fai(() => d.pagaCompensi(pagate.map((r) => r.id), data, cassaId), `Pagato: ${euro(totale)} € in CONTABILITÀ`, onFatto)}>
           Segna pagato {euro(totale)} €
         </button>
       </div>

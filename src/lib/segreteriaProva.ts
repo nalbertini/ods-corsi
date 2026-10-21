@@ -1,7 +1,7 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
-import { cosaNonVaCompenso, descrizionePagamento, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
+import { cosaNonVaCompenso, cosaNonVaPagamento, descrizionePagamento, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cancellaFileIl, contattoNonValido, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
@@ -53,7 +53,6 @@ import {
   NOME_CASSA_CONTANTI,
   NOME_CASSA_CONTO,
   oggiARoma,
-  giornoChiuso,
   previstoCassa,
   primoMovimentoManuale,
   righeMovimenti,
@@ -1113,11 +1112,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (rs.length !== scelte.length) throw new Error("Una delle ricevute non c'è più, è annullata o è già pagata: ricarica la pagina")
       if (new Set(rs.map((r) => r.personaId)).size !== 1) throw new Error('Si pagano insieme solo le ricevute dello stesso tecnico')
       const { casse, voci, chiusure } = contabilita()
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(data) || data > oggiARoma()) throw new Error('La data del pagamento non può essere nel futuro')
+      const no = cosaNonVaPagamento({ ricevute: rs, data, cassaId, casse, chiusure, oggi: oggiARoma() })
+      if (no) throw new Error(no === 'Scrivi il giorno del pagamento' ? 'La data del pagamento non può essere nel futuro' : no)
       const cassa = casse.find((c) => c.id === cassaId)
       if (!cassa) throw new Error('Scegli la cassa')
-      if (cassa.dal && data < cassa.dal) throw new Error('La data è prima dell’inizio della cassa')
-      if (giornoChiuso(chiusure, [cassa.id], data)) throw new Error('Quel giorno la cassa è già chiusa: scegli un altro giorno o annulla la chiusura')
       const p = persona(rs[0].personaId)
       const id = `m-${unico()}`
       a().movimenti = [

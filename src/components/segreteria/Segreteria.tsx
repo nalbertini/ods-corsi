@@ -22,7 +22,7 @@ import { numeriRaccolta } from '../../lib/vestiario'
 import { Richieste } from './Richieste'
 import { PresenzeIstruttori } from './PresenzeIstruttori'
 import { Compensi } from './Compensi'
-import { spunteDi } from '../../lib/ruoli'
+import { puo } from '../../lib/ruoli'
 import { PresenzeSegnalate } from './PresenzeSegnalate'
 import { Segnalazioni } from './Segnalazioni'
 // Il pannello del sito porta con sé l'editor del testo e la sua pulizia: si scaricano solo aprendolo.
@@ -590,7 +590,7 @@ export function Segreteria({
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
-        {d && voce === 'compensi' && <Compensi d={d} puoPagare={spunteDi(chi).includes('amministrazione')} />}
+        {d && voce === 'compensi' && <Compensi d={d} puoPagare={puo(chi, 'contabilita')} />}
         {d && voce === 'personale' && <Personale d={d} />}
         {d && voce === 'esercizi' && <EserciziPalestra d={d} />}
         {d && voce === 'listino' && <Listino d={d} />}
