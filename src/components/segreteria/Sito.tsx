@@ -18,7 +18,7 @@ import {
   type VoceMenu,
 } from '../../lib/sitoPagine'
 import { pulisciTesto } from '../../lib/sitoTesto'
-import { cosaNonVaPezzi, databaseConPezzi, siProvaNuovoEditor, cosaNonVaPortare, dividiInParti, divisibileInParti, frasePartiNuove, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
+import { PAGINA_ISTRUTTORI, cosaNonVaPezzi, databaseConPezzi, siProvaNuovoEditor, cosaNonVaPortare, dividiInParti, divisibileInParti, frasePartiNuove, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
 import { Immagini } from './ImmaginiSito'
 import { OrarioSito } from './OrarioSito'
 import { Campo, chiedi, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
@@ -56,7 +56,7 @@ function Conto({ testo, limite }: { testo: string; limite: number }) {
  * La pagina del sito da scrivere. Salvare la bozza non cambia il sito:
  * solo PUBBLICA copia la bozza nel testo che il sito mostra.
  */
-function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; pagina: PaginaSito; altri: string[]; onChiudi: () => void; ricarica: () => Promise<void> }) {
+function Scrivi({ d, pagina, altri, pagine, onChiudi, ricarica }: { d: DatiSegreteria; pagina: PaginaSito; altri: string[]; pagine: PaginaSito[]; onChiudi: () => void; ricarica: () => Promise<void> }) {
   const [titolo, setTitolo] = useState(pagina.titolo)
   const [descrizione, setDescrizione] = useState(pagina.descrizione)
   const [bozzaTesto, setBozza] = useState(pagina.bozza)
@@ -194,7 +194,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
             <div className="sito-testo sito-anteprima" aria-label="Com’è sul sito" dangerouslySetInnerHTML={{ __html: pulisciTesto(bozza) }} />
           ) : (
             <Suspense fallback={<span className="sg-sotto">Apro l’editor…</span>}>
-              {aPezzi ? <EditorPezzi key={rimonta} d={d} pezzi={pezzi} onCambia={setPezzi} /> : <EditorTesto valore={bozzaTesto} onCambia={setBozza} etichetta={`Testo di ${pagina.titolo}`} d={d} />}
+              {aPezzi ? <EditorPezzi key={rimonta} d={d} pezzi={pezzi} onCambia={setPezzi} pagine={pagine} conIstruttori={pagina.slug === PAGINA_ISTRUTTORI} /> : <EditorTesto valore={bozzaTesto} onCambia={setBozza} etichetta={`Testo di ${pagina.titolo}`} d={d} />}
             </Suspense>
           )}
           {noTesto && <Guaio testo={noTesto} />}
@@ -413,7 +413,7 @@ export function Sito({ d }: { d: DatiSegreteria }) {
       </Testa>
 
       {lei ? (
-        <Scrivi key={lei.id} d={d} pagina={lei} altri={tutte.filter((p) => p.id !== lei.id).map((p) => p.slug)} onChiudi={() => setAperta(null)} ricarica={ricarica} />
+        <Scrivi key={lei.id} d={d} pagina={lei} altri={tutte.filter((p) => p.id !== lei.id).map((p) => p.slug)} pagine={tutte} onChiudi={() => setAperta(null)} ricarica={ricarica} />
       ) : (
         <>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
