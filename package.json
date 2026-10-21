@@ -118,7 +118,8 @@
     "prova:frequenza": "node scripts/prova-frequenza.mjs",
     "prova:statistiche-sito": "node scripts/prova-statistiche-sito.mjs",
     "prova:ricevute-email": "node scripts/prova-ricevute-email.mjs",
-    "prova:tariffe": "node scripts/prova-tariffe.mjs"
+    "prova:tariffe": "node scripts/prova-tariffe.mjs",
+    "prova:lettere": "node scripts/prova-lettere.mjs"
   },
   "dependencies": {
     "@puckeditor/core": "^0.23.0",

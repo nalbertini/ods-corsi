@@ -5,6 +5,7 @@ import { allungaCalendario } from './allunga'
 import { giorniConLezioni } from './calendarioSettimana'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
+import { cosaNonVaLettera, type Lettera } from './lettere'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
@@ -166,6 +167,7 @@ const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabili
 const MANCA_CHIUSURA = 'Il database non è ancora aggiornato per la chiusura della cassa: va lanciato 60-chiusura-cassa.sql'
 const MANCA_CAMBIA_VOCE = 'Il database non è ancora aggiornato per cambiare la voce dei movimenti: va lanciato 67-cambia-voce.sql'
 const MANCA_MOVIMENTI_PERSONA = 'Il database non è ancora aggiornato per collegare i movimenti alle persone: va lanciato 70-movimenti-persona.sql'
+const MANCA_LETTERE = 'Le lettere d’incarico non sono ancora attive sul database: va lanciato 79-lettere-incarico.sql'
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   // Prima di `segnalazioni`, che le somiglia.
   [/chiusure_cassa/, MANCA_CHIUSURA],
@@ -182,6 +184,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
   [/pagamenti_diretti|pagamento_diretto/, MANCANO_PAGAMENTI_A_MANO],
   [/ricevute|emetti_ricevuta/, 'Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql'],
+  [/lettere_incarico/, MANCA_LETTERE],
   [/tariffe_istruttori/, 'Le tariffe e i dati dei tecnici non sono ancora attivi sul database: va lanciato 78-tariffe-tecnici.sql'],
   [/anagrafiche/, 'Nascita, residenza e genitore degli iscritti non sono ancora attivi sul database: va lanciato 18-anagrafiche.sql'],
   [/segna_istruttore_previsto/, 'Segnare un istruttore su una lezione già coperta non è ancora attivo sul database: va lanciato 46-istruttore-collega.sql'],
@@ -235,6 +238,38 @@ function daRigaAnagrafica(r: RigaAnagrafica | null): Anagrafica | null {
   return Object.fromEntries(ANAGRAFICA.flatMap(([k, c]) => (r[c] ? [[k, r[c]]] : []))) as Anagrafica
 }
 
+/** Una riga di `lettere_incarico` (79-lettere-incarico.sql). */
+interface RigaLettera {
+  id: string
+  persona_id: string
+  stagione: string
+  dal: string
+  al: string
+  qualifica: string
+  giorni: string
+  data: string
+  tariffe: Lettera['tariffe']
+  tecnico: Lettera['tecnico']
+  firmata: boolean
+  sostituita_il: string | null
+  creata_il: string
+}
+const daRigaLettera = (r: RigaLettera): Lettera => ({
+  id: r.id,
+  personaId: r.persona_id,
+  stagione: r.stagione,
+  dal: r.dal,
+  al: r.al,
+  qualifica: r.qualifica,
+  giorni: r.giorni,
+  data: r.data,
+  tariffe: r.tariffe,
+  tecnico: r.tecnico,
+  firmata: r.firmata,
+  sostituitaIl: r.sostituita_il,
+  creataIl: r.creata_il,
+})
+
 /**
  * Un errore che non conosciamo: alla segreteria si dice cosa fare, il testo
  * del server (in inglese, per chi sviluppa) va solo nella console.
@@ -264,6 +299,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /pagamento_diretto/.test(e.message ?? '')) return new Error(MANCANO_PAGAMENTI_A_MANO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
     return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /fai_lettera_incarico/.test(e.message ?? '')) return new Error(MANCA_LETTERE)
   // Province e IBAN dei tecnici arrivano con 78-tariffe-tecnici.sql: 42703 leggendo, PGRST204 scrivendo.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /provincia_nascita|provincia|iban/.test(e.message ?? '')) return new Error(MANCA_TARIFFE)
   if (e?.code === '42703' && /ricevute/.test(e.message ?? '')) return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
@@ -1171,6 +1207,34 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         corsi: { nome: string } | null
       }>
       return (righe ?? []).map((r) => ({ corsoId: r.corso_id, corso: r.corsi?.nome ?? '', centesimi: r.centesimi_ora }))
+    },
+
+    async lettere(personaId) {
+      const righe = ok(await db.from('lettere_incarico').select('*').eq('persona_id', personaId).order('creata_il', { ascending: false })) as RigaLettera[] | null
+      return (righe ?? []).map(daRigaLettera)
+    },
+
+    async faiLettera(l) {
+      const no = cosaNonVaLettera(l)
+      if (no) throw new Error(no)
+      const riga = ok(
+        await db.rpc('fai_lettera_incarico', {
+          persona: l.personaId,
+          stagione: l.stagione,
+          dal: l.dal,
+          al: l.al,
+          qualifica: l.qualifica,
+          giorni: l.giorni.trim(),
+          data: l.data,
+          tariffe: l.tariffe,
+          tecnico: l.tecnico,
+        }),
+      ) as RigaLettera
+      return daRigaLettera(riga)
+    },
+
+    async segnaFirmata(letteraId, firmata) {
+      ok(await db.from('lettere_incarico').update({ firmata }).eq('id', letteraId))
     },
 
     async salvaTariffa(personaId, corsoId, centesimi) {

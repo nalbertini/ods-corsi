@@ -1,5 +1,6 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
+import { cosaNonVaLettera, type Lettera } from './lettere'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cancellaFileIl, contattoNonValido, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
@@ -1034,6 +1035,31 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (centesimi === null) delete sue[corsoId]
       else sue[corsoId] = centesimi
       a().tariffe = { ...a().tariffe, [personaId]: sue }
+      salva()
+    },
+
+    async lettere(personaId) {
+      return (a().lettere ?? []).filter((x) => x.personaId === personaId).slice().reverse()
+    },
+
+    async faiLettera(dati) {
+      // Le stesse regole di `fai_lettera_incarico`.
+      const p = persona(dati.personaId)
+      if (!(p.ruolo === 'istruttore' || p.ancheIstruttore)) throw new Error('La lettera d’incarico si fa a chi insegna')
+      const no = cosaNonVaLettera(dati)
+      if (no) throw new Error(no)
+      const ora = new Date().toISOString()
+      const nuova: Lettera = { ...dati, giorni: dati.giorni.trim(), id: crypto.randomUUID(), firmata: false, sostituitaIl: null, creataIl: ora }
+      a().lettere = [
+        ...(a().lettere ?? []).map((x) => (x.personaId === dati.personaId && x.stagione === dati.stagione && !x.sostituitaIl ? { ...x, sostituitaIl: ora } : x)),
+        nuova,
+      ]
+      salva()
+      return nuova
+    },
+
+    async segnaFirmata(letteraId, firmata) {
+      a().lettere = (a().lettere ?? []).map((x) => (x.id === letteraId ? { ...x, firmata } : x))
       salva()
     },
 

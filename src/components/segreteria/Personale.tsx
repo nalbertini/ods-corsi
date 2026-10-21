@@ -7,7 +7,7 @@ import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, us
 import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
-import { DatiTecnico, Tariffe } from './DatiTecnico'
+import { DatiTecnico, LetteraIncarico, Tariffe } from './DatiTecnico'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
 
 /**
@@ -565,6 +565,7 @@ function Scheda({
         <>
           <DatiTecnico d={d} p={p} fai={fai} />
           <Tariffe d={d} p={p} fai={fai} />
+          <LetteraIncarico d={d} p={p} fai={fai} />
         </>
       )}
       {dellaSala && <PresenzeDelMese d={d} p={p} />}

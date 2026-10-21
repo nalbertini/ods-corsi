@@ -3,6 +3,8 @@ import type { Anagrafica, DatiSegreteria, PersonaleSeg } from '../../lib/segrete
 import { conProvincia } from '../../lib/segreteria'
 import { dataLunga } from '../../lib/sala'
 import { centesimiDaEuro, cosaNonVaEuroOra, euroDaScrivere, euroOra, righeTariffe } from '../../lib/tariffe'
+import { cosaNonVaLettera, datiPerLettera, lettereDellaScheda, importoInLettere, propostaLettera, QUALIFICHE, stagioneDi, type DatiLettera, type Lettera, type ScelteLettera } from '../../lib/lettere'
+import { euro } from '../../lib/ricevute'
 import { Campo, chiedi, Guaio, Riga, useAvviso, useCarica } from './comune'
 import { ModificaAnagrafica, type CampoAnagrafica } from './Iscritti'
 
@@ -193,6 +195,165 @@ export function Tariffe({ d, p, fai }: { d: DatiSegreteria; p: PersonaleSeg; fai
       )}
       {presenze === null && <span className="sg-sotto">Le presenze non si sono lette: mancano i corsi fatti da sostituto. Riapri la scheda fra poco.</span>}
       <span className="sg-sotto">Un corso compare qui appena lo insegna, anche da sostituto. Cambiare una tariffa non tocca le ricevute già fatte.</span>
+    </div>
+  )
+}
+
+const oggi = () => new Date().toLocaleDateString('sv-SE')
+
+/**
+ * La lettera d'incarico della stagione: si prepara qui, si stampa e si fa
+ * firmare; quando il foglio firmato torna, si spunta «Firmata». Correggerla ne
+ * fa una nuova: la vecchia resta, sostituita, e si può ristampare.
+ */
+export function LetteraIncarico({ d, p, fai }: { d: DatiSegreteria; p: PersonaleSeg; fai: Fai }) {
+  const stagione = stagioneDi(oggi())
+  const dati = useCarica(async () => {
+    const [lettere, an, tariffe] = await Promise.all([d.lettere(p.id), d.anagraficaDi(p.id), d.tariffe(p.id)])
+    return { lettere, an: an?.dati ?? null, tariffe }
+  }, [d, p.id])
+  const [scelte, setScelte] = useState<ScelteLettera | null>(null)
+
+  if (dati.guaio)
+    return (
+      <div className="stack" style={{ gap: 8 }}>
+        <Riga titolo="LETTERA D’INCARICO" />
+        <Guaio testo={dati.guaio} />
+      </div>
+    )
+  if (!dati.dato) return null
+  const { lettere, an, tariffe } = dati.dato
+  const { valida, altre } = lettereDellaScheda(lettere, stagione)
+  const stampa = (l: DatiLettera) => void fai(async () => (await import('../../lib/letteraPdf')).scaricaLettera(l))
+
+  if (scelte) {
+    const nuova = datiPerLettera(p, an, tariffe, scelte)
+    const no = cosaNonVaLettera(nuova)
+    return (
+      <div className="stack" style={{ gap: 12 }}>
+        <Riga titolo={`LETTERA D’INCARICO · ${scelte.stagione}`} />
+        <div className="sg-due">
+          <Campo id="li-dal" etichetta="DAL">
+            <input id="li-dal" type="date" className="sg-campo" value={scelte.dal} onChange={(e) => setScelte({ ...scelte, dal: e.target.value })} />
+          </Campo>
+          <Campo id="li-al" etichetta="AL">
+            <input id="li-al" type="date" className="sg-campo" value={scelte.al} onChange={(e) => setScelte({ ...scelte, al: e.target.value })} />
+          </Campo>
+          <Campo id="li-qualifica" etichetta="QUALIFICA">
+            <select id="li-qualifica" className="sg-campo" value={scelte.qualifica} onChange={(e) => setScelte({ ...scelte, qualifica: e.target.value })}>
+              {QUALIFICHE.map((q) => (
+                <option key={q} value={q}>
+                  {q}
+                </option>
+              ))}
+            </select>
+          </Campo>
+          <Campo id="li-giorni" etichetta="GIORNI PREFERITI">
+            <input id="li-giorni" className="sg-campo" maxLength={80} placeholder="venerdì" value={scelte.giorni} onChange={(e) => setScelte({ ...scelte, giorni: e.target.value })} />
+          </Campo>
+          <Campo id="li-data" etichetta="DATA DELLA LETTERA">
+            <input id="li-data" type="date" className="sg-campo" value={scelte.data} onChange={(e) => setScelte({ ...scelte, data: e.target.value })} />
+          </Campo>
+        </div>
+        <span className="sg-sotto">Proposto da settembre a luglio: per chi arriva dopo, cambia la data di inizio.</span>
+        <div className="stack" style={{ gap: 4 }}>
+          <span className="sg-etichetta">IL COMPENSO, SULLA LETTERA</span>
+          {nuova.tariffe.length ? (
+            nuova.tariffe.map((t) => (
+              <span key={t.corso} style={{ fontSize: 15 }}>
+                € {euro(t.centesimi)} ({importoInLettere(t.centesimi)}) l’ora per il corso {t.corso}
+              </span>
+            ))
+          ) : (
+            <span style={{ fontSize: 15, color: 'var(--dim)' }}>Nessuna tariffa.</span>
+          )}
+          <span className="sg-sotto">Dalle TARIFFE qui sopra: per cambiarle, lascia stare e cambiale lì.</span>
+        </div>
+        {no && (
+          <span role="alert" style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>
+            {no}.
+          </span>
+        )}
+        <span className="sg-sotto">Esce la lettera da stampare con tre firme a mano: il Presidente, «per accettazione» e l’approvazione dei punti 4 e 5.</span>
+        <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelte(null)}>
+            Lascia stare
+          </button>
+          <button type="button" className="sg-btn sg-btn-linea" disabled={!!no} onClick={() => stampa(nuova)}>
+            Vedi il PDF
+          </button>
+          <button
+            type="button"
+            className="sg-btn sg-btn-pieno"
+            disabled={!!no}
+            onClick={() =>
+              void fai(async () => {
+                const fatta = await d.faiLettera(nuova)
+                await (await import('../../lib/letteraPdf')).scaricaLettera(fatta)
+              }, valida ? 'Lettera corretta: quella di prima resta, sostituita' : 'Lettera fatta', async () => {
+                setScelte(null)
+                await dati.ricarica()
+              })
+            }
+          >
+            Salva e stampa
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Tariffe e dati si rileggono: possono essere appena cambiati qui sopra.
+  const prepara = () => void dati.ricarica().then(() => setScelte(valida ? { stagione, dal: valida.dal, al: valida.al, qualifica: valida.qualifica, giorni: valida.giorni, data: valida.data } : { stagione, ...propostaLettera(stagione), qualifica: 'Allenatore', giorni: '' }))
+  const quando = (l: Lettera) => `lettera del ${dataLunga(l.data)}`
+
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <Riga titolo={`LETTERA D’INCARICO · ${stagione}`} />
+      {valida ? (
+        <div className="stack" style={{ gap: 10, padding: '14px 16px', border: '2px solid var(--line-soft)' }}>
+          <span className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+            <span className="sg-segno-regola" data-tono="verde">VALIDA</span>
+            <span style={{ fontSize: 15, fontWeight: 600 }}>
+              dal {dataLunga(valida.dal)} al {dataLunga(valida.al)} · {valida.qualifica}
+            </span>
+          </span>
+          <span className="sg-sotto">
+            {[valida.giorni, valida.tariffe.map((t) => `${euroOra(t.centesimi)} per ${t.corso}`).join(', '), quando(valida)].filter(Boolean).join(' · ')}
+          </span>
+          <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            <button type="button" className="sg-btn sg-btn-linea" onClick={() => stampa(valida)}>
+              Stampa la lettera
+            </button>
+            <button type="button" className="sg-btn sg-btn-linea" onClick={prepara}>
+              Correggi
+            </button>
+            <label className="row" style={{ gap: 8, minHeight: 44, fontSize: 14, fontWeight: 600 }}>
+              <input
+                type="checkbox"
+                checked={valida.firmata}
+                onChange={(e) => void fai(() => d.segnaFirmata(valida.id, e.target.checked), e.target.checked ? 'Segnata firmata' : 'Tolta la spunta', dati.ricarica)}
+              />
+              Firmata
+            </label>
+          </div>
+        </div>
+      ) : (
+        <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <span className="sg-sotto">Nessuna lettera per la stagione {stagione}.</span>
+          <button type="button" className="sg-btn sg-btn-pieno" onClick={prepara}>
+            Prepara la lettera
+          </button>
+        </div>
+      )}
+      {altre.map((l) => (
+        <span key={l.id} className="row" style={{ gap: 12, flexWrap: 'wrap', fontSize: 13, color: 'var(--dim)' }}>
+          {l.sostituitaIl ? `Sostituita · ${l.stagione} · ${quando(l)} · sostituita il ${dataLunga(l.sostituitaIl.slice(0, 10))}` : `${l.stagione} · ${quando(l)}${l.firmata ? ' · firmata' : ''}`}
+          <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 13 }} onClick={() => stampa(l)}>
+            Stampa
+          </button>
+        </span>
+      ))}
     </div>
   )
 }
