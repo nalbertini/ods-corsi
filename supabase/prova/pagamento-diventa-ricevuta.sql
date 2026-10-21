@@ -13,6 +13,7 @@ insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'anna@ods.it'),
   ('22222222-2222-2222-2222-222222222222', 'maura@ods.it'),
   ('33333333-3333-3333-3333-333333333333', 'lia@ods.it'),
+  ('44444444-4444-4444-4444-444444444444', 'tablet@ods.it'),
   ('66666666-6666-6666-6666-666666666666', 'ada@ods.it');
 insert into persone (id, nome, cognome, ruolo, email, utente_id) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'Anna', 'Segreteria', 'staff', 'anna@ods.it', '11111111-1111-1111-1111-111111111111'),
@@ -117,6 +118,8 @@ select atteso('con 280 € in contanti dell''11/10 no', rifiuto($$select da(2, d
 select atteso('con 280 + 50 € in contanti del 10/10 no: più del pagamento a mano',
   rifiuto($$select da(2, dati(33000, jsonb_build_array(pg(28000), pg(5000))))$$), :NON_COSI);
 select atteso('senza pagamenti no', rifiuto($$select da(2, dati(28000, '[]'))$$), :NON_COSI);
+-- `emetti_ricevuta` tiene i primi 40 caratteri del metodo: 40 spazi davanti a «Contanti» non sono contanti per la cassa.
+select atteso('40 spazi davanti a «Contanti» no', rifiuto($$select da(2, dati(28000, jsonb_build_array(pg(28000, repeat(' ', 40) || 'Contanti'))))$$), :NON_COSI);
 select atteso('nessuna ricevuta nuova', (quante() - :prima)::text, '0');
 select atteso('…e il pagamento a mano resta attivo', stato(2), 'attivo');
 select atteso('« contanti » minuscolo e con gli spazi è lo stesso metodo',
@@ -191,6 +194,13 @@ reset role;
 \echo ''
 \echo '--- 6. i ruoli ---'
 select quante() as prima \gset
+insert into sale (id, nome) values ('eeeeeeee-0000-0000-0000-000000000001', 'Tatami');
+insert into postazioni (id, nome, sala_id, utente_id) values
+  ('eeeeeeee-0000-0000-0000-000000000002', 'Tablet Tatami', 'eeeeeeee-0000-0000-0000-000000000001', '44444444-4444-4444-4444-444444444444');
+select chi('44444444-4444-4444-4444-444444444444');
+set role authenticated;
+select atteso('tablet no', left(rifiuto($$select da(6, dati(28000, jsonb_build_array(pg(28000))))$$), 5), '42501');
+reset role;
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 select atteso('istruttore no', left(rifiuto($$select da(6, dati(28000, jsonb_build_array(pg(28000))))$$), 5), '42501');
@@ -218,6 +228,26 @@ reset role;
 
 \echo ''
 \echo '--- 7. annullare la ricevuta rimette il pagamento a mano SENZA RICEVUTA ---'
+select chi('11111111-1111-1111-1111-111111111111');
+reset role;
+-- Chi non è segreteria o amministrazione non annulla, e il pagamento a mano resta legato.
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('istruttore non annulla', left(rifiuto(format('select annulla_ricevuta(%L::uuid)', :'r1')), 5), '42501');
+reset role;
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select atteso('iscritto non annulla', left(rifiuto(format('select annulla_ricevuta(%L::uuid)', :'r1')), 5), '42501');
+reset role;
+select chi('44444444-4444-4444-4444-444444444444');
+set role authenticated;
+select atteso('tablet non annulla', left(rifiuto(format('select annulla_ricevuta(%L::uuid)', :'r1')), 5), '42501');
+reset role;
+select chi('');
+set role anon;
+select atteso('chi non ha accesso non annulla', left(rifiuto(format('select annulla_ricevuta(%L::uuid)', :'r1')), 5), '42501');
+reset role;
+select atteso('…e il pagamento a mano resta legato', (stato(1) like 'annullato%ricevuta n.%')::text, 'true');
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select annulla_ricevuta(:'r1'::uuid);

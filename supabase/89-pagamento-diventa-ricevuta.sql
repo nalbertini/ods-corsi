@@ -34,14 +34,16 @@ begin
   if gia.id is not null then raise exception 'La ricevuta n. %/% fatta da questo modulo non ha dentro questo pagamento a mano: chiudi il modulo e riaprilo', gia.numero, gia.anno using errcode = '22023'; end if;
   if p.annullato_il is not null then raise exception 'Questo pagamento a mano è già annullato: la ricevuta si fa da + FAI LA RICEVUTA' using errcode = '22023'; end if;
   if p.persona_id is distinct from nullif(dati->>'persona_id', '')::uuid then raise exception 'Il pagamento a mano è di un’altra persona' using errcode = '22023'; end if;
+  nuova := emetti_ricevuta(dati);
   -- Quei soldi entrano tali e quali (stessa data, stesso modo): il previsto della cassa di quel giorno non si muove.
+  -- Si guarda la ricevuta come l'ha scritta `emetti_ricevuta` (il metodo tagliato a 40, la data già messa), cioè quel
+  -- che legge `previsto_cassa`; il rifiuto disfa anche lei.
   select coalesce(sum((pg->>'importo')::int), 0) into somma
-    from jsonb_array_elements(coalesce(dati->'voci', '[]')) v, jsonb_array_elements(coalesce(v->'pagamenti', '[]')) pg
-    where lower(btrim(pg->>'metodo')) = lower(btrim(p.metodo)) and coalesce((pg->>'data')::date, (dati->>'data')::date) = p.data;
+    from jsonb_array_elements(nuova->'voci') v, jsonb_array_elements(coalesce(v->'pagamenti', '[]')) pg
+    where lower(btrim(pg->>'metodo')) = lower(btrim(p.metodo)) and (pg->>'data')::date = p.data;
   if somma <> p.importo then
     raise exception 'Il pagamento a mano di % € (%, %) va nella ricevuta così com’è: rimettilo, o annulla il pagamento e fai la ricevuta a mano', soldi_sql(p.importo), p.metodo, to_char(p.data, 'DD/MM/YYYY') using errcode = '22023';
   end if;
-  nuova := emetti_ricevuta(dati);
   update pagamenti_diretti set annullato_il = now(), annullato_da = persona_corrente(), ricevuta_id = (nuova->>'id')::uuid where id = p.id;
   return nuova;
 end $$;

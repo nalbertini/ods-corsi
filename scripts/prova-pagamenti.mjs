@@ -713,6 +713,41 @@ console.log('\n26. in prova: FANNE LA RICEVUTA (emettiRicevuta con il pagamento 
     typeof (await emetti(dati(28000, [pag('2026-10-10', 28000)], { chiave: 'dddddddd-0000-4000-8000-000000000028' }), p1))?.id, 'string')
 }
 
+console.log('\n28. FANNE LA RICEVUTA porta il pagamento a mano fino al database')
+{
+  // Se il legame si perde la ricevuta è normale, il pagamento a mano resta, e gli stessi soldi contano due volte.
+  const x = diretto('pd-28', 'p-Rossi', '2026-10-10', 28000)
+  const d = prova(() => m.datiDaPagamento(x, 'k-28'))
+  ok('datiDaPagamento: il pagamento e la chiave', [d.pagamentoId, d.chiaveRicevuta, d.importo, d.data, d.metodo], ['pd-28', 'k-28', 28000, '2026-10-10', 'Contanti'])
+  const tsx = readFileSync('src/components/segreteria/Ricevute.tsx', 'utf8')
+  ok('Ricevute.tsx: emettiRicevuta riceve il pagamento a mano', /d\.emettiRicevuta\(dati, conSatispay\?\.id, daPagamento\?\.pagamentoId\)/.test(tsx), true)
+  ok('Ricevute.tsx: dal pagamento a mano niente Satispay nella stessa ricevuta', /const conSatispay = metodo === 'Satispay' && !daPagamento\?\.pagamentoId \? sp : undefined/.test(tsx), true)
+  ok('Ricevute.tsx: il guaio del modulo dice cosaNonVaDaPagamento', /cosaNonVaDaPagamento\(dati\.voci, dati\.data, daPagamento\)/.test(tsx), true)
+  const sb = readFileSync('src/lib/segreteriaSupabase.ts', 'utf8')
+  const corpo = sb.slice(sb.indexOf('async emettiRicevuta('), sb.indexOf('async annullaRicevuta('))
+  ok('segreteriaSupabase.ts: col pagamento a mano, emetti_ricevuta_da_pagamento con pagamento: pagamentoId',
+    /pagamentoId \? 'emetti_ricevuta_da_pagamento'/.test(corpo) && /pagamentoId \? \{ pagamento: pagamentoId \}/.test(corpo), true)
+  const isc = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
+  const lascia = isc.slice(isc.indexOf('onLasciaStare={() => {'), isc.indexOf('onFatta={() => {'))
+  ok('Iscritti.tsx: «Lascia stare» da FANNE LA RICEVUTA non riapre REGISTRA IL PAGAMENTO',
+    lascia.indexOf('if (!siPerdeUscendo(daPagamento)) return setDaPagamento(null)') > -1 && lascia.indexOf('if (!siPerdeUscendo(daPagamento))') < lascia.indexOf('setRiprendi(daPagamento)'), true)
+}
+
+console.log('\n29. in prova: Satispay e pagamento a mano nella stessa ricevuta no')
+{
+  const s = m.creaSegreteriaProva()
+  const [chi] = (await s.persone()).filter((p) => p.attiva)
+  const pid = (await s.registraPagamentoDiretto({ personaId: chi.id, data: '2026-10-10', importo: 28000, metodo: 'Contanti', voce: 'ANNUALE JUDO KIDS' })).id
+  const dati = { data: '2026-10-10', personaId: chi.id, ente: m.ENTE_PREDEFINITO, intestatario: { nome: chi.nome, cognome: chi.cognome }, voci: [voce('ANNUALE JUDO KIDS', 28000, [pag('2026-10-10', 28000)])], anticipo: 0 }
+  let esito
+  try {
+    esito = await s.emettiRicevuta(dati, 'sp-qualunque', pid)
+  } catch (e) {
+    esito = `ERRORE: ${e.message}`
+  }
+  ok('rifiutata prima di guardare il resto', esito, 'ERRORE: Una ricevuta si fa da un pagamento a mano o da un Satispay, non da tutti e due: chiudi il modulo e riaprilo')
+}
+
 console.log('\n27. uscire dalla ricevuta aperta da un pagamento chiede prima solo se si perde (siPerdeUscendo)')
 {
   const d = { personaId: 'p-1', data: '2026-10-10', importo: 4000, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA' }

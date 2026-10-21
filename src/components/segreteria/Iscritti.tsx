@@ -741,8 +741,7 @@ function Scheda({
           onDaPagamento={daPagamento ? undefined : (x) => setDaPagamento(x)}
           onLasciaStare={() => {
             setPagando(false)
-            if (daPagamento?.pagamentoId) return setDaPagamento(null)
-            if (!daPagamento) return
+            if (!siPerdeUscendo(daPagamento)) return setDaPagamento(null)
             setRiprendi(daPagamento)
             setDaPagamento(null)
             avvisa('Pagamento non registrato: è ancora nel modulo, da registrare senza ricevuta o da riprovare.', true)

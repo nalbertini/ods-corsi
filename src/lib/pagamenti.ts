@@ -93,27 +93,24 @@ export function comeSiAnnulla(r: RigaPagamento): 'ricevuta' | 'pagamento' | null
 /** La domanda prima di annullare una ricevuta: la stessa nella scheda della persona e in PAGAMENTI. */
 export const domandaAnnullaRicevuta = (r: { id: string; numero: number; anno: number }, diretti: PagamentoDiretto[] = []) => {
   const x = diretti.find((y) => y.ricevutaId === r.id)
-  const dentro = x ? ` Dentro c’è il pagamento a mano del ${dataBreve(x.data)} (${soldi(x.importo)} in ${x.metodo}): torna SENZA RICEVUTA, e da lì si rifà la ricevuta giusta.` : ''
+  const dentro = x ? ` Dentro c’è il pagamento a mano del ${dataRicevuta(x.data)} (${soldi(x.importo)} in ${x.metodo}): torna SENZA RICEVUTA, e da lì si rifà la ricevuta giusta.` : ''
   return `Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare.${dentro}`
 }
-
-/** `AAAA-MM-GG` come `GG/MM/AAAA`, come `to_char(…, 'DD/MM/YYYY')` nei rifiuti del database. */
-const dataBreve = (d: string) => d.split('-').reverse().join('/')
 
 /**
  * Lo stesso rifiuto di `emetti_ricevuta_da_pagamento`: dentro la ricevuta, i pagamenti con il modo e la data del
  * pagamento a mano fanno esattamente il suo importo. Così quei soldi entrano tali e quali, e la cassa non si muove.
  * Un pagamento senza data è del giorno della ricevuta, come in `emetti_ricevuta`.
  */
-export function cosaNonVaDaPagamento(voci: VoceRicevuta[], dataRicevuta: string, x: Pick<PagamentoDiretto, 'data' | 'importo' | 'metodo'>): string | null {
+export function cosaNonVaDaPagamento(voci: VoceRicevuta[], giorno: string, x: Pick<PagamentoDiretto, 'data' | 'importo' | 'metodo'>): string | null {
   const metodo = x.metodo.trim().toLowerCase()
   const somma = voci
     .flatMap((v) => v.pagamenti)
-    .filter((p) => p.metodo.trim().toLowerCase() === metodo && (p.data || dataRicevuta) === x.data)
+    .filter((p) => p.metodo.trim().toLowerCase() === metodo && (p.data || giorno) === x.data)
     .reduce((t, p) => t + p.importo, 0)
   return somma === x.importo
     ? null
-    : `Il pagamento a mano di ${soldi(x.importo)} (${x.metodo}, ${dataBreve(x.data)}) va nella ricevuta così com’è: rimettilo, o annulla il pagamento e fai la ricevuta a mano`
+    : `Il pagamento a mano di ${soldi(x.importo)} (${x.metodo}, ${dataRicevuta(x.data)}) va nella ricevuta così com’è: rimettilo, o annulla il pagamento e fai la ricevuta a mano`
 }
 
 /** Un pagamento a mano registrato, come i dati da cui FANNE LA RICEVUTA compila la ricevuta (una chiave nuova). */

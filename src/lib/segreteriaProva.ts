@@ -1154,6 +1154,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async emettiRicevuta(dati, satispayId, pagamentoId) {
+      // Da un pagamento a mano o da un Satispay: gli stessi soldi in una ricevuta sola, mai due fonti insieme.
+      if (satispayId && pagamentoId) throw new Error('Una ricevuta si fa da un pagamento a mano o da un Satispay, non da tutti e due: chiudi il modulo e riaprilo')
       // Lo stesso ordine del database: col Satispay, prima che sia arrivato; dal pagamento a mano, prima che ci sia.
       const sp = satispayId ? pagamentiSatispayProva().find((x) => x.id === satispayId) : undefined
       if (satispayId && sp?.stato !== 'pagato') throw new Error('Questo pagamento Satispay non è arrivato')
