@@ -77,6 +77,11 @@ export interface DatiRichiesta {
    * arrivato ed è per il suo corso e la sua formula.
    */
   pagamentoSatispay?: string
+  /**
+   * Lo stesso per tutte le richieste mandate insieme dal modulo (una
+   * famiglia): la segreteria ne riceve un avviso solo (`84-avvisi-segreteria.sql`).
+   */
+  invio?: string
 }
 
 export interface Richiesta extends DatiRichiesta {
@@ -357,7 +362,7 @@ export function tipiDaChiedere(natoIl: string, nomiCorsi: string[], oggi = new D
 }
 
 /** I campi del modulo che possono non andare, per segnarli uno per uno. */
-export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'provenienza' | 'conosciuto' | 'pagamentoSatispay'>
+export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'provenienza' | 'conosciuto' | 'pagamentoSatispay' | 'invio'>
 
 /**
  * Una cosa che non va: `messaggio` è quello del server, `testo` quello corto

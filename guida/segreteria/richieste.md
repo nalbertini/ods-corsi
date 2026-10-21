@@ -25,6 +25,13 @@ Normalmente si vedono solo le nuove; **Anche quelle già gestite** mostra tutte,
 e **Da stampare** (finché ce ne sono) quelle con il documento da
 stampare.
 
+Quando arriva una richiesta, la segreteria riceve anche un'email, se
+l'indirizzo è scritto in [Impostazioni](regole.md#gli-avvisi): il suo link
+**Apri la richiesta** porta dritto qui, a quella richiesta. Se oggi qualche
+avviso non è partito (più di 50 in un giorno, o la posta che non lo
+accetta), in cima un riquadro giallo dice quanti: le richieste sono comunque
+tutte nell'elenco.
+
 ## Guardare una richiesta
 
 Un clic apre la richiesta in una finestra sopra l'elenco ([come funziona](README.md#la-finestra-dei-dettagli)), con **Precedente** e **Successiva** per scorrere le altre. Dentro ci sono le risposte: nato il / a, codice fiscale, residenza, genitore (per

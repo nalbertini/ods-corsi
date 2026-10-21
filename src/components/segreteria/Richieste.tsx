@@ -1,3 +1,4 @@
+import { Etichetta, Riquadro } from '../ds'
 import { FiltroRicerca } from './FiltroRicerca'
 import type { Ricercata } from '../../lib/ricerca'
 import { useState, type ReactNode } from 'react'
@@ -89,6 +90,8 @@ export function Richieste({
   const [daStampare, setDaStampare] = useState(!!stampareIniziale)
   const [scelta, setScelta] = useState<string | null>(aperta ?? null)
   const { avviso, fai } = useAvviso()
+  // Gli avvisi per email rimasti fuori dal tetto di oggi: senza 84-avvisi-segreteria.sql sono zero.
+  const nonMandati = useCarica(() => d.avvisiNonMandatiOggi(), [d]).dato ?? 0
   const voci = useListino()?.listino.corsi
 
   const nomi = new Map((corsi.dato ?? []).map((c) => [c.id, c.nome]))
@@ -176,6 +179,14 @@ export function Richieste({
             Anche quelle già gestite
           </button>
         </Testa>
+        {nonMandati > 0 && (
+          <section aria-label="Avvisi">
+            <Riquadro tono="prova">
+              <Etichetta>AVVISI</Etichetta>
+              <span>{nonMandati === 1 ? 'Oggi un avviso non è partito' : `Oggi ${nonMandati} avvisi non sono partiti`} per email. Le richieste sono tutte qui sotto.</span>
+            </Riquadro>
+          </section>
+        )}
         {ricerca && <FiltroRicerca ricerca={ricerca} onTogli={onTogliRicerca} />}
 
         {elenco.guaio && <Guaio testo={elenco.guaio} />}

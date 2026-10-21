@@ -1,3 +1,4 @@
+import { indirizziDaSalvare } from './avvisoSegreteria'
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
@@ -1586,6 +1587,20 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async salvaEnteRicevute(e) {
       a().enteRicevute = e
       salva()
+    },
+
+    async avvisiIndirizzi() {
+      return a().avvisiIndirizzi ?? { a: null, cc: 'asdilcentrojudo@gmail.com' }
+    },
+
+    async salvaAvvisiIndirizzi(x) {
+      a().avvisiIndirizzi = indirizziDaSalvare(x)
+      salva()
+    },
+
+    // In prova nessuna mail parte: nessun avviso si perde.
+    async avvisiNonMandatiOggi() {
+      return 0
     },
 
     async listino() {

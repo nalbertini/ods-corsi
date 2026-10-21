@@ -800,6 +800,12 @@ export interface DatiSegreteria {
   /** I dati dell'associazione in testa alle ricevute. */
   enteRicevute(): Promise<EnteRicevuta>
   salvaEnteRicevute(e: EnteRicevuta): Promise<void>
+  /** A chi vanno gli avvisi per email di richieste e pagamenti (`84-avvisi-segreteria.sql`); `a` vuoto: spenti. */
+  avvisiIndirizzi(): Promise<{ a: string | null; cc: string | null }>
+  /** Li cambia; un indirizzo sbagliato non si salva, e l'errore dice cosa correggere. */
+  salvaAvvisiIndirizzi(x: { a: string; cc: string }): Promise<void>
+  /** Quanti avvisi di oggi non sono partiti (il tetto di 50 al giorno). */
+  avvisiNonMandatiOggi(): Promise<number>
   /** Il listino che vale: quello cambiato da LISTINO, o quello del foglio (`listino.ts`). */
   listino(): Promise<ListinoLetto>
   /** Lo salva per la pagina di iscrizione e le ricevute; `null` rimette quello del foglio. */
