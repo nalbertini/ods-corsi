@@ -407,6 +407,16 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'annulla_ricevuta_compenso' and corpo like '%È pagata%')),
   ('82-manca-la-firma.sql', 'manca la firma: «a lezione basta uno» e chi non c''era',
     exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'corsi' and column_name = 'basta_uno')
-    and to_regprocedure('public.segna_istruttore_assente(uuid,uuid)') is not null)
+    and to_regprocedure('public.segna_istruttore_assente(uuid,uuid)') is not null),
+  ('83-satispay-prima.sql', 'Satispay prima di mandare: il pagamento senza richiesta e la richiesta che lo prende',
+    to_regprocedure('public.satispay_prepara_prima(uuid,text,text,text,text)') is not null
+    and to_regprocedure('public.satispay_stato_pagamento(uuid)') is not null
+    and to_regprocedure('public.importo_corso(uuid,text,date)') is not null
+    and exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'pagamenti_satispay' and column_name = 'email')
+    and exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'pagamenti_satispay' and column_name = 'preso_il')
+    -- Rilanciare 06 o 74 dopo 83 rimette la invia_iscrizione che ignora il pagamento: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pagamento_satispay%' and corpo like '%preso_il%'))
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -31,7 +31,7 @@ globalThis.localStorage = {
   setItem: (k, v) => memoria.set(k, String(v)),
   removeItem: (k) => memoria.delete(k),
 }
-globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} }
+globalThis.window = { location: { search: '', hash: '', pathname: '/iscrizioni/' }, addEventListener() {} }
 
 // Un modulo per volta: uno che manca fa rosso i suoi casi, non ferma gli altri.
 const carica = async (contents) => {
@@ -55,8 +55,10 @@ const s = await carica("export * from './src/lib/satispay'")
 const g = await carica("export { pagamentoDi } from './src/lib/segreteria'; export { VALIDITA } from './src/lib/costi'")
 const c = await carica("export * from './src/lib/contabilita'; export { ENTE_PREDEFINITO } from './src/lib/ricevute'")
 const f = await carica("export * from './supabase/functions/satispay/firma'")
+// La parte nuova di «prima paghi, poi mandi» si carica a parte: finché manca, fa rosso solo i suoi casi.
+const pp = await carica("export { pagaSatispayProva } from './src/lib/richiesteProva'")
 const p = await carica(
-  "export { creaRichiesteProva, pagamentiSatispayProva } from './src/lib/richiesteProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { stimaIscrizione } from './src/lib/nucleo'",
+  "export { creaRichiesteProva, pagamentiSatispayProva, salvaSatispay } from './src/lib/richiesteProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { stimaIscrizione } from './src/lib/nucleo'",
 )
 
 let guai = 0
@@ -124,11 +126,15 @@ console.log('\n2b. come si paga dal modulo, e quali file si chiedono')
   ok('bonifico resta bonifico anche senza Satispay', prova(() => s.modoPagamento('bonifico', no, false)), 'bonifico')
   ok('dal nucleo nessuna scelta: come prima', prova(() => s.modoPagamento('satispay', si, true)), null)
   ok('nessuna scelta già fatta: si sceglie', prova(() => s.modoPagamento(null, si, false)), null)
-  ok('senza scelta il modulo non parte', prova(() => s.cosaNonVaModo(null, false, false)), 'Manca come paghi: Satispay o bonifico')
-  ok('Satispay: va, senza ricevuta', prova(() => s.cosaNonVaModo('satispay', false, false)), null)
-  ok('bonifico senza ricevuta: non parte', prova(() => s.cosaNonVaModo('bonifico', false, false)), 'Manca la ricevuta del bonifico: una foto, lo screenshot o il PDF')
-  ok('bonifico con la ricevuta: va', prova(() => s.cosaNonVaModo('bonifico', false, true)), null)
-  ok('dal nucleo non si sceglie', prova(() => s.cosaNonVaModo(null, true, false)), null)
+  const nessuno = { pronto: false, giaPagato: false }
+  ok('senza scelta il modulo non parte', prova(() => s.cosaNonVaModo(null, false, false, nessuno)), 'Manca come paghi: Satispay o bonifico')
+  ok('Satispay non ancora pagato: non parte', prova(() => s.cosaNonVaModo('satispay', false, false, nessuno)), 'Prima paga con Satispay, in fondo al modulo: la richiesta parte dopo')
+  ok('Satispay pagato per questa scelta: va, senza ricevuta', prova(() => s.cosaNonVaModo('satispay', false, false, { pronto: true, giaPagato: true })), null)
+  ok('bonifico senza ricevuta: non parte', prova(() => s.cosaNonVaModo('bonifico', false, false, nessuno)), 'Manca la ricevuta del bonifico: una foto, lo screenshot o il PDF')
+  ok('bonifico con la ricevuta: va', prova(() => s.cosaNonVaModo('bonifico', false, true, nessuno)), null)
+  ok('pagato con Satispay e poi scelto il bonifico: non parte, lo dice', prova(() => s.cosaNonVaModo('bonifico', false, true, { pronto: false, giaPagato: true })), s.GIA_PAGATO_SATISPAY)
+  ok('e il testo dice di rimettere Satispay', String(prova(() => s.GIA_PAGATO_SATISPAY)).includes('rimetti Satispay'), true)
+  ok('dal nucleo non si sceglie', prova(() => s.cosaNonVaModo(null, true, false, nessuno)), null)
   ok('la ricevuta del bonifico: col bonifico sì', prova(() => s.chiedeRicevuta('bonifico', false)), true)
   ok('con Satispay no', prova(() => s.chiedeRicevuta('satispay', false)), false)
   // Il vecchio campo «PUOI PAGARE IN SEGRETERIA» compariva nel modulo pubblico prima di scegliere come pagare.
@@ -300,6 +306,147 @@ console.log('\n7. in prova: paga finge l’approvazione, con l’importo della s
   ok('e torna fra i pagamenti', prova(() => s.righeSatispay([libero], () => '').length), 1)
   ok('e si propone per la ricevuta nuova', prova(() => s.satispayDaUsare([libero], personaId)?.id), sp.id)
   ok('la ricevuta rifatta: fatta', await aspetta(async () => typeof (await seg.emettiRicevuta(ricevuta(stima.totale), sp.id)).id), 'string')
+}
+
+console.log('\n8. prima paghi, poi mandi: il riquadro PAGA')
+{
+  const scelta = { corso: 'c1', formula: 'annuale', nome: 'Luca', cognome: 'Rossi', email: 'luca@esempio.it' }
+  const vivo = { id: 'sp1', corsoId: 'c1', formula: 'annuale', nome: 'Luca', cognome: 'Rossi', email: 'luca@esempio.it', stato: 'attesa', importo: 45000 }
+  const altro = (x = {}) => ({ stima: 45000, corso: 'Judo adulti', manca: null, preparo: false, guaio: null, ...x })
+  const rq = (sc, p, x) => prova(() => s.statoRiquadroPaga(sc, p, altro(x)))
+  ok('il modulo non è a posto: niente tasto, la frase dice cosa manca', prova(() => { const x = rq(scelta, null, { manca: 'Manca la firma sul modulo' }); return [x.cosa, x.tasto, x.sotto] }),
+    ['manca', null, 'Prima di pagare: manca la firma sul modulo'])
+  ok('niente ancora preparato: si prepara, il tasto è spento', prova(() => { const x = rq(scelta, null); return [x.cosa, x.tasto, x.spento] }), ['prepara', 'PREPARO IL PAGAMENTO…', true])
+  ok('in attesa ma senza link: si aspetta che sia pronto', rq(scelta, vivo)?.cosa, 'prepara')
+  ok('la preparazione non è andata: RIPROVA, e il guaio si legge', prova(() => { const x = rq(scelta, null, { guaio: 'Satispay non risponde: riprova fra qualche minuto' }); return [x.tasto, x.azione, x.spento, x.testo] }),
+    ['RIPROVA CON SATISPAY', 'prepara', false, 'Satispay non risponde: riprova fra qualche minuto'])
+  const pronto = rq(scelta, { ...vivo, link: 'https://online.satispay.com/pay/SP-1' })
+  ok('link pronto: si paga', pronto?.cosa, 'paga')
+  ok('il tasto apre il link già pronto', [pronto?.azione, pronto?.link], ['link', 'https://online.satispay.com/pay/SP-1'])
+  ok('il tasto dice quanto, coi centesimi', pronto?.tasto, `PAGA ${s.soldi(45000)} CON SATISPAY`)
+  ok('il riquadro: bordo blu, la cifra, la riga di cosa si paga', prova(() => [pronto.bordo, pronto.importo, pronto.riga]), ['blu', 45000, 'Quota associativa e annuale Judo adulti.'])
+  ok('il trimestre si dice così', rq({ ...scelta, formula: 'trimestre' }, null, { corso: 'MGA' })?.riga, 'Quota associativa e trimestre MGA.')
+  ok('sotto il tasto: lo stesso pagamento se si chiude Satispay', pronto?.sotto, 'Se chiudi Satispay senza confermare, torna qui: è lo stesso pagamento, non paghi due volte.')
+  ok('in attesa per un altro corso: se ne prepara uno nuovo, con la cifra di adesso',
+    prova(() => { const x = rq({ ...scelta, corso: 'c2' }, { ...vivo, link: 'x' }, { stima: 20000 }); return [x.cosa, x.importo] }), ['prepara', 20000])
+  ok('in attesa per un’altra email: se ne prepara uno nuovo', rq({ ...scelta, email: 'luca.rossi@esempio.it' }, { ...vivo, link: 'x' })?.cosa, 'prepara')
+  ok('nome scritto con le maiuscole diverse: è lo stesso', rq({ ...scelta, nome: ' luca ', email: 'LUCA@esempio.it' }, { ...vivo, link: 'x' })?.cosa, 'paga')
+  // Le 10.42 a Roma: alle 8.42 UTC d'ottobre.
+  const fatto = rq(scelta, { ...vivo, stato: 'pagato', link: 'x', pagatoIl: '2026-10-20T08:42:00Z' })
+  ok('pagato: si manda la richiesta', [fatto?.cosa, fatto?.tasto, fatto?.azione], ['pagato', 'MANDA LA RICHIESTA', 'manda'])
+  ok('pagato: bordo verde e l’ora di Roma', [fatto?.bordo, fatto?.testo], ['fatto', '✓ Pagati con Satispay alle 10.42. Ora manda la richiesta.'])
+  ok('pagato anche col modulo che ancora non va: il tasto resta MANDA, lo dice il riquadro dei guai', rq(scelta, { ...vivo, stato: 'pagato', pagatoIl: '2026-10-20T08:42:00Z' }, { manca: 'Manca la firma sul modulo' })?.cosa, 'pagato')
+  const andato = rq(scelta, { ...vivo, stato: 'non-andato', link: 'x' })
+  ok('non andato: si riprova', [andato?.cosa, andato?.tasto, andato?.azione], ['non-andato', 'RIPROVA CON SATISPAY', 'prepara'])
+  ok('non andato: bordo giallo, la frase col segno, il bonifico sotto', prova(() => [andato.bordo, andato.testo.startsWith('! '), andato.sotto]),
+    ['avviso', true, 'Oppure torna a «Paghi con» e scegli il bonifico.'])
+  ok('mentre si riprepara il tasto è spento', rq(scelta, { ...vivo, stato: 'non-andato' }, { preparo: true })?.spento, true)
+  const nonVale = rq({ ...scelta, corso: 'c2' }, { ...vivo, stato: 'pagato', pagatoIl: '2026-10-20T08:42:00Z' })
+  ok('pagato e poi cambiato il corso: il pagamento non vale più', nonVale?.cosa, 'non-vale')
+  ok('non vale: la cifra è quella pagata, e si chiama la segreteria', prova(() => [nonVale.importo, nonVale.tasto, nonVale.azione, nonVale.link?.startsWith('tel:')]), [45000, 'CHIAMA LA SEGRETERIA', 'chiama', true])
+  ok('pagato e poi cambiata la formula: il pagamento non vale più', rq({ ...scelta, formula: 'trimestre' }, { ...vivo, stato: 'pagato' })?.cosa, 'non-vale')
+  ok('pagato e poi cambiata l’email: non vale più', rq({ ...scelta, email: 'altra@esempio.it' }, { ...vivo, stato: 'pagato' })?.cosa, 'non-vale')
+
+  // Quando preparare: il modulo a posto, e la stessa chiave per la stessa scelta e la stessa persona.
+  ok('modulo non a posto: niente chiave, non si prepara', prova(() => s.chiavePreparo(scelta, 'Manca la firma sul modulo')), '')
+  ok('modulo a posto: la chiave è scelta e persona, ripulite', prova(() => s.chiavePreparo({ ...scelta, nome: ' Luca ', email: 'Luca@Esempio.it ' }, null)), 'c1|annuale|luca|rossi|luca@esempio.it')
+  ok('cambia l’email: cambia la chiave, si riprepara', prova(() => s.chiavePreparo(scelta, null) !== s.chiavePreparo({ ...scelta, email: 'altra@esempio.it' }, null)), true)
+
+  // Cosa si manda: il pagamento solo se si paga con Satispay ed è arrivato.
+  const sp = { id: 'sp1', stato: 'pagato' }
+  ok('Satispay pagato: si manda il pagamento', prova(() => s.pagamentoDaMandare('satispay', sp)), 'sp1')
+  ok('Satispay non pagato: niente', prova(() => s.pagamentoDaMandare('satispay', { ...sp, stato: 'attesa' })), undefined)
+  ok('bonifico: niente, anche col Satispay pagato', prova(() => s.pagamentoDaMandare('bonifico', sp)), undefined)
+}
+
+console.log('\n8b. in PAGAMENTI: il pagato senza richiesta, da richiamare o restituire')
+{
+  const senzaRichiesta = { id: 'sp5', chi: 'Verdi Sara', nome: 'Sara', cognome: 'Verdi', email: 'sara@esempio.it', corsoId: 'c1', formula: 'trimestre', importo: 20000, stato: 'pagato', creatoIl: '2026-10-20T08:40:00Z', pagatoIl: '2026-10-20T08:42:00Z' }
+  const riga = prova(() => s.righeSatispay([senzaRichiesta], nomeDi)[0])
+  ok('pagato e senza richiesta: una riga che lo dice', JSON.stringify(riga ?? null).includes('Satispay senza richiesta'), true)
+  ok('con nome, importo e giorno', prova(() => [riga.chi, riga.importo, riga.data]), ['Verdi Sara', 20000, '2026-10-20'])
+  ok('con l’email per richiamare', JSON.stringify(riga ?? null).includes('sara@esempio.it'), true)
+  ok('con il corso e la formula', prova(() => s.righeSatispay([{ ...senzaRichiesta, corso: 'MGA' }], nomeDi)[0].nota), 'Satispay senza richiesta · sara@esempio.it · trimestre MGA')
+  ok('uno con la sua richiesta non lo dice', JSON.stringify(prova(() => s.righeSatispay([pagato], nomeDi))).includes('senza richiesta'), false)
+  ok('in attesa senza richiesta: nessuna riga', prova(() => s.righeSatispay([{ ...senzaRichiesta, stato: 'attesa', pagatoIl: undefined }], nomeDi).length), 0)
+}
+
+console.log('\n8c. il ritorno da Satispay: la richiesta non è ancora partita')
+{
+  ok('pagato: si torna alla scheda del modulo a mandare', prova(() => s.ritornoSatispay({ stato: 'pagato', importo: 18000 }).testi[1]), 'Torna alla scheda dove hai compilato il modulo e premi MANDA LA RICHIESTA.')
+  ok('non andato', prova(() => s.ritornoSatispay({ stato: 'non-andato', importo: 18000 }).titolo), 'IL PAGAMENTO NON È ANDATO')
+  ok('un pagamento che non si trova: lo dice il titolo', prova(() => s.ritornoSatispay(null).titolo), 'PAGAMENTO NON TROVATO')
+  ok('già preso da una richiesta: è arrivata, pagata', prova(() => s.ritornoSatispay({ stato: 'pagato', importo: 18000, collegato: true }).titolo), 'RICHIESTA ARRIVATA · PAGATO')
+}
+
+console.log('\n9. in prova: prima paghi, poi mandi')
+{
+  const r = prova(() => p.creaRichiesteProva())
+  const seg = prova(() => p.creaSegreteriaProva())
+  const listino = await aspetta(async () => (await seg.listino()).listino)
+  const corsi = await aspetta(async () => (await seg.corsi()).filter((x) => x.id === 'judo-adulti'))
+  const stima = prova(() => p.stimaIscrizione({ chi: 'Rossi Luca', corsi, formula: 'annuale' }, [], '2026-10-20', listino))
+  const scelta = { corso: 'judo-adulti', formula: 'annuale', nome: 'Luca', cognome: 'Rossi', email: 'luca.prima@esempio.it' }
+  const modulo = (cambi = {}) => ({
+    nome: 'Luca', cognome: 'Rossi', natoIl: '1996-01-01', natoA: 'Torino', codiceFiscale: 'RSSLCU96A01L219K',
+    indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'luca.prima@esempio.it', telefono: '347 111 2233',
+    corsi: ['judo-adulti'], formula: 'annuale', regolamento: true, ...cambi,
+  })
+  const quante = async () => (await aspetta(() => r.richieste())).length
+
+  const primo = await aspetta(() => r.prepara(scelta))
+  ok('prepara: in attesa, col link e l’importo della stima', prova(() => [primo.stato, typeof primo.link === 'string' && primo.link !== '', primo.importo]), ['attesa', true, stima.totale])
+  ok('prepara una seconda volta: lo stesso pagamento', await aspetta(async () => (await r.prepara(scelta)).id), primo?.id)
+  ok('il link porta alla pagina di ritorno di questa cartella', prova(() => primo.link.startsWith('/iscrizioni/?prova&satispay=')), true)
+  ok('prima di pagare: in attesa', await aspetta(async () => (await r.statoSatispay(primo.id))?.stato), 'attesa')
+  const prima = await quante()
+  // Gli stessi testi di invia_iscrizione in 83-satispay-prima.sql (supabase/prova/satispay.sql, sezione 10).
+  ok('invia col pagamento in attesa: no', await aspetta(() => r.invia(modulo({ pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_NON_ARRIVATO}`)
+  ok('e nessuna richiesta entrata', await quante(), prima)
+
+  await aspetta(() => pp.pagaSatispayProva(primo.id))
+  ok('aperto il link: pagato', await aspetta(async () => (await r.statoSatispay(primo.id))?.stato), 'pagato')
+  ok('pagato per l’annuale, la richiesta col trimestre: no', await aspetta(() => r.invia(modulo({ formula: 'trimestre', pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_ALTRA_SCELTA}`)
+  ok('un pagamento che non c’è: no', await aspetta(() => r.invia(modulo({ pagamentoSatispay: 'sp-che-non-ce' }))), `ERRORE: ${s.PAGAMENTO_NON_VALE}`)
+  ok('pagato per un corso, la richiesta per un altro: no', await aspetta(() => r.invia(modulo({ corsi: ['judo-agonisti'], pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_ALTRA_SCELTA}`)
+  ok('la richiesta con due corsi: no', await aspetta(() => r.invia(modulo({ corsi: ['judo-adulti', 'judo-agonisti'], pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_ALTRA_SCELTA}`)
+  ok('a nome di un altro (chi ha trovato l’id): no', await aspetta(() => r.invia(modulo({ nome: 'Gino', cognome: 'Neri', codiceFiscale: 'NREGNI96A01L219Q', email: 'gino@esempio.it', pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_ALTRA_PERSONA}`)
+  ok('ricaricata la pagina dopo aver pagato: prepara ritrova il pagato, non se ne paga un altro',
+    await aspetta(async () => { const x = await r.prepara(scelta); return [x.id === primo.id, x.stato, x.link] }), [true, 'pagato', undefined])
+  ok('e ancora nessuna richiesta entrata', await quante(), prima)
+
+  const id = await aspetta(() => r.invia(modulo({ pagamentoSatispay: primo.id })))
+  ok('pagato, stesso corso e formula: la richiesta parte', typeof id === 'string' && !id.startsWith('ERRORE') ? 'partita' : id, 'partita')
+  const suo = prova(() => p.pagamentiSatispayProva().find((x) => x.id === primo.id))
+  ok('il pagamento è collegato alla richiesta', suo?.richiestaId, id)
+  ok('in RICHIESTE è Pagata', prova(() => s.segnoRichiesta(suo, 'nuova').tag), 'Pagata')
+  ok('e statoPagamento della richiesta lo sa', await aspetta(async () => (await r.statoPagamento(id))?.stato), 'pagato')
+  ok('la risposta si è persa e si rimanda lo stesso: si ritrova la stessa richiesta', await aspetta(() => r.invia(modulo({ pagamentoSatispay: primo.id }))), id)
+  ok('lo stesso pagamento con un’altra email: no', await aspetta(() => r.invia(modulo({ email: 'luca.due@esempio.it', pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_NON_VALE}`)
+  ok('e le richieste entrate sono una', await quante(), prima + 1)
+  // La richiesta si cancella: il pagamento torna senza richiesta, ma è già stato preso e non si riusa.
+  prova(() => p.salvaSatispay(p.pagamentiSatispayProva().map((x) => (x.id === primo.id ? { ...x, richiestaId: undefined } : x))))
+  ok('preso e poi rimasto senza richiesta: non vale per un’altra', await aspetta(() => r.invia(modulo({ codiceFiscale: 'RSSLCU96A01L219K', pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_NON_VALE}`)
+
+  const nuovo = await aspetta(() => r.prepara(scelta))
+  ok('dopo, lo stesso modulo prepara un pagamento nuovo', prova(() => nuovo.id !== primo.id && nuovo.stato === 'attesa'), true)
+  await aspetta(() => p.salvaSatispay(p.pagamentiSatispayProva().map((x) => (x.id === nuovo.id ? { ...x, stato: 'non-andato' } : x))))
+  ok('non andato, mandato con la richiesta: no', await aspetta(() => r.invia(modulo({ email: 'luca.tre@esempio.it', pagamentoSatispay: nuovo.id }))), `ERRORE: ${s.PAGAMENTO_NON_ARRIVATO}`)
+  ok('nome lunghissimo: lo dice, come il database', await aspetta(() => r.prepara({ ...scelta, nome: 'L'.repeat(81) })), 'ERRORE: Un campo non va: nome e cognome hanno al massimo 80 caratteri')
+}
+
+console.log('\n10. il modulo: il tasto PAGA è un link già pronto')
+{
+  const tsx = readFileSync('src/components/ModuloIscrizione.tsx', 'utf8')
+  ok('nessun window.location.assign verso il link di Satispay', /window\.location\.assign\([^)]*link/.test(tsx), false)
+  ok('il tasto PAGA è un Tasto con href al link', /<Tasto\b[^>]*\bhref=\{[^}]*link[^}]*\}/.test(tsx), true)
+  ok('il riquadro segue statoRiquadroPaga', tsx.includes('statoRiquadroPaga('), true)
+  ok('niente più MANDA E PAGA CON SATISPAY', tsx.includes('MANDA E PAGA CON SATISPAY'), false)
+  ok('lo stato si richiede quando la pagina torna visibile', tsx.includes('visibilitychange'), true)
+  ok('il pagamento da mandare viene da pagamentoDaMandare', tsx.includes('pagamentoSatispay: pagamentoDaMandare('), true)
+  ok('quando preparare viene da chiavePreparo', tsx.includes('chiavePreparo('), true)
+  ok('le etichette del tasto non sono scritte nel modulo', /RIPROVA CON SATISPAY|PREPARO IL PAGAMENTO/.test(tsx), false)
+  ok('nome e cognome hanno al massimo 80 caratteri', (tsx.match(/maxLength=\{80\}/g) ?? []).length >= 2, true)
 }
 
 if (guai) {

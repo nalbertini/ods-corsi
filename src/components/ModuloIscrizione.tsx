@@ -14,8 +14,7 @@ import { useListino } from './Costi'
 import type { SceltaModulo } from '../lib/firma'
 import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
-import { chiedeRicevuta, comePuoiPagare, cosaNonVaModo, ERRORE_SATISPAY, modoPagamento, nonSemplice, senzaVoceDelCorso, soldi, type Pago } from '../lib/satispay'
-import { PagamentoOnline, ricordaPromemoria } from './PagamentoOnline'
+import { chiavePreparo, chiedeRicevuta, comePuoiPagare, cosaNonVaModo, ERRORE_SATISPAY, esitoPagamento, modoPagamento, nonSemplice, pagamentoDaMandare, senzaVoceDelCorso, soldi, statoRiquadroPaga, type PagamentoPrima, type Pago } from '../lib/satispay'
 
 /**
  * Il modulo di iscrizione: le domande che prima stavano su Google Form, e i
@@ -97,7 +96,10 @@ const ID: Record<CampoModulo, string> = {
 /** Le caselle del foglio: finché non si sceglie, nessuna. */
 type Scelte = { [K in keyof SceltaModulo]?: boolean }
 
-type Fase = { tipo: 'compila' } | { tipo: 'invio'; passo: string } | { tipo: 'file'; id: string; mancati: TipoFile[]; perche: string } | { tipo: 'fatto' } | { tipo: 'paga'; id: string; guaio?: string }
+type Fase = { tipo: 'compila' } | { tipo: 'invio'; passo: string } | { tipo: 'file'; id: string; mancati: TipoFile[]; perche: string } | { tipo: 'fatto' }
+
+/** Ogni quanto si chiede a Satispay com'è andata, dopo aver aperto il pagamento. */
+const OGNI = 4000
 
 export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZIONI' }: { onChiudi: () => void; nucleo?: PerIlNucleo; torna?: string }) {
   const [d, setD] = useState<DatiRichieste | null>(null)
@@ -129,6 +131,13 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const [provato, setProvato] = useState(false)
   const [pago, setPago] = useState<Pago | null>(null)
   const [satispayAttivo, setSatispayAttivo] = useState(false)
+  // Con Satispay si paga in fondo al modulo, prima di mandare: il pagamento preparato, e se lo si è aperto.
+  const [sp, setSp] = useState<PagamentoPrima | null>(null)
+  const [aperto, setAperto] = useState(false)
+  const [preparo, setPreparo] = useState(false)
+  const [guaioSp, setGuaioSp] = useState<string | null>(null)
+  // Quanti controlli dello stato di fila non hanno risposto: dopo qualche giro lo si dice.
+  const erroriStato = useRef(0)
 
   // Finché il modulo è aperto ha l'aspetto del sito, non quello del tema dell'app.
   useEffect(() => apriAspettoModulo(), [])
@@ -222,7 +231,49 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   // Col bonifico la ricevuta è obbligatoria (con Satispay non si chiede): come vuole anche `fileObbligatori` per la pagina pubblica.
   const obbligatori = fileObbligatori(daChiedere, modo === 'bonifico')
 
+  // La scelta per cui si paga e chi paga: con Satispay sempre un corso solo (`nonSemplice`).
+  const scelta = modo === 'satispay' && scelti.length === 1 ? { corso: scelti[0].id, formula: b.formula, nome: b.nome, cognome: b.cognome, email: b.email } : null
+
   const errori = problemi(pronta)
+
+  /** Il pagamento Satispay per la scelta di adesso: quello vivo, o uno nuovo. Il link arriva prima del tocco. */
+  const prepara = async () => {
+    if (!d || !scelta) return
+    setPreparo(true)
+    setGuaioSp(null)
+    try {
+      const p = await d.prepara(scelta)
+      setSp({ ...p, corsoId: scelta.corso, formula: scelta.formula, nome: scelta.nome, cognome: scelta.cognome, email: scelta.email })
+      setAperto(false)
+    } catch (e) {
+      setGuaioSp(e instanceof Error ? e.message : ERRORE_SATISPAY)
+    }
+    setPreparo(false)
+  }
+
+  // Aperto Satispay, si chiede com'è andata: quando la pagina torna visibile, e intanto ogni pochi secondi.
+  useEffect(() => {
+    if (!d || !sp || sp.stato !== 'attesa' || !aperto) return
+    let vivo = true
+    erroriStato.current = 0
+    const leggi = () =>
+      document.visibilityState === 'visible' &&
+      void d.statoSatispay(sp.id).then(
+        (s) => {
+          erroriStato.current = 0
+          if (vivo && s && s.stato !== 'attesa') setSp((p) => (p && p.id === sp.id ? { ...p, ...s } : p))
+        },
+        // Una volta può capitare (la rete del telefono); tre di fila vuol dire che Satispay non risponde.
+        () => vivo && ++erroriStato.current >= 3 && setGuaioSp(ERRORE_SATISPAY),
+      )
+    const timer = setInterval(leggi, OGNI)
+    document.addEventListener('visibilitychange', leggi)
+    return () => {
+      vivo = false
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', leggi)
+    }
+  }, [d, sp?.id, sp?.stato, aperto])
   /** Cosa scrivere sotto un campo: «Manca» solo dopo aver provato a mandare. */
   const nota = (k: CampoModulo): Nota | undefined => {
     const e = errori[k]
@@ -256,16 +307,34 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     return null
   }
 
-  /** Cosa blocca l'invio adesso; il riquadro in fondo lo mostra dopo il primo tentativo e lo segue a ogni modifica. */
-  const blocco =
-    mancaPerInviare({
+  /** Cosa manca al modulo, a parte come si paga: con Satispay si paga solo col modulo a posto. */
+  const mancaModulo = mancaPerInviare({
     dati: pronta,
     privacy,
     come,
     firma: mancaPerFirmare(),
     file,
     obbligatori,
-    }) ?? (stima && scelti.length ? cosaNonVaModo(modo, !!nucleo, !!file.ricevuta) : null)
+  })
+  const riquadroPaga = scelta && stima ? statoRiquadroPaga(scelta, sp, { stima: stima.totale, corso: scelti[0].nome, manca: mancaModulo, preparo, guaio: guaioSp }) : null
+  /** Cosa blocca l'invio adesso; il riquadro in fondo lo mostra dopo il primo tentativo e lo segue a ogni modifica. */
+  const blocco =
+    mancaModulo ??
+    (stima && scelti.length ? cosaNonVaModo(modo, !!nucleo, !!file.ricevuta, { pronto: riquadroPaga?.cosa === 'pagato', giaPagato: sp?.stato === 'pagato' }) : null)
+
+  // Si prepara da solo col modulo a posto, dopo un attimo senza modifiche (l'email non a metà), e di nuovo se cambiano
+  // la scelta o chi paga. Dopo un errore si riprova col tasto, non a ogni lettera.
+  const chiave = chiavePreparo(scelta, mancaModulo)
+  const preparato = useRef('')
+  useEffect(() => {
+    if (!chiave || riquadroPaga?.cosa !== 'prepara' || preparato.current === chiave) return
+    const t = setTimeout(() => {
+      preparato.current = chiave
+      void prepara()
+    }, 800)
+    return () => clearTimeout(t)
+    // Solo quando cambiano scelta e persona, o il pagamento non serve più: `prepara` legge i dati di adesso.
+  }, [chiave, riquadroPaga?.cosa])
   /** Le note sotto le scelte: dopo un tentativo di mandare, o di guardare il modulo. */
   const provatoFirma = provato || guaioFirma !== null
   const riquadro = provato ? blocco ?? guaio : null
@@ -360,32 +429,13 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     try {
       // Da dove arriva: l'etichetta del link della visita e la risposta; dall'area iscritti «area-iscritti», senza domanda.
       const { conosciuto, ...risposte } = pronta
-      id = await d!.invia({ ...risposte, ...origineDellaRichiesta(!!nucleo, conosciuto) })
+      // Con Satispay la richiesta prende con sé il pagamento già fatto: senza, il database la rifiuta.
+      id = await d!.invia({ ...risposte, ...origineDellaRichiesta(!!nucleo, conosciuto), pagamentoSatispay: pagamentoDaMandare(modo, sp) })
     } catch (e) {
       setFase({ tipo: 'compila' })
       return setGuaio(e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco')
     }
-    const tuttiArrivati = await carica(id, daChiedere.map((f) => f.tipo), tutti)
-    if (modo === 'satispay' && tuttiArrivati && d) await vaiASatispay(d, id)
-  }
-
-  /** Dopo l'invio: il pagamento Satispay, e via nell'app. Se non parte, la pagina del pagamento dice perché e fa riprovare. */
-  const vaiASatispay = async (x: DatiRichieste, id: string) => {
-    setFase({ tipo: 'invio', passo: 'Apro Satispay…' })
-    // L'indirizzo per tornare a pagare dopo: la pagina del pagamento lo apre da sola.
-    const u = new URL(window.location.href)
-    u.searchParams.set('pagamento', id)
-    history.replaceState(null, '', u)
-    if (promemoriaCertificato) ricordaPromemoria(id, [promemoriaCertificato])
-    try {
-      const r = await x.paga(id)
-      if (r && 'link' in r) return window.location.assign(r.link)
-      if (r) return setFase({ tipo: 'paga', id })
-      // Il servizio si è spento dopo l'invio: la pagina del pagamento lo dice, e si riprova.
-      setFase({ tipo: 'paga', id, guaio: ERRORE_SATISPAY })
-    } catch (e) {
-      setFase({ tipo: 'paga', id, guaio: e instanceof Error ? e.message : undefined })
-    }
+    await carica(id, daChiedere.map((f) => f.tipo), tutti)
   }
 
   // Il certificato da portare: lo dice la pagina finale, con o senza Satispay.
@@ -394,24 +444,22 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       ? `Ricorda di consegnare in segreteria il certificato medico${certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.`
       : null
 
-  if (fase.tipo === 'paga')
-    return (
-      <PagamentoOnline
-        richiestaId={fase.id}
-        chi={`${b.nome.trim()} ${b.cognome.trim()}`}
-        guaioIniziale={fase.guaio}
-        promemoria={promemoriaCertificato ? [promemoriaCertificato] : []}
-        onChiudi={onChiudi}
-      />
-    )
-
   if (fase.tipo === 'fatto') {
+    // Pagata con Satispay prima di mandare: lo dice la pagina finale.
+    const pagata = modo === 'satispay' && sp?.stato === 'pagato' ? esitoPagamento(sp) : null
     return (
       <div className="pad stack esito">
-        <TitoloEsito tono="fatto">RICHIESTA ARRIVATA</TitoloEsito>
-        <span className="esito-testo">
-          Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
-        </span>
+        <TitoloEsito tono="fatto">{pagata?.titolo ?? 'RICHIESTA ARRIVATA'}</TitoloEsito>
+        {pagata?.testi.map((t) => (
+          <span key={t} className="esito-testo">{t}</span>
+        ))}
+        {pagata ? (
+          <span className="esito-testo">La segreteria controlla la richiesta e ti scrive se manca qualcosa. La ricevuta della palestra te la dà la segreteria.</span>
+        ) : (
+          <span className="esito-testo">
+            Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
+          </span>
+        )}
         {promemoriaCertificato && <span className="esito-testo">{promemoriaCertificato}</span>}
         {!file.ricevuta && !modo && <span className="esito-testo">Non hai caricato la ricevuta: paga in segreteria, o portala lì se hai già pagato.</span>}
         <Tasto onClick={onChiudi}>{torna}</Tasto>
@@ -430,7 +478,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         {fase.mancati.map((t) => (
           <SceltaFile key={t} tipo={t} file={file[t]} onFile={(f) => setFile((p) => ({ ...p, [t]: f }))} />
         ))}
-        <Tasto variante="principale" onClick={() => void carica(fase.id, fase.mancati).then((ok) => (ok && modo === 'satispay' && d ? vaiASatispay(d, fase.id) : undefined))}>
+        <Tasto variante="principale" onClick={() => void carica(fase.id, fase.mancati)}>
           RIPROVA
         </Tasto>
         <Dettaglio>Si può riprovare per un'ora. Se non va, {nucleo ? 'porta i fogli in segreteria' : 'chiama la segreteria'}.</Dettaglio>
@@ -475,10 +523,10 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
 
       <Sezione titolo="CHI SI ISCRIVE">
         <Campo id="m-nome" nota={nota('nome')} etichetta="NOME">
-          <input id="m-nome" {...segna('nome')} className="campo" autoComplete="given-name" value={b.nome} onChange={metti('nome')} />
+          <input id="m-nome" {...segna('nome')} className="campo" autoComplete="given-name" maxLength={80} value={b.nome} onChange={metti('nome')} />
         </Campo>
         <Campo id="m-cognome" nota={nota('cognome')} etichetta="COGNOME">
-          <input id="m-cognome" {...segna('cognome')} className="campo" autoComplete="family-name" value={b.cognome} onChange={metti('cognome')} />
+          <input id="m-cognome" {...segna('cognome')} className="campo" autoComplete="family-name" maxLength={80} value={b.cognome} onChange={metti('cognome')} />
         </Campo>
         <Campo id="m-cf" nota={nota('codiceFiscale')} etichetta="CODICE FISCALE" largo>
           <input id="m-cf" {...segna('codiceFiscale')} className="campo num campo-codice" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.codiceFiscale} onChange={metti('codiceFiscale')} />
@@ -848,15 +896,42 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         </label>
       </Sezione>
 
+      {riquadroPaga && (
+        <Sezione titolo="PAGA">
+          <div className="modulo-campo modulo-largo paga-riquadro" data-bordo={riquadroPaga.bordo}>
+            <Riquadro stretto>
+              <span className="num paga-cifra">{soldi(riquadroPaga.importo)}</span>
+              <Dettaglio tono="testo">{riquadroPaga.riga}</Dettaglio>
+              <Dettaglio tono={riquadroPaga.tonoTesto}>{riquadroPaga.testo}</Dettaglio>
+              {guaioSp && guaioSp !== riquadroPaga.testo && <Dettaglio tono="guaio">{guaioSp}</Dettaglio>}
+            </Riquadro>
+          </div>
+        </Sezione>
+      )}
+
       <div className="pad stack modulo-piede">
         {riquadro && (
           <div role="alert">
             <Riquadro tono="guaio">{riquadro}</Riquadro>
           </div>
         )}
-        <Tasto variante="principale" type="submit" disabled={inVolo || !d}>
-          {inVolo ? fase.passo.toUpperCase() : modo === 'satispay' ? 'MANDA E PAGA CON SATISPAY' : 'MANDA LA RICHIESTA'}
-        </Tasto>
+        {/* Con Satispay il tasto giallo è prima il pagamento, un link già pronto che si apre al tocco, e poi l'invio: lo decide statoRiquadroPaga. */}
+        {riquadroPaga?.link ? (
+          <Tasto variante="principale" href={riquadroPaga.link} qui={riquadroPaga.azione === 'chiama'} onClick={riquadroPaga.azione === 'link' ? () => setAperto(true) : undefined}>
+            {riquadroPaga.tasto}
+          </Tasto>
+        ) : riquadroPaga && riquadroPaga.azione !== 'manda' ? (
+          riquadroPaga.tasto && (
+            <Tasto variante="principale" disabled={riquadroPaga.spento || riquadroPaga.azione !== 'prepara'} onClick={() => void prepara()}>
+              {riquadroPaga.tasto}
+            </Tasto>
+          )
+        ) : (
+          <Tasto variante="principale" type="submit" disabled={inVolo || !d}>
+            {inVolo ? fase.passo.toUpperCase() : 'MANDA LA RICHIESTA'}
+          </Tasto>
+        )}
+        {riquadroPaga?.sotto && <Dettaglio>{riquadroPaga.sotto}</Dettaglio>}
       </div>
     </form>
   )
@@ -1042,7 +1117,7 @@ const MODI: Array<{ id: Pago; testo: string; riga: string }> = [
 
 /**
  * Il modulo pubblico: quanto si paga e come. Con Satispay l'importo è quello
- * che calcola il database, e il tasto in fondo apre l'app dopo l'invio; col
+ * che calcola il database, e si paga in fondo al modulo prima di mandare; col
  * bonifico IBAN, causale e la sua ricevuta stanno qui insieme.
  */
 function IlPagamento({ stima, modo, puoi, onModo, causale: testo, ricevuta }: { stima: Stima; modo: Pago | null; puoi: ReturnType<typeof comePuoiPagare>; onModo: (m: Pago) => void; causale: string; ricevuta: ReactNode }) {
@@ -1069,7 +1144,7 @@ function IlPagamento({ stima, modo, puoi, onModo, causale: testo, ricevuta }: { 
           />
         </div>
         {!puoi.satispay && puoi.perche && <Dettaglio>{puoi.perche}.</Dettaglio>}
-        {modo === 'satispay' && <Dettaglio>Quando mandi la richiesta si apre Satispay con {soldi(stima.totale)}. Confermi lì e torni qui.</Dettaglio>}
+        {modo === 'satispay' && <Dettaglio>Paghi in fondo al modulo, prima di mandare la richiesta: {soldi(stima.totale)} con Satispay.</Dettaglio>}
       </div>
       {modo === 'bonifico' && (
         <>

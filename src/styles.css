@@ -1085,6 +1085,15 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .passo-dettaglio[data-tono='testo'] { color: var(--text); }
 .passo-dettaglio[data-tono='guaio'] { color: var(--rosso-testo); }
 .passo-dettaglio[data-tono='avviso'] { color: var(--giallo-testo); }
+.passo-dettaglio[data-tono='fatto'] { color: var(--verde-testo); }
+/* Il riquadro PAGA in fondo al modulo pubblico (satispay-prima): il bordo dice com'è andata, la cifra resta del colore del testo tranne da pagato. */
+.paga-riquadro .riquadro { border-color: var(--blu); }
+.paga-riquadro[data-bordo='fatto'] .riquadro { border-color: var(--verde-testo); }
+.paga-riquadro[data-bordo='avviso'] .riquadro { border-color: var(--giallo-testo); }
+.paga-riquadro[data-bordo='guaio'] .riquadro { border-color: var(--rosso-testo); }
+.paga-riquadro .passo-dettaglio { font-size: 15px; }
+.paga-cifra { font-family: var(--cond); font-size: 34px; font-weight: 800; line-height: 1.1; }
+.paga-riquadro[data-bordo='fatto'] .paga-cifra { color: var(--verde-testo); }
 .passo-btn { min-height: 48px; padding: 0 16px; font-size: 16px; text-decoration: none; align-self: flex-start; }
 /* L'IBAN in grande, a gruppi di quattro: se va a capo, va a capo fra un gruppo e l'altro. */
 .iban-riga { display: block; overflow-wrap: anywhere; }
