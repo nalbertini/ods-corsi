@@ -91,7 +91,7 @@ console.log('\nIl menu del Banco')
 const luoghi = await impacchetta("export { LUOGHI } from './src/lib/luoghiBanco'")
 ok('LUOGHI: i cinque luoghi con le loro voci', (luoghi.LUOGHI ?? []).map((l) => [l.id, l.voci.map((v) => v.voce)]), [
   ['oggi', ['dafare', 'settimana', 'presenze']],
-  ['persone', ['iscritti', 'tessere', 'richieste', 'istruttori', 'personale']],
+  ['persone', ['iscritti', 'tessere', 'richieste', 'istruttori', 'compensi', 'personale']],
   ['corsi', ['corsi', 'esercizi']],
   ['soldi', ['pagamenti', 'contabilita', 'listino', 'vestiario']],
   ['palestra', ['statistiche', 'segnalazioni', 'sito', 'regole']],

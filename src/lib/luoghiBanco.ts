@@ -25,6 +25,7 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
       { voce: 'tessere', nome: 'TESSERE' },
       { voce: 'richieste', nome: 'RICHIESTE ONLINE' },
       { voce: 'istruttori', nome: 'ISTRUTTORI' },
+      { voce: 'compensi', nome: 'COMPENSI' },
       { voce: 'personale', nome: 'ACCESSI' },
     ],
   },

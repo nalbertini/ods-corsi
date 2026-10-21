@@ -132,7 +132,7 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
     ['Ogni giorno', ['dafare', 'richieste', 'presenze']],
     ['Iscritti e soldi', ['iscritti', 'tessere', 'pagamenti']],
     ['Corsi e orari', ['settimana', 'corsi', 'listino']],
-    ['Istruttori', ['istruttori', 'personale']],
+    ['Istruttori', ['istruttori', 'compensi', 'personale']],
     ['Il resto', ['statistiche', 'vestiario', 'esercizi', 'segnalazioni', 'sito']],
   ]
   ok('solo segreteria: i cinque gruppi, senza CONTABILITÀ', gruppi('segreteria'), DELLA_SEGRETERIA_NEL_MENU)
