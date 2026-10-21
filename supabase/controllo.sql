@@ -432,6 +432,13 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('85-solleciti.sql', 'i solleciti su WhatsApp: chi ha sollecitato e quando',
     to_regclass('public.solleciti') is not null
     and to_regprocedure('public.segna_sollecito(uuid)') is not null
-    and to_regprocedure('public.ultimo_sollecito(uuid)') is not null)
+    and to_regprocedure('public.ultimo_sollecito(uuid)') is not null),
+  ('86-ricevuta-una-volta.sql', 'una ricevuta fatta una volta sola: la chiave del modulo',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'ricevute' and column_name = 'chiave')
+    and to_regprocedure('public.ricevuta_gia_fatta(uuid,uuid)') is not null
+    -- Rilanciare 55 o 73 dopo 86 rimette le funzioni che ignorano la chiave: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%ricevuta_gia_fatta%')
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%'))
 ) as x(file, cosa, c)
 order by file, cosa;

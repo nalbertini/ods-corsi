@@ -330,6 +330,11 @@ pagamento torna libero per quella giusta.
 socio e il genitore), il totale e, con un acconto, quanto si paga ora e quanto
 resta. Confermato, le dà il numero e scarica il PDF, da stampare o mandare.
 
+Se la rete cade mentre la fai e l'app dà errore, ripremi **FAI LA RICEVUTA**
+senza chiudere: se era già fatta ritrovi quella, col suo numero, e non ne
+nasce un'altra. Se nel frattempo hai cambiato qualcosa, vale la ricevuta già
+fatta: se è sbagliata si annulla e se ne fa un'altra.
+
 ### La ricevuta per email
 
 Se la persona ha l'**EMAIL DI CONTATTO**, la domanda di **FAI LA RICEVUTA** ha

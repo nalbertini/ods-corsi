@@ -109,6 +109,8 @@ export interface DatiRicevuta {
   /** Centesimi già dati prima, che non sono in queste voci. */
   anticipo: number
   note?: string
+  /** Del modulo che la fa: ripremendo dopo una risposta persa, torna la stessa ricevuta (`86-ricevuta-una-volta.sql`). */
+  chiave?: string
 }
 
 export interface Ricevuta extends Omit<DatiRicevuta, 'numero'> {
