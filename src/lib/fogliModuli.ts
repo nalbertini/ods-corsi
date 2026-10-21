@@ -9,7 +9,9 @@ import { PAGAMENTO } from './iscrizione'
  * indietro, e le autorizzazioni hanno i campi da compilare al computer.
  *
  * L'aspetto è quello del sito (`docs/design-canvas/moduli-pdf`, pelle B):
- * carta bianca, Big Shoulders per i titoli, Inter per il testo, filetti blu.
+ * carta bianca, Big Shoulders per i titoli, Inter per il testo, filetti blu;
+ * testata e piede sono la carta intestata (`docs/design-canvas/carta-intestata`,
+ * variante A), che esce anche da sola per la lettera d'incarico.
  * Le parole delle autorizzazioni sono quelle del foglio di sempre: se la
  * palestra le cambia, si cambiano qui sotto, non nella resa.
  *
@@ -68,10 +70,15 @@ const COL = {
   tenue: [0x46, 0x60, 0x6f],
   blu: [0x14, 0x70, 0x9f],
   filo: [0xcf, 0xe6, 0xf4],
+  giallo: [0xf4, 0xc3, 0x1b],
 } as const
 
-const PIEDE =
-  'Corso Francia 224 Cascine Vica Rivoli 10098 Torino; telefono 3479119064; e-mail: asdilcentrojudo@gmail.com; pec: asdilcentrojudo@legalmail.it; Cod.fisc.: 95562500017; p.iva:10002760014'
+/** I dati della palestra nel piede, in tre gruppi di due righe (a capo fra i dati, mai dentro uno); `peso` è la larghezza della colonna. */
+const PIEDE = [
+  { etichetta: 'SEDE', righe: ['Corso Francia 224, Cascine Vica', '10098 Rivoli (TO)'], peso: 1 },
+  { etichetta: 'CONTATTI', righe: ['347 911 9064 · asdilcentrojudo@gmail.com', 'PEC asdilcentrojudo@legalmail.it'], peso: 1.6 },
+  { etichetta: 'DATI FISCALI', righe: ['C.F. 95562500017', 'P.IVA 10002760014'], peso: 0.9 },
+]
 
 type Colore = readonly [number, number, number]
 interface Pezzo {
@@ -80,7 +87,7 @@ interface Pezzo {
   g?: boolean
 }
 
-export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uint8Array; minori: Uint8Array; costi: Uint8Array }> {
+export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uint8Array; minori: Uint8Array; costi: Uint8Array; carta: Uint8Array }> {
   const lib = await import('pdf-lib')
   const { PDFDocument, rgb, pushGraphicsState, popGraphicsState, setCharacterSpacing, PDFName, PDFString } = lib
 
@@ -137,14 +144,27 @@ export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uin
       pagina.drawImage(b.simbolo, { x: L - MARGINE - sw, y: A - top - alto, width: sw, height: alto })
       this.testo('ASD IL CENTRO JUDO', { font: b.titoloFont, corpo: 30, centro: L / 2, y: top + 30, tracking: 0.03 * 30, colore: COL.inchiostro })
       this.testo(this.sottotitolo, { font: b.titoloFont, corpo: 11, centro: L / 2, y: top + 46, tracking: 0.22 * 11, colore: COL.tenue })
-      pagina.drawLine({ start: { x: MARGINE, y: A - top - alto - 6 }, end: { x: L - MARGINE, y: A - top - alto - 6 }, thickness: 2, color: colore(COL.blu) })
+      // Il filo blu comincia con un tatami giallo, come i pulsanti del sito (variante A di docs/design-canvas/carta-intestata).
+      const filo = A - top - alto - 6
+      pagina.drawRectangle({ x: MARGINE, y: filo - 3, width: 44, height: 6, color: colore(COL.giallo) })
+      pagina.drawLine({ start: { x: MARGINE + 44, y: filo }, end: { x: L - MARGINE, y: filo }, thickness: 2, color: colore(COL.blu) })
       this.y = top + alto + 6
     }
 
+    /** Il piede: una tessera chiara coi dati della palestra in tre gruppi, da 22 a 68 punti dal fondo. */
     private piede() {
       const { pagina, b } = this
-      pagina.drawLine({ start: { x: MARGINE, y: 78 }, end: { x: L - MARGINE, y: 78 }, thickness: 0.7, color: colore(COL.filo) })
-      this.righe(PIEDE, { font: b.corpo, corpo: 8, interlinea: 11, x: MARGINE, larghezza: L - 2 * MARGINE, y: A - 66, colore: COL.tenue })
+      const largo = L - 2 * MARGINE
+      pagina.drawSvgPath(`M6 0H${largo - 6}Q${largo} 0 ${largo} 6V40Q${largo} 46 ${largo - 6} 46H6Q0 46 0 40V6Q0 0 6 0Z`, { x: MARGINE, y: 68, color: colore(COL.filo) })
+      const pesi = PIEDE.reduce((s, g) => s + g.peso, 0)
+      const libero = largo - 28 - 12 * (PIEDE.length - 1)
+      let x = MARGINE + 14
+      for (const g of PIEDE) {
+        const w = (libero * g.peso) / pesi
+        this.testo(g.etichetta, { font: b.titoloFont, corpo: 8, x, y: A - 68 + 15, tracking: 0.8, colore: COL.blu })
+        g.righe.forEach((r, i) => this.testo(r, { font: b.corpo, corpo: 7, x, y: A - 68 + 25 + i * 9.5, colore: COL.inchiostro }))
+        x += w + 12
+      }
     }
 
     /** Una riga di testo: `y` è la linea di base, dall'alto. */
@@ -466,5 +486,14 @@ export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uin
     return b.pdf.save()
   }
 
-  return { maggiorenni: await maggiorenni(), minori: await minori(), costi: await costi() }
+  // ---------------------------------------------------------------------------------------------
+  // La carta intestata: testata e piede e basta. La lettera d'incarico (letteraPdf.ts) ci scrive
+  // sopra, così nell'app non servono i font del sito né fontkit.
+  const carta = async () => {
+    const b = await nuovo('Carta intestata · ASD IL CENTRO JUDO')
+    new Foglio(b, null, 'ASSOCIAZIONE SPORTIVA DILETTANTISTICA')
+    return b.pdf.save()
+  }
+
+  return { maggiorenni: await maggiorenni(), minori: await minori(), costi: await costi(), carta: await carta() }
 }

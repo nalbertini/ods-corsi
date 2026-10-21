@@ -14,7 +14,7 @@
 // PDF, da aprire e guardare.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { inflateSync } from 'node:zlib'
 
 // pdf-lib vuole `platform: 'node'`; la segreteria no, come in prova-tariffe.mjs.
@@ -113,7 +113,7 @@ const carica = async (contents, file) => {
 }
 const l = {
   ...(await carica("export * from './src/lib/lettere'", 'src/lib/lettere.ts')),
-  ...(await carica("export { letteraPdf } from './src/lib/letteraPdf'; export { PDFDocument } from 'pdf-lib'", 'src/lib/letteraPdf.ts')),
+  ...(await carica("export { letteraPdf, cartaIntestata } from './src/lib/letteraPdf'; export { PDFDocument, PDFName, PDFDict, PDFArray, PDFRawStream, StandardFonts } from 'pdf-lib'", 'src/lib/letteraPdf.ts')),
 }
 const m = await importa(
   "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'",
@@ -296,11 +296,19 @@ await prova('la data che manca è «data»', () => l.campoCheNonVa({ ...dati, da
 await prova('tutto giusto: nessuno', () => l.campoCheNonVa(dati), null)
 await prova('i corsi che insegna e restano fuori dalla lettera, senza tariffa', () => l.corsiFuoriLettera(['Aikido 2', 'Aikido 3', 'Judo kids'], [{ corso: 'Aikido 2', centesimi: 1500 }]), ['Aikido 3', 'Judo kids'])
 
+// Una carta finta, una pagina A4 con una scritta: qui si prova letteraPdf; la carta vera è in prova-fogli-moduli.mjs.
+const carta = await (async () => {
+  const c = await l.PDFDocument.create()
+  const pg = c.addPage([595.28, 841.89])
+  pg.drawText('CARTA DI PROVA', { x: 40, y: 800, size: 12, font: await c.embedFont(l.StandardFonts.Helvetica) })
+  return c.save()
+})()
+
 console.log('\n6. il PDF')
 {
   const fai = async (x) => {
     try {
-      const byte = await l.letteraPdf(x)
+      const byte = await l.letteraPdf(x, carta)
       const doc = await l.PDFDocument.load(byte)
       return { byte, doc, testo: piatto(testoDelPdf(byte)) }
     } catch (e) {
@@ -327,6 +335,122 @@ console.log('\n6. il PDF')
     ok("e c'è anche l'ultima", t.testo.includes('Ginnastica dolce'), true)
     if (cartella) writeFileSync(`${cartella}/lettera-tante-tariffe.pdf`, t.byte)
   }
+}
+
+console.log('\n6 bis. la lettera sulla carta intestata')
+{
+  const fai = async (x, su = carta) => {
+    try {
+      const byte = await l.letteraPdf(x, su)
+      return { doc: await l.PDFDocument.load(byte) }
+    } catch (e) {
+      return { errore: e.message }
+    }
+  }
+  // Solo il contenuto della pagina, non quello della carta disegnata sopra: si vede cosa scrive la lettera da sé.
+  const contenuto = (pg) => {
+    const c = pg.node.Contents()
+    const flussi = c instanceof l.PDFArray ? c.asArray().map((r) => pg.doc.context.lookup(r)) : [c]
+    return flussi
+      .filter((f) => f instanceof l.PDFRawStream)
+      .map((f) => {
+        try {
+          return inflateSync(f.contents).toString('latin1')
+        } catch {
+          return Buffer.from(f.contents).toString('latin1')
+        }
+      })
+      .join('\n')
+  }
+  // Le righe scritte sulla pagina, in WinAnsi: 0x92 è l'apostrofo curvo.
+  const righe = (pg) => [...contenuto(pg).matchAll(/<([0-9A-F]+)> Tj/g)].map((t) => Buffer.from(t[1], 'hex').toString('latin1').replace(/\x92/g, '’'))
+  const pagine = (doc) => doc.getPages().map((pg) => ({ righe: righe(pg), testo: piatto(righe(pg).join(' ')), pg }))
+  /** I nomi degli XObject di tipo Form fra le risorse della pagina, e se la pagina li disegna (`Do`). */
+  const disegnaForm = (pg) => {
+    const xo = pg.node.Resources()?.lookup(l.PDFName.of('XObject'), l.PDFDict)
+    if (!xo) return false
+    const forme = xo.keys().filter((k) => {
+      const o = xo.lookup(k)
+      return String((o instanceof l.PDFRawStream ? o.dict : o)?.get(l.PDFName.of('Subtype'))) === '/Form'
+    })
+    const c = contenuto(pg)
+    return forme.some((k) => c.includes(`${k.toString()} Do`))
+  }
+  const tante = { ...lettera, tariffe: ['Judo kids', 'Judo adulti', 'Judo 2', 'Lotta 2', 'Lotta 3', 'Aikido', 'Karate', 'Ginnastica dolce'].map((corso, i) => ({ corso, centesimi: 1500 + i * 50 })) }
+
+  for (const [nome, x] of [['la lettera di Ballabio', lettera], ['quella con otto tariffe', tante]]) {
+    const p = await fai(x)
+    ok(`${nome}, con la carta: si fa`, p.errore ?? 'fatto', 'fatto')
+    if (p.errore) continue
+    const ps = pagine(p.doc)
+    const N = ps.length
+    ok(`${nome}: A4 in verticale`, Object.values(p.doc.getPage(0).getSize()).map(Math.round), [595, 842])
+    ok(`${nome}: ogni pagina ha disegnata la carta (un XObject Form)`, ps.map((q) => disegnaForm(q.pg)), ps.map(() => true))
+    ok(`${nome}: la lettera non scrive più da sé «ASD IL CENTRO JUDO» in testa`, ps.map((q) => q.righe.some((r) => r.trim() === 'ASD IL CENTRO JUDO')), ps.map(() => false))
+    ok(`${nome}: né il piede «Corso Francia 224…»`, ps.map((q) => q.testo.includes('Corso Francia 224')), ps.map(() => false))
+    // La lettera più corta (una tariffa, senza giorni) va comunque su due pagine: il caso a una pagina non c'è.
+    ok(`${nome}: più di una pagina`, N > 1, true)
+    ok(`${nome}: la pagina n ha «pagina n di ${N}»`, ps.map((q, i) => q.testo.includes(`pagina ${i + 1} di ${N}`)), ps.map(() => true))
+    ok(
+      `${nome}: dalla seconda, «Diana Ballabio · lettera d'incarico 2026/27 · pagina n di ${N}»`,
+      ps.slice(1).map((q, i) => q.testo.includes(`Diana Ballabio · lettera d'incarico 2026/27 · pagina ${i + 2} di ${N}`)),
+      ps.slice(1).map(() => true),
+    )
+    // Firma e puntini non si separano: la pagina con chi firma ha anche la sua riga «Firma:» dopo.
+    const separate = ['Il Presidente', 'Per accettazione', 'A norma degli artt. 1341'].filter((chi) => {
+      const q = ps.find((y) => y.righe.some((r) => r.startsWith(chi)))
+      return !q || !q.righe.slice(q.righe.findIndex((r) => r.startsWith(chi))).some((r) => r.startsWith('Firma:'))
+    })
+    ok(`${nome}: ogni firma ha i suoi puntini sulla stessa pagina`, separate, [])
+    const tutto = piatto(ps.map((q) => q.righe.join('\n')).join('\n'))
+    ok(`${nome}: il testo della lettera c'è lo stesso`, ['BLLDNI86H61H355W', '15,00 (quindici/00)', 'Il Presidente', 'Per accettazione', 'ASD IL CENTRO JUDO il Suo'].filter((f) => !tutto.includes(f)), [])
+  }
+
+  // Dopo una firma, la riga che la chiude («Data: …» o il nome) sta sulla sua pagina: mai da sola sulla pagina dopo.
+  // Con la carta il testo ha meno posto, e con quattro tariffe il nome finiva da solo in cima alla terza pagina.
+  const staccate = []
+  for (let n = 1; n <= 14; n++) {
+    const x = { ...lettera, tariffe: Array.from({ length: n }, (_, i) => ({ corso: `Corso ${i + 1}`, centesimi: 1500 + i * 50 })) }
+    const p = await fai(x)
+    if (p.errore) {
+      staccate.push(`${n}: ${p.errore}`)
+      continue
+    }
+    const ps = pagine(p.doc)
+    const dove = (f) => ps.findIndex((q) => q.righe.some(f))
+    const data = dove((r) => r.startsWith('Data:'))
+    const accettazione = dove((r) => r.startsWith('Per accettazione'))
+    const nome = ps.findLastIndex((q) => q.righe.some((r) => r.trim() === 'BALLABIO DIANA'))
+    const norma = dove((r) => r.startsWith('A norma degli artt.'))
+    if (data !== accettazione) staccate.push(`${n} tariffe: «Data:» a pagina ${data + 1}, la sua firma a pagina ${accettazione + 1}`)
+    if (nome !== norma) staccate.push(`${n} tariffe: il nome a pagina ${nome + 1}, la sua firma a pagina ${norma + 1}`)
+  }
+  ok('da 1 a 14 tariffe: la data e il nome stanno sulla pagina della loro firma', staccate, [])
+
+  // La carta si scarica dall'app: se non arriva, o arriva altro (una pagina HTML del wifi), un messaggio per chi usa l'app.
+  const AVVISO = 'La carta intestata non si scarica: controlla la connessione e riprova.'
+  const risposta = (ok, byte) => async () => ({ ok, arrayBuffer: async () => new Uint8Array(byte).buffer })
+  await prova('la carta: un PDF arriva com’è', async () => (await l.cartaIntestata(risposta(true, carta))).length, carta.length)
+  await prova('la carta in 404: il messaggio', () => l.cartaIntestata(risposta(false, [])).then(() => 'scaricata', (e) => e.message), AVVISO)
+  await prova('senza rete: il messaggio', () => l.cartaIntestata(async () => { throw new TypeError('Failed to fetch') }).then(() => 'scaricata', (e) => e.message), AVVISO)
+  await prova('una pagina HTML al posto del PDF: il messaggio', () => l.cartaIntestata(risposta(true, Buffer.from('<!doctype html><html></html>'))).then(() => 'scaricata', (e) => e.message), AVVISO)
+
+  // Sulla carta vera il testo della lettera sta fra la testata (fino a 92 punti dall'alto) e il piede (fino a 68 dal
+  // fondo): nessuna riga ci finisce sopra. Le y sono le linee di base dei Tm che la lettera scrive da sé.
+  const vera = new Uint8Array(readFileSync('public/moduli/carta-intestata.pdf'))
+  const fuori = []
+  for (let n = 1; n <= 14; n++) {
+    const x = { ...lettera, tariffe: Array.from({ length: n }, (_, i) => ({ corso: `Corso ${i + 1}`, centesimi: 1500 + i * 50 })) }
+    const p = await fai(x, vera)
+    if (p.errore) {
+      fuori.push(`${n}: ${p.errore}`)
+      continue
+    }
+    p.doc.getPages().forEach((pg, i) => {
+      for (const [, y] of contenuto(pg).matchAll(/ (-?[\d.]+) Tm/g)) if (Number(y) < 70 || Number(y) + 10 > 841.89 - 92) fuori.push(`${n} tariffe, pagina ${i + 1}: una riga a y=${y}`)
+    })
+  }
+  ok('sulla carta vera, da 1 a 14 tariffe: nessuna riga nella testata o nel piede', fuori, [])
 }
 
 console.log('\n7. la segreteria di prova: fa, sostituisce, spunta firmata')

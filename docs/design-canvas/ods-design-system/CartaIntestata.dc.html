@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- I PDF usano Big Shoulders Display e Inter (dati/moduli/fonts); qui il canvas li prende da Google Fonts. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;600&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COSTRUITA: la carta intestata dei PDF (`Foglio.testata` e `Foglio.piede` di src/lib/fogliModuli.ts), A4 = 595×842 pt.
+     La usano i tre moduli di public/moduli (sottotitolo = il nome del modulo) e, come public/moduli/carta-intestata.pdf,
+     la lettera d'incarico (letteraPdf.ts), che ci scrive sopra in Helvetica e aggiunge «pagina n di N» sopra il piede. -->
+<div style="position: relative; width: 595px; height: 842px; background: #ffffff; overflow: hidden; color: #0d2a3d">
+  <div style="position: absolute; left: 40px; right: 40px; top: 28px; height: 54px; display: flex; align-items: center; justify-content: space-between">
+    <img src="./carta-intestata-mascotte.png" style="height: 54px; width: auto; display: block" alt="">
+    <div style="text-align: center">
+      <div style="font-family: {{big}}; font-weight: 800; font-size: 30px; letter-spacing: 0.03em; line-height: 1">ASD IL CENTRO JUDO</div>
+      <div style="font-family: {{big}}; font-weight: 800; font-size: 11px; letter-spacing: 0.22em; color: #46606f; margin-top: 5px">{{sottotitolo}}</div>
+    </div>
+    <img src="./carta-intestata-simbolo.png" style="height: 54px; width: auto; display: block" alt="">
+  </div>
+  <div style="position: absolute; left: 40px; right: 40px; top: 85px; display: flex; align-items: center"><div style="width: 44px; height: 6px; background: #f4c31b"></div><div style="flex: 1; height: 2px; background: #14709f"></div></div>
+  <div style="position: absolute; left: 56px; right: 56px; top: 112px; font-family: {{inter}}; font-size: 10px; line-height: 1.35; color: #0d2a3d">{{corpo}}</div>
+  <sc-if value="{{conPagina}}" hint-placeholder-val="{{ false }}"><div style="position: absolute; right: 56px; bottom: 70px; font-family: {{inter}}; font-size: 7.5px; color: #46606f">{{pagina}}</div></sc-if>
+  <div style="position: absolute; left: 40px; right: 40px; bottom: 22px; height: 46px; background: #cfe6f4; border-radius: 6px; padding: 8px 14px 0; display: grid; grid-template-columns: 1fr 1.6fr 0.9fr; gap: 12px; font-family: {{inter}}; font-size: 7px; line-height: 9.5px">
+    <sc-for list="{{gruppi}}" as="g" hint-placeholder-count="3"><div><div style="font-family: {{big}}; font-weight: 800; font-size: 8px; letter-spacing: 0.1em; color: #14709f; line-height: 1.2; margin-bottom: 1px">{{g.etichetta}}</div><div>{{g.uno}}</div><div>{{g.due}}</div></div></sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"sottotitolo":{"editor":"text","default":"ASSOCIAZIONE SPORTIVA DILETTANTISTICA"},"corpo":{"editor":"text","default":""},"pagina":{"editor":"text","default":""},"$preview":{"width":595,"height":842}}'>
+// I dati del piede: PIEDE di src/lib/fogliModuli.ts, due righe per gruppo.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return {
+      big: BIG, inter: INTER,
+      sottotitolo: p.sottotitolo ?? 'ASSOCIAZIONE SPORTIVA DILETTANTISTICA',
+      corpo: p.corpo ?? '', pagina: p.pagina ?? '', conPagina: !!p.pagina,
+      gruppi: [
+        { etichetta: 'SEDE', uno: 'Corso Francia 224, Cascine Vica', due: '10098 Rivoli (TO)' },
+        { etichetta: 'CONTATTI', uno: '347 911 9064 · asdilcentrojudo@gmail.com', due: 'PEC asdilcentrojudo@legalmail.it' },
+        { etichetta: 'DATI FISCALI', uno: 'C.F. 95562500017', due: 'P.IVA 10002760014' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
