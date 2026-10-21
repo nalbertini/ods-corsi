@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
+import { contaFila, type RichiesteFila } from '../../lib/filaSito'
 import type { AltreSito, NumeriSito } from '../../lib/sitoNumeri'
 import type { LetturaSito, StatoSito } from '../../lib/sitoStatistiche'
 import { TESTI_GUAI, chiaveSito, contaDal, creaMemoria, lettiAlle, nomeMeseSito, notaMese } from '../../lib/sitoStatistiche'
@@ -15,8 +16,9 @@ const it = (n: number) => n.toLocaleString('it-IT')
  * da GoatCounter (funzione `conti-sito`). Le regole (quando leggere, AGGIORNA, le frasi) stanno in
  * sitoStatistiche.ts e sitoNumeri.ts; qui si mostra. Un guaio sta dentro il riquadro: gli altri riquadri restano.
  * Il corso scelto non conta. `a` è oggi: il periodo di STATISTICHE finisce sempre oggi.
+ * Sopra, DAL SITO ALLE RICHIESTE: la stessa lettura del sito e le richieste che STATISTICHE ha già letto.
  */
-export function StatisticheSito({ d, da, a, corso }: { d: DatiSegreteria; da: string; a: string; corso: boolean }) {
+export function StatisticheSito({ d, da, a, corso, richieste }: { d: DatiSegreteria; da: string; a: string; corso: boolean; richieste: RichiesteFila }) {
   const chiave = chiaveSito(da, a)
   const [stato, setStato] = useState<StatoSito | null>(null)
   const [legge, setLegge] = useState(false)
@@ -67,6 +69,8 @@ export function StatisticheSito({ d, da, a, corso }: { d: DatiSegreteria; da: st
   const letti = stato ? (numeri ? lettiAlle(stato.letti) : 'Non letti') : ''
 
   return (
+    <>
+    <Fila stato={stato} richieste={richieste} dal={dal} corso={corso} />
     <section aria-label="Il sito" className="sg-riquadro">
       <Riga titolo="IL SITO">
         <span className="sg-sito-nota-titolo">visite e tocchi su Iscriviti, Chiama e Scrivici · tutta la palestra</span>
@@ -110,6 +114,86 @@ export function StatisticheSito({ d, da, a, corso }: { d: DatiSegreteria; da: st
         </div>
       )}
       {numeri && <Numeri numeri={numeri} da={da} a={a} />}
+    </section>
+    </>
+  )
+}
+
+/** Un gradino della fila: la cifra, o perché non c'è (si legge, o il guaio della sua metà). */
+type Gradino = { titolo: string; n: number | null; sotto: string; legge: boolean; guaio: string }
+
+/**
+ * DAL SITO ALLE RICHIESTE: visite → tocchi su Iscriviti → richieste dal sito → accolte. Le regole stanno in
+ * filaSito.ts. Un guaio tocca solo la sua metà: il contatore i primi due gradini, il database gli altri due.
+ */
+function Fila({ stato, richieste, dal, corso }: { stato: StatoSito | null; richieste: RichiesteFila; dal: string | null; corso: boolean }) {
+  const numeri = stato && 'numeri' in stato ? stato.numeri : null
+  const f = contaFila(numeri, richieste && 'righe' in richieste ? richieste : null)
+  const sito = { legge: stato === null, guaio: stato && 'guaio' in stato ? TESTI_GUAI[stato.guaio].titolo : '' }
+  const delle = { legge: richieste === undefined, guaio: 'Non si sanno' }
+  const persone = (n: number | null, una: string, tante: string) => (n === 1 ? una : tante)
+  const gradini: Gradino[] = [
+    { titolo: 'VISITE', n: f.visite, sotto: 'sul sito, nel periodo', ...sito },
+    { titolo: 'TOCCHI SU ISCRIVITI', n: f.tocchi, sotto: 'hanno toccato Iscriviti', ...sito },
+    { titolo: 'RICHIESTE DAL SITO', n: f.richieste, sotto: persone(f.richieste, 'persona', 'persone'), ...delle },
+    { titolo: 'ACCOLTE', n: f.accolte, sotto: persone(f.accolte, 'persona, oggi iscritta', 'persone, oggi iscritte'), ...delle },
+  ]
+  return (
+    <section aria-label="Dal sito alle richieste" className="sg-riquadro">
+      <Riga titolo="DAL SITO ALLE RICHIESTE">
+        <span className="sg-sito-nota-titolo">dalle visite alle richieste accolte · tutta la palestra</span>
+      </Riga>
+      {numeri?.prova && (
+        <div className="sg-sito-frase" data-prova="true">
+          <b>… Prova</b> · visite e tocchi inventati, le richieste sono quelle fatte in prova.
+        </div>
+      )}
+      {dal && (
+        <div className="sg-sito-frase">
+          Si conta dal <b>{dal}</b>, quando sul sito è stato acceso il contatore: anche le richieste, così i gradini si confrontano.
+        </div>
+      )}
+      {corso && <div className="sg-sito-frase">Il sito è di tutta la palestra: il corso scelto qui non conta, la fila è di tutti i corsi.</div>}
+
+      <ol className="sg-fila">
+        {gradini.map((g, i) => (
+          <Fragment key={g.titolo}>
+            {i > 0 && (
+              <li className="sg-fila-passa">
+                <span className="sg-fila-freccia" aria-hidden="true">→</span>
+                <span className="num sg-fila-pc">{f.passaggi[i - 1]}</span>
+              </li>
+            )}
+            <li className="sg-fila-gradino">
+              <span className="sg-etichetta">{g.titolo}</span>
+              {g.n !== null ? (
+                <>
+                  <span className="num sg-fila-cifra">{it(g.n)}</span>
+                  <span className="sg-fila-sotto">{g.sotto}</span>
+                </>
+              ) : g.legge ? (
+                <span className="sg-fila-sotto">Sto leggendo…</span>
+              ) : (
+                <>
+                  <span className="sg-fila-guaio">NON LETTO</span>
+                  <span>{g.guaio}</span>
+                </>
+              )}
+            </li>
+          </Fragment>
+        ))}
+      </ol>
+
+      {stato && 'guaio' in stato && <span className="sg-sito-indicativi">Visite e tocchi vengono dal contatore del sito: cosa fare lo dice IL SITO, qui sotto.</span>}
+      {richieste && 'manca' in richieste && <span className="sg-sito-indicativi">{richieste.manca}</span>}
+      {f.oltre && (
+        <div className="sg-sito-frase">
+          Le richieste sono più dei tocchi: una famiglia tocca Iscriviti una volta e manda una richiesta per persona, e chi apre un link del sito mandato da un amico arriva al modulo senza toccare Iscriviti.
+        </div>
+      )}
+      <span className="sg-fila-spiega">
+        Richieste e accolte si contano per persona, nello stato di oggi. «Dal sito» vuol dire che il modulo è stato aperto da una pagina del sito, anche da un link del sito mandato su WhatsApp, che non si distingue; non contano il link della segreteria, l’area iscritti e le richieste senza provenienza. Le percentuali dicono quanti passano al gradino dopo.
+      </span>
     </section>
   )
 }
