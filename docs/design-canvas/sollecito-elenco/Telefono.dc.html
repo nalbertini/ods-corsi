@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Copiata da ods-design-system/PaginaSitoTelefono.dc.html: ISCRITTI a 390px col filtro acceso; la cella del sollecito va sotto, su tutta la riga. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 900px; background: #eef5fa">
+  <dc-import name="BarraTelefono" tema="sito" hint-size="390px,56px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 14px; padding: 18px 16px">
+    <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ISCRITTI</h1>
+    <div role="table" style="display: flex; flex-direction: column; background: #ffffff; border-radius: 6px">
+      <dc-import name="RigaIscritto" tema="sito" nome="Colombo Giorgia" corsi="Judo ragazzi" contatto="333 165 9203" bollini="NO CERTIFICATO:rosso|DA PAGARE:rosso" frequenza="6/8" sollecito="tasto" sollecitato="Sollecitato il 14/10 da Giulia" corsi="" contatto="" griglia="1.4fr 130px 50px" telefono="{{ true }}" hint-size="100%,120px"></dc-import>
+<dc-import name="RigaIscritto" tema="sito" nome="Rizzo Ginevra" corsi="Judo kids" contatto="320 987 6543" bollini="SERVE DAL 4/11:giallo" frequenza="5/8" sollecito="tasto" sollecitato="" corsi="" contatto="" griglia="1.4fr 130px 50px" telefono="{{ true }}" hint-size="100%,120px"></dc-import>
+<dc-import name="RigaIscritto" tema="sito" nome="Romano Nicolò" corsi="Pilates" contatto="011 234 5678" bollini="SCADUTO:rosso" frequenza="3/8" sollecito="fisso" sollecitato="" corsi="" contatto="" griglia="1.4fr 130px 50px" telefono="{{ true }}" hint-size="100%,120px"></dc-import>
+<dc-import name="RigaIscritto" tema="sito" nome="Verdi Luca" corsi="Judo kids" contatto="nessun contatto" bollini="NO CERTIFICATO:rosso" frequenza="7/8" sollecito="manca" sollecitato="" corsi="" contatto="" griglia="1.4fr 130px 50px" telefono="{{ true }}" hint-size="100%,120px"></dc-import>
+    </div>
+    <span style="font-size: 14px; line-height: 1.45; color: #46606f">Sul telefono la colonna CONTATTO non c’è: il tasto va sotto il nome, largo quanto la riga.</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

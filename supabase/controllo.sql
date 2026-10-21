@@ -445,6 +445,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.ricevuta_gia_fatta(uuid,uuid)') is not null
     -- Rilanciare 55 o 73 dopo 86 rimette le funzioni che ignorano la chiave: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%ricevuta_gia_fatta%')
-    and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%'))
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%')),
+  ('87-solleciti-elenco.sql', 'i solleciti nell''elenco ISCRITTI: gli ultimi di tutti e Annulla',
+    to_regprocedure('public.ultimi_solleciti()') is not null
+    and to_regprocedure('public.togli_sollecito(uuid)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;
