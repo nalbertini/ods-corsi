@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.148.1 — 21 ottobre 2026
+
+### Modificato
+
+- Pulizia: tolte le regole del vecchio editor delle pagine
+
+## 0.148.0 — 21 ottobre 2026
+
+### Novità
+
+- Il compenso pagato finisce in CONTABILITÀ
+
 ## 0.147.0 — 21 ottobre 2026
 
 ### Novità

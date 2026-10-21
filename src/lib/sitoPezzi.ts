@@ -48,13 +48,6 @@ export const MASSIMO_PEZZI = 100
 /** Il limite del database sul JSON dei pezzi (`supabase/62-sito-pezzi.sql`): oltre non si salva. */
 export const MASSIMO_CARATTERI = 400000
 
-/** Il nome di una parte nell'ELENCO, con le parole della segreteria. */
-export const nomeParte = (p: Pezzo): string =>
-  p.type === 'fotoInCima' ? 'Foto in cima' : p.type === 'testo' ? 'Testo' : p.type === 'foto' ? 'Foto' : p.type === 'iscriviti' ? 'Iscriviti' : p.type === 'pulsanti' ? 'Pulsanti' : p.type === 'domande' ? 'Domande' : p.type === 'istruttore' ? 'Istruttore' : p.props.colonne.length === 2 ? 'Due colonne' : 'Tre colonne'
-
-/** Cosa dice il pannello delle impostazioni finché nessuna parte è scelta. */
-export const FRASE_NESSUNA_PARTE = 'Tocca una parte della pagina per cambiarne le impostazioni.'
-
 export const pezziVuoti = (): PezziPagina => ({ content: [] })
 
 /** L'unica pagina dove si mette la parte ISTRUTTORE: le sue parti diventano le tessere (`elencoIstruttori` di sitoIstruttori.ts). */
@@ -92,35 +85,6 @@ export function notaPaginaIstruttore(slug: string, pagine: ReadonlyArray<{ slug:
 
 /** Basta il tipo: i dati di Puck danno `type: string`, e queste regole non leggono altro. */
 type ConTipo = ReadonlyArray<{ type: string }>
-
-/** La pagina ha già la parte ISCRIVITI: un'altra non si mette. */
-export const conIscriviti = (pezzi: ConTipo): boolean => pezzi.some((p) => p.type === 'iscriviti')
-
-/** Perché il tasto + PARTE è spento, a parole; `null` se si può mettere. */
-export function motivoSpento(tipo: Pezzo['type'], pezzi: ConTipo): string | null {
-  if (pezzi.length >= MASSIMO_PEZZI) return `La pagina ha già ${MASSIMO_PEZZI} parti, il massimo`
-  if (tipo === 'iscriviti' && conIscriviti(pezzi)) return 'C’è già: una parte Iscriviti per pagina'
-  return null
-}
-
-export const puoMettere = (tipo: Pezzo['type'], pezzi: ConTipo): boolean => motivoSpento(tipo, pezzi) === null
-
-/** SU (-1) e GIÙ (+1): dentro la pagina, e mai con ISCRIVITI, che sta ferma in fondo. */
-export function spostabile(pezzi: ConTipo, indice: number, verso: -1 | 1): boolean {
-  const altro = indice + verso
-  if (indice < 0 || altro < 0 || altro >= pezzi.length) return false
-  return pezzi[indice].type !== 'iscriviti' && pezzi[altro].type !== 'iscriviti'
-}
-
-/**
- * Dove va una parte nuova: dopo quella scelta (`dopo`, l'indice) o in fondo. ISCRIVITI va sempre in fondo, e
- * nessuna parte le va dopo: sul sito è l'invito che chiude la pagina.
- */
-export function doveMettere(tipo: Pezzo['type'], dopo: number | null, pezzi: ConTipo): number {
-  if (tipo === 'iscriviti') return pezzi.length
-  const dove = dopo === null ? pezzi.length : dopo + 1
-  return conIscriviti(pezzi) ? Math.min(dove, pezzi.length - 1) : dove
-}
 
 const stringa = (x: unknown): x is string => typeof x === 'string'
 const oggetto = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x)
@@ -194,47 +158,6 @@ export const senzaPunto = (domanda: string): boolean => domanda.trim() !== '' &&
 /** Le pagine verso cui può portare un pulsante: pubblicate e non nascoste. Contatti no: sul sito un pulsante verso Contatti non esce (`senzaPulsantiContatti`). */
 export const pagineDaPulsante = <P extends { slug: string; titolo: string; pubblicato: string | null; nascosta: boolean }>(pagine: P[]): Array<{ slug: string; titolo: string }> =>
   pagine.filter((p) => p.pubblicato !== null && !p.nascosta && p.slug !== 'contatti').map((p) => ({ slug: p.slug, titolo: p.titolo }))
-
-/** Cosa nasce quando la segreteria aggiunge una colonna: vuota, ma con il suo `html` (il campo array di Puck non ne mette uno da solo). */
-export const colonnaNuova = (): { html: string } => ({ html: '' })
-
-/**
- * Il pezzo con il testo scritto nella pagina: il testo di un TESTO, o quello della colonna `colonna` di COLONNE.
- * Non cambia mai il pezzo ricevuto; per una foto o una colonna che non c'è lo restituisce com'è, così nessuna
- * scrittura finisce nel posto sbagliato.
- */
-export function scriviTesto(p: Pezzo, html: string, colonna = 0): Pezzo {
-  if (p.type === 'testo') return { ...p, props: { ...p.props, html } }
-  if (p.type === 'colonne' && colonna >= 0 && colonna < p.props.colonne.length) {
-    return { ...p, props: { ...p.props, colonne: p.props.colonne.map((c, i) => (i === colonna ? { html } : c)) } }
-  }
-  return p
-}
-
-/** La pagina con il testo scritto nel pezzo `id` (e nella colonna `colonna`): quello che si salva senza aspettare Puck. Un pezzo che non c'è lascia la pagina com'è. */
-export function conTestoScritto(pagina: PezziPagina, id: string, html: string, colonna = 0): PezziPagina {
-  const i = pagina.content.findIndex((p) => p.props.id === id)
-  if (i < 0) return pagina
-  return { content: pagina.content.map((p, k) => (k === i ? scriviTesto(p, html, colonna) : p)) }
-}
-
-/** Cosa fa un tasto premuto dentro il testo: annulla o rifai di Puck (Cmd o Ctrl con Z, Maiusc+Z, Y), altrimenti `null`: il tasto è del testo. */
-export function versoStoria(tasto: string, conMeta: boolean, conMaiusc: boolean, conAlt: boolean): 'indietro' | 'avanti' | null {
-  if (!conMeta || conAlt) return null
-  const k = tasto.toLowerCase()
-  if (k === 'y') return 'avanti'
-  if (k === 'z') return conMaiusc ? 'avanti' : 'indietro'
-  return null
-}
-
-/** La parte scelta dopo ANNULLA o RIFAI: la stessa di prima se c'è ancora, se no nessuna (Puck riporta la scelta di allora). */
-export const selezioneDopoStoria = <S extends { index: number }>(scelto: S | null, quanti: number): S | null => (scelto && scelto.index < quanti ? scelto : null)
-
-/** Dopo quanto Puck ha registrato nella storia l'ultima scrittura (lui aspetta 250ms dall'ultima: qui un po' di più). */
-export const FINESTRA_STORIA_MS = 300
-
-/** Quanto aspettare prima di annullare o rifare, perché l'ultima scrittura (all'istante `ultima`, 0 se mai) sia già nella storia di Puck. */
-export const attesaStoria = (ultima: number, ora: number): number => (ultima === 0 ? 0 : Math.max(0, FINESTRA_STORIA_MS - (ora - ultima)))
 
 function inHtml(p: Pezzo): string {
   switch (p.type) {
@@ -474,9 +397,6 @@ export function dividiInParti(p: PezziPagina): PezziPagina {
 
 /** Il tasto «Dividi in parti» c'è solo se dividere dà più parti di adesso. */
 export const divisibileInParti = (p: PezziPagina): boolean => dividiInParti(p).content.length > p.content.length
-
-/** Cosa dice la pagina subito dopo la divisione: quante parti ci sono e come tenerle o scartarle. */
-export const frasePartiNuove = (n: number): string => `Ora ci sono ${n} parti, nell'ELENCO. Il testo è lo stesso. Per tenerle premi SALVA BOZZA; per lasciare tutto com'era, premi TUTTE LE PAGINE e scegli TORNA ALLE PAGINE.`
 
 /**
  * L'editor (Puck, `EditorPuck.tsx`) apre ogni pagina a pezzi: quelle scritte col testo solo si dividono
