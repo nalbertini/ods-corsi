@@ -1385,7 +1385,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Da un pagamento a mano o da un Satispay: gli stessi soldi in una ricevuta sola, mai due fonti insieme.
       if (satispayId && pagamentoId) throw new Error('Una ricevuta si fa da un pagamento a mano o da un Satispay, non da tutti e due: chiudi il modulo e riaprilo')
       const dati = { ...r, intestatario: pulisciIntestatario(r.intestatario) }
-      const no = cosaNonVa(dati)
+      const no = cosaNonVa(dati, oggiARoma())
       if (no) throw new Error(no)
       const riga = ok(
         await db.rpc(pagamentoId ? 'emetti_ricevuta_da_pagamento' : satispayId ? 'emetti_ricevuta_satispay' : 'emetti_ricevuta', {
@@ -1702,6 +1702,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return (ok(await db.rpc('storico_persona', { persona })) ?? []) as Array<{ id: string; data: string; descrizione: string; importo: number; voce: string; cassa: string }>
     },
 
+    async contantiChiusiFino() {
+      // Senza 92-ricevuta-cassa-chiusa.sql l'errore lo prendono i componenti: nessun avviso, decide il database.
+      return (ok(await db.rpc('cassa_contanti_chiusa_fino')) as string | null) ?? null
+    },
+
     async chiusure() {
       // Le righe arrivano senza tipo dall'API: la forma è quella di 60-chiusura-cassa.sql.
       const righe = ok(await tutteLeRighe((prima, ultima) => db.from('chiusure_cassa').select('*').order('data', { ascending: false }).order('id').range(prima, ultima))) as Array<{
@@ -1748,7 +1753,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async registraPagamentoDiretto(d: DatiPagamentoDiretto) {
-      // Il futuro lo ferma anche qui; il giorno chiuso lo vede solo il database (la segreteria non legge le chiusure).
+      // Il futuro lo ferma anche qui; il giorno chiuso lo dice il modulo, con `contantiChiusiFino`, e poi il database.
       const no = cosaNonVaDiretto(d, oggiARoma())
       if (no) throw new Error(no)
       const riga = ok(

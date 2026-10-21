@@ -166,9 +166,16 @@ export function conti(r: Pick<DatiRicevuta, 'voci' | 'anticipo'>) {
   return { totale, pagato, netto: Math.max(0, totale - pagato - r.anticipo) }
 }
 
-/** Gli stessi rifiuti di `emetti_ricevuta`, per dirli subito sotto al modulo. */
-export function cosaNonVa(r: DatiRicevuta): string | null {
+/**
+ * Gli stessi rifiuti di `emetti_ricevuta`, per dirli subito sotto al modulo.
+ * `oggi` è il giorno di Roma; `prossimo` il numero che l'anno della ricevuta
+ * darebbe da sé (1 se non ha ricevute), quando chi chiama lo sa.
+ */
+export function cosaNonVa(r: DatiRicevuta, oggi: string, prossimo?: number): string | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(r.data)) return 'Serve la data della ricevuta'
+  if (r.data < '2000-01-01' || r.data > '2100-12-31') return 'La data della ricevuta non torna'
+  if (r.data > oggi) return 'La data della ricevuta è nel futuro: si fa per quel che è già successo'
+  if ((r.note ?? '').length > 500) return 'La nota è troppo lunga: al massimo 500 caratteri'
   if (!r.intestatario.nome.trim() || !r.intestatario.cognome.trim()) return 'Servono nome e cognome del socio'
   if (!r.voci.length) return 'Serve almeno una voce'
   if (r.voci.length > 20) return 'Al massimo venti voci'
@@ -178,8 +185,13 @@ export function cosaNonVa(r: DatiRicevuta): string | null {
     if (!Number.isInteger(v.prezzo) || v.prezzo < 0) return `Il prezzo di «${v.descrizione}» non va`
     if (v.dal && v.al && v.al < v.dal) return `Le date di «${v.descrizione}» sono al contrario`
     if (v.pagamenti.some((p) => !Number.isInteger(p.importo) || p.importo < 0)) return `Un pagamento di «${v.descrizione}» non va`
+    // Senza data il pagamento prende quella della ricevuta, già controllata; quelli a zero non entrano, come in `fai_ricevuta`.
+    if (v.pagamenti.some((p) => p.importo > 0 && p.data && p.data > oggi)) return `Un pagamento di «${v.descrizione}» ha la data nel futuro: si scrive quel che è già successo`
+    if (v.pagamenti.some((p) => p.importo > 0 && p.data && p.data < '2000-01-01')) return `La data di un pagamento di «${v.descrizione}» non torna`
   }
-  if (r.numero !== undefined && (!Number.isInteger(r.numero) || r.numero < 1)) return 'Il numero della ricevuta non va'
+  if (r.numero !== undefined && (!Number.isInteger(r.numero) || r.numero < 1 || r.numero > 999999)) return 'Il numero della ricevuta non va'
+  // A mano solo in un anno senza ricevute, per continuare la numerazione di un altro programma: dopo, un errore di battitura aprirebbe un buco.
+  if (r.numero !== undefined && prossimo !== undefined && prossimo > 1) return `Il ${r.data.slice(0, 4)} ha già le sue ricevute: lascia vuoto il numero, prende il primo libero`
   const c = conti(r)
   if (c.pagato + r.anticipo > c.totale) return 'Si è pagato più del totale: controlla gli importi'
   return null

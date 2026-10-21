@@ -811,6 +811,8 @@ export interface DatiSegreteria {
   storicoPersona(persona: string): Promise<VoceStorico[]>
   /** Le chiusure della Cassa Contanti, anche le annullate (`60-chiusura-cassa.sql`). */
   chiusure(): Promise<ChiusuraCassa[]>
+  /** Fin quando è chiusa la Cassa Contanti (null: mai): la legge anche la segreteria, che le chiusure non le vede. */
+  contantiChiusiFino(): Promise<string | null>
   /** Chiude la Cassa Contanti fino a un giorno: il previsto lo calcola il database, la differenza si scrive da sé. Rende l'id. */
   chiudiCassa(d: { cassaId: string; data: string; contato: number; nota?: string }): Promise<string>
   /** Si annulla solo l'ultima chiusura, con il suo movimento di differenza. */
@@ -1211,9 +1213,9 @@ export function avvisiGesto(gesto: { file?: unknown; scade: string }, c: Pick<Ce
   return x
 }
 
-/** La domanda prima di disattivare: col file del certificato, dice che si cancella e che riattivare non lo riporta. */
+/** La domanda prima di disattivare: le iscrizioni si chiudono, e col file del certificato dice che si cancella e che riattivare non lo riporta. */
 export const confermaDisattiva = (nome: string, c: Pick<CertificatoSeg, 'conFile'>) =>
-  `Disattivare ${nome}? Sparisce dagli appelli e dal tablet; si può riattivare.${c.conFile ? ' Il file del certificato si cancella subito e riattivarla non lo riporta: la data resta.' : ''}`
+  `Disattivare ${nome}? Le sue iscrizioni si chiudono oggi e sparisce dal tablet. Si può riattivare, ma i corsi si rimettono con Iscrivi.${c.conFile ? ' Il file del certificato si cancella subito e riattivarla non lo riporta: la data resta.' : ''}`
 
 /** La domanda prima di unire due schede: con un certificato da una delle due, dice quale resta. */
 export const confermaUnione = (nomeVia: string, nomeResta: string, via: Pick<CertificatoSeg, 'scade' | 'conFile'>, resta: Pick<CertificatoSeg, 'scade' | 'conFile'>, perso = '') =>

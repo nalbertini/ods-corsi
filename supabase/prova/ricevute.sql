@@ -3,7 +3,9 @@
 -- si cambia e non si cancella.
 -- Dalla sezione 5, la ricevuta una volta sola (86-ricevuta-una-volta.sql): la
 -- chiave del modulo aperto, ripremendo FAI LA RICEVUTA dopo una rete caduta.
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 86-ricevuta-una-volta.sql.
+-- Dalla sezione 6, la data e il numero (93-ricevuta-data-numero.sql): niente futuro, e il numero a mano solo
+-- in un anno che non ha ancora ricevute.
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 93-ricevuta-data-numero.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -46,8 +48,9 @@ create or replace function ricevuta(giorno text, numero int default null, pagato
     'anticipo', 0)
 $$;
 -- L'anticipo: i soldi dati prima, fuori dalle voci. Gli stessi casi di «con un anticipo» in scripts/prova-ricevuta.mjs.
+-- Ognuna nel suo anno (301 nel 2011, 302 nel 2012…): il numero a mano va solo in un anno senza ricevute.
 create or replace function ricevuta_anticipo(numero int, quota_pagata int, annuale int, annuale_pagato int, anticipo int) returns jsonb language sql as $$
-  select ricevuta('2026-09-10', numero) || jsonb_build_object('anticipo', anticipo, 'voci', jsonb_build_array(
+  select ricevuta((2010 + numero - 300) || '-09-10', numero) || jsonb_build_object('anticipo', anticipo, 'voci', jsonb_build_array(
     jsonb_build_object('descrizione', 'QUOTA ASSOCIATIVA', 'quantita', 1, 'prezzo', 5000, 'dal', '2026-09-01', 'al', '2027-07-31',
       'pagamenti', jsonb_build_array(jsonb_build_object('data', '2026-09-10', 'importo', quota_pagata, 'metodo', 'Bonifico'))),
     jsonb_build_object('descrizione', 'Annuale Lotta 3 · sconto famiglia 20% su 368,00 €', 'quantita', 1, 'prezzo', annuale, 'dal', '2026-09-01', 'al', '2027-06-30',
@@ -61,8 +64,8 @@ select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('la prima di un programma che ne aveva già 115', (select (emetti_ricevuta(ricevuta('2026-09-01', 116)))->>'numero'), '116');
 select atteso('la seguente va avanti da sé', (select (emetti_ricevuta(ricevuta('2026-09-02')))->>'numero'), '117');
-select atteso('un numero già preso no', tenta($$select emetti_ricevuta(ricevuta('2026-09-03', 116))::text$$), 'NEGATO: La ricevuta numero 116 del 2026 c’è già…');
-select atteso('a gennaio si riparte da 1', (select (emetti_ricevuta(ricevuta('2027-01-10')))->>'numero'), '1');
+select atteso('un numero a mano quando l''anno ha già ricevute no', tenta($$select emetti_ricevuta(ricevuta('2026-09-03', 116))::text$$), 'NEGATO: Il 2026 ha già le sue ricevute: lascia vuoto il numero, prende il primo libero');
+select atteso('un altro anno riparte da 1', (select (emetti_ricevuta(ricevuta('2025-01-10')))->>'numero'), '1');
 select atteso('il totale lo conta il server', (select totale || '/' || pagato from ricevute where numero = 116), '41800/41800');
 select atteso('pagata in parte', (select (emetti_ricevuta(ricevuta('2026-09-04', null, 18000)))->>'pagato'), '23000');
 select atteso('chi l''ha fatta, lo scrive il server', (select p.nome from ricevute r join persone p on p.id = r.creata_da where r.numero = 116), 'Anna');
@@ -125,7 +128,7 @@ select atteso('resta col socio scritto dentro', (select intestatario->>'cognome'
 \echo ''
 \echo '--- 5. la ricevuta una volta sola: la chiave del modulo ---'
 -- FAI LA RICEVUTA ripremuto dopo una rete caduta: la ricevuta era fatta, torna quella.
--- Nel 2028, così i numeri partono da 1; Manuela si è cancellata (sezione 4): qui Pietro.
+-- Nel 2024, così i numeri partono da 1; Manuela si è cancellata (sezione 4): qui Pietro.
 insert into persone (id, nome, cognome, ruolo) values
   ('aaaaaaaa-0000-0000-0000-000000000004', 'Pietro', 'Chiave', 'iscritto'),
   ('aaaaaaaa-0000-0000-0000-000000000005', 'Paola', 'Altra', 'iscritto');
@@ -140,67 +143,102 @@ begin
   return 'nessun errore';
 exception when others then return sqlstate || ' ' || sqlerrm;
 end $$;
-create or replace function del_2028() returns text language sql as $$ select count(*)::text from ricevute where anno = 2028 $$;
-grant execute on function con_chiave(text, text, int, int, text), rifiuto(text), del_2028() to anon, authenticated;
+create or replace function del_2024() returns text language sql as $$ select count(*)::text from ricevute where anno = 2024 $$;
+grant execute on function con_chiave(text, text, int, int, text), rifiuto(text), del_2024() to anon, authenticated;
 
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
-select emetti_ricevuta(con_chiave('2028-03-01', 'dddddddd-0000-4000-8000-000000000001')) as prima \gset
+select emetti_ricevuta(con_chiave('2024-03-01', 'dddddddd-0000-4000-8000-000000000001')) as prima \gset
 select atteso('la prima con la chiave: il numero 1', :'prima'::jsonb->>'numero', '1');
-select emetti_ricevuta(con_chiave('2028-03-01', 'dddddddd-0000-4000-8000-000000000001')) as ancora \gset
+select emetti_ricevuta(con_chiave('2024-03-01', 'dddddddd-0000-4000-8000-000000000001')) as ancora \gset
 select atteso('la stessa chiave: torna la stessa ricevuta', :'ancora'::jsonb->>'id', :'prima'::jsonb->>'id');
 select atteso('…col suo numero', :'ancora'::jsonb->>'numero', '1');
-select atteso('…e la ricevuta resta una', del_2028(), '1');
-select atteso('la seguente senza chiave prende il numero dopo, nessuno consumato', (select emetti_ricevuta(ricevuta('2028-03-02') || '{"persona_id": "aaaaaaaa-0000-0000-0000-000000000004"}')->>'numero'), '2');
+select atteso('…e la ricevuta resta una', del_2024(), '1');
+select atteso('la seguente senza chiave prende il numero dopo, nessuno consumato', (select emetti_ricevuta(ricevuta('2024-03-02') || '{"persona_id": "aaaaaaaa-0000-0000-0000-000000000004"}')->>'numero'), '2');
 
-select emetti_ricevuta(con_chiave('2028-03-03', 'dddddddd-0000-4000-8000-000000000003')) as annullanda \gset
+select emetti_ricevuta(con_chiave('2024-03-03', 'dddddddd-0000-4000-8000-000000000003')) as annullanda \gset
 select annulla_ricevuta((:'annullanda'::jsonb->>'id')::uuid);
 select atteso('la stessa chiave di una ricevuta annullata: no, e dice cosa fare',
-  rifiuto(format($$select emetti_ricevuta(%L::jsonb)$$, con_chiave('2028-03-03', 'dddddddd-0000-4000-8000-000000000003'))),
-  '22023 La ricevuta n. 3/2028 fatta da questo modulo è stata annullata: chiudi il modulo e riaprilo per farne un’altra');
-select atteso('…e nessuna ricevuta in più', del_2028(), '3');
+  rifiuto(format($$select emetti_ricevuta(%L::jsonb)$$, con_chiave('2024-03-03', 'dddddddd-0000-4000-8000-000000000003'))),
+  '22023 La ricevuta n. 3/2024 fatta da questo modulo è stata annullata: chiudi il modulo e riaprilo per farne un’altra');
+select atteso('…e nessuna ricevuta in più', del_2024(), '3');
 
-select emetti_ricevuta(con_chiave('2028-03-04', 'dddddddd-0000-4000-8000-000000000004', 50)) as a_mano \gset
+-- Il numero a mano va solo in un anno senza ricevute: qui il 2023.
+select emetti_ricevuta(con_chiave('2023-03-04', 'dddddddd-0000-4000-8000-000000000004', 50)) as a_mano \gset
 select atteso('col numero scritto a mano: il 50', :'a_mano'::jsonb->>'numero', '50');
-select atteso('il numero a mano ripetuto con la stessa chiave: non «c’è già», torna quella',
-  tenta(format($$select emetti_ricevuta(%L::jsonb)->>'id'$$, con_chiave('2028-03-04', 'dddddddd-0000-4000-8000-000000000004', 50))), :'a_mano'::jsonb->>'id');
-select atteso('…e la ricevuta resta una', (select count(*)::text from ricevute where anno = 2028 and numero = 50), '1');
+select atteso('il numero a mano ripetuto con la stessa chiave: non «ha già le sue ricevute», torna quella',
+  tenta(format($$select emetti_ricevuta(%L::jsonb)->>'id'$$, con_chiave('2023-03-04', 'dddddddd-0000-4000-8000-000000000004', 50))), :'a_mano'::jsonb->>'id');
+select atteso('…e la ricevuta resta una', (select count(*)::text from ricevute where anno = 2023 and numero = 50), '1');
 
 select atteso('la stessa chiave per un''altra persona: no, e dice cosa fare',
-  rifiuto(format($$select emetti_ricevuta(%L::jsonb)$$, con_chiave('2028-03-01', 'dddddddd-0000-4000-8000-000000000001', persona => 'aaaaaaaa-0000-0000-0000-000000000005'))),
+  rifiuto(format($$select emetti_ricevuta(%L::jsonb)$$, con_chiave('2024-03-01', 'dddddddd-0000-4000-8000-000000000001', persona => 'aaaaaaaa-0000-0000-0000-000000000005'))),
   '22023 Questa ricevuta è già stata fatta per un’altra persona: chiudi il modulo e riaprilo');
-select atteso('…e nessuna ricevuta in più', del_2028(), '4');
+select atteso('…e nessuna ricevuta in più', del_2024(), '3');
 
 select atteso('la stessa chiave con altri dati: torna quella fatta, com''è',
   tenta(format($$select (r->>'id') || ' ' || (r->>'data') || ' ' || (r->>'pagato') from emetti_ricevuta(%L::jsonb) r$$,
-    con_chiave('2028-03-09', 'dddddddd-0000-4000-8000-000000000001', pagato => 18000))),
-  (:'prima'::jsonb->>'id') || ' 2028-03-01 41800');
-select atteso('…e nessuna ricevuta in più', del_2028(), '4');
+    con_chiave('2024-03-09', 'dddddddd-0000-4000-8000-000000000001', pagato => 18000))),
+  (:'prima'::jsonb->>'id') || ' 2024-03-01 41800');
+select atteso('…e nessuna ricevuta in più', del_2024(), '3');
 
-select emetti_ricevuta(ricevuta('2028-03-10') || '{"persona_id": "aaaaaaaa-0000-0000-0000-000000000004"}');
-select emetti_ricevuta(ricevuta('2028-03-10') || '{"persona_id": "aaaaaaaa-0000-0000-0000-000000000004"}');
-select atteso('senza chiave, come prima: due volte, due ricevute', del_2028(), '6');
-select emetti_ricevuta(con_chiave('2028-03-10', ''));
-select emetti_ricevuta(con_chiave('2028-03-10', ''));
-select atteso('con la chiave vuota, come senza: due ricevute', del_2028(), '8');
+select emetti_ricevuta(ricevuta('2024-03-10') || '{"persona_id": "aaaaaaaa-0000-0000-0000-000000000004"}');
+select emetti_ricevuta(ricevuta('2024-03-10') || '{"persona_id": "aaaaaaaa-0000-0000-0000-000000000004"}');
+select atteso('senza chiave, come prima: due volte, due ricevute', del_2024(), '5');
+select emetti_ricevuta(con_chiave('2024-03-10', ''));
+select emetti_ricevuta(con_chiave('2024-03-10', ''));
+select atteso('con la chiave vuota, come senza: due ricevute', del_2024(), '7');
 
 select atteso('una chiave che non è un uuid: no, e dice cosa fare',
-  rifiuto(format($$select emetti_ricevuta(%L::jsonb)$$, con_chiave('2028-03-11', 'non-un-uuid'))),
+  rifiuto(format($$select emetti_ricevuta(%L::jsonb)$$, con_chiave('2024-03-11', 'non-un-uuid'))),
   '22023 La ricevuta non si capisce: ricarica la pagina');
-select atteso('…e nessuna ricevuta in più', del_2028(), '8');
+select atteso('…e nessuna ricevuta in più', del_2024(), '7');
 reset role;
 
 select atteso('la chiave è unica anche fra le annullate, pure scrivendo da superutente',
   rifiuto($$insert into ricevute (anno, numero, data, ente, intestatario, voci, totale, pagato, chiave)
-    values (2028, 900, '2028-03-12', '{}', '{}', '[{}]', 0, 0, 'dddddddd-0000-4000-8000-000000000003')$$), '23505 …');
+    values (2024, 900, '2024-03-12', '{}', '{}', '[{}]', 0, 0, 'dddddddd-0000-4000-8000-000000000003')$$), '23505 …');
 
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 select atteso('un istruttore con una chiave che c’è già: no, come sempre',
-  tenta(format($$select emetti_ricevuta(%L::jsonb)::text$$, con_chiave('2028-03-01', 'dddddddd-0000-4000-8000-000000000001'))), 'NEGATO: la ricevuta la fa la segreteria');
+  tenta(format($$select emetti_ricevuta(%L::jsonb)::text$$, con_chiave('2024-03-01', 'dddddddd-0000-4000-8000-000000000001'))), 'NEGATO: la ricevuta la fa la segreteria');
 reset role;
 select chi('');
 set role anon;
 select atteso('chi non ha fatto l''accesso, con una chiave che c’è già: no',
-  tenta(format($$select emetti_ricevuta(%L::jsonb)::text$$, con_chiave('2028-03-01', 'dddddddd-0000-4000-8000-000000000001'))), 'NEGATO: …');
+  tenta(format($$select emetti_ricevuta(%L::jsonb)::text$$, con_chiave('2024-03-01', 'dddddddd-0000-4000-8000-000000000001'))), 'NEGATO: …');
+reset role;
+
+\echo ''
+\echo '--- 6. la data e il numero (93-ricevuta-data-numero.sql) ---'
+-- Il 31/12 si scrive 2027-12-31: la ricevuta prenderebbe il n. 1/2027 e rovinerebbe la numerazione dell'anno dopo.
+create or replace function giorno(dopo int) returns text language sql security definer as $$ select to_char(contabilita_oggi() + dopo, 'YYYY-MM-DD') $$;
+create or replace function del_2022() returns text language sql as $$ select count(*)::text from ricevute where anno = 2022 $$;
+grant execute on function giorno(int), del_2022() to authenticated;
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('domani no', tenta(format($$select emetti_ricevuta(%L::jsonb)::text$$, ricevuta(giorno(1)))),
+  'NEGATO: La data della ricevuta è nel futuro: si fa per quel che è già successo');
+select atteso('prima del 2000 no', tenta($$select emetti_ricevuta(ricevuta('1999-12-31'))::text$$), 'NEGATO: La data della ricevuta non torna');
+select atteso('dopo il 2100 no', tenta($$select emetti_ricevuta(ricevuta('2101-01-01'))::text$$), 'NEGATO: La data della ricevuta non torna');
+-- Senza persona: Manuela la sezione 3 l'ha cancellata.
+select atteso('oggi sì', (select emetti_ricevuta(ricevuta(giorno(0)) - 'persona_id')->>'data'), giorno(0));
+select atteso('un pagamento nel futuro dentro una voce no',
+  tenta(format($$select emetti_ricevuta(%L::jsonb)::text$$,
+    jsonb_set(ricevuta(giorno(0)), '{voci,0,pagamenti,0,data}', to_jsonb(giorno(1))))),
+  'NEGATO: Un pagamento di «QUOTA ASSOCIATIVA» ha la data nel futuro: si scrive quel che è già successo');
+select atteso('un pagamento prima del 2000 no',
+  tenta(format($$select emetti_ricevuta(%L::jsonb)::text$$,
+    jsonb_set(ricevuta(giorno(0)), '{voci,0,pagamenti,0,data}', '"1999-12-31"'))),
+  'NEGATO: La data di un pagamento di «QUOTA ASSOCIATIVA» non torna');
+-- 1160 al posto di 116: il buco 117-1159 non si chiuderebbe più.
+select max(numero)::text as ultimo_2026 from ricevute where anno = 2026 \gset
+select atteso('il numero a mano quando l''anno ha già ricevute: no', tenta($$select emetti_ricevuta(ricevuta('2026-09-20', 1160))::text$$),
+  'NEGATO: Il 2026 ha già le sue ricevute: lascia vuoto il numero, prende il primo libero');
+select atteso('…e il prossimo resta quello dopo l''ultimo', (select max(numero)::text from ricevute where anno = 2026), :'ultimo_2026');
+select atteso('un numero oltre 999999 no', tenta($$select emetti_ricevuta(ricevuta('2022-03-01', 1000000))::text$$), 'NEGATO: Il numero della ricevuta non va');
+select atteso('il numero 0 no', tenta($$select emetti_ricevuta(ricevuta('2022-03-01', 0))::text$$), 'NEGATO: Il numero della ricevuta non va');
+select atteso('una nota oltre 500 caratteri no', tenta(format($$select emetti_ricevuta(%L::jsonb)::text$$, ricevuta('2022-03-01') || jsonb_build_object('note', repeat('a', 501)))),
+  'NEGATO: La nota è troppo lunga: al massimo 500 caratteri');
+select atteso('…e nel 2022 nessuna ricevuta', del_2022(), '0');
 reset role;

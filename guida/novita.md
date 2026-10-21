@@ -10,6 +10,31 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.156.9 — 21 ottobre 2026
+
+### Risolto
+
+- Una ricevuta non si fa più con una data nel futuro, e il numero a mano solo in un anno senza ricevute
+
+## 0.156.8 — 21 ottobre 2026
+
+### Modificato
+
+- Le sessioni di Claude partono senza superpowers
+
+## 0.156.7 — 21 ottobre 2026
+
+### Risolto
+
+- Chi si ritira e poi torna non ricompare nei corsi vecchi
+
+## 0.156.6 — 21 ottobre 2026
+
+### Risolto
+
+- La guida dice come registrare un bonifico solo per più persone della famiglia
+- I contanti di un giorno di cassa chiusa non entrano più dalla ricevuta, e l'avviso lo vede anche la segreteria
+
 ## 0.156.5 — 21 ottobre 2026
 
 ### Risolto

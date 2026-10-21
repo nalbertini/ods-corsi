@@ -721,10 +721,10 @@ console.log('\n26. una cassa senza giorno di partenza non si chiude, e un previs
   ok('un previsto oltre dieci milioni di euro no', prova(() => m.cosaNonVaPrevisto(1_000_000_001, 1_000_000_001)), NON_TORNA)
 }
 
-console.log('\n27. annullare un incasso in contanti di un giorno chiuso: l\'avviso prima di farlo')
+console.log('\n27. annullare un incasso in contanti di un giorno chiuso: l\'avviso prima di farlo (avvisoCassaChiusa(pagamenti, fino))')
 {
-  const k14 = chiusa('k14', '2026-09-14')
-  const avviso = (pagamenti, chiusure = [k14]) => prova(() => m.avvisoCassaChiusa(pagamenti, chiusure))
+  // `fino` è la data dell'ultima chiusura non annullata (`contantiChiusiFino`, che legge anche la segreteria): quale chiusura conta lo dice lei.
+  const avviso = (pagamenti, fino = '2026-09-14') => prova(() => m.avvisoCassaChiusa(pagamenti, fino))
   const ATTENZIONE = 'Attenzione: la cassa contanti è chiusa fino al 14/09/2026 e questo incasso in contanti è di quei giorni: la chiusura non sarà più in regola e dovrai scrivere una rettifica.'
   ok('un incasso in contanti dentro i giorni chiusi avvisa', avviso([{ data: '2026-09-10', metodo: 'Contanti' }]), ATTENZIONE)
   ok('…il giorno stesso della chiusura', avviso([{ data: '2026-09-14', metodo: 'Contanti' }]), ATTENZIONE)
@@ -732,10 +732,38 @@ console.log('\n27. annullare un incasso in contanti di un giorno chiuso: l\'avvi
   ok('basta uno dei pagamenti di una ricevuta', avviso([{ data: '2026-09-20', metodo: 'Contanti' }, { data: '2026-09-02', metodo: 'Contanti' }]), ATTENZIONE)
   ok('il giorno dopo la chiusura no', avviso([{ data: '2026-09-15', metodo: 'Contanti' }]), null)
   ok('un pagamento con carta o bonifico non tocca la cassa', avviso([{ data: '2026-09-10', metodo: 'POS' }, { data: '2026-09-10', metodo: 'Bonifico' }]), null)
-  ok('senza chiusure niente', avviso([{ data: '2026-09-10', metodo: 'Contanti' }], []), null)
-  ok('una chiusura annullata non conta', avviso([{ data: '2026-09-10', metodo: 'Contanti' }], [{ ...k14, annullataIl: '2026-09-15T10:00:00Z' }]), null)
-  ok('con due chiusure vale l\'ultima', avviso([{ data: '2026-09-17', metodo: 'Contanti' }], [k14, chiusa('k20', '2026-09-20')]), ATTENZIONE.replace('14/09', '20/09'))
+  ok('senza chiusure (fino null) niente', avviso([{ data: '2026-09-10', metodo: 'Contanti' }], null), null)
+  ok('la data di chiusura cambia la frase', avviso([{ data: '2026-09-17', metodo: 'Contanti' }], '2026-09-20'), ATTENZIONE.replace('14/09', '20/09'))
   ok('senza pagamenti niente', avviso([]), null)
+}
+
+console.log('\n27b. i contanti di una ricevuta in un giorno già chiuso (contantiInGiornoChiuso(pagamenti, dataRicevuta, fino, tranne?))')
+{
+  // Le stesse regole di `emetti_ricevuta` (92-ricevuta-cassa-chiusa.sql), provate da supabase/prova/ricevuta-cassa-chiusa.sql.
+  const CHIUSO = 'Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura'
+  const FINO = '2026-09-10'
+  const no = (pagamenti, dataRicevuta = '2026-09-10', fino = FINO, tranne) => prova(() => m.contantiInGiornoChiuso(pagamenti, dataRicevuta, fino, tranne))
+  const c = (data, importo = 3000, metodo = 'Contanti') => ({ ...(data ? { data } : {}), importo, metodo })
+  ok('contanti datati il giorno della chiusura no', no([c('2026-09-10')]), CHIUSO)
+  ok('…prima della chiusura no', no([c('2026-09-05')]), CHIUSO)
+  ok('«CONTANTI » maiuscolo e con lo spazio è lo stesso', no([c('2026-09-10', 3000, 'CONTANTI ')]), CHIUSO)
+  ok('contanti del giorno dopo la chiusura sì', no([c('2026-09-11')], '2026-09-11'), null)
+  ok('conta la data del pagamento: ricevuta del 20 con contanti del 10 no', no([c('2026-09-10')], '2026-09-20'), CHIUSO)
+  ok('…e ricevuta del 10 con contanti del 20 sì', no([c('2026-09-20')], '2026-09-10'), null)
+  ok('senza data il pagamento è del giorno della ricevuta: ricevuta del 10 no', no([c(null)], '2026-09-10'), CHIUSO)
+  ok('…ricevuta dell\'11 sì', no([c(null)], '2026-09-11'), null)
+  ok('un pagamento a 0 € in contanti non entra in cassa', no([c('2026-09-10', 0)]), null)
+  ok('carta, POS, bonifico, Satispay in un giorno chiuso sì', ['Carta', 'POS', 'Bonifico', 'Satispay'].map((metodo) => no([c('2026-09-10', 3000, metodo)])), [null, null, null, null])
+  ok('senza chiusure (fino null) tutto va', no([c('2026-09-10')], '2026-09-10', null), null)
+  ok('basta uno dei pagamenti', no([c('2026-09-20'), c('2026-09-10', 3000, 'POS'), c('2026-09-05', 2000)], '2026-09-20'), CHIUSO)
+  ok('chiusa fino al 9: contanti del 10 sì', no([c('2026-09-10')], '2026-09-10', '2026-09-09'), null)
+  // Il pagamento a mano registrato prima della chiusura (FANNE LA RICEVUTA): i suoi contanti sono già nel previsto.
+  const tranne = { data: '2026-09-10', metodo: 'Contanti' }
+  ok('i contanti del pagamento a mano, stessa data, passano', no([c('2026-09-10', 3000)], '2026-09-10', FINO, tranne), null)
+  ok('…anche scritti « contanti » e senza data nella ricevuta dello stesso giorno', no([c(null, 3000, ' contanti ')], '2026-09-10', FINO, tranne), null)
+  ok('…ma altri contanti in un giorno chiuso no', no([c('2026-09-10', 3000), c('2026-09-05', 2000)], '2026-09-10', FINO, tranne), CHIUSO)
+  ok('…né contanti di un altro giorno chiuso al posto suo', no([c('2026-09-09', 3000)], '2026-09-10', FINO, tranne), CHIUSO)
+  ok('un pagamento a mano col POS non salva i contanti del suo giorno', no([c('2026-09-10', 3000, 'POS'), c('2026-09-10', 2000)], '2026-09-10', FINO, { data: '2026-09-10', metodo: 'POS' }), CHIUSO)
 }
 
 console.log('\n28. la voce di rettifica che manca')
