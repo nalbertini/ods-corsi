@@ -8,6 +8,7 @@
  */
 
 import { blocchi, contenuto, immagine, iniziali, testoSolo, type Blocco } from './sitoLayout'
+import { corsiDa } from './sitoPezzi'
 
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
@@ -42,7 +43,7 @@ function cognomeECorsi(riga: string): { cognome: string; corsi: string[] } {
   const t = testoSolo(riga)
   const i = t.indexOf('·')
   const [cognome, corsi] = i >= 0 ? [t.slice(0, i), t.slice(i + 1)] : t.includes(',') ? ['', t] : [t, '']
-  return { cognome: cognome.trim(), corsi: corsi.split(',').map((x) => x.trim()).filter(Boolean) }
+  return { cognome: cognome.trim(), corsi: corsiDa(corsi) }
 }
 
 /** Il nome del tecnico e, se c'è, l'indirizzo della sua scheda: solo un link a una pagina pubblicata conta. */

@@ -3264,6 +3264,15 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
 .sito-pezzi .sg-chip:disabled { background: var(--surface-2); color: var(--dim); border-color: transparent; opacity: 1; }
 /* Una parte senza niente dentro si vede e ha l'altezza di un tocco. */
 .sito-pezzi-vuoto { display: flex; align-items: center; min-height: 44px; padding: 0 16px; border: 2px dashed var(--line); color: var(--dim); font-size: 15px; }
+/* Un istruttore nella pagina (sito-istruttori-blocchi/Proposta): foto o iniziale da 56px, nome e cognome, corsi in pastiglie. */
+.sito-pezzo-istruttore { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border: 2px solid var(--line); background: var(--surface); overflow-wrap: anywhere; }
+.sito-pezzo-istruttore img, .sito-pezzo-istruttore .iniziale { width: 56px; max-width: 100%; height: 56px; flex-shrink: 0; object-fit: cover; }
+.sito-pezzo-istruttore .iniziale { display: flex; align-items: center; justify-content: center; background: var(--surface-2); font-family: var(--cond); font-weight: 800; font-size: 26px; }
+.sito-pezzo-istruttore .nome { font-family: var(--cond); font-weight: 800; font-size: 22px; text-transform: uppercase; line-height: 1; }
+.sito-pezzo-istruttore .cognome { font-weight: 700; color: var(--dim); }
+.sito-pezzo-istruttore .pillola { padding: 2px 8px; border: 1.5px solid var(--riga-campo); border-radius: 999px; font-size: 13px; font-weight: 600; }
+/* La frase sotto una parte che spezza le tessere degli istruttori, e sotto una pagina non pubblicata. */
+.sito-pezzi-avviso { margin: 6px 0 0; color: var(--giallo-testo); font-size: 14px; font-weight: 600; line-height: 1.4; }
 /* Sotto i 1280px la pagina sta sopra e il pannello sotto, a tutta larghezza. */
 @media (max-width: 1279px) {
   .sito-pezzi-corpo { height: auto; min-height: 640px; }

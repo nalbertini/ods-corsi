@@ -79,7 +79,6 @@ console.log('\n1. Un testo che comincia con un h3 è l’elenco dei tecnici')
   ok('con la foto: la foto è quadrata in cima, dentro «ritratto-foto»', /^<span class="ritratto-foto"><img [^>]*alt="Maurizio"[^>]*><\/span>/.test(r[0].html), true)
   ok('nome e cognome sono nel titolo, il cognome in un suo span', /<h3><span class="nome">Maurizio<\/span> <span class="cognome">Cognome0<\/span><\/h3>/.test(r[0].html), true)
   ok('i corsi sono pastiglie, una per corso, nell’ordine scritto, senza la frase', [conta(r[0].html, /<span class="pillola">/g), /<span class="pillola">Judo<\/span><span class="pillola">Pesi<\/span>/.test(r[0].html), /·/.test(r[0].html)], [2, true, false])
-  // r[1] è Diana: le tessere seguono l'ordine scritto (prima era Maura, tirata su dall'ordine fisso).
   ok('senza foto: fascia con l’iniziale, che non si legge', r[1].html.startsWith('<span class="ritratto-foto" aria-hidden="true">D</span>'), true)
   ok('il paragrafo dopo l’ultimo tecnico è testo sotto la griglia, non un tecnico', [/<\/section><div class="testo"><p>Ogni istruttore ha la sua pagina\.<\/p><\/div>/.test(main(h)), conta(r[12].html, /Ogni istruttore/g)], [true, 0])
   ok('senza paragrafo di chiusura, niente testo', /<div class="testo">/.test(main(pagina(tredici))), false)
@@ -93,9 +92,8 @@ console.log('\n1. Un testo che comincia con un h3 è l’elenco dei tecnici')
 console.log('\n2. Le tessere seguono l’ordine scritto e i colori vanno a diagonali')
 {
   const nomi = (h) => tessere(h).map((x) => x.html.match(/class="nome">([^<]*)</)?.[1])
-  // La regola è cambiata per scelta (pagina Istruttori a pezzi): niente più ordine fisso per i primi otto.
   ok('13 tessere nell’ordine scritto', nomi(pagina(tredici)), NOMI)
-  ok('nessun nome passa davanti, nemmeno quelli che prima erano in testa', nomi(pagina('<h3>x</h3><h3>MAURA</h3><h3><a href="/m/">maurizio</a></h3>')), ['x', 'MAURA', 'maurizio'])
+  ok('nessun nome passa davanti', nomi(pagina('<h3>x</h3><h3>MAURA</h3><h3><a href="/m/">maurizio</a></h3>')), ['x', 'MAURA', 'maurizio'])
   const colori = tessere(pagina(tredici)).map((x) => x.colore)
   ok('colori a diagonali (riga + colonna) su quattro colonne', colori, ['giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo'])
   ok('nessun vicino in riga o in colonna ha lo stesso colore', colori.every((c, i) => (i % 4 === 3 || c !== colori[i + 1]) && (i + 4 >= colori.length || c !== colori[i + 4])), true)

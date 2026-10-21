@@ -18,7 +18,7 @@ import {
   type VoceMenu,
 } from '../../lib/sitoPagine'
 import { pulisciTesto } from '../../lib/sitoTesto'
-import { PAGINA_ISTRUTTORI, cosaNonVaPezzi, databaseConPezzi, siProvaNuovoEditor, cosaNonVaPortare, dividiInParti, divisibileInParti, frasePartiNuove, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
+import { cosaNonVaPezzi, databaseConPezzi, siProvaNuovoEditor, cosaNonVaPortare, dividiInParti, divisibileInParti, frasePartiNuove, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
 import { Immagini } from './ImmaginiSito'
 import { OrarioSito } from './OrarioSito'
 import { Campo, chiedi, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
@@ -194,7 +194,7 @@ function Scrivi({ d, pagina, altri, pagine, onChiudi, ricarica }: { d: DatiSegre
             <div className="sito-testo sito-anteprima" aria-label="Com’è sul sito" dangerouslySetInnerHTML={{ __html: pulisciTesto(bozza) }} />
           ) : (
             <Suspense fallback={<span className="sg-sotto">Apro l’editor…</span>}>
-              {aPezzi ? <EditorPezzi key={rimonta} d={d} pezzi={pezzi} onCambia={setPezzi} pagine={pagine} conIstruttori={pagina.slug === PAGINA_ISTRUTTORI} /> : <EditorTesto valore={bozzaTesto} onCambia={setBozza} etichetta={`Testo di ${pagina.titolo}`} d={d} />}
+              {aPezzi ? <EditorPezzi key={rimonta} d={d} pezzi={pezzi} onCambia={setPezzi} pagine={pagine} slug={pagina.slug} /> : <EditorTesto valore={bozzaTesto} onCambia={setBozza} etichetta={`Testo di ${pagina.titolo}`} d={d} />}
             </Suspense>
           )}
           {noTesto && <Guaio testo={noTesto} />}

@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; font-family: {{INTER}}; color: {{c.text}}">
+  <div style="display: flex; align-items: center; gap: 14px; padding: 10px 14px; border: 2px solid {{bordo}}; background: {{c.surface}}; overflow-wrap: anywhere">
+    <sc-if value="{{conFoto}}"><span style="display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; flex-shrink: 0; background: {{c.blu}}"></span></sc-if>
+    <sc-if value="{{senzaFoto}}"><span aria-hidden="true" style="display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; flex-shrink: 0; background: {{c.surface2}}; font-family: {{BIG}}; font-weight: 800; font-size: 26px">{{iniziale}}</span></sc-if>
+    <span style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+      <span style="font-family: {{BIG}}; font-weight: 800; font-size: 22px; text-transform: uppercase; line-height: 1">{{nome}} <span style="font-weight: 700; color: {{c.dim}}">{{cognome}}</span></span>
+      <span style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{pastiglie}}" as="x" hint-placeholder-count="2"><span style="padding: 2px 8px; border: 1.5px solid {{c.blu}}; border-radius: 999px; font-size: 13px; font-weight: 600">{{x}}</span></sc-for></span>
+    </span>
+  </div>
+  <sc-if value="{{avviso}}"><p style="margin: 6px 0 0; color: {{c.gialloTesto}}; font-size: 14px; font-weight: 600; line-height: 1.4">! Gli istruttori dopo questa parte non sono in tessere: spostala sotto l’ultimo istruttore.</p></sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Fabio"},"cognome":{"editor":"text","default":"Berta"},"corsi":{"editor":"text","default":"Aikido, Judo"},"foto":{"editor":"boolean","default":true},"scelta":{"editor":"boolean","default":false},"avviso":{"editor":"boolean","default":false},"$preview":{"width":520,"height":110}}'>
+// COSTRUITA (`PezzoIstruttore` e `AvvisoIstruttori` di EditorPezzi.tsx, `.sito-pezzo-istruttore` e `.sito-pezzi-avviso` di src/styles.css;
+// ../sito-istruttori-blocchi/): una parte ISTRUTTORE nell'editor a pezzi, look del sito. Bordo 2px `line` (scelta: `text`), fondo `surface`,
+// foto o iniziale da 56px (fondo `surface-2`, Big Shoulders 800 26px), nome Big Shoulders 800 22px maiuscolo, cognome 700 `dim`, corsi in
+// pastiglie (bordo 1.5px `riga-campo`, 13px 600). `avviso` mostra sotto la frase gialla (`giallo-testo`, 14px 600) che compare sotto una parte
+// TESTO / FOTO / COLONNE messa prima di un istruttore. Il nome lungo va a capo (overflow-wrap: anywhere).
+const c = { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', blu: '#14709f', gialloTesto: '#8f6a00' };
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const nome = p.nome ?? 'Fabio';
+    const foto = !(p.foto === false || p.foto === 'false');
+    return {
+      c, BIG, INTER, nome, cognome: p.cognome ?? 'Berta',
+      iniziale: nome.trim().slice(0, 1).toUpperCase(),
+      conFoto: foto, senzaFoto: !foto,
+      bordo: p.scelta === true || p.scelta === 'true' ? c.text : c.line,
+      pastiglie: (p.corsi ?? 'Aikido, Judo').split(',').map((x) => x.trim()).filter(Boolean),
+      avviso: p.avviso === true || p.avviso === 'true',
+    };
+  }
+}
+</script>
+</body>
+</html>

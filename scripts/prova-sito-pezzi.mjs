@@ -10,6 +10,7 @@
 // e il CSS le affianca (le impila sul telefono). Il sito resta statico.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
+import { readFileSync } from 'node:fs'
 
 const carica = async (file) => {
   try {
@@ -861,6 +862,27 @@ console.log('\nLa parte ISTRUTTORE: un istruttore per parte, nell\'ordine delle 
   ok('nota: una pagina mai pubblicata', nota('diana'), NON_PUBBLICATA)
   ok('nota: una pagina nascosta', nota('maura'), NON_PUBBLICATA)
   ok('nota: una pagina pubblicata, niente da dire', nota('fabio-berta'), null)
+}
+
+console.log('\nLa parte ISTRUTTORE: dove si mette, con quale pagina, come si vede nell\'editor')
+{
+  const ammessa = (t, slug) => prova(() => z.parteAmmessa(t, slug))
+  ok('ISTRUTTORE si mette nella pagina degli istruttori', ammessa('istruttore', 'istruttori'), true)
+  ok('ISTRUTTORE non si mette in un\'altra pagina', [ammessa('istruttore', 'judo'), ammessa('istruttore', 'home')], [false, false])
+  ok('le altre parti si mettono ovunque', [ammessa('testo', 'judo'), ammessa('foto', 'istruttori')], [true, true])
+
+  const PAG = [{ slug: 'home', diLegge: false }, { slug: 'istruttori', diLegge: false }, { slug: 'privacy', diLegge: true }, { slug: 'fabio-berta', diLegge: false }, { slug: 'judo', diLegge: false }]
+  ok('LA SUA PAGINA: né la Home, né Istruttori stessa, né le pagine di legge', prova(() => z.pagineIstruttore(PAG).map((p) => p.slug)), ['fabio-berta', 'judo'])
+
+  const valido = (pagina) => prova(() => z.pezziValidi({ content: [{ type: 'istruttore', props: { id: 'i1', nome: 'Fabio', cognome: '', corsi: '', src: '', alt: '', pagina } }] }))
+  ok('la pagina di un istruttore è un indirizzo del sito, solo lettere, cifre e trattini', [valido(''), valido('fabio-berta'), valido('/evil.com'), valido('a/b'), valido('Fabio')], [true, true, false, false, false])
+
+  ok('i corsi, da un testo con le virgole', prova(() => z.corsiDa(' Judo ,, Pesi,')), ['Judo', 'Pesi'])
+
+  const css = readFileSync('src/styles.css', 'utf8')
+  ok('l\'avviso e la nota sono gialli (giallo-testo)', /\.sito-pezzi-avviso\s*\{[^}]*color:\s*var\(--giallo-testo\)/.test(css), true)
+  ok('la foto dell\'istruttore nell\'editor non esce dal riquadro', /\.sito-pezzo-istruttore img[^{]*\{[^}]*max-width:\s*100%/.test(css) || /\.sito-pezzo-istruttore img[^{]*\{[^}]*width:\s*56px/.test(css), true)
+  ok('un nome lunghissimo va a capo', /\.sito-pezzo-istruttore[^{]*\{[^}]*overflow-wrap:\s*anywhere/.test(css), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

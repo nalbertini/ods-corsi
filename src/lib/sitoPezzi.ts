@@ -44,6 +44,15 @@ export const pezziVuoti = (): PezziPagina => ({ content: [] })
 /** L'unica pagina dove si mette la parte ISTRUTTORE: le sue parti diventano le tessere (`elencoIstruttori` di sitoIstruttori.ts). */
 export const PAGINA_ISTRUTTORI = 'istruttori'
 
+/** La parte ISTRUTTORE si mette solo nella pagina degli istruttori: altrove non diventa tessera e confonde. */
+export const parteAmmessa = (tipo: string, slug: string): boolean => tipo !== 'istruttore' || slug === PAGINA_ISTRUTTORI
+
+/** Le pagine fra cui scegliere quella di un istruttore: non la Home (è «/»), non Istruttori stessa, non quelle di legge. */
+export const pagineIstruttore = <P extends { slug: string; diLegge: boolean }>(pagine: ReadonlyArray<P>): P[] => pagine.filter((p) => !p.diLegge && p.slug !== 'home' && p.slug !== PAGINA_ISTRUTTORI)
+
+/** I corsi di un istruttore, dal testo con le virgole: gli stessi nell'editor e sul sito. */
+export const corsiDa = (testo: string): string[] => testo.split(',').map((c) => c.trim()).filter(Boolean)
+
 /**
  * Sul sito le tessere sono gli istruttori di fila dall'inizio del testo: una parte prima di uno di loro (testo, foto, colonne)
  * chiude la griglia lì, e chi viene dopo esce come testo. ISCRIVITI no: il sito la toglie dal testo prima di guardarlo.
@@ -109,7 +118,8 @@ function pezzoValido(x: unknown): x is Pezzo {
     case 'iscriviti':
       return stringa(p.titolo) && stringa(p.frase)
     case 'istruttore':
-      return [p.nome, p.cognome, p.corsi, p.src, p.alt, p.pagina].every(stringa) && (p.nome as string).trim() !== ''
+      // `pagina` finisce in un href: solo un indirizzo del sito (`/slug/`), mai un altro dominio.
+      return stringa(p.nome) && p.nome.trim() !== '' && [p.cognome, p.corsi, p.src, p.alt].every(stringa) && stringa(p.pagina) && /^[a-z0-9-]*$/.test(p.pagina)
     case 'colonne':
       return Array.isArray(p.colonne) && p.colonne.length >= 2 && p.colonne.length <= 3 && p.colonne.every((c) => oggetto(c) && stringa(c.html))
     default:
@@ -193,7 +203,7 @@ function inHtml(p: Pezzo): string {
       // La forma che legge `elencoIstruttori`: h3 col nome, la foto, «Cognome · corso, corso». Il «·» c'è sempre coi corsi,
       // se no un corso solo senza cognome sarebbe letto come cognome.
       const { nome, cognome, corsi, src, alt, pagina } = p.props
-      const elenco = corsi.split(',').map((c) => c.trim()).filter(Boolean).join(', ')
+      const elenco = corsiDa(corsi).join(', ')
       const riga = elenco ? `${cognome.trim()} · ${elenco}`.trim() : cognome.trim()
       const n = esc(nome.trim())
       return `<h3>${pagina ? `<a href="/${esc(pagina)}/">${n}</a>` : n}</h3>${src ? `<img src="${esc(src)}" alt="${esc(alt)}">` : ''}${riga ? `<p>${esc(riga)}</p>` : ''}`

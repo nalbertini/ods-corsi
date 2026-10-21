@@ -3,7 +3,7 @@ import { createUsePuck, Puck, registerOverlayPortal, type ComponentData, type Co
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { PaginaSito } from '../../lib/sitoPagine'
-import { FRASE_NESSUNA_PARTE, avvisoIstruttori, notaPaginaIstruttore, attesaStoria, colonnaNuova, doveMettere, motivoSpento, puoMettere, spostabile, conTestoScritto, nomeParte, scriviTesto, selezioneDopoStoria, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
+import { FRASE_NESSUNA_PARTE, avvisoIstruttori, corsiDa, notaPaginaIstruttore, pagineIstruttore, parteAmmessa, attesaStoria, colonnaNuova, doveMettere, motivoSpento, puoMettere, spostabile, conTestoScritto, nomeParte, scriviTesto, selezioneDopoStoria, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import { invito } from '../../lib/sitoGenera'
 import { TestoInPagina } from './TestoInPagina'
@@ -31,7 +31,7 @@ type Props = {
 }
 
 /** Le pagine fra cui scegliere quella di un istruttore: basta sapere se è pubblicata. */
-type Pagine = ReadonlyArray<Pick<PaginaSito, 'slug' | 'titolo' | 'pubblicato' | 'nascosta'>>
+type Pagine = ReadonlyArray<Pick<PaginaSito, 'slug' | 'titolo' | 'pubblicato' | 'nascosta' | 'diLegge'>>
 
 /** Il corpo di un testo come lo vede chi scrive: ripulito dalla stessa funzione che lo ripulisce per il sito. */
 const Testo = ({ html }: { html: string }) => <div className="sito-testo" style={{ minHeight: 0, border: 0 }} dangerouslySetInnerHTML={{ __html: pulisciTesto(html) }} />
@@ -189,7 +189,7 @@ function AvvisoIstruttori({ id }: { id: string }) {
 
 /** Un istruttore come lo vede chi scrive: foto (o iniziale), nome e cognome, corsi in pastiglie. La tessera vera la mostra «Com'è sul sito». */
 function PezzoIstruttore({ nome, cognome, corsi, src, alt }: Props['istruttore']) {
-  const pastiglie = corsi.split(',').map((c) => c.trim()).filter(Boolean)
+  const pastiglie = corsiDa(corsi)
   return (
     <div className="sito-pezzo-istruttore">
       {src ? <img src={src} alt={alt} /> : <span className="iniziale" aria-hidden="true">{nome.trim().slice(0, 1).toUpperCase()}</span>}
@@ -211,7 +211,7 @@ function CampoPagina({ pagine, value, onChange }: { pagine: Pagine; value: strin
         <option value="">Nessuna</option>
         {/* Una pagina tolta resta scelta finché non se ne sceglie un'altra: la nota lo dice. */}
         {value && !pagine.some((p) => p.slug === value) && <option value={value}>/{value}/</option>}
-        {pagine.map((p) => <option key={p.slug} value={p.slug}>{p.titolo} · /{p.slug}/</option>)}
+        {pagineIstruttore(pagine).map((p) => <option key={p.slug} value={p.slug}>{p.titolo} · /{p.slug}/</option>)}
       </select>
       {nota && <span className="sito-pezzi-avviso">{nota}</span>}
     </label>
@@ -307,7 +307,7 @@ const PARTI: Array<{ tipo: keyof Props; nome: string }> = [
  * I gesti senza trascinare: mettere una parte (dopo quella scelta, o in fondo), spostarla su o giù, toglierla.
  * Col dito sul tablet trascinare sbaglia facile; qui sono tasti da 44px.
  */
-function Comandi({ onNuova, conIstruttori }: { onNuova: () => void; conIstruttori: boolean }) {
+function Comandi({ onNuova, slug }: { onNuova: () => void; slug: string }) {
   const dispatch = usePuck((s) => s.dispatch)
   const scelto = usePuck((s) => s.appState.ui.itemSelector)
   const contenuto = usePuck((s) => s.appState.data.content)
@@ -333,7 +333,7 @@ function Comandi({ onNuova, conIstruttori }: { onNuova: () => void; conIstruttor
   }
   return (
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', padding: 8 }}>
-      {PARTI.filter((p) => conIstruttori || p.tipo !== 'istruttore').map((p) => (
+      {PARTI.filter((p) => parteAmmessa(p.tipo, slug)).map((p) => (
         <button key={p.tipo} type="button" className="sg-chip num" disabled={!puoMettere(p.tipo, contenuto)} title={motivoSpento(p.tipo, contenuto) ?? undefined} onClick={() => metti(p.tipo)}>
           + {p.nome}
         </button>
@@ -408,8 +408,8 @@ function Destra({ scheda, setScheda }: { scheda: Scheda; setScheda: (k: Scheda) 
   )
 }
 
-/** `conIstruttori`: la pagina degli istruttori, l'unica dove si mette la parte ISTRUTTORE. */
-export default function EditorPezzi({ d, pezzi, onCambia, pagine, conIstruttori }: { d: DatiSegreteria; pezzi: PezziPagina; onCambia: (p: PezziPagina) => void; pagine: Pagine; conIstruttori: boolean }) {
+/** `slug`: l'indirizzo della pagina, che decide quali parti si mettono (`parteAmmessa`). */
+export default function EditorPezzi({ d, pezzi, onCambia, pagine, slug }: { d: DatiSegreteria; pezzi: PezziPagina; onCambia: (p: PezziPagina) => void; pagine: Pagine; slug: string }) {
   const config = useMemo(() => configura(d, pagine), [d, pagine])
   // Puck vuole anche `root`; i pezzi sono quelli che teniamo noi. Si parte una volta sola: poi i pezzi li tiene Puck.
   const [iniziali] = useState<Data>(() => ({ root: { props: {} }, content: pezzi.content }))
@@ -428,7 +428,7 @@ export default function EditorPezzi({ d, pezzi, onCambia, pagine, conIstruttori 
         }}
       >
         <div className="sito-pezzi-corpo">
-          <Comandi onNuova={() => setScheda('impostazioni')} conIstruttori={conIstruttori} />
+          <Comandi onNuova={() => setScheda('impostazioni')} slug={slug} />
           <div className="sito-pezzi-colonne">
             {/* Toccare una parte nella pagina porta alle sue impostazioni; dall'elenco si resta lì, per spostarla con «Su» e «Giù». */}
             <div className="sito-pezzi-pagina" onClickCapture={() => setScheda('impostazioni')}><Puck.Preview /></div>
