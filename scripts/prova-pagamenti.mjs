@@ -9,9 +9,18 @@
 import { readFileSync } from 'node:fs'
 import { build } from 'esbuild'
 
+// segreteriaProva tiene i dati nel localStorage: qui basta una mappa.
+const memoria = new Map()
+globalThis.localStorage = {
+  getItem: (k) => (memoria.has(k) ? memoria.get(k) : null),
+  setItem: (k, v) => memoria.set(k, String(v)),
+  removeItem: (k) => memoria.delete(k),
+}
+globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} }
+
 const { outputFiles } = await build({
   stdin: {
-    contents: "export * from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro } from './src/lib/ricevute'; export { dataLunga } from './src/lib/sala'",
+    contents: "export * from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro } from './src/lib/ricevute'; export { dataLunga } from './src/lib/sala'; export { conti } from './src/lib/ricevute'; export { NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, VOCE_QUOTA, VOCE_CORSI, cassaDelMetodo, voceDiSistema, doveEntraInContabilita } from './src/lib/contabilita'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { VALIDITA } from './src/lib/costi'; export { pagamentoDi } from './src/lib/segreteria'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -366,7 +375,7 @@ console.log('\n4d. il pagamento a mano in contanti in un giorno già chiuso')
   ok('un importo sbagliato si dice prima del giorno chiuso', frase({ importo: 0 }), 'L’importo deve essere più di zero')
 }
 
-console.log('\n5. il riepilogo prima di registrare un pagamento a mano (riepilogoPagamentoDiretto(dati, chi) → righe)')
+console.log('\n14. il riepilogo prima di registrare un pagamento a mano (riepilogoPagamentoDiretto(dati, chi) → righe)')
 {
   const base = { personaId: 'p-Rossi', data: '2026-10-01', importo: 4050, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA' }
   const testo = (cambio = {}, chi = 'Rossi Giulia') => prova(() => m.riepilogoPagamentoDiretto({ ...base, ...cambio }, chi)).toString()
@@ -378,17 +387,97 @@ console.log('\n5. il riepilogo prima di registrare un pagamento a mano (riepilog
   ok('dice chi', t.includes('Rossi Giulia'), true)
   ok('dice la data', t.includes(m.dataLunga('2026-10-01')), true)
   ok('dice a cosa serve', t.includes('QUOTA ASSOCIATIVA'), true)
-  ok('dice che va nella Cassa Contanti', t.includes('Va nella Cassa Contanti'), true)
+  // Cambiato: la cassa ora la dice «Entra in CONTABILITÀ: …», solo con `contabilita: true` (prove sotto).
+  ok('la riga «Va nella Cassa Contanti» non c\'è più', t.includes('Va nella Cassa Contanti'), false)
   ok('dice che non ha ricevuta e che si annulla', t.includes(SENZA), true)
   ok('dice che non riduce il residuo di nessuna ricevuta', /residuo/i.test(t) && /nessuna ricevuta/i.test(t), true)
   const carta = testo({ metodo: 'POS' })
   ok('con la carta: il modo c\'è, la Cassa Contanti no', [carta.includes('POS'), carta.includes('Cassa Contanti')], [true, false])
-  ok('«contanti» in minuscolo va nella cassa lo stesso', testo({ metodo: 'contanti' }).includes('Va nella Cassa Contanti'), true)
   ok('senza ricevuta e senza residuo anche con la carta', [carta.includes(SENZA), /residuo/i.test(carta)], [true, true])
   ok('la nota, se c\'è, si legge', testo({ nota: 'in palestra' }).includes('in palestra'), true)
+
+  // Con le opzioni: la conferma di REGISTRA IL PAGAMENTO (contabilità e casella della ricevuta).
+  const righe = (cambio = {}, o) => prova(() => m.riepilogoPagamentoDiretto({ ...base, ...cambio }, 'Rossi Giulia', o))
+  const PRIME = [`${m.euro(4050)} € · Contanti`, 'Rossi Giulia', m.dataLunga('2026-10-01'), 'QUOTA ASSOCIATIVA']
+  const RESIDUO = 'Non riduce il residuo di nessuna ricevuta'
+  ok('senza opzioni: le prime righe, poi le due su ricevuta e residuo', righe(), [...PRIME, SENZA, RESIDUO])
+  ok('…con la nota dopo la voce', righe({ nota: ' in palestra ' }), [...PRIME, 'in palestra', SENZA, RESIDUO])
+  ok('con la contabilità: aggiunge dove entra', righe({}, { contabilita: true }), [...PRIME, 'Entra in CONTABILITÀ: Cassa Contanti · Quota associativa', SENZA, RESIDUO])
+  ok('con la casella della ricevuta: niente «Senza ricevuta» né residuo', righe({}, { ricevuta: true }), PRIME)
+  ok('con tutte e due: le prime righe e la contabilità', righe({}, { contabilita: true, ricevuta: true }), [...PRIME, 'Entra in CONTABILITÀ: Cassa Contanti · Quota associativa'])
+  ok('POS e un corso: Conto Corrente · Corsi e altri pagamenti', righe({ importo: 8000, metodo: 'POS', voce: 'Annuale Judo adulti' }, { contabilita: true, ricevuta: true }), [`${m.euro(8000)} € · POS`, 'Rossi Giulia', m.dataLunga('2026-10-01'), 'Annuale Judo adulti', 'Entra in CONTABILITÀ: Conto Corrente · Corsi e altri pagamenti'])
+  ok('contabilita: false è come senza', righe({}, { contabilita: false }), [...PRIME, SENZA, RESIDUO])
 }
 
-console.log('\n6. Ricevute.tsx scrive solo dopo il sì del riepilogo')
+console.log('\n15. dove entra in contabilità (doveEntraInContabilita(metodo, voce))')
+{
+  const dove = (metodo, voce) => prova(() => m.doveEntraInContabilita(metodo, voce))
+  ok('40,00 € contanti «Quota associativa»', dove('Contanti', 'Quota associativa'), 'Entra in CONTABILITÀ: Cassa Contanti · Quota associativa')
+  ok('80,00 € POS «Annuale Judo adulti»', dove('POS', 'Annuale Judo adulti'), 'Entra in CONTABILITÀ: Conto Corrente · Corsi e altri pagamenti')
+  ok('«  contanti » e «QUOTA ASSOCIATIVA »: maiuscole e spazi non contano', dove('  contanti ', 'QUOTA ASSOCIATIVA '), 'Entra in CONTABILITÀ: Cassa Contanti · Quota associativa')
+  ok('Bonifico: Conto Corrente', dove('Bonifico', 'Quota associativa'), 'Entra in CONTABILITÀ: Conto Corrente · Quota associativa')
+  ok('Satispay: Conto Corrente', dove('Satispay', 'ALTRO'), 'Entra in CONTABILITÀ: Conto Corrente · Corsi e altri pagamenti')
+  ok('«Quota + ottobre» non è la quota associativa', dove('Contanti', 'Quota + ottobre'), 'Entra in CONTABILITÀ: Cassa Contanti · Corsi e altri pagamenti')
+  // Dice le stesse cose dei movimenti di CONTABILITÀ (`incassiDerivati`): se una cambia, l'altra la segue.
+  const casse = { contanti: m.NOME_CASSA_CONTANTI, conto: m.NOME_CASSA_CONTO }
+  const diverse = []
+  for (const metodo of [...m.METODI_A_MANO, 'contanti', ' CONTANTI ', 'pos'])
+    for (const voce of ['Quota associativa', 'QUOTA ASSOCIATIVA', ' quota associativa ', 'Quota + ottobre', 'Annuale Judo adulti', 'ALTRO']) {
+      const voluto = `Entra in CONTABILITÀ: ${casse[m.cassaDelMetodo(metodo)]} · ${m.voceDiSistema(voce)}`
+      if (dove(metodo, voce) !== voluto) diverse.push(`${metodo}/${voce}`)
+    }
+  ok('per ogni metodo e voce dice quel che fa cassaDelMetodo e voceDiSistema', diverse, [])
+}
+
+console.log('\n16. la ricevuta fatta da un pagamento a mano (voceDaPagamento(dati) → voce)')
+{
+  const d = { personaId: 'p-Rossi', data: '2026-10-01', importo: 4000, metodo: ' Contanti ', voce: ' Quota associativa ', nota: 'in palestra' }
+  const v = prova(() => m.voceDaPagamento(d))
+  ok('una voce, quantità 1, prezzo e pagato uguali all\'importo', v, { descrizione: 'Quota associativa', quantita: 1, prezzo: 4000, pagamenti: [{ data: '2026-10-01', importo: 4000, metodo: 'Contanti' }], ...m.VALIDITA.quota })
+  // Senza «al» la quota varrebbe per sempre (`pagamentoDi`): ha le date della stagione, come quella del listino.
+  ok('la quota ha dal/al della stagione', typeof v === 'object' ? [v.dal, v.al] : v, [m.VALIDITA.quota.dal, m.VALIDITA.quota.al])
+  ok('…anche scritta in maiuscolo', prova(() => m.voceDaPagamento({ ...d, voce: 'QUOTA ASSOCIATIVA' }).al), m.VALIDITA.quota.al)
+  ok('un\'altra voce: niente dal/al', prova(() => { const x = m.voceDaPagamento({ ...d, voce: 'Maglietta' }); return 'dal' in x || 'al' in x }), false)
+  ok('la nota non entra nella voce', JSON.stringify(v).includes('in palestra'), false)
+  ok('la ricevuta torna: totale = pagato = importo, niente da dare', typeof v === 'object' ? m.conti({ voci: [v], anticipo: 0 }) : v, { totale: 4000, pagato: 4000, netto: 0 })
+  ok('con POS', prova(() => m.voceDaPagamento({ ...d, importo: 8000, metodo: 'POS', voce: 'Annuale Judo adulti' })), { descrizione: 'Annuale Judo adulti', quantita: 1, prezzo: 8000, pagamenti: [{ data: '2026-10-01', importo: 8000, metodo: 'POS' }] })
+}
+
+console.log('\n17. la casella «fai anche la ricevuta» (notaRicevutaDaPagamento, tastoRicevutaDaPagamento)')
+{
+  ok('spuntata: la nota', prova(() => m.notaRicevutaDaPagamento(true)), 'Si apre FAI LA RICEVUTA già compilata. Il pagamento si registra lì, una volta sola.')
+  ok('tolta: la nota', prova(() => m.notaRicevutaDaPagamento(false)), 'Resta SENZA RICEVUTA e non cambia se è in regola: una quota resta DA PAGARE. Per la ricevuta, dopo, si annulla il pagamento e la si fa.')
+  ok('spuntata: il tasto', prova(() => m.tastoRicevutaDaPagamento(true)), 'Sì, fai la ricevuta')
+  ok('tolta: il tasto', prova(() => m.tastoRicevutaDaPagamento(false)), 'Sì, registra senza ricevuta')
+}
+
+console.log('\n18. in prova: la ricevuta da un pagamento a mano conta il pagamento una volta sola')
+{
+  const s = m.creaSegreteriaProva()
+  const chi = (await s.persone()).find((p) => p.attiva)
+  const d = { personaId: chi.id, data: '2026-10-01', importo: 4000, metodo: 'Contanti', voce: 'Quota associativa' }
+  const quante = async () => [m.righeDaRicevute(await s.ricevute()).length, (await s.pagamentiDiretti()).length]
+  const [primaR, primaD] = await quante()
+  const v = prova(() => m.voceDaPagamento(d))
+  let fatta = 'nessuna'
+  try {
+    fatta = typeof (await s.emettiRicevuta({ data: d.data, personaId: d.personaId, ente: m.ENTE_PREDEFINITO, intestatario: { nome: chi.nome, cognome: chi.cognome }, voci: [v], anticipo: 0 })).id
+  } catch (e) {
+    fatta = `ERRORE: ${e.message}`
+  }
+  ok('la ricevuta si fa', fatta, 'string')
+  const [dopoR, dopoD] = await quante()
+  ok('PAGAMENTI cresce di una riga sola, dalla ricevuta', [dopoR - primaR, dopoD - primaD], [1, 0])
+  const nuova = m.righeDaRicevute(await s.ricevute()).find((r) => r.personaId === chi.id && r.data === d.data && r.importo === 4000)
+  ok('…con l\'importo e il metodo del pagamento', nuova ? [nuova.importo, nuova.metodo] : null, [4000, 'Contanti'])
+  // Il guaio trovato dal collaudo: la quota fatta da un pagamento a mano risultava pagata per sempre.
+  const dopo = (await s.persone()).find((p) => p.id === chi.id)
+  const giornoDopo = new Date(Date.parse(`${m.VALIDITA.quota.al}T12:00:00Z`) + 864e5).toISOString().slice(0, 10)
+  ok('la quota è pagata fino alla fine della stagione', prova(() => m.pagamentoDi(dopo, m.VALIDITA.quota.al).come), 'pagato')
+  ok('…e il giorno dopo non più', prova(() => m.pagamentoDi(dopo, giornoDopo).come) === 'pagato', false)
+}
+
+console.log('\n19. Ricevute.tsx scrive solo dopo il sì del riepilogo, e non se si fa la ricevuta')
 {
   const tsx = readFileSync('src/components/segreteria/Ricevute.tsx', 'utf8')
   const chiamate = tsx.split('registraPagamentoDiretto(').length - 1
@@ -397,9 +486,23 @@ console.log('\n6. Ricevute.tsx scrive solo dopo il sì del riepilogo')
   // Dall'inizio del gestore che la contiene: l'ultimo `onClick={` o `= async` prima della chiamata.
   const inizi = [...tsx.slice(0, i).matchAll(/onClick=\{|=\s*async\b/g)]
   const gestore = tsx.slice(inizi.at(-1)?.index ?? 0, i)
-  ok('nel gestore, prima della chiamata, c\'è un `await chiedi(`', /await chiedi\(/.test(gestore), true)
+  // La conferma ha la casella «Fai anche la ricevuta»: è `chiediSpunta`, che dice il sì e la spunta.
+  ok('nel gestore, prima della chiamata, c\'è un `await chiediSpunta(`', /await chiediSpunta\(/.test(gestore), true)
   ok('…col riepilogo di riepilogoPagamentoDiretto', gestore.includes('riepilogoPagamentoDiretto('), true)
-  ok('…e senza il sì si esce prima di scrivere', /if \(!\(await chiedi\([\s\S]*?\)\)\) return/.test(gestore), true)
+  ok('…e senza il sì si esce prima di scrivere', /const \{ si, spuntata \} = await chiediSpunta\([\s\S]*?\)\s*if \(!si\) return/.test(gestore), true)
+  ok('…e con la ricevuta si esce prima di scrivere: il pagamento sta solo nella ricevuta', /if \(onRicevuta && spuntata\) return onRicevuta\(dati\)/.test(gestore), true)
+  // Contanti in un giorno di cassa chiusa: la ricevuta non li rifiuta (è un documento), ma la chiusura non torna più.
+  // Chi legge le chiusure (l'amministrazione) lo sa prima di farla, come quando la annulla.
+  const emettiR = tsx.slice(tsx.indexOf('const emetti = async () => {'), tsx.indexOf("'Fai la ricevuta',"))
+  ok('FAI LA RICEVUTA avvisa dei contanti in un giorno di cassa chiusa', /avvisoCassaChiusa\(dati\.voci\.flatMap\(\(v\) => v\.pagamenti\), await d\.chiusure\(\)\.catch\(\(\) => \[\]\)\)/.test(emettiR), true)
+  ok('…e l\'avviso sta nella domanda', /cassaChiusa \?/.test(emettiR), true)
+  // FAI LA RICEVUTA aperta dal pagamento: la voce è quella del modulo, non il listino.
+  ok('con daPagamento le voci vengono solo da voceDaPagamento', /if \(daPagamento\) return setVoci\(\[\{ \.\.\.bozzaDa\(voceDaPagamento\(daPagamento\)\)/.test(tsx), true)
+  const isc = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
+  const lascia = isc.slice(isc.indexOf('onLasciaStare={() => {'), isc.indexOf('onFatta={() => {'))
+  ok('ricevuta non fatta: il pagamento torna nel modulo', /setRiprendi\(daPagamento\)/.test(lascia), true)
+  ok('…e non si registra niente', /registraPagamentoDiretto/.test(lascia), false)
+  ok('uscire dalla ricevuta aperta dal pagamento chiede prima', /useBozza\(!!daPagamento/.test(isc), true)
   // Il guaio sotto al modulo è lo stesso del database: oggi (a Roma) e le chiusure arrivano alla funzione.
   const riga = tsx.split('\n').find((l) => l.includes('cosaNonVaDiretto({')) ?? ''
   ok('il modulo passa oggi e le chiusure a cosaNonVaDiretto', [riga.includes('oggi'), riga.includes('chiusure')], [true, true])

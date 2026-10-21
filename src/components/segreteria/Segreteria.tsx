@@ -570,6 +570,7 @@ export function Segreteria({
             onNuovo={() => segna({ voce: 'iscritti', nuovo: true }, 'push')}
             onConti={contiCambiati}
             filtroIniziale={filtro}
+            contabilita={puo(chi, 'contabilita')}
           />
         )}
         {d && voce === 'richieste' && <Richieste key={`${filtro ?? ''}|${ricerca?.testo ?? ''}|${richiesta ?? posto.richiesta ?? ''}`} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} ricerca={ricerca} aperta={richiesta ?? posto.richiesta} onTogliRicerca={() => setRicerca(undefined)} onConti={contiCambiati} />}

@@ -1,0 +1,12 @@
+{
+ "pages": [
+  { "id": "page-1", "name": "Pagamento e ricevuta · proposta" }
+ ],
+ "artboards": [
+  { "file": "Conferma.dc.html", "title": "REGISTRA IL PAGAMENTO: oggi e proposta", "x": 0, "y": 300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1600, "text": "Registrando un pagamento, l'app chiede se fare la ricevuta e dice dove entra in contabilità" },
+  { "id": "sotto", "kind": "body", "x": 0, "y": 120, "maxW": 1600, "text": "Una conferma sola, come oggi: la casella sta dentro. Con «Sì, fai la ricevuta» si apre FAI LA RICEVUTA com'è oggi, ma con una voce sola: A COSA SERVE, al prezzo dell'importo, già pagata con la data e COME HA PAGATO del modulo (niente quota e annuale del listino aggiunti). Tutto si cambia. Se la si chiude senza farla (o manca il codice fiscale), si torna al modulo coi dati ancora scritti e l'avviso «Pagamento non registrato»: da lì si registra senza ricevuta. Il movimento in CONTABILITÀ non si scrive a mano: ricevuta o pagamento a mano, compare da sé, e un annullo lo toglie da sé." }
+ ]
+}

@@ -19,6 +19,8 @@ L'elenco unisce due cose:
   **Incasso iscritto**. Non si ricopiano e non si cambiano da qui: se una ricevuta
   o un pagamento si annulla, cambia da sé anche qui. Contanti vanno in Cassa
   Contanti, tutto il resto (bonifico, POS, Satispay, assegno) in Conto Corrente.
+  Prima di registrare un pagamento a mano, il riepilogo dice già dove entra
+  («Entra in CONTABILITÀ: Cassa Contanti · Quota associativa»).
   Il «pagato fino al» non è un incasso e qui non compare. Satispay entra per
   l'importo pagato dalla famiglia: le commissioni e i rimborsi fatti dall'app
   Satispay Business si registrano a mano;
@@ -264,7 +266,9 @@ sull'ultima chiusura: toglie anche la sua «Differenza di cassa» e riapre i gio
 stampato non vale più. Una chiusura non si cambia: si annulla e si rifà.
 
 Se stai per annullare una ricevuta o un pagamento in contanti di un giorno già chiuso, la domanda di
-conferma te lo dice prima. Se dopo una chiusura qualcuno annulla una ricevuta o un pagamento in contanti di quei giorni,
+conferma te lo dice prima. Lo stesso se stai per fare una ricevuta con un pagamento in contanti di un
+giorno già chiuso (anche quella aperta da REGISTRA IL PAGAMENTO): la ricevuta si fa lo stesso, perché
+è un documento, ma la chiusura non torna più e serve una rettifica. Se dopo una chiusura qualcuno annulla una ricevuta o un pagamento in contanti di quei giorni,
 compare un avviso rosso «La chiusura del … non è più in regola»: il foglio già stampato non torna
 più coi conti, e la correzione è una rettifica con una data dopo la chiusura.
 

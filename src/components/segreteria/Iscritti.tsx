@@ -1,6 +1,7 @@
 import { soldi } from '../../lib/satispay'
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { altriAperti, altriFiltri, FILTRI_VISIBILI, ID_FILTRI, TESTI_FILTRI, type IdFiltro } from '../../lib/filtriIscritti'
+import type { DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
@@ -104,6 +105,7 @@ export function Iscritti({
   ricerca,
   onTogliRicerca,
   onConti,
+  contabilita,
 }: {
   d: DatiSegreteria
   /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
@@ -122,6 +124,8 @@ export function Iscritti({
   onTogliRicerca: () => void
   /** Una scheda cambiata (certificato, pagamento, archiviata, nuova): i conti di COSA MANCA si rileggono. */
   onConti?: () => void
+  /** Chi vede CONTABILITÀ: registrando un pagamento legge dove entra. */
+  contabilita?: boolean
 }) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
@@ -295,6 +299,7 @@ export function Iscritti({
             tessere={conTessereLette ? tessere.dato!.elenco : undefined}
             fai={fai}
             avvisa={avvisa}
+            contabilita={contabilita}
             onCambiato={() => {
               void ricarica()
               onConti?.()
@@ -568,6 +573,7 @@ function Scheda({
   unisciCon,
   doppio,
   nonDoppioni,
+  contabilita,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
@@ -589,6 +595,7 @@ function Scheda({
   doppio?: string
   /** Le schede segnate «non sono doppioni» con questa: si tolgono da qui, se segnate per sbaglio. */
   nonDoppioni: PersonaSeg[]
+  contabilita?: boolean
 }) {
   const oggi = chiaveGiorno(new Date())
   const [modifica, setModifica] = useState<DatiPersona | null>(null)
@@ -597,6 +604,16 @@ function Scheda({
   useBozza(!!modifica)
   const [daAggiungere, setDaAggiungere] = useState('')
   const [pagando, setPagando] = useState(false)
+  // Il pagamento a mano da cui parte la ricevuta: se non la si fa, il modulo si riapre con quei dati.
+  const [daPagamento, setDaPagamento] = useState<DatiPagamentoDiretto | null>(null)
+  const [riprendi, setRiprendi] = useState<DatiPagamentoDiretto | null>(null)
+  // Uscire dalla ricevuta aperta dal pagamento lo perderebbe: prima si chiede, anche se non si è toccato niente.
+  useBozza(!!daPagamento, 'Il pagamento a mano')
+  // StoricoIscritto lo legge una volta, nel suo useState iniziale, quando si monta (nello stesso render, prima
+  // di questo effetto): poi si dimentica, se no una ricevuta dopo lo riaprirebbe coi dati vecchi.
+  useEffect(() => {
+    if (riprendi && !pagando) setRiprendi(null)
+  }, [riprendi, pagando])
   const [unendo, setUnendo] = useState(!!unisciCon)
   const [togliendo, setTogliendo] = useState(false)
   // Dopo una ricevuta nuova l'elenco delle ricevute si rilegge da capo.
@@ -676,9 +693,17 @@ function Scheda({
           corsi={correnti.flatMap((i) => { const c = corsi.get(i.corsoId); return c ? [{ id: c.id, nome: c.nome }] : [] })}
           fai={fai}
           avvisa={avvisa}
-          onLasciaStare={() => setPagando(false)}
+          daPagamento={daPagamento ?? undefined}
+          onLasciaStare={() => {
+            setPagando(false)
+            if (!daPagamento) return
+            setRiprendi(daPagamento)
+            setDaPagamento(null)
+            avvisa('Pagamento non registrato: è ancora nel modulo, da registrare senza ricevuta o da riprovare.', true)
+          }}
           onFatta={() => {
             setPagando(false)
+            setDaPagamento(null)
             setAperta(schedaIniziale(true))
             setGiroRicevute((g) => g + 1)
             onCambiato()
@@ -806,7 +831,11 @@ function Scheda({
       <div role="tabpanel" id={idPannello('quota')} aria-labelledby={idLinguetta('quota')} hidden={aperta !== 'quota'}>
         <div id="sez-quota" className="stack" style={{ gap: 24, minWidth: 0 }}>
             <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
-            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} avvisa={avvisa} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
+            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} avvisa={avvisa} onNuova={() => setPagando(true)} onCambiato={onCambiato} contabilita={contabilita} riprendi={riprendi ?? undefined} onRicevuta={(x) => {
+              setRiprendi(null)
+              setDaPagamento(x)
+              setPagando(true)
+            }} />
             <StoricoPersona key={`s-${p.id}`} d={d} personaId={p.id} />
         </div>
       </div>
