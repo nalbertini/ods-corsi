@@ -90,6 +90,11 @@ select atteso('authenticated le chiama, anon no (permessi)',
   (select string_agg(has_function_privilege('authenticated', p.oid, 'execute')::text || '/' || has_function_privilege('anon', p.oid, 'execute')::text, ' ' order by p.proname)
    from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('segna_sollecito', 'ultimo_sollecito')), 'true/false true/false');
 
+update persone set attiva = false where id = 'aaaaaaaa-0000-0000-0000-000000000001';
+select atteso('una segreteria con la scheda disattivata non segna più',
+  left(esito($q$select come('11111111-1111-1111-1111-111111111111', $$select segna_sollecito('cccccccc-0000-0000-0000-000000000001')::text$$)$q$), 5), '42501');
+update persone set attiva = true where id = 'aaaaaaaa-0000-0000-0000-000000000001';
+
 \echo ''
 \echo '--- 2. la tabella non si tocca da fuori ---'
 select atteso('la segreteria non la legge direttamente',
@@ -107,8 +112,8 @@ select atteso('chi ha premuto è la persona collegata, non un argomento',
   (select string_agg(p.nome, ',' order by p.nome) from solleciti s join persone p on p.id = s.creato_da), 'Anna,Sandro');
 -- Il più recente vince: uno di Anna, più tardi.
 update solleciti set creato_il = now() - interval '2 days' where creato_da = 'aaaaaaaa-0000-0000-0000-000000000003';
-select atteso('l''ultimo è di Anna, col suo nome',
-  come('11111111-1111-1111-1111-111111111111', $$select da from ultimo_sollecito('cccccccc-0000-0000-0000-000000000001')$$), 'Anna');
+select atteso('l''ultimo è di Anna, con nome e cognome (due Anna si distinguono)',
+  come('11111111-1111-1111-1111-111111111111', $$select da from ultimo_sollecito('cccccccc-0000-0000-0000-000000000001')$$), 'Anna Segreteria');
 select atteso('una persona mai sollecitata: nessuna riga',
   come('11111111-1111-1111-1111-111111111111', $$select count(*)::text from ultimo_sollecito('aaaaaaaa-0000-0000-0000-000000000007')$$), '0');
 select atteso('una scheda disattivata non si sollecita',

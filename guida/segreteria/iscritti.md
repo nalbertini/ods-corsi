@@ -132,7 +132,8 @@ che servirà al compimento dei 6 anni), il messaggio già scritto e **Apri
 WhatsApp**. Il tasto apre WhatsApp col messaggio pronto, al telefono della
 scheda: lo puoi cambiare, poi premi invio in WhatsApp. L'app non manda niente da
 sola. Quota e certificato vanno in un messaggio solo. A un minorenne si scrive
-al genitore dei **DATI ANAGRAFICI** («Ciao Laura, … per Marco»). Il messaggio
+al genitore dei **DATI ANAGRAFICI** («Ciao Laura, … per Marco»); senza genitore il
+messaggio non saluta per nome («Ciao, … per Marco»). Il messaggio
 dice solo nome, cosa manca, data e importo: mai codice fiscale, ricevute o note.
 Premuto il tasto, sotto compare **Sollecitato l'ultima volta il … da …**, così
 la collega vede che è già stato fatto. Se il telefono manca o è sbagliato, il

@@ -36,7 +36,9 @@
 </div>
 </x-dc>
 <script data-dc-script data-props='{"titolo":{"editor":"text","default":"SOLLECITO SU WHATSAPP"},"motivi":{"editor":"text","default":"Quota da pagare: 30,00 €:rosso|Certificato medico scaduto il 12 marzo 2026:rosso"},"testo":{"editor":"text","default":"Ciao Marco, …"},"chi":{"editor":"text","default":"A Rossi Laura (genitore) · 333 123 4567"},"tasto":{"editor":"text","default":"Apri WhatsApp"},"stato":{"editor":"enum","options":["pronto","senza-telefono"],"default":"pronto"},"perche":{"editor":"text","default":"Manca il telefono: aggiungilo in PERSONA → Modifica, poi torna qui."},"avviso":{"editor":"text","default":""},"ultimo":{"editor":"text","default":""},"telefono":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":640,"height":260}}'>
-// PROPOSTA (../sollecito-whatsapp/), non costruita: il riquadro del sollecito nella scheda di una persona, sotto i timbri.
+// COSTRUITO (`SollecitoWhatsApp` in src/components/segreteria/Sollecito.tsx, `.sg-sollecito*` di src/styles.css; ../sollecito-whatsapp/):
+// il riquadro del sollecito nella scheda di una persona, sotto i timbri. Il testo «perche» con un telefono scritto male
+// dice «Il telefono «…» non va bene per WhatsApp: correggilo in PERSONA → Modifica, solo cifre, poi torna qui.».
 // Elenca i motivi (quota, certificato) col loro tono, mostra il messaggio come partira' e il tasto che apre
 // https://wa.me/<numero>?text=<messaggio>: l'app non manda niente, la segreteria preme invio in WhatsApp.
 // Look come RigaDaFare col tema sito: tessera bianca senza bordo, raggio 6px, barra a sinistra di 4px giallo scuro

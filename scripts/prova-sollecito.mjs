@@ -54,6 +54,7 @@ try {
 } catch (e) {
   console.log('  ✗ manca src/lib/sollecito.ts —', (e.errors?.[0]?.text ?? e.message).split('\n')[0])
 }
+const fraseSollecitato = (...a) => (typeof sol.fraseSollecitato === 'function' ? sol.fraseSollecitato(...a) : 'manca fraseSollecitato')
 const lib = (nome) => (typeof sol[nome] === 'function' ? sol[nome] : () => `manca ${nome}`)
 const numeroWhatsApp = lib('numeroWhatsApp')
 const sollecitoDi = lib('sollecitoDi')
@@ -105,6 +106,9 @@ ok('«011 234 5678» prende il 39', numeroWhatsApp('011 234 5678'), '39011234567
 ok('un numero italiano che comincia per 0 è un fisso', [di(persona({ telefono: '011 234 5678' }))?.numero, di(persona({ telefono: '011 234 5678' }))?.fisso], ['390112345678', true])
 ok('un cellulare non è un fisso', di(persona())?.fisso, false)
 ok('un numero svizzero non è un fisso', di(persona({ telefono: '+41 79 123 45 67' }))?.fisso, false)
+ok('il telefono: c\'è', di(persona())?.telefono, 'ok')
+ok('il telefono: vuoto è «manca»', di(persona({ telefono: undefined }))?.telefono, 'manca')
+ok('il telefono: scritto ma sbagliato è «sbagliato», non «manca»', di(persona({ telefono: '333-165-9203 (mamma)' }))?.telefono, 'sbagliato')
 
 console.log('\n3-6. la quota associativa')
 ok('da pagare: rosso, con l\'importo del listino', motivi(persona()), [{ testo: 'Quota associativa da pagare: 30,00 €', tono: 'rosso' }])
@@ -142,8 +146,9 @@ const marco = persona({ nome: 'Marco', cognome: 'Rossi', natoIl: '2017-05-01', c
 const genitore = { natoIl: '2017-05-01', genitoreNome: 'Laura', genitoreCognome: 'Rossi' }
 ok('minorenne: si scrive al genitore, per il ragazzo', testo(marco, genitore), 'Ciao Laura, ti scriviamo dalla segreteria del Centro Judo per Marco: la quota associativa è da pagare (30,00 €) e il certificato medico è scaduto il 12 marzo 2026. Puoi passare in segreteria o rispondere qui. Grazie!')
 ok('minorenne: a chi si scrive è il genitore', di(marco, genitore)?.a, 'Rossi Laura (genitore)')
-ok('minorenne senza genitore: saluto al ragazzo, senza «per»', testo(marco, undefined).startsWith('Ciao Marco, ti scriviamo dalla segreteria del Centro Judo: '), true)
-ok('minorenne senza genitore: si scrive a lui', di(marco, undefined)?.a, 'Rossi Marco')
+ok('minorenne senza genitore: niente saluto per nome (il telefono è forse di un genitore), «per Marco»', testo(marco, undefined).startsWith('Ciao, ti scriviamo dalla segreteria del Centro Judo per Marco: '), true)
+ok('minorenne senza genitore: a chi risponde al telefono, non al ragazzo', di(marco, undefined)?.a, 'un genitore di Marco')
+ok('minorenne con l\'anagrafica ma senza il nome del genitore: come senza genitore', [testo(marco, { natoIl: '2017-05-01', genitoreNome: '', genitoreCognome: 'Rossi' }).startsWith('Ciao, ti scriviamo dalla segreteria del Centro Judo per Marco: '), di(marco, { natoIl: '2017-05-01', genitoreNome: '', genitoreCognome: 'Rossi' })?.a], [true, 'un genitore di Marco'])
 ok('a 18 anni compiuti non si scrive più al genitore', di(persona({ natoIl: '2008-10-21' }), genitore)?.a, 'Bianchi Paolo')
 
 console.log('\n12. le frasi del messaggio')
@@ -183,13 +188,11 @@ const s = m.creaSegreteriaProva()
 const daPagare = (await s.persone()).filter((p) => p.attiva && m.pagamentoDi(p, OGGI).come === 'da_pagare')
 ok('in prova c\'è chi ha la quota da pagare', daPagare.length > 0, true)
 const conTelefono = daPagare.find((p) => p.telefono)
-if (!conTelefono) console.log('  ! nessuna persona di prova con la quota da pagare ha un telefono: il link non si prova qui')
+ok('in prova c\'è chi ha la quota da pagare e un telefono', !!conTelefono, true)
 const diProva = daPagare[0] && sollecitoDi(daPagare[0], undefined, QUOTA, OGGI)
 ok('una persona di prova con la quota da pagare ha il suo sollecito', !!diProva && typeof diProva === 'object', true)
-if (conTelefono) {
-  const conLink = sollecitoDi(conTelefono, undefined, QUOTA, OGGI)
-  ok('con il telefono di prova il link c\'è', typeof conLink?.link === 'string' && conLink.link.startsWith('https://wa.me/39'), true)
-}
+const conLink = conTelefono && sollecitoDi(conTelefono, undefined, QUOTA, OGGI)
+ok('con il telefono di prova il link c\'è', typeof conLink?.link === 'string' && conLink.link.startsWith('https://wa.me/39'), true)
 
 console.log('\n16. «Sollecitato il … da …» in prova, come 85-solleciti.sql')
 const chi = daPagare[0]
@@ -201,6 +204,11 @@ await s.attivaPersona(spenta.id, false)
 let rifiuto = ''
 await s.segnaSollecito(spenta.id).catch((e) => (rifiuto = e.message))
 ok('una scheda disattivata non si sollecita', !!rifiuto, true)
+let nessuno = ''
+await s.segnaSollecito('non-esiste').catch((e) => (nessuno = e.message))
+ok('una persona che non c\'è nemmeno', !!nessuno, true)
+ok('la riga sotto il tasto, con chi', fraseSollecitato({ quando: new Date(2026, 9, 14, 9, 30).toISOString(), da: 'Giulia Ferri' }), 'Sollecitato l’ultima volta il 14 ottobre 2026 alle 09:30 da Giulia Ferri')
+ok('la riga sotto il tasto, senza chi', fraseSollecitato({ quando: new Date(2026, 9, 14, 9, 30).toISOString(), da: '' }), 'Sollecitato l’ultima volta il 14 ottobre 2026 alle 09:30')
 
 console.log(guai ? `\n${guai} prove non passano.` : '\nTutte le prove passano.')
 process.exit(guai ? 1 : 0)

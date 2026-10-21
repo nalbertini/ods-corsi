@@ -1,8 +1,8 @@
-import { dataLunga } from './sala'
+import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import { anni, telefonoGiusto } from './richieste'
 import { cifreTelefono } from './vestiario'
 import { euro } from './ricevute'
-import { dalCertificato, pagamentoDi, statoCertificato, type Anagrafica, type PersonaSeg } from './segreteria'
+import { dalCertificato, pagamentoDi, statoCertificato, type Anagrafica, type PersonaSeg, type UltimoSollecito } from './segreteria'
 
 /**
  * Il sollecito su WhatsApp della scheda di una persona: cosa manca (quota,
@@ -24,10 +24,12 @@ export interface Sollecito {
   /** Le cifre per `wa.me`, col prefisso; null senza un telefono giusto. */
   numero: string | null
   link: string | null
-  /** A chi va: «Rossi Laura (genitore)» o «Bianchi Paolo». */
+  /** A chi va: «Rossi Laura (genitore)», «un genitore di Marco» o «Bianchi Paolo». */
   a: string
   /** Sembra un fisso italiano: su WhatsApp di solito non c'è. */
   fisso: boolean
+  /** Il telefono della scheda: vuoto e scritto male si dicono in modo diverso. */
+  telefono: 'ok' | 'manca' | 'sbagliato'
 }
 
 /**
@@ -96,7 +98,8 @@ export function sollecitoDi(p: PersonaSeg, anagrafica: Anagrafica | undefined, q
 
   const minore = !!p.natoIl && anni(p.natoIl, new Date(`${oggi}T12:00`)) < 18
   const genitore = minore && anagrafica?.genitoreNome ? anagrafica : undefined
-  const saluto = genitore ? `Ciao ${genitore.genitoreNome}, ${SALUTO} per ${p.nome}` : `Ciao ${p.nome}, ${SALUTO}`
+  // Un minorenne senza genitore in scheda: il telefono è forse di un genitore, e a un bambino non si scrive «ti».
+  const saluto = genitore ? `Ciao ${genitore.genitoreNome}, ${SALUTO} per ${p.nome}` : minore ? `Ciao, ${SALUTO} per ${p.nome}` : `Ciao ${p.nome}, ${SALUTO}`
   const testo = `${saluto}: ${manca.map((x) => x.frase).join(' e ')}. ${CHIUSA}`
   const numero = numeroWhatsApp(p.telefono)
   return {
@@ -104,7 +107,12 @@ export function sollecitoDi(p: PersonaSeg, anagrafica: Anagrafica | undefined, q
     testo,
     numero,
     link: numero ? `https://wa.me/${numero}?text=${encodeURIComponent(testo)}` : null,
-    a: genitore ? `${[genitore.genitoreCognome, genitore.genitoreNome].filter(Boolean).join(' ')} (genitore)` : `${p.cognome} ${p.nome}`,
+    a: genitore ? `${[genitore.genitoreCognome, genitore.genitoreNome].filter(Boolean).join(' ')} (genitore)` : minore ? `un genitore di ${p.nome}` : `${p.cognome} ${p.nome}`,
     fisso: !!numero && sembraFisso(numero),
+    telefono: numero ? 'ok' : p.telefono?.trim() ? 'sbagliato' : 'manca',
   }
 }
+
+/** La riga sotto il tasto: quando e, se si sa, chi. */
+export const fraseSollecitato = (u: UltimoSollecito) =>
+  `Sollecitato l’ultima volta il ${dataLunga(chiaveGiorno(new Date(u.quando)))} alle ${oraDi(u.quando)}${u.da ? ` da ${u.da}` : ''}`

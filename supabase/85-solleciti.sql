@@ -14,7 +14,7 @@
 --     persona attiva. Chi preme è la persona di chi è collegato
 --     (`persona_corrente()`), non un argomento. Rende il momento.
 --   · `ultimo_sollecito(persona)`: solo la segreteria. L'ultimo, con il nome
---     di chi l'ha segnato (vuoto se quella scheda non c'è più).
+--     e cognome di chi l'ha segnato (vuoto se quella scheda non c'è più).
 -- Amministrazione senza segreteria, istruttori, tablet, iscritti e `anon` no:
 -- non vedono i contatti, quindi nemmeno i solleciti.
 --
@@ -57,7 +57,7 @@ create or replace function ultimo_sollecito(persona uuid) returns table (creato_
 begin
   if not e_staff() then raise exception 'i solleciti li vede la segreteria' using errcode = '42501'; end if;
   return query
-    select s.creato_il, coalesce(p.nome, '')
+    select s.creato_il, coalesce(trim(p.nome || ' ' || p.cognome), '')
       from solleciti s left join persone p on p.id = s.creato_da
      where s.persona_id = ultimo_sollecito.persona
      order by s.creato_il desc
