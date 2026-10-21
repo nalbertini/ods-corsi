@@ -36,7 +36,9 @@ export function PagamentoAperto({ d, riga, fai, onChiudi, onFatto }: { d: DatiSe
     if (!r) return
     // Dell'intera ricevuta si conosce qui solo questa riga; chi non vede le chiusure (la segreteria) non ha l'avviso.
     const avviso = avvisoCassaChiusa([riga], await d.chiusure().catch(() => []))
-    if (!(await chiedi(`${domandaAnnullaRicevuta(r)}${avviso ? ` ${avviso}` : ''}`, 'Sì, annulla la ricevuta', { no: 'No, lasciala', pericolo: true }))) return
+    // Nata da un pagamento a mano, la domanda dice che quel pagamento torna SENZA RICEVUTA.
+    const diretti = riga.personaId ? await d.pagamentiDiretti(riga.personaId).catch(() => []) : []
+    if (!(await chiedi(`${domandaAnnullaRicevuta(r, diretti)}${avviso ? ` ${avviso}` : ''}`, 'Sì, annulla la ricevuta', { no: 'No, lasciala', pericolo: true }))) return
     void fai(() => d.annullaRicevuta(r.id), 'Ricevuta annullata', onFatto)
   }
   const annullaPagamento = async () => {

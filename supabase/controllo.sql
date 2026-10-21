@@ -446,6 +446,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%')),
   ('87-pagamento-una-volta.sql', 'un pagamento a mano registrato una volta sola: la chiave della ricevuta e il Satispay arrivato',
     -- Rilanciare 64 dopo 87 rimette la funzione che ignora chiave e Satispay: la riga torna «da lanciare».
-    exists (select 1 from dentro where nome = 'registra_pagamento_diretto' and corpo like '%chiave_ricevuta%' and corpo like '%pagamenti_satispay%'))
+    exists (select 1 from dentro where nome = 'registra_pagamento_diretto' and corpo like '%chiave_ricevuta%' and corpo like '%pagamenti_satispay%')),
+  ('88-pagamento-diventa-ricevuta.sql', 'il pagamento a mano diventa ricevuta, e torna se la ricevuta si annulla',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'pagamenti_diretti' and column_name = 'ricevuta_id')
+    and to_regprocedure('public.emetti_ricevuta_da_pagamento(jsonb,uuid)') is not null
+    -- Rilanciare 55 dopo 88 rimette l'annullo che lascia il pagamento a mano annullato: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'annulla_ricevuta' and corpo like '%pagamenti_diretti%'))
 ) as x(file, cosa, c)
 order by file, cosa;

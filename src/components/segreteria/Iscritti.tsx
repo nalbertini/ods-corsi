@@ -691,6 +691,8 @@ function Scheda({
       ) : pagando ? (
         <Bozza>
         <NuovaRicevuta
+          // Scelto un pagamento a mano in cima alla ricevuta, il modulo riparte da quello.
+          key={daPagamento?.chiaveRicevuta ?? 'nuova'}
           d={d}
           p={p}
           nucleo={nucleo}
@@ -698,8 +700,11 @@ function Scheda({
           fai={fai}
           avvisa={avvisa}
           daPagamento={daPagamento ?? undefined}
+          // Un pagamento a mano già registrato (FANNE LA RICEVUTA): niente da riprendere, resta nello storico com'era.
+          onDaPagamento={daPagamento ? undefined : (x) => setDaPagamento(x)}
           onLasciaStare={() => {
             setPagando(false)
+            if (daPagamento?.pagamentoId) return setDaPagamento(null)
             if (!daPagamento) return
             setRiprendi(daPagamento)
             setDaPagamento(null)

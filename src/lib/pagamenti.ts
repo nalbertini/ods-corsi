@@ -5,6 +5,7 @@ import { doveEntraInContabilita } from './contabilita'
 import { dataLunga } from './sala'
 import { paroleCercate, piano, somiglia } from './nomi'
 import { csv } from './vestiario'
+import { soldi } from './satispay'
 
 /**
  * Lo storico dei pagamenti: i pagamenti dentro le ricevute e quelli registrati
@@ -26,11 +27,15 @@ export interface PagamentoDiretto {
   nota?: string
   creatoIl: string
   annullatoIl?: string
+  /** La ricevuta in cui è finito (`88-pagamento-diventa-ricevuta.sql`): annullato, ma non perso. */
+  ricevutaId?: string
 }
 
 export type DatiPagamentoDiretto = Omit<PagamentoDiretto, 'id' | 'creatoIl' | 'annullatoIl'> & {
   /** Con «Fai anche la ricevuta»: la chiave della ricevuta, che resta col pagamento ripreso dopo «Lascia stare». */
   chiaveRicevuta?: string
+  /** Da FANNE LA RICEVUTA: il pagamento a mano già registrato, che la ricevuta annulla (`emetti_ricevuta_da_pagamento`). */
+  pagamentoId?: string
 }
 
 /** Una riga dello storico: un pagamento, di una ricevuta o fatto a mano. */
@@ -86,8 +91,49 @@ export function comeSiAnnulla(r: RigaPagamento): 'ricevuta' | 'pagamento' | null
 }
 
 /** La domanda prima di annullare una ricevuta: la stessa nella scheda della persona e in PAGAMENTI. */
-export const domandaAnnullaRicevuta = (r: { numero: number; anno: number }) =>
-  `Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare.`
+export const domandaAnnullaRicevuta = (r: { id: string; numero: number; anno: number }, diretti: PagamentoDiretto[] = []) => {
+  const x = diretti.find((y) => y.ricevutaId === r.id)
+  const dentro = x ? ` Dentro c’è il pagamento a mano del ${dataBreve(x.data)} (${soldi(x.importo)} in ${x.metodo}): torna SENZA RICEVUTA, e da lì si rifà la ricevuta giusta.` : ''
+  return `Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare.${dentro}`
+}
+
+/** `AAAA-MM-GG` come `GG/MM/AAAA`, come `to_char(…, 'DD/MM/YYYY')` nei rifiuti del database. */
+const dataBreve = (d: string) => d.split('-').reverse().join('/')
+
+/**
+ * Lo stesso rifiuto di `emetti_ricevuta_da_pagamento`: dentro la ricevuta, i pagamenti con il modo e la data del
+ * pagamento a mano fanno esattamente il suo importo. Così quei soldi entrano tali e quali, e la cassa non si muove.
+ * Un pagamento senza data è del giorno della ricevuta, come in `emetti_ricevuta`.
+ */
+export function cosaNonVaDaPagamento(voci: VoceRicevuta[], dataRicevuta: string, x: Pick<PagamentoDiretto, 'data' | 'importo' | 'metodo'>): string | null {
+  const metodo = x.metodo.trim().toLowerCase()
+  const somma = voci
+    .flatMap((v) => v.pagamenti)
+    .filter((p) => p.metodo.trim().toLowerCase() === metodo && (p.data || dataRicevuta) === x.data)
+    .reduce((t, p) => t + p.importo, 0)
+  return somma === x.importo
+    ? null
+    : `Il pagamento a mano di ${soldi(x.importo)} (${x.metodo}, ${dataBreve(x.data)}) va nella ricevuta così com’è: rimettilo, o annulla il pagamento e fai la ricevuta a mano`
+}
+
+/** Un pagamento a mano registrato, come i dati da cui FANNE LA RICEVUTA compila la ricevuta (una chiave nuova). */
+export const datiDaPagamento = (x: PagamentoDiretto, chiaveRicevuta: string): DatiPagamentoDiretto => ({
+  personaId: x.personaId,
+  data: x.data,
+  importo: x.importo,
+  metodo: x.metodo,
+  voce: x.voce,
+  nota: x.nota,
+  chiaveRicevuta,
+  pagamentoId: x.id,
+})
+
+/** Cosa dice lo storico di un pagamento a mano: attivo, finito in una ricevuta (quale), o annullato. */
+export function statoDiretto(x: PagamentoDiretto, ricevute: Ricevuta[]): string {
+  if (!x.annullatoIl) return 'Senza ricevuta'
+  const r = x.ricevutaId ? ricevute.find((y) => y.id === x.ricevutaId) : undefined
+  return r ? `Diventato ricevuta n. ${r.numero}/${r.anno}` : 'Annullato'
+}
 
 /** La domanda prima di annullare un pagamento fatto a mano. */
 export const domandaAnnullaPagamento = (x: { importo: number; data: string }) =>
@@ -155,7 +201,7 @@ export const voceDaPagamento = (d: DatiPagamentoDiretto): VoceRicevuta => ({
 export const notaRicevutaDaPagamento = (spuntata: boolean) =>
   spuntata
     ? 'Si apre FAI LA RICEVUTA già compilata. Il pagamento si registra lì, una volta sola.'
-    : 'Resta SENZA RICEVUTA e non cambia se è in regola: una quota resta DA PAGARE. Per la ricevuta, dopo, si annulla il pagamento e la si fa.'
+    : 'Resta SENZA RICEVUTA e non cambia se è in regola: una quota resta DA PAGARE. Per la ricevuta, dopo, FANNE LA RICEVUTA sul pagamento.'
 
 /** Il tasto del sì: dice cosa succede con la spunta e senza. */
 export const tastoRicevutaDaPagamento = (spuntata: boolean) => (spuntata ? 'Sì, fai la ricevuta' : 'Sì, registra senza ricevuta')

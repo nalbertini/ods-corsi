@@ -723,8 +723,11 @@ export interface DatiSegreteria {
   segnaFirmataCompenso(id: string, firmata: boolean): Promise<void>
   /** Paga una o più ricevute dello stesso tecnico con un movimento solo in CONTABILITÀ (`paga_compensi`). */
   pagaCompensi(ids: string[], data: string, cassaId: string): Promise<void>
-  /** Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). */
-  emettiRicevuta(r: DatiRicevuta, satispayId?: string): Promise<Ricevuta>
+  /**
+   * Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). Con `pagamentoId` la fa da un pagamento
+   * a mano e lo annulla insieme (`emetti_ricevuta_da_pagamento` in `88-pagamento-diventa-ricevuta.sql`).
+   */
+  emettiRicevuta(r: DatiRicevuta, satispayId?: string, pagamentoId?: string): Promise<Ricevuta>
   /**
    * I pagamenti Satispay dal modulo di iscrizione, anche in attesa e non
    * andati (`73-satispay.sql`); vuoto senza il file. Con `satispayId`,

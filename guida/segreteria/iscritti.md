@@ -407,8 +407,8 @@ Nel riepilogo c'è la casella **Fai anche la ricevuta**, già spuntata:
   scheda: la ricevuta è nello storico. Una quota associativa fatta così vale
   fino alla fine della stagione, come quella del listino;
 - **tolta**, «Sì, registra senza ricevuta» lo mette nello storico, sotto
-  **SENZA RICEVUTA**, e lo conta in **PAGATO**. Per farne la ricevuta dopo, si
-  annulla il pagamento e si fa la ricevuta: se no si conta due volte.
+  **SENZA RICEVUTA**, e lo conta in **PAGATO**. Per farne la ricevuta dopo,
+  **FANNE LA RICEVUTA** sul pagamento (sotto).
 
 Se la persona ha già pagato con Satispay dal modulo di iscrizione, la casella
 non c'è: la ricevuta si fa con quei soldi, da **+ FAI LA RICEVUTA**. Per lo
@@ -416,6 +416,25 @@ stesso motivo un pagamento a mano con **COME HA PAGATO** Satispay non si
 registra finché quei soldi non sono in una ricevuta («Con Satispay sono già
 arrivati … dal modulo: fai la ricevuta con quelli»). Un Satispay pagato al
 banco, senza il modulo, si registra come sempre.
+
+**FANNE LA RICEVUTA**, su ogni pagamento SENZA RICEVUTA, apre **FAI LA
+RICEVUTA** già compilata con quel pagamento: una voce sola, con la data e il
+modo del pagamento. Voci e prezzi si cambiano (per un acconto, il prezzo pieno
+e il pagato più basso), ma quei soldi entrano tali e quali: se cambi data,
+modo o importo del pagamento, l'app lo dice prima («Il pagamento a mano di …
+va nella ricevuta così com'è»). Altri soldi si aggiungono con un'altra voce.
+Fatta la ricevuta, il pagamento a mano si annulla da solo, nello stesso
+momento, e nello storico dice **Diventato ricevuta n. …**: i soldi contano una
+volta sola. Con un Satispay arrivato dal modulo il tasto non c'è: la ricevuta
+si fa con quei soldi.
+
+Anche **+ FAI LA RICEVUTA** mostra in cima i pagamenti SENZA RICEVUTA della
+persona, ognuno col suo **FANNE LA RICEVUTA**: se la ricevuta è per quei
+soldi, si fa da lì; se sono altri soldi, si va avanti col modulo.
+
+Annullando una ricevuta nata da un pagamento a mano, la domanda lo dice, e il
+pagamento torna **SENZA RICEVUTA** com'era: i soldi non spariscono, e da lì si
+rifà la ricevuta giusta.
 
 Come una ricevuta, non si cambia e non si cancella: se è sbagliato,
 **ANNULLA PAGAMENTO** (chiede conferma) e se ne registra un altro; l'annullato
