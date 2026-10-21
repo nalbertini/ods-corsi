@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 16px 18px; background: {{c.surface}}; border: {{bordo}}; border-radius: {{raggio}}; box-shadow: {{barra}}; font-family: {{fam}}; color: {{c.text}}">
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: {{c.dim}}">{{titolo}}</span>
+  <sc-for list="{{motivi}}" as="m" hint-placeholder-count="2">
+    <span style="font-size: 16px; font-weight: 600; line-height: 1.35; color: {{m.colore}}">{{m.testo}}</span>
+  </sc-for>
+  <sc-if value="{{pronto}}">
+    <div style="padding: 10px 12px; background: {{c.bg}}; border-radius: {{raggio}}; font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: {{c.sec}}">{{testo}}</div>
+    <div style="display: flex; flex-wrap: {{a.capo}}; flex-direction: {{a.dir}}; align-items: {{a.allinea}}; gap: 12px">
+      <dc-import name="Bottone" label="{{tasto}}" variante="pieno" contesto="segreteria" tema="{{tema}}" hint-size="{{a.tasto}}"></dc-import>
+      <span style="font-size: 14px; line-height: 1.4; color: {{c.sec}}">{{chi}}</span>
+    </div>
+    <sc-if value="{{avviso}}"><span style="font-size: 14px; line-height: 1.45; color: {{c.gialloTesto}}">{{avviso}}</span></sc-if>
+    <sc-if value="{{ultimo}}"><span style="font-size: 14px; line-height: 1.45; color: {{c.dim}}">{{ultimo}}</span></sc-if>
+  </sc-if>
+  <sc-if value="{{senza}}">
+    <span style="font-size: 14px; line-height: 1.45; color: {{c.rossoTesto}}">{{perche}}</span>
+    <div><dc-import name="Bottone" label="Vai a PERSONA" variante="linea" contesto="segreteria" tema="{{tema}}" hint-size="160px,44px"></dc-import></div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"SOLLECITO SU WHATSAPP"},"motivi":{"editor":"text","default":"Quota da pagare: 30,00 €:rosso|Certificato medico scaduto il 12 marzo 2026:rosso"},"testo":{"editor":"text","default":"Ciao Marco, …"},"chi":{"editor":"text","default":"A Rossi Laura (genitore) · 333 123 4567"},"tasto":{"editor":"text","default":"Apri WhatsApp"},"stato":{"editor":"enum","options":["pronto","senza-telefono"],"default":"pronto"},"perche":{"editor":"text","default":"Manca il telefono: aggiungilo in PERSONA → Modifica, poi torna qui."},"avviso":{"editor":"text","default":""},"ultimo":{"editor":"text","default":""},"telefono":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":640,"height":260}}'>
+// PROPOSTA (../sollecito-whatsapp/), non costruita: il riquadro del sollecito nella scheda di una persona, sotto i timbri.
+// Elenca i motivi (quota, certificato) col loro tono, mostra il messaggio come partira' e il tasto che apre
+// https://wa.me/<numero>?text=<messaggio>: l'app non manda niente, la segreteria preme invio in WhatsApp.
+// Look come RigaDaFare col tema sito: tessera bianca senza bordo, raggio 6px, barra a sinistra di 4px giallo scuro
+// (cosa da fare, non un guaio); titolo spaziato 12px 700, motivi 16px 600, messaggio su fondo `bg` 14px.
+// motivi: "testo:tono" separati da | (tono rosso, giallo o vuoto). stato senza-telefono: niente messaggio ne' tasto,
+// la frase in rosso-testo e «Vai a PERSONA». avviso: la frase giallo-testo sotto il tasto (numero che sembra un fisso).
+// ultimo: la riga spenta «Sollecitato il … da …» (l'ultima volta che si e' premuto il tasto). telefono: tasto a tutta larghezza, la riga «A …» sotto.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rossoTesto: '#ff5a52', gialloTesto: '#f4c31b' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const tema = p.tema || 'sito';
+    const c = T[tema] || T.sito;
+    const sito = tema === 'sito';
+    const tel = truthy(p.telefono);
+    const TONO = { rosso: c.rossoTesto, giallo: c.gialloTesto };
+    const motivi = String(p.motivi ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
+      const k = s.lastIndexOf(':');
+      const t = k > 0 ? s.slice(k + 1).trim() : '';
+      return { testo: TONO[t] ? s.slice(0, k).trim() : s, colore: TONO[t] || c.text };
+    });
+    const senza = p.stato === 'senza-telefono';
+    return {
+      c, tema, motivi, fam: sito ? INTER : COND,
+      titolo: p.titolo ?? 'SOLLECITO SU WHATSAPP', testo: p.testo ?? '', chi: p.chi ?? '', tasto: p.tasto ?? 'Apri WhatsApp',
+      perche: p.perche ?? 'Manca il telefono: aggiungilo in PERSONA → Modifica, poi torna qui.',
+      pronto: !senza, senza, avviso: p.avviso ?? '', ultimo: p.ultimo ?? '',
+      bordo: sito ? '0' : '2px solid ' + c.line, raggio: sito ? '6px' : '0',
+      barra: 'inset 4px 0 0 ' + c.gialloTesto,
+      a: tel
+        ? { capo: 'nowrap', dir: 'column', allinea: 'stretch', tasto: '100%,48px' }
+        : { capo: 'wrap', dir: 'row', allinea: 'center', tasto: '180px,48px' },
+    };
+  }
+}
+</script>
+</body>
+</html>

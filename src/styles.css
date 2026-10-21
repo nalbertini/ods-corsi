@@ -2602,6 +2602,18 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-riquadro { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; background: var(--surface); border: 2px solid var(--line); min-width: 0; }
 .sg-riquadro[data-fatto='true'] { border-color: var(--verde); }
 .sg-riquadro-titolo { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
+/* Il sollecito su WhatsApp sotto i timbri: una cosa da fare, non un guaio, quindi la barra gialla scura a sinistra. */
+.sg-sollecito { gap: 10px; box-shadow: inset 4px 0 0 var(--giallo-testo); }
+.sg-sollecito-motivi { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 16px; font-weight: 600; line-height: 1.35; }
+.sg-sollecito-motivi [data-tono='rosso'] { color: var(--rosso-testo); }
+.sg-sollecito-motivi [data-tono='giallo'] { color: var(--giallo-testo); }
+.sg-sollecito-testo { margin: 0; padding: 10px 12px; background: var(--bg); font-size: 14px; line-height: 1.5; white-space: pre-wrap; color: var(--sec); }
+.sg-sollecito-tasto { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 14px; color: var(--sec); }
+.sg-sollecito-avviso { margin: 0; font-size: 14px; line-height: 1.45; color: var(--giallo-testo); }
+.sg-sollecito-avviso[data-tono='rosso'] { color: var(--rosso-testo); }
+.sg-sollecito-ultimo { margin: 0; font-size: 14px; color: var(--dim); }
+:root[data-look='sito'] .sg-sollecito-testo { border-radius: 6px; }
+@media (max-width: 600px) { .sg-sollecito-tasto { flex-direction: column; align-items: stretch; } }
 .sg-voce-elenco { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 12px; background: var(--bg); border: 2px solid var(--line); }
 /* Un pagamento sotto la sua ricevuta: rientrato, con la barra a sinistra. Quello fatto a mano sta da solo, come una ricevuta. */
 .sg-pagamento { margin-left: 24px; min-height: 44px; padding: 4px 12px; background: var(--surface); border-left-width: 4px; }

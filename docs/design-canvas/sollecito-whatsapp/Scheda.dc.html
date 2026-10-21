@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Copiata da ods-design-system/PaginaSito.dc.html: il corpo e' la scheda iscritto (Scheda di Iscritti.tsx), testata, timbri e schede. A sinistra com'e' oggi, a destra la proposta: il riquadro Sollecito fra i timbri e le schede. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="ISCRITTI" numeri="" nome="Giulia Ferri" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-width: 0; padding: 28px 36px; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 18px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">OGGI</span>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ROSSI MARCO</h1>
+      <span style="font-size: 14px; color: #46606f">9 anni · Judo kids · genitore Rossi Laura</span>
+    </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 0.75fr; gap: 12px">
+<dc-import name="Timbro" tema="sito" titolo="CERTIFICATO MEDICO" parola="SCADUTO" tono="rosso" righe="il 12 marzo 2026" hint-size="100%,96px"></dc-import>
+<dc-import name="Timbro" tema="sito" titolo="QUOTA" parola="DA PAGARE" tono="rosso" righe="" hint-size="100%,96px"></dc-import>
+<dc-import name="Timbro" tema="sito" titolo="DOCUMENTO D’IDENTITÀ" parola="IN REGOLA" tono="verde" righe="" piccolo="{{ true }}" hint-size="100%,70px"></dc-import>
+</div>
+      <dc-import name="SchedeIscritto" tema="sito" acceso="PERSONA" hint-size="100%,44px"></dc-import>
+      <span style="font-size: 14px; line-height: 1.45; color: #46606f">I timbri dicono cosa manca, ma il messaggio alla famiglia la segreteria lo scrive a mano su WhatsApp, ogni volta diverso.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 18px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · IL SOLLECITO SOTTO I TIMBRI</span>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ROSSI MARCO</h1>
+      <span style="font-size: 14px; color: #46606f">9 anni · Judo kids · genitore Rossi Laura</span>
+    </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 0.75fr; gap: 12px">
+<dc-import name="Timbro" tema="sito" titolo="CERTIFICATO MEDICO" parola="SCADUTO" tono="rosso" righe="il 12 marzo 2026" hint-size="100%,96px"></dc-import>
+<dc-import name="Timbro" tema="sito" titolo="QUOTA" parola="DA PAGARE" tono="rosso" righe="" hint-size="100%,96px"></dc-import>
+<dc-import name="Timbro" tema="sito" titolo="DOCUMENTO D’IDENTITÀ" parola="IN REGOLA" tono="verde" righe="" piccolo="{{ true }}" hint-size="100%,70px"></dc-import>
+</div>
+      <dc-import name="Sollecito" tema="sito" motivi="Quota associativa da pagare: 30,00 €:rosso|Certificato medico scaduto il 12 marzo 2026:rosso" testo="Ciao Laura, ti scriviamo dalla segreteria del Centro Judo per Marco: la quota associativa è da pagare (30,00 €) e il certificato medico è scaduto il 12 marzo 2026. Puoi passare in segreteria o rispondere qui. Grazie!" chi="A Rossi Laura (genitore) · 333 123 4567" ultimo="Sollecitato l’ultima volta il 14 ottobre 2026 da Giulia" hint-size="100%,250px"></dc-import>
+      <dc-import name="SchedeIscritto" tema="sito" acceso="PERSONA" hint-size="100%,44px"></dc-import>
+      <span style="font-size: 14px; line-height: 1.45; color: #46606f">Un messaggio solo con tutto quello che manca. «Apri WhatsApp» apre la chat col testo già scritto: si può cambiare, poi si preme invio in WhatsApp. L’app non manda niente da sola. Premendo il tasto la scheda segna «Sollecitato il … da …», così la collega non lo rimanda.</span>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

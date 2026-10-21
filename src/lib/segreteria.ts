@@ -537,6 +537,12 @@ export interface DatiPersona {
   telefono?: string
 }
 
+/** Quando la segreteria ha aperto l'ultimo sollecito su WhatsApp, e chi (vuoto se non si sa). */
+export interface UltimoSollecito {
+  quando: string
+  da: string
+}
+
 export interface DatiSegreteria {
   readonly modo: 'prova' | 'supabase'
 
@@ -739,6 +745,10 @@ export interface DatiSegreteria {
   esitiInvioRicevuta(id: string): Promise<InvioRicevuta[]>
   /** Da quando le ricevute si mandano per email; `null` senza 76-ricevute-email.sql. */
   ricevuteEmailDal(): Promise<string | null>
+  /** Segna che la segreteria ha aperto il sollecito su WhatsApp di una persona attiva (`85-solleciti.sql`); `null` senza il file. */
+  segnaSollecito(personaId: string): Promise<string | null>
+  /** L'ultimo sollecito segnato, col nome di chi; `null` se non ce n'è o senza `85-solleciti.sql`. */
+  ultimoSollecito(personaId: string): Promise<UltimoSollecito | null>
   /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
   pagamentiDiretti(personaId?: string): Promise<PagamentoDiretto[]>
   /** Nome e cognome di chi ha pagato, e nient'altro: per chi segue i pagamenti senza vedere le persone (`55-amministrazione.sql`). */

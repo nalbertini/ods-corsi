@@ -21,6 +21,7 @@ import { euro, QUOTA } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
 import { StoricoPersona } from './CollegaPersona'
 import { PagatoPrima } from './PagatoPrima'
+import { SollecitoWhatsApp } from './Sollecito'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
@@ -650,6 +651,7 @@ function Scheda({
       </div>
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
       {!unendo && !pagando && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
+      {!unendo && !pagando && <SollecitoWhatsApp d={d} p={p} oggi={oggi} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
 
       {unendo ? (
         <UnisciDoppione
