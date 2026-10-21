@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DatiSegreteria, Tariffa } from '../../lib/segreteria'
+import type { Voce } from '../../lib/indirizzoSegreteria'
 import { NOME_CASSA_CONTO, oggiARoma, type Cassa, type ChiusuraCassa } from '../../lib/contabilita'
 import { insegna } from '../../lib/ruoli'
 import { chiaveGiorno, dataLunga } from '../../lib/sala'
@@ -60,6 +61,7 @@ export function AzioniRicevuta({
   onCambiato,
   inScheda,
   onPaga,
+  onVai,
 }: {
   d: DatiSegreteria
   p: Persona
@@ -73,6 +75,8 @@ export function AzioniRicevuta({
   inScheda?: boolean
   /** Per chi cura anche la contabilità: apre il pannello SEGNA PAGATO di questo tecnico. */
   onPaga?: () => void
+  /** Porta a un'altra voce della segreteria: un link col cancelletto, dalle pagine d'area, porterebbe fuori. */
+  onVai: (v: Voce) => void
 }) {
   const [cambia, setCambia] = useState<{ testo: string; motivo: string } | null>(null)
   // Mentre prepara o annulla i tasti sono spenti: un doppio clic non fa due cose.
@@ -151,7 +155,8 @@ export function AzioniRicevuta({
 
   if (ricevuta)
     return (
-      <span className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+      // I tasti vanno a capo dentro la loro colonna, a destra: la riga non si sfascia.
+      <span className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center', flex: '0 1 280px', justifyContent: 'flex-end' }}>
         <label className="row" style={{ gap: 8, minHeight: 44, fontSize: 14, fontWeight: 600 }}>
           <input
             type="checkbox"
@@ -164,8 +169,9 @@ export function AzioniRicevuta({
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => scarica([ricevuta]))}>
           Ristampa
         </button>
-        {!ricevuta.pagataIl && onPaga && (
-          <button type="button" className="sg-btn sg-btn-pieno" disabled={occupato} onClick={onPaga}>
+        {/* Solo una ricevuta che torna col mese si paga; una che non torna si annulla e si rifà prima. */}
+        {stato === 'fatta' && onPaga && (
+          <button type="button" className="sg-btn sg-btn-linea" disabled={occupato} onClick={onPaga}>
             Segna pagato
           </button>
         )}
@@ -194,15 +200,15 @@ export function AzioniRicevuta({
   // Chi è fermo ha dove andare a sistemare.
   if (stato === 'da-confermare')
     return (
-      <a className="sg-link sg-link-alto" style={{ fontSize: 14 }} href="#istruttori">
+      <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} onClick={() => onVai('istruttori')}>
         Conferma in Presenze istruttori ›
-      </a>
+      </button>
     )
   if ((stato === 'senza-tariffa' || stato === 'senza-dati') && !inScheda)
     return (
-      <a className="sg-link sg-link-alto" style={{ fontSize: 14 }} href="#personale">
+      <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} onClick={() => onVai('personale')}>
         {stato === 'senza-tariffa' ? 'Scrivi la tariffa' : 'Scrivi i dati'} in Istruttori e accessi ›
-      </a>
+      </button>
     )
   return null
 }
@@ -250,7 +256,7 @@ type Filtro = 'tutti' | 'da-fare' | 'da-pagare' | 'da-firmare'
  * preparano tutte insieme, in un PDF solo; chi non è pronto si salta e si dice
  * perché.
  */
-export function Compensi({ d, puoPagare }: { d: DatiSegreteria; puoPagare: boolean }) {
+export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare: boolean; onVai: (v: Voce) => void }) {
   const periodi = useMemo(mesi, [])
   const [periodo, setPeriodo] = useState(periodi[1]?.chiave ?? periodi[0].chiave)
   const [filtro, setFiltro] = useState<Filtro>('tutti')
@@ -276,7 +282,7 @@ export function Compensi({ d, puoPagare }: { d: DatiSegreteria; puoPagare: boole
   const daFare = righe.filter((r) => r.stato === 'da-fare')
   const fermi = righe.filter((r) => r.stato === 'da-confermare' || r.stato === 'senza-tariffa' || r.stato === 'senza-dati' || r.stato === 'non-torna')
   const daFirmare = righe.filter((r) => r.ricevuta && !r.ricevuta.firmata)
-  const daPagare = righe.filter((r) => r.stato === 'fatta' || r.stato === 'non-torna')
+  const daPagare = righe.filter((r) => r.stato === 'fatta')
   const visibili = filtro === 'da-fare' ? daFare : filtro === 'da-firmare' ? daFirmare : filtro === 'da-pagare' ? daPagare : righe
 
   const preparaTutte = async () => {
@@ -302,7 +308,7 @@ export function Compensi({ d, puoPagare }: { d: DatiSegreteria; puoPagare: boole
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <Testa titolo="COMPENSI" sotto="Le ricevute dei tecnici, mese per mese: per ogni corso, ore confermate × la sua tariffa. Si stampano, si fanno firmare, si spunta «Firmata» quando tornano." />
+      <Testa titolo="COMPENSI" sotto="Le ricevute dei tecnici, mese per mese: per ogni corso, ore confermate × la sua tariffa. Si stampano, si fanno firmare, si segnano pagate." />
       {avviso}
       <label className="stack" style={{ gap: 6, maxWidth: 240 }}>
         <span className="sg-etichetta">MESE</span>
@@ -363,7 +369,7 @@ export function Compensi({ d, puoPagare }: { d: DatiSegreteria; puoPagare: boole
                     <SegnoCompenso stato={r.stato} conto={r.conto} ricevuta={r.ricevuta} manca={r.manca} />
                   </span>
                   {/* I tasti stanno fuori dal dettaglio: un clic su un tasto non apre né chiude i corsi. */}
-                  <AzioniRicevuta d={d} p={r.persona} conto={r.conto} ricevuta={r.ricevuta} stato={r.stato} mese={mese} fai={fai} onCambiato={dati.ricarica} onPaga={puoPagare ? () => setPaga(r.persona) : undefined} />
+                  <AzioniRicevuta d={d} p={r.persona} conto={r.conto} ricevuta={r.ricevuta} stato={r.stato} mese={mese} fai={fai} onCambiato={dati.ricarica} onPaga={puoPagare ? () => setPaga(r.persona) : undefined} onVai={onVai} />
                 </div>
                 {r.conto.righe.length > 0 && (
                   <details className="sg-compenso sg-compenso-per-corso">
@@ -434,6 +440,12 @@ function PannelloPaga({
   const [scelte, setScelte] = useState<string[]>(ricevute.map((r) => r.id))
   const oggi = oggiARoma()
   const [data, setData] = useState(oggi)
+  // Si apre in fondo alla pagina: ci si porta lì, anche sul telefono e con la tastiera.
+  const titolo = useRef<HTMLHeadingElement>(null)
+  useEffect(() => {
+    titolo.current?.scrollIntoView({ block: 'start' })
+    titolo.current?.focus()
+  }, [])
   const conto = casse.find((c) => c.nome === NOME_CASSA_CONTO)
   const [cassaId, setCassaId] = useState(conto?.id ?? casse[0]?.id ?? '')
   const pagate = ricevute.filter((r) => scelte.includes(r.id))
@@ -442,9 +454,9 @@ function PannelloPaga({
   const no = cosaNonVaPagamento({ ricevute: pagate, data, cassaId, casse, chiusure, oggi })
   return (
     <section className="stack" style={{ gap: 14, maxWidth: 820, padding: '22px 24px', border: '2px solid var(--text)' }} aria-label={`Segna pagato ${nomeDi(p)}`}>
-      <span className="sg-etichetta" style={{ fontSize: 15 }}>
-        SEGNA PAGATO · {nomeDi(p).toUpperCase()}
-      </span>
+      <h2 ref={titolo} tabIndex={-1} className="sg-riquadro-titolo ob" style={{ margin: 0 }}>
+        Segna pagato · {nomeDi(p)}
+      </h2>
       <span className="sg-etichetta">LE RICEVUTE CHE PAGHI</span>
       {ricevute.map((r) => (
         <label key={r.id} className="row" style={{ gap: 12, minHeight: 44, fontSize: 15 }}>
@@ -469,7 +481,7 @@ function PannelloPaga({
         <div className="stack" style={{ gap: 6 }}>
           <span className="sg-etichetta">CASSA</span>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-            {casse.map((c) => (
+            {[...casse].sort((x, y) => Number(y.nome === NOME_CASSA_CONTO) - Number(x.nome === NOME_CASSA_CONTO)).map((c) => (
               <button key={c.id} type="button" className="num sg-chip" aria-pressed={c.id === cassaId} onClick={() => setCassaId(c.id)}>
                 {c.nome}
               </button>
