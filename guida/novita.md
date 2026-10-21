@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.154.3 — 21 ottobre 2026
+
+### Risolto
+
+- In CONTABILITÀ la colonna PERSONA mostra anche l'iscritto degli incassi
+
 ## 0.154.2 — 21 ottobre 2026
 
 ### Modificato
