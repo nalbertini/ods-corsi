@@ -189,6 +189,26 @@ console.log('\n5. iscritti')
   await s.attivaPersona(primo.id, true)
 }
 
+console.log('\n5b. disattivare chiude le iscrizioni, riattivare non le riapre')
+{
+  const marco = await s.salvaPersona({ nome: 'Marco', cognome: 'Ritirato', email: 'marco@esempio.it' })
+  const altra = await s.salvaPersona({ nome: 'Altra', cognome: 'Rimasta', email: 'altra@esempio.it' })
+  await s.iscrivi(marco, 'lotta-2')
+  await s.iscrivi(marco, 'lotta-3', '2026-10-05')
+  await s.iscrivi(altra, 'lotta-2')
+  // Un'iscrizione chiusa nel passato: `termina` non la sa fare, la si mette nell'archivio.
+  m.archivio.dati.iscrizioni.push({ corsoId: 'judo-2', personaId: marco, dal: '2026-01-10', al: '2026-06-30' })
+  const al = async (p, c) => (await s.persone()).find((x) => x.id === p).iscrizioni.find((i) => i.corsoId === c)?.al
+  await s.attivaPersona(marco, false)
+  ok('disattivata: l\'aperta si chiude oggi, quella futura al suo dal, quella passata com\'era', [await al(marco, 'lotta-2'), await al(marco, 'lotta-3'), await al(marco, 'judo-2')], ['2026-09-26', '2026-10-05', '2026-06-30'])
+  ok('le iscrizioni di un\'altra persona non si toccano', await al(altra, 'lotta-2'), undefined)
+  await s.attivaPersona(marco, true)
+  ok('riattivata: non si riapre niente', [await al(marco, 'lotta-2'), await al(marco, 'lotta-3'), await al(marco, 'judo-2')], ['2026-09-26', '2026-10-05', '2026-06-30'])
+  const [ven] = await lotta2([9, 2])
+  ok('e il corso vecchio non la riprende nell\'appello', (await app.dettaglio(ven.id)).elenco.some((p) => p.id === marco), false)
+  ok('l\'altra c\'è ancora', (await app.dettaglio(ven.id)).elenco.some((p) => p.id === altra), true)
+}
+
 console.log('\n6. quanto viene ciascuno')
 {
   const [lun] = (await s.settimana(...giorno([8, 21]))).filter((l) => l.corsoId === 'judo-2')

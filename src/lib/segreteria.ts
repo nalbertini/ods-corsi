@@ -1210,9 +1210,9 @@ export function avvisiGesto(gesto: { file?: unknown; scade: string }, c: Pick<Ce
   return x
 }
 
-/** La domanda prima di disattivare: col file del certificato, dice che si cancella e che riattivare non lo riporta. */
+/** La domanda prima di disattivare: le iscrizioni si chiudono, e col file del certificato dice che si cancella e che riattivare non lo riporta. */
 export const confermaDisattiva = (nome: string, c: Pick<CertificatoSeg, 'conFile'>) =>
-  `Disattivare ${nome}? Sparisce dagli appelli e dal tablet; si può riattivare.${c.conFile ? ' Il file del certificato si cancella subito e riattivarla non lo riporta: la data resta.' : ''}`
+  `Disattivare ${nome}? Le sue iscrizioni si chiudono oggi e sparisce dal tablet. Si può riattivare, ma i corsi si rimettono con Iscrivi.${c.conFile ? ' Il file del certificato si cancella subito e riattivarla non lo riporta: la data resta.' : ''}`
 
 /** La domanda prima di unire due schede: con un certificato da una delle due, dice quale resta. */
 export const confermaUnione = (nomeVia: string, nomeResta: string, via: Pick<CertificatoSeg, 'scade' | 'conFile'>, resta: Pick<CertificatoSeg, 'scade' | 'conFile'>, perso = '') =>
