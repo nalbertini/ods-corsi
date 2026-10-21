@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.144.1 — 21 ottobre 2026
+
+### Risolto
+
+- Nella pagina Istruttori del sito l'ordine dell'editor è quello delle tessere, un istruttore per parte
+
 ## 0.144.0 — 21 ottobre 2026
 
 ### Novità
