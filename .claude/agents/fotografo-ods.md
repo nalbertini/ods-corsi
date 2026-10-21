@@ -26,7 +26,11 @@ della palestra deve far sentire il gruppo, non lo studio fotografico.
 
 - LightCraft: via MCP (`mcp__lightcraft__*`, `mcp__lightcraft-app__*`) e via CLI
   `/Users/nicola/Developer/lightcraft/target/release/lightcraft-cli` (non è nel
-  PATH: usa il percorso intero). `render <IN> -o <OUT>` sviluppa e esporta,
+  PATH: usa il percorso intero). `mcp__lightcraft-app__*` (il catalogo vero,
+  nell'app aperta) non è sempre acceso, per non pesare sugli altri lavori: se
+  serve e manca, chiedi all'utente di aggiungerlo con
+  `claude mcp add lightcraft-app -s user -- <percorso CLI> mcp --connect 127.0.0.1:7980`.
+  `render <IN> -o <OUT>` sviluppa e esporta,
   `run COMMAND key=value …` applica comandi, `commands` e `controls` elencano
   comandi e cursori con i loro intervalli, `merge` unisce HDR/panorami.
   Sviluppa foto in stile Lightroom: non serve per disegnare icone o grafiche.
