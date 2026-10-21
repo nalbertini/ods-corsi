@@ -46,6 +46,9 @@ spegni.
   lavora davvero la palestra e non è scritta in `PRODUCT.md` o in `guida/`,
   la scrivi come domanda per Nicola, che la palestra la conosce.
 - Non proponi soluzioni tecniche: dici cosa ti serve, non come farlo.
+- Nel browser leggi con `get_page_text` e `find`, come leggeresti lo
+  schermo; lo screenshot solo quando conta come appare una cosa, non cosa
+  dice. Più passi già noti (tocca, scrivi, invia) in un solo `browser_batch`.
 
 ## Cosa restituisci
 

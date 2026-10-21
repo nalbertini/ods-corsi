@@ -1,4 +1,4 @@
--- I contanti in un giorno di cassa già chiusa non entrano neanche dalla ricevuta (90-ricevuta-cassa-chiusa.sql):
+-- I contanti in un giorno di cassa già chiusa non entrano neanche dalla ricevuta (92-ricevuta-cassa-chiusa.sql):
 --   · `emetti_ricevuta` rifiuta un pagamento in contanti con importo > 0 e data (la sua, o se manca quella della
 --     ricevuta) fino all'ultima chiusura non annullata della Cassa Contanti; carta, POS e bonifico passano;
 --   · la chiave del modulo già usata dà la ricevuta già fatta, anche se nel frattempo il giorno si è chiuso;
@@ -8,7 +8,7 @@
 --   · `cassa_contanti_chiusa_fino()` dà alla segreteria la data della chiusura (per l'avviso), senza aprirle le chiusure.
 -- Le stesse regole di `contantiInGiornoChiuso` (src/lib/contabilita.ts) e della modalità prova, provate da
 -- scripts/prova-contabilita.mjs e scripts/prova-pagamenti.mjs.
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 90-ricevuta-cassa-chiusa.sql.
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 92-ricevuta-cassa-chiusa.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 

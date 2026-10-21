@@ -491,7 +491,7 @@ console.log('\n19. Ricevute.tsx scrive solo dopo il sì del riepilogo, e non se 
   ok('…col riepilogo di riepilogoPagamentoDiretto', gestore.includes('riepilogoPagamentoDiretto('), true)
   ok('…e senza il sì si esce prima di scrivere', /const \{ si, spuntata \} = await chiediSpunta\([\s\S]*?\)\s*if \(!si\) return/.test(gestore), true)
   ok('…e con la ricevuta si esce prima di scrivere: il pagamento sta solo nella ricevuta', /if \(onRicevuta && spuntata\) return onRicevuta\(\{ \.\.\.dati, chiaveRicevuta: [^}]+\}\)/.test(gestore), true)
-  // Contanti in un giorno di cassa chiusa: la ricevuta li rifiuta come il database (90), sotto al modulo prima di farla.
+  // Contanti in un giorno di cassa chiusa: la ricevuta li rifiuta come il database (92), sotto al modulo prima di farla.
   // La data viene da `contantiChiusiFino`, che legge anche la segreteria (le chiusure le vede solo l'amministrazione).
   const emettiR = tsx.slice(tsx.indexOf('const emetti = async () => {'), tsx.indexOf("'Fai la ricevuta',"))
   ok('FAI LA RICEVUTA non chiede più «si fa lo stesso» sui contanti di un giorno chiuso', [/avvisoCassaChiusa\(/.test(emettiR), /d\.chiusure\(\)/.test(emettiR)], [false, false])
@@ -759,7 +759,7 @@ console.log('\n27. uscire dalla ricevuta aperta da un pagamento chiede prima sol
   ok('nessun pagamento: non chiede', [m.siPerdeUscendo(null), m.siPerdeUscendo(undefined)], [false, false])
 }
 
-console.log('\n30. in prova: i contanti in un giorno di cassa chiusa non entrano neanche dalla ricevuta (come 90-ricevuta-cassa-chiusa.sql)')
+console.log('\n30. in prova: i contanti in un giorno di cassa chiusa non entrano neanche dalla ricevuta (come 92-ricevuta-cassa-chiusa.sql)')
 {
   const s = m.creaSegreteriaProva()
   const CHIUSO = 'ERRORE: Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura'

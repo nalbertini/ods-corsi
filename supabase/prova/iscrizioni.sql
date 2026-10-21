@@ -460,5 +460,70 @@ select atteso('Dini non finisce su Dino', tenta($$select (accogli_iscrizione((se
 select atteso('Dino ritrovato dal codice', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'dino@esempio.it')) = 'aaaaaaaa-0000-0000-0000-000000000010')::text$$), 'true');
 reset role;
 
+-- Due persone con lo stesso nome: la scheda che ha già un codice fiscale, e
+-- non è quello della richiesta, è di un altro. Né la scheda senza email
+-- (come chi è venuto a fare una prova), né la stessa email o lo stesso
+-- telefono la fanno agganciare: nasce una scheda nuova.
+-- Ugo Rana è arrivato dal modulo Google, senza email.
+insert into persone (id, nome, cognome, ruolo, telefono) values ('aaaaaaaa-0000-0000-0000-000000000011', 'Ugo', 'Rana', 'iscritto', '347 666 0001');
+insert into anagrafiche (persona_id, codice_fiscale) values ('aaaaaaaa-0000-0000-0000-000000000011', cf_prova('RNAGUO', (current_date - interval '30 years')::date));
+-- Ivo Rana è stato accolto con l'email di Maura: la sua scheda resta senza email.
+set role anon;
+select atteso('il primo Ivo Rana la manda', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Ivo', 'cognome', 'Rana', 'codice_fiscale', cf_prova('RNAVIO', (current_date - interval '30 years')::date), 'email', 'maura@ods.it', 'telefono', '347 666 0002'))) is not null)::text$$), 'true');
+reset role;
+set role authenticated;
+select atteso('il primo Ivo accolto', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Ivo' and cognome = 'Rana')) is not null)::text$$), 'true');
+reset role;
+-- Ada Rana ha la sua email, e un codice dal modulo Google.
+insert into persone (id, nome, cognome, ruolo, email) values ('aaaaaaaa-0000-0000-0000-000000000012', 'Ada', 'Rana', 'iscritto', 'ada@esempio.it');
+insert into anagrafiche (persona_id, codice_fiscale) values ('aaaaaaaa-0000-0000-0000-000000000012', cf_prova('RNADAA', (current_date - interval '30 years')::date, true));
+set role anon;
+select atteso('l''altro Ugo Rana la manda, col telefono di casa', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Ugo', 'cognome', 'Rana', 'codice_fiscale', cf_prova('RNAGUO', (current_date - interval '50 years')::date), 'nato_il', current_date - interval '50 years',
+  'email', 'ugo.altro@esempio.it', 'telefono', '347 666 0001'))) is not null)::text$$), 'true');
+select atteso('l''altro Ivo Rana la manda', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Ivo', 'cognome', 'Rana', 'codice_fiscale', cf_prova('RNAVIO', (current_date - interval '50 years')::date), 'nato_il', current_date - interval '50 years',
+  'email', 'ivo.altro@esempio.it', 'telefono', '347 666 0003'))) is not null)::text$$), 'true');
+select atteso('l''altra Ada Rana la manda, con la stessa email', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Ada', 'cognome', 'Rana', 'codice_fiscale', cf_prova('RNADAA', (current_date - interval '50 years')::date, true), 'nato_il', current_date - interval '50 years',
+  'email', 'ada@esempio.it', 'telefono', '347 666 0004'))) is not null)::text$$), 'true');
+reset role;
+set role authenticated;
+select atteso('l''altro Ugo non finisce sulla scheda di Ugo, anche col suo telefono',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'ugo.altro@esempio.it')) <> 'aaaaaaaa-0000-0000-0000-000000000011')::text$$), 'true');
+select atteso('l''altro Ivo non finisce sulla scheda senza email del primo',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'ivo.altro@esempio.it'))
+    <> (select persona_id from richieste_iscrizione where email = 'maura@ods.it' and nome = 'Ivo'))::text$$), 'true');
+select atteso('l''altra Ada non finisce sulla scheda di Ada, anche con la stessa email',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Ada' and cognome = 'Rana')) <> 'aaaaaaaa-0000-0000-0000-000000000012')::text$$), 'true');
+select atteso('due Ugo, due Ivo, due Ada', (select string_agg(nome || ' ' || n, ', ' order by nome) from (select nome, count(*) n from persone where cognome = 'Rana' group by nome) q), 'Ada 2, Ivo 2, Ugo 2');
+select atteso('la scheda del primo Ugo resta senza corsi nuovi', (select count(*)::text from iscrizioni where persona_id = 'aaaaaaaa-0000-0000-0000-000000000011'), '0');
+reset role;
+
+\echo ''
+\echo '--- eliminare una richiesta: accolta, tiene i dati della scheda ---'
+-- Per chi arriva dal modulo nascita, codice fiscale, residenza e genitore
+-- stanno solo nella richiesta accolta: eliminarla li toglie alla scheda.
+set role anon;
+select atteso('Teo manda una richiesta', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Teo', 'cognome', 'Neri', 'codice_fiscale', cf_prova('NRETEO', (current_date - interval '30 years')::date), 'email', 'teo@esempio.it', 'telefono', '347 777 0003'))) is not null)::text$$), 'true');
+reset role;
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria rifiuta Teo', tenta($$select rifiuta_iscrizione((select id from richieste_iscrizione where email = 'teo@esempio.it'))::text$$), '');
+select atteso('rifiutata, si elimina', tenta($$delete from richieste_iscrizione where email = 'teo@esempio.it'$$), 'FATTO (1 righe)');
+select atteso('accolta, con la scheda: non si elimina', tenta($$delete from richieste_iscrizione where email = 'saro@esempio.it'$$), 'a vuoto (0 righe)');
+select atteso('accolta: lo stato non si cambia a mano', tenta($$update richieste_iscrizione set stato = 'rifiutata' where email = 'saro@esempio.it'$$), 'NEGATO: …');
+select atteso('accolta: la scheda non si stacca a mano', tenta($$update richieste_iscrizione set persona_id = null where email = 'saro@esempio.it'$$), 'NEGATO: …');
+select atteso('accolta: i dati non si cambiano a mano', tenta($$update richieste_iscrizione set codice_fiscale = 'XXXXXXXXXXXXXXXX' where email = 'saro@esempio.it'$$), 'NEGATO: …');
+select atteso('e i dati di Saro restano', (select count(*)::text from richieste_iscrizione where email = 'saro@esempio.it' and codice_fiscale is not null), '1');
+reset role;
+-- La scheda cancellata (`on delete set null`): la richiesta non serve più a nessuno.
+delete from persone where id = (select persona_id from richieste_iscrizione where email = 'saro@esempio.it');
+set role authenticated;
+select atteso('accolta, ma la scheda non c''è più: si elimina', tenta($$delete from richieste_iscrizione where email = 'saro@esempio.it'$$), 'FATTO (1 righe)');
+reset role;
+
 \echo ''
 \echo 'TUTTO A POSTO'

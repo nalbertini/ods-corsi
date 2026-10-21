@@ -4,7 +4,7 @@ import type { Ricercata } from '../../lib/ricerca'
 import { useState, type ReactNode } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
-import { accogliConCertificato, DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato } from '../../lib/richieste'
+import { accogliConCertificato, DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato, siElimina } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
 import { nomeConosciuto, nomeProvenienza } from '../../lib/provenienza'
 import { daRestituire, segnoRichiesta, type PagamentoSatispay } from '../../lib/satispay'
@@ -511,7 +511,7 @@ function Scheda({
           <Riga titolo={omonimi.length === 1 ? 'IN ELENCO C’È GIÀ' : `IN ELENCO CE NE SONO GIÀ ${omonimi.length}`} />
           <span className="sg-sotto">
             Stesso nome e cognome. Se è {omonimi.length === 1 ? 'lui' : 'uno di loro'}, accogli la richiesta sulla sua scheda: se no «Accogli» ne fa una nuova
-            quando email, telefono e codice fiscale non tornano.
+            quando la scheda ha già un altro codice fiscale, o quando email e telefono non tornano.
           </span>
           <div className="stack" style={{ gap: 8 }}>
             {omonimi.map((p) => {
@@ -594,19 +594,21 @@ function Scheda({
         )}
       </div>
 
-      {/* Lontano da «Accogli» e «Rifiuta»: cancella i file per sempre e si usa di rado. */}
-      <div className="row" style={{ justifyContent: 'flex-end', marginTop: 24 }}>
-        <button
-          type="button"
-          className="sg-btn sg-btn-linea sg-pericolo"
-          onClick={async () => {
-            if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.${restituire ? `\n\n${restituire} Eliminata la richiesta, in RICHIESTE ONLINE non si vede più.` : ''}`, 'Elimina per sempre', { pericolo: true })))
-              void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)
-          }}
-        >
-          Elimina richiesta e file
-        </button>
-      </div>
+      {/* Lontano da «Accogli» e «Rifiuta»: cancella i file per sempre e si usa di rado. Accolta, tiene i dati della scheda. */}
+      {siElimina(x) && (
+        <div className="row" style={{ justifyContent: 'flex-end', marginTop: 24 }}>
+          <button
+            type="button"
+            className="sg-btn sg-btn-linea sg-pericolo"
+            onClick={async () => {
+              if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file?${restituire ? `\n\n${restituire} Eliminata la richiesta, in RICHIESTE ONLINE non si vede più.` : ''}`, 'Elimina per sempre', { pericolo: true })))
+                void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)
+            }}
+          >
+            Elimina richiesta e file
+          </button>
+        </div>
+      )}
     </>
   )
 }

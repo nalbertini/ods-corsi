@@ -267,20 +267,47 @@ console.log('\n8. quanto costa una persona in più')
   ok('un corso fuori listino si dice', [ignoto.senzaPrezzo, ignoto.totale], [['Corso che non c’è'], quota])
   const voce = (descrizione, prezzo) => ({ descrizione, quantita: 1, prezzo, pagamenti: [] })
   const ric = [
-    { personaId: 'a', voci: [voce('QUOTA ASSOCIATIVA', quota), voce('Annuale Judo 2', judo)] },
-    { personaId: 'b', voci: [voce('Trimestre Lotta 2', 9000)], annullataIl: undefined },
-    { personaId: 'c', voci: [voce('Annuale Lotta 2', 1)], annullataIl: '2026-09-20' },
+    { data: '2026-09-15', personaId: 'a', voci: [voce('QUOTA ASSOCIATIVA', quota), voce('Annuale Judo 2', judo)] },
+    { data: '2026-09-15', personaId: 'b', voci: [voce('Trimestre Lotta 2', 9000)], annullataIl: undefined },
+    { data: '2026-09-15', personaId: 'c', voci: [voce('Annuale Lotta 2', 1)], annullataIl: '2026-09-20' },
   ]
-  ok('gli annuali del nucleo dalle ricevute, non le annullate', m.abbonamentiDalleRicevute(ric, (id) => id.toUpperCase()), [{ chi: 'A', corso: 'Judo 2', importo: judo }])
+  ok('gli annuali del nucleo dalle ricevute, non le annullate', m.abbonamentiDalleRicevute(ric, (id) => id.toUpperCase(), giorno), [{ chi: 'A', corso: 'Judo 2', importo: judo }])
   const scontata = m.descrizioneScontata('Annuale Judo 2', judo)
   ok('la voce scontata dice su quanto', scontata, `Annuale Judo 2 · sconto famiglia 20% su ${(judo / 100).toFixed(2).replace('.', ',')} €`)
   ok('e si rilegge', m.scontoDellaVoce(scontata), { descrizione: 'Annuale Judo 2', pieno: judo })
   ok('una voce qualunque non è scontata', m.scontoDellaVoce('Annuale Judo 2'), null)
-  const conSconto = [{ personaId: 'a', voci: [voce(scontata, judo - Math.round(judo * 0.2))] }]
-  ok('l’annuale scontato conta col prezzo pieno', m.abbonamentiDalleRicevute(conSconto, (id) => id), [{ chi: 'a', corso: 'Judo 2', importo: judo, scontato: true }])
-  const gia = m.stimaIscrizione({ chi: 'Tommaso', corsi: ['Judo 2'], formula: 'annuale' }, m.abbonamentiDalleRicevute(conSconto, () => 'Anna'), giorno, L)
+  const conSconto = [{ data: '2026-09-15', personaId: 'a', voci: [voce(scontata, judo - Math.round(judo * 0.2))] }]
+  ok('l’annuale scontato conta col prezzo pieno', m.abbonamentiDalleRicevute(conSconto, (id) => id, giorno), [{ chi: 'a', corso: 'Judo 2', importo: judo, scontato: true }])
+  const gia = m.stimaIscrizione({ chi: 'Tommaso', corsi: ['Judo 2'], formula: 'annuale' }, m.abbonamentiDalleRicevute(conSconto, () => 'Anna', giorno), giorno, L)
   ok('lo sconto già avuto da un altro non torna', [gia.sconto.qui, gia.sconto.chi, gia.totale], [false, 'Anna', quota + judo])
   ok('un annuale solo: niente sconto', m.doveVaLoSconto([{ chi: 'T', corso: 'X', importo: 1 }], []), null)
+
+  // PIÙ CORSI: una persona con più annuali paga i corsi al massimo 660 €, quota a parte; lo sconto famiglia è fra persone.
+  const PIU = 66000
+  const due = m.stimaIscrizione({ chi: 'Marco', corsi: ['Judo 3', 'Judo agonisti'], formula: 'annuale' }, [], giorno, L)
+  ok('due annuali della stessa persona: 660 € più la quota, niente sconto famiglia', [due.totale, due.sconto], [quota + PIU, undefined])
+  ok('e la riga del tetto si vede', due.righe.some((r) => /più corsi/i.test(r.testo) && r.importo < 0), true)
+  ok('due annuali della stessa persona: niente sconto famiglia', m.doveVaLoSconto([{ chi: 'T', corso: 'X', importo: 1 }, { chi: 'T', corso: 'Y', importo: 2 }], []), null)
+  ok('anche se uno l’ha già pagato prima', m.doveVaLoSconto([{ chi: 'T', corso: 'X', importo: 1 }], [{ chi: 'T', corso: 'Y', importo: 2 }]), null)
+  const conAnna = m.stimaIscrizione({ chi: 'Marco', corsi: ['Judo 3', 'Judo agonisti'], formula: 'annuale' }, [{ chi: 'Anna', corso: 'Judo 2', importo: judo }], giorno, L)
+  ok('PIÙ CORSI conta come un annuale da 660: lo sconto va su quello di Anna, che costa meno', [conAnna.sconto?.qui, conAnna.sconto?.chi, conAnna.totale], [false, 'Anna', quota + PIU])
+  const conCaro = m.stimaIscrizione({ chi: 'Marco', corsi: ['Judo 3', 'Judo agonisti'], formula: 'annuale' }, [{ chi: 'Anna', corso: 'X', importo: PIU + 1000 }], giorno, L)
+  ok('se costa meno PIÙ CORSI, il 20% è su 660', [conCaro.sconto?.qui, conCaro.totale], [true, quota + PIU - Math.round(PIU * 0.2)])
+  const pocoA = m.stimaIscrizione({ chi: 'A', corsi: ['Psicomotricità'], formula: 'annuale' }, [], giorno, L).totale - quota
+  const pocoB = m.stimaIscrizione({ chi: 'A', corsi: ['Giocomotricità'], formula: 'annuale' }, [], giorno, L).totale - quota
+  const sotto = m.stimaIscrizione({ chi: 'A', corsi: ['Psicomotricità', 'Giocomotricità'], formula: 'annuale' }, [], giorno, L)
+  ok('sotto i 660 € si paga la somma', [pocoA + pocoB < PIU, sotto.totale], [true, quota + pocoA + pocoB])
+  const triDue = m.stimaIscrizione({ chi: 'Marco', corsi: ['Judo 3', 'Judo agonisti'], formula: 'trimestre' }, [], giorno, L)
+  ok('col trimestre il tetto non c’è', triDue.righe.some((r) => /più corsi/i.test(r.testo)), false)
+
+  // Le ricevute contano per la stagione dei corsi di `giorno`: un annuale dell'anno prima non dà né toglie lo sconto.
+  const stagioni = [
+    { data: '2025-10-01', personaId: 'a', voci: [voce('Annuale Judo 2', judo)] },
+    { data: '2025-10-01', personaId: 'b', voci: [voce(scontata, judo - Math.round(judo * 0.2))] },
+    { data: '2026-07-15', personaId: 'c', voci: [{ ...voce('Annuale Lotta 2', 30000), dal: '2026-09-01', al: '2027-06-30' }] },
+  ]
+  ok('solo gli annuali della stagione di oggi (luglio è già della stagione dopo)', m.abbonamentiDalleRicevute(stagioni, (id) => id, giorno), [{ chi: 'c', corso: 'Lotta 2', importo: 30000 }])
+  ok('l’anno dopo, quelli dell’anno prima non contano più', m.abbonamentiDalleRicevute(stagioni, (id) => id, '2027-10-01'), [])
 }
 
 console.log('\n9. il nucleo dalla scheda della segreteria')

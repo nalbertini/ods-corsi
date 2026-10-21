@@ -276,6 +276,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'sito_pagine_pubbliche')),
   ('53-codice-fiscale-stesso-nome.sql', 'accogliere aggancia dal codice fiscale solo chi ha lo stesso nome',
     exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%lower(p.cognome) = lower(r.cognome)%')),
+  ('90-omonimi-codice-fiscale.sql', 'accogliere non aggancia l''omonimo che ha già un altro codice fiscale',
+    exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%a.codice_fiscale <> r.codice_fiscale%')),
   ('54-pagamenti-diretti.sql', 'i pagamenti fatti a mano, senza ricevuta',
     to_regclass('public.pagamenti_diretti') is not null
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'registra_pagamento_diretto')
@@ -458,10 +460,13 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.emetti_ricevuta_da_pagamento(jsonb,uuid)') is not null
     -- Rilanciare 55 dopo 89 rimette l'annullo che lascia il pagamento a mano annullato: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'annulla_ricevuta' and corpo like '%pagamenti_diretti%')),
-  ('90-ricevuta-cassa-chiusa.sql', 'i contanti di un giorno di cassa chiusa non entrano dalla ricevuta, e la segreteria sa fin quando è chiusa',
+  ('91-richieste-accolte-restano.sql', 'una richiesta accolta non si elimina finché c''è la scheda',
+    exists (select 1 from pg_policies where tablename = 'richieste_iscrizione' and policyname = 'richieste_cancella' and qual like '%accolta%')
+    and not has_table_privilege('authenticated', 'public.richieste_iscrizione', 'update')),
+  ('92-ricevuta-cassa-chiusa.sql', 'i contanti di un giorno di cassa chiusa non entrano dalla ricevuta, e la segreteria sa fin quando è chiusa',
     to_regprocedure('public.cassa_contanti_chiusa_fino()') is not null
     and exists (select 1 from dentro where nome = 'fai_ricevuta' and corpo like '%cassa_giorno_chiuso%')
-    -- Rilanciare 86 o 89 dopo 90 rimette le funzioni che non guardano il giorno chiuso: la riga torna «da lanciare».
+    -- Rilanciare 86 o 89 dopo 92 rimette le funzioni che non guardano il giorno chiuso: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%fai_ricevuta%')
     and exists (select 1 from dentro where nome = 'emetti_ricevuta_da_pagamento' and corpo like '%fai_ricevuta%'))
 ) as x(file, cosa, c)

@@ -1694,7 +1694,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async contantiChiusiFino() {
-      // Senza 90-ricevuta-cassa-chiusa.sql l'errore lo prendono i componenti: nessun avviso, decide il database.
+      // Senza 92-ricevuta-cassa-chiusa.sql l'errore lo prendono i componenti: nessun avviso, decide il database.
       return (ok(await db.rpc('cassa_contanti_chiusa_fino')) as string | null) ?? null
     },
 

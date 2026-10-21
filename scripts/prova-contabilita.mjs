@@ -739,7 +739,7 @@ console.log('\n27. annullare un incasso in contanti di un giorno chiuso: l\'avvi
 
 console.log('\n27b. i contanti di una ricevuta in un giorno già chiuso (contantiInGiornoChiuso(pagamenti, dataRicevuta, fino, tranne?))')
 {
-  // Le stesse regole di `emetti_ricevuta` (90-ricevuta-cassa-chiusa.sql), provate da supabase/prova/ricevuta-cassa-chiusa.sql.
+  // Le stesse regole di `emetti_ricevuta` (92-ricevuta-cassa-chiusa.sql), provate da supabase/prova/ricevuta-cassa-chiusa.sql.
   const CHIUSO = 'Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura'
   const FINO = '2026-09-10'
   const no = (pagamenti, dataRicevuta = '2026-09-10', fino = FINO, tranne) => prova(() => m.contantiInGiornoChiuso(pagamenti, dataRicevuta, fino, tranne))

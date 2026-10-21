@@ -102,7 +102,11 @@ Accolta o rifiutata, la finestra si chiude da sola e si torna all'elenco, alla p
   non basta a riconoscerla: se nome e cognome sono diversi da quelli della
   scheda, ACCOGLI ne fa una nuova (se era la stessa persona scritta in modo
   diverso, le due schede si uniscono poi con **UNISCI…** in
-  [Iscritti](iscritti.md)). Se l'email della richiesta
+  [Iscritti](iscritti.md)). Nemmeno lo stesso nome basta: se la scheda ha già
+  un codice fiscale diverso da quello della richiesta è un'altra persona, e
+  ACCOGLI ne fa una nuova anche quando la scheda è senza email o ha la stessa
+  email o lo stesso telefono. Se sapete che è la stessa persona, sceglietela
+  dalla lista **IN ELENCO C'È GIÀ**. Se l'email della richiesta
   è già di un'altra persona (un fratello, il genitore), la nuova scheda entra
   senza email di accesso e con quell'indirizzo come **email di contatto**: lì
   trovate l'indirizzo da richiamare. **Apri la scheda** porta
@@ -111,9 +115,11 @@ Accolta o rifiutata, la finestra si chiude da sola e si torna all'elenco, alla p
   a mano. Se aveva già pagato con Satispay, la conferma lo dice: i soldi
   restano in [PAGAMENTI](pagamenti.md) e vanno restituiti dall'app Satispay
   Business, poi registrati in CONTABILITÀ.
-- **Elimina richiesta e file**, in fondo — cancella per sempre la richiesta con i suoi file. La scheda in
-  elenco, se c'è, resta. Anche il pagamento Satispay resta, col nome di chi
-  l'ha fatto.
+- **Elimina richiesta e file**, in fondo, solo per le richieste nuove (lo
+  spam) o rifiutate — cancella per sempre la richiesta con i suoi file. Il
+  pagamento Satispay resta, col nome di chi l'ha fatto.
 
-Una richiesta accolta o rifiutata resta qui, con quello che diceva, finché non
-la si elimina.
+Una richiesta accolta resta qui, con quello che diceva: data e luogo di
+nascita, codice fiscale, residenza e genitore della scheda stanno lì, e
+servono per ricevute, tesseramento e certificato. Si può eliminare solo dopo
+aver eliminato la sua scheda. Una rifiutata resta finché non la si elimina.

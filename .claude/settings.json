@@ -5,6 +5,7 @@
       "Bash(gh pr merge *)"
     ]
   },
+  "autoCompactWindow": 200000,
   "enabledPlugins": {
     "common-room@synced": false,
     "cowork-plugin-management@synced": false,
@@ -25,7 +26,10 @@
     "small-business@synced": false,
     "wealth-management@synced": false,
     "figma@claude-plugins-official": false,
-    "transcripted-live@transcripted": false
+    "transcripted-live@transcripted": false,
+    "mission-control@claude-code-mods": false,
+    "cc-plugin-you-should-know@builtin": false,
+    "financial-analysis@synced": false
   },
   "deniedMcpServers": [
     {
@@ -149,6 +153,17 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tipi.mjs\"",
             "timeout": 120,
             "statusMessage": "Controllo dei tipi…"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && (nohup /Users/nicola/.local/bin/graphify update . >/dev/null 2>&1 &)",
+            "timeout": 10
           }
         ]
       }

@@ -607,7 +607,7 @@ export function NuovaRicevuta({
     const x = [p, ...nucleo].find((y) => y.id === id)
     return x ? `${x.nome} ${x.cognome}` : ''
   }
-  const altri = partenza.dato ? abbonamentiDalleRicevute([...partenza.dato[2], ...partenza.dato[4].flat()], nomeDi) : []
+  const altri = partenza.dato ? abbonamentiDalleRicevute([...partenza.dato[2], ...partenza.dato[4].flat()], nomeDi, data) : []
   const metti = (v: Bozza[], si = scontoSi) => setVoci(conSconto(v, altri, chi, si))
 
   // La prima volta che arriva quello che si sa, si compila il modulo.
@@ -898,7 +898,9 @@ export function NuovaRicevuta({
             <span style={{ fontSize: 12, color: 'var(--dim)' }}>
               {dove.scontato
                 ? `Sconto famiglia: l’ha già avuto ${dove.chi}, su ${dove.corso}.`
-                : `Sconto famiglia: va sull’annuale che costa meno nel nucleo, ${dove.corso} di ${dove.chi}, già pagato.`}
+                : dove.chi === chi
+                  ? `Sconto famiglia: va su questa persona, che ha più corsi (${dove.corso}): ${percento}% sul totale dei corsi, da scrivere a mano nei prezzi.`
+                  : `Sconto famiglia: va sull’annuale che costa meno nel nucleo, ${dove.corso} di ${dove.chi}, già pagato.`}
             </span>
           )
         )}

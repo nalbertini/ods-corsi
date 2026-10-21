@@ -1,6 +1,6 @@
 import { FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
-import { ESTENSIONI, MASSIMO_FILE } from './richieste'
+import { ACCOLTA_RESTA, ESTENSIONI, MASSIMO_FILE, siElimina } from './richieste'
 import { tutteLeRighe } from './tutteLeRighe'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { ERRORE_SATISPAY, SATISPAY_SPENTO, type StatoSatispay } from './satispay'
@@ -282,7 +282,11 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
     },
 
     async elimina(richiestaId) {
-      // Prima i file: una riga senza file è innocua, un file senza riga resta
+      // Prima lo stato: la policy direbbe di no alla riga solo dopo che i file sono andati.
+      // Una riga che non si legge non ha dati da perdere: si puliscono i file come prima.
+      const [riga] = (ok(await db.from('richieste_iscrizione').select('stato, persona_id').eq('id', richiestaId)) ?? []) as Array<{ stato: StatoRichiesta; persona_id: string | null }>
+      if (riga && !siElimina({ stato: riga.stato, personaId: riga.persona_id ?? undefined })) throw new Error(ACCOLTA_RESTA)
+      // Poi i file: una riga senza file è innocua, un file senza riga resta
       // lì e nessuno lo ritrova più.
       const tutti = await nomi(richiestaId)
       if (tutti.length) {

@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere, fileObbligatori, MANCA_RICEVUTA, DETTAGLIO_RICEVUTA } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'; export { archivio } from './src/lib/archivioProva'; export { aggiungiRichiesteProva, scordaRichiesteProva, richiesteContateProva } from './src/lib/richiesteProva'; export { seminaEsempi } from './src/lib/esempiProva'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { siElimina, ACCOLTA_RESTA, daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere, fileObbligatori, MANCA_RICEVUTA, DETTAGLIO_RICEVUTA } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'; export { archivio } from './src/lib/archivioProva'; export { aggiungiRichiesteProva, scordaRichiesteProva, richiesteContateProva } from './src/lib/richiesteProva'; export { seminaEsempi } from './src/lib/esempiProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -276,6 +276,10 @@ console.log('\n4. la segreteria accoglie e rifiuta')
   ok('e non si accoglie più', await errore(() => r.accogli(terzo)), 'Questa richiesta è già stata rifiutata')
   await r.elimina(terzo)
   ok('eliminato, sparisce', (await r.richieste()).some((x) => x.id === terzo), false)
+  // Accolta, la richiesta tiene nascita, codice fiscale e residenza della scheda: non si elimina.
+  ok('accolta: non si elimina, lo dice', await errore(() => r.elimina(luca)), m.ACCOLTA_RESTA)
+  ok('accolta: la richiesta resta, coi suoi dati', (await r.richieste()).find((x) => x.id === luca)?.codiceFiscale, 'RSSLCU96A01L219K')
+  ok('la regola: nuova e rifiutata sì, accolta con la scheda no, accolta senza scheda sì', [{ stato: 'nuova' }, { stato: 'rifiutata' }, { stato: 'accolta', personaId: 'p-1' }, { stato: 'accolta' }].map(m.siElimina), [true, true, false, true])
 
   const e = await s.esporta(id)
   ok("l'esportazione porta la richiesta", e.richieste_di_iscrizione.map((x) => [x.stato, x.codiceFiscale]), [['accolta', 'RSSLCU96A01L219K']])
@@ -333,6 +337,56 @@ console.log('\n7. la mamma con la sua email: la scheda la sceglie la segreteria'
   const cf = m.lettereCognome('Neri') + m.lettereNome('Paolo') + '96A01L219'
   const id2 = await r.invia(adulto({ nome: 'Paolo', cognome: 'Neri', codiceFiscale: cf + m.carattereControllo(cf), email: 'casa.neri@esempio.it', telefono: '3331234567' }))
   ok('Paolo ritrovato dal telefono', await r.accogli(id2), paolo)
+}
+
+console.log('\n7b. lo stesso nome, un altro codice fiscale: le regole di accogli_iscrizione')
+{
+  const a = m.archivio.dati
+  const cf = (cognome, nome, resto) => {
+    const b = m.lettereCognome(cognome) + m.lettereNome(nome) + resto
+    return b + m.carattereControllo(b)
+  }
+  const persona = (p) => {
+    a.persone = [...a.persone, { ruolo: 'iscritto', attiva: true, creataIl: '2026-01-01', ...p }]
+    return p.id
+  }
+  const nuove = (nome) => a.persone.filter((p) => p.nome === nome && p.cognome === 'Rana').length
+
+  // Ugo è stato accolto con l'email di Mario: la sua scheda resta senza email, ma il codice è noto.
+  const ugo = await s.salvaPersona({ nome: 'Ugo', cognome: 'Rana' })
+  await r.accogli(await r.invia(adulto({ nome: 'Ugo', cognome: 'Rana', codiceFiscale: cf('Rana', 'Ugo', '96A01L219'), email: 'mario@esempio.it', telefono: '347 666 0001' })), ugo)
+  const altroUgo = await r.accogli(await r.invia(adulto({ nome: 'Ugo', cognome: 'Rana', natoIl: '1976-01-01', codiceFiscale: cf('Rana', 'Ugo', '76A01L219'), email: 'ugo.altro@esempio.it', telefono: '347 666 0001' })))
+  ok('l’altro Ugo non finisce sulla scheda senza email del primo, nemmeno col suo telefono', altroUgo !== ugo, true)
+  ok('due Ugo Rana', nuove('Ugo'), 2)
+
+  // Ada ha la sua email e un codice dal modulo Google: la stessa email con un altro codice è un’altra persona.
+  const ada = persona({ id: 'p-ada', nome: 'Ada', cognome: 'Rana', email: 'ada@esempio.it' })
+  a.anagrafiche = { ...a.anagrafiche, [ada]: { codiceFiscale: cf('Rana', 'Ada', '96A41L219') } }
+  const altraAda = await r.accogli(await r.invia(adulto({ nome: 'Ada', cognome: 'Rana', natoIl: '1976-01-01', codiceFiscale: cf('Rana', 'Ada', '76A41L219'), email: 'ada@esempio.it', telefono: '347 666 0004' })))
+  ok('l’altra Ada non finisce sulla scheda di Ada, anche con la stessa email', altraAda !== ada, true)
+
+  // Un istruttore con lo stesso nome non è chi si iscrive.
+  const ivo = persona({ id: 'i-ivo', nome: 'Ivo', cognome: 'Rana', ruolo: 'istruttore' })
+  const iscrittoIvo = await r.accogli(await r.invia(adulto({ nome: 'Ivo', cognome: 'Rana', codiceFiscale: cf('Rana', 'Ivo', '96A01L219'), email: 'ivo@esempio.it', telefono: '347 666 0005' })))
+  ok('Ivo l’istruttore resta istruttore: l’iscritto è una scheda nuova', [iscrittoIvo !== ivo, a.persone.find((p) => p.id === ivo).ruolo], [true, 'istruttore'])
+
+  // Due Eva senza codice: la più vecchia senza email, la più nuova con un’altra email e lo stesso telefono. Come il database: la più vecchia.
+  persona({ id: 'p-eva-1', nome: 'Eva', cognome: 'Rana', creataIl: '2025-01-01' })
+  persona({ id: 'p-eva-2', nome: 'Eva', cognome: 'Rana', email: 'eva.vecchia@esempio.it', telefono: '347 666 0006', creataIl: '2026-02-01' })
+  ok('fra due Eva senza la stessa email, la più vecchia', await r.accogli(await r.invia(adulto({ nome: 'Eva', cognome: 'Rana', codiceFiscale: cf('Rana', 'Eva', '96A41L219'), email: 'eva@esempio.it', telefono: '347 666 0006' }))), 'p-eva-1')
+
+  // Due Zoe: la più vecchia senza email, la più nuova con la stessa della richiesta. Vince la stessa email.
+  persona({ id: 'p-zoe-1', nome: 'Zoe', cognome: 'Rana', creataIl: '2025-01-01' })
+  persona({ id: 'p-zoe-2', nome: 'Zoe', cognome: 'Rana', email: 'zoe@esempio.it', creataIl: '2026-02-01' })
+  ok('fra due Zoe, prima quella con la stessa email', await r.accogli(await r.invia(adulto({ nome: 'Zoe', cognome: 'Rana', codiceFiscale: cf('Rana', 'Zoe', '96A41L219'), email: 'zoe@esempio.it', telefono: '347 666 0008' }))), 'p-zoe-2')
+
+  // Teo ha un certificato valido: quello arrivato col modulo non lo sostituisce, e resta fra i file della richiesta.
+  persona({ id: 'p-teo', nome: 'Teo', cognome: 'Rana', email: 'teo@esempio.it', certificato: { scade: '2027-01-01', file: 'p-teo/certificato-1.pdf' } })
+  const perTeo = await r.invia(adulto({ nome: 'Teo', cognome: 'Rana', codiceFiscale: cf('Rana', 'Teo', '96A01L219'), email: 'teo@esempio.it', telefono: '347 666 0007' }))
+  await r.caricaFile(perTeo, 'certificato', new File(['x'], 'certificato.pdf', { type: 'application/pdf' }))
+  ok('Teo ritrovato', await r.accogli(perTeo), 'p-teo')
+  ok('il certificato valido di Teo resta il suo', a.persone.find((p) => p.id === 'p-teo').certificato, { scade: '2027-01-01', file: 'p-teo/certificato-1.pdf' })
+  ok('e quello del modulo resta fra i file della richiesta', (await r.file(perTeo)).some((f) => f.tipo === 'certificato'), true)
 }
 
 console.log('\n8. i dati anagrafici: dalla richiesta, e dalla scheda dopo')
@@ -570,12 +624,14 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     ok('rifiuta: già rifiutata, il messaggio del database', await errore(() => finto({ rpc: { rifiuta_iscrizione: ERR('P0001', 'Questa richiesta non è più nuova') } }).v.rifiuta('r-1')), 'Questa richiesta non è più nuova')
     ok('rifiuta: senza permesso', await errore(() => finto({ rpc: { rifiuta_iscrizione: ERR('42501') } }).v.rifiuta('r-1')), PERMESSO)
 
+    const accolta = finto({ tabella: { data: [{ stato: 'accolta', persona_id: 'p-1' }], error: null }, elenco: { 'r-1': nomiFile('modulo.pdf') } })
+    ok('elimina: accolta, con la scheda, non tocca né file né riga', [await errore(() => accolta.v.elimina('r-1')), accolta.reg.some((x) => x[0] === 'remove' || x[0] === 'delete')], [m.ACCOLTA_RESTA, false])
     const e = finto({ elenco: { 'r-1': nomiFile('modulo.pdf', 'documento.jpg') } })
     await e.v.elimina('r-1')
-    ok('elimina: prima i file, poi la riga', e.reg, [['list', 'iscrizioni', 'r-1'], ['remove', 'iscrizioni', ['r-1/modulo.pdf', 'r-1/documento.jpg']], ['from', 'richieste_iscrizione'], ['delete'], ['eq', 'id', 'r-1']])
+    ok('elimina: prima lo stato, poi i file, poi la riga', e.reg, [['from', 'richieste_iscrizione'], ['select', 'stato, persona_id'], ['eq', 'id', 'r-1'], ['list', 'iscrizioni', 'r-1'], ['remove', 'iscrizioni', ['r-1/modulo.pdf', 'r-1/documento.jpg']], ['from', 'richieste_iscrizione'], ['delete'], ['eq', 'id', 'r-1']])
     const senza = finto()
     await senza.v.elimina('r-1')
-    ok('elimina: senza file, solo la riga', senza.reg.map((x) => x[0]), ['list', 'from', 'delete', 'eq'])
+    ok('elimina: senza file, solo la riga', senza.reg.map((x) => x[0]), ['from', 'select', 'eq', 'list', 'from', 'delete', 'eq'])
     const rotto = finto({ elenco: { 'r-1': nomiFile('modulo.pdf') }, rimuovi: { data: null, error: { message: 'down' } } })
     ok('elimina: se i file non vanno via, la riga resta (un file senza riga non lo ritrova nessuno)', [await errore(() => rotto.v.elimina('r-1')), rotto.reg.some((x) => x[0] === 'delete')], ['down', false])
     ok('elimina: senza permesso sulla riga', await errore(() => finto({ cancella: ERR('42501') }).v.elimina('r-1')), PERMESSO)
@@ -746,8 +802,7 @@ console.log('\n15. da dove arriva la richiesta: la prova pulisce e scarta come 7
   await r.elimina(daEliminare)
   // Eliminata quando è ancora nuova (lo spam) non conta più; accolta o rifiutata, eliminata, resta contata.
   ok('una richiesta eliminata da nuova non conta più', quante(await conteggi(), 'corso-karate'), 0)
-  await r.elimina(id)
-  ok('una richiesta accolta, eliminata, resta contata', quante(await conteggi(), 'home'), 1)
+  ok('una richiesta accolta non si elimina, e resta contata', [await errore(() => r.elimina(id)), quante(await conteggi(), 'home')], [m.ACCOLTA_RESTA, 1])
   ok('fuori dal periodo non conta', typeof s.richiesteDaDove === 'function' && (await s.richiesteDaDove(new Date(2026, 7, 1), new Date(2026, 7, 31))).righe.length, 0)
   const rif = (await r.richieste()).find((x) => x.provenienza === 'instagram').id
   await r.rifiuta(rif)

@@ -10,6 +10,42 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.156.5 — 21 ottobre 2026
+
+### Risolto
+
+- Eliminare una richiesta accolta non cancella più codice fiscale, nascita e residenza dalla scheda
+- Con più corsi si paga il tetto di 660 €, e lo sconto famiglia guarda solo la stagione in corso
+
+### Modificato
+
+- Il team di agenti dello sviluppo costa meno a ogni ciclo
+- Le sessioni di sviluppo hanno il grafo del codice anche nei worktree
+
+## 0.156.4 — 21 ottobre 2026
+
+### Risolto
+
+- Due persone con lo stesso nome ma un altro codice fiscale non finiscono più sulla stessa scheda quando si accoglie una richiesta
+
+## 0.156.3 — 21 ottobre 2026
+
+### Modificato
+
+- Le sessioni di Claude si compattano a 200k token
+
+## 0.156.2 — 21 ottobre 2026
+
+### Modificato
+
+- Le sessioni di sviluppo spengono anche gli ultimi plugin che non servono
+
+## 0.156.1 — 21 ottobre 2026
+
+### Modificato
+
+- Il ciclo di sviluppo consuma meno token
+
 ## 0.156.0 — 21 ottobre 2026
 
 ### Novità

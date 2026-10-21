@@ -1,5 +1,5 @@
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
-import { controlla, DA_STAMPARE, pulisciCf, minorenne } from './richieste'
+import { ACCOLTA_RESTA, controlla, DA_STAMPARE, pulisciCf, minorenne, siElimina } from './richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { archivio, certificatiProva, scordaCertificato } from './archivioProva'
 import { nomeProprio } from './nomi'
@@ -366,16 +366,22 @@ export function creaRichiesteProva(): DatiRichieste {
       // accolta, poi stesso nome e cognome, e la stessa email, nessuna o lo
       // stesso telefono. Il codice vale solo con lo stesso nome e cognome: lo
       // sanno in tanti, e un nome diverso la segreteria lo sceglie a mano.
-      const stessoNome = (p: { nome: string; cognome: string }) => stesso(p.nome, r.nome) && stesso(p.cognome, r.cognome)
+      // Sempre fra gli iscritti: un istruttore omonimo non è chi si iscrive.
+      const stessoNome = (p: { nome: string; cognome: string; ruolo: string }) => p.ruolo === 'iscritto' && stesso(p.nome, r.nome) && stesso(p.cognome, r.cognome)
       const perCf = tutte
         .filter((x) => x.id !== r.id && x.codiceFiscale === r.codiceFiscale && x.personaId)
         .map((x) => a.persone.find((p) => p.id === x.personaId))
         .find((p) => p && stessoNome(p))
       // O quello dei dati anagrafici, di chi è arrivato dalle risposte del modulo Google.
       const perAnagrafica = a.persone.find((p) => a.anagrafiche?.[p.id]?.codiceFiscale === r.codiceFiscale && stessoNome(p))
+      // Un codice fiscale già noto e diverso è un'altra persona con lo stesso nome (90-omonimi-codice-fiscale.sql).
+      const altroCf = (id: string) =>
+        tutte.some((x) => x.personaId === id && x.stato === 'accolta' && x.codiceFiscale !== r.codiceFiscale) ||
+        (!!a.anagrafiche?.[id]?.codiceFiscale && a.anagrafiche[id].codiceFiscale !== r.codiceFiscale)
       const perNome = a.persone
-        .filter((p) => stesso(p.nome, r.nome) && stesso(p.cognome, r.cognome) && (!p.email || p.email.toLowerCase() === email || (cifre(r.telefono).length >= 9 && cifre(p.telefono) === cifre(r.telefono))))
-        .sort((x, y) => Number(!!y.email) - Number(!!x.email))[0]
+        .filter((p) => stessoNome(p) && !altroCf(p.id) && (!p.email || p.email.toLowerCase() === email || (cifre(r.telefono).length >= 9 && cifre(p.telefono) === cifre(r.telefono))))
+        // Prima chi ha la stessa email, poi la scheda più vecchia.
+        .sort((x, y) => Number(y.email?.toLowerCase() === email) - Number(x.email?.toLowerCase() === email) || x.creataIl.localeCompare(y.creataIl))[0]
       const trovata = scelta ?? perCf ?? perAnagrafica ?? perNome
       let id: string
       if (trovata) {
@@ -412,9 +418,11 @@ export function creaRichiesteProva(): DatiRichieste {
         // Chi aveva una fine segnata la perde; chi aveva già smesso riparte da oggi.
         a.iscrizioni = [...a.iscrizioni.filter((i) => i !== c), { corsoId, personaId: id, dal: c && c.al! >= oggi ? c.dal : oggi }]
       }
-      // Il certificato passa alla scheda, senza data: la scrive la segreteria. Come `accogli_iscrizione`.
+      // Il certificato passa alla scheda, senza data: la scrive la segreteria. Come `accogli_iscrizione`:
+      // se la scheda ne ha già uno valido resta quello, e il file resta fra quelli della richiesta.
       const cert = file.get(richiestaId)?.get('certificato')
-      if (cert) {
+      const valido = a.persone.find((p) => p.id === id)?.certificato
+      if (cert && !(valido?.file && valido.scade && valido.scade >= oggi)) {
         scordaCertificato(id)
         certificatiProva.set(id, { url: cert.url, pdf: cert.pdf })
         file.get(richiestaId)?.delete('certificato')
@@ -433,6 +441,10 @@ export function creaRichiesteProva(): DatiRichieste {
     },
 
     async elimina(richiestaId) {
+      const x = una(richiestaId)
+      // Come `on delete set null`: una scheda cancellata non tiene più la richiesta.
+      const scheda = archivio.dati.persone.some((p) => p.id === x.personaId) ? x.personaId : undefined
+      if (!siElimina({ stato: x.stato, personaId: scheda })) throw new Error(ACCOLTA_RESTA)
       for (const f of file.get(richiestaId)?.values() ?? []) if (f.url) URL.revokeObjectURL(f.url)
       file.delete(richiestaId)
       tutte = tutte.filter((r) => r.id !== richiestaId)

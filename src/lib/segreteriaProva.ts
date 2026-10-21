@@ -144,7 +144,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     movimenti: a().movimenti ?? [],
     chiusure: a().chiusure ?? [],
   })
-  // Come `cassa_contanti_chiusa_fino` (90): si chiude solo la Cassa Contanti, vale l'ultima chiusura attiva.
+  // Come `cassa_contanti_chiusa_fino` (92): si chiude solo la Cassa Contanti, vale l'ultima chiusura attiva.
   const fino = () => contabilita().chiusure.filter((k) => !k.annullataIl).map((k) => k.data).sort().at(-1) ?? null
   // Lo storico collegato alle persone: le righe dei movimenti scritti qui o importati, e le schede per nome.
   const righeDelloStorico = () => righeMovimenti([], contabilita().movimenti, contabilita().voci)
@@ -1195,7 +1195,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const r = { ...dati, intestatario: pulisciIntestatario(dati.intestatario), note: dati.note?.trim() || undefined }
       const no = cosaNonVa(r)
       if (no) throw new Error(no)
-      // Come `fai_ricevuta` (90): i contanti di un giorno chiuso no, tranne quelli del pagamento a mano che diventa ricevuta.
+      // Come `fai_ricevuta` (92): i contanti di un giorno chiuso no, tranne quelli del pagamento a mano che diventa ricevuta.
       const chiuso = contantiInGiornoChiuso(r.voci.flatMap((v) => v.pagamenti), r.data, fino(), pd)
       if (chiuso) throw new Error(chiuso)
       if (r.note && r.note.length > 500) throw new Error('La nota è troppo lunga: al massimo 500 caratteri')

@@ -222,9 +222,14 @@ create temp table d as select richieste_da_dove(current_date - 30, current_date)
 reset role;
 select atteso('eliminata da nuova (come lo spam): home scende a 1', conta('provenienza', 'home'), '1');
 select atteso('e non resta nessuna riga senza legame', (select count(*)::text from richieste_contate where richiesta_id is null), '0');
+-- Un'accolta si elimina solo quando la sua scheda non c'è più (91-richieste-accolte-restano.sql).
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
-select atteso('la segreteria elimina l''accolta e la rifiutata', tenta($$delete from richieste_iscrizione where stato in ('accolta', 'rifiutata')$$), 'FATTO (2 righe)');
+select atteso('l''accolta con la scheda resta', tenta($$delete from richieste_iscrizione where stato = 'accolta'$$), 'a vuoto (0 righe)');
+reset role;
+delete from persone where id in (select persona_id from richieste_iscrizione where stato = 'accolta');
+set role authenticated;
+select atteso('la segreteria elimina l''accolta senza scheda e la rifiutata', tenta($$delete from richieste_iscrizione where stato in ('accolta', 'rifiutata')$$), 'FATTO (2 righe)');
 drop table d;
 create temp table d as select richieste_da_dove(current_date - 30, current_date) x;
 reset role;

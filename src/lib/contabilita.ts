@@ -276,7 +276,7 @@ export function avvisoCassaChiusa(pagamenti: Array<{ data: string; metodo: strin
 export const MSG_CONTANTI_CHIUSI = 'Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura'
 
 /**
- * I contanti di una ricevuta in un giorno già chiuso romperebbero la chiusura: come `fai_ricevuta` (90-ricevuta-cassa-chiusa.sql).
+ * I contanti di una ricevuta in un giorno già chiuso romperebbero la chiusura: come `fai_ricevuta` (92-ricevuta-cassa-chiusa.sql).
  * Un pagamento senza data è del giorno della ricevuta. `tranne`: il pagamento a mano che diventa ricevuta, se è in contanti
  * i suoi soldi di quel giorno sono già nel previsto.
  */
