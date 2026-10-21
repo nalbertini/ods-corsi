@@ -310,21 +310,25 @@ console.log('\n9b. le ricevute')
   ok('la seguente va avanti da sé', (await s.emettiRicevuta({ ...base, voci: [voce(36800, 18000)] })).numero, 117)
   let no = ''
   await s.emettiRicevuta({ ...base, numero: 116, voci: [voce(100, 0)] }).catch((e) => (no = e.message))
-  ok('un numero già preso no', no.startsWith('La ricevuta numero 116 del 2026 c’è già'), true)
+  ok('il numero a mano in un anno che ha già le sue ricevute no', no, 'Il 2026 ha già le sue ricevute: lascia vuoto il numero, prende il primo libero')
+  no = ''
+  await s.emettiRicevuta({ ...base, data: '2026-09-27', voci: [voce(100, 100)] }).catch((e) => (no = e.message))
+  ok('una data nel futuro no', no, 'La data della ricevuta è nel futuro: si fa per quel che è già successo')
   no = ''
   await s.emettiRicevuta({ ...base, voci: [voce(100, 200)] }).catch((e) => (no = e.message))
   ok('pagato più del totale no', no, 'Si è pagato più del totale: controlla gli importi')
-  ok('a gennaio si riparte', (await s.emettiRicevuta({ ...base, data: '2027-01-10', voci: [voce(100, 100)] })).numero, 1)
+  // Un anno prima, che non ha ricevute: si parte da 1 (nel futuro non si può).
+  ok('un altro anno riparte da 1', (await s.emettiRicevuta({ ...base, data: '2025-01-10', voci: [voce(100, 100)] })).numero, 1)
   await s.annullaRicevuta(prima.id)
   const sue = await s.ricevute(chi.id)
-  ok('le sue, dalla più recente, anche l\'annullata', sue.map((r) => [r.numero, !!r.annullataIl]), [[1, false], [117, false], [116, true]])
+  ok('le sue, dalla più recente, anche l\'annullata', sue.map((r) => [r.numero, !!r.annullataIl]), [[117, false], [116, true], [1, false]])
   ok('il prossimo numero salta l\'annullata', await s.prossimoNumero(2026), 118)
   ok('i dati del socio ora vengono dall\'ultima ricevuta', (await s.intestatarioDi(chi.id)).cognome, chi.cognome)
   await s.salvaEnteRicevute({ ...ente, nome: 'Asd Nuova' })
   ok('l\'associazione cambiata', (await s.enteRicevute()).nome, 'Asd Nuova')
   ok('le ricevute nell\'esportazione', (await s.esporta(chi.id)).ricevute.length, 3)
   // Una ricevuta vecchia senza codice fiscale: quello scritto dopo in DATI ANAGRAFICI ci va lo stesso.
-  await s.emettiRicevuta({ ...base, data: '2027-01-11', intestatario: { nome: chi.nome, cognome: chi.cognome, indirizzo: 'via Vecchia 3' }, voci: [voce(100, 100)] })
+  await s.emettiRicevuta({ ...base, data: '2026-09-20', intestatario: { nome: chi.nome, cognome: chi.cognome, indirizzo: 'via Vecchia 3' }, voci: [voce(100, 100)] })
   await s.salvaAnagrafica(chi.id, { codiceFiscale: 'RSSMRA80A01L219X', indirizzo: 'via Altra 9' })
   const dopo = await s.intestatarioDi(chi.id)
   ok('il codice fiscale scritto dopo la ricevuta vecchia: c\'è', dopo.codiceFiscale, 'RSSMRA80A01L219X')
@@ -4287,57 +4291,57 @@ await sezione('la chiusura di cassa sul database (client finto): senza 60-chiusu
 // ---------------------------------------------------------------------------
 await sezione('la ricevuta una volta sola, in prova: la chiave del modulo', async () => {
   const [chi, altro] = await s.persone()
-  const voce = (pagato) => ({ descrizione: 'Annuale Lotta 3', quantita: 1, prezzo: 36800, pagamenti: [{ data: '2028-03-01', importo: pagato, metodo: 'Bonifico' }] })
-  const base = { data: '2028-03-01', personaId: chi.id, ente: await s.enteRicevute(), intestatario: { nome: chi.nome, cognome: chi.cognome }, anticipo: 0, voci: [voce(36800)] }
-  // Nel 2028, così i numeri partono da 1.
-  const del2028 = async () => (await s.ricevute()).filter((r) => r.anno === 2028).length
+  const voce = (pagato) => ({ descrizione: 'Annuale Lotta 3', quantita: 1, prezzo: 36800, pagamenti: [{ data: '2024-03-01', importo: pagato, metodo: 'Bonifico' }] })
+  const base = { data: '2024-03-01', personaId: chi.id, ente: await s.enteRicevute(), intestatario: { nome: chi.nome, cognome: chi.cognome }, anticipo: 0, voci: [voce(36800)] }
+  // Nel 2024, così i numeri partono da 1; il numero a mano nel 2023, che è vuoto (a mano solo in un anno senza ricevute).
+  const diProva = async () => (await s.ricevute()).filter((r) => r.anno === 2024 || r.anno === 2023).length
   const K = (n) => `dddddddd-0000-4000-8000-00000000000${n}`
   const prima = await s.emettiRicevuta({ ...base, chiave: K(1) })
   ok('la prima con la chiave: il numero 1', prima.numero, 1)
   const ancora = await s.emettiRicevuta({ ...base, chiave: K(1) })
   ok('la stessa chiave: torna la stessa ricevuta, col suo numero', [ancora.id, ancora.numero], [prima.id, 1])
-  ok('…e la ricevuta resta una', await del2028(), 1)
-  ok('la seguente senza chiave prende il numero dopo, nessuno consumato', (await s.emettiRicevuta({ ...base, data: '2028-03-02' })).numero, 2)
+  ok('…e la ricevuta resta una', await diProva(), 1)
+  ok('la seguente senza chiave prende il numero dopo, nessuno consumato', (await s.emettiRicevuta({ ...base, data: '2024-03-02' })).numero, 2)
 
-  const annullanda = await s.emettiRicevuta({ ...base, data: '2028-03-03', chiave: K(3) })
+  const annullanda = await s.emettiRicevuta({ ...base, data: '2024-03-03', chiave: K(3) })
   await s.annullaRicevuta(annullanda.id)
-  ok('la stessa chiave di una ricevuta annullata: no, e dice cosa fare', await errore(() => s.emettiRicevuta({ ...base, data: '2028-03-03', chiave: K(3) })),
-    'La ricevuta n. 3/2028 fatta da questo modulo è stata annullata: chiudi il modulo e riaprilo per farne un’altra')
-  ok('…e nessuna ricevuta in più', await del2028(), 3)
+  ok('la stessa chiave di una ricevuta annullata: no, e dice cosa fare', await errore(() => s.emettiRicevuta({ ...base, data: '2024-03-03', chiave: K(3) })),
+    'La ricevuta n. 3/2024 fatta da questo modulo è stata annullata: chiudi il modulo e riaprilo per farne un’altra')
+  ok('…e nessuna ricevuta in più', await diProva(), 3)
 
-  const aMano = await s.emettiRicevuta({ ...base, data: '2028-03-04', numero: 50, chiave: K(4) })
+  const aMano = await s.emettiRicevuta({ ...base, data: '2023-03-04', numero: 50, chiave: K(4) })
   ok('il numero a mano ripetuto con la stessa chiave: non «c’è già», torna quella',
-    await s.emettiRicevuta({ ...base, data: '2028-03-04', numero: 50, chiave: K(4) }).then((r) => r.id, (e) => e.message), aMano.id)
-  ok('…e la ricevuta resta una', await del2028(), 4)
+    await s.emettiRicevuta({ ...base, data: '2023-03-04', numero: 50, chiave: K(4) }).then((r) => r.id, (e) => e.message), aMano.id)
+  ok('…e la ricevuta resta una', await diProva(), 4)
 
   ok('la stessa chiave per un’altra persona: no, e dice cosa fare',
     await errore(() => s.emettiRicevuta({ ...base, personaId: altro.id, intestatario: { nome: altro.nome, cognome: altro.cognome }, chiave: K(1) })),
     'Questa ricevuta è già stata fatta per un’altra persona: chiudi il modulo e riaprilo')
-  ok('…e nessuna ricevuta in più', await del2028(), 4)
+  ok('…e nessuna ricevuta in più', await diProva(), 4)
 
-  const altriDati = await s.emettiRicevuta({ ...base, data: '2028-03-09', voci: [voce(18000)], chiave: K(1) })
-  ok('la stessa chiave con altri dati: torna quella fatta, com’è', [altriDati.id, altriDati.data, altriDati.pagato], [prima.id, '2028-03-01', 36800])
-  ok('…e nessuna ricevuta in più', await del2028(), 4)
+  const altriDati = await s.emettiRicevuta({ ...base, data: '2024-03-09', voci: [voce(18000)], chiave: K(1) })
+  ok('la stessa chiave con altri dati: torna quella fatta, com’è', [altriDati.id, altriDati.data, altriDati.pagato], [prima.id, '2024-03-01', 36800])
+  ok('…e nessuna ricevuta in più', await diProva(), 4)
 
-  await s.emettiRicevuta({ ...base, data: '2028-03-10' })
-  await s.emettiRicevuta({ ...base, data: '2028-03-10' })
-  ok('senza chiave, come prima: due volte, due ricevute', await del2028(), 6)
-  await s.emettiRicevuta({ ...base, data: '2028-03-10', chiave: '' })
-  await s.emettiRicevuta({ ...base, data: '2028-03-10', chiave: '' })
-  ok('con la chiave vuota, come senza: due ricevute', await del2028(), 8)
+  await s.emettiRicevuta({ ...base, data: '2024-03-10' })
+  await s.emettiRicevuta({ ...base, data: '2024-03-10' })
+  ok('senza chiave, come prima: due volte, due ricevute', await diProva(), 6)
+  await s.emettiRicevuta({ ...base, data: '2024-03-10', chiave: '' })
+  await s.emettiRicevuta({ ...base, data: '2024-03-10', chiave: '' })
+  ok('con la chiave vuota, come senza: due ricevute', await diProva(), 8)
 
-  ok('una chiave che non è un uuid: no, e dice cosa fare', await errore(() => s.emettiRicevuta({ ...base, data: '2028-03-11', chiave: 'non-un-uuid' })),
+  ok('una chiave che non è un uuid: no, e dice cosa fare', await errore(() => s.emettiRicevuta({ ...base, data: '2024-03-11', chiave: 'non-un-uuid' })),
     'La ricevuta non si capisce: ricarica la pagina')
-  ok('…e nessuna ricevuta in più', await del2028(), 8)
+  ok('…e nessuna ricevuta in più', await diProva(), 8)
 })
 
 await sezione('la ricevuta una volta sola, sul database (client finto): la chiave va alle due funzioni', async () => {
   const chiamate = []
-  const riga = { id: 'r1', anno: 2028, numero: 1, data: '2028-03-01', persona_id: 'p1', ente: {}, intestatario: { nome: 'Pietro', cognome: 'Chiave' }, voci: [], totale: 0, pagato: 0, anticipo: 0, note: null, creata_il: '2028-03-01T10:00:00Z', annullata_il: null }
+  const riga = { id: 'r1', anno: 2024, numero: 1, data: '2024-03-01', persona_id: 'p1', ente: {}, intestatario: { nome: 'Pietro', cognome: 'Chiave' }, voci: [], totale: 0, pagato: 0, anticipo: 0, note: null, creata_il: '2024-03-01T10:00:00Z', annullata_il: null }
   const db = m.creaSegreteriaSupabase({ from: () => { throw new Error('non deve leggere tabelle') }, rpc: async (f, x) => (chiamate.push([f, x]), { data: riga, error: null }) })
   const dati = {
-    data: '2028-03-01', personaId: 'p1', ente: { nome: 'Asd Il Centro Judo' }, intestatario: { nome: 'Pietro', cognome: 'Chiave' }, anticipo: 0,
-    voci: [{ descrizione: 'Annuale', quantita: 1, prezzo: 36800, pagamenti: [{ data: '2028-03-01', importo: 36800, metodo: 'Satispay' }] }],
+    data: '2024-03-01', personaId: 'p1', ente: { nome: 'Asd Il Centro Judo' }, intestatario: { nome: 'Pietro', cognome: 'Chiave' }, anticipo: 0,
+    voci: [{ descrizione: 'Annuale', quantita: 1, prezzo: 36800, pagamenti: [{ data: '2024-03-01', importo: 36800, metodo: 'Satispay' }] }],
     chiave: 'dddddddd-0000-4000-8000-000000000001',
   }
   await db.emettiRicevuta(dati).catch(() => {})

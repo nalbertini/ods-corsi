@@ -88,10 +88,10 @@ create or replace function codice_di(sql text) returns text language plpgsql as 
 begin execute sql; return 'nessuno';
 exception when others then return sqlstate;
 end $$;
--- Una ricevuta per una persona, dalla funzione vera.
+-- Una ricevuta per una persona, dalla funzione vera. Il numero lo prende da sé, in ordine: a mano solo in un anno senza ricevute (93).
 create or replace function ricevuta(persona text, nome text, cognome text, numero int) returns jsonb language sql as $$
   select jsonb_build_object(
-    'data', '2026-10-21', 'numero', numero, 'persona_id', persona,
+    'data', '2026-10-21', 'persona_id', persona,
     'ente', jsonb_build_object('nome', 'Asd Il Centro Judo'),
     'intestatario', jsonb_build_object('nome', nome, 'cognome', cognome, 'codiceFiscale', 'LBRMNL14H53L219X'),
     'voci', jsonb_build_array(jsonb_build_object('descrizione', 'QUOTA ASSOCIATIVA', 'quantita', 1, 'prezzo', 3000,

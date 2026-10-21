@@ -297,7 +297,11 @@ pagamento torna libero per quella giusta.
   **Satispay** se ha pagato col modulo). Il
   numero si lascia vuoto: prende da solo il primo libero dell'anno, e a
   gennaio si riparte da 1. Si scrive solo la prima volta, per continuare la
-  numerazione del programma di prima (se l'ultima era la 115, si scrive 116).
+  numerazione del programma di prima (se l'ultima era la 115, si scrive 116):
+  quando l'anno ha già le sue ricevute, un numero scritto a mano non passa
+  («Il 2026 ha già le sue ricevute: lascia vuoto il numero, prende il primo
+  libero»). La data non va oltre oggi, né quella della ricevuta né quella di un
+  pagamento: la ricevuta si fa per quel che è già successo.
 - **VOCI** — quello che si paga. Si parte già con la **quota associativa**
   (se in questa stagione non è ancora pagata) e l'**annuale** dei corsi che
   fa, coi prezzi del [listino](listino.md). Ogni voce ha la quantità, il prezzo, da

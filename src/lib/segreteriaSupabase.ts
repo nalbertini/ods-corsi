@@ -1376,7 +1376,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Da un pagamento a mano o da un Satispay: gli stessi soldi in una ricevuta sola, mai due fonti insieme.
       if (satispayId && pagamentoId) throw new Error('Una ricevuta si fa da un pagamento a mano o da un Satispay, non da tutti e due: chiudi il modulo e riaprilo')
       const dati = { ...r, intestatario: pulisciIntestatario(r.intestatario) }
-      const no = cosaNonVa(dati)
+      const no = cosaNonVa(dati, oggiARoma())
       if (no) throw new Error(no)
       const riga = ok(
         await db.rpc(pagamentoId ? 'emetti_ricevuta_da_pagamento' : satispayId ? 'emetti_ricevuta_satispay' : 'emetti_ricevuta', {
