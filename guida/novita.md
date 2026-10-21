@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.157.0 — 22 ottobre 2026
+
+### Novità
+
+- I corsi scaduti o non pagati in DA FARE, nel filtro CORSI SCADUTI e nel sollecito
+
 ## 0.156.10 — 22 ottobre 2026
 
 ### Risolto
