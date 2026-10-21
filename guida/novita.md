@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.147.0 — 21 ottobre 2026
+
+### Novità
+
+- Tutte le pagine del sito si scrivono e si pubblicano nel nuovo editor
+
 ## 0.146.0 — 21 ottobre 2026
 
 ### Novità
