@@ -7,7 +7,7 @@ import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, us
 import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
-import { DatiTecnico, Tariffe } from './DatiTecnico'
+import { DatiTecnico, LetteraIncarico, Tariffe } from './DatiTecnico'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
 
 /**
@@ -373,6 +373,7 @@ function Scheda({
 }) {
   const [modifica, setModifica] = useState<{ nome: string; cognome: string; email: string } | null>(null)
   const [pin, setPin] = useState<string | null>(null)
+  const [versione, setVersione] = useState(0)
   useBozza((!!modifica && personaCambiata(p, modifica)) || !!pin, `${p.nome} ${p.cognome}`.trim())
   // Il ruolo doppio si scrive solo se c'era o ci sarà: un database senza la
   // sua colonna salva lo stesso tutti gli altri (vedi `ruoloDaScrivere`).
@@ -563,8 +564,9 @@ function Scheda({
       {/* I dati per pagarlo solo a chi insegna: la segreteria che non insegna non ha compensi. */}
       {insegna(p) && (
         <>
-          <DatiTecnico d={d} p={p} fai={fai} />
-          <Tariffe d={d} p={p} fai={fai} />
+          <DatiTecnico d={d} p={p} fai={fai} onSalvato={() => setVersione((v) => v + 1)} />
+          <Tariffe d={d} p={p} fai={fai} onSalvato={() => setVersione((v) => v + 1)} />
+          <LetteraIncarico d={d} p={p} fai={fai} versione={versione} />
         </>
       )}
       {dellaSala && <PresenzeDelMese d={d} p={p} />}

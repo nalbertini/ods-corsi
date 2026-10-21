@@ -86,6 +86,29 @@ TARIFFA**: **Scrivi** → gli euro l'ora (15 o 15,50) → **OK**. **Cambia** per
 correggerla, **togli** per toglierla. Una tariffa scritta non sparisce se il
 corso passa a un altro: resta, con «non lo insegna più».
 
+## La lettera d'incarico
+
+Sotto le tariffe, **LETTERA D'INCARICO** della stagione (da settembre ad
+agosto). Si fa una volta l'anno, prima di pagare il tecnico.
+
+1. **Prepara la lettera**: sono già proposti il periodo (dal 1° settembre al
+   30 luglio) e la data (1° settembre). Per chi arriva dopo si cambia la data
+   di inizio. Si scelgono la **QUALIFICA** e i **GIORNI PREFERITI** (si possono
+   lasciare vuoti).
+2. Il compenso sulla lettera sono le **tariffe orarie** qui sopra, in cifre e
+   in lettere («€ 15,00 (quindici/00) l'ora per il corso Judo kids»). Per
+   cambiarle si cambiano nelle tariffe. Senza tariffe, o senza codice fiscale
+   e residenza, la lettera non si fa e l'app dice cosa manca.
+3. **Vedi il PDF** per controllarla, **Salva e stampa** per farla: si scarica
+   il PDF, da stampare e far firmare (il Presidente, il tecnico «per
+   accettazione» e l'approvazione dei punti 4 e 5).
+4. Quando il foglio firmato torna, si spunta **Firmata**.
+
+Il testo è quello della lettera della palestra, coi punti numerati di seguito.
+La lettera fatta non si cambia: **Correggi** ne fa una nuova, e quella di
+prima resta sotto, «Sostituita», e si può ancora stampare. Restano anche le
+lettere delle stagioni passate.
+
 ## Le presenze del mese, per i compensi
 
 In fondo alla scheda, **PRESENZE**: si sceglie il mese (gli ultimi dodici) e

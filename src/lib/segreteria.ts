@@ -4,6 +4,7 @@ import type { RuoloPersonale } from './ruoli'
 import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
 import type { IncassoPrima } from './pagatoPrima'
+import type { DatiLettera, Lettera } from './lettere'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
@@ -694,6 +695,12 @@ export interface DatiSegreteria {
   tariffe(personaId: string): Promise<Tariffa[]>
   /** Scrive la tariffa di un corso in centesimi l'ora; `null` la toglie. */
   salvaTariffa(personaId: string, corsoId: string, centesimi: number | null): Promise<void>
+  /** Le lettere d'incarico di un tecnico, dalla più nuova, anche le sostituite (`79-lettere-incarico.sql`). */
+  lettere(personaId: string): Promise<Lettera[]>
+  /** Fa la lettera; se ce n'è già una valida per la stagione, la sostituisce (`fai_lettera_incarico`). */
+  faiLettera(dati: DatiLettera): Promise<Lettera>
+  /** Il foglio firmato è tornato, o no: l'unica cosa che si cambia di una lettera fatta. */
+  segnaFirmata(letteraId: string, firmata: boolean): Promise<void>
   /** Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). */
   emettiRicevuta(r: DatiRicevuta, satispayId?: string): Promise<Ricevuta>
   /**

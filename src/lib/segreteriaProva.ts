@@ -1,5 +1,6 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
+import { cosaNonVaLettera, type Lettera } from './lettere'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cancellaFileIl, contattoNonValido, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
@@ -1037,6 +1038,32 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
+    async lettere(personaId) {
+      return (a().lettere ?? []).filter((x) => x.personaId === personaId).slice().reverse()
+    },
+
+    async faiLettera(dati) {
+      // Le stesse regole di `fai_lettera_incarico`.
+      const p = persona(dati.personaId)
+      // Nell'ordine dell'app col database: prima `cosaNonVaLettera`, poi la funzione.
+      const no = cosaNonVaLettera(dati)
+      if (no) throw new Error(no)
+      if (!(p.ruolo === 'istruttore' || p.ancheIstruttore)) throw new Error('La lettera d’incarico si fa a chi insegna')
+      const ora = new Date().toISOString()
+      const nuova: Lettera = { ...dati, giorni: dati.giorni.trim(), id: crypto.randomUUID(), firmata: false, sostituitaIl: null, creataIl: ora }
+      a().lettere = [
+        ...(a().lettere ?? []).map((x) => (x.personaId === dati.personaId && x.stagione === dati.stagione && !x.sostituitaIl ? { ...x, sostituitaIl: ora } : x)),
+        nuova,
+      ]
+      salva()
+      return nuova
+    },
+
+    async segnaFirmata(letteraId, firmata) {
+      a().lettere = (a().lettere ?? []).map((x) => (x.id === letteraId ? { ...x, firmata } : x))
+      salva()
+    },
+
     async emettiRicevuta(dati, satispayId) {
       // Come `emetti_ricevuta_satispay`, prima della ricevuta: un pagamento arrivato, una ricevuta sola, gli stessi soldi.
       if (satispayId) {
@@ -1739,6 +1766,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (a().iscrizioni.some((x) => x.personaId === personaId) || (a().ricevute ?? []).some((x) => x.personaId === personaId))
         throw new Error(`${nome} è anche allievo: non si elimina, gli si toglie l'accesso`)
       // Come il database: `pagamenti_diretti` non lascia cancellare chi ne ha.
+      // Come `on delete restrict` di `lettere_incarico`, che `elimina_istruttore` dice così.
+      if ((a().lettere ?? []).some((x) => x.personaId === personaId)) throw new Error(`${nome} ha già lavorato nei registri: non si elimina, gli si toglie l'accesso`)
       if ((a().pagamentiDiretti ?? []).some((x) => x.personaId === personaId))
         throw new Error(`${nome} ha dei pagamenti registrati: non si elimina, gli si toglie l'accesso`)
       a().persone = a().persone.filter((x) => x.id !== personaId)
@@ -2131,6 +2160,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         richieste_di_iscrizione: richiesteDi(personaId).map(({ id: _id, personaId: _p, ...r }) => r),
         certificato_e_pagamento: { certificato_scade: p.certificato?.scade ?? null, certificato_file: p.certificato?.file ?? null, documento_in_segreteria: !!p.documento, ...(p.pagamento ?? { stato: 'da_pagare' }) },
         ricevute: (a().ricevute ?? []).filter((r) => r.personaId === personaId).map(({ id: _id, personaId: _p, ...r }) => r),
+        lettere_incarico: (a().lettere ?? []).filter((l) => l.personaId === personaId).map(({ id: _id, personaId: _p, ...l }) => l),
         pagamenti_a_mano: (a().pagamentiDiretti ?? []).filter((x) => x.personaId === personaId).map(({ id: _id, personaId: _p, ...x }) => x),
         dati_anagrafici: a().anagrafiche?.[personaId] ?? null,
       }
