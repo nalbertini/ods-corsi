@@ -724,7 +724,7 @@ export interface DatiSegreteria {
   statistiche(da: Date, a: Date): Promise<Statistiche>
   /**
    * I numeri del sito (GoatCounter) fra due giorni `AAAA-MM-GG` di Roma, per IL SITO in STATISTICHE: dalla funzione
-   * `statistiche-sito`. Un guaio non è un'eccezione: il riquadro lo dice e gli altri restano.
+   * `conti-sito`. Un guaio non è un'eccezione: il riquadro lo dice e gli altri restano.
    */
   statisticheSito(da: string, a: string): Promise<LetturaSito>
   /** Da dove arrivano le richieste arrivate fra due giorni, raggruppate (`74-provenienza-richieste.sql`); `null` finché il file non c'è. */

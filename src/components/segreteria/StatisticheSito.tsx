@@ -12,7 +12,7 @@ const it = (n: number) => n.toLocaleString('it-IT')
 
 /**
  * IL SITO, in fondo a STATISTICHE: quanta gente guarda il sito e quante volte tocca Iscriviti, Chiama o Scrivici,
- * da GoatCounter (funzione `statistiche-sito`). Le regole (quando leggere, AGGIORNA, le frasi) stanno in
+ * da GoatCounter (funzione `conti-sito`). Le regole (quando leggere, AGGIORNA, le frasi) stanno in
  * sitoStatistiche.ts e sitoNumeri.ts; qui si mostra. Un guaio sta dentro il riquadro: gli altri riquadri restano.
  * Il corso scelto non conta. `a` è oggi: il periodo di STATISTICHE finisce sempre oggi.
  */

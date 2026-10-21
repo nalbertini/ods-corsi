@@ -2,7 +2,7 @@
 // I numeri del sito per IL SITO in STATISTICHE: da quello che risponde
 // GoatCounter ai conti che vede la segreteria.
 //
-// Questo file ha una copia identica in supabase/functions/statistiche-sito/
+// Questo file ha una copia identica in supabase/functions/conti-sito/
 // numeri.ts: la funzione gira su Deno, che src/lib non lo legge. Per questo qui
 // non si importa niente; `npm run prova:statistiche-sito` controlla che le due
 // copie siano uguali. Si cambia qui e si ricopia là.

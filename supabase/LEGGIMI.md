@@ -1033,7 +1033,7 @@ Senza la funzione l'app funziona uguale: il sito si aggiorna col giro a tempo.
 
 Il riquadro **IL SITO** di STATISTICHE legge le visite e i tocchi su
 Iscriviti, Chiama e Scrivici da GoatCounter con la funzione
-**`statistiche-sito`** (`functions/statistiche-sito/index.ts`). La chiave di
+**`conti-sito`** (`functions/conti-sito/index.ts`). La chiave di
 GoatCounter sta solo nella funzione, mai nell'app; all'app tornano solo i
 conti. La usa solo la segreteria (`ruolo = 'staff'`, attiva).
 
@@ -1047,13 +1047,16 @@ conti. La usa solo la segreteria (`ruolo = 'staff'`, attiva).
 3. Pubblica la funzione:
 
 ```sh
-supabase functions deploy statistiche-sito --project-ref <id-del-progetto>
+supabase functions deploy conti-sito --project-ref <id-del-progetto>
 ```
 
 o dal pannello, **Edge Functions → Deploy a new function**, col nome
-`statistiche-sito` e i due file della cartella (`index.ts` e `numeri.ts`).
+`conti-sito` e i due file della cartella (`index.ts` e `numeri.ts`).
 `numeri.ts` è una copia di `src/lib/sitoNumeri.ts`: si cambia là e si
 ricopia (`npm run prova:statistiche-sito` controlla che siano uguali).
+Il nome non dice «statistiche»: i filtri contro il tracciamento dei browser
+bloccano gli indirizzi che lo contengono, e il riquadro restava vuoto.
+`statistiche-sito`, il nome di prima, si può cancellare dal pannello.
 
 Senza la funzione il riquadro dice «Il contatore non è ancora acceso»;
 senza la chiave «Manca la chiave del contatore»; con una chiave scaduta o

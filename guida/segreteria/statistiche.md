@@ -105,7 +105,7 @@ Aggiorna; se dice «L'app non ti riconosce», esci e rientra); gli altri riquadr
 restano. Se per qualche tocco il contatore dà solo il totale, il riquadro lo
 spartisce sui mesi come le visite e dice che è una stima. Non vanno nel CSV.
 
-Col database vero il riquadro vuole la funzione `statistiche-sito` pubblicata
+Col database vero il riquadro vuole la funzione `conti-sito` pubblicata
 su Supabase, con la chiave di GoatCounter (vedi `supabase/LEGGIMI.md`, «I
 numeri del sito»): finché manca, dice «Il contatore non è ancora acceso». In
 prova i numeri sono inventati, sempre gli stessi.

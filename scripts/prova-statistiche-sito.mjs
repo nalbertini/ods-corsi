@@ -4,9 +4,9 @@
 //   node scripts/prova-statistiche-sito.mjs
 //
 // src/lib/sitoNumeri.ts tiene le regole che servono alla funzione
-// `statistiche-sito` (giorni di Roma in UTC, mese per mese, pagine e
+// `conti-sito` (giorni di Roma in UTC, mese per mese, pagine e
 // provenienze); la funzione ne ha una copia identica in
-// supabase/functions/statistiche-sito/numeri.ts, perché Deno non legge src/lib.
+// supabase/functions/conti-sito/numeri.ts, perché Deno non legge src/lib.
 // src/lib/sitoStatistiche.ts tiene quelle dell'app: memoria di 10 minuti,
 // AGGIORNA una volta al minuto, «si conta dal», le frasi d'errore e i numeri
 // della modalità prova.
@@ -179,12 +179,12 @@ ok('… anche i clic', prova(() => N.riassumi({ stats: [giorno('2027-01-05', 20)
 ok('quali voci escludere alla pagina dopo', prova(() => N.giaViste([pag1])), '1,2')
 ok('se ce ne sono ancora', prova(() => [N.ancoraVoci(pag1), N.ancoraVoci(pag2)]), [true, false])
 
-console.log('La funzione statistiche-sito')
+console.log('La funzione conti-sito')
 const lib = leggi('src/lib/sitoNumeri.ts')
-const copia = leggi('supabase/functions/statistiche-sito/numeri.ts')
+const copia = leggi('supabase/functions/conti-sito/numeri.ts')
 ok('la funzione tiene una copia identica delle regole', lib !== '' && copia === lib, true)
 ok('le regole non importano niente (Deno le legge così come sono)', /^\s*import\s/m.test(lib), false)
-const fn = leggi('supabase/functions/statistiche-sito/index.ts')
+const fn = leggi('supabase/functions/conti-sito/index.ts')
 ok('usa la copia', fn.includes("from './numeri.ts'"), true)
 ok('il segreto è GOATCOUNTER_CHIAVE', fn.includes("Deno.env.get('GOATCOUNTER_CHIAVE')"), true)
 ok('il sito è fisso: ods', fn.includes('https://ods.goatcounter.com/api/v0'), true)
@@ -280,7 +280,7 @@ console.log('L’app')
 const seg = leggi('src/lib/segreteria.ts')
 ok('DatiSegreteria ha statisticheSito', /statisticheSito\(da: string, a: string\): Promise<LetturaSito>/.test(seg), true)
 const sup = leggi('src/lib/segreteriaSupabase.ts')
-ok('Supabase chiama la funzione statistiche-sito', sup.includes("functions.invoke('statistiche-sito'"), true)
+ok('Supabase chiama la funzione conti-sito (un nome che i filtri contro il tracciamento non bloccano)', sup.includes("functions.invoke('conti-sito'"), true)
 ok('la prova usa i numeri inventati', leggi('src/lib/segreteriaProva.ts').includes('numeriDiProva('), true)
 const stat = leggi('src/components/segreteria/Statistiche.tsx')
 const iSito = stat.indexOf('<StatisticheSito')
