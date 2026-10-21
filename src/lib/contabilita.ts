@@ -265,12 +265,33 @@ export function cosaNonVaAnnulloMovimento(riga: RigaMovimento, chiusure: Chiusur
 
 /**
  * Annullare un incasso in contanti di un giorno già chiuso lascia la chiusura «non più in regola»: l'avviso, da dire prima di farlo.
- * Si chiude solo la Cassa Contanti, quindi vale l'ultima chiusura attiva, qualunque cassa sia.
+ * `fino`: l'ultima chiusura attiva della Cassa Contanti (`contantiChiusiFino`, che legge anche la segreteria), o null.
  */
-export function avvisoCassaChiusa(pagamenti: Array<{ data: string; metodo: string }>, chiusure: ChiusuraCassa[]): string | null {
-  const fino = chiusure.filter((k) => !k.annullataIl).map((k) => k.data).sort().at(-1)
+export function avvisoCassaChiusa(pagamenti: Array<{ data: string; metodo: string }>, fino: string | null): string | null {
   if (!fino || !pagamenti.some((p) => p.data <= fino && cassaDelMetodo(p.metodo) === 'contanti')) return null
   return `Attenzione: la cassa contanti è chiusa fino al ${dataRicevuta(fino)} e questo incasso in contanti è di quei giorni: la chiusura non sarà più in regola e dovrai scrivere una rettifica.`
+}
+
+/** Il rifiuto dei contanti in un giorno già chiuso: lo stesso del pagamento a mano e di `emetti_ricevuta`. */
+export const MSG_CONTANTI_CHIUSI = 'Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura'
+
+/**
+ * I contanti di una ricevuta in un giorno già chiuso romperebbero la chiusura: come `fai_ricevuta` (92-ricevuta-cassa-chiusa.sql).
+ * Un pagamento senza data è del giorno della ricevuta. `tranne`: il pagamento a mano che diventa ricevuta, se è in contanti
+ * i suoi soldi di quel giorno sono già nel previsto.
+ */
+export function contantiInGiornoChiuso(
+  pagamenti: Array<{ data?: string; importo: number; metodo: string }>,
+  dataRicevuta: string,
+  fino: string | null,
+  tranne?: { data: string; metodo: string },
+): string | null {
+  const salvo = tranne && cassaDelMetodo(tranne.metodo) === 'contanti' ? tranne.data : null
+  const chiuso = (p: { data?: string; importo: number; metodo: string }) => {
+    const quando = p.data ?? dataRicevuta
+    return p.importo > 0 && cassaDelMetodo(p.metodo) === 'contanti' && quando !== salvo && !!fino && quando <= fino
+  }
+  return pagamenti.some(chiuso) ? MSG_CONTANTI_CHIUSI : null
 }
 
 /** Le voci «Rettifica» (entrata e uscita) che non ci sono ancora: servono a correggere un giorno chiuso. */
