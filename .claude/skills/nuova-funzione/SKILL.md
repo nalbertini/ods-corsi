@@ -45,9 +45,12 @@ una schermata, un file SQL), si fanno i passi che mancano, e si dice.
 zero: si copia `Pagina.dc.html` o `PaginaTelefono.dc.html` e si importano i
 componenti (vedi il README della libreria). Il canvas della funzione sta in
 `docs/design-canvas/<nome>/` e mostra com'è oggi (se la schermata esiste già)
-e la proposta, affiancati; `unico.mjs` lo mette, come pagina, nel canvas unico. Un componente che manca si aggiunge prima alla
+e la proposta. Un componente che manca si aggiunge prima alla
 libreria. Prima di mostrarlo: `node docs/design-canvas/ods-design-system/verifica.mjs`.
-Si pubblica il canvas unico (vedi sotto) e si dà il link all'utente.
+La proposta si pubblica in un **canvas suo**, un Artifact nuovo di tipo Design
+con solo le schermate della proposta e i componenti che importa: mai nel canvas
+unico, che con centinaia di schermate di altri lavori non si riesce a leggere
+(deciso dall'utente il 2026-10-21). Si dà il link di quel canvas.
 
 **Discussione (4).** Ogni giro di correzioni aggiorna il canvas, non resta a
 parole. Il design è approvato quando l'utente lo dice: le prove e il codice
@@ -62,7 +65,8 @@ veri. Se il costruito ha scartato qualcosa dell'approvato, vince il costruito.
 Poi `verifica.mjs` e si ripubblica il canvas unico. Il canvas della funzione
 resta come storia; quello che vale è la libreria.
 
-**Il canvas unico.** La libreria e tutte le sezioni stanno in un solo Artifact,
+**Il canvas unico.** Solo per la libreria e l'archivio di quel che è costruito,
+mai per una proposta in discussione. La libreria e tutte le sezioni stanno in un solo Artifact,
 le sezioni nella pagina Archivio, ordinate per area, per consultarle insieme. Lo costruisce
 `node docs/design-canvas/unico.mjs <cartella>` (una sezione nuova si aggiunge
 a `SEZIONI` nello script) e si pubblica sullo stesso Artifact di sempre, con
