@@ -200,8 +200,8 @@ const impaginazioneVecchia = (r) => /grid-area:\s*nota/.test(r.corpo) || r.selet
 // L'editor a pezzi non ha più i tre pannelli di Puck (parti, pagina, campi) ma la sua pagina e due schede: le regole sulla sua impaginazione di prima (`.sito-pezzi > div`, le classi interne di Puck) sono tolte di proposito.
 const pezziVecchio = (r) => r.selettori.some((x) => /^\.sito-pezzi > div$|^\.sito-pezzi \[class\*=/.test(x))
 // L'editor delle pagine ha l'aspetto di Puck: i suoi campi, le note e la riga del perché prendono i colori di Puck, non quelli dell'app, e i tasti `.sg-btn` lì dentro non ci sono più.
-// Il vecchio editor (EditorPezzi, EditorTesto, la colonna destra) è tolto: le sue regole (`.sito-due`, `.sito-barra*`, `.sito-pezzi*`, `.sito-pezzo*`, `.sito-colonn*`) con lui.
-const puckNativo = (r) => r.selettori.some((x) => /^\.sito-puck|^\.sito-(due|barra|tasto|sep|pezzi|pezzo|colonne|colonna)\b/.test(x))
+// Il vecchio editor (EditorPezzi, EditorTesto, la colonna destra) è tolto: le sue regole (`.sito-due`, `.sito-barra*`, `.sito-pezzi*`, `.sito-pezzo*`, `.sito-colonn*`, `.sito-testo*`) con lui.
+const puckNativo = (r) => r.selettori.some((x) => /^\.sito-puck|^\.sito-(due|barra|tasto|sep|pezzi|pezzo|colonne|colonna|testo)\b/.test(x))
 // La scheda accanto all'elenco (`.sg-due-colonne`, `.sg-torna`, e la soglia dei 1240 px) è tolta di proposito: i dettagli della segreteria si aprono in una finestra sopra l'elenco (`prova:scheda-finestra`). `.sg-lista` e `.sg-scheda` perdono la larghezza fissa e la posizione sticky fuori dalla finestra.
 const schedaAffiancata = (r) => r.selettori.some((x) => /^\.sg-due-colonne( > \.sg-scheda)?$|^\.sg-torna$|^\.sg-lista$|^\.sg-scheda$/.test(x))
 // Le schede dell'iscritto e del personale non vanno più su due colonne: `.sg-scheda-griglia` è tolta di proposito, sia la regola sia quella dei telefoni.
