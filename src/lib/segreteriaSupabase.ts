@@ -1,3 +1,4 @@
+import { indirizziDaSalvare } from './avvisoSegreteria'
 import { daSenzaIstruttore } from './ore'
 import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -181,6 +182,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/sito_pagine|sito_menu|sito_redirect|salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito/, MANCA_SITO],
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
   [/tessere/, 'Le tessere non sono ancora attive sul database: va lanciato 61-tessere.sql'],
+  [/avvisi_indirizzi/, 'Gli avvisi non sono ancora attivi sul database: va lanciato 84-avvisi-segreteria.sql'],
   [/non_doppioni/, 'Segnare due schede «non sono doppioni» non è ancora attivo sul database: va lanciato 33-non-doppioni.sql'],
   [/segnalazioni/, 'Le segnalazioni non sono ancora attive sul database: va lanciato 25-segnalazioni.sql'],
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
@@ -1690,6 +1692,25 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async salvaEnteRicevute(e) {
       ok(await db.from('impostazioni').update({ ricevute: e }).eq('id', true))
+    },
+
+    async avvisiIndirizzi() {
+      const r = await db.from('avvisi_indirizzi').select('a, cc').maybeSingle()
+      // Senza 84-avvisi-segreteria.sql la tabella non c'è: gli avvisi sono spenti.
+      if (r.error?.code === '42P01' || r.error?.code === 'PGRST205') return { a: null, cc: null }
+      const x = ok(r) as { a: string | null; cc: string | null } | null
+      return { a: x?.a ?? null, cc: x?.cc ?? null }
+    },
+
+    async salvaAvvisiIndirizzi(x) {
+      const nuovi = indirizziDaSalvare(x)
+      ok(await db.from('avvisi_indirizzi').update(nuovi).eq('id', true))
+    },
+
+    async avvisiNonMandatiOggi() {
+      const r = await db.rpc('avvisi_non_mandati_oggi')
+      if (r.error?.code === 'PGRST202' || r.error?.code === '42883') return 0
+      return (ok(r) as number | null) ?? 0
     },
 
     async listino() {

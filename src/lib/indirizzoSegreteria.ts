@@ -10,6 +10,7 @@
  *   #iscritti/nuovo           il modulo del nuovo iscritto
  *   #corsi/<id>
  *   #corsi/nuovo              il modulo del nuovo corso
+ *   #richieste/<id>           una richiesta online aperta: il link dell'avviso alla segreteria
  *   #settimana?dal=2026-09-28&sala=<id>&lezione=<id>&inizio=<ora>
  */
 
@@ -34,6 +35,8 @@ export interface Posto {
   /** Il lunedì della settimana in griglia, `AAAA-MM-GG`. */
   settimana?: string
   sala?: string
+  /** La richiesta online aperta dal link di un avviso per email. */
+  richiesta?: string
 }
 
 const DATA = /^\d{4}-\d{2}-\d{2}$/
@@ -69,6 +72,13 @@ export function leggiIndirizzo(hash: string, { prova }: { prova: boolean }): Pos
       return dafare
     }
   }
+  if (voce === 'richieste' && resto.length === 1 && resto[0]) {
+    try {
+      return { voce, richiesta: decodeURIComponent(resto[0]) }
+    } catch {
+      return dafare
+    }
+  }
   if (resto.length) return dafare
   if (voce !== 'settimana') return { voce }
   const q = new URLSearchParams(coda)
@@ -93,6 +103,7 @@ export function scriviIndirizzo(p: Posto): string {
   if (p.voce === 'iscritti' && p.persona) return `#iscritti/${encodeURIComponent(p.persona)}${p.daCorso ? `?corso=${encodeURIComponent(p.daCorso)}` : ''}`
   if (p.voce === 'corsi' && p.nuovo) return '#corsi/nuovo'
   if (p.voce === 'corsi' && p.corso) return `#corsi/${encodeURIComponent(p.corso)}`
+  if (p.voce === 'richieste' && p.richiesta) return `#richieste/${encodeURIComponent(p.richiesta)}`
   if (p.voce !== 'settimana') return `#${p.voce}`
   const q = new URLSearchParams()
   if (p.settimana) q.set('dal', p.settimana)

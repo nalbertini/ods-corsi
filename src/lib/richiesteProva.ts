@@ -205,7 +205,8 @@ export function creaRichiesteProva(): DatiRichieste {
         .flatMap((c) => c.ricorrenze.filter((x) => !x.al || x.al >= oggi).map((x) => ({ corsoId: c.id, giorno: x.giorno, ora: x.ora, durata: x.durata })))
     },
 
-    async invia({ pagamentoSatispay, ...dati }) {
+    // In prova nessun avviso parte: la chiave dell'invio non serve.
+    async invia({ pagamentoSatispay, invio: _invio, ...dati }) {
       const guaio = controlla(dati)
       if (guaio) throw new Error(guaio)
       const aperti = new Set(archivio.dati.corsi.filter((c) => c.attivo).map((c) => c.id))

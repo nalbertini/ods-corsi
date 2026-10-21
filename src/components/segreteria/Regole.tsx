@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, motivoAttivitaUsata, testoDateSalvate, type AttivitaSeg, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
 import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
+import { indirizzoValido } from '../../lib/avvisoSegreteria'
 import { Spunta } from '../Icons'
 import { aspettoInUso, useAspetto, type Aspetto } from '../../lib/aspetto'
 import { TELEFONO, useSchermo } from '../../lib/largo'
@@ -21,6 +22,7 @@ const GRUPPI = {
   'imp-stagione': 'La stagione',
   'imp-sale': 'Le sale e i tablet',
   'imp-ricevute': 'Le ricevute',
+  'imp-avvisi': 'Gli avvisi',
   'imp-importa': 'Importa da Excel',
   'imp-dati': 'Dati e privacy',
 } as const
@@ -256,6 +258,10 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
 
       <Gruppo id="imp-ricevute">
         <EnteRicevute d={d} />
+      </Gruppo>
+
+      <Gruppo id="imp-avvisi">
+        <AvvisiSegreteria d={d} />
       </Gruppo>
 
       <Gruppo id="imp-importa">
@@ -853,6 +859,72 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
         Drive. GitHub tiene le copie novanta giorni. Il file è cifrato: senza la password del backup non lo apre nessuno, quindi su Drive può stare anche
         in una cartella condivisa. La password va tenuta da parte, fuori da qui: per rimettere a posto una copia serve, insieme al file.
       </ComeFunziona>
+    </section>
+  )
+}
+
+/** A chi vanno le email di richieste e pagamenti: la prima vuota le spegne, la copia è facoltativa. */
+function AvvisiSegreteria({ d }: { d: DatiSegreteria }) {
+  const letti = useCarica(() => d.avvisiIndirizzi(), [d])
+  const { avviso, fai } = useAvviso()
+  const [b, setB] = useState<{ a: string; cc: string } | null>(null)
+  const ora = b ?? { a: letti.dato?.a ?? '', cc: letti.dato?.cc ?? '' }
+  useBozza(!!b && !!letti.dato && (b.a.trim() !== (letti.dato.a ?? '') || b.cc.trim() !== (letti.dato.cc ?? '')), 'Gli avvisi alla segreteria')
+  const guaio = (v: string) => (v.trim() ? indirizzoValido(v) : null)
+
+  const campo = (k: 'a' | 'cc', etichetta: string) => {
+    const g = guaio(ora[k])
+    return (
+      <Campo id={`av-${k}`} etichetta={etichetta} manca={!!g} nota={g ? { testo: g, guaio: true } : undefined}>
+        <input
+          id={`av-${k}`}
+          type="email"
+          className="sg-campo"
+          maxLength={254}
+          spellCheck={false}
+          aria-invalid={!!g}
+          aria-describedby={g ? `av-${k}-nota` : undefined}
+          value={ora[k]}
+          disabled={!letti.dato}
+          onChange={(x) => setB({ ...ora, [k]: x.target.value })}
+        />
+      </Campo>
+    )
+  }
+
+  return (
+    <section aria-label="Gli avvisi alla segreteria" className="sg-riquadro">
+      <span className="ob sg-riquadro-titolo">GLI AVVISI ALLA SEGRETERIA</span>
+      <span className="sg-sotto">Un’email quando arriva una richiesta online o un pagamento Satispay. Partono da info@officinedellosport.it. Senza la prima email: nessun avviso. La copia va a ogni avviso.</span>
+      {letti.guaio && <Guaio testo={letti.guaio} />}
+      {campo('a', 'EMAIL PER GLI AVVISI')}
+      {campo('cc', 'IN COPIA · FACOLTATIVA')}
+      {b && (
+        <div className="row" style={{ gap: 8 }}>
+          <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setB(null)}>
+            Lascia stare
+          </button>
+          <button
+            type="button"
+            className="sg-btn sg-btn-pieno grow"
+            disabled={!!guaio(b.a) || !!guaio(b.cc)}
+            onClick={() =>
+              void fai(
+                () => d.salvaAvvisiIndirizzi(b),
+                b.a.trim() ? 'Avvisi salvati' : 'Avvisi spenti',
+                async () => {
+                  await letti.ricarica()
+                  setB(null)
+                },
+              )
+            }
+          >
+            Salva
+          </button>
+        </div>
+      )}
+      <span className="sg-sotto">Al più 50 avvisi al giorno: le ricevute alle famiglie vengono prima. Quelli in più li conta RICHIESTE ONLINE.</span>
+      {avviso}
     </section>
   )
 }

@@ -1,3 +1,4 @@
+import { nuovoId } from './prove'
 import type { CorsoPerEta, CorsoRef, Listino } from './listino'
 import { corsiPerEta, etaDelListino, voceDelCorso } from './listino'
 import type { VoceCosto } from './costi'
@@ -1504,9 +1505,11 @@ async function mandaDavvero(d: DatiRichieste, daMandare: DaMandare[]): Promise<E
   // Le richieste arrivano separate: la segreteria le lega da questa riga.
   // Il nome come lo scrive `invia`: la segreteria lo ritrova uguale in elenco.
   const nome = (x: DatiRichiesta) => `${nomeProprio(x.nome)} ${nomeProprio(x.cognome)}`
+  // Lo stesso per tutte: la segreteria riceve un avviso solo per la famiglia.
+  const invio = nuovoId()
   const dati = daMandare.map(({ dati: x }, i) => {
-    if (daMandare.length < 2) return x
-    return { ...x, note: conIlLegame(x.note, daMandare.filter((_, j) => j !== i).map((y) => nome(y.dati))) }
+    if (daMandare.length < 2) return { ...x, invio }
+    return { ...x, invio, note: conIlLegame(x.note, daMandare.filter((_, j) => j !== i).map((y) => nome(y.dati))) }
   })
 
   const ids: string[] = []

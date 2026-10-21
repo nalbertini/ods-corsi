@@ -1,0 +1,11 @@
+{
+ "pages": [{ "id": "page-1", "name": "Avvisi alla segreteria · proposta" }],
+ "artboards": [
+  { "file": "Mail.dc.html", "title": "Le email che arrivano alla segreteria", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Impostazioni.dc.html", "title": "IMPOSTAZIONI: l'indirizzo degli avvisi", "x": 0, "y": 1700, "page": "page-1" },
+  { "file": "Richieste.dc.html", "title": "RICHIESTE ONLINE: oltre il tetto", "x": 1560, "y": 1700, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1280, "text": "Un'email alla segreteria quando arriva una richiesta o un pagamento Satispay" }
+ ]
+}

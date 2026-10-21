@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- IMPOSTAZIONI › LE RICEVUTE (Regole.tsx, gruppo imp-ricevute; EnteRicevute di Ricevute.tsx righe 842-890). Cornice da PaginaSito.dc.html. Oggi: solo CHI FA LE RICEVUTE (accorciato). Proposta: il riquadro GLI AVVISI ALLA SEGRETERIA sotto, stesso .sg-riquadro, un Campo e il salva come in EnteRicevute. Si aggiunge un gruppo GLI AVVISI dopo LE RICEVUTE, con la sua voce nell indice. -->
+<div style="display: flex; width: 1440px; min-height: 1100px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="IMPOSTAZIONI" numeri="RICHIESTE ONLINE:3" nome="Marco Rossi" ruolo="Segreteria" altezza="1100px" hint-size="240px,1100px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">IMPOSTAZIONI</h1>
+      <span style="font-size: 14px; color: #46606f">Le scelte che spettano alla palestra, non al programma.</span>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap">
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Questo schermo" hint-size="140px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="La stagione" hint-size="120px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Le sale e i tablet" hint-size="160px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Le ricevute" hint-size="120px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Gli avvisi" hint-size="110px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Importa da Excel" hint-size="150px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Dati e privacy" hint-size="130px,40px"></dc-import>
+    </div>
+    <div style="display: flex; gap: 36px; align-items: flex-start">
+      <div style="display: flex; flex-direction: column; gap: 10px; width: 520px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · IL GRUPPO NUOVO, DOPO LE RICEVUTE</span>
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.04em">GLI AVVISI</h2>
+        <section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #ffffff; border-radius: 6px">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f">GLI AVVISI ALLA SEGRETERIA</span>
+          <span style="font-size: 14px; line-height: 1.45; color: #46606f">Un’email quando arriva una richiesta online o un pagamento Satispay. Partono da info@officinedellosport.it. Senza la prima email: nessun avviso. La copia va a ogni avviso.</span>
+          <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="EMAIL PER GLI AVVISI" valore="segreteria@officinedellosport.it" hint-size="100%,72px"></dc-import>
+          <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="IN COPIA · FACOLTATIVA" valore="asdilcentrojudo@gmail.com" hint-size="100%,72px"></dc-import>
+          <div style="display: flex; gap: 8px">
+            <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Lascia stare" variante="linea" hint-size="200px,48px"></dc-import>
+            <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Salva" variante="pieno" hint-size="200px,48px"></dc-import>
+          </div>
+          <span style="font-size: 14px; line-height: 1.45; color: #46606f">Al più 50 avvisi al giorno: le ricevute alle famiglie vengono prima. Quelli in più li conta RICHIESTE ONLINE.</span>
+        </section>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; width: 520px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · L’INDIRIZZO NON È UN’EMAIL</span>
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.04em">GLI AVVISI</h2>
+        <section style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #ffffff; border-radius: 6px">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #46606f">GLI AVVISI ALLA SEGRETERIA</span>
+          <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="EMAIL PER GLI AVVISI" valore="segreteria@officinedellosport" nota="Manca qualcosa dopo la chiocciola: controlla l’indirizzo." hint-size="100%,96px"></dc-import>
+          <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="IN COPIA · FACOLTATIVA" valore="asdilcentrojudo@gmail.com" hint-size="100%,72px"></dc-import>
+          <div style="display: flex; gap: 8px">
+            <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Lascia stare" variante="linea" hint-size="200px,48px"></dc-import>
+            <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Salva" variante="pieno" disabled="{{ true }}" hint-size="200px,48px"></dc-import>
+          </div>
+        </section>
+        <span style="font-size: 14px; line-height: 1.45; color: #46606f">Solo la segreteria vede e cambia l’indirizzo; l’amministrazione no.</span>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
