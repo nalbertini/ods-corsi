@@ -276,6 +276,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'sito_pagine_pubbliche')),
   ('53-codice-fiscale-stesso-nome.sql', 'accogliere aggancia dal codice fiscale solo chi ha lo stesso nome',
     exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%lower(p.cognome) = lower(r.cognome)%')),
+  ('90-omonimi-codice-fiscale.sql', 'accogliere non aggancia l''omonimo che ha già un altro codice fiscale',
+    exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%a.codice_fiscale <> r.codice_fiscale%')),
   ('54-pagamenti-diretti.sql', 'i pagamenti fatti a mano, senza ricevuta',
     to_regclass('public.pagamenti_diretti') is not null
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'registra_pagamento_diretto')
