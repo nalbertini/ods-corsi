@@ -25,6 +25,7 @@ type Props = {
   foto: { src: string; alt: string }
   colonne: { colonne: Array<{ html: Testo }> }
   iscriviti: { titolo: string; frase: string }
+  istruttore: { nome: string; cognome: string; corsi: string; src: string; alt: string; pagina: string }
 }
 type Radice = { titolo: string; descrizione: string }
 
@@ -131,6 +132,20 @@ function configura(d: DatiSegreteria): Config<Props, Radice> {
         permissions: { duplicate: false, drag: false },
         // Sicuro: `invito` mette titolo e frase con le entità, il resto è fisso.
         render: ({ titolo, frase }) => <div dangerouslySetInnerHTML={{ __html: invito({ titolo, frase }, true) }} />,
+      },
+      // Le parti della pagina Istruttori aperte qui restano intere; la pagina della scheda si sceglie nell'editor di oggi.
+      istruttore: {
+        label: 'Istruttore',
+        fields: {
+          src: foto.src,
+          alt: { type: 'text', label: 'Cosa si vede (vuoto = «Ritratto di Nome Cognome»)' },
+          nome: { type: 'text', label: 'Nome' },
+          cognome: { type: 'text', label: 'Cognome' },
+          corsi: { type: 'text', label: 'Corsi (separati da una virgola)' },
+          pagina: { type: 'text', label: 'La sua pagina (l’indirizzo, es. fabio-berta)' },
+        },
+        defaultProps: { nome: '', cognome: '', corsi: '', src: '', alt: '', pagina: '' },
+        render: ({ id, nome, cognome, corsi, src, alt, pagina }) => <Html v={pezziInHtml({ content: [{ type: 'istruttore', props: { id, nome, cognome, corsi, src, alt, pagina } }] })} />,
       },
     },
   }
