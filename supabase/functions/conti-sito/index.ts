@@ -22,7 +22,8 @@
 //
 // numeri.ts è una copia di src/lib/sitoNumeri.ts (Deno non legge src/lib):
 // si cambia là e si ricopia qui; `npm run prova:statistiche-sito` controlla.
-// Si pubblica con `supabase functions deploy statistiche-sito` (vedi `LEGGIMI.md`).
+// Si pubblica con `supabase functions deploy conti-sito` (vedi `LEGGIMI.md`). Il nome non dice «statistiche»:
+// i filtri contro il tracciamento dei browser bloccano gli indirizzi che lo contengono, e il riquadro restava vuoto.
 // ---------------------------------------------------------------------------
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { ancoraVoci, giaViste, giornoValido, intervalloSito, riassumi } from './numeri.ts'

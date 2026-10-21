@@ -3,7 +3,7 @@
 // «si conta dal», le frasi d'errore e i numeri della modalità prova.
 //
 // I conti di quello che risponde GoatCounter stanno in sitoNumeri.ts, che la
-// funzione `statistiche-sito` usa uguale.
+// funzione `conti-sito` usa uguale.
 // ---------------------------------------------------------------------------
 import { SITO_DAL, mesiDelPeriodo, primoGiorno } from './sitoNumeri'
 import type { NumeriSito } from './sitoNumeri'

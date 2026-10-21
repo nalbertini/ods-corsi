@@ -1527,7 +1527,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async statisticheSito(da, a) {
-      const { data, error } = await db.functions.invoke('statistiche-sito', { body: { da, a } })
+      const { data, error } = await db.functions.invoke('conti-sito', { body: { da, a } })
       if (!error) {
         // `as`: il corpo è quello della nostra funzione, fatto da riassumi() di sitoNumeri.ts.
         const numeri = (data as { numeri?: NumeriSito } | null)?.numeri
