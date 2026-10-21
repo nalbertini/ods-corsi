@@ -1,5 +1,6 @@
 import type { PDFFont, PDFPage } from 'pdf-lib'
 import { scrivibileCon } from './firma'
+import { cartaIntestata, SU_CARTA } from './cartaPdf'
 import { nomeFileLettera, testoLettera, type DatiLettera } from './lettere'
 
 /**
@@ -21,8 +22,8 @@ const RIGA = 13.5
  * e sopra la riga «pagina n di N», che sta sopra il piede (fino a 68 punti dal fondo).
  * Se la carta di `fogliModuli.ts` cambia misure, la prova (prova-lettere.mjs, 6 bis) se ne accorge.
  */
-const INIZIO = 112
-const FONDO = PAGINA.h - 92
+const INIZIO = SU_CARTA.inizio
+const FONDO = PAGINA.h - SU_CARTA.sotto
 
 /** Le righe di un testo che sta in `largo` punti, a capo fra le parole. */
 export function aCapo(testo: string, font: PDFFont, corpo: number, largo: number): string[] {
@@ -116,18 +117,6 @@ export async function letteraPdf(l: DatiLettera, carta: Uint8Array): Promise<Uin
       p.drawText(testo, { x: PAGINA.w - MARGINE - font.widthOfTextAtSize(testo, 7.5), y: 76, size: 7.5, font, color: grigio })
     })
   return pdf.save()
-}
-
-/**
- * La carta intestata di public/moduli. Senza, la lettera non esce: meglio un avviso che una lettera
- * senza intestazione. Anche una risposta che non è un PDF (la pagina di un wifi, un proxy) è «non arrivata».
- */
-export async function cartaIntestata(scarica: () => Promise<Pick<Response, 'ok' | 'arrayBuffer'>> = () => fetch('moduli/carta-intestata.pdf')): Promise<Uint8Array> {
-  const byte = await scarica()
-    .then(async (r) => (r.ok ? new Uint8Array(await r.arrayBuffer()) : null))
-    .catch(() => null)
-  if (!byte || new TextDecoder().decode(byte.subarray(0, 5)) !== '%PDF-') throw new Error('La carta intestata non si scarica: controlla la connessione e riprova.')
-  return byte
 }
 
 /** Scarica il PDF col nome che dice di chi, di che stagione e di che giorno è (`nomeFileLettera`). */

@@ -8,12 +8,13 @@
 // che va a una seconda pagina. Con una cartella ci lascia i PDF, da aprire e guardare.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
-import { writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { inflateSync } from 'node:zlib'
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export { righeDelPeriodo } from './src/lib/contabilita'; export { chiusuraCassaPdf, righePerPagina } from './src/lib/chiusuraCassaPdf'; export { ENTE_PREDEFINITO } from './src/lib/ricevute'; export { PDFDocument } from 'pdf-lib'",
+    contents: "export { righeDelPeriodo } from './src/lib/contabilita'; export { chiusuraCassaPdf, righePerPagina } from './src/lib/chiusuraCassaPdf'; export { ENTE_PREDEFINITO } from './src/lib/ricevute'; export { PDFDocument, PDFArray, PDFRawStream, PDFName, PDFDict } from 'pdf-lib'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -26,6 +27,66 @@ const { outputFiles } = await build({
 })
 const m = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 const cartella = process.argv[2]
+
+// Leggere una pagina come prova-lettere.mjs § 6 bis: solo il contenuto della pagina, non quello della carta
+// disegnata sopra. Le righe scritte (dove, che corpo, cosa), i Form disegnati con `Do` e il riquadro che
+// coprono sulla pagina (BBox per la Matrix del Form e per quella del momento), i punti delle linee, le curve.
+const leggiPagina = ({ PDFArray, PDFRawStream, PDFName, PDFDict }) => (pg) => {
+  const c = pg.node.Contents()
+  const contenuto = (c instanceof PDFArray ? c.asArray().map((r) => pg.doc.context.lookup(r)) : [c])
+    .filter((f) => f instanceof PDFRawStream)
+    .map((f) => {
+      try {
+        return inflateSync(f.contents).toString('latin1')
+      } catch {
+        return Buffer.from(f.contents).toString('latin1')
+      }
+    })
+    .join('\n')
+  const xo = pg.node.Resources()?.lookup(PDFName.of('XObject'), PDFDict)
+  const forma = (nome) => {
+    const o = xo?.lookup(PDFName.of(nome.slice(1)))
+    const d = o instanceof PDFRawStream ? o.dict : o
+    return String(d?.get(PDFName.of('Subtype'))) === '/Form' ? d : null
+  }
+  const numeri = (d, k) => d.lookup(PDFName.of(k), PDFArray)?.asArray().map((n) => n.asNumber())
+  const per = ([a, b, c, d, e, f], [A, B, C, D, E, F]) => [a * A + b * C, a * B + b * D, c * A + d * C, c * B + d * D, e * A + f * C + E, e * B + f * D + F]
+  const punto = ([a, b, c, d, e, f], x, y) => [a * x + c * y + e, b * x + d * y + f]
+  const scritte = []
+  const forme = []
+  const punti = []
+  let curve = 0
+  let ctm = [1, 0, 0, 1, 0, 0]
+  let tm = [0, 0]
+  let corpo = 0
+  let num = []
+  let prima = ''
+  const pila = []
+  for (const t of contenuto.split(/\s+/)) {
+    if (/^-?[\d.]+$/.test(t)) {
+      num.push(Number(t))
+      continue
+    }
+    if (t === 'q') pila.push(ctm)
+    else if (t === 'Q') ctm = pila.pop() ?? ctm
+    else if (t === 'cm') ctm = per(num.slice(-6), ctm)
+    else if (t === 'Tf') corpo = num.at(-1)
+    else if (t === 'Tm') tm = punto(ctm, num.at(-2), num.at(-1))
+    else if (t === 'Tj' && prima.startsWith('<')) scritte.push({ x: tm[0], y: tm[1], corpo, testo: Buffer.from(prima.slice(1, -1), 'hex').toString('latin1').replace(/\x92/g, '’') })
+    else if (t === 'Do' && forma(prima)) {
+      const d = forma(prima)
+      const m = per(numeri(d, 'Matrix') ?? [1, 0, 0, 1, 0, 0], ctm)
+      const [x0, y0, x1, y1] = numeri(d, 'BBox')
+      const angoli = [punto(m, x0, y0), punto(m, x1, y1), punto(m, x0, y1), punto(m, x1, y0)]
+      forme.push({ nome: prima, dopo: scritte.length, x0: Math.min(...angoli.map((a) => a[0])), x1: Math.max(...angoli.map((a) => a[0])), y0: Math.min(...angoli.map((a) => a[1])), y1: Math.max(...angoli.map((a) => a[1])) })
+    } else if (t === 'm' || t === 'l') punti.push(punto(ctm, num.at(-2), num.at(-1)))
+    else if (t === 'c') curve++
+    num = []
+    prima = t
+  }
+  const tratteggi = [...contenuto.matchAll(/\[([^\]]*)\]\s+-?[\d.]+\s+d\b/g)].filter((x) => x[1].trim()).length
+  return { contenuto, scritte, righe: scritte.map((s) => s.testo), forme, punti, curve, tratteggi }
+}
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -122,6 +183,48 @@ console.log('\n2. il PDF')
     writeFileSync(`${cartella}/chiusura.pdf`, normale)
     writeFileSync(`${cartella}/chiusura-annullata.pdf`, annullata)
     writeFileSync(`${cartella}/chiusura-tanti.pdf`, tanti)
+  }
+}
+
+console.log('\n3. il PDF sulla carta intestata')
+{
+  const leggi = leggiPagina(m)
+  const carta = new Uint8Array(readFileSync('public/moduli/carta-intestata.pdf'))
+  const ALTO = 841.89
+  const ente = { ...m.ENTE_PREDEFINITO, nome: 'Officine Dello Sport ASD' }
+  const mov = (n) => Array.from({ length: n }, (_, i) => riga(`m${String(i).padStart(3, '0')}`, i % 2 ? 'uscita' : 'entrata', '2026-09-10', 100 + i, 'c1'))
+  const fai = async (k, righe, su) => {
+    try {
+      const doc = await m.PDFDocument.load(await m.chiusuraCassaPdf({ ente, cassa: 'Cassa Contanti', chiusura: k, righe, ...(su ? { carta: su } : {}) }))
+      return { doc, pagine: doc.getPages().map(leggi) }
+    } catch (e) {
+      return { errore: e.message }
+    }
+  }
+  const impronta = (p) => p.errore ?? createHash('sha256').update(p.pagine.map((q) => q.contenuto).join('\n')).digest('hex').slice(0, 16)
+  const annullata = { ...chiusura, annullataIl: '2026-09-15T10:00:00Z', annullataDa: 'Chiara Bianchi' }
+  const casi = [['la chiusura di otto movimenti', chiusura, mov(8), 'bc2ef9a8e543eb94'], ['quella annullata', annullata, mov(8), '3b81df22353416fa'], ['quella di centoventi movimenti', chiusura, mov(120), '62dfab120e6a25ca']]
+
+  // Senza carta il foglio è quello di oggi: lo stesso contenuto, pagina per pagina, e niente disegnato sopra.
+  for (const [nome, k, righe, oggi] of casi) {
+    const p = await fai(k, righe)
+    ok(`${nome}, senza carta: nessun XObject Form`, p.errore ?? p.pagine.map((q) => q.forme.length), p.pagine?.map(() => 0))
+    ok(`${nome}, senza carta: lo stesso contenuto di oggi`, impronta(p), oggi)
+  }
+
+  for (const [nome, k, righe] of casi) {
+    const p = await fai(k, righe, carta)
+    ok(`${nome}, con la carta: si fa`, p.errore ?? 'fatto', 'fatto')
+    if (p.errore) continue
+    const ps = p.pagine
+    if (righe.length > 100) ok(`${nome}: più di una pagina`, ps.length > 1, true)
+    ok(`${nome}: ogni pagina ha la carta (un XObject Form)`, ps.map((q) => q.forme.length > 0), ps.map(() => true))
+    ok(`${nome}: la pagina non scrive più da sé nome, indirizzo e C.F. dell’ente: li dice la carta`, ps.map((q) => q.righe.filter((r) => r === ente.nome || r.includes(ente.indirizzo) || r.startsWith('C.F.'))), ps.map(() => []))
+    ok(`${nome}: il titolo «CHIUSURA DI CASSA» resta, sulla prima pagina`, ps[0].righe.includes('CHIUSURA DI CASSA'), true)
+    ok(`${nome}: le firme restano, sull’ultima`, ['Chi ha contato', 'Chi controlla'].filter((f) => !ps.at(-1).righe.includes(f)), [])
+    const fuori = ps.flatMap((q, i) => q.scritte.filter((s) => s.y - 0.2 * s.corpo < 68 || s.y + 0.75 * s.corpo > ALTO - 92).map((s) => `pagina ${i + 1}: «${s.testo}» a y=${s.y}`))
+    ok(`${nome}: nessuna riga nella testata (92 punti dall’alto) o nel piede (68 dal fondo) della carta vera`, fuori, [])
+    if (ps.length > 1) ok(`${nome}: «pagina n di ${ps.length}» su ogni pagina, sopra il piede`, ps.map((q, i) => q.righe.some((r) => r.includes(`pagina ${i + 1} di ${ps.length}`))), ps.map(() => true))
   }
 }
 

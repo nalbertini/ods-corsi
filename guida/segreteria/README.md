@@ -191,3 +191,19 @@ si perdono.», con **Torna a finire** (il tasto in evidenza: INVIO resta) o
 corso, tornando all'elenco da una scheda e col tasto Indietro o Avanti del
 browser: **Torna a finire** lascia tutto com'era. Una modifica rimessa
 com'era non conta. Chiudendo o ricaricando la pagina lo chiede il browser.
+
+## I fogli sulla carta intestata
+
+I PDF che l'app fa escono sulla **carta intestata** della palestra: mascotte,
+nome e simbolo in alto, sede, contatti e dati fiscali in fondo. Vale per la
+lettera d'incarico, le ricevute, le ricevute dei compensi, il bilancio, la
+chiusura di cassa e il report delle presenze degli istruttori. La ricevuta, che
+si taglia a metà, ha la testata in piccolo su tutte e due le copie. Con più
+fogli, ognuno dice «pagina 1 di 2». Anche un foglio vecchio, ristampato, esce
+sulla carta di oggi, con i dati di allora.
+
+Se la carta non si scarica (manca la connessione), il PDF non esce da solo:
+l'avviso lo dice, si riprova col tasto di prima, oppure **Senza carta**
+lo fa uscire lo stesso, senza intestazione. Facendo una ricevuta, il PDF in
+quel caso non si scarica e l'avviso dice di riscaricarlo dallo storico. La
+lettera d'incarico, invece, senza carta non esce.

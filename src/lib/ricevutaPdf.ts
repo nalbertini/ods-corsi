@@ -23,6 +23,8 @@ const DOVE_COPIE = [MARGINE, PAGINA.w - MARGINE - COPIA]
 
 /** Dove comincia e finisce lo spazio delle voci, e dove stanno i riquadri sotto. */
 const VOCI = { da: 252, a: 466 }
+/** Con la carta, sopra ogni copia la testata piccola: quel che sta sopra le voci scende di tanto, e le voci hanno meno posto. */
+const TESTATA = 52
 const TOTALI = { da: 472, a: 532 }
 const DICITURA = { da: 532, a: 578 }
 
@@ -33,12 +35,13 @@ const RIGA_PAGAMENTO = 11
 const altezza = (v: VoceRicevuta) => RIGA_VOCE + (v.dal || v.al ? RIGA_VOCE : 0) + (v.pagamenti.length ? RIGA_PAGAMENTO * (1 + v.pagamenti.length) : 0) + 5
 
 /** Le voci divise in pagine: quante ne stanno nello spazio, almeno una per pagina. */
-export function pagineDelleVoci(voci: VoceRicevuta[]): VoceRicevuta[][] {
+export function pagineDelleVoci(voci: VoceRicevuta[], conCarta = false): VoceRicevuta[][] {
   const pagine: VoceRicevuta[][] = [[]]
+  const spazio = VOCI.a - VOCI.da - (conCarta ? TESTATA : 0)
   let usato = 0
   for (const v of voci) {
     const h = altezza(v)
-    if (usato + h > VOCI.a - VOCI.da && pagine[pagine.length - 1].length) {
+    if (usato + h > spazio && pagine[pagine.length - 1].length) {
       pagine.push([])
       usato = 0
     }
@@ -50,16 +53,23 @@ export function pagineDelleVoci(voci: VoceRicevuta[]): VoceRicevuta[][] {
 
 const prezzo = (cent: number) => `€${euro(cent)}`
 
-export async function ricevutaPdf(r: Ricevuta): Promise<Uint8Array> {
+/**
+ * Con `carta` ogni copia ha in testa la testata della carta intestata, in piccolo (il foglio si taglia a metà):
+ * il riquadro dell'associazione resta, coi dati di IMPOSTAZIONI.
+ */
+export async function ricevutaPdf(r: Ricevuta, carta?: Uint8Array): Promise<Uint8Array> {
   const { PDFDocument, StandardFonts, rgb, degrees } = await import('pdf-lib')
   const pdf = await PDFDocument.create()
+  // La testata della carta (mascotte, nome, simbolo e filo), ritagliata dalla sua pagina A4.
+  const testata = carta ? await pdf.embedPage((await PDFDocument.load(carta)).getPage(0), { left: 36, right: 559.28, bottom: 841.89 - 94, top: 841.89 - 24 }) : undefined
+  const sotto = testata ? TESTATA : 0
   const font = await pdf.embedFont(StandardFonts.Helvetica)
   const grassetto = await pdf.embedFont(StandardFonts.HelveticaBold)
   const nero = rgb(0, 0, 0)
   const bianco = rgb(1, 1, 1)
   const scrivibile = scrivibileCon(font)
   const c = conti(r)
-  const pagine = pagineDelleVoci(r.voci)
+  const pagine = pagineDelleVoci(r.voci, !!testata)
 
   const y = (t: number) => PAGINA.h - t
 
@@ -95,19 +105,23 @@ export async function ricevutaPdf(r: Ricevuta): Promise<Uint8Array> {
   const linea = (p: PDFPage, x1: number, x2: number, t: number) => p.drawLine({ start: { x: x1, y: y(t) }, end: { x: x2, y: y(t) }, thickness: 0.75, color: nero })
 
   const copia = (p: PDFPage, x: number, voci: VoceRicevuta[], ultima: boolean, n: number) => {
-    // L'associazione, e a destra numero, data e tipo.
+    // La testata piccola, poi l'associazione, e a destra numero, data e tipo.
+    if (testata) {
+      const alta = (testata.height * COPIA) / testata.width
+      p.drawPage(testata, { x, y: y(14) - alta, width: COPIA, height: alta })
+    }
     const e = r.ente
-    riquadro(p, x, 20, 118)
+    riquadro(p, x, 20 + sotto, 118 + sotto)
     const destra = x + COPIA - 120
-    p.drawLine({ start: { x: destra, y: y(20) }, end: { x: destra, y: y(118) }, thickness: 0.75, color: nero })
-    testo(p, e.nome, x + 14, 46, { corpo: 12, f: grassetto, largo: destra - x - 24 })
-    testo(p, e.indirizzo, x + 14, 62, { corpo: 10, largo: destra - x - 24 })
-    testo(p, `${e.cap} ${e.comune}`, x + 14, 76, { corpo: 10, largo: destra - x - 24 })
-    testo(p, 'C.F.:', x + 14, 92, { corpo: 9, f: grassetto })
-    testo(p, e.codiceFiscale, x + 44, 92, { corpo: 10 })
+    p.drawLine({ start: { x: destra, y: y(20 + sotto) }, end: { x: destra, y: y(118 + sotto) }, thickness: 0.75, color: nero })
+    testo(p, e.nome, x + 14, 46 + sotto, { corpo: 12, f: grassetto, largo: destra - x - 24 })
+    testo(p, e.indirizzo, x + 14, 62 + sotto, { corpo: 10, largo: destra - x - 24 })
+    testo(p, `${e.cap} ${e.comune}`, x + 14, 76 + sotto, { corpo: 10, largo: destra - x - 24 })
+    testo(p, 'C.F.:', x + 14, 92 + sotto, { corpo: 9, f: grassetto })
+    testo(p, e.codiceFiscale, x + 44, 92 + sotto, { corpo: 10 })
     if (e.partitaIva) {
-      testo(p, 'P.IVA:', x + 14, 106, { corpo: 9, f: grassetto })
-      testo(p, e.partitaIva, x + 44, 106, { corpo: 10 })
+      testo(p, 'P.IVA:', x + 14, 106 + sotto, { corpo: 9, f: grassetto })
+      testo(p, e.partitaIva, x + 44, 106 + sotto, { corpo: 10 })
     }
     const celle: Array<[string, string]> = [
       ['Numero', pagine.length > 1 ? `${r.numero} · pag. ${n}/${pagine.length}` : String(r.numero)],
@@ -115,7 +129,7 @@ export async function ricevutaPdf(r: Ricevuta): Promise<Uint8Array> {
       ['Tipo Documento', 'Ricevuta Semplice'],
     ]
     celle.forEach(([etichetta, valore], i) => {
-      const t = 20 + i * 32.7
+      const t = 20 + sotto + i * 32.7
       if (i) linea(p, destra, x + COPIA, t)
       testo(p, etichetta, destra + 5, t + 11, { corpo: 7.5, f: grassetto })
       testo(p, valore, destra + 5, t + 24, { corpo: 9.5, largo: 110 })
@@ -123,34 +137,34 @@ export async function ricevutaPdf(r: Ricevuta): Promise<Uint8Array> {
 
     // Il socio.
     const s = r.intestatario
-    riquadro(p, x, 124, 222)
-    testo(p, 'Dati Identificativi del Socio', x + 5, 135, { corpo: 7.5, f: grassetto })
-    testo(p, `${s.cognome} ${s.nome}`.toUpperCase(), x + 10, 150, { corpo: 9.5, largo: COPIA - 20 })
-    testo(p, (s.indirizzo ?? '').toUpperCase(), x + 10, 164, { corpo: 9.5, largo: COPIA - 20 })
-    testo(p, s.cap, x + 10, 178, { corpo: 9.5 })
-    testo(p, s.comune, x + 50, 178, { corpo: 8, largo: 120 })
-    testo(p, s.provincia?.toUpperCase(), x + 180, 178, { corpo: 9.5 })
-    testo(p, 'Nato Il', x + 215, 178, { corpo: 8.5, f: grassetto })
-    testo(p, dataRicevuta(s.natoIl), x + 248, 178, { corpo: 9.5 })
-    testo(p, 'C.F.', x + 10, 192, { corpo: 8.5, f: grassetto })
-    testo(p, s.codiceFiscale, x + 36, 192, { corpo: 9.5, largo: 170 })
-    testo(p, 'P.IVA', x + 215, 192, { corpo: 8.5, f: grassetto })
-    testo(p, s.partitaIva, x + 248, 192, { corpo: 9.5, largo: COPIA - 258 })
-    testo(p, 'Genitore', x + 10, 206, { corpo: 8.5, f: grassetto })
-    testo(p, s.genitore?.toUpperCase(), x + 50, 206, { corpo: 9.5, largo: 160 })
-    testo(p, 'C.F.', x + 215, 206, { corpo: 8.5, f: grassetto })
-    testo(p, s.genitoreCodiceFiscale, x + 238, 206, { corpo: 9.5, largo: COPIA - 248 })
+    riquadro(p, x, 124 + sotto, 222 + sotto)
+    testo(p, 'Dati Identificativi del Socio', x + 5, 135 + sotto, { corpo: 7.5, f: grassetto })
+    testo(p, `${s.cognome} ${s.nome}`.toUpperCase(), x + 10, 150 + sotto, { corpo: 9.5, largo: COPIA - 20 })
+    testo(p, (s.indirizzo ?? '').toUpperCase(), x + 10, 164 + sotto, { corpo: 9.5, largo: COPIA - 20 })
+    testo(p, s.cap, x + 10, 178 + sotto, { corpo: 9.5 })
+    testo(p, s.comune, x + 50, 178 + sotto, { corpo: 8, largo: 120 })
+    testo(p, s.provincia?.toUpperCase(), x + 180, 178 + sotto, { corpo: 9.5 })
+    testo(p, 'Nato Il', x + 215, 178 + sotto, { corpo: 8.5, f: grassetto })
+    testo(p, dataRicevuta(s.natoIl), x + 248, 178 + sotto, { corpo: 9.5 })
+    testo(p, 'C.F.', x + 10, 192 + sotto, { corpo: 8.5, f: grassetto })
+    testo(p, s.codiceFiscale, x + 36, 192 + sotto, { corpo: 9.5, largo: 170 })
+    testo(p, 'P.IVA', x + 215, 192 + sotto, { corpo: 8.5, f: grassetto })
+    testo(p, s.partitaIva, x + 248, 192 + sotto, { corpo: 9.5, largo: COPIA - 258 })
+    testo(p, 'Genitore', x + 10, 206 + sotto, { corpo: 8.5, f: grassetto })
+    testo(p, s.genitore?.toUpperCase(), x + 50, 206 + sotto, { corpo: 9.5, largo: 160 })
+    testo(p, 'C.F.', x + 215, 206 + sotto, { corpo: 8.5, f: grassetto })
+    testo(p, s.genitoreCodiceFiscale, x + 238, 206 + sotto, { corpo: 9.5, largo: COPIA - 248 })
 
     // La barra nera delle voci.
     const q = x + COPIA - 100
     const pr = x + COPIA - 8
-    p.drawRectangle({ x, y: y(240), width: COPIA, height: 14, color: nero })
-    testo(p, 'Addebito', x + 4, 236, { corpo: 7.5, f: grassetto, colore: bianco })
-    testo(p, 'Q', q, 236, { corpo: 7.5, f: grassetto, colore: bianco })
-    testo(p, 'Prezzo', pr, 236, { corpo: 7.5, f: grassetto, colore: bianco, destra: true })
+    p.drawRectangle({ x, y: y(240 + sotto), width: COPIA, height: 14, color: nero })
+    testo(p, 'Addebito', x + 4, 236 + sotto, { corpo: 7.5, f: grassetto, colore: bianco })
+    testo(p, 'Q', q, 236 + sotto, { corpo: 7.5, f: grassetto, colore: bianco })
+    testo(p, 'Prezzo', pr, 236 + sotto, { corpo: 7.5, f: grassetto, colore: bianco, destra: true })
 
     // Le voci, ognuna col suo riepilogo dei pagamenti.
-    let t = VOCI.da
+    let t = VOCI.da + sotto
     for (const v of voci) {
       t += RIGA_VOCE - 3
       testo(p, v.descrizione, x + 10, t, { corpo: 9, largo: q - x - 20 })
@@ -214,8 +228,8 @@ export async function ricevutaPdf(r: Ricevuta): Promise<Uint8Array> {
 }
 
 /** Il PDF scaricato dal browser, col suo nome. */
-export async function scaricaRicevuta(r: Ricevuta, nome: string) {
-  const byte = await ricevutaPdf(r)
+export async function scaricaRicevuta(r: Ricevuta, nome: string, carta?: Uint8Array) {
+  const byte = await ricevutaPdf(r, carta)
   const url = URL.createObjectURL(new Blob([byte as BlobPart], { type: 'application/pdf' }))
   const a = document.createElement('a')
   a.href = url

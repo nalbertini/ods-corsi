@@ -4,7 +4,7 @@ import type { Voce } from '../../lib/indirizzoSegreteria'
 import { personaCambiata } from '../../lib/segreteria'
 import { daSpunte, insegna, nomeDelRuolo, puo, siElimina, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
 import { chiaveGiorno, dataLunga, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, suCarta, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
@@ -838,7 +838,7 @@ function PresenzeDelMese({ d, p, fai, versione, onVai }: { d: DatiSegreteria; p:
               <span key={r.id} className="row" style={{ gap: 12, flexWrap: 'wrap', fontSize: 13, color: 'var(--sec)' }}>
                 {[r.mese.slice(0, 7).split('-').reverse().join('/'), `${euro(r.importo)} €`, r.annullataIl ? 'annullata' : r.pagataIl ? `pagata il ${dataLunga(r.pagataIl)}` : 'da pagare', r.annullataIl ? '' : r.firmata ? 'firmata' : 'non firmata'].filter(Boolean).join(' · ')}
                 {/* Un'annullata non si ristampa: un foglio uguale a uno valido si potrebbe far firmare o pagare per sbaglio. */}
-                {!r.annullataIl && <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 13 }} onClick={() => void fai(async () => (await import('../../lib/ricevutaCompensoPdf')).scaricaRicevuteCompensi([r]))}>
+                {!r.annullataIl && <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 13 }} onClick={() => void fai(() => suCarta(fai, async (c) => (await import('../../lib/ricevutaCompensoPdf')).scaricaRicevuteCompensi([r], c)), 'PDF scaricato')}>
                   Ristampa
                 </button>}
               </span>

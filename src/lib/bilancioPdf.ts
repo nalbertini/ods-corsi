@@ -1,5 +1,6 @@
 import type { PDFFont, PDFPage } from 'pdf-lib'
 import { conSegno, differenza, fraseBilancio, nomeFileBilancio, type Bilancio } from './bilancio'
+import { numeraPagine } from './cartaPdf'
 import { scrivibileCon } from './firma'
 import { dataRicevuta, euro, type EnteRicevuta } from './ricevute'
 
@@ -22,6 +23,8 @@ export interface DatiFoglioBilancio {
   bilancio: Bilancio
   /** Il giorno di oggi: la data di calcolo che il foglio porta. */
   oggi: string
+  /** La carta intestata: con lei la testa dell'associazione la dà la carta. */
+  carta?: Uint8Array
 }
 
 export async function bilancioPdf(d: DatiFoglioBilancio): Promise<Uint8Array> {
@@ -51,10 +54,15 @@ export async function bilancioPdf(d: DatiFoglioBilancio): Promise<Uint8Array> {
   const importo = (c: number | null) => (c === null ? '—' : `${euro(c)} €`)
 
   const pagine: PDFPage[] = []
-  /** Una pagina nuova con la testa dell'associazione; rende dove si può cominciare a scrivere. */
+  const [foglio] = d.carta ? await pdf.embedPdf(d.carta) : []
+  /** Una pagina nuova con la testa dell'associazione (o la carta); rende dove si può cominciare a scrivere. */
   const nuovaPagina = () => {
     const p = pdf.addPage([PAGINA.w, PAGINA.h])
     pagine.push(p)
+    if (foglio) {
+      p.drawPage(foglio)
+      return { p, t: 128 }
+    }
     testo(p, ente.nome, MARGINE, 56, { corpo: 14, f: grassetto, largo: destra - MARGINE })
     testo(p, `${ente.indirizzo} · ${ente.cap} ${ente.comune}`.replace(/^ · /, ''), MARGINE, 71, { corpo: 9 })
     testo(p, `C.F. ${ente.codiceFiscale}${ente.partitaIva ? ` · P.IVA ${ente.partitaIva}` : ''}`, MARGINE, 83, { corpo: 9 })
@@ -135,7 +143,9 @@ export async function bilancioPdf(d: DatiFoglioBilancio): Promise<Uint8Array> {
   ultima.drawLine({ start: { x: destra - meta, y: y(firme) }, end: { x: destra, y: y(firme) }, thickness: 0.75, color: nero })
   testo(ultima, 'Chi ha preparato', MARGINE, firme + 12, { corpo: 8 })
   testo(ultima, 'Chi controlla', destra - meta, firme + 12, { corpo: 8 })
-  if (pagine.length > 1) pagine.forEach((q, i) => testo(q, `pag. ${i + 1}/${pagine.length}`, destra, 56, { corpo: 9, destra: true }))
+  // Sulla carta il numero di pagina sta in basso: in alto c'è la testata.
+  if (foglio) numeraPagine(pagine, font, '', rgb(0.3, 0.3, 0.3))
+  else if (pagine.length > 1) pagine.forEach((q, i) => testo(q, `pag. ${i + 1}/${pagine.length}`, destra, 56, { corpo: 9, destra: true }))
 
   pdf.setTitle(`Bilancio ${b.anno}${b.parziale ? ' (parziale)' : ''} · per cassa`)
   pdf.setAuthor(ente.nome)

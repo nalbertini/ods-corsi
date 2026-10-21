@@ -15,6 +15,7 @@
  *
  * Gli importi sono in centesimi.
  */
+import { NON_ARRIVA } from './cartaPdf'
 import { delMese, type MiaPresenza } from './ore'
 import { euro } from './ricevute'
 import { QUALIFICHE, stagioneDi, type Lettera, type TecnicoLettera } from './lettere'
@@ -316,6 +317,16 @@ export function datiPerRicevuta(
 export function esitoDelMese(fatte: number, saltati: string[]): { testo: string; guaio: boolean } {
   const quante = fatte === 0 ? 'Nessuna ricevuta fatta' : fatte === 1 ? 'Fatta 1 ricevuta' : `Fatte ${fatte} ricevute`
   return { testo: saltati.length ? `${quante}. Saltati: ${saltati.join('; ')}` : quante, guaio: fatte === 0 && saltati.length > 0 }
+}
+
+/**
+ * L'avviso dopo «Prepara e stampa»: l'esito e, se la carta non è arrivata e c'è qualcosa da stampare, anche questo,
+ * col tasto per stampare senza (`senzaCarta`). Le ricevute ci sono già: il PDF aspetta il tasto.
+ */
+export function avvisoDelMese(fatte: number, saltati: string[], conCarta: boolean): { testo: string; guaio: boolean; senzaCarta: boolean } {
+  const esito = esitoDelMese(fatte, saltati)
+  if (conCarta || !fatte) return { ...esito, senzaCarta: false }
+  return { testo: `${esito.testo}. ${NON_ARRIVA}`, guaio: true, senzaCarta: true }
 }
 
 const MESI_BREVI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']

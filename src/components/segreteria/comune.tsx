@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { NotaCampo, type Nota } from '../ds'
+import { GuaioConAzione } from '../../lib/cartaPdf'
 import { clicFuoriChiude } from '../../lib/schedaFinestra'
 import { dataLunga } from '../../lib/sala'
 
@@ -242,6 +243,9 @@ export interface AzioneAvviso {
   fa: () => unknown
 }
 
+// Il guaio con un tasto e la stampa sulla carta stanno in src/lib (cartaPdf.ts), con le loro prove.
+export { GuaioConAzione, stampaSenzaCarta, suCarta } from '../../lib/cartaPdf'
+
 /** Un avviso in basso a destra, che se ne va da solo: «Salvato», «Non si può». */
 export function useAvviso() {
   const [testo, setTesto] = useState<{ t: string; guaio: boolean; azione?: AzioneAvviso } | null>(null)
@@ -314,7 +318,7 @@ export function useAvviso() {
         await poi?.()
         return true
       } catch (e) {
-        avvisa(messaggio(e), true)
+        avvisa(messaggio(e), true, e instanceof GuaioConAzione ? e.azione : undefined)
         return false
       } finally {
         inCorso.current = false

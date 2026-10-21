@@ -113,7 +113,7 @@ const carica = async (contents, file) => {
 }
 const l = {
   ...(await carica("export * from './src/lib/lettere'", 'src/lib/lettere.ts')),
-  ...(await carica("export { letteraPdf, cartaIntestata } from './src/lib/letteraPdf'; export { PDFDocument, PDFName, PDFDict, PDFArray, PDFRawStream, StandardFonts } from 'pdf-lib'", 'src/lib/letteraPdf.ts')),
+  ...(await carica("export { letteraPdf } from './src/lib/letteraPdf'; export { cartaIntestata } from './src/lib/cartaPdf'; export { PDFDocument, PDFName, PDFDict, PDFArray, PDFRawStream, StandardFonts } from 'pdf-lib'", 'src/lib/letteraPdf.ts')),
 }
 const m = await importa(
   "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'",

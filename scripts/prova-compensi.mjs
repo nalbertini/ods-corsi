@@ -15,7 +15,8 @@
 // civici» non c'è più. Con una cartella ci lascia il PDF, da guardare.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
-import { writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { inflateSync } from 'node:zlib'
 
 // Il giorno della lezione è quello di Roma, anche su una macchina in UTC.
@@ -44,6 +45,66 @@ globalThis.localStorage = {
 }
 globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} }
 const cartella = process.argv[2]
+
+// Leggere una pagina come prova-lettere.mjs § 6 bis: solo il contenuto della pagina, non quello della carta
+// disegnata sopra. Le righe scritte (dove, che corpo, cosa), i Form disegnati con `Do` e il riquadro che
+// coprono sulla pagina (BBox per la Matrix del Form e per quella del momento), i punti delle linee, le curve.
+const leggiPagina = ({ PDFArray, PDFRawStream, PDFName, PDFDict }) => (pg) => {
+  const c = pg.node.Contents()
+  const contenuto = (c instanceof PDFArray ? c.asArray().map((r) => pg.doc.context.lookup(r)) : [c])
+    .filter((f) => f instanceof PDFRawStream)
+    .map((f) => {
+      try {
+        return inflateSync(f.contents).toString('latin1')
+      } catch {
+        return Buffer.from(f.contents).toString('latin1')
+      }
+    })
+    .join('\n')
+  const xo = pg.node.Resources()?.lookup(PDFName.of('XObject'), PDFDict)
+  const forma = (nome) => {
+    const o = xo?.lookup(PDFName.of(nome.slice(1)))
+    const d = o instanceof PDFRawStream ? o.dict : o
+    return String(d?.get(PDFName.of('Subtype'))) === '/Form' ? d : null
+  }
+  const numeri = (d, k) => d.lookup(PDFName.of(k), PDFArray)?.asArray().map((n) => n.asNumber())
+  const per = ([a, b, c, d, e, f], [A, B, C, D, E, F]) => [a * A + b * C, a * B + b * D, c * A + d * C, c * B + d * D, e * A + f * C + E, e * B + f * D + F]
+  const punto = ([a, b, c, d, e, f], x, y) => [a * x + c * y + e, b * x + d * y + f]
+  const scritte = []
+  const forme = []
+  const punti = []
+  let curve = 0
+  let ctm = [1, 0, 0, 1, 0, 0]
+  let tm = [0, 0]
+  let corpo = 0
+  let num = []
+  let prima = ''
+  const pila = []
+  for (const t of contenuto.split(/\s+/)) {
+    if (/^-?[\d.]+$/.test(t)) {
+      num.push(Number(t))
+      continue
+    }
+    if (t === 'q') pila.push(ctm)
+    else if (t === 'Q') ctm = pila.pop() ?? ctm
+    else if (t === 'cm') ctm = per(num.slice(-6), ctm)
+    else if (t === 'Tf') corpo = num.at(-1)
+    else if (t === 'Tm') tm = punto(ctm, num.at(-2), num.at(-1))
+    else if (t === 'Tj' && prima.startsWith('<')) scritte.push({ x: tm[0], y: tm[1], corpo, testo: Buffer.from(prima.slice(1, -1), 'hex').toString('latin1').replace(/\x92/g, '’') })
+    else if (t === 'Do' && forma(prima)) {
+      const d = forma(prima)
+      const m = per(numeri(d, 'Matrix') ?? [1, 0, 0, 1, 0, 0], ctm)
+      const [x0, y0, x1, y1] = numeri(d, 'BBox')
+      const angoli = [punto(m, x0, y0), punto(m, x1, y1), punto(m, x0, y1), punto(m, x1, y0)]
+      forme.push({ nome: prima, dopo: scritte.length, x0: Math.min(...angoli.map((a) => a[0])), x1: Math.max(...angoli.map((a) => a[0])), y0: Math.min(...angoli.map((a) => a[1])), y1: Math.max(...angoli.map((a) => a[1])) })
+    } else if (t === 'm' || t === 'l') punti.push(punto(ctm, num.at(-2), num.at(-1)))
+    else if (t === 'c') curve++
+    num = []
+    prima = t
+  }
+  const tratteggi = [...contenuto.matchAll(/\[([^\]]*)\]\s+-?[\d.]+\s+d\b/g)].filter((x) => x[1].trim()).length
+  return { contenuto, scritte, righe: scritte.map((s) => s.testo), forme, punti, curve, tratteggi }
+}
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -120,7 +181,7 @@ const carica = async (contents, file) => {
 const c = {
   ...(await carica("export * from './src/lib/compensi'", 'src/lib/compensi.ts')),
   ...(await carica(
-    "export { ricevutaCompensoPdf, ricevuteCompensiPdf } from './src/lib/ricevutaCompensoPdf'; export { PDFDocument } from 'pdf-lib'",
+    "export { ricevutaCompensoPdf, ricevuteCompensiPdf, scaricaRicevuteCompensi } from './src/lib/ricevutaCompensoPdf'; export { PDFDocument, PDFArray, PDFRawStream, PDFName, PDFDict } from 'pdf-lib'",
     'src/lib/ricevutaCompensoPdf.ts',
   )),
 }
@@ -502,6 +563,11 @@ console.log('\n4 bis. i dati della ricevuta, dalla scheda')
   ok('tutte fatte: un messaggio di riuscita', c.esitoDelMese(3, []), { testo: 'Fatte 3 ricevute', guaio: false })
   ok('una sola: al singolare', c.esitoDelMese(1, []), { testo: 'Fatta 1 ricevuta', guaio: false })
   ok('fatte e saltate: si dice, ma non è un errore', c.esitoDelMese(2, ['Rossi Marco (presenze da confermare)']), { testo: 'Fatte 2 ricevute. Saltati: Rossi Marco (presenze da confermare)', guaio: false })
+  // Senza carta il PDF aspetta il tasto: l'avviso dice insieme chi è saltato e che la carta non è arrivata.
+  const NON_ARRIVA = 'La carta intestata non si scarica: controlla la connessione e riprova.'
+  ok('senza carta, fatte e saltate: l’esito e la carta, col tasto', (typeof c.avvisoDelMese === 'function' ? c.avvisoDelMese(2, ['Rossi Marco (presenze da confermare)'], false) : 'avvisoDelMese non c’è'), { testo: `Fatte 2 ricevute. Saltati: Rossi Marco (presenze da confermare). ${NON_ARRIVA}`, guaio: true, senzaCarta: true })
+  ok('con la carta: l’esito di sempre, senza tasto', (typeof c.avvisoDelMese === 'function' ? c.avvisoDelMese(2, [], true) : 'avvisoDelMese non c’è'), { testo: 'Fatte 2 ricevute', guaio: false, senzaCarta: false })
+  ok('nessuna fatta: niente da stampare, niente tasto', (typeof c.avvisoDelMese === 'function' ? c.avvisoDelMese(0, ['Rossi Marco (x)'], false) : 'avvisoDelMese non c’è'), { testo: 'Nessuna ricevuta fatta. Saltati: Rossi Marco (x)', guaio: true, senzaCarta: false })
   ok('nessuna fatta e qualcuno saltato: è un guaio', c.esitoDelMese(0, ['Verdi Luca: mancano i dati per la ricevuta: IBAN']), { testo: 'Nessuna ricevuta fatta. Saltati: Verdi Luca: mancano i dati per la ricevuta: IBAN', guaio: true })
   ok('senza i dati è ferma, non da fare', c.statoCompenso({ conto: { ...conto, senzaTariffa: [] }, manca: 'Mancano i dati per la ricevuta: IBAN' }), 'senza-dati')
   ok('le presenze da confermare vengono prima dei dati', c.statoCompenso({ conto: { ...conto, daConfermare: 1 }, manca: 'x' }), 'da-confermare')
@@ -545,6 +611,77 @@ console.log('\n5. il PDF')
     ok('tutte A4 in verticale', tutte.doc.getPages().every((x) => Math.round(x.getSize().width) === 595 && Math.round(x.getSize().height) === 842), true)
     if (cartella) writeFileSync(`${cartella}/ricevute-compensi.pdf`, tutte.byte)
   }
+}
+
+console.log('\n5 bis. la ricevuta del compenso sulla carta intestata')
+{
+  const leggi = leggiPagina(c)
+  const carta = new Uint8Array(readFileSync('public/moduli/carta-intestata.pdf'))
+  const ALTO = 841.89
+  const fai = async (rs, su) => {
+    try {
+      const doc = await c.PDFDocument.load(await c.ricevuteCompensiPdf(rs, su))
+      return { doc, pagine: doc.getPages().map(leggi) }
+    } catch (e) {
+      return { errore: e.message }
+    }
+  }
+  const impronta = (p) => p.errore ?? createHash('sha256').update(p.pagine.map((q) => q.contenuto).join('\n')).digest('hex').slice(0, 16)
+  const altra = { ...ricevuta, id: 'r2', tecnico: { ...BALLABIO, nome: 'Mario', cognome: 'Rossi', codiceFiscale: 'RSSMRA80A01L219M' }, qualifica: null }
+
+  // Senza carta la ricevuta è quella di oggi: lo stesso contenuto, pagina per pagina, e niente disegnato sopra.
+  for (const [nome, rs, oggi] of [['quella di Ballabio', [ricevuta], '6bd394318f59f91b'], ['Ballabio e Rossi insieme', [ricevuta, altra], '7e294adbbe164245']]) {
+    const p = await fai(rs)
+    ok(`${nome}, senza carta: nessun XObject Form`, p.errore ?? p.pagine.map((q) => q.forme.length), p.pagine?.map(() => 0))
+    ok(`${nome}, senza carta: lo stesso contenuto di oggi`, impronta(p), oggi)
+  }
+
+  const una = await fai([ricevuta], carta)
+  const tutte = await fai([ricevuta, altra], carta)
+  ok('con la carta: si fa', una.errore ?? 'fatto', 'fatto')
+  ok('con la carta, Ballabio e Rossi insieme: si fa', tutte.errore ?? 'fatto', 'fatto')
+  if (!una.errore && !tutte.errore) {
+    const N = una.pagine.length
+    ok('la ricevuta di Ballabio va su più pagine', N > 1, true)
+    ok('ogni pagina ha la carta (un XObject Form)', tutte.pagine.map((q) => q.forme.length > 0), tutte.pagine.map(() => true))
+    ok('tutte A4 in verticale', tutte.doc.getPages().map((x) => Object.values(x.getSize()).map(Math.round)), tutte.pagine.map(() => [595, 842]))
+    const fuori = tutte.pagine.flatMap((q, i) => [
+      ...q.scritte.filter((s) => s.y - 0.2 * s.corpo < 68 || s.y + 0.75 * s.corpo > ALTO - 92).map((s) => `pagina ${i + 1}: «${s.testo}» a y=${s.y}`),
+      ...q.punti.filter(([, y]) => y < 68 || y > ALTO - 92).map(([, y]) => `pagina ${i + 1}: una linea a y=${y}`),
+    ])
+    ok('nessuna riga né linea nella testata (92 punti dall’alto) o nel piede (68 dal fondo)', fuori, [])
+    /** Le pagine di una ricevuta: ognuna dice «pagina n di N», dalla seconda anche di chi è, sulla stessa riga. */
+    const contate = (ps, chi) =>
+      ps.map((q, i) => {
+        const riga = q.righe.find((r) => piatto(r).includes(`pagina ${i + 1} di ${ps.length}`))
+        return !!riga && (i === 0 || piatto(riga).includes(chi))
+      })
+    ok(`Ballabio: «pagina n di ${N}» su ogni pagina, dalla seconda con «Diana Ballabio»`, contate(una.pagine, 'Diana Ballabio'), una.pagine.map(() => true))
+    ok('con più ricevute ogni ricevuta conta le sue pagine: prima Ballabio', contate(tutte.pagine.slice(0, N), 'Diana Ballabio'), una.pagine.map(() => true))
+    ok('…poi Rossi, da «pagina 1»', contate(tutte.pagine.slice(N), 'Mario Rossi'), tutte.pagine.slice(N).map(() => true))
+    // Firma e riga per firmare non si separano: «Luogo e data», «Firma del collaboratore» e «Collegno, …» sulla stessa pagina.
+    const dove = (ps, f) => ps.findIndex((q) => q.righe.some((r) => r.startsWith(f)))
+    ok('firma, luogo e data sulla stessa pagina', ['Luogo e data', 'Firma del collaboratore', 'Collegno, 21/10/2026'].map((f) => dove(una.pagine, f) >= 0 && dove(una.pagine, f) === dove(una.pagine, 'Firma del collaboratore')), [true, true, true])
+    const tutto = piatto(una.pagine.flatMap((q) => q.righe).join('\n'))
+    ok('il testo della ricevuta c’è lo stesso', ['BLLDNI86H61H355W', 'IT60X0542811101000000123456', 'RICHIEDE', 'LIQUIDAZIONE DEI COMPENSI A COLLABORATORI SPORTIVI', 'NETTO A PAGARE'].filter((f) => !tutto.includes(f)), [])
+  }
+  // Lo scaricamento dal browser, finto: il Blob che si scaricherebbe.
+  const scaricato = async (f) => {
+    const prima = { document: globalThis.document, crea: URL.createObjectURL, revoca: URL.revokeObjectURL }
+    let blob
+    globalThis.document = { createElement: () => ({ click() {}, remove() {} }), body: { appendChild() {} } }
+    URL.createObjectURL = (b) => ((blob = b), 'blob:prova')
+    URL.revokeObjectURL = () => {}
+    try {
+      await f()
+    } finally {
+      globalThis.document = prima.document
+      URL.createObjectURL = prima.crea
+      URL.revokeObjectURL = prima.revoca
+    }
+    return c.PDFDocument.load(new Uint8Array(await blob.arrayBuffer()))
+  }
+  await prova('scaricaRicevuteCompensi con la carta: il PDF scaricato ha la carta su ogni pagina', async () => (await scaricato(() => c.scaricaRicevuteCompensi([ricevuta], carta))).getPages().map((q) => leggi(q).forme.length > 0), una.pagine?.map(() => true))
 }
 
 console.log('\n6. la segreteria di prova: fa, annulla, rifà, spunta firmata')

@@ -3,7 +3,8 @@ import { comeArrivata, previstiSenzaPresenza, type DatiSegreteria, type LezioneS
 import type { StatoPresenzaIstruttore } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { mesi } from '../../lib/ore'
-import { chiedi, Guaio, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { SOCIETA } from '../../lib/cartaPdf'
+import { chiedi, Guaio, suCarta, Testa, useAvviso, useCarica, useOrdina } from './comune'
 
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 const perNome = (a: string, b: string) => a.localeCompare(b, 'it')
@@ -253,8 +254,9 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
           disabled={!report.length || lavora}
           onClick={() =>
             void fai(
-              async () =>
-                (await import('../../lib/reportIstruttoriPdf')).scaricaReportIstruttori(
+              () =>
+                suCarta(fai, async (carta) =>
+                  (await import('../../lib/reportIstruttoriPdf')).scaricaReportIstruttori(
                   report,
                   {
                     periodo: m ? m.nome : 'Ultimi dodici mesi',
@@ -263,7 +265,10 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
                     piuMesi: !m || m.chiave.startsWith('anno-'),
                     lezioniDaConfermare: lezioniNelMese.filter((l) => (!corso || l.corso === corso) && (!istruttore || l.previsti.some((x) => x.id === istruttore && !x.stato))).length,
                   },
-                  'Officine Dello Sport',
+                  // Il report è della società, come gli altri documenti sulla carta intestata.
+                  SOCIETA,
+                  carta,
+                  ),
                 ),
               'Report scaricato',
             )

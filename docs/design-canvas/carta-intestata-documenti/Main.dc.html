@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «carta intestata sui documenti»: ricevuta di un iscritto, ricevuta del compenso, bilancio, chiusura di cassa e report presenze istruttori; oggi a sinistra, proposta a destra. Le proposte sono montaggi: la carta vera (public/moduli/carta-intestata.pdf) e il corpo del PDF di oggi senza la sua intestazione. -->
+<div style="width:1796px; min-height:4900px; display:flex; flex-direction:column; gap:72px; padding:32px; background:#eef5fa">
+<!-- PROPOSTA «carta intestata sui documenti»: la ricevuta di un iscritto. Oggi (PDF dell’app, prova-ricevuta.mjs) e la proposta: una testata piccola su ogni copia; i dati dell’emittente restano quelli di IMPOSTAZIONI. -->
+<div style="display:flex; gap:48px; align-items:flex-start">
+  <div><div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:14px; letter-spacing:0.12em; color:#0d2a3d; margin-bottom:8px">OGGI · RICEVUTA DI UN ISCRITTO</div><div style="box-shadow:0 1px 3px rgba(13,42,61,.18)"><img src="/_blob/970b5b150c81101a936ea141a041dcf9" style="width:842px; height:595px; display:block" alt=""></div></div>
+  <div><div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:14px; letter-spacing:0.12em; color:#0d2a3d; margin-bottom:8px">PROPOSTA · RICEVUTA DI UN ISCRITTO</div><div style="position:relative; display:flex; width:842px; height:595px; background:#ffffff; box-shadow:0 1px 3px rgba(13,42,61,.18)">
+    <div style="position:relative; width:421px; height:595px; overflow:hidden">
+      <div style="position:absolute; left:22px; right:22px; top:12px; height:34px; display:flex; align-items:center; justify-content:space-between">
+        <img src="./carta-intestata-mascotte.png" style="height:34px; width:auto; display:block" alt="">
+        <div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:19px; letter-spacing:0.03em; color:#0d2a3d; line-height:1">ASD IL CENTRO JUDO</div>
+        <img src="./carta-intestata-simbolo.png" style="height:34px; width:auto; display:block" alt="">
+      </div>
+      <div style="position:absolute; left:22px; right:22px; top:50px; display:flex; align-items:center"><div style="width:30px; height:5px; background:#f4c31b"></div><div style="flex:1; height:1.5px; background:#14709f"></div></div>
+      <div style="position:absolute; left:0; top:60px; width:421px; height:535px; overflow:hidden">
+        <img src="/_blob/970b5b150c81101a936ea141a041dcf9" style="position:absolute; left:9px; top:-8px; width:816.74px; height:577.15px; display:block" alt="">
+      </div>
+    </div>
+    <div style="width:0; border-left:1px dashed #cfe6f4"></div>
+    <div style="position:relative; width:421px; height:595px; overflow:hidden">
+      <div style="position:absolute; left:22px; right:22px; top:12px; height:34px; display:flex; align-items:center; justify-content:space-between">
+        <img src="./carta-intestata-mascotte.png" style="height:34px; width:auto; display:block" alt="">
+        <div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:19px; letter-spacing:0.03em; color:#0d2a3d; line-height:1">ASD IL CENTRO JUDO</div>
+        <img src="./carta-intestata-simbolo.png" style="height:34px; width:auto; display:block" alt="">
+      </div>
+      <div style="position:absolute; left:22px; right:22px; top:50px; display:flex; align-items:center"><div style="width:30px; height:5px; background:#f4c31b"></div><div style="flex:1; height:1.5px; background:#14709f"></div></div>
+      <div style="position:absolute; left:0; top:60px; width:421px; height:535px; overflow:hidden">
+        <img src="/_blob/970b5b150c81101a936ea141a041dcf9" style="position:absolute; left:-412px; top:-8px; width:816.74px; height:577.15px; display:block" alt="">
+      </div>
+    </div>
+    <div style="position:absolute; left:30px; top:72px; width:150px; height:54px; outline:2px dashed #e4292a; outline-offset:2px"></div>
+    <div style="position:absolute; left:30px; top:132px; background:#ffffff; border:2px solid #e4292a; border-radius:4px; padding:3px 6px; font-family:Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:10px; font-weight:700; color:#0d2a3d">C.F. 10002760014 qui, 95562500017 sulla carta: quale è giusto?</div>
+  </div><div style="width:842px; margin-top:10px; font-family:Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:13px; line-height:1.45; color:#0d2a3d"><b>Una testata piccola su ogni copia</b>, perché il foglio si taglia a metà: mascotte, nome e simbolo, filo blu col tatami giallo. Il riquadro di chi fa la ricevuta resta com’è, coi dati di IMPOSTAZIONI (che la segreteria può cambiare): niente piede fisso, per non avere due volte gli stessi dati, magari diversi. Il resto della ricevuta resta uguale, un po’ più piccolo.</div></div>
+</div>
+<!-- PROPOSTA: la ricevuta del compenso di un tecnico (autocertificazione) sulla carta. Oggi senza intestazione: il testo scende e la parte in fondo va alla pagina dopo. -->
+<div style="display:flex; gap:32px; align-items:flex-start">
+  <div><div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:14px; letter-spacing:0.12em; color:#0d2a3d; margin-bottom:8px">OGGI · RICEVUTA DEL COMPENSO</div><div style="box-shadow:0 1px 3px rgba(13,42,61,.18)"><img src="/_blob/dd9d0914e53d88a29938c9f171e5b966" style="width:595px; height:842px; display:block" alt=""></div></div>
+  <div><div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:14px; letter-spacing:0.12em; color:#0d2a3d; margin-bottom:8px">PROPOSTA · RICEVUTA DEL COMPENSO</div><div style="position:relative; width:595px; height:842px; background:#ffffff; box-shadow:0 1px 3px rgba(13,42,61,.18); overflow:hidden">
+    <img src="/_blob/87686ef1da9ba2355ce098ac77e9ea16" style="width:595px; height:842px; display:block" alt="">
+    <div style="position:absolute; left:0; right:0; top:104px; height:646px; overflow:hidden">
+      <img src="/_blob/dd9d0914e53d88a29938c9f171e5b966" style="position:absolute; left:0; top:-30px; width:595px; height:842px; display:block" alt="">
+      
+    </div>
+  </div><div style="width:595px; margin-top:10px; font-family:Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:13px; line-height:1.45; color:#0d2a3d">Oggi non ha intestazione: con la carta si capisce subito di chi è. Il testo scende sotto la testata, quindi l’ultima parte (RICHIEDE, la liquidazione, le firme) passa alla pagina dopo, con la sua carta. Firme e puntini restano insieme, come nella lettera.</div></div>
+</div>
+<!-- PROPOSTA: il bilancio sulla carta. Oggi ha in testa nome, indirizzo e C.F. da IMPOSTAZIONI: li dà la carta. -->
+<div style="display:flex; gap:32px; align-items:flex-start">
+  <div><div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:14px; letter-spacing:0.12em; color:#0d2a3d; margin-bottom:8px">OGGI · BILANCIO</div><div style="box-shadow:0 1px 3px rgba(13,42,61,.18)"><img src="/_blob/e43ebaa815497e01dfb4c93422310fcd" style="width:595px; height:842px; display:block" alt=""></div></div>
+  <div><div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:14px; letter-spacing:0.12em; color:#0d2a3d; margin-bottom:8px">PROPOSTA · BILANCIO</div><div style="position:relative; width:595px; height:842px; background:#ffffff; box-shadow:0 1px 3px rgba(13,42,61,.18); overflow:hidden">
+    <img src="/_blob/87686ef1da9ba2355ce098ac77e9ea16" style="width:595px; height:842px; display:block" alt="">
+    <div style="position:absolute; left:0; right:0; top:104px; height:646px; overflow:hidden">
+      <img src="/_blob/e43ebaa815497e01dfb4c93422310fcd" style="position:absolute; left:0; top:-96px; width:595px; height:842px; display:block" alt="">
+      <div style="position:absolute; left:40px; top:4px; width:200px; height:20px; outline:2px dashed #e4292a; outline-offset:2px"></div>
+    <div style="position:absolute; left:40px; top:30px; background:#ffffff; border:2px solid #e4292a; border-radius:4px; padding:3px 6px; font-family:Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:10px; font-weight:700; color:#0d2a3d">la carta dice C.F. 95562500017, oggi qui 10002760014</div>
+    </div>
+  </div><div style="width:595px; margin-top:10px; font-family:Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:13px; line-height:1.45; color:#0d2a3d">Via le tre righe in testa (nome, indirizzo, C.F.): li dice la carta. Il titolo BILANCIO 2025 e le tabelle restano come sono; le firme «Chi ha preparato» e «Chi controlla» stanno sopra il piede.</div></div>
+</div>
+<!-- PROPOSTA: la chiusura di cassa sulla carta. Come il bilancio. -->
+<div style="display:flex; gap:32px; align-items:flex-start">
+  <div><div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:14px; letter-spacing:0.12em; color:#0d2a3d; margin-bottom:8px">OGGI · CHIUSURA DI CASSA</div><div style="box-shadow:0 1px 3px rgba(13,42,61,.18)"><img src="/_blob/6c33301c07414876a329c44ef3113880" style="width:595px; height:842px; display:block" alt=""></div></div>
+  <div><div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:14px; letter-spacing:0.12em; color:#0d2a3d; margin-bottom:8px">PROPOSTA · CHIUSURA DI CASSA</div><div style="position:relative; width:595px; height:842px; background:#ffffff; box-shadow:0 1px 3px rgba(13,42,61,.18); overflow:hidden">
+    <img src="/_blob/87686ef1da9ba2355ce098ac77e9ea16" style="width:595px; height:842px; display:block" alt="">
+    <div style="position:absolute; left:0; right:0; top:104px; height:646px; overflow:hidden">
+      <img src="/_blob/6c33301c07414876a329c44ef3113880" style="position:absolute; left:0; top:-96px; width:595px; height:842px; display:block" alt="">
+      
+    </div>
+  </div><div style="width:595px; margin-top:10px; font-family:Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:13px; line-height:1.45; color:#0d2a3d">Come il bilancio: via l’intestazione di testo, che la carta sostituisce. Oggi lì c’è il nome di IMPOSTAZIONI (nella prova «Officine Dello Sport ASD»): sulla carta è sempre ASD IL CENTRO JUDO.</div></div>
+</div>
+<!-- PROPOSTA: il report delle presenze degli istruttori sulla carta. Oggi ha il marchio a ingranaggi di Officine dello Sport. -->
+<div style="display:flex; gap:32px; align-items:flex-start">
+  <div><div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:14px; letter-spacing:0.12em; color:#0d2a3d; margin-bottom:8px">OGGI · REPORT PRESENZE ISTRUTTORI</div><div style="box-shadow:0 1px 3px rgba(13,42,61,.18)"><img src="/_blob/71f7f3fb74a19739f76f6842247ec20a" style="width:595px; height:842px; display:block" alt=""></div></div>
+  <div><div style="font-family:'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight:800; font-size:14px; letter-spacing:0.12em; color:#0d2a3d; margin-bottom:8px">PROPOSTA · REPORT PRESENZE ISTRUTTORI</div><div style="position:relative; width:595px; height:842px; background:#ffffff; box-shadow:0 1px 3px rgba(13,42,61,.18); overflow:hidden">
+    <img src="/_blob/87686ef1da9ba2355ce098ac77e9ea16" style="width:595px; height:842px; display:block" alt="">
+    <div style="position:absolute; left:0; right:0; top:104px; height:646px; overflow:hidden">
+      <img src="/_blob/71f7f3fb74a19739f76f6842247ec20a" style="position:absolute; left:0; top:-52px; width:595px; height:842px; display:block" alt="">
+      <div style="position:absolute; right:30px; top:-30px; width:115px; height:60px; background:#ffffff"></div>
+    </div>
+  </div><div style="width:595px; margin-top:10px; font-family:Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:13px; line-height:1.45; color:#0d2a3d">Il marchio a ingranaggi di Officine dello Sport lascia il posto alla carta di ASD IL CENTRO JUDO: è un documento della società, come gli altri. Le pagine dopo la prima hanno già una riga col periodo: resta, sotto la testata.</div></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1796,"height":4900}}'>
+class Component extends DCLogic { renderVals() { return {} } }
+</script>
+</body>
+</html>

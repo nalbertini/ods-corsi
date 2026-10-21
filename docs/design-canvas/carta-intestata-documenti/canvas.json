@@ -1,0 +1,19 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Carta intestata sui documenti"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Ricevute, bilancio, cassa e report · oggi e sulla carta",
+      "x": 0,
+      "y": 0,
+      "w": 1796,
+      "h": 4900,
+      "page": "page-1"
+    }
+  ]
+}

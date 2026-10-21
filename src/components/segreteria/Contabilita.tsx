@@ -60,7 +60,7 @@ import { filtraPerPersona, cosaNonVaCollegato, type FiltroPersona } from '../../
 import { fraseDallaChat } from '../../lib/collega'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
-import { Campo, chiedi, Guaio, lasciare, messaggio, scaricaCsv, SchedaPiena, Testa, useAvviso, useBozza, useCarica } from './comune'
+import { Campo, chiedi, Guaio, lasciare, messaggio, scaricaCsv, SchedaPiena, suCarta, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { Numero } from './Presenze'
 import { CollegaAPersona, CollegaSicuri } from './CollegaPersona'
 import { Bilancio } from './Bilancio'
@@ -1170,10 +1170,10 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
 /** Le chiusure della Cassa Contanti, dalla più recente: chi, quando, la differenza, il foglio PDF e (solo l'ultima) l'annullo. */
 function ElencoChiusure({ d, cassa, casse, chiusure, righe, fai, onCambiato }: { d: DatiSegreteria; cassa: Cassa; casse: Cassa[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void }) {
   const dellaCassa = chiusure.filter((k) => k.cassaId === cassa.id).sort((x, y) => y.data.localeCompare(x.data) || y.chiusaIl.localeCompare(x.chiusaIl))
-  const foglio = async (k: ChiusuraCassa) => {
+  const foglio = async (k: ChiusuraCassa, carta?: Uint8Array) => {
     const ente = await d.enteRicevute()
     const { scaricaChiusuraCassa } = await import('../../lib/chiusuraCassaPdf')
-    await scaricaChiusuraCassa({ ente, cassa: cassa.nome, chiusura: k, righe, nonPiuInRegola: chiusuraNonPiuInRegola(k, casse, righe) }, `chiusura-cassa-${k.data}.pdf`)
+    await scaricaChiusuraCassa({ ente, cassa: cassa.nome, chiusura: k, righe, nonPiuInRegola: chiusuraNonPiuInRegola(k, casse, righe), carta }, `chiusura-cassa-${k.data}.pdf`)
   }
   const annulla = async (k: ChiusuraCassa) => {
     const domanda = `Annullare la chiusura del ${dataRicevuta(k.data)}? Si toglie anche la sua «Differenza di cassa» e i giorni tornano aperti. Il foglio PDF già stampato non vale più.`
@@ -1194,7 +1194,7 @@ function ElencoChiusure({ d, cassa, casse, chiusure, righe, fai, onCambiato }: {
             {k.annullataIl && ` · annullata${k.annullataDa ? ` da ${k.annullataDa}` : ''}`}
             {k.nota && <span style={{ display: 'block', paddingTop: 2 }}>Nota: {k.nota}</span>}
           </span>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => foglio(k), 'Foglio PDF scaricato')}>
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => suCarta(fai, (c) => foglio(k, c)), 'Foglio PDF scaricato')}>
             PDF
           </button>
           {cosaNonVaAnnulloChiusura(k.id, chiusure) === null && (

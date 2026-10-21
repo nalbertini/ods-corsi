@@ -11,6 +11,9 @@
 // quello che decide la segreteria di prova.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import { inflateSync } from 'node:zlib'
 
 // Il giorno della lezione è quello di Roma, anche su una macchina in UTC.
 process.env.TZ = 'Europe/Rome'
@@ -46,6 +49,66 @@ globalThis.Date = class extends DateVera {
   static now() {
     return OGGI
   }
+}
+
+// Leggere una pagina come prova-lettere.mjs § 6 bis: solo il contenuto della pagina, non quello della carta
+// disegnata sopra. Le righe scritte (dove, che corpo, cosa), i Form disegnati con `Do` e il riquadro che
+// coprono sulla pagina (BBox per la Matrix del Form e per quella del momento), i punti delle linee, le curve.
+const leggiPagina = ({ PDFArray, PDFRawStream, PDFName, PDFDict }) => (pg) => {
+  const c = pg.node.Contents()
+  const contenuto = (c instanceof PDFArray ? c.asArray().map((r) => pg.doc.context.lookup(r)) : [c])
+    .filter((f) => f instanceof PDFRawStream)
+    .map((f) => {
+      try {
+        return inflateSync(f.contents).toString('latin1')
+      } catch {
+        return Buffer.from(f.contents).toString('latin1')
+      }
+    })
+    .join('\n')
+  const xo = pg.node.Resources()?.lookup(PDFName.of('XObject'), PDFDict)
+  const forma = (nome) => {
+    const o = xo?.lookup(PDFName.of(nome.slice(1)))
+    const d = o instanceof PDFRawStream ? o.dict : o
+    return String(d?.get(PDFName.of('Subtype'))) === '/Form' ? d : null
+  }
+  const numeri = (d, k) => d.lookup(PDFName.of(k), PDFArray)?.asArray().map((n) => n.asNumber())
+  const per = ([a, b, c, d, e, f], [A, B, C, D, E, F]) => [a * A + b * C, a * B + b * D, c * A + d * C, c * B + d * D, e * A + f * C + E, e * B + f * D + F]
+  const punto = ([a, b, c, d, e, f], x, y) => [a * x + c * y + e, b * x + d * y + f]
+  const scritte = []
+  const forme = []
+  const punti = []
+  let curve = 0
+  let ctm = [1, 0, 0, 1, 0, 0]
+  let tm = [0, 0]
+  let corpo = 0
+  let num = []
+  let prima = ''
+  const pila = []
+  for (const t of contenuto.split(/\s+/)) {
+    if (/^-?[\d.]+$/.test(t)) {
+      num.push(Number(t))
+      continue
+    }
+    if (t === 'q') pila.push(ctm)
+    else if (t === 'Q') ctm = pila.pop() ?? ctm
+    else if (t === 'cm') ctm = per(num.slice(-6), ctm)
+    else if (t === 'Tf') corpo = num.at(-1)
+    else if (t === 'Tm') tm = punto(ctm, num.at(-2), num.at(-1))
+    else if (t === 'Tj' && prima.startsWith('<')) scritte.push({ x: tm[0], y: tm[1], corpo, testo: Buffer.from(prima.slice(1, -1), 'hex').toString('latin1').replace(/\x92/g, '’') })
+    else if (t === 'Do' && forma(prima)) {
+      const d = forma(prima)
+      const m = per(numeri(d, 'Matrix') ?? [1, 0, 0, 1, 0, 0], ctm)
+      const [x0, y0, x1, y1] = numeri(d, 'BBox')
+      const angoli = [punto(m, x0, y0), punto(m, x1, y1), punto(m, x0, y1), punto(m, x1, y0)]
+      forme.push({ nome: prima, dopo: scritte.length, x0: Math.min(...angoli.map((a) => a[0])), x1: Math.max(...angoli.map((a) => a[0])), y0: Math.min(...angoli.map((a) => a[1])), y1: Math.max(...angoli.map((a) => a[1])) })
+    } else if (t === 'm' || t === 'l') punti.push(punto(ctm, num.at(-2), num.at(-1)))
+    else if (t === 'c') curve++
+    num = []
+    prima = t
+  }
+  const tratteggi = [...contenuto.matchAll(/\[([^\]]*)\]\s+-?[\d.]+\s+d\b/g)].filter((x) => x[1].trim()).length
+  return { contenuto, scritte, righe: scritte.map((s) => s.testo), forme, punti, curve, tratteggi }
 }
 
 let guai = 0
@@ -275,6 +338,84 @@ console.log('\n5. i conti del report per il compenso (contiReport)')
   ok('per mese, in ordine di data, con il mese di Roma', c.perMese?.map((g) => [g.nome, g.confermate.length]), [['Ottobre 2026', 3], ['Novembre 2026', 1]])
   ok('per giorno, da lunedì', c.perGiorno?.map((g) => [g.nome, g.confermate.length]), [['Lunedì', 2], ['Martedì', 1], ['Mercoledì', 0], ['Giovedì', 0], ['Domenica', 1]])
   ok('nessuna presenza: tutto a zero', (({ minutiTotali, istruttori, corsi, perIstruttore }) => [minutiTotali, istruttori, corsi, perIstruttore])(conti([])), [0, 0, 0, []])
+}
+
+console.log('\n6. il report delle presenze sulla carta intestata')
+{
+  // pdf-lib vuole `platform: 'node'`, come in prova-lettere.mjs.
+  let r = {}
+  try {
+    const { outputFiles } = await build({
+      stdin: { contents: "export { reportIstruttoriPdf, scaricaReportIstruttori } from './src/lib/reportIstruttoriPdf'; export { PDFDocument, PDFArray, PDFRawStream, PDFName, PDFDict } from 'pdf-lib'", resolveDir: '.', loader: 'ts' },
+      bundle: true,
+      format: 'esm',
+      platform: 'node',
+      write: false,
+      logLevel: 'silent',
+      define: { 'import.meta.env': '{}' },
+    })
+    r = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+  } catch (e) {
+    console.log('  ✗ reportIstruttoriPdf.ts non si carica —', e.errors?.[0]?.text ?? e.message)
+    guai++
+  }
+  const leggi = leggiPagina(r)
+  const carta = new Uint8Array(readFileSync('public/moduli/carta-intestata.pdf'))
+  const ALTO = 841.89
+  const ENTE = 'Officine Dello Sport ASD'
+  const f = { periodo: 'Ottobre 2026', piuMesi: false }
+  const riga = (i) => ({ ...presenza(`r${i}`, `P${i % 4}`, ['Judo', 'Lotta 2', 'Pesi'][i % 3], new Date(2026, 9, 1 + (i % 30), 17, 0), 60, i % 7 ? 'confermata' : 'da_confermare'), nome: ['Maurizio', 'Maura', 'Anna', 'Bruno'][i % 4] })
+  const fai = async (righe, su) => {
+    try {
+      const doc = await r.PDFDocument.load(await r.reportIstruttoriPdf(righe, f, ENTE, su))
+      return { doc, pagine: doc.getPages().map(leggi) }
+    } catch (e) {
+      return { errore: e.message }
+    }
+  }
+  const impronta = (p) => p.errore ?? createHash('sha256').update(p.pagine.map((q) => q.contenuto).join('\n')).digest('hex').slice(0, 16)
+  const casi = [['il report di sei lezioni', Array.from({ length: 6 }, (_, i) => riga(i)), '89e071bec2ef62b2'], ['quello di centoventi', Array.from({ length: 120 }, (_, i) => riga(i)), 'b68350d1b8cf4f30']]
+
+  // Senza carta il report è quello di oggi, col logo a ingranaggi: i denti sono cerchi tratteggiati.
+  for (const [nome, righe, oggi] of casi) {
+    const p = await fai(righe)
+    ok(`${nome}, senza carta: nessun XObject Form`, p.errore ?? p.pagine.map((q) => q.forme.length), p.pagine?.map(() => 0))
+    ok(`${nome}, senza carta: il logo a ingranaggi c’è (curve e tratteggio)`, p.errore ?? [p.pagine[0].curve > 0, p.pagine[0].tratteggi > 0], [true, true])
+    ok(`${nome}, senza carta: lo stesso contenuto di oggi`, impronta(p), oggi)
+  }
+
+  for (const [nome, righe] of casi) {
+    const p = await fai(righe, carta)
+    ok(`${nome}, con la carta: si fa`, p.errore ?? 'fatto', 'fatto')
+    if (p.errore) continue
+    const ps = p.pagine
+    if (righe.length > 100) ok(`${nome}: più di una pagina`, ps.length > 1, true)
+    ok(`${nome}: ogni pagina ha la carta (un XObject Form)`, ps.map((q) => q.forme.length > 0), ps.map(() => true))
+    ok(`${nome}: niente logo a ingranaggi, su nessuna pagina (né curve né tratteggi)`, ps.map((q) => [q.curve, q.tratteggi]), ps.map(() => [0, 0]))
+    ok(`${nome}: niente riga dell’ente in testa alla prima pagina`, ps[0].righe.filter((x) => x === ENTE), [])
+    ok(`${nome}: il titolo e il periodo restano`, ['Report presenze istruttori', 'Ottobre 2026'].filter((x) => !ps[0].righe.includes(x)), [])
+    const fuori = ps.flatMap((q, i) => q.scritte.filter((s) => s.y - 0.2 * s.corpo < 68 || s.y + 0.75 * s.corpo > ALTO - 92).map((s) => `pagina ${i + 1}: «${s.testo}» a y=${s.y}`))
+    ok(`${nome}: nessuna riga nella testata (92 punti dall’alto) o nel piede (68 dal fondo) della carta vera`, fuori, [])
+    if (ps.length > 1) ok(`${nome}: «pagina n di ${ps.length}» su ogni pagina, sopra il piede`, ps.map((q, i) => q.righe.some((r) => r.includes(`pagina ${i + 1} di ${ps.length}`))), ps.map(() => true))
+  }
+
+  // Lo scaricamento dal browser, finto: il Blob che si scaricherebbe.
+  await prova('scaricaReportIstruttori con la carta: il PDF scaricato ha la carta', async () => {
+    const prima = { document: globalThis.document, crea: URL.createObjectURL, revoca: URL.revokeObjectURL }
+    let blob
+    globalThis.document = { createElement: () => ({ click() {}, remove() {} }), body: { appendChild() {} } }
+    URL.createObjectURL = (b) => ((blob = b), 'blob:prova')
+    URL.revokeObjectURL = () => {}
+    try {
+      await r.scaricaReportIstruttori([riga(1)], f, ENTE, carta)
+    } finally {
+      globalThis.document = prima.document
+      URL.createObjectURL = prima.crea
+      URL.revokeObjectURL = prima.revoca
+    }
+    const doc = await r.PDFDocument.load(new Uint8Array(await blob.arrayBuffer()))
+    return doc.getPages().every((q) => leggi(q).forme.length > 0)
+  }, true)
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

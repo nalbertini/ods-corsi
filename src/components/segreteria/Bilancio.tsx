@@ -3,7 +3,7 @@ import { anniDelBilancio, bilancioAnno, csvBilancio, differenza, esito, fraseBil
 import type { Cassa, RigaMovimento } from '../../lib/contabilita'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { dataRicevuta } from '../../lib/ricevute'
-import { scaricaCsv, type useAvviso } from './comune'
+import { scaricaCsv, suCarta, type useAvviso } from './comune'
 import { Numero } from './Presenze'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
@@ -29,9 +29,9 @@ export function Bilancio({ d, casse, righe, oggi, fai }: { d: DatiSegreteria; ca
   const vecchi = anni.slice(0, -ANNI_IN_CHIP).reverse()
   const prima = anno - 1
 
-  const pdf = async () => {
+  const pdf = async (carta?: Uint8Array) => {
     const [ente, { scaricaBilancio }] = await Promise.all([d.enteRicevute(), import('../../lib/bilancioPdf')])
-    await scaricaBilancio({ ente, bilancio: b, oggi })
+    await scaricaBilancio({ ente, bilancio: b, oggi, carta })
   }
 
   return (
@@ -140,7 +140,7 @@ export function Bilancio({ d, casse, righe, oggi, fai }: { d: DatiSegreteria; ca
 
           <div className="row" style={{ gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <button type="button" className="sg-btn sg-btn-linea" onClick={() => scaricaCsv(nomeFileBilancio(anno, 'csv'), csvBilancio(b, oggi))}>Esporta CSV</button>
-            <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(pdf, 'Foglio PDF scaricato')}>Esporta PDF</button>
+            <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => suCarta(fai, pdf), 'Foglio PDF scaricato')}>Esporta PDF</button>
           </div>
           <span className="sg-sotto">CSV e PDF dicono «per cassa» e la data di calcolo; non portano nomi di iscritti né movimenti singoli.</span>
         </>
