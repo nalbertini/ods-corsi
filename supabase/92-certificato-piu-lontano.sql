@@ -37,6 +37,10 @@ begin
   select * into r from richieste_iscrizione where id = richiesta for update;
   if r.id is null then raise exception 'richiesta inesistente' using errcode = 'P0002'; end if;
   if r.stato <> 'nuova' then raise exception 'Questa richiesta è già stata %', r.stato using errcode = '22023'; end if;
+  -- Più di tre anni avanti è quasi sempre l'anno sbagliato, come in `salva_certificato`.
+  if scade > oggi + interval '3 years' then
+    raise exception 'La data è troppo lontana: controlla l''anno.' using errcode = '22023';
+  end if;
 
   if persona is not null then
     select id into chi from persone where id = persona;

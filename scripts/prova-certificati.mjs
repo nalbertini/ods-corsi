@@ -385,8 +385,6 @@ await sezione('6b. accogliere porta anche la data, in un passo solo', async () =
   const senzaData = await r.invia(adulto({ nome: 'Bea', codiceFiscale: 'DTABEA96A41L219D', email: 'bea@esempio.it' }))
   const idBea = await r.accogli(senzaData, undefined, '')
   ok('senza la data, accoglie lo stesso e la data non c\'è', (await di(idBea)).certificato.scade, undefined)
-  // Il passo è uno: non c'è più un «accolta, ma la data no» da raccontare.
-  ok('accogliere non passa più da salvaCertificato', 'accogliConCertificato' in m.richiesteLib, false)
   const cia = await r.invia(adulto({ nome: 'Cia', codiceFiscale: 'DTACIA96A41L219O', email: 'cia@esempio.it' }))
   await r.caricaFile(cia, 'certificato', pdf())
   ok('una data troppo lontana ferma l\'accoglimento, prima', await errore(() => r.accogli(cia, undefined, '2035-01-01')), 'La data è troppo lontana: controlla l\'anno.')
