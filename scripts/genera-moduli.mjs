@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// I fogli di public/moduli/ (autorizzazioni e costi), ricostruiti dal codice.
+// I fogli di public/moduli/ (autorizzazioni, costi e la carta intestata), ricostruiti dal codice.
 //
 //   node scripts/genera-moduli.mjs [--oggi AAAA-MM-GG]
 //
@@ -44,4 +44,5 @@ const fogli = await generaFogli({
 writeFileSync('public/moduli/autorizzazioni-maggiorenni.pdf', fogli.maggiorenni)
 writeFileSync('public/moduli/autorizzazioni-minori.pdf', fogli.minori)
 writeFileSync('public/moduli/costi-2026-27.pdf', fogli.costi)
+writeFileSync('public/moduli/carta-intestata.pdf', fogli.carta)
 console.log(`Fogli scritti in public/moduli/ (oggi = ${oggi})`)

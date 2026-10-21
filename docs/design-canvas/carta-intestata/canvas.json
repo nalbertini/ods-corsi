@@ -1,0 +1,7 @@
+{
+  "pages": [{ "id": "page-1", "name": "Carta intestata" }],
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Lettera d’incarico · oggi e due pelli", "x": 0, "y": 0, "w": 3167, "h": 1040, "page": "page-1" },
+    { "file": "Moduli.dc.html", "title": "Moduli · stessa testata", "x": 0, "y": 1160, "w": 1913, "h": 1040, "page": "page-1" }
+  ]
+}
