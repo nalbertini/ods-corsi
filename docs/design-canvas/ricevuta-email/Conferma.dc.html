@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La domanda di FAI LA RICEVUTA: chiedi() di comune.tsx (Conferma, righe 148-175) col testo di emetti() in Ricevute.tsx (righe 544-563) e domandaRicevuta di lib/ricevute.ts (riga 382). Dialogo col tema sito; la casella e' la PROPOSTA (Dialogo `spunta`). -->
+<div style="display: flex; flex-direction: column; gap: 36px; width: 1944px; padding: 28px 36px; background: #eef5fa">
+  <div style="display: flex; gap: 36px; align-items: flex-start">
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">OGGI · LA DOMANDA DI FAI LA RICEVUTA</span><dc-import name="Dialogo" domanda="Fare la ricevuta n. 12/2026 per Rossi Marco, al genitore Rossi Laura, 80,00 €?" resto="Fatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra." tema="sito" tipo="conferma" no="Torna a correggere" si="Fai la ricevuta" pericolo="{{ true }}" altezza="440px" hint-size="600px,440px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">Il PDF si scarica e basta: alla famiglia non arriva niente.</span></div>
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · CON L’EMAIL DI CONTATTO (UN MINORE: QUELLA DEL GENITORE)</span><dc-import name="Dialogo" domanda="Fare la ricevuta n. 12/2026 per Rossi Marco, al genitore Rossi Laura, 80,00 €?" resto="Fatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra." spunta="Manda per email a mamma@esempio.it" spuntaNota="Email di contatto del genitore, Rossi Laura. Se è sbagliata togli la spunta: la ricevuta si fa senza mail." tema="sito" tipo="conferma" no="Torna a correggere" si="Fai la ricevuta" pericolo="{{ true }}" altezza="520px" hint-size="600px,520px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">La casella è già spuntata. Si toglie solo se non va mandata o se l’indirizzo è sbagliato: per correggerlo non c’è un campo qui, si corregge in PERSONA e si manda dopo.</span></div>
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · SPUNTA TOLTA</span><dc-import name="Dialogo" domanda="Fare la ricevuta n. 12/2026 per Rossi Marco, al genitore Rossi Laura, 80,00 €?" resto="Fatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra." spunta="Manda per email a mamma@esempio.it" spuntata="{{ false }}" spuntaNota="Senza spunta la ricevuta si fa senza mail: si può mandare dopo con MANDA PER EMAIL, dallo storico." tema="sito" tipo="conferma" no="Torna a correggere" si="Fai la ricevuta" pericolo="{{ true }}" altezza="520px" hint-size="600px,520px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">Il tasto resta FAI LA RICEVUTA: la mail è un di più, non cambia la ricevuta.</span></div>
+  </div>
+  <div style="display: flex; gap: 36px; align-items: flex-start">
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · ADULTO CON EMAIL DI CONTATTO</span><dc-import name="Dialogo" domanda="Fare la ricevuta n. 13/2026 a Bianchi Sara, 50,00 €?" resto="Fatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra." spunta="Manda per email a sara.bianchi@esempio.it" spuntaNota="Email di contatto. Se è sbagliata togli la spunta: la ricevuta si fa senza mail." tema="sito" tipo="conferma" no="Torna a correggere" si="Fai la ricevuta" pericolo="{{ true }}" altezza="520px" hint-size="600px,520px"></dc-import></div>
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · ADULTO SENZA EMAIL DI CONTATTO</span><dc-import name="Dialogo" domanda="Fare la ricevuta n. 13/2026 a Bianchi Sara, 50,00 €?" resto="Fatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.
+
+Nessuna email di contatto in scheda: la ricevuta non si manda. Il PDF si scarica come sempre." tema="sito" tipo="conferma" no="Torna a correggere" si="Fai la ricevuta" pericolo="{{ true }}" altezza="480px" hint-size="600px,480px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">Anche se ha un’email di accesso: la ricevuta va solo all’email di contatto. Aggiunta in PERSONA, la si manda dallo storico.</span></div>
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · MINORE SENZA EMAIL DI CONTATTO DEL GENITORE</span><dc-import name="Dialogo" domanda="Fare la ricevuta n. 12/2026 per Rossi Marco, al genitore Rossi Laura, 80,00 €?" resto="Fatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.
+
+Nessuna email di contatto in scheda: la ricevuta non si manda. Il PDF si scarica come sempre." tema="sito" tipo="conferma" no="Torna a correggere" si="Fai la ricevuta" pericolo="{{ true }}" altezza="480px" hint-size="600px,480px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">Mai all’email di accesso, né del ragazzo né del genitore.</span></div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1944,"height":1260}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

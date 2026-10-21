@@ -94,8 +94,9 @@ Le email sono due, e servono a cose diverse:
 - **EMAIL** è per entrare nell'app: una sola persona per indirizzo. Se è già di
   qualcuno, l'app dice di chi e di metterla come email di contatto.
 - **EMAIL DI CONTATTO** è dove scrivete o telefonate alla famiglia: può essere
-  la stessa per più persone (un genitore e i figli, due fratelli). L'app non
-  manda mai mail a questo indirizzo.
+  la stessa per più persone (un genitore e i figli, due fratelli). È anche
+  dove arrivano le ricevute per email (vedi [Un pagamento e la sua
+  ricevuta](#un-pagamento-e-la-sua-ricevuta)): mai all'**EMAIL** di accesso.
 
 Due omonimi si distinguono dal telefono, dal codice fiscale o dalla data di
 nascita: l'email non basta più, perché un figlio può non averla.
@@ -312,6 +313,38 @@ pagamento torna libero per quella giusta.
 **FAI LA RICEVUTA** prima chiede di rileggere: a chi va (per un minore, il
 socio e il genitore), il totale e, con un acconto, quanto si paga ora e quanto
 resta. Confermato, le dà il numero e scarica il PDF, da stampare o mandare.
+
+### La ricevuta per email
+
+Se la persona ha l'**EMAIL DI CONTATTO**, la domanda di **FAI LA RICEVUTA** ha
+una casella già spuntata: «Manda per email a …», e sotto da dove viene
+l'indirizzo (per un minore, «Email di contatto del genitore»). Lasciata la
+spunta, fatta la ricevuta parte una mail da info@officinedellosport.it con il
+PDF allegato; nella mail ci sono solo nome, numero, data e totale, i dati
+restano nel PDF. Tolta la spunta, la ricevuta si fa senza mail. Senza email di
+contatto la casella non c'è e la domanda lo dice: la ricevuta si fa lo stesso,
+e la mail non parte mai all'email di accesso.
+
+Nello storico, sotto ogni ricevuta:
+
+- **Mandata il … a …** (e «· 2 volte» se è partita più volte), con **MANDA DI
+  NUOVO**.
+- **Non mandata**, con **MANDA PER EMAIL**: per le ricevute senza spunta, o se
+  la mail non è partita.
+- **Fatta prima dell'invio per email**: le ricevute di prima, che si possono
+  mandare con **MANDA PER EMAIL**.
+- Senza email di contatto il tasto è spento e dice di aggiungerla in
+  **PERSONA**.
+
+**MANDA PER EMAIL** e **MANDA DI NUOVO** chiedono conferma e mostrano
+l'indirizzo di oggi. **MANDATA** vuol dire partita dall'app, non letta: se la
+famiglia non la trova, guardi nello spam; un indirizzo sbagliato ma scritto bene
+torna indietro nella casella info@. Se la mail non parte (la posta non
+risponde, manca la password della posta) la ricevuta resta fatta, e l'avviso
+dice di riprovare con **MANDA PER EMAIL**. Le mail sono al massimo 400 al
+giorno per tutte le ricevute, e 3 al giorno per la stessa ricevuta: oltre,
+l'avviso dice di riprovare domani. Annullare una ricevuta già mandata non
+avvisa la famiglia: se serve, la si chiama.
 Nello storico **PAGAMENTI** della scheda ogni ricevuta si riscarica con **PDF**,
 uguale a com'era, e sotto ci sono i suoi pagamenti: data, come, a cosa serve e importo.
 **MANCA** dice quanto resta da pagare di quella ricevuta.

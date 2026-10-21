@@ -59,6 +59,7 @@ import {
   type VoceContabile,
 } from './contabilita'
 import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
+import { mandateOggi, SOGLIA_MAIL_GIORNO, TETTO_PER_RICEVUTA } from './ricevuteEmail'
 
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
@@ -1053,6 +1054,43 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (!r || r.annullataIl) throw new Error('Ricevuta inesistente o già annullata')
       a().ricevute = (a().ricevute ?? []).map((x) => (x.id === id ? { ...x, annullataIl: new Date().toISOString() } : x))
       salva()
+    },
+
+    // Le stesse regole di `controlla_invio_ricevuta` e della Edge Function, senza rete: nessuna mail parte davvero.
+    async mandaRicevuta(id) {
+      const r = (a().ricevute ?? []).find((x) => x.id === id)
+      if (!r) return { esito: 'non partita', motivo: 'posta' }
+      if (r.annullataIl) return { esito: 'non partita', motivo: 'annullata' }
+      const invii = a().inviiRicevute ?? []
+      // Come il database: la stessa ricevuta al più tre volte in 24 ore, e la quarta non lascia righe.
+      const dal = Date.now() - 24 * 3600_000
+      if (invii.filter((i) => i.ricevutaId === id && i.esito === 'mandata' && Date.parse(i.creatoIl) > dal).length >= TETTO_PER_RICEVUTA) return { esito: 'non partita', motivo: 'troppe' }
+      // Solo l'email di contatto, mai quella di accesso.
+      const indirizzo = a().persone.find((p) => p.id === r.personaId)?.emailContatto?.trim()
+      if (!indirizzo) return { esito: 'non partita', motivo: 'senza-indirizzo' }
+      const creatoIl = new Date().toISOString()
+      const troppe = mandateOggi(invii, new Date()) >= SOGLIA_MAIL_GIORNO
+      a().inviiRicevute = [...invii, troppe ? { ricevutaId: id, creatoIl, indirizzo, esito: 'non partita', motivo: 'soglia' } : { ricevutaId: id, creatoIl, indirizzo, esito: 'mandata' }]
+      salva()
+      return troppe ? { esito: 'non partita', motivo: 'soglia' } : { esito: 'mandata', indirizzo }
+    },
+
+    async inviiRicevute(personaId) {
+      const sue = new Set((a().ricevute ?? []).filter((r) => r.personaId === personaId).map((r) => r.id))
+      return (a().inviiRicevute ?? []).filter((i) => sue.has(i.ricevutaId)).sort((x, y) => x.creatoIl.localeCompare(y.creatoIl))
+    },
+
+    async esitiInvioRicevuta(id) {
+      // Come `esiti_invio_ricevuta`: data ed esito, senza indirizzo né motivo.
+      return (a().inviiRicevute ?? []).filter((i) => i.ricevutaId === id).map(({ ricevutaId, creatoIl, esito }) => ({ ricevutaId, creatoIl, esito }))
+    },
+
+    async ricevuteEmailDal() {
+      if (!a().ricevuteEmailDal) {
+        a().ricevuteEmailDal = new Date().toISOString()
+        salva()
+      }
+      return a().ricevuteEmailDal ?? null
     },
 
     async pagamentiDiretti(personaId) {

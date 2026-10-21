@@ -116,7 +116,8 @@
     "prova:sito-orario": "node scripts/prova-sito-orario.mjs",
     "prova:mcp": "node scripts/prova-mcp.mjs",
     "prova:frequenza": "node scripts/prova-frequenza.mjs",
-    "prova:statistiche-sito": "node scripts/prova-statistiche-sito.mjs"
+    "prova:statistiche-sito": "node scripts/prova-statistiche-sito.mjs",
+    "prova:ricevute-email": "node scripts/prova-ricevute-email.mjs"
   },
   "dependencies": {
     "@puckeditor/core": "^0.23.0",
