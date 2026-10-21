@@ -276,5 +276,16 @@ const senzaProgresso = await (async () => {
 })()
 ok('il progresso è facoltativo', senzaProgresso, { collegati: 2, restano: 0 })
 
+console.log('\n9. l\'apostrofo dopo una vocale in fondo alla parola vale accento (le stesse coppie di supabase/prova/movimenti-persona.sql, sezione 20)')
+// Il vecchio programma scriveva «NICOLO'» per «Nicolò»: in fondo alla parola, dopo una vocale, l'apostrofo è un accento.
+ok('in mezzo alla parola l\'apostrofo resta', prova(() => ['D\'Amico', 'Dell\'Acqua', 'Sant\'Anna', 'D’Angelo'].map(m.normalizzaNome)), ['d\'amico', 'dell\'acqua', 'sant\'anna', 'd\'angelo'])
+ok('dopo una consonante resta anche in fondo alla parola', prova(() => m.normalizzaNome('Sant\' Anna')), 'sant\' anna')
+const coppie = [['FEMIA NICOLO\'', 'Femia Nicolò'], ['BADALI\' GABRIELE', 'Badalì Gabriele'], ['DA VIA\' ADELAIDE', 'Da Vià Adelaide'], ['MARCHIO\' PAOLA', 'Marchiò Paola'], ['MORANDO NICOLO\'', 'Morando Nicoló']]
+ok('l\'apostrofo in fondo dopo una vocale ha la stessa chiave dell\'accento', prova(() => coppie.map(([a, b]) => `${m.normalizzaNome(a)} = ${m.normalizzaNome(b)}`)), ['femia nicolo', 'badali gabriele', 'da via adelaide', 'marchio paola', 'morando nicolo'].map((k) => `${k} = ${k}`))
+ok('…anche con ’ e `', prova(() => ['NICOLO’', 'NICOLO`'].map(m.normalizzaNome)), ['nicolo', 'nicolo'])
+ok('«Cliente BADALI\' GABRIELE per mensile»: sicuro, la sola scheda Badalì Gabriele (non Badali Alessio)',
+  prova(() => m.abbinaPersone(m.nomeDallaCausale('Cliente BADALI\' GABRIELE per mensile'), [{ id: 'bg', nome: 'Gabriele', cognome: 'Badalì' }, { id: 'ba', nome: 'Alessio', cognome: 'Badali' }])), { esito: 'sicuro', ids: ['bg'] })
+ok('«Cliente FEMIA NICOLO\' per quota» trova la scheda Femia Nicolò', prova(() => m.abbinaPersone(m.nomeDallaCausale('Cliente FEMIA NICOLO\' per quota'), [{ id: 'fn', nome: 'Nicolò', cognome: 'Femia' }])), { esito: 'sicuro', ids: ['fn'] })
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

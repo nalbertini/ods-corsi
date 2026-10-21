@@ -57,10 +57,11 @@ create policy collegamenti_persona_legge on collegamenti_persona for select to a
 
 -- Il nome come lo si confronta: minuscolo, senza accenti (anche quelli scomposti), apostrofo dritto, spazi di ogni tipo
 -- uno solo, le parole in ordine alfabetico (così «Rossi Giulia» e «Giulia Rossi» sono lo stesso nome). Lo stesso di
--- `normalizzaNome` (src/lib/movimentiPersona.ts). Pura e con l'indice qui sotto: serve a `persone`, quindi anche chi
--- scrive una persona ha il permesso di chiamarla.
+-- `normalizzaNome` (src/lib/movimentiPersona.ts). Il vecchio programma scrive l'accento come apostrofo («NICOLO'»): in
+-- fondo alla parola dopo una vocale si toglie; dopo una consonante («D'Amico», «Sant' Anna») è un'elisione e resta.
+-- Pura e con l'indice qui sotto: serve a `persone`, quindi anche chi scrive una persona ha il permesso di chiamarla.
 create or replace function collegamento_token(t text) returns text language sql immutable set search_path = public as $$
-  select string_agg(x, ' ' order by x)
+  select string_agg(regexp_replace(x, '([aeiou])''$', '\1'), ' ' order by regexp_replace(x, '([aeiou])''$', '\1'))
   from unnest(regexp_split_to_array(
     btrim(regexp_replace(
       regexp_replace(normalize(translate(lower(coalesce(t, '')), '‘’`', repeat(chr(39), 3)), NFD), '[\u0300-\u036f]', '', 'g'),
@@ -73,8 +74,10 @@ create or replace function collegamento_token(t text) returns text language sql 
 create or replace function collegamento_nome(descrizione text) returns text language sql immutable set search_path = public as $$
   select substring(regexp_replace(descrizione, '[\u00a0\u2007\u202f\ufeff]', ' ', 'g') from '(?i)^\s*?cliente\s+?(.+?)\s+?per\s') $$;
 
--- Cercare per nome sulle schede costa una scansione: con l'indice è una ricerca. Se la funzione sopra cambia, si rifà (`reindex`).
+-- Cercare per nome sulle schede costa una scansione: con l'indice è una ricerca. Se la funzione sopra cambia, si rifà: il
+-- `reindex` sotto lo fa a ogni lancio (le schede sono poche), così un indice fatto con la regola di prima non resta.
 create index if not exists persone_nome_token on persone (collegamento_token(nome || ' ' || cognome));
+reindex index persone_nome_token;
 
 -- Le persone con quel nome (nome e cognome, in qualunque ordine).
 create or replace function collegamento_candidati(descrizione text) returns setof uuid

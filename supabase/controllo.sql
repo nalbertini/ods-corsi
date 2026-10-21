@@ -355,6 +355,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'collega_movimenti_persona') and to_regclass('public.collegamenti_persona') is not null
     and exists (select 1 from information_schema.columns
                 where table_schema = 'public' and table_name = 'movimenti' and column_name = 'persona_id')),
+  ('70-movimenti-persona.sql', 'l''accento scritto come apostrofo dal vecchio programma («NICOLO''» = «Nicolò»)',
+    collegamento_token('Nicolo''') = collegamento_token('Nicolò')),
   ('71-pagato-vecchio-programma.sql', 'la lettura degli incassi del vecchio programma nella stagione, per il filtro «Pagato nel vecchio programma»',
     to_regprocedure('public.incassi_vecchio_programma()') is not null
     and exists (select 1 from information_schema.columns
