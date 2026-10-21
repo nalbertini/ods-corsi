@@ -1200,18 +1200,16 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (gia) return gia
       if (dati.personaId) persona(dati.personaId)
       const r = { ...dati, intestatario: pulisciIntestatario(dati.intestatario), note: dati.note?.trim() || undefined }
-      const no = cosaNonVa(r)
+      const anno = Number(r.data.slice(0, 4))
+      const tutte = a().ricevute ?? []
+      const prossimo = Math.max(0, ...tutte.filter((x) => x.anno === anno).map((x) => x.numero)) + 1
+      const no = cosaNonVa(r, oggiARoma(), prossimo)
       if (no) throw new Error(no)
       // Come `fai_ricevuta` (92): i contanti di un giorno chiuso no, tranne quelli del pagamento a mano che diventa ricevuta.
       const chiuso = contantiInGiornoChiuso(r.voci.flatMap((v) => v.pagamenti), r.data, fino(), pd)
       if (chiuso) throw new Error(chiuso)
-      if (r.note && r.note.length > 500) throw new Error('La nota è troppo lunga: al massimo 500 caratteri')
-      const anno = Number(r.data.slice(0, 4))
-      const tutte = a().ricevute ?? []
-      // Come `emetti_ricevuta`: il numero dato, se è libero; se no il primo dopo l'ultimo.
-      if (r.numero && tutte.some((x) => x.anno === anno && x.numero === r.numero))
-        throw new Error(`La ricevuta numero ${r.numero} del ${anno} c’è già: lascia il numero vuoto per il primo libero`)
-      const numero = r.numero ?? Math.max(0, ...tutte.filter((x) => x.anno === anno).map((x) => x.numero)) + 1
+      // Come `fai_ricevuta` (93): il numero dato solo in un anno vuoto, se no il primo dopo l'ultimo.
+      const numero = r.numero ?? prossimo
       const voci = r.voci.map((v) => ({ ...v, descrizione: v.descrizione.trim(), pagamenti: v.pagamenti.filter((p) => p.importo > 0) }))
       const c = contiRicevuta({ voci, anticipo: r.anticipo })
       const { numero: _n, ...resto } = r

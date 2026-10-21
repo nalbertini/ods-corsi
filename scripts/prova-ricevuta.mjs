@@ -146,6 +146,8 @@ ok('niente di salvato: il predefinito', ente(null), m.ENTE_PREDEFINITO)
 // IMPOSTAZIONI salva senza i campi vuoti: una P.IVA tolta dalla segreteria non torna dal predefinito.
 ok('una P.IVA tolta in IMPOSTAZIONI resta tolta', ente(Object.fromEntries(Object.entries(m.ENTE_PREDEFINITO).filter(([k]) => k !== 'partitaIva'))).partitaIva, undefined)
 
+// Il giorno in cui si fa la ricevuta: le date nel futuro no.
+const OGGI = '2026-10-21'
 const pagato = (importo) =>[{ data: '2026-09-01', importo, metodo: 'Bonifico' }]
 const quella = {
   id: 'r1',
@@ -168,10 +170,28 @@ const quella = {
 }
 const c = m.conti(quella)
 ok('totale, pagato e netto', [c.totale, c.pagato, c.netto], [41800, 41800, 0])
-ok('va bene', m.cosaNonVa(quella), null)
-ok('senza voci no', m.cosaNonVa({ ...quella, voci: [] }), 'Serve almeno una voce')
-ok('pagato più del totale no', m.cosaNonVa({ ...quella, anticipo: 100 }), 'Si è pagato più del totale: controlla gli importi')
-ok('senza il nome del socio no', m.cosaNonVa({ ...quella, intestatario: { nome: '', cognome: 'Albertini' } }), 'Servono nome e cognome del socio')
+ok('va bene', m.cosaNonVa(quella, OGGI), null)
+ok('senza voci no', m.cosaNonVa({ ...quella, voci: [] }, OGGI), 'Serve almeno una voce')
+ok('pagato più del totale no', m.cosaNonVa({ ...quella, anticipo: 100 }, OGGI), 'Si è pagato più del totale: controlla gli importi')
+ok('senza il nome del socio no', m.cosaNonVa({ ...quella, intestatario: { nome: '', cognome: 'Albertini' } }, OGGI), 'Servono nome e cognome del socio')
+// La data e il numero, come `93-ricevuta-data-numero.sql`: il 31/12 un 2027 al posto del 2026 aprirebbe l'anno dopo.
+const quota = quella.voci[0].descrizione
+const conPagamento = (data) => ({ ...quella, voci: [{ ...quella.voci[0], pagamenti: [{ data, importo: 5000, metodo: 'Bonifico' }] }, quella.voci[1]] })
+ok('oggi sì', m.cosaNonVa({ ...quella, data: OGGI }, OGGI), null)
+ok('domani no', m.cosaNonVa({ ...quella, data: '2026-10-22' }, OGGI), 'La data della ricevuta è nel futuro: si fa per quel che è già successo')
+ok('prima del 2000 no', m.cosaNonVa({ ...quella, data: '1999-12-31' }, OGGI), 'La data della ricevuta non torna')
+ok('dopo il 2100 no, anche con un oggi sbagliato', m.cosaNonVa({ ...quella, data: '2101-01-01' }, '2101-12-31'), 'La data della ricevuta non torna')
+ok('un pagamento nel futuro no', m.cosaNonVa(conPagamento('2026-10-22'), OGGI), `Un pagamento di «${quota}» ha la data nel futuro: si scrive quel che è già successo`)
+ok('un pagamento prima del 2000 no', m.cosaNonVa(conPagamento('1999-12-31'), OGGI), `La data di un pagamento di «${quota}» non torna`)
+ok('un pagamento senza data: quella della ricevuta', m.cosaNonVa(conPagamento(''), OGGI), null)
+ok('un pagamento a zero non conta, nemmeno la sua data (come fai_ricevuta)', m.cosaNonVa({ ...quella, voci: [{ ...quella.voci[0], pagamenti: [{ data: '2026-10-22', importo: 0, metodo: 'Bonifico' }] }, quella.voci[1]] }, OGGI), null)
+ok('un numero oltre 999999 no', m.cosaNonVa({ ...quella, numero: 1000000 }, OGGI), 'Il numero della ricevuta non va')
+ok('una nota oltre 500 caratteri no', m.cosaNonVa({ ...quella, note: 'a'.repeat(501) }, OGGI), 'La nota è troppo lunga: al massimo 500 caratteri')
+ok('una nota di 500 sì', m.cosaNonVa({ ...quella, note: 'a'.repeat(500) }, OGGI), null)
+// 1160 al posto di 116: il buco non si chiuderebbe più. A mano solo in un anno senza ricevute, per continuare un altro programma.
+ok('il numero a mano quando l\'anno ha già ricevute no', m.cosaNonVa({ ...quella, numero: 1160 }, OGGI, 117), 'Il 2026 ha già le sue ricevute: lascia vuoto il numero, prende il primo libero')
+ok('il numero a mano in un anno senza ricevute sì', m.cosaNonVa({ ...quella, numero: 116 }, OGGI, 1), null)
+ok('senza numero, con l\'anno già avviato, sì', m.cosaNonVa({ ...quella, numero: undefined }, OGGI, 117), null)
 ok('la voce di Lotta 3 dal foglio dei costi', m.vociDelCorso('lotta 3', '2026-08-31').map((v) => v.voce('2026-09-01').prezzo), [48000, 46000, 18000])
 ok('dopo il 31 agosto niente saldo', m.vociDelCorso('lotta 3', '2026-09-01').map((v) => v.voce('2026-09-01').prezzo), [48000, 18000])
 ok('la quota prima di tutto', m.vociPronte(['Judo 3'], '2026-09-01')[0].chiave, 'quota')
@@ -453,7 +473,7 @@ const scontata = {
   voci: [quella.voci[0], { ...quella.voci[1], descrizione: 'Annuale Lotta 3 · sconto famiglia 20% su 368,00 €', prezzo: 29440, pagamenti: pagato(29440) }],
 }
 ok('con lo sconto famiglia, il totale scontato', m.conti(scontata).totale, 34440)
-ok('va bene', m.cosaNonVa(scontata), null)
+ok('va bene', m.cosaNonVa(scontata, OGGI), null)
 console.log('Con un anticipo')
 // Gli stessi casi di supabase/prova/ricevute.sql (ricevute 301-304): stessi numeri.
 const conAnticipo = (quota, annuale, annualePagato, anticipo) => ({
@@ -468,7 +488,7 @@ const mancano = (r) => m.quoteDi([{ ...r, annullataIl: undefined }]).map((q) => 
 const parziale = conAnticipo(0, 29440, 29440, 2000)
 ok('anticipo parziale: il netto scende dell’anticipo', m.conti(parziale), { totale: 34440, pagato: 29440, netto: 3000 })
 ok('anticipo parziale: alla quota manca quel che resta', mancano(parziale), [3000])
-ok('anticipo parziale: la ricevuta va bene', m.cosaNonVa(parziale), null)
+ok('anticipo parziale: la ricevuta va bene', m.cosaNonVa(parziale, OGGI), null)
 ok('senza anticipo alla quota mancano i suoi 50 €', mancano({ ...parziale, anticipo: 0 }), [5000])
 const copreQuota = conAnticipo(0, 29440, 29440, 5000)
 ok('l’anticipo che copre il resto: netto zero', m.conti(copreQuota).netto, 0)
@@ -476,11 +496,11 @@ ok('l’anticipo che copre il resto: la quota non manca', mancano(copreQuota), [
 const tuttoAnticipo = conAnticipo(0, 29440, 0, 34440)
 ok('anticipo pari al totale: netto zero', m.conti(tuttoAnticipo), { totale: 34440, pagato: 0, netto: 0 })
 ok('anticipo pari al totale: la quota non manca', mancano(tuttoAnticipo), [0])
-ok('anticipo pari al totale: la ricevuta va bene', m.cosaNonVa(tuttoAnticipo), null)
+ok('anticipo pari al totale: la ricevuta va bene', m.cosaNonVa(tuttoAnticipo, OGGI), null)
 const misto = conAnticipo(2000, 29440, 0, 10000)
 ok('anticipo e quota pagata in parte: il netto toglie pagato e anticipo', m.conti(misto), { totale: 34440, pagato: 2000, netto: 22440 })
 ok('anticipo e quota pagata in parte: manca la quota, non di più', mancano(misto), [3000])
-ok('un anticipo oltre il totale no', m.cosaNonVa(conAnticipo(0, 29440, 29440, 5001)), 'Si è pagato più del totale: controlla gli importi')
+ok('un anticipo oltre il totale no', m.cosaNonVa(conAnticipo(0, 29440, 29440, 5001), OGGI), 'Si è pagato più del totale: controlla gli importi')
 ok('una ricevuta annullata non ha quote', m.quoteDi([{ ...parziale, annullataIl: '2026-09-11T10:00:00Z' }]), [])
 ok('la domanda con l’anticipo: quanto si paga ora e quanto resta', m.domandaRicevuta('n. 5/2026', leone, false, m.conti(parziale)), 'Fare la ricevuta n. 5/2026 a Leone Alessandro, 344,40 € · pagati ora 294,40 € · restano 30,00 €?')
 ok('la domanda con l’anticipo che copre tutto', m.domandaRicevuta('n. 5/2026', leone, false, m.conti(copreQuota)), 'Fare la ricevuta n. 5/2026 a Leone Alessandro, 344,40 € · pagati ora 294,40 € · restano 0,00 €?')
