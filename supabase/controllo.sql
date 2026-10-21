@@ -474,6 +474,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'fai_ricevuta' and corpo like '%contabilita_oggi%' and corpo like '%cassa_giorno_chiuso%')
     and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%fai_ricevuta%')),
   ('94-disattiva-chiude-iscrizioni.sql', 'disattivare una scheda chiude le sue iscrizioni',
-    exists (select 1 from pg_trigger where tgname = 'persone_iscrizioni_disattivata' and tgrelid = 'public.persone'::regclass))
+    exists (select 1 from pg_trigger where tgname = 'persone_iscrizioni_disattivata' and tgrelid = 'public.persone'::regclass)),
+  ('95-certificato-piu-lontano.sql', 'accogliendo vince il certificato che scade dopo',
+    to_regprocedure('public.accogli_iscrizione(uuid, uuid, date)') is not null and to_regprocedure('public.accogli_iscrizione(uuid, uuid)') is null)
 ) as x(file, cosa, c)
 order by file, cosa;

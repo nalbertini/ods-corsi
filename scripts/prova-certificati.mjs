@@ -378,20 +378,17 @@ await sezione('6b. accogliere porta anche la data, in un passo solo', async () =
     indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'ada@esempio.it', telefono: '347 111 2233',
     corsi: ['judo-adulti'], formula: 'annuale', regolamento: true, ...cambi,
   })
-  const accogli = (rich, dati, richiestaId, persona, scade) =>
-    typeof m.richiesteLib.accogliConCertificato === 'function' ? m.richiesteLib.accogliConCertificato(rich, dati, richiestaId, persona, scade) : Promise.reject(new Error('manca la funzione accogliConCertificato'))
   const ada = await r.invia(adulto())
   await r.caricaFile(ada, 'certificato', pdf())
-  const id = await accogli(r, s, ada, undefined, '2027-02-01')
+  const id = await r.accogli(ada, undefined, '2027-02-01')
   ok('accolta: il file e la data sono sulla scheda', [(await di(id)).certificato.conFile, (await di(id)).certificato.scade], [true, '2027-02-01'])
   const senzaData = await r.invia(adulto({ nome: 'Bea', codiceFiscale: 'DTABEA96A41L219D', email: 'bea@esempio.it' }))
-  const idBea = await accogli(r, s, senzaData, undefined, '')
+  const idBea = await r.accogli(senzaData, undefined, '')
   ok('senza la data, accoglie lo stesso e la data non c\'è', (await di(idBea)).certificato.scade, undefined)
   const cia = await r.invia(adulto({ nome: 'Cia', codiceFiscale: 'DTACIA96A41L219O', email: 'cia@esempio.it' }))
-  const rotta = { ...s, salvaCertificato: async () => { throw new Error('Non c’è rete: riprova quando torna') } }
-  const e = await errore(() => accogli(r, rotta, cia, undefined, '2027-02-01'))
-  ok('se la data non si salva lo dice, con la causa, e dice dove scriverla', [/accolta/.test(e), /Non c’è rete: riprova quando torna/.test(e), /scheda dell’iscritto/.test(e)], [true, true, true])
-  ok('e la richiesta è accolta davvero: non si accoglie due volte', (await r.richieste()).find((x) => x.id === cia).stato, 'accolta')
+  await r.caricaFile(cia, 'certificato', pdf())
+  ok('una data troppo lontana ferma l\'accoglimento, prima', await errore(() => r.accogli(cia, undefined, '2035-01-01')), 'La data è troppo lontana: controlla l\'anno.')
+  ok('e la richiesta è ancora da accogliere', (await r.richieste()).find((x) => x.id === cia).stato, 'nuova')
   ok('mancano data e file: la richiesta dice cosa manca', [m.richiesteLib.problemiCertificato(true, ''), m.richiesteLib.problemiCertificato(true, '2027-02-01'), m.richiesteLib.problemiCertificato(false, '')], [['Manca la data del certificato.'], [], []])
 })
 
