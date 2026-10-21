@@ -432,6 +432,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('85-solleciti.sql', 'i solleciti su WhatsApp: chi ha sollecitato e quando',
     to_regclass('public.solleciti') is not null
     and to_regprocedure('public.segna_sollecito(uuid)') is not null
-    and to_regprocedure('public.ultimo_sollecito(uuid)') is not null)
+    and to_regprocedure('public.ultimo_sollecito(uuid)') is not null),
+  ('86-solleciti-elenco.sql', 'i solleciti nell''elenco ISCRITTI: gli ultimi di tutti e Annulla',
+    to_regprocedure('public.ultimi_solleciti()') is not null
+    and to_regprocedure('public.togli_sollecito(uuid)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

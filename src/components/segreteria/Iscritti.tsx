@@ -1,6 +1,6 @@
 import { soldi } from '../../lib/satispay'
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { altriAperti, altriFiltri, FILTRI_VISIBILI, ID_FILTRI, TESTI_FILTRI, type IdFiltro } from '../../lib/filtriIscritti'
+import { altriAperti, altriFiltri, conSollecito, FILTRI_VISIBILI, ID_FILTRI, TESTI_FILTRI, type IdFiltro } from '../../lib/filtriIscritti'
 import type { DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
@@ -22,7 +22,9 @@ import { euro, QUOTA } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
 import { StoricoPersona } from './CollegaPersona'
 import { PagatoPrima } from './PagatoPrima'
-import { SollecitoWhatsApp } from './Sollecito'
+import { CellaSollecito, SollecitoWhatsApp } from './Sollecito'
+import { cellaSollecito } from '../../lib/sollecito'
+import { voceQuota } from '../../lib/ricevute'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
@@ -222,6 +224,23 @@ export function Iscritti({
       (!senzaDocumento || !p.documento) &&
       (!soloFilePrima || certificatoDaStampare(p.certificato)),
   )
+  // Coi filtri di chi ha qualcosa da sistemare, la colonna WHATSAPP: le letture in blocco partono solo allora.
+  const sollecitare = conSollecito(accesi) && !soloPagatoPrima && !soloDoppi
+  const perSollecito = useCarica(
+    async () => {
+      if (!sollecitare) return null
+      // Il genitore serve solo ai minorenni: se non si legge, il tasto resta col messaggio senza genitore.
+      const [listino, genitori] = await Promise.all([d.listino(), d.genitori().catch(() => new Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome'>>())])
+      return { quota: voceQuota(listino.listino).voce(oggi).prezzo, genitori }
+    },
+    [d, sollecitare, oggi],
+  )
+  const sollecitati = useCarica(async () => (sollecitare ? d.ultimiSolleciti() : null), [d, sollecitare])
+  const nelVecchioIds = new Set(delVecchio ? [...delVecchio.quota, ...delVecchio.daGuardare].map((r) => r.personaId) : [])
+  const cellaDi = (p: PersonaSeg) =>
+    perSollecito.dato
+      ? cellaSollecito(p, perSollecito.dato.genitori.get(p.id), perSollecito.dato.quota, oggi, { quotaNelVecchio: nelVecchioIds.has(p.id), tesseraDaSistemare: senzaTessera(tesseraDi(p)) })
+      : null
   const suoiCorsi = (p: PersonaSeg) => p.iscrizioni.filter((i) => inCorso(i, oggi)).map((i) => perId.get(i.corsoId)?.nome).filter(Boolean)
   const { ordina, colonna } = useOrdina<PersonaSeg, 'nome' | 'corsi' | 'contatto' | 'regola' | 'frequenza'>({
     nome: (p) => `${p.cognome} ${p.nome}`,
@@ -420,12 +439,13 @@ export function Iscritti({
           />
         ) : (
         <div role="table" aria-label="Iscritti" className="sg-tabella">
-          <div role="row" className="sg-lista-testa sg-riga-iscritto">
+          <div role="row" className="sg-lista-testa sg-riga-iscritto" data-sollecito={sollecitare || undefined}>
             {colonna('nome', 'NOME')}
             {colonna('corsi', 'CORSI')}
             {colonna('contatto', 'CONTATTO')}
             {colonna('regola', 'IN REGOLA?', { numeri: true })}
             {colonna('frequenza', '30 GIORNI', { numeri: true, destra: true })}
+            {sollecitare && <span role="columnheader" className="sg-cella-sollecito-testa">WHATSAPP</span>}
           </div>
           <div className="sg-tabella-corpo">
             {persone.dato === null && !persone.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo gli iscritti…</p>}
@@ -441,6 +461,7 @@ export function Iscritti({
                   className="sg-riga-iscritto sg-iscritto"
                   data-scelto={!nuovo && scelta === p.id}
                   data-spento={!p.attiva}
+                  data-sollecito={sollecitare || undefined}
                   onClick={() => {
                     setUnisciCon(null)
                     onScelta(p.id, 'push')
@@ -464,6 +485,7 @@ export function Iscritti({
                   <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', color: vienePoco(f) ? 'var(--giallo-testo)' : 'var(--text)' }}>
                     {f ? `${f.presenti}/${f.dovute}` : '—'}
                   </span>
+                  {sollecitare && <CellaSollecito d={d} p={p} cella={cellaDi(p)} ultimo={sollecitati.dato?.get(p.id)} avvisa={avvisa} dopo={() => void sollecitati.ricarica()} />}
                 </div>
               )
             })}

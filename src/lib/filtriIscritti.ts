@@ -50,3 +50,8 @@ export function altriFiltri(c: { conTessere: boolean; filePrima: number; doppion
 export function altriAperti(accesi: IdFiltro[], scelto: boolean): boolean {
   return scelto || accesi.some((id) => !FILTRI_VISIBILI.includes(id))
 }
+
+/** I filtri di chi ha qualcosa da sistemare: con uno acceso l'elenco ha il tasto del sollecito su WhatsApp. */
+export const FILTRI_SOLLECITO: IdFiltro[] = ['certificato', 'scadenza', 'arrivo', 'pagare', 'fuori']
+
+export const conSollecito = (accesi: IdFiltro[]) => accesi.some((id) => FILTRI_SOLLECITO.includes(id))

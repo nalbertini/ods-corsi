@@ -1,5 +1,5 @@
 import { indirizziDaSalvare } from './avvisoSegreteria'
-import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
+import type { Anagrafica, AnagraficaDi, UltimoSollecito, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
 import { cosaNonVaCompenso, cosaNonVaPagamento, descrizionePagamento, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
@@ -1226,6 +1226,30 @@ export function creaSegreteriaProva(): DatiSegreteria {
       a().solleciti = [...(a().solleciti ?? []), { personaId, creatoIl, da: '' }]
       salva()
       return creatoIl
+    },
+
+    async ultimiSolleciti() {
+      const tutti = new Map<string, UltimoSollecito>()
+      for (const s of a().solleciti ?? []) if ((tutti.get(s.personaId)?.quando ?? '') < s.creatoIl) tutti.set(s.personaId, { quando: s.creatoIl, da: s.da })
+      return tutti
+    },
+
+    // Come `togli_sollecito`: l'ultimo, solo entro 15 minuti. In prova si è sempre la stessa segreteria.
+    async togliSollecito(personaId) {
+      const suoi = (a().solleciti ?? []).filter((s) => s.personaId === personaId).sort((x, y) => y.creatoIl.localeCompare(x.creatoIl))
+      if (!suoi[0] || Date.parse(suoi[0].creatoIl) < Date.now() - 15 * 60_000) return false
+      a().solleciti = (a().solleciti ?? []).filter((s) => s !== suoi[0])
+      salva()
+      return true
+    },
+
+    async genitori() {
+      const tutti = new Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome'>>()
+      for (const p of a().persone) {
+        const an = anagraficaDi(p.id)
+        if (an) tutti.set(p.id, Object.fromEntries(Object.entries({ genitoreNome: an.dati.genitoreNome, genitoreCognome: an.dati.genitoreCognome }).filter(([, v]) => v)))
+      }
+      return tutti
     },
 
     async ultimoSollecito(personaId) {

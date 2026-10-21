@@ -128,4 +128,37 @@ select atteso('cancellata la scheda di chi ha segnato, il sollecito resta col no
   come('11111111-1111-1111-1111-111111111111', $$select da || '|' || (creato_il is not null)::text from ultimo_sollecito('cccccccc-0000-0000-0000-000000000001')$$), '|true');
 
 \echo ''
+\echo '--- 4. l''elenco: gli ultimi solleciti di tutti, e Annulla (86-solleciti-elenco.sql) ---'
+select atteso('86-solleciti-elenco.sql è stato lanciato: ci sono ultimi_solleciti e togli_sollecito',
+  (to_regprocedure('public.ultimi_solleciti()') is not null and to_regprocedure('public.togli_sollecito(uuid)') is not null)::text, 'true');
+-- Sara, mai sollecitata; Marco ha il sollecito vecchio di Sandro (che non c'è più) e ora uno di Anna.
+insert into persone (id, nome, cognome, ruolo, attiva) values ('cccccccc-0000-0000-0000-000000000003', 'Sara', 'Neri', 'iscritto', true);
+select come('11111111-1111-1111-1111-111111111111', $$select segna_sollecito('cccccccc-0000-0000-0000-000000000001')::text$$);
+select atteso('solo la segreteria legge l''elenco',
+  matrice('select count(*) from ultimi_solleciti()'),
+  'anna:ok ada:42501 sandro:42501 ivo:42501 maura:42501 luca:42501 senza:42501 tablet:42501 anon:42501');
+select atteso('e solo lei toglie',
+  matrice($q$select togli_sollecito('cccccccc-0000-0000-0000-000000000003')$q$),
+  'anna:ok ada:42501 sandro:42501 ivo:42501 maura:42501 luca:42501 senza:42501 tablet:42501 anon:42501');
+select atteso('authenticated le chiama, anon no (permessi)',
+  (select string_agg(has_function_privilege('authenticated', p.oid, 'execute')::text || '/' || has_function_privilege('anon', p.oid, 'execute')::text, ' ' order by p.proname)
+   from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('togli_sollecito', 'ultimi_solleciti')), 'true/false true/false');
+select atteso('una riga per persona sollecitata, l''ultima, col nome di chi',
+  come('11111111-1111-1111-1111-111111111111', $$select string_agg(persona_id::text || '=' || da, ',' order by persona_id) from ultimi_solleciti()$$),
+  'cccccccc-0000-0000-0000-000000000001=Anna Segreteria');
+select atteso('Annulla toglie l''ultimo di chi l''ha appena segnato',
+  come('11111111-1111-1111-1111-111111111111', $$select togli_sollecito('cccccccc-0000-0000-0000-000000000001')::text$$), 'true');
+select atteso('e torna quello di prima (senza nome: la scheda di chi l''ha segnato non c''è più)',
+  come('11111111-1111-1111-1111-111111111111', $$select coalesce(string_agg(da, ','), 'nessuno') from ultimi_solleciti() where persona_id = 'cccccccc-0000-0000-0000-000000000001'$$), '');
+select atteso('il sollecito di un altro non si toglie',
+  come('11111111-1111-1111-1111-111111111111', $$select togli_sollecito('cccccccc-0000-0000-0000-000000000001')::text$$), 'false');
+select atteso('una persona mai sollecitata: niente da togliere',
+  come('11111111-1111-1111-1111-111111111111', $$select togli_sollecito('cccccccc-0000-0000-0000-000000000003')::text$$), 'false');
+-- Dopo un quarto d'ora non è più un tasto sbagliato: resta.
+select come('11111111-1111-1111-1111-111111111111', $$select segna_sollecito('cccccccc-0000-0000-0000-000000000003')::text$$);
+update solleciti set creato_il = now() - interval '16 minutes' where persona_id = 'cccccccc-0000-0000-0000-000000000003';
+select atteso('dopo un quarto d''ora il sollecito non si toglie più',
+  come('11111111-1111-1111-1111-111111111111', $$select togli_sollecito('cccccccc-0000-0000-0000-000000000003')::text$$), 'false');
+
+\echo ''
 \echo 'solleciti: TUTTO A POSTO'

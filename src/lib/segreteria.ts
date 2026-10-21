@@ -749,6 +749,12 @@ export interface DatiSegreteria {
   segnaSollecito(personaId: string): Promise<string | null>
   /** L'ultimo sollecito segnato, col nome di chi; `null` se non ce n'è o senza `85-solleciti.sql`. */
   ultimoSollecito(personaId: string): Promise<UltimoSollecito | null>
+  /** L'ultimo sollecito di ognuno, in un colpo, per l'elenco ISCRITTI; vuota senza `86-solleciti-elenco.sql`. */
+  ultimiSolleciti(): Promise<Map<string, UltimoSollecito>>
+  /** «Annulla»: toglie l'ultimo sollecito se l'ha segnato chi è collegato da meno di 15 minuti; falso se non l'ha tolto o senza il file. */
+  togliSollecito(personaId: string): Promise<boolean>
+  /** Il genitore di ognuno, in un colpo, con la regola di `anagraficaDi`: per il sollecito ai minorenni nell'elenco. */
+  genitori(): Promise<Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome'>>>
   /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
   pagamentiDiretti(personaId?: string): Promise<PagamentoDiretto[]>
   /** Nome e cognome di chi ha pagato, e nient'altro: per chi segue i pagamenti senza vedere le persone (`55-amministrazione.sql`). */

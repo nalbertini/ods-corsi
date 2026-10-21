@@ -11,6 +11,7 @@ import { cosaNonVaCompenso, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
+import { genitoriDa, type RigaGenitore } from './sollecito'
 import { tutteLeRighe } from './tutteLeRighe'
 import { ESTENSIONI } from './richieste'
 import { insegna, RUOLI_DEL_PERSONALE, segniDi, type RuoloPersonale } from './ruoli'
@@ -1445,6 +1446,43 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return null
       // `as`: segna_sollecito() in 85-solleciti.sql rende un timestamptz.
       return ok(r) as string
+    },
+
+    async ultimiSolleciti() {
+      const r = await db.rpc('ultimi_solleciti')
+      // Senza 86-solleciti-elenco.sql l'elenco non dice chi è già sollecitato, e basta.
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return new Map()
+      // `as`: le righe di ultimi_solleciti() in 86-solleciti-elenco.sql, una per persona.
+      return new Map((ok(r) as Array<{ persona_id: string; creato_il: string; da: string }>).map((x) => [x.persona_id, { quando: x.creato_il, da: x.da }]))
+    },
+
+    async togliSollecito(personaId) {
+      const r = await db.rpc('togli_sollecito', { persona: personaId })
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return false
+      // `as`: togli_sollecito() in 86-solleciti-elenco.sql rende un boolean.
+      return ok(r) as boolean
+    },
+
+    async genitori() {
+      const tutte = async (r: Promise<{ data: unknown[]; error: unknown }>) => {
+        const { data, error } = await r
+        return error ? [] : data
+      }
+      const [an, rich] = await Promise.all([
+        tutte(tutteLeRighe((prima, ultima) => db.from('anagrafiche').select('persona_id, genitore_nome, genitore_cognome, cambiata_il').order('persona_id').range(prima, ultima))),
+        tutte(
+          tutteLeRighe((prima, ultima) =>
+            db.from('richieste_iscrizione').select('id, persona_id, genitore_nome, genitore_cognome, gestita_il, creata_il').eq('stato', 'accolta').not('persona_id', 'is', null).order('id').range(prima, ultima),
+          ),
+        ),
+      ])
+      // `as`: le righe sono quelle dei select qui sopra.
+      type Riga = { persona_id: string; genitore_nome: string | null; genitore_cognome: string | null }
+      const riga = (x: Riga, quando: string): RigaGenitore => ({ personaId: x.persona_id, genitoreNome: x.genitore_nome ?? undefined, genitoreCognome: x.genitore_cognome ?? undefined, quando })
+      return genitoriDa(
+        (rich as Array<Riga & { gestita_il: string | null; creata_il: string }>).map((x) => riga(x, x.gestita_il ?? x.creata_il)),
+        (an as Array<Riga & { cambiata_il: string }>).map((x) => riga(x, x.cambiata_il)),
+      )
     },
 
     async ultimoSollecito(personaId) {
