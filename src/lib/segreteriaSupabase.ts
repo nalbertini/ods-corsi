@@ -1440,6 +1440,22 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       }))
     },
 
+    async segnaSollecito(personaId) {
+      const r = await db.rpc('segna_sollecito', { persona: personaId })
+      // Senza 85-solleciti.sql il sollecito si apre lo stesso: solo non resta segnato.
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return null
+      // `as`: segna_sollecito() in 85-solleciti.sql rende un timestamptz.
+      return ok(r) as string
+    },
+
+    async ultimoSollecito(personaId) {
+      const r = await db.rpc('ultimo_sollecito', { persona: personaId })
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return null
+      // `as`: le righe di ultimo_sollecito() in 85-solleciti.sql, al più una.
+      const u = (ok(r) as Array<{ creato_il: string; da: string }>)[0]
+      return u ? { quando: u.creato_il, da: u.da } : null
+    },
+
     async esitiInvioRicevuta(id) {
       const r = await db.rpc('esiti_invio_ricevuta', { ricevuta: id })
       if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return []

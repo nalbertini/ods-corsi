@@ -429,6 +429,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.avvisi_non_mandati_oggi()') is not null
     -- Rilanciare 06, 74 o 83 dopo 84 rimette la invia_iscrizione che ignora l'invio: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%inv := %')),
+  ('85-solleciti.sql', 'i solleciti su WhatsApp: chi ha sollecitato e quando',
+    to_regclass('public.solleciti') is not null
+    and to_regprocedure('public.segna_sollecito(uuid)') is not null
+    and to_regprocedure('public.ultimo_sollecito(uuid)') is not null),
   ('86-ricevuta-una-volta.sql', 'una ricevuta fatta una volta sola: la chiave del modulo',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'ricevute' and column_name = 'chiave')

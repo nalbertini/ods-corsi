@@ -125,7 +125,23 @@ un timbro apre la scheda che lo contiene (sotto) e porta alla sua parte. Se la s
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
 **Riattiva**.
 
-Sotto i timbri la scheda è divisa in quattro schede, e se ne vede una alla volta:
+Sotto i timbri, se la quota o il certificato sono da sistemare, c'è
+**SOLLECITO SU WHATSAPP**: cosa manca (la quota da pagare, scaduta o pagata in
+parte; il certificato mancante, scaduto, in scadenza nei prossimi 30 giorni, o
+che servirà al compimento dei 6 anni), il messaggio già scritto e **Apri
+WhatsApp**. Il tasto apre WhatsApp col messaggio pronto, al telefono della
+scheda: lo puoi cambiare, poi premi invio in WhatsApp. L'app non manda niente da
+sola. Quota e certificato vanno in un messaggio solo. A un minorenne si scrive
+al genitore dei **DATI ANAGRAFICI** («Ciao Laura, … per Marco»); senza genitore il
+messaggio non saluta per nome («Ciao, … per Marco»). Il messaggio
+dice solo nome, cosa manca, data e importo: mai codice fiscale, ricevute o note.
+Premuto il tasto, sotto compare **Sollecitato l'ultima volta il … da …**, così
+la collega vede che è già stato fatto. Se il telefono manca o è sbagliato, il
+riquadro lo dice e **Vai a PERSONA** porta dove aggiungerlo; se sembra un fisso
+(comincia per 0), avvisa che su WhatsApp di solito non c'è. Una scheda
+disattivata, o in regola, non ha il riquadro.
+
+Poi la scheda è divisa in quattro schede, e se ne vede una alla volta:
 
 - **PERSONA** — i contatti, **STESSO CONTATTO DI**, **DATI ANAGRAFICI**, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.

@@ -1231,6 +1231,20 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return (a().inviiRicevute ?? []).filter((i) => sue.has(i.ricevutaId)).sort((x, y) => x.creatoIl.localeCompare(y.creatoIl))
     },
 
+    // Come `segna_sollecito`: solo su una scheda attiva. In prova non si sa chi è collegato: il nome resta vuoto.
+    async segnaSollecito(personaId) {
+      if (!a().persone.some((p) => p.id === personaId && p.attiva)) throw new Error('La scheda non c’è o è disattivata.')
+      const creatoIl = new Date().toISOString()
+      a().solleciti = [...(a().solleciti ?? []), { personaId, creatoIl, da: '' }]
+      salva()
+      return creatoIl
+    },
+
+    async ultimoSollecito(personaId) {
+      const u = (a().solleciti ?? []).filter((s) => s.personaId === personaId).sort((x, y) => y.creatoIl.localeCompare(x.creatoIl))[0]
+      return u ? { quando: u.creatoIl, da: u.da } : null
+    },
+
     async esitiInvioRicevuta(id) {
       // Come `esiti_invio_ricevuta`: data ed esito, senza indirizzo né motivo.
       return (a().inviiRicevute ?? []).filter((i) => i.ricevutaId === id).map(({ ricevutaId, creatoIl, esito }) => ({ ricevutaId, creatoIl, esito }))
