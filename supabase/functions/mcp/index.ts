@@ -6,7 +6,8 @@
 // L'accesso è quello di Supabase (Authentication → OAuth Server): Claude chiede il token, la persona entra in ODS
 // e dice CONSENTI (la pagina `collega/` dell'app), e da lì ogni chiamata porta il suo token. Qui non c'è la chiave
 // `service_role`: il server legge e scrive col token di chi chiama, quindi valgono le stesse regole dell'app
-// (`e_amministrazione()`, le funzioni di 59, 60 e 72). Le regole e il protocollo sono in src/lib/mcp.ts e
+// (`e_amministrazione()`, le funzioni di 59, 60, 72, 75 e 76). Il token di Claude passa solo dalle funzioni di
+// `porta_di_claude()` (76): niente tabelle. Le regole e il protocollo sono in src/lib/mcp.ts e
 // src/lib/movimentiDallaChat.ts, provate da scripts/prova-mcp.mjs; qui solo Supabase.
 //
 // Si pubblica senza il controllo del token di Supabase (`--no-verify-jwt`): senza token deve rispondere questo
@@ -44,16 +45,16 @@ function apri(token: string) {
   return {
     eAmministrazione: async () => ok(await db.rpc('e_amministrazione')) === true,
     async voci() {
-      const righe = ok(await db.from('voci_contabili').select('id, nome, tipo, di_sistema, attiva')) as Array<{ id: string; nome: string; tipo: 'entrata' | 'uscita'; di_sistema: boolean; attiva: boolean }>
+      const righe = ok(await db.rpc('chat_voci')) as Array<{ id: string; nome: string; tipo: 'entrata' | 'uscita'; di_sistema: boolean; attiva: boolean }>
       return righe.map((r) => ({ id: r.id, nome: r.nome, tipo: r.tipo, diSistema: r.di_sistema, attiva: r.attiva }))
     },
     async casse() {
-      const righe = ok(await db.from('casse').select('id, nome, saldo_iniziale, dal').order('nome')) as Array<{ id: string; nome: string; saldo_iniziale: number; dal: string | null }>
+      const righe = ok(await db.rpc('chat_casse')) as Array<{ id: string; nome: string; saldo_iniziale: number; dal: string | null }>
       return righe.map((r) => ({ id: r.id, nome: r.nome, saldoIniziale: r.saldo_iniziale, ...(r.dal ? { dal: r.dal } : {}) }))
     },
     async chiusure() {
       // Con `movimento_id`: la differenza della chiusura non conta nel ricalcolo di «non più in regola».
-      const righe = ok(await db.from('chiusure_cassa').select('id, cassa_id, dal, data, previsto, contato, differenza, movimento_id, chiusa_il, annullata_il')) as Parameters<typeof chiusuraDaRiga>[0][]
+      const righe = ok(await db.rpc('chat_chiusure')) as Parameters<typeof chiusuraDaRiga>[0][]
       return righe.map(chiusuraDaRiga)
     },
     async simili(testo: string) {
@@ -96,7 +97,7 @@ function apri(token: string) {
     },
     eSegreteria: async () => ok(await db.rpc('e_staff')) === true,
     async corsi() {
-      const righe = ok(await db.from('corsi').select('id, nome').eq('attivo', true).order('nome')) as Array<{ id: string; nome: string }>
+      const righe = ok(await db.rpc('chat_corsi')) as Array<{ id: string; nome: string }>
       return righe.map((r) => ({ id: r.id, nome: r.nome }))
     },
     // Le righe di 75-chat-segreteria.sql: nome e cognome dei minori sono già nulli, e non c'è altro di loro.
@@ -127,7 +128,8 @@ function apri(token: string) {
       return righe.map((r) => ({ sessioneId: r.sessione_id, corsoId: r.corso_id, inizio: r.inizio, prove: r.prove }))
     },
     registra: async (dati: Record<string, unknown>) => {
-      const r = ok(await db.rpc('registra_movimento_dalla_chat', { dati })) as MovimentoScritto
+      // Una riga sola, in un elenco: `chat_registra` (76) risponde con `returns table`.
+      const [r] = ok(await db.rpc('chat_registra', { dati })) as MovimentoScritto[]
       return { id: r.id, tipo: r.tipo, data: r.data, importo: r.importo, descrizione: r.descrizione, voce_id: r.voce_id, cassa_id: r.cassa_id }
     },
   }

@@ -1,14 +1,15 @@
 -- Claude passa solo dalla sua porta (76-claude-dalla-porta.sql): il token che Claude riceve quando una persona lo
 -- collega a ODS Corsi (OAuth Server di Supabase) porta tutti i diritti di quella persona, più il claim `client_id`.
 -- Qui si prova che con quel claim:
---   · `controlla_richiesta()`, che PostgREST chiama prima di ogni richiesta, lascia passare solo quello che usa il
---     server MCP (supabase/functions/mcp): poche tabelle senza persone, in sola lettura, e le sue funzioni; il resto
+--   · `controlla_richiesta()`, che PostgREST chiama prima di ogni richiesta, lascia passare solo le funzioni del
+--     server MCP (supabase/functions/mcp), nessuna tabella (con l'embedding una tabella porta alle altre); il resto
 --     (persone, anagrafiche, ricevute, movimenti, ogni altra funzione, GraphQL) è «42501»;
 --   · i file dello Storage (certificati, documenti) sono chiusi, in lettura e in scrittura;
 --   · i token dell'app, senza `client_id`, e chi non ha fatto l'accesso passano come prima.
--- E le letture dei conti che il server faceva sulle tabelle, ora funzioni della sola amministrazione:
--- `chat_movimenti()`, `chat_movimenti_uguali(…)`, `chat_movimento_per_chiave(chiave)`, `chat_ricevute()`,
--- `chat_pagamenti_diretti()`, con le sole colonne che servono.
+-- E le letture che il server faceva sulle tabelle, ora funzioni: quelle dei conti della sola amministrazione
+-- (`chat_movimenti()`, `chat_movimenti_uguali(…)`, `chat_movimento_per_chiave(chiave)`, `chat_ricevute()`,
+-- `chat_pagamenti_diretti()`), con le sole colonne che servono; `chat_voci()`, `chat_casse()`, `chat_chiusure()`,
+-- `chat_corsi()` con l'RLS delle loro tabelle; `chat_registra(dati)`.
 -- Si lancia dopo finto-supabase.sql e i file dello schema, su un database suo.
 \set ON_ERROR_STOP on
 set timezone = 'UTC';
@@ -100,19 +101,23 @@ select atteso('…un nome che somiglia no', richiesta(:'sandro', :'claude', 'GET
 select atteso('…un percorso con due pezzi no', richiesta(:'sandro', :'claude', 'GET', 'voci_contabili/persone'), :'NO');
 select atteso('…un client_id vuoto è sempre Claude', richiesta(:'sandro', '{"sub": "33333333-3333-3333-3333-333333333333", "client_id": ""}', 'GET', 'persone'), :'NO');
 select atteso('…anche senza utente', richiesta('', '{"client_id": "x"}', 'GET', 'persone'), :'NO');
-select atteso('le tabelle senza persone, in lettura: voci_contabili', richiesta(:'sandro', :'claude', 'GET', 'voci_contabili'), 'ok');
-select atteso('…col percorso che comincia con la barra', richiesta(:'sandro', :'claude', 'GET', '/voci_contabili'), 'ok');
-select atteso('…casse', richiesta(:'sandro', :'claude', 'GET', 'casse'), 'ok');
-select atteso('…chiusure_cassa', richiesta(:'sandro', :'claude', 'GET', 'chiusure_cassa'), 'ok');
-select atteso('…corsi', richiesta(:'sandro', :'claude', 'GET', 'corsi'), 'ok');
-select atteso('…HEAD (il conto delle righe)', richiesta(:'sandro', :'claude', 'HEAD', 'corsi'), 'ok');
-select atteso('…ma non in scrittura', richiesta(:'sandro', :'claude', 'PATCH', 'voci_contabili'), :'NO');
-select atteso('…né aggiungere', richiesta(:'sandro', :'claude', 'POST', 'casse'), :'NO');
-select atteso('…né cancellare', richiesta(:'sandro', :'claude', 'DELETE', 'corsi'), :'NO');
+select atteso('nessuna tabella, nemmeno senza persone: voci_contabili', richiesta(:'sandro', :'claude', 'GET', 'voci_contabili'), :'NO');
+select atteso('…casse', richiesta(:'sandro', :'claude', 'GET', '/casse'), :'NO');
+select atteso('…chiusure_cassa', richiesta(:'sandro', :'claude', 'GET', 'chiusure_cassa'), :'NO');
+select atteso('…corsi (da corsi si arriva a iscrizioni e persone con ?select=)', richiesta(:'sandro', :'claude', 'GET', 'corsi'), :'NO');
+select atteso('…né registra_movimento_dalla_chat (risponde con una riga di movimenti)', richiesta(:'sandro', :'claude', 'POST', 'rpc/registra_movimento_dalla_chat'), :'NO');
 select atteso('le funzioni del server: ' || f, richiesta(:'sandro', :'claude', 'POST', 'rpc/' || f), 'ok')
-  from unnest(array['e_amministrazione', 'e_staff', 'movimenti_simili', 'registra_movimento_dalla_chat',
-    'chat_iscritti', 'chat_registro', 'chat_prove', 'chat_movimenti', 'chat_movimenti_uguali',
-    'chat_movimento_per_chiave', 'chat_ricevute', 'chat_pagamenti_diretti']) f;
+  from unnest(array['e_amministrazione', 'e_staff', 'chat_voci', 'chat_casse', 'chat_chiusure', 'movimenti_simili', 'chat_registra',
+    'chat_movimenti', 'chat_movimenti_uguali', 'chat_movimento_per_chiave', 'chat_ricevute', 'chat_pagamenti_diretti',
+    'chat_corsi', 'chat_iscritti', 'chat_registro', 'chat_prove']) f;
+select atteso('…e nient''altro: la porta è quell''elenco', (select array_length(porta_di_claude(), 1))::text, '16');
+-- Su una tabella, o su una funzione che risponde col tipo di una sua riga, PostgREST fa l'embedding
+-- (`?select=*,persone(*)`): la porta vede solo il percorso principale. Le funzioni della porta rispondono con
+-- `returns table` (o un valore semplice), mai con una riga di tabella.
+select atteso('nessuna funzione della porta risponde con righe di una tabella',
+  (select string_agg(p.proname, ',') from pg_proc p join pg_type t on t.oid = p.prorettype
+    where p.pronamespace = 'public'::regnamespace and p.proname = any (porta_di_claude()) and t.typrelid <> 0), null);
+select atteso('…e ognuna c''è', (select count(distinct p.proname)::text from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = any (porta_di_claude())), '16');
 select atteso('…anche chiamate in GET', richiesta(:'sandro', :'claude', 'GET', 'rpc/chat_movimenti'), 'ok');
 
 \echo '--- 3. i file dello Storage: chiusi al token di Claude ---'
@@ -180,9 +185,15 @@ select atteso('le letture dei conti: security definer, stable, search_path fissa
 select atteso('anon non le chiama',
   (select string_agg(f, ',') from unnest(array['chat_movimenti()', 'chat_movimenti_uguali(text,integer,date,date)', 'chat_movimento_per_chiave(text)', 'chat_ricevute()', 'chat_pagamenti_diretti()']) f
     where has_function_privilege('anon', f, 'execute')), null);
-select atteso('controlla_richiesta e da_claude: le chiamano tutti (PostgREST le chiama col ruolo di chi chiede)',
+select atteso('controlla_richiesta, da_claude e porta_di_claude: le chiamano tutti (PostgREST col ruolo di chi chiede)',
   (has_function_privilege('anon', 'controlla_richiesta()', 'execute') and has_function_privilege('authenticated', 'controlla_richiesta()', 'execute')
-   and has_function_privilege('anon', 'da_claude()', 'execute') and has_function_privilege('authenticated', 'da_claude()', 'execute'))::text, 'true');
+   and has_function_privilege('anon', 'da_claude()', 'execute') and has_function_privilege('authenticated', 'da_claude()', 'execute')
+   and has_function_privilege('anon', 'porta_di_claude()', 'execute'))::text, 'true');
+select atteso('le letture senza persone: Sandro le legge',
+  da(:'sandro', :'claude', 'select ((select count(*) from chat_voci()) > 0 and (select count(*) from chat_casse()) = 2)::text'), 'true');
+select atteso('…anon no',
+  (select string_agg(f, ',') from unnest(array['chat_voci()', 'chat_casse()', 'chat_chiusure()', 'chat_corsi()', 'chat_registra(jsonb)']) f
+    where has_function_privilege('anon', f, 'execute')), null);
 select atteso('PostgREST chiama controlla_richiesta prima di ogni richiesta',
   (select array_to_string(rolconfig, ';') from pg_roles where rolname = 'authenticator'), '…pgrst.db_pre_request=public.controlla_richiesta…');
 select atteso('niente scritto dalle prove: tre movimenti, un pagamento, un file',
