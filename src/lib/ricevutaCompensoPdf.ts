@@ -1,4 +1,5 @@
-import type { PDFDocument, PDFFont, PDFPage } from 'pdf-lib'
+import type { PDFDocument, PDFEmbeddedPage, PDFFont, PDFPage } from 'pdf-lib'
+import { numeraPagine, SU_CARTA } from './cartaPdf'
 import { scrivibileCon } from './firma'
 import { aCapo } from './letteraPdf'
 import { testoRicevutaCompenso, type DatiRicevutaCompenso } from './compensi'
@@ -21,16 +22,26 @@ const FONDO = PAGINA.h - 48
 /** Le righe che sono titoli: in grassetto, con lo spazio sopra. */
 const TITOLI = /^(AUTOCERTIFICAZIONE|DICHIARA|RICHIEDE|LIQUIDAZIONE)/
 
-async function scriviRicevuta(pdf: PDFDocument, r: DatiRicevutaCompenso, font: PDFFont, grassetto: PDFFont) {
+/** Con `foglio` (la carta intestata) ogni pagina parte da lì, e il testo sta fra la sua testata e il suo piede. */
+async function scriviRicevuta(pdf: PDFDocument, r: DatiRicevutaCompenso, font: PDFFont, grassetto: PDFFont, foglio?: PDFEmbeddedPage) {
   const { rgb } = await import('pdf-lib')
   const nero = rgb(0, 0, 0)
   const scrivibile = scrivibileCon(font)
-  let pagina: PDFPage = pdf.addPage([PAGINA.w, PAGINA.h])
-  let y = MARGINE
+  const inizio = foglio ? SU_CARTA.inizio : MARGINE
+  const fondo = foglio ? PAGINA.h - SU_CARTA.sotto : FONDO
+  const pagine: PDFPage[] = []
+  const nuova = () => {
+    const p = pdf.addPage([PAGINA.w, PAGINA.h])
+    if (foglio) p.drawPage(foglio)
+    pagine.push(p)
+    return p
+  }
+  let pagina: PDFPage = nuova()
+  let y = inizio
   const spazio = (h: number) => {
-    if (y + h > FONDO) {
-      pagina = pdf.addPage([PAGINA.w, PAGINA.h])
-      y = MARGINE
+    if (y + h > fondo) {
+      pagina = nuova()
+      y = inizio
     }
   }
   const scrivi = (testo: string, x: number, f: PDFFont) => {
@@ -84,10 +95,12 @@ async function scriviRicevuta(pdf: PDFDocument, r: DatiRicevutaCompenso, font: P
     if (riga.startsWith('Collegno,')) y += 2 * RIGA
     y += 2
   }
+  // Ogni ricevuta conta le sue pagine: due fogli sciolti si ritrovano col nome del tecnico.
+  if (foglio) numeraPagine(pagine, font, scrivibile(`${r.tecnico.nome} ${r.tecnico.cognome}`.trim()), rgb(0.3, 0.3, 0.3))
 }
 
 /** Il PDF di più ricevute, una dopo l'altra: per stampare quelle del mese in una volta. */
-export async function ricevuteCompensiPdf(rs: DatiRicevutaCompenso[]): Promise<Uint8Array> {
+export async function ricevuteCompensiPdf(rs: DatiRicevutaCompenso[], carta?: Uint8Array): Promise<Uint8Array> {
   const { PDFDocument, StandardFonts } = await import('pdf-lib')
   const pdf = await PDFDocument.create()
   pdf.setTitle(rs.length === 1 ? `Compenso ${rs[0].mese.slice(0, 7)} · ${rs[0].tecnico.cognome} ${rs[0].tecnico.nome}`.trim() : `Compensi ${rs[0]?.mese.slice(0, 7) ?? ''}`)
@@ -95,15 +108,16 @@ export async function ricevuteCompensiPdf(rs: DatiRicevutaCompenso[]): Promise<U
   pdf.setCreator('ODS Corsi')
   const font = await pdf.embedFont(StandardFonts.Helvetica)
   const grassetto = await pdf.embedFont(StandardFonts.HelveticaBold)
-  for (const r of rs) await scriviRicevuta(pdf, r, font, grassetto)
+  const [foglio] = carta ? await pdf.embedPdf(carta) : []
+  for (const r of rs) await scriviRicevuta(pdf, r, font, grassetto, foglio)
   return pdf.save()
 }
 
 export const ricevutaCompensoPdf = (r: DatiRicevutaCompenso) => ricevuteCompensiPdf([r])
 
 /** Scarica il PDF: «compensi-2026-10.pdf» per più ricevute, «compenso-2026-10-ballabio-diana.pdf» per una. */
-export async function scaricaRicevuteCompensi(rs: DatiRicevutaCompenso[]) {
-  const byte = await ricevuteCompensiPdf(rs)
+export async function scaricaRicevuteCompensi(rs: DatiRicevutaCompenso[], carta?: Uint8Array) {
+  const byte = await ricevuteCompensiPdf(rs, carta)
   const chi = (r: DatiRicevutaCompenso) =>
     [r.tecnico.cognome, r.tecnico.nome].filter((x) => x.trim()).join('-').toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, '-')
   const nome = rs.length === 1 ? `compenso-${rs[0].mese.slice(0, 7)}-${chi(rs[0])}.pdf` : `compensi-${rs[0]?.mese.slice(0, 7) ?? ''}.pdf`

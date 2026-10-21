@@ -1,4 +1,5 @@
 import type { PDFFont, PDFPage } from 'pdf-lib'
+import { numeraPagine, SU_CARTA } from './cartaPdf'
 import { scrivibileCon } from './firma'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from './sala'
 import type { PresenzaIstruttoreSeg } from './segreteria'
@@ -121,7 +122,8 @@ interface Colonna {
   destra?: boolean
 }
 
-export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: FiltriReport, ente: string): Promise<Uint8Array> {
+/** Con `carta` ogni pagina parte dalla carta intestata: niente logo a ingranaggi né nome in testa, e il testo sta fra testata e piede. */
+export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: FiltriReport, ente: string, carta?: Uint8Array): Promise<Uint8Array> {
   const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib')
   const pdf = await PDFDocument.create()
   const font = await pdf.embedFont(StandardFonts.Helvetica)
@@ -137,8 +139,12 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
   const c = contiReport(righe)
   const ordinate = [...righe].sort((a, b) => a.inizio.localeCompare(b.inizio))
 
+  const [foglio] = carta ? await pdf.embedPdf(carta) : []
+  const inizio = foglio ? SU_CARTA.inizio - 12 : MARGINE
+  const fondoPagina = foglio ? PAGINA.h - SU_CARTA.sotto : FONDO
   let p: PDFPage = pdf.addPage([PAGINA.w, PAGINA.h])
-  let t = MARGINE
+  if (foglio) p.drawPage(foglio)
+  let t = inizio
 
   const testo = (s: string, x: number, alto: number, o: { corpo?: number; f?: PDFFont; colore?: ReturnType<typeof rgb>; fino?: number; destra?: boolean } = {}) => {
     const corpo = o.corpo ?? 9
@@ -164,14 +170,15 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
 
   const nuovaPagina = () => {
     p = pdf.addPage([PAGINA.w, PAGINA.h])
-    t = MARGINE
+    if (foglio) p.drawPage(foglio)
+    t = inizio
     testo(`${ente} · Presenze istruttori · ${f.periodo}`, MARGINE, t + 8, { corpo: 8, colore: grigio })
-    logo(MARGINE + LARGO - 34, t - 8, 34)
+    if (!foglio) logo(MARGINE + LARGO - 34, t - 8, 34)
     t += 24
   }
   /** C'è posto per `alto` punti? Se no, si va a capo pagina. */
   const posto = (alto: number) => {
-    if (t + alto > FONDO) nuovaPagina()
+    if (t + alto > fondoPagina) nuovaPagina()
   }
 
   const titolo = (s: string) => {
@@ -199,7 +206,7 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
     posto(RIGA * 3)
     testa()
     righe.forEach((r, n) => {
-      if (t + RIGA > FONDO) {
+      if (t + RIGA > fondoPagina) {
         nuovaPagina()
         testa()
       }
@@ -212,8 +219,10 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
   }
 
   // La testa, col logo a destra.
-  logo(MARGINE + LARGO - 96, t - 6, 96)
-  testo(ente, MARGINE, t + 9, { corpo: 9, colore: grigio })
+  if (!foglio) {
+    logo(MARGINE + LARGO - 96, t - 6, 96)
+    testo(ente, MARGINE, t + 9, { corpo: 9, colore: grigio })
+  }
   testo('Report presenze istruttori', MARGINE, t + 32, { corpo: 20, f: grassetto })
   testo(f.periodo, MARGINE, t + 52, { corpo: 13 })
   const filtri = [f.corso && `Corso: ${f.corso}`, f.istruttore && `Istruttore: ${f.istruttore}`].filter(Boolean).join(' · ')
@@ -387,7 +396,9 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
 
   // I numeri di pagina, quando si sa quante sono.
   const pagine = pdf.getPages()
-  pagine.forEach((pg, i) => {
+  // Sulla carta il numero sta sopra il piede: a 26 punti dal fondo c'è la tessera coi dati.
+  if (foglio) numeraPagine(pagine, font, '', grigio)
+  else pagine.forEach((pg, i) => {
     const s = `Pagina ${i + 1} di ${pagine.length}`
     pg.drawText(s, { x: PAGINA.w - MARGINE - font.widthOfTextAtSize(s, 7.5), y: 26, size: 7.5, font, color: grigio })
   })
@@ -399,8 +410,8 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
 }
 
 /** Il PDF scaricato dal browser, col suo nome: si apre e si stampa. */
-export async function scaricaReportIstruttori(righe: PresenzaIstruttoreSeg[], f: FiltriReport, ente: string) {
-  const byte = await reportIstruttoriPdf(righe, f, ente)
+export async function scaricaReportIstruttori(righe: PresenzaIstruttoreSeg[], f: FiltriReport, ente: string, carta?: Uint8Array) {
+  const byte = await reportIstruttoriPdf(righe, f, ente, carta)
   const url = URL.createObjectURL(new Blob([byte as BlobPart], { type: 'application/pdf' }))
   const a = document.createElement('a')
   a.href = url

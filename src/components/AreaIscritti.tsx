@@ -17,6 +17,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
 import { comePaga, dalCertificato, pagamentoDi, statoCertificato } from '../lib/segreteria'
 import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
 import { CONTATTI, chiama } from '../lib/sito'
+import { cartaSePuoi } from '../lib/cartaPdf'
 import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
 import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } from './ds'
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
@@ -480,7 +481,8 @@ function Ricevute({ ricevute }: { ricevute: Ricevuta[] }) {
     setGuaio(null)
     // pdf-lib si carica solo qui: chi guarda le lezioni non lo scarica.
     void import('../lib/ricevutaPdf')
-      .then((m) => m.scaricaRicevuta(r, nomeFileRicevuta(r)))
+      // Qui non c'è nessuno a cui chiedere: con la carta se arriva, se no senza.
+      .then(async (m) => m.scaricaRicevuta(r, nomeFileRicevuta(r), await cartaSePuoi()))
       .catch(() => setGuaio('Il PDF non si è fatto: riprova fra un attimo.'))
   }
   return (

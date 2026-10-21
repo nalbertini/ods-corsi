@@ -9,12 +9,14 @@
 // lascia i PDF, da aprire per guardare che tutto stia nei riquadri.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
-import { writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { inflateSync } from 'node:zlib'
 
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/ricevute'; export { annoScritto, anniDiNascita, altriAperti, corsiPerEta, cosaNonVaListino, testoAltriCorsi, fuoriEta, listinoDa, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
+      "export * from './src/lib/ricevute'; export { annoScritto, anniDiNascita, altriAperti, corsiPerEta, cosaNonVaListino, testoAltriCorsi, fuoriEta, listinoDa, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci, scaricaRicevuta } from './src/lib/ricevutaPdf'; export { PDFDocument, PDFArray, PDFRawStream, PDFName, PDFDict } from 'pdf-lib'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -27,6 +29,66 @@ const { outputFiles } = await build({
 })
 const m = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 const cartella = process.argv[2]
+
+// Leggere una pagina come prova-lettere.mjs § 6 bis: solo il contenuto della pagina, non quello della carta
+// disegnata sopra. Le righe scritte (dove, che corpo, cosa), i Form disegnati con `Do` e il riquadro che
+// coprono sulla pagina (BBox per la Matrix del Form e per quella del momento), i punti delle linee, le curve.
+const leggiPagina = ({ PDFArray, PDFRawStream, PDFName, PDFDict }) => (pg) => {
+  const c = pg.node.Contents()
+  const contenuto = (c instanceof PDFArray ? c.asArray().map((r) => pg.doc.context.lookup(r)) : [c])
+    .filter((f) => f instanceof PDFRawStream)
+    .map((f) => {
+      try {
+        return inflateSync(f.contents).toString('latin1')
+      } catch {
+        return Buffer.from(f.contents).toString('latin1')
+      }
+    })
+    .join('\n')
+  const xo = pg.node.Resources()?.lookup(PDFName.of('XObject'), PDFDict)
+  const forma = (nome) => {
+    const o = xo?.lookup(PDFName.of(nome.slice(1)))
+    const d = o instanceof PDFRawStream ? o.dict : o
+    return String(d?.get(PDFName.of('Subtype'))) === '/Form' ? d : null
+  }
+  const numeri = (d, k) => d.lookup(PDFName.of(k), PDFArray)?.asArray().map((n) => n.asNumber())
+  const per = ([a, b, c, d, e, f], [A, B, C, D, E, F]) => [a * A + b * C, a * B + b * D, c * A + d * C, c * B + d * D, e * A + f * C + E, e * B + f * D + F]
+  const punto = ([a, b, c, d, e, f], x, y) => [a * x + c * y + e, b * x + d * y + f]
+  const scritte = []
+  const forme = []
+  const punti = []
+  let curve = 0
+  let ctm = [1, 0, 0, 1, 0, 0]
+  let tm = [0, 0]
+  let corpo = 0
+  let num = []
+  let prima = ''
+  const pila = []
+  for (const t of contenuto.split(/\s+/)) {
+    if (/^-?[\d.]+$/.test(t)) {
+      num.push(Number(t))
+      continue
+    }
+    if (t === 'q') pila.push(ctm)
+    else if (t === 'Q') ctm = pila.pop() ?? ctm
+    else if (t === 'cm') ctm = per(num.slice(-6), ctm)
+    else if (t === 'Tf') corpo = num.at(-1)
+    else if (t === 'Tm') tm = punto(ctm, num.at(-2), num.at(-1))
+    else if (t === 'Tj' && prima.startsWith('<')) scritte.push({ x: tm[0], y: tm[1], corpo, testo: Buffer.from(prima.slice(1, -1), 'hex').toString('latin1').replace(/\x92/g, '’') })
+    else if (t === 'Do' && forma(prima)) {
+      const d = forma(prima)
+      const m = per(numeri(d, 'Matrix') ?? [1, 0, 0, 1, 0, 0], ctm)
+      const [x0, y0, x1, y1] = numeri(d, 'BBox')
+      const angoli = [punto(m, x0, y0), punto(m, x1, y1), punto(m, x0, y1), punto(m, x1, y0)]
+      forme.push({ nome: prima, dopo: scritte.length, x0: Math.min(...angoli.map((a) => a[0])), x1: Math.max(...angoli.map((a) => a[0])), y0: Math.min(...angoli.map((a) => a[1])), y1: Math.max(...angoli.map((a) => a[1])) })
+    } else if (t === 'm' || t === 'l') punti.push(punto(ctm, num.at(-2), num.at(-1)))
+    else if (t === 'c') curve++
+    num = []
+    prima = t
+  }
+  const tratteggi = [...contenuto.matchAll(/\[([^\]]*)\]\s+-?[\d.]+\s+d\b/g)].filter((x) => x[1].trim()).length
+  return { contenuto, scritte, righe: scritte.map((s) => s.testo), forme, punti, curve, tratteggi }
+}
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -422,6 +484,94 @@ for (const [nome, r] of [['ricevuta-116', quella], ['ricevuta-sconto-famiglia', 
   ok(`${nome}: A4 in orizzontale`, doc.getPage(0).getSize().width > doc.getPage(0).getSize().height, true)
   ok(`${nome}: pagine`, pagine, m.pagineDelleVoci(r.voci).length)
   if (cartella) writeFileSync(`${cartella}/${nome}.pdf`, byte)
+}
+
+console.log('La ricevuta sulla carta intestata')
+{
+  const leggi = leggiPagina(m)
+  const carta = new Uint8Array(readFileSync('public/moduli/carta-intestata.pdf'))
+  const fai = async (r, su) => {
+    try {
+      const doc = await m.PDFDocument.load(await m.ricevutaPdf(r, su))
+      return { doc, pagine: doc.getPages().map(leggi) }
+    } catch (e) {
+      return { errore: e.message }
+    }
+  }
+  const impronta = (p) => p.errore ?? createHash('sha256').update(p.pagine.map((q) => q.contenuto).join('\n')).digest('hex').slice(0, 16)
+  const annullata = { ...quella, annullataIl: '2026-09-02T10:00:00Z' }
+  const molte = { ...tante, numero: 119, voci: Array.from({ length: 12 }, (_, i) => ({ ...tante.voci[0], descrizione: `Trimestre Judo ${i + 1}` })) }
+  /** Le righe delle voci (fra «Prezzo» della barra e «Note» dei totali) che scendono fino a «Note», copia per copia. */
+  const vociSuiTotali = (q) => {
+    const fuori = []
+    q.scritte.forEach((s, i) => {
+      if (s.testo !== 'Prezzo') return
+      const note = q.scritte.findIndex((n, j) => j > i && n.testo === 'Note')
+      for (const v of q.scritte.slice(i + 1, note)) if (v.y - 0.2 * v.corpo <= q.scritte[note].y + q.scritte[note].corpo) fuori.push(v.testo)
+    })
+    return fuori
+  }
+
+  // Senza carta la ricevuta è quella di oggi: lo stesso contenuto, pagina per pagina, e niente disegnato sopra.
+  const OGGI = { 'la 116': '3a43b6bd59dcf0d2', 'quella con sette voci': '5782764b0ddedb7a', 'l’annullata': 'd504cf943b1cbb91' }
+  for (const [nome, r] of [['la 116', quella], ['quella con sette voci', tante], ['l’annullata', annullata]]) {
+    const p = await fai(r)
+    ok(`${nome}, senza carta: nessun XObject Form`, p.errore ?? p.pagine.map((q) => q.forme.length), p.pagine?.map(() => 0))
+    ok(`${nome}, senza carta: lo stesso contenuto di oggi`, impronta(p), OGGI[nome])
+  }
+  ok('senza carta, sette voci da tre righe di pagamento: ancora tre per pagina', m.pagineDelleVoci(tante.voci, false).length, 3)
+
+  for (const [nome, r] of [['la 116', quella], ['quella con sette voci', tante], ['l’annullata', annullata], ['quella con dodici voci', molte]]) {
+    const p = await fai(r, carta)
+    ok(`${nome}, con la carta: si fa`, p.errore ?? 'fatto', 'fatto')
+    if (p.errore) continue
+    const { pagine: ps } = p
+    const N = ps.length
+    ok(`${nome}: A4 in orizzontale`, Object.values(p.doc.getPage(0).getSize()).map(Math.round), [842, 595])
+    ok(`${nome}: le pagine sono quelle di pagineDelleVoci con la carta`, N, m.pagineDelleVoci(r.voci, true).length)
+    ok(`${nome}: ogni pagina disegna due testate piccole (XObject Form), una per copia`, ps.map((q) => q.forme.map((f) => (f.x1 <= 841.89 / 2 ? 'sinistra' : f.x0 >= 841.89 / 2 ? 'destra' : 'in mezzo')).sort()), ps.map(() => ['destra', 'sinistra']))
+    const dentro = ps.flatMap((q, i) =>
+      q.scritte
+        .filter((s) => q.forme.some((f) => s.x >= f.x0 - 0.5 && s.x < f.x1 && s.y + 0.75 * s.corpo > f.y0 && s.y - 0.2 * s.corpo < f.y1))
+        .map((s) => `pagina ${i + 1}: «${s.testo}» a y=${s.y}`),
+    )
+    ok(`${nome}: nessuna riga della ricevuta dentro la testata piccola`, dentro, [])
+    ok(`${nome}: le voci non scendono nei totali`, ps.flatMap(vociSuiTotali), [])
+    const tutto = ps.flatMap((q) => q.righe).join('\n')
+    const parole = ['Asd Il Centro Judo', 'Corso Francia 224', '95562500017', 'ALBERTINI MANUELA', 'LBRMNL14H53L219X', 'ALBERTINI NICOLA', ...r.voci.map((v) => v.descrizione), 'Totale Documento', 'Netto a Pagare', 'Esente da imposta e tasse']
+    ok(`${nome}: le parole della ricevuta ci sono tutte (ente, socio, voci, totali, dicitura)`, parole.filter((f) => !tutto.includes(f)), [])
+    ok(`${nome}: ogni pagina tranne l’ultima dice «Continua a pagina n», in tutte e due le copie`, ps.map((q, i) => q.righe.filter((x) => x === `Continua a pagina ${i + 2}`).length), ps.map((_, i) => (i < N - 1 ? 2 : 0)))
+    if (r.annullataIl) {
+      // ANNULLATA sopra la carta: la k-esima si scrive dopo il k-esimo Form.
+      ok(`${nome}: ANNULLATA si scrive dopo la carta, così sta sopra`, ps.map((q) => {
+        const annullate = q.scritte.flatMap((s, i) => (s.testo === 'ANNULLATA' ? [i] : []))
+        const forme = q.forme.map((f) => f.dopo).sort((a, b) => a - b)
+        return annullate.length === 2 && forme.length === 2 && forme.every((d, k) => d <= annullate[k])
+      }), ps.map(() => true))
+    }
+  }
+  ok('con la carta le voci hanno meno posto: dodici voci vanno su più pagine che senza', m.pagineDelleVoci(molte.voci, true).length > m.pagineDelleVoci(molte.voci).length, true)
+}
+
+// Lo scaricamento dal browser, finto: la ricevuta scaricata ha la carta che le si passa.
+{
+  const carta = new Uint8Array(readFileSync('public/moduli/carta-intestata.pdf'))
+  const prima = { document: globalThis.document, crea: URL.createObjectURL, revoca: URL.revokeObjectURL }
+  let blob
+  globalThis.document = { createElement: () => ({ click() {}, remove() {} }), body: { appendChild() {} } }
+  URL.createObjectURL = (b) => ((blob = b), 'blob:prova')
+  URL.revokeObjectURL = () => {}
+  try {
+    await m.scaricaRicevuta(quella, 'prova.pdf', carta)
+    const doc = await m.PDFDocument.load(new Uint8Array(await blob.arrayBuffer()))
+    ok('scaricaRicevuta con la carta: il PDF scaricato ha la testata piccola su ogni copia', doc.getPages().map((q) => leggiPagina(m)(q).forme.length), doc.getPages().map(() => 2))
+  } catch (e) {
+    ok('scaricaRicevuta con la carta: si fa', e.message, 'fatto')
+  } finally {
+    globalThis.document = prima.document
+    URL.createObjectURL = prima.crea
+    URL.revokeObjectURL = prima.revoca
+  }
 }
 
 if (guai) {

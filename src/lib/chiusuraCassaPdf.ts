@@ -1,5 +1,6 @@
 import type { PDFFont, PDFPage } from 'pdf-lib'
 import { descrizioneRiga, differenzaInParole, giornoRoma, importoPerCassa, righeDelPeriodo, type ChiusuraCassa, type RigaMovimento } from './contabilita'
+import { numeraPagine } from './cartaPdf'
 import { scrivibileCon } from './firma'
 import { dataRicevuta, euro, type EnteRicevuta } from './ricevute'
 
@@ -33,6 +34,8 @@ export interface DatiFoglioChiusura {
   righe: RigaMovimento[]
   /** Dopo la chiusura è cambiato un incasso: l'elenco di adesso non torna più con le cifre salvate, e il foglio lo dice. */
   nonPiuInRegola?: boolean
+  /** La carta intestata: con lei la testa dell'associazione la dà la carta, e il numero di pagina va in basso. */
+  carta?: Uint8Array
 }
 
 export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Array> {
@@ -85,12 +88,16 @@ export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Arra
     return t + fatte.length * (corpo + 3)
   }
 
+  const [foglio] = d.carta ? await pdf.embedPdf(d.carta) : []
   const testa = (p: PDFPage, n: number) => {
-    testo(p, ente.nome, MARGINE, 56, { corpo: 14, f: grassetto, largo: destra - MARGINE })
-    testo(p, `${ente.indirizzo} · ${ente.cap} ${ente.comune}`.replace(/^ · /, ''), MARGINE, 71, { corpo: 9 })
-    testo(p, `C.F. ${ente.codiceFiscale}${ente.partitaIva ? ` · P.IVA ${ente.partitaIva}` : ''}`, MARGINE, 83, { corpo: 9 })
-    if (gruppi.length > 1) testo(p, `pag. ${n}/${gruppi.length}`, destra, 56, { corpo: 9, destra: true })
-    linea(p, MARGINE, destra, 94, 0.75)
+    if (foglio) p.drawPage(foglio)
+    else {
+      testo(p, ente.nome, MARGINE, 56, { corpo: 14, f: grassetto, largo: destra - MARGINE })
+      testo(p, `${ente.indirizzo} · ${ente.cap} ${ente.comune}`.replace(/^ · /, ''), MARGINE, 71, { corpo: 9 })
+      testo(p, `C.F. ${ente.codiceFiscale}${ente.partitaIva ? ` · P.IVA ${ente.partitaIva}` : ''}`, MARGINE, 83, { corpo: 9 })
+      if (gruppi.length > 1) testo(p, `pag. ${n}/${gruppi.length}`, destra, 56, { corpo: 9, destra: true })
+      linea(p, MARGINE, destra, 94, 0.75)
+    }
     if (d.nonPiuInRegola) testo(p, 'ATTENZIONE: dopo la chiusura sono cambiati dei pagamenti in contanti: l’elenco non torna più con le cifre.', MARGINE, 106, { corpo: 8.5, f: grassetto, colore: rosso, largo: destra - MARGINE })
     if (k.annullataIl) p.drawText('ANNULLATA', { x: 150, y: y(520), size: 70, font: grassetto, color: rosso, opacity: 0.3, rotate: degrees(25) })
   }
@@ -149,6 +156,8 @@ export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Arra
     }
   })
 
+  // Sulla carta il numero di pagina sta in basso: in alto c'è la testata.
+  if (foglio) numeraPagine(pdf.getPages(), font, '', rgb(0.3, 0.3, 0.3))
   pdf.setTitle(`Chiusura di cassa · ${d.cassa} · ${periodo}${k.annullataIl ? ' · ANNULLATA' : ''}${d.nonPiuInRegola ? ' · NON PIÙ IN REGOLA' : ''}`)
   pdf.setAuthor(ente.nome)
   pdf.setCreationDate(new Date(k.chiusaIl))

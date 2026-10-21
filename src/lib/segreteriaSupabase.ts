@@ -1396,7 +1396,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         // `as`: le colonne di CAMPI_RICEVUTA sono quelle di RigaRicevuta, come in `ricevute()` qui sopra.
         const r = ricevuta(ok(await db.from('ricevute').select(CAMPI_RICEVUTA).eq('id', id).single()) as unknown as RigaRicevuta)
         // Lo stesso PDF che si scarica; pdf-lib solo quando serve, come in Ricevute.tsx.
-        const pdf = await (await import('./ricevutaPdf')).ricevutaPdf(r)
+        // La carta intestata se arriva: una mail non si ferma per la grafica.
+        const pdf = await (await import('./ricevutaPdf')).ricevutaPdf(r, await (await import('./cartaPdf')).cartaSePuoi())
         let binario = ''
         // A pezzi: String.fromCharCode con tutto il PDF insieme supera gli argomenti che il browser accetta.
         for (let i = 0; i < pdf.length; i += 0x8000) binario += String.fromCharCode(...pdf.subarray(i, i + 0x8000))

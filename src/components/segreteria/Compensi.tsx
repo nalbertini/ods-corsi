@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { cartaSePuoi } from '../../lib/cartaPdf'
 import type { DatiSegreteria, Tariffa } from '../../lib/segreteria'
 import type { Voce } from '../../lib/indirizzoSegreteria'
 import { NOME_CASSA_CONTO, oggiARoma, type Cassa, type ChiusuraCassa } from '../../lib/contabilita'
@@ -7,8 +8,8 @@ import { chiaveGiorno, dataLunga, oraDi } from '../../lib/sala'
 import { euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
-import { centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, esitoDelMese, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type SenzaFirma, type StatoCompenso } from '../../lib/compensi'
-import { chiedi, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, avvisoDelMese, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type SenzaFirma, type StatoCompenso } from '../../lib/compensi'
+import { chiedi, Guaio, GuaioConAzione, stampaSenzaCarta, suCarta, Testa, useAvviso, useCarica } from './comune'
 import { Numero } from './Presenze'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
@@ -34,7 +35,7 @@ const saltato = (r: { persona: Persona; stato: StatoCompenso }) => `${nomeDi(r.p
 const maiuscola = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 const quante = (n: number, uno: string, tanti: string) => `${n} ${n === 1 ? uno : tanti}`
 const quanteOre = (minuti: number) => `${ore(minuti)} ${minuti === 60 ? 'ora' : 'ore'}`
-const scarica = async (rs: RicevutaCompenso[]) => (await import('../../lib/ricevutaCompensoPdf')).scaricaRicevuteCompensi(rs)
+const scarica = async (rs: RicevutaCompenso[], carta?: Uint8Array) => (await import('../../lib/ricevutaCompensoPdf')).scaricaRicevuteCompensi(rs, carta)
 
 /**
  * Fa la ricevuta del mese di un tecnico: legge i suoi dati e le sue lettere,
@@ -99,7 +100,7 @@ export function AzioniRicevuta({
     })
     // Prima si salva, poi si scarica: se il PDF non esce, la ricevuta c'è già e si ristampa.
     const r = fatta.r
-    if (ok && r) void fai(() => scarica([r]))
+    if (ok && r) void fai(() => suCarta(fai, (c) => scarica([r], c)), 'PDF scaricato')
   }
   const annulla = async () => {
     if (!ricevuta) return
@@ -168,7 +169,7 @@ export function AzioniRicevuta({
           />
           Firmata
         </label>
-        <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => scarica([ricevuta]))}>
+        <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => suCarta(fai, (c) => scarica([ricevuta], c)), 'PDF scaricato')}>
           Ristampa
         </button>
         {/* Solo una ricevuta che torna col mese si paga; una che non torna si annulla e si rifà prima. */}
@@ -356,6 +357,8 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
     const fatte: RicevutaCompenso[] = []
     const saltati: string[] = fermi.map(saltato)
     setTutte(true)
+    // La carta prima: se non arriva, l'avviso dice insieme l'esito (chi è saltato) e che il PDF aspetta.
+    const carta = await cartaSePuoi()
     await fai(async () => {
       for (const r of daFare) {
         try {
@@ -364,8 +367,9 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
           saltati.push(e instanceof Error ? e.message : nomeDi(r.persona))
         }
       }
-      if (fatte.length) await scarica(fatte)
-      const esito = esitoDelMese(fatte.length, saltati)
+      if (fatte.length && carta) await scarica(fatte, carta)
+      const esito = avvisoDelMese(fatte.length, saltati, !!carta)
+      if (esito.senzaCarta) throw new GuaioConAzione(esito.testo, stampaSenzaCarta(fai, () => scarica(fatte)))
       if (esito.guaio) throw new Error(esito.testo)
       avvisa(esito.testo)
     })

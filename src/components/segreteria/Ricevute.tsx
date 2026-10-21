@@ -1,4 +1,5 @@
 import { cosaNonVaMetodo, cosaNonVaSatispay, satispayDaUsare, soldi } from '../../lib/satispay'
+import { cartaSePuoi } from '../../lib/cartaPdf'
 import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
@@ -30,7 +31,7 @@ import {
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
 import { chiaveGiorno } from '../../lib/sala'
 import { avvisoDopoRicevuta, avvisoManda, confermaEmail, daMandare, domandaManda, genitoreDellaMail, restaDopoManda, restaDopoRicevuta, siRiprova, statoPosta, ultimaMandata } from '../../lib/ricevuteEmail'
-import { chiedi, chiediSpunta, Campo, dataLunga, Guaio, Riga, useAvviso, useBozza, useCarica } from './comune'
+import { chiedi, chiediSpunta, Campo, dataLunga, Guaio, Riga, suCarta, useAvviso, useBozza, useCarica } from './comune'
 import { Numero } from './Presenze'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
@@ -57,7 +58,7 @@ const chiediEManda = async (d: DatiSegreteria, r: Ricevuta, emailContatto: strin
 }
 
 /** Il PDF si fa solo quando serve: pdf-lib pesa, e l'elenco non ne ha bisogno. */
-const scarica = async (r: Ricevuta) => (await import('../../lib/ricevutaPdf')).scaricaRicevuta(r, nomeFileRicevuta(r))
+const scarica = async (r: Ricevuta, carta?: Uint8Array) => (await import('../../lib/ricevutaPdf')).scaricaRicevuta(r, nomeFileRicevuta(r), carta)
 
 /**
  * Lo storico dei pagamenti di un iscritto, nella sua scheda: ogni ricevuta con
@@ -150,7 +151,7 @@ export function StoricoIscritto({ d, p, corsi, fai, avvisa, onNuova, onCambiato 
                   </span>
                 )}
               </span>
-              <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(r))}>
+              <button type="button" className="num sg-chip" onClick={() => void fai(() => suCarta(fai, (c) => scarica(r, c)), 'PDF scaricato')}>
                 PDF
               </button>
               {/* La mail sopra, ANNULLA sotto su una riga sua: sul telefono, affiancati, un dito sbagliato annullerebbe. */}
@@ -611,10 +612,14 @@ export function NuovaRicevuta({
       async () => {
         const r = await d.emettiRicevuta(dati, conSatispay?.id)
         // Fatta la ricevuta, PDF e mail vanno ognuno per conto suo: se uno non va, l'altro parte lo stesso.
-        const scaricato = await scarica(r).then(
-          () => true,
-          () => false,
-        )
+        // Senza carta intestata il PDF non esce: l'avviso dice di riscaricarlo dallo storico, che chiede se stamparlo senza.
+        const carta = await cartaSePuoi()
+        const scaricato = carta
+          ? await scarica(r, carta).then(
+              () => true,
+              () => false,
+            )
+          : false
         // La ricevuta c'è comunque: se la mail non parte l'avviso non è rosso, e dalla posta che non risponde si riprova da qui.
         const esito = daMandare(p.emailContatto ?? null, spuntata) ? await d.mandaRicevuta(r.id) : null
         dillo(
