@@ -12,7 +12,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/listino'; export { COSTI, QUOTA_ASSOCIATIVA, SALDO_ENTRO, VALIDITA, saldoAperto } from './src/lib/costi'; export { vociDelCorso, vociPronte } from './src/lib/ricevute'; export { stimaIscrizione } from './src/lib/nucleo'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'",
+      "export * from './src/lib/listino'; export { COSTI, QUOTA_ASSOCIATIVA, SALDO_ENTRO, STAGIONE, saldoAperto } from './src/lib/costi'; export { vociDelCorso, vociPronte } from './src/lib/ricevute'; export { stimaIscrizione } from './src/lib/nucleo'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -257,9 +257,9 @@ console.log('\n5. l’età minima di un corso («dai N anni»)')
   ok('saldo: con la data del listino vale quella, non il 31/08', [m.saldoAperto('2026-09-15', '2026-09-30'), m.saldoAperto('2026-09-30', '2026-09-30'), m.saldoAperto('2026-10-01', '2026-09-30')], [true, true, false])
   ok('quota associativa: 50 euro', m.QUOTA_ASSOCIATIVA, 50)
   ok('il listino di partenza porta quota e saldo di costi.ts', [m.LISTINO_PREDEFINITO.quota, m.LISTINO_PREDEFINITO.saldoEntro], [50, '2026-08-31'])
-  ok('validità: la quota fino a fine luglio', m.VALIDITA.quota, { dal: '2026-09-01', al: '2027-07-31' })
-  ok('validità: l\'annuale dei corsi fino a fine giugno', m.VALIDITA.corsi, { dal: '2026-09-01', al: '2027-06-30' })
-  ok('validità: la quota dura più dei corsi, e partono insieme', [m.VALIDITA.quota.al > m.VALIDITA.corsi.al, m.VALIDITA.quota.dal === m.VALIDITA.corsi.dal], [true, true])
+  ok('validità: la quota fino a fine luglio', m.STAGIONE.quota, { dal: '2026-09-01', al: '2027-07-31' })
+  ok('validità: l\'annuale dei corsi fino a fine giugno', m.STAGIONE.corsi, { dal: '2026-09-01', al: '2027-06-30' })
+  ok('validità: la quota dura più dei corsi, e partono insieme', [m.STAGIONE.quota.al > m.STAGIONE.corsi.al, m.STAGIONE.quota.dal === m.STAGIONE.corsi.dal], [true, true])
   ok('ricevuta: il saldo del 31/08 c\'è, quello del 01/09 no', [m.vociDelCorso('Judo 3', '2026-08-31').some((v) => v.chiave.endsWith('~saldo')), m.vociDelCorso('Judo 3', '2026-09-01').some((v) => v.chiave.endsWith('~saldo'))], [true, false])
   ok('costi: ogni voce ha un corso, un nome unico e prezzi in euro interi positivi', m.COSTI.every((c) => c.corso && c.prezzi.length && c.prezzi.every((p) => [p.saldo, p.annuale, p.trimestre].every((x) => x === undefined || (Number.isInteger(x) && x > 0)))) && new Set(m.COSTI.map((c) => c.corso)).size === m.COSTI.length, true)
   ok('costi: il saldo, dove c\'è, costa meno dell\'annuale', m.COSTI.flatMap((c) => c.prezzi).filter((p) => p.saldo !== undefined && p.annuale !== undefined && p.saldo >= p.annuale).length, 0)

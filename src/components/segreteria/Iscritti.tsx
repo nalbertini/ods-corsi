@@ -6,7 +6,7 @@ import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
 import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, fuoriRegola, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
-import { VALIDITA } from '../../lib/costi'
+import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -1720,7 +1720,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
   const t = timbriScheda(p, oggi).quota
   const eccezione = p.pagamento.stato !== 'da_pagare'
   const [scrivi, setScrivi] = useState(false)
-  const [b, setB] = useState({ fino: VALIDITA.quota.al, nota: '' })
+  const [b, setB] = useState({ fino: stagioneDi(oggi).quota.al, nota: '' })
   const ricevute = useCarica(() => d.ricevute(p.id), [d, p.id])
   // Per ogni corso pagato, l'ultima data fin cui vale.
   const corsi = new Map<string, string>()

@@ -602,8 +602,8 @@ export function NuovaRicevuta({
     if (daPagamento) return setVoci([{ ...bozzaDa(voceDaPagamento(daPagamento)), pagatoAMano: true }])
     const quotaPagata = fatte.some((r) => !r.annullataIl && r.voci.some((v) => v.descrizione.toUpperCase() === QUOTA && (!v.al || v.al >= oggi)))
     metti([
-      ...(quotaPagata ? [] : [bozzaDa(pronte[0].voce(oggi))]),
-      ...corsi.flatMap((c) => vociDelCorso(c, data, l).slice(0, 1)).map((v) => bozzaDa(v.voce(oggi))),
+      ...(quotaPagata ? [] : [bozzaDa(pronte[0].voce(data || oggi))]),
+      ...corsi.flatMap((c) => vociDelCorso(c, data, l).slice(0, 1)).map((v) => bozzaDa(v.voce(data || oggi))),
     ])
   }, [partenza.dato])
 
@@ -826,7 +826,7 @@ export function NuovaRicevuta({
             className="num sg-chip sg-chip-pieno"
             disabled={!aggiungi || voci.length >= 20}
             onClick={() => {
-              const v = pronte.find((x) => x.chiave === aggiungi)?.voce(data)
+              const v = pronte.find((x) => x.chiave === aggiungi)?.voce(data || oggi)
               if (v) metti([...voci, bozzaDa(v)])
               setAggiungi('')
             }}
