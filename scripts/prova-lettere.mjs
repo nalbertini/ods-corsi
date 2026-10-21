@@ -176,6 +176,7 @@ await prova('una donna (il giorno di nascita +40): «Gentile signora»', () => l
 await prova('anche col codice scritto in minuscolo', () => l.saluto('blldni86h61h355w'), 'Gentile signora')
 await prova('anche con l\'omocodia (il giorno scritto a lettere)', () => l.saluto('BLLDNI86HSMH355A'), 'Gentile signora')
 await prova('un uomo: «Gentile signor»', () => l.saluto('RSSMRA80A01L219M'), 'Gentile signor')
+await prova('una donna nata il 5 (giorno 45 nel codice)', () => l.saluto('BLLDNI86H45H355W'), 'Gentile signora')
 await prova('un altro uomo', () => l.saluto('LBRNCL80C02L219F'), 'Gentile signor')
 await prova('senza codice fiscale: «Gentile»', () => l.saluto(), 'Gentile')
 await prova('col codice vuoto: «Gentile»', () => l.saluto(''), 'Gentile')
@@ -187,8 +188,16 @@ await prova('senza tariffe', () => l.cosaNonVaLettera({ ...dati, tariffe: [] }),
 await prova('la fine prima dell\'inizio', () => l.cosaNonVaLettera({ ...dati, al: '2026-08-01' }), "La fine viene prima dell'inizio")
 ok('la fine lo stesso giorno dell\'inizio no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, al: '2026-09-01' })), 'un messaggio')
 ok('una qualifica fuori elenco no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, qualifica: 'Bidello' })), 'un messaggio')
+ok('una stagione che non torna no («2026/99»)', unMessaggio(() => l.cosaNonVaLettera({ ...dati, stagione: '2026/99' })), 'un messaggio')
 ok('una stagione scritta male no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, stagione: '2026-27' })), 'un messaggio')
 ok('i giorni oltre 80 caratteri no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, giorni: 'x'.repeat(81) })), 'un messaggio')
+await prova('la fine dopo la stagione no', () => l.cosaNonVaLettera({ ...dati, al: '2030-07-30' }), 'Il periodo va dentro la stagione 2026/27')
+await prova("l'inizio prima della stagione no", () => l.cosaNonVaLettera({ ...dati, dal: '2025-12-01' }), 'Il periodo va dentro la stagione 2026/27')
+await prova('fino al 31 agosto sì', () => l.cosaNonVaLettera({ ...dati, al: '2027-08-31' }), null)
+ok('una tariffa di zero no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, tariffe: [{ corso: 'Judo kids', centesimi: 0 }] })), 'un messaggio')
+ok('una tariffa coi decimali di centesimo no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, tariffe: [{ corso: 'Judo kids', centesimi: 15.5 }] })), 'un messaggio')
+ok('la data vuota no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, data: '' })), 'un messaggio')
+ok('una data scritta male no', unMessaggio(() => l.cosaNonVaLettera({ ...dati, dal: '2026-9-1' })), 'un messaggio')
 await prova('i giorni vuoti sì', () => l.cosaNonVaLettera({ ...dati, giorni: '' }), null)
 await prova('le qualifiche, nell\'ordine della lettera', () => l.QUALIFICHE, [
   'Allenatore', 'Istruttore', 'Direttore tecnico', 'Direttore sportivo', 'Preparatore atletico', 'Direttore di gara', 'Atleta', 'Altro',
@@ -267,8 +276,25 @@ console.log('\n5 ter. quale lettera vale nella scheda')
   const x = (id, stagione, sostituitaIl = null) => ({ id, stagione, sostituitaIl })
   const ls = [x('n', '2026/27'), x('v', '2026/27', '2026-09-15T10:00:00Z'), x('p', '2025/26')]
   await prova('la valida della stagione, e le altre dalla più nuova', () => { const r = l.lettereDellaScheda(ls, '2026/27'); return [r.valida?.id, r.altre.map((y) => y.id)] }, ['n', ['v', 'p']])
+  await prova('la valida anche se in elenco viene dopo la sostituita', () => l.lettereDellaScheda([x('v', '2026/27', '2026-09-15T10:00:00Z'), x('n', '2026/27')], '2026/27').valida?.id, 'n')
   await prova('nessuna valida per una stagione nuova', () => { const r = l.lettereDellaScheda(ls, '2027/28'); return [r.valida ?? null, r.altre.length] }, [null, 3])
 }
+
+console.log('\n5 quater. il nome del file, le scelte proposte, la riga sotto, il compenso')
+await prova('il nome del file: stagione, chi, giorno', () => l.nomeFileLettera({ ...lettera, tecnico: { ...BALLABIO, cognome: 'Ballabìo' } }), 'lettera-incarico-2026-27-ballabio-diana-2026-09-01.pdf')
+await prova('la sostituita si distingue', () => l.nomeFileLettera({ ...lettera, sostituitaIl: '2026-09-15T10:00:00Z' }), 'lettera-incarico-2026-27-ballabio-diana-2026-09-01-sostituita.pdf')
+await prova('col cognome vuoto niente trattino doppio', () => l.nomeFileLettera({ ...lettera, tecnico: { ...BALLABIO, cognome: '', nome: 'Fabio' } }), 'lettera-incarico-2026-27-fabio-2026-09-01.pdf')
+await prova('senza lettera valida: la proposta della stagione', () => l.scelteDaProporre(undefined, '2026/27'), { stagione: '2026/27', dal: '2026-09-01', al: '2027-07-30', data: '2026-09-01', qualifica: 'Allenatore', giorni: '' })
+await prova('con la valida: i suoi valori, per correggerla', () => l.scelteDaProporre({ ...lettera, dal: '2026-10-01', qualifica: 'Istruttore' }, '2026/27'), { stagione: '2026/27', dal: '2026-10-01', al: '2027-07-30', qualifica: 'Istruttore', giorni: 'venerdì', data: '2026-09-01' })
+await prova('la riga di una sostituita firmata', () => l.rigaLettera({ ...lettera, firmata: true, sostituitaIl: '2026-09-15T10:00:00Z' }), 'Sostituita · 2026/27 · lettera del 1 settembre 2026 · sostituita il 15 settembre 2026 · firmata')
+await prova('la riga di una lettera di un\'altra stagione, non firmata', () => l.rigaLettera({ ...lettera, stagione: '2025/26', data: '2025-09-01' }), '2025/26 · lettera del 1 settembre 2025 · non firmata')
+await prova('il compenso: lo stesso nella lettera e nella scheda', () => l.compensoDi({ corso: 'Judo kids', centesimi: 1500 }), '€\u00a015,00 (quindici/00) per ogni ora di lezione nel corso Judo kids')
+
+await prova('quale campo non va: la fine prima dell\'inizio è «al»', () => l.campoCheNonVa({ ...dati, al: '2026-08-01' }), 'al')
+await prova('l\'inizio prima della stagione è «dal»', () => l.campoCheNonVa({ ...dati, dal: '2025-12-01' }), 'dal')
+await prova('la data che manca è «data»', () => l.campoCheNonVa({ ...dati, data: '' }), 'data')
+await prova('tutto giusto: nessuno', () => l.campoCheNonVa(dati), null)
+await prova('i corsi che insegna e restano fuori dalla lettera, senza tariffa', () => l.corsiFuoriLettera(['Aikido 2', 'Aikido 3', 'Judo kids'], [{ corso: 'Aikido 2', centesimi: 1500 }]), ['Aikido 3', 'Judo kids'])
 
 console.log('\n6. il PDF')
 {
@@ -340,6 +366,11 @@ console.log('\n7. la segreteria di prova: fa, sostituisce, spunta firmata')
   ok('la fine prima dell\'inizio no', await errore(() => s.faiLettera({ ...sua, al: '2026-08-01' })), "La fine viene prima dell'inizio")
   await prova('e le lettere sono ancora tre', async () => (await s.lettere(tecnico.id)).length, 3)
   await prova('chi non insegna non ne ha', () => s.lettere(nonInsegna.id), [])
+  // Un tecnico nuovo, senza corsi né lezioni: l'unica cosa che lo tiene è la lettera.
+  const nuovo = await s.salvaPersonale({ nome: 'Teo', cognome: 'Nuovo', ruolo: 'istruttore' })
+  await s.faiLettera({ ...dati, personaId: nuovo })
+  ok('un tecnico con lettere non si elimina, come col database', await errore(() => s.eliminaIstruttore(nuovo)), "Teo Nuovo ha già lavorato nei registri: non si elimina, gli si toglie l'accesso")
+  await prova('le lettere stanno nei dati della persona che si esportano', async () => (await s.esporta(tecnico.id)).lettere_incarico?.length, 3)
 }
 
 console.log('\n8. col database vero: la funzione, la sola colonna firmata, la tabella')

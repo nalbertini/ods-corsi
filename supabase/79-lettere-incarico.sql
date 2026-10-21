@@ -13,7 +13,7 @@
 --   · `fai_lettera_incarico(...)`: l'unico modo di farla. Sostituisce la
 --     valida della stessa stagione e fa la nuova, insieme. Solo per chi
 --     insegna (`ruolo = 'istruttore'` o `anche_istruttore`), con almeno una
---     tariffa.
+--     tariffa e il periodo dentro la stagione (1° settembre – 31 agosto).
 -- La legge, la fa e la spunta solo la segreteria (`e_staff()`): né il
 -- tecnico, né gli istruttori, né l'amministrazione senza segreteria, né
 -- `anon`. Un tecnico con lettere non si elimina: gli si toglie l'accesso.
@@ -57,14 +57,30 @@ declare
   nuova lettere_incarico;
 begin
   if not e_staff() then
-    raise exception 'Le lettere d''incarico le fa la segreteria' using errcode = '42501';
+    raise exception 'Le lettere d’incarico le fa la segreteria' using errcode = '42501';
   end if;
   if not exists (select 1 from persone p where p.id = persona and (p.ruolo = 'istruttore' or coalesce(p.anche_istruttore, false))) then
-    raise exception 'La lettera d''incarico si fa a chi insegna' using errcode = '22023';
+    raise exception 'La lettera d’incarico si fa a chi insegna' using errcode = '22023';
   end if;
-  if jsonb_typeof(tariffe) is distinct from 'array'
-     or exists (select 1 from jsonb_array_elements(tariffe) t where jsonb_typeof(t) <> 'object' or coalesce((t->>'centesimi')::int, 0) <= 0) then
+  -- Un elenco da 1 a 50 tariffe, ognuna col suo corso e un intero fra 1 e 100.000 centesimi: niente cast che si rompe a metà.
+  if jsonb_typeof(tariffe) is distinct from 'array' or jsonb_array_length(tariffe) not between 1 and 50
+     or exists (select 1 from jsonb_array_elements(tariffe) t
+                where jsonb_typeof(t) <> 'object' or jsonb_typeof(t->'corso') is distinct from 'string' or length(trim(t->>'corso')) = 0
+                   or jsonb_typeof(t->'centesimi') is distinct from 'number' or (t->>'centesimi') !~ '^[0-9]{1,6}$'
+                   or (t->>'centesimi')::int not between 1 and 100000) then
     raise exception 'Le tariffe della lettera non sono giuste' using errcode = '22023';
+  end if;
+  if jsonb_typeof(tecnico) is distinct from 'object' or pg_column_size(tecnico) > 8192 then
+    raise exception 'I dati del tecnico della lettera non sono giusti' using errcode = '22023';
+  end if;
+  -- Il periodo sta nella stagione, dal 1° settembre al 31 agosto: un anno scritto male non passa.
+  if fai_lettera_incarico.stagione !~ '^\d{4}/\d{2}$'
+     or right(fai_lettera_incarico.stagione, 2) <> lpad(((left(fai_lettera_incarico.stagione, 4)::int + 1) % 100)::text, 2, '0') then
+    raise exception 'La stagione si scrive come 2026/27' using errcode = '22023';
+  end if;
+  if fai_lettera_incarico.dal < make_date(left(fai_lettera_incarico.stagione, 4)::int, 9, 1)
+     or fai_lettera_incarico.al > make_date(left(fai_lettera_incarico.stagione, 4)::int + 1, 8, 31) then
+    raise exception 'Il periodo va dentro la stagione %', fai_lettera_incarico.stagione using errcode = '22023';
   end if;
   -- Una sola valida per stagione: quella di prima resta, segnata.
   update lettere_incarico l set sostituita_il = now()

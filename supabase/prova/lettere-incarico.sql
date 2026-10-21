@@ -12,7 +12,12 @@ insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'anna@ods.it'),
   ('22222222-2222-2222-2222-222222222222', 'ada@ods.it'),
   ('55555555-5555-5555-5555-555555555555', 'maura@ods.it'),
-  ('33333333-3333-3333-3333-333333333333', 'luca@ods.it');
+  ('33333333-3333-3333-3333-333333333333', 'luca@ods.it'),
+  ('77777777-7777-7777-7777-777777777777', 'tablet@ods.it'),
+  ('66666666-6666-6666-6666-666666666666', 'senza@ods.it');
+-- Un tablet di sala (in `postazioni`, senza scheda) e un account senza scheda.
+insert into sale (id, nome) values ('bbbbbbbb-0000-0000-0000-000000000001', 'Tatami');
+insert into postazioni (id, nome, sala_id, utente_id) values ('dddddddd-0000-0000-0000-000000000001', 'Tablet', 'bbbbbbbb-0000-0000-0000-000000000001', '77777777-7777-7777-7777-777777777777');
 -- Anna: segreteria che non insegna. Sara: segreteria che insegna anche. Ada:
 -- solo amministrazione. Maura (con l'accesso) e Ivo: istruttori. Luca: iscritto.
 insert into persone (id, nome, cognome, ruolo, anche_istruttore, email, utente_id) values
@@ -101,12 +106,25 @@ select atteso('una qualifica fuori elenco no', tenta(lettera('aaaaaaaa-0000-0000
 select atteso('la fine uguale all''inizio no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', al => '2026-09-01')), 'NEGATO: …');
 select atteso('la fine prima dell''inizio no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', al => '2026-08-01')), 'NEGATO: …');
 select atteso('una stagione scritta male no («2026-27»)', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', stagione => '2026-27')), 'NEGATO: …');
+select atteso('la fine dopo la stagione no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', al => '2030-07-30')), 'NEGATO: …');
+select atteso('l''inizio prima della stagione no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', dal => '2025-12-01')), 'NEGATO: …');
+select atteso('fino al 31 agosto sì', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', stagione => '2032/33', dal => '2032-09-01', al => '2033-08-31')), 'true');
+select atteso('una tariffa di 1.000 € l''ora sì', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', stagione => '2033/34', dal => '2033-09-01', al => '2034-07-30', tariffe => '[{"corso": "Judo kids", "centesimi": 100000}]')), 'true');
+select atteso('un centesimo in più no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', tariffe => '[{"corso": "Judo kids", "centesimi": 100001}]')), 'NEGATO: Le tariffe della lettera non sono giuste');
+select atteso('un corso di soli spazi no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', tariffe => '[{"corso": "  ", "centesimi": 1500}]')), 'NEGATO: Le tariffe della lettera non sono giuste');
+select atteso('i dati del tecnico oltre 8 KB no', tenta($$select (fai_lettera_incarico(persona => 'aaaaaaaa-0000-0000-0000-000000000006', stagione => '2026/27', dal => '2026-09-01', al => '2027-07-30', qualifica => 'Allenatore', giorni => '', data => '2026-09-01', tariffe => '[{"corso": "Judo kids", "centesimi": 1500}]', tecnico => jsonb_build_object('nome', (select string_agg(md5(i::text), '') from generate_series(1, 400) i)))).id is not null$$), 'NEGATO: I dati del tecnico della lettera non sono giusti');
+select atteso('una stagione che non torna no («2026/99»)', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', stagione => '2026/99')), 'NEGATO: …');
+select atteso('una tariffa scritta come testo no, col messaggio', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', tariffe => '[{"corso": "Judo kids", "centesimi": "x"}]')), 'NEGATO: Le tariffe della lettera non sono giuste');
+select atteso('una tariffa coi decimali no, col messaggio', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', tariffe => '[{"corso": "Judo kids", "centesimi": 1.5}]')), 'NEGATO: Le tariffe della lettera non sono giuste');
+select atteso('una tariffa enorme no, col messaggio', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', tariffe => '[{"corso": "Judo kids", "centesimi": 99999999999}]')), 'NEGATO: Le tariffe della lettera non sono giuste');
+select atteso('una tariffa senza corso no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', tariffe => '[{"centesimi": 1500}]')), 'NEGATO: Le tariffe della lettera non sono giuste');
+select atteso('più di 50 tariffe no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', tariffe => (select jsonb_agg(jsonb_build_object('corso', 'c' || i, 'centesimi', 100))::text from generate_series(1, 51) i))), 'NEGATO: Le tariffe della lettera non sono giuste');
 select atteso('i giorni oltre 80 caratteri no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', giorni => repeat('x', 81))), 'NEGATO: …');
 select atteso('i giorni vuoti sì', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', giorni => '')), 'true');
 select atteso('per la segreteria che non insegna no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000001')), 'NEGATO: …');
 select atteso('per l''amministrazione che non insegna no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000002')), 'NEGATO: …');
 select atteso('per un iscritto no', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000003')), 'NEGATO: …');
-select atteso('le lettere sono ancora quelle di prima, più quella di Ivo', (select count(*)::text from lettere_incarico), '5');
+select atteso('le lettere sono ancora quelle di prima, più quelle di Ivo', (select count(*)::text from lettere_incarico), '7');
 reset role;
 
 \echo ''
@@ -126,7 +144,7 @@ select atteso('non se ne scrive una a mano: solo con fai_lettera_incarico',
   tenta($$insert into lettere_incarico (persona_id, stagione, dal, al, qualifica, giorni, data, tariffe, tecnico)
     values ('aaaaaaaa-0000-0000-0000-000000000006', '2027/28', '2027-09-01', '2028-07-30', 'Allenatore', '', '2027-09-01',
       '[{"corso": "Judo kids", "centesimi": 1500}]', '{"nome": "Ivo", "cognome": "Tecnico"}')$$), 'NEGATO: …');
-select atteso('le tariffe sono ancora quelle', (select string_agg(distinct tariffe->0->>'centesimi', ' ') from lettere_incarico), '1500');
+select atteso('le tariffe sono ancora quelle', (select string_agg(distinct tariffe->0->>'centesimi', ' ' order by tariffe->0->>'centesimi') from lettere_incarico), '100000 1500');
 reset role;
 
 \echo ''
@@ -156,10 +174,23 @@ select atteso('anon non legge le lettere', tenta($$select count(*)::text from le
 select atteso('non se ne fa una', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006')), 'NEGATO: …');
 select atteso('non le spunta firmate', tenta($$update lettere_incarico set firmata = true$$), 'NEGATO: …');
 reset role;
-select atteso('e nessuno di loro ha cambiato niente: firmate nessuna, lettere 5',
-  (select count(*) filter (where firmata)::text || ' ' || count(*)::text from lettere_incarico), '0 5');
+select atteso('e nessuno di loro ha cambiato niente: firmate nessuna, lettere 7',
+  (select count(*) filter (where firmata)::text || ' ' || count(*)::text from lettere_incarico), '0 7');
 
 \echo ''
+\echo '--- 5 bis. un tablet di sala e un account senza scheda: niente ---'
+select chi('77777777-7777-7777-7777-777777777777');
+set role authenticated;
+select atteso('il tablet non vede le lettere', (select count(*)::text from lettere_incarico), '0');
+select atteso('non ne fa', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', stagione => '2030/31', dal => '2030-09-01', al => '2031-07-30')), 'NEGATO: …');
+select atteso('non spunta firmata', tenta($$update lettere_incarico set firmata = true$$), 'a vuoto (0 righe)');
+reset role;
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select atteso('l''account senza scheda non vede le lettere', (select count(*)::text from lettere_incarico), '0');
+select atteso('non ne fa', tenta(lettera('aaaaaaaa-0000-0000-0000-000000000006', stagione => '2030/31', dal => '2030-09-01', al => '2031-07-30')), 'NEGATO: …');
+reset role;
+
 \echo '--- 6. un tecnico con lettere non si elimina ---'
 select atteso('eliminare Maura, che ha lettere: no', tenta($$delete from persone where id = 'aaaaaaaa-0000-0000-0000-000000000005'$$), 'NEGATO: …');
 select atteso('e le sue lettere restano', (select count(*)::text from lettere_incarico where persona_id = 'aaaaaaaa-0000-0000-0000-000000000005'), '3');

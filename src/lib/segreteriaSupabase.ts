@@ -2399,7 +2399,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async esporta(personaId) {
-      const [persona, isc, pres, rich, scheda, ric, dir, anag] = await Promise.all([
+      const [persona, isc, pres, rich, scheda, ric, dir, anag, lett] = await Promise.all([
         db.from('persone').select('nome, cognome, email, telefono, ruolo, attiva, creata_il').eq('id', personaId).single(),
         db.from('iscrizioni').select('dal, al, corsi ( nome )').eq('persona_id', personaId),
         tutteLeRighe((prima, ultima) => db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId).order('id').range(prima, ultima)),
@@ -2414,6 +2414,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         db.from('pagamenti_diretti').select('data, importo, metodo, voce, nota, creato_il, annullato_il').eq('persona_id', personaId),
         // Nascita, residenza e genitore di chi è entrato dall'import.
         db.from('anagrafiche').select(`${CAMPI_ANAGRAFICA}, cambiata_il`).eq('persona_id', personaId).maybeSingle(),
+        // Le lettere d'incarico di un tecnico, coi dati copiati dentro.
+        db.from('lettere_incarico').select('stagione, dal, al, qualifica, giorni, data, tariffe, tecnico, firmata, sostituita_il, creata_il').eq('persona_id', personaId),
       ])
       return {
         esportato_il: new Date().toISOString(),
@@ -2428,6 +2430,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         pagamenti_a_mano: dir.error?.code === '42P01' || dir.error?.code === 'PGRST205' ? [] : ok(dir),
         // Senza 18-anagrafiche.sql non ce n'è.
         dati_anagrafici: anag.error?.code === '42P01' || anag.error?.code === 'PGRST205' ? null : ok(anag),
+        // Senza 79-lettere-incarico.sql non ce ne sono.
+        lettere_incarico: lett.error?.code === '42P01' || lett.error?.code === 'PGRST205' ? [] : ok(lett),
       }
     },
     async backup() {

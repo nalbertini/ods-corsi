@@ -1045,9 +1045,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async faiLettera(dati) {
       // Le stesse regole di `fai_lettera_incarico`.
       const p = persona(dati.personaId)
-      if (!(p.ruolo === 'istruttore' || p.ancheIstruttore)) throw new Error('La lettera d’incarico si fa a chi insegna')
+      // Nell'ordine dell'app col database: prima `cosaNonVaLettera`, poi la funzione.
       const no = cosaNonVaLettera(dati)
       if (no) throw new Error(no)
+      if (!(p.ruolo === 'istruttore' || p.ancheIstruttore)) throw new Error('La lettera d’incarico si fa a chi insegna')
       const ora = new Date().toISOString()
       const nuova: Lettera = { ...dati, giorni: dati.giorni.trim(), id: crypto.randomUUID(), firmata: false, sostituitaIl: null, creataIl: ora }
       a().lettere = [
@@ -1765,6 +1766,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (a().iscrizioni.some((x) => x.personaId === personaId) || (a().ricevute ?? []).some((x) => x.personaId === personaId))
         throw new Error(`${nome} è anche allievo: non si elimina, gli si toglie l'accesso`)
       // Come il database: `pagamenti_diretti` non lascia cancellare chi ne ha.
+      // Come `on delete restrict` di `lettere_incarico`, che `elimina_istruttore` dice così.
+      if ((a().lettere ?? []).some((x) => x.personaId === personaId)) throw new Error(`${nome} ha già lavorato nei registri: non si elimina, gli si toglie l'accesso`)
       if ((a().pagamentiDiretti ?? []).some((x) => x.personaId === personaId))
         throw new Error(`${nome} ha dei pagamenti registrati: non si elimina, gli si toglie l'accesso`)
       a().persone = a().persone.filter((x) => x.id !== personaId)
@@ -2157,6 +2160,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         richieste_di_iscrizione: richiesteDi(personaId).map(({ id: _id, personaId: _p, ...r }) => r),
         certificato_e_pagamento: { certificato_scade: p.certificato?.scade ?? null, certificato_file: p.certificato?.file ?? null, documento_in_segreteria: !!p.documento, ...(p.pagamento ?? { stato: 'da_pagare' }) },
         ricevute: (a().ricevute ?? []).filter((r) => r.personaId === personaId).map(({ id: _id, personaId: _p, ...r }) => r),
+        lettere_incarico: (a().lettere ?? []).filter((l) => l.personaId === personaId).map(({ id: _id, personaId: _p, ...l }) => l),
         pagamenti_a_mano: (a().pagamentiDiretti ?? []).filter((x) => x.personaId === personaId).map(({ id: _id, personaId: _p, ...x }) => x),
         dati_anagrafici: a().anagrafiche?.[personaId] ?? null,
       }

@@ -393,6 +393,8 @@
 :root[data-look='sito'] .sg-btn-pieno { background: var(--giallo); color: var(--su-colore); }
 /* Un tasto spento resta un blocco grigio anche nel look del sito: se no sembra acceso e non risponde. */
 :root[data-look='sito'] .sg-btn:disabled { background: var(--surface-2); color: var(--dim); }
+/* Anche il tasto a linea: senza bordo, se no sembra acceso (DESIGN.md › Buttons › Disabilitato). */
+:root[data-look='sito'] .sg-btn-linea:disabled { border-color: transparent; }
 /* Anche un chip spento: con l'opacità il testo bianco sull'azzurro non si legge (DESIGN.md › Buttons). */
 :root[data-look='sito'] .sg-chip:disabled { background: var(--surface-2); color: var(--dim); border-color: transparent; opacity: 1; }
 :root[data-look='sito'] .sg-btn-linea,

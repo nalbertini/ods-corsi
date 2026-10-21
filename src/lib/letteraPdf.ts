@@ -1,6 +1,6 @@
 import type { PDFFont, PDFPage } from 'pdf-lib'
 import { scrivibileCon } from './firma'
-import { testoLettera, type DatiLettera } from './lettere'
+import { nomeFileLettera, testoLettera, type DatiLettera } from './lettere'
 
 /**
  * Il PDF della lettera d'incarico: un A4 in verticale, come il Word della
@@ -25,7 +25,8 @@ const PIEDE =
 function aCapo(testo: string, font: PDFFont, corpo: number, largo: number): string[] {
   const righe: string[] = []
   let riga = ''
-  for (const parola of testo.split(/\s+/)) {
+  // Solo gli spazi normali: quello che non va a capo (fra € e l'importo) tiene unite le parole.
+  for (const parola of testo.split(/[ \t\n]+/)) {
     const prova = riga ? `${riga} ${parola}` : parola
     if (riga && font.widthOfTextAtSize(prova, corpo) > largo) {
       righe.push(riga)
@@ -48,10 +49,13 @@ export async function letteraPdf(l: DatiLettera): Promise<Uint8Array> {
   const grigio = rgb(0.3, 0.3, 0.3)
   const scrivibile = scrivibileCon(font)
 
-  let pagina: PDFPage
+  let pagina: PDFPage = pdf.addPage([PAGINA.w, PAGINA.h])
   let y = 0
+  let prima = true
   const nuovaPagina = () => {
-    pagina = pdf.addPage([PAGINA.w, PAGINA.h])
+    // La prima pagina c'è già: le altre si aggiungono quando la precedente è piena.
+    if (!prima) pagina = pdf.addPage([PAGINA.w, PAGINA.h])
+    prima = false
     pagina.drawText('ASD IL CENTRO JUDO', { x: MARGINE, y: PAGINA.h - 40, size: 11, font: grassetto, color: nero })
     const piede = aCapo(scrivibile(PIEDE), font, 7, LARGO)
     piede.forEach((r, i) => pagina.drawText(r, { x: MARGINE, y: PAGINA.h - (FONDO + 22 + i * 9), size: 7, font, color: grigio }))
@@ -92,7 +96,7 @@ export async function letteraPdf(l: DatiLettera): Promise<Uint8Array> {
     const righe = aCapo(testo, font, CORPO, LARGO - rientro)
     if (p.numero) {
       if (y + RIGA > FONDO) nuovaPagina()
-      pagina!.drawText(`${p.numero}.`, { x: MARGINE, y: PAGINA.h - y - CORPO, size: CORPO, font: grassetto, color: nero })
+      pagina.drawText(`${p.numero}.`, { x: MARGINE, y: PAGINA.h - y - CORPO, size: CORPO, font: grassetto, color: nero })
     }
     righe.forEach((r, i) => scrivi(p.tipo === 'voce' && i === 0 && !/^[a-c]\)/.test(r) ? `– ${r}` : r, MARGINE + rientro))
     y += RIGA / 3
@@ -100,13 +104,13 @@ export async function letteraPdf(l: DatiLettera): Promise<Uint8Array> {
   return pdf.save()
 }
 
-/** Scarica il PDF col nome che dice di chi e di che stagione è: «lettera-incarico-2026-27-ballabio-diana.pdf». */
-export async function scaricaLettera(l: DatiLettera) {
+/** Scarica il PDF col nome che dice di chi, di che stagione e di che giorno è (`nomeFileLettera`). */
+export async function scaricaLettera(l: DatiLettera & { sostituitaIl?: string | null }) {
   const byte = await letteraPdf(l)
   const url = URL.createObjectURL(new Blob([byte as BlobPart], { type: 'application/pdf' }))
   const a = document.createElement('a')
   a.href = url
-  a.download = `lettera-incarico-${l.stagione.replace('/', '-')}-${`${l.tecnico.cognome}-${l.tecnico.nome}`.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, '-')}.pdf`
+  a.download = nomeFileLettera(l)
   document.body.appendChild(a)
   a.click()
   a.remove()

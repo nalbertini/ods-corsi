@@ -13,6 +13,8 @@
  * Gli importi sono in centesimi.
  */
 import { euro } from './ricevute'
+import { cfDonna } from './codiceFiscale'
+import { dataLunga } from './sala'
 
 export const QUALIFICHE = ['Allenatore', 'Istruttore', 'Direttore tecnico', 'Direttore sportivo', 'Preparatore atletico', 'Direttore di gara', 'Atleta', 'Altro'] as const
 
@@ -101,14 +103,10 @@ export function propostaLettera(stagione: string) {
   return { dal: `${da}-09-01`, al: `${da + 1}-07-30`, data: `${da}-09-01` }
 }
 
-const OMOCODIA = 'LMNPQRSTUV'
-
-/** «Gentile signora» o «Gentile signor» dal codice fiscale (le donne hanno il giorno di nascita +40); senza, «Gentile». */
+/** «Gentile signora» o «Gentile signor» dal codice fiscale; senza, o illeggibile, «Gentile». */
 export function saluto(codiceFiscale?: string): string {
-  const cf = (codiceFiscale ?? '').toUpperCase()
-  if (!/^[A-Z]{6}[0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{2}/.test(cf)) return 'Gentile'
-  const giorno = Number(cf.slice(9, 11).replace(/[LMNPQRSTUV]/g, (c) => String(OMOCODIA.indexOf(c))))
-  return giorno > 40 ? 'Gentile signora' : 'Gentile signor'
+  const donna = cfDonna(codiceFiscale ?? '')
+  return donna === null ? 'Gentile' : donna ? 'Gentile signora' : 'Gentile signor'
 }
 
 /** Perché la lettera non si può fare; `null` se va. Le stesse regole di `fai_lettera_incarico`. */
@@ -116,17 +114,24 @@ export function cosaNonVaLettera(d: Pick<DatiLettera, 'stagione' | 'dal' | 'al' 
   if (!d.tariffe.length) return 'Scrivi almeno una tariffa nella scheda prima di fare la lettera'
   if (d.tariffe.some((t) => !Number.isInteger(t.centesimi) || t.centesimi <= 0)) return 'Una tariffa non è giusta: correggila nella scheda'
   if (!d.tecnico.codiceFiscale || !d.tecnico.indirizzo?.trim() || !d.tecnico.comune?.trim()) return 'Mancano i dati per la lettera: codice fiscale e residenza'
-  if (!/^\d{4}\/\d{2}$/.test(d.stagione)) return 'La stagione si scrive come 2026/27'
+  if (!/^\d{4}\/\d{2}$/.test(d.stagione) || d.stagione.slice(5) !== String((Number(d.stagione.slice(0, 4)) + 1) % 100).padStart(2, '0'))
+    return 'La stagione si scrive come 2026/27'
   const giorno = /^\d{4}-\d{2}-\d{2}$/
   if (!giorno.test(d.dal) || !giorno.test(d.al) || !giorno.test(d.data)) return 'Scrivi le date per intero'
   if (d.al < d.dal) return "La fine viene prima dell'inizio"
   if (d.al === d.dal) return "La fine è lo stesso giorno dell'inizio"
+  const da = Number(d.stagione.slice(0, 4))
+  if (d.dal < `${da}-09-01` || d.al > `${da + 1}-08-31`) return `Il periodo va dentro la stagione ${d.stagione}`
+  // `includes` di un elenco `as const` vuole proprio quel tipo: qui la qualifica arriva come testo qualunque.
   if (!(QUALIFICHE as readonly string[]).includes(d.qualifica)) return 'Scegli la qualifica dall’elenco'
-  if (d.giorni.length > 80) return 'I giorni sono troppo lunghi: al massimo 80 caratteri'
+  if (d.giorni.trim().length > 80) return 'I giorni sono troppo lunghi: al massimo 80 caratteri'
   return null
 }
 
 const gma = (g: string) => g.split('-').reverse().join('/')
+
+/** Una tariffa come la dice la lettera (e la scheda, prima di farla). Spazio che non va a capo: «€» non resta da solo in fondo alla riga. */
+export const compensoDi = (t: TariffaLettera) => `€\u00a0${euro(t.centesimi)} (${importoInLettere(t.centesimi)}) per ogni ora di lezione nel corso ${t.corso}`
 const nomeIntero = (t: TecnicoLettera) => `${t.cognome} ${t.nome}`.trim().toUpperCase()
 
 /** Un pezzo della lettera: i punti hanno il numero, le voci di un elenco no. */
@@ -143,7 +148,7 @@ const ASD = 'ASD IL CENTRO JUDO'
 export function testoLettera(l: DatiLettera): Paragrafo[] {
   const t = l.tecnico
   const residenza = [t.indirizzo, [t.cap, t.comune].filter(Boolean).join(' ') + (t.provincia ? ` (${t.provincia})` : '')].filter((x) => x?.trim()).join(' – ').toUpperCase()
-  const tariffe = l.tariffe.map((x) => `€ ${euro(x.centesimi)} (${importoInLettere(x.centesimi)}) per ogni ora di lezione nel corso ${x.corso}`).join('; ')
+  const tariffe = l.tariffe.map(compensoDi).join('; ')
   const giorni = l.giorni.trim() ? ` preferibilmente nei giorni di ${l.giorni.trim()},` : ''
   return [
     { testo: saluto(t.codiceFiscale), tipo: 'destinatario' },
@@ -238,3 +243,51 @@ export function lettereDellaScheda<L extends Pick<Lettera, 'stagione' | 'sostitu
   const valida = lettere.find((l) => l.stagione === stagione && !l.sostituitaIl)
   return { valida, altre: lettere.filter((l) => l !== valida) }
 }
+
+/** Da dove parte il modulo: i valori della lettera valida, per correggerla, o la proposta della stagione. */
+export function scelteDaProporre(valida: Pick<Lettera, 'dal' | 'al' | 'qualifica' | 'giorni' | 'data'> | undefined, stagione: string): ScelteLettera {
+  return valida
+    ? { stagione, dal: valida.dal, al: valida.al, qualifica: valida.qualifica, giorni: valida.giorni, data: valida.data }
+    : { stagione, ...propostaLettera(stagione), qualifica: 'Allenatore', giorni: '' }
+}
+
+/** La riga di una lettera che non è la valida: sostituita o di un'altra stagione, e se il foglio firmato è tornato. */
+export function rigaLettera(l: Pick<Lettera, 'stagione' | 'data' | 'sostituitaIl' | 'firmata'>): string {
+  return [
+    l.sostituitaIl ? 'Sostituita' : '',
+    l.stagione,
+    `lettera del ${dataLunga(l.data)}`,
+    l.sostituitaIl ? `sostituita il ${dataLunga(l.sostituitaIl.slice(0, 10))}` : '',
+    l.firmata ? 'firmata' : 'non firmata',
+  ]
+    .filter(Boolean)
+    .join(' · ')
+}
+
+/** «lettera-incarico-2026-27-ballabio-diana-2026-09-01.pdf»: di chi, di che stagione e di che giorno; «-sostituita» se lo è. */
+export function nomeFileLettera(l: Pick<DatiLettera, 'stagione' | 'data' | 'tecnico'> & { sostituitaIl?: string | null }): string {
+  const chi = [l.tecnico.cognome, l.tecnico.nome]
+    .filter((x) => x.trim())
+    .join('-')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/[^a-z0-9]+/g, '-')
+  return ['lettera-incarico', l.stagione.replace('/', '-'), chi, l.data, l.sostituitaIl ? 'sostituita' : ''].filter(Boolean).join('-') + '.pdf'
+}
+
+/** Il campo da segnare in rosso quando `cosaNonVaLettera` dice di no per una data. */
+export function campoCheNonVa(d: Pick<DatiLettera, 'stagione' | 'dal' | 'al' | 'data'>): 'dal' | 'al' | 'data' | null {
+  const giorno = /^\d{4}-\d{2}-\d{2}$/
+  if (!giorno.test(d.dal)) return 'dal'
+  if (!giorno.test(d.al) || d.al <= d.dal) return 'al'
+  if (!giorno.test(d.data)) return 'data'
+  const da = Number(d.stagione.slice(0, 4))
+  if (d.dal < `${da}-09-01`) return 'dal'
+  if (d.al > `${da + 1}-08-31`) return 'al'
+  return null
+}
+
+/** I corsi di cui è titolare che restano fuori dalla lettera perché non hanno una tariffa: la scheda li dice. */
+export const corsiFuoriLettera = (corsiTitolare: string[], tariffe: Array<{ corso: string }>) =>
+  corsiTitolare.filter((c) => !tariffe.some((t) => t.corso === c)).sort((a, b) => a.localeCompare(b, 'it'))
