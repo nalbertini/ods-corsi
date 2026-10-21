@@ -128,7 +128,7 @@ titolo('luoghi del Banco')
   ok('i nomi dei luoghi', LUOGHI.map((l) => l.nome), ['OGGI', 'PERSONE', 'CORSI', 'SOLDI', 'PALESTRA'])
   const voci = (id) => (LUOGHI.find((l) => l.id === id)?.voci ?? []).map((v) => [v.voce, v.nome])
   ok('OGGI', voci('oggi'), [['dafare', 'OGGI'], ['settimana', 'SETTIMANA'], ['presenze', 'PRESENZE']])
-  ok('PERSONE', voci('persone'), [['iscritti', 'ISCRITTI'], ['tessere', 'TESSERE'], ['richieste', 'RICHIESTE ONLINE'], ['istruttori', 'ISTRUTTORI'], ['personale', 'ACCESSI']])
+  ok('PERSONE', voci('persone'), [['iscritti', 'ISCRITTI'], ['tessere', 'TESSERE'], ['richieste', 'RICHIESTE ONLINE'], ['istruttori', 'ISTRUTTORI'], ['compensi', 'COMPENSI'], ['personale', 'ACCESSI']])
   ok('CORSI', voci('corsi'), [['corsi', 'CORSI'], ['esercizi', 'ESERCIZI']])
   // PAGAMENTI resta il primo: è quel che si apre di più, e dal luogo si arriva lì.
   ok('SOLDI', voci('soldi'), [['pagamenti', 'PAGAMENTI'], ['contabilita', 'CONTABILITÀ'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
