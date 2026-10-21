@@ -676,9 +676,13 @@ export function NuovaRicevuta({
     // La mail va all'email di contatto della scheda (per un minore, del genitore): la casella è già spuntata.
     const genitore = genitoreDellaMail({ intestatario: socio, data: data || oggi })
     const email = confermaEmail(p.emailContatto ?? null, genitore, true)
+    // Contanti in un giorno di cassa chiusa: la ricevuta si fa lo stesso (è un documento), ma la chiusura non torna più.
+    // Chi non vede le chiusure (la segreteria) non ha l'avviso.
+    const cassaChiusa = avvisoCassaChiusa(dati.voci.flatMap((v) => v.pagamenti), await d.chiusure().catch(() => []))
     const righe = [
       domandaRicevuta(quale, socio, minore, c),
       avvisa.length ? `\n${avvisaTesto}.` : '',
+      cassaChiusa ? `\n${cassaChiusa}` : '',
       '\nFatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.',
       email.spunta ? '' : `\n${email.nota}`,
     ]

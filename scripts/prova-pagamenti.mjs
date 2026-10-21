@@ -491,6 +491,11 @@ console.log('\n19. Ricevute.tsx scrive solo dopo il sì del riepilogo, e non se 
   ok('…col riepilogo di riepilogoPagamentoDiretto', gestore.includes('riepilogoPagamentoDiretto('), true)
   ok('…e senza il sì si esce prima di scrivere', /const \{ si, spuntata \} = await chiediSpunta\([\s\S]*?\)\s*if \(!si\) return/.test(gestore), true)
   ok('…e con la ricevuta si esce prima di scrivere: il pagamento sta solo nella ricevuta', /if \(onRicevuta && spuntata\) return onRicevuta\(dati\)/.test(gestore), true)
+  // Contanti in un giorno di cassa chiusa: la ricevuta non li rifiuta (è un documento), ma la chiusura non torna più.
+  // Chi legge le chiusure (l'amministrazione) lo sa prima di farla, come quando la annulla.
+  const emettiR = tsx.slice(tsx.indexOf('const emetti = async () => {'), tsx.indexOf("'Fai la ricevuta',"))
+  ok('FAI LA RICEVUTA avvisa dei contanti in un giorno di cassa chiusa', /avvisoCassaChiusa\(dati\.voci\.flatMap\(\(v\) => v\.pagamenti\), await d\.chiusure\(\)\.catch\(\(\) => \[\]\)\)/.test(emettiR), true)
+  ok('…e l\'avviso sta nella domanda', /cassaChiusa \?/.test(emettiR), true)
   // FAI LA RICEVUTA aperta dal pagamento: la voce è quella del modulo, non il listino.
   ok('con daPagamento le voci vengono solo da voceDaPagamento', /if \(daPagamento\) return setVoci\(\[\{ \.\.\.bozzaDa\(voceDaPagamento\(daPagamento\)\)/.test(tsx), true)
   const isc = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
