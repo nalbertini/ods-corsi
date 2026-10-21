@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- I rifiuti nuovi di REGISTRA UN PAGAMENTO (RegistraPagamento di Ricevute.tsx): la nota sotto il campo come oggi (cosaNonVaDiretto), l'avviso guaio di useAvviso. -->
+<div style="display: flex; flex-direction: column; gap: 36px; width: 1944px; padding: 28px 36px; background: #eef5fa">
+<div style="display: flex; gap: 36px; align-items: flex-start">
+<div style="display: flex; flex-direction: column; gap: 10px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · SATISPAY GIÀ ARRIVATO DAL MODULO</span>
+<dc-import name="Titoletto" tema="sito" label="REGISTRA UN PAGAMENTO" hint-size="100%,50px"></dc-import>
+<dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="COME HA PAGATO" valore="Satispay" nota="Con Satispay sono già arrivati 310 € dal modulo: fai la ricevuta con quelli." notaTono="guaio" hint-size="600px,110px"></dc-import>
+<span style="font-size: 14px; line-height: 1.45; color: #46606f">Satispay resta fra i modi (si può pagare con Satispay al banco), ma non si registra a mano se un Satispay arrivato dal modulo non è ancora in una ricevuta. Vale anche da PAGAMENTI dell’amministrazione.</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · LA RICEVUTA ERA GIÀ FATTA (RETE CADUTA)</span>
+<dc-import name="Titoletto" tema="sito" label="REGISTRA UN PAGAMENTO" hint-size="100%,50px"></dc-import>
+<dc-import name="Avviso" tema="sito" guaio="{{ true }}" testo="Questo pagamento è già nella ricevuta n. 121/2026: non va registrato di nuovo. Ricarica la scheda per vederla." hint-size="600px,80px"></dc-import>
+<span style="font-size: 14px; line-height: 1.45; color: #46606f">Dopo «Fai anche la ricevuta», la rete che cade e «Lascia stare», il modulo torna coi dati. Se la ricevuta in realtà era stata fatta, registrarlo senza ricevuta si rifiuta.</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · ANNULLARE UNA RICEVUTA NATA DA UN PAGAMENTO</span>
+<dc-import name="Dialogo" tema="sito" tipo="conferma" pericolo="{{ true }}" domanda="Annullare la ricevuta n. 121/2026?" resto="Dentro c’è il pagamento a mano del 10 ottobre (280,00 € in contanti): torna SENZA RICEVUTA, e da lì si rifà la ricevuta giusta." no="No, lasciala" si="Sì, annulla la ricevuta" altezza="380px" hint-size="600px,380px"></dc-import>
+<span style="font-size: 14px; line-height: 1.45; color: #46606f">I soldi non spariscono: il pagamento a mano si rimette com’era, e la chiusura di cassa di quel giorno non cambia.</span>
+</div>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1944,"height":580}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
