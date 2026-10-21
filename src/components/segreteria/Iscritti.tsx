@@ -1436,7 +1436,7 @@ export function ModificaAnagrafica({
       ? !cfValido(cf)
         ? "L'ultimo carattere del codice fiscale non torna: forse c'è una lettera sbagliata."
         : !cfTornaColNome(cf, p.nome, p.cognome)
-          ? `Il codice fiscale non torna con ${p.nome} ${p.cognome}: è il suo?`
+          ? `Il codice fiscale non torna con ${[p.nome, p.cognome].filter(Boolean).join(' ')}: è il suo?`
           : pulita.natoIl && !cfTornaConLaData(cf, pulita.natoIl)
             ? 'Il codice fiscale e la data di nascita non dicono lo stesso giorno.'
             : null

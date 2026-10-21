@@ -224,14 +224,50 @@ export interface AnagraficaDi {
   da: 'modulo' | 'segreteria'
 }
 
+/**
+ * Le sigle delle province, anche quelle che non ci sono più (si nasce dove si
+ * è nati), ed EE per l'estero: le stesse di `luoghi.json`. Una sigla
+ * inventata finirebbe sulla lettera d'incarico.
+ */
+const PROVINCE = new Set(
+  'AG AL AN AO AP AQ AR AT AV BA BG BI BL BN BO BR BS BT BZ CA CB CE CH CI CL CN CO CR CS CT CZ EE EN FC FE FG FI FM FO FR FU GE GO GR IM IS KR LC LE LI LO LT LU MB MC ME MI MN MO MS MT NA NO NU OG OR OT PA PC PD PE PG PI PL PN PO PR PS PT PU PV PZ RA RC RE RG RI RM RN RO SA SI SO SP SR SS SU SV TA TE TN TO TP TR TS TV UD VA VB VC VE VG VI VR VS VT VV ZA'.split(' '),
+)
+
+/** La forma e le due cifre di controllo (modulo 97): una cifra sbagliata a mano non passa. */
+function ibanGiusto(iban: string): boolean {
+  if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/.test(iban)) return false
+  const cifre = (iban.slice(4) + iban.slice(0, 4)).replace(/[A-Z]/g, (l) => String(l.charCodeAt(0) - 55))
+  let resto = 0
+  for (const c of cifre) resto = (resto * 10 + Number(c)) % 97
+  return resto === 1
+}
+
+/** Il modulo di iscrizione non li chiede: sono sempre quelli scritti dalla segreteria. */
+export const SOLO_SEGRETERIA: Array<keyof Anagrafica> = ['provinciaNascita', 'provincia', 'iban']
+
+/**
+ * Quando vince la richiesta di iscrizione (più recente), province e IBAN
+ * restano quelli della segreteria: se no un MODIFICA partito da lì, che
+ * sostituisce tutta la riga, li cancellerebbe. La stessa per il database e
+ * per la prova.
+ */
+export function conDatiDellaSegreteria(vince: AnagraficaDi | null, daSegreteria: Anagrafica | null): AnagraficaDi | null {
+  if (!vince || vince.da === 'segreteria' || !daSegreteria) return vince
+  const tenuti = Object.fromEntries(SOLO_SEGRETERIA.flatMap((k) => (daSegreteria[k] ? [[k, daSegreteria[k]]] : [])))
+  return { dati: { ...vince.dati, ...tenuti }, da: vince.da }
+}
+
+/** «Torino (TO)»: un luogo con la sigla della provincia, se c'è. Come va sulla lettera e sulla ricevuta. */
+export const conProvincia = (luogo?: string, provincia?: string) => [luogo, provincia && `(${provincia})`].filter(Boolean).join(' ')
+
 /** I limiti di `anagrafiche` (18-anagrafiche.sql), detti prima di salvare. `null` se va bene. */
 export function cosaNonVaAnagrafica(a: Anagrafica, oggi = chiaveGiornoOggi()): string | null {
   if (a.natoIl && (!/^\d{4}-\d{2}-\d{2}$/.test(a.natoIl) || Number.isNaN(Date.parse(a.natoIl)) || a.natoIl > oggi)) return 'La data di nascita non è giusta'
   if (a.codiceFiscale && !/^[A-Z0-9]{16}$/.test(a.codiceFiscale)) return 'Il codice fiscale ha sedici lettere e cifre'
   if (a.genitoreCodiceFiscale && !/^[A-Z0-9]{16}$/.test(a.genitoreCodiceFiscale)) return 'Il codice fiscale del genitore ha sedici lettere e cifre'
   if (a.cap && !/^\d{5}$/.test(a.cap)) return 'Il CAP ha cinque cifre'
-  if ((a.provincia && !/^[A-Z]{2}$/.test(a.provincia)) || (a.provinciaNascita && !/^[A-Z]{2}$/.test(a.provinciaNascita))) return 'La provincia è la sigla di due lettere'
-  if (a.iban && !/^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/.test(a.iban)) return "L'IBAN non è giusto"
+  if ((a.provincia && !PROVINCE.has(a.provincia)) || (a.provinciaNascita && !PROVINCE.has(a.provinciaNascita))) return 'La provincia è la sigla di due lettere'
+  if (a.iban && !ibanGiusto(a.iban)) return "L'IBAN non è giusto"
   const lunghi: Array<[keyof Anagrafica, number, string]> = [
     ['natoA', 80, 'Il luogo di nascita'], ['comune', 80, 'Il comune'], ['indirizzo', 160, "L'indirizzo"],
     ['genitoreNome', 80, 'Il nome del genitore'], ['genitoreCognome', 80, 'Il cognome del genitore'], ['genitoreNato', 120, 'La nascita del genitore'],

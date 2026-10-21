@@ -560,13 +560,14 @@ function Scheda({
         </div>
       </div>
 
-      {dellaSala && (
+      {/* I dati per pagarlo solo a chi insegna: la segreteria che non insegna non ha compensi. */}
+      {insegna(p) && (
         <>
           <DatiTecnico d={d} p={p} fai={fai} />
           <Tariffe d={d} p={p} fai={fai} />
-          <PresenzeDelMese d={d} p={p} />
         </>
       )}
+      {dellaSala && <PresenzeDelMese d={d} p={p} />}
 
       <div className="sg-scheda-piede">
         <button

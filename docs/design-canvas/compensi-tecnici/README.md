@@ -8,7 +8,7 @@ senza la riga del progetto «spazi civici / CUP».
 | Tavola | Cosa mostra |
 |---|---|
 | `SchedaOggi` | La scheda di un istruttore com'è (`Personale.tsx`, `Scheda` in `SchedaPiena`) |
-| `SchedaProposta` | La stessa con DATI PER LETTERA E RICEVUTE (anche IBAN), TARIFFE per corso, LETTERA D'INCARICO con «Firmata» e PRESENZE E COMPENSO (per corso, ricevuta del mese, ricevute dell'anno, preso da noi nell'anno per data di pagamento) |
+| `SchedaProposta` | COSTRUITI i primi due blocchi (`DatiTecnico.tsx`, PR «i dati e le tariffe dei tecnici»): DATI PER LETTERA E RICEVUTE (LUOGO DI NASCITA, CF, RESIDENZA e IBAN a tutta riga, IBAN a gruppi di quattro) e TARIFFE (righe titolare / da sostituto / non lo insegna più, SENZA TARIFFA col `Badge` segno rosso, campo «€ l'ora» con l'errore sotto, «togli» rosso con conferma). Il resto è ancora proposta. La stessa con DATI PER LETTERA E RICEVUTE (anche IBAN), TARIFFE per corso, LETTERA D'INCARICO con «Firmata» e PRESENZE E COMPENSO (per corso, ricevuta del mese, ricevute dell'anno, preso da noi nell'anno per data di pagamento) |
 | `PreparaLettera` | La finestra della lettera: periodo, qualifica, giorni, data; il compenso sono le tariffe orarie della scheda, in cifre e in lettere |
 | `CompensiMese` | La pagina nuova COMPENSI (segreteria e amministrazione insieme): un tecnico per riga, aperta per corso, i filtri, il tasto che stampa le pronte e dice chi salta, e il pannello SEGNA PAGATO per una o più ricevute dello stesso tecnico |
 | `CompensiMeseTelefono` | La stessa sul telefono |

@@ -9,13 +9,15 @@ set timezone = 'Europe/Rome';
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'anna@ods.it'),
   ('22222222-2222-2222-2222-222222222222', 'ada@ods.it'),
-  ('55555555-5555-5555-5555-555555555555', 'maura@ods.it');
+  ('55555555-5555-5555-5555-555555555555', 'maura@ods.it'),
+  ('33333333-3333-3333-3333-333333333333', 'luca@ods.it');
 -- Anna: segreteria. Ada: solo amministrazione. Maura e Ivo: istruttori.
 insert into persone (id, nome, cognome, ruolo, email, utente_id) values
   ('aaaaaaaa-0000-0000-0000-000000000001', 'Anna', 'Segreteria', 'staff', 'anna@ods.it', '11111111-1111-1111-1111-111111111111'),
   ('aaaaaaaa-0000-0000-0000-000000000002', 'Ada', 'Conti', 'amministrazione', 'ada@ods.it', '22222222-2222-2222-2222-222222222222'),
   ('aaaaaaaa-0000-0000-0000-000000000005', 'Maura', 'Uno', 'istruttore', 'maura@ods.it', '55555555-5555-5555-5555-555555555555'),
-  ('aaaaaaaa-0000-0000-0000-000000000006', 'Ivo', 'Tecnico', 'istruttore', null, null);
+  ('aaaaaaaa-0000-0000-0000-000000000006', 'Ivo', 'Tecnico', 'istruttore', null, null),
+  ('aaaaaaaa-0000-0000-0000-000000000003', 'Luca', 'Rossi', 'iscritto', 'luca@ods.it', '33333333-3333-3333-3333-333333333333');
 insert into sale (id, nome) values ('bbbbbbbb-0000-0000-0000-000000000001', 'Tatami');
 insert into corsi (id, nome, sala_id, istruttore_id) values
   ('cccccccc-0000-0000-0000-000000000001', 'Judo', 'bbbbbbbb-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000006'),
@@ -110,10 +112,23 @@ select atteso('l''amministrazione non legge l''IBAN', (select count(*)::text fro
 reset role;
 
 \echo ''
+\echo '--- 4 bis. un iscritto con l''accesso: nemmeno ---'
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select atteso('l''iscritto non vede le tariffe', (select count(*)::text from tariffe_istruttori), '0');
+select atteso('non se ne scrive una',
+  tenta($$insert into tariffe_istruttori (persona_id, corso_id, centesimi_ora)
+    values ('aaaaaaaa-0000-0000-0000-000000000006', 'cccccccc-0000-0000-0000-000000000001', 9900)$$), 'NEGATO: …');
+select atteso('non le cambia', tenta($$update tariffe_istruttori set centesimi_ora = 9900$$), 'a vuoto (0 righe)');
+select atteso('non legge l''IBAN', (select count(*)::text from anagrafiche where iban is not null), '0');
+reset role;
+
+\echo ''
 \echo '--- 5. chi non ha fatto l''accesso ---'
 select chi('');
 set role anon;
 select atteso('anon non legge le tariffe', tenta($$select count(*)::text from tariffe_istruttori$$), 'NEGATO: …');
+select atteso('anon non legge l''anagrafica', tenta($$select count(*)::text from anagrafiche$$), 'NEGATO: …');
 select atteso('anon non ne scrive',
   tenta($$insert into tariffe_istruttori (persona_id, corso_id, centesimi_ora)
     values ('aaaaaaaa-0000-0000-0000-000000000005', 'cccccccc-0000-0000-0000-000000000001', 9900)$$), 'NEGATO: …');

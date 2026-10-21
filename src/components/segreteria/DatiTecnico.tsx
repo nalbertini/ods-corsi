@@ -1,26 +1,27 @@
 import { useState } from 'react'
 import type { Anagrafica, DatiSegreteria, PersonaleSeg } from '../../lib/segreteria'
+import { conProvincia } from '../../lib/segreteria'
 import { dataLunga } from '../../lib/sala'
-import { centesimiDaEuro, euroOra, righeTariffe } from '../../lib/tariffe'
-import { Campo, Guaio, Riga, useAvviso, useCarica } from './comune'
+import { centesimiDaEuro, cosaNonVaEuroOra, euroDaScrivere, euroOra, righeTariffe } from '../../lib/tariffe'
+import { Campo, chiedi, Guaio, Riga, useAvviso, useCarica } from './comune'
 import { ModificaAnagrafica, type CampoAnagrafica } from './Iscritti'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 
 /** Quelli che vanno sulla lettera d'incarico e sulla ricevuta del compenso, nell'ordine in cui si scrivono. */
 const CAMPI_TECNICO: CampoAnagrafica[] = [
-  { k: 'natoA', etichetta: 'Nato a', max: 80 },
-  { k: 'provinciaNascita', etichetta: 'Provincia di nascita', codice: true, max: 2 },
+  { k: 'natoA', etichetta: 'Luogo di nascita', max: 80 },
+  { k: 'provinciaNascita', etichetta: 'Provincia di nascita', codice: true, max: 4 },
   { k: 'natoIl', etichetta: 'Data di nascita', tipo: 'date', max: 10 },
   { k: 'codiceFiscale', etichetta: 'Codice fiscale', codice: true, max: 16 },
   { k: 'indirizzo', etichetta: 'Indirizzo', largo: true, max: 160 },
   { k: 'cap', etichetta: 'CAP', max: 5 },
   { k: 'comune', etichetta: 'Comune', max: 80 },
-  { k: 'provincia', etichetta: 'Provincia', codice: true, max: 2 },
-  { k: 'iban', etichetta: 'IBAN', codice: true, largo: true, max: 34 },
+  { k: 'provincia', etichetta: 'Provincia', codice: true, max: 4 },
+  // Con gli spazi a gruppi di quattro: l'app li toglie prima di salvare.
+  { k: 'iban', etichetta: 'IBAN', codice: true, largo: true, max: 42 },
 ]
 
-const conProvincia = (luogo?: string, provincia?: string) => [luogo, provincia && `(${provincia})`].filter(Boolean).join(' ')
 
 /**
  * Nascita, residenza e IBAN del tecnico: vanno sulla lettera d'incarico e su
@@ -66,11 +67,12 @@ export function DatiTecnico({ d, p, fai }: { d: DatiSegreteria; p: PersonaleSeg;
       {an.guaio && <Guaio testo={an.guaio} />}
       {x ? (
         <div className="sg-due">
-          <Campo etichetta="NATO A">{valore(conProvincia(x.natoA, x.provinciaNascita))}</Campo>
+          <Campo etichetta="LUOGO DI NASCITA">{valore(conProvincia(x.natoA, x.provinciaNascita))}</Campo>
           <Campo etichetta="DATA DI NASCITA">{valore(x.natoIl && dataLunga(x.natoIl))}</Campo>
-          <Campo etichetta="CODICE FISCALE">{valore(x.codiceFiscale, true)}</Campo>
-          <Campo etichetta="RESIDENZA">{valore([x.indirizzo, conProvincia([x.cap, x.comune].filter(Boolean).join(' '), x.provincia)].filter(Boolean).join(' · '))}</Campo>
-          <Campo etichetta="IBAN" largo>{valore(x.iban, true)}</Campo>
+          <Campo etichetta="CODICE FISCALE" largo>{valore(x.codiceFiscale, true)}</Campo>
+          <Campo etichetta="RESIDENZA" largo>{valore([x.indirizzo, conProvincia([x.cap, x.comune].filter(Boolean).join(' '), x.provincia)].filter(Boolean).join(' · '))}</Campo>
+          {/* A gruppi di quattro, per controllarlo a voce: il dato salvato resta senza spazi. */}
+          <Campo etichetta="IBAN" largo>{valore(x.iban?.replace(/(.{4})/g, '$1 ').trim(), true)}</Campo>
         </div>
       ) : (
         an.dato && <span className="sg-sotto">Nessun dato: servono per la lettera d’incarico e le ricevute dei compensi.</span>
@@ -87,7 +89,8 @@ export function DatiTecnico({ d, p, fai }: { d: DatiSegreteria; p: PersonaleSeg;
  */
 export function Tariffe({ d, p, fai }: { d: DatiSegreteria; p: PersonaleSeg; fai: Fai }) {
   const dati = useCarica(async () => {
-    const [tariffe, corsi, presenze] = await Promise.all([d.tariffe(p.id), d.corsi(), d.presenzeIstruttori(366).catch(() => [])])
+    // shortcut: legge le presenze di tutti per un anno solo per trovare i corsi fatti da sostituto; se pesa, una lettura per persona.
+    const [tariffe, corsi, presenze] = await Promise.all([d.tariffe(p.id), d.corsi(), d.presenzeIstruttori(366).then((x) => x, () => null)])
     return { tariffe, corsi, presenze }
   }, [d, p.id])
   const [scrive, setScrive] = useState<{ corso: string; testo: string } | null>(null)
@@ -99,13 +102,10 @@ export function Tariffe({ d, p, fai }: { d: DatiSegreteria; p: PersonaleSeg; fai
   )
   if (!dati.dato) return null
   const { tariffe, corsi, presenze } = dati.dato
-  const fatti = presenze.filter((x) => x.personaId === p.id && x.stato === 'confermata').map((x) => x.corso)
-  const righe = righeTariffe(p.corsi, fatti, tariffe)
-  const idDi = (corso: string) => tariffe.find((t) => t.corso === corso)?.corsoId ?? corsi.find((c) => c.nome === corso)?.id
+  const righe = righeTariffe(p.id, p.corsi, presenze ?? [], tariffe, corsi)
   const centesimi = scrive && centesimiDaEuro(scrive.testo)
 
-  const salva = (corso: string, c: number | null) => {
-    const corsoId = idDi(corso)
+  const salva = (corsoId: string | undefined, c: number | null) => {
     if (!corsoId) return
     void fai(() => d.salvaTariffa(p.id, corsoId, c), c === null ? 'Tariffa tolta' : 'Tariffa salvata', async () => {
       setScrive(null)
@@ -123,16 +123,16 @@ export function Tariffe({ d, p, fai }: { d: DatiSegreteria; p: PersonaleSeg; fai
             <div key={r.corso} role="row" className="row" style={{ gap: 12, justifyContent: 'space-between', flexWrap: 'wrap', padding: '8px 14px', minHeight: 48, borderBottom: '1px solid var(--line-soft)' }}>
               <span role="cell" className="stack" style={{ gap: 2 }}>
                 <span style={{ fontSize: 15, fontWeight: 600 }}>{r.corso}</span>
-                {r.daSostituto && <span style={{ fontSize: 13, color: 'var(--dim)' }}>{fatti.includes(r.corso) ? 'da sostituto' : 'non lo insegna più'}</span>}
+                {r.perche !== 'titolare' && <span style={{ fontSize: 13, color: 'var(--dim)' }}>{r.perche === 'sostituto' ? 'da sostituto' : 'non lo insegna più'}</span>}
               </span>
               {scrive?.corso === r.corso ? (
                 <form
                   role="cell"
                   className="row"
-                  style={{ gap: 8 }}
+                  style={{ gap: 8, flexWrap: 'wrap' }}
                   onSubmit={(e) => {
                     e.preventDefault()
-                    if (centesimi) salva(r.corso, centesimi)
+                    if (centesimi) salva(r.corsoId, centesimi)
                   }}
                 >
                   <input
@@ -141,6 +141,8 @@ export function Tariffe({ d, p, fai }: { d: DatiSegreteria; p: PersonaleSeg; fai
                     inputMode="decimal"
                     aria-label={`Euro l’ora per ${r.corso}`}
                     autoFocus
+                    aria-invalid={!!cosaNonVaEuroOra(scrive.testo)}
+                    aria-describedby={`tariffa-${r.corsoId ?? r.corso.replace(/\W/g, "")}`}
                     value={scrive.testo}
                     onChange={(e) => setScrive({ ...scrive, testo: e.target.value })}
                   />
@@ -149,26 +151,37 @@ export function Tariffe({ d, p, fai }: { d: DatiSegreteria; p: PersonaleSeg; fai
                     OK
                   </button>
                   {r.centesimi !== undefined && (
-                    <button type="button" className="sg-link" onClick={() => salva(r.corso, null)}>
+                    <button
+                      type="button"
+                      className="sg-link sg-link-alto sg-pericolo" style={{ fontSize: 14 }}
+                      onClick={async () => {
+                        if (await chiedi(`Togliere la tariffa di ${r.corso}? Le ricevute già fatte non cambiano.`, 'Togli', { pericolo: true })) salva(r.corsoId, null)
+                      }}
+                    >
                       togli
                     </button>
                   )}
-                  <button type="button" className="sg-link" onClick={() => setScrive(null)}>
+                  <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} onClick={() => setScrive(null)}>
                     lascia stare
                   </button>
+                  {cosaNonVaEuroOra(scrive.testo) && (
+                    <span id={`tariffa-${r.corsoId ?? r.corso.replace(/\W/g, "")}`} role="alert" style={{ flexBasis: '100%', fontSize: 13, color: 'var(--rosso-testo)' }}>
+                      {cosaNonVaEuroOra(scrive.testo)}.
+                    </span>
+                  )}
                 </form>
               ) : (
                 <span role="cell" className="row" style={{ gap: 12 }}>
                   {r.centesimi !== undefined ? (
                     <span className="num" style={{ fontSize: 15 }}>{euroOra(r.centesimi)}</span>
                   ) : (
-                    <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: 'var(--rosso-testo)' }}>✕ SENZA TARIFFA</span>
+                    <span className="sg-segno-regola" data-tono="rosso">SENZA TARIFFA</span>
                   )}
                   <button
                     type="button"
-                    className="sg-link"
-                    disabled={!idDi(r.corso)}
-                    onClick={() => setScrive({ corso: r.corso, testo: r.centesimi === undefined ? '' : String(r.centesimi / 100).replace('.', ',') })}
+                    className="sg-link sg-link-alto" style={{ fontSize: 14 }}
+                    disabled={!r.corsoId}
+                    onClick={() => setScrive({ corso: r.corso, testo: r.centesimi === undefined ? '' : euroDaScrivere(r.centesimi) })}
                   >
                     {r.centesimi === undefined ? 'Scrivi' : 'Cambia'}
                   </button>
@@ -178,7 +191,8 @@ export function Tariffe({ d, p, fai }: { d: DatiSegreteria; p: PersonaleSeg; fai
           ))}
         </div>
       )}
-      <span className="sg-sotto">Un corso compare qui appena lo insegna, anche da sostituto.</span>
+      {presenze === null && <span className="sg-sotto">Le presenze non si sono lette: mancano i corsi fatti da sostituto. Riapri la scheda fra poco.</span>}
+      <span className="sg-sotto">Un corso compare qui appena lo insegna, anche da sostituto. Cambiare una tariffa non tocca le ricevute già fatte.</span>
     </div>
   )
 }

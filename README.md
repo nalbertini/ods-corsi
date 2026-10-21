@@ -63,6 +63,9 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   iscritti (per nome, telefono o email), richieste online, corsi (anche per
   giorno) e istruttori, senza chiamare il database; «ALTRI N» apre la voce già
   filtrata (`src/lib/ricerca.ts`).
+- **I dati e le tariffe dei tecnici**: nella scheda di chi insegna, i dati per
+  lettera d'incarico e ricevute (province e IBAN compresi) e una tariffa oraria
+  per ogni corso, anche fatto da sostituto (`supabase/77-tariffe-tecnici.sql`).
 - **Gli iscritti di un corso**: nella scheda di un corso, DATI e ISCRITTI; in ISCRITTI una
   persona per riga con certificato e quota a parole, ricerca, ordinamento per colonna e un clic
   che apre la sua scheda; Indietro ritrova ricerca e ordine (`src/lib/segreteria.ts`).

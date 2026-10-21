@@ -24,6 +24,7 @@
 // `text`, testo `bg`); disabled = opacita' 0.4. numero: un .sg-tag dentro il chip (tonoNumero neutro / rosso / giallo, come Badge tag). Un nome lungo si taglia con «…» (max-width 100%), il numero resta.
 // tema sito (`:root[data-look='sito']`): Inter 15px 600 senza spaziatura, raggio 6px, bordo blu #14709f; il filtro scelto e' blu pieno con testo
 // bianco e il segno ✓ davanti (non solo un altro colore); `pieno` e' lo stesso blu. Il numero e' un tag bianco con bordo.
+// tema sito e disabled: blocco `surface-2` #cfe6f4, testo `dim` #46606f, bordo trasparente, niente opacita' (styles.css, `.sg-chip:disabled` del look sito).
 const T = {
   scuro: { bg: '#121212', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', suColore: '#121212', suRosso: '#ffffff' },
   chiaro: { bg: '#f4f4f1', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', suColore: '#121212', suRosso: '#ffffff' },
@@ -40,15 +41,16 @@ class Component extends DCLogic {
     const numero = p.numero ?? '';
     const tn = p.tonoNumero || 'neutro';
     const sito = p.tema === 'sito';
-    const blu = pieno || acceso;
+    const spento = truthy(p.disabled);
+    const blu = (pieno || acceso) && !(sito && spento);
     return {
       cond: sito ? INTER : COND, label: p.label ?? 'DA PAGARE',
       corpo: sito ? '15px' : '13px', peso: sito ? 600 : 700, spazio: sito ? '0' : '0.12em', raggio: sito ? '6px' : '0',
       segno: sito && acceso ? '✓ ' : '',
-      sfondo: sito ? (blu ? c.blu : c.bg) : pieno ? c.text : acceso ? c.surface2 : 'transparent',
-      bordo: sito ? (blu ? c.blu : c.line) : pieno || acceso ? c.text : c.line,
-      colore: sito ? (blu ? '#ffffff' : c.text) : pieno ? c.bg : acceso ? c.text : c.sec,
-      opacita: truthy(p.disabled) ? '0.4' : '1',
+      sfondo: sito && spento ? '#cfe6f4' : sito ? (blu ? c.blu : c.bg) : pieno ? c.text : acceso ? c.surface2 : 'transparent',
+      bordo: sito && spento ? 'transparent' : sito ? (blu ? c.blu : c.line) : pieno || acceso ? c.text : c.line,
+      colore: sito && spento ? c.dim : sito ? (blu ? '#ffffff' : c.text) : pieno ? c.bg : acceso ? c.text : c.sec,
+      opacita: spento && !sito ? '0.4' : '1',
       numero, haNumero: numero !== '',
       riempNumero: sito ? '1px 8px' : '0 4px', bordoNumero: sito ? '1.5px solid ' + (tn === 'rosso' ? c.rosso : tn === 'giallo' ? c.giallo : c.suColore) : '0',
       fondoNumero: sito ? c.bg : tn === 'rosso' ? c.rosso : tn === 'giallo' ? c.giallo : c.dim,
