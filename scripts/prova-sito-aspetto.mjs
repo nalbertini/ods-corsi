@@ -272,12 +272,12 @@ console.log('\nPiede e invito')
   ok('il piede è una tessera scura #0d2a3d', [sfondo(pie), piede !== ''], [INCHIOSTRO, true])
   ok('i recapiti di oggi: indirizzo, telefono, Instagram, Facebook', [piede.includes(C.indirizzo ?? '?'), piede.includes(C.telefono ?? '?'), piede.includes(C.instagram ?? '?'), piede.includes(C.facebook ?? '?')], [true, true, true, true])
   ok('e niente di più: quattro recapiti in elenco e le voci del menu come link a parte, senza voci di piede', [conta(piede, /<li>/g), conta(piede, /<nav class="piede-menu"[^>]*>(?:<a\b[^>]*>[^<]*<\/a>)+<\/nav>/g)], [4, 1])
-  const inv = (t) => (t.match(/<a class="invito"[\s\S]*?<\/a>/) || [''])[0]
+  const inv = (t) => (t.match(/<section class="invito"[\s\S]*?<\/section>/) || [''])[0]
   const j = c(con, 'judo/index.html')
   ok('l’invito in fondo: link al modulo di iscrizione con «Iscriviti», dopo il contenuto e prima del piede', [/href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"/.test(inv(j)), />Iscriviti</.test(inv(j)), j.indexOf('</main>') < j.indexOf('class="invito"'), j.indexOf('class="invito"') < j.indexOf('<footer')], [true, true, true, true])
   ok('c’è anche nella pagina contatti (il design la ha)', /href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"/.test(inv(c(con, 'contatti/index.html'))), true)
   ok('non c’è se la pagina contatti non esiste', inv(c(senza, 'index.html')), '')
-  ok('«Prova» dell’invito è grande', /clamp\(\s*\d{2,3}px|^\d{2,3}px/.test(dich(R, V, (x) => /^\.invito .*parola$/.test(x))['font-size'] ?? ''), true)
+  ok('il titolo dell’invito è grande', /clamp\(\s*\d{2,3}px|^\d{2,3}px/.test(dich(R, V, (x) => x === '.invito h2')['font-size'] ?? ''), true)
 }
 
 console.log('\nPulsante «Contattaci» sotto titolo e frase: in nessuna pagina (sta già in testata)')

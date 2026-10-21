@@ -3,7 +3,7 @@ import { createUsePuck, Puck, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { PaginaSito } from '../../lib/sitoPagine'
-import { CSS_SITO } from '../../lib/sitoGenera'
+import { CSS_SITO, invito } from '../../lib/sitoGenera'
 import { cosaNonVaSalvare, daSalvare, pezziDaAprire, pezziInHtml, TESTO_DEL_SITO, type BozzaPezzi, type Pezzo } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import AnteprimaPagina from './AnteprimaPagina'
@@ -24,6 +24,7 @@ type Props = {
   testo: { html: Testo }
   foto: { src: string; alt: string }
   colonne: { colonne: Array<{ html: Testo }> }
+  iscriviti: { titolo: string; frase: string }
 }
 type Radice = { titolo: string; descrizione: string }
 
@@ -118,6 +119,18 @@ function configura(d: DatiSegreteria): Config<Props, Radice> {
             {colonne.map((c, i) => <Html key={i} v={c.html} />)}
           </div>
         ),
+      },
+      iscriviti: {
+        label: 'Iscriviti',
+        fields: {
+          titolo: { type: 'text', label: 'Titolo (vuoto = «Vieni a provare.»)' },
+          frase: { type: 'textarea', label: 'Frase (vuoto = quella di sempre)' },
+        },
+        defaultProps: { titolo: '', frase: '' },
+        // Una per pagina e sempre in fondo: niente copia né trascinamento. Dal cassetto se ne può mettere un'altra: la ferma `cosaNonVaSalvare`.
+        permissions: { duplicate: false, drag: false },
+        // Sicuro: `invito` mette titolo e frase con le entità, il resto è fisso.
+        render: ({ titolo, frase }) => <div dangerouslySetInnerHTML={{ __html: invito({ titolo, frase }, true) }} />,
       },
     },
   }

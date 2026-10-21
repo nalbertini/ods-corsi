@@ -95,10 +95,12 @@ ok('titolo da 120px (come I corsi), interlinea .82', [D('.interna h1', 'font-siz
 ok('frase da 22px con 28px sotto', [D('.interna .intro p', 'font-size'), D('.interna .intro p', 'margin')], ['22px', '0 0 28px'])
 ok('telefono: padding 20 e 36px sotto; titolo da 56px (come I corsi); frase 18px', [T('.pagina-hero.interna', 'padding'), T('.interna h1', 'font-size'), T('.interna .intro p', 'font-size')], ['20px var(--margine) 36px', '56px', '18px'])
 
-console.log('\n3. Invito «Prova»')
-ok('desktop: 96px sopra, margini della pagina, alto 300px, padding 36px 40px', [D('.invito', 'margin'), D('.invito', 'min-height'), D('.invito', 'padding')], ['96px var(--margine) 6px', '300px', '36px 40px'])
-ok('frase da 22px, parola da 170px, nessuna freccia', [D('.invito .frase', 'font-size'), D('.invito .parola', 'font-size'), D('.invito .freccia', 'display')], ['22px', '170px', 'none'])
-ok('telefono: 48px sopra, alto 260px, padding 22px, frase 17px, parola 120px', [T('.invito', 'margin-top'), T('.invito', 'min-height'), T('.invito', 'padding'), T('.invito .frase', 'font-size'), T('.invito .parola', 'font-size')], ['48px', '260px', '22px', '17px', '120px'])
+console.log('\n3. Invito «Iscriviti»')
+ok('desktop: 96px sopra, margini della pagina, padding 56px', [D('.invito', 'margin'), D('.invito', 'padding')], ['96px var(--margine) 6px', '56px'])
+// `dich` legge come base anche le regole fra 901 e 1200px: le due misure dei riquadri si guardano nel CSS.
+ok('quattro riquadri in fila sul computer, due fra 901 e 1200px', [/\.invito-riquadri\{display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/.test(c), /@media \(min-width:901px\) and \(max-width:1200px\)\{\.invito-riquadri\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}\}/.test(c)], [true, true])
+ok('titolo da 56 a 88px, frase da 22px, pulsanti alti 52px', [D('.invito h2', 'font-size'), D('.invito-frase p', 'font-size'), D('.invito-riquadri .pulsante', 'min-height')], ['clamp(56px,6.11vw,88px)', '22px', '52px'])
+ok('telefono: 48px sopra, padding 28px 22px, una colonna, frase 18px', [T('.invito', 'margin'), T('.invito', 'padding'), T('.invito-riquadri', 'grid-template-columns'), T('.invito-frase p', 'font-size')], ['48px var(--margine) 6px', '28px 22px', 'minmax(0,1fr)', '18px'])
 
 console.log('\n4. Piede')
 ok('il nome va su due righe: «Officine» e «dello Sport»', /<p class="nome">Officine<br>dello Sport<\/p>/.test(h), true)
