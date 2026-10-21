@@ -1,0 +1,10 @@
+{
+  "pages": [{ "id": "page-1", "name": "Sito · invito Iscriviti · proposta" }],
+  "artboards": [
+    { "file": "InvitoOggi.dc.html", "title": "1 · Invito com'è oggi (1440)", "x": 0, "y": 0, "w": 1440, "h": 820, "page": "page-1" },
+    { "file": "InvitoProposta.dc.html", "title": "2 · Invito proposta (1440)", "x": 1560, "y": 0, "w": 1440, "h": 960, "page": "page-1" },
+    { "file": "InvitoOggiTelefono.dc.html", "title": "3 · Invito oggi (375)", "x": 3120, "y": 0, "w": 375, "h": 1000, "page": "page-1" },
+    { "file": "InvitoPropostaTelefono.dc.html", "title": "4 · Invito proposta (375)", "x": 3615, "y": 0, "w": 375, "h": 1620, "page": "page-1" },
+    { "file": "InvitoEditor.dc.html", "title": "5 · La parte + ISCRIVITI nell'editor", "x": 0, "y": 1100, "w": 1440, "h": 1420, "page": "page-1" }
+  ]
+}

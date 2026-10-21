@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Invito proposta</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- PROPOSTA (1440px): `SitoInvito` della libreria al posto di `invito()`. Stesso margine e stesso posto (prima del piede); alto 440px come la chiamata finale della Home (`SitoCta`), ma pieno: titolo 88px, frase su cosa si fa con 10 €, due pulsanti, tre passi e dove siamo. -->
+<div style="width:1440px;background:#eef5fa;color:#0d2a3d;padding-bottom:48px">
+  <p style="font-family:Inter,'Helvetica Neue',Arial,sans-serif;margin:0;padding:24px 48px 0;font-size:15px;color:#46606f">… il testo della pagina (qui /orari/) …</p>
+  <div style="margin:96px 48px 6px"><dc-import name="SitoInvito" hint-size="100%,440px"></dc-import></div>
+  <div style="padding:0 48px"><dc-import name="SitoPiede" hint-size="100%,260px"></dc-import></div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,7 +1,7 @@
 /**
  * Le tariffe dei tecnici: quanto prende un tecnico per un'ora di lezione,
  * una per ogni corso che insegna, anche da sostituto
- * (`77-tariffe-tecnici.sql`). Il compenso del mese è, corso per corso, le ore
+ * (`78-tariffe-tecnici.sql`). Il compenso del mese è, corso per corso, le ore
  * confermate per la sua tariffa.
  *
  * Gli importi sono in centesimi, come nelle ricevute.

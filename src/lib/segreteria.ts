@@ -204,7 +204,7 @@ export interface Anagrafica {
   genitoreCodiceFiscale?: string
   /** Luogo e data di nascita del genitore, come sono scritti nel modulo. */
   genitoreNato?: string
-  /** Le sigle delle province e l'IBAN servono solo ai tecnici, per lettera d'incarico e compensi (`77-tariffe-tecnici.sql`). */
+  /** Le sigle delle province e l'IBAN servono solo ai tecnici, per lettera d'incarico e compensi (`78-tariffe-tecnici.sql`). */
   provinciaNascita?: string
   provincia?: string
   iban?: string
@@ -690,7 +690,7 @@ export interface DatiSegreteria {
    * `null` se non ce ne sono.
    */
   anagraficaDi(personaId: string): Promise<AnagraficaDi | null>
-  /** Le tariffe orarie di un tecnico, una per corso (`77-tariffe-tecnici.sql`). */
+  /** Le tariffe orarie di un tecnico, una per corso (`78-tariffe-tecnici.sql`). */
   tariffe(personaId: string): Promise<Tariffa[]>
   /** Scrive la tariffa di un corso in centesimi l'ora; `null` la toglie. */
   salvaTariffa(personaId: string, corsoId: string, centesimi: number | null): Promise<void>

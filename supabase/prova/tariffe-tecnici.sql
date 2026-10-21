@@ -1,7 +1,7 @@
 -- I dati per pagare i tecnici: le province e l'IBAN nell'anagrafica, e la
 -- tariffa oraria di ogni tecnico per ogni corso (`tariffe_istruttori`). Li
 -- vede e li cambia solo la segreteria; se ne vanno col corso o con la persona.
--- Si lancia dopo finto-supabase.sql e tutto lo schema (77-tariffe-tecnici.sql
+-- Si lancia dopo finto-supabase.sql e tutto lo schema (78-tariffe-tecnici.sql
 -- compreso).
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';

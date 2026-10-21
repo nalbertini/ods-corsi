@@ -185,8 +185,10 @@ console.log('\nIn fondo l’invito «Iscriviti» come nelle altre pagine, niente
 {
   const conContatti = { pagine: [pag('home'), pag('contatti'), pag('orari', { titolo: 'Orari', testo: testoOrari })] }
   for (const [cosa, h] of [['con gli orari', pagina(ORARI, conContatti)], ['senza orari', pagina([], conContatti)]]) {
-    ok(`${cosa}: nessun tasto «Scrivici su WhatsApp»`, [/wa\.me/.test(h), /WhatsApp/.test(h)], [false, false])
-    ok(`${cosa}: dopo il <main> l’invito giallo «Iscriviti», come nelle altre pagine`, /<\/main><a class="invito"[^>]*>[\s\S]*Iscriviti/.test(h), true)
+    // Il «Scrivici» dell'invito (design invito-iscriviti) è quello di tutte le pagine: qui si guarda il resto della pagina.
+    const fuori = h.replace(/<section class="invito"[\s\S]*?<\/section>/, '')
+    ok(`${cosa}: nessun tasto «Scrivici su WhatsApp»`, [/wa\.me/.test(fuori), /WhatsApp/.test(fuori)], [false, false])
+    ok(`${cosa}: dopo il <main> l’invito giallo «Iscriviti», come nelle altre pagine`, /<\/main><section class="invito"[^>]*>(?:(?!<\/section>)[\s\S])*>Iscriviti<\/a>/.test(h), true)
     ok(`${cosa}: la riga «Per variazioni contatta…» resta nella fascia`, /<div class="variazioni">[\s\S]*Per variazioni contatta/.test(h), true)
   }
   ok('senza la pagina Contatti niente invito, come nelle altre pagine', /class="invito"/.test(pagina(ORARI)), false)

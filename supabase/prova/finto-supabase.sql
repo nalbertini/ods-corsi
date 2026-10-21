@@ -10,10 +10,18 @@ create or replace function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('prova.utente', true), '')::uuid
 $$;
 
+-- auth.jwt() legge i claim del token dalla variabile che PostgREST mette a ogni richiesta, come Supabase.
+create or replace function auth.jwt() returns jsonb language sql stable as $$
+  select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb
+$$;
+
+-- Il ruolo con cui PostgREST si collega: le sue impostazioni (`pgrst.db_pre_request`) valgono per ogni richiesta.
+do $$ begin create role authenticator nologin noinherit; exception when duplicate_object then null; end $$;
 do $$ begin create role anon nologin; exception when duplicate_object then null; end $$;
 do $$ begin create role authenticated nologin; exception when duplicate_object then null; end $$;
 do $$ begin create role service_role nologin bypassrls; exception when duplicate_object then null; end $$;
 grant usage on schema public, auth to anon, authenticated, service_role;
+grant execute on function auth.jwt() to anon, authenticated;
 
 -- Lo Storage: le due tabelle che le policy dei file guardano. Supabase le ha
 -- già, con l'RLS accesa e i permessi ad `anon` e `authenticated`.

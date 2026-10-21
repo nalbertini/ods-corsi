@@ -171,7 +171,7 @@ export interface Archivio {
   enteRicevute?: EnteRicevuta
   /** Nascita, residenza e genitore degli iscritti importati, per persona (18-anagrafiche.sql). */
   anagrafiche?: Record<string, Anagrafica & { cambiataIl?: string }>
-  /** Le tariffe dei tecnici in centesimi l'ora, per persona e per corso (77-tariffe-tecnici.sql). */
+  /** Le tariffe dei tecnici in centesimi l'ora, per persona e per corso (78-tariffe-tecnici.sql). */
   tariffe?: Record<string, Record<string, number>>
   /** Chi è venuto a provare una lezione, come le righe di `prove` (21-prove.sql). */
   prove?: ProvaLezione[]

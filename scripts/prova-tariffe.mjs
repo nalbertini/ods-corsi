@@ -5,7 +5,7 @@
 //
 // Per pagare un tecnico servono le province e l'IBAN nella sua anagrafica e
 // una tariffa oraria per ogni corso che insegna (`src/lib/tariffe.ts`,
-// `supabase/77-tariffe-tecnici.sql`, provato da
+// `supabase/78-tariffe-tecnici.sql`, provato da
 // `supabase/prova/tariffe-tecnici.sql`). Qui: i controlli dei campi nuovi,
 // gli euro scritti a mano, le righe della scheda (i corsi di cui è titolare e
 // quelli fatti da sostituto), la segreteria di prova e quella col database.
@@ -253,7 +253,7 @@ console.log('\n5. col database vero: le colonne nuove di anagrafiche e la tabell
   ok('cancellando la riga', chiesto.filter(([tab, k]) => tab === 'tariffe_istruttori' && k !== 'select').map(([, k]) => k), ['delete'])
 }
 
-console.log('\n6. senza 77-tariffe-tecnici.sql: la scheda dice cosa lanciare')
+console.log('\n6. senza 78-tariffe-tecnici.sql: la scheda dice cosa lanciare')
 {
   const manca = { data: null, error: { message: 'column anagrafiche.provincia_nascita does not exist', code: '42703' } }
   const db = m.creaSegreteriaSupabase({
@@ -265,7 +265,7 @@ console.log('\n6. senza 77-tariffe-tecnici.sql: la scheda dice cosa lanciare')
     },
     rpc: () => Promise.resolve({ data: null, error: null }),
   })
-  const MANCA = 'Le tariffe e i dati dei tecnici non sono ancora attivi sul database: va lanciato 77-tariffe-tecnici.sql'
+  const MANCA = 'Le tariffe e i dati dei tecnici non sono ancora attivi sul database: va lanciato 78-tariffe-tecnici.sql'
   ok('le tariffe', await errore(() => db.tariffe('p1')), MANCA)
   ok('i dati del tecnico', await errore(() => db.anagraficaDi('p1')), MANCA)
 }

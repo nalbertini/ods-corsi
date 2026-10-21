@@ -374,6 +374,7 @@ del sito. `piccolo` li porta alla misura del telefono (375px). `nota="DA CONFERM
 | `SitoInBreve.dc.html` | La carta «In breve» con le recensioni da 7 parole |
 | `SitoDomanda.dc.html` | Una domanda delle FAQ |
 | `SitoCta.dc.html` | La chiamata finale a due colonne con pulsante pieno (`alt` della foto come prop) |
+| `SitoInvito.dc.html` | COSTRUITO (`invito()` di `sitoGenera.ts`, `.invito*`; `../invito-iscriviti/` e i commenti sul canvas del 21 ottobre): l'invito giallo in fondo alle pagine. In alto titolo (88px) a sinistra, frase sulle prove (3 € / 10 €, «€» con lo spazio indivisibile) e il link «Guarda gli orari» (48px, `conOrari`: c'è la pagina Orari e non è lei) a destra; sotto quattro riquadri in fila (due fra 901 e 1200px, uno sotto l'altro sul telefono), ognuno con etichetta, valore in Big Shoulders, nota e lo stesso pulsante pieno da 52px: ISCRIVITI per primo, l'unico inchiostro col pulsante giallo, poi CHIAMA, SCRIVICI e VIENI A TROVARCI bianchi col pulsante inchiostro. La parte ISCRIVITI degli editor a pezzi ne cambia solo titolo e frase (vuoti = di sempre); `piccolo` il telefono |
 | `SitoPiede.dc.html` | Il piede, link da 48px |
 | `SitoRecapito.dc.html` | Un recapito (telefono, Instagram, Facebook, indirizzo) come tessera intera con azione da 48px; il cartellino «DA CONFERMARE» sta sopra il titolo |
 | `SitoMappa.dc.html` | La mappa OpenStreetMap con segnaposto, targhetta e pulsante «Ottieni indicazioni» da 56px; `width`/`height` dichiarati |

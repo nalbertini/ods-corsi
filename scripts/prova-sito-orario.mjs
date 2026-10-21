@@ -146,8 +146,8 @@ const ORARI = orariDel(r(A, 1, '17:00'), r(A, 3, '17:00'), r(B, 2, '16:30'), r(B
 
 console.log('\n3. Pagina non collegata: l’HTML è quello di oggi')
 // Le impronte sono dell’HTML di una pagina non collegata (senza campi nuovi): cambiano se cambia la testata, il logo o il CSS, e allora si rifanno.
-// Rifatte quando ogni pagina ha avuto «Salta al contenuto» in cima e il telefono del piede è diventato un link tel:, , per le correzioni di Scrivici, logo e numeri 1-4, e per le recensioni a carte uguali (via il CSS di «In breve»), e quando i corsi della Home sono tornati un elenco unico (via il CSS dei gruppi per età), e quando il piede degli Istruttori si è staccato dalla griglia, e per la settimana di prova a 10 euro.
-const OGGI = { dati: "6561c53384adf2d00e676f663b71f6b32c8da87fdfcb8b794933512dc1fa1f75", foto: 'a98365ce4b7c1d3ee79fc38cd85d753ecd40b8ad606e14b8df18f656475e7247', fascia: '7fdd531174c88e244f1b7be8fd5b451b914afa01658381568590b67a1f3c9351' }
+// Rifatte quando ogni pagina ha avuto «Salta al contenuto» in cima e il telefono del piede è diventato un link tel:, , per le correzioni di Scrivici, logo e numeri 1-4, e per le recensioni a carte uguali (via il CSS di «In breve»), e quando i corsi della Home sono tornati un elenco unico (via il CSS dei gruppi per età), e quando il piede degli Istruttori si è staccato dalla griglia, e per la settimana di prova a 10 euro, e per l’invito «Iscriviti» ridisegnato (design invito-iscriviti), e per «€» che non va a capo e il riquadro «dove siamo» con la freccia, e per i quattro riquadri Iscriviti, Chiama, Scrivici e Vieni a trovarci.
+const OGGI = { dati: "17f619539d9031fa07c6da17714a071f2ef62899fb87d749394904ea860ecb20", foto: '49a6d8fc53b217c71cc7c07bbdcbe3cf6b92889535547c77841e41cfacd4b745', fascia: '5c92e049f3ac2826c2ba39fe67d3806c1bd6c7d21f31e3361f081628e0633f56' }
 ok('con foto di apertura: HTML di oggi', sha(pagina(CON_FOTO)), OGGI.foto)
 ok('fascia blu: HTML di oggi', sha(pagina(FASCIA)), OGGI.fascia)
 ok('l’orario a mano si vede ancora', /09:15 – 10:15/.test(testo(main(pagina(CON_FOTO)))), true)

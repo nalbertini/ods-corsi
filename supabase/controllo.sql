@@ -388,7 +388,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.esiti_invio_ricevuta(uuid)') is not null
     and exists (select 1 from information_schema.columns
                 where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'ricevute_email_dal')),
-  ('77-tariffe-tecnici.sql', 'i dati e le tariffe dei tecnici: province, IBAN e tariffa oraria per corso',
+  ('78-tariffe-tecnici.sql', 'i dati e le tariffe dei tecnici: province, IBAN e tariffa oraria per corso',
     to_regclass('public.tariffe_istruttori') is not null
     and exists (select 1 from information_schema.columns
                 where table_schema = 'public' and table_name = 'anagrafiche' and column_name = 'iban'))

@@ -182,7 +182,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
   [/pagamenti_diretti|pagamento_diretto/, MANCANO_PAGAMENTI_A_MANO],
   [/ricevute|emetti_ricevuta/, 'Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql'],
-  [/tariffe_istruttori/, 'Le tariffe e i dati dei tecnici non sono ancora attivi sul database: va lanciato 77-tariffe-tecnici.sql'],
+  [/tariffe_istruttori/, 'Le tariffe e i dati dei tecnici non sono ancora attivi sul database: va lanciato 78-tariffe-tecnici.sql'],
   [/anagrafiche/, 'Nascita, residenza e genitore degli iscritti non sono ancora attivi sul database: va lanciato 18-anagrafiche.sql'],
   [/segna_istruttore_previsto/, 'Segnare un istruttore su una lezione già coperta non è ancora attivo sul database: va lanciato 46-istruttore-collega.sql'],
   [/lezioni_senza_istruttore|segna_istruttori_lezione/, 'Le lezioni tenute da confermare non sono ancora attive sul database: va lanciato 23-istruttori-dalle-lezioni.sql'],
@@ -190,7 +190,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/presenze_istruttori/, 'Le presenze degli istruttori non sono ancora attive sul database: va lanciato 15-presenze-istruttori.sql'],
 ]
 
-const MANCA_TARIFFE = 'Le tariffe e i dati dei tecnici non sono ancora attivi sul database: va lanciato 77-tariffe-tecnici.sql'
+const MANCA_TARIFFE = 'Le tariffe e i dati dei tecnici non sono ancora attivi sul database: va lanciato 78-tariffe-tecnici.sql'
 const MANCA_ATTIVITA = 'Le attività non sono ancora attive sul database: va lanciato 41-attivita.sql'
 
 const MANCA_AMMINISTRAZIONE = 'Il ruolo amministrazione non è ancora attivo sul database: va lanciato 55-amministrazione.sql'
@@ -264,7 +264,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /pagamento_diretto/.test(e.message ?? '')) return new Error(MANCANO_PAGAMENTI_A_MANO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
     return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
-  // Province e IBAN dei tecnici arrivano con 77-tariffe-tecnici.sql: 42703 leggendo, PGRST204 scrivendo.
+  // Province e IBAN dei tecnici arrivano con 78-tariffe-tecnici.sql: 42703 leggendo, PGRST204 scrivendo.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /provincia_nascita|provincia|iban/.test(e.message ?? '')) return new Error(MANCA_TARIFFE)
   if (e?.code === '42703' && /ricevute/.test(e.message ?? '')) return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
   // Il listino arriva con 19-listino.sql: 42703 leggendo, PGRST204 scrivendo.

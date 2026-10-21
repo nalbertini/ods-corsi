@@ -1235,5 +1235,33 @@ console.log('\n35. il certificato dei minori dal giorno dei 6 anni (seiAnni), se
   ok('il bimbo del 10 novembre: fra chi compie 6 anni entro un mese, non fra chi è senza certificato', prova(() => [/1 \w+ 6 anni entro un mese senza certificato/.test(t), t.includes('Minori: 2 senza certificato valido, 1 in scadenza')]), [true, true])
 }
 
+console.log('\n36. le Edge Function con la chiave service_role non si chiamano col token di Claude')
+{
+  // backup, invita, sito e conti-sito leggono chi chiama con `getUser` e poi lavorano con `service_role`: non passano
+  // dalla porta di PostgREST (77-claude-dalla-porta.sql), quindi rifiutano loro il token con `client_id`.
+  const { readFileSync } = await import('node:fs')
+  const { transformSync } = await import('esbuild')
+  const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url')
+  const token = (claim) => `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64(claim)}.firma`
+  const app = token({ sub: 'u1', role: 'authenticated', aal: 'aal1' })
+  const claude = token({ sub: 'u1', role: 'authenticated', client_id: '9a8b7c6d-5e4f-3a2b-1c0d-9e8f7a6b5c4d' })
+  // Claim lunghi e con caratteri che in base64url diventano - e _.
+  const strano = token({ sub: 'ü~~~>>>???', role: 'authenticated', client_id: '' })
+  let prima = null
+  for (const f of ['backup', 'invita', 'sito', 'conti-sito']) {
+    const testo = readFileSync(`supabase/functions/${f}/index.ts`, 'utf8')
+    const funzione = /function daClaude\(token: string\): boolean \{[\s\S]*?\n\}\n/.exec(testo)?.[0] ?? ''
+    if (prima === null) prima = funzione
+    ok(`${f}: c'è daClaude, uguale nelle quattro`, [funzione.length > 0, funzione === prima], [true, true])
+    const daClaude = prova(() => new Function(`${transformSync(funzione, { loader: 'ts' }).code}; return daClaude`)())
+    ok(`${f}: il token dell'app passa, quello di Claude no (anche col client_id vuoto), uno che non si legge no`,
+      prova(() => [daClaude(app), daClaude(claude), daClaude(strano), daClaude('non.un-token'), daClaude('')]), [false, true, true, true, true])
+    const righe = testo.split('\n')
+    const dopo = righe.findIndex((r) => r.includes('await admin.auth.getUser(token)'))
+    ok(`${f}: il rifiuto subito dopo chi chiama, prima di ogni lettura con service_role`,
+      [righe[dopo + 1]?.trim().startsWith('if (!chi.user)'), righe[dopo + 2]?.trim()], [true, "if (daClaude(token)) return no('Da Claude questa funzione non si chiama: si usa dall’app', 403)"])
+  }
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -20,10 +20,6 @@ export const CSS_INTERNE = `
 .interna .intro p,.interna .intro>div{grid-column:2}
 .pagina-hero.interna.elenco-tecnici{grid-template-columns:1fr 480px}
 }
-.invito{margin:96px var(--margine) 6px;min-height:300px;padding:36px 40px}
-.invito .frase{max-width:520px;font-size:22px}
-.invito .freccia{display:none}
-.invito .parola{font-size:170px}
 .piede{gap:40px;margin:0 var(--margine) 48px;padding:40px}
 .piede .nome{font-size:56px}
 .piede .col{font-size:16px;line-height:1.9}
@@ -37,9 +33,6 @@ export const CSS_INTERNE = `
 .pagina-hero.interna{padding:20px var(--margine) 36px}
 .interna h1{font-size:56px;line-height:.84}
 .interna .intro p{margin:0 0 22px;font-size:18px}
-.invito{margin-top:48px;min-height:260px;padding:22px}
-.invito .frase{font-size:17px}
-.invito .parola{font-size:120px}
 .piede{flex-direction:column;flex-wrap:nowrap;gap:0;margin:0 var(--margine) 24px;padding:24px}
 .piede .nome{font-size:44px;margin-bottom:14px}
 .piede .col+.col{margin-top:12px}
