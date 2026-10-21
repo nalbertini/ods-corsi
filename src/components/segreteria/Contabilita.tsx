@@ -56,7 +56,7 @@ import {
   vociOfferte,
   vociPerLaScelta,
 } from '../../lib/contabilita'
-import { filtraPerPersona, cosaNonVaCollegato, type FiltroPersona } from '../../lib/movimentiPersona'
+import { filtraPerPersona, cosaNonVaCollegato, collegatoAMano, type FiltroPersona } from '../../lib/movimentiPersona'
 import { fraseDallaChat } from '../../lib/collega'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
@@ -197,7 +197,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
   const nomiPersone = useMemo(() => new Map((nomiLetti.dato ?? []).map((p) => [p.id, `${p.cognome} ${p.nome}`] as const)), [nomiLetti.dato])
   const daDecidere = (esitiLetti.dato ?? []).filter((e) => e.esito === 'omonimi').length
   const senzaScheda = (esitiLetti.dato ?? []).filter((e) => e.esito === 'nessuna').length
-  const collegatiTutti = righe.filter((r) => r.personaId).length
+  const collegatiTutti = filtraPerPersona(righe, 'collegati', {}).length
 
   const { dal, al } = intervalloDi(periodo, oggi, '', '')
   const trovate = filtraPerPersona(filtraMovimenti(righe, { testo, dal, al, tipo, cassaId, voce, annullati }), persona, esiti)
@@ -495,15 +495,16 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
                   {!r.personaId && esiti[r.id] === 'omonimi' && <span className="num sg-tag sg-solo-telefono" data-tipo="aspetta" style={{ marginLeft: 8 }}>Omonimi</span>}
                   {!r.personaId && esiti[r.id] === 'nessuna' && <span className="num sg-tag sg-solo-telefono" style={{ marginLeft: 8 }}>Senza scheda</span>}
                   <span className="sg-sotto-movimento">
-                    <span className="sg-solo-telefono">{[dataRicevuta(r.data), r.voce, r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId), r.personaId ? nomiPersone.get(r.personaId) : ''].filter(Boolean).join(' · ')}</span>
+                    <span className="sg-solo-telefono">{[dataRicevuta(r.data), r.voce, r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId), collegatoAMano(r) ? nomiPersone.get(r.personaId ?? '') : ''].filter(Boolean).join(' · ')}</span>
                     {r.sotto && <span>{r.sotto}</span>}
                   </span>
                 </span>
                 <span role="cell" className="sg-persona-riga">
                   {r.personaId ? (
                     <>
-                      <span style={{ fontWeight: 600 }}>{nomiPersone.get(r.personaId) ?? 'Persona collegata'}</span>
-                      <span className="num sg-tag" data-tipo="fatto">Collegato</span>
+                      <span style={{ fontWeight: 600 }}>{nomiPersone.get(r.personaId) ?? (collegatoAMano(r) ? 'Persona collegata' : '')}</span>
+                      {/* Un incasso iscritto è della persona da sé: «Collegato» farebbe cercare uno Scollega che qui non c'è. */}
+                      {collegatoAMano(r) && <span className="num sg-tag" data-tipo="fatto">Collegato</span>}
                     </>
                   ) : esiti[r.id] === 'omonimi' ? (
                     <span className="num sg-tag" data-tipo="aspetta">Omonimi</span>
