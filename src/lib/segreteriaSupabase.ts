@@ -4,6 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import { giorniConLezioni } from './calendarioSettimana'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
+import { cosaNonVaTariffa } from './tariffe'
 import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { tutteLeRighe } from './tutteLeRighe'
@@ -180,6 +181,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
   [/pagamenti_diretti|pagamento_diretto/, MANCANO_PAGAMENTI_A_MANO],
   [/ricevute|emetti_ricevuta/, 'Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql'],
+  [/tariffe_istruttori|provincia_nascita|iban/, 'Le tariffe e i dati dei tecnici non sono ancora attivi sul database: va lanciato 77-tariffe-tecnici.sql'],
   [/anagrafiche/, 'Nascita, residenza e genitore degli iscritti non sono ancora attivi sul database: va lanciato 18-anagrafiche.sql'],
   [/segna_istruttore_previsto/, 'Segnare un istruttore su una lezione già coperta non è ancora attivo sul database: va lanciato 46-istruttore-collega.sql'],
   [/lezioni_senza_istruttore|segna_istruttori_lezione/, 'Le lezioni tenute da confermare non sono ancora attive sul database: va lanciato 23-istruttori-dalle-lezioni.sql'],
@@ -218,7 +220,12 @@ const ANAGRAFICA: Array<[keyof Anagrafica, string]> = [
   ['genitoreCognome', 'genitore_cognome'],
   ['genitoreCodiceFiscale', 'genitore_codice_fiscale'],
   ['genitoreNato', 'genitore_nato'],
+  ['provinciaNascita', 'provincia_nascita'],
+  ['provincia', 'provincia'],
+  ['iban', 'iban'],
 ]
+/** Il modulo di iscrizione non li chiede: restano quelli della segreteria anche quando vince la richiesta. */
+const SOLO_SEGRETERIA: Array<keyof Anagrafica> = ['provinciaNascita', 'provincia', 'iban']
 const CAMPI_ANAGRAFICA = ANAGRAFICA.map(([, c]) => c).join(', ')
 type RigaAnagrafica = Record<string, string | null>
 const aRigaAnagrafica = (a: Anagrafica) => Object.fromEntries(ANAGRAFICA.flatMap(([k, c]) => (a[k]?.trim() ? [[c, a[k]!.trim()]] : [])))
@@ -492,7 +499,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     const x = s ? daRigaAnagrafica(s) : null
     const daSegreteria = x && Object.keys(x).length ? { dati: x, da: 'segreteria' as const, quando: s!.cambiata_il } : null
     const vince = daRichiesta && daSegreteria ? (daSegreteria.quando >= daRichiesta.quando ? daSegreteria : daRichiesta) : (daSegreteria ?? daRichiesta)
-    return vince && { dati: vince.dati, da: vince.da }
+    // Se no un MODIFICA partito dalla richiesta, che sostituisce, li cancellerebbe.
+    const tenuti = vince === daRichiesta && x ? Object.fromEntries(SOLO_SEGRETERIA.flatMap((k) => (x[k] ? [[k, x[k]]] : []))) : {}
+    return vince && { dati: { ...vince.dati, ...tenuti }, da: vince.da }
   }
 
   /** Chi insegna ogni corso, per nome, col primo di riferimento davanti. */
@@ -1151,6 +1160,26 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const riga = sostituisci ? Object.fromEntries(ANAGRAFICA.map(([k, c]) => [c, x[k] ?? null])) : aRigaAnagrafica(x)
       if (Object.keys(riga).length === 0) return
       ok(await db.from('anagrafiche').upsert({ persona_id: personaId, ...riga }, { onConflict: 'persona_id' }))
+    },
+
+    async tariffe(personaId) {
+      // Il client crede che `corsi(nome)` sia un elenco: è un corso solo, perché la riga ha un `corso_id`.
+      const righe = ok(await db.from('tariffe_istruttori').select('corso_id, centesimi_ora, corsi(nome)').eq('persona_id', personaId)) as unknown as Array<{
+        corso_id: string
+        centesimi_ora: number
+        corsi: { nome: string } | null
+      }>
+      return (righe ?? []).map((r) => ({ corsoId: r.corso_id, corso: r.corsi?.nome ?? '', centesimi: r.centesimi_ora }))
+    },
+
+    async salvaTariffa(personaId, corsoId, centesimi) {
+      if (centesimi === null) {
+        ok(await db.from('tariffe_istruttori').delete().eq('persona_id', personaId).eq('corso_id', corsoId))
+        return
+      }
+      const no = cosaNonVaTariffa(centesimi)
+      if (no) throw new Error(no)
+      ok(await db.from('tariffe_istruttori').upsert({ persona_id: personaId, corso_id: corsoId, centesimi_ora: centesimi }, { onConflict: 'persona_id,corso_id' }))
     },
 
     async emettiRicevuta(r, satispayId) {

@@ -204,6 +204,17 @@ export interface Anagrafica {
   genitoreCodiceFiscale?: string
   /** Luogo e data di nascita del genitore, come sono scritti nel modulo. */
   genitoreNato?: string
+  /** Le sigle delle province e l'IBAN servono solo ai tecnici, per lettera d'incarico e compensi (`77-tariffe-tecnici.sql`). */
+  provinciaNascita?: string
+  provincia?: string
+  iban?: string
+}
+
+/** Quanto prende un tecnico per un'ora di lezione in un corso. */
+export interface Tariffa {
+  corsoId: string
+  corso: string
+  centesimi: number
 }
 
 /** I dati anagrafici di una persona e da dove vengono: dal modulo dell'app o dall'import. */
@@ -219,6 +230,8 @@ export function cosaNonVaAnagrafica(a: Anagrafica, oggi = chiaveGiornoOggi()): s
   if (a.codiceFiscale && !/^[A-Z0-9]{16}$/.test(a.codiceFiscale)) return 'Il codice fiscale ha sedici lettere e cifre'
   if (a.genitoreCodiceFiscale && !/^[A-Z0-9]{16}$/.test(a.genitoreCodiceFiscale)) return 'Il codice fiscale del genitore ha sedici lettere e cifre'
   if (a.cap && !/^\d{5}$/.test(a.cap)) return 'Il CAP ha cinque cifre'
+  if ((a.provincia && !/^[A-Z]{2}$/.test(a.provincia)) || (a.provinciaNascita && !/^[A-Z]{2}$/.test(a.provinciaNascita))) return 'La provincia è la sigla di due lettere'
+  if (a.iban && !/^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/.test(a.iban)) return "L'IBAN non è giusto"
   const lunghi: Array<[keyof Anagrafica, number, string]> = [
     ['natoA', 80, 'Il luogo di nascita'], ['comune', 80, 'Il comune'], ['indirizzo', 160, "L'indirizzo"],
     ['genitoreNome', 80, 'Il nome del genitore'], ['genitoreCognome', 80, 'Il cognome del genitore'], ['genitoreNato', 120, 'La nascita del genitore'],
@@ -231,7 +244,7 @@ export function cosaNonVaAnagrafica(a: Anagrafica, oggi = chiaveGiornoOggi()): s
 export function pulisciAnagrafica(a: Anagrafica): Anagrafica {
   const x: Record<string, string> = {}
   for (const [k, v] of Object.entries(a)) if (typeof v === 'string' && v.trim()) x[k] = v.trim().replace(/\s+/g, ' ')
-  for (const k of ['codiceFiscale', 'genitoreCodiceFiscale', 'cap']) if (x[k]) x[k] = x[k].toUpperCase().replace(/\s/g, '')
+  for (const k of ['codiceFiscale', 'genitoreCodiceFiscale', 'cap', 'provincia', 'provinciaNascita', 'iban']) if (x[k]) x[k] = x[k].toUpperCase().replace(/\s/g, '')
   for (const k of ['genitoreNome', 'genitoreCognome']) if (x[k]) x[k] = nomeProprio(x[k])
   return x as Anagrafica
 }
@@ -641,6 +654,10 @@ export interface DatiSegreteria {
    * `null` se non ce ne sono.
    */
   anagraficaDi(personaId: string): Promise<AnagraficaDi | null>
+  /** Le tariffe orarie di un tecnico, una per corso (`77-tariffe-tecnici.sql`). */
+  tariffe(personaId: string): Promise<Tariffa[]>
+  /** Scrive la tariffa di un corso in centesimi l'ora; `null` la toglie. */
+  salvaTariffa(personaId: string, corsoId: string, centesimi: number | null): Promise<void>
   /** Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). */
   emettiRicevuta(r: DatiRicevuta, satispayId?: string): Promise<Ricevuta>
   /**

@@ -7,6 +7,7 @@ import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, us
 import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
+import { DatiTecnico, Tariffe } from './DatiTecnico'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
 
 /**
@@ -559,7 +560,13 @@ function Scheda({
         </div>
       </div>
 
-      {dellaSala && <PresenzeDelMese d={d} p={p} />}
+      {dellaSala && (
+        <>
+          <DatiTecnico d={d} p={p} fai={fai} />
+          <Tariffe d={d} p={p} fai={fai} />
+          <PresenzeDelMese d={d} p={p} />
+        </>
+      )}
 
       <div className="sg-scheda-piede">
         <button
