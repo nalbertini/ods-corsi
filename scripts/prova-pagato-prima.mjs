@@ -37,7 +37,7 @@ const impacchetta = async (contents) => {
 // src/lib/pagatoPrima.ts può non esserci ancora: le prove falliscono con «non è una funzione», non per un import.
 const m = {
   ...(existsSync('src/lib/pagatoPrima.ts') ? await impacchetta("export * from './src/lib/pagatoPrima'") : {}),
-  ...(await impacchetta("export * from './src/lib/filtriIscritti'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { pagamentoDi } from './src/lib/segreteria'; export { VALIDITA } from './src/lib/costi'")),
+  ...(await impacchetta("export * from './src/lib/filtriIscritti'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { pagamentoDi } from './src/lib/segreteria'; export { STAGIONE, stagioneDi } from './src/lib/costi'")),
 }
 
 let guai = 0
@@ -87,14 +87,17 @@ console.log('\n2. chi non compare')
   ok('persona non attiva: no', await tutto(pagato({ attiva: false })), [])
   const c = await gruppi([clio], [
     inc('clio', '2025-09-28', 5000), // stagione scorsa
-    inc('clio', '2027-08-01', 5000), // dopo la fine
-    inc('clio', '2026-08-31', 5000), // il giorno prima di settembre
+    inc('clio', '2027-08-01', 5000), // dopo la fine: è già della stagione dopo
+    inc('clio', '2026-07-31', 5000), // il giorno prima di agosto: la stagione prima
   ])
   ok('storico fuori stagione (confini compresi): no', await tutto(Promise.resolve(c)), [])
   ok('il 1 settembre e il 31 luglio sono dentro', [ids(await gruppi([clio], [inc('clio', '2026-09-01', 5000)]), 'quota'), ids(await gruppi([clio], [inc('clio', '2027-07-31', 5000)]), 'quota')], [['clio'], ['clio']])
+  // Agosto è già della stagione che inizia: chi paga ad agosto paga quella (come nel database, 71-pagato-vecchio-programma.sql).
+  ok('il 1 e il 31 agosto 2026 sono dentro', [ids(await gruppi([clio], [inc('clio', '2026-08-01', 5000)]), 'quota'), ids(await gruppi([clio], [inc('clio', '2026-08-31', 5000)]), 'quota')], [['clio'], ['clio']])
   // La stagione si ricava dalla data di oggi, come nel database: da settembre 2027 il filtro non resta vuoto.
-  ok('la stagione di oggi (ottobre 2026) e di gennaio 2027', [m.stagioneDi?.('2026-10-18'), m.stagioneDi?.('2027-01-10')], [{ dal: '2026-09-01', al: '2027-07-31' }, { dal: '2026-09-01', al: '2027-07-31' }])
-  ok('dal 1 settembre 2027 è la stagione nuova', m.stagioneDi?.('2027-09-01'), { dal: '2027-09-01', al: '2028-07-31' })
+  const confini = (g) => { const x = m.stagioneDi?.(g); return x && { dal: x.dal, al: x.al } }
+  ok('la stagione di oggi (ottobre 2026) e di gennaio 2027', [confini('2026-10-18'), confini('2027-01-10')], [{ dal: '2026-08-01', al: '2027-07-31' }, { dal: '2026-08-01', al: '2027-07-31' }])
+  ok('dal 1 agosto 2027 è la stagione nuova', [confini('2027-07-31'), confini('2027-08-01'), confini('2027-09-01')], [{ dal: '2026-08-01', al: '2027-07-31' }, { dal: '2027-08-01', al: '2028-07-31' }, { dal: '2027-08-01', al: '2028-07-31' }])
   ok('a ottobre 2027 conta l\'incasso di settembre 2027, non quello del 2026', ids(await gruppi([clio], [inc('clio', '2027-09-28', 5000), inc('clio', '2026-09-28', 5000)], '2027-10-18'), 'quota'), ['clio'])
   ok('…e solo quello nuovo', (await gruppi([clio], [inc('clio', '2026-09-28', 5000)], '2027-10-18')).quota?.length, 0)
   ok('la riga dice se la quota è scaduta o da pagare', [(await gruppi([persona('s', 'Marta', 'Esposito', { quote: [{ anno: 2025, numero: 3, al: '2026-07-31', mancano: 0 }] })], [inc('s', '2026-09-14', 5000)])).quota?.[0]?.scaduta, (await gruppi([clio], [inc('clio', '2026-09-14', 5000)])).quota?.[0]?.scaduta], [true, false])
@@ -145,8 +148,8 @@ console.log('\n4. segnare in blocco: pagato, fino a fine stagione, nota «Dal ve
   const tre = [{ id: 'a', nome: 'Clio', cognome: 'Tatone' }, { id: 'b', nome: 'Marta', cognome: 'Esposito' }, { id: 'c', nome: 'Elia', cognome: 'Moretti' }]
   const r = await prova(() => m.segnaPagatoPrima(d(), tre))
   ok('tutte riuscite: tre riusciti, nessun fallito', [r.riusciti, r.falliti], [['a', 'b', 'c'], []])
-  ok('ognuna è segnata «pagato», fino a fine stagione, con la nota', chiamate.map(([id, p]) => [id, p]), tre.map((x) => [x.id, { stato: 'pagato', fino: m.VALIDITA.quota.al, nota: 'Dal vecchio programma' }]))
-  ok('«fino» di default è 2027-07-31', m.VALIDITA.quota.al, '2027-07-31')
+  ok('ognuna è segnata «pagato», fino a fine stagione, con la nota', chiamate.map(([id, p]) => [id, p]), tre.map((x) => [x.id, { stato: 'pagato', fino: m.STAGIONE.quota.al, nota: 'Dal vecchio programma' }]))
+  ok('«fino» di default è 2027-07-31', m.STAGIONE.quota.al, '2027-07-31')
   chiamate.length = 0
   await prova(() => m.segnaPagatoPrima(d(), tre.slice(0, 1), { fino: '2027-01-31', nota: 'Ricevuta di carta' }))
   ok('fino e nota si possono cambiare', chiamate, [['a', { stato: 'pagato', fino: '2027-01-31', nota: 'Ricevuta di carta' }]])
@@ -164,7 +167,7 @@ console.log('\n4. segnare in blocco: pagato, fino a fine stagione, nota «Dal ve
   ok('53 persone: tutte segnate, a pacchetti (non tutte insieme)', [y.riusciti?.length, y.falliti?.length, massimo > 1 && massimo < 53], [53, 0, true])
   ok('nessuna persona: niente da fare, nessuna chiamata', await prova(async () => { const z = await m.segnaPagatoPrima(d(), []); return [z.riusciti, z.falliti] }), [[], []])
   // Chi è segnato esce dal filtro: la stessa segnatura, riletta da pagamentoDi, lo mette a posto.
-  const clio = persona('clio', 'Clio', 'Tatone', { pagamento: { stato: 'pagato', fino: m.VALIDITA.quota.al, nota: 'Dal vecchio programma' } })
+  const clio = persona('clio', 'Clio', 'Tatone', { pagamento: { stato: 'pagato', fino: m.STAGIONE.quota.al, nota: 'Dal vecchio programma' } })
   ok('dopo la segnatura Clio è «pagato» e non è più nel filtro', [m.pagamentoDi(clio, OGGI).come, ids(await gruppi([clio], [inc('clio', '2026-09-28', 5000)]), 'quota')], ['pagato', []])
 }
 
@@ -209,7 +212,7 @@ console.log('\n7. la modalità prova ha dati inventati: una persona con storico 
   const [r] = g.quota ?? []
   const p = persone.find?.((x) => x.id === r?.personaId)
   ok('è attiva e la sua quota è da pagare (non pagata, non in parte)', [p?.attiva, p && m.pagamentoDi(p, OGGI).come], [true, 'da_pagare'])
-  ok('gli incassi sono tutti nella stagione di VALIDITA.quota', elenco.every((i) => i.data >= m.VALIDITA.quota.dal && i.data <= m.VALIDITA.quota.al), true)
+  ok('gli incassi sono tutti nella stagione del listino', elenco.every((i) => i.data >= m.STAGIONE.quota.dal && i.data <= m.STAGIONE.quota.al), true)
   ok('ce n\'è anche uno da guardare a mano (sotto 50 € o solo corsi) e uno non collegato, per vedere il filtro per intero', [g.daGuardare?.length >= 1, g.nonCollegati >= 1], [true, true])
   // Segnarla davvero, con la segreteria di prova: la stessa riga esce dal filtro.
   if (r) {

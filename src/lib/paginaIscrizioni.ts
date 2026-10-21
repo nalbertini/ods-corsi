@@ -58,7 +58,7 @@ export const COME_SI_PAGA = {
  */
 export function costiBreve(quota: number, satispay: boolean) {
   return {
-    etichetta: `QUANTO COSTA · ${STAGIONE}`,
+    etichetta: `QUANTO COSTA · ${STAGIONE.etichetta}`,
     titolo: `Quota associativa ${inEuro(quota)}, più il corso.`,
     righe: [
       { testo: 'Sconto famiglia, sull’annuale che costa meno', cifra: `−${Math.round(SCONTO_FAMIGLIA * 100)}%` },

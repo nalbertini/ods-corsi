@@ -361,6 +361,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regprocedure('public.incassi_vecchio_programma()') is not null
     and exists (select 1 from information_schema.columns
                 where table_schema = 'public' and table_name = 'movimenti' and column_name = 'persona_id')),
+  ('71-pagato-vecchio-programma.sql', 'agosto nella stagione che inizia, come nell''app (src/lib/costi.ts)',
+    exists (select 1 from dentro where nome = 'incassi_vecchio_programma' and corpo like '%12 months%')),
   ('72-movimenti-dalla-chat.sql', 'i movimenti registrati dalla chat con Claude: la chiave, il segno e i simili',
     to_regprocedure('public.registra_movimento_dalla_chat(jsonb)') is not null
     and to_regprocedure('public.movimenti_simili(text)') is not null

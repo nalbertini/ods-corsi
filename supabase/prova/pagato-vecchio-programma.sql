@@ -97,11 +97,11 @@ select atteso('authenticated la chiama, anon no (permessi)',
 
 \echo ''
 \echo '--- 2. i dati: la stagione di oggi (dal 1 settembre al 31 luglio) e quella di prima ---'
--- S = `inizio()` è il 1 settembre di questa stagione; le date si scrivono come giorni da S, così la prova vale in ogni mese.
+-- S = `inizio()` è il 1 agosto di questa stagione (agosto è già della stagione che inizia); le date si scrivono come giorni da S, così la prova vale in ogni mese.
 create or replace function inizio() returns date language sql stable as $$
-  select make_date(extract(year from (now() at time zone 'Europe/Rome'))::int - case when extract(month from (now() at time zone 'Europe/Rome')) >= 9 then 0 else 1 end, 9, 1) $$;
--- L'ultimo giorno: il 31 luglio, undici mesi meno un giorno dopo S, in giorni da S.
-create or replace function ultimo() returns int language sql stable as $$ select (inizio() + interval '11 months' - interval '1 day')::date - inizio() $$;
+  select make_date(extract(year from (now() at time zone 'Europe/Rome'))::int - case when extract(month from (now() at time zone 'Europe/Rome')) >= 8 then 0 else 1 end, 8, 1) $$;
+-- L'ultimo giorno: il 31 luglio, dodici mesi meno un giorno dopo S, in giorni da S.
+create or replace function ultimo() returns int language sql stable as $$ select (inizio() + interval '12 months' - interval '1 day')::date - inizio() $$;
 insert into persone (id, nome, cognome, ruolo, attiva) values
   (pid(1), 'Clio', 'Tatone', 'iscritto', true),
   (pid(2), 'Elia', 'Moretti', 'iscritto', true),
@@ -119,7 +119,7 @@ create or replace function mov(n int, giorni int, importo int, voce uuid, person
 select mov(1, 27, 5000, id_voce('Quota associativa', 'entrata'), pid(1));
 select mov(2, 10, 31000, id_voce('Corsi e altri pagamenti', 'entrata'), pid(2));
 select mov(3, 13, 3000, id_voce('Quota associativa', 'entrata'), pid(3));
--- Il confine: il 1 settembre e il 31 luglio entrano, il 31 agosto prima e il 1 agosto dopo no.
+-- Il confine: il 1 agosto e il 31 luglio entrano, il 31 luglio prima e il 1 agosto dopo no.
 select mov(4, 0, 5000, id_voce('Quota associativa', 'entrata'), pid(4));
 select mov(5, ultimo(), 5100, id_voce('Quota associativa', 'entrata'), pid(5));
 select mov(6, -1, 5000, id_voce('Quota associativa', 'entrata'), pid(4));
@@ -144,7 +144,7 @@ grant execute on function lettura(text), inizio(), ultimo() to anon, authenticat
 
 \echo ''
 \echo '--- 3. cosa rende: gli incassi dello storico della stagione, collegati o no ---'
-select atteso('entrano: i tre in stagione, il 1 settembre, il 31 luglio, e i due non collegati; restano fuori il 31 agosto prima, il 1 agosto dopo, la stagione scorsa, l''annullato, l''uscita, il movimento a mano e l''altra voce',
+select atteso('entrano: i tre in stagione, il 1 agosto, il 31 luglio, e i due non collegati; restano fuori il 31 luglio prima, il 1 agosto dopo, la stagione scorsa, l''annullato, l''uscita, il movimento a mano e l''altra voce',
   lettura('11111111-1111-1111-1111-111111111111'),
   '4/0/5000/Quota associativa 2/10/31000/Corsi e altri pagamenti 3/13/3000/Quota associativa -/15/5000/Quota associativa -/16/12500/Corsi e altri pagamenti 1/27/5000/Quota associativa 5/'
   || ultimo()::text || '/5100/Quota associativa');

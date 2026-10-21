@@ -1,5 +1,6 @@
 import { VOCE_QUOTA } from './contabilita'
-import { QUOTA_ASSOCIATIVA, VALIDITA } from './costi'
+import { QUOTA_ASSOCIATIVA, stagioneDi } from './costi'
+import { chiaveGiorno } from './sala'
 import { pagamentoDi, type DatiSegreteria, type PersonaSeg } from './segreteria'
 
 /**
@@ -52,20 +53,12 @@ const riga = (p: PersonaSeg, i: IncassoPrima, oggi: string, extra: Pick<RigaPaga
 })
 
 /**
- * La stagione di oggi, come la calcola il database (`incassi_vecchio_programma`): dal 1 settembre al 31 luglio. Da settembre
- * si passa alla stagione nuova da sola, senza aspettare che si aggiorni `VALIDITA`.
- */
-export function stagioneDi(oggi: string): { dal: string; al: string } {
-  const anno = Number(oggi.slice(0, 4)) - (Number(oggi.slice(5, 7)) >= 9 ? 0 : 1)
-  return { dal: `${anno}-09-01`, al: `${anno + 1}-07-31` }
-}
-
-/**
  * Le persone attive con un incasso della stagione corrente (confini compresi) che oggi risultano da pagare, scadute o
  * pagate in parte, divise fra «da segnare» e «da guardare a mano». Chi ha già la quota (ricevuta valida o segnata
  * senza ricevuta dell'app) non c'è: non resta niente da fare.
  */
 export function pagatoNelVecchio(persone: PersonaSeg[], incassi: IncassoPrima[], oggi: string): PagatoNelVecchio {
+  // La stagione di oggi, come la calcola il database (`incassi_vecchio_programma`): agosto è già della nuova.
   const stagione = stagioneDi(oggi)
   const dentro = incassi.filter((i) => i.data >= stagione.dal && i.data <= stagione.al)
   const perId = new Map(persone.map((p) => [p.id, p]))
@@ -123,7 +116,7 @@ export async function segnaPagatoPrima(
   opzioni: { fino?: string; nota?: string } = {},
   suProgresso?: (fatte: number) => void,
 ): Promise<EsitoSegnatura> {
-  const pagamento = { stato: 'pagato' as const, fino: opzioni.fino ?? VALIDITA.quota.al, nota: opzioni.nota ?? NOTA_DI_DEFAULT }
+  const pagamento = { stato: 'pagato' as const, fino: opzioni.fino ?? stagioneDi(chiaveGiorno(new Date())).quota.al, nota: opzioni.nota ?? NOTA_DI_DEFAULT }
   const esito: EsitoSegnatura = { riusciti: [], falliti: [] }
   for (let i = 0; i < persone.length; i += PACCHETTO) {
     const giro = persone.slice(i, i + PACCHETTO)

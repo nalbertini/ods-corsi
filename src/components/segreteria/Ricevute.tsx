@@ -595,8 +595,8 @@ export function NuovaRicevuta({
     if (daPagamento) return setVoci([{ ...bozzaDa(voceDaPagamento(daPagamento)), pagatoAMano: true }])
     const quotaPagata = fatte.some((r) => !r.annullataIl && r.voci.some((v) => v.descrizione.toUpperCase() === QUOTA && (!v.al || v.al >= oggi)))
     metti([
-      ...(quotaPagata ? [] : [bozzaDa(pronte[0].voce(oggi))]),
-      ...corsi.flatMap((c) => vociDelCorso(c, data, l).slice(0, 1)).map((v) => bozzaDa(v.voce(oggi))),
+      ...(quotaPagata ? [] : [bozzaDa(pronte[0].voce(data || oggi))]),
+      ...corsi.flatMap((c) => vociDelCorso(c, data, l).slice(0, 1)).map((v) => bozzaDa(v.voce(data || oggi))),
     ])
   }, [partenza.dato])
 

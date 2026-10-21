@@ -52,7 +52,7 @@ const carica = async (contents) => {
   }
 }
 const s = await carica("export * from './src/lib/satispay'")
-const g = await carica("export { pagamentoDi } from './src/lib/segreteria'; export { VALIDITA } from './src/lib/costi'")
+const g = await carica("export { pagamentoDi } from './src/lib/segreteria'; export { STAGIONE } from './src/lib/costi'")
 const c = await carica("export * from './src/lib/contabilita'; export { ENTE_PREDEFINITO } from './src/lib/ricevute'")
 const f = await carica("export * from './supabase/functions/satispay/firma'")
 // La parte nuova di «prima paghi, poi mandi» si carica a parte: finché manca, fa rosso solo i suoi casi.
@@ -198,8 +198,9 @@ console.log('\n4d. la quota nella scheda: col Satispay arrivato non è «da paga
 {
   const nessuno = { pagamento: { stato: 'da_pagare' }, quote: [] }
   ok('senza Satispay: da pagare', prova(() => g.pagamentoDi(nessuno, '2026-10-20').come), 'da_pagare')
-  ok('Satispay arrivato, senza ricevuta: pagata, con Satispay', prova(() => g.pagamentoDi({ ...nessuno, satispay: 23000 }, '2026-10-20')), { come: 'pagato', fonte: 'satispay', fino: g.VALIDITA.quota.al, importo: 23000 })
-  const conRicevuta = { ...nessuno, satispay: 23000, quote: [{ anno: 2026, numero: 7, dal: '2026-09-01', al: g.VALIDITA.quota.al, mancano: 0 }] }
+  ok('Satispay arrivato, senza ricevuta: pagata, con Satispay', prova(() => g.pagamentoDi({ ...nessuno, satispay: 23000 }, '2026-10-20')), { come: 'pagato', fonte: 'satispay', fino: g.STAGIONE.quota.al, importo: 23000 })
+  ok('Satispay a ottobre 2027: pagata fino al 31/7/2028', prova(() => g.pagamentoDi({ ...nessuno, satispay: 23000 }, '2027-10-20').fino), '2028-07-31')
+  const conRicevuta = { ...nessuno, satispay: 23000, quote: [{ anno: 2026, numero: 7, dal: '2026-09-01', al: g.STAGIONE.quota.al, mancano: 0 }] }
   ok('con la ricevuta della quota vale la ricevuta', prova(() => g.pagamentoDi(conRicevuta, '2026-10-20').fonte), 'ricevuta')
 }
 

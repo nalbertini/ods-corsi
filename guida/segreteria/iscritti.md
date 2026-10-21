@@ -35,7 +35,8 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   caricato prima della nuova gestione (senza data di caricamento). Quelli
   nuovi non ci sono mai.
 - **Pagato nel vecchio programma** col numero — solo finché ce ne sono: chi è
-  attivo, ha un incasso del vecchio programma nella stagione (collegato alla sua
+  attivo, ha un incasso del vecchio programma nella stagione (dal 1° agosto al
+  31 luglio; collegato alla sua
   scheda in CONTABILITÀ › MOVIMENTI) e nell'app risulta ancora da pagare. Sotto la
   riga di stato c'è chi **ha pagato la quota** e chi **ha pagato solo corsi**; ogni
   riga dice quale incasso è (data, importo, voce). Le righe con la casella si

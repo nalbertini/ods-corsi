@@ -1,4 +1,4 @@
-import { saldoAperto, VALIDITA, type VoceCosto } from './costi'
+import { saldoAperto, stagioneDi, type VoceCosto } from './costi'
 import { LISTINO_PREDEFINITO, voceDelCorso, type CorsoRef, type Listino } from './listino'
 import { minorenne, type DatiRichiesta } from './richieste'
 import { nomeProprio } from './nomi'
@@ -234,11 +234,12 @@ export interface VocePronta {
   voce: (oggi: string) => Omit<VoceRicevuta, 'pagamenti'>
 }
 
-/** La fine di un trimestre che parte da `dal`: tre mesi meno un giorno, non oltre la stagione. */
+/** La fine di un trimestre che parte da `dal`: tre mesi meno un giorno, non oltre i corsi della sua stagione. */
 export function fineTrimestre(dal: string) {
   const [a, m, g] = dal.split('-').map(Number)
   const x = new Date(Date.UTC(a, m - 1 + 3, g - 1)).toISOString().slice(0, 10)
-  return x > VALIDITA.corsi.al ? VALIDITA.corsi.al : x
+  const fine = stagioneDi(dal).corsi.al
+  return x > fine ? fine : x
 }
 
 /** Euro del listino → centesimi, senza i resti della virgola mobile. */
@@ -250,7 +251,7 @@ export function voceQuota(listino: Listino = LISTINO_PREDEFINITO): VocePronta {
   return {
     chiave: 'quota',
     etichetta: `Quota associativa · ${euro(prezzo)} €`,
-    voce: () => ({ descrizione: 'QUOTA ASSOCIATIVA', quantita: 1, prezzo, ...VALIDITA.quota }),
+    voce: (oggi) => ({ descrizione: 'QUOTA ASSOCIATIVA', quantita: 1, prezzo, ...stagioneDi(oggi).quota }),
   }
 }
 
@@ -268,15 +269,16 @@ function vociDellaVoce(c: VoceCosto, giorno: string, listino: Listino): VocePron
     const nome = p.etichetta ? `${c.corso} ${p.etichetta.toLowerCase()}` : c.corso
     const x: VocePronta[] = []
     if (p.annuale !== undefined)
-      x.push({ chiave: `${c.corso}~${i}~annuale`, etichetta: `${nome} · annuale · ${euro(cent(p.annuale))} €`, voce: () => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: cent(p.annuale!), ...VALIDITA.corsi }) })
+      x.push({ chiave: `${c.corso}~${i}~annuale`, etichetta: `${nome} · annuale · ${euro(cent(p.annuale))} €`, voce: (oggi) => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: cent(p.annuale!), ...stagioneDi(oggi).corsi }) })
     if (p.saldo !== undefined && p.saldo !== p.annuale && saldoAperto(giorno, listino.saldoEntro))
-      x.push({ chiave: `${c.corso}~${i}~saldo`, etichetta: `${nome} · annuale a saldo · ${euro(cent(p.saldo))} €`, voce: () => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: cent(p.saldo!), ...VALIDITA.corsi }) })
+      x.push({ chiave: `${c.corso}~${i}~saldo`, etichetta: `${nome} · annuale a saldo · ${euro(cent(p.saldo))} €`, voce: (oggi) => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: cent(p.saldo!), ...stagioneDi(oggi).corsi }) })
     if (p.trimestre !== undefined)
       x.push({
         chiave: `${c.corso}~${i}~trimestre`,
         etichetta: `${nome} · trimestre · ${euro(cent(p.trimestre))} €`,
         voce: (oggi) => {
-          const dal = oggi < VALIDITA.corsi.dal ? VALIDITA.corsi.dal : oggi
+          const inizio = stagioneDi(oggi).corsi.dal
+          const dal = oggi < inizio ? inizio : oggi
           return { descrizione: `Trimestre ${nome}`, quantita: 1, prezzo: cent(p.trimestre!), dal, al: fineTrimestre(dal) }
         },
       })

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Titoletto } from '../ds'
-import { VALIDITA } from '../../lib/costi'
+import { stagioneDi } from '../../lib/costi'
 import { frasePagatoPrima, NOTA_DI_DEFAULT, segnaPagatoPrima, type EsitoSegnatura, type PagatoNelVecchio, type RigaPagatoPrima } from '../../lib/pagatoPrima'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
+import { chiaveGiorno } from '../../lib/sala'
 import { Campo, useDialogo } from './comune'
 
 /**
@@ -219,7 +220,7 @@ function Conferma({
   onSegna: (fino: string, nota: string) => void
 }) {
   const ref = useDialogo<HTMLFormElement>(onChiudi)
-  const [fino, setFino] = useState<string>(VALIDITA.quota.al)
+  const [fino, setFino] = useState<string>(() => stagioneDi(chiaveGiorno(new Date())).quota.al)
   const [nota, setNota] = useState(NOTA_DI_DEFAULT)
   return (
     <>

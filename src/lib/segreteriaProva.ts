@@ -17,8 +17,8 @@ import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva,
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { enteDaDati, fineAnno, importaTessereProva } from './tessere'
-import { QUOTA_ASSOCIATIVA } from './costi'
-import { NOTA_DI_DEFAULT, stagioneDi, type IncassoPrima } from './pagatoPrima'
+import { QUOTA_ASSOCIATIVA, stagioneDi } from './costi'
+import { NOTA_DI_DEFAULT, type IncassoPrima } from './pagatoPrima'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
