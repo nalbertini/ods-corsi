@@ -3,11 +3,14 @@
 //
 //   node scripts/prova-sito-pezzi.mjs
 //
-// `src/lib/sitoPezzi.ts`: i pezzi (foto in cima, testo, foto, colonne) e il
-// loro HTML piatto; `pulisciTesto` ammette le colonne; `generaSito` le lascia
-// intatte e il CSS le affianca (le impila sul telefono). Il sito resta statico.
+// `src/lib/sitoPezzi.ts`: i pezzi (foto in cima, testo, foto, colonne, iscriviti,
+// istruttore) e il loro HTML piatto; un istruttore per parte, nell'ordine delle
+// tessere sul sito, con l'avviso per la parte che li spezza e la nota sulla
+// sua pagina. `pulisciTesto` ammette le colonne; `generaSito` le lascia intatte
+// e il CSS le affianca (le impila sul telefono). Il sito resta statico.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
+import { readFileSync } from 'node:fs'
 
 const carica = async (file) => {
   try {
@@ -975,6 +978,88 @@ ok('una domanda senza «?»: nessuna tessera chiara', typeof misto === 'string' 
 ok('una domanda senza «?»: Google legge solo quella col «?»', typeof misto === 'string' && [...misto.matchAll(/"@type":"Question","name":"([^"]*)"/g)].map((m) => m[1]), ['Serve esperienza?'])
 // Mai dopo ISCRIVITI, anche le parti nuove.
 ok('Pulsanti o Domande dopo Iscriviti: non vanno, e lo dice', prova(() => [z.cosaNonVaPezzi({ content: [{ type: 'iscriviti', props: { id: 'i', titolo: '', frase: '' } }, PU('p', B('modulo'))] }), z.cosaNonVaPezzi({ content: [{ type: 'iscriviti', props: { id: 'i', titolo: '', frase: '' } }, D('d', [])] })]), ['La parte Iscriviti è una sola e sta in fondo alla pagina', 'La parte Iscriviti è una sola e sta in fondo alla pagina'])
+
+console.log('\nLa parte ISTRUTTORE: un istruttore per parte, nell\'ordine delle tessere')
+{
+  const IS = (id, nome, { cognome = '', corsi = '', src = '', alt = '', pagina = '' } = {}) => ({ type: 'istruttore', props: { id, nome, cognome, corsi, src, alt, pagina } })
+  const I = (id) => ({ type: 'iscriviti', props: { id, titolo: '', frase: '' } })
+  const cosa = (x) => prova(() => z.cosaNonVaPezzi(x))
+  const SENZA_NOME = 'Ogni istruttore ha bisogno del nome: scrivilo o togli la parte'
+
+  // Il tipo, il nome nell'ELENCO, quando è valido.
+  ok('istruttore: una pagina di istruttori è valida', valido({ content: [IS('a', 'Federico'), IS('b', 'Maurizio', { cognome: 'Innella', corsi: 'Judo', src: 'https://x.it/m.jpg', alt: 'Maurizio', pagina: 'maurizio-innella' })] }), true)
+  ok('istruttore: con testo prima e Iscriviti in fondo è valida', valido({ content: [T('t', '<p>x</p>'), IS('a', 'Federico'), I('z')] }), true)
+  ok('istruttore: nell\'ELENCO si chiama «Istruttore»', prova(() => z.nomeParte(IS('a', 'Federico'))), 'Istruttore')
+  ok('istruttore: senza nome non è valido', valido({ content: [IS('a', '')] }), false)
+  ok('istruttore: un nome di soli spazi non è valido', valido({ content: [IS('a', '   ')] }), false)
+  for (const campo of ['nome', 'cognome', 'corsi', 'src', 'alt', 'pagina']) {
+    ok(`istruttore: «${campo}» che non è testo non è valido`, valido({ content: [{ type: 'istruttore', props: { ...IS('a', 'Federico').props, [campo]: 3 } }] }), false)
+    const senza = { ...IS('a', 'Federico').props }
+    delete senza[campo]
+    ok(`istruttore: senza «${campo}» non è valido`, valido({ content: [{ type: 'istruttore', props: senza }] }), false)
+  }
+  ok('istruttore: senza nome, la frase dice cosa fare', cosa({ content: [IS('a', 'Federico'), IS('b', '')] }), SENZA_NOME)
+  ok('istruttore: nome di soli spazi, la stessa frase', cosa({ content: [IS('a', '  ')] }), SENZA_NOME)
+  ok('istruttore: col nome, niente da dire', cosa({ content: [IS('a', 'Federico')] }), null)
+
+  // Il testo piatto: quello che il sito fa diventare tessere.
+  ok('istruttore: solo il nome è un h3, senza p', html([IS('a', 'Federico')]), '<h3>Federico</h3>')
+  ok('istruttore: con la pagina il nome è un link a /slug/', html([IS('a', 'Fabio', { pagina: 'fabio-berta' })]), '<h3><a href="/fabio-berta/">Fabio</a></h3>')
+  ok('istruttore: la foto viene dopo il nome, col suo alt', html([IS('a', 'Fabio', { src: 'https://x.it/f.jpg', alt: 'Fabio ai tatami' })]), '<h3>Fabio</h3><img alt="Fabio ai tatami" src="https://x.it/f.jpg" />')
+  ok('istruttore: senza foto niente img, anche con l\'alt scritto', html([IS('a', 'Fabio', { alt: 'Fabio' })]), '<h3>Fabio</h3>')
+  ok('istruttore: la foto con alt vuoto resta alt="" (lo scrive il sito)', html([IS('a', 'Fabio', { src: 'https://x.it/f.jpg' })]), '<h3>Fabio</h3><img alt="" src="https://x.it/f.jpg" />')
+  ok('istruttore: cognome e corsi sono «Cognome · c1, c2»', html([IS('a', 'Fabio', { cognome: 'Berta', corsi: 'Aikido, Judo' })]), '<h3>Fabio</h3><p>Berta · Aikido, Judo</p>')
+  ok('istruttore: i corsi si ripuliscono (spazi e virgole vuote via)', html([IS('a', 'Fabio', { cognome: 'Berta', corsi: ' Aikido ,, Judo,Pesi , ' })]), '<h3>Fabio</h3><p>Berta · Aikido, Judo, Pesi</p>')
+  ok('istruttore: senza corsi la riga è il cognome', html([IS('a', 'Fabio', { cognome: 'Berta' })]), '<h3>Fabio</h3><p>Berta</p>')
+  ok('istruttore: corsi fatti solo di virgole e spazi sono nessun corso', html([IS('a', 'Fabio', { cognome: 'Berta', corsi: ' , ,' })]), '<h3>Fabio</h3><p>Berta</p>')
+  ok('istruttore: senza cognome ma con corsi la riga è «· c1» (il «·» c\'è sempre)', html([IS('a', 'Aldo', { corsi: 'Judo' })]), '<h3>Aldo</h3><p>· Judo</p>')
+  ok('istruttore: tutto insieme, nell\'ordine nome, foto, riga', html([IS('a', 'Maurizio', { cognome: 'Innella', corsi: 'Judo', src: 'https://x.it/m.jpg', alt: 'Maurizio', pagina: 'maurizio-innella' })]), '<h3><a href="/maurizio-innella/">Maurizio</a></h3><img alt="Maurizio" src="https://x.it/m.jpg" /><p>Innella · Judo</p>')
+  ok('istruttore: nome, cognome e corsi sono testo, mai HTML', html([IS('a', '<b>Al</b> & Bo', { cognome: 'Rossi & <i>Bianchi</i>', corsi: '<b>Judo</b> & Pesi' })]), '<h3>&lt;b&gt;Al&lt;/b&gt; &amp; Bo</h3><p>Rossi &amp; &lt;i&gt;Bianchi&lt;/i&gt; · &lt;b&gt;Judo&lt;/b&gt; &amp; Pesi</p>')
+  ok('istruttore: le parti si susseguono nell\'ordine dell\'array', html([IS('a', 'Federico'), IS('b', 'Maurizio'), IS('c', 'Aldo')]), '<h3>Federico</h3><h3>Maurizio</h3><h3>Aldo</h3>')
+
+  // L'avviso: una parte che spezza gli istruttori.
+  const avviso = (p, i) => prova(() => z.avvisoIstruttori(p, i))
+  const SPEZZA = 'Gli istruttori dopo questa parte non sono in tessere: spostala sotto l’ultimo istruttore.'
+  ok('avviso: un testo prima degli istruttori', avviso([T('t', ''), IS('a', 'A'), IS('b', 'B')], 0), SPEZZA)
+  ok('avviso: un testo in mezzo agli istruttori', avviso([IS('a', 'A'), T('t', ''), IS('b', 'B')], 1), SPEZZA)
+  ok('avviso: una foto o la foto in cima prima degli istruttori', [avviso([CIMA('c'), IS('a', 'A')], 0), avviso([IS('a', 'A'), F('f'), IS('b', 'B')], 1)], [SPEZZA, SPEZZA])
+  ok('avviso: le colonne prima di un istruttore', avviso([C('c', [{ html: '' }, { html: '' }]), IS('a', 'A')], 0), SPEZZA)
+  ok('avviso: niente per un testo dopo l\'ultimo istruttore', avviso([IS('a', 'A'), IS('b', 'B'), T('t', '')], 2), null)
+  ok('avviso: niente per gli istruttori stessi', [avviso([T('t', ''), IS('a', 'A'), IS('b', 'B')], 1), avviso([T('t', ''), IS('a', 'A'), IS('b', 'B')], 2)], [null, null])
+  ok('avviso: niente per la parte Iscriviti', avviso([IS('a', 'A'), I('z')], 1), null)
+  ok('avviso: niente in una pagina senza istruttori', avviso([T('t', ''), F('f'), T('u', '')], 0), null)
+
+  // La nota sotto il campo «pagina»: dice se il nome sarà un link.
+  const PAGINE = [{ slug: 'fabio-berta', pubblicato: '2026-10-01T10:00:00Z', nascosta: false }, { slug: 'diana', pubblicato: null, nascosta: false }, { slug: 'maura', pubblicato: '2026-10-01T10:00:00Z', nascosta: true }]
+  const nota = (s) => prova(() => z.notaPaginaIstruttore(s, PAGINE))
+  const NON_PUBBLICATA = 'Non è pubblicata: il nome sarà un link quando la pubblichi.'
+  ok('nota: nessuna pagina scelta, niente da dire', nota(''), null)
+  ok('nota: una pagina che non c\'è più', nota('valerio'), 'Questa pagina non c’è più: scegline un’altra.')
+  ok('nota: una pagina mai pubblicata', nota('diana'), NON_PUBBLICATA)
+  ok('nota: una pagina nascosta', nota('maura'), NON_PUBBLICATA)
+  ok('nota: una pagina pubblicata, niente da dire', nota('fabio-berta'), null)
+}
+
+console.log('\nLa parte ISTRUTTORE: dove si mette, con quale pagina, come si vede nell\'editor')
+{
+  const ammessa = (t, slug) => prova(() => z.parteAmmessa(t, slug))
+  ok('ISTRUTTORE si mette nella pagina degli istruttori', ammessa('istruttore', 'istruttori'), true)
+  ok('ISTRUTTORE non si mette in un\'altra pagina', [ammessa('istruttore', 'judo'), ammessa('istruttore', 'home')], [false, false])
+  ok('le altre parti si mettono ovunque', [ammessa('testo', 'judo'), ammessa('foto', 'istruttori')], [true, true])
+
+  const PAG = [{ slug: 'home', diLegge: false }, { slug: 'istruttori', diLegge: false }, { slug: 'privacy', diLegge: true }, { slug: 'fabio-berta', diLegge: false }, { slug: 'judo', diLegge: false }]
+  ok('LA SUA PAGINA: né la Home, né Istruttori stessa, né le pagine di legge', prova(() => z.pagineIstruttore(PAG).map((p) => p.slug)), ['fabio-berta', 'judo'])
+
+  const valido = (pagina) => prova(() => z.pezziValidi({ content: [{ type: 'istruttore', props: { id: 'i1', nome: 'Fabio', cognome: '', corsi: '', src: '', alt: '', pagina } }] }))
+  ok('la pagina di un istruttore è un indirizzo del sito, solo lettere, cifre e trattini', [valido(''), valido('fabio-berta'), valido('/evil.com'), valido('a/b'), valido('Fabio')], [true, true, false, false, false])
+
+  ok('i corsi, da un testo con le virgole', prova(() => z.corsiDa(' Judo ,, Pesi,')), ['Judo', 'Pesi'])
+
+  const css = readFileSync('src/styles.css', 'utf8')
+  ok('l\'avviso e la nota sono gialli (giallo-testo)', /\.sito-pezzi-avviso\s*\{[^}]*color:\s*var\(--giallo-testo\)/.test(css), true)
+  ok('la foto dell\'istruttore nell\'editor non esce dal riquadro', /\.sito-pezzo-istruttore img[^{]*\{[^}]*max-width:\s*100%/.test(css) || /\.sito-pezzo-istruttore img[^{]*\{[^}]*width:\s*56px/.test(css), true)
+  ok('un nome lunghissimo va a capo', /\.sito-pezzo-istruttore[^{]*\{[^}]*overflow-wrap:\s*anywhere/.test(css), true)
+}
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

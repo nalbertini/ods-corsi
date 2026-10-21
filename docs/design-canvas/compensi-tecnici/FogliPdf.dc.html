@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .et { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #46606f; }
+    .val { font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .velo { background: rgba(13, 42, 61, 0.55); }
+    .finestra { display: flex; flex-direction: column; background: #ffffff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; color: #0d2a3d; }
+    .nuovo { box-shadow: inset 4px 0 0 #f4c31b; padding-left: 14px; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 32px; }
+    .cella { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .tab { display: grid; gap: 14px; align-items: center; padding: 8px 14px; min-height: 48px; border-bottom: 1px solid #cfe6f4; background: #ffffff; font-size: 15px; }
+    .num { font-variant-numeric: tabular-nums; text-align: right; }
+    .link { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px; }
+    .piede { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 14px 28px 18px; border-top: 2px solid #cfe6f4; }
+  </style>
+</helmet>
+<!-- PROPOSTA: i due PDF a grandi linee (A4 ridotto). In inchiostro quello che stampa l'app; nei riquadri tratteggiati blu quello che resta da scrivere a mano.
+     Testata e piede dell'associazione come fogliModuli.ts. Nessuna riga «play district spazi civici… CUP». Le trattenute escono a 0,00: nessuno supera le soglie. -->
+<div style="display: flex; flex-direction: column; gap: 18px; width: 1100px; padding: 28px 36px 36px; background: #eef5fa">
+  <div style="display: flex; gap: 18px; align-items: center"><span class="et">LEGENDA</span><span style="display: block; font-size: 10px; font-weight: 700; line-height: 1.4">Stampato dall’app</span><span style="display: block; padding: 3px 6px; border: 1.5px dashed #14709f; color: #14709f; font-size: 10px; font-weight: 700; letter-spacing: 0.06em">DA SCRIVERE A MANO</span></div>
+  <div style="display: flex; gap: 40px; align-items: flex-start">
+    <div style="display: flex; flex-direction: column; gap: 8px"><span class="et">LA LETTERA D’INCARICO · 1 L’ANNO</span>
+      <div style="display: flex; flex-direction: column; gap: 7px; width: 420px; height: 594px; padding: 26px 30px; background: #ffffff; border: 1px solid #cfe6f4; overflow: hidden">
+        <span style="display: block; font-size: 10px; font-weight: 700; line-height: 1.4">ASD IL CENTRO JUDO</span><span style="display: block; font-size: 9px; color: #46606f; line-height: 1.35">Corso Francia 224, Cascine Vica Rivoli · CF 95562500017 · P.IVA 10002760014</span>
+        <span style="display: block; font-size: 10px; font-weight: 500; line-height: 1.4">Gentile signora DIANA BALLABIO · Via Montelera 73 – Val della Torre (TO) · BLLDNI86H61H355W</span>
+        <span style="display: block; font-size: 10px; font-weight: 700; line-height: 1.4">Oggetto: lettera di incarico per collaborazione coordinata e continuativa sportiva dilettantistica.</span>
+        <span style="display: block; font-size: 10px; font-weight: 500; line-height: 1.4">Dal 01/09/2026 al 30/07/2027 · Allenatore · preferibilmente il venerdì.</span>
+        <span style="display: block; font-size: 10px; font-weight: 500; line-height: 1.4">Compenso: € 15,00 (quindici/00) l’ora per il corso Judo kids; € 15,00 (quindici/00) l’ora per il corso Judo ragazzi; per le ore svolte, liquidate mensilmente.</span>
+        <span style="display: block; font-size: 9px; color: #46606f; line-height: 1.35">Gli altri punti: il testo fisso della bozza (obblighi, risoluzione, INPS sopra 5.000 €, ritenuta sopra 15.000 €, pagamento, non subordinazione, incompatibilità, sicurezza), numerati di seguito. Sempre uguale.</span>
+        <span style="display: block; font-size: 9px; color: #46606f; line-height: 1.35">…</span>
+        <span style="display: block; font-size: 10px; font-weight: 500; line-height: 1.4">Il Presidente</span><span style="display: block; padding: 3px 6px; border: 1.5px dashed #14709f; color: #14709f; font-size: 10px; font-weight: 700; letter-spacing: 0.06em">FIRMA DEL PRESIDENTE</span>
+        <span style="display: block; font-size: 10px; font-weight: 500; line-height: 1.4">Per accettazione, DIANA BALLABIO · Data 01/09/2026</span><span style="display: block; padding: 3px 6px; border: 1.5px dashed #14709f; color: #14709f; font-size: 10px; font-weight: 700; letter-spacing: 0.06em">FIRMA DEL TECNICO</span>
+        <span style="display: block; font-size: 9px; color: #46606f; line-height: 1.35">Artt. 1341 e 1342 c.c.: approvati i punti 4 e 5.</span><span style="display: block; padding: 3px 6px; border: 1.5px dashed #14709f; color: #14709f; font-size: 10px; font-weight: 700; letter-spacing: 0.06em">FIRMA DEL TECNICO</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px"><span class="et">LA RICEVUTA DEL MESE · 1 PER TECNICO</span>
+      <div style="display: flex; flex-direction: column; gap: 7px; width: 420px; height: 594px; padding: 26px 30px; background: #ffffff; border: 1px solid #cfe6f4; overflow: hidden">
+        <span style="display: block; font-size: 10px; font-weight: 700; line-height: 1.4">AUTOCERTIFICAZIONE PER COMPENSI A COLLABORATORI SPORTIVI – ANNO 2026</span>
+        <span style="display: block; font-size: 10px; font-weight: 500; line-height: 1.4">BALLABIO DIANA · nata a Rivoli (TO) il 21/06/1986 · Via Montelera 73, 10040 Val della Torre (TO) · BLLDNI86H61H355W</span>
+        <span style="display: block; font-size: 10px; font-weight: 500; line-height: 1.4">Mansione: ☒ ALLENATORE (dalla lettera d’incarico)</span>
+        <span style="display: block; font-size: 9px; color: #46606f; line-height: 1.35">Dichiara ai fini fiscali (soglia 15.000 €): le tre caselle e l’importo.</span><span style="display: block; padding: 3px 6px; border: 1.5px dashed #14709f; color: #14709f; font-size: 10px; font-weight: 700; letter-spacing: 0.06em">☐ ☐ ☐ · EURO ______</span>
+        <span style="display: block; font-size: 9px; color: #46606f; line-height: 1.35">Dichiara ai fini previdenziali (soglia 5.000 €): le tre caselle e l’importo.</span><span style="display: block; padding: 3px 6px; border: 1.5px dashed #14709f; color: #14709f; font-size: 10px; font-weight: 700; letter-spacing: 0.06em">☐ ☐ ☐ · EURO ______</span>
+        <span style="display: block; font-size: 9px; color: #46606f; line-height: 1.35">Cassa professionale, pensionato, nessuna forma pensionistica · dipendente pubblico sì/no e autorizzazione.</span><span style="display: block; padding: 3px 6px; border: 1.5px dashed #14709f; color: #14709f; font-size: 10px; font-weight: 700; letter-spacing: 0.06em">☐ ☐ ☐ · ☐ ☐</span>
+        <span style="display: block; font-size: 10px; font-weight: 500; line-height: 1.4">Richiede il compenso lordo di € 180,00 maturato dal 01/10/2026 al 31/10/2026, a mezzo bonifico su IBAN IT60 X054 2811 1010 0000 0123 456.</span>
+        <span style="display: block; font-size: 10px; font-weight: 500; line-height: 1.4">Collegno, 02/11/2026</span><span style="display: block; padding: 3px 6px; border: 1.5px dashed #14709f; color: #14709f; font-size: 10px; font-weight: 700; letter-spacing: 0.06em">FIRMA DEL COLLABORATORE</span>
+        <span style="display: block; font-size: 10px; font-weight: 500; line-height: 1.4">LIQUIDAZIONE · lordo 180,00 · INPS 0,00 · IRPEF 0,00 · addizionali 0,00 · NETTO A PAGARE 180,00</span>
+        <span style="display: block; padding: 3px 6px; border: 1.5px dashed #14709f; color: #14709f; font-size: 10px; font-weight: 700; letter-spacing: 0.06em">DATA DEL PAGAMENTO</span>
+      </div>
+    </div>
+  </div>
+  <span class="frase" style="max-width: 900px">Sulla ricevuta la data è il giorno della stampa. La data del pagamento resta a mano sul foglio stampato prima del bonifico; una ristampa dopo il pagamento la porta scritta.</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1100,"height":760}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { createUsePuck, Puck, registerOverlayPortal, type ComponentData, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { FRASE_NESSUNA_PARTE, attesaStoria, colonnaNuova, doveMettere, motivoSpento, puoMettere, spostabile, conTestoScritto, nomeParte, scriviTesto, selezioneDopoStoria, vuoto, type Domanda, type Pezzo, type PezziPagina, type Pulsante } from '../../lib/sitoPezzi'
+import type { PaginaSito } from '../../lib/sitoPagine'
+import { FRASE_NESSUNA_PARTE, avvisoIstruttori, corsiDa, notaPaginaIstruttore, pagineIstruttore, parteAmmessa, attesaStoria, colonnaNuova, doveMettere, motivoSpento, puoMettere, spostabile, conTestoScritto, nomeParte, scriviTesto, selezioneDopoStoria, vuoto, type Domanda, type Pezzo, type PezziPagina, type Pulsante } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import { invito, parteSulSito } from '../../lib/sitoGenera'
 import { TestoInPagina } from './TestoInPagina'
@@ -28,7 +29,11 @@ type Props = {
   iscriviti: { titolo: string; frase: string }
   pulsanti: { pulsanti: Pulsante[] }
   domande: { titolo: string; domande: Domanda[] }
+  istruttore: { nome: string; cognome: string; corsi: string; src: string; alt: string; pagina: string }
 }
+
+/** Le pagine fra cui scegliere quella di un istruttore: basta sapere se è pubblicata. */
+type Pagine = ReadonlyArray<Pick<PaginaSito, 'slug' | 'titolo' | 'pubblicato' | 'nascosta' | 'diLegge'>>
 
 /** Il corpo di un testo come lo vede chi scrive: ripulito dalla stessa funzione che lo ripulisce per il sito. */
 const Testo = ({ html }: { html: string }) => <div className="sito-testo" style={{ minHeight: 0, border: 0 }} dangerouslySetInnerHTML={{ __html: pulisciTesto(html) }} />
@@ -178,7 +183,46 @@ function PezzoTesto({ d, id, colonne }: { d: DatiSegreteria; id: string; colonne
   )
 }
 
-function configura(d: DatiSegreteria): Config<Props> {
+/** Sotto una parte che spezza le tessere degli istruttori, la frase che dice cosa fare (`avvisoIstruttori`). */
+function AvvisoIstruttori({ id }: { id: string }) {
+  const frase = usePuck((s) => { const c = s.appState.data.content; return avvisoIstruttori(c, c.findIndex((x) => x.props.id === id)) })
+  return frase ? <p className="sito-pezzi-avviso sotto-parte" role="note"><span aria-hidden="true">! </span>{frase}</p> : null
+}
+
+/** Un istruttore come lo vede chi scrive: foto (o iniziale), nome e cognome, corsi in pastiglie. La tessera vera la mostra «Com'è sul sito». */
+function PezzoIstruttore({ nome, cognome, corsi, src, alt }: Props['istruttore']) {
+  const pastiglie = corsiDa(corsi)
+  // Appena messa, come le altre parti vuote: il tratteggio dice cosa manca.
+  if (nome.trim() === '') return <span className="sito-pezzi-vuoto">Istruttore: scrivi il nome a destra</span>
+  return (
+    <div className="sito-pezzo-istruttore">
+      {src ? <img src={src} alt={alt} /> : <span className="iniziale" aria-hidden="true">{nome.trim().slice(0, 1).toUpperCase()}</span>}
+      <span className="stack" style={{ gap: 6, minWidth: 0 }}>
+        <span className="nome">{nome.trim()} {cognome && <span className="cognome">{cognome}</span>}</span>
+        {pastiglie.length > 0 && <span className="row" style={{ gap: 6, flexWrap: 'wrap' }}>{pastiglie.map((c, i) => <span key={i} className="pillola">{c}</span>)}</span>}
+      </span>
+    </div>
+  )
+}
+
+/** La pagina dell'istruttore si sceglie fra quelle del sito; sotto, se non è pubblicata, che il nome non sarà ancora un link. */
+function CampoPagina({ pagine, value, onChange }: { pagine: Pagine; value: string; onChange: (v: string) => void }) {
+  const nota = notaPaginaIstruttore(value, pagine)
+  return (
+    <label className="stack" style={{ gap: 6 }}>
+      <span className="sg-etichetta">LA SUA PAGINA</span>
+      <select className="sg-campo" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">Nessuna</option>
+        {/* Una pagina tolta resta scelta finché non se ne sceglie un'altra: la nota lo dice. */}
+        {value && !pagine.some((p) => p.slug === value) && <option value={value}>/{value}/</option>}
+        {pagineIstruttore(pagine).map((p) => <option key={p.slug} value={p.slug}>{p.titolo} · /{p.slug}/</option>)}
+      </select>
+      {nota && <span className="sito-pezzi-avviso">{nota}</span>}
+    </label>
+  )
+}
+
+function configura(d: DatiSegreteria, pagine: Pagine): Config<Props> {
   const foto = {
     src: {
       type: 'custom' as const,
@@ -197,27 +241,27 @@ function configura(d: DatiSegreteria): Config<Props> {
         label: 'FOTO IN CIMA',
         fields: foto,
         defaultProps: { src: '', alt: '' },
-        render: ({ src, alt }) => (src ? <img src={src} alt={alt} style={{ width: '100%', maxHeight: 260, objectFit: 'cover' }} /> : <span className="sito-pezzi-vuoto">Foto in cima: scegli la foto</span>),
+        render: ({ id, src, alt }) => <>{src ? <img src={src} alt={alt} style={{ width: '100%', maxHeight: 260, objectFit: 'cover' }} /> : <span className="sito-pezzi-vuoto">Foto in cima: scegli la foto</span>}<AvvisoIstruttori id={id} /></>,
       },
       testo: {
         label: 'TESTO',
         // Il testo si scrive nella pagina: il pannello di destra non ha niente da mostrare per questo campo (`Destra` dice dov'è).
         fields: { html: { type: 'custom', render: () => <></> } },
         defaultProps: { html: '' },
-        render: ({ id, html }) => <PezzoTesto d={d} id={id} colonne={[{ html }]} />,
+        render: ({ id, html }) => <><PezzoTesto d={d} id={id} colonne={[{ html }]} /><AvvisoIstruttori id={id} /></>,
       },
       foto: {
         label: 'FOTO',
         fields: foto,
         defaultProps: { src: '', alt: '' },
-        render: ({ src, alt }) => (src ? <img src={src} alt={alt} style={{ width: '100%', maxHeight: 360, objectFit: 'cover' }} /> : <span className="sito-pezzi-vuoto">Foto: scegli la foto</span>),
+        render: ({ id, src, alt }) => <>{src ? <img src={src} alt={alt} style={{ width: '100%', maxHeight: 360, objectFit: 'cover' }} /> : <span className="sito-pezzi-vuoto">Foto: scegli la foto</span>}<AvvisoIstruttori id={id} /></>,
       },
       colonne: {
         label: 'COLONNE',
         // Le colonne si scrivono nella pagina; nel pannello restano solo quante sono (da 2 a 3), con aggiungi e togli.
         fields: { colonne: { type: 'array', label: 'COLONNE (da 2 a 3)', min: 2, max: 3, arrayFields: { html: { type: 'custom', render: () => <></> } }, defaultItemProps: colonnaNuova(), getItemSummary: (_, i) => `Colonna ${(i ?? 0) + 1}` } },
         defaultProps: { colonne: [{ html: '' }, { html: '' }] },
-        render: ({ id, colonne }) => <PezzoTesto d={d} id={id} colonne={colonne} />,
+        render: ({ id, colonne }) => <><PezzoTesto d={d} id={id} colonne={colonne} /><AvvisoIstruttori id={id} /></>,
       },
       // Le parti del nuovo editor: qui si vedono e si spostano, ma si cambiano di là (`FRASE_NUOVO_EDITOR`).
       // Sicuro: `parteSulSito` passa da `pezziInHtml`, che ripulisce.
@@ -235,6 +279,19 @@ function configura(d: DatiSegreteria): Config<Props> {
         // Sicuro: `invito` mette titolo e frase con le entità, il resto è fisso. La forma vera la mostra «Com'è sul sito».
         render: ({ titolo, frase }) => <div className="sito-testo" style={{ minHeight: 0, border: 0 }} dangerouslySetInnerHTML={{ __html: invito({ titolo, frase }, true) }} />,
       },
+      istruttore: {
+        label: 'ISTRUTTORE',
+        fields: {
+          src: foto.src,
+          alt: { type: 'text', label: 'COSA SI VEDE (vuoto = «Ritratto di Nome Cognome»)' },
+          nome: { type: 'text', label: 'NOME' },
+          cognome: { type: 'text', label: 'COGNOME' },
+          corsi: { type: 'text', label: 'CORSI (separati da una virgola)' },
+          pagina: { type: 'custom', render: ({ value, onChange }) => <CampoPagina pagine={pagine} value={value} onChange={onChange} /> },
+        },
+        defaultProps: { nome: '', cognome: '', corsi: '', src: '', alt: '', pagina: '' },
+        render: (p) => <PezzoIstruttore {...p} />,
+      },
     },
   }
 }
@@ -249,6 +306,7 @@ const FRASE_TESTO_IN_PAGINA = 'Il testo si scrive direttamente nella pagina.'
 const FRASE_NUOVO_EDITOR = 'Questa parte si cambia nel nuovo editor: chiudi e premi «Prova il nuovo editor».'
 
 const PARTI: Array<{ tipo: keyof Props; nome: string }> = [
+  { tipo: 'istruttore', nome: 'ISTRUTTORE' },
   { tipo: 'fotoInCima', nome: 'FOTO IN CIMA' },
   { tipo: 'testo', nome: 'TESTO' },
   { tipo: 'foto', nome: 'FOTO' },
@@ -260,7 +318,7 @@ const PARTI: Array<{ tipo: keyof Props; nome: string }> = [
  * I gesti senza trascinare: mettere una parte (dopo quella scelta, o in fondo), spostarla su o giù, toglierla.
  * Col dito sul tablet trascinare sbaglia facile; qui sono tasti da 44px.
  */
-function Comandi({ onNuova }: { onNuova: () => void }) {
+function Comandi({ onNuova, slug }: { onNuova: () => void; slug: string }) {
   const dispatch = usePuck((s) => s.dispatch)
   const scelto = usePuck((s) => s.appState.ui.itemSelector)
   const contenuto = usePuck((s) => s.appState.data.content)
@@ -286,7 +344,7 @@ function Comandi({ onNuova }: { onNuova: () => void }) {
   }
   return (
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', padding: 8 }}>
-      {PARTI.map((p) => (
+      {PARTI.filter((p) => parteAmmessa(p.tipo, slug)).map((p) => (
         <button key={p.tipo} type="button" className="sg-chip num" disabled={!puoMettere(p.tipo, contenuto)} title={motivoSpento(p.tipo, contenuto) ?? undefined} onClick={() => metti(p.tipo)}>
           + {p.nome}
         </button>
@@ -363,8 +421,9 @@ function Destra({ scheda, setScheda }: { scheda: Scheda; setScheda: (k: Scheda) 
   )
 }
 
-export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria; pezzi: PezziPagina; onCambia: (p: PezziPagina) => void }) {
-  const config = useMemo(() => configura(d), [d])
+/** `slug`: l'indirizzo della pagina, che decide quali parti si mettono (`parteAmmessa`). */
+export default function EditorPezzi({ d, pezzi, onCambia, pagine, slug }: { d: DatiSegreteria; pezzi: PezziPagina; onCambia: (p: PezziPagina) => void; pagine: Pagine; slug: string }) {
+  const config = useMemo(() => configura(d, pagine), [d, pagine])
   // Puck vuole anche `root`; i pezzi sono quelli che teniamo noi. Si parte una volta sola: poi i pezzi li tiene Puck.
   const [iniziali] = useState<Data>(() => ({ root: { props: {} }, content: pezzi.content }))
   const [scheda, setScheda] = useState<Scheda>('impostazioni')
@@ -382,7 +441,7 @@ export default function EditorPezzi({ d, pezzi, onCambia }: { d: DatiSegreteria;
         }}
       >
         <div className="sito-pezzi-corpo">
-          <Comandi onNuova={() => setScheda('impostazioni')} />
+          <Comandi onNuova={() => setScheda('impostazioni')} slug={slug} />
           <div className="sito-pezzi-colonne">
             {/* Toccare una parte nella pagina porta alle sue impostazioni; dall'elenco si resta lì, per spostarla con «Su» e «Giù». */}
             <div className="sito-pezzi-pagina" onClickCapture={() => setScheda('impostazioni')}><Puck.Preview /></div>

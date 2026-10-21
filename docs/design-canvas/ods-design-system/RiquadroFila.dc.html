@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<section aria-label="Dal sito alle richieste" style="display: flex; flex-direction: column; gap: 14px; width: 100%; min-width: 0; padding: 18px 20px; background: #ffffff; border-radius: 6px; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <!-- La testa: come Riga di comune.tsx e come IL SITO (titolo, filo, nota); sul telefono la nota va sotto. -->
+  <div style="display: flex; flex-wrap: {{aCapo}}; align-items: baseline; gap: 4px 10px">
+    <h3 style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.22em; color: #46606f; white-space: nowrap">DAL SITO ALLE RICHIESTE</h3>
+    <div style="flex-grow: 1; height: 2px; background: #cfe6f4"></div>
+    <span style="font-size: 12px; color: #46606f; flex-basis: {{baseNota}}">dalle visite alle richieste accolte · tutta la palestra</span>
+  </div>
+
+  <!-- Le frasi: fasce azzurre senza segno, come in IL SITO (non sono guai). Una sola «si conta dal» per tutti i gradini. -->
+  <sc-if value="{{haProva}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 10px 14px; border-radius: 6px; background: #eef5fa; box-shadow: inset 4px 0 0 #8f6a00; font-size: 14px; line-height: 1.45"><b style="color: #8f6a00">… Prova</b> · visite e tocchi inventati, le richieste sono quelle fatte in prova.</div>
+  </sc-if>
+  <sc-if value="{{haDal}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 10px 14px; border-radius: 6px; background: #eef5fa; font-size: 14px; line-height: 1.45">Si conta dal <b>{{dal}}</b>, quando sul sito è stato acceso il contatore: anche le richieste, così i gradini si confrontano.</div>
+  </sc-if>
+  <sc-if value="{{haCorso}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 10px 14px; border-radius: 6px; background: #eef5fa; font-size: 14px; line-height: 1.45">Il sito è di tutta la palestra: il corso scelto qui non conta, la fila è di tutti i corsi.</div>
+  </sc-if>
+
+  <!-- I quattro gradini: tessere azzurre (#eef5fa) in fila, col passaggio fra l'una e l'altra (freccia e percentuale).
+       Niente barre in proporzione: 1.200 visite e 9 richieste farebbero barre invisibili. Sul telefono una sotto l'altra. -->
+  <ol style="display: flex; flex-direction: {{verso}}; align-items: stretch; gap: 0; margin: 0; padding: 0; list-style: none">
+    <sc-for list="{{gradini}}" as="g" hint-placeholder-count="4">
+      <sc-if value="{{g.conPassaggio}}" hint-placeholder-val="{{ true }}">
+        <li aria-hidden="false" style="display: flex; flex-direction: {{g.versoPassaggio}}; align-items: center; justify-content: center; gap: 2px 8px; flex: 0 0 {{g.largPassaggio}}; padding: {{g.spazioPassaggio}}; color: #46606f">
+          <span style="font-size: 18px; line-height: 1; color: #14709f">{{g.freccia}}</span>
+          <span style="font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; color: #0d2a3d; white-space: nowrap">{{g.pc}}</span>
+        </li>
+      </sc-if>
+      <li style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 0; min-width: 0; padding: 14px 16px; border-radius: 6px; background: #eef5fa">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f">{{g.titolo}}</span>
+        <sc-if value="{{g.ha}}" hint-placeholder-val="{{ true }}">
+          <span style="font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 700; line-height: 1.15">{{g.n}}</span>
+          <span style="font-size: 13px; line-height: 1.4; color: #46606f">{{g.sotto}}</span>
+        </sc-if>
+        <sc-if value="{{g.manca}}" hint-placeholder-val="{{ false }}">
+          <!-- Il guaio della sua meta' sola: l'altra meta' resta coi numeri. Titolo NON LETTO rosso come Guaio di comune.tsx. -->
+          <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: #b81d1d">NON LETTO</span>
+          <span style="font-size: 14px; font-weight: 600; line-height: 1.4">{{g.guaio}}</span>
+        </sc-if>
+      </li>
+    </sc-for>
+  </ol>
+
+  <sc-if value="{{haGuaioSito}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 13px; line-height: 1.45; color: #46606f">Visite e tocchi vengono dal contatore del sito: cosa fare lo dice IL SITO, qui sotto.</span>
+  </sc-if>
+  <sc-if value="{{haGuaioRichieste}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 13px; line-height: 1.45; color: #46606f">{{mancaProvenienza}}</span>
+  </sc-if>
+  <sc-if value="{{haOltre}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 10px 14px; border-radius: 6px; background: #eef5fa; font-size: 14px; line-height: 1.45">Le richieste sono più dei tocchi: una famiglia tocca Iscriviti una volta e manda una richiesta per persona, e chi apre un link del sito mandato da un amico arriva al modulo senza toccare Iscriviti.</div>
+  </sc-if>
+
+  <!-- Cosa vuol dire ogni gradino, in una riga sola sotto la fila. -->
+  <span style="font-size: 12px; line-height: 1.5; color: #46606f">Richieste e accolte si contano per persona, nello stato di oggi. «Dal sito» vuol dire che il modulo è stato aperto da una pagina del sito, anche da un link del sito mandato su WhatsApp, che non si distingue; non contano il link della segreteria, l'area iscritti e le richieste senza provenienza. Le percentuali dicono quanti passano al gradino dopo.</span>
+</section>
+</x-dc>
+<script data-dc-script data-props='{"visite":{"editor":"text","default":"1200"},"tocchi":{"editor":"text","default":"26"},"richieste":{"editor":"text","default":"9"},"accolte":{"editor":"text","default":"4"},"guaioSito":{"editor":"text","default":""},"guaioRichieste":{"editor":"boolean","default":false},"dal":{"editor":"text","default":""},"corso":{"editor":"boolean","default":false},"prova":{"editor":"boolean","default":false},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1124,"height":330}}'>
+// COSTRUITO: il riquadro DAL SITO ALLE RICHIESTE, in fondo a STATISTICHE della segreteria, subito sopra IL SITO, nel look del sito
+// (`Fila` in src/components/segreteria/StatisticheSito.tsx, classi .sg-fila-* di src/styles.css; regole in src/lib/filaSito.ts). Il design approvato sta in ../fila-sito/.
+// Come costruito: mentre legge, il gradino dice «Sto leggendo…»; senza le richieste i gradini 3-4 dicono «Non si sanno» e sotto la fila c'e' il perche';
+// sul telefono (sotto i 768px) la freccia e' la stessa → girata in giu'.
+// Il guscio e la testa sono quelli di RiquadroSito (.sg-riquadro col look: tessera bianca, raggio 6px, padding 18px 20px; testa di `Riga`).
+// I gradini sono tessere surface #eef5fa raggio 6px con l'etichetta 12px 700 0.18em `dim` (come VISITE MESE PER MESE) e la cifra 28px 700 tabulare.
+// Le frasi sono le fasce azzurre di IL SITO; il guaio di una meta' e' il titolo di Guaio (NON LETTO, #b81d1d) dentro i suoi gradini.
+// Le percentuali: Math.round, «meno dell'1%» sotto l'1% (ma non zero), «—» quando il gradino prima e' zero o non si sa. Oltre il 100% non si tronca: la fascia lo spiega.
+// guaioSito: il titolo del guaio di IL SITO (TESTI_GUAI), vuoto se i numeri ci sono; guaioRichieste: manca 74-provenienza-richieste.sql (MANCA_PROVENIENZA).
+// telefono: i gradini una sotto l'altra, col passaggio (freccia in giu' e percentuale) fra l'uno e l'altro.
+const truthy = (v) => v === true || v === 'true';
+const it = (n) => Number(n).toLocaleString('it-IT');
+const pc = (da, a) => {
+  if (da == null || a == null || da === 0) return '—';
+  const p = (100 * a) / da;
+  return p > 0 && p < 1 ? "meno dell'1%" : Math.round(p) + '%';
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const tel = truthy(p.telefono);
+    const gs = p.guaioSito || '';
+    const gr = truthy(p.guaioRichieste);
+    const num = (v) => (v === '' || v == null ? null : Number(v));
+    const v = gs ? null : num(p.visite), t = gs ? null : num(p.tocchi);
+    const r = gr ? null : num(p.richieste), a = gr ? null : num(p.accolte);
+    const guaioR = 'Non si sanno';
+    const gradini = [
+      { titolo: 'VISITE', n: v, sotto: 'sul sito, nel periodo', guaio: gs },
+      { titolo: 'TOCCHI SU ISCRIVITI', n: t, sotto: 'hanno toccato Iscriviti', guaio: gs, pc: pc(v, t) },
+      { titolo: 'RICHIESTE DAL SITO', n: r, sotto: r === 1 ? 'persona' : 'persone', guaio: guaioR, pc: pc(t, r) },
+      { titolo: 'ACCOLTE', n: a, sotto: a === 1 ? 'persona, oggi iscritta' : 'persone, oggi iscritte', guaio: guaioR, pc: pc(r, a) },
+    ].map((g, i) => ({ ...g, conPassaggio: i > 0, versoPassaggio: tel ? 'row' : 'column', freccia: tel ? '↓' : '→', largPassaggio: tel ? 'auto' : '84px', spazioPassaggio: tel ? '8px 0' : '0 4px', ha: g.n != null, manca: g.n == null, n: g.n == null ? '' : it(g.n) }));
+    return {
+      aCapo: tel ? 'wrap' : 'nowrap', baseNota: tel ? '100%' : 'auto',
+      verso: tel ? 'column' : 'row',
+      gradini,
+      haDal: !!p.dal, dal: p.dal ?? '', haCorso: truthy(p.corso), haProva: truthy(p.prova),
+      haGuaioSito: !!gs, haGuaioRichieste: gr,
+      mancaProvenienza: 'Per contare da dove arrivano le richieste va lanciato 74-provenienza-richieste.sql: il resto delle statistiche funziona.',
+      haOltre: t != null && r != null && t > 0 && r > t,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+import type { Lettera } from './lettere'
 import type { Segnalata } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 import type { StatoSito } from './sitoProva'
@@ -171,6 +172,10 @@ export interface Archivio {
   enteRicevute?: EnteRicevuta
   /** Nascita, residenza e genitore degli iscritti importati, per persona (18-anagrafiche.sql). */
   anagrafiche?: Record<string, Anagrafica & { cambiataIl?: string }>
+  /** Le tariffe dei tecnici in centesimi l'ora, per persona e per corso (78-tariffe-tecnici.sql). */
+  tariffe?: Record<string, Record<string, number>>
+  /** Le lettere d'incarico dei tecnici (79-lettere-incarico.sql), dalla più vecchia. */
+  lettere?: Lettera[]
   /** Chi è venuto a provare una lezione, come le righe di `prove` (21-prove.sql). */
   prove?: ProvaLezione[]
   /** Le tessere (61-tessere.sql); un archivio salvato prima non le ha. */

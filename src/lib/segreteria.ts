@@ -4,6 +4,7 @@ import type { RuoloPersonale } from './ruoli'
 import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
 import type { IncassoPrima } from './pagatoPrima'
+import type { DatiLettera, Lettera } from './lettere'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
@@ -204,6 +205,17 @@ export interface Anagrafica {
   genitoreCodiceFiscale?: string
   /** Luogo e data di nascita del genitore, come sono scritti nel modulo. */
   genitoreNato?: string
+  /** Le sigle delle province e l'IBAN servono solo ai tecnici, per lettera d'incarico e compensi (`78-tariffe-tecnici.sql`). */
+  provinciaNascita?: string
+  provincia?: string
+  iban?: string
+}
+
+/** Quanto prende un tecnico per un'ora di lezione in un corso. */
+export interface Tariffa {
+  corsoId: string
+  corso: string
+  centesimi: number
 }
 
 /** I dati anagrafici di una persona e da dove vengono: dal modulo dell'app o dall'import. */
@@ -213,12 +225,50 @@ export interface AnagraficaDi {
   da: 'modulo' | 'segreteria'
 }
 
+/**
+ * Le sigle delle province, anche quelle che non ci sono più (si nasce dove si
+ * è nati), ed EE per l'estero: le stesse di `luoghi.json`. Una sigla
+ * inventata finirebbe sulla lettera d'incarico.
+ */
+const PROVINCE = new Set(
+  'AG AL AN AO AP AQ AR AT AV BA BG BI BL BN BO BR BS BT BZ CA CB CE CH CI CL CN CO CR CS CT CZ EE EN FC FE FG FI FM FO FR FU GE GO GR IM IS KR LC LE LI LO LT LU MB MC ME MI MN MO MS MT NA NO NU OG OR OT PA PC PD PE PG PI PL PN PO PR PS PT PU PV PZ RA RC RE RG RI RM RN RO SA SI SO SP SR SS SU SV TA TE TN TO TP TR TS TV UD VA VB VC VE VG VI VR VS VT VV ZA'.split(' '),
+)
+
+/** La forma e le due cifre di controllo (modulo 97): una cifra sbagliata a mano non passa. */
+function ibanGiusto(iban: string): boolean {
+  if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/.test(iban)) return false
+  const cifre = (iban.slice(4) + iban.slice(0, 4)).replace(/[A-Z]/g, (l) => String(l.charCodeAt(0) - 55))
+  let resto = 0
+  for (const c of cifre) resto = (resto * 10 + Number(c)) % 97
+  return resto === 1
+}
+
+/** Il modulo di iscrizione non li chiede: sono sempre quelli scritti dalla segreteria. */
+export const SOLO_SEGRETERIA: Array<keyof Anagrafica> = ['provinciaNascita', 'provincia', 'iban']
+
+/**
+ * Quando vince la richiesta di iscrizione (più recente), province e IBAN
+ * restano quelli della segreteria: se no un MODIFICA partito da lì, che
+ * sostituisce tutta la riga, li cancellerebbe. La stessa per il database e
+ * per la prova.
+ */
+export function conDatiDellaSegreteria(vince: AnagraficaDi | null, daSegreteria: Anagrafica | null): AnagraficaDi | null {
+  if (!vince || vince.da === 'segreteria' || !daSegreteria) return vince
+  const tenuti = Object.fromEntries(SOLO_SEGRETERIA.flatMap((k) => (daSegreteria[k] ? [[k, daSegreteria[k]]] : [])))
+  return { dati: { ...vince.dati, ...tenuti }, da: vince.da }
+}
+
+/** «Torino (TO)»: un luogo con la sigla della provincia, se c'è. Come va sulla lettera e sulla ricevuta. */
+export const conProvincia = (luogo?: string, provincia?: string) => [luogo, provincia && `(${provincia})`].filter(Boolean).join(' ')
+
 /** I limiti di `anagrafiche` (18-anagrafiche.sql), detti prima di salvare. `null` se va bene. */
 export function cosaNonVaAnagrafica(a: Anagrafica, oggi = chiaveGiornoOggi()): string | null {
   if (a.natoIl && (!/^\d{4}-\d{2}-\d{2}$/.test(a.natoIl) || Number.isNaN(Date.parse(a.natoIl)) || a.natoIl > oggi)) return 'La data di nascita non è giusta'
   if (a.codiceFiscale && !/^[A-Z0-9]{16}$/.test(a.codiceFiscale)) return 'Il codice fiscale ha sedici lettere e cifre'
   if (a.genitoreCodiceFiscale && !/^[A-Z0-9]{16}$/.test(a.genitoreCodiceFiscale)) return 'Il codice fiscale del genitore ha sedici lettere e cifre'
   if (a.cap && !/^\d{5}$/.test(a.cap)) return 'Il CAP ha cinque cifre'
+  if ((a.provincia && !PROVINCE.has(a.provincia)) || (a.provinciaNascita && !PROVINCE.has(a.provinciaNascita))) return 'La provincia è la sigla di due lettere'
+  if (a.iban && !ibanGiusto(a.iban)) return "L'IBAN non è giusto"
   const lunghi: Array<[keyof Anagrafica, number, string]> = [
     ['natoA', 80, 'Il luogo di nascita'], ['comune', 80, 'Il comune'], ['indirizzo', 160, "L'indirizzo"],
     ['genitoreNome', 80, 'Il nome del genitore'], ['genitoreCognome', 80, 'Il cognome del genitore'], ['genitoreNato', 120, 'La nascita del genitore'],
@@ -231,7 +281,7 @@ export function cosaNonVaAnagrafica(a: Anagrafica, oggi = chiaveGiornoOggi()): s
 export function pulisciAnagrafica(a: Anagrafica): Anagrafica {
   const x: Record<string, string> = {}
   for (const [k, v] of Object.entries(a)) if (typeof v === 'string' && v.trim()) x[k] = v.trim().replace(/\s+/g, ' ')
-  for (const k of ['codiceFiscale', 'genitoreCodiceFiscale', 'cap']) if (x[k]) x[k] = x[k].toUpperCase().replace(/\s/g, '')
+  for (const k of ['codiceFiscale', 'genitoreCodiceFiscale', 'cap', 'provincia', 'provinciaNascita', 'iban']) if (x[k]) x[k] = x[k].toUpperCase().replace(/\s/g, '')
   for (const k of ['genitoreNome', 'genitoreCognome']) if (x[k]) x[k] = nomeProprio(x[k])
   return x as Anagrafica
 }
@@ -641,6 +691,16 @@ export interface DatiSegreteria {
    * `null` se non ce ne sono.
    */
   anagraficaDi(personaId: string): Promise<AnagraficaDi | null>
+  /** Le tariffe orarie di un tecnico, una per corso (`78-tariffe-tecnici.sql`). */
+  tariffe(personaId: string): Promise<Tariffa[]>
+  /** Scrive la tariffa di un corso in centesimi l'ora; `null` la toglie. */
+  salvaTariffa(personaId: string, corsoId: string, centesimi: number | null): Promise<void>
+  /** Le lettere d'incarico di un tecnico, dalla più nuova, anche le sostituite (`79-lettere-incarico.sql`). */
+  lettere(personaId: string): Promise<Lettera[]>
+  /** Fa la lettera; se ce n'è già una valida per la stagione, la sostituisce (`fai_lettera_incarico`). */
+  faiLettera(dati: DatiLettera): Promise<Lettera>
+  /** Il foglio firmato è tornato, o no: l'unica cosa che si cambia di una lettera fatta. */
+  segnaFirmata(letteraId: string, firmata: boolean): Promise<void>
   /** Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). */
   emettiRicevuta(r: DatiRicevuta, satispayId?: string): Promise<Ricevuta>
   /**

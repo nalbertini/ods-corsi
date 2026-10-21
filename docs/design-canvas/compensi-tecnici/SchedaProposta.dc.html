@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .et { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #46606f; }
+    .val { font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .velo { background: rgba(13, 42, 61, 0.55); }
+    .finestra { display: flex; flex-direction: column; background: #ffffff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; color: #0d2a3d; }
+    .nuovo { box-shadow: inset 4px 0 0 #f4c31b; padding-left: 14px; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 32px; }
+    .cella { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .tab { display: grid; gap: 14px; align-items: center; padding: 8px 14px; min-height: 48px; border-bottom: 1px solid #cfe6f4; background: #ffffff; font-size: 15px; }
+    .num { font-variant-numeric: tabular-nums; text-align: right; }
+    .link { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px; }
+    .piede { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 14px 28px 18px; border-top: 2px solid #cfe6f4; }
+  </style>
+</helmet>
+<!-- PROPOSTA: la scheda di un istruttore con tre blocchi nuovi (barra gialla a sinistra = nuovo) e PRESENZE che diventa PRESENZE E COMPENSO.
+     DATI PER LETTERA E RICEVUTE: solo la segreteria; per chi e' anche iscritto sono gli stessi della scheda di iscritto. L'IBAN va stampato sulla ricevuta, mai nel movimento.
+     TARIFFE: una per corso che insegna, anche da sostituto, in € l'ora; un corso senza tariffa e' segnato. Il mese e' la somma per corso di ore × tariffa.
+     LETTERA D'INCARICO: una valida per stagione, con le tariffe orarie; correggere ne fa una nuova, la vecchia resta come sostituita. «Firmata» = il foglio firmato e' tornato. -->
+<div style="display: flex; width: 1440px; min-height: 2560px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0"><dc-import name="Menu" tema="sito" autorizzazioni="segreteria e amministrazione" attiva="ISTRUTTORI E ACCESSI" compensi="{{ true }}" numeri="RICHIESTE ONLINE:3, PRESENZE ISTRUTTORI:3" nome="Marco Rossi" ruolo="Segreteria e amministrazione" altezza="2560px" hint-size="240px,2560px"></dc-import></div>
+  <main class="velo" style="flex: 1; min-width: 0; padding: 24px 40px">
+    <div class="finestra" style="width: 900px; margin: 0 auto">
+    <div style="display: flex; align-items: flex-start; gap: 14px; padding: 20px 28px 14px">
+      <span style="display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; border: 2px solid #0d2a3d; font-size: 30px">美</span>
+      <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 4px; min-width: 0">
+        <span class="big" style="font-size: 30px">DIANA BALLABIO</span>
+        <span style="font-size: 13px; color: #46606f">Istruttore</span>
+      </div>
+      <dc-import name="Bottone" label="✕" variante="icona" tema="sito" hint-size="44px,44px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 22px; padding: 8px 28px 20px">
+      <div class="due"><div class="cella"><span class="et">EMAIL</span><span class="val">diana.ballabio@esempio.it</span></div><div class="cella"><span class="et">CORSI</span><span class="val">Judo kids, Judo ragazzi</span></div></div>
+      <div><dc-import name="Chip" tema="sito" label="Modifica" acceso="{{ false }}" hint-size="132px,44px"></dc-import></div>
+      <span class="frase" style="padding: 10px 14px; border: 1px dashed #14709f">RUOLO · ACCESSO · PIN TABLET: come oggi.</span>
+
+      <section class="nuovo" style="display: flex; flex-direction: column; gap: 12px">
+        <dc-import name="Titoletto" tema="sito" label="DATI PER LETTERA E RICEVUTE" conto="" hint-size="100%,50px"></dc-import>
+        <div class="due"><div class="cella"><span class="et">NATA A</span><span class="val">Rivoli (TO)</span></div><div class="cella"><span class="et">DATA DI NASCITA</span><span class="val">21/06/1986</span></div><div class="cella"><span class="et">CODICE FISCALE</span><span class="val">BLLDNI86H61H355W</span></div><div class="cella"><span class="et">RESIDENZA</span><span class="val">Via Montelera 73 · 10040 Val della Torre (TO)</span></div><div class="cella"><span class="et">IBAN</span><span class="val">IT60 X054 2811 1010 0000 0123 456</span></div></div>
+        <span class="frase">Li vede solo la segreteria. Vanno sulla lettera d’incarico e su ogni ricevuta.</span>
+        <div><dc-import name="Chip" tema="sito" label="Modifica i dati" acceso="{{ false }}" hint-size="195px,44px"></dc-import></div>
+      </section>
+
+      <section class="nuovo" style="display: flex; flex-direction: column; gap: 12px">
+        <dc-import name="Titoletto" tema="sito" label="TARIFFE" conto="3" hint-size="100%,50px"></dc-import>
+        <div style="display: flex; flex-direction: column">
+          <dc-import name="TestataTabella" tema="sito" colonne="CORSO|TARIFFA|" griglia="minmax(0,1fr) 200px 120px" ordinata="CORSO" ultima-a-destra="{{ false }}" hint-size="100%,32px"></dc-import>
+          <div class="tab" style="grid-template-columns: minmax(0,1fr) 200px 120px"><span style="font-weight: 600">Judo kids</span><span class="num">15,00 € l’ora</span><span class="link" style="justify-content: flex-end">Cambia</span></div>
+          <div class="tab" style="grid-template-columns: minmax(0,1fr) 200px 120px"><span style="font-weight: 600">Judo ragazzi</span><span class="num">15,00 € l’ora</span><span class="link" style="justify-content: flex-end">Cambia</span></div>
+          <div class="tab" style="grid-template-columns: minmax(0,1fr) 200px 120px"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600">Judo adulti</span><span style="font-size: 13px; color: #46606f">da sostituto, 2 lezioni in ottobre</span></span><span style="display: flex; justify-content: flex-end"><dc-import name="Badge" tema="sito" tipo="segno" tono="rosso" label="SENZA TARIFFA" hint-size="157px,26px"></dc-import></span><span class="link" style="justify-content: flex-end">Scrivi</span></div>
+        </div>
+        <span class="frase">Un corso compare qui appena lo insegna, anche da sostituto. Cambiare una tariffa non tocca le ricevute già fatte.</span>
+      </section>
+
+      <section class="nuovo" style="display: flex; flex-direction: column; gap: 12px">
+        <dc-import name="Titoletto" tema="sito" label="LETTERA D’INCARICO · 2026/27" conto="" hint-size="100%,50px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 2px solid #cfe6f4">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap"><dc-import name="Badge" tema="sito" tipo="segno" tono="verde" label="VALIDA" hint-size="94px,26px"></dc-import><span style="font-size: 15px; font-weight: 600">dal 01/09/2026 al 30/07/2027 · Allenatore</span></div>
+          <span class="frase">Venerdì · 15,00 € l’ora per Judo kids e Judo ragazzi · lettera del 01/09/2026</span>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center"><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Stampa la lettera" variante="linea" hint-size="197px,48px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Correggi" variante="linea" hint-size="116px,48px"></dc-import><span role="checkbox" aria-checked="true" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; font-weight: 600"><span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #0d2a3d; border-radius: 4px; background: #0d2a3d; color: #ffffff; font-size: 16px; font-weight: 700">✓</span>Firmata</span></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 4px 2px"><span style="font-size: 13px; color: #46606f">Sostituita · lettera del 01/09/2026, senza Judo ragazzi · sostituita il 15/09/2026</span><span class="link" style="font-size: 13px">Stampa</span></div>
+      </section>
+
+      <section class="nuovo" style="display: flex; flex-direction: column; gap: 12px">
+        <dc-import name="Titoletto" tema="sito" label="PRESENZE E COMPENSO" conto="" hint-size="100%,50px"></dc-import>
+        <div style="display: flex; gap: 10px; align-items: center"><div style="width: 220px"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="MESE" valore="Ottobre 2026" nota="" nota-tono="avviso" hint-size="100%,80px"></dc-import></div><dc-import name="Chip" tema="sito" label="Scarica" acceso="{{ false }}" hint-size="123px,44px"></dc-import></div>
+        <span class="frase">Le lezioni in cui ha messo il PIN sul tablet di sala, confermate: sono quelle da pagare.</span>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px"><dc-import name="Numero" tema="sito" titolo="LEZIONI" valore="8" sotto="Ottobre 2026" hint-size="100%,110px"></dc-import><dc-import name="Numero" tema="sito" titolo="ORE" valore="12" sotto="da orario delle lezioni" hint-size="100%,110px"></dc-import><dc-import name="Numero" tema="sito" titolo="DA CONFERMARE" valore="0" sotto="niente in sospeso" hint-size="100%,110px"></dc-import><dc-import name="Numero" tema="sito" titolo="COMPENSO" valore="180,00 €" sotto="ore × tariffa del corso" hint-size="100%,110px"></dc-import></div>
+        <div style="display: flex; flex-direction: column">
+          <dc-import name="TestataTabella" tema="sito" colonne="CORSO|LEZIONI|ORE|TARIFFA|IMPORTO" griglia="minmax(0,1fr) 80px 80px 140px 110px" ordinata="CORSO" hint-size="100%,32px"></dc-import>
+          <div class="tab" style="grid-template-columns: minmax(0,1fr) 80px 80px 140px 110px"><span style="font-weight: 600">Judo kids</span><span class="num">4</span><span class="num">6</span><span class="num">15,00 € l’ora</span><span class="num" style="font-weight: 700">90,00 €</span></div>
+          <div class="tab" style="grid-template-columns: minmax(0,1fr) 80px 80px 140px 110px"><span style="font-weight: 600">Judo ragazzi</span><span class="num">4</span><span class="num">6</span><span class="num">15,00 € l’ora</span><span class="num" style="font-weight: 700">90,00 €</span></div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 16px; border: 2px solid #cfe6f4">
+          <div style="display: flex; flex-direction: column; gap: 6px"><dc-import name="Badge" tema="sito" tipo="segno" tono="neutro" label="RICEVUTA DI OTTOBRE DA FARE" hint-size="283px,26px"></dc-import><span class="frase">Esce un PDF da stampare e far firmare. Netto uguale al lordo.</span></div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap"><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Modifica il compenso" variante="linea" hint-size="225px,48px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Prepara la ricevuta" variante="pieno" hint-size="215px,48px"></dc-import></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 2px solid #0d2a3d; background: #ffffff">
+          <span class="et">MODIFICA IL COMPENSO DI OTTOBRE</span>
+          <div class="due"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="COMPENSO" valore="200,00 €" nota="Calcolato dalle lezioni: 180,00 €." nota-tono="avviso" hint-size="100%,90px"></dc-import><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="PERCHÉ" valore="lezione in più il 13/10, non segnata" nota="Obbligatorio: resta scritto accanto al compenso." nota-tono="avviso" hint-size="100%,90px"></dc-import></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap"><span class="link">Torna al calcolato</span><div style="display: flex; gap: 8px"><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Lascia stare" variante="linea" hint-size="152px,48px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Salva" variante="pieno" hint-size="100px,48px"></dc-import></div></div>
+        </div>
+        <span class="frase">Dopo il salvataggio, sotto COMPENSO: «200,00 € · cambiato a mano (calcolato 180,00 €): lezione in più il 13/10». La ricevuta esce con 200,00 €. In COMPENSI la riga porta il segno CAMBIATO A MANO.</span>
+        <dc-import name="Titoletto" tema="sito" label="LE RICEVUTE DEL 2026" conto="" hint-size="100%,50px"></dc-import>
+        <div style="display: flex; flex-direction: column">
+          <div class="tab" style="grid-template-columns: 130px minmax(0,1fr) 110px 120px 100px"><span>Settembre</span><span><dc-import name="Badge" tema="sito" tipo="segno" tono="verde" label="PAGATA IL 05/10" hint-size="175px,26px"></dc-import></span><span class="num" style="font-weight: 700">120,00 €</span><span role="checkbox" aria-checked="true" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; font-weight: 600"><span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #0d2a3d; border-radius: 4px; background: #0d2a3d; color: #ffffff; font-size: 16px; font-weight: 700">✓</span>Firmata</span><span class="link">Ristampa</span></div>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap"><span class="et">PRESO DA NOI NEL 2026</span><span style="font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums">1.240,00 €</span><span class="frase">i compensi pagati quest’anno, contati dal giorno del pagamento</span></div>
+      </section>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span class="et">LO STESSO BLOCCO, CON PRESENZE DA DECIDERE</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 16px; border: 2px solid #e4292a">
+          <div style="display: flex; flex-direction: column; gap: 6px"><dc-import name="Badge" tema="sito" tipo="segno" tono="rosso" label="3 PRESENZE DA CONFERMARE" hint-size="256px,26px"></dc-import><span class="frase">La ricevuta di ottobre si fa quando sono decise.</span></div>
+          <span class="link">Conferma in Presenze istruttori ›</span>
+        </div>
+      </div>
+      <span class="frase" style="padding: 10px 14px; border: 1px dashed #14709f">KANJI: come oggi.</span>
+    </div>
+    <div class="piede"><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Elimina" variante="rosso" hint-size="110px,48px"></dc-import></div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":2560}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

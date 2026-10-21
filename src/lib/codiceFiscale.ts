@@ -91,6 +91,13 @@ export function lettereNome(nome: string): string {
 /** Le prime sei lettere tornano con cognome e nome. */
 export const cfTornaColNome = (cf: string, nome: string, cognome: string) => cf.slice(0, 6) === lettereCognome(cognome) + lettereNome(nome)
 
+/** Se il codice è di una donna (il giorno di nascita +40); `null` se il codice non si legge. */
+export function cfDonna(codice: string): boolean | null {
+  const cf = codice.toUpperCase()
+  if (!/^[A-Z]{6}[0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{2}/.test(cf)) return null
+  return cifre(cf.slice(9, 11)) > 40
+}
+
 /**
  * Il luogo di nascita: nome, sigla della provincia (`EE` per l'estero) e,
  * se quel nome ha smesso di valere, fino a quando. Da `scripts/luoghi.py`.

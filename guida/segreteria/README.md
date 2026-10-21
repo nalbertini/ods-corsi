@@ -86,7 +86,7 @@ la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scel
 | **PRESENZE · SEGNALATE** | Una scheda di PRESENZE: gli iscritti che dicono di esserci stati e non risultano, da accogliere o rifiutare (solo in prova) | [Apri](presenze-segnalate.md) |
 | **Statistiche** | Come va la palestra mese per mese: presenze, iscritti, giorni e ore, corsi, istruttori, incassi | [Apri](statistiche.md) |
 | **Presenze istruttori** | Le presenze degli istruttori dal PIN e dall'appello, confermate e da confermare, le lezioni tenute in cui scegliere chi c'era, il CSV e il report PDF | [Apri](presenze-istruttori.md) |
-| **Istruttori e accessi** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
+| **Istruttori e accessi** | Chi entra nell'app, con che ruolo, i PIN del tablet, i dati, le tariffe e le lettere d'incarico dei tecnici | [Apri](istruttori-e-accessi.md) |
 | **Esercizi** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
 | **Listino** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
 | **Vestiario** | Gli ordini di vestiario, judogi e costumini: il catalogo, la chiusura, chi ha saldato, l'elenco per il fornitore | [Apri](vestiario.md) |

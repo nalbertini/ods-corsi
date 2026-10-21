@@ -1,0 +1,62 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Compensi dei tecnici · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "SchedaOggi.dc.html",
+   "title": "OGGI · la scheda di un istruttore",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "SchedaProposta.dc.html",
+   "title": "PROPOSTA · dati, tariffa, lettera e compenso del mese",
+   "x": 1560,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "PreparaLettera.dc.html",
+   "title": "PROPOSTA · prepara la lettera d'incarico",
+   "x": 3120,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "CompensiMese.dc.html",
+   "title": "PROPOSTA · COMPENSI, il mese di tutti i tecnici, col pannello SEGNA PAGATO",
+   "x": 0,
+   "y": 3000,
+   "page": "page-1"
+  },
+  {
+   "file": "CompensiMeseTelefono.dc.html",
+   "title": "PROPOSTA · COMPENSI sul telefono",
+   "x": 1560,
+   "y": 3000,
+   "page": "page-1"
+  },
+  {
+   "file": "FogliPdf.dc.html",
+   "title": "PROPOSTA · i due PDF: cosa stampa l'app, cosa si scrive a mano",
+   "x": 3120,
+   "y": 1720,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1600,
+   "text": "Compensi dei tecnici: lettera d'incarico con le tariffe orarie, ricevuta del mese per corso, pagamento da COMPENSI"
+  }
+ ]
+}
