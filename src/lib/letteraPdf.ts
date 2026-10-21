@@ -16,10 +16,13 @@ const MARGINE = 56
 const LARGO = PAGINA.w - 2 * MARGINE
 const CORPO = 10
 const RIGA = 13.5
-/** Dove finisce lo spazio del testo: sotto ci sta il piede. */
-const FONDO = PAGINA.h - 64
-const PIEDE =
-  'Corso Francia 224 Cascine Vica Rivoli 10098 Torino; telefono 3479119064; e-mail: asdilcentrojudo@gmail.com; pec: asdilcentrojudo@legalmail.it; Cod.fisc.: 95562500017; p.iva:10002760014'
+/**
+ * Lo spazio del testo sulla carta intestata: sotto la testata (che finisce a 92 punti dall'alto)
+ * e sopra la riga «pagina n di N», che sta sopra il piede (fino a 68 punti dal fondo).
+ * Se la carta di `fogliModuli.ts` cambia misure, la prova (prova-lettere.mjs, 6 bis) se ne accorge.
+ */
+const INIZIO = 112
+const FONDO = PAGINA.h - 92
 
 /** Le righe di un testo che sta in `largo` punti, a capo fra le parole. */
 export function aCapo(testo: string, font: PDFFont, corpo: number, largo: number): string[] {
@@ -37,7 +40,8 @@ export function aCapo(testo: string, font: PDFFont, corpo: number, largo: number
   return righe
 }
 
-export async function letteraPdf(l: DatiLettera): Promise<Uint8Array> {
+/** `carta` è public/moduli/carta-intestata.pdf (fatta da `fogliModuli.ts`): ogni pagina parte da lì, testata e piede li dà lei. */
+export async function letteraPdf(l: DatiLettera, carta: Uint8Array): Promise<Uint8Array> {
   const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib')
   const pdf = await PDFDocument.create()
   pdf.setTitle(`Lettera d'incarico ${l.stagione} · ${l.tecnico.cognome} ${l.tecnico.nome}`.trim())
@@ -48,6 +52,7 @@ export async function letteraPdf(l: DatiLettera): Promise<Uint8Array> {
   const nero = rgb(0, 0, 0)
   const grigio = rgb(0.3, 0.3, 0.3)
   const scrivibile = scrivibileCon(font)
+  const [foglio] = await pdf.embedPdf(carta)
 
   let pagina: PDFPage = pdf.addPage([PAGINA.w, PAGINA.h])
   let y = 0
@@ -56,10 +61,8 @@ export async function letteraPdf(l: DatiLettera): Promise<Uint8Array> {
     // La prima pagina c'è già: le altre si aggiungono quando la precedente è piena.
     if (!prima) pagina = pdf.addPage([PAGINA.w, PAGINA.h])
     prima = false
-    pagina.drawText('ASD IL CENTRO JUDO', { x: MARGINE, y: PAGINA.h - 40, size: 11, font: grassetto, color: nero })
-    const piede = aCapo(scrivibile(PIEDE), font, 7, LARGO)
-    piede.forEach((r, i) => pagina.drawText(r, { x: MARGINE, y: PAGINA.h - (FONDO + 22 + i * 9), size: 7, font, color: grigio }))
-    y = 72
+    pagina.drawPage(foglio)
+    y = INIZIO
   }
   nuovaPagina()
   /** Scrive una riga; se non c'è più posto, va alla pagina dopo. */
@@ -70,7 +73,8 @@ export async function letteraPdf(l: DatiLettera): Promise<Uint8Array> {
   }
   const puntini = '…………………………………………'
 
-  for (const p of testoLettera(l)) {
+  const paragrafi = testoLettera(l)
+  for (const [i, p] of paragrafi.entries()) {
     const testo = scrivibile(p.testo)
     if (p.tipo === 'destinatario') {
       // Il destinatario sta a destra, come nella lettera di carta.
@@ -84,8 +88,10 @@ export async function letteraPdf(l: DatiLettera): Promise<Uint8Array> {
       continue
     }
     if (p.tipo === 'firma') {
-      // Prima di una firma lo spazio per l'altra pagina insieme: firma e puntini non si separano.
-      if (y + 4 * RIGA > FONDO) nuovaPagina()
+      // Firma, puntini e la riga che la chiude («Data: …» o il nome) vanno nella stessa pagina: si conta tutto prima.
+      const dopo = paragrafi[i + 1]
+      const chiude = dopo && !dopo.tipo && !dopo.numero ? aCapo(scrivibile(dopo.testo), font, CORPO, LARGO).length : 0
+      if (y + (2.5 + aCapo(testo, font, CORPO, LARGO).length + chiude) * RIGA > FONDO) nuovaPagina()
       y += RIGA
       for (const r of aCapo(testo, font, CORPO, LARGO)) scrivi(r, MARGINE)
       y += RIGA / 2
@@ -101,12 +107,32 @@ export async function letteraPdf(l: DatiLettera): Promise<Uint8Array> {
     righe.forEach((r, i) => scrivi(p.tipo === 'voce' && i === 0 && !/^[a-c]\)/.test(r) ? `– ${r}` : r, MARGINE + rientro))
     y += RIGA / 3
   }
+  // Con più fogli ognuno dice che pagina è e, dal secondo, di chi: sciolti sul banco si ritrovano.
+  const pagine = pdf.getPages()
+  if (pagine.length > 1)
+    pagine.forEach((p, i) => {
+      const dove = `pagina ${i + 1} di ${pagine.length}`
+      const testo = scrivibile(i === 0 ? dove : `${l.tecnico.nome} ${l.tecnico.cognome}`.trim() + ` · lettera d’incarico ${l.stagione} · ${dove}`)
+      p.drawText(testo, { x: PAGINA.w - MARGINE - font.widthOfTextAtSize(testo, 7.5), y: 76, size: 7.5, font, color: grigio })
+    })
   return pdf.save()
+}
+
+/**
+ * La carta intestata di public/moduli. Senza, la lettera non esce: meglio un avviso che una lettera
+ * senza intestazione. Anche una risposta che non è un PDF (la pagina di un wifi, un proxy) è «non arrivata».
+ */
+export async function cartaIntestata(scarica: () => Promise<Pick<Response, 'ok' | 'arrayBuffer'>> = () => fetch('moduli/carta-intestata.pdf')): Promise<Uint8Array> {
+  const byte = await scarica()
+    .then(async (r) => (r.ok ? new Uint8Array(await r.arrayBuffer()) : null))
+    .catch(() => null)
+  if (!byte || new TextDecoder().decode(byte.subarray(0, 5)) !== '%PDF-') throw new Error('La carta intestata non si scarica: controlla la connessione e riprova.')
+  return byte
 }
 
 /** Scarica il PDF col nome che dice di chi, di che stagione e di che giorno è (`nomeFileLettera`). */
 export async function scaricaLettera(l: DatiLettera & { sostituitaIl?: string | null }) {
-  const byte = await letteraPdf(l)
+  const byte = await letteraPdf(l, await cartaIntestata())
   const url = URL.createObjectURL(new Blob([byte as BlobPart], { type: 'application/pdf' }))
   const a = document.createElement('a')
   a.href = url

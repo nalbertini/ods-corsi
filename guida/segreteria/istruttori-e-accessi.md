@@ -105,6 +105,11 @@ agosto). Si fa una volta l'anno, prima di pagare il tecnico.
 4. Quando il foglio firmato torna, si spunta **Firmata**.
 
 Il testo è quello della lettera della palestra, coi punti numerati di seguito.
+Esce sulla **carta intestata**, come i moduli delle autorizzazioni: mascotte,
+nome della palestra e simbolo in alto, sede, contatti e dati fiscali in fondo.
+Si legge anche stampata in bianco e nero. Ogni foglio dice «pagina 1 di 2», e
+dal secondo anche il nome del tecnico, così due fogli sciolti si ritrovano.
+Senza connessione la carta non si scarica e la lettera non esce: l'app lo dice.
 La lettera fatta non si cambia: **Correggi** ne fa una nuova, e quella di
 prima resta sotto, «Sostituita», e si può ancora stampare. Restano anche le
 lettere delle stagioni passate.

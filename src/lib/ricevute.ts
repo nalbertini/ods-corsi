@@ -36,10 +36,21 @@ export const ENTE_PREDEFINITO: EnteRicevuta = {
   indirizzo: 'Corso Francia 224',
   cap: '10098',
   comune: 'Rivoli',
-  codiceFiscale: '10002760014',
+  codiceFiscale: '95562500017',
+  partitaIva: '10002760014',
   rasd: '95562500017',
   dicitura:
     "Esente da imposta e tasse ai sensi dell'art. 11 e 11bis del D.P.R. 971/86 e art.4 e 10 D.P.R. 633/72. Esente da bollo in modo assoluto art.7 Tabella allegato B D.P.R. 642/72",
+}
+
+/**
+ * L'ente salvato (in una ricevuta già emessa, o in IMPOSTAZIONI) col predefinito sotto per quel che manca.
+ * Ma i numeri fiscali sono suoi: se ha il C.F. e non la P.IVA, la P.IVA di oggi non si aggiunge, se no una
+ * ricevuta vecchia ristampata direbbe una cosa mai emessa.
+ */
+export function enteDa(salvato: Partial<EnteRicevuta> | null | undefined): EnteRicevuta {
+  if (!salvato?.codiceFiscale) return { ...ENTE_PREDEFINITO, ...salvato }
+  return { ...ENTE_PREDEFINITO, partitaIva: undefined, ...salvato }
 }
 
 /**

@@ -16,7 +16,7 @@
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import fontkit from '@pdf-lib/fontkit'
@@ -134,6 +134,7 @@ const committati = {
   maggiorenni: leggi('public/moduli/autorizzazioni-maggiorenni.pdf'),
   minori: leggi('public/moduli/autorizzazioni-minori.pdf'),
   costi: leggi('public/moduli/costi-2026-27.pdf'),
+  carta: existsSync('public/moduli/carta-intestata.pdf') ? leggi('public/moduli/carta-intestata.pdf') : null,
 }
 const origini = { committato: committati, generato: generati }
 
@@ -162,8 +163,11 @@ console.log('\n2. le parole delle autorizzazioni sono quelle di prima')
 for (const [origine, pdf] of Object.entries(origini)) {
   for (const foglio of ['maggiorenni', 'minori']) {
     const t = testo(pdf[foglio])
-    const avute = parole(t)
-    const volute = fixture(foglio)
+    // Solo il corpo, fino all'ultimo «firma»: il piede è cambiato con la carta intestata (SEDE, CONTATTI,
+    // DATI FISCALI) e si prova a parte qui sotto; le parole legali stanno tutte prima.
+    const corpo = (ps) => ps.slice(0, ps.lastIndexOf('firma') + 1)
+    const avute = corpo(parole(t))
+    const volute = corpo(fixture(foglio))
     const { tolte, aggiunte } = differenze(volute, avute)
     ok(`${origine} ${foglio}: le parole di prima ci sono, tranne ${tolte.length ? '«' + tolte.join(' ') + '»' : 'nessuna'}`, tolte, DIFFERENZE[foglio].tolte)
     ok(`${origine} ${foglio}: le parole in più sono solo titoletti ed etichette dei campi`, aggiunte, DIFFERENZE[foglio].aggiunte)
@@ -226,6 +230,40 @@ for (const foglio of ['maggiorenni', 'minori', 'costi']) {
   const f = async (pdf) => (await campi(pdf)).map((c) => `${c.getName()}:${c.constructor.name}`)
   ok(`${foglio}: stessi campi`, await f(committati[foglio]), await f(generati[foglio]))
   ok(`${foglio}: stesse pagine`, (await m.PDFDocument.load(committati[foglio])).getPageCount(), (await m.PDFDocument.load(generati[foglio])).getPageCount())
+}
+
+console.log('\n4 bis. il piede della carta intestata, nei tre moduli')
+const DATI_PALESTRA = ['Corso Francia 224, Cascine Vica', '10098 Rivoli (TO)', '347 911 9064', 'asdilcentrojudo@gmail.com', 'PEC asdilcentrojudo@legalmail.it', 'C.F. 95562500017', 'P.IVA 10002760014']
+for (const [origine, pdf] of Object.entries(origini)) {
+  for (const foglio of ['maggiorenni', 'minori', 'costi']) {
+    // In maiuscolo: «sede» minuscolo c'è anche nel corpo delle autorizzazioni.
+    const t = testo(pdf[foglio])
+    ok(`${origine} ${foglio}: il piede ha «SEDE», «CONTATTI» e «DATI FISCALI»`, ['SEDE', 'CONTATTI', 'DATI FISCALI'].filter((e) => !new RegExp(`\\b${e}\\b`).test(t)), [])
+    // E i dati della palestra, uno per uno: il confronto delle parole (sezione 2) si ferma prima del piede.
+    const piatto = t.replace(/\s+/g, ' ')
+    ok(`${origine} ${foglio}: i dati della palestra nel piede`, DATI_PALESTRA.filter((d) => !piatto.includes(d)), [])
+  }
+}
+
+console.log('\n4 ter. la carta intestata, per la lettera d’incarico')
+{
+  const [c, g] = [committati.carta, generati.carta]
+  ok('generaFogli rende anche la carta', g instanceof Uint8Array, true)
+  ok('il file committato c’è (public/moduli/carta-intestata.pdf)', c instanceof Uint8Array, true)
+  ok('genera-moduli.mjs la scrive', readFileSync('scripts/genera-moduli.mjs', 'utf8').includes('public/moduli/carta-intestata.pdf'), true)
+  if (c && g) ok('il file committato è uguale byte per byte a quello generato', Buffer.compare(Buffer.from(c), Buffer.from(g)), 0)
+  for (const [origine, pdf] of [['committata', c], ['generata', g]]) {
+    if (!(pdf instanceof Uint8Array)) continue
+    const doc = await m.PDFDocument.load(pdf)
+    ok(`${origine}: una pagina A4`, [doc.getPageCount(), ...Object.values(doc.getPage(0).getSize()).map(Math.round)], [1, 595, 842])
+    ok(`${origine}: nessun campo di modulo`, doc.getForm().getFields().length, 0)
+    const t = testo(pdf).replace(/\s+/g, ' ')
+    ok(
+      `${origine}: testata e piede`,
+      ['ASD IL CENTRO JUDO', 'ASSOCIAZIONE SPORTIVA DILETTANTISTICA', 'SEDE', 'CONTATTI', 'DATI FISCALI', 'C.F. 95562500017', 'P.IVA 10002760014'].filter((s) => !t.includes(s)),
+      [],
+    )
+  }
 }
 
 console.log('\n5. i font e le immagini della testata')

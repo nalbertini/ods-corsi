@@ -63,7 +63,7 @@ import {
   VOCE_QUOTA,
   type VoceContabile,
 } from './contabilita'
-import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
+import { conti as contiRicevuta, cosaNonVa, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 import { mandateOggi, SOGLIA_MAIL_GIORNO, TETTO_PER_RICEVUTA } from './ricevuteEmail'
 
 /**
@@ -1581,7 +1581,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async enteRicevute() {
-      return { ...ENTE_PREDEFINITO, ...(a().enteRicevute ?? {}) }
+      return enteDa(a().enteRicevute)
     },
 
     async salvaEnteRicevute(e) {

@@ -25,7 +25,7 @@ import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '..
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
 import { satispayPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
-import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { motivoDaErrore, type InvioRicevuta } from './ricevuteEmail'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
@@ -123,7 +123,7 @@ const ricevuta = (r: RigaRicevuta): Ricevuta => ({
   numero: r.numero,
   data: r.data,
   personaId: r.persona_id ?? undefined,
-  ente: { ...ENTE_PREDEFINITO, ...r.ente },
+  ente: enteDa(r.ente),
   intestatario: r.intestatario,
   voci: r.voci.map((v) => ({ ...v, dal: v.dal ?? undefined, al: v.al ?? undefined })),
   totale: r.totale,
@@ -1687,7 +1687,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const r = await db.from('impostazioni').select('ricevute').maybeSingle()
       // Senza 16-ricevute.sql la colonna non c'è: valgono quelli scritti nell'app.
       if (r.error?.code === '42703') return ENTE_PREDEFINITO
-      return { ...ENTE_PREDEFINITO, ...((ok(r) as { ricevute: Partial<EnteRicevuta> } | null)?.ricevute ?? {}) }
+      return enteDa((ok(r) as { ricevute: Partial<EnteRicevuta> } | null)?.ricevute)
     },
 
     async salvaEnteRicevute(e) {

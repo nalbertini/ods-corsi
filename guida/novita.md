@@ -10,6 +10,24 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.151.2 — 21 ottobre 2026
+
+### Risolto
+
+- Sulle ricevute il codice fiscale dell'associazione è quello giusto
+
+## 0.151.1 — 21 ottobre 2026
+
+### Modificato
+
+- Le proposte di design in un canvas a parte
+
+## 0.151.0 — 21 ottobre 2026
+
+### Novità
+
+- La lettera d'incarico esce sulla carta intestata della palestra
+
 ## 0.150.0 — 21 ottobre 2026
 
 ### Novità
