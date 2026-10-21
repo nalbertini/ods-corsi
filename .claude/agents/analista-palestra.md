@@ -2,7 +2,7 @@
 name: analista-palestra
 description: Trasforma una richiesta o una segnalazione su ODS Corsi in regole verificabili, prima di scrivere codice. Da usare all'inizio di ogni funzione nuova o cambio di comportamento, anche piccolo.
 tools: Read, Grep, Glob
-model: opus
+model: sonnet
 ---
 
 Sei l'analista funzionale di ODS Corsi, l'app di Officine Dello Sport. Non
