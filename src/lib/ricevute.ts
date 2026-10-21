@@ -1,5 +1,5 @@
 import { saldoAperto, VALIDITA, type VoceCosto } from './costi'
-import { LISTINO_PREDEFINITO, nomeCorso as pulito, voceDelCorso, type CorsoRef, type Listino } from './listino'
+import { LISTINO_PREDEFINITO, voceDelCorso, type CorsoRef, type Listino } from './listino'
 import { minorenne, type DatiRichiesta } from './richieste'
 import { nomeProprio } from './nomi'
 import { cfNatoIl, cfValido } from './codiceFiscale'
@@ -370,9 +370,9 @@ export function intestatarioDa(
   return { ...(anagrafica ? intestatarioDaRichiesta({ ...anagrafica, nome: chi.nome, cognome: chi.cognome }) : {}), ...pieni, nome: chi.nome, cognome: chi.cognome }
 }
 
-/** Il nome del file del PDF: `ricevuta-116-2026-albertini-manuela.pdf`. */
-export const nomeFileRicevuta = (r: Pick<Ricevuta, 'numero' | 'anno' | 'intestatario'>) =>
-  `ricevuta-${r.numero}-${r.anno}-${pulito(`${r.intestatario.cognome} ${r.intestatario.nome}`).replace(/ /g, '-')}.pdf`
+// Il nome del file del PDF (`ricevuta-116-2026-albertini-manuela.pdf`) sta col testo della mail, che lo copia nella
+// Edge Function: il PDF scaricato e quello allegato hanno lo stesso nome.
+export { nomeFileRicevuta } from './ricevutaMail'
 
 /**
  * La domanda prima di fare la ricevuta: a chi va (per un minore, il socio e

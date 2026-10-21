@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Copiata da ods-design-system/PaginaSitoTelefono.dc.html (390px): la scheda iscritto sulla scheda QUOTA, oggi e proposta, e la domanda di FAI LA RICEVUTA. -->
+<div style="display: flex; gap: 48px; align-items: flex-start; width: 1530px; padding: 28px 36px; background: #eef5fa">
+  <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">OGGI · TELEFONO</span><div style="display: flex; flex-direction: column; width: 390px; min-height: 1400px; background: #eef5fa">
+    <dc-import name="BarraTelefono" tema="sito" luogo="SEGRETERIA" da-fare="5" hint-size="100%,62px"></dc-import>
+    <main style="display: flex; flex-direction: column; gap: 12px; padding: 20px 16px 28px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ROSSI MARCO</h1><span style="font-size: 14px; color: #46606f">9 anni · Judo kids</span></div>
+      <dc-import name="SchedeIscritto" tema="sito" acceso="QUOTA E PAGAMENTI" telefono="{{ true }}" hint-size="100%,56px"></dc-import>
+      <dc-import name="Titoletto" tema="sito" label="PAGAMENTI" hint-size="100%,50px"></dc-import>
+<dc-import name="RigaPagamento" titolo="N. 12/2026 · 21 ottobre 2026" sotto="QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS · totale 80,00 €" tasti="PDF" tastiSotto="Annulla ricevuta:pericolo" tema="sito" importo="" hint-size="100%,112px"></dc-import>
+<dc-import name="RigaPagamento" tema="sito" tipo="pagamento" titolo="21 ottobre 2026 · Bonifico" sotto="QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS" importo="80,00 €" tasti="" hint-size="100%,48px"></dc-import>
+<dc-import name="RigaPagamento" titolo="N. 11/2026 · 20 ottobre 2026" tag="Annullata:rosso" sotto="Annullata il 21 ottobre 2026 · QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS · totale 80,00 €" tasti="PDF" annullato="{{ true }}" tema="sito" importo="" hint-size="100%,64px"></dc-import>
+<dc-import name="RigaPagamento" titolo="N. 3/2026 · 2 settembre 2026" sotto="QUOTA ASSOCIATIVA · totale 30,00 €" tasti="PDF" tastiSotto="Annulla ricevuta:pericolo" tema="sito" importo="" hint-size="100%,112px"></dc-import>
+    </main>
+  </div></div>
+  <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · TELEFONO</span><div style="display: flex; flex-direction: column; width: 390px; min-height: 1400px; background: #eef5fa">
+    <dc-import name="BarraTelefono" tema="sito" luogo="SEGRETERIA" da-fare="5" hint-size="100%,62px"></dc-import>
+    <main style="display: flex; flex-direction: column; gap: 12px; padding: 20px 16px 28px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ROSSI MARCO</h1><span style="font-size: 14px; color: #46606f">9 anni · Judo kids</span></div>
+      <dc-import name="SchedeIscritto" tema="sito" acceso="QUOTA E PAGAMENTI" telefono="{{ true }}" hint-size="100%,56px"></dc-import>
+      <dc-import name="Titoletto" tema="sito" label="PAGAMENTI" hint-size="100%,50px"></dc-import>
+<dc-import name="RigaPagamento" titolo="N. 12/2026 · 21 ottobre 2026" sotto="QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS · totale 80,00 €" posta="✓ Mandata il 21/10/2026 a mamma@esempio.it" postaTono="verde" tasti="PDF" tastiMail="Manda di nuovo" tastiSotto="Annulla ricevuta:pericolo" tema="sito" importo="" hint-size="100%,160px"></dc-import>
+<dc-import name="RigaPagamento" tema="sito" tipo="pagamento" titolo="21 ottobre 2026 · Bonifico" sotto="QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS" importo="80,00 €" tasti="" hint-size="100%,48px"></dc-import>
+<dc-import name="RigaPagamento" titolo="N. 11/2026 · 20 ottobre 2026" tag="Annullata:rosso" sotto="Annullata il 21 ottobre 2026 · QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS · totale 80,00 €" posta="Mandata il 20/10/2026 a mamma@esempio.it" postaTono="neutro" tasti="PDF" annullato="{{ true }}" tema="sito" importo="" hint-size="100%,120px"></dc-import>
+<dc-import name="RigaPagamento" titolo="N. 10/2026 · 14 ottobre 2026" sotto="TRIMESTRE PILATES · totale 120,00 €" posta="… Non mandata: la mail non è partita" postaTono="giallo" tasti="PDF" tastiMail="Manda per email" tastiSotto="Annulla ricevuta:pericolo" tema="sito" importo="" hint-size="100%,170px"></dc-import>
+<dc-import name="RigaPagamento" titolo="N. 3/2026 · 2 settembre 2026" sotto="QUOTA ASSOCIATIVA · totale 30,00 €" posta="Fatta prima dell’invio per email" postaTono="neutro" tasti="PDF" tastiMail="Manda per email" tastiSotto="Annulla ricevuta:pericolo" tema="sito" importo="" hint-size="100%,170px"></dc-import>
+<span style="font-size: 14px; line-height: 1.45; color: #46606f">MANDATA vuol dire partita dall’app, non letta: se la famiglia non la trova, guardi nello spam o usi MANDA DI NUOVO. Annullare una ricevuta già mandata non avvisa la famiglia.</span><dc-import name="RigaPagamento" titolo="N. 9/2026 · 10 ottobre 2026" sotto="QUOTA ASSOCIATIVA · totale 30,00 €" posta="Non mandata: nessuna email di contatto in scheda" postaTono="neutro" tasti="PDF" tastiMail="Manda per email:spento" tastiSotto="Annulla ricevuta:pericolo" motivo="Nessuna email di contatto in scheda: aggiungila in PERSONA." tema="sito" importo="" hint-size="100%,190px"></dc-import>
+    </main>
+  </div></div>
+  <div style="display: flex; flex-direction: column; gap: 8px; width: 390px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · LA DOMANDA SUL TELEFONO</span><dc-import name="Dialogo" domanda="Fare la ricevuta n. 12/2026 per Rossi Marco, al genitore Rossi Laura, 80,00 €?" resto="Fatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra." spunta="Manda per email a mamma@esempio.it" spuntaNota="Email di contatto del genitore, Rossi Laura. Se è sbagliata togli la spunta: la ricevuta si fa senza mail." tema="sito" tipo="conferma" no="Torna a correggere" si="Fai la ricevuta" pericolo="{{ true }}" altezza="844px" hint-size="390px,844px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">Nell’app sul telefono i due tasti vanno uno sotto l’altro, a tutta larghezza (styles.css riga 2218): qui il Dialogo li tiene affiancati.</span></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1530,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

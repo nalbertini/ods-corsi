@@ -29,10 +29,32 @@ import {
 } from '../../lib/ricevute'
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
 import { chiaveGiorno } from '../../lib/sala'
-import { chiedi, Campo, dataLunga, Guaio, Riga, useAvviso, useBozza, useCarica } from './comune'
+import { avvisoDopoRicevuta, avvisoManda, confermaEmail, daMandare, domandaManda, genitoreDellaMail, restaDopoManda, restaDopoRicevuta, siRiprova, statoPosta, ultimaMandata } from '../../lib/ricevuteEmail'
+import { chiedi, chiediSpunta, Campo, dataLunga, Guaio, Riga, useAvviso, useBozza, useCarica } from './comune'
 import { Numero } from './Presenze'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
+type Avvisa = ReturnType<typeof useAvviso>['avvisa']
+
+/**
+ * MANDA PER EMAIL, dallo storico o dall'avviso dopo FAI LA RICEVUTA: prima la domanda con l'indirizzo, che è quello
+ * della scheda, lo stesso che sceglie il database (se è sbagliato si risponde no e si corregge in PERSONA); poi com'è
+ * andata, il guaio in rosso perché qui la mail era tutto. `giaMandata`: l'ultima volta che è partita.
+ */
+const chiediEManda = async (d: DatiSegreteria, r: Ricevuta, emailContatto: string | null | undefined, giaMandata: string | null, fai: Fai, avvisa: Avvisa, poi?: () => unknown) => {
+  const a = emailContatto?.trim()
+  if (!a) return
+  const q = domandaManda(r, a, genitoreDellaMail(r), giaMandata)
+  if (!(await chiedi(`${q.domanda} ${q.resto}`, q.si))) return
+  void fai(
+    async () => {
+      const e = await d.mandaRicevuta(r.id)
+      avvisa(avvisoManda(r, e), restaDopoManda(e))
+    },
+    undefined,
+    poi,
+  )
+}
 
 /** Il PDF si fa solo quando serve: pdf-lib pesa, e l'elenco non ne ha bisogno. */
 const scarica = async (r: Ricevuta) => (await import('../../lib/ricevutaPdf')).scaricaRicevuta(r, nomeFileRicevuta(r))
@@ -43,8 +65,11 @@ const scarica = async (r: Ricevuta) => (await import('../../lib/ricevutaPdf')).s
  * ricevute si riscaricano e si annullano da qui, e da qui si fa la ricevuta
  * nuova o si registra un pagamento fatto a mano.
  */
-export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; corsi: string[]; fai: Fai; onNuova: () => void; onCambiato: () => void }) {
+export function StoricoIscritto({ d, p, corsi, fai, avvisa, onNuova, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; corsi: string[]; fai: Fai; avvisa: Avvisa; onNuova: () => void; onCambiato: () => void }) {
   const ricevute = useCarica(() => d.ricevute(p.id), [d, p.id])
+  // La mail delle ricevute: se non si legge, lo storico non ne dice niente, come senza 76-ricevute-email.sql.
+  const posta = useCarica(() => Promise.all([d.inviiRicevute(p.id), d.ricevuteEmailDal()]), [d, p.id])
+  const [invii, dal] = posta.dato ?? [[], null]
   // Senza 54-pagamenti-diretti.sql le ricevute si vedono lo stesso: il guaio si dice, ma non ferma lo storico.
   const diretti = useCarica(() => d.pagamentiDiretti(p.id), [d, p.id])
   const [registrando, setRegistrando] = useState(false)
@@ -102,6 +127,8 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
       {tutteRicevute.map((r) => {
         const manca = r.annullataIl ? 0 : conti(r).netto
         const righe = righeDaRicevute([r])
+        const suoi = invii.filter((i) => i.ricevutaId === r.id)
+        const stato = statoPosta(r, suoi, p.emailContatto ?? null, dal)
         return (
           <div key={r.id} className="stack" style={{ gap: 6 }}>
             <div className="sg-voce-elenco" style={{ flexWrap: 'wrap' }}>
@@ -117,10 +144,24 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
                   {r.annullataIl ? `Annullata il ${dataLunga(r.annullataIl.slice(0, 10))} · ` : ''}
                   {r.voci.map((v) => v.descrizione).join(', ')} · totale {euro(r.totale)} €{r.anticipo > 0 ? ` · anticipo ${euro(r.anticipo)} €` : ''}
                 </span>
+                {stato && (
+                  <span className="sg-sotto" data-tono={stato.tono ?? undefined} style={{ marginTop: 2, overflowWrap: 'anywhere' }}>
+                    {stato.testo}
+                  </span>
+                )}
               </span>
               <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(r))}>
                 PDF
               </button>
+              {/* La mail sopra, ANNULLA sotto su una riga sua: sul telefono, affiancati, un dito sbagliato annullerebbe. */}
+              {!r.annullataIl && stato?.tasto && (
+                <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+                  {stato.motivo && <span style={{ flex: '1 1 200px', fontSize: 13, color: 'var(--dim)', textAlign: 'right' }}>{stato.motivo}</span>}
+                  <button type="button" className="num sg-chip" disabled={stato.spento} onClick={() => void chiediEManda(d, r, p.emailContatto, ultimaMandata(suoi), fai, avvisa, () => posta.ricarica())}>
+                    {stato.tasto}
+                  </button>
+                </div>
+              )}
               {/* Raro e senza ritorno: su una riga sua, a destra, e non più grande del PDF che si preme ogni giorno. */}
               {!r.annullataIl && (
                 <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
@@ -136,6 +177,9 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
           </div>
         )
       })}
+      {dal && tutteRicevute.length > 0 && (
+        <span className="sg-sotto">MANDATA vuol dire partita dall’app, non letta: se la famiglia non la trova, guardi nello spam o usi MANDA DI NUOVO. Annullare una ricevuta già mandata non avvisa la famiglia.</span>
+      )}
       {aMano.length > 0 && <Riga titolo="SENZA RICEVUTA" />}
       {righeDirette(aMano, () => `${p.cognome} ${p.nome}`).map((x) => {
         const suo = aMano.find((y) => y.id === x.direttoId)
@@ -412,6 +456,7 @@ export function NuovaRicevuta({
   nucleo = [],
   corsi,
   fai,
+  avvisa: dillo,
   onFatta,
   onLasciaStare,
 }: {
@@ -422,6 +467,7 @@ export function NuovaRicevuta({
   /** I corsi che fa adesso: le loro voci vengono prima. */
   corsi: CorsoRef[]
   fai: Fai
+  avvisa: Avvisa
   onFatta: () => void
   onLasciaStare: () => void
 }) {
@@ -545,19 +591,39 @@ export function NuovaRicevuta({
     if (!dati || !c) return
     // La ricevuta ha un numero e non si cambia più: prima di farla, si rilegge.
     const quale = n ? `n. ${n}/${anno}` : prossimo.dato ? `n. ${prossimo.dato}/${anno}` : `col prossimo numero del ${anno}`
+    // La mail va all'email di contatto della scheda (per un minore, del genitore): la casella è già spuntata.
+    const genitore = genitoreDellaMail({ intestatario: socio, data: data || oggi })
+    const email = confermaEmail(p.emailContatto ?? null, genitore, true)
     const righe = [
       domandaRicevuta(quale, socio, minore, c),
       avvisa.length ? `\n${avvisaTesto}.` : '',
       '\nFatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.',
+      email.spunta ? '' : `\n${email.nota}`,
     ]
-    if (!(await chiedi(righe.join('\n'), 'Fai la ricevuta', { no: 'Torna a correggere', pericolo: true }))) return
+    const { si, spuntata } = await chiediSpunta(
+      righe.join('\n'),
+      'Fai la ricevuta',
+      { no: 'Torna a correggere', pericolo: true },
+      email.spunta ? { testo: email.spunta, nota: (x) => confermaEmail(p.emailContatto ?? null, genitore, x).nota } : undefined,
+    )
+    if (!si) return
     void fai(
       async () => {
         const r = await d.emettiRicevuta(dati, conSatispay?.id)
-        await scarica(r)
-        return r
+        // Fatta la ricevuta, PDF e mail vanno ognuno per conto suo: se uno non va, l'altro parte lo stesso.
+        const scaricato = await scarica(r).then(
+          () => true,
+          () => false,
+        )
+        // La ricevuta c'è comunque: se la mail non parte l'avviso non è rosso, e dalla posta che non risponde si riprova da qui.
+        const esito = daMandare(p.emailContatto ?? null, spuntata) ? await d.mandaRicevuta(r.id) : null
+        dillo(
+          avvisoDopoRicevuta(r, esito, scaricato),
+          restaDopoRicevuta(esito, scaricato),
+          siRiprova(esito) ? { etichetta: 'Manda per email', fa: () => void chiediEManda(d, r, p.emailContatto, null, fai, dillo, onFatta) } : undefined,
+        )
       },
-      'Ricevuta fatta: il PDF è scaricato',
+      undefined,
       onFatta,
     )
   }

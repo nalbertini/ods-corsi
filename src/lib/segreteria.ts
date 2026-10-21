@@ -11,6 +11,7 @@ import type { Disciplina } from '../../timer/src/lib/discipline'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
 import { euro } from './ricevute'
+import type { EsitoMandata, InvioRicevuta } from './ricevuteEmail'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
 import type { PagamentoSatispay } from './satispay'
 import { VALIDITA } from './costi'
@@ -650,6 +651,18 @@ export interface DatiSegreteria {
   pagamentiSatispay(): Promise<PagamentoSatispay[]>
   /** La annulla: resta, col suo numero, e il PDF dice ANNULLATA. */
   annullaRicevuta(id: string): Promise<void>
+  /**
+   * Manda la ricevuta in PDF all'email di contatto della persona, lo stesso PDF che si scarica: l'indirizzo lo sceglie
+   * il database (Edge Function `ricevuta-email`, `76-ricevute-email.sql`). Non lancia: com'è andata, anche quando manca
+   * il file o la funzione, sta nell'esito, perché la ricevuta è già fatta e la mail è un di più.
+   */
+  mandaRicevuta(id: string): Promise<EsitoMandata>
+  /** I tentativi di mandare le ricevute di una persona, dal più vecchio; vuoto senza 76-ricevute-email.sql. Li legge la segreteria. */
+  inviiRicevute(personaId: string): Promise<InvioRicevuta[]>
+  /** Data ed esito dei tentativi di una ricevuta, senza indirizzo: per l'amministrazione in IL PAGAMENTO. Vuoto senza il file. */
+  esitiInvioRicevuta(id: string): Promise<InvioRicevuta[]>
+  /** Da quando le ricevute si mandano per email; `null` senza 76-ricevute-email.sql. */
+  ricevuteEmailDal(): Promise<string | null>
   /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
   pagamentiDiretti(personaId?: string): Promise<PagamentoDiretto[]>
   /** Nome e cognome di chi ha pagato, e nient'altro: per chi segue i pagamenti senza vedere le persone (`55-amministrazione.sql`). */

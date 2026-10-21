@@ -25,7 +25,7 @@ Sostituire fogli Excel, Google Form e registri cartacei con un'unica app che tie
 
 ## Positioning
 
-Non è un gestionale per palestre generico: è fatto su misura per le abitudini di ODS. Le sale con la loro musica, il kanji di ogni istruttore come timbro, la «ricevuta semplice» dell'associazione con il suo numero che va avanti da sé, il modulo delle autorizzazioni della palestra firmato col dito, il certificato e il documento che restano su carta in segreteria. I dati restano in casa (nessun servizio esterno vede gli iscritti, font serviti in locale, backup cifrato) e il costo è quasi zero (GitHub Pages + Supabase, nessun abbonamento).
+Non è un gestionale per palestre generico: è fatto su misura per le abitudini di ODS. Le sale con la loro musica, il kanji di ogni istruttore come timbro, la «ricevuta semplice» dell'associazione con il suo numero che va avanti da sé, il modulo delle autorizzazioni della palestra firmato col dito, il certificato e il documento che restano su carta in segreteria. I dati restano in casa (nessun servizio esterno vede gli iscritti, tranne la posta di Register.it per le ricevute via email, font serviti in locale, backup cifrato) e il costo è quasi zero (GitHub Pages + Supabase, nessun abbonamento).
 
 ## Operating Context
 
@@ -65,7 +65,7 @@ Non è un gestionale per palestre generico: è fatto su misura per le abitudini 
 1. **La segreteria prima.** Ciò che manca o non è in regola si vede subito, in rosso, senza cercarlo.
 2. **Si spiega da sé.** Nessuno ha formazione: ogni schermata dice cosa fare con parole della palestra, non dell'informatica.
 3. **Il gesto più frequente è il più corto.** «TUTTI PRESENTI» e due assenze invece di venti presenze; un tocco sul nome al tablet.
-4. **I dati restano in casa.** Ogni nuova funzione rispetta privacy e minori prima della comodità; niente servizi esterni sui dati degli iscritti.
+4. **I dati restano in casa.** Ogni nuova funzione rispetta privacy e minori prima della comodità; niente servizi esterni sui dati degli iscritti. L'unica eccezione, scelta dalla palestra e scritta nell'informativa: la ricevuta per email passa dalla posta di Register.it, solo verso l'email di contatto.
 5. **Calza ODS, non un'altra palestra.** Si modella sulle abitudini vere (carta, sale, ricevuta) invece di imporne di nuove.
 
 ## Accessibility & Inclusion

@@ -21,6 +21,7 @@ import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } fr
 import { satispayPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { motivoDaErrore, type InvioRicevuta } from './ricevuteEmail'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
 import { mancaPagatoPrima, type IncassoPrima } from './pagatoPrima'
@@ -1176,6 +1177,69 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async annullaRicevuta(id) {
       ok(await db.rpc('annulla_ricevuta', { ricevuta: id }))
+    },
+
+    async mandaRicevuta(id) {
+      // Mai un'eccezione: la ricevuta è già fatta, e quello che manca (file, funzione, posta) diventa un motivo.
+      try {
+        // `as`: le colonne di CAMPI_RICEVUTA sono quelle di RigaRicevuta, come in `ricevute()` qui sopra.
+        const r = ricevuta(ok(await db.from('ricevute').select(CAMPI_RICEVUTA).eq('id', id).single()) as unknown as RigaRicevuta)
+        // Lo stesso PDF che si scarica; pdf-lib solo quando serve, come in Ricevute.tsx.
+        const pdf = await (await import('./ricevutaPdf')).ricevutaPdf(r)
+        let binario = ''
+        // A pezzi: String.fromCharCode con tutto il PDF insieme supera gli argomenti che il browser accetta.
+        for (let i = 0; i < pdf.length; i += 0x8000) binario += String.fromCharCode(...pdf.subarray(i, i + 0x8000))
+        // Nessun indirizzo nel corpo: lo sceglie il database.
+        const { data, error } = await db.functions.invoke('ricevuta-email', { body: { ricevuta: id, pdf: btoa(binario) } })
+        if (!error) {
+          // `as`: il corpo è quello della nostra funzione (supabase/functions/ricevuta-email).
+          const x = data as { esito?: string; indirizzo?: string; registrata?: boolean } | null
+          if (x?.esito !== 'mandata') return { esito: 'non partita', motivo: 'posta' }
+          return { esito: 'mandata', indirizzo: x.indirizzo ?? '', ...(x.registrata === false ? { registrata: false } : {}) }
+        }
+        // Quando la funzione ha risposto, il suo `tipo` dice il motivo; se no decide l'errore (rete, 404).
+        const contesto: unknown = 'context' in error ? error.context : null
+        let corpo: unknown = null
+        try {
+          corpo = contesto instanceof Response ? await contesto.clone().json() : null
+        } catch {
+          // Non è la nostra risposta.
+        }
+        return { esito: 'non partita', motivo: motivoDaErrore(corpo && typeof corpo === 'object' && 'tipo' in corpo ? corpo : error) }
+      } catch (e) {
+        return { esito: 'non partita', motivo: motivoDaErrore(e) }
+      }
+    },
+
+    async inviiRicevute(personaId) {
+      const sue = ok(await db.from('ricevute').select('id').eq('persona_id', personaId)) as Array<{ id: string }>
+      if (!sue.length) return []
+      const r = await db.from('invii_ricevute').select('ricevuta_id, creato_il, esito, indirizzo, motivo').in('ricevuta_id', sue.map((x) => x.id)).order('creato_il')
+      // Senza 76-ricevute-email.sql la tabella non c'è: lo storico non dice niente della mail.
+      if (r.error && ['PGRST205', '42P01'].includes(r.error.code)) return []
+      // `as`: le colonne scelte qui sopra di invii_ricevute (76-ricevute-email.sql).
+      return (ok(r) as Array<{ ricevuta_id: string; creato_il: string; esito: InvioRicevuta['esito']; indirizzo: string; motivo: string | null }>).map((x) => ({
+        ricevutaId: x.ricevuta_id,
+        creatoIl: x.creato_il,
+        esito: x.esito,
+        indirizzo: x.indirizzo,
+        ...(x.motivo ? { motivo: x.motivo } : {}),
+      }))
+    },
+
+    async esitiInvioRicevuta(id) {
+      const r = await db.rpc('esiti_invio_ricevuta', { ricevuta: id })
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return []
+      // `as`: le righe di esiti_invio_ricevuta() in 76-ricevute-email.sql, senza indirizzo.
+      return (ok(r) as Array<{ creato_il: string; esito: InvioRicevuta['esito'] }>).map((x) => ({ ricevutaId: id, creatoIl: x.creato_il, esito: x.esito }))
+    },
+
+    async ricevuteEmailDal() {
+      const r = await db.from('impostazioni').select('ricevute_email_dal').maybeSingle()
+      // Senza 76-ricevute-email.sql la colonna non c'è.
+      if (r.error && r.error.code === '42703') return null
+      // `as`: la colonna scelta qui sopra.
+      return (ok(r) as { ricevute_email_dal: string | null } | null)?.ricevute_email_dal ?? null
     },
 
     pagamentiSatispay: leggiSatispay,

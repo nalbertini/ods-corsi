@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'avviso dopo FAI LA RICEVUTA (useAvviso di comune.tsx: Avviso col tema sito). Oggi: il testo di fai() in emetti(), Ricevute.tsx riga 560. -->
+<div style="display: flex; gap: 48px; align-items: flex-start; width: 1100px; padding: 28px 36px; background: #eef5fa">
+  <div style="display: flex; flex-direction: column; gap: 12px; width: 460px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">OGGI · DOPO FAI LA RICEVUTA</span>
+    <dc-import name="Avviso" tema="sito" testo="Ricevuta fatta: il PDF è scaricato" hint-size="460px,96px"></dc-import>
+    <span style="font-size: 14px; line-height: 1.45; color: #46606f">Sparisce dopo 8 secondi.</span>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 12px; width: 520px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · MANDATA</span>
+    <dc-import name="Avviso" tema="sito" testo="Ricevuta n. 12/2026 fatta e mandata a mamma@esempio.it. Il PDF è scaricato." hint-size="460px,96px"></dc-import>
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · LA MAIL NON È PARTITA</span>
+    <dc-import name="Avviso" tema="sito" testo="Ricevuta n. 12/2026 fatta, il PDF è scaricato. La mail non è partita: riprova con MANDA PER EMAIL." azione="Manda per email" hint-size="460px,96px"></dc-import>
+    <span style="font-size: 14px; line-height: 1.45; color: #46606f">La ricevuta c’è: l’avviso non è rosso. Il tasto dell’avviso fa la stessa cosa di MANDA PER EMAIL nello storico, dove la riga resta «Non mandata». Mai il testo grezzo dell’errore.</span>
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · TROPPE MAIL OGGI</span>
+    <dc-import name="Avviso" tema="sito" testo="Ricevuta n. 12/2026 fatta, il PDF è scaricato. Oggi sono partite 400 mail, il massimo: riprova domani con MANDA PER EMAIL." hint-size="460px,96px"></dc-import>
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · SENZA SPUNTA O SENZA EMAIL</span>
+    <dc-import name="Avviso" tema="sito" testo="Ricevuta n. 12/2026 fatta: il PDF è scaricato. Non mandata per email." hint-size="460px,96px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1100,"height":820}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
