@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Non e' una schermata dell'app: e' la mail come la vede il genitore nel suo programma di posta, disegnata a parte (nessun componente della libreria la descrive) coi colori del sito. Telefono da CONTATTI di src/lib/sito.ts (riga 74), nome del file da nomeFileRicevuta di lib/ricevute.ts (riga 374). -->
+<div style="display: flex; gap: 36px; align-items: flex-start; width: 1300px; padding: 28px 36px; background: #eef5fa">
+  <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · LA MAIL CHE ARRIVA AL GENITORE</span><div style="display: flex; flex-direction: column; width: 560px; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
+    <div style="display: flex; flex-direction: column; gap: 4px; padding: 16px 20px; border-bottom: 2px solid #cfe6f4; font-size: 14px">
+      <span><b>Officine Dello Sport</b> <span style="color: #46606f">&lt;info@officinedellosport.it&gt;</span></span>
+      <span style="color: #46606f">a mamma@esempio.it</span>
+      <span style="font-size: 17px; font-weight: 700; margin-top: 6px">Ricevuta n. 12/2026 per Marco Rossi · Officine Dello Sport</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 20px">
+      <p style="margin: 0; font-size: 15px; line-height: 1.5">Buongiorno, in allegato la ricevuta n. 12/2026 del 21 ottobre 2026 per Marco Rossi: 80,00 €.</p>
+      
+      <p style="margin: 0; font-size: 15px; line-height: 1.5">Per qualsiasi domanda chiamaci al 346 329 2786. A presto in palestra, Officine Dello Sport.</p>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 2px solid #cfe6f4; border-radius: 6px; align-self: flex-start">
+        <span style="padding: 4px 6px; background: #b81d1d; color: #ffffff; font-size: 12px; font-weight: 700; border-radius: 4px">PDF</span>
+        <span style="font-size: 14px; font-weight: 600">ricevuta-12-2026-Rossi-Marco.pdf</span>
+      </div>
+    </div>
+  </div></div>
+  <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · RICEVUTA RIFATTA DOPO UN ANNULLO</span><div style="display: flex; flex-direction: column; width: 560px; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
+    <div style="display: flex; flex-direction: column; gap: 4px; padding: 16px 20px; border-bottom: 2px solid #cfe6f4; font-size: 14px">
+      <span><b>Officine Dello Sport</b> <span style="color: #46606f">&lt;info@officinedellosport.it&gt;</span></span>
+      <span style="color: #46606f">a mamma@esempio.it</span>
+      <span style="font-size: 17px; font-weight: 700; margin-top: 6px">Ricevuta n. 12/2026 per Marco Rossi · Officine Dello Sport</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 20px">
+      <p style="margin: 0; font-size: 15px; line-height: 1.5">Buongiorno, in allegato la ricevuta n. 12/2026 del 21 ottobre 2026 per Marco Rossi: 80,00 €.</p>
+      <p style="margin: 0; font-size: 15px; line-height: 1.5; font-weight: 600">Sostituisce la ricevuta n. 11/2026, annullata.</p>
+      <p style="margin: 0; font-size: 15px; line-height: 1.5">Per qualsiasi domanda chiamaci al 346 329 2786. A presto in palestra, Officine Dello Sport.</p>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 2px solid #cfe6f4; border-radius: 6px; align-self: flex-start">
+        <span style="padding: 4px 6px; background: #b81d1d; color: #ffffff; font-size: 12px; font-weight: 700; border-radius: 4px">PDF</span>
+        <span style="font-size: 14px; font-weight: 600">ricevuta-12-2026-Rossi-Marco.pdf</span>
+      </div>
+    </div>
+  </div><span style="font-size: 14px; line-height: 1.45; color: #46606f">La riga in più c’è solo se la ricevuta nuova prende il posto di una annullata.</span></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1300,"height":560}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

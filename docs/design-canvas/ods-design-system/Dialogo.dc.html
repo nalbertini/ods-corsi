@@ -8,20 +8,28 @@
 <x-dc>
 <helmet>
   <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="position: relative; width: 100%; height: {{altezza}}; overflow: hidden; background: {{c.bg}}; color: {{c.text}}">
+<div style="position: relative; width: 100%; height: {{altezza}}; overflow: hidden; background: {{c.bg}}; color: {{c.text}}; font-family: {{corpoTesto}}">
   <div style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6)"></div>
 
   <sc-if value="{{eConferma}}" hint-placeholder-val="{{ true }}">
-    <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(520px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 12px; padding: 28px; background: {{c.surface}}; border: 2px solid {{c.text}}">
-      <p style="margin: 0; font-family: {{cond}}; font-size: 24px; font-weight: 700; letter-spacing: 0.02em; line-height: 1.15">{{domanda}}</p>
+    <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(520px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 12px; padding: 28px; background: {{c.surface}}; border: 2px solid {{c.text}}; border-radius: {{raggio}}">
+      <p style="margin: 0; font-family: {{titoli}}; font-size: 24px; font-weight: 700; letter-spacing: 0.02em; line-height: 1.15">{{domanda}}</p>
       <sc-if value="{{haResto}}" hint-placeholder-val="{{ true }}">
         <p style="margin: 0; font-size: 16px; line-height: 1.5; color: {{c.sec}}; white-space: pre-line">{{resto}}</p>
+      </sc-if>
+      <sc-if value="{{haSpunta}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; padding: 4px 12px; border: 2px solid {{c.line}}; border-radius: {{raggio}}">
+          <dc-import name="Campo" tipo="spunta" contesto="segreteria" valore="{{spunta}}" scelto="{{spuntata}}" tema="{{temaCampo}}" hint-size="100%,48px"></dc-import>
+          <sc-if value="{{haSpuntaNota}}" hint-placeholder-val="{{ false }}">
+            <span style="padding: 0 0 10px 34px; font-size: 14px; line-height: 1.4; color: {{c.dim}}">{{spuntaNota}}</span>
+          </sc-if>
+        </div>
       </sc-if>
       <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 8px">
         <dc-import name="Bottone" label="{{no}}" variante="{{varianteNo}}" contesto="segreteria" tema="{{tema}}" hint-size="150px,48px"></dc-import>
@@ -69,7 +77,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["conferma","dialogo","cassetto"],"default":"conferma"},"domanda":{"editor":"text","default":"Annullare Judo kids di lunedì alle 18:30?"},"resto":{"editor":"text","default":"Calendario e tablet la mostrano annullata, ma gli iscritti non vengono avvisati: vanno chiamati o scritti. Si rimette con PREVISTA."},"no":{"editor":"text","default":"LASCIA STARE"},"si":{"editor":"text","default":"ANNULLA LA LEZIONE"},"pericolo":{"editor":"boolean","default":false},"restare":{"editor":"boolean","default":false},"titolo":{"editor":"text","default":""},"sotto":{"editor":"text","default":"Una lezione in più, fuori dalle ricorrenze: un recupero, un evento, una prova aperta. Gli iscritti del corso sono già nell appello."},"quando":{"editor":"text","default":"LUNEDÌ 12 OTTOBRE · 18:30–19:30"},"tinta":{"editor":"text","default":"#1b8ac4"},"stato":{"editor":"enum","options":["prevista","svolta","annullata"],"default":"prevista"},"istruttore":{"editor":"text","default":"Come da corso"},"altezza":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":640,"height":440}}'>
+<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["conferma","dialogo","cassetto"],"default":"conferma"},"domanda":{"editor":"text","default":"Annullare Judo kids di lunedì alle 18:30?"},"resto":{"editor":"text","default":"Calendario e tablet la mostrano annullata, ma gli iscritti non vengono avvisati: vanno chiamati o scritti. Si rimette con PREVISTA."},"no":{"editor":"text","default":"LASCIA STARE"},"si":{"editor":"text","default":"ANNULLA LA LEZIONE"},"pericolo":{"editor":"boolean","default":false},"restare":{"editor":"boolean","default":false},"titolo":{"editor":"text","default":""},"sotto":{"editor":"text","default":"Una lezione in più, fuori dalle ricorrenze: un recupero, un evento, una prova aperta. Gli iscritti del corso sono già nell appello."},"quando":{"editor":"text","default":"LUNEDÌ 12 OTTOBRE · 18:30–19:30"},"tinta":{"editor":"text","default":"#1b8ac4"},"stato":{"editor":"enum","options":["prevista","svolta","annullata"],"default":"prevista"},"istruttore":{"editor":"text","default":"Come da corso"},"spunta":{"editor":"text","default":""},"spuntata":{"editor":"boolean","default":true},"spuntaNota":{"editor":"text","default":""},"altezza":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":640,"height":440}}'>
 // Riproduzione 1:1 dei dialoghi e del cassetto di segreteria, su un velo (.sg-velo: nero al 60%, qui sopra il fondo `bg`).
 // tipo "conferma": .sg-dialogo.sg-conferma di `Conferma` (src/components/segreteria/comune.tsx righe 157-174; src/styles.css righe
 //   1448-1466): 520px al massimo, padding 28px, gap 12px, fondo `surface`, bordo 2px `text`; domanda .sg-conferma-domanda (cond 24px
@@ -83,10 +91,16 @@
 //   bordo sinistro 2px `text`, in alto 6px della `tinta` del corso; titolo .ob 28px 700 (vuoto = JUDO KIDS), data e ora cond 14px 0.14em
 //   `dim`, ✕ (.icon-btn), STATO a tre scelte (.sg-btn.sg-scelta: 44px, 14px; quella accesa col bordo `text` e fondo `surface-2`) e
 //   ISTRUTTORE come select (acceso giallo quando c'e' un sostituto: qui non riprodotto, vedi Campo `acceso`).
+// tema sito (src/styles.css righe 240-268 e 369-383, `:root[data-look='sito']`): fondo pagina `bg` #eef5fa, dialogo bianco con bordo 2px
+//   inchiostro e raggio 6px, domanda in --cond = Big Shoulders Display, testo in Inter; il velo resta .sg-velo (nero al 60%). I tasti sono
+//   i Bottone col tema sito (pieno giallo, rosso pieno con `pericolo`).
+// PROPOSTA «ricevuta via email» (../ricevuta-email/): spunta = una casella sotto il resto (Campo tipo spunta, 22px), in un riquadro con
+//   bordo 2px `line`; spuntata = gia' spuntata (default); spuntaNota = la frase sotto, 14px `dim`, allineata al testo della casella.
 // altezza: quella del velo (default 440px conferma, 520px dialogo, 600px cassetto). Il fuoco e l'animazione non sono riprodotti.
 const T = {
   scuro: { surface: '#1c1c1c', surface2: '#242424', bg: '#121212', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', line: '#333333' },
   chiaro: { surface: '#ffffff', surface2: '#e9e9e5', bg: '#f4f4f1', text: '#161616', sec: '#3d3d3a', dim: '#656561', line: '#d4d4ce' },
+  sito: { surface: '#ffffff', surface2: '#cfe6f4', bg: '#eef5fa', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', line: '#cfe6f4' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
@@ -100,7 +114,13 @@ class Component extends DCLogic {
     const resto = p.resto ?? 'Calendario e tablet la mostrano annullata, ma gli iscritti non vengono avvisati: vanno chiamati o scritti. Si rimette con PREVISTA.';
     const stato = p.stato || 'prevista';
     return {
-      c, cond: COND, tema: p.tema === 'chiaro' ? 'chiaro' : 'scuro',
+      c, cond: COND, tema: p.tema === 'chiaro' || p.tema === 'sito' ? p.tema : 'scuro',
+      temaCampo: p.tema === 'chiaro' || p.tema === 'sito' ? p.tema : 'scuro',
+      raggio: p.tema === 'sito' ? '6px' : '0',
+      titoli: p.tema === 'sito' ? "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif" : COND,
+      corpoTesto: p.tema === 'sito' ? "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" : "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      spunta: p.spunta ?? '', haSpunta: (p.spunta ?? '') !== '', spuntata: p.spuntata === undefined ? true : truthy(p.spuntata),
+      spuntaNota: p.spuntaNota ?? '', haSpuntaNota: (p.spuntaNota ?? '') !== '',
       eConferma: tipo === 'conferma', eDialogo: tipo === 'dialogo', eCassetto: tipo === 'cassetto',
       altezza: p.altezza || (tipo === 'cassetto' ? '600px' : tipo === 'dialogo' ? '520px' : '440px'),
       domanda: p.domanda ?? 'Annullare Judo kids di lunedì alle 18:30?', resto, haResto: resto !== '',

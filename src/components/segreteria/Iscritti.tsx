@@ -56,7 +56,7 @@ function CampiEmail({
   const nota = (di: typeof campo, avviso: string): Nota => (campo === di ? { testo: guaio, guaio: true } : { testo: avviso, guaio: false })
   const campi = [
     { id: `${prefisso}-email`, etichetta: 'Email', valore: email, cambia: onEmail, di: 'email' as const, avviso: "Per entrare nell'app. Una sola persona per indirizzo." },
-    { id: `${prefisso}-contatto`, etichetta: 'Email di contatto', valore: contatto, cambia: onContatto, di: 'emailContatto' as const, avviso: "Dove scriviamo o telefoniamo alla famiglia. Può essere lo stesso di altri. L'app non manda mai mail qui." },
+    { id: `${prefisso}-contatto`, etichetta: 'Email di contatto', valore: contatto, cambia: onContatto, di: 'emailContatto' as const, avviso: 'Dove scriviamo o telefoniamo alla famiglia, e dove arrivano le ricevute per email.' },
   ]
   return (
     <>
@@ -675,6 +675,7 @@ function Scheda({
           nucleo={nucleo}
           corsi={correnti.flatMap((i) => { const c = corsi.get(i.corsoId); return c ? [{ id: c.id, nome: c.nome }] : [] })}
           fai={fai}
+          avvisa={avvisa}
           onLasciaStare={() => setPagando(false)}
           onFatta={() => {
             setPagando(false)
@@ -805,7 +806,7 @@ function Scheda({
       <div role="tabpanel" id={idPannello('quota')} aria-labelledby={idLinguetta('quota')} hidden={aperta !== 'quota'}>
         <div id="sez-quota" className="stack" style={{ gap: 24, minWidth: 0 }}>
             <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
-            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
+            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} avvisa={avvisa} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
             <StoricoPersona key={`s-${p.id}`} d={d} personaId={p.id} />
         </div>
       </div>

@@ -40,3 +40,7 @@ nello storico e si può annullare.
   ANNULLATA; se copriva la quota, la quota torna da pagare.
 
 Una riga già annullata si apre lo stesso, senza il tasto.
+
+Il pagamento di una ricevuta ha anche la riga **EMAIL**: «Mandata il …» se la
+ricevuta è partita per email alla famiglia, se no «Non mandata». L'indirizzo
+non si vede: per mandarla o rimandarla, la si passa alla segreteria.
