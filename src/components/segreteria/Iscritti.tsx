@@ -22,6 +22,7 @@ import { euro, QUOTA } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
 import { StoricoPersona } from './CollegaPersona'
 import { PagatoPrima } from './PagatoPrima'
+import { SollecitoWhatsApp } from './Sollecito'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
@@ -618,6 +619,8 @@ function Scheda({
   const [togliendo, setTogliendo] = useState(false)
   // Dopo una ricevuta nuova l'elenco delle ricevute si rilegge da capo.
   const [giroRicevute, setGiroRicevute] = useState(0)
+  // Dopo i DATI ANAGRAFICI salvati il sollecito rilegge il genitore: a un minorenne si scrive a lui.
+  const [giroAnagrafica, setGiroAnagrafica] = useState(0)
   // La scheda con la persona si ricrea (key): ogni persona riparte da PERSONA.
   const [aperta, setAperta] = useState<IdScheda>(schedaIniziale())
   // Un timbro cliccato: scorre e mette il fuoco solo dopo che la sua scheda si vede (un nascosto non prende il fuoco).
@@ -667,6 +670,7 @@ function Scheda({
       </div>
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
       {!unendo && !pagando && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
+      {!unendo && !pagando && <SollecitoWhatsApp d={d} p={p} oggi={oggi} giro={giroAnagrafica} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -783,7 +787,7 @@ function Scheda({
             </div>
           )}
 
-          <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
+          <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} fai={fai} onCambiato={() => { setGiroAnagrafica((g) => g + 1); onCambiato() }} />
           {d.modo === 'prova' && <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />}
           {nonDoppioni.length > 0 && (
             <div className="stack" style={{ gap: 8 }}>

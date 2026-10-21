@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- I casi del riquadro Sollecito, da solo (e' quello che cambia nella scheda). -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px 36px; width: 1240px; padding: 28px 36px; background: #eef5fa; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">SOLO LA QUOTA · ADULTO</span>
+<dc-import name="Sollecito" tema="sito" motivi="Quota associativa scaduta il 31 agosto 2026: 30,00 €:rosso" testo="Ciao Paolo, ti scriviamo dalla segreteria del Centro Judo: la quota associativa è scaduta il 31 agosto 2026 (30,00 €). Puoi passare in segreteria o rispondere qui. Grazie!" chi="A Bianchi Paolo · 347 555 1212"  hint-size="100%,250px"></dc-import></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PAGATA IN PARTE</span>
+<dc-import name="Sollecito" tema="sito" motivi="Quota associativa pagata in parte: mancano 10,00 €:giallo" testo="Ciao Paolo, ti scriviamo dalla segreteria del Centro Judo: della quota associativa mancano 10,00 €. Puoi passare in segreteria o rispondere qui. Grazie!" chi="A Bianchi Paolo · 347 555 1212"  hint-size="100%,250px"></dc-import></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">CERTIFICATO IN SCADENZA</span>
+<dc-import name="Sollecito" tema="sito" motivi="Certificato medico in scadenza il 5 novembre 2026, fra 15 giorni:giallo" testo="Ciao Laura, ti scriviamo dalla segreteria del Centro Judo per Marco: il certificato medico scade il 5 novembre 2026. Ci porti quello nuovo? Grazie!" chi="A Rossi Laura (genitore) · 333 123 4567"  hint-size="100%,250px"></dc-import></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">COMPIE 6 ANNI · IL CERTIFICATO SERVIRÀ</span>
+<dc-import name="Sollecito" tema="sito" motivi="Compie 6 anni il 9 novembre 2026: da allora serve il certificato medico:giallo" testo="Ciao Sara, ti scriviamo dalla segreteria del Centro Judo per Luca: dal 9 novembre, quando compie 6 anni, per allenarsi serve il certificato medico. Ce lo porti? Grazie!" chi="A Verdi Sara (genitore) · 320 987 6543"  hint-size="100%,250px"></dc-import></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">UN NUMERO CHE SEMBRA UN FISSO</span>
+<dc-import name="Sollecito" tema="sito" motivi="Quota associativa da pagare: 30,00 €:rosso" testo="Ciao Anna, ti scriviamo dalla segreteria del Centro Judo: la quota associativa è da pagare (30,00 €). Puoi passare in segreteria o rispondere qui. Grazie!" chi="A Neri Anna · 011 234 5678" avviso="Sembra un numero fisso: su WhatsApp di solito non c’è. Se hai un cellulare, aggiungilo in PERSONA." hint-size="100%,250px"></dc-import></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">SENZA TELEFONO</span>
+<dc-import name="Sollecito" tema="sito" stato="senza-telefono" motivi="Quota associativa da pagare: 30,00 €:rosso" hint-size="100%,150px"></dc-import></div>
+<div style="grid-column: 1 / -1"><span style="font-size: 14px; line-height: 1.45; color: #46606f">Il messaggio parla al genitore quando la persona è minorenne e in scheda c’è il genitore. Una scheda disattivata, o con quota e certificato in regola, non ha il riquadro. Il testo dice solo nome, motivo, data e importo: mai codice fiscale, ricevute o note.</span></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1240,"height":1100}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

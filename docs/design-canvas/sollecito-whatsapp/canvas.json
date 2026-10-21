@@ -1,0 +1,11 @@
+{
+ "pages": [{ "id": "page-1", "name": "Sollecito su WhatsApp · proposta" }],
+ "artboards": [
+  { "file": "Scheda.dc.html", "title": "La scheda iscritto: oggi e proposta", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Telefono.dc.html", "title": "Sul telefono (390 px)", "x": 1560, "y": 300, "page": "page-1" },
+  { "file": "Casi.dc.html", "title": "I casi del sollecito", "x": 0, "y": 1300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1280, "text": "Dalla scheda dell'iscritto, il sollecito già scritto su WhatsApp" }
+ ]
+}
