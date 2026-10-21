@@ -37,6 +37,13 @@ controllare com'è venuta.
   scritto in testa, per esempio **SALDO 31/8**) e la ricevuta propone
   l'annuale a saldo; dopo, sparisce da tutte e due.
 
+Le date delle voci le prende la ricevuta dal suo giorno, non dal listino: la
+stagione va dal 1° agosto al 31 luglio, perché chi paga ad agosto paga quella
+che inizia. La quota vale dal 1° settembre al 31 luglio (pagata ad agosto,
+da subito); l'annuale dal 1° settembre al 30 giugno. Un trimestre fatto a
+luglio o ad agosto parte dal 1° settembre; gli altri partono dal giorno della
+ricevuta, e non vanno oltre il 30 giugno.
+
 ## I corsi
 
 Ogni corso è una riga col nome e i prezzi; **Cambia** la apre:

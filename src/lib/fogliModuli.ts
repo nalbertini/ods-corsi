@@ -1,5 +1,5 @@
 import type { PDFDocument, PDFFont, PDFForm, PDFPage } from 'pdf-lib'
-import { COSTI, OFFERTE, QUOTA_ASSOCIATIVA, STAGIONE, VALIDITA, saldoAperto } from './costi'
+import { COSTI, OFFERTE, QUOTA_ASSOCIATIVA, STAGIONE, saldoAperto } from './costi'
 import { PAGAMENTO } from './iscrizione'
 
 /**
@@ -395,7 +395,7 @@ export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uin
   // ---------------------------------------------------------------------------------------------
   // I costi, dai dati dell'app
   const costi = async () => {
-    const b = await nuovo(`Costi ${STAGIONE.replace('/', '-')} · ASD IL CENTRO JUDO`)
+    const b = await nuovo(`Costi ${STAGIONE.etichetta.replace('/', '-')} · ASD IL CENTRO JUDO`)
     const f = new Foglio(b, null, 'OFFICINE DELLO SPORT')
     const maiuscola = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
     const mese = (iso: string) => new Date(`${iso}T12:00:00Z`).toLocaleDateString('it-IT', { month: 'long', year: 'numeric', timeZone: 'UTC' })
@@ -408,8 +408,8 @@ export async function generaFogli(opz: OpzioniFogli): Promise<{ maggiorenni: Uin
     riga('Via Vittorio Sassi 26, Collegno', y0)
     riga(`IBAN ${PAGAMENTO.iban}`, y0 + 15)
     riga(`intestato: ${PAGAMENTO.intestatario}`, y0 + 30)
-    f.testo(`STAGIONE ${STAGIONE.replace('/', '-20')}`, { font: b.titoloFont, corpo: 24, destra, y: y0 + 8, tracking: 1.2, colore: COL.inchiostro })
-    f.testo(`Quota associativa: ${QUOTA_ASSOCIATIVA}€, valida fino a ${mese(VALIDITA.quota.al)}`, { font: b.corpo, corpo: 10.5, destra, y: y0 + 30, colore: COL.inchiostro })
+    f.testo(`STAGIONE ${STAGIONE.etichetta.replace('/', '-20')}`, { font: b.titoloFont, corpo: 24, destra, y: y0 + 8, tracking: 1.2, colore: COL.inchiostro })
+    f.testo(`Quota associativa: ${QUOTA_ASSOCIATIVA}€, valida fino a ${mese(STAGIONE.quota.al)}`, { font: b.corpo, corpo: 10.5, destra, y: y0 + 30, colore: COL.inchiostro })
     f.y = y0 + 44
 
     // Le colonne: corso, età, giorni e orari, l'etichetta dei prezzi (1 GIORNO…), poi saldo (se c'è ancora), annuale, trimestre.

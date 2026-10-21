@@ -4,7 +4,8 @@ import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, OrarioAper
 import { anniScritti, dataDaCf, datiRichieste, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
 import { caricaLuoghi, cfValido, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
-import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
+import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO } from '../lib/iscrizione'
+import { stagioneDi } from '../lib/costi'
 import { altriAperti, corsiAmmessi, testoAltriCorsi, type CorsoPerEta, type Listino } from '../lib/listino'
 import { elenco, euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
@@ -614,7 +615,7 @@ function Flusso({
       genitoreProvincia: prov,
       firma,
       originale,
-      stagione: STAGIONE,
+      stagione: stagioneDi(chiaveGiorno(new Date())).etichetta,
     })
     return new File([new Uint8Array(pdf)], 'modulo-firmato.pdf', { type: 'application/pdf' })
   }
@@ -968,7 +969,7 @@ function Flusso({
           <Casella
             id="n-tesseramento"
             etichetta="IL TESSERAMENTO ALLA FIJLKAM E/O FIPE"
-            dettaglio={`Per la stagione ${STAGIONE}. Questa risposta è tua, non quella di ${primo}.`}
+            dettaglio={`Per la stagione ${stagioneDi(chiaveGiorno(new Date())).etichetta}. Questa risposta è tua, non quella di ${primo}.`}
             si="Acconsento"
             no="Non acconsento"
             scelta={v.scelte.tesseramento}
@@ -1128,7 +1129,7 @@ function Flusso({
                 <Casella
                   id="n-tesseramento"
                   etichetta="IL TESSERAMENTO ALLA FIJLKAM E/O FIPE"
-                  dettaglio={`Per la stagione ${STAGIONE}.`}
+                  dettaglio={`Per la stagione ${stagioneDi(chiaveGiorno(new Date())).etichetta}.`}
                   si={figlio ? 'Autorizzo' : 'Acconsento'}
                   no={figlio ? 'Non autorizzo' : 'Non acconsento'}
                   scelta={v.scelte.tesseramento}

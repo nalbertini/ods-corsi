@@ -221,7 +221,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
 
   return (
     <>
-      <Testa titolo="LISTINO" sotto={`I costi della stagione ${STAGIONE}: quelli della pagina di iscrizione e delle voci pronte delle ricevute.`}>
+      <Testa titolo="LISTINO" sotto={`I costi della stagione ${STAGIONE.etichetta}: quelli della pagina di iscrizione e delle voci pronte delle ricevute.`}>
         <a className="sg-btn sg-btn-linea" href={indirizzo(INDIRIZZI.iscrizioni)} target="_blank" rel="noopener">
           Vedi la pagina ↗
         </a>

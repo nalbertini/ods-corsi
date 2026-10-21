@@ -5,7 +5,8 @@ import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codice
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { CONOSCIUTO, domandaConosciuto, origineDellaRichiesta, pulisciConosciuto, SCEGLI_SE_VUOI, type Conosciuto } from '../lib/provenienza'
 import { riduciFoto } from '../lib/foto'
-import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
+import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO } from '../lib/iscrizione'
+import { stagioneDi } from '../lib/costi'
 import { altriAperti, corsiPerEta, testoAltriCorsi, type CorsoPerEta, type CorsoRef } from '../lib/listino'
 import { causale, stimaIscrizione, type Abbonamento, type Stima } from '../lib/nucleo'
 import { euro } from '../lib/ricevute'
@@ -357,7 +358,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       genitoreProvincia: provinciaGenitore,
       firma,
       originale,
-      stagione: STAGIONE,
+      stagione: stagioneDi(chiaveGiorno(new Date())).etichetta,
     })
     return new File([new Uint8Array(pdf)], 'modulo-firmato.pdf', { type: 'application/pdf' })
   }
@@ -745,7 +746,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             <Casella
               id="m-tesseramento"
               etichetta="IL TESSERAMENTO ALLA FIJLKAM E/O FIPE"
-              dettaglio={`Per la stagione ${STAGIONE}. ${aiutoScelta('tesseramento', minore)}`}
+              dettaglio={`Per la stagione ${stagioneDi(chiaveGiorno(new Date())).etichetta}. ${aiutoScelta('tesseramento', minore)}`}
               nota={provatoFirma && scelte.tesseramento === undefined ? NOTA_SCELTA.tesseramento : undefined}
               si={minore ? 'Autorizzo' : 'Acconsento'}
               no={minore ? 'Non autorizzo' : 'Non acconsento'}
