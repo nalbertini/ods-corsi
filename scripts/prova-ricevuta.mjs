@@ -47,6 +47,19 @@ ok('il trimestre da ottobre', m.fineTrimestre('2026-10-01'), '2026-12-31')
 ok('il trimestre non va oltre la stagione', m.fineTrimestre('2027-05-10'), '2027-06-30')
 
 ok('la palestra parte col suo numero RASD', m.ENTE_PREDEFINITO.rasd, '95562500017')
+// Il C.F. dell'associazione è 95562500017 e la P.IVA 10002760014, come sulla carta intestata: prima il C.F. era la P.IVA.
+ok('la palestra parte col suo codice fiscale', m.ENTE_PREDEFINITO.codiceFiscale, '95562500017')
+ok('e con la sua partita IVA', m.ENTE_PREDEFINITO.partitaIva, '10002760014')
+// Un ente salvato (una ricevuta già emessa, IMPOSTAZIONI) tiene i suoi numeri: dal predefinito non prende la P.IVA,
+// se no una ricevuta vecchia «C.F. 10002760014» ristampata uscirebbe con «P.IVA 10002760014», mai emessa così.
+const ente = (x) => (typeof m.enteDa === 'function' ? m.enteDa(x) : 'ERRORE: enteDa non c’è')
+const vecchio = { nome: 'Asd Il Centro Judo', indirizzo: 'Corso Francia 224', cap: '10098', comune: 'Rivoli', codiceFiscale: '10002760014', rasd: '95562500017', dicitura: 'Esente' }
+ok('un ente salvato senza P.IVA resta senza', ente(vecchio).partitaIva, undefined)
+ok('e tiene il suo C.F.', ente(vecchio).codiceFiscale, '10002760014')
+ok('un ente salvato senza la dicitura prende quella di oggi', ente(Object.fromEntries(Object.entries(vecchio).filter(([k]) => k !== 'dicitura'))).dicitura, m.ENTE_PREDEFINITO.dicitura)
+ok('niente di salvato: il predefinito', ente(null), m.ENTE_PREDEFINITO)
+// IMPOSTAZIONI salva senza i campi vuoti: una P.IVA tolta dalla segreteria non torna dal predefinito.
+ok('una P.IVA tolta in IMPOSTAZIONI resta tolta', ente(Object.fromEntries(Object.entries(m.ENTE_PREDEFINITO).filter(([k]) => k !== 'partitaIva'))).partitaIva, undefined)
 
 const pagato = (importo) =>[{ data: '2026-09-01', importo, metodo: 'Bonifico' }]
 const quella = {

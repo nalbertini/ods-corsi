@@ -130,7 +130,9 @@ andare indietro.
 CAP, comune, codice fiscale e, se c'è, la partita IVA e il numero di iscrizione
 al RASD (il registro delle attività sportive dilettantistiche); e la **DICITURA IN
 FONDO**, quella dell'esenzione da IVA e bollo. Si parte con quelli di Asd Il
-Centro Judo. **Salva** compare quando si cambia qualcosa, e vale per le
+Centro Judo: codice fiscale **95562500017**, partita IVA **10002760014**. Se
+qui il codice fiscale è 10002760014, è la partita IVA scritta al posto
+sbagliato: si correggono tutti e due e si salva. **Salva** compare quando si cambia qualcosa, e vale per le
 ricevute che si fanno da lì in poi: quelle già fatte restano come erano. Le
 ricevute si fanno dalla scheda di un iscritto (vedi
 [Iscritti](iscritti.md#un-pagamento-e-la-sua-ricevuta)).
