@@ -149,7 +149,7 @@ const semplice = (t: string) => piano(t).trim()
 export const METODI_A_MANO = [...METODI, 'Satispay']
 
 /** Gli stessi rifiuti di `registra_pagamento_diretto`, per dirli subito sotto al modulo. */
-export function cosaNonVaDiretto(d: DatiPagamentoDiretto, oggi?: string, chiusure: ReadonlyArray<{ data: string; annullataIl?: string | null }> = []): string | null {
+export function cosaNonVaDiretto(d: DatiPagamentoDiretto, oggi?: string, fino?: string | null): string | null {
   if (!d.personaId) return 'Manca la persona'
   // Una data vera (non il 30 febbraio) fra il 2000 e il 2100, come `registra_pagamento_diretto`.
   const giorno = /^\d{4}-\d{2}-\d{2}$/.test(d.data) ? new Date(`${d.data}T00:00:00Z`) : null
@@ -165,8 +165,7 @@ export function cosaNonVaDiretto(d: DatiPagamentoDiretto, oggi?: string, chiusur
   if (!d.voce.trim()) return 'Scrivi a cosa serve il pagamento'
   if (d.voce.trim().length > 120) return 'La voce è troppo lunga'
   if ((d.nota ?? '').length > 300) return 'La nota è troppo lunga: al massimo 300 caratteri'
-  // I contanti entrano nella Cassa Contanti: in un giorno già chiuso romperebbero la chiusura. Si chiude solo quella cassa, vale l'ultima chiusura attiva.
-  const fino = chiusure.filter((k) => !k.annullataIl).map((k) => k.data).sort().at(-1)
+  // I contanti entrano nella Cassa Contanti: in un giorno già chiuso romperebbero la chiusura. `fino` è `contantiChiusiFino`.
   if (fino && d.data <= fino && d.metodo.trim().toLowerCase() === 'contanti') return 'Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura'
   return null
 }
@@ -210,7 +209,7 @@ export const notaRicevutaDaPagamento = (spuntata: boolean) =>
 export const tastoRicevutaDaPagamento = (spuntata: boolean) => (spuntata ? 'Sì, fai la ricevuta' : 'Sì, registra senza ricevuta')
 
 /** Il guaio è dell'importo? Se con un importo buono il rifiuto sparisce, sì: gli altri campi non si segnano a torto. */
-export const importoNonVa = (d: DatiPagamentoDiretto, oggi?: string, chiusure?: ReadonlyArray<{ data: string; annullataIl?: string | null }>) => cosaNonVaDiretto(d, oggi, chiusure) !== null && cosaNonVaDiretto({ ...d, importo: 100 }, oggi, chiusure) === null
+export const importoNonVa = (d: DatiPagamentoDiretto, oggi?: string, fino?: string | null) => cosaNonVaDiretto(d, oggi, fino) !== null && cosaNonVaDiretto({ ...d, importo: 100 }, oggi, fino) === null
 
 const nomeIntestatario = (r: Ricevuta) => `${r.intestatario.cognome} ${r.intestatario.nome}`.trim()
 

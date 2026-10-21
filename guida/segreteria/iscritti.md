@@ -251,8 +251,12 @@ scheda è disattivata, nessuno.
   domani non è più nell'appello, il registro resta. «Iscrivi a un corso…» +
   **Iscrivi** la aggiunge a un altro.
 - **ULTIME 12 LEZIONI** — presente o assente, lezione per lezione: ✓ presente, ✕ assente, G giustificato, vuoto non segnato.
-- **Disattiva** — sparisce da tutti gli appelli e dal tablet (chi smette del
-  tutto). **Riattiva** la rimette.
+- **Disattiva** — sparisce dal tablet e le sue iscrizioni si chiudono oggi,
+  come con **Termina**: da domani non è in nessun appello (un corso che
+  doveva ancora cominciare resta solo il giorno in cui parte), il registro resta
+  (chi smette del tutto). **Riattiva** rimette la scheda ma non i corsi: si
+  iscrive di nuovo con **Iscrivi**, o accogliendo la sua richiesta, che la
+  rimette solo nei corsi chiesti.
 - **UNISCI…** — due schede della stessa persona diventano una: succede
   quando all'appello qualcuno non ritrova chi è già venuto a provare e lo
   aggiunge di nuovo. Scegliete l'altra scheda (in cima chi ha lo stesso
@@ -337,6 +341,12 @@ pagamento torna libero per quella giusta.
   - Senza l'**indirizzo** la ricevuta si fa lo stesso: il campo è segnato in
     giallo, una riga gialla dice che resterà vuoto, e lo ripete la domanda
     prima di farla.
+- **I contanti** con la data di un giorno in cui la cassa contanti è già
+  chiusa non entrano: sotto il modulo si legge «Quel giorno la cassa è già
+  chiusa: scegli una data dopo la chiusura», e **FAI LA RICEVUTA** resta
+  spento. Carta, bonifico e Satispay vanno sempre. Fa eccezione **FANNE LA
+  RICEVUTA** su un pagamento a mano già registrato: quei soldi sono già nei
+  conti di quel giorno.
 - **ANTICIPO** — quello che si era già dato prima, fuori da queste voci.
   **NOTE** — facoltative, vanno nel riquadro «Note».
 - Sotto si legge il **totale**, il **pagato** e il **netto a pagare** (quel
@@ -390,7 +400,7 @@ uguale a com'era, e sotto ci sono i suoi pagamenti: data, come, a cosa serve e i
 **MANCA** dice quanto resta da pagare di quella ricevuta.
 
 Una ricevuta fatta **non si cambia e non si cancella**: se è sbagliata,
-**ANNULLA RICEVUTA**, sotto la ricevuta (chiede conferma), e se ne fa un'altra. Se la ricevuta annullata
+**ANNULLA RICEVUTA**, sotto la ricevuta (chiede conferma), e se ne fa un'altra. Se ha contanti di un giorno in cui la cassa è già chiusa, la domanda lo dice: si può annullare lo stesso, ma la chiusura non sarà più in regola e l'amministrazione dovrà scrivere una rettifica. Se la ricevuta annullata
 aveva la quota e nessun'altra la copre, la scheda chiede: **RESTA DA PAGARE**
 (di solito, perché se ne fa subito una giusta) o **ERA PAGATA FUORI
 DALL'APP**. L'annullata resta in elenco

@@ -161,7 +161,7 @@ export interface DatiRichieste {
    * `accogli_iscrizione` in `06-iscrizioni.sql`) e se non c'è se ne fa una.
    * `scade` è la data del certificato arrivato col modulo, letta dalla
    * segreteria: passa alla scheda col file se scade dopo quello che c'è
-   * (`92-certificato-piu-lontano.sql`).
+   * (`95-certificato-piu-lontano.sql`).
    */
   accogli(richiestaId: string, personaId?: string, scade?: string): Promise<string>
   rifiuta(richiestaId: string): Promise<void>

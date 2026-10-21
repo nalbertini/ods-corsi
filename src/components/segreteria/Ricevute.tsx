@@ -4,7 +4,7 @@ import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { etichettaQuota, pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
-import { avvisoCassaChiusa, oggiARoma, type ChiusuraCassa } from '../../lib/contabilita'
+import { avvisoCassaChiusa, contantiInGiornoChiuso, oggiARoma } from '../../lib/contabilita'
 import { cosaNonVaDaPagamento, cosaNonVaDiretto, datiDaPagamento, statoDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, notaRicevutaDaPagamento, riepilogoPagamentoDiretto, tastoRicevutaDaPagamento, voceDaPagamento, vociSuggerite, type DatiPagamentoDiretto, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
 import {
   centesimi,
@@ -110,7 +110,7 @@ export function StoricoIscritto({
   // Annullata una ricevuta con la quota che nessun'altra copre: la quota torna da pagare, o era pagata fuori dall'app?
   const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
   const annulla = async (r: Ricevuta) => {
-    const avviso = avvisoCassaChiusa(r.voci.flatMap((v) => v.pagamenti), await d.chiusure().catch(() => []))
+    const avviso = avvisoCassaChiusa(r.voci.flatMap((v) => v.pagamenti), await d.contantiChiusiFino().catch(() => null))
     if (!(await chiedi(`${domandaAnnullaRicevuta(r, diretti.dato ?? [])}${avviso ? ` ${avviso}` : ''}`, 'Sì, annulla la ricevuta', { no: 'No, lasciala', pericolo: true }))) return
     const oggi = chiaveGiorno(new Date())
     const altre = (ricevute.dato ?? []).filter((x) => x.id !== r.id)
@@ -124,7 +124,7 @@ export function StoricoIscritto({
     })
   }
   const annullaPagamento = async (x: PagamentoDiretto) => {
-    const avviso = avvisoCassaChiusa([x], await d.chiusure().catch(() => []))
+    const avviso = avvisoCassaChiusa([x], await d.contantiChiusiFino().catch(() => null))
     if (!(await chiedi(`${domandaAnnullaPagamento(x)}${avviso ? ` ${avviso}` : ''}`, 'Sì, annulla il pagamento', { no: 'No, lascialo', pericolo: true }))) return
     void fai(() => d.annullaPagamentoDiretto(x.id), 'Pagamento annullato', () => diretti.ricarica())
   }
@@ -348,9 +348,8 @@ export function RegistraPagamento({
 }) {
   const oggi = oggiARoma()
   const [data, setData] = useState(iniziale?.data ?? oggi)
-  const [chiusure, setChiusure] = useState<ChiusuraCassa[]>([])
-  // Chi non vede le chiusure (la segreteria) non ha l'avviso qui: il database rifiuta lo stesso.
-  useEffect(() => { void d.chiusure().then(setChiusure).catch(() => undefined) }, [d])
+  const [fino, setFino] = useState<string | null>(null)
+  useEffect(() => { void d.contantiChiusiFino().then(setFino).catch(() => undefined) }, [d])
   const [importo, setImporto] = useState(iniziale ? euro(iniziale.importo) : '')
   const [metodo, setMetodo] = useState(iniziale?.metodo ?? METODI_A_MANO[0])
   const [voce, setVoce] = useState(iniziale?.voce ?? '')
@@ -358,7 +357,7 @@ export function RegistraPagamento({
   // Lasciarlo a metà chiede prima di perderlo, come il resto della scheda.
   useBozza(importo !== '' || nota !== '', 'Il pagamento a mano')
   const cent = centesimi(importo)
-  const guaio = importo === '' ? null : cent === null ? 'L’importo non si capisce: scrivi un numero, per esempio 40,00.' : (cosaNonVaDiretto({ personaId: p.id, data, importo: cent, metodo, voce, nota }, oggi, chiusure) ?? cosaNonVaSatispayAMano(metodo, p.satispay))
+  const guaio = importo === '' ? null : cent === null ? 'L’importo non si capisce: scrivi un numero, per esempio 40,00.' : (cosaNonVaDiretto({ personaId: p.id, data, importo: cent, metodo, voce, nota }, oggi, fino) ?? cosaNonVaSatispayAMano(metodo, p.satispay))
   const manca = cent === null || !!guaio || !voce.trim()
   return (
     <section aria-label="Pagamento fatto a mano" className="sg-riquadro">
@@ -370,7 +369,7 @@ export function RegistraPagamento({
           <input id="pd-data" className="sg-campo" type="date" max={oggi} value={data} onChange={(e) => setData(e.target.value)} />
         </Campo>
         <Campo id="pd-importo" etichetta="IMPORTO" manca={importo === ''}>
-          <input id="pd-importo" className="sg-campo" inputMode="decimal" placeholder="40,00" value={importo} onChange={(e) => setImporto(e.target.value)} aria-invalid={(cent === null || importoNonVa({ personaId: p.id, data, importo: cent, metodo, voce, nota }, oggi, chiusure)) || undefined} />
+          <input id="pd-importo" className="sg-campo" inputMode="decimal" placeholder="40,00" value={importo} onChange={(e) => setImporto(e.target.value)} aria-invalid={(cent === null || importoNonVa({ personaId: p.id, data, importo: cent, metodo, voce, nota }, oggi, fino)) || undefined} />
         </Campo>
         <Campo id="pd-metodo" etichetta="COME HA PAGATO">
           <select id="pd-metodo" className="sg-campo" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
@@ -565,6 +564,8 @@ export function NuovaRicevuta({
   const [data, setData] = useState(daPagamento?.data ?? oggi)
   const anno = Number(data.slice(0, 4)) || Number(oggi.slice(0, 4))
   const prossimo = useCarica(() => d.prossimoNumero(anno), [d, anno])
+  // Fin quando è chiusa la cassa contanti: il rifiuto sotto al modulo, prima di farla. Senza, decide il database.
+  const chiusaFino = useCarica(() => d.contantiChiusiFino().catch(() => null), [d])
   const partenza = useCarica(
     () => Promise.all([d.intestatarioDi(p.id), d.enteRicevute(), d.ricevute(p.id), d.listino().then(async (x) => ({ ...x, listino: listinoUsabile(x.listino, await d.corsi()) })), Promise.all(nucleo.map((x) => d.ricevute(x.id)))]),
     [d, p.id, nucleo.map((x) => x.id).join()],
@@ -660,7 +661,7 @@ export function NuovaRicevuta({
       ? null
       : { data, personaId: p.id, numero: n, ente, intestatario: socio, voci: fatte, anticipo: anticipoCent, note: note.trim() || undefined, chiave }
   const guaio =
-    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null) ?? (daPagamento?.pagamentoId ? cosaNonVaDaPagamento(dati.voci, dati.data, daPagamento) : null)) : null
+    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null) ?? (daPagamento?.pagamentoId ? cosaNonVaDaPagamento(dati.voci, dati.data, daPagamento) : null) ?? contantiInGiornoChiuso(dati.voci.flatMap((v) => v.pagamenti), dati.data, chiusaFino.dato ?? null, daPagamento?.pagamentoId ? daPagamento : undefined)) : null
   const c = dati ? conti(dati) : null
 
   // Lo sconto famiglia: dove è, o perché non è qui.
@@ -702,13 +703,9 @@ export function NuovaRicevuta({
     // La mail va all'email di contatto della scheda (per un minore, del genitore): la casella è già spuntata.
     const genitore = genitoreDellaMail({ intestatario: socio, data: data || oggi })
     const email = confermaEmail(p.emailContatto ?? null, genitore, true)
-    // Contanti in un giorno di cassa chiusa: la ricevuta si fa lo stesso (è un documento), ma la chiusura non torna più.
-    // Chi non vede le chiusure (la segreteria) non ha l'avviso.
-    const cassaChiusa = avvisoCassaChiusa(dati.voci.flatMap((v) => v.pagamenti), await d.chiusure().catch(() => []))
     const righe = [
       domandaRicevuta(quale, socio, minore, c),
       avvisa.length ? `\n${avvisaTesto}.` : '',
-      cassaChiusa ? `\n${cassaChiusa}` : '',
       '\nFatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.',
       email.spunta ? '' : `\n${email.nota}`,
     ]

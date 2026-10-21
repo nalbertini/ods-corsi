@@ -60,6 +60,7 @@ import {
   ultimaChiusura,
   VOCE_CORSI,
   VOCE_DIFFERENZA,
+  contantiInGiornoChiuso,
   VOCE_QUOTA,
   type VoceContabile,
 } from './contabilita'
@@ -143,6 +144,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
     movimenti: a().movimenti ?? [],
     chiusure: a().chiusure ?? [],
   })
+  // Come `cassa_contanti_chiusa_fino` (92): si chiude solo la Cassa Contanti, vale l'ultima chiusura attiva.
+  const fino = () => contabilita().chiusure.filter((k) => !k.annullataIl).map((k) => k.data).sort().at(-1) ?? null
   // Lo storico collegato alle persone: le righe dei movimenti scritti qui o importati, e le schede per nome.
   const righeDelloStorico = () => righeMovimenti([], contabilita().movimenti, contabilita().voci)
   const personePerNome = (): PersonaPerNome[] => a().persone.map((p) => ({ id: p.id, nome: p.nome, cognome: p.cognome }))
@@ -746,6 +749,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
       persona(personaId)
       // Disattivata, si lascia dietro il file del certificato; la data resta, e riattivarla non lo riporta.
       if (!attiva) scordaCertificato(personaId)
+      // Come il trigger del database: disattivata, le iscrizioni aperte si chiudono oggi (come `termina`); riattivarla non le riapre.
+      const g = oggi()
+      if (!attiva)
+        a().iscrizioni = a().iscrizioni.map((i) => {
+          const fine = i.dal > g ? i.dal : g
+          return i.personaId === personaId && (!i.al || i.al > fine) ? { ...i, al: fine } : i
+        })
       a().persone = a().persone.map((p) =>
         p.id !== personaId ? p : { ...p, attiva, certificato: !attiva && p.certificato ? { scade: p.certificato.scade, caricatoIl: p.certificato.caricatoIl } : p.certificato },
       )
@@ -1192,6 +1202,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const r = { ...dati, intestatario: pulisciIntestatario(dati.intestatario), note: dati.note?.trim() || undefined }
       const no = cosaNonVa(r)
       if (no) throw new Error(no)
+      // Come `fai_ricevuta` (92): i contanti di un giorno chiuso no, tranne quelli del pagamento a mano che diventa ricevuta.
+      const chiuso = contantiInGiornoChiuso(r.voci.flatMap((v) => v.pagamenti), r.data, fino(), pd)
+      if (chiuso) throw new Error(chiuso)
       if (r.note && r.note.length > 500) throw new Error('La nota è troppo lunga: al massimo 500 caratteri')
       const anno = Number(r.data.slice(0, 4))
       const tutte = a().ricevute ?? []
@@ -1566,6 +1579,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return contabilita().chiusure.map((k) => ({ ...k }))
     },
 
+    async contantiChiusiFino() {
+      return fino()
+    },
+
     async chiudiCassa(d) {
       const { casse, voci, movimenti, chiusure } = contabilita()
       const no = cosaNonVaChiusura(d, casse, chiusure, oggiARoma())
@@ -1638,7 +1655,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async registraPagamentoDiretto(dati) {
       // Prima la persona, poi il resto: come `registra_pagamento_diretto`.
       if (dati.personaId && !a().persone.some((x) => x.id === dati.personaId)) throw new Error('Questa scheda non c’è più')
-      const no = cosaNonVaDiretto(dati, oggiARoma(), contabilita().chiusure)
+      const no = cosaNonVaDiretto(dati, oggiARoma(), fino())
       if (no) throw new Error(no)
       // Come `registra_pagamento_diretto` (88-pagamento-una-volta.sql): la ricevuta di questo modulo già fatta, o un Satispay libero.
       const chiave = dati.chiaveRicevuta?.trim().toLowerCase() || undefined

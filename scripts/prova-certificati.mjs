@@ -167,7 +167,7 @@ await sezione('1b. cosa dice la scheda e cosa si può salvare', async () => {
 
   // Le conferme.
   ok('disattivare dice che il file si cancella e non torna', [f('confermaDisattiva', 'Rita Rossi', { scade: '2027-03-14', conFile: true }), f('confermaDisattiva', 'Rita Rossi', { conFile: false })],
-    ['Disattivare Rita Rossi? Sparisce dagli appelli e dal tablet; si può riattivare. Il file del certificato si cancella subito e riattivarla non lo riporta: la data resta.', 'Disattivare Rita Rossi? Sparisce dagli appelli e dal tablet; si può riattivare.'])
+    ['Disattivare Rita Rossi? Le sue iscrizioni si chiudono oggi e sparisce dal tablet. Si può riattivare, ma i corsi si rimettono con Iscrivi. Il file del certificato si cancella subito e riattivarla non lo riporta: la data resta.', 'Disattivare Rita Rossi? Le sue iscrizioni si chiudono oggi e sparisce dal tablet. Si può riattivare, ma i corsi si rimettono con Iscrivi.'])
   ok('unire dice quale certificato resta', [f('confermaUnione', 'Mario Rossi', 'Mario Rossi', { conFile: true }, { conFile: false }), f('confermaUnione', 'Mario Rossi', 'Mario Rossi', { conFile: false }, { conFile: false })],
     ['Unire Mario Rossi in Mario Rossi? La scheda di Mario Rossi se ne va, e non si torna indietro. Del certificato resta quello che scade più tardi, col suo file (se uno non ha il file, quello col file).', 'Unire Mario Rossi in Mario Rossi? La scheda di Mario Rossi se ne va, e non si torna indietro.'])
   ok('sotto i 6 anni senza certificato: NON SERVE, spento, non il primo gesto', riga(p({ conFile: false }, '2021-01-01')), ['NON SERVE', 'spento', 'Carica il certificato', false])

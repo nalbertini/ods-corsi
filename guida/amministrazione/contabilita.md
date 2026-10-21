@@ -268,10 +268,11 @@ movimenti in contanti senza i nomi degli iscritti, due righe per le firme). **An
 sull'ultima chiusura: toglie anche la sua «Differenza di cassa» e riapre i giorni; il foglio già
 stampato non vale più. Una chiusura non si cambia: si annulla e si rifà.
 
-Se stai per annullare una ricevuta o un pagamento in contanti di un giorno già chiuso, la domanda di
-conferma te lo dice prima. Lo stesso se stai per fare una ricevuta con un pagamento in contanti di un
-giorno già chiuso (anche quella aperta da REGISTRA IL PAGAMENTO): la ricevuta si fa lo stesso, perché
-è un documento, ma la chiusura non torna più e serve una rettifica. Se dopo una chiusura qualcuno annulla una ricevuta o un pagamento in contanti di quei giorni,
+Una ricevuta con un pagamento in contanti di un giorno già chiuso non si fa (anche quella aperta da
+REGISTRA IL PAGAMENTO), come il pagamento a mano: scegli una data dopo la chiusura, o annulla prima la
+chiusura. Passa solo **FANNE LA RICEVUTA** su un pagamento a mano già registrato, i cui contanti sono
+già nei conti di quel giorno. Se stai per annullare una ricevuta o un pagamento in contanti di un giorno
+già chiuso, la domanda di conferma te lo dice prima, anche alla segreteria. Se dopo una chiusura qualcuno annulla una ricevuta o un pagamento in contanti di quei giorni,
 compare un avviso rosso «La chiusura del … non è più in regola»: il foglio già stampato non torna
 più coi conti, e la correzione è una rettifica con una data dopo la chiusura.
 

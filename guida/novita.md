@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.156.6 — 21 ottobre 2026
+
+### Risolto
+
+- La guida dice come registrare un bonifico solo per più persone della famiglia
+- I contanti di un giorno di cassa chiusa non entrano più dalla ricevuta, e l'avviso lo vede anche la segreteria
+
 ## 0.156.5 — 21 ottobre 2026
 
 ### Risolto
