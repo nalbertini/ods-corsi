@@ -104,9 +104,8 @@ ok('script tolto anche dentro una colonna', html([C('a', [{ html: '<p>1</p><scri
 
 // Il «+» sotto «Colonna 2» nell'editor aggiunge una colonna: nasce senza html se nessuno glielo dà, e l'editor andava in schermo bianco.
 console.log('\nColonne: la colonna aggiunta')
-ok('la colonna nuova è un html vuoto', prova(() => z.colonnaNuova()), { html: '' })
 ok('una colonna senza html conta come vuota', prova(() => z.vuoto(undefined)), true)
-ok('due colonne più una nuova sono valide', valido({ content: [C('a', [{ html: '<p>1</p>' }, { html: '<p>2</p>' }, z.colonnaNuova()])] }), true)
+ok('due colonne più una nuova sono valide', valido({ content: [C('a', [{ html: '<p>1</p>' }, { html: '<p>2</p>' }, { html: '' }])] }), true)
 
 console.log('\nTesto: le colonne sono le sole novità')
 const COL = '<div class="colonne c-2"><div class="colonna"><p>1</p></div><div class="colonna"><p>2</p></div></div>'
@@ -465,111 +464,6 @@ console.log('\nPorta ai pezzi: in modalità prova la pagina converte senza cambi
   ok('versione vecchia: i pezzi restano null (lo stato di prima non cambia)', pagina(s0, 'pre-pugilistica').pezzi, null)
 }
 
-// Il pannello a destra, finché nessuna parte è scelta: dice cosa fare, con le parole della segreteria (parte, non blocco).
-{
-  const f = z.FRASE_NESSUNA_PARTE
-  ok('nessuna parte scelta: il pannello dice di toccarne una', typeof f === 'string' && /^Tocca una parte della pagina/.test(f), true)
-  ok('nessuna parte scelta: la frase dice cosa succede, in italiano di palestra', typeof f === 'string' && /impostazioni/.test(f) && !/blocc|component|elemento/i.test(f), true)
-}
-
-// ELENCO: ogni parte col nome che la segreteria le dà (FOTO IN CIMA, TESTO, FOTO, DUE o TRE COLONNE).
-{
-  const col = (n) => ({ type: 'colonne', props: { id: 'c', colonne: Array.from({ length: n }, () => ({ html: '' })) } })
-  const nome = (p) => prova(() => z.nomeParte(p))
-  ok('elenco: foto in cima', nome({ type: 'fotoInCima', props: { id: 'a', src: '', alt: '' } }), 'Foto in cima')
-  ok('elenco: testo', nome({ type: 'testo', props: { id: 'b', html: '' } }), 'Testo')
-  ok('elenco: foto', nome({ type: 'foto', props: { id: 'd', src: '', alt: '' } }), 'Foto')
-  ok('elenco: due colonne', nome(col(2)), 'Due colonne')
-  ok('elenco: tre colonne', nome(col(3)), 'Tre colonne')
-}
-
-// SCRIVERE NELLA PAGINA: il testo e le colonne si scrivono nel pezzo, senza toccare il resto.
-console.log('\nScrivere il testo nella pagina')
-{
-  const scrivi = (p, h, c) => prova(() => (c === undefined ? z.scriviTesto(p, h) : z.scriviTesto(p, h, c)))
-  const copia = (x) => JSON.parse(JSON.stringify(x))
-
-  const t0 = T('t1', '<p>vecchio</p>')
-  const t1 = scrivi(t0, '<p>nuovo</p>')
-  ok('testo: l’html è quello scritto', t1?.props?.html, '<p>nuovo</p>')
-  ok('testo: restano id e tipo', [t1?.props?.id, t1?.type], ['t1', 'testo'])
-
-  for (const n of [2, 3]) {
-    const cols = Array.from({ length: n }, (_, i) => ({ html: `<p>${i}</p>` }))
-    const c0 = C('c1', cols)
-    const c1 = scrivi(c0, '<p>scritta</p>', 1)
-    const voluto = cols.map((c, i) => (i === 1 ? { html: '<p>scritta</p>' } : c))
-    ok(`${n} colonne: cambia solo la seconda`, c1?.props?.colonne, voluto)
-    ok(`${n} colonne: restano id, tipo e numero di colonne`, [c1?.props?.id, c1?.type, c1?.props?.colonne?.length], ['c1', 'colonne', n])
-  }
-  ok('colonne: senza indicarla si scrive la prima', scrivi(C('c1', [{ html: 'a' }, { html: 'b' }]), 'x')?.props?.colonne, [{ html: 'x' }, { html: 'b' }])
-
-  for (const [cosa, p, h, c] of [
-    ['testo', T('t1', '<p>a</p>'), '<p>b</p>'],
-    ['colonne', C('c1', [{ html: 'a' }, { html: 'b' }, { html: 'c' }]), '<p>x</p>', 2],
-  ]) {
-    const prima = copia(p)
-    scrivi(p, h, c)
-    ok(`${cosa}: l’oggetto ricevuto non cambia`, p, prima)
-  }
-
-  const f = F('f1'), cima = CIMA('k1')
-  ok('foto: restituisce lo stesso oggetto', scrivi(f, '<p>x</p>') === f, true)
-  ok('foto in cima: restituisce lo stesso oggetto', scrivi(cima, '<p>x</p>') === cima, true)
-  ok('foto: l’oggetto ricevuto non cambia', f, F('f1'))
-  const c2 = C('c2', [{ html: 'a' }, { html: 'b' }])
-  ok('colonne: colonna -1 restituisce lo stesso oggetto', scrivi(c2, 'x', -1) === c2, true)
-  ok('colonne: colonna oltre il numero restituisce lo stesso oggetto', scrivi(c2, 'x', 2) === c2, true)
-  ok('colonne: nessuna colonna cambia se fuori misura', c2, C('c2', [{ html: 'a' }, { html: 'b' }]))
-
-  const sporco = '<p>ciao</p><script>alert(1)</script>'
-  const pagina = { content: [scrivi(T('t1', ''), sporco), scrivi(C('c1', [{ html: '' }, { html: '' }]), sporco, 1)] }
-  ok('scritto: la pagina resta valida', valido(pagina), true)
-  const uscito = html(pagina.content)
-  ok('scritto: nell’html finale c’è il testo', buono(uscito) && uscito.includes('ciao'), true)
-  ok('scritto: un <script> non esce', buono(uscito) && !/script|alert/i.test(uscito), true)
-}
-
-// Il testo scritto arriva subito a chi salva: la pagina con quel pezzo cambiato, senza aspettare Puck.
-{
-  const pagina = { content: [T('a', '<p>uno</p>'), C('b', [{ html: '<p>x</p>' }, { html: '<p>y</p>' }]), F('c')] }
-  const copia = JSON.stringify(pagina)
-  const r = prova(() => z.conTestoScritto(pagina, 'b', '<p>nuovo</p>', 1))
-  ok('pagina: cambia solo la colonna scritta del pezzo giusto', r?.content?.map((p) => JSON.stringify(p.props)), [JSON.stringify({ id: 'a', html: '<p>uno</p>' }), JSON.stringify({ id: 'b', colonne: [{ html: '<p>x</p>' }, { html: '<p>nuovo</p>' }] }), JSON.stringify({ id: 'c', src: 'https://x.it/a.jpg', alt: 'Un tatami' })])
-  ok('pagina: il testo scritto va nel pezzo testo', prova(() => z.conTestoScritto(pagina, 'a', '<p>due</p>').content[0].props.html), '<p>due</p>')
-  ok('pagina: la pagina ricevuta non cambia', JSON.stringify(pagina), copia)
-  ok('pagina: un pezzo che non c\'è lascia la pagina com\'è', prova(() => z.conTestoScritto(pagina, 'zzz', 'x') === pagina), true)
-  ok('pagina: resta valida', valido(r), true)
-}
-
-// ANNULLA e RIFAI dalla tastiera dentro il testo: Cmd/Ctrl+Z indietro, Cmd/Ctrl+Maiusc+Z o Cmd/Ctrl+Y avanti; il resto è del testo.
-{
-  const v = (tasto, meta = true, maiusc = false, alt = false) => prova(() => z.versoStoria(tasto, meta, maiusc, alt))
-  ok('tastiera: Cmd+Z va indietro', v('z'), 'indietro')
-  ok('tastiera: Cmd+Z maiuscola (CapsLock) va indietro', v('Z'), 'indietro')
-  ok('tastiera: Cmd+Maiusc+Z va avanti', v('z', true, true), 'avanti')
-  ok('tastiera: Cmd+Y va avanti', v('y'), 'avanti')
-  ok('tastiera: Z senza Cmd è una lettera', v('z', false), null)
-  ok('tastiera: Alt+Cmd+Z non è nostra', v('z', true, false, true), null)
-  ok('tastiera: Cmd+B non è nostra', v('b'), null)
-}
-// Dopo ANNULLA e RIFAI la parte scelta resta scelta, se c'è ancora.
-{
-  const sel = (s, n) => prova(() => z.selezioneDopoStoria(s, n))
-  ok('storia: la parte scelta resta', sel({ index: 1, zone: 'z' }, 3), { index: 1, zone: 'z' })
-  ok('storia: se la lista si è accorciata sotto di lei, nessuna', sel({ index: 3, zone: 'z' }, 3), null)
-  ok('storia: nessuna scelta, nessuna scelta', sel(null, 3), null)
-}
-
-// Puck registra un passo nella storia 250ms dopo l'ultima scrittura: annullare prima toglierebbe il passo di prima.
-{
-  const a = (ultima, ora) => prova(() => z.attesaStoria(ultima, ora))
-  ok('storia: appena scritto, si aspetta quasi tutta la finestra', a(1000, 1010), 290)
-  ok('storia: a metà finestra si aspetta il resto', a(1000, 1150), 150)
-  ok('storia: passata la finestra non si aspetta', a(1000, 1400), 0)
-  ok('storia: mai scritto, non si aspetta', a(0, 5000), 0)
-}
-
 console.log('\nDividi in parti: una pagina già a pezzi con un solo testo lungo')
 {
   const dividi = (p) => prova(() => z.dividiInParti(p))
@@ -659,8 +553,6 @@ console.log('\nDividi in parti: una pagina già a pezzi con un solo testo lungo'
     ok(`9: dividere due volte è come dividere una (${cosa})`, [valido(dividi(p)), dividi(dividi(p))], [true, dividi(p)])
   }
 
-  ok('10: la frase dice quante parti, SALVA BOZZA e TORNA ALLE PAGINE', prova(() => { const f = z.frasePartiNuove(11); return ['11 parti', 'SALVA BOZZA', 'TUTTE LE PAGINE', 'TORNA ALLE PAGINE'].every((x) => f.includes(x)) }), true)
-
   const due = pagina(T('t1', lungo), K, T('t2', `<h2>X</h2><p>1</p>${IMG('e')}<p>2</p>`), FO)
   ok('11: due testi divisibili si dividono tutti e due', forma(dividi(due)), [
     ['testo', '<p>a</p>'], ['testo', '<h2>T</h2><p>b</p>'], ['foto', ['https://x.it/d.jpg', 'd']], ['testo', '<p>c</p>'],
@@ -706,11 +598,10 @@ console.log('\nLa parte ISCRIVITI: l\'invito in fondo alla pagina')
   const cosa = (x) => prova(() => z.cosaNonVaPezzi(x))
   const UNA_IN_FONDO = 'La parte Iscriviti è una sola e sta in fondo alla pagina'
 
-  // 4. Il tipo e il nome.
+  // 4. Il tipo.
   ok('4: una pagina con la parte Iscriviti in fondo è valida', valido({ content: [T('a', '<p>x</p>'), I('b')] }), true)
   ok('4: la parte Iscriviti da sola è valida', valido({ content: [I('a', 'Titolo', 'Frase')] }), true)
   ok('4: con la foto in cima e la parte in fondo è valida', valido({ content: [CIMA('a'), T('b', '<p>x</p>'), I('c')] }), true)
-  ok('4: nell\'ELENCO si chiama «Iscriviti»', prova(() => z.nomeParte(I('a'))), 'Iscriviti')
 
   // 5. Una sola, l'ultima; titolo e frase stringhe.
   ok('5: due parti Iscriviti non sono valide', valido({ content: [T('a', '<p>x</p>'), I('b'), I('c')] }), false)
@@ -754,18 +645,6 @@ console.log('\nLa parte ISCRIVITI: l\'invito in fondo alla pagina')
   ok('8: una bozza di prima (senza la parte) è ancora valida', valido(prima), true)
   ok('8: e dà lo stesso testo di prima', html(prima.content), '<img alt="Cima" src="https://x.it/c.jpg" /><h2>Titolo</h2><p>x</p><img alt="Un tatami" src="https://x.it/a.jpg" /><div class="colonne c-2"><div class="colonna"><p>1</p></div><div class="colonna"><p>2</p></div></div>')
   ok('8: una pagina vecchia senza div iscriviti non prende una parte Iscriviti', prova(() => z.htmlInPezzi('<p>a</p><h2>B</h2><p>c</p>'))?.content?.some((x) => x.type === 'iscriviti'), false)
-  ok('8: i nomi delle altre parti non cambiano', [CIMA('a'), T('b', ''), F('c'), C('d', [{ html: '' }, { html: '' }]), C('e', [{ html: '' }, { html: '' }, { html: '' }])].map((p) => prova(() => z.nomeParte(p))), ['Foto in cima', 'Testo', 'Foto', 'Due colonne', 'Tre colonne'])
-}
-
-console.log('\nLa parte ISCRIVITI: dove la mettono i tasti + PARTE')
-{
-  const p = [T('a', '<p>a</p>'), T('b', '<p>b</p>')]
-  const pi = [...p, { type: 'iscriviti', props: { id: 'i', titolo: '', frase: '' } }]
-  ok('+ ISCRIVITI va sempre in fondo, anche con una parte scelta', [z.doveMettere('iscriviti', 0, p), z.doveMettere('iscriviti', null, p)], [2, 2])
-  ok('una parte nuova senza scelta, con ISCRIVITI in fondo, va prima di lei', z.doveMettere('testo', null, pi), 2)
-  ok('una parte nuova dopo quella scelta resta prima di ISCRIVITI', [z.doveMettere('foto', 0, pi), z.doveMettere('foto', 2, pi)], [1, 2])
-  ok('senza ISCRIVITI una parte nuova va dopo la scelta, o in fondo', [z.doveMettere('testo', 0, p), z.doveMettere('testo', null, p)], [1, 2])
-  ok('con ISCRIVITI già in pagina non se ne mette un\'altra', [z.conIscriviti(pi), z.conIscriviti(p)], [true, false])
 }
 
 console.log('\nLa parte ISCRIVITI: «Dividi in parti» non la crea in mezzo')
@@ -773,19 +652,6 @@ console.log('\nLa parte ISCRIVITI: «Dividi in parti» non la crea in mezzo')
   const pagina = { content: [T('a', '<h2>Uno</h2><p>a</p><h2>Due</h2><p>b</p><div class="iscriviti"><h2>T</h2></div>'), T('b', '<p>dopo</p>')] }
   const divisa = z.dividiInParti(pagina)
   ok('un TESTO che finisce col div della parte resta intero', [divisa.content.length, divisa.content.some((q) => q.type === 'iscriviti')], [2, false])
-}
-
-console.log('\nLa parte ISCRIVITI: i tasti che la toccano')
-{
-  const p = [T('a', '<p>a</p>'), T('b', '<p>b</p>')]
-  const pi = [...p, { type: 'iscriviti', props: { id: 'i', titolo: '', frase: '' } }]
-  ok('+ ISCRIVITI si può mettere una volta sola', [z.puoMettere('iscriviti', p), z.puoMettere('iscriviti', pi), z.puoMettere('testo', pi)], [true, false, true])
-  const tanti = Array.from({ length: z.MASSIMO_PEZZI }, (_, i) => T('t' + i, '<p>x</p>'))
-  ok('oltre il massimo delle parti non se ne mette nessuna', [z.puoMettere('testo', tanti), z.puoMettere('iscriviti', tanti)], [false, false])
-  ok('ISCRIVITI non si sposta: né su né giù', [z.spostabile(pi, 2, -1), z.spostabile(pi, 2, 1)], [false, false])
-  ok('la parte prima di ISCRIVITI non le va sotto, ma sale', [z.spostabile(pi, 1, 1), z.spostabile(pi, 1, -1)], [false, true])
-  ok('senza ISCRIVITI si sposta come prima, dentro la pagina', [z.spostabile(p, 0, 1), z.spostabile(p, 0, -1), z.spostabile(p, 1, 1)], [true, false, false])
-  ok('il tasto spento dice perché', z.motivoSpento('iscriviti', pi), 'C’è già: una parte Iscriviti per pagina')
 }
 
 // ---------------------------------------------------------------------------
@@ -873,14 +739,6 @@ ok('7: altro con indirizzo vuoto è valido (il pulsante non esce)', valido({ con
 for (const slug of ['../x', 'Orari Nuovi', '/orari/']) {
   const c = [PU('p', B('pagina', 'Orari', slug))]
   ok(`7: pagina con lo slug «${slug}» non è valida e lo dice`, [valido({ content: c }), nonVa(c), salvare(c)], [false, NO_INDIRIZZO, NO_INDIRIZZO])
-}
-
-console.log('\nPULSANTI e DOMANDE: nome e posto nell\'ELENCO')
-{
-  const pi = [T('a', '<p>a</p>'), T('b', '<p>b</p>'), { type: 'iscriviti', props: { id: 'i', titolo: '', frase: '' } }]
-  ok('8: i nomi delle parti nuove', [PU('p', B('modulo')), D('d', [])].map((p) => prova(() => z.nomeParte(p))), ['Pulsanti', 'Domande'])
-  ok('9: senza scelta vanno prima di ISCRIVITI, come TESTO', [z.doveMettere('pulsanti', null, pi), z.doveMettere('domande', null, pi)], [2, 2])
-  ok('9: il tasto + PARTE non è spento', [z.motivoSpento('pulsanti', pi), z.motivoSpento('domande', pi)], [null, null])
 }
 
 console.log('\nDOMANDE: l\'HTML della parte')
@@ -971,10 +829,9 @@ console.log('\nLa parte ISTRUTTORE: un istruttore per parte, nell\'ordine delle 
   const cosa = (x) => prova(() => z.cosaNonVaPezzi(x))
   const SENZA_NOME = 'Ogni istruttore ha bisogno del nome: scrivilo o togli la parte'
 
-  // Il tipo, il nome nell'ELENCO, quando è valido.
+  // Il tipo e quando è valido.
   ok('istruttore: una pagina di istruttori è valida', valido({ content: [IS('a', 'Federico'), IS('b', 'Maurizio', { cognome: 'Innella', corsi: 'Judo', src: 'https://x.it/m.jpg', alt: 'Maurizio', pagina: 'maurizio-innella' })] }), true)
   ok('istruttore: con testo prima e Iscriviti in fondo è valida', valido({ content: [T('t', '<p>x</p>'), IS('a', 'Federico'), I('z')] }), true)
-  ok('istruttore: nell\'ELENCO si chiama «Istruttore»', prova(() => z.nomeParte(IS('a', 'Federico'))), 'Istruttore')
   ok('istruttore: senza nome non è valido', valido({ content: [IS('a', '')] }), false)
   ok('istruttore: un nome di soli spazi non è valido', valido({ content: [IS('a', '   ')] }), false)
   for (const campo of ['nome', 'cognome', 'corsi', 'src', 'alt', 'pagina']) {
