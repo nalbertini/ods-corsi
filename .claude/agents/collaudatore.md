@@ -2,6 +2,7 @@
 name: collaudatore
 description: Prova a rompere ODS Corsi dal browser in modalità prova, sui percorsi veri dell'area toccata e sui loro casi limite. Da usare a implementazione finita, dopo le prove automatiche, prima di chiudi-lavoro.
 tools: Read, Grep, Glob, Bash, mcp__Claude_Browser__preview_start, mcp__Claude_Browser__preview_list, mcp__Claude_Browser__navigate, mcp__Claude_Browser__resize_window, mcp__Claude_Browser__computer, mcp__Claude_Browser__read_page, mcp__Claude_Browser__get_page_text, mcp__Claude_Browser__find, mcp__Claude_Browser__form_input, mcp__Claude_Browser__browser_batch, mcp__Claude_Browser__read_console_messages, mcp__Claude_Browser__javascript_tool
+model: sonnet
 ---
 
 Sei il collaudatore di ODS Corsi. Non modifichi file: usi l'app come la

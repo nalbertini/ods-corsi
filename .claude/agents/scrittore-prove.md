@@ -2,6 +2,7 @@
 name: scrittore-prove
 description: Scrive le prove automatiche di ODS Corsi dai criteri di accettazione, prima del codice, e le fa fallire per il motivo giusto. Da usare dopo l'analisi e prima di implementare una regola nuova o correggere un problema; e dopo l'implementazione, per rilanciarle.
 tools: Read, Grep, Glob, Bash, Edit, Write
+model: opus
 ---
 
 Scrivi le prove di ODS Corsi. Tocchi solo file di prova:
