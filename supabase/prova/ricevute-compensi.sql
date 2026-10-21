@@ -156,6 +156,15 @@ select atteso('una riga coi minuti negativi no',
   tenta(ricevuta('aaaaaaaa-0000-0000-0000-000000000006', mese => primo(-5), righe => '[{"corso": "Judo kids", "lezioni": 4, "minuti": -480, "centesimi_ora": 1500, "importo": 12000}]')), 'NEGATO: …');
 select atteso('una riga con la tariffa scritta come testo no',
   tenta(ricevuta('aaaaaaaa-0000-0000-0000-000000000006', mese => primo(-5), righe => '[{"corso": "Judo kids", "lezioni": 4, "minuti": 480, "centesimi_ora": "x", "importo": 12000}]')), 'NEGATO: …');
+select atteso('una riga con l''importo che non è ore × tariffa no (il perché non si aggira)',
+  tenta(ricevuta('aaaaaaaa-0000-0000-0000-000000000006', mese => primo(-5), righe => '[{"corso": "Judo kids", "lezioni": 4, "minuti": 480, "centesimi_ora": 1500, "importo": 99999}]', calcolato => 99999, importo => 99999)), 'NEGATO: Le righe del compenso non sono giuste: rifai la ricevuta dalla pagina COMPENSI');
+select atteso('una riga coi numeri scritti come testo no',
+  tenta(ricevuta('aaaaaaaa-0000-0000-0000-000000000006', mese => primo(-5), righe => '[{"corso": "Judo kids", "lezioni": "4", "minuti": 480, "centesimi_ora": 1500, "importo": 12000}]')), 'NEGATO: Le righe del compenso non sono giuste: rifai la ricevuta dalla pagina COMPENSI');
+select atteso('il mese che manca no, col messaggio',
+  tenta($$select (fai_ricevuta_compenso(persona => 'aaaaaaaa-0000-0000-0000-000000000006', mese => null, righe => '[{"corso": "Judo kids", "lezioni": 4, "minuti": 480, "centesimi_ora": 1500, "importo": 12000}]', calcolato => 12000, importo => 12000, motivo => null, tecnico => '{}', qualifica => null, data => current_date)).id is not null$$),
+  'NEGATO: Il mese della ricevuta non va: il primo del mese, non nel futuro');
+select atteso('i dati del tecnico che non sono un oggetto no, col messaggio',
+  tenta(ricevuta('aaaaaaaa-0000-0000-0000-000000000006', mese => primo(-5), tecnico => '"x"')), 'NEGATO: I dati del tecnico della ricevuta non sono giusti');
 select atteso('una riga senza tariffa no',
   tenta(ricevuta('aaaaaaaa-0000-0000-0000-000000000006', mese => primo(-5), righe => '[{"corso": "Judo kids", "lezioni": 4, "minuti": 480, "importo": 12000}]')), 'NEGATO: …');
 select atteso('una riga con l''importo coi decimali no',

@@ -5,7 +5,7 @@ import { chiaveGiorno, dataLunga } from '../../lib/sala'
 import { euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
-import { centesimiDaImporto, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type StatoCompenso } from '../../lib/compensi'
+import { centesimiDaImporto, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, esitoDelMese, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type StatoCompenso } from '../../lib/compensi'
 import { chiedi, Guaio, Testa, useAvviso, useCarica } from './comune'
 import { Numero } from './Presenze'
 
@@ -22,6 +22,7 @@ const NOME_STATO: Record<StatoCompenso, { testo: string; tono: 'rosso' | 'giallo
 }
 
 const nomeDi = (p: Persona) => `${p.cognome} ${p.nome}`.trim()
+const saltato = (r: { persona: Persona; stato: StatoCompenso }) => `${nomeDi(r.persona)} (${NOME_STATO[r.stato].testo.toLowerCase()})`
 const quante = (n: number, uno: string, tanti: string) => `${n} ${n === 1 ? uno : tanti}`
 const quanteOre = (minuti: number) => `${ore(minuti)} ${minuti === 60 ? 'ora' : 'ore'}`
 const scarica = async (rs: RicevutaCompenso[]) => (await import('../../lib/ricevutaCompensoPdf')).scaricaRicevuteCompensi(rs)
@@ -79,7 +80,8 @@ export function AzioniRicevuta({
       await onCambiato()
     })
     // Prima si salva, poi si scarica: se il PDF non esce, la ricevuta c'è già e si ristampa.
-    if (ok && fatta.r) void fai(() => scarica([fatta.r!]))
+    const r = fatta.r
+    if (ok && r) void fai(() => scarica([r]))
   }
   const annulla = async () => {
     if (!ricevuta) return
@@ -212,9 +214,9 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
   const m = periodi.find((x) => x.chiave === periodo) ?? periodi[0]
   const mese = primoDelMese(m.da)
   const giorni = Math.ceil((Date.now() - m.da.getTime()) / 86_400_000) + 1
-  const { avviso, fai } = useAvviso()
+  const { avviso, avvisa, fai } = useAvviso()
   const dati = useCarica(async () => {
-    const [personale, presenze, senzaIstruttore, ricevute] = await Promise.all([d.personale(), d.presenzeIstruttori(giorni), d.lezioniSenzaIstruttore().catch(() => []), d.ricevuteCompensi()])
+    const [personale, presenze, senzaIstruttore, ricevute] = await Promise.all([d.personale(), d.presenzeIstruttori(giorni), d.lezioniSenzaIstruttore(), d.ricevuteCompensi()])
     const tecnici = personale.filter(insegna)
     const [tariffe, mancano] = await Promise.all([
       Promise.all(tecnici.map(async (t) => [t.id, await d.tariffe(t.id)] as const)).then((x): Record<string, Tariffa[]> => Object.fromEntries(x)),
@@ -231,7 +233,7 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
 
   const preparaTutte = async () => {
     const fatte: RicevutaCompenso[] = []
-    const saltati: string[] = fermi.map((r) => `${nomeDi(r.persona)} (${NOME_STATO[r.stato].testo.toLowerCase()})`)
+    const saltati: string[] = fermi.map(saltato)
     setTutte(true)
     await fai(async () => {
       for (const r of daFare) {
@@ -242,8 +244,10 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
         }
       }
       if (fatte.length) await scarica(fatte)
-      if (saltati.length) throw new Error(`${fatte.length ? `Fatte ${fatte.length}. ` : ''}Saltati: ${saltati.join('; ')}`)
-    }, `Fatte ${daFare.length} ricevute`)
+      const esito = esitoDelMese(fatte.length, saltati)
+      if (esito.guaio) throw new Error(esito.testo)
+      avvisa(esito.testo)
+    })
     setTutte(false)
     await dati.ricarica()
   }
@@ -278,7 +282,7 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
               </button>
               <span className="sg-sotto" style={{ flex: 1, minWidth: 240 }}>
                 Un PDF solo con quelle da fare.
-                {fermi.length > 0 && ` Salta ${fermi.map((r) => `${nomeDi(r.persona)} (${NOME_STATO[r.stato].testo.toLowerCase()})`).join(', ')}.`}
+                {fermi.length > 0 && ` Salta ${fermi.map(saltato).join(', ')}.`}
               </span>
             </div>
           )}

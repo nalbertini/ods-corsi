@@ -730,7 +730,8 @@ function PresenzeDelMese({ d, p, fai, versione }: { d: DatiSegreteria; p: Person
   const giorni = Math.ceil((Date.now() - m.da.getTime()) / 86_400_000) + 1
   const elenco = useCarica(() => d.presenzeIstruttori(giorni), [d, giorni])
   // Le lezioni tenute in cui era previsto e non si è segnato: da decidere anche quelle.
-  const proposte = useCarica(() => d.lezioniSenzaIstruttore().catch(() => []), [d])
+  // `null`: non si sono lette. Le presenze si mostrano lo stesso, il compenso no: senza, il conto sarebbe sbagliato.
+  const proposte = useCarica(() => d.lezioniSenzaIstruttore().catch(() => null), [d])
 
   const { righe: del, confermate: fatte, minuti: totale, daConfermare, perCorso } = delMese(elenco.dato ?? [], proposte.dato ?? [], p.id, m)
   // Il compenso solo a chi insegna: la segreteria che non insegna ha le presenze, non le ricevute.
@@ -738,7 +739,7 @@ function PresenzeDelMese({ d, p, fai, versione }: { d: DatiSegreteria; p: Person
     async () => (insegna(p) ? { tariffe: await d.tariffe(p.id), ricevute: await d.ricevuteCompensi(p.id), manca: mancaPerRicevuta((await d.anagraficaDi(p.id))?.dati ?? null) } : null),
     [d, p.id, versione],
   )
-  const conto = compenso.dato ? compensoDelMese(elenco.dato ?? [], proposte.dato ?? [], p.id, m, compenso.dato.tariffe) : null
+  const conto = compenso.dato && proposte.dato ? compensoDelMese(elenco.dato ?? [], proposte.dato ?? [], p.id, m, compenso.dato.tariffe) : null
   const mese = primoDelMese(m.da)
   const ricevuta = compenso.dato?.ricevute.find((r) => r.mese === mese && !r.annullataIl)
   const ricaricaTutto = () => Promise.all([compenso.ricarica(), elenco.ricarica()])

@@ -268,3 +268,9 @@ export function datiPerRicevuta(
     data: oggi,
   }
 }
+
+/** Cosa dire dopo «Prepara e stampa le ricevute»: quante fatte e chi è stato saltato; è un guaio solo se non ne è uscita nessuna. */
+export function esitoDelMese(fatte: number, saltati: string[]): { testo: string; guaio: boolean } {
+  const quante = fatte === 0 ? 'Nessuna ricevuta fatta' : fatte === 1 ? 'Fatta 1 ricevuta' : `Fatte ${fatte} ricevute`
+  return { testo: saltati.length ? `${quante}. Saltati: ${saltati.join('; ')}` : quante, guaio: fatte === 0 && saltati.length > 0 }
+}

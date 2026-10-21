@@ -1074,7 +1074,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (no) throw new Error(no)
       if (!(p.ruolo === 'istruttore' || p.ancheIstruttore)) throw new Error('La ricevuta del compenso si fa a chi insegna')
       if (!/^\d{4}-\d{2}-01$/.test(dati.mese) || dati.mese > primoDelMese(new Date())) throw new Error('Il mese della ricevuta non va: il primo del mese, non nel futuro')
-      if (!dati.righe.length || dati.righe.some((r) => !r.corso.trim() || !r.centesimiOra || r.importo === undefined) || dati.calcolato !== dati.righe.reduce((s, r) => s + (r.importo ?? 0), 0))
+      if (!dati.righe.length || dati.righe.some((r) => !r.corso.trim() || !r.centesimiOra || r.importo !== Math.round((r.minuti / 60) * r.centesimiOra)) || dati.calcolato !== dati.righe.reduce((s, r) => s + (r.importo ?? 0), 0))
         throw new Error('Le righe del compenso non sono giuste: rifai la ricevuta dalla pagina COMPENSI')
       if ((a().ricevuteCompensi ?? []).some((x) => x.personaId === dati.personaId && x.mese === dati.mese && !x.annullataIl))
         throw new Error("C'è già la ricevuta di questo mese: annullala prima di rifarla")
