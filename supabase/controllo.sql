@@ -297,7 +297,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from pg_enum e where e.enumtypid = 'ruolo'::regtype and e.enumlabel = 'amministrazione')
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'persone' and column_name = 'anche_amministrazione')
     and exists (select 1 from dentro where nome = 'e_amministrazione')
-    and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%e_amministrazione()%')
+    and exists (select 1 from dentro where nome in ('emetti_ricevuta', 'fai_ricevuta') and corpo like '%e_amministrazione()%')
     and exists (select 1 from dentro where nome = 'nomi_persone')
     and exists (select 1 from dentro where nome = 'cerca_pagatori')
     and to_regclass('public.ricerche_pagatori') is not null),
@@ -446,7 +446,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
             where table_schema = 'public' and table_name = 'ricevute' and column_name = 'chiave')
     and to_regprocedure('public.ricevuta_gia_fatta(uuid,uuid)') is not null
     -- Rilanciare 55 o 73 dopo 86 rimette le funzioni che ignorano la chiave: la riga torna «da lanciare».
-    and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%ricevuta_gia_fatta%')
+    and exists (select 1 from dentro where nome in ('emetti_ricevuta', 'fai_ricevuta') and corpo like '%ricevuta_gia_fatta%')
     and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%')),
   ('87-solleciti-elenco.sql', 'i solleciti nell''elenco ISCRITTI: gli ultimi di tutti e Annulla',
     to_regprocedure('public.ultimi_solleciti()') is not null
@@ -463,6 +463,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('91-richieste-accolte-restano.sql', 'una richiesta accolta non si elimina finché c''è la scheda',
     exists (select 1 from pg_policies where tablename = 'richieste_iscrizione' and policyname = 'richieste_cancella' and qual like '%accolta%')
     and not has_table_privilege('authenticated', 'public.richieste_iscrizione', 'update')),
+  ('92-ricevuta-cassa-chiusa.sql', 'i contanti di un giorno di cassa chiusa non entrano dalla ricevuta, e la segreteria sa fin quando è chiusa',
+    to_regprocedure('public.cassa_contanti_chiusa_fino()') is not null
+    and exists (select 1 from dentro where nome = 'fai_ricevuta' and corpo like '%cassa_giorno_chiuso%')
+    -- Rilanciare 86 o 89 dopo 92 rimette le funzioni che non guardano il giorno chiuso: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%fai_ricevuta%')
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta_da_pagamento' and corpo like '%fai_ricevuta%')),
   ('94-disattiva-chiude-iscrizioni.sql', 'disattivare una scheda chiude le sue iscrizioni',
     exists (select 1 from pg_trigger where tgname = 'persone_iscrizioni_disattivata' and tgrelid = 'public.persone'::regclass))
 ) as x(file, cosa, c)

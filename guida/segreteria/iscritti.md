@@ -341,6 +341,12 @@ pagamento torna libero per quella giusta.
   - Senza l'**indirizzo** la ricevuta si fa lo stesso: il campo è segnato in
     giallo, una riga gialla dice che resterà vuoto, e lo ripete la domanda
     prima di farla.
+- **I contanti** con la data di un giorno in cui la cassa contanti è già
+  chiusa non entrano: sotto il modulo si legge «Quel giorno la cassa è già
+  chiusa: scegli una data dopo la chiusura», e **FAI LA RICEVUTA** resta
+  spento. Carta, bonifico e Satispay vanno sempre. Fa eccezione **FANNE LA
+  RICEVUTA** su un pagamento a mano già registrato: quei soldi sono già nei
+  conti di quel giorno.
 - **ANTICIPO** — quello che si era già dato prima, fuori da queste voci.
   **NOTE** — facoltative, vanno nel riquadro «Note».
 - Sotto si legge il **totale**, il **pagato** e il **netto a pagare** (quel
@@ -394,7 +400,7 @@ uguale a com'era, e sotto ci sono i suoi pagamenti: data, come, a cosa serve e i
 **MANCA** dice quanto resta da pagare di quella ricevuta.
 
 Una ricevuta fatta **non si cambia e non si cancella**: se è sbagliata,
-**ANNULLA RICEVUTA**, sotto la ricevuta (chiede conferma), e se ne fa un'altra. Se la ricevuta annullata
+**ANNULLA RICEVUTA**, sotto la ricevuta (chiede conferma), e se ne fa un'altra. Se ha contanti di un giorno in cui la cassa è già chiusa, la domanda lo dice: si può annullare lo stesso, ma la chiusura non sarà più in regola e l'amministrazione dovrà scrivere una rettifica. Se la ricevuta annullata
 aveva la quota e nessun'altra la copre, la scheda chiede: **RESTA DA PAGARE**
 (di solito, perché se ne fa subito una giusta) o **ERA PAGATA FUORI
 DALL'APP**. L'annullata resta in elenco
