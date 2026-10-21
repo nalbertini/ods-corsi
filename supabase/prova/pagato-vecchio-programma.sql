@@ -1,5 +1,5 @@
 -- «Pagato nel vecchio programma» (71-pagato-vecchio-programma.sql): la lettura che dice, per la stagione corrente
--- (dal 1 settembre al 31 luglio, a Roma), quali incassi dello storico importato (`origine_import like 'prima-nota:%'`,
+-- (dal 1 agosto al 31 luglio, a Roma), quali incassi dello storico importato (`origine_import like 'prima-nota:%'`,
 -- entrate non annullate sulle voci «Quota associativa» e «Corsi e altri pagamenti») ci sono, e di chi: `persona_id`
 -- è la persona a cui il movimento è collegato (70-movimenti-persona.sql), vuoto se non lo è ancora. La funzione
 -- `incassi_vecchio_programma()` rende (persona_id, data, importo, voce), SOLO LETTURA: non scrive niente.
@@ -96,7 +96,7 @@ select atteso('authenticated la chiama, anon no (permessi)',
    from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'incassi_vecchio_programma'), 'true/false');
 
 \echo ''
-\echo '--- 2. i dati: la stagione di oggi (dal 1 settembre al 31 luglio) e quella di prima ---'
+\echo '--- 2. i dati: la stagione di oggi (dal 1 agosto al 31 luglio) e quella di prima ---'
 -- S = `inizio()` è il 1 agosto di questa stagione (agosto è già della stagione che inizia); le date si scrivono come giorni da S, così la prova vale in ogni mese.
 create or replace function inizio() returns date language sql stable as $$
   select make_date(extract(year from (now() at time zone 'Europe/Rome'))::int - case when extract(month from (now() at time zone 'Europe/Rome')) >= 8 then 0 else 1 end, 8, 1) $$;

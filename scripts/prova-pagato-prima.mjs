@@ -13,7 +13,7 @@
 //   IncassoPrima = { personaId: string | null, data: 'AAAA-MM-GG', importo, voce }
 //   pagatoNelVecchio(persone, incassi, oggi) → { quota, daGuardare, nonCollegati }
 //   RigaPagatoPrima = { personaId, data, importo, voce, motivo?, daPersonaId? }
-//   segnaPagatoPrima(d, persone, { fino?, nota? }) → { riusciti: id[], falliti: [{ id, nome, errore }] }
+//   segnaPagatoPrima(d, persone, { fino?, nota?, oggi? }) → { riusciti: id[], falliti: [{ id, nome, errore }] }
 // ---------------------------------------------------------------------------
 process.env.TZ = 'Europe/Rome'
 import { existsSync } from 'node:fs'
@@ -146,10 +146,12 @@ console.log('\n4. segnare in blocco: pagato, fino a fine stagione, nota «Dal ve
     },
   })
   const tre = [{ id: 'a', nome: 'Clio', cognome: 'Tatone' }, { id: 'b', nome: 'Marta', cognome: 'Esposito' }, { id: 'c', nome: 'Elia', cognome: 'Moretti' }]
-  const r = await prova(() => m.segnaPagatoPrima(d(), tre))
+  const r = await prova(() => m.segnaPagatoPrima(d(), tre, { oggi: OGGI }))
   ok('tutte riuscite: tre riusciti, nessun fallito', [r.riusciti, r.falliti], [['a', 'b', 'c'], []])
-  ok('ognuna è segnata «pagato», fino a fine stagione, con la nota', chiamate.map(([id, p]) => [id, p]), tre.map((x) => [x.id, { stato: 'pagato', fino: m.STAGIONE.quota.al, nota: 'Dal vecchio programma' }]))
-  ok('«fino» di default è 2027-07-31', m.STAGIONE.quota.al, '2027-07-31')
+  ok('ognuna è segnata «pagato», fino a fine stagione, con la nota', chiamate.map(([id, p]) => [id, p]), tre.map((x) => [x.id, { stato: 'pagato', fino: '2027-07-31', nota: 'Dal vecchio programma' }]))
+  chiamate.length = 0
+  await prova(() => m.segnaPagatoPrima(d(), tre.slice(0, 1), { oggi: '2027-10-01' }))
+  ok('segnata a ottobre 2027: «fino» di default è la fine della 2027/28', chiamate.map(([, p]) => p.fino), ['2028-07-31'])
   chiamate.length = 0
   await prova(() => m.segnaPagatoPrima(d(), tre.slice(0, 1), { fino: '2027-01-31', nota: 'Ricevuta di carta' }))
   ok('fino e nota si possono cambiare', chiamate, [['a', { stato: 'pagato', fino: '2027-01-31', nota: 'Ricevuta di carta' }]])
@@ -212,7 +214,8 @@ console.log('\n7. la modalità prova ha dati inventati: una persona con storico 
   const [r] = g.quota ?? []
   const p = persone.find?.((x) => x.id === r?.personaId)
   ok('è attiva e la sua quota è da pagare (non pagata, non in parte)', [p?.attiva, p && m.pagamentoDi(p, OGGI).come], [true, 'da_pagare'])
-  ok('gli incassi sono tutti nella stagione del listino', elenco.every((i) => i.data >= m.STAGIONE.quota.dal && i.data <= m.STAGIONE.quota.al), true)
+  const adesso = m.stagioneDi(new Date().toISOString().slice(0, 10))
+  ok('gli incassi sono tutti nella stagione di oggi', elenco.every((i) => i.data >= adesso.dal && i.data <= adesso.al), true)
   ok('ce n\'è anche uno da guardare a mano (sotto 50 € o solo corsi) e uno non collegato, per vedere il filtro per intero', [g.daGuardare?.length >= 1, g.nonCollegati >= 1], [true, true])
   // Segnarla davvero, con la segreteria di prova: la stessa riga esce dal filtro.
   if (r) {

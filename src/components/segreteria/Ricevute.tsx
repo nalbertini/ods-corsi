@@ -819,7 +819,7 @@ export function NuovaRicevuta({
             className="num sg-chip sg-chip-pieno"
             disabled={!aggiungi || voci.length >= 20}
             onClick={() => {
-              const v = pronte.find((x) => x.chiave === aggiungi)?.voce(data)
+              const v = pronte.find((x) => x.chiave === aggiungi)?.voce(data || oggi)
               if (v) metti([...voci, bozzaDa(v)])
               setAggiungi('')
             }}

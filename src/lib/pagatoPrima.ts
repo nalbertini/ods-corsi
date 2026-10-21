@@ -113,10 +113,10 @@ export interface EsitoSegnatura {
 export async function segnaPagatoPrima(
   d: Pick<DatiSegreteria, 'salvaPagamento'>,
   persone: Array<{ id: string; nome: string; cognome: string }>,
-  opzioni: { fino?: string; nota?: string } = {},
+  opzioni: { fino?: string; nota?: string; oggi?: string } = {},
   suProgresso?: (fatte: number) => void,
 ): Promise<EsitoSegnatura> {
-  const pagamento = { stato: 'pagato' as const, fino: opzioni.fino ?? stagioneDi(chiaveGiorno(new Date())).quota.al, nota: opzioni.nota ?? NOTA_DI_DEFAULT }
+  const pagamento = { stato: 'pagato' as const, fino: opzioni.fino ?? stagioneDi(opzioni.oggi ?? chiaveGiorno(new Date())).quota.al, nota: opzioni.nota ?? NOTA_DI_DEFAULT }
   const esito: EsitoSegnatura = { riusciti: [], falliti: [] }
   for (let i = 0; i < persone.length; i += PACCHETTO) {
     const giro = persone.slice(i, i + PACCHETTO)
