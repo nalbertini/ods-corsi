@@ -120,7 +120,8 @@
     "prova:fila-sito": "node scripts/prova-fila-sito.mjs",
     "prova:ricevute-email": "node scripts/prova-ricevute-email.mjs",
     "prova:tariffe": "node scripts/prova-tariffe.mjs",
-    "prova:lettere": "node scripts/prova-lettere.mjs"
+    "prova:lettere": "node scripts/prova-lettere.mjs",
+    "prova:compensi": "node scripts/prova-compensi.mjs"
   },
   "dependencies": {
     "@puckeditor/core": "^0.23.0",

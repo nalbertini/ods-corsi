@@ -6,6 +6,7 @@ import { giorniConLezioni } from './calendarioSettimana'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
+import { cosaNonVaCompenso, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
@@ -167,6 +168,7 @@ const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabili
 const MANCA_CHIUSURA = 'Il database non è ancora aggiornato per la chiusura della cassa: va lanciato 60-chiusura-cassa.sql'
 const MANCA_CAMBIA_VOCE = 'Il database non è ancora aggiornato per cambiare la voce dei movimenti: va lanciato 67-cambia-voce.sql'
 const MANCA_MOVIMENTI_PERSONA = 'Il database non è ancora aggiornato per collegare i movimenti alle persone: va lanciato 70-movimenti-persona.sql'
+const MANCA_COMPENSI = 'Le ricevute dei compensi non sono ancora attive sul database: va lanciato 80-ricevute-compensi.sql'
 const MANCA_LETTERE = 'Le lettere d’incarico non sono ancora attive sul database: va lanciato 79-lettere-incarico.sql'
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   // Prima di `segnalazioni`, che le somiglia.
@@ -183,6 +185,8 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/musica_sale/, 'La musica delle sale non è ancora attiva sul database: va lanciato 09-musica.sql'],
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
   [/pagamenti_diretti|pagamento_diretto/, MANCANO_PAGAMENTI_A_MANO],
+  // Prima delle ricevute dei soci: «ricevute_compensi» contiene «ricevute».
+  [/ricevute_compensi/, MANCA_COMPENSI],
   [/ricevute|emetti_ricevuta/, 'Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql'],
   [/lettere_incarico/, MANCA_LETTERE],
   [/tariffe_istruttori/, 'Le tariffe e i dati dei tecnici non sono ancora attivi sul database: va lanciato 78-tariffe-tecnici.sql'],
@@ -270,6 +274,38 @@ const daRigaLettera = (r: RigaLettera): Lettera => ({
   creataIl: r.creata_il,
 })
 
+/** Una riga di `ricevute_compensi` (80-ricevute-compensi.sql): le righe del conto col nome del database. */
+interface RigaRicevutaCompenso {
+  id: string
+  persona_id: string
+  mese: string
+  righe: Array<{ corso: string; lezioni: number; minuti: number; centesimi_ora?: number; importo?: number }>
+  calcolato: number
+  importo: number
+  motivo: string | null
+  tecnico: RicevutaCompenso['tecnico']
+  qualifica: string | null
+  data: string
+  firmata: boolean
+  annullata_il: string | null
+  creata_il: string
+}
+const daRigaRicevutaCompenso = (r: RigaRicevutaCompenso): RicevutaCompenso => ({
+  id: r.id,
+  personaId: r.persona_id,
+  mese: r.mese,
+  righe: r.righe.map((x) => ({ corso: x.corso, lezioni: x.lezioni, minuti: x.minuti, ...(x.centesimi_ora === undefined ? {} : { centesimiOra: x.centesimi_ora }), ...(x.importo === undefined ? {} : { importo: x.importo }) })),
+  calcolato: r.calcolato,
+  importo: r.importo,
+  motivo: r.motivo,
+  tecnico: r.tecnico,
+  qualifica: r.qualifica,
+  data: r.data,
+  firmata: r.firmata,
+  annullataIl: r.annullata_il,
+  creataIl: r.creata_il,
+})
+
 /**
  * Un errore che non conosciamo: alla segreteria si dice cosa fare, il testo
  * del server (in inglese, per chi sviluppa) va solo nella console.
@@ -296,6 +332,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // Una radio nelle liste della musica: il vincolo del link la ammette dal 39.
   if (e?.code === '23514' && /musica_sale_link_check/.test(e.message ?? ''))
     return new Error('Le radio nelle liste non sono ancora attive sul database: va lanciato 39-musica-radio.sql')
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevuta_compenso/.test(e.message ?? '')) return new Error(MANCA_COMPENSI)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /pagamento_diretto/.test(e.message ?? '')) return new Error(MANCANO_PAGAMENTI_A_MANO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
     return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
@@ -1231,6 +1268,40 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         }),
       ) as RigaLettera
       return daRigaLettera(riga)
+    },
+
+    async ricevuteCompensi(personaId) {
+      let q = db.from('ricevute_compensi').select('*')
+      if (personaId) q = q.eq('persona_id', personaId)
+      const righe = ok(await q.order('mese', { ascending: false }).order('creata_il', { ascending: false })) as RigaRicevutaCompenso[] | null
+      return (righe ?? []).map(daRigaRicevutaCompenso)
+    },
+
+    async faiRicevutaCompenso(r) {
+      const no = cosaNonVaCompenso(r)
+      if (no) throw new Error(no)
+      const riga = ok(
+        await db.rpc('fai_ricevuta_compenso', {
+          persona: r.personaId,
+          mese: r.mese,
+          righe: r.righe.map((x) => ({ corso: x.corso, lezioni: x.lezioni, minuti: x.minuti, centesimi_ora: x.centesimiOra, importo: x.importo })),
+          calcolato: r.calcolato,
+          importo: r.importo,
+          motivo: r.importo === r.calcolato ? null : r.motivo?.trim() || null,
+          tecnico: r.tecnico,
+          qualifica: r.qualifica,
+          data: r.data,
+        }),
+      ) as RigaRicevutaCompenso
+      return daRigaRicevutaCompenso(riga)
+    },
+
+    async annullaRicevutaCompenso(id) {
+      ok(await db.rpc('annulla_ricevuta_compenso', { id }))
+    },
+
+    async segnaFirmataCompenso(id, firmata) {
+      ok(await db.from('ricevute_compensi').update({ firmata }).eq('id', id))
     },
 
     async segnaFirmata(letteraId, firmata) {
@@ -2399,7 +2470,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async esporta(personaId) {
-      const [persona, isc, pres, rich, scheda, ric, dir, anag, lett] = await Promise.all([
+      const [persona, isc, pres, rich, scheda, ric, dir, anag, lett, comp] = await Promise.all([
         db.from('persone').select('nome, cognome, email, telefono, ruolo, attiva, creata_il').eq('id', personaId).single(),
         db.from('iscrizioni').select('dal, al, corsi ( nome )').eq('persona_id', personaId),
         tutteLeRighe((prima, ultima) => db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId).order('id').range(prima, ultima)),
@@ -2416,6 +2487,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         db.from('anagrafiche').select(`${CAMPI_ANAGRAFICA}, cambiata_il`).eq('persona_id', personaId).maybeSingle(),
         // Le lettere d'incarico di un tecnico, coi dati copiati dentro.
         db.from('lettere_incarico').select('stagione, dal, al, qualifica, giorni, data, tariffe, tecnico, firmata, sostituita_il, creata_il').eq('persona_id', personaId),
+        // Le ricevute dei compensi di un tecnico, coi dati copiati dentro.
+        db.from('ricevute_compensi').select('mese, righe, calcolato, importo, motivo, tecnico, qualifica, data, firmata, annullata_il, creata_il').eq('persona_id', personaId),
       ])
       return {
         esportato_il: new Date().toISOString(),
@@ -2432,6 +2505,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         dati_anagrafici: anag.error?.code === '42P01' || anag.error?.code === 'PGRST205' ? null : ok(anag),
         // Senza 79-lettere-incarico.sql non ce ne sono.
         lettere_incarico: lett.error?.code === '42P01' || lett.error?.code === 'PGRST205' ? [] : ok(lett),
+        // Senza 80-ricevute-compensi.sql non ce ne sono.
+        ricevute_compensi: comp.error?.code === '42P01' || comp.error?.code === 'PGRST205' ? [] : ok(comp),
       }
     },
     async backup() {

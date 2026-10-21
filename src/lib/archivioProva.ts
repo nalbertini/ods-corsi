@@ -1,4 +1,5 @@
 import type { Lettera } from './lettere'
+import type { RicevutaCompenso } from './compensi'
 import type { Segnalata } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 import type { StatoSito } from './sitoProva'
@@ -176,6 +177,8 @@ export interface Archivio {
   tariffe?: Record<string, Record<string, number>>
   /** Le lettere d'incarico dei tecnici (79-lettere-incarico.sql), dalla più vecchia. */
   lettere?: Lettera[]
+  /** Le ricevute dei compensi dei tecnici (80-ricevute-compensi.sql), dalla più vecchia. */
+  ricevuteCompensi?: RicevutaCompenso[]
   /** Chi è venuto a provare una lezione, come le righe di `prove` (21-prove.sql). */
   prove?: ProvaLezione[]
   /** Le tessere (61-tessere.sql); un archivio salvato prima non le ha. */

@@ -22,7 +22,7 @@ const PIEDE =
   'Corso Francia 224 Cascine Vica Rivoli 10098 Torino; telefono 3479119064; e-mail: asdilcentrojudo@gmail.com; pec: asdilcentrojudo@legalmail.it; Cod.fisc.: 95562500017; p.iva:10002760014'
 
 /** Le righe di un testo che sta in `largo` punti, a capo fra le parole. */
-function aCapo(testo: string, font: PDFFont, corpo: number, largo: number): string[] {
+export function aCapo(testo: string, font: PDFFont, corpo: number, largo: number): string[] {
   const righe: string[] = []
   let riga = ''
   // Solo gli spazi normali: quello che non va a capo (fra € e l'importo) tiene unite le parole.
