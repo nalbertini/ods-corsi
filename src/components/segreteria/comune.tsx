@@ -110,7 +110,15 @@ export interface Domanda {
   pericolo: boolean
   /** Il no è il tasto in evidenza: si sta uscendo da qualcosa non salvato. */
   restare: boolean
-  risposta: (si: boolean) => void
+  /** Una casella sotto la domanda, già spuntata: una scelta in più che non cambia il sì (MANDA PER EMAIL in FAI LA RICEVUTA). */
+  spunta?: SpuntaDomanda
+  risposta: (si: boolean, spuntata: boolean) => void
+}
+
+export interface SpuntaDomanda {
+  testo: string
+  /** La frase sotto la casella, che cambia con la spunta. */
+  nota: (spuntata: boolean) => string
 }
 let mostra: ((d: Domanda) => void) | null = null
 
@@ -122,9 +130,14 @@ let mostra: ((d: Domanda) => void) | null = null
  * nella pagina (la segreteria lo mette); senza, si chiede al browser.
  */
 export function chiedi(testo: string, si: string, o: { no?: string; pericolo?: boolean; restare?: boolean } = {}): Promise<boolean> {
+  return chiediSpunta(testo, si, o).then((x) => x.si)
+}
+
+/** Come `chiedi`, con la casella `spunta` sotto la domanda: dice anche se è rimasta spuntata. Senza `<Conferme />` resta spuntata. */
+export function chiediSpunta(testo: string, si: string, o: { no?: string; pericolo?: boolean; restare?: boolean } = {}, spunta?: SpuntaDomanda): Promise<{ si: boolean; spuntata: boolean }> {
   return new Promise((risposta) => {
-    if (!mostra) return risposta(window.confirm(testo))
-    mostra({ testo, si, no: o.no ?? 'No, lascia stare', pericolo: !!o.pericolo, restare: !!o.restare, risposta })
+    if (!mostra) return risposta({ si: window.confirm(testo), spuntata: true })
+    mostra({ testo, si, no: o.no ?? 'No, lascia stare', pericolo: !!o.pericolo, restare: !!o.restare, spunta, risposta: (x, spuntata) => risposta({ si: x, spuntata }) })
   })
 }
 
@@ -138,15 +151,16 @@ export function Conferme() {
     }
   }, [])
   if (!d) return null
-  const fine = (si: boolean) => {
+  const fine = (si: boolean, spuntata = true) => {
     setD(null)
-    d.risposta(si)
+    d.risposta(si, spuntata)
   }
   return <Conferma d={d} fine={fine} />
 }
 
-export function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean) => void }) {
-  const ref = useDialogo<HTMLDivElement>(() => fine(false))
+export function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean, spuntata?: boolean) => void }) {
+  const [spuntata, setSpuntata] = useState(true)
+  const ref = useDialogo<HTMLDivElement>(() => fine(false, spuntata))
   const no = useRef<HTMLButtonElement>(null)
   // Dopo `useDialogo`, che mette il fuoco sul dialogo: si parte dalla risposta sicura.
   useEffect(() => no.current?.focus(), [])
@@ -165,11 +179,22 @@ export function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean) => void 
             {resto}
           </p>
         )}
+        {d.spunta && (
+          <div className="sg-conferma-spunta">
+            <label className="modulo-privacy">
+              <input type="checkbox" checked={spuntata} onChange={(e) => setSpuntata(e.target.checked)} aria-describedby="conferma-spunta-nota" />
+              {d.spunta.testo}
+            </label>
+            <span id="conferma-spunta-nota" className="sg-conferma-spunta-nota">
+              {d.spunta.nota(spuntata)}
+            </span>
+          </div>
+        )}
         <div className="sg-conferma-tasti">
-          <button ref={no} type="button" className={d.restare ? 'sg-btn sg-btn-pieno' : 'sg-btn sg-btn-linea'} onClick={() => fine(false)}>
+          <button ref={no} type="button" className={d.restare ? 'sg-btn sg-btn-pieno' : 'sg-btn sg-btn-linea'} onClick={() => fine(false, spuntata)}>
             {d.no}
           </button>
-          <button type="button" className={d.pericolo ? 'sg-btn sg-btn-rosso' : d.restare ? 'sg-btn sg-btn-linea' : 'sg-btn sg-btn-pieno'} onClick={() => fine(true)}>
+          <button type="button" className={d.pericolo ? 'sg-btn sg-btn-rosso' : d.restare ? 'sg-btn sg-btn-linea' : 'sg-btn sg-btn-pieno'} onClick={() => fine(true, spuntata)}>
             {d.si}
           </button>
         </div>

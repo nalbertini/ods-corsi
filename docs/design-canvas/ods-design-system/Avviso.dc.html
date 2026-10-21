@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="{{ruolo}}" style="display: flex; align-items: center; gap: 14px; width: 100%; max-width: 460px; padding: 10px 10px 10px 18px; background: {{fondo}}; color: {{colore}}; font-family: {{corpoTesto}}; font-size: 15px; font-weight: 600; line-height: 1.4">
+  <span style="flex: 1 1 0; min-width: 0">{{testo}}</span>
+  <sc-if value="{{haAzione}}" hint-placeholder-val="{{ false }}">
+    <span style="display: inline-flex; align-items: center; flex-shrink: 0; align-self: stretch; min-height: 44px; padding: 0 12px; border: 2px solid currentColor; font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; white-space: nowrap">{{azione}}</span>
+    <span aria-label="Chiudi l’avviso" style="display: grid; place-items: center; flex-shrink: 0; align-self: stretch; min-width: 44px; min-height: 44px; border: 2px solid currentColor">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"></path></svg>
+    </span>
+  </sc-if>
+  <sc-if value="{{senzaAzione}}" hint-placeholder-val="{{ true }}">
+    <span style="display: inline-flex; align-items: center; flex-shrink: 0; align-self: stretch; min-height: 44px; padding: 0 12px; border: 2px solid currentColor; font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.14em">Chiudi</span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"Ricevuta annullata"},"guaio":{"editor":"boolean","default":false},"azione":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":460,"height":80}}'>
+// L'avviso dopo un'azione della segreteria (`useAvviso` di src/components/segreteria/comune.tsx righe 221-275; .sg-avviso di
+// src/styles.css righe 2534-2546): nell'app sta fisso in basso a destra (36px dal lato, 28px dal fondo; sul telefono 16px dai lati,
+// riga 2892), qui disegnato da solo. Al massimo 460px, padding 10px 10px 10px 18px, gap 14px, 15px 600; fondo `text` e testo `bg`
+// (l'inverso della pagina); `guaio` = fondo `rosso` e testo `su-rosso`, e resta finche' non lo si chiude (role alert).
+// Il tasto: .sg-avviso-chiudi (alto 44px, padding 0 12px, bordo 2px del colore del testo, --cond 13px 700 0.14em) con «Chiudi»;
+// con un'`azione` (RIAPRI, MANDA PER EMAIL…) il tasto ha la parola dell'azione e accanto c'e' la ✕ (.sg-avviso-x, 44px).
+// tema sito (righe 240-268): --text #0d2a3d, --bg #eef5fa, --cond Big Shoulders Display, testo in Inter.
+const T = {
+  scuro: { text: '#f2f2f0', bg: '#121212', rosso: '#e4292a', suRosso: '#ffffff', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+  chiaro: { text: '#161616', bg: '#f4f4f1', rosso: '#e4292a', suRosso: '#ffffff', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+  sito: { text: '#0d2a3d', bg: '#eef5fa', rosso: '#e4292a', suRosso: '#ffffff', cond: "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif", body: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const guaio = truthy(p.guaio);
+    const azione = p.azione ?? '';
+    return {
+      testo: p.testo ?? 'Ricevuta annullata', ruolo: guaio ? 'alert' : 'status',
+      fondo: guaio ? c.rosso : c.text, colore: guaio ? c.suRosso : c.bg,
+      cond: c.cond, corpoTesto: c.body,
+      azione, haAzione: azione !== '', senzaAzione: azione === '',
+    };
+  }
+}
+</script>
+</body>
+</html>

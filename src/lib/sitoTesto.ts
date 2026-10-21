@@ -17,13 +17,13 @@ import sanitizeHtml from 'sanitize-html'
 const LINK_ASSOLUTO = /^(https?:|mailto:|tel:)/i
 export const LINK_INTERNO = /^\/(?![/\\])/
 
-/** Le sole classi di un `div`: le colonne affiancate della pagina a pezzi (`sitoPezzi.ts`). */
-const CLASSI_COLONNE = ['colonne', 'c-2', 'c-3', 'colonna']
+/** Le sole classi di un `div`: le colonne affiancate e la parte ISCRIVITI della pagina a pezzi (`sitoPezzi.ts`). */
+const CLASSI_DIV = ['colonne', 'c-2', 'c-3', 'colonna', 'iscriviti']
 
 const OPZIONI: sanitizeHtml.IOptions = {
   allowedTags: ['h2', 'h3', 'p', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'br', 'div'],
   allowedAttributes: { a: ['href', 'rel', 'target', 'class'], img: ['src', 'alt'], div: ['class'] },
-  allowedClasses: { a: ['pulsante'], div: [...CLASSI_COLONNE] },
+  allowedClasses: { a: ['pulsante'], div: [...CLASSI_DIV] },
   allowedSchemes: ['http', 'https', 'mailto', 'tel'],
   allowedSchemesByTag: { img: ['http', 'https'] },
   allowProtocolRelative: false,
@@ -50,7 +50,7 @@ const OPZIONI: sanitizeHtml.IOptions = {
 }
 
 /**
- * Toglie i `div` che non sono colonne, e le loro chiusure, tenendo il contenuto.
+ * Toglie i `div` che non sono colonne né la parte ISCRIVITI, e le loro chiusure, tenendo il contenuto.
  * Lo fa prima di `sanitizeHtml`: rinominare un tag ammesso in uno no, dentro la libreria, lascia una chiusura orfana.
  */
 function senzaDivEstranei(html: string): string {
@@ -58,7 +58,7 @@ function senzaDivEstranei(html: string): string {
   return html.replace(/<(\/?)div\b([^>]*)>/gi, (tag, chiude: string, resto: string) => {
     if (chiude) return tenuti.pop() ? tag : ''
     const classi = /\bclass\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(resto)
-    const tiene = (classi?.[1] ?? classi?.[2] ?? '').split(/\s+/).some((c) => c === 'colonne' || c === 'colonna')
+    const tiene = (classi?.[1] ?? classi?.[2] ?? '').split(/\s+/).some((c) => c === 'colonne' || c === 'colonna' || c === 'iscriviti')
     tenuti.push(tiene)
     return tiene ? tag : ''
   })

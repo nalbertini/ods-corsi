@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: {{spazio}}; padding: {{pad}}; background: #f4c31b; color: #0d2a3d; border-radius: 6px">
+  <div style="display: grid; grid-template-columns: {{colonne}}; gap: {{spazio}}; align-items: end">
+    <div style="display: flex; flex-direction: column; gap: 20px; min-width: 0">
+      <span style="font-family: {{inter}}; font-size: 14px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase">{{occhiello}}</span>
+      <h2 style="font-family: {{big}}; text-transform: uppercase; margin: 0; font-weight: 800; font-size: {{corpo}}; line-height: .9; text-wrap: balance; overflow-wrap: anywhere">{{titolo}}</h2>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 20px; min-width: 0">
+      <p style="font-family: {{inter}}; margin: 0; font-size: {{corpoTesto}}; line-height: 1.45; max-width: 560px">{{frase}}</p>
+      <sc-if value="{{conOrari}}" hint-placeholder-val="{{ true }}"><span style="display: inline-flex; align-self: flex-start; align-items: center; min-height: 48px; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 18px; text-decoration: underline; text-underline-offset: 4px">Guarda gli orari</span></sc-if>
+    </div>
+  </div>
+  <div style="display: grid; grid-template-columns: {{colonneAzioni}}; gap: 6px">
+    <sc-for list="{{azioni}}" as="x" hint-placeholder-count="3">
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: {{padPasso}}; background: {{x.fondo}}; color: {{x.testo}}; border-radius: 6px">
+        <span style="font-family: {{inter}}; font-size: 13px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase">{{x.etichetta}}</span>
+        <span style="font-family: {{big}}; font-weight: 800; font-size: {{corpoValore}}; line-height: .95; text-transform: uppercase; overflow-wrap: anywhere">{{x.valore}}</span>
+        <span style="font-family: {{inter}}; font-size: {{corpoPasso}}; line-height: 1.35">{{x.nota}}</span>
+        <span style="display: inline-flex; align-items: center; justify-content: center; align-self: {{allinea}}; min-height: 52px; margin-top: auto; padding: 0 22px; border-radius: 6px; background: {{x.fondoTasto}}; color: {{x.testoTasto}}; font-family: {{inter}}; font-size: 17px; font-weight: 600">{{x.azione}}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"occhiello":{"editor":"text","default":"Una settimana di prova"},"titolo":{"editor":"text","default":"Vieni a provare."},"frase":{"editor":"text","default":"Una lezione a 3 € o una settimana a 10 €: provi le discipline adatte alla tua età, o a quella di tuo figlio, poi scegli."},"principale":{"editor":"text","default":"Iscriviti"},"telefono":{"editor":"text","default":"346 329 2786"},"indirizzo":{"editor":"text","default":"Via Vittorio Sassi 26, Collegno"},"metro":{"editor":"text","default":"Vicino alla metro Fermi"},"piccolo":{"editor":"boolean","default":false},"conOrari":{"editor":"boolean","default":true},"$preview":{"width":1344,"height":540}}'>
+// COSTRUITO (`invito()` di src/lib/sitoGenera.ts, `.invito*`; ../invito-iscriviti/ e i cinque commenti sul canvas del 21 ottobre).
+// In alto il titolo a sinistra e, a destra, la frase sulle prove con «Guarda gli orari» (link da 48px, solo se c'è la pagina Orari e
+// non è lei: `conOrari`). Sotto quattro riquadri in fila con lo stesso pulsante pieno da 52px: ISCRIVITI per primo, l'unico inchiostro
+// col pulsante giallo (si distingue per il posto e il fondo, non per un pulsante diverso), poi CHIAMA (tel:), SCRIVICI (WhatsApp,
+// `scrivi` di src/lib/sito.ts) e VIENI A TROVARCI (`CONTATTI.mappa`), bianchi col pulsante inchiostro. Fra 901 e 1200px i riquadri
+// vanno due per riga; `piccolo` è il telefono: tutto in colonna, pulsanti a tutta larghezza.
+// «€» con lo spazio indivisibile; il titolo va a capo anche dentro una parola lunga. La parte ISCRIVITI degli editor a pezzi cambia
+// solo `titolo` e `frase` (vuoti = quelli di sempre). Valori: giallo #f4c31b, inchiostro #0d2a3d, tessere bianche distanziate di 6px.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const pic = truthy(p.piccolo);
+    // Iscriviti è il primo riquadro, l'unico scuro: si distingue per il posto e il fondo, non per un pulsante diverso.
+    const azioni = [
+      { etichetta: 'Prova e iscriviti', valore: p.principale ?? 'Iscriviti', nota: 'Online, dal telefono, in pochi minuti', azione: 'Iscriviti', fondo: '#0d2a3d', testo: '#ffffff', fondoTasto: '#f4c31b', testoTasto: '#0d2a3d' },
+      { etichetta: 'Chiama', valore: p.telefono ?? '', nota: 'Ti diciamo quando venire, per la tua età', azione: 'Chiama ora', fondo: '#ffffff', testo: '#0d2a3d', fondoTasto: '#0d2a3d', testoTasto: '#ffffff' },
+      { etichetta: 'Scrivici', valore: 'WhatsApp', nota: 'Allo stesso numero: ti rispondiamo appena possibile', azione: 'Scrivici su WhatsApp', fondo: '#ffffff', testo: '#0d2a3d', fondoTasto: '#0d2a3d', testoTasto: '#ffffff' },
+      { etichetta: 'Vieni a trovarci', valore: p.indirizzo ?? '', nota: p.metro ?? '', azione: 'Come arrivare', fondo: '#ffffff', testo: '#0d2a3d', fondoTasto: '#0d2a3d', testoTasto: '#ffffff' },
+    ];
+    return {
+      big: BIG, inter: INTER, occhiello: p.occhiello ?? '', titolo: p.titolo ?? '', frase: p.frase ?? '', principale: p.principale ?? '',
+      telefono: p.telefono ?? '', azioni, indirizzo: p.indirizzo ?? '', metro: p.metro ?? '', conOrari: p.conOrari === undefined ? true : truthy(p.conOrari),
+      colonne: pic ? '1fr' : '1fr 1fr', colonneAzioni: pic ? '1fr' : 'repeat(4, minmax(0, 1fr))', spazio: pic ? '28px' : '40px', pad: pic ? '28px 22px' : '56px',
+      corpo: pic ? '56px' : '88px', corpoTesto: pic ? '18px' : '22px', largPulsante: pic ? '100%' : 'auto',
+      padPasso: pic ? '16px' : '22px', corpoPasso: pic ? '16px' : '17px', corpoValore: pic ? '32px' : '32px', allinea: pic ? 'stretch' : 'flex-start',
+    };
+  }
+}
+</script>
+</body>
+</html>

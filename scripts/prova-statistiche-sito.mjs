@@ -193,7 +193,7 @@ ok('tre indirizzi: total, hits, toprefs', [...new Set([...fn.matchAll(/\/stats\/
 ok('risponde 401, 403, 400, 501, 502', [401, 403, 400, 501, 502].every((s) => new RegExp(`,\\s*${s}[,)]`).test(fn)), true)
 ok('la chiave non torna mai all’app', /risposta\([^)]*chiave/.test(fn), false)
 const iStaff = fn.indexOf("eq('ruolo', 'staff')")
-// Il 403 della segreteria, dopo il filtro sul ruolo: prima ce n'è un altro, quello del token di Claude (76-claude-dalla-porta.sql).
+// Il 403 della segreteria, dopo il filtro sul ruolo: prima ce n'è un altro, quello del token di Claude (77-claude-dalla-porta.sql).
 const i403 = fn.indexOf(', 403)', iStaff)
 const iChiave = fn.indexOf("Deno.env.get('GOATCOUNTER_CHIAVE')")
 ok('prima si guarda chi chiama, poi si prende la chiave', iStaff > 0 && i403 > iStaff && iChiave > i403, true)

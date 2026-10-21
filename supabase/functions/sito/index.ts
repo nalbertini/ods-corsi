@@ -40,7 +40,7 @@ const no = (guaio: string, stato: number) => risposta({ guaio }, stato)
 
 /**
  * Il token che Claude riceve quando lo si collega a ODS Corsi (OAuth Server, claim `client_id`): `getUser` lo accetta
- * come un accesso qualunque, ma da Claude questa funzione non si chiama (vedi 76-claude-dalla-porta.sql). Il token è
+ * come un accesso qualunque, ma da Claude questa funzione non si chiama (vedi 77-claude-dalla-porta.sql). Il token è
  * già verificato da `getUser`: qui se ne leggono solo i claim; uno che non si legge vale come di Claude.
  */
 function daClaude(token: string): boolean {

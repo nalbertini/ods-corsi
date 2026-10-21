@@ -2,8 +2,9 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { createUsePuck, Puck, registerOverlayPortal, type ComponentData, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { FRASE_NESSUNA_PARTE, MASSIMO_PEZZI, attesaStoria, colonnaNuova, conTestoScritto, nomeParte, scriviTesto, selezioneDopoStoria, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
+import { FRASE_NESSUNA_PARTE, attesaStoria, colonnaNuova, doveMettere, motivoSpento, puoMettere, spostabile, conTestoScritto, nomeParte, scriviTesto, selezioneDopoStoria, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
+import { invito } from '../../lib/sitoGenera'
 import { TestoInPagina } from './TestoInPagina'
 import { ScegliImmagine } from './ImmaginiSito'
 
@@ -24,6 +25,7 @@ type Props = {
   testo: { html: string }
   foto: { src: string; alt: string }
   colonne: { colonne: Array<{ html: string }> }
+  iscriviti: { titolo: string; frase: string }
 }
 
 /** Il corpo di un testo come lo vede chi scrive: ripulito dalla stessa funzione che lo ripulisce per il sito. */
@@ -213,6 +215,18 @@ function configura(d: DatiSegreteria): Config<Props> {
         defaultProps: { colonne: [{ html: '' }, { html: '' }] },
         render: ({ id, colonne }) => <PezzoTesto d={d} id={id} colonne={colonne} />,
       },
+      iscriviti: {
+        label: 'ISCRIVITI',
+        fields: {
+          titolo: { type: 'text', label: 'TITOLO (vuoto = «Vieni a provare.»)' },
+          frase: { type: 'textarea', label: 'FRASE (vuoto = quella di sempre)' },
+        },
+        defaultProps: { titolo: '', frase: '' },
+        // Una per pagina e sempre in fondo: niente copia né trascinamento (SU e GIÙ la lasciano dov'è, `spostabile`).
+        permissions: { duplicate: false, drag: false },
+        // Sicuro: `invito` mette titolo e frase con le entità, il resto è fisso. La forma vera la mostra «Com'è sul sito».
+        render: ({ titolo, frase }) => <div className="sito-testo" style={{ minHeight: 0, border: 0 }} dangerouslySetInnerHTML={{ __html: invito({ titolo, frase }, true) }} />,
+      },
     },
   }
 }
@@ -230,6 +244,7 @@ const PARTI: Array<{ tipo: keyof Props; nome: string }> = [
   { tipo: 'testo', nome: 'TESTO' },
   { tipo: 'foto', nome: 'FOTO' },
   { tipo: 'colonne', nome: 'COLONNE' },
+  { tipo: 'iscriviti', nome: 'ISCRIVITI' },
 ]
 
 /**
@@ -239,7 +254,7 @@ const PARTI: Array<{ tipo: keyof Props; nome: string }> = [
 function Comandi({ onNuova }: { onNuova: () => void }) {
   const dispatch = usePuck((s) => s.dispatch)
   const scelto = usePuck((s) => s.appState.ui.itemSelector)
-  const quanti = usePuck((s) => s.appState.data.content.length)
+  const contenuto = usePuck((s) => s.appState.data.content)
   const { storia, indietro, avanti } = useStoria()
   const vai = (verso: number) => {
     if (!scelto) return
@@ -248,7 +263,7 @@ function Comandi({ onNuova }: { onNuova: () => void }) {
     dispatch({ type: 'setUi', ui: { itemSelector: { index: scelto.index + verso, zone: ZONA } } })
   }
   const metti = (tipo: keyof Props) => {
-    const dove = scelto ? scelto.index + 1 : quanti
+    const dove = doveMettere(tipo, scelto ? scelto.index : null, contenuto)
     dispatch({ type: 'insert', componentType: tipo, destinationIndex: dove, destinationZone: ZONA })
     // La parte nuova resta scelta: SU, GIÙ, TOGLI e i suoi campi sono lì, senza un tocco in più.
     dispatch({ type: 'setUi', ui: { itemSelector: { index: dove, zone: ZONA } } })
@@ -263,15 +278,15 @@ function Comandi({ onNuova }: { onNuova: () => void }) {
   return (
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', padding: 8 }}>
       {PARTI.map((p) => (
-        <button key={p.tipo} type="button" className="sg-chip num" disabled={quanti >= MASSIMO_PEZZI} onClick={() => metti(p.tipo)}>
+        <button key={p.tipo} type="button" className="sg-chip num" disabled={!puoMettere(p.tipo, contenuto)} title={motivoSpento(p.tipo, contenuto) ?? undefined} onClick={() => metti(p.tipo)}>
           + {p.nome}
         </button>
       ))}
       <span className="grow" />
       <button type="button" className="sg-chip num" disabled={!storia.hasPast} onClick={indietro}>Annulla</button>
       <button type="button" className="sg-chip num" disabled={!storia.hasFuture} onClick={avanti}>Rifai</button>
-      <button type="button" className="sg-chip num" disabled={!scelto || scelto.index === 0} onClick={() => vai(-1)}>Su ▲</button>
-      <button type="button" className="sg-chip num" disabled={!scelto || scelto.index >= quanti - 1} onClick={() => vai(1)}>Giù ▼</button>
+      <button type="button" className="sg-chip num" disabled={!scelto || !spostabile(contenuto, scelto.index, -1)} onClick={() => vai(-1)}>Su ▲</button>
+      <button type="button" className="sg-chip num" disabled={!scelto || !spostabile(contenuto, scelto.index, 1)} onClick={() => vai(1)}>Giù ▼</button>
       <button data-bozza type="button" className="sg-chip num sg-pericolo" disabled={!scelto} onClick={togli}>Togli</button>
     </div>
   )

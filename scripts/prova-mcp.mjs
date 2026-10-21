@@ -1238,7 +1238,7 @@ console.log('\n35. il certificato dei minori dal giorno dei 6 anni (seiAnni), se
 console.log('\n36. le Edge Function con la chiave service_role non si chiamano col token di Claude')
 {
   // backup, invita, sito e conti-sito leggono chi chiama con `getUser` e poi lavorano con `service_role`: non passano
-  // dalla porta di PostgREST (76-claude-dalla-porta.sql), quindi rifiutano loro il token con `client_id`.
+  // dalla porta di PostgREST (77-claude-dalla-porta.sql), quindi rifiutano loro il token con `client_id`.
   const { readFileSync } = await import('node:fs')
   const { transformSync } = await import('esbuild')
   const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url')

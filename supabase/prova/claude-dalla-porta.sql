@@ -1,4 +1,4 @@
--- Claude passa solo dalla sua porta (76-claude-dalla-porta.sql): il token che Claude riceve quando una persona lo
+-- Claude passa solo dalla sua porta (77-claude-dalla-porta.sql): il token che Claude riceve quando una persona lo
 -- collega a ODS Corsi (OAuth Server di Supabase) porta tutti i diritti di quella persona, più il claim `client_id`.
 -- Qui si prova che con quel claim:
 --   · `controlla_richiesta()`, che PostgREST chiama prima di ogni richiesta, lascia passare solo le funzioni del
@@ -28,7 +28,7 @@ select (to_regprocedure('public.controlla_richiesta()') is not null
     and to_regprocedure('public.chat_movimento_per_chiave(text)') is not null
     and to_regprocedure('public.chat_ricevute()') is not null
     and to_regprocedure('public.chat_pagamenti_diretti()') is not null)::text as c76 \gset
-select atteso('76-claude-dalla-porta.sql è stato lanciato', :'c76', 'true');
+select atteso('77-claude-dalla-porta.sql è stato lanciato', :'c76', 'true');
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'anna@ods.it'),

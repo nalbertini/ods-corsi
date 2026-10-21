@@ -15,6 +15,11 @@ export type Pezzo =
   | { type: 'testo'; props: { id: string; html: string } }
   | { type: 'foto'; props: { id: string; src: string; alt: string } }
   | { type: 'colonne'; props: { id: string; colonne: Array<{ html: string }> } }
+  // L'invito in fondo alla pagina (`invito` di sitoGenera.ts): titolo e frase vuoti sono quelli di sempre.
+  | { type: 'iscriviti'; props: { id: string } & ParteIscriviti }
+
+/** Quel che la segreteria cambia dell'invito: il resto (indirizzo, numero, pulsanti, passi) è del sito. */
+export type ParteIscriviti = { titolo: string; frase: string }
 
 export interface PezziPagina {
   content: Pezzo[]
@@ -27,12 +32,44 @@ export const MASSIMO_CARATTERI = 400000
 
 /** Il nome di una parte nell'ELENCO, con le parole della segreteria. */
 export const nomeParte = (p: Pezzo): string =>
-  p.type === 'fotoInCima' ? 'Foto in cima' : p.type === 'testo' ? 'Testo' : p.type === 'foto' ? 'Foto' : p.props.colonne.length === 2 ? 'Due colonne' : 'Tre colonne'
+  p.type === 'fotoInCima' ? 'Foto in cima' : p.type === 'testo' ? 'Testo' : p.type === 'foto' ? 'Foto' : p.type === 'iscriviti' ? 'Iscriviti' : p.props.colonne.length === 2 ? 'Due colonne' : 'Tre colonne'
 
 /** Cosa dice il pannello delle impostazioni finché nessuna parte è scelta. */
 export const FRASE_NESSUNA_PARTE = 'Tocca una parte della pagina per cambiarne le impostazioni.'
 
 export const pezziVuoti = (): PezziPagina => ({ content: [] })
+
+/** Basta il tipo: i dati di Puck danno `type: string`, e queste regole non leggono altro. */
+type ConTipo = ReadonlyArray<{ type: string }>
+
+/** La pagina ha già la parte ISCRIVITI: un'altra non si mette. */
+export const conIscriviti = (pezzi: ConTipo): boolean => pezzi.some((p) => p.type === 'iscriviti')
+
+/** Perché il tasto + PARTE è spento, a parole; `null` se si può mettere. */
+export function motivoSpento(tipo: Pezzo['type'], pezzi: ConTipo): string | null {
+  if (pezzi.length >= MASSIMO_PEZZI) return `La pagina ha già ${MASSIMO_PEZZI} parti, il massimo`
+  if (tipo === 'iscriviti' && conIscriviti(pezzi)) return 'C’è già: una parte Iscriviti per pagina'
+  return null
+}
+
+export const puoMettere = (tipo: Pezzo['type'], pezzi: ConTipo): boolean => motivoSpento(tipo, pezzi) === null
+
+/** SU (-1) e GIÙ (+1): dentro la pagina, e mai con ISCRIVITI, che sta ferma in fondo. */
+export function spostabile(pezzi: ConTipo, indice: number, verso: -1 | 1): boolean {
+  const altro = indice + verso
+  if (indice < 0 || altro < 0 || altro >= pezzi.length) return false
+  return pezzi[indice].type !== 'iscriviti' && pezzi[altro].type !== 'iscriviti'
+}
+
+/**
+ * Dove va una parte nuova: dopo quella scelta (`dopo`, l'indice) o in fondo. ISCRIVITI va sempre in fondo, e
+ * nessuna parte le va dopo: sul sito è l'invito che chiude la pagina.
+ */
+export function doveMettere(tipo: Pezzo['type'], dopo: number | null, pezzi: ConTipo): number {
+  if (tipo === 'iscriviti') return pezzi.length
+  const dove = dopo === null ? pezzi.length : dopo + 1
+  return conIscriviti(pezzi) ? Math.min(dove, pezzi.length - 1) : dove
+}
 
 const stringa = (x: unknown): x is string => typeof x === 'string'
 const oggetto = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x)
@@ -46,6 +83,8 @@ function pezzoValido(x: unknown): x is Pezzo {
     case 'foto':
     case 'fotoInCima':
       return stringa(p.src) && p.src !== '' && stringa(p.alt)
+    case 'iscriviti':
+      return stringa(p.titolo) && stringa(p.frase)
     case 'colonne':
       return Array.isArray(p.colonne) && p.colonne.length >= 2 && p.colonne.length <= 3 && p.colonne.every((c) => oggetto(c) && stringa(c.html))
     default:
@@ -61,6 +100,8 @@ export function pezziValidi(x: unknown): x is PezziPagina {
   const pezzi = x.content as Pezzo[]
   if (new Set(pezzi.map((p) => p.props.id)).size !== pezzi.length) return false
   const incima = pezzi.flatMap((p, i) => (p.type === 'fotoInCima' ? [i] : []))
+  const iscriviti = pezzi.flatMap((p, i) => (p.type === 'iscriviti' ? [i] : []))
+  if (iscriviti.length > 1 || (iscriviti.length === 1 && iscriviti[0] !== pezzi.length - 1)) return false
   return incima.length === 0 || (incima.length === 1 && incima[0] === 0)
 }
 
@@ -123,6 +164,8 @@ function inHtml(p: Pezzo): string {
       if (piene.length < 2) return piene[0]?.html ?? ''
       return `<div class="colonne c-${piene.length}">${piene.map((c) => `<div class="colonna">${c.html}</div>`).join('')}</div>`
     }
+    case 'iscriviti':
+      return `<div class="iscriviti">${p.props.titolo ? `<h2>${esc(p.props.titolo)}</h2>` : ''}${p.props.frase ? `<p>${esc(p.props.frase)}</p>` : ''}</div>`
   }
 }
 
@@ -137,6 +180,8 @@ export function cosaNonVaPezzi(x: unknown): string | null {
     if (x.content.length > MASSIMO_PEZZI) return `La pagina ha troppe parti: al massimo ${MASSIMO_PEZZI}`
     const incima = parti.filter((p) => p.type === 'fotoInCima')
     if (incima.length > 1 || (incima.length === 1 && x.content[0] !== incima[0])) return 'La foto in cima è una sola e sta in alto'
+    const iscriviti = parti.filter((p) => p.type === 'iscriviti')
+    if (iscriviti.length > 1 || (iscriviti.length === 1 && x.content[x.content.length - 1] !== iscriviti[0])) return 'La parte Iscriviti è una sola e sta in fondo alla pagina'
     const foto = parti.filter((p) => (p.type === 'foto' || p.type === 'fotoInCima') && oggetto(p.props))
     if (foto.some((p) => !stringa((p.props as Record<string, unknown>).src) || (p.props as Record<string, unknown>).src === '')) return 'Ogni foto ha bisogno della sua immagine: scegline una o togli la foto'
     const colonne = parti.filter((p) => p.type === 'colonne' && oggetto(p.props) && Array.isArray((p.props as Record<string, unknown>).colonne))
@@ -226,6 +271,15 @@ function spezzaTesto(t: string): Segmento[] {
 }
 
 /**
+ * La parte ISCRIVITI in fondo al testo piatto, com'è scritta da `pezziInHtml`, e il testo che resta prima.
+ * Solo in fondo e solo in quella forma: un `div` così in mezzo alla pagina non è la parte, e resta testo.
+ */
+export function parteIscriviti(html: string): { resto: string; parte: ParteIscriviti | null } {
+  const m = /<div class="iscriviti">(?:<h2>([^<]*)<\/h2>)?(?:<p>([^<]*)<\/p>)?<\/div>$/.exec(html)
+  return m ? { resto: html.slice(0, m.index), parte: { titolo: disesc(m[1] ?? ''), frase: disesc(m[2] ?? '') } } : { resto: html, parte: null }
+}
+
+/**
  * Il testo piatto di una pagina vecchia, spezzato nei pezzi dell'editor: foto iniziale, colonne, foto tra i
  * paragrafi, testo che comincia a ogni titolo. Non si fida di sé: se i pezzi non rifanno esattamente il testo
  * (`pezziInHtml`), la pagina resta un solo pezzo di testo, così «Porta ai pezzi» non cambia mai quello che c'è scritto.
@@ -233,6 +287,7 @@ function spezzaTesto(t: string): Segmento[] {
 export function htmlInPezzi(html: string): PezziPagina {
   const t = pulisciTesto(html)
   if (t.trim() === '') return pezziVuoti()
+  const { resto, parte } = parteIscriviti(t)
   const pezzi: Pezzo[] = []
   const id = () => `p${pezzi.length + 1}`
   const testo = (h: string) => {
@@ -257,15 +312,16 @@ export function htmlInPezzi(html: string): PezziPagina {
     scarica()
   }
   let da = 0
-  for (const b of divDi(t, /\bcolonne\b/)) {
-    testo(t.slice(da, b.da))
+  for (const b of divDi(resto, /\bcolonne\b/)) {
+    testo(resto.slice(da, b.da))
     const colonne = divDi(b.dentro, /\bcolonna\b/).map((c) => ({ html: c.dentro }))
     // Colonne dentro una colonna non si riaprono nell'editor: si lasciano come testo.
     if (colonne.some((c) => /<div\b/i.test(c.html))) return unico(t)
     pezzi.push({ type: 'colonne', props: { id: id(), colonne } })
     da = b.a
   }
-  testo(t.slice(da))
+  testo(resto.slice(da))
+  if (parte) pezzi.push({ type: 'iscriviti', props: { id: id(), ...parte } })
   const primo = pezzi[0]
   if (primo?.type === 'foto') pezzi[0] = { type: 'fotoInCima', props: { ...primo.props, id: 'p0' } }
   const candidato: PezziPagina = { content: pezzi }
@@ -291,9 +347,9 @@ export function dividiInParti(p: PezziPagina): PezziPagina {
   const content = p.content.flatMap((x): Pezzo[] => {
     if (x.type !== 'testo') return [x]
     const parti = htmlInPezzi(x.props.html).content
-    if (parti.length < 2 || parti.some((q) => q.type === 'colonne')) return [x]
+    if (parti.length < 2 || parti.some((q) => q.type === 'colonne' || q.type === 'iscriviti')) return [x]
     return parti.flatMap((q, i): Pezzo[] => {
-      if (q.type === 'colonne') return [] // già escluso sopra: serve solo a restringere il tipo
+      if (q.type === 'colonne' || q.type === 'iscriviti') return [] // già escluso sopra: serve solo a restringere il tipo
       // La prima parte tiene l'id del testo; la foto in cima di una divisione è una foto qualunque: in cima ce n'è una sola.
       const id = i === 0 && q.type === 'testo' ? x.props.id : idNuovo()
       return [q.type === 'testo' ? { type: 'testo', props: { id, html: q.props.html } } : { type: 'foto', props: { id, src: q.props.src, alt: q.props.alt } }]

@@ -6,8 +6,8 @@
 // L'accesso è quello di Supabase (Authentication → OAuth Server): Claude chiede il token, la persona entra in ODS
 // e dice CONSENTI (la pagina `collega/` dell'app), e da lì ogni chiamata porta il suo token. Qui non c'è la chiave
 // `service_role`: il server legge e scrive col token di chi chiama, quindi valgono le stesse regole dell'app
-// (`e_amministrazione()`, le funzioni di 59, 60, 72, 75 e 76). Il token di Claude passa solo dalle funzioni di
-// `porta_di_claude()` (76): niente tabelle. Le regole e il protocollo sono in src/lib/mcp.ts e
+// (`e_amministrazione()`, le funzioni di 59, 60, 72, 75 e 77). Il token di Claude passa solo dalle funzioni di
+// `porta_di_claude()` (77): niente tabelle. Le regole e il protocollo sono in src/lib/mcp.ts e
 // src/lib/movimentiDallaChat.ts, provate da scripts/prova-mcp.mjs; qui solo Supabase.
 //
 // Si pubblica senza il controllo del token di Supabase (`--no-verify-jwt`): senza token deve rispondere questo
@@ -65,13 +65,13 @@ function apri(token: string) {
       const righe = ok(await db.rpc('chat_movimenti_uguali', { cerca_tipo: c.tipo, cerca_importo: c.importo, dal: c.dal, al: c.al })) as Array<{ id: string; tipo: string; data: string; importo: number; descrizione: string; voce_id: string | null; persona_id: string | null; annullato_il: string | null }>
       return righe.map((r) => ({ id: r.id, tipo: r.tipo, data: r.data, importo: r.importo, descrizione: r.descrizione, voceId: r.voce_id ?? '', personaId: r.persona_id, annullato: r.annullato_il !== null }))
     },
-    // Chi ha scritto e se è annullato li guarda il database (`chat_movimento_per_chiave`, 76).
+    // Chi ha scritto e se è annullato li guarda il database (`chat_movimento_per_chiave`, 77).
     async perChiave(chiave: string) {
       const righe = ok(await db.rpc('chat_movimento_per_chiave', { chiave })) as MovimentoScritto[]
       return righe[0] ?? null
     },
-    // Le letture dei conti: tutte le righe (lo storico supera le 1000 di una pagina), dalle funzioni di 76: il token
-    // di Claude non legge le tabelle (`controlla_richiesta`). Le righe arrivano senza tipo dall'API: la forma è quella di 76.
+    // Le letture dei conti: tutte le righe (lo storico supera le 1000 di una pagina), dalle funzioni di 77: il token
+    // di Claude non legge le tabelle (`controlla_richiesta`). Le righe arrivano senza tipo dall'API: la forma è quella di 77.
     async movimenti() {
       const righe = ok(await tutteLeRighe((da: number, a: number) => db.rpc('chat_movimenti').order('id').range(da, a))) as Array<{
         id: string; tipo: 'entrata' | 'uscita' | 'giroconto'; data: string; importo: number; voce_id: string | null; cassa_id: string; cassa_a_id: string | null
@@ -87,7 +87,7 @@ function apri(token: string) {
       }))
     },
     // Gli incassi degli iscritti: mai intestatario, ente, note o persona; delle ricevute solo le voci coi loro pagamenti.
-    // Le righe arrivano senza tipo dall'API: la forma è quella di `chat_ricevute` e `chat_pagamenti_diretti` (76).
+    // Le righe arrivano senza tipo dall'API: la forma è quella di `chat_ricevute` e `chat_pagamenti_diretti` (77).
     async incassi() {
       const [ricevute, diretti] = await Promise.all([
         tutteLeRighe((da: number, a: number) => db.rpc('chat_ricevute').order('id').range(da, a)),
@@ -128,7 +128,7 @@ function apri(token: string) {
       return righe.map((r) => ({ sessioneId: r.sessione_id, corsoId: r.corso_id, inizio: r.inizio, prove: r.prove }))
     },
     registra: async (dati: Record<string, unknown>) => {
-      // Una riga sola, in un elenco: `chat_registra` (76) risponde con `returns table`.
+      // Una riga sola, in un elenco: `chat_registra` (77) risponde con `returns table`.
       const [r] = ok(await db.rpc('chat_registra', { dati })) as MovimentoScritto[]
       return { id: r.id, tipo: r.tipo, data: r.data, importo: r.importo, descrizione: r.descrizione, voce_id: r.voce_id, cassa_id: r.cassa_id }
     },

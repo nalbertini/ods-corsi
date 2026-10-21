@@ -542,5 +542,122 @@ console.log('\nIl logo: una variante piccola per lo schermo normale')
   ok('la variante piccola pesa meno di 20 KB', !!piccolo && existsSync(`sito${piccolo}`) && statSync(`sito${piccolo}`).size < 20480, true)
 }
 
+// ---------------------------------------------------------------------------
+// L'invito «Iscriviti» ridisegnato (docs/design-canvas/invito-iscriviti/) e la parte ISCRIVITI dell'editor a pezzi,
+// che lo mette lei in fondo alla pagina (`<div class="iscriviti">`, sitoPezzi.ts).
+const TESTI_ISCRIZIONE = 'https://app.officinedellosport.it/iscrizioni/'
+const TITOLO_INVITO = 'Vieni a provare.'
+const FRASE_INVITO = 'Una lezione a 3 € o una settimana a 10 €: provi le discipline adatte alla tua età, o a quella di tuo figlio, poi scegli.'
+const inviti = (h) => [...h.matchAll(/<section class="invito"[^>]*>[\s\S]*?<\/section>/g)].map((m) => m[0])
+const invitoDi = (h) => inviti(h)[0] ?? ''
+const testoDi = (x) => x.replace(/<[^>]*>/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()
+const linkDi = (x) => [...x.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({ testo: testoDi(m[2]), href: /\shref="([^"]*)"/.exec(m[1])?.[1] ?? '', attr: m[1] }))
+const linkCon = (x, testo) => linkDi(x).find((l) => l.testo === testo)
+const titoloInvito = (inv) => testoDi(/<h2[^>]*>([\s\S]*?)<\/h2>/.exec(inv)?.[1] ?? '')
+const frasiInvito = (inv) => [...inv.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/g)].map((m) => testoDi(m[1]))
+const corpo = (h) => h.match(/<main[^>]*>([\s\S]*)<\/main>/)?.[1] ?? ''
+// Tutte le pagine pubblicate, contatti e orari compresi: l'invito automatico esce dove esce oggi.
+const conTutte = (extra = []) => dati({ pagine: [pag('home'), pag('judo'), pag('orari'), pag('contatti'), pag('privacy', { diLegge: true }), pag('cookie', { diLegge: true }), ...extra] })
+
+console.log('\nL’invito ridisegnato: com’è fatto')
+{
+  const r = genera(conTutte())
+  const h = c(r, 'judo/index.html')
+  const inv = invitoDi(h)
+  ok('l’invito è una <section class="invito">, non più un unico <a>', [inviti(h).length, conta(h, /<a class="invito"/g)], [1, 0])
+  ok('l’invito non ha più la parola grande (class="parola")', inv !== '' && !/class="parola"/.test(inv), true)
+  ok('l’invito ha l’occhiello «Una settimana di prova»', testoDi(inv).includes('Una settimana di prova'), true)
+  ok('l’invito ha il titolo di sempre in un <h2>', titoloInvito(inv), TITOLO_INVITO)
+  ok('l’invito ha la frase di sempre in un <p>', frasiInvito(inv).includes(FRASE_INVITO), true)
+  ok('«Iscriviti» porta al modulo di iscrizione', (linkCon(inv, 'Iscriviti')?.href ?? '').startsWith(TESTI_ISCRIZIONE), true)
+  // I quattro riquadri in fila sotto il testo (commenti sul canvas del 21 ottobre): Iscriviti per primo, poi Chiama, Scrivici e Vieni a trovarci.
+  const riquadri = [...(/<ul class="invito-riquadri"[^>]*>([\s\S]*?)<\/ul>/.exec(inv)?.[1] ?? '').matchAll(/<li([^>]*)>([\s\S]*?)<\/li>/g)]
+  ok('sotto ci sono quattro riquadri, ognuno col suo pulsante', [riquadri.length, ...riquadri.map((m) => linkDi(m[2]).length)], [4, 1, 1, 1, 1])
+  ok('i pulsanti dei riquadri, in ordine', riquadri.map((m) => linkDi(m[2])[0]?.testo), ['Iscriviti', 'Chiama ora', 'Scrivici su WhatsApp', 'Come arrivare'])
+  ok('il primo riquadro è Iscriviti, l’unico scuro', riquadri.map((m) => /class="[^"]*\bscuro\b/.test(m[1])), [true, false, false, false])
+  ok('«Chiama ora» chiama il numero (chiama di sito.ts) e il riquadro lo scrive', [linkCon(inv, 'Chiama ora')?.href, testoDi(riquadri[1]?.[2] ?? '').includes('346 329 2786')], [s.chiama, true])
+  ok('«Scrivici su WhatsApp» apre WhatsApp allo stesso numero (scrivi di sito.ts)', (linkCon(inv, 'Scrivici su WhatsApp')?.href ?? '').startsWith('https://wa.me/393463292786'), true)
+  ok('«Come arrivare» apre le indicazioni (CONTATTI.mappa)', linkCon(inv, 'Come arrivare')?.href, s.CONTATTI?.mappa.replace(/&/g, '&amp;'))
+  ok('nel testo in alto nessun pulsante: Chiama e Scrivici non si ripetono', linkDi(/<div class="invito-testo"[^>]*>([\s\S]*?)<\/div>/.exec(inv)?.[1] ?? '').map((l) => l.testo).filter((t) => t !== 'Guarda gli orari'), [])
+  ok('l’invito dice dove siamo, vicino alla metro Fermi', [testoDi(inv).includes(s.CONTATTI?.indirizzo ?? '?'), /vicino alla metro Fermi/i.test(testoDi(inv))], [true, true])
+  ok('con la pagina orari pubblicata: «Guarda gli orari» porta a /orari/', linkCon(inv, 'Guarda gli orari')?.href, '/orari/')
+  const senzaOrari = invitoDi(c(genera(dati({ pagine: [pag('home'), pag('judo'), pag('contatti')] })), 'judo/index.html'))
+  ok('nella pagina Orari l’invito non rimanda a sé stessa', linkCon(invitoDi(c(r, 'orari/index.html')), 'Guarda gli orari'), undefined)
+  ok('senza la pagina orari l’invito c’è, ma senza il link agli orari', [senzaOrari !== '', linkDi(senzaOrari).some((l) => /orari/i.test(l.testo) || /\/orari\//.test(l.href))], [true, false])
+}
+
+console.log('\nL’invito ridisegnato: dove esce')
+{
+  const F = await import('./fixture-home-nuova.mjs')
+  const r = genera(conTutte())
+  ok('esce nelle pagine di sempre: home, judo, orari, contatti', ['index.html', 'judo/index.html', 'orari/index.html', 'contatti/index.html'].map((f) => inviti(c(r, f)).length), [1, 1, 1, 1])
+  ok('non esce nelle pagine di legge (privacy, cookie)', ['privacy/index.html', 'cookie/index.html'].map((f) => conta(c(r, f), /class="invito"/g)), [0, 0])
+  const senza = genera(dati())
+  ok('senza la pagina contatti pubblicata non esce', html(senza).filter((f) => f !== '404.html').map((f) => conta(c(senza, f), /class="invito"/g)), [0, 0, 0])
+  ok('la Home nuova con la sua chiamata finale non ha l’invito', conta(genera(F.dati(F.TESTO_NUOVO))['index.html'] ?? '', /class="invito"/g), 0)
+  ok('la Home nuova senza chiamata finale ha l’invito nuovo', inviti(genera(F.dati(F.INTRO + F.CORSI + F.FAQ))['index.html'] ?? '').length, 1)
+  const tecnici = ['Maurizio', 'Diana', 'Katia', 'Serena', 'Tiziano', 'Fabio', 'Valerio', 'Giulia', 'Maura', 'Elena', 'Aldo', 'Manuel', 'Federico'].map((n, i) => `<h3>${n}</h3><p>Cognome${i} · Judo</p>`).join('')
+  const el = c(genera(dati({ pagine: [pag('home'), pag('istruttori', { testo: tecnici }), pag('contatti')] })), 'istruttori/index.html')
+  ok('l’elenco dei tecnici con la tessera d’invito non ha anche l’invito in fondo', [/ritratto-invito/.test(el), conta(el, /class="invito"/g)], [true, 0])
+  ok('mai due inviti in una pagina', html(r).filter((f) => conta(c(r, f), /class="invito"/g) > 1), [])
+}
+
+console.log('\nL’invito ridisegnato: le statistiche contano ancora «iscriviti»')
+{
+  const inv = invitoDi(c(genera({ ...conTutte(), statistiche: 'odscorsi' }), 'judo/index.html'))
+  ok('il tocco su «Iscriviti» dell’invito si conta come «iscriviti»', /data-goatcounter-click="iscriviti"/.test(linkCon(inv, 'Iscriviti')?.attr ?? ''), true)
+  ok('anche «Chiama ora» e «Scrivici su WhatsApp» dell’invito si contano', [/data-goatcounter-click="chiama"/.test(linkCon(inv, 'Chiama ora')?.attr ?? ''), /data-goatcounter-click="scrivici"/.test(linkCon(inv, 'Scrivici su WhatsApp')?.attr ?? '')], [true, true])
+}
+
+console.log('\nL’invito: le correzioni del collaudo')
+{
+  const anteprima = prova(() => g.paginaInAnteprima({ slug: 'karate', titolo: 'Karate', descrizione: '', testo: '<p>Corpo</p><div class="iscriviti"><h2>Iscrizioni aperte</h2></div>' }, []))
+  ok('l’anteprima della segreteria mostra l’invito della parte, uno', [inviti(typeof anteprima === 'string' ? anteprima : '').length, titoloInvito(invitoDi(typeof anteprima === 'string' ? anteprima : ''))], [1, 'Iscrizioni aperte'])
+  const senzaParte = prova(() => g.paginaInAnteprima({ slug: 'judo', titolo: 'Judo', descrizione: '', testo: '<p>Corpo</p>' }, []))
+  ok('l’anteprima senza la parte mostra l’invito di sempre, come sul sito', inviti(typeof senzaParte === 'string' ? senzaParte : '').length, 1)
+  const inv = invitoDi(c(genera(conTutte()), 'judo/index.html'))
+  ok('nell’invito «€» non va a capo da solo (spazio indivisibile prima)', [/\d €/.test(inv), /\d\u00a0€/.test(inv)], [false, true])
+  const spazi = invitoDi(c(genera(conTutte([pag('karate', { testo: '<p>Corpo</p><div class="iscriviti"><h2>   </h2><p>  </p></div>' })])), 'karate/index.html'))
+  ok('titolo e frase di soli spazi: il testo di sempre', [titoloInvito(spazi), frasiInvito(spazi).includes(FRASE_INVITO)], [TITOLO_INVITO, true])
+  const legge = genera(conTutte([pag('note', { diLegge: true, testo: '<p>x</p><div class="iscriviti"><h2>No</h2></div>' })]))
+  ok('una pagina di legge con la parte: nessun invito e nessun resto della parte', [conta(c(legge, 'note/index.html'), /class="invito"/g), /iscriviti|>No</.test(c(legge, 'note/index.html'))], [0, false])
+  ok('il titolo dell’invito va a capo dentro il riquadro anche con una parola lunga', /\.invito h2\{[^}]*overflow-wrap:anywhere/.test(c(genera(conTutte()), 'judo/index.html')), true)
+  ok('«Guarda gli orari» è un bersaglio di almeno 48px', /\.invito-orari\{[^}]*min-height:48px/.test(c(genera(conTutte()), 'judo/index.html')), true)
+}
+
+console.log('\nLa parte ISCRIVITI nella pagina generata')
+{
+  const h = c(genera(conTutte([pag('karate', { testo: '<p>Sopra</p><div class="iscriviti"><h2>T</h2><p>F</p></div><p>Sotto</p>' })])), 'karate/index.html')
+  ok('un div iscriviti in mezzo al testo non è la parte: il testo dopo resta, l’invito è quello di sempre', [corpo(h).includes('Sotto'), titoloInvito(invitoDi(h))], [true, TITOLO_INVITO])
+}
+{
+  const F = await import('./fixture-home-nuova.mjs')
+  const PARTE = '<div class="iscriviti"><h2>Prova il judo &amp; il karate</h2><p>Due lezioni a 5 € &amp; poi scegli.</p></div>'
+  const h = c(genera(conTutte([pag('karate', { testo: `<p>Corpo del karate</p>${PARTE}` })])), 'karate/index.html')
+  ok('con la parte in fondo l’invito esce una volta sola', [inviti(h).length, conta(h, /class="invito"/g)], [1, 1])
+  ok('l’invito ha il titolo e la frase della parte', [titoloInvito(invitoDi(h)), frasiInvito(invitoDi(h)).includes('Due lezioni a 5 € & poi scegli.')], ['Prova il judo & il karate', true])
+  ok('l’invito della parte ha ancora i quattro pulsanti dei riquadri', ['Iscriviti', 'Chiama ora', 'Scrivici su WhatsApp', 'Come arrivare'].map((t) => linkCon(invitoDi(h), t) !== undefined), [true, true, true, true])
+  ok('il div della parte e il suo titolo non stanno anche nel corpo', [/class="iscriviti"/.test(h), corpo(h).includes('Prova il judo'), corpo(h).includes('Corpo del karate')], [false, false, true])
+  const vuota = invitoDi(c(genera(conTutte([pag('karate', { testo: '<p>Corpo</p><div class="iscriviti"></div>' })])), 'karate/index.html'))
+  ok('la parte senza titolo né frase: il testo di sempre', [titoloInvito(vuota), frasiInvito(vuota).includes(FRASE_INVITO)], [TITOLO_INVITO, true])
+  const soloTitolo = invitoDi(c(genera(conTutte([pag('karate', { testo: '<p>Corpo</p><div class="iscriviti"><h2>Solo il titolo</h2></div>' })])), 'karate/index.html'))
+  ok('la parte col solo titolo: la frase di sempre', [titoloInvito(soloTitolo), frasiInvito(soloTitolo).includes(FRASE_INVITO)], ['Solo il titolo', true])
+  const soloFrase = invitoDi(c(genera(conTutte([pag('karate', { testo: '<p>Corpo</p><div class="iscriviti"><p>Solo la frase</p></div>' })])), 'karate/index.html'))
+  ok('la parte con la sola frase: il titolo di sempre', [titoloInvito(soloFrase), frasiInvito(soloFrase).includes('Solo la frase')], [TITOLO_INVITO, true])
+
+  // La segreteria l'ha messa lei: vince anche dove l'automatico lascia il posto alla chiamata finale.
+  const home = genera(F.dati(F.TESTO_NUOVO + PARTE))['index.html'] ?? ''
+  ok('la Home nuova con la chiamata finale e la parte: l’invito della parte, uno', [inviti(home).length, titoloInvito(invitoDi(home))], [1, 'Prova il judo & il karate'])
+  const tecnici = ['Maurizio', 'Diana', 'Katia', 'Serena', 'Tiziano', 'Fabio', 'Valerio', 'Giulia', 'Maura', 'Elena', 'Aldo', 'Manuel', 'Federico'].map((n, i) => `<h3>${n}</h3><p>Cognome${i} · Judo</p>`).join('')
+  const el = c(genera(dati({ pagine: [pag('home'), pag('istruttori', { testo: tecnici + PARTE }), pag('contatti')] })), 'istruttori/index.html')
+  ok('l’elenco dei tecnici con la parte: l’invito della parte, uno', [inviti(el).length, titoloInvito(invitoDi(el))], [1, 'Prova il judo & il karate'])
+  const senzaContatti = c(genera(dati({ pagine: [pag('home'), pag('karate', { testo: `<p>Corpo</p>${PARTE}` })] })), 'karate/index.html')
+  ok('senza la pagina contatti la parte non fa uscire l’invito, e non resta nel corpo', [conta(senzaContatti, /class="invito"/g), /class="iscriviti"/.test(senzaContatti), corpo(senzaContatti).includes('Prova il judo')], [0, false, false])
+
+  const ATTACCO = '<div class="iscriviti"><h2>&lt;script&gt;alert(1)&lt;/script&gt;</h2><p>&lt;img src=x onerror=alert(1)&gt;</p></div>'
+  const a = c(genera(conTutte([pag('karate', { testo: `<p>Corpo</p>${ATTACCO}` })])), 'karate/index.html')
+  ok('titolo e frase della parte arrivano escapati: nessun tag entra', [/<script>alert/.test(senzaDati(a)), /<img src=x/.test(a), invitoDi(a).includes('&lt;script&gt;alert(1)&lt;/script&gt;'), invitoDi(a).includes('&lt;img src=x onerror=alert(1)&gt;')], [false, false, true, true])
+}
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)

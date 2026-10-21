@@ -3,7 +3,8 @@ import type { DatiSegreteria } from '../../lib/segreteria'
 import { bastaPerCercare, comeSiAnnulla, domandaAnnullaPagamento, domandaAnnullaRicevuta, MASSIMO_PAGATORI, type RigaPagamento } from '../../lib/pagamenti'
 import { avvisoCassaChiusa } from '../../lib/contabilita'
 import { dataRicevuta, euro } from '../../lib/ricevute'
-import { chiedi, messaggio, Riga, type useAvviso } from './comune'
+import { rigaEmail } from '../../lib/ricevuteEmail'
+import { chiedi, messaggio, Riga, useCarica, type useAvviso } from './comune'
 import { RegistraPagamento } from './Ricevute'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
@@ -21,6 +22,15 @@ export function PagamentoAperto({ d, riga, fai, onChiudi, onFatto }: { d: DatiSe
     qui.current?.scrollIntoView({ block: 'center' })
   }, [riga.id])
   const come = comeSiAnnulla(riga)
+  // Se la ricevuta è partita per email: solo data ed esito, mai l'indirizzo. Senza 76-ricevute-email.sql (o se non si
+  // legge) la riga non c'è; mentre carica c'è già, con «—», così le righe sotto non saltano.
+  const ricevutaId = riga.ricevuta?.id
+  const posta = useCarica(async () => {
+    if (!ricevutaId) return ''
+    const [esiti, dal] = await Promise.all([d.esitiInvioRicevuta(ricevutaId), d.ricevuteEmailDal()])
+    return dal ? rigaEmail(esiti) : ''
+  }, [d, ricevutaId])
+  const email = !ricevutaId || posta.guaio ? '' : (posta.dato ?? '—')
   const annullaRicevuta = async () => {
     const r = riga.ricevuta
     if (!r) return
@@ -42,6 +52,7 @@ export function PagamentoAperto({ d, riga, fai, onChiudi, onFatto }: { d: DatiSe
     ['A COSA SERVE', riga.voce],
     ['COME', riga.metodo],
     ['RICEVUTA', riga.ricevuta ? `${riga.ricevuta.numero}/${riga.ricevuta.anno}` : 'SENZA RICEVUTA'],
+    ...(email ? [['EMAIL', email] satisfies [string, string]] : []),
     ['IMPORTO', `${euro(riga.importo)} €`],
   ]
   if (riga.nota) dettaglio.push(['NOTA', riga.nota])

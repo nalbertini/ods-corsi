@@ -414,7 +414,7 @@ select atteso('non ci sono funzioni di lettura: si legge dalle tabelle', (select
   -- cambia_voce_movimenti (67-cambia-voce.sql) scrive, non legge: la prova è cambia-voce.sql
   -- collega_movimenti_persona e scollega_movimenti_persona (70-movimenti-persona.sql) scrivono un'etichetta: la prova è movimenti-persona.sql
   -- movimenti_simili (72-movimenti-dalla-chat.sql) legge per Claude senza persone né autori, che dalle tabelle uscirebbero: la prova è movimenti-dalla-chat.sql
-  -- chat_movimenti, chat_movimenti_uguali, chat_voci e chat_casse (76-claude-dalla-porta.sql) leggono per Claude, che dalle tabelle non passa più: la prova è claude-dalla-porta.sql
+  -- chat_movimenti, chat_movimenti_uguali, chat_voci e chat_casse (77-claude-dalla-porta.sql) leggono per Claude, che dalle tabelle non passa più: la prova è claude-dalla-porta.sql
   and p.proname ~ '(movimenti|voci|casse)' and p.proname not in ('cambia_voce_movimenti', 'collega_movimenti_persona', 'scollega_movimenti_persona', 'movimenti_simili', 'chat_movimenti', 'chat_movimenti_uguali', 'chat_voci', 'chat_casse')), 'nessuna');
 
 \echo ''
