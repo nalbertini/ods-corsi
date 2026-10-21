@@ -115,7 +115,7 @@ type PresenzaPerFirma = Pick<PresenzaIstruttoreSeg, 'sessioneId' | 'corso' | 'in
 /**
  * Le lezioni del mese, già finite e non annullate, dove `personaId` era
  * previsto, non ha nessuna presenza (né rifiutata né da confermare: quelle si
- * decidono già) e un collega sì, non rifiutata. Una lezione senza nessuna firma
+ * decidono già) e un altro previsto sì, non rifiutata. Una lezione senza nessuna firma
  * non c'è: sta fra quelle senza istruttore. Nei corsi dove basta uno non si
  * chiede.
  */
@@ -129,9 +129,12 @@ export function senzaFirma(presenze: PresenzaPerFirma[], personaId: string, mese
       const inizio = new Date(x.inizio).getTime()
       if (inizio < mese.da.getTime() || inizio >= fine || new Date(x.fine) > adesso) return []
       if (l.some((p) => p.annullata || p.bastaUno) || l.some((p) => p.personaId === personaId)) return []
-      if (!l.some((p) => p.previstiElenco?.some((q) => q.id === personaId))) return []
-      const firmatoDa = l.filter((p) => p.stato !== 'rifiutata').map((p) => p.nome)
-      return firmatoDa.length ? [{ sessioneId: x.sessioneId, corso: x.corso, inizio: x.inizio, firmatoDa }] : []
+      const previsti = x.previstiElenco ?? []
+      if (!previsti.some((q) => q.id === personaId)) return []
+      const firmate = l.filter((p) => p.stato !== 'rifiutata')
+      // Ha firmato solo chi non era previsto: l'ha sostituito, non era una lezione in due.
+      if (!firmate.some((p) => previsti.some((q) => q.id === p.personaId))) return []
+      return [{ sessioneId: x.sessioneId, corso: x.corso, inizio: x.inizio, firmatoDa: firmate.map((p) => p.nome) }]
     })
     .sort((a, b) => a.inizio.localeCompare(b.inizio))
 }

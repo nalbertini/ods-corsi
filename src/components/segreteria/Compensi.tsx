@@ -267,6 +267,8 @@ function SenzaFirmaElenco({ d, p, lezioni, fai, onCambiato }: { d: DatiSegreteri
     setOccupato(true)
     try {
       await fai(() => (cera ? d.segnaIstruttorePrevisto(l.sessioneId, p.id) : d.segnaIstruttoreAssente(l.sessioneId, p.id)), cera ? `${p.nome} c’era: la lezione entra nel compenso` : `${p.nome} non c’era`, onCambiato)
+      // La riga segnata sparisce e quella sotto sale al suo posto: il secondo clic di un doppio clic cadrebbe lì.
+      await new Promise((r) => setTimeout(r, 600))
     } finally {
       setOccupato(false)
     }
@@ -472,7 +474,7 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
               }}
             />
           )}
-          <span className="sg-sotto">Chi non ha lezioni confermate nel mese non c’è. Le lezioni da sostituto si pagano a chi c’era, con la sua tariffa per quel corso.</span>
+          <span className="sg-sotto">Chi non ha lezioni confermate nel mese c’è solo se gli manca la firma in una lezione tenuta in due. Le lezioni da sostituto si pagano a chi c’era, con la sua tariffa per quel corso.</span>
         </>
       )}
     </div>

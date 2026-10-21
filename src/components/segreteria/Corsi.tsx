@@ -127,6 +127,7 @@ export function Corsi({
       key={nuovo ? 'nuovo' : corso!.id}
       d={d}
       corso={corso}
+      conBastaUno={(corsi.dato ?? []).some((c) => c.bastaUno !== undefined)}
       iscritti={corso ? iscrittiA(corso.id) : []}
       persone={persone.dato ?? []}
       guaio={persone.dato === null ? persone.guaio : null}
@@ -265,9 +266,12 @@ function Scheda({
   onCambiato,
   onArchiviato,
   onLasciaStare,
+  conBastaUno,
 }: {
   d: DatiSegreteria
   corso: CorsoSeg | null
+  /** Il database ha «a lezione basta uno» (82-manca-la-firma.sql): un corso nuovo parte senza spunta. */
+  conBastaUno: boolean
   iscritti: RigaIscrittoCorso[]
   persone: PersonaSeg[]
   /** La lettura delle persone è fallita: non si può dire «0 iscritti». */
@@ -295,7 +299,7 @@ function Scheda({
     colore: corso?.colore ?? COLORI[0].hex,
     enteTessera: corso?.enteTessera,
     // Assente se il database non ha ancora la colonna (82-manca-la-firma.sql): la spunta non si mostra e non si scrive.
-    bastaUno: corso?.bastaUno,
+    bastaUno: corso ? corso.bastaUno : conBastaUno ? false : undefined,
   }))
   // Un corso nuovo prende la prima sala, quando le sale arrivano.
   // Solo un corso nuovo: su uno che esiste senza sala SALVA si accenderebbe da solo.

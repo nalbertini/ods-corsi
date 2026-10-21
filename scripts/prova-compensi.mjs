@@ -299,6 +299,11 @@ console.log('\n2 bis. manca la firma: chi era previsto a una lezione tenuta in d
   ok('   finita da un minuto: sì', quante(sf(soloAnna, 'MA', new Date(2026, 9, 3, 19, 1))), 1)
   ok('7. solo la firma di Anna, rifiutata: nessuna per Maura', quante(sf([firma('j3', ANNA, 'rifiutata', il3)], 'MA')), 0)
   ok('   la firma di Anna da confermare conta: Maura ne ha una', quante(sf([firma('j3', ANNA, 'da_confermare', il3)], 'MA')), 1)
+  // Un corso col solo Tiziano, firmato da Maurizio che non era previsto: è una sostituzione, non una lezione in due.
+  ok('   l\'unico previsto, e ha firmato uno che non era previsto: nessuna (si è fatto sostituire)',
+    quante(sf([firma('p7', FEDERICO, 'confermata', il3, [ANNA])], 'AN')), 0)
+  ok('   in due, ha firmato l\'altro previsto e uno che non lo era: Maura ne ha una',
+    quante(sf([firma('j3', ANNA, 'confermata', il3), firma('j3', FEDERICO, 'confermata', il3)], 'MA')), 1)
   ok('8. nei corsi dove «a lezione basta uno»: nessuna', quante(sf([firma('j3', ANNA, 'confermata', il3, [ANNA, MAURA], { bastaUno: true })], 'MA')), 0)
   ok('9. una lezione di un altro mese non conta',
     quante(sf([firma('n6', ANNA, 'confermata', new Date(2026, 10, 6, 18, 0))], 'MA', new Date(2026, 11, 1))), 0)

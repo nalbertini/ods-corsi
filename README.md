@@ -75,6 +75,8 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   (`supabase/80-ricevute-compensi.sql`). SEGNA PAGATO scrive l'uscita in CONTABILITÀ (anche più
   mesi in un movimento, bonifico o contanti), e il movimento annullato le rimette da pagare
   (`supabase/81-compensi-pagati.sql`).
+- **Manca la firma**: in COMPENSI chi era previsto a una lezione tenuta in due e non ha firmato,
+  con C'ERA e «Non c'era»; nei corsi alternati «a lezione basta uno» (`supabase/82-manca-la-firma.sql`).
 - **Gli iscritti di un corso**: nella scheda di un corso, DATI e ISCRITTI; in ISCRITTI una
   persona per riga con certificato e quota a parole, ricerca, ordinamento per colonna e un clic
   che apre la sua scheda; Indietro ritrova ricerca e ordine (`src/lib/segreteria.ts`).
