@@ -829,6 +829,16 @@
       "h": 480,
       "page": "page-2"
     }
+,
+    {
+      "file": "RiquadroPaga.dc.html",
+      "title": "RiquadroPaga",
+      "x": 2710,
+      "y": 10100,
+      "w": 350,
+      "h": 300,
+      "page": "page-2"
+    }
   ],
   "annotations": [
     {

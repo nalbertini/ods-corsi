@@ -43,7 +43,7 @@ export function Tasto({ variante = 'linea', children, href, scarica, qui, onClic
   if (href) {
     const fuori = qui ? {} : scarica ? { download: true } : { target: '_blank', rel: 'noopener noreferrer' }
     return (
-      <a className={classiTasto(variante)} href={href} {...fuori}>
+      <a className={classiTasto(variante)} href={href} onClick={onClick} {...fuori}>
         {children}
       </a>
     )
@@ -98,7 +98,7 @@ export function Cifra({ children }: { children: ReactNode }) {
 }
 
 /** La frase sotto un titolo, in `dim`. `tono` la colora quando dice un guaio o un avviso. */
-export function Dettaglio({ children, tono }: { children: ReactNode; tono?: 'testo' | 'guaio' | 'avviso' }) {
+export function Dettaglio({ children, tono }: { children: ReactNode; tono?: 'testo' | 'guaio' | 'avviso' | 'fatto' }) {
   return (
     <span className="passo-dettaglio" data-tono={tono}>
       {children}

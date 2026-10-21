@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.150.0 — 21 ottobre 2026
+
+### Novità
+
+- Con Satispay si paga in fondo al modulo, e la richiesta parte solo dopo il pagamento
+
 ## 0.149.0 — 21 ottobre 2026
 
 ### Novità

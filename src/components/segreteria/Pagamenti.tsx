@@ -252,12 +252,16 @@ export function Pagamenti({ d, onVai, soloNomi }: { d: DatiSegreteria; onVai?: (
                   <span className="sg-sotto-nome">
                     <span>{dataRicevuta(x.data)} · {x.voce} · {x.metodo}{x.ricevuta ? ` · ${x.ricevuta.numero}/${x.ricevuta.anno}` : ''}</span>
                     {!x.ricevuta && <span className="num sg-tag">Senza ricevuta</span>}
+                    {x.senzaRichiesta && <span className="num sg-tag" data-tipo="manca">Satispay senza richiesta</span>}
                     {x.annullato && <span className="num sg-tag" data-tipo="manca">Annullato</span>}
                   </span>
+                  {/* Pagato in fondo al modulo e la richiesta non è partita: email e corso per richiamare o restituire. */}
+                  {x.senzaRichiesta && x.nota && <span className="sg-sotto-nome">{x.nota.replace(/^Satispay senza richiesta · /, '')}</span>}
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>
                   {x.voce}
                   {!x.ricevuta && <span className="num sg-tag" style={{ marginLeft: 8 }}>Senza ricevuta</span>}
+                  {x.senzaRichiesta && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Satispay senza richiesta</span>}
                   {x.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.metodo}</span>

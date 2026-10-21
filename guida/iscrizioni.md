@@ -147,14 +147,24 @@ Chi si iscrive risponde alle domande dal telefono:
 - **Il pagamento**, dopo aver scelto un corso: **QUANTO PAGHI**, quota e
   corso dal listino, e **PAGHI CON**, da scegliere fra **Satispay** e
   **Bonifico** (nessuno è già scelto).
-  - Con **Satispay** il tasto in fondo diventa **MANDA E PAGA CON SATISPAY**:
-    manda la richiesta e apre Satispay con l'importo già scritto, quello che
-    calcola il database dal listino. Si conferma nell'app e si torna alla
-    pagina del pagamento, che dice **RICHIESTA ARRIVATA · PAGATO** (quanto e
-    quando), oppure che il pagamento manca (**PAGA … CON SATISPAY** lo riapre:
-    è lo stesso pagamento, non si paga due volte) o non è andato (**RIPROVA
-    CON SATISPAY**). La pagina ha un indirizzo suo
-    (`iscrizioni/?pagamento=…`): si può tornare a pagare più tardi.
+  - Con **Satispay** si paga **prima** di mandare, in fondo al modulo: dopo
+    **ALTRO** c'è **PAGA** con l'importo, quello che calcola il database dal
+    listino. Quando il resto del modulo è a posto (firma, caselle, documenti),
+    il tasto giallo **PAGA … CON SATISPAY** apre Satispay con l'importo già
+    scritto; finché manca qualcosa, sotto c'è scritto cosa. Si conferma nell'app e si torna alla pagina del
+    modulo, che si aggiorna da sola: «✓ Pagati con Satispay alle …» e il
+    tasto diventa **MANDA LA RICHIESTA**. La richiesta parte solo dopo, già
+    pagata, e la pagina finale dice **RICHIESTA ARRIVATA · PAGATO**. Se il
+    pagamento non è andato c'è **RIPROVA CON SATISPAY**, o si sceglie il
+    bonifico. Chiudere Satispay senza confermare non fa pagare due volte: si
+    riapre lo stesso pagamento, e chi ricarica la pagina dopo aver pagato
+    ritrova il pagamento fatto, con gli stessi nome, email e corso. Satispay
+    riporta a una pagina (`iscrizioni/?satispay=…`) che dice com'è andata e di
+    tornare alla scheda del modulo.
+  - Pagato e poi cambiato corso, annuale/trimestre, nome o email, quel
+    pagamento non vale per la richiesta: si rimette quello di prima, o si
+    chiama la segreteria (**CHIAMA LA SEGRETERIA**). Pagato con Satispay e poi
+    scelto il bonifico, il modulo lo dice e non manda: si pagherebbe due volte.
   - Satispay c'è solo nei casi semplici: un corso della sua età, con una sola
     riga di prezzo nel listino della segreteria. Con più corsi (valgono le
     offerte), con un corso a giorni, senza prezzo o fuori età non c'è, e una

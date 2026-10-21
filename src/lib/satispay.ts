@@ -2,6 +2,7 @@ import type { RigaPagamento } from './pagamenti'
 import { dataLunga } from './sala'
 import { inEuro } from './vestiario'
 import type { CorsoRef, Listino } from './listino'
+import { chiama } from './sito'
 
 /**
  * Il pagamento con Satispay dal modulo di iscrizione: le regole e i testi.
@@ -29,12 +30,37 @@ export interface PagamentoSatispay {
   ricevutaId?: string
   /** La scheda della richiesta accolta. */
   personaId?: string
+  /**
+   * Pagato prima di mandare la richiesta (`83-satispay-prima.sql`): per quale
+   * corso e formula, e di chi, per richiamarlo se la richiesta non arriva.
+   */
+  corsoId?: string
+  formula?: 'annuale' | 'trimestre'
+  nome?: string
+  cognome?: string
+  email?: string
+  /** Il nome del corso pagato, per la riga in PAGAMENTI. */
+  corso?: string
+  /** Quando una richiesta l'ha preso: resta anche se la richiesta si cancella, e allora non si riusa. */
+  presoIl?: string
 }
 
 /** Lo stato come lo dice Satispay. Quello che non si conosce è ancora in attesa: mai pagato per sbaglio. */
 export const statoDa = (status: string): StatoSatispay => (status === 'ACCEPTED' ? 'pagato' : status === 'CANCELED' ? 'non-andato' : 'attesa')
 
 export const ERRORE_SATISPAY = 'Satispay non risponde: riprova fra qualche minuto'
+
+/** I rifiuti di `invia_iscrizione` per il pagamento fatto prima (`83-satispay-prima.sql`): gli stessi testi in prova. */
+export const PAGAMENTO_NON_ARRIVATO = 'Il pagamento Satispay non è ancora arrivato: conferma in Satispay e riprova'
+export const PAGAMENTO_ALTRA_SCELTA = 'Il pagamento Satispay era per un altro corso o un’altra formula: rimetti la scelta di prima, o chiama la segreteria'
+export const PAGAMENTO_NON_VALE = 'Questo pagamento Satispay non vale più: paga di nuovo in fondo al modulo'
+export const PAGAMENTO_ALTRA_PERSONA = 'Il pagamento Satispay è a un altro nome o un’altra email: rimetti quelli di prima, o chiama la segreteria'
+/** Nome o cognome oltre la misura della colonna: lo stesso testo di `satispay_prepara_prima`. */
+export const NOME_TROPPO_LUNGO = 'Un campo non va: nome e cognome hanno al massimo 80 caratteri'
+/** Senza `83-satispay-prima.sql` la Edge Function dice che il servizio non c'è: si paga col bonifico. */
+export const SATISPAY_SPENTO = 'Satispay per ora non è attivo: scegli il bonifico'
+/** Pagato con Satispay e poi scelto il bonifico: si pagherebbe due volte. */
+export const GIA_PAGATO_SATISPAY = 'Hai già pagato con Satispay: rimetti Satispay in «Paghi con» per mandare la richiesta, o chiama la segreteria'
 
 /** «Judo 3», «Judo 3 e Lotta 3», «Judo 3, Lotta 3 e Zumba». */
 const elenco = (x: string[]) => (x.length < 2 ? x.join('') : `${x.slice(0, -1).join(', ')} e ${x[x.length - 1]}`)
@@ -113,6 +139,12 @@ export const righeSatispay = (pagamenti: PagamentoSatispay[], nomeDi: (personaId
             voce: 'ISCRIZIONE',
             personaId: p.personaId,
             chi: p.personaId ? nomeDi(p.personaId) : p.chi,
+            // Pagato in fondo al modulo e la richiesta non è partita: la segreteria richiama o restituisce.
+            ...(!p.richiestaId &&
+              !p.personaId && {
+                nota: ['Satispay senza richiesta', p.email, p.corso && `${p.formula ?? ''} ${p.corso}`.trim()].filter(Boolean).join(' · '),
+                senzaRichiesta: true,
+              }),
             annullato: false,
           },
         ],
@@ -231,9 +263,158 @@ export function satispayPerPersona(pagamenti: PagamentoSatispay[]): Map<string, 
  * ha guardato. Col bonifico la ricevuta è obbligatoria: senza, non si sa se
  * ha pagato. Dal nucleo non si sceglie, e si paga come prima.
  */
-export function cosaNonVaModo(modo: Pago | null, nucleo: boolean, conRicevuta: boolean): string | null {
+export function cosaNonVaModo(
+  modo: Pago | null,
+  nucleo: boolean,
+  conRicevuta: boolean,
+  satispay: { /** pagato per la scelta di adesso */ pronto: boolean; /** un pagamento Satispay arrivato, per qualunque scelta */ giaPagato: boolean },
+): string | null {
   if (nucleo) return null
   if (!modo) return 'Manca come paghi: Satispay o bonifico'
+  // Pagato con Satispay e poi cambiato in bonifico: i soldi ci sono già, col bonifico si pagherebbe due volte.
+  if (modo === 'bonifico' && satispay.giaPagato) return GIA_PAGATO_SATISPAY
   if (modo === 'bonifico' && !conRicevuta) return 'Manca la ricevuta del bonifico: una foto, lo screenshot o il PDF'
+  // Con Satispay si paga prima, in fondo al modulo: la richiesta parte solo pagata (83-satispay-prima.sql).
+  if (modo === 'satispay' && !satispay.pronto) return 'Prima paga con Satispay, in fondo al modulo: la richiesta parte dopo'
   return null
+}
+
+/** «10.42»: l'ora a Roma, come si legge su un orologio. */
+const oraARoma = (iso: string) => new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' }).replace(':', '.')
+
+/** Per chi si paga e cosa: un corso con la formula, e chi paga (come lo ripulisce `satispay_prepara_prima`). */
+export type SceltaPaga = { corso: string; formula: 'annuale' | 'trimestre'; nome: string; cognome: string; email: string }
+
+/** Il pagamento preparato in fondo al modulo, per la scelta e la persona di allora. */
+export type PagamentoPrima = Omit<SceltaPaga, 'corso'> & { id: string; corsoId: string; stato: StatoSatispay; importo: number; link?: string; pagatoIl?: string }
+
+/** Nome e cognome senza spazi ai lati né maiuscole, l'email in minuscolo: lo stesso per il database. */
+const ripulita = (x: SceltaPaga) => [x.corso, x.formula, x.nome.trim().toLowerCase(), x.cognome.trim().toLowerCase(), x.email.trim().toLowerCase()].join('|')
+const dellaScelta = (p: PagamentoPrima): SceltaPaga => ({ corso: p.corsoId, formula: p.formula, nome: p.nome, cognome: p.cognome, email: p.email })
+
+/**
+ * Quando preparare il pagamento: solo col modulo a posto (`manca` è quello
+ * che bloccherebbe l'invio), così non si paga una richiesta che poi non
+ * parte; e di nuovo se cambiano la scelta o chi paga. `''` vuol dire non
+ * ancora: la chiave cambia, e si riprepara.
+ */
+export const chiavePreparo = (scelta: SceltaPaga | null, manca: string | null) => (scelta && !manca ? ripulita(scelta) : '')
+
+/** L'id del pagamento da mandare con la richiesta: solo pagando con Satispay, ed è arrivato. */
+export const pagamentoDaMandare = (modo: Pago | null, sp: { id: string; stato: StatoSatispay } | null) =>
+  modo === 'satispay' && sp?.stato === 'pagato' ? sp.id : undefined
+
+/** Il riquadro PAGA, tutto quello che si vede: il .tsx lo mostra soltanto. */
+export interface RiquadroPaga {
+  cosa: 'manca' | 'prepara' | 'paga' | 'pagato' | 'non-andato' | 'non-vale'
+  /** La cifra: quella del pagamento se è per la scelta di adesso, se no la stima. */
+  importo: number
+  bordo: 'blu' | 'fatto' | 'avviso' | 'guaio'
+  /** «Quota associativa e annuale Judo adulti.» */
+  riga: string
+  testo: string
+  tonoTesto: 'testo' | 'fatto' | 'avviso' | 'guaio'
+  /** Il tasto giallo in fondo: `null` se non c'è. */
+  tasto: string | null
+  azione: 'link' | 'prepara' | 'manda' | 'chiama' | null
+  link?: string
+  spento: boolean
+  /** La riga sotto il tasto. */
+  sotto: string | null
+}
+
+/**
+ * Il riquadro PAGA in fondo al modulo pubblico, quando si paga con Satispay
+ * prima di mandare: cosa mostrare per la scelta di adesso e il pagamento
+ * preparato. Il tasto PAGA è il link già pronto: lo si apre al tocco, senza
+ * attese. Un pagamento in attesa per un'altra scelta o un'altra persona non
+ * serve più e se ne prepara un altro; uno pagato per un'altra scelta o
+ * persona non vale per la richiesta (`invia_iscrizione` lo rifiuta).
+ */
+export function statoRiquadroPaga(
+  scelta: SceltaPaga,
+  p: PagamentoPrima | null,
+  altro: { /** la stima di adesso, in centesimi */ stima: number; /** il nome del corso */ corso: string; manca: string | null; preparo: boolean; guaio: string | null },
+): RiquadroPaga {
+  const sua = !!p && ripulita(dellaScelta(p)) === ripulita(scelta)
+  const base = {
+    importo: sua ? p.importo : altro.stima,
+    riga: `Quota associativa e ${scelta.formula} ${altro.corso}.`,
+    link: undefined as string | undefined,
+    spento: false,
+    sotto: null as string | null,
+  }
+  const riprova = { tasto: 'RIPROVA CON SATISPAY', azione: 'prepara' as const, spento: altro.preparo, sotto: 'Oppure torna a «Paghi con» e scegli il bonifico.' }
+  if (p?.stato === 'pagato') {
+    if (sua)
+      return {
+        ...base,
+        cosa: 'pagato',
+        bordo: 'fatto',
+        testo: `✓ Pagati con Satispay${p.pagatoIl ? ` alle ${oraARoma(p.pagatoIl)}` : ''}. Ora manda la richiesta.`,
+        tonoTesto: 'fatto',
+        tasto: 'MANDA LA RICHIESTA',
+        azione: 'manda',
+      }
+    return {
+      ...base,
+      cosa: 'non-vale',
+      importo: p.importo,
+      bordo: 'guaio',
+      testo: 'Hai pagato per un altro corso, un’altra formula o a un altro nome: rimetti quelli di prima per mandare la richiesta, o chiama la segreteria.',
+      tonoTesto: 'guaio',
+      tasto: 'CHIAMA LA SEGRETERIA',
+      azione: 'chiama',
+      link: chiama,
+    }
+  }
+  const avvisa = { bordo: 'blu' as const, testo: 'Paghi adesso con Satispay; la richiesta parte solo quando Satispay conferma.', tonoTesto: 'testo' as const }
+  if (altro.manca)
+    return { ...base, ...avvisa, cosa: 'manca', tasto: null, azione: null, sotto: `Prima di pagare: ${altro.manca.charAt(0).toLowerCase()}${altro.manca.slice(1)}` }
+  if (sua && p.stato === 'non-andato')
+    return {
+      ...base,
+      ...riprova,
+      cosa: 'non-andato',
+      bordo: 'avviso',
+      testo: '! Il pagamento non è andato: in Satispay è stato annullato o non è stato confermato. La richiesta non è partita.',
+      tonoTesto: 'avviso',
+    }
+  if (sua && p.link)
+    return {
+      ...base,
+      ...avvisa,
+      cosa: 'paga',
+      tasto: `PAGA ${soldi(p.importo)} CON SATISPAY`,
+      azione: 'link',
+      link: p.link,
+      sotto: 'Se chiudi Satispay senza confermare, torna qui: è lo stesso pagamento, non paghi due volte.',
+    }
+  if (altro.guaio && !altro.preparo) return { ...base, ...riprova, cosa: 'prepara', bordo: 'blu', testo: altro.guaio, tonoTesto: 'guaio' }
+  return { ...base, ...avvisa, cosa: 'prepara', tasto: 'PREPARO IL PAGAMENTO…', azione: null, spento: true }
+}
+
+/**
+ * Il ritorno da Satispay dopo aver pagato in fondo al modulo
+ * (`iscrizioni/?satispay=<pagamento>`): la richiesta non è ancora partita, e
+ * si manda dal modulo, rimasto aperto nell'altra scheda. Nessun tasto porta a
+ * un modulo nuovo: chi lo ricompilasse pagherebbe di nuovo.
+ */
+export function ritornoSatispay(p: { stato: StatoSatispay; importo: number; collegato?: boolean } | null): { titolo: string; tono: 'fatto' | 'avviso'; testi: string[] } {
+  if (!p) return { titolo: 'PAGAMENTO NON TROVATO', tono: 'avviso', testi: ['Questo pagamento non si trova.', 'Torna alla scheda dove hai compilato il modulo.'] }
+  if (p.stato === 'pagato' && p.collegato)
+    return { titolo: 'RICHIESTA ARRIVATA · PAGATO', tono: 'fatto', testi: [`Hai pagato ${soldi(p.importo)} con Satispay, e la richiesta è arrivata in segreteria.`] }
+  if (p.stato === 'pagato')
+    return {
+      titolo: 'PAGAMENTO RICEVUTO',
+      tono: 'fatto',
+      testi: [`Hai pagato ${soldi(p.importo)} con Satispay.`, 'Torna alla scheda dove hai compilato il modulo e premi MANDA LA RICHIESTA.'],
+    }
+  if (p.stato === 'non-andato')
+    return { titolo: 'IL PAGAMENTO NON È ANDATO', tono: 'avviso', testi: ['Torna alla scheda dove hai compilato il modulo e riprova, o scegli il bonifico.'] }
+  return {
+    titolo: 'PAGAMENTO IN ATTESA',
+    tono: 'avviso',
+    testi: [`Satispay non ha ancora confermato i ${soldi(p.importo)}.`, 'Torna alla scheda dove hai compilato il modulo: si aggiorna da sola quando Satispay conferma.'],
+  }
 }

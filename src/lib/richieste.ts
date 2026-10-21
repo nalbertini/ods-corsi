@@ -71,6 +71,12 @@ export interface DatiRichiesta {
    */
   provenienza?: string
   conosciuto?: Conosciuto
+  /**
+   * Il pagamento Satispay fatto in fondo al modulo, prima di mandare
+   * (`83-satispay-prima.sql`): la richiesta lo prende con sé solo se è
+   * arrivato ed è per il suo corso e la sua formula.
+   */
+  pagamentoSatispay?: string
 }
 
 export interface Richiesta extends DatiRichiesta {
@@ -127,6 +133,15 @@ export interface DatiRichieste {
   satispayAttivo(): Promise<boolean>
   /** Lo stato del pagamento Satispay della richiesta, riletto da Satispay se è in attesa; `null` se non ce n'è. */
   statoPagamento(richiestaId: string): Promise<{ stato: StatoSatispay; importo: number; pagatoIl?: string } | null>
+  /**
+   * Il pagamento Satispay da fare prima di mandare la richiesta, per un corso
+   * e la formula: quello in attesa per la stessa scelta, o uno nuovo, col
+   * link per aprirlo; già pagato e non ancora preso da una richiesta (la
+   * pagina ricaricata), senza link. L'importo lo calcola il database.
+   */
+  prepara(scelta: { corso: string; formula: 'annuale' | 'trimestre'; nome: string; cognome: string; email: string }): Promise<{ stato: StatoSatispay; id: string; importo: number; link?: string; pagatoIl?: string }>
+  /** Lo stato di un pagamento per il suo id, riletto da Satispay se è in attesa; `null` se non c'è. */
+  statoSatispay(pagamentoId: string): Promise<{ stato: StatoSatispay; importo: number; pagatoIl?: string; /** già preso da una richiesta */ collegato?: boolean } | null>
 
   // Per la segreteria.
   richieste(): Promise<Richiesta[]>
@@ -342,7 +357,7 @@ export function tipiDaChiedere(natoIl: string, nomiCorsi: string[], oggi = new D
 }
 
 /** I campi del modulo che possono non andare, per segnarli uno per uno. */
-export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'provenienza' | 'conosciuto'>
+export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi' | 'provenienza' | 'conosciuto' | 'pagamentoSatispay'>
 
 /**
  * Una cosa che non va: `messaggio` è quello del server, `testo` quello corto

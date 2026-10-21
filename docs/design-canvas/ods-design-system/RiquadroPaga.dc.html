@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 12px; width: 100%; color: #0d2a3d">
+  <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px; background: #ffffff; border: 2px solid {{bordo}}; border-radius: 6px">
+    <span style="font-family: {{cond}}; font-size: 34px; font-weight: 800; line-height: 1.1; color: {{coloreCifra}}">{{cifra}}</span>
+    <span style="font-size: 15px; line-height: 1.4; color: #0d2a3d">{{riga}}</span>
+    <span style="font-size: 15px; line-height: 1.4; color: {{coloreTesto}}">{{testo}}</span>
+  </div>
+  <sc-if value="{{haTasto}}" hint-placeholder-val="{{ true }}">
+    <a href="#" style="display: flex; align-items: center; justify-content: center; min-height: 56px; border-radius: 6px; text-decoration: none; background: {{fondoTasto}}; color: {{coloreTastoTesto}}; font-family: {{cond}}; font-size: 22px; font-weight: 800; letter-spacing: 0.06em">{{tasto}}</a>
+  </sc-if>
+  <sc-if value="{{haSotto}}" hint-placeholder-val="{{ true }}">
+    <span style="font-size: 14px; line-height: 1.4; color: #46606f">{{sotto}}</span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["manca","prepara","paga","pagato","non-andato","non-vale"],"default":"paga"},"cifra":{"editor":"text","default":"180,00 €"},"corso":{"editor":"text","default":"trimestre MGA metodo globale autodifesa"},"$preview":{"width":350,"height":300}}'>
+// COSTRUITO (2026-10-21, satispay-prima): la sezione PAGA in fondo al modulo pubblico di src/components/ModuloIscrizione.tsx, con Satispay.
+// Testi e scelte da `statoRiquadroPaga` di src/lib/satispay.ts; stili da src/styles.css (.paga-riquadro, .paga-cifra, .passo-dettaglio 15px):
+// bordo 2px `blu` #14709f, `verde-testo` #0b7a33 da pagato, `giallo-testo` #8f6a00 se non è andato, `rosso-testo` #b81d1d se non vale più;
+// cifra Big Shoulders 34px 800 `testo` (verde solo da pagato). Il tasto principale del modulo (tema sito: giallo #f4c31b, testo #0d2a3d,
+// Big Shoulders 22px 0.06em, alto 56px, raggio 6px) è un link già pronto: PAGA, CHIAMA LA SEGRETERIA (tel:); spento mentre si prepara.
+// Con `manca` il tasto non c'è e sotto la riga dice cosa manca.
+const COND = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const STATI = {
+  manca: { bordo: '#14709f', testo: 'Paghi adesso con Satispay; la richiesta parte solo quando Satispay conferma.', tono: '#0d2a3d', tasto: '', sotto: 'Prima di pagare: manca la firma sul modulo' },
+  prepara: { bordo: '#14709f', testo: 'Paghi adesso con Satispay; la richiesta parte solo quando Satispay conferma.', tono: '#0d2a3d', tasto: 'PREPARO IL PAGAMENTO…', spento: true, sotto: '' },
+  paga: { bordo: '#14709f', testo: 'Paghi adesso con Satispay; la richiesta parte solo quando Satispay conferma.', tono: '#0d2a3d', tasto: 'PAGA {cifra} CON SATISPAY', sotto: 'Se chiudi Satispay senza confermare, torna qui: è lo stesso pagamento, non paghi due volte.' },
+  pagato: { bordo: '#0b7a33', testo: '✓ Pagati con Satispay alle 15.12. Ora manda la richiesta.', tono: '#0b7a33', cifra: '#0b7a33', tasto: 'MANDA LA RICHIESTA', sotto: '' },
+  'non-andato': { bordo: '#8f6a00', testo: '! Il pagamento non è andato: in Satispay è stato annullato o non è stato confermato. La richiesta non è partita.', tono: '#8f6a00', tasto: 'RIPROVA CON SATISPAY', sotto: 'Oppure torna a «Paghi con» e scegli il bonifico.' },
+  'non-vale': { bordo: '#b81d1d', testo: 'Hai pagato per un altro corso, un’altra formula o a un altro nome: rimetti quelli di prima per mandare la richiesta, o chiama la segreteria.', tono: '#b81d1d', tasto: 'CHIAMA LA SEGRETERIA', sotto: '' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const st = STATI[p.stato] || STATI.paga;
+    const cifra = p.cifra ?? '180,00 €';
+    return {
+      cond: COND, cifra, bordo: st.bordo, coloreCifra: st.cifra || '#0d2a3d', coloreTesto: st.tono,
+      riga: `Quota associativa e ${p.corso ?? 'trimestre MGA metodo globale autodifesa'}.`, testo: st.testo,
+      haTasto: !!st.tasto, tasto: st.tasto.replace('{cifra}', cifra),
+      fondoTasto: st.spento ? '#cfe6f4' : '#f4c31b', coloreTastoTesto: st.spento ? '#46606f' : '#0d2a3d',
+      haSotto: !!st.sotto, sotto: st.sotto,
+    };
+  }
+}
+</script>
+</body>
+</html>

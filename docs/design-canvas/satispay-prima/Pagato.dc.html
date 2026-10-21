@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo sono file locali OFL; un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA 4. Dopo MANDA LA RICHIESTA: la pagina finale di oggi, con PAGATO. La richiesta arriva in segreteria gia' pagata. -->
+<div style="display: flex; flex-direction: column; width: 375px; min-height: 420px; background: #eef5fa; color: #0d2a3d">
+<main style="display: flex; flex-direction: column; gap: 14px; padding: 20px">
+<span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; color: #0b7a33">RICHIESTA ARRIVATA · PAGATO</span><span style="font-size: 15px; line-height: 1.4; color: #0d2a3d">Hai pagato 180 € con Satispay il 21 ottobre.</span><span style="font-size: 15px; line-height: 1.4; color: #46606f">La segreteria controlla la richiesta e ti scrive se manca qualcosa. La ricevuta della palestra te la dà la segreteria.</span><a href="#" style="display: flex; align-items: center; justify-content: center; min-height: 56px; border: 2px solid #14709f; border-radius: 6px; text-decoration: none; color: #0d2a3d; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.06em">TORNA ALLE ISCRIZIONI</a>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":375,"height":420}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

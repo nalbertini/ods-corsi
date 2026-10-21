@@ -1,0 +1,11 @@
+{"v":3,"createdOnFiles":{"v":1,"at":"2026-10-21T13:31:34Z"},"title":"Satispay · prima paghi, poi mandi","launch":{"view":"canvas","page":"proposta"},"pages":[{"id":"proposta","name":"Proposta"}],"boards":{
+"OggiPagamento.dc.html":{"x":0,"y":0,"w":375,"h":812,"page":"proposta","title":"Oggi · IL PAGAMENTO, a metà modulo"},
+"OggiFondo.dc.html":{"x":455,"y":0,"w":375,"h":812,"page":"proposta","title":"Oggi · il fondo del modulo"},
+"PagamentoFrase.dc.html":{"x":0,"y":1240,"w":375,"h":420,"page":"proposta","title":"A metà modulo · cambia solo la frase"},
+"Main.dc.html":{"x":455,"y":1240,"w":375,"h":760,"page":"proposta","title":"1 · In fondo: paghi"},
+"ModuloPagato.dc.html":{"x":910,"y":1240,"w":375,"h":760,"page":"proposta","title":"2 · Pagato: mandi"},
+"ModuloNonAndato.dc.html":{"x":1365,"y":1240,"w":375,"h":760,"page":"proposta","title":"3 · Se non è andato"},
+"Pagato.dc.html":{"x":1820,"y":1240,"w":375,"h":420,"page":"proposta","title":"4 · Richiesta arrivata"}},
+"order":["OggiPagamento.dc.html","OggiFondo.dc.html","PagamentoFrase.dc.html","Main.dc.html","ModuloPagato.dc.html","ModuloNonAndato.dc.html","Pagato.dc.html"],
+"notes":{"oggi":{"x":0,"y":-300,"text":"Oggi: la pagina vera delle iscrizioni","kind":"title1","maxW":830,"page":"proposta"},"titolo":{"x":0,"y":940,"text":"Proposta: in fondo al modulo prima paghi, poi mandi","kind":"title1","maxW":2195,"page":"proposta"}},
+"designSystems":[]}
