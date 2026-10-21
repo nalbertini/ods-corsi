@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .et { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #46606f; }
+    .val { font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .velo { background: rgba(13, 42, 61, 0.55); }
+  </style>
+</helmet>
+<!-- PROPOSTA: nella scheda del corso in CORSI, sotto ISTRUTTORI, quando ce n'e' piu' d'uno. Spunta da 24px come «Firmata» in COMPENSI.
+     Spuntata: in una lezione di questo corso, se un istruttore ha firmato, agli altri previsti non si chiede la firma (niente MANCA LA FIRMA).
+     Vuota (di partenza): si aspettano tutti, come nel Judo adulti tenuto in due. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 820px; padding: 24px 28px; background: #ffffff; border: 2px solid #cfe6f4; color: #0d2a3d">
+  <span class="et">ISTRUTTORI · ANCHE PIÙ D'UNO</span>
+  <div style="display: flex; gap: 6px; flex-wrap: wrap"><dc-import name="Chip" tema="sito" label="Rossi Marco" acceso="{{ true }}" hint-size="140px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Gialli Anna" acceso="{{ true }}" hint-size="140px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Neri Maura" acceso="{{ true }}" hint-size="140px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Bianchi Sara" acceso="{{ false }}" hint-size="140px,44px"></dc-import></div>
+  <span style="font-size: 13px; color: #46606f">Tutti possono fare l'appello e aggiornare le lezioni; il primo che hai scelto è quello di riferimento.</span>
+  <div class="nuovo" style="display: flex; flex-direction: column; gap: 4px">
+    <span role="checkbox" aria-checked="true" style="display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15px; font-weight: 600"><span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #0d2a3d; border-radius: 4px; background: #0d2a3d; color: #ffffff; font-size: 16px; font-weight: 700">✓</span>Si alternano: a lezione basta uno</span>
+    <span style="font-size: 13px; color: #46606f; line-height: 1.4; padding-left: 34px">Se uno ha firmato, in COMPENSI agli altri non si chiede la firma. Lasciala vuota se a lezione sono sempre tutti.</span>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":820,"height":300}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
