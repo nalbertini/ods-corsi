@@ -462,6 +462,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'annulla_ricevuta' and corpo like '%pagamenti_diretti%')),
   ('91-richieste-accolte-restano.sql', 'una richiesta accolta non si elimina finché c''è la scheda',
     exists (select 1 from pg_policies where tablename = 'richieste_iscrizione' and policyname = 'richieste_cancella' and qual like '%accolta%')
-    and not has_table_privilege('authenticated', 'public.richieste_iscrizione', 'update'))
+    and not has_table_privilege('authenticated', 'public.richieste_iscrizione', 'update')),
+  ('92-certificato-piu-lontano.sql', 'accogliendo vince il certificato che scade dopo',
+    to_regprocedure('public.accogli_iscrizione(uuid, uuid, date)') is not null and to_regprocedure('public.accogli_iscrizione(uuid, uuid)') is null)
 ) as x(file, cosa, c)
 order by file, cosa;

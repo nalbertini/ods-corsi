@@ -387,6 +387,28 @@ console.log('\n7b. lo stesso nome, un altro codice fiscale: le regole di accogli
   ok('Teo ritrovato', await r.accogli(perTeo), 'p-teo')
   ok('il certificato valido di Teo resta il suo', a.persone.find((p) => p.id === 'p-teo').certificato, { scade: '2027-01-01', file: 'p-teo/certificato-1.pdf' })
   ok('e quello del modulo resta fra i file della richiesta', (await r.file(perTeo)).some((f) => f.tipo === 'certificato'), true)
+
+  // Con la data letta dalla segreteria vince il certificato che scade dopo, file e data insieme.
+  const conCertificato = async (nome, email, telefono, scade) => {
+    const id = await r.invia(adulto({ nome, cognome: 'Rana', codiceFiscale: cf('Rana', nome, '96A01L219'), email, telefono }))
+    await r.caricaFile(id, 'certificato', new File(['x'], 'certificato.pdf', { type: 'application/pdf' }))
+    return id
+  }
+  persona({ id: 'p-ugo', nome: 'Ugo', cognome: 'Rana', email: 'ugo@esempio.it', certificato: { scade: '2027-01-01', file: 'p-ugo/certificato-1.pdf' } })
+  const perUgo = await conCertificato('Ugo', 'ugo@esempio.it', '347 666 0011')
+  await r.accogli(perUgo, 'p-ugo', '2027-10-31')
+  const cu = a.persone.find((p) => p.id === 'p-ugo').certificato
+  ok('il nuovo scade dopo: file e data nuovi sulla scheda', [cu.scade, /^p-ugo\/certificato-\d+\.pdf$/.test(cu.file)], ['2027-10-31', true])
+  ok('e non è più fra i file della richiesta', (await r.file(perUgo)).some((f) => f.tipo === 'certificato'), false)
+  persona({ id: 'p-lea', nome: 'Lea', cognome: 'Rana', email: 'lea@esempio.it', certificato: { scade: '2027-01-01', file: 'p-lea/certificato-1.pdf' } })
+  const perLea = await conCertificato('Lea', 'lea@esempio.it', '347 666 0012')
+  await r.accogli(perLea, 'p-lea', '2027-01-01')
+  ok('la stessa scadenza non è più lontana: resta il suo, con la sua data', a.persone.find((p) => p.id === 'p-lea').certificato, { scade: '2027-01-01', file: 'p-lea/certificato-1.pdf' })
+  ok('e quello del modulo resta nella richiesta', (await r.file(perLea)).some((f) => f.tipo === 'certificato'), true)
+  persona({ id: 'p-ivo', nome: 'Ivo', cognome: 'Rana', email: 'ivo.rana@esempio.it', certificato: { scade: '2028-01-01' } })
+  const perIvo = await conCertificato('Ivo', 'ivo.rana@esempio.it', '347 666 0013')
+  await r.accogli(perIvo, 'p-ivo', '2027-06-01')
+  ok('una data senza file non è un certificato: prende il nuovo, con la sua data', a.persone.find((p) => p.id === 'p-ivo').certificato.scade, '2027-06-01')
 }
 
 console.log('\n8. i dati anagrafici: dalla richiesta, e dalla scheda dopo')
@@ -616,6 +638,8 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     ok('accoglie: torna la scheda, con la sola richiesta se la segreteria non ne sceglie una', [await v.accogli('r-1'), reg[0]], ['p-9', ['rpc', 'accogli_iscrizione', { richiesta: 'r-1' }]])
     await v.accogli('r-1', 'p-3')
     ok('accoglie: con la scheda scelta, la manda', reg[1], ['rpc', 'accogli_iscrizione', { richiesta: 'r-1', persona: 'p-3' }])
+    await v.accogli('r-1', undefined, '2027-10-31')
+    ok('accoglie: la data del certificato viaggia con la richiesta', reg[2], ['rpc', 'accogli_iscrizione', { richiesta: 'r-1', scade: '2027-10-31' }])
     ok('accoglie: già accolta, il messaggio è quello del database', await errore(() => finto({ rpc: { accogli_iscrizione: ERR('P0001', 'Questa richiesta è già stata accolta') } }).v.accogli('r-1')), 'Questa richiesta è già stata accolta')
     ok('accoglie: senza permesso', await errore(() => finto({ rpc: { accogli_iscrizione: ERR('42501') } }).v.accogli('r-1')), PERMESSO)
     const r = finto()

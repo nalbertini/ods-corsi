@@ -159,8 +159,11 @@ export interface DatiRichieste {
    * La persona in elenco, iscritta ai corsi scelti: torna il suo id. Con
    * `personaId` la scheda la sceglie la segreteria; senza, la si cerca (vedi
    * `accogli_iscrizione` in `06-iscrizioni.sql`) e se non c'è se ne fa una.
+   * `scade` è la data del certificato arrivato col modulo, letta dalla
+   * segreteria: passa alla scheda col file se scade dopo quello che c'è
+   * (`92-certificato-piu-lontano.sql`).
    */
-  accogli(richiestaId: string, personaId?: string): Promise<string>
+  accogli(richiestaId: string, personaId?: string, scade?: string): Promise<string>
   rifiuta(richiestaId: string): Promise<void>
   /** La richiesta e i suoi file, per sempre; accolta, solo se la scheda non c'è più (`siElimina`). */
   elimina(richiestaId: string): Promise<void>
@@ -228,31 +231,6 @@ export const FORMULE: Array<[Formula, string]> = [
 
 /** Cosa manca del certificato arrivato col modulo prima di accogliere: la data, che la richiesta non porta. */
 export const problemiCertificato = (conFile: boolean, scade: string): string[] => (conFile && !scade ? ['Manca la data del certificato.'] : [])
-
-/**
- * Accoglie la richiesta e, se c'è, scrive la data del certificato sulla
- * scheda: un passo solo per chi usa l'app. Se la richiesta è accolta ma la
- * data no, lo dice con la causa e dice dove scriverla: accogliere non si
- * annulla, e rifarlo non serve.
- */
-export async function accogliConCertificato(
-  r: Pick<DatiRichieste, 'accogli'>,
-  d: { salvaCertificato(personaId: string, scade: string): Promise<void> },
-  richiestaId: string,
-  personaId: string | undefined,
-  scade: string,
-): Promise<string> {
-  const id = await r.accogli(richiestaId, personaId)
-  if (scade) {
-    try {
-      await d.salvaCertificato(id, scade)
-    } catch (e) {
-      const causa = e instanceof Error ? e.message : ''
-      throw new Error(`Richiesta accolta, ma la data del certificato non si è salvata${causa ? `: ${causa}` : ''}. Scrivila dalla scheda dell’iscritto.`, { cause: e })
-    }
-  }
-  return id
-}
 
 /** Come la vuole il database: senza spazi, in maiuscolo. */
 export const pulisciCf = (s: string) => s.replace(/\s/g, '').toUpperCase()

@@ -4,6 +4,7 @@ import { caricaLuoghi, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { archivio, certificatiProva, scordaCertificato } from './archivioProva'
 import { nomeProprio } from './nomi'
 import { chiaveGiorno } from './sala'
+import { cosaNonVaScadenza } from './segreteria'
 import { MASSIMO_PERSONE } from './passiIscrizione'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { caricaListino } from './listino'
@@ -351,9 +352,11 @@ export function creaRichiesteProva(): DatiRichieste {
       file.get(richiestaId)?.delete(tipo)
     },
 
-    async accogli(richiestaId, personaId) {
+    async accogli(richiestaId, personaId, scade) {
       const r = una(richiestaId)
       if (r.stato !== 'nuova') throw new Error(`Questa richiesta è già stata ${r.stato}`)
+      const guasto = scade ? cosaNonVaScadenza(scade) : null
+      if (guasto) throw new Error(guasto)
       const a = archivio.dati
       const oggi = chiaveGiorno(new Date())
       const stesso = (x: string, y: string) => x.toLowerCase() === y.toLowerCase()
@@ -418,16 +421,16 @@ export function creaRichiesteProva(): DatiRichieste {
         // Chi aveva una fine segnata la perde; chi aveva già smesso riparte da oggi.
         a.iscrizioni = [...a.iscrizioni.filter((i) => i !== c), { corsoId, personaId: id, dal: c && c.al! >= oggi ? c.dal : oggi }]
       }
-      // Il certificato passa alla scheda, senza data: la scrive la segreteria. Come `accogli_iscrizione`:
-      // se la scheda ne ha già uno valido resta quello, e il file resta fra quelli della richiesta.
+      // Il certificato passa alla scheda con la data letta dalla segreteria. Come `accogli_iscrizione`:
+      // se la scheda ne ha già uno valido che non scade prima resta quello, e il file resta fra quelli della richiesta.
       const cert = file.get(richiestaId)?.get('certificato')
       const valido = a.persone.find((p) => p.id === id)?.certificato
-      if (cert && !(valido?.file && valido.scade && valido.scade >= oggi)) {
+      if (cert && !(valido?.file && valido.scade && valido.scade >= oggi && (!scade || valido.scade >= scade))) {
         scordaCertificato(id)
         certificatiProva.set(id, { url: cert.url, pdf: cert.pdf })
         file.get(richiestaId)?.delete('certificato')
         a.persone = a.persone.map((p) =>
-          p.id === id ? { ...p, certificato: { scade: p.certificato?.scade, file: `${id}/certificato-${Date.now()}.${cert.pdf ? 'pdf' : 'jpg'}`, caricatoIl: oggi } } : p,
+          p.id === id ? { ...p, certificato: { scade: scade || p.certificato?.scade, file: `${id}/certificato-${Date.now()}.${cert.pdf ? 'pdf' : 'jpg'}`, caricatoIl: oggi } } : p,
         )
       }
       archivio.salva()
