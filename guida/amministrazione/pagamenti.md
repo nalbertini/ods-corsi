@@ -24,6 +24,10 @@ nello storico e si può annullare.
 - **I contanti** di un giorno in cui la Cassa Contanti è già chiusa non si
   registrano: scegli una data dopo la chiusura, o annulla prima la chiusura. Carta e
   bonifico non toccano la cassa e vanno sempre.
+- **Satispay** non si registra a mano se chi ha pagato ha già un Satispay
+  arrivato dal modulo di iscrizione e non ancora in una ricevuta: quei soldi
+  vanno nella ricevuta, che fa la segreteria dalla scheda. Se no conterebbero
+  due volte.
 - Prima di scrivere, l'app mostra un **riepilogo** (importo, come ha pagato, chi,
   data, a cosa serve, e dove entra in CONTABILITÀ: Cassa Contanti per i contanti,
   Conto Corrente per il resto): **Sì, registra il pagamento** lo scrive, **No, torna al

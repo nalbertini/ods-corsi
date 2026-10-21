@@ -448,6 +448,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%')),
   ('87-solleciti-elenco.sql', 'i solleciti nell''elenco ISCRITTI: gli ultimi di tutti e Annulla',
     to_regprocedure('public.ultimi_solleciti()') is not null
-    and to_regprocedure('public.togli_sollecito(uuid)') is not null)
+    and to_regprocedure('public.togli_sollecito(uuid)') is not null),
+  ('88-pagamento-una-volta.sql', 'un pagamento a mano registrato una volta sola: la chiave della ricevuta e il Satispay arrivato',
+    -- Rilanciare 64 dopo 88 rimette la funzione che ignora chiave e Satispay: la riga torna «da lanciare».
+    exists (select 1 from dentro where nome = 'registra_pagamento_diretto' and corpo like '%chiave_ricevuta%' and corpo like '%pagamenti_satispay%'))
 ) as x(file, cosa, c)
 order by file, cosa;
