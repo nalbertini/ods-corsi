@@ -557,7 +557,8 @@ export function NuovaRicevuta({
   onFatta: () => void
   onLasciaStare: () => void
 }) {
-  const oggi = chiaveGiorno(new Date())
+  // Il giorno di Roma, come `contabilita_oggi()`: oltre, la ricevuta è nel futuro.
+  const oggi = oggiARoma()
   // Una per modulo aperto (o quella del pagamento a mano): ripremendo dopo una risposta persa torna la ricevuta già
   // fatta, non ne nasce un'altra.
   const [chiave] = useState(() => daPagamento?.chiaveRicevuta ?? nuovoId())
@@ -661,7 +662,7 @@ export function NuovaRicevuta({
       ? null
       : { data, personaId: p.id, numero: n, ente, intestatario: socio, voci: fatte, anticipo: anticipoCent, note: note.trim() || undefined, chiave }
   const guaio =
-    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null) ?? (daPagamento?.pagamentoId ? cosaNonVaDaPagamento(dati.voci, dati.data, daPagamento) : null) ?? contantiInGiornoChiuso(dati.voci.flatMap((v) => v.pagamenti), dati.data, chiusaFino.dato ?? null, daPagamento?.pagamentoId ? daPagamento : undefined)) : null
+    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati, oggi, prossimo.dato ?? undefined) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null) ?? (daPagamento?.pagamentoId ? cosaNonVaDaPagamento(dati.voci, dati.data, daPagamento) : null) ?? contantiInGiornoChiuso(dati.voci.flatMap((v) => v.pagamenti), dati.data, chiusaFino.dato ?? null, daPagamento?.pagamentoId ? daPagamento : undefined)) : null
   const c = dati ? conti(dati) : null
 
   // Lo sconto famiglia: dove è, o perché non è qui.
@@ -776,7 +777,7 @@ export function NuovaRicevuta({
 
       <div className="sg-tre">
         <Campo id="rc-data" etichetta="DATA">
-          <input id="rc-data" className="sg-campo" type="date" value={data} onChange={(e) => setData(e.target.value)} />
+          <input id="rc-data" className="sg-campo" type="date" max={oggi} value={data} onChange={(e) => setData(e.target.value)} />
         </Campo>
         <Campo id="rc-numero" etichetta="NUMERO">
           <input
@@ -803,7 +804,7 @@ export function NuovaRicevuta({
         </span>
       )}
       <span style={{ fontSize: 12, color: 'var(--dim)', marginTop: -12 }}>
-        Il numero si lascia vuoto: prende il primo libero del {anno}. Si scrive solo per continuare la numerazione di un altro programma.
+        Il numero si lascia vuoto: prende il primo libero del {anno}. Si scrive solo in un anno ancora senza ricevute, per continuare la numerazione di un altro programma.
       </span>
 
       <div className="stack" style={{ gap: 10 }}>
@@ -958,7 +959,7 @@ export function NuovaRicevuta({
         <span style={{ fontSize: 14, color: 'var(--sec)' }}>Senza la QUOTA ASSOCIATIVA questa ricevuta non cambia se è in regola: conta solo la quota.</span>
       )}
 
-      {guaio && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{guaio}</span>}
+      {guaio && <span role="alert" style={{ fontSize: 15, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       {avvisa.length > 0 && (
         <span style={{ fontSize: 15, color: 'var(--giallo-testo)' }}>
           {avvisaTesto}: si può fare lo stesso, ma {avvisa.length > 1 ? 'resteranno vuoti' : 'resterà vuoto'}.
