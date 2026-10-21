@@ -157,6 +157,8 @@ export interface Archivio {
   ricevute?: Ricevuta[]
   /** I tentativi di mandare le ricevute per email, come `invii_ricevute` (76-ricevute-email.sql): in prova nessuna mail parte. */
   inviiRicevute?: InvioRicevuta[]
+  /** I solleciti su WhatsApp segnati, come `solleciti` (85-solleciti.sql): in prova nessun messaggio parte. */
+  solleciti?: Array<{ personaId: string; creatoIl: string; da: string }>
   /** Da quando le ricevute si mandano: la prima volta che si guarda, come il file SQL lanciato quel giorno. */
   ricevuteEmailDal?: string
   /** I pagamenti fatti a mano, senza ricevuta (54-pagamenti-diretti.sql). */
