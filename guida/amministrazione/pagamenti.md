@@ -43,7 +43,9 @@ nello storico e si può annullare.
   resta in elenco, segnato annullato, e non si conta più;
 - un pagamento **di una ricevuta** non si annulla da solo: **Annulla la ricevuta**
   annulla la ricevuta intera. Resta in elenco col suo numero e il PDF dice
-  ANNULLATA; se copriva la quota, la quota torna da pagare.
+  ANNULLATA; se copriva la quota, la quota torna da pagare. Se la ricevuta era
+  nata da un pagamento a mano (FANNE LA RICEVUTA della segreteria), la domanda
+  lo dice, e quel pagamento torna senza ricevuta: i soldi restano contati.
 
 Una riga già annullata si apre lo stesso, senza il tasto.
 

@@ -476,9 +476,11 @@ const datiPrevisto = (cambi = {}) => {
     rcv(5, [voce('ALTRO', 777, [pag('2026-08-31', 777)])]),
     rcv(6, [voce('ALTRO', 888, [pag('2026-09-20', 888, 'contanti')])], cambi.annullaR6 ? annullata : {}),
     rcv(7, [voce('ALTRO', 999, [pag('2026-09-25', 999)])]),
+    // FANNE LA RICEVUTA del pagamento a mano dd1: gli stessi 20,00 in contanti dell'8, nella ricevuta.
+    ...(cambi.dd1Ricevuta ? [rcv(8, [voce('ALTRO', 2000, [pag('2026-09-08', 2000, 'Contanti')])])] : []),
   ]
   const diretti = [
-    diretto('dd1', 'p-Rossi', '2026-09-08', 2000, { metodo: '  contanti', ...(cambi.annullaD1 ? { annullatoIl: '2026-09-26T10:00:00Z' } : {}) }),
+    diretto('dd1', 'p-Rossi', '2026-09-08', 2000, { metodo: '  contanti', ...(cambi.annullaD1 ? { annullatoIl: '2026-09-26T10:00:00Z' } : {}), ...(cambi.dd1Ricevuta ? { annullatoIl: '2026-09-26T10:00:00Z', ricevutaId: 'r8' } : {}) }),
     diretto('dd2', 'p-Rossi', '2026-09-08', 700, { metodo: 'Assegno' }),
     diretto('dd3', 'p-Rossi', '2026-09-08', 900, { annullatoIl: '2026-09-09T10:00:00Z' }),
   ]
@@ -507,6 +509,7 @@ console.log('\n18. il previsto di cassa: lo stesso numero del database')
   ok('fino al 24, prima dei 9,99 del 25: lo stesso', al('2026-09-24'), 14388)
   ok('il 25 entrano i 9,99', al('2026-09-25'), 15387)
   ok('il 3: solo i 30,00 della ricevuta', al('2026-09-03'), 13000)
+  ok('il pagamento a mano diventato ricevuta: il previsto dell\'8 non cambia', al('2026-09-08', prova(() => datiPrevisto({ dd1Ricevuta: true }))), 13500)
   const con = prova(() => datiPrevisto({ diff1: true, diff2: true }))
   ok('la differenza di una chiusura (−5,00 il 7) conta: a fine giorno in cassa c\'è quel che si è contato', al('2026-09-07', con), 9500)
   ok('…e il +3,00 del 20: 143,88 − 5,00 + 3,00 = 141,88', al('2026-09-20', con), 14188)

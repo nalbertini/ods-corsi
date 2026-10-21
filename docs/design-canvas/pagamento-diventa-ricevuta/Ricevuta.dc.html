@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- FAI LA RICEVUTA (NuovaRicevuta di Ricevute.tsx): solo la parte nuova in cima al modulo, il resto del modulo non cambia. Riquadro e Bottone della libreria, tema sito. -->
+<div style="display: flex; flex-direction: column; gap: 36px; width: 1944px; padding: 28px 36px; background: #eef5fa">
+<div style="display: flex; gap: 36px; align-items: flex-start">
+<div style="display: flex; flex-direction: column; gap: 10px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · APERTA DA «FANNE LA RICEVUTA»</span>
+<dc-import name="Titoletto" tema="sito" label="FAI LA RICEVUTA" hint-size="100%,50px"></dc-import>
+<dc-import name="Riquadro" tema="sito" contesto="segreteria" etichetta="DAL PAGAMENTO A MANO DEL 10 OTTOBRE" titolo="" cifra="280,00 €" testo="Contanti · ANNUALE JUDO KIDS. Fatta la ricevuta, quel pagamento si annulla: i soldi contano una volta sola." tonoTesto="testo" hint-size="600px,150px"></dc-import>
+<span style="font-size: 14px; line-height: 1.45; color: #46606f">Voci e prezzi si cambiano. Il pagamento in contanti del 10 ottobre deve restare di 280,00 €: se lo si cambia, l’app lo dice prima di fare la ricevuta. Altri soldi pagati adesso vanno in un’altra ricevuta: questa ha la data e il modo di quel pagamento.</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · SE SI CAMBIA IL PAGAMENTO DEL 10 OTTOBRE</span>
+<dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="PAGATO ORA" valore="250,00" nota="Il pagamento in contanti del 10 ottobre era di 280,00 €: rimettilo così, o annulla il pagamento e fai la ricevuta a mano." notaTono="guaio" hint-size="600px,110px"></dc-import>
+<span style="font-size: 14px; line-height: 1.45; color: #46606f">Lo stesso rifiuto viene dal database, se l’app non lo vede.</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · FAI LA RICEVUTA GENERICA, CON PAGAMENTI SENZA RICEVUTA</span>
+<dc-import name="Titoletto" tema="sito" label="FAI LA RICEVUTA" hint-size="100%,50px"></dc-import>
+<dc-import name="Riquadro" tema="sito" contesto="segreteria" etichetta="SENZA RICEVUTA: SONO GLI STESSI SOLDI?" titolo="" cifra="" testo="Ci sono pagamenti registrati a mano. Se questa ricevuta è per quei soldi, falla da lì: se no contano due volte." tonoTesto="avviso" hint-size="600px,130px"></dc-import>
+<dc-import name="RigaPagamento" tema="sito" tipo="pagamento" titolo="10 ottobre 2026 · Contanti" sotto="ANNUALE JUDO KIDS" importo="280,00 €" tasti="Fanne la ricevuta" hint-size="100%,56px"></dc-import>
+<dc-import name="RigaPagamento" tema="sito" tipo="pagamento" titolo="12 ottobre 2026 · POS" sotto="QUOTA ASSOCIATIVA" importo="30,00 €" tasti="Fanne la ricevuta" hint-size="100%,56px"></dc-import>
+<span style="font-size: 14px; line-height: 1.45; color: #46606f">In cima a FAI LA RICEVUTA, ogni pagamento a mano non annullato della persona, sempre (non solo quelli con lo stesso importo). Non blocca: se sono altri soldi, si va avanti col modulo.</span>
+</div>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1944,"height":700}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

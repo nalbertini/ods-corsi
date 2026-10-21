@@ -20,7 +20,7 @@ globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} 
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export * from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro } from './src/lib/ricevute'; export { dataLunga } from './src/lib/sala'; export { conti } from './src/lib/ricevute'; export { NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, VOCE_QUOTA, VOCE_CORSI, cassaDelMetodo, voceDiSistema, doveEntraInContabilita } from './src/lib/contabilita'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { STAGIONE } from './src/lib/costi'; export { pagamentoDi } from './src/lib/segreteria'",
+    contents: "export * from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro } from './src/lib/ricevute'; export { dataLunga } from './src/lib/sala'; export { conti } from './src/lib/ricevute'; export { NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, VOCE_QUOTA, VOCE_CORSI, cassaDelMetodo, voceDiSistema, doveEntraInContabilita } from './src/lib/contabilita'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { STAGIONE } from './src/lib/costi'; export { pagamentoDi } from './src/lib/segreteria'; export { soldi } from './src/lib/satispay'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -449,7 +449,7 @@ console.log('\n16. la ricevuta fatta da un pagamento a mano (voceDaPagamento(dat
 console.log('\n17. la casella «fai anche la ricevuta» (notaRicevutaDaPagamento, tastoRicevutaDaPagamento)')
 {
   ok('spuntata: la nota', prova(() => m.notaRicevutaDaPagamento(true)), 'Si apre FAI LA RICEVUTA già compilata. Il pagamento si registra lì, una volta sola.')
-  ok('tolta: la nota', prova(() => m.notaRicevutaDaPagamento(false)), 'Resta SENZA RICEVUTA e non cambia se è in regola: una quota resta DA PAGARE. Per la ricevuta, dopo, si annulla il pagamento e la si fa.')
+  ok('tolta: la nota', prova(() => m.notaRicevutaDaPagamento(false)), 'Resta SENZA RICEVUTA e non cambia se è in regola: una quota resta DA PAGARE. Per la ricevuta, dopo, FANNE LA RICEVUTA sul pagamento.')
   ok('spuntata: il tasto', prova(() => m.tastoRicevutaDaPagamento(true)), 'Sì, fai la ricevuta')
   ok('tolta: il tasto', prova(() => m.tastoRicevutaDaPagamento(false)), 'Sì, registra senza ricevuta')
 }
@@ -505,7 +505,8 @@ console.log('\n19. Ricevute.tsx scrive solo dopo il sì del riepilogo, e non se 
   const lascia = isc.slice(isc.indexOf('onLasciaStare={() => {'), isc.indexOf('onFatta={() => {'))
   ok('ricevuta non fatta: il pagamento torna nel modulo', /setRiprendi\(daPagamento\)/.test(lascia), true)
   ok('…e non si registra niente', /registraPagamentoDiretto/.test(lascia), false)
-  ok('uscire dalla ricevuta aperta dal pagamento chiede prima', /useBozza\(!!daPagamento/.test(isc), true)
+  // Quando chiede lo dice `siPerdeUscendo` (sezione 27): qui, che la scheda la usi.
+  ok('uscire dalla ricevuta aperta dal pagamento chiede prima', /useBozza\(siPerdeUscendo\(daPagamento\)/.test(isc), true)
   // Il guaio sotto al modulo è lo stesso del database: oggi (a Roma) e le chiusure arrivano alla funzione.
   const riga = tsx.split('\n').find((l) => l.includes('cosaNonVaDiretto({')) ?? ''
   ok('il modulo passa oggi e le chiusure a cosaNonVaDiretto', [riga.includes('oggi'), riga.includes('chiusure')], [true, true])
@@ -590,6 +591,169 @@ console.log('\n22. REGISTRA IL PAGAMENTO manda la chiave anche registrando senza
   // Dalla scheda il Satispay libero si dice sotto il modulo, prima di premere: non solo col rifiuto del database.
   const guaio = tsx.slice(tsx.indexOf('const guaio = importo'), tsx.indexOf('const manca = cent'))
   ok('Ricevute.tsx: il guaio del modulo dice anche cosaNonVaSatispayAMano(metodo, p.satispay)', /cosaNonVaSatispayAMano\(metodo, p\.satispay\)/.test(guaio), true)
+}
+
+// Il pagamento a mano diventa ricevuta (supabase/prova/pagamento-diventa-ricevuta.sql): gli stessi casi e gli stessi testi.
+const nonCosi = (importo, metodo = 'Contanti') =>
+  `Il pagamento a mano di ${m.soldi(importo)} (${metodo}, 10/10/2026) va nella ricevuta così com’è: rimettilo, o annulla il pagamento e fai la ricevuta a mano`
+
+console.log('\n23. FANNE LA RICEVUTA: il pagamento a mano va nella ricevuta così com\'è (cosaNonVaDaPagamento)')
+{
+  const x = diretto('pd-23', 'p-Rossi', '2026-10-10', 28000)
+  const v = (prezzo, pagamenti) => [voce('ANNUALE JUDO KIDS', prezzo, pagamenti)]
+  const no = (voci, data = '2026-10-10', y = x) => prova(() => m.cosaNonVaDaPagamento(voci, data, y))
+  ok('280 € in contanti del 10/10: va', no(v(28000, [pag('2026-10-10', 28000)])), null)
+  ok('« contanti » minuscolo e con gli spazi è lo stesso metodo', no(v(28000, [pag('2026-10-10', 28000, ' contanti ')])), null)
+  ok('senza data il pagamento è del giorno della ricevuta', no(v(28000, [{ importo: 28000, metodo: 'Contanti' }])), null)
+  ok('…e con la ricevuta dell\'11/10 non è più del 10/10', no(v(28000, [{ importo: 28000, metodo: 'Contanti' }]), '2026-10-11'), nonCosi(28000))
+  ok('140 + 140 € in contanti del 10/10 fanno 280: va', no(v(28000, [pag('2026-10-10', 14000), pag('2026-10-10', 14000)])), null)
+  ok('si aggiungono pagamenti d\'altro metodo: 280 € contanti + 100 € POS va', no(v(38000, [pag('2026-10-10', 28000), pag('2026-10-10', 10000, 'POS')])), null)
+  ok('…e d\'altra data: + 100 € contanti dell\'11/10 va', no(v(38000, [pag('2026-10-10', 28000), pag('2026-10-11', 10000)])), null)
+  ok('con 250 € no', no(v(28000, [pag('2026-10-10', 25000)])), nonCosi(28000))
+  ok('con 280 € POS no', no(v(28000, [pag('2026-10-10', 28000, 'POS')])), nonCosi(28000))
+  ok('con 280 € in contanti dell\'11/10 no', no(v(28000, [pag('2026-10-11', 28000)])), nonCosi(28000))
+  ok('con 280 + 50 € in contanti del 10/10 no', no(v(33000, [pag('2026-10-10', 28000), pag('2026-10-10', 5000)])), nonCosi(28000))
+  ok('senza pagamenti no', no(v(28000, [])), nonCosi(28000))
+  ok('il metodo com\'è scritto nel pagamento a mano, e i centesimi',
+    no(v(5050, [pag('2026-10-10', 5000, 'Bonifico')]), '2026-10-10', diretto('pd-23b', 'p-Rossi', '2026-10-10', 5050, { metodo: 'Bonifico' })), nonCosi(5050, 'Bonifico'))
+}
+
+console.log('\n24. lo stato del pagamento a mano nello storico (statoDiretto)')
+{
+  const r = ricevuta(121, 'Giulia', 'Rossi', [voce('ANNUALE JUDO KIDS', 28000, [pag('2026-10-10', 28000)])])
+  const x = diretto('pd-24', 'p-Rossi', '2026-10-10', 28000)
+  ok('attivo: Senza ricevuta', prova(() => m.statoDiretto(x, [r])), 'Senza ricevuta')
+  ok('diventato ricevuta: dice quale', prova(() => m.statoDiretto({ ...x, annullatoIl: '2026-10-11T10:00:00Z', ricevutaId: r.id }, [r])), 'Diventato ricevuta n. 121/2026')
+  ok('annullato a mano: Annullato', prova(() => m.statoDiretto({ ...x, annullatoIl: '2026-10-11T10:00:00Z' }, [r])), 'Annullato')
+  ok('con una ricevuta che non c\'è: Annullato', prova(() => m.statoDiretto({ ...x, annullatoIl: '2026-10-11T10:00:00Z', ricevutaId: 'r-sparita' }, [r])), 'Annullato')
+}
+
+console.log('\n25. annullare la ricevuta fatta dal pagamento a mano lo dice (domandaAnnullaRicevuta)')
+{
+  const oggiTesto = 'Annullare la ricevuta 121/2026? Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare.'
+  const r = { id: 'r-25', numero: 121, anno: 2026 }
+  const x = diretto('pd-25', 'p-Rossi', '2026-10-10', 28000, { annullatoIl: '2026-10-11T10:00:00Z', ricevutaId: 'r-25' })
+  ok('con dentro il pagamento a mano: torna SENZA RICEVUTA', prova(() => m.domandaAnnullaRicevuta(r, [x])),
+    `${oggiTesto} Dentro c’è il pagamento a mano del 10/10/2026 (${m.soldi(28000)} in Contanti): torna SENZA RICEVUTA, e da lì si rifà la ricevuta giusta.`)
+  ok('un pagamento a mano di un\'altra ricevuta: il testo di oggi', prova(() => m.domandaAnnullaRicevuta(r, [{ ...x, ricevutaId: 'r-altra' }])), oggiTesto)
+  ok('senza pagamenti a mano: il testo di oggi', prova(() => m.domandaAnnullaRicevuta(r, [])), oggiTesto)
+}
+
+console.log('\n26. in prova: FANNE LA RICEVUTA (emettiRicevuta con il pagamento a mano, come emetti_ricevuta_da_pagamento)')
+{
+  const s = m.creaSegreteriaProva()
+  const [chi, altra] = (await s.persone()).filter((p) => p.attiva)
+  const nuovo = async (personaId = chi.id) =>
+    (await s.registraPagamentoDiretto({ personaId, data: '2026-10-10', importo: 28000, metodo: 'Contanti', voce: 'ANNUALE JUDO KIDS' })).id
+  const dati = (prezzo, pagamenti, extra = {}) => ({
+    data: '2026-10-10', personaId: chi.id, ente: m.ENTE_PREDEFINITO, intestatario: { nome: chi.nome, cognome: chi.cognome },
+    voci: [voce('ANNUALE JUDO KIDS', prezzo, pagamenti)], anticipo: 0, ...extra,
+  })
+  const emetti = async (d, pid) => {
+    try {
+      return await s.emettiRicevuta(d, undefined, pid)
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  const di = async (pid) => (await s.pagamentiDiretti()).find((x) => x.id === pid)
+  // Come `stato` della prova SQL: attivo, o annullato e legato (o no) a una ricevuta.
+  const stato = async (pid) => {
+    const x = await di(pid)
+    return !x ? 'non c’è' : !x.annullatoIl && !x.ricevutaId ? 'attivo' : `annullato · ${x.ricevutaId ?? 'senza ricevuta'}`
+  }
+  const quante = async () => (await s.ricevute()).length
+
+  const p1 = await nuovo()
+  const r1 = await emetti(dati(28000, [pag('2026-10-10', 28000)]), p1)
+  ok('la ricevuta si fa', typeof r1?.id, 'string')
+  ok('…e il pagamento a mano è annullato e legato a lei', await stato(p1), `annullato · ${r1?.id}`)
+
+  const p2 = await nuovo()
+  const prima = await quante()
+  ok('con 250 € no', await emetti(dati(28000, [pag('2026-10-10', 25000)]), p2), `ERRORE: ${nonCosi(28000)}`)
+  ok('con 280 € POS no', await emetti(dati(28000, [pag('2026-10-10', 28000, 'POS')]), p2), `ERRORE: ${nonCosi(28000)}`)
+  ok('con 280 € in contanti dell\'11/10 no', await emetti(dati(28000, [pag('2026-10-11', 28000)]), p2), `ERRORE: ${nonCosi(28000)}`)
+  ok('già annullato no', await emetti(dati(28000, [pag('2026-10-10', 28000)]), p1), 'ERRORE: Questo pagamento a mano è già annullato: la ricevuta si fa da + FAI LA RICEVUTA')
+  const pAltra = await nuovo(altra.id)
+  ok('di un\'altra persona no', await emetti(dati(28000, [pag('2026-10-10', 28000)]), pAltra), 'ERRORE: Il pagamento a mano è di un’altra persona')
+  ok('un id che non c\'è no', await emetti(dati(28000, [pag('2026-10-10', 28000)]), 'pd-sparito'), 'ERRORE: Questo pagamento a mano non c’è più')
+  ok('pagato più del totale no', await emetti(dati(20000, [pag('2026-10-10', 28000)]), p2), 'ERRORE: Si è pagato più del totale: controlla gli importi')
+  ok('nessuna ricevuta nuova', await quante(), prima)
+  ok('…e i pagamenti a mano restano attivi', [await stato(p2), await stato(pAltra)], ['attivo', 'attivo'])
+  ok('280 € contanti + 100 € POS su 380 € va', typeof (await emetti(dati(38000, [pag('2026-10-10', 28000), pag('2026-10-10', 10000, 'POS')]), p2))?.id, 'string')
+
+  // La chiave del modulo: ripremuto dopo la rete caduta, la stessa ricevuta.
+  const K = 'dddddddd-0000-4000-8000-000000000026'
+  const p3 = await nuovo()
+  const r3 = await emetti(dati(28000, [pag('2026-10-10', 28000)], { chiave: K }), p3)
+  const dopo = await quante()
+  ok('la stessa chiamata con la stessa chiave dà la stessa ricevuta', (await emetti(dati(28000, [pag('2026-10-10', 28000)], { chiave: K }), p3))?.id, r3?.id)
+  ok('…nessun numero nuovo', await quante(), dopo)
+  const K2 = 'dddddddd-0000-4000-8000-000000000027'
+  const normale = await emetti(dati(5000, [pag('2026-10-10', 5000, 'POS')], { chiave: K2 }))
+  const p4 = await nuovo()
+  ok('la chiave di una ricevuta senza questo pagamento no', await emetti(dati(28000, [pag('2026-10-10', 28000)], { chiave: K2 }), p4),
+    `ERRORE: La ricevuta n. ${normale?.numero}/${normale?.anno} fatta da questo modulo non ha dentro questo pagamento a mano: chiudi il modulo e riaprilo`)
+  ok('…e il pagamento resta attivo', await stato(p4), 'attivo')
+
+  // annullaRicevuta: il pagamento a mano torna SENZA RICEVUTA, e se ne rifà la ricevuta.
+  const annulla = async (id) => {
+    try {
+      await s.annullaRicevuta(id)
+      return 'fatto'
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  ok('annullare la ricevuta fatta dal pagamento a mano si può', await annulla(r1?.id), 'fatto')
+  ok('…e il pagamento a mano torna attivo, senza ricevuta', await stato(p1), 'attivo')
+  ok('annullare una ricevuta normale non tocca i pagamenti a mano', [await annulla(normale?.id), await stato(p3), await stato(p4)], ['fatto', `annullato · ${r3?.id}`, 'attivo'])
+  ok('tornato attivo, se ne rifà la ricevuta con un\'altra chiave',
+    typeof (await emetti(dati(28000, [pag('2026-10-10', 28000)], { chiave: 'dddddddd-0000-4000-8000-000000000028' }), p1))?.id, 'string')
+}
+
+console.log('\n28. FANNE LA RICEVUTA porta il pagamento a mano fino al database')
+{
+  // Se il legame si perde la ricevuta è normale, il pagamento a mano resta, e gli stessi soldi contano due volte.
+  const x = diretto('pd-28', 'p-Rossi', '2026-10-10', 28000)
+  const d = prova(() => m.datiDaPagamento(x, 'k-28'))
+  ok('datiDaPagamento: il pagamento e la chiave', [d.pagamentoId, d.chiaveRicevuta, d.importo, d.data, d.metodo], ['pd-28', 'k-28', 28000, '2026-10-10', 'Contanti'])
+  const tsx = readFileSync('src/components/segreteria/Ricevute.tsx', 'utf8')
+  ok('Ricevute.tsx: emettiRicevuta riceve il pagamento a mano', /d\.emettiRicevuta\(dati, conSatispay\?\.id, daPagamento\?\.pagamentoId\)/.test(tsx), true)
+  ok('Ricevute.tsx: dal pagamento a mano niente Satispay nella stessa ricevuta', /const conSatispay = metodo === 'Satispay' && !daPagamento\?\.pagamentoId \? sp : undefined/.test(tsx), true)
+  ok('Ricevute.tsx: il guaio del modulo dice cosaNonVaDaPagamento', /cosaNonVaDaPagamento\(dati\.voci, dati\.data, daPagamento\)/.test(tsx), true)
+  const sb = readFileSync('src/lib/segreteriaSupabase.ts', 'utf8')
+  const corpo = sb.slice(sb.indexOf('async emettiRicevuta('), sb.indexOf('async annullaRicevuta('))
+  ok('segreteriaSupabase.ts: col pagamento a mano, emetti_ricevuta_da_pagamento con pagamento: pagamentoId',
+    /pagamentoId \? 'emetti_ricevuta_da_pagamento'/.test(corpo) && /pagamentoId \? \{ pagamento: pagamentoId \}/.test(corpo), true)
+  const isc = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
+  const lascia = isc.slice(isc.indexOf('onLasciaStare={() => {'), isc.indexOf('onFatta={() => {'))
+  ok('Iscritti.tsx: «Lascia stare» da FANNE LA RICEVUTA non riapre REGISTRA IL PAGAMENTO',
+    lascia.indexOf('if (!siPerdeUscendo(daPagamento)) return setDaPagamento(null)') > -1 && lascia.indexOf('if (!siPerdeUscendo(daPagamento))') < lascia.indexOf('setRiprendi(daPagamento)'), true)
+}
+
+console.log('\n29. in prova: Satispay e pagamento a mano nella stessa ricevuta no')
+{
+  const s = m.creaSegreteriaProva()
+  const [chi] = (await s.persone()).filter((p) => p.attiva)
+  const pid = (await s.registraPagamentoDiretto({ personaId: chi.id, data: '2026-10-10', importo: 28000, metodo: 'Contanti', voce: 'ANNUALE JUDO KIDS' })).id
+  const dati = { data: '2026-10-10', personaId: chi.id, ente: m.ENTE_PREDEFINITO, intestatario: { nome: chi.nome, cognome: chi.cognome }, voci: [voce('ANNUALE JUDO KIDS', 28000, [pag('2026-10-10', 28000)])], anticipo: 0 }
+  let esito
+  try {
+    esito = await s.emettiRicevuta(dati, 'sp-qualunque', pid)
+  } catch (e) {
+    esito = `ERRORE: ${e.message}`
+  }
+  ok('rifiutata prima di guardare il resto', esito, 'ERRORE: Una ricevuta si fa da un pagamento a mano o da un Satispay, non da tutti e due: chiudi il modulo e riaprilo')
+}
+
+console.log('\n27. uscire dalla ricevuta aperta da un pagamento chiede prima solo se si perde (siPerdeUscendo)')
+{
+  const d = { personaId: 'p-1', data: '2026-10-10', importo: 4000, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA' }
+  ok('da REGISTRA IL PAGAMENTO, non ancora scritto: chiede', m.siPerdeUscendo(d), true)
+  ok('da FANNE LA RICEVUTA, già registrato: non chiede', m.siPerdeUscendo({ ...d, pagamentoId: 'pd-1' }), false)
+  ok('nessun pagamento: non chiede', [m.siPerdeUscendo(null), m.siPerdeUscendo(undefined)], [false, false])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

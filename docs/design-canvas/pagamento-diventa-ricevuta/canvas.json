@@ -1,0 +1,14 @@
+{
+ "pages": [
+  { "id": "page-1", "name": "Il pagamento diventa ricevuta · proposta" }
+ ],
+ "artboards": [
+  { "file": "Scheda.dc.html", "title": "Lo storico della scheda: oggi e proposta", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Ricevuta.dc.html", "title": "FAI LA RICEVUTA: dal pagamento e l'avviso di doppione", "x": 1560, "y": 300, "page": "page-1" },
+  { "file": "Rifiuti.dc.html", "title": "REGISTRA UN PAGAMENTO e ANNULLA RICEVUTA", "x": 1560, "y": 1100, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1600, "text": "Gli stessi soldi si registrano una volta sola" },
+  { "id": "sotto", "kind": "body", "x": 0, "y": 120, "maxW": 1600, "text": "Il pagamento a mano diventa ricevuta con un tasto, e si annulla da solo. FAI LA RICEVUTA mostra i pagamenti senza ricevuta della persona. REGISTRA UN PAGAMENTO rifiuta un Satispay già arrivato dal modulo e un pagamento già finito in una ricevuta." }
+ ]
+}

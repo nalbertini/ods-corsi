@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { etichettaQuota, pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
 import { avvisoCassaChiusa, oggiARoma, type ChiusuraCassa } from '../../lib/contabilita'
-import { cosaNonVaDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, notaRicevutaDaPagamento, riepilogoPagamentoDiretto, tastoRicevutaDaPagamento, voceDaPagamento, vociSuggerite, type DatiPagamentoDiretto, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
+import { cosaNonVaDaPagamento, cosaNonVaDiretto, datiDaPagamento, statoDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, notaRicevutaDaPagamento, riepilogoPagamentoDiretto, tastoRicevutaDaPagamento, voceDaPagamento, vociSuggerite, type DatiPagamentoDiretto, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
 import {
   centesimi,
   conti,
@@ -111,13 +111,14 @@ export function StoricoIscritto({
   const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
   const annulla = async (r: Ricevuta) => {
     const avviso = avvisoCassaChiusa(r.voci.flatMap((v) => v.pagamenti), await d.chiusure().catch(() => []))
-    if (!(await chiedi(`${domandaAnnullaRicevuta(r)}${avviso ? ` ${avviso}` : ''}`, 'Sì, annulla la ricevuta', { no: 'No, lasciala', pericolo: true }))) return
+    if (!(await chiedi(`${domandaAnnullaRicevuta(r, diretti.dato ?? [])}${avviso ? ` ${avviso}` : ''}`, 'Sì, annulla la ricevuta', { no: 'No, lasciala', pericolo: true }))) return
     const oggi = chiaveGiorno(new Date())
     const altre = (ricevute.dato ?? []).filter((x) => x.id !== r.id)
     const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
     const dopo = pagamentoDi({ pagamento: p.pagamento, quote: quoteDi(altre) }, oggi)
     void fai(() => d.annullaRicevuta(r.id), 'Ricevuta annullata', async () => {
-      await ricevute.ricarica()
+      // Un pagamento a mano diventato questa ricevuta torna SENZA RICEVUTA: si rilegge anche lui.
+      await Promise.all([ricevute.ricarica(), diretti.ricarica()])
       onCambiato()
       if (quota && dopo.come !== 'pagato') setScoperta({ numero: `${r.numero}/${r.anno}`, al: quota.al })
     })
@@ -212,7 +213,9 @@ export function StoricoIscritto({
       {aMano.length > 0 && <Riga titolo="SENZA RICEVUTA" />}
       {righeDirette(aMano, () => `${p.cognome} ${p.nome}`).map((x) => {
         const suo = aMano.find((y) => y.id === x.direttoId)
-        return <RigaDelloStorico key={x.id} riga={x} aMano onAnnulla={x.annullato || !suo ? undefined : () => annullaPagamento(suo)} />
+        // Con un Satispay arrivato la ricevuta va fatta con quei soldi: dal pagamento a mano no, come con «Fai anche la ricevuta».
+        const fanne = suo && !x.annullato && onRicevuta && !p.satispay ? () => onRicevuta(datiDaPagamento(suo, nuovoId())) : undefined
+        return <RigaDelloStorico key={x.id} riga={x} aMano stato={suo ? statoDiretto(suo, tutteRicevute) : undefined} diventato={!!suo?.ricevutaId} onFanne={fanne} onAnnulla={x.annullato || !suo ? undefined : () => annullaPagamento(suo)} />
       })}
       {scoperta && (
         <div className="sg-prima">
@@ -278,7 +281,7 @@ export function StoricoIscritto({
 }
 
 /** Un pagamento nello storico: la data e come, a cosa serve, l'importo. */
-function RigaDelloStorico({ riga, aMano, onAnnulla }: { riga: RigaPagamento; aMano?: boolean; onAnnulla?: () => void }) {
+function RigaDelloStorico({ riga, aMano, stato, diventato, onFanne, onAnnulla }: { riga: RigaPagamento; aMano?: boolean; stato?: string; diventato?: boolean; onFanne?: () => void; onAnnulla?: () => void }) {
   const barrato = riga.annullato ? 'line-through' : undefined
   return (
     <div className="sg-voce-elenco sg-pagamento" data-amano={aMano || undefined} data-annullato={riga.annullato || undefined} style={{ flexWrap: 'wrap' }}>
@@ -289,12 +292,18 @@ function RigaDelloStorico({ riga, aMano, onAnnulla }: { riga: RigaPagamento; aMa
         </span>
         <span style={{ fontSize: 12, color: 'var(--dim)', overflowWrap: 'anywhere' }}>
           {[riga.voce, riga.nota].filter(Boolean).join(' · ')}
-          {aMano && <span className="num sg-tag" data-tipo={riga.annullato ? 'manca' : undefined} style={{ marginLeft: 8 }}>{riga.annullato ? 'Annullato' : 'Senza ricevuta'}</span>}
+          {aMano && <span className="num sg-tag" data-tipo={diventato ? 'fatto' : riga.annullato ? 'manca' : undefined} style={diventato ? { display: 'block', width: 'fit-content', marginTop: 4 } : { marginLeft: 8 }}>{stato ?? (riga.annullato ? 'Annullato' : 'Senza ricevuta')}</span>}
         </span>
       </span>
       <span className="num" style={{ fontSize: 18, fontWeight: 700, whiteSpace: 'nowrap', textDecoration: barrato, color: riga.annullato ? 'var(--dim)' : 'var(--verde-testo)' }}>
         {euro(riga.importo)} €
       </span>
+      {/* Come per la ricevuta: quel che si preme spesso sulla riga, l'annullo raro su una riga sua; a capo, a destra come lui. */}
+      {onFanne && (
+        <button type="button" className="num sg-chip" style={{ marginLeft: 'auto' }} onClick={onFanne}>
+          Fanne la ricevuta
+        </button>
+      )}
       {onAnnulla && (
         <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
           <button type="button" className="num sg-chip sg-pericolo" onClick={onAnnulla}>
@@ -529,11 +538,17 @@ export function NuovaRicevuta({
   onFatta,
   onLasciaStare,
   daPagamento,
+  onDaPagamento,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
-  /** Da REGISTRA IL PAGAMENTO: una voce sola, già pagata, con la data e il modo del modulo. */
+  /**
+   * Da REGISTRA IL PAGAMENTO, o da FANNE LA RICEVUTA (con `pagamentoId`): una voce sola, già pagata, con la data e il
+   * modo del modulo o del pagamento a mano.
+   */
   daPagamento?: DatiPagamentoDiretto
+  /** FANNE LA RICEVUTA da un pagamento a mano della persona, scelto in cima alla ricevuta. */
+  onDaPagamento?: (dati: DatiPagamentoDiretto) => void
   /** Gli altri del suo nucleo familiare: dalle loro ricevute, lo sconto famiglia. */
   nucleo?: PersonaSeg[]
   /** I corsi che fa adesso: le loro voci vengono prima. */
@@ -570,12 +585,16 @@ export function NuovaRicevuta({
   // Pagata dal modulo con Satispay: quei soldi entrano in questa ricevuta, una volta sola (`emetti_ricevuta_satispay`).
   const satispay = useCarica(() => d.pagamentiSatispay(), [d])
   const sp = satispayDaUsare(satispay.dato ?? [], p.id)
+  // I pagamenti a mano ancora SENZA RICEVUTA: se sono gli stessi soldi, la ricevuta si fa da lì (se no contano due volte).
+  const diretti = useCarica(() => (daPagamento || sp ? Promise.resolve([]) : d.pagamentiDiretti(p.id)), [d, p.id, !!sp])
+  const senzaRicevuta = (diretti.dato ?? []).filter((x) => !x.annullatoIl)
   useEffect(() => {
     // Da un pagamento a mano il modo è quello del modulo: se c'è anche un Satispay, lo dice `cosaNonVaMetodo`.
     if (sp && !daPagamento) setMetodo('Satispay')
   }, [sp?.id])
   // Il pagamento da mettere in questa ricevuta: c'è, e si paga con Satispay.
-  const conSatispay = metodo === 'Satispay' ? sp : undefined
+  // Dal pagamento a mano i soldi sono quelli: un Satispay arrivato non entra nella stessa ricevuta.
+  const conSatispay = metodo === 'Satispay' && !daPagamento?.pagamentoId ? sp : undefined
 
   const listino = partenza.dato?.[3].listino
   const gruppi = listino ? vociInDueGruppi(corsi, data, listino) : { primi: [], altri: [] }
@@ -641,7 +660,7 @@ export function NuovaRicevuta({
       ? null
       : { data, personaId: p.id, numero: n, ente, intestatario: socio, voci: fatte, anticipo: anticipoCent, note: note.trim() || undefined, chiave }
   const guaio =
-    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null)) : null
+    typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null) ?? (daPagamento?.pagamentoId ? cosaNonVaDaPagamento(dati.voci, dati.data, daPagamento) : null)) : null
   const c = dati ? conti(dati) : null
 
   // Lo sconto famiglia: dove è, o perché non è qui.
@@ -702,7 +721,7 @@ export function NuovaRicevuta({
     if (!si) return
     void fai(
       async () => {
-        const r = await d.emettiRicevuta(dati, conSatispay?.id)
+        const r = await d.emettiRicevuta(dati, conSatispay?.id, daPagamento?.pagamentoId)
         // Fatta la ricevuta, PDF e mail vanno ognuno per conto suo: se uno non va, l'altro parte lo stesso.
         // Senza carta intestata il PDF non esce: l'avviso dice di riscaricarlo dallo storico, che chiede se stamparlo senza.
         const carta = await cartaSePuoi()
@@ -728,6 +747,35 @@ export function NuovaRicevuta({
   return (
     <div className="stack" style={{ gap: 20 }}>
       <Riga titolo="NUOVO PAGAMENTO · RICEVUTA" />
+      {/* Un'informazione e un avviso che non ferma: riquadri normali, niente rosso (il Segnale Unico, DESIGN.md). */}
+      {daPagamento?.pagamentoId && (
+        <section className="sg-riquadro" aria-label="Dal pagamento a mano">
+          <span className="sg-etichetta">DAL PAGAMENTO A MANO DEL {dataLunga(daPagamento.data).toUpperCase()}</span>
+          <span style={{ fontSize: 15, lineHeight: 1.4 }}>
+            <span className="num">{euro(daPagamento.importo)} €</span> · {daPagamento.metodo} · {daPagamento.voce}. Fatta la ricevuta, quel pagamento si annulla: i soldi contano una volta sola.
+          </span>
+        </section>
+      )}
+      {onDaPagamento && senzaRicevuta.length > 0 && (
+        <section className="sg-riquadro" aria-label="Pagamenti senza ricevuta">
+          <span className="sg-etichetta">SENZA RICEVUTA: SONO GLI STESSI SOLDI?</span>
+          <span className="sg-sotto" data-tono="aspetta" style={{ fontSize: 15, lineHeight: 1.4 }}>
+            Ci sono pagamenti registrati a mano. Se questa ricevuta è per quei soldi, falla da lì: se no contano due volte.
+          </span>
+          {senzaRicevuta.map((x) => (
+            <div key={x.id} className="sg-voce-elenco sg-pagamento" data-amano style={{ flexWrap: 'wrap' }}>
+              <span className="stack grow" style={{ minWidth: 0, flex: '1 1 200px' }}>
+                <span style={{ fontSize: 15, fontWeight: 600 }}>{dataLunga(x.data)} · {x.metodo}</span>
+                <span style={{ fontSize: 12, color: 'var(--dim)', overflowWrap: 'anywhere' }}>{x.voce}</span>
+              </span>
+              <span className="num" style={{ fontSize: 18, fontWeight: 700, whiteSpace: 'nowrap' }}>{euro(x.importo)} €</span>
+              <button type="button" className="num sg-chip" style={{ marginLeft: 'auto' }} onClick={() => onDaPagamento(datiDaPagamento(x, nuovoId()))}>
+                Fanne la ricevuta
+              </button>
+            </div>
+          ))}
+        </section>
+      )}
 
       <div className="sg-tre">
         <Campo id="rc-data" etichetta="DATA">
