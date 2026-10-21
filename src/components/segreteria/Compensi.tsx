@@ -4,8 +4,8 @@ import { insegna } from '../../lib/ruoli'
 import { chiaveGiorno, dataLunga } from '../../lib/sala'
 import { euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
-import { euroOra, centesimiDaEuro, euroDaScrivere } from '../../lib/tariffe'
-import { cosaNonVaCompenso, datiPerRicevuta, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type StatoCompenso } from '../../lib/compensi'
+import { euroOra, euroDaScrivere } from '../../lib/tariffe'
+import { centesimiDaImporto, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type StatoCompenso } from '../../lib/compensi'
 import { chiedi, Guaio, Testa, useAvviso, useCarica } from './comune'
 import { Numero } from './Presenze'
 
@@ -15,12 +15,15 @@ type Persona = { id: string; nome: string; cognome: string }
 const NOME_STATO: Record<StatoCompenso, { testo: string; tono: 'rosso' | 'giallo' | 'neutro' | 'verde' }> = {
   'da-confermare': { testo: 'PRESENZE DA CONFERMARE', tono: 'rosso' },
   'senza-tariffa': { testo: 'SENZA TARIFFA', tono: 'rosso' },
+  'senza-dati': { testo: 'MANCANO I DATI', tono: 'rosso' },
   'da-fare': { testo: 'RICEVUTA DA FARE', tono: 'neutro' },
   fatta: { testo: 'FATTA', tono: 'verde' },
   'non-torna': { testo: 'NON TORNA PIÙ', tono: 'rosso' },
 }
 
 const nomeDi = (p: Persona) => `${p.cognome} ${p.nome}`.trim()
+const quante = (n: number, uno: string, tanti: string) => `${n} ${n === 1 ? uno : tanti}`
+const quanteOre = (minuti: number) => `${ore(minuti)} ${minuti === 60 ? 'ora' : 'ore'}`
 const scarica = async (rs: RicevutaCompenso[]) => (await import('../../lib/ricevutaCompensoPdf')).scaricaRicevuteCompensi(rs)
 
 /**
@@ -59,7 +62,17 @@ export function AzioniRicevuta({
   onCambiato: () => Promise<unknown>
 }) {
   const [cambia, setCambia] = useState<{ testo: string; motivo: string } | null>(null)
+  // Mentre prepara o annulla i tasti sono spenti: un doppio clic non fa due cose.
+  const [occupato, setOccupato] = useState(false)
   const prepara = async (cambiato?: { importo: number; motivo: string }) => {
+    setOccupato(true)
+    try {
+      await preparaOra(cambiato)
+    } finally {
+      setOccupato(false)
+    }
+  }
+  const preparaOra = async (cambiato?: { importo: number; motivo: string }) => {
     const fatta: { r?: RicevutaCompenso } = {}
     const ok = await fai(async () => (fatta.r = await faiRicevuta(d, p, conto, mese, cambiato)), 'Ricevuta fatta', async () => {
       setCambia(null)
@@ -70,13 +83,26 @@ export function AzioniRicevuta({
   }
   const annulla = async () => {
     if (!ricevuta) return
-    if (!(await chiedi(`Annullare la ricevuta di ${nomeDi(p)}? Resta nel registro, annullata; poi se ne fa una nuova.`, 'Annulla la ricevuta', { pericolo: true }))) return
-    void fai(() => d.annullaRicevutaCompenso(ricevuta.id), 'Ricevuta annullata', onCambiato)
+    // Il secondo clic di un doppio clic su «Prepara» finisce qui, appena la ricevuta c'è: non vale.
+    if (Date.now() - Date.parse(ricevuta.creataIl) < 1500) return
+    const rifai = stato === 'non-torna'
+    const domanda = rifai
+      ? `Annullare la ricevuta di ${nomeDi(p)} e farne una nuova coi conti di adesso? Quella di prima resta nel registro, annullata.`
+      : `Annullare la ricevuta di ${nomeDi(p)}? Resta nel registro, annullata; poi se ne fa una nuova.`
+    if (!(await chiedi(domanda, rifai ? 'Annulla e rifai' : 'Annulla la ricevuta', { pericolo: true }))) return
+    setOccupato(true)
+    try {
+      const ok = await fai(() => d.annullaRicevutaCompenso(ricevuta.id), 'Ricevuta annullata', rifai ? undefined : onCambiato)
+      // «Annulla e rifai»: annullata quella vecchia, si fa subito la nuova.
+      if (ok && rifai) await preparaOra()
+    } finally {
+      setOccupato(false)
+    }
   }
 
   if (cambia) {
-    const importo = centesimiDaEuro(cambia.testo) ?? 0
-    const no = cosaNonVaCompenso({ importo, calcolato: conto.calcolato, motivo: cambia.motivo })
+    const importo = centesimiDaImporto(cambia.testo) ?? 0
+    const no = cosaNonVaImportoScritto(cambia.testo) ?? cosaNonVaCompenso({ importo, calcolato: conto.calcolato, motivo: cambia.motivo })
     return (
       <div className="stack" style={{ gap: 10, padding: '14px 16px', border: '2px solid var(--text)', flexBasis: '100%' }}>
         <span className="sg-etichetta">MODIFICA IL COMPENSO</span>
@@ -101,7 +127,7 @@ export function AzioniRicevuta({
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => setCambia(null)}>
             Lascia stare
           </button>
-          <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no} onClick={() => void prepara({ importo, motivo: cambia.motivo })}>
+          <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no || occupato} onClick={() => void prepara({ importo, motivo: cambia.motivo })}>
             Prepara la ricevuta
           </button>
         </div>
@@ -124,7 +150,7 @@ export function AzioniRicevuta({
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => scarica([ricevuta]))}>
           Ristampa
         </button>
-        <button type="button" className="sg-btn sg-btn-linea sg-pericolo" onClick={() => void annulla()}>
+        <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={occupato} onClick={() => void annulla()}>
           {stato === 'non-torna' ? 'Annulla e rifai' : 'Annulla'}
         </button>
       </span>
@@ -133,10 +159,10 @@ export function AzioniRicevuta({
   if (stato === 'da-fare')
     return (
       <span className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-        <button type="button" className="sg-btn sg-btn-linea" onClick={() => setCambia({ testo: euroDaScrivere(conto.calcolato), motivo: '' })}>
+        <button type="button" className="sg-btn sg-btn-linea" disabled={occupato} onClick={() => setCambia({ testo: euroDaScrivere(conto.calcolato), motivo: '' })}>
           Modifica il compenso
         </button>
-        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void prepara()}>
+        <button type="button" className="sg-btn sg-btn-pieno" disabled={occupato} onClick={() => void prepara()}>
           Prepara la ricevuta
         </button>
       </span>
@@ -145,15 +171,17 @@ export function AzioniRicevuta({
 }
 
 /** Il segno dello stato, in parole e col colore, e sotto cosa fare. */
-export function SegnoCompenso({ stato, conto, ricevuta }: { stato: StatoCompenso; conto: ContoCompenso; ricevuta?: RicevutaCompenso }) {
+export function SegnoCompenso({ stato, conto, ricevuta, manca, inScheda }: { stato: StatoCompenso; conto: ContoCompenso; ricevuta?: RicevutaCompenso; manca?: string | null; inScheda?: boolean }) {
   const s = NOME_STATO[stato]
   const frase =
     stato === 'da-confermare'
       ? `${conto.daConfermare} da confermare in PRESENZE ISTRUTTORI: prima si decidono, poi si fa la ricevuta.`
       : stato === 'senza-tariffa'
-        ? `${conto.senzaTariffa.join(', ')} senza tariffa: si scrive nella scheda, in ISTRUTTORI E ACCESSI.`
-        : stato === 'non-torna' && ricevuta
-          ? `Ricevuta di ${euro(ricevuta.importo)} €: dopo è cambiata una presenza e il mese ora fa ${euro(conto.calcolato)} €.`
+        ? `${conto.senzaTariffa.join(', ')} senza tariffa: si scrive ${inScheda ? 'qui sopra, in TARIFFE' : 'nella scheda, in ISTRUTTORI E ACCESSI'}.`
+        : stato === 'senza-dati'
+          ? `${manca ?? 'Mancano i dati per la ricevuta'}: si scrivono ${inScheda ? 'qui sopra, in DATI PER LETTERA E RICEVUTE' : 'nella scheda, in ISTRUTTORI E ACCESSI'}.`
+          : stato === 'non-torna' && ricevuta
+          ? `Ricevuta di ${euro(ricevuta.importo)} €: dopo è cambiata una presenza e il mese ora fa ${euro(conto.calcolato)} €.${ricevuta.firmata ? ' Era firmata.' : ''}`
           : ricevuta
             ? `Fatta il ${dataLunga(ricevuta.data)}${ricevuta.motivo ? ` · cambiata a mano: ${ricevuta.motivo}` : ''}${ricevuta.firmata ? '' : ' · da riportare firmata'}`
             : ''
@@ -180,6 +208,7 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
   const periodi = useMemo(mesi, [])
   const [periodo, setPeriodo] = useState(periodi[1]?.chiave ?? periodi[0].chiave)
   const [filtro, setFiltro] = useState<Filtro>('tutti')
+  const [tutte, setTutte] = useState(false)
   const m = periodi.find((x) => x.chiave === periodo) ?? periodi[0]
   const mese = primoDelMese(m.da)
   const giorni = Math.ceil((Date.now() - m.da.getTime()) / 86_400_000) + 1
@@ -187,19 +216,23 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
   const dati = useCarica(async () => {
     const [personale, presenze, senzaIstruttore, ricevute] = await Promise.all([d.personale(), d.presenzeIstruttori(giorni), d.lezioniSenzaIstruttore().catch(() => []), d.ricevuteCompensi()])
     const tecnici = personale.filter(insegna)
-    const tariffe: Record<string, Tariffa[]> = Object.fromEntries(await Promise.all(tecnici.map(async (t) => [t.id, await d.tariffe(t.id)] as const)))
-    return { tecnici, presenze, senzaIstruttore, ricevute, tariffe }
+    const [tariffe, mancano] = await Promise.all([
+      Promise.all(tecnici.map(async (t) => [t.id, await d.tariffe(t.id)] as const)).then((x): Record<string, Tariffa[]> => Object.fromEntries(x)),
+      Promise.all(tecnici.map(async (t) => [t.id, mancaPerRicevuta((await d.anagraficaDi(t.id))?.dati ?? null)] as const)).then((x): Record<string, string | null> => Object.fromEntries(x)),
+    ])
+    return { tecnici, presenze, senzaIstruttore, ricevute, tariffe, mancano }
   }, [d, giorni])
 
   const righe = dati.dato ? righeCompensi({ ...dati.dato, mese: m }) : []
   const daFare = righe.filter((r) => r.stato === 'da-fare')
-  const fermi = righe.filter((r) => r.stato === 'da-confermare' || r.stato === 'senza-tariffa' || r.stato === 'non-torna')
+  const fermi = righe.filter((r) => r.stato === 'da-confermare' || r.stato === 'senza-tariffa' || r.stato === 'senza-dati' || r.stato === 'non-torna')
   const daFirmare = righe.filter((r) => r.ricevuta && !r.ricevuta.firmata)
   const visibili = filtro === 'da-fare' ? daFare : filtro === 'da-firmare' ? daFirmare : righe
 
   const preparaTutte = async () => {
     const fatte: RicevutaCompenso[] = []
     const saltati: string[] = fermi.map((r) => `${nomeDi(r.persona)} (${NOME_STATO[r.stato].testo.toLowerCase()})`)
+    setTutte(true)
     await fai(async () => {
       for (const r of daFare) {
         try {
@@ -211,6 +244,7 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
       if (fatte.length) await scarica(fatte)
       if (saltati.length) throw new Error(`${fatte.length ? `Fatte ${fatte.length}. ` : ''}Saltati: ${saltati.join('; ')}`)
     }, `Fatte ${daFare.length} ricevute`)
+    setTutte(false)
     await dati.ricarica()
   }
 
@@ -239,7 +273,7 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
           </div>
           {daFare.length > 0 && (
             <div className="row" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center', padding: '14px 16px', border: '2px solid var(--line-soft)' }}>
-              <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void preparaTutte()}>
+              <button type="button" className="sg-btn sg-btn-pieno" disabled={tutte} onClick={() => void preparaTutte()}>
                 Prepara e stampa le ricevute ({daFare.length})
               </button>
               <span className="sg-sotto" style={{ flex: 1, minWidth: 240 }}>
@@ -268,22 +302,22 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
                 <div className="row" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center', minHeight: 48 }}>
                   <span style={{ fontSize: 15, fontWeight: 600, minWidth: 160 }}>{nomeDi(r.persona)}</span>
                   <span className="num" style={{ fontSize: 14, color: 'var(--sec)' }}>
-                    {r.conto.lezioni} lezioni · {ore(r.conto.minuti)} ore
+                    {quante(r.conto.lezioni, 'lezione', 'lezioni')} · {quanteOre(r.conto.minuti)}
                   </span>
                   <span className="num" style={{ fontSize: 15, fontWeight: 700, minWidth: 90 }}>{r.ricevuta || r.conto.calcolato ? `${euro(r.ricevuta?.importo ?? r.conto.calcolato)} €` : '—'}</span>
                   <span style={{ flex: 1, minWidth: 200 }}>
-                    <SegnoCompenso stato={r.stato} conto={r.conto} ricevuta={r.ricevuta} />
+                    <SegnoCompenso stato={r.stato} conto={r.conto} ricevuta={r.ricevuta} manca={r.manca} />
                   </span>
                   {/* I tasti stanno fuori dal dettaglio: un clic su un tasto non apre né chiude i corsi. */}
                   <AzioniRicevuta d={d} p={r.persona} conto={r.conto} ricevuta={r.ricevuta} stato={r.stato} mese={mese} fai={fai} onCambiato={dati.ricarica} />
                 </div>
                 {r.conto.righe.length > 0 && (
                   <details className="sg-compenso">
-                    <summary style={{ fontSize: 13, color: 'var(--sec)', minHeight: 32 }}>Per corso</summary>
+                    <summary style={{ fontSize: 13, color: 'var(--sec)', minHeight: 44, display: 'flex', alignItems: 'center' }}>Per corso</summary>
                     {r.conto.righe.map((x) => (
                       <div key={x.corso} className="row" style={{ gap: 14, fontSize: 13, color: 'var(--sec)', padding: '2px 0 2px 16px', flexWrap: 'wrap' }}>
                         <span style={{ minWidth: 160 }}>{x.corso}</span>
-                        <span className="num">{ore(x.minuti)} ore</span>
+                        <span className="num">{quanteOre(x.minuti)}</span>
                         <span className="num">{x.centesimiOra ? euroOra(x.centesimiOra) : 'SENZA TARIFFA'}</span>
                         <span className="num" style={{ fontWeight: 700 }}>{x.importo !== undefined ? `${euro(x.importo)} €` : '—'}</span>
                       </div>

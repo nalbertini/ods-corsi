@@ -64,7 +64,7 @@ export interface RicevutaCompenso extends DatiRicevutaCompenso {
   creataIl: string
 }
 
-export type StatoCompenso = 'da-confermare' | 'senza-tariffa' | 'da-fare' | 'fatta' | 'non-torna'
+export type StatoCompenso = 'da-confermare' | 'senza-tariffa' | 'senza-dati' | 'da-fare' | 'fatta' | 'non-torna'
 
 /** Il primo del mese di una data, `AAAA-MM-01`, nel giorno di qui. */
 export const primoDelMese = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
@@ -92,10 +92,12 @@ export function compensoDelMese<P extends MiaPresenza>(presenze: P[], senzaIstru
  * adesso torna con quello di quando è stata fatta (il calcolato, non
  * l'importo, che può essere cambiato a mano): una presenza decisa dopo si vede.
  */
-export function statoCompenso({ conto, ricevuta }: { conto: ContoCompenso; ricevuta?: Pick<RicevutaCompenso, 'calcolato' | 'annullataIl'> | null }): StatoCompenso {
+export function statoCompenso({ conto, ricevuta, manca }: { conto: ContoCompenso; ricevuta?: Pick<RicevutaCompenso, 'calcolato' | 'annullataIl'> | null; manca?: string | null }): StatoCompenso {
   if (ricevuta && !ricevuta.annullataIl) return ricevuta.calcolato === conto.calcolato ? 'fatta' : 'non-torna'
   if (conto.daConfermare > 0) return 'da-confermare'
   if (conto.senzaTariffa.length) return 'senza-tariffa'
+  // Senza codice fiscale, residenza o IBAN la ricevuta non si fa: si vede prima di provarci.
+  if (manca) return 'senza-dati'
   return 'da-fare'
 }
 
@@ -111,6 +113,7 @@ export function righeCompensi<P extends MiaPresenza>({
   mese,
   tariffe,
   ricevute,
+  mancano,
 }: {
   tecnici: Array<{ id: string; nome: string; cognome: string }>
   presenze: P[]
@@ -118,6 +121,8 @@ export function righeCompensi<P extends MiaPresenza>({
   mese: { da: Date; a: Date }
   tariffe: Record<string, Tariffa[]>
   ricevute: RicevutaCompenso[]
+  /** Cosa manca nella scheda di ognuno per fare la ricevuta (`mancaPerRicevuta`); senza, non si guarda. */
+  mancano?: Record<string, string | null>
 }) {
   const chiave = primoDelMese(mese.da)
   return [...tecnici]
@@ -125,7 +130,8 @@ export function righeCompensi<P extends MiaPresenza>({
     .map((persona) => {
       const conto = compensoDelMese(presenze, senzaIstruttore, persona.id, mese, tariffe[persona.id] ?? [])
       const ricevuta = ricevute.find((r) => r.personaId === persona.id && r.mese === chiave && !r.annullataIl)
-      return { persona, conto, ricevuta, stato: statoCompenso({ conto, ricevuta }) }
+      const manca = mancano?.[persona.id] ?? null
+      return { persona, conto, ricevuta, manca, stato: statoCompenso({ conto, ricevuta, manca }) }
     })
     .filter((r) => r.ricevuta || r.conto.lezioni || r.conto.daConfermare)
 }
@@ -207,7 +213,27 @@ export function testoRicevutaCompenso(r: DatiRicevutaCompenso): string[] {
 
 /** Quello che serve sulla ricevuta e manca nella scheda: senza, la ricevuta non si fa. */
 export function mancaPerRicevuta(a: { codiceFiscale?: string; indirizzo?: string; comune?: string; iban?: string } | null): string | null {
-  return a?.codiceFiscale && a.indirizzo?.trim() && a.comune?.trim() && a.iban ? null : 'Mancano i dati per la ricevuta: codice fiscale, residenza e IBAN'
+  const mancano = [!a?.codiceFiscale && 'codice fiscale', !(a?.indirizzo?.trim() && a?.comune?.trim()) && 'residenza', !a?.iban && 'IBAN'].filter((x): x is string => !!x)
+  if (!mancano.length) return null
+  return `Mancano i dati per la ricevuta: ${mancano.length === 1 ? mancano[0] : `${mancano.slice(0, -1).join(', ')} e ${mancano.at(-1)}`}`
+}
+
+/** Il compenso scritto a mano, in centesimi: «1540,00», «1.250,50», «180.5». `null` se non si legge. */
+export function centesimiDaImporto(testo: string): number | null {
+  let t = testo.trim().replace(/\s|€/g, '')
+  // Col punto e la virgola il punto è delle migliaia; con uno solo dei due, è il separatore dei decimali.
+  t = t.includes(',') ? t.replace(/\./g, '').replace(',', '.') : t
+  if (!/^\d+(\.\d{1,2})?$/.test(t)) return null
+  return Math.round(Number(t) * 100)
+}
+
+/** Perché quello scritto nel campo del compenso non va; `null` se va. */
+export function cosaNonVaImportoScritto(testo: string): string | null {
+  const c = centesimiDaImporto(testo)
+  if (c === null) return 'Scrivi il compenso in euro, per esempio 180 o 180,50'
+  if (c <= 0) return 'Il compenso è un importo più grande di zero'
+  if (c > 10_000_000) return 'Il compenso è al massimo 100.000 €'
+  return null
 }
 
 /**
