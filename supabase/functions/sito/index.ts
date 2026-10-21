@@ -38,6 +38,20 @@ const risposta = (corpo: Record<string, unknown>, stato = 200) =>
 
 const no = (guaio: string, stato: number) => risposta({ guaio }, stato)
 
+/**
+ * Il token che Claude riceve quando lo si collega a ODS Corsi (OAuth Server, claim `client_id`): `getUser` lo accetta
+ * come un accesso qualunque, ma da Claude questa funzione non si chiama (vedi 77-claude-dalla-porta.sql). Il token è
+ * già verificato da `getUser`: qui se ne leggono solo i claim; uno che non si legge vale come di Claude.
+ */
+function daClaude(token: string): boolean {
+  try {
+    const parte = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    return 'client_id' in JSON.parse(atob(parte.padEnd(Math.ceil(parte.length / 4) * 4, '=')))
+  } catch {
+    return true
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (req.method !== 'POST') return no('Solo POST', 405)
@@ -51,6 +65,7 @@ Deno.serve(async (req) => {
   const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '')
   const { data: chi } = await admin.auth.getUser(token)
   if (!chi.user) return no('Serve un accesso da segreteria', 401)
+  if (daClaude(token)) return no('Da Claude questa funzione non si chiama: si usa dall’app', 403)
   const { data: staff } = await admin
     .from('persone')
     .select('id')
