@@ -20,145 +20,100 @@ il footer in fondo. Quello che scrivi resta **bozza** finché non premi
 trattini: «Chi siamo» diventa `chi-siamo`). Si può cambiare. Un indirizzo già
 usato, o uno che serve al sito (`admin`, `api`, `privacy`…), non va.
 
-**Nuova pagina** crea una pagina **a pezzi**. Le pagine che c'erano prima (la
-Home, i corsi) si scrivono ancora come ti ricordi, con il testo solo; le pagine
-di legge restano così.
+**Nuova pagina** crea la pagina e la apre per scriverla.
 
-Per portare una pagina vecchia ai pezzi, aprila e, sotto i tasti, premi **PORTA
-AI PEZZI** (sotto «EDITOR A PEZZI»). Il testo resta com'è: la foto messa in cima
-diventa **FOTO IN CIMA**, le colonne diventano **COLONNE**, ogni foto messa tra i
-paragrafi diventa una **FOTO**, e ogni titolo grande apre un nuovo **TESTO**: così
-nell'**Elenco** trovi più parti e le sposti con **Su** e **Giù**. Il sito non cambia finché non premi **Pubblica**. **Non si torna al
-vecchio editor.** Il tasto è spento finché ci sono modifiche non salvate: prima
-**Salva bozza**. Se la pagina è troppo lunga, un avviso dice di togliere qualcosa.
+### Scrivere una pagina
 
-Una pagina già a pezzi, ma con un solo **TESTO** lungo (nell'**Elenco** c'è una
-voce sola), si divide con **DIVIDI IN PARTI**, sotto «EDITOR A PEZZI»: il tasto
-compare solo se c'è qualcosa da dividere. Ogni titolo apre una parte nuova (i
-sottotitoli restano nel testo) e ogni foto tra i paragrafi diventa una **FOTO**;
-foto in cima e colonne restano dove sono. Il testo non cambia. La pagina resta
-**Da salvare**: se non ti piace, **Tutte le pagine** e poi **Torna alle pagine**
-la scarta; se ti piace, **Salva bozza**. Il tasto è spento finché ci sono
-modifiche non salvate: prima **Salva bozza**.
+Toccando una pagina si apre l'editor, a tutto schermo, con l'aspetto di Puck
+(il programma che lo fa). In alto c'è il titolo e, sotto, l'indirizzo, lo stato,
+i corsi collegati e **da salvare** se hai cambiato qualcosa. I tasti:
 
-Una pagina a pezzi si compone con le parti che metti in fila:
+- **‹ Tutte le pagine** torna all'elenco. Se c'è qualcosa non salvato, chiede prima.
+- **Com'è sul sito** mostra la pagina come sarà pubblicata, con le modifiche non
+  ancora salvate, le tessere e gli orari; **‹ Torna a scrivere** la richiude.
+- **Salva bozza** salva senza cambiare il sito.
+- **Pubblica** salva la bozza, se serve, e la mette sul sito. Se nel frattempo
+  qualcun altro ha cambiato la pagina, non scrive niente e lo dice: ricaricala
+  per vedere le sue modifiche, poi rifai la tua.
 
-- **+ FOTO IN CIMA**: una foto sola, sempre in alto.
-- **+ TESTO**: un testo, con gli stessi tasti di sempre (qui sotto).
-- **+ FOTO**: una foto, col suo testo alternativo (o «solo decorativa»).
-- **+ COLONNE**: da due a tre colonne di testo, una accanto all'altra. Sul telefono
+Quando **Salva bozza** o **Pubblica** sono spenti, una riga rossa in fondo dice
+perché: manca il titolo, una foto non ha l'immagine, il testo è troppo lungo
+(oltre 200.000 caratteri). Un titolo oltre 60 lettere ferma solo **Pubblica**.
+
+**A sinistra**, in **Parti**, le parti da trascinare nella pagina dove le vuoi; in
+**Struttura** l'elenco delle parti della pagina: trascinando una riga la sposti.
+
+- **Foto in cima**: una foto sola, sempre in alto.
+- **Testo**: lo scrivi direttamente nella pagina o a destra, con **Titolo**,
+  **Sottotitolo**, grassetto, corsivo, elenchi, citazione e link. Se incolli un
+  testo da Word o da un altro sito, quello che il sito non ammette sparisce da solo.
+- **Foto**: una foto, col suo testo alternativo («Cosa si vede»; vuoto = solo decorativa).
+- **Colonne**: da due a tre colonne di testo, una accanto all'altra. Sul telefono
   si mettono una sotto l'altra. Una colonna lasciata vuota non compare sul sito.
-- **+ ISCRIVITI**: l'invito giallo in fondo alla pagina, con il **TITOLO** e la
-  **FRASE** che scrivi tu (per esempio «Iscrizioni aperte» a settembre). Vuoti,
-  restano quelli di sempre. Indirizzo, telefono, pulsanti e passi sono quelli del
-  sito e non si cambiano. È una sola e sta sempre in fondo: non si copia, non si
-  sposta, e se c'è già il tasto è spento. Su quella pagina prende il posto
-  dell'invito di sempre, e compare anche dove la pagina ha già la sua chiamata
-  finale (Home, Corsi, un corso, Chi siamo). Senza la pagina Contatti non compare.
-- **+ ISTRUTTORE** (solo nella pagina **Gli istruttori**, indirizzo `/istruttori/`):
-  un tecnico, con **NOME** (obbligatorio), **COGNOME**, **CORSI** (separati da una
-  virgola), la **foto** dalla libreria e **LA SUA PAGINA**, scelta fra le pagine
-  del sito. Il nome diventa un link solo quando la sua pagina è pubblicata: se non
-  lo è, sotto lo dice. Sul sito ogni istruttore è una tessera, **nell'ordine in cui
-  sono le parti**: per cambiarlo usa **SU** e **GIÙ** o trascina. Le tessere sono gli
-  istruttori di fila dall'inizio della pagina: un **TESTO** o una **FOTO** messi
-  prima o in mezzo li interrompono (chi viene dopo esce come testo semplice), e
-  sotto quella parte compare l'avviso giallo. Spostala sotto l'ultimo istruttore.
-
-Le parti si mettono dopo quella scelta, o in fondo (sempre prima di **ISCRIVITI**). Per cambiare l'ordine si
-trascina la parte, oppure si sceglie e si premono **SU** o **GIÙ**; **Togli** la
-toglie dalla pagina.
-
-**Il testo si scrive nella pagina**, dove lo vedi: tocca un **TESTO** o una
-colonna e scrivi lì. Sopra la parte scelta compare la barra dei tasti (**TITOLO**,
-**SOTTOTITOLO**, **GRASSETTO**, **CORSIVO**, **ELENCO**, **ELENCO 1, 2, 3**, **CITAZIONE**,
-**LINK**, **IMMAGINE**, **PULSANTE**); se sopra non c'è posto, sta dentro la parte, in alto. Nelle
-**COLONNE** ogni colonna si scrive per conto suo: tocca quella che vuoi, la
-barra è una sola per tutte. **ANNULLA** e **RIFAI** (e Ctrl+Z) tolgono e rimettono un pezzo di testo alla
-volta, non una lettera. Per spostare una parte con un testo dentro usa **SU** e
-**GIÙ** (o l'**ELENCO**): trascinando sul testo si selezionano le parole.
-
-La pagina prende tutto lo spazio; a destra ci sono due schede. **IMPOSTAZIONI**
-mostra i campi della parte che hai toccato, come la foto e quante colonne sono (di un testo
-dice solo di scriverlo nella pagina; se non ne hai toccata nessuna dice
-di toccarne una). **ELENCO** mostra le parti della pagina in fila: da lì le
-scegli e le trascini. Sotto i 1280 pixel di larghezza (tablet in piedi) la pagina
-sta sopra e le due schede sotto. Le tessere, le domande e le citazioni a scorrimento si
-formano da sole dal testo, come per ogni pagina (vedi «Come il testo diventa
-tessere»). **Anteprima** mostra la pagina come il sito la farà, con le
-tessere; il carattere del sito e il logo si vedono solo sul sito vero.
-
-Se compare «Le pagine a pezzi non sono ancora attive sul database», va
-lanciato `62-sito-pezzi.sql` (lo fa chi cura l'app): finché non c'è, le pagine
-nuove si scrivono col testo solo.
-
-Toccando una pagina si apre per scriverla:
-
-- Il testo ha i tasti **TITOLO**, **SOTTOTITOLO**, **GRASSETTO**, **CORSIVO**,
-  **ELENCO**, **ELENCO 1, 2, 3**, **CITAZIONE**, **LINK**, **IMMAGINE** e **PULSANTE**. **LINK** e
-  **PULSANTE** chiedono dove portano: un indirizzo che comincia con `https://`,
-  `mailto:`, `tel:` o con `/` per una pagina del sito. Altro non si può
-  scrivere: se incolli un testo da Word o da un altro sito, quello che il sito
-  non ammette sparisce da solo.
-- **LINK** e **PULSANTE** non mettono un indirizzo che il sito non ammette: se è sbagliato dicono cosa scrivere.
-- Il testo di una pagina arriva a 200.000 caratteri: oltre, **Salva bozza** e **Pubblica** aspettano e una riga dice di quanto.
-- A destra il **titolo per Google** (al massimo 60 lettere), la
-  **descrizione** (160) e l'**indirizzo della pagina**. Il numero sotto dice a
-  quanto sei; diventa rosso se superi il limite. Cambiando l'indirizzo di una
-  pagina pubblicata, il vecchio porta al nuovo.
-  Titolo e descrizione compaiono anche nell'anteprima di quando qualcuno
-  condivide la pagina (WhatsApp, Facebook, Instagram), con l'immagine del sito.
-- **Salva bozza** salva senza cambiare il sito. **Anteprima** mostra com'è
-  scritta (nelle pagine a pezzi, com'è sul sito); **Torna a scrivere** la richiude.
-- **Pubblica** salva la bozza, se serve, e la rende il testo del sito. Se
-  nel frattempo qualcun altro ha cambiato la pagina, non scrive niente e lo
-  dice: ricaricala per vedere le sue modifiche, poi rifai la tua.
-- **Nascondi dal sito** toglie la pagina dal sito senza cancellarla;
-  **Mostra sul sito** la rimette. **Cancella la pagina** la toglie per sempre;
-  non si cancella finché è nel menu o nel footer.
-
-Le pagine di legge (**privacy, cookie, contributi pubblici**) non si
-nascondono né si cancellano.
-
-Se esci con qualcosa scritto e non salvato, l'app chiede prima.
-
-### Il nuovo editor, da provare
-
-Accanto ai tasti di una pagina c'è **Prova il nuovo editor**: lo stesso lavoro,
-in un editor solo, a tutto schermo. Non c'è per le pagine di legge, e si apre
-solo se la pagina è salvata.
-
-- A sinistra, in **Parti**, le sette parti (foto in cima, testo, foto,
-  colonne, pulsanti, domande, iscriviti): si trascinano nella pagina dove le vuoi. In **Struttura** c'è
-  l'elenco delle parti della pagina: trascinando una riga la sposti.
-- Al centro la pagina, coi caratteri e i colori del sito, come sul tablet.
-  Sopra, i tasti per vederla come sul telefono o sul computer.
-- A destra i campi di quel che hai scelto. Senza niente di scelto ci sono
-  **Titolo** (anche su Google) e **Descrizione**; scelto un testo, lo scrivi lì o
-  direttamente nella pagina. **Pagina**, in cima, riporta a titolo e descrizione.
-- **Pulsanti** (solo qui): da uno a tre pulsanti in fila. Per ognuno scegli **Dove porta**:
+- **Pulsanti**: da uno a tre pulsanti in fila. Per ognuno scegli **Dove porta**:
   **Modulo di iscrizione**, **Telefono** e **WhatsApp** (il numero del sito, non si scrive),
   **Una pagina del sito** (fra quelle pubblicate; Contatti no, sul sito è nel menu) o
-  **Altro indirizzo** (https://, mailto:, tel: oppure /, come il tasto **PULSANTE**). Poi il
-  **Testo**. Il pulsante del modulo si legge sempre «Iscriviti», giallo e per primo: il prezzo
-  della prova scrivilo nel testo vicino. Gli altri sono a linea. Ovunque la metti, la parte non
-  cambia l'impaginazione della pagina. Un pulsante senza testo o senza dove non compare.
-- **Domande** (solo qui): le domande frequenti, con un **Titolo** (vuoto = «Domande frequenti»)
-  e le coppie **Domanda** e **Risposta** (grassetto, corsivo ed elenchi; niente titoli). Sul sito
-  escono a tessere chiare e Google le legge come domande frequenti. Ogni domanda deve finire con
-  «?»: senza, si salva lo stesso, ma tutte le domande di quella parte escono a tessere colorate e
-  Google salta quella; sotto il campo te lo dice in giallo. Una coppia senza domanda o senza
-  risposta non compare. Nel vecchio editor queste due parti si vedono e si spostano, ma si
-  cambiano solo qui.
-- **Com'è sul sito** mostra la pagina com'è dopo la pubblicazione, con tessere e
-  orari.
-- **Salva bozza** salva senza cambiare il sito; resta spento finché non cambi
-  qualcosa, o se manca qualcosa (una foto senza immagine, il titolo): accanto c'è
-  scritto cosa, in fondo allo schermo. Anche le pagine scritte col testo solo si
-  aprono a parti, ma restano come prima finché non salvi: la prima volta l'app
-  chiede, perché salvata la pagina resta a parti.
-- Per **pubblicare** chiudi il nuovo editor (**Chiudi**: torni alle pagine),
-  riapri la pagina e premi **Pubblica**.
+  **Altro indirizzo** (`https://`, `mailto:`, `tel:` oppure `/`). Poi il **Testo**. Il
+  pulsante del modulo si legge sempre «Iscriviti», giallo e per primo: il prezzo della
+  prova scrivilo nel testo vicino. Gli altri sono a linea. Un pulsante senza testo o
+  senza dove non compare.
+- **Domande**: le domande frequenti, con un **Titolo** (vuoto = «Domande frequenti»)
+  e le coppie **Domanda** e **Risposta** (grassetto, corsivo ed elenchi; niente titoli).
+  Sul sito escono a tessere chiare e Google le legge come domande frequenti. Ogni
+  domanda deve finire con «?»: senza, si salva lo stesso, ma tutte le domande di quella
+  parte escono a tessere colorate e Google salta quella; sotto il campo te lo dice in
+  giallo. Una coppia senza domanda o senza risposta non compare.
+- **Iscriviti**: l'invito giallo in fondo alla pagina, con il **Titolo** e la
+  **Frase** che scrivi tu (per esempio «Iscrizioni aperte» a settembre). Vuoti,
+  restano quelli di sempre. Indirizzo, telefono, pulsanti e passi sono quelli del
+  sito e non si cambiano. È una sola e sta sempre in fondo: non si copia né si sposta.
+  Su quella pagina prende il posto dell'invito di sempre, e compare anche dove la
+  pagina ha già la sua chiamata finale (Home, Corsi, un corso, Chi siamo). Senza la
+  pagina Contatti non compare.
+- **Istruttore** (solo nella pagina **Gli istruttori**, indirizzo `/istruttori/`):
+  un tecnico, con **Nome** (obbligatorio), **Cognome**, **Corsi** (separati da una
+  virgola), la **foto** dalla libreria e **La sua pagina**, scelta fra le pagine
+  del sito. Il nome diventa un link solo quando la sua pagina è pubblicata: se non
+  lo è, sotto lo dice. Sul sito ogni istruttore è una tessera, **nell'ordine in cui
+  sono le parti**. Le tessere sono gli istruttori di fila dall'inizio della pagina:
+  un **Testo** o una **Foto** messi prima o in mezzo li interrompono (chi viene dopo
+  esce come testo semplice), e sotto quella parte compare l'avviso con il «!».
+  Spostala sotto l'ultimo istruttore.
+
+**Al centro** la pagina, coi caratteri e i colori del sito, come sul tablet. Sopra,
+i tasti per vederla come sul telefono o sul computer. **Copia** e **Togli** sulla
+parte scelta la copiano o la tolgono; **Annulla** e **Rifai**, in alto, tolgono e
+rimettono l'ultima modifica.
+
+**A destra** i campi di quel che hai scelto. Senza niente di scelto (o con
+**Pagina**, in cima) ci sono i campi della pagina:
+
+- **Titolo (anche su Google)**, al massimo 60 lettere, e **Descrizione** (160). Il
+  numero sotto dice a quanto sei; oltre il limite diventa rosso e lo dice a parole.
+  Titolo e descrizione compaiono anche nell'anteprima di quando qualcuno condivide la
+  pagina (WhatsApp, Facebook, Instagram), con l'immagine del sito.
+- **Indirizzo della pagina**: cambialo e premi **Cambia indirizzo**. Vale subito,
+  senza **Pubblica**; se la pagina è pubblicata, il vecchio indirizzo porta al nuovo e
+  i link già mandati funzionano ancora.
+- **Orario dai corsi** (vedi sotto): vale subito, senza salvare né pubblicare.
+- **Dividi in parti**: c'è solo se un testo ha titoli o foto da dividere. Ogni titolo
+  apre una parte nuova (i sottotitoli restano nel testo) e ogni foto tra i paragrafi
+  diventa una **Foto**. Il testo non cambia. La pagina resta **da salvare**: se non ti
+  piace, **Annulla** in alto la rimette com'era.
+- **Sul sito**: **Nascondi dal sito** toglie la pagina dal sito senza cancellarla
+  (**Mostra sul sito** la rimette); **Cancella la pagina** la toglie per sempre, e
+  non si cancella finché è nel menu o nel footer.
+
+Le pagine scritte prima col testo solo (la Home, i corsi) si aprono già divise in
+parti, ma restano come prima finché non salvi: la prima volta che premi **Salva
+bozza** o **Pubblica** l'app chiede, perché da lì in poi la pagina si scrive a parti.
+Sul sito non cambia niente finché non pubblichi.
+
+Le pagine di legge (**privacy, cookie, contributi pubblici**) hanno solo la parte
+**Testo**, l'indirizzo fisso e niente orario: non si nascondono né si cancellano.
+
+Se compare «Le pagine non si possono scrivere: il database non è ancora
+aggiornato», va lanciato `62-sito-pezzi.sql`: chiedi a chi cura l'app.
 
 ## L'orario dai corsi
 
@@ -323,7 +278,7 @@ Per avere la pagina:
 
 Attenzione a `[orari]`: se lo scrivi diverso (`[orario]`, parentesi tonde, un
 altro indirizzo della pagina) non c'è nessun avviso, e la pagina esce con le
-tue righe e senza orari. Guarda sempre l'**Anteprima** prima di Pubblica.
+tue righe e senza orari. Guarda sempre **Com'è sul sito** prima di Pubblica.
 
 Come si presenta: una tessera per ogni giorno, da lunedì a domenica (un giorno
 senza lezioni non c'è), con ora di inizio e fine e nome del corso. In fondo, la

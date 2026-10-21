@@ -26,7 +26,7 @@ export interface PaginaSito {
   titolo: string
   descrizione: string
   bozza: string
-  /** I pezzi della bozza: `null` = pagina col vecchio editor di testo; `undefined` = il database non ha ancora `62-sito-pezzi.sql`. */
+  /** I pezzi della bozza: `null` = pagina scritta col testo solo (si apre a parti, `pezziDaAprire`); `undefined` = il database non ha ancora `62-sito-pezzi.sql`. */
   pezzi?: PezziPagina | null
   /** I corsi da cui viene l'orario della pagina, in ordine di scelta (`68-sito-orario.sql`): vuoto = orario scritto a mano; `undefined` = il database non ha ancora il 67. */
   corsiCollegati?: string[]

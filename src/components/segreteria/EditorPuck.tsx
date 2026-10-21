@@ -1,21 +1,23 @@
-import { useId, useMemo, useState, type ReactNode } from 'react'
-import { createUsePuck, FieldLabel, Puck, type Config, type Data } from '@puckeditor/core'
+import { createContext, useContext, useId, useMemo, useState, type ReactNode } from 'react'
+import { AutoField, Button, createUsePuck, FieldLabel, Puck, RichTextMenu, type Config, type Data, type RichtextField } from '@puckeditor/core'
+import type { Editor } from '@tiptap/react'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import type { PaginaSito } from '../../lib/sitoPagine'
+import { conteggio, controllaSlug, LIMITE_DESCRIZIONE, LIMITE_TITOLO, PAROLE_STATO, pagineDiLeggeProtette, statoPagina, type PaginaSito } from '../../lib/sitoPagine'
 import { CSS_SITO, invito, parteSulSito } from '../../lib/sitoGenera'
 import { CONTATTI } from '../../lib/sito'
-import { conIndirizziGiusti, cosaNonVaSalvare, daSalvare, MASSIMO_DOMANDE, MASSIMO_PULSANTI, parteAmmessa, pezziDaAprire, pezziInHtml, senzaPunto, TESTO_DEL_SITO, type BozzaPezzi, type Domanda, type DovePorta, type Pezzo, type Pulsante } from '../../lib/sitoPezzi'
+import { avvisoIstruttori, conIndirizziGiusti, cosaNonVaPezzi, cosaNonVaPubblicare, cosaNonVaSalvare, daSalvare, dividiInParti, divisibileInParti, MASSIMO_DOMANDE, MASSIMO_PULSANTI, notaPaginaIstruttore, pagineIstruttore, parteAmmessa, pezziDaAprire, pezziInHtml, salvaAParti, senzaPunto, TESTO_DEL_SITO, type BozzaPezzi, type Domanda, type DovePorta, type Pezzo, type Pulsante } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
+import { ESTENSIONI_TESTO, indirizzoDelLink } from '../../lib/sitoTiptap'
 import AnteprimaPagina from './AnteprimaPagina'
 import { ScegliImmagine } from './ImmaginiSito'
+import { OrarioSito } from './OrarioSito'
 import { chiedi, useAvviso, useBozza } from './comune'
 
 /**
- * Il nuovo editor delle pagine, da provare accanto a quello di oggi: Puck completo, così com'è.
- * Puck tiene i blocchi, la struttura, i formati dello schermo e la colonna di destra; noi gli diamo
- * i quattro pezzi, titolo e descrizione, il CSS del sito e Salva bozza. Si pubblica dall'editor di oggi.
- * Il campo foto e il disegno delle foto ripetono quelli di `EditorPezzi`: si tiene uno dei due editor quando la prova finisce.
+ * L'editor delle pagine del sito: Puck completo, col suo aspetto. Puck tiene le parti, la struttura,
+ * i formati dello schermo e la colonna di destra; noi gli diamo le parti, il CSS del sito, i campi della
+ * pagina (titolo, descrizione, indirizzo, orario, nascondi, cancella) e i tasti Salva bozza e Pubblica.
  */
 
 /** Il testo è `string` nei dati; mentre si scrive nella pagina Puck lo dà al disegno già come editor (`RichText`). */
@@ -30,7 +32,8 @@ type Props = {
   domande: { titolo: string; domande: Domanda[] }
   istruttore: { nome: string; cognome: string; corsi: string; src: string; alt: string; pagina: string }
 }
-type Radice = { titolo: string; descrizione: string }
+/** I campi della pagina. Solo titolo e descrizione si salvano coi pezzi; gli altri agiscono subito e non tengono valori. */
+type Radice = { titolo: string; descrizione: string; indirizzo?: string; orario?: string; dividi?: string; sulSito?: string }
 
 const usePuck = createUsePuck<Config<Props, Radice>>()
 /** La zona dei pezzi di Puck: una sola, quella della pagina. */
@@ -57,7 +60,7 @@ function CampoFoto({ d, valore }: { d: DatiSegreteria; valore: string }) {
   return (
     <>
       {valore ? <img src={valore} alt="" style={{ width: '100%', maxHeight: 140, objectFit: 'cover' }} /> : <span className="sito-pezzi-vuoto">Manca la foto</span>}
-      <button type="button" className="sg-btn sg-btn-linea" onClick={() => setApri(true)}>{valore ? 'Cambia foto' : 'Scegli la foto'}</button>
+      <Button variant="secondary" onClick={() => setApri(true)}>{valore ? 'Cambia foto' : 'Scegli la foto'}</Button>
       {apri && (
         <ScegliImmagine
           d={d}
@@ -74,6 +77,197 @@ function CampoFoto({ d, valore }: { d: DatiSegreteria; valore: string }) {
     </>
   )
 }
+
+/** Quel che i campi della pagina e della parte ISTRUTTORE leggono e fanno: cambia a ogni salvataggio, la config di Puck no. */
+type Pagina = {
+  d: DatiSegreteria
+  pagina: PaginaSito
+  pagine: PaginaSito[]
+  lavora: boolean
+  fai: ReturnType<typeof useAvviso>['fai']
+  avvisa: ReturnType<typeof useAvviso>['avvisa']
+  ricarica: () => Promise<void>
+  onChiudi: () => void
+}
+const PaginaAperta = createContext<Pagina | null>(null)
+function usePagina(): Pagina {
+  const p = useContext(PaginaAperta)
+  // shortcut: i campi si disegnano solo dentro EditorPuck, che dà sempre il contesto.
+  if (!p) throw new Error('Campo della pagina fuori dall’editor')
+  return p
+}
+
+/** Un campo di testo di Puck col conteggio delle lettere sotto: oltre il limite lo dice anche a parole. */
+function CampoConto({ label, limite, area, value, onChange, oltre }: { label: string; limite: number; area?: boolean; value: string; onChange: (v: string) => void; oltre: string }) {
+  // Gli spazi in fondo non contano: il salvataggio li toglie.
+  const { n, troppo } = conteggio((value ?? '').trim(), limite)
+  return (
+    <FieldLabel label={label}>
+      <AutoField field={{ type: area ? 'textarea' : 'text', label }} value={value ?? ''} onChange={onChange} />
+      <p className={troppo ? 'sito-puck-nota sito-puck-troppo' : 'sito-puck-nota'}>{n} su {limite}{troppo ? ` · ${oltre}` : ''}</p>
+    </FieldLabel>
+  )
+}
+
+/** L'indirizzo della pagina si cambia subito, non col salvataggio: il vecchio porta al nuovo. Le pagine di legge lo tengono fisso. */
+function CampoIndirizzoPagina() {
+  const { d, pagina, pagine, lavora, fai, ricarica } = usePagina()
+  const [slug, setSlug] = useState(pagina.slug)
+  if (pagina.diLegge) return <FieldLabel label="Indirizzo della pagina"><p className="sito-puck-nota">/{pagina.slug}/ · {pagineDiLeggeProtette(pagina, 'indirizzo')}</p></FieldLabel>
+  const no = slug === pagina.slug ? null : controllaSlug(slug, pagine.filter((p) => p.id !== pagina.id).map((p) => p.slug))
+  return (
+    <FieldLabel label="Indirizzo della pagina">
+      <input className="sito-puck-campo" data-avviso={!!no} value={slug} onChange={(e) => setSlug(e.target.value.trim())} />
+      {no ? <p className="sito-puck-nota sito-puck-troppo">{no}</p> : pagina.pubblicato !== null && <p className="sito-puck-nota">Se lo cambi, il vecchio indirizzo porta al nuovo: i link già mandati funzionano ancora.</p>}
+      {slug !== pagina.slug && (
+        <div style={{ marginTop: 8 }}>
+          <Button variant="secondary" disabled={lavora || !!no} onClick={() => void fai(() => d.cambiaIndirizzoSito(pagina.id, slug), 'Indirizzo cambiato', ricarica)}>Cambia indirizzo</Button>
+        </div>
+      )}
+    </FieldLabel>
+  )
+}
+
+/** I corsi collegati: valgono subito, senza Salva bozza né Pubblica. */
+function CampoOrario() {
+  const { d, pagina, lavora, fai, ricarica } = usePagina()
+  return (
+    <FieldLabel label="Orario dai corsi">
+      <OrarioSito d={d} pagina={pagina} lavora={lavora} onCambia={(corsi) => void fai(() => d.collegaCorsiSito(pagina.id, corsi), 'Fatto. Il sito si aggiorna da solo entro 5 minuti', ricarica)} />
+      {!!pagina.corsiCollegati?.length && <p className="sito-puck-nota">Va subito sul sito, entro 5 minuti, senza Salva bozza né Pubblica.</p>}
+    </FieldLabel>
+  )
+}
+
+/** Un testo lungo coi titoli diventa una parte per titolo; resta da salvare, e ANNULLA lo rimette com'era. */
+function CampoDividi() {
+  const { avvisa } = usePagina()
+  const dati = usePuck((s) => s.appState.data)
+  const dispatch = usePuck((s) => s.dispatch)
+  // Nei dati di Puck il testo è sempre `string`, come nei pezzi (vedi `bozzaDa`).
+  const pezzi = { content: dati.content as unknown as Pezzo[] }
+  if (!divisibileInParti(pezzi)) return <></>
+  const dividi = async () => {
+    const nuovi = dividiInParti(pezzi)
+    const no = cosaNonVaPezzi(nuovi)
+    if (no) return avvisa(no, true)
+    if (!(await chiedi('Dividere il testo in parti? Ogni titolo e ogni foto aprono una parte nuova. Il testo non cambia, e non va online finché non pubblichi. Se non ti piace, premi Annulla in alto.', 'Dividi', { no: 'Lascia stare' }))) return
+    // Un passo nella storia: Annulla in alto rimette il testo com'era.
+    // Stessi pezzi, nel tipo dei dati di Puck (il testo `string` è uno dei casi di `Testo`).
+    dispatch({ type: 'setData', data: { ...dati, content: nuovi.content as unknown as typeof dati.content }, recordHistory: true })
+  }
+  return (
+    <FieldLabel label="Dividi in parti">
+      <p className="sito-puck-nota">Ogni titolo e ogni foto del testo aprono una parte nuova. Il testo non cambia.</p>
+      <div style={{ marginTop: 8 }}><Button variant="secondary" onClick={() => void dividi()}>Dividi in parti</Button></div>
+    </FieldLabel>
+  )
+}
+
+/** Nascondi e cancella: subito, con la domanda prima. Le pagine di legge restano sempre sul sito. */
+function CampoSulSito() {
+  const { d, pagina, lavora, fai, ricarica, onChiudi } = usePagina()
+  if (pagina.diLegge) return <p className="sito-puck-nota">{pagineDiLeggeProtette(pagina, 'cancella')}</p>
+  const nascondi = async () => {
+    if (!pagina.nascosta && !(await chiedi(`Nascondere «${pagina.titolo}»? Sparisce dal sito alla prossima pubblicazione, ma resta qui.`, 'Nascondi', { pericolo: true }))) return
+    await fai(() => d.nascondiPaginaSito(pagina.id, !pagina.nascosta), pagina.nascosta ? 'Di nuovo sul sito' : 'Nascosta', ricarica)
+  }
+  const cancella = async () => {
+    if (!(await chiedi(`Cancellare «${pagina.titolo}»? Non si può rimettere.`, 'Cancella la pagina', { pericolo: true }))) return
+    await fai(() => d.cancellaPaginaSito(pagina.id), 'Pagina cancellata', async () => {
+      await ricarica()
+      onChiudi()
+    })
+  }
+  return (
+    <FieldLabel label="Sul sito">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <Button variant="secondary" fullWidth disabled={lavora} onClick={() => void nascondi()}>{pagina.nascosta ? 'Mostra sul sito' : 'Nascondi dal sito'}</Button>
+        <Button variant="secondary" fullWidth disabled={lavora} onClick={() => void cancella()}>Cancella la pagina</Button>
+      </div>
+    </FieldLabel>
+  )
+}
+
+/** La pagina di un istruttore si sceglie fra quelle del sito; sotto, se non è pubblicata, che il nome non sarà ancora un link. */
+function CampoPaginaIstruttore({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { pagine } = usePagina()
+  const nota = notaPaginaIstruttore(value, pagine)
+  return (
+    <FieldLabel label="La sua pagina">
+      <select className="sito-puck-campo" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">Nessuna</option>
+        {/* Una pagina tolta resta scelta finché non se ne sceglie un'altra: la nota lo dice. */}
+        {value && !pagine.some((p) => p.slug === value) && <option value={value}>/{value}/</option>}
+        {pagineIstruttore(pagine).map((p) => <option key={p.slug} value={p.slug}>{p.titolo} · /{p.slug}/</option>)}
+      </select>
+      {nota && <p className="sito-puck-nota sito-puck-avviso">{nota}</p>}
+    </FieldLabel>
+  )
+}
+
+/** Sotto una parte che spezza le tessere degli istruttori, la frase che dice cosa fare (`avvisoIstruttori`). Nell'iframe c'è solo il CSS del sito: lo stile è qui, col «!» davanti. */
+function AvvisoIstruttori({ id }: { id: string }) {
+  const frase = usePuck((s) => { const c = s.appState.data.content; return avvisoIstruttori(c, c.findIndex((x) => x.props.id === id)) })
+  return frase ? <p role="note" style={{ margin: '6px 0 12px', fontSize: 14, fontWeight: 600 }}>! {frase}</p> : null
+}
+
+/** La barra di un testo: quella di Puck, più Link e Pulsante (Puck non ne ha), con l'indirizzo scritto sotto. */
+function MenuTesto({ children, editor }: { children: ReactNode; editor: Editor | null }) {
+  const [link, setLink] = useState<{ indirizzo: string; pulsante: boolean; guaio?: string } | null>(null)
+  // `getAttributes` dà un oggetto senza tipo: qui si legge solo quello che il link porta.
+  const attuale = (editor?.getAttributes('link') ?? {}) as { href?: string; class?: string | null }
+  const ePulsante = attuale.class === 'pulsante'
+  const apri = (pulsante: boolean) => setLink({ indirizzo: attuale.href ?? '', pulsante })
+  const metti = () => {
+    if (!editor || !link) return
+    const r = indirizzoDelLink(link.indirizzo)
+    if ('guaio' in r) return setLink({ ...link, guaio: r.guaio })
+    editor.chain().focus().extendMarkRange('link').setMark('link', { href: r.indirizzo, class: link.pulsante ? 'pulsante' : null }).run()
+    setLink(null)
+  }
+  const inLink = !!editor?.isActive('link')
+  return (
+    <RichTextMenu>
+      {children}
+      <RichTextMenu.Group>
+        <RichTextMenu.Control title="Link" icon={<span style={{ textDecoration: 'underline' }}>Link</span>} active={inLink && !ePulsante} disabled={!editor} onClick={() => apri(false)} />
+        <RichTextMenu.Control title="Pulsante" icon={<span>Pulsante</span>} active={inLink && ePulsante} disabled={!editor} onClick={() => apri(true)} />
+      </RichTextMenu.Group>
+      {link && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, width: '100%', padding: 6 }}>
+          <input
+            className="sito-puck-campo"
+            aria-label={link.pulsante ? 'Dove porta il pulsante' : 'Dove porta il link'}
+            placeholder="https://… oppure /chi-siamo"
+            autoFocus
+            value={link.indirizzo}
+            data-avviso={!!link.guaio}
+            onChange={(e) => setLink({ ...link, indirizzo: e.target.value, guaio: undefined })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') { e.preventDefault(); metti() }
+              if (e.key === 'Escape') setLink(null)
+            }}
+          />
+          {link.guaio && <p className="sito-puck-nota sito-puck-troppo" style={{ width: '100%' }}>{link.guaio}</p>}
+          <Button variant="primary" onClick={metti}>Metti</Button>
+          {inLink && <Button variant="secondary" onClick={() => { editor?.chain().focus().extendMarkRange('link').unsetLink().run(); setLink(null) }}>Togli</Button>}
+          <Button variant="secondary" onClick={() => setLink(null)}>Lascia stare</Button>
+        </div>
+      )}
+    </RichTextMenu>
+  )
+}
+
+/** Un campo di testo del sito: le opzioni che il sito tiene, foto e pulsanti che restano (`sitoTiptap.ts`), Link e Pulsante nella barra. */
+const testoDelSito = (label: string, altro: Partial<RichtextField> = {}): RichtextField => ({
+  type: 'richtext',
+  label,
+  options: TESTO_DEL_SITO,
+  tiptap: { extensions: ESTENSIONI_TESTO },
+  renderMenu: ({ children, editor }) => <MenuTesto editor={editor}>{children}</MenuTesto>,
+  ...altro,
+})
 
 const DOVE: Array<{ label: string; value: DovePorta }> = [
   { label: 'Modulo di iscrizione', value: 'modulo' },
@@ -144,20 +338,30 @@ function DomandeInPagina({ id }: { id: string }) {
   return html ? <div dangerouslySetInnerHTML={{ __html: html }} /> : <span className="sito-pezzi-vuoto">Nessuna domanda pronta: scrivi domanda e risposta a destra</span>
 }
 
-function configura(d: DatiSegreteria, slug: string, verso: Array<{ slug: string; titolo: string }>): Config<Props, Radice> {
+function configura(d: DatiSegreteria, slug: string, diLegge: boolean, verso: Array<{ slug: string; titolo: string }>): Config<Props, Radice> {
   const foto = {
     src: { type: 'custom' as const, label: 'Foto', render: ({ value }: { value: string }) => <CampoFoto d={d} valore={value} /> },
     alt: { type: 'text' as const, label: 'Cosa si vede (vuoto = solo decorativa)' },
   }
-  const immagine = (alta: number) => ({ src, alt }: { src: string; alt: string }) =>
-    src ? <img src={src} alt={alt} style={{ width: '100%', maxHeight: alta, objectFit: 'cover', display: 'block' }} /> : <span className="sito-pezzi-vuoto">Manca la foto: sceglila a destra</span>
+  const immagine = (alta: number) => ({ id, src, alt }: { id: string; src: string; alt: string }) => (
+    <>
+      {src ? <img src={src} alt={alt} style={{ width: '100%', maxHeight: alta, objectFit: 'cover', display: 'block' }} /> : <span className="sito-pezzi-vuoto">Manca la foto: sceglila a destra</span>}
+      <AvvisoIstruttori id={id} />
+    </>
+  )
+  const nascoste = (['fotoInCima', 'testo', 'foto', 'colonne', 'pulsanti', 'domande', 'iscriviti', 'istruttore'] as const).filter((t) => !parteAmmessa(t, slug, diLegge))
+  // Un campo che fa (indirizzo, orario, dividi, nascondi): disegna solo il suo componente, il valore non c'è.
+  const fa = (Campo: () => ReactNode) => ({ type: 'custom' as const, render: () => <Campo /> })
   return {
-    // Fuori dalla pagina degli istruttori la parte ISTRUTTORE non è fra quelle da mettere (`parteAmmessa`).
-    ...(parteAmmessa('istruttore', slug) ? {} : { categories: { nascoste: { components: ['istruttore'], visible: false } } }),
+    // Le parti che questa pagina non ammette non sono fra quelle da mettere (`parteAmmessa`): ISTRUTTORE fuori da Istruttori, tutto tranne Testo in una pagina di legge.
+    ...(nascoste.length ? { categories: { nascoste: { components: [...nascoste], visible: false } } } : {}),
     root: {
       fields: {
-        titolo: { type: 'text', label: 'Titolo (anche su Google)' },
-        descrizione: { type: 'textarea', label: 'Descrizione' },
+        titolo: { type: 'custom', render: ({ value, onChange }) => <CampoConto label="Titolo (anche su Google)" limite={LIMITE_TITOLO} value={value} onChange={onChange} oltre="per pubblicare accorcialo" /> },
+        descrizione: { type: 'custom', render: ({ value, onChange }) => <CampoConto label="Descrizione" area limite={LIMITE_DESCRIZIONE} value={value} onChange={onChange} oltre="Google la taglia" /> },
+        indirizzo: fa(CampoIndirizzoPagina),
+        ...(diLegge ? {} : { orario: fa(CampoOrario), dividi: fa(CampoDividi) }),
+        sulSito: fa(CampoSulSito),
       },
       // La pagina nell'iframe col CSS vero del sito e la stessa testa (titolo e descrizione) che le dà il generatore.
       // Tessere, collage e colonne del sito li fa il generatore sull'HTML intero: si vedono con «Com'è sul sito».
@@ -180,19 +384,22 @@ function configura(d: DatiSegreteria, slug: string, verso: Array<{ slug: string;
       fotoInCima: { label: 'Foto in cima', fields: foto, defaultProps: { src: '', alt: '' }, render: immagine(260) },
       testo: {
         label: 'Testo',
-        fields: { html: { type: 'richtext', label: 'Testo', contentEditable: true, options: TESTO_DEL_SITO } },
+        fields: { html: testoDelSito('Testo', { contentEditable: true }) },
         defaultProps: { html: '' },
-        render: ({ html }) => <Html v={html} />,
+        render: ({ id, html }) => <><Html v={html} /><AvvisoIstruttori id={id} /></>,
       },
       foto: { label: 'Foto', fields: foto, defaultProps: { src: '', alt: '' }, render: immagine(360) },
       colonne: {
         label: 'Colonne',
-        fields: { colonne: { type: 'array', label: 'Colonne (da 2 a 3)', min: 2, max: 3, arrayFields: { html: { type: 'richtext', label: 'Testo', options: TESTO_DEL_SITO } }, defaultItemProps: { html: '' }, getItemSummary: (_, i) => `Colonna ${(i ?? 0) + 1}` } },
+        fields: { colonne: { type: 'array', label: 'Colonne (da 2 a 3)', min: 2, max: 3, arrayFields: { html: testoDelSito('Testo') }, defaultItemProps: { html: '' }, getItemSummary: (_, i) => `Colonna ${(i ?? 0) + 1}` } },
         defaultProps: { colonne: [{ html: '' }, { html: '' }] },
-        render: ({ colonne }) => (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${colonne.length}, minmax(0, 1fr))`, gap: 24 }}>
-            {colonne.map((c, i) => <Html key={i} v={c.html} />)}
-          </div>
+        render: ({ id, colonne }) => (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${colonne.length}, minmax(0, 1fr))`, gap: 24 }}>
+              {colonne.map((c, i) => <Html key={i} v={c.html} />)}
+            </div>
+            <AvvisoIstruttori id={id} />
+          </>
         ),
       },
       pulsanti: {
@@ -232,7 +439,7 @@ function configura(d: DatiSegreteria, slug: string, verso: Array<{ slug: string;
             arrayFields: {
               domanda: { type: 'custom', label: 'Domanda', render: ({ value, onChange }) => <CampoDomanda value={value} onChange={onChange} /> },
               // Niente titoli nella risposta: aprirebbero un'altra domanda (li toglie comunque `pezziInHtml`).
-              risposta: { type: 'richtext', label: 'Risposta', options: { ...TESTO_DEL_SITO, heading: false } },
+              risposta: testoDelSito('Risposta', { options: { ...TESTO_DEL_SITO, heading: false } }),
             },
             defaultItemProps: { domanda: '', risposta: '' },
             getItemSummary: (q, i) => `${(i ?? 0) + 1} · ${q.domanda || 'Nuova domanda'}`,
@@ -253,7 +460,6 @@ function configura(d: DatiSegreteria, slug: string, verso: Array<{ slug: string;
         // Sicuro: `invito` mette titolo e frase con le entità, il resto è fisso.
         render: ({ titolo, frase }) => <div dangerouslySetInnerHTML={{ __html: invito({ titolo, frase }, true) }} />,
       },
-      // Le parti della pagina Istruttori aperte qui restano intere; la pagina della scheda si sceglie nell'editor di oggi.
       istruttore: {
         label: 'Istruttore',
         fields: {
@@ -262,7 +468,7 @@ function configura(d: DatiSegreteria, slug: string, verso: Array<{ slug: string;
           nome: { type: 'text', label: 'Nome' },
           cognome: { type: 'text', label: 'Cognome' },
           corsi: { type: 'text', label: 'Corsi (separati da una virgola)' },
-          pagina: { type: 'text', label: 'La sua pagina (l’indirizzo, es. fabio-berta)' },
+          pagina: { type: 'custom', render: ({ value, onChange }) => <CampoPaginaIstruttore value={value} onChange={onChange} /> },
         },
         defaultProps: { nome: '', cognome: '', corsi: '', src: '', alt: '', pagina: '' },
         render: ({ id, nome, cognome, corsi, src, alt, pagina }) => <Html v={pezziInHtml({ content: [{ type: 'istruttore', props: { id, nome, cognome, corsi, src, alt, pagina } }] })} />,
@@ -346,69 +552,101 @@ const SCHERMI = [
   { width: 1280, label: 'computer', icon: 'Monitor' as const },
 ]
 
-export default function EditorPuck({ d, pagina, verso, onChiudi, ricarica }: { d: DatiSegreteria; pagina: PaginaSito; verso: Array<{ slug: string; titolo: string }>; onChiudi: () => void; ricarica: () => Promise<void> }) {
-  // Le pagine del vecchio editor si aprono già a pezzi; sul database restano com'erano finché non si salva.
+export default function EditorPuck({ d, pagina, pagine, verso, onChiudi, ricarica }: { d: DatiSegreteria; pagina: PaginaSito; pagine: PaginaSito[]; verso: Array<{ slug: string; titolo: string }>; onChiudi: () => void; ricarica: () => Promise<void> }) {
+  // Le pagine scritte col testo solo si aprono già a parti; sul database restano com'erano finché non si salva.
   // I pezzi salvati hanno il testo come `string`, uno dei casi di `Testo`.
   const [iniziali] = useState<Data<Props, Radice>>(() => ({
     root: { props: { titolo: pagina.titolo, descrizione: pagina.descrizione } },
     content: pezziDaAprire(pagina).content,
   }))
-  // Una config sola per tutta la prova: rifatta a ogni tasto, Puck rimonterebbe i campi.
-  const config = useMemo(() => configura(d, pagina.slug, verso), [d, pagina.slug, verso])
+  // Una config sola per la pagina aperta: rifatta a ogni tasto, Puck rimonterebbe i campi.
+  const config = useMemo(() => configura(d, pagina.slug, pagina.diLegge, verso), [d, pagina.slug, pagina.diLegge, verso])
   const [ora, setOra] = useState<BozzaPezzi>(() => bozzaDa(iniziali))
-  const { avviso, fai, lavora } = useAvviso()
+  const { avviso, avvisa, fai, lavora } = useAvviso()
   /** La pagina da mostrare com'è sul sito (null: si scrive). */
   const [sulSito, setSulSito] = useState<BozzaPezzi | null>(null)
   const sporca = daSalvare(pagina, ora)
   const no = cosaNonVaSalvare(ora)
+  const noPubblica = cosaNonVaPubblicare(ora)
+  // Letto una volta all'apertura: Puck usa `ui` solo per partire.
+  const [stretto] = useState(() => window.innerWidth < 1024)
   useBozza(sporca, pagina.titolo)
 
   const chiudi = async () => {
-    if (sporca && !(await chiedi('Ci sono modifiche non salvate. Se chiudi si perdono.', 'Chiudi', { no: 'Resta qui', restare: true }))) return
+    if (sporca && !(await chiedi('Ci sono modifiche non salvate. Se torni alle pagine si perdono.', 'Torna alle pagine', { no: 'Resta qui', restare: true }))) return
     onChiudi()
   }
+  // Una pagina scritta col testo solo, salvata qui, resta a parti per sempre: la prima volta si chiede.
+  const aParti = (si: string, sulSito: string) => !salvaAParti(pagina) || chiedi(`Salvare «${pagina.titolo}» a parti? ${sulSito} Da qui in poi la pagina si scrive a parti.`, si, { no: 'Lascia stare' })
+  // Gli spazi si tolgono qui, come fanno il database e la modalità prova: la bozza salvata torna uguale a quella scritta.
+  const salvata = () => d.salvaBozzaPezziSito(pagina.id, pagina.versione, { ...ora, titolo: ora.titolo.trim(), descrizione: ora.descrizione.trim() })
   // Dopo il salvataggio `ricarica` porta la pagina nuova (e la sua versione): `sporca` torna falso da sé.
-  // Gli spazi si tolgono qui: la modalità prova non li toglie, il database sì.
   const salva = async () => {
-    // Come «Porta ai pezzi»: una pagina del vecchio editor, salvata qui, resta a parti per sempre.
-    if (pagina.pezzi === null && !(await chiedi(`Salvare «${pagina.titolo}» a parti? Non si torna più al vecchio editor di testo. Il sito non cambia finché non pubblichi.`, 'Salva a parti', { no: 'Lascia stare' }))) return
-    await fai(() => d.salvaBozzaPezziSito(pagina.id, pagina.versione, { ...ora, titolo: ora.titolo.trim(), descrizione: ora.descrizione.trim() }), 'Bozza salvata. Il sito non è cambiato: si pubblica dall’editor di sempre', ricarica)
+    if (!(await aParti('Salva a parti', 'Sul sito non cambia niente finché non pubblichi.'))) return
+    await fai(salvata, 'Bozza salvata. Il sito non è cambiato: serve Pubblica', ricarica)
+  }
+  const pubblica = async () => {
+    if (!(await chiedi(`Pubblicare «${ora.titolo.trim() || pagina.titolo}»? Il sito mostrerà la pagina nuova al prossimo aggiornamento.`, 'Pubblica'))) return
+    if (sporca && !(await aParti('Salva a parti e pubblica', 'Il sito mostrerà il testo com’è adesso.'))) return
+    await fai(
+      async () => {
+        const versione = sporca ? await salvata() : pagina.versione
+        try {
+          await d.pubblicaPaginaSito(pagina.id, versione)
+        } catch (e) {
+          // La bozza è già salvata, la versione è salita: si rilegge, o il secondo tentativo litiga con noi.
+          await ricarica()
+          throw e
+        }
+      },
+      'Pubblicata',
+      ricarica,
+    )
   }
 
-  // Il «Publish» di Puck (`children`) non si mostra: si pubblica dall'editor di oggi, che fa tutti i controlli.
+  // Il «Publish» di Puck (`children`) non si mostra: Pubblica è nostro, salva prima la bozza e fa i controlli del database.
   const tasti = () => (
     <>
-      <button type="button" className="sg-btn sg-btn-linea" onClick={() => void chiudi()}>Chiudi</button>
-      <button type="button" className="sg-btn sg-btn-linea" onClick={() => setSulSito(ora)}>Com’è sul sito</button>
-      <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || !sporca || !!no} onClick={() => void salva()}>Salva bozza</button>
+      <Button variant="secondary" onClick={() => void chiudi()}>‹ Tutte le pagine</Button>
+      <Button variant="secondary" onClick={() => setSulSito(ora)}>Com’è sul sito</Button>
+      <Button variant="secondary" disabled={lavora || !sporca || !!no} onClick={() => void salva()}>Salva bozza</Button>
+      <Button variant="primary" disabled={lavora || !!noPubblica} onClick={() => void pubblica()}>Pubblica</Button>
     </>
   )
+  // Accanto al titolo, in piccolo: se c'è da salvare (per primo: è quel che non va), lo stato e i corsi. L'indirizzo è nel pannello della pagina.
+  const corsi = pagina.corsiCollegati?.length ?? 0
+  const sotto = [sporca ? 'da salvare' : '', PAROLE_STATO[statoPagina(pagina)], corsi ? `collegata a ${corsi} ${corsi === 1 ? 'corso' : 'corsi'}` : ''].filter(Boolean).join(' · ')
 
   return (
-    <div className="sito-puck">
-      <Puck
-        config={config}
-        data={iniziali}
-        dictionary={PAROLE}
-        viewports={SCHERMI}
-        headerTitle={pagina.titolo}
-        overrides={{ headerActions: tasti }}
-        onChange={(data) => setOra(bozzaDa(data))}
-        // Si apre sul tablet: sul computer (1280) la pagina viene troppo piccola per leggerla; la misura vera è in «Com'è sul sito».
-        ui={{ viewports: { current: { width: 768, height: 'auto' }, controlsVisible: true, options: SCHERMI } }}
-      />
-      {no && sporca && <p role="alert" className="sito-puck-guaio">{no}</p>}
-      {sulSito && (
-        <div className="sito-puck sito-puck-sul-sito">
-          <div className="row" style={{ gap: 8, padding: 8 }}>
-            <button type="button" className="sg-btn sg-btn-linea" onClick={() => setSulSito(null)}>‹ Torna a scrivere</button>
+    <PaginaAperta.Provider value={{ d, pagina, pagine, lavora, fai, avvisa, ricarica, onChiudi }}>
+      <div className="sito-puck" data-guaio={!!noPubblica || undefined}>
+        <Puck
+          config={config}
+          data={iniziali}
+          dictionary={PAROLE}
+          viewports={SCHERMI}
+          headerTitle={pagina.titolo}
+          headerPath={sotto}
+          overrides={{ headerActions: tasti }}
+          onChange={(data) => setOra(bozzaDa(data))}
+          // Si apre sul tablet: sul computer (1280) la pagina viene troppo piccola per leggerla; la misura vera è in «Com'è sul sito».
+          // Su uno schermo stretto si apre senza il pannello delle parti, e sul telefono come sul telefono: se no la pagina è un francobollo.
+          ui={{ ...(stretto ? { leftSideBarVisible: false } : {}), viewports: { current: { width: window.innerWidth < 768 ? 360 : 768, height: 'auto' }, controlsVisible: true, options: SCHERMI } }}
+        />
+        {/* Perché Pubblica (e Salva bozza) è spento: in fondo, a parole. */}
+        {noPubblica && <p role="alert" className="sito-puck-guaio">{noPubblica}</p>}
+        {sulSito && (
+          <div className="sito-puck sito-puck-sul-sito">
+            <div style={{ display: 'flex', gap: 8, padding: 8 }}>
+              <Button variant="secondary" onClick={() => setSulSito(null)}>‹ Torna a scrivere</Button>
+            </div>
+            <div style={{ flex: 1, display: 'flex' }}>
+              <AnteprimaPagina d={d} slug={pagina.slug} titolo={sulSito.titolo} descrizione={sulSito.descrizione} testo={pezziInHtml(sulSito.pezzi)} />
+            </div>
           </div>
-          <div style={{ flex: 1, display: 'flex' }}>
-            <AnteprimaPagina d={d} slug={pagina.slug} titolo={sulSito.titolo} descrizione={sulSito.descrizione} testo={pezziInHtml(sulSito.pezzi)} />
-          </div>
-        </div>
-      )}
-      {avviso}
-    </div>
+        )}
+        {avviso}
+      </div>
+    </PaginaAperta.Provider>
   )
 }

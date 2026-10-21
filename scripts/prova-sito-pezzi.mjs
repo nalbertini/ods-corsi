@@ -49,6 +49,8 @@ const C = (id, colonne) => ({ type: 'colonne', props: { id, colonne } })
 const CIMA = (id) => ({ type: 'fotoInCima', props: { id, src: 'https://x.it/c.jpg', alt: 'Cima' } })
 const buono = (r) => typeof r === 'string' && !r.startsWith('ERRORE')
 const pulisci = (h) => prova(() => t.pulisciTesto(h))
+// Una pagina scritta col testo solo, aperta a parti (`pezziDaAprire`) e salvata così: perché non si salverebbe.
+const portata = (bozza) => prova(() => z.cosaNonVaSalvare({ titolo: 'T', descrizione: '', pezzi: z.pezziDaAprire({ bozza, pezzi: null }) }))
 
 console.log('\nPezzi: pagina vuota e validità')
 ok('pezziVuoti è una pagina senza pezzi', prova(() => z.pezziVuoti()), { content: [] })
@@ -253,7 +255,6 @@ console.log('\nDatabase senza 62-sito-pezzi.sql: l\'app regge')
 
 console.log('\nPorta ai pezzi: le funzioni ci sono')
 ok('htmlInPezzi è una funzione di sitoPezzi', typeof z.htmlInPezzi, 'function')
-ok('portabileAiPezzi è una funzione di sitoPezzi', typeof z.portabileAiPezzi, 'function')
 
 console.log('\nPorta ai pezzi: htmlInPezzi')
 {
@@ -422,13 +423,13 @@ console.log('\nPorta ai pezzi: si taglia ai titoli h2 e alle foto isolate')
   const troppi = pezzi(cento)
   ok('oltre 100 pezzi: i pezzi non sono validi, niente accorpamento', valido(troppi), false)
   ok('oltre 100 pezzi: il testo resta tutto identico', giro(cento), pulisci(cento))
-  ok('oltre 100 pezzi: cosaNonVaPortare avvisa della pagina con troppe parti', prova(() => z.cosaNonVaPortare(cento)), 'La pagina ha troppe parti: al massimo 100')
-  ok('esattamente 100 pezzi: si porta', prova(() => z.cosaNonVaPortare(Array.from({ length: 100 }, (_, i) => `<h2>T${i}</h2><p>x</p>`).join(''))), null)
+  ok('oltre 100 pezzi: al primo salvataggio avvisa della pagina con troppe parti', portata(cento), 'La pagina ha troppe parti: al massimo 100')
+  ok('esattamente 100 pezzi: si salva', portata(Array.from({ length: 100 }, (_, i) => `<h2>T${i}</h2><p>x</p>`).join('')), null)
 }
 
-console.log('\nPorta ai pezzi: cosaNonVaPortare (prima di chiedere conferma)')
+console.log('\nUna pagina scritta col testo solo, al primo salvataggio a parti: cosaNonVaSalvare')
 {
-  const no = (x) => prova(() => z.cosaNonVaPortare(x))
+  const no = portata
   ok('un testo normale si porta', no('<p>Ciao</p>'), null)
   ok('il testo vuoto si porta', no(''), null)
   // Un limite per volta (insieme, ciascun controllo coprirebbe l'altro): solo quello della bozza, e solo quello dei pezzi.
@@ -437,18 +438,6 @@ console.log('\nPorta ai pezzi: cosaNonVaPortare (prima di chiedere conferma)')
   ok('sotto i 200000 della bozza ma con il JSON oltre i 400000 dei pezzi: la frase sulla pagina lunga', [pulisci(virgolette).length < 200000, /La pagina è troppo lunga/.test(String(no(virgolette)))], [true, true])
   ok('troppo grande per i pezzi: una frase che dice di toglierne, non di ricaricare', [/lung/.test(String(no(`<p>${'a'.repeat(400000)}</p>`))), /ricarica/.test(String(no(`<p>${'a'.repeat(400000)}</p>`)))], [true, false])
   ok('testo che dopo la pulizia supera il limite della bozza (& diventa &amp;): una frase sul testo lungo', /lung/.test(String(no(`<p>${'&'.repeat(190000)}</p>`))), true)
-}
-
-console.log('\nPorta ai pezzi: portabileAiPezzi')
-{
-  const p = (o) => prova(() => z.portabileAiPezzi(o))
-  ok('vecchio editor (null), non di legge: si può portare', p({ pezzi: null, diLegge: false }), true)
-  ok('database senza il 62 (undefined): no', p({ pezzi: undefined, diLegge: false }), false)
-  ok('campo assente: no', p({ diLegge: false }), false)
-  ok('già a pezzi: no', p({ pezzi: { content: [] }, diLegge: false }), false)
-  ok('già a pezzi con contenuto: no', p({ pezzi: { content: [T('a', 'x')] }, diLegge: false }), false)
-  ok('pagina di legge con pezzi null: no', p({ pezzi: null, diLegge: true }), false)
-  ok('pagina di legge senza il 62: no', p({ pezzi: undefined, diLegge: true }), false)
 }
 
 console.log('\nPorta ai pezzi: in modalità prova la pagina converte senza cambiare nulla')
@@ -703,10 +692,6 @@ console.log('\nIl nuovo editor (Puck completo): con cosa si apre, quando c\'è d
   ok('13: una pagina che va si salva', prova(() => z.cosaNonVaSalvare(dati(aPezzi))), null)
   ok('14: spazi in più intorno alla descrizione non sono un cambio', prova(() => z.daSalvare(aPezzi, { ...dati(aPezzi), descrizione: ' Per tutti ' })), false)
   ok('15: un testo troppo lungo non si salva, e la frase dice quanto', prova(() => z.cosaNonVaSalvare(dati(aPezzi, { content: [T('t1', `<p>${'a'.repeat(200001)}</p>`)] })))?.startsWith?.('Il testo è troppo lungo') ?? false, true)
-  ok('16: il nuovo editor c\'è per una pagina a pezzi', prova(() => z.siProvaNuovoEditor({ diLegge: false, pezzi: aPezzi.pezzi })), true)
-  ok('17: il nuovo editor c\'è per una pagina del vecchio editor', prova(() => z.siProvaNuovoEditor({ diLegge: false, pezzi: null })), true)
-  ok('18: il nuovo editor non c\'è per una pagina di legge', prova(() => z.siProvaNuovoEditor({ diLegge: true, pezzi: null })), false)
-  ok('19: il nuovo editor non c\'è senza 62-sito-pezzi.sql', prova(() => z.siProvaNuovoEditor({ diLegge: false })), false)
   // Il testo del nuovo editor ha solo quel che il sito tiene: le parti spente non ci sono, e il sito toglie i loro segni.
   const spente = ['underline', 'strike', 'code', 'codeBlock', 'horizontalRule', 'textAlign']
   ok('20: sottolineato, barrato, codice, righe e allineamenti sono spenti', spente.filter((k) => z.TESTO_DEL_SITO?.[k] !== false), [])
@@ -1055,10 +1040,57 @@ console.log('\nLa parte ISTRUTTORE: dove si mette, con quale pagina, come si ved
 
   ok('i corsi, da un testo con le virgole', prova(() => z.corsiDa(' Judo ,, Pesi,')), ['Judo', 'Pesi'])
 
-  const css = readFileSync('src/styles.css', 'utf8')
-  ok('l\'avviso e la nota sono gialli (giallo-testo)', /\.sito-pezzi-avviso\s*\{[^}]*color:\s*var\(--giallo-testo\)/.test(css), true)
-  ok('la foto dell\'istruttore nell\'editor non esce dal riquadro', /\.sito-pezzo-istruttore img[^{]*\{[^}]*max-width:\s*100%/.test(css) || /\.sito-pezzo-istruttore img[^{]*\{[^}]*width:\s*56px/.test(css), true)
-  ok('un nome lunghissimo va a capo', /\.sito-pezzo-istruttore[^{]*\{[^}]*overflow-wrap:\s*anywhere/.test(css), true)
+}
+
+// ---------------------------------------------------------------------------
+// Un editor solo (docs/design-canvas/sito-solo-puck): ogni pagina si scrive e si pubblica nel nuovo editor.
+// ---------------------------------------------------------------------------
+console.log('\nUn editor solo: le pagine di legge, Pubblica, il database senza pezzi')
+{
+  const ammessa = (t, slug, diLegge) => prova(() => z.parteAmmessa(t, slug, diLegge))
+  ok('pagina di legge: solo la parte Testo', ['fotoInCima', 'testo', 'foto', 'colonne', 'pulsanti', 'domande', 'iscriviti', 'istruttore'].filter((t) => ammessa(t, 'privacy', true) === true), ['testo'])
+  ok('pagina non di legge: tutte come prima', [ammessa('foto', 'judo', false), ammessa('iscriviti', 'judo', false), ammessa('istruttore', 'judo', false)], [true, true, false])
+
+  const pub = (b) => prova(() => z.cosaNonVaPubblicare(b))
+  const B = (titolo, content = [T('a', '<p>x</p>')]) => ({ titolo, descrizione: '', pezzi: { content } })
+  ok('Pubblica: si può con titolo e testo a posto', pub(B('Judo')), null)
+  ok('Pubblica: senza titolo, la stessa frase di Salva bozza', pub(B('  ')), 'Scrivi il titolo della pagina')
+  ok('Pubblica: con una parte incompleta, la stessa frase di Salva bozza', pub(B('Judo', [F('f', '')])), prova(() => z.cosaNonVaSalvare(B('Judo', [F('f', '')]))))
+  ok('Pubblica: titolo di 60 lettere va', pub(B('a'.repeat(60))), null)
+  ok('Pubblica: titolo di 61 lettere no, e dice cosa fare', pub(B('a'.repeat(61))), 'Accorcia il titolo: per pubblicare al massimo 60 lettere (ora 61)')
+  ok('Salva bozza: il titolo lungo non la ferma', prova(() => z.cosaNonVaSalvare(B('a'.repeat(61)))), null)
+
+  ok('database senza 62: la frase dice a chi chiedere', typeof z.FRASE_SENZA_PEZZI === 'string' && z.FRASE_SENZA_PEZZI.includes('chi cura l’app'), true)
+  // La prima volta che una pagina scritta col testo solo si salva, l'app chiede: da lì resta a parti.
+  const chiede = (pezzi) => prova(() => z.salvaAParti({ pezzi }))
+  ok('salvare chiede «a parti» solo per una pagina scritta col testo solo', [chiede(null), chiede({ content: [] }), chiede({ content: [T('a', '<p>x</p>')] })], [true, false, false])
+
+  // Una pagina di legge col testo solo si apre come un solo Testo, anche con foto o colonne: altre parti non le ammette.
+  const legge = (bozza) => prova(() => z.pezziDaAprire({ bozza, pezzi: null, diLegge: true }))
+  const conFoto = '<p>Dati</p><img src="https://x.it/a.jpg" alt="Firma"><p>Altro</p>'
+  ok('pagina di legge con una foto: si apre come un solo Testo', prova(() => legge(conFoto).content.map((p) => p.type)), ['testo'])
+  ok('pagina di legge: il testo resta identico', prova(() => z.pezziInHtml(legge(conFoto))), pulisci(conFoto))
+  ok('pagina non di legge con una foto: si divide come prima', prova(() => z.pezziDaAprire({ bozza: conFoto, pezzi: null, diLegge: false }).content.map((p) => p.type)), ['testo', 'foto', 'testo'])
+
+  ok('il vecchio editor non c\'è più: niente «prova il nuovo», niente «porta ai pezzi»', [typeof z.siProvaNuovoEditor, typeof z.portabileAiPezzi, typeof z.cosaNonVaPortare], ['undefined', 'undefined', 'undefined'])
+}
+
+// Il campo di testo di Puck (tiptap) butta quel che non conosce: le foto dentro un TESTO e la classe dei pulsanti
+// sparivano alla prima lettera scritta. Le estensioni di `sitoTiptap.ts` le tengono; il giro è quello del campo.
+console.log('\nUn editor solo: il testo scritto in Puck tiene foto e pulsanti')
+{
+  const tt = await carica('src/lib/sitoTiptap.ts')
+  const { generateJSON, generateHTML } = await import('@tiptap/html/server')
+  const { default: StarterKit } = await import('@tiptap/starter-kit')
+  const estensioni = [StarterKit.configure({ link: false }), ...(tt.ESTENSIONI_TESTO ?? [])]
+  const giro = (h) => prova(() => pulisci(generateHTML(generateJSON(h, estensioni), estensioni)))
+  const conFoto = '<p>Prima</p><img src="https://x.it/a.jpg" alt="Un tatami"><p>Dopo</p>'
+  ok('una foto dentro un testo resta, con il suo testo alternativo', giro(conFoto), pulisci(conFoto))
+  ok('una foto solo decorativa (alt vuoto) resta decorativa', giro('<img src="https://x.it/a.jpg" alt="">'), pulisci('<img src="https://x.it/a.jpg" alt="">'))
+  const pulsante = '<p><a class="pulsante" href="/orari">Guarda gli orari</a></p>'
+  ok('un pulsante scritto nel testo resta pulsante', giro(pulsante), pulisci(pulsante))
+  ok('un link normale resta un link senza classe', giro('<p><a href="https://x.it">qui</a></p>'), pulisci('<p><a href="https://x.it">qui</a></p>'))
+  ok('il link si scrive solo con un indirizzo che il sito ammette', [prova(() => tt.indirizzoDelLink(' /orari ')), prova(() => tt.indirizzoDelLink('javascript:alert(1)'))], [{ indirizzo: '/orari' }, { guaio: 'Scrivi un indirizzo che cominci con https://, mailto:, tel: oppure /, senza spazi' }])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
