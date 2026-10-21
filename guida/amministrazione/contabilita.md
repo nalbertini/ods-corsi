@@ -141,8 +141,9 @@ riepilogo: registra solo dopo il tuo «ok», e poi dice cosa ha scritto.
 - **Le spese da classificare**: le uscite su «Da classificare», «Varie» o senza voce,
   raggruppate per descrizione, le più pesanti prima, con la voce proposta. La voce si cambia qui,
   da **Cambiare la voce**: Claude dice cosa cercare, la voce di partenza e il periodo **Tutto**.
-- **Solo fornitori**: le foto le vede Claude, non l'app. Compensi degli istruttori e ricevute
-  degli iscritti si registrano qui, come sempre: gli incassi degli iscritti in PAGAMENTI.
+- **Solo fornitori**: le foto le vede Claude, non l'app. I compensi degli istruttori si pagano
+  da [COMPENSI](../segreteria/compensi.md#il-pagamento), che scrive qui il movimento; gli
+  incassi degli iscritti in PAGAMENTI.
 - **La data** è il giorno in cui i soldi sono usciti o entrati, non quella della fattura: per
   una bolletta con l'addebito Claude chiede quando è stata addebitata. Una fattura non ancora
   pagata si registra quando si paga.
@@ -164,6 +165,13 @@ agli altri: la voce e il testo si correggono qui, il resto annullando e rifacend
 Un rimborso a un iscritto è un'uscita, con una voce tua. Un errore trovato dopo si
 corregge annullando e rifacendo, oppure, se il giorno è già chiuso (vedi sotto), con un movimento
 con una data dopo la chiusura e una voce «Rettifica» (in VOCI si crea con un tocco).
+
+### I compensi dei tecnici
+
+Un pagamento segnato in [COMPENSI](../segreteria/compensi.md#il-pagamento) è un'uscita
+come le altre, con la voce di sistema **Compensi istruttori**, collegata al tecnico, e la
+descrizione «Compenso · Nome Cognome · ott 2026». Se è sbagliato si **annulla** qui: le sue
+ricevute tornano da pagare in COMPENSI e si ripagano da lì.
 
 ## Bilancio
 

@@ -3430,6 +3430,6 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 @media (max-width: 480px) {
   .sg-compenso-riga { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
   .sg-compenso-riga > :nth-child(n + 3) { grid-column: 1 / -1; }
-  .sg-numeri[data-telefono-due] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sg-numeri[data-telefono-due] > :nth-child(1), .sg-numeri[data-telefono-due] > :nth-child(4) { display: none; }
+  .sg-numeri[data-telefono-due] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sg-numeri[data-telefono-due] > :nth-child(1) { display: none; }
 }

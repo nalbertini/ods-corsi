@@ -115,7 +115,7 @@ const VERSIONI = ['2025-06-18', '2025-03-26', '2024-11-05']
 /** Come Claude deve usare gli strumenti: le scelte della palestra, che valgono per ogni documento. */
 const ISTRUZIONI = `Registri in CONTABILITÀ di ODS Corsi le spese e le entrate lette su fatture, ricevute e scontrini di FORNITORI.
 - Prima di registrare mostra sempre il riepilogo (tipo, data, importo, voce, cassa, descrizione) e aspetta l'«ok» della persona.
-- Solo documenti di fornitori. Ricevute a iscritti e compensi di istruttori non si registrano dalla chat: si fanno nell'app (PAGAMENTI o CONTABILITÀ).
+- Solo documenti di fornitori. Ricevute a iscritti e compensi di istruttori non si registrano dalla chat: si fanno nell'app (le ricevute in PAGAMENTI, i compensi in COMPENSI).
 - La data è il giorno in cui i soldi sono usciti o entrati, non quella della fattura. Se il documento ha solo la scadenza (bollette con addebito), chiedi quando è stato addebitato. Una fattura non ancora pagata non si registra: chiedi di riportarla quando è pagata.
 - L'importo è quello pagato davvero: con la ritenuta d'acconto è il netto; la ritenuta si registra a parte quando si paga l'F24.
 - La cassa: contanti → Cassa Contanti, tutto il resto (POS, bonifico, addebito) → Conto Corrente. Se il documento non lo dice, chiedi. Una spesa anticipata da un collaboratore non si registra ora: si registra il rimborso quando lo si paga.

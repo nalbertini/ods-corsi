@@ -75,10 +75,10 @@
 // anche delle lezioni fatte da sostituto. Lo stato e' sempre un segno con la parola, mai solo il colore; sotto, in `dim`, il perche' (`nota`).
 // stato: da-confermare (rosso, «N PRESENZE DA CONFERMARE», link a PRESENZE ISTRUTTORI, importo «—»: blocca solo questo tecnico);
 //        senza-tariffa (rosso, «SENZA TARIFFA PER <corso>», importo «—», link alla scheda); senza-dati (rosso, MANCANO I DATI, cosa manca e il link
-//        alla scheda: si vede prima di provare); da-fare (neutro, MODIFICA IL COMPENSO e PREPARA LA RICEVUTA); fatta (COSTRUITA: verde, FATTA, «Fatta il …»,
-//        Firmata, RISTAMPA, e ANNULLA rosso su una riga sua);
-//        da-pagare e pagata arrivano col pagamento in contabilità (PROPOSTA): da-pagare (giallo, ricevuta fatta e non pagata, SEGNA PAGATO); non-torna (rosso: la ricevuta e' rimasta com'era fatta, il mese adesso fa un'altra cifra;
-//        ANNULLA E RIFAI); pagata (verde, «PAGATA IL gg/mm», RISTAMPA).
+//        alla scheda: si vede prima di provare); da-fare (neutro, MODIFICA IL COMPENSO e PREPARA LA RICEVUTA); fatta = da-pagare (COSTRUITA nel codice
+//        come «fatta»: giallo, FATTA · DA PAGARE, «Fatta il …», Firmata, RISTAMPA, SEGNA PAGATO a linea, ANNULLA rosso su una riga sua);
+//        da-pagare e pagata COSTRUITE col pagamento in contabilità: da-pagare (giallo, ricevuta fatta e non pagata, SEGNA PAGATO a linea); non-torna (rosso: la ricevuta e' rimasta com'era fatta, il mese adesso fa un'altra cifra;
+//        ANNULLA E RIFAI, non si paga); pagata (verde, PAGATA, la data nella frase sotto, Firmata e RISTAMPA, niente ANNULLA).
 // firmata: con una ricevuta fatta (da-pagare, non-torna, pagata) compare la spunta «Firmata»; non spuntata aggiunge il segno giallo DA RIPORTARE FIRMATA.
 // telefono: la riga impilata (nome e importo, lezioni e ore, segni, nota, tasto a tutta larghezza), chiusa.
 const STATI = {
@@ -86,10 +86,10 @@ const STATI = {
   'senza-tariffa': { tono: 'rosso', segno: (p) => `SENZA TARIFFA PER ${(p.corso ?? 'Judo adulti').toUpperCase()}`, azione: 'Scrivi la tariffa ›', link: true, nota: 'Ha fatto lezione in un corso che non ha la sua tariffa.', vuoto: true },
   'senza-dati': { tono: 'rosso', segno: () => 'MANCANO I DATI', azione: 'Scrivi i dati in Istruttori e accessi ›', link: true, nota: 'IBAN: si scrivono nella scheda, in ISTRUTTORI E ACCESSI.' },
   'da-fare': { tono: 'neutro', segno: () => 'RICEVUTA DA FARE', azione: 'Prepara la ricevuta', link: false, nota: '' },
-  'fatta': { tono: 'verde', segno: () => 'FATTA', azione: 'Ristampa', link: false, nota: 'Fatta il 2 novembre 2026', fatta: true },
+  'fatta': { tono: 'giallo', segno: () => 'FATTA · DA PAGARE', azione: 'Segna pagato', link: false, nota: 'Fatta il 2 novembre 2026', fatta: true },
   'da-pagare': { tono: 'giallo', segno: () => 'FATTA · DA PAGARE', azione: 'Segna pagato', link: false, nota: '', fatta: true },
   'non-torna': { tono: 'rosso', segno: () => 'NON TORNA PIÙ', azione: 'Annulla e rifai', link: false, nota: 'Ricevuta di 180,00 €: dopo è stata rifiutata una presenza e il mese ora fa 165,00 €.', fatta: true },
-  'pagata': { tono: 'verde', segno: (p) => `PAGATA IL ${p.quando ?? '05/11'}`, azione: 'Ristampa', link: false, nota: '', fatta: true },
+  'pagata': { tono: 'verde', segno: () => 'PAGATA', azione: 'Ristampa', link: false, nota: `Pagata il ${'5 novembre 2026'}. Per annullarla, prima si annulla il pagamento in CONTABILITÀ.`, fatta: true },
 };
 const vero = (v, d) => (v === undefined ? d : v === true || v === 'true');
 class Component extends DCLogic {
