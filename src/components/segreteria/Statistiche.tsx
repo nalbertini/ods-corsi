@@ -6,6 +6,7 @@ import type { Destinazione, Voce } from './Segreteria'
 import { Colonne, Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
 import { StatisticheSito } from './StatisticheSito'
+import { richiesteFila } from '../../lib/filaSito'
 import { conNonSiSaInFondo, contaDaDove, fraseDaDove, MANCA_PROVENIENZA, notaDaDove, type VoceDaDove } from '../../lib/provenienza'
 
 const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
@@ -318,8 +319,7 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
         da={chiaveGiorno(da)}
         a={g}
         corso={!!corso}
-        titoli={titoli.dato ?? {}}
-        richieste={daDove.guaio ? { manca: daDove.guaio } : daDove.dato?.conti === null ? { manca: MANCA_PROVENIENZA } : daDove.dato?.conti ? { righe: daDove.dato.conti.righe } : undefined}
+        richieste={richiesteFila(daDove, titoli)}
       />
     </>
   )

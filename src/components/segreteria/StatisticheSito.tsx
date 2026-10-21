@@ -1,7 +1,6 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { contaFila } from '../../lib/filaSito'
-import type { RigaDaDove } from '../../lib/provenienza'
+import { contaFila, type RichiesteFila } from '../../lib/filaSito'
 import type { AltreSito, NumeriSito } from '../../lib/sitoNumeri'
 import type { LetturaSito, StatoSito } from '../../lib/sitoStatistiche'
 import { TESTI_GUAI, chiaveSito, contaDal, creaMemoria, lettiAlle, nomeMeseSito, notaMese } from '../../lib/sitoStatistiche'
@@ -12,9 +11,6 @@ const memoria = creaMemoria()
 
 const it = (n: number) => n.toLocaleString('it-IT')
 
-/** Le richieste per la fila, lette da STATISTICHE per DA DOVE ARRIVANO LE RICHIESTE: `undefined` mentre legge, `manca` col perché. */
-export type RichiesteFila = { righe: RigaDaDove[] } | { manca: string } | undefined
-
 /**
  * IL SITO, in fondo a STATISTICHE: quanta gente guarda il sito e quante volte tocca Iscriviti, Chiama o Scrivici,
  * da GoatCounter (funzione `conti-sito`). Le regole (quando leggere, AGGIORNA, le frasi) stanno in
@@ -22,7 +18,7 @@ export type RichiesteFila = { righe: RigaDaDove[] } | { manca: string } | undefi
  * Il corso scelto non conta. `a` è oggi: il periodo di STATISTICHE finisce sempre oggi.
  * Sopra, DAL SITO ALLE RICHIESTE: la stessa lettura del sito e le richieste che STATISTICHE ha già letto.
  */
-export function StatisticheSito({ d, da, a, corso, richieste, titoli }: { d: DatiSegreteria; da: string; a: string; corso: boolean; richieste: RichiesteFila; titoli: Readonly<Record<string, string>> }) {
+export function StatisticheSito({ d, da, a, corso, richieste }: { d: DatiSegreteria; da: string; a: string; corso: boolean; richieste: RichiesteFila }) {
   const chiave = chiaveSito(da, a)
   const [stato, setStato] = useState<StatoSito | null>(null)
   const [legge, setLegge] = useState(false)
@@ -74,7 +70,7 @@ export function StatisticheSito({ d, da, a, corso, richieste, titoli }: { d: Dat
 
   return (
     <>
-    <Fila stato={stato} richieste={richieste} titoli={titoli} dal={dal} corso={corso} />
+    <Fila stato={stato} richieste={richieste} dal={dal} corso={corso} />
     <section aria-label="Il sito" className="sg-riquadro">
       <Riga titolo="IL SITO">
         <span className="sg-sito-nota-titolo">visite e tocchi su Iscriviti, Chiama e Scrivici · tutta la palestra</span>
@@ -130,10 +126,9 @@ type Gradino = { titolo: string; n: number | null; sotto: string; legge: boolean
  * DAL SITO ALLE RICHIESTE: visite → tocchi su Iscriviti → richieste dal sito → accolte. Le regole stanno in
  * filaSito.ts. Un guaio tocca solo la sua metà: il contatore i primi due gradini, il database gli altri due.
  */
-function Fila({ stato, richieste, titoli, dal, corso }: { stato: StatoSito | null; richieste: RichiesteFila; titoli: Readonly<Record<string, string>>; dal: string | null; corso: boolean }) {
+function Fila({ stato, richieste, dal, corso }: { stato: StatoSito | null; richieste: RichiesteFila; dal: string | null; corso: boolean }) {
   const numeri = stato && 'numeri' in stato ? stato.numeri : null
-  const righe = richieste && 'righe' in richieste ? richieste.righe : null
-  const f = contaFila(numeri, righe, titoli)
+  const f = contaFila(numeri, richieste && 'righe' in richieste ? richieste : null)
   const sito = { legge: stato === null, guaio: stato && 'guaio' in stato ? TESTI_GUAI[stato.guaio].titolo : '' }
   const delle = { legge: richieste === undefined, guaio: 'Non si sanno' }
   const persone = (n: number | null, una: string, tante: string) => (n === 1 ? una : tante)
