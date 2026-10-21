@@ -133,8 +133,9 @@ export function RegistraDaPagamenti({ d, fai, onFatto, onChiudi }: { d: DatiSegr
   if (scelto) {
     return (
       <div className="stack" style={{ gap: 8 }}>
-        {/* Senza i corsi della persona (non li vede): «a cosa serve» si scrive, senza suggerimenti. */}
-        <RegistraPagamento d={d} p={scelto} corsi={[]} fai={fai} onFatto={onFatto} onChiudi={onChiudi} />
+        {/* Senza i corsi della persona (non li vede): «a cosa serve» si scrive, senza suggerimenti. Qui arriva solo
+            l'amministrazione, che vede CONTABILITÀ; senza la scheda la ricevuta non si fa (mancano i dati del socio). */}
+        <RegistraPagamento d={d} p={scelto} corsi={[]} fai={fai} onFatto={onFatto} onChiudi={onChiudi} contabilita />
         <div className="row">
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelto(null)}>
             Non è {scelto.cognome.toUpperCase()} {scelto.nome.toUpperCase()}: scegli un’altra persona

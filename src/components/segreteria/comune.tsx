@@ -111,7 +111,7 @@ export interface Domanda {
   pericolo: boolean
   /** Il no è il tasto in evidenza: si sta uscendo da qualcosa non salvato. */
   restare: boolean
-  /** Una casella sotto la domanda, già spuntata: una scelta in più che non cambia il sì (MANDA PER EMAIL in FAI LA RICEVUTA). */
+  /** Una casella sotto la domanda: una scelta in più (MANDA PER EMAIL in FAI LA RICEVUTA); con `si` cambia anche il tasto (FAI ANCHE LA RICEVUTA). */
   spunta?: SpuntaDomanda
   risposta: (si: boolean, spuntata: boolean) => void
 }
@@ -120,6 +120,10 @@ export interface SpuntaDomanda {
   testo: string
   /** La frase sotto la casella, che cambia con la spunta. */
   nota: (spuntata: boolean) => string
+  /** Il tasto del sì, quando la spunta cambia cosa fa (fare la ricevuta o no); senza, resta quello della domanda. */
+  si?: (spuntata: boolean) => string
+  /** Come parte la casella: spuntata, se non si dice. */
+  spuntata?: boolean
 }
 let mostra: ((d: Domanda) => void) | null = null
 
@@ -160,7 +164,7 @@ export function Conferme() {
 }
 
 export function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean, spuntata?: boolean) => void }) {
-  const [spuntata, setSpuntata] = useState(true)
+  const [spuntata, setSpuntata] = useState(d.spunta?.spuntata ?? true)
   const ref = useDialogo<HTMLDivElement>(() => fine(false, spuntata))
   const no = useRef<HTMLButtonElement>(null)
   // Dopo `useDialogo`, che mette il fuoco sul dialogo: si parte dalla risposta sicura.
@@ -196,7 +200,7 @@ export function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean, spuntata
             {d.no}
           </button>
           <button type="button" className={d.pericolo ? 'sg-btn sg-btn-rosso' : d.restare ? 'sg-btn sg-btn-linea' : 'sg-btn sg-btn-pieno'} onClick={() => fine(true, spuntata)}>
-            {d.si}
+            {d.spunta?.si?.(spuntata) ?? d.si}
           </button>
         </div>
       </div>

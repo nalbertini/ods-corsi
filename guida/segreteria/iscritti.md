@@ -382,9 +382,29 @@ modulo: **DATA**, **IMPORTO**, **COME HA PAGATO**, **A COSA SERVE** (la quota
 associativa, un corso, altro: si sceglie dai suggerimenti o si scrive) e una
 **NOTA** facoltativa («pagato direttamente in palestra»). La data non può
 essere dopo oggi. **REGISTRA IL PAGAMENTO** mostra prima un riepilogo da
-confermare («Sì, registra il pagamento»: «No, torna al modulo» lascia il modulo
-com'era), poi lo mette nello storico, sotto **SENZA RICEVUTA**, e lo conta in
-**PAGATO**. Come una ricevuta, non si cambia e non si cancella: se è sbagliato,
+confermare («No, torna al modulo» lascia il modulo com'era). Chi vede
+CONTABILITÀ ci legge anche dove entra l'incasso, per esempio «Entra in
+CONTABILITÀ: Cassa Contanti · Quota associativa»: il movimento si fa da sé,
+non va scritto.
+
+Nel riepilogo c'è la casella **Fai anche la ricevuta**, già spuntata:
+
+- **spuntata**, «Sì, fai la ricevuta» apre **FAI LA RICEVUTA** già compilata,
+  con una voce sola (A COSA SERVE, al prezzo dell'importo, già pagata con la
+  data e il modo del modulo). Tutto si cambia prima di farla. Il pagamento si
+  registra lì, nella ricevuta, una volta sola. Se la ricevuta non la fai (la
+  chiudi, o manca il codice fiscale), il pagamento **non è registrato**: si
+  torna al modulo coi dati ancora scritti, e la casella tolta: da lì lo
+  registri senza ricevuta o riprovi. Una quota associativa fatta così vale
+  fino alla fine della stagione, come quella del listino;
+- **tolta**, «Sì, registra senza ricevuta» lo mette nello storico, sotto
+  **SENZA RICEVUTA**, e lo conta in **PAGATO**. Per farne la ricevuta dopo, si
+  annulla il pagamento e si fa la ricevuta: se no si conta due volte.
+
+Se la persona ha già pagato con Satispay dal modulo di iscrizione, la casella
+non c'è: la ricevuta si fa con quei soldi, da **+ FAI LA RICEVUTA**.
+
+Come una ricevuta, non si cambia e non si cancella: se è sbagliato,
 **ANNULLA PAGAMENTO** (chiede conferma) e se ne registra un altro; l'annullato
 resta in elenco, barrato, e non si conta.
 

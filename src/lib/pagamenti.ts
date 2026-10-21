@@ -1,4 +1,7 @@
-import { conti, dataRicevuta, euro, METODI, QUOTA, type Ricevuta } from './ricevute'
+import { conti, dataRicevuta, euro, METODI, QUOTA, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { VALIDITA } from './costi'
+// Circolare (contabilita.ts legge le righe da qui): regge perché si usa solo dentro le funzioni.
+import { doveEntraInContabilita } from './contabilita'
 import { dataLunga } from './sala'
 import { paroleCercate, piano, somiglia } from './nomi'
 import { csv } from './vestiario'
@@ -116,17 +119,43 @@ export function cosaNonVaDiretto(d: DatiPagamentoDiretto, oggi?: string, chiusur
   return null
 }
 
-/** Le righe del riepilogo da confermare prima di scrivere un pagamento a mano. */
-export const riepilogoPagamentoDiretto = (d: DatiPagamentoDiretto, chi: string): string[] => [
+/**
+ * Le righe del riepilogo da confermare prima di scrivere un pagamento a mano. `contabilita`: chi vede CONTABILITÀ legge
+ * dove entra l'incasso. `ricevuta`: c'è la casella «Fai anche la ricevuta», la
+ * cui nota dice già cosa vuol dire restare senza.
+ */
+export const riepilogoPagamentoDiretto = (d: DatiPagamentoDiretto, chi: string, o: { contabilita?: boolean; ricevuta?: boolean } = {}): string[] => [
   `${euro(d.importo)} € · ${d.metodo.trim()}`,
   chi,
   dataLunga(d.data),
   d.voce.trim(),
   ...(d.nota?.trim() ? [d.nota.trim()] : []),
-  ...(d.metodo.trim().toLowerCase() === 'contanti' ? ['Va nella Cassa Contanti'] : []),
-  'Senza ricevuta: resta nello storico e si può annullare',
-  'Non riduce il residuo di nessuna ricevuta',
+  ...(o.contabilita ? [doveEntraInContabilita(d.metodo, d.voce)] : []),
+  ...(o.ricevuta ? [] : ['Senza ricevuta: resta nello storico e si può annullare', 'Non riduce il residuo di nessuna ricevuta']),
 ]
+
+/**
+ * La voce sola della ricevuta fatta da un pagamento a mano: già pagata, con la
+ * data e il modo del modulo. La quota ha le date della stagione, come quella
+ * del listino: senza «al» varrebbe per sempre (`pagamentoDi`). La nota va
+ * nelle note della ricevuta, non nella voce.
+ */
+export const voceDaPagamento = (d: DatiPagamentoDiretto): VoceRicevuta => ({
+  descrizione: d.voce.trim(),
+  quantita: 1,
+  prezzo: d.importo,
+  pagamenti: [{ data: d.data, importo: d.importo, metodo: d.metodo.trim() }],
+  ...(d.voce.trim().toUpperCase() === QUOTA ? VALIDITA.quota : {}),
+})
+
+/** La nota sotto la casella «Fai anche la ricevuta», che cambia con la spunta. */
+export const notaRicevutaDaPagamento = (spuntata: boolean) =>
+  spuntata
+    ? 'Si apre FAI LA RICEVUTA già compilata. Il pagamento si registra lì, una volta sola.'
+    : 'Resta SENZA RICEVUTA e non cambia se è in regola: una quota resta DA PAGARE. Per la ricevuta, dopo, si annulla il pagamento e la si fa.'
+
+/** Il tasto del sì: dice cosa succede con la spunta e senza. */
+export const tastoRicevutaDaPagamento = (spuntata: boolean) => (spuntata ? 'Sì, fai la ricevuta' : 'Sì, registra senza ricevuta')
 
 /** Il guaio è dell'importo? Se con un importo buono il rifiuto sparisce, sì: gli altri campi non si segnano a torto. */
 export const importoNonVa = (d: DatiPagamentoDiretto, oggi?: string, chiusure?: ReadonlyArray<{ data: string; annullataIl?: string | null }>) => cosaNonVaDiretto(d, oggi, chiusure) !== null && cosaNonVaDiretto({ ...d, importo: 100 }, oggi, chiusure) === null

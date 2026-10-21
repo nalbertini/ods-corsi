@@ -729,3 +729,31 @@ select atteso('i numeri del riepilogo: 2400 sicuri di 2400 persone, 300 da decid
 select atteso('gli esiti hanno gli stessi numeri e 3000 righe', (select count(*) filter (where e->>'esito' = 'sicuro') || '/' || count(*) filter (where e->>'esito' = 'omonimi') || '/' || count(*) filter (where e->>'esito' = 'nessuna') || ' di ' || count(*)
   from jsonb_array_elements(:'esiti_grandi'::jsonb) e), '2400/300/300 di 3000');
 rollback;
+
+\echo ''
+\echo '--- 20. l''apostrofo dopo una vocale in fondo alla parola vale accento (70-movimenti-persona.sql; le stesse coppie di scripts/prova-movimenti-persona.mjs, sezione 9) ---'
+-- Il vecchio programma scriveva «NICOLO'» per «Nicolò»: in fondo alla parola, dopo una vocale, l'apostrofo è un accento.
+select atteso('in mezzo alla parola l''apostrofo resta',
+  concat_ws(' | ', collegamento_token($$D'Amico$$), collegamento_token($$Dell'Acqua$$), collegamento_token($$Sant'Anna$$), collegamento_token(E'D’Angelo')),
+  $$d'amico | dell'acqua | sant'anna | d'angelo$$);
+select atteso('dopo una vocale ma in mezzo alla parola resta', collegamento_token($$O'Brien$$), $$o'brien$$);
+select atteso('dopo una consonante resta anche in fondo alla parola', collegamento_token($$Sant' Anna$$), $$anna sant'$$);
+select atteso('l''apostrofo in fondo dopo una vocale ha la stessa chiave dell''accento',
+  (select string_agg(collegamento_token(a) || ' = ' || collegamento_token(b), ' | ' order by n) from (values
+    (1, $$FEMIA NICOLO'$$, 'Femia Nicolò'), (2, $$BADALI' GABRIELE$$, 'Badalì Gabriele'), (3, $$DA VIA' ADELAIDE$$, 'Da Vià Adelaide'),
+    (4, $$MARCHIO' PAOLA$$, 'Marchiò Paola'), (5, $$MORANDO NICOLO'$$, 'Morando Nicoló')) v(n, a, b)),
+  'femia nicolo = femia nicolo | badali gabriele = badali gabriele | adelaide da via = adelaide da via | marchio paola = marchio paola | morando nicolo = morando nicolo');
+select atteso('…anche con ’ e `', collegamento_token(E'NICOLO’') || ' ' || collegamento_token('NICOLO`'), 'nicolo nicolo');
+insert into persone (id, nome, cognome, ruolo) values
+  (pid(30), 'Gabriele', 'Badalì', 'iscritto'), (pid(31), 'Alessio', 'Badali', 'iscritto'), (pid(32), 'Nicolò', 'Femia', 'iscritto');
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, origine_import) values
+  ('entrata', '2025-07-01', 3100, id_voce('Corsi e altri pagamenti', 'entrata'), id_cassa('Conto Corrente'), $$Cliente BADALI' GABRIELE per mensile$$, 'prima-nota:30'),
+  ('entrata', '2025-07-02', 3200, id_voce('Quota associativa', 'entrata'), id_cassa('Conto Corrente'), $$Cliente FEMIA NICOLO' per quota$$, 'prima-nota:31');
+select atteso('«Cliente BADALI'' GABRIELE per mensile»: sicuro, e l''unico candidato è Badalì Gabriele (non Badali Alessio)',
+  esito_di(30) || ' ' || coalesce(come(:ada, format($q$select string_agg(c.nome || ' ' || c.cognome, ', ') from candidati_persona_movimento(%L) c$q$, id_n(30))), 'nessuno'),
+  'sicuro Gabriele Badalì');
+-- Due istruzioni: `persona_di` nella stessa del collegamento leggerebbe i movimenti com'erano prima.
+select atteso('il blocco dei sicuri collega i due movimenti con l''apostrofo',
+  come_json(:ada, format($q$select collega_sicuri_persona(%L)::text$q$, lotto(30))), '{"restano": 0, "collegati": 2}');
+select atteso('il blocco dei sicuri collega «Cliente FEMIA NICOLO'' per quota» a Nicolò Femia, e Badalì a Gabriele',
+  coalesce(persona_di(31), '—') || ' / ' || coalesce(persona_di(30), '—'), 'Nicolò Femia / Gabriele Badalì');

@@ -61,7 +61,11 @@ export interface VoceStorico {
   cassa: string
 }
 
-/** Minuscolo, senza accenti, apostrofo dritto, spazi di ogni tipo uno solo: «José» e «JOSÈ» sono lo stesso nome. */
+/**
+ * Minuscolo, senza accenti, apostrofo dritto, spazi di ogni tipo uno solo: «José» e «JOSÈ» sono lo stesso nome. Il vecchio
+ * programma scrive l'accento come apostrofo («NICOLO'»): in fondo alla parola dopo una vocale si toglie; dopo una
+ * consonante («D'Amico», «Sant' Anna») è un'elisione e resta.
+ */
 export const normalizzaNome = (s: string): string =>
   s
     .normalize('NFD')
@@ -70,6 +74,7 @@ export const normalizzaNome = (s: string): string =>
     .toLowerCase()
     .replace(/[\s ​]+/g, ' ')
     .trim()
+    .replace(/([aeiou])'(?= |$)/g, '$1')
 
 /** Il nome della causale dell'import, «Cliente NOME per …»: la prima «per» lo chiude. Altre causali: nessun nome. */
 export function nomeDallaCausale(descrizione: string): string | null {

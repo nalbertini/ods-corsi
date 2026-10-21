@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.153.0 — 21 ottobre 2026
+
+### Novità
+
+- Registrando un pagamento l'app chiede se fare la ricevuta e dice dove entra in contabilità
+
+## 0.152.2 — 21 ottobre 2026
+
+### Risolto
+
+- Lo storico si collega anche ai nomi con l'accento scritto come apostrofo (NICOLO')
+
 ## 0.152.1 — 21 ottobre 2026
 
 ### Modificato
