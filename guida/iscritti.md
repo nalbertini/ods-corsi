@@ -71,9 +71,12 @@ cognome fanno famiglia, a gruppi di due o tre.
   testo il cursore va dove tocchi. Per un minore il documento non va portato:
   è quello del genitore, che la segreteria ha già.
 - **Quanto costa**, nel modulo, scelti corsi e formula: la quota
-  associativa, il corso, e lo **sconto famiglia** del listino (il 20%
-  sull'annuale che costa meno nel nucleo; a pari prezzo va sulla persona
-  nuova). Gli annuali già pagati si leggono dalle ricevute del nucleo. Sotto,
+  associativa, il corso, e le offerte del listino. Con più corsi annuali,
+  **più corsi**: i corsi insieme costano al massimo 660 €, la quota a parte.
+  Lo **sconto famiglia** è fra persone diverse: il 20% sull'annuale che costa
+  meno nel nucleo (chi ha più corsi conta come un annuale solo); a pari prezzo
+  va sulla persona nuova. Gli annuali già pagati si leggono dalle ricevute del
+  nucleo, solo quelli della stagione in corso. Sotto,
   l'IBAN e la **causale** col nome di chi si iscrive, da copiare, e Satispay.
   La ricevuta del bonifico si carica fra i file, o si paga in segreteria. È una stima:
   le altre offerte e l'importo giusto li conferma la segreteria.

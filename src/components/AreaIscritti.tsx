@@ -148,7 +148,7 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
 
   const aggiungi = async () => {
     const d = await dati.datiDelNucleo(personaId)
-    setModulo({ titolare: io.nome, dati: d, abbonamenti: abbonamentiDalleRicevute(ricevute, nomeDi) })
+    setModulo({ titolare: io.nome, dati: d, abbonamenti: abbonamentiDalleRicevute(ricevute, nomeDi, chiaveGiorno(new Date())) })
     suSubito()
   }
   const apri = (id: string) => {
@@ -533,7 +533,7 @@ function Nucleo({
   const valide = ricevute.filter((r) => !r.annullataIl)
   const pagatoDa = (id: string) => valide.filter((r) => r.personaId === id).reduce((s, r) => s + r.pagato, 0)
   const nomeDi = (id: string) => membri.find((p) => p.id === id)?.nome ?? ''
-  const annuali = abbonamentiDalleRicevute(ricevute, nomeDi)
+  const annuali = abbonamentiDalleRicevute(ricevute, nomeDi, oggi)
   const minimo = doveVaLoSconto([], annuali)
   const PAGA: Record<string, string> = { pagato: 'PAGATO', in_parte: 'IN PARTE', da_pagare: 'DA PAGARE', scaduto: 'DA RINNOVARE' }
   return (

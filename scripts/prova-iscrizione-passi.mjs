@@ -2239,8 +2239,9 @@ console.log('\n40. LA FAMIGLIA')
   ok('un corso senza prezzo: la riga sì', righe(carte([luca({ corsi: ['yoga'] })])[1]), [['STESSO CORSO', 'Yoga', 'venerdì 20.00-21.00', ['venerdì 20.00-21.00']]])
   // Ogni corso una riga, fino a tre; il risparmio è quello del primo.
   const due = carte([luca({ corsi: ['judo-adulti', 'pilates'] })])
-  // Lo sconto è quello di contoFamiglia: il 20% dell'annuale più basso, Pilates di Luca (300 €).
-  ok('due corsi di Luca: una riga per corso, il risparmio del primo', [righe(due[1]).map((r) => r[1]), due[1]?.risparmio], [['Judo adulti', 'Pilates'], 'Con Judo adulti annuale risparmiate 60 €'])
+  // Lo sconto è quello di contoFamiglia, fra persone: Luca con due corsi conta come un annuale (PIÙ CORSI),
+  // e il 20% va sul Judo adulti dell'altro adulto, che costa meno.
+  ok('due corsi di Luca: una riga per corso, il risparmio del primo', [righe(due[1]).map((r) => r[1]), due[1]?.risparmio], [['Judo adulti', 'Pilates'], 'Con Judo adulti annuale risparmiate 72 €'])
   const tre = carte([luca({ corsi: ['aikido-adulti'] })])
   ok('tre corsi per bambini alla stessa ora: tre righe, per nome', righe(tre[0]).map((r) => [r[0], r[1]]), [['STESSA ORA', 'Judo piccoli'], ['STESSA ORA', 'Lotta 3'], ['STESSA ORA', 'Psicomotricità']])
   ok('tre corsi: il risparmio del primo', tre[0]?.risparmio, 'Con Judo piccoli annuale risparmiate 50 €')
