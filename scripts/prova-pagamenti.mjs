@@ -502,7 +502,8 @@ console.log('\n19. Ricevute.tsx scrive solo dopo il sì del riepilogo, e non se 
   const lascia = isc.slice(isc.indexOf('onLasciaStare={() => {'), isc.indexOf('onFatta={() => {'))
   ok('ricevuta non fatta: il pagamento torna nel modulo', /setRiprendi\(daPagamento\)/.test(lascia), true)
   ok('…e non si registra niente', /registraPagamentoDiretto/.test(lascia), false)
-  ok('uscire dalla ricevuta aperta dal pagamento chiede prima', /useBozza\(!!daPagamento/.test(isc), true)
+  // Quando chiede lo dice `siPerdeUscendo` (sezione 27): qui, che la scheda la usi.
+  ok('uscire dalla ricevuta aperta dal pagamento chiede prima', /useBozza\(siPerdeUscendo\(daPagamento\)/.test(isc), true)
   // Il guaio sotto al modulo è lo stesso del database: oggi (a Roma) e le chiusure arrivano alla funzione.
   const riga = tsx.split('\n').find((l) => l.includes('cosaNonVaDiretto({')) ?? ''
   ok('il modulo passa oggi e le chiusure a cosaNonVaDiretto', [riga.includes('oggi'), riga.includes('chiusure')], [true, true])
@@ -707,6 +708,14 @@ console.log('\n26. in prova: FANNE LA RICEVUTA (emettiRicevuta con il pagamento 
   ok('annullare una ricevuta normale non tocca i pagamenti a mano', [await annulla(normale?.id), await stato(p3), await stato(p4)], ['fatto', `annullato · ${r3?.id}`, 'attivo'])
   ok('tornato attivo, se ne rifà la ricevuta con un\'altra chiave',
     typeof (await emetti(dati(28000, [pag('2026-10-10', 28000)], { chiave: 'dddddddd-0000-4000-8000-000000000028' }), p1))?.id, 'string')
+}
+
+console.log('\n27. uscire dalla ricevuta aperta da un pagamento chiede prima solo se si perde (siPerdeUscendo)')
+{
+  const d = { personaId: 'p-1', data: '2026-10-10', importo: 4000, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA' }
+  ok('da REGISTRA IL PAGAMENTO, non ancora scritto: chiede', m.siPerdeUscendo(d), true)
+  ok('da FANNE LA RICEVUTA, già registrato: non chiede', m.siPerdeUscendo({ ...d, pagamentoId: 'pd-1' }), false)
+  ok('nessun pagamento: non chiede', [m.siPerdeUscendo(null), m.siPerdeUscendo(undefined)], [false, false])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

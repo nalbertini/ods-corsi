@@ -292,7 +292,7 @@ function RigaDelloStorico({ riga, aMano, stato, onFanne, onAnnulla }: { riga: Ri
         </span>
         <span style={{ fontSize: 12, color: 'var(--dim)', overflowWrap: 'anywhere' }}>
           {[riga.voce, riga.nota].filter(Boolean).join(' · ')}
-          {aMano && <span className="num sg-tag" data-tipo={riga.annullato ? 'manca' : undefined} style={{ marginLeft: 8 }}>{stato ?? (riga.annullato ? 'Annullato' : 'Senza ricevuta')}</span>}
+          {aMano && <span className="num sg-tag" data-tipo={stato?.startsWith('Diventato') ? 'fatto' : riga.annullato ? 'manca' : undefined} style={{ marginLeft: 8 }}>{stato ?? (riga.annullato ? 'Annullato' : 'Senza ricevuta')}</span>}
         </span>
       </span>
       <span className="num" style={{ fontSize: 18, fontWeight: 700, whiteSpace: 'nowrap', textDecoration: barrato, color: riga.annullato ? 'var(--dim)' : 'var(--verde-testo)' }}>

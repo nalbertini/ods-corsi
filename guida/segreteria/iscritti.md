@@ -422,7 +422,8 @@ RICEVUTA** già compilata con quel pagamento: una voce sola, con la data e il
 modo del pagamento. Voci e prezzi si cambiano (per un acconto, il prezzo pieno
 e il pagato più basso), ma quei soldi entrano tali e quali: se cambi data,
 modo o importo del pagamento, l'app lo dice prima («Il pagamento a mano di …
-va nella ricevuta così com'è»). Altri soldi si aggiungono con un'altra voce.
+va nella ricevuta così com'è»). Altri soldi pagati adesso vanno in un'altra
+ricevuta: questa ha la data e il modo di quel pagamento.
 Fatta la ricevuta, il pagamento a mano si annulla da solo, nello stesso
 momento, e nello storico dice **Diventato ricevuta n. …**: i soldi contano una
 volta sola. Con un Satispay arrivato dal modulo il tasto non c'è: la ricevuta

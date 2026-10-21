@@ -128,6 +128,12 @@ export const datiDaPagamento = (x: PagamentoDiretto, chiaveRicevuta: string): Da
   pagamentoId: x.id,
 })
 
+/**
+ * Uscire dalla ricevuta aperta da un pagamento chiede prima solo se il pagamento non è ancora registrato (da REGISTRA
+ * IL PAGAMENTO): lì si perderebbe. Da FANNE LA RICEVUTA il pagamento c'è già, e resta SENZA RICEVUTA.
+ */
+export const siPerdeUscendo = (d: DatiPagamentoDiretto | null | undefined) => !!d && !d.pagamentoId
+
 /** Cosa dice lo storico di un pagamento a mano: attivo, finito in una ricevuta (quale), o annullato. */
 export function statoDiretto(x: PagamentoDiretto, ricevute: Ricevuta[]): string {
   if (!x.annullatoIl) return 'Senza ricevuta'
