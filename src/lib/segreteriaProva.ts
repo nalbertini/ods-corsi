@@ -1167,7 +1167,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const gia = chiave ? (a().ricevute ?? []).find((x) => x.chiave === chiave) : undefined
       if (gia && gia.personaId !== dati.personaId) throw new Error('Questa ricevuta è già stata fatta per un’altra persona: chiudi il modulo e riaprilo')
       if (gia?.annullataIl) throw new Error(`La ricevuta n. ${gia.numero}/${gia.anno} fatta da questo modulo è stata annullata: chiudi il modulo e riaprilo per farne un’altra`)
-      // Come `emetti_ricevuta_da_pagamento` (88): la chiave prima di «già annullato», poi i soldi tali e quali.
+      // Come `emetti_ricevuta_da_pagamento` (89): la chiave prima di «già annullato», poi i soldi tali e quali.
       if (pd) {
         if (gia && pd.ricevutaId === gia.id) return gia
         if (gia) throw new Error(`La ricevuta n. ${gia.numero}/${gia.anno} fatta da questo modulo non ha dentro questo pagamento a mano: chiudi il modulo e riaprilo`)
@@ -1219,7 +1219,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const r = (a().ricevute ?? []).find((x) => x.id === id)
       if (!r || r.annullataIl) throw new Error('Ricevuta inesistente o già annullata')
       a().ricevute = (a().ricevute ?? []).map((x) => (x.id === id ? { ...x, annullataIl: new Date().toISOString() } : x))
-      // Come `annulla_ricevuta` (88): il pagamento a mano che era diventato questa ricevuta torna com'era.
+      // Come `annulla_ricevuta` (89): il pagamento a mano che era diventato questa ricevuta torna com'era.
       a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((y) => {
         if (y.ricevutaId !== id) return y
         const { annullatoIl: _annullato, ricevutaId: _ricevuta, ...comEra } = y
