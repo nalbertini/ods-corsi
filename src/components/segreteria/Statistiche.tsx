@@ -313,7 +313,14 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
       )}
 
       {/* In fondo e fuori dal blocco delle lezioni: i numeri del sito non dipendono da quelli della palestra. */}
-      <StatisticheSito d={d} da={chiaveGiorno(da)} a={g} corso={!!corso} />
+      <StatisticheSito
+        d={d}
+        da={chiaveGiorno(da)}
+        a={g}
+        corso={!!corso}
+        titoli={titoli.dato ?? {}}
+        richieste={daDove.guaio ? { manca: daDove.guaio } : daDove.dato?.conti === null ? { manca: MANCA_PROVENIENZA } : daDove.dato?.conti ? { righe: daDove.dato.conti.righe } : undefined}
+      />
     </>
   )
 }

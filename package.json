@@ -117,6 +117,7 @@
     "prova:mcp": "node scripts/prova-mcp.mjs",
     "prova:frequenza": "node scripts/prova-frequenza.mjs",
     "prova:statistiche-sito": "node scripts/prova-statistiche-sito.mjs",
+    "prova:fila-sito": "node scripts/prova-fila-sito.mjs",
     "prova:ricevute-email": "node scripts/prova-ricevute-email.mjs",
     "prova:tariffe": "node scripts/prova-tariffe.mjs"
   },
