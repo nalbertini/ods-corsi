@@ -360,14 +360,16 @@ await sezione('6. la richiesta accolta porta il certificato sulla scheda', async
   const idTerzo = await r.accogli(terzo)
   ok('tolto prima di accogliere: la scheda non ha niente', [(await di(idTerzo)).certificato.conFile, await s.apriCertificato(idTerzo)], [false, null])
 
-  // Chi aveva già un certificato: quello nuovo prende il posto, la data non si tocca.
+  // Chi aveva già un certificato valido lo tiene, come nel database: quello arrivato col modulo
+  // (potrebbe essere sbagliato, o di un altro) resta fra i file della richiesta.
   const mario = await nuova('Mario', 'Verdi')
   await s.caricaCertificato(mario, png(), '2027-05-31')
   const quarto = await r.invia(adulto({ nome: 'Quarto', codiceFiscale: 'RSSQRT96A01L219R', email: 'quarto@esempio.it' }))
   await r.caricaFile(quarto, 'certificato', pdf())
   await r.accogli(quarto, mario)
   const cm = (await di(mario)).certificato
-  ok('il file nuovo prende il posto del vecchio, la data resta quella scritta dalla segreteria', [cm.conFile, cm.scade, (await s.apriCertificato(mario))?.pdf], [true, '2027-05-31', true])
+  ok('il certificato valido resta il suo, con la sua data', [cm.conFile, cm.scade, (await s.apriCertificato(mario))?.pdf], [true, '2027-05-31', false])
+  ok('e quello del modulo resta nella richiesta', (await r.file(quarto)).some((x) => x.tipo === 'certificato'), true)
 })
 
 await sezione('6b. accogliere porta anche la data, in un passo solo', async () => {
