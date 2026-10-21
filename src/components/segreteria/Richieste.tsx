@@ -4,7 +4,7 @@ import type { Ricercata } from '../../lib/ricerca'
 import { useState, type ReactNode } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
-import { accogliConCertificato, DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato, siElimina } from '../../lib/richieste'
+import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato, siElimina } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
 import { nomeConosciuto, nomeProvenienza } from '../../lib/provenienza'
 import { daRestituire, segnoRichiesta, type PagamentoSatispay } from '../../lib/satispay'
@@ -342,7 +342,7 @@ function Scheda({
     )
   }
   // La data del certificato la scrive la segreteria dal foglio: la richiesta non la porta, e viaggia con l'accoglimento.
-  const accoglila = (personaId?: string) => () => accogliConCertificato(r, d, x.id, personaId, certificato ? scadeCert : '')
+  const accoglila = (personaId?: string) => () => r.accogli(x.id, personaId, certificato ? scadeCert : undefined)
 
   // Solo da accolta: così la scheda dell'iscritto segna che la copia è in segreteria.
   const stampato = async (personaId: string) => {
@@ -459,7 +459,7 @@ function Scheda({
                 </Campo>
               </div>
               <span className="sg-sotto">
-                La data la scrivi tu, leggendo il foglio. Accogliendo, il file resta nella scheda dell’iscritto, in «Certificato medico»: non va stampato né cancellato.
+                La data la scrivi tu, leggendo il foglio. Accogliendo, il file passa alla scheda dell’iscritto, in «Certificato medico», se scade dopo quello che ha già: non va stampato né cancellato.
               </span>
               <div className="row">
                 <button

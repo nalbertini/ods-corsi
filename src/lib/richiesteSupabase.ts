@@ -2,6 +2,7 @@ import { FunctionsHttpError, type SupabaseClient } from '@supabase/supabase-js'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
 import { ACCOLTA_RESTA, ESTENSIONI, MASSIMO_FILE, siElimina } from './richieste'
 import { tutteLeRighe } from './tutteLeRighe'
+import { cosaNonVaScadenza } from './segreteria'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { ERRORE_SATISPAY, SATISPAY_SPENTO, type StatoSatispay } from './satispay'
 
@@ -271,10 +272,11 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       if ((data ?? []).length < suoi.length) throw new Error('Il file non si è cancellato: serve un accesso da segreteria')
     },
 
-    async accogli(richiestaId, personaId) {
-      // `persona` solo quando la sceglie la segreteria: finché `06-iscrizioni.sql`
-      // non è rilanciato la funzione ha un argomento solo, e così accoglie lo stesso.
-      return ok(await db.rpc('accogli_iscrizione', personaId ? { richiesta: richiestaId, persona: personaId } : { richiesta: richiestaId })) as string
+    async accogli(richiestaId, personaId, scade) {
+      const guasto = scade ? cosaNonVaScadenza(scade) : null
+      if (guasto) throw new Error(guasto)
+      // `persona` e `scade` solo quando ci sono: il database usa i suoi valori di partenza.
+      return ok(await db.rpc('accogli_iscrizione', { richiesta: richiestaId, ...(personaId && { persona: personaId }), ...(scade && { scade }) })) as string
     },
 
     async rifiuta(richiestaId) {

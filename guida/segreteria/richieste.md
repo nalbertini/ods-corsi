@@ -81,12 +81,13 @@ chi si è iscritto lo rimanda (o lo porta in segreteria). Accogliendo, il file
 passa alla scheda dell'iscritto, in **CERTIFICATO MEDICO**, con la data
 scritta qui; non va stampato né cancellato. Se il file c'è e la data no, sotto
 **PRIMA DI ACCOGLIERE** c'è «Manca la data del certificato» e il tasto è
-**Accogli lo stesso**: la data si scrive poi dalla scheda. Se la data scritta
-qui non si salva, l'app dice che la richiesta è accolta e che la data va
-scritta dalla scheda. Se la scheda aveva già un certificato scaduto, quello
-nuovo prende il posto del vecchio; se ne aveva uno ancora valido, il file della
-richiesta non lo sostituisce e resta qui, per guardarlo (vedi
-[Iscritti](iscritti.md)). Il modulo è
+**Accogli lo stesso**: la data si scrive poi dalla scheda. File e data
+passano insieme all'accoglimento: una data sbagliata (più di tre anni avanti)
+lo ferma prima. Se la scheda aveva già un certificato ancora valido, vince
+quello che scade dopo: se il nuovo scade dopo, file e data nuovi prendono il
+posto dei vecchi; se no la scheda resta com'era e il file della richiesta resta
+qui, per guardarlo (vedi [Iscritti](iscritti.md)). Senza data, un certificato
+valido sulla scheda resta quello. Il modulo è
 la foto del foglio firmato a mano, oppure il PDF firmato dal telefono: il
 foglio della palestra compilato in blu, con la firma e, in fondo, la data e
 l'ora in cui è stato firmato. Se ne manca uno

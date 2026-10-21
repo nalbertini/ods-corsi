@@ -274,9 +274,10 @@ select atteso('iscritto al Judo da oggi',
 select atteso('la richiesta dice chi e quando',
   (select stato || ' da ' || (select nome from persone where id = gestita_da) || ' · legata: ' || (persona_id is not null) from richieste_iscrizione where nome = 'Luca'), 'accolta da Anna · legata: true');
 select atteso('una seconda volta no', tenta(format($$select accogli_iscrizione('%s')::text$$, (select id from la_richiesta))), 'NEGATO: Questa richiesta è già stata accolta');
-select atteso('Giulia accolta, due corsi', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Giulia')) is not null)::text$$), 'true');
-select atteso('anche il suo certificato passa alla scheda, come jpg',
-  (select (certificato_file ~ ('^' || persona_id || '/certificato-[0-9]+\.jpg$'))::text from schede_iscritti where persona_id = (select id from persone where nome = 'Giulia')), 'true');
+select atteso('Giulia accolta, due corsi, con la data del certificato letta dalla segreteria',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Giulia'), null, current_date + 300) is not null)::text$$), 'true');
+select atteso('anche il suo certificato passa alla scheda, come jpg, con la data',
+  (select (certificato_file ~ ('^' || persona_id || '/certificato-[0-9]+\.jpg$'))::text || ' ' || (certificato_scade = current_date + 300) from schede_iscritti where persona_id = (select id from persone where nome = 'Giulia')), 'true true');
 select atteso('dalle richieste i certificati sono usciti', (select count(*)::text from storage.objects where bucket_id = 'iscrizioni' and name ~ '/certificato\.'), '0');
 select atteso('e non c''è niente da stampare', (select cardinality(richieste_con_documento())::text), '0');
 select atteso('Marco, stessa email: entra senza', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Marco')) is not null)::text$$), 'true');
@@ -347,36 +348,85 @@ reset role;
 -- Con la richiesta della mamma è arrivato un certificato nuovo, un PDF.
 insert into storage.objects (bucket_id, name) select 'iscrizioni', id || '/certificato.pdf' from richieste_iscrizione where email = 'elisa@esempio.it';
 set role authenticated;
-select atteso('Mario sulla scheda scelta', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'elisa@esempio.it'), 'aaaaaaaa-0000-0000-0000-000000000004') = 'aaaaaaaa-0000-0000-0000-000000000004')::text$$), 'true');
+-- La segreteria legge sul foglio la stessa scadenza: non è più lontana, resta quello che c'era.
+select atteso('Mario sulla scheda scelta', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'elisa@esempio.it'), 'aaaaaaaa-0000-0000-0000-000000000004', current_date + 365) = 'aaaaaaaa-0000-0000-0000-000000000004')::text$$), 'true');
 select atteso('un Mario solo, con la sua email e ora il telefono', (select count(*) || ' ' || max(email::text) || ' ' || max(telefono) from persone where cognome = 'Verdi'), '1 mario@esempio.it 347 999 0000');
 select atteso('iscritto al Judo', (select count(*)::text from iscrizioni where persona_id = 'aaaaaaaa-0000-0000-0000-000000000004'), '1');
--- Il suo certificato è ancora valido: il file arrivato col modulo non lo sostituisce (potrebbe essere di
--- chiunque, anche sbagliato) e resta fra i file della richiesta, per la segreteria.
+-- Il suo certificato è ancora valido e quello nuovo non scade dopo: il file arrivato col modulo non lo
+-- sostituisce e resta fra i file della richiesta, per la segreteria.
 select atteso('il certificato valido resta quello che era: il suo png',
   (select certificato_file from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000004'), 'aaaaaaaa-0000-0000-0000-000000000004/certificato-1.png');
 select atteso('nella sua cartella c''è ancora solo il vecchio',
   (select string_agg(name, ', ') from storage.objects where bucket_id = 'certificati' and name like 'aaaaaaaa-0000-0000-0000-000000000004/%'), 'aaaaaaaa-0000-0000-0000-000000000004/certificato-1.png');
 select atteso('il file della richiesta resta dov''era, per la segreteria',
   (select count(*)::text from storage.objects where bucket_id = 'iscrizioni' and name = (select id from richieste_iscrizione where email = 'elisa@esempio.it') || '/certificato.pdf'), '1');
-select atteso('la scheda è una sola e la data è quella scritta dalla segreteria',
+select atteso('la scheda è una sola e la data è quella di prima',
   (select count(*) || ' ' || (min(certificato_scade) = current_date + 365) from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000004'), '1 true');
--- Paolo aveva un certificato scaduto: quello arrivato col modulo lo sostituisce, e la data resta.
+-- Paolo aveva un certificato scaduto: quello arrivato col modulo lo sostituisce, con la data scritta dalla segreteria.
 reset role;
 insert into storage.objects (bucket_id, name) values ('certificati', 'aaaaaaaa-0000-0000-0000-000000000005/certificato-1.pdf');
 insert into schede_iscritti (persona_id, certificato_scade, certificato_file) values
   ('aaaaaaaa-0000-0000-0000-000000000005', current_date - 10, 'aaaaaaaa-0000-0000-0000-000000000005/certificato-1.pdf');
 insert into storage.objects (bucket_id, name) select 'iscrizioni', id || '/certificato.png' from richieste_iscrizione where email = 'casa.neri@esempio.it';
 set role authenticated;
-select atteso('Paolo ritrovato dal telefono', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'casa.neri@esempio.it')) = 'aaaaaaaa-0000-0000-0000-000000000005')::text$$), 'true');
+select atteso('Paolo ritrovato dal telefono', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'casa.neri@esempio.it'), null, current_date + 300) = 'aaaaaaaa-0000-0000-0000-000000000005')::text$$), 'true');
 select atteso('una scheda che non c''è non si sceglie', tenta($$select accogli_iscrizione((select id from richieste_iscrizione where email = 'altro.paolo@esempio.it'), gen_random_uuid())::text$$), 'NEGATO: Questa scheda non c''è più');
 select atteso('l''altro Paolo è un''altra persona', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'altro.paolo@esempio.it')) <> 'aaaaaaaa-0000-0000-0000-000000000005')::text$$), 'true');
 select atteso('due Paolo Neri', (select count(*)::text from persone where cognome = 'Neri'), '2');
 select atteso('il certificato di Paolo era scaduto: quello nuovo ha preso il posto, un png',
   (select (certificato_file ~ '^aaaaaaaa-0000-0000-0000-000000000005/certificato-[0-9]+\.png$')::text from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000005'), 'true');
-select atteso('e la data scaduta resta, la riscrive la segreteria',
-  (select (certificato_scade = current_date - 10)::text from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000005'), 'true');
+select atteso('e la data è quella nuova',
+  (select (certificato_scade = current_date + 300)::text from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000005'), 'true');
 select atteso('nella sua cartella ce n''è uno solo',
   (select count(*)::text from storage.objects where bucket_id = 'certificati' and name like 'aaaaaaaa-0000-0000-0000-000000000005/%'), '1');
+reset role;
+
+-- Nino ha un certificato valido ancora tre mesi; Rita ha solo una data, senza file.
+-- Tutti e due mandano un certificato nuovo col modulo.
+insert into persone (id, nome, cognome, ruolo, email) values
+  ('aaaaaaaa-0000-0000-0000-000000000020', 'Nino', 'Gallo', 'iscritto', 'nino@esempio.it'),
+  ('aaaaaaaa-0000-0000-0000-000000000021', 'Rita', 'Gallo', 'iscritto', 'rita@esempio.it'),
+  ('aaaaaaaa-0000-0000-0000-000000000022', 'Gino', 'Gallo', 'iscritto', 'gino@esempio.it');
+insert into storage.objects (bucket_id, name) values ('certificati', 'aaaaaaaa-0000-0000-0000-000000000020/certificato-1.pdf'), ('certificati', 'aaaaaaaa-0000-0000-0000-000000000022/certificato-1.pdf');
+insert into schede_iscritti (persona_id, certificato_scade, certificato_file) values
+  ('aaaaaaaa-0000-0000-0000-000000000020', current_date + 90, 'aaaaaaaa-0000-0000-0000-000000000020/certificato-1.pdf'),
+  ('aaaaaaaa-0000-0000-0000-000000000022', current_date + 90, 'aaaaaaaa-0000-0000-0000-000000000022/certificato-1.pdf'),
+  ('aaaaaaaa-0000-0000-0000-000000000021', current_date + 500, null);
+set role anon;
+select atteso('Nino manda la richiesta', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Nino', 'cognome', 'Gallo', 'codice_fiscale', cf_prova('GLLNNI', (current_date - interval '30 years')::date), 'email', 'nino@esempio.it', 'telefono', '347 222 0020'))) is not null)::text$$), 'true');
+select atteso('Rita manda la richiesta', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Rita', 'cognome', 'Gallo', 'codice_fiscale', cf_prova('GLLRTI', (current_date - interval '30 years')::date, true), 'email', 'rita@esempio.it', 'telefono', '347 222 0021'))) is not null)::text$$), 'true');
+select atteso('Gino manda la richiesta', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Gino', 'cognome', 'Gallo', 'codice_fiscale', cf_prova('GLLGNI', (current_date - interval '30 years')::date), 'email', 'gino@esempio.it', 'telefono', '347 222 0022'))) is not null)::text$$), 'true');
+reset role;
+insert into storage.objects (bucket_id, name) select 'iscrizioni', id || '/certificato.jpg' from richieste_iscrizione where email in ('nino@esempio.it', 'rita@esempio.it', 'gino@esempio.it');
+set role authenticated;
+-- Più di tre anni avanti è quasi sempre l'anno sbagliato: non si accoglie, e la richiesta resta da fare.
+select atteso('una data troppo lontana non accoglie',
+  tenta($$select accogli_iscrizione((select id from richieste_iscrizione where email = 'nino@esempio.it'), 'aaaaaaaa-0000-0000-0000-000000000020', current_date + 4 * 365)::text$$), 'NEGATO: La data è troppo lontana: controlla l''anno.');
+select atteso('e la richiesta di Nino è ancora nuova', (select stato::text from richieste_iscrizione where email = 'nino@esempio.it'), 'nuova');
+-- Il certificato di Nino scade fra tre mesi, quello nuovo fra dieci: vince il nuovo, file e data insieme.
+select atteso('Nino accolto con la data del certificato nuovo',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'nino@esempio.it'), 'aaaaaaaa-0000-0000-0000-000000000020', current_date + 300) = 'aaaaaaaa-0000-0000-0000-000000000020')::text$$), 'true');
+select atteso('la scheda di Nino ha il file nuovo e la data nuova',
+  (select (certificato_file ~ '^aaaaaaaa-0000-0000-0000-000000000020/certificato-[0-9]+\.jpg$')::text || ' ' || (certificato_scade = current_date + 300) from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000020'), 'true true');
+select atteso('il vecchio file di Nino non c''è più: nella cartella ce n''è uno',
+  (select count(*) || ' ' || bool_and(name <> 'aaaaaaaa-0000-0000-0000-000000000020/certificato-1.pdf') from storage.objects where bucket_id = 'certificati' and name like 'aaaaaaaa-0000-0000-0000-000000000020/%'), '1 true');
+select atteso('e non è più fra i file della richiesta',
+  (select count(*)::text from storage.objects where bucket_id = 'iscrizioni' and name = (select id from richieste_iscrizione where email = 'nino@esempio.it') || '/certificato.jpg'), '0');
+-- Rita ha una data ma nessun file: non è un certificato valido, e quello nuovo lo prende, anche con una data più vicina.
+select atteso('Rita accolta',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'rita@esempio.it'), 'aaaaaaaa-0000-0000-0000-000000000021', current_date + 200) = 'aaaaaaaa-0000-0000-0000-000000000021')::text$$), 'true');
+select atteso('la scheda di Rita ha il file e la data nuovi',
+  (select (certificato_file ~ '^aaaaaaaa-0000-0000-0000-000000000021/certificato-[0-9]+\.jpg$')::text || ' ' || (certificato_scade = current_date + 200) from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000021'), 'true true');
+-- Senza la data non si sa quale scade dopo: il certificato valido di Gino resta il suo.
+select atteso('Gino accolto senza data',
+  tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'gino@esempio.it'), 'aaaaaaaa-0000-0000-0000-000000000022') = 'aaaaaaaa-0000-0000-0000-000000000022')::text$$), 'true');
+select atteso('la scheda di Gino è com''era',
+  (select certificato_file || ' ' || (certificato_scade = current_date + 90) from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000022'), 'aaaaaaaa-0000-0000-0000-000000000022/certificato-1.pdf true');
+select atteso('e il file nuovo resta fra quelli della richiesta',
+  (select count(*)::text from storage.objects where bucket_id = 'iscrizioni' and name = (select id from richieste_iscrizione where email = 'gino@esempio.it') || '/certificato.jpg'), '1');
 reset role;
 
 -- Una richiesta con nome e cognome di un istruttore: la ricerca di «chi è già in elenco» guarda solo gli iscritti.
