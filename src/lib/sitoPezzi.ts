@@ -17,6 +17,8 @@ export type Pezzo =
   | { type: 'colonne'; props: { id: string; colonne: Array<{ html: string }> } }
   // L'invito in fondo alla pagina (`invito` di sitoGenera.ts): titolo e frase vuoti sono quelli di sempre.
   | { type: 'iscriviti'; props: { id: string } & ParteIscriviti }
+  // Un tecnico della pagina degli istruttori: `src` vuoto = senza foto, `pagina` = lo slug della sua scheda ('' = nessuna), `corsi` con le virgole.
+  | { type: 'istruttore'; props: { id: string; nome: string; cognome: string; corsi: string; src: string; alt: string; pagina: string } }
 
 /** Quel che la segreteria cambia dell'invito: il resto (indirizzo, numero, pulsanti, passi) è del sito. */
 export type ParteIscriviti = { titolo: string; frase: string }
@@ -32,12 +34,42 @@ export const MASSIMO_CARATTERI = 400000
 
 /** Il nome di una parte nell'ELENCO, con le parole della segreteria. */
 export const nomeParte = (p: Pezzo): string =>
-  p.type === 'fotoInCima' ? 'Foto in cima' : p.type === 'testo' ? 'Testo' : p.type === 'foto' ? 'Foto' : p.type === 'iscriviti' ? 'Iscriviti' : p.props.colonne.length === 2 ? 'Due colonne' : 'Tre colonne'
+  p.type === 'fotoInCima' ? 'Foto in cima' : p.type === 'testo' ? 'Testo' : p.type === 'foto' ? 'Foto' : p.type === 'iscriviti' ? 'Iscriviti' : p.type === 'istruttore' ? 'Istruttore' : p.props.colonne.length === 2 ? 'Due colonne' : 'Tre colonne'
 
 /** Cosa dice il pannello delle impostazioni finché nessuna parte è scelta. */
 export const FRASE_NESSUNA_PARTE = 'Tocca una parte della pagina per cambiarne le impostazioni.'
 
 export const pezziVuoti = (): PezziPagina => ({ content: [] })
+
+/** L'unica pagina dove si mette la parte ISTRUTTORE: le sue parti diventano le tessere (`elencoIstruttori` di sitoIstruttori.ts). */
+export const PAGINA_ISTRUTTORI = 'istruttori'
+
+/** La parte ISTRUTTORE si mette solo nella pagina degli istruttori: altrove non diventa tessera e confonde. */
+export const parteAmmessa = (tipo: string, slug: string): boolean => tipo !== 'istruttore' || slug === PAGINA_ISTRUTTORI
+
+/** Le pagine fra cui scegliere quella di un istruttore: non la Home (è «/»), non Istruttori stessa, non quelle di legge. */
+export const pagineIstruttore = <P extends { slug: string; diLegge: boolean }>(pagine: ReadonlyArray<P>): P[] => pagine.filter((p) => !p.diLegge && p.slug !== 'home' && p.slug !== PAGINA_ISTRUTTORI)
+
+/** I corsi di un istruttore, dal testo con le virgole: gli stessi nell'editor e sul sito. */
+export const corsiDa = (testo: string): string[] => testo.split(',').map((c) => c.trim()).filter(Boolean)
+
+/**
+ * Sul sito le tessere sono gli istruttori di fila dall'inizio del testo: una parte prima di uno di loro (testo, foto, colonne)
+ * chiude la griglia lì, e chi viene dopo esce come testo. ISCRIVITI no: il sito la toglie dal testo prima di guardarlo.
+ */
+export function avvisoIstruttori(pezzi: ConTipo, indice: number): string | null {
+  const p = pezzi[indice]
+  if (!p || p.type === 'istruttore' || p.type === 'iscriviti') return null
+  return pezzi.slice(indice + 1).some((x) => x.type === 'istruttore') ? 'Gli istruttori dopo questa parte non sono in tessere: spostala sotto l’ultimo istruttore.' : null
+}
+
+/** Cosa dire sotto la pagina scelta per un istruttore: il nome è un link solo verso una pagina pubblicata (`nomeELink`). */
+export function notaPaginaIstruttore(slug: string, pagine: ReadonlyArray<{ slug: string; pubblicato: string | null; nascosta: boolean }>): string | null {
+  if (slug === '') return null
+  const p = pagine.find((x) => x.slug === slug)
+  if (!p) return 'Questa pagina non c’è più: scegline un’altra.'
+  return p.pubblicato === null || p.nascosta ? 'Non è pubblicata: il nome sarà un link quando la pubblichi.' : null
+}
 
 /** Basta il tipo: i dati di Puck danno `type: string`, e queste regole non leggono altro. */
 type ConTipo = ReadonlyArray<{ type: string }>
@@ -85,6 +117,9 @@ function pezzoValido(x: unknown): x is Pezzo {
       return stringa(p.src) && p.src !== '' && stringa(p.alt)
     case 'iscriviti':
       return stringa(p.titolo) && stringa(p.frase)
+    case 'istruttore':
+      // `pagina` finisce in un href: solo un indirizzo del sito (`/slug/`), mai un altro dominio.
+      return stringa(p.nome) && p.nome.trim() !== '' && [p.cognome, p.corsi, p.src, p.alt].every(stringa) && stringa(p.pagina) && /^[a-z0-9-]*$/.test(p.pagina)
     case 'colonne':
       return Array.isArray(p.colonne) && p.colonne.length >= 2 && p.colonne.length <= 3 && p.colonne.every((c) => oggetto(c) && stringa(c.html))
     default:
@@ -164,6 +199,15 @@ function inHtml(p: Pezzo): string {
       if (piene.length < 2) return piene[0]?.html ?? ''
       return `<div class="colonne c-${piene.length}">${piene.map((c) => `<div class="colonna">${c.html}</div>`).join('')}</div>`
     }
+    case 'istruttore': {
+      // La forma che legge `elencoIstruttori`: h3 col nome, la foto, «Cognome · corso, corso». Il «·» c'è sempre coi corsi,
+      // se no un corso solo senza cognome sarebbe letto come cognome.
+      const { nome, cognome, corsi, src, alt, pagina } = p.props
+      const elenco = corsiDa(corsi).join(', ')
+      const riga = elenco ? `${cognome.trim()} · ${elenco}`.trim() : cognome.trim()
+      const n = esc(nome.trim())
+      return `<h3>${pagina ? `<a href="/${esc(pagina)}/">${n}</a>` : n}</h3>${src ? `<img src="${esc(src)}" alt="${esc(alt)}">` : ''}${riga ? `<p>${esc(riga)}</p>` : ''}`
+    }
     case 'iscriviti':
       return `<div class="iscriviti">${p.props.titolo ? `<h2>${esc(p.props.titolo)}</h2>` : ''}${p.props.frase ? `<p>${esc(p.props.frase)}</p>` : ''}</div>`
   }
@@ -184,6 +228,7 @@ export function cosaNonVaPezzi(x: unknown): string | null {
     if (iscriviti.length > 1 || (iscriviti.length === 1 && x.content[x.content.length - 1] !== iscriviti[0])) return 'La parte Iscriviti è una sola e sta in fondo alla pagina'
     const foto = parti.filter((p) => (p.type === 'foto' || p.type === 'fotoInCima') && oggetto(p.props))
     if (foto.some((p) => !stringa((p.props as Record<string, unknown>).src) || (p.props as Record<string, unknown>).src === '')) return 'Ogni foto ha bisogno della sua immagine: scegline una o togli la foto'
+    if (parti.some((p) => p.type === 'istruttore' && oggetto(p.props) && (!stringa(p.props.nome) || p.props.nome.trim() === ''))) return 'Ogni istruttore ha bisogno del nome: scrivilo o togli la parte'
     const colonne = parti.filter((p) => p.type === 'colonne' && oggetto(p.props) && Array.isArray((p.props as Record<string, unknown>).colonne))
     if (colonne.some((p) => { const n = ((p.props as Record<string, unknown>).colonne as unknown[]).length; return n < 2 || n > 3 })) return 'Le colonne sono due o tre'
     if (JSON.stringify(x).length > MASSIMO_CARATTERI) return 'La pagina è troppo lunga: togli qualcosa'

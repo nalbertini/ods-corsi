@@ -8,11 +8,13 @@
 //  1. Un testo senza `h2` che comincia con un `h3` è una griglia di ritratti:
 //     ogni `h3` (il nome) con la foto, se c'è, e il paragrafo che lo segue (il ruolo).
 //     Quel che viene dopo l'ultimo ritratto resta testo, sotto la griglia.
-//  2. L'ordine è fisso per i primi otto (Maurizio, Maura, Diana, Fabio, Tiziano, Valerio, Manuel, Federico), poi gli altri
-//     come scritti. I colori vanno a diagonali: nessun vicino, in riga o in colonna, ha lo stesso colore.
+//  2. Le tessere seguono l'ordine scritto: nell'editor a pezzi un istruttore è una parte (ISTRUTTORE) e l'ordine
+//     delle parti è l'ordine delle tessere. I colori vanno a diagonali, sulla posizione: nessun vicino, in riga o in
+//     colonna, ha lo stesso colore.
 //  3. Senza foto il cerchio porta l’iniziale; col link nel nome la tessera è tutta cliccabile.
 //  4. La testata delle pagine senza collage: titolo a sinistra, descrizione e pulsante a destra.
 //  5. Le misure del design, a 1440px e a telefono, lette dal CSS.
+//  11. Le parti ISTRUTTORE (`pezziInHtml` di src/lib/sitoPezzi.ts) diventano le tessere: ordine, link, alt, testo.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 
@@ -27,6 +29,14 @@ const { outputFiles } = await build({
   banner: { js: "import { createRequire as __cr } from 'node:module'; const require = __cr(process.cwd() + '/');" },
 })
 const g = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+const z = await (async () => {
+  const { outputFiles: f } = await build({
+    entryPoints: ['src/lib/sitoPezzi.ts'], bundle: true, format: 'esm', platform: 'node', write: false, logLevel: 'silent',
+    define: { 'import.meta.env': '{}' },
+    banner: { js: "import { createRequire as __cr } from 'node:module'; const require = __cr(process.cwd() + '/');" },
+  })
+  return import('data:text/javascript;base64,' + Buffer.from(f[0].text).toString('base64'))
+})()
 // Ogni link al modulo porta l'etichetta della sua pagina (`?da=home`…, provata in prova-sito-genera.mjs): qui si guarda
 // l'impaginazione, che non cambia, e la si confronta senza l'etichetta con quella di prima.
 const senzaDa = (r) => (r && typeof r === 'object' ? Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'string' ? v.replace(/(\?|&amp;|&)da=[a-z0-9-]+/g, '') : v])) : r)
@@ -69,7 +79,7 @@ console.log('\n1. Un testo che comincia con un h3 è l’elenco dei tecnici')
   ok('con la foto: la foto è quadrata in cima, dentro «ritratto-foto»', /^<span class="ritratto-foto"><img [^>]*alt="Maurizio"[^>]*><\/span>/.test(r[0].html), true)
   ok('nome e cognome sono nel titolo, il cognome in un suo span', /<h3><span class="nome">Maurizio<\/span> <span class="cognome">Cognome0<\/span><\/h3>/.test(r[0].html), true)
   ok('i corsi sono pastiglie, una per corso, nell’ordine scritto, senza la frase', [conta(r[0].html, /<span class="pillola">/g), /<span class="pillola">Judo<\/span><span class="pillola">Pesi<\/span>/.test(r[0].html), /·/.test(r[0].html)], [2, true, false])
-  ok('senza foto: fascia con l’iniziale, che non si legge', r[1].html.startsWith('<span class="ritratto-foto" aria-hidden="true">M</span>'), true)
+  ok('senza foto: fascia con l’iniziale, che non si legge', r[1].html.startsWith('<span class="ritratto-foto" aria-hidden="true">D</span>'), true)
   ok('il paragrafo dopo l’ultimo tecnico è testo sotto la griglia, non un tecnico', [/<\/section><div class="testo"><p>Ogni istruttore ha la sua pagina\.<\/p><\/div>/.test(main(h)), conta(r[12].html, /Ogni istruttore/g)], [true, 0])
   ok('senza paragrafo di chiusura, niente testo', /<div class="testo">/.test(main(pagina(tredici))), false)
   ok('un nome senza cognome: solo il nome, nessun «·» e nessuno span vuoto', (() => { const t = tessere(pagina('<h3>A</h3><h3>B</h3><p>Rossi · Judo</p>')); return [/class="cognome"/.test(t[0].html), /class="cognome"/.test(t[1].html)] })(), [false, true])
@@ -79,11 +89,11 @@ console.log('\n1. Un testo che comincia con un h3 è l’elenco dei tecnici')
   ok('la foto con «alt» scritto dalla segreteria lo tiene', /alt="Diana in tuta"/.test(main(pagina(`<h3>Diana</h3><img src="${P}d.jpg" alt="Diana in tuta"><p>Cognome1 · Judo</p><h3>B</h3><p>x</p>`))), true)
 }
 
-console.log('\n2. L’ordine è fisso e i colori vanno a diagonali')
+console.log('\n2. Le tessere seguono l’ordine scritto e i colori vanno a diagonali')
 {
   const nomi = (h) => tessere(h).map((x) => x.html.match(/class="nome">([^<]*)</)?.[1])
-  ok('prima gli otto in ordine, poi gli altri come scritti', nomi(pagina(tredici)), ['Maurizio', 'Maura', 'Diana', 'Fabio', 'Tiziano', 'Valerio', 'Manuel', 'Federico', 'Katia', 'Serena', 'Giulia', 'Elena', 'Aldo'])
-  ok('maiuscole e link nel nome non contano', nomi(pagina('<h3>x</h3><h3>MAURA</h3><h3><a href="/m/">maurizio</a></h3>')), ['maurizio', 'MAURA', 'x'])
+  ok('13 tessere nell’ordine scritto', nomi(pagina(tredici)), NOMI)
+  ok('nessun nome passa davanti', nomi(pagina('<h3>x</h3><h3>MAURA</h3><h3><a href="/m/">maurizio</a></h3>')), ['x', 'MAURA', 'maurizio'])
   const colori = tessere(pagina(tredici)).map((x) => x.colore)
   ok('colori a diagonali (riga + colonna) su quattro colonne', colori, ['giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo'])
   ok('nessun vicino in riga o in colonna ha lo stesso colore', colori.every((c, i) => (i % 4 === 3 || c !== colori[i + 1]) && (i + 4 >= colori.length || c !== colori[i + 4])), true)
@@ -167,6 +177,27 @@ console.log('\n10. La scheda scarna di un istruttore (nome, foto o iniziale, cor
   ok('non è una scheda: la Home e Chi siamo', [/<div class="scheda-ritratto/.test(scheda('<ul><li><strong>Corsi</strong> Aikido</li></ul>', [], true, 'home')), /<div class="scheda-ritratto/.test(scheda('<ul><li><strong>Corsi</strong> Aikido</li></ul>', [], true, 'chi-siamo'))], [false, false])
   const completa = `<img src="${P}m.jpg" alt="Maurizio Innella — Maestro"><blockquote><p>Frase</p><p><em>Maurizio</em></p></blockquote><ul><li><strong>Ruolo</strong> Maestro</li><li><strong>Corsi</strong> Judo</li></ul><h2>Il percorso</h2><p>x</p>`
   ok('la scheda completa (foto, citazione) resta quella di sempre', [/<div class="scheda-ritratto/.test(scheda(completa)), /class="ritratto"><figure class="tessera foto"/.test(main(scheda(completa)))], [false, true])
+}
+
+console.log('\n11. Le parti ISTRUTTORE diventano le tessere')
+{
+  const IS = (id, nome, { cognome = '', corsi = '', src = '', alt = '', pagina = '' } = {}) => ({ type: 'istruttore', props: { id, nome, cognome, corsi, src, alt, pagina } })
+  const testo = (...parti) => { try { return z.pezziInHtml({ content: parti }) } catch (e) { return `ERRORE: ${e.message}` } }
+  const nomi = (h) => tessere(h).map((x) => x.html.match(/class="nome">([^<]*)</)?.[1])
+  ok('le tessere seguono l’ordine delle parti: Federico, Maurizio, Aldo', nomi(pagina(testo(IS('a', 'Federico'), IS('b', 'Maurizio'), IS('c', 'Aldo')))), ['Federico', 'Maurizio', 'Aldo'])
+  const tredici = NOMI.map((n, i) => IS('p' + i, n, { cognome: `Cognome${i}`, corsi: 'Judo, Pesi', ...(i === 0 ? { src: `${P}m.jpg`, alt: 'Maurizio' } : {}) }))
+  const h = pagina(testo(...tredici))
+  ok('13 parti: 13 tessere nell’ordine scritto', nomi(h), NOMI)
+  ok('13 parti: i colori a diagonali, sulla posizione', tessere(h).map((x) => x.colore), ['giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo'])
+  ok('13 parti: c’è la tessera d’invito, larga 3', /ritratto-invito s3/.test(invitoTessera(h)), true)
+  const conPagina = (extra) => tessere(pagina(testo(IS('a', 'Federico', { cognome: 'Rossi', pagina: 'federico-rossi' }), IS('b', 'Aldo')), 'istruttori', extra))[0]?.html ?? ''
+  ok('la pagina scelta non è pubblicata: il nome non è un link', [/<a /.test(conPagina([])), /<span class="nome">Federico<\/span>/.test(conPagina([]))], [false, true])
+  ok('la pagina scelta è pubblicata: il nome è un link a /slug/', /<h3><a href="\/federico-rossi\/"><span class="nome">Federico<\/span> <span class="cognome">Rossi<\/span><\/a><\/h3>/.test(conPagina(['federico-rossi'])), true)
+  ok('la foto con alt vuoto: «Ritratto di Nome Cognome»', /<img [^>]*alt="Ritratto di Diana Ballabio"/.test(main(pagina(testo(IS('a', 'Diana', { cognome: 'Ballabio', corsi: 'MGA', src: `${P}d.jpg` }), IS('b', 'Aldo'))))), true)
+  const senzaCognome = tessere(pagina(testo(IS('a', 'Aldo', { corsi: 'Judo' }), IS('b', 'Diana'))))[0]?.html ?? ''
+  ok('senza cognome, coi corsi: la pastiglia Judo e nessun cognome', [conta(senzaCognome, /<span class="pillola">Judo<\/span>/g), /class="cognome"/.test(senzaCognome)], [1, false])
+  const strano = tessere(pagina(testo(IS('a', '<b>Al</b> & Bo'), IS('b', 'Diana'))))[0]?.html ?? ''
+  ok('un nome con <b> e &: sul sito è testo, non HTML', [/<span class="nome">&lt;b&gt;Al&lt;\/b&gt; &amp; Bo<\/span>/.test(strano), /<b>/.test(strano)], [true, false])
 }
 
 console.log('\n4. Quel che non è una pagina di ritratti resta com’era')
