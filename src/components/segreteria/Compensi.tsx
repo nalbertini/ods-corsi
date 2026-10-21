@@ -21,8 +21,12 @@ const NOME_STATO: Record<StatoCompenso, { testo: string; tono: 'rosso' | 'giallo
   'non-torna': { testo: 'NON TORNA PIÙ', tono: 'rosso' },
 }
 
+/** Il tono del segno di uno stato: rosso quando si è fermi, e allora anche il riquadro. */
+export const tonoCompenso = (stato: StatoCompenso) => NOME_STATO[stato].tono
+
 const nomeDi = (p: Persona) => `${p.cognome} ${p.nome}`.trim()
 const saltato = (r: { persona: Persona; stato: StatoCompenso }) => `${nomeDi(r.persona)} (${NOME_STATO[r.stato].testo.toLowerCase()})`
+const maiuscola = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 const quante = (n: number, uno: string, tanti: string) => `${n} ${n === 1 ? uno : tanti}`
 const quanteOre = (minuti: number) => `${ore(minuti)} ${minuti === 60 ? 'ora' : 'ore'}`
 const scarica = async (rs: RicevutaCompenso[]) => (await import('../../lib/ricevutaCompensoPdf')).scaricaRicevuteCompensi(rs)
@@ -52,6 +56,7 @@ export function AzioniRicevuta({
   mese,
   fai,
   onCambiato,
+  inScheda,
 }: {
   d: DatiSegreteria
   p: Persona
@@ -61,6 +66,8 @@ export function AzioniRicevuta({
   mese: string
   fai: Fai
   onCambiato: () => Promise<unknown>
+  /** Nella scheda del tecnico: tariffe e dati sono già lì sopra, non serve il collegamento. */
+  inScheda?: boolean
 }) {
   const [cambia, setCambia] = useState<{ testo: string; motivo: string } | null>(null)
   // Mentre prepara o annulla i tasti sono spenti: un doppio clic non fa due cose.
@@ -152,9 +159,12 @@ export function AzioniRicevuta({
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => scarica([ricevuta]))}>
           Ristampa
         </button>
-        <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={occupato} onClick={() => void annulla()}>
-          {stato === 'non-torna' ? 'Annulla e rifai' : 'Annulla'}
-        </button>
+        {/* Annulla su una riga sua: sul telefono un dito sbagliato accanto a Ristampa annullerebbe. */}
+        <span style={{ flexBasis: '100%', display: 'flex' }}>
+          <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={occupato} onClick={() => void annulla()}>
+            {stato === 'non-torna' ? 'Annulla e rifai' : 'Annulla'}
+          </button>
+        </span>
       </span>
     )
 
@@ -169,6 +179,19 @@ export function AzioniRicevuta({
         </button>
       </span>
     )
+  // Chi è fermo ha dove andare a sistemare.
+  if (stato === 'da-confermare')
+    return (
+      <a className="sg-link sg-link-alto" style={{ fontSize: 14 }} href="#istruttori">
+        Conferma in Presenze istruttori ›
+      </a>
+    )
+  if ((stato === 'senza-tariffa' || stato === 'senza-dati') && !inScheda)
+    return (
+      <a className="sg-link sg-link-alto" style={{ fontSize: 14 }} href="#personale">
+        {stato === 'senza-tariffa' ? 'Scrivi la tariffa' : 'Scrivi i dati'} in Istruttori e accessi ›
+      </a>
+    )
   return null
 }
 
@@ -181,16 +204,23 @@ export function SegnoCompenso({ stato, conto, ricevuta, manca, inScheda }: { sta
       : stato === 'senza-tariffa'
         ? `${conto.senzaTariffa.join(', ')} senza tariffa: si scrive ${inScheda ? 'qui sopra, in TARIFFE' : 'nella scheda, in ISTRUTTORI E ACCESSI'}.`
         : stato === 'senza-dati'
-          ? `${manca ?? 'Mancano i dati per la ricevuta'}: si scrivono ${inScheda ? 'qui sopra, in DATI PER LETTERA E RICEVUTE' : 'nella scheda, in ISTRUTTORI E ACCESSI'}.`
+          ? `${maiuscola((manca ?? '').replace(/^Mancano i dati per la ricevuta: /, '') || 'I dati')}: si scrivono ${inScheda ? 'qui sopra, in DATI PER LETTERA E RICEVUTE' : 'nella scheda, in ISTRUTTORI E ACCESSI'}.`
           : stato === 'non-torna' && ricevuta
           ? `Ricevuta di ${euro(ricevuta.importo)} €: dopo è cambiata una presenza e il mese ora fa ${euro(conto.calcolato)} €.${ricevuta.firmata ? ' Era firmata.' : ''}`
           : ricevuta
-            ? `Fatta il ${dataLunga(ricevuta.data)}${ricevuta.motivo ? ` · cambiata a mano: ${ricevuta.motivo}` : ''}${ricevuta.firmata ? '' : ' · da riportare firmata'}`
+            ? `Fatta il ${dataLunga(ricevuta.data)}${ricevuta.motivo ? ` · cambiata a mano: ${ricevuta.motivo}` : ''}`
             : ''
   return (
-    <span className="stack" style={{ gap: 4, minWidth: 0 }}>
-      <span className="sg-segno-regola" data-tono={s.tono}>
-        {s.testo}
+    <span className="stack" style={{ gap: 4, minWidth: 0, alignItems: 'flex-start' }}>
+      <span className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+        <span className="sg-segno-regola" data-tono={s.tono}>
+          {s.testo}
+        </span>
+        {ricevuta && !ricevuta.firmata && (
+          <span className="sg-segno-regola" data-tono="giallo">
+            DA RIPORTARE FIRMATA
+          </span>
+        )}
       </span>
       {frase && <span style={{ fontSize: 13, color: 'var(--sec)' }}>{frase}</span>}
     </span>
@@ -269,8 +299,9 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
       {dati.guaio && <Guaio testo={dati.guaio} />}
       {dati.dato && (
         <>
-          <div className="sg-numeri">
-            <Numero titolo="TECNICI" valore={righe.length} sotto="con lezioni nel mese" />
+          {/* Sul telefono solo DA FARE e FERMI, affiancati: l'elenco comincia prima. */}
+          <div className="sg-numeri" data-telefono-due>
+            <Numero titolo="TECNICI" valore={righe.length} sotto="nel mese" />
             <Numero titolo="DA FARE" valore={daFare.length} sotto={`${euro(daFare.reduce((s, r) => s + r.conto.calcolato, 0))} €`} />
             <Numero titolo="FERMI" valore={fermi.length} sotto="da sistemare prima" allarme={fermi.length > 0} />
             <Numero titolo="DA RIPORTARE" valore={daFirmare.length} sotto="firmate" />
@@ -303,12 +334,12 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
           <div className="stack" style={{ gap: 0 }}>
             {visibili.map((r) => (
               <div key={r.persona.id} className="stack" style={{ gap: 4, borderBottom: '1px solid var(--line-soft)', padding: '10px 0' }}>
-                <div className="row" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center', minHeight: 48 }}>
+                <div className="row sg-compenso-riga" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center', minHeight: 48 }}>
                   <span style={{ fontSize: 15, fontWeight: 600, minWidth: 160 }}>{nomeDi(r.persona)}</span>
+                  <span className="num" style={{ fontSize: 15, fontWeight: 700, minWidth: 90 }}>{r.ricevuta || r.conto.calcolato ? `${euro(r.ricevuta?.importo ?? r.conto.calcolato)} €` : '—'}</span>
                   <span className="num" style={{ fontSize: 14, color: 'var(--sec)' }}>
                     {quante(r.conto.lezioni, 'lezione', 'lezioni')} · {quanteOre(r.conto.minuti)}
                   </span>
-                  <span className="num" style={{ fontSize: 15, fontWeight: 700, minWidth: 90 }}>{r.ricevuta || r.conto.calcolato ? `${euro(r.ricevuta?.importo ?? r.conto.calcolato)} €` : '—'}</span>
                   <span style={{ flex: 1, minWidth: 200 }}>
                     <SegnoCompenso stato={r.stato} conto={r.conto} ricevuta={r.ricevuta} manca={r.manca} />
                   </span>
@@ -316,13 +347,19 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
                   <AzioniRicevuta d={d} p={r.persona} conto={r.conto} ricevuta={r.ricevuta} stato={r.stato} mese={mese} fai={fai} onCambiato={dati.ricarica} />
                 </div>
                 {r.conto.righe.length > 0 && (
-                  <details className="sg-compenso">
+                  <details className="sg-compenso sg-compenso-per-corso">
                     <summary style={{ fontSize: 13, color: 'var(--sec)', minHeight: 44, display: 'flex', alignItems: 'center' }}>Per corso</summary>
                     {r.conto.righe.map((x) => (
-                      <div key={x.corso} className="row" style={{ gap: 14, fontSize: 13, color: 'var(--sec)', padding: '2px 0 2px 16px', flexWrap: 'wrap' }}>
-                        <span style={{ minWidth: 160 }}>{x.corso}</span>
+                      <div key={x.corso} className="sg-compenso-corso" style={{ fontSize: 13, color: 'var(--sec)', padding: '2px 0 2px 16px' }}>
+                        <span>{x.corso}</span>
                         <span className="num">{quanteOre(x.minuti)}</span>
-                        <span className="num">{x.centesimiOra ? euroOra(x.centesimiOra) : 'SENZA TARIFFA'}</span>
+                        {x.centesimiOra ? (
+                          <span className="num">{euroOra(x.centesimiOra)}</span>
+                        ) : (
+                          <span className="sg-segno-regola" data-tono="rosso">
+                            SENZA TARIFFA
+                          </span>
+                        )}
                         <span className="num" style={{ fontWeight: 700 }}>{x.importo !== undefined ? `${euro(x.importo)} €` : '—'}</span>
                       </div>
                     ))}

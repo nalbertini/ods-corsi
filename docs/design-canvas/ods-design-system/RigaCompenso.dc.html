@@ -68,21 +68,25 @@
 </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Ballabio Diana"},"lezioni":{"editor":"text","default":"8"},"ore":{"editor":"text","default":"12"},"importo":{"editor":"text","default":"180,00 €"},"stato":{"editor":"enum","options":["da-confermare","senza-tariffa","da-fare","da-pagare","non-torna","pagata"],"default":"da-fare"},"firmata":{"editor":"boolean","default":true},"quante":{"editor":"text","default":"3"},"corso":{"editor":"text","default":"Judo adulti"},"quando":{"editor":"text","default":"05/11"},"nota":{"editor":"text","default":""},"aperta":{"editor":"boolean","default":false},"corsi":{"editor":"text","default":"Judo kids:6:15,00 € l’ora:90,00 €|Judo ragazzi:6:15,00 € l’ora:90,00 €"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1100,"height":76}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Ballabio Diana"},"lezioni":{"editor":"text","default":"8"},"ore":{"editor":"text","default":"12"},"importo":{"editor":"text","default":"180,00 €"},"stato":{"editor":"enum","options":["da-confermare","senza-tariffa","senza-dati","da-fare","fatta","non-torna","da-pagare","pagata"],"default":"da-fare"},"firmata":{"editor":"boolean","default":true},"quante":{"editor":"text","default":"3"},"corso":{"editor":"text","default":"Judo adulti"},"quando":{"editor":"text","default":"05/11"},"nota":{"editor":"text","default":""},"aperta":{"editor":"boolean","default":false},"corsi":{"editor":"text","default":"Judo kids:6:15,00 € l’ora:90,00 €|Judo ragazzi:6:15,00 € l’ora:90,00 €"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1100,"height":76}}'>
 // PROPOSTA (docs/design-canvas/compensi-tecnici): una riga di COMPENSI, un tecnico con lezioni confermate nel mese. Look del sito: righe bianche col filetto
 // 1px `line-soft` #cfe6f4 come la tabella di PERSONALE (`.sg-tabella`), padding 8px 14px, nome Inter 15px 600, cifre tabulari a destra.
 // La riga si apre per corso (`aperta`, `corsi` = «corso:ore:tariffa:importo|…», tariffa «—» = manca, in rosso): il mese e' la somma di ore × tariffa di quel corso,
 // anche delle lezioni fatte da sostituto. Lo stato e' sempre un segno con la parola, mai solo il colore; sotto, in `dim`, il perche' (`nota`).
 // stato: da-confermare (rosso, «N PRESENZE DA CONFERMARE», link a PRESENZE ISTRUTTORI, importo «—»: blocca solo questo tecnico);
-//        senza-tariffa (rosso, «SENZA TARIFFA PER <corso>», importo «—», link alla scheda); da-fare (neutro, PREPARA LA RICEVUTA);
-//        da-pagare (giallo, ricevuta fatta e non pagata, SEGNA PAGATO); non-torna (rosso: la ricevuta e' rimasta com'era fatta, il mese adesso fa un'altra cifra;
+//        senza-tariffa (rosso, «SENZA TARIFFA PER <corso>», importo «—», link alla scheda); senza-dati (rosso, MANCANO I DATI, cosa manca e il link
+//        alla scheda: si vede prima di provare); da-fare (neutro, MODIFICA IL COMPENSO e PREPARA LA RICEVUTA); fatta (COSTRUITA: verde, FATTA, «Fatta il …»,
+//        Firmata, RISTAMPA, e ANNULLA rosso su una riga sua);
+//        da-pagare e pagata arrivano col pagamento in contabilità (PROPOSTA): da-pagare (giallo, ricevuta fatta e non pagata, SEGNA PAGATO); non-torna (rosso: la ricevuta e' rimasta com'era fatta, il mese adesso fa un'altra cifra;
 //        ANNULLA E RIFAI); pagata (verde, «PAGATA IL gg/mm», RISTAMPA).
 // firmata: con una ricevuta fatta (da-pagare, non-torna, pagata) compare la spunta «Firmata»; non spuntata aggiunge il segno giallo DA RIPORTARE FIRMATA.
 // telefono: la riga impilata (nome e importo, lezioni e ore, segni, nota, tasto a tutta larghezza), chiusa.
 const STATI = {
   'da-confermare': { tono: 'rosso', segno: (p) => `${p.quante ?? '3'} PRESENZE DA CONFERMARE`, azione: 'Conferma in Presenze istruttori ›', link: true, nota: 'Prima si decidono, poi si fa la ricevuta.', vuoto: true },
   'senza-tariffa': { tono: 'rosso', segno: (p) => `SENZA TARIFFA PER ${(p.corso ?? 'Judo adulti').toUpperCase()}`, azione: 'Scrivi la tariffa ›', link: true, nota: 'Ha fatto lezione in un corso che non ha la sua tariffa.', vuoto: true },
+  'senza-dati': { tono: 'rosso', segno: () => 'MANCANO I DATI', azione: 'Scrivi i dati in Istruttori e accessi ›', link: true, nota: 'IBAN: si scrivono nella scheda, in ISTRUTTORI E ACCESSI.' },
   'da-fare': { tono: 'neutro', segno: () => 'RICEVUTA DA FARE', azione: 'Prepara la ricevuta', link: false, nota: '' },
+  'fatta': { tono: 'verde', segno: () => 'FATTA', azione: 'Ristampa', link: false, nota: 'Fatta il 2 novembre 2026', fatta: true },
   'da-pagare': { tono: 'giallo', segno: () => 'FATTA · DA PAGARE', azione: 'Segna pagato', link: false, nota: '', fatta: true },
   'non-torna': { tono: 'rosso', segno: () => 'NON TORNA PIÙ', azione: 'Annulla e rifai', link: false, nota: 'Ricevuta di 180,00 €: dopo è stata rifiutata una presenza e il mese ora fa 165,00 €.', fatta: true },
   'pagata': { tono: 'verde', segno: (p) => `PAGATA IL ${p.quando ?? '05/11'}`, azione: 'Ristampa', link: false, nota: '', fatta: true },

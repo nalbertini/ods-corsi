@@ -8,7 +8,7 @@ import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
 import { DatiTecnico, LetteraIncarico, Tariffe } from './DatiTecnico'
-import { AzioniRicevuta, SegnoCompenso } from './Compensi'
+import { AzioniRicevuta, SegnoCompenso, tonoCompenso } from './Compensi'
 import { compensoDelMese, mancaPerRicevuta, primoDelMese, statoCompenso } from '../../lib/compensi'
 import { euro } from '../../lib/ricevute'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
@@ -774,7 +774,12 @@ function PresenzeDelMese({ d, p, fai, versione }: { d: DatiSegreteria; p: Person
         <Numero titolo="LEZIONI" valore={fatte.length} sotto={m.nome} />
         <Numero titolo="ORE" valore={ore(totale)} sotto="da orario delle lezioni" />
         <Numero titolo="DA CONFERMARE" valore={daConfermare} sotto={daConfermare ? 'in PRESENZE ISTRUTTORI' : 'niente in sospeso'} allarme={daConfermare > 0} />
-        {conto && <Numero titolo="COMPENSO" valore={euro(ricevuta?.importo ?? conto.calcolato)} sotto={ricevuta?.motivo ? 'euro, cambiato a mano' : 'euro, ore × tariffa'} />}
+        {conto &&
+          (ricevuta || (!conto.senzaTariffa.length && !conto.daConfermare) ? (
+            <Numero titolo="COMPENSO" valore={euro(ricevuta?.importo ?? conto.calcolato)} sotto={ricevuta?.motivo ? 'euro, cambiato a mano' : 'euro, ore × tariffa'} />
+          ) : (
+            <Numero titolo="COMPENSO" valore="—" sotto={conto.daConfermare ? 'presenze da decidere' : 'manca una tariffa'} />
+          ))}
       </div>
       {perCorso.length > 0 && (
         <div role="table" aria-label={`Lezioni di ${p.nome}, ${m.nome}`} className="sg-tabella">
@@ -803,11 +808,14 @@ function PresenzeDelMese({ d, p, fai, versione }: { d: DatiSegreteria; p: Person
       {elenco.dato !== null && !del.length && <span style={{ fontSize: 14, color: 'var(--dim)' }}>Nessuna presenza in {m.nome.toLowerCase()}.</span>}
       {compenso.guaio && <Guaio testo={compenso.guaio} />}
       {conto && (conto.lezioni > 0 || conto.daConfermare > 0 || ricevuta) && (
-        <div className="row" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center', padding: '14px 16px', border: '2px solid var(--line-soft)' }}>
+        <div
+          className="row"
+          style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center', padding: '14px 16px', border: `2px solid ${tonoCompenso(statoCompenso({ conto, ricevuta, manca: compenso.dato?.manca })) === 'rosso' ? 'var(--rosso)' : 'var(--line-soft)'}` }}
+        >
           <span style={{ flex: 1, minWidth: 220 }}>
             <SegnoCompenso stato={statoCompenso({ conto, ricevuta, manca: compenso.dato?.manca })} conto={conto} ricevuta={ricevuta} manca={compenso.dato?.manca} inScheda />
           </span>
-          <AzioniRicevuta d={d} p={p} conto={conto} ricevuta={ricevuta} stato={statoCompenso({ conto, ricevuta, manca: compenso.dato?.manca })} mese={mese} fai={fai} onCambiato={ricaricaTutto} />
+          <AzioniRicevuta d={d} p={p} conto={conto} ricevuta={ricevuta} stato={statoCompenso({ conto, ricevuta, manca: compenso.dato?.manca })} mese={mese} fai={fai} onCambiato={ricaricaTutto} inScheda />
         </div>
       )}
       {compenso.dato && compenso.dato.ricevute.some((r) => r !== ricevuta) && (
