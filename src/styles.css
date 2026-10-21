@@ -3269,6 +3269,16 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
 /* I tasti di Puck che si usano davvero (annulla, pannelli, formati, zoom, Copia e Togli) arrivano ai 44px; i nostri non vanno a capo. */
 .sito-puck { --puck-iconbutton-space: 12px; --puck-actionbar-action-space: 12px; --puck-field-richtext-menu-space-x: 6px; --puck-field-richtext-menu-space-y: 6px; }
 .sito-puck .sg-btn { white-space: nowrap; flex-shrink: 0; }
+/* Sul tablet (768px) i tre tasti più il titolo non entrano: tasti più stretti, sempre alti 48px. */
+@media (max-width: 900px) { .sito-puck .sg-btn { padding-inline: 12px; } }
+/* I campi nostri dentro il pannello di Puck (testo, pagina, domanda dei Pulsanti e delle Domande): come i suoi, alti 44px. */
+.sito-puck-campo { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--text); font: inherit; font-size: 14px; }
+.sito-puck-campo[data-avviso='true'] { border: 2px solid var(--giallo-testo); }
+.sito-puck-campo:focus-visible { outline: 3px solid var(--blu); outline-offset: 2px; }
+.sito-puck-nota { margin: 6px 0 0; font-size: 13px; line-height: 1.45; color: var(--dim); }
+.sito-puck-avviso { color: var(--giallo-testo); font-weight: 600; }
+/* La barra di un testo nel pannello (la risposta delle Domande) va a capo: sul tablet scorrerebbe di lato, coi tasti fuori dal pannello. */
+.sito-puck [class*='RichTextMenu--form'], .sito-puck [class*='RichTextMenu--form'] [class*='RichTextMenu-group'] { flex-wrap: wrap; }
 /* Perché Salva bozza è spento: in una riga intera in fondo, sopra la pagina, come la nota rossa dell'editor di oggi. */
 .sito-puck-guaio { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1; margin: 0; padding: 12px 16px; background: var(--surface); border-top: 2px solid var(--rosso-testo); color: var(--rosso-testo); font-size: 16px; font-weight: 600; }
 /* Senza il pannello delle parti la pagina prende lo spazio: la cornice segue l'altezza dello schermo, mai sotto i 720px. */

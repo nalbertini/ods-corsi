@@ -128,14 +128,28 @@ Accanto ai tasti di una pagina c'è **Prova il nuovo editor**: lo stesso lavoro,
 in un editor solo, a tutto schermo. Non c'è per le pagine di legge, e si apre
 solo se la pagina è salvata.
 
-- A sinistra, in **Parti**, le cinque parti (foto in cima, testo, foto,
-  colonne, iscriviti): si trascinano nella pagina dove le vuoi. In **Struttura** c'è
+- A sinistra, in **Parti**, le sette parti (foto in cima, testo, foto,
+  colonne, pulsanti, domande, iscriviti): si trascinano nella pagina dove le vuoi. In **Struttura** c'è
   l'elenco delle parti della pagina: trascinando una riga la sposti.
 - Al centro la pagina, coi caratteri e i colori del sito, come sul tablet.
   Sopra, i tasti per vederla come sul telefono o sul computer.
 - A destra i campi di quel che hai scelto. Senza niente di scelto ci sono
   **Titolo** (anche su Google) e **Descrizione**; scelto un testo, lo scrivi lì o
   direttamente nella pagina. **Pagina**, in cima, riporta a titolo e descrizione.
+- **Pulsanti** (solo qui): da uno a tre pulsanti in fila. Per ognuno scegli **Dove porta**:
+  **Modulo di iscrizione**, **Telefono** e **WhatsApp** (il numero del sito, non si scrive),
+  **Una pagina del sito** (fra quelle pubblicate; Contatti no, sul sito è nel menu) o
+  **Altro indirizzo** (https://, mailto:, tel: oppure /, come il tasto **PULSANTE**). Poi il
+  **Testo**. Il pulsante del modulo si legge sempre «Iscriviti», giallo e per primo: il prezzo
+  della prova scrivilo nel testo vicino. Gli altri sono a linea. Ovunque la metti, la parte non
+  cambia l'impaginazione della pagina. Un pulsante senza testo o senza dove non compare.
+- **Domande** (solo qui): le domande frequenti, con un **Titolo** (vuoto = «Domande frequenti»)
+  e le coppie **Domanda** e **Risposta** (grassetto, corsivo ed elenchi; niente titoli). Sul sito
+  escono a tessere chiare e Google le legge come domande frequenti. Ogni domanda deve finire con
+  «?»: senza, si salva lo stesso, ma tutte le domande di quella parte escono a tessere colorate e
+  Google salta quella; sotto il campo te lo dice in giallo. Una coppia senza domanda o senza
+  risposta non compare. Nel vecchio editor queste due parti si vedono e si spostano, ma si
+  cambiano solo qui.
 - **Com'è sul sito** mostra la pagina com'è dopo la pubblicazione, con tessere e
   orari.
 - **Salva bozza** salva senza cambiare il sito; resta spento finché non cambi

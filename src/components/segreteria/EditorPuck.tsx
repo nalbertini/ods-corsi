@@ -1,10 +1,11 @@
-import { useMemo, useState, type ReactNode } from 'react'
-import { createUsePuck, Puck, type Config, type Data } from '@puckeditor/core'
+import { useId, useMemo, useState, type ReactNode } from 'react'
+import { createUsePuck, FieldLabel, Puck, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { PaginaSito } from '../../lib/sitoPagine'
-import { CSS_SITO, invito } from '../../lib/sitoGenera'
-import { cosaNonVaSalvare, daSalvare, parteAmmessa, pezziDaAprire, pezziInHtml, TESTO_DEL_SITO, type BozzaPezzi, type Pezzo } from '../../lib/sitoPezzi'
+import { CSS_SITO, invito, parteSulSito } from '../../lib/sitoGenera'
+import { CONTATTI } from '../../lib/sito'
+import { conIndirizziGiusti, cosaNonVaSalvare, daSalvare, MASSIMO_DOMANDE, MASSIMO_PULSANTI, parteAmmessa, pezziDaAprire, pezziInHtml, senzaPunto, TESTO_DEL_SITO, type BozzaPezzi, type Domanda, type DovePorta, type Pezzo, type Pulsante } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import AnteprimaPagina from './AnteprimaPagina'
 import { ScegliImmagine } from './ImmaginiSito'
@@ -25,6 +26,8 @@ type Props = {
   foto: { src: string; alt: string }
   colonne: { colonne: Array<{ html: Testo }> }
   iscriviti: { titolo: string; frase: string }
+  pulsanti: { pulsanti: Pulsante[] }
+  domande: { titolo: string; domande: Domanda[] }
   istruttore: { nome: string; cognome: string; corsi: string; src: string; alt: string; pagina: string }
 }
 type Radice = { titolo: string; descrizione: string }
@@ -72,7 +75,76 @@ function CampoFoto({ d, valore }: { d: DatiSegreteria; valore: string }) {
   )
 }
 
-function configura(d: DatiSegreteria, slug: string): Config<Props, Radice> {
+const DOVE: Array<{ label: string; value: DovePorta }> = [
+  { label: 'Modulo di iscrizione', value: 'modulo' },
+  { label: 'Telefono', value: 'telefono' },
+  { label: 'WhatsApp', value: 'whatsapp' },
+  { label: 'Una pagina del sito', value: 'pagina' },
+  { label: 'Altro indirizzo', value: 'altro' },
+]
+
+/** Il numero del pulsante nel campo array di Puck, dal nome del campo («pulsanti[1].testo»). */
+const numeroDi = (name: string) => Number(/\[(\d+)\]/.exec(name)?.[1] ?? -1)
+
+/** Quello che il pulsante sa già, dal pezzo scelto: il campo di Puck vede solo il suo valore. */
+function useDove(name: string): DovePorta | undefined {
+  return usePuck((s) => {
+    const p = s.selectedItem?.props
+    return p && 'pulsanti' in p ? p.pulsanti[numeroDi(name)]?.dove : undefined
+  })
+}
+
+/** Il testo del pulsante: quello del modulo non si scrive, sul sito è sempre «Iscriviti». */
+function CampoTesto({ name, value, onChange }: { name: string; value: string; onChange: (v: string) => void }) {
+  const dove = useDove(name)
+  if (dove === 'modulo') return <p className="sito-puck-nota">Sul sito si legge sempre «Iscriviti», giallo e per primo. Il prezzo scrivilo nella parte Testo.</p>
+  return <FieldLabel label="Testo"><input className="sito-puck-campo" value={value} onChange={(e) => onChange(e.target.value)} /></FieldLabel>
+}
+
+/** Dove porta, quando non lo sa già il sito: una pagina pubblicata da scegliere, o l'indirizzo scritto. */
+function CampoIndirizzo({ name, value, onChange, verso }: { name: string; value: string; onChange: (v: string) => void; verso: Array<{ slug: string; titolo: string }> }) {
+  const dove = useDove(name)
+  if (dove === 'pagina')
+    return (
+      <>
+        <FieldLabel label="Pagina">
+          <select className="sito-puck-campo" value={value} onChange={(e) => onChange(e.target.value)}>
+            <option value="">Scegli la pagina</option>
+            {verso.map((p) => <option key={p.slug} value={p.slug}>{p.titolo}</option>)}
+          </select>
+        </FieldLabel>
+        <p className="sito-puck-nota">Solo le pagine pubblicate. Contatti non c’è: sul sito è nel menu.</p>
+      </>
+    )
+  if (dove === 'altro') return <FieldLabel label="Indirizzo"><input className="sito-puck-campo" placeholder="https://… oppure /chi-siamo" value={value} onChange={(e) => onChange(e.target.value)} /></FieldLabel>
+  // Il modulo lo dice già il campo di sotto; il numero non va a capo a metà.
+  return dove === 'modulo' ? <></> : <p className="sito-puck-nota">Il numero del sito, {CONTATTI.telefono.replace(/ /g, '\u00a0')}.</p>
+}
+
+/** La domanda, con l'avviso se non finisce con «?»: si salva lo stesso, ma sul sito non esce come domanda. */
+function CampoDomanda({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const manca = senzaPunto(value)
+  const avviso = useId()
+  return (
+    <FieldLabel label="Domanda">
+      <input className="sito-puck-campo" data-avviso={manca} aria-describedby={manca ? avviso : undefined} value={value} onChange={(e) => onChange(e.target.value)} />
+      {manca && <p id={avviso} className="sito-puck-nota sito-puck-avviso">Finisce senza «?»: sul sito tutte le domande di questa parte escono come tessere colorate, e Google non legge questa. Scrivila come domanda, per esempio «Quanto costa?».</p>}
+    </FieldLabel>
+  )
+}
+
+/**
+ * Le domande nella pagina, dai dati di Puck: al disegno Puck passa la risposta (richtext) già come editor, non come testo,
+ * e la parte resterebbe sempre vuota. I dati hanno il testo vero.
+ */
+function DomandeInPagina({ id }: { id: string }) {
+  const parte = usePuck((s) => s.appState.data.content.find((c) => c.props.id === id))
+  const html = parte?.type === 'domande' ? parteSulSito({ type: 'domande', props: { id, titolo: parte.props.titolo, domande: parte.props.domande.map((q) => ({ domanda: q.domanda, risposta: typeof q.risposta === 'string' ? q.risposta : '' })) } }) : ''
+  // Sicuro: `parteSulSito` passa da `pezziInHtml`, che ripulisce. Le tessere col colore che avranno (chiare solo se tutte finiscono con «?»).
+  return html ? <div dangerouslySetInnerHTML={{ __html: html }} /> : <span className="sito-pezzi-vuoto">Nessuna domanda pronta: scrivi domanda e risposta a destra</span>
+}
+
+function configura(d: DatiSegreteria, slug: string, verso: Array<{ slug: string; titolo: string }>): Config<Props, Radice> {
   const foto = {
     src: { type: 'custom' as const, label: 'Foto', render: ({ value }: { value: string }) => <CampoFoto d={d} valore={value} /> },
     alt: { type: 'text' as const, label: 'Cosa si vede (vuoto = solo decorativa)' },
@@ -122,6 +194,52 @@ function configura(d: DatiSegreteria, slug: string): Config<Props, Radice> {
             {colonne.map((c, i) => <Html key={i} v={c.html} />)}
           </div>
         ),
+      },
+      pulsanti: {
+        label: 'Pulsanti',
+        fields: {
+          pulsanti: {
+            type: 'array',
+            label: `Pulsanti (da 1 a ${MASSIMO_PULSANTI})`,
+            min: 1,
+            max: MASSIMO_PULSANTI,
+            arrayFields: {
+              dove: { type: 'select', label: 'Dove porta', options: DOVE },
+              indirizzo: { type: 'custom', label: 'Dove', render: ({ name, value, onChange }) => <CampoIndirizzo name={name} value={value} onChange={onChange} verso={verso} /> },
+              testo: { type: 'custom', label: 'Testo', render: ({ name, value, onChange }) => <CampoTesto name={name} value={value} onChange={onChange} /> },
+            },
+            defaultItemProps: { dove: 'modulo', testo: '', indirizzo: '' },
+            // Corto: nel pannello del tablet ogni parola in più è una riga in più. Dove porta lo dice il pulsante aperto.
+            getItemSummary: (b, i) => `${(i ?? 0) + 1} · ${b.dove === 'modulo' ? 'Iscriviti' : b.testo.trim() || 'Senza testo'}`,
+          },
+        },
+        defaultProps: { pulsanti: [{ dove: 'modulo', testo: '', indirizzo: '' }] },
+        resolveData: (data, { lastData }) => ({ ...data, props: { ...data.props, pulsanti: conIndirizziGiusti(lastData?.props.pulsanti ?? [], data.props.pulsanti) } }),
+        // Sicuro: `parteSulSito` passa da `pezziInHtml`, che ripulisce. È la fila com'è sul sito.
+        render: ({ id, pulsanti }) => {
+          const html = parteSulSito({ type: 'pulsanti', props: { id, pulsanti } })
+          return html ? <div dangerouslySetInnerHTML={{ __html: html }} /> : <span className="sito-pezzi-vuoto">Nessun pulsante pronto: scegli dove porta e scrivi il testo a destra</span>
+        },
+      },
+      domande: {
+        label: 'Domande',
+        fields: {
+          titolo: { type: 'text', label: 'Titolo (vuoto = «Domande frequenti»)' },
+          domande: {
+            type: 'array',
+            label: 'Domande',
+            max: MASSIMO_DOMANDE,
+            arrayFields: {
+              domanda: { type: 'custom', label: 'Domanda', render: ({ value, onChange }) => <CampoDomanda value={value} onChange={onChange} /> },
+              // Niente titoli nella risposta: aprirebbero un'altra domanda (li toglie comunque `pezziInHtml`).
+              risposta: { type: 'richtext', label: 'Risposta', options: { ...TESTO_DEL_SITO, heading: false } },
+            },
+            defaultItemProps: { domanda: '', risposta: '' },
+            getItemSummary: (q, i) => `${(i ?? 0) + 1} · ${q.domanda || 'Nuova domanda'}`,
+          },
+        },
+        defaultProps: { titolo: '', domande: [{ domanda: '', risposta: '' }] },
+        render: ({ id }) => <DomandeInPagina id={id} />,
       },
       iscriviti: {
         label: 'Iscriviti',
@@ -228,7 +346,7 @@ const SCHERMI = [
   { width: 1280, label: 'computer', icon: 'Monitor' as const },
 ]
 
-export default function EditorPuck({ d, pagina, onChiudi, ricarica }: { d: DatiSegreteria; pagina: PaginaSito; onChiudi: () => void; ricarica: () => Promise<void> }) {
+export default function EditorPuck({ d, pagina, verso, onChiudi, ricarica }: { d: DatiSegreteria; pagina: PaginaSito; verso: Array<{ slug: string; titolo: string }>; onChiudi: () => void; ricarica: () => Promise<void> }) {
   // Le pagine del vecchio editor si aprono già a pezzi; sul database restano com'erano finché non si salva.
   // I pezzi salvati hanno il testo come `string`, uno dei casi di `Testo`.
   const [iniziali] = useState<Data<Props, Radice>>(() => ({
@@ -236,7 +354,7 @@ export default function EditorPuck({ d, pagina, onChiudi, ricarica }: { d: DatiS
     content: pezziDaAprire(pagina).content,
   }))
   // Una config sola per tutta la prova: rifatta a ogni tasto, Puck rimonterebbe i campi.
-  const config = useMemo(() => configura(d, pagina.slug), [d, pagina.slug])
+  const config = useMemo(() => configura(d, pagina.slug, verso), [d, pagina.slug, verso])
   const [ora, setOra] = useState<BozzaPezzi>(() => bozzaDa(iniziali))
   const { avviso, fai, lavora } = useAvviso()
   /** La pagina da mostrare com'è sul sito (null: si scrive). */

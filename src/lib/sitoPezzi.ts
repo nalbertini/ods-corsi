@@ -1,4 +1,5 @@
-import { testoTroppoLungo } from './sitoPagine'
+import { indirizzoValido, percorsoPagina, slugValido, testoTroppoLungo } from './sitoPagine'
+import { ISCRIZIONE, chiama, whatsapp } from './sito'
 import { pulisciTesto } from './sitoTesto'
 
 /**
@@ -17,11 +18,26 @@ export type Pezzo =
   | { type: 'colonne'; props: { id: string; colonne: Array<{ html: string }> } }
   // L'invito in fondo alla pagina (`invito` di sitoGenera.ts): titolo e frase vuoti sono quelli di sempre.
   | { type: 'iscriviti'; props: { id: string } & ParteIscriviti }
+  | { type: 'pulsanti'; props: { id: string; pulsanti: Pulsante[] } }
+  // Titolo vuoto: «Domande frequenti». Il titolo apre una sezione sua, così le domande non si mescolano coi sottotitoli di prima.
+  | { type: 'domande'; props: { id: string; titolo: string; domande: Domanda[] } }
   // Un tecnico della pagina degli istruttori: `src` vuoto = senza foto, `pagina` = lo slug della sua scheda ('' = nessuna), `corsi` con le virgole.
   | { type: 'istruttore'; props: { id: string; nome: string; cognome: string; corsi: string; src: string; alt: string; pagina: string } }
 
 /** Quel che la segreteria cambia dell'invito: il resto (indirizzo, numero, pulsanti, passi) è del sito. */
 export type ParteIscriviti = { titolo: string; frase: string }
+
+/** Dove porta un pulsante: il modulo, il telefono e WhatsApp sono quelli del sito, senza indirizzi da scrivere. */
+export type DovePorta = 'modulo' | 'telefono' | 'whatsapp' | 'pagina' | 'altro'
+const DOVE: readonly string[] = ['modulo', 'telefono', 'whatsapp', 'pagina', 'altro'] satisfies DovePorta[]
+/** `indirizzo`: lo slug per 'pagina', l'indirizzo scritto per 'altro', vuoto per gli altri. */
+export type Pulsante = { dove: DovePorta; testo: string; indirizzo: string }
+/** La risposta è HTML: grassetto, corsivo, link ed elenchi. */
+export type Domanda = { domanda: string; risposta: string }
+
+/** Oltre tre pulsanti in fila, sul telefono, sono un muro. */
+export const MASSIMO_PULSANTI = 3
+export const MASSIMO_DOMANDE = 30
 
 export interface PezziPagina {
   content: Pezzo[]
@@ -34,7 +50,7 @@ export const MASSIMO_CARATTERI = 400000
 
 /** Il nome di una parte nell'ELENCO, con le parole della segreteria. */
 export const nomeParte = (p: Pezzo): string =>
-  p.type === 'fotoInCima' ? 'Foto in cima' : p.type === 'testo' ? 'Testo' : p.type === 'foto' ? 'Foto' : p.type === 'iscriviti' ? 'Iscriviti' : p.type === 'istruttore' ? 'Istruttore' : p.props.colonne.length === 2 ? 'Due colonne' : 'Tre colonne'
+  p.type === 'fotoInCima' ? 'Foto in cima' : p.type === 'testo' ? 'Testo' : p.type === 'foto' ? 'Foto' : p.type === 'iscriviti' ? 'Iscriviti' : p.type === 'pulsanti' ? 'Pulsanti' : p.type === 'domande' ? 'Domande' : p.type === 'istruttore' ? 'Istruttore' : p.props.colonne.length === 2 ? 'Due colonne' : 'Tre colonne'
 
 /** Cosa dice il pannello delle impostazioni finché nessuna parte è scelta. */
 export const FRASE_NESSUNA_PARTE = 'Tocca una parte della pagina per cambiarne le impostazioni.'
@@ -106,6 +122,10 @@ export function doveMettere(tipo: Pezzo['type'], dopo: number | null, pezzi: Con
 const stringa = (x: unknown): x is string => typeof x === 'string'
 const oggetto = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x)
 
+/** Un indirizzo vuoto è ammesso (il pulsante non esce); uno scritto deve andare, come quello del tasto PULSANTE. */
+const indirizzoAmmesso = (dove: string, indirizzo: string) =>
+  indirizzo === '' || (dove === 'pagina' ? slugValido(indirizzo) : dove !== 'altro' || indirizzoValido(indirizzo))
+
 function pezzoValido(x: unknown): x is Pezzo {
   if (!oggetto(x) || !oggetto(x.props) || !stringa(x.props.id) || x.props.id === '') return false
   const p = x.props
@@ -122,6 +142,10 @@ function pezzoValido(x: unknown): x is Pezzo {
       return stringa(p.nome) && p.nome.trim() !== '' && [p.cognome, p.corsi, p.src, p.alt].every(stringa) && stringa(p.pagina) && /^[a-z0-9-]*$/.test(p.pagina)
     case 'colonne':
       return Array.isArray(p.colonne) && p.colonne.length >= 2 && p.colonne.length <= 3 && p.colonne.every((c) => oggetto(c) && stringa(c.html))
+    case 'pulsanti':
+      return Array.isArray(p.pulsanti) && p.pulsanti.length >= 1 && p.pulsanti.length <= MASSIMO_PULSANTI && p.pulsanti.every((b) => oggetto(b) && stringa(b.dove) && DOVE.includes(b.dove) && stringa(b.testo) && stringa(b.indirizzo) && indirizzoAmmesso(b.dove, b.indirizzo))
+    case 'domande':
+      return stringa(p.titolo) && Array.isArray(p.domande) && p.domande.length <= MASSIMO_DOMANDE && p.domande.every((d) => oggetto(d) && stringa(d.domanda) && stringa(d.risposta))
     default:
       return false
   }
@@ -144,6 +168,29 @@ const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').repl
 
 /** Senza testo e senza foto. Accetta anche `undefined`: Puck può dare una colonna appena aggiunta senza `html`. */
 export const vuoto = (html: string | undefined) => !html || (!/<img\b/i.test(html) && html.replace(/<[^>]*>/g, '').trim() === '')
+
+/** Il vero indirizzo di un pulsante; vuoto se non porta da nessuna parte (allora non esce). */
+function hrefDi(b: Pulsante): string {
+  if (b.dove === 'modulo') return ISCRIZIONE
+  if (b.dove === 'telefono') return chiama
+  if (b.dove === 'whatsapp') return whatsapp
+  if (b.dove === 'pagina') return b.indirizzo ? percorsoPagina(b.indirizzo) : ''
+  return b.indirizzo
+}
+
+/**
+ * I pulsanti dopo una modifica, coi loro indirizzi: dove «Dove porta» è cambiato, l'indirizzo di prima non vale più
+ * (lo slug di una pagina non è un «altro indirizzo», e viceversa) e resterebbe a bloccare il salvataggio senza vedersi.
+ */
+export const conIndirizziGiusti = (prima: readonly Pulsante[], dopo: Pulsante[]): Pulsante[] =>
+  dopo.map((b, i) => (prima[i] && prima[i].dove !== b.dove && b.indirizzo !== '' ? { ...b, indirizzo: '' } : b))
+
+/** Vero per una domanda scritta che non finisce con «?»: sul sito le domande della parte non escono come domande. */
+export const senzaPunto = (domanda: string): boolean => domanda.trim() !== '' && !domanda.trim().endsWith('?')
+
+/** Le pagine verso cui può portare un pulsante: pubblicate e non nascoste. Contatti no: sul sito un pulsante verso Contatti non esce (`senzaPulsantiContatti`). */
+export const pagineDaPulsante = <P extends { slug: string; titolo: string; pubblicato: string | null; nascosta: boolean }>(pagine: P[]): Array<{ slug: string; titolo: string }> =>
+  pagine.filter((p) => p.pubblicato !== null && !p.nascosta && p.slug !== 'contatti').map((p) => ({ slug: p.slug, titolo: p.titolo }))
 
 /** Cosa nasce quando la segreteria aggiunge una colonna: vuota, ma con il suo `html` (il campo array di Puck non ne mette uno da solo). */
 export const colonnaNuova = (): { html: string } => ({ html: '' })
@@ -210,6 +257,22 @@ function inHtml(p: Pezzo): string {
     }
     case 'iscriviti':
       return `<div class="iscriviti">${p.props.titolo ? `<h2>${esc(p.props.titolo)}</h2>` : ''}${p.props.frase ? `<p>${esc(p.props.frase)}</p>` : ''}</div>`
+    case 'pulsanti': {
+      // Il riquadro suo, come ISCRIVITI: il generatore lo disegna sempre con «Iscriviti» per primo e non cambia l'impaginazione.
+      const fuori = p.props.pulsanti.flatMap((b) => {
+        const href = hrefDi(b)
+        const testo = b.dove === 'modulo' ? 'Iscriviti' : b.testo.trim()
+        return href && testo ? [`<a class="pulsante" href="${esc(href)}">${esc(testo)}</a>`] : []
+      })
+      return fuori.length ? `<div class="pulsanti">${fuori.join('')}</div>` : ''
+    }
+    case 'domande': {
+      // Un titolo scritto nella risposta aprirebbe un'altra domanda o sezione: resta un paragrafo.
+      const coppie = p.props.domande.filter((d) => d.domanda.trim() !== '' && !vuoto(d.risposta))
+      if (!coppie.length) return ''
+      const risposta = (h: string) => h.replace(/<(\/?)h[1-6]\b[^>]*>/gi, '<$1p>')
+      return `<h2>${esc(p.props.titolo.trim() || 'Domande frequenti')}</h2>${coppie.map((d) => `<h3>${esc(d.domanda.trim())}</h3>${risposta(d.risposta)}`).join('')}`
+    }
   }
 }
 
@@ -231,6 +294,8 @@ export function cosaNonVaPezzi(x: unknown): string | null {
     if (parti.some((p) => p.type === 'istruttore' && oggetto(p.props) && (!stringa(p.props.nome) || p.props.nome.trim() === ''))) return 'Ogni istruttore ha bisogno del nome: scrivilo o togli la parte'
     const colonne = parti.filter((p) => p.type === 'colonne' && oggetto(p.props) && Array.isArray((p.props as Record<string, unknown>).colonne))
     if (colonne.some((p) => { const n = ((p.props as Record<string, unknown>).colonne as unknown[]).length; return n < 2 || n > 3 })) return 'Le colonne sono due o tre'
+    const pulsanti = parti.flatMap((p) => (p.type === 'pulsanti' && oggetto(p.props) && Array.isArray(p.props.pulsanti) ? p.props.pulsanti.filter(oggetto) : []))
+    if (pulsanti.some((b) => stringa(b.dove) && stringa(b.indirizzo) && !indirizzoAmmesso(b.dove, b.indirizzo))) return 'Un pulsante porta a un indirizzo che non va: scrivi un indirizzo che cominci con https://, mailto:, tel: oppure /, senza spazi'
     if (JSON.stringify(x).length > MASSIMO_CARATTERI) return 'La pagina è troppo lunga: togli qualcosa'
   }
   return 'La pagina non è fatta come il sito la vuole: ricaricala e riprova'
@@ -394,7 +459,7 @@ export function dividiInParti(p: PezziPagina): PezziPagina {
     const parti = htmlInPezzi(x.props.html).content
     if (parti.length < 2 || parti.some((q) => q.type === 'colonne' || q.type === 'iscriviti')) return [x]
     return parti.flatMap((q, i): Pezzo[] => {
-      if (q.type === 'colonne' || q.type === 'iscriviti') return [] // già escluso sopra: serve solo a restringere il tipo
+      if (q.type !== 'testo' && q.type !== 'foto' && q.type !== 'fotoInCima') return [] // già escluso sopra, o mai dato da `htmlInPezzi`: serve solo a restringere il tipo
       // La prima parte tiene l'id del testo; la foto in cima di una divisione è una foto qualunque: in cima ce n'è una sola.
       const id = i === 0 && q.type === 'testo' ? x.props.id : idNuovo()
       return [q.type === 'testo' ? { type: 'testo', props: { id, html: q.props.html } } : { type: 'foto', props: { id, src: q.props.src, alt: q.props.alt } }]

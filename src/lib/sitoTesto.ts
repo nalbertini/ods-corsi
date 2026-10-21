@@ -17,8 +17,8 @@ import sanitizeHtml from 'sanitize-html'
 const LINK_ASSOLUTO = /^(https?:|mailto:|tel:)/i
 export const LINK_INTERNO = /^\/(?![/\\])/
 
-/** Le sole classi di un `div`: le colonne affiancate e la parte ISCRIVITI della pagina a pezzi (`sitoPezzi.ts`). */
-const CLASSI_DIV = ['colonne', 'c-2', 'c-3', 'colonna', 'iscriviti']
+/** Le sole classi di un `div`: le colonne affiancate e le parti ISCRIVITI e PULSANTI della pagina a pezzi (`sitoPezzi.ts`). */
+const CLASSI_DIV = ['colonne', 'c-2', 'c-3', 'colonna', 'iscriviti', 'pulsanti']
 
 const OPZIONI: sanitizeHtml.IOptions = {
   allowedTags: ['h2', 'h3', 'p', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'br', 'div'],
@@ -50,7 +50,7 @@ const OPZIONI: sanitizeHtml.IOptions = {
 }
 
 /**
- * Toglie i `div` che non sono colonne né la parte ISCRIVITI, e le loro chiusure, tenendo il contenuto.
+ * Toglie i `div` che non sono colonne né le parti ISCRIVITI e PULSANTI, e le loro chiusure, tenendo il contenuto.
  * Lo fa prima di `sanitizeHtml`: rinominare un tag ammesso in uno no, dentro la libreria, lascia una chiusura orfana.
  */
 function senzaDivEstranei(html: string): string {
@@ -58,7 +58,7 @@ function senzaDivEstranei(html: string): string {
   return html.replace(/<(\/?)div\b([^>]*)>/gi, (tag, chiude: string, resto: string) => {
     if (chiude) return tenuti.pop() ? tag : ''
     const classi = /\bclass\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(resto)
-    const tiene = (classi?.[1] ?? classi?.[2] ?? '').split(/\s+/).some((c) => c === 'colonne' || c === 'colonna' || c === 'iscriviti')
+    const tiene = (classi?.[1] ?? classi?.[2] ?? '').split(/\s+/).some((c) => c === 'colonne' || c === 'colonna' || c === 'iscriviti' || c === 'pulsanti')
     tenuti.push(tiene)
     return tiene ? tag : ''
   })

@@ -803,6 +803,182 @@ console.log('\nLa parte ISCRIVITI: i tasti che la toccano')
   ok('il tasto spento dice perché', z.motivoSpento('iscriviti', pi), 'C’è già: una parte Iscriviti per pagina')
 }
 
+// ---------------------------------------------------------------------------
+// Le parti PULSANTI e DOMANDE (docs/design-canvas/sito-pulsanti-domande).
+// I numeri sono quelli dei criteri di accettazione.
+// ---------------------------------------------------------------------------
+const s = await carica('src/lib/sito.ts')
+const PU = (id, ...pulsanti) => ({ type: 'pulsanti', props: { id, pulsanti } })
+const B = (dove, testo = '', indirizzo = '') => ({ dove, testo, indirizzo })
+const D = (id, domande, titolo = '') => ({ type: 'domande', props: { id, titolo, domande } })
+const Q = (domanda, risposta) => ({ domanda, risposta })
+const salvare = (content) => prova(() => z.cosaNonVaSalvare({ titolo: 'Judo', descrizione: '', pezzi: { content } }))
+const nonVa = (content) => prova(() => z.cosaNonVaPezzi({ content }))
+const NO_INDIRIZZO = 'Un pulsante porta a un indirizzo che non va: scrivi un indirizzo che cominci con https://, mailto:, tel: oppure /, senza spazi'
+const anteprima = (content) => prova(() => g.paginaInAnteprima({ slug: 'judo', titolo: 'Judo', descrizione: '', testo: z.pezziInHtml({ content }) }, []))
+// pulisciTesto aggiunge rel="noopener noreferrer" a ogni link che non comincia con «/»: anche tel: e wa.me.
+const REL = ' rel="noopener noreferrer"'
+
+console.log('\nPULSANTI: gli indirizzi del sito')
+ok('2: ISCRIZIONE è il modulo online', s.ISCRIZIONE, 'https://app.officinedellosport.it/iscrizioni/')
+ok('2: whatsapp è il numero del sito su wa.me', s.whatsapp, 'https://wa.me/393463292786')
+ok('2: MASSIMO_PULSANTI è 3', z.MASSIMO_PULSANTI, 3)
+
+console.log('\nPULSANTI: l\'HTML della parte')
+ok('1: telefono porta a tel: col numero del sito', html([PU('p', B('telefono', 'Chiamaci'))]), `<div class="pulsanti"><a class="pulsante" href="tel:+393463292786"${REL}>Chiamaci</a></div>`)
+ok('1: whatsapp porta a wa.me col numero del sito', html([PU('p', B('whatsapp', 'Scrivici'))]), `<div class="pulsanti"><a class="pulsante" href="https://wa.me/393463292786"${REL}>Scrivici</a></div>`)
+ok('1: il modulo porta a ISCRIZIONE e dice sempre «Iscriviti»', html([PU('p', B('modulo', 'Prova gratis'))]), `<div class="pulsanti"><a class="pulsante" href="https://app.officinedellosport.it/iscrizioni/"${REL}>Iscriviti</a></div>`)
+ok('1: una pagina del sito porta a /slug/', html([PU('p', B('pagina', 'Orari', 'orari'))]), '<div class="pulsanti"><a class="pulsante" href="/orari/">Orari</a></div>')
+ok('1: altro indirizzo porta a quello scritto', html([PU('p', B('altro', 'Il regolamento', 'https://x.it/a'))]), `<div class="pulsanti"><a class="pulsante" href="https://x.it/a"${REL}>Il regolamento</a></div>`)
+ok('1: più pulsanti stanno nello stesso div.pulsanti, nell\'ordine scritto', html([PU('p', B('whatsapp', 'Scrivici'), B('pagina', 'Orari', 'orari'), B('telefono', 'Chiamaci'))]),
+  `<div class="pulsanti"><a class="pulsante" href="https://wa.me/393463292786"${REL}>Scrivici</a><a class="pulsante" href="/orari/">Orari</a><a class="pulsante" href="tel:+393463292786"${REL}>Chiamaci</a></div>`)
+ok('3: un pulsante senza testo (o di soli spazi) non esce', html([PU('p', B('telefono', ''), B('whatsapp', '   '), B('pagina', 'Orari', 'orari'))]), '<div class="pulsanti"><a class="pulsante" href="/orari/">Orari</a></div>')
+ok('3: il modulo esce anche senza testo', html([PU('p', B('modulo', ''))]), `<div class="pulsanti"><a class="pulsante" href="https://app.officinedellosport.it/iscrizioni/"${REL}>Iscriviti</a></div>`)
+ok('3: pagina o altro senza indirizzo non escono', html([PU('p', B('pagina', 'Orari', ''), B('altro', 'Fuori', ''), B('telefono', 'Chiamaci'))]), `<div class="pulsanti"><a class="pulsante" href="tel:+393463292786"${REL}>Chiamaci</a></div>`)
+ok('3: una parte senza pulsanti che escono non lascia niente', html([T('a', '<p>x</p>'), PU('p', B('telefono', ' '), B('altro', 'Fuori', '')), T('b', '<p>y</p>')]), '<p>x</p><p>y</p>')
+ok('4: il testo esce come testo, non come HTML', html([PU('p', B('telefono', '<script>x</script> "a"'))]), `<div class="pulsanti"><a class="pulsante" href="tel:+393463292786"${REL}>&lt;script&gt;x&lt;/script&gt; "a"</a></div>`)
+
+ok('1: pulisciTesto tiene la fila dei pulsanti', pulisci('<div class="pulsanti"><a class="pulsante" href="/orari/">Orari</a></div>'), '<div class="pulsanti"><a class="pulsante" href="/orari/">Orari</a></div>')
+ok('1: il CSS di ogni pagina ha la fila dei pulsanti', /(^|[\n}])\.pulsanti\{/.test(g.CSS_SITO ?? ''), true)
+
+console.log('\nPULSANTI: il sito li mostra come nel canvas, in ogni punto, senza cambiare impaginazione')
+{
+  // La fila della parte: le classi e i testi dei link, e se il modulo porta al modulo (col `?da=` del generatore).
+  const fila = (h) => {
+    const div = typeof h === 'string' ? /<div class="pulsanti">([\s\S]*?)<\/div>/.exec(h)?.[1] ?? '' : ''
+    return [...div.matchAll(/<a class="([^"]*)" href="([^"]*)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], m[2].startsWith('https://app.officinedellosport.it/iscrizioni/') ? 'modulo' : m[2], m[3]])
+  }
+  const VOLUTA = [['pulsante primario', 'modulo', 'Iscriviti'], ['pulsante secondario', '/orari/', 'Orari'], ['pulsante secondario', 'tel:+393463292786', 'Chiamaci']]
+  // Il modulo scritto per secondo esce lo stesso per primo; gli altri restano nell'ordine scritto.
+  const PARTE = PU('p', B('pagina', 'Orari', 'orari'), B('modulo', 'Prova'), B('telefono', 'Chiamaci'))
+  const su = (slug, content) => prova(() => g.paginaInAnteprima({ slug, titolo: 'Judo', descrizione: '', testo: z.pezziInHtml({ content }) }, []))
+  // Le impaginazioni nuove (Home, corso, Corsi, Contatti, Chi siamo) hanno tutte `<main class="passo-unico…">`; quella di sempre no.
+  const nuova = (h) => typeof h === 'string' ? /<main class="[^"]*\bpasso-unico\b/.test(h) : h
+  const a = su('judo', [T('a', '<h2>Cosa si fa</h2><p>Si cade.</p>'), PARTE])
+  ok('5a: in una sezione di judo, dopo un titolo, la fila come nel canvas', fila(a), VOLUTA)
+  const b = su('judo', [PARTE, T('a', '<h2>Cosa si fa</h2><p>Si cade.</p>')])
+  ok('5b: in cima a judo, prima di ogni titolo, la fila come nel canvas', fila(b), VOLUTA)
+  ok('5b: e judo non cambia impaginazione', nuova(b), false)
+  const c = su('home', [PARTE, T('a', '<h2>Chi siamo</h2><p>Una palestra.</p>')])
+  ok('5c: in cima alla home la fila come nel canvas', fila(c), VOLUTA)
+  ok('5c: e la home non cambia impaginazione', nuova(c), false)
+  // Un <p> di soli pulsanti scritto dentro un TESTO resta com'è oggi: col modulo in cima la pagina prende l'impaginazione nuova.
+  const P = '<p><a class="pulsante" href="https://app.officinedellosport.it/iscrizioni/">Prova</a></p>'
+  ok('5: un TESTO vecchio col modulo in cima alla home dà ancora la Home nuova', nuova(su('home', [T('a', P + '<h2>Chi siamo</h2><p>Una palestra.</p>')])), true)
+  ok('5: un TESTO vecchio col modulo in cima a judo dà ancora il corso nuovo', nuova(su('judo', [T('a', P + '<h2>Cosa si fa</h2><p>Si cade.</p>')])), true)
+}
+
+console.log('\nPULSANTI: validità')
+ok('6: con 1, 2 e 3 pulsanti è valida', [1, 2, 3].map((n) => valido({ content: [PU('p', ...Array.from({ length: n }, () => B('telefono', 'Chiamaci')))] })), [true, true, true])
+for (const [cosa, p] of [
+  ['senza pulsanti', PU('p')],
+  ['con 4 pulsanti', PU('p', B('telefono', 'a'), B('telefono', 'b'), B('telefono', 'c'), B('telefono', 'd'))],
+  ['con un dove sconosciuto', PU('p', B('fax', 'Faxaci'))],
+  ['con un testo non stringa', PU('p', { dove: 'telefono', testo: 3, indirizzo: '' })],
+  ['con un indirizzo non stringa', PU('p', { dove: 'altro', testo: 'x', indirizzo: null })],
+  ['con un pulsante non oggetto', PU('p', 'telefono')],
+  ['con pulsanti non array', { type: 'pulsanti', props: { id: 'p', pulsanti: 'telefono' } }],
+]) ok(`6: una parte Pulsanti ${cosa} non è valida`, valido({ content: [p] }), false)
+for (const ind of ['javascript:alert(1)', '//altro.it', 'www.x.it', 'https://x.it/a b', ' https://x.it/a']) {
+  const c = [PU('p', B('altro', 'Fuori', ind))]
+  ok(`7: altro con «${ind}» non è valido e lo dice`, [valido({ content: c }), nonVa(c), salvare(c)], [false, NO_INDIRIZZO, NO_INDIRIZZO])
+}
+for (const ind of ['https://x.it/a', 'mailto:a@b.it', 'tel:+390111234567', '/orari/']) ok(`7: altro con «${ind}» è valido`, valido({ content: [PU('p', B('altro', 'Fuori', ind))] }), true)
+ok('7: altro con indirizzo vuoto è valido (il pulsante non esce)', valido({ content: [PU('p', B('altro', 'Fuori', ''))] }), true)
+for (const slug of ['../x', 'Orari Nuovi', '/orari/']) {
+  const c = [PU('p', B('pagina', 'Orari', slug))]
+  ok(`7: pagina con lo slug «${slug}» non è valida e lo dice`, [valido({ content: c }), nonVa(c), salvare(c)], [false, NO_INDIRIZZO, NO_INDIRIZZO])
+}
+
+console.log('\nPULSANTI e DOMANDE: nome e posto nell\'ELENCO')
+{
+  const pi = [T('a', '<p>a</p>'), T('b', '<p>b</p>'), { type: 'iscriviti', props: { id: 'i', titolo: '', frase: '' } }]
+  ok('8: i nomi delle parti nuove', [PU('p', B('modulo')), D('d', [])].map((p) => prova(() => z.nomeParte(p))), ['Pulsanti', 'Domande'])
+  ok('9: senza scelta vanno prima di ISCRIVITI, come TESTO', [z.doveMettere('pulsanti', null, pi), z.doveMettere('domande', null, pi)], [2, 2])
+  ok('9: il tasto + PARTE non è spento', [z.motivoSpento('pulsanti', pi), z.motivoSpento('domande', pi)], [null, null])
+}
+
+console.log('\nDOMANDE: l\'HTML della parte')
+ok('10: senza titolo il titolo è «Domande frequenti»', html([D('d', [Q('Serve esperienza?', '<p>No.</p>')])]), '<h2>Domande frequenti</h2><h3>Serve esperienza?</h3><p>No.</p>')
+ok('10: col titolo scritto, quel titolo', html([D('d', [Q('Serve esperienza?', '<p>No.</p>')], 'Le vostre domande')]), '<h2>Le vostre domande</h2><h3>Serve esperienza?</h3><p>No.</p>')
+ok('10: titolo e domanda escono come testo, la domanda senza spazi ai lati', html([D('d', [Q('  <b>Serve</b> & altro?  ', '<p>No.</p>')], '<i>Tu</i> & noi')]), '<h2>&lt;i&gt;Tu&lt;/i&gt; &amp; noi</h2><h3>&lt;b&gt;Serve&lt;/b&gt; &amp; altro?</h3><p>No.</p>')
+ok('10: più coppie una dopo l\'altra', html([D('d', [Q('Uno?', '<p>A.</p>'), Q('Due?', '<ul><li>B</li></ul>')])]), '<h2>Domande frequenti</h2><h3>Uno?</h3><p>A.</p><h3>Due?</h3><ul><li>B</li></ul>')
+ok('11: una coppia senza domanda o senza risposta non esce', html([D('d', [Q('', '<p>A.</p>'), Q('   ', '<p>B.</p>'), Q('Vuota?', '<p></p>'), Q('Niente?', ''), Q('Piena?', '<p>Sì.</p>')])]), '<h2>Domande frequenti</h2><h3>Piena?</h3><p>Sì.</p>')
+ok('11: senza coppie che escono la parte non lascia niente, neanche il titolo', html([T('a', '<p>x</p>'), D('d', [Q('', '<p>A.</p>'), Q('Vuota?', '<p></p>')], 'Domande'), D('e', [])]), '<p>x</p>')
+ok('12: un titolo dentro la risposta esce come paragrafo', html([D('d', [Q('Serve?', '<h2>Sì</h2><h3>Sempre</h3><h4>Dopo</h4><p>Fine.</p>')])]), '<h2>Domande frequenti</h2><h3>Serve?</h3><p>Sì</p><p>Sempre</p><p>Dopo</p><p>Fine.</p>')
+
+console.log('\nDOMANDE: il sito le riconosce')
+{
+  const h = anteprima([T('a', '<h2>Info</h2><h3>Orari</h3><p>Sera.</p>'), D('d', [Q('Serve esperienza?', '<p>No.</p>'), Q('Quanto costa?', '<p>Poco.</p>')])])
+  const tessere = typeof h === 'string' ? [...h.matchAll(/<article class="([^"]*)"><h3>([^<]*)<\/h3>/g)].filter((m) => m[2].endsWith('?')).map((m) => [m[1], m[2]]) : h
+  ok('13: le domande sono tessere chiare', tessere, [['tessera chiara', 'Serve esperienza?'], ['tessera chiara', 'Quanto costa?']])
+  const ld = typeof h === 'string' ? /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(h)?.[1] : null
+  const faq = prova(() => JSON.parse(ld)['@graph'].find((n) => n['@type'] === 'FAQPage')?.mainEntity.map((q) => q.name))
+  ok('13: i dati per Google hanno le due domande, e solo quelle', faq, ['Serve esperienza?', 'Quanto costa?'])
+}
+
+console.log('\nDOMANDE: senza «?» si salva, con l\'avviso')
+{
+  const c = [D('d', [Q('Orari e prezzi', '<p>Sera.</p>')])]
+  ok('14: una domanda senza «?» è valida e si salva', [valido({ content: c }), salvare(c)], [true, null])
+  ok('14: senzaPunto avvisa solo per una domanda scritta senza «?»', ['Orari e prezzi', 'Quanto costa? ', '  ', ''].map((d) => prova(() => z.senzaPunto(d))), [true, false, false, false])
+}
+
+console.log('\nDOMANDE: validità')
+ok('15: MASSIMO_DOMANDE è 30', z.MASSIMO_DOMANDE, 30)
+ok('15: senza coppie è valida', valido({ content: [D('d', [])] }), true)
+ok('15: con 30 coppie è valida, con 31 no', [30, 31].map((n) => valido({ content: [D('d', Array.from({ length: n }, (_, i) => Q(`D${i}?`, '<p>R</p>')))] })), [true, false])
+for (const [cosa, p] of [
+  ['con domande non array', { type: 'domande', props: { id: 'd', titolo: '', domande: 'x' } }],
+  ['senza domande', { type: 'domande', props: { id: 'd', titolo: '' } }],
+  ['con un titolo non stringa', { type: 'domande', props: { id: 'd', titolo: 3, domande: [] } }],
+  ['senza titolo', { type: 'domande', props: { id: 'd', domande: [] } }],
+  ['con una coppia non oggetto', D('d', ['Serve?'])],
+  ['con una domanda non stringa', D('d', [{ domanda: 1, risposta: '<p>No.</p>' }])],
+  ['con una risposta non stringa', D('d', [{ domanda: 'Serve?', risposta: null }])],
+  ['con una coppia senza risposta', D('d', [{ domanda: 'Serve?' }])],
+]) ok(`15: una parte Domande ${cosa} non è valida`, valido({ content: [p] }), false)
+
+console.log('\nPULSANTI: le pagine tra cui scegliere')
+{
+  const P = (slug, titolo, pubblicato = '2026-10-01T10:00:00Z', nascosta = false) => ({ slug, titolo, pubblicato, nascosta })
+  ok('17: solo le pubblicate e non nascoste, senza Contatti, nell\'ordine', prova(() => z.pagineDaPulsante([P('orari', 'Orari'), P('bozza', 'Bozza', null), P('segreta', 'Segreta', '2026-10-01T10:00:00Z', true), P('contatti', 'Contatti'), P('judo', 'Judo')])),
+    [{ slug: 'orari', titolo: 'Orari' }, { slug: 'judo', titolo: 'Judo' }])
+}
+
+
+// ---------------------------------------------------------------------------
+// Il giro dopo il collaudo: i guai trovati nel browser, ognuno con la prova che non lo fa tornare.
+// ---------------------------------------------------------------------------
+console.log('\nPulsanti e Domande, dopo il collaudo')
+
+// Dentro `.testo` vinceva `.testo a.pulsante` (0,2,1): la fila usciva tutta scura.
+const cssSito = g.CSS_SITO ?? ''
+ok('la fila: Iscriviti giallo anche dentro il testo', /\.pulsanti \.pulsante\.primario\{background:var\(--giallo\);color:var\(--inchiostro\)/.test(cssSito), true)
+ok('la fila: gli altri a linea anche dentro il testo', /\.pulsanti \.pulsante\.secondario\{background:transparent;color:var\(--inchiostro\);border:2px solid var\(--inchiostro\)/.test(cssSito), true)
+
+// La Home sul sito è «/», non «/home/».
+ok('un pulsante verso la Home porta a /', prova(() => z.pezziInHtml({ content: [PU('h', B('pagina', 'Home', 'home'))] })), '<div class="pulsanti"><a class="pulsante" href="/">Home</a></div>')
+ok('percorsoPagina: la Home e le altre', prova(() => [sa.percorsoPagina('home'), sa.percorsoPagina('orari')]), ['/', '/orari/'])
+
+// Cambiando «Dove porta» l'indirizzo di prima non deve restare a bloccare il salvataggio.
+ok('cambia dove porta: l’indirizzo si svuota', prova(() => z.conIndirizziGiusti([B('altro', 'Sito', 'https://x.it/')], [B('pagina', 'Sito', 'https://x.it/')])), [B('pagina', 'Sito', '')])
+ok('stesso dove: l’indirizzo resta', prova(() => z.conIndirizziGiusti([B('altro', 'Sito', 'https://x.it/')], [B('altro', 'Sito', 'https://x.it/b')])), [B('altro', 'Sito', 'https://x.it/b')])
+ok('un pulsante nuovo resta com’è', prova(() => z.conIndirizziGiusti([], [B('modulo')])), [B('modulo')])
+
+// Quel che l'editor disegna nella pagina.
+const fila = prova(() => g.parteSulSito(PU('s', B('telefono', 'Chiamaci'), B('modulo', 'Prova'))))
+ok('parteSulSito: la fila con Iscriviti primario per primo', typeof fila === 'string' && /^<div class="pulsanti"><a class="pulsante primario"[^>]*>Iscriviti<\/a><a class="pulsante secondario" href="tel:\+393463292786"[^>]*>Chiamaci<\/a><\/div>$/.test(fila), true)
+const tessere = prova(() => g.parteSulSito(D('d', [Q('Serve esperienza?', '<p>No.</p>'), Q('Cosa porto?', '<p>Scarpe.</p>')])))
+ok('parteSulSito: le domande sono tessere chiare', typeof tessere === 'string' && (tessere.match(/class="tessera chiara"/g) ?? []).length, 2)
+
+// L'avviso del «?» dice il vero: una domanda senza «?» fa uscire colorate tutte le tessere della parte, e Google legge solo le altre.
+const misto = prova(() => g.paginaInAnteprima({ slug: 'judo', titolo: 'Judo', descrizione: '', testo: z.pezziInHtml({ content: [D('d', [Q('Serve esperienza?', '<p>No.</p>'), Q('Orari e prezzi', '<p>Sera.</p>')])] }) }, []))
+ok('una domanda senza «?»: nessuna tessera chiara', typeof misto === 'string' && /class="tessera chiara"/.test(misto), false)
+ok('una domanda senza «?»: Google legge solo quella col «?»', typeof misto === 'string' && [...misto.matchAll(/"@type":"Question","name":"([^"]*)"/g)].map((m) => m[1]), ['Serve esperienza?'])
+// Mai dopo ISCRIVITI, anche le parti nuove.
+ok('Pulsanti o Domande dopo Iscriviti: non vanno, e lo dice', prova(() => [z.cosaNonVaPezzi({ content: [{ type: 'iscriviti', props: { id: 'i', titolo: '', frase: '' } }, PU('p', B('modulo'))] }), z.cosaNonVaPezzi({ content: [{ type: 'iscriviti', props: { id: 'i', titolo: '', frase: '' } }, D('d', [])] })]), ['La parte Iscriviti è una sola e sta in fondo alla pagina', 'La parte Iscriviti è una sola e sta in fondo alla pagina'])
+
 console.log('\nLa parte ISTRUTTORE: un istruttore per parte, nell\'ordine delle tessere')
 {
   const IS = (id, nome, { cognome = '', corsi = '', src = '', alt = '', pagina = '' } = {}) => ({ type: 'istruttore', props: { id, nome, cognome, corsi, src, alt, pagina } })

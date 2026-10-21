@@ -18,7 +18,7 @@ import {
   type VoceMenu,
 } from '../../lib/sitoPagine'
 import { pulisciTesto } from '../../lib/sitoTesto'
-import { cosaNonVaPezzi, databaseConPezzi, siProvaNuovoEditor, cosaNonVaPortare, dividiInParti, divisibileInParti, frasePartiNuove, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
+import { cosaNonVaPezzi, databaseConPezzi, pagineDaPulsante, siProvaNuovoEditor, cosaNonVaPortare, dividiInParti, divisibileInParti, frasePartiNuove, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
 import { Immagini } from './ImmaginiSito'
 import { OrarioSito } from './OrarioSito'
 import { Campo, chiedi, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
@@ -56,7 +56,7 @@ function Conto({ testo, limite }: { testo: string; limite: number }) {
  * La pagina del sito da scrivere. Salvare la bozza non cambia il sito:
  * solo PUBBLICA copia la bozza nel testo che il sito mostra.
  */
-function Scrivi({ d, pagina, altri, pagine, onChiudi, ricarica }: { d: DatiSegreteria; pagina: PaginaSito; altri: string[]; pagine: PaginaSito[]; onChiudi: () => void; ricarica: () => Promise<void> }) {
+function Scrivi({ d, pagina, altri, pagine, verso, onChiudi, ricarica }: { d: DatiSegreteria; pagina: PaginaSito; altri: string[]; pagine: PaginaSito[]; verso: Array<{ slug: string; titolo: string }>; onChiudi: () => void; ricarica: () => Promise<void> }) {
   const [titolo, setTitolo] = useState(pagina.titolo)
   const [descrizione, setDescrizione] = useState(pagina.descrizione)
   const [bozzaTesto, setBozza] = useState(pagina.bozza)
@@ -153,7 +153,7 @@ function Scrivi({ d, pagina, altri, pagine, onChiudi, ricarica }: { d: DatiSegre
   if (nuovo)
     return (
       <Suspense fallback={<span className="sg-sotto">Apro il nuovo editor…</span>}>
-        <EditorPuck d={d} pagina={pagina} onChiudi={onChiudi} ricarica={ricarica} />
+        <EditorPuck d={d} pagina={pagina} verso={verso} onChiudi={onChiudi} ricarica={ricarica} />
       </Suspense>
     )
 
@@ -385,6 +385,8 @@ export function Sito({ d }: { d: DatiSegreteria }) {
   const [aperta, setAperta] = useState<string | 'nuova' | null>(null)
   const tutte = pagine.dato ?? []
   const lei = tutte.find((p) => p.id === aperta)
+  // Le pagine dei pulsanti, rifatte solo quando cambiano: una lista nuova a ogni disegno rifarebbe la config del nuovo editor, e Puck rimonterebbe i campi.
+  const verso = useMemo(() => pagineDaPulsante((pagine.dato ?? []).filter((p) => p.id !== aperta)), [pagine.dato, aperta])
 
   // Cambiando scheda con voci a metà (menu o footer) si chiede prima, come cambiando voce del menu a sinistra.
   const cambiaScheda = async (dopo: 'pagine' | 'menu' | 'immagini') => {
@@ -413,7 +415,7 @@ export function Sito({ d }: { d: DatiSegreteria }) {
       </Testa>
 
       {lei ? (
-        <Scrivi key={lei.id} d={d} pagina={lei} altri={tutte.filter((p) => p.id !== lei.id).map((p) => p.slug)} pagine={tutte} onChiudi={() => setAperta(null)} ricarica={ricarica} />
+        <Scrivi key={lei.id} d={d} pagina={lei} altri={tutte.filter((p) => p.id !== lei.id).map((p) => p.slug)} pagine={tutte} verso={verso} onChiudi={() => setAperta(null)} ricarica={ricarica} />
       ) : (
         <>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>

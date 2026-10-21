@@ -1,7 +1,7 @@
 import { urlImmagine } from './sitoImmagini'
-import { indirizzoValido, slugValido } from './sitoPagine'
+import { indirizzoValido, percorsoPagina, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
-import { parteIscriviti, type ParteIscriviti } from './sitoPezzi'
+import { parteIscriviti, pezziInHtml, type ParteIscriviti, type Pezzo } from './sitoPezzi'
 import { GRIGLIA_MASSIMA, collage, conFila, impagina, persona, testataCorso } from './sitoLayout'
 import { elencoIstruttori, schedaScarna, type Cornice } from './sitoIstruttori'
 import { CSS_CORSI, CSS_CORSI_NUOVA, corsiNuova, eCorsiNuova } from './sitoCorsi'
@@ -9,12 +9,12 @@ import { CSS_INTERNE } from './sitoInterne'
 import { cssFoci, cssFociSchede } from './sitoFoto'
 import { eContattiNuova, contattiNuova } from './sitoContatti'
 import { CSS_ORARI, dividiOrari, orariHtml, type OrarioSito } from './sitoOrari'
-import { eHomeNuova, eIscrizione, homeNuova } from './sitoHome'
+import { eHomeNuova, eIscrizione, homeNuova, pulsanti, pulsantiDi } from './sitoHome'
 import { conProvenienza, etichettaPagina, haProvenienza } from './provenienza'
 import { CSS_ORARIO_AUTOMATICO, corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
 import { testiOrario, type OrarioAperto } from './sitoOrario'
 import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
-import { CONTATTI, chiama, scrivi } from './sito'
+import { CONTATTI, ISCRIZIONE, chiama, scrivi } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
 
 /**
@@ -106,7 +106,7 @@ const TESTI = {
   inpiu: 'Una settimana a 10 euro: provi tutte le discipline e scegli.',
   contatti: '/contatti/',
   // Il modulo sta nell'app (stesso indirizzo della guida), non nel sito: «Prova» porta a chi vuole iscriversi.
-  iscrizione: 'https://app.officinedellosport.it/iscrizioni/',
+  iscrizione: ISCRIZIONE,
 }
 const NOME = TESTI.nome
 /** L'immagine di condivisione, 1200×630, nella cartella delle risorse del sito. */
@@ -118,7 +118,7 @@ const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const slugDiPagina = (s: string) => s === 'home' || slugValido(s)
 
 /** L'indirizzo della pagina dentro il sito: la home è «/», le altre «/slug/». */
-const percorso = (slug: string) => (slug === 'home' ? '/' : `/${slug}/`)
+const percorso = percorsoPagina
 
 /** Dove si scrive il file di una pagina. */
 export const fileDi = (slug: string) => (slug === 'home' ? 'index.html' : `${slug}/index.html`)
@@ -418,6 +418,10 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .testata{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:22px var(--margine)}
 .pulsante,.testo a.pulsante,.colonna a.pulsante{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 32px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:18px;font-weight:600;text-decoration:none}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
+.pulsanti{display:flex;flex-wrap:wrap;gap:12px}
+/* Più forti di .testo a.pulsante: la fila della parte PULSANTI sta dentro il testo. */
+.pulsanti .pulsante.primario{background:var(--giallo);color:var(--inchiostro)}
+.pulsanti .pulsante.secondario{background:transparent;color:var(--inchiostro);border:2px solid var(--inchiostro)}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
 h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height:.82;overflow-wrap:anywhere}
 .pagina-hero{padding:40px var(--margine) 96px;display:flex;flex-wrap:wrap;align-items:stretch;gap:28px 56px}
@@ -1059,6 +1063,22 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
   })
 }
 
+/**
+ * La parte PULSANTI della pagina a pezzi (`sitoPezzi.ts`), disegnata come nel resto del sito: «Iscriviti» giallo e per primo,
+ * gli altri a linea, ovunque stia. Resta un `div` e non un `<p>`, così non fa mai passare la pagina all'impaginazione nuova.
+ */
+const conPartiPulsanti = (html: string) =>
+  html.replace(/<div class="pulsanti">[\s\S]*?<\/div>/g, (div) => {
+    const l = pulsantiDi({ tag: 'p', html: div })
+    return l ? pulsanti(l, TESTI.iscrizione) : ''
+  })
+
+/** Una parte PULSANTI o DOMANDE com'è sul sito, per disegnarla nell'editor: la fila dei pulsanti, le domande a tessere. */
+export function parteSulSito(p: Pezzo): string {
+  const html = pezziInHtml({ content: [p] })
+  return p.type === 'domande' ? impagina(html) : conPartiPulsanti(html)
+}
+
 /** In testata c'è un solo pulsante, «Iscriviti»; Contatti è una voce del menu come le altre (sul telefono il menu entra in una riga). */
 function testata(c: Contesto, corrente = ''): string {
   const menu = lista(voci('menu', c), corrente)
@@ -1167,7 +1187,8 @@ const PAGINE_NON_CORSO = new Set(['home', 'corsi', 'contatti', 'chi-siamo'])
 // Le pagine di legge sono informative: niente invito «Iscriviti» in fondo.
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   // La parte ISCRIVITI in fondo al testo diventa l'invito, una volta sola: non resta anche nel corpo.
-  const { resto: pulito, parte } = parteIscriviti(senzaPulsantiContatti(testoDellaPagina(p.testo, c.d.ospitiImmagini ?? []), c.d.dominio))
+  const { resto, parte } = parteIscriviti(senzaPulsantiContatti(testoDellaPagina(p.testo, c.d.ospitiImmagini ?? []), c.d.dominio))
+  const pulito = conPartiPulsanti(resto)
   // Dove la pagina ha già la sua chiamata finale l'invito automatico non esce; quello della parte sì, l'ha messo la segreteria.
   const fondo = (giaChiamata: boolean) => ((giaChiamata && !parte) || !conContatti ? '' : invito(parte, c.slugs.has('orari') && p.slug !== 'orari'))
   // La pagina «orari» col segnaposto [orari]: gli orari veri dei corsi. Senza il segnaposto è una pagina come le altre.
