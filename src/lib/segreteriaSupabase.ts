@@ -1694,10 +1694,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async contantiChiusiFino() {
-      const r = await db.rpc('cassa_contanti_chiusa_fino')
-      // Senza 90-ricevuta-cassa-chiusa.sql la funzione non c'è: nessun avviso, il pagamento a mano lo rifiuta il database.
-      if (r.error?.code === 'PGRST202' || r.error?.code === '42883') return null
-      return (ok(r) as string | null) ?? null
+      // Senza 90-ricevuta-cassa-chiusa.sql l'errore lo prendono i componenti: nessun avviso, decide il database.
+      return (ok(await db.rpc('cassa_contanti_chiusa_fino')) as string | null) ?? null
     },
 
     async chiusure() {

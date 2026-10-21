@@ -209,6 +209,9 @@ set role anon;
 select atteso('chi non ha accesso no', left(rifiuto('select fino()'), 5), '42501');
 reset role;
 select atteso('anon non ha execute', has_function_privilege('anon', 'cassa_contanti_chiusa_fino()', 'execute')::text, 'false');
+-- `fai_ricevuta` col suo `tranne` salta il giorno chiuso: la chiamano solo le funzioni del database.
+select atteso('fai_ricevuta: authenticated non ha execute', has_function_privilege('authenticated', 'fai_ricevuta(jsonb,date)', 'execute')::text, 'false');
+select atteso('fai_ricevuta: anon non ha execute', has_function_privilege('anon', 'fai_ricevuta(jsonb,date)', 'execute')::text, 'false');
 
 \echo ''
 \echo '--- 7. la chiusura annullata non chiude più; vale l''ultima non annullata ---'
