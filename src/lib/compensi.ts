@@ -18,7 +18,7 @@
 import { delMese, type MiaPresenza } from './ore'
 import { euro } from './ricevute'
 import { QUALIFICHE, stagioneDi, type Lettera, type TecnicoLettera } from './lettere'
-import type { LezioneSenzaIstruttore, Tariffa } from './segreteria'
+import type { LezioneSenzaIstruttore, PresenzaIstruttoreSeg, Tariffa } from './segreteria'
 import { giornoChiuso, type Cassa, type ChiusuraCassa } from './contabilita'
 
 export interface RigaCompenso {
@@ -69,7 +69,7 @@ export interface RicevutaCompenso extends DatiRicevutaCompenso {
   pagataIl: string | null
 }
 
-export type StatoCompenso = 'da-confermare' | 'senza-tariffa' | 'senza-dati' | 'da-fare' | 'fatta' | 'non-torna' | 'pagata'
+export type StatoCompenso = 'da-confermare' | 'senza-tariffa' | 'senza-dati' | 'da-fare' | 'fatta' | 'non-torna' | 'pagata' | 'solo-attese'
 
 /** Il primo del mese di una data, `AAAA-MM-01`, nel giorno di qui. */
 export const primoDelMese = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
@@ -108,12 +108,40 @@ export function statoCompenso({ conto, ricevuta, manca }: { conto: ContoCompenso
   return 'da-fare'
 }
 
+/** Una lezione tenuta in due dove a un previsto manca la firma. */
+export type SenzaFirma = { sessioneId: string; corso: string; inizio: string; firmatoDa: string[] }
+type PresenzaPerFirma = Pick<PresenzaIstruttoreSeg, 'sessioneId' | 'corso' | 'inizio' | 'fine' | 'personaId' | 'nome' | 'stato' | 'previstiElenco' | 'annullata' | 'bastaUno'>
+
+/**
+ * Le lezioni del mese, già finite e non annullate, dove `personaId` era
+ * previsto, non ha nessuna presenza (né rifiutata né da confermare: quelle si
+ * decidono già) e un collega sì, non rifiutata. Una lezione senza nessuna firma
+ * non c'è: sta fra quelle senza istruttore. Nei corsi dove basta uno non si
+ * chiede.
+ */
+export function senzaFirma(presenze: PresenzaPerFirma[], personaId: string, mese: { da: Date; a: Date }, adesso = new Date()): SenzaFirma[] {
+  const fine = new Date(mese.a.getFullYear(), mese.a.getMonth(), mese.a.getDate() + 1).getTime()
+  const perLezione = new Map<string, PresenzaPerFirma[]>()
+  for (const p of presenze) perLezione.set(p.sessioneId, [...(perLezione.get(p.sessioneId) ?? []), p])
+  return [...perLezione.values()]
+    .flatMap((l): SenzaFirma[] => {
+      const x = l[0]
+      const inizio = new Date(x.inizio).getTime()
+      if (inizio < mese.da.getTime() || inizio >= fine || new Date(x.fine) > adesso) return []
+      if (l.some((p) => p.annullata || p.bastaUno) || l.some((p) => p.personaId === personaId)) return []
+      if (!l.some((p) => p.previstiElenco?.some((q) => q.id === personaId))) return []
+      const firmatoDa = l.filter((p) => p.stato !== 'rifiutata').map((p) => p.nome)
+      return firmatoDa.length ? [{ sessioneId: x.sessioneId, corso: x.corso, inizio: x.inizio, firmatoDa }] : []
+    })
+    .sort((a, b) => a.inizio.localeCompare(b.inizio))
+}
+
 /**
  * Le righe della pagina COMPENSI per un mese: un tecnico per riga, per
- * cognome. Chi non ha lezioni, né da confermare, né una ricevuta di quel mese
- * non c'è.
+ * cognome. Chi non ha lezioni, né da confermare, né una ricevuta, né una
+ * lezione senza la sua firma di quel mese non c'è.
  */
-export function righeCompensi<P extends MiaPresenza>({
+export function righeCompensi<P extends MiaPresenza & PresenzaPerFirma>({
   tecnici,
   presenze,
   senzaIstruttore,
@@ -138,9 +166,13 @@ export function righeCompensi<P extends MiaPresenza>({
       const conto = compensoDelMese(presenze, senzaIstruttore, persona.id, mese, tariffe[persona.id] ?? [])
       const ricevuta = ricevute.find((r) => r.personaId === persona.id && r.mese === chiave && !r.annullataIl)
       const manca = mancano?.[persona.id] ?? null
-      return { persona, conto, ricevuta, manca, stato: statoCompenso({ conto, ricevuta, manca }) }
+      const firme = senzaFirma(presenze, persona.id, mese)
+      // Chi ha solo lezioni senza la sua firma non ha niente da pagare finché la segreteria non dice C'ERA.
+      const solo = !ricevuta && !conto.lezioni && !conto.daConfermare
+      const stato: StatoCompenso = solo ? 'solo-attese' : statoCompenso({ conto, ricevuta, manca })
+      return { persona, conto, ricevuta, manca, senzaFirma: firme, stato }
     })
-    .filter((r) => r.ricevuta || r.conto.lezioni || r.conto.daConfermare)
+    .filter((r) => r.ricevuta || r.conto.lezioni || r.conto.daConfermare || r.senzaFirma.length)
 }
 
 /** Perché la ricevuta non si può fare con questo importo; `null` se va. Le stesse regole di `fai_ricevuta_compenso`. */

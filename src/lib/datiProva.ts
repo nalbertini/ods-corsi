@@ -264,6 +264,22 @@ export function segnaIstruttorePrevistoProva(sessioneId: string, personaId: stri
   archivio.salva()
 }
 
+/** Come `segna_istruttore_assente`: «non c'era», una presenza rifiutata per un previsto senza firma. */
+export function segnaIstruttoreAssenteProva(sessioneId: string, personaId: string, da: string) {
+  const l = trovaLezione(sessioneId)
+  if (!l) throw new Error('lezione inesistente')
+  if (comeE(l).stato === 'annullata') throw new Error('la lezione è annullata')
+  if (!comeE(l).istruttori.includes(personaId)) throw new Error('si sceglie fra gli istruttori previsti')
+  const tutte = archivio.dati.presenzeIstruttori ?? []
+  if (tutte.some((x) => x.sessioneId === sessioneId && x.personaId === personaId)) return
+  const adesso = new Date().toISOString()
+  archivio.dati.presenzeIstruttori = [
+    ...tutte,
+    { id: nuovoIdPresenza(), sessioneId, personaId, stato: 'rifiutata', prevista: true, entratoIl: adesso, sala: comeE(l).sala, gestitaDa: da, gestitaIl: adesso, come: 'segreteria' },
+  ]
+  archivio.salva()
+}
+
 /** Come `lezioni_senza_istruttore` del database. */
 export function lezioniSenzaIstruttoreProva(): LezioneSenzaIstruttore[] {
   const ora = new Date()

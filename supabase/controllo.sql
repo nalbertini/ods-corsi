@@ -404,6 +404,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from voci_contabili where nome = 'Compensi istruttori' and tipo = 'uscita' and di_sistema)
     and exists (select 1 from pg_trigger where tgname = 'compensi_tornano' and not tgisinternal)
     -- Rilanciare 80 dopo 81 rimette l'annullamento che non guarda il pagamento: la riga torna «da lanciare».
-    and exists (select 1 from dentro where nome = 'annulla_ricevuta_compenso' and corpo like '%È pagata%'))
+    and exists (select 1 from dentro where nome = 'annulla_ricevuta_compenso' and corpo like '%È pagata%')),
+  ('82-manca-la-firma.sql', 'manca la firma: «a lezione basta uno» e chi non c''era',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'corsi' and column_name = 'basta_uno')
+    and to_regprocedure('public.segna_istruttore_assente(uuid,uuid)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -192,6 +192,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/lettere_incarico/, MANCA_LETTERE],
   [/tariffe_istruttori/, 'Le tariffe e i dati dei tecnici non sono ancora attivi sul database: va lanciato 78-tariffe-tecnici.sql'],
   [/anagrafiche/, 'Nascita, residenza e genitore degli iscritti non sono ancora attivi sul database: va lanciato 18-anagrafiche.sql'],
+  [/segna_istruttore_assente|basta_uno/, 'Segnare chi non c’era e «a lezione basta uno» non sono ancora attivi sul database: va lanciato 82-manca-la-firma.sql'],
   [/segna_istruttore_previsto/, 'Segnare un istruttore su una lezione già coperta non è ancora attivo sul database: va lanciato 46-istruttore-collega.sql'],
   [/lezioni_senza_istruttore|segna_istruttori_lezione/, 'Le lezioni tenute da confermare non sono ancora attive sul database: va lanciato 23-istruttori-dalle-lezioni.sql'],
   [/elimina_presenza_istruttore/, 'Eliminare una presenza non è ancora attivo sul database: va lanciato 65-elimina-presenza-rifiutata.sql'],
@@ -792,6 +793,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         ricorrenze: Array<{ id: string; giorno: number; ora: string; durata_min: number; dal: string; al: string | null; sala_id: string | null; sale: { nome: string } | null; attivita_id?: string | null; attivita?: { nome: string } | null }>
       }>
       const chi = await insegnanti(righe.map((r) => r.id))
+      // Letta a parte: senza 82-manca-la-firma.sql la colonna non c'è, e CORSI non offre la spunta.
+      const bastaUno = await db.from('corsi').select('id, basta_uno')
+      // La forma è quella della select qui sopra.
+      const uno = bastaUno.error ? null : new Map((bastaUno.data as Array<{ id: string; basta_uno: boolean }>).map((r) => [r.id, r.basta_uno]))
       const g = oggi()
       return righe.map(
         (r): CorsoSeg => ({
@@ -804,6 +809,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           capienza: r.capienza ?? undefined,
           attivo: r.attivo,
           enteTessera: r.ente_tessera ?? undefined,
+          bastaUno: uno ? (uno.get(r.id) ?? false) : undefined,
           ricorrenze: r.ricorrenze
             .filter((x) => !x.al || x.al >= g)
             .map((x) => ({
@@ -833,6 +839,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         colore: c.colore ?? null,
         // Solo se la scelta c'è: senza `61-tessere.sql` la schermata non la offre e la colonna non esiste.
         ...(c.enteTessera === undefined ? {} : { ente_tessera: enteDaDati(c.enteTessera) ?? null }),
+        // Come la tessera: solo se la spunta c'è, cioè dopo 82-manca-la-firma.sql.
+        ...(c.bastaUno === undefined ? {} : { basta_uno: c.bastaUno }),
       }
       const id = c.id
         ? (ok(await db.from('corsi').update(riga).eq('id', c.id)), c.id)
@@ -2083,7 +2091,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             .select(
               // Con `*`: `come` c'è solo dopo 23-istruttori-dalle-lezioni.sql, e senza si legge lo stesso.
               '*, ' +
-                'sessioni ( corso_id, inizio, fine, istruttore_id, stato, corsi ( nome, colore, istruttore_id ), persone ( nome, cognome ) ), ' +
+                'sessioni ( corso_id, inizio, fine, istruttore_id, stato, corsi ( * ), persone ( nome, cognome ) ), ' +
                 'persona:persone!persona_id ( nome, cognome ), gestore:persone!gestita_da ( nome, cognome ), postazioni ( sale ( nome ) )',
             )
             .or(`stato.eq.da_confermare,entrato_il.gte.${da}`)
@@ -2107,7 +2115,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           fine: string
           istruttore_id: string | null
           stato: string
-          corsi: { nome: string; colore: string | null; istruttore_id: string | null } | null
+          // Con `*`: `basta_uno` c'è solo dopo 82-manca-la-firma.sql.
+          corsi: { nome: string; colore: string | null; istruttore_id: string | null; basta_uno?: boolean } | null
           persone: { nome: string; cognome: string } | null
         } | null
         persona: { nome: string; cognome: string } | null
@@ -2150,6 +2159,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             segnataDa: r.segnata_da ? segnatori.get(r.segnata_da) : undefined,
             previstiElenco,
             annullata: s.stato === 'annullata',
+            bastaUno: s.corsi?.basta_uno ?? false,
           },
         ]
       })
@@ -2412,6 +2422,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async segnaIstruttorePrevisto(sessioneId, personaId) {
       ok(await db.rpc('segna_istruttore_previsto', { sessione: sessioneId, persona: personaId }))
+    },
+
+    async segnaIstruttoreAssente(sessioneId, personaId) {
+      ok(await db.rpc('segna_istruttore_assente', { sessione: sessioneId, persona: personaId }))
     },
 
     async allenamenti(quanti) {

@@ -59,6 +59,8 @@ export interface CorsoProva {
   attivo: boolean
   /** Quale tessera chiede (FIJLKAM, FIPE…); senza, nessuna. */
   enteTessera?: string
+  /** A lezione basta uno degli istruttori (`corsi.basta_uno`). */
+  bastaUno?: boolean
   ricorrenze: RicorrenzaProva[]
 }
 

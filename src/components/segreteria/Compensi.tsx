@@ -7,7 +7,7 @@ import { chiaveGiorno, dataLunga } from '../../lib/sala'
 import { euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
-import { centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, esitoDelMese, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type StatoCompenso } from '../../lib/compensi'
+import { centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, esitoDelMese, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type SenzaFirma, type StatoCompenso } from '../../lib/compensi'
 import { chiedi, Guaio, Testa, useAvviso, useCarica } from './comune'
 import { Numero } from './Presenze'
 
@@ -22,6 +22,7 @@ const NOME_STATO: Record<StatoCompenso, { testo: string; tono: 'rosso' | 'giallo
   fatta: { testo: 'FATTA · DA PAGARE', tono: 'giallo' },
   pagata: { testo: 'PAGATA', tono: 'verde' },
   'non-torna': { testo: 'NON TORNA PIÙ', tono: 'rosso' },
+  'solo-attese': { testo: 'NIENTE DA PAGARE, PER ORA', tono: 'neutro' },
 }
 
 /** Il tono del segno di uno stato: rosso quando si è fermi, e allora anche il riquadro. */
@@ -214,7 +215,7 @@ export function AzioniRicevuta({
 }
 
 /** Il segno dello stato, in parole e col colore, e sotto cosa fare. */
-export function SegnoCompenso({ stato, conto, ricevuta, manca, inScheda }: { stato: StatoCompenso; conto: ContoCompenso; ricevuta?: RicevutaCompenso; manca?: string | null; inScheda?: boolean }) {
+export function SegnoCompenso({ stato, conto, ricevuta, manca, inScheda, senzaFirma = 0 }: { stato: StatoCompenso; conto: ContoCompenso; ricevuta?: RicevutaCompenso; manca?: string | null; inScheda?: boolean; senzaFirma?: number }) {
   const s = NOME_STATO[stato]
   const frase =
     stato === 'da-confermare'
@@ -223,6 +224,8 @@ export function SegnoCompenso({ stato, conto, ricevuta, manca, inScheda }: { sta
         ? `${conto.senzaTariffa.join(', ')} senza tariffa: si scrive ${inScheda ? 'qui sopra, in TARIFFE' : 'nella scheda, in ISTRUTTORI E ACCESSI'}.`
         : stato === 'senza-dati'
           ? `${maiuscola((manca ?? '').replace(/^Mancano i dati per la ricevuta: /, '') || 'I dati')}: si scrivono ${inScheda ? 'qui sopra, in DATI PER LETTERA E RICEVUTE' : 'nella scheda, in ISTRUTTORI E ACCESSI'}.`
+          : stato === 'solo-attese'
+          ? 'Nel mese non ha lezioni firmate. Se c’era, si segna qui sotto e la ricevuta si fa.'
           : stato === 'non-torna' && ricevuta
           ? `Ricevuta di ${euro(ricevuta.importo)} €: dopo è cambiata una presenza e il mese ora fa ${euro(conto.calcolato)} €.${ricevuta.firmata ? ' Era firmata.' : ''}`
           : stato === 'pagata' && ricevuta?.pagataIl
@@ -241,13 +244,63 @@ export function SegnoCompenso({ stato, conto, ricevuta, manca, inScheda }: { sta
             DA RIPORTARE FIRMATA
           </span>
         )}
+        {senzaFirma > 0 && (
+          <span className="sg-segno-regola" data-tono="giallo">
+            MANCA LA FIRMA · {quante(senzaFirma, 'LEZIONE', 'LEZIONI')}
+          </span>
+        )}
       </span>
       {frase && <span style={{ fontSize: 13, color: 'var(--sec)' }}>{frase}</span>}
     </span>
   )
 }
 
-type Filtro = 'tutti' | 'da-fare' | 'da-pagare' | 'da-firmare'
+/**
+ * Le lezioni in due dove al tecnico manca la firma: chi ha firmato, e i due
+ * tasti. C'ERA conferma la presenza (entra nel compenso); «Non c'era» la
+ * rifiuta e non si chiede più.
+ */
+function SenzaFirmaElenco({ d, p, lezioni, fai, onCambiato }: { d: DatiSegreteria; p: Persona; lezioni: SenzaFirma[]; fai: Fai; onCambiato: () => Promise<unknown> }) {
+  // Un clic alla volta: un doppio clic su C'ERA non deve diventare anche «Non c'era».
+  const [occupato, setOccupato] = useState(false)
+  const segna = async (l: SenzaFirma, cera: boolean) => {
+    setOccupato(true)
+    try {
+      await fai(() => (cera ? d.segnaIstruttorePrevisto(l.sessioneId, p.id) : d.segnaIstruttoreAssente(l.sessioneId, p.id)), cera ? `${p.nome} c’era: la lezione entra nel compenso` : `${p.nome} non c’era`, onCambiato)
+    } finally {
+      setOccupato(false)
+    }
+  }
+  return (
+    <div className="stack" style={{ gap: 0, paddingLeft: 16 }}>
+      <span className="sg-etichetta" style={{ padding: '8px 0 4px' }}>
+        MANCA LA SUA FIRMA
+      </span>
+      {lezioni.map((l) => {
+        const quando = new Date(l.inizio)
+        return (
+          <div key={l.sessioneId} className="row sg-senza-firma" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center', minHeight: 52, borderTop: '1px solid var(--line-soft)', fontSize: 14 }}>
+            <span style={{ minWidth: 140 }}>{l.corso}</span>
+            <span className="num" style={{ minWidth: 150 }}>
+              {dataLunga(chiaveGiorno(quando), false)} · {quando.toTimeString().slice(0, 5)}
+            </span>
+            <span style={{ flex: 1, minWidth: 160, color: 'var(--sec)' }}>ha firmato {l.firmatoDa.join(', ')}</span>
+            <span className="row" style={{ gap: 12, alignItems: 'center' }}>
+              <button type="button" className="sg-btn sg-btn-linea" disabled={occupato} onClick={() => void segna(l, true)}>
+                C’era
+              </button>
+              <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} disabled={occupato} onClick={() => void segna(l, false)}>
+                Non c’era
+              </button>
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+type Filtro = 'tutti' | 'da-fare' | 'da-pagare' | 'da-firmare' | 'manca-firma'
 
 /**
  * COMPENSI: il mese di tutti i tecnici. Una riga per chi ha lezioni
@@ -287,7 +340,8 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
   const fermi = righe.filter((r) => r.stato === 'da-confermare' || r.stato === 'senza-tariffa' || r.stato === 'senza-dati' || r.stato === 'non-torna')
   const daFirmare = righe.filter((r) => r.ricevuta && !r.ricevuta.firmata)
   const daPagare = righe.filter((r) => r.stato === 'fatta')
-  const visibili = filtro === 'da-fare' ? daFare : filtro === 'da-firmare' ? daFirmare : filtro === 'da-pagare' ? daPagare : righe
+  const senzaFirme = righe.filter((r) => r.senzaFirma.length)
+  const visibili = filtro === 'da-fare' ? daFare : filtro === 'da-firmare' ? daFirmare : filtro === 'da-pagare' ? daPagare : filtro === 'manca-firma' ? senzaFirme : righe
 
   const preparaTutte = async () => {
     const fatte: RicevutaCompenso[] = []
@@ -352,6 +406,7 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
                 ['da-fare', 'Da fare', daFare.length],
                 ['da-pagare', 'Da pagare', daPagare.length],
                 ['da-firmare', 'Da riportare firmate', daFirmare.length],
+                ['manca-firma', 'Manca la firma', senzaFirme.length],
               ] as const
             ).map(([id, testo, n]) => (
               <button key={id} type="button" className="num sg-chip" aria-pressed={filtro === id} onClick={() => setFiltro(id)}>
@@ -370,11 +425,12 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
                     {quante(r.conto.lezioni, 'lezione', 'lezioni')} · {quanteOre(r.conto.minuti)}
                   </span>
                   <span style={{ flex: 1, minWidth: 200 }}>
-                    <SegnoCompenso stato={r.stato} conto={r.conto} ricevuta={r.ricevuta} manca={r.manca} />
+                    <SegnoCompenso stato={r.stato} conto={r.conto} ricevuta={r.ricevuta} manca={r.manca} senzaFirma={r.senzaFirma.length} />
                   </span>
                   {/* I tasti stanno fuori dal dettaglio: un clic su un tasto non apre né chiude i corsi. */}
                   <AzioniRicevuta d={d} p={r.persona} conto={r.conto} ricevuta={r.ricevuta} stato={r.stato} mese={mese} fai={fai} onCambiato={dati.ricarica} onPaga={puoPagare ? () => setPaga(r.persona) : undefined} onVai={onVai} />
                 </div>
+                {r.senzaFirma.length > 0 && <SenzaFirmaElenco d={d} p={r.persona} lezioni={r.senzaFirma} fai={fai} onCambiato={dati.ricarica} />}
                 {r.conto.righe.length > 0 && (
                   <details className="sg-compenso sg-compenso-per-corso">
                     <summary style={{ fontSize: 13, color: 'var(--sec)', minHeight: 44, display: 'flex', alignItems: 'center' }}>Per corso</summary>

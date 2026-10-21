@@ -251,6 +251,87 @@ console.log('\n2. lo stato del compenso, e chi ha una riga nella pagina COMPENSI
   )
 }
 
+console.log('\n2 bis. manca la firma: chi era previsto a una lezione tenuta in due e non ha firmato')
+{
+  const ANNA = { id: 'AN', nome: 'Anna Bianchi' }
+  const MAURA = { id: 'MA', nome: 'Maura Uno' }
+  const FEDERICO = { id: 'FE', nome: 'Federico Due' }
+  // Una presenza della lezione `sessione`: chi ha messo il PIN, coi previsti della lezione.
+  const firma = (sessione, chi, stato, inizio, previsti = [ANNA, MAURA], altro = {}) => ({
+    id: `${sessione}-${chi.id}`,
+    sessioneId: sessione,
+    corso: 'Judo',
+    inizio: iso(inizio),
+    fine: iso(inizio.getTime() + 60 * 60_000),
+    personaId: chi.id,
+    nome: chi.nome,
+    previsti: previsti.map((p) => p.nome).join(', '),
+    stato,
+    prevista: true,
+    come: 'pin',
+    entratoIl: iso(inizio),
+    previstiElenco: previsti,
+    ...altro,
+  })
+  const il3 = new Date(2026, 9, 3, 18, 0)
+  const dopo = new Date(2026, 9, 31, 23, 0)
+  const sf = (presenze, personaId, adesso = dopo, mese = ottobre) => {
+    try {
+      return c.senzaFirma(presenze, personaId, mese, adesso)
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  const quante = (x) => (Array.isArray(x) ? x.length : x ?? 'non c\'è')
+  const soloAnna = [firma('j3', ANNA, 'confermata', il3)]
+
+  ok('1. Judo del 3, previste Anna e Maura, solo Anna confermata: Maura ha una lezione senza firma, firmata da Anna',
+    sf(soloAnna, 'MA'), [{ sessioneId: 'j3', corso: 'Judo', inizio: iso(il3), firmatoDa: ['Anna Bianchi'] }])
+  ok('   e Anna, che ha firmato, nessuna', quante(sf(soloAnna, 'AN')), 0)
+  ok('2. Maura rifiutata: nessuna', quante(sf([...soloAnna, firma('j3', MAURA, 'rifiutata', il3)], 'MA')), 0)
+  ok('   Maura da confermare: nessuna', quante(sf([...soloAnna, firma('j3', MAURA, 'da_confermare', il3)], 'MA')), 0)
+  // Senza nessuna presenza la lezione sta fra le da confermare (le senza istruttore), non qui.
+  ok('3. una lezione senza nessuna firma: nessuna per nessuno', [quante(sf([], 'MA')), quante(sf([], 'AN'))], [0, 0])
+  ok('4. il sostituto Federico ha firmato: Anna non ha nulla',
+    quante(sf([firma('j3', FEDERICO, 'confermata', il3, [FEDERICO])], 'AN')), 0)
+  ok('5. una lezione annullata: nessuna', quante(sf([firma('j3', ANNA, 'confermata', il3, [ANNA, MAURA], { annullata: true })], 'MA')), 0)
+  ok('6. la lezione di oggi non ancora finita: nessuna', quante(sf(soloAnna, 'MA', new Date(2026, 9, 3, 18, 30))), 0)
+  ok('   finita da un minuto: sì', quante(sf(soloAnna, 'MA', new Date(2026, 9, 3, 19, 1))), 1)
+  ok('7. solo la firma di Anna, rifiutata: nessuna per Maura', quante(sf([firma('j3', ANNA, 'rifiutata', il3)], 'MA')), 0)
+  ok('   la firma di Anna da confermare conta: Maura ne ha una', quante(sf([firma('j3', ANNA, 'da_confermare', il3)], 'MA')), 1)
+  ok('8. nei corsi dove «a lezione basta uno»: nessuna', quante(sf([firma('j3', ANNA, 'confermata', il3, [ANNA, MAURA], { bastaUno: true })], 'MA')), 0)
+  ok('9. una lezione di un altro mese non conta',
+    quante(sf([firma('n6', ANNA, 'confermata', new Date(2026, 10, 6, 18, 0))], 'MA', new Date(2026, 11, 1))), 0)
+  const il10 = new Date(2026, 9, 10, 18, 0)
+  ok('   due lezioni, dalla prima', (() => {
+    const x = sf([firma('j10', ANNA, 'confermata', il10), ...soloAnna], 'MA')
+    return Array.isArray(x) ? x.map((l) => l.sessioneId) : x
+  })(), ['j3', 'j10'])
+  ok('   firmata da due: tutti e due i nomi',
+    sf([firma('t3', ANNA, 'confermata', il3, [ANNA, MAURA, FEDERICO]), firma('t3', FEDERICO, 'confermata', il3, [ANNA, MAURA, FEDERICO])], 'MA')?.[0]?.firmatoDa?.slice().sort(),
+    ['Anna Bianchi', 'Federico Due'])
+
+  const tecnici = [
+    { id: 'AN', nome: 'Anna', cognome: 'Bianchi' },
+    { id: 'MA', nome: 'Maura', cognome: 'Uno' },
+  ]
+  const righe = (ricevute = []) => {
+    try {
+      return c.righeCompensi({ tecnici, presenze: soloAnna, senzaIstruttore: [], mese: ottobre, tariffe: { AN: [tariffa('Judo', 1500)], MA: [tariffa('Judo', 1500)] }, ricevute })
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  const di = (x, id) => (Array.isArray(x) ? x.find((r) => r.persona.id === id) : x)
+  const maura = di(righe(), 'MA')
+  ok('10. Maura con solo quella: la riga c\'è, «solo attese», nessuna lezione',
+    maura && [maura.stato, maura.conto?.lezioni, quante(maura.senzaFirma)], ['solo-attese', 0, 1])
+  const fatta = di(righe([{ id: 'r9', personaId: 'MA', mese: '2026-10-01', calcolato: 0, importo: 1500, motivo: 'A mano', annullataIl: null }]), 'MA')
+  ok('    Maura con la ricevuta fatta: fatta, e la lezione senza firma resta', fatta && [fatta.stato, quante(fatta.senzaFirma)], ['fatta', 1])
+  const anna = di(righe(), 'AN')
+  ok('    Anna non ha lezioni senza firma, e il suo stato non cambia', anna && [anna.stato, quante(anna.senzaFirma)], ['da-fare', 0])
+}
+
 console.log('\n3. cosa non va nel compenso, prima di fare la ricevuta')
 {
   const no = (x) => {

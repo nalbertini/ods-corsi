@@ -12,7 +12,7 @@ import { numeriDiProva } from './sitoStatistiche'
 import { insegna, segniDi, siElimina, type RuoloPersonale } from './ruoli'
 import { contattoDopoUnione, type IndiziDoppioni } from './doppioni'
 import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
-import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
+import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttoreAssenteProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { enteDaDati, fineAnno, importaTessereProva } from './tessere'
@@ -402,6 +402,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
           capienza: c.capienza,
           attivo: c.attivo,
           enteTessera: c.enteTessera,
+          bastaUno: c.bastaUno ?? false,
           ricorrenze: c.ricorrenze
             .filter((r) => !r.al || r.al >= g)
             .map(({ sala, ...r }) => ({ ...r, salaId: sala, sala, attivita: nomeAttivita(r.attivitaId ?? null) }))
@@ -417,7 +418,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         const id = a().corsi.some((c) => c.id === base) ? `${base}-${unico()}` : base
         a().corsi = [
           ...a().corsi,
-          { id, nome: dati.nome.trim(), colore: dati.colore ?? '#1b8ac4', sala: dati.salaId ?? a().sale[0], istruttori: dati.istruttori, capienza: dati.capienza, attivo: true, enteTessera: enteDaDati(dati.enteTessera), ricorrenze: [] },
+          { id, nome: dati.nome.trim(), colore: dati.colore ?? '#1b8ac4', sala: dati.salaId ?? a().sale[0], istruttori: dati.istruttori, capienza: dati.capienza, attivo: true, enteTessera: enteDaDati(dati.enteTessera), bastaUno: dati.bastaUno ?? false, ricorrenze: [] },
         ]
         salva()
         return id
@@ -433,6 +434,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
               capienza: dati.capienza,
               colore: dati.colore ?? x.colore,
               enteTessera: enteDaDati(dati.enteTessera),
+              bastaUno: dati.bastaUno ?? x.bastaUno,
               // Un giorno che ora sarebbe nella sala del corso torna a seguirlo, come nel database.
               ricorrenze: x.ricorrenze.map(({ sala, ...r }) => (sala && sala !== (dati.salaId ?? x.sala) ? { ...r, sala } : r)),
             }
@@ -2139,6 +2141,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
               previsti: comeE(l).istruttori.map(nomeIstruttore).join(', '),
               previstiElenco: comeE(l).istruttori.map((id) => ({ id, nome: nomeIstruttore(id) })),
               annullata: comeE(l).stato === 'annullata',
+              bastaUno: l.corso.bastaUno ?? false,
               sala: x.sala,
               stato: x.stato,
               prevista: x.prevista,
@@ -2183,6 +2186,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async segnaIstruttorePrevisto(sessioneId, personaId) {
       segnaIstruttorePrevistoProva(sessioneId, personaId, 'Segreteria di prova')
+    },
+
+    async segnaIstruttoreAssente(sessioneId, personaId) {
+      segnaIstruttoreAssenteProva(sessioneId, personaId, 'Segreteria di prova')
     },
 
     async allenamenti(quanti) {

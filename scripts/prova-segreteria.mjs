@@ -1800,6 +1800,8 @@ console.log('\nuna modifica non salvata: CORSI e ISTRUTTORI E ACCESSI chiedono p
   ok('il nome cambiato è una modifica', cambiato(corso, { ...b, nome: 'Karate bambini' }), true)
   ok('il nome con uno spazio in più non è una modifica', cambiato(corso, { ...b, nome: 'Karate ' }), false)
   ok('la sala cambiata è una modifica', cambiato(corso, { ...b, salaId: 's2' }), true)
+  ok('«a lezione basta uno» spuntata è una modifica', cambiato(corso, { ...b, bastaUno: true }), true)
+  ok('«basta uno» vuota su un corso che non ce l’ha non è una modifica', cambiato(corso, { ...b, bastaUno: false }), false)
   ok('i posti cambiati sono una modifica', cambiato(corso, { ...b, capienza: 25 }), true)
   ok('i posti tolti sono una modifica', cambiato(corso, { ...b, capienza: undefined }), true)
   ok('il colore cambiato è una modifica', cambiato(corso, { ...b, colore: m.COLORI[2].hex }), true)
