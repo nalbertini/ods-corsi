@@ -76,6 +76,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Non contano quelle delle estensioni: su Supabase `citext` sta in `public`,
   -- è di `supabase_admin` e il SQL Editor non può toglierle i permessi, ma
   -- sono le funzioni del tipo delle email e non toccano nessuna tabella.
+  -- `orari_sito` è della pagina Orari (69); `da_claude`, `porta_di_claude` e
+  -- `controlla_richiesta` le chiama PostgREST prima di ogni richiesta (77),
+  -- anche per chi non ha un accesso.
   ('06-iscrizioni.sql', 'i permessi, dopo gli altri file',
     not exists (
       select 1 from pg_proc p
@@ -83,8 +86,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
         and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
         and has_function_privilege('anon', p.oid, 'execute')
         and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino', 'mesi_presenze_pubblici',
-                                'vestiario', 'invia_ordine_vestiario', 'orari_aperti',
-                                'sito_pagine_pubbliche', 'sito_menu_pubblico', 'sito_redirect_pubblici'))),
+                                'vestiario', 'invia_ordine_vestiario', 'orari_aperti', 'orari_sito',
+                                'sito_pagine_pubbliche', 'sito_menu_pubblico', 'sito_redirect_pubblici',
+                                'da_claude', 'porta_di_claude', 'controlla_richiesta'))),
   ('06-iscrizioni.sql', 'documento e certificato col modulo, da stampare',
     exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%certificato%')
     and exists (select 1 from dentro where nome = 'richieste_con_documento')),
@@ -434,6 +438,13 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('85-solleciti.sql', 'i solleciti su WhatsApp: chi ha sollecitato e quando',
     to_regclass('public.solleciti') is not null
     and to_regprocedure('public.segna_sollecito(uuid)') is not null
-    and to_regprocedure('public.ultimo_sollecito(uuid)') is not null)
+    and to_regprocedure('public.ultimo_sollecito(uuid)') is not null),
+  ('86-ricevuta-una-volta.sql', 'una ricevuta fatta una volta sola: la chiave del modulo',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'ricevute' and column_name = 'chiave')
+    and to_regprocedure('public.ricevuta_gia_fatta(uuid,uuid)') is not null
+    -- Rilanciare 55 o 73 dopo 86 rimette le funzioni che ignorano la chiave: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%ricevuta_gia_fatta%')
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%'))
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -17,7 +17,9 @@ L'elenco unisce due cose:
   pagamenti Satispay dal modulo di iscrizione (finché non sono in una
   ricevuta, poi conta la ricevuta) di [PAGAMENTI](pagamenti.md) entrano da soli, uno per pagamento, col segno
   **Incasso iscritto**. Non si ricopiano e non si cambiano da qui: se una ricevuta
-  o un pagamento si annulla, cambia da sé anche qui. Contanti vanno in Cassa
+  o un pagamento si annulla, cambia da sé anche qui. In **PERSONA** c'è il nome
+  della scheda dell'iscritto (vuota se il pagamento non ha una scheda): la
+  descrizione resta il nome scritto sulla ricevuta, che può essere diverso. Contanti vanno in Cassa
   Contanti, tutto il resto (bonifico, POS, Satispay, assegno) in Conto Corrente.
   Prima di registrare un pagamento a mano, il riepilogo dice già dove entra
   («Entra in CONTABILITÀ: Cassa Contanti · Quota associativa»).
@@ -110,7 +112,8 @@ Non si collegano i movimenti scritti qui, i giroconti, la «Differenza di cassa�
   il collegamento passa a chi resta.
 
 Il filtro **Persona** sopra l'elenco ha **Collegati**, **Da decidere** e **Senza scheda**, con il numero
-di ognuno sull'intero storico.
+di ognuno sull'intero storico. **Collegati** conta solo lo storico collegato: gli incassi degli iscritti
+hanno la persona da sé e non ci sono.
 
 ### Giroconto
 

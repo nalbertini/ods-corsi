@@ -994,6 +994,65 @@ console.log('\n39. Contabilita.tsx: Nuovo movimento e Giroconto sono una pagina 
   ok('PERSONA è un menu, non quattro chip', /id="filtro-persona"/.test(corpo), true)
 }
 
+console.log('\n40. la colonna PERSONA mostra l\'iscritto anche per gli incassi; «Collegati» resta lo storico collegato a mano')
+{
+  const persona = await build({
+    stdin: { contents: "export { cosaNonVaCollegato, filtraPerPersona, collegatoAMano } from './src/lib/movimentiPersona'", resolveDir: '.', loader: 'ts' },
+    bundle: true,
+    format: 'esm',
+    platform: 'node',
+    write: false,
+    logLevel: 'silent',
+    define: { 'import.meta.env': '{}' },
+  }).then(
+    (r) => import('data:text/javascript;base64,' + Buffer.from(r.outputFiles[0].text).toString('base64')),
+    (e) => ({ errore: e.errors?.[0]?.text ?? e.message }),
+  )
+  ok('il modulo src/lib/movimentiPersona.ts c\'è', persona.errore ?? 'c\'è', 'c\'è')
+  const nomi = [{ id: 'p1', nome: 'Giulia', cognome: 'Rossi' }, { id: 'p2', nome: 'Zoë', cognome: "D'Amico" }, { id: 'p3', nome: 'Luca', cognome: 'Neri' }]
+  const conP1 = ricevuta(70, 'Giulia', 'Rossi', [voce('QUOTA ASSOCIATIVA', 3000, [pag('2026-09-20', 3000)])], { personaId: 'p1' })
+  const senzaP = ricevuta(71, 'Mario', 'Verdi', [voce('ANNUALE JUDO', 2000, [pag('2026-09-21', 2000, 'POS')])], { personaId: undefined })
+  const aMano = diretto('d70', 'p2', '2026-09-22', 1500, { metodo: 'Assegno', voce: 'ANNUALE JUDO' })
+  const sp = (id, personaId) => ({ id, chi: 'Neri Luca', importo: 2500, stato: 'pagato', creatoIl: '2026-09-23T08:00:00Z', pagatoIl: '2026-09-23T10:00:00Z', personaId })
+  const storico = [
+    { id: 'st1', tipo: 'entrata', data: '2025-03-04', importo: 3000, voceId: 'v-quota', cassaId: 'c2', descrizione: 'Cliente Giulia Rossi per quota', creatoIl: '2025-03-04T10:00:00Z', origineImport: 'prima-nota:1', personaId: 'p1' },
+    { id: 'st2', tipo: 'entrata', data: '2025-03-05', importo: 3000, voceId: 'v-quota', cassaId: 'c2', descrizione: 'Cliente Anna Bruni per quota', creatoIl: '2025-03-05T10:00:00Z', origineImport: 'prima-nota:2' },
+  ]
+  const elenco = prova(() => m.elencoMovimenti([conP1, senzaP], [aMano], nomi, casse, storico, voci, [sp('s1', 'p3'), sp('s2', undefined)]))
+  const di = (pred) => prova(() => elenco.find(pred))
+  const ric = di((r) => r.id === `incasso:${conP1.id}:0:0`)
+  const ricSenza = di((r) => r.id === `incasso:${senzaP.id}:0:0`)
+  const dir = di((r) => r.id === 'incasso:diretto:d70')
+  const sat = di((r) => r.id === 'incasso:satispay:s1')
+  const satSenza = di((r) => r.id === 'incasso:satispay:s2')
+
+  // 1.
+  ok('una ricevuta con la scheda p1: la riga dell\'incasso ha personaId p1', ric?.personaId, 'p1')
+  ok('un pagamento a mano: la riga ha la persona del pagamento', dir?.personaId, 'p2')
+  ok('un Satispay con la scheda: la riga ha la sua persona', sat?.personaId, 'p3')
+  ok('incassiDerivati copia la persona della riga di PAGAMENTI', prova(() => m.incassiDerivati(m.righeDaRicevute([conP1]), casse).map((r) => r.personaId)), ['p1'])
+  // 2.
+  ok('una ricevuta senza scheda: nessuna persona', ricSenza?.personaId ?? null, null)
+  ok('un Satispay senza scheda: nessuna persona', satSenza?.personaId ?? null, null)
+  // 3.
+  ok('un incasso con la persona non è cambiabile: nessuna casella, quindi né Collega né Scollega', [ric, dir, sat].map((r) => prova(() => m.cambiabile(r))), [false, false, false])
+  ok('…e non si collega: non viene dal vecchio programma', prova(() => persona.cosaNonVaCollegato(ric)), 'Il movimento del 20/09/2026 (Rossi Giulia) non viene dal vecchio programma: non si collega')
+  // 4.
+  ok('la descrizione resta il nome della ricevuta', [ric?.descrizione, dir?.descrizione, sat?.descrizione], ['Rossi Giulia', "D'Amico Zoë", 'Neri Luca'])
+  ok('cercando «rossi giulia» la si trova', prova(() => m.filtraMovimenti(elenco, { testo: 'rossi giulia' }).map((r) => r.id)), [`incasso:${conP1.id}:0:0`])
+  // 5.
+  ok('«Collegati» è solo lo storico collegato a mano, non gli incassi con la persona', prova(() => persona.filtraPerPersona(elenco, 'collegati', {}).map((r) => r.id)), ['st1'])
+  ok('…anche con una riga d\'incasso che porta la persona', prova(() => persona.filtraPerPersona([{ ...riga('st9', 'entrata', '2025-01-01', 100, 'c2'), personaId: 'p1' }, { id: 'incasso:x', origine: 'ricevuta', tipo: 'entrata', data: '2026-09-01', importo: 100, descrizione: 'Rossi Giulia', voce: 'Quota associativa', cassaId: 'c2', annullato: false, personaId: 'p1' }], 'collegati', {}).map((r) => r.id)), ['st9'])
+  ok('collegatoAMano: sì lo storico con la persona, no l\'incasso con la persona né lo storico senza', prova(() => [elenco.find((r) => r.id === 'st1'), ric, { ...riga('st8', 'entrata', '2025-01-01', 100, 'c2') }].map(persona.collegatoAMano)), [true, false, false])
+  ok('il conteggio di «Collegati» resta quello dello storico', prova(() => persona.filtraPerPersona(elenco, 'collegati', {}).length), storico.filter((x) => x.personaId).length)
+  // 6.
+  ok('sul foglio di chiusura un incasso con la persona è «Incasso iscritto · …», senza nome', prova(() => m.descrizioneRiga(ric)), 'Incasso iscritto · Quota associativa')
+  // 7.
+  const senzaPersone = prova(() => elenco.map(({ personaId: _p, ...r }) => (r.origine === 'movimento' ? { ...r, personaId: _p } : r)))
+  ok('i residui sono gli stessi con e senza la persona negli incassi', prova(() => m.residui(casse, elenco)), prova(() => m.residui(casse, senzaPersone)))
+  ok('…e i totali', prova(() => m.totali(elenco)), prova(() => m.totali(senzaPersone)))
+}
+
 // ---------------------------------------------------------------------------
 // Quel che legge la chat (src/lib/mcp.ts, provato da scripts/prova-mcp.mjs).
 // incassiPerConti(incassi, casse): gli incassi con solo data, importo, metodo, voce, annullato.

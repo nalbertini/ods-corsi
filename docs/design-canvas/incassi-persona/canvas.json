@@ -1,0 +1,12 @@
+{
+ "pages": [
+  { "id": "page-1", "name": "Incassi e persona · proposta" }
+ ],
+ "artboards": [
+  { "file": "Elenco.dc.html", "title": "MOVIMENTI: oggi e proposta", "x": 0, "y": 200, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1440, "text": "In MOVIMENTI la colonna PERSONA mostra anche l'iscritto degli incassi" },
+  { "id": "sotto", "kind": "body", "x": 0, "y": 90, "maxW": 1440, "text": "Il nome arriva dalla ricevuta o dal pagamento, che hanno già la scheda: niente da collegare a mano. Il filtro PERSONA → «Collegati» resta per lo storico collegato. Importi, casse, PDF della chiusura e CSV non cambiano." }
+ ]
+}

@@ -4279,5 +4279,72 @@ await sezione('la chiusura di cassa sul database (client finto): senza 60-chiusu
   ok('senza 59 le chiamate di prima dicono ancora 59', await errore(() => senzaFunzioni('PGRST202', (f) => `Could not find the function public.${f} in the schema cache`).registraMovimento({ tipo: 'entrata', data: '2026-09-10', importo: 4000, voceId: 'v1', cassaId: 'c2', descrizione: 'Offerta' })), MANCA_CONTABILITA)
 })
 
+// ---------------------------------------------------------------------------
+// La ricevuta una volta sola (86-ricevuta-una-volta.sql): FAI LA RICEVUTA
+// ripremuto dopo una rete caduta. Il modulo aperto ha una chiave sua; con la
+// stessa chiave torna la ricevuta già fatta, come `emetti_ricevuta`
+// (supabase/prova/ricevute.sql, sezione 5), con gli stessi messaggi.
+// ---------------------------------------------------------------------------
+await sezione('la ricevuta una volta sola, in prova: la chiave del modulo', async () => {
+  const [chi, altro] = await s.persone()
+  const voce = (pagato) => ({ descrizione: 'Annuale Lotta 3', quantita: 1, prezzo: 36800, pagamenti: [{ data: '2028-03-01', importo: pagato, metodo: 'Bonifico' }] })
+  const base = { data: '2028-03-01', personaId: chi.id, ente: await s.enteRicevute(), intestatario: { nome: chi.nome, cognome: chi.cognome }, anticipo: 0, voci: [voce(36800)] }
+  // Nel 2028, così i numeri partono da 1.
+  const del2028 = async () => (await s.ricevute()).filter((r) => r.anno === 2028).length
+  const K = (n) => `dddddddd-0000-4000-8000-00000000000${n}`
+  const prima = await s.emettiRicevuta({ ...base, chiave: K(1) })
+  ok('la prima con la chiave: il numero 1', prima.numero, 1)
+  const ancora = await s.emettiRicevuta({ ...base, chiave: K(1) })
+  ok('la stessa chiave: torna la stessa ricevuta, col suo numero', [ancora.id, ancora.numero], [prima.id, 1])
+  ok('…e la ricevuta resta una', await del2028(), 1)
+  ok('la seguente senza chiave prende il numero dopo, nessuno consumato', (await s.emettiRicevuta({ ...base, data: '2028-03-02' })).numero, 2)
+
+  const annullanda = await s.emettiRicevuta({ ...base, data: '2028-03-03', chiave: K(3) })
+  await s.annullaRicevuta(annullanda.id)
+  ok('la stessa chiave di una ricevuta annullata: no, e dice cosa fare', await errore(() => s.emettiRicevuta({ ...base, data: '2028-03-03', chiave: K(3) })),
+    'La ricevuta n. 3/2028 fatta da questo modulo è stata annullata: chiudi il modulo e riaprilo per farne un’altra')
+  ok('…e nessuna ricevuta in più', await del2028(), 3)
+
+  const aMano = await s.emettiRicevuta({ ...base, data: '2028-03-04', numero: 50, chiave: K(4) })
+  ok('il numero a mano ripetuto con la stessa chiave: non «c’è già», torna quella',
+    await s.emettiRicevuta({ ...base, data: '2028-03-04', numero: 50, chiave: K(4) }).then((r) => r.id, (e) => e.message), aMano.id)
+  ok('…e la ricevuta resta una', await del2028(), 4)
+
+  ok('la stessa chiave per un’altra persona: no, e dice cosa fare',
+    await errore(() => s.emettiRicevuta({ ...base, personaId: altro.id, intestatario: { nome: altro.nome, cognome: altro.cognome }, chiave: K(1) })),
+    'Questa ricevuta è già stata fatta per un’altra persona: chiudi il modulo e riaprilo')
+  ok('…e nessuna ricevuta in più', await del2028(), 4)
+
+  const altriDati = await s.emettiRicevuta({ ...base, data: '2028-03-09', voci: [voce(18000)], chiave: K(1) })
+  ok('la stessa chiave con altri dati: torna quella fatta, com’è', [altriDati.id, altriDati.data, altriDati.pagato], [prima.id, '2028-03-01', 36800])
+  ok('…e nessuna ricevuta in più', await del2028(), 4)
+
+  await s.emettiRicevuta({ ...base, data: '2028-03-10' })
+  await s.emettiRicevuta({ ...base, data: '2028-03-10' })
+  ok('senza chiave, come prima: due volte, due ricevute', await del2028(), 6)
+  await s.emettiRicevuta({ ...base, data: '2028-03-10', chiave: '' })
+  await s.emettiRicevuta({ ...base, data: '2028-03-10', chiave: '' })
+  ok('con la chiave vuota, come senza: due ricevute', await del2028(), 8)
+
+  ok('una chiave che non è un uuid: no, e dice cosa fare', await errore(() => s.emettiRicevuta({ ...base, data: '2028-03-11', chiave: 'non-un-uuid' })),
+    'La ricevuta non si capisce: ricarica la pagina')
+  ok('…e nessuna ricevuta in più', await del2028(), 8)
+})
+
+await sezione('la ricevuta una volta sola, sul database (client finto): la chiave va alle due funzioni', async () => {
+  const chiamate = []
+  const riga = { id: 'r1', anno: 2028, numero: 1, data: '2028-03-01', persona_id: 'p1', ente: {}, intestatario: { nome: 'Pietro', cognome: 'Chiave' }, voci: [], totale: 0, pagato: 0, anticipo: 0, note: null, creata_il: '2028-03-01T10:00:00Z', annullata_il: null }
+  const db = m.creaSegreteriaSupabase({ from: () => { throw new Error('non deve leggere tabelle') }, rpc: async (f, x) => (chiamate.push([f, x]), { data: riga, error: null }) })
+  const dati = {
+    data: '2028-03-01', personaId: 'p1', ente: { nome: 'Asd Il Centro Judo' }, intestatario: { nome: 'Pietro', cognome: 'Chiave' }, anticipo: 0,
+    voci: [{ descrizione: 'Annuale', quantita: 1, prezzo: 36800, pagamenti: [{ data: '2028-03-01', importo: 36800, metodo: 'Satispay' }] }],
+    chiave: 'dddddddd-0000-4000-8000-000000000001',
+  }
+  await db.emettiRicevuta(dati).catch(() => {})
+  await db.emettiRicevuta(dati, 'sp-1').catch(() => {})
+  ok('emetti_ricevuta ed emetti_ricevuta_satispay ricevono la chiave del modulo', chiamate.map(([f, x]) => [f, x?.dati?.chiave]),
+    [['emetti_ricevuta', dati.chiave], ['emetti_ricevuta_satispay', dati.chiave]])
+})
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

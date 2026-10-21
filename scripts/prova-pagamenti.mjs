@@ -493,7 +493,7 @@ console.log('\n19. Ricevute.tsx scrive solo dopo il sì del riepilogo, e non se 
   ok('nel gestore, prima della chiamata, c\'è un `await chiediSpunta(`', /await chiediSpunta\(/.test(gestore), true)
   ok('…col riepilogo di riepilogoPagamentoDiretto', gestore.includes('riepilogoPagamentoDiretto('), true)
   ok('…e senza il sì si esce prima di scrivere', /const \{ si, spuntata \} = await chiediSpunta\([\s\S]*?\)\s*if \(!si\) return/.test(gestore), true)
-  ok('…e con la ricevuta si esce prima di scrivere: il pagamento sta solo nella ricevuta', /if \(onRicevuta && spuntata\) return onRicevuta\(dati\)/.test(gestore), true)
+  ok('…e con la ricevuta si esce prima di scrivere: il pagamento sta solo nella ricevuta', /if \(onRicevuta && spuntata\) return onRicevuta\(\{ \.\.\.dati, chiaveRicevuta: [^}]+\}\)/.test(gestore), true)
   // Contanti in un giorno di cassa chiusa: la ricevuta non li rifiuta (è un documento), ma la chiusura non torna più.
   // Chi legge le chiusure (l'amministrazione) lo sa prima di farla, come quando la annulla.
   const emettiR = tsx.slice(tsx.indexOf('const emetti = async () => {'), tsx.indexOf("'Fai la ricevuta',"))
@@ -509,6 +509,29 @@ console.log('\n19. Ricevute.tsx scrive solo dopo il sì del riepilogo, e non se 
   // Il guaio sotto al modulo è lo stesso del database: oggi (a Roma) e le chiusure arrivano alla funzione.
   const riga = tsx.split('\n').find((l) => l.includes('cosaNonVaDiretto({')) ?? ''
   ok('il modulo passa oggi e le chiusure a cosaNonVaDiretto', [riga.includes('oggi'), riga.includes('chiusure')], [true, true])
+}
+
+console.log('\n20. la ricevuta una volta sola: il modulo di FAI LA RICEVUTA ha la sua chiave')
+{
+  // Ripremuto dopo una rete caduta, il modulo manda la stessa chiave e torna la ricevuta già fatta
+  // (supabase/prova/ricevute.sql, sezione 5). Una chiave per modulo aperto: ricaricando, se ne prende un'altra.
+  const tsx = readFileSync('src/components/segreteria/Ricevute.tsx', 'utf8')
+  const modulo = tsx.slice(tsx.indexOf('export function NuovaRicevuta('), tsx.indexOf('export function EnteRicevute('))
+  ok('nuovoId viene da src/lib/prove', /import \{[^}]*\bnuovoId\b[^}]*\} from '\.\.\/\.\.\/lib\/prove'/.test(tsx), true)
+  // Con la funzione d'inizio: `useState(nuovoId())` ne farebbe una nuova a ogni disegno, buttandola.
+  // Dal pagamento a mano la chiave viene col pagamento: «Lascia stare» dopo un errore e riprovare dà la stessa ricevuta.
+  const presa = modulo.match(/const \[(\w+)\] = useState\(\(\) => daPagamento\?\.chiaveRicevuta \?\? nuovoId\(\)\)/)
+  ok('NuovaRicevuta prende la chiave una volta: useState(() => daPagamento?.chiaveRicevuta ?? nuovoId())', !!presa, true)
+  const datiR = modulo.slice(modulo.indexOf('const dati: DatiRicevuta | null ='), modulo.indexOf('const guaio ='))
+  const nome = presa?.[1] ?? '§'
+  ok('…e la mette nei dati della ricevuta, quella presa e non una nuova',
+    [new RegExp(`[{,]\\s*chiave(: ${nome})?\\s*[,}]`).test(datiR) && (nome === 'chiave' || datiR.includes(`chiave: ${nome}`)), datiR.includes('nuovoId(')], [true, false])
+  // Il modulo del pagamento a mano: la chiave nasce la prima volta e torna con il pagamento ripreso.
+  const pd = tsx.slice(tsx.indexOf('if (onRicevuta && spuntata)'), tsx.indexOf("'Pagamento registrato'"))
+  ok('REGISTRA IL PAGAMENTO passa alla ricevuta la chiave del pagamento ripreso, o una nuova',
+    pd.includes('onRicevuta({ ...dati, chiaveRicevuta: iniziale?.chiaveRicevuta ?? nuovoId() })'), true)
+  const isc = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
+  ok('«Lascia stare» tiene il pagamento con la sua chiave', isc.includes('setRiprendi(daPagamento)'), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

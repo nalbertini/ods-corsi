@@ -1154,15 +1154,27 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async emettiRicevuta(dati, satispayId) {
+      // Lo stesso ordine del database: col Satispay, prima che sia arrivato.
+      const sp = satispayId ? pagamentiSatispayProva().find((x) => x.id === satispayId) : undefined
+      if (satispayId && sp?.stato !== 'pagato') throw new Error('Questo pagamento Satispay non è arrivato')
+      // Come `ricevuta_gia_fatta` (86-ricevuta-una-volta.sql): la chiave del modulo già usata dà quella ricevuta.
+      // Come `::uuid` in Postgres, le maiuscole non contano.
+      const chiave = dati.chiave?.trim().toLowerCase() || undefined
+      if (chiave && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(chiave))
+        throw new Error('La ricevuta non si capisce: ricarica la pagina')
+      const gia = chiave ? (a().ricevute ?? []).find((x) => x.chiave === chiave) : undefined
+      if (gia && gia.personaId !== dati.personaId) throw new Error('Questa ricevuta è già stata fatta per un’altra persona: chiudi il modulo e riaprilo')
+      if (gia?.annullataIl) throw new Error(`La ricevuta n. ${gia.numero}/${gia.anno} fatta da questo modulo è stata annullata: chiudi il modulo e riaprilo per farne un’altra`)
       // Come `emetti_ricevuta_satispay`, prima della ricevuta: un pagamento arrivato, una ricevuta sola, gli stessi soldi.
-      if (satispayId) {
-        const sp = pagamentiSatispayProva().find((x) => x.id === satispayId)
-        if (sp?.stato !== 'pagato') throw new Error('Questo pagamento Satispay non è arrivato')
+      if (sp) {
+        if (gia && sp.ricevutaId === gia.id) return gia
+        if (gia) throw new Error(`La ricevuta n. ${gia.numero}/${gia.anno} fatta da questo modulo non ha dentro questo pagamento Satispay: chiudi il modulo e riaprilo`)
         if (sp.ricevutaId) throw new Error('Questo pagamento Satispay è già in una ricevuta')
         if (!sp.personaId || sp.personaId !== dati.personaId) throw new Error('Il pagamento Satispay è di un’altra persona: accogli prima la sua richiesta')
         const no = cosaNonVaSatispay(dati.voci, sp)
         if (no) throw new Error(no)
       }
+      if (gia) return gia
       if (dati.personaId) persona(dati.personaId)
       const r = { ...dati, intestatario: pulisciIntestatario(dati.intestatario), note: dati.note?.trim() || undefined }
       const no = cosaNonVa(r)
@@ -1177,7 +1189,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const voci = r.voci.map((v) => ({ ...v, descrizione: v.descrizione.trim(), pagamenti: v.pagamenti.filter((p) => p.importo > 0) }))
       const c = contiRicevuta({ voci, anticipo: r.anticipo })
       const { numero: _n, ...resto } = r
-      const nuova: Ricevuta = { ...resto, voci, id: `r-${unico()}`, anno, numero, totale: c.totale, pagato: c.pagato, creataIl: new Date().toISOString() }
+      const nuova: Ricevuta = { ...resto, chiave, voci, id: `r-${unico()}`, anno, numero, totale: c.totale, pagato: c.pagato, creataIl: new Date().toISOString() }
       a().ricevute = [...tutte, nuova]
       salva()
       if (satispayId) salvaSatispay(pagamentiSatispayProva().map((x) => (x.id === satispayId ? { ...x, ricevutaId: nuova.id } : x)))
