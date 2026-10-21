@@ -191,8 +191,8 @@ export function cosaNonVaCompenso({ importo, calcolato, motivo }: { importo: num
 
 const gma = (g: string) => g.split('-').reverse().join('/')
 const casella = (si: boolean) => (si ? '☒' : '☐')
-/** L'ordine della bozza: prima l'atleta. */
-const MANSIONI = ['Atleta', 'Allenatore', 'Istruttore', 'Direttore tecnico', 'Direttore sportivo', 'Preparatore atletico', 'Direttore di gara', 'Altro'] as const satisfies ReadonlyArray<(typeof QUALIFICHE)[number]>
+/** L'ordine della bozza, prima l'atleta; le altre figure la palestra non le ha. */
+const MANSIONI: readonly string[] = ['Atleta', 'Allenatore', 'Istruttore'] satisfies Array<(typeof QUALIFICHE)[number]>
 
 /**
  * La ricevuta, una riga per riga: quello che va nel PDF. Le caselle `☐`/`☒`
@@ -216,7 +216,8 @@ export function testoRicevutaCompenso(r: DatiRicevutaCompenso): string[] {
     `COMUNE: ${su(t.comune)} PROV: ${t.provincia ?? ''} CAP: ${t.cap ?? ''}`,
     `CODICE FISCALE: ${t.codiceFiscale ?? ''}`,
     'Il sottoscritto, titolare di un rapporto di lavoro sportivo ai sensi dell’art. 25 del Decreto Legislativo 28 febbraio 2021, n. 36, con mansioni di (barrare la casella di interesse):',
-    ...MANSIONI.map((q) => `${casella(r.qualifica === q)} ${q.toUpperCase()}`),
+    // Una lettera con un'altra qualifica la stampa lo stesso, barrata: la dichiarazione dice il vero.
+    ...[...MANSIONI, ...(r.qualifica && !MANSIONI.includes(r.qualifica) ? [r.qualifica] : [])].map((q) => `${casella(r.qualifica === q)} ${q.toUpperCase()}`),
     'consapevole delle sanzioni penali previste in caso di dichiarazioni non veritiere e di falsità negli atti (articolo 76, D.P.R. 445/2000), ai sensi degli artt. 46 e 47 del D.P.R. 445/2000,',
     'DICHIARA ai fini fiscali',
     `ai sensi del comma 1-bis, articolo 51, D.lgs. 36/2021 come novellato dall’articolo 16, D.L. 198/2022 convertito con modificazioni dalla L. 14/2023, relativamente al periodo dal 1° gennaio ${anno} alla data odierna:`,
