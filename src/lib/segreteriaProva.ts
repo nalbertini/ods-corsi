@@ -26,7 +26,7 @@ const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
-import { cosaNonVaSatispay, satispayPerPersona } from './satispay'
+import { cosaNonVaSatispay, cosaNonVaSatispayAMano, satispayPerPersona } from './satispay'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
@@ -1593,7 +1593,16 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (dati.personaId && !a().persone.some((x) => x.id === dati.personaId)) throw new Error('Questa scheda non c’è più')
       const no = cosaNonVaDiretto(dati, oggiARoma(), contabilita().chiusure)
       if (no) throw new Error(no)
-      const nuovo: PagamentoDiretto = { ...dati, metodo: dati.metodo.trim(), voce: dati.voce.trim(), nota: dati.nota?.trim() || undefined, id: `pd-${unico()}`, creatoIl: new Date().toISOString() }
+      // Come `registra_pagamento_diretto` (87-pagamento-una-volta.sql): la ricevuta di questo modulo già fatta, o un Satispay libero.
+      const chiave = dati.chiaveRicevuta?.trim().toLowerCase() || undefined
+      if (chiave && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(chiave))
+        throw new Error('La ricevuta non si capisce: ricarica la pagina')
+      const gia = chiave ? (a().ricevute ?? []).find((x) => x.chiave === chiave && x.personaId === dati.personaId && !x.annullataIl) : undefined
+      if (gia) throw new Error(`Questo pagamento è già nella ricevuta n. ${gia.numero}/${gia.anno}: non va registrato di nuovo`)
+      const sp = cosaNonVaSatispayAMano(dati.metodo, satispayPerPersona(pagamentiSatispayProva()).get(dati.personaId))
+      if (sp) throw new Error(sp)
+      const { chiaveRicevuta: _chiave, ...senzaChiave } = dati
+      const nuovo: PagamentoDiretto = { ...senzaChiave, metodo: dati.metodo.trim(), voce: dati.voce.trim(), nota: dati.nota?.trim() || undefined, id: `pd-${unico()}`, creatoIl: new Date().toISOString() }
       a().pagamentiDiretti = [...(a().pagamentiDiretti ?? []), nuovo]
       salva()
       return nuovo

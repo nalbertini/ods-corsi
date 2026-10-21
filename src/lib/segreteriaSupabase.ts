@@ -1691,7 +1691,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       if (no) throw new Error(no)
       const riga = ok(
         await db.rpc('registra_pagamento_diretto', {
-          dati: { persona_id: d.personaId, data: d.data, importo: d.importo, metodo: d.metodo.trim(), voce: d.voce.trim(), nota: d.nota?.trim() || null },
+          dati: { persona_id: d.personaId, data: d.data, importo: d.importo, metodo: d.metodo.trim(), voce: d.voce.trim(), nota: d.nota?.trim() || null, chiave: d.chiaveRicevuta },
         }),
       ) as RigaPagamentoDiretto
       return pagamentoDiretto(riga)

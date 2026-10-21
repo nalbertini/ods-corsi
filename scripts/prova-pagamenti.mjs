@@ -531,5 +531,60 @@ console.log('\n20. la ricevuta una volta sola: il modulo di FAI LA RICEVUTA ha l
   ok('«Lascia stare» tiene il pagamento con la sua chiave', isc.includes('setRiprendi(daPagamento)'), true)
 }
 
+console.log('\n21. in prova: il pagamento a mano non si registra se è già in una ricevuta (come registra_pagamento_diretto)')
+{
+  // La rete cade dopo FAI LA RICEVUTA, «Lascia stare», e si registra senza ricevuta: la chiave del modulo dice che è già fatta
+  // (supabase/prova/pagamento-una-volta.sql, sezioni 1-4).
+  const s = m.creaSegreteriaProva()
+  const [chi, altra] = (await s.persone()).filter((p) => p.attiva)
+  const K = 'dddddddd-0000-4000-8000-000000000021'
+  const d = { personaId: chi.id, data: '2026-10-01', importo: 4000, metodo: 'Carta', voce: 'Quota associativa' }
+  const registra = async (x) => {
+    try {
+      return typeof (await s.registraPagamentoDiretto(x)).id
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  const quanti = async () => (await s.pagamentiDiretti()).length
+  let fatta = null
+  try {
+    fatta = await s.emettiRicevuta({ data: d.data, personaId: d.personaId, ente: m.ENTE_PREDEFINITO, intestatario: { nome: chi.nome, cognome: chi.cognome }, voci: [m.voceDaPagamento(d)], anticipo: 0, chiave: K })
+  } catch (e) {
+    fatta = `ERRORE: ${e.message}`
+  }
+  ok('la ricevuta con la chiave si fa', typeof fatta?.id, 'string')
+  const prima = await quanti()
+  ok('con la chiave della ricevuta fatta: no',
+    await registra({ ...d, chiaveRicevuta: K }), `ERRORE: Questo pagamento è già nella ricevuta n. ${fatta?.numero}/${fatta?.anno}: non va registrato di nuovo`)
+  ok('…anche con la chiave scritta in maiuscolo e con gli spazi',
+    await registra({ ...d, chiaveRicevuta: ` ${K.toUpperCase()} ` }), `ERRORE: Questo pagamento è già nella ricevuta n. ${fatta?.numero}/${fatta?.anno}: non va registrato di nuovo`)
+  ok('…e non si registra niente', await quanti(), prima)
+  ok('una chiave rotta: no', await registra({ ...d, chiaveRicevuta: 'non-una-chiave' }), 'ERRORE: La ricevuta non si capisce: ricarica la pagina')
+  ok('…e non si registra niente', await quanti(), prima)
+  ok('la stessa chiave per un\'altra persona: si registra (la chiave non è sua)', await registra({ ...d, personaId: altra.id, chiaveRicevuta: K }), 'string')
+  ok('una chiave che nessuna ricevuta ha: si registra', await registra({ ...d, chiaveRicevuta: 'dddddddd-0000-4000-8000-000000000099' }), 'string')
+  ok('senza chiave: si registra', await registra(d), 'string')
+  try {
+    await s.annullaRicevuta(fatta.id)
+  } catch {
+    /* il rosso lo dice la prova qui sotto */
+  }
+  ok('annullata la ricevuta, con la sua chiave si registra', await registra({ ...d, chiaveRicevuta: K }), 'string')
+  ok('…e ora i pagamenti a mano sono quattro di più', await quanti(), prima + 4)
+}
+
+console.log('\n22. REGISTRA IL PAGAMENTO manda la chiave anche registrando senza ricevuta')
+{
+  // Ripreso dopo «Lascia stare», il modulo ha la chiave della ricevuta forse già fatta: il database la guarda.
+  const tsx = readFileSync('src/components/segreteria/Ricevute.tsx', 'utf8')
+  const modulo = tsx.slice(tsx.indexOf('if (onRicevuta && spuntata)'), tsx.indexOf("'Pagamento registrato'"))
+  ok('Ricevute.tsx: d.registraPagamentoDiretto({ ...dati, chiaveRicevuta: iniziale?.chiaveRicevuta })',
+    /d\.registraPagamentoDiretto\(\{ \.\.\.dati, chiaveRicevuta: iniziale\?\.chiaveRicevuta \}\)/.test(modulo), true)
+  const sb = readFileSync('src/lib/segreteriaSupabase.ts', 'utf8')
+  const corpo = sb.slice(sb.indexOf('async registraPagamentoDiretto('), sb.indexOf('async annullaPagamentoDiretto('))
+  ok('segreteriaSupabase.ts: l\'rpc registra_pagamento_diretto ha `chiave: d.chiaveRicevuta` nei dati', /\bchiave: d\.chiaveRicevuta\b/.test(corpo), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -443,6 +443,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.ricevuta_gia_fatta(uuid,uuid)') is not null
     -- Rilanciare 55 o 73 dopo 86 rimette le funzioni che ignorano la chiave: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%ricevuta_gia_fatta%')
-    and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%'))
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%')),
+  ('87-pagamento-una-volta.sql', 'un pagamento a mano registrato una volta sola: la chiave della ricevuta e il Satispay arrivato',
+    -- Rilanciare 64 dopo 87 rimette la funzione che ignora chiave e Satispay: la riga torna «da lanciare».
+    exists (select 1 from dentro where nome = 'registra_pagamento_diretto' and corpo like '%chiave_ricevuta%' and corpo like '%pagamenti_satispay%'))
 ) as x(file, cosa, c)
 order by file, cosa;

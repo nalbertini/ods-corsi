@@ -400,14 +400,22 @@ Nel riepilogo c'è la casella **Fai anche la ricevuta**, già spuntata:
   registra lì, nella ricevuta, una volta sola. Se la ricevuta non la fai (la
   chiudi, o manca il codice fiscale), il pagamento **non è registrato**: si
   torna al modulo coi dati ancora scritti, e la casella tolta: da lì lo
-  registri senza ricevuta o riprovi. Una quota associativa fatta così vale
+  registri senza ricevuta o riprovi. Se la rete è caduta proprio mentre la
+  ricevuta si faceva, può darsi che sia stata fatta lo stesso: allora
+  registrarlo senza ricevuta si rifiuta («Questo pagamento è già nella
+  ricevuta n. …: non va registrato di nuovo»). Chiudi il modulo e ricarica la
+  scheda: la ricevuta è nello storico. Una quota associativa fatta così vale
   fino alla fine della stagione, come quella del listino;
 - **tolta**, «Sì, registra senza ricevuta» lo mette nello storico, sotto
   **SENZA RICEVUTA**, e lo conta in **PAGATO**. Per farne la ricevuta dopo, si
   annulla il pagamento e si fa la ricevuta: se no si conta due volte.
 
 Se la persona ha già pagato con Satispay dal modulo di iscrizione, la casella
-non c'è: la ricevuta si fa con quei soldi, da **+ FAI LA RICEVUTA**.
+non c'è: la ricevuta si fa con quei soldi, da **+ FAI LA RICEVUTA**. Per lo
+stesso motivo un pagamento a mano con **COME HA PAGATO** Satispay non si
+registra finché quei soldi non sono in una ricevuta («Con Satispay sono già
+arrivati … dal modulo: fai la ricevuta con quelli»). Un Satispay pagato al
+banco, senza il modulo, si registra come sempre.
 
 Come una ricevuta, non si cambia e non si cancella: se è sbagliato,
 **ANNULLA PAGAMENTO** (chiede conferma) e se ne registra un altro; l'annullato

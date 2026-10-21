@@ -1,4 +1,4 @@
-import { cosaNonVaMetodo, cosaNonVaSatispay, satispayDaUsare, soldi } from '../../lib/satispay'
+import { cosaNonVaMetodo, cosaNonVaSatispay, cosaNonVaSatispayAMano, satispayDaUsare, soldi } from '../../lib/satispay'
 import { cartaSePuoi } from '../../lib/cartaPdf'
 import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useRef, useState } from 'react'
@@ -324,7 +324,8 @@ export function RegistraPagamento({
   onRicevuta,
 }: {
   d: DatiSegreteria
-  p: { id: string; nome: string; cognome: string }
+  /** `satispay`: i centesimi arrivati dal modulo e non ancora in una ricevuta, se la scheda li conosce. */
+  p: { id: string; nome: string; cognome: string; satispay?: number }
   corsi: string[]
   fai: Fai
   onFatto: () => void
@@ -348,7 +349,7 @@ export function RegistraPagamento({
   // Lasciarlo a metà chiede prima di perderlo, come il resto della scheda.
   useBozza(importo !== '' || nota !== '', 'Il pagamento a mano')
   const cent = centesimi(importo)
-  const guaio = importo === '' ? null : cent === null ? 'L’importo non si capisce: scrivi un numero, per esempio 40,00.' : cosaNonVaDiretto({ personaId: p.id, data, importo: cent, metodo, voce, nota }, oggi, chiusure)
+  const guaio = importo === '' ? null : cent === null ? 'L’importo non si capisce: scrivi un numero, per esempio 40,00.' : (cosaNonVaDiretto({ personaId: p.id, data, importo: cent, metodo, voce, nota }, oggi, chiusure) ?? cosaNonVaSatispayAMano(metodo, p.satispay))
   const manca = cent === null || !!guaio || !voce.trim()
   return (
     <section aria-label="Pagamento fatto a mano" className="sg-riquadro">
@@ -402,7 +403,8 @@ export function RegistraPagamento({
             // Con la ricevuta il pagamento a mano non si scrive: sta nella ricevuta, una volta sola.
             // Ripreso dopo «Lascia stare», la stessa chiave: se la ricevuta era già fatta (rete caduta), torna quella.
             if (onRicevuta && spuntata) return onRicevuta({ ...dati, chiaveRicevuta: iniziale?.chiaveRicevuta ?? nuovoId() })
-            void fai(() => d.registraPagamentoDiretto(dati), 'Pagamento registrato', onFatto)
+            // La chiave del modulo ripreso: se la ricevuta in realtà era fatta, il database non lo registra una seconda volta.
+            void fai(() => d.registraPagamentoDiretto({ ...dati, chiaveRicevuta: iniziale?.chiaveRicevuta }), 'Pagamento registrato', onFatto)
           }}
         >
           Registra il pagamento

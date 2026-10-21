@@ -233,6 +233,14 @@ export const senzaVoceDelCorso = (corsi: CorsoRef[], listino: Listino): string[]
 export const cosaNonVaMetodo = (metodo: string, p: PagamentoSatispay | undefined): string | null =>
   p && metodo !== 'Satispay' ? `Con Satispay sono già arrivati ${soldi(p.importo)}: scegli PAGATO CON «Satispay», se no si contano due volte` : null
 
+/**
+ * Un pagamento a mano con Satispay quando dal modulo ne è arrivato uno non ancora in una ricevuta (`libero`, in
+ * centesimi, da `satispayPerPersona`): quei soldi vanno nella ricevuta, se no si contano due volte. Lo stesso testo di
+ * `registra_pagamento_diretto` (87-pagamento-una-volta.sql). Senza Satispay libero, Satispay al banco va bene.
+ */
+export const cosaNonVaSatispayAMano = (metodo: string, libero: number | undefined): string | null =>
+  libero && metodo.trim().toLowerCase() === 'satispay' ? `Con Satispay sono già arrivati ${soldi(libero)} dal modulo: fai la ricevuta con quelli` : null
+
 /** Cosa dire prima di rifiutare o eliminare una richiesta pagata: i soldi restano, e vanno restituiti. */
 export const daRestituire = (p: PagamentoSatispay | undefined): string | null =>
   p?.stato === 'pagato' && !p.ricevutaId ? `I ${soldi(p.importo)} pagati con Satispay restano in PAGAMENTI: vanno restituiti dall’app Satispay Business.` : null

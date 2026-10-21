@@ -330,6 +330,33 @@ console.log('\n7. in prova: paga finge l’approvazione, con l’importo della s
     `ERRORE: La ricevuta n. ${senza?.numero}/${senza?.anno} fatta da questo modulo non ha dentro questo pagamento Satispay: chiudi il modulo e riaprilo`)
   ok('…e nessuna ricevuta in più', (await aspetta(() => seg.ricevute(personaId))).length, primaDi)
   ok('…e il pagamento non è in nessuna ricevuta', (await aspetta(() => seg.pagamentiSatispay())).find?.((x) => x.id === sp.id)?.ricevutaId, undefined)
+
+  // Il Satispay è arrivato e libero: lo stesso pagamento scritto a mano conterebbe due volte gli stessi soldi
+  // (supabase/prova/pagamento-una-volta.sql, sezioni 5 e 6).
+  const SATISPAY_A_MANO = `ERRORE: Con Satispay sono già arrivati ${s.soldi(stima.totale)} dal modulo: fai la ricevuta con quelli`
+  const aMano = (x) => ({ personaId, data: '2026-10-20', importo: 1000, metodo: 'Satispay', voce: 'Quota associativa', ...x })
+  const diretti = async () => (await aspetta(() => seg.pagamentiDiretti()))?.length
+  const primaD = await diretti()
+  ok('Satispay a mano con un Satispay libero: no', await aspetta(async () => typeof (await seg.registraPagamentoDiretto(aMano())).id), SATISPAY_A_MANO)
+  ok('…« satispay » minuscolo e con gli spazi, uguale', await aspetta(async () => typeof (await seg.registraPagamentoDiretto(aMano({ metodo: ' satispay ' }))).id), SATISPAY_A_MANO)
+  ok('…anche con l\'importo arrivato', await aspetta(async () => typeof (await seg.registraPagamentoDiretto(aMano({ importo: stima.totale }))).id), SATISPAY_A_MANO)
+  ok('…e non si registra niente', await diretti(), primaD)
+  ok('in contanti: si registra', await aspetta(async () => typeof (await seg.registraPagamentoDiretto(aMano({ metodo: 'Contanti' }))).id), 'string')
+  ok('Satispay a mano per chi non ha Satispay libero: si registra',
+    await aspetta(async () => typeof (await seg.registraPagamentoDiretto(aMano({ personaId: (await seg.persone()).find((x) => x.attiva && x.id !== personaId).id }))).id), 'string')
+}
+
+console.log('\n7b. il Satispay a mano con soldi Satispay ancora liberi (cosaNonVaSatispayAMano(metodo, libero))')
+{
+  const FRASE = `Con Satispay sono già arrivati ${prova(() => s.soldi(31000))} dal modulo: fai la ricevuta con quelli`
+  ok('Satispay con 310 € liberi: la frase', prova(() => s.cosaNonVaSatispayAMano('Satispay', 31000)), FRASE)
+  ok('« satispay » minuscolo e con gli spazi: uguale', prova(() => s.cosaNonVaSatispayAMano(' satispay ', 31000)), FRASE)
+  ok('i centesimi si dicono', prova(() => s.cosaNonVaSatispayAMano('Satispay', 3050)),
+    `Con Satispay sono già arrivati ${prova(() => s.soldi(3050))} dal modulo: fai la ricevuta con quelli`)
+  ok('contanti: niente', prova(() => s.cosaNonVaSatispayAMano('Contanti', 31000)), null)
+  ok('carta: niente', prova(() => s.cosaNonVaSatispayAMano('Carta', 31000)), null)
+  ok('niente di libero (0): niente', prova(() => s.cosaNonVaSatispayAMano('Satispay', 0)), null)
+  ok('niente di libero (undefined, come satispayPerPersona per chi non c\'è): niente', prova(() => s.cosaNonVaSatispayAMano('Satispay', undefined)), null)
 }
 
 console.log('\n8. prima paghi, poi mandi: il riquadro PAGA')
