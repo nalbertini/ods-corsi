@@ -6,6 +6,7 @@ import type { Cassa, CambioVoce, ChiusuraCassa, MovimentoManuale, VoceContabile 
 import type { Ruolo, StatoSessione } from './sala'
 import type { PagamentoDiretto } from './pagamenti'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
+import type { InvioRicevuta } from './ricevuteEmail'
 import type { Anagrafica, FileSeg } from './segreteria'
 import type { TesseraSeg } from './tessere'
 
@@ -150,6 +151,10 @@ export interface Archivio {
   dateCorsiDal?: string
   /** Le ricevute dei pagamenti, come le righe di `ricevute` (16-ricevute.sql). */
   ricevute?: Ricevuta[]
+  /** I tentativi di mandare le ricevute per email, come `invii_ricevute` (76-ricevute-email.sql): in prova nessuna mail parte. */
+  inviiRicevute?: InvioRicevuta[]
+  /** Da quando le ricevute si mandano: la prima volta che si guarda, come il file SQL lanciato quel giorno. */
+  ricevuteEmailDal?: string
   /** I pagamenti fatti a mano, senza ricevuta (54-pagamenti-diretti.sql). */
   pagamentiDiretti?: PagamentoDiretto[]
   /** La contabilità (59-contabilita.sql): le casse con i saldi iniziali, le voci, i movimenti a mano. Mancanti: quelle di partenza. */

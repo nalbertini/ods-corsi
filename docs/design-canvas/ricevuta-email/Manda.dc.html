@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- MANDA PER EMAIL dallo storico (PROPOSTA): stessa chiedi() di comune.tsx, Dialogo tema sito; poi l'Avviso. -->
+<div style="display: flex; gap: 36px; align-items: flex-start; width: 1840px; padding: 28px 36px; background: #eef5fa">
+  <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · LA DOMANDA DI MANDA PER EMAIL</span><dc-import name="Dialogo" domanda="Mandare la ricevuta n. 10/2026 a mamma@esempio.it?" resto="Email di contatto del genitore, Rossi Laura. Il PDF va allegato alla mail; la ricevuta non cambia." no="No, lascia stare" si="Manda" pericolo="{{ false }}" tema="sito" tipo="conferma" altezza="400px" hint-size="600px,400px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">Solo l’indirizzo e da dove viene: se è sbagliato, si risponde no e lo si corregge in PERSONA.</span></div>
+  <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · MANDA DI NUOVO (GIÀ MANDATA)</span><dc-import name="Dialogo" domanda="Mandare di nuovo la ricevuta n. 12/2026 a mamma@esempio.it?" resto="Email di contatto del genitore, Rossi Laura. È già partita il 21/10/2026: la famiglia la riceve un’altra volta, uguale." no="No, lascia stare" si="Manda di nuovo" pericolo="{{ false }}" tema="sito" tipo="conferma" altezza="400px" hint-size="600px,400px"></dc-import></div>
+  <div style="display: flex; flex-direction: column; gap: 12px; width: 460px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · DOPO</span>
+    <dc-import name="Avviso" tema="sito" testo="Ricevuta n. 10/2026 mandata a mamma@esempio.it" hint-size="460px,96px"></dc-import>
+    <dc-import name="Avviso" tema="sito" testo="La mail non è partita: controlla la connessione e riprova." guaio="{{ true }}" hint-size="460px,96px"></dc-import>
+    <dc-import name="Avviso" tema="sito" testo="Oggi sono partite 400 mail, il massimo: riprova domani." guaio="{{ true }}" hint-size="460px,96px"></dc-import>
+    <span style="font-size: 14px; line-height: 1.45; color: #46606f">Mandata, la riga dello storico diventa «✓ Mandata il 21/10/2026 a mamma@esempio.it».</span>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1840,"height":520}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

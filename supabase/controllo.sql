@@ -375,6 +375,18 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from pg_trigger where tgname = 'richieste_contate_nuova' and not tgisinternal)
     and exists (select 1 from pg_trigger where tgname = 'richieste_contate_scorda' and not tgisinternal)
     -- Rilanciare 06 dopo 74 rimette la invia_iscrizione che ignora le due chiavi: la riga torna «da lanciare».
-    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pulisci_provenienza%'))
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pulisci_provenienza%')),
+  ('76-ricevute-email.sql', 'la ricevuta per email: gli invii, l''indirizzo dalla scheda e la soglia del giorno',
+    to_regclass('public.invii_ricevute') is not null
+    and to_regprocedure('public.indirizzo_ricevuta(uuid)') is not null
+    and to_regprocedure('public.controlla_invio_ricevuta(uuid)') is not null
+    and to_regprocedure('public.registra_invio_ricevuta(uuid,text,text,uuid,citext,text)') is not null
+    -- La firma di prima la chiamava il browser: se c'è ancora, il file è quello vecchio.
+    and to_regprocedure('public.registra_invio_ricevuta(uuid,text,text)') is null
+    and exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'invii_ricevute' and column_name = 'pdf_sha256')
+    and to_regprocedure('public.esiti_invio_ricevuta(uuid)') is not null
+    and exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'ricevute_email_dal'))
 ) as x(file, cosa, c)
 order by file, cosa;

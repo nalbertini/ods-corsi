@@ -1,0 +1,69 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Ricevuta via email · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Scheda.dc.html",
+   "title": "La scheda iscritto: lo storico, oggi e proposta",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Conferma.dc.html",
+   "title": "La domanda di FAI LA RICEVUTA",
+   "x": 1560,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Esito.dc.html",
+   "title": "L'avviso dopo la ricevuta",
+   "x": 0,
+   "y": 1800,
+   "page": "page-1"
+  },
+  {
+   "file": "Manda.dc.html",
+   "title": "MANDA PER EMAIL dallo storico",
+   "x": 1220,
+   "y": 1800,
+   "page": "page-1"
+  },
+  {
+   "file": "Mail.dc.html",
+   "title": "La mail che arriva al genitore",
+   "x": 3120,
+   "y": 1800,
+   "page": "page-1"
+  },
+  {
+   "file": "Amministrazione.dc.html",
+   "title": "Come la vede l'amministrazione",
+   "x": 0,
+   "y": 2800,
+   "page": "page-1"
+  },
+  {
+   "file": "Telefono.dc.html",
+   "title": "Sul telefono (390 px)",
+   "x": 1920,
+   "y": 2800,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "La ricevuta arriva alla famiglia per email, col PDF allegato"
+  }
+ ]
+}
