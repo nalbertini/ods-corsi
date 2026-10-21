@@ -2746,6 +2746,24 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-sito-tabella.sg-sito-tabella tbody tr > :first-child { min-width: 0; white-space: nowrap; }
 }
 
+/* DAL SITO ALLE RICHIESTE, sopra IL SITO (Fila in StatisticheSito.tsx; design: docs/design-canvas/fila-sito).
+   Quattro gradini in fila, tessere del colore del fondo; fra l'uno e l'altro la freccia e quanti passano. Niente barre:
+   migliaia di visite e una ventina di richieste farebbero barre invisibili. Sul telefono uno sotto l'altro. */
+.sg-fila { display: flex; align-items: stretch; margin: 0; padding: 0; list-style: none; }
+.sg-fila-gradino { display: flex; flex-direction: column; gap: 4px; flex: 1 1 0; min-width: 0; padding: 14px 16px; border-radius: 6px; background: var(--bg); }
+.sg-fila-cifra { font-size: 28px; font-weight: 700; line-height: 1.15; color: var(--text); }
+.sg-fila-sotto { font-size: 13px; line-height: 1.4; color: var(--dim); }
+.sg-fila-guaio { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: var(--rosso-testo); }
+.sg-fila-guaio + span { font-size: 14px; font-weight: 600; line-height: 1.4; }
+.sg-fila-passa { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px 8px; flex: 0 0 84px; padding: 0 4px; }
+.sg-fila-freccia { font-size: 18px; line-height: 1; color: var(--blu); }
+.sg-fila-pc { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.sg-fila-spiega { font-size: 12px; line-height: 1.5; color: var(--dim); }
+@media (max-width: 767px) {
+  .sg-fila { flex-direction: column; }
+  .sg-fila-passa { flex-direction: row; flex-basis: auto; padding: 8px 0; }
+  .sg-fila-freccia { transform: rotate(90deg); }
+}
 .sg-passi { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
 .sg-passi li { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border: 2px solid var(--line-soft); color: var(--dim); }
 .sg-passi li[aria-current='step'] { border-color: var(--text); color: var(--text); }

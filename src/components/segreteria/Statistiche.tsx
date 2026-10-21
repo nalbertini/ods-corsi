@@ -6,6 +6,7 @@ import type { Destinazione, Voce } from './Segreteria'
 import { Colonne, Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
 import { StatisticheSito } from './StatisticheSito'
+import { richiesteFila } from '../../lib/filaSito'
 import { conNonSiSaInFondo, contaDaDove, fraseDaDove, MANCA_PROVENIENZA, notaDaDove, type VoceDaDove } from '../../lib/provenienza'
 
 const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
@@ -313,7 +314,13 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
       )}
 
       {/* In fondo e fuori dal blocco delle lezioni: i numeri del sito non dipendono da quelli della palestra. */}
-      <StatisticheSito d={d} da={chiaveGiorno(da)} a={g} corso={!!corso} />
+      <StatisticheSito
+        d={d}
+        da={chiaveGiorno(da)}
+        a={g}
+        corso={!!corso}
+        richieste={richiesteFila(daDove, titoli)}
+      />
     </>
   )
 }

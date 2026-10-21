@@ -1,0 +1,24 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Dal sito alle richieste · proposta"
+  }
+ ],
+ "artboards": [
+  { "file": "Proposta.dc.html", "title": "PROPOSTA · DAL SITO ALLE RICHIESTE sopra IL SITO, ultimi 3 mesi, tutti i corsi", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "PropostaTelefono.dc.html", "title": "PROPOSTA · sul telefono", "x": 1560, "y": 300, "page": "page-1" },
+  { "file": "Stati.dc.html", "title": "PROPOSTA · si conta dal, corso scelto, oltre il 100%, i due guai, meno dell'1%, prova", "x": 2070, "y": 300, "page": "page-1" },
+  { "file": "RiquadroFila.dc.html", "title": "Componente della proposta · RiquadroFila", "x": 0, "y": 2000, "page": "page-1" }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1840,
+   "text": "Dal sito alle richieste: visite → tocchi su Iscriviti → richieste dal sito → accolte"
+  }
+ ]
+}

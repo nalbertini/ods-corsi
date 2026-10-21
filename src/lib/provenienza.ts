@@ -24,8 +24,8 @@ const MASSIMO_PROVENIENZA = 90
 const FORMA = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 /** Le etichette che non vengono dal sito. */
-const DA_SEGRETERIA = 'segreteria'
-const DA_AREA_ISCRITTI = 'area-iscritti'
+export const DA_SEGRETERIA = 'segreteria'
+export const DA_AREA_ISCRITTI = 'area-iscritti'
 
 const NON_SI_SA = 'Non si sa'
 
