@@ -4,8 +4,8 @@
 
 Le scelte che spettano alla palestra, non al programma.
 
-La pagina ha sei gruppi: **QUESTO SCHERMO**, **LA STAGIONE**, **LE SALE E I TABLET**, **LE
-RICEVUTE**, **IMPORTA DA EXCEL** (la [guida](importa.md)), **DATI E PRIVACY**. In cima, un tasto per ognuno porta dritto al
+La pagina ha sette gruppi: **QUESTO SCHERMO**, **LA STAGIONE**, **LE SALE E I TABLET**, **LE
+RICEVUTE**, **GLI AVVISI**, **IMPORTA DA EXCEL** (la [guida](importa.md)), **DATI E PRIVACY**. In cima, un tasto per ognuno porta dritto al
 gruppo. Le spiegazioni lunghe di un riquadro stanno dietro **COME
 FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista.
 
@@ -134,6 +134,36 @@ Centro Judo. **Salva** compare quando si cambia qualcosa, e vale per le
 ricevute che si fanno da lì in poi: quelle già fatte restano come erano. Le
 ricevute si fanno dalla scheda di un iscritto (vedi
 [Iscritti](iscritti.md#un-pagamento-e-la-sua-ricevuta)).
+
+## Gli avvisi
+
+**GLI AVVISI ALLA SEGRETERIA**: dove arriva un'email quando arriva una
+richiesta online o un pagamento Satispay. **EMAIL PER GLI AVVISI** è
+l'indirizzo della segreteria: vuoto, non parte nessun avviso. **IN COPIA** è
+facoltativo, e riceve ogni avviso (si parte con asdilcentrojudo@gmail.com).
+Le email partono da info@officinedellosport.it. Un indirizzo scritto male lo
+dice sotto il campo, e **Salva** non si tocca finché non va.
+
+Cosa arriva:
+
+Gli avvisi partono da quando si scrive l'indirizzo: le richieste arrivate
+prima, ad avvisi spenti, non mandano niente.
+
+- **Una richiesta**, da cinque a dieci minuti dopo: l'oggetto dice nome, corso
+  e se è pagata o da pagare; dentro, come paga (Satispay con l'importo,
+  bonifico con o senza ricevuta) e **Apri la richiesta**. Una famiglia mandata
+  insieme arriva in un'email sola, con tutti, e chi è fuori età è segnato «da
+  richiamare». Chi della famiglia arriva più tardi (un invio rimasto a metà e
+  ripreso) ha un'email sua.
+- **Un pagamento Satispay** arrivato dopo la richiesta.
+- **Un pagamento Satispay senza richiesta**: qualcuno ha pagato in fondo al
+  modulo e dopo un'ora la richiesta non è arrivata. C'è l'email che ha
+  lasciato, per richiamarlo o restituire i soldi.
+
+Nell'email solo nomi, corsi e importi: mai note, codice fiscale, data di
+nascita, documenti. Al più 50 avvisi al giorno, perché la casella manda anche
+le ricevute alle famiglie: quelli in più non partono, e
+[Richieste online](richieste.md) lo dice.
 
 ## Importa da Excel
 

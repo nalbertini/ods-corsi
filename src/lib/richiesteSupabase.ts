@@ -171,6 +171,8 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             conosciuto: d.conosciuto,
             // Il pagamento fatto in fondo al modulo: senza 83-satispay-prima.sql la chiave si ignora.
             pagamento_satispay: d.pagamentoSatispay,
+            // Le richieste della stessa famiglia: senza 84-avvisi-segreteria.sql la chiave si ignora.
+            invio: d.invio,
           },
         }),
       ) as string

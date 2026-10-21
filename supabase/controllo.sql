@@ -417,6 +417,15 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from information_schema.columns
                 where table_schema = 'public' and table_name = 'pagamenti_satispay' and column_name = 'preso_il')
     -- Rilanciare 06 o 74 dopo 83 rimette la invia_iscrizione che ignora il pagamento: la riga torna «da lanciare».
-    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pagamento_satispay%' and corpo like '%preso_il%'))
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pagamento_satispay%' and corpo like '%preso_il%')),
+  ('84-avvisi-segreteria.sql', 'gli avvisi alla segreteria: indirizzi, registro e la famiglia che avvisa una volta',
+    to_regclass('public.avvisi_indirizzi') is not null
+    and to_regclass('public.avvisi_segreteria') is not null
+    and to_regprocedure('public.avvisi_da_mandare()') is not null
+    and to_regprocedure('public.avviso_mandato(uuid)') is not null
+    and to_regprocedure('public.avviso_preso(uuid)') is not null
+    and to_regprocedure('public.avvisi_non_mandati_oggi()') is not null
+    -- Rilanciare 06, 74 o 83 dopo 84 rimette la invia_iscrizione che ignora l'invio: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%inv := %'))
 ) as x(file, cosa, c)
 order by file, cosa;

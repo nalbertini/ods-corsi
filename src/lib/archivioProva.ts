@@ -173,6 +173,8 @@ export interface Archivio {
   collegamentiPersona?: Array<{ movimentoId: string; prima?: string; dopo?: string; lotto?: string; quando: string }>
   /** I dati dell'associazione per le ricevute, se la segreteria li ha cambiati. */
   enteRicevute?: EnteRicevuta
+  /** Gli indirizzi degli avvisi per email: in prova nessuna mail parte. */
+  avvisiIndirizzi?: { a: string | null; cc: string | null }
   /** Nascita, residenza e genitore degli iscritti importati, per persona (18-anagrafiche.sql). */
   anagrafiche?: Record<string, Anagrafica & { cambiataIl?: string }>
   /** Le tariffe dei tecnici in centesimi l'ora, per persona e per corso (78-tariffe-tecnici.sql). */
