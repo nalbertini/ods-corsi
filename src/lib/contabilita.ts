@@ -112,6 +112,10 @@ export const cassaDelMetodo = (metodo: string): 'contanti' | 'conto' => (metodo.
 /** La voce di sistema di un incasso: la quota associativa, o tutto il resto. */
 export const voceDiSistema = (voce: string) => (voce.trim().toLowerCase() === 'quota associativa' ? VOCE_QUOTA : VOCE_CORSI)
 
+/** Dove va un incasso in CONTABILITÀ, detto prima di registrarlo: la cassa e la voce che `incassiDerivati` gli darà. */
+export const doveEntraInContabilita = (metodo: string, voce: string) =>
+  `Entra in CONTABILITÀ: ${cassaDelMetodo(metodo) === 'contanti' ? NOME_CASSA_CONTANTI : NOME_CASSA_CONTO} · ${voceDiSistema(voce)}`
+
 /**
  * Gli incassi degli iscritti come movimenti di entrata, uno per pagamento. Sono
  * le righe di PAGAMENTI (`righeDaRicevute`, `righeDirette`): `pagato fino al` e

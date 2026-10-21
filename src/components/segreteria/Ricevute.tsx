@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { etichettaQuota, pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
 import { avvisoCassaChiusa, oggiARoma, type ChiusuraCassa } from '../../lib/contabilita'
-import { cosaNonVaDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, riepilogoPagamentoDiretto, vociSuggerite, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
+import { cosaNonVaDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, notaRicevutaDaPagamento, riepilogoPagamentoDiretto, tastoRicevutaDaPagamento, voceDaPagamento, vociSuggerite, type DatiPagamentoDiretto, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
 import {
   centesimi,
   conti,
@@ -66,19 +66,46 @@ const scarica = async (r: Ricevuta, carta?: Uint8Array) => (await import('../../
  * ricevute si riscaricano e si annullano da qui, e da qui si fa la ricevuta
  * nuova o si registra un pagamento fatto a mano.
  */
-export function StoricoIscritto({ d, p, corsi, fai, avvisa, onNuova, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; corsi: string[]; fai: Fai; avvisa: Avvisa; onNuova: () => void; onCambiato: () => void }) {
+export function StoricoIscritto({
+  d,
+  p,
+  corsi,
+  fai,
+  avvisa,
+  onNuova,
+  onCambiato,
+  contabilita,
+  riprendi,
+  onRicevuta,
+}: {
+  d: DatiSegreteria
+  p: PersonaSeg
+  corsi: string[]
+  fai: Fai
+  avvisa: Avvisa
+  onNuova: () => void
+  onCambiato: () => void
+  /** Chi vede CONTABILITÀ: la conferma dice dove entra l'incasso. */
+  contabilita?: boolean
+  /** Un pagamento a mano tornato dalla ricevuta non fatta: il modulo si riapre con quei dati. */
+  riprendi?: DatiPagamentoDiretto
+  /** Il pagamento a mano diventa una ricevuta: la apre la scheda, già compilata. */
+  onRicevuta?: (dati: DatiPagamentoDiretto) => void
+}) {
   const ricevute = useCarica(() => d.ricevute(p.id), [d, p.id])
   // La mail delle ricevute: se non si legge, lo storico non ne dice niente, come senza 76-ricevute-email.sql.
   const posta = useCarica(() => Promise.all([d.inviiRicevute(p.id), d.ricevuteEmailDal()]), [d, p.id])
   const [invii, dal] = posta.dato ?? [[], null]
   // Senza 54-pagamenti-diretti.sql le ricevute si vedono lo stesso: il guaio si dice, ma non ferma lo storico.
   const diretti = useCarica(() => d.pagamentiDiretti(p.id), [d, p.id])
-  const [registrando, setRegistrando] = useState(false)
+  const [registrando, setRegistrando] = useState(!!riprendi)
   // Aperto il modulo, si porta in vista: sul telefono sta sotto lo schermo.
   const modulo = useRef<HTMLDivElement>(null)
+  // Anche quando arriva lo storico: riaperto tornando dalla ricevuta, il modulo scende sotto le ricevute appena lette.
+  const letto = ricevute.dato !== undefined && diretti.dato !== undefined
   useEffect(() => {
     if (registrando) modulo.current?.scrollIntoView({ block: 'center' })
-  }, [registrando])
+  }, [registrando, letto])
   // Annullata una ricevuta con la quota che nessun'altra copre: la quota torna da pagare, o era pagata fuori dall'app?
   const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
   const annulla = async (r: Ricevuta) => {
@@ -223,6 +250,10 @@ export function StoricoIscritto({ d, p, corsi, fai, avvisa, onNuova, onCambiato 
           p={p}
           corsi={corsi}
           fai={fai}
+          iniziale={riprendi}
+          contabilita={contabilita}
+          // Con un Satispay arrivato la ricevuta va fatta con quei soldi (`cosaNonVaMetodo`): un altro pagamento resta senza.
+          onRicevuta={p.satispay ? undefined : onRicevuta}
           onFatto={() => {
             setRegistrando(false)
             void diretti.ricarica()
@@ -280,16 +311,39 @@ function RigaDelloStorico({ riga, aMano, onAnnulla }: { riga: RigaPagamento; aMa
  * La persona serve solo per registrare: il modulo va anche senza la sua scheda
  * (l'amministrazione).
  */
-export function RegistraPagamento({ d, p, corsi, fai, onFatto, onChiudi }: { d: DatiSegreteria; p: { id: string; nome: string; cognome: string }; corsi: string[]; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
+export function RegistraPagamento({
+  d,
+  p,
+  corsi,
+  fai,
+  onFatto,
+  onChiudi,
+  iniziale,
+  contabilita,
+  onRicevuta,
+}: {
+  d: DatiSegreteria
+  p: { id: string; nome: string; cognome: string }
+  corsi: string[]
+  fai: Fai
+  onFatto: () => void
+  onChiudi: () => void
+  /** I dati di un pagamento già scritto: tornato dalla ricevuta non fatta. */
+  iniziale?: DatiPagamentoDiretto
+  /** Chi vede CONTABILITÀ: il riepilogo dice dove entra l'incasso. */
+  contabilita?: boolean
+  /** Con la scheda della persona: la conferma chiede se farne la ricevuta. Senza (l'amministrazione) resta senza. */
+  onRicevuta?: (dati: DatiPagamentoDiretto) => void
+}) {
   const oggi = oggiARoma()
-  const [data, setData] = useState(oggi)
+  const [data, setData] = useState(iniziale?.data ?? oggi)
   const [chiusure, setChiusure] = useState<ChiusuraCassa[]>([])
   // Chi non vede le chiusure (la segreteria) non ha l'avviso qui: il database rifiuta lo stesso.
   useEffect(() => { void d.chiusure().then(setChiusure).catch(() => undefined) }, [d])
-  const [importo, setImporto] = useState('')
-  const [metodo, setMetodo] = useState(METODI_A_MANO[0])
-  const [voce, setVoce] = useState('')
-  const [nota, setNota] = useState('')
+  const [importo, setImporto] = useState(iniziale ? euro(iniziale.importo) : '')
+  const [metodo, setMetodo] = useState(iniziale?.metodo ?? METODI_A_MANO[0])
+  const [voce, setVoce] = useState(iniziale?.voce ?? '')
+  const [nota, setNota] = useState(iniziale?.nota ?? '')
   // Lasciarlo a metà chiede prima di perderlo, come il resto della scheda.
   useBozza(importo !== '' || nota !== '', 'Il pagamento a mano')
   const cent = centesimi(importo)
@@ -335,7 +389,17 @@ export function RegistraPagamento({ d, p, corsi, fai, onFatto, onChiudi }: { d: 
           onClick={async () => {
             if (cent === null) return
             const dati = { personaId: p.id, data, importo: cent, metodo, voce: voce.trim(), nota: nota.trim() || undefined }
-            if (!(await chiedi(`Registrare questo pagamento?\n${riepilogoPagamentoDiretto(dati, `${p.cognome} ${p.nome}`).join('\n')}`, 'Sì, registra il pagamento', { no: 'No, torna al modulo' }))) return
+            const riepilogo = riepilogoPagamentoDiretto(dati, `${p.cognome} ${p.nome}`, { contabilita, ricevuta: !!onRicevuta })
+            const { si, spuntata } = await chiediSpunta(
+              `Registrare questo pagamento?\n${riepilogo.join('\n')}`,
+              'Sì, registra il pagamento',
+              { no: 'No, torna al modulo' },
+              // Tornati dalla ricevuta non fatta, si riparte senza: il messaggio dice di registrarlo senza ricevuta.
+              onRicevuta ? { testo: 'Fai anche la ricevuta', nota: notaRicevutaDaPagamento, si: tastoRicevutaDaPagamento, spuntata: !iniziale } : undefined,
+            )
+            if (!si) return
+            // Con la ricevuta il pagamento a mano non si scrive: sta nella ricevuta, una volta sola.
+            if (onRicevuta && spuntata) return onRicevuta(dati)
             void fai(() => d.registraPagamentoDiretto(dati), 'Pagamento registrato', onFatto)
           }}
         >
@@ -460,9 +524,12 @@ export function NuovaRicevuta({
   avvisa: dillo,
   onFatta,
   onLasciaStare,
+  daPagamento,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
+  /** Da REGISTRA IL PAGAMENTO: una voce sola, già pagata, con la data e il modo del modulo. */
+  daPagamento?: DatiPagamentoDiretto
   /** Gli altri del suo nucleo familiare: dalle loro ricevute, lo sconto famiglia. */
   nucleo?: PersonaSeg[]
   /** I corsi che fa adesso: le loro voci vengono prima. */
@@ -473,7 +540,7 @@ export function NuovaRicevuta({
   onLasciaStare: () => void
 }) {
   const oggi = chiaveGiorno(new Date())
-  const [data, setData] = useState(oggi)
+  const [data, setData] = useState(daPagamento?.data ?? oggi)
   const anno = Number(data.slice(0, 4)) || Number(oggi.slice(0, 4))
   const prossimo = useCarica(() => d.prossimoNumero(anno), [d, anno])
   const partenza = useCarica(
@@ -481,12 +548,12 @@ export function NuovaRicevuta({
     [d, p.id, nucleo.map((x) => x.id).join()],
   )
   const [numero, setNumero] = useState('')
-  const [metodo, setMetodo] = useState<string>(METODI[0])
+  const [metodo, setMetodo] = useState<string>(daPagamento?.metodo.trim() ?? METODI[0])
   const [voci, setVoci] = useState<Bozza[] | null>(null)
   const [socio, setSocio] = useState<IntestatarioRicevuta | null>(null)
   const [ente, setEnte] = useState<EnteRicevuta | null>(null)
   const [anticipo, setAnticipo] = useState('')
-  const [note, setNote] = useState('')
+  const [note, setNote] = useState(daPagamento?.nota ?? '')
   const [aggiungi, setAggiungi] = useState('')
   const [scontoSi, setScontoSi] = useState(true)
   // I DATI DEL SOCIO aperti o chiusi si decide una volta, quando arrivano: poi
@@ -497,7 +564,8 @@ export function NuovaRicevuta({
   const satispay = useCarica(() => d.pagamentiSatispay(), [d])
   const sp = satispayDaUsare(satispay.dato ?? [], p.id)
   useEffect(() => {
-    if (sp) setMetodo('Satispay')
+    // Da un pagamento a mano il modo è quello del modulo: se c'è anche un Satispay, lo dice `cosaNonVaMetodo`.
+    if (sp && !daPagamento) setMetodo('Satispay')
   }, [sp?.id])
   // Il pagamento da mettere in questa ricevuta: c'è, e si paga con Satispay.
   const conSatispay = metodo === 'Satispay' ? sp : undefined
@@ -523,6 +591,8 @@ export function NuovaRicevuta({
     const prima = mancanoDatiSocio(intestatario, new Date(data || oggi))
     setSocioAperto(prima.blocca.length + prima.avvisa.length > 0)
     setEnte(e)
+    // Da un pagamento a mano: la voce scritta lì, pagata per intero, senza quota e annuali del listino.
+    if (daPagamento) return setVoci([{ ...bozzaDa(voceDaPagamento(daPagamento)), pagatoAMano: true }])
     const quotaPagata = fatte.some((r) => !r.annullataIl && r.voci.some((v) => v.descrizione.toUpperCase() === QUOTA && (!v.al || v.al >= oggi)))
     metti([
       ...(quotaPagata ? [] : [bozzaDa(pronte[0].voce(oggi))]),
@@ -530,7 +600,18 @@ export function NuovaRicevuta({
     ])
   }, [partenza.dato])
 
-  if (partenza.guaio) return <Guaio testo={`Non si riesce a preparare la ricevuta: ${partenza.guaio}`} />
+  if (partenza.guaio)
+    return (
+      <div className="stack" style={{ gap: 12 }}>
+        <Guaio testo={`Non si riesce a preparare la ricevuta: ${partenza.guaio}`} />
+        {/* Da un pagamento a mano: l'unica strada per riaverlo nel modulo. */}
+        {daPagamento && (
+          <button type="button" className="sg-btn sg-btn-linea" onClick={onLasciaStare}>
+            Torna al pagamento
+          </button>
+        )}
+      </div>
+    )
   if (!voci || !socio || !ente) return <span className="sg-sotto">Un momento…</span>
 
   const cambia = (chiave: number, c: Partial<Bozza>) =>
@@ -653,7 +734,8 @@ export function NuovaRicevuta({
         </Campo>
         <Campo id="rc-metodo" etichetta="PAGATO CON">
           <select id="rc-metodo" className="sg-campo" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
-            {(sp ? METODI_A_MANO : METODI).map((m) => (
+            {/* Satispay anche dal pagamento a mano (senza un Satispay arrivato): lì è un modo di pagare come un altro. */}
+            {(sp || daPagamento?.metodo.trim() === 'Satispay' ? METODI_A_MANO : METODI).map((m) => (
               <option key={m}>{m}</option>
             ))}
           </select>

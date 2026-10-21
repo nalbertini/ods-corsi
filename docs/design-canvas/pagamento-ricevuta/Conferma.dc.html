@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La conferma di REGISTRA IL PAGAMENTO: chiedi() di comune.tsx (Conferma) col testo di RegistraPagamento in Ricevute.tsx e riepilogoPagamentoDiretto di lib/pagamenti.ts. Cassa e voce: cassaDelMetodo e voceDiSistema di lib/contabilita.ts. La casella e' la PROPOSTA (Dialogo `spunta`). -->
+<div style="display: flex; flex-direction: column; gap: 36px; width: 1944px; padding: 28px 36px; background: #eef5fa">
+  <div style="display: flex; gap: 36px; align-items: flex-start">
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">OGGI · LA CONFERMA DI REGISTRA IL PAGAMENTO</span><dc-import name="Dialogo" domanda="Registrare questo pagamento?" resto="40,00 € · Contanti
+Rossi Marco
+mercoledì 21 ottobre 2026
+Quota associativa
+Va nella Cassa Contanti
+Senza ricevuta: resta nello storico e si può annullare
+Non riduce il residuo di nessuna ricevuta" tema="sito" tipo="conferma" no="No, torna al modulo" si="Sì, registra il pagamento" altezza="520px" hint-size="600px,520px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">Oggi la ricevuta non si può fare: il pagamento resta SENZA RICEVUTA. Se poi si fa anche la ricevuta, l’incasso conta due volte.</span></div>
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · CONTANTI, CHI VEDE CONTABILITÀ</span><dc-import name="Dialogo" domanda="Registrare questo pagamento?" resto="40,00 € · Contanti
+Rossi Marco
+mercoledì 21 ottobre 2026
+Quota associativa
+Entra in CONTABILITÀ: Cassa Contanti · Quota associativa" spunta="Fai anche la ricevuta" spuntaNota="Si apre FAI LA RICEVUTA già compilata. Il pagamento si registra lì, una volta sola." tema="sito" tipo="conferma" no="No, torna al modulo" si="Sì, fai la ricevuta" altezza="560px" hint-size="600px,560px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">La casella è già spuntata. Il tasto dice cosa succede: con la spunta apre la ricevuta, senza registra e basta. Il movimento in CONTABILITÀ si fa da sé, in tutti e due i casi.</span></div>
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · SPUNTA TOLTA</span><dc-import name="Dialogo" domanda="Registrare questo pagamento?" resto="40,00 € · Contanti
+Rossi Marco
+mercoledì 21 ottobre 2026
+Quota associativa
+Entra in CONTABILITÀ: Cassa Contanti · Quota associativa" spunta="Fai anche la ricevuta" spuntaNota="Resta SENZA RICEVUTA e non cambia se è in regola: una quota resta DA PAGARE. Per la ricevuta, dopo, si annulla il pagamento e la si fa." spuntata="{{ false }}" tema="sito" tipo="conferma" no="No, torna al modulo" si="Sì, registra senza ricevuta" altezza="560px" hint-size="600px,560px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">Come oggi: il pagamento si registra subito, senza ricevuta.</span></div>
+  </div>
+  <div style="display: flex; gap: 36px; align-items: flex-start">
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · POS, CHI VEDE CONTABILITÀ</span><dc-import name="Dialogo" domanda="Registrare questo pagamento?" resto="80,00 € · POS
+Bianchi Sara
+mercoledì 21 ottobre 2026
+Annuale Judo adulti
+Entra in CONTABILITÀ: Conto Corrente · Corsi e altri pagamenti" spunta="Fai anche la ricevuta" spuntaNota="Si apre FAI LA RICEVUTA già compilata. Il pagamento si registra lì, una volta sola." tema="sito" tipo="conferma" no="No, torna al modulo" si="Sì, fai la ricevuta" altezza="560px" hint-size="600px,560px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">Contanti in Cassa Contanti, tutto il resto (POS, bonifico, Satispay) in Conto Corrente. Voce: Quota associativa, o Corsi e altri pagamenti per tutto il resto.</span></div>
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · SEGRETERIA SENZA CONTABILITÀ</span><dc-import name="Dialogo" domanda="Registrare questo pagamento?" resto="40,00 € · Contanti
+Rossi Marco
+mercoledì 21 ottobre 2026
+Quota associativa" spunta="Fai anche la ricevuta" spuntaNota="Si apre FAI LA RICEVUTA già compilata. Il pagamento si registra lì, una volta sola." tema="sito" tipo="conferma" no="No, torna al modulo" si="Sì, fai la ricevuta" altezza="520px" hint-size="600px,520px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">Chi non vede CONTABILITÀ non ha la riga: il movimento si fa lo stesso.</span></div>
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 600px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · SOLO AMMINISTRAZIONE, DA PAGAMENTI</span><dc-import name="Dialogo" domanda="Registrare questo pagamento?" resto="40,00 € · Contanti
+Rossi Marco
+mercoledì 21 ottobre 2026
+Quota associativa
+Entra in CONTABILITÀ: Cassa Contanti · Quota associativa
+Senza ricevuta: resta nello storico e si può annullare
+Non riduce il residuo di nessuna ricevuta" tema="sito" tipo="conferma" no="No, torna al modulo" si="Sì, registra il pagamento" altezza="520px" hint-size="600px,520px"></dc-import><span style="font-size: 14px; line-height: 1.45; color: #46606f">Senza la scheda della persona non c’è la casella: la ricevuta chiede i dati del socio. Resta SENZA RICEVUTA, come oggi.</span></div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1944,"height":1340}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

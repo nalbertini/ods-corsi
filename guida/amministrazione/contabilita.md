@@ -19,6 +19,8 @@ L'elenco unisce due cose:
   **Incasso iscritto**. Non si ricopiano e non si cambiano da qui: se una ricevuta
   o un pagamento si annulla, cambia da sé anche qui. Contanti vanno in Cassa
   Contanti, tutto il resto (bonifico, POS, Satispay, assegno) in Conto Corrente.
+  Prima di registrare un pagamento a mano, il riepilogo dice già dove entra
+  («Entra in CONTABILITÀ: Cassa Contanti · Quota associativa»).
   Il «pagato fino al» non è un incasso e qui non compare. Satispay entra per
   l'importo pagato dalla famiglia: le commissioni e i rimborsi fatti dall'app
   Satispay Business si registrano a mano;

@@ -25,9 +25,11 @@ nello storico e si può annullare.
   registrano: scegli una data dopo la chiusura, o annulla prima la chiusura. Carta e
   bonifico non toccano la cassa e vanno sempre.
 - Prima di scrivere, l'app mostra un **riepilogo** (importo, come ha pagato, chi,
-  data, a cosa serve): **Sì, registra il pagamento** lo scrive, **No, torna al
+  data, a cosa serve, e dove entra in CONTABILITÀ: Cassa Contanti per i contanti,
+  Conto Corrente per il resto): **Sì, registra il pagamento** lo scrive, **No, torna al
   modulo** lascia tutto com'era. Un pagamento a mano non riduce il residuo di nessuna
-  ricevuta.
+  ricevuta. Da qui resta senza ricevuta: la ricevuta si fa dalla scheda della persona,
+  che ha i dati del socio.
 
 ## Annullare
 
