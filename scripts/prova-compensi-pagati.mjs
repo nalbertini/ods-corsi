@@ -161,6 +161,9 @@ console.log('\n4. le ricevute da pagare di un tecnico')
   ok('fatte, non annullate, non pagate, sue, dalla più vecchia', sicuro(() => c.pagabili(ricevute, 'A').map((r) => r.id)), ['r2', 'r6', 'r1'])
   ok('di un altro solo le sue', sicuro(() => c.pagabili(ricevute, 'B').map((r) => r.id)), ['r5'])
   ok('chi non ne ha: nessuna', sicuro(() => c.pagabili(ricevute, 'Z')), [])
+  // Il conto di adesso di ogni mese: una ricevuta che non torna più col suo mese non si paga, si annulla e si rifà.
+  const contoDi = (mese) => (mese === '2026-10-01' ? 1 : undefined)
+  ok('una che non torna più col suo mese no', sicuro(() => c.pagabili(ricevute, 'A', (r) => contoDi(r.mese) ?? r.calcolato).map((r) => r.id)), ['r2', 'r6', 'r1'].filter((id) => ricevute.find((r) => r.id === id).mese !== '2026-10-01'))
 }
 
 console.log('\n4 bis. cosa non va nel pagamento, prima di premere')

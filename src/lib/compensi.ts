@@ -300,9 +300,24 @@ export function descrizionePagamento(nome: string, cognome: string, mesi: string
 export const presoNellAnno = (ricevute: Array<Pick<RicevutaCompenso, 'importo' | 'annullataIl' | 'pagataIl'>>, anno: number) =>
   ricevute.filter((r) => !r.annullataIl && r.pagataIl?.startsWith(`${anno}-`)).reduce((s, r) => s + r.importo, 0)
 
-/** Le ricevute di un tecnico che si possono pagare: fatte, non annullate, non pagate, dalla più vecchia. */
-export const pagabili = <R extends Pick<RicevutaCompenso, 'personaId' | 'mese' | 'annullataIl' | 'pagataIl'>>(ricevute: R[], personaId: string) =>
-  ricevute.filter((r) => r.personaId === personaId && !r.annullataIl && !r.pagataIl).sort((x, y) => x.mese.localeCompare(y.mese))
+/**
+ * Le ricevute di un tecnico che si possono pagare: fatte, non annullate, non
+ * pagate, dalla più vecchia. Con `calcolatoDiAdesso` (il conto di oggi del mese
+ * di una ricevuta) si tolgono quelle che non tornano più: si annullano e si
+ * rifanno prima, come dice la loro riga.
+ */
+export const pagabili = <R extends Pick<RicevutaCompenso, 'personaId' | 'mese' | 'annullataIl' | 'pagataIl' | 'calcolato'>>(
+  ricevute: R[],
+  personaId: string,
+  calcolatoDiAdesso?: (r: R) => number | undefined,
+) =>
+  ricevute
+    .filter((r) => r.personaId === personaId && !r.annullataIl && !r.pagataIl)
+    .filter((r) => {
+      const adesso = calcolatoDiAdesso?.(r)
+      return adesso === undefined || adesso === r.calcolato
+    })
+    .sort((x, y) => x.mese.localeCompare(y.mese))
 
 /** La voce di sistema dei pagamenti dei tecnici in CONTABILITÀ (`81-compensi-pagati.sql`). */
 export const VOCE_COMPENSI = 'Compensi istruttori'

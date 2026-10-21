@@ -7,7 +7,7 @@ import { chiaveGiorno, dataLunga } from '../../lib/sala'
 import { euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
-import { centesimiDaImporto, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, esitoDelMese, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type StatoCompenso } from '../../lib/compensi'
+import { centesimiDaImporto, compensoDelMese, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, cosaNonVaPagamento, descrizionePagamento, esitoDelMese, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type StatoCompenso } from '../../lib/compensi'
 import { chiedi, Guaio, Testa, useAvviso, useCarica } from './comune'
 import { Numero } from './Presenze'
 
@@ -226,7 +226,7 @@ export function SegnoCompenso({ stato, conto, ricevuta, manca, inScheda }: { sta
           : stato === 'non-torna' && ricevuta
           ? `Ricevuta di ${euro(ricevuta.importo)} €: dopo è cambiata una presenza e il mese ora fa ${euro(conto.calcolato)} €.${ricevuta.firmata ? ' Era firmata.' : ''}`
           : stato === 'pagata' && ricevuta?.pagataIl
-            ? `Pagata il ${dataLunga(ricevuta.pagataIl)}${ricevuta.motivo ? ` · cambiata a mano: ${ricevuta.motivo}` : ''}. Per annullarla, prima si annulla il pagamento in CONTABILITÀ.`
+            ? `Pagata il ${dataLunga(ricevuta.pagataIl)}${ricevuta.motivo ? ` · cambiata a mano: ${ricevuta.motivo}` : ''}. Per annullarla, prima si annulla il pagamento in CONTABILITÀ.${conto.calcolato !== ricevuta.calcolato ? ` Dopo il pagamento è cambiata una presenza: il mese ora fa ${euro(conto.calcolato)} €.` : ''}`
             : ricevuta
             ? `Fatta il ${dataLunga(ricevuta.data)}${ricevuta.motivo ? ` · cambiata a mano: ${ricevuta.motivo}` : ''}`
             : ''
@@ -267,7 +267,11 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
   const giorni = Math.ceil((Date.now() - m.da.getTime()) / 86_400_000) + 1
   const { avviso, avvisa, fai } = useAvviso()
   const dati = useCarica(async () => {
-    const [personale, presenze, senzaIstruttore, ricevute] = await Promise.all([d.personale(), d.presenzeIstruttori(giorni), d.lezioniSenzaIstruttore(), d.ricevuteCompensi()])
+    // Per pagare servono anche i mesi delle ricevute ancora da pagare, per vedere se tornano: le presenze si leggono da lì.
+    const ricevute = await d.ricevuteCompensi()
+    const piuVecchia = ricevute.filter((r) => !r.annullataIl && !r.pagataIl).reduce((min, r) => (r.mese < min ? r.mese : min), mese)
+    const indietro = Math.max(giorni, Math.ceil((Date.now() - Date.parse(`${piuVecchia}T00:00:00`)) / 86_400_000) + 1)
+    const [personale, presenze, senzaIstruttore] = await Promise.all([d.personale(), d.presenzeIstruttori(indietro), d.lezioniSenzaIstruttore()])
     const tecnici = personale.filter(insegna)
     const [tariffe, mancano] = await Promise.all([
       Promise.all(tecnici.map(async (t) => [t.id, await d.tariffe(t.id)] as const)).then((x): Record<string, Tariffa[]> => Object.fromEntries(x)),
@@ -398,7 +402,11 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
               key={paga.id}
               d={d}
               p={paga}
-              ricevute={pagabili(dati.dato.ricevute, paga.id)}
+              ricevute={pagabili(dati.dato.ricevute, paga.id, (r) => {
+                // Il conto di adesso del mese della ricevuta, con le stesse presenze e tariffe della pagina.
+                const [y, mm] = r.mese.split('-').map(Number)
+                return dati.dato ? compensoDelMese(dati.dato.presenze, dati.dato.senzaIstruttore, r.personaId, { da: new Date(y, mm - 1, 1), a: new Date(y, mm, 0) }, dati.dato.tariffe[r.personaId] ?? []).calcolato : undefined
+              })}
               casse={dati.dato.casse}
               chiusure={dati.dato.chiusure}
               fai={fai}
