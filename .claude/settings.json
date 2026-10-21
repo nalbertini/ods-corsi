@@ -5,6 +5,7 @@
       "Bash(gh pr merge *)"
     ]
   },
+  "autoCompactWindow": 200000,
   "enabledPlugins": {
     "common-room@synced": false,
     "cowork-plugin-management@synced": false,
