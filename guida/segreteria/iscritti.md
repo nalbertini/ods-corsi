@@ -310,7 +310,10 @@ pagamento torna libero per quella giusta.
 - **Sconto famiglia** — se la persona è in un [nucleo
   familiare](#il-nucleo-familiare), la ricevuta lo mette da sé: il 20%
   sull'annuale che costa meno fra quelli di questa ricevuta e quelli già
-  pagati dal nucleo (a pari prezzo, su questa ricevuta). Il prezzo della voce
+  pagati dal nucleo nella stessa stagione dei corsi (a pari prezzo, su questa
+  ricevuta). È fra persone diverse: chi ha più annuali conta come uno solo,
+  al massimo 660 € (l'offerta più corsi, che si scrive nel prezzo della voce),
+  e fra i suoi corsi lo sconto non va. Il prezzo della voce
   scende, e la descrizione dice su quanto: «Annuale Judo 2 · sconto famiglia
   20% su 480,00 €». Sotto le voci si legge su quale voce è andato, con
   **Togli lo sconto** (e poi **Metti lo sconto** per rimetterlo). Non lo mette
@@ -486,6 +489,6 @@ Il nucleo è uno solo: chi è già nel nucleo di un altro, o ne ha uno suo con
 altri dentro, va prima tolto. Le richieste aggiunte da un titolare dalla sua
 area entrano nel suo nucleo da sole, quando si accolgono.
 
-Sotto, lo **sconto famiglia**: dalle ricevute del nucleo, il 20% sull'annuale
+Sotto, lo **sconto famiglia**: dalle ricevute del nucleo della stagione in corso, il 20% sull'annuale
 che costa meno, di chi e quanto, o chi l'ha già avuto. Sulla ricevuta lo mette
 l'app ([Un pagamento e la sua ricevuta](#un-pagamento-e-la-sua-ricevuta)).

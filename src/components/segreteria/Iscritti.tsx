@@ -1312,7 +1312,7 @@ function NucleoFamiliare({
     const x = tutti.find((y) => y.id === id)
     return x ? `${x.nome} ${x.cognome}` : ''
   }
-  const annuali = abbonamentiDalleRicevute(ricevute.dato ?? [], nomeDi)
+  const annuali = abbonamentiDalleRicevute(ricevute.dato ?? [], nomeDi, chiaveGiorno(new Date()))
   const minimo = doveVaLoSconto([], annuali)
   // Chi si può aggiungere: chi può entrare secondo le regole, prima chi ha lo stesso cognome.
   const candidati = p.nucleo

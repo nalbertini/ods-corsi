@@ -1,6 +1,7 @@
 import type { Formula } from './richieste'
 import type { Ricevuta } from './ricevute'
 import { centesimi, euro, voceQuota, vociDelCorso } from './ricevute'
+import { PIU_CORSI, stagioneDi } from './costi'
 import type { CorsoRef, Listino } from './listino'
 
 /**
@@ -14,9 +15,11 @@ import type { CorsoRef, Listino } from './listino'
  * online qualunque, con `nucleoDi`: la controlla la segreteria, e accolta
  * entra nel nucleo (vedi `accogli` in `richiesteProva.ts`).
  *
- * Qui ci sono anche i conti di quanto costa una persona in più, con lo
- * sconto famiglia del listino: l'annuale col costo minore del nucleo ha il
- * 20% di sconto, la quota associativa no. Gli annuali già pagati si leggono
+ * Qui ci sono anche i conti di quanto costa una persona in più, con le
+ * offerte del listino: PIÙ CORSI, gli annuali di una persona costano in tutto
+ * al massimo `PIU_CORSI` (la quota a parte); e lo sconto famiglia, fra persone
+ * diverse: l'annuale col costo minore del nucleo ha il 20% di sconto, la
+ * quota associativa no. Chi ha più corsi conta come un annuale solo. Gli annuali già pagati si leggono
  * dalle ricevute; è una stima, e l'importo giusto lo conferma la segreteria.
  * Sulla ricevuta lo sconto lo mette la segreteria da sé (vedi `NuovaRicevuta`):
  * il prezzo della voce è già scontato, e la descrizione dice su quanto.
@@ -50,16 +53,19 @@ export function scontoDellaVoce(descrizione: string): { descrizione: string; pie
 export const importoSconto = (pieno: number) => Math.round(pieno * SCONTO_FAMIGLIA)
 
 /**
- * Gli annuali già pagati dal nucleo, dalle ricevute non annullate: le voci
- * «Annuale …» (vedi `vociDelCorso` in `ricevute.ts`), col prezzo pieno anche
- * quelle scontate. `chi` è il nome da mostrare, per id.
+ * Gli annuali già pagati dal nucleo per la stagione dei corsi di `giorno`,
+ * dalle ricevute non annullate: le voci «Annuale …» (vedi `vociDelCorso` in
+ * `ricevute.ts`), col prezzo pieno anche quelle scontate. La stagione è quella
+ * della voce (`dal`), o della ricevuta se la voce non la dice: un annuale
+ * dell'anno prima non dà né toglie lo sconto. `chi` è il nome da mostrare, per id.
  */
-export function abbonamentiDalleRicevute(ricevute: Ricevuta[], chi: (personaId: string) => string): Abbonamento[] {
+export function abbonamentiDalleRicevute(ricevute: Ricevuta[], chi: (personaId: string) => string, giorno: string): Abbonamento[] {
+  const stagione = stagioneDi(giorno).corsi.dal
   return ricevute
     .filter((r) => !r.annullataIl && r.personaId)
     .flatMap((r) =>
       r.voci
-        .filter((v) => /^annuale /i.test(v.descrizione))
+        .filter((v) => /^annuale /i.test(v.descrizione) && stagioneDi(v.dal ?? r.data).corsi.dal === stagione)
         .map((v): Abbonamento => {
           const s = scontoDellaVoce(v.descrizione)
           const corso = (s?.descrizione ?? v.descrizione).replace(/^annuale /i, '')
@@ -69,17 +75,29 @@ export function abbonamentiDalleRicevute(ricevute: Ricevuta[], chi: (personaId: 
 }
 
 /**
+ * Gli annuali di una persona come uno solo, per l'offerta PIÙ CORSI: i corsi
+ * insieme, la somma fino a `PIU_CORSI`. Con un annuale solo torna quello.
+ */
+export function piuCorsi<A extends Abbonamento>(suoi: A[]): A | Abbonamento {
+  if (suoi.length === 1) return suoi[0]
+  const somma = suoi.reduce((s, a) => s + a.importo, 0)
+  return { chi: suoi[0].chi, corso: suoi.map((a) => a.corso).join(', '), importo: Math.min(somma, PIU_CORSI * 100) }
+}
+
+/**
  * Su quale annuale va lo sconto famiglia: su quello che l'ha già avuto, se
- * c'è; se no, con almeno due annuali, su quello che costa meno. A pari prezzo
- * vince il primo dei `suoi`, quelli da pagare adesso: gli altri hanno già
- * pagato. `null` se lo sconto non c'è.
+ * c'è; se no, con almeno due persone, su quello che costa meno. Chi ha più
+ * annuali conta come uno (vedi `piuCorsi`). A pari prezzo vince il primo dei
+ * `suoi`, quelli da pagare adesso: gli altri hanno già pagato. `null` se lo
+ * sconto non c'è.
  */
 export function doveVaLoSconto<A extends Abbonamento>(suoi: A[], altri: Abbonamento[]): A | Abbonamento | null {
   const tutti: Abbonamento[] = [...suoi, ...altri]
   const gia = tutti.find((a) => a.scontato)
   if (gia) return gia
-  if (tutti.length < 2) return null
-  return tutti.reduce((x, y) => (y.importo < x.importo ? y : x))
+  const persone = [...new Set(tutti.map((a) => a.chi))].map((chi) => piuCorsi(tutti.filter((a) => a.chi === chi)))
+  if (persone.length < 2) return null
+  return persone.reduce((x, y) => (y.importo < x.importo ? y : x))
 }
 
 export interface RigaStima {
@@ -129,11 +147,15 @@ export function stimaIscrizione(
     righe.push({ testo: x.descrizione, importo: x.prezzo * x.quantita })
     if (nuovo.formula === 'annuale') suoi.push({ chi: nuovo.chi, corso: nome, importo: x.prezzo * x.quantita })
   }
-  // Lo sconto è della famiglia: servono almeno due annuali nel nucleo.
+  // PIÙ CORSI: i suoi annuali insieme non passano il tetto.
+  const tutto = suoi.length ? piuCorsi(suoi) : null
+  const oltre = suoi.reduce((s, a) => s + a.importo, 0) - (tutto?.importo ?? 0)
+  if (oltre > 0) righe.push({ testo: `Più corsi: in tutto ${PIU_CORSI} €`, importo: -oltre })
+  // Lo sconto è della famiglia: servono almeno due persone con un annuale nel nucleo.
   let sconto: Stima['sconto']
-  const minimo = doveVaLoSconto(suoi, altri)
+  const minimo = doveVaLoSconto(tutto ? [tutto] : [], altri)
   if (minimo) {
-    const qui = suoi.includes(minimo)
+    const qui = minimo === tutto
     const importo = importoSconto(minimo.importo)
     sconto = { qui, chi: minimo.chi, corso: minimo.corso, importo }
     if (qui) righe.push({ testo: `Sconto famiglia: ${Math.round(SCONTO_FAMIGLIA * 100)}% su annuale ${minimo.corso}`, importo: -importo })
