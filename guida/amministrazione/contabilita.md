@@ -92,7 +92,7 @@ Non si collegano i movimenti scritti qui, i giroconti, la «Differenza di cassa�
 
 - **I casi sicuri, in blocco**: **Collega i casi sicuri** apre il riepilogo (quanti movimenti, a quante
   persone, quanto fanno, un campione di nomi). Sono sicuri i movimenti con nome e cognome della causale
-  uguali a quelli di **una sola scheda**, in qualunque ordine e senza badare a maiuscole e accenti.
+  uguali a quelli di **una sola scheda**, in qualunque ordine e senza badare a maiuscole e accenti, anche quando il vecchio programma scrive l'accento come apostrofo (NICOLO' è Nicolò).
   Niente si scrive finché non dici **Sì, collega**. Vanno a pacchetti da 500, ognuno tutto o niente; se uno
   si ferma, l'app dice quanti ne ha collegati e **Rifai il collegamento** riparte dagli altri. A fine
   lavoro **Togli questo lotto** scollega solo quelli appena collegati: quelli cambiati a mano dopo non si toccano.
