@@ -90,7 +90,11 @@ function aParole(n: number): string {
 /** Come si scrive in una lettera: «quindici/00», «milleduecentocinquanta/50». */
 export const importoInLettere = (centesimi: number) => `${aParole(Math.floor(centesimi / 100))}/${String(centesimi % 100).padStart(2, '0')}`
 
-/** La stagione di un giorno: parte il 1° settembre. «2026/27». */
+/**
+ * La stagione dell'incarico di un tecnico: parte il 1° settembre, come la lettera
+ * (da settembre ad agosto). «2026/27». Non è quella di quote e ricevute (`stagioneDi`
+ * di costi.ts), dove agosto è già della stagione che inizia.
+ */
 export function stagioneDi(giorno: string): string {
   const [anno, mese] = giorno.split('-').map(Number)
   const da = mese >= 9 ? anno : anno - 1

@@ -52,7 +52,7 @@ const carica = async (contents) => {
   }
 }
 const s = await carica("export * from './src/lib/satispay'")
-const g = await carica("export { pagamentoDi } from './src/lib/segreteria'; export { VALIDITA } from './src/lib/costi'")
+const g = await carica("export { pagamentoDi } from './src/lib/segreteria'; export { STAGIONE } from './src/lib/costi'")
 const c = await carica("export * from './src/lib/contabilita'; export { ENTE_PREDEFINITO } from './src/lib/ricevute'")
 const f = await carica("export * from './supabase/functions/satispay/firma'")
 // La parte nuova di «prima paghi, poi mandi» si carica a parte: finché manca, fa rosso solo i suoi casi.
@@ -198,8 +198,9 @@ console.log('\n4d. la quota nella scheda: col Satispay arrivato non è «da paga
 {
   const nessuno = { pagamento: { stato: 'da_pagare' }, quote: [] }
   ok('senza Satispay: da pagare', prova(() => g.pagamentoDi(nessuno, '2026-10-20').come), 'da_pagare')
-  ok('Satispay arrivato, senza ricevuta: pagata, con Satispay', prova(() => g.pagamentoDi({ ...nessuno, satispay: 23000 }, '2026-10-20')), { come: 'pagato', fonte: 'satispay', fino: g.VALIDITA.quota.al, importo: 23000 })
-  const conRicevuta = { ...nessuno, satispay: 23000, quote: [{ anno: 2026, numero: 7, dal: '2026-09-01', al: g.VALIDITA.quota.al, mancano: 0 }] }
+  ok('Satispay arrivato, senza ricevuta: pagata, con Satispay', prova(() => g.pagamentoDi({ ...nessuno, satispay: 23000 }, '2026-10-20')), { come: 'pagato', fonte: 'satispay', fino: g.STAGIONE.quota.al, importo: 23000 })
+  ok('Satispay a ottobre 2027: pagata fino al 31/7/2028', prova(() => g.pagamentoDi({ ...nessuno, satispay: 23000 }, '2027-10-20').fino), '2028-07-31')
+  const conRicevuta = { ...nessuno, satispay: 23000, quote: [{ anno: 2026, numero: 7, dal: '2026-09-01', al: g.STAGIONE.quota.al, mancano: 0 }] }
   ok('con la ricevuta della quota vale la ricevuta', prova(() => g.pagamentoDi(conRicevuta, '2026-10-20').fonte), 'ricevuta')
 }
 
@@ -306,6 +307,30 @@ console.log('\n7. in prova: paga finge l’approvazione, con l’importo della s
   ok('e torna fra i pagamenti', prova(() => s.righeSatispay([libero], () => '').length), 1)
   ok('e si propone per la ricevuta nuova', prova(() => s.satispayDaUsare([libero], personaId)?.id), sp.id)
   ok('la ricevuta rifatta: fatta', await aspetta(async () => typeof (await seg.emettiRicevuta(ricevuta(stima.totale), sp.id)).id), 'string')
+
+  // FAI LA RICEVUTA ripremuto dopo una rete caduta: con la chiave del modulo torna la ricevuta fatta, come `emetti_ricevuta_satispay`
+  // (supabase/prova/satispay.sql, sezione 14). Il pagamento torna libero annullando la rifatta.
+  const rifatta = (await aspetta(() => seg.ricevute(personaId))).find?.((x) => !x.annullataIl)
+  await aspetta(() => seg.annullaRicevuta(rifatta.id))
+  const conChiave = (chiave) => ({ ...ricevuta(stima.totale), chiave })
+  const fatta = await aspetta(() => seg.emettiRicevuta(conChiave('dddddddd-0000-4000-8000-000000000010'), sp.id))
+  ok('con la chiave del modulo: fatta', typeof fatta?.id, 'string')
+  const quante = (await aspetta(() => seg.ricevute(personaId))).length
+  ok('la stessa chiave, col pagamento già dentro: torna la stessa ricevuta',
+    await aspetta(async () => (await seg.emettiRicevuta(conChiave('dddddddd-0000-4000-8000-000000000010'), sp.id)).id), fatta?.id)
+  ok('…e nessuna ricevuta in più', (await aspetta(() => seg.ricevute(personaId))).length, quante)
+  ok('…e il pagamento resta in quella', (await aspetta(() => seg.pagamentiSatispay())).find?.((x) => x.id === sp.id)?.ricevutaId, fatta?.id)
+  ok('una chiave nuova col pagamento già usato: no, come sempre',
+    await aspetta(async () => { await seg.emettiRicevuta(conChiave('dddddddd-0000-4000-8000-000000000011'), sp.id); return 'fatta' }), 'ERRORE: Questo pagamento Satispay è già in una ricevuta')
+  // Il modulo ha fatto la ricevuta senza Satispay: la stessa chiave col pagamento non lo lega a quella.
+  await aspetta(() => seg.annullaRicevuta(fatta.id))
+  const senza = await aspetta(() => seg.emettiRicevuta(conChiave('dddddddd-0000-4000-8000-000000000012')))
+  const primaDi = (await aspetta(() => seg.ricevute(personaId))).length
+  ok('la stessa chiave di una ricevuta fatta senza il pagamento: no',
+    await aspetta(async () => { await seg.emettiRicevuta(conChiave('dddddddd-0000-4000-8000-000000000012'), sp.id); return 'fatta' }),
+    `ERRORE: La ricevuta n. ${senza?.numero}/${senza?.anno} fatta da questo modulo non ha dentro questo pagamento Satispay: chiudi il modulo e riaprilo`)
+  ok('…e nessuna ricevuta in più', (await aspetta(() => seg.ricevute(personaId))).length, primaDi)
+  ok('…e il pagamento non è in nessuna ricevuta', (await aspetta(() => seg.pagamentiSatispay())).find?.((x) => x.id === sp.id)?.ricevutaId, undefined)
 }
 
 console.log('\n8. prima paghi, poi mandi: il riquadro PAGA')

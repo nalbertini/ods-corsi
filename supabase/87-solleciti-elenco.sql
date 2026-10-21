@@ -18,7 +18,7 @@
 -- Le stesse regole della modalità prova (src/lib/segreteriaProva.ts), provate
 -- da supabase/prova/solleciti.sql e da scripts/prova-sollecito.mjs.
 --
--- Si lancia dopo `85-solleciti.sql`. Non chiede di rilanciare
+-- Si lancia dopo `85-solleciti.sql` (e dopo `86-ricevuta-una-volta.sql`, che non tocca). Non chiede di rilanciare
 -- `06-iscrizioni.sql` e non tocca nessuna funzione di prima. Finché non c'è,
 -- il tasto nell'elenco c'è lo stesso, senza la riga «Sollecitato il …», e
 -- «Annulla» dice di lanciare questo file.

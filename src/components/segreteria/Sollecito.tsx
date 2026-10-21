@@ -84,7 +84,7 @@ export function SollecitoWhatsApp({ d, p, oggi, giro, giroSolleciti, quotaNelVec
 /**
  * Il tasto premuto: WhatsApp si apre comunque (è il link), qui si segna
  * soltanto. L'avviso ha «Annulla», per un tasto premuto per sbaglio o un
- * messaggio che non è partito (86-solleciti-elenco.sql).
+ * messaggio che non è partito (87-solleciti-elenco.sql).
  */
 export function segnaSollecito(d: DatiSegreteria, p: PersonaSeg, avvisa: ReturnType<typeof useAvviso>['avvisa'], dopo: () => void) {
   // Un doppio tocco apre WhatsApp due volte, ma segna una volta sola: se no «Annulla» ne toglierebbe uno e l'altro resterebbe.
@@ -103,7 +103,7 @@ export function segnaSollecito(d: DatiSegreteria, p: PersonaSeg, avvisa: ReturnT
               dopo()
               avvisa(tolto ? 'Sollecito tolto.' : 'Il sollecito non si toglie più: è passato più di un quarto d’ora, o l’ha segnato un’altra persona.', !tolto)
             },
-            (e: unknown) => avvisa(e instanceof Error && e.message.includes('86-') ? e.message : 'Il sollecito non si è tolto: controlla la connessione e riprova.', true),
+            (e: unknown) => avvisa(e instanceof Error && e.message.includes('87-') ? e.message : 'Il sollecito non si è tolto: controlla la connessione e riprova.', true),
           ),
       })
     },

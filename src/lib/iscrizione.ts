@@ -5,6 +5,7 @@
  * pubblica sono in `paginaIscrizioni.ts`.
  */
 
+import { STAGIONE } from './costi'
 import { haUnServer } from './dati'
 
 /**
@@ -51,11 +52,8 @@ export const MODULI: Documento[] = [
   { etichetta: 'MINORI', file: 'moduli/autorizzazioni-minori.pdf' },
 ]
 
-/** La stagione: quella dei costi, e l'anno del tesseramento sul modulo firmato dall'app. */
-export const STAGIONE = '2026/27'
-
 /** I costi della stagione, corso per corso, con sconti e offerte. */
-export const LISTINO: Documento = { etichetta: `COSTI ${STAGIONE}`, file: 'moduli/costi-2026-27.pdf' }
+export const LISTINO: Documento = { etichetta: `COSTI ${STAGIONE.etichetta}`, file: 'moduli/costi-2026-27.pdf' }
 
 /** Dove si paga, dal foglio dei costi. */
 export const PAGAMENTO: {

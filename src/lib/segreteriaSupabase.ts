@@ -1381,6 +1381,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             voci: dati.voci,
             anticipo: dati.anticipo,
             note: dati.note?.trim() || null,
+            chiave: dati.chiave ?? null,
           },
         }),
       ) as RigaRicevuta
@@ -1450,16 +1451,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async ultimiSolleciti() {
       const r = await db.rpc('ultimi_solleciti')
-      // Senza 86-solleciti-elenco.sql l'elenco non dice chi è già sollecitato, e basta.
+      // Senza 87-solleciti-elenco.sql l'elenco non dice chi è già sollecitato, e basta.
       if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return new Map()
-      // `as`: le righe di ultimi_solleciti() in 86-solleciti-elenco.sql, una per persona.
+      // `as`: le righe di ultimi_solleciti() in 87-solleciti-elenco.sql, una per persona.
       return new Map((ok(r) as Array<{ persona_id: string; creato_il: string; da: string }>).map((x) => [x.persona_id, { quando: x.creato_il, da: x.da }]))
     },
 
     async togliSollecito(personaId) {
       const r = await db.rpc('togli_sollecito', { persona: personaId })
-      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) throw new Error('«Annulla» non c’è ancora sul database: va lanciato 86-solleciti-elenco.sql.')
-      // `as`: togli_sollecito() in 86-solleciti-elenco.sql rende un boolean.
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) throw new Error('«Annulla» non c’è ancora sul database: va lanciato 87-solleciti-elenco.sql.')
+      // `as`: togli_sollecito() in 87-solleciti-elenco.sql rende un boolean.
       return ok(r) as boolean
     },
 

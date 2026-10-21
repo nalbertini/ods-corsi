@@ -35,7 +35,8 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   caricato prima della nuova gestione (senza data di caricamento). Quelli
   nuovi non ci sono mai.
 - **Pagato nel vecchio programma** col numero — solo finché ce ne sono: chi è
-  attivo, ha un incasso del vecchio programma nella stagione (collegato alla sua
+  attivo, ha un incasso del vecchio programma nella stagione (dal 1° agosto al
+  31 luglio; collegato alla sua
   scheda in CONTABILITÀ › MOVIMENTI) e nell'app risulta ancora da pagare. Sotto la
   riga di stato c'è chi **ha pagato la quota** e chi **ha pagato solo corsi**; ogni
   riga dice quale incasso è (data, importo, voce). Le righe con la casella si
@@ -344,6 +345,11 @@ pagamento torna libero per quella giusta.
 **FAI LA RICEVUTA** prima chiede di rileggere: a chi va (per un minore, il
 socio e il genitore), il totale e, con un acconto, quanto si paga ora e quanto
 resta. Confermato, le dà il numero e scarica il PDF, da stampare o mandare.
+
+Se la rete cade mentre la fai e l'app dà errore, ripremi **FAI LA RICEVUTA**
+senza chiudere: se era già fatta ritrovi quella, col suo numero, e non ne
+nasce un'altra. Se nel frattempo hai cambiato qualcosa, vale la ricevuta già
+fatta: se è sbagliata si annulla e se ne fa un'altra.
 
 ### La ricevuta per email
 

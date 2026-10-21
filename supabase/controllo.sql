@@ -76,6 +76,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   -- Non contano quelle delle estensioni: su Supabase `citext` sta in `public`,
   -- è di `supabase_admin` e il SQL Editor non può toglierle i permessi, ma
   -- sono le funzioni del tipo delle email e non toccano nessuna tabella.
+  -- `orari_sito` è della pagina Orari (69); `da_claude`, `porta_di_claude` e
+  -- `controlla_richiesta` le chiama PostgREST prima di ogni richiesta (77),
+  -- anche per chi non ha un accesso.
   ('06-iscrizioni.sql', 'i permessi, dopo gli altri file',
     not exists (
       select 1 from pg_proc p
@@ -83,8 +86,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
         and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
         and has_function_privilege('anon', p.oid, 'execute')
         and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino', 'mesi_presenze_pubblici',
-                                'vestiario', 'invia_ordine_vestiario', 'orari_aperti',
-                                'sito_pagine_pubbliche', 'sito_menu_pubblico', 'sito_redirect_pubblici'))),
+                                'vestiario', 'invia_ordine_vestiario', 'orari_aperti', 'orari_sito',
+                                'sito_pagine_pubbliche', 'sito_menu_pubblico', 'sito_redirect_pubblici',
+                                'da_claude', 'porta_di_claude', 'controlla_richiesta'))),
   ('06-iscrizioni.sql', 'documento e certificato col modulo, da stampare',
     exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%certificato%')
     and exists (select 1 from dentro where nome = 'richieste_con_documento')),
@@ -361,6 +365,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regprocedure('public.incassi_vecchio_programma()') is not null
     and exists (select 1 from information_schema.columns
                 where table_schema = 'public' and table_name = 'movimenti' and column_name = 'persona_id')),
+  ('71-pagato-vecchio-programma.sql', 'agosto nella stagione che inizia, come nell''app (src/lib/costi.ts)',
+    exists (select 1 from dentro where nome = 'incassi_vecchio_programma' and corpo like '%12 months%')),
   ('72-movimenti-dalla-chat.sql', 'i movimenti registrati dalla chat con Claude: la chiave, il segno e i simili',
     to_regprocedure('public.registra_movimento_dalla_chat(jsonb)') is not null
     and to_regprocedure('public.movimenti_simili(text)') is not null
@@ -433,7 +439,14 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.solleciti') is not null
     and to_regprocedure('public.segna_sollecito(uuid)') is not null
     and to_regprocedure('public.ultimo_sollecito(uuid)') is not null),
-  ('86-solleciti-elenco.sql', 'i solleciti nell''elenco ISCRITTI: gli ultimi di tutti e Annulla',
+  ('86-ricevuta-una-volta.sql', 'una ricevuta fatta una volta sola: la chiave del modulo',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'ricevute' and column_name = 'chiave')
+    and to_regprocedure('public.ricevuta_gia_fatta(uuid,uuid)') is not null
+    -- Rilanciare 55 o 73 dopo 86 rimette le funzioni che ignorano la chiave: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%ricevuta_gia_fatta%')
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%')),
+  ('87-solleciti-elenco.sql', 'i solleciti nell''elenco ISCRITTI: gli ultimi di tutti e Annulla',
     to_regprocedure('public.ultimi_solleciti()') is not null
     and to_regprocedure('public.togli_sollecito(uuid)') is not null)
 ) as x(file, cosa, c)

@@ -128,8 +128,8 @@ select atteso('cancellata la scheda di chi ha segnato, il sollecito resta col no
   come('11111111-1111-1111-1111-111111111111', $$select da || '|' || (creato_il is not null)::text from ultimo_sollecito('cccccccc-0000-0000-0000-000000000001')$$), '|true');
 
 \echo ''
-\echo '--- 4. l''elenco: gli ultimi solleciti di tutti, e Annulla (86-solleciti-elenco.sql) ---'
-select atteso('86-solleciti-elenco.sql è stato lanciato: ci sono ultimi_solleciti e togli_sollecito',
+\echo '--- 4. l''elenco: gli ultimi solleciti di tutti, e Annulla (87-solleciti-elenco.sql) ---'
+select atteso('87-solleciti-elenco.sql è stato lanciato: ci sono ultimi_solleciti e togli_sollecito',
   (to_regprocedure('public.ultimi_solleciti()') is not null and to_regprocedure('public.togli_sollecito(uuid)') is not null)::text, 'true');
 -- Sara, mai sollecitata; Marco ha il sollecito vecchio di Sandro (che non c'è più) e ora uno di Anna.
 insert into persone (id, nome, cognome, ruolo, attiva) values ('cccccccc-0000-0000-0000-000000000003', 'Sara', 'Neri', 'iscritto', true);

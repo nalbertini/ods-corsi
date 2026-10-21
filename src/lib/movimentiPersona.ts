@@ -145,10 +145,16 @@ export function esitiCollegamenti(movimenti: MovimentoDaCollegare[], persone: Pe
 
 export type FiltroPersona = '' | 'collegati' | 'da_decidere' | 'senza_scheda'
 
-/** Il filtro PERSONA dell'elenco: i collegati, gli omonimi da decidere, quelli senza scheda. Vuoto: tutti. */
-export function filtraPerPersona<T extends { id: string; personaId?: string }>(righe: T[], filtro: FiltroPersona, esiti: Record<string, EsitoCollegamento | undefined>): T[] {
+/** Lo storico collegato a mano: gli incassi iscritti hanno la persona da sé, non si collegano né si scollegano. */
+export const collegatoAMano = (r: { origine: string; personaId?: string }) => r.origine === 'movimento' && !!r.personaId
+
+/**
+ * Il filtro PERSONA dell'elenco: i collegati, gli omonimi da decidere, quelli senza scheda. Vuoto: tutti.
+ * «Collegati» è lo storico collegato a mano: gli incassi iscritti hanno la persona da sé e coprirebbero quel lavoro.
+ */
+export function filtraPerPersona<T extends { id: string; origine: string; personaId?: string }>(righe: T[], filtro: FiltroPersona, esiti: Record<string, EsitoCollegamento | undefined>): T[] {
   if (!filtro) return righe
-  if (filtro === 'collegati') return righe.filter((r) => !!r.personaId)
+  if (filtro === 'collegati') return righe.filter(collegatoAMano)
   const voluto: EsitoCollegamento = filtro === 'da_decidere' ? 'omonimi' : 'nessuna'
   return righe.filter((r) => !r.personaId && esiti[r.id] === voluto)
 }

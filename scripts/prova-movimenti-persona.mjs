@@ -224,7 +224,8 @@ ok('i numeri degli esiti coincidono con quelli del riepilogo', prova(() => {
   return [r.sicuri.movimenti, r.daDecidere.movimenti, r.senzaScheda.movimenti]
 }))
 
-const righeElenco = [{ id: 'r1', personaId: 'g1' }, { id: 'r2' }, { id: 'r3' }, { id: 'r4' }, { id: 'r5', personaId: 'g2' }, { id: 'r6' }]
+// Righe dello storico: «Collegati» guarda anche l'origine, perché gli incassi iscritti hanno la persona da sé.
+const righeElenco = [{ id: 'r1', personaId: 'g1' }, { id: 'r2' }, { id: 'r3' }, { id: 'r4' }, { id: 'r5', personaId: 'g2' }, { id: 'r6' }].map((r) => ({ origine: 'movimento', ...r }))
 const esitiElenco = { r2: 'omonimi', r3: 'nessuna', r4: 'sicuro', r5: 'omonimi', r6: 'omonimi' }
 const filtra = (f) => prova(() => m.filtraPerPersona(righeElenco, f, esitiElenco).map((r) => r.id))
 ok('nessun filtro: tutte le righe, nello stesso ordine', filtra(''), ['r1', 'r2', 'r3', 'r4', 'r5', 'r6'])

@@ -16,7 +16,7 @@ import { inflateSync } from 'node:zlib'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/ricevute'; export { annoScritto, anniDiNascita, altriAperti, corsiPerEta, cosaNonVaListino, testoAltriCorsi, fuoriEta, listinoDa, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci, scaricaRicevuta } from './src/lib/ricevutaPdf'; export { PDFDocument, PDFArray, PDFRawStream, PDFName, PDFDict } from 'pdf-lib'",
+      "export * from './src/lib/ricevute'; export { stagioneDi } from './src/lib/costi'; export { annoScritto, anniDiNascita, altriAperti, corsiPerEta, cosaNonVaListino, testoAltriCorsi, fuoriEta, listinoDa, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci, scaricaRicevuta } from './src/lib/ricevutaPdf'; export { PDFDocument, PDFArray, PDFRawStream, PDFName, PDFDict } from 'pdf-lib'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -107,6 +107,29 @@ ok('Collegno è in provincia di Torino', m.provinciaDalCap('10093'), 'TO')
 ok('Milano no', m.provinciaDalCap('20121'), '')
 ok('il trimestre da ottobre', m.fineTrimestre('2026-10-01'), '2026-12-31')
 ok('il trimestre non va oltre la stagione', m.fineTrimestre('2027-05-10'), '2027-06-30')
+
+// La stagione si ricava dalla data della ricevuta, non da un anno scritto fisso: da settembre 2027 è la 2027/28.
+// Agosto è già della stagione che inizia (chi paga ad agosto paga quella); i corsi di luglio e agosto partono dal 1/9.
+const st = (g) => { try { return m.stagioneDi(g) } catch (e) { return `ERRORE: ${e.message}` } }
+const etichetta = (g) => st(g)?.etichetta
+ok('la stagione del 1/9/2026, del 30/6/2027 e del 31/7/2027', ['2026-09-01', '2027-06-30', '2027-07-31'].map(etichetta), ['2026/27', '2026/27', '2026/27'])
+ok('il 1/8/2027, il 31/8/2027 e il 1/9/2027 sono già della 2027/28', ['2027-08-01', '2027-08-31', '2027-09-01'].map(etichetta), ['2027/28', '2027/28', '2027/28'])
+ok('la stagione del 1/9/2027 per intero', st('2027-09-01'), { etichetta: '2027/28', dal: '2027-08-01', al: '2028-07-31', quota: { dal: '2027-09-01', al: '2028-07-31' }, corsi: { dal: '2027-09-01', al: '2028-06-30' } })
+ok('il 31/7/2027 la quota vale fino a quel giorno', st('2027-07-31')?.quota, { dal: '2026-09-01', al: '2027-07-31' })
+ok('una quota pagata il 20/8/2027 vale da subito fino al 31/7/2028', st('2027-08-20')?.quota, { dal: '2027-08-20', al: '2028-07-31' })
+ok('i corsi del 30/6/2027 sono della 2026/27', st('2027-06-30')?.corsi, { dal: '2026-09-01', al: '2027-06-30' })
+ok('i corsi comprati il 1/7/2027 sono già della 2027/28', st('2027-07-01')?.corsi, { dal: '2027-09-01', al: '2028-06-30' })
+const dalAl = (v) => { try { const x = v(); return [x.dal, x.al] } catch (e) { return `ERRORE: ${e.message}` } }
+ok('la quota in una ricevuta di ottobre 2027', dalAl(() => m.voceQuota().voce('2027-10-01')), ['2027-09-01', '2028-07-31'])
+ok('la quota in una ricevuta del 20/8/2027', dalAl(() => m.voceQuota().voce('2027-08-20')), ['2027-08-20', '2028-07-31'])
+ok('la quota in una ricevuta di ottobre 2026 non cambia', dalAl(() => m.voceQuota().voce('2026-10-01')), ['2026-09-01', '2027-07-31'])
+const vocePronta = (g, fine) => () => m.vociDelCorso('lotta 3', g).find((v) => v.chiave.endsWith(fine)).voce(g)
+ok('l\'annuale in una ricevuta di ottobre 2027', dalAl(vocePronta('2027-10-01', '~annuale')), ['2027-09-01', '2028-06-30'])
+ok('il trimestre del 15/9/2027 finisce il 14/12/2027', dalAl(vocePronta('2027-09-15', '~trimestre')), ['2027-09-15', '2027-12-14'])
+ok('il trimestre del 10/5/2028 non va oltre il 30/6/2028', dalAl(vocePronta('2028-05-10', '~trimestre')), ['2028-05-10', '2028-06-30'])
+ok('il trimestre fatto il 1/7/2027 parte dal 1/9/2027 (mai «al» prima di «dal»)', dalAl(vocePronta('2027-07-01', '~trimestre')), ['2027-09-01', '2027-11-30'])
+ok('il trimestre fatto il 20/8/2027 parte dal 1/9/2027', dalAl(vocePronta('2027-08-20', '~trimestre')), ['2027-09-01', '2027-11-30'])
+ok('fineTrimestre del 10/5/2028 si ferma al 30/6/2028', m.fineTrimestre('2028-05-10'), '2028-06-30')
 
 ok('la palestra parte col suo numero RASD', m.ENTE_PREDEFINITO.rasd, '95562500017')
 // Il C.F. dell'associazione è 95562500017 e la P.IVA 10002760014, come sulla carta intestata: prima il C.F. era la P.IVA.

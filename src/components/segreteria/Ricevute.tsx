@@ -30,6 +30,7 @@ import {
 } from '../../lib/ricevute'
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
 import { chiaveGiorno } from '../../lib/sala'
+import { nuovoId } from '../../lib/prove'
 import { avvisoDopoRicevuta, avvisoManda, confermaEmail, daMandare, domandaManda, genitoreDellaMail, restaDopoManda, restaDopoRicevuta, siRiprova, statoPosta, ultimaMandata } from '../../lib/ricevuteEmail'
 import { chiedi, chiediSpunta, Campo, dataLunga, Guaio, Riga, suCarta, useAvviso, useBozza, useCarica } from './comune'
 import { Numero } from './Presenze'
@@ -399,7 +400,8 @@ export function RegistraPagamento({
             )
             if (!si) return
             // Con la ricevuta il pagamento a mano non si scrive: sta nella ricevuta, una volta sola.
-            if (onRicevuta && spuntata) return onRicevuta(dati)
+            // Ripreso dopo «Lascia stare», la stessa chiave: se la ricevuta era già fatta (rete caduta), torna quella.
+            if (onRicevuta && spuntata) return onRicevuta({ ...dati, chiaveRicevuta: iniziale?.chiaveRicevuta ?? nuovoId() })
             void fai(() => d.registraPagamentoDiretto(dati), 'Pagamento registrato', onFatto)
           }}
         >
@@ -540,6 +542,9 @@ export function NuovaRicevuta({
   onLasciaStare: () => void
 }) {
   const oggi = chiaveGiorno(new Date())
+  // Una per modulo aperto (o quella del pagamento a mano): ripremendo dopo una risposta persa torna la ricevuta già
+  // fatta, non ne nasce un'altra.
+  const [chiave] = useState(() => daPagamento?.chiaveRicevuta ?? nuovoId())
   const [data, setData] = useState(daPagamento?.data ?? oggi)
   const anno = Number(data.slice(0, 4)) || Number(oggi.slice(0, 4))
   const prossimo = useCarica(() => d.prossimoNumero(anno), [d, anno])
@@ -595,8 +600,8 @@ export function NuovaRicevuta({
     if (daPagamento) return setVoci([{ ...bozzaDa(voceDaPagamento(daPagamento)), pagatoAMano: true }])
     const quotaPagata = fatte.some((r) => !r.annullataIl && r.voci.some((v) => v.descrizione.toUpperCase() === QUOTA && (!v.al || v.al >= oggi)))
     metti([
-      ...(quotaPagata ? [] : [bozzaDa(pronte[0].voce(oggi))]),
-      ...corsi.flatMap((c) => vociDelCorso(c, data, l).slice(0, 1)).map((v) => bozzaDa(v.voce(oggi))),
+      ...(quotaPagata ? [] : [bozzaDa(pronte[0].voce(data || oggi))]),
+      ...corsi.flatMap((c) => vociDelCorso(c, data, l).slice(0, 1)).map((v) => bozzaDa(v.voce(data || oggi))),
     ])
   }, [partenza.dato])
 
@@ -632,7 +637,7 @@ export function NuovaRicevuta({
   const dati: DatiRicevuta | null =
     typeof fatte === 'string' || anticipoCent === null
       ? null
-      : { data, personaId: p.id, numero: n, ente, intestatario: socio, voci: fatte, anticipo: anticipoCent, note: note.trim() || undefined }
+      : { data, personaId: p.id, numero: n, ente, intestatario: socio, voci: fatte, anticipo: anticipoCent, note: note.trim() || undefined, chiave }
   const guaio =
     typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? (cosaNonVa(dati) ?? cosaNonVaMetodo(metodo, sp) ?? (conSatispay ? cosaNonVaSatispay(dati.voci, conSatispay) : null)) : null
   const c = dati ? conti(dati) : null
@@ -819,7 +824,7 @@ export function NuovaRicevuta({
             className="num sg-chip sg-chip-pieno"
             disabled={!aggiungi || voci.length >= 20}
             onClick={() => {
-              const v = pronte.find((x) => x.chiave === aggiungi)?.voce(data)
+              const v = pronte.find((x) => x.chiave === aggiungi)?.voce(data || oggi)
               if (v) metti([...voci, bozzaDa(v)])
               setAggiungi('')
             }}

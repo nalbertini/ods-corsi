@@ -88,7 +88,7 @@ export interface RigaMovimento {
   annullato: boolean
   /** Solo dei movimenti a mano: `prima-nota:N` se vengono dallo storico importato. */
   origineImport?: string
-  /** Solo dei movimenti a mano: la persona collegata allo storico. */
+  /** La persona: collegata a mano allo storico, o quella della ricevuta o del pagamento di un incasso iscritto. */
   personaId?: string
   /** Solo dei movimenti a mano: registrato dalla chat con Claude, e quando. */
   dallaChat?: boolean
@@ -131,6 +131,7 @@ export function incassiDerivati(righe: RigaPagamento[], casse: Cassa[]): RigaMov
     importo: r.importo,
     descrizione: r.chi,
     sotto: `${r.voce} · ${r.metodo}`,
+    personaId: r.personaId,
     voce: voceDiSistema(r.voce),
     cassaId: cassa(cassaDelMetodo(r.metodo) === 'contanti' ? NOME_CASSA_CONTANTI : NOME_CASSA_CONTO),
     annullato: r.annullato,

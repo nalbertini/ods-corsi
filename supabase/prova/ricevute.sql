@@ -1,7 +1,9 @@
 -- Le ricevute: le fa e le annulla solo la segreteria, il numero va avanti da
 -- sé e riparte ogni anno, i conti li fa il server, e una ricevuta fatta non
 -- si cambia e non si cancella.
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 16-ricevute.sql.
+-- Dalla sezione 5, la ricevuta una volta sola (86-ricevuta-una-volta.sql): la
+-- chiave del modulo aperto, ripremendo FAI LA RICEVUTA dopo una rete caduta.
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 86-ricevuta-una-volta.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -119,3 +121,86 @@ reset role;
 \echo '--- 4. la persona si cancella, la ricevuta resta ---'
 delete from persone where id = 'aaaaaaaa-0000-0000-0000-000000000003';
 select atteso('resta col socio scritto dentro', (select intestatario->>'cognome' from ricevute where numero = 116), 'Albertini');
+
+\echo ''
+\echo '--- 5. la ricevuta una volta sola: la chiave del modulo ---'
+-- FAI LA RICEVUTA ripremuto dopo una rete caduta: la ricevuta era fatta, torna quella.
+-- Nel 2028, così i numeri partono da 1; Manuela si è cancellata (sezione 4): qui Pietro.
+insert into persone (id, nome, cognome, ruolo) values
+  ('aaaaaaaa-0000-0000-0000-000000000004', 'Pietro', 'Chiave', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000005', 'Paola', 'Altra', 'iscritto');
+create or replace function con_chiave(giorno text, chiave text, numero int default null, pagato int default 36800,
+  persona text default 'aaaaaaaa-0000-0000-0000-000000000004') returns jsonb language sql as $$
+  select ricevuta(giorno, numero, pagato) || jsonb_strip_nulls(jsonb_build_object('chiave', chiave, 'persona_id', persona))
+$$;
+-- Il codice e il testo dell'errore, per i rifiuti che devono dire cosa fare.
+create or replace function rifiuto(sql text) returns text language plpgsql as $$
+begin
+  execute sql;
+  return 'nessun errore';
+exception when others then return sqlstate || ' ' || sqlerrm;
+end $$;
+create or replace function del_2028() returns text language sql as $$ select count(*)::text from ricevute where anno = 2028 $$;
+grant execute on function con_chiave(text, text, int, int, text), rifiuto(text), del_2028() to anon, authenticated;
+
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select emetti_ricevuta(con_chiave('2028-03-01', 'dddddddd-0000-4000-8000-000000000001')) as prima \gset
+select atteso('la prima con la chiave: il numero 1', :'prima'::jsonb->>'numero', '1');
+select emetti_ricevuta(con_chiave('2028-03-01', 'dddddddd-0000-4000-8000-000000000001')) as ancora \gset
+select atteso('la stessa chiave: torna la stessa ricevuta', :'ancora'::jsonb->>'id', :'prima'::jsonb->>'id');
+select atteso('…col suo numero', :'ancora'::jsonb->>'numero', '1');
+select atteso('…e la ricevuta resta una', del_2028(), '1');
+select atteso('la seguente senza chiave prende il numero dopo, nessuno consumato', (select emetti_ricevuta(ricevuta('2028-03-02') || '{"persona_id": "aaaaaaaa-0000-0000-0000-000000000004"}')->>'numero'), '2');
+
+select emetti_ricevuta(con_chiave('2028-03-03', 'dddddddd-0000-4000-8000-000000000003')) as annullanda \gset
+select annulla_ricevuta((:'annullanda'::jsonb->>'id')::uuid);
+select atteso('la stessa chiave di una ricevuta annullata: no, e dice cosa fare',
+  rifiuto(format($$select emetti_ricevuta(%L::jsonb)$$, con_chiave('2028-03-03', 'dddddddd-0000-4000-8000-000000000003'))),
+  '22023 La ricevuta n. 3/2028 fatta da questo modulo è stata annullata: chiudi il modulo e riaprilo per farne un’altra');
+select atteso('…e nessuna ricevuta in più', del_2028(), '3');
+
+select emetti_ricevuta(con_chiave('2028-03-04', 'dddddddd-0000-4000-8000-000000000004', 50)) as a_mano \gset
+select atteso('col numero scritto a mano: il 50', :'a_mano'::jsonb->>'numero', '50');
+select atteso('il numero a mano ripetuto con la stessa chiave: non «c’è già», torna quella',
+  tenta(format($$select emetti_ricevuta(%L::jsonb)->>'id'$$, con_chiave('2028-03-04', 'dddddddd-0000-4000-8000-000000000004', 50))), :'a_mano'::jsonb->>'id');
+select atteso('…e la ricevuta resta una', (select count(*)::text from ricevute where anno = 2028 and numero = 50), '1');
+
+select atteso('la stessa chiave per un''altra persona: no, e dice cosa fare',
+  rifiuto(format($$select emetti_ricevuta(%L::jsonb)$$, con_chiave('2028-03-01', 'dddddddd-0000-4000-8000-000000000001', persona => 'aaaaaaaa-0000-0000-0000-000000000005'))),
+  '22023 Questa ricevuta è già stata fatta per un’altra persona: chiudi il modulo e riaprilo');
+select atteso('…e nessuna ricevuta in più', del_2028(), '4');
+
+select atteso('la stessa chiave con altri dati: torna quella fatta, com''è',
+  tenta(format($$select (r->>'id') || ' ' || (r->>'data') || ' ' || (r->>'pagato') from emetti_ricevuta(%L::jsonb) r$$,
+    con_chiave('2028-03-09', 'dddddddd-0000-4000-8000-000000000001', pagato => 18000))),
+  (:'prima'::jsonb->>'id') || ' 2028-03-01 41800');
+select atteso('…e nessuna ricevuta in più', del_2028(), '4');
+
+select emetti_ricevuta(ricevuta('2028-03-10') || '{"persona_id": "aaaaaaaa-0000-0000-0000-000000000004"}');
+select emetti_ricevuta(ricevuta('2028-03-10') || '{"persona_id": "aaaaaaaa-0000-0000-0000-000000000004"}');
+select atteso('senza chiave, come prima: due volte, due ricevute', del_2028(), '6');
+select emetti_ricevuta(con_chiave('2028-03-10', ''));
+select emetti_ricevuta(con_chiave('2028-03-10', ''));
+select atteso('con la chiave vuota, come senza: due ricevute', del_2028(), '8');
+
+select atteso('una chiave che non è un uuid: no, e dice cosa fare',
+  rifiuto(format($$select emetti_ricevuta(%L::jsonb)$$, con_chiave('2028-03-11', 'non-un-uuid'))),
+  '22023 La ricevuta non si capisce: ricarica la pagina');
+select atteso('…e nessuna ricevuta in più', del_2028(), '8');
+reset role;
+
+select atteso('la chiave è unica anche fra le annullate, pure scrivendo da superutente',
+  rifiuto($$insert into ricevute (anno, numero, data, ente, intestatario, voci, totale, pagato, chiave)
+    values (2028, 900, '2028-03-12', '{}', '{}', '[{}]', 0, 0, 'dddddddd-0000-4000-8000-000000000003')$$), '23505 …');
+
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('un istruttore con una chiave che c’è già: no, come sempre',
+  tenta(format($$select emetti_ricevuta(%L::jsonb)::text$$, con_chiave('2028-03-01', 'dddddddd-0000-4000-8000-000000000001'))), 'NEGATO: la ricevuta la fa la segreteria');
+reset role;
+select chi('');
+set role anon;
+select atteso('chi non ha fatto l''accesso, con una chiave che c’è già: no',
+  tenta(format($$select emetti_ricevuta(%L::jsonb)::text$$, con_chiave('2028-03-01', 'dddddddd-0000-4000-8000-000000000001'))), 'NEGATO: …');
+reset role;

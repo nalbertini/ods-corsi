@@ -20,7 +20,7 @@ globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} 
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export * from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro } from './src/lib/ricevute'; export { dataLunga } from './src/lib/sala'; export { conti } from './src/lib/ricevute'; export { NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, VOCE_QUOTA, VOCE_CORSI, cassaDelMetodo, voceDiSistema, doveEntraInContabilita } from './src/lib/contabilita'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { VALIDITA } from './src/lib/costi'; export { pagamentoDi } from './src/lib/segreteria'",
+    contents: "export * from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro } from './src/lib/ricevute'; export { dataLunga } from './src/lib/sala'; export { conti } from './src/lib/ricevute'; export { NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, VOCE_QUOTA, VOCE_CORSI, cassaDelMetodo, voceDiSistema, doveEntraInContabilita } from './src/lib/contabilita'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { STAGIONE } from './src/lib/costi'; export { pagamentoDi } from './src/lib/segreteria'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -433,10 +433,13 @@ console.log('\n16. la ricevuta fatta da un pagamento a mano (voceDaPagamento(dat
 {
   const d = { personaId: 'p-Rossi', data: '2026-10-01', importo: 4000, metodo: ' Contanti ', voce: ' Quota associativa ', nota: 'in palestra' }
   const v = prova(() => m.voceDaPagamento(d))
-  ok('una voce, quantità 1, prezzo e pagato uguali all\'importo', v, { descrizione: 'Quota associativa', quantita: 1, prezzo: 4000, pagamenti: [{ data: '2026-10-01', importo: 4000, metodo: 'Contanti' }], ...m.VALIDITA.quota })
+  ok('una voce, quantità 1, prezzo e pagato uguali all\'importo', v, { descrizione: 'Quota associativa', quantita: 1, prezzo: 4000, pagamenti: [{ data: '2026-10-01', importo: 4000, metodo: 'Contanti' }], ...m.STAGIONE.quota })
   // Senza «al» la quota varrebbe per sempre (`pagamentoDi`): ha le date della stagione, come quella del listino.
-  ok('la quota ha dal/al della stagione', typeof v === 'object' ? [v.dal, v.al] : v, [m.VALIDITA.quota.dal, m.VALIDITA.quota.al])
-  ok('…anche scritta in maiuscolo', prova(() => m.voceDaPagamento({ ...d, voce: 'QUOTA ASSOCIATIVA' }).al), m.VALIDITA.quota.al)
+  ok('la quota ha dal/al della stagione', typeof v === 'object' ? [v.dal, v.al] : v, [m.STAGIONE.quota.dal, m.STAGIONE.quota.al])
+  ok('…anche scritta in maiuscolo', prova(() => m.voceDaPagamento({ ...d, voce: 'QUOTA ASSOCIATIVA' }).al), m.STAGIONE.quota.al)
+  // Un pagamento della stagione dopo prende la sua stagione, non quella del listino.
+  ok('la quota pagata il 1/10/2027 vale fino al 31/7/2028', prova(() => { const x = m.voceDaPagamento({ ...d, data: '2027-10-01' }); return [x.dal, x.al] }), ['2027-09-01', '2028-07-31'])
+  ok('la quota pagata il 20/8/2027 vale da subito', prova(() => { const x = m.voceDaPagamento({ ...d, data: '2027-08-20' }); return [x.dal, x.al] }), ['2027-08-20', '2028-07-31'])
   ok('un\'altra voce: niente dal/al', prova(() => { const x = m.voceDaPagamento({ ...d, voce: 'Maglietta' }); return 'dal' in x || 'al' in x }), false)
   ok('la nota non entra nella voce', JSON.stringify(v).includes('in palestra'), false)
   ok('la ricevuta torna: totale = pagato = importo, niente da dare', typeof v === 'object' ? m.conti({ voci: [v], anticipo: 0 }) : v, { totale: 4000, pagato: 4000, netto: 0 })
@@ -472,8 +475,8 @@ console.log('\n18. in prova: la ricevuta da un pagamento a mano conta il pagamen
   ok('…con l\'importo e il metodo del pagamento', nuova ? [nuova.importo, nuova.metodo] : null, [4000, 'Contanti'])
   // Il guaio trovato dal collaudo: la quota fatta da un pagamento a mano risultava pagata per sempre.
   const dopo = (await s.persone()).find((p) => p.id === chi.id)
-  const giornoDopo = new Date(Date.parse(`${m.VALIDITA.quota.al}T12:00:00Z`) + 864e5).toISOString().slice(0, 10)
-  ok('la quota è pagata fino alla fine della stagione', prova(() => m.pagamentoDi(dopo, m.VALIDITA.quota.al).come), 'pagato')
+  const giornoDopo = new Date(Date.parse(`${m.STAGIONE.quota.al}T12:00:00Z`) + 864e5).toISOString().slice(0, 10)
+  ok('la quota è pagata fino alla fine della stagione', prova(() => m.pagamentoDi(dopo, m.STAGIONE.quota.al).come), 'pagato')
   ok('…e il giorno dopo non più', prova(() => m.pagamentoDi(dopo, giornoDopo).come) === 'pagato', false)
 }
 
@@ -490,7 +493,7 @@ console.log('\n19. Ricevute.tsx scrive solo dopo il sì del riepilogo, e non se 
   ok('nel gestore, prima della chiamata, c\'è un `await chiediSpunta(`', /await chiediSpunta\(/.test(gestore), true)
   ok('…col riepilogo di riepilogoPagamentoDiretto', gestore.includes('riepilogoPagamentoDiretto('), true)
   ok('…e senza il sì si esce prima di scrivere', /const \{ si, spuntata \} = await chiediSpunta\([\s\S]*?\)\s*if \(!si\) return/.test(gestore), true)
-  ok('…e con la ricevuta si esce prima di scrivere: il pagamento sta solo nella ricevuta', /if \(onRicevuta && spuntata\) return onRicevuta\(dati\)/.test(gestore), true)
+  ok('…e con la ricevuta si esce prima di scrivere: il pagamento sta solo nella ricevuta', /if \(onRicevuta && spuntata\) return onRicevuta\(\{ \.\.\.dati, chiaveRicevuta: [^}]+\}\)/.test(gestore), true)
   // Contanti in un giorno di cassa chiusa: la ricevuta non li rifiuta (è un documento), ma la chiusura non torna più.
   // Chi legge le chiusure (l'amministrazione) lo sa prima di farla, come quando la annulla.
   const emettiR = tsx.slice(tsx.indexOf('const emetti = async () => {'), tsx.indexOf("'Fai la ricevuta',"))
@@ -506,6 +509,29 @@ console.log('\n19. Ricevute.tsx scrive solo dopo il sì del riepilogo, e non se 
   // Il guaio sotto al modulo è lo stesso del database: oggi (a Roma) e le chiusure arrivano alla funzione.
   const riga = tsx.split('\n').find((l) => l.includes('cosaNonVaDiretto({')) ?? ''
   ok('il modulo passa oggi e le chiusure a cosaNonVaDiretto', [riga.includes('oggi'), riga.includes('chiusure')], [true, true])
+}
+
+console.log('\n20. la ricevuta una volta sola: il modulo di FAI LA RICEVUTA ha la sua chiave')
+{
+  // Ripremuto dopo una rete caduta, il modulo manda la stessa chiave e torna la ricevuta già fatta
+  // (supabase/prova/ricevute.sql, sezione 5). Una chiave per modulo aperto: ricaricando, se ne prende un'altra.
+  const tsx = readFileSync('src/components/segreteria/Ricevute.tsx', 'utf8')
+  const modulo = tsx.slice(tsx.indexOf('export function NuovaRicevuta('), tsx.indexOf('export function EnteRicevute('))
+  ok('nuovoId viene da src/lib/prove', /import \{[^}]*\bnuovoId\b[^}]*\} from '\.\.\/\.\.\/lib\/prove'/.test(tsx), true)
+  // Con la funzione d'inizio: `useState(nuovoId())` ne farebbe una nuova a ogni disegno, buttandola.
+  // Dal pagamento a mano la chiave viene col pagamento: «Lascia stare» dopo un errore e riprovare dà la stessa ricevuta.
+  const presa = modulo.match(/const \[(\w+)\] = useState\(\(\) => daPagamento\?\.chiaveRicevuta \?\? nuovoId\(\)\)/)
+  ok('NuovaRicevuta prende la chiave una volta: useState(() => daPagamento?.chiaveRicevuta ?? nuovoId())', !!presa, true)
+  const datiR = modulo.slice(modulo.indexOf('const dati: DatiRicevuta | null ='), modulo.indexOf('const guaio ='))
+  const nome = presa?.[1] ?? '§'
+  ok('…e la mette nei dati della ricevuta, quella presa e non una nuova',
+    [new RegExp(`[{,]\\s*chiave(: ${nome})?\\s*[,}]`).test(datiR) && (nome === 'chiave' || datiR.includes(`chiave: ${nome}`)), datiR.includes('nuovoId(')], [true, false])
+  // Il modulo del pagamento a mano: la chiave nasce la prima volta e torna con il pagamento ripreso.
+  const pd = tsx.slice(tsx.indexOf('if (onRicevuta && spuntata)'), tsx.indexOf("'Pagamento registrato'"))
+  ok('REGISTRA IL PAGAMENTO passa alla ricevuta la chiave del pagamento ripreso, o una nuova',
+    pd.includes('onRicevuta({ ...dati, chiaveRicevuta: iniziale?.chiaveRicevuta ?? nuovoId() })'), true)
+  const isc = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
+  ok('«Lascia stare» tiene il pagamento con la sua chiave', isc.includes('setRiprendi(daPagamento)'), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

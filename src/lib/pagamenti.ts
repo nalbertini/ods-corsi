@@ -1,5 +1,5 @@
 import { conti, dataRicevuta, euro, METODI, QUOTA, type Ricevuta, type VoceRicevuta } from './ricevute'
-import { VALIDITA } from './costi'
+import { stagioneDi } from './costi'
 // Circolare (contabilita.ts legge le righe da qui): regge perché si usa solo dentro le funzioni.
 import { doveEntraInContabilita } from './contabilita'
 import { dataLunga } from './sala'
@@ -28,7 +28,10 @@ export interface PagamentoDiretto {
   annullatoIl?: string
 }
 
-export type DatiPagamentoDiretto = Omit<PagamentoDiretto, 'id' | 'creatoIl' | 'annullatoIl'>
+export type DatiPagamentoDiretto = Omit<PagamentoDiretto, 'id' | 'creatoIl' | 'annullatoIl'> & {
+  /** Con «Fai anche la ricevuta»: la chiave della ricevuta, che resta col pagamento ripreso dopo «Lascia stare». */
+  chiaveRicevuta?: string
+}
 
 /** Una riga dello storico: un pagamento, di una ricevuta o fatto a mano. */
 export interface RigaPagamento {
@@ -136,7 +139,7 @@ export const riepilogoPagamentoDiretto = (d: DatiPagamentoDiretto, chi: string, 
 
 /**
  * La voce sola della ricevuta fatta da un pagamento a mano: già pagata, con la
- * data e il modo del modulo. La quota ha le date della stagione, come quella
+ * data e il modo del modulo. La quota ha le date della stagione del pagamento, come quella
  * del listino: senza «al» varrebbe per sempre (`pagamentoDi`). La nota va
  * nelle note della ricevuta, non nella voce.
  */
@@ -145,7 +148,7 @@ export const voceDaPagamento = (d: DatiPagamentoDiretto): VoceRicevuta => ({
   quantita: 1,
   prezzo: d.importo,
   pagamenti: [{ data: d.data, importo: d.importo, metodo: d.metodo.trim() }],
-  ...(d.voce.trim().toUpperCase() === QUOTA ? VALIDITA.quota : {}),
+  ...(d.voce.trim().toUpperCase() === QUOTA ? stagioneDi(d.data).quota : {}),
 })
 
 /** La nota sotto la casella «Fai anche la ricevuta», che cambia con la spunta. */

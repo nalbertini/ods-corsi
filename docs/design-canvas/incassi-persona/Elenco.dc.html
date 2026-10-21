@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    /* Valori da styles.css: .sg-riga-movimento (2408), .sg-persona-riga (2410), .sg-sotto-movimento (2432), .sg-tag look sito (440-453), token sito (241-258). */
+    .et { font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .riga { display: grid; grid-template-columns: 44px 100px minmax(0, 1.5fr) minmax(0, 1.1fr) minmax(0, 1fr) 150px 130px; gap: 14px; align-items: center; min-height: 50px; padding: 6px 14px; border-bottom: 1px solid #cfe6f4; }
+    .riga.spenta { opacity: 0.55; }
+    .data { font-size: 13px; color: #0d2a3d; }
+    .desc { font-size: 15px; font-weight: 600; }
+    .sotto { display: block; font-size: 13px; font-weight: 400; }
+    .pers { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; font-size: 14px; }
+    .tag { display: inline-block; margin-left: 8px; padding: 1px 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.02em; background: #fff; color: #46606f; border: 1.5px solid #46606f; }
+    .tag.fatto { color: #0b7a33; border-color: #0b7a33; }
+    .tag.fatto::before { content: '✓ '; }
+    .tag.manca { color: #b81d1d; border-color: #b81d1d; }
+    .tag.manca::before { content: '✕ '; }
+    .imp { font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: #0b7a33; }
+    .piccolo { font-size: 13px; }
+    .cas { width: 22px; height: 22px; border: 2px solid #46606f; background: #fff; }
+    .nuovo { box-shadow: inset 4px 0 0 #8f6a00; background: #fff; }
+    .titolo-blocco { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00; margin-top: 8px; }
+  </style>
+</helmet>
+<div style="display: flex; width: 1440px; min-height: 1180px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" autorizzazioni="amministrazione" attiva="CONTABILITÀ" numeri="" nome="Chiara Bianchi" ruolo="Amministrazione" altezza="1180px" hint-size="240px,1180px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 14px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</h1>
+      <span style="font-size: 14px; color: #46606f">Le entrate e le uscite della palestra, in due casse. Gli incassi degli iscritti ci sono già: si correggono in PAGAMENTI.</span>
+    </div>
+
+    <span class="titolo-blocco">OGGI · LA PERSONA C'È SOLO NELLO STORICO COLLEGATO</span>
+    <div style="display: flex; flex-direction: column">
+      <div class="riga" style="min-height: 0; border-bottom: 2px solid #cfe6f4"><span></span><span class="et">DATA</span><span class="et">DESCRIZIONE</span><span class="et">PERSONA</span><span class="et">VOCE</span><span class="et">CASSA</span><span class="et" style="text-align: right">IMPORTO</span></div>
+      <div class="riga"><span></span><span class="data">21/10/2026</span><span class="desc">Dello Iacovo Noemi<span class="tag">Incasso iscritto</span><span class="sotto">QUOTA ASSOCIATIVA · Bonifico</span></span><span class="pers"></span><span class="piccolo">Quota associativa</span><span class="piccolo">Conto Corrente</span><span class="imp">+ 50,00 €</span></div>
+      <div class="riga"><span></span><span class="data">21/10/2026</span><span class="desc">Mancini Leonardo<span class="tag">Incasso iscritto</span><span class="sotto">Annuale Psicomotricità · Bonifico</span></span><span class="pers"></span><span class="piccolo">Corsi e altri pagamenti</span><span class="piccolo">Conto Corrente</span><span class="imp">+ 300,00 €</span></div>
+      <div class="riga"><span><span class="cas" style="display: block"></span></span><span class="data">11/09/2025</span><span class="desc">CLIENTE ROSSI MARCO PER QUOTA ASSOCIATIVA<span class="sotto">dallo storico</span></span><span class="pers"><span style="font-weight: 600">Rossi Marco</span><span class="tag fatto" style="margin-left: 0">Collegato</span></span><span class="piccolo">Quota associativa</span><span class="piccolo">Cassa Contanti</span><span class="imp">+ 30,00 €</span></div>
+    </div>
+
+    <span class="titolo-blocco">PROPOSTA · ANCHE GLI INCASSI DICONO DI CHI SONO</span>
+    <div style="display: flex; flex-direction: column">
+      <div class="riga" style="min-height: 0; border-bottom: 2px solid #cfe6f4"><span></span><span class="et">DATA</span><span class="et">DESCRIZIONE</span><span class="et">PERSONA</span><span class="et">VOCE</span><span class="et">CASSA</span><span class="et" style="text-align: right">IMPORTO</span></div>
+      <div class="riga nuovo"><span></span><span class="data">21/10/2026</span><span class="desc">Dello Iacovo Noemi<span class="tag">Incasso iscritto</span><span class="sotto">QUOTA ASSOCIATIVA · Bonifico</span></span><span class="pers"><span style="font-weight: 600">Dello Iacovo Noemi</span></span><span class="piccolo">Quota associativa</span><span class="piccolo">Conto Corrente</span><span class="imp">+ 50,00 €</span></div>
+      <div class="riga nuovo"><span></span><span class="data">21/10/2026</span><span class="desc">Mancini Paola<span class="tag">Incasso iscritto</span><span class="sotto">Annuale Psicomotricità · Bonifico</span></span><span class="pers"><span style="font-weight: 600">Mancini Leonardo</span></span><span class="piccolo">Corsi e altri pagamenti</span><span class="piccolo">Conto Corrente</span><span class="imp">+ 300,00 €</span></div>
+      <div class="riga nuovo"><span></span><span class="data">20/10/2026</span><span class="desc">Ferri Luca<span class="tag">Incasso iscritto</span><span class="sotto">Mensile Judo · Satispay</span></span><span class="pers"></span><span class="piccolo">Corsi e altri pagamenti</span><span class="piccolo">Conto Corrente</span><span class="imp">+ 45,00 €</span></div>
+      <div class="riga nuovo spenta"><span></span><span class="data">18/10/2026</span><span class="desc" style="text-decoration: line-through">Costantino Daniele<span class="tag">Incasso iscritto</span><span class="tag manca">Annullato</span><span class="sotto">Annuale Judo adulti · Bonifico</span></span><span class="pers"><span style="font-weight: 600">Costantino Daniele</span></span><span class="piccolo">Corsi e altri pagamenti</span><span class="piccolo">Conto Corrente</span><span class="imp">+ 100,00 €</span></div>
+      <div class="riga"><span><span class="cas" style="display: block"></span></span><span class="data">11/09/2025</span><span class="desc">CLIENTE ROSSI MARCO PER QUOTA ASSOCIATIVA<span class="sotto">dallo storico</span></span><span class="pers"><span style="font-weight: 600">Rossi Marco</span><span class="tag fatto" style="margin-left: 0">Collegato</span></span><span class="piccolo">Quota associativa</span><span class="piccolo">Cassa Contanti</span><span class="imp">+ 30,00 €</span></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px; max-width: 1000px; font-size: 14px; line-height: 1.45; color: #46606f">
+      <span>· Incasso con la scheda: in PERSONA il nome della scheda di oggi, senza tag: «Incasso iscritto» dice già da dove viene, e «Collegato» farebbe cercare uno Scollega che qui non c'è.</span>
+      <span>· La DESCRIZIONE resta il nome sulla ricevuta: può essere diverso (Mancini Paola sulla ricevuta, Mancini Leonardo in PERSONA).</span>
+      <span>· Senza scheda (Ferri Luca, Satispay non abbinato): cella vuota, nessun tag. Annullato: il nome resta, la riga è spenta.</span>
+      <span>· Lo storico collegato non cambia, casella compresa. Sul telefono, dove PERSONA non c'è, il nome dell'incasso non si ripete sotto la descrizione.</span>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

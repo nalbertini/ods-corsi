@@ -50,19 +50,35 @@ export interface VoceCosto {
   nota?: string
 }
 
-export const STAGIONE = '2026/27'
+/**
+ * La stagione di un giorno, quello della ricevuta, del pagamento o del modulo:
+ * va dal 1° agosto al 31 luglio, perché chi paga ad agosto paga la stagione che
+ * inizia (lo stesso confine di `71-pagato-vecchio-programma.sql`). La quota vale
+ * dal 1° settembre al 31 luglio, o da subito se pagata ad agosto; i corsi dal 1°
+ * settembre al 30 giugno, e quelli comprati a luglio sono già della stagione dopo.
+ */
+export function stagioneDi(giorno: string) {
+  const [anno, mese] = giorno.split('-').map(Number)
+  const da = mese >= 8 ? anno : anno - 1
+  const corsi = mese >= 7 ? anno : anno - 1
+  return {
+    etichetta: `${da}/${String((da + 1) % 100).padStart(2, '0')}`,
+    dal: `${da}-08-01`,
+    al: `${da + 1}-07-31`,
+    quota: { dal: mese === 8 ? giorno : `${da}-09-01`, al: `${da + 1}-07-31` },
+    corsi: { dal: `${corsi}-09-01`, al: `${corsi + 1}-06-30` },
+  }
+}
+
+/**
+ * La stagione del listino qui sotto: «QUANTO COSTA · 2026/27», il foglio dei
+ * costi, e la fine di un pagamento fuori dall'app scritto senza data. Si cambia
+ * con i prezzi, non da sola: a settembre i prezzi possono essere ancora questi.
+ */
+export const STAGIONE = stagioneDi('2026-09-01')
 
 /** La quota associativa, in euro come i prezzi qui sotto. */
 export const QUOTA_ASSOCIATIVA = 50
-
-/**
- * Da quando a quando valgono, sulle ricevute: la quota fino a fine luglio,
- * l'annuale dei corsi fino a fine giugno (come le ricevute della segreteria).
- */
-export const VALIDITA = {
-  quota: { dal: '2026-09-01', al: '2027-07-31' },
-  corsi: { dal: '2026-09-01', al: '2027-06-30' },
-}
 
 /**
  * Fino a quando vale il prezzo a saldo, compreso. Dopo non si propone più:
