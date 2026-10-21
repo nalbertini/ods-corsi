@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.154.0 — 21 ottobre 2026
+
+### Novità
+
+- Nella scheda dell'iscritto, il sollecito su WhatsApp per la quota e il certificato
+
 ## 0.153.0 — 21 ottobre 2026
 
 ### Novità
