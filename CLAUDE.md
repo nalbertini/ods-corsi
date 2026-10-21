@@ -56,7 +56,8 @@ Le stesse girano su ogni PR (`.github/workflows/controlla.yml`).
   c'è già (regola data il 2026-10-18). Ogni altra scrittura sul database vero
   (dati, cancellazioni, cose fuori dalla PR) resta con il sì dell'utente.
 - Una funzione che cambia qualcosa che si vede parte dal design: proposta in
-  un canvas che parte dalla libreria, discussione con l'utente, solo dopo
+  un canvas suo (un Artifact nuovo, mai il canvas unico) che parte dalla
+  libreria, discussione con l'utente, solo dopo
   prove e codice, e a fine lavoro la libreria aggiornata (skill
   `nuova-funzione`, passi 3, 4 e 10).
 - Ogni mockup fatto con `/design` parte dalla libreria in

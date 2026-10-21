@@ -26,7 +26,6 @@ const PRINCIPALE = [
   { id: 'orari-evidenziati', nome: 'Iscrizione · orari compatibili', cartella: 'orari-evidenziati' },
   { id: 'corsi-vicini', nome: 'Iscrizione · corsi vicini', cartella: 'corsi-vicini' },
   { id: 'quanto-paghi', nome: 'Iscrizione · quanto paghi', cartella: 'quanto-paghi' },
-  { id: 'satispay-iscrizione', nome: 'Iscrizione · pagare con Satispay', cartella: 'satispay-iscrizione' },
   { id: 'ricevuta-obbligatoria', nome: 'Iscrizione · ricevuta obbligatoria', cartella: 'ricevuta-obbligatoria' },
   { id: 'totale-barra', nome: 'Iscrizione · totale del modulo', cartella: 'totale-barra' },
   { id: 'comune-dal-cap', nome: 'Iscrizione · comune dal CAP', cartella: 'comune-dal-cap' },
