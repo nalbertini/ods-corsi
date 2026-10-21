@@ -2,9 +2,9 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { createUsePuck, Puck, registerOverlayPortal, type ComponentData, type Config, type Data } from '@puckeditor/core'
 import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { FRASE_NESSUNA_PARTE, attesaStoria, colonnaNuova, doveMettere, motivoSpento, puoMettere, spostabile, conTestoScritto, nomeParte, scriviTesto, selezioneDopoStoria, vuoto, type Pezzo, type PezziPagina } from '../../lib/sitoPezzi'
+import { FRASE_NESSUNA_PARTE, attesaStoria, colonnaNuova, doveMettere, motivoSpento, puoMettere, spostabile, conTestoScritto, nomeParte, scriviTesto, selezioneDopoStoria, vuoto, type Domanda, type Pezzo, type PezziPagina, type Pulsante } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
-import { invito } from '../../lib/sitoGenera'
+import { invito, parteSulSito } from '../../lib/sitoGenera'
 import { TestoInPagina } from './TestoInPagina'
 import { ScegliImmagine } from './ImmaginiSito'
 
@@ -26,6 +26,8 @@ type Props = {
   foto: { src: string; alt: string }
   colonne: { colonne: Array<{ html: string }> }
   iscriviti: { titolo: string; frase: string }
+  pulsanti: { pulsanti: Pulsante[] }
+  domande: { titolo: string; domande: Domanda[] }
 }
 
 /** Il corpo di un testo come lo vede chi scrive: ripulito dalla stessa funzione che lo ripulisce per il sito. */
@@ -185,6 +187,8 @@ function configura(d: DatiSegreteria): Config<Props> {
     },
     alt: { type: 'text' as const, label: 'COSA SI VEDE (vuoto = solo decorativa)' },
   }
+  // Un campo che il pannello non mostra (`Destra` dice dove si cambia la parte).
+  const nessuno = { type: 'custom' as const, render: () => <></> }
   return {
     // La pagina non ha campi suoi (il titolo è quello del pannello).
     root: { fields: {}, render: ({ children }) => <>{children}</> },
@@ -215,6 +219,10 @@ function configura(d: DatiSegreteria): Config<Props> {
         defaultProps: { colonne: [{ html: '' }, { html: '' }] },
         render: ({ id, colonne }) => <PezzoTesto d={d} id={id} colonne={colonne} />,
       },
+      // Le parti del nuovo editor: qui si vedono e si spostano, ma si cambiano di là (`FRASE_NUOVO_EDITOR`).
+      // Sicuro: `parteSulSito` passa da `pezziInHtml`, che ripulisce.
+      pulsanti: { label: 'PULSANTI', fields: { pulsanti: nessuno }, defaultProps: { pulsanti: [] }, render: ({ id, pulsanti }) => <div dangerouslySetInnerHTML={{ __html: parteSulSito({ type: 'pulsanti', props: { id, pulsanti } }) }} /> },
+      domande: { label: 'DOMANDE', fields: { titolo: nessuno, domande: nessuno }, defaultProps: { titolo: '', domande: [] }, render: ({ id, titolo, domande }) => <div dangerouslySetInnerHTML={{ __html: parteSulSito({ type: 'domande', props: { id, titolo, domande } }) }} /> },
       iscriviti: {
         label: 'ISCRIVITI',
         fields: {
@@ -238,6 +246,7 @@ function FotoDelPezzo({ d, src }: { d: DatiSegreteria; src: string }) {
 }
 
 const FRASE_TESTO_IN_PAGINA = 'Il testo si scrive direttamente nella pagina.'
+const FRASE_NUOVO_EDITOR = 'Questa parte si cambia nel nuovo editor: chiudi e premi «Prova il nuovo editor».'
 
 const PARTI: Array<{ tipo: keyof Props; nome: string }> = [
   { tipo: 'fotoInCima', nome: 'FOTO IN CIMA' },
@@ -343,6 +352,8 @@ function Destra({ scheda, setScheda }: { scheda: Scheda; setScheda: (k: Scheda) 
         </div>
       ) : scelta?.type === 'testo' ? (
         <p className="sito-pezzi-frase">{FRASE_TESTO_IN_PAGINA}</p>
+      ) : scelta?.type === 'pulsanti' || scelta?.type === 'domande' ? (
+        <p className="sito-pezzi-frase">{FRASE_NUOVO_EDITOR}</p>
       ) : scelta ? (
         <Puck.Fields />
       ) : (

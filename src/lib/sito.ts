@@ -82,5 +82,11 @@ const numero = `39${CONTATTI.telefono.replace(/\s/g, '')}`
 /** Il numero per il tasto CHIAMA. */
 export const chiama = `tel:+${numero}`
 
+/** WhatsApp allo stesso numero, senza messaggio: dove porta un pulsante «WhatsApp» del sito. */
+export const whatsapp = `https://wa.me/${numero}`
+
+/** Il modulo di iscrizione online: sul sito il pulsante che ci porta si legge sempre «Iscriviti». */
+export const ISCRIZIONE = 'https://app.officinedellosport.it/iscrizioni/'
+
 /** Il tasto SCRIVI: WhatsApp allo stesso numero, col messaggio già scritto. */
 export const scrivi = (testo: string) => `https://wa.me/${numero}?text=${encodeURIComponent(testo)}`

@@ -1,0 +1,37 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Sito · parti Pulsanti e Domande"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Oggi.dc.html",
+      "title": "1 · Oggi: cinque parti",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Pulsanti.dc.html",
+      "title": "2 · La parte PULSANTI",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Domande.dc.html",
+      "title": "3 · La parte DOMANDE: una domanda senza «?» avvisa",
+      "x": 3120,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    }
+  ]
+}
