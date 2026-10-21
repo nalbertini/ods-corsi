@@ -26,9 +26,16 @@
     </sc-for>
   </span>
   <span style="font-family: {{fam}}; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: {{coloreFreq}}">{{frequenza}}</span>
+  <sc-if value="{{conSollecito}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; flex-direction: column; align-items: {{s.allinea}}; gap: 4px; padding: 6px 0; grid-column: {{s.colonna}}">
+      <sc-if value="{{s.tasto}}"><dc-import name="Bottone" label="WhatsApp" variante="linea" contesto="segreteria" tema="{{tema}}" hint-size="{{s.misura}}"></dc-import></sc-if>
+      <sc-if value="{{s.nota}}"><span style="font-size: 13px; color: {{s.coloreNota}}">{{s.nota}}</span></sc-if>
+      <sc-if value="{{sollecitato}}"><span style="font-size: 12px; color: {{c.dim}}">{{sollecitato}}</span></sc-if>
+    </span>
+  </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Rossi Giulia"},"corsi":{"editor":"text","default":"Judo kids, Pilates"},"contatto":{"editor":"text","default":"333 1234567"},"bollini":{"editor":"text","default":"CERTIFICATO:verde|QUOTA:giallo"},"frequenza":{"editor":"text","default":"5/8"},"poco":{"editor":"boolean","default":false},"daStampare":{"editor":"boolean","default":false},"stato":{"editor":"enum","options":["normale","scelta","spenta"],"default":"normale"},"griglia":{"editor":"text","default":"1.2fr 1.4fr 1.3fr 150px 80px"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":900,"height":70}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Rossi Giulia"},"corsi":{"editor":"text","default":"Judo kids, Pilates"},"contatto":{"editor":"text","default":"333 1234567"},"bollini":{"editor":"text","default":"CERTIFICATO:verde|QUOTA:giallo"},"frequenza":{"editor":"text","default":"5/8"},"poco":{"editor":"boolean","default":false},"daStampare":{"editor":"boolean","default":false},"stato":{"editor":"enum","options":["normale","scelta","spenta"],"default":"normale"},"griglia":{"editor":"text","default":"1.2fr 1.4fr 1.3fr 150px 80px"},"sollecito":{"editor":"enum","options":["","tasto","fisso","manca","sbagliato","tessera","vecchio"],"default":""},"sollecitato":{"editor":"text","default":""},"telefono":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":900,"height":70}}'>
 // Riproduzione 1:1 della riga della tabella ISCRITTI: .sg-riga-iscritto + .sg-iscritto (src/styles.css righe 1544 e
 // 1586-1593, 1599) usata in src/components/segreteria/Iscritti.tsx (righe 286-317). Alta almeno 50px, padding 0 14px,
 // filetto sotto 1px `surface-2`. Nome 15px 600 (+ DA STAMPARE, .sg-tag, se il certificato e' un file da stampare e
@@ -38,6 +45,11 @@
 // stato: scelta = la scheda aperta (.sg-iscritto[data-scelto]: fondo `surface-2` e contorno 2px `text` dentro la riga);
 // spenta = disattivata (opacita' 0.45). Si clicca tutta (cursor pointer, non riprodotto), come il passaggio del mouse
 // (fondo `surface`).
+// COSTRUITO (`CellaSollecito` in Sollecito.tsx, `.sg-cella-sollecito*`; ../sollecito-elenco/): `sollecito` aggiunge l'ultima cella, solo coi filtri del sollecito: «WhatsApp» a linea
+// (nell'elenco i tasti sono tanti: il giallo pieno resta uno per schermata), che apre wa.me e segna il sollecito senza
+// aprire la scheda; `fisso` col tasto e «Sembra un fisso» giallo-testo; `manca` / `sbagliato` senza tasto, la frase in
+// rosso-testo; `tessera` (con «Non in regola», solo la tessera da sistemare) la frase in `dim`; `vecchio` (quota pagata nel vecchio programma, da segnare) in giallo-testo. Padding sotto 8px col `telefono`. `sollecitato` la riga 12px `dim` sotto («Sollecitato il 14/10»). Con `sollecito` la griglia ha una
+// colonna in piu' (passarla in `griglia`). `telefono`: la cella va sotto, su tutta la riga, col tasto largo.
 // bollini: "PAROLA:tono" separati da | (tono rosso / giallo / verde / spento). La testata sta in TestataTabella.
 // tema sito (`:root[data-look='sito']`): la riga scelta non prende un fondo colorato ma bianco con il contorno blu #14709f (sotto un testo giallo scuro il
 // celeste non arriva a 4,5:1); l'ultima colonna e i segni sono in Inter, i segni con ✕ … ✓ davanti (Badge).
@@ -59,7 +71,13 @@ const stato = p.stato || 'normale';
       const i = s.lastIndexOf(':');
       return i > 0 ? { testo: s.slice(0, i).trim(), tono: s.slice(i + 1).trim() } : { testo: s, tono: 'spento' };
     });
+    const sol = p.sollecito || '';
+    const tel = truthy(p.telefono);
+    const NOTE = { fisso: 'Sembra un fisso', manca: 'Manca il telefono', sbagliato: 'Telefono da correggere', tessera: 'Solo la tessera: non si sollecita qui', vecchio: 'Quota pagata nel vecchio programma: da segnare' };
     return {
+      conSollecito: !!sol, sollecitato: p.sollecitato || '',
+      s: { tasto: sol === 'tasto' || sol === 'fisso', nota: NOTE[sol] || '', coloreNota: sol === 'fisso' || sol === 'vecchio' ? c.gialloTesto : sol === 'tessera' ? c.dim : c.rossoTesto,
+        colonna: tel ? '1 / -1' : 'auto', allinea: tel ? 'stretch' : 'flex-start', misura: tel ? '100%,44px' : '130px,44px' },
       c, fam: p.tema === 'sito' ? INTER : COND, bollini, contatto, tema: p.tema || 'scuro',
       nome: p.nome ?? 'Rossi Giulia', corsi: p.corsi ?? 'Judo kids, Pilates', frequenza: p.frequenza ?? '5/8',
       griglia: p.griglia || '1.2fr 1.4fr 1.3fr 150px 80px',

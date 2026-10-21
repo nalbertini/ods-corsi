@@ -2393,6 +2393,17 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 
 .sg-tabella { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
 .sg-riga-iscritto { display: grid; grid-template-columns: 1.2fr 1.4fr 1.3fr 150px 80px; gap: 14px; align-items: center; }
+/* Coi filtri del sollecito, la colonna WHATSAPP in fondo: il tasto a linea (sono tanti, il giallo resta uno per schermata) e sotto l'ultimo sollecito. */
+.sg-riga-iscritto[data-sollecito] { grid-template-columns: 1.2fr 1.2fr 1.1fr 150px 70px 150px; }
+.sg-cella-sollecito { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 0; }
+.sg-cella-sollecito .sg-btn { min-height: 44px; }
+.sg-cella-sollecito-nota { font-size: 13px; color: var(--rosso-testo); }
+.sg-cella-sollecito-nota[data-tono='giallo'] { color: var(--giallo-testo); }
+.sg-cella-sollecito-nota[data-tono='spento'] { color: var(--dim); }
+.sg-cella-sollecito-ultimo { font-size: 12px; color: var(--dim); }
+/* L'avviso col suo «Annulla» va a sinistra, sopra i nomi: a destra coprirebbe il tasto della riga dopo, il gesto che viene subito. */
+@media (min-width: 768px) { .sg-corpo:has(.sg-riga-iscritto[data-sollecito]) .sg-avviso { right: auto; left: 276px; } }
+@media (min-width: 768px) and (max-width: 1000px) { .sg-corpo:has(.sg-riga-iscritto[data-sollecito]) .sg-avviso { left: 236px; } }
 /* Il tab ISCRITTI di un corso: cognome, nome, da quando, certificato, quota. */
 .sg-riga-iscritto-corso { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 150px minmax(0, 170px) minmax(0, 170px); gap: 14px; align-items: center; }
 .sg-riga-iscritto-corso .sg-segno-regola { white-space: normal; }
@@ -2920,6 +2931,10 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-ricevuta-voce { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sg-riga-iscritto { grid-template-columns: 1fr auto 70px; }
   .sg-riga-iscritto > :nth-child(2), .sg-riga-iscritto > :nth-child(3) { display: none; }
+  /* Sul telefono la cella WHATSAPP va sotto, su tutta la riga, col tasto largo; la testata non la nomina. */
+  .sg-riga-iscritto[data-sollecito] { grid-template-columns: 1fr auto 70px; }
+  .sg-riga-iscritto .sg-cella-sollecito { grid-column: 1 / -1; align-items: stretch; padding-top: 0; padding-bottom: 8px; }
+  .sg-cella-sollecito-testa { display: none; }
   /* Sul telefono: chi con sotto il resto, e l'importo. */
   .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
   .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; }

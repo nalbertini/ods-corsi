@@ -210,5 +210,126 @@ ok('una persona che non c\'è nemmeno', !!nessuno, true)
 ok('la riga sotto il tasto, con chi', fraseSollecitato({ quando: new Date(2026, 9, 14, 9, 30).toISOString(), da: 'Giulia Ferri' }), 'Sollecitato l’ultima volta il 14 ottobre 2026 alle 09:30 da Giulia Ferri')
 ok('la riga sotto il tasto, senza chi', fraseSollecitato({ quando: new Date(2026, 9, 14, 9, 30).toISOString(), da: '' }), 'Sollecitato l’ultima volta il 14 ottobre 2026 alle 09:30')
 
+// ---------------------------------------------------------------------------
+// Il sollecito nell'elenco ISCRITTI filtrato: una cella per riga, la frase
+// corta, il genitore di tutti in una volta e l'ultimo sollecito di tutti.
+// ---------------------------------------------------------------------------
+const cellaSollecito = lib('cellaSollecito')
+const fraseCorta = lib('fraseCorta')
+const genitoriDa = lib('genitoriDa')
+// La cella, o la stringa «manca …» se la funzione non c'è: così la prova lo dice.
+const cella = (p, anagrafica, opz) => cellaSollecito(p, anagrafica, QUOTA, OGGI, opz)
+const statoCella = (p, anagrafica, opz) => {
+  const c = cella(p, anagrafica, opz)
+  return typeof c === 'string' ? c : (c?.stato ?? null)
+}
+
+console.log('\n17. la cella dell\'elenco: tasto, fisso, manca, sbagliato')
+const scaduto = persona(certificato('2026-03-12'))
+ok('certificato scaduto e cellulare: il tasto', statoCella(scaduto), 'tasto')
+ok('il sollecito della cella è quello della scheda', cella(scaduto)?.sollecito, sollecitoDi(scaduto, undefined, QUOTA, OGGI))
+const fisso = persona({ ...certificato('2026-03-12'), telefono: '011 234 5678' })
+ok('un fisso: «fisso»', statoCella(fisso), 'fisso')
+ok('un fisso: il link c\'è lo stesso', typeof cella(fisso)?.sollecito?.link === 'string', true)
+const vuoto = persona({ ...certificato('2026-03-12'), telefono: undefined })
+ok('telefono vuoto: «manca»', statoCella(vuoto), 'manca')
+ok('telefono vuoto: il sollecito c\'è, senza link', [!!cella(vuoto)?.sollecito, cella(vuoto)?.sollecito?.link], [true, null])
+ok('telefono scritto male: «sbagliato»', statoCella(persona({ ...certificato('2026-03-12'), telefono: '333-165 (mamma)' })), 'sbagliato')
+
+console.log('\n18. la cella di chi è in regola')
+const inRegola = persona({ quote: [ricevuta(0)] })
+ok('in regola con la tessera da sistemare: «tessera», senza sollecito', cella(inRegola, undefined, { tesseraDaSistemare: true }), { stato: 'tessera', sollecito: null })
+ok('in regola e niente da sistemare: nessuna cella', cella(inRegola), null)
+ok('scheda disattivata: nessuna cella, anche con la tessera', cella(persona({ attiva: false, quote: [ricevuta(0)] }), undefined, { tesseraDaSistemare: true }), null)
+
+console.log('\n19. la quota pagata nel vecchio programma')
+const vecchio = { quotaNelVecchio: true }
+ok('solo la quota da pagare, nel vecchio: «vecchio», senza sollecito', cella(persona(), undefined, vecchio), { stato: 'vecchio', sollecito: null })
+const dueMotivi = persona({ certificato: { scade: '2026-03-12', conFile: true } })
+ok('quota e certificato scaduto, nel vecchio: il tasto', statoCella(dueMotivi, undefined, vecchio), 'tasto')
+ok('quota e certificato scaduto, nel vecchio: solo il certificato', cella(dueMotivi, undefined, vecchio)?.sollecito?.motivi?.map((x) => x.testo), ['Certificato medico scaduto il 12 marzo 2026'])
+const testoVecchio = cella(dueMotivi, undefined, vecchio)?.sollecito?.testo ?? ''
+ok('quota e certificato scaduto, nel vecchio: il messaggio non parla di quota', [!!testoVecchio, testoVecchio.includes('quota')], [true, false])
+ok('senza il vecchio: i due motivi di sempre', cella(dueMotivi)?.sollecito?.motivi?.map((x) => x.testo), ['Quota associativa da pagare: 30,00 €', 'Certificato medico scaduto il 12 marzo 2026'])
+
+console.log('\n20. sollecitoDi con la quota nel vecchio programma')
+const scadutaQuota = persona({ ...senzaCertificato, quote: [ricevuta(0, { anno: 2025, numero: 40, dal: '2025-09-01', al: '2026-08-31' })] })
+ok('quota scaduta, nel vecchio: niente motivo di quota', sollecitoDi(scadutaQuota, undefined, QUOTA, OGGI, vecchio)?.motivi, soloCertificato)
+ok('quota pagata in parte, nel vecchio: niente motivo di quota', sollecitoDi(persona({ ...senzaCertificato, quote: [ricevuta(1000)] }), undefined, QUOTA, OGGI, vecchio)?.motivi, soloCertificato)
+
+console.log('\n21. la frase corta sotto il tasto')
+ok('un altro giorno, con chi', fraseCorta({ quando: new Date(2026, 9, 14, 9, 30).toISOString(), da: 'Giulia Ferri' }), 'Sollecitato il 14/10 da Giulia Ferri')
+ok('un altro giorno, senza chi', fraseCorta({ quando: new Date(2026, 9, 14, 9, 30).toISOString(), da: '' }), 'Sollecitato il 14/10')
+ok('oggi, con chi: l\'ora', fraseCorta({ quando: new Date(2026, 9, 21, 9, 30).toISOString(), da: 'Giulia Ferri' }), 'Sollecitato oggi alle 09:30 da Giulia Ferri')
+ok('oggi, senza chi: l\'ora', fraseCorta({ quando: new Date(2026, 9, 21, 9, 30).toISOString(), da: '' }), 'Sollecitato oggi alle 09:30')
+
+console.log('\n22. il genitore di tutti, come anagrafica(): il più recente, la segreteria a pari')
+const genitori = (r, sg) => {
+  const g = genitoriDa(r, sg)
+  return g instanceof Map ? Object.fromEntries(g) : g
+}
+const riga = (personaId, quando, genitoreNome, genitoreCognome) => ({ personaId, quando, genitoreNome, genitoreCognome })
+ok('solo la richiesta accolta: il suo genitore', genitori([riga('p1', '2026-09-01', 'Laura', 'Rossi')], [])?.p1, { genitoreNome: 'Laura', genitoreCognome: 'Rossi' })
+ok('due richieste: vince la più recente', genitori([riga('p2', '2026-08-01', 'Anna', 'Verdi'), riga('p2', '2026-09-10', 'Laura', 'Verdi')], [])?.p2?.genitoreNome, 'Laura')
+ok('la segreteria più recente della richiesta: la segreteria', genitori([riga('p3', '2026-09-01', 'Laura', 'Rossi')], [riga('p3', '2026-10-01', 'Marta', 'Rossi')])?.p3?.genitoreNome, 'Marta')
+ok('la richiesta più recente della segreteria: la richiesta', genitori([riga('p3', '2026-09-01', 'Laura', 'Rossi')], [riga('p3', '2026-08-01', 'Marta', 'Rossi')])?.p3?.genitoreNome, 'Laura')
+ok('stessa data: la segreteria', genitori([riga('p3', '2026-09-01', 'Laura', 'Rossi')], [riga('p3', '2026-09-01', 'Marta', 'Rossi')])?.p3?.genitoreNome, 'Marta')
+ok('la segreteria più recente senza genitore (ma con altri dati): vince lo stesso, come nella scheda', genitori([riga('p4', '2026-09-01', 'Laura', 'Rossi')], [{ personaId: 'p4', quando: '2026-10-01' }])?.p4, {})
+ok('una riga della segreteria tutta vuota non conta: vince la richiesta, come nella scheda', genitori([riga('p6', '2026-09-01', 'Laura', 'Rossi')], [{ personaId: 'p6', quando: '2026-10-01', vuota: true }])?.p6, { genitoreNome: 'Laura', genitoreCognome: 'Rossi' })
+const vuota = genitori([], [])
+ok('nessuna riga: la persona non c\'è', typeof vuota === 'object' && vuota !== null ? 'p5' in vuota : vuota, false)
+
+console.log('\n23. in prova: i genitori e gli ultimi solleciti di tutti')
+// Un archivio di prova nuovo, perché la 16 ha già sollecitato qualcuno.
+memoria.clear()
+const m2 = await impacchetta(
+  "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva } from './src/lib/datiProva'; export { seminaEsempi } from './src/lib/esempiProva'",
+)
+m2.creaDatiProva()
+m2.seminaEsempi()
+const s2 = m2.creaSegreteriaProva()
+const metodo = (nome) => (typeof s2[nome] === 'function' ? s2[nome] : async () => `manca ${nome}`)
+const descrivi = (x) => (x instanceof Map ? 'una Map' : x)
+const tuttiGenitori = await metodo('genitori')()
+ok('genitori() è una Map', descrivi(tuttiGenitori), 'una Map')
+const ultimi = await metodo('ultimiSolleciti')()
+ok('ultimiSolleciti() all\'inizio è una Map vuota', ultimi instanceof Map ? ultimi.size : ultimi, 0)
+const attive = (await s2.persone()).filter((p) => p.attiva)
+const uno = attive[0]
+const quando = await s2.segnaSollecito(uno.id)
+const dopo = await metodo('ultimiSolleciti')()
+ok('dopo il sollecito c\'è, col suo quando', dopo instanceof Map ? dopo.get(uno.id)?.quando : dopo, quando)
+ok('togliSollecito su chi è sollecitato: vero', await metodo('togliSollecito')(uno.id), true)
+const tolto = await metodo('ultimiSolleciti')()
+ok('dopo averlo tolto non c\'è più', tolto instanceof Map ? tolto.has(uno.id) : tolto, false)
+ok('togliSollecito su chi non è mai stato sollecitato: falso', await metodo('togliSollecito')(attive[1].id), false)
+
+console.log('\n24. in prova: il genitore della mappa è quello della scheda')
+let minorenne = null
+for (const p of attive) {
+  const an = await s2.anagraficaDi(p.id)
+  if (an?.dati?.genitoreNome) {
+    minorenne = { id: p.id, genitoreNome: an.dati.genitoreNome }
+    break
+  }
+}
+ok('in prova c\'è un minorenne col genitore nei dati anagrafici', !!minorenne, true)
+if (minorenne)
+  ok('genitori() dà lo stesso nome di anagraficaDi()', tuttiGenitori instanceof Map ? tuttiGenitori.get(minorenne.id)?.genitoreNome : tuttiGenitori, minorenne.genitoreNome)
+
+console.log('\n25. chi ha la quota nel vecchio programma: solo chi l\'ha pagata, non chi ha pagato solo corsi')
+const quotaNelVecchioDi = typeof sol.quotaNelVecchioDi === 'function' ? sol.quotaNelVecchioDi : () => 'manca quotaNelVecchioDi'
+const delVecchio = { quota: [{ personaId: 'p-quota' }], daGuardare: [{ personaId: 'p-corsi', motivo: 'solo-corsi' }, { personaId: 'p-sotto', motivo: 'sotto-quota' }, { personaId: 'p-nucleo', motivo: 'altra-persona' }], nonCollegati: 0 }
+const nv = quotaNelVecchioDi(delVecchio)
+ok('quota pagata nel vecchio: sì', nv instanceof Set ? nv.has('p-quota') : nv, true)
+ok('solo corsi, o quota sotto i 50 €: no (decide la segreteria)', nv instanceof Set ? [nv.has('p-corsi'), nv.has('p-sotto')] : nv, [false, false])
+ok('incasso del titolare del nucleo: no (decide la segreteria)', nv instanceof Set ? nv.has('p-nucleo') : nv, false)
+{
+  const opz = { quotaNelVecchio: true }
+  const p = persona({ certificato: { scade: '2026-03-12', conFile: false } })
+  ok('scheda e riga, con la quota nel vecchio: lo stesso testo', typeof sol.cellaSollecito === 'function' ? sol.cellaSollecito(p, undefined, QUOTA, OGGI, opz)?.sollecito?.testo : 'manca cellaSollecito', sollecitoDi(p, undefined, QUOTA, OGGI, opz)?.testo)
+}
+ok('senza la lettura del vecchio programma: nessuno', quotaNelVecchioDi(null) instanceof Set ? quotaNelVecchioDi(null).size : 'non è un Set', 0)
+
 console.log(guai ? `\n${guai} prove non passano.` : '\nTutte le prove passano.')
 process.exit(guai ? 1 : 0)

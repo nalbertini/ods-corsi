@@ -236,7 +236,7 @@ export const cosaNonVaMetodo = (metodo: string, p: PagamentoSatispay | undefined
 /**
  * Un pagamento a mano con Satispay quando dal modulo ne è arrivato uno non ancora in una ricevuta (`libero`, in
  * centesimi, da `satispayPerPersona`): quei soldi vanno nella ricevuta, se no si contano due volte. Lo stesso testo di
- * `registra_pagamento_diretto` (87-pagamento-una-volta.sql). Senza Satispay libero, Satispay al banco va bene.
+ * `registra_pagamento_diretto` (88-pagamento-una-volta.sql). Senza Satispay libero, Satispay al banco va bene.
  */
 export const cosaNonVaSatispayAMano = (metodo: string, libero: number | undefined): string | null =>
   libero && metodo.trim().toLowerCase() === 'satispay' ? `Con Satispay sono già arrivati ${soldi(libero)} dal modulo: fai la ricevuta con quelli` : null

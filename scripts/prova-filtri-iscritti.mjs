@@ -67,5 +67,18 @@ console.log('\nIscritti.tsx li prende da src/lib')
   ok('«+ Nuovo iscritto» e l\'etichetta di colonna «IN REGOLA?»', ['+ Nuovo iscritto', 'IN REGOLA?'].filter((x) => !tsx.includes(x)), [])
 }
 
+console.log('\nIl sollecito nell\'elenco: solo coi filtri di chi ha qualcosa da sistemare')
+{
+  const con = (a) => (typeof m.conSollecito === 'function' ? m.conSollecito(a) : 'manca conSollecito')
+  ok('i filtri del sollecito sono esattamente cinque', m.FILTRI_SOLLECITO ?? 'manca FILTRI_SOLLECITO', ['certificato', 'scadenza', 'arrivo', 'pagare', 'fuori'])
+  ok('nessun filtro acceso: niente sollecito', con([]), false)
+  ok('solo «Vengono poco»: niente sollecito', con(['poco']), false)
+  ok('«Solo senza email» e «Vengono poco»: niente sollecito', con(['senza-email', 'poco']), false)
+  for (const f of ['certificato', 'scadenza', 'arrivo', 'pagare', 'fuori']) ok(`acceso «${f}»: il sollecito c'è`, con([f]), true)
+  ok('«Vengono poco» insieme a «Da pagare»: il sollecito c\'è', con(['poco', 'pagare']), true)
+  ok('«Pagato nel vecchio programma» ha la sua vista: niente colonna, anche con «Da pagare»', con(['pagare', 'pagato-prima']), false)
+  ok('«Possibili doppioni» ha la sua vista: niente colonna', con(['fuori', 'doppioni']), false)
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
