@@ -10,6 +10,22 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.155.0 — 21 ottobre 2026
+
+### Novità
+
+- Il sollecito su WhatsApp anche nell'elenco ISCRITTI, accanto a ogni nome
+
+### Modificato
+
+- Gli agenti di revisione e collaudo usano un modello più leggero
+
+## 0.154.4 — 21 ottobre 2026
+
+### Risolto
+
+- Dal 1° settembre 2027 quote, ricevute e pagamenti prendono la stagione giusta
+
 ## 0.154.3 — 21 ottobre 2026
 
 ### Risolto

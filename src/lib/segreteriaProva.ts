@@ -1,5 +1,5 @@
 import { indirizziDaSalvare } from './avvisoSegreteria'
-import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
+import type { Anagrafica, AnagraficaDi, UltimoSollecito, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
 import { cosaNonVaCompenso, cosaNonVaPagamento, descrizionePagamento, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
@@ -17,8 +17,8 @@ import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva,
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { enteDaDati, fineAnno, importaTessereProva } from './tessere'
-import { QUOTA_ASSOCIATIVA } from './costi'
-import { NOTA_DI_DEFAULT, stagioneDi, type IncassoPrima } from './pagatoPrima'
+import { QUOTA_ASSOCIATIVA, stagioneDi } from './costi'
+import { NOTA_DI_DEFAULT, type IncassoPrima } from './pagatoPrima'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
@@ -1261,6 +1261,30 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return creatoIl
     },
 
+    async ultimiSolleciti() {
+      const tutti = new Map<string, UltimoSollecito>()
+      for (const s of a().solleciti ?? []) if ((tutti.get(s.personaId)?.quando ?? '') < s.creatoIl) tutti.set(s.personaId, { quando: s.creatoIl, da: s.da })
+      return tutti
+    },
+
+    // Come `togli_sollecito`: l'ultimo, solo entro 15 minuti. In prova si è sempre la stessa segreteria.
+    async togliSollecito(personaId) {
+      const suoi = (a().solleciti ?? []).filter((s) => s.personaId === personaId).sort((x, y) => y.creatoIl.localeCompare(x.creatoIl))
+      if (!suoi[0] || Date.parse(suoi[0].creatoIl) < Date.now() - 15 * 60_000) return false
+      a().solleciti = (a().solleciti ?? []).filter((s) => s !== suoi[0])
+      salva()
+      return true
+    },
+
+    async genitori() {
+      const tutti = new Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome'>>()
+      for (const p of a().persone) {
+        const an = anagraficaDi(p.id)
+        if (an) tutti.set(p.id, Object.fromEntries(Object.entries({ genitoreNome: an.dati.genitoreNome, genitoreCognome: an.dati.genitoreCognome }).filter(([, v]) => v)))
+      }
+      return tutti
+    },
+
     async ultimoSollecito(personaId) {
       const u = (a().solleciti ?? []).filter((s) => s.personaId === personaId).sort((x, y) => y.creatoIl.localeCompare(x.creatoIl))[0]
       return u ? { quando: u.creatoIl, da: u.da } : null
@@ -1614,7 +1638,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (dati.personaId && !a().persone.some((x) => x.id === dati.personaId)) throw new Error('Questa scheda non c’è più')
       const no = cosaNonVaDiretto(dati, oggiARoma(), contabilita().chiusure)
       if (no) throw new Error(no)
-      // Come `registra_pagamento_diretto` (87-pagamento-una-volta.sql): la ricevuta di questo modulo già fatta, o un Satispay libero.
+      // Come `registra_pagamento_diretto` (88-pagamento-una-volta.sql): la ricevuta di questo modulo già fatta, o un Satispay libero.
       const chiave = dati.chiaveRicevuta?.trim().toLowerCase() || undefined
       if (chiave && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(chiave))
         throw new Error('La ricevuta non si capisce: ricarica la pagina')

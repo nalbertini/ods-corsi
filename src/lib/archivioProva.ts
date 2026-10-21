@@ -437,7 +437,8 @@ function iniziale(): Archivio {
   // Il primo senza certificato (NON SERVE), il secondo con quello valido già segnato.
   if (piccoli[0]) persone.get(piccoli[0])!.certificato = undefined
   if (piccoli[2]) {
-    anagrafiche[piccoli[2]] = { natoIl: natoIlDa(6, 14) }
+    // Col genitore: il sollecito su WhatsApp per un minorenne si scrive a lui.
+    anagrafiche[piccoli[2]] = { natoIl: natoIlDa(6, 14), genitoreNome: 'Laura', genitoreCognome: persone.get(piccoli[2])!.cognome }
     // Senza certificato: è quello che l'avviso di DA FARE deve far vedere.
     // `piccoli` viene dalle iscrizioni, che hanno sempre la persona.
     persone.get(piccoli[2])!.certificato = undefined

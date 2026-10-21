@@ -11,6 +11,7 @@ import { cosaNonVaCompenso, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
+import { genitoriDa, type RigaGenitore } from './sollecito'
 import { tutteLeRighe } from './tutteLeRighe'
 import { ESTENSIONI } from './richieste'
 import { insegna, RUOLI_DEL_PERSONALE, segniDi, type RuoloPersonale } from './ruoli'
@@ -84,7 +85,7 @@ interface RigaPagamentoDiretto {
   nota: string | null
   creato_il: string
   annullato_il: string | null
-  /** Con 88-pagamento-diventa-ricevuta.sql; prima la colonna non c'è. */
+  /** Con 89-pagamento-diventa-ricevuta.sql; prima la colonna non c'è. */
   ricevuta_id?: string | null
 }
 const CAMPI_DIRETTO_PRIMA = 'id, persona_id, data, importo, metodo, voce, nota, creato_il, annullato_il'
@@ -376,9 +377,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (((e?.code === 'PGRST202' || e?.code === '42883') && /segna_istruttore_assente/.test(e.message ?? '')) || ((e?.code === '42703' || e?.code === 'PGRST204') && /basta_uno/.test(e.message ?? '')))
     return new Error(MANCA_FIRMA)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevuta_compenso/.test(e.message ?? '')) return new Error(MANCA_COMPENSI)
-  // Prima di /ricevut/: la ricevuta dal pagamento a mano arriva dopo, con 88-pagamento-diventa-ricevuta.sql.
+  // Prima di /ricevut/: la ricevuta dal pagamento a mano arriva dopo, con 89-pagamento-diventa-ricevuta.sql.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /emetti_ricevuta_da_pagamento/.test(e.message ?? ''))
-    return new Error('FANNE LA RICEVUTA non è ancora attivo sul database: va lanciato 88-pagamento-diventa-ricevuta.sql')
+    return new Error('FANNE LA RICEVUTA non è ancora attivo sul database: va lanciato 89-pagamento-diventa-ricevuta.sql')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /pagamento_diretto/.test(e.message ?? '')) return new Error(MANCANO_PAGAMENTI_A_MANO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
     return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
@@ -1455,6 +1456,46 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return ok(r) as string
     },
 
+    async ultimiSolleciti() {
+      const r = await db.rpc('ultimi_solleciti')
+      // Senza 87-solleciti-elenco.sql l'elenco non dice chi è già sollecitato, e basta.
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return new Map()
+      // `as`: le righe di ultimi_solleciti() in 87-solleciti-elenco.sql, una per persona.
+      return new Map((ok(r) as Array<{ persona_id: string; creato_il: string; da: string }>).map((x) => [x.persona_id, { quando: x.creato_il, da: x.da }]))
+    },
+
+    async togliSollecito(personaId) {
+      const r = await db.rpc('togli_sollecito', { persona: personaId })
+      if (r.error && ['PGRST202', '42883'].includes(r.error.code)) throw new Error('«Annulla» non c’è ancora sul database: va lanciato 87-solleciti-elenco.sql.')
+      // `as`: togli_sollecito() in 87-solleciti-elenco.sql rende un boolean.
+      return ok(r) as boolean
+    },
+
+    async genitori() {
+      // Senza 18-anagrafiche.sql vale la richiesta, come in `anagrafica()`; ogni altro guaio si dice (una fonte persa cambierebbe chi vince).
+      const tutte = async (r: Promise<{ data: unknown[]; error: { code?: string } | null }>) => {
+        const { data, error } = await r
+        if (error && !['PGRST205', '42P01'].includes(error.code ?? '')) throw new Error('I genitori non si sono letti: controlla la connessione e riprova.')
+        return error ? [] : data
+      }
+      const [an, rich] = await Promise.all([
+        tutte(tutteLeRighe((prima, ultima) => db.from('anagrafiche').select(`persona_id, ${CAMPI_ANAGRAFICA}, cambiata_il`).order('persona_id').range(prima, ultima))),
+        tutte(
+          tutteLeRighe((prima, ultima) =>
+            db.from('richieste_iscrizione').select('id, persona_id, genitore_nome, genitore_cognome, gestita_il, creata_il').eq('stato', 'accolta').not('persona_id', 'is', null).order('id').range(prima, ultima),
+          ),
+        ),
+      ])
+      // `as`: le righe sono quelle dei select qui sopra.
+      type Riga = { persona_id: string; genitore_nome: string | null; genitore_cognome: string | null }
+      const riga = (x: Riga, quando: string): RigaGenitore => ({ personaId: x.persona_id, genitoreNome: x.genitore_nome ?? undefined, genitoreCognome: x.genitore_cognome ?? undefined, quando })
+      return genitoriDa(
+        (rich as Array<Riga & { gestita_il: string | null; creata_il: string }>).map((x) => riga(x, x.gestita_il ?? x.creata_il)),
+        // Una riga della segreteria senza nessun dato non conta, come in `anagrafica()`.
+        (an as Array<Riga & RigaAnagrafica & { cambiata_il: string }>).map((x) => ({ ...riga(x, x.cambiata_il), vuota: !Object.keys(daRigaAnagrafica(x) ?? {}).length })),
+      )
+    },
+
     async ultimoSollecito(personaId) {
       const r = await db.rpc('ultimo_sollecito', { persona: personaId })
       if (r.error && ['PGRST202', '42883'].includes(r.error.code)) return null
@@ -1486,7 +1527,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         return (personaId ? q.eq('persona_id', personaId) : q).order('data', { ascending: false }).order('creato_il', { ascending: false }).order('id').range(prima, ultima)
       }
       let righe = await tutteLeRighe(leggi(CAMPI_DIRETTO))
-      // Prima di 88-pagamento-diventa-ricevuta.sql `ricevuta_id` non c'è: lo storico si legge lo stesso, senza.
+      // Prima di 89-pagamento-diventa-ricevuta.sql `ricevuta_id` non c'è: lo storico si legge lo stesso, senza.
       if (righe.error?.code === '42703') righe = await tutteLeRighe(leggi(CAMPI_DIRETTO_PRIMA))
       // `as`: Supabase tipa la riga a modo suo, la forma è quella di `CAMPI_DIRETTO`.
       return (ok(righe) as unknown as RigaPagamentoDiretto[]).map(pagamentoDiretto)

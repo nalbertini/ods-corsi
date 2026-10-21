@@ -16,7 +16,7 @@ import { euro } from './ricevute'
 import type { EsitoMandata, InvioRicevuta } from './ricevuteEmail'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
 import type { PagamentoSatispay } from './satispay'
-import { VALIDITA } from './costi'
+import { STAGIONE, stagioneDi } from './costi'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import type { Listino, ListinoLetto } from './listino'
 import { nomeProprio, paroleCercate, somiglia } from './nomi'
@@ -185,7 +185,7 @@ export type StatoPagamento = 'da_pagare' | 'in_parte' | 'pagato'
  */
 export interface PagamentoSeg {
   stato: StatoPagamento
-  /** Fin quando vale l'eccezione; senza, fino alla fine della stagione (`VALIDITA.quota.al`). */
+  /** Fin quando vale l'eccezione; senza, fino alla fine della stagione del listino (`STAGIONE.quota.al`). */
   fino?: string
   nota?: string
 }
@@ -725,7 +725,7 @@ export interface DatiSegreteria {
   pagaCompensi(ids: string[], data: string, cassaId: string): Promise<void>
   /**
    * Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). Con `pagamentoId` la fa da un pagamento
-   * a mano e lo annulla insieme (`emetti_ricevuta_da_pagamento` in `88-pagamento-diventa-ricevuta.sql`).
+   * a mano e lo annulla insieme (`emetti_ricevuta_da_pagamento` in `89-pagamento-diventa-ricevuta.sql`).
    */
   emettiRicevuta(r: DatiRicevuta, satispayId?: string, pagamentoId?: string): Promise<Ricevuta>
   /**
@@ -752,6 +752,12 @@ export interface DatiSegreteria {
   segnaSollecito(personaId: string): Promise<string | null>
   /** L'ultimo sollecito segnato, col nome di chi; `null` se non ce n'è o senza `85-solleciti.sql`. */
   ultimoSollecito(personaId: string): Promise<UltimoSollecito | null>
+  /** L'ultimo sollecito di ognuno, in un colpo, per l'elenco ISCRITTI; vuota senza `87-solleciti-elenco.sql`. */
+  ultimiSolleciti(): Promise<Map<string, UltimoSollecito>>
+  /** «Annulla»: toglie l'ultimo sollecito se l'ha segnato chi è collegato da meno di 15 minuti; falso se non l'ha tolto o senza il file. */
+  togliSollecito(personaId: string): Promise<boolean>
+  /** Il genitore di ognuno, in un colpo, con la regola di `anagraficaDi`: per il sollecito ai minorenni nell'elenco. */
+  genitori(): Promise<Map<string, Pick<Anagrafica, 'genitoreNome' | 'genitoreCognome'>>>
   /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
   pagamentiDiretti(personaId?: string): Promise<PagamentoDiretto[]>
   /** Nome e cognome di chi ha pagato, e nient'altro: per chi segue i pagamenti senza vedere le persone (`55-amministrazione.sql`). */
@@ -1243,11 +1249,11 @@ export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispa
   if (pagata) return { come: 'pagato', fonte: 'ricevuta', fino: pagata.al, ricevuta: numero(pagata) }
 
   const m = p.pagamento
-  const fino = m.fino || VALIDITA.quota.al
+  const fino = m.fino || STAGIONE.quota.al
   const eccezione = m.stato !== 'da_pagare' && fino >= oggi
   if (eccezione && m.stato === 'pagato') return { come: 'pagato', fonte: 'fuori_app', fino, nota: m.nota }
   // Pagata dal modulo con Satispay, quota compresa: manca solo la ricevuta, e non è da chiamare.
-  if (p.satispay) return { come: 'pagato', fonte: 'satispay', fino: VALIDITA.quota.al, importo: p.satispay }
+  if (p.satispay) return { come: 'pagato', fonte: 'satispay', fino: stagioneDi(oggi).quota.al, importo: p.satispay }
   const parte = [...valgono].sort((a, b) => a.mancano - b.mancano)[0]
   if (parte) return { come: 'in_parte', fonte: 'ricevuta', fino: parte.al, mancano: parte.mancano, ricevuta: numero(parte) }
   if (eccezione) return { come: 'in_parte', fonte: 'fuori_app', fino, nota: m.nota }

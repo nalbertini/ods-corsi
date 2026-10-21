@@ -365,6 +365,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regprocedure('public.incassi_vecchio_programma()') is not null
     and exists (select 1 from information_schema.columns
                 where table_schema = 'public' and table_name = 'movimenti' and column_name = 'persona_id')),
+  ('71-pagato-vecchio-programma.sql', 'agosto nella stagione che inizia, come nell''app (src/lib/costi.ts)',
+    exists (select 1 from dentro where nome = 'incassi_vecchio_programma' and corpo like '%12 months%')),
   ('72-movimenti-dalla-chat.sql', 'i movimenti registrati dalla chat con Claude: la chiave, il segno e i simili',
     to_regprocedure('public.registra_movimento_dalla_chat(jsonb)') is not null
     and to_regprocedure('public.movimenti_simili(text)') is not null
@@ -444,14 +446,17 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     -- Rilanciare 55 o 73 dopo 86 rimette le funzioni che ignorano la chiave: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%ricevuta_gia_fatta%')
     and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%')),
-  ('87-pagamento-una-volta.sql', 'un pagamento a mano registrato una volta sola: la chiave della ricevuta e il Satispay arrivato',
-    -- Rilanciare 64 dopo 87 rimette la funzione che ignora chiave e Satispay: la riga torna «da lanciare».
+  ('87-solleciti-elenco.sql', 'i solleciti nell''elenco ISCRITTI: gli ultimi di tutti e Annulla',
+    to_regprocedure('public.ultimi_solleciti()') is not null
+    and to_regprocedure('public.togli_sollecito(uuid)') is not null),
+  ('88-pagamento-una-volta.sql', 'un pagamento a mano registrato una volta sola: la chiave della ricevuta e il Satispay arrivato',
+    -- Rilanciare 64 dopo 88 rimette la funzione che ignora chiave e Satispay: la riga torna «da lanciare».
     exists (select 1 from dentro where nome = 'registra_pagamento_diretto' and corpo like '%chiave_ricevuta%' and corpo like '%pagamenti_satispay%')),
-  ('88-pagamento-diventa-ricevuta.sql', 'il pagamento a mano diventa ricevuta, e torna se la ricevuta si annulla',
+  ('89-pagamento-diventa-ricevuta.sql', 'il pagamento a mano diventa ricevuta, e torna se la ricevuta si annulla',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'pagamenti_diretti' and column_name = 'ricevuta_id')
     and to_regprocedure('public.emetti_ricevuta_da_pagamento(jsonb,uuid)') is not null
-    -- Rilanciare 55 dopo 88 rimette l'annullo che lascia il pagamento a mano annullato: la riga torna «da lanciare».
+    -- Rilanciare 55 dopo 89 rimette l'annullo che lascia il pagamento a mano annullato: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'annulla_ricevuta' and corpo like '%pagamenti_diretti%'))
 ) as x(file, cosa, c)
 order by file, cosa;

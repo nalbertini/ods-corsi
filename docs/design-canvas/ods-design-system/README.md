@@ -53,7 +53,7 @@ Google, e vale solo per i mockup.
 | `ProvaPannello` | `Prove.tsx`: CHI VIENE A PROVARE, con campi, già venuti e i due tasti |
 | `CercaPersona` | La pagina «Aggiungi chi prova» (`CercaPersona.tsx`) |
 | `TestataTabella` | La testata delle tabelle di segreteria (`.sg-lista-testa`, `.sg-ordina`) |
-| `RigaIscritto` | La riga della tabella ISCRITTI: normale, scelta, spenta |
+| `RigaIscritto` | La riga della tabella ISCRITTI: normale, scelta, spenta; COSTRUITO `sollecito` (`../sollecito-elenco/`): la colonna WHATSAPP coi filtri del sollecito (tasto a linea, o il perché: fisso, manca, sbagliato, tessera, vecchio) e `sollecitato` sotto; `telefono` la cella sotto la riga |
 | `RigaPresenzaIstruttore` | La riga di PRESENZE ISTRUTTORI, con CONFERMA e RIFIUTA; `nonSegnati` (nomi separati da `\|`) mette sotto PREVISTO i link «+ Nome c’era» |
 | `RigaCompenso` | PROPOSTA (`../compensi-tecnici/`): una riga di COMPENSI, look sito: nome, lezioni, ore, importo, stato con segno e parola (`stato` da-confermare, senza-tariffa con il `corso`, da-fare, da-pagare, non-torna, pagata) e sotto il perché, il tasto o il link; `firmata` falso aggiunge DA RIPORTARE FIRMATA accanto alla spunta «Firmata»; `aperta` mostra per corso ore × tariffa (`corsi`); `attese` (PROPOSTA, `../coistruttore-atteso/`) aggiunge MANCA LA FIRMA e, a riga aperta, le lezioni in due senza la sua firma con C’ERA / Non c’era; `solo-attese` è chi ha solo quelle; `telefono` la impila |
 | `FiltriIscritti` | La barra sopra la tabella ISCRITTI: ricerca, corso, chip; `storico` aggiunge «Pagato nel vecchio programma N» dietro «Altri filtri» (PROPOSTA) |

@@ -2,6 +2,7 @@
 name: designer-ods
 description: Rivede le schermate di ODS Corsi toccate da un cambio rispetto a DESIGN.md e PRODUCT.md, guardandole nel browser alla misura di chi le usa. Da usare quando un cambio tocca componenti .tsx o styles.css.
 tools: Read, Grep, Glob, Bash, mcp__Claude_Browser__preview_start, mcp__Claude_Browser__preview_list, mcp__Claude_Browser__navigate, mcp__Claude_Browser__resize_window, mcp__Claude_Browser__computer, mcp__Claude_Browser__read_page, mcp__Claude_Browser__find, mcp__Claude_Browser__browser_batch, mcp__Claude_Browser__read_console_messages
+model: sonnet
 ---
 
 Sei il designer di ODS Corsi. Non modifichi file: dici cosa non rispetta il

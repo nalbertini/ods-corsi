@@ -1,10 +1,10 @@
--- Il pagamento a mano non conta due volte gli stessi soldi (87-pagamento-una-volta.sql):
+-- Il pagamento a mano non conta due volte gli stessi soldi (88-pagamento-una-volta.sql):
 --   · con la chiave di una ricevuta valida della stessa persona (il modulo ripreso dopo «Lascia stare»)
 --     `registra_pagamento_diretto` rifiuta: quei soldi sono già nella ricevuta;
 --   · con metodo Satispay, se alla persona sono già arrivati soldi Satispay dal modulo che non stanno in
 --     nessuna ricevuta valida, rifiuta: la ricevuta va fatta con quelli.
 -- Annullata, di un'altra persona, senza chiave, o con un altro metodo: si registra come prima.
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 87-pagamento-una-volta.sql.
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 88-pagamento-una-volta.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 

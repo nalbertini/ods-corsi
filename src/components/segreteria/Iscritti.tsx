@@ -1,12 +1,12 @@
 import { soldi } from '../../lib/satispay'
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { altriAperti, altriFiltri, FILTRI_VISIBILI, ID_FILTRI, TESTI_FILTRI, type IdFiltro } from '../../lib/filtriIscritti'
+import { altriAperti, altriFiltri, conSollecito, FILTRI_VISIBILI, ID_FILTRI, TESTI_FILTRI, type IdFiltro } from '../../lib/filtriIscritti'
 import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
 import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, fuoriRegola, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
-import { VALIDITA } from '../../lib/costi'
+import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -18,11 +18,12 @@ import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
 import type { Ricercata } from '../../lib/ricerca'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
-import { euro, QUOTA } from '../../lib/ricevute'
+import { euro, QUOTA, voceQuota } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
 import { StoricoPersona } from './CollegaPersona'
 import { PagatoPrima } from './PagatoPrima'
-import { SollecitoWhatsApp } from './Sollecito'
+import { CellaSollecito, SollecitoWhatsApp } from './Sollecito'
+import { cellaSollecito, quotaNelVecchioDi } from '../../lib/sollecito'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
@@ -222,6 +223,25 @@ export function Iscritti({
       (!senzaDocumento || !p.documento) &&
       (!soloFilePrima || certificatoDaStampare(p.certificato)),
   )
+  // Coi filtri di chi ha qualcosa da sistemare, la colonna WHATSAPP: le letture in blocco partono solo allora.
+  const sollecitare = conSollecito(accesi)
+  const perSollecito = useCarica(
+    async () => {
+      if (!sollecitare) return null
+      // Il genitore serve solo ai minorenni: se non si legge (`genitori` lo regge da sé), il tasto resta col messaggio senza genitore.
+      const [listino, genitori] = await Promise.all([d.listino(), d.genitori()])
+      return { quota: voceQuota(listino.listino).voce(oggi).prezzo, genitori }
+    },
+    [d, sollecitare, oggi],
+  )
+  // Un sollecito segnato o tolto, dalla riga o dalla scheda: si rileggono tutte e due.
+  const [giroSolleciti, setGiroSolleciti] = useState(0)
+  const sollecitati = useCarica(async () => (sollecitare ? d.ultimiSolleciti() : null), [d, sollecitare, giroSolleciti])
+  const nelVecchioIds = quotaNelVecchioDi(delVecchio)
+  const cellaDi = (p: PersonaSeg) =>
+    perSollecito.dato
+      ? cellaSollecito(p, perSollecito.dato.genitori.get(p.id), perSollecito.dato.quota, oggi, { quotaNelVecchio: nelVecchioIds.has(p.id), tesseraDaSistemare: senzaTessera(tesseraDi(p)) })
+      : null
   const suoiCorsi = (p: PersonaSeg) => p.iscrizioni.filter((i) => inCorso(i, oggi)).map((i) => perId.get(i.corsoId)?.nome).filter(Boolean)
   const { ordina, colonna } = useOrdina<PersonaSeg, 'nome' | 'corsi' | 'contatto' | 'regola' | 'frequenza'>({
     nome: (p) => `${p.cognome} ${p.nome}`,
@@ -301,6 +321,9 @@ export function Iscritti({
             fai={fai}
             avvisa={avvisa}
             contabilita={contabilita}
+            quotaNelVecchio={nelVecchioIds.has(persona.id)}
+            giroSolleciti={giroSolleciti}
+            onSollecitato={() => setGiroSolleciti((g) => g + 1)}
             onCambiato={() => {
               void ricarica()
               onConti?.()
@@ -419,13 +442,16 @@ export function Iscritti({
             }}
           />
         ) : (
+        <>
+        {sollecitare && perSollecito.guaio && <Guaio titolo="WHATSAPP" testo={`La colonna dei solleciti non si è letta: ${perSollecito.guaio}`} />}
         <div role="table" aria-label="Iscritti" className="sg-tabella">
-          <div role="row" className="sg-lista-testa sg-riga-iscritto">
+          <div role="row" className="sg-lista-testa sg-riga-iscritto" data-sollecito={sollecitare || undefined}>
             {colonna('nome', 'NOME')}
             {colonna('corsi', 'CORSI')}
             {colonna('contatto', 'CONTATTO')}
             {colonna('regola', 'IN REGOLA?', { numeri: true })}
             {colonna('frequenza', '30 GIORNI', { numeri: true, destra: true })}
+            {sollecitare && <span role="columnheader" className="sg-etichetta sg-cella-sollecito-testa">WHATSAPP</span>}
           </div>
           <div className="sg-tabella-corpo">
             {persone.dato === null && !persone.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo gli iscritti…</p>}
@@ -441,6 +467,7 @@ export function Iscritti({
                   className="sg-riga-iscritto sg-iscritto"
                   data-scelto={!nuovo && scelta === p.id}
                   data-spento={!p.attiva}
+                  data-sollecito={sollecitare || undefined}
                   onClick={() => {
                     setUnisciCon(null)
                     onScelta(p.id, 'push')
@@ -464,6 +491,7 @@ export function Iscritti({
                   <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', color: vienePoco(f) ? 'var(--giallo-testo)' : 'var(--text)' }}>
                     {f ? `${f.presenti}/${f.dovute}` : '—'}
                   </span>
+                  {sollecitare && <CellaSollecito d={d} p={p} cella={cellaDi(p)} ultimo={sollecitati.dato?.get(p.id)} avvisa={avvisa} dopo={() => setGiroSolleciti((g) => g + 1)} />}
                 </div>
               )
             })}
@@ -474,6 +502,7 @@ export function Iscritti({
             30 GIORNI: presenze su lezioni avute, senza i giustificati
           </span>
         </div>
+        </>
         )}
 
       </div>
@@ -575,6 +604,9 @@ function Scheda({
   doppio,
   nonDoppioni,
   contabilita,
+  quotaNelVecchio,
+  giroSolleciti,
+  onSollecitato,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
@@ -597,6 +629,11 @@ function Scheda({
   /** Le schede segnate «non sono doppioni» con questa: si tolgono da qui, se segnate per sbaglio. */
   nonDoppioni: PersonaSeg[]
   contabilita?: boolean
+  /** Ha la quota pagata nel vecchio programma: il sollecito non la chiede (come la riga dell'elenco). */
+  quotaNelVecchio: boolean
+  /** Cambia quando un sollecito si segna o si toglie dall'elenco. */
+  giroSolleciti: number
+  onSollecitato: () => void
 }) {
   const oggi = chiaveGiorno(new Date())
   const [modifica, setModifica] = useState<DatiPersona | null>(null)
@@ -670,7 +707,7 @@ function Scheda({
       </div>
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
       {!unendo && !pagando && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
-      {!unendo && !pagando && <SollecitoWhatsApp d={d} p={p} oggi={oggi} giro={giroAnagrafica} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
+      {!unendo && !pagando && <SollecitoWhatsApp d={d} p={p} oggi={oggi} giro={giroAnagrafica} giroSolleciti={giroSolleciti} quotaNelVecchio={quotaNelVecchio} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -1725,7 +1762,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
   const t = timbriScheda(p, oggi).quota
   const eccezione = p.pagamento.stato !== 'da_pagare'
   const [scrivi, setScrivi] = useState(false)
-  const [b, setB] = useState({ fino: VALIDITA.quota.al, nota: '' })
+  const [b, setB] = useState({ fino: stagioneDi(oggi).quota.al, nota: '' })
   const ricevute = useCarica(() => d.ricevute(p.id), [d, p.id])
   // Per ogni corso pagato, l'ultima data fin cui vale.
   const corsi = new Map<string, string>()

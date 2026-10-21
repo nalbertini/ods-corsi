@@ -1,11 +1,11 @@
--- Il pagamento a mano diventa ricevuta (88-pagamento-diventa-ricevuta.sql):
+-- Il pagamento a mano diventa ricevuta (89-pagamento-diventa-ricevuta.sql):
 --   · `emetti_ricevuta_da_pagamento(dati, pagamento)` fa la ricevuta e annulla il pagamento a mano nella stessa
 --     transazione, legandolo alla ricevuta (`pagamenti_diretti.ricevuta_id`): o tutte e due, o nessuna;
 --   · nella ricevuta i pagamenti con il metodo e la data del pagamento a mano fanno esattamente il suo importo;
 --   · la chiave del modulo (86) ripetuta dà la stessa ricevuta;
 --   · `annulla_ricevuta` di quella ricevuta rimette il pagamento a mano SENZA RICEVUTA;
 --   · il previsto della Cassa Contanti non cambia in nessuno dei passaggi.
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 88-pagamento-diventa-ricevuta.sql.
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 89-pagamento-diventa-ricevuta.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 

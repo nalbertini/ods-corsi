@@ -35,7 +35,8 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   caricato prima della nuova gestione (senza data di caricamento). Quelli
   nuovi non ci sono mai.
 - **Pagato nel vecchio programma** col numero — solo finché ce ne sono: chi è
-  attivo, ha un incasso del vecchio programma nella stagione (collegato alla sua
+  attivo, ha un incasso del vecchio programma nella stagione (dal 1° agosto al
+  31 luglio; collegato alla sua
   scheda in CONTABILITÀ › MOVIMENTI) e nell'app risulta ancora da pagare. Sotto la
   riga di stato c'è chi **ha pagato la quota** e chi **ha pagato solo corsi**; ogni
   riga dice quale incasso è (data, importo, voce). Le righe con la casella si
@@ -140,6 +141,21 @@ la collega vede che è già stato fatto. Se il telefono manca o è sbagliato, il
 riquadro lo dice e **Vai a PERSONA** porta dove aggiungerlo; se sembra un fisso
 (comincia per 0), avvisa che su WhatsApp di solito non c'è. Una scheda
 disattivata, o in regola, non ha il riquadro.
+
+Per sollecitarne tanti di fila non serve aprire ogni scheda: con acceso
+**Senza certificato valido**, **Certificato in scadenza**, **Compiono 6 anni**,
+**Da pagare** o **Non in regola**, l'elenco ha in fondo la colonna **WHATSAPP**.
+**WhatsApp** apre lo stesso messaggio della scheda e segna il sollecito, senza
+aprire la scheda; sotto si legge «Sollecitato il 14/10 da …» (o «oggi alle …»).
+L'avviso in basso ha **Annulla**, per togliere il segno se il messaggio non è
+partito: vale per un quarto d'ora, e solo per chi l'ha segnato. Sulla riga senza
+tasto c'è il perché: **Manca il telefono**, **Telefono da correggere** (un clic
+sulla riga apre la scheda), **Solo la tessera** (con **Non in regola**: il
+sollecito non parla di tessera) o **Quota pagata nel vecchio programma: da
+segnare** (la quota non si sollecita finché non è segnata da **Pagato nel vecchio
+programma**; chi ha pagato solo corsi si sollecita). Un fisso
+ha il tasto, con **Sembra un fisso**. Lo stesso **Annulla** c'è anche nella
+scheda.
 
 Poi la scheda è divisa in quattro schede, e se ne vede una alla volta:
 
