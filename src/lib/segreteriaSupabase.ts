@@ -2499,7 +2499,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         // Le lettere d'incarico di un tecnico, coi dati copiati dentro.
         db.from('lettere_incarico').select('stagione, dal, al, qualifica, giorni, data, tariffe, tecnico, firmata, sostituita_il, creata_il').eq('persona_id', personaId),
         // Le ricevute dei compensi di un tecnico, coi dati copiati dentro.
-        db.from('ricevute_compensi').select('mese, righe, calcolato, importo, motivo, tecnico, qualifica, data, firmata, annullata_il, creata_il').eq('persona_id', personaId),
+        // Tutta la riga (con `pagata_il`, che arriva con l'81); gli id interni si tolgono sotto.
+        db.from('ricevute_compensi').select('*').eq('persona_id', personaId),
       ])
       return {
         esportato_il: new Date().toISOString(),
@@ -2517,7 +2518,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         // Senza 79-lettere-incarico.sql non ce ne sono.
         lettere_incarico: lett.error?.code === '42P01' || lett.error?.code === 'PGRST205' ? [] : ok(lett),
         // Senza 80-ricevute-compensi.sql non ce ne sono.
-        ricevute_compensi: comp.error?.code === '42P01' || comp.error?.code === 'PGRST205' ? [] : ok(comp),
+        ricevute_compensi:
+          comp.error?.code === '42P01' || comp.error?.code === 'PGRST205'
+            ? []
+            : ((ok(comp) ?? []) as Array<Record<string, unknown>>).map(({ id: _i, persona_id: _p, movimento_id: _m, creata_da: _c, ...r }) => r),
       }
     },
     async backup() {

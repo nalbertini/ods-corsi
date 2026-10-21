@@ -151,6 +151,7 @@ select atteso('una già pagata no', tenta(paga(format('{%s}', :'m_set'), giorno(
 select atteso('una già pagata con una da pagare no', tenta(paga(format('{%s,%s}', :'m_feb', :'m_set'), giorno(0), :'conto')), 'NEGATO: …');
 select atteso('una ricevuta che non c''è no', tenta(paga('{99999999-9999-9999-9999-999999999999}', giorno(0), :'conto')), 'NEGATO: …');
 select atteso('domani no', tenta(paga(format('{%s}', :'m_feb'), giorno(-1), :'conto')), 'NEGATO: …');
+select atteso('una data prima del 2000 no', tenta(paga(format('{%s}', :'m_feb'), '1990-01-01', :'conto')), 'NEGATO: La data non si capisce');
 select atteso('il giorno che manca no', tenta(paga(format('{%s}', :'m_feb'), null, :'conto')), 'NEGATO: …');
 select atteso('prima dell''inizio della cassa no', tenta(paga(format('{%s}', :'m_feb'), giorno(31), :'conto')), 'NEGATO: …');
 select atteso('in un giorno chiuso no', tenta(paga(format('{%s}', :'m_feb'), giorno(6), :'contanti')), 'NEGATO: …');
@@ -177,6 +178,12 @@ select atteso('e resta valida e pagata', (select coalesce(annullata_il::text, 'v
 select atteso('il movimento di un pagamento non si cancella, nemmeno da dentro', tenta(format('delete from movimenti where id = %L', :'pag_set_ott')), 'NEGATO: …');
 
 \echo ''
+\echo '--- 5 bis. una voce «Compensi istruttori» già scritta a mano diventa quella di sistema ---'
+-- Rilanciare l'81 con una voce omonima non di sistema (come arriverebbe dalla prima nota) non lascia il pagamento senza voce.
+update voci_contabili set di_sistema = false where nome = 'Compensi istruttori';
+\ir ../81-compensi-pagati.sql
+select atteso('la voce torna di sistema, una sola', (select count(*)::text || ' ' || bool_and(di_sistema)::text from voci_contabili where tipo = 'uscita' and lower(trim(nome)) = 'compensi istruttori'), '1 true');
+
 \echo '--- 6. annullato il movimento, tornano da pagare ---'
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;

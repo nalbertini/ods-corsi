@@ -27,6 +27,8 @@
 -- ---------------------------------------------------------------------------
 
 insert into voci_contabili (nome, tipo, di_sistema) values ('Compensi istruttori', 'uscita', true) on conflict do nothing;
+-- Una voce omonima già scritta a mano (la prima nota importata, per esempio) diventa quella di sistema: se no il pagamento resta senza voce.
+update voci_contabili set di_sistema = true, attiva = true where tipo = 'uscita' and lower(trim(nome)) = 'compensi istruttori' and not (di_sistema and attiva);
 
 alter table ricevute_compensi add column if not exists movimento_id uuid references movimenti on delete restrict;
 alter table ricevute_compensi add column if not exists pagata_il date;
@@ -51,7 +53,8 @@ declare
   chi persone;
   quante int;
   persone_diverse int;
-  totale int;
+  totale bigint;
+  descrizione text;
   mesi date[];
 begin
   if not e_staff() then raise exception 'I compensi li paga chi cura segreteria e contabilità' using errcode = '42501'; end if;
@@ -65,14 +68,19 @@ begin
   if quante <> cardinality(ricevute) then raise exception 'Una delle ricevute non c''è più, è annullata o è già pagata: ricarica la pagina' using errcode = '22023'; end if;
   if persone_diverse <> 1 then raise exception 'Si pagano insieme solo le ricevute dello stesso tecnico' using errcode = '22023'; end if;
   if paga_compensi.data is null or paga_compensi.data > contabilita_oggi() then raise exception 'La data del pagamento non può essere nel futuro' using errcode = '22023'; end if;
+  -- Gli stessi limiti di un movimento scritto a mano (`movimento_comune`).
+  if paga_compensi.data < date '2000-01-01' then raise exception 'La data non si capisce' using errcode = '22023'; end if;
+  if totale > 10000000 then raise exception 'Il totale è troppo alto per un pagamento solo: paga i mesi in più volte' using errcode = '22023'; end if;
   select * into ca from casse where id = cassa for share;
   if not found then raise exception 'Scegli la cassa' using errcode = '22023'; end if;
   if ca.dal is not null and paga_compensi.data < ca.dal then raise exception 'La data è prima dell’inizio della cassa' using errcode = '22023'; end if;
   if cassa_giorno_chiuso(ca.id, paga_compensi.data) then raise exception 'Quel giorno la cassa è già chiusa: scegli un altro giorno o annulla la chiusura' using errcode = '22023'; end if;
   select p.* into chi from persone p join ricevute_compensi x on x.persona_id = p.id where x.id = ricevute[1];
+  descrizione := descrizione_pagamento(chi.nome, chi.cognome, mesi);
+  if char_length(descrizione) > 200 then raise exception 'Troppi mesi in un pagamento solo: pagali in più volte' using errcode = '22023'; end if;
   insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, creato_da, persona_id)
-  values ('uscita', paga_compensi.data, totale, (select id from voci_contabili where nome = 'Compensi istruttori' and tipo = 'uscita' and di_sistema), ca.id,
-          descrizione_pagamento(chi.nome, chi.cognome, mesi), persona_corrente(), chi.id)
+  values ('uscita', paga_compensi.data, totale, (select id from voci_contabili where tipo = 'uscita' and lower(trim(nome)) = 'compensi istruttori' and di_sistema), ca.id,
+          descrizione, persona_corrente(), chi.id)
   returning * into r;
   update ricevute_compensi x set movimento_id = r.id, pagata_il = paga_compensi.data where x.id = any(ricevute);
   return r;
@@ -85,11 +93,16 @@ create or replace function annulla_ricevuta_compenso(id uuid) returns ricevute_c
 declare r ricevute_compensi;
 begin
   if not e_staff() then raise exception 'Le ricevute dei compensi le annulla la segreteria' using errcode = '42501'; end if;
-  if exists (select 1 from ricevute_compensi x where x.id = annulla_ricevuta_compenso.id and x.movimento_id is not null) then
-    raise exception 'È pagata: prima annulla il pagamento in CONTABILITÀ → MOVIMENTI' using errcode = '22023';
+  -- Il controllo «non pagata» sta nell'update stesso: un pagamento che arriva nello stesso momento non lascia una ricevuta annullata e pagata.
+  update ricevute_compensi x set annullata_il = now()
+    where x.id = annulla_ricevuta_compenso.id and x.annullata_il is null and x.movimento_id is null
+    returning * into r;
+  if not found then
+    if exists (select 1 from ricevute_compensi x where x.id = annulla_ricevuta_compenso.id and x.movimento_id is not null) then
+      raise exception 'È pagata: prima annulla il pagamento in CONTABILITÀ → MOVIMENTI' using errcode = '22023';
+    end if;
+    raise exception 'Questa ricevuta non c''è o è già annullata' using errcode = '22023';
   end if;
-  update ricevute_compensi x set annullata_il = now() where x.id = annulla_ricevuta_compenso.id and x.annullata_il is null returning * into r;
-  if not found then raise exception 'Questa ricevuta non c''è o è già annullata' using errcode = '22023'; end if;
   return r;
 end $$;
 revoke all on function annulla_ricevuta_compenso(uuid) from public, anon;

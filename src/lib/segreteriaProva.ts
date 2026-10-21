@@ -127,7 +127,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
           { id: 'voce-differenza-uscita', nome: VOCE_DIFFERENZA, tipo: 'uscita', diSistema: true, attiva: true },
         ]
     // Come 81-compensi-pagati.sql: c'è anche in un archivio fatto prima.
-    return conDifferenza.some((v) => v.nome === VOCE_COMPENSI) ? conDifferenza : [...conDifferenza, { id: 'voce-compensi', nome: VOCE_COMPENSI, tipo: 'uscita', diSistema: true, attiva: true }]
+    // Una voce omonima scritta a mano diventa quella di sistema, come nell'81.
+    const omonima = (v: VoceContabile) => v.tipo === 'uscita' && v.nome.trim().toLowerCase() === VOCE_COMPENSI.toLowerCase()
+    return conDifferenza.some(omonima)
+      ? conDifferenza.map((v) => (omonima(v) ? { ...v, diSistema: true, attiva: true } : v))
+      : [...conDifferenza, { id: 'voce-compensi', nome: VOCE_COMPENSI, tipo: 'uscita', diSistema: true, attiva: true }]
   }
   const contabilita = () => ({
     casse: a().casse ?? [
@@ -1125,7 +1129,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
           tipo: 'uscita',
           data,
           importo: rs.reduce((s, r) => s + r.importo, 0),
-          voceId: voci.find((v) => v.nome === VOCE_COMPENSI && v.tipo === 'uscita')?.id,
+          voceId: voci.find((v) => v.tipo === 'uscita' && v.diSistema && v.nome.trim().toLowerCase() === VOCE_COMPENSI.toLowerCase())?.id,
           cassaId: cassa.id,
           descrizione: descrizionePagamento(p.nome, p.cognome ?? '', rs.map((r) => r.mese)),
           personaId: p.id,
@@ -2245,7 +2249,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         certificato_e_pagamento: { certificato_scade: p.certificato?.scade ?? null, certificato_file: p.certificato?.file ?? null, documento_in_segreteria: !!p.documento, ...(p.pagamento ?? { stato: 'da_pagare' }) },
         ricevute: (a().ricevute ?? []).filter((r) => r.personaId === personaId).map(({ id: _id, personaId: _p, ...r }) => r),
         lettere_incarico: (a().lettere ?? []).filter((l) => l.personaId === personaId).map(({ id: _id, personaId: _p, ...l }) => l),
-        ricevute_compensi: (a().ricevuteCompensi ?? []).filter((r) => r.personaId === personaId).map(({ id: _id, personaId: _p, ...r }) => r),
+        ricevute_compensi: (a().ricevuteCompensi ?? []).filter((r) => r.personaId === personaId).map(({ id: _id, personaId: _p, movimentoId: _m, ...r }) => r),
         pagamenti_a_mano: (a().pagamentiDiretti ?? []).filter((x) => x.personaId === personaId).map(({ id: _id, personaId: _p, ...x }) => x),
         dati_anagrafici: a().anagrafiche?.[personaId] ?? null,
       }
