@@ -37,7 +37,7 @@ import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
-import { cosaNonVaDiretto, trovaPagatori, type PagamentoDiretto } from './pagamenti'
+import { cosaNonVaDaPagamento, cosaNonVaDiretto, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
   cosaNonVaAnnulloMovimento,
@@ -1153,10 +1153,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
-    async emettiRicevuta(dati, satispayId) {
-      // Lo stesso ordine del database: col Satispay, prima che sia arrivato.
+    async emettiRicevuta(dati, satispayId, pagamentoId) {
+      // Da un pagamento a mano o da un Satispay: gli stessi soldi in una ricevuta sola, mai due fonti insieme.
+      if (satispayId && pagamentoId) throw new Error('Una ricevuta si fa da un pagamento a mano o da un Satispay, non da tutti e due: chiudi il modulo e riaprilo')
+      // Lo stesso ordine del database: col Satispay, prima che sia arrivato; dal pagamento a mano, prima che ci sia.
       const sp = satispayId ? pagamentiSatispayProva().find((x) => x.id === satispayId) : undefined
       if (satispayId && sp?.stato !== 'pagato') throw new Error('Questo pagamento Satispay non è arrivato')
+      const pd = pagamentoId ? (a().pagamentiDiretti ?? []).find((x) => x.id === pagamentoId) : undefined
+      if (pagamentoId && !pd) throw new Error('Questo pagamento a mano non c’è più')
       // Come `ricevuta_gia_fatta` (86-ricevuta-una-volta.sql): la chiave del modulo già usata dà quella ricevuta.
       // Come `::uuid` in Postgres, le maiuscole non contano.
       const chiave = dati.chiave?.trim().toLowerCase() || undefined
@@ -1165,6 +1169,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const gia = chiave ? (a().ricevute ?? []).find((x) => x.chiave === chiave) : undefined
       if (gia && gia.personaId !== dati.personaId) throw new Error('Questa ricevuta è già stata fatta per un’altra persona: chiudi il modulo e riaprilo')
       if (gia?.annullataIl) throw new Error(`La ricevuta n. ${gia.numero}/${gia.anno} fatta da questo modulo è stata annullata: chiudi il modulo e riaprilo per farne un’altra`)
+      // Come `emetti_ricevuta_da_pagamento` (89): la chiave prima di «già annullato», poi i soldi tali e quali.
+      if (pd) {
+        if (gia && pd.ricevutaId === gia.id) return gia
+        if (gia) throw new Error(`La ricevuta n. ${gia.numero}/${gia.anno} fatta da questo modulo non ha dentro questo pagamento a mano: chiudi il modulo e riaprilo`)
+        if (pd.annullatoIl) throw new Error('Questo pagamento a mano è già annullato: la ricevuta si fa da + FAI LA RICEVUTA')
+        if (pd.personaId !== dati.personaId) throw new Error('Il pagamento a mano è di un’altra persona')
+        const no = cosaNonVaDaPagamento(dati.voci, dati.data, pd)
+        if (no) throw new Error(no)
+      }
       // Come `emetti_ricevuta_satispay`, prima della ricevuta: un pagamento arrivato, una ricevuta sola, gli stessi soldi.
       if (sp) {
         if (gia && sp.ricevutaId === gia.id) return gia
@@ -1193,6 +1206,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
       a().ricevute = [...tutte, nuova]
       salva()
       if (satispayId) salvaSatispay(pagamentiSatispayProva().map((x) => (x.id === satispayId ? { ...x, ricevutaId: nuova.id } : x)))
+      if (pd) {
+        a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((y) => (y.id === pd.id ? { ...y, annullatoIl: new Date().toISOString(), ricevutaId: nuova.id } : y))
+        salva()
+      }
       return nuova
     },
 
@@ -1204,6 +1221,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const r = (a().ricevute ?? []).find((x) => x.id === id)
       if (!r || r.annullataIl) throw new Error('Ricevuta inesistente o già annullata')
       a().ricevute = (a().ricevute ?? []).map((x) => (x.id === id ? { ...x, annullataIl: new Date().toISOString() } : x))
+      // Come `annulla_ricevuta` (89): il pagamento a mano che era diventato questa ricevuta torna com'era.
+      a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((y) => {
+        if (y.ricevutaId !== id) return y
+        const { annullatoIl: _annullato, ricevutaId: _ricevuta, ...comEra } = y
+        return comEra
+      })
       salva()
     },
 

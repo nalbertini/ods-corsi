@@ -6,21 +6,111 @@
     ]
   },
   "enabledPlugins": {
+    "common-room@synced": false,
+    "cowork-plugin-management@synced": false,
+    "data@synced": false,
+    "design@synced": false,
+    "desktop-commander@synced": false,
+    "engineering@synced": false,
+    "enterprise-search@synced": false,
+    "finance@synced": false,
+    "human-resources@synced": false,
+    "legal@synced": false,
+    "lseg@synced": false,
+    "marketing@synced": false,
+    "operations@synced": false,
+    "pdf-viewer@synced": false,
+    "productivity@synced": false,
+    "sales@synced": false,
+    "small-business@synced": false,
+    "wealth-management@synced": false,
     "figma@claude-plugins-official": false,
     "transcripted-live@transcripted": false,
     "mission-control@claude-code-mods": false,
     "cc-plugin-you-should-know@builtin": false,
-    "data@synced": false,
-    "design@synced": false,
-    "legal@synced": false,
-    "lseg@synced": false,
-    "financial-analysis@synced": false,
-    "wealth-management@synced": false,
-    "productivity@synced": false,
-    "cowork-plugin-management@synced": false,
-    "pdf-viewer@synced": false,
-    "desktop-commander@synced": false
+    "financial-analysis@synced": false
   },
+  "deniedMcpServers": [
+    {
+      "serverName": "claude.ai Microsoft 365"
+    },
+    {
+      "serverName": "claude.ai Google Cloud BigQuery"
+    },
+    {
+      "serverName": "claude.ai Webflow"
+    },
+    {
+      "serverName": "claude.ai Trello"
+    },
+    {
+      "serverName": "claude.ai Google Slides"
+    },
+    {
+      "serverName": "claude.ai Google Sheets"
+    },
+    {
+      "serverName": "claude.ai Google Docs"
+    },
+    {
+      "serverName": "claude.ai Spotify"
+    },
+    {
+      "serverName": "claude.ai Granola"
+    },
+    {
+      "serverName": "claude.ai Expedia"
+    },
+    {
+      "serverName": "claude.ai Ryanair"
+    },
+    {
+      "serverName": "claude.ai Turkish Airlines"
+    },
+    {
+      "serverName": "claude.ai EULER"
+    },
+    {
+      "serverName": "claude.ai Google Chat"
+    },
+    {
+      "serverName": "claude.ai Postman"
+    },
+    {
+      "serverName": "claude.ai HubSpot"
+    },
+    {
+      "serverName": "claude.ai Fathom"
+    },
+    {
+      "serverName": "claude.ai Audible"
+    },
+    {
+      "serverName": "claude.ai Booking.com"
+    },
+    {
+      "serverName": "claude.ai Google Drive"
+    },
+    {
+      "serverName": "claude.ai Slack"
+    },
+    {
+      "serverName": "claude.ai Gmail"
+    },
+    {
+      "serverName": "claude.ai Google Calendar"
+    },
+    {
+      "serverName": "toolkit"
+    },
+    {
+      "serverCommand": [
+        "/Users/nicola/Developer/lightcraft/target/release/lightcraft-cli",
+        "mcp",
+        "/Users/nicola/Downloads/2025 2 febbraio 20 officine"
+      ]
+    }
+  ],
   "hooks": {
     "PreToolUse": [
       {

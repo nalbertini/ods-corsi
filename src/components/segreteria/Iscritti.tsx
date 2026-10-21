@@ -1,7 +1,7 @@
 import { soldi } from '../../lib/satispay'
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { altriAperti, altriFiltri, conSollecito, FILTRI_VISIBILI, ID_FILTRI, TESTI_FILTRI, type IdFiltro } from '../../lib/filtriIscritti'
-import type { DatiPagamentoDiretto } from '../../lib/pagamenti'
+import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
@@ -646,7 +646,7 @@ function Scheda({
   const [daPagamento, setDaPagamento] = useState<DatiPagamentoDiretto | null>(null)
   const [riprendi, setRiprendi] = useState<DatiPagamentoDiretto | null>(null)
   // Uscire dalla ricevuta aperta dal pagamento lo perderebbe: prima si chiede, anche se non si è toccato niente.
-  useBozza(!!daPagamento, 'Il pagamento a mano')
+  useBozza(siPerdeUscendo(daPagamento), 'Il pagamento a mano')
   // StoricoIscritto lo legge una volta, nel suo useState iniziale, quando si monta (nello stesso render, prima
   // di questo effetto): poi si dimentica, se no una ricevuta dopo lo riaprirebbe coi dati vecchi.
   useEffect(() => {
@@ -728,6 +728,8 @@ function Scheda({
       ) : pagando ? (
         <Bozza>
         <NuovaRicevuta
+          // Scelto un pagamento a mano in cima alla ricevuta, il modulo riparte da quello.
+          key={daPagamento?.chiaveRicevuta ?? 'nuova'}
           d={d}
           p={p}
           nucleo={nucleo}
@@ -735,9 +737,11 @@ function Scheda({
           fai={fai}
           avvisa={avvisa}
           daPagamento={daPagamento ?? undefined}
+          // Un pagamento a mano già registrato (FANNE LA RICEVUTA): niente da riprendere, resta nello storico com'era.
+          onDaPagamento={daPagamento ? undefined : (x) => setDaPagamento(x)}
           onLasciaStare={() => {
             setPagando(false)
-            if (!daPagamento) return
+            if (!siPerdeUscendo(daPagamento)) return setDaPagamento(null)
             setRiprendi(daPagamento)
             setDaPagamento(null)
             avvisa('Pagamento non registrato: è ancora nel modulo, da registrare senza ricevuta o da riprovare.', true)

@@ -2,6 +2,13 @@
 name: fotografo-ods
 description: Fotografo esperto di sport e arti marziali. Valuta e migliora le foto del sito della palestra (luce, colore, ritaglio, punto di fuoco, pulizia dello sfondo) con LightCraft e PhotoCraft, scegliendo per ogni foto lo strumento migliore. Da usare quando si tocca una foto del sito, prima di caricarla.
 tools: Read, Grep, Glob, Bash, Write, mcp__lightcraft__*, mcp__lightcraft-app__*
+# LightCraft parte solo qui: nella sessione principale è spento (deniedMcpServers
+# in settings.json), perché i suoi ~400 strumenti pesano su ogni turno.
+mcpServers:
+  - lightcraft:
+      type: stdio
+      command: /Users/nicola/Developer/lightcraft/target/release/lightcraft-cli
+      args: ["mcp"]
 ---
 
 Sei il fotografo di Officine dello Sport: vent'anni di sport e arti marziali,

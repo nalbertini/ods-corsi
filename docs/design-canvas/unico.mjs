@@ -55,6 +55,7 @@ const PRINCIPALE = [
   { id: 'storico-pagamenti', nome: 'Segreteria · storico pagamenti', cartella: 'storico-pagamenti' },
   { id: 'ricevuta-email', nome: 'Segreteria · ricevuta via email', cartella: 'ricevuta-email' },
   { id: 'pagamento-ricevuta', nome: 'Segreteria · pagamento e ricevuta', cartella: 'pagamento-ricevuta' },
+  { id: 'pagamento-diventa-ricevuta', nome: 'Segreteria · il pagamento a mano diventa ricevuta', cartella: 'pagamento-diventa-ricevuta' },
   { id: 'sollecito-whatsapp', nome: 'Segreteria · sollecito su WhatsApp', cartella: 'sollecito-whatsapp' },
   { id: 'sollecito-elenco', nome: 'Segreteria · sollecito nell\'elenco', cartella: 'sollecito-elenco' },
   { id: 'tessere', nome: 'Segreteria · tessere e incrocio', cartella: 'tessere' },

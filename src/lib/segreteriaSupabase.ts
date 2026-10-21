@@ -85,8 +85,11 @@ interface RigaPagamentoDiretto {
   nota: string | null
   creato_il: string
   annullato_il: string | null
+  /** Con 89-pagamento-diventa-ricevuta.sql; prima la colonna non c'è. */
+  ricevuta_id?: string | null
 }
-const CAMPI_DIRETTO = 'id, persona_id, data, importo, metodo, voce, nota, creato_il, annullato_il'
+const CAMPI_DIRETTO_PRIMA = 'id, persona_id, data, importo, metodo, voce, nota, creato_il, annullato_il'
+const CAMPI_DIRETTO = `${CAMPI_DIRETTO_PRIMA}, ricevuta_id`
 const pagamentoDiretto = (r: RigaPagamentoDiretto): PagamentoDiretto => ({
   id: r.id,
   personaId: r.persona_id,
@@ -97,6 +100,7 @@ const pagamentoDiretto = (r: RigaPagamentoDiretto): PagamentoDiretto => ({
   nota: r.nota ?? undefined,
   creatoIl: r.creato_il,
   annullatoIl: r.annullato_il ?? undefined,
+  ricevutaId: r.ricevuta_id ?? undefined,
 })
 
 /** Una riga di `ricevute` (16-ricevute.sql): le voci sono il JSON che scrive `emetti_ricevuta`. */
@@ -373,6 +377,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (((e?.code === 'PGRST202' || e?.code === '42883') && /segna_istruttore_assente/.test(e.message ?? '')) || ((e?.code === '42703' || e?.code === 'PGRST204') && /basta_uno/.test(e.message ?? '')))
     return new Error(MANCA_FIRMA)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevuta_compenso/.test(e.message ?? '')) return new Error(MANCA_COMPENSI)
+  // Prima di /ricevut/: la ricevuta dal pagamento a mano arriva dopo, con 89-pagamento-diventa-ricevuta.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /emetti_ricevuta_da_pagamento/.test(e.message ?? ''))
+    return new Error('FANNE LA RICEVUTA non è ancora attivo sul database: va lanciato 89-pagamento-diventa-ricevuta.sql')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /pagamento_diretto/.test(e.message ?? '')) return new Error(MANCANO_PAGAMENTI_A_MANO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
     return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
@@ -1365,13 +1372,15 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.from('tariffe_istruttori').upsert({ persona_id: personaId, corso_id: corsoId, centesimi_ora: centesimi }, { onConflict: 'persona_id,corso_id' }))
     },
 
-    async emettiRicevuta(r, satispayId) {
+    async emettiRicevuta(r, satispayId, pagamentoId) {
+      // Da un pagamento a mano o da un Satispay: gli stessi soldi in una ricevuta sola, mai due fonti insieme.
+      if (satispayId && pagamentoId) throw new Error('Una ricevuta si fa da un pagamento a mano o da un Satispay, non da tutti e due: chiudi il modulo e riaprilo')
       const dati = { ...r, intestatario: pulisciIntestatario(r.intestatario) }
       const no = cosaNonVa(dati)
       if (no) throw new Error(no)
       const riga = ok(
-        await db.rpc(satispayId ? 'emetti_ricevuta_satispay' : 'emetti_ricevuta', {
-          ...(satispayId ? { pagamento: satispayId } : {}),
+        await db.rpc(pagamentoId ? 'emetti_ricevuta_da_pagamento' : satispayId ? 'emetti_ricevuta_satispay' : 'emetti_ricevuta', {
+          ...(pagamentoId ? { pagamento: pagamentoId } : satispayId ? { pagamento: satispayId } : {}),
           dati: {
             data: dati.data,
             persona_id: dati.personaId ?? null,
@@ -1515,12 +1524,15 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     pagamentiSatispay: leggiSatispay,
 
     async pagamentiDiretti(personaId) {
-      const leggi = (prima: number, ultima: number) => {
-        const q = db.from('pagamenti_diretti').select(CAMPI_DIRETTO)
+      const leggi = (campi: string) => (prima: number, ultima: number) => {
+        const q = db.from('pagamenti_diretti').select(campi)
         return (personaId ? q.eq('persona_id', personaId) : q).order('data', { ascending: false }).order('creato_il', { ascending: false }).order('id').range(prima, ultima)
       }
+      let righe = await tutteLeRighe(leggi(CAMPI_DIRETTO))
+      // Prima di 89-pagamento-diventa-ricevuta.sql `ricevuta_id` non c'è: lo storico si legge lo stesso, senza.
+      if (righe.error?.code === '42703') righe = await tutteLeRighe(leggi(CAMPI_DIRETTO_PRIMA))
       // `as`: Supabase tipa la riga a modo suo, la forma è quella di `CAMPI_DIRETTO`.
-      return (ok(await tutteLeRighe(leggi)) as unknown as RigaPagamentoDiretto[]).map(pagamentoDiretto)
+      return (ok(righe) as unknown as RigaPagamentoDiretto[]).map(pagamentoDiretto)
     },
 
     async nomiPersone(ids) {
