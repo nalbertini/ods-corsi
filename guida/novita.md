@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.142.0 — 21 ottobre 2026
+
+### Novità
+
+- I dati e le tariffe dei tecnici nella loro scheda
+
 ## 0.141.1 — 21 ottobre 2026
 
 ### Risolto
