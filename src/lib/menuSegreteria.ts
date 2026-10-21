@@ -60,6 +60,7 @@ export const GRUPPI_MENU: GruppoMenu[] = [
     titolo: 'Istruttori',
     voci: [
       ['istruttori', 'Presenze istruttori'],
+      ['compensi', 'Compensi'],
       ['personale', 'Istruttori e accessi'],
     ],
   },
@@ -189,6 +190,7 @@ const GUIDE: Record<Exclude<Voce, 'contabilita'>, string> = {
   segnalate: 'segreteria/presenze-segnalate',
   statistiche: 'segreteria/statistiche',
   istruttori: 'segreteria/presenze-istruttori',
+  compensi: 'segreteria/compensi',
   personale: 'segreteria/istruttori-e-accessi',
   esercizi: 'segreteria/esercizi',
   listino: 'segreteria/listino',

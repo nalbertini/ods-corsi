@@ -69,6 +69,10 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
 - **La lettera d'incarico**: nella scheda del tecnico, la lettera della stagione col testo della
   palestra e le sue tariffe orarie (anche in lettere), da stampare e firmare a mano; correggerla ne
   fa una nuova e la vecchia resta, con la spunta «Firmata» (`supabase/79-lettere-incarico.sql`).
+- **I compensi dei tecnici**: la pagina COMPENSI (ISTRUTTORI) fa ogni mese la ricevuta di ogni
+  tecnico (autocertificazione e liquidazione) dalle ore confermate per la sua tariffa, anche col
+  compenso cambiato a mano e il perché, tutte in un PDF; «Firmata» e «Non torna più»
+  (`supabase/80-ricevute-compensi.sql`).
 - **Gli iscritti di un corso**: nella scheda di un corso, DATI e ISCRITTI; in ISCRITTI una
   persona per riga con certificato e quota a parole, ricerca, ordinamento per colonna e un clic
   che apre la sua scheda; Indietro ritrova ricerca e ordine (`src/lib/segreteria.ts`).
