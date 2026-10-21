@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.156.3 — 21 ottobre 2026
+
+### Modificato
+
+- Le sessioni di Claude si compattano a 200k token
+
 ## 0.156.2 — 21 ottobre 2026
 
 ### Modificato
