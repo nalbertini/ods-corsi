@@ -62,9 +62,13 @@ export interface RicevutaCompenso extends DatiRicevutaCompenso {
   firmata: boolean
   annullataIl: string | null
   creataIl: string
+  /** Il movimento in CONTABILITÀ che l'ha pagata (`81-compensi-pagati.sql`); `null` = da pagare. */
+  movimentoId: string | null
+  /** Il giorno del pagamento, `AAAA-MM-GG`. */
+  pagataIl: string | null
 }
 
-export type StatoCompenso = 'da-confermare' | 'senza-tariffa' | 'senza-dati' | 'da-fare' | 'fatta' | 'non-torna'
+export type StatoCompenso = 'da-confermare' | 'senza-tariffa' | 'senza-dati' | 'da-fare' | 'fatta' | 'non-torna' | 'pagata'
 
 /** Il primo del mese di una data, `AAAA-MM-01`, nel giorno di qui. */
 export const primoDelMese = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
@@ -92,7 +96,9 @@ export function compensoDelMese<P extends MiaPresenza>(presenze: P[], senzaIstru
  * adesso torna con quello di quando è stata fatta (il calcolato, non
  * l'importo, che può essere cambiato a mano): una presenza decisa dopo si vede.
  */
-export function statoCompenso({ conto, ricevuta, manca }: { conto: ContoCompenso; ricevuta?: Pick<RicevutaCompenso, 'calcolato' | 'annullataIl'> | null; manca?: string | null }): StatoCompenso {
+export function statoCompenso({ conto, ricevuta, manca }: { conto: ContoCompenso; ricevuta?: Pick<RicevutaCompenso, 'calcolato' | 'annullataIl'> & { pagataIl?: string | null } | null; manca?: string | null }): StatoCompenso {
+  // Pagata è pagata, anche se dopo è cambiata una presenza: i soldi sono usciti.
+  if (ricevuta && !ricevuta.annullataIl && ricevuta.pagataIl) return 'pagata'
   if (ricevuta && !ricevuta.annullataIl) return ricevuta.calcolato === conto.calcolato ? 'fatta' : 'non-torna'
   if (conto.daConfermare > 0) return 'da-confermare'
   if (conto.senzaTariffa.length) return 'senza-tariffa'
@@ -274,3 +280,28 @@ export function esitoDelMese(fatte: number, saltati: string[]): { testo: string;
   const quante = fatte === 0 ? 'Nessuna ricevuta fatta' : fatte === 1 ? 'Fatta 1 ricevuta' : `Fatte ${fatte} ricevute`
   return { testo: saltati.length ? `${quante}. Saltati: ${saltati.join('; ')}` : quante, guaio: fatte === 0 && saltati.length > 0 }
 }
+
+const MESI_BREVI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
+
+/**
+ * La descrizione del movimento del pagamento, come la scrive `paga_compensi`:
+ * «Compenso · Anna Gialli · set, ott 2026»; anni diversi «dic 2026, gen 2027».
+ * Mai codice fiscale né IBAN.
+ */
+export function descrizionePagamento(nome: string, cognome: string, mesi: string[]): string {
+  const anni = new Map<string, number[]>()
+  for (const m of [...new Set(mesi)].sort()) anni.set(m.slice(0, 4), [...(anni.get(m.slice(0, 4)) ?? []), Number(m.slice(5, 7))])
+  const quando = [...anni].map(([anno, ms]) => `${ms.map((x) => MESI_BREVI[x - 1]).join(', ')} ${anno}`).join(', ')
+  return `Compenso · ${`${nome} ${cognome}`.trim()} · ${quando}`
+}
+
+/** Quanto ha preso da noi in un anno: le ricevute pagate quell'anno, per data di pagamento (per cassa, come il BILANCIO). */
+export const presoNellAnno = (ricevute: Array<Pick<RicevutaCompenso, 'importo' | 'annullataIl' | 'pagataIl'>>, anno: number) =>
+  ricevute.filter((r) => !r.annullataIl && r.pagataIl?.startsWith(`${anno}-`)).reduce((s, r) => s + r.importo, 0)
+
+/** Le ricevute di un tecnico che si possono pagare: fatte, non annullate, non pagate, dalla più vecchia. */
+export const pagabili = <R extends Pick<RicevutaCompenso, 'personaId' | 'mese' | 'annullataIl' | 'pagataIl'>>(ricevute: R[], personaId: string) =>
+  ricevute.filter((r) => r.personaId === personaId && !r.annullataIl && !r.pagataIl).sort((x, y) => x.mese.localeCompare(y.mese))
+
+/** La voce di sistema dei pagamenti dei tecnici in CONTABILITÀ (`81-compensi-pagati.sql`). */
+export const VOCE_COMPENSI = 'Compensi istruttori'

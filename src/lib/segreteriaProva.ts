@@ -1,7 +1,7 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
-import { cosaNonVaCompenso, primoDelMese, type RicevutaCompenso } from './compensi'
+import { cosaNonVaCompenso, descrizionePagamento, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cancellaFileIl, contattoNonValido, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
@@ -53,6 +53,7 @@ import {
   NOME_CASSA_CONTANTI,
   NOME_CASSA_CONTO,
   oggiARoma,
+  giornoChiuso,
   previstoCassa,
   primoMovimentoManuale,
   righeMovimenti,
@@ -119,12 +120,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
       { id: 'voce-quota', nome: VOCE_QUOTA, tipo: 'entrata', diSistema: true, attiva: true },
       { id: 'voce-corsi', nome: VOCE_CORSI, tipo: 'entrata', diSistema: true, attiva: true },
     ]
-    if (base.some((v) => v.nome === VOCE_DIFFERENZA)) return base
-    return [
-      ...base,
-      { id: 'voce-differenza-entrata', nome: VOCE_DIFFERENZA, tipo: 'entrata', diSistema: true, attiva: true },
-      { id: 'voce-differenza-uscita', nome: VOCE_DIFFERENZA, tipo: 'uscita', diSistema: true, attiva: true },
-    ]
+    const conDifferenza: VoceContabile[] = base.some((v) => v.nome === VOCE_DIFFERENZA)
+      ? base
+      : [
+          ...base,
+          { id: 'voce-differenza-entrata', nome: VOCE_DIFFERENZA, tipo: 'entrata', diSistema: true, attiva: true },
+          { id: 'voce-differenza-uscita', nome: VOCE_DIFFERENZA, tipo: 'uscita', diSistema: true, attiva: true },
+        ]
+    // Come 81-compensi-pagati.sql: c'è anche in un archivio fatto prima.
+    return conDifferenza.some((v) => v.nome === VOCE_COMPENSI) ? conDifferenza : [...conDifferenza, { id: 'voce-compensi', nome: VOCE_COMPENSI, tipo: 'uscita', diSistema: true, attiva: true }]
   }
   const contabilita = () => ({
     casse: a().casse ?? [
@@ -1085,6 +1089,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
         firmata: false,
         annullataIl: null,
         creataIl: new Date().toISOString(),
+        movimentoId: null,
+        pagataIl: null,
       }
       a().ricevuteCompensi = [...(a().ricevuteCompensi ?? []), nuova]
       salva()
@@ -1093,8 +1099,42 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async annullaRicevutaCompenso(id) {
       const r = (a().ricevuteCompensi ?? []).find((x) => x.id === id)
+      if (r?.movimentoId) throw new Error('È pagata: prima annulla il pagamento in CONTABILITÀ → MOVIMENTI')
       if (!r || r.annullataIl) throw new Error("Questa ricevuta non c'è o è già annullata")
       a().ricevuteCompensi = (a().ricevuteCompensi ?? []).map((x) => (x.id === id ? { ...x, annullataIl: new Date().toISOString() } : x))
+      salva()
+    },
+
+    async pagaCompensi(ids, data, cassaId) {
+      // Le stesse regole di `paga_compensi`.
+      const scelte = [...new Set(ids)]
+      if (!scelte.length) throw new Error('Scegli almeno una ricevuta da pagare')
+      const rs = (a().ricevuteCompensi ?? []).filter((r) => scelte.includes(r.id) && !r.annullataIl && !r.movimentoId)
+      if (rs.length !== scelte.length) throw new Error("Una delle ricevute non c'è più, è annullata o è già pagata: ricarica la pagina")
+      if (new Set(rs.map((r) => r.personaId)).size !== 1) throw new Error('Si pagano insieme solo le ricevute dello stesso tecnico')
+      const { casse, voci, chiusure } = contabilita()
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(data) || data > oggiARoma()) throw new Error('La data del pagamento non può essere nel futuro')
+      const cassa = casse.find((c) => c.id === cassaId)
+      if (!cassa) throw new Error('Scegli la cassa')
+      if (cassa.dal && data < cassa.dal) throw new Error('La data è prima dell’inizio della cassa')
+      if (giornoChiuso(chiusure, [cassa.id], data)) throw new Error('Quel giorno la cassa è già chiusa: scegli un altro giorno o annulla la chiusura')
+      const p = persona(rs[0].personaId)
+      const id = `m-${unico()}`
+      a().movimenti = [
+        ...contabilita().movimenti,
+        {
+          id,
+          tipo: 'uscita',
+          data,
+          importo: rs.reduce((s, r) => s + r.importo, 0),
+          voceId: voci.find((v) => v.nome === VOCE_COMPENSI && v.tipo === 'uscita')?.id,
+          cassaId: cassa.id,
+          descrizione: descrizionePagamento(p.nome, p.cognome ?? '', rs.map((r) => r.mese)),
+          personaId: p.id,
+          creatoIl: new Date().toISOString(),
+        },
+      ]
+      a().ricevuteCompensi = (a().ricevuteCompensi ?? []).map((r) => (scelte.includes(r.id) ? { ...r, movimentoId: id, pagataIl: data } : r))
       salva()
     },
 
@@ -1290,6 +1330,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const chiuso = cosaNonVaAnnulloMovimento(righeMovimenti([], [m], contabilita().voci)[0], contabilita().chiusure)
       if (chiuso) throw new Error(chiuso)
       a().movimenti = contabilita().movimenti.map((x) => (x.id === id ? { ...x, annullatoIl: new Date().toISOString() } : x))
+      // Come il trigger `compensi_tornano`: il pagamento annullato rimette le sue ricevute da pagare.
+      a().ricevuteCompensi = (a().ricevuteCompensi ?? []).map((r) => (r.movimentoId === id ? { ...r, movimentoId: null, pagataIl: null } : r))
       salva()
     },
 

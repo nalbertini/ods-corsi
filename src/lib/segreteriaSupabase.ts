@@ -168,6 +168,7 @@ const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabili
 const MANCA_CHIUSURA = 'Il database non è ancora aggiornato per la chiusura della cassa: va lanciato 60-chiusura-cassa.sql'
 const MANCA_CAMBIA_VOCE = 'Il database non è ancora aggiornato per cambiare la voce dei movimenti: va lanciato 67-cambia-voce.sql'
 const MANCA_MOVIMENTI_PERSONA = 'Il database non è ancora aggiornato per collegare i movimenti alle persone: va lanciato 70-movimenti-persona.sql'
+const MANCA_PAGATI = 'Pagare i compensi non è ancora attivo sul database: va lanciato 81-compensi-pagati.sql'
 const MANCA_COMPENSI = 'Le ricevute dei compensi non sono ancora attive sul database: va lanciato 80-ricevute-compensi.sql'
 const MANCA_LETTERE = 'Le lettere d’incarico non sono ancora attive sul database: va lanciato 79-lettere-incarico.sql'
 const TABELLE_DOPO: Array<[RegExp, string]> = [
@@ -289,6 +290,9 @@ interface RigaRicevutaCompenso {
   firmata: boolean
   annullata_il: string | null
   creata_il: string
+  /** Senza 81-compensi-pagati.sql le due colonne non ci sono: da pagare. */
+  movimento_id?: string | null
+  pagata_il?: string | null
 }
 const daRigaRicevutaCompenso = (r: RigaRicevutaCompenso): RicevutaCompenso => ({
   id: r.id,
@@ -304,6 +308,8 @@ const daRigaRicevutaCompenso = (r: RigaRicevutaCompenso): RicevutaCompenso => ({
   firmata: r.firmata,
   annullataIl: r.annullata_il,
   creataIl: r.creata_il,
+  movimentoId: r.movimento_id ?? null,
+  pagataIl: r.pagata_il ?? null,
 })
 
 /**
@@ -332,6 +338,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // Una radio nelle liste della musica: il vincolo del link la ammette dal 39.
   if (e?.code === '23514' && /musica_sale_link_check/.test(e.message ?? ''))
     return new Error('Le radio nelle liste non sono ancora attive sul database: va lanciato 39-musica-radio.sql')
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /paga_compensi/.test(e.message ?? '')) return new Error(MANCA_PAGATI)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevuta_compenso/.test(e.message ?? '')) return new Error(MANCA_COMPENSI)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /pagamento_diretto/.test(e.message ?? '')) return new Error(MANCANO_PAGAMENTI_A_MANO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
@@ -1298,6 +1305,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async annullaRicevutaCompenso(id) {
       ok(await db.rpc('annulla_ricevuta_compenso', { id }))
+    },
+
+    async pagaCompensi(ids, data, cassaId) {
+      ok(await db.rpc('paga_compensi', { ricevute: ids, data, cassa: cassaId }))
     },
 
     async segnaFirmataCompenso(id, firmata) {

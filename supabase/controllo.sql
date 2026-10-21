@@ -398,6 +398,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('80-ricevute-compensi.sql', 'le ricevute mensili dei compensi dei tecnici: una per mese, fatte e annullate dalle funzioni',
     to_regclass('public.ricevute_compensi') is not null
     and to_regprocedure('public.fai_ricevuta_compenso(uuid,date,jsonb,integer,integer,text,jsonb,text,date)') is not null
-    and to_regprocedure('public.annulla_ricevuta_compenso(uuid)') is not null)
+    and to_regprocedure('public.annulla_ricevuta_compenso(uuid)') is not null),
+  ('81-compensi-pagati.sql', 'il compenso pagato in contabilità: la voce, il pagamento e le ricevute che tornano da pagare',
+    to_regprocedure('public.paga_compensi(uuid[],date,uuid)') is not null
+    and exists (select 1 from voci_contabili where nome = 'Compensi istruttori' and tipo = 'uscita' and di_sistema)
+    and exists (select 1 from pg_trigger where tgname = 'compensi_tornano' and not tgisinternal)
+    -- Rilanciare 80 dopo 81 rimette l'annullamento che non guarda il pagamento: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'annulla_ricevuta_compenso' and corpo like '%È pagata%'))
 ) as x(file, cosa, c)
 order by file, cosa;

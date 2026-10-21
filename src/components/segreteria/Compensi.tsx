@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import type { DatiSegreteria, Tariffa } from '../../lib/segreteria'
+import type { Cassa } from '../../lib/contabilita'
 import { insegna } from '../../lib/ruoli'
 import { chiaveGiorno, dataLunga } from '../../lib/sala'
 import { euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
-import { centesimiDaImporto, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, esitoDelMese, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type StatoCompenso } from '../../lib/compensi'
+import { centesimiDaImporto, cosaNonVaCompenso, cosaNonVaImportoScritto, datiPerRicevuta, descrizionePagamento, esitoDelMese, pagabili, VOCE_COMPENSI, mancaPerRicevuta, primoDelMese, righeCompensi, type ContoCompenso, type RicevutaCompenso, type StatoCompenso } from '../../lib/compensi'
 import { chiedi, Guaio, Testa, useAvviso, useCarica } from './comune'
 import { Numero } from './Presenze'
 
@@ -17,7 +18,8 @@ const NOME_STATO: Record<StatoCompenso, { testo: string; tono: 'rosso' | 'giallo
   'senza-tariffa': { testo: 'SENZA TARIFFA', tono: 'rosso' },
   'senza-dati': { testo: 'MANCANO I DATI', tono: 'rosso' },
   'da-fare': { testo: 'RICEVUTA DA FARE', tono: 'neutro' },
-  fatta: { testo: 'FATTA', tono: 'verde' },
+  fatta: { testo: 'FATTA · DA PAGARE', tono: 'giallo' },
+  pagata: { testo: 'PAGATA', tono: 'verde' },
   'non-torna': { testo: 'NON TORNA PIÙ', tono: 'rosso' },
 }
 
@@ -57,6 +59,7 @@ export function AzioniRicevuta({
   fai,
   onCambiato,
   inScheda,
+  onPaga,
 }: {
   d: DatiSegreteria
   p: Persona
@@ -68,6 +71,8 @@ export function AzioniRicevuta({
   onCambiato: () => Promise<unknown>
   /** Nella scheda del tecnico: tariffe e dati sono già lì sopra, non serve il collegamento. */
   inScheda?: boolean
+  /** Per chi cura anche la contabilità: apre il pannello SEGNA PAGATO di questo tecnico. */
+  onPaga?: () => void
 }) {
   const [cambia, setCambia] = useState<{ testo: string; motivo: string } | null>(null)
   // Mentre prepara o annulla i tasti sono spenti: un doppio clic non fa due cose.
@@ -159,12 +164,19 @@ export function AzioniRicevuta({
         <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => scarica([ricevuta]))}>
           Ristampa
         </button>
-        {/* Annulla su una riga sua: sul telefono un dito sbagliato accanto a Ristampa annullerebbe. */}
-        <span style={{ flexBasis: '100%', display: 'flex' }}>
-          <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={occupato} onClick={() => void annulla()}>
-            {stato === 'non-torna' ? 'Annulla e rifai' : 'Annulla'}
+        {!ricevuta.pagataIl && onPaga && (
+          <button type="button" className="sg-btn sg-btn-pieno" disabled={occupato} onClick={onPaga}>
+            Segna pagato
           </button>
-        </span>
+        )}
+        {/* Annulla su una riga sua: sul telefono un dito sbagliato accanto a Ristampa annullerebbe. Una pagata non si annulla da qui. */}
+        {!ricevuta.pagataIl && (
+          <span style={{ flexBasis: '100%', display: 'flex' }}>
+            <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={occupato} onClick={() => void annulla()}>
+              {stato === 'non-torna' ? 'Annulla e rifai' : 'Annulla'}
+            </button>
+          </span>
+        )}
       </span>
     )
 
@@ -207,7 +219,9 @@ export function SegnoCompenso({ stato, conto, ricevuta, manca, inScheda }: { sta
           ? `${maiuscola((manca ?? '').replace(/^Mancano i dati per la ricevuta: /, '') || 'I dati')}: si scrivono ${inScheda ? 'qui sopra, in DATI PER LETTERA E RICEVUTE' : 'nella scheda, in ISTRUTTORI E ACCESSI'}.`
           : stato === 'non-torna' && ricevuta
           ? `Ricevuta di ${euro(ricevuta.importo)} €: dopo è cambiata una presenza e il mese ora fa ${euro(conto.calcolato)} €.${ricevuta.firmata ? ' Era firmata.' : ''}`
-          : ricevuta
+          : stato === 'pagata' && ricevuta?.pagataIl
+            ? `Pagata il ${dataLunga(ricevuta.pagataIl)}${ricevuta.motivo ? ` · cambiata a mano: ${ricevuta.motivo}` : ''}. Per annullarla, prima si annulla il pagamento in CONTABILITÀ.`
+            : ricevuta
             ? `Fatta il ${dataLunga(ricevuta.data)}${ricevuta.motivo ? ` · cambiata a mano: ${ricevuta.motivo}` : ''}`
             : ''
   return (
@@ -227,7 +241,7 @@ export function SegnoCompenso({ stato, conto, ricevuta, manca, inScheda }: { sta
   )
 }
 
-type Filtro = 'tutti' | 'da-fare' | 'da-firmare'
+type Filtro = 'tutti' | 'da-fare' | 'da-pagare' | 'da-firmare'
 
 /**
  * COMPENSI: il mese di tutti i tecnici. Una riga per chi ha lezioni
@@ -236,11 +250,12 @@ type Filtro = 'tutti' | 'da-fare' | 'da-firmare'
  * preparano tutte insieme, in un PDF solo; chi non è pronto si salta e si dice
  * perché.
  */
-export function Compensi({ d }: { d: DatiSegreteria }) {
+export function Compensi({ d, puoPagare }: { d: DatiSegreteria; puoPagare: boolean }) {
   const periodi = useMemo(mesi, [])
   const [periodo, setPeriodo] = useState(periodi[1]?.chiave ?? periodi[0].chiave)
   const [filtro, setFiltro] = useState<Filtro>('tutti')
   const [tutte, setTutte] = useState(false)
+  const [paga, setPaga] = useState<Persona | null>(null)
   const m = periodi.find((x) => x.chiave === periodo) ?? periodi[0]
   const mese = primoDelMese(m.da)
   const giorni = Math.ceil((Date.now() - m.da.getTime()) / 86_400_000) + 1
@@ -252,14 +267,17 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
       Promise.all(tecnici.map(async (t) => [t.id, await d.tariffe(t.id)] as const)).then((x): Record<string, Tariffa[]> => Object.fromEntries(x)),
       Promise.all(tecnici.map(async (t) => [t.id, mancaPerRicevuta((await d.anagraficaDi(t.id))?.dati ?? null)] as const)).then((x): Record<string, string | null> => Object.fromEntries(x)),
     ])
-    return { tecnici, presenze, senzaIstruttore, ricevute, tariffe, mancano }
+    // Le casse le legge solo chi cura la contabilità: serve per pagare.
+    const casse = puoPagare ? await d.casse() : []
+    return { tecnici, presenze, senzaIstruttore, ricevute, tariffe, mancano, casse }
   }, [d, giorni])
 
   const righe = dati.dato ? righeCompensi({ ...dati.dato, mese: m }) : []
   const daFare = righe.filter((r) => r.stato === 'da-fare')
   const fermi = righe.filter((r) => r.stato === 'da-confermare' || r.stato === 'senza-tariffa' || r.stato === 'senza-dati' || r.stato === 'non-torna')
   const daFirmare = righe.filter((r) => r.ricevuta && !r.ricevuta.firmata)
-  const visibili = filtro === 'da-fare' ? daFare : filtro === 'da-firmare' ? daFirmare : righe
+  const daPagare = righe.filter((r) => r.stato === 'fatta' || r.stato === 'non-torna')
+  const visibili = filtro === 'da-fare' ? daFare : filtro === 'da-firmare' ? daFirmare : filtro === 'da-pagare' ? daPagare : righe
 
   const preparaTutte = async () => {
     const fatte: RicevutaCompenso[] = []
@@ -304,7 +322,7 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
             <Numero titolo="TECNICI" valore={righe.length} sotto="nel mese" />
             <Numero titolo="DA FARE" valore={daFare.length} sotto={`${euro(daFare.reduce((s, r) => s + r.conto.calcolato, 0))} €`} />
             <Numero titolo="FERMI" valore={fermi.length} sotto="da sistemare prima" allarme={fermi.length > 0} />
-            <Numero titolo="DA RIPORTARE" valore={daFirmare.length} sotto="firmate" />
+            <Numero titolo="DA PAGARE" valore={daPagare.length} sotto={`${euro(daPagare.reduce((s, r) => s + (r.ricevuta?.importo ?? 0), 0))} €`} />
           </div>
           {daFare.length > 0 && (
             <div className="row" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center', padding: '14px 16px', border: '2px solid var(--line-soft)' }}>
@@ -322,6 +340,7 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
               [
                 ['tutti', 'Tutti', righe.length],
                 ['da-fare', 'Da fare', daFare.length],
+                ['da-pagare', 'Da pagare', daPagare.length],
                 ['da-firmare', 'Da riportare firmate', daFirmare.length],
               ] as const
             ).map(([id, testo, n]) => (
@@ -344,7 +363,7 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
                     <SegnoCompenso stato={r.stato} conto={r.conto} ricevuta={r.ricevuta} manca={r.manca} />
                   </span>
                   {/* I tasti stanno fuori dal dettaglio: un clic su un tasto non apre né chiude i corsi. */}
-                  <AzioniRicevuta d={d} p={r.persona} conto={r.conto} ricevuta={r.ricevuta} stato={r.stato} mese={mese} fai={fai} onCambiato={dati.ricarica} />
+                  <AzioniRicevuta d={d} p={r.persona} conto={r.conto} ricevuta={r.ricevuta} stato={r.stato} mese={mese} fai={fai} onCambiato={dati.ricarica} onPaga={puoPagare ? () => setPaga(r.persona) : undefined} />
                 </div>
                 {r.conto.righe.length > 0 && (
                   <details className="sg-compenso sg-compenso-per-corso">
@@ -368,9 +387,128 @@ export function Compensi({ d }: { d: DatiSegreteria }) {
               </div>
             ))}
           </div>
+          {paga && dati.dato && (
+            <PannelloPaga
+              d={d}
+              p={paga}
+              ricevute={pagabili(dati.dato.ricevute, paga.id)}
+              casse={dati.dato.casse}
+              fai={fai}
+              onFatto={async () => {
+                setPaga(null)
+                await dati.ricarica()
+              }}
+            />
+          )}
           <span className="sg-sotto">Chi non ha lezioni confermate nel mese non c’è. Le lezioni da sostituto si pagano a chi c’era, con la sua tariffa per quel corso.</span>
         </>
       )}
     </div>
+  )
+}
+
+/**
+ * SEGNA PAGATO: una o più ricevute fatte e non pagate dello stesso tecnico,
+ * il giorno e la cassa; diventano un'uscita sola in CONTABILITÀ con la voce
+ * «Compensi istruttori». Prima di scrivere si vede il riepilogo.
+ */
+function PannelloPaga({
+  d,
+  p,
+  ricevute,
+  casse,
+  fai,
+  onFatto,
+}: {
+  d: DatiSegreteria
+  p: Persona
+  ricevute: RicevutaCompenso[]
+  casse: Cassa[]
+  fai: Fai
+  onFatto: () => Promise<void>
+}) {
+  const [scelte, setScelte] = useState<string[]>(ricevute.map((r) => r.id))
+  const [data, setData] = useState(chiaveGiorno(new Date()))
+  const conto = casse.find((c) => c.nome === 'Conto Corrente')
+  const [cassaId, setCassaId] = useState(conto?.id ?? casse[0]?.id ?? '')
+  const pagate = ricevute.filter((r) => scelte.includes(r.id))
+  const totale = pagate.reduce((s, r) => s + r.importo, 0)
+  const cassa = casse.find((c) => c.id === cassaId)
+  const no = !pagate.length ? 'Scegli almeno una ricevuta' : !data ? 'Scrivi il giorno del pagamento' : data > chiaveGiorno(new Date()) ? 'La data del pagamento non può essere nel futuro' : !cassa ? 'Scegli la cassa' : null
+  return (
+    <section className="stack" style={{ gap: 14, maxWidth: 820, padding: '22px 24px', border: '2px solid var(--text)' }} aria-label={`Segna pagato ${nomeDi(p)}`}>
+      <span className="sg-etichetta" style={{ fontSize: 15 }}>
+        SEGNA PAGATO · {nomeDi(p).toUpperCase()}
+      </span>
+      <span className="sg-etichetta">LE RICEVUTE CHE PAGHI</span>
+      {ricevute.map((r) => (
+        <label key={r.id} className="row" style={{ gap: 12, minHeight: 44, fontSize: 15 }}>
+          <input
+            type="checkbox"
+            style={{ width: 24, height: 24, margin: 0, accentColor: 'var(--text)' }}
+            checked={scelte.includes(r.id)}
+            onChange={(e) => setScelte(e.target.checked ? [...scelte, r.id] : scelte.filter((x) => x !== r.id))}
+          />
+          <span style={{ flex: 1 }}>
+            {dataLunga(r.mese).replace(/^1 /, '')} · fatta il {dataLunga(r.data)}
+          </span>
+          <span className="num" style={{ fontWeight: 700 }}>{euro(r.importo)} €</span>
+        </label>
+      ))}
+      <span className="sg-sotto">Solo le sue ricevute fatte e non ancora pagate. Un bonifico che paga più mesi è un movimento solo.</span>
+      <div className="sg-due sg-scheda-campi">
+        <label className="stack" style={{ gap: 6 }}>
+          <span className="sg-etichetta">DATA DEL PAGAMENTO</span>
+          <input type="date" className="sg-campo" value={data} max={chiaveGiorno(new Date())} onChange={(e) => setData(e.target.value)} />
+        </label>
+        <div className="stack" style={{ gap: 6 }}>
+          <span className="sg-etichetta">CASSA</span>
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            {casse.map((c) => (
+              <button key={c.id} type="button" className="num sg-chip" aria-pressed={c.id === cassaId} onClick={() => setCassaId(c.id)}>
+                {c.nome}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      {pagate.length > 0 && cassa && (
+        <div className="sg-due" style={{ padding: '14px 16px', border: '2px solid var(--line-soft)' }}>
+          <span className="stack" style={{ gap: 2 }}>
+            <span className="sg-etichetta">TIPO</span>Uscita
+          </span>
+          <span className="stack" style={{ gap: 2 }}>
+            <span className="sg-etichetta">CASSA</span>
+            {cassa.nome}
+          </span>
+          <span className="stack" style={{ gap: 2 }}>
+            <span className="sg-etichetta">VOCE</span>
+            {VOCE_COMPENSI}
+          </span>
+          <span className="stack" style={{ gap: 2 }}>
+            <span className="sg-etichetta">IMPORTO</span>
+            {euro(totale)} €
+          </span>
+          <span className="stack" style={{ gap: 2, gridColumn: 'span 2' }}>
+            <span className="sg-etichetta">DESCRIZIONE</span>
+            {descrizionePagamento(p.nome, p.cognome, pagate.map((r) => r.mese))}
+          </span>
+        </div>
+      )}
+      <span className="sg-sotto">Si scrive in CONTABILITÀ → MOVIMENTI collegato al tecnico, senza codice fiscale né IBAN. Se va annullato, si annulla da lì e le ricevute tornano da pagare.</span>
+      {no && (
+        <span role="alert" style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>
+          {no}.
+        </span>
+      )}
+      <div className="row" style={{ gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <button type="button" className="sg-btn sg-btn-linea" onClick={() => void onFatto()}>
+          Lascia stare
+        </button>
+        <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no} onClick={() => void fai(() => d.pagaCompensi(scelte, data, cassaId), `Pagato: ${euro(totale)} € in CONTABILITÀ`, onFatto)}>
+          Segna pagato {euro(totale)} €
+        </button>
+      </div>
+    </section>
   )
 }

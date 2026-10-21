@@ -52,4 +52,20 @@ firmate** fa vedere chi lo deve ancora riportare.
 Una ricevuta fatta non si cambia: **Annulla** la toglie (resta nel registro,
 annullata) e se ne fa una nuova. **Ristampa** riscarica la stessa.
 
-Il pagamento in contabilità arriva con un prossimo aggiornamento.
+## Il pagamento
+
+Chi cura anche la contabilità vede **Segna pagato** sulle ricevute fatte: si
+apre il pannello del tecnico con le sue ricevute fatte e non pagate (anche di
+mesi diversi, già spuntate), il **giorno del pagamento** e la **cassa**
+(Conto Corrente per il bonifico, Cassa Contanti per i contanti). Sotto c'è il
+riepilogo di quello che si scrive in CONTABILITÀ: un'uscita sola, con la voce
+**Compensi istruttori**, il totale e la descrizione «Compenso · Nome Cognome ·
+set, ott 2026». **Segna pagato** la scrive, e le ricevute diventano **PAGATA**
+con la data.
+
+Una ricevuta pagata non si annulla da qui: prima si annulla il pagamento in
+[Contabilità](../amministrazione/contabilita.md) → MOVIMENTI, e le ricevute
+tornano da pagare. Il filtro **Da pagare** fa vedere chi aspetta il bonifico.
+
+Nella scheda del tecnico, **PRESO DA NOI NEL** dice quanto ha preso
+quest'anno, contato dal giorno del pagamento.

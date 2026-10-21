@@ -2,14 +2,14 @@ import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import { personaCambiata } from '../../lib/segreteria'
 import { daSpunte, insegna, nomeDelRuolo, puo, siElimina, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
-import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
+import { chiaveGiorno, dataLunga, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
 import { DatiTecnico, LetteraIncarico, Tariffe } from './DatiTecnico'
 import { AzioniRicevuta, SegnoCompenso, tonoCompenso } from './Compensi'
-import { compensoDelMese, mancaPerRicevuta, primoDelMese, statoCompenso } from '../../lib/compensi'
+import { compensoDelMese, mancaPerRicevuta, presoNellAnno, primoDelMese, statoCompenso } from '../../lib/compensi'
 import { euro } from '../../lib/ricevute'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
 
@@ -818,6 +818,13 @@ function PresenzeDelMese({ d, p, fai, versione }: { d: DatiSegreteria; p: Person
           <AzioniRicevuta d={d} p={p} conto={conto} ricevuta={ricevuta} stato={statoCompenso({ conto, ricevuta, manca: compenso.dato?.manca })} mese={mese} fai={fai} onCambiato={ricaricaTutto} inScheda />
         </div>
       )}
+      {compenso.dato && (
+        <span className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'baseline' }}>
+          <span className="sg-etichetta">PRESO DA NOI NEL {new Date().getFullYear()}</span>
+          <span className="num" style={{ fontSize: 18, fontWeight: 700 }}>{euro(presoNellAnno(compenso.dato.ricevute, new Date().getFullYear()))} €</span>
+          <span className="sg-sotto">i compensi pagati quest’anno, contati dal giorno del pagamento</span>
+        </span>
+      )}
       {compenso.dato && compenso.dato.ricevute.some((r) => r !== ricevuta) && (
         <div className="stack" style={{ gap: 4 }}>
           <span className="sg-etichetta">LE ALTRE RICEVUTE</span>
@@ -825,7 +832,7 @@ function PresenzeDelMese({ d, p, fai, versione }: { d: DatiSegreteria; p: Person
             .filter((r) => r !== ricevuta)
             .map((r) => (
               <span key={r.id} className="row" style={{ gap: 12, flexWrap: 'wrap', fontSize: 13, color: 'var(--sec)' }}>
-                {[r.mese.slice(0, 7).split('-').reverse().join('/'), `${euro(r.importo)} €`, r.annullataIl ? 'annullata' : r.firmata ? 'firmata' : 'non firmata'].join(' · ')}
+                {[r.mese.slice(0, 7).split('-').reverse().join('/'), `${euro(r.importo)} €`, r.annullataIl ? 'annullata' : r.pagataIl ? `pagata il ${dataLunga(r.pagataIl)}` : 'da pagare', r.annullataIl ? '' : r.firmata ? 'firmata' : 'non firmata'].filter(Boolean).join(' · ')}
                 {/* Un'annullata non si ristampa: un foglio uguale a uno valido si potrebbe far firmare o pagare per sbaglio. */}
                 {!r.annullataIl && <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 13 }} onClick={() => void fai(async () => (await import('../../lib/ricevutaCompensoPdf')).scaricaRicevuteCompensi([r]))}>
                   Ristampa

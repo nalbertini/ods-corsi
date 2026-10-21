@@ -709,6 +709,8 @@ export interface DatiSegreteria {
   annullaRicevutaCompenso(id: string): Promise<void>
   /** Il foglio firmato è tornato, o no: l'unica cosa che si cambia di una ricevuta fatta. */
   segnaFirmataCompenso(id: string, firmata: boolean): Promise<void>
+  /** Paga una o più ricevute dello stesso tecnico con un movimento solo in CONTABILITÀ (`paga_compensi`). */
+  pagaCompensi(ids: string[], data: string, cassaId: string): Promise<void>
   /** Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). */
   emettiRicevuta(r: DatiRicevuta, satispayId?: string): Promise<Ricevuta>
   /**
