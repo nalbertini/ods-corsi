@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.156.4 — 21 ottobre 2026
+
+### Risolto
+
+- Due persone con lo stesso nome ma un altro codice fiscale non finiscono più sulla stessa scheda quando si accoglie una richiesta
+
 ## 0.156.3 — 21 ottobre 2026
 
 ### Modificato
