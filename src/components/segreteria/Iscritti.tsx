@@ -24,6 +24,7 @@ import { StoricoPersona } from './CollegaPersona'
 import { PagatoPrima } from './PagatoPrima'
 import { CellaSollecito, SollecitoWhatsApp } from './Sollecito'
 import { cellaSollecito, quotaNelVecchioDi } from '../../lib/sollecito'
+import { consiglioCorso, corsiDaPagare, nonPagati, statoCorsi, testoCorso, testoCorsoBreve, type StatoCorso } from '../../lib/corsiDaPagare'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
@@ -135,6 +136,8 @@ export function Iscritti({
   const tessere = useCarica(() => d.tessere(), [d])
   const indizi = useCarica(() => d.indiziDoppioni(), [d])
   const storico = useCarica(() => d.pagatoPrima(), [d])
+  // Il listino dice quali corsi si pagano: senza, nessuno ha un corso scaduto (mai un rosso per una lettura mancata).
+  const listino = useCarica(() => d.listino(), [d])
   const [cerca, setCerca] = useState('')
   const [corso, setCorso] = useState('')
   const [soloSenzaEmail, setSoloSenzaEmail] = useState(false)
@@ -143,6 +146,7 @@ export function Iscritti({
   const [scadenza, setScadenza] = useState(filtroIniziale === 'scadenza')
   const [arrivo, setArrivo] = useState(filtroIniziale === 'arrivo')
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
+  const [corsiScaduti, setCorsiScaduti] = useState(filtroIniziale === 'corsi-scaduti')
   const [fuori, setFuori] = useState(filtroIniziale === 'fuori-regola')
   const [noTessera, setNoTessera] = useState(filtroIniziale === 'senza-tessera')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
@@ -166,6 +170,8 @@ export function Iscritti({
   if (conTessereLette)
     for (const r of incrocioTessere(conTessere(tutti, tessere.dato!.elenco), corsi.dato ?? [], oggi)) incroci.set(r.personaId, [...(incroci.get(r.personaId) ?? []), r])
   const tesseraDi = (p: PersonaSeg) => incroci.get(p.id) ?? []
+  const statiDi = (p: PersonaSeg) => (listino.dato && corsi.dato ? statoCorsi(p, corsi.dato, listino.dato.listino, oggi) : undefined)
+  const scopertiDi = (p: PersonaSeg) => (listino.dato && corsi.dato ? corsiDaPagare(p, corsi.dato, listino.dato.listino, oggi) : [])
   const nFilePrima = tutti.filter((p) => certificatoDaStampare(p.certificato)).length
   // Finiti tutti (cancellati da soli o tolti), il filtro si spegne da sé.
   const soloFilePrima = filePrima && nFilePrima > 0
@@ -184,6 +190,7 @@ export function Iscritti({
     scadenza: [scadenza, setScadenza],
     arrivo: [arrivo, setArrivo],
     pagare: [pagare, setPagare],
+    'corsi-scaduti': [corsiScaduti, setCorsiScaduti],
     fuori: [fuori, setFuori],
     'senza-tessera': [noTessera, setNoTessera],
     'senza-documento': [senzaDocumento, setSenzaDocumento],
@@ -218,6 +225,7 @@ export function Iscritti({
       (!scadenza || certificatoInScadenza(p, oggi)) &&
       (!arrivo || certificatoInArrivo(p, oggi)) &&
       (!pagare || daPagare(p, oggi)) &&
+      (!corsiScaduti || scopertiDi(p).length > 0) &&
       (!fuori || fuoriRegola(p, oggi) || (p.attiva && senzaTessera(tesseraDi(p)))) &&
       (!noTessera || senzaTessera(tesseraDi(p))) &&
       (!senzaDocumento || !p.documento) &&
@@ -240,7 +248,11 @@ export function Iscritti({
   const nelVecchioIds = quotaNelVecchioDi(delVecchio)
   const cellaDi = (p: PersonaSeg) =>
     perSollecito.dato
-      ? cellaSollecito(p, perSollecito.dato.genitori.get(p.id), perSollecito.dato.quota, oggi, { quotaNelVecchio: nelVecchioIds.has(p.id), tesseraDaSistemare: senzaTessera(tesseraDi(p)) })
+      ? cellaSollecito(p, perSollecito.dato.genitori.get(p.id), perSollecito.dato.quota, oggi, {
+          quotaNelVecchio: nelVecchioIds.has(p.id),
+          tesseraDaSistemare: senzaTessera(tesseraDi(p)),
+          corsi: statiDi(p),
+        })
       : null
   const suoiCorsi = (p: PersonaSeg) => p.iscrizioni.filter((i) => inCorso(i, oggi)).map((i) => perId.get(i.corsoId)?.nome).filter(Boolean)
   const { ordina, colonna } = useOrdina<PersonaSeg, 'nome' | 'corsi' | 'contatto' | 'regola' | 'frequenza'>({
@@ -257,6 +269,7 @@ export function Iscritti({
   const senzaCertificato = attiveOra.filter((p) => senzaCertificatoValido(p, oggi)).length
   const inScadenza = attiveOra.filter((p) => certificatoInScadenza(p, oggi)).length
   const nonPagato = attiveOra.filter((p) => daPagare(p, oggi)).length
+  const nScaduti = corsiScaduti ? attiveOra.filter((p) => scopertiDi(p).length > 0).length : 0
   const persona = nuovo ? null : (tutti.find((p) => p.id === scelta) ?? null)
   const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica(), indizi.ricarica(), tessere.ricarica(), storico.ricarica()])
 
@@ -315,6 +328,7 @@ export function Iscritti({
             p={persona}
             tutti={tutti}
             corsi={perId}
+            statiCorsi={statiDi(persona)}
             attivi={attivi}
             f={freq.dato?.get(persona.id)}
             tessere={conTessereLette ? tessere.dato!.elenco : undefined}
@@ -343,7 +357,7 @@ export function Iscritti({
       <div className="stack" style={{ gap: 18 }}>
         <Testa
           titolo="ISCRITTI"
-          sotto={`${attiveOra.length} persone attive · ${senzaCertificato ? `${senzaCertificato} senza certificato valido` : 'tutti col certificato'}${inScadenza ? ` · ${inScadenza} in scadenza` : ''} · ${nonPagato ? `${nonPagato} da pagare` : 'tutti in regola coi pagamenti'}.${
+          sotto={corsiScaduti ? `${nScaduti === 1 ? 'Un iscritto ha' : `${nScaduti} iscritti hanno`} un corso scaduto o pagato in parte.` : `${attiveOra.length} persone attive · ${senzaCertificato ? `${senzaCertificato} senza certificato valido` : 'tutti col certificato'}${inScadenza ? ` · ${inScadenza} in scadenza` : ''} · ${nonPagato ? `${nonPagato} da pagare` : 'tutti in regola coi pagamenti'}.${
             nFilePrima === 1 ? ' Un certificato non archiviato.' : nFilePrima ? ` ${nFilePrima} certificati non archiviati.` : ''
           }`}
         >
@@ -458,7 +472,8 @@ export function Iscritti({
             {persone.dato !== null && trovati.length === 0 && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Nessuno corrisponde alla ricerca. <button type="button" className="sg-link sg-link-alto" onClick={togliFiltri}>Togli ricerca e filtri</button></p>}
             {ordina(trovati).map((p) => {
               const f = freq.dato?.get(p.id)
-              const suoi = suoiCorsi(p)
+              // Col filtro, al posto dei corsi quelli da pagare con la data: si legge chi sollecitare per cosa.
+              const suoi = corsiScaduti ? scopertiDi(p).map(testoCorsoBreve) : suoiCorsi(p)
               return (
                 // Una riga vera della tabella, che si clicca tutta; dalla tastiera e per chi legge lo schermo c'è il tasto sul nome.
                 <div
@@ -479,7 +494,7 @@ export function Iscritti({
                     </button>
                     {certificatoDaStampare(p.certificato) && <span className="num sg-tag" style={{ marginLeft: 8 }}>{TESTI_FILTRI['file-di-prima']}</span>}
                   </span>
-                  <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(', ') || '—'}</span>
+                  <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(corsiScaduti ? ' · ' : ', ') || '—'}</span>
                   <span role="cell" style={{ fontSize: 13, color: p.email || p.emailContatto || p.telefono ? 'var(--sec)' : 'var(--rosso-testo)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {p.telefono ?? p.email ?? p.emailContatto ?? 'nessun contatto'}
                   </span>
@@ -607,9 +622,12 @@ function Scheda({
   quotaNelVecchio,
   giroSolleciti,
   onSollecitato,
+  statiCorsi,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
+  /** I corsi a pagamento in corso, pagati o no (`statoCorsi`); undefined se non si sa. */
+  statiCorsi?: StatoCorso[]
   /** Tutti gli iscritti, per il nucleo familiare. */
   tutti: PersonaSeg[]
   corsi: Map<string, CorsoSeg>
@@ -681,7 +699,7 @@ function Scheda({
   const nucleo = titolare ? [titolare, ...tutti.filter((x) => x.nucleo === titolare.id && x.attiva)].filter((x) => x.id !== p.id) : []
   const parenti = stessoContatto(p, tutti)
   const tessereDi = tessere ? tessere.filter((t) => t.personaId === p.id) : undefined
-  const segni = segniSchede({ ...p, tessere: tessereDi }, [...corsi.values()], oggi, { aperta, inModifica: !!modifica })
+  const segni = segniSchede({ ...p, tessere: tessereDi }, [...corsi.values()], oggi, { aperta, inModifica: !!modifica }, statiCorsi && nonPagati(statiCorsi))
   const tastiera = (e: KeyboardEvent) => {
     const dove = tastoScheda(aperta, e.key)
     if (!dove) return
@@ -707,7 +725,7 @@ function Scheda({
       </div>
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
       {!unendo && !pagando && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
-      {!unendo && !pagando && <SollecitoWhatsApp d={d} p={p} oggi={oggi} giro={giroAnagrafica} giroSolleciti={giroSolleciti} quotaNelVecchio={quotaNelVecchio} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
+      {!unendo && !pagando && <SollecitoWhatsApp d={d} p={p} oggi={oggi} giro={giroAnagrafica} giroSolleciti={giroSolleciti} quotaNelVecchio={quotaNelVecchio} corsi={statiCorsi} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -875,7 +893,7 @@ function Scheda({
 
       <div role="tabpanel" id={idPannello('quota')} aria-labelledby={idLinguetta('quota')} hidden={aperta !== 'quota'}>
         <div id="sez-quota" className="stack" style={{ gap: 24, minWidth: 0 }}>
-            <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
+            <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} statiCorsi={statiCorsi} fai={fai} onCambiato={onCambiato} />
             <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} avvisa={avvisa} onNuova={() => setPagando(true)} onCambiato={onCambiato} contabilita={contabilita} riprendi={riprendi ?? undefined} onRicevuta={(x) => {
               setRiprendi(null)
               setDaPagamento(x)
@@ -1755,7 +1773,7 @@ function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
  * o con una ricevuta di carta, c'è l'eccezione scritta a mano, fino a una
  * data. Sotto, fin quando sono pagati i corsi: si guardano, non contano.
  */
-function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void }) {
+function Pagamento({ d, p, fai, onCambiato, statiCorsi }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void; statiCorsi?: StatoCorso[] }) {
   const oggi = chiaveGiorno(new Date())
   const s = pagamentoDi(p, oggi)
   const t = timbriScheda(p, oggi).quota
@@ -1772,6 +1790,8 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
       if ((corsi.get(v.descrizione) ?? '') < v.al) corsi.set(v.descrizione, v.al)
     }
   }
+  // Il primo corso scaduto dice quale voce scrivere sulla ricevuta nuova.
+  const scaduto = statiCorsi?.find((c) => c.come === 'scaduto')
   const fino = s.fino ? dataLunga(s.fino) : ''
   // Una frase sola, per il caso che è: le date ci sono solo dove servono.
   const detto =
@@ -1798,7 +1818,24 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
       </Riga>
       <span style={{ fontSize: 14, color: s.come === 'pagato' ? 'var(--sec)' : s.come === 'in_parte' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{detto}</span>
       {s.fonte === 'fuori_app' && s.nota && <span style={{ fontSize: 14, color: 'var(--sec)' }}>{s.nota}</span>}
-      {corsi.size > 0 && (
+      {statiCorsi && statiCorsi.length > 0 ? (
+        <>
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', color: 'var(--dim)', paddingTop: 8 }}>CORSI</span>
+          <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 2, fontSize: 13 }}>
+            {statiCorsi.map((c) => {
+              const { testo, tono } = testoCorso(c)
+              return (
+                <li key={c.corsoId} style={tono === 'sec' ? { color: 'var(--sec)' } : { color: `var(--${tono}-testo)`, fontWeight: 600 }}>
+                  {testo}
+                </li>
+              )
+            })}
+          </ul>
+          {scaduto && (
+            <span style={{ fontSize: 14, color: 'var(--dim)' }}>{consiglioCorso(scaduto)}</span>
+          )}
+        </>
+      ) : !statiCorsi && corsi.size > 0 && (
         <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 2, fontSize: 13, color: 'var(--sec)' }}>
           {[...corsi].map(([corso, al]) => (
             <li key={corso}>

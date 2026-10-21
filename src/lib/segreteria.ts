@@ -16,6 +16,7 @@ import { euro } from './ricevute'
 import type { EsitoMandata, InvioRicevuta } from './ricevuteEmail'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
 import type { PagamentoSatispay } from './satispay'
+import type { VoceCorso } from './corsiDaPagare'
 import { STAGIONE, stagioneDi } from './costi'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import type { Listino, ListinoLetto } from './listino'
@@ -153,6 +154,8 @@ export interface PersonaSeg {
   pagamento: PagamentoSeg
   /** Le quote associative delle sue ricevute non annullate: da qui si sa se ha pagato. */
   quote?: QuotaRicevuta[]
+  /** Le altre voci delle stesse ricevute, per i corsi da pagare (`corsiDaPagare.ts`); assente se non si sono lette. */
+  vociCorsi?: VoceCorso[]
   /** Centesimi pagati con Satispay dal modulo e non ancora in una ricevuta (`73-satispay.sql`). */
   satispay?: number
   /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`). Solo in prova, per ora. */

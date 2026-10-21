@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// ISCRITTI: tre filtri in vista, gli altri dietro «Altri filtri», senza browser.
+// ISCRITTI: quattro filtri in vista, gli altri dietro «Altri filtri», senza browser.
 //
 //   node scripts/prova-filtri-iscritti.mjs
 //
@@ -30,15 +30,15 @@ const altri = (x) => (m.altriFiltri ? m.altriFiltri(x) : mancante)
 const aperti = (a, s) => (m.altriAperti ? m.altriAperti(a, s) : mancante)
 const nessuno = { conTessere: false, filePrima: 0, doppioni: 0 }
 
-console.log('\nI tre in vista')
-ok('certificato, pagare, fuori: in quest\'ordine', m.FILTRI_VISIBILI ?? mancante, ['certificato', 'pagare', 'fuori'])
+console.log('\nI quattro in vista')
+ok('certificato, pagare, corsi-scaduti, fuori: in quest\'ordine', m.FILTRI_VISIBILI ?? mancante, ['certificato', 'pagare', 'corsi-scaduti', 'fuori'])
 
 console.log('\nI testi')
-ok('un testo per ognuno dei 12 filtri', m.TESTI_FILTRI ?? mancante, {
+ok('un testo per ognuno dei 13 filtri', m.TESTI_FILTRI ?? mancante, {
   'senza-email': 'Solo senza email', poco: 'Vengono poco', certificato: 'Senza certificato valido',
   scadenza: 'Certificato in scadenza', arrivo: 'Compiono 6 anni', pagare: 'Da pagare', fuori: 'Non in regola',
   'senza-tessera': 'Senza tessera', 'senza-documento': 'Senza documento', 'file-di-prima': 'Non archiviato',
-  doppioni: 'Possibili doppioni', 'pagato-prima': 'Pagato nel vecchio programma',
+  doppioni: 'Possibili doppioni', 'pagato-prima': 'Pagato nel vecchio programma', 'corsi-scaduti': 'Corsi scaduti',
 })
 
 console.log('\nGli altri filtri, quelli presenti adesso')
@@ -49,7 +49,7 @@ ok('con i file di prima: file-di-prima in fondo', altri({ ...nessuno, filePrima:
 ok('con i doppioni: doppioni in fondo', altri({ ...nessuno, doppioni: 2 }), [...base, 'doppioni'])
 const tutti = altri({ conTessere: true, filePrima: 3, doppioni: 2 })
 ok('tutti gli opzionali: otto, nell\'ordine', tutti, ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-tessera', 'senza-documento', 'file-di-prima', 'doppioni'])
-ok('i tre in vista non sono mai fra gli altri', Array.isArray(tutti) ? tutti.filter((x) => ['certificato', 'pagare', 'fuori'].includes(x)) : tutti, [])
+ok('i quattro in vista non sono mai fra gli altri', Array.isArray(tutti) ? tutti.filter((x) => ['certificato', 'pagare', 'corsi-scaduti', 'fuori'].includes(x)) : tutti, [])
 
 console.log('\nIl gruppo aperto')
 ok('aperto dall\'utente: aperto', aperti([], true), true)
@@ -70,11 +70,11 @@ console.log('\nIscritti.tsx li prende da src/lib')
 console.log('\nIl sollecito nell\'elenco: solo coi filtri di chi ha qualcosa da sistemare')
 {
   const con = (a) => (typeof m.conSollecito === 'function' ? m.conSollecito(a) : 'manca conSollecito')
-  ok('i filtri del sollecito sono esattamente cinque', m.FILTRI_SOLLECITO ?? 'manca FILTRI_SOLLECITO', ['certificato', 'scadenza', 'arrivo', 'pagare', 'fuori'])
+  ok('i filtri del sollecito sono esattamente sei', m.FILTRI_SOLLECITO ?? 'manca FILTRI_SOLLECITO', ['certificato', 'scadenza', 'arrivo', 'pagare', 'corsi-scaduti', 'fuori'])
   ok('nessun filtro acceso: niente sollecito', con([]), false)
   ok('solo «Vengono poco»: niente sollecito', con(['poco']), false)
   ok('«Solo senza email» e «Vengono poco»: niente sollecito', con(['senza-email', 'poco']), false)
-  for (const f of ['certificato', 'scadenza', 'arrivo', 'pagare', 'fuori']) ok(`acceso «${f}»: il sollecito c'è`, con([f]), true)
+  for (const f of ['certificato', 'scadenza', 'arrivo', 'pagare', 'corsi-scaduti', 'fuori']) ok(`acceso «${f}»: il sollecito c'è`, con([f]), true)
   ok('«Vengono poco» insieme a «Da pagare»: il sollecito c\'è', con(['poco', 'pagare']), true)
   ok('«Pagato nel vecchio programma» ha la sua vista: niente colonna, anche con «Da pagare»', con(['pagare', 'pagato-prima']), false)
   ok('«Possibili doppioni» ha la sua vista: niente colonna', con(['fuori', 'doppioni']), false)

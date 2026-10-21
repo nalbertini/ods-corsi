@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: una casella sua, CORSI SCADUTI, accanto a PAGAMENTI (che resta della quota), e la sua riga in DA FARE. Stessa funzione, stessi numeri del filtro di ISCRITTI. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="DA FARE" numeri="" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">DA FARE</h1>
+      <span style="font-size: 14px; color: #46606f">mercoledì 16 dicembre 2026. Quello che aspetta la segreteria: si riconta ogni volta che torni qui.</span>
+    </div>
+    <dc-import name="CosaManca" tema="sito" colonne="6" voci="0|Appelli non fatti||r; 2|Certificati scaduti||r; 0|Pagamenti||r; 9|Corsi scaduti||r; 0|Senza tessera||v; 1|Richieste online||g" hint-size="100%,72px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <dc-import name="RigaDaFare" tema="sito" livello="blocca" principale="{{ true }}" n="2" titolo="Iscritti senza certificato valido" sotto="Il certificato medico manca o è scaduto: senza, in sala non si entra." tasto="Chiedi i certificati" hint-size="100%,96px"></dc-import>
+      <dc-import name="RigaDaFare" tema="sito" livello="blocca" n="9" titolo="Iscritti con un corso scaduto" sotto="La quota è a posto, ma il trimestre o l’annuale di un corso è finito, o è pagato in parte. In sala si entra lo stesso." tasto="Vedi chi" hint-size="100%,96px"></dc-import>
+      <div style="padding-top: 6px"></div>
+      <dc-import name="RigaDaFare" tema="sito" livello="presto" n="1" titolo="Richieste online nuove" sotto="Da accogliere: aspettano una risposta, ma non bloccano niente." tasto="Accogli le richieste" hint-size="100%,96px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

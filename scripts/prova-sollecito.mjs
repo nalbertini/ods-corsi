@@ -331,5 +331,38 @@ ok('incasso del titolare del nucleo: no (decide la segreteria)', nv instanceof S
 }
 ok('senza la lettura del vecchio programma: nessuno', quotaNelVecchioDi(null) instanceof Set ? quotaNelVecchioDi(null).size : 'non è un Set', 0)
 
+console.log('\n26. i corsi: dopo la quota, prima del certificato')
+{
+  // Laura, adulta, quota a posto e certificato valido; i corsi arrivano già calcolati (`statoCorsi`).
+  const laura = persona({ nome: 'Laura', cognome: 'Rossi', pagamento: { stato: 'pagato' } })
+  const oggi = '2026-12-16'
+  const judo3 = { corsoId: 'judo3', corso: 'Judo 3', come: 'scaduto', formula: 'trimestre', al: '2026-12-15' }
+  const conCorsi = (corsi, p = laura) => sollecitoDi(p, undefined, QUOTA, oggi, { corsi })
+  ok('Judo 3 scaduto: il motivo, rosso', conCorsi([judo3])?.motivi, [{ testo: 'Judo 3: trimestre scaduto il 15 dicembre 2026', tono: 'rosso' }])
+  ok('Judo 3 scaduto: il messaggio per Laura', conCorsi([judo3])?.testo, 'Ciao Laura, ti scriviamo dalla segreteria del Centro Judo: il trimestre di Judo 3 è scaduto il 15 dicembre 2026. Puoi passare in segreteria o rispondere qui. Grazie!')
+  ok('senza formula si dice «corso»', conCorsi([{ ...judo3, formula: undefined }])?.motivi?.map((x) => x.testo), ['Judo 3: corso scaduto il 15 dicembre 2026'])
+  const annuale = { corsoId: 'pilates', corso: 'Pilates', come: 'scaduto', formula: 'annuale', al: '2026-06-30' }
+  ok('annuale scaduto: il motivo', conCorsi([annuale])?.motivi?.map((x) => x.testo), ['Pilates: annuale scaduto il 30 giugno 2026'])
+  ok('annuale scaduto: «l’annuale», non «il annuale»', conCorsi([annuale])?.testo, 'Ciao Laura, ti scriviamo dalla segreteria del Centro Judo: l’annuale di Pilates è scaduto il 30 giugno 2026. Puoi passare in segreteria o rispondere qui. Grazie!')
+  const mga = { corsoId: 'mga', corso: 'MGA', come: 'fuori_scaduto', al: '2026-11-30' }
+  ok('pagato fuori dall\'app e scaduto: rosso', conCorsi([mga])?.motivi, [{ testo: 'MGA: pagato fino al 30 novembre 2026, ora da pagare', tono: 'rosso' }])
+  ok('…e la frase', conCorsi([mga])?.testo.includes('il corso di MGA era pagato fino al 30 novembre 2026.'), true)
+  const x = { corsoId: 'x', corso: 'X', come: 'da_pagare' }
+  ok('da pagare: rosso', conCorsi([x])?.motivi, [{ testo: 'X: corso da pagare', tono: 'rosso' }])
+  ok('…e la frase', conCorsi([x])?.testo.includes('il corso di X è da pagare.'), true)
+  const pilates = { corsoId: 'pilates', corso: 'Pilates', come: 'in_parte', formula: 'annuale', al: '2027-06-30', mancano: 4000 }
+  ok('in parte: giallo, con quanto manca', conCorsi([pilates])?.motivi, [{ testo: 'Pilates: pagato in parte, mancano 40 €', tono: 'giallo' }])
+  ok('…e la frase', conCorsi([pilates])?.testo.includes('del corso di Pilates mancano 40 €.'), true)
+  ok('da controllare: nessun motivo, nessun sollecito', conCorsi([{ corsoId: 'x', corso: 'X', come: 'da_controllare' }]), null)
+  ok('pagato, fuori dall\'app, Satispay: nessun motivo', conCorsi([{ corsoId: 'a', corso: 'A', come: 'pagato', al: '2027-03-15' }, { corsoId: 'b', corso: 'B', come: 'fuori_app', al: '2027-03-15' }, { corsoId: 'c', corso: 'C', come: 'satispay' }]), null)
+  const tutto = persona({ nome: 'Laura', certificato: { scade: '2026-03-12', conFile: true } })
+  const messaggio = conCorsi([judo3, x], tutto)
+  ok('l\'ordine: quota, corsi, certificato', messaggio?.motivi.map((v) => v.testo), ['Quota associativa da pagare: 30,00 €', 'Judo 3: trimestre scaduto il 15 dicembre 2026', 'X: corso da pagare', 'Certificato medico scaduto il 12 marzo 2026'])
+  ok('un solo messaggio, con « e »', messaggio?.testo, 'Ciao Laura, ti scriviamo dalla segreteria del Centro Judo: la quota associativa è da pagare (30,00 €) e il trimestre di Judo 3 è scaduto il 15 dicembre 2026 e il corso di X è da pagare e il certificato medico è scaduto il 12 marzo 2026. Puoi passare in segreteria o rispondere qui. Grazie!')
+  ok('senza corsi il sollecito è quello di sempre', [sollecitoDi(laura, undefined, QUOTA, oggi), sollecitoDi(laura, undefined, QUOTA, oggi, { corsi: [] }), sollecitoDi(tutto, undefined, QUOTA, oggi)?.testo === sollecitoDi(tutto, undefined, QUOTA, oggi, { corsi: [] })?.testo], [null, null, true])
+  const cella = typeof sol.cellaSollecito === 'function' ? sol.cellaSollecito(laura, undefined, QUOTA, oggi, { corsi: [judo3] }) : 'manca cellaSollecito'
+  ok('cellaSollecito con solo un corso scaduto: il tasto', cella?.stato ?? cella, 'tasto')
+}
+
 console.log(guai ? `\n${guai} prove non passano.` : '\nTutte le prove passano.')
 process.exit(guai ? 1 : 0)

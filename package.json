@@ -44,6 +44,7 @@
     "prova:appello-liste": "node scripts/prova-appello-liste.mjs",
     "prova:appello-ordine": "node scripts/prova-appello-ordine.mjs",
     "prova:cosa-manca": "node scripts/prova-cosa-manca.mjs",
+    "prova:corsi-da-pagare": "node scripts/prova-corsi-da-pagare.mjs",
     "prova:calendario": "node scripts/prova-calendario.mjs",
     "prova:iscritti": "node scripts/prova-iscritti.mjs",
     "prova:iscritti-corso": "node scripts/prova-iscritti-corso.mjs",

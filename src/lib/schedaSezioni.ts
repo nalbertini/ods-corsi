@@ -2,6 +2,7 @@
 // si muove la tastiera e quali segni mettono sulla linguetta. Il .tsx mostra e chiama.
 import { timbriScheda, type CorsoSeg, type PersonaSeg } from './segreteria'
 import { timbroTessera } from './tessere'
+import type { StatoCorso } from './corsiDaPagare'
 
 export type IdScheda = 'persona' | 'documenti' | 'quota' | 'corsi'
 
@@ -67,6 +68,8 @@ export function segniSchede(
   corsi: Array<Pick<CorsoSeg, 'id' | 'nome'> & { enteTessera?: string | null }>,
   oggi: string,
   stato: { aperta: IdScheda; inModifica: boolean },
+  /** I corsi da pagare (`corsiDaPagare`): con la quota a posto, la QUOTA dice «CORSO SCADUTO». */
+  scoperti: ReadonlyArray<Pick<StatoCorso, 'come'>> = [],
 ): SegniSchede {
   const t = timbriScheda(p, oggi)
   // Senza le tessere lette (il database non le ha ancora) il timbro non c'è, come nella scheda.
@@ -77,10 +80,12 @@ export function segniSchede(
   }
   const doc = peggiore([t.certificato.tono, t.documento.tono, tessera?.tono])
   const quota = peggiore([t.quota.tono])
+  // Il giallo solo se nessuno è scaduto (pagato in parte, da controllare): uno scaduto è rosso come la quota.
+  const corso = p.attiva && scoperti.length ? (scoperti.every((s) => s.come === 'in_parte' || s.come === 'da_controllare') ? 'giallo' : 'rosso') : null
   return {
     persona: stato.inModifica && stato.aperta !== 'persona' ? { parola: 'IN MODIFICA', tono: 'giallo' } : null,
     documenti: doc ? { parola: 'DA SISTEMARE', tono: doc } : null,
-    quota: quota ? { parola: 'DA PAGARE', tono: quota } : null,
+    quota: quota ? { parola: 'DA PAGARE', tono: quota } : corso ? { parola: 'CORSO SCADUTO', tono: corso } : null,
     corsi: null,
   }
 }

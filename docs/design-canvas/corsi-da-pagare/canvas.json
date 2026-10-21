@@ -1,0 +1,12 @@
+{
+ "pages": [{ "id": "page-1", "name": "Corsi scaduti · proposta" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "Oggi, 16 dicembre: il trimestre di Laura è scaduto e non si vede", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "DaFare.dc.html", "title": "Proposta · DA FARE con la casella CORSI SCADUTI", "x": 1540, "y": 300, "page": "page-1" },
+  { "file": "Elenco.dc.html", "title": "Proposta · ISCRITTI, filtro Corsi scaduti", "x": 0, "y": 1300, "page": "page-1" },
+  { "file": "Scheda.dc.html", "title": "Proposta · la scheda, QUOTA E PAGAMENTI, e il sollecito", "x": 1540, "y": 1300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1280, "text": "Corsi scaduti: chi ha il trimestre finito non risulta più in regola" }
+ ]
+}

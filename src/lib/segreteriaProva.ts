@@ -65,6 +65,7 @@ import {
   type VoceContabile,
 } from './contabilita'
 import { conti as contiRicevuta, cosaNonVa, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
+import { vociCorsiDi } from './corsiDaPagare'
 import { mandateOggi, SOGLIA_MAIL_GIORNO, TETTO_PER_RICEVUTA } from './ricevuteEmail'
 
 /**
@@ -684,6 +685,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             documento: !!p.documento,
             pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
+            vociCorsi: vociCorsiDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
             satispay: conSatispay.get(p.id),
             nucleo: p.nucleo,
             natoIl: anagraficaDi(p.id)?.dati.natoIl,

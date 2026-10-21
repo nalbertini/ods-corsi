@@ -6,6 +6,7 @@ import { prezziMancanti, prezziMancantiInBreve } from '../../lib/listino'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { contaTessere, conTessere, incrocioTessere } from '../../lib/tessere'
 import { appelliSenzaSegni, certificatiDaSistemare, contiDaRileggere, contiDellaStriscia, GIORNI_APPELLI, mantieniIPrecedenti, pagamentiNonInRegola, type ContiCosaManca } from '../../lib/cosaManca'
+import { corsiScaduti } from '../../lib/corsiDaPagare'
 import { classeTastoDaFare, TESTI_DA_FARE } from '../../lib/daFareTesti'
 import { dataLunga, Testa } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
@@ -26,6 +27,8 @@ export interface ContiDaFare {
   /** …e compie 6 anni entro un mese, senza certificato: da avvisare la famiglia. */
   arrivo: number | null
   pagare: number | null
+  /** Iscritti attivi con un trimestre o un annuale finito: undefined se le ricevute non si sono lette (la riga non c'è). */
+  corsi?: number | null
   /** Iscritti a un corso che chiede la tessera, senza una valida: come il filtro SENZA TESSERA di ISCRITTI. */
   tessere: number | null
   certificatiDaStampare: number | null
@@ -91,15 +94,18 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
     const persone = pesante ? d.persone() : Promise.resolve(null)
     // Le tessere si leggono con le persone: senza `61-tessere.sql` (manca) il conto resta «non so».
     const tessere = pesante ? Promise.all([d.tessere(), d.corsi()]) : Promise.resolve(null)
+    // I corsi scaduti chiedono il listino: quali corsi si pagano e con che nome.
+    const corsiListino = pesante ? Promise.all([d.corsi(), d.listino()]) : Promise.resolve(null)
     const lezioni = pesante ? d.settimana(new Date(adesso - GIORNI_APPELLI * 24 * 60 * 60_000), new Date(adesso)) : Promise.resolve(null)
     const listino = tutto ? Promise.all([d.listino(), d.corsi()]).then(([l, corsi]) => prezziMancanti(l.listino, corsi, oggi)) : Promise.resolve(null)
-    void Promise.all([oppure(istruttori), oppure(richieste), oppure(persone), oppure(lezioni), d.segnalate ? oppure(d.segnalate()) : null, oppure(listino), oppure(tessere)]).then(
-      ([istr, ric, pers, lez, segn, list, tess]) => {
+    void Promise.all([oppure(istruttori), oppure(richieste), oppure(persone), oppure(lezioni), d.segnalate ? oppure(d.segnalate()) : null, oppure(listino), oppure(tessere), oppure(corsiListino)]).then(
+      ([istr, ric, pers, lez, segn, list, tess, cl]) => {
         if (!vivo) return
         const attive = pers?.filter((p) => p.attiva) ?? null
         const appelliMancanti = lez ? appelliSenzaSegni(lez, adesso) : null
         const richiesteNuove = ric ? ric.tutte.filter((x) => x.stato === 'nuova').length : null
         const contoTessere = pers && tess && !tess[0].manca ? contaTessere(incrocioTessere(conTessere(pers, tess[0].elenco), tess[1], oggi)) : null
+        const contoCorsi = pers && cl ? corsiScaduti(pers, cl[0], cl[1].listino, oggi) : null
         const nuova = Date.now()
         // Pesante finita bene (tutte e due le letture): da qui i conti sono freschi.
         if (pesante && pers && lez) {
@@ -112,7 +118,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
           striscia: pesante
             ? mantieniIPrecedenti(
                 prima.striscia,
-                contiDellaStriscia({ persone: pers, lezioni: lez, richieste: richiesteNuove, tessere: contoTessere }, adesso, oggi),
+                contiDellaStriscia({ persone: pers, lezioni: lez, richieste: richiesteNuove, tessere: contoTessere, corsi: contoCorsi }, adesso, oggi),
                 nuova,
               )
             : { ...prima.striscia, richieste: richiesteNuove ?? prima.striscia.richieste },
@@ -126,6 +132,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
           scadenza: pesante ? (attive ? attive.filter((p) => certificatoInScadenza(p, oggi)).length : null) : prima.scadenza,
           arrivo: pesante ? (attive ? attive.filter((p) => certificatoInArrivo(p, oggi)).length : null) : prima.arrivo,
           pagare: pesante ? (pers ? pagamentiNonInRegola(pers, oggi) : null) : prima.pagare,
+          corsi: pesante ? contoCorsi : prima.corsi,
           tessere: pesante ? contoTessere : prima.tessere,
           certificatiDaStampare: pesante ? (pers ? pers.filter((p) => certificatoDaStampare(p.certificato)).length : null) : prima.certificatiDaStampare,
           documentiDaStampare: tutto ? (ric?.conDocumento ? ric.conDocumento.size : null) : prima.documentiDaStampare,
@@ -164,6 +171,7 @@ const LIVELLO: Record<string, Livello> = {
   appelli: 'blocca',
   certificati: 'blocca',
   pagare: 'blocca',
+  corsi: 'blocca',
   richieste: 'presto',
   istruttori: 'presto',
   segnalate: 'presto',
@@ -267,6 +275,20 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       voce: 'iscritti',
       dove: { filtro: 'pagare' },
     },
+    ...(conti.corsi !== undefined
+      ? [
+          {
+            chiave: 'corsi',
+            n: conti.corsi,
+            titolo: (n: number) => uno(n, TESTI_DA_FARE.corsi.singolare, TESTI_DA_FARE.corsi.plurale),
+            sotto: 'Il trimestre o l’annuale di un corso è finito, o non è pagato del tutto. In sala si entra lo stesso.',
+            aPosto: 'corsi',
+            tasto: TESTI_DA_FARE.corsi.tasto,
+            voce: 'iscritti',
+            dove: { filtro: 'corsi-scaduti' },
+          } satisfies Cosa,
+        ]
+      : []),
     {
       chiave: 'listino',
       n: conti.listino ? conti.listino.length : null,

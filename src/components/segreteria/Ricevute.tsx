@@ -956,7 +956,7 @@ export function NuovaRicevuta({
       )}
 
       {!conQuota && (
-        <span style={{ fontSize: 14, color: 'var(--sec)' }}>Senza la QUOTA ASSOCIATIVA questa ricevuta non cambia se è in regola: conta solo la quota.</span>
+        <span style={{ fontSize: 14, color: 'var(--sec)' }}>Senza la QUOTA ASSOCIATIVA questa ricevuta non cambia se è in regola: conta solo la quota. Un «Trimestre» o un «Annuale» col nome del corso lo segna pagato.</span>
       )}
 
       {guaio && <span role="alert" style={{ fontSize: 15, color: 'var(--rosso-testo)' }}>{guaio}</span>}

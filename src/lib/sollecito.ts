@@ -1,13 +1,14 @@
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import { anni, telefonoGiusto } from './richieste'
 import { cifreTelefono } from './vestiario'
-import { euro } from './ricevute'
+import { euro, euroBreve } from './ricevute'
+import type { StatoCorso } from './corsiDaPagare'
 import type { PagatoNelVecchio } from './pagatoPrima'
 import { dalCertificato, pagamentoDi, statoCertificato, type Anagrafica, type PersonaSeg, type UltimoSollecito } from './segreteria'
 
 /**
  * Il sollecito su WhatsApp della scheda di una persona: cosa manca (quota,
- * certificato), il messaggio già scritto e il link `wa.me` che apre WhatsApp
+ * corsi, certificato), il messaggio già scritto e il link `wa.me` che apre WhatsApp
  * col testo pronto. L'app non manda niente: l'invio lo preme la segreteria.
  * Gli stati sono quelli dei timbri (`pagamentoDi`, `statoCertificato`).
  */
@@ -18,7 +19,7 @@ export interface Motivo {
 }
 
 export interface Sollecito {
-  /** Quel che manca, per il riquadro: prima la quota, poi il certificato. */
+  /** Quel che manca, per il riquadro: prima la quota, poi i corsi, poi il certificato. */
   motivi: Motivo[]
   /** Il messaggio: solo nome, motivo, data e importo. Mai codice fiscale, ricevute o note. */
   testo: string
@@ -63,6 +64,22 @@ export interface OpzioniSollecito {
   quotaNelVecchio?: boolean
   /** Ha la tessera da sistemare: il sollecito non ne parla, ma l'elenco lo dice. */
   tesseraDaSistemare?: boolean
+  /** I corsi della persona (`statoCorsi`): quelli non coperti si sollecitano dopo la quota. */
+  corsi?: StatoCorso[]
+}
+
+/** Il motivo di un corso non coperto; null per quelli pagati e per «da controllare», che la segreteria guarda prima. */
+function motivoCorso(s: StatoCorso): (Motivo & { frase: string }) | null {
+  const al = s.al ? dataLunga(s.al) : ''
+  const formula = s.formula ?? 'corso'
+  if (s.come === 'scaduto') return { testo: `${s.corso}: ${formula} scaduto il ${al}`, tono: 'rosso', frase: `${formula === 'annuale' ? 'l’' : 'il '}${formula} di ${s.corso} è scaduto il ${al}` }
+  if (s.come === 'fuori_scaduto') return { testo: `${s.corso}: pagato fino al ${al}, ora da pagare`, tono: 'rosso', frase: `il corso di ${s.corso} era pagato fino al ${al}` }
+  if (s.come === 'da_pagare') return { testo: `${s.corso}: corso da pagare`, tono: 'rosso', frase: `il corso di ${s.corso} è da pagare` }
+  if (s.come === 'in_parte') {
+    const mancano = euroBreve(s.mancano ?? 0)
+    return { testo: `${s.corso}: pagato in parte, mancano ${mancano}`, tono: 'giallo', frase: `del corso di ${s.corso} mancano ${mancano}` }
+  }
+  return null
 }
 
 /** I motivi con la loro frase per il messaggio, nell'ordine in cui si dicono. */
@@ -79,6 +96,10 @@ function cosaManca(p: PersonaSeg, quota: number, oggi: string, opz: OpzioniSolle
         ? { testo: `Quota associativa pagata in parte: mancano ${euro(paga.mancano)} €`, tono: 'giallo', frase: `della quota associativa mancano ${euro(paga.mancano)} €` }
         : { testo: 'Quota associativa pagata in parte', tono: 'giallo', frase: 'la quota associativa è pagata solo in parte' },
     )
+  for (const c of opz.corsi ?? []) {
+    const m = motivoCorso(c)
+    if (m) fuori.push(m)
+  }
 
   const scade = p.certificato.scade
   const cert = statoCertificato(p, oggi)

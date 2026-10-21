@@ -200,6 +200,9 @@ export function cosaNonVa(r: DatiRicevuta, oggi: string, prossimo?: number): str
 /** «418,00»: centesimi scritti all'italiana. */
 export const euro = (cent: number) => (cent / 100).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true })
 
+/** Una cifra in centesimi in poche lettere: «50 €», «50,50 €», lo sconto con il meno. */
+export const euroBreve = (cent: number) => `${cent < 0 ? '−' : ''}${Math.abs(cent) % 100 === 0 ? Math.abs(cent) / 100 : (Math.abs(cent) / 100).toFixed(2).replace('.', ',')} €`
+
 /** «418», «418,5», «418,50 €» → centesimi; `null` se non è un importo. */
 export function centesimi(testo: string): number | null {
   const t = testo.replace(/[€\s]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.')
