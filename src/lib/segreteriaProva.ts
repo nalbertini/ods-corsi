@@ -1,6 +1,7 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
+import { cosaNonVaCompenso, primoDelMese, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cancellaFileIl, contattoNonValido, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
@@ -1059,6 +1060,49 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return nuova
     },
 
+    async ricevuteCompensi(personaId) {
+      return (a().ricevuteCompensi ?? [])
+        .filter((x) => !personaId || x.personaId === personaId)
+        .slice()
+        .sort((x, y) => y.mese.localeCompare(x.mese) || y.creataIl.localeCompare(x.creataIl))
+    },
+
+    async faiRicevutaCompenso(dati) {
+      // Le stesse regole di `fai_ricevuta_compenso`, nell'ordine dell'app col database.
+      const p = persona(dati.personaId)
+      const no = cosaNonVaCompenso(dati)
+      if (no) throw new Error(no)
+      if (!(p.ruolo === 'istruttore' || p.ancheIstruttore)) throw new Error('La ricevuta del compenso si fa a chi insegna')
+      if (!/^\d{4}-\d{2}-01$/.test(dati.mese) || dati.mese > primoDelMese(new Date())) throw new Error('Il mese della ricevuta non va: il primo del mese, non nel futuro')
+      if (!dati.righe.length || dati.righe.length > 50 || dati.righe.some((r) => !r.corso.trim() || r.lezioni < 1 || r.minuti < 1 || !r.centesimiOra || r.centesimiOra > 100_000 || r.importo !== Math.round((r.minuti / 60) * r.centesimiOra)) || dati.calcolato !== dati.righe.reduce((s, r) => s + (r.importo ?? 0), 0))
+        throw new Error('Le righe del compenso non sono giuste: rifai la ricevuta dalla pagina COMPENSI')
+      if ((a().ricevuteCompensi ?? []).some((x) => x.personaId === dati.personaId && x.mese === dati.mese && !x.annullataIl))
+        throw new Error("C'è già la ricevuta di questo mese: annullala prima di rifarla")
+      const nuova: RicevutaCompenso = {
+        ...dati,
+        motivo: dati.importo === dati.calcolato ? null : dati.motivo?.trim() || null,
+        id: crypto.randomUUID(),
+        firmata: false,
+        annullataIl: null,
+        creataIl: new Date().toISOString(),
+      }
+      a().ricevuteCompensi = [...(a().ricevuteCompensi ?? []), nuova]
+      salva()
+      return nuova
+    },
+
+    async annullaRicevutaCompenso(id) {
+      const r = (a().ricevuteCompensi ?? []).find((x) => x.id === id)
+      if (!r || r.annullataIl) throw new Error("Questa ricevuta non c'è o è già annullata")
+      a().ricevuteCompensi = (a().ricevuteCompensi ?? []).map((x) => (x.id === id ? { ...x, annullataIl: new Date().toISOString() } : x))
+      salva()
+    },
+
+    async segnaFirmataCompenso(id, firmata) {
+      a().ricevuteCompensi = (a().ricevuteCompensi ?? []).map((x) => (x.id === id ? { ...x, firmata } : x))
+      salva()
+    },
+
     async segnaFirmata(letteraId, firmata) {
       a().lettere = (a().lettere ?? []).map((x) => (x.id === letteraId ? { ...x, firmata } : x))
       salva()
@@ -1767,7 +1811,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         throw new Error(`${nome} è anche allievo: non si elimina, gli si toglie l'accesso`)
       // Come il database: `pagamenti_diretti` non lascia cancellare chi ne ha.
       // Come `on delete restrict` di `lettere_incarico`, che `elimina_istruttore` dice così.
-      if ((a().lettere ?? []).some((x) => x.personaId === personaId)) throw new Error(`${nome} ha già lavorato nei registri: non si elimina, gli si toglie l'accesso`)
+      if ((a().lettere ?? []).some((x) => x.personaId === personaId) || (a().ricevuteCompensi ?? []).some((x) => x.personaId === personaId)) throw new Error(`${nome} ha già lavorato nei registri: non si elimina, gli si toglie l'accesso`)
       if ((a().pagamentiDiretti ?? []).some((x) => x.personaId === personaId))
         throw new Error(`${nome} ha dei pagamenti registrati: non si elimina, gli si toglie l'accesso`)
       a().persone = a().persone.filter((x) => x.id !== personaId)
@@ -2161,6 +2205,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         certificato_e_pagamento: { certificato_scade: p.certificato?.scade ?? null, certificato_file: p.certificato?.file ?? null, documento_in_segreteria: !!p.documento, ...(p.pagamento ?? { stato: 'da_pagare' }) },
         ricevute: (a().ricevute ?? []).filter((r) => r.personaId === personaId).map(({ id: _id, personaId: _p, ...r }) => r),
         lettere_incarico: (a().lettere ?? []).filter((l) => l.personaId === personaId).map(({ id: _id, personaId: _p, ...l }) => l),
+        ricevute_compensi: (a().ricevuteCompensi ?? []).filter((r) => r.personaId === personaId).map(({ id: _id, personaId: _p, ...r }) => r),
         pagamenti_a_mano: (a().pagamentiDiretti ?? []).filter((x) => x.personaId === personaId).map(({ id: _id, personaId: _p, ...x }) => x),
         dati_anagrafici: a().anagrafiche?.[personaId] ?? null,
       }

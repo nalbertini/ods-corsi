@@ -37,11 +37,11 @@ ok('titoli e voci, nell\'ordine', Array.isArray(GRUPPI) ? GRUPPI.map((g) => [g.t
   ['Ogni giorno', [['dafare', 'Da fare'], ['richieste', 'Richieste online'], ['presenze', 'Presenze']]],
   ['Iscritti e soldi', [['iscritti', 'Iscritti'], ['tessere', 'Tessere'], ['pagamenti', 'Pagamenti']]],
   ['Corsi e orari', [['settimana', 'Settimana'], ['corsi', 'Corsi'], ['listino', 'Listino']]],
-  ['Istruttori', [['istruttori', 'Presenze istruttori'], ['personale', 'Istruttori e accessi']]],
+  ['Istruttori', [['istruttori', 'Presenze istruttori'], ['compensi', 'Compensi'], ['personale', 'Istruttori e accessi']]],
   ['Il resto', [['statistiche', 'Statistiche'], ['vestiario', 'Vestiario'], ['esercizi', 'Esercizi'], ['segnalazioni', 'Segnalazioni'], ['sito', 'Sito']]],
 ])
-const ID16 = 'dafare settimana richieste presenze iscritti tessere pagamenti corsi istruttori personale statistiche listino vestiario esercizi segnalazioni sito'.split(' ')
-ok('le 16 voci di prima ci sono ancora, una volta sola',
+const ID16 = 'dafare settimana richieste presenze iscritti tessere pagamenti corsi istruttori compensi personale statistiche listino vestiario esercizi segnalazioni sito'.split(' ')
+ok('le 16 voci di prima e COMPENSI ci sono, una volta sola',
   Array.isArray(GRUPPI) ? GRUPPI.flatMap((g) => g.voci.map(([id]) => id)).sort() : GRUPPI, [...ID16].sort())
 ok('solo «Il resto» è secondario',
   Array.isArray(GRUPPI) ? GRUPPI.filter((g) => g.secondario === true).map((g) => g.titolo) : GRUPPI, ['Il resto'])
@@ -91,7 +91,7 @@ console.log('\nIl menu del Banco')
 const luoghi = await impacchetta("export { LUOGHI } from './src/lib/luoghiBanco'")
 ok('LUOGHI: i cinque luoghi con le loro voci', (luoghi.LUOGHI ?? []).map((l) => [l.id, l.voci.map((v) => v.voce)]), [
   ['oggi', ['dafare', 'settimana', 'presenze']],
-  ['persone', ['iscritti', 'tessere', 'richieste', 'istruttori', 'personale']],
+  ['persone', ['iscritti', 'tessere', 'richieste', 'istruttori', 'compensi', 'personale']],
   ['corsi', ['corsi', 'esercizi']],
   ['soldi', ['pagamenti', 'contabilita', 'listino', 'vestiario']],
   ['palestra', ['statistiche', 'segnalazioni', 'sito', 'regole']],

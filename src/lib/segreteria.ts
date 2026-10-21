@@ -5,6 +5,7 @@ import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, Mo
 import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
 import type { IncassoPrima } from './pagatoPrima'
 import type { DatiLettera, Lettera } from './lettere'
+import type { DatiRicevutaCompenso, RicevutaCompenso } from './compensi'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
@@ -701,6 +702,13 @@ export interface DatiSegreteria {
   faiLettera(dati: DatiLettera): Promise<Lettera>
   /** Il foglio firmato è tornato, o no: l'unica cosa che si cambia di una lettera fatta. */
   segnaFirmata(letteraId: string, firmata: boolean): Promise<void>
+  /** Le ricevute dei compensi di un tecnico, o di tutti, dalla più nuova, anche le annullate (`80-ricevute-compensi.sql`). */
+  ricevuteCompensi(personaId?: string): Promise<RicevutaCompenso[]>
+  /** Fa la ricevuta del mese (`fai_ricevuta_compenso`); se ce n'è già una non annullata, dice di annullarla prima. */
+  faiRicevutaCompenso(dati: DatiRicevutaCompenso): Promise<RicevutaCompenso>
+  annullaRicevutaCompenso(id: string): Promise<void>
+  /** Il foglio firmato è tornato, o no: l'unica cosa che si cambia di una ricevuta fatta. */
+  segnaFirmataCompenso(id: string, firmata: boolean): Promise<void>
   /** Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). */
   emettiRicevuta(r: DatiRicevuta, satispayId?: string): Promise<Ricevuta>
   /**

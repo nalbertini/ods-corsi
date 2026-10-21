@@ -3505,3 +3505,15 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-sotto[data-tono='fatto'] { color: var(--verde-testo); }
 .sg-sotto[data-tono='aspetta'] { color: var(--giallo-testo); }
 .sg-sotto[data-tono='guaio'] { color: var(--rosso-testo); }
+
+/* COMPENSI: la riga del tecnico, i corsi in colonna, il «Per corso» che dice che si apre; sul telefono la riga si impila. */
+.sg-compenso-corso { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 14px; align-items: center; }
+.sg-compenso-per-corso > summary::before { content: '▸ '; }
+.sg-compenso-per-corso[open] > summary::before { content: '▾ '; }
+.sg-segno-regola[data-tono='neutro'] { color: var(--text); }
+@media (max-width: 480px) {
+  .sg-compenso-riga { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-compenso-riga > :nth-child(n + 3) { grid-column: 1 / -1; }
+  .sg-numeri[data-telefono-due] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-numeri[data-telefono-due] > :nth-child(1), .sg-numeri[data-telefono-due] > :nth-child(4) { display: none; }
+}

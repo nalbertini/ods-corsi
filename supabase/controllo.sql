@@ -394,6 +394,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
                 where table_schema = 'public' and table_name = 'anagrafiche' and column_name = 'iban')),
   ('79-lettere-incarico.sql', 'le lettere d''incarico dei tecnici: una valida per stagione, fatte dalla funzione',
     to_regclass('public.lettere_incarico') is not null
-    and to_regprocedure('public.fai_lettera_incarico(uuid,text,date,date,text,text,date,jsonb,jsonb)') is not null)
+    and to_regprocedure('public.fai_lettera_incarico(uuid,text,date,date,text,text,date,jsonb,jsonb)') is not null),
+  ('80-ricevute-compensi.sql', 'le ricevute mensili dei compensi dei tecnici: una per mese, fatte e annullate dalle funzioni',
+    to_regclass('public.ricevute_compensi') is not null
+    and to_regprocedure('public.fai_ricevuta_compenso(uuid,date,jsonb,integer,integer,text,jsonb,text,date)') is not null
+    and to_regprocedure('public.annulla_ricevuta_compenso(uuid)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

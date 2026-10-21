@@ -8,6 +8,9 @@ import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
 import { DatiTecnico, LetteraIncarico, Tariffe } from './DatiTecnico'
+import { AzioniRicevuta, SegnoCompenso, tonoCompenso } from './Compensi'
+import { compensoDelMese, mancaPerRicevuta, primoDelMese, statoCompenso } from '../../lib/compensi'
+import { euro } from '../../lib/ricevute'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
 
 /**
@@ -569,7 +572,7 @@ function Scheda({
           <LetteraIncarico d={d} p={p} fai={fai} versione={versione} />
         </>
       )}
-      {dellaSala && <PresenzeDelMese d={d} p={p} />}
+      {dellaSala && <PresenzeDelMese d={d} p={p} fai={fai} versione={versione} />}
 
       <div className="sg-scheda-piede">
         <button
@@ -718,7 +721,8 @@ function scaricaCsv(righe: PresenzaIstruttoreSeg[], chi: string, mese: string) {
  * segreteria); quelle ancora da confermare si dicono a parte, perché vanno
  * decise prima di chiudere il mese.
  */
-function PresenzeDelMese({ d, p }: { d: DatiSegreteria; p: PersonaleSeg }) {
+/** `versione` cambia quando dati o tariffe si salvano: il compenso si rilegge. */
+function PresenzeDelMese({ d, p, fai, versione }: { d: DatiSegreteria; p: PersonaleSeg; fai: Fai; versione: number }) {
   const periodi = useMemo(mesi, [])
   const [periodo, setPeriodo] = useState(periodi[0].chiave)
   const m = periodi.find((x) => x.chiave === periodo) ?? periodi[0]
@@ -726,9 +730,19 @@ function PresenzeDelMese({ d, p }: { d: DatiSegreteria; p: PersonaleSeg }) {
   const giorni = Math.ceil((Date.now() - m.da.getTime()) / 86_400_000) + 1
   const elenco = useCarica(() => d.presenzeIstruttori(giorni), [d, giorni])
   // Le lezioni tenute in cui era previsto e non si è segnato: da decidere anche quelle.
-  const proposte = useCarica(() => d.lezioniSenzaIstruttore().catch(() => []), [d])
+  // `null`: non si sono lette. Le presenze si mostrano lo stesso, il compenso no: senza, il conto sarebbe sbagliato.
+  const proposte = useCarica(() => d.lezioniSenzaIstruttore().catch(() => null), [d])
 
   const { righe: del, confermate: fatte, minuti: totale, daConfermare, perCorso } = delMese(elenco.dato ?? [], proposte.dato ?? [], p.id, m)
+  // Il compenso solo a chi insegna: la segreteria che non insegna ha le presenze, non le ricevute.
+  const compenso = useCarica(
+    async () => (insegna(p) ? { tariffe: await d.tariffe(p.id), ricevute: await d.ricevuteCompensi(p.id), manca: mancaPerRicevuta((await d.anagraficaDi(p.id))?.dati ?? null) } : null),
+    [d, p.id, versione],
+  )
+  const conto = compenso.dato && proposte.dato ? compensoDelMese(elenco.dato ?? [], proposte.dato ?? [], p.id, m, compenso.dato.tariffe) : null
+  const mese = primoDelMese(m.da)
+  const ricevuta = compenso.dato?.ricevute.find((r) => r.mese === mese && !r.annullataIl)
+  const ricaricaTutto = () => Promise.all([compenso.ricarica(), elenco.ricarica()])
   const { ordina, colonna } = useOrdina<(typeof perCorso)[number], 'corso' | 'lezioni' | 'ore'>({
     corso: (c) => c.corso,
     lezioni: (c) => c.lezioni,
@@ -760,6 +774,12 @@ function PresenzeDelMese({ d, p }: { d: DatiSegreteria; p: PersonaleSeg }) {
         <Numero titolo="LEZIONI" valore={fatte.length} sotto={m.nome} />
         <Numero titolo="ORE" valore={ore(totale)} sotto="da orario delle lezioni" />
         <Numero titolo="DA CONFERMARE" valore={daConfermare} sotto={daConfermare ? 'in PRESENZE ISTRUTTORI' : 'niente in sospeso'} allarme={daConfermare > 0} />
+        {conto &&
+          (ricevuta || (!conto.senzaTariffa.length && !conto.daConfermare) ? (
+            <Numero titolo="COMPENSO" valore={euro(ricevuta?.importo ?? conto.calcolato)} sotto={ricevuta?.motivo ? 'euro, cambiato a mano' : 'euro, ore × tariffa'} />
+          ) : (
+            <Numero titolo="COMPENSO" valore="—" sotto={conto.daConfermare ? 'presenze da decidere' : 'manca una tariffa'} />
+          ))}
       </div>
       {perCorso.length > 0 && (
         <div role="table" aria-label={`Lezioni di ${p.nome}, ${m.nome}`} className="sg-tabella">
@@ -786,6 +806,34 @@ function PresenzeDelMese({ d, p }: { d: DatiSegreteria; p: PersonaleSeg }) {
         </div>
       )}
       {elenco.dato !== null && !del.length && <span style={{ fontSize: 14, color: 'var(--dim)' }}>Nessuna presenza in {m.nome.toLowerCase()}.</span>}
+      {compenso.guaio && <Guaio testo={compenso.guaio} />}
+      {conto && (conto.lezioni > 0 || conto.daConfermare > 0 || ricevuta) && (
+        <div
+          className="row"
+          style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center', padding: '14px 16px', border: `2px solid ${tonoCompenso(statoCompenso({ conto, ricevuta, manca: compenso.dato?.manca })) === 'rosso' ? 'var(--rosso)' : 'var(--line-soft)'}` }}
+        >
+          <span style={{ flex: 1, minWidth: 220 }}>
+            <SegnoCompenso stato={statoCompenso({ conto, ricevuta, manca: compenso.dato?.manca })} conto={conto} ricevuta={ricevuta} manca={compenso.dato?.manca} inScheda />
+          </span>
+          <AzioniRicevuta d={d} p={p} conto={conto} ricevuta={ricevuta} stato={statoCompenso({ conto, ricevuta, manca: compenso.dato?.manca })} mese={mese} fai={fai} onCambiato={ricaricaTutto} inScheda />
+        </div>
+      )}
+      {compenso.dato && compenso.dato.ricevute.some((r) => r !== ricevuta) && (
+        <div className="stack" style={{ gap: 4 }}>
+          <span className="sg-etichetta">LE ALTRE RICEVUTE</span>
+          {compenso.dato.ricevute
+            .filter((r) => r !== ricevuta)
+            .map((r) => (
+              <span key={r.id} className="row" style={{ gap: 12, flexWrap: 'wrap', fontSize: 13, color: 'var(--sec)' }}>
+                {[r.mese.slice(0, 7).split('-').reverse().join('/'), `${euro(r.importo)} €`, r.annullataIl ? 'annullata' : r.firmata ? 'firmata' : 'non firmata'].join(' · ')}
+                {/* Un'annullata non si ristampa: un foglio uguale a uno valido si potrebbe far firmare o pagare per sbaglio. */}
+                {!r.annullataIl && <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 13 }} onClick={() => void fai(async () => (await import('../../lib/ricevutaCompensoPdf')).scaricaRicevuteCompensi([r]))}>
+                  Ristampa
+                </button>}
+              </span>
+            ))}
+        </div>
+      )}
     </div>
   )
 }
