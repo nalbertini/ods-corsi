@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.139.2 — 21 ottobre 2026
+
+### Risolto
+
+- Il riquadro IL SITO in Statistiche diceva che il contatore non era acceso
+
 ## 0.139.1 — 21 ottobre 2026
 
 ### Modificato
