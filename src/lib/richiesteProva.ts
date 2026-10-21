@@ -1,5 +1,5 @@
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
-import { controlla, DA_STAMPARE, pulisciCf, minorenne } from './richieste'
+import { ACCOLTA_RESTA, controlla, DA_STAMPARE, pulisciCf, minorenne, siElimina } from './richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { archivio, certificatiProva, scordaCertificato } from './archivioProva'
 import { nomeProprio } from './nomi'
@@ -441,6 +441,10 @@ export function creaRichiesteProva(): DatiRichieste {
     },
 
     async elimina(richiestaId) {
+      const x = una(richiestaId)
+      // Come `on delete set null`: una scheda cancellata non tiene più la richiesta.
+      const scheda = archivio.dati.persone.some((p) => p.id === x.personaId) ? x.personaId : undefined
+      if (!siElimina({ stato: x.stato, personaId: scheda })) throw new Error(ACCOLTA_RESTA)
       for (const f of file.get(richiestaId)?.values() ?? []) if (f.url) URL.revokeObjectURL(f.url)
       file.delete(richiestaId)
       tutte = tutte.filter((r) => r.id !== richiestaId)

@@ -162,9 +162,17 @@ export interface DatiRichieste {
    */
   accogli(richiestaId: string, personaId?: string): Promise<string>
   rifiuta(richiestaId: string): Promise<void>
-  /** La richiesta e i suoi file, per sempre. */
+  /** La richiesta e i suoi file, per sempre; accolta, solo se la scheda non c'è più (`siElimina`). */
   elimina(richiestaId: string): Promise<void>
 }
+
+/**
+ * Accolta, la richiesta tiene nascita, codice fiscale, residenza e genitore
+ * della scheda (vedi `18-anagrafiche.sql`): finché la scheda c'è non si
+ * elimina. Come la policy `richieste_cancella` di `91-richieste-accolte-restano.sql`.
+ */
+export const siElimina = (r: Pick<Richiesta, 'stato' | 'personaId'>): boolean => r.stato !== 'accolta' || !r.personaId
+export const ACCOLTA_RESTA = 'Una richiesta accolta non si elimina: tiene nascita, codice fiscale e residenza della scheda'
 
 /** I file da caricare, nell'ordine in cui si chiedono. */
 export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string; obbligatorio: boolean; seManca?: string }> = [

@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere, fileObbligatori, MANCA_RICEVUTA, DETTAGLIO_RICEVUTA } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'; export { archivio } from './src/lib/archivioProva'; export { aggiungiRichiesteProva, scordaRichiesteProva, richiesteContateProva } from './src/lib/richiesteProva'; export { seminaEsempi } from './src/lib/esempiProva'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { siElimina, ACCOLTA_RESTA, daSelezionare, anni, anniScritti, certificatoDaPortare, avvisoCertificato, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, sceltaMancante, MANCA_SCELTA, aiutoScelta, NOTA_SCELTA, FILE, firmaDaRifare, minorenne, problemi, tipiDaChiedere, fileObbligatori, MANCA_RICEVUTA, DETTAGLIO_RICEVUTA } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'; export { archivio } from './src/lib/archivioProva'; export { aggiungiRichiesteProva, scordaRichiesteProva, richiesteContateProva } from './src/lib/richiesteProva'; export { seminaEsempi } from './src/lib/esempiProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -276,6 +276,10 @@ console.log('\n4. la segreteria accoglie e rifiuta')
   ok('e non si accoglie più', await errore(() => r.accogli(terzo)), 'Questa richiesta è già stata rifiutata')
   await r.elimina(terzo)
   ok('eliminato, sparisce', (await r.richieste()).some((x) => x.id === terzo), false)
+  // Accolta, la richiesta tiene nascita, codice fiscale e residenza della scheda: non si elimina.
+  ok('accolta: non si elimina, lo dice', await errore(() => r.elimina(luca)), m.ACCOLTA_RESTA)
+  ok('accolta: la richiesta resta, coi suoi dati', (await r.richieste()).find((x) => x.id === luca)?.codiceFiscale, 'RSSLCU96A01L219K')
+  ok('la regola: nuova e rifiutata sì, accolta con la scheda no, accolta senza scheda sì', [{ stato: 'nuova' }, { stato: 'rifiutata' }, { stato: 'accolta', personaId: 'p-1' }, { stato: 'accolta' }].map(m.siElimina), [true, true, false, true])
 
   const e = await s.esporta(id)
   ok("l'esportazione porta la richiesta", e.richieste_di_iscrizione.map((x) => [x.stato, x.codiceFiscale]), [['accolta', 'RSSLCU96A01L219K']])
@@ -620,12 +624,14 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     ok('rifiuta: già rifiutata, il messaggio del database', await errore(() => finto({ rpc: { rifiuta_iscrizione: ERR('P0001', 'Questa richiesta non è più nuova') } }).v.rifiuta('r-1')), 'Questa richiesta non è più nuova')
     ok('rifiuta: senza permesso', await errore(() => finto({ rpc: { rifiuta_iscrizione: ERR('42501') } }).v.rifiuta('r-1')), PERMESSO)
 
+    const accolta = finto({ tabella: { data: [{ stato: 'accolta', persona_id: 'p-1' }], error: null }, elenco: { 'r-1': nomiFile('modulo.pdf') } })
+    ok('elimina: accolta, con la scheda, non tocca né file né riga', [await errore(() => accolta.v.elimina('r-1')), accolta.reg.some((x) => x[0] === 'remove' || x[0] === 'delete')], [m.ACCOLTA_RESTA, false])
     const e = finto({ elenco: { 'r-1': nomiFile('modulo.pdf', 'documento.jpg') } })
     await e.v.elimina('r-1')
-    ok('elimina: prima i file, poi la riga', e.reg, [['list', 'iscrizioni', 'r-1'], ['remove', 'iscrizioni', ['r-1/modulo.pdf', 'r-1/documento.jpg']], ['from', 'richieste_iscrizione'], ['delete'], ['eq', 'id', 'r-1']])
+    ok('elimina: prima lo stato, poi i file, poi la riga', e.reg, [['from', 'richieste_iscrizione'], ['select', 'stato, persona_id'], ['eq', 'id', 'r-1'], ['list', 'iscrizioni', 'r-1'], ['remove', 'iscrizioni', ['r-1/modulo.pdf', 'r-1/documento.jpg']], ['from', 'richieste_iscrizione'], ['delete'], ['eq', 'id', 'r-1']])
     const senza = finto()
     await senza.v.elimina('r-1')
-    ok('elimina: senza file, solo la riga', senza.reg.map((x) => x[0]), ['list', 'from', 'delete', 'eq'])
+    ok('elimina: senza file, solo la riga', senza.reg.map((x) => x[0]), ['from', 'select', 'eq', 'list', 'from', 'delete', 'eq'])
     const rotto = finto({ elenco: { 'r-1': nomiFile('modulo.pdf') }, rimuovi: { data: null, error: { message: 'down' } } })
     ok('elimina: se i file non vanno via, la riga resta (un file senza riga non lo ritrova nessuno)', [await errore(() => rotto.v.elimina('r-1')), rotto.reg.some((x) => x[0] === 'delete')], ['down', false])
     ok('elimina: senza permesso sulla riga', await errore(() => finto({ cancella: ERR('42501') }).v.elimina('r-1')), PERMESSO)
@@ -796,8 +802,7 @@ console.log('\n15. da dove arriva la richiesta: la prova pulisce e scarta come 7
   await r.elimina(daEliminare)
   // Eliminata quando è ancora nuova (lo spam) non conta più; accolta o rifiutata, eliminata, resta contata.
   ok('una richiesta eliminata da nuova non conta più', quante(await conteggi(), 'corso-karate'), 0)
-  await r.elimina(id)
-  ok('una richiesta accolta, eliminata, resta contata', quante(await conteggi(), 'home'), 1)
+  ok('una richiesta accolta non si elimina, e resta contata', [await errore(() => r.elimina(id)), quante(await conteggi(), 'home')], [m.ACCOLTA_RESTA, 1])
   ok('fuori dal periodo non conta', typeof s.richiesteDaDove === 'function' && (await s.richiesteDaDove(new Date(2026, 7, 1), new Date(2026, 7, 31))).righe.length, 0)
   const rif = (await r.richieste()).find((x) => x.provenienza === 'instagram').id
   await r.rifiuta(rif)
