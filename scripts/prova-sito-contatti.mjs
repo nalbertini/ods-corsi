@@ -156,12 +156,12 @@ console.log('\n5. Quel che il design ha e il sito non aveva')
 
 console.log('\n6. L’invito e il piede, misure del design')
 {
-  ok('invito: 96px sopra, 6px sotto, padding 56px, due colonne', [/margin:\s*96px var\(--margine\) 6px/.test(css('.invito')), /padding:\s*56px(;|$)/.test(css('.invito')), /grid-template-columns:\s*minmax\(0,1\.1fr\) minmax\(0,1fr\)/.test(css('.invito'))], [true, true, true])
-  ok('invito: titolo da 56 a 88px, frase da 22px (520px al massimo), pulsanti alti 60px', [/font-size:\s*clamp\(56px,6\.11vw,88px\)/.test(css('.invito h2')), /font-size:\s*22px/.test(css('.invito-testo>p:not(.occhiello)')), /max-width:\s*520px/.test(css('.invito-testo>p:not(.occhiello)')), /min-height:\s*60px/.test(css('.invito .pulsante'))], [true, true, true, true])
+  ok('invito: 96px sopra, 6px sotto, padding 56px, quattro riquadri in fila', [/margin:\s*96px var\(--margine\) 6px/.test(css('.invito')), /padding:\s*56px(;|$)/.test(css('.invito')), /grid-template-columns:\s*repeat\(4,minmax\(0,1fr\)\)/.test(css('.invito-riquadri'))], [true, true, true])
+  ok('invito: titolo da 56 a 88px, frase da 22px (560px al massimo), pulsanti alti 52px', [/font-size:\s*clamp\(56px,6\.11vw,88px\)/.test(css('.invito h2')), /font-size:\s*22px/.test(css('.invito-frase p')), /max-width:\s*560px/.test(css('.invito-frase p')), /min-height:\s*52px/.test(css('.invito-riquadri .pulsante'))], [true, true, true, true])
   ok('piede: Inter 16px, interlinea 1.9, 40px dentro su tutti i lati', [/font-size:\s*16px/.test(css('.piede')), /line-height:\s*1\.9/.test(css('.piede')), /padding:\s*40px;|padding:\s*40px$/.test(css('.piede'))], [true, true, true])
   const mob = CSS.slice(CSS.indexOf('@media (max-width:900px)'))
   const m = (sel) => [...mob.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].filter((x) => x[1].trim() === sel).map((x) => x[2]).join(';')
-  ok('telefono invito: 48px sopra, una colonna, padding 28px 22px, frase 18px', [/margin:\s*48px var\(--margine\) 6px/.test(m('.invito')), /grid-template-columns:\s*minmax\(0,1fr\)(;|$)/.test(m('.invito')), /padding:\s*28px 22px/.test(m('.invito')), /font-size:\s*18px/.test(m('.invito-testo>p:not(.occhiello)'))], [true, true, true, true])
+  ok('telefono invito: 48px sopra, una colonna, padding 28px 22px, frase 18px', [/margin:\s*48px var\(--margine\) 6px/.test(m('.invito')), /grid-template-columns:\s*minmax\(0,1fr\)(;|$)/.test(m('.invito-riquadri')), /padding:\s*28px 22px/.test(m('.invito')), /font-size:\s*18px/.test(m('.invito-frase p'))], [true, true, true, true])
 }
 
 console.log('\n7. La mappa del sito')

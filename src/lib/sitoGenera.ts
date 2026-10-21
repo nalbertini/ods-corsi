@@ -92,12 +92,11 @@ const TESTI = {
   occhiello: 'Una settimana di prova',
   titoloInvito: 'Vieni a provare.',
   fraseInvito: 'Una lezione a 3 € o una settimana a 10 €: provi le discipline adatte alla tua età, o a quella di tuo figlio, poi scegli.',
-  // La prova non si prenota dal modulo: si chiede a voce o su WhatsApp, poi ci si iscrive.
-  passi: [
-    ['Chiamaci o scrivici', 'Ti diciamo quando venire, per la sua età'],
-    ['Vieni a provare', 'Una lezione 3 €, una settimana 10 €'],
-    ['Scegli e iscriviti', 'Online, dal telefono, in pochi minuti'],
-  ],
+  // I quattro riquadri sotto il testo: Iscriviti per primo, poi i modi di arrivare a noi (la prova si chiede a voce o su WhatsApp).
+  iscriviti: { etichetta: 'Prova e iscriviti', nota: 'Online, dal telefono, in pochi minuti' },
+  chiama: { etichetta: 'Chiama', nota: 'Ti diciamo quando venire, per la tua età', azione: 'Chiama ora' },
+  scrivici: { etichetta: 'Scrivici', valore: 'WhatsApp', nota: 'Allo stesso numero: ti rispondiamo appena possibile', azione: 'Scrivici su WhatsApp' },
+  dove: { etichetta: 'Vieni a trovarci', azione: 'Come arrivare' },
   scriviProva: 'Ciao, vorrei provare un corso',
   orari: 'Guarda gli orari',
   altriLink: 'Altri link',
@@ -412,7 +411,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .salta{position:absolute;left:-9999px;top:0}
 .salta:focus{left:16px;top:16px;z-index:100;display:inline-flex;align-items:center;min-height:48px;padding:0 20px;background:var(--giallo);color:var(--inchiostro);font-weight:700;text-decoration:none}
 .invito a:focus-visible{outline-color:var(--inchiostro)}
-.invito-dove a:focus-visible{outline-color:var(--giallo)}
+.invito .scuro a:focus-visible{outline-color:var(--giallo)}
 .piede a:focus-visible{outline-color:var(--giallo)}
 .logo{display:block;flex-shrink:0}
 .logo img{display:block;width:112px;height:110px;mix-blend-mode:multiply}
@@ -438,23 +437,23 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .testo blockquote{padding-left:18px;border-left:4px solid var(--blu);font-size:1.15em}
 .testo a,.colonna a{text-underline-offset:3px}
 .testo img,.colonna img{max-width:100%;height:auto;border-radius:6px}
-.invito{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:48px;margin:96px var(--margine) 6px;padding:56px;border-radius:6px;background:var(--giallo);color:var(--inchiostro)}
-.invito-testo{display:flex;flex-direction:column;justify-content:center;gap:20px;min-width:0}
+.invito{display:flex;flex-direction:column;gap:40px;margin:96px var(--margine) 6px;padding:56px;border-radius:6px;background:var(--giallo);color:var(--inchiostro)}
+.invito-testo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px;align-items:end}
+.invito-capo{display:flex;flex-direction:column;gap:20px;margin:0}
 .invito .occhiello{margin:0;font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
 .invito h2{margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(56px,6.11vw,88px);line-height:.9;text-wrap:balance;overflow-wrap:anywhere}
-.invito-testo>p:not(.occhiello){margin:0;max-width:520px;font-size:22px;line-height:1.45}
-.invito-pulsanti{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px}
-.invito .pulsante{min-height:60px;padding:0 28px}
-.invito .pulsante.secondario{border-width:3px}
-.invito-lato{display:flex;flex-direction:column;gap:6px;min-width:0}
-.invito-passi{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;counter-reset:passo}
-.invito-passi li{display:grid;grid-template-columns:56px minmax(0,1fr);column-gap:16px;align-items:center;padding:18px 22px;border-radius:6px;background:#fff;font-size:18px;line-height:1.35;counter-increment:passo}
-.invito-passi li::before{content:counter(passo);grid-row:span 2;font-family:var(--display);font-weight:800;font-size:56px;line-height:.8;color:var(--blu)}
-.invito-passi strong{display:block}
-.invito-dove{display:grid;grid-template-columns:56px minmax(0,1fr);column-gap:16px;align-items:center;margin:0;padding:18px 22px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:18px;line-height:1.35}
-.invito-dove::before{content:"↓";grid-row:span 3;font-family:var(--display);font-weight:800;font-size:40px;line-height:.8;color:var(--giallo);text-align:center}
-.invito-dove strong{display:block}
-.invito-dove a{display:flex;align-items:center;min-height:48px;color:#fff;text-underline-offset:3px}
+.invito-frase{display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-width:0}
+.invito-frase p{margin:0;max-width:560px;font-size:22px;line-height:1.45}
+.invito-orari{display:inline-flex;align-items:center;min-height:48px;font-size:18px;font-weight:600;text-underline-offset:4px}
+.invito-riquadri{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}
+.invito-riquadri li{display:flex;flex-direction:column;gap:4px;min-width:0;padding:22px;border-radius:6px;background:#fff;font-size:17px;line-height:1.35}
+.invito-riquadri li.scuro{background:var(--inchiostro);color:#fff}
+.invito-riquadri p{margin:0}
+.invito-riquadri .etichetta{font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.invito-riquadri .valore{font-family:var(--display);font-weight:800;font-size:32px;line-height:.95;text-transform:uppercase;overflow-wrap:anywhere}
+.invito-riquadri .pulsante{align-self:flex-start;min-height:52px;margin-top:auto;padding:0 22px;font-size:17px}
+.invito-riquadri p:last-of-type{margin-bottom:12px}
+.invito-riquadri .scuro .pulsante{background:var(--giallo);color:var(--inchiostro)}
 .piede{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:32px;margin:0 var(--margine) 48px;padding:40px;background:var(--inchiostro);color:#fff;border-radius:6px}
 .piede .nome{max-width:5.5em;margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:56px;line-height:.9}
 .piede .colonne{display:contents;font-size:16px;line-height:1.9}
@@ -800,10 +799,12 @@ h1{font-size:84px;line-height:.84}
 .tessera.citazione{min-height:300px;padding:22px;gap:20px;font-size:19px;line-height:1.35}
 .avatar{width:48px;height:48px;font-size:24px;background:var(--chiara)}
 .firma{gap:12px;font-size:28px;line-height:.95}
-.invito{grid-template-columns:minmax(0,1fr);gap:28px;margin:48px var(--margine) 6px;padding:28px 22px}
-.invito-testo>p:not(.occhiello){font-size:18px}
-.invito .pulsante{width:100%}
-.invito-passi li,.invito-dove{padding:14px 16px;font-size:16px}
+.invito{gap:28px;margin:48px var(--margine) 6px;padding:28px 22px}
+.invito-testo{grid-template-columns:minmax(0,1fr);gap:20px}
+.invito-frase p{font-size:18px}
+.invito-riquadri{grid-template-columns:minmax(0,1fr)}
+.invito-riquadri li{padding:16px;font-size:16px}
+.invito-riquadri .pulsante{align-self:stretch}
 .piede{margin:0 var(--margine) 24px;padding:24px;gap:14px}
 .piede .nome{font-size:44px}
 .pannello .tessera:has(.tondi){display:flex;align-items:flex-start}
@@ -917,6 +918,7 @@ ${CSS_TESTATA}
 ${cssFoci()}
 @media (max-width:720px){.colonne.c-2,.colonne.c-3{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
+@media (min-width:901px) and (max-width:1200px){.invito-riquadri{grid-template-columns:repeat(2,minmax(0,1fr))}}
 `.replace(/\n/g, '')
 
 /**
@@ -1084,17 +1086,24 @@ function barraProva(): string {
 const conEuro = (t: string) => t.replace(/(\d) €/g, '$1\u00a0€')
 
 /**
- * L'invito in fondo alla pagina (design: docs/design-canvas/invito-iscriviti/): titolo, frase sulle prove, «Iscriviti», «Chiama»
- * e «Scrivici», poi i tre passi e dove siamo. La parte ISCRIVITI dell'editor (`parte`) ne cambia solo titolo e frase;
+ * L'invito in fondo alla pagina (design: `SitoInvito` della libreria): in alto titolo e frase sulle prove, sotto quattro
+ * riquadri con lo stesso pulsante, Iscriviti per primo e scuro, poi Chiama, Scrivici e Vieni a trovarci. La parte ISCRIVITI dell'editor (`parte`) ne cambia solo titolo e frase;
  * l'indirizzo, il numero e i link sono quelli di tutto il sito. Lo mostrano così anche i due editor a pezzi.
  */
 export function invito(parte: ParteIscriviti | null, conOrari: boolean): string {
   // Un titolo di soli spazi è vuoto: vale quello di sempre.
   const titolo = parte?.titolo.trim() || TESTI.titoloInvito
   const frase = parte?.frase.trim() || TESTI.fraseInvito
-  const passi = TESTI.passi.map(([t, d]) => `<li><strong>${t}</strong> ${conEuro(d)}</li>`).join('')
-  const orari = conOrari ? `<a href="${percorso('orari')}">${TESTI.orari}</a>` : ''
-  return `<section class="invito" aria-labelledby="invito-titolo"><div class="invito-testo"><p class="occhiello">${TESTI.occhiello}</p><h2 id="invito-titolo">${esc(titolo)}</h2><p>${conEuro(esc(frase))}</p><div class="invito-pulsanti"><a class="pulsante" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.prova}</a><a class="pulsante secondario" href="${esc(chiama)}">Chiama ${esc(CONTATTI.telefono)}</a><a class="pulsante secondario" href="${esc(scrivi(TESTI.scriviProva))}" rel="noopener noreferrer">Scrivici</a></div></div><div class="invito-lato"><ol class="invito-passi">${passi}</ol><p class="invito-dove"><strong>${esc(CONTATTI.indirizzo)}</strong> ${TESTI.metro[0].toUpperCase() + TESTI.metro.slice(1)}${orari}</p></div></section>`
+  const orari = conOrari ? `<a class="invito-orari" href="${percorso('orari')}">${TESTI.orari}</a>` : ''
+  const riquadro = (classe: string, etichetta: string, valore: string, nota: string, link: string) => `<li${classe}><p class="etichetta">${etichetta}</p><p class="valore">${valore}</p><p>${nota}</p>${link}</li>`
+  const metro = TESTI.metro[0].toUpperCase() + TESTI.metro.slice(1)
+  const riquadri = [
+    riquadro(' class="scuro"', TESTI.iscriviti.etichetta, TESTI.prova, TESTI.iscriviti.nota, `<a class="pulsante" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.prova}</a>`),
+    riquadro('', TESTI.chiama.etichetta, esc(CONTATTI.telefono), TESTI.chiama.nota, `<a class="pulsante" href="${esc(chiama)}">${TESTI.chiama.azione}</a>`),
+    riquadro('', TESTI.scrivici.etichetta, TESTI.scrivici.valore, TESTI.scrivici.nota, `<a class="pulsante" href="${esc(scrivi(TESTI.scriviProva))}" rel="noopener noreferrer">${TESTI.scrivici.azione}</a>`),
+    riquadro('', TESTI.dove.etichetta, esc(CONTATTI.indirizzo), metro, `<a class="pulsante" href="${esc(CONTATTI.mappa)}" rel="noopener noreferrer">${TESTI.dove.azione}</a>`),
+  ].join('')
+  return `<section class="invito" aria-labelledby="invito-titolo"><div class="invito-testo"><hgroup class="invito-capo"><p class="occhiello">${TESTI.occhiello}</p><h2 id="invito-titolo">${esc(titolo)}</h2></hgroup><div class="invito-frase"><p>${conEuro(esc(frase))}</p>${orari}</div></div><ul class="invito-riquadri">${riquadri}</ul></section>`
 }
 
 /** Le anteprime di condivisione (Open Graph e Twitter). Il 404 non si condivide: non le ha. */

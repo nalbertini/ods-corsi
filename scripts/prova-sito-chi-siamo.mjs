@@ -84,7 +84,7 @@ console.log('\n7. Testata e invito come nel design')
   const inv = h.match(/<section class="invito"[\s\S]*?<\/section>/)?.[0] ?? ''
   ok('l’invito dice anche della settimana a 10 euro', [inv.includes('una settimana a 10\u00a0€'), inv.includes('Collegno')], [true, true])
   const css = h.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
-  ok('l’invito in due colonne, con margini della pagina e 56px dentro', /\.invito\{display:grid;grid-template-columns:minmax\(0,1\.1fr\) minmax\(0,1fr\);gap:48px;margin:96px var\(--margine\) 6px;padding:56px;/.test(css), true)
+  ok('l’invito: testo sopra e riquadri sotto, con margini della pagina e 56px dentro', /\.invito\{display:flex;flex-direction:column;gap:40px;margin:96px var\(--margine\) 6px;padding:56px;/.test(css), true)
   ok('il titolo dell’invito a 88px a 1440px', /\.invito h2\{[^}]*font-size:clamp\(56px,6\.11vw,88px\)/.test(css), true)
   ok('logo alto 110px e testata con 22px sopra e sotto', [/\.logo img\{height:110px\}/.test(css), /\.testata\{padding:22px var\(--margine\)\}/.test(css)], [true, true])
   ok('la pagina aperta è gialla', /\.testata nav a\[aria-current\]\{background:var\(--giallo\)\}/.test(css), true)

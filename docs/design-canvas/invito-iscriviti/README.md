@@ -31,3 +31,11 @@ Componente nuovo in `../ods-design-system/`: `SitoInvito`.
   senza la pagina Contatti non esce, come l'invito di sempre.
 - «Guarda gli orari» va su una riga sua, alta 48px, e manca nella pagina Orari.
 - «€» ha lo spazio indivisibile prima; il titolo va a capo anche dentro una parola lunga.
+
+## Dopo, sul canvas (21 ottobre)
+
+Cinque commenti sul canvas hanno cambiato la parte bassa: al posto dei tre passi e del
+riquadro con l'indirizzo, quattro riquadri in fila con lo stesso pulsante, ISCRIVITI per
+primo e scuro, poi CHIAMA, SCRIVICI e VIENI A TROVARCI. In alto restano titolo, frase e
+«Guarda gli orari». Le tavole qui sono la proposta di prima; com'è adesso lo dice
+`SitoInvito` della libreria.

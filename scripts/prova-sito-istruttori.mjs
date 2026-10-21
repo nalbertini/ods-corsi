@@ -198,7 +198,7 @@ console.log('\n8. La cornice (testata, invito, piede) con le misure del design')
   const conMenu = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'istruttori', titolo: 'T', descrizione: '', testo: '' }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Chi siamo', slug: 'istruttori', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contattaci', slug: 'contatti', indirizzo: null }], rinvii: [] })['istruttori/index.html']
   ok('la voce del menu della pagina aperta ha aria-current, le altre no', [conta(conMenu, /<a [^>]*aria-current="page"/g), /<a href="\/istruttori\/" aria-current="page">Chi siamo<\/a>/.test(conMenu)], [1, true])
   const inv = ri(/^\s*\.invito\s*$/)
-  ok('invito sul telefono: una colonna, 28px 22px di padding, frase 18px, pulsanti a tutta larghezza', [/\.invito\{[^}]*grid-template-columns:\s*minmax\(0,1fr\)[;}]/.test(TELEFONO), /\.invito\{[^}]*padding:\s*28px 22px/.test(TELEFONO), /\.invito-testo>p:not\(\.occhiello\)\{[^}]*font-size:\s*18px/.test(TELEFONO), /\.invito \.pulsante\{[^}]*width:\s*100%/.test(TELEFONO)], [true, true, true, true])
+  ok('invito sul telefono: una colonna, 28px 22px di padding, frase 18px, pulsanti a tutta larghezza', [/\.invito-riquadri\{[^}]*grid-template-columns:\s*minmax\(0,1fr\)[;}]/.test(TELEFONO), /\.invito\{[^}]*padding:\s*28px 22px/.test(TELEFONO), /\.invito-frase p\{[^}]*font-size:\s*18px/.test(TELEFONO), /\.invito-riquadri \.pulsante\{[^}]*align-self:\s*stretch/.test(TELEFONO)], [true, true, true, true])
   const pie = ri(/^\s*\.piede\s*$/)
   ok('piede sul telefono: 24px di padding e di margine sotto', [/\.piede\{[^}]*margin-bottom:\s*24px/.test(TELEFONO), /\.piede\{[^}]*padding:\s*24px/.test(TELEFONO)], [true, true])
 }
@@ -207,7 +207,7 @@ console.log('\n9. Le differenze che restavano: pulsante corto, invito, piede, te
 {
   const h = pagina(dodici)
   const invito = h.match(/<section class="invito"[\s\S]*?<\/section>/)?.[0] ?? ''
-  ok('l’invito dice anche della settimana a 10 euro, come nel design', [invito.includes('una settimana a 10\u00a0€'), invito.includes('<strong>Via Vittorio Sassi 26, Collegno</strong>')], [true, true])
+  ok('l’invito dice anche della settimana a 10 euro, come nel design', [invito.includes('una settimana a 10\u00a0€'), invito.includes('<p class="valore">Via Vittorio Sassi 26, Collegno</p>')], [true, true])
   const pie = (h.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
   ok('instagram e facebook stanno su una riga, divisi da «·» (li in linea, il separatore è CSS)', [/\.recapiti li:nth-child\(n\+3\)\{[^}]*display:\s*inline/.test(CSS), /\.recapiti li:nth-child\(4\)::before\{[^}]*content:\s*" · "/.test(CSS)], [true, true])
   const voci = [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'istruttori', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy', slug: null, indirizzo: '/privacy/' }]
