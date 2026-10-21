@@ -84,7 +84,7 @@ drop policy if exists richieste_aggiorna on richieste_iscrizione;
 drop policy if exists richieste_cancella on richieste_iscrizione;
 create policy richieste_legge on richieste_iscrizione for select to authenticated using (e_staff());
 -- Accolta, la richiesta tiene nascita, codice fiscale e residenza della scheda:
--- si cancella solo quando la scheda non c'è più (vedi 90-richieste-accolte-restano.sql).
+-- si cancella solo quando la scheda non c'è più (vedi 91-richieste-accolte-restano.sql).
 create policy richieste_cancella on richieste_iscrizione for delete to authenticated
   using (e_staff() and (stato <> 'accolta' or persona_id is null));
 revoke all on richieste_iscrizione from anon, authenticated;

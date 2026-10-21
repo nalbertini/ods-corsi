@@ -169,7 +169,7 @@ export interface DatiRichieste {
 /**
  * Accolta, la richiesta tiene nascita, codice fiscale, residenza e genitore
  * della scheda (vedi `18-anagrafiche.sql`): finché la scheda c'è non si
- * elimina. Come la policy `richieste_cancella` di `90-richieste-accolte-restano.sql`.
+ * elimina. Come la policy `richieste_cancella` di `91-richieste-accolte-restano.sql`.
  */
 export const siElimina = (r: Pick<Richiesta, 'stato' | 'personaId'>): boolean => r.stato !== 'accolta' || !r.personaId
 export const ACCOLTA_RESTA = 'Una richiesta accolta non si elimina: tiene nascita, codice fiscale e residenza della scheda'
