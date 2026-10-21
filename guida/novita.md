@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.156.7 — 21 ottobre 2026
+
+### Risolto
+
+- Chi si ritira e poi torna non ricompare nei corsi vecchi
+
 ## 0.156.6 — 21 ottobre 2026
 
 ### Risolto
