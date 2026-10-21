@@ -749,6 +749,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
       persona(personaId)
       // Disattivata, si lascia dietro il file del certificato; la data resta, e riattivarla non lo riporta.
       if (!attiva) scordaCertificato(personaId)
+      // Come il trigger del database: disattivata, le iscrizioni aperte si chiudono oggi (come `termina`); riattivarla non le riapre.
+      const g = oggi()
+      if (!attiva)
+        a().iscrizioni = a().iscrizioni.map((i) => {
+          const fine = i.dal > g ? i.dal : g
+          return i.personaId === personaId && (!i.al || i.al > fine) ? { ...i, al: fine } : i
+        })
       a().persone = a().persone.map((p) =>
         p.id !== personaId ? p : { ...p, attiva, certificato: !attiva && p.certificato ? { scade: p.certificato.scade, caricatoIl: p.certificato.caricatoIl } : p.certificato },
       )

@@ -251,8 +251,12 @@ scheda è disattivata, nessuno.
   domani non è più nell'appello, il registro resta. «Iscrivi a un corso…» +
   **Iscrivi** la aggiunge a un altro.
 - **ULTIME 12 LEZIONI** — presente o assente, lezione per lezione: ✓ presente, ✕ assente, G giustificato, vuoto non segnato.
-- **Disattiva** — sparisce da tutti gli appelli e dal tablet (chi smette del
-  tutto). **Riattiva** la rimette.
+- **Disattiva** — sparisce dal tablet e le sue iscrizioni si chiudono oggi,
+  come con **Termina**: da domani non è in nessun appello (un corso che
+  doveva ancora cominciare resta solo il giorno in cui parte), il registro resta
+  (chi smette del tutto). **Riattiva** rimette la scheda ma non i corsi: si
+  iscrive di nuovo con **Iscrivi**, o accogliendo la sua richiesta, che la
+  rimette solo nei corsi chiesti.
 - **UNISCI…** — due schede della stessa persona diventano una: succede
   quando all'appello qualcuno non ritrova chi è già venuto a provare e lo
   aggiunge di nuovo. Scegliete l'altra scheda (in cima chi ha lo stesso

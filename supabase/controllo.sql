@@ -468,6 +468,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'fai_ricevuta' and corpo like '%cassa_giorno_chiuso%')
     -- Rilanciare 86 o 89 dopo 92 rimette le funzioni che non guardano il giorno chiuso: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%fai_ricevuta%')
-    and exists (select 1 from dentro where nome = 'emetti_ricevuta_da_pagamento' and corpo like '%fai_ricevuta%'))
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta_da_pagamento' and corpo like '%fai_ricevuta%')),
+  ('94-disattiva-chiude-iscrizioni.sql', 'disattivare una scheda chiude le sue iscrizioni',
+    exists (select 1 from pg_trigger where tgname = 'persone_iscrizioni_disattivata' and tgrelid = 'public.persone'::regclass))
 ) as x(file, cosa, c)
 order by file, cosa;
