@@ -400,7 +400,7 @@ console.log('\n9. in prova: prima paghi, poi mandi')
   ok('il link porta alla pagina di ritorno di questa cartella', prova(() => primo.link.startsWith('/iscrizioni/?prova&satispay=')), true)
   ok('prima di pagare: in attesa', await aspetta(async () => (await r.statoSatispay(primo.id))?.stato), 'attesa')
   const prima = await quante()
-  // Gli stessi testi di invia_iscrizione in 81-satispay-prima.sql (supabase/prova/satispay.sql, sezione 10).
+  // Gli stessi testi di invia_iscrizione in 83-satispay-prima.sql (supabase/prova/satispay.sql, sezione 10).
   ok('invia col pagamento in attesa: no', await aspetta(() => r.invia(modulo({ pagamentoSatispay: primo.id }))), `ERRORE: ${s.PAGAMENTO_NON_ARRIVATO}`)
   ok('e nessuna richiesta entrata', await quante(), prima)
 

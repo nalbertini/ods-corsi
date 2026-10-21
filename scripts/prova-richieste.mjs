@@ -463,7 +463,7 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     const b = finto()
     await b.v.invia(adulto({ regolamento: 'sì' }))
     ok('invia: il regolamento vale solo se è proprio vero', b.reg[0][2].dati.regolamento, false)
-    // Il pagamento Satispay fatto prima (81-satispay-prima.sql): senza la chiave giusta il database non lo prende.
+    // Il pagamento Satispay fatto prima (83-satispay-prima.sql): senza la chiave giusta il database non lo prende.
     const c = finto()
     await c.v.invia(adulto({ pagamentoSatispay: 'sp-1' }))
     ok('invia: il pagamento Satispay parte come pagamento_satispay', c.reg[0][2].dati.pagamento_satispay, 'sp-1')

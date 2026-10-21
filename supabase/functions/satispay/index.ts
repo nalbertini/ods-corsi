@@ -14,7 +14,7 @@
 //     Satispay se è ancora in attesa (la callback può essersi persa);
 //   · POST { azione: 'prepara', corso, formula, nome, cognome, email }: il
 //     pagamento da fare in fondo al modulo, prima di mandare la richiesta
-//     (`satispay_prepara_prima`, 81-satispay-prima.sql): quello in attesa per
+//     (`satispay_prepara_prima`, 83-satispay-prima.sql): quello in attesa per
 //     la stessa scelta, o uno nuovo. Torna l'id, il link e l'importo;
 //   · POST { azione: 'stato_pagamento', pagamento }: com'è andato quel
 //     pagamento, per id, chiedendolo a Satispay se è ancora in attesa;
@@ -140,8 +140,8 @@ Deno.serve(async (req) => {
     return risposta({ guaio: 'Richiesta storta' }, 400)
   }
   if (corpo.azione === 'attivo') {
-    // Il servizio c'è se c'è anche 81-satispay-prima.sql (e quindi 73): PGRST202 vuol dire che non è stato lanciato.
-    // L'app di prima chiede solo 73, ma 81 si lancia prima che la nuova vada in linea.
+    // Il servizio c'è se c'è anche 83-satispay-prima.sql (e quindi 73): PGRST202 vuol dire che non è stato lanciato.
+    // L'app di prima chiede solo 73, ma 83 si lancia prima che la nuova vada in linea.
     const { error } = await admin.rpc('satispay_stato_pagamento', { pagamento: '00000000-0000-0000-0000-000000000000' })
     return risposta({ attivo: error?.code !== 'PGRST202' })
   }
@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
       cognome: testo(corpo.cognome),
       email: testo(corpo.email, 254),
     })
-    // PGRST202: 81-satispay-prima.sql non c'è ancora.
+    // PGRST202: 83-satispay-prima.sql non c'è ancora.
     if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: detto(error) }, 409)
     const p = data as { stato: string; id: string; importo: number; satispay_id?: string | null; link?: string | null; pagato_il?: string | null }
     // Già pagato e non ancora preso da una richiesta (la pagina ricaricata dopo aver pagato): non si paga due volte.

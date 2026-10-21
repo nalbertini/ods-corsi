@@ -1,35 +1,21 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import {
-  bozzaCambiata,
-  conteggio,
   controllaMenu,
   controllaSlug,
-  LIMITE_DESCRIZIONE,
-  LIMITE_TITOLO,
   PAROLE_STATO,
-  pagineDiLeggeProtette,
   slugDaTitolo,
   spostaVoce,
   statoPagina,
-  testoTroppoLungo,
   type PaginaSito,
   type StatoPagina,
   type VoceMenu,
 } from '../../lib/sitoPagine'
-import { pulisciTesto } from '../../lib/sitoTesto'
-import { cosaNonVaPezzi, databaseConPezzi, pagineDaPulsante, siProvaNuovoEditor, cosaNonVaPortare, dividiInParti, divisibileInParti, frasePartiNuove, htmlInPezzi, pezziCambiati, pezziInHtml, pezziVuoti, portabileAiPezzi, type PezziPagina } from '../../lib/sitoPezzi'
+import { databaseConPezzi, FRASE_SENZA_PEZZI, pagineDaPulsante, pezziVuoti } from '../../lib/sitoPezzi'
 import { Immagini } from './ImmaginiSito'
-import { OrarioSito } from './OrarioSito'
-import { Campo, chiedi, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
-import { Titoletto } from '../ds'
+import { Campo, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
 
-// L'editor porta con sé una libreria grossa: si scarica solo quando si apre una pagina da scrivere.
-const EditorTesto = lazy(() => import('./EditorTesto').then((m) => ({ default: m.EditorTesto })))
-// Anche l'editor a pezzi e l'anteprima vera (che porta il generatore del sito) si scaricano solo quando servono.
-const EditorPezzi = lazy(() => import('./EditorPezzi'))
-const AnteprimaPagina = lazy(() => import('./AnteprimaPagina'))
-// Il nuovo editor (Puck completo), da provare accanto a quello di oggi.
+// L'editor (Puck, con l'anteprima che porta il generatore del sito) è grosso: si scarica solo quando si apre una pagina.
 const EditorPuck = lazy(() => import('./EditorPuck'))
 
 const TONO_STATO: Record<StatoPagina, string | undefined> = { pubblicata: 'fatto', modificata: 'presto', 'solo-bozza': undefined, nascosta: undefined }
@@ -46,230 +32,7 @@ const Stato = ({ p }: { p: PaginaSito }) => {
 /** «12 ott» o «oggi, 10:12»: quando una pagina è stata pubblicata l'ultima volta. */
 const quandoPubblicata = (p: PaginaSito) => (p.pubblicataIl ? new Date(p.pubblicataIl).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) : '—')
 
-function Conto({ testo, limite }: { testo: string; limite: number }) {
-  const { n, troppo } = conteggio(testo, limite)
-  // Il rosso non basta da solo: oltre il limite lo dice anche a parole.
-  return <span style={{ color: troppo ? 'var(--rosso-testo)' : 'var(--dim)' }}>{troppo ? `${n} SU ${limite} · TROPPO LUNGO` : `${n} SU ${limite}`}</span>
-}
-
-/**
- * La pagina del sito da scrivere. Salvare la bozza non cambia il sito:
- * solo PUBBLICA copia la bozza nel testo che il sito mostra.
- */
-function Scrivi({ d, pagina, altri, pagine, verso, onChiudi, ricarica }: { d: DatiSegreteria; pagina: PaginaSito; altri: string[]; pagine: PaginaSito[]; verso: Array<{ slug: string; titolo: string }>; onChiudi: () => void; ricarica: () => Promise<void> }) {
-  const [titolo, setTitolo] = useState(pagina.titolo)
-  const [descrizione, setDescrizione] = useState(pagina.descrizione)
-  const [bozzaTesto, setBozza] = useState(pagina.bozza)
-  // Una pagina a pezzi (`pagina.pezzi`) si scrive coi pezzi; una col vecchio editor, col testo.
-  const [pezzi, setPezzi] = useState<PezziPagina>(pagina.pezzi ?? pezziVuoti())
-  const aPezzi = !!pagina.pezzi
-  // Dopo «Dividi in parti» l'editor si rimonta (`key`): prende i pezzi una volta sola, poi li tiene Puck.
-  const [rimonta, setRimonta] = useState(0)
-  const [appenaDivisa, setAppenaDivisa] = useState(false)
-  const [slug, setSlug] = useState(pagina.slug)
-  const [anteprima, setAnteprima] = useState(false)
-  const [nuovo, setNuovo] = useState(false)
-  const { avviso, avvisa, fai, lavora } = useAvviso()
-  // I pezzi si controllano e si traducono in testo solo quando cambiano, non a ogni tasto di un altro campo.
-  const noPezzi = useMemo(() => (aPezzi ? cosaNonVaPezzi(pezzi) : null), [aPezzi, pezzi])
-  const bozza = useMemo(() => (aPezzi && !noPezzi ? pezziInHtml(pezzi) : bozzaTesto), [aPezzi, noPezzi, pezzi, bozzaTesto])
-  const pezziDiversi = useMemo(() => aPezzi && pezziCambiati(pezzi, pagina.pezzi), [aPezzi, pezzi, pagina.pezzi])
-  const sporca = titolo.trim() !== pagina.titolo || descrizione.trim() !== pagina.descrizione || (aPezzi ? pezziDiversi : bozzaCambiata(bozza, pagina.bozza))
-  // Si guarda la pagina salvata, non a ogni tasto battuto: il tasto è spento finché c'è DA SALVARE, e dopo il salvataggio vale quella.
-  const puoDividere = useMemo(() => !pagina.diLegge && !!pagina.pezzi && divisibileInParti(pagina.pezzi), [pagina.diLegge, pagina.pezzi])
-  // La frase «Ora ci sono N parti» vale finché la divisione è da salvare; salvata (o scartata), non c'è più.
-  useEffect(() => {
-    if (!sporca) setAppenaDivisa(false)
-  }, [sporca])
-  // Col nuovo editor aperto le modifiche le tiene lui (e il suo useBozza): questo non deve avvisare a torto.
-  useBozza(sporca && !nuovo, pagina.titolo)
-  const noSlug = slug === pagina.slug ? null : controllaSlug(slug, altri)
-  const noTitolo = !titolo.trim() ? 'Scrivi il titolo della pagina' : null
-  const noTesto = noPezzi ?? testoTroppoLungo(bozza)
-  const salvata = () =>
-    aPezzi ? d.salvaBozzaPezziSito(pagina.id, pagina.versione, { titolo, descrizione, pezzi }) : d.salvaBozzaSito(pagina.id, pagina.versione, { titolo, descrizione, bozza: pulisciTesto(bozza) })
-
-  const salva = () => fai(salvata, 'Bozza salvata. Il sito non è cambiato: serve PUBBLICA', ricarica)
-  const pubblica = async () => {
-    if (!(await chiedi(`Pubblicare «${titolo.trim() || pagina.titolo}»? Il sito mostrerà il testo nuovo al prossimo aggiornamento.`, 'Pubblica'))) return
-    await fai(
-      async () => {
-        const versione = sporca ? await salvata() : pagina.versione
-        try {
-          await d.pubblicaPaginaSito(pagina.id, versione)
-        } catch (e) {
-          // La bozza è già salvata, la versione è salita: si rilegge, o il secondo tentativo litiga con noi.
-          await ricarica()
-          throw e
-        }
-      },
-      'Pubblicata',
-      ricarica,
-    )
-  }
-  // Il testo di prima diventa pezzi senza cambiare una parola (`htmlInPezzi`); `Scrivi` non si rimonta dopo `ricarica`,
-  // quindi i pezzi nuovi si danno anche allo stato locale, o l'editor si aprirebbe vuoto.
-  const portaAiPezzi = async () => {
-    const no = cosaNonVaPortare(pagina.bozza)
-    if (no) return avvisa(no, true)
-    if (!(await chiedi(`Portare «${pagina.titolo}» ai pezzi? Non si torna più al vecchio editor di testo. Il testo resta com’è e il sito non cambia finché non pubblichi.`, 'Porta ai pezzi', { no: 'Lascia stare' }))) return
-    const nuovi = htmlInPezzi(pagina.bozza)
-    await fai(
-      async () => {
-        await d.salvaBozzaPezziSito(pagina.id, pagina.versione, { titolo: pagina.titolo, descrizione: pagina.descrizione, pezzi: nuovi })
-        setPezzi(nuovi)
-      },
-      'Pagina portata ai pezzi. Il sito non è cambiato',
-      ricarica,
-    )
-  }
-  // Collegare i corsi non cambia il testo: si salva subito e il sito si aggiorna da solo.
-  const collegaCorsi = (corsi: string[]) => fai(() => d.collegaCorsiSito(pagina.id, corsi), 'Fatto. Il sito si aggiorna da solo entro 5 minuti', ricarica)
-  // Non si salva da sola: la divisione resta DA SALVARE e «Torna alle pagine» la scarta.
-  const dividi = async () => {
-    const nuovi = dividiInParti(pezzi)
-    const no = cosaNonVaPezzi(nuovi)
-    if (no) return avvisa(no, true)
-    if (!(await chiedi(`Dividere «${pagina.titolo}» in parti? Il testo non cambia: ogni titolo e ogni foto aprono una parte nuova. Non va online finché non pubblichi. Se non ti piace, premi TUTTE LE PAGINE e scegli TORNA ALLE PAGINE: non cambia niente.`, 'Dividi', { no: 'Lascia stare' }))) return
-    setPezzi(nuovi)
-    setAppenaDivisa(true)
-    setRimonta((k) => k + 1)
-  }
-  const cambiaSlug = () => fai(() => d.cambiaIndirizzoSito(pagina.id, slug), 'Indirizzo cambiato', ricarica)
-  const nascondi = async () => {
-    if (!pagina.nascosta && !(await chiedi(`Nascondere «${pagina.titolo}»? Sparisce dal sito alla prossima pubblicazione, ma resta qui.`, 'Nascondi', { pericolo: true }))) return
-    await fai(() => d.nascondiPaginaSito(pagina.id, !pagina.nascosta), pagina.nascosta ? 'Di nuovo sul sito' : 'Nascosta', ricarica)
-  }
-  const cancella = async () => {
-    if (!(await chiedi(`Cancellare «${pagina.titolo}»? Non si può rimettere.`, 'Cancella la pagina', { pericolo: true }))) return
-    await fai(() => d.cancellaPaginaSito(pagina.id), 'Pagina cancellata', async () => {
-      await ricarica()
-      onChiudi()
-    })
-  }
-
-  // Col nuovo editor aperto sotto non resta questo: niente tasti nascosti da raggiungere col Tab.
-  // Chiuso si torna alle pagine: questo editor ha ancora i pezzi di prima, e salvandoli si perderebbe il lavoro fatto di là.
-  if (nuovo)
-    return (
-      <Suspense fallback={<span className="sg-sotto">Apro il nuovo editor…</span>}>
-        <EditorPuck d={d} pagina={pagina} verso={verso} onChiudi={onChiudi} ricarica={ricarica} />
-      </Suspense>
-    )
-
-  return (
-    <>
-      <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-        <button type="button" className="sg-btn sg-btn-linea" onClick={async () => { if (sporca && !(await chiedi('Ci sono modifiche non salvate. Se torni alle pagine si perdono.', 'Torna alle pagine', { no: 'Resta qui', restare: true }))) return; onChiudi() }}>
-          ‹ Tutte le pagine
-        </button>
-        <Stato p={pagina} />
-        {!!pagina.corsiCollegati?.length && <span className="sg-tag" data-tipo="fatto">Collegata a {pagina.corsiCollegati.length} {pagina.corsiCollegati.length === 1 ? 'corso' : 'corsi'}</span>}
-        {sporca && <span className="sg-tag" data-tipo="presto">Da salvare</span>}
-        <span className="grow" />
-        <button type="button" className="sg-btn sg-btn-verde" disabled={lavora || !!noTitolo || !!noSlug || !!noTesto || conteggio(titolo, LIMITE_TITOLO).troppo} onClick={() => void pubblica()}>
-          Pubblica
-        </button>
-        <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || !sporca || !!noTitolo || !!noTesto} onClick={() => void salva()}>
-          Salva bozza
-        </button>
-        <button type="button" className="sg-btn sg-btn-linea" aria-pressed={anteprima} onClick={() => setAnteprima((x) => !x)}>
-          {anteprima ? 'Torna a scrivere' : 'Anteprima'}
-        </button>
-        {siProvaNuovoEditor(pagina) && (
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => (sporca || slug !== pagina.slug ? avvisa('Salva o annulla le modifiche, poi prova il nuovo editor', true) : setNuovo(true))}>
-            Prova il nuovo editor
-          </button>
-        )}
-      </div>
-
-      <div className={aPezzi ? 'sito-due sito-due-pezzi' : 'sito-due'}>
-        <div className="stack" style={{ gap: 10, minWidth: 0 }}>
-          {anteprima && aPezzi ? (
-            <Suspense fallback={<span className="sg-sotto">Apro l’anteprima…</span>}>
-              <AnteprimaPagina d={d} slug={pagina.slug} titolo={titolo} descrizione={descrizione} testo={bozza} />
-            </Suspense>
-          ) : anteprima ? (
-            // Sicuro: è il testo ripulito dalla stessa funzione che lo ripulisce per il sito (sitoTesto.ts).
-            <div className="sito-testo sito-anteprima" aria-label="Com’è sul sito" dangerouslySetInnerHTML={{ __html: pulisciTesto(bozza) }} />
-          ) : (
-            <Suspense fallback={<span className="sg-sotto">Apro l’editor…</span>}>
-              {aPezzi ? <EditorPezzi key={rimonta} d={d} pezzi={pezzi} onCambia={setPezzi} pagine={pagine} slug={pagina.slug} /> : <EditorTesto valore={bozzaTesto} onCambia={setBozza} etichetta={`Testo di ${pagina.titolo}`} d={d} />}
-            </Suspense>
-          )}
-          {noTesto && <Guaio testo={noTesto} />}
-        </div>
-        <div className="stack" style={{ gap: 14, minWidth: 0 }}>
-          <Campo id="sito-titolo" etichetta="TITOLO PER GOOGLE" manca={!!noTitolo} nota={noTitolo ? { guaio: true, testo: noTitolo } : undefined}>
-            <input id="sito-titolo" className="sg-campo" value={titolo} onChange={(e) => setTitolo(e.target.value)} />
-            <Conto testo={titolo} limite={LIMITE_TITOLO} />
-          </Campo>
-          <Campo id="sito-descrizione" etichetta="DESCRIZIONE">
-            <textarea id="sito-descrizione" className="sg-campo" rows={4} value={descrizione} onChange={(e) => setDescrizione(e.target.value)} />
-            <Conto testo={descrizione} limite={LIMITE_DESCRIZIONE} />
-          </Campo>
-          <Campo id="sito-indirizzo" etichetta="INDIRIZZO DELLA PAGINA" nota={pagina.diLegge ? { guaio: false, testo: pagineDiLeggeProtette(pagina, 'indirizzo') ?? '' } : noSlug ? { guaio: true, testo: noSlug } : pagina.pubblicato !== null ? { guaio: false, testo: 'Se lo cambi, il vecchio indirizzo porta al nuovo.' } : undefined}>
-            <input id="sito-indirizzo" className="sg-campo" value={slug} disabled={pagina.diLegge} onChange={(e) => setSlug(e.target.value.trim())} />
-          </Campo>
-          {slug !== pagina.slug && (
-            <button type="button" className="sg-btn sg-btn-pieno" disabled={lavora || !!noSlug} onClick={() => void cambiaSlug()}>
-              Cambia indirizzo
-            </button>
-          )}
-          {!pagina.diLegge && (
-            <div className="stack" style={{ gap: 10, paddingTop: 8, borderTop: '2px solid var(--line)' }}>
-              <Titoletto>ORARIO DAI CORSI</Titoletto>
-              <OrarioSito d={d} pagina={pagina} lavora={lavora} onCambia={(corsi) => void collegaCorsi(corsi)} />
-            </div>
-          )}
-          {portabileAiPezzi(pagina) && (
-            <div className="stack" style={{ gap: 10, paddingTop: 8, borderTop: '2px solid var(--line)' }}>
-              <Titoletto>EDITOR A PEZZI</Titoletto>
-              <button type="button" className="sg-btn sg-btn-linea" disabled={lavora || sporca} onClick={() => void portaAiPezzi()}>
-                Porta ai pezzi
-              </button>
-              <span className="sg-sotto">{sporca ? 'Salva la bozza prima di passare ai pezzi.' : 'Il testo resta com’è: lo trovi in foto, testo e colonne da trascinare. Sul sito non cambia niente finché non pubblichi.'}</span>
-            </div>
-          )}
-          {(puoDividere || appenaDivisa) && (
-            <div className="stack" style={{ gap: 10, paddingTop: 8, borderTop: '2px solid var(--line)' }}>
-              <Titoletto>EDITOR A PEZZI</Titoletto>
-              {puoDividere && !appenaDivisa && (
-                <button type="button" className="sg-btn sg-btn-linea" disabled={lavora || sporca} onClick={() => void dividi()}>
-                  Dividi in parti
-                </button>
-              )}
-              <span className="sg-sotto">
-                {appenaDivisa
-                  ? frasePartiNuove(pezzi.content.length)
-                  : sporca
-                    ? 'Salva la bozza prima di dividere.'
-                    : 'Il testo resta com’è: ogni titolo apre una parte nuova e ogni foto tra i paragrafi diventa una Foto. I sottotitoli restano nel testo. Sul sito non cambia niente finché non pubblichi.'}
-              </span>
-            </div>
-          )}
-          <div className="stack" style={{ gap: 8 }}>
-            {pagina.diLegge ? (
-              <span className="sg-sotto">{pagineDiLeggeProtette(pagina, 'cancella')}</span>
-            ) : (
-              <>
-                <button type="button" className="sg-btn sg-btn-tratteggio" disabled={lavora} onClick={() => void nascondi()}>
-                  {pagina.nascosta ? 'Mostra sul sito' : 'Nascondi dal sito'}
-                </button>
-                <button type="button" className="sg-btn sg-btn-linea sg-pericolo" disabled={lavora} onClick={() => void cancella()}>
-                  Cancella la pagina
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-      {avviso}
-    </>
-  )
-}
-
-/** `aPezzi`: la pagina nasce a pezzi (serve `62-sito-pezzi.sql`); senza, nasce col vecchio editor di testo. */
+/** `aPezzi`: la pagina nasce a pezzi (serve `62-sito-pezzi.sql`); senza, non si potrebbe scrivere (`FRASE_SENZA_PEZZI`). */
 function NuovaPagina({ d, altri, aPezzi, finita }: { d: DatiSegreteria; altri: string[]; aPezzi: boolean; finita: (id?: string) => unknown }) {
   const [titolo, setTitolo] = useState('')
   const [slug, setSlug] = useState('')
@@ -415,7 +178,13 @@ export function Sito({ d }: { d: DatiSegreteria }) {
       </Testa>
 
       {lei ? (
-        <Scrivi key={lei.id} d={d} pagina={lei} altri={tutte.filter((p) => p.id !== lei.id).map((p) => p.slug)} pagine={tutte} verso={verso} onChiudi={() => setAperta(null)} ricarica={ricarica} />
+        databaseConPezzi(tutte) ? (
+          <Suspense fallback={<span className="sg-sotto">Apro l’editor…</span>}>
+            <EditorPuck key={lei.id} d={d} pagina={lei} pagine={tutte} verso={verso} onChiudi={() => setAperta(null)} ricarica={ricarica} />
+          </Suspense>
+        ) : (
+          <Guaio testo={FRASE_SENZA_PEZZI} />
+        )
       ) : (
         <>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>

@@ -1,0 +1,48 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Manca la firma · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "CompensiOggi.dc.html",
+   "title": "OGGI · COMPENSI: chi ha dimenticato il PIN non c’è",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "CompensiProposta.dc.html",
+   "title": "PROPOSTA · MANCA LA FIRMA, con C’ERA e Non c’era",
+   "x": 1560,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "CompensiPropostaTelefono.dc.html",
+   "title": "PROPOSTA · sul telefono",
+   "x": 3120,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "CorsoBastaUno.dc.html",
+   "title": "PROPOSTA · CORSI: «a lezione basta uno» per i corsi alternati",
+   "x": 1560,
+   "y": 1760,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1600,
+   "text": "Il co-istruttore senza PIN: in COMPENSI si vede chi era previsto a una lezione in due e non ha firmato"
+  }
+ ]
+}

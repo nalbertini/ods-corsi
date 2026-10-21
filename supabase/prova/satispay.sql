@@ -2,10 +2,10 @@
 -- listino, un pagamento per richiesta (mai due in attesa), lo stato lo scrive
 -- solo la Edge Function (service_role), e un pagamento arrivato entra in una
 -- ricevuta una volta sola, con l'importo giusto.
--- Dalla sezione 8, prima paghi e poi mandi (81-satispay-prima.sql): il
+-- Dalla sezione 8, prima paghi e poi mandi (83-satispay-prima.sql): il
 -- pagamento nasce dal corso e dalla formula, senza richiesta, e la richiesta
 -- lo prende con sé solo se è pagato, suo e libero.
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 81-satispay-prima.sql.
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 83-satispay-prima.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 

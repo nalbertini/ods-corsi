@@ -38,7 +38,10 @@ I corsi archiviati stanno in fondo: «N corsi archiviati · mostra», e
   in maiuscolo; vuoto se il corso non la chiede (psicomotricità, giocomotricità…). Serve a [TESSERE](tessere.md):
   senza, l'app non sa a chi chiederla. Il campo c'è solo se il database ha le tessere;
 - **ISTRUTTORI** — anche più d'uno: il primo che scegli è quello di
-  riferimento;
+  riferimento. Con più istruttori c'è **Si alternano: a lezione basta uno**:
+  spuntala dove a lezione ce n'è uno alla volta, così in
+  [COMPENSI](compensi.md) agli altri non si chiede la firma (anche per le
+  lezioni già passate);
 - **COLORE** — segue la disciplina (blu judo, rosso lotta, giallo pesi, verde
   motricità), così da lontano si capisce cos'è.
 

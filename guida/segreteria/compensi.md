@@ -28,6 +28,29 @@ tecnico che ha lezioni nel mese, con le ore, il compenso e a che punto è:
 
 **Per corso** apre il dettaglio: ore, tariffa e importo di ogni corso.
 
+## Manca la firma
+
+In una lezione tenuta in due, chi dimentica il PIN non ha la presenza e non
+sarebbe pagato. Se un altro istruttore del corso ha firmato e lui no, accanto allo stato c'è il
+segno giallo **MANCA LA FIRMA** e sotto la riga **MANCA LA SUA FIRMA**: corso,
+giorno e ora, chi ha firmato. Per ogni lezione:
+
+- **C'era**: la presenza è confermata e la lezione entra nel compenso, anche
+  dopo le due settimane di [Presenze istruttori](presenze-istruttori.md);
+- **Non c'era**: la presenza è segnata rifiutata e la firma non si chiede più.
+  Se era uno sbaglio, la rifiutata si elimina in Presenze istruttori.
+
+Non ferma la ricevuta: si fa lo stesso. Se la ricevuta è già fatta e poi si
+segna **C'era**, la riga diventa **NON TORNA PIÙ**: si annulla e si rifà. Se è
+già **PAGATA**, prima si annulla il pagamento in CONTABILITÀ, poi si rifà la
+ricevuta del mese giusto e si ripaga. Chi nel mese ha solo lezioni senza la
+sua firma c'è lo stesso, con **NIENTE DA PAGARE, PER ORA**. Il filtro **Manca
+la firma** le raccoglie.
+
+Nei corsi dove gli istruttori si alternano, in [Corsi](corsi.md) si spunta
+**Si alternano: a lezione basta uno**: lì, se uno ha firmato, agli altri non
+si chiede.
+
 ## Fare le ricevute
 
 **Prepara e stampa le ricevute** fa in una volta tutte quelle da fare e le
@@ -52,4 +75,20 @@ firmate** fa vedere chi lo deve ancora riportare.
 Una ricevuta fatta non si cambia: **Annulla** la toglie (resta nel registro,
 annullata) e se ne fa una nuova. **Ristampa** riscarica la stessa.
 
-Il pagamento in contabilità arriva con un prossimo aggiornamento.
+## Il pagamento
+
+Chi cura anche la contabilità vede **Segna pagato** sulle ricevute fatte: si
+apre il pannello del tecnico con le sue ricevute fatte e non pagate (anche di
+mesi diversi, già spuntate), il **giorno del pagamento** e la **cassa**
+(Conto Corrente per il bonifico, Cassa Contanti per i contanti). Sotto c'è il
+riepilogo di quello che si scrive in CONTABILITÀ: un'uscita sola, con la voce
+**Compensi istruttori**, il totale e la descrizione «Compenso · Nome Cognome ·
+set, ott 2026». **Segna pagato** la scrive, e le ricevute diventano **PAGATA**
+con la data.
+
+Una ricevuta pagata non si annulla da qui: prima si annulla il pagamento in
+[Contabilità](../amministrazione/contabilita.md) → MOVIMENTI, e le ricevute
+tornano da pagare. Il filtro **Da pagare** fa vedere chi aspetta il bonifico.
+
+Nella scheda del tecnico, **PRESO DA NOI NEL** dice quanto ha preso
+quest'anno, contato dal giorno del pagamento.

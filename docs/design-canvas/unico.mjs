@@ -87,11 +87,13 @@ const PRINCIPALE = [
   { id: 'sito-pezzi-spazio', nome: 'Sito · pezzi, più spazio · proposta', cartella: 'sito-pezzi-spazio' },
   { id: 'sito-pezzi-scrivi', nome: 'Sito · scrivi nella pagina · proposta', cartella: 'sito-pezzi-scrivi-in-pagina' },
   { id: 'sito-pulsanti-domande', nome: 'Sito · parti Pulsanti e Domande', cartella: 'sito-pulsanti-domande' },
+  { id: 'sito-solo-puck', nome: 'Sito · un editor solo · proposta scartata', cartella: 'sito-solo-puck' },
   { id: 'orario-automatico', nome: 'Sito · orario dalla pagina CORSI · proposta', cartella: 'orario-automatico' },
   { id: 'scheda-popover', nome: 'Segreteria · dettagli in una finestra · proposta', cartella: 'scheda-popover' },
   { id: 'provenienza-richieste', nome: 'Segreteria · da dove arrivano le richieste · proposta', cartella: 'provenienza-richieste' },
   { id: 'sito-in-statistiche', nome: 'Segreteria · il sito in Statistiche · proposta', cartella: 'sito-in-statistiche' },
   { id: 'compensi-tecnici', nome: 'Segreteria · compensi dei tecnici · proposta', cartella: 'compensi-tecnici' },
+  { id: 'coistruttore-atteso', nome: 'Segreteria · compensi, manca la firma · proposta', cartella: 'coistruttore-atteso' },
   { id: 'sito-istruttori-blocchi', nome: 'Sito · istruttori a blocchi · proposta', cartella: 'sito-istruttori-blocchi' },
   { id: 'fila-sito', nome: 'Segreteria · dal sito alle richieste · proposta', cartella: 'fila-sito' },
 ]
@@ -108,7 +110,7 @@ const STORIA = [
   { id: 'sito-rebrand', nome: 'Sito · tre rebrand (scartati)', cartella: 'sito-rebrand', superata: 'scartati, vale il design approvato del sito' },
 ]
 // Funzioni già costruite: la libreria dice com'è l'app adesso, i loro canvas passano in Storia.
-const COSTRUITE = new Set(['sito-istruttori-blocchi', 'fila-sito', 'sito-in-statistiche', 'ricevuta-obbligatoria', 'fatture-dalla-chat', 'famiglia-passo', 'famiglia-ultimo-passo', 'iscrizione-famiglia', 'anche-tu-stessa-ora', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'riempi-prova', 'firma-schermo-intero', 'navigazione-passi', 'carta-atleta', 'banco', 'cerca-universale', 'menu-icone', 'menu-unico', 'import-fogli', 'iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'tessere', 'scheda-iscritto-schede', 'documenti-semplici', 'prezzi-mancanti', 'ruolo-amministrazione', 'contabilita', 'cambia-voce', 'movimenti-persona', 'movimenti-filtri', 'filtro-storico-pagamenti', 'chiusura-cassa', 'bilancio-anno', 'scheda-popover', 'email-contatto', 'sito-pannello', 'sito-pubblico', 'orari-sito', 'orario-automatico', 'barra-prova-chiama', 'invito-iscriviti', 'senza-scrivici', 'corsi-per-eta', 'fatti-recensioni', 'sito-pulsanti-domande'])
+const COSTRUITE = new Set(['sito-istruttori-blocchi', 'fila-sito', 'sito-in-statistiche', 'ricevuta-obbligatoria', 'fatture-dalla-chat', 'famiglia-passo', 'famiglia-ultimo-passo', 'iscrizione-famiglia', 'anche-tu-stessa-ora', 'corsi-vicini', 'quanto-paghi', 'totale-barra', 'riempi-prova', 'firma-schermo-intero', 'navigazione-passi', 'carta-atleta', 'banco', 'cerca-universale', 'menu-icone', 'menu-unico', 'import-fogli', 'iscritti-del-corso', 'iscritti-riepilogo', 'storico-pagamenti', 'tessere', 'scheda-iscritto-schede', 'documenti-semplici', 'prezzi-mancanti', 'ruolo-amministrazione', 'contabilita', 'cambia-voce', 'movimenti-persona', 'movimenti-filtri', 'filtro-storico-pagamenti', 'chiusura-cassa', 'bilancio-anno', 'scheda-popover', 'email-contatto', 'sito-pannello', 'sito-pubblico', 'orari-sito', 'orario-automatico', 'barra-prova-chiama', 'invito-iscriviti', 'senza-scrivici', 'corsi-per-eta', 'fatti-recensioni', 'sito-pulsanti-domande', 'sito-solo-puck'])
 // Singole tavole «Oggi» superate dentro sezioni che restano nel principale: vanno in Storia, il resto resta.
 const OGGI_SUPERATE = { 'iscrizioni-pagina': ['Oggi', 'OggiCosti'], 'segreteria-sito': ['OggiDaFare', 'OggiIscritti', 'OggiMenu', 'OggiSettimana', 'TatamiSettimana'] }
 const MODO_STORIA = process.argv[3] === 'storia'
@@ -126,7 +128,7 @@ SEZIONI.sort((a, b) => aree.indexOf(AREA(a)) - aree.indexOf(AREA(b)))
 const ARCHIVIO = 'archivio'
 // Le proposte ancora aperte stanno in una pagina a parte, sopra l'Archivio: lì si discute, il resto è storia.
 const DISCUSSIONE = 'in-discussione'
-const APERTE = new Set(['ricevuta-email', 'segreteria-dalla-chat', 'orari-evidenziati', 'esci-dalla-prova', 'moduli-pdf', 'istruttore-collega', 'sito-pezzi-spazio', 'sito-pezzi-scrivi', 'provenienza-richieste', 'compensi-tecnici'])
+const APERTE = new Set(['ricevuta-email', 'segreteria-dalla-chat', 'orari-evidenziati', 'esci-dalla-prova', 'moduli-pdf', 'istruttore-collega', 'sito-pezzi-spazio', 'sito-pezzi-scrivi', 'provenienza-richieste', 'compensi-tecnici', 'coistruttore-atteso'])
 
 const ultima = (cartella) => execFileSync('git', ['log', '-1', '--format=%ad', '--date=short', '--', join(base, cartella)], { encoding: 'utf8' }).trim()
 const stem = (f) => f.replace(/\.dc\.html$/, '')

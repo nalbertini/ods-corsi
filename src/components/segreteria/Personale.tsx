@@ -1,15 +1,16 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
+import type { Voce } from '../../lib/indirizzoSegreteria'
 import { personaCambiata } from '../../lib/segreteria'
 import { daSpunte, insegna, nomeDelRuolo, puo, siElimina, spunteDi, stesseSpunte, type Permesso, type Spunta } from '../../lib/ruoli'
-import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
+import { chiaveGiorno, dataLunga, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
 import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
 import { DatiTecnico, LetteraIncarico, Tariffe } from './DatiTecnico'
 import { AzioniRicevuta, SegnoCompenso, tonoCompenso } from './Compensi'
-import { compensoDelMese, mancaPerRicevuta, primoDelMese, statoCompenso } from '../../lib/compensi'
+import { compensoDelMese, mancaPerRicevuta, presoNellAnno, primoDelMese, statoCompenso } from '../../lib/compensi'
 import { euro } from '../../lib/ricevute'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
 
@@ -47,7 +48,7 @@ const SPUNTE: Array<[Spunta, string]> = [
  * così: la chiave che sta nell'app è pubblica. Al primo accesso l'account e la
  * scheda si legano da soli, per email.
  */
-export function Personale({ d }: { d: DatiSegreteria }) {
+export function Personale({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce) => void }) {
   const lista = useCarica(() => d.personale(), [d])
   const { avviso, avvisa, fai } = useAvviso()
   const [scelta, setScelta] = useState<string | null>(null)
@@ -115,6 +116,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
             avvisa={avvisa}
             partito={partito}
             onCambiato={lista.ricarica}
+            onVai={onVai}
             onEliminata={async () => {
               chiudi()
               await lista.ricarica()
@@ -363,6 +365,7 @@ function Scheda({
   partito,
   onCambiato,
   onEliminata,
+  onVai,
 }: {
   d: DatiSegreteria
   p: PersonaleSeg
@@ -373,6 +376,7 @@ function Scheda({
   partito: Partito
   onCambiato: () => Promise<void>
   onEliminata: () => Promise<void>
+  onVai: (v: Voce) => void
 }) {
   const [modifica, setModifica] = useState<{ nome: string; cognome: string; email: string } | null>(null)
   const [pin, setPin] = useState<string | null>(null)
@@ -572,7 +576,7 @@ function Scheda({
           <LetteraIncarico d={d} p={p} fai={fai} versione={versione} />
         </>
       )}
-      {dellaSala && <PresenzeDelMese d={d} p={p} fai={fai} versione={versione} />}
+      {dellaSala && <PresenzeDelMese d={d} p={p} fai={fai} versione={versione} onVai={onVai} />}
 
       <div className="sg-scheda-piede">
         <button
@@ -722,7 +726,7 @@ function scaricaCsv(righe: PresenzaIstruttoreSeg[], chi: string, mese: string) {
  * decise prima di chiudere il mese.
  */
 /** `versione` cambia quando dati o tariffe si salvano: il compenso si rilegge. */
-function PresenzeDelMese({ d, p, fai, versione }: { d: DatiSegreteria; p: PersonaleSeg; fai: Fai; versione: number }) {
+function PresenzeDelMese({ d, p, fai, versione, onVai }: { d: DatiSegreteria; p: PersonaleSeg; fai: Fai; versione: number; onVai: (v: Voce) => void }) {
   const periodi = useMemo(mesi, [])
   const [periodo, setPeriodo] = useState(periodi[0].chiave)
   const m = periodi.find((x) => x.chiave === periodo) ?? periodi[0]
@@ -815,8 +819,15 @@ function PresenzeDelMese({ d, p, fai, versione }: { d: DatiSegreteria; p: Person
           <span style={{ flex: 1, minWidth: 220 }}>
             <SegnoCompenso stato={statoCompenso({ conto, ricevuta, manca: compenso.dato?.manca })} conto={conto} ricevuta={ricevuta} manca={compenso.dato?.manca} inScheda />
           </span>
-          <AzioniRicevuta d={d} p={p} conto={conto} ricevuta={ricevuta} stato={statoCompenso({ conto, ricevuta, manca: compenso.dato?.manca })} mese={mese} fai={fai} onCambiato={ricaricaTutto} inScheda />
+          <AzioniRicevuta d={d} p={p} conto={conto} ricevuta={ricevuta} stato={statoCompenso({ conto, ricevuta, manca: compenso.dato?.manca })} mese={mese} fai={fai} onCambiato={ricaricaTutto} inScheda onVai={onVai} />
         </div>
+      )}
+      {compenso.dato && (
+        <span className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'baseline' }}>
+          <span className="sg-etichetta">PRESO DA NOI NEL {new Date().getFullYear()}</span>
+          <span className="num" style={{ fontSize: 18, fontWeight: 700 }}>{euro(presoNellAnno(compenso.dato.ricevute, new Date().getFullYear()))} €</span>
+          <span className="sg-sotto">i compensi pagati quest’anno, contati dal giorno del pagamento</span>
+        </span>
       )}
       {compenso.dato && compenso.dato.ricevute.some((r) => r !== ricevuta) && (
         <div className="stack" style={{ gap: 4 }}>
@@ -825,7 +836,7 @@ function PresenzeDelMese({ d, p, fai, versione }: { d: DatiSegreteria; p: Person
             .filter((r) => r !== ricevuta)
             .map((r) => (
               <span key={r.id} className="row" style={{ gap: 12, flexWrap: 'wrap', fontSize: 13, color: 'var(--sec)' }}>
-                {[r.mese.slice(0, 7).split('-').reverse().join('/'), `${euro(r.importo)} €`, r.annullataIl ? 'annullata' : r.firmata ? 'firmata' : 'non firmata'].join(' · ')}
+                {[r.mese.slice(0, 7).split('-').reverse().join('/'), `${euro(r.importo)} €`, r.annullataIl ? 'annullata' : r.pagataIl ? `pagata il ${dataLunga(r.pagataIl)}` : 'da pagare', r.annullataIl ? '' : r.firmata ? 'firmata' : 'non firmata'].filter(Boolean).join(' · ')}
                 {/* Un'annullata non si ristampa: un foglio uguale a uno valido si potrebbe far firmare o pagare per sbaglio. */}
                 {!r.annullataIl && <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 13 }} onClick={() => void fai(async () => (await import('../../lib/ricevutaCompensoPdf')).scaricaRicevuteCompensi([r]))}>
                   Ristampa

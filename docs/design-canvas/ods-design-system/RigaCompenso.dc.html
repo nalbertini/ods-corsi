@@ -26,6 +26,7 @@
       <div style="display: flex; flex-wrap: wrap; gap: 6px">
         <dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="230px,26px"></dc-import>
         <sc-if value="{{daRiportare}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="DA RIPORTARE FIRMATA" tema="sito" hint-size="210px,26px"></dc-import></sc-if>
+        <sc-if value="{{conAttese}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="{{segnoAttese}}" tema="sito" hint-size="230px,26px"></dc-import></sc-if>
       </div>
       <sc-if value="{{haNota}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #46606f; line-height: 1.35">{{nota}}</span></sc-if>
     </div>
@@ -49,6 +50,19 @@
       </sc-for>
     </div>
   </sc-if>
+  <sc-if value="{{aperteAttese}}" hint-placeholder-val="{{ false }}">
+    <div role="table" aria-label="Manca la sua firma" style="display: flex; flex-direction: column; margin: 0 14px 12px 54px; border-top: 1px solid #cfe6f4">
+      <span style="padding: 8px 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #46606f">{{titoloAttese}}</span>
+      <sc-for list="{{attese}}" as="a" hint-placeholder-count="1">
+        <div role="row" style="display: grid; grid-template-columns: minmax(0, 1fr) 130px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 52px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+          <span role="cell">{{a.corso}}</span>
+          <span role="cell" style="font-variant-numeric: tabular-nums">{{a.giorno}}</span>
+          <span role="cell" style="color: #46606f">ha firmato {{a.chi}}</span>
+          <span role="cell" style="display: flex; gap: 10px; align-items: center; justify-content: flex-end"><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" tema="sito" hint-size="90px,44px"></dc-import><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; text-decoration: underline; text-underline-offset: 3px">Non c’era</span></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
 </sc-if>
 <sc-if value="{{telefono}}" hint-placeholder-val="{{ false }}">
   <div role="row" style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px">
@@ -60,36 +74,53 @@
     <div style="display: flex; flex-wrap: wrap; gap: 6px">
       <dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="230px,26px"></dc-import>
       <sc-if value="{{daRiportare}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="DA RIPORTARE FIRMATA" tema="sito" hint-size="210px,26px"></dc-import></sc-if>
+      <sc-if value="{{conAttese}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="{{segnoAttese}}" tema="sito" hint-size="230px,26px"></dc-import></sc-if>
     </div>
     <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #46606f; line-height: 1.35">{{nota}}</span></sc-if>
+    <sc-if value="{{conAttese}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; border-top: 1px solid #cfe6f4">
+        <span style="padding: 8px 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #46606f">{{titoloAttese}}</span>
+        <sc-for list="{{attese}}" as="a" hint-placeholder-count="1">
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+            <span>{{a.corso}} · {{a.giorno}}</span>
+            <span style="color: #46606f">ha firmato {{a.chi}}</span>
+            <span style="display: flex; gap: 12px; align-items: center"><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" tema="sito" hint-size="90px,44px"></dc-import><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; text-decoration: underline; text-underline-offset: 3px">Non c’era</span></span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
     <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" tema="sito" larghezza="100%" hint-size="100%,48px"></dc-import></sc-if>
     <sc-if value="{{conLink}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">{{azione}}</span></sc-if>
   </div>
 </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Ballabio Diana"},"lezioni":{"editor":"text","default":"8"},"ore":{"editor":"text","default":"12"},"importo":{"editor":"text","default":"180,00 €"},"stato":{"editor":"enum","options":["da-confermare","senza-tariffa","senza-dati","da-fare","fatta","non-torna","da-pagare","pagata"],"default":"da-fare"},"firmata":{"editor":"boolean","default":true},"quante":{"editor":"text","default":"3"},"corso":{"editor":"text","default":"Judo adulti"},"quando":{"editor":"text","default":"05/11"},"nota":{"editor":"text","default":""},"aperta":{"editor":"boolean","default":false},"corsi":{"editor":"text","default":"Judo kids:6:15,00 € l’ora:90,00 €|Judo ragazzi:6:15,00 € l’ora:90,00 €"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1100,"height":76}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Ballabio Diana"},"lezioni":{"editor":"text","default":"8"},"ore":{"editor":"text","default":"12"},"importo":{"editor":"text","default":"180,00 €"},"stato":{"editor":"enum","options":["da-confermare","senza-tariffa","senza-dati","da-fare","fatta","non-torna","da-pagare","pagata","solo-attese"],"default":"da-fare"},"firmata":{"editor":"boolean","default":true},"quante":{"editor":"text","default":"3"},"corso":{"editor":"text","default":"Judo adulti"},"quando":{"editor":"text","default":"05/11"},"nota":{"editor":"text","default":""},"aperta":{"editor":"boolean","default":false},"corsi":{"editor":"text","default":"Judo kids:6:15,00 € l’ora:90,00 €|Judo ragazzi:6:15,00 € l’ora:90,00 €"},"telefono":{"editor":"boolean","default":false},"attese":{"editor":"text","default":""},"$preview":{"width":1100,"height":76}}'>
 // PROPOSTA (docs/design-canvas/compensi-tecnici): una riga di COMPENSI, un tecnico con lezioni confermate nel mese. Look del sito: righe bianche col filetto
 // 1px `line-soft` #cfe6f4 come la tabella di PERSONALE (`.sg-tabella`), padding 8px 14px, nome Inter 15px 600, cifre tabulari a destra.
 // La riga si apre per corso (`aperta`, `corsi` = «corso:ore:tariffa:importo|…», tariffa «—» = manca, in rosso): il mese e' la somma di ore × tariffa di quel corso,
 // anche delle lezioni fatte da sostituto. Lo stato e' sempre un segno con la parola, mai solo il colore; sotto, in `dim`, il perche' (`nota`).
 // stato: da-confermare (rosso, «N PRESENZE DA CONFERMARE», link a PRESENZE ISTRUTTORI, importo «—»: blocca solo questo tecnico);
 //        senza-tariffa (rosso, «SENZA TARIFFA PER <corso>», importo «—», link alla scheda); senza-dati (rosso, MANCANO I DATI, cosa manca e il link
-//        alla scheda: si vede prima di provare); da-fare (neutro, MODIFICA IL COMPENSO e PREPARA LA RICEVUTA); fatta (COSTRUITA: verde, FATTA, «Fatta il …»,
-//        Firmata, RISTAMPA, e ANNULLA rosso su una riga sua);
-//        da-pagare e pagata arrivano col pagamento in contabilità (PROPOSTA): da-pagare (giallo, ricevuta fatta e non pagata, SEGNA PAGATO); non-torna (rosso: la ricevuta e' rimasta com'era fatta, il mese adesso fa un'altra cifra;
-//        ANNULLA E RIFAI); pagata (verde, «PAGATA IL gg/mm», RISTAMPA).
+//        alla scheda: si vede prima di provare); da-fare (neutro, MODIFICA IL COMPENSO e PREPARA LA RICEVUTA); fatta = da-pagare (COSTRUITA nel codice
+//        come «fatta»: giallo, FATTA · DA PAGARE, «Fatta il …», Firmata, RISTAMPA, SEGNA PAGATO a linea, ANNULLA rosso su una riga sua);
+//        da-pagare e pagata COSTRUITE col pagamento in contabilità: da-pagare (giallo, ricevuta fatta e non pagata, SEGNA PAGATO a linea); non-torna (rosso: la ricevuta e' rimasta com'era fatta, il mese adesso fa un'altra cifra;
+//        ANNULLA E RIFAI, non si paga); pagata (verde, PAGATA, la data nella frase sotto, Firmata e RISTAMPA, niente ANNULLA).
 // firmata: con una ricevuta fatta (da-pagare, non-torna, pagata) compare la spunta «Firmata»; non spuntata aggiunge il segno giallo DA RIPORTARE FIRMATA.
+// attese (COSTRUITA, `SenzaFirmaElenco` in Compensi.tsx; storia in docs/design-canvas/coistruttore-atteso): «corso:giorno:chi ha firmato|…», le lezioni in due dove il tecnico era previsto e non ha firmato.
+//        Aggiunge il segno giallo «MANCA LA FIRMA · N LEZIONI» accanto allo stato, che non cambia; sotto, un dettaglio chiuso «MANCA LA FIRMA DI NOME · N LEZIONI», aperto per solo-attese o col filtro (qui: a riga aperta, e sempre al telefono), con C’ERA a linea
+//        (presenza confermata, entra nel compenso) e «Non c’era» (si chiude, non torna). solo-attese: nel mese ha solo lezioni senza firma, importo «—», niente tasto.
 // telefono: la riga impilata (nome e importo, lezioni e ore, segni, nota, tasto a tutta larghezza), chiusa.
 const STATI = {
   'da-confermare': { tono: 'rosso', segno: (p) => `${p.quante ?? '3'} PRESENZE DA CONFERMARE`, azione: 'Conferma in Presenze istruttori ›', link: true, nota: 'Prima si decidono, poi si fa la ricevuta.', vuoto: true },
   'senza-tariffa': { tono: 'rosso', segno: (p) => `SENZA TARIFFA PER ${(p.corso ?? 'Judo adulti').toUpperCase()}`, azione: 'Scrivi la tariffa ›', link: true, nota: 'Ha fatto lezione in un corso che non ha la sua tariffa.', vuoto: true },
   'senza-dati': { tono: 'rosso', segno: () => 'MANCANO I DATI', azione: 'Scrivi i dati in Istruttori e accessi ›', link: true, nota: 'IBAN: si scrivono nella scheda, in ISTRUTTORI E ACCESSI.' },
   'da-fare': { tono: 'neutro', segno: () => 'RICEVUTA DA FARE', azione: 'Prepara la ricevuta', link: false, nota: '' },
-  'fatta': { tono: 'verde', segno: () => 'FATTA', azione: 'Ristampa', link: false, nota: 'Fatta il 2 novembre 2026', fatta: true },
+  'fatta': { tono: 'giallo', segno: () => 'FATTA · DA PAGARE', azione: 'Segna pagato', link: false, nota: 'Fatta il 2 novembre 2026', fatta: true },
   'da-pagare': { tono: 'giallo', segno: () => 'FATTA · DA PAGARE', azione: 'Segna pagato', link: false, nota: '', fatta: true },
   'non-torna': { tono: 'rosso', segno: () => 'NON TORNA PIÙ', azione: 'Annulla e rifai', link: false, nota: 'Ricevuta di 180,00 €: dopo è stata rifiutata una presenza e il mese ora fa 165,00 €.', fatta: true },
-  'pagata': { tono: 'verde', segno: (p) => `PAGATA IL ${p.quando ?? '05/11'}`, azione: 'Ristampa', link: false, nota: '', fatta: true },
+  'solo-attese': { tono: 'neutro', segno: () => 'NIENTE DA PAGARE, PER ORA', azione: '', link: false, nota: 'Nel mese non ha lezioni firmate. Se c’era, si segna qui sotto e la ricevuta si fa.', vuoto: true, niente: true },
+  'pagata': { tono: 'verde', segno: () => 'PAGATA', azione: 'Ristampa', link: false, nota: `Pagata il ${'5 novembre 2026'}. Per annullarla, prima si annulla il pagamento in CONTABILITÀ.`, fatta: true },
 };
 const vero = (v, d) => (v === undefined ? d : v === true || v === 'true');
 class Component extends DCLogic {
@@ -105,11 +136,21 @@ class Component extends DCLogic {
       const manca = (tariffa ?? '—') === '—';
       return { corso, ore, tariffa: manca ? 'SENZA TARIFFA' : tariffa, importo: importo ?? '—', coloreTariffa: manca ? '#b81d1d' : '#0d2a3d', pesoTariffa: manca ? 700 : 400 };
     });
+    const attese = String(p.attese ?? '').split('|').filter(Boolean).map((r) => {
+      // L'ora ha i due punti: il giorno è quel che sta fra il corso e chi ha firmato.
+      const parti = r.split(':');
+      const corso = parti[0], chi = parti[parti.length - 1], giorno = parti.slice(1, -1).join(':');
+      return { corso, giorno, chi };
+    });
+    const conAttese = attese.length > 0;
     return {
+      attese, conAttese, aperteAttese: conAttese && (aperta || p.stato === 'solo-attese'),
+      segnoAttese: `MANCA LA FIRMA · ${attese.length} ${attese.length === 1 ? 'LEZIONE' : 'LEZIONI'}`,
+      titoloAttese: `MANCA LA FIRMA DI ${String(p.nome ?? 'Ballabio Diana').split(' ').slice(-1)[0].toUpperCase()} · ${attese.length} ${attese.length === 1 ? 'LEZIONE' : 'LEZIONI'}`,
       largo: !telefono, telefono, aperta, corsi, freccia: aperta ? '▾' : '▸',
       nome: p.nome ?? 'Ballabio Diana', lezioni: p.lezioni ?? '8', ore: p.ore ?? '12',
       importo: s.vuoto ? '—' : (p.importo ?? '180,00 €'), coloreImporto: s.vuoto ? '#46606f' : '#0d2a3d',
-      tono: s.tono, segno: s.segno(p), azione: s.azione, conLink: s.link, conTasto: !s.link,
+      tono: s.tono, segno: s.segno(p), azione: s.azione, conLink: s.link, conTasto: !s.link && !s.niente,
       conSpunta: !!s.fatta, firmata, daRiportare: !!s.fatta && !firmata,
       fondoSpunta: firmata ? '#0d2a3d' : '#ffffff', segnoSpunta: firmata ? '✓' : '',
       haNota: nota !== '', nota,

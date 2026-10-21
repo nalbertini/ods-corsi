@@ -3217,19 +3217,6 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
 }
 
 /* SITO (segreteria): le pagine del sito della palestra, il loro testo e il menu. */
-.sito-due { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
-@media (max-width: 1000px) { .sito-due { grid-template-columns: minmax(0, 1fr); } }
-.sito-barra { gap: 6px; flex-wrap: wrap; }
-.sito-tasto { min-width: 44px; min-height: 44px; }
-/* Separa i gruppi di tasti (titoli, stile, elenchi, inserimenti) */
-.sito-sep { align-self: stretch; width: 2px; margin: 0 4px; background: var(--text); opacity: 0.25; }
-.sito-testo { min-height: 420px; padding: 24px 28px; background: var(--surface); border: 2px solid var(--line); font-size: 17px; line-height: 1.5; color: var(--text); }
-.sito-testo:focus { outline: 2px solid var(--text); outline-offset: 2px; }
-.sito-testo > * + * { margin-top: 14px; }
-.sito-testo p, .sito-testo ul, .sito-testo ol, .sito-testo blockquote { margin-top: 0; margin-bottom: 0; }
-.sito-testo h2, .sito-testo h3 { margin: 0; font-family: var(--cond); font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; line-height: 1.1; }
-/* Puck ha tre pannelli: ha bisogno di tutta la larghezza, e i campi della pagina vanno sotto. */
-.sito-due-pezzi { grid-template-columns: minmax(0, 1fr); }
 /* L'orario dai corsi nel pannello SITO: i corsi collegati e le righe come le vede il sito. */
 .sito-corso-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 0 0 12px; border: 2px solid var(--blu); background: var(--surface); font-size: 15px; font-weight: 600; }
 .sito-chip-x { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: inherit; font-size: 18px; cursor: pointer; }
@@ -3238,94 +3225,41 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
 .sito-orario-righe { list-style: none; margin: 0; padding: 0; }
 .sito-orario-riga { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0 10px; padding: 14px 16px; border-left: 6px solid var(--blu); background: var(--surface-2); font-family: var(--cond); font-size: 24px; font-weight: 800; line-height: 1; text-transform: uppercase; }
 .sito-orario-ora { white-space: nowrap; font-size: 22px; }
-.sito-due-pezzi > .stack:last-child { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); align-items: start; }
 /* L'anteprima vera segue il tema come gli altri riquadri: il fondo azzurro del sito sta dentro la pagina. */
 .sito-anteprima-pagina { width: 100%; height: 720px; border: 2px solid var(--line); background: var(--surface); }
-/* Puck: i suoi colori, i raggi e il carattere sono quelli dell'app (squadrato, token del tema), non i suoi. */
-.sito-pezzi {
-  --puck-font-family: var(--body);
-  --puck-color-surface: var(--surface);
-  --puck-color-surface-muted: var(--surface-2);
-  --puck-color-surface-subtle: var(--surface-2);
-  --puck-color-border: var(--line);
-  --puck-color-border-muted: var(--line-soft);
-  --puck-color-border-hover: var(--text);
-  --puck-color-text: var(--text);
-  --puck-color-text-secondary: var(--dim);
-  --puck-color-text-muted: var(--dim);
-  --puck-color-text-subtle: var(--dim);
-  --puck-color-text-inverse: var(--bg);
-  --puck-color-interactive: var(--text);
-  --puck-color-interactive-soft: var(--surface-2);
-  --puck-color-interactive-soft-hover: var(--line);
-  --puck-color-selection-border: var(--text);
-  --puck-color-focus-ring: var(--text);
-  --puck-radius-m: 0;
-  --puck-radius-l: 0;
-  --puck-field-radius: 0;
-  --puck-field-color-text: var(--text);
-  --puck-field-color-bg: var(--surface);
-  --puck-field-color-border: var(--riga-campo);
-  min-height: 520px;
-  border: 2px solid var(--line);
-  background: var(--surface);
-  color: var(--text);
-}
-.sito-pezzi * { border-radius: 0; }
-/* Il nuovo editor (Puck completo) prende tutto lo schermo; sotto il velo (10) dei dialoghi, così domande e scelta della foto gli stanno sopra. */
-.sito-puck { position: fixed; inset: 0; z-index: 9; background: var(--surface); }
+/* L'editor delle pagine (Puck, col suo aspetto: sempre chiaro, coi suoi colori) prende tutto lo schermo; sotto il velo (10) dei dialoghi, così domande e scelta della foto gli stanno sopra. */
+.sito-puck { position: fixed; inset: 0; z-index: 9; background: var(--puck-color-white); color: var(--puck-color-text); color-scheme: light; }
 .sito-puck-sul-sito { display: flex; flex-direction: column; }
 /* I tasti di Puck che si usano davvero (annulla, pannelli, formati, zoom, Copia e Togli) arrivano ai 44px; i nostri non vanno a capo. */
-.sito-puck { --puck-iconbutton-space: 12px; --puck-actionbar-action-space: 12px; --puck-field-richtext-menu-space-x: 6px; --puck-field-richtext-menu-space-y: 6px; }
-.sito-puck .sg-btn { white-space: nowrap; flex-shrink: 0; }
-/* Sul tablet (768px) i tre tasti più il titolo non entrano: tasti più stretti, sempre alti 48px. */
-@media (max-width: 900px) { .sito-puck .sg-btn { padding-inline: 12px; } }
-/* I campi nostri dentro il pannello di Puck (testo, pagina, domanda dei Pulsanti e delle Domande): come i suoi, alti 44px. */
-.sito-puck-campo { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--text); font: inherit; font-size: 14px; }
-.sito-puck-campo[data-avviso='true'] { border: 2px solid var(--giallo-testo); }
-.sito-puck-campo:focus-visible { outline: 3px solid var(--blu); outline-offset: 2px; }
-.sito-puck-nota { margin: 6px 0 0; font-size: 13px; line-height: 1.45; color: var(--dim); }
-.sito-puck-avviso { color: var(--giallo-testo); font-weight: 600; }
+.sito-puck { --puck-iconbutton-space: 12px; --puck-actionbar-action-space: 12px; --puck-field-richtext-menu-space-x: 6px; --puck-field-richtext-menu-space-y: 6px; --puck-button-medium-space-y: 12px; }
+/* Con la riga del perché in fondo, Puck si ferma sopra di lei: non copre la sua barra in basso né l'ultimo campo. */
+.sito-puck[data-guaio] { padding-bottom: 52px; }
+/* Il testo nel pannello ha spazio anche col campo del link aperto sotto la barra. */
+.sito-puck [class*='RichTextEditor--editor'] { min-height: 280px; }
+/* I campi nostri dentro il pannello di Puck (testo, pagina, domanda dei Pulsanti e delle Domande): come i suoi, coi suoi colori, alti 44px. */
+.sito-puck-campo { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid var(--puck-field-color-border, var(--puck-color-grey-09)); border-radius: 4px; background: var(--puck-color-white); color: var(--puck-color-text); font: inherit; font-size: 14px; }
+.sito-puck-campo[data-avviso='true'] { border: 2px solid var(--puck-color-yellow-04); }
+.sito-puck-campo:focus-visible { outline: 3px solid var(--puck-color-azure-05); outline-offset: 2px; }
+.sito-puck-nota { margin: 6px 0 0; font-size: 13px; line-height: 1.45; color: var(--puck-color-text-secondary); }
+.sito-puck-avviso { color: var(--puck-color-yellow-04); font-weight: 600; }
+/* Come i campi di Puck sotto i 458px: 16px, e il telefono non ingrandisce la pagina quando li si tocca. */
+@media (max-width: 457px) { .sito-puck-campo { font-size: 16px; } }
+/* Oltre il limite (titolo, descrizione) o un indirizzo che non va: rosso e a parole. */
+.sito-puck-troppo { color: var(--puck-color-red-04); font-weight: 600; }
 /* La barra di un testo nel pannello (la risposta delle Domande) va a capo: sul tablet scorrerebbe di lato, coi tasti fuori dal pannello. */
 .sito-puck [class*='RichTextMenu--form'], .sito-puck [class*='RichTextMenu--form'] [class*='RichTextMenu-group'] { flex-wrap: wrap; }
-/* Perché Salva bozza è spento: in una riga intera in fondo, sopra la pagina, come la nota rossa dell'editor di oggi. */
-.sito-puck-guaio { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1; margin: 0; padding: 12px 16px; background: var(--surface); border-top: 2px solid var(--rosso-testo); color: var(--rosso-testo); font-size: 16px; font-weight: 600; }
-/* Senza il pannello delle parti la pagina prende lo spazio: la cornice segue l'altezza dello schermo, mai sotto i 720px. */
-.sito-pezzi-corpo { display: flex; flex-direction: column; height: max(720px, calc(100vh - 220px)); }
-.sito-pezzi-colonne { display: grid; grid-template-columns: minmax(0, 1fr) 320px; flex: 1; min-height: 0; }
-.sito-pezzi-pagina { overflow: auto; padding: 16px; min-width: 0; }
-.sito-pezzi-destra { display: flex; flex-direction: column; gap: 14px; padding: 12px; border-left: 2px solid var(--line); overflow: auto; }
-.sito-pezzi-riga { display: flex; align-items: center; min-height: 48px; padding: 0 14px; border: 2px solid var(--line); background: var(--surface); color: var(--text); font-size: 15px; text-align: left; }
-.sito-pezzi-riga[data-on='true'] { border-color: var(--text); background: var(--surface-2); font-weight: 700; }
-.sito-pezzi-frase { margin: 0; padding: 18px; border: 2px dashed var(--line); color: var(--dim); font-size: 16px; line-height: 1.45; }
-/* I tasti sopra l'editor sono quelli della segreteria; da spenti restano leggibili. */
-.sito-pezzi .sg-chip { color: var(--text); border-color: var(--riga-campo); background: var(--surface); }
-.sito-pezzi .sg-chip:disabled { background: var(--surface-2); color: var(--dim); border-color: transparent; opacity: 1; }
+/* La testata di Puck: titolo e stato stringono (coi puntini) invece di spingere fuori i tasti, che vanno a capo se non c'è posto. */
+@media (min-width: 638px) { .sito-puck [class*='PuckHeader-inner'] { grid-template-columns: auto minmax(120px, 1fr) minmax(0, max-content); } }
+.sito-puck [class*='PuckHeader-title'] { min-width: 0; }
+.sito-puck [class*='PuckHeader-title'] > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Lo stato sotto il titolo va a capo invece di sparire coi puntini: «da salvare» deve leggersi. */
+.sito-puck [class*='PuckHeader-path'] { display: block; white-space: normal; }
+.sito-puck [class*='PuckHeader-tools'] { min-width: 0; }
+.sito-puck [class*='MenuBar-inner'] { flex-wrap: wrap; justify-content: flex-end; row-gap: 8px; }
+/* Perché Salva bozza o Pubblica è spento: in una riga intera in fondo, sopra la pagina. */
+.sito-puck-guaio { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1; margin: 0; padding: 12px 16px; background: var(--puck-color-white); border-top: 2px solid var(--puck-color-red-04); color: var(--puck-color-red-04); font-size: 16px; font-weight: 600; }
 /* Una parte senza niente dentro si vede e ha l'altezza di un tocco. */
 .sito-pezzi-vuoto { display: flex; align-items: center; min-height: 44px; padding: 0 16px; border: 2px dashed var(--line); color: var(--dim); font-size: 15px; }
-/* Un istruttore nella pagina (sito-istruttori-blocchi/Proposta): foto o iniziale da 56px, nome e cognome, corsi in pastiglie. */
-.sito-pezzo-istruttore { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border: 2px solid var(--line); background: var(--surface); overflow-wrap: anywhere; }
-.sito-pezzo-istruttore img, .sito-pezzo-istruttore .iniziale { width: 56px; max-width: 100%; height: 56px; flex-shrink: 0; object-fit: cover; }
-.sito-pezzo-istruttore .iniziale { display: flex; align-items: center; justify-content: center; background: var(--surface-2); font-family: var(--cond); font-weight: 800; font-size: 26px; }
-.sito-pezzo-istruttore .nome { font-family: var(--cond); font-weight: 800; font-size: 22px; text-transform: uppercase; line-height: 1; }
-.sito-pezzo-istruttore .cognome { font-weight: 700; color: var(--dim); }
-.sito-pezzo-istruttore .pillola { padding: 2px 8px; border: 1.5px solid var(--riga-campo); border-radius: 6px; font-size: 13px; font-weight: 600; }
-/* La frase sotto una parte che spezza le tessere degli istruttori, e sotto una pagina non pubblicata. */
-.sito-pezzi-avviso { margin: 6px 0 0; color: var(--giallo-testo); font-size: 14px; font-weight: 600; line-height: 1.4; }
-/* Sotto una parte, staccata da quella che segue e allineata al suo testo. */
-.sito-pezzi-avviso.sotto-parte { margin: 6px 0 12px; padding-left: 14px; }
-/* Sotto i 1280px la pagina sta sopra e il pannello sotto, a tutta larghezza. */
-@media (max-width: 1279px) {
-  .sito-pezzi-corpo { height: auto; min-height: 640px; }
-  .sito-pezzi-colonne { grid-template-columns: minmax(0, 1fr); }
-  .sito-pezzi-destra { border-left: 0; border-top: 2px solid var(--line); min-height: 200px; }
-}
-.sito-testo h2 { font-size: 28px; }
-.sito-testo h3 { font-size: 22px; }
-.sito-testo ul, .sito-testo ol { padding-left: 24px; }
-.sito-testo blockquote { padding-left: 14px; border-left: 4px solid var(--line); color: var(--sec); }
-.sito-testo a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
-.sito-testo a.pulsante, .sito-testo a[data-pulsante='true'] { display: inline-block; padding: 10px 18px; background: var(--text); color: var(--bg); text-decoration: none; font-family: var(--cond); font-weight: 700; letter-spacing: 0.1em; }
 .sito-elenco { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 2px solid var(--line); background: var(--surface); }
 .sito-riga { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr) 210px 100px; width: 100%; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; border: 0; border-top: 2px solid var(--line-soft); background: transparent; color: var(--text); text-align: left; font: inherit; cursor: pointer; }
 .sito-riga:hover { background: var(--surface-2); }
@@ -3347,9 +3281,6 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sito-scegli { width: min(760px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow-y: auto; }
 .sito-immagini-scelta { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .sito-immagini-scelta img { height: 110px; }
-.sito-testo img { display: block; max-width: 100%; height: auto; }
-/* La foto scelta si vede scelta: bordo pieno, come la casella a fuoco. */
-.sito-testo img.ProseMirror-selectednode { outline: 4px solid var(--text); outline-offset: 2px; }
 .sito-barra-foto { align-items: center; }
 @media (max-width: 767px) { .sito-immagini-scelta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .sito-voce > .sg-campo { flex: 1 1 240px; min-width: 0; }
@@ -3459,35 +3390,6 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* CONTABILITÀ: i totali delle casse vanno a capo sotto una certa larghezza, invece di tagliare gli importi a 40px. */
 .sg-numeri.sg-numeri-conti { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 
-/* Il testo scritto nella pagina (EditorPezzi.tsx, TestoInPagina.tsx): la barra dei tasti sta sopra il pezzo scelto e non sposta la pagina. */
-.sito-pezzo { display: flow-root; } /* il margine negativo della barra non esce dal pezzo */
-.sito-pezzo .sito-testo { min-height: 0; border: 0; }
-.sito-pezzo .sito-testo:focus { outline: none; }
-.sito-pezzo[data-scelto] .sito-testo { min-height: 88px; }
-.sito-colonne { display: grid; gap: 16px; }
-.sito-colonna { min-width: 0; }
-.sito-pezzo[data-scelto] .sito-colonne .sito-colonna { outline: 2px dashed var(--riga-campo); outline-offset: -2px; }
-.sito-pezzo[data-scelto] .sito-colonne .sito-colonna[data-viva='true'] { outline: 3px solid var(--blu); background: var(--surface); }
-/* Il posto della barra prende la sua altezza (`--hb`, la misura la barra) e si tira su di altrettanto: il pezzo non si muove; scorrendo, la barra resta agganciata in alto. */
-.sito-barra-flotta { position: sticky; top: 0; z-index: 5; height: var(--hb, 0px); margin: calc(-1 * var(--hb, 0px) - 6px) 0 6px; }
-.sito-barra-flotta[data-in-cima] { margin: 0 0 6px; }
-.sito-barra-caja { display: flex; flex-direction: column; gap: 6px; padding: 6px; border: 2px solid var(--text); background: var(--surface); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); }
-/* La barra è una riga sola che scorre di lato: due o tre righe coprirebbero il pezzo di sopra, e sul telefono mezzo schermo. */
-.sito-barra-caja .sito-barra { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 6px; }
-.sito-barra-caja .sito-tasto { flex-shrink: 0; }
-/* La barra della foto va a capo anche sul telefono: i tasti dell'azione e la frase d'errore devono restare in vista, senza scorrere di lato. */
-.sito-barra-caja .sito-barra-foto { flex-wrap: wrap; overflow-x: visible; padding-bottom: 0; }
-.sito-barra-foto .sg-campo { min-width: 0; flex: 1 1 140px; }
-/* Sullo schermo largo i tasti stanno tutti in vista, su due righe (come nel design approvato): nessuno nascosto da scorrere di lato. */
-@media (min-width: 900px) {
-  .sito-barra-caja .sito-barra { flex-wrap: wrap; overflow-x: visible; padding-bottom: 0; }
-}
-/* La linguetta di Puck (nome, copia, togli) è una sola, sul bordo alto del pezzo scelto, e coprirebbe la barra: con un testo scelto Togli, Su e Giù sono già in alto. */
-.sito-pezzi:has(.sito-pezzo[data-scelto]) [class*='DraggableComponent-actionsOverlay'] { display: none; }
-@media (max-width: 600px) {
-  .sito-pezzi-pagina { padding: 8px; }
-  .sito-pezzo .sito-testo { padding: 16px 14px; }
-}
 /* Quello che toglie qualcosa (cancella, elimina, annulla, disattiva) è rosso
    in ogni pulsante, a linea, chip o link: il rosso pieno resta al «sì» della
    conferma. In coda al file e con `:root[data-look='sito']` per battere i colori del
@@ -3520,9 +3422,21 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-compenso-per-corso > summary::before { content: '▸ '; }
 .sg-compenso-per-corso[open] > summary::before { content: '▾ '; }
 .sg-segno-regola[data-tono='neutro'] { color: var(--text); }
+/* MANCA LA SUA FIRMA: corso, giorno, chi ha firmato, i due tasti; le colonne restano ferme coi nomi lunghi. */
+.sg-senza-firma { display: grid; grid-template-columns: minmax(0, 1fr) 130px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 52px; padding: 6px 0; border-top: 1px solid var(--line-soft); font-size: 14px; }
+.sg-senza-firma-corso { min-width: 0; overflow-wrap: anywhere; }
+.sg-senza-firma-sotto { display: contents; }
+.sg-senza-firma-chi { min-width: 0; color: var(--sec); }
+/* Due segni accanto (PRESENZE DA CONFERMARE, MANCA LA FIRMA · N LEZIONI) in una colonna stretta: vanno a capo dentro, non escono. */
+.sg-compenso-riga .sg-segno-regola { white-space: normal; }
 @media (max-width: 480px) {
+  .sg-senza-firma { grid-template-columns: minmax(0, 1fr) auto; padding: 8px 0; }
+  .sg-senza-firma-corso { font-weight: 600; grid-column: 1; }
+  .sg-senza-firma-sotto { display: block; grid-column: 1; font-size: 13px; color: var(--sec); }
+  .sg-senza-firma-sotto > * + *::before { content: ' · '; }
+  .sg-senza-firma > :last-child { grid-column: 2; grid-row: 1 / span 2; }
   .sg-compenso-riga { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
   .sg-compenso-riga > :nth-child(n + 3) { grid-column: 1 / -1; }
-  .sg-numeri[data-telefono-due] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sg-numeri[data-telefono-due] > :nth-child(1), .sg-numeri[data-telefono-due] > :nth-child(4) { display: none; }
+  .sg-numeri[data-telefono-due] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sg-numeri[data-telefono-due] > :nth-child(1) { display: none; }
 }

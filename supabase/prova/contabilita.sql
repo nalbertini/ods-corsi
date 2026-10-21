@@ -144,7 +144,7 @@ grant execute on function atteso(text, text, text), chi(text), tenta(text), esit
 \echo '--- 1. le due casse e le due voci di sistema ci sono già ---'
 select atteso('le casse', (select string_agg(nome || ' ' || saldo_iniziale || ' ' || coalesce(dal::text, '—'), ', ' order by nome) from casse), 'Cassa Contanti 0 —, Conto Corrente 0 —');
 -- Le voci «Differenza di cassa» arrivano con 60-chiusura-cassa.sql e le prova chiusura-cassa.sql: qui si contano quelle del 59.
-select atteso('le voci di sistema', (select string_agg(nome || ' ' || tipo || ' ' || di_sistema || ' ' || attiva, ', ' order by nome) from voci_contabili where nome <> 'Differenza di cassa'), 'Corsi e altri pagamenti entrata true true, Quota associativa entrata true true');
+select atteso('le voci di sistema', (select string_agg(nome || ' ' || tipo || ' ' || di_sistema || ' ' || attiva, ', ' order by nome) from voci_contabili where nome not in ('Differenza di cassa', 'Compensi istruttori')), 'Corsi e altri pagamenti entrata true true, Quota associativa entrata true true');
 select atteso('nessun movimento', (select count(*)::text from movimenti), '0');
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
@@ -155,7 +155,7 @@ select atteso('«Corsi e altri pagamenti» non si disattiva', esito(format('sele
 select atteso('un doppione della quota associativa no', esito($$select salva_voce('{"nome": "QUOTA ASSOCIATIVA", "tipo": "entrata"}')$$), '22023 C’è già una voce «QUOTA ASSOCIATIVA» tra le entrate');
 select atteso('né di «Corsi e altri pagamenti», con spazi', esito($$select salva_voce('{"nome": "  corsi e altri pagamenti ", "tipo": "entrata"}')$$), '22023 C’è già una voce «corsi e altri pagamenti» tra le entrate');
 reset role;
-select atteso('le voci di sistema sono rimaste com''erano', (select string_agg(nome || ' ' || attiva, ', ' order by nome) from voci_contabili where nome <> 'Differenza di cassa'), 'Corsi e altri pagamenti true, Quota associativa true');
+select atteso('le voci di sistema sono rimaste com''erano', (select string_agg(nome || ' ' || attiva, ', ' order by nome) from voci_contabili where nome not in ('Differenza di cassa', 'Compensi istruttori')), 'Corsi e altri pagamenti true, Quota associativa true');
 
 \echo ''
 \echo '--- 2. le voci: il nome è unico per tipo, una voce si disattiva e non si butta ---'
@@ -329,7 +329,7 @@ update movimenti set descrizione = 'Offerta di Rossi' where descrizione = repeat
 \echo '--- 7. chi vede e chi scrive ---'
 select impronta() as prima \gset
 select (select count(*) from voci_contabili) || '/' || (select count(*) from casse) || '/' || (select count(*) from movimenti) as tutto \gset
-select atteso('c''è qualcosa da vedere', (select count(*) from voci_contabili where nome <> 'Differenza di cassa') || '/' || (select count(*) from casse) || '/' || (select count(*) from movimenti), '8/2/8');
+select atteso('c''è qualcosa da vedere', (select count(*) from voci_contabili where nome not in ('Differenza di cassa', 'Compensi istruttori')) || '/' || (select count(*) from casse) || '/' || (select count(*) from movimenti), '8/2/8');
 -- Vedere: l'amministrazione, anche se insegna, e la segreteria che ha anche quel ruolo.
 select atteso(label || ': legge tutto', da_visto(utente, ruolo), voluto)
   from (values
@@ -442,7 +442,7 @@ select atteso('prima del rilancio il saldo è quello impostato', (select saldo_i
 \i supabase/59-contabilita.sql
 select atteso('rilanciato, i dati sono gli stessi', impronta(), :'prima');
 select atteso('…le casse sono ancora due', (select count(*)::text from casse), '2');
-select atteso('…le voci di sistema ancora due', (select count(*)::text from voci_contabili where di_sistema and nome <> 'Differenza di cassa'), '2');
+select atteso('…le voci di sistema ancora due', (select count(*)::text from voci_contabili where di_sistema and nome not in ('Differenza di cassa', 'Compensi istruttori')), '2');
 select atteso('…il saldo impostato non è tornato a zero', (select saldo_iniziale || ' ' || dal from casse where nome = 'Cassa Contanti'), '10000 2026-09-01');
 select atteso('…e i permessi sono gli stessi', (select string_agg(t || ': ' || coalesce((select string_agg(p, ',' order by p) from unnest(array['select', 'insert', 'update', 'delete']) p where has_table_privilege('authenticated', 'public.' || t, p)), 'niente'), '; ' order by t)
   from unnest(array['casse', 'movimenti', 'voci_contabili']) t), 'casse: select; movimenti: select; voci_contabili: select');

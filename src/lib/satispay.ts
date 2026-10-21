@@ -31,7 +31,7 @@ export interface PagamentoSatispay {
   /** La scheda della richiesta accolta. */
   personaId?: string
   /**
-   * Pagato prima di mandare la richiesta (`81-satispay-prima.sql`): per quale
+   * Pagato prima di mandare la richiesta (`83-satispay-prima.sql`): per quale
    * corso e formula, e di chi, per richiamarlo se la richiesta non arriva.
    */
   corsoId?: string
@@ -50,14 +50,14 @@ export const statoDa = (status: string): StatoSatispay => (status === 'ACCEPTED'
 
 export const ERRORE_SATISPAY = 'Satispay non risponde: riprova fra qualche minuto'
 
-/** I rifiuti di `invia_iscrizione` per il pagamento fatto prima (`81-satispay-prima.sql`): gli stessi testi in prova. */
+/** I rifiuti di `invia_iscrizione` per il pagamento fatto prima (`83-satispay-prima.sql`): gli stessi testi in prova. */
 export const PAGAMENTO_NON_ARRIVATO = 'Il pagamento Satispay non è ancora arrivato: conferma in Satispay e riprova'
 export const PAGAMENTO_ALTRA_SCELTA = 'Il pagamento Satispay era per un altro corso o un’altra formula: rimetti la scelta di prima, o chiama la segreteria'
 export const PAGAMENTO_NON_VALE = 'Questo pagamento Satispay non vale più: paga di nuovo in fondo al modulo'
 export const PAGAMENTO_ALTRA_PERSONA = 'Il pagamento Satispay è a un altro nome o un’altra email: rimetti quelli di prima, o chiama la segreteria'
 /** Nome o cognome oltre la misura della colonna: lo stesso testo di `satispay_prepara_prima`. */
 export const NOME_TROPPO_LUNGO = 'Un campo non va: nome e cognome hanno al massimo 80 caratteri'
-/** Senza `81-satispay-prima.sql` la Edge Function dice che il servizio non c'è: si paga col bonifico. */
+/** Senza `83-satispay-prima.sql` la Edge Function dice che il servizio non c'è: si paga col bonifico. */
 export const SATISPAY_SPENTO = 'Satispay per ora non è attivo: scegli il bonifico'
 /** Pagato con Satispay e poi scelto il bonifico: si pagherebbe due volte. */
 export const GIA_PAGATO_SATISPAY = 'Hai già pagato con Satispay: rimetti Satispay in «Paghi con» per mandare la richiesta, o chiama la segreteria'
@@ -274,7 +274,7 @@ export function cosaNonVaModo(
   // Pagato con Satispay e poi cambiato in bonifico: i soldi ci sono già, col bonifico si pagherebbe due volte.
   if (modo === 'bonifico' && satispay.giaPagato) return GIA_PAGATO_SATISPAY
   if (modo === 'bonifico' && !conRicevuta) return 'Manca la ricevuta del bonifico: una foto, lo screenshot o il PDF'
-  // Con Satispay si paga prima, in fondo al modulo: la richiesta parte solo pagata (81-satispay-prima.sql).
+  // Con Satispay si paga prima, in fondo al modulo: la richiesta parte solo pagata (83-satispay-prima.sql).
   if (modo === 'satispay' && !satispay.pronto) return 'Prima paga con Satispay, in fondo al modulo: la richiesta parte dopo'
   return null
 }

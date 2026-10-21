@@ -169,7 +169,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             // Il database le pulisce e scarta quelle che non vanno; senza 74-provenienza-richieste.sql le ignora.
             provenienza: d.provenienza,
             conosciuto: d.conosciuto,
-            // Il pagamento fatto in fondo al modulo: senza 81-satispay-prima.sql la chiave si ignora.
+            // Il pagamento fatto in fondo al modulo: senza 83-satispay-prima.sql la chiave si ignora.
             pagamento_satispay: d.pagamentoSatispay,
           },
         }),
@@ -197,7 +197,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
 
     async prepara(x) {
       const r = await satispay({ azione: 'prepara', corso: x.corso, formula: x.formula, nome: x.nome, cognome: x.cognome, email: x.email })
-      // Senza 81-satispay-prima.sql la funzione dice che il servizio non c'è: si paga col bonifico.
+      // Senza 83-satispay-prima.sql la funzione dice che il servizio non c'è: si paga col bonifico.
       if (r.attivo === false) throw new Error(SATISPAY_SPENTO)
       if (typeof r.id !== 'string' || typeof r.importo !== 'number') throw new Error(ERRORE_SATISPAY)
       if (r.stato === 'pagato') return { stato: 'pagato', id: r.id, importo: r.importo, pagatoIl: typeof r.pagato_il === 'string' ? r.pagato_il : undefined }
@@ -207,7 +207,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
 
     async statoSatispay(pagamentoId) {
       const r = await satispay({ azione: 'stato_pagamento', pagamento: pagamentoId })
-      // `as`: la forma è quella di `satispay_stato_pagamento` (81-satispay-prima.sql), riletta dalla funzione.
+      // `as`: la forma è quella di `satispay_stato_pagamento` (83-satispay-prima.sql), riletta dalla funzione.
       const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null; collegato?: boolean } | null | undefined
       return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined, collegato: p.collegato === true } : null
     },

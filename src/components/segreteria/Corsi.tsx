@@ -127,6 +127,7 @@ export function Corsi({
       key={nuovo ? 'nuovo' : corso!.id}
       d={d}
       corso={corso}
+      conBastaUno={(corsi.dato ?? []).some((c) => c.bastaUno !== undefined)}
       iscritti={corso ? iscrittiA(corso.id) : []}
       persone={persone.dato ?? []}
       guaio={persone.dato === null ? persone.guaio : null}
@@ -265,9 +266,12 @@ function Scheda({
   onCambiato,
   onArchiviato,
   onLasciaStare,
+  conBastaUno,
 }: {
   d: DatiSegreteria
   corso: CorsoSeg | null
+  /** Il database ha «a lezione basta uno» (82-manca-la-firma.sql): un corso nuovo parte senza spunta. */
+  conBastaUno: boolean
   iscritti: RigaIscrittoCorso[]
   persone: PersonaSeg[]
   /** La lettura delle persone è fallita: non si può dire «0 iscritti». */
@@ -294,6 +298,8 @@ function Scheda({
     capienza: corso?.capienza,
     colore: corso?.colore ?? COLORI[0].hex,
     enteTessera: corso?.enteTessera,
+    // Assente se il database non ha ancora la colonna (82-manca-la-firma.sql): la spunta non si mostra e non si scrive.
+    bastaUno: corso ? corso.bastaUno : conBastaUno ? false : undefined,
   }))
   // Un corso nuovo prende la prima sala, quando le sale arrivano.
   // Solo un corso nuovo: su uno che esiste senza sala SALVA si accenderebbe da solo.
@@ -527,6 +533,15 @@ function Scheda({
         <span style={{ fontSize: 13, color: 'var(--dim)' }}>
           Tutti possono fare l'appello e aggiornare le lezioni; il primo che hai scelto è quello di riferimento.
         </span>
+      )}
+      {bozza.istruttori.length > 1 && bozza.bastaUno !== undefined && (
+        <div className="stack" style={{ gap: 4 }}>
+          <label className="row" style={{ gap: 10, minHeight: 44, fontSize: 15, fontWeight: 600, alignSelf: 'flex-start' }}>
+            <input type="checkbox" style={{ width: 24, height: 24, margin: 0, accentColor: 'var(--text)', cursor: 'pointer' }} checked={bozza.bastaUno} onChange={(e) => setBozza({ ...bozza, bastaUno: e.target.checked })} />
+            Si alternano: a lezione basta uno
+          </label>
+          <span style={{ fontSize: 13, color: 'var(--dim)', paddingLeft: 34 }}>Se uno ha firmato, in COMPENSI agli altri non si chiede la firma. Lasciala vuota se a lezione sono sempre tutti.</span>
+        </div>
       )}
 
       {corso && (

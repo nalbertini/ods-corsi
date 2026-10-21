@@ -137,7 +137,7 @@ declare
   cf_gen text := nullif(upper(regexp_replace(coalesce(dati->>'genitore_codice_fiscale', ''), '\s', '', 'g')), '');
   tel_2 text := nullif(trim(coalesce(dati->>'telefono_2', '')), '');
   testo text;
-  -- Il pagamento Satispay fatto prima, in fondo al modulo (81-satispay-prima.sql): la richiesta lo prende con sé.
+  -- Il pagamento Satispay fatto prima, in fondo al modulo (83-satispay-prima.sql): la richiesta lo prende con sé.
   pagato uuid;
   p pagamenti_satispay;
 begin

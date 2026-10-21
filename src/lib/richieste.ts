@@ -73,7 +73,7 @@ export interface DatiRichiesta {
   conosciuto?: Conosciuto
   /**
    * Il pagamento Satispay fatto in fondo al modulo, prima di mandare
-   * (`81-satispay-prima.sql`): la richiesta lo prende con sé solo se è
+   * (`83-satispay-prima.sql`): la richiesta lo prende con sé solo se è
    * arrivato ed è per il suo corso e la sua formula.
    */
   pagamentoSatispay?: string

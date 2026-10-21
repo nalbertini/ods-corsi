@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs'
 
 const D = 'src/components/segreteria/'
-const FILE = ['Settimana', 'CalendarioSettimana', 'Presenze', 'PresenzeIstruttori', 'PresenzeSegnalate', 'Richieste', 'Corsi', 'Tessere', 'Listino', 'Pagamenti', 'PagamentoAperto', 'Ricevute', 'Contabilita', 'Vestiario', 'Importa', 'Iscritti', 'Sito', 'EditorTesto', 'ImmaginiSito', 'Statistiche', 'Segnalazioni', 'TimerPalestra', 'Personale', 'Regole', 'Segreteria', 'CosaManca', 'comune', 'DaFare', 'CercaIscritto', 'FiltroRicerca', 'EditorPezzi', 'AnteprimaPagina', 'banco/BarraBanco', 'banco/Oggi', 'banco/PersonaBanco'].map((f) => `${D}${f}.tsx`)
+const FILE = ['Settimana', 'CalendarioSettimana', 'Presenze', 'PresenzeIstruttori', 'PresenzeSegnalate', 'Richieste', 'Corsi', 'Tessere', 'Listino', 'Pagamenti', 'PagamentoAperto', 'Ricevute', 'Contabilita', 'Vestiario', 'Importa', 'Iscritti', 'Sito', 'EditorPuck', 'ImmaginiSito', 'Statistiche', 'Segnalazioni', 'TimerPalestra', 'Personale', 'Regole', 'Segreteria', 'CosaManca', 'comune', 'DaFare', 'CercaIscritto', 'FiltroRicerca', 'AnteprimaPagina', 'banco/BarraBanco', 'banco/Oggi', 'banco/PersonaBanco'].map((f) => `${D}${f}.tsx`)
 // Parole che restano maiuscole per scelta, per file: il tasto MENU/CHIUDI della barra del telefono e il bollino DATI DI PROVA (una sigla di stato).
 const ECCEZIONI = { Segreteria: ['MENU', 'CHIUDI', 'DATI', 'PROVA'], 'banco/BarraBanco': ['DATI', 'PROVA'] }
 const SIGLE = new Set(['CSV', 'PDF', 'PIN', 'RASD', 'IBAN', 'FIJLKAM', 'FIPE'])

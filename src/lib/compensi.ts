@@ -18,7 +18,8 @@
 import { delMese, type MiaPresenza } from './ore'
 import { euro } from './ricevute'
 import { QUALIFICHE, stagioneDi, type Lettera, type TecnicoLettera } from './lettere'
-import type { LezioneSenzaIstruttore, Tariffa } from './segreteria'
+import type { LezioneSenzaIstruttore, PresenzaIstruttoreSeg, Tariffa } from './segreteria'
+import { giornoChiuso, type Cassa, type ChiusuraCassa } from './contabilita'
 
 export interface RigaCompenso {
   corso: string
@@ -62,9 +63,13 @@ export interface RicevutaCompenso extends DatiRicevutaCompenso {
   firmata: boolean
   annullataIl: string | null
   creataIl: string
+  /** Il movimento in CONTABILITÀ che l'ha pagata (`81-compensi-pagati.sql`); `null` = da pagare. */
+  movimentoId: string | null
+  /** Il giorno del pagamento, `AAAA-MM-GG`. */
+  pagataIl: string | null
 }
 
-export type StatoCompenso = 'da-confermare' | 'senza-tariffa' | 'senza-dati' | 'da-fare' | 'fatta' | 'non-torna'
+export type StatoCompenso = 'da-confermare' | 'senza-tariffa' | 'senza-dati' | 'da-fare' | 'fatta' | 'non-torna' | 'pagata' | 'solo-attese'
 
 /** Il primo del mese di una data, `AAAA-MM-01`, nel giorno di qui. */
 export const primoDelMese = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
@@ -92,7 +97,9 @@ export function compensoDelMese<P extends MiaPresenza>(presenze: P[], senzaIstru
  * adesso torna con quello di quando è stata fatta (il calcolato, non
  * l'importo, che può essere cambiato a mano): una presenza decisa dopo si vede.
  */
-export function statoCompenso({ conto, ricevuta, manca }: { conto: ContoCompenso; ricevuta?: Pick<RicevutaCompenso, 'calcolato' | 'annullataIl'> | null; manca?: string | null }): StatoCompenso {
+export function statoCompenso({ conto, ricevuta, manca }: { conto: ContoCompenso; ricevuta?: Pick<RicevutaCompenso, 'calcolato' | 'annullataIl' | 'pagataIl'> | null; manca?: string | null }): StatoCompenso {
+  // Pagata è pagata, anche se dopo è cambiata una presenza: i soldi sono usciti.
+  if (ricevuta && !ricevuta.annullataIl && ricevuta.pagataIl) return 'pagata'
   if (ricevuta && !ricevuta.annullataIl) return ricevuta.calcolato === conto.calcolato ? 'fatta' : 'non-torna'
   if (conto.daConfermare > 0) return 'da-confermare'
   if (conto.senzaTariffa.length) return 'senza-tariffa'
@@ -101,12 +108,43 @@ export function statoCompenso({ conto, ricevuta, manca }: { conto: ContoCompenso
   return 'da-fare'
 }
 
+/** Una lezione tenuta in due dove a un previsto manca la firma. */
+export type SenzaFirma = { sessioneId: string; corso: string; inizio: string; firmatoDa: string[] }
+type PresenzaPerFirma = Pick<PresenzaIstruttoreSeg, 'sessioneId' | 'corso' | 'inizio' | 'fine' | 'personaId' | 'nome' | 'stato' | 'previstiElenco' | 'annullata' | 'bastaUno'>
+
+/**
+ * Le lezioni del mese, già finite e non annullate, dove `personaId` era
+ * previsto, non ha nessuna presenza (né rifiutata né da confermare: quelle si
+ * decidono già) e un altro previsto sì, non rifiutata. Una lezione senza nessuna firma
+ * non c'è: sta fra quelle senza istruttore. Nei corsi dove basta uno non si
+ * chiede.
+ */
+export function senzaFirma(presenze: PresenzaPerFirma[], personaId: string, mese: { da: Date; a: Date }, adesso = new Date()): SenzaFirma[] {
+  const fine = new Date(mese.a.getFullYear(), mese.a.getMonth(), mese.a.getDate() + 1).getTime()
+  const perLezione = new Map<string, PresenzaPerFirma[]>()
+  for (const p of presenze) perLezione.set(p.sessioneId, [...(perLezione.get(p.sessioneId) ?? []), p])
+  return [...perLezione.values()]
+    .flatMap((l): SenzaFirma[] => {
+      const x = l[0]
+      const inizio = new Date(x.inizio).getTime()
+      if (inizio < mese.da.getTime() || inizio >= fine || new Date(x.fine) > adesso) return []
+      if (l.some((p) => p.annullata || p.bastaUno) || l.some((p) => p.personaId === personaId)) return []
+      const previsti = x.previstiElenco ?? []
+      if (!previsti.some((q) => q.id === personaId)) return []
+      const firmate = l.filter((p) => p.stato !== 'rifiutata')
+      // Ha firmato solo chi non era previsto: l'ha sostituito, non era una lezione in due.
+      if (!firmate.some((p) => previsti.some((q) => q.id === p.personaId))) return []
+      return [{ sessioneId: x.sessioneId, corso: x.corso, inizio: x.inizio, firmatoDa: firmate.map((p) => p.nome) }]
+    })
+    .sort((a, b) => a.inizio.localeCompare(b.inizio))
+}
+
 /**
  * Le righe della pagina COMPENSI per un mese: un tecnico per riga, per
- * cognome. Chi non ha lezioni, né da confermare, né una ricevuta di quel mese
- * non c'è.
+ * cognome. Chi non ha lezioni, né da confermare, né una ricevuta, né una
+ * lezione senza la sua firma di quel mese non c'è.
  */
-export function righeCompensi<P extends MiaPresenza>({
+export function righeCompensi<P extends MiaPresenza & PresenzaPerFirma>({
   tecnici,
   presenze,
   senzaIstruttore,
@@ -131,9 +169,13 @@ export function righeCompensi<P extends MiaPresenza>({
       const conto = compensoDelMese(presenze, senzaIstruttore, persona.id, mese, tariffe[persona.id] ?? [])
       const ricevuta = ricevute.find((r) => r.personaId === persona.id && r.mese === chiave && !r.annullataIl)
       const manca = mancano?.[persona.id] ?? null
-      return { persona, conto, ricevuta, manca, stato: statoCompenso({ conto, ricevuta, manca }) }
+      const firme = senzaFirma(presenze, persona.id, mese)
+      // Chi ha solo lezioni senza la sua firma non ha niente da pagare finché la segreteria non dice C'ERA.
+      const solo = !ricevuta && !conto.lezioni && !conto.daConfermare
+      const stato: StatoCompenso = solo ? 'solo-attese' : statoCompenso({ conto, ricevuta, manca })
+      return { persona, conto, ricevuta, manca, senzaFirma: firme, stato }
     })
-    .filter((r) => r.ricevuta || r.conto.lezioni || r.conto.daConfermare)
+    .filter((r) => r.ricevuta || r.conto.lezioni || r.conto.daConfermare || r.senzaFirma.length)
 }
 
 /** Perché la ricevuta non si può fare con questo importo; `null` se va. Le stesse regole di `fai_ricevuta_compenso`. */
@@ -273,4 +315,74 @@ export function datiPerRicevuta(
 export function esitoDelMese(fatte: number, saltati: string[]): { testo: string; guaio: boolean } {
   const quante = fatte === 0 ? 'Nessuna ricevuta fatta' : fatte === 1 ? 'Fatta 1 ricevuta' : `Fatte ${fatte} ricevute`
   return { testo: saltati.length ? `${quante}. Saltati: ${saltati.join('; ')}` : quante, guaio: fatte === 0 && saltati.length > 0 }
+}
+
+const MESI_BREVI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
+
+/**
+ * La descrizione del movimento del pagamento, come la scrive `paga_compensi`:
+ * «Compenso · Anna Gialli · set, ott 2026»; anni diversi «dic 2026, gen 2027».
+ * Mai codice fiscale né IBAN.
+ */
+export function descrizionePagamento(nome: string, cognome: string, mesi: string[]): string {
+  const anni = new Map<string, number[]>()
+  for (const m of [...new Set(mesi)].sort()) anni.set(m.slice(0, 4), [...(anni.get(m.slice(0, 4)) ?? []), Number(m.slice(5, 7))])
+  const quando = [...anni].map(([anno, ms]) => `${ms.map((x) => MESI_BREVI[x - 1]).join(', ')} ${anno}`).join(', ')
+  return `Compenso · ${`${nome} ${cognome}`.trim()} · ${quando}`
+}
+
+/** Quanto ha preso da noi in un anno: le ricevute pagate quell'anno, per data di pagamento (per cassa, come il BILANCIO). */
+export const presoNellAnno = (ricevute: Array<Pick<RicevutaCompenso, 'importo' | 'annullataIl' | 'pagataIl'>>, anno: number) =>
+  ricevute.filter((r) => !r.annullataIl && r.pagataIl?.startsWith(`${anno}-`)).reduce((s, r) => s + r.importo, 0)
+
+/**
+ * Le ricevute di un tecnico che si possono pagare: fatte, non annullate, non
+ * pagate, dalla più vecchia. Con `calcolatoDiAdesso` (il conto di oggi del mese
+ * di una ricevuta) si tolgono quelle che non tornano più: si annullano e si
+ * rifanno prima, come dice la loro riga.
+ */
+export const pagabili = <R extends Pick<RicevutaCompenso, 'personaId' | 'mese' | 'annullataIl' | 'pagataIl' | 'calcolato'>>(
+  ricevute: R[],
+  personaId: string,
+  calcolatoDiAdesso?: (r: R) => number | undefined,
+) =>
+  ricevute
+    .filter((r) => r.personaId === personaId && !r.annullataIl && !r.pagataIl)
+    .filter((r) => {
+      const adesso = calcolatoDiAdesso?.(r)
+      return adesso === undefined || adesso === r.calcolato
+    })
+    .sort((x, y) => x.mese.localeCompare(y.mese))
+
+/** La voce di sistema dei pagamenti dei tecnici in CONTABILITÀ (`81-compensi-pagati.sql`). */
+export const VOCE_COMPENSI = 'Compensi istruttori'
+
+/**
+ * Perché il pagamento non si può segnare; `null` se va. Le stesse regole di
+ * `paga_compensi`, dette prima di premere: almeno una ricevuta, il giorno non
+ * nel futuro, la cassa, non prima del suo inizio, non in un giorno chiuso.
+ */
+export function cosaNonVaPagamento({
+  ricevute,
+  data,
+  cassaId,
+  casse,
+  chiusure,
+  oggi,
+}: {
+  ricevute: unknown[]
+  data: string
+  cassaId: string
+  casse: Cassa[]
+  chiusure: ChiusuraCassa[]
+  oggi: string
+}): string | null {
+  if (!ricevute.length) return 'Scegli almeno una ricevuta da pagare'
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return 'Scrivi il giorno del pagamento'
+  if (data > oggi) return 'La data del pagamento non può essere nel futuro'
+  const cassa = casse.find((c) => c.id === cassaId)
+  if (!cassa) return 'Scegli la cassa'
+  if (cassa.dal && data < cassa.dal) return 'La data è prima dell’inizio della cassa'
+  if (giornoChiuso(chiusure, [cassa.id], data)) return 'Quel giorno la cassa è già chiusa: scegli un altro giorno o annulla la chiusura'
+  return null
 }

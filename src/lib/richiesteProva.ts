@@ -214,7 +214,7 @@ export function creaRichiesteProva(): DatiRichieste {
         throw new Error('Il nucleo per cui iscrivi non c’è più: ricarica la pagina')
       const email = dati.email.trim().toLowerCase()
       const pagato = pagamentoSatispay ? pagamentiSatispayProva().find((p) => p.id === pagamentoSatispay) : undefined
-      // Come `invia_iscrizione` in 81-satispay-prima.sql: lo stesso invio rimandato dopo una risposta persa ritrova
+      // Come `invia_iscrizione` in 83-satispay-prima.sql: lo stesso invio rimandato dopo una risposta persa ritrova
       // la sua richiesta (stesso codice fiscale, email e scelta), senza contare nei limiti.
       const sua = pagato?.richiestaId ? tutte.find((x) => x.id === pagato.richiestaId) : undefined
       if (sua && sua.codiceFiscale === pulisciCf(dati.codiceFiscale) && sua.email === email && sua.formula === dati.formula && [...new Set(dati.corsi)].join() === sua.corsi.join())
@@ -222,7 +222,7 @@ export function creaRichiesteProva(): DatiRichieste {
       const ieri = Date.now() - 24 * 60 * 60_000
       if (tutte.filter((r) => r.email === email && new Date(r.creataIl).getTime() > ieri).length >= PER_EMAIL_AL_GIORNO)
         throw new Error(`Da questa email sono già arrivate ${PER_EMAIL_AL_GIORNO} richieste oggi: se serve, scrivi alla segreteria`)
-      // Come `invia_iscrizione` in 81-satispay-prima.sql: il pagamento fatto prima, solo se è arrivato, mai preso,
+      // Come `invia_iscrizione` in 83-satispay-prima.sql: il pagamento fatto prima, solo se è arrivato, mai preso,
       // per questa scelta e pagato da chi si iscrive.
       if (pagamentoSatispay) {
         if (!pagato || pagato.richiestaId || pagato.presoIl || !pagato.corsoId) throw new Error(PAGAMENTO_NON_VALE)
