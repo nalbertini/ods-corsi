@@ -65,9 +65,9 @@ chi la manda deve chiamare o scrivere alla segreteria.
 
 Sotto, **I FILE**: modulo firmato e ricevuta. La ricevuta non è obbligatoria:
 se non c'è, una riga dice «Nessuna ricevuta: il pagamento si fa in
-segreteria», e la richiesta si accoglie lo stesso. Le richieste mandate insieme
-(una famiglia) hanno tutte la stessa ricevuta: è un bonifico
-solo, per il totale di tutte. La carta d'identità è quella di chi si iscrive (anche un minore, dai 6
+segreteria», e la richiesta si accoglie lo stesso. Se più persone della
+famiglia hanno pagato con un bonifico solo, mettetelo intero su una ricevuta;
+sulle altre niente «Bonifico», se no il conto prende i soldi due volte. La carta d'identità è quella di chi si iscrive (anche un minore, dai 6
 anni: non più quella del genitore) e sta in un riquadro giallo,
 perché nell'app non resta: accolta la richiesta, la si apre, si stampa, si
 mette nella cartellina e **Stampato, cancella** la cancella per sempre. La
