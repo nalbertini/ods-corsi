@@ -5,6 +5,22 @@
       "Bash(gh pr merge *)"
     ]
   },
+  "enabledPlugins": {
+    "figma@claude-plugins-official": false,
+    "transcripted-live@transcripted": false,
+    "mission-control@claude-code-mods": false,
+    "cc-plugin-you-should-know@builtin": false,
+    "data@synced": false,
+    "design@synced": false,
+    "legal@synced": false,
+    "lseg@synced": false,
+    "financial-analysis@synced": false,
+    "wealth-management@synced": false,
+    "productivity@synced": false,
+    "cowork-plugin-management@synced": false,
+    "pdf-viewer@synced": false,
+    "desktop-commander@synced": false
+  },
   "hooks": {
     "PreToolUse": [
       {
