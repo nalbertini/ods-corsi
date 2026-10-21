@@ -352,14 +352,13 @@ console.log('\n4c. il pagamento a mano: non nel futuro (cosaNonVaDiretto(dati, o
   ok('il futuro vale per ogni modo di pagare', ['Bonifico', 'POS', 'Satispay'].map((metodo) => frase({ data: '2026-10-19', metodo })), [FUTURO, FUTURO, FUTURO])
 }
 
-console.log('\n4d. il pagamento a mano in contanti in un giorno già chiuso')
+console.log('\n4d. il pagamento a mano in contanti in un giorno già chiuso (cosaNonVaDiretto(dati, oggi, fino))')
 {
+  // `fino` è la data dell'ultima chiusura non annullata della Cassa Contanti (`contantiChiusiFino`), o null.
   const OGGI = '2026-10-18'
   const CHIUSO = 'Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura'
   const buono = { personaId: 'p-Rossi', data: '2026-09-21', importo: 3000, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA' }
-  const chiusura = (id, data, altro = {}) => ({ id, cassaId: 'c1', dal: '2026-09-01', data, previsto: 0, contato: 0, differenza: 0, chiusaIl: `${data}T20:00:00Z`, ...altro })
-  const k = [chiusura('k1', '2026-09-21')]
-  const frase = (cambio, chiusure = k) => prova(() => m.cosaNonVaDiretto({ ...buono, ...cambio }, OGGI, chiusure))
+  const frase = (cambio, fino = '2026-09-21') => prova(() => m.cosaNonVaDiretto({ ...buono, ...cambio }, OGGI, fino))
   ok('contanti nel giorno della chiusura no', frase({}), CHIUSO)
   ok('contanti prima della chiusura no', frase({ data: '2026-09-10' }), CHIUSO)
   ok('contanti il giorno dopo la chiusura sì', frase({ data: '2026-09-22' }), null)
@@ -367,10 +366,8 @@ console.log('\n4d. il pagamento a mano in contanti in un giorno già chiuso')
   ok('carta nello stesso giorno sì', frase({ metodo: 'POS' }), null)
   ok('bonifico nello stesso giorno sì', frase({ metodo: 'Bonifico' }), null)
   ok('Satispay nello stesso giorno sì', frase({ metodo: 'Satispay' }), null)
-  ok('senza chiusure i contanti vanno', frase({}, []), null)
-  ok('una chiusura annullata non chiude niente', frase({}, [chiusura('k1', '2026-09-21', { annullataIl: '2026-09-23T08:00:00Z' })]), null)
-  ok('vale l\'ultima chiusura attiva', frase({ data: '2026-09-25' }, [chiusura('k1', '2026-09-21'), chiusura('k2', '2026-09-26')]), CHIUSO)
-  ok('…e se l\'ultima è annullata, quella di prima', [frase({ data: '2026-09-25' }, [chiusura('k1', '2026-09-21'), chiusura('k2', '2026-09-26', { annullataIl: '2026-09-27T08:00:00Z' })]), frase({ data: '2026-09-21' }, [chiusura('k1', '2026-09-21'), chiusura('k2', '2026-09-26', { annullataIl: '2026-09-27T08:00:00Z' })])], [null, CHIUSO])
+  ok('senza chiusure (fino null) i contanti vanno', frase({}, null), null)
+  ok('…e senza il terzo argomento', prova(() => m.cosaNonVaDiretto(buono, OGGI)), null)
   ok('il futuro si dice prima del giorno chiuso', frase({ data: '2026-10-19' }), 'La data è nel futuro: si registra quel che è già successo')
   ok('un importo sbagliato si dice prima del giorno chiuso', frase({ importo: 0 }), 'L’importo deve essere più di zero')
 }
@@ -494,11 +491,13 @@ console.log('\n19. Ricevute.tsx scrive solo dopo il sì del riepilogo, e non se 
   ok('…col riepilogo di riepilogoPagamentoDiretto', gestore.includes('riepilogoPagamentoDiretto('), true)
   ok('…e senza il sì si esce prima di scrivere', /const \{ si, spuntata \} = await chiediSpunta\([\s\S]*?\)\s*if \(!si\) return/.test(gestore), true)
   ok('…e con la ricevuta si esce prima di scrivere: il pagamento sta solo nella ricevuta', /if \(onRicevuta && spuntata\) return onRicevuta\(\{ \.\.\.dati, chiaveRicevuta: [^}]+\}\)/.test(gestore), true)
-  // Contanti in un giorno di cassa chiusa: la ricevuta non li rifiuta (è un documento), ma la chiusura non torna più.
-  // Chi legge le chiusure (l'amministrazione) lo sa prima di farla, come quando la annulla.
+  // Contanti in un giorno di cassa chiusa: la ricevuta li rifiuta come il database (90), sotto al modulo prima di farla.
+  // La data viene da `contantiChiusiFino`, che legge anche la segreteria (le chiusure le vede solo l'amministrazione).
   const emettiR = tsx.slice(tsx.indexOf('const emetti = async () => {'), tsx.indexOf("'Fai la ricevuta',"))
-  ok('FAI LA RICEVUTA avvisa dei contanti in un giorno di cassa chiusa', /avvisoCassaChiusa\(dati\.voci\.flatMap\(\(v\) => v\.pagamenti\), await d\.chiusure\(\)\.catch\(\(\) => \[\]\)\)/.test(emettiR), true)
-  ok('…e l\'avviso sta nella domanda', /cassaChiusa \?/.test(emettiR), true)
+  ok('FAI LA RICEVUTA non chiede più «si fa lo stesso» sui contanti di un giorno chiuso', [/avvisoCassaChiusa\(/.test(emettiR), /d\.chiusure\(\)/.test(emettiR)], [false, false])
+  const guaioR = tsx.split('\n').find((l) => l.includes('cosaNonVaDaPagamento(dati.voci')) ?? ''
+  ok('…il guaio sotto al modulo dice i contanti di un giorno chiuso', /contantiInGiornoChiuso\(dati\.voci\.flatMap\(\(v\) => v\.pagamenti\), dati\.data, /.test(guaioR), true)
+  ok('…tranne i soldi del pagamento a mano che diventa ricevuta', /daPagamento\?\.pagamentoId \? daPagamento : undefined\)/.test(guaioR), true)
   // FAI LA RICEVUTA aperta dal pagamento: la voce è quella del modulo, non il listino.
   ok('con daPagamento le voci vengono solo da voceDaPagamento', /if \(daPagamento\) return setVoci\(\[\{ \.\.\.bozzaDa\(voceDaPagamento\(daPagamento\)\)/.test(tsx), true)
   const isc = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
@@ -509,7 +508,11 @@ console.log('\n19. Ricevute.tsx scrive solo dopo il sì del riepilogo, e non se 
   ok('uscire dalla ricevuta aperta dal pagamento chiede prima', /useBozza\(siPerdeUscendo\(daPagamento\)/.test(isc), true)
   // Il guaio sotto al modulo è lo stesso del database: oggi (a Roma) e le chiusure arrivano alla funzione.
   const riga = tsx.split('\n').find((l) => l.includes('cosaNonVaDiretto({')) ?? ''
-  ok('il modulo passa oggi e le chiusure a cosaNonVaDiretto', [riga.includes('oggi'), riga.includes('chiusure')], [true, true])
+  ok('il modulo passa oggi e la data di chiusura a cosaNonVaDiretto', [riga.includes('oggi'), /cosaNonVaDiretto\(\{[^}]*\}, oggi, \w+\)/.test(riga)], [true, true])
+  // Avviso e guaio anche per la segreteria: nessuno di questi componenti legge più le chiusure, che lei non vede.
+  const aperto = readFileSync('src/components/segreteria/PagamentoAperto.tsx', 'utf8')
+  ok('Ricevute.tsx non legge d.chiusure(): usa contantiChiusiFino', [/d\.chiusure\(\)/.test(tsx), /d\.contantiChiusiFino\(\)/.test(tsx)], [false, true])
+  ok('PagamentoAperto.tsx non legge d.chiusure(): usa contantiChiusiFino', [/d\.chiusure\(\)/.test(aperto), /d\.contantiChiusiFino\(\)/.test(aperto)], [false, true])
 }
 
 console.log('\n20. la ricevuta una volta sola: il modulo di FAI LA RICEVUTA ha la sua chiave')
@@ -754,6 +757,70 @@ console.log('\n27. uscire dalla ricevuta aperta da un pagamento chiede prima sol
   ok('da REGISTRA IL PAGAMENTO, non ancora scritto: chiede', m.siPerdeUscendo(d), true)
   ok('da FANNE LA RICEVUTA, già registrato: non chiede', m.siPerdeUscendo({ ...d, pagamentoId: 'pd-1' }), false)
   ok('nessun pagamento: non chiede', [m.siPerdeUscendo(null), m.siPerdeUscendo(undefined)], [false, false])
+}
+
+console.log('\n30. in prova: i contanti in un giorno di cassa chiusa non entrano neanche dalla ricevuta (come 90-ricevuta-cassa-chiusa.sql)')
+{
+  const s = m.creaSegreteriaProva()
+  const CHIUSO = 'ERRORE: Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura'
+  const [chi] = (await s.persone()).filter((p) => p.attiva)
+  const dati = (data, pagamenti, extra = {}) => ({
+    data, personaId: chi.id, ente: m.ENTE_PREDEFINITO, intestatario: { nome: chi.nome, cognome: chi.cognome },
+    voci: [voce('ALTRO', pagamenti.reduce((t, p) => t + p.importo, 0) + (extra.anticipo ?? 0), pagamenti)], anticipo: 0, ...extra,
+  })
+  const emetti = async (d, pid) => {
+    try {
+      return await s.emettiRicevuta(d, undefined, pid)
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  const fatta = async (d, pid) => typeof (await emetti(d, pid))?.id
+  const quante = async () => (await s.ricevute()).length
+  const ultimo = async () => Math.max(0, ...(await s.ricevute()).filter((r) => r.anno === 2026).map((r) => r.numero))
+  const cassa = (await s.casse()).find((c) => c.nome === m.NOME_CASSA_CONTANTI)
+  const fino = async () => {
+    try {
+      return await s.contantiChiusiFino()
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+
+  ok('senza chiusure contantiChiusiFino è null', await fino(), null)
+  // Prima della chiusura: una ricevuta con la chiave K del 9, e un pagamento a mano di 30 € contanti del 10.
+  const K = 'dddddddd-0000-4000-8000-000000000090'
+  const r9 = await emetti(dati('2026-09-09', [pag('2026-09-09', 3000)], { chiave: K }))
+  const pd = (await s.registraPagamentoDiretto({ personaId: chi.id, data: '2026-09-10', importo: 3000, metodo: 'Contanti', voce: 'ALTRO' })).id
+  await s.salvaSaldoCassa(cassa.id, 0, '2026-09-01')
+  const k10 = await s.chiudiCassa({ cassaId: cassa.id, data: '2026-09-10', contato: 0 })
+  ok('chiusa fino al 10: contantiChiusiFino dà il 10', await fino(), '2026-09-10')
+
+  const prima = await quante()
+  const numero = await ultimo()
+  ok('contanti 30 € datati 10 no', await emetti(dati('2026-09-10', [pag('2026-09-10', 3000)])), CHIUSO)
+  ok('«CONTANTI » no', await emetti(dati('2026-09-10', [pag('2026-09-10', 3000, 'CONTANTI ')])), CHIUSO)
+  ok('ricevuta del 20 con contanti datati 10 no', await emetti(dati('2026-09-20', [pag('2026-09-10', 3000)])), CHIUSO)
+  ok('pagamento senza data e ricevuta del 10 no', await emetti(dati('2026-09-10', [{ importo: 3000, metodo: 'Contanti' }])), CHIUSO)
+  ok('nessuna ricevuta nuova, nessun numero preso', [await quante(), await ultimo()], [prima, numero])
+  ok('contanti datati 11 sì', await fatta(dati('2026-09-11', [pag('2026-09-11', 3000)])), 'string')
+  ok('…col numero dopo l\'ultimo', await ultimo(), numero + 1)
+  ok('ricevuta del 10 con contanti datati 20 sì', await fatta(dati('2026-09-10', [pag('2026-09-20', 3000)])), 'string')
+  ok('carta, POS, bonifico datati 10 sì', [await fatta(dati('2026-09-10', [pag('2026-09-10', 3000, 'Carta')])), await fatta(dati('2026-09-10', [pag('2026-09-10', 3000, 'POS')])), await fatta(dati('2026-09-10', [pag('2026-09-10', 3000, 'Bonifico')]))], ['string', 'string', 'string'])
+  ok('anticipo e un pagamento a 0 € in contanti del 10 sì', await fatta(dati('2026-09-10', [pag('2026-09-10', 0)], { anticipo: 5000 })), 'string')
+  ok('la chiave K della ricevuta del 9: la stessa ricevuta, senza errore', (await emetti(dati('2026-09-09', [pag('2026-09-09', 3000)], { chiave: K })))?.id, r9?.id)
+
+  // FANNE LA RICEVUTA del pagamento a mano registrato prima della chiusura.
+  const di = async () => (await s.pagamentiDiretti()).find((x) => x.id === pd)
+  ok('dal pagamento a mano, con in più 20 € contanti del 5, no', await emetti(dati('2026-09-10', [pag('2026-09-10', 3000), pag('2026-09-05', 2000)]), pd), CHIUSO)
+  ok('…e il pagamento a mano resta com\'era', [!!(await di())?.annullatoIl, (await di())?.ricevutaId ?? null], [false, null])
+  const daPd = await emetti(dati('2026-09-10', [pag('2026-09-10', 3000)]), pd)
+  ok('dal pagamento a mano, 30 € contanti del 10: sì', typeof daPd?.id, 'string')
+  ok('…e il pagamento a mano è annullato e legato', [!!(await di())?.annullatoIl, (await di())?.ricevutaId], [true, daPd?.id])
+
+  await s.annullaChiusuraCassa(k10)
+  ok('chiusura annullata: contantiChiusiFino è null', await fino(), null)
+  ok('…e i contanti datati 10 passano', await fatta(dati('2026-09-10', [pag('2026-09-10', 3000)])), 'string')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

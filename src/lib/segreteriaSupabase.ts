@@ -1693,6 +1693,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return (ok(await db.rpc('storico_persona', { persona })) ?? []) as Array<{ id: string; data: string; descrizione: string; importo: number; voce: string; cassa: string }>
     },
 
+    async contantiChiusiFino() {
+      const r = await db.rpc('cassa_contanti_chiusa_fino')
+      // Senza 90-ricevuta-cassa-chiusa.sql la funzione non c'è: nessun avviso, il pagamento a mano lo rifiuta il database.
+      if (r.error?.code === 'PGRST202' || r.error?.code === '42883') return null
+      return (ok(r) as string | null) ?? null
+    },
+
     async chiusure() {
       // Le righe arrivano senza tipo dall'API: la forma è quella di 60-chiusura-cassa.sql.
       const righe = ok(await tutteLeRighe((prima, ultima) => db.from('chiusure_cassa').select('*').order('data', { ascending: false }).order('id').range(prima, ultima))) as Array<{
@@ -1739,7 +1746,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async registraPagamentoDiretto(d: DatiPagamentoDiretto) {
-      // Il futuro lo ferma anche qui; il giorno chiuso lo vede solo il database (la segreteria non legge le chiusure).
+      // Il futuro lo ferma anche qui; il giorno chiuso lo dice il modulo, con `contantiChiusiFino`, e poi il database.
       const no = cosaNonVaDiretto(d, oggiARoma())
       if (no) throw new Error(no)
       const riga = ok(
