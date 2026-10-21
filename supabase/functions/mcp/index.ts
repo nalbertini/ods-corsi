@@ -32,11 +32,9 @@ const ok = <T>({ data, error }: { data: T; error: unknown }): T => {
   return data
 }
 
-// `utente` è l'account del token: la chiave di una registrazione vale solo per i suoi movimenti.
 type MovimentoScritto = { id: string; tipo: string; data: string; importo: number; descrizione: string; voce_id: string; cassa_id: string }
-const COLONNE = 'id, tipo, data, importo, descrizione, voce_id, cassa_id'
 
-function apri(token: string, utente: string) {
+function apri(token: string) {
   const db = createClient(url, pubblica, {
     global: { headers: { Authorization: `Bearer ${token}` } },
     auth: { persistSession: false, autoRefreshToken: false },
@@ -63,19 +61,18 @@ function apri(token: string, utente: string) {
       return righe.map((r) => ({ id: r.id, data: r.data, tipo: r.tipo, importo: r.importo, descrizione: r.descrizione, voce: r.voce, voceId: r.voce_id, voceAttiva: r.voce_attiva, cassa: r.cassa }))
     },
     async uguali(c: { tipo: string; importo: number; dal: string; al: string }) {
-      const righe = ok(await db.from('movimenti').select('id, tipo, data, importo, descrizione, voce_id, persona_id, annullato_il')
-        .eq('tipo', c.tipo).eq('importo', c.importo).gte('data', c.dal).lte('data', c.al)) as Array<{ id: string; tipo: string; data: string; importo: number; descrizione: string; voce_id: string | null; persona_id: string | null; annullato_il: string | null }>
+      const righe = ok(await db.rpc('chat_movimenti_uguali', { cerca_tipo: c.tipo, cerca_importo: c.importo, dal: c.dal, al: c.al })) as Array<{ id: string; tipo: string; data: string; importo: number; descrizione: string; voce_id: string | null; persona_id: string | null; annullato_il: string | null }>
       return righe.map((r) => ({ id: r.id, tipo: r.tipo, data: r.data, importo: r.importo, descrizione: r.descrizione, voceId: r.voce_id ?? '', personaId: r.persona_id, annullato: r.annullato_il !== null }))
     },
+    // Chi ha scritto e se è annullato li guarda il database (`chat_movimento_per_chiave`, 76).
     async perChiave(chiave: string) {
-      const chi = ok(await db.from('persone').select('id').eq('utente_id', utente).maybeSingle()) as { id: string } | null
-      if (!chi) return null
-      return ok(await db.from('movimenti').select(COLONNE).eq('chiave_chat', chiave).eq('creato_da', chi.id).is('annullato_il', null).maybeSingle()) as MovimentoScritto | null
+      const righe = ok(await db.rpc('chat_movimento_per_chiave', { chiave })) as MovimentoScritto[]
+      return righe[0] ?? null
     },
-    // Le letture dei conti: tutte le righe (lo storico supera le 1000 di una pagina), con le sole colonne che servono.
-    // Le righe arrivano senza tipo dall'API: la forma è quella di 59-contabilita.sql.
+    // Le letture dei conti: tutte le righe (lo storico supera le 1000 di una pagina), dalle funzioni di 76: il token
+    // di Claude non legge le tabelle (`controlla_richiesta`). Le righe arrivano senza tipo dall'API: la forma è quella di 76.
     async movimenti() {
-      const righe = ok(await tutteLeRighe((da: number, a: number) => db.from('movimenti').select('id, tipo, data, importo, voce_id, cassa_id, cassa_a_id, descrizione, creato_il, annullato_il, origine_import, persona_id').order('id').range(da, a))) as Array<{
+      const righe = ok(await tutteLeRighe((da: number, a: number) => db.rpc('chat_movimenti').order('id').range(da, a))) as Array<{
         id: string; tipo: 'entrata' | 'uscita' | 'giroconto'; data: string; importo: number; voce_id: string | null; cassa_id: string; cassa_a_id: string | null
         descrizione: string; creato_il: string; annullato_il: string | null; origine_import: string | null; persona_id: string | null
       }>
@@ -89,11 +86,11 @@ function apri(token: string, utente: string) {
       }))
     },
     // Gli incassi degli iscritti: mai intestatario, ente, note o persona; delle ricevute solo le voci coi loro pagamenti.
-    // Le righe arrivano senza tipo dall'API: la forma è quella di 16-ricevute.sql e 54-pagamenti-diretti.sql.
+    // Le righe arrivano senza tipo dall'API: la forma è quella di `chat_ricevute` e `chat_pagamenti_diretti` (76).
     async incassi() {
       const [ricevute, diretti] = await Promise.all([
-        tutteLeRighe((da: number, a: number) => db.from('ricevute').select('id, voci, annullata_il').order('id').range(da, a)),
-        tutteLeRighe((da: number, a: number) => db.from('pagamenti_diretti').select('id, data, importo, metodo, voce, annullato_il').order('id').range(da, a)),
+        tutteLeRighe((da: number, a: number) => db.rpc('chat_ricevute').order('id').range(da, a)),
+        tutteLeRighe((da: number, a: number) => db.rpc('chat_pagamenti_diretti').order('id').range(da, a)),
       ])
       return incassiDaRighe(ok(ricevute) as Parameters<typeof incassiDaRighe>[0], ok(diretti) as Parameters<typeof incassiDaRighe>[1])
     },
@@ -142,11 +139,9 @@ Deno.serve(async (req) => {
   }
   // Un token scaduto o revocato è un 401, non un errore dello strumento: così Claude lo rinnova da solo.
   const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s*/i, '').trim()
-  let utente = ''
   if (token) {
     const { data } = await createClient(url, pubblica, { auth: { persistSession: false, autoRefreshToken: false } }).auth.getUser(token)
     if (!data.user) return nonAutorizzato(METADATI)
-    utente = data.user.id
   }
-  return rispondiMcp(req, { metadati: METADATI, apri: (t: string) => apri(t, utente), oggi: () => oggiARoma() })
+  return rispondiMcp(req, { metadati: METADATI, apri, oggi: () => oggiARoma() })
 })
