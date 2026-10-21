@@ -116,12 +116,13 @@ console.log('\n7. Testata, invito e piede come nel design (solo pagine di corso)
   ok('menu: voci a 4px una dall’altra sul computer (più 16px di imbottitura), la corrente gialla', [dec('.testata nav ul', 'gap', 1), dec('.testata nav a[aria-current]', 'background')], ['4px', 'var(--giallo)'])
   ok('menu: voci alte 48px, con 16px di imbottitura anche sul computer', [dec('.testata nav a', 'min-height'), dec('.testata nav a', 'padding', 1)], ['48px', '0 16px'])
   ok('pulsanti in testata: padding 0 24px', dec('.testata .pulsante', 'padding'), '0 24px')
-  ok('invito: alto 300px, padding 36px 40px, margini 96px e 6px', [px(dec('.pagina-corso .invito', 'min-height')), dec('.pagina-corso .invito', 'padding'), dec('.pagina-corso .invito', 'margin')], [300, '36px 40px', '96px var(--margine) 6px'])
-  ok('invito: frase a 22px, «Prova» a 170px, senza freccia', [px(dec('.pagina-corso .invito .frase', 'font-size')), px(dec('.pagina-corso .invito .parola', 'font-size')), dec('.pagina-corso .invito .freccia', 'display')], [22, 170, 'none'])
+  // L'invito è quello di tutte le pagine (CSS_SITO): nessuna regola sua in .pagina-corso.
+  ok('invito: c’è, padding 56px, margini 96px e 6px, due colonne', [/<section class="invito"/.test(h), dec('.invito', 'padding'), dec('.invito', 'margin'), dec('.invito', 'grid-template-columns'), regole.some((r) => /\.pagina-corso \.invito/.test(r.s))], [true, '56px', '96px var(--margine) 6px', 'minmax(0,1.1fr) minmax(0,1fr)', false])
+  ok('invito: titolo da 56 a 88px, frase a 22px, pulsanti alti 60px', [dec('.invito h2', 'font-size'), px(dec('.invito-testo>p:not(.occhiello)', 'font-size')), px(dec('.invito .pulsante', 'min-height'))], ['clamp(56px,6.11vw,88px)', 22, 60])
   ok('piede: margini 0 e 48px, nome a 56px', [dec('.pagina-corso .piede', 'margin'), px(dec('.pagina-corso .piede .nome', 'font-size'))], ['0 var(--margine) 48px', 56])
   ok('piede: padding 40px, colonne senza riquadro (i recapiti prima delle altre)', [dec('.pagina-corso .piede', 'padding'), dec('.pagina-corso .piede .colonne', 'display')], ['40px', 'contents'])
   ok('telefono: logo 82px, menu aperto su fondo pieno con voci da 48px', [px(dec('.pagina-corso .logo img', 'height', 1)), dec('#menu:target', 'background'), dec('.testata nav a', 'min-height', 1)], [82, 'var(--fondo)', '48px'])
-  ok('telefono: invito alto 260px, «Prova» a 120px; piede con nome a 44px e padding 24px', [px(dec('.pagina-corso .invito', 'min-height', 1)), px(dec('.pagina-corso .invito .parola', 'font-size', 1)), px(dec('.pagina-corso .piede .nome', 'font-size', 1)), dec('.pagina-corso .piede', 'padding', 1)], [260, 120, 44, '24px'])
+  ok('telefono: invito in una colonna con padding 28px 22px e frase a 18px; piede con nome a 44px e padding 24px', [dec('.invito', 'grid-template-columns', 1), dec('.invito', 'padding', 1), px(dec('.invito-testo>p:not(.occhiello)', 'font-size', 1)), px(dec('.pagina-corso .piede .nome', 'font-size', 1)), dec('.pagina-corso .piede', 'padding', 1)], ['minmax(0,1fr)', '28px 22px', 18, 44, '24px'])
 }
 
 console.log('\n8. Le differenze che restavano')

@@ -153,7 +153,7 @@ console.log('\n6. Il pulsante in testata')
 {
   const h = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [], rinvii: [] })['index.html'] ?? ''
   ok('in testata: «Iscriviti» (pulsante primario, intero) verso il modulo di iscrizione', /<header class="testata">[\s\S]*<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(h), true)
-  ok('l’invito in fondo dice «Iscriviti»', /class="parola">Iscriviti</.test(h), true)
+  ok('l’invito in fondo dice «Iscriviti»', /<section class="invito"[^>]*>(?:(?!<\/section>)[\s\S])*>Iscriviti<\/a>/.test(h), true)
   // Il pulsante non ha più la coda «una settimana · 5 €» da nascondere sul telefono: l'etichetta è una sola.
   ok('l’etichetta è intera: niente «estensione» in testata', /class="estensione"/.test(h), false)
 }
@@ -194,7 +194,7 @@ console.log('\n7. Desktop: le misure del design')
   ok('fascia di quattro foto: alta 540px', ha(base, '.foto-fila.quattro img', 'height:540px'), true)
   ok('quattro tessere dei valori: alte almeno 190px, imbottitura 26px 30px, titolo da 58px', [ha(scrivania, '.sezione .tessere.n-4 .tessera:not(.foto)', 'min-height:190px'), ha(base, '.tessere.n-4 .tessera', 'padding:26px 30px'), ha(base, '.tessere.n-4 h3', 'font-size:58px')], [true, true, true])
   ok('domande: scheda chiara alta almeno 260px, con 26px 28px, titolo da 30px, testo da 17px', [ha(scrivania, '.sezione .tessera.chiara:not(.foto)', 'min-height:260px'), ha(base, '.tessera.chiara', 'padding:26px 28px'), ha(base, '.tessera.chiara h3', 'font-size:30px'), ha(base, '.tessera.chiara', 'font-size:17px')], [true, true, true, true])
-  ok('invito: margini del contenuto, alto 300px, frase da 22px, parola da 170px', [ha(base, '.invito', 'margin:0 var(--margine) 6px'), ha(base, '.invito', 'min-height:300px'), ha(base, '.invito .frase', 'font-size:22px'), ha(base, '.invito .parola', 'font-size:170px')], [true, true, true, true])
+  ok('invito: margini del contenuto, padding 56px, titolo da 56 a 88px, frase da 22px, pulsanti alti 60px', [ha(base, '.invito', 'margin:96px var(--margine) 6px'), ha(base, '.invito', 'padding:56px'), ha(base, '.invito h2', 'font-size:clamp(56px,6.11vw,88px)'), ha(base, '.invito-testo>p:not(.occhiello)', 'font-size:22px'), ha(base, '.invito .pulsante', 'min-height:60px')], [true, true, true, true, true])
   ok('piede: margini del contenuto, 48px sotto, nome da 56px', [ha(base, '.piede', 'margin:0 var(--margine) 48px'), ha(base, '.piede .nome', 'font-size:56px')], [true, true])
 }
 
@@ -220,7 +220,7 @@ console.log('\n9. Telefono: le misure del design')
   ok('quattro foto: alte 220px', ha(mobile, '.foto-fila.quattro img', 'height:220px'), true)
   ok('quattro tessere dei valori: alte almeno 120px, titolo da 40px', [ha(mobile, '.tessere.n-4 .tessera', 'min-height:120px'), ha(mobile, '.tessere.n-4 h3', 'font-size:40px')], [true, true])
   ok('citazioni: larghe 300px, alte almeno 300px, testo da 19px', [ha(mobile, '.citazioni .tessera', 'flex:0 0 300px'), ha(mobile, '.tessera.citazione', 'min-height:300px'), ha(mobile, '.tessera.citazione', 'font-size:19px')], [true, true, true])
-  ok('invito: alto almeno 260px, parola da 120px', [ha(mobile, '.invito', 'min-height:260px'), ha(mobile, '.invito .parola', 'font-size:120px')], [true, true])
+  ok('invito: una colonna, 48px sopra, padding 28px 22px, frase da 18px', [ha(mobile, '.invito', 'grid-template-columns:minmax(0,1fr)'), ha(mobile, '.invito', 'margin:48px var(--margine) 6px'), ha(mobile, '.invito', 'padding:28px 22px'), ha(mobile, '.invito-testo>p:not(.occhiello)', 'font-size:18px')], [true, true, true, true])
   ok('piede: nome da 44px, 24px di imbottitura', [ha(mobile, '.piede .nome', 'font-size:44px'), ha(mobile, '.piede', 'padding:24px')], [true, true])
   const m = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contatti', slug: 'contatti', indirizzo: null }], rinvii: [] })
   ok('domande: una gialla e una chiara, a turno', ha(mobile, '.tessere .tessera.chiara:nth-child(odd)', 'background:var(--giallo)'), true)
@@ -242,9 +242,10 @@ console.log('\n11. Dettagli visibili: firme, virgolette, invito, piede')
 {
   ok('la firma non è in corsivo', ha(base, '.firma em', 'font-style:normal'), true)
   ok('le citazioni hanno le virgolette « » (si aggiungono nel CSS, il testo non cambia)', [/\.citazione>p:first-child::before\{content:"«"/.test(cssPagina), /\.citazione>p:first-child::after\{content:"»"/.test(cssPagina)], [true, true])
-  ok('l’invito non ha la freccia', ha(base, '.invito .freccia', 'display:none'), true)
   const h = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy', slug: null, indirizzo: '/privacy/' }], rinvii: [] })['index.html'] ?? ''
   const piede = h.match(/<footer class="piede">[\s\S]*<\/footer>/)?.[0] ?? ''
+  const inv = h.match(/<section class="invito"[\s\S]*?<\/section>/)?.[0] ?? ''
+  ok('l’invito non ha la freccia', [inv !== '', /↗|class="freccia"/.test(inv)], [true, false])
   ok('il piede ha recapiti, menu e voci di legge, senza titoli (come nel design)', [/<ul class="recapiti-piede">/.test(piede), /<nav class="piede-menu"/.test(piede), /<h2/.test(piede)], [true, true, false])
   ok('il menu del piede ripete le voci del menu', /<a href="\/"[^>]*>Home<\/a>/.test(piede), true)
   ok('il nome nel piede va a capo in due righe', ha(base, '.piede .nome', 'max-width:5.5em'), true)

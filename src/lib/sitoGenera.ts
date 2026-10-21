@@ -1,6 +1,7 @@
 import { urlImmagine } from './sitoImmagini'
 import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
+import { parteIscriviti, type ParteIscriviti } from './sitoPezzi'
 import { GRIGLIA_MASSIMA, collage, conFila, impagina, persona, testataCorso } from './sitoLayout'
 import { elencoIstruttori, schedaScarna, type Cornice } from './sitoIstruttori'
 import { CSS_CORSI, CSS_CORSI_NUOVA, corsiNuova, eCorsiNuova } from './sitoCorsi'
@@ -13,7 +14,7 @@ import { conProvenienza, etichettaPagina, haProvenienza } from './provenienza'
 import { CSS_ORARIO_AUTOMATICO, corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
 import { testiOrario, type OrarioAperto } from './sitoOrario'
 import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
-import { CONTATTI, chiama } from './sito'
+import { CONTATTI, chiama, scrivi } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
 
 /**
@@ -87,8 +88,18 @@ const TESTI = {
   provaIntera: 'Iscriviti',
   metro: 'vicino alla metro Fermi',
   nomeContatti: 'Contatti',
-  invito: 'Vieni a provare: ti aspettiamo in',
-  settimana: 'Una settimana a 10 euro: provi tutte le discipline e scegli.',
+  // L'invito in fondo alle pagine (`invito`): titolo e frase sono quelli di sempre, la parte ISCRIVITI dell'editor li può cambiare.
+  occhiello: 'Una settimana di prova',
+  titoloInvito: 'Vieni a provare.',
+  fraseInvito: 'Una lezione a 3 € o una settimana a 10 €: provi le discipline adatte alla tua età, o a quella di tuo figlio, poi scegli.',
+  // La prova non si prenota dal modulo: si chiede a voce o su WhatsApp, poi ci si iscrive.
+  passi: [
+    ['Chiamaci o scrivici', 'Ti diciamo quando venire, per la sua età'],
+    ['Vieni a provare', 'Una lezione 3 €, una settimana 10 €'],
+    ['Scegli e iscriviti', 'Online, dal telefono, in pochi minuti'],
+  ],
+  scriviProva: 'Ciao, vorrei provare un corso',
+  orari: 'Guarda gli orari',
   altriLink: 'Altri link',
   pagine: 'Pagine',
   trovarci: 'Vieni a trovarci',
@@ -348,7 +359,6 @@ const CSS_HOME = `
  */
 const CSS_CONTATTI = `
 .contatti-nuova h1{font-size:120px}
-.contatti-nuova~.invito{height:auto;min-height:300px}
 .recapiti-sez{padding:48px var(--margine) 0}
 .recapiti-sez .recapiti{grid-auto-rows:minmax(270px,auto)}
 .recapiti .tessera{position:relative}
@@ -401,7 +411,8 @@ a{color:inherit}
 a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset:3px}
 .salta{position:absolute;left:-9999px;top:0}
 .salta:focus{left:16px;top:16px;z-index:100;display:inline-flex;align-items:center;min-height:48px;padding:0 20px;background:var(--giallo);color:var(--inchiostro);font-weight:700;text-decoration:none}
-.invito:focus-visible{outline-color:var(--inchiostro)}
+.invito a:focus-visible{outline-color:var(--inchiostro)}
+.invito-dove a:focus-visible{outline-color:var(--giallo)}
 .piede a:focus-visible{outline-color:var(--giallo)}
 .logo{display:block;flex-shrink:0}
 .logo img{display:block;width:112px;height:110px;mix-blend-mode:multiply}
@@ -427,11 +438,23 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .testo blockquote{padding-left:18px;border-left:4px solid var(--blu);font-size:1.15em}
 .testo a,.colonna a{text-underline-offset:3px}
 .testo img,.colonna img{max-width:100%;height:auto;border-radius:6px}
-.invito{display:flex;flex-direction:column;justify-content:space-between;gap:20px;margin:0 var(--margine) 6px;padding:36px 40px;min-height:300px;border-radius:6px;background:var(--giallo);color:var(--inchiostro);text-decoration:none}
-.invito .riga{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
-.invito .frase{max-width:min(520px,80%);font-size:22px;line-height:1.35}
-.invito .freccia{display:none}
-.invito .parola{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:170px;line-height:.8;letter-spacing:-.01em}
+.invito{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:48px;margin:96px var(--margine) 6px;padding:56px;border-radius:6px;background:var(--giallo);color:var(--inchiostro)}
+.invito-testo{display:flex;flex-direction:column;justify-content:center;gap:20px;min-width:0}
+.invito .occhiello{margin:0;font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.invito h2{margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(56px,6.11vw,88px);line-height:.9;text-wrap:balance;overflow-wrap:anywhere}
+.invito-testo>p:not(.occhiello){margin:0;max-width:520px;font-size:22px;line-height:1.45}
+.invito-pulsanti{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px}
+.invito .pulsante{min-height:60px;padding:0 28px}
+.invito .pulsante.secondario{border-width:3px}
+.invito-lato{display:flex;flex-direction:column;gap:6px;min-width:0}
+.invito-passi{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;counter-reset:passo}
+.invito-passi li{display:grid;grid-template-columns:56px minmax(0,1fr);column-gap:16px;align-items:center;padding:18px 22px;border-radius:6px;background:#fff;font-size:18px;line-height:1.35;counter-increment:passo}
+.invito-passi li::before{content:counter(passo);grid-row:span 2;font-family:var(--display);font-weight:800;font-size:56px;line-height:.8;color:var(--blu)}
+.invito-passi strong{display:block}
+.invito-dove{display:grid;grid-template-columns:56px minmax(0,1fr);column-gap:16px;align-items:center;margin:0;padding:18px 22px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:18px;line-height:1.35}
+.invito-dove::before{content:"↓";grid-row:span 3;font-family:var(--display);font-weight:800;font-size:40px;line-height:.8;color:var(--giallo);text-align:center}
+.invito-dove strong{display:block}
+.invito-dove a{display:flex;align-items:center;min-height:48px;color:#fff;text-underline-offset:3px}
 .piede{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:32px;margin:0 var(--margine) 48px;padding:40px;background:var(--inchiostro);color:#fff;border-radius:6px}
 .piede .nome{max-width:5.5em;margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:56px;line-height:.9}
 .piede .colonne{display:contents;font-size:16px;line-height:1.9}
@@ -443,12 +466,7 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .piede .fine{flex-basis:100%;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;margin-top:0;font-size:14px;color:var(--chiara)}
 .testata{padding:22px var(--margine)}
 .logo img{height:110px}
-.invito{margin:96px var(--margine) 6px;padding:36px 40px;min-height:300px}
-.invito .frase{max-width:520px;font-size:22px}
-.invito .freccia{display:none}
-.invito .parola{font-size:clamp(96px,11.8vw,170px)}
 .piede{margin:0 var(--margine) 48px}
-.invito{gap:0}
 .piede{gap:40px;padding:40px;font-size:16px;line-height:1.9}
 .piede .colonne{display:contents}
 .piede .nome{max-width:5.5em}
@@ -605,10 +623,6 @@ main:has(.ritratto-invito) + .piede{margin-top:6px}
 .piede{margin:0 var(--margine) 48px}
 .piede .nome{font-size:clamp(44px,3.9vw,56px)}
 .piede{gap:40px;padding:40px;font-size:16px;line-height:1.9}
-.invito{margin:96px var(--margine) 6px;height:300px;min-height:0;padding:36px 40px}
-.invito .frase{max-width:520px;font-size:22px;line-height:1.35}
-.invito .freccia{display:none}
-.invito .parola{font-size:170px;line-height:.8}
 .piede-menu a{display:block}
 .recapiti-piede li:nth-child(n+3){display:inline}
 .recapiti-piede li:last-child::before{content:" · "}
@@ -786,9 +800,10 @@ h1{font-size:84px;line-height:.84}
 .tessera.citazione{min-height:300px;padding:22px;gap:20px;font-size:19px;line-height:1.35}
 .avatar{width:48px;height:48px;font-size:24px;background:var(--chiara)}
 .firma{gap:12px;font-size:28px;line-height:.95}
-.invito{margin:48px var(--margine) 6px;min-height:260px;padding:22px;gap:20px}
-.invito .frase{font-size:17px;line-height:1.35}
-.invito .parola{font-size:120px}
+.invito{grid-template-columns:minmax(0,1fr);gap:28px;margin:48px var(--margine) 6px;padding:28px 22px}
+.invito-testo>p:not(.occhiello){font-size:18px}
+.invito .pulsante{width:100%}
+.invito-passi li,.invito-dove{padding:14px 16px;font-size:16px}
 .piede{margin:0 var(--margine) 24px;padding:24px;gap:14px}
 .piede .nome{font-size:44px}
 .pannello .tessera:has(.tondi){display:flex;align-items:flex-start}
@@ -868,9 +883,6 @@ h1{font-size:84px;line-height:.84}
 .piede-menu a{display:inline}
 .piede-menu a+a::before{content:" · "}
 .piede-legale{opacity:.85}
-.invito{margin:48px var(--margine) 6px;height:auto;min-height:260px;padding:22px}
-.invito .frase{font-size:17px}
-.invito .parola{font-size:120px}
 .piede-legale li{display:inline}
 .piede-legale li+li::before{content:" · "}
 .recapiti p:not(:first-of-type){display:none}
@@ -912,13 +924,9 @@ ${cssFoci()}
  * tutto dentro `main.corso` e `.corso-testata`, così le altre pagine non cambiano e non lo portano.
  */
 const CSS_CORSO = `
-/* Testata, invito e piede come nel design: solo nelle pagine di un corso (body.pagina-corso). */
+/* Testata e piede come nel design: solo nelle pagine di un corso (body.pagina-corso). */
 .pagina-corso .testata{padding:22px var(--margine)}
 .pagina-corso .logo img{height:110px}
-.pagina-corso .invito{min-height:300px;padding:36px 40px;margin:96px var(--margine) 6px}
-.pagina-corso .invito .frase{max-width:520px;font-size:22px}
-.pagina-corso .invito .parola{font-size:clamp(96px,11.8vw,170px)}
-.pagina-corso .invito .freccia{display:none}
 .pagina-corso .piede{margin:0 var(--margine) 48px;padding:40px;gap:40px}
 .pagina-corso .piede .nome{max-width:5em;font-size:clamp(40px,3.89vw,56px)}
 .pagina-corso .piede .colonne{display:contents}
@@ -958,9 +966,6 @@ const CSS_CORSO = `
 @media (max-width:900px){
 .pagina-corso .testata{gap:0 16px;padding:12px var(--margine) 0}
 .pagina-corso .logo img{height:82px}
-.pagina-corso .invito{min-height:260px;padding:22px;margin:48px var(--margine) 6px;gap:20px}
-.pagina-corso .invito .frase{max-width:none;font-size:17px}
-.pagina-corso .invito .parola{font-size:clamp(80px,32vw,120px)}
 .pagina-corso .piede{display:flex;flex-direction:column;gap:12px;margin:0 var(--margine) 24px;padding:24px}
 .pagina-corso .piede .nome{font-size:44px;margin-bottom:2px}
 .pagina-corso .piede .menu li,.pagina-corso .piede .legali li{display:inline}
@@ -1075,9 +1080,21 @@ function barraProva(): string {
   return `<nav class="barra-prova" aria-label="Prova o chiama"><a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer" aria-label="Iscriviti: una settimana di prova a 10 euro">Iscriviti</a><a class="pulsante secondario" href="${esc(chiama)}">Chiama</a></nav>`
 }
 
-function invito(conContatti: boolean): string {
-  if (!conContatti) return ''
-  return `<a class="invito" href="${TESTI.iscrizione}" rel="noopener noreferrer"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}. ${TESTI.settimana}</span><span class="freccia" aria-hidden="true">↗\uFE0E</span></span><span class="parola">${TESTI.prova}</span></a>`
+/** «10 €» non si spezza a fine riga (DESIGN.md): lo spazio prima di «€» è indivisibile, anche nella frase della segreteria. */
+const conEuro = (t: string) => t.replace(/(\d) €/g, '$1\u00a0€')
+
+/**
+ * L'invito in fondo alla pagina (design: docs/design-canvas/invito-iscriviti/): titolo, frase sulle prove, «Iscriviti», «Chiama»
+ * e «Scrivici», poi i tre passi e dove siamo. La parte ISCRIVITI dell'editor (`parte`) ne cambia solo titolo e frase;
+ * l'indirizzo, il numero e i link sono quelli di tutto il sito. Lo mostrano così anche i due editor a pezzi.
+ */
+export function invito(parte: ParteIscriviti | null, conOrari: boolean): string {
+  // Un titolo di soli spazi è vuoto: vale quello di sempre.
+  const titolo = parte?.titolo.trim() || TESTI.titoloInvito
+  const frase = parte?.frase.trim() || TESTI.fraseInvito
+  const passi = TESTI.passi.map(([t, d]) => `<li><strong>${t}</strong> ${conEuro(d)}</li>`).join('')
+  const orari = conOrari ? `<a href="${percorso('orari')}">${TESTI.orari}</a>` : ''
+  return `<section class="invito" aria-labelledby="invito-titolo"><div class="invito-testo"><p class="occhiello">${TESTI.occhiello}</p><h2 id="invito-titolo">${esc(titolo)}</h2><p>${conEuro(esc(frase))}</p><div class="invito-pulsanti"><a class="pulsante" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.prova}</a><a class="pulsante secondario" href="${esc(chiama)}">Chiama ${esc(CONTATTI.telefono)}</a><a class="pulsante secondario" href="${esc(scrivi(TESTI.scriviProva))}" rel="noopener noreferrer">Scrivici</a></div></div><div class="invito-lato"><ol class="invito-passi">${passi}</ol><p class="invito-dove"><strong>${esc(CONTATTI.indirizzo)}</strong> ${TESTI.metro[0].toUpperCase() + TESTI.metro.slice(1)}${orari}</p></div></section>`
 }
 
 /** Le anteprime di condivisione (Open Graph e Twitter). Il 404 non si condivide: non le ha. */
@@ -1140,15 +1157,18 @@ const PAGINE_NON_CORSO = new Set(['home', 'corsi', 'contatti', 'chi-siamo'])
 
 // Le pagine di legge sono informative: niente invito «Iscriviti» in fondo.
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
-  const pulito = senzaPulsantiContatti(testoDellaPagina(p.testo, c.d.ospitiImmagini ?? []), c.d.dominio)
+  // La parte ISCRIVITI in fondo al testo diventa l'invito, una volta sola: non resta anche nel corpo.
+  const { resto: pulito, parte } = parteIscriviti(senzaPulsantiContatti(testoDellaPagina(p.testo, c.d.ospitiImmagini ?? []), c.d.dominio))
+  // Dove la pagina ha già la sua chiamata finale l'invito automatico non esce; quello della parte sì, l'ha messo la segreteria.
+  const fondo = (giaChiamata: boolean) => ((giaChiamata && !parte) || !conContatti ? '' : invito(parte, c.slugs.has('orari') && p.slug !== 'orari'))
   // La pagina «orari» col segnaposto [orari]: gli orari veri dei corsi. Senza il segnaposto è una pagina come le altre.
   const orari = p.slug === 'orari' && !p.diLegge ? dividiOrari(pulito) : null
-  if (orari) return paginaOrari(p, c, conContatti, orari)
-  if (!PAGINE_NON_CORSO.has(p.slug) && !p.diLegge && eCorsoNuovo(pulito, TESTI.iscrizione)) return paginaCorsoNuovo(p, c, conContatti, pulito)
-  if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, conContatti, pulito)
-  if (p.slug === 'corsi' && !p.diLegge && eCorsiNuova(pulito, TESTI.iscrizione)) return paginaCorsiNuova(p, c, conContatti, pulito)
-  if (p.slug === 'chi-siamo' && !p.diLegge && eChiSiamoNuova(pulito, TESTI.iscrizione)) return paginaChiSiamoNuova(p, c, conContatti, pulito)
-  if (p.slug === 'contatti' && !p.diLegge && eContattiNuova(pulito, TESTI.iscrizione)) return paginaContattiNuova(p, c, conContatti, pulito)
+  if (orari) return paginaOrari(p, c, fondo, orari)
+  if (!PAGINE_NON_CORSO.has(p.slug) && !p.diLegge && eCorsoNuovo(pulito, TESTI.iscrizione)) return paginaCorsoNuovo(p, c, fondo, pulito)
+  if (p.slug === 'home' && !p.diLegge && eHomeNuova(pulito, TESTI.iscrizione)) return paginaHomeNuova(p, c, fondo, pulito)
+  if (p.slug === 'corsi' && !p.diLegge && eCorsiNuova(pulito, TESTI.iscrizione)) return paginaCorsiNuova(p, c, fondo, pulito)
+  if (p.slug === 'chi-siamo' && !p.diLegge && eChiSiamoNuova(pulito, TESTI.iscrizione)) return paginaChiSiamoNuova(p, c, fondo, pulito)
+  if (p.slug === 'contatti' && !p.diLegge && eContattiNuova(pulito, TESTI.iscrizione)) return paginaContattiNuova(p, c, fondo, pulito)
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
   // La pagina di un corso (foto, dati, presentazione prima del primo h2) ha la sua testata; le regole stanno in `main.corso`.
@@ -1169,64 +1189,64 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
     : p.diLegge
       ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
       : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}${inTestata.html ? '' : ' solo'}${tecnici ? ' elenco-tecnici' : ''}"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main${scheda ? ' class="scheda-scarna"' : dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${tecnici?.conInvito || p.diLegge ? '' : invito(conContatti)}${piede(c)}`
+  const corpo = `${t}<main${scheda ? ' class="scheda-scarna"' : dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${p.diLegge ? '' : fondo(tecnici?.conInvito ?? false)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: c.corsi.has(p.slug) })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null, dati })
 }
 
 /** La Home nuova (sitoHome.ts): testata, hero con i due pulsanti, sezioni a passo unico. Senza la chiamata finale nel testo resta l'invito di sempre. */
-function paginaHomeNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+function paginaHomeNuova(p: PaginaGenerata, c: Contesto, fondo: (giaChiamata: boolean) => string, pulito: string): string {
   const h = homeNuova(pulito, TESTI.iscrizione, barraProva())
   const hero = `<section class="pagina-hero con-pulsanti${h.foto ? '' : ' solo'}"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div>${h.foto}</section>`
-  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico">${hero}${h.html}</main>${fondo(h.chiamata)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati })
 }
 
-/** Gli orari (sitoOrari.ts): titolo e introduzione della segreteria, una tessera per giorno, la riga «Per variazioni…» e la data. Senza l'invito: nel design la pagina finisce con le variazioni. */
-function paginaOrari(p: PaginaGenerata, c: Contesto, conContatti: boolean, { prima, dopo }: { prima: string; dopo: string }): string {
+/** Gli orari (sitoOrari.ts): titolo e introduzione della segreteria, una tessera per giorno, la riga «Per variazioni…» e la data. Chiude con l'invito, come le altre. */
+function paginaOrari(p: PaginaGenerata, c: Contesto, fondo: (giaChiamata: boolean) => string, { prima, dopo }: { prima: string; dopo: string }): string {
   // Senza orari la pagina non ha niente da introdurre: la frase del design al posto dell'introduzione della segreteria.
   const intro = (c.d.orariSito ?? []).length ? prima || (p.descrizione ? `<p>${esc(p.descrizione)}</p>` : '') : '<p>L’orario della settimana comparirà qui.</p>'
   const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${intro}</div></section>`
-  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-orari">${hero}${orariHtml(dopo, c.d.orariSito ?? [])}</main>${invito(conContatti)}${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-orari">${hero}${orariHtml(dopo, c.d.orariSito ?? [])}</main>${fondo(false)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: '', titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssOrari: true, dati })
 }
 
 /** I corsi nuova (sitoCorsi.ts): testata col solo titolo e la frase, nove schede, chiamata finale. Senza la chiamata nel testo resta l'invito di sempre. */
-function paginaCorsiNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+function paginaCorsiNuova(p: PaginaGenerata, c: Contesto, fondo: (giaChiamata: boolean) => string, pulito: string): string {
   const h = corsiNuova(pulito, TESTI.iscrizione)
   const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${h.frase ? `<p>${h.frase}</p>` : ''}</div></section>`
-  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-corsi">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico pagina-corsi">${hero}${h.html}</main>${fondo(h.chiamata)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsi: true, dati })
 }
 
 /** La pagina del corso rivista (sitoCorso.ts): come la Home nuova, con la foto di apertura o la fascia sotto il titolo. */
-function paginaCorsoNuovo(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+function paginaCorsoNuovo(p: PaginaGenerata, c: Contesto, fondo: (giaChiamata: boolean) => string, pulito: string): string {
   const collegata = (p.corsiCollegati?.length ?? 0) > 0
   const h = corsoNuovo(pulito, TESTI.iscrizione, collegata ? testiOrario(p.corsiCollegati ?? [], c.d.orari ?? []) : undefined)
   // Sotto il titolo nessun pulsante: «Iscriviti» sta già nella barra in alto e nella chiamata finale.
   const hero = `<section class="pagina-hero solo"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div></section>`
-  const corpo = `${testata(c, percorso('corsi'))}<main class="passo-unico corso-nuovo" data-corso="${esc(p.slug)}">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const corpo = `${testata(c, percorso('corsi'))}<main class="passo-unico corso-nuovo" data-corso="${esc(p.slug)}">${hero}${h.html}</main>${fondo(h.chiamata)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: true })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssCorsoNuovo: cssFuochiCorso(p.slug) + (collegata ? CSS_ORARIO_AUTOMATICO : ''), dati })
 }
 
 /** Contatti nuova (sitoContatti.ts): come la Home, testata, titolo con i due pulsanti, sezioni a passo unico; l'invito di sempre resta in fondo. */
-function paginaContattiNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+function paginaContattiNuova(p: PaginaGenerata, c: Contesto, fondo: (giaChiamata: boolean) => string, pulito: string): string {
   const h = contattiNuova(pulito, TESTI.iscrizione, NOME, CONTATTI.indirizzo)
   const hero = `<section class="pagina-hero con-pulsanti solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${h.bottoni}</div></section>`
-  const corpo = `${testata(c, percorso(p.slug))}<main class="contatti-nuova passo-unico">${hero}${h.html}</main>${invito(conContatti)}${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="contatti-nuova passo-unico">${hero}${h.html}</main>${fondo(false)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, cssContatti: true, dati })
 }
 
 /** La Chi siamo nuova (sitoChiSiamo.ts): le regole della Home più le sue, dopo. Senza la chiamata finale nel testo resta l'invito di sempre. */
-function paginaChiSiamoNuova(p: PaginaGenerata, c: Contesto, conContatti: boolean, pulito: string): string {
+function paginaChiSiamoNuova(p: PaginaGenerata, c: Contesto, fondo: (giaChiamata: boolean) => string, pulito: string): string {
   const h = chiSiamoNuova(pulito, TESTI.iscrizione)
   const hero = `<section class="pagina-hero solo"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}</div></section>`
-  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico chi-siamo-nuova">${hero}${h.html}</main>${h.chiamata ? '' : invito(conContatti)}${piede(c)}`
+  const corpo = `${testata(c, percorso(p.slug))}<main class="passo-unico chi-siamo-nuova">${hero}${h.html}</main>${fondo(h.chiamata)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: false })
   // Le regole della pagina vanno in coda al CSS della Home, senza toccare `documento` (condiviso con le altre pagine).
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssHome: true, dati }).replace('</head>', () => `<style>${CSS_CHI_SIAMO}</style></head>`)
@@ -1331,6 +1351,16 @@ function llms(c: Contesto, pagine: PaginaGenerata[]): string {
  * non va si salta, e le altre si generano lo stesso. Un dominio che non va
  * ferma tutto: finirebbe in canonical, sitemap e robots.txt.
  */
+/**
+ * La pagina che la segreteria sta scrivendo, com'è sul sito (`AnteprimaPagina.tsx`). Sul sito la pagina Contatti c'è sempre:
+ * qui se ne mette una vuota, se no l'invito in fondo, che c'è solo con Contatti, non si vedrebbe mai.
+ */
+export function paginaInAnteprima(p: { slug: string; titolo: string; descrizione: string; testo: string }, orariSito: OrarioSito[]): string {
+  const contatti = p.slug === 'contatti' ? [] : [{ slug: 'contatti', titolo: 'Contatti', descrizione: '', testo: '' }]
+  const file = generaSito({ dominio: 'https://www.officinedellosport.it', pagine: [p, ...contatti], menu: [], rinvii: [], orariSito })
+  return file[fileDi(p.slug)] ?? ''
+}
+
 export function generaSito(d: DatiSito): Record<string, string> {
   if (!DOMINIO.test(d.dominio)) throw new Error('Il dominio del sito non va bene: deve essere come https://www.officinedellosport.it, senza «/» in fondo')
   const pagine = d.pagine.filter((p, i) => slugDiPagina(p.slug) && d.pagine.findIndex((x) => x.slug === p.slug) === i)

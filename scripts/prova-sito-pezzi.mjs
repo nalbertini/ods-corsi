@@ -712,5 +712,93 @@ console.log('\nIl nuovo editor (Puck completo): con cosa si apre, quando c\'è d
   ok('23: il sito tiene i segni delle parti accese', pulisci('<h2>a</h2><h3>b</h3><p><strong>c</strong><em>d</em></p><ul><li>e</li></ul><ol><li>f</li></ol><blockquote>g</blockquote>'), '<h2>a</h2><h3>b</h3><p><strong>c</strong><em>d</em></p><ul><li>e</li></ul><ol><li>f</li></ol><blockquote>g</blockquote>')
 }
 
+console.log('\nLa parte ISCRIVITI: l\'invito in fondo alla pagina')
+{
+  const I = (id, titolo = '', frase = '') => ({ type: 'iscriviti', props: { id, titolo, frase } })
+  const cosa = (x) => prova(() => z.cosaNonVaPezzi(x))
+  const UNA_IN_FONDO = 'La parte Iscriviti è una sola e sta in fondo alla pagina'
+
+  // 4. Il tipo e il nome.
+  ok('4: una pagina con la parte Iscriviti in fondo è valida', valido({ content: [T('a', '<p>x</p>'), I('b')] }), true)
+  ok('4: la parte Iscriviti da sola è valida', valido({ content: [I('a', 'Titolo', 'Frase')] }), true)
+  ok('4: con la foto in cima e la parte in fondo è valida', valido({ content: [CIMA('a'), T('b', '<p>x</p>'), I('c')] }), true)
+  ok('4: nell\'ELENCO si chiama «Iscriviti»', prova(() => z.nomeParte(I('a'))), 'Iscriviti')
+
+  // 5. Una sola, l'ultima; titolo e frase stringhe.
+  ok('5: due parti Iscriviti non sono valide', valido({ content: [T('a', '<p>x</p>'), I('b'), I('c')] }), false)
+  ok('5: la parte Iscriviti non in fondo non è valida', valido({ content: [I('a'), T('b', '<p>x</p>')] }), false)
+  ok('5: due parti Iscriviti: la frase dice dove va', cosa({ content: [T('a', '<p>x</p>'), I('b'), I('c')] }), UNA_IN_FONDO)
+  ok('5: la parte Iscriviti in mezzo: la frase dice dove va', cosa({ content: [T('a', '<p>x</p>'), I('b'), T('c', '<p>y</p>')] }), UNA_IN_FONDO)
+  ok('5: la parte Iscriviti in fondo: niente da dire', cosa({ content: [T('a', '<p>x</p>'), I('b')] }), null)
+  ok('5: un titolo che non è testo non è valido', valido({ content: [{ type: 'iscriviti', props: { id: 'a', titolo: 3, frase: '' } }] }), false)
+  ok('5: una frase che non è testo non è valida', valido({ content: [{ type: 'iscriviti', props: { id: 'a', titolo: '', frase: null } }] }), false)
+  ok('5: senza titolo né frase non è valida', valido({ content: [{ type: 'iscriviti', props: { id: 'a' } }] }), false)
+
+  // 6. Il testo piatto, ripulito, con le entità.
+  ok('6: la parte vuota è un div iscriviti vuoto, in fondo', html([T('a', '<p>x</p>'), I('b')]), '<p>x</p><div class="iscriviti"></div>')
+  ok('6: titolo e frase in h2 e p, con & e < come entità', html([T('a', '<p>x</p>'), I('b', 'Judo & <karate', 'Prova & <scegli')]), '<p>x</p><div class="iscriviti"><h2>Judo &amp; &lt;karate</h2><p>Prova &amp; &lt;scegli</p></div>')
+  ok('6: col solo titolo niente p', html([I('a', 'Solo il titolo', '')]), '<div class="iscriviti"><h2>Solo il titolo</h2></div>')
+  ok('6: con la sola frase niente h2', html([I('a', '', 'Solo la frase')]), '<div class="iscriviti"><p>Solo la frase</p></div>')
+  const PARTE = '<div class="iscriviti"><h2>Titolo</h2><p>Frase</p></div>'
+  ok('6: pulisciTesto lascia intatta la parte Iscriviti', pulisci(`<p>x</p>${PARTE}`), `<p>x</p>${PARTE}`)
+  ok('6: pulisciTesto lascia intatta anche la parte vuota', pulisci('<div class="iscriviti"></div>'), '<div class="iscriviti"></div>')
+
+  // 7. Andata e ritorno.
+  for (const [nome, parte] of [['con titolo e frase', I('p2', 'Judo & <karate', 'Prova & <scegli')], ['vuota', I('p2')], ['col solo titolo', I('p2', 'Vieni', '')], ['con la sola frase', I('p2', '', 'Una lezione a 3 €')]]) {
+    const p = { content: [T('p1', '<p>Corpo</p>'), parte] }
+    const h = prova(() => z.pezziInHtml(p))
+    const giro = prova(() => z.htmlInPezzi(h))
+    const ultima = giro?.content?.[giro.content.length - 1]
+    ok(`7: andata e ritorno della parte ${nome}: torna la stessa parte`, [ultima?.type, ultima?.props?.titolo, ultima?.props?.frase], ['iscriviti', parte.props.titolo, parte.props.frase])
+    ok(`7: andata e ritorno della parte ${nome}: il testo è identico`, prova(() => z.pezziInHtml(giro)), h)
+  }
+  const sola = prova(() => z.htmlInPezzi('<div class="iscriviti"><h2>T</h2></div>'))
+  ok('7: una pagina con la sola parte torna una parte Iscriviti', sola?.content?.map((x) => x.type), ['iscriviti'])
+  const inMezzo = '<p>Sopra</p><div class="iscriviti"><h2>T</h2><p>F</p></div><p>Sotto</p>'
+  const mezzo = prova(() => z.htmlInPezzi(inMezzo))
+  ok('7: un div iscriviti che non è in fondo non diventa una parte Iscriviti', mezzo?.content?.some((x) => x.type === 'iscriviti'), false)
+  ok('7: e il testo resta identico', prova(() => z.pezziInHtml(mezzo)), pulisci(inMezzo))
+  const divisa = prova(() => z.dividiInParti({ content: [T('a', '<h2>A</h2><p>1</p><h2>B</h2><p>2</p>'), I('z', 'Vieni', '')] }))
+  ok('7: «Dividi in parti» lascia la parte Iscriviti in fondo', divisa?.content?.map((x) => x.type), ['testo', 'testo', 'iscriviti'])
+
+  // 8. Le bozze di prima.
+  const prima = { content: [CIMA('a'), T('b', '<h2>Titolo</h2><p>x</p>'), F('c'), C('d', [{ html: '<p>1</p>' }, { html: '<p>2</p>' }])] }
+  ok('8: una bozza di prima (senza la parte) è ancora valida', valido(prima), true)
+  ok('8: e dà lo stesso testo di prima', html(prima.content), '<img alt="Cima" src="https://x.it/c.jpg" /><h2>Titolo</h2><p>x</p><img alt="Un tatami" src="https://x.it/a.jpg" /><div class="colonne c-2"><div class="colonna"><p>1</p></div><div class="colonna"><p>2</p></div></div>')
+  ok('8: una pagina vecchia senza div iscriviti non prende una parte Iscriviti', prova(() => z.htmlInPezzi('<p>a</p><h2>B</h2><p>c</p>'))?.content?.some((x) => x.type === 'iscriviti'), false)
+  ok('8: i nomi delle altre parti non cambiano', [CIMA('a'), T('b', ''), F('c'), C('d', [{ html: '' }, { html: '' }]), C('e', [{ html: '' }, { html: '' }, { html: '' }])].map((p) => prova(() => z.nomeParte(p))), ['Foto in cima', 'Testo', 'Foto', 'Due colonne', 'Tre colonne'])
+}
+
+console.log('\nLa parte ISCRIVITI: dove la mettono i tasti + PARTE')
+{
+  const p = [T('a', '<p>a</p>'), T('b', '<p>b</p>')]
+  const pi = [...p, { type: 'iscriviti', props: { id: 'i', titolo: '', frase: '' } }]
+  ok('+ ISCRIVITI va sempre in fondo, anche con una parte scelta', [z.doveMettere('iscriviti', 0, p), z.doveMettere('iscriviti', null, p)], [2, 2])
+  ok('una parte nuova senza scelta, con ISCRIVITI in fondo, va prima di lei', z.doveMettere('testo', null, pi), 2)
+  ok('una parte nuova dopo quella scelta resta prima di ISCRIVITI', [z.doveMettere('foto', 0, pi), z.doveMettere('foto', 2, pi)], [1, 2])
+  ok('senza ISCRIVITI una parte nuova va dopo la scelta, o in fondo', [z.doveMettere('testo', 0, p), z.doveMettere('testo', null, p)], [1, 2])
+  ok('con ISCRIVITI già in pagina non se ne mette un\'altra', [z.conIscriviti(pi), z.conIscriviti(p)], [true, false])
+}
+
+console.log('\nLa parte ISCRIVITI: «Dividi in parti» non la crea in mezzo')
+{
+  const pagina = { content: [T('a', '<h2>Uno</h2><p>a</p><h2>Due</h2><p>b</p><div class="iscriviti"><h2>T</h2></div>'), T('b', '<p>dopo</p>')] }
+  const divisa = z.dividiInParti(pagina)
+  ok('un TESTO che finisce col div della parte resta intero', [divisa.content.length, divisa.content.some((q) => q.type === 'iscriviti')], [2, false])
+}
+
+console.log('\nLa parte ISCRIVITI: i tasti che la toccano')
+{
+  const p = [T('a', '<p>a</p>'), T('b', '<p>b</p>')]
+  const pi = [...p, { type: 'iscriviti', props: { id: 'i', titolo: '', frase: '' } }]
+  ok('+ ISCRIVITI si può mettere una volta sola', [z.puoMettere('iscriviti', p), z.puoMettere('iscriviti', pi), z.puoMettere('testo', pi)], [true, false, true])
+  const tanti = Array.from({ length: z.MASSIMO_PEZZI }, (_, i) => T('t' + i, '<p>x</p>'))
+  ok('oltre il massimo delle parti non se ne mette nessuna', [z.puoMettere('testo', tanti), z.puoMettere('iscriviti', tanti)], [false, false])
+  ok('ISCRIVITI non si sposta: né su né giù', [z.spostabile(pi, 2, -1), z.spostabile(pi, 2, 1)], [false, false])
+  ok('la parte prima di ISCRIVITI non le va sotto, ma sale', [z.spostabile(pi, 1, 1), z.spostabile(pi, 1, -1)], [false, true])
+  ok('senza ISCRIVITI si sposta come prima, dentro la pagina', [z.spostabile(p, 0, 1), z.spostabile(p, 0, -1), z.spostabile(p, 1, 1)], [true, false, false])
+  ok('il tasto spento dice perché', z.motivoSpento('iscriviti', pi), 'C’è già: una parte Iscriviti per pagina')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

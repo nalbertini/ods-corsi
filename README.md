@@ -192,6 +192,8 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   I pezzi si conservano in `sito_pagine.bozza_pezzi` (`supabase/62-sito-pezzi.sql`) e il testo piatto che ne esce (`src/lib/sitoPezzi.ts`) è la
   bozza di sempre: il sito resta statico e le tessere si formano da sole. Le pagine che c'erano prima restano col vecchio editor,
   finché non si preme PORTA AI PEZZI (non per le pagine di legge): `htmlInPezzi` spezza il testo senza cambiarlo e non si torna indietro.
+  La parte ISCRIVITI è l'invito giallo in fondo alla pagina (`invito()` di `src/lib/sitoGenera.ts`: prove da 3 € e 10 €, Iscriviti, Chiama,
+  Scrivici, i passi e l'indirizzo), con titolo e frase della segreteria: una sola, sempre in fondo, e prende il posto dell'invito di sempre.
 - **Il sito della palestra** (voce SITO della segreteria): le pagine del sito, il menu in alto e il footer si
   scrivono nell'app, senza WordPress. Ogni pagina ha una **bozza**, che non cambia il sito, e un testo
   **pubblicato**, che cambia solo con PUBBLICA; il testo ricco passa da un editor che ammette solo titoli,

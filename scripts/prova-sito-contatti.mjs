@@ -107,11 +107,13 @@ console.log('\n4. Testata e piede come nel design')
   ok('in Contatti la testata non ha pulsanti segnati come pagina corrente', /<span class="pulsante/.test(tc), false)
   ok('nelle altre pagine la testata ha un solo link a /contatti/ (la voce «Contatti» del menu), nessun «Scrivici» e il menu del telefono ha solo «Iscriviti» come pulsante', [(th.match(/<a [^>]*href="\/contatti\/"[^>]*>Contatti<\/a>/g) || []).length, (th.match(/href="\/contatti\/"/g) || []).length, /Scrivici/.test(th), /nel-menu[^>]*href="\/contatti\/"/.test(th)], [1, 1, false, false])
   ok('nessun <a> dice «Contattaci», anche se la segreteria ha scritto così nel menu', [due['index.html'], due['contatti/index.html']].map((h) => /<a [^>]*>\s*Contattaci\s*<\/a>/.test(h)), [false, false])
-  ok('il piede di ogni pagina mostra «Contatti» verso /contatti/, mai «Scrivici»', [due['index.html'], due['contatti/index.html']].map((h) => [/<footer[\s\S]*<a href="\/contatti\/"[^>]*>Contatti<\/a>[\s\S]*<\/footer>/.test(h), /Scrivici/.test(h)]), [[true, false], [true, false]])
+  // «Scrivici» c'è nell'invito per scelta (design invito-iscriviti): qui si guarda solo il piede.
+  const piedeDi = (h) => (h.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
+  ok('il piede di ogni pagina mostra «Contatti» verso /contatti/, mai «Scrivici»', [due['index.html'], due['contatti/index.html']].map((h) => [/<a href="\/contatti\/"[^>]*>Contatti<\/a>/.test(piedeDi(h)), /Scrivici/.test(piedeDi(h))]), [[true, false], [true, false]])
   // Etichetta sempre «Contatti» e posto scelto dalla segreteria in MENU (non più tolta dall'elenco).
   const ordinato = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'corsi', titolo: 'Co', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [voce('Home', 'home'), { ...voce('Parlaci', 'contatti'), ordine: 2 }, { ...voce('Corsi', 'corsi'), ordine: 3 }], rinvii: [] })
   const elenco = ((ordinato['corsi/index.html'].match(/<nav id="menu"[\s\S]*?<\/nav>/) || [''])[0].match(/<a [^>]*>[^<]*<\/a>/g) || []).map((x) => x.replace(/<[^>]*>/g, ''))
-  ok('«Parlaci» scritto dalla segreteria diventa «Contatti», al posto scelto nel menu', [elenco.filter((x) => /Home|Parlaci|Contatti|Corsi/.test(x)), /Parlaci|Scrivici/.test(ordinato['corsi/index.html'])], [['Home', 'Contatti', 'Corsi'], false])
+  ok('«Parlaci» scritto dalla segreteria diventa «Contatti», al posto scelto nel menu', [elenco.filter((x) => /Home|Parlaci|Contatti|Corsi/.test(x)), /Parlaci/.test(ordinato['corsi/index.html']) || /Scrivici/.test(testataDi(ordinato['corsi/index.html']) + piedeDi(ordinato['corsi/index.html']))], [['Home', 'Contatti', 'Corsi'], false])
   const senzaC = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }], menu: [voce('Home', 'home')], rinvii: [] })
   ok('senza la pagina Contatti pubblicata: nessuna voce, nessun link a /contatti/', /\/contatti\/|Contatti/.test(senzaC['index.html']), false)
   ok('il titolo della pagina dato dal database non si tocca', /<h1[^>]*>[\s\S]*C[\s\S]*<\/h1>/.test(due['contatti/index.html']) && /<title>C\b/.test(due['contatti/index.html']), true)
@@ -132,7 +134,7 @@ console.log('\n5. Quel che il design ha e il sito non aveva')
   const vuoto = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contattaci', slug: 'contatti', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy policy', slug: null, indirizzo: '/privacy/' }], rinvii: [] })
   const c = vuoto['contatti/index.html']
   const pie = (c.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
-  ok('la pagina Contatti non ha il pulsante «Contattaci» sotto il titolo e ha l’invito «Prova» in fondo', [/<a class="pulsante" href="\/contatti\/">Contattaci<\/a>/.test(c), /class="invito"/.test(c)], [false, true])
+  ok('la pagina Contatti non ha il pulsante «Contattaci» sotto il titolo e ha l’invito «Iscriviti» in fondo', [/<a class="pulsante" href="\/contatti\/">Contattaci<\/a>/.test(c), /class="invito"/.test(c)], [false, true])
   ok('il pulsante in testata dice «Iscriviti», intero', /<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(c), true)
   ok('piede: il nome va a capo dopo «Officine», senza titoli né riga «©»', [/<p class="nome">Officine<br>dello Sport<\/p>/.test(pie), /<h2/.test(pie), /class="fine"/.test(pie)], [true, false, false])
   ok('piede: le pagine del menu e quelle di legge sono due elenchi senza titolo', [/<nav class="piede-menu" aria-label="Pagine"><a href="\/">Home<\/a><a href="\/contatti\/"[^>]*>Contatti<\/a><\/nav>/.test(pie), /<ul class="piede-legale"><li><a href="\/privacy\/">Privacy policy<\/a><\/li><\/ul>/.test(pie)], [true, true])
@@ -154,12 +156,12 @@ console.log('\n5. Quel che il design ha e il sito non aveva')
 
 console.log('\n6. L’invito e il piede, misure del design')
 {
-  ok('invito: 96px sopra, 6px sotto, alto 300px, padding 36px 40px', [/margin:\s*96px var\(--margine\) 6px/.test(css('.invito')), /height:\s*300px/.test(css('.invito')), /padding:\s*36px 40px/.test(css('.invito'))], [true, true, true])
-  ok('invito: frase da 22px (520px al massimo), senza freccia, «Prova» da 170px', [/font-size:\s*22px/.test(css('.invito .frase')), /max-width:\s*520px/.test(css('.invito .frase')), /display:\s*none/.test(css('.invito .freccia')), /font-size:\s*170px/.test(css('.invito .parola')), /line-height:\s*\.8/.test(css('.invito .parola'))], [true, true, true, true, true])
+  ok('invito: 96px sopra, 6px sotto, padding 56px, due colonne', [/margin:\s*96px var\(--margine\) 6px/.test(css('.invito')), /padding:\s*56px(;|$)/.test(css('.invito')), /grid-template-columns:\s*minmax\(0,1\.1fr\) minmax\(0,1fr\)/.test(css('.invito'))], [true, true, true])
+  ok('invito: titolo da 56 a 88px, frase da 22px (520px al massimo), pulsanti alti 60px', [/font-size:\s*clamp\(56px,6\.11vw,88px\)/.test(css('.invito h2')), /font-size:\s*22px/.test(css('.invito-testo>p:not(.occhiello)')), /max-width:\s*520px/.test(css('.invito-testo>p:not(.occhiello)')), /min-height:\s*60px/.test(css('.invito .pulsante'))], [true, true, true, true])
   ok('piede: Inter 16px, interlinea 1.9, 40px dentro su tutti i lati', [/font-size:\s*16px/.test(css('.piede')), /line-height:\s*1\.9/.test(css('.piede')), /padding:\s*40px;|padding:\s*40px$/.test(css('.piede'))], [true, true, true])
   const mob = CSS.slice(CSS.indexOf('@media (max-width:900px)'))
   const m = (sel) => [...mob.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].filter((x) => x[1].trim() === sel).map((x) => x[2]).join(';')
-  ok('telefono invito: 48px sopra, alto almeno 260px, padding 22px, frase 17px, «Prova» 120px', [/margin(-top)?:\s*48px/.test(m('.invito')), /min-height:\s*260px/.test(m('.invito')), /padding:\s*22px/.test(m('.invito')), /font-size:\s*17px/.test(m('.invito .frase')), /font-size:\s*120px/.test(m('.invito .parola'))], [true, true, true, true, true])
+  ok('telefono invito: 48px sopra, una colonna, padding 28px 22px, frase 18px', [/margin:\s*48px var\(--margine\) 6px/.test(m('.invito')), /grid-template-columns:\s*minmax\(0,1fr\)(;|$)/.test(m('.invito')), /padding:\s*28px 22px/.test(m('.invito')), /font-size:\s*18px/.test(m('.invito-testo>p:not(.occhiello)'))], [true, true, true, true])
 }
 
 console.log('\n7. La mappa del sito')

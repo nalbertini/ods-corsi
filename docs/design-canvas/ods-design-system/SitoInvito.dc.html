@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Il sito pubblico usa Big Shoulders Display e Inter (src/lib/sitoGenera.ts); qui il canvas li prende da Google Fonts. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: {{colonne}}; gap: {{spazio}}; padding: {{pad}}; background: #f4c31b; color: #0d2a3d; border-radius: 6px">
+  <div style="display: flex; flex-direction: column; justify-content: center; gap: 20px; min-width: 0">
+    <span style="font-family: {{inter}}; font-size: 14px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase">{{occhiello}}</span>
+    <h2 style="font-family: {{big}}; text-transform: uppercase; margin: 0; font-weight: 800; font-size: {{corpo}}; line-height: .9; text-wrap: balance; overflow-wrap: anywhere">{{titolo}}</h2>
+    <p style="font-family: {{inter}}; margin: 0; font-size: {{corpoTesto}}; line-height: 1.45; max-width: 520px">{{frase}}</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px">
+      <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 60px; padding: 0 28px; border-radius: 6px; background: #0d2a3d; color: #ffffff; font-family: {{inter}}; font-weight: 600; font-size: 18px; width: {{largPulsante}}">{{principale}}</span>
+      <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 60px; padding: 0 28px; border-radius: 6px; border: 3px solid #0d2a3d; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 18px; width: {{largPulsante}}">Chiama {{telefono}}</span>
+      <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 60px; padding: 0 28px; border-radius: 6px; border: 3px solid #0d2a3d; color: #0d2a3d; font-family: {{inter}}; font-weight: 600; font-size: 18px; width: {{largPulsante}}">Scrivici</span>
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+    <sc-for list="{{passi}}" as="x" hint-placeholder-count="3">
+      <div style="display: grid; grid-template-columns: 56px 1fr; gap: 16px; align-items: center; padding: {{padPasso}}; background: #ffffff; border-radius: 6px">
+        <span style="font-family: {{big}}; font-weight: 800; font-size: 56px; line-height: .8; color: #14709f">{{x.n}}</span>
+        <span style="font-family: {{inter}}; font-size: {{corpoPasso}}; line-height: 1.35"><b style="font-weight: 700">{{x.titolo}}</b><br>{{x.testo}}</span>
+      </div>
+    </sc-for>
+    <div style="display: grid; grid-template-columns: 56px 1fr; gap: 16px; align-items: center; padding: {{padPasso}}; background: #0d2a3d; color: #ffffff; border-radius: 6px">
+      <span aria-hidden="true" style="font-family: {{big}}; font-weight: 800; font-size: 40px; line-height: .8; color: #f4c31b; text-align: center">↓</span>
+      <span style="font-family: {{inter}}; font-size: {{corpoPasso}}; line-height: 1.35"><b style="font-weight: 700">{{indirizzo}}</b><br>{{metro}}<sc-if value="{{conOrari}}" hint-placeholder-val="{{ true }}"><br><u style="display: inline-flex; align-items: center; min-height: 48px">Guarda gli orari</u></sc-if></span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"occhiello":{"editor":"text","default":"Una settimana di prova"},"titolo":{"editor":"text","default":"Vieni a provare."},"frase":{"editor":"text","default":"Una lezione a 3 € o una settimana a 10 €: provi le discipline adatte alla tua età, o a quella di tuo figlio, poi scegli."},"principale":{"editor":"text","default":"Iscriviti"},"telefono":{"editor":"text","default":"346 329 2786"},"passi":{"editor":"text","default":"Chiamaci o scrivici|Ti diciamo quando venire, per la sua età;Vieni a provare|Una lezione 3 €, una settimana 10 €;Scegli e iscriviti|Online, dal telefono, in pochi minuti"},"indirizzo":{"editor":"text","default":"Via Vittorio Sassi 26, Collegno"},"metro":{"editor":"text","default":"Vicino alla metro Fermi"},"piccolo":{"editor":"boolean","default":false},"conOrari":{"editor":"boolean","default":true},"$preview":{"width":1344,"height":440}}'>
+// COSTRUITO (`invito()` di src/lib/sitoGenera.ts, `.invito*`; ../invito-iscriviti/): l'invito in fondo alle pagine del sito.
+// Il costruito: «€» con lo spazio indivisibile; il titolo va a capo anche dentro una parola lunga; «Guarda gli orari» su una riga
+// sua, da 48px, solo se c'è la pagina Orari e non nella pagina Orari (`conOrari`); tutti i pulsanti con 28px ai lati.
+// La parte ISCRIVITI degli editor a pezzi cambia solo `titolo` e `frase` (vuoti = quelli di sempre).
+// Oggi: la parola ISCRIVITI a 170px occupa mezzo riquadro, la frase dice solo indirizzo e prezzo, metà del giallo è vuota
+// e non si può chiamare. Qui: titolo a 88px come la chiamata finale (`SitoCta`), la frase dice cosa si fa con 10 €,
+// tre pulsanti: «Iscriviti» (pagina iscrizioni/, la stessa di oggi), «Chiama» (tel:) e «Scrivici» (WhatsApp, `scrivi` di src/lib/sito.ts);
+// a destra i tre passi veri della prova (la prova non si prenota dal modulo: si chiede a voce) e dove siamo, con il link agli orari.
+// Valori: giallo #f4c31b e inchiostro #0d2a3d, blu #14709f per le cifre (5,4:1 sul bianco), pulsanti 60px raggio 6px
+// come `SitoPulsante`, tessere bianche distanziate di 6px come le tessere del sito.
+// `passi` = «titolo|testo» separati da «;». `piccolo` è il telefono: una colonna, pulsanti a tutta larghezza.
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const pic = truthy(p.piccolo);
+    const passi = String(p.passi ?? '').split(';').filter(Boolean).map((r, i) => { const [titolo, testo] = r.split('|'); return { n: String(i + 1), titolo: titolo ?? '', testo: testo ?? '' }; });
+    return {
+      big: BIG, inter: INTER, occhiello: p.occhiello ?? '', titolo: p.titolo ?? '', frase: p.frase ?? '', principale: p.principale ?? '',
+      telefono: p.telefono ?? '', passi, indirizzo: p.indirizzo ?? '', metro: p.metro ?? '', conOrari: p.conOrari === undefined ? true : truthy(p.conOrari),
+      colonne: pic ? '1fr' : '1.1fr 1fr', spazio: pic ? '28px' : '48px', pad: pic ? '28px 22px' : '56px',
+      corpo: pic ? '56px' : '88px', corpoTesto: pic ? '18px' : '22px', largPulsante: pic ? '100%' : 'auto',
+      padPasso: pic ? '14px 16px' : '18px 22px', corpoPasso: pic ? '16px' : '18px',
+    };
+  }
+}
+</script>
+</body>
+</html>

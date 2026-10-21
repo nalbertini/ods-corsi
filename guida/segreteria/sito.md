@@ -48,8 +48,15 @@ Una pagina a pezzi si compone con le parti che metti in fila:
 - **+ FOTO**: una foto, col suo testo alternativo (o «solo decorativa»).
 - **+ COLONNE**: da due a tre colonne di testo, una accanto all'altra. Sul telefono
   si mettono una sotto l'altra. Una colonna lasciata vuota non compare sul sito.
+- **+ ISCRIVITI**: l'invito giallo in fondo alla pagina, con il **TITOLO** e la
+  **FRASE** che scrivi tu (per esempio «Iscrizioni aperte» a settembre). Vuoti,
+  restano quelli di sempre. Indirizzo, telefono, pulsanti e passi sono quelli del
+  sito e non si cambiano. È una sola e sta sempre in fondo: non si copia, non si
+  sposta, e se c'è già il tasto è spento. Su quella pagina prende il posto
+  dell'invito di sempre, e compare anche dove la pagina ha già la sua chiamata
+  finale (Home, Corsi, un corso, Chi siamo). Senza la pagina Contatti non compare.
 
-Le parti si mettono dopo quella scelta, o in fondo. Per cambiare l'ordine si
+Le parti si mettono dopo quella scelta, o in fondo (sempre prima di **ISCRIVITI**). Per cambiare l'ordine si
 trascina la parte, oppure si sceglie e si premono **SU** o **GIÙ**; **Togli** la
 toglie dalla pagina.
 
@@ -112,8 +119,8 @@ Accanto ai tasti di una pagina c'è **Prova il nuovo editor**: lo stesso lavoro,
 in un editor solo, a tutto schermo. Non c'è per le pagine di legge, e si apre
 solo se la pagina è salvata.
 
-- A sinistra, in **Parti**, le quattro parti (foto in cima, testo, foto,
-  colonne): si trascinano nella pagina dove le vuoi. In **Struttura** c'è
+- A sinistra, in **Parti**, le cinque parti (foto in cima, testo, foto,
+  colonne, iscriviti): si trascinano nella pagina dove le vuoi. In **Struttura** c'è
   l'elenco delle parti della pagina: trascinando una riga la sposti.
 - Al centro la pagina, coi caratteri e i colori del sito, come sul tablet.
   Sopra, i tasti per vederla come sul telefono o sul computer.
@@ -222,7 +229,8 @@ Il sito nuovo ha sempre una **Home**: senza una Home pubblicata non si genera.
 Le pagine di legge (privacy, cookie, contributi pubblici) hanno l'impaginazione
 solo testo; le altre hanno in cima il titolo grande (in maiuscolo) e, sotto, la frase della
 **descrizione**. In alto a destra c'è il solo pulsante «Iscriviti»; l'invito giallo in fondo
-compare se esiste una pagina pubblicata con indirizzo `contatti`, tranne nelle pagine di legge, che sono informative. **Contatti è una voce del
+(«Vieni a provare.», le prove da 3 € e 10 €, i pulsanti **Iscriviti**, **Chiama** e **Scrivici**,
+i tre passi della prova, l'indirizzo e **Guarda gli orari**) compare se esiste una pagina pubblicata con indirizzo `contatti`, tranne nelle pagine di legge, che sono informative. **Contatti è una voce del
 menu**, non un pulsante: nel menu e nel piede si chiama sempre «Contatti», qualunque
 etichetta scrivi, e sta nel posto che le dai in **MENU**. Un pulsante «Scrivici» verso
 `/contatti/` scritto nel testo di una pagina il sito non lo mostra (il testo qui resta com'è);

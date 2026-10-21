@@ -106,10 +106,10 @@ console.log('\n3. Il nome è un link solo se la scheda è pubblicata')
 console.log('\n3b. La tessera «Vieni a conoscerli» completa la riga di quattro')
 {
   const inv = (n) => invitoTessera(pagina(unElenco(n)))
-  ok('con 13 tecnici c’è, larga 3 colonne, e sostituisce l’invito di fondo pagina', [/ritratto-invito s3/.test(inv(13)), conta(pagina(tredici), /<a class="invito"/g)], [true, 0])
+  ok('con 13 tecnici c’è, larga 3 colonne, e sostituisce l’invito di fondo pagina', [/ritratto-invito s3/.test(inv(13)), conta(pagina(tredici), /class="invito"/g)], [true, 0])
   ok('con 14 tecnici è larga 2', /ritratto-invito s2/.test(invitoTessera(pagina(unElenco(13) + R('Z', 'x · Judo')))), true)
   ok('la tessera invita alla settimana a 10 €', inv(13).includes('Una settimana a 10 €: provi tutte le discipline, incontri gli istruttori e scegli.'), true)
-  ok('con 12 tecnici non c’è: la riga è piena, resta l’invito di fondo pagina', [inv(12), conta(pagina(dodici), /<a class="invito"/g)], ['', 1])
+  ok('con 12 tecnici non c’è: la riga è piena, resta l’invito di fondo pagina', [inv(12), conta(pagina(dodici), /<section class="invito"/g)], ['', 1])
   const t = inv(13)
   ok('ha il solo pulsante «Iscriviti» (modulo): niente «Scrivici», né pulsanti verso /contatti/, in nessun punto della pagina', [/<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(t), /pulsante secondario/.test(t), /Scrivici/.test(pagina(tredici)), /<a class="pulsante[^"]*" href="\/contatti\/"/.test(pagina(tredici))], [true, false, false, false])
   ok('senza la pagina Contatti, niente «Scrivici» e nessun link a /contatti/', [/Scrivici/.test(invitoTessera(pagina(tredici, 'istruttori', [], false))), /\/contatti\//.test(pagina(tredici, 'istruttori', [], false))], [false, false])
@@ -151,8 +151,9 @@ console.log('\n10. La scheda scarna di un istruttore (nome, foto o iniziale, cor
   ok('il nome è il titolo grande, nome e cognome su due righe', /<h1><span>Fabio<\/span> <span>Berta<\/span><\/h1>/.test(m), true)
   ok('la foto c’è, col suo «alt»', /<div class="scheda-ritratto"><img [^>]*alt="Fabio ai tatami"/.test(m), true)
   ok('i corsi sono una tessera «Corsi» con il testo scritto', /<h2>Corsi<\/h2><p>Aikido<\/p>/.test(m), true)
-  ok('il solo pulsante «Iscriviti» (modulo): niente «Scrivici» né pulsanti verso /contatti/ nella scheda', [/<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(m), /pulsante secondario/.test(m), /Scrivici/.test(h), /<a class="pulsante[^"]*" href="\/contatti\/"/.test(h)], [true, false, false, false])
-  ok('c’è l’invito di fondo pagina e nessuna tessera vuota', [conta(h, /<a class="invito"/g), /da scrivere|<article class="tessera[^"]*">\s*<\/article>/i.test(m)], [1, false])
+  // «Scrivici» c'è nell'invito di fondo pagina per scelta (design invito-iscriviti): la regola è della scheda, il <main>.
+  ok('il solo pulsante «Iscriviti» (modulo): niente «Scrivici» né pulsanti verso /contatti/ nella scheda', [/<a class="pulsante primario" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"[^>]*>Iscriviti<\/a>/.test(m), /pulsante secondario/.test(m), /Scrivici/.test(m), /<a class="pulsante[^"]*" href="\/contatti\/"/.test(h)], [true, false, false, false])
+  ok('c’è l’invito di fondo pagina e nessuna tessera vuota', [conta(h, /<section class="invito"/g), /da scrivere|<article class="tessera[^"]*">\s*<\/article>/i.test(m)], [1, false])
   ok('il ritorno «Gli istruttori» c’è se la pagina esiste', /<a class="indietro" href="\/istruttori\/">/.test(m), true)
   ok('e non c’è se non esiste (sarebbe un 404)', /class="indietro"/.test(main(scheda(`${FA}<ul><li><strong>Corsi</strong> Aikido</li></ul>`))), false)
   ok('senza «Contatti» pubblicata non c’è «Scrivici» né link a /contatti/', [/Scrivici/.test(main(scheda(`${FA}<ul><li><strong>Corsi</strong> Aikido</li></ul>`, [], false))), /\/contatti\//.test(scheda(`${FA}<ul><li><strong>Corsi</strong> Aikido</li></ul>`, [], false))], [false, false])
@@ -197,7 +198,7 @@ console.log('\n8. La cornice (testata, invito, piede) con le misure del design')
   const conMenu = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'istruttori', titolo: 'T', descrizione: '', testo: '' }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Chi siamo', slug: 'istruttori', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contattaci', slug: 'contatti', indirizzo: null }], rinvii: [] })['istruttori/index.html']
   ok('la voce del menu della pagina aperta ha aria-current, le altre no', [conta(conMenu, /<a [^>]*aria-current="page"/g), /<a href="\/istruttori\/" aria-current="page">Chi siamo<\/a>/.test(conMenu)], [1, true])
   const inv = ri(/^\s*\.invito\s*$/)
-  ok('invito sul telefono: 22px di padding, alto 260px, frase 17px', [/\.invito\{[^}]*padding:\s*22px/.test(TELEFONO), /\.invito\{[^}]*min-height:\s*260px/.test(TELEFONO), /\.invito \.frase\{[^}]*font-size:\s*17px/.test(TELEFONO)], [true, true, true])
+  ok('invito sul telefono: una colonna, 28px 22px di padding, frase 18px, pulsanti a tutta larghezza', [/\.invito\{[^}]*grid-template-columns:\s*minmax\(0,1fr\)[;}]/.test(TELEFONO), /\.invito\{[^}]*padding:\s*28px 22px/.test(TELEFONO), /\.invito-testo>p:not\(\.occhiello\)\{[^}]*font-size:\s*18px/.test(TELEFONO), /\.invito \.pulsante\{[^}]*width:\s*100%/.test(TELEFONO)], [true, true, true, true])
   const pie = ri(/^\s*\.piede\s*$/)
   ok('piede sul telefono: 24px di padding e di margine sotto', [/\.piede\{[^}]*margin-bottom:\s*24px/.test(TELEFONO), /\.piede\{[^}]*padding:\s*24px/.test(TELEFONO)], [true, true])
 }
@@ -205,7 +206,8 @@ console.log('\n8. La cornice (testata, invito, piede) con le misure del design')
 console.log('\n9. Le differenze che restavano: pulsante corto, invito, piede, testo sul telefono')
 {
   const h = pagina(dodici)
-  ok('l’invito dice anche della settimana a 10 euro, come nel design', />Vieni a provare: ti aspettiamo in Via Vittorio Sassi 26, Collegno\. Una settimana a 10 euro: provi tutte le discipline e scegli\.<\/span>/.test(h), true)
+  const invito = h.match(/<section class="invito"[\s\S]*?<\/section>/)?.[0] ?? ''
+  ok('l’invito dice anche della settimana a 10 euro, come nel design', [invito.includes('una settimana a 10\u00a0€'), invito.includes('<strong>Via Vittorio Sassi 26, Collegno</strong>')], [true, true])
   const pie = (h.match(/<footer[\s\S]*?<\/footer>/) || [''])[0]
   ok('instagram e facebook stanno su una riga, divisi da «·» (li in linea, il separatore è CSS)', [/\.recapiti li:nth-child\(n\+3\)\{[^}]*display:\s*inline/.test(CSS), /\.recapiti li:nth-child\(4\)::before\{[^}]*content:\s*" · "/.test(CSS)], [true, true])
   const voci = [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'istruttori', indirizzo: null }, { dove: 'footer', ordine: 1, etichetta: 'Privacy', slug: null, indirizzo: '/privacy/' }]
