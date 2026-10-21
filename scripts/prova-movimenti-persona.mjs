@@ -279,6 +279,7 @@ ok('il progresso è facoltativo', senzaProgresso, { collegati: 2, restano: 0 })
 console.log('\n9. l\'apostrofo dopo una vocale in fondo alla parola vale accento (le stesse coppie di supabase/prova/movimenti-persona.sql, sezione 20)')
 // Il vecchio programma scriveva «NICOLO'» per «Nicolò»: in fondo alla parola, dopo una vocale, l'apostrofo è un accento.
 ok('in mezzo alla parola l\'apostrofo resta', prova(() => ['D\'Amico', 'Dell\'Acqua', 'Sant\'Anna', 'D’Angelo'].map(m.normalizzaNome)), ['d\'amico', 'dell\'acqua', 'sant\'anna', 'd\'angelo'])
+ok('dopo una vocale ma in mezzo alla parola resta', prova(() => m.normalizzaNome('O\'Brien')), 'o\'brien')
 ok('dopo una consonante resta anche in fondo alla parola', prova(() => m.normalizzaNome('Sant\' Anna')), 'sant\' anna')
 const coppie = [['FEMIA NICOLO\'', 'Femia Nicolò'], ['BADALI\' GABRIELE', 'Badalì Gabriele'], ['DA VIA\' ADELAIDE', 'Da Vià Adelaide'], ['MARCHIO\' PAOLA', 'Marchiò Paola'], ['MORANDO NICOLO\'', 'Morando Nicoló']]
 ok('l\'apostrofo in fondo dopo una vocale ha la stessa chiave dell\'accento', prova(() => coppie.map(([a, b]) => `${m.normalizzaNome(a)} = ${m.normalizzaNome(b)}`)), ['femia nicolo', 'badali gabriele', 'da via adelaide', 'marchio paola', 'morando nicolo'].map((k) => `${k} = ${k}`))

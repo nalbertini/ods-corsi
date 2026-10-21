@@ -736,6 +736,7 @@ rollback;
 select atteso('in mezzo alla parola l''apostrofo resta',
   concat_ws(' | ', collegamento_token($$D'Amico$$), collegamento_token($$Dell'Acqua$$), collegamento_token($$Sant'Anna$$), collegamento_token(E'D’Angelo')),
   $$d'amico | dell'acqua | sant'anna | d'angelo$$);
+select atteso('dopo una vocale ma in mezzo alla parola resta', collegamento_token($$O'Brien$$), $$o'brien$$);
 select atteso('dopo una consonante resta anche in fondo alla parola', collegamento_token($$Sant' Anna$$), $$anna sant'$$);
 select atteso('l''apostrofo in fondo dopo una vocale ha la stessa chiave dell''accento',
   (select string_agg(collegamento_token(a) || ' = ' || collegamento_token(b), ' | ' order by n) from (values

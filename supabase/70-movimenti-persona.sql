@@ -61,12 +61,12 @@ create policy collegamenti_persona_legge on collegamenti_persona for select to a
 -- fondo alla parola dopo una vocale si toglie; dopo una consonante («D'Amico», «Sant' Anna») è un'elisione e resta.
 -- Pura e con l'indice qui sotto: serve a `persone`, quindi anche chi scrive una persona ha il permesso di chiamarla.
 create or replace function collegamento_token(t text) returns text language sql immutable set search_path = public as $$
-  select string_agg(regexp_replace(x, '([aeiou])''$', '\1'), ' ' order by regexp_replace(x, '([aeiou])''$', '\1'))
+  select string_agg(y, ' ' order by y)
   from unnest(regexp_split_to_array(
     btrim(regexp_replace(
       regexp_replace(normalize(translate(lower(coalesce(t, '')), '‘’`', repeat(chr(39), 3)), NFD), '[\u0300-\u036f]', '', 'g'),
       '[\s\u00a0\u2007\u202f\u200b\ufeff]+', ' ', 'g')),
-    ' ')) x
+    ' ')) x, regexp_replace(x, '([aeiou])''$', '\1') y
   where x <> '' $$;
 
 -- Il nome della causale «Cliente NOME per …»: la prima «per» lo chiude (tutti i quantificatori pigri: in Postgres
