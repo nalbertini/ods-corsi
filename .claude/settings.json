@@ -156,6 +156,17 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && (nohup /Users/nicola/.local/bin/graphify update . >/dev/null 2>&1 &)",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }
