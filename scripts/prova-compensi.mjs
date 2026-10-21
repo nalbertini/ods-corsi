@@ -380,7 +380,8 @@ const dati = {
   data: '2026-10-21',
 }
 const ricevuta = { ...dati, id: 'r1', firmata: false, annullataIl: null, creataIl: '2026-10-21T10:00:00Z' }
-const MANSIONI = ['ATLETA', 'ALLENATORE', 'ISTRUTTORE', 'DIRETTORE TECNICO', 'DIRETTORE SPORTIVO', 'PREPARATORE ATLETICO', 'DIRETTORE DI GARA', 'ALTRO']
+// La palestra ha solo queste tre figure: le altre della bozza non si stampano.
+const MANSIONI = ['ATLETA', 'ALLENATORE', 'ISTRUTTORE']
 
 console.log('\n4. il testo: la bozza della palestra, senza il progetto, coi dati della ricevuta')
 {
@@ -426,7 +427,9 @@ console.log('\n4. il testo: la bozza della palestra, senza il progetto, coi dati
   ha('nessuna forma pensionistica, vuota', '☐ di non essere iscritto ad alcuna forma pensionistica obbligatoria')
   ha('non dipendente pubblico, vuota', '☐ di non essere dipendente pubblico')
   ha('dipendente pubblico, vuota', '☐ di essere dipendente pubblico')
-  ok('tutte le caselle vuote: sette mansioni e tredici dichiarazioni', quante(tutto, '☐'), 20)
+  ok('tutte le caselle vuote: due mansioni e tredici dichiarazioni', quante(tutto, '☐'), 15)
+  nonHa('niente «Direttore tecnico»', 'DIRETTORE TECNICO')
+  nonHa('niente «Altro»', '☐ ALTRO')
   come('la richiesta col compenso, il periodo e l\'IBAN',
     /RICHIEDE La liquidazione e il pagamento del compenso lordo pari ad € 180,00 maturato nel periodo 01\/10\/2026-31\/10\/2026, a mezzo bonifico bancario su IBAN IT60X0542811101000000123456/)
   nonHa('senza il doppio «€ €» della bozza', '€ €')
@@ -450,8 +453,9 @@ console.log('\n4. il testo: la bozza della palestra, senza il progetto, coi dati
 
   const senza = righe({ ...ricevuta, qualifica: null }).join('\n')
   ok('senza la lettera: nessuna mansione barrata', quante(senza, '☒'), 0)
-  ok('e tutte e otto col quadratino vuoto', MANSIONI.every((x) => senza.includes(`☐ ${x}`)), true)
-  ok("un'altra qualifica: «Direttore di gara»", righe({ ...ricevuta, qualifica: 'Direttore di gara' }).join('\n').includes('☒ DIRETTORE DI GARA'), true)
+  ok('e tutte e tre col quadratino vuoto', MANSIONI.every((x) => senza.includes(`☐ ${x}`)), true)
+  // Una lettera vecchia con un'altra qualifica: la sua casella resta, barrata, dopo le tre.
+  ok("un'altra qualifica: «Direttore di gara»", righe({ ...ricevuta, qualifica: 'Direttore di gara' }).join('\n').includes('☐ ISTRUTTORE\n☒ DIRETTORE DI GARA'), true)
   ok('«Altro»', righe({ ...ricevuta, qualifica: 'Altro' }).join('\n').includes('☒ ALTRO'), true)
 
   const cambiato = righe({ ...ricevuta, importo: 20000, motivo: 'Una lezione in più non segnata' })

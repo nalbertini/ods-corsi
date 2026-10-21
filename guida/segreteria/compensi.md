@@ -61,7 +61,9 @@ scheda del tecnico, con **Prepara la ricevuta**.
 Sulla ricevuta escono già scritti i dati del tecnico (nascita, residenza,
 codice fiscale, IBAN), la mansione della sua
 [lettera d'incarico](istruttori-e-accessi.md#la-lettera-dincarico) della
-stagione, il compenso del mese, «Collegno» e la data di stampa. A mano restano
+stagione, il compenso del mese, «Collegno» e la data di stampa. Le caselle
+della mansione sono tre, ATLETA, ALLENATORE e ISTRUTTORE: una lettera con
+un'altra qualifica la stampa barrata, dopo le tre. A mano restano
 le caselle delle dichiarazioni, la firma e la data del pagamento. Senza codice
 fiscale, residenza o IBAN nella scheda, la ricevuta non si fa.
 
