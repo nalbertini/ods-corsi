@@ -53,6 +53,19 @@ da tutte le parti.
   provano con `npm run -s prova:coda`; un caso che manca va a `scrittore-prove`.
 - La console: errori o avvisi nuovi.
 
+## Quanto provi
+
+Ogni passo nel browser rimanda tutta la pagina e la conversazione: il
+collaudo è l'agente più caro del ciclo.
+
+- Solo i percorsi dei criteri e i loro casi limite, non tutta l'app.
+- Per leggere: `get_page_text`, `find` e `read_page` (con `ref_id` o
+  `filter: "interactive"`). Lo screenshot solo per un problema che si vede e
+  il testo non dice.
+- Più passi già noti (tocca, scrivi, invia) in un solo `browser_batch`.
+- Una sessione di collaudo sta in una cinquantina di azioni nel browser. Se
+  non bastano, ti fermi e scrivi cosa resta da provare.
+
 ## Cosa restituisci
 
 ```

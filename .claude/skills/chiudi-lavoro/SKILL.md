@@ -12,7 +12,7 @@ da sé. Prima di aprirla, queste quattro cose, in ordine.
 ## 1. Le prove, tutte
 
 ```bash
-npm run build:tutto
+npm run -s build:tutto > "$TMPDIR/build.log" 2>&1 && echo "✓ build" || tail -40 "$TMPDIR/build.log"
 for s in $(node -p "Object.keys(require('./package.json').scripts).filter((s) => s.startsWith('prova:') && s !== 'prova:sql').join(' ')"); do npm run -s $s >/dev/null 2>&1 || echo "✗ $s"; done
 ```
 
