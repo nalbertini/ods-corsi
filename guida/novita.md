@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.151.1 — 21 ottobre 2026
+
+### Modificato
+
+- Le proposte di design in un canvas a parte
+
 ## 0.151.0 — 21 ottobre 2026
 
 ### Novità
