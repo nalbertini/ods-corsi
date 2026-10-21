@@ -428,6 +428,13 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.avviso_preso(uuid)') is not null
     and to_regprocedure('public.avvisi_non_mandati_oggi()') is not null
     -- Rilanciare 06, 74 o 83 dopo 84 rimette la invia_iscrizione che ignora l'invio: la riga torna «da lanciare».
-    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%inv := %'))
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%inv := %')),
+  ('86-ricevuta-una-volta.sql', 'una ricevuta fatta una volta sola: la chiave del modulo',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'ricevute' and column_name = 'chiave')
+    and to_regprocedure('public.ricevuta_gia_fatta(uuid,uuid)') is not null
+    -- Rilanciare 55 o 73 dopo 86 rimette le funzioni che ignorano la chiave: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta' and corpo like '%ricevuta_gia_fatta%')
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta_satispay' and corpo like '%ricevuta_gia_fatta%'))
 ) as x(file, cosa, c)
 order by file, cosa;

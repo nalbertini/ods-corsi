@@ -5,7 +5,9 @@
 -- Dalla sezione 8, prima paghi e poi mandi (83-satispay-prima.sql): il
 -- pagamento nasce dal corso e dalla formula, senza richiesta, e la richiesta
 -- lo prende con sé solo se è pagato, suo e libero.
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 83-satispay-prima.sql.
+-- Dalla sezione 14, la ricevuta una volta sola (86-ricevuta-una-volta.sql): con
+-- la chiave del modulo già usata torna la ricevuta fatta, non «già in una ricevuta».
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 86-ricevuta-una-volta.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -544,6 +546,40 @@ select atteso('iscritto: satispay_prepara_prima no',
 reset role;
 select atteso('e il pagato di Sara resta senza richiesta',
   (select coalesce(richiesta_id::text, 'senza richiesta') from pagamenti_satispay where id = (:'ps'::jsonb->>'id')::uuid), 'senza richiesta');
+
+\echo ''
+\echo '--- 14. FAI LA RICEVUTA ripremuto dopo una rete caduta: la chiave del modulo ---'
+-- La ricevuta di Paolo si rifà dal modulo, con la sua chiave: il pagamento torna libero annullando quella della sezione 7.
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select annulla_ricevuta((:'rifatta'::jsonb->>'id')::uuid);
+select emetti_ricevuta_satispay(ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000005') || '{"chiave": "dddddddd-0000-4000-8000-000000000010"}', :'pagato_paolo') as con_chiave \gset
+select count(*) as quante from ricevute \gset
+select atteso('la stessa chiave, col pagamento già dentro: torna la stessa ricevuta',
+  tenta(format($$select emetti_ricevuta_satispay(%L::jsonb, %L::uuid)->>'id'$$,
+    ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000005') || '{"chiave": "dddddddd-0000-4000-8000-000000000010"}', :'pagato_paolo')),
+  :'con_chiave'::jsonb->>'id');
+select atteso('…e nessuna ricevuta in più', (select count(*)::text from ricevute), :'quante');
+select atteso('…e il pagamento resta in quella',
+  (select ricevuta_id::text from pagamenti_satispay where id = :'pagato_paolo'), :'con_chiave'::jsonb->>'id');
+select atteso('una chiave nuova col pagamento già usato: no, come sempre',
+  rifiuto(format($$select emetti_ricevuta_satispay(%L::jsonb, %L::uuid)$$,
+    ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000005') || '{"chiave": "dddddddd-0000-4000-8000-000000000011"}', :'pagato_paolo')),
+  '22023 Questo pagamento Satispay è già in una ricevuta');
+select atteso('…e nessuna ricevuta in più', (select count(*)::text from ricevute), :'quante');
+-- Il modulo ha fatto la ricevuta senza Satispay: la stessa chiave col pagamento non la lega a quella.
+select annulla_ricevuta((:'con_chiave'::jsonb->>'id')::uuid);
+select emetti_ricevuta(ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000005') || '{"chiave": "dddddddd-0000-4000-8000-000000000012"}');
+select count(*) as quante from ricevute \gset
+select atteso('la stessa chiave di una ricevuta fatta senza il pagamento: no',
+  (rifiuto(format($$select emetti_ricevuta_satispay(%L::jsonb, %L::uuid)$$,
+    ricevuta_satispay('aaaaaaaa-0000-0000-0000-000000000005') || '{"chiave": "dddddddd-0000-4000-8000-000000000012"}', :'pagato_paolo'))
+   like '22023 La ricevuta n. %/% fatta da questo modulo non ha dentro questo pagamento Satispay: chiudi il modulo e riaprilo')::text, 'true');
+select atteso('…e nessuna ricevuta in più', (select count(*)::text from ricevute), :'quante');
+select atteso('…e il pagamento non è in nessuna ricevuta valida',
+  (select count(*)::text from pagamenti_satispay p join ricevute r on r.id = p.ricevuta_id
+    where p.id = :'pagato_paolo' and r.annullata_il is null), '0');
+reset role;
 
 \echo ''
 \echo 'Satispay: tutto a posto.'

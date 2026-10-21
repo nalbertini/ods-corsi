@@ -28,7 +28,10 @@ export interface PagamentoDiretto {
   annullatoIl?: string
 }
 
-export type DatiPagamentoDiretto = Omit<PagamentoDiretto, 'id' | 'creatoIl' | 'annullatoIl'>
+export type DatiPagamentoDiretto = Omit<PagamentoDiretto, 'id' | 'creatoIl' | 'annullatoIl'> & {
+  /** Con «Fai anche la ricevuta»: la chiave della ricevuta, che resta col pagamento ripreso dopo «Lascia stare». */
+  chiaveRicevuta?: string
+}
 
 /** Una riga dello storico: un pagamento, di una ricevuta o fatto a mano. */
 export interface RigaPagamento {

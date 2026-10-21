@@ -1380,6 +1380,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             voci: dati.voci,
             anticipo: dati.anticipo,
             note: dati.note?.trim() || null,
+            chiave: dati.chiave ?? null,
           },
         }),
       ) as RigaRicevuta
