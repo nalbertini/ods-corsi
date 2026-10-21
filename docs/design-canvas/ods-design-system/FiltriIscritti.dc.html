@@ -36,7 +36,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"cerca":{"editor":"text","default":""},"corso":{"editor":"text","default":"Tutti i corsi"},"attivi":{"editor":"text","default":"DA PAGARE"},"doppioni":{"editor":"text","default":"0"},"storico":{"editor":"text","default":"0"},"aperti":{"editor":"boolean","default":false},"daStampare":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":1000,"height":110}}'>
+<script data-dc-script data-props='{"cerca":{"editor":"text","default":""},"corso":{"editor":"text","default":"Tutti i corsi"},"attivi":{"editor":"text","default":"DA PAGARE"},"doppioni":{"editor":"text","default":"0"},"storico":{"editor":"text","default":"0"},"corsiScaduti":{"editor":"boolean","default":false},"aperti":{"editor":"boolean","default":false},"daStampare":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":1000,"height":110}}'>
 // Riproduzione 1:1 della barra sopra la tabella ISCRITTI: src/components/segreteria/Iscritti.tsx (righe 191-235),
 // riga con gap 10px che va a capo. Il campo di ricerca e' .sg-campo (src/styles.css righe 1360-1364: alto 44px,
 // padding 0 12px, fondo `bg`, bordo 2px `line`, 15px; placeholder in `dim`) largo 360px; il filtro per corso e'
@@ -48,6 +48,7 @@
 // DA PAGARE, NON IN REGOLA, SENZA DOCUMENTO). daStampare: compare CERTIFICATI DA STAMPARE (solo se ce ne sono). doppioni: se > 0
 // compare POSSIBILI DOPPIONI con il numero.
 // storico: PROPOSTA (filtro-storico-pagamenti): se > 0 compare «Pagato nel vecchio programma N» dietro «Altri filtri» (solo se c'e' almeno una persona).
+// corsiScaduti: PROPOSTA (corsi-da-pagare): compare CORSI SCADUTI accanto a DA PAGARE, anche fra i tre in vista del tema sito (che diventano quattro).
 // Non riprodotto: fuoco, passaggio del mouse.
 // tema sito (src/lib/filtriIscritti.ts, `:root[data-look='sito']`): sopra la tabella solo ricerca, corso e i tre filtri che servono al banco (Senza certificato
 // valido, Da pagare, Non in regola), poi «Altri filtri (N) ▾», un comando sottolineato; gli altri stanno dietro e si aprono da soli se uno e' acceso
@@ -75,8 +76,10 @@ const sito = p.tema === 'sito';
     if (doppi > 0) visibili.push('POSSIBILI DOPPIONI ' + doppi);
     const storico = Number(p.storico) || 0;
     if (storico > 0) visibili.push('PAGATO NEL VECCHIO PROGRAMMA ' + storico);
+    const corsi = truthy(p.corsiScaduti);
+    if (corsi) visibili.splice(visibili.indexOf('DA PAGARE') + 1, 0, 'CORSI SCADUTI');
     if (sito) {
-      const tre = ['SENZA CERTIFICATO VALIDO', 'DA PAGARE', 'NON IN REGOLA'];
+      const tre = corsi ? ['SENZA CERTIFICATO VALIDO', 'DA PAGARE', 'CORSI SCADUTI', 'NON IN REGOLA'] : ['SENZA CERTIFICATO VALIDO', 'DA PAGARE', 'NON IN REGOLA'];
       altri = visibili.filter((n) => !tre.includes(n));
       visibili = tre;
     }
