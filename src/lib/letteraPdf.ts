@@ -70,7 +70,7 @@ export async function letteraPdf(l: DatiLettera): Promise<Uint8Array> {
     const testo = scrivibile(p.testo)
     if (p.tipo === 'destinatario') {
       // Il destinatario sta a destra, come nella lettera di carta.
-      for (const r of aCapo(testo, font, CORPO, LARGO / 2)) scrivi(r, MARGINE + LARGO / 2)
+      for (const r of aCapo(testo, font, CORPO, LARGO * 0.6)) scrivi(r, MARGINE + LARGO * 0.4)
       continue
     }
     if (p.tipo === 'oggetto') {
