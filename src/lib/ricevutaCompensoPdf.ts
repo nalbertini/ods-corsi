@@ -19,7 +19,7 @@ const RIGA = 12
 const FONDO = PAGINA.h - 48
 
 /** Le righe che sono titoli: in grassetto, con lo spazio sopra. */
-const TITOLI = /^(AUTOCERTIFICAZIONE|DICHIARA|RICHIEDE|LIQUIDAZIONE|NETTO A PAGARE)/
+const TITOLI = /^(AUTOCERTIFICAZIONE|DICHIARA|RICHIEDE|LIQUIDAZIONE)/
 
 async function scriviRicevuta(pdf: PDFDocument, r: DatiRicevutaCompenso, font: PDFFont, grassetto: PDFFont) {
   const { rgb } = await import('pdf-lib')
@@ -54,10 +54,34 @@ async function scriviRicevuta(pdf: PDFDocument, r: DatiRicevutaCompenso, font: P
       y += 2
       continue
     }
+    // La liquidazione in colonne: la voce a sinistra, segno e importo allineati a destra.
+    const liquidazione = /^(.+?) ([+\-=]) (\d[\d.,]*)$/.exec(riga)
+    if (liquidazione) {
+      const f = riga.startsWith('NETTO') ? grassetto : font
+      spazio(RIGA)
+      const yr = PAGINA.h - y - CORPO
+      pagina.drawText(scrivibile(liquidazione[1]), { x: MARGINE, y: yr, size: CORPO, font: f, color: nero })
+      pagina.drawText(liquidazione[2], { x: MARGINE + LARGO - 80, y: yr, size: CORPO, font: f, color: nero })
+      const importo = scrivibile(liquidazione[3])
+      pagina.drawText(importo, { x: MARGINE + LARGO - f.widthOfTextAtSize(importo, CORPO), y: yr, size: CORPO, font: f, color: nero })
+      y += RIGA + 2
+      continue
+    }
+    // Luogo e data a sinistra, la firma a destra con la riga per firmare sotto.
+    if (riga === 'Luogo e data Firma del collaboratore') {
+      y += RIGA
+      spazio(RIGA * 4)
+      const yr = PAGINA.h - y - CORPO
+      pagina.drawText('Luogo e data', { x: MARGINE, y: yr, size: CORPO, font, color: nero })
+      pagina.drawText('Firma del collaboratore', { x: MARGINE + LARGO / 2 + 20, y: yr, size: CORPO, font, color: nero })
+      pagina.drawLine({ start: { x: MARGINE + LARGO / 2 + 20, y: yr - 3 * RIGA }, end: { x: MARGINE + LARGO, y: yr - 3 * RIGA }, thickness: 0.6, color: nero })
+      y += RIGA
+      continue
+    }
     const titolo = TITOLI.test(riga)
     if (titolo) y += RIGA / 2
     for (const t of aCapo(scrivibile(riga), titolo ? grassetto : font, CORPO, LARGO)) scrivi(t, MARGINE, titolo ? grassetto : font)
-    if (riga.startsWith('Collegno,') || riga.startsWith('DATA PAGAMENTO')) y += RIGA
+    if (riga.startsWith('Collegno,')) y += 2 * RIGA
     y += 2
   }
 }
