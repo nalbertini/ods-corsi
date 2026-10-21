@@ -141,6 +141,36 @@ reset role;
 
 \echo ''
 \echo '--- 7. i ruoli ---'
+-- Un iscritto con l'accesso e un tablet: nessuno dei due registra pagamenti, prima di guardare chiave o Satispay.
+insert into auth.users (id, email) values
+  ('33333333-3333-3333-3333-333333333333', 'lia@ods.it'),
+  ('44444444-4444-4444-4444-444444444444', 'tablet@ods.it');
+insert into persone (id, nome, cognome, ruolo, email, utente_id) values
+  ('aaaaaaaa-0000-0000-0000-000000000014', 'Lia', 'Blu', 'iscritto', 'lia@ods.it', '33333333-3333-3333-3333-333333333333');
+insert into sale (id, nome) values ('eeeeeeee-0000-0000-0000-000000000001', 'Tatami');
+insert into postazioni (id, nome, sala_id, utente_id) values
+  ('eeeeeeee-0000-0000-0000-000000000002', 'Tablet Tatami', 'eeeeeeee-0000-0000-0000-000000000001', '44444444-4444-4444-4444-444444444444');
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select atteso('iscritto con la chiave della 120: prima il ruolo',
+  left(rifiuto($$select registra_pagamento_diretto(pag('{"importo": 707, "chiave": "bbbbbbbb-0000-0000-0000-000000000001"}'))$$), 5), '42501');
+select atteso('iscritto con Satispay: prima il ruolo',
+  left(rifiuto($$select registra_pagamento_diretto(pag('{"importo": 708, "metodo": "Satispay"}'))$$), 5), '42501');
+reset role;
+select chi('44444444-4444-4444-4444-444444444444');
+set role authenticated;
+select atteso('tablet con la chiave della 120: prima il ruolo',
+  left(rifiuto($$select registra_pagamento_diretto(pag('{"importo": 709, "chiave": "bbbbbbbb-0000-0000-0000-000000000001"}'))$$), 5), '42501');
+select atteso('tablet con Satispay: prima il ruolo',
+  left(rifiuto($$select registra_pagamento_diretto(pag('{"importo": 710, "metodo": "Satispay"}'))$$), 5), '42501');
+reset role;
+select chi('');
+set role anon;
+select atteso('chi non ha accesso, con la chiave della 120: no',
+  left(rifiuto($$select registra_pagamento_diretto(pag('{"importo": 711, "chiave": "bbbbbbbb-0000-0000-0000-000000000001"}'))$$), 5), '42501');
+select atteso('chi non ha accesso, con Satispay: no',
+  left(rifiuto($$select registra_pagamento_diretto(pag('{"importo": 712, "metodo": "Satispay"}'))$$), 5), '42501');
+reset role;
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 select atteso('istruttore con la chiave della 120: prima il ruolo',
@@ -161,7 +191,7 @@ select atteso('amministrazione con Satispay per Paolo no',
 select atteso('amministrazione con la chiave dell''annullata sì',
   (registra_pagamento_diretto(pag('{"importo": 706, "chiave": "bbbbbbbb-0000-0000-0000-000000000002"}')))->>'importo', '706');
 reset role;
-select atteso('i rifiuti dei ruoli non hanno scritto niente', (select count(*)::text from pagamenti_diretti where importo between 701 and 705), '0');
+select atteso('i rifiuti dei ruoli non hanno scritto niente', (select count(*)::text from pagamenti_diretti where importo between 701 and 705 or importo between 707 and 712), '0');
 select atteso('il Satispay del modulo non è cambiato', (select string_agg(coalesce(ricevuta_id::text, 'libero'), ',' order by importo) from pagamenti_satispay where stato = 'pagato'),
   'dddddddd-0000-0000-0000-000000000121,libero,dddddddd-0000-0000-0000-000000000122,dddddddd-0000-0000-0000-000000000120,libero,libero');
 

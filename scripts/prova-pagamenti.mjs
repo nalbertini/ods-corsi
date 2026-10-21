@@ -584,6 +584,9 @@ console.log('\n22. REGISTRA IL PAGAMENTO manda la chiave anche registrando senza
   const sb = readFileSync('src/lib/segreteriaSupabase.ts', 'utf8')
   const corpo = sb.slice(sb.indexOf('async registraPagamentoDiretto('), sb.indexOf('async annullaPagamentoDiretto('))
   ok('segreteriaSupabase.ts: l\'rpc registra_pagamento_diretto ha `chiave: d.chiaveRicevuta` nei dati', /\bchiave: d\.chiaveRicevuta\b/.test(corpo), true)
+  // Dalla scheda il Satispay libero si dice sotto il modulo, prima di premere: non solo col rifiuto del database.
+  const guaio = tsx.slice(tsx.indexOf('const guaio = importo'), tsx.indexOf('const manca = cent'))
+  ok('Ricevute.tsx: il guaio del modulo dice anche cosaNonVaSatispayAMano(metodo, p.satispay)', /cosaNonVaSatispayAMano\(metodo, p\.satispay\)/.test(guaio), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
