@@ -461,4 +461,28 @@ select atteso('Dino ritrovato dal codice', tenta($$select (accogli_iscrizione((s
 reset role;
 
 \echo ''
+\echo '--- eliminare una richiesta: accolta, tiene i dati della scheda ---'
+-- Per chi arriva dal modulo nascita, codice fiscale, residenza e genitore
+-- stanno solo nella richiesta accolta: eliminarla li toglie alla scheda.
+set role anon;
+select atteso('Teo manda una richiesta', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Teo', 'cognome', 'Neri', 'codice_fiscale', cf_prova('NRETEO', (current_date - interval '30 years')::date), 'email', 'teo@esempio.it', 'telefono', '347 777 0003'))) is not null)::text$$), 'true');
+reset role;
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria rifiuta Teo', tenta($$select rifiuta_iscrizione((select id from richieste_iscrizione where email = 'teo@esempio.it'))::text$$), '');
+select atteso('rifiutata, si elimina', tenta($$delete from richieste_iscrizione where email = 'teo@esempio.it'$$), 'FATTO (1 righe)');
+select atteso('accolta, con la scheda: non si elimina', tenta($$delete from richieste_iscrizione where email = 'saro@esempio.it'$$), 'a vuoto (0 righe)');
+select atteso('accolta: lo stato non si cambia a mano', tenta($$update richieste_iscrizione set stato = 'rifiutata' where email = 'saro@esempio.it'$$), 'NEGATO: …');
+select atteso('accolta: la scheda non si stacca a mano', tenta($$update richieste_iscrizione set persona_id = null where email = 'saro@esempio.it'$$), 'NEGATO: …');
+select atteso('accolta: i dati non si cambiano a mano', tenta($$update richieste_iscrizione set codice_fiscale = 'XXXXXXXXXXXXXXXX' where email = 'saro@esempio.it'$$), 'NEGATO: …');
+select atteso('e i dati di Saro restano', (select count(*)::text from richieste_iscrizione where email = 'saro@esempio.it' and codice_fiscale is not null), '1');
+reset role;
+-- La scheda cancellata (`on delete set null`): la richiesta non serve più a nessuno.
+delete from persone where id = (select persona_id from richieste_iscrizione where email = 'saro@esempio.it');
+set role authenticated;
+select atteso('accolta, ma la scheda non c''è più: si elimina', tenta($$delete from richieste_iscrizione where email = 'saro@esempio.it'$$), 'FATTO (1 righe)');
+reset role;
+
+\echo ''
 \echo 'TUTTO A POSTO'

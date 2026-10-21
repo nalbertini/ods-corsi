@@ -457,6 +457,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
             where table_schema = 'public' and table_name = 'pagamenti_diretti' and column_name = 'ricevuta_id')
     and to_regprocedure('public.emetti_ricevuta_da_pagamento(jsonb,uuid)') is not null
     -- Rilanciare 55 dopo 89 rimette l'annullo che lascia il pagamento a mano annullato: la riga torna «da lanciare».
-    and exists (select 1 from dentro where nome = 'annulla_ricevuta' and corpo like '%pagamenti_diretti%'))
+    and exists (select 1 from dentro where nome = 'annulla_ricevuta' and corpo like '%pagamenti_diretti%')),
+  ('90-richieste-accolte-restano.sql', 'una richiesta accolta non si elimina finché c''è la scheda',
+    exists (select 1 from pg_policies where tablename = 'richieste_iscrizione' and policyname = 'richieste_cancella' and qual like '%accolta%')
+    and not has_table_privilege('authenticated', 'public.richieste_iscrizione', 'update'))
 ) as x(file, cosa, c)
 order by file, cosa;
