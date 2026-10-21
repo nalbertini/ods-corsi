@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .et { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #46606f; }
+    .val { font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .velo { background: rgba(13, 42, 61, 0.55); }
+    .finestra { display: flex; flex-direction: column; background: #ffffff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; color: #0d2a3d; }
+    .nuovo { box-shadow: inset 4px 0 0 #f4c31b; padding-left: 14px; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 32px; }
+    .cella { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .tab { display: grid; gap: 14px; align-items: center; padding: 8px 14px; min-height: 48px; border-bottom: 1px solid #cfe6f4; background: #ffffff; font-size: 15px; }
+    .num { font-variant-numeric: tabular-nums; text-align: right; }
+    .link { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px; }
+    .piede { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 14px 28px 18px; border-top: 2px solid #cfe6f4; }
+  </style>
+</helmet>
+<!-- PROPOSTA: la lettera d'incarico si prepara in una finestra sopra la scheda. Si scrivono solo i campi qui sotto; le tariffe vengono dalla scheda (TARIFFE) e non si
+     riscrivono qui. Il resto e' il testo fisso della bozza dell'associazione, punti rinumerati, senza la riga del progetto «spazi civici / CUP». Le cifre in lettere le fa l'app. -->
+<div style="display: flex; width: 1440px; min-height: 1100px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0"><dc-import name="Menu" tema="sito" autorizzazioni="segreteria e amministrazione" attiva="ISTRUTTORI E ACCESSI" compensi="{{ true }}" numeri="RICHIESTE ONLINE:3, PRESENZE ISTRUTTORI:3" nome="Marco Rossi" ruolo="Segreteria e amministrazione" altezza="1100px" hint-size="240px,1100px"></dc-import></div>
+  <main class="velo" style="flex: 1; min-width: 0; padding: 24px 40px">
+    <div class="finestra" style="width: 760px; margin: 0 auto">
+      <div style="display: flex; align-items: flex-start; gap: 12px; padding: 20px 28px 14px">
+        <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 4px"><span class="big" style="font-size: 30px">LETTERA D’INCARICO · 2026/27</span><span style="font-size: 13px; color: #46606f">Diana Ballabio · collaborazione coordinata e continuativa sportiva</span></div>
+        <dc-import name="Bottone" label="✕" variante="icona" tema="sito" hint-size="44px,44px"></dc-import>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 8px 28px 20px">
+        <div class="due"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="DAL" valore="01/09/2026" nota="" nota-tono="avviso" hint-size="100%,80px"></dc-import><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="AL" valore="30/07/2027" nota="" nota-tono="avviso" hint-size="100%,80px"></dc-import></div>
+        <span class="frase" style="margin-top: -6px">Proposto da settembre a luglio. Per chi arriva dopo, cambia la data di inizio.</span>
+        <div class="due"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="QUALIFICA" valore="Allenatore" nota="" nota-tono="avviso" hint-size="100%,80px"></dc-import><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="GIORNI PREFERITI" valore="venerdì" nota="Dai suoi corsi: venerdì." nota-tono="avviso" hint-size="100%,90px"></dc-import></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><span class="et">IL COMPENSO, SULLA LETTERA</span>
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border: 2px solid #cfe6f4; font-size: 15px">
+            <span>€ 15,00 (quindici/00) l’ora per il corso Judo kids</span>
+            <span>€ 15,00 (quindici/00) l’ora per il corso Judo ragazzi</span>
+          </div>
+          <span class="frase">Dalle TARIFFE della scheda: per cambiarle, chiudi e cambiale lì. Judo adulti non c’è: non ha ancora una tariffa.</span>
+        </div>
+        <div class="due"><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="DATA DELLA LETTERA" valore="01/09/2026" nota="" nota-tono="avviso" hint-size="100%,80px"></dc-import><div></div></div>
+        <span class="frase">Esce la lettera da stampare con tre firme a mano: il Presidente, «per accettazione» e l’approvazione dei punti 4 e 5. Quando torna firmata, spunta «Firmata» nella scheda.</span>
+      </div>
+      <div class="piede"><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Lascia stare" variante="linea" hint-size="152px,48px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Vedi il PDF" variante="linea" hint-size="143px,48px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" label="Salva e stampa" variante="pieno" hint-size="170px,48px"></dc-import></div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

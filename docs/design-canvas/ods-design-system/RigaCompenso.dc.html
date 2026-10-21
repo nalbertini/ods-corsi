@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="rowgroup" style="display: flex; flex-direction: column; width: 100%; border-bottom: 1px solid #cfe6f4; background: #ffffff; color: #0d2a3d">
+<sc-if value="{{largo}}" hint-placeholder-val="{{ true }}">
+  <div role="row" style="display: grid; grid-template-columns: 28px minmax(0, 1.3fr) 70px 70px 110px minmax(0, 1.6fr) 250px; gap: 12px; align-items: center; min-height: 60px; padding: 8px 14px">
+    <span aria-hidden="true" style="font-size: 14px; color: #46606f">{{freccia}}</span>
+    <span role="cell" style="font-size: 15px; font-weight: 600; min-width: 0">{{nome}}</span>
+    <span role="cell" style="font-size: 15px; font-variant-numeric: tabular-nums; text-align: right">{{lezioni}}</span>
+    <span role="cell" style="font-size: 15px; font-variant-numeric: tabular-nums; text-align: right">{{ore}}</span>
+    <span role="cell" style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; color: {{coloreImporto}}">{{importo}}</span>
+    <div role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+      <div style="display: flex; flex-wrap: wrap; gap: 6px">
+        <dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="230px,26px"></dc-import>
+        <sc-if value="{{daRiportare}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="DA RIPORTARE FIRMATA" tema="sito" hint-size="210px,26px"></dc-import></sc-if>
+      </div>
+      <sc-if value="{{haNota}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #46606f; line-height: 1.35">{{nota}}</span></sc-if>
+    </div>
+    <div role="cell" style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap">
+      <sc-if value="{{conSpunta}}" hint-placeholder-val="{{ false }}">
+        <span role="checkbox" aria-checked="{{firmata}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; font-weight: 600"><span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #0d2a3d; border-radius: 4px; background: {{fondoSpunta}}; color: #ffffff; font-size: 16px; font-weight: 700">{{segnoSpunta}}</span>Firmata</span>
+      </sc-if>
+      <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" tema="sito" hint-size="170px,44px"></dc-import></sc-if>
+      <sc-if value="{{conLink}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">{{azione}}</span></sc-if>
+    </div>
+  </div>
+  <sc-if value="{{aperta}}" hint-placeholder-val="{{ false }}">
+    <div role="table" aria-label="Per corso" style="display: flex; flex-direction: column; margin: 0 14px 10px 54px; border-top: 1px solid #cfe6f4">
+      <sc-for list="{{corsi}}" as="k" hint-placeholder-count="2">
+        <div role="row" style="display: grid; grid-template-columns: minmax(0, 1fr) 70px 150px 110px; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+          <span role="cell">{{k.corso}}</span>
+          <span role="cell" style="font-variant-numeric: tabular-nums; text-align: right">{{k.ore}} ore</span>
+          <span role="cell" style="font-variant-numeric: tabular-nums; text-align: right; color: {{k.coloreTariffa}}; font-weight: {{k.pesoTariffa}}">{{k.tariffa}}</span>
+          <span role="cell" style="font-variant-numeric: tabular-nums; text-align: right; font-weight: 600">{{k.importo}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+</sc-if>
+<sc-if value="{{telefono}}" hint-placeholder-val="{{ false }}">
+  <div role="row" style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px">
+    <div style="display: flex; align-items: baseline; gap: 10px">
+      <span style="flex: 1; min-width: 0; font-size: 15px; font-weight: 600">{{nome}}</span>
+      <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: {{coloreImporto}}">{{importo}}</span>
+    </div>
+    <span style="font-size: 13px; color: #46606f; font-variant-numeric: tabular-nums">{{lezioni}} lezioni · {{ore}} ore</span>
+    <div style="display: flex; flex-wrap: wrap; gap: 6px">
+      <dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="230px,26px"></dc-import>
+      <sc-if value="{{daRiportare}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="DA RIPORTARE FIRMATA" tema="sito" hint-size="210px,26px"></dc-import></sc-if>
+    </div>
+    <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #46606f; line-height: 1.35">{{nota}}</span></sc-if>
+    <sc-if value="{{conTasto}}" hint-placeholder-val="{{ true }}"><dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" tema="sito" larghezza="100%" hint-size="100%,48px"></dc-import></sc-if>
+    <sc-if value="{{conLink}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">{{azione}}</span></sc-if>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Ballabio Diana"},"lezioni":{"editor":"text","default":"8"},"ore":{"editor":"text","default":"12"},"importo":{"editor":"text","default":"180,00 €"},"stato":{"editor":"enum","options":["da-confermare","senza-tariffa","da-fare","da-pagare","non-torna","pagata"],"default":"da-fare"},"firmata":{"editor":"boolean","default":true},"quante":{"editor":"text","default":"3"},"corso":{"editor":"text","default":"Judo adulti"},"quando":{"editor":"text","default":"05/11"},"nota":{"editor":"text","default":""},"aperta":{"editor":"boolean","default":false},"corsi":{"editor":"text","default":"Judo kids:6:15,00 € l’ora:90,00 €|Judo ragazzi:6:15,00 € l’ora:90,00 €"},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1100,"height":76}}'>
+// PROPOSTA (docs/design-canvas/compensi-tecnici): una riga di COMPENSI, un tecnico con lezioni confermate nel mese. Look del sito: righe bianche col filetto
+// 1px `line-soft` #cfe6f4 come la tabella di PERSONALE (`.sg-tabella`), padding 8px 14px, nome Inter 15px 600, cifre tabulari a destra.
+// La riga si apre per corso (`aperta`, `corsi` = «corso:ore:tariffa:importo|…», tariffa «—» = manca, in rosso): il mese e' la somma di ore × tariffa di quel corso,
+// anche delle lezioni fatte da sostituto. Lo stato e' sempre un segno con la parola, mai solo il colore; sotto, in `dim`, il perche' (`nota`).
+// stato: da-confermare (rosso, «N PRESENZE DA CONFERMARE», link a PRESENZE ISTRUTTORI, importo «—»: blocca solo questo tecnico);
+//        senza-tariffa (rosso, «SENZA TARIFFA PER <corso>», importo «—», link alla scheda); da-fare (neutro, PREPARA LA RICEVUTA);
+//        da-pagare (giallo, ricevuta fatta e non pagata, SEGNA PAGATO); non-torna (rosso: la ricevuta e' rimasta com'era fatta, il mese adesso fa un'altra cifra;
+//        ANNULLA E RIFAI); pagata (verde, «PAGATA IL gg/mm», RISTAMPA).
+// firmata: con una ricevuta fatta (da-pagare, non-torna, pagata) compare la spunta «Firmata»; non spuntata aggiunge il segno giallo DA RIPORTARE FIRMATA.
+// telefono: la riga impilata (nome e importo, lezioni e ore, segni, nota, tasto a tutta larghezza), chiusa.
+const STATI = {
+  'da-confermare': { tono: 'rosso', segno: (p) => `${p.quante ?? '3'} PRESENZE DA CONFERMARE`, azione: 'Conferma in Presenze istruttori ›', link: true, nota: 'Prima si decidono, poi si fa la ricevuta.', vuoto: true },
+  'senza-tariffa': { tono: 'rosso', segno: (p) => `SENZA TARIFFA PER ${(p.corso ?? 'Judo adulti').toUpperCase()}`, azione: 'Scrivi la tariffa ›', link: true, nota: 'Ha fatto lezione in un corso che non ha la sua tariffa.', vuoto: true },
+  'da-fare': { tono: 'neutro', segno: () => 'RICEVUTA DA FARE', azione: 'Prepara la ricevuta', link: false, nota: '' },
+  'da-pagare': { tono: 'giallo', segno: () => 'FATTA · DA PAGARE', azione: 'Segna pagato', link: false, nota: '', fatta: true },
+  'non-torna': { tono: 'rosso', segno: () => 'NON TORNA PIÙ', azione: 'Annulla e rifai', link: false, nota: 'Ricevuta di 180,00 €: dopo è stata rifiutata una presenza e il mese ora fa 165,00 €.', fatta: true },
+  'pagata': { tono: 'verde', segno: (p) => `PAGATA IL ${p.quando ?? '05/11'}`, azione: 'Ristampa', link: false, nota: '', fatta: true },
+};
+const vero = (v, d) => (v === undefined ? d : v === true || v === 'true');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const s = STATI[p.stato] || STATI['da-fare'];
+    const nota = (p.nota ?? '') !== '' ? p.nota : s.nota;
+    const telefono = vero(p.telefono, false);
+    const aperta = vero(p.aperta, false) && !telefono;
+    const firmata = vero(p.firmata, true);
+    const corsi = String(p.corsi ?? 'Judo kids:6:15,00 € l’ora:90,00 €|Judo ragazzi:6:15,00 € l’ora:90,00 €').split('|').filter(Boolean).map((r) => {
+      const [corso, ore, tariffa, importo] = r.split(':');
+      const manca = (tariffa ?? '—') === '—';
+      return { corso, ore, tariffa: manca ? 'SENZA TARIFFA' : tariffa, importo: importo ?? '—', coloreTariffa: manca ? '#b81d1d' : '#0d2a3d', pesoTariffa: manca ? 700 : 400 };
+    });
+    return {
+      largo: !telefono, telefono, aperta, corsi, freccia: aperta ? '▾' : '▸',
+      nome: p.nome ?? 'Ballabio Diana', lezioni: p.lezioni ?? '8', ore: p.ore ?? '12',
+      importo: s.vuoto ? '—' : (p.importo ?? '180,00 €'), coloreImporto: s.vuoto ? '#46606f' : '#0d2a3d',
+      tono: s.tono, segno: s.segno(p), azione: s.azione, conLink: s.link, conTasto: !s.link,
+      conSpunta: !!s.fatta, firmata, daRiportare: !!s.fatta && !firmata,
+      fondoSpunta: firmata ? '#0d2a3d' : '#ffffff', segnoSpunta: firmata ? '✓' : '',
+      haNota: nota !== '', nota,
+    };
+  }
+}
+</script>
+</body>
+</html>

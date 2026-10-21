@@ -1,4 +1,6 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
+import { cosaNonVaTariffa } from './tariffe'
+import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cancellaFileIl, contattoNonValido, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
@@ -204,7 +206,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       daRichiesta = { dati, da: 'modulo' as const, quando: r.gestitaIl ?? r.creataIl }
     }
     const vince = daRichiesta && daSegreteria ? (daSegreteria.quando >= daRichiesta.quando ? daSegreteria : daRichiesta) : (daSegreteria ?? daRichiesta)
-    return vince && { dati: vince.dati, da: vince.da }
+    return conDatiDellaSegreteria(vince && { dati: vince.dati, da: vince.da }, an)
   }
 
   const cambiaLezione = (id: string, f: (l: LezioneProva) => LezioneProva | null) => {
@@ -1011,6 +1013,27 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (!sostituisci && Object.keys(nuovi).length === 0) return
       const prima = sostituisci ? {} : a().anagrafiche?.[personaId]
       a().anagrafiche = { ...a().anagrafiche, [personaId]: { ...prima, ...nuovi, cambiataIl: new Date().toISOString() } }
+      salva()
+    },
+
+    async tariffe(personaId) {
+      return Object.entries(a().tariffe?.[personaId] ?? {}).flatMap(([corsoId, centesimi]) => {
+        const c = a().corsi.find((x) => x.id === corsoId)
+        return c ? [{ corsoId, corso: c.nome, centesimi }] : []
+      })
+    },
+
+    async salvaTariffa(personaId, corsoId, centesimi) {
+      persona(personaId)
+      corso(corsoId)
+      if (centesimi !== null) {
+        const no = cosaNonVaTariffa(centesimi)
+        if (no) throw new Error(no)
+      }
+      const sue = { ...a().tariffe?.[personaId] }
+      if (centesimi === null) delete sue[corsoId]
+      else sue[corsoId] = centesimi
+      a().tariffe = { ...a().tariffe, [personaId]: sue }
       salva()
     },
 

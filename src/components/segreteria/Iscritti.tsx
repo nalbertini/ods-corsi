@@ -1384,8 +1384,10 @@ function DatiAnagrafici({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: Perso
   )
 }
 
+export type CampoAnagrafica = { k: keyof Anagrafica; etichetta: string; tipo?: 'date'; codice?: boolean; largo?: boolean; max: number }
+
 /** I campi della MODIFICA, nell'ordine in cui si scrivono. */
-const CAMPI_ANAGRAFICA: Array<{ k: keyof Anagrafica; etichetta: string; tipo?: 'date'; codice?: boolean; largo?: boolean; max: number }> = [
+const CAMPI_ANAGRAFICA: CampoAnagrafica[] = [
   { k: 'natoIl', etichetta: 'Nato il', tipo: 'date', max: 10 },
   { k: 'natoA', etichetta: 'A', max: 80 },
   { k: 'codiceFiscale', etichetta: 'Codice fiscale', codice: true, largo: true, max: 16 },
@@ -1404,20 +1406,25 @@ const CAMPI_ANAGRAFICA: Array<{ k: keyof Anagrafica; etichetta: string; tipo?: '
  * scritto giusto ma che non torna con la persona si dice, e si salva lo
  * stesso: a volte è il dato vecchio a essere sbagliato.
  */
-function ModificaAnagrafica({
+export function ModificaAnagrafica({
   d,
   p,
   fai,
   dati,
   onCambia,
   onFatto,
+  campi = CAMPI_ANAGRAFICA,
+  titolo = 'DATI ANAGRAFICI',
 }: {
   d: DatiSegreteria
-  p: PersonaSeg
+  p: Pick<PersonaSeg, 'id' | 'nome' | 'cognome'>
   fai: Fai
   dati: Anagrafica
   onCambia: (a: Anagrafica) => void
   onFatto: () => void
+  /** Quelli di un tecnico non sono quelli di un iscritto: niente genitore, ma province e IBAN. */
+  campi?: CampoAnagrafica[]
+  titolo?: string
 }) {
   const pulita = pulisciAnagrafica(dati)
   const no = cosaNonVaAnagrafica(pulita)
@@ -1429,16 +1436,16 @@ function ModificaAnagrafica({
       ? !cfValido(cf)
         ? "L'ultimo carattere del codice fiscale non torna: forse c'è una lettera sbagliata."
         : !cfTornaColNome(cf, p.nome, p.cognome)
-          ? `Il codice fiscale non torna con ${p.nome} ${p.cognome}: è il suo?`
+          ? `Il codice fiscale non torna con ${[p.nome, p.cognome].filter(Boolean).join(' ')}: è il suo?`
           : pulita.natoIl && !cfTornaConLaData(cf, pulita.natoIl)
             ? 'Il codice fiscale e la data di nascita non dicono lo stesso giorno.'
             : null
       : null
   return (
     <div className="stack" style={{ gap: 12 }}>
-      <Riga titolo="DATI ANAGRAFICI" />
+      <Riga titolo={titolo} />
       <div className="sg-due">
-        {CAMPI_ANAGRAFICA.map((c) => (
+        {campi.map((c) => (
           <Fragment key={c.k}>
             <Campo id={`an-${c.k}`} etichetta={c.etichetta} largo={c.largo} nota={c.k === 'comune' && dalCap.nota ? { testo: dalCap.nota, guaio: false } : undefined}>
               <input

@@ -117,7 +117,8 @@
     "prova:mcp": "node scripts/prova-mcp.mjs",
     "prova:frequenza": "node scripts/prova-frequenza.mjs",
     "prova:statistiche-sito": "node scripts/prova-statistiche-sito.mjs",
-    "prova:ricevute-email": "node scripts/prova-ricevute-email.mjs"
+    "prova:ricevute-email": "node scripts/prova-ricevute-email.mjs",
+    "prova:tariffe": "node scripts/prova-tariffe.mjs"
   },
   "dependencies": {
     "@puckeditor/core": "^0.23.0",
