@@ -12,11 +12,12 @@ sola prima del codice e un solo giro di correzioni dopo.
 
 ## La corsia
 
-La sceglie l'analista al passo 1, e la dice in testa alle regole.
+La sceglie l'analista al passo 1, e la dice in testa alle regole. Quando la
+richiesta è già chiaramente piccola, la sceglie Claude, e scrive lui le regole.
 
 | Corsia | Quando | Passi |
 |---|---|---|
-| piccola | niente che si vede, nessun file in `supabase/` | 1, 5, 6, 8 (solo `revisore-codice` e `garante-qualita`), 9, 11 |
+| piccola | niente che si vede, nessun file in `supabase/` | 1 (Claude, senza analista), 5, 6, 8 (un agente solo: `garante-qualita` per un problema corretto, se no `revisore-codice`), 9, 11 |
 | media | cambia una regola in `src/lib` o in `supabase/`, ma niente che si vede | 1, 5, 6, 8, 9, 11 |
 | grande | cambia qualcosa che qualcuno vede o fa | tutti |
 

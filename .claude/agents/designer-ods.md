@@ -33,6 +33,10 @@ spegni.
 
 Ogni schermata toccata, in tema scuro e chiaro (il tasto del tema in testata).
 
+Ogni screenshot rimanda un'immagine intera: uno per schermata e tema, con
+`scale: 0.5`, e `zoom` sulla zona da guardare da vicino. Testi, etichette e
+struttura si leggono con `read_page` o `find`, non con uno screenshot.
+
 ## Cosa guardi
 
 - Colori e caratteri solo dalle variabili del sistema in `styles.css`: niente
