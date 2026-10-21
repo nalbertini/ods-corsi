@@ -1,4 +1,4 @@
--- Disattivare una scheda chiude le sue iscrizioni (93-disattiva-chiude-iscrizioni.sql).
+-- Disattivare una scheda chiude le sue iscrizioni (94-disattiva-chiude-iscrizioni.sql).
 --
 -- Prima si disattivava solo `persone.attiva`: riattivandola (a mano, o
 -- accogliendo una richiesta) la persona tornava negli appelli di tutti i corsi
@@ -7,7 +7,7 @@
 -- riapre: i corsi si rimettono con Iscrivi o con una richiesta accolta.
 -- La metà di prova è `attivaPersona` in `src/lib/segreteriaProva.ts`
 -- (scripts/prova-segreteria.mjs).
--- Si lancia dopo finto-supabase.sql e i file dello schema (il 93 compreso).
+-- Si lancia dopo finto-supabase.sql e i file dello schema (il 94 compreso).
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -122,14 +122,14 @@ select atteso('Marco ha ancora Karate', iscrizioni_di('aaaaaaaa-0000-0000-0000-0
 select atteso('Sara ha ancora Judo 1', iscrizioni_di('aaaaaaaa-0000-0000-0000-000000000003'), 'Judo 1:aperta');
 
 \echo ''
-\echo '--- 5. chi era già disattivato prima del 93 ---'
--- Disattivata senza passare dal trigger (com'era sul database vero prima del 93), con un corso aperto e uno futuro.
+\echo '--- 5. chi era già disattivato prima del 94 ---'
+-- Disattivata senza passare dal trigger (com'era sul database vero prima del 94), con un corso aperto e uno futuro.
 insert into persone (id, nome, cognome, ruolo, email, attiva) values
   ('aaaaaaaa-0000-0000-0000-000000000005', 'Luca', 'Vecchio', 'iscritto', 'luca@esempio.it', false);
 insert into iscrizioni (corso_id, persona_id, dal, al) values
   ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000005', current_date - 300, null),
   ('cccccccc-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000005', current_date + 5, null);
-\ir ../93-disattiva-chiude-iscrizioni.sql
-select atteso('rilanciare il 93 le chiude', iscrizioni_di('aaaaaaaa-0000-0000-0000-000000000005'),
+\ir ../94-disattiva-chiude-iscrizioni.sql
+select atteso('rilanciare il 94 le chiude', iscrizioni_di('aaaaaaaa-0000-0000-0000-000000000005'),
   'Judo 2:' || oggi_roma(5) || ', Karate:' || oggi_roma());
 select atteso('e non tocca chi è attivo', iscrizioni_di('aaaaaaaa-0000-0000-0000-000000000003'), 'Judo 1:aperta');

@@ -463,7 +463,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('91-richieste-accolte-restano.sql', 'una richiesta accolta non si elimina finché c''è la scheda',
     exists (select 1 from pg_policies where tablename = 'richieste_iscrizione' and policyname = 'richieste_cancella' and qual like '%accolta%')
     and not has_table_privilege('authenticated', 'public.richieste_iscrizione', 'update')),
-  ('93-disattiva-chiude-iscrizioni.sql', 'disattivare una scheda chiude le sue iscrizioni',
+  ('94-disattiva-chiude-iscrizioni.sql', 'disattivare una scheda chiude le sue iscrizioni',
     exists (select 1 from pg_trigger where tgname = 'persone_iscrizioni_disattivata' and tgrelid = 'public.persone'::regclass))
 ) as x(file, cosa, c)
 order by file, cosa;
