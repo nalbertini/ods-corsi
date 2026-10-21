@@ -339,6 +339,56 @@ console.log('\n7. la mamma con la sua email: la scheda la sceglie la segreteria'
   ok('Paolo ritrovato dal telefono', await r.accogli(id2), paolo)
 }
 
+console.log('\n7b. lo stesso nome, un altro codice fiscale: le regole di accogli_iscrizione')
+{
+  const a = m.archivio.dati
+  const cf = (cognome, nome, resto) => {
+    const b = m.lettereCognome(cognome) + m.lettereNome(nome) + resto
+    return b + m.carattereControllo(b)
+  }
+  const persona = (p) => {
+    a.persone = [...a.persone, { ruolo: 'iscritto', attiva: true, creataIl: '2026-01-01', ...p }]
+    return p.id
+  }
+  const nuove = (nome) => a.persone.filter((p) => p.nome === nome && p.cognome === 'Rana').length
+
+  // Ugo è stato accolto con l'email di Mario: la sua scheda resta senza email, ma il codice è noto.
+  const ugo = await s.salvaPersona({ nome: 'Ugo', cognome: 'Rana' })
+  await r.accogli(await r.invia(adulto({ nome: 'Ugo', cognome: 'Rana', codiceFiscale: cf('Rana', 'Ugo', '96A01L219'), email: 'mario@esempio.it', telefono: '347 666 0001' })), ugo)
+  const altroUgo = await r.accogli(await r.invia(adulto({ nome: 'Ugo', cognome: 'Rana', natoIl: '1976-01-01', codiceFiscale: cf('Rana', 'Ugo', '76A01L219'), email: 'ugo.altro@esempio.it', telefono: '347 666 0001' })))
+  ok('l’altro Ugo non finisce sulla scheda senza email del primo, nemmeno col suo telefono', altroUgo !== ugo, true)
+  ok('due Ugo Rana', nuove('Ugo'), 2)
+
+  // Ada ha la sua email e un codice dal modulo Google: la stessa email con un altro codice è un’altra persona.
+  const ada = persona({ id: 'p-ada', nome: 'Ada', cognome: 'Rana', email: 'ada@esempio.it' })
+  a.anagrafiche = { ...a.anagrafiche, [ada]: { codiceFiscale: cf('Rana', 'Ada', '96A41L219') } }
+  const altraAda = await r.accogli(await r.invia(adulto({ nome: 'Ada', cognome: 'Rana', natoIl: '1976-01-01', codiceFiscale: cf('Rana', 'Ada', '76A41L219'), email: 'ada@esempio.it', telefono: '347 666 0004' })))
+  ok('l’altra Ada non finisce sulla scheda di Ada, anche con la stessa email', altraAda !== ada, true)
+
+  // Un istruttore con lo stesso nome non è chi si iscrive.
+  const ivo = persona({ id: 'i-ivo', nome: 'Ivo', cognome: 'Rana', ruolo: 'istruttore' })
+  const iscrittoIvo = await r.accogli(await r.invia(adulto({ nome: 'Ivo', cognome: 'Rana', codiceFiscale: cf('Rana', 'Ivo', '96A01L219'), email: 'ivo@esempio.it', telefono: '347 666 0005' })))
+  ok('Ivo l’istruttore resta istruttore: l’iscritto è una scheda nuova', [iscrittoIvo !== ivo, a.persone.find((p) => p.id === ivo).ruolo], [true, 'istruttore'])
+
+  // Due Eva senza codice: la più vecchia senza email, la più nuova con un’altra email e lo stesso telefono. Come il database: la più vecchia.
+  persona({ id: 'p-eva-1', nome: 'Eva', cognome: 'Rana', creataIl: '2025-01-01' })
+  persona({ id: 'p-eva-2', nome: 'Eva', cognome: 'Rana', email: 'eva.vecchia@esempio.it', telefono: '347 666 0006', creataIl: '2026-02-01' })
+  ok('fra due Eva senza la stessa email, la più vecchia', await r.accogli(await r.invia(adulto({ nome: 'Eva', cognome: 'Rana', codiceFiscale: cf('Rana', 'Eva', '96A41L219'), email: 'eva@esempio.it', telefono: '347 666 0006' }))), 'p-eva-1')
+
+  // Due Zoe: la più vecchia senza email, la più nuova con la stessa della richiesta. Vince la stessa email.
+  persona({ id: 'p-zoe-1', nome: 'Zoe', cognome: 'Rana', creataIl: '2025-01-01' })
+  persona({ id: 'p-zoe-2', nome: 'Zoe', cognome: 'Rana', email: 'zoe@esempio.it', creataIl: '2026-02-01' })
+  ok('fra due Zoe, prima quella con la stessa email', await r.accogli(await r.invia(adulto({ nome: 'Zoe', cognome: 'Rana', codiceFiscale: cf('Rana', 'Zoe', '96A41L219'), email: 'zoe@esempio.it', telefono: '347 666 0008' }))), 'p-zoe-2')
+
+  // Teo ha un certificato valido: quello arrivato col modulo non lo sostituisce, e resta fra i file della richiesta.
+  persona({ id: 'p-teo', nome: 'Teo', cognome: 'Rana', email: 'teo@esempio.it', certificato: { scade: '2027-01-01', file: 'p-teo/certificato-1.pdf' } })
+  const perTeo = await r.invia(adulto({ nome: 'Teo', cognome: 'Rana', codiceFiscale: cf('Rana', 'Teo', '96A01L219'), email: 'teo@esempio.it', telefono: '347 666 0007' }))
+  await r.caricaFile(perTeo, 'certificato', new File(['x'], 'certificato.pdf', { type: 'application/pdf' }))
+  ok('Teo ritrovato', await r.accogli(perTeo), 'p-teo')
+  ok('il certificato valido di Teo resta il suo', a.persone.find((p) => p.id === 'p-teo').certificato, { scade: '2027-01-01', file: 'p-teo/certificato-1.pdf' })
+  ok('e quello del modulo resta fra i file della richiesta', (await r.file(perTeo)).some((f) => f.tipo === 'certificato'), true)
+}
+
 console.log('\n8. i dati anagrafici: dalla richiesta, e dalla scheda dopo')
 {
   const lucaId = (await r.richieste()).find((x) => x.id === luca).personaId

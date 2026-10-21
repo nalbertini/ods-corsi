@@ -511,7 +511,7 @@ function Scheda({
           <Riga titolo={omonimi.length === 1 ? 'IN ELENCO C’È GIÀ' : `IN ELENCO CE NE SONO GIÀ ${omonimi.length}`} />
           <span className="sg-sotto">
             Stesso nome e cognome. Se è {omonimi.length === 1 ? 'lui' : 'uno di loro'}, accogli la richiesta sulla sua scheda: se no «Accogli» ne fa una nuova
-            quando email, telefono e codice fiscale non tornano.
+            quando la scheda ha già un altro codice fiscale, o quando email e telefono non tornano.
           </span>
           <div className="stack" style={{ gap: 8 }}>
             {omonimi.map((p) => {
