@@ -37,8 +37,10 @@ senza salvare**.
   DIMENTICATA?**.
 - **PIN TABLET** — vedi sotto.
 - **TOGLI L'ACCESSO** — la persona non entra più nell'app né nell'area
-  istruttore del tablet; le presenze che ha segnato restano nel registro.
-  **RIDAI L'ACCESSO** lo rimette.
+  istruttore del tablet; le presenze che ha segnato restano nel registro. Se
+  si allena anche come allievo, le sue iscrizioni si chiudono oggi, come con
+  **Disattiva** fra gli [iscritti](iscritti.md). **RIDAI L'ACCESSO** lo
+  rimette, ma non i corsi: si iscrive di nuovo.
 - **Elimina** — per chi insegna (con la spunta **ISTRUTTORE**) e per la
   **SEGRETERIA**, se non ha storia, per esempio aggiunto per sbaglio: dopo la
   conferma spariscono la scheda e l'account, e non si torna indietro. Chi ha

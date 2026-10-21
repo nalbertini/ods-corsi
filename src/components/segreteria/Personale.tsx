@@ -583,7 +583,7 @@ function Scheda({
           type="button"
           className="sg-btn sg-btn-linea sg-pericolo"
           onClick={async () => {
-            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`, 'Togli l’accesso', { pericolo: true }))) return
+            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore, e se si allena in un corso l'iscrizione si chiude oggi; il registro resta.`, 'Togli l’accesso', { pericolo: true }))) return
             void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Accesso tolto' : 'Accesso ridato', onCambiato)
           }}
         >
