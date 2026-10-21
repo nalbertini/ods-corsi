@@ -17,6 +17,8 @@ insert into sessioni (id, corso_id, inizio, fine) values
   ('eeeeeeee-0000-0000-0000-000000000082', 'cccccccc-0000-0000-0000-000000000001', now() - interval '2 days', now() - interval '2 days' + interval '1 hour'),
   ('eeeeeeee-0000-0000-0000-000000000083', 'cccccccc-0000-0000-0000-000000000001', now() - interval '3 days', now() - interval '3 days' + interval '1 hour');
 update sessioni set stato = 'annullata' where id = 'eeeeeeee-0000-0000-0000-000000000083';
+-- Una lezione fra due giorni, come la 82: chi non c'era si sa solo dopo.
+insert into sessioni select (jsonb_populate_record(s, jsonb_build_object('id', 'eeeeeeee-0000-0000-0000-000000000089', 'inizio', now() + interval '2 days', 'fine', now() + interval '2 days 1 hour'))).* from sessioni s where s.id = 'eeeeeeee-0000-0000-0000-000000000082';
 insert into sessioni (id, corso_id, inizio, fine, istruttore_id) values
   ('eeeeeeee-0000-0000-0000-000000000084', 'cccccccc-0000-0000-0000-000000000001', now() - interval '4 days', now() - interval '4 days' + interval '1 hour', 'aaaaaaaa-0000-0000-0000-000000000006');
 insert into presenze_istruttori (sessione_id, persona_id, stato, prevista, come) values
@@ -54,6 +56,8 @@ select atteso('fuori dai previsti: 22023', codice($$select segna_istruttore_asse
 -- Col sostituto la lezione la fa lui solo (`previsti_su`): Maura lì non è prevista.
 select atteso('non chi il sostituto ha sostituito', tenta($$select segna_istruttore_assente('eeeeeeee-0000-0000-0000-000000000084', 'aaaaaaaa-0000-0000-0000-000000000002')$$), 'NEGATO: si sceglie fra gli istruttori previsti');
 select atteso('né su una annullata', tenta($$select segna_istruttore_assente('eeeeeeee-0000-0000-0000-000000000083', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: la lezione è annullata');
+select atteso('né su una lezione che non c''è ancora stata', tenta($$select segna_istruttore_assente('eeeeeeee-0000-0000-0000-000000000089', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: la lezione non c''è ancora stata');
+select atteso('né per nessuno: 22023', codice($$select segna_istruttore_assente('eeeeeeee-0000-0000-0000-000000000082', null)$$), '22023');
 select atteso('annullata: 22023', codice($$select segna_istruttore_assente('eeeeeeee-0000-0000-0000-000000000083', 'aaaaaaaa-0000-0000-0000-000000000006')$$), '22023');
 select atteso('né su una lezione che non c''è', tenta($$select segna_istruttore_assente('00000000-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: lezione inesistente');
 select atteso('che non c''è: P0002', codice($$select segna_istruttore_assente('00000000-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'P0002');

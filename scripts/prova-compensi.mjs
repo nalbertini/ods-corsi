@@ -305,6 +305,7 @@ console.log('\n2 bis. manca la firma: chi era previsto a una lezione tenuta in d
   ok('   in due, ha firmato l\'altro previsto e uno che non lo era: Maura ne ha una',
     quante(sf([firma('j3', ANNA, 'confermata', il3), firma('j3', FEDERICO, 'confermata', il3)], 'MA')), 1)
   ok('8. nei corsi dove «a lezione basta uno»: nessuna', quante(sf([firma('j3', ANNA, 'confermata', il3, [ANNA, MAURA], { bastaUno: true })], 'MA')), 0)
+  ok('   l\'ultimo giorno del mese conta', quante(sf([firma('j31', ANNA, 'confermata', new Date(2026, 9, 31, 18, 0))], 'MA', new Date(2026, 10, 1))), 1)
   ok('9. una lezione di un altro mese non conta',
     quante(sf([firma('n6', ANNA, 'confermata', new Date(2026, 10, 6, 18, 0))], 'MA', new Date(2026, 11, 1))), 0)
   const il10 = new Date(2026, 9, 10, 18, 0)

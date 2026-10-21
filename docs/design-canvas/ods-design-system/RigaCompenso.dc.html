@@ -52,13 +52,13 @@
   </sc-if>
   <sc-if value="{{aperteAttese}}" hint-placeholder-val="{{ false }}">
     <div role="table" aria-label="Manca la sua firma" style="display: flex; flex-direction: column; margin: 0 14px 12px 54px; border-top: 1px solid #cfe6f4">
-      <span style="padding: 8px 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #46606f">MANCA LA SUA FIRMA</span>
+      <span style="padding: 8px 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #46606f">{{titoloAttese}}</span>
       <sc-for list="{{attese}}" as="a" hint-placeholder-count="1">
-        <div role="row" style="display: grid; grid-template-columns: minmax(0, 1fr) 110px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 52px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+        <div role="row" style="display: grid; grid-template-columns: minmax(0, 1fr) 130px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 52px; border-bottom: 1px solid #cfe6f4; font-size: 14px">
           <span role="cell">{{a.corso}}</span>
           <span role="cell" style="font-variant-numeric: tabular-nums">{{a.giorno}}</span>
           <span role="cell" style="color: #46606f">ha firmato {{a.chi}}</span>
-          <span role="cell" style="display: flex; gap: 10px; align-items: center; justify-content: flex-end"><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" tema="sito" hint-size="90px,44px"></dc-import><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">Non c’era</span></span>
+          <span role="cell" style="display: flex; gap: 10px; align-items: center; justify-content: flex-end"><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" tema="sito" hint-size="90px,44px"></dc-import><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; text-decoration: underline; text-underline-offset: 3px">Non c’era</span></span>
         </div>
       </sc-for>
     </div>
@@ -79,12 +79,12 @@
     <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #46606f; line-height: 1.35">{{nota}}</span></sc-if>
     <sc-if value="{{conAttese}}" hint-placeholder-val="{{ false }}">
       <div style="display: flex; flex-direction: column; border-top: 1px solid #cfe6f4">
-        <span style="padding: 8px 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #46606f">MANCA LA SUA FIRMA</span>
+        <span style="padding: 8px 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #46606f">{{titoloAttese}}</span>
         <sc-for list="{{attese}}" as="a" hint-placeholder-count="1">
           <div style="display: flex; flex-direction: column; gap: 4px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; font-size: 14px">
             <span>{{a.corso}} · {{a.giorno}}</span>
             <span style="color: #46606f">ha firmato {{a.chi}}</span>
-            <span style="display: flex; gap: 12px; align-items: center"><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" tema="sito" hint-size="90px,44px"></dc-import><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">Non c’era</span></span>
+            <span style="display: flex; gap: 12px; align-items: center"><dc-import name="Bottone" label="C’era" variante="linea" contesto="segreteria" tema="sito" hint-size="90px,44px"></dc-import><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #46606f; text-decoration: underline; text-underline-offset: 3px">Non c’era</span></span>
           </div>
         </sc-for>
       </div>
@@ -107,8 +107,8 @@
 //        da-pagare e pagata COSTRUITE col pagamento in contabilità: da-pagare (giallo, ricevuta fatta e non pagata, SEGNA PAGATO a linea); non-torna (rosso: la ricevuta e' rimasta com'era fatta, il mese adesso fa un'altra cifra;
 //        ANNULLA E RIFAI, non si paga); pagata (verde, PAGATA, la data nella frase sotto, Firmata e RISTAMPA, niente ANNULLA).
 // firmata: con una ricevuta fatta (da-pagare, non-torna, pagata) compare la spunta «Firmata»; non spuntata aggiunge il segno giallo DA RIPORTARE FIRMATA.
-// attese (PROPOSTA, docs/design-canvas/coistruttore-atteso): «corso:giorno:chi ha firmato|…», le lezioni in due dove il tecnico era previsto e non ha firmato.
-//        Aggiunge il segno giallo «MANCA LA FIRMA · N LEZIONI» accanto allo stato, che non cambia; a riga aperta (e sempre al telefono) l'elenco con C’ERA a linea
+// attese (COSTRUITA, `SenzaFirmaElenco` in Compensi.tsx; storia in docs/design-canvas/coistruttore-atteso): «corso:giorno:chi ha firmato|…», le lezioni in due dove il tecnico era previsto e non ha firmato.
+//        Aggiunge il segno giallo «MANCA LA FIRMA · N LEZIONI» accanto allo stato, che non cambia; sotto, un dettaglio chiuso «MANCA LA FIRMA DI NOME · N LEZIONI», aperto per solo-attese o col filtro (qui: a riga aperta, e sempre al telefono), con C’ERA a linea
 //        (presenza confermata, entra nel compenso) e «Non c’era» (si chiude, non torna). solo-attese: nel mese ha solo lezioni senza firma, importo «—», niente tasto.
 // telefono: la riga impilata (nome e importo, lezioni e ore, segni, nota, tasto a tutta larghezza), chiusa.
 const STATI = {
@@ -137,13 +137,16 @@ class Component extends DCLogic {
       return { corso, ore, tariffa: manca ? 'SENZA TARIFFA' : tariffa, importo: importo ?? '—', coloreTariffa: manca ? '#b81d1d' : '#0d2a3d', pesoTariffa: manca ? 700 : 400 };
     });
     const attese = String(p.attese ?? '').split('|').filter(Boolean).map((r) => {
-      const [corso, giorno, chi] = r.split(':');
+      // L'ora ha i due punti: il giorno è quel che sta fra il corso e chi ha firmato.
+      const parti = r.split(':');
+      const corso = parti[0], chi = parti[parti.length - 1], giorno = parti.slice(1, -1).join(':');
       return { corso, giorno, chi };
     });
     const conAttese = attese.length > 0;
     return {
       attese, conAttese, aperteAttese: conAttese && (aperta || p.stato === 'solo-attese'),
       segnoAttese: `MANCA LA FIRMA · ${attese.length} ${attese.length === 1 ? 'LEZIONE' : 'LEZIONI'}`,
+      titoloAttese: `MANCA LA FIRMA DI ${String(p.nome ?? 'Ballabio Diana').split(' ').slice(-1)[0].toUpperCase()} · ${attese.length} ${attese.length === 1 ? 'LEZIONE' : 'LEZIONI'}`,
       largo: !telefono, telefono, aperta, corsi, freccia: aperta ? '▾' : '▸',
       nome: p.nome ?? 'Ballabio Diana', lezioni: p.lezioni ?? '8', ore: p.ore ?? '12',
       importo: s.vuoto ? '—' : (p.importo ?? '180,00 €'), coloreImporto: s.vuoto ? '#46606f' : '#0d2a3d',

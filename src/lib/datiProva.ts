@@ -269,6 +269,7 @@ export function segnaIstruttoreAssenteProva(sessioneId: string, personaId: strin
   const l = trovaLezione(sessioneId)
   if (!l) throw new Error('lezione inesistente')
   if (comeE(l).stato === 'annullata') throw new Error('la lezione è annullata')
+  if (l.inizio > new Date()) throw new Error('la lezione non c’è ancora stata')
   if (!comeE(l).istruttori.includes(personaId)) throw new Error('si sceglie fra gli istruttori previsti')
   const tutte = archivio.dati.presenzeIstruttori ?? []
   if (tutte.some((x) => x.sessioneId === sessioneId && x.personaId === personaId)) return

@@ -536,8 +536,8 @@ function Scheda({
       )}
       {bozza.istruttori.length > 1 && bozza.bastaUno !== undefined && (
         <div className="stack" style={{ gap: 4 }}>
-          <label className="row" style={{ gap: 10, minHeight: 44, fontSize: 15, fontWeight: 600 }}>
-            <input type="checkbox" style={{ width: 24, height: 24, margin: 0, accentColor: 'var(--text)' }} checked={bozza.bastaUno} onChange={(e) => setBozza({ ...bozza, bastaUno: e.target.checked })} />
+          <label className="row" style={{ gap: 10, minHeight: 44, fontSize: 15, fontWeight: 600, alignSelf: 'flex-start' }}>
+            <input type="checkbox" style={{ width: 24, height: 24, margin: 0, accentColor: 'var(--text)', cursor: 'pointer' }} checked={bozza.bastaUno} onChange={(e) => setBozza({ ...bozza, bastaUno: e.target.checked })} />
             Si alternano: a lezione basta uno
           </label>
           <span style={{ fontSize: 13, color: 'var(--dim)', paddingLeft: 34 }}>Se uno ha firmato, in COMPENSI agli altri non si chiede la firma. Lasciala vuota se a lezione sono sempre tutti.</span>

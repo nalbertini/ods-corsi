@@ -3,7 +3,7 @@ import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import { giorniConLezioni } from './calendarioSettimana'
-import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
+import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiCorso, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
 import { cosaNonVaCompenso, type RicevutaCompenso } from './compensi'
@@ -169,6 +169,7 @@ const MANCA_CHIUSURA = 'Il database non è ancora aggiornato per la chiusura del
 const MANCA_CAMBIA_VOCE = 'Il database non è ancora aggiornato per cambiare la voce dei movimenti: va lanciato 67-cambia-voce.sql'
 const MANCA_MOVIMENTI_PERSONA = 'Il database non è ancora aggiornato per collegare i movimenti alle persone: va lanciato 70-movimenti-persona.sql'
 const MANCA_PAGATI = 'Pagare i compensi non è ancora attivo sul database: va lanciato 81-compensi-pagati.sql'
+const MANCA_FIRMA = 'Segnare chi non c’era e «a lezione basta uno» non sono ancora attivi sul database: va lanciato 82-manca-la-firma.sql'
 const MANCA_COMPENSI = 'Le ricevute dei compensi non sono ancora attive sul database: va lanciato 80-ricevute-compensi.sql'
 const MANCA_LETTERE = 'Le lettere d’incarico non sono ancora attive sul database: va lanciato 79-lettere-incarico.sql'
 const TABELLE_DOPO: Array<[RegExp, string]> = [
@@ -192,7 +193,6 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/lettere_incarico/, MANCA_LETTERE],
   [/tariffe_istruttori/, 'Le tariffe e i dati dei tecnici non sono ancora attivi sul database: va lanciato 78-tariffe-tecnici.sql'],
   [/anagrafiche/, 'Nascita, residenza e genitore degli iscritti non sono ancora attivi sul database: va lanciato 18-anagrafiche.sql'],
-  [/segna_istruttore_assente|basta_uno/, 'Segnare chi non c’era e «a lezione basta uno» non sono ancora attivi sul database: va lanciato 82-manca-la-firma.sql'],
   [/segna_istruttore_previsto/, 'Segnare un istruttore su una lezione già coperta non è ancora attivo sul database: va lanciato 46-istruttore-collega.sql'],
   [/lezioni_senza_istruttore|segna_istruttori_lezione/, 'Le lezioni tenute da confermare non sono ancora attive sul database: va lanciato 23-istruttori-dalle-lezioni.sql'],
   [/elimina_presenza_istruttore/, 'Eliminare una presenza non è ancora attivo sul database: va lanciato 65-elimina-presenza-rifiutata.sql'],
@@ -323,6 +323,33 @@ function sconosciuto(testo: string | undefined, altrimenti = 'Non è andata: rip
 }
 
 /** Un errore del database detto in modo che la segreteria lo capisca. */
+/** La riga di `corsi` da scrivere per `salvaCorso`. */
+export function rigaDelCorso(c: DatiCorso) {
+  return {
+    nome: c.nome.trim(),
+    sala_id: c.salaId ?? null,
+    istruttore_id: c.istruttori[0] ?? null,
+    capienza: c.capienza ?? null,
+    colore: c.colore ?? null,
+    // Solo se la scelta c'è: senza `61-tessere.sql` la schermata non la offre e la colonna non esiste.
+    ...(c.enteTessera === undefined ? {} : { ente_tessera: enteDaDati(c.enteTessera) ?? null }),
+    // Come la tessera: solo se la spunta c'è, cioè dopo 82-manca-la-firma.sql.
+    ...(c.bastaUno === undefined ? {} : { basta_uno: c.bastaUno }),
+  }
+}
+
+/**
+ * «A lezione basta uno» per corso, dalla lettura di `id, basta_uno`; `null`
+ * se la colonna non c'è ancora (82-manca-la-firma.sql). Ogni altro errore si
+ * dice: una rete che cade non deve togliere la spunta senza avvisare.
+ */
+export function bastaUnoDai(r: { data: unknown; error: { code?: string; message?: string } | null }): Map<string, boolean> | null {
+  if (r.error?.code === '42703' && /basta_uno/.test(r.error.message ?? '')) return null
+  if (r.error) throw guaio(r.error)
+  // La forma è quella della select `id, basta_uno`.
+  return new Map((r.data as Array<{ id: string; basta_uno: boolean }>).map((x) => [x.id, x.basta_uno]))
+}
+
 function guaio(e: { message?: string; code?: string } | null): Error {
   // Le attività arrivano con 41-attivita.sql: la colonna, la tabella o il legame che mancano.
   if (/attivita/.test(e?.message ?? '')) {
@@ -340,6 +367,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === '23514' && /musica_sale_link_check/.test(e.message ?? ''))
     return new Error('Le radio nelle liste non sono ancora attive sul database: va lanciato 39-musica-radio.sql')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /paga_compensi/.test(e.message ?? '')) return new Error(MANCA_PAGATI)
+  if (((e?.code === 'PGRST202' || e?.code === '42883') && /segna_istruttore_assente/.test(e.message ?? '')) || ((e?.code === '42703' || e?.code === 'PGRST204') && /basta_uno/.test(e.message ?? '')))
+    return new Error(MANCA_FIRMA)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevuta_compenso/.test(e.message ?? '')) return new Error(MANCA_COMPENSI)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /pagamento_diretto/.test(e.message ?? '')) return new Error(MANCANO_PAGAMENTI_A_MANO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
@@ -794,9 +823,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       }>
       const chi = await insegnanti(righe.map((r) => r.id))
       // Letta a parte: senza 82-manca-la-firma.sql la colonna non c'è, e CORSI non offre la spunta.
-      const bastaUno = await db.from('corsi').select('id, basta_uno')
-      // La forma è quella della select qui sopra.
-      const uno = bastaUno.error ? null : new Map((bastaUno.data as Array<{ id: string; basta_uno: boolean }>).map((r) => [r.id, r.basta_uno]))
+      const uno = bastaUnoDai(await db.from('corsi').select('id, basta_uno'))
       const g = oggi()
       return righe.map(
         (r): CorsoSeg => ({
@@ -831,17 +858,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async salvaCorso(c) {
       if (!c.nome.trim()) throw new Error('Il corso ha bisogno di un nome')
-      const riga = {
-        nome: c.nome.trim(),
-        sala_id: c.salaId ?? null,
-        istruttore_id: c.istruttori[0] ?? null,
-        capienza: c.capienza ?? null,
-        colore: c.colore ?? null,
-        // Solo se la scelta c'è: senza `61-tessere.sql` la schermata non la offre e la colonna non esiste.
-        ...(c.enteTessera === undefined ? {} : { ente_tessera: enteDaDati(c.enteTessera) ?? null }),
-        // Come la tessera: solo se la spunta c'è, cioè dopo 82-manca-la-firma.sql.
-        ...(c.bastaUno === undefined ? {} : { basta_uno: c.bastaUno }),
-      }
+      const riga = rigaDelCorso(c)
       const id = c.id
         ? (ok(await db.from('corsi').update(riga).eq('id', c.id)), c.id)
         : (ok(await db.from('corsi').insert(riga).select('id').single()) as { id: string }).id

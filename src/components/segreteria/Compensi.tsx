@@ -3,7 +3,7 @@ import type { DatiSegreteria, Tariffa } from '../../lib/segreteria'
 import type { Voce } from '../../lib/indirizzoSegreteria'
 import { NOME_CASSA_CONTO, oggiARoma, type Cassa, type ChiusuraCassa } from '../../lib/contabilita'
 import { insegna } from '../../lib/ruoli'
-import { chiaveGiorno, dataLunga } from '../../lib/sala'
+import { chiaveGiorno, dataLunga, oraDi } from '../../lib/sala'
 import { euro } from '../../lib/ricevute'
 import { mesi, oreItaliane as ore } from '../../lib/ore'
 import { euroOra, euroDaScrivere } from '../../lib/tariffe'
@@ -12,6 +12,7 @@ import { chiedi, Guaio, Testa, useAvviso, useCarica } from './comune'
 import { Numero } from './Presenze'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
+const GIORNI_CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
 type Persona = { id: string; nome: string; cognome: string }
 
 const NOME_STATO: Record<StatoCompenso, { testo: string; tono: 'rosso' | 'giallo' | 'neutro' | 'verde' }> = {
@@ -260,7 +261,7 @@ export function SegnoCompenso({ stato, conto, ricevuta, manca, inScheda, senzaFi
  * tasti. C'ERA conferma la presenza (entra nel compenso); «Non c'era» la
  * rifiuta e non si chiede più.
  */
-function SenzaFirmaElenco({ d, p, lezioni, fai, onCambiato }: { d: DatiSegreteria; p: Persona; lezioni: SenzaFirma[]; fai: Fai; onCambiato: () => Promise<unknown> }) {
+function SenzaFirmaElenco({ d, p, lezioni, aperto, fai, onCambiato }: { d: DatiSegreteria; p: Persona; lezioni: SenzaFirma[]; aperto: boolean; fai: Fai; onCambiato: () => Promise<unknown> }) {
   // Un clic alla volta: un doppio clic su C'ERA non deve diventare anche «Non c'era».
   const [occupato, setOccupato] = useState(false)
   const segna = async (l: SenzaFirma, cera: boolean) => {
@@ -273,32 +274,38 @@ function SenzaFirmaElenco({ d, p, lezioni, fai, onCambiato }: { d: DatiSegreteri
       setOccupato(false)
     }
   }
+  const righe = lezioni.map((l) => {
+    const quando = new Date(l.inizio)
+    return (
+      <div key={l.sessioneId} className="sg-senza-firma">
+        <span className="sg-senza-firma-corso">{l.corso}</span>
+        {/* Sul telefono giorno e chi ha firmato stanno sotto il corso, su una riga: al desktop sono due colonne. */}
+        <span className="sg-senza-firma-sotto">
+          <span className="num">
+            {GIORNI_CORTI[quando.getDay()]} {quando.getDate()}/{quando.getMonth() + 1} · {oraDi(l.inizio)}
+          </span>
+          <span className="sg-senza-firma-chi">ha firmato {l.firmatoDa.join(', ')}</span>
+        </span>
+        <span className="row" style={{ gap: 12, alignItems: 'center' }}>
+          <button type="button" className="sg-btn sg-btn-linea" disabled={occupato} onClick={() => void segna(l, true)}>
+            C’era
+          </button>
+          <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} disabled={occupato} onClick={() => void segna(l, false)}>
+            Non c’era
+          </button>
+        </span>
+      </div>
+    )
+  })
+  const titolo = `MANCA LA FIRMA DI ${p.nome.toUpperCase()} · ${quante(lezioni.length, 'LEZIONE', 'LEZIONI')}`
+  // Chiuso come «Per corso»: aperto da sé solo dove serve guardarlo (chi ha solo queste, o il filtro «Manca la firma»).
   return (
-    <div className="stack" style={{ gap: 0, paddingLeft: 16 }}>
-      <span className="sg-etichetta" style={{ padding: '8px 0 4px' }}>
-        MANCA LA SUA FIRMA
-      </span>
-      {lezioni.map((l) => {
-        const quando = new Date(l.inizio)
-        return (
-          <div key={l.sessioneId} className="row sg-senza-firma" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center', minHeight: 52, borderTop: '1px solid var(--line-soft)', fontSize: 14 }}>
-            <span style={{ minWidth: 140 }}>{l.corso}</span>
-            <span className="num" style={{ minWidth: 150 }}>
-              {dataLunga(chiaveGiorno(quando), false)} · {quando.toTimeString().slice(0, 5)}
-            </span>
-            <span style={{ flex: 1, minWidth: 160, color: 'var(--sec)' }}>ha firmato {l.firmatoDa.join(', ')}</span>
-            <span className="row" style={{ gap: 12, alignItems: 'center' }}>
-              <button type="button" className="sg-btn sg-btn-linea" disabled={occupato} onClick={() => void segna(l, true)}>
-                C’era
-              </button>
-              <button type="button" className="sg-link sg-link-alto" style={{ fontSize: 14 }} disabled={occupato} onClick={() => void segna(l, false)}>
-                Non c’era
-              </button>
-            </span>
-          </div>
-        )
-      })}
-    </div>
+    <details className="sg-compenso sg-compenso-per-corso" open={aperto}>
+      <summary className="sg-etichetta" style={{ minHeight: 44, display: 'flex', alignItems: 'center' }}>
+        {titolo}
+      </summary>
+      <div className="stack" style={{ gap: 0, paddingLeft: 16 }}>{righe}</div>
+    </details>
   )
 }
 
@@ -432,7 +439,7 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
                   {/* I tasti stanno fuori dal dettaglio: un clic su un tasto non apre né chiude i corsi. */}
                   <AzioniRicevuta d={d} p={r.persona} conto={r.conto} ricevuta={r.ricevuta} stato={r.stato} mese={mese} fai={fai} onCambiato={dati.ricarica} onPaga={puoPagare ? () => setPaga(r.persona) : undefined} onVai={onVai} />
                 </div>
-                {r.senzaFirma.length > 0 && <SenzaFirmaElenco d={d} p={r.persona} lezioni={r.senzaFirma} fai={fai} onCambiato={dati.ricarica} />}
+                {r.senzaFirma.length > 0 && <SenzaFirmaElenco d={d} p={r.persona} lezioni={r.senzaFirma} aperto={r.stato === 'solo-attese' || filtro === 'manca-firma'} fai={fai} onCambiato={dati.ricarica} />}
                 {r.conto.righe.length > 0 && (
                   <details className="sg-compenso sg-compenso-per-corso">
                     <summary style={{ fontSize: 13, color: 'var(--sec)', minHeight: 44, display: 'flex', alignItems: 'center' }}>Per corso</summary>
