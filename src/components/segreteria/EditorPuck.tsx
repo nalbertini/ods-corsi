@@ -4,7 +4,7 @@ import '@puckeditor/core/puck.css'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { PaginaSito } from '../../lib/sitoPagine'
 import { CSS_SITO, invito } from '../../lib/sitoGenera'
-import { cosaNonVaSalvare, daSalvare, pezziDaAprire, pezziInHtml, TESTO_DEL_SITO, type BozzaPezzi, type Pezzo } from '../../lib/sitoPezzi'
+import { cosaNonVaSalvare, daSalvare, parteAmmessa, pezziDaAprire, pezziInHtml, TESTO_DEL_SITO, type BozzaPezzi, type Pezzo } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import AnteprimaPagina from './AnteprimaPagina'
 import { ScegliImmagine } from './ImmaginiSito'
@@ -25,6 +25,7 @@ type Props = {
   foto: { src: string; alt: string }
   colonne: { colonne: Array<{ html: Testo }> }
   iscriviti: { titolo: string; frase: string }
+  istruttore: { nome: string; cognome: string; corsi: string; src: string; alt: string; pagina: string }
 }
 type Radice = { titolo: string; descrizione: string }
 
@@ -71,7 +72,7 @@ function CampoFoto({ d, valore }: { d: DatiSegreteria; valore: string }) {
   )
 }
 
-function configura(d: DatiSegreteria): Config<Props, Radice> {
+function configura(d: DatiSegreteria, slug: string): Config<Props, Radice> {
   const foto = {
     src: { type: 'custom' as const, label: 'Foto', render: ({ value }: { value: string }) => <CampoFoto d={d} valore={value} /> },
     alt: { type: 'text' as const, label: 'Cosa si vede (vuoto = solo decorativa)' },
@@ -79,6 +80,8 @@ function configura(d: DatiSegreteria): Config<Props, Radice> {
   const immagine = (alta: number) => ({ src, alt }: { src: string; alt: string }) =>
     src ? <img src={src} alt={alt} style={{ width: '100%', maxHeight: alta, objectFit: 'cover', display: 'block' }} /> : <span className="sito-pezzi-vuoto">Manca la foto: sceglila a destra</span>
   return {
+    // Fuori dalla pagina degli istruttori la parte ISTRUTTORE non è fra quelle da mettere (`parteAmmessa`).
+    ...(parteAmmessa('istruttore', slug) ? {} : { categories: { nascoste: { components: ['istruttore'], visible: false } } }),
     root: {
       fields: {
         titolo: { type: 'text', label: 'Titolo (anche su Google)' },
@@ -131,6 +134,20 @@ function configura(d: DatiSegreteria): Config<Props, Radice> {
         permissions: { duplicate: false, drag: false },
         // Sicuro: `invito` mette titolo e frase con le entità, il resto è fisso.
         render: ({ titolo, frase }) => <div dangerouslySetInnerHTML={{ __html: invito({ titolo, frase }, true) }} />,
+      },
+      // Le parti della pagina Istruttori aperte qui restano intere; la pagina della scheda si sceglie nell'editor di oggi.
+      istruttore: {
+        label: 'Istruttore',
+        fields: {
+          src: foto.src,
+          alt: { type: 'text', label: 'Cosa si vede (vuoto = «Ritratto di Nome Cognome»)' },
+          nome: { type: 'text', label: 'Nome' },
+          cognome: { type: 'text', label: 'Cognome' },
+          corsi: { type: 'text', label: 'Corsi (separati da una virgola)' },
+          pagina: { type: 'text', label: 'La sua pagina (l’indirizzo, es. fabio-berta)' },
+        },
+        defaultProps: { nome: '', cognome: '', corsi: '', src: '', alt: '', pagina: '' },
+        render: ({ id, nome, cognome, corsi, src, alt, pagina }) => <Html v={pezziInHtml({ content: [{ type: 'istruttore', props: { id, nome, cognome, corsi, src, alt, pagina } }] })} />,
       },
     },
   }
@@ -219,7 +236,7 @@ export default function EditorPuck({ d, pagina, onChiudi, ricarica }: { d: DatiS
     content: pezziDaAprire(pagina).content,
   }))
   // Una config sola per tutta la prova: rifatta a ogni tasto, Puck rimonterebbe i campi.
-  const config = useMemo(() => configura(d), [d])
+  const config = useMemo(() => configura(d, pagina.slug), [d, pagina.slug])
   const [ora, setOra] = useState<BozzaPezzi>(() => bozzaDa(iniziali))
   const { avviso, fai, lavora } = useAvviso()
   /** La pagina da mostrare com'è sul sito (null: si scrive). */

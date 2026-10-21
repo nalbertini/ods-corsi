@@ -206,6 +206,8 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   finché non si preme PORTA AI PEZZI (non per le pagine di legge): `htmlInPezzi` spezza il testo senza cambiarlo e non si torna indietro.
   La parte ISCRIVITI è l'invito giallo in fondo alla pagina (`invito()` di `src/lib/sitoGenera.ts`: prove da 3 € e 10 €, poi i riquadri Iscriviti,
   Chiama, Scrivici e Vieni a trovarci), con titolo e frase della segreteria: una sola, sempre in fondo, e prende il posto dell'invito di sempre.
+  Nella pagina Istruttori la parte ISTRUTTORE è un tecnico (nome, cognome, corsi, foto, la sua pagina): le tessere del sito seguono l'ordine
+  delle parti (`elencoIstruttori` di `src/lib/sitoIstruttori.ts`), e un testo messo prima di un istruttore porta l'avviso giallo.
 - **Il sito della palestra** (voce SITO della segreteria): le pagine del sito, il menu in alto e il footer si
   scrivono nell'app, senza WordPress. Ogni pagina ha una **bozza**, che non cambia il sito, e un testo
   **pubblicato**, che cambia solo con PUBBLICA; il testo ricco passa da un editor che ammette solo titoli,

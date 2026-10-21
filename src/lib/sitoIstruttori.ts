@@ -8,6 +8,7 @@
  */
 
 import { blocchi, contenuto, immagine, iniziali, testoSolo, type Blocco } from './sitoLayout'
+import { corsiDa } from './sitoPezzi'
 
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
@@ -19,8 +20,6 @@ export interface Cornice {
   indirizzo: string
 }
 
-/** Chi sta in testa all'elenco, in quest'ordine; gli altri seguono come scritti. */
-const IN_TESTA = ['maurizio', 'maura', 'diana', 'fabio', 'tiziano', 'valerio', 'manuel', 'federico']
 /** I colori dei ritratti: a diagonali (riga + colonna), così nessun vicino, in riga o in colonna, ha lo stesso colore. */
 const COLORI_RITRATTI = ['giallo', 'blu', 'inchiostro'] as const
 const COLORI_DATI = ['chiara', 'blu', 'inchiostro', 'giallo'] as const
@@ -44,7 +43,7 @@ function cognomeECorsi(riga: string): { cognome: string; corsi: string[] } {
   const t = testoSolo(riga)
   const i = t.indexOf('·')
   const [cognome, corsi] = i >= 0 ? [t.slice(0, i), t.slice(i + 1)] : t.includes(',') ? ['', t] : [t, '']
-  return { cognome: cognome.trim(), corsi: corsi.split(',').map((x) => x.trim()).filter(Boolean) }
+  return { cognome: cognome.trim(), corsi: corsiDa(corsi) }
 }
 
 /** Il nome del tecnico e, se c'è, l'indirizzo della sua scheda: solo un link a una pagina pubblicata conta. */
@@ -79,9 +78,8 @@ export function elencoIstruttori(testoPulito: string, c: Cornice): { html: strin
     tecnici.push({ nome, scheda: (colore) => `<article class="tessera ritratto ${colore}">${ritratto}<div class="ritratto-testo"><h3>${href ? `<a href="${href}">${titolo}</a>` : titolo}</h3>${pastiglie}</div></article>` })
   }
   if (tecnici.length < 2) return null
-  // sort è stabile: chi non è in elenco tiene l'ordine in cui è scritto.
-  const posto = (nome: string) => { const k = IN_TESTA.indexOf(nome.trim().toLowerCase()); return k < 0 ? IN_TESTA.length : k }
-  const tessere = [...tecnici].sort((a, b) => posto(a.nome) - posto(b.nome)).map((t, k) => t.scheda(COLORI_RITRATTI[(Math.floor(k / COLONNE) + (k % COLONNE)) % COLORI_RITRATTI.length]))
+  // L'ordine è quello scritto: la segreteria lo sceglie nell'editor, una parte ISTRUTTORE per tecnico.
+  const tessere = tecnici.map((t, k) => t.scheda(COLORI_RITRATTI[(Math.floor(k / COLONNE) + (k % COLONNE)) % COLORI_RITRATTI.length]))
   const vuote = (COLONNE - (tessere.length % COLONNE)) % COLONNE
   const invito = vuote >= INVITO_MIN
     ? `<div class="tessera ritratto-invito s${vuote}"><p class="parola">Vieni a conoscerli sul tatami.</p><p class="frase">Una settimana a 10 €: provi tutte le discipline, incontri gli istruttori e scegli. Ti aspettiamo in ${esc(c.indirizzo)}.</p>${azioni(c)}</div>`
