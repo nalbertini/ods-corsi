@@ -293,7 +293,7 @@ console.log('\n9. sale e regole')
     [await conta.scadute(12), chiesto[1].tabella, chiesto[1].colonne.includes('sessioni!inner'), chiesto[1].filtri],
     [3, 'presenze', true, [['sessioni.inizio', dodiciFa.toISOString().slice(0, 10)]]])
   const dati = await s.esporta((await app.dettaglio((await lotta2([9, 2]))[0].id)).elenco[0].id)
-  ok('l\'esportazione ha anagrafica, iscrizioni, presenze, richieste, certificato, pagamento, ricevute e pagamenti a mano', Object.keys(dati).sort(), ['certificato_e_pagamento', 'dati_anagrafici', 'esportato_il', 'iscrizioni', 'pagamenti_a_mano', 'persona', 'presenze', 'ricevute', 'richieste_di_iscrizione'])
+  ok('l\'esportazione ha anagrafica, iscrizioni, presenze, richieste, certificato, pagamento, ricevute, pagamenti a mano e lettere d\'incarico', Object.keys(dati).sort(), ['certificato_e_pagamento', 'dati_anagrafici', 'esportato_il', 'iscrizioni', 'lettere_incarico', 'pagamenti_a_mano', 'persona', 'presenze', 'ricevute', 'richieste_di_iscrizione'])
 }
 
 console.log('\n9b. le ricevute')

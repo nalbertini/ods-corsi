@@ -73,6 +73,38 @@ medie: si conta a parte.
   [ricevute](iscritti.md) del mese, per la data della ricevuta, senza le
   annullate. È di tutti i corsi insieme: una ricevuta può averne più d'uno.
 
+## Dal sito alle richieste
+
+Subito sopra IL SITO, **DAL SITO ALLE RICHIESTE** mette in fila quattro
+numeri, per vedere quanta della gente che guarda il sito diventa un'iscrizione:
+
+1. **Visite**: le visite al sito nel periodo, le stesse di IL SITO.
+2. **Tocchi su Iscriviti**: quante volte è stato toccato Iscriviti.
+3. **Richieste dal sito**: le richieste d'iscrizione arrivate da una pagina
+   del sito, **per persona** (una famiglia di tre conta tre).
+4. **Accolte**: quelle di prima che oggi sono accolte.
+
+Fra un numero e l'altro c'è quanti passano al gradino dopo: «2%» vuol dire
+che 2 visite su 100 toccano Iscriviti. «Meno dell'1%» quando sono pochissimi,
+«—» quando il numero prima è zero o non si sa.
+
+- **«Dal sito»** vuol dire che il modulo è stato aperto da una pagina del sito
+  (la Home, un corso, un'altra pagina, anche col vecchio indirizzo). Conta
+  anche il link di una pagina del sito mandato su WhatsApp: non si può
+  distinguere. Non contano il link di COPIA LINK ISCRIZIONI, l'area iscritti e
+  le richieste di cui non si sa da dove arrivano.
+- **Le richieste possono essere più dei tocchi**: una famiglia tocca Iscriviti
+  una volta e manda una richiesta per persona, e chi apre un link del sito
+  mandato da un amico arriva al modulo senza toccare Iscriviti. La percentuale
+  allora passa il 100%, e una frase lo dice.
+- Si conta dal **20 ottobre 2026**, quando sul sito è stato acceso il
+  contatore. Il **corso** scelto in alto non conta: la fila è di tutta la
+  palestra.
+- Se il contatore del sito non risponde, mancano solo visite e tocchi (cosa
+  fare lo dice IL SITO, con **Aggiorna**); se il database non conta ancora da
+  dove arrivano le richieste, mancano solo le richieste e le accolte.
+- Non va nel file di **Scarica CSV**.
+
 ## Il sito
 
 In fondo alla pagina, **IL SITO** dice quanta gente guarda il sito della

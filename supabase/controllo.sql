@@ -391,6 +391,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('78-tariffe-tecnici.sql', 'i dati e le tariffe dei tecnici: province, IBAN e tariffa oraria per corso',
     to_regclass('public.tariffe_istruttori') is not null
     and exists (select 1 from information_schema.columns
-                where table_schema = 'public' and table_name = 'anagrafiche' and column_name = 'iban'))
+                where table_schema = 'public' and table_name = 'anagrafiche' and column_name = 'iban')),
+  ('79-lettere-incarico.sql', 'le lettere d''incarico dei tecnici: una valida per stagione, fatte dalla funzione',
+    to_regclass('public.lettere_incarico') is not null
+    and to_regprocedure('public.fai_lettera_incarico(uuid,text,date,date,text,text,date,jsonb,jsonb)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;
