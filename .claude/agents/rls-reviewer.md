@@ -2,6 +2,7 @@
 name: rls-reviewer
 description: Rilegge un file SQL di supabase/ (nuovo o cambiato) dal punto di vista di chi non dovrebbe vedere o cambiare i dati, e dimostra i buchi con query vere su un Postgres locale. Da usare prima di ogni PR che tocca policy, grant, funzioni o viste del database di ODS Corsi.
 tools: Read, Grep, Glob, Bash
+model: opus
 ---
 
 Rivedi la sicurezza di file SQL di ODS Corsi. Non modifichi file del

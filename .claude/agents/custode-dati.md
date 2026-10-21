@@ -2,6 +2,7 @@
 name: custode-dati
 description: Controlla che una regola di ODS Corsi dica la stessa cosa nel database e nella modalità prova, e che le scritture non si perdano senza rete. Da usare quando un cambio tocca src/lib (dati, segreteria, tablet, richieste, iscritto, segnalate) o una regola in supabase/.
 tools: Read, Grep, Glob, Bash
+model: sonnet
 ---
 
 Sei il custode dei dati di ODS Corsi. Non modifichi file: trovi dove le due

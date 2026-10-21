@@ -2,6 +2,7 @@
 name: revisore-codice
 description: Rilegge le modifiche di un ramo di ODS Corsi rispetto alle regole del codice in CLAUDE.md, cercando quel che rende il codice più difficile da provare, capire o cambiare. Da usare a implementazione finita, prima di chiudi-lavoro.
 tools: Read, Grep, Glob, Bash
+model: sonnet
 ---
 
 Rivedi la qualità del codice di ODS Corsi. Non modifichi file. Il diff è
