@@ -19,7 +19,7 @@ process.env.TZ = 'Europe/Rome'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaDatiProva, istruttoreDallAppello } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * as segreteriaLib from './src/lib/segreteria'; export * as oreLib from './src/lib/ore'; export { righeIstruttori, conMioAppello } from './src/lib/dati'",
+      "export { creaDatiProva, istruttoreDallAppello } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * as supabaseLib from './src/lib/segreteriaSupabase'; export * as segreteriaLib from './src/lib/segreteria'; export * as oreLib from './src/lib/ore'; export * as compensiLib from './src/lib/compensi'; export { righeIstruttori, conMioAppello } from './src/lib/dati'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -210,6 +210,48 @@ console.log('\n5. la segreteria segna un previsto su una lezione già coperta')
   ok('né su una lezione che non c\'è', await errore(() => seg.segnaIstruttorePrevisto('s@niente@2026-09-26@11:30', 'i-maura')), 'lezione inesistente')
 }
 
+console.log('\n5 bis. manca la firma: «Non c\'era» e «a lezione basta uno»')
+{
+  // Sabato 12 Maurizio ha fatto l'appello, Maura non ha firmato.
+  const DODICI = 's@collega@2026-09-12@11:30'
+  const CINQUE = 's@collega@2026-09-05@11:30'
+  m.istruttoreDallAppello(DODICI, 'i-maurizio')
+  m.istruttoreDallAppello(CINQUE, 'i-maurizio')
+  const settembre = { da: new Date(2026, 8, 1), a: new Date(2026, 8, 30) }
+  const senza = async (personaId = 'i-maura') => {
+    const x = m.compensiLib.senzaFirma(await seg.presenzeIstruttori(365), personaId, settembre, new Date())
+    return x.filter((l) => [DODICI, CINQUE].includes(l.sessioneId)).map((l) => [l.sessioneId, l.firmatoDa])
+  }
+  // Il nome come lo scrive PRESENZE ISTRUTTORI.
+  const MAURIZIO = (await seg.presenzeIstruttori(365)).find((x) => x.personaId === 'i-maurizio')?.nome
+  await prova('Maura ha due lezioni senza firma, firmate da Maurizio', senza, [[CINQUE, [MAURIZIO]], [DODICI, [MAURIZIO]]])
+  await prova('la segreteria segna Maura: non c\'era', () => seg.segnaIstruttoreAssente(DODICI, 'i-maura'), undefined)
+  ok('Maura rifiutata, scelta dalla segreteria, era prevista', di(DODICI, 'i-maura'), 'rifiutata segreteria true')
+  ok('decisa dalla segreteria di prova', righe().find((p) => p.sessioneId === DODICI && p.personaId === 'i-maura')?.gestitaDa, 'Segreteria di prova')
+  await prova('e quella lezione non manca più', senza, [[CINQUE, [MAURIZIO]]])
+  ok('due volte: niente', await errore(() => seg.segnaIstruttoreAssente(DODICI, 'i-maura')), 'nessun errore')
+  ok('e la presenza resta una', righe().filter((p) => p.sessioneId === DODICI && p.personaId === 'i-maura').length, 1)
+  ok('Maurizio c\'era già: niente', await errore(() => seg.segnaIstruttoreAssente(DODICI, 'i-maurizio')), 'nessun errore')
+  ok('e resta com\'era', di(DODICI, 'i-maurizio'), 'confermata appello true')
+  ok('non uno fuori dai previsti', await errore(() => seg.segnaIstruttoreAssente(DODICI, 'i-federico')), 'si sceglie fra gli istruttori previsti')
+  ok('e non gli resta nessuna presenza', di(DODICI, 'i-federico'), 'nessuna')
+  ok('né su una annullata', await errore(() => seg.segnaIstruttoreAssente(ANNULLATA, 'i-maura')), 'la lezione è annullata')
+  ok('né su una lezione che non c\'è', await errore(() => seg.segnaIstruttoreAssente('s@niente@2026-09-26@11:30', 'i-maura')), 'lezione inesistente')
+
+  const collega = (bastaUno) => seg.salvaCorso({ id: 'collega', nome: 'Lotta collega', salaId: 'Lotta', istruttori: ['i-maurizio', 'i-maura'], colore: '#16a54a', bastaUno })
+  const delCorso = async () => (await seg.corsi()).find((c) => c.id === 'collega')?.bastaUno
+  const nellePresenze = async () => [...new Set((await seg.presenzeIstruttori(365)).filter((x) => x.sessioneId.startsWith('s@collega@')).map((x) => x.bastaUno))]
+  await prova('un corso nuovo non ha «a lezione basta uno»', delCorso, false)
+  await prova('la segreteria lo spunta', async () => (await collega(true), delCorso()), true)
+  await prova('e lo sanno le presenze delle sue lezioni', nellePresenze, [true])
+  await prova('così a Maura non manca più nessuna firma', senza, [])
+  await prova('lo toglie', async () => (await collega(false), delCorso()), false)
+  await prova('e le presenze lo sanno', nellePresenze, [false])
+  await prova('e la lezione del 5 torna a mancare', senza, [[CINQUE, [MAURIZIO]]])
+  await prova('salvato senza dirlo resta com\'era', async () => (await collega(true), await seg.salvaCorso({ id: 'collega', nome: 'Lotta collega', salaId: 'Lotta', istruttori: ['i-maurizio', 'i-maura'], colore: '#16a54a' }), delCorso()), true)
+  await collega(false).catch(() => {})
+}
+
 console.log('\n6. la riga di PRESENZE ISTRUTTORI')
 {
   const come = (x) => m.segreteriaLib.comeArrivata(x)
@@ -341,6 +383,53 @@ console.log('\n7. col database: la coda delle scritture')
 
   const s = finto(() => ({ data: 'segnata', error: null }))
   await prova('la segreteria chiama la sua funzione', async () => (await m.creaSegreteriaSupabase(s.db).segnaIstruttorePrevisto('s1', 'p2'), s.chiamate.at(-1)), ['segna_istruttore_previsto', { sessione: 's1', persona: 'p2' }])
+  const assente = finto(() => ({ data: 'segnata', error: null }))
+  await prova('«non c\'era» chiama la sua funzione', async () => (await m.creaSegreteriaSupabase(assente.db).segnaIstruttoreAssente('s1', 'p2'), assente.chiamate.at(-1)), ['segna_istruttore_assente', { sessione: 's1', persona: 'p2' }])
+  // Il database senza 82-manca-la-firma.sql: niente spunta, niente colonna scritta, e il messaggio dice cosa lanciare.
+  const senza82 = finto(() => ({ data: null, error: { code: 'PGRST202', message: 'Could not find the function public.segna_istruttore_assente(persona, sessione) in the schema cache' } }))
+  await prova('«non c\'era» senza l\'82: dice di lanciarlo', async () => {
+    try {
+      await m.creaSegreteriaSupabase(senza82.db).segnaIstruttoreAssente('s1', 'p2')
+      return 'nessun errore'
+    } catch (e) {
+      return /82-manca-la-firma\.sql/.test(e.message)
+    }
+  }, true)
+  const sl = m.supabaseLib
+  // Le presenze lette dal database portano «basta uno» dal corso della lezione (`corsi ( * )`).
+  const tabelle = (righe) => ({
+    rpc: async () => ({ data: null, error: null }),
+    from: (t) => {
+      let da = 0
+      const catena = new Proxy({}, {
+        get: (_, k) => {
+          if (k === 'then') return (fatto) => fatto({ data: t === 'presenze_istruttori' && da === 0 ? righe : [], error: null })
+          return (...args) => (k === 'range' && (da = args[0]), catena)
+        },
+      })
+      return catena
+    },
+  })
+  const presenza = (basta) => ({
+    id: 'x1', sessione_id: 's1', persona_id: 'p1', stato: 'confermata', prevista: true, entrato_il: '2026-10-07T17:00:00Z', gestita_il: null,
+    sessioni: { corso_id: 'c1', inizio: '2026-10-07T17:00:00Z', fine: '2026-10-07T18:00:00Z', istruttore_id: null, stato: 'programmata', corsi: { nome: 'Lotta 2', colore: null, istruttore_id: 'p1', ...(basta === undefined ? {} : { basta_uno: basta }) }, persone: null },
+    persona: { nome: 'Federico', cognome: 'Due' }, gestore: null, postazioni: null,
+  })
+  await prova('col database, le presenze di un corso «basta uno» lo dicono', async () => (await m.creaSegreteriaSupabase(tabelle([presenza(true)])).presenzeIstruttori(30)).map((x) => x.bastaUno), [true])
+  await prova('e senza la colonna (prima dell\'82) no', async () => (await m.creaSegreteriaSupabase(tabelle([presenza(undefined)])).presenzeIstruttori(30)).map((x) => x.bastaUno), [false])
+  ok('la colonna basta_uno c\'è: si legge per corso', [...(sl.bastaUnoDai?.({ data: [{ id: 'c1', basta_uno: true }], error: null }) ?? [])], [['c1', true]])
+  ok('la colonna non c\'è ancora (42703): nessuna spunta', sl.bastaUnoDai?.({ data: null, error: { code: '42703', message: 'column corsi.basta_uno does not exist' } }), null)
+  ok('un altro errore (la rete) non si fa passare per «colonna assente»', (() => {
+    try {
+      sl.bastaUnoDai?.({ data: null, error: { code: '', message: 'TypeError: Failed to fetch' } })
+      return 'passato'
+    } catch {
+      return 'errore'
+    }
+  })(), 'errore')
+  const riga = (c) => sl.rigaDelCorso?.({ nome: 'Lotta', istruttori: ['p1'], ...c })
+  ok('salvare un corso senza la spunta non scrive basta_uno', riga({}) && 'basta_uno' in riga({}), false)
+  ok('salvare un corso con la spunta la scrive', riga({ bastaUno: true })?.basta_uno, true)
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

@@ -28,6 +28,29 @@ tecnico che ha lezioni nel mese, con le ore, il compenso e a che punto è:
 
 **Per corso** apre il dettaglio: ore, tariffa e importo di ogni corso.
 
+## Manca la firma
+
+In una lezione tenuta in due, chi dimentica il PIN non ha la presenza e non
+sarebbe pagato. Se un altro istruttore del corso ha firmato e lui no, accanto allo stato c'è il
+segno giallo **MANCA LA FIRMA** e sotto la riga **MANCA LA SUA FIRMA**: corso,
+giorno e ora, chi ha firmato. Per ogni lezione:
+
+- **C'era**: la presenza è confermata e la lezione entra nel compenso, anche
+  dopo le due settimane di [Presenze istruttori](presenze-istruttori.md);
+- **Non c'era**: la presenza è segnata rifiutata e la firma non si chiede più.
+  Se era uno sbaglio, la rifiutata si elimina in Presenze istruttori.
+
+Non ferma la ricevuta: si fa lo stesso. Se la ricevuta è già fatta e poi si
+segna **C'era**, la riga diventa **NON TORNA PIÙ**: si annulla e si rifà. Se è
+già **PAGATA**, prima si annulla il pagamento in CONTABILITÀ, poi si rifà la
+ricevuta del mese giusto e si ripaga. Chi nel mese ha solo lezioni senza la
+sua firma c'è lo stesso, con **NIENTE DA PAGARE, PER ORA**. Il filtro **Manca
+la firma** le raccoglie.
+
+Nei corsi dove gli istruttori si alternano, in [Corsi](corsi.md) si spunta
+**Si alternano: a lezione basta uno**: lì, se uno ha firmato, agli altri non
+si chiede.
+
 ## Fare le ricevute
 
 **Prepara e stampa le ricevute** fa in una volta tutte quelle da fare e le

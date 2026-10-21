@@ -93,6 +93,7 @@ const PRINCIPALE = [
   { id: 'provenienza-richieste', nome: 'Segreteria · da dove arrivano le richieste · proposta', cartella: 'provenienza-richieste' },
   { id: 'sito-in-statistiche', nome: 'Segreteria · il sito in Statistiche · proposta', cartella: 'sito-in-statistiche' },
   { id: 'compensi-tecnici', nome: 'Segreteria · compensi dei tecnici · proposta', cartella: 'compensi-tecnici' },
+  { id: 'coistruttore-atteso', nome: 'Segreteria · compensi, manca la firma · proposta', cartella: 'coistruttore-atteso' },
   { id: 'sito-istruttori-blocchi', nome: 'Sito · istruttori a blocchi · proposta', cartella: 'sito-istruttori-blocchi' },
   { id: 'fila-sito', nome: 'Segreteria · dal sito alle richieste · proposta', cartella: 'fila-sito' },
 ]
@@ -127,7 +128,7 @@ SEZIONI.sort((a, b) => aree.indexOf(AREA(a)) - aree.indexOf(AREA(b)))
 const ARCHIVIO = 'archivio'
 // Le proposte ancora aperte stanno in una pagina a parte, sopra l'Archivio: lì si discute, il resto è storia.
 const DISCUSSIONE = 'in-discussione'
-const APERTE = new Set(['ricevuta-email', 'segreteria-dalla-chat', 'orari-evidenziati', 'esci-dalla-prova', 'moduli-pdf', 'istruttore-collega', 'sito-pezzi-spazio', 'sito-pezzi-scrivi', 'provenienza-richieste', 'compensi-tecnici'])
+const APERTE = new Set(['ricevuta-email', 'segreteria-dalla-chat', 'orari-evidenziati', 'esci-dalla-prova', 'moduli-pdf', 'istruttore-collega', 'sito-pezzi-spazio', 'sito-pezzi-scrivi', 'provenienza-richieste', 'compensi-tecnici', 'coistruttore-atteso'])
 
 const ultima = (cartella) => execFileSync('git', ['log', '-1', '--format=%ad', '--date=short', '--', join(base, cartella)], { encoding: 'utf8' }).trim()
 const stem = (f) => f.replace(/\.dc\.html$/, '')

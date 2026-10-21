@@ -3413,7 +3413,19 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-compenso-per-corso > summary::before { content: '▸ '; }
 .sg-compenso-per-corso[open] > summary::before { content: '▾ '; }
 .sg-segno-regola[data-tono='neutro'] { color: var(--text); }
+/* MANCA LA SUA FIRMA: corso, giorno, chi ha firmato, i due tasti; le colonne restano ferme coi nomi lunghi. */
+.sg-senza-firma { display: grid; grid-template-columns: minmax(0, 1fr) 130px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 52px; padding: 6px 0; border-top: 1px solid var(--line-soft); font-size: 14px; }
+.sg-senza-firma-corso { min-width: 0; overflow-wrap: anywhere; }
+.sg-senza-firma-sotto { display: contents; }
+.sg-senza-firma-chi { min-width: 0; color: var(--sec); }
+/* Due segni accanto (PRESENZE DA CONFERMARE, MANCA LA FIRMA · N LEZIONI) in una colonna stretta: vanno a capo dentro, non escono. */
+.sg-compenso-riga .sg-segno-regola { white-space: normal; }
 @media (max-width: 480px) {
+  .sg-senza-firma { grid-template-columns: minmax(0, 1fr) auto; padding: 8px 0; }
+  .sg-senza-firma-corso { font-weight: 600; grid-column: 1; }
+  .sg-senza-firma-sotto { display: block; grid-column: 1; font-size: 13px; color: var(--sec); }
+  .sg-senza-firma-sotto > * + *::before { content: ' · '; }
+  .sg-senza-firma > :last-child { grid-column: 2; grid-row: 1 / span 2; }
   .sg-compenso-riga { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
   .sg-compenso-riga > :nth-child(n + 3) { grid-column: 1 / -1; }
   .sg-numeri[data-telefono-due] { grid-template-columns: repeat(3, minmax(0, 1fr)); }

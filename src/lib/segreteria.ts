@@ -84,6 +84,8 @@ export interface CorsoSeg {
   attivo: boolean
   /** Quale tessera chiede il corso (FIJLKAM, FIPE…); senza, nessuna (`61-tessere.sql`). */
   enteTessera?: string
+  /** Gli istruttori si alternano: a lezione basta uno, agli altri non si chiede la firma. Assente senza `82-manca-la-firma.sql`. */
+  bastaUno?: boolean
   /** Solo quelle ancora in corso o future: quelle chiuse restano nel registro. */
   ricorrenze: RicorrenzaSeg[]
 }
@@ -319,6 +321,8 @@ export interface DatiCorso {
   colore?: string
   /** In maiuscolo; vuoto o assente: il corso non chiede una tessera. */
   enteTessera?: string
+  /** Assente: resta com'era (senza `82-manca-la-firma.sql` la colonna non c'è). */
+  bastaUno?: boolean
 }
 
 /** Una lezione passata con il suo appello, per il resoconto delle presenze. */
@@ -453,6 +457,8 @@ export interface PresenzaIstruttoreSeg {
   previstiElenco?: Array<{ id: string; nome: string }>
   /** La lezione è stata annullata: non si segna più nessuno. */
   annullata?: boolean
+  /** Il corso è di quelli dove a lezione basta uno (`Corso.bastaUno`). */
+  bastaUno?: boolean
 }
 
 /**
@@ -883,6 +889,8 @@ export interface DatiSegreteria {
   segnaIstruttoriLezione(sessioneId: string, presenti: string[]): Promise<void>
   /** Un previsto senza presenza c'era, anche se la lezione è già coperta da un collega: confermato. */
   segnaIstruttorePrevisto(sessioneId: string, personaId: string): Promise<void>
+  /** «Non c'era»: una presenza rifiutata per un previsto senza firma, così COMPENSI non la chiede più. */
+  segnaIstruttoreAssente(sessioneId: string, personaId: string): Promise<void>
   /** Gli ultimi timer fatti partire, dal più recente. */
   allenamenti(quanti: number): Promise<AllenamentoSeg[]>
   impostazioni(): Promise<Impostazioni>
@@ -1653,7 +1661,8 @@ export function corsoCambiato(corso: CorsoSeg | null, bozza: DatiCorso, salaIniz
     bozza.capienza !== salvato.capienza ||
     (bozza.colore ?? COLORI[0].hex) !== salvato.colore ||
     // Senza tessera è vuota o assente, lo stesso.
-    (bozza.enteTessera ?? '') !== salvato.enteTessera
+    (bozza.enteTessera ?? '') !== salvato.enteTessera ||
+    (bozza.bastaUno ?? false) !== (corso?.bastaUno ?? false)
   )
 }
 
