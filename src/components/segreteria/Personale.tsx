@@ -24,7 +24,7 @@ const PERMESSI: Array<[string, Permesso]> = [
   ['Vedere schede, certificati e presenze delle persone', 'schede'],
   ['Registrare e annullare pagamenti, annullare ricevute', 'pagamenti'],
   ['Emettere ricevute (per l’amministrazione non ancora)', 'emettere-ricevute'],
-  ['Vedere PAGAMENTI e scaricare il CSV', 'pagina-pagamenti'],
+  ['Vedere gli incassi in CONTABILITÀ e scaricare il CSV', 'pagina-pagamenti'],
   ['Cambiare il listino', 'listino'],
   ['Vedere le STATISTICHE (presenze e iscritti)', 'statistiche'],
   ['Contabilità: movimenti, voci e casse', 'contabilita'],

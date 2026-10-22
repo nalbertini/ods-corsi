@@ -9,8 +9,6 @@ import { Corsi, riapriSuIscritti } from './Corsi'
 import { Iscritti } from './Iscritti'
 import { Presenze } from './Presenze'
 import { Statistiche } from './Statistiche'
-import { Pagamenti } from './Pagamenti'
-import { PaginaTessere } from './Tessere'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
 import { Listino } from './Listino'
@@ -29,7 +27,6 @@ import { Palestra } from './banco/Palestra'
 // Il pannello del sito porta con sé l'editor del testo e la sua pulizia: si scaricano solo aprendolo.
 const Sito = lazy(() => import('./Sito').then((m) => ({ default: m.Sito })))
 import { tocca } from '../../lib/segnalazioni'
-import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
 import { CosaManca } from './CosaManca'
 import { strisciaVisibile } from '../../lib/cosaManca'
@@ -48,7 +45,7 @@ import { linkDellaSegreteria } from '../../lib/provenienza'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 import { eScorciatoiaDiRicerca } from '../../lib/scorciatoiaRicerca'
-import { guidaDellaVoce, indirizzoConsentito, leggeLaSegreteria, menuDi, pagamentiRidotti, postoConsentito, primaVoce, titoloDelMenu, vociConsentite } from '../../lib/menuSegreteria'
+import { guidaDellaVoce, indirizzoConsentito, leggeLaSegreteria, menuDi, postoConsentito, primaVoce, titoloDelMenu, vociConsentite } from '../../lib/menuSegreteria'
 
 export type { Voce }
 
@@ -368,7 +365,7 @@ export function Segreteria({
 
   // In un'altra scheda: la segreteria resta dov'era, con quello che c'era aperto.
   const guida = (
-    <a className="icon-btn tasto-guida" href={indirizzoPagina(guidaDellaVoce(voce, chi))} target="_blank" rel="noopener" title="La guida" aria-label="Apri la guida di questa voce">
+    <a className="icon-btn tasto-guida" href={indirizzoPagina(guidaDellaVoce(voce))} target="_blank" rel="noopener" title="La guida" aria-label="Apri la guida di questa voce">
       ?
     </a>
   )
@@ -656,15 +653,12 @@ export function Segreteria({
         )}
         {d && voce === 'richieste' && <Richieste key={`${filtro ?? ''}|${ricerca?.testo ?? ''}|${richiesta ?? posto.richiesta ?? ''}`} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} ricerca={ricerca} aperta={richiesta ?? posto.richiesta} onTogliRicerca={() => setRicerca(undefined)} onConti={contiCambiati} />}
         {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} schede={schedePresenze} />}
-        {d && voce === 'tessere' && <PaginaTessere d={d} onVai={vai} />}
         {d && voce === 'contabilita' && <Contabilita key={movimento ?? ''} d={d} movimento={movimento} onPersona={conSegreteria ? (id) => void vai('iscritti', { persona: id }) : undefined} />}
-        {d && voce === 'pagamenti' && <Pagamenti d={d} onVai={conSegreteria ? vai : undefined} soloNomi={pagamentiRidotti(chi)} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} schede={schedePresenze} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'compensi' && <Compensi d={d} puoPagare={puo(chi, 'contabilita')} onVai={(v) => void vai(v)} />}
         {d && voce === 'personale' && <Personale d={d} onVai={(v) => void vai(v)} />}
-        {d && voce === 'esercizi' && <EserciziPalestra d={d} />}
         {d && voce === 'listino' && <Listino d={d} />}
         {d && voce === 'vestiario' && <Vestiario onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'regole' && <Regole d={d} onVai={vai} />}

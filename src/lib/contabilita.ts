@@ -152,7 +152,7 @@ export function incassiDerivati(righe: RigaPagamento[], casse: Cassa[]): RigaMov
     data: r.data,
     importo: r.importo,
     descrizione: r.chi,
-    sotto: `${r.voce} · ${r.metodo}`,
+    sotto: `${r.voce} · ${r.metodo}${r.ricevuta ? ` · ricevuta ${r.ricevuta.numero}/${r.ricevuta.anno}` : r.senzaRichiesta ? '' : ' · senza ricevuta'}`,
     personaId: r.personaId,
     voce: voceDiSistema(r.voce),
     cassaId: cassa(NOME_CASSA[cassaDelMetodo(r.metodo, r.data)]),
@@ -445,6 +445,65 @@ export function residui(casse: Cassa[], righe: RigaMovimento[]): Array<{ cassaId
     }
     return { cassaId: c.id, entrate, uscite, residuo: c.saldoIniziale + entrate - uscite + giroconti }
   })
+}
+
+export interface RigaEstratto {
+  riga: RigaMovimento
+  entrata: number
+  uscita: number
+  /** Il saldo delle casse scelte dopo questo movimento. */
+  saldo: number
+}
+
+export interface EstrattoConto {
+  saldoIniziale: number
+  entrate: number
+  uscite: number
+  saldoFinale: number
+  righe: RigaEstratto[]
+}
+
+/**
+ * MOVIMENTI come un estratto conto: le righe dalla più recente, ciascuna col saldo
+ * delle casse scelte dopo di lei (vuote = tutte). Un giroconto è un'uscita se parte da
+ * una cassa scelta e arriva fuori, un'entrata nel caso opposto, a zero fra due scelte.
+ * Come `residui`, un movimento prima del «dal» della cassa non conta.
+ */
+export function estrattoConto(righe: RigaMovimento[], casse: Cassa[], f: FiltroMovimenti & { cassaIds?: string[] }): EstrattoConto {
+  const scelte = casse.filter((c) => !f.cassaIds?.length || f.cassaIds.includes(c.id))
+  const conta = (r: RigaMovimento, id?: string) => {
+    const c = id ? scelte.find((x) => x.id === id) : undefined
+    return !!c && !(c.dal && r.data < c.dal)
+  }
+  /** Quanto una riga sposta il saldo, e se tocca le casse scelte. */
+  const effetto = (r: RigaMovimento) => {
+    const da = conta(r, r.cassaId)
+    const a = r.tipo === 'giroconto' && conta(r, r.cassaAId)
+    if (r.tipo === 'giroconto') return { tocca: da || a, entrata: a && !da ? r.importo : 0, uscita: da && !a ? r.importo : 0 }
+    return { tocca: da, entrata: da && r.tipo === 'entrata' ? r.importo : 0, uscita: da && r.tipo === 'uscita' ? r.importo : 0 }
+  }
+  const { dal } = f
+  const prima = dal ? righe.filter((r) => !r.annullato && r.data < dal) : []
+  const saldoIniziale = scelte.reduce((s, c) => s + c.saldoIniziale, 0) + prima.reduce((s, r) => s + effetto(r).entrata - effetto(r).uscita, 0)
+  const periodo = { annullati: f.annullati, dal: f.dal, al: f.al }
+  const cercate = new Set(filtraMovimenti(righe, { ...periodo, testo: f.testo, voce: f.voce }).map((r) => r.id))
+  const viste = filtraMovimenti(righe, periodo)
+    .sort((x, y) => y.data.localeCompare(x.data) || x.id.localeCompare(y.id))
+    .map((riga) => ({ riga, ...effetto(riga) }))
+    .filter((x) => x.tocca)
+  // Il saldo è sempre quello vero delle casse: tipo, testo e voce nascondono righe, non le tolgono dal conto.
+  let corrente = saldoIniziale
+  const conSaldo: RigaEstratto[] = []
+  for (const x of [...viste].reverse()) {
+    const e = x.riga.annullato ? 0 : x.entrata
+    const u = x.riga.annullato ? 0 : x.uscita
+    corrente += e - u
+    conSaldo.unshift({ riga: x.riga, entrata: e, uscita: u, saldo: corrente })
+  }
+  const mostrate = conSaldo.filter((x) => cercate.has(x.riga.id)).filter((x) => !f.tipo || (f.tipo === 'entrata' ? x.entrata > 0 : f.tipo === 'uscita' && x.uscita > 0) || (x.riga.annullato && x.riga.tipo === f.tipo))
+  const entrate = mostrate.reduce((s, x) => s + x.entrata, 0)
+  const uscite = mostrate.reduce((s, x) => s + x.uscita, 0)
+  return { saldoIniziale, entrate, uscite, saldoFinale: corrente, righe: mostrate }
 }
 
 /** Entrate, uscite e la differenza: i giroconti e gli annullati non contano. */

@@ -2,6 +2,8 @@
 
 ← [Torna alla segreteria](README.md)
 
+Si trova in **IMPOSTAZIONI › GLI ESERCIZI**.
+
 Sopra l'elenco ci sono **LE CATEGORIE** della palestra: Judo, Lotta, Pilates,
 Yoga, e poi A corpo libero, Attrezzi, Core, Cardio, Mobilità. È l'unica
 divisione degli esercizi, e la stessa dei timer e delle liste di musica. Si

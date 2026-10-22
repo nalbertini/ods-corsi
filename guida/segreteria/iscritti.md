@@ -33,7 +33,8 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   **CORSI** dice cosa manca per ogni corso (**Judo: scaduto il 31 dicembre**).
 - **Non in regola** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
   anche dal bottone **Chi non è in regola** delle [Statistiche](statistiche.md).
-- **Senza tessera** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([TESSERE](tessere.md)).
+- **Senza tessera** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([Le tessere](#le-tessere)).
+- **Tesserati senza corso** — chi ha una tessera da atleta che vale oggi e nessun corso (può aver smesso e avere ancora la tessera dell'anno). C'è solo se il database ha le tessere.
 - **Senza documento** — chi non ha ancora la copia del documento d'identità in
   segreteria.
 - **Non archiviato** — solo finché ce ne sono: chi ha un file di certificato
@@ -110,17 +111,17 @@ manca tutto c'è scritto «nessun contatto». Davanti c'è il telefono o la bust
 
 ## Nuovo iscritto
 
-**+ Nuovo iscritto** → nome, cognome, email, email di contatto e telefono
+**+ Nuovo iscritto** → nome, cognome, le due email e il telefono
 (facoltativi), **ISCRIVI A** un corso → **Salva**.
 
 Le email sono due, e servono a cose diverse:
 
-- **EMAIL** è per entrare nell'app: una sola persona per indirizzo. Se è già di
-  qualcuno, l'app dice di chi e di metterla come email di contatto.
-- **EMAIL DI CONTATTO** è dove scrivete o telefonate alla famiglia: può essere
+- **EMAIL PER ENTRARE NELL'APP**: una sola persona per indirizzo. Se è già di
+  qualcuno, l'app dice di chi e di metterla come email per ricevute e avvisi.
+- **EMAIL PER RICEVUTE E AVVISI** (nelle altre pagine, **EMAIL DI CONTATTO**) è dove scrivete o telefonate alla famiglia: può essere
   la stessa per più persone (un genitore e i figli, due fratelli). È anche
   dove arrivano le ricevute per email (vedi [Un pagamento e la sua
-  ricevuta](#un-pagamento-e-la-sua-ricevuta)): mai all'**EMAIL** di accesso.
+  ricevuta](#un-pagamento-e-la-sua-ricevuta)): mai all'email per entrare nell'app.
 
 Due omonimi si distinguono dal telefono, dal codice fiscale o dalla data di
 nascita: l'email non basta più, perché un figlio può non averla.
@@ -136,7 +137,14 @@ Anche il tasto Indietro del browser torna all'elenco, dalla scheda come dal
 modulo di un iscritto nuovo, e una scheda aperta
 resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 
-In cima, i timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
+Sotto il nome, l'età e da quando è in elenco. Se manca qualcosa, prima di tutto
+c'è il riquadro rosso **✕ COSA MANCA**, una riga per cosa: il telefono e
+l'email per ricevute e avvisi, il codice fiscale (**serve per la ricevuta**), la
+data di nascita, e per un minorenne il nome e il codice fiscale del genitore.
+Una scheda in regola per quota e certificato può avere lo stesso il riquadro:
+dice cosa completare nei dati. Quando non manca niente il riquadro non c'è.
+
+Poi i timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
 grandi (verde a posto, giallo da guardare, rosso manca), con le parole
 dell'elenco ma la data intera: **SCADUTO IL 25/09/2026**, **VALIDO FINO
 AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
@@ -144,7 +152,9 @@ AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
 il timbro è grigio, **NON SERVE**, con **SOTTO I 6 ANNI**; un certificato già
 segnato si vede com'è, senza rosso. Nell'ultimo mese prima del compleanno è
 giallo, **SERVE DAL 14/10/2026**, sotto **FRA 14 GIORNI**. Senza certificato e senza data di nascita il timbro è rosso e dice anche **MANCA LA DATA DI NASCITA**. E
-**DOCUMENTO D'IDENTITÀ** più piccolo, perché non serve per entrare. Un clic su
+**DOCUMENTO D'IDENTITÀ**, grande come gli altri: per un minorenne dice solo se
+c'è e quando scade. Con la **TESSERA** i timbri sono quattro, tutti larghi
+uguale. Un clic su
 un timbro apre la scheda che lo contiene (sotto) e porta alla sua parte. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
 **Riattiva**.
@@ -188,9 +198,9 @@ scheda.
 
 Poi la scheda è divisa in quattro schede, e se ne vede una alla volta:
 
-- **PERSONA** — i contatti, **STESSO CONTATTO DI**, **DATI ANAGRAFICI**, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
+- **PERSONA** — i **CONTATTI** (l'**EMAIL PER ENTRARE NELL'APP** solo se c'è), **STESSO CONTATTO DI**, **DATI ANAGRAFICI** (con **NATA IL** o **NATO IL** dal codice fiscale; senza un codice fiscale giusto, **NATO IL**), il **GENITORE** solo per un minorenne, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. **Modifica i contatti** cambia anche nome e cognome. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
-- **QUOTA E PAGAMENTI** — la quota e i pagamenti, con **+ FAI LA RICEVUTA** e **+ REGISTRA UN PAGAMENTO**. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
+- **QUOTA E PAGAMENTI** — la quota e i pagamenti. **+ FAI LA RICEVUTA** e **+ REGISTRA UN PAGAMENTO** stanno subito sotto la **QUOTA**, prima dello storico: non serve scorrere tutte le ricevute. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
   corsi che l'amministrazione ha scritto in CONTABILITÀ con questa persona stanno in **SCRITTI IN
   CONTABILITÀ**, col tag **Scritto in contabilità**: non sono ricevute (niente numero né PDF), non si
   sommano e non toccano quello che resta da pagare. Se la quota la vuoi contata, la ricevuta si fa qui.
@@ -279,7 +289,7 @@ scheda è disattivata, nessuno.
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
   PAGATA**. In elenco la quota è in regola, e nella scheda si legge **Fuori app**; alla sua data
   scade da sola, e **Togli «pagata fuori dall'app»** la toglie prima.
-- **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima **PAGATO**, **MANCA** e **QUOTA**; poi ogni ricevuta con i suoi pagamenti sotto, e dopo **SENZA RICEVUTA** quelli registrati a mano. Quelli di tutti sono in [PAGAMENTI](pagamenti.md).
+- **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima **PAGATO**, **MANCA** e **QUOTA**; poi ogni ricevuta con i suoi pagamenti sotto, e dopo **SENZA RICEVUTA** quelli registrati a mano. Quelli di tutti sono in [CONTABILITÀ → MOVIMENTI](../amministrazione/contabilita.md#movimenti).
 - **ISCRIZIONI** — i corsi che fa. **Termina** la toglie da un corso: da
   domani non è più nell'appello, il registro resta. «Iscrivi a un corso…» +
   **Iscrivi** la aggiunge a un altro.
@@ -314,12 +324,30 @@ scheda è disattivata, nessuno.
 
 ### I suoi dati
 
-In fondo alla scheda **PERSONA**, **I SUOI DATI**: **Esporta i dati** scarica un file con
+In fondo alla scheda, accanto a **Unisci con un altro iscritto…**, **Esporta i dati** scarica un file con
 anagrafica, iscrizioni e presenze, quello che una persona ha diritto di chiedere.
 
 ## Le tessere
 
-Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a quando vale (**FIJLKAM · agonista · fino al 31 dicembre 2026**), il numero, se viene dal RASD o è scritta a mano, e se è **IN REGOLA**, **SCADE A DICEMBRE** o **SCADUTA**. Senza tessera la scheda dice se il corso la chiede. **+ AGGIUNGI UNA TESSERA** serve per chi non è nel foglio del RASD; **Togli** la toglie, dopo una conferma, e **Annulla** nell'avviso la rimette com'era. In cima alla scheda c'è anche il timbro **TESSERA** (solo per chi ha un corso che la chiede). Le tessere del RASD non si cambiano: si rifà l'import ([Tessere](tessere.md)).
+Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a quando vale (**FIJLKAM · agonista · fino al 31 dicembre 2026**), il numero, se viene dal RASD o è scritta a mano, e se è **IN REGOLA**, **SCADE A DICEMBRE** o **SCADUTA**. Senza tessera la scheda dice se il corso la chiede. **+ AGGIUNGI UNA TESSERA** serve per chi non è nel foglio del RASD; **Togli** la toglie, dopo una conferma, e **Annulla** nell'avviso la rimette com'era. Le tessere del RASD non si cambiano: si rifà l'import (sotto).
+
+> **Per ora le tessere non vengono segnalate.** Nessuna parte dell'app dice che una tessera manca, è scaduta o scade: niente casella TESSERE in COSA MANCA, niente parola nella colonna IN REGOLA, niente timbro TESSERA. Restano i filtri e le tessere nella scheda, che si vedono, si aggiungono e si tolgono come prima.
+
+**Quale tessera chiede un corso.** In [CORSI](corsi.md), nei dati del corso, **TESSERA RICHIESTA**: l'ente, in maiuscolo (**FIJLKAM**, **FIPE**), o vuoto se il corso non la chiede. Judo, Lotta, Aikido, MGA e Avviamento chiedono FIJLKAM; i corsi della sala Pesi FIPE; psicomotricità, giocomotricità e prepugilistica nessuna. Si cambia quando si vuole.
+
+### Caricare il foglio del RASD
+
+**Importa tessere**, in cima all'**Elenco**, apre il caricamento; **← Iscritti** torna all'elenco. Tre passi:
+
+1. **IL FOGLIO** — dal RASD, tab Tesseramenti, salva il foglio come **CSV** (da Excel: *File → Salva con nome → CSV UTF-8*). Le colonne sono **Organismo, Persona, Codice fiscale, Tipo, Codice tess., Valido dal**, con `;` o `,` come separatore. **Scegli il foglio**, poi **Controlla**.
+2. **IL CONTROLLO** — non scrive niente. Dice quante tessere sono nuove, quante ci sono già e non cambiano, e quante righe restano fuori, ognuna col motivo. **Metti N tessere** le scrive.
+3. **NELL'APP** — le trovi nella scheda di ogni persona, sotto **TESSERE**.
+
+La persona si riconosce dal **codice fiscale e dallo stesso nome** (anche con accenti, apostrofi o nome e cognome scambiati): se il codice fiscale c'è ma il nome è un altro, la riga non entra. L'import **non crea nessuna persona**: chi non ha la scheda, o ha la scheda senza il codice fiscale, resta fuori. Si scrive il codice fiscale nella scheda e si rifà il foglio. Si può rifare quante volte si vuole: non duplica niente. La tessera vale fino al **31 dicembre** dell'anno di «Valido dal».
+
+Le righe fuori sono di tre tipi: **nessuna scheda con questo codice fiscale**, **il codice fiscale è di un'altra persona** (controlla il nome) e **la riga ha dei dati che non vanno**.
+
+Se il database non ha ancora le tessere, il filtro e il tasto non ci sono.
 
 ## Un pagamento e la sua ricevuta
 

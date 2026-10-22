@@ -138,6 +138,36 @@ export function StoricoIscritto({
 
   return (
     <div className="stack" style={{ gap: 8 }}>
+      {/* Sotto la QUOTA, prima dello storico: con tante ricevute in fondo bisognava scorrere. */}
+      {registrando ? (
+        <div ref={modulo}>
+        <RegistraPagamento
+          d={d}
+          p={p}
+          corsi={corsi}
+          fai={fai}
+          iniziale={riprendi}
+          contabilita={contabilita}
+          // Con un Satispay arrivato la ricevuta va fatta con quei soldi (`cosaNonVaMetodo`): un altro pagamento resta senza.
+          onRicevuta={p.satispay ? undefined : onRicevuta}
+          onFatto={() => {
+            setRegistrando(false)
+            void diretti.ricarica()
+          }}
+          onChiudi={() => setRegistrando(false)}
+        />
+        </div>
+      ) : (
+        <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+          {/* Pieno se è la prima cosa da fare, o se è tutto a posto: la scheda si apre per incassare. */}
+          <button type="button" className={tastoPrincipale(p, oggi) === 'quota' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo onClick={onNuova}>
+            + Fai la ricevuta
+          </button>
+          <button type="button" className="num sg-chip" onClick={() => setRegistrando(true)}>
+            + Registra un pagamento
+          </button>
+        </div>
+      )}
       <Riga titolo="PAGAMENTI" />
       {ricevute.guaio && <Guaio testo={ricevute.guaio} />}
       {diretti.guaio && <Guaio testo={diretti.guaio} />}
@@ -245,35 +275,6 @@ export function StoricoIscritto({
             </button>
           </div>
           <span className="sg-sotto">Se ne fai subito un’altra giusta, scegli «Resta da pagare»: la nuova ricevuta la rimette pagata.</span>
-        </div>
-      )}
-      {registrando ? (
-        <div ref={modulo}>
-        <RegistraPagamento
-          d={d}
-          p={p}
-          corsi={corsi}
-          fai={fai}
-          iniziale={riprendi}
-          contabilita={contabilita}
-          // Con un Satispay arrivato la ricevuta va fatta con quei soldi (`cosaNonVaMetodo`): un altro pagamento resta senza.
-          onRicevuta={p.satispay ? undefined : onRicevuta}
-          onFatto={() => {
-            setRegistrando(false)
-            void diretti.ricarica()
-          }}
-          onChiudi={() => setRegistrando(false)}
-        />
-        </div>
-      ) : (
-        <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-          {/* Pieno se è la prima cosa da fare, o se è tutto a posto: la scheda si apre per incassare. */}
-          <button type="button" className={tastoPrincipale(p, oggi) === 'quota' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo onClick={onNuova}>
-            + Fai la ricevuta
-          </button>
-          <button type="button" className="num sg-chip" onClick={() => setRegistrando(true)}>
-            + Registra un pagamento
-          </button>
         </div>
       )}
     </div>

@@ -8,7 +8,7 @@ import { eIndirizzoGuida, INDIRIZZO_AREE } from './cancelletti'
  *
  * - `segreteria/`: il computer della reception, solo per chi ha il ruolo di
  *   segreteria;
- * - `amministrazione/`: i conti della palestra (pagamenti e listino), per chi
+ * - `amministrazione/`: i conti della palestra (contabilità e listino), per chi
  *   ha il ruolo di amministrazione;
  * - `iscrizioni/`: la pagina pubblica, quella del link da mandare a chi vuole
  *   iscriversi, senza accesso;

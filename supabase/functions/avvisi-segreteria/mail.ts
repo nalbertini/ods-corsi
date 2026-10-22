@@ -119,8 +119,8 @@ export function testoAvviso(a: Avviso, app: string): { oggetto: string; testo: s
       `Email lasciata: ${riga(a.email)}`,
       'Da chiamare: forse si è fermata a metà del modulo, o i soldi vanno restituiti.',
     ]
-    link = `${app}#pagamenti`
-    tasto = 'Apri PAGAMENTI'
+    link = `${app}#contabilita`
+    tasto = 'Apri CONTABILITÀ'
   }
   return {
     oggetto,

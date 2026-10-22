@@ -22,7 +22,6 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
     nome: 'PERSONE',
     voci: [
       { voce: 'iscritti', nome: 'ISCRITTI' },
-      { voce: 'tessere', nome: 'TESSERE' },
       { voce: 'richieste', nome: 'RICHIESTE ONLINE' },
       { voce: 'istruttori', nome: 'ISTRUTTORI' },
       { voce: 'compensi', nome: 'COMPENSI' },
@@ -34,14 +33,12 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
     nome: 'CORSI',
     voci: [
       { voce: 'corsi', nome: 'CORSI' },
-      { voce: 'esercizi', nome: 'ESERCIZI' },
     ],
   },
   {
     id: 'soldi',
     nome: 'SOLDI',
     voci: [
-      { voce: 'pagamenti', nome: 'PAGAMENTI' },
       { voce: 'contabilita', nome: 'CONTABILITÀ' },
       { voce: 'listino', nome: 'LISTINO' },
       { voce: 'vestiario', nome: 'VESTIARIO' },

@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<span style="position: relative; display: inline-flex; flex-direction: column; gap: 6px; vertical-align: top">
+  <span style="display: inline-flex; align-items: stretch; height: 44px; border: 2px solid #14709f; border-radius: 6px; overflow: hidden; background: {{fondo}}">
+    <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 15px; white-space: nowrap">
+      <span style="font-weight: 500; color: #46606f">{{nome}}</span>
+      <span style="font-weight: {{peso}}; color: #0d2a3d">{{valore}}</span>
+      <span style="font-size: 11px; color: #0d2a3d">▾</span>
+    </span>
+    <sc-if value="{{attivo}}" hint-placeholder-val="{{ false }}">
+      <span aria-label="Togli il filtro" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; border-left: 1px solid #cfe6f4; font-size: 15px; font-weight: 700; color: #0d2a3d">✕</span>
+    </sc-if>
+  </span>
+  <sc-if value="{{aperto}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; flex-direction: column; min-width: 240px; padding: 6px 0; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; box-shadow: 0 8px 24px rgba(13, 42, 61, 0.18)">
+      <sc-for list="{{opzioni}}" as="o" hint-placeholder-count="4">
+        <span style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; background: {{o.fondo}}; font-size: 15px; font-weight: {{o.peso}}; color: #0d2a3d; white-space: nowrap"><span style="width: 18px; height: 18px; border: 2px solid #14709f; border-radius: 3px; font-size: 13px; line-height: 14px; text-align: center; background: {{o.casella}}; color: #ffffff">{{o.segno}}</span>{{o.testo}}<span style="margin-left: auto; padding-left: 16px; font-variant-numeric: tabular-nums; font-size: 13px; color: #46606f">{{o.conto}}</span></span>
+      </sc-for>
+    </span>
+  </sc-if>
+</span>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Cassa"},"valore":{"editor":"text","default":"Tutte"},"scelte":{"editor":"text","default":"Cassa Contanti|Satispay"},"attivo":{"editor":"boolean","default":false},"aperto":{"editor":"boolean","default":false},"opzioni":{"editor":"text","default":"Cassa Contanti|Conto Corrente|Satispay"},"tema":{"editor":"enum","options":["sito"],"default":"sito","section":"Tema"},"$preview":{"width":280,"height":260}}'>
+// `FiltroCasse` di Contabilita.tsx (`.sg-filtro-menu.sg-casse`): il filtro CASSE di MOVIMENTI a scelta multipla, uguale a FiltroMenu da chiuso
+// («Cassa Tutte ▾», 44px, ✕ quando non sono tutte). Aperto: un <details> con una casella da 18px per cassa (Cassa Contanti, Conto Corrente,
+// Satispay), l'elenco sotto il tasto fuori dal riquadro (position absolute, senza overflow:hidden). `scelte` sono le casse spuntate.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const attivo = p.attivo === true || p.attivo === 'true';
+    const valore = p.valore ?? 'Tutte';
+    const opzioni = String(p.opzioni ?? '').split('|').map((x) => x.trim()).filter(Boolean).map((x) => {
+      const [testo, conto = ''] = x.split(':');
+      const su = String(p.scelte ?? '').split('|').includes(testo);
+      return { testo, conto, segno: su ? '✓' : '', casella: su ? '#14709f' : '#ffffff', fondo: '#ffffff', peso: su ? 700 : 500 };
+    });
+    return { nome: p.nome ?? 'Cassa', valore, attivo, aperto: p.aperto === true || p.aperto === 'true', opzioni, fondo: attivo ? '#cfe6f4' : '#ffffff', peso: attivo ? 700 : 600 };
+  }
+}
+</script>
+</body>
+</html>

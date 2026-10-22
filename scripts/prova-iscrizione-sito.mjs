@@ -212,20 +212,24 @@ const settimanaVecchia = (r) => r.selettori.some((x) => /^\.sg-griglia$|^\.sg-or
 // La pagina iscrizioni/ corta: il riquadro IL VESTIARIO non sta più sotto (gli ordini si aprono solo a #vestiario, scelta dell'utente) e i
 // tasti social in fondo non ci sono più, quindi le loro regole sono tolte; il fondo col tasto per cominciare ha ora respiro (gap e 32px sotto).
 const vestiarioSottoLaPagina = (r) => r.selettori.some((x) => x === '.scroll > .iscrizioni-contatti' || x === '.iscrizioni-piede' || x === '.iscrizioni-richiesta')
-const rigaMovimentoConCasella = (r) => r.selettori.some((x) => /^\.sg-riga-movimento$|^\.sg-riga-movimento > :not\(:nth-child\(2\)\):not\(:last-child\)$/.test(x))
+// Le righe senza casella (`data-senza-casella`) non ci sono più: l'estratto conto le ha tutte con la casella.
+const rigaMovimentoConCasella = (r) => r.selettori.some((x) => /^\.sg-riga-movimento$|^\.sg-riga-movimento > :not\(:nth-child\(2\)\):not\(:last-child\)$|^\.sg-riga-movimento\[data-senza-casella='true'\]( > :first-child)?$/.test(x))
 // Sul telefono COMPENSI tiene anche DA PAGARE (tre numeri, si nasconde solo TECNICI): le due regole di `.sg-numeri[data-telefono-due]` sono cambiate di proposito.
 const numeriCompensi = (r) => r.selettori.some((x) => x.startsWith('.sg-numeri[data-telefono-due]'))
 // IMPOSTAZIONI va a schede (`prova:impostazioni`): l'indice in cima e i titoli dei gruppi (`.sg-indice`, `.sg-regole-gruppo`, `.sg-regole-titolo`) sono tolti di proposito.
 const impostazioniAGruppi = (r) => r.selettori.some((x) => /^\.sg-indice$|^\.sg-regole-(gruppo|titolo)(:focus-visible)?$/.test(x))
 // CONTABILITÀ ha tre casse (Satispay): `.sg-numeri.sg-numeri-conti` va a capo da 220px invece che da 280px, così le tre stanno su una riga.
 const numeriConti = (r) => r.selettori.includes('.sg-numeri.sg-numeri-conti')
+// La scheda dell'iscritto rivista: i timbri tutti larghi uguale (niente più DOCUMENTO piccolo né colonna in più con la TESSERA) e la linguetta aperta scura; le loro regole sono cambiate di proposito.
+const SCHEDA_RIVISTA = ['.sg-timbri', '.sg-timbri[data-con-tessera]', ".sg-timbro[data-piccolo='true']", ".sg-timbro[data-piccolo='true'] .sg-timbro-parola", ".sg-timbro[data-piccolo='true'] .sg-timbro-riga", ".sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno[data-tono='giallo']"]
+const schedaRivista = (r) => r.selettori.every((x) => SCHEDA_RIVISTA.includes(x))
 // Le cifre di OGGI nel Banco sono le caselle della striscia (cinque o sei, colore dallo stato): `.bn-cifre` e il vecchio `data-guaio` sono cambiati di proposito.
 const cifreBanco = (r) => r.selettori.some((x) => /^\.bn-cifre$|^\.bn-cifra\[data-guaio/.test(x))
 // L'area iscritti ha il look del sito: SEGNALA è cresciuto a 44px col bordo blu (`prova:look`).
 const segnalaIscritti = (r) => r.selettori.includes('.mia-segnala')
 // Aiuto e Impostazioni con il loro nome stanno nel riquadro di chi è dentro (`prova:menu`): la riga di icone in cima al menu non c'è più, il riquadro è più basso e DATI DI PROVA sta sempre lì; i risultati della ricerca hanno la loro icona.
 const menuConNomi = (r) => r.selettori.some((x) => /^#sg-menu \.sg-icone( > \.sg-bollino)?$|^#sg-menu \.sg-chi > \.sg-bollino$|^\.sg-chi$/.test(x))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !menuConNomi(r) && !segnalaIscritti(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !menuConNomi(r) && !schedaRivista(r) && !segnalaIscritti(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

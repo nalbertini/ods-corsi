@@ -74,7 +74,7 @@ Le liste che il tablet di sala fa partire dalla sua barra in basso (vedi
   legge cos'è; un indirizzo che comincia con http, o che non è nessuno dei
   tre, non si salva;
 - **la sala**, o **Tutte le sale**;
-- **la categoria** (Judo, Lotta, Core…; la lista si cura in [ESERCIZI](esercizi.md)),
+- **la categoria** (Judo, Lotta, Core…; la lista si cura in IMPOSTAZIONI › GLI ESERCIZI, vedi [Esercizi](esercizi.md)),
   o **Tutte** per quelle comuni, o nessuna: sul tablet si filtrano per quella.
 
 **Cambia** per correggerla, **Togli** per toglierla. Il tablet le rilegge ogni
@@ -158,7 +158,7 @@ le ricevute alle famiglie: quelli in più non partono, e
 Corsi e iscritti dai fogli CSV, o gli iscritti dalle risposte del modulo Google,
 in tre passi: i fogli, il controllo, il database. Si può rifare quante volte si
 vuole, non duplica niente. Tutto è spiegato in [Importa da Excel](importa.md). Le tessere
-del RASD non si caricano da qui ma da [TESSERE](tessere.md#caricare-il-foglio-del-rasd).
+del RASD non si caricano da qui ma da [ISCRITTI → Importa tessere](iscritti.md#caricare-il-foglio-del-rasd).
 
 ## Dati e privacy
 

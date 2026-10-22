@@ -44,8 +44,6 @@ export const GRUPPI_MENU: GruppoMenu[] = [
     titolo: 'Iscritti e soldi',
     voci: [
       ['iscritti', 'Iscritti'],
-      ['tessere', 'Tessere'],
-      ['pagamenti', 'Pagamenti'],
     ],
   },
   {
@@ -71,19 +69,18 @@ export const GRUPPI_MENU: GruppoMenu[] = [
     voci: [
       ['statistiche', 'Statistiche'],
       ['vestiario', 'Vestiario'],
-      ['esercizi', 'Esercizi'],
       ['segnalazioni', 'Segnalazioni'],
       ['sito', 'Sito'],
     ],
   },
 ]
 
-/** Il gruppo dei conti per chi ha l'amministrazione: la contabilità; chi ha solo i conti ha anche pagamenti e listino. */
+/** Il gruppo dei conti per chi ha l'amministrazione: la contabilità; chi ha solo i conti ha anche il listino. */
 export const TITOLO_CONTI = 'I conti'
 
 /**
  * Il menu: i cinque gruppi della segreteria per chi la ha; con l'amministrazione in più «I conti» con CONTABILITÀ
- * (dopo «Iscritti e soldi»). Chi ha solo l'amministrazione vede «I conti» e basta, con pagamenti e listino ridotti.
+ * (dopo «Iscritti e soldi»). Chi ha solo l'amministrazione vede «I conti» e basta, con il listino.
  * Un gruppo senza voci non c'è.
  */
 export function menuDi(chi: Chi): GruppoMenu[] {
@@ -101,7 +98,6 @@ export function menuDi(chi: Chi): GruppoMenu[] {
         titolo: TITOLO_CONTI,
         voci: [
           ['contabilita', 'Contabilità'],
-          ['pagamenti', 'Pagamenti'],
           ['listino', 'Listino'],
         ],
       },
@@ -120,8 +116,8 @@ export function titoloDelMenu(chi: Chi): string {
 /** Cosa si fa qui, detto a chi sceglie dove entrare. */
 export function descrizioneDelMenu(chi: Chi): string {
   const spunte = spunteDi(chi)
-  if (!spunte.includes('segreteria')) return 'I conti della palestra: contabilità, pagamenti e listino.'
-  return `Corsi, iscritti, presenze e richieste, dal computer della reception${spunte.includes('amministrazione') ? ', e i conti: contabilità, pagamenti e listino' : ''}.`
+  if (!spunte.includes('segreteria')) return 'I conti della palestra: contabilità e listino.'
+  return `Corsi, iscritti, presenze e richieste, dal computer della reception${spunte.includes('amministrazione') ? ', e i conti: contabilità e listino' : ''}.`
 }
 
 /** Le voci del menu, in ordine. */
@@ -168,13 +164,9 @@ export function nomeDellArea(area: AreaDiAccount, chi: Chi): string {
   return area === 'istruttori' ? 'ISTRUTTORI' : 'SALA'
 }
 
-/** PAGAMENTI mostra solo nomi e importi a chi ha solo l'amministrazione: le persone non le legge. */
-export const pagamentiRidotti = (chi: Chi): boolean => !leggeLaSegreteria(chi)
-
 /** La pagina della guida di ogni voce: il tasto «?» apre quella della voce aperta. */
-export function guidaDellaVoce(voce: Voce, chi: Chi): string {
+export function guidaDellaVoce(voce: Voce): string {
   if (voce === 'contabilita') return 'amministrazione/contabilita'
-  if (voce === 'pagamenti' && pagamentiRidotti(chi)) return 'amministrazione/pagamenti'
   return GUIDE[voce]
 }
 
@@ -183,8 +175,6 @@ const GUIDE: Record<Exclude<Voce, 'contabilita'>, string> = {
   settimana: 'segreteria/settimana',
   corsi: 'segreteria/corsi',
   iscritti: 'segreteria/iscritti',
-  tessere: 'segreteria/tessere',
-  pagamenti: 'segreteria/pagamenti',
   richieste: 'segreteria/richieste',
   presenze: 'segreteria/presenze',
   segnalate: 'segreteria/presenze-segnalate',
@@ -192,7 +182,6 @@ const GUIDE: Record<Exclude<Voce, 'contabilita'>, string> = {
   istruttori: 'segreteria/presenze-istruttori',
   compensi: 'segreteria/compensi',
   personale: 'segreteria/istruttori-e-accessi',
-  esercizi: 'segreteria/esercizi',
   listino: 'segreteria/listino',
   vestiario: 'segreteria/vestiario',
   regole: 'segreteria/regole',

@@ -114,7 +114,7 @@ Accolta o rifiutata, la finestra si chiude da sola e si torna all'elenco, alla p
   alla sua scheda in [Iscritti](iscritti.md).
 - **Rifiuta** — chi l'ha mandata **non viene avvisato**: va chiamato o scritto
   a mano. Se aveva già pagato con Satispay, la conferma lo dice: i soldi
-  restano in [PAGAMENTI](pagamenti.md) e vanno restituiti dall'app Satispay
+  restano negli incassi di [CONTABILITÀ](../amministrazione/contabilita.md#movimenti) e vanno restituiti dall'app Satispay
   Business, poi registrati in CONTABILITÀ.
 - **Elimina richiesta e file**, in fondo, solo per le richieste nuove (lo
   spam) o rifiutate — cancella per sempre la richiesta con i suoi file. Il

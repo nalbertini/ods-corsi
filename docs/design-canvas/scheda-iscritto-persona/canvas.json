@@ -1,0 +1,48 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Scheda dell'iscritto · PERSONA"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Oggi.dc.html",
+      "title": "Oggi",
+      "x": 0,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Minorenne.dc.html",
+      "title": "Proposta · minorenne, manca il CF del genitore",
+      "x": 960,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Maggiorenne.dc.html",
+      "title": "Proposta · maggiorenne in regola",
+      "x": 1920,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Quota.dc.html",
+      "title": "Proposta · QUOTA E PAGAMENTI, «Fai la ricevuta» sotto la quota",
+      "x": 2880,
+      "y": 300,
+      "page": "page-1"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "titolo",
+      "kind": "title1",
+      "x": 0,
+      "y": 0,
+      "maxW": 1280,
+      "text": "La scheda dell'iscritto: cosa manca in alto, età, un Modifica per sezione"
+    }
+  ]
+}
