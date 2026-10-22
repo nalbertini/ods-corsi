@@ -36,6 +36,7 @@ import {
   riepilogoGiroconto,
   riepilogoMovimento,
   rigaAppenaScritta,
+  ricevutaDoppione,
   perVoce,
   previstoCassa,
   primoMovimentoManuale,
@@ -60,15 +61,19 @@ import {
   ultimaChiusura,
   VOCE_DIFFERENZA,
   vociOfferte,
+  vuolePersona,
+  vuolePersonaRiga,
+  SCEGLI_LA_PERSONA,
+  UNA_RIGA_ALLA_VOLTA,
   vociPerLaScelta,
 } from '../../lib/contabilita'
-import { filtraPerPersona, cosaNonVaCollegato, collegatoAMano, type FiltroPersona } from '../../lib/movimentiPersona'
+import { filtraPerPersona, cosaNonVaCollegato, collegatoAMano, senzaPersona, type CandidatoPersona, type FiltroPersona } from '../../lib/movimentiPersona'
 import { fraseDallaChat } from '../../lib/collega'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { Campo, chiedi, FiltroMenu, Guaio, lasciare, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { ICONE_CONTI } from '../Icons'
-import { CollegaAPersona, CollegaSicuri } from './CollegaPersona'
+import { CampoPersona, CollegaAPersona, CollegaSicuri } from './CollegaPersona'
 import { Bilancio } from './Bilancio'
 import { ScaricoSatispay } from './ScaricoSatispay'
 import { commissioneSatispay, NOME_CASSA_SATISPAY, spesaCommissione } from '../../lib/satispayScarico'
@@ -82,7 +87,7 @@ type Fai = ReturnType<typeof useAvviso>['fai']
  * degli iscritti sono nell'elenco ma non si scrivono qui: si ricavano da
  * ricevute e pagamenti, e si correggono in PAGAMENTI.
  */
-export function Contabilita({ d }: { d: DatiSegreteria }) {
+export function Contabilita({ d, movimento, onPersona }: { d: DatiSegreteria; movimento?: string; onPersona?: (personaId: string) => void }) {
   const [scheda, setScheda] = useState<Scheda>('movimenti')
   const casse = useCarica(() => d.casse(), [d])
   const voci = useCarica(() => d.voci(), [d])
@@ -152,7 +157,7 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
       {/* Le schede si nascondono, non si smontano: filtri e bozze restano dove sono. */}
       {pronto && (
         <>
-          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
+          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} movimento={movimento} onPersona={onPersona} /></div>
           <div hidden={scheda !== 'bilancio'}><Bilancio d={d} casse={casse.dato ?? []} righe={elenco} oggi={oggiARoma()} fai={fai} /></div>
           <div hidden={scheda !== 'voci'}><Voci d={d} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
           <div hidden={scheda !== 'casse'}><Casse d={d} casse={casse.dato ?? []} chiusure={dateChiusure} guaioChiusure={chiusure.guaio ?? undefined} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
@@ -197,7 +202,7 @@ function Saldo({ nome, icona, valore, sotto }: { nome: string; icona: IconaConti
   )
 }
 
-function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void }) {
+function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, movimento, onPersona }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void; movimento?: string; onPersona?: (personaId: string) => void }) {
   const oggi = oggiARoma()
   const [f, setF] = useState<FiltriElenco>(FILTRI_INIZIALI)
   const { testo, periodo, tipo, cassaId, voce, persona, annullati } = f
@@ -206,7 +211,8 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }:
   const [scrivo, setScrivo] = useState<'movimento' | 'giroconto' | null>(null)
   // Dopo aver scritto un movimento che i filtri nascondono: se no sembra perso.
   const [appena, setAppena] = useState<RigaMovimento | null>(null)
-  const [aperto, setAperto] = useState<RigaMovimento | null>(null)
+  // Arrivando dalla scheda di una persona («Apri in contabilità») il movimento è già aperto.
+  const [aperto, setAperto] = useState<RigaMovimento | null>(() => righe.find((r) => r.id === movimento) ?? null)
   const [viste, setViste] = useState(RIGHE_ELENCO)
   const [scelti, setScelti] = useState<Set<string>>(new Set())
   const [cambio, setCambio] = useState(false)
@@ -328,7 +334,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }:
           </button>
         </div>
         {scrivo === 'movimento' ? (
-          <NuovoMovimento d={d} voci={voci} casse={casse} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
+          <NuovoMovimento d={d} voci={voci} casse={casse} righe={righe} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
         ) : (
           <NuovoGiroconto d={d} casse={casse} voci={voci} righe={righe} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
         )}
@@ -369,7 +375,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }:
       {collegando === 'mano' && sceltiRighe.length > 0 && <InVista><CollegaAPersona d={d} righe={sceltiRighe} fai={fai} onFatto={collegamentoFatto} onChiudi={chiudiCollega} /></InVista>}
       {aperto && (
         <SchedaPiena key={aperto.id} etichetta={`Movimento: ${aperto.descrizione}`} torna="I movimenti" onTorna={() => void torna()}>
-          <MovimentoAperto d={d} voci={voci} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} fai={fai} onChiudi={() => void torna()} onFatto={fatto} />
+          <MovimentoAperto d={d} voci={voci} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} nomePersona={aperto.personaId ? nomiPersone.get(aperto.personaId) : undefined} fai={fai} onChiudi={() => void torna()} onFatto={() => { fatto(); void esitiLetti.ricarica() }} onPersona={onPersona} />
         </SchedaPiena>
       )}
 
@@ -412,7 +418,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }:
               id="filtro-persona"
               nome="Persona"
               value={persona}
-              opzioni={[['', 'Tutte'], ['collegati', `Collegati · ${collegatiTutti}`], ['da_decidere', `Da decidere · ${daDecidere}`], ['senza_scheda', `Senza scheda · ${senzaScheda}`]]}
+              opzioni={[['', 'Tutte'], ['collegati', `Collegati · ${collegatiTutti}`], ['da_decidere', `Da decidere · ${daDecidere}`], ['senza_scheda', `Senza scheda · ${senzaScheda}`], ['senza_persona', `Quote e corsi senza persona · ${righe.filter(senzaPersona).length}`]]}
               // Le opzioni sono quelle di FiltroPersona scritte qui sopra: il valore non può essere altro.
               onChange={(v) => metti(v ? { persona: v as FiltroPersona, periodo: 'tutto' } : { persona: '' })}
             />
@@ -605,8 +611,14 @@ function CambiaVoce({ d, ids, righe, voci, onRileggi, onFatto, onChiudi }: { d: 
   const offerte = vociPerLaScelta(ids, righe, voci)
   const riep = riepilogoCambioVoce(ids, righe, voceId, voci)
   // Il controllo scorre l'elenco intero: si rifà solo se cambia la scelta o la voce, non a ogni pacchetto scritto.
-  const guaio = useMemo(() => (voceId ? pacchetti(ids).map((p) => cosaNonVaCambioVoce(p, righe, voci, voceId)).find(Boolean) ?? null : null), [ids, righe, voci, voceId])
   const nomeVoce = voci.find((v) => v.id === voceId)?.nome
+  // Qui la persona non si sceglie: anche un movimento a mano solo verso una quota o un corso si cambia dal dettaglio.
+  const guaio = useMemo(() => {
+    if (!voceId) return null
+    const scelti = new Set(ids)
+    if (righe.some((r) => scelti.has(r.id) && r.origine === 'movimento' && vuolePersonaRiga(r, nomeVoce))) return UNA_RIGA_ALLA_VOLTA
+    return pacchetti(ids).map((p) => cosaNonVaCambioVoce(p, righe, voci, voceId)).find(Boolean) ?? null
+  }, [ids, righe, voci, voceId, nomeVoce])
   const cambia = async () => {
     if (inCorso.current) return
     inCorso.current = true
@@ -688,7 +700,7 @@ function CambiaVoce({ d, ids, righe, voci, onRileggi, onFatto, onChiudi }: { d: 
   )
 }
 
-function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { d: DatiSegreteria; voci: VoceContabile[]; casse: Cassa[]; chiusure: ChiusuraCassa[]; fai: Fai; onFatto: (nuova: RigaMovimento) => void; onChiudi: () => void }) {
+function NuovoMovimento({ d, voci, casse, righe, chiusure, fai, onFatto, onChiudi }: { d: DatiSegreteria; voci: VoceContabile[]; casse: Cassa[]; righe: RigaMovimento[]; chiusure: ChiusuraCassa[]; fai: Fai; onFatto: (nuova: RigaMovimento) => void; onChiudi: () => void }) {
   const oggi = oggiARoma()
   const [tipo, setTipo] = useState<'entrata' | 'uscita'>('uscita')
   const [data, setData] = useState(oggi)
@@ -697,11 +709,16 @@ function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { 
   const [voceId, setVoceId] = useState('')
   const [descrizione, setDescrizione] = useState('')
   const [nota, setNota] = useState('')
-  useBozza(importo !== '' || descrizione !== '' || nota !== '', 'Il movimento')
+  const [persona, setPersona] = useState<CandidatoPersona | null>(null)
+  useBozza(importo !== '' || descrizione !== '' || nota !== '' || !!persona, 'Il movimento')
   const dellaScelta = vociOfferte(voci, tipo)
   const cent = centesimi(importo)
-  const guaio = cosaNonVaImporto(importo, '40,00') ?? (cent === null ? null : cosaNonVaMovimento({ tipo, data, importo: cent, voceId, cassaId, descrizione, nota }, voci, casse, oggi, chiusure))
+  const conPersona = vuolePersona(tipo, voci.find((v) => v.id === voceId)?.nome)
+  const personaId = conPersona ? persona?.id : undefined
+  const guaio = cosaNonVaImporto(importo, '40,00') ?? (cent === null ? null : cosaNonVaMovimento({ tipo, data, importo: cent, voceId, cassaId, descrizione, nota, personaId }, voci, casse, oggi, chiusure))
   const manca = cent === null || !!guaio || !voceId || !descrizione.trim()
+  // Un avviso, non un blocco: la stessa quota forse è già una ricevuta o un pagamento in PAGAMENTI.
+  const doppione = personaId && cent !== null ? ricevutaDoppione(righe, personaId, cent, data) : null
   return (
     <section aria-label="Nuovo movimento" className="sg-riquadro">
       <span className="sg-etichetta">ENTRATA O USCITA</span>
@@ -735,6 +752,11 @@ function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { 
             ))}
           </select>
         </Campo>
+        {conPersona && (
+          <div style={{ gridColumn: '1 / -1' }}>
+            <CampoPersona d={d} scelta={persona} onScegli={setPersona} manca="Scegli la persona: una quota o un corso si registra sempre con la sua scheda." />
+          </div>
+        )}
         <Campo id="mv-descrizione" etichetta="DESCRIZIONE" largo manca={!descrizione.trim()}>
           <input id="mv-descrizione" className="sg-campo" maxLength={200} value={descrizione} onChange={(e) => setDescrizione(e.target.value)} />
         </Campo>
@@ -743,8 +765,16 @@ function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { 
         </Campo>
       </div>
       {giornoChiuso(chiusure, [cassaId], data) && <span role="status" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura.</span>}
-      <span className="sg-sotto">Un solo importo, senza IVA. Registrato, non si cambia: si annulla e si rifà (la descrizione e la nota sì). Niente dati personali che non servono.</span>
-      {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
+      {doppione && persona && (
+        <div role="status" className="sg-riquadro" data-avviso="true" style={{ borderColor: 'var(--giallo-testo)', gap: 4 }}>
+          <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>FORSE GIÀ IN PAGAMENTI</span>
+          <span style={{ fontSize: 15 }}>
+            {persona.cognome} {persona.nome} ha già {doppione.origine === 'ricevuta' ? 'una ricevuta' : 'un pagamento'} di {soldi(doppione.importo)} del {dataRicevuta(doppione.data)} in PAGAMENTI. Se è la stessa quota, non scriverla qui: c’è già.
+          </span>
+        </div>
+      )}
+      <span className="sg-sotto">Un solo importo, senza IVA. Registrato, non si cambia: si annulla e si rifà (la descrizione, la nota e la persona sì). Niente dati personali che non servono.</span>
+      {guaio && guaio !== SCEGLI_LA_PERSONA && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
         <button
           type="button"
@@ -752,10 +782,11 @@ function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { 
           disabled={manca}
           onClick={async () => {
             if (cent === null) return
-            const dati = { tipo, data, importo: cent, voceId, cassaId, descrizione: descrizione.trim(), nota: nota.trim() || undefined }
+            const dati = { tipo, data, importo: cent, voceId, cassaId, descrizione: descrizione.trim(), nota: nota.trim() || undefined, personaId }
             const riepilogo = riepilogoMovimento(dati, voci.find((v) => v.id === voceId)?.nome ?? '', casse.find((c) => c.id === cassaId)?.nome ?? '')
+            if (personaId && persona) riepilogo.push(`Persona: ${persona.cognome} ${persona.nome}`)
             if (!(await chiedi(`Registrare questo movimento?\n${riepilogo.join('\n')}`, 'Sì, registra il movimento', { no: 'No, torna al modulo' }))) return
-            void fai(() => d.registraMovimento(dati), 'Movimento registrato', () => onFatto(rigaAppenaScritta({ tipo, data, importo: cent, descrizione: dati.descrizione, voce: voci.find((v) => v.id === voceId)?.nome ?? null, cassaId })))
+            void fai(() => d.registraMovimento(dati), 'Movimento registrato', () => onFatto(rigaAppenaScritta({ tipo, data, importo: cent, descrizione: dati.descrizione, voce: voci.find((v) => v.id === voceId)?.nome ?? null, cassaId, personaId })))
           }}
         >
           Registra il movimento
@@ -859,7 +890,10 @@ function NuovoGiroconto({ d, casse, voci, righe, chiusure, fai, onFatto, onChiud
 }
 
 /** Un movimento aperto dall'elenco: a mano si annulla e se ne correggono descrizione e nota; un incasso degli iscritti si guarda e basta. */
-function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi, onFatto }: { d: DatiSegreteria; voci: VoceContabile[]; riga: RigaMovimento; chiusure: ChiusuraCassa[]; cassa: string; cassaA: string; fai: Fai; onChiudi: () => void; onFatto: () => void }) {
+// Un link che si tocca col dito: alto 44px, come «mostra tutte» nei previsti.
+const DITO = { fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center' } as const
+
+function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, nomePersona, fai, onChiudi, onFatto, onPersona }: { d: DatiSegreteria; voci: VoceContabile[]; riga: RigaMovimento; chiusure: ChiusuraCassa[]; cassa: string; cassaA: string; nomePersona?: string; fai: Fai; onChiudi: () => void; onFatto: () => void; onPersona?: (personaId: string) => void }) {
   const manuale = riga.origine === 'movimento'
   const giro = riga.tipo === 'giroconto'
   const chiuso = cosaNonVaAnnulloMovimento(riga, chiusure)
@@ -871,7 +905,17 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
   const offerte = riga.tipo === 'entrata' || riga.tipo === 'uscita' ? vociOfferte(voci, riga.tipo) : []
   const voceAttuale = voci.find((v) => v.nome === riga.voce && v.tipo === riga.tipo)
   const [voceId, setVoceId] = useState(voceAttuale?.id ?? '')
-  const voceGuaio = voceId && voceId !== voceAttuale?.id ? cosaNonVaCambioVoce([riga.id], [riga], voci, voceId) : null
+  const voceNuova = voci.find((v) => v.id === voceId)
+  // Una riga a mano che va su una quota o un corso ci va con la persona: quella che ha già, o quella scelta qui.
+  const conPersona = !!voceId && voceId !== voceAttuale?.id && vuolePersonaRiga(riga, voceNuova?.nome)
+  const [personaScelta, setPersonaScelta] = useState<CandidatoPersona | null>(null)
+  const personaId = personaScelta?.id ?? riga.personaId
+  const voceGuaio = voceId && voceId !== voceAttuale?.id ? cosaNonVaCambioVoce([riga.id], [riga], voci, voceId, personaId) : null
+  const [collegando, setCollegando] = useState(false)
+  const scollega = async () => {
+    const si = await chiedi(`Scollegare «${riga.descrizione}» da ${nomePersona ?? 'questa persona'}? Il movimento resta com'è, senza persona.`, 'Sì, scollega', { no: 'No, lascialo' })
+    if (si) void fai(() => d.scollegaMovimentiPersona([riga.id]), 'Movimento scollegato', onFatto)
+  }
   const traccia = useCarica(() => (manuale && !giro ? d.cambiVoceMovimento(riga.id) : Promise.resolve([])), [d, riga.id, manuale, giro])
   useBozza(descrizione !== riga.descrizione || nota !== (riga.nota ?? ''), 'La correzione')
   const annulla = async () => {
@@ -905,6 +949,26 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
           </div>
         ))}
       </div>
+      {(riga.personaId || (riga.tipo !== 'giroconto' && vuolePersona(riga.tipo, riga.voce ?? undefined))) && (
+        <div className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline', flexWrap: 'wrap' }}>
+          <span className="sg-etichetta" style={{ width: 130, flexShrink: 0 }}>PERSONA</span>
+          {riga.personaId ? (
+            <span style={{ fontSize: 15, minWidth: 0, overflowWrap: 'anywhere' }}>{nomePersona ?? '…'}</span>
+          ) : (
+            <span style={{ fontSize: 15, color: 'var(--rosso-testo)' }}>Nessuna: di chi è?</span>
+          )}
+          {riga.personaId && onPersona && (
+            <button type="button" className="sg-link" style={DITO} onClick={() => onPersona(riga.personaId ?? '')}>Apri la scheda ›</button>
+          )}
+          {manuale && !riga.annullato && !collegando && (
+            <>
+              <button type="button" className="sg-link" style={DITO} onClick={() => setCollegando(true)}>{riga.personaId ? 'Cambia persona' : 'Collega a una persona'}</button>
+              {riga.personaId && <button type="button" className="sg-link" style={DITO} onClick={() => void scollega()}>Scollega</button>}
+            </>
+          )}
+        </div>
+      )}
+      {collegando && <CollegaAPersona d={d} righe={[riga]} fai={fai} onFatto={onFatto} onChiudi={() => setCollegando(false)} />}
       {!manuale && <span className="sg-sotto">Si cambia in PAGAMENTI, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
       {manuale && riga.annullato && <span className="sg-sotto"><span className="num sg-tag" data-tipo="manca">Annullato</span> Resta in elenco e non si conta più.</span>}
       {manuale && !riga.annullato && (
@@ -930,8 +994,11 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
               <textarea id="ma-nota" className="sg-campo" rows={2} maxLength={300} value={nota} onChange={(e) => setNota(e.target.value)} />
             </Campo>
           </div>
+          {conPersona && !riga.personaId && (
+            <CampoPersona d={d} scelta={personaScelta} onScegli={setPersonaScelta} manca="Scegli la persona: una quota o un corso si sposta sempre con la sua scheda." />
+          )}
           {chiuso && <span className="sg-sotto">{chiuso}</span>}
-          {voceGuaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{voceGuaio}</span>}
+          {voceGuaio && voceGuaio !== SCEGLI_LA_PERSONA && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{voceGuaio}</span>}
           {dallaChat && <span className="sg-sotto">{dallaChat}</span>}
           <span className="sg-sotto">Importo, data e cassa non si cambiano: si annulla e si rifà.{giro ? ' La descrizione di un giroconto la scrive il sistema.' : ' La voce sì, anche se il giorno è già chiuso: i soldi non cambiano.'}</span>
         </>
@@ -949,7 +1016,7 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, fai, onChiudi
         {manuale && !riga.annullato && (
           <>
             {cambiabile(riga) && (
-              <button type="button" className="sg-btn sg-btn-pieno" disabled={!voceId || voceId === voceAttuale?.id || !!voceGuaio} onClick={() => void fai(() => d.cambiaVoceMovimenti([riga.id], voceId), `Voce cambiata in «${offerte.find((v) => v.id === voceId)?.nome ?? ''}»`, onFatto)}>
+              <button type="button" className="sg-btn sg-btn-pieno" disabled={!voceId || voceId === voceAttuale?.id || !!voceGuaio} onClick={() => void fai(() => d.cambiaVoceMovimenti([riga.id], voceId, conPersona ? personaId : undefined), `Voce cambiata in «${offerte.find((v) => v.id === voceId)?.nome ?? ''}»`, onFatto)}>
                 Cambia la voce
               </button>
             )}

@@ -7,7 +7,7 @@
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
-select (to_regprocedure('public.cambia_voce_movimenti(uuid[], uuid)') is not null and to_regclass('public.cambi_voce') is not null)::text as c67 \gset
+select (to_regprocedure('public.cambia_voce_movimenti(uuid[], uuid, uuid)') is not null and to_regclass('public.cambi_voce') is not null)::text as c67 \gset
 create or replace function atteso(cosa text, avuto text, voluto text) returns text language plpgsql as $$
 begin
   if avuto is distinct from voluto and not (voluto like '%…' and avuto like replace(voluto, '…', '%')) then

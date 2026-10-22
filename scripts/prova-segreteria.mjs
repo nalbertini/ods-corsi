@@ -3886,7 +3886,8 @@ await sezione('collegare lo storico alla persona (70-movimenti-persona.sql): ste
     st(13, '2025-03-04', 1000, 'Cliente Giulia Verdelli per extra', { annullatoIl: '2025-03-05T10:00:00.000Z' }),
     st(14, '2026-05-10', 2500, 'Cliente\nJOSÈ  FERRARESI\nper mensile'),
   ]
-  await s.registraMovimento({ tipo: 'entrata', data: '2026-09-10', importo: 3000, voceId: cx.quota, cassaId: cx.conto, descrizione: 'Cliente Giulia Verdelli per mano' })
+  // A mano e senza persona, com'era scritta prima di 98-quote-persona.sql: `registraMovimento` ora la chiede, quindi la si semina.
+  m.archivio.dati.movimenti = [...m.archivio.dati.movimenti, { id: 'mano-1', tipo: 'entrata', data: '2026-09-10', importo: 3000, voceId: cx.quota, cassaId: cx.conto, descrizione: 'Cliente Giulia Verdelli per mano', creatoIl: '2026-09-10T10:00:00.000Z' }]
   await s.registraGiroconto({ daCassaId: cx.contanti, aCassaId: cx.conto, data: '2026-09-06', importo: 1000 })
   const k = await s.chiudiCassa({ cassaId: cx.contanti, data: '2026-09-07', contato: 100 })
   const per = async (id) => (await s.movimenti()).find((x) => x.id === id)
@@ -3959,7 +3960,6 @@ await sezione('collegare lo storico alla persona (70-movimenti-persona.sql): ste
   ok('i candidati di un movimento che non c\'è', await errore(() => s.candidatiPersonaMovimento('non-c-e')), 'Il movimento non c’è')
   ok('con una candidata sola: id, nome e cognome; anno di nascita, corsi e iscritta dal restano vuoti', (await s.candidatiPersonaMovimento('st1')).map((c) => [c.id, c.nome, c.cognome, c.annoNascita ?? null, c.corsi, c.iscrittoDal ?? null]), [[giulia, 'Giulia', 'Verdelli', null, [], null]])
   const frasiCandidati = [
-    ['un movimento a mano col nome di una minorenne', idMano, 'Il movimento del 10/09/2026 (Cliente Giulia Verdelli per mano) non viene dal vecchio programma: non si collega'],
     ['un\'uscita', 'st12', 'Il movimento del 03/03/2025 (Cliente Giulia Verdelli per rimborso) è un’uscita: si collegano solo le entrate'],
     ['un annullato', 'st13', 'Il movimento del 04/03/2025 (Cliente Giulia Verdelli per extra) è annullato: non si collega'],
     ['un\'entrata su un\'altra voce', 'st11', 'Il movimento del 02/03/2025 (Cliente Giulia Verdelli per regalo) è su «Non classificato»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»'],
@@ -3967,7 +3967,6 @@ await sezione('collegare lo storico alla persona (70-movimenti-persona.sql): ste
     ['la differenza di una chiusura', idDiff, 'Il movimento del 07/09/2026 (Differenza di cassa) è scritto dalla chiusura di cassa: non si collega'],
   ]
   for (const [cosa, id, frase] of frasiCandidati) ok(`candidati, ${cosa}: rifiutati con la frase del collegamento`, await errore(() => s.candidatiPersonaMovimento(id)), frase)
-  ok('…e di una minorenne non esce l\'anno di nascita', /2016/.test(await errore(() => s.candidatiPersonaMovimento(idMano))), false)
   ok('la prima Sara Nerini; lo stesso id due volte conta una', stabile(await s.collegaMovimentiPersona(['st4', 'st4'], sara1)), stabile({ collegati: 1, giaCosi: 0 }))
   ok('la seconda all\'altra', stabile(await s.collegaMovimentiPersona(['st5'], sara2)), stabile({ collegati: 1, giaCosi: 0 }))
   ok('un movimento ha una persona sola: spostato sull\'altra', [stabile(await s.collegaMovimentiPersona(['st4'], sara2)), await di(4)], [stabile({ collegati: 1, giaCosi: 0 }), sara2])
@@ -3977,7 +3976,7 @@ await sezione('collegare lo storico alla persona (70-movimenti-persona.sql): ste
   ok('…scollegato, il quinto rientra negli esiti come omonimo', [(await esiti()).includes('st5:omonimi'), await conta(), await dalRiepilogo()], [true, [0, 1, 2], [0, 1, 2]])
   ok('il giorno chiuso (3 settembre, chiusa al 7) cambia scheda', [stabile(await s.collegaMovimentiPersona(['st3'], giulia)), await di(3)], [stabile({ collegati: 1, giaCosi: 0 }), giulia])
   ok('…la chiusura è quella di prima', await chiusura(), dopoChiusura)
-  ok('…il giorno è ancora chiuso', await errore(() => s.registraMovimento({ tipo: 'entrata', data: '2026-09-06', importo: 100, voceId: cx.quota, cassaId: cx.contanti, descrizione: 'No' })), MSG_CHIUSO)
+  ok('…il giorno è ancora chiuso', await errore(() => s.registraMovimento({ tipo: 'entrata', data: '2026-09-06', importo: 100, voceId: cx.quota, personaId: giulia, cassaId: cx.contanti, descrizione: 'No' })), MSG_CHIUSO)
   ok('niente di questo ha toccato un importo, una data, una cassa, una voce', await senzaPersona(), prima)
 
   console.log('   quel che non va si rifiuta, tutto o niente')
@@ -3993,7 +3992,6 @@ await sezione('collegare lo storico alla persona (70-movimenti-persona.sql): ste
     ['un giroconto', [idsGiro], giulia, 'Un giroconto non ha una persona'],
     ['un\'uscita', ['st12'], giulia, 'Il movimento del 03/03/2025 (Cliente Giulia Verdelli per rimborso) è un’uscita: si collegano solo le entrate'],
     ['la differenza di una chiusura', [idDiff], giulia, 'Il movimento del 07/09/2026 (Differenza di cassa) è scritto dalla chiusura di cassa: non si collega'],
-    ['un movimento a mano, anche su «Quota associativa» e con un nome nel testo', [idMano], giulia, 'Il movimento del 10/09/2026 (Cliente Giulia Verdelli per mano) non viene dal vecchio programma: non si collega'],
     ['un\'entrata su un\'altra voce', ['st11'], giulia, 'Il movimento del 02/03/2025 (Cliente Giulia Verdelli per regalo) è su «Non classificato»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»'],
     ['uno cattivo in fondo ferma tutto e dice quale', ['st5', 'st6', 'st11'], sara2, 'Il movimento del 02/03/2025 (Cliente Giulia Verdelli per regalo) è su «Non classificato»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»'],
   ]
@@ -4064,6 +4062,87 @@ await sezione('collegare lo storico alla persona (70-movimenti-persona.sql): ste
   await s.annullaChiusuraCassa(k)
 })
 
+await sezione('quote e corsi scritti a mano con la persona (98-quote-persona.sql): stesse regole del database', async () => {
+  const UNA_RIGA = 'Una quota o un corso si sposta una riga alla volta, con la persona: apri il movimento dall’elenco e cambia la voce lì.'
+  const giulia = await s.salvaPersona({ nome: 'Giulia', cognome: 'Quotini' })
+  const marco = await s.salvaPersona({ nome: 'Marco', cognome: 'Corsetti' })
+  const ent = await s.salvaVoce({ nome: 'Eventi quote', tipo: 'entrata' })
+  const base = { tipo: 'entrata', data: '2026-09-12', importo: 4500, cassaId: cx.conto }
+  const seme = (id, o) => ({ id, ...base, voceId: cx.don, descrizione: `Seme ${id}`, creatoIl: '2026-09-12T10:00:00.000Z', ...o })
+  const per = async (descrizione) => (await s.movimenti()).find((x) => x.descrizione === descrizione)
+  const traccia = () => m.archivio.dati.collegamentiPersona ?? []
+  const quanti = async () => (await s.movimenti()).length
+  // Una funzione che manca o rifiuta non ferma la sezione: il risultato è il messaggio e la prova sotto fallisce da sé.
+  const cosi = (f) => f().catch((e) => `ERRORE: ${e.message}`)
+
+  console.log('   registrare: la persona è obbligatoria su una quota o un corso')
+  const prima = await quanti()
+  const t0 = traccia().length
+  ok('una quota senza persona no', await errore(() => s.registraMovimento({ ...base, voceId: cx.quota, descrizione: 'Quota senza' })), 'Scegli la persona')
+  ok('un corso senza persona no', await errore(() => s.registraMovimento({ ...base, voceId: cx.corsi, descrizione: 'Corso senza' })), 'Scegli la persona')
+  ok('…con la persona vuota no', await errore(() => s.registraMovimento({ ...base, voceId: cx.quota, personaId: '', descrizione: 'Quota vuota' })), 'Scegli la persona')
+  ok('una persona che non c\'è no', await errore(() => s.registraMovimento({ ...base, voceId: cx.quota, personaId: 'non-c-e', descrizione: 'Quota fantasma' })), 'Scegli la persona')
+  ok('dei rifiuti non è entrato niente', [await quanti(), traccia().length], [prima, t0])
+  const scheda = async (id) => JSON.stringify((await s.persone()).find((p) => p.id === id))
+  const schedaPrima = await scheda(giulia)
+  ok('una quota con la persona va', await errore(() => s.registraMovimento({ ...base, voceId: cx.quota, personaId: giulia, descrizione: 'Quota di Giulia' })), 'nessun errore')
+  ok('un corso con la persona va', await errore(() => s.registraMovimento({ ...base, voceId: cx.corsi, personaId: marco, descrizione: 'Corso di Marco' })), 'nessun errore')
+  ok('…e la scheda di Giulia resta com\'era: la quota scritta a mano non conta come pagata', await scheda(giulia), schedaPrima)
+  ok('il movimento ha la persona', [(await per('Quota di Giulia')).personaId, (await per('Corso di Marco')).personaId], [giulia, marco])
+  const q = await per('Quota di Giulia')
+  ok('…e la traccia del collegamento: da nessuno a lei, senza lotto', traccia().filter((x) => x.movimentoId === q.id).map((x) => [x.prima, x.dopo, x.lotto]), [[undefined, giulia, undefined]])
+  ok('una donazione non ha bisogno della persona, e se c\'è non si scrive', [
+    await errore(() => s.registraMovimento({ ...base, voceId: cx.don, descrizione: 'Donazione senza' })),
+    await errore(() => s.registraMovimento({ ...base, voceId: cx.don, personaId: giulia, descrizione: 'Donazione con' })),
+    (await per('Donazione con')).personaId,
+  ], ['nessun errore', 'nessun errore', undefined])
+  ok('un\'uscita non ha bisogno della persona', await errore(() => s.registraMovimento({ ...base, tipo: 'uscita', voceId: cx.aff, descrizione: 'Affitto senza' })), 'nessun errore')
+
+  console.log('   cambiare la voce: a mano una riga alla volta, con la persona')
+  m.archivio.dati.movimenti = [
+    ...m.archivio.dati.movimenti,
+    seme('qx1'), seme('qx2'), seme('qx3'),
+    seme('qp1', { origineImport: 'prima-nota:901', voceId: ent }), seme('qp2', { origineImport: 'prima-nota:902', voceId: ent }),
+    seme('qq1', { voceId: cx.quota }), seme('qq2', { voceId: cx.quota, personaId: giulia }),
+  ]
+  const tutto = async () => stabile([await s.movimenti(), traccia(), (await Promise.all(['qx1', 'qx2', 'qx3', 'qp1'].map((id) => s.cambiVoceMovimento(id))))])
+  const fermo = await tutto()
+  const rifiuti = [
+    ['due a mano verso Quota', ['qx1', 'qx2'], cx.quota, giulia, UNA_RIGA],
+    ['…verso Corsi', ['qx1', 'qx2'], cx.corsi, giulia, UNA_RIGA],
+    ['uno a mano e uno dello storico, verso Quota', ['qx1', 'qp1'], cx.quota, giulia, UNA_RIGA],
+    ['uno a mano senza persona', ['qx1'], cx.quota, undefined, 'Scegli la persona'],
+    ['…con la persona vuota', ['qx1'], cx.corsi, '', 'Scegli la persona'],
+    ['…con una persona che non c\'è', ['qx1'], cx.quota, 'non-c-e', 'Scegli la persona'],
+  ]
+  for (const [cosa, ids, voce, persona, messaggio] of rifiuti) ok(cosa, await errore(() => s.cambiaVoceMovimenti(ids, voce, persona)), messaggio)
+  ok('dei rifiuti non è cambiato niente, nemmeno le tracce', await tutto(), fermo)
+  ok('uno a mano con la persona: cambiato', stabile(await s.cambiaVoceMovimenti(['qx1'], cx.quota, giulia)), stabile({ cambiati: 1, giaCosi: 0 }))
+  const x1 = await per('Seme qx1')
+  ok('…ha la voce nuova e la persona', [x1.voceId, x1.personaId], [cx.quota, giulia])
+  ok('…la traccia del cambio voce c\'è', (await s.cambiVoceMovimento('qx1')).map((c) => [c.prima, c.dopo]), [['Donazioni', 'Quota associativa']])
+  ok('…e quella del collegamento', traccia().filter((x) => x.movimentoId === 'qx1').map((x) => [x.prima, x.dopo, x.lotto]), [[undefined, giulia, undefined]])
+  ok('lo storico in blocco verso Quota senza persona: come oggi', [stabile(await s.cambiaVoceMovimenti(['qp1', 'qp2'], cx.quota)), (await per('Seme qp1')).personaId, (await per('Seme qp2')).voceId], [stabile({ cambiati: 2, giaCosi: 0 }), undefined, cx.quota])
+  ok('movimenti già sulla voce di arrivo: già così, la persona non serve', stabile(await s.cambiaVoceMovimenti(['qq1', 'qq2'], cx.quota)), stabile({ cambiati: 0, giaCosi: 2 }))
+  ok('altre voci in blocco, a mano compresi: come oggi', [stabile(await s.cambiaVoceMovimenti(['qx2', 'qx3'], ent)), (await per('Seme qx2')).voceId, (await per('Seme qx2')).personaId], [stabile({ cambiati: 2, giaCosi: 0 }), ent, undefined])
+
+  console.log('   la scheda: gli scritti in contabilità a parte dallo storico')
+  m.archivio.dati.movimenti = [...m.archivio.dati.movimenti, seme('qs1', { origineImport: 'prima-nota:903', voceId: cx.quota, descrizione: 'Cliente Giulia Quotini per quota' })]
+  await s.collegaMovimentiPersona(['qs1'], giulia)
+  const dellaScheda = (await s.storicoPersona(giulia)).map((r) => `${r.descrizione}|${r.aMano}`).sort()
+  ok('lo storico di Giulia dice quali sono scritti a mano (aMano) e quali vengono dal vecchio programma', dellaScheda, ['Cliente Giulia Quotini per quota|false', 'Quota di Giulia|true', 'Seme qq2|true', 'Seme qx1|true'].sort())
+
+  console.log('   collegare: un\'entrata a mano su Quota o Corsi si collega, il blocco la lascia stare')
+  m.archivio.dati.movimenti = [...m.archivio.dati.movimenti, seme('qc1', { voceId: cx.corsi, descrizione: 'Cliente Marco Corsetti per Satispay' })]
+  ok('i candidati di un\'entrata a mano: la scheda col nome, non un rifiuto', await cosi(async () => (await s.candidatiPersonaMovimento('qc1')).map((c) => c.id)), [marco])
+  const riepilogo = await s.riepilogoCollegamentiPersona()
+  ok('il riepilogo e gli esiti non la contano', [(await s.esitiCollegamentiPersona()).some((e) => e.id === 'qc1'), riepilogo.sicuri.movimenti], [false, 0])
+  ok('il blocco automatico non la collega', [stabile(await s.collegaSicuriPersona('11111111-aaaa-0000-0000-0000000000a1')), (await per('Cliente Marco Corsetti per Satispay')).personaId], [stabile({ collegati: 0, restano: 0 }), undefined])
+  ok('a mano sì', [await cosi(async () => stabile(await s.collegaMovimentiPersona(['qc1'], marco))), (await per('Cliente Marco Corsetti per Satispay')).personaId], [stabile({ collegati: 1, giaCosi: 0 }), marco])
+  ok('…e si scollega', [await cosi(async () => stabile(await s.scollegaMovimentiPersona(['qc1']))), (await per('Cliente Marco Corsetti per Satispay')).personaId], [stabile({ scollegati: 1, giaSenza: 0 }), undefined])
+  ok('una donazione a mano no: non è quota né corso', await errore(() => s.collegaMovimentiPersona(['qx2'], marco)), 'Il movimento del 12/09/2026 (Seme qx2) è su «Eventi quote»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»')
+})
+
 // ---- Il database vero: le chiamate giuste, e il file 59 che può mancare.
 const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
 const tabelleContab = {
@@ -4118,6 +4197,8 @@ await sezione('la contabilità sul database (client finto): le funzioni giuste c
   ok('registraMovimento rende l\'id e manda i campi del database', [await db.registraMovimento(mov), ultima()], ['nuovo-1', stabile(['registra_movimento', { dati: { tipo: 'entrata', data: '2026-09-10', importo: 4000, voce_id: 'v1', cassa_id: 'c2', descrizione: 'Offerta di Rossi', nota: null } }])])
   await db.registraMovimento({ ...mov, nota: ' per la gara ' })
   ok('…con la nota ripulita', ultima(), stabile(['registra_movimento', { dati: { tipo: 'entrata', data: '2026-09-10', importo: 4000, voce_id: 'v1', cassa_id: 'c2', descrizione: 'Offerta di Rossi', nota: 'per la gara' } }]))
+  await db.registraMovimento({ ...mov, voceId: 'v1', personaId: 'p1' })
+  ok('…con la persona (una quota o un corso): `persona_id`', ultima(), stabile(['registra_movimento', { dati: { tipo: 'entrata', data: '2026-09-10', importo: 4000, voce_id: 'v1', cassa_id: 'c2', descrizione: 'Offerta di Rossi', nota: null, persona_id: 'p1' } }]))
   ok('registraGiroconto rende l\'id e manda da, a, data, importo, nota', [await db.registraGiroconto({ daCassaId: 'c1', aCassaId: 'c2', data: '2026-09-15', importo: 1000 }), ultima()], ['nuovo-1', stabile(['registra_giroconto', { dati: { da: 'c1', a: 'c2', data: '2026-09-15', importo: 1000, nota: null } }])])
   await db.annullaMovimento('m1')
   ok('annullaMovimento', ultima(), stabile(['annulla_movimento', { id: 'm1' }]))
@@ -4167,6 +4248,8 @@ await sezione('cambiare la voce sul database (client finto): la funzione giusta 
   const { db, chiamate } = clientContab({ funzione: () => ({ data: { cambiati: 2, gia_cosi: 1 }, error: null }) })
   const r = await db.cambiaVoceMovimenti(['m1', 'm2', 'm3'], 'v2')
   ok('manda gli id e la voce, e rende cambiati e già così', [stabile(r), stabile(chiamate.at(-1))], [stabile({ cambiati: 2, giaCosi: 1 }), stabile(['cambia_voce_movimenti', { ids: ['m1', 'm2', 'm3'], voce: 'v2' }])])
+  await db.cambiaVoceMovimenti(['m1'], 'v1', 'p1')
+  ok('con la persona (una quota o un corso): la manda come `persona`', stabile(chiamate.at(-1)), stabile(['cambia_voce_movimenti', { ids: ['m1'], voce: 'v1', persona: 'p1' }]))
 })
 
 await sezione('cambiare la voce sul database (client finto): la traccia', async () => {
@@ -4220,7 +4303,10 @@ await sezione('collegare lo storico alla persona sul database (client finto): le
   const [cand, cCand] = await chiama([{ id: 'p1', nome: 'Sara', cognome: 'Nerini', anno_nascita: 2010, corsi: ['Judo kids'], iscritto_dal: '2024-09-10' }, { id: 'p2', nome: 'Sara', cognome: 'Nerini', anno_nascita: null, corsi: [], iscritto_dal: null }], (db) => db.candidatiPersonaMovimento('m4'))
   ok('i candidati: il movimento, le persone con i nomi in camelCase', [stabile(cand.map((c) => [c.id, c.nome, c.cognome, c.annoNascita ?? null, c.corsi, c.iscrittoDal ?? null])), stabile(cCand)], [stabile([['p1', 'Sara', 'Nerini', 2010, ['Judo kids'], '2024-09-10'], ['p2', 'Sara', 'Nerini', null, [], null]]), stabile(['candidati_persona_movimento', { movimento: 'm4' }])])
   const [sto, cSto] = await chiama([{ id: 'm1', data: '2025-09-03', descrizione: 'Cliente Giulia Verdelli per quota', importo: 3000, voce: 'Quota associativa', cassa: 'Conto Corrente' }], (db) => db.storicoPersona('p1'))
-  ok('lo storico di una scheda: la persona, le righe com\'erano', [stabile(sto), stabile(cSto)], [stabile([{ id: 'm1', data: '2025-09-03', descrizione: 'Cliente Giulia Verdelli per quota', importo: 3000, voce: 'Quota associativa', cassa: 'Conto Corrente' }]), stabile(['storico_persona', { persona: 'p1' }])])
+  // Cambiata da 98-quote-persona.sql: senza `a_mano` (database prima del 98) la riga è dello storico, `aMano: false`.
+  ok('lo storico di una scheda: la persona, le righe com\'erano', [stabile(sto), stabile(cSto)], [stabile([{ id: 'm1', data: '2025-09-03', descrizione: 'Cliente Giulia Verdelli per quota', importo: 3000, voce: 'Quota associativa', cassa: 'Conto Corrente', aMano: false }]), stabile(['storico_persona', { persona: 'p1' }])])
+  const [stoMano] = await chiama([{ id: 'm2', data: '2026-09-10', descrizione: 'Quota di Giulia', importo: 4000, voce: 'Quota associativa', cassa: 'Cassa Contanti', a_mano: true }], (db) => db.storicoPersona('p1'))
+  ok('…e `a_mano` del database diventa `aMano`', stabile(stoMano), stabile([{ id: 'm2', data: '2026-09-10', descrizione: 'Quota di Giulia', importo: 4000, voce: 'Quota associativa', cassa: 'Cassa Contanti', aMano: true }]))
   ok('senza righe: lista vuota (il database può rendere null)', (await chiama(null, (db) => db.storicoPersona('p1')))[0], [])
   const [esi, cEsi] = await chiama([{ id: 'm1', esito: 'sicuro' }, { id: 'm2', esito: 'omonimi' }, { id: 'm3', esito: 'nessuna' }], (db) => db.esitiCollegamentiPersona())
   ok('gli esiti per riga: la funzione senza parametri, le righe com\'erano', [cEsi[0], cEsi[1] ?? null, stabile(esi)], ['esiti_collegamenti_persona', null, stabile([{ id: 'm1', esito: 'sicuro' }, { id: 'm2', esito: 'omonimi' }, { id: 'm3', esito: 'nessuna' }])])

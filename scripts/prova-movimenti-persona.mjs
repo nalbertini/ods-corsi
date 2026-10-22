@@ -99,8 +99,13 @@ ok('un annullato', no({ annullato: true }), 'Il movimento del 04/03/2025 (Client
 ok('un giroconto', no({ tipo: 'giroconto', voce: null, origineImport: undefined }), 'Un giroconto non ha una persona')
 ok('la differenza di una chiusura', no({ voce: 'Differenza di cassa', origineImport: undefined, descrizione: 'Differenza di cassa', data: '2026-09-07' }), 'Il movimento del 07/09/2026 (Differenza di cassa) è scritto dalla chiusura di cassa: non si collega')
 ok('un\'uscita', no({ tipo: 'uscita', voce: 'Da classificare', data: '2025-03-03', descrizione: 'Cliente Giulia Verdi per rimborso' }), 'Il movimento del 03/03/2025 (Cliente Giulia Verdi per rimborso) è un’uscita: si collegano solo le entrate')
-ok('un movimento scritto a mano, anche con un nome nel testo', no({ origineImport: undefined, voce: 'Quota associativa', data: '2026-09-10', descrizione: 'Cliente Giulia Verdi per mano' }), 'Il movimento del 10/09/2026 (Cliente Giulia Verdi per mano) non viene dal vecchio programma: non si collega')
-ok('una chiave che non è dello storico', no({ origineImport: 'altro:7' }), 'Il movimento del 04/03/2025 (Cliente Giulia Verdi per extra) non viene dal vecchio programma: non si collega')
+// Cambiata da «Quest'entrata a mano non si collega» (quote-persona): un'entrata scritta a mano su Quota o Corsi si collega.
+ok('un\'entrata scritta a mano su «Quota associativa», anche con un nome nel testo (Satispay): si collega', no({ origineImport: undefined, voce: 'Quota associativa', data: '2026-09-10', descrizione: 'Cliente Giulia Verdi per mano' }), null)
+ok('…e su «Corsi e altri pagamenti»', no({ origineImport: undefined }), null)
+ok('…e anche un annullato a mano resta annullato', no({ origineImport: undefined, annullato: true, voce: 'Quota associativa', data: '2026-09-10', descrizione: 'Cliente Giulia Verdi per mano' }), 'Il movimento del 10/09/2026 (Cliente Giulia Verdi per mano) è annullato: non si collega')
+ok('…una donazione a mano no: non è quota né corso', no({ origineImport: undefined, voce: 'Donazioni', data: '2026-09-10', descrizione: 'Offerta' }), 'Il movimento del 10/09/2026 (Offerta) è su «Donazioni»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»')
+// Cambiata da quote-persona: una chiave che non è dello storico è un movimento a mano, e si collega.
+ok('una chiave che non è dello storico vale come scritto a mano: si collega', no({ origineImport: 'altro:7' }), null)
 ok('un\'entrata su «Da classificare»', no({ voce: 'Da classificare', data: '2025-03-02', descrizione: 'Cliente Giulia Verdi per regalo' }), 'Il movimento del 02/03/2025 (Cliente Giulia Verdi per regalo) è su «Da classificare»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»')
 ok('un giorno chiuso non è un motivo per dire no: è un\'etichetta', no({ data: '2026-09-03' }), null)
 ok('un movimento già collegato a un\'altra persona si può ricollegare a mano', no({ personaId: 'g9' }), null)
@@ -288,6 +293,39 @@ ok('…anche con ’ e `', prova(() => ['NICOLO’', 'NICOLO`'].map(m.normalizza
 ok('«Cliente BADALI\' GABRIELE per mensile»: sicuro, la sola scheda Badalì Gabriele (non Badali Alessio)',
   prova(() => m.abbinaPersone(m.nomeDallaCausale('Cliente BADALI\' GABRIELE per mensile'), [{ id: 'bg', nome: 'Gabriele', cognome: 'Badalì' }, { id: 'ba', nome: 'Alessio', cognome: 'Badali' }])), { esito: 'sicuro', ids: ['bg'] })
 ok('«Cliente FEMIA NICOLO\' per quota» trova la scheda Femia Nicolò', prova(() => m.abbinaPersone(m.nomeDallaCausale('Cliente FEMIA NICOLO\' per quota'), [{ id: 'fn', nome: 'Nicolò', cognome: 'Femia' }])), { esito: 'sicuro', ids: ['fn'] })
+
+console.log('\n10. quote e corsi scritti a mano (quote-persona): il blocco guarda solo lo storico, il filtro SENZA PERSONA le trova')
+const amano = (o) => mv({ origineImport: undefined, data: '2026-09-02', voce: 'Quota associativa', descrizione: 'Cliente Giulia Verdi per Satispay', ...o })
+const conMano = [...storico, amano({ id: 'h1' }), amano({ id: 'h2', voce: 'Corsi e altri pagamenti', descrizione: 'Cliente Sara Neri per mensile' })]
+ok('il riepilogo non cambia se si aggiungono entrate a mano: nemmeno con «Cliente NOME per…»', senzaCampione(rie(conMano)), senzaCampione(rie()))
+ok('…neanche i già collegati: uno a mano con una persona non conta', senzaCampione(rie([...storico, amano({ id: 'h3', personaId: 'g1' })])).giaCollegati, 0)
+ok('gli esiti non hanno le entrate a mano', esitiDi(conMano).some((e) => e.id === 'h1' || e.id === 'h2'), false)
+ok('…e sono gli stessi di prima', esitiDi(conMano), esitiDi())
+const base = { origine: 'movimento', tipo: 'entrata', voce: 'Quota associativa', annullato: false }
+const righeSenza = [
+  { id: 's1', ...base, origineImport: undefined },
+  { id: 's2', ...base, voce: 'Corsi e altri pagamenti', origineImport: 'altro:1' },
+  { id: 's3', ...base, origineImport: 'prima-nota:3' },
+  { id: 's4', ...base, personaId: 'g1' },
+  { id: 's5', ...base, annullato: true },
+  { id: 's6', ...base, tipo: 'uscita' },
+  { id: 's7', ...base, voce: 'Donazioni' },
+  { id: 's8', ...base, origine: 'pagamento' },
+  { id: 's9', ...base, tipo: 'giroconto', voce: null },
+  { id: 's10', ...base, origine: 'ricevuta' },
+]
+ok('«senza persona»: entrate a mano su Quota o Corsi senza persona (non lo storico, non gli annullati, non gli incassi iscritti)',
+  prova(() => m.filtraPerPersona(righeSenza, 'senza_persona', {}).map((r) => r.id)), ['s1', 's2'])
+ok('…gli esiti dello storico non c\'entrano', prova(() => m.filtraPerPersona(righeSenza, 'senza_persona', { s1: 'omonimi', s3: 'nessuna' }).map((r) => r.id)), ['s1', 's2'])
+ok('…le altre voci del filtro non sono cambiate', prova(() => m.filtraPerPersona(righeSenza, 'collegati', {}).map((r) => r.id)), ['s4'])
+
+console.log('\n11. dividiStorico: lo storico di una scheda in due, scritto in contabilità e vecchio programma')
+const vs = (id, aMano) => ({ id, data: '2026-09-01', descrizione: id, importo: 1000, voce: 'Quota associativa', cassa: 'Conto Corrente', aMano })
+ok('i due gruppi, nello stesso ordine di prima', prova(() => {
+  const r = m.dividiStorico([vs('a', true), vs('b', false), vs('c', false), vs('d', true)])
+  return { inContabilita: r.inContabilita.map((x) => x.id), vecchioProgramma: r.vecchioProgramma.map((x) => x.id) }
+}), { inContabilita: ['a', 'd'], vecchioProgramma: ['b', 'c'] })
+ok('niente: due liste vuote', prova(() => m.dividiStorico([])), { inContabilita: [], vecchioProgramma: [] })
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

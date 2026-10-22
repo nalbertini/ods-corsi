@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .pr { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00; }
+    .nota { font-size: 14px; color: #46606f; line-height: 1.4; }
+    .fin { display: flex; flex-direction: column; gap: 14px; padding: 20px 28px 22px; background: #fff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; }
+    .tit { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; line-height: 1.05; }
+    .r { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; align-items: baseline; }
+    .r .et { width: 130px; flex-shrink: 0; }
+    .r span:last-child { font-size: 15px; }
+    .link { color: #14709f; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+    .err { font-size: 14px; color: #a81a1a; }
+  </style>
+</helmet>
+<!-- La scheda della persona, storico dei pagamenti (StoricoIscritto): l'entrata scritta in CONTABILITÀ sta fra i pagamenti, ma non si somma. -->
+<div style="display: flex; gap: 32px; width: 1180px; padding: 28px 36px 36px; align-items: flex-start">
+<div style="width: 720px; display: flex; flex-direction: column; gap: 10px"><span class="pr">PROPOSTA · NELLA SCHEDA, FRA I PAGAMENTI</span>
+<section class="fin" style="border-top-color:#14709f;border-color:#cfe6f4"><span class="et">BIANCHI MARCO · PAGAMENTI</span>
+<dc-import name="RigaPagamento" tema="sito" tipo="ricevuta" titolo="N. 41/2026 · 20 ottobre 2026" sotto="ANNUALE JUDO KIDS" importo="195,00 €" tasti="PDF|ANNULLA RICEVUTA" hint-size="100%,120px"></dc-import>
+<dc-import name="RigaPagamento" tema="sito" tipo="ricevuta" titolo="22 ottobre 2026 · Cassa Contanti" sotto="QUOTA ASSOCIATIVA · QUOTA 2026/27" importo="40,00 €" tag="SCRITTO IN CONTABILITÀ" tagTono="giallo" tasti="APRI IN CONTABILITÀ" hint-size="100%,120px"></dc-import>
+<span class="nota">Non conta nella quota: la stagione e il «da pagare» guardano solo le ricevute di PAGAMENTI. Si apre e si scollega da CONTABILITÀ.</span>
+</section></div>
+<div style="width: 360px; display:flex;flex-direction:column;gap:12px;padding-top:30px">
+<span class="et">PERCHÉ IL SEGNO</span>
+<span class="nota">Il tag giallo dice che non è una ricevuta: senza numero, senza PDF, e non tocca quello che resta da pagare. Se la quota la vuoi contata, la ricevuta si fa in PAGAMENTI.</span>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1180,"height":520}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .pr { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00; }
+    .nota { font-size: 14px; color: #46606f; line-height: 1.4; }
+    .fin { display: flex; flex-direction: column; gap: 14px; padding: 20px 28px 22px; background: #fff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; }
+    .tit { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; line-height: 1.05; }
+    .r { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; align-items: baseline; }
+    .r .et { width: 130px; flex-shrink: 0; }
+    .r span:last-child { font-size: 15px; }
+    .link { color: #14709f; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+    .err { font-size: 14px; color: #a81a1a; }
+  </style>
+</helmet>
+<!-- CAMBIA VOCE verso Quota associativa o Corsi e altri pagamenti: una riga alla volta, con la persona. In blocco no. -->
+<div style="display: flex; gap: 32px; width: 1440px; padding: 28px 36px 36px; align-items: flex-start">
+<div style="width: 520px; display: flex; flex-direction: column; gap: 10px"><span class="pr">PROPOSTA · UNA RIGA ALLA VOLTA, CON LA PERSONA</span>
+<section class="fin"><span class="et">IL MOVIMENTO</span><span class="tit">Satispay · pagamento</span><div><div class="r"><span class="et">DATA</span><span>15/10/2026</span></div><div class="r"><span class="et">TIPO</span><span>ENTRATA</span></div><div class="r"><span class="et">CASSA</span><span>Conto Corrente</span></div><div class="r"><span class="et">IMPORTO</span><span>60,00 €</span></div></div>
+<dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="VOCE" valore="Quota associativa" nota="Era «Da classificare»." hint-size="100%,96px"></dc-import>
+<div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#eef5fa;border:2px solid #cfe6f4">
+<dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="PERSONA · DI CHI È" valore="ferri" manca="{{ true }}" nota="Scegli la persona: una quota o un corso si sposta sempre con la sua scheda." hint-size="100%,96px"></dc-import>
+<dc-import name="SceltaPersona" nome="Ferri Luca" dettagli="nascita 2009 · Karate agonisti · iscrizione dal 4 set 2024" hint-size="100%,64px"></dc-import>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><dc-import name="Bottone" tema="sito" label="Cambia la voce" variante="pieno" contesto="segreteria" disabled="{{ true }}" hint-size="190px,48px"></dc-import><dc-import name="Bottone" tema="sito" label="Chiudi" variante="linea" contesto="segreteria" hint-size="110px,48px"></dc-import></div>
+</section>
+<span class="nota">Scegliendo Quota o Corsi nel movimento aperto compare PERSONA, come nel nuovo movimento. Il tasto si accende scelta la persona, e voce e persona si scrivono insieme.</span></div>
+<div style="width: 520px; display: flex; flex-direction: column; gap: 10px"><span class="pr">PROPOSTA · CAMBIA VOCE IN BLOCCO</span>
+<section class="fin" style="border-top-color:#14709f;border-color:#cfe6f4">
+<span class="et">3 ENTRATE · DA CLASSIFICARE</span><span class="tit">IN QUALE VOCE?</span>
+<dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="VOCE NUOVA" valore="Quota associativa" manca="{{ true }}" nota="Una quota o un corso si sposta una riga alla volta, con la persona: apri il movimento dall'elenco e cambia la voce lì." hint-size="100%,112px"></dc-import>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding-top:14px;border-top:2px solid #cfe6f4">
+<dc-import name="Bottone" tema="sito" label="No, torna all’elenco" variante="linea" contesto="segreteria" hint-size="210px,48px"></dc-import>
+<dc-import name="Bottone" tema="sito" label="Cambia la voce a 3" variante="pieno" contesto="segreteria" disabled="{{ true }}" hint-size="210px,48px"></dc-import></div>
+</section>
+<span class="nota">Verso le altre voci il cambio in blocco resta com’è oggi. Le righe ancora da fare si trovano col filtro «Quote e corsi senza persona».</span></div>
+<div style="width: 280px; display:flex;flex-direction:column;gap:12px;padding-top:30px">
+<span class="et">MOVIMENTI · FILTRO PERSONA</span>
+<dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="PERSONA" valore="Quote e corsi senza persona · 12" hint-size="100%,80px"></dc-import>
+<span class="nota">Una scelta nuova nel filtro PERSONA che c’è già: le entrate su Quota e Corsi ancora senza persona, col conto.</span>
+</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":860}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

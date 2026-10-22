@@ -980,7 +980,8 @@ console.log('\n37. collegare alla persona: le righe dell\'elenco portano chiave 
   ok('l\'entrata dello storico su una voce di sistema, con o senza persona: niente da dire', [no('s1'), no('s2')], [null, null])
   ok('una voce che non è un incasso', no('s4'), 'Il movimento del 04/03/2025 (Cliente Giulia Verdelli per extra) è su «Da classificare»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»')
   ok('un\'uscita', no('s5'), 'Il movimento del 04/03/2025 (Cliente Giulia Verdelli per extra) è un’uscita: si collegano solo le entrate')
-  ok('a mano', no('s3'), 'Il movimento del 04/03/2025 (Cliente Giulia Verdelli per mano) non viene dal vecchio programma: non si collega')
+  // Cambiata da quote-persona: un'entrata scritta a mano su Quota o Corsi si collega (prima: «non viene dal vecchio programma»).
+  ok('a mano, su una voce di sistema: si collega', no('s3'), null)
   ok('un annullato', no('s6'), 'Il movimento del 04/03/2025 (Cliente Giulia Verdelli per extra) è annullato: non si collega')
   ok('un giroconto', no('s7'), 'Un giroconto non ha una persona')
   ok('la differenza di una chiusura', no('s8'), 'Il movimento del 07/09/2026 (Differenza di cassa) è scritto dalla chiusura di cassa: non si collega')
@@ -1217,6 +1218,86 @@ console.log('\n94. le icone di casse e voci: solo per i nomi che si riconoscono'
   ok('le voci della palestra che si riconoscono', prova(() => voci.map(m.iconaVoce)), ['tessera', 'tessera', 'persone', 'persone', 'lampadina', 'telefono', 'manubrio', 'casa', 'casa', 'banca'])
   ok('maiuscole e spazi non contano', prova(() => m.iconaVoce('  AFFITTO sala ')), 'casa')
   ok('«Varie», «Da classificare» e una voce senza nome: nessuna icona', prova(() => ['Varie', 'Da classificare', null].map(m.iconaVoce)), [null, null, null])
+}
+
+console.log('\n95. quote e corsi scritti a mano hanno la persona (supabase/98-quote-persona.sql)')
+{
+  const oggi = '2026-09-26'
+  ok('la frase «una riga alla volta» è una sola', m.UNA_RIGA_ALLA_VOLTA, 'Una quota o un corso si sposta una riga alla volta, con la persona: apri il movimento dall’elenco e cambia la voce lì.')
+  ok('vuolePersona: solo le entrate su Quota e Corsi', prova(() => [
+    m.vuolePersona('entrata', 'Quota associativa'), m.vuolePersona('entrata', 'Corsi e altri pagamenti'),
+    m.vuolePersona('entrata', 'Donazioni'), m.vuolePersona('uscita', 'Quota associativa'), m.vuolePersona('uscita', 'Affitto sala'), m.vuolePersona('entrata', null),
+  ]), [true, true, false, false, false, false])
+
+  console.log('   cosaNonVaMovimento: la persona')
+  const buono = { tipo: 'entrata', data: '2026-09-10', importo: 4000, voceId: 'v-quota', cassaId: 'c1', descrizione: 'Quota di Rossi' }
+  const di = (cambio) => prova(() => m.cosaNonVaMovimento({ ...buono, ...cambio }, voci, casse, oggi))
+  ok('una quota senza persona: scegli la persona', di({}), 'Scegli la persona')
+  ok('…con la persona vuota anche', di({ personaId: '' }), 'Scegli la persona')
+  ok('…con la persona va', di({ personaId: 'g1' }), null)
+  ok('un corso senza persona: scegli la persona', di({ voceId: 'v-corsi' }), 'Scegli la persona')
+  ok('…con la persona va', di({ voceId: 'v-corsi', personaId: 'g1' }), null)
+  ok('una donazione non ha bisogno della persona', di({ voceId: 'v-don' }), null)
+  ok('…e se c\'è non dà fastidio', di({ voceId: 'v-don', personaId: 'g1' }), null)
+  ok('un\'uscita non ha bisogno della persona', di({ tipo: 'uscita', voceId: 'v-aff' }), null)
+  ok('come il database: senza persona e senza descrizione dice prima della persona', di({ descrizione: '' }), 'Scegli la persona')
+  ok('gli altri rifiuti restano: una quota senza descrizione dice della descrizione', di({ personaId: 'g1', descrizione: '' }), m.cosaNonVaMovimento({ ...buono, voceId: 'v-don', descrizione: '' }, voci, casse, oggi))
+
+  console.log('   cosaNonVaCambioVoce: la persona e le righe una alla volta')
+  const vv = [
+    ...voci,
+    { id: 'v-dcE', nome: 'Da classificare', tipo: 'entrata', diSistema: false, attiva: true },
+    { id: 'v-difU', nome: 'Differenza di cassa', tipo: 'uscita', diSistema: true, attiva: true },
+  ]
+  const mv = (id, o) => ({ id, tipo: 'entrata', data: '2026-09-02', importo: 5000, voceId: 'v-don', cassaId: 'c2', descrizione: `Movimento ${id}`, creatoIl: '2026-09-02T10:00:00Z', ...o })
+  const righe = m.righeMovimenti([], [
+    mv('x1'), mv('x2'),
+    mv('p1', { voceId: 'v-dcE', origineImport: 'prima-nota:1', data: '2019-03-14' }), mv('p2', { voceId: 'v-dcE', origineImport: 'prima-nota:2', data: '2019-03-15' }),
+    mv('q1', { voceId: 'v-quota' }), mv('q2', { voceId: 'v-quota', personaId: 'g1' }),
+    mv('an', { annullatoIl: '2026-09-03T00:00:00Z' }),
+    mv('u1', { tipo: 'uscita', voceId: 'v-aff' }),
+  ], vv)
+  const no = (ids, voce, persona) => prova(() => m.cosaNonVaCambioVoce(ids, righe, vv, voce, persona))
+  ok('due a mano verso Quota: una riga alla volta', no(['x1', 'x2'], 'v-quota', 'g1'), m.UNA_RIGA_ALLA_VOLTA)
+  ok('…verso Corsi anche', no(['x1', 'x2'], 'v-corsi', 'g1'), m.UNA_RIGA_ALLA_VOLTA)
+  ok('…senza persona prima la regola delle righe', no(['x1', 'x2'], 'v-quota'), m.UNA_RIGA_ALLA_VOLTA)
+  ok('uno a mano e uno dello storico insieme, verso Quota: una riga alla volta', no(['x1', 'p1'], 'v-quota', 'g1'), m.UNA_RIGA_ALLA_VOLTA)
+  ok('uno a mano senza persona: scegli la persona', no(['x1'], 'v-quota'), 'Scegli la persona')
+  ok('…con la persona vuota anche', no(['x1'], 'v-corsi', ''), 'Scegli la persona')
+  ok('uno a mano con la persona: va', no(['x1'], 'v-quota', 'g1'), null)
+  ok('lo storico in blocco verso Quota senza persona: va (resta come oggi)', no(['p1', 'p2'], 'v-quota'), null)
+  ok('…verso Corsi anche', no(['p1', 'p2'], 'v-corsi'), null)
+  ok('lo storico da solo, senza persona: va', no(['p1'], 'v-quota'), null)
+  ok('movimenti già sulla voce di arrivo: niente da cambiare, la persona non serve', no(['q1', 'q2'], 'v-quota'), null)
+  ok('altre voci in blocco, a mano compresi: come prima', no(['x1', 'x2'], 'v-dcE'), null)
+  ok('…e la persona non dà fastidio', no(['x1'], 'v-dcE', 'g1'), null)
+  ok('vuolePersonaRiga: a mano verso Quota sì, dallo storico no, già lì no, verso altro no, un\'uscita no', prova(() => [
+    m.vuolePersonaRiga({ tipo: 'entrata', voce: 'Donazioni' }, 'Quota associativa'),
+    m.vuolePersonaRiga({ tipo: 'entrata', voce: 'Da classificare', origineImport: 'prima-nota:1' }, 'Quota associativa'),
+    m.vuolePersonaRiga({ tipo: 'entrata', voce: 'Quota associativa' }, 'Quota associativa'),
+    m.vuolePersonaRiga({ tipo: 'entrata', voce: 'Donazioni' }, 'Da classificare'),
+    m.vuolePersonaRiga({ tipo: 'uscita', voce: 'Affitto sala' }, 'Quota associativa'),
+  ]), [true, false, false, false, false])
+  ok('il cambio in blocco usa vuolePersonaRiga: anche uno solo a mano verso Quota va aperto dal dettaglio', /vuolePersonaRiga\(r, nomeVoce\)\)\) return UNA_RIGA_ALLA_VOLTA/.test(readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')), true)
+  ok('un annullato resta annullato, con o senza persona', [no(['an'], 'v-quota', 'g1'), no(['an'], 'v-quota')], Array(2).fill('Il movimento del 02/09/2026 (Movimento an) è annullato: non si cambia'))
+  ok('una voce di entrata a un\'uscita: prima il tipo, poi la persona', no(['u1'], 'v-quota', 'g1'), 'La voce scelta non va con questo tipo di movimento')
+  ok('senza movimenti, i controlli di prima', no([], 'v-quota', 'g1'), 'Scegli almeno un movimento')
+
+  console.log('   ricevutaDoppione: l\'avviso prima di scrivere una quota che sembra già pagata')
+  const r = (id, o) => ({ id, origine: 'ricevuta', tipo: 'entrata', data: '2026-09-10', importo: 4500, descrizione: 'Rossi', voce: 'Quota associativa', cassaId: 'c2', annullato: false, personaId: 'g1', ...o })
+  const doppio = (rr, persona = 'g1', importo = 4500, data = '2026-09-10') => prova(() => m.ricevutaDoppione(rr, persona, importo, data)?.id ?? null)
+  ok('una ricevuta della stessa persona, stesso importo, stesso giorno: è un doppione', doppio([r('a')]), 'a')
+  ok('…un pagamento di PAGAMENTI anche', doppio([r('a', { origine: 'pagamento' })]), 'a')
+  ok('…30 giorni prima ancora sì', doppio([r('a', { data: '2026-08-11' })]), 'a')
+  ok('…31 giorni prima no', doppio([r('a', { data: '2026-08-10' })]), null)
+  ok('…dopo la data no', doppio([r('a', { data: '2026-09-11' })]), null)
+  ok('un\'altra persona no', doppio([r('a', { personaId: 'g2' })]), null)
+  ok('un altro importo no', doppio([r('a', { importo: 4600 })]), null)
+  ok('un annullato no', doppio([r('a', { annullato: true })]), null)
+  ok('un movimento a mano no: non è un incasso iscritto', doppio([r('a', { origine: 'movimento' })]), null)
+  ok('senza righe, nessun doppione', doppio([]), null)
+  ok('senza persona, nessun doppione', doppio([r('a', { personaId: undefined })], ''), null)
+  ok('se ce n\'è più d\'uno rende il primo dell\'elenco', doppio([r('a', { origine: 'movimento' }), r('b'), r('c')]), 'b')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

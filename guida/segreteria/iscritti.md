@@ -172,7 +172,11 @@ Poi la scheda è divisa in quattro schede, e se ne vede una alla volta:
 
 - **PERSONA** — i contatti, **STESSO CONTATTO DI**, **DATI ANAGRAFICI**, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
-- **QUOTA E PAGAMENTI** — la quota e i pagamenti, con **+ FAI LA RICEVUTA** e **+ REGISTRA UN PAGAMENTO**. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. In fondo, se
+- **QUOTA E PAGAMENTI** — la quota e i pagamenti, con **+ FAI LA RICEVUTA** e **+ REGISTRA UN PAGAMENTO**. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
+  corsi che l'amministrazione ha scritto in CONTABILITÀ con questa persona stanno in **SCRITTI IN
+  CONTABILITÀ**, col tag **Scritto in contabilità**: non sono ricevute (niente numero né PDF), non si
+  sommano e non toccano quello che resta da pagare. Se la quota la vuoi contata, la ricevuta si fa qui.
+  **Apri in contabilità** apre il movimento, per chi vede CONTABILITÀ. In fondo, se
   l'amministrazione ha collegato alla persona dei pagamenti del vecchio programma, c'è il blocco **DAL VECCHIO
   PROGRAMMA**: è lo storico, a parte. Non è nei pagamenti qui sopra e non conta per «quota pagata»: se la persona
   ha pagato anche nell'app negli stessi giorni, lo stesso incasso può comparire in tutti e due.
