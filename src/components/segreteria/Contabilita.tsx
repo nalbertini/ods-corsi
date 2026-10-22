@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { tastoLinguette } from '../../lib/schedaSezioni'
 import { createPortal } from 'react-dom'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import {
@@ -79,6 +80,12 @@ import { ScaricoSatispay } from './ScaricoSatispay'
 import { commissioneSatispay, NOME_CASSA_SATISPAY, spesaCommissione } from '../../lib/satispayScarico'
 
 type Scheda = 'movimenti' | 'bilancio' | 'voci' | 'casse'
+const SCHEDE: readonly (readonly [Scheda, string])[] = [
+  ['movimenti', 'Movimenti'],
+  ['bilancio', 'Bilancio'],
+  ['voci', 'Voci'],
+  ['casse', 'Casse'],
+]
 type Fai = ReturnType<typeof useAvviso>['fai']
 
 /**
@@ -127,17 +134,25 @@ export function Contabilita({ d, movimento, onPersona }: { d: DatiSegreteria; mo
       <Testa titolo="CONTABILITÀ" sotto="Le entrate e le uscite della palestra, nelle sue casse. Gli incassi degli iscritti ci sono già: si correggono in PAGAMENTI.">
         <div className="row" style={{ gap: 10, flexWrap: 'wrap' }} ref={setAzioni} />
       </Testa>
-      <Segmenti
-        etichetta="Contabilità"
-        voci={[
-          ['movimenti', 'Movimenti'],
-          ['bilancio', 'Bilancio'],
-          ['voci', 'Voci'],
-          ['casse', 'Casse'],
-        ]}
-        scelta={scheda}
-        onScegli={setScheda}
-      />
+      <div
+        role="tablist"
+        aria-label="Contabilità"
+        className="schede sg-schede"
+        onKeyDown={(e) => {
+          const dove = tastoLinguette(SCHEDE.map(([s]) => s), scheda, e.key)
+          if (!dove) return
+          e.preventDefault()
+          setScheda(dove)
+          // Il fuoco segue la scheda, come in IMPOSTAZIONI.
+          e.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]')[SCHEDE.findIndex(([s]) => s === dove)]?.focus()
+        }}
+      >
+        {SCHEDE.map(([s, nome]) => (
+          <button key={s} type="button" role="tab" aria-selected={scheda === s} tabIndex={scheda === s ? 0 : -1} className="scheda" data-on={scheda === s} onClick={() => setScheda(s)}>
+            {nome}
+          </button>
+        ))}
+      </div>
       {guaio && <Guaio testo={guaio} />}
       {nonInRegola.map((k) => (
         <div key={k.id} role="alert" className="sg-riquadro" style={{ borderColor: 'var(--rosso-testo)' }}>

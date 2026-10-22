@@ -4,7 +4,7 @@
 
 Le entrate e le uscite della palestra, in due casse: **Cassa Contanti** e
 **Conto Corrente**. La vede solo chi ha il ruolo di amministrazione: la segreteria
-semplice, gli istruttori e il tablet no. Ha quattro schede: **MOVIMENTI**, **BILANCIO**, **VOCI**, **CASSE**.
+semplice, gli istruttori e il tablet no. Ha quattro schede, sotto il titolo come in IMPOSTAZIONI: **MOVIMENTI**, **BILANCIO**, **VOCI**, **CASSE**.
 
 ## Movimenti
 
