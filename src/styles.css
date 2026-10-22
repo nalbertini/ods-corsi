@@ -510,6 +510,8 @@
 /* La tinta del corso è una barra in alto; quella a sinistra è dello stato. */
 :root[data-look='sito'] .lezione { background: var(--surface); border: 0; border-top: 4px solid var(--tinta); border-radius: 6px; }
 :root[data-look='sito'] .lezione[aria-current='true'] { box-shadow: inset 0 0 0 2px var(--blu); }
+/* L'area iscritti tiene la tinta del corso a sinistra, come prima del look. */
+:root[data-look='sito'] .mia-lezione { border-top: 0; border-left: 6px solid var(--tinta); }
 :root[data-look='sito'] .lezione-nome { font-weight: 800; letter-spacing: 0.02em; }
 :root[data-look='sito'] .lezione-destra { flex-shrink: 0; margin-left: 8px; max-width: 45%; }
 :root[data-look='sito'] .lezione .chi-kanji > span:last-child { overflow-wrap: anywhere; min-width: 0; }

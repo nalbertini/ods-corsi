@@ -4,8 +4,8 @@
 //   node scripts/prova-look.mjs
 //
 // Sono sempre chiare: `lib/aspettoSegreteria.ts` mette `data-look="sito"` su
-// <html> quando l'area è segreteria o amministrazione, `tema.ts` allora forza
-// `chiaro` senza toccare `ods-tema` (che resta per istruttori, tablet, timer),
+// <html> quando l'area è segreteria, amministrazione, istruttori o iscritti, `tema.ts` allora forza
+// `chiaro` senza toccare `ods-tema` (che resta per tablet e timer),
 // e `styles.css` ridefinisce i token solo sotto `:root[data-look='sito']`.
 // Il Banco prende solo colori e caratteri; il tasto del tema lì sparisce.
 // ---------------------------------------------------------------------------
@@ -97,8 +97,8 @@ const ambiente = ({ salvato = null, luce: chiaro = false, look = false } = {}) =
 }
 
 // --- 1. lookDellArea ---------------------------------------------------------
-// Le aree col look: segreteria, amministrazione e (dal «look del sito» dell'istruttore) istruttori.
-const LOOK_AREE = ['segreteria', 'amministrazione', 'istruttori']
+// Le aree col look: segreteria, amministrazione, istruttori e (dall'«area iscritti nel look del sito») iscritti.
+const LOOK_AREE = ['segreteria', 'amministrazione', 'istruttori', 'iscritti']
 const AREE = ['segreteria', 'amministrazione', 'iscrizioni', 'iscritti', 'istruttori', 'sala', 'guida', 'scelta']
 console.log('\nL\'aspetto per area (src/lib/aspettoSegreteria.ts)')
 let asp
@@ -125,6 +125,14 @@ for (const a of AREE) {
   ok('da sala ad amministrazione: si riaccende', e.look(), 'sito')
   vedi(() => asp.applicaLook('amministrazione', e.doc))
   ok('due volte la stessa area: resta acceso', e.look(), 'sito')
+}
+{
+  // Il look forza il chiaro: nell'area iscritti il tasto del tema non servirebbe a niente.
+  const app = readFileSync('src/App.tsx', 'utf8')
+  ok('la Testata di ISCRITTI è senzaTema', /<Testata luogo="ISCRITTI"[^>]*\bsenzaTema\b/.test(app), true)
+  // Il calendario dell'istruttore ha la tinta in alto; l'iscritto la tiene a sinistra, come prima.
+  ok('le lezioni dell\'iscritto: la tinta del corso resta il filo a sinistra',
+    /:root\[data-look='sito'\] \.mia-lezione \{[^}]*border-top: 0;[^}]*border-left: 6px solid var\(--tinta\)/.test(readFileSync('src/styles.css', 'utf8')), true)
 }
 {
   const main = readFileSync('src/main.tsx', 'utf8')
