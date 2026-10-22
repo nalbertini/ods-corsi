@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Saira+Condensed:wght@700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00; }
+    li { margin: 4px 0; }
+  </style>
+</helmet>
+<!-- OGGI · CONTABILITÀ → MOVIMENTI come la manda l'utente (2026-10-22), con quel che la rende pasticciata. -->
+<div style="width: 1440px; padding: 28px 36px; display: flex; flex-direction: column; gap: 16px; background: #eef5fa">
+  <span class="et">OGGI · CONTABILITÀ → MOVIMENTI</span>
+  <img src="./oggi.png" alt="Movimenti oggi" style="width: 100%; border: 2px solid #cfe6f4">
+  <ul style="margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.45">
+    <li><b>Sei file di cose una sotto l’altra</b> prima della prima riga: saldi, tasti, filtri su due righe, conteggio, vista, «Scegli le 275».</li>
+    <li><b>Tutto ha lo stesso peso</b>: 14 tasti e chip con lo stesso bordo blu, filtri e azioni non si distinguono.</li>
+    <li><b>I filtri parlano in tre modi</b>: chip che si accendono, chip che si spengono ripremendo, menu a tendina.</li>
+    <li><b>Il conteggio e «Togli i filtri» sono staccati</b> dalla tabella, e non dicono quali filtri sono accesi.</li>
+    <li><b>Le azioni sono lontane da cosa toccano</b>: Esporta CSV vive coi tasti della pagina ma esporta i trovati; «Scegli le 275» è un tasto a sé invece della casella in testa alla colonna.</li>
+  </ul>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

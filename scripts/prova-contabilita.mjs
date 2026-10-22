@@ -1023,16 +1023,31 @@ console.log('\n39. Contabilita.tsx: Nuovo movimento e Giroconto sono una pagina 
   const da = tsx.indexOf('function Movimenti(')
   const fino = tsx.indexOf('function CambiaVoce(')
   const corpo = da >= 0 && fino > da ? tsx.slice(da, fino) : ''
-  ok('il periodo parte da PERIODO_INIZIALE', /useState<Periodo>\(PERIODO_INIZIALE\)/.test(corpo), true)
+  ok('i filtri partono da FILTRI_INIZIALI', /useState<FiltriElenco>\(FILTRI_INIZIALI\)/.test(corpo), true)
   ok('Nuovo movimento non è più un riquadro sopra l\'elenco (`InVista`)', /<InVista><NuovoMovimento/.test(corpo), false)
   ok('…né il Giroconto', /<InVista><NuovoGiroconto/.test(corpo), false)
   ok('con il modulo aperto l\'elenco non c\'è: si torna con «I movimenti» chiedendo prima (`lasciare`)', /if \(scrivo\)/.test(corpo) && /I movimenti/.test(corpo) && /lasciare\(\)/.test(corpo), true)
   ok('«Raggruppa per voce» non è più un chip dei filtri', /Raggruppa per voce/.test(corpo), false)
-  ok('c\'è la vista Elenco | Per voce', /Per voce/.test(corpo) && /VISTA/.test(corpo), true)
+  ok('c\'è la vista Elenco | Per voce, a segmenti', /<Segmenti[^>]*Vista/.test(corpo) && /Per voce/.test(corpo), true)
+  ok('il periodo è a segmenti, non quattro chip', /<Segmenti[^>]*Periodo/.test(corpo), true)
+  ok('le pillole della riga di stato vengono da `filtriAccesi`, e la ✕ toglie con `togliFiltro`', /filtriAccesi\(/.test(corpo) && /togliFiltro\(/.test(corpo), true)
+  ok('«Scegli tutte» è la casella in testa alla tabella, non un tasto a sé', /Scegli tutte le/.test(corpo), false)
+  ok('…la casella c\'è', /columnheader[^>]*>\s*<input type="checkbox"/.test(corpo), true)
+  ok('le azioni della pagina vanno nella testata (`createPortal`)', /createPortal\(/.test(corpo), true)
   ok('c\'è «Togli i filtri»', /Togli i filtri/.test(corpo), true)
+  // Le azioni in testata restano in vista col dettaglio aperto: toccarle non deve buttare una correzione non salvata.
+  ok('Giroconto e Nuovo movimento chiedono prima di lasciare il dettaglio', /const apri = async[^]*?if \(!\(await lasciare\(\)\)\) return[^]*?setScrivo\(cosa\)/.test(corpo), true)
+  // Le regole dell'elenco stanno nel componente: queste fermano chi le cambia per sbaglio.
+  ok('la ✕ di una pillola toglie solo quel filtro (`togliFiltro(f, a.chiave)`)', /togliFiltro\(f, a\.chiave\)/.test(corpo), true)
+  ok('le somme della riga di stato sono di quel che si vede (`totali(trovate)`)', /totali\(trovate\)/.test(corpo), true)
+  ok('la casella in testa sceglie solo quelli che si possono cambiare', /const scegliibili = trovate\.filter\(cambiabile\)/.test(corpo), true)
+  ok('«Togli i filtri» riporta tutti i filtri alla partenza', /const azzera = \(\) => \{\s*setF\(FILTRI_INIZIALI\)/.test(corpo), true)
+  ok('…anche «Collega i casi sicuri»', /const collegaSicuri = async[^]*?if \(!\(await lasciare\(\)\)\) return[^]*?setCollegando\('sicuri'\)/.test(corpo), true)
+  ok('«Vedi i da decidere» parte da filtri spenti, se no un filtro acceso li nasconde', /onVediDaDecidere=\{[^}]*setF\(\{ \.\.\.FILTRI_INIZIALI, periodo: 'tutto', persona: 'da_decidere' \}\)/.test(corpo), true)
   ok('i filtri attivi si contano con `filtriAttivi`', /filtriAttivi\(/.test(corpo), true)
   ok('dopo la registrazione fuori dai filtri lo dice (`nonSiVedra`)', /nonSiVedra\(/.test(tsx), true)
   ok('PERSONA è un menu, non quattro chip', /id="filtro-persona"/.test(corpo), true)
+  ok('anche CASSA e TIPO sono menu', /id="filtro-cassa"/.test(corpo) && /id="filtro-tipo"/.test(corpo), true)
 }
 
 console.log('\n40. la colonna PERSONA mostra l\'iscritto anche per gli incassi; «Collegati» resta lo storico collegato a mano')
@@ -1160,6 +1175,48 @@ console.log('\n92. la ricerca di MOVIMENTI non bada agli spazi in più')
   const righe = [r('a', 'FERRAMENTA   bianchi'), r('b', 'ferramenta bianchi'), r('c', 'ferramentabianchi')]
   ok('«ferramenta bianchi» trova anche quella con tre spazi in mezzo, non quella attaccata', m.filtraMovimenti(righe, { testo: 'ferramenta bianchi' }).map((x) => x.id), ['a', 'b'])
   ok('…e scritta con due spazi trova le stesse', m.filtraMovimenti(righe, { testo: 'ferramenta  bianchi' }).map((x) => x.id), ['a', 'b'])
+}
+
+console.log('\n93. la riga di stato di MOVIMENTI dice quali filtri sono accesi, e ognuno si toglie da solo')
+{
+  const base = prova(() => m.FILTRI_INIZIALI)
+  ok('alla partenza: tutto l\'anno, il resto vuoto', base, { testo: '', periodo: 'anno', tipo: '', cassaId: '', voce: '', persona: '', annullati: false })
+  const nomi = { nomeCassa: (id) => ({ c1: 'Cassa Contanti', c2: 'Conto Corrente' })[id] ?? '', mese: 'Ottobre 2026' }
+  ok('alla partenza nessuna pillola', prova(() => m.filtriAccesi(base, nomi)), [])
+  const tutti = { testo: '  affitto ', periodo: 'mese', tipo: 'uscita', cassaId: 'c2', voce: 'Affitto sala', persona: 'da_decidere', annullati: true }
+  ok('ogni filtro acceso ha la sua pillola, nell\'ordine dei filtri', prova(() => m.filtriAccesi(tutti, nomi)), [
+    { chiave: 'testo', testo: '«affitto»' },
+    { chiave: 'periodo', testo: 'Ottobre 2026' },
+    { chiave: 'tipo', testo: 'Uscite' },
+    { chiave: 'cassaId', testo: 'Conto Corrente' },
+    { chiave: 'voce', testo: 'Affitto sala' },
+    { chiave: 'persona', testo: 'Da decidere' },
+    { chiave: 'annullati', testo: 'Con gli annullati' },
+  ])
+  ok('le pillole sono tante quanti i filtri attivi', prova(() => m.filtriAccesi(tutti, nomi).length === m.filtriAttivi(tutti)), true)
+  ok('«Mese scorso», «Tutto», «Entrate», «Giroconti», «Collegati», «Senza scheda»', prova(() => [
+    m.filtriAccesi({ ...base, periodo: 'scorso' }, nomi)[0].testo,
+    m.filtriAccesi({ ...base, periodo: 'tutto' }, nomi)[0].testo,
+    m.filtriAccesi({ ...base, tipo: 'entrata' }, nomi)[0].testo,
+    m.filtriAccesi({ ...base, tipo: 'giroconto' }, nomi)[0].testo,
+    m.filtriAccesi({ ...base, persona: 'collegati' }, nomi)[0].testo,
+    m.filtriAccesi({ ...base, persona: 'senza_scheda' }, nomi)[0].testo,
+  ]), ['Mese scorso', 'Tutto', 'Entrate', 'Giroconti', 'Collegati', 'Senza scheda'])
+  ok('una cassa che non si trova fa comunque una pillola che si legge', prova(() => m.filtriAccesi({ ...base, cassaId: 'sparita' }, nomi)), [{ chiave: 'cassaId', testo: 'Cassa' }])
+  ok('una ricerca di soli spazi non fa pillola', prova(() => m.filtriAccesi({ ...base, testo: '   ' }, nomi)), [])
+  ok('la ✕ del periodo lo riporta a tutto l\'anno, il resto resta', prova(() => m.togliFiltro(tutti, 'periodo')), { ...tutti, periodo: 'anno' })
+  ok('la ✕ della cassa toglie solo la cassa', prova(() => m.togliFiltro(tutti, 'cassaId')), { ...tutti, cassaId: '' })
+  ok('la ✕ di «Con gli annullati» li nasconde di nuovo', prova(() => m.togliFiltro(tutti, 'annullati').annullati), false)
+}
+
+console.log('\n94. le icone di casse e voci: solo per i nomi che si riconoscono')
+{
+  ok('le tre casse della palestra', prova(() => ['Cassa Contanti', 'Conto Corrente', 'Satispay'].map(m.iconaCassa)), ['banconota', 'banca', 'telefono'])
+  ok('una cassa con un altro nome: nessuna icona', prova(() => m.iconaCassa('Cassa eventi')), null)
+  const voci = ['Quota associativa', 'Tesseramento', 'Corsi e altri pagamenti', 'Pagamento istruttori', 'Pagamento utenze', 'Spese telefoniche', 'Attrezzature', 'Affitto sala', 'Affitto palestre Rivoli', 'Commissioni bancarie']
+  ok('le voci della palestra che si riconoscono', prova(() => voci.map(m.iconaVoce)), ['tessera', 'tessera', 'persone', 'persone', 'lampadina', 'telefono', 'manubrio', 'casa', 'casa', 'banca'])
+  ok('maiuscole e spazi non contano', prova(() => m.iconaVoce('  AFFITTO sala ')), 'casa')
+  ok('«Varie», «Da classificare» e una voce senza nome: nessuna icona', prova(() => ['Varie', 'Da classificare', null].map(m.iconaVoce)), [null, null, null])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

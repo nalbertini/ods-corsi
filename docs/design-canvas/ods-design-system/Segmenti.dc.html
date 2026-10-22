@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="group" style="display: inline-flex; align-items: stretch; height: 48px; border: 2px solid #14709f; border-radius: 6px; overflow: hidden; background: #ffffff">
+  <sc-for list="{{voci}}" as="v" hint-placeholder-count="4">
+    <span style="display: inline-flex; align-items: center; padding: 0 14px; border-left: {{v.filo}}; background: {{v.fondo}}; color: {{v.colore}}; font-size: 15px; font-weight: 600; white-space: nowrap">{{v.testo}}</span>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"voci":{"editor":"text","default":"Ottobre 2026|Mese scorso|Tutto l’anno|Tutto"},"scelta":{"editor":"text","default":"Mese scorso"},"tema":{"editor":"enum","options":["sito"],"default":"sito","section":"Tema"},"$preview":{"width":460,"height":52}}'>
+// `Segmenti` di comune.tsx, `.sg-segmenti` in styles.css: le scelte che si escludono a vicenda in un pezzo solo, al posto di una fila
+// di .sg-chip staccati (PERIODO e VISTA di CONTABILITÀ → MOVIMENTI). Ogni voce alta 44px (48 col bordo), va a capo se non ci sta, bordo 2px `riga-campo` #14709f, raggio 6px come .sg-chip del look sito;
+// fra una voce e l'altra un filo 1px `line` #cfe6f4. La voce scelta e' blu pieno con testo bianco e ✓ davanti, come il chip acceso:
+// lo stato non sta solo nel colore. Nell'app: un role="group" con aria-label e un <button aria-pressed> per voce.
+// Solo tema sito: la segreteria e' sempre chiara.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const nomi = String(p.voci ?? '').split('|').map((x) => x.trim()).filter(Boolean);
+    return {
+      voci: nomi.map((testo, i) => {
+        const su = testo === p.scelta;
+        return { testo: (su ? '✓ ' : '') + testo, fondo: su ? '#14709f' : '#ffffff', colore: su ? '#ffffff' : '#0d2a3d', filo: i === 0 ? '0' : '1px solid #cfe6f4' };
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>

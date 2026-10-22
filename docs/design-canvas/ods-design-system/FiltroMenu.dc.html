@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<span style="position: relative; display: inline-flex; flex-direction: column; gap: 6px; vertical-align: top">
+  <span style="display: inline-flex; align-items: stretch; height: 44px; border: 2px solid #14709f; border-radius: 6px; overflow: hidden; background: {{fondo}}">
+    <span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 15px; white-space: nowrap">
+      <span style="font-weight: 500; color: #46606f">{{nome}}</span>
+      <span style="font-weight: {{peso}}; color: #0d2a3d">{{valore}}</span>
+      <span style="font-size: 11px; color: #0d2a3d">▾</span>
+    </span>
+    <sc-if value="{{attivo}}" hint-placeholder-val="{{ false }}">
+      <span aria-label="Togli il filtro" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; border-left: 1px solid #cfe6f4; font-size: 15px; font-weight: 700; color: #0d2a3d">✕</span>
+    </sc-if>
+  </span>
+  <sc-if value="{{aperto}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; flex-direction: column; min-width: 240px; padding: 6px 0; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; box-shadow: 0 8px 24px rgba(13, 42, 61, 0.18)">
+      <sc-for list="{{opzioni}}" as="o" hint-placeholder-count="4">
+        <span style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 14px; background: {{o.fondo}}; font-size: 15px; font-weight: {{o.peso}}; color: #0d2a3d; white-space: nowrap"><span style="width: 14px">{{o.segno}}</span>{{o.testo}}<span style="margin-left: auto; padding-left: 16px; font-variant-numeric: tabular-nums; font-size: 13px; color: #46606f">{{o.conto}}</span></span>
+      </sc-for>
+    </span>
+  </sc-if>
+</span>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Cassa"},"valore":{"editor":"text","default":"Tutte"},"attivo":{"editor":"boolean","default":false},"aperto":{"editor":"boolean","default":false},"opzioni":{"editor":"text","default":"Tutte|Cassa Contanti|Conto Corrente|Satispay"},"tema":{"editor":"enum","options":["sito"],"default":"sito","section":"Tema"},"$preview":{"width":280,"height":260}}'>
+// `FiltroMenu` di comune.tsx, `.sg-filtro-menu` in styles.css: un filtro sopra una tabella come tasto-menu «Nome  Valore ▾», al posto di etichetta + fila di
+// .sg-chip o etichetta + <select> (CASSA, TIPO, VOCE, PERSONA di CONTABILITÀ → MOVIMENTI). Alto 44px, bordo 2px `riga-campo` #14709f,
+// raggio 6px come .sg-chip del look sito; nome in `dim` #46606f 500, valore in `text` #0d2a3d.
+// attivo: fondo `line` #cfe6f4, valore in 700 e la ✕ (44px, filo 1px `line`, si tocca da sola) che toglie solo quel filtro: un filtro attivo si
+// vede sempre. aperto: l'elenco sotto, una voce da 44px, la scelta con ✓ e fondo #eef5fa; il numero a destra (opzioni «Testo:N»)
+// e' quello che oggi sta dentro la voce («Da decidere · 12»).
+// Nell'app e' un <select> nativo trasparente sopra il tasto (tastiera, telefono e lettore di schermo gratis): l'elenco aperto e' quello
+// del browser, e `aperto` qui resta solo come la proposta l'aveva disegnato.
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const attivo = p.attivo === true || p.attivo === 'true';
+    const valore = p.valore ?? 'Tutte';
+    const opzioni = String(p.opzioni ?? '').split('|').map((x) => x.trim()).filter(Boolean).map((x) => {
+      const [testo, conto = ''] = x.split(':');
+      const su = testo === valore;
+      return { testo, conto, segno: su ? '✓' : '', fondo: su ? '#eef5fa' : '#ffffff', peso: su ? 700 : 500 };
+    });
+    return { nome: p.nome ?? 'Cassa', valore, attivo, aperto: p.aperto === true || p.aperto === 'true', opzioni, fondo: attivo ? '#cfe6f4' : '#ffffff', peso: attivo ? 700 : 600 };
+  }
+}
+</script>
+</body>
+</html>
