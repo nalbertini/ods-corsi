@@ -386,7 +386,7 @@ export function Segreteria({
 
   // Nel riquadro di chi è dentro, col loro nome: due icone senza parola in cima non dicevano cosa fossero.
   const guidaNome = (
-    <a className="num sg-voce" href={indirizzoPagina(guidaDellaVoce(voce, chi))} target="_blank" rel="noopener">
+    <a className="num sg-voce" href={indirizzoPagina(guidaDellaVoce(voce))} target="_blank" rel="noopener">
       <span className="sg-voce-aiuto" aria-hidden="true">?</span>
       <span className="sg-voce-testo">Aiuto</span>
     </a>
