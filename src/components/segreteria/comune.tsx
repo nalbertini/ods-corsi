@@ -749,7 +749,8 @@ export function MenuAzioni({ etichetta, children, onLista }: { etichetta: string
       // Fuori dal menu, o su una voce (anche una portata da un altro componente): si chiude.
       if (!d.contains(e.target) || e.target.closest('[role="menuitem"]')) chiudi()
     }
-    const tasto = (e: KeyboardEvent) => { if (e.key === 'Escape' && dettagli.current?.open) { chiudi(); dettagli.current.querySelector('summary')?.focus() } }
+    // L'Esc si ferma qui: dentro una scheda (useDialogo, su window) chiuderebbe anche la scheda.
+    const tasto = (e: KeyboardEvent) => { if (e.key === 'Escape' && dettagli.current?.open) { e.stopPropagation(); chiudi(); dettagli.current.querySelector('summary')?.focus() } }
     document.addEventListener('click', clic)
     document.addEventListener('keydown', tasto)
     return () => { document.removeEventListener('click', clic); document.removeEventListener('keydown', tasto) }

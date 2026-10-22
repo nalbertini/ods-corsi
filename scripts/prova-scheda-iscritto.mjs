@@ -22,7 +22,7 @@ const { outputFiles } = await build({
   stdin: { contents: "export * from './src/lib/segreteria'", resolveDir: '.', loader: 'ts' },
   bundle: true, format: 'esm', write: false, logLevel: 'error', define: { 'import.meta.env': '{}' },
 })
-const { vociAltro } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+const { vociAltro, azioniTestata } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 
 console.log('\nLe voci del menu «Altro»')
 const voci = (attiva, inModifica) => (typeof vociAltro === 'function' ? vociAltro({ attiva }, inModifica) : 'vociAltro non esiste')
@@ -30,6 +30,15 @@ ok('scheda attiva: unisci, esporta, disattiva', voci(true, false), ['unisci', 'e
 ok('scheda disattivata: unisci, esporta, riattiva', voci(false, false), ['unisci', 'esporta', 'riattiva'])
 ok('in modifica, scheda attiva: il menu non c\'è', voci(true, true), [])
 ok('in modifica, scheda disattivata: il menu non c\'è', voci(false, true), [])
+
+console.log('\nLe azioni in testata')
+const azioni = (...a) => (typeof azioniTestata === 'function' ? azioniTestata(...a) : 'azioniTestata non esiste')
+const attiva = { attiva: true }
+ok('a riposo: tasto del sollecito e Altro', azioni(attiva, true, {}), { sollecito: true, altro: ['unisci', 'esporta', 'disattiva'] })
+ok('niente da sollecitare: solo Altro', azioni(attiva, false, {}), { sollecito: false, altro: ['unisci', 'esporta', 'disattiva'] })
+ok('in modifica: il tasto resta, Altro no', azioni(attiva, true, { modifica: true }), { sollecito: true, altro: [] })
+ok('durante l\'unione: né tasto né Altro', azioni(attiva, true, { unendo: true }), { sollecito: false, altro: [] })
+ok('durante il pagamento: né tasto né Altro', azioni(attiva, true, { pagando: true }), { sollecito: false, altro: [] })
 
 console.log('\nLa scheda (sorgente)')
 const isc = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
@@ -45,7 +54,7 @@ const voceMenu = isc.match(/<button\b[^>]*role="menuitem"[^>]*>[\s\S]*?<\/button
 ok('le voci del menu hanno role="menuitem" (unisci, esporta, disattiva/riattiva)', voceMenu.length >= 3, true)
 const disattiva = voceMenu.find((v) => v.includes('Disattiva'))
 ok('la voce Disattiva è rossa', !!disattiva && disattiva.includes('sg-pericolo'), true)
-ok('la voce Disattiva chiede conferma', !!disattiva && isc.includes('chiedi(confermaDisattiva('), true)
+ok('la voce Disattiva chiede conferma', !!disattiva && disattiva.includes('chiedi(confermaDisattiva('), true)
 const riattiva = voceMenu.find((v) => v.includes('Riattiva'))
 ok('la voce Riattiva non è rossa', !!riattiva && (!riattiva.includes('sg-pericolo') || /attiva\s*(\?|&&)[^}]*sg-pericolo/.test(riattiva)), true)
 
@@ -54,6 +63,14 @@ ok('c\'è il tasto «Sollecita su WhatsApp»', (isc + sol).includes('Sollecita s
 ok('il tasto apre e chiude: aria-expanded', /aria-expanded[\s\S]{0,400}Sollecita su WhatsApp|Sollecita su WhatsApp[\s\S]{0,400}aria-expanded/.test(isc + sol), true)
 const iSol = isc.indexOf('<SollecitoWhatsApp')
 ok('il riquadro sta sopra i timbri', iSol > 0 && iSol < isc.indexOf('<Timbri p={p}'), true)
+
+console.log('\nEsc nel menu «Altro»')
+// La scheda è un dialogo (useDialogo ascolta Esc su window): l'Esc che chiude il menu
+// non deve salire fin lì, se no chiude anche la scheda.
+const comune = readFileSync('src/components/segreteria/comune.tsx', 'utf8')
+const menu = comune.slice(comune.indexOf('export function MenuAzioni'))
+const escMenu = menu.match(/const tasto = \(e: KeyboardEvent\) => \{[\s\S]*?\n/)?.[0] ?? ''
+ok('l\'Esc che chiude il menu si ferma lì (stopPropagation)', escMenu.includes('stopPropagation'), true)
 
 console.log(guai ? `\n${guai} da sistemare` : '\nTutto a posto')
 process.exit(guai ? 1 : 0)

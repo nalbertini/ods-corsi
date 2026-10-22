@@ -1429,6 +1429,19 @@ export function vociAltro(p: Pick<PersonaSeg, 'attiva'>, inModifica: boolean): V
 }
 
 /**
+ * Cosa sta in testata accanto al nome. Mentre si unisce o si fa una ricevuta
+ * niente: le azioni porterebbero fuori da quel che si sta facendo.
+ */
+export function azioniTestata(
+  p: Pick<PersonaSeg, 'attiva'>,
+  daSollecitare: boolean,
+  { modifica = false, unendo = false, pagando = false }: { modifica?: boolean; unendo?: boolean; pagando?: boolean },
+): { sollecito: boolean; altro: VoceAltro[] } {
+  if (unendo || pagando) return { sollecito: false, altro: [] }
+  return { sollecito: daSollecitare, altro: vociAltro(p, modifica) }
+}
+
+/**
  * Il tasto pieno della scheda, a riposo: uno solo, quello di quel che c'è da
  * fare per primo. Prima ciò che tiene fuori di sala o è da incassare, poi
  * l'avviso. Con tutto a posto resta la quota: la scheda si apre soprattutto

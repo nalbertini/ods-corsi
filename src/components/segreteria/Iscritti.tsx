@@ -4,7 +4,7 @@ import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, campoDelGuaio, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, tastoPrincipale, timbriScheda, vienePoco, vociAltro } from '../../lib/segreteria'
+import { avvisiGesto, campoDelGuaio, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -795,7 +795,8 @@ function Scheda({
     return () => window.removeEventListener(APRI_SCHEDA, apri)
   }, [])
   const sollecito = useSollecito({ d, p, oggi, giro: giroAnagrafica, giroSolleciti, quotaNelVecchio, corsi: statiCorsi })
-  const voci = vociAltro(p, !!modifica)
+  const azioni = azioniTestata(p, !!sollecito.s, { modifica: !!modifica, unendo, pagando })
+  const voci = azioni.altro
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
   // Letti qui e non in DATI ANAGRAFICI: età e COSA MANCA in cima alla scheda li vogliono.
   const an = useCarica(async () => ({ di: await d.anagraficaDi(p.id) }), [d, p.id])
@@ -844,11 +845,10 @@ function Scheda({
           </h2>
           <span style={{ fontSize: 13, color: 'var(--dim)' }}>{sottoNome(natoIl, p.creataIl, ora)}</span>
         </div>
-        {/* Mentre si unisce o si fa una ricevuta la testata resta col nome: le azioni porterebbero fuori. */}
-        {!unendo && !pagando && (sollecito.s || voci.length > 0) && (
+        {(azioni.sollecito || voci.length > 0) && (
           <div className="sg-scheda-testa-azioni">
             <div className="sg-scheda-testa-tasti">
-              {sollecito.s && (
+              {azioni.sollecito && (
                 <button type="button" className="sg-btn sg-btn-pieno sg-scheda-testa-sollecito" aria-expanded={sollecitoAperto} aria-controls="sg-sollecito" onClick={() => setSollecitoAperto((a) => !a)}>
                   Sollecita su WhatsApp <span aria-hidden="true">{sollecitoAperto ? '▴' : '▾'}</span>
                 </button>
@@ -901,12 +901,12 @@ function Scheda({
                 </MenuAzioni>
               )}
             </div>
-            {sollecito.s && sollecito.ultimo && <span className="sg-scheda-testa-ultimo">{fraseSollecitato(sollecito.ultimo)}</span>}
+            {azioni.sollecito && sollecito.ultimo && <span className="sg-scheda-testa-ultimo">{fraseSollecitato(sollecito.ultimo)}</span>}
           </div>
         )}
       </div>
       {!unendo && !pagando && sollecito.guaio && <Guaio titolo="SOLLECITO SU WHATSAPP" testo={sollecito.guaio} />}
-      {!unendo && !pagando && sollecito.s && sollecitoAperto && <SollecitoWhatsApp d={d} p={p} s={sollecito.s} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
+      {azioni.sollecito && sollecito.s && sollecitoAperto && <SollecitoWhatsApp d={d} p={p} s={sollecito.s} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
       {!unendo && !pagando && manca.length > 0 && (
         <div className="sg-scheda-manca" role="status">
           <span className="sg-scheda-manca-titolo">✕ COSA MANCA</span>
