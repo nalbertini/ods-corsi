@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.160.0 — 22 ottobre 2026
+
+### Novità
+
+- Le IMPOSTAZIONI a schede, e lo storico dei timer, le tessere del RASD e l'esporta dati nei posti dove si usano
+
 ## 0.159.0 — 22 ottobre 2026
 
 ### Novità
