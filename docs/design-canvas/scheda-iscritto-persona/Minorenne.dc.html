@@ -23,16 +23,28 @@
     .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
   </style>
 </helmet>
-<!-- 2 · PROPOSTA, MINORENNE. Età in testata; timbri alti uguale; ogni sezione col suo Modifica che dice cosa cambia; le due email col loro uso; i vuoti in una riga «Manca»; il blocco GENITORE sempre in vista, il codice fiscale che manca in rosso con la parola, come la ricevuta che si blocca; azioni rare in fondo, Disattiva staccato a destra. -->
+<!-- 2 · PROPOSTA, MINORENNE. Età in testata; timbri alti uguale; ogni sezione col suo Modifica che dice cosa cambia; le due email col loro uso; i vuoti in una riga «Manca»; il blocco GENITORE sempre in vista, il codice fiscale che manca vuoto col suo tasto, perché il motivo sta già in COSA MANCA; azioni rare nel menù «Altro» accanto al nome. -->
 <div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
   <span class="etichetta-tavola" style="color: #8f6a00">PROPOSTA · MINORENNE, MANCA IL CODICE FISCALE DEL GENITORE</span>
   <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
-    <div style="display: flex; justify-content: flex-end; margin: -8px -12px 0 0">
-      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="icona" label="✕" hint-size="44px,44px"></dc-import>
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 4px">
+    <!-- Le azioni rare (Unisci, Esporta, Disattiva) in un menù «Altro» accanto al nome, al posto della riga in fondo: commento 5c24b629. -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-top: -8px">
+      <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
       <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ADAMO ANDREA</h2>
       <span style="font-size: 13px; color: #46606f">14 anni · in elenco dal 6 ottobre 2026</span>
+    </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-right: -12px">
+        <div style="position: relative">
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Altro ▾" hint-size="110px,44px"></dc-import>
+          <!-- L'elenco aperto, coi valori di FiltroMenu.dc.html (bordo 2px, raggio 6, ombra, righe da 44px). Se si approva, diventa MenuAzioni.dc.html nella libreria. -->
+          <div style="position: absolute; top: 52px; right: 0; z-index: 2; width: 270px; background: #ffffff; border: 2px solid #14709f; border-radius: 6px; box-shadow: 0 8px 24px rgba(13,42,61,0.18); overflow: hidden; font-size: 15px; font-weight: 500">
+            <div style="height: 44px; display: flex; align-items: center; padding: 0 14px">Unisci con un altro iscritto…</div>
+            <div style="height: 44px; display: flex; align-items: center; padding: 0 14px; border-top: 1px solid #cfe6f4">Esporta i dati</div>
+            <div style="height: 44px; display: flex; align-items: center; padding: 0 14px; border-top: 1px solid #cfe6f4; color: #b81d1d; font-weight: 700">Disattiva…</div>
+          </div>
+        </div>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="icona" label="✕" hint-size="44px,44px"></dc-import>
+      </div>
     </div>
     <div style="display: flex; flex-direction: column; gap: 6px; border: 2px solid #b81d1d; border-radius: 6px; padding: 12px 16px">
       <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #b81d1d">✕ COSA MANCA</span>
@@ -47,9 +59,9 @@
     <dc-import name="SchedeIscritto" tema="sito" acceso="PERSONA" chiare="{{ true }}" hint-size="100%,44px"></dc-import>
     <div class="riga"><span class="et">CONTATTI</span><span class="filo"></span><dc-import name="Chip" tema="sito" label="Modifica i contatti" hint-size="190px,40px"></dc-import></div>
     <div class="due">
-      <dc-import name="Dato" tema="sito" etichetta="EMAIL PER RICEVUTE E AVVISI" valore="" nota="Per un minorenne è quella del genitore." hint-size="100%,62px"></dc-import>
-      <dc-import name="Dato" tema="sito" etichetta="TELEFONO" valore="" nota="Per un minorenne è quello del genitore." hint-size="100%,62px"></dc-import>
-      <dc-import name="Dato" tema="sito" etichetta="EMAIL PER ENTRARE NELL’APP" valore="antos.adams@gmail.com" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" icona="email" etichetta="EMAIL PER RICEVUTE E AVVISI" valore="" nota="Per un minorenne è quella del genitore." hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" icona="telefono" etichetta="TELEFONO" valore="" nota="Per un minorenne è quello del genitore." hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" icona="email" etichetta="EMAIL PER ENTRARE NELL’APP" valore="antos.adams@gmail.com" nota="Una per persona: serve solo per entrare." hint-size="100%,62px"></dc-import>
     </div>
     <div class="riga"><span class="et">DATI ANAGRAFICI</span><span class="filo"></span><dc-import name="Chip" tema="sito" label="Modifica i dati anagrafici" hint-size="240px,40px"></dc-import></div>
     <div class="due">
@@ -64,12 +76,8 @@
     <div class="due">
       <dc-import name="Dato" tema="sito" etichetta="NOME" valore="Adamo Antonio" hint-size="100%,62px"></dc-import>
       <dc-import name="Dato" tema="sito" etichetta="NATO A E IL" valore="Roma 22/2/1971" hint-size="100%,62px"></dc-import>
-      <dc-import name="Dato" tema="sito" etichetta="✕ CODICE FISCALE DEL GENITORE" valore="Manca" tono="rosso" nota="Serve per la ricevuta: senza, non si può fare." hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" etichetta="CODICE FISCALE" valore="" hint-size="100%,62px"></dc-import>
       <div style="display: flex; align-items: center"><dc-import name="Chip" tema="sito" label="Aggiungi il codice fiscale" hint-size="240px,40px"></dc-import></div>
-    </div>
-    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 16px; border-top: 2px solid #cfe6f4">
-      <div style="display: flex; gap: 8px"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Unisci con un altro iscritto…" hint-size="280px,48px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Esporta i dati" hint-size="170px,48px"></dc-import></div>
-      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pericolo" label="Disattiva" hint-size="150px,48px"></dc-import>
     </div>
   </div></div>
 </x-dc>

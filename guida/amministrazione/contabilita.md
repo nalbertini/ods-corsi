@@ -52,7 +52,7 @@ a Tutto l'anno) e a destra ENTRATE, USCITE e DIFFERENZA di quel che vedi.
 ### Gli incassi degli iscritti
 
 Qui si guardano; si registrano dalla scheda della persona. Toccare una riga **Incasso iscritto**
-apre la scheda, nella scheda **QUOTA E PAGAMENTI**: lì **+ REGISTRA UN PAGAMENTO** (con il
+apre la scheda, nella scheda **QUOTA E PAGAMENTI**: lì **+ AGGIUNGI INCASSO** (con il
 riepilogo prima di scrivere, e dove entra: Cassa Contanti per i contanti, Satispay, Conto
 Corrente per il resto) e **+ FAI LA RICEVUTA** ([Un pagamento e la sua
 ricevuta](../segreteria/iscritti.md#un-pagamento-e-la-sua-ricevuta)). Si annulla da lì: un

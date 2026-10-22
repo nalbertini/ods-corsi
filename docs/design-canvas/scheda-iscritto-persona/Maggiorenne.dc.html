@@ -23,16 +23,22 @@
     .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
   </style>
 </helmet>
-<!-- 3 · PROPOSTA, MAGGIORENNE IN REGOLA. Senza il blocco GENITORE e senza la riga «Manca»: la scheda si accorcia. «Esporta i dati» resta in fondo, fra le azioni rare. -->
+<!-- 3 · PROPOSTA, MAGGIORENNE IN REGOLA. Senza il blocco GENITORE e senza la riga «Manca»: la scheda si accorcia. «Esporta i dati» sta nel menù «Altro», fra le azioni rare. -->
 <div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
   <span class="etichetta-tavola" style="color: #8f6a00">PROPOSTA · MAGGIORENNE, TUTTO IN REGOLA</span>
   <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
-    <div style="display: flex; justify-content: flex-end; margin: -8px -12px 0 0">
-      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="icona" label="✕" hint-size="44px,44px"></dc-import>
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 4px">
+    <!-- Le azioni rare (Unisci, Esporta, Disattiva) in un menù «Altro» accanto al nome, al posto della riga in fondo: commento 5c24b629. -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-top: -8px">
+      <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
       <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">BIANCHI LAURA</h2>
       <span style="font-size: 13px; color: #46606f">38 anni · in elenco dal 12 settembre 2025</span>
+    </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-right: -12px">
+        <div style="position: relative">
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Altro ▾" hint-size="110px,44px"></dc-import>
+        </div>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="icona" label="✕" hint-size="44px,44px"></dc-import>
+      </div>
     </div>
     <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: stretch">
       <dc-import name="Timbro" tema="sito" titolo="CERTIFICATO MEDICO" parola="VALIDO FINO AL 29/09/2027" tono="verde" righe="" hint-size="100%,96px"></dc-import>
@@ -42,9 +48,9 @@
     <dc-import name="SchedeIscritto" tema="sito" acceso="PERSONA" chiare="{{ true }}" hint-size="100%,44px"></dc-import>
     <div class="riga"><span class="et">CONTATTI</span><span class="filo"></span><dc-import name="Chip" tema="sito" label="Modifica i contatti" hint-size="190px,40px"></dc-import></div>
     <div class="due">
-      <dc-import name="Dato" tema="sito" etichetta="EMAIL PER RICEVUTE E AVVISI" valore="laura.bianchi@esempio.it" hint-size="100%,62px"></dc-import>
-      <dc-import name="Dato" tema="sito" etichetta="TELEFONO" valore="333 123 4567" hint-size="100%,62px"></dc-import>
-      <dc-import name="Dato" tema="sito" etichetta="EMAIL PER ENTRARE NELL’APP" valore="laura.bianchi@esempio.it" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" icona="email" etichetta="EMAIL PER RICEVUTE E AVVISI" valore="laura.bianchi@esempio.it" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" icona="telefono" etichetta="TELEFONO" valore="333 123 4567" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" icona="email" etichetta="EMAIL PER ENTRARE NELL’APP" valore="laura.bianchi@esempio.it" nota="Una per persona: serve solo per entrare." hint-size="100%,62px"></dc-import>
     </div>
     <div class="riga"><span class="et">DATI ANAGRAFICI</span><span class="filo"></span><dc-import name="Chip" tema="sito" label="Modifica i dati anagrafici" hint-size="240px,40px"></dc-import></div>
     <div class="due">
@@ -55,10 +61,6 @@
     </div>
     <!-- La nota di provenienza resta, come nell'app (Iscritti.tsx): serve a capire un dato sbagliato dopo un import. -->
     <p class="sotto" style="font-size: 12px; margin-top: -10px">dall’import o dalla segreteria</p>
-    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 16px; border-top: 2px solid #cfe6f4">
-      <div style="display: flex; gap: 8px"><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Unisci con un altro iscritto…" hint-size="280px,48px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Esporta i dati" hint-size="170px,48px"></dc-import></div>
-      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pericolo" label="Disattiva" hint-size="150px,48px"></dc-import>
-    </div>
   </div></div>
 </x-dc>
 <script data-dc-script data-props='{"$preview":{"width":860,"height":1500}}'>
