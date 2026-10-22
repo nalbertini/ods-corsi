@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.169.0 — 22 ottobre 2026
+
+### Novità
+
+- La scheda dell'iscritto è più chiara, con «Cosa manca» in evidenza
+
 ## 0.168.2 — 22 ottobre 2026
 
 ### Modificato
