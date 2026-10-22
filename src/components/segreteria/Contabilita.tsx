@@ -292,7 +292,9 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }:
     window.setTimeout(() => statoElenco.current?.focus(), 0)
   }
   const fuori = !!appena && nonSiVedra(appena, { testo, dal, al, tipo, cassaId, voce, persona })
-  const apri = (cosa: 'movimento' | 'giroconto') => {
+  // Le azioni stanno nella testata, in vista anche col dettaglio aperto: prima si chiede se lasciare la correzione.
+  const apri = async (cosa: 'movimento' | 'giroconto') => {
+    if (!(await lasciare())) return
     setAperto(null)
     setCambio(false)
     setCollegando(null)
@@ -303,6 +305,13 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }:
   const cambioFinito = () => {
     setCambio(false)
     setScelti(new Set())
+  }
+  const collegaSicuri = async () => {
+    if (!(await lasciare())) return
+    setAperto(null)
+    setScrivo(null)
+    setCambio(false)
+    setCollegando('sicuri')
   }
   // Dal dettaglio si esce chiedendo prima, se c'è una correzione non salvata.
   const torna = async () => {
@@ -333,14 +342,14 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }:
       {azioni && createPortal(
         <>
           {!esitiLetti.guaio && (
-            <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setAperto(null); setScrivo(null); setCambio(false); setCollegando('sicuri') }}>
+            <button type="button" className="sg-btn sg-btn-linea" onClick={() => void collegaSicuri()}>
               Collega i casi sicuri
             </button>
           )}
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => apri('giroconto')}>
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => void apri('giroconto')}>
             Giroconto
           </button>
-          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => apri('movimento')}>
+          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void apri('movimento')}>
             Nuovo movimento
           </button>
         </>,
@@ -356,7 +365,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }:
       <ScaricoSatispay d={d} fai={fai} onCambiato={onCambiato} />
 
       {cambio && idScelti.length > 0 && sceltaRiep.tipo !== 'misto' && <InVista><CambiaVoce d={d} ids={idScelti} righe={righe} voci={voci} onRileggi={onCambiato} onFatto={cambioFinito} onChiudi={() => setCambio(false)} /></InVista>}
-      {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); metti({ periodo: 'tutto', persona: 'da_decidere' }) }} onChiudi={chiudiCollega} /></InVista>}
+      {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); setF({ ...FILTRI_INIZIALI, periodo: 'tutto', persona: 'da_decidere' }) }} onChiudi={chiudiCollega} /></InVista>}
       {collegando === 'mano' && sceltiRighe.length > 0 && <InVista><CollegaAPersona d={d} righe={sceltiRighe} fai={fai} onFatto={collegamentoFatto} onChiudi={chiudiCollega} /></InVista>}
       {aperto && (
         <SchedaPiena key={aperto.id} etichetta={`Movimento: ${aperto.descrizione}`} torna="I movimenti" onTorna={() => void torna()}>
@@ -371,7 +380,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }:
         </div>
       )}
 
-      <section className="sg-elenco" aria-label="Movimenti">
+      <section className="sg-elenco" aria-label="Filtri ed elenco dei movimenti">
         <div className="sg-elenco-barra" role="group" aria-label="Filtri dei movimenti">
           <label htmlFor="cerca-movimenti" className="vh">
             Cerca nella descrizione
@@ -432,7 +441,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }:
           </span>
           {accesi.map((a) => (
             <span key={a.chiave} className="sg-pillola">
-              {a.testo}
+              <span className="sg-pillola-testo">{a.testo}</span>
               <button type="button" aria-label={`Togli il filtro ${a.testo}`} onClick={() => setF(togliFiltro(f, a.chiave))}>✕</button>
             </span>
           ))}
@@ -467,7 +476,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }:
               <input type="checkbox" disabled={!scegliibili.length}
                 checked={idScelti.length > 0 && scegliibili.every((r) => scelti.has(r.id))}
                 onChange={(e) => setScelti(e.target.checked ? new Set(scegliibili.map((r) => r.id)) : new Set())}
-                aria-label={!scegliibili.length ? "Nessun movimento da scegliere" : scegliibili.length === trovate.length ? `Scegli i ${scegliibili.length} movimenti trovati` : `Scegli i ${scegliibili.length} movimenti che si possono cambiare`}
+                aria-label={!scegliibili.length ? 'Nessun movimento da scegliere' : scegliibili.length === 1 ? 'Scegli il movimento che si può cambiare' : scegliibili.length === trovate.length ? `Scegli i ${scegliibili.length} movimenti trovati` : `Scegli i ${scegliibili.length} movimenti che si possono cambiare`}
               />
             </span>
             <span role="columnheader" className="sg-etichetta">DATA</span>

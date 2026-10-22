@@ -1035,6 +1035,15 @@ console.log('\n39. Contabilita.tsx: Nuovo movimento e Giroconto sono una pagina 
   ok('…la casella c\'è', /columnheader[^>]*>\s*<input type="checkbox"/.test(corpo), true)
   ok('le azioni della pagina vanno nella testata (`createPortal`)', /createPortal\(/.test(corpo), true)
   ok('c\'è «Togli i filtri»', /Togli i filtri/.test(corpo), true)
+  // Le azioni in testata restano in vista col dettaglio aperto: toccarle non deve buttare una correzione non salvata.
+  ok('Giroconto e Nuovo movimento chiedono prima di lasciare il dettaglio', /const apri = async[^]*?if \(!\(await lasciare\(\)\)\) return[^]*?setScrivo\(cosa\)/.test(corpo), true)
+  // Le regole dell'elenco stanno nel componente: queste fermano chi le cambia per sbaglio.
+  ok('la ✕ di una pillola toglie solo quel filtro (`togliFiltro(f, a.chiave)`)', /togliFiltro\(f, a\.chiave\)/.test(corpo), true)
+  ok('le somme della riga di stato sono di quel che si vede (`totali(trovate)`)', /totali\(trovate\)/.test(corpo), true)
+  ok('la casella in testa sceglie solo quelli che si possono cambiare', /const scegliibili = trovate\.filter\(cambiabile\)/.test(corpo), true)
+  ok('«Togli i filtri» riporta tutti i filtri alla partenza', /const azzera = \(\) => \{\s*setF\(FILTRI_INIZIALI\)/.test(corpo), true)
+  ok('…anche «Collega i casi sicuri»', /const collegaSicuri = async[^]*?if \(!\(await lasciare\(\)\)\) return[^]*?setCollegando\('sicuri'\)/.test(corpo), true)
+  ok('«Vedi i da decidere» parte da filtri spenti, se no un filtro acceso li nasconde', /onVediDaDecidere=\{[^}]*setF\(\{ \.\.\.FILTRI_INIZIALI, periodo: 'tutto', persona: 'da_decidere' \}\)/.test(corpo), true)
   ok('i filtri attivi si contano con `filtriAttivi`', /filtriAttivi\(/.test(corpo), true)
   ok('dopo la registrazione fuori dai filtri lo dice (`nonSiVedra`)', /nonSiVedra\(/.test(tsx), true)
   ok('PERSONA è un menu, non quattro chip', /id="filtro-persona"/.test(corpo), true)
@@ -1193,6 +1202,7 @@ console.log('\n93. la riga di stato di MOVIMENTI dice quali filtri sono accesi, 
     m.filtriAccesi({ ...base, persona: 'collegati' }, nomi)[0].testo,
     m.filtriAccesi({ ...base, persona: 'senza_scheda' }, nomi)[0].testo,
   ]), ['Mese scorso', 'Tutto', 'Entrate', 'Giroconti', 'Collegati', 'Senza scheda'])
+  ok('una cassa che non si trova fa comunque una pillola che si legge', prova(() => m.filtriAccesi({ ...base, cassaId: 'sparita' }, nomi)), [{ chiave: 'cassaId', testo: 'Cassa' }])
   ok('una ricerca di soli spazi non fa pillola', prova(() => m.filtriAccesi({ ...base, testo: '   ' }, nomi)), [])
   ok('la ✕ del periodo lo riporta a tutto l\'anno, il resto resta', prova(() => m.togliFiltro(tutti, 'periodo')), { ...tutti, periodo: 'anno' })
   ok('la ✕ della cassa toglie solo la cassa', prova(() => m.togliFiltro(tutti, 'cassaId')), { ...tutti, cassaId: '' })

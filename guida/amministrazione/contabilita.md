@@ -41,7 +41,7 @@ scorso, tutto l'anno, tutto) ed **Esporta CSV**, un foglio per Excel e per il co
 senza gli annullati. Sotto quattro menu, **Tipo** (**Entrate**, **Uscite**, **Giroconti**),
 **Cassa**, **Voce** e **Persona**, poi **Mostra annullati** e la **vista**: **Elenco** o **Per
 voce**, che dà i totali per voce. Un menu acceso ha il fondo pieno e una ✕ accanto che lo spegne.
-Sotto i filtri, la riga azzurra dice quanti movimenti ci sono, quanti ne hai scelti, ogni
+Sotto i filtri, una riga dice quanti movimenti ci sono, quanti ne hai scelti, ogni
 filtro acceso con la sua ✕ (toglie solo quello), **Togli i filtri** (li toglie tutti e riporta
 a Tutto l'anno) e a destra ENTRATE, USCITE e DIFFERENZA di quel che vedi.
 

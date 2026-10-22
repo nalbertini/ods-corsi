@@ -496,7 +496,8 @@ export function filtriAccesi(f: FiltriElenco, nomi: { nomeCassa: (id: string) =>
     ['testo', f.testo.trim() !== '', `«${f.testo.trim()}»`],
     ['periodo', f.periodo !== PERIODO_INIZIALE, periodo],
     ['tipo', f.tipo !== '', NOME_TIPO[f.tipo] ?? f.tipo],
-    ['cassaId', f.cassaId !== '', nomi.nomeCassa(f.cassaId)],
+    // Una cassa non più in elenco: la pillola non resta vuota, si può ancora togliere.
+    ['cassaId', f.cassaId !== '', nomi.nomeCassa(f.cassaId) || 'Cassa'],
     ['voce', f.voce !== '', f.voce],
     ['persona', f.persona !== '', NOME_PERSONA[f.persona] ?? f.persona],
     ['annullati', f.annullati, 'Con gli annullati'],
