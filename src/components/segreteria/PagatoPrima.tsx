@@ -266,7 +266,7 @@ function Conferma({
         </div>
         {!fino && <span role="alert" className="sg-sotto" style={{ color: 'var(--rosso-testo)' }}>Metti la data fino a cui vale la quota.</span>}
         <span className="sg-sotto" style={{ lineHeight: 1.5 }}>
-          Se la data non è giusta per qualcuno, si corregge persona per persona dalla scheda: QUOTA E PAGAMENTI › Pagata senza ricevuta dell’app.
+          Se la data non è giusta per qualcuno, si corregge persona per persona dalla scheda: QUOTA E PAGAMENTI › Segna come pagata.
         </span>
         <div className="row" style={{ gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           <button type="button" className="sg-btn sg-btn-linea" onClick={onChiudi}>

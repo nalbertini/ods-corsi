@@ -434,6 +434,15 @@
       "page": "page-2"
     },
     {
+      "file": "Stato.dc.html",
+      "title": "Stato",
+      "x": 2310,
+      "y": 7802,
+      "w": 640,
+      "h": 80,
+      "page": "page-2"
+    },
+    {
       "file": "TimerAnello.dc.html",
       "title": "TimerAnello",
       "x": 1890,
@@ -828,8 +837,7 @@
       "w": 350,
       "h": 480,
       "page": "page-2"
-    }
-,
+    },
     {
       "file": "RiquadroPaga.dc.html",
       "title": "RiquadroPaga",

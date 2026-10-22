@@ -3,6 +3,7 @@ import { NotaCampo, type Nota } from '../ds'
 import { GuaioConAzione } from '../../lib/cartaPdf'
 import { clicFuoriChiude } from '../../lib/schedaFinestra'
 import { dataLunga } from '../../lib/sala'
+import type { Tono } from '../../lib/segreteria'
 
 type Valore = string | number | null | undefined
 
@@ -377,6 +378,19 @@ export function Campo({ id, etichetta, children, largo, manca, nota }: { id?: st
       )}
       {children}
       {id && <NotaCampo id={`${id}-nota`} nota={nota} />}
+    </div>
+  )
+}
+
+/** Un riquadro di scheda: lo stato in grande (colorato dal tono), il dettaglio sotto, i tasti a destra. */
+export function Stato({ nome, sotto, tono, finita, children }: { nome: string; sotto?: ReactNode; tono?: Tono; finita?: boolean; children?: ReactNode }) {
+  return (
+    <div className="sg-stato" data-tono={tono} data-finita={finita || undefined}>
+      <span className="stack" style={{ gap: 2, minWidth: 0 }}>
+        <span className="sg-stato-nome">{nome}</span>
+        {sotto && <span className="sg-sotto" style={{ fontSize: 13 }}>{sotto}</span>}
+      </span>
+      {children && <span className="sg-stato-tasti">{children}</span>}
     </div>
   )
 }

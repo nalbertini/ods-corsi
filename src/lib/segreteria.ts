@@ -1392,6 +1392,15 @@ function timbroQuota(s: StatoPaga): Timbro {
   return { tono: 'rosso', parola: 'DA PAGARE', inElenco: 'Da pagare', righe: [{ testo: 'NESSUNA RICEVUTA' }] }
 }
 
+export function timbroDocumento(documento: boolean): Timbro {
+  return {
+    tono: documento ? 'verde' : 'giallo',
+    parola: documento ? 'IN SEGRETERIA' : 'DA PORTARE',
+    // Del genitore, per un minore: la scheda non sa l'età, lo dice la sezione DOCUMENTO.
+    righe: [{ testo: 'NON SERVE PER ENTRARE' }],
+  }
+}
+
 /**
  * I tre timbri in cima alla scheda: certificato, quota, documento. Il
  * documento si vede ma non conta per «in regola» (vedi `inRegola`). Chi è
@@ -1401,12 +1410,7 @@ export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'doc
   const t = {
     certificato: timbroCertificato(p.certificato, oggi, p.natoIl),
     quota: timbroQuota(pagamentoDi(p, oggi)),
-    documento: {
-      tono: p.documento ? 'verde' : 'giallo',
-      parola: p.documento ? 'IN SEGRETERIA' : 'DA PORTARE',
-      // Del genitore, per un minore: la scheda non sa l'età, lo dice la sezione DOCUMENTO.
-      righe: [{ testo: 'NON SERVE PER ENTRARE' }],
-    } satisfies Timbro,
+    documento: timbroDocumento(p.documento),
   }
   if (p.attiva) return t
   const spegni = (x: Timbro): Timbro => ({ ...x, tono: 'spento', righe: x.righe.map(({ testo }) => ({ testo })) })

@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.171.0 — 22 ottobre 2026
+
+### Novità
+
+- Nella scheda dell'iscritto, DOCUMENTI, QUOTA E PAGAMENTI e CORSI a riquadri, con i tasti accanto
+
+## 0.170.3 — 22 ottobre 2026
+
+### Modificato
+
+- Contabilità, Movimenti più pulita: menu «Altre azioni», saldi compatti e colonna Tipo
+
 ## 0.170.2 — 22 ottobre 2026
 
 ### Modificato
