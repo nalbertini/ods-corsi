@@ -6,6 +6,12 @@ Chi è tesserato (FIJLKAM, FIPE…), di che tipo e fino a quando, e chi è iscri
 senza la tessera che quel corso chiede. Le tessere si leggono dal RASD; il tesseramento
 non si fa qui.
 
+> **Per ora le tessere non vengono segnalate.** Nessuna parte dell'app dice che una tessera
+> manca, è scaduta o scade: niente casella TESSERE in COSA MANCA, niente parola nella colonna
+> IN REGOLA, niente timbro TESSERA né filtro SENZA TESSERA in ISCRITTI. In questa pagina resta
+> solo l'elenco dei tesserati senza corso; nella scheda le tessere si vedono, si aggiungono e si
+> tolgono come prima. Quello che segue sulle segnalazioni tornerà vero quando si riaccendono.
+
 ## Quale tessera chiede un corso
 
 In [CORSI](corsi.md), nei dati del corso, **TESSERA RICHIESTA**: l'ente, in maiuscolo

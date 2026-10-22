@@ -12,6 +12,7 @@
 
 import type { FiltroSegreteria, Voce } from './indirizzoSegreteria'
 import { comePaga, senzaCertificatoValido, type LezioneSeg, type PersonaSeg } from './segreteria'
+import { SEGNALA_TESSERE } from './tessere'
 
 /** Fin dove si guarda indietro per gli appelli che mancano. */
 export const GIORNI_APPELLI = 30
@@ -153,6 +154,9 @@ export function caselleCosaManca(c: ContiCosaManca): Casella[] {
     }
   })
 }
+
+/** Le caselle che l'app mostra: a segnalazioni delle tessere spente, la casella TESSERE non c'è. */
+export const caselleDaMostrare = (c: ContiCosaManca) => caselleCosaManca(c).filter((x) => SEGNALA_TESSERE || x.id !== 'tessere')
 
 /** Per chi non vede lo schermo: cosa è cambiato dopo una lettura. Niente alla prima lettura, né quando un numero passa da «non so» a un valore. */
 export function annuncioCambio(prima: ContiCosaManca, dopo: ContiCosaManca): string | null {

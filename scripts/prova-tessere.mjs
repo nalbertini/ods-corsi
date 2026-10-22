@@ -286,5 +286,20 @@ console.log('\nLa quinta casella di COSA MANCA (scelta A del canvas, confermata)
   ok('porta agli ISCRITTI col filtro «senza tessera»', [c(14).voce, c(14).filtro], ['iscritti', 'senza-tessera'])
 }
 
+console.log('\nPer ora le tessere non si segnalano (l\'interruttore SEGNALA_TESSERE)')
+{
+  ok('l\'interruttore è spento', m.SEGNALA_TESSERE, false)
+  const mostrato = m.incrocioDaMostrare(persone, corsi, '2026-11-01')
+  ok('l\'incrocio mostrato: nessuna manca, scaduta o in scadenza', mostrato.filter((r) => r.esito !== 'non_iscritto').length, 0)
+  ok('…mentre la logica le vede ancora', m.incrocioTessere(persone, corsi, '2026-11-01').some((r) => r.esito !== 'non_iscritto'), true)
+  ok('i tesserati senza corso restano', mostrato.length, m.incrocioTessere(persone, corsi, '2026-11-01').filter((r) => r.esito === 'non_iscritto').length)
+  ok('il conto di COSA MANCA è 0 e nessuno è «senza tessera»', [m.contaTessere(mostrato), m.senzaTessera(mostrato)], [0, false])
+  ok('IN REGOLA non cambia', m.paroleConTessera([{ tono: 'verde', parola: 'In regola' }], mostrato), [{ tono: 'verde', parola: 'In regola' }])
+  const caselle = m.cosaManca.caselleDaMostrare({ appelli: 0, certificati: 0, pagamenti: 0, tessere: 14, richieste: 0, contato: true })
+  ok('la casella TESSERE non c\'è, le altre sì', caselle.map((x) => x.id), ['appelli', 'certificati', 'pagamenti', 'richieste'])
+  ok('la frase di una tessera scaduta non dice «scaduta»', m.fraseDaMostrare(T('FIJLKAM', '2025-01-01', '2025-12-31'), OGGI), 'FIJLKAM · praticante · fino al 31 dicembre 2025')
+  ok('…né «scade fra»', m.fraseDaMostrare(T('FIJLKAM', '2026-01-01', '2026-12-31'), OGGI), 'FIJLKAM · praticante · fino al 31 dicembre 2026')
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
