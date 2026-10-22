@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>PRESENZE, proposta</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Copiata da ods-design-system/PaginaSito.dc.html: PRESENZE, proposta. Nomi e numeri dello schermo di oggi (22 ottobre 2026).
+     Le liste lunghe si accorciano (le prime N voci + «Mostra tutti») e le tre sezioni in fondo si chiudono come un `details`, col conto in testa. -->
+<div style="display: flex; width: 1440px; min-height: 1000px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="PRESENZE" numeri="" nome="Marco Rossi" ruolo="Segreteria" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">PRESENZE</h1>
+        <span style="font-size: 14px; color: #46606f">Chi si sta perdendo, quali appelli mancano, chi c'era lezione per lezione.</span>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center">
+        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; background: #fff; border: 2px solid #14709f; font-size: 15px">Ottobre 2026 ⌄</span>
+        <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; background: #fff; border: 2px solid #14709f; font-size: 15px; min-width: 180px">Tutti i corsi ⌄</span>
+        <dc-import name="Chip" tema="sito" label="Scarica CSV" hint-size="130px,44px"></dc-import>
+      </div>
+    </div>
+
+    <!-- Barre per corso e numeri stanno già in STATISTICHE: qui solo un rimando. -->
+    <a href="#" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 2px solid #14709f; background: #fff; color: #0d2a3d; font-size: 15px; font-weight: 600; text-decoration: none">Com'è andato il mese: presenze per corso e per giorno → STATISTICHE</a>
+
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start">
+      <section aria-label="Chi si sta perdendo" style="display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: #fff; border: 2px solid #cfe6f4">
+        <div style="display: flex; align-items: baseline; gap: 14px">
+          <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap">CHI SI STA PERDENDO · 23</span>
+          <span style="flex: 1; height: 2px; background: #cfe6f4"></span>
+          <span style="font-size: 12px; color: #46606f">3 assenze di fila o più</span>
+        </div>
+        <sc-for list="{{persi}}" as="x" hint-placeholder-count="5">
+          <div style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 12px; background: #eef5fa; border: 2px solid #cfe6f4">
+            <span style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+              <span style="font-size: 15px; font-weight: 600">{{x.nome}}</span>
+              <span style="font-size: 12px; color: #46606f">{{x.sotto}}</span>
+            </span>
+            <span style="font-size: 18px; font-weight: 700; color: #b81d1d">{{x.fila}}</span>
+            <dc-import name="Chip" tema="sito" label="Apri la scheda" hint-size="140px,44px"></dc-import>
+          </div>
+        </sc-for>
+        <a href="#" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 2px solid #14709f; background: #fff; color: #0d2a3d; font-size: 15px; font-weight: 600; text-decoration: none">Mostra tutti i 23 ⌄</a>
+      </section>
+    </div>
+
+    <!-- Le tre sezioni lunghe: una riga ciascuna, col conto in testa. APPELLI MANCANTI si apre da sola quando ce n'è (e arrivando da DA FARE); le altre restano chiuse. -->
+    <section aria-label="Appelli mancanti" style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 18px; background: #fff; border: 2px solid #cfe6f4; box-shadow: inset 4px 0 0 #e4292a">
+      <div style="display: flex; align-items: center; gap: 14px; min-height: 56px">
+        <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.24em; white-space: nowrap">APPELLI MANCANTI</span>
+        <span style="font-size: 15px; font-weight: 700; color: #b81d1d">1</span>
+        <span style="flex: 1; height: 2px; background: #cfe6f4"></span>
+        <span style="font-size: 18px; color: #46606f">⌃</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 12px; background: #eef5fa; border: 2px solid #e4292a">
+        <span style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+          <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 16px">LOTTA 2</span>
+          <span style="font-size: 12px; color: #46606f">martedì 20 ottobre · 18:30 · Enrico Conti</span>
+        </span>
+        <dc-import name="Chip" tema="sito" label="Fai l’appello ora" hint-size="160px,44px"></dc-import>
+      </div>
+    </section>
+
+    <section aria-label="Prove" style="display: flex; align-items: center; gap: 14px; min-height: 60px; padding: 0 20px; background: #fff; border: 2px solid #cfe6f4">
+      <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.24em; white-space: nowrap">PROVE</span>
+      <span style="font-size: 12px; color: #46606f">4 persone in 4 lezioni</span>
+      <span style="flex: 1; height: 2px; background: #cfe6f4"></span>
+      <span style="font-size: 18px; color: #46606f">⌄</span>
+    </section>
+
+    <section aria-label="Registro del mese" style="display: flex; align-items: center; gap: 14px; min-height: 60px; padding: 0 20px; background: #fff; border: 2px solid #cfe6f4">
+      <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.24em; white-space: nowrap">REGISTRO DEL MESE</span>
+      <span style="font-size: 12px; color: #46606f">122 lezioni con l’appello, chi c'era lezione per lezione</span>
+      <span style="flex: 1; height: 2px; background: #cfe6f4"></span>
+      <span style="font-size: 18px; color: #46606f">⌄</span>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const persi = [
+      { nome: 'Di Lorenzo Orazio', sotto: 'Preparazione atletica, pesi e Mobility · mai negli ultimi due mesi', fila: 23 },
+      { nome: 'Marseglia Luca', sotto: 'Preparazione atletica, pesi e Mobility · l’ultima volta giovedì 1 ottobre', fila: 21 },
+      { nome: 'Tortorelli Pietro', sotto: 'Preparazione atletica, pesi e Mobility · mai negli ultimi due mesi', fila: 19 },
+      { nome: 'Ghezzi Marta', sotto: 'Preparazione atletica, pesi e Mobility · l’ultima volta mercoledì 7 ottobre', fila: 16 },
+      { nome: 'Perini Letizia', sotto: 'Preparazione atletica, Judo adulti · l’ultima volta giovedì 15 ottobre', fila: 15 },
+    ];
+    return { persi };
+  }
+}
+</script>
+</body>
+</html>

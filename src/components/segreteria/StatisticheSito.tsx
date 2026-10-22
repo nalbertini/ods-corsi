@@ -296,7 +296,7 @@ function Numeri({ numeri, da, a }: { numeri: NumeriSito; da: string; a: string }
   )
 }
 
-/** Barre di un valore solo, come `.sg-barra` di PRESENZE, col nome su due righe; «Diretto o non si sa» a parte, sotto un filo. */
+/** Barre di un valore solo, come quelle di STATISTICHE, col nome su due righe; «Diretto o non si sa» a parte, sotto un filo. */
 function Barre({ titolo, righe, altre, parola, sotto, diretto }: { titolo: string; righe: Array<{ nome: string; sotto: string; n: number }>; altre: AltreSito; parola: string; sotto?: string; diretto?: number }) {
   const tutte = altre.quante ? [...righe, { nome: `Altre ${altre.quante}${parola ? ` ${parola}` : ''}`, sotto: '', n: altre.visite }] : righe
   const max = Math.max(1, diretto ?? 0, ...tutte.map((r) => r.n))

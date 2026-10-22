@@ -1,10 +1,10 @@
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { type ReactNode, type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import type { DatiSegreteria, ProvaSeg, RigaRegistro } from '../../lib/segreteria'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
 import { Guaio, Riga, Testa, useCarica } from './comune'
 import { mesi } from '../../lib/ore'
-import { chiSiStaPerdendo, conAppello, conto, DI_FILA, GIORNI_RECENTI, percento } from '../../lib/frequenza'
+import { accorcia, chiSiStaPerdendo, conAppello, DI_FILA, GIORNI_RECENTI } from '../../lib/frequenza'
 
 /** Il registro del mese in un foglio da aprire con Excel: punto e virgola e BOM, come i fogli che si importano. */
 function scaricaCsv(righe: RigaRegistro[], nome: string) {
@@ -44,13 +44,13 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
   const [periodo, setPeriodo] = useState(senzaAppello ? '30' : periodi[1].chiave)
 
   const [corso, setCorso] = useState('')
-  const [sopra, setSopra] = useState<string | null>(null)
+  const [tuttiPersi, setTuttiPersi] = useState(false)
   const p = periodi.find((x) => x.chiave === periodo) ?? periodi[0]
 
   const registro = useCarica(() => d.registro(p.da, p.a), [d, p])
   // Arrivati da DA FARE per gli appelli che mancano: la pagina si apre lì,
   // quando il registro è arrivato e sopra c'è già tutto quello che lo precede.
-  const appelli = useRef<HTMLElement>(null)
+  const appelli = useRef<HTMLDetailsElement>(null)
   const arrivato = registro.dato !== null
   useEffect(() => {
     if (senzaAppello && arrivato) appelli.current?.scrollIntoView({ block: 'start' })
@@ -62,26 +62,16 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
   const tutte = registro.dato ?? []
   const righe = tutte.filter((r) => !corso || r.corsoId === corso)
   const svolte = righe.filter((r) => r.stato !== 'annullata')
-  const annullate = righe.length - svolte.length
   const fatte = svolte.filter(conAppello)
   const mancanti = svolte.filter((r) => !conAppello(r)).sort((a, b) => b.inizio.localeCompare(a.inizio))
-  const totale = conto(righe)
   const corsi = [...new Map(tutte.map((r) => [r.corsoId, r.corso])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'it'))
 
-  const barre = corsi
-    .map(([id, nome]) => {
-      const qui = tutte.filter((r) => r.corsoId === id)
-      const c = conto(qui)
-      return { id, nome, ...c, lezioni: qui.filter((r) => r.stato !== 'annullata' && conAppello(r)).length, pc: percento(c) }
-    })
-    .filter((b) => b.pc !== null)
-    .sort((a, b) => b.pc! - a.pc! || a.nome.localeCompare(b.nome, 'it'))
-
   const persi = useMemo(() => chiSiStaPerdendo(recenti.dato ?? [], corso), [recenti.dato, corso])
+  const { visibili: primiPersi, nascoste: restanoPersi } = accorcia(persi, PRIMI_PERSI, tuttiPersi)
 
   return (
     <>
-      <Testa titolo="PRESENZE" sotto="Chi viene, chi si sta perdendo, quali appelli mancano, chi c'era lezione per lezione.">
+      <Testa titolo="PRESENZE" sotto="Chi si sta perdendo, quali appelli mancano, chi c'era lezione per lezione.">
         <label htmlFor="periodo" className="vh">
           Periodo
         </label>
@@ -116,68 +106,18 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
 
       {registro.guaio && <Guaio testo={registro.guaio} />}
 
-      <div className="sg-numeri">
-        <Numero titolo="LEZIONI SVOLTE" valore={svolte.length} sotto={annullate ? `${annullate} ${annullate === 1 ? 'annullata' : 'annullate'}` : 'nessuna annullata'} />
-        <Numero
-          titolo="PRESENZE"
-          valore={totale.presenti}
-          sotto={fatte.length ? `${(totale.presenti / fatte.length).toLocaleString('it-IT', { maximumFractionDigits: 1 })} a lezione, dove c'è l'appello` : 'nessun appello'}
-        />
-        <Numero titolo="SUGLI ISCRITTI" valore={percento(totale) === null ? '—' : `${percento(totale)}%`} sotto="i giustificati non contano" />
-        <Numero titolo="SENZA APPELLO" valore={mancanti.length} sotto="lezioni passate, nessuno ha segnato" allarme={mancanti.length > 0} />
-      </div>
+      {/* Le barre per corso e i numeri del mese stanno già in STATISTICHE. */}
+      <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => onVai('statistiche')}>
+        Com'è andato il mese: presenze per corso e per giorno → Statistiche
+      </button>
 
-      <div className="sg-presenze">
-        <section aria-label="Presenza media per corso" className="sg-riquadro">
-          <Riga titolo="PRESENZA MEDIA PER CORSO">
-            <span style={{ fontSize: 12, color: 'var(--dim)' }}>presenti su iscritti, dove c'è l'appello</span>
-          </Riga>
-          {registro.dato === null && !registro.guaio && <span className="sg-sotto">Sto leggendo il registro…</span>}
-          {registro.dato !== null && barre.length === 0 && <span className="sg-sotto">Nessun appello fatto in questo periodo.</span>}
-          <div className="stack" style={{ gap: 10 }}>
-            {barre.map((b) => (
-              <button
-                key={b.id}
-                type="button"
-                className="sg-barra"
-                aria-pressed={corso === b.id}
-                data-spenta={!!corso && corso !== b.id}
-                aria-label={`${b.nome}: ${b.pc}%, ${b.presenti} presenze su ${b.dovute} in ${b.lezioni} lezioni`}
-                onClick={() => setCorso(corso === b.id ? '' : b.id)}
-                onMouseEnter={() => setSopra(b.id)}
-                onMouseLeave={() => setSopra(null)}
-                onFocus={() => setSopra(b.id)}
-                onBlur={() => setSopra(null)}
-              >
-                <span className="ob sg-barra-nome">{b.nome.toUpperCase()}</span>
-                <span className="sg-barra-binario">
-                  <span className="sg-barra-pieno" style={{ width: `${b.pc}%` }} />
-                  {sopra === b.id && (
-                    <span className="sg-barra-suggerimento" role="tooltip">
-                      {b.presenti} presenze su {b.dovute} · {b.lezioni} {b.lezioni === 1 ? 'lezione' : 'lezioni'}
-                    </span>
-                  )}
-                </span>
-                <span className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right' }}>{b.pc}%</span>
-              </button>
-            ))}
-          </div>
-          {barre.length > 0 && (
-            <div className="sg-barra-scala num">
-              <span>0%</span>
-              <span>50%</span>
-              <span>100%</span>
-            </div>
-          )}
-        </section>
-
-        <div className="stack" style={{ gap: 20, minWidth: 0 }}>
+      <div className="stack" style={{ gap: 20 }}>
           <section aria-label="Chi si sta perdendo" className="sg-riquadro">
-            <Riga titolo="CHI SI STA PERDENDO">
+            <Riga titolo={`CHI SI STA PERDENDO · ${persi.length}`}>
               <span style={{ fontSize: 12, color: 'var(--dim)' }}>{DI_FILA} assenze di fila o più</span>
             </Riga>
             {recenti.dato !== null && persi.length === 0 && <span style={{ fontSize: 14, color: 'var(--verde-testo)' }}>Nessuno: chi è iscritto viene.</span>}
-            {persi.map((x) => (
+            {primiPersi.map((x) => (
               <div key={x.id} className="sg-voce-elenco">
                 <span className="stack grow" style={{ minWidth: 0 }}>
                   <span style={{ fontSize: 15, fontWeight: 600 }}>{x.nome}</span>
@@ -191,10 +131,14 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
                 </button>
               </div>
             ))}
+            {(restanoPersi > 0 || tuttiPersi) && (
+              <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} aria-expanded={tuttiPersi} onClick={() => setTuttiPersi(!tuttiPersi)}>
+                {tuttiPersi ? 'Mostra meno' : `Mostra tutti i ${persi.length} (altri ${restanoPersi})`}
+              </button>
+            )}
           </section>
 
-          <section ref={appelli} aria-label="Appelli mancanti" className="sg-riquadro">
-            <Riga titolo="APPELLI MANCANTI" />
+          <Chiudibile rif={appelli} titolo={`APPELLI MANCANTI${mancanti.length ? ` · ${mancanti.length}` : ''}`} aperta={mancanti.length > 0 || !!senzaAppello} allarme={mancanti.length > 0}>
             {registro.dato !== null && mancanti.length === 0 && <span style={{ fontSize: 14, color: 'var(--verde-testo)' }}>Nessuno: tutte le lezioni passate hanno l'appello.</span>}
             {mancanti.slice(0, 30).map((r) => (
               <div key={r.sessioneId} className="sg-voce-elenco" style={{ borderColor: 'var(--rosso)' }}>
@@ -211,14 +155,36 @@ export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria
               </div>
             ))}
             {mancanti.length > 30 && <span className="sg-sotto">…e altre {mancanti.length - 30}.</span>}
-          </section>
+          </Chiudibile>
 
           <Prove prove={prove} corso={corso} onVai={onVai} />
-        </div>
-      </div>
 
-      <Registro righe={fatte} caricato={registro.dato !== null} onVai={onVai} />
+          <Registro righe={fatte} caricato={registro.dato !== null} onVai={onVai} />
+      </div>
     </>
+  )
+}
+
+const PRIMI_PERSI = 5
+
+/**
+ * Una sezione lunga chiusa, con il titolo e il conto in vista: si apre da sola
+ * solo quando c'è qualcosa da fare (`aperta`). `<details>` perché la tastiera e
+ * chi legge lo schermo lo sanno già usare.
+ */
+function Chiudibile({ titolo, nota, aperta, allarme, rif, children }: { titolo: string; nota?: string; aperta?: boolean; allarme?: boolean; rif?: RefObject<HTMLDetailsElement>; children: ReactNode }) {
+  // Lo stato è qui perché `open` controllato da React rimetterebbe a posto ogni apertura o chiusura a mano.
+  const [apertoOra, setApertoOra] = useState(!!aperta)
+  useEffect(() => setApertoOra(!!aperta), [aperta])
+  return (
+    <details ref={rif} className="sg-riquadro sg-chiudibile" data-allarme={!!allarme} open={apertoOra} onToggle={(e) => setApertoOra(e.currentTarget.open)}>
+      <summary>
+        <Riga titolo={titolo}>{nota && <span style={{ fontSize: 12, color: 'var(--dim)' }}>{nota}</span>}</Riga>
+      </summary>
+      <div className="stack" style={{ gap: 10 }}>
+        {children}
+      </div>
+    </details>
   )
 }
 
@@ -238,10 +204,7 @@ function Registro({ righe, caricato, onVai }: { righe: RigaRegistro[]; caricato:
     giorni.set(g, [...(giorni.get(g) ?? []), r])
   }
   return (
-    <section aria-label="Registro del mese" className="sg-riquadro" style={{ marginTop: 20 }}>
-      <Riga titolo="REGISTRO DEL MESE">
-        <span style={{ fontSize: 12, color: 'var(--dim)' }}>chi c'era, lezione per lezione</span>
-      </Riga>
+    <Chiudibile titolo="REGISTRO DEL MESE" nota={caricato ? `${righe.length} ${righe.length === 1 ? 'lezione' : 'lezioni'} con l'appello, chi c'era lezione per lezione` : 'chi c\'era, lezione per lezione'}>
       {caricato && righe.length === 0 && <span className="sg-sotto">Nessun appello fatto in questo periodo.</span>}
       {[...giorni.entries()].map(([g, lezioni]) => (
         <div key={g} className="stack" style={{ gap: 6 }}>
@@ -292,7 +255,7 @@ function Registro({ righe, caricato, onVai }: { righe: RigaRegistro[]; caricato:
           })}
         </div>
       ))}
-    </section>
+    </Chiudibile>
   )
 }
 
@@ -306,12 +269,10 @@ function Prove({ prove, corso, onVai }: { prove: { dato: ProvaSeg[] | null; guai
   const qui = corso ? tutte.filter((x) => x.corsoId === corso) : tutte
   const persone = new Set(qui.map((x) => x.personaId)).size
   return (
-    <section aria-label="Prove" className="sg-riquadro">
-      <Riga titolo="PROVE">
-        <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-          {prove.dato ? `${persone} ${persone === 1 ? 'persona' : 'persone'} in ${qui.length} ${qui.length === 1 ? 'lezione' : 'lezioni'}` : 'chi è venuto a provare'}
-        </span>
-      </Riga>
+    <Chiudibile
+      titolo="PROVE"
+      nota={prove.dato ? `${persone} ${persone === 1 ? 'persona' : 'persone'} in ${qui.length} ${qui.length === 1 ? 'lezione' : 'lezioni'}` : 'chi è venuto a provare'}
+    >
       {prove.guaio && <Guaio testo={prove.guaio} />}
       {prove.dato !== null && qui.length === 0 && <span className="sg-sotto">Nessuno è venuto a provare in questo periodo.</span>}
       {qui.slice(0, 40).map((x) => (
@@ -339,7 +300,7 @@ function Prove({ prove, corso, onVai }: { prove: { dato: ProvaSeg[] | null; guai
         </div>
       ))}
       {qui.length > 40 && <span className="sg-sotto">…e altre {qui.length - 40}.</span>}
-    </section>
+    </Chiudibile>
   )
 }
 

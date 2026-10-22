@@ -1995,6 +1995,16 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-cerca-voce { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; padding: 6px 10px; font-size: 15px; cursor: pointer; }
 .sg-cerca-voce[aria-selected='true'] { background: var(--surface-2); box-shadow: inset 4px 0 0 var(--text); }
 .sg-cerca-voce[data-spento] { color: var(--dim); }
+.sg-cerca-voce > svg { flex: none; color: var(--dim); }
+.sg-cerca-voce { gap: 12px; }
+.sg-cerca-voce > .sg-cerca-testo { flex-grow: 1; }
+.sg-ricerca-finestra .sg-cerca-elenco { width: 536px; border: 0; box-shadow: none; }
+.sg-chi-voci { padding-bottom: 6px; border-bottom: 1px solid var(--line-soft); }
+.sg-voce-aiuto { display: inline-flex; align-items: center; justify-content: center; width: 20px; flex: none; font-weight: 700; }
+/* La ricerca con ⌘K: una finestra al centro, sopra tutto, sul fondo scurito. */
+.sg-ricerca-finestra { position: fixed; inset: 0; z-index: 40; display: flex; align-items: flex-start; justify-content: center; padding-top: 18vh; background: rgba(0, 0, 0, 0.6); }
+.sg-ricerca-corpo { width: 560px; max-width: calc(100vw - 16px); padding: 12px; background: var(--surface); border: 2px solid var(--text); }
+.sg-ricerca-finestra .sg-cerca { padding: 0; }
 .sg-cerca-testo { display: flex; flex-direction: column; min-width: 0; }
 /* Su telefono un nome lungo andrebbe a capo accanto allo stato: resta su una riga, coi puntini. */
 .sg-cerca-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2031,21 +2041,17 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-voce-testo { flex: 1; min-width: 0; }
 a.sg-voce { text-decoration: none; }
 .sg-voce[aria-current='page'] { border-left-color: var(--text); background: var(--surface); color: var(--text); }
-.sg-chi { display: flex; flex-direction: column; gap: 6px; padding: 14px 12px; border: 2px solid var(--line-soft); }
+.sg-icone { gap: 8px; padding: 0 4px; }
+.sg-chi { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 2px solid var(--line-soft); }
 .sg-bollino {
   font-size: 11px; font-weight: 700; letter-spacing: 0.18em; color: var(--su-colore); background: var(--giallo);
   padding: 2px 6px; align-self: flex-start; margin-top: 4px;
 }
-.sg-icone { gap: 8px; padding: 0 4px; }
 .icon-btn[aria-current='page'] { border-color: var(--text); color: var(--text); }
 /* DATI DI PROVA sta accanto ai tre tasti, in cima e sempre in vista; in chi è
    entrato resta solo sul telefono, dove i tasti sono nella barra in cima. */
 /* Senza il margine ci sta, dal computer, su due righe accanto ai tasti: la
    riga resta alta 44. Sul tablet, più stretto, va sotto. */
-#sg-menu .sg-icone { padding: 0; flex-wrap: wrap; }
-/* 56 px: «DATI DI» su una riga e «PROVA» sotto. */
-#sg-menu .sg-icone > .sg-bollino { margin-top: 0; align-self: center; flex: 0 0 56px; }
-@media (min-width: 768px) { #sg-menu .sg-chi > .sg-bollino { display: none; } }
 .sg-link { font-size: 13px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 .sg-link:hover { color: var(--text); }
 /* In fondo al menu i link (Riparti dall'orario vero, Esci) sono bersagli veri
@@ -2765,20 +2771,18 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-registro > summary::-webkit-details-marker { display: none; }
 .sg-registro[open] > summary { border-color: var(--text); }
 .sg-registro-nomi { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px 12px; border: 2px solid var(--line); border-top: 0; }
-.sg-presenze { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: start; }
-
-/* Un solo valore per corso, una tinta sola: la barra dice quanto, il numero accanto lo dice esatto. */
-.sg-barra { display: grid; grid-template-columns: 170px 1fr 48px; gap: 12px; align-items: center; min-height: 34px; text-align: left; }
-.sg-barra[data-spenta='true'] { opacity: 0.35; }
-.sg-barra-nome { font-size: 15px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Barra di un valore solo, una tinta sola: la barra dice quanto, il numero accanto lo dice esatto. */
 .sg-barra-binario { position: relative; height: 14px; background: var(--surface-2); }
 .sg-barra-pieno { position: absolute; left: 0; top: 0; bottom: 0; background: var(--blu); border-radius: 0 4px 4px 0; }
-.sg-barra:hover .sg-barra-pieno, .sg-barra:focus-visible .sg-barra-pieno, .sg-barra[aria-pressed='true'] .sg-barra-pieno { background: #3aa0d6; }
-.sg-barra-suggerimento {
-  position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 2; white-space: nowrap;
-  padding: 4px 8px; background: var(--text); color: var(--bg); font-size: 12px; font-weight: 600;
-}
-.sg-barra-scala { display: flex; justify-content: space-between; padding: 0 60px 0 182px; font-size: 11px; color: var(--dim); }
+
+/* Le sezioni lunghe di PRESENZE: chiuse, col titolo e il conto in vista; il segno a destra dice se si apre o si chiude. */
+.sg-chiudibile > summary { display: flex; align-items: center; gap: 14px; min-height: 44px; cursor: pointer; list-style: none; }
+.sg-chiudibile > summary::-webkit-details-marker { display: none; }
+.sg-chiudibile > summary > .sg-riga-titolo { flex: 1; }
+.sg-chiudibile > summary::after { content: '⌄'; font-size: 18px; color: var(--dim); }
+.sg-chiudibile[open] > summary::after { content: '⌃'; }
+.sg-chiudibile[open] > summary { margin-bottom: 10px; }
+.sg-chiudibile[data-allarme='true'] { box-shadow: inset 4px 0 0 var(--rosso); }
 
 /* Le statistiche: colonne mese per mese, giorni e ore, tabelle dei corsi. */
 .sg-stat-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
@@ -2970,9 +2974,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 
 @media (max-width: 1000px) {
   .sg-numeri, .sg-cosa-entra { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sg-presenze, .sg-importa, .sg-regole { grid-template-columns: minmax(0, 1fr); }
-  .sg-barra { grid-template-columns: 110px 1fr 44px; }
-  .sg-barra-scala { padding-left: 122px; padding-right: 56px; }
+  .sg-importa, .sg-regole { grid-template-columns: minmax(0, 1fr); }
   .sg-riga-personale { grid-template-columns: 1fr 1fr; }
   .sg-lista-testa.sg-riga-personale { display: none; }
 }
@@ -2983,8 +2985,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 @media (min-width: 768px) and (max-width: 1000px) {
   .sg-menu { width: 200px; padding-left: 12px; padding-right: 12px; }
   .sg-voce { font-size: 15px; letter-spacing: 0.1em; padding: 0 10px; }
-  /* Accanto ai tasti non ci sta: sotto, su una riga sola. */
-  #sg-menu .sg-icone > .sg-bollino { flex-basis: auto; }
   .sg-corpo { padding: calc(var(--safe-t) + 20px) 20px 20px; }
 }
 
@@ -3001,7 +3001,9 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   /* 8 + 44 + 8 + il bordo: alta 62, ed è lì che il menu aperto comincia. */
   .sg-barra-tel > svg { flex-shrink: 0; }
   .sg-barra-tel > .icon-btn { border: none; }
+  /* Sul telefono Aiuto, tema e Impostazioni stanno già nella barra in cima. */
   .sg-icone { display: none; }
+  .sg-chi-voci { display: none; }
   .sg-tasto-menu {
     display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px;
     border: 2px solid var(--line); color: var(--text);
