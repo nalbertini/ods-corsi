@@ -670,3 +670,53 @@ export function scaricaCsv(nome: string, testo: string) {
   a.click()
   URL.revokeObjectURL(url)
 }
+
+/**
+ * Una scelta fra poche voci che si escludono (il periodo, la vista): tasti
+ * attaccati, quello scelto pieno col ✓. Un gruppo di `aria-pressed` e non
+ * dei tab: la scelta cambia l'elenco sotto, non apre un pannello.
+ */
+export function Segmenti<T extends string>({ etichetta, voci, scelta, onScegli }: { etichetta: string; voci: readonly (readonly [T, string])[]; scelta: T; onScegli: (v: T) => void }) {
+  return (
+    <div role="group" aria-label={etichetta} className="sg-segmenti">
+      {voci.map(([v, testo]) => (
+        <button key={v} type="button" aria-pressed={v === scelta} onClick={() => onScegli(v)}>
+          {testo}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Una scelta fra tante (la cassa, la voce): un tasto che dice il filtro e il
+ * valore, sopra un `<select>` vero e trasparente, così tastiera, lettore di
+ * schermo e telefono hanno il menu loro. Acceso, ha la ✕ per spegnerlo.
+ * Il primo valore delle opzioni è «tutti», il filtro spento.
+ */
+export function FiltroMenu({ id, nome, value, opzioni, onChange }: { id: string; nome: string; value: string; opzioni: readonly (readonly [string, string])[]; onChange: (v: string) => void }) {
+  const spento = opzioni[0]?.[0] ?? ''
+  const acceso = value !== spento
+  const testo = opzioni.find(([v]) => v === value)?.[1] ?? value
+  return (
+    <span className="sg-filtro-menu" data-acceso={acceso}>
+      <span className="sg-filtro-menu-tasto">
+        <label htmlFor={id}>{nome}</label>
+        <span aria-hidden="true" className="sg-filtro-menu-valore">{testo}</span>
+        <span aria-hidden="true">▾</span>
+        <select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
+          {opzioni.map(([v, t]) => (
+            <option key={v} value={v}>
+              {t}
+            </option>
+          ))}
+        </select>
+      </span>
+      {acceso && (
+        <button type="button" className="sg-filtro-menu-togli" aria-label={`Togli il filtro ${nome}`} onClick={() => onChange(spento)}>
+          ✕
+        </button>
+      )}
+    </span>
+  )
+}

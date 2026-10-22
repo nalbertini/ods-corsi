@@ -1,0 +1,18 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-22T19:09:14Z" },
+  "title": "ODS Corsi · Segreteria e iscritti nel look del sito",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "BancoOggi.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 760, "title": "Il Banco · oggi: gli stessi numeri tre volte" },
+    "BancoProposta.dc.html": { "x": 1560, "y": 0, "w": 1440, "h": 760, "title": "Il Banco · proposta: ogni numero una volta" },
+    "SchedeOggi.dc.html": { "x": 0, "y": 900, "w": 1440, "h": 820, "title": "Schede · oggi: quattro modi" },
+    "SchedeProposta.dc.html": { "x": 1560, "y": 900, "w": 1440, "h": 820, "title": "Schede · proposta: un modo, sotto il titolo" },
+    "IscrittiOggi.dc.html": { "x": 0, "y": 1860, "w": 390, "h": 1060, "title": "Area iscritti · oggi" },
+    "IscrittiProposta.dc.html": { "x": 510, "y": 1860, "w": 390, "h": 1060, "title": "Area iscritti · proposta nel look del sito" }
+  },
+  "order": ["BancoOggi.dc.html", "BancoProposta.dc.html", "SchedeOggi.dc.html", "SchedeProposta.dc.html", "IscrittiOggi.dc.html", "IscrittiProposta.dc.html"],
+  "notes": {},
+  "designSystems": []
+}

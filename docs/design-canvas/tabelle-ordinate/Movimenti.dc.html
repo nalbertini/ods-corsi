@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .nota { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00; }
+    .col { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #46606f; }
+    .elenco { background: #ffffff; border: 2px solid #cfe6f4; }
+    .barra { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px; }
+    .cerca { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 240px; max-width: 380px; height: 44px; padding: 0 12px; border: 2px solid #14709f; border-radius: 6px; color: #46606f; font-size: 15px; }
+    .stato { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 48px; padding: 8px 16px; background: #eef5fa; border-top: 1px solid #cfe6f4; border-bottom: 1px solid #cfe6f4; font-size: 14px; }
+    .riga { display: grid; grid-template-columns: 44px 84px minmax(0, 2fr) minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 0.9fr) 130px; gap: 14px; align-items: center; min-height: 56px; padding: 6px 16px; border-bottom: 1px solid #cfe6f4; }
+    .testa { min-height: 44px; border-bottom: 2px solid #cfe6f4; }
+    .box { width: 20px; height: 20px; border: 2px solid #14709f; border-radius: 4px; background: #ffffff; }
+    .data { font-size: 14px; font-variant-numeric: tabular-nums; color: #46606f; }
+    .desc { font-size: 15px; font-weight: 600; }
+    .sotto { display: block; margin-top: 2px; font-size: 13px; font-weight: 400; color: #46606f; }
+    .cella { font-size: 14px; color: #0d2a3d; }
+    .imp { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+    .entra { color: #0b7a33; }
+    .tag { display: inline-flex; align-items: center; padding: 1px 8px; border: 1.5px solid #0d2a3d; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .link { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; color: #0d2a3d; }
+    .cassa { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .cassa svg { flex-shrink: 0; color: #14709f; }
+    .voce { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .voce svg { flex-shrink: 0; color: #46606f; }
+  </style>
+</helmet>
+<!-- PROPOSTA · CONTABILITÀ → MOVIMENTI riordinato. Da sei file di cose a tre blocchi:
+     1) testata della pagina: titolo e frase a sinistra, le azioni della pagina a destra (Nuovo movimento giallo, l'unico pieno);
+     2) i saldi;
+     3) L'ELENCO in un riquadro solo: barra dei filtri (cerca, PERIODO a segmenti, Tipo/Cassa/Voce/Persona come tasti-menu,
+        Annullati, Esporta CSV), riga di stato (quanti, quali filtri, Togli i filtri, totali), testata con la casella «scegli tutte»,
+        righe, piede. Gli stessi filtri e conteggi di oggi: cambia solo dove stanno. -->
+<div style="display: flex; width: 1440px; min-height: 1240px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="CONTABILITÀ" numeri="" nome="Chiara Bianchi" ruolo="Amministrazione" altezza="1240px" hint-size="240px,1240px"></dc-import>
+  </div>
+  <main style="flex: 1; min-width: 0; padding: 28px 36px; display: flex; flex-direction: column; gap: 18px">
+
+    <div style="display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+      <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 320px">
+        <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</h1>
+        <span style="font-size: 14px; color: #46606f">Le entrate e le uscite della palestra. Gli incassi degli iscritti ci sono già: si correggono in PAGAMENTI.</span>
+      </div>
+      <dc-import name="Bottone" tema="sito" label="Collega i casi sicuri" variante="linea" contesto="segreteria" hint-size="210px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" label="Giroconto" variante="linea" contesto="segreteria" hint-size="130px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" label="Nuovo movimento" variante="pieno" contesto="segreteria" hint-size="200px,48px"></dc-import>
+    </div>
+
+    <dc-import name="Segmenti" voci="Movimenti|Bilancio|Voci|Casse" scelta="Movimenti" hint-size="380px,44px"></dc-import>
+
+    <!-- I saldi in una striscia sola: cifre da 28px (non 44) perche' «1.079.031,02 €» stia in un quarto di larghezza senza sbordare;
+         entrate e uscite su due righe. Sotto i 900px le caselle vanno a due a due. -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); background: #ffffff; border: 2px solid #cfe6f4">
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 14px 18px; border-right: 1px solid #cfe6f4;">
+        <span class="col">CASSA CONTANTI</span>
+        <span style="font-size: 28px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap">36.274,93 €</span>
+        <span style="font-size: 13px; line-height: 1.4; color: #46606f; font-variant-numeric: tabular-nums">entrate 142.860,00 €<br>uscite 106.585,07 €</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 14px 18px; border-right: 1px solid #cfe6f4;">
+        <span class="col">CONTO CORRENTE</span>
+        <span style="font-size: 28px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap">126.736,48 €</span>
+        <span style="font-size: 13px; line-height: 1.4; color: #46606f; font-variant-numeric: tabular-nums">entrate 1.079.031,02 €<br>uscite 952.294,54 €</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 14px 18px; border-right: 1px solid #cfe6f4;">
+        <span class="col">SATISPAY</span>
+        <span style="font-size: 28px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap">0,00 €</span>
+        <span style="font-size: 13px; line-height: 1.4; color: #46606f; font-variant-numeric: tabular-nums">entrate 0,00 €<br>uscite 0,00 €</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 14px 18px;">
+        <span class="col">TOTALE</span>
+        <span style="font-size: 28px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap">163.011,41 €</span>
+        <span style="font-size: 13px; line-height: 1.4; color: #46606f; font-variant-numeric: tabular-nums">saldi iniziali compresi<br>&#160;</span>
+      </div>
+    </div>
+
+    <section class="elenco" aria-label="Movimenti">
+      <div class="barra" role="group" aria-label="Filtri dei movimenti">
+        <div class="cerca"><span aria-hidden="true">⌕</span>Cerca nella descrizione</div>
+        <dc-import name="Segmenti" voci="Ottobre 2026|Mese scorso|Tutto l’anno|Tutto" scelta="Mese scorso" hint-size="450px,44px"></dc-import>
+        <span style="flex: 1"></span>
+        <dc-import name="Bottone" tema="sito" label="Esporta CSV" variante="linea" contesto="segreteria" hint-size="150px,48px"></dc-import>
+      </div>
+      <div class="barra" style="padding-top: 0">
+        <dc-import name="FiltroMenu" nome="Tipo" valore="Tutti" hint-size="130px,44px"></dc-import>
+        <dc-import name="FiltroMenu" nome="Cassa" valore="Tutte" hint-size="140px,44px"></dc-import>
+        <dc-import name="FiltroMenu" nome="Voce" valore="Tutte" hint-size="140px,44px"></dc-import>
+        <dc-import name="FiltroMenu" nome="Persona" valore="Tutte" hint-size="160px,44px"></dc-import>
+        <label style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px; font-size: 15px; font-weight: 500"><span class="box"></span>Mostra annullati</label>
+        <span style="flex: 1"></span>
+        <dc-import name="Segmenti" voci="Elenco|Per voce" scelta="Elenco" hint-size="210px,44px"></dc-import>
+      </div>
+
+      <div class="stato" role="status">
+        <b>279 movimenti</b>
+        <span style="color: #46606f">·</span>
+        <span class="tag" style="background: #ffffff">Mese scorso</span>
+        <span class="link">Togli i filtri</span>
+        <span style="flex: 1"></span>
+        <span style="color: #46606f">Entrate</span> <b class="entra" style="font-variant-numeric: tabular-nums">+ 18.420,00 €</b>
+        <span style="color: #46606f; margin-left: 10px">Uscite</span> <b style="font-variant-numeric: tabular-nums">− 9.806,15 €</b>
+        <span style="color: #46606f; margin-left: 10px">Differenza</span> <b style="font-variant-numeric: tabular-nums">+ 8.613,85 €</b>
+      </div>
+
+      <div role="row" class="riga testa">
+        <span class="box" aria-label="Scegli le 275 che si possono cambiare"></span>
+        <span class="col">DATA ▼</span><span class="col">DESCRIZIONE</span><span class="col">PERSONA</span><span class="col">VOCE</span><span class="col">CASSA</span><span class="col" style="text-align: right">IMPORTO</span>
+      </div>
+      <div role="row" class="riga"><span class="box"></span><span class="data">30 set</span><span class="desc">Rossi Giulia<span class="sotto">Annuale Judo Kids · POS</span></span><span class="cella">Rossi Giulia</span><span class="cella voce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 0 1 10 0v2"/><circle cx="17" cy="9" r="2.5"/><path d="M15 21v-1.5a4 4 0 0 1 6-3.4"/></svg>Corsi</span><span class="cella cassa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4l9 6"/><line x1="5" y1="10" x2="5" y2="18"/><line x1="10" y1="10" x2="10" y2="18"/><line x1="14" y1="10" x2="14" y2="18"/><line x1="19" y1="10" x2="19" y2="18"/><line x1="3" y1="20" x2="21" y2="20"/></svg>Conto Corrente</span><span class="imp entra">+ 320,00 €</span></div>
+      <div role="row" class="riga"><span class="box"></span><span class="data">29 set</span><span class="desc">Enel · bolletta n. 4471 · set 2026</span><span class="cella" style="color: #46606f">—</span><span class="cella voce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>Utenze</span><span class="cella cassa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4l9 6"/><line x1="5" y1="10" x2="5" y2="18"/><line x1="10" y1="10" x2="10" y2="18"/><line x1="14" y1="10" x2="14" y2="18"/><line x1="19" y1="10" x2="19" y2="18"/><line x1="3" y1="20" x2="21" y2="20"/></svg>Conto Corrente</span><span class="imp">− 412,30 €</span></div>
+      <div role="row" class="riga"><span class="box"></span><span class="data">28 set</span><span class="desc">Bianchi Luca <span class="tag">Da Satispay</span><span class="sotto">Mensile Karate adulti</span></span><span class="cella"><span class="tag">Da collegare</span></span><span class="cella voce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 0 1 10 0v2"/><circle cx="17" cy="9" r="2.5"/><path d="M15 21v-1.5a4 4 0 0 1 6-3.4"/></svg>Corsi</span><span class="cella cassa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>Satispay</span><span class="imp entra">+ 55,00 €</span></div>
+      <div role="row" class="riga"><span></span><span class="data">27 set</span><span class="desc">Versamento in banca <span class="tag">Giroconto</span></span><span class="cella" style="color: #46606f">—</span><span class="cella" style="color: #46606f">—</span><span class="cella cassa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 4 19 8 15 12"/><line x1="5" y1="8" x2="19" y2="8"/><polyline points="9 20 5 16 9 12"/><line x1="19" y1="16" x2="5" y2="16"/></svg>Contanti → Conto</span><span class="imp">1.500,00 €</span></div>
+      <div role="row" class="riga"><span class="box"></span><span class="data">25 set</span><span class="desc">Decathlon · scontrino n. 88 · set 2026</span><span class="cella" style="color: #46606f">—</span><span class="cella voce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/><rect x="3" y="8" width="3" height="8" rx="1"/><rect x="18" y="8" width="3" height="8" rx="1"/></svg>Attrezzatura</span><span class="cella cassa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><line x1="6" y1="12" x2="6.01" y2="12"/><line x1="18" y1="12" x2="18.01" y2="12"/></svg>Cassa Contanti</span><span class="imp">− 89,90 €</span></div>
+      <div role="row" class="riga"><span class="box"></span><span class="data">24 set</span><span class="desc">Verdi Marco<span class="sotto">Quota associativa 2026/27 · contanti</span></span><span class="cella">Verdi Marco <span class="tag" style="border-color: #0b7a33; color: #0b7a33">✓ Collegato</span></span><span class="cella voce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3 3 0 0 1 6 0"/><line x1="15" y1="10" x2="18" y2="10"/><line x1="15" y1="14" x2="18" y2="14"/></svg>Quote</span><span class="cella cassa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><line x1="6" y1="12" x2="6.01" y2="12"/><line x1="18" y1="12" x2="18.01" y2="12"/></svg>Cassa Contanti</span><span class="imp entra">+ 30,00 €</span></div>
+      <div role="row" class="riga" style="border-bottom: 0"><span></span><span class="data">22 set</span><span class="desc" style="text-decoration: line-through; color: #46606f">Affitto palestra settembre <span class="tag" style="border-color: #b81d1d; color: #b81d1d; text-decoration: none">Annullato</span></span><span class="cella" style="color: #46606f">—</span><span class="cella voce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><rect x="10" y="14" width="4" height="6"/></svg>Affitto sala</span><span class="cella cassa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4l9 6"/><line x1="5" y1="10" x2="5" y2="18"/><line x1="10" y1="10" x2="10" y2="18"/><line x1="14" y1="10" x2="14" y2="18"/><line x1="19" y1="10" x2="19" y2="18"/><line x1="3" y1="20" x2="21" y2="20"/></svg>Conto Corrente</span><span class="imp" style="text-decoration: line-through; color: #46606f">− 1.976,10 €</span></div>
+
+      <div style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-top: 2px solid #cfe6f4">
+        <dc-import name="Bottone" tema="sito" label="Mostra altre 50 righe" variante="linea" contesto="segreteria" hint-size="220px,48px"></dc-import>
+        <span style="font-size: 14px; color: #46606f">ne vedi 50 su 279</span>
+      </div>
+    </section>
+
+    <span class="nota">COSA CAMBIA</span>
+    <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; color: #0d2a3d">
+      <li><b>Azioni della pagina in testata</b>, accanto al titolo; <b>Esporta CSV dentro l’elenco</b>, perché esporta i trovati.</li>
+      <li><b>Le schede della pagina e il periodo a segmenti</b>: una scelta sola fra poche, un pezzo solo invece di quattro tasti staccati.</li>
+      <li><b>Tipo, Cassa, Voce, Persona come tasti-menu</b> «Nome Valore ▾»: stessa forma per tutti, una riga sola. «Mostra annullati» è una casella.</li>
+      <li><b>Riga di stato attaccata alla tabella</b>: quanti, quali filtri, Togli i filtri e i totali del periodo (oggi in fondo alla pagina).</li>
+      <li><b>«Scegli le 275» diventa la casella</b> in testa alla colonna; la data è corta e grigia, l’importo a destra in cifre allineate, i tag sotto o accanto al nome.</li>
+    </ul>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'area iscritti come e' adesso (telefono, dati di prova di Barbieri Alessandro): tema chiaro dell'app, Saira obliquo e Barlow, angoli vivi.
+     Il resto dell'app che vede la palestra (segreteria, istruttori, sito) e' nel look del sito: qui chi apre dal sito trova un'altra app. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1060px; background: #f4f4f1">
+  <dc-import name="Testata" tema="chiaro" luogo="ISCRITTI" hint-size="100%,72px"></dc-import>
+  <dc-import name="NastroProva" tema="chiaro" hint-size="100%,40px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 14px; padding: 18px 16px 28px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #b81d1d">OGGI · UN'ALTRA APP</span>
+    <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 34px; letter-spacing: 0.02em; line-height: 1">Ciao Alessandro</h1>
+    <div style="display: flex"><dc-import name="MiaChip" tema="chiaro" label="GIOCOMOTRICITÀ" tinta="#12913f" hint-size="150px,40px"></dc-import></div>
+    <div style="display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; background: #ffffff; border: 2px solid #d4d4ce">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 30px; color: #0b7a33; line-height: 1">SEI IN REGOLA</span>
+      <span style="font-size: 15px; color: #3d3d3a">Certificato medico valido e quota pagata.</span>
+    </div>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; color: #656561">PROSSIME LEZIONI · 4</span>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.2em; color: #656561">MARTEDÌ 27 OTTOBRE</span>
+    <dc-import name="MiaLezione" tema="chiaro" ora="17:00" corso="Giocomotricità" sotto="Lotta" cosa="" tinta="#12913f" hint-size="100%,72px"></dc-import>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.2em; color: #656561">GIOVEDÌ 29 OTTOBRE</span>
+    <dc-import name="MiaLezione" tema="chiaro" ora="17:00" corso="Giocomotricità" sotto="Lotta" cosa="" tinta="#12913f" hint-size="100%,72px"></dc-import>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 14px; letter-spacing: 0.2em; color: #656561">MARTEDÌ 3 NOVEMBRE</span>
+    <dc-import name="MiaLezione" tema="chiaro" ora="17:00" corso="Giocomotricità" sotto="Lotta" cosa="" tinta="#12913f" hint-size="100%,72px"></dc-import>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 15px; letter-spacing: 0.24em; color: #656561">LE TUE PRESENZE · 9/10</span>
+    <dc-import name="MiaPresenza" tema="chiaro" corso="Giocomotricità" quando="giovedì 22 ottobre · 17:00" stato="niente" hint-size="100%,80px"></dc-import>
+    <dc-import name="MiaPresenza" tema="chiaro" corso="Giocomotricità" quando="martedì 20 ottobre · 17:00" stato="presente" hint-size="100%,80px"></dc-import>
+    <dc-import name="MiaPresenza" tema="chiaro" corso="Giocomotricità" quando="giovedì 15 ottobre · 17:00" stato="presente" hint-size="100%,80px"></dc-import>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1060}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

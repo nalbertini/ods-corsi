@@ -1,0 +1,14 @@
+{
+ "pages": [
+  { "id": "page-1", "name": "Tabelle e filtri in ordine · proposta" }
+ ],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "OGGI · Contabilità → Movimenti", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Movimenti.dc.html", "title": "PROPOSTA · Movimenti riordinato", "x": 1520, "y": 300, "page": "page-1" },
+  { "file": "Stati.dc.html", "title": "PROPOSTA · filtri accesi, scelta, nessun risultato", "x": 3040, "y": 300, "page": "page-1" },
+  { "file": "Iscritti.dc.html", "title": "PROPOSTA · lo stesso schema su Iscritti", "x": 4320, "y": 300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1400, "text": "Tabelle e filtri: un riquadro solo, filtri per tipo di scelta, la riga di stato dice quali filtri sono accesi" }
+ ]
+}

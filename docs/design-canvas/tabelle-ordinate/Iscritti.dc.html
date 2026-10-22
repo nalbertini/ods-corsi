@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .nota { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00; }
+    .col { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #46606f; }
+    .elenco { background: #ffffff; border: 2px solid #cfe6f4; }
+    .barra { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px; }
+    .cerca { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 240px; max-width: 380px; height: 44px; padding: 0 12px; border: 2px solid #14709f; border-radius: 6px; color: #46606f; font-size: 15px; }
+    .stato { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 48px; padding: 8px 16px; background: #eef5fa; border-top: 1px solid #cfe6f4; border-bottom: 1px solid #cfe6f4; font-size: 14px; }
+    .riga { display: grid; grid-template-columns: 44px minmax(0, 1.3fr) minmax(0, 1.5fr) minmax(0, 1.2fr) 150px 90px; gap: 14px; align-items: center; min-height: 56px; padding: 6px 16px; border-bottom: 1px solid #cfe6f4; }
+    .box { width: 20px; height: 20px; border: 2px solid #14709f; border-radius: 4px; background: #ffffff; }
+    .nome { font-size: 15px; font-weight: 600; }
+    .sotto { display: block; margin-top: 2px; font-size: 13px; font-weight: 400; color: #46606f; }
+    .cella { font-size: 14px; }
+    .num { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+    .tag { display: inline-flex; align-items: center; padding: 1px 8px; border: 1.5px solid #0d2a3d; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 4px 0 10px; background: #ffffff; border: 1.5px solid #14709f; border-radius: 6px; font-weight: 600; }
+    .pill b { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; font-size: 13px; }
+    .link { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+  </style>
+</helmet>
+<!-- PROPOSTA · lo stesso schema su ISCRITTI, per far vedere che vale per tutte le tabelle della segreteria.
+     La regola: una scelta fra poche che si escludono → Segmenti; una scelta fra tante → FiltroMenu; un filtro che si accende da solo
+     (Da pagare, Senza certificato…) → .sg-chip come oggi, con ✓ quando e' acceso. Stato, testata e righe identici a MOVIMENTI. -->
+<div style="display: flex; width: 1440px; min-height: 940px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="ISCRITTI" numeri="" nome="Marco Rossi" ruolo="Segreteria" altezza="940px" hint-size="240px,940px"></dc-import>
+  </div>
+  <main style="flex: 1; min-width: 0; padding: 28px 36px; display: flex; flex-direction: column; gap: 18px">
+    <div style="display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+      <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 320px">
+        <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ISCRITTI</h1>
+        <span style="font-size: 14px; color: #46606f">Chi è iscritto quest’anno. Tocca una riga per aprire la scheda.</span>
+      </div>
+      <dc-import name="Bottone" tema="sito" label="Importa" variante="linea" contesto="segreteria" hint-size="120px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" label="Nuovo iscritto" variante="pieno" contesto="segreteria" hint-size="180px,48px"></dc-import>
+    </div>
+
+    <section class="elenco" aria-label="Iscritti">
+      <div class="barra" role="group" aria-label="Filtri degli iscritti">
+        <div class="cerca">⌕ Cerca per nome o email</div>
+        <dc-import name="FiltroMenu" nome="Corso" valore="Tutti" hint-size="140px,44px"></dc-import>
+        <span style="flex: 1"></span>
+        <dc-import name="Bottone" tema="sito" label="Esporta CSV" variante="linea" contesto="segreteria" hint-size="150px,48px"></dc-import>
+      </div>
+      <div class="barra" style="padding-top: 0">
+        <dc-import name="Chip" tema="sito" label="Senza certificato valido" hint-size="230px,44px"></dc-import>
+        <dc-import name="Chip" tema="sito" label="Da pagare" acceso="{{ true }}" hint-size="130px,44px"></dc-import>
+        <dc-import name="Chip" tema="sito" label="Non in regola" hint-size="150px,44px"></dc-import>
+        <span class="link" style="margin-left: 6px; font-size: 15px">Altri filtri ▾</span>
+      </div>
+      <div class="stato" role="status">
+        <b>7 iscritti</b><span style="color: #46606f">· su 412</span>
+        <span class="pill">Da pagare<b>✕</b></span>
+        <span class="link" style="margin-left: 6px">Togli i filtri</span>
+      </div>
+      <div class="riga" style="min-height: 44px; border-bottom: 2px solid #cfe6f4">
+        <span class="box"></span><span class="col">NOME ▲</span><span class="col">CORSI</span><span class="col">CONTATTO</span><span class="col">IN REGOLA</span><span class="col" style="text-align: right">30 GIORNI</span>
+      </div>
+      <div class="riga"><span class="box"></span><span class="nome">Bianchi Luca<span class="sotto">nato nel 2015</span></span><span class="cella">Judo Kids · Karate</span><span class="cella">luca.bianchi@esempio.it</span><span class="tag" style="border-color: #b81d1d; color: #b81d1d">! Da pagare</span><span class="num">8</span></div>
+      <div class="riga"><span class="box"></span><span class="nome">Conti Sara<span class="sotto">nata nel 1990</span></span><span class="cella">Kickboxing</span><span class="cella">333 120 4455</span><span class="tag" style="border-color: #b81d1d; color: #b81d1d">! Da pagare</span><span class="num">11</span></div>
+      <div class="riga" style="border-bottom: 0"><span class="box"></span><span class="nome">Esposito Marco<span class="sotto">nato nel 2012</span></span><span class="cella">Judo ragazzi</span><span class="cella">genitore: 347 990 1212</span><span class="tag" style="border-color: #b81d1d; color: #b81d1d">! Da pagare</span><span class="num">2</span></div>
+    </section>
+
+    <span class="nota">LA REGOLA, PER TUTTE LE TABELLE</span>
+    <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5">
+      <li><b>Un riquadro solo</b>: filtri → riga di stato → testata → righe → piede. Fuori restano solo titolo, azioni della pagina e numeri.</li>
+      <li><b>Forma del filtro dal tipo di scelta</b>: poche e che si escludono = segmenti; tante = tasto-menu; un filtro che si accende da solo = chip.</li>
+      <li><b>La riga di stato dice sempre quanti e quali filtri</b>, ognuno con la sua ✕, più «Togli i filtri».</li>
+      <li><b>Righe uguali ovunque</b>: 56px, nome in grassetto con il dettaglio grigio sotto, numeri a destra in cifre allineate, stati come tag con il segno.</li>
+    </ul>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":940}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
