@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.167.0 — 22 ottobre 2026
+
+### Novità
+
+- Le quote e i corsi scritti a mano in CONTABILITÀ si registrano con la persona, che si vede e si apre dal movimento
+
 ## 0.166.0 — 22 ottobre 2026
 
 ### Novità
