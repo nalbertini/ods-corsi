@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.158.0 — 22 ottobre 2026
+
+### Novità
+
+- Nella ricerca del Banco ogni iscritto mostra se è in regola (certificato e quota)
+
 ## 0.157.1 — 22 ottobre 2026
 
 ### Modificato
