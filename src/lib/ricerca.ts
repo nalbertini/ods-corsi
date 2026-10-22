@@ -2,7 +2,7 @@ import { paroleCercate, piano, somiglia } from './nomi'
 import { anniScritti, minorenne, type Richiesta } from './richieste'
 import type { Posto, Voce } from './indirizzoSegreteria'
 import { chiaveGiorno, GIORNI, giornoPerEsteso } from './sala'
-import type { CorsoSeg, Istruttore, PersonaSeg } from './segreteria'
+import { paroleInRegola, type CorsoSeg, type Istruttore, type ParolaStato, type PersonaSeg } from './segreteria'
 
 /**
  * La ricerca in cima al menu di segreteria: un campo, quattro gruppi. Lavora
@@ -29,6 +29,8 @@ export interface RigaTrovata {
   spenta?: boolean
   /** La nota è un bollino giallo: c'è qualcosa da fare. */
   tag?: boolean
+  /** Di un iscritto attivo: certificato e quota che non vanno, come nella colonna IN REGOLA, vuota se è in regola. */
+  stato?: ParolaStato[]
 }
 
 export interface GruppoTrovato {
@@ -127,7 +129,9 @@ export function cercaTutto(scritto: string, fonti: Fonti, oggi = new Date()): Es
       id: p.id,
       nome: `${p.cognome} ${p.nome}`,
       sotto,
-      ...(p.attiva ? {} : { nota: 'non attiva', spenta: true }),
+      // Le note grigie della colonna (Non serve, Senza data, Fuori app) qui sono rumore: al banco conta se può entrare.
+      // Anche «In regola» si toglie: la lista vuota è il ✓, così la scelta sta qui e si prova.
+      ...(p.attiva ? { stato: paroleInRegola(p, chiaveGiorno(oggi)).filter((x) => x.tono === 'rosso' || x.tono === 'giallo') } : { nota: 'non attiva', spenta: true }),
     })))
   }
 

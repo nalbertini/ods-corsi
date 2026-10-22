@@ -74,7 +74,7 @@ const gr = (e, tipo) => e.gruppi.find((g) => g.tipo === tipo) ?? { totale: 0, ri
 const idIn = (e, tipo) => (gr(e, tipo)?.righe ?? []).map((r) => r.id)
 
 const persona = (id, nome, cognome, altro = {}) => ({
-  id, nome, cognome, attiva: true, creataIl: '2026-01-01', iscrizioni: [], certificato: {}, documento: false, pagamento: {}, ...altro,
+  id, nome, cognome, attiva: true, creataIl: '2026-01-01', iscrizioni: [], certificato: {}, documento: false, pagamento: { stato: 'da_pagare' }, ...altro,
 })
 const richiesta = (id, nome, cognome, stato, creataIl, altro = {}) => ({
   id, nome, cognome, stato, creataIl, natoIl: '1990-01-01', natoA: '', codiceFiscale: '', indirizzo: '', cap: '', comune: '', email: '', telefono: '', corsi: [], formula: 'annuale', ...altro,
@@ -306,6 +306,46 @@ console.log('\n16. una lettura fallita tiene i dati di prima')
     ok(`${k} fallita: resta quella di prima, e si dice`, [r.fonti?.[k], r.vecchi], [prima[k], true])
   }
   ok('una riuscita sostituisce la vecchia', u(prima, tutte), { fonti: tutte, vecchi: false })
+}
+
+console.log('\n17. l\'iscritto attivo trovato dice se è in regola')
+{
+  const quotaPagata = { anno: 2026, numero: 1, dal: '2026-09-01', al: '2027-08-31', mancano: 0 }
+  const cert = (scade) => ({ certificato: { scade, conFile: true }, natoIl: '1990-01-01' })
+  const stato = (p, q = 'rossi') => gr(cerca(q, { persone: [p] }), 'iscritti').righe[0]?.stato
+  const rosso = (parola) => ({ tono: 'rosso', parola })
+  const giallo = (parola) => ({ tono: 'giallo', parola })
+  // In regola: niente da dire, la lista è vuota e la riga mostra il solo ✓.
+  const inRegola = []
+
+  ok('senza certificato né ricevuta: prima il certificato, poi la quota', stato(persona('a', 'Anna', 'Rossi', { natoIl: '1990-01-01' })), [rosso('Manca il certificato'), rosso('Da pagare')])
+  ok('certificato scaduto e quota pagata: solo il certificato', stato(persona('a', 'Anna', 'Rossi', { ...cert('2026-08-01'), quote: [quotaPagata] })), [rosso('Certificato scaduto')])
+  ok('certificato valido e quota pagata: In regola', stato(persona('a', 'Anna', 'Rossi', { ...cert('2027-06-01'), quote: [quotaPagata] })), inRegola)
+  ok('la quota pagata fuori app non aggiunge «Fuori app»', stato(persona('a', 'Anna', 'Rossi', { ...cert('2027-06-01'), pagamento: { stato: 'pagato', fino: '2027-08-31' } })), inRegola)
+  ok('il certificato in scadenza dà il giallo con la data', stato(persona('a', 'Anna', 'Rossi', { ...cert('2026-10-10'), quote: [quotaPagata] })), [giallo('Scade il 10/10')])
+  ok('un certificato che scade proprio oggi: «Scade oggi»', stato(persona('a', 'Anna', 'Rossi', { ...cert('2026-09-26'), quote: [quotaPagata] })), [giallo('Scade oggi')])
+  ok('la quota pagata in parte è gialla', stato(persona('a', 'Anna', 'Rossi', { ...cert('2027-06-01'), quote: [{ ...quotaPagata, mancano: 500 }] })), [giallo('Pagata in parte')])
+  ok('l\'adulto senza data di nascita, certificato e quota a posto: In regola (la nota grigia non si dice)', stato(persona('a', 'Anna', 'Rossi', { certificato: { scade: '2027-06-01', conFile: true }, quote: [quotaPagata] })), inRegola)
+
+  const piccolo = { natoIl: '2022-01-01' }
+  ok('sotto i 6 anni senza certificato conta solo la quota: da pagare', stato(persona('a', 'Anna', 'Rossi', piccolo)), [rosso('Da pagare')])
+  ok('sotto i 6 anni, quota pagata: In regola', stato(persona('a', 'Anna', 'Rossi', { ...piccolo, quote: [quotaPagata] })), inRegola)
+
+  const archiviato = gr(cerca('rossi', { persone: [persona('b', 'Bruno', 'Rossi', { attiva: false })] }), 'iscritti').righe[0]
+  ok('chi non è attivo non ha «stato» (la chiave manca), tiene «non attiva» e spenta', [archiviato && 'stato' in archiviato, archiviato?.nota, archiviato?.spenta], [false, 'non attiva', true])
+
+  const minore = persona('m', 'Marco', 'Bianchi', { natoIl: '2017-03-01', telefono: '347 555 0199' })
+  const genitore = persona('g', 'Anna', 'Verdi', { ...cert('2027-06-01'), quote: [quotaPagata], telefono: '347 555 0199' })
+  const righe = gr(cerca('3475550199', { persone: [minore, genitore] }), 'iscritti').righe
+  ok('il minore trovato dal numero del genitore porta il suo stato; il genitore il proprio', righe.map((r) => [r.id, r.stato]), [['m', [rosso('Manca il certificato'), rosso('Da pagare')]], ['g', inRegola]])
+
+  const e = cerca('rossi', {
+    persone: [persona('a', 'Anna', 'Rossi')],
+    richieste: [richiesta('r1', 'Elia', 'Rossi', 'nuova', '2026-09-10')],
+    corsi: [corso('c1', 'Rossi team', 'Tatami', [[1, '17:00']])],
+    istruttori: [{ id: 'i1', nome: 'Rossi' }],
+  })
+  ok('richieste, corsi e istruttori non hanno «stato»', ['richieste', 'corsi', 'istruttori'].map((t) => gr(e, t).righe.some((r) => 'stato' in r)), [false, false, false])
 }
 
 console.log(guai ? `\n${guai} prove non passano.` : '\nTutto a posto.')

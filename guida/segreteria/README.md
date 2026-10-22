@@ -40,6 +40,9 @@ due o tre di fila; **Esc** lo svuota.
   è uscito («tel. 338 123 4567»). Chi non è più iscritto si trova ancora, con
   «non attiva». Se il telefono o l'email sono di un genitore esce il bambino, con
   «numero di un genitore», senza i dati del genitore.
+  A destra si vede se è in regola, con le parole della colonna IN REGOLA di
+  ISCRITTI: prima il certificato, sotto la quota («Manca il certificato»,
+  «Da pagare»). Chi è in regola ha solo **✓**. Sotto i 6 anni conta solo la quota.
 - **Richieste online**: per il nome di chi chiede, anche quelle già accolte o
   rifiutate; Invio la apre. Quelle ancora da accogliere vengono prima, col bollino.
 - **Corsi**: per nome, sala o giorno: «gio» trova i corsi del giovedì.
