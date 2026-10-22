@@ -244,6 +244,9 @@ export const fraseDaMostrare = (t: Pick<TesseraSeg, 'ente' | 'tipo' | 'al'>, ogg
 /** Le persone senza una tessera valida (manca o scaduta): il numero della casella TESSERE di COSA MANCA e le righe del filtro. */
 export const contaTessere = (righe: RigaIncrocio[]) => new Set(righe.filter((r) => senzaTessera([r])).map((r) => r.personaId)).size
 
+/** Chi ha la tessera ma non è iscritto a nessun corso che la chiede: il filtro «Tesserati senza corso» di ISCRITTI. */
+export const tesseratoSenzaCorso = (righe: RigaIncrocio[]): boolean => righe.some((r) => r.esito === 'non_iscritto')
+
 /** Attacca a ogni persona le sue tessere. */
 export function conTessere<T extends { id: string }>(persone: T[], tessere: TesseraSeg[]): Array<T & { tessere: TesseraSeg[] }> {
   const per = new Map<string, TesseraSeg[]>()
@@ -391,17 +394,4 @@ export function timbroTessera(
   if (peggiore.stato === 'valida') return { tono: 'verde', parola: 'IN REGOLA', righe }
   if (peggiore.stato === 'in_scadenza') return { tono: 'giallo', parola: `SCADE A ${MESI[Number(peggiore.al!.slice(5, 7)) - 1]}`, righe }
   return { tono: 'rosso', parola: peggiore.stato === 'manca' ? 'NO TESSERA' : 'SCADUTA', righe }
-}
-
-export type ListaTessere = 'senza' | 'mai' | 'scadute' | 'senza-corso'
-
-/** Le righe di una lista della pagina TESSERE: chi non l'ha (manca, scaduta, in scadenza), chi non l'ha mai avuta, chi l'ha scaduta, chi è tesserato senza corso. */
-export function righeDellaLista(righe: RigaIncrocio[], lista: ListaTessere): RigaIncrocio[] {
-  const esiti: Record<ListaTessere, EsitoIncrocio[]> = {
-    senza: ['manca', 'scaduta', 'in_scadenza'],
-    mai: ['manca'],
-    scadute: ['scaduta'],
-    'senza-corso': ['non_iscritto'],
-  }
-  return righe.filter((r) => esiti[lista].includes(r.esito))
 }

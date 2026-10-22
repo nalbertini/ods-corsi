@@ -159,10 +159,9 @@ parte.
 | Vedere schede, certificati e presenze delle persone | no | sì | no |
 | Registrare e annullare pagamenti, annullare ricevute | no | sì | sì |
 | Emettere ricevute (per l'amministrazione non ancora) | no | sì | no |
-| Vedere PAGAMENTI e scaricare il CSV | no | sì | sì |
 | Cambiare il listino | no | sì | sì |
 | Vedere le STATISTICHE (presenze e iscritti) | no | sì | no |
-| Contabilità: movimenti, voci e casse | no | no | sì |
+| Contabilità: movimenti (con gli incassi degli iscritti), il CSV, voci e casse | no | no | sì |
 | Creare account, cambiare i ruoli, scaricare il backup | no | sì | no |
 
 Chi ha più ruoli può quello che può ciascuno. Con **ISTRUTTORE** gli si danno
@@ -174,9 +173,7 @@ tutte le autorizzazioni che si hanno.
 
 L'**amministrazione** è per chi cura i conti: vede il gruppo **I CONTI** del menu
 ([la guida](../amministrazione/README.md)), e senza la segreteria non vede le persone. Se insegna
-anche (spunta **ISTRUTTORE**) vede l'elenco delle persone come un istruttore. Nei pagamenti
-vede il nome, a cosa servono, come e quanto: non il telefono, l'email o il codice
-fiscale. Account, ruoli, PIN e backup restano alla segreteria. Col database, il
+anche (spunta **ISTRUTTORE**) vede l'elenco delle persone come un istruttore. Account, ruoli, PIN e backup restano alla segreteria. Col database, il
 ruolo c'è dopo aver lanciato `supabase/55-amministrazione.sql` (dopo `54`);
 finché non c'è, **AMMINISTRAZIONE** non si può scegliere e provarci dice di
 aggiornare il database.

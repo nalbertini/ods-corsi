@@ -446,6 +446,10 @@
 :root[data-look='sito'] .sg-segmenti > button[aria-pressed='true'] { background: var(--blu); color: #ffffff; }
 :root[data-look='sito'] .sg-segmenti > button:focus-visible { outline-color: var(--blu); }
 :root[data-look='sito'] .sg-filtro-menu:focus-within { outline-color: var(--blu); }
+/* L'elenco delle casse esce dal riquadro: senza taglio, e il raggio sul tasto. */
+:root[data-look='sito'] .sg-filtro-menu.sg-casse { overflow: visible; }
+:root[data-look='sito'] .sg-filtro-casse summary { border-radius: 4px; }
+:root[data-look='sito'] .sg-filtro-casse-lista { border-color: var(--riga-campo); border-radius: 6px; }
 :root[data-look='sito'] .sg-filtro-menu[data-acceso='true'] { background: var(--line); }
 :root[data-look='sito'] .sg-pillola { border-color: var(--blu); border-radius: 6px; }
 :root[data-look='sito'] .sg-elenco-casella input { accent-color: var(--blu); }
@@ -2505,7 +2509,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto-corso > :nth-child(3) { order: 5; grid-column: 1 / -1; }
   .sg-riga-iscritto:not(.sg-lista-testa) > :nth-child(3)::before { content: 'Iscritto dal '; color: var(--dim); }
 }
-.sg-riga-movimento { display: grid; grid-template-columns: 44px 100px minmax(0, 1.5fr) minmax(0, 1.1fr) minmax(0, 1fr) 150px 130px; gap: 14px; align-items: center; }
+.sg-riga-movimento { display: grid; grid-template-columns: 44px 100px minmax(0, 2fr) minmax(0, 1fr) 120px 120px 130px; gap: 14px; align-items: center; }
 /* La persona a cui lo storico è collegato (70-movimenti-persona.sql): il nome o lo stato, con un tag sotto. */
 .sg-persona-riga { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
 /* Scegliere fra due omonimi: una scheda per persona, con quel che le distingue. */
@@ -2531,12 +2535,16 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 /* Sotto la descrizione: la causale dell'incasso; sul telefono, davanti, anche data, voce e cassa che lì non hanno la loro colonna. */
 .sg-sotto-movimento { display: flex; flex-direction: column; font-size: 13px; color: var(--sec); font-weight: 400; overflow-wrap: anywhere; }
 .sg-solo-telefono { display: none; }
+/* Le casse a scelta multipla: l'elenco si apre sotto il tasto. */
+.sg-filtro-casse { position: relative; }
+.sg-filtro-casse summary { display: flex; align-items: center; box-sizing: border-box; list-style: none; cursor: pointer; min-height: 44px; }
+.sg-filtro-casse summary::-webkit-details-marker { display: none; }
+.sg-filtro-menu-etichetta { color: var(--dim); }
+.sg-filtro-casse-lista { position: absolute; z-index: 6; top: 100%; left: -2px; display: flex; flex-direction: column; min-width: 100%; padding: 6px 12px; background: var(--bg, var(--surface)); border: 2px solid var(--text); white-space: nowrap; }
 /* Sul tablet la tabella dei movimenti ha troppe colonne (con PERSONA sette): sotto i 1200px resta come sul telefono, con il resto sotto la descrizione. */
 @media (max-width: 1200px) {
   .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; }
   .sg-riga-movimento > :not(:first-child):not(:nth-child(3)):not(:last-child) { display: none; }
-  .sg-riga-movimento[data-senza-casella='true'] { grid-template-columns: minmax(0, 1fr) auto; }
-  .sg-riga-movimento[data-senza-casella='true'] > :first-child { display: none; }
   .sg-solo-telefono { display: inline; }
   .sg-lista-testa.sg-riga-movimento { display: none; }
 }
@@ -3040,8 +3048,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; }
   .sg-riga-movimento > :not(:first-child):not(:nth-child(3)):not(:last-child) { display: none; }
   /* Senza casella (un incasso, un annullato) niente fascia vuota a sinistra. */
-  .sg-riga-movimento[data-senza-casella='true'] { grid-template-columns: minmax(0, 1fr) auto; }
-  .sg-riga-movimento[data-senza-casella='true'] > :first-child { display: none; }
   .sg-solo-telefono { display: inline; }
   .sg-lista-testa.sg-riga-movimento { display: none; }
   .sg-riga-pagamento-tab > :not(:nth-child(2)):not(:last-child), .sg-riga-residuo > :not(:first-child):not(:nth-child(5)) { display: none; }

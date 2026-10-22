@@ -4,7 +4,6 @@ import { stagioneDi } from './costi'
 import { doveEntraInContabilita } from './contabilita'
 import { dataLunga } from './sala'
 import { paroleCercate, piano, somiglia } from './nomi'
-import { csv } from './vestiario'
 import { soldi } from './satispay'
 
 /**
@@ -312,44 +311,6 @@ export const vociSuggerite = (corsi: string[]): string[] => [QUOTA, ...corsi.fla
 
 export const intervalloAnno = (oggi: string): { dal: string; al: string } => ({ dal: `${oggi.slice(0, 4)}-01-01`, al: `${oggi.slice(0, 4)}-12-31` })
 
-/** Una ricevuta non annullata a cui manca ancora qualcosa. */
-export interface Residuo {
-  ricevuta: Ricevuta
-  chi: string
-  /** Centesimi. */
-  manca: number
-}
-
-/** Dalla ricevuta con più da pagare; le annullate e le saldate non ci sono. */
-export const daIncassare = (ricevute: Ricevuta[]): Residuo[] =>
-  ricevute
-    .filter((r) => !r.annullataIl)
-    .map((r) => ({ ricevuta: r, chi: nomeIntestatario(r), manca: conti(r).netto }))
-    .filter((x) => x.manca > 0)
-    .sort((a, b) => b.manca - a.manca)
-
-/** Chi deve ancora pagare, cercato per nome o per numero di ricevuta come in `filtra`. */
-export const filtraResidui = (residui: Residuo[], testo: string): Residuo[] => {
-  const t = semplice(testo)
-  return residui.filter((x) => corrisponde(t, x.chi, x.ricevuta))
-}
-
-/** I numeri in cima a PAGAMENTI: sui pagamenti trovati (le annullate non contano) e sulle ricevute da incassare. */
-export function riepilogo(trovate: RigaPagamento[], ricevute: Ricevuta[]) {
-  const validi = trovate.filter((x) => !x.annullato)
-  const residui = daIncassare(ricevute)
-  const totale = totalePagato(validi)
-  const contanti = totalePagato(validi.filter((x) => semplice(x.metodo) === 'contanti'))
-  return {
-    totale,
-    contanti,
-    pagamenti: validi.length,
-    senzaRicevuta: validi.filter((x) => !x.ricevuta).length,
-    daIncassare: residui.reduce((s, x) => s + x.manca, 0),
-    ricevuteDaIncassare: residui.length,
-  }
-}
-
 /** Quanto è stato pagato e quanto manca, per la scheda: ricevute (anticipo compreso) e pagamenti a mano. Le annullate non contano. */
 export function riassunto(ricevute: Ricevuta[], diretti: PagamentoDiretto[]): { pagato: number; manca: number } {
   const valide = ricevute.filter((r) => !r.annullataIl)
@@ -357,12 +318,3 @@ export function riassunto(ricevute: Ricevuta[], diretti: PagamentoDiretto[]): { 
   const aMano = diretti.reduce((s, x) => (x.annullatoIl ? s : s + x.importo), 0)
   return { pagato: dalleRicevute + aMano, manca: valide.reduce((s, r) => s + conti(r).netto, 0) }
 }
-
-/** Il foglio per il commercialista (punto e virgola, importi all'italiana); le annullate non ci sono. */
-export const csvPagamenti = (righe: RigaPagamento[]): string =>
-  csv([
-    ['data', 'chi', 'a cosa serve', 'come', 'ricevuta', 'importo', 'nota'],
-    ...righe
-      .filter((r) => !r.annullato)
-      .map((r) => [dataRicevuta(r.data), r.chi, r.voce, r.metodo, r.ricevuta ? `${r.ricevuta.numero}/${r.ricevuta.anno}` : '', euro(r.importo), r.nota ?? '']),
-  ])

@@ -26,9 +26,9 @@ numeri gialli dicono cosa aspetta, con le stesse parole del menu di prima.
 | Luogo | Voci |
 |---|---|
 | **OGGI** | OGGI ([la giornata](#oggi)), [SETTIMANA](settimana.md), [PRESENZE](presenze.md) |
-| **PERSONE** | [ISCRITTI](iscritti.md), [TESSERE](tessere.md), [RICHIESTE ONLINE](richieste.md), [ISTRUTTORI](presenze-istruttori.md), [ACCESSI](istruttori-e-accessi.md) |
+| **PERSONE** | [ISCRITTI](iscritti.md), [RICHIESTE ONLINE](richieste.md), [ISTRUTTORI](presenze-istruttori.md), [ACCESSI](istruttori-e-accessi.md) |
 | **CORSI** | [CORSI](corsi.md), [ESERCIZI](esercizi.md) |
-| **SOLDI** | [PAGAMENTI](pagamenti.md), [LISTINO](listino.md), [VESTIARIO](vestiario.md) |
+| **SOLDI** | [CONTABILITÀ](../amministrazione/contabilita.md), [LISTINO](listino.md), [VESTIARIO](vestiario.md) |
 | **PALESTRA** | [STATISTICHE](statistiche.md), [SEGNALAZIONI](segnalazioni.md), [SITO](sito.md), [IMPOSTAZIONI](regole.md) |
 
 Nessuna voce di prima si perde. Le pagine sono le stesse; gli indirizzi
