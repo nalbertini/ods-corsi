@@ -77,6 +77,28 @@ firmate** fa vedere chi lo deve ancora riportare.
 Una ricevuta fatta non si cambia: **Annulla** la toglie (resta nel registro,
 annullata) e se ne fa una nuova. **Ristampa** riscarica la stessa.
 
+## Il compenso extra
+
+Per un lavoro che non sta nelle lezioni (uno stage, un arbitraggio, un
+evento) si fa una **ricevuta a parte**, oltre a quella del mese. **+ Compenso
+extra**, in alto, apre il dialogo: si sceglie il **tecnico** (anche chi nel
+mese non ha lezioni), il **mese** in cui lo si paga (propone quello in corso, anche per un lavoro
+di un mese prima), si scrive **per cosa**
+(da 3 a 200 caratteri, si legge così sulla ricevuta) e l'**importo**. Dalla
+riga di un tecnico, in **Per corso**, c'è **+ Compenso extra per …** col
+tecnico già scelto. **Fai e stampa la ricevuta** la salva e scarica il PDF:
+lo stesso modello di quella del mese, con «per cosa» al posto delle lezioni e
+la mansione della ricevuta del mese (senza, si barra a mano). Come per il
+mese, senza codice fiscale, residenza o IBAN non si fa.
+
+Nello stesso mese se ne possono fare quante servono: stanno sotto la riga del
+tecnico, col segno **EXTRA**. Chi nel mese ha solo extra c'è lo stesso, con
+**NESSUNA LEZIONE NEL MESE**. Si spuntano **Firmata**, si ristampano e si
+pagano come quella del mese. Finché non è pagata, **Modifica** cambia per cosa
+e quanto (e la ricevuta torna da firmare: si ristampa e si rifà firmare), e
+**Annulla** la toglie (resta nel registro, annullata). Il filtro
+**Extra** le raccoglie.
+
 ## Il pagamento
 
 Chi cura anche la contabilità vede **Segna pagato** sulle ricevute fatte: si
@@ -85,7 +107,7 @@ mesi diversi, già spuntate), il **giorno del pagamento** e la **cassa**
 (Conto Corrente per il bonifico, Cassa Contanti per i contanti). Sotto c'è il
 riepilogo di quello che si scrive in CONTABILITÀ: un'uscita sola, con la voce
 **Compensi istruttori**, il totale e la descrizione «Compenso · Nome Cognome ·
-set, ott 2026». **Segna pagato** la scrive, e le ricevute diventano **PAGATA**
+set, ott 2026»; un'extra ci aggiunge il suo «per cosa». **Segna pagato** la scrive, e le ricevute diventano **PAGATA**
 con la data.
 
 Una ricevuta pagata non si annulla da qui: prima si annulla il pagamento in

@@ -170,7 +170,7 @@ export interface Archivio {
   movimenti?: MovimentoManuale[]
   /** Le chiusure della Cassa Contanti (60-chiusura-cassa.sql). */
   chiusure?: ChiusuraCassa[]
-  /** I pagamenti del negozio Satispay letti dallo scarico (96-satispay-scarico.sql): in prova sono d'esempio. */
+  /** I pagamenti del negozio Satispay letti dallo scarico (97-satispay-scarico.sql): in prova sono d'esempio. */
   satispayNegozio?: PagamentoNegozio[]
   /** A che punto è lo scarico: il primo confermato, l'ultimo giro. */
   satispayScarico?: { primoFatto: boolean; ultimo: string | null; errore: string | null }

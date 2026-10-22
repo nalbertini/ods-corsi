@@ -1,11 +1,11 @@
--- Lo scarico dei pagamenti Satispay del negozio (96-satispay-scarico.sql): entrano
+-- Lo scarico dei pagamenti Satispay del negozio (97-satispay-scarico.sql): entrano
 -- da soli in CONTABILITÀ una volta sola, senza doppioni con quelli del modulo di
 -- iscrizione (pagamenti_satispay) né con le entrate scritte a mano.
 -- Le stesse regole di src/lib/satispayScarico.ts (applicaScarico), provate da
 -- scripts/prova-satispay-scarico.mjs: stessi casi, stessi messaggi.
 -- Ordine delle regole: modulo, poi i doppioni, poi il giorno chiuso, poi il movimento nuovo.
 -- Parte dallo schema da sé: ricrea utenti e dati.
--- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 96-satispay-scarico.sql.
+-- Si lancia dopo finto-supabase.sql e i file dello schema, fino a 97-satispay-scarico.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -16,9 +16,9 @@ begin
   end if;
   return 'ok  ' || cosa || ' → ' || avuto;
 end $$;
--- Se manca questo, 96-satispay-scarico.sql non è stato lanciato: la prova lo dice subito.
+-- Se manca questo, 97-satispay-scarico.sql non è stato lanciato: la prova lo dice subito.
 select (to_regclass('public.satispay_negozio') is not null and to_regclass('public.satispay_scarico') is not null)::text as c96 \gset
-select atteso('96-satispay-scarico.sql è stato lanciato: ci sono le due tabelle', :'c96', 'true');
+select atteso('97-satispay-scarico.sql è stato lanciato: ci sono le due tabelle', :'c96', 'true');
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'anna@ods.it'),

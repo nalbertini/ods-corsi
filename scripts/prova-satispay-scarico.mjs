@@ -3,7 +3,7 @@
 //
 //   node scripts/prova-satispay-scarico.mjs
 //
-// Le regole stanno in `src/lib/satispayScarico.ts`; il database (96-satispay-scarico.sql)
+// Le regole stanno in `src/lib/satispayScarico.ts`; il database (97-satispay-scarico.sql)
 // dice la stessa cosa, e `supabase/prova/satispay-scarico.sql` ha gli stessi casi
 // con gli stessi messaggi. Ordine delle regole: modulo, doppioni, giorno chiuso,
 // movimento nuovo. Oggi, per la prova, è il 22 ottobre 2026.

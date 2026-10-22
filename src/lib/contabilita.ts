@@ -50,7 +50,7 @@ export interface MovimentoManuale {
   personaId?: string
   /** Registrato da Claude col server MCP (`72-movimenti-dalla-chat.sql`): il segno DALLA CHAT nel movimento aperto. */
   dallaChat?: boolean
-  /** Scaricato da Satispay (`96-satispay-scarico.sql`), o un movimento a mano riconosciuto: il segno DA SATISPAY. */
+  /** Scaricato da Satispay (`97-satispay-scarico.sql`), o un movimento a mano riconosciuto: il segno DA SATISPAY. */
   satispayId?: string
 }
 
@@ -102,7 +102,7 @@ export interface RigaMovimento {
 export const NOME_CASSA_CONTANTI = 'Cassa Contanti'
 export const NOME_CASSA_CONTO = 'Conto Corrente'
 export const NOME_CASSA_SATISPAY = 'Satispay'
-/** Dal 1° ottobre 2026 Satispay è una cassa a sé (96-satispay-scarico.sql); prima si scriveva nel Conto Corrente. */
+/** Dal 1° ottobre 2026 Satispay è una cassa a sé (97-satispay-scarico.sql); prima si scriveva nel Conto Corrente. */
 export const CAMBIO_CASSA_SATISPAY = '2026-10-01'
 export const VOCE_QUOTA = 'Quota associativa'
 export const VOCE_CORSI = 'Corsi e altri pagamenti'

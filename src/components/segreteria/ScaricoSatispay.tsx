@@ -12,7 +12,7 @@ const quando = (iso: string) => new Date(iso).toLocaleString('it-IT', { timeZone
 const giornoLungo = (data: string) => `${new Date(`${data}T12:00:00`).toLocaleDateString('it-IT', { weekday: 'long' })} ${dataRicevuta(data)}`
 
 /**
- * Lo scarico dei pagamenti Satispay del negozio in MOVIMENTI (96-satispay-scarico.sql): la striscia con
+ * Lo scarico dei pagamenti Satispay del negozio in MOVIMENTI (97-satispay-scarico.sql): la striscia con
  * «Scarica ora», l'avviso dei casi da decidere e, la prima volta, l'anteprima. Senza il 96 non si vede niente.
  */
 export function ScaricoSatispay({ d, fai, onCambiato }: { d: DatiSegreteria; fai: Fai; onCambiato: () => void }) {

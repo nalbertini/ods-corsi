@@ -3398,7 +3398,7 @@ const sembra = (v) => ({ nome: v?.nome, tipo: v?.tipo, diSistema: v?.diSistema, 
 
 await sezione('la contabilità di prova: le tre casse e le due voci di sistema', async () => {
   const casse = await s.casse()
-  // La cassa Satispay parte il 1° ottobre 2026 (96-satispay-scarico.sql): prima i pagamenti Satispay stavano in Conto Corrente.
+  // La cassa Satispay parte il 1° ottobre 2026 (97-satispay-scarico.sql): prima i pagamenti Satispay stavano in Conto Corrente.
   ok('le tre casse, a zero; solo Satispay con la data', casse.map((c) => [c.nome, c.saldoIniziale, c.dal ?? null]).sort(), [['Cassa Contanti', 0, null], ['Conto Corrente', 0, null], ['Satispay', 0, '2026-10-01']])
   cx.contanti = casse.find((c) => c.nome === 'Cassa Contanti').id
   cx.conto = casse.find((c) => c.nome === 'Conto Corrente').id
@@ -3778,7 +3778,7 @@ await sezione('si annulla solo l\'ultima, e i giorni si riaprono', async () => {
 })
 
 await sezione('cambiare la voce di un movimento (67-cambia-voce.sql): stesse regole del database', async () => {
-  // «Da classificare» c'è già: la porta lo scarico Satispay (96-satispay-scarico.sql).
+  // «Da classificare» c'è già: la porta lo scarico Satispay (97-satispay-scarico.sql).
   const dc = (await s.voci()).find((v) => v.nome === 'Da classificare' && v.tipo === 'uscita').id
   const en = await s.salvaVoce({ nome: 'Energia', tipo: 'uscita' })
   const spenta = await s.salvaVoce({ nome: 'Vecchia due', tipo: 'uscita' })

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .et { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: #46606f; }
+    .val { font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+    .velo { background: rgba(13, 42, 61, 0.55); }
+    .finestra { display: flex; flex-direction: column; background: #ffffff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; color: #0d2a3d; }
+    .nuovo { box-shadow: inset 4px 0 0 #f4c31b; padding-left: 14px; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 32px; }
+    .cella { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .tab { display: grid; gap: 14px; align-items: center; padding: 8px 14px; min-height: 48px; border-bottom: 1px solid #cfe6f4; background: #ffffff; font-size: 15px; }
+    .num { font-variant-numeric: tabular-nums; text-align: right; }
+    .link { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px; }
+    .piede { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; padding: 14px 28px 18px; border-top: 2px solid #cfe6f4; }
+  </style>
+</helmet>
+<!-- PROPOSTA: il dialogo «+ Compenso extra» sul telefono, a tutta pagina. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 900px; background: #ffffff">
+  <div class="finestra" role="dialog" aria-label="Compenso extra" style="width: 390px; border-left: 0; border-right: 0; border-bottom: 0">
+    <div style="display: flex; flex-direction: column; gap: 4px; padding: 20px 16px 8px"><h2 class="big" style="margin: 0; font-size: 26px">COMPENSO EXTRA</h2><span class="frase">Una ricevuta a parte, oltre a quella del mese: per uno stage, un arbitraggio, un evento.</span></div>
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 12px 16px 18px">
+      <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="TECNICO" valore="Neri Paolo" hint-size="100%,80px"></dc-import>
+      <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="MESE" valore="Ottobre 2026" nota="Il mese in cui la paghi: la ritrovi lì, in COMPENSI e in contabilità." nota-tono="avviso" hint-size="100%,100px"></dc-import>
+      <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="area" etichetta="PER COSA" valore="Stage di judo del 18 ottobre a Varese" nota="Si legge così sulla ricevuta. Da 3 a 200 caratteri." nota-tono="avviso" hint-size="100%,130px"></dc-import>
+      <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="IMPORTO (€)" valore="150,00" hint-size="100%,80px"></dc-import>
+      <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="sola-lettura" etichetta="QUALIFICA" valore="Istruttore · come nella ricevuta del mese" hint-size="100%,70px"></dc-import>
+      <span class="frase">Si stampa subito, come quella del mese: stesso modello, al posto delle lezioni la riga «per cosa». Ha il suo numero.</span>
+    </div>
+    <div class="piede">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Annulla" variante="linea" hint-size="120px,48px"></dc-import>
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" label="Fai e stampa la ricevuta" variante="pieno" hint-size="260px,48px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

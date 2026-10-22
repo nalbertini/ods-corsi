@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Lo scarico dei pagamenti Satispay del negozio in CONTABILITÀ (96-satispay-scarico.sql).
+// Lo scarico dei pagamenti Satispay del negozio in CONTABILITÀ (97-satispay-scarico.sql).
 //
 // Qui si legge soltanto: l'elenco `GET /g_business/v1/payments`, con la stessa chiave firmata della funzione
 // `satispay`, pagina per pagina, nella tabella `satispay_negozio`. Le regole (modulo, a mano, giorno chiuso,
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
   const { data: stato, error } = await admin.from('satispay_scarico').select('primo_fatto, ripresa, storia_completa').single()
   if (error || !stato) {
     console.error('satispay_scarico', error)
-    return risposta({ guaio: 'Lo scarico non è pronto: manca 96-satispay-scarico.sql' }, 501)
+    return risposta({ guaio: 'Lo scarico non è pronto: manca 97-satispay-scarico.sql' }, 501)
   }
   // Di notte niente finché l'amministrazione non ha visto e confermato il primo scarico.
   if (!chi.user && !stato.primo_fatto) return risposta({ fatto: false })

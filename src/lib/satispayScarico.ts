@@ -1,4 +1,4 @@
-// Lo scarico dei pagamenti Satispay del negozio in CONTABILITÀ (`supabase/96-satispay-scarico.sql`).
+// Lo scarico dei pagamenti Satispay del negozio in CONTABILITÀ (`supabase/97-satispay-scarico.sql`).
 // Qui stanno le regole che si provano senza browser: lo scorrere delle pagine (copiato nella Edge Function
 // `satispay-scarico/pagine.ts`), la stessa regola del database per la modalità prova, e la commissione del giroconto.
 import {
@@ -126,7 +126,7 @@ export function movimentoDelPagamento(p: PagamentoNegozio, data: string, cassa: 
 }
 
 /**
- * Le regole di `satispay_negozio_applica` (96-satispay-scarico.sql) per la modalità prova: lo stesso ordine, gli
+ * Le regole di `satispay_negozio_applica` (97-satispay-scarico.sql) per la modalità prova: lo stesso ordine, gli
  * stessi conti. Con `scrivi` falso è l'anteprima: i dati non cambiano. Torna sempre array nuovi.
  */
 export function applicaScarico(dati: DatiScarico, scrivi: boolean): { conti: ContiScarico; movimenti: MovimentoManuale[]; negozio: PagamentoNegozio[] } {
