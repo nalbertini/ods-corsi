@@ -1,5 +1,6 @@
 -- ODS Corsi · i pagamenti Satispay del negozio entrano da soli in CONTABILITÀ
--- Si lancia dopo 60-chiusura-cassa.sql, 63-importa-prima-nota.sql e 73-satispay.sql, e si può rilanciare.
+-- Si lancia dopo 60-chiusura-cassa.sql, 63-importa-prima-nota.sql, 73-satispay.sql e 84-avvisi-segreteria.sql, e si
+-- può rilanciare.
 --
 -- La Edge Function `satispay-scarico` legge l'elenco dei pagamenti da Satispay e lo copia così com'è in
 -- `satispay_negozio` (`satispay_negozio_salva`); le regole stanno tutte qui, in `satispay_negozio_applica`.
@@ -257,6 +258,29 @@ create or replace function satispay_scarico_segna(errore text) returns void
   update satispay_scarico set ultimo = now(), errore = satispay_scarico_segna.errore
 $$;
 
+-- Finito uno scarico vero, la segreteria riceve un'email (con gli altri avvisi, 84-avvisi-segreteria.sql) solo se
+-- ha scritto movimenti, se ha lasciato pagamenti da decidere o se non è riuscito. `conti` è quel che dà
+-- `satispay_negozio_applica`, null se lo scarico non è arrivato fin lì. Conta nel tetto dei 50 al giorno.
+create or replace function satispay_scarico_avvisa(conti jsonb, errore text) returns void
+  language plpgsql security definer set search_path = public as $$
+declare
+  contati int;
+begin
+  if (select a from avvisi_indirizzi limit 1) is null then return; end if;
+  if errore is null and coalesce((conti->>'scritti')::int, 0) = 0 and coalesce((conti->>'da_decidere')::int, 0) = 0 then
+    return;
+  end if;
+  -- Lo stesso lucchetto di `avvisi_da_mandare`: il tetto si conta una volta sola.
+  perform pg_advisory_xact_lock(hashtext('avvisi_da_mandare'));
+  select count(*) into contati from avvisi_segreteria v
+   where v.non_mandato is null
+     and (coalesce(v.mandato_il, v.creato_il) at time zone 'Europe/Rome')::date = (now() at time zone 'Europe/Rome')::date;
+  insert into avvisi_segreteria (tipo, chiave, dati, non_mandato)
+    values ('satispay_scarico', 'scarico:' || gen_random_uuid(),
+            coalesce(conti, '{}'::jsonb) || jsonb_build_object('errore', errore),
+            case when contati >= 50 then 'tetto' end);
+end $$;
+
 create or replace function satispay_scarico_ripresa(ripresa text, completa boolean) returns void
   language sql security definer set search_path = public as $$
   update satispay_scarico set ripresa = satispay_scarico_ripresa.ripresa, storia_completa = completa
@@ -264,9 +288,9 @@ $$;
 
 revoke all on function satispay_cassa(date), satispay_scrivi(satispay_negozio, date, casse, uuid) from public, anon, authenticated;
 revoke all on function satispay_negozio_salva(jsonb), satispay_negozio_applica(boolean), satispay_scarico_segna(text),
-  satispay_scarico_ripresa(text, boolean) from public, anon, authenticated;
+  satispay_scarico_ripresa(text, boolean), satispay_scarico_avvisa(jsonb, text) from public, anon, authenticated;
 grant execute on function satispay_negozio_salva(jsonb), satispay_negozio_applica(boolean), satispay_scarico_segna(text),
-  satispay_scarico_ripresa(text, boolean) to service_role;
+  satispay_scarico_ripresa(text, boolean), satispay_scarico_avvisa(jsonb, text) to service_role;
 revoke all on function satispay_decidi(text, text, uuid), satispay_scarico_stato() from public, anon;
 grant execute on function satispay_decidi(text, text, uuid), satispay_scarico_stato() to authenticated;
 

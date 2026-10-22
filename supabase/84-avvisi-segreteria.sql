@@ -10,7 +10,9 @@
 --     `richieste_iscrizione.invio`), cinque minuti dopo l'ultima arrivata,
 --     così le altre della famiglia e la ricevuta del bonifico ci sono già;
 --   · un pagamento Satispay arrivato dopo l'avviso della sua richiesta;
---   · un pagamento Satispay senza richiesta, dopo un'ora.
+--   · un pagamento Satispay senza richiesta, dopo un'ora;
+--   · uno scarico Satispay in CONTABILITÀ con qualcosa da dire (lo mette
+--     `satispay_scarico_avvisa` di 97-satispay-scarico.sql, coi conti in `dati`).
 -- Mai due volte (`chiave` unica; la Edge Function prende ogni avviso con
 -- `avviso_preso` prima di mandarlo), mai quel che è arrivato prima di
 -- `avvisi_indirizzi.dal` (che riparte quando si mette l'indirizzo), al più 50
@@ -63,7 +65,7 @@ create or replace trigger avvisi_riaccesi before update on avvisi_indirizzi for 
 -- Il registro: un avviso per riga, solo i riferimenti. Il testo si fa quando parte, dai dati di quel momento.
 create table if not exists avvisi_segreteria (
   id           uuid primary key default gen_random_uuid(),
-  tipo         text not null check (tipo in ('richiesta', 'pagamento', 'pagamento_senza_richiesta')),
+  tipo         text not null,
   chiave       text not null unique,
   richieste    uuid[] not null default '{}',
   pagamento_id uuid,
@@ -72,9 +74,15 @@ create table if not exists avvisi_segreteria (
   -- Quante volte la Edge Function l'ha preso (`avviso_preso`), e quando l'ultima: la posta che non risponde.
   tentativi    int not null default 0,
   preso_il     timestamptz,
-  non_mandato  text
+  non_mandato  text,
+  -- Quel che l'avviso dice quando non c'è un dato vivo da cui rifarlo: i conti di uno scarico Satispay.
+  dati         jsonb
 );
 alter table avvisi_segreteria add column if not exists preso_il timestamptz;
+alter table avvisi_segreteria add column if not exists dati jsonb;
+alter table avvisi_segreteria drop constraint if exists avvisi_segreteria_tipo_check;
+alter table avvisi_segreteria add constraint avvisi_segreteria_tipo_check
+  check (tipo in ('richiesta', 'pagamento', 'pagamento_senza_richiesta', 'satispay_scarico'));
 alter table avvisi_segreteria drop constraint if exists avvisi_segreteria_non_mandato_check;
 alter table avvisi_segreteria add constraint avvisi_segreteria_non_mandato_check check (non_mandato in ('tetto', 'vuoto', 'guasto'));
 alter table avvisi_segreteria enable row level security;
@@ -90,6 +98,12 @@ declare
   r richieste_iscrizione;
   p pagamenti_satispay;
 begin
+  -- Lo scarico Satispay (`satispay_scarico_avvisa`, 97-satispay-scarico.sql): i conti sono quelli di quel giro.
+  if v.tipo = 'satispay_scarico' then
+    return jsonb_build_object('tipo', 'satispay_scarico', 'quando', v.creato_il,
+      'incassi', coalesce((v.dati->>'incassi')::int, 0), 'rimborsi', coalesce((v.dati->>'rimborsi')::int, 0),
+      'daDecidere', coalesce((v.dati->>'da_decidere')::int, 0), 'errore', v.dati->>'errore');
+  end if;
   if v.tipo = 'richiesta' then
     select jsonb_agg(jsonb_build_object(
              'richiestaId', x.id, 'nome', x.nome, 'cognome', x.cognome,

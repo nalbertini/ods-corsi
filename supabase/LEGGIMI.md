@@ -123,7 +123,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 94. `94-disattiva-chiude-iscrizioni.sql` — disattivare una scheda chiude oggi le sue iscrizioni aperte (il trigger `persone_iscrizioni_disattivata`; una che comincia più avanti finisce il giorno in cui comincia), e riattivarla non le riapre: riattivata a mano o accogliendo una richiesta, torna solo nei corsi chiesti. Una volta sola chiude quelle ancora aperte di chi è già disattivato. Si lancia dopo `06`.
 95. `95-certificato-piu-lontano.sql` — accogliendo una richiesta col certificato vince quello che scade dopo: la data letta dalla segreteria viaggia con l'accoglimento (`accogli_iscrizione(richiesta, persona, scade)`), e se il certificato nuovo scade dopo quello valido della scheda, o la scheda non ne ha uno valido, file e data nuovi prendono il posto dei vecchi; se no la scheda resta com'era e il file resta nella richiesta. Toglie la firma vecchia `accogli_iscrizione(uuid, uuid)`. Si lancia dopo `90`; rilanciando `06`, `44`, `45`, `53` o `90` va rilanciato anche questo.
 96. `96-compensi-extra.sql` — la ricevuta di compenso extra (uno stage, un torneo), separata da quella del mese: colonna `ricevute_compensi.extra` (per che cosa, 3–200 caratteri; null per la ricevuta del mese), nessuna riga corso, l'importo scritto dalla segreteria. Più extra per tecnico e mese; la ricevuta del mese resta una sola (`ricevute_compensi_valida` guarda solo quelle). `fai_ricevuta_compenso_extra` prende tecnico e qualifica dal server, `modifica_ricevuta_compenso_extra` cambia descrizione e importo finché non è pagata; `paga_compensi` aggiunge il testo delle extra alla descrizione del movimento. Si lancia dopo `81`; rilanciando `80` o `81` va rilanciato anche questo.
-97. `97-satispay-scarico.sql` — i pagamenti Satispay del negozio entrano da soli in CONTABILITÀ: la cassa «Satispay» (dal 2026-10-01; prima i pagamenti vanno nel Conto Corrente), le voci «Da classificare» e «Commissioni bancarie», il segno `movimenti.satispay_id` (uno per pagamento, anche annullato), le tabelle `satispay_negozio` (i pagamenti letti) e `satispay_scarico` (lo stato, una riga), che legge solo l'amministrazione. La Edge Function `satispay-scarico` salva i pagamenti (`satispay_negozio_salva`) e `satispay_negozio_applica` li scrive: quelli del modulo restano fuori, uno uguale scritto a mano prende il segno, due uguali o un giorno chiuso diventano «da decidere» (`satispay_decidi`, dall'amministrazione). pg_cron la chiama ogni notte, dopo il primo scarico confermato. Si lancia dopo `59`, `60`, `63`, `73` e `92`.
+97. `97-satispay-scarico.sql` — i pagamenti Satispay del negozio entrano da soli in CONTABILITÀ: la cassa «Satispay» (dal 2026-10-01; prima i pagamenti vanno nel Conto Corrente), le voci «Da classificare» e «Commissioni bancarie», il segno `movimenti.satispay_id` (uno per pagamento, anche annullato), le tabelle `satispay_negozio` (i pagamenti letti) e `satispay_scarico` (lo stato, una riga), che legge solo l'amministrazione. La Edge Function `satispay-scarico` salva i pagamenti (`satispay_negozio_salva`) e `satispay_negozio_applica` li scrive: quelli del modulo restano fuori, uno uguale scritto a mano prende il segno, due uguali o un giorno chiuso diventano «da decidere» (`satispay_decidi`, dall'amministrazione). Finito uno scarico vero, `satispay_scarico_avvisa` mette un avviso alla segreteria (tipo `satispay_scarico` di `84`) se ha scritto movimenti, lasciato pagamenti da decidere o non è riuscito. pg_cron la chiama ogni notte, dopo il primo scarico confermato. Si lancia dopo `59`, `60`, `63`, `73`, `84` e `92`.
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -1239,6 +1239,11 @@ visto l'anteprima del primo scarico e l'ha confermata da MOVIMENTI. Lo storico
 si legge dal pagamento più nuovo al più vecchio, e se si ferma a metà riparte
 da dove era arrivato.
 
+Finito uno scarico vero (non l'anteprima), se ha scritto movimenti, lasciato
+pagamenti da decidere o non è riuscito, la segreteria riceve un avviso (vedi
+«Gli avvisi alla segreteria»): la funzione `avvisi-segreteria` va ripubblicata
+con la `mail.ts` che conosce il tipo `satispay_scarico`.
+
 ## 14. La ricevuta per email
 
 Fatta la ricevuta, la famiglia la riceve in PDF all'**email di contatto** della
@@ -1276,9 +1281,9 @@ log della funzione.
 
 ## 15. Gli avvisi alla segreteria
 
-Quando arriva una richiesta di iscrizione o un pagamento Satispay, la
-segreteria riceve un'email all'indirizzo scritto in **IMPOSTAZIONI → GLI
-AVVISI**, con la copia facoltativa (all'inizio `asdilcentrojudo@gmail.com`).
+Quando arriva una richiesta di iscrizione o un pagamento Satispay, o finisce
+uno scarico Satispay in CONTABILITÀ con qualcosa da dire, la segreteria
+riceve un'email all'indirizzo scritto in **IMPOSTAZIONI → GLI AVVISI**, con la copia facoltativa (all'inizio `asdilcentrojudo@gmail.com`).
 Cosa avvisare lo decide il database (`84-avvisi-segreteria.sql`); scrive e
 manda la funzione **`avvisi-segreteria`**
 (`functions/avvisi-segreteria/index.ts`), dalla stessa casella della ricevuta

@@ -122,7 +122,7 @@ ricevute si fanno dalla scheda di un iscritto (vedi
 ## Gli avvisi
 
 **GLI AVVISI ALLA SEGRETERIA**: dove arriva un'email quando arriva una
-richiesta online o un pagamento Satispay. **EMAIL PER GLI AVVISI** è
+richiesta online, un pagamento Satispay o uno scarico Satispay in CONTABILITÀ. **EMAIL PER GLI AVVISI** è
 l'indirizzo della segreteria: vuoto, non parte nessun avviso. **IN COPIA** è
 facoltativo, e riceve ogni avviso (si parte con asdilcentrojudo@gmail.com).
 Le email partono da info@officinedellosport.it. Un indirizzo scritto male lo
@@ -143,6 +143,10 @@ prima, ad avvisi spenti, non mandano niente.
 - **Un pagamento Satispay senza richiesta**: qualcuno ha pagato in fondo al
   modulo e dopo un'ora la richiesta non è arrivata. C'è l'email che ha
   lasciato, per richiamarlo o restituire i soldi.
+- **Lo scarico Satispay in CONTABILITÀ**, se ha scritto movimenti, se ha
+  lasciato pagamenti da decidere o se non è riuscito: quanti incassi e
+  rimborsi sono entrati, quanti sono da decidere, e **Apri CONTABILITÀ**. Uno
+  scarico senza niente di nuovo non manda niente.
 
 Nell'email solo nomi, corsi e importi: mai note, codice fiscale, data di
 nascita, documenti. Al più 50 avvisi al giorno, perché la casella manda anche
