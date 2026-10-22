@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.168.0 — 22 ottobre 2026
+
+### Novità
+
+- Nell'elenco ISCRITTI certificato e quota in due colonne, e quante persone accende ogni filtro
+
+### Modificato
+
+- Le schede di CONTABILITÀ e PRESENZE sotto il titolo, come in IMPOSTAZIONI
+
 ## 0.167.0 — 22 ottobre 2026
 
 ### Novità
