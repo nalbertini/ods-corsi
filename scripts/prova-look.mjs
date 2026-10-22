@@ -97,7 +97,7 @@ const ambiente = ({ salvato = null, luce: chiaro = false, look = false } = {}) =
 }
 
 // --- 1. lookDellArea ---------------------------------------------------------
-// Le aree col look: segreteria, amministrazione, istruttori e (dall'«area iscritti nel look del sito») iscritti.
+// Le aree col look del sito: segreteria, amministrazione, istruttori e iscritti.
 const LOOK_AREE = ['segreteria', 'amministrazione', 'istruttori', 'iscritti']
 const AREE = ['segreteria', 'amministrazione', 'iscrizioni', 'iscritti', 'istruttori', 'sala', 'guida', 'scelta']
 console.log('\nL\'aspetto per area (src/lib/aspettoSegreteria.ts)')
@@ -133,6 +133,9 @@ for (const a of AREE) {
   // Il calendario dell'istruttore ha la tinta in alto; l'iscritto la tiene a sinistra, come prima.
   ok('le lezioni dell\'iscritto: la tinta del corso resta il filo a sinistra',
     /:root\[data-look='sito'\] \.mia-lezione \{[^}]*border-top: 0;[^}]*border-left: 6px solid var\(--tinta\)/.test(readFileSync('src/styles.css', 'utf8')), true)
+  // SEGNALA si tocca dal telefono, in piedi: 44px, e il bordo blu del tasto come nella proposta.
+  const segnala = readFileSync('src/styles.css', 'utf8').match(/\n\.mia-segnala \{[^}]*\}/)?.[0] ?? ''
+  ok('SEGNALA: alto almeno 44px, col bordo blu', [/min-height: 44px/.test(segnala), /border: 2px solid var\(--blu\)/.test(segnala)], [true, true])
 }
 {
   const main = readFileSync('src/main.tsx', 'utf8')

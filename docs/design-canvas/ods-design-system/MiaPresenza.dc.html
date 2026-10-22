@@ -26,21 +26,23 @@
       <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; white-space: nowrap; color: {{coloreSegnalata}}">{{segnalata}}</span>
     </sc-if>
     <sc-if value="{{puoSegnalare}}" hint-placeholder-val="{{ false }}">
-      <span style="display: inline-flex; align-items: center; min-height: 32px; padding: 6px 10px; border: 2px solid {{c.line}}; background: {{c.surface}}; color: {{c.text}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.12em">SEGNALA</span>
+      <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 6px 10px; border: 2px solid {{c.blu}}; background: {{c.surface}}; color: {{c.text}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.12em">SEGNALA</span>
     </sc-if>
   </span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"quando":{"editor":"text","default":"Lunedì 5 ottobre · 17:30"},"stato":{"editor":"enum","options":["presente","assente","giustificato","niente"],"default":"presente"},"segnalata":{"editor":"enum","options":["no","da-confermare","rifiutata"],"default":"no"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":80}}'>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"quando":{"editor":"text","default":"Lunedì 5 ottobre · 17:30"},"stato":{"editor":"enum","options":["presente","assente","giustificato","niente"],"default":"presente"},"segnalata":{"editor":"enum","options":["no","da-confermare","rifiutata"],"default":"no"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":80}}'>
 // Riproduzione 1:1 della riga delle presenze nell'area iscritti: <li className="mia-presenza-voce"> con .mia-presenza in
 // src/components/AreaIscritti.tsx (righe 366-399) e src/styles.css (righe 792-807, 797-800). Nell'app le righe stanno in un
 // unico riquadro (.mie-presenze, padding 4px 14px) separate da un filo; qui una riga col suo riquadro.
 // - stato: presente = segno ✓ e PRESENTE in verde; assente = ✗ e ASSENTE in rosso-testo; giustificato = – e niente = · (NON SEGNATO), spenti in `faint`.
 // - segnalata: una segnalazione gia' fatta (DA CONFERMARE in giallo-testo, RIFIUTATA in rosso-testo): sostituisce il tasto.
-// - Il tasto SEGNALA (.mia-segnala, 32px) c'e' solo dove non risulta presente ne' giustificato e non c'e' gia' una segnalazione.
+// - Il tasto SEGNALA (.mia-segnala, 44px, bordo blu) c'e' solo dove non risulta presente ne' giustificato e non c'e' gia' una segnalazione.
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', faint: '#5a5a56', verde: '#16a54a', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', faint: '#a8a8a3', verde: '#12913f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', faint: '#5a5a56', verde: '#16a54a', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52', blu: '#1b8ac4' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', faint: '#a8a8a3', verde: '#12913f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d', blu: '#1b8ac4' },
+  // L'area iscritti ha il look del sito (lookDellArea): sempre chiara, coi token di :root[data-look='sito'].
+  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', faint: '#46606f', verde: '#12913f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d', blu: '#14709f' },
 };
 const SEGNI = { presente: ['✓', 'PRESENTE'], assente: ['✗', 'ASSENTE'], giustificato: ['–', 'GIUSTIFICATO'], niente: ['·', 'NON SEGNATO'] };
 class Component extends DCLogic {

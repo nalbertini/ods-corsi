@@ -1457,8 +1457,8 @@ a.btn { text-decoration: none; }
 .mie-presenze { list-style: none; }
 /* Segnalare una presenza mancante: il tasto piccolo sulla riga, e sotto la nota. */
 .mia-segnala {
-  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; padding: 6px 10px; min-height: 32px;
-  border: 2px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; padding: 6px 10px; min-height: 44px;
+  border: 2px solid var(--blu); background: var(--surface); color: var(--text); cursor: pointer;
 }
 .mia-segnala-modulo { gap: 8px; padding: 0 0 12px 34px; }
 .mia-presenza-segnalata { max-width: none; white-space: nowrap; }
