@@ -50,6 +50,8 @@ export interface MovimentoManuale {
   personaId?: string
   /** Registrato da Claude col server MCP (`72-movimenti-dalla-chat.sql`): il segno DALLA CHAT nel movimento aperto. */
   dallaChat?: boolean
+  /** Scaricato da Satispay (`96-satispay-scarico.sql`), o un movimento a mano riconosciuto: il segno DA SATISPAY. */
+  satispayId?: string
 }
 
 /** Una chiusura della Cassa Contanti: il periodo da `dal` a `data`, quel che c'era «secondo i conti» e quel che si è contato. */
@@ -93,10 +95,15 @@ export interface RigaMovimento {
   /** Solo dei movimenti a mano: registrato dalla chat con Claude, e quando. */
   dallaChat?: boolean
   creatoIl?: string
+  /** Solo dei movimenti a mano: l'id del pagamento Satispay, il segno DA SATISPAY. */
+  satispayId?: string
 }
 
 export const NOME_CASSA_CONTANTI = 'Cassa Contanti'
 export const NOME_CASSA_CONTO = 'Conto Corrente'
+export const NOME_CASSA_SATISPAY = 'Satispay'
+/** Dal 1° ottobre 2026 Satispay è una cassa a sé (96-satispay-scarico.sql); prima si scriveva nel Conto Corrente. */
+export const CAMBIO_CASSA_SATISPAY = '2026-10-01'
 export const VOCE_QUOTA = 'Quota associativa'
 export const VOCE_CORSI = 'Corsi e altri pagamenti'
 /** La voce che la chiusura di cassa scrive da sola (una di entrata e una di uscita): a mano non si sceglie. */
@@ -106,15 +113,19 @@ export const VOCE_VARIE = 'Varie'
 /** Sopra questa differenza (in centesimi) la schermata chiede una conferma in più. */
 export const SOGLIA_DIFFERENZA = 2000
 
-/** Contanti in Cassa Contanti, tutto il resto (bonifico, POS, Satispay, assegno) in Conto Corrente. */
-export const cassaDelMetodo = (metodo: string): 'contanti' | 'conto' => (metodo.trim().toLowerCase() === 'contanti' ? 'contanti' : 'conto')
+/** Contanti in Cassa Contanti, Satispay dal cambio nella cassa Satispay, tutto il resto (bonifico, POS, assegno) in Conto Corrente. */
+export const cassaDelMetodo = (metodo: string, data: string): 'contanti' | 'conto' | 'satispay' => {
+  const m = metodo.trim().toLowerCase()
+  return m === 'contanti' ? 'contanti' : m === 'satispay' && data >= CAMBIO_CASSA_SATISPAY ? 'satispay' : 'conto'
+}
+const NOME_CASSA = { contanti: NOME_CASSA_CONTANTI, conto: NOME_CASSA_CONTO, satispay: NOME_CASSA_SATISPAY }
 
 /** La voce di sistema di un incasso: la quota associativa, o tutto il resto. */
 export const voceDiSistema = (voce: string) => (voce.trim().toLowerCase() === 'quota associativa' ? VOCE_QUOTA : VOCE_CORSI)
 
 /** Dove va un incasso in CONTABILITÀ, detto prima di registrarlo: la cassa e la voce che `incassiDerivati` gli darà. */
-export const doveEntraInContabilita = (metodo: string, voce: string) =>
-  `Entra in CONTABILITÀ: ${cassaDelMetodo(metodo) === 'contanti' ? NOME_CASSA_CONTANTI : NOME_CASSA_CONTO} · ${voceDiSistema(voce)}`
+export const doveEntraInContabilita = (metodo: string, voce: string, data: string) =>
+  `Entra in CONTABILITÀ: ${NOME_CASSA[cassaDelMetodo(metodo, data)]} · ${voceDiSistema(voce)}`
 
 /**
  * Gli incassi degli iscritti come movimenti di entrata, uno per pagamento. Sono
@@ -133,7 +144,7 @@ export function incassiDerivati(righe: RigaPagamento[], casse: Cassa[]): RigaMov
     sotto: `${r.voce} · ${r.metodo}`,
     personaId: r.personaId,
     voce: voceDiSistema(r.voce),
-    cassaId: cassa(cassaDelMetodo(r.metodo) === 'contanti' ? NOME_CASSA_CONTANTI : NOME_CASSA_CONTO),
+    cassaId: cassa(NOME_CASSA[cassaDelMetodo(r.metodo, r.data)]),
     annullato: r.annullato,
   }))
 }
@@ -156,6 +167,7 @@ export function righeMovimenti(derivati: RigaMovimento[], manuali: MovimentoManu
       origineImport: x.origineImport,
       personaId: x.personaId,
       ...(x.dallaChat ? { dallaChat: true, creatoIl: x.creatoIl } : {}),
+      ...(x.satispayId ? { satispayId: x.satispayId } : {}),
     }),
   )
   return [...derivati, ...mie].sort((a, b) => b.data.localeCompare(a.data) || a.id.localeCompare(b.id))
@@ -268,7 +280,7 @@ export function cosaNonVaAnnulloMovimento(riga: RigaMovimento, chiusure: Chiusur
  * `fino`: l'ultima chiusura attiva della Cassa Contanti (`contantiChiusiFino`, che legge anche la segreteria), o null.
  */
 export function avvisoCassaChiusa(pagamenti: Array<{ data: string; metodo: string }>, fino: string | null): string | null {
-  if (!fino || !pagamenti.some((p) => p.data <= fino && cassaDelMetodo(p.metodo) === 'contanti')) return null
+  if (!fino || !pagamenti.some((p) => p.data <= fino && cassaDelMetodo(p.metodo, p.data) === 'contanti')) return null
   return `Attenzione: la cassa contanti è chiusa fino al ${dataRicevuta(fino)} e questo incasso in contanti è di quei giorni: la chiusura non sarà più in regola e dovrai scrivere una rettifica.`
 }
 
@@ -286,10 +298,10 @@ export function contantiInGiornoChiuso(
   fino: string | null,
   tranne?: { data: string; metodo: string },
 ): string | null {
-  const salvo = tranne && cassaDelMetodo(tranne.metodo) === 'contanti' ? tranne.data : null
+  const salvo = tranne && cassaDelMetodo(tranne.metodo, tranne.data) === 'contanti' ? tranne.data : null
   const chiuso = (p: { data?: string; importo: number; metodo: string }) => {
     const quando = p.data ?? dataRicevuta
-    return p.importo > 0 && cassaDelMetodo(p.metodo) === 'contanti' && quando !== salvo && !!fino && quando <= fino
+    return p.importo > 0 && cassaDelMetodo(p.metodo, quando) === 'contanti' && quando !== salvo && !!fino && quando <= fino
   }
   return pagamenti.some(chiuso) ? MSG_CONTANTI_CHIUSI : null
 }

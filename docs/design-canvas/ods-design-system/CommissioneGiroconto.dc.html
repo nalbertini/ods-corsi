@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+<div style="display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; padding: 14px 16px; background: {{c.bg}}; color: {{c.text}}; font-family: {{c.body}}">
+  <span style="font-size: 14px">Dal <span>{{dal}}</span> al <span>{{al}}</span> Satispay ha incassato <b>{{incassato}}</b> ({{pagamenti}}). In banca ne sono arrivati {{inBanca}}.</span>
+  <label style="display: flex; flex-direction: row; gap: 12px; align-items: center; font-size: 14px; min-height: 44px">
+    <input type="checkbox" checked="{{spunta}}" style="width: 24px; height: 24px; margin: 0; accent-color: {{c.text}}; flex-shrink: 0">
+    <span>Registra <b>{{commissione}}</b> come uscita «Commissioni bancarie» dalla cassa Satispay</span>
+  </label>
+  <span style="font-size: 14px; color: {{c.dim}}">Se la differenza non è la commissione (un versamento a metà, un errore), togli la spunta e scrivila tu.</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"dal":{"editor":"text","default":"13/10"},"al":{"editor":"text","default":"19/10"},"incassato":{"editor":"text","default":"410,00 €"},"pagamenti":{"editor":"text","default":"31 pagamenti, meno 1 rimborso"},"inBanca":{"editor":"text","default":"404,30 €"},"commissione":{"editor":"text","default":"5,70 €"},"spunta":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":760,"height":150}}'>
+// COSTRUITA (blocco `commissione` di `NuovoGiroconto` in src/components/segreteria/Contabilita.tsx; proposta e storia in ../satispay-scarico/):
+// compare dentro il riquadro GIROCONTO FRA LE CASSE, dopo i campi, solo quando DA e' la cassa Satispay, la voce «Commissioni bancarie» c'e' e
+// l'importo e' valido (il campo si chiama ARRIVATI IN BANCA invece di IMPORTO). Colonna con gap 6px, padding 14px 16px, fondo `bg` (la pagina,
+// non il riquadro), senza bordo. Frase da 14px «Dal GG/MM al GG/MM Satispay ha incassato <b>X</b> (N pagamenti[, meno N rimborsi]). In banca ne
+// sono arrivati Y.»; riga con la casella 24x24 (accentColor `text`) alta almeno 44px, gap 12px, 14px, spuntata di partenza: «Registra <b>Z</b>
+// come uscita «Commissioni bancarie» dalla cassa Satispay»; nota `dim` da 14px. Con la spunta il tasto diventa «Registra giroconto e
+// commissione» e la nota del giroconto aggiunge «; la commissione si annulla a parte». Il tasto di uscita si chiama «No, torna indietro»
+// (nella proposta «Annulla»); le date sono GG/MM (nella proposta «13 al 19 ottobre»); il fondo e' `bg` come nella proposta.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', giallo: '#f4c31b', rosso: '#ff5a52', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', giallo: '#8f6a00', rosso: '#b81d1d', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+  sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', giallo: '#8f6a00', rosso: '#b81d1d', cond: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif", body: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { c: T[p.tema] || T.sito, dal: p.dal ?? '', al: p.al ?? '', incassato: p.incassato ?? '', pagamenti: p.pagamenti ?? '', inBanca: p.inBanca ?? '', commissione: p.commissione ?? '', spunta: truthy(p.spunta ?? true) };
+  }
+}
+</script>
+</body>
+</html>

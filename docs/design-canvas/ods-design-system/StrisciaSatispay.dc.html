@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 18px; width: 100%; min-width: 0; color: {{c.text}}; font-family: {{c.body}}">
+  <section aria-label="Scarico da Satispay" style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 14px 18px; background: {{c.surface}}; border: 2px solid {{c.line}}; min-width: 0">
+    <div style="display: flex; flex-direction: column; gap: 2px; flex: 999 1 420px; min-width: 0">
+      <span style="font-family: {{c.cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">SATISPAY</span>
+      <span style="font-size: 15px">{{testo}}</span>
+      <sc-if value="{{haErrore}}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 14px; color: {{c.rosso}}">L’ultimo scarico non è riuscito: {{errore}}</span>
+      </sc-if>
+    </div>
+    <sc-if value="{{primoFatto}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="linea" label="Scarica ora" hint-size="140px,48px"></dc-import>
+    </sc-if>
+    <sc-if value="{{primoDaFare}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="pieno" label="Guarda il primo scarico" hint-size="220px,48px"></dc-import>
+    </sc-if>
+  </section>
+  <sc-if value="{{haDaDecidere}}" hint-placeholder-val="{{ true }}">
+    <section aria-label="Da decidere" style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 14px 18px; background: {{c.surface}}; border: 2px solid {{c.giallo}}; min-width: 0">
+      <div style="display: flex; flex-direction: column; gap: 2px; flex: 999 1 420px; min-width: 0">
+        <span style="font-family: {{c.cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.giallo}}">{{titoloDaDecidere}}</span>
+        <span style="font-size: 15px">{{testoDaDecidere}}</span>
+      </div>
+      <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="pieno" label="{{tastoDaDecidere}}" hint-size="170px,48px"></dc-import>
+    </section>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"primoFatto":{"editor":"boolean","default":true},"testo":{"editor":"text","default":"Ultimo scarico il 22/10/2026 alle 3:10. I pagamenti del modulo sono già in PAGAMENTI."},"errore":{"editor":"text","default":""},"daDecidere":{"editor":"enum","options":["0","1","2"],"default":"2"},"testoDaDecidere":{"editor":"text","default":"Uno cade in un giorno già chiuso, uno potrebbe essere già scritto a mano."},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":900,"height":200}}'>
+// COSTRUITA (`ScaricoSatispay` di src/components/segreteria/ScaricoSatispay.tsx; proposta e storia in ../satispay-scarico/): le due
+// strisce sotto i numeri delle casse in CONTABILITA' → MOVIMENTI, in colonna con gap 18px. Sono due `.sg-riquadro` in riga
+// (flex-wrap, gap 12px 18px, padding 14px 18px, fondo `surface`, bordo 2px `line`): a sinistra il blocco di testo (flex 999 1 420px,
+// gap 2px) con `.sg-etichetta` (12px 700, 0.18em, `dim`) e frase da 15px, a destra il tasto da 48px.
+// Prima striscia: etichetta SATISPAY. Se il primo scarico non e' stato fatto (primoFatto falso) la frase e' «I pagamenti del negozio possono
+// entrare da soli, ogni notte. La prima volta guardi cosa scriverebbe l'app, poi dici si.» e il tasto e' «Guarda il primo scarico»
+// (pieno); dopo, «Ultimo scarico il GG/MM/AAAA alle H:MM. I pagamenti del modulo sono gia' in PAGAMENTI.» (con «Si scarica ogni
+// notte.» se non c'e' ancora un ultimo; dopo «Scarica ora» in piu' «Appena scaricati: N incassi e N rimborsi.») e «Scarica ora»
+// a linea. `errore` aggiunge in rosso-testo «L'ultimo scarico non e' riuscito: …» (14px).
+// Seconda striscia, solo con casi da decidere: stessa forma ma bordo e titolo in `giallo-testo`; titolo «N PAGAMENTI SATISPAY DA DECIDERE»
+// (al singolare «1 PAGAMENTO SATISPAY DA DECIDERE»), frase = `testoDaDecidere` + «Non sono entrati: restano qui finche' non decidi.»
+// (al singolare «Non e' entrato: resta qui…»), tasto pieno «Guarda i N casi» (o «Guarda il caso»).
+// Senza il 96-satispay-scarico.sql lo stato non c'e' e le strisce non si vedono.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', giallo: '#f4c31b', rosso: '#ff5a52', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', giallo: '#8f6a00', rosso: '#b81d1d', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+  sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', giallo: '#8f6a00', rosso: '#b81d1d', cond: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif", body: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const n = Number(p.daDecidere ?? 2);
+    const fatto = truthy(p.primoFatto ?? true);
+    const coda = n === 1 ? 'Non è entrato: resta qui finché non decidi.' : 'Non sono entrati: restano qui finché non decidi.';
+    return {
+      c: T[p.tema] || T.sito, tema: p.tema || 'sito',
+      primoFatto: fatto, primoDaFare: !fatto,
+      testo: fatto ? (p.testo ?? '') : 'I pagamenti del negozio possono entrare da soli, ogni notte. La prima volta guardi cosa scriverebbe l’app, poi dici sì.',
+      errore: p.errore ?? '', haErrore: (p.errore ?? '') !== '',
+      haDaDecidere: n > 0,
+      titoloDaDecidere: n === 1 ? '1 PAGAMENTO SATISPAY DA DECIDERE' : n + ' PAGAMENTI SATISPAY DA DECIDERE',
+      testoDaDecidere: (p.testoDaDecidere ?? '') + ' ' + coda,
+      tastoDaDecidere: n === 1 ? 'Guarda il caso' : 'Guarda i ' + n + ' casi',
+    };
+  }
+}
+</script>
+</body>
+</html>

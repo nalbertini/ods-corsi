@@ -476,6 +476,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('94-disattiva-chiude-iscrizioni.sql', 'disattivare una scheda chiude le sue iscrizioni',
     exists (select 1 from pg_trigger where tgname = 'persone_iscrizioni_disattivata' and tgrelid = 'public.persone'::regclass)),
   ('95-certificato-piu-lontano.sql', 'accogliendo vince il certificato che scade dopo',
-    to_regprocedure('public.accogli_iscrizione(uuid, uuid, date)') is not null and to_regprocedure('public.accogli_iscrizione(uuid, uuid)') is null)
+    to_regprocedure('public.accogli_iscrizione(uuid, uuid, date)') is not null and to_regprocedure('public.accogli_iscrizione(uuid, uuid)') is null),
+  ('96-satispay-scarico.sql', 'i pagamenti Satispay del negozio entrano da soli in contabilità',
+    to_regclass('public.satispay_negozio') is not null and to_regprocedure('public.satispay_negozio_applica(boolean)') is not null
+    and exists (select 1 from casse where nome = 'Satispay'))
 ) as x(file, cosa, c)
 order by file, cosa;

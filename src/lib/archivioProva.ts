@@ -5,6 +5,7 @@ import type { Segnalazione } from './segnalazioni'
 import type { StatoSito } from './sitoProva'
 import type { ImmagineSito } from './sitoImmagini'
 import type { Cassa, CambioVoce, ChiusuraCassa, MovimentoManuale, VoceContabile } from './contabilita'
+import type { PagamentoNegozio } from './satispayScarico'
 import type { Ruolo, StatoSessione } from './sala'
 import type { PagamentoDiretto } from './pagamenti'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
@@ -169,6 +170,10 @@ export interface Archivio {
   movimenti?: MovimentoManuale[]
   /** Le chiusure della Cassa Contanti (60-chiusura-cassa.sql). */
   chiusure?: ChiusuraCassa[]
+  /** I pagamenti del negozio Satispay letti dallo scarico (96-satispay-scarico.sql): in prova sono d'esempio. */
+  satispayNegozio?: PagamentoNegozio[]
+  /** A che punto è lo scarico: il primo confermato, l'ultimo giro. */
+  satispayScarico?: { primoFatto: boolean; ultimo: string | null; errore: string | null }
   /** I cambi di voce dei movimenti (67-cambia-voce.sql), dal più vecchio. */
   cambiVoce?: Array<CambioVoce & { movimentoId: string }>
   /** La traccia dei collegamenti dello storico alle persone (70-movimenti-persona.sql), dal più vecchio. */

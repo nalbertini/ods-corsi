@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Pagamenti Satispay da decidere</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Proposta: si apre da «Guarda i 2 casi» nell'avviso giallo di MOVIMENTI. Un riquadro per caso; ogni scelta lo toglie dall'elenco.
+     Un pagamento non entra finche' qui non si decide. -->
+<div style="display: flex; width: 1440px; min-height: 1000px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="CONTABILITÀ" numeri="" nome="Nicola Albertini" ruolo="Amministrazione" area="amministrazione" autorizzazioni="segreteria e amministrazione" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</h1>
+      <span style="font-size: 14px; color: #46606f">2 pagamenti Satispay da decidere. Finché non scegli, non entrano.</span>
+    </div>
+    <section aria-label="Giorno chiuso" style="display: flex; flex-direction: column; gap: 14px; max-width: 880px; padding: 22px 24px; background: #ffffff; border: 2px solid #8f6a00">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #8f6a00">CADE IN UN GIORNO GIÀ CHIUSO</span>
+      <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 18px">
+        <span style="font-size: 20px; font-weight: 700">Satispay · Marco B.</span>
+        <span style="font-size: 20px; font-weight: 700">+12,00 €</span>
+      </div>
+      <span style="font-size: 15px; line-height: 1.5">Pagato sabato 18/10/2026. La cassa di quel giorno è chiusa: scriverlo lì cambierebbe una chiusura già fatta.</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Scrivilo oggi, 22/10" hint-size="200px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Lascialo fuori" hint-size="150px,44px"></dc-import>
+      </div>
+    </section>
+    <section aria-label="Forse già scritto a mano" style="display: flex; flex-direction: column; gap: 14px; max-width: 880px; padding: 22px 24px; background: #ffffff; border: 2px solid #8f6a00">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #8f6a00">FORSE GIÀ SCRITTO A MANO</span>
+      <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 18px">
+        <span style="font-size: 20px; font-weight: 700">Satispay · Laura M.</span>
+        <span style="font-size: 20px; font-weight: 700">+25,00 €</span>
+      </div>
+      <span style="font-size: 15px; line-height: 1.5">Pagato martedì 14/10/2026. Quel giorno ci sono due movimenti a mano da 25,00 €. È uno di questi?</span>
+      <div style="display: flex; flex-direction: column; border-top: 1px solid #cfe6f4">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 160px 110px; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+          <span><b>Lezione di prova · Rossi Anna</b> · Lezioni di prova</span><span>Conto Corrente</span><span style="text-align: right; font-weight: 600">+25,00 €</span>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 160px 110px; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid #cfe6f4; font-size: 14px">
+          <span><b>Maglietta ODS taglia M</b> · Vestiario</span><span>Conto Corrente</span><span style="text-align: right; font-weight: 600">+25,00 €</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="È la lezione di prova" hint-size="210px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="È la maglietta" hint-size="160px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Nessuno dei due: scrivilo" hint-size="250px,44px"></dc-import>
+      </div>
+      <span style="font-size: 14px; color: #46606f">Se è uno dei due, resta quello a mano con la sua voce, e prende il segno DA SATISPAY.</span>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

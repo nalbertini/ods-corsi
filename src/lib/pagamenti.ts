@@ -181,7 +181,7 @@ export const riepilogoPagamentoDiretto = (d: DatiPagamentoDiretto, chi: string, 
   dataLunga(d.data),
   d.voce.trim(),
   ...(d.nota?.trim() ? [d.nota.trim()] : []),
-  ...(o.contabilita ? [doveEntraInContabilita(d.metodo, d.voce)] : []),
+  ...(o.contabilita ? [doveEntraInContabilita(d.metodo, d.voce, d.data)] : []),
   ...(o.ricevuta ? [] : ['Senza ricevuta: resta nello storico e si può annullare', 'Non riduce il residuo di nessuna ricevuta']),
 ]
 

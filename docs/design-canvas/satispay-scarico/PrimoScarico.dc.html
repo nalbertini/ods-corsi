@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Primo scarico da Satispay</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Proposta: il primo scarico non scrive niente finche' non dici si'. Pagina intera al posto dell'elenco, come Nuovo movimento e Giroconto
+     (.sg-riquadro, etichetta + titolo .ob). Le cifre sono d'esempio. -->
+<div style="display: flex; width: 1440px; min-height: 1000px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="CONTABILITÀ" numeri="" nome="Nicola Albertini" ruolo="Amministrazione" area="amministrazione" autorizzazioni="segreteria e amministrazione" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</h1>
+      <span style="font-size: 14px; color: #46606f">La prima volta l’app ti fa vedere cosa scriverebbe. Le notti dopo scarica da sola.</span>
+    </div>
+    <section aria-label="Primo scarico da Satispay" style="display: flex; flex-direction: column; gap: 16px; max-width: 880px; padding: 22px 24px; background: #ffffff; border: 2px solid #cfe6f4">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">NIENTE SI SCRIVE FINCHÉ NON DICI SÌ</span>
+      <span style="font-size: 22px; font-weight: 700">PRIMO SCARICO DA SATISPAY</span>
+      <span style="font-size: 15px; line-height: 1.5">Satispay ha <b>412 pagamenti</b> del negozio, dal 3 settembre 2024 a ieri. Ecco cosa ne farebbe l’app.</span>
+      <div style="display: flex; flex-direction: column; border-top: 1px solid #cfe6f4">
+        <div style="display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-bottom: 1px solid #cfe6f4; font-size: 15px">
+          <b style="text-align: right; font-size: 20px">318</b>
+          <span><b>incassi del negozio entrano</b> in «Da classificare», col segno DA SATISPAY. La voce la scegli dopo, con Cambia voce.</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-bottom: 1px solid #cfe6f4; font-size: 15px">
+          <b style="text-align: right; font-size: 20px">9</b>
+          <span><b>rimborsi entrano come uscite</b>, anche loro in «Da classificare».</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-bottom: 1px solid #cfe6f4; font-size: 15px">
+          <b style="text-align: right; font-size: 20px">57</b>
+          <span><b>sono pagamenti del modulo di iscrizione</b>: sono già in PAGAMENTI o in una ricevuta. Non si scrivono una seconda volta.</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-bottom: 1px solid #cfe6f4; font-size: 15px">
+          <b style="text-align: right; font-size: 20px">24</b>
+          <span><b>erano già scritti a mano</b>: stesso giorno, stesso importo, un solo movimento possibile. Resta quello a mano, con la sua voce; prende il segno DA SATISPAY.</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-bottom: 1px solid #cfe6f4; font-size: 15px">
+          <b style="text-align: right; font-size: 20px; color: #8f6a00">4</b>
+          <span><b>sono da decidere</b>: un giorno già chiuso, o più movimenti a mano con lo stesso importo quel giorno. Non entrano: li trovi in MOVIMENTI, nell’avviso giallo.</span>
+        </div>
+      </div>
+      <span style="font-size: 14px; color: #46606f; line-height: 1.5">Dal 1° ottobre 2026 entrano nella cassa Satispay; quelli di prima in Conto Corrente, come si faceva finora, così i saldi passati non cambiano. Uno scarico si annulla movimento per movimento, come ogni movimento.</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Sì, scrivi i 327 movimenti" hint-size="260px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Non ora" hint-size="110px,44px"></dc-import>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

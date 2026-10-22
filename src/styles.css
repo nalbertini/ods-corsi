@@ -3449,7 +3449,7 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 }
 
 /* CONTABILITÀ: i totali delle casse vanno a capo sotto una certa larghezza, invece di tagliare gli importi a 40px. */
-.sg-numeri.sg-numeri-conti { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.sg-numeri.sg-numeri-conti { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 
 /* Quello che toglie qualcosa (cancella, elimina, annulla, disattiva) è rosso
    in ogni pulsante, a linea, chip o link: il rosso pieno resta al «sì» della

@@ -26,6 +26,7 @@ import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '..
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
 import { satispayPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
+import type { ContiScarico, DaDecidere } from './satispayScarico'
 import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { vociCorsiDi } from './corsiDaPagare'
 import { motivoDaErrore, type InvioRicevuta } from './ricevuteEmail'
@@ -1570,7 +1571,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const righe = ok(await tutteLeRighe((prima, ultima) => db.from('movimenti').select('*').order('id').range(prima, ultima))) as Array<{
         id: string; tipo: 'entrata' | 'uscita' | 'giroconto'; data: string; importo: number; voce_id: string | null; cassa_id: string; cassa_a_id: string | null
         descrizione: string; nota: string | null; creato_il: string; annullato_il: string | null
-        origine_import?: string | null; persona_id?: string | null; dalla_chat?: boolean
+        origine_import?: string | null; persona_id?: string | null; dalla_chat?: boolean; satispay_id?: string | null
       }>
       return righe.map((r) => ({
         id: r.id,
@@ -1587,6 +1588,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         ...(r.origine_import ? { origineImport: r.origine_import } : {}),
         ...(r.persona_id ? { personaId: r.persona_id } : {}),
         ...(r.dalla_chat ? { dallaChat: true } : {}),
+        ...(r.satispay_id ? { satispayId: r.satispay_id } : {}),
       }))
     },
 
@@ -1622,6 +1624,36 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async annullaMovimento(id) {
       ok(await db.rpc('annulla_movimento', { id }))
+    },
+
+    async statoScaricoSatispay() {
+      const r = await db.rpc('satispay_scarico_stato')
+      // Senza 96-satispay-scarico.sql la funzione non c'è: niente striscia, il resto della contabilità va.
+      if (r.error && (r.error.code === 'PGRST202' || r.error.code === '42883')) return null
+      // `as`: la forma di satispay_scarico_stato() in 96-satispay-scarico.sql, che il client non conosce.
+      const x = ok(r) as {
+        primo_fatto: boolean; ultimo: string | null; errore: string | null
+        da_decidere: Array<Omit<DaDecidere, 'satispayId'> & { satispay_id: string }>
+      }
+      return {
+        primoFatto: x.primo_fatto,
+        ultimo: x.ultimo,
+        errore: x.errore,
+        daDecidere: x.da_decidere.map(({ satispay_id, ...resto }) => ({ satispayId: satispay_id, ...resto })),
+      }
+    },
+
+    async scaricaSatispay(anteprima) {
+      const { data, error } = await db.functions.invoke('satispay-scarico', { body: { anteprima } })
+      if (error) throw await guaioFunzione(error, 'dello scarico Satispay', 'Lo scarico non è riuscito: riprova fra qualche minuto')
+      // `as`: il corpo è quello della funzione satispay-scarico: `conti` di satispay_negozio_applica, o un guaio da mostrare.
+      const r = data as { conti?: ContiScarico; guaio?: string }
+      if (!r.conti) throw new Error(r.guaio ?? 'Lo scarico non è riuscito: riprova fra qualche minuto')
+      return r.conti
+    },
+
+    async decidiSatispay(satispayId, scelta, movimentoId) {
+      ok(await db.rpc('satispay_decidi', { satispay_id: satispayId, scelta, movimento: movimentoId ?? null }))
     },
 
     async correggiTestoMovimento(id, descrizione, nota) {

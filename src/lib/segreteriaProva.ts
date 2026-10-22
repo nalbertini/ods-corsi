@@ -27,6 +27,7 @@ import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sito
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
 import { cosaNonVaSatispay, cosaNonVaSatispayAMano, satispayPerPersona } from './satispay'
+import { applicaScarico, CAMBIO_CASSA_SATISPAY, daDecidere, decidiScarico, NOME_CASSA_SATISPAY, type PagamentoNegozio } from './satispayScarico'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { ESTENSIONI } from './richieste'
@@ -37,7 +38,7 @@ import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
-import { cosaNonVaDaPagamento, cosaNonVaDiretto, trovaPagatori, type PagamentoDiretto } from './pagamenti'
+import { cosaNonVaDaPagamento, cosaNonVaDiretto, righeDaRicevute, righeDirette, trovaPagatori, type PagamentoDiretto } from './pagamenti'
 import {
   cosaNonVaAnnulloChiusura,
   cosaNonVaAnnulloMovimento,
@@ -62,11 +63,27 @@ import {
   VOCE_DIFFERENZA,
   contantiInGiornoChiuso,
   VOCE_QUOTA,
+  type Cassa,
   type VoceContabile,
 } from './contabilita'
 import { conti as contiRicevuta, cosaNonVa, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 import { vociCorsiDi } from './corsiDaPagare'
 import { mandateOggi, SOGLIA_MAIL_GIORNO, TETTO_PER_RICEVUTA } from './ricevuteEmail'
+
+/** I pagamenti d'esempio del negozio negli ultimi giorni, come li darebbe Satispay: uno annullato, un rimborso e uno da decidere. */
+function negozioDiProva(): PagamentoNegozio[] {
+  const fa = (giorni: number, ora: number) => new Date(Date.now() - giorni * 86_400_000).toISOString().slice(0, 10) + `T${String(ora).padStart(2, '0')}:15:00Z`
+  return [
+    { satispayId: 'negozio-1', tipo: 'TO_BUSINESS', stato: 'ACCEPTED', importo: 1200, quando: fa(5, 9), chi: 'Rossi Marta' },
+    { satispayId: 'negozio-2', tipo: 'TO_BUSINESS', stato: 'ACCEPTED', importo: 3500, quando: fa(4, 16), chi: 'Bianchi Luca' },
+    { satispayId: 'negozio-3', tipo: 'TO_BUSINESS', stato: 'CANCELED', importo: 1500, quando: fa(3, 17), chi: 'Verdi Anna' },
+    { satispayId: 'negozio-4', tipo: 'TO_BUSINESS', stato: 'ACCEPTED', importo: 1500, quando: fa(3, 17), chi: 'Verdi Anna' },
+    { satispayId: 'negozio-5', tipo: 'REFUND_TO_BUSINESS', stato: 'ACCEPTED', importo: 1200, quando: fa(2, 10), chi: 'Rossi Marta' },
+    { satispayId: 'negozio-6', tipo: 'TO_BUSINESS', stato: 'ACCEPTED', importo: 800, quando: fa(1, 18), chi: 'Neri Paolo' },
+    // Già messo da parte da uno scarico di prima: in prova si vede l'avviso giallo dei casi da decidere.
+    { satispayId: 'negozio-7', tipo: 'TO_BUSINESS', stato: 'ACCEPTED', importo: 2000, quando: fa(6, 11), chi: 'Gialli Sara', esito: 'da_decidere', motivo: 'giorno_chiuso' },
+  ]
+}
 
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
@@ -117,7 +134,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
   const salva = () => archivio.salva()
   // Le casse e le voci di partenza, finché la segreteria non ne cambia: due casse a zero e le due voci degli incassi.
   // Le voci della segreteria, o quelle di partenza; la chiusura di cassa scrive da sola «Differenza di cassa»: c'è sempre, anche in un archivio fatto prima.
-  const vociDiPartenza = (): VoceContabile[] => {
+  const vociSenzaScarico = (): VoceContabile[] => {
     const base: VoceContabile[] = a().voci ?? [
       { id: 'voce-quota', nome: VOCE_QUOTA, tipo: 'entrata', diSistema: true, attiva: true },
       { id: 'voce-corsi', nome: VOCE_CORSI, tipo: 'entrata', diSistema: true, attiva: true },
@@ -136,12 +153,29 @@ export function creaSegreteriaProva(): DatiSegreteria {
       ? conDifferenza.map((v) => (omonima(v) ? { ...v, diSistema: true, attiva: true } : v))
       : [...conDifferenza, { id: 'voce-compensi', nome: VOCE_COMPENSI, tipo: 'uscita', diSistema: true, attiva: true }]
   }
-  const contabilita = () => ({
-    casse: a().casse ?? [
+  // Come 96-satispay-scarico.sql: le voci dello scarico ci sono anche in un archivio fatto prima.
+  const vociDelloScarico = (): VoceContabile[] => {
+    const voci = vociSenzaScarico()
+    const mancano = (
+      [
+        ['voce-da-classificare-entrata', 'Da classificare', 'entrata'],
+        ['voce-da-classificare-uscita', 'Da classificare', 'uscita'],
+        ['voce-commissioni', 'Commissioni bancarie', 'uscita'],
+      ] as const
+    ).filter(([, nome, tipo]) => !voci.some((v) => v.tipo === tipo && v.nome.trim().toLowerCase() === nome.toLowerCase()))
+    return [...voci, ...mancano.map(([id, nome, tipo]): VoceContabile => ({ id, nome, tipo, diSistema: false, attiva: true }))]
+  }
+  const cassePartenza = (): Cassa[] => {
+    const casse = a().casse ?? [
       { id: 'cassa-contanti', nome: NOME_CASSA_CONTANTI, saldoIniziale: 0 },
       { id: 'cassa-conto', nome: NOME_CASSA_CONTO, saldoIniziale: 0 },
-    ],
-    voci: vociDiPartenza(),
+    ]
+    // Come 96-satispay-scarico.sql: la cassa Satispay c'è anche in un archivio fatto prima.
+    return casse.some((c) => c.nome === NOME_CASSA_SATISPAY) ? casse : [...casse, { id: 'cassa-satispay', nome: NOME_CASSA_SATISPAY, saldoIniziale: 0, dal: CAMBIO_CASSA_SATISPAY }]
+  }
+  const contabilita = () => ({
+    casse: cassePartenza(),
+    voci: vociDelloScarico(),
     movimenti: a().movimenti ?? [],
     chiusure: a().chiusure ?? [],
   })
@@ -1636,6 +1670,46 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const k = chiusure.find((x) => x.id === id)
       a().chiusure = chiusure.map((x) => (x.id === id ? { ...x, annullataIl: adesso, annullataDa: 'Amministrazione' } : x))
       if (k?.movimentoId) a().movimenti = movimenti.map((x) => (x.id === k.movimentoId ? { ...x, annullatoIl: adesso } : x))
+      salva()
+    },
+
+    async statoScaricoSatispay() {
+      const { movimenti, voci, casse } = contabilita()
+      const stato = a().satispayScarico ?? { primoFatto: false, ultimo: null, errore: null }
+      return { ...stato, daDecidere: daDecidere({ negozio: a().satispayNegozio ?? [], movimenti, voci, casse }) }
+    },
+
+    async scaricaSatispay(anteprima) {
+      // In prova Satispay non si chiama: il negozio ha pagamenti d'esempio, più quelli pagati col modulo.
+      const pagati = pagamentiSatispayProva().filter((p) => p.stato === 'pagato')
+      const letti = a().satispayNegozio ?? negozioDiProva()
+      const negozio = [
+        ...letti,
+        ...pagati
+          .filter((p) => !letti.some((n) => n.satispayId === p.id))
+          .map((p): PagamentoNegozio => ({ satispayId: p.id, tipo: 'TO_BUSINESS', stato: 'ACCEPTED', importo: p.importo, quando: p.pagatoIl ?? p.creatoIl, chi: p.chi })),
+      ]
+      const { movimenti, voci, casse, chiusure } = contabilita()
+      // Come satispay_negozio_applica: del modulo ogni id, e le righe di PAGAMENTI tranne le ricevute del modulo.
+      const modulo = pagamentiSatispayProva()
+      const ricevuteModulo = new Set(modulo.map((p) => p.ricevutaId))
+      const pagamenti = [...righeDaRicevute(a().ricevute ?? []).filter((x) => !ricevuteModulo.has(x.ricevuta?.id)), ...righeDirette(a().pagamentiDiretti ?? [], () => '')]
+      const r = applicaScarico({ negozio, modulo: modulo.map((p) => p.id), pagamenti, movimenti, voci, casse, chiusure, oggi: oggiARoma() }, !anteprima)
+      // Come satispay_negozio_salva: i pagamenti letti restano anche dopo l'anteprima, senza esito.
+      a().satispayNegozio = r.negozio
+      if (!anteprima) {
+        a().movimenti = r.movimenti
+        a().satispayScarico = { primoFatto: true, ultimo: new Date().toISOString(), errore: null }
+      }
+      salva()
+      return r.conti
+    },
+
+    async decidiSatispay(satispayId, scelta, movimentoId) {
+      const { movimenti, voci, casse, chiusure } = contabilita()
+      const r = decidiScarico({ negozio: a().satispayNegozio ?? [], modulo: [], pagamenti: [], movimenti, voci, casse, chiusure, oggi: oggiARoma() }, satispayId, scelta, movimentoId)
+      a().satispayNegozio = r.negozio
+      a().movimenti = r.movimenti
       salva()
     },
 
