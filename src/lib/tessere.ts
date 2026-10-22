@@ -27,6 +27,13 @@ export interface TesseraSeg {
   origine?: 'rasd' | 'manuale'
 }
 
+/**
+ * Per ora le tessere non si segnalano (lo ha chiesto la palestra): niente parole,
+ * timbri, conti né filtri che dicono che una tessera manca, è scaduta o scade.
+ * Le regole qui sotto restano come sono: per riaccenderle basta `true`.
+ */
+export const SEGNALA_TESSERE = false
+
 /** Quanti giorni prima della fine una tessera è «in scadenza». */
 export const GIORNI_IN_SCADENZA = 60
 
@@ -224,6 +231,15 @@ export function incrocioTessere(persone: PersonaPerTessere[], corsi: Array<Pick<
   }
   return righe
 }
+
+/** L'incrocio che l'app mostra: a segnalazioni spente resta solo chi è tesserato senza corso. */
+export function incrocioDaMostrare(...a: Parameters<typeof incrocioTessere>): RigaIncrocio[] {
+  return incrocioTessere(...a).filter((r) => SEGNALA_TESSERE || r.esito === 'non_iscritto')
+}
+
+/** La frase che l'app mostra: a segnalazioni spente solo fin quando vale, senza «scaduta» né «scade fra». */
+export const fraseDaMostrare = (t: Pick<TesseraSeg, 'ente' | 'tipo' | 'al'>, oggi: string) =>
+  SEGNALA_TESSERE ? fraseTessera(t, oggi) : `${t.ente} · ${t.tipo} · fino al ${dataLunga(t.al)}`
 
 /** Le persone senza una tessera valida (manca o scaduta): il numero della casella TESSERE di COSA MANCA e le righe del filtro. */
 export const contaTessere = (righe: RigaIncrocio[]) => new Set(righe.filter((r) => senzaTessera([r])).map((r) => r.personaId)).size

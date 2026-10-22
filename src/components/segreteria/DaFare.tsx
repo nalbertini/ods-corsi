@@ -4,7 +4,7 @@ import { certificatoDaStampare, certificatoInArrivo, certificatoInScadenza } fro
 import { datiRichieste } from '../../lib/richieste'
 import { prezziMancanti, prezziMancantiInBreve } from '../../lib/listino'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { contaTessere, conTessere, incrocioTessere } from '../../lib/tessere'
+import { contaTessere, conTessere, incrocioDaMostrare } from '../../lib/tessere'
 import { appelliSenzaSegni, certificatiDaSistemare, contiDaRileggere, contiDellaStriscia, GIORNI_APPELLI, mantieniIPrecedenti, pagamentiNonInRegola, type ContiCosaManca } from '../../lib/cosaManca'
 import { corsiScaduti } from '../../lib/corsiDaPagare'
 import { classeTastoDaFare, TESTI_DA_FARE } from '../../lib/daFareTesti'
@@ -104,7 +104,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
         const attive = pers?.filter((p) => p.attiva) ?? null
         const appelliMancanti = lez ? appelliSenzaSegni(lez, adesso) : null
         const richiesteNuove = ric ? ric.tutte.filter((x) => x.stato === 'nuova').length : null
-        const contoTessere = pers && tess && !tess[0].manca ? contaTessere(incrocioTessere(conTessere(pers, tess[0].elenco), tess[1], oggi)) : null
+        const contoTessere = pers && tess && !tess[0].manca ? contaTessere(incrocioDaMostrare(conTessere(pers, tess[0].elenco), tess[1], oggi)) : null
         const contoCorsi = pers && cl ? corsiScaduti(pers, cl[0], cl[1].listino, oggi) : null
         const nuova = Date.now()
         // Pesante finita bene (tutte e due le letture): da qui i conti sono freschi.

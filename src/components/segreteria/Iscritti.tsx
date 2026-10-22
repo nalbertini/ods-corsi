@@ -10,7 +10,7 @@ import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { conTessere, incrocioTessere, paroleConTessera, senzaTessera, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
+import { conTessere, incrocioDaMostrare, paroleConTessera, SEGNALA_TESSERE, senzaTessera, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
 import { APRI_SCHEDA, idLinguetta, idPannello, schedaDellaSezione, schedaIniziale, SCHEDE, segniSchede, serveCambiare, tastoScheda, type IdScheda } from '../../lib/schedaSezioni'
 import { TessereDellaPersona } from './Tessere'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
@@ -168,7 +168,7 @@ export function Iscritti({
   const conTessereLette = !!tessere.dato && !tessere.dato.manca
   const incroci = new Map<string, RigaIncrocio[]>()
   if (conTessereLette)
-    for (const r of incrocioTessere(conTessere(tutti, tessere.dato!.elenco), corsi.dato ?? [], oggi)) incroci.set(r.personaId, [...(incroci.get(r.personaId) ?? []), r])
+    for (const r of incrocioDaMostrare(conTessere(tutti, tessere.dato!.elenco), corsi.dato ?? [], oggi)) incroci.set(r.personaId, [...(incroci.get(r.personaId) ?? []), r])
   const tesseraDi = (p: PersonaSeg) => incroci.get(p.id) ?? []
   const statiDi = (p: PersonaSeg) => (listino.dato && corsi.dato ? statoCorsi(p, corsi.dato, listino.dato.listino, oggi) : undefined)
   const scopertiDi = (p: PersonaSeg) => (listino.dato && corsi.dato ? corsiDaPagare(p, corsi.dato, listino.dato.listino, oggi) : [])
@@ -198,7 +198,7 @@ export function Iscritti({
     doppioni: [soloDoppi, setDoppi],
     'pagato-prima': [soloPagatoPrima, setPagatoPrima],
   }
-  const altri = altriFiltri({ conTessere: conTessereLette, filePrima: nFilePrima, doppioni: coppie.length, conStorico: nelVecchio > 0 })
+  const altri = altriFiltri({ conTessere: conTessereLette && SEGNALA_TESSERE, filePrima: nFilePrima, doppioni: coppie.length, conStorico: nelVecchio > 0 })
   const accesi = ID_FILTRI.filter((id) => filtri[id][0])
   const altriVisibili = altriAperti(accesi, altriScelto)
   // Il gruppo è aperto solo perché un filtro nascosto è acceso: finché lo è, non si chiude.
@@ -698,7 +698,8 @@ function Scheda({
   const titolare = p.nucleo ? tutti.find((x) => x.id === p.nucleo) : p
   const nucleo = titolare ? [titolare, ...tutti.filter((x) => x.nucleo === titolare.id && x.attiva)].filter((x) => x.id !== p.id) : []
   const parenti = stessoContatto(p, tutti)
-  const tessereDi = tessere ? tessere.filter((t) => t.personaId === p.id) : undefined
+  // A segnalazioni spente niente timbro TESSERA né segno sulla linguetta: la sezione resta.
+  const tessereDi = tessere && SEGNALA_TESSERE ? tessere.filter((t) => t.personaId === p.id) : undefined
   const segni = segniSchede({ ...p, tessere: tessereDi }, [...corsi.values()], oggi, { aperta, inModifica: !!modifica }, statiCorsi && nonPagati(statiCorsi))
   const tastiera = (e: KeyboardEvent) => {
     const dove = tastoScheda(aperta, e.key)

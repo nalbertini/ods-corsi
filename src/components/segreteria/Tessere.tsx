@@ -5,14 +5,15 @@ import {
   conTessere,
   contaTessere,
   contiImport,
-  fraseTessera,
-  incrocioTessere,
+  fraseDaMostrare,
+  incrocioDaMostrare,
   motivoNonAbbinata,
   righeDellaLista,
   tessereRichieste,
   parolaTessera,
   parolaTesseraBreve,
   righeDalFoglio,
+  SEGNALA_TESSERE,
   statoDiUna,
   type EsitoImportTessere,
   type ListaTessere,
@@ -45,6 +46,7 @@ function Segno({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde' | 'spent
 
 /** La parola di una tessera nella sua riga: lo stato dalle sue date, senza «TESSERA» davanti. */
 function segnoDiUna(t: TesseraSeg, oggi: string) {
+  if (!SEGNALA_TESSERE) return null
   const stato = statoDiUna(t, oggi)
   const p = parolaTesseraBreve(stato, t.al)
   return p ? <Segno tono={p.tono}>{p.parola}</Segno> : <Segno tono="verde">In regola</Segno>
@@ -87,14 +89,14 @@ export function TessereDellaPersona({
     <div className="stack" style={{ gap: 8 }} id="sez-tessere">
       <Riga titolo="TESSERE" />
       {sue.length === 0 && (
-        <span style={{ fontSize: 14, color: richieste.size ? 'var(--rosso-testo)' : 'var(--sec)' }}>
-          {richieste.size ? `Nessuna tessera. ${chiede}.` : 'Nessuna tessera. I suoi corsi non la chiedono.'}
+        <span style={{ fontSize: 14, color: richieste.size && SEGNALA_TESSERE ? 'var(--rosso-testo)' : 'var(--sec)' }}>
+          {!richieste.size ? 'Nessuna tessera. I suoi corsi non la chiedono.' : SEGNALA_TESSERE ? `Nessuna tessera. ${chiede}.` : 'Nessuna tessera.'}
         </span>
       )}
       {sue.map((t) => (
         <div key={t.id} className="sg-iscrizione" style={{ flexWrap: 'wrap', paddingBlock: 6 }}>
           <span className="stack grow" style={{ minWidth: 0, gap: 2 }}>
-            <span style={{ fontSize: 15, fontWeight: 600 }}>{fraseTessera(t, oggi)}</span>
+            <span style={{ fontSize: 15, fontWeight: 600 }}>{fraseDaMostrare(t, oggi)}</span>
             <span style={{ fontSize: 12, color: 'var(--dim)' }}>
               n. {t.codice} · {t.origine === 'rasd' ? 'dal RASD' : 'scritta a mano'}
             </span>
@@ -184,7 +186,7 @@ type Lista = ListaTessere
  * scheda; per caricare il foglio del RASD si va in IMPOSTAZIONI.
  */
 export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void }) {
-  const [lista, setLista] = useState<Lista>('senza')
+  const [lista, setLista] = useState<Lista>(SEGNALA_TESSERE ? 'senza' : 'senza-corso')
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
   const tessere = useCarica(() => d.tessere(), [d])
@@ -192,7 +194,7 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
   const guaio = persone.guaio ?? corsi.guaio ?? tessere.guaio
   const pronte = persone.dato && corsi.dato && tessere.dato
   const manca = !!tessere.dato?.manca
-  const righe: RigaIncrocio[] = pronte && !manca ? incrocioTessere(conTessere(persone.dato!, tessere.dato!.elenco), corsi.dato!, oggi) : []
+  const righe: RigaIncrocio[] = pronte && !manca ? incrocioDaMostrare(conTessere(persone.dato!, tessere.dato!.elenco), corsi.dato!, oggi) : []
   const nome = new Map((persone.dato ?? []).map((p) => [p.id, `${p.cognome} ${p.nome}`]))
   const ordinate = (l: Lista) => righeDellaLista(righe, l).sort((a, b) => (nome.get(a.personaId) ?? '').localeCompare(nome.get(b.personaId) ?? '', 'it'))
   const senza = ordinate('senza')
@@ -202,7 +204,7 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
     ? 'Un attimo…'
     : manca
       ? 'Le tessere non sono ancora attive sul database: va lanciato 61-tessere.sql.'
-      : `${contaTessere(righe)} ${contaTessere(righe) === 1 ? 'iscritto senza tessera valida' : 'iscritti senza tessera valida'} · ${senzaCorso.length} ${senzaCorso.length === 1 ? 'tesserato senza corso' : 'tesserati senza corso'}.`
+      : `${SEGNALA_TESSERE ? `${contaTessere(righe)} ${contaTessere(righe) === 1 ? 'iscritto senza tessera valida' : 'iscritti senza tessera valida'} · ` : ''}${senzaCorso.length} ${senzaCorso.length === 1 ? 'tesserato senza corso' : 'tesserati senza corso'}.`
 
   return (
     <div className="stack" style={{ gap: 18 }}>
@@ -215,15 +217,20 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
       {pronte && !manca && (
         <>
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-            <button type="button" className="num sg-chip" aria-pressed={lista === 'senza'} onClick={() => setLista('senza')}>
-              Senza tessera {senza.length}
-            </button>
-            <button type="button" className="num sg-chip" aria-pressed={lista === 'mai'} onClick={() => setLista('mai')}>
-              Mai avute {ordinate('mai').length}
-            </button>
-            <button type="button" className="num sg-chip" aria-pressed={lista === 'scadute'} onClick={() => setLista('scadute')}>
-              Scadute {ordinate('scadute').length}
-            </button>
+            {/* A segnalazioni spente resta solo l'elenco dei tesserati senza corso. */}
+            {SEGNALA_TESSERE && (
+              <>
+                <button type="button" className="num sg-chip" aria-pressed={lista === 'senza'} onClick={() => setLista('senza')}>
+                  Senza tessera {senza.length}
+                </button>
+                <button type="button" className="num sg-chip" aria-pressed={lista === 'mai'} onClick={() => setLista('mai')}>
+                  Mai avute {ordinate('mai').length}
+                </button>
+                <button type="button" className="num sg-chip" aria-pressed={lista === 'scadute'} onClick={() => setLista('scadute')}>
+                  Scadute {ordinate('scadute').length}
+                </button>
+              </>
+            )}
             <button type="button" className="num sg-chip" aria-pressed={lista === 'senza-corso'} onClick={() => setLista('senza-corso')}>
               Tesserati senza corso {senzaCorso.length}
             </button>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { annuncioCambio, caselleCosaManca, type ContiCosaManca } from '../../lib/cosaManca'
+import { annuncioCambio, caselleDaMostrare, type ContiCosaManca } from '../../lib/cosaManca'
 import type { Destinazione, Voce } from './Segreteria'
 
 /**
@@ -17,7 +17,7 @@ export function CosaManca({
   onVai: (v: Voce, d?: Destinazione) => void
   onRiprova: () => void
 }) {
-  const caselle = caselleCosaManca(conti)
+  const caselle = caselleDaMostrare(conti)
   // Un numero che cambia lo dice, piano, a chi non vede lo schermo: non alla prima lettura.
   const [detto, setDetto] = useState('')
   const prima = useRef(conti)
