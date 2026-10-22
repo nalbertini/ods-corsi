@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .campo { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 44px; padding: 0 12px; background: #fff; border: 2px solid #14709f; border-radius: 6px; font-size: 15px; }
+    .gruppo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .bollo { display: inline-block; margin-left: 6px; padding: 1px 8px; border: 1.5px solid #14709f; border-radius: 6px; font-size: 12px; font-weight: 600; color: #14709f; vertical-align: 2px }
+    .riga { display: grid; grid-template-columns: 44px 104px minmax(0, 1fr) 150px 170px 120px 120px; gap: 12px; align-items: center; background: #fff; border-bottom: 1px solid #cfe6f4; }
+    .riga { padding: 16px 18px; min-height: 92px; } .nome { font-size: 16px; font-weight: 700; } .l2 { font-size: 14px; color: #0d2a3d; margin-top: 3px } .l3 { font-size: 13px; color: #46606f; margin-top: 2px } .imp { font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; text-align: right; color: #0b7a33 } .saldo { font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 500; color: #46606f; text-align: right }
+    .cifra { font-family: Inter, 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700; line-height: 1.1; white-space: nowrap }
+    .cella { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 10px 16px; border-right: 1px solid #cfe6f4 }
+    .cella:last-child { border-right: 0 } .cella .sotto { display: flex; flex-direction: column; font-size: 13px; line-height: 1.4; color: #46606f; font-variant-numeric: tabular-nums }
+    .cella .tit { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: #46606f }
+  </style>
+</helmet>
+<!-- PROPOSTA · RITOCCHI GRAFICI · CONTABILITÀ → MOVIMENTI, elenco. Valori copiati da src/styles.css (token del look sito) e dallo screenshot dell'app del 22/10/2026. -->
+<div style="display: flex; width: 1440px; min-height: 1100px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="CONTABILITÀ" numeri="" nome="Chiara Bianchi" ruolo="Amministrazione" altezza="1100px" hint-size="240px,1100px"></dc-import>
+  </div>
+  <main style="flex: 1; min-width: 0; padding: 28px 36px; display: flex; flex-direction: column; gap: 18px">
+    <span class="et" style="color: #8f6a00">PROPOSTA · RITOCCHI GRAFICI</span>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 20px">
+      <div><h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</h1>
+      <span style="font-size: 14px; color: #46606f">Le entrate e le uscite della palestra, nelle sue casse. Gli incassi degli iscritti ci sono già: si correggono nella scheda della persona.</span></div>
+      <div style="display: flex; gap: 10px"><div style="position: relative"><dc-import name="Bottone" tema="sito" label="Altre azioni ▾" variante="linea" contesto="segreteria" hint-size="160px,48px"></dc-import><div style="position: absolute; z-index: 5; top: 54px; left: 0; min-width: 240px; background: #fff; border: 2px solid #14709f"><div style="padding: 12px 16px; font-size: 15px; font-weight: 500">Collega i casi sicuri</div><div style="padding: 12px 16px; font-size: 15px; font-weight: 500; border-top: 1px solid #cfe6f4">Giroconto</div><div style="padding: 12px 16px; font-size: 15px; font-weight: 500; border-top: 1px solid #cfe6f4">Esporta CSV</div><div style="padding: 12px 16px; font-size: 15px; font-weight: 500; border-top: 1px solid #cfe6f4">Guarda il primo scarico Satispay</div></div></div><dc-import name="Bottone" tema="sito" label="Nuovo movimento" variante="pieno" contesto="segreteria" hint-size="200px,48px"></dc-import></div>
+    </div>
+    <div style="display: flex; gap: 10px"><dc-import name="Chip" tema="sito" label="Movimenti" acceso="{{ true }}" hint-size="130px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Bilancio" hint-size="110px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Voci" hint-size="90px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Casse" hint-size="90px,44px"></dc-import></div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #fff; border: 2px solid #cfe6f4"><div class="cella"><span class="tit"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:#14709f"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></svg>CASSA CONTANTI</span><span class="cifra">36.274,93 €</span><span class="sotto"><span>entrate 142.860,00 €</span><span>uscite 106.585,07 €</span></span></div><div class="cella"><span class="tit"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:#14709f"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M10 10v8M14 10v8M19 10v8M3 20h18"/></svg>CONTO CORRENTE</span><span class="cifra">121.920,89 €</span><span class="sotto"><span>entrate 1.079.211,02 €</span><span>uscite 957.290,13 €</span></span></div><div class="cella"><span class="tit"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:#14709f"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>SATISPAY</span><span class="cifra">0,00 €</span><span class="sotto"><span>entrate 0,00 €</span><span>uscite 0,00 €</span></span></div><div class="cella"><span class="tit">TOTALE</span><span class="cifra">158.195,82 €</span><span class="sotto"><span>saldi iniziali compresi</span><span></span></span></div></div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; background: #fff; border: 2px solid #cfe6f4">
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: nowrap">
+        <div class="campo" style="width: 180px; color: #46606f; font-size: 14px">Cerca…</div><div class="campo" style="width: 150px; padding: 0 10px; font-size: 14px"><span>Tutto l’anno</span><span>▾</span></div><div class="campo" style="width: 92px; padding: 0 10px; font-size: 14px"><span>Tipo</span><span>▾</span></div><div class="campo" style="width: 92px; padding: 0 10px; font-size: 14px"><span>Casse</span><span>▾</span></div><div class="campo" style="width: 92px; padding: 0 10px; font-size: 14px"><span>Voce</span><span>▾</span></div><div class="campo" style="width: 100px; padding: 0 10px; font-size: 14px"><span>Persona</span><span>▾</span></div><label style="display: flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap"><span style="width: 18px; height: 18px; border: 2px solid #14709f; background: #fff; flex-shrink: 0"></span>Annullati</label><div style="flex: 1"></div><div style="display: flex; gap: 8px"><dc-import name="Chip" tema="sito" label="Elenco" acceso="{{ true }}" hint-size="90px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Per voce" hint-size="100px,44px"></dc-import></div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column">
+      <div style="display: flex; justify-content: space-between; padding: 12px 18px; background: #cfe6f4; font-size: 14px"><b>939 movimenti</b><span>Saldo iniziale <b>165.521,00 €</b> · Entrate <b style="color: #0b7a33">+ 162.322,17 €</b> · Uscite <b>− 169.647,35 €</b> · Saldo finale <b>158.195,82 €</b></span></div>
+      <div class="riga" style="min-height: 0; padding: 10px 18px; background: transparent; border-bottom: 2px solid #14709f"><span></span><span class="et">DATA</span><span class="et">DESCRIZIONE</span><span class="et">TIPO</span><span class="et">CASSA</span><span class="et" style="text-align: right">ENTRATE</span><span class="et" style="text-align: right">USCITE</span></div>
+      <div class="riga">
+        <span></span><span style="font-size: 14px">22/10/2026</span>
+        <div><span class="nome">Usseglio Veronica</span><div class="l2">Quota associativa</div><div class="l3">ricevuta 308/2026</div></div>
+        <span style="display: flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 600; color: #14709f"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3 3 0 0 1 6 0M15 10h3M15 14h3"/></svg>Incasso iscritto</span>
+        <span style="font-size: 14px; display: flex; gap: 8px; align-items: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:#14709f"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M10 10v8M14 10v8M19 10v8M3 20h18"/></svg>Conto Corrente</span>
+        <span class="imp">+ 50,00 €</span><span></span>
+      </div>
+      <div class="riga">
+        <span></span><span style="font-size: 14px">22/10/2026</span>
+        <div><span class="nome">Usseglio Veronica</span><div class="l2">Corsi e altri pagamenti</div><div class="l3">Trimestre Preparazione atletica, pesi e Mobility 2 giorni · ricevuta 308/2026</div></div>
+        <span style="display: flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 600; color: #14709f"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3 3 0 0 1 6 0M15 10h3M15 14h3"/></svg>Incasso iscritto</span>
+        <span style="font-size: 14px; display: flex; gap: 8px; align-items: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:#14709f"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M10 10v8M14 10v8M19 10v8M3 20h18"/></svg>Conto Corrente</span>
+        <span class="imp">+ 170,00 €</span><span></span>
+      </div>
+      <div class="riga">
+        <span></span><span style="font-size: 14px">22/10/2026</span>
+        <div><span class="nome">Spampinato Giacomo</span><div class="l2">Quota associativa</div><div class="l3">ricevuta 309/2026</div></div>
+        <span style="display: flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 600; color: #14709f"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3 3 0 0 1 6 0M15 10h3M15 14h3"/></svg>Incasso iscritto</span>
+        <span style="font-size: 14px; display: flex; gap: 8px; align-items: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:#14709f"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M10 10v8M14 10v8M19 10v8M3 20h18"/></svg>Conto Corrente</span>
+        <span class="imp">+ 50,00 €</span><span></span>
+      </div>
+      <div class="riga">
+        <span></span><span style="font-size: 14px">21/10/2026</span>
+        <div><span class="nome">Orrú Tommaso</span><div class="l2">Corsi e altri pagamenti</div><div class="l3">Annuale Avviamento arti marziali 1 · ricevuta 306/2026</div></div>
+        <span style="display: flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 600; color: #14709f"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3 3 0 0 1 6 0M15 10h3M15 14h3"/></svg>Incasso iscritto</span>
+        <span style="font-size: 14px; display: flex; gap: 8px; align-items: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:#14709f"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M10 10v8M14 10v8M19 10v8M3 20h18"/></svg>Conto Corrente</span>
+        <span class="imp">+ 195,00 €</span><span></span>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

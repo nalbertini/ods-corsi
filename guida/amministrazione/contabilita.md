@@ -10,17 +10,18 @@ semplice, gli istruttori e il tablet no. Ha quattro schede, sotto il titolo come
 
 MOVIMENTI è un **estratto conto**. In cima, in una riga di stato, **Saldo iniziale**,
 **Entrate**, **Uscite** e **Saldo finale**, di quel che hai scelto con i filtri. La
-tabella ha le colonne **DATA**, **DESCRIZIONE**, **CASSA**, **ENTRATE**, **USCITE** e
-**SALDO**: il saldo progressivo, con le righe dalla più recente. I tasti **Collega i casi
-sicuri**, **Giroconto** e **Nuovo movimento** stanno accanto al titolo CONTABILITÀ, e solo in
-questa scheda.
+tabella ha le colonne **DATA**, **DESCRIZIONE**, **TIPO** (con la sua icona: Incasso iscritto,
+Giroconto, Entrata, Uscita), **CASSA**, **ENTRATE** e **USCITE**, con le righe dalla più
+recente. Accanto al titolo CONTABILITÀ, e solo in questa scheda, c'è **Nuovo movimento**
+e il menu **Altre azioni**: **Collega i casi sicuri**, **Giroconto**, **Esporta CSV** e
+quella di Satispay (vedi sotto).
 
 L'elenco unisce due cose:
 
 - gli **incassi degli iscritti**: le ricevute, i pagamenti a mano e i
   pagamenti Satispay dal modulo di iscrizione (finché non sono in una
-  ricevuta, poi conta la ricevuta) entrano da soli, uno per pagamento, col segno
-  **Incasso iscritto** (sotto la descrizione: voce · metodo · ricevuta N/AAAA, o senza ricevuta). Non si ricopiano e non si cambiano da qui: toccare la riga apre la scheda della
+  ricevuta, poi conta la ricevuta) entrano da soli, uno per pagamento, con il tipo
+  **Incasso iscritto** (sotto il nome: la voce, e ricevuta N/AAAA o senza ricevuta; il metodo lo dice la cassa). Non si ricopiano e non si cambiano da qui: toccare la riga apre la scheda della
   persona, nella scheda **QUOTA E PAGAMENTI**, dove si registra l'incasso e si fa la ricevuta. Se una ricevuta
   o un pagamento si annulla, cambia da sé anche qui. In **PERSONA** c'è il nome
   della scheda dell'iscritto (vuota se il pagamento non ha una scheda): la
@@ -40,8 +41,8 @@ L'elenco unisce due cose:
 Si parte da **Tutto l'anno**: l'elenco, ENTRATE, USCITE e DIFFERENZA contano l'anno in
 corso, non più il mese. Filtri ed elenco stanno in un riquadro solo. Sopra la **ricerca** nella
 descrizione (non bada a maiuscole, accenti e spazi in più), il **periodo** (il mese, il mese
-scorso, tutto l'anno, tutto) ed **Esporta CSV**, un foglio per Excel e per il commercialista,
-senza gli annullati. Sotto i menu: **Casse** (**Conto corrente**, **Contanti**, **Satispay**: se ne spuntano quante
+scorso, tutto l'anno, tutto) e i menu, tutti sulla stessa riga. **Esporta CSV**, nel menu **Altre azioni**, dà un foglio per Excel e per il commercialista,
+senza gli annullati. I menu: **Casse** (**Conto corrente**, **Contanti**, **Satispay**: se ne spuntano quante
 si vuole, nessuna spuntata vale tutte), **Tipo** (**Tutti**, **Entrate**, **Uscite**), **Voce** e **Persona**, poi **Mostra annullati** e la **vista**: **Elenco** o **Per
 voce**, che dà i totali per voce. Un menu acceso ha il fondo pieno e una ✕ accanto che lo spegne.
 Sotto i filtri, una riga dice quanti movimenti ci sono, quanti ne hai scelti, ogni
@@ -179,8 +180,8 @@ giroconto va e la commissione no, l'app lo dice: la commissione si scrive da
 ### Lo scarico da Satispay
 
 I pagamenti del negozio Satispay entrano da soli, ogni notte, fino al giorno prima.
-In MOVIMENTI la striscia Satispay dice quando è stato l'ultimo scarico, e **Scarica
-ora** lo fa subito.
+In MOVIMENTI, nel menu **Altre azioni**, **Scarica ora i pagamenti Satispay** lo fa subito
+(la prima volta c'è invece **Guarda il primo scarico Satispay**). Se l'ultimo scarico non è riuscito, o ci sono casi da decidere, un avviso lo dice sopra l'elenco.
 
 **La prima volta** c'è l'anteprima: l'app legge tutto Satispay e dice cosa
 scriverebbe, senza scrivere niente finché non dici sì. Ogni pagamento entra una volta
