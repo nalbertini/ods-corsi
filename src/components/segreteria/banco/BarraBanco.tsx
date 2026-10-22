@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Logo } from '../../Logo'
 import { Bollino } from '../../ds'
 import type { Voce } from '../../../lib/indirizzoSegreteria'
-import { luoghiPer, luogoDi, voceInLista } from '../../../lib/luoghiBanco'
+import { luoghiPer, luogoDi, voceDelLuogo, voceInLista } from '../../../lib/luoghiBanco'
 
 /** Il numero da mostrare accanto a una voce: cose che aspettano, con la parola per chi non vede il colore. */
 const Segno = ({ n, detto }: { n: number; detto: string }) =>
@@ -120,7 +120,7 @@ export function BarraBanco({
         {luoghi.map((l) => {
           const n = l.voci.reduce((somma, v) => somma + (segni[v.voce]?.n ?? 0), 0)
           return (
-            <button key={l.id} type="button" className="num bn-luogo" aria-current={l.id === luogo.id ? 'page' : undefined} onClick={() => onVai(l.voci[0].voce)}>
+            <button key={l.id} type="button" className="num bn-luogo" aria-current={l.id === luogo.id ? 'page' : undefined} onClick={() => onVai(voceDelLuogo(l))}>
               {l.nome}
               <Segno n={n} detto="da guardare" />
             </button>

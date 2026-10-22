@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PALESTRA proposta: il clic sul luogo apre una pagina d'ingresso, LA PALESTRA, con le quattro voci in grande (VoceGrande),
+     ciascuna con la frase della pagina che apre. Le voci restano anche nella seconda riga, nessuna accesa: chi sa dove andare ci va
+     dritto. Le segnalazioni che aspettano una risposta si vedono sulla tessera, con la barra gialla scura e la parola. -->
+<div style="display: flex; flex-direction: column; width: 1440px; min-height: 820px; background: #eef5fa">
+  <dc-import name="BarraBanco" luogo="PALESTRA" voce="" numeri="OGGI:7, PERSONE:4, PALESTRA:2, SEGNALAZIONI:2" hint-size="100%,190px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 18px; padding: 24px 36px 28px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">LA PALESTRA</h1>
+      <span style="font-size: 14px; color: #46606f">Quello che si apre di rado: i numeri, le segnalazioni, il sito, le regole.</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; max-width: 960px">
+      <dc-import name="VoceGrande" voce="statistiche" titolo="STATISTICHE" frase="Come va la palestra, mese per mese: chi viene, quando, in quali corsi, quanto entra." hint-size="100%,168px"></dc-import>
+      <dc-import name="VoceGrande" voce="segnalazioni" titolo="SEGNALAZIONI" frase="Cosa non va nell’app o cosa serve: si scrive qui, la risposta arriva sotto." stato="2 da rispondere" hint-size="100%,168px"></dc-import>
+      <dc-import name="VoceGrande" voce="sito" titolo="SITO" frase="Le pagine del sito della palestra, il menu, il footer e le immagini." hint-size="100%,168px"></dc-import>
+      <dc-import name="VoceGrande" voce="regole" titolo="IMPOSTAZIONI" frase="Le scelte che spettano alla palestra, non al programma." hint-size="100%,168px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":820}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
