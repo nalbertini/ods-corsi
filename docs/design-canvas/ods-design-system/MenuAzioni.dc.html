@@ -18,13 +18,15 @@
   <div style="display: flex; flex-direction: column; min-width: 260px; margin-top: 4px; padding: 6px; background: #fff; border: 2px solid #0d2a3d">
     <div style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: 15px">{{voce1}}</div>
     <div style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: 15px">{{voce2}}</div>
-    <div style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: 15px; color: #46606f">{{voceSpenta}}</div>
+    <sc-if value="{{voce3}}"><div style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: 15px">{{voce3}}</div></sc-if>
+    <sc-if value="{{voceSpenta}}"><div style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: 15px; color: #46606f">{{voceSpenta}}</div></sc-if>
+    <sc-if value="{{voceRossa}}"><div style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: 15px; color: #b81d1d">{{voceRossa}}</div></sc-if>
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"Altre azioni"},"voce1":{"editor":"text","default":"Collega i casi sicuri"},"voce2":{"editor":"text","default":"Giroconto"},"voceSpenta":{"editor":"text","default":"Esporta CSV"},"$preview":{"width":300,"height":260}}'>
+<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"Altre azioni"},"voce1":{"editor":"text","default":"Collega i casi sicuri"},"voce2":{"editor":"text","default":"Giroconto"},"voce3":{"editor":"text","default":""},"voceSpenta":{"editor":"text","default":"Esporta CSV"},"voceRossa":{"editor":"text","default":""},"$preview":{"width":300,"height":260}}'>
 // Riproduzione 1:1 di MenuAzioni (comune.tsx; .sg-menu-azioni*, src/styles.css): tasto a linea .sg-btn-linea e lista ancorata a SINISTRA del tasto
-// (left: 0), bordo 2px `text`, voci alte 44px, 15px; la voce spenta e' `dim`. Si chiude con un clic fuori, su una voce o con Esc (stati non riprodotti). Tema sito.
+// (left: 0), bordo 2px `text`, voci alte 44px, 15px; la voce spenta e' `dim`; voceRossa (vuota di norma) e' in `rosso-testo`, per cio' che toglie (Disattiva), come Bottone `pericolo`. Le voci vuote non si disegnano. Si chiude con un clic fuori, su una voce o con Esc (stati non riprodotti). Tema sito.
 </script>
 </body>
 </html>

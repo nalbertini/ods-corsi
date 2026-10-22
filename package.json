@@ -54,6 +54,7 @@
     "prova:dafare": "node scripts/prova-dafare.mjs",
     "prova:menu": "node scripts/prova-menu.mjs",
     "prova:scheda-finestra": "node scripts/prova-scheda-finestra.mjs",
+    "prova:scheda-iscritto": "node scripts/prova-scheda-iscritto.mjs",
     "prova:filtri-iscritti": "node scripts/prova-filtri-iscritti.mjs",
     "prova:pagato-prima": "node scripts/prova-pagato-prima.mjs",
     "prova:sito": "node scripts/prova-sito.mjs",
