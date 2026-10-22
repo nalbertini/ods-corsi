@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .riga { display: grid; grid-template-columns: 1.3fr 1.6fr 140px 110px 30px; gap: 12px; align-items: center; padding: 14px; border-bottom: 1px solid #cfe6f4; font-size: 15px; background: #fff; }
+    .riga b { font-weight: 600; }
+    .dim { color: #46606f; font-size: 13px; }
+    .imp { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .tag { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.08em; font-size: 14px; padding: 3px 8px; border: 2px solid #0d2a3d; justify-self: start; }
+   
+    .vai { text-align: right; font-size: 18px; color: #46606f; }
+    .testa { display: grid; grid-template-columns: 1.3fr 1.6fr 140px 110px 30px; gap: 12px; padding: 10px 14px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.1em; font-size: 14px; color: #46606f; border-bottom: 2px solid #0d2a3d; }
+    .nota { font-size: 14px; color: #46606f; }
+    .az { display: flex; gap: 10px; align-items: center; }
+    .card { background: #fff; border: 2px solid #cfe6f4; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  </style>
+</helmet>
+<div style="position:relative;display:flex;width:1440px;min-height:1000px;background:#eef5fa">
+  <div style="width:240px;flex-shrink:0"><dc-import name="Menu" tema="sito" iscrittiUnico="true" attiva="ISCRITTI" numeri="" nome="Marco Rossi" ruolo="Segreteria" altezza="1500px" hint-size="240px,1500px"></dc-import></div>
+  <main style="display:flex;flex-direction:column;gap:18px;flex:1;min-width:0;padding:28px 36px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-size:34px;font-weight:800;letter-spacing:.04em;line-height:1">ISCRITTI</h1><span style="font-size:14px;color:#46606f">Gli incassi e le ricevute. Una riga apre la scheda della persona.</span></div>
+    <dc-import name="SchedeIscritti" tema="sito" acceso="PAGAMENTI" hint-size="100%,48px"></dc-import>
+    <div style="display:flex;flex-direction:column">
+      <div class="testa"><span>PERSONA</span><span>COSA</span><span>QUANDO</span><span style="text-align:right">IMPORTO</span><span></span></div>
+      <div class="riga"><div><b>Rossi Giulia</b></div><div class="dim">Judo kids annuale</div><div class="dim">14/10/2026</div><div class="imp">310,00 €</div><div class="vai">›</div></div>
+      <div class="riga"><div><b>Bianchi Marco</b></div><div class="dim">Quota associativa</div><div class="dim">12/10/2026</div><div class="imp">50,00 €</div><div class="vai">›</div></div>
+      <div class="riga"><div><b>Esposito Marta</b></div><div class="dim">Pilates · 10 ingressi</div><div class="dim">09/10/2026</div><div class="imp">95,00 €</div><div class="vai">›</div></div>
+      <div class="riga"><div><b>Gallo Anna (per Gallo Elia)</b></div><div class="dim">Psicomotricità</div><div class="dim">03/10/2026</div><div class="imp">125,00 €</div><div class="vai">›</div></div>
+    </div>
+    <div class="nota">Le colonne e i filtri di oggi restano come sono: cambia solo dove si arriva. Anche il Banco (luogo SOLDI) porta qui.</div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
