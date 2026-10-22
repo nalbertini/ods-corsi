@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Tema sito: Inter (qui da Google Fonts, in app file locale OFL). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<section style="display: flex; align-items: center; gap: 14px; min-height: 60px; padding: 0 20px; background: #fff; border: 2px solid #cfe6f4; box-shadow: {{allarmeOmbra}}; color: #0d2a3d">
+  <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.24em; white-space: nowrap">{{titolo}}</span>
+  <sc-if value="{{haNota}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; color: #46606f">{{nota}}</span></sc-if>
+  <span style="flex: 1; height: 2px; background: #cfe6f4"></span>
+  <span style="font-size: 18px; color: #46606f">{{segno}}</span>
+</section>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"PROVE"},"nota":{"editor":"text","default":"4 persone in 4 lezioni"},"aperta":{"editor":"boolean","default":false},"allarme":{"editor":"boolean","default":false},"$preview":{"width":720,"height":64}}'>
+// Riproduzione di `Chiudibile` di Presenze.tsx (`.sg-chiudibile`, styles.css): la testata di una sezione lunga che si apre e si chiude
+// (`<details>`): titolo spaziato, nota, filo, ⌄ da chiusa / ⌃ da aperta; alta 44px minimo. Si apre da sola solo se c'è qualcosa da fare.
+// `allarme`: barra rossa a sinistra (`inset 4px 0 0` rosso testo #b81d1d), il conto nel titolo («APPELLI MANCANTI · 15») resta il segnale che non dipende dal colore.
+// Mostra solo la testata: il corpo aperto sono i riquadri e le righe già in libreria.
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const nota = p.nota ?? '';
+    return {
+      titolo: p.titolo ?? 'PROVE', nota, haNota: nota !== '',
+      segno: truthy(p.aperta) ? '⌃' : '⌄',
+      allarmeOmbra: truthy(p.allarme) ? 'inset 4px 0 0 #b81d1d' : 'none',
+    };
+  }
+}
+</script>
+</body>
+</html>
