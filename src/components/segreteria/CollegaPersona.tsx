@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { LIMITE_CAMBIO_VOCE, pacchetti, type RigaMovimento } from '../../lib/contabilita'
-import { collegaTuttiISicuri, cosaNonVaCollegato, type CandidatoPersona } from '../../lib/movimentiPersona'
+import { collegaTuttiISicuri, cosaNonVaCollegato, dividiStorico, type CandidatoPersona, type VoceStorico } from '../../lib/movimentiPersona'
 import { dataRicevuta, euro } from '../../lib/ricevute'
-import { chiedi, Guaio, messaggio, useCarica, type useAvviso } from './comune'
+import { chiedi, dataLunga, Guaio, messaggio, useCarica, type useAvviso } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 const soldi = (c: number) => `${euro(c)} €`
@@ -154,21 +154,9 @@ function SchedaCandidata({ c, scelta, onScegli }: { c: CandidatoPersona; scelta:
   )
 }
 
-/**
- * Collegare a mano uno o più movimenti scelti a una persona: per gli omonimi e per i movimenti che il blocco non ha preso.
- * Le persone offerte sono quelle col nome della causale del primo movimento; se non bastano, si cerca per nome.
- */
-export function CollegaAPersona({ d, righe, fai, onFatto, onChiudi }: { d: DatiSegreteria; righe: RigaMovimento[]; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
-  const ids = righe.map((r) => r.id)
-  const candidati = useCarica(() => d.candidatiPersonaMovimento(ids[0]), [d, ids[0]])
-  const [scritto, setScritto] = useState('')
+/** Le schede col nome scritto, da tre lettere: l'amministrazione non scorre le schede, ne cerca una. */
+function useCercaPersone(d: DatiSegreteria, scritto: string): CandidatoPersona[] {
   const [trovati, setTrovati] = useState<CandidatoPersona[]>([])
-  const [personaId, setPersonaId] = useState('')
-  const [lavoro, setLavoro] = useState<number | null>(null)
-  const guaio = righe.map((r) => cosaNonVaCollegato(r)).find(Boolean) ?? null
-  const totale = righe.reduce((s, r) => s + r.importo, 0)
-
-  // Per nome, da tre lettere: l'amministrazione non scorre le schede, ne cerca una.
   useEffect(() => {
     const t = scritto.trim()
     if (t.length < 3) {
@@ -187,6 +175,48 @@ export function CollegaAPersona({ d, righe, fai, onFatto, onChiudi }: { d: DatiS
       window.clearTimeout(attesa)
     }
   }, [d, scritto])
+  return trovati
+}
+
+/**
+ * La persona di una quota o di un corso scritti a mano (nuovo movimento, cambio voce): si cerca per nome e se ne
+ * sceglie una. La scelta resta in vista anche quando si cambia quel che si cerca.
+ */
+export function CampoPersona({ d, scelta, onScegli, manca }: { d: DatiSegreteria; scelta: CandidatoPersona | null; onScegli: (p: CandidatoPersona) => void; manca: string }) {
+  const [scritto, setScritto] = useState('')
+  const trovati = useCercaPersone(d, scritto)
+  const offerte = scelta ? [scelta, ...trovati.filter((t) => t.id !== scelta.id)] : trovati
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <label className="stack" style={{ gap: 6 }}>
+        <span className="sg-etichetta">PERSONA · DI CHI È</span>
+        <input className="sg-campo" type="search" placeholder="Almeno tre lettere del nome o del cognome" value={scritto} onChange={(e) => setScritto(e.target.value)} />
+      </label>
+      {offerte.length > 0 && (
+        <div className="stack" style={{ gap: 8 }} role="radiogroup" aria-label="Persona">
+          {offerte.map((p) => <SchedaCandidata key={p.id} c={p} scelta={p.id === scelta?.id} onScegli={() => onScegli(p)} />)}
+        </div>
+      )}
+      {scritto.trim().length >= 3 && trovati.length === 0 && !scelta && <span className="sg-sotto" role="status">Nessuna scheda con questo nome.</span>}
+      {!scelta && <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{manca}</span>}
+      <span className="sg-sotto">Si cerca da tre lettere. La quota va a chi frequenta, anche se ha pagato il genitore.</span>
+    </div>
+  )
+}
+
+/**
+ * Collegare a mano uno o più movimenti scelti a una persona: per gli omonimi e per i movimenti che il blocco non ha preso.
+ * Le persone offerte sono quelle col nome della causale del primo movimento; se non bastano, si cerca per nome.
+ */
+export function CollegaAPersona({ d, righe, fai, onFatto, onChiudi }: { d: DatiSegreteria; righe: RigaMovimento[]; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
+  const ids = righe.map((r) => r.id)
+  const candidati = useCarica(() => d.candidatiPersonaMovimento(ids[0]), [d, ids[0]])
+  const [scritto, setScritto] = useState('')
+  const trovati = useCercaPersone(d, scritto)
+  const [personaId, setPersonaId] = useState('')
+  const [lavoro, setLavoro] = useState<number | null>(null)
+  const guaio = righe.map((r) => cosaNonVaCollegato(r)).find(Boolean) ?? null
+  const totale = righe.reduce((s, r) => s + r.importo, 0)
 
   const offerte = [...(candidati.dato ?? []), ...trovati.filter((t) => !(candidati.dato ?? []).some((c) => c.id === t.id))]
   const scelta = offerte.find((p) => p.id === personaId)
@@ -247,17 +277,48 @@ export function CollegaAPersona({ d, righe, fai, onFatto, onChiudi }: { d: DatiS
 }
 
 /**
- * Nella scheda di una persona: i pagamenti che il vecchio programma ha registrato a suo nome, a parte. Non sono
- * pagamenti dell'app e non si sommano ai suoi: lo stesso incasso può comparire in tutti e due, nei giorni in cui
- * le due cose si sono sovrapposte. Se non ce ne sono, il blocco non compare.
+ * Nella scheda di una persona: i movimenti di CONTABILITÀ a suo nome. Quelli scritti a mano (una quota, un corso)
+ * stanno fra i pagamenti ma non si sommano: non sono ricevute, e la quota resta da pagare. Quelli del vecchio
+ * programma stanno a parte: lo stesso incasso può comparire anche nei pagamenti dell'app, nei giorni in cui le due
+ * cose si sono sovrapposte. Se non ce ne sono, il blocco non compare.
  */
 const RIGHE_STORICO = 5
-export function StoricoPersona({ d, personaId }: { d: DatiSegreteria; personaId: string }) {
+export function StoricoPersona({ d, personaId, onMovimento }: { d: DatiSegreteria; personaId: string; onMovimento?: (id: string) => void }) {
   const st = useCarica(() => d.storicoPersona(personaId), [d, personaId])
   const [tutte, setTutte] = useState(false)
-  const righe = st.dato ?? []
+  const { inContabilita, vecchioProgramma: righe } = dividiStorico(st.dato ?? [])
   if (st.guaio) return <span className="sg-sotto" role="status">Lo storico dal vecchio programma non si legge: {st.guaio}</span>
-  if (righe.length === 0) return null
+  return (
+    <>
+      {inContabilita.length > 0 && (
+        <section className="stack" style={{ gap: 8 }} aria-label="Scritti in contabilità">
+          <span className="sg-etichetta" style={{ fontSize: 13, letterSpacing: '0.2em' }}>SCRITTI IN CONTABILITÀ · {inContabilita.length}</span>
+          {inContabilita.map((r) => (
+            <div key={r.id} className="sg-voce-elenco sg-pagamento" style={{ flexWrap: 'wrap' }}>
+              <span className="stack grow" style={{ minWidth: 0, flex: '1 1 200px' }}>
+                <span style={{ fontSize: 15, fontWeight: 600 }}>{dataLunga(r.data)} · {r.cassa}</span>
+                <span style={{ fontSize: 12, color: 'var(--dim)', overflowWrap: 'anywhere' }}>
+                  {r.voce} · {r.descrizione}
+                  <span className="num sg-tag" data-tipo="presto" style={{ marginLeft: 8 }}>Scritto in contabilità</span>
+                </span>
+              </span>
+              <span className="num" style={{ fontSize: 18, fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--verde-testo)' }}>{soldi(r.importo)}</span>
+              {onMovimento && (
+                <button type="button" className="num sg-chip" style={{ marginLeft: 'auto' }} onClick={() => onMovimento(r.id)}>
+                  Apri in contabilità
+                </button>
+              )}
+            </div>
+          ))}
+          <span className="sg-sotto">Non è una ricevuta: senza numero, senza PDF, e non tocca quello che resta da pagare. Se la quota la vuoi contata, la ricevuta si fa in PAGAMENTI.</span>
+        </section>
+      )}
+      {righe.length > 0 && <StoricoVecchio righe={righe} tutte={tutte} onTutte={() => setTutte(!tutte)} />}
+    </>
+  )
+}
+
+function StoricoVecchio({ righe, tutte, onTutte }: { righe: VoceStorico[]; tutte: boolean; onTutte: () => void }) {
   // `storicoPersona` rende le righe dal più recente.
   const ultimo = righe[0].data
   const viste = tutte ? righe : righe.slice(0, RIGHE_STORICO)
@@ -284,7 +345,7 @@ export function StoricoPersona({ d, personaId }: { d: DatiSegreteria; personaId:
       </div>
       <div className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         {righe.length > RIGHE_STORICO && (
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => setTutte(!tutte)}>
+          <button type="button" className="sg-btn sg-btn-linea" onClick={onTutte}>
             {tutte ? 'Mostra meno' : `Mostra altri ${righe.length - RIGHE_STORICO}`}
           </button>
         )}

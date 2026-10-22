@@ -106,6 +106,16 @@ export const NOME_CASSA_SATISPAY = 'Satispay'
 export const CAMBIO_CASSA_SATISPAY = '2026-10-01'
 export const VOCE_QUOTA = 'Quota associativa'
 export const VOCE_CORSI = 'Corsi e altri pagamenti'
+/** Un'entrata su una quota o un corso, scritta a mano, ha la persona che ha pagato (`98-quote-persona.sql`). */
+export const vuolePersona = (tipo: string, voceNome: string | null | undefined): boolean =>
+  tipo === 'entrata' && (voceNome === VOCE_QUOTA || voceNome === VOCE_CORSI)
+/** Un movimento a mano (non dello storico) che cambia voce verso una quota o un corso: ci va con la persona. */
+export const vuolePersonaRiga = (r: Pick<RigaMovimento, 'tipo' | 'voce' | 'origineImport'>, voceNome: string | null | undefined): boolean =>
+  r.voce !== voceNome && vuolePersona(r.tipo, voceNome) && !r.origineImport?.startsWith('prima-nota:')
+/** Le parole del database quando manca la persona: lo schermo le riconosce per non ripeterle sotto il campo. */
+export const SCEGLI_LA_PERSONA = 'Scegli la persona'
+/** Le parole di `cambia_voce_movimenti` quando un lotto porterebbe su una quota o un corso dei movimenti a mano. */
+export const UNA_RIGA_ALLA_VOLTA = 'Una quota o un corso si sposta una riga alla volta, con la persona: apri il movimento dall’elenco e cambia la voce lì.'
 /** La voce che la chiusura di cassa scrive da sola (una di entrata e una di uscita): a mano non si sceglie. */
 export const VOCE_DIFFERENZA = 'Differenza di cassa'
 /** La voce dove lo storico ha messo le spese sparse: per i conti della chat è da sistemare, come «Da classificare». */
@@ -331,7 +341,7 @@ export const cambiabile = (r: RigaMovimento): boolean => r.origine === 'moviment
  * Cosa non va in un cambio di voce, con le parole di `cambia_voce_movimenti`. Cambia solo la voce, quindi i giorni
  * chiusi non contano. `righe` è l'elenco intero; il primo movimento che non va, in ordine di id, dà il messaggio.
  */
-export function cosaNonVaCambioVoce(ids: string[], righe: RigaMovimento[], voci: VoceContabile[], voceId: string): string | null {
+export function cosaNonVaCambioVoce(ids: string[], righe: RigaMovimento[], voci: VoceContabile[], voceId: string, personaId?: string): string | null {
   const scelte = [...new Set(ids)].sort()
   if (!scelte.length) return 'Scegli almeno un movimento'
   if (scelte.length > LIMITE_CAMBIO_VOCE) return `Troppi movimenti in una volta: al massimo ${LIMITE_CAMBIO_VOCE}`
@@ -351,6 +361,10 @@ export function cosaNonVaCambioVoce(ids: string[], righe: RigaMovimento[], voci:
     if (r.voce === VOCE_DIFFERENZA) return `${quale} è scritto dalla chiusura di cassa: non si cambia`
     if (r.tipo !== voce.tipo) return 'La voce scelta non va con questo tipo di movimento'
   }
+  // Lo storico del vecchio programma resta facoltativo: la persona la vogliono solo i movimenti scritti a mano.
+  const aMano = trovate.filter((r) => r && vuolePersonaRiga(r, voce.nome))
+  if (aMano.length && scelte.length > 1) return UNA_RIGA_ALLA_VOLTA
+  if (aMano.length && !personaId) return SCEGLI_LA_PERSONA
   return null
 }
 
@@ -489,7 +503,7 @@ export function filtriAttivi(f: FiltriElenco): number {
 }
 
 /** Il movimento appena scritto com'è nell'elenco, per sapere se i filtri lo nascondono. */
-export const rigaAppenaScritta = (r: Pick<RigaMovimento, 'tipo' | 'data' | 'importo' | 'descrizione' | 'cassaId' | 'cassaAId'> & { voce?: string | null }): RigaMovimento => ({
+export const rigaAppenaScritta = (r: Pick<RigaMovimento, 'tipo' | 'data' | 'importo' | 'descrizione' | 'cassaId' | 'cassaAId' | 'personaId'> & { voce?: string | null }): RigaMovimento => ({
   id: 'nuovo',
   origine: 'movimento',
   voce: null,
@@ -499,7 +513,7 @@ export const rigaAppenaScritta = (r: Pick<RigaMovimento, 'tipo' | 'data' | 'impo
 
 /**
  * Un movimento appena scritto resta fuori dall'elenco se i filtri lo escludono: la schermata lo dice, se no sembra perso.
- * Con una persona scelta non si vede mai, perché un movimento nuovo non ne ha una.
+ * Con una persona scelta si dice sempre: il filtro guarda i collegamenti letti prima di scriverlo.
  */
 export function nonSiVedra(r: RigaMovimento, f: Pick<FiltroMovimenti, 'testo' | 'dal' | 'al' | 'tipo' | 'cassaId' | 'voce'> & { persona?: string }): boolean {
   return !!f.persona || filtraMovimenti([r], { ...f, annullati: false }).length === 0
@@ -562,6 +576,8 @@ export interface DatiMovimento {
   cassaId: string
   descrizione: string
   nota?: string
+  /** Chi ha pagato: obbligatoria per una quota o un corso (`vuolePersona`), ignorata sulle altre voci. */
+  personaId?: string
 }
 
 export function cosaNonVaMovimento(d: DatiMovimento, voci: VoceContabile[], casse: Cassa[], oggi: string, chiusure: ChiusuraCassa[] = []): string | null {
@@ -573,6 +589,7 @@ export function cosaNonVaMovimento(d: DatiMovimento, voci: VoceContabile[], cass
   if (voce.tipo !== d.tipo) return 'La voce scelta non va con questo tipo di movimento'
   if (!voce.attiva) return 'La voce non è più in uso: scegline un’altra'
   if (voce.diSistema && voce.nome === VOCE_DIFFERENZA) return 'La «Differenza di cassa» si scrive da sola chiudendo la cassa'
+  if (vuolePersona(d.tipo, voce.nome) && !d.personaId) return SCEGLI_LA_PERSONA
   const cassa = casse.find((c) => c.id === d.cassaId)
   if (!cassa) return 'Scegli la cassa'
   if (cassa.dal && d.data < cassa.dal) return 'La data è prima dell’inizio della cassa'
@@ -580,6 +597,16 @@ export function cosaNonVaMovimento(d: DatiMovimento, voci: VoceContabile[], cass
   if (!d.descrizione.trim()) return 'Scrivi una descrizione'
   if (d.descrizione.trim().length > 200) return 'La descrizione è troppo lunga: al massimo 200 caratteri'
   return null
+}
+
+/**
+ * Una ricevuta o un pagamento della stessa persona e dello stesso importo nei 30 giorni fino a `data`: la quota che
+ * si sta scrivendo a mano sembra già incassata. È un avviso, non un rifiuto.
+ */
+export function ricevutaDoppione<T extends Pick<RigaMovimento, 'origine' | 'annullato' | 'personaId' | 'importo' | 'data'>>(righe: T[], personaId: string, importo: number, data: string): T | null {
+  if (!personaId) return null
+  const dal = new Date(new Date(`${data}T12:00:00Z`).getTime() - 30 * 86_400_000).toISOString().slice(0, 10)
+  return righe.find((r) => r.origine !== 'movimento' && !r.annullato && r.personaId === personaId && r.importo === importo && r.data >= dal && r.data <= data) ?? null
 }
 
 /** Le righe del riepilogo da confermare prima di scrivere un movimento. */
