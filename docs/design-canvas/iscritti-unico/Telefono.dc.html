@@ -17,7 +17,6 @@
     .dim { color: #46606f; font-size: 13px; }
     .imp { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
     .tag { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.08em; font-size: 14px; padding: 3px 8px; border: 2px solid #0d2a3d; justify-self: start; }
-   
     .vai { text-align: right; font-size: 18px; color: #46606f; }
     .testa { display: grid; grid-template-columns: 1.3fr 1.6fr 140px 110px 30px; gap: 12px; padding: 10px 14px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.1em; font-size: 14px; color: #46606f; border-bottom: 2px solid #0d2a3d; }
     .nota { font-size: 14px; color: #46606f; }
@@ -29,10 +28,11 @@
   <dc-import name="BarraTelefono" tema="sito" luogo="SEGRETERIA" da-fare="5" hint-size="100%,62px"></dc-import>
   <main style="display:flex;flex-direction:column;gap:16px;flex:1;padding:20px 16px 0">
     <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-size:34px;font-weight:800;letter-spacing:.04em;line-height:1">ISCRITTI</h1><span style="font-size:14px;color:#46606f">46 iscritti.</span></div>
-    <div style="display:flex;gap:0"><dc-import name="SchedeIscritti" tema="sito" telefono="true" acceso="ELENCO" hint-size="100%,44px"></dc-import></div>
-    <dc-import name="FiltriIscritti" tema="sito" attivi="TUTTI" hint-size="100%,200px"></dc-import>
+    <dc-import name="FiltriIscritti" tema="sito" attivi="" conti="SENZA CERTIFICATO VALIDO:70|DA PAGARE:22|CORSI SCADUTI:9|NON IN REGOLA:81" hint-size="100%,200px"></dc-import>
     <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="IMPORTA TESSERE" larghezza="100%" hint-size="100%,48px"></dc-import>
-    <dc-import name="RigaIscritto" tema="sito" nome="Rossi Giulia" corsi="Judo kids, Pilates" contatto="333 1234567" bollini="IN REGOLA:verde" frequenza="5/8" hint-size="100%,70px"></dc-import>
+    <dc-import name="TestataTabella" tema="sito" colonne="NOME|CERTIFICATO@certificato|QUOTA@quota|30 GG" griglia="minmax(0, 1fr) 56px 56px 40px" ordinata="NOME" hint-size="100%,40px"></dc-import>
+    <dc-import name="RigaIscritto" tema="sito" nome="Rossi Giulia" corsi="" contatto="" bollini="ok:ok" quota="ok:ok" frequenza="9/9" poco="{{ false }}" proposta="{{ true }}" piu="" telefono="{{ true }}" griglia="minmax(0, 1fr) 56px 56px 40px" hint-size="100%,50px"></dc-import>
+    <dc-import name="RigaIscritto" tema="sito" nome="Bianchi Marco" corsi="" contatto="" bollini="Manca:rosso" quota="Da pagare:rosso" frequenza="2/7" poco="{{ false }}" proposta="{{ true }}" piu="" telefono="{{ true }}" griglia="minmax(0, 1fr) 56px 56px 40px" hint-size="100%,50px"></dc-import>
   </main>
 </div>
 </x-dc>

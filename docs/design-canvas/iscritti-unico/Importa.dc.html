@@ -17,7 +17,6 @@
     .dim { color: #46606f; font-size: 13px; }
     .imp { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
     .tag { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.08em; font-size: 14px; padding: 3px 8px; border: 2px solid #0d2a3d; justify-self: start; }
-   
     .vai { text-align: right; font-size: 18px; color: #46606f; }
     .testa { display: grid; grid-template-columns: 1.3fr 1.6fr 140px 110px 30px; gap: 12px; padding: 10px 14px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.1em; font-size: 14px; color: #46606f; border-bottom: 2px solid #0d2a3d; }
     .nota { font-size: 14px; color: #46606f; }
@@ -26,10 +25,9 @@
   </style>
 </helmet>
 <div style="position:relative;display:flex;width:1440px;min-height:1000px;background:#eef5fa">
-  <div style="width:240px;flex-shrink:0"><dc-import name="Menu" tema="sito" iscrittiUnico="true" attiva="ISCRITTI" numeri="" nome="Marco Rossi" ruolo="Segreteria" altezza="1500px" hint-size="240px,1500px"></dc-import></div>
+  <div style="width:240px;flex-shrink:0"><dc-import name="Menu" tema="sito" iscrittiUnico="true" autorizzazioni="segreteria e amministrazione" attiva="ISCRITTI" numeri="" nome="Marco Rossi" ruolo="Segreteria" altezza="1500px" hint-size="240px,1500px"></dc-import></div>
   <main style="display:flex;flex-direction:column;gap:18px;flex:1;min-width:0;padding:28px 36px">
     <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-size:34px;font-weight:800;letter-spacing:.04em;line-height:1">ISCRITTI</h1><span style="font-size:14px;color:#46606f">Importa tessere dal RASD.</span></div>
-    <dc-import name="SchedeIscritti" tema="sito" acceso="ELENCO" hint-size="100%,48px"></dc-import>
     <div class="card">
       <dc-import name="Passi" attivo="2" tema="chiaro" hint-size="520px,50px"></dc-import>
       <dc-import name="FoglioLetto" foglio="tessere-rasd.csv" righe="260" saltate="4" tema="chiaro" hint-size="300px,150px"></dc-import>

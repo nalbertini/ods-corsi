@@ -21,8 +21,8 @@
    "page": "page-1"
   },
   {
-   "file": "Pagamenti.dc.html",
-   "title": "3 · ISCRITTI, scheda PAGAMENTI",
+   "file": "Contabilita.dc.html",
+   "title": "3 · CONTABILITÀ, scheda PAGAMENTI",
    "x": 0,
    "y": 1700,
    "page": "page-1"
@@ -39,13 +39,6 @@
    "title": "5 · Sul telefono (390 px)",
    "x": 3040,
    "y": 300,
-   "page": "page-1"
-  },
-  {
-   "file": "Amministrazione.dc.html",
-   "title": "6 · Amministrazione sola: invariata",
-   "x": 3040,
-   "y": 1700,
    "page": "page-1"
   }
  ],
