@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.164.0 — 22 ottobre 2026
+
+### Novità
+
+- Un'email alla segreteria quando lo scarico Satispay scrive in CONTABILITÀ o non riesce
+
 ## 0.163.0 — 22 ottobre 2026
 
 ### Novità
