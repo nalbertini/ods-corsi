@@ -1417,6 +1417,17 @@ export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'doc
   return { certificato: spegni(t.certificato), quota: spegni(t.quota), documento: spegni(t.documento), disattivata: true }
 }
 
+export type VoceAltro = 'unisci' | 'esporta' | 'disattiva' | 'riattiva'
+
+/**
+ * Le voci del menu «Altro» in testata alla scheda: le azioni rare. In
+ * modifica non c'è, come il piede di prima: si salva o si lascia stare.
+ */
+export function vociAltro(p: Pick<PersonaSeg, 'attiva'>, inModifica: boolean): VoceAltro[] {
+  if (inModifica) return []
+  return ['unisci', 'esporta', p.attiva ? 'disattiva' : 'riattiva']
+}
+
 /**
  * Il tasto pieno della scheda, a riposo: uno solo, quello di quel che c'è da
  * fare per primo. Prima ciò che tiene fuori di sala o è da incassare, poi
