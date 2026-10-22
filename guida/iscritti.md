@@ -8,6 +8,9 @@
 segreteria sa della sua iscrizione, senza dover chiedere. Si legge e basta: per cambiare
 qualcosa si passa in segreteria.
 
+Ha i colori e i caratteri del sito della palestra, blu e giallo, ed è sempre
+chiara, qualunque tema sia scelto altrove: il tasto del tema qui non c'è.
+
 È un **pilota**: per ora si vede solo con i dati inventati, per far vedere
 alla palestra com'è prima di aprirla agli iscritti veri. L'indirizzo è
 <https://app.officinedellosport.it/iscritti/>: col database vero dice

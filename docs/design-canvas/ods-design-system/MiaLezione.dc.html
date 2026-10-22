@@ -25,7 +25,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"ora":{"editor":"text","default":"18:30"},"corso":{"editor":"text","default":"Judo kids"},"sotto":{"editor":"text","default":"Sala 1 · Marco R."},"cosa":{"editor":"text","default":"SOSTITUTO"},"tinta":{"editor":"text","default":"#1b8ac4"},"annullata":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":72}}'>
+<script data-dc-script data-props='{"ora":{"editor":"text","default":"18:30"},"corso":{"editor":"text","default":"Judo kids"},"sotto":{"editor":"text","default":"Sala 1 · Marco R."},"cosa":{"editor":"text","default":"SOSTITUTO"},"tinta":{"editor":"text","default":"#1b8ac4"},"annullata":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":72}}'>
 // Riproduzione 1:1 della lezione nell'area iscritti: la funzione Lezione di src/components/AreaIscritti.tsx (righe 291-309)
 // con .card, .lezione, .lezione-ora, .lezione-nome e .mia-lezione in src/styles.css (righe 300-310 e 774-780). Non e' un
 // tasto (cursor default): ora, corso, sala e istruttore, a destra cosa ha di diverso dal solito.
@@ -35,6 +35,8 @@
 const T = {
   scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
   chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+  // Col look del sito la tinta resta a sinistra (.mia-lezione), non in alto come la .lezione degli istruttori.
+  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
 };
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
