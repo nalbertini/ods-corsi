@@ -490,6 +490,15 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('97-satispay-scarico.sql', 'i pagamenti Satispay del negozio entrano da soli in contabilità',
     to_regclass('public.satispay_negozio') is not null and to_regprocedure('public.satispay_negozio_applica(boolean)') is not null
     and exists (select 1 from casse where nome = 'Satispay')
-    and to_regprocedure('public.satispay_scarico_avvisa(jsonb,text)') is not null)
+    and to_regprocedure('public.satispay_scarico_avvisa(jsonb,text)') is not null),
+  ('98-quote-persona.sql', 'le quote e i corsi scritti a mano hanno la persona',
+    to_regprocedure('public.cambia_voce_movimenti(uuid[],uuid,uuid)') is not null
+    and to_regprocedure('public.voce_vuole_persona(text,uuid)') is not null
+    -- Rilanciare 60 o 70 dopo 98 rimette le funzioni senza la persona (in 70 anche `collegamento_perche`): la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'registra_movimento' and corpo like '%voce_vuole_persona%')
+    and exists (select 1 from dentro where nome = 'storico_persona' and corpo like '%prima-nota:%')
+    and not exists (select 1 from dentro where nome = 'collegamento_perche' and corpo like '%non viene dal vecchio programma%')
+    -- Rilanciare 67 dopo 98 rimette la versione a due argomenti accanto a questa: l'app non sa più quale chiamare.
+    and to_regprocedure('public.cambia_voce_movimenti(uuid[],uuid)') is null)
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -60,6 +60,8 @@ export interface Destinazione {
   daCorso?: string
   /** Una richiesta da aprire, scelta dalla ricerca. */
   richiesta?: string
+  /** Un movimento di CONTABILITÀ da aprire, dalla scheda di una persona. */
+  movimento?: string
   /** Cosa si è cercato e chi è uscito: la voce mostra solo quelli, finché non si dice MOSTRA TUTTI. */
   ricerca?: Ricercata
   lezione?: { id: string; inizio: string }
@@ -148,6 +150,7 @@ export function Segreteria({
   // Come il filtro: un punto di partenza dato dalla ricerca, non un posto dell'indirizzo.
   const [ricerca, setRicerca] = useState<Ricercata>()
   const [richiesta, setRichiesta] = useState<string>()
+  const [movimento, setMovimento] = useState<string>()
   // Il menu del telefono, aperto o chiuso; sul computer non conta.
   const [aperto, setAperto] = useState(false)
   // Sul telefono il menu aperto è un passo della cronologia, sullo stesso
@@ -179,6 +182,7 @@ export function Segreteria({
     setFiltro(filtroDopo(ora.current.voce, v, filtro, d.filtro))
     setRicerca(d.ricerca)
     setRichiesta(d.richiesta)
+    setMovimento(d.movimento)
     // Dal menu del telefono la voce scelta prende il posto del passo del
     // menu: Indietro poi torna alla voce di prima, non al menu aperto.
     segna(postoDelMenu(ora.current, v, d), nelMenu() ? 'replace' : 'push')
@@ -596,12 +600,13 @@ export function Segreteria({
             onConti={contiCambiati}
             filtroIniziale={filtro}
             contabilita={puo(chi, 'contabilita')}
+            onMovimento={puo(chi, 'contabilita') ? (id) => void vai('contabilita', { movimento: id }) : undefined}
           />
         )}
         {d && voce === 'richieste' && <Richieste key={`${filtro ?? ''}|${ricerca?.testo ?? ''}|${richiesta ?? posto.richiesta ?? ''}`} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} ricerca={ricerca} aperta={richiesta ?? posto.richiesta} onTogliRicerca={() => setRicerca(undefined)} onConti={contiCambiati} />}
         {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} schede={schedePresenze} />}
         {d && voce === 'tessere' && <PaginaTessere d={d} onVai={vai} />}
-        {d && voce === 'contabilita' && <Contabilita d={d} />}
+        {d && voce === 'contabilita' && <Contabilita key={movimento ?? ''} d={d} movimento={movimento} onPersona={conSegreteria ? (id) => void vai('iscritti', { persona: id }) : undefined} />}
         {d && voce === 'pagamenti' && <Pagamenti d={d} onVai={conSegreteria ? vai : undefined} soloNomi={pagamentiRidotti(chi)} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} schede={schedePresenze} onCambiato={() => setGiroConte((g) => g + 1)} />}

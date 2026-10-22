@@ -47,6 +47,8 @@ import {
   cosaNonVaChiusura,
   cosaNonVaGiroconto,
   cosaNonVaMovimento,
+  vuolePersona,
+  SCEGLI_LA_PERSONA,
   cosaNonVaPrevisto,
   cosaNonVaSaldo,
   cosaNonVaVoce,
@@ -1482,11 +1484,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const { voci, casse, chiusure } = contabilita()
       const no = cosaNonVaMovimento(d, voci, casse, oggiARoma(), chiusure)
       if (no) throw new Error(no)
+      const chi = vuolePersona(d.tipo, voci.find((v) => v.id === d.voceId)?.nome) ? d.personaId : undefined
+      if (chi && !a().persone.some((p) => p.id === chi)) throw new Error(SCEGLI_LA_PERSONA)
       const id = `m-${unico()}`
       a().movimenti = [
         ...contabilita().movimenti,
         { id, tipo: d.tipo, data: d.data, importo: d.importo, voceId: d.voceId, cassaId: d.cassaId, descrizione: d.descrizione.trim(), ...(d.nota?.trim() ? { nota: d.nota.trim() } : {}), creatoIl: new Date().toISOString() },
       ]
+      if (chi) scriviCollegamento(id, chi)
       salva()
       return id
     },
@@ -1517,12 +1522,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
-    async cambiaVoceMovimenti(ids, voceId) {
+    async cambiaVoceMovimenti(ids, voceId, personaId) {
       const { movimenti, voci } = contabilita()
-      const no = cosaNonVaCambioVoce(ids, righeMovimenti([], movimenti, voci), voci, voceId)
+      const no = cosaNonVaCambioVoce(ids, righeMovimenti([], movimenti, voci), voci, voceId, personaId)
       if (no) throw new Error(no)
       const scelti = new Set(ids)
       const arrivo = voci.find((v) => v.id === voceId)
+      // Come il database: la persona conta solo per un movimento a mano che arriva su una quota o un corso.
+      const aMano = movimenti.filter((x) => scelti.has(x.id) && x.voceId !== voceId && vuolePersona(x.tipo, arrivo?.nome) && !x.origineImport?.startsWith('prima-nota:'))
+      if (aMano.length && !a().persone.some((p) => p.id === personaId)) throw new Error(SCEGLI_LA_PERSONA)
       const quando = new Date().toISOString()
       const cambiVoce = [...(a().cambiVoce ?? [])]
       let cambiati = 0
@@ -1538,6 +1546,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         return { ...x, voceId }
       })
       a().cambiVoce = cambiVoce
+      for (const x of aMano) if (x.personaId !== personaId) scriviCollegamento(x.id, personaId)
       salva()
       return { cambiati, giaCosi }
     },
@@ -1562,7 +1571,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const persone = personePerNome()
       const sicuri = () =>
         righeDelloStorico()
-          .filter((r) => !cosaNonVaCollegato(r) && !r.personaId && abbinaPersone(nomeDallaCausale(r.descrizione), persone).esito === 'sicuro')
+          .filter((r) => r.origineImport?.startsWith('prima-nota:') && !cosaNonVaCollegato(r) && !r.personaId && abbinaPersone(nomeDallaCausale(r.descrizione), persone).esito === 'sicuro')
           .sort((x, y) => x.id.localeCompare(y.id))
       const daFare = sicuri().slice(0, quanti)
       for (const r of daFare) scriviCollegamento(r.id, abbinaPersone(nomeDallaCausale(r.descrizione), persone).ids[0], lotto)
@@ -1574,7 +1583,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const elenco = [...new Set(ids)].sort()
       if (!elenco.length) throw new Error('Scegli almeno un movimento')
       if (elenco.length > LIMITE_CAMBIO_VOCE) throw new Error(`Troppi movimenti in una volta: al massimo ${LIMITE_CAMBIO_VOCE}`)
-      if (!persona || !a().persone.some((p) => p.id === persona)) throw new Error('Scegli la persona')
+      if (!persona || !a().persone.some((p) => p.id === persona)) throw new Error(SCEGLI_LA_PERSONA)
       const scelte = righeScelte(elenco)
       for (const r of scelte) {
         const no = cosaNonVaCollegato(r)
@@ -1663,6 +1672,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
           importo: x.importo,
           voce: voci.find((v) => v.id === x.voceId)?.nome ?? '—',
           cassa: casse.find((c) => c.id === x.cassaId)?.nome ?? '—',
+          aMano: !x.origineImport?.startsWith('prima-nota:'),
         }))
     },
 
