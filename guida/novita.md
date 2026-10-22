@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.160.1 — 22 ottobre 2026
+
+### Modificato
+
+- La pagina TIMER dei telefoni degli istruttori ha lo stesso aspetto del resto dell'app
+
 ## 0.160.0 — 22 ottobre 2026
 
 ### Novità
