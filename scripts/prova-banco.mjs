@@ -129,7 +129,7 @@ titolo('luoghi del Banco')
   const voci = (id) => (LUOGHI.find((l) => l.id === id)?.voci ?? []).map((v) => [v.voce, v.nome])
   ok('OGGI', voci('oggi'), [['dafare', 'OGGI'], ['settimana', 'SETTIMANA'], ['presenze', 'PRESENZE']])
   ok('PERSONE', voci('persone'), [['iscritti', 'ISCRITTI'], ['tessere', 'TESSERE'], ['richieste', 'RICHIESTE ONLINE'], ['istruttori', 'ISTRUTTORI'], ['compensi', 'COMPENSI'], ['personale', 'ACCESSI']])
-  ok('CORSI', voci('corsi'), [['corsi', 'CORSI'], ['esercizi', 'ESERCIZI']])
+  ok('CORSI', voci('corsi'), [['corsi', 'CORSI']])
   // PAGAMENTI resta il primo: è quel che si apre di più, e dal luogo si arriva lì.
   ok('SOLDI', voci('soldi'), [['pagamenti', 'PAGAMENTI'], ['contabilita', 'CONTABILITÀ'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
   ok('PALESTRA', voci('palestra'), [['statistiche', 'STATISTICHE'], ['segnalazioni', 'SEGNALAZIONI'], ['sito', 'SITO'], ['regole', 'IMPOSTAZIONI']])
@@ -175,7 +175,7 @@ titolo('luoghi del Banco')
   for (const v of VOCI) if (v !== 'segnalate') ok(`voceInLista(${v}) è se stessa`, voceInLista(v), v)
 
   // Il guscio non perde voci: le tredici di oggi (GRUPPI di Segreteria.tsx) più le impostazioni.
-  for (const v of ['dafare', 'settimana', 'richieste', 'presenze', 'iscritti', 'corsi', 'istruttori', 'personale', 'statistiche', 'listino', 'vestiario', 'esercizi', 'segnalazioni', 'regole'])
+  for (const v of ['dafare', 'settimana', 'richieste', 'presenze', 'iscritti', 'corsi', 'istruttori', 'personale', 'statistiche', 'listino', 'vestiario', 'segnalazioni', 'regole'])
     ok(`il Banco ha ancora ${v}`, nelleListe.includes(v), true)
 }
 
