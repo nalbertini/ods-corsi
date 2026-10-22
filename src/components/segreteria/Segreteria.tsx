@@ -25,6 +25,7 @@ import { Compensi } from './Compensi'
 import { puo } from '../../lib/ruoli'
 import { PresenzeSegnalate } from './PresenzeSegnalate'
 import { Segnalazioni } from './Segnalazioni'
+import { Palestra } from './banco/Palestra'
 // Il pannello del sito porta con sé l'editor del testo e la sua pulizia: si scaricano solo aprendolo.
 const Sito = lazy(() => import('./Sito').then((m) => ({ default: m.Sito })))
 import { tocca } from '../../lib/segnalazioni'
@@ -597,6 +598,7 @@ export function Segreteria({
         {d && voce === 'listino' && <Listino d={d} />}
         {d && voce === 'vestiario' && <Vestiario onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'regole' && <Regole d={d} onVai={vai} />}
+        {voce === 'palestra' && <Palestra daRispondere={daRispondere} onVai={(v) => void vai(v)} />}
         {d && voce === 'segnalazioni' && <Segnalazioni d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'sito' && (
           <Suspense fallback={<span className="sg-sotto">Apro il sito…</span>}>

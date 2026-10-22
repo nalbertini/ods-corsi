@@ -66,8 +66,37 @@ export const luoghiPer = (consentite: readonly Voce[]): typeof LUOGHI =>
 /** La voce da evidenziare nella seconda riga: le segnalate sono una scheda di PRESENZE, non una voce. */
 export const voceInLista = (voce: Voce): Voce => (voce === 'segnalate' ? 'presenze' : voce)
 
+/**
+ * Dove porta il tasto di un luogo: la sua prima voce, salvo PALESTRA. Quel che sta lì si apre di rado,
+ * e nessuna delle quattro è più importante delle altre: si arriva a una pagina che le mostra in grande.
+ */
+export const voceDelLuogo = (l: (typeof LUOGHI)[number]): Voce => (l.id === 'palestra' ? 'palestra' : l.voci[0].voce)
+
 /** In che luogo sta una voce: da qui la barra sa quale luogo accendere. */
 export function luogoDi(voce: Voce): LuogoId {
+  if (voce === 'palestra') return 'palestra'
   const lista = voceInLista(voce)
   return LUOGHI.find((l) => l.voci.some((v) => v.voce === lista))?.id ?? 'oggi'
+}
+
+/** Cosa c'è dietro ogni voce di PALESTRA, detto in una frase: è il `sotto` della pagina che apre. */
+const FRASI_PALESTRA: Partial<Record<Voce, string>> = {
+  statistiche: 'Come va la palestra, mese per mese: chi viene, quando, in quali corsi, quanto entra.',
+  segnalazioni: 'Cosa non va nell’app o cosa serve: si scrive qui, la risposta arriva sotto.',
+  sito: 'Le pagine del sito della palestra, il menu, il footer e le immagini.',
+  regole: 'Le scelte che spettano alla palestra, non al programma.',
+}
+
+/**
+ * Le tessere della pagina LA PALESTRA: le voci del luogo, nello stesso ordine e con lo stesso nome, così la pagina
+ * e la riga sotto i luoghi non si separano. SEGNALAZIONI dice quante aspettano risposta, come il numero del menu.
+ */
+export function tesserePalestra(daRispondere: number): Array<{ voce: Voce; titolo: string; frase: string; stato?: string }> {
+  const palestra = LUOGHI.find((l) => l.id === 'palestra')?.voci ?? []
+  return palestra.map((v) => ({
+    voce: v.voce,
+    titolo: v.nome,
+    frase: FRASI_PALESTRA[v.voce] ?? '',
+    stato: v.voce === 'segnalazioni' && daRispondere > 0 ? `${daRispondere} da rispondere` : undefined,
+  }))
 }

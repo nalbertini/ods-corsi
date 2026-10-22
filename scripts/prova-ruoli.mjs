@@ -158,6 +158,8 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
   ok('chi ha solo l\'amministrazione che scrive #iscritti arriva a CONTABILITÀ', consenti('iscritti', 'amministrazione'), { voce: 'contabilita' })
   ok('…e anche #regole (le impostazioni sono della segreteria)', consenti('regole', 'amministrazione'), { voce: 'contabilita' })
   ok('la segreteria apre le impostazioni, che non sono nel menu', consenti('regole', 'segreteria'), { voce: 'regole' })
+  ok('la pagina PALESTRA è della segreteria', [consenti('palestra', 'segreteria').voce, consenti('palestra', 'amministrazione').voce], ['palestra', 'contabilita'])
+  ok('le voci delle tessere sono della segreteria', ['statistiche', 'segnalazioni', 'sito', 'regole'].map((v) => consenti(v, 'segreteria').voce), ['statistiche', 'segnalazioni', 'sito', 'regole'])
   ok('le segnalate sono della segreteria, e solo in prova', [consenti('segnalate', 'segreteria', true).voce, consenti('segnalate', 'segreteria', false).voce], ['segnalate', 'dafare'])
   ok('l\'id della scheda aperta resta, se la voce spetta', m.postoConsentito({ voce: 'iscritti', persona: 'p1' }, chi.segreteria, { prova: false }), { voce: 'iscritti', persona: 'p1' })
   ok('e non resta se la voce non spetta', m.postoConsentito({ voce: 'iscritti', persona: 'p1' }, chi.amministrazione, { prova: false }), { voce: 'contabilita' })

@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 100%; min-height: 168px; padding: 20px 22px; background: #ffffff; border-radius: 6px; box-shadow: {{barra}}; color: #0d2a3d; text-align: left">
+  <div style="display: flex; align-items: center; gap: 12px">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none" aria-hidden="true"><path d="{{icona}}"></path></svg>
+    <span style="flex: 1; min-width: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 28px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">{{titolo}}</span>
+    <span style="font-size: 20px; color: #46606f" aria-hidden="true">›</span>
+  </div>
+  <span style="font-size: 15px; line-height: 1.45; color: #46606f">{{frase}}</span>
+  <sc-if value="{{haStato}}" hint-placeholder-val="{{ false }}">
+    <span style="align-self: flex-start; margin-top: auto; padding: 1px 8px; background: #ffffff; border: 1.5px solid #8f6a00; border-radius: 6px; color: #8f6a00; font-size: 12px; font-weight: 700; letter-spacing: 0.02em">… {{stato}}</span>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"voce":{"editor":"enum","options":["statistiche","segnalazioni","sito","regole"],"default":"statistiche"},"titolo":{"editor":"text","default":"STATISTICHE"},"frase":{"editor":"text","default":"Come va la palestra, mese per mese: chi viene, quando, in quali corsi, quanto entra."},"stato":{"editor":"text","default":""},"$preview":{"width":400,"height":168}}'>
+// Riproduzione di una tessera di `Palestra` (src/components/segreteria/banco/Palestra.tsx), `.bn-tessera` di src/styles.css nel look
+// del sito: tessera bianca sul fondo azzurro, raggio 6px, senza il bordo da 2px (come .sg-riquadro e .sg-dafare-riga);
+// l'icona e' quella del menu (ICONE_MENU; per IMPOSTAZIONI `Cursori`), il titolo Big Shoulders 800, la frase e' il
+// `sotto` della pagina che apre (titoli, frasi e stato da `tesserePalestra` di src/lib/luoghiBanco.ts). Le tessere stanno in due colonne (`.bn-tessere`, max 960px, spazio 14px). `stato` (cose che aspettano) mette la barra di 4px giallo scuro a sinistra e il tag, come una riga «presto» di DA FARE.
+const ICONE = {
+  statistiche: 'M12 20V10M18 20V4M6 20v-4',
+  segnalazioni: 'M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z M4 22v-7',
+  sito: 'M2 12a10 10 0 1 0 20 0a10 10 0 1 0 -20 0 M2 12h20 M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z',
+  regole: 'M20 7h-9M14 17H4 M4 7a3 3 0 1 0 6 0a3 3 0 1 0 -6 0 M14 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0',
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const stato = p.stato ?? '';
+    return {
+      icona: ICONE[p.voce] || ICONE.statistiche, titolo: p.titolo ?? 'STATISTICHE', frase: p.frase ?? '',
+      haStato: !!stato, stato, barra: stato ? 'inset 4px 0 0 #8f6a00' : 'none',
+    };
+  }
+}
+</script>
+</body>
+</html>

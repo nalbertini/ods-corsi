@@ -35,6 +35,12 @@ Nessuna voce di prima si perde. Le pagine sono le stesse; gli indirizzi
 (`#iscritti`, `#settimana`…) anche, così un segnalibro vecchio funziona in
 tutti e due gli aspetti.
 
+Ogni luogo apre la sua prima voce, tranne **PALESTRA**: lì c'è quel che si
+apre di rado, e il luogo porta alla pagina **LA PALESTRA**, con le quattro
+voci in grande e una frase che dice cosa c'è dentro. Se ci sono segnalazioni
+che aspettano risposta, la tessera SEGNALAZIONI lo dice («2 da rispondere»).
+Le voci restano anche nella riga sotto i luoghi.
+
 ## OGGI
 
 La giornata a tabellone: una colonna per sala, le ore a sinistra, le lezioni
