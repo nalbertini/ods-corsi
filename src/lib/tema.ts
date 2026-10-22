@@ -18,7 +18,7 @@ export const TEMI: readonly Tema[] = ['scuro', 'chiaro', 'tatami']
 /** Il colore della barra del browser e del telefono per ogni tema: quello del fondo. */
 export const COLORE_BARRA: Record<Tema, string> = { scuro: '#121212', chiaro: '#f4f4f1', tatami: '#ebe6d0' }
 
-/** La barra con il look del sito (segreteria e amministrazione): il fondo di quell'aspetto, qualunque sia il tema scelto. */
+/** La barra con il look del sito (vedi `lookDellArea`): il fondo di quell'aspetto, qualunque sia il tema scelto. */
 export const COLORE_BARRA_LOOK = '#eef5fa'
 
 /** Un valore salvato che non è esattamente uno dei temi (un altro nome, una versione più nuova) non conta. */

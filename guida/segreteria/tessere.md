@@ -55,7 +55,7 @@ Un clic su una riga apre la scheda della persona.
 
 ## Dove si vede
 
-- In [ISCRITTI](iscritti.md): la colonna **IN REGOLA?** dice anche **Manca la tessera** o **Tessera scaduta**,
+- In [ISCRITTI](iscritti.md): la colonna **QUOTA** dice anche **Tessera da fare** o **Tessera scaduta**,
   c'è il filtro **Senza tessera** (sotto «Altri filtri»), e **Non in regola** li comprende.
 - La striscia **COSA MANCA** ha la casella **TESSERE**, con il numero di chi non ha una tessera valida.
 - La scheda della persona ha il timbro **TESSERA** in cima, come il certificato e la quota (**NO TESSERA**,

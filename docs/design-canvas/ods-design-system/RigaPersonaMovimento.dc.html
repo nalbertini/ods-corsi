@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 14px; width: 100%; max-width: 560px; padding: 8px 0; border-bottom: 1px solid {{c.lineSoft}}; color: {{c.text}}; font-family: {{fam}}">
+  <span style="width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: {{c.dim}}">PERSONA</span>
+  <sc-if value="{{conPersona}}" hint-placeholder-val="{{ true }}">
+    <span style="font-size: 15px; min-width: 0; overflow-wrap: anywhere">{{nome}}</span>
+    <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Apri la scheda ›</span>
+  </sc-if>
+  <sc-if value="{{senzaPersona}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 15px; color: {{c.rossoTesto}}">Nessuna: di chi è?</span>
+  </sc-if>
+  <sc-if value="{{aMano}}" hint-placeholder-val="{{ true }}">
+    <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">{{cambia}}</span>
+    <sc-if value="{{scollega}}" hint-placeholder-val="{{ true }}">
+      <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Scollega</span>
+    </sc-if>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Orrù Tommaso"},"aMano":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":560,"height":64}}'>
+// COSTRUITA (`MovimentoAperto` di `Contabilita.tsx`; ../quote-persona/): la riga PERSONA del movimento aperto in CONTABILITÀ,
+// sopra i dati, sulle entrate di «Quota associativa» e «Corsi e altri pagamenti» o quando la persona c'è già. Etichetta
+// `.sg-etichetta` larga 130px, il nome a 15px (vuoto: «Nessuna: di chi è?» in rosso-testo), poi i `.sg-link` a 15px alti 44px
+// (`DITO`): «Apri la scheda ›» con la persona; sui movimenti a mano (`aMano`) «Cambia persona» / «Collega a una persona» e «Scollega».
+// Filetto sotto `line-soft`, padding 8px 0, gap 14px, a capo sul telefono.
+const T = {
+  scuro: { text: '#f2f2f0', dim: '#8c8c88', lineSoft: '#2a2a2a', rossoTesto: '#ff5a52' },
+  chiaro: { text: '#161616', dim: '#656561', lineSoft: '#e2e2dd', rossoTesto: '#b81d1d' },
+  sito: { text: '#0d2a3d', dim: '#46606f', lineSoft: '#cfe6f4', rossoTesto: '#b81d1d' },
+};
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.sito;
+    const nome = p.nome ?? 'Orrù Tommaso';
+    const conPersona = nome !== '';
+    const aMano = p.aMano === undefined ? true : truthy(p.aMano);
+    return {
+      c, fam: p.tema === 'sito' || !p.tema ? INTER : 'Barlow, Arial, sans-serif', nome, conPersona, senzaPersona: !conPersona,
+      aMano, cambia: conPersona ? 'Cambia persona' : 'Collega a una persona', scollega: conPersona,
+    };
+  }
+}
+</script>
+</body>
+</html>

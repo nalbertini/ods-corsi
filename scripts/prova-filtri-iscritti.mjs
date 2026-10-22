@@ -64,7 +64,9 @@ console.log('\nIscritti.tsx li prende da src/lib')
   ok('importa da filtriIscritti', tsx.includes("lib/filtriIscritti'"), true)
   const vecchi = ['SOLO SENZA EMAIL', 'VENGONO POCO', 'SENZA CERTIFICATO VALIDO', 'CERTIFICATO IN SCADENZA', 'COMPIONO 6 ANNI', 'NON IN REGOLA', 'SENZA TESSERA', 'SENZA DOCUMENTO', 'NON ARCHIVIATO', '+ NUOVO ISCRITTO']
   ok('niente più i testi dei filtri in maiuscolo, né «+ NUOVO ISCRITTO»', vecchi.filter((x) => tsx.includes(x)), [])
-  ok('«+ Nuovo iscritto» e l\'etichetta di colonna «IN REGOLA?»', ['+ Nuovo iscritto', 'IN REGOLA?'].filter((x) => !tsx.includes(x)), [])
+  ok('«+ Nuovo iscritto» e le etichette di colonna «CERTIFICATO» e «QUOTA»', ['+ Nuovo iscritto', 'CERTIFICATO', 'QUOTA'].filter((x) => !tsx.includes(x)), [])
+  ok('la colonna «IN REGOLA?» non c\'è più', tsx.includes('IN REGOLA?'), false)
+  ok('il conto di un chip si legge solo per i quattro chip sempre in vista', typeof m.haConto === 'function' ? m.ID_FILTRI.filter(m.haConto) : 'manca haConto', ['certificato', 'pagare', 'corsi-scaduti', 'fuori'])
 }
 
 console.log('\nIl sollecito nell\'elenco: solo coi filtri di chi ha qualcosa da sistemare')

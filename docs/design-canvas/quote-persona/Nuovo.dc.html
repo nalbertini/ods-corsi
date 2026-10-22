@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .pr { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00; }
+    .nota { font-size: 14px; color: #46606f; line-height: 1.4; }
+    .fin { display: flex; flex-direction: column; gap: 14px; padding: 20px 28px 22px; background: #fff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; }
+    .tit { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; line-height: 1.05; }
+    .r { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; align-items: baseline; }
+    .r .et { width: 130px; flex-shrink: 0; }
+    .r span:last-child { font-size: 15px; }
+    .link { color: #14709f; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+    .err { font-size: 14px; color: #a81a1a; }
+  </style>
+</helmet>
+<!-- NUOVO MOVIMENTO (pagina intera, movimenti-filtri/Nuovo): con Entrata e voce Quota associativa o Corsi e altri pagamenti compare PERSONA, obbligatoria. -->
+<div style="display: flex; width: 1440px; min-height: 1060px">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="CONTABILITÀ" numeri="" nome="Chiara Bianchi" ruolo="Amministrazione" altezza="1060px" hint-size="240px,1060px"></dc-import>
+  </div>
+  <main style="flex: 1; min-width: 0; padding: 28px 36px; display: flex; gap: 32px; align-items: flex-start">
+   <div style="display:flex;flex-direction:column;gap:18px;width:720px">
+    <span class="pr">PROPOSTA · ENTRATA SU UNA QUOTA: SI SCEGLIE DI CHI È</span>
+    <div><dc-import name="Bottone" tema="sito" label="← I movimenti" variante="linea" contesto="segreteria" hint-size="170px,48px"></dc-import></div>
+    <div style="display: flex; flex-direction: column; gap: 4px"><span class="et">ENTRATA O USCITA</span>
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">NUOVO MOVIMENTO</h1></div>
+    <div style="display: flex; flex-direction: column; gap: 16px; padding: 24px 28px; background: #fff; border: 2px solid #cfe6f4; border-top: 6px solid #14709f">
+      <div style="display: flex; gap: 10px"><dc-import name="Chip" tema="sito" label="Uscita" hint-size="130px,44px"></dc-import><dc-import name="Chip" tema="sito" label="Entrata" acceso="{{ true }}" hint-size="130px,44px"></dc-import></div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px">
+        <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="DATA" valore="22/10/2026" hint-size="100%,80px"></dc-import>
+        <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="IMPORTO" valore="40,00" hint-size="100%,80px"></dc-import>
+        <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="CASSA" valore="Cassa Contanti" hint-size="100%,80px"></dc-import>
+        <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="VOCE" valore="Quota associativa" hint-size="100%,80px"></dc-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#eef5fa;border:2px solid #cfe6f4">
+        <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="PERSONA · DI CHI È" valore="bian" manca="{{ true }}" nota="Scegli la persona: una quota o un corso si registra sempre con la sua scheda." hint-size="100%,96px"></dc-import>
+        <dc-import name="SceltaPersona" nome="Bianchi Marco" dettagli="nascita 2014 · Judo kids · iscrizione dal 9 set 2025" hint-size="100%,64px"></dc-import>
+        <dc-import name="SceltaPersona" nome="Bianchi Sofia" dettagli="nascita 2011 · Karate ragazzi · iscrizione dal 12 set 2023" hint-size="100%,64px"></dc-import>
+        <span class="nota">Si cerca da tre lettere, fra tutte le schede, anche archiviate. La quota va a chi frequenta, anche se ha pagato il genitore.</span>
+      </div>
+      <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="DESCRIZIONE" valore="Quota 2026/27" hint-size="100%,80px"></dc-import>
+      <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="area" etichetta="NOTA · FACOLTATIVA" valore="" hint-size="100%,100px"></dc-import>
+      <span class="nota">Un solo importo, senza IVA. Registrato, non si cambia: si annulla e si rifà (la descrizione, la nota e la persona sì).</span>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px; border-top: 2px solid #cfe6f4">
+        <dc-import name="Bottone" tema="sito" label="No, torna indietro" variante="linea" contesto="segreteria" hint-size="200px,48px"></dc-import>
+        <dc-import name="Bottone" tema="sito" label="Registra il movimento" variante="pieno" contesto="segreteria" disabled="{{ true }}" hint-size="240px,48px"></dc-import>
+      </div>
+    </div>
+   </div>
+   <div style="display:flex;flex-direction:column;gap:12px;width:380px;padding-top:120px">
+    <span class="et">QUANDO COMPARE</span>
+    <span class="nota">Solo con <b>Entrata</b> e voce <b>Quota associativa</b> o <b>Corsi e altri pagamenti</b>. Con un’uscita o un’altra voce il riquadro non c’è, e il modulo è quello di oggi.</span>
+    <span class="et" style="margin-top:12px">SCELTA</span>
+    <dc-import name="SceltaPersona" nome="Bianchi Marco" dettagli="nascita 2014 · Judo kids · iscrizione dal 9 set 2025" scelta="{{ true }}" hint-size="100%,64px"></dc-import>
+    <span class="nota">Scelta la persona, il tasto si accende: «Registra il movimento» scrive il movimento e la persona insieme, o niente.</span>
+    <span class="et" style="margin-top:12px">FORSE GIÀ IN PAGAMENTI</span>
+    <div style="padding:10px 12px;background:#f6f3e4;border-left:4px solid #8f6a00;font-size:14px;line-height:1.4">Bianchi Marco ha già una ricevuta di 40,00 € del 20/10/2026 in PAGAMENTI. Se è la stessa quota, non scriverla qui: c’è già.</div>
+    <span class="nota">Un avviso, non un blocco: stessa persona, stesso importo, negli ultimi 30 giorni.</span>
+   </div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1060}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #46606f; }
+    .pr { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00; }
+    .nota { font-size: 14px; color: #46606f; line-height: 1.4; }
+    .fin { display: flex; flex-direction: column; gap: 14px; padding: 20px 28px 22px; background: #fff; border: 2px solid #0d2a3d; border-top: 6px solid #0d2a3d; }
+    .tit { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 26px; font-weight: 800; letter-spacing: 0.04em; line-height: 1.05; }
+    .r { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; align-items: baseline; }
+    .r .et { width: 130px; flex-shrink: 0; }
+    .r span:last-child { font-size: 15px; }
+    .link { color: #14709f; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+    .err { font-size: 14px; color: #a81a1a; }
+  </style>
+</helmet>
+<!-- Il movimento aperto di CONTABILITÀ → MOVIMENTI (MovimentoAperto in Contabilita.tsx), nella finestra sopra l'elenco.
+     Riga PERSONA in cima ai dati, solo per le entrate su Quota associativa e Corsi e altri pagamenti. -->
+<div style="display: flex; gap: 32px; width: 1680px; padding: 28px 36px 36px; align-items: flex-start">
+<div style="width: 520px; display: flex; flex-direction: column; gap: 10px"><span class="et">OGGI · INCASSO DI UN ISCRITTO</span>
+<section class="fin"><span class="et">INCASSO DI UN ISCRITTO</span><span class="tit">Orrú Tommaso</span><div><div class="r"><span class="et">DATA</span><span>21/10/2026</span></div><div class="r"><span class="et">TIPO</span><span>ENTRATA</span></div><div class="r"><span class="et">VOCE</span><span>Corsi e altri pagamenti</span></div><div class="r"><span class="et">CASSA</span><span>Conto Corrente</span></div><div class="r"><span class="et">IMPORTO</span><span>195,00 €</span></div></div>
+<span class="nota">Si cambia in PAGAMENTI, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>
+<div><dc-import name="Bottone" tema="sito" label="Chiudi" variante="linea" contesto="segreteria" hint-size="110px,48px"></dc-import></div></section>
+<span class="nota">Il nome c’è solo come titolo, scritto dalla ricevuta: non si capisce che è una scheda, né si apre.</span></div>
+
+<div style="width: 520px; display: flex; flex-direction: column; gap: 10px"><span class="pr">PROPOSTA · LA PERSONA, CHE SI APRE</span>
+<section class="fin"><span class="et">INCASSO DI UN ISCRITTO</span><span class="tit">Orrú Tommaso</span><div><div class="r"><span class="et">PERSONA</span><span><span style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap"><b>Orrù Tommaso</b><a class="link">Apri la scheda ›</a></span></span></div><div class="r"><span class="et">DATA</span><span>21/10/2026</span></div><div class="r"><span class="et">TIPO</span><span>ENTRATA</span></div><div class="r"><span class="et">VOCE</span><span>Corsi e altri pagamenti</span></div><div class="r"><span class="et">CASSA</span><span>Conto Corrente</span></div><div class="r"><span class="et">IMPORTO</span><span>195,00 €</span></div></div>
+<span class="nota">Si cambia in PAGAMENTI, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>
+<div><dc-import name="Bottone" tema="sito" label="Chiudi" variante="linea" contesto="segreteria" hint-size="110px,48px"></dc-import></div></section>
+<span class="nota">«Apri la scheda ›» chiude la finestra e apre la persona in ISCRITTI. Qui la persona non si cambia: viene dalla ricevuta.</span></div>
+
+<div style="width: 520px; display: flex; flex-direction: column; gap: 10px"><span class="pr">PROPOSTA · SCRITTO A MANO PRIMA DI QUESTO CAMBIO</span>
+<section class="fin"><span class="et">IL MOVIMENTO</span><span class="tit">Quota Bianchi</span><div><div class="r"><span class="et">PERSONA</span><span><span style="color:#8f6a00;font-weight:600">Nessuna: di chi è?</span></span></div><div class="r"><span class="et">DATA</span><span>03/10/2026</span></div><div class="r"><span class="et">TIPO</span><span>ENTRATA</span></div><div class="r"><span class="et">CASSA</span><span>Cassa Contanti</span></div><div class="r"><span class="et">IMPORTO</span><span>40,00 €</span></div></div>
+<dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="VOCE" valore="Quota associativa" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" tema="sito" contesto="segreteria" tipo="testo" etichetta="DESCRIZIONE" valore="Quota Bianchi" hint-size="100%,80px"></dc-import>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><dc-import name="Bottone" tema="sito" label="Collega a una persona" variante="pieno" contesto="segreteria" hint-size="220px,48px"></dc-import><dc-import name="Bottone" tema="sito" label="Annulla il movimento" variante="pericolo" contesto="segreteria" hint-size="210px,48px"></dc-import></div></section>
+<span class="nota">Resta com’è, non blocca niente. «Collega a una persona» apre la ricerca per nome già usata per lo storico. Collegato, la riga diventa come al centro, con «Cambia persona» e «Scollega» accanto.</span></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1680,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

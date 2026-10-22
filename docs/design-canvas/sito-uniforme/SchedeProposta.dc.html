@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Proposta: un solo modo. Le schede di IMPOSTAZIONI (.schede.sg-schede) sempre subito sotto il titolo; CONTABILITA' lascia i chip ai filtri, PRESENZE porta le schede sotto il titolo. Nessun componente nuovo. -->
+<div style="display: flex; flex-direction: column; gap: 20px; width: 1440px; min-height: 820px; padding: 28px 36px; background: #ffffff">
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · LE SCHEDE DI IMPOSTAZIONI DAPPERTUTTO, SEMPRE SOTTO IL TITOLO</span>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px">
+    <section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #eef5fa; border: 2px solid #cfe6f4; border-radius: 6px; min-height: 260px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #0b7a33">IMPOSTAZIONI · RESTA COM’È</span>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">IMPOSTAZIONI</h1>
+          <span style="font-size: 14px; color: #46606f">Le scelte che spettano alla palestra.</span>
+        </div>
+      <dc-import name="SchedeImpostazioni" tema="sito" acceso="LA STAGIONE" hint-size="100%,96px"></dc-import>
+      <span style="margin-top: auto; font-size: 13px; line-height: 1.5; color: #46606f">È il modello.</span>
+    </section>
+    <section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #eef5fa; border: 2px solid #cfe6f4; border-radius: 6px; min-height: 260px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #8f6a00">CONTABILITÀ · SCHEDE AL POSTO DEI CHIP</span>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</h1>
+          <span style="font-size: 14px; color: #46606f">Le entrate e le uscite della palestra, nelle sue casse.</span>
+        </div>
+      <div role="tablist" style="display: flex; flex-wrap: wrap; gap: 4px"><span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; white-space: nowrap; background: #cfe6f4; border: 2px solid #0d2a3d; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.18em; color: #0d2a3d">MOVIMENTI</span><span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; white-space: nowrap; background: #ffffff; border: 2px solid #cfe6f4; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.18em; color: #46606f">BILANCIO</span><span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; white-space: nowrap; background: #ffffff; border: 2px solid #cfe6f4; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.18em; color: #46606f">VOCI</span><span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; white-space: nowrap; background: #ffffff; border: 2px solid #cfe6f4; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.18em; color: #46606f">CASSE</span></div>
+      <span style="margin-top: auto; font-size: 13px; line-height: 1.5; color: #46606f">I chip restano per i filtri della lista (cassa, voce, periodo): così si capisce cosa cambia pagina e cosa filtra.</span>
+    </section>
+    <section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #eef5fa; border: 2px solid #cfe6f4; border-radius: 6px; min-height: 260px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #8f6a00">PRESENZE · SCHEDE SOTTO IL TITOLO</span>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">PRESENZE</h1>
+          <span style="font-size: 14px; color: #46606f">Chi viene, chi si sta perdendo, quali appelli mancano.</span>
+        </div>
+      <div role="tablist" style="display: flex; flex-wrap: wrap; gap: 4px"><span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; white-space: nowrap; background: #cfe6f4; border: 2px solid #0d2a3d; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.18em; color: #0d2a3d">IL MESE</span><span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; white-space: nowrap; background: #ffffff; border: 2px solid #cfe6f4; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.18em; color: #46606f">SEGNALATE <span style="margin-left: 8px; padding: 1px 7px; border: 2px solid #8f6a00; background: #ffffff; color: #8f6a00; font-family: Inter, Arial, sans-serif; font-size: 12px; letter-spacing: 0">2</span></span></div>
+      <span style="margin-top: auto; font-size: 13px; line-height: 1.5; color: #46606f">Il titolo resta PRESENZE anche in SEGNALATE; cambia solo la riga sotto.</span>
+    </section>
+    <section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #eef5fa; border: 2px solid #cfe6f4; border-radius: 6px; min-height: 260px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #0b7a33">SCHEDA PERSONA · RESTA COM’È</span>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">Bianchi Luca</h1>
+          <span style="font-size: 14px; color: #46606f">Judo kids · tessera 2026</span>
+        </div>
+      <dc-import name="SchedeIscritto" tema="sito" acceso="PERSONA" segno-quota="giallo" parola-quota="DA PAGARE" hint-size="100%,50px"></dc-import>
+      <span style="margin-top: auto; font-size: 13px; line-height: 1.5; color: #46606f">Già così; anche le schede del corso (DATI, ISCRITTI) restano.</span>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":820}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

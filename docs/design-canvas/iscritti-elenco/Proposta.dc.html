@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Copiata da ods-design-system/PaginaSito.dc.html: ISCRITTI, proposta. Nomi inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="ISCRITTI" numeri="" nome="Giulia Ferri" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ISCRITTI</h1>
+        <span style="font-size: 14px; color: #46606f">203 persone attive · 7 certificati in scadenza.</span>
+      </div>
+      <dc-import name="Bottone" label="+ Nuovo iscritto" variante="pieno" contesto="segreteria" tema="sito" hint-size="170px,48px"></dc-import>
+    </div>
+    <dc-import name="FiltriIscritti" tema="sito" attivi="" corsiScaduti="{{ true }}" conti="SENZA CERTIFICATO VALIDO:70|DA PAGARE:22|CORSI SCADUTI:9|NON IN REGOLA:81" hint-size="100%,110px"></dc-import>
+    <div role="table" style="display: flex; flex-direction: column">
+      <dc-import name="TestataTabella" tema="sito" colonne="NOME|CERTIFICATO|QUOTA|CORSI|CONTATTO|30 GIORNI" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" ordinata="NOME" hint-size="100%,40px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Bianchi Marco" corsi="Judo 3" contatto="338 727 9888" bollini="ok:ok" quota="ok:ok" frequenza="9/9" poco="{{ false }}" proposta="{{ true }}" piu="" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Bruno Elena" corsi="Judo adulti" contatto="antos.adams@example.com" bollini="ok:ok" quota="ok:ok" frequenza="2/7" poco="{{ true }}" proposta="{{ true }}" piu="" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Colombo Luca" corsi="Judo agonisti, Preparazione atletica" contatto="338 479 7222" bollini="ok:ok" quota="ok:ok" frequenza="11/40" poco="{{ true }}" proposta="{{ true }}" piu="+2" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Conti Sara" corsi="Pesistica e Mobility" contatto="347 697 6222" bollini="Manca:rosso" quota="ok:ok" frequenza="5/8" poco="{{ false }}" proposta="{{ true }}" piu="" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="De Luca Matteo" corsi="Giocomotricità" contatto="333 304 6353" bollini="Non serve:nota" quota="ok:ok" frequenza="4/5" poco="{{ false }}" proposta="{{ true }}" piu="" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Esposito Giulia" corsi="Lotta 2" contatto="+39 333 494 3979" bollini="Scaduto:rosso" quota="Da pagare:rosso" frequenza="0/1" poco="{{ false }}" proposta="{{ true }}" piu="" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Esposito Marta" corsi="Psicomotricità" contatto="+39 333 494 3979" bollini="Non serve:nota" quota="Da pagare:rosso" frequenza="—" poco="{{ false }}" proposta="{{ true }}" piu="" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Ferrari Davide" corsi="—" contatto="nessun contatto" bollini="Manca:rosso" quota="Da pagare:rosso" frequenza="—" poco="{{ false }}" proposta="{{ true }}" piu="" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Galli Anna" corsi="Judo 3" contatto="350 972 8664" bollini="Scade il 4/11:giallo" quota="ok:ok" frequenza="8/9" poco="{{ false }}" proposta="{{ true }}" piu="" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Moretti Paolo" corsi="Karate ragazzi" contatto="349 112 0457" bollini="Senza data:giallo" quota="ok:ok" frequenza="6/8" poco="{{ false }}" proposta="{{ true }}" piu="" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Ricci Sofia" corsi="Pilates" contatto="sofia.ricci@example.com" bollini="ok:ok" quota="Tessera da fare:giallo" frequenza="7/8" poco="{{ false }}" proposta="{{ true }}" piu="" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Rossi Andrea" corsi="—" contatto="335 880 1290" bollini="Archiviato:spento" quota="—:nota" frequenza="—" poco="{{ false }}" stato="spenta" proposta="{{ true }}" piu="" griglia="minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+    </div>
+    <span style="font-size: 14px; line-height: 1.45; color: #46606f">Lo stato viene subito dopo il nome, in due colonne: CERTIFICATO e QUOTA (con la tessera). Ognuna ha il suo ✓ o il suo guaio, con la parola corta perché la testata dice già di cosa si parla: si vede a colpo d’occhio chi ha un problema e di che tipo, e la colonna si può ordinare. «Fuori app» resta nella scheda (QUOTA E PAGAMENTI), «Non serve il certificato» è una nota grigia. Righe tutte alte uguali. Davanti al contatto l’icona del telefono o della busta. I filtri hanno il conto, e il sottotitolo tiene solo quel che i filtri non dicono. Sotto il numero di 30 GIORNI una barretta mostra quanto è venuto (vuota: mai; gialla: meno della metà), e passando sopra c’è la spiegazione; dopo due corsi «+2», coi nomi interi nel title. «Senza data» (manca la data di nascita, non si sa se serve il certificato) è un guaio leggero giallo; la tessera da fare sta sotto QUOTA, gialla. Un archiviato ha la riga spenta e la parola «Archiviato» al posto del ✓. I conti sui chip seguono la ricerca e il corso scelti; la frase sui corsi scaduti va nel sottotitolo solo col filtro acceso.</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

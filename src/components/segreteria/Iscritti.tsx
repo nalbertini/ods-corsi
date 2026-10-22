@@ -1,16 +1,16 @@
 import { soldi } from '../../lib/satispay'
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { altriAperti, altriFiltri, conSollecito, FILTRI_VISIBILI, ID_FILTRI, TESTI_FILTRI, type IdFiltro } from '../../lib/filtriIscritti'
+import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, FILTRI_VISIBILI, haConto, ID_FILTRI, passaChip, TESTI_FILTRI, type ChipConto, type ContestoFiltri, type IdFiltro } from '../../lib/filtriIscritti'
 import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
-import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, campoDelGuaio, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, fuoriRegola, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
+import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
+import { avvisiGesto, campoDelGuaio, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, timbriScheda, vienePoco } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { conTessere, incrocioDaMostrare, paroleConTessera, SEGNALA_TESSERE, senzaTessera, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
+import { conTessere, incrocioDaMostrare, SEGNALA_TESSERE, senzaTessera, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
 import { APRI_SCHEDA, idLinguetta, idPannello, schedaDellaSezione, schedaIniziale, SCHEDE, segniSchede, serveCambiare, tastoScheda, type IdScheda } from '../../lib/schedaSezioni'
 import { TessereDellaPersona } from './Tessere'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
@@ -27,11 +27,6 @@ import { cellaSollecito, quotaNelVecchioDi } from '../../lib/sollecito'
 import { consiglioCorso, corsiDaPagare, nonPagati, statoCorsi, testoCorso, testoCorsoBreve, type StatoCorso } from '../../lib/corsiDaPagare'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 
-/** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
-const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
-
-// La quota si cerca fra chi è attivo: chi ha smesso non la deve portare. Gli stessi conti di DA FARE.
-const daPagare = (p: PersonaSeg, oggi: string) => p.attiva && comePaga(p, oggi) !== 'pagato'
 /** Quanto non è in regola, per ordinare: i guai più grossi prima. */
 const GUAIO_CERTIFICATO: Record<StatoCertificato, number> = { manca: 2, scaduto: 2, in_scadenza: 1, in_arrivo: 1, valido: 0, non_serve: 0 }
 const GUAIO_PAGA: Record<ComePaga, number> = { da_pagare: 2, scaduto: 2, in_parte: 1, pagato: 0 }
@@ -82,6 +77,66 @@ function CampiEmail({
   )
 }
 
+/**
+ * Un segno delle colonne CERTIFICATO e QUOTA: il pallino del colore e la parola. Il verde è un ✓ solo, la nota
+ * (Non serve) una frase grigia. Sul telefono resta il pallino: la parola la legge chi usa lo schermo e il title.
+ */
+function SegnoElenco({ s }: { s: Segno }) {
+  if (s.tono === 'verde')
+    return (
+      <span className="sg-segno-ok" role="img" aria-label={s.parola} title={s.parola}>
+        ✓
+      </span>
+    )
+  return (
+    <span className="sg-segno-elenco" data-tono={s.tono} title={s.parola}>
+      <span className="sg-segno-parola">{s.parola}</span>
+    </span>
+  )
+}
+
+/** Sul telefono le colonne sono strette: CERTIFICATO e QUOTA diventano un'icona, 30 GIORNI «30 GG». */
+function TestaStretta({ parola, corta }: { parola: string; corta?: string }) {
+  return (
+    <>
+      <span className="sg-testa-larga">{parola}</span>
+      {corta ? (
+        <span className="sg-testa-stretta">{corta}</span>
+      ) : (
+        <svg className="sg-testa-stretta" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label={parola}>
+          {parola === 'QUOTA' ? (
+            <>
+              <path d="M18 7c-1.2-1.3-3-2-5-2a7 7 0 0 0 0 14c2 0 3.8-.7 5-2" />
+              <path d="M4 10h9M4 14h9" />
+            </>
+          ) : (
+            <>
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <path d="M14 2v6h6M12 11v6M9 14h6" />
+            </>
+          )}
+        </svg>
+      )}
+    </>
+  )
+}
+
+/** Davanti al contatto: si chiama o si scrive. Tratto 1.75 come le icone del menu. */
+function IconaContatto({ tipo }: { tipo: 'telefono' | 'email' }) {
+  return (
+    <svg className="sg-icona-contatto" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {tipo === 'telefono' ? (
+        <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z" />
+      ) : (
+        <>
+          <rect x="2" y="4" width="20" height="16" rx="2" />
+          <path d="m22 7-10 6L2 7" />
+        </>
+      )}
+    </svg>
+  )
+}
+
 function Bollino({ tono, children }: { tono: Tono; children: string }) {
   return (
     <span className="num sg-segno-regola" data-tono={tono}>
@@ -109,6 +164,7 @@ export function Iscritti({
   onTogliRicerca,
   onConti,
   contabilita,
+  onMovimento,
 }: {
   d: DatiSegreteria
   /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
@@ -129,6 +185,8 @@ export function Iscritti({
   onConti?: () => void
   /** Chi vede CONTABILITÀ: registrando un pagamento legge dove entra. */
   contabilita?: boolean
+  /** Apre in CONTABILITÀ un movimento scritto a mano per questa persona; senza, il tasto non c'è. */
+  onMovimento?: (id: string) => void
 }) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
@@ -208,25 +266,29 @@ export function Iscritti({
     setCorso('')
     accesi.forEach((id) => filtri[id][1](false))
   }
+  const contesto: ContestoFiltri = { oggi, scopertiDi, tesseraDi }
+  // Ricerca e corso: quel che resta scelto quando si accende un chip, e su cui si contano i chip.
+  const inBase = (p: PersonaSeg) =>
+    (!ricerca || ricerca.ids.includes(p.id)) && cercaNellElenco(p, cerca) && (!corso || p.iscrizioni.some((i) => i.corsoId === corso && inCorso(i, oggi)))
+  const conti = contiChip(tutti, inBase, contesto)
   const chipFiltro = (id: IdFiltro) => (
     <button key={id} type="button" className="num sg-chip" aria-pressed={filtri[id][0]} onClick={() => filtri[id][1](!filtri[id][0])}>
       {TESTI_FILTRI[id]}
-      {id === 'doppioni' ? ` ${coppie.length}` : id === 'pagato-prima' ? ` ${nelVecchio}` : ''}
+      {id === 'doppioni' ? ` ${coppie.length}` : id === 'pagato-prima' ? ` ${nelVecchio}` : haConto(id) ? ` · ${conti[id]}` : ''}
     </button>
   )
+  const chip = (id: ChipConto, acceso: boolean, p: PersonaSeg) => !acceso || passaChip(id, p, contesto)
   const trovati = tutti.filter(
     (p) =>
-      (!ricerca || ricerca.ids.includes(p.id)) &&
-      cercaNellElenco(p, cerca) &&
-      (!corso || p.iscrizioni.some((i) => i.corsoId === corso && inCorso(i, oggi))) &&
+      inBase(p) &&
       (!soloSenzaEmail || senzaEmail(p)) &&
       (!poco || vienePoco(freq.dato?.get(p.id))) &&
-      (!certificato || senzaCertificatoValido(p, oggi)) &&
+      chip('certificato', certificato, p) &&
       (!scadenza || certificatoInScadenza(p, oggi)) &&
       (!arrivo || certificatoInArrivo(p, oggi)) &&
-      (!pagare || daPagare(p, oggi)) &&
-      (!corsiScaduti || scopertiDi(p).length > 0) &&
-      (!fuori || fuoriRegola(p, oggi) || (p.attiva && senzaTessera(tesseraDi(p)))) &&
+      chip('pagare', pagare, p) &&
+      chip('corsi-scaduti', corsiScaduti, p) &&
+      chip('fuori', fuori, p) &&
       (!noTessera || senzaTessera(tesseraDi(p))) &&
       (!senzaDocumento || !p.documento) &&
       (!soloFilePrima || certificatoDaStampare(p.certificato)),
@@ -255,20 +317,20 @@ export function Iscritti({
         })
       : null
   const suoiCorsi = (p: PersonaSeg) => p.iscrizioni.filter((i) => inCorso(i, oggi)).map((i) => perId.get(i.corsoId)?.nome).filter(Boolean)
-  const { ordina, colonna } = useOrdina<PersonaSeg, 'nome' | 'corsi' | 'contatto' | 'regola' | 'frequenza'>({
+  const { ordina, colonna } = useOrdina<PersonaSeg, 'nome' | 'certificato' | 'quota' | 'corsi' | 'contatto' | 'frequenza'>({
     nome: (p) => `${p.cognome} ${p.nome}`,
+    certificato: (p) => GUAIO_CERTIFICATO[statoCertificato(p, oggi)],
+    // La tessera da sistemare sta nella colonna QUOTA: pesa come un guaio piccolo.
+    quota: (p) => GUAIO_PAGA[comePaga(p, oggi)] + Number(senzaTessera(tesseraDi(p))),
     corsi: (p) => suoiCorsi(p).join(', '),
     contatto: (p) => p.telefono ?? p.email ?? p.emailContatto,
-    regola: (p) => GUAIO_CERTIFICATO[statoCertificato(p, oggi)] + GUAIO_PAGA[comePaga(p, oggi)],
     frequenza: (p) => {
       const f = freq.dato?.get(p.id)
       return f && f.dovute ? f.presenti / f.dovute : null
     },
   })
   const attiveOra = tutti.filter((p) => p.attiva)
-  const senzaCertificato = attiveOra.filter((p) => senzaCertificatoValido(p, oggi)).length
   const inScadenza = attiveOra.filter((p) => certificatoInScadenza(p, oggi)).length
-  const nonPagato = attiveOra.filter((p) => daPagare(p, oggi)).length
   const nScaduti = corsiScaduti ? attiveOra.filter((p) => scopertiDi(p).length > 0).length : 0
   const persona = nuovo ? null : (tutti.find((p) => p.id === scelta) ?? null)
   const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica(), indizi.ricarica(), tessere.ricarica(), storico.ricarica()])
@@ -335,6 +397,7 @@ export function Iscritti({
             fai={fai}
             avvisa={avvisa}
             contabilita={contabilita}
+            onMovimento={onMovimento}
             quotaNelVecchio={nelVecchioIds.has(persona.id)}
             giroSolleciti={giroSolleciti}
             onSollecitato={() => setGiroSolleciti((g) => g + 1)}
@@ -357,7 +420,8 @@ export function Iscritti({
       <div className="stack" style={{ gap: 18 }}>
         <Testa
           titolo="ISCRITTI"
-          sotto={corsiScaduti ? `${nScaduti === 1 ? 'Un iscritto ha' : `${nScaduti} iscritti hanno`} un corso scaduto o pagato in parte.` : `${attiveOra.length} persone attive · ${senzaCertificato ? `${senzaCertificato} senza certificato valido` : 'tutti col certificato'}${inScadenza ? ` · ${inScadenza} in scadenza` : ''} · ${nonPagato ? `${nonPagato} da pagare` : 'tutti in regola coi pagamenti'}.${
+          // Senza certificato e da pagare li dicono i chip, coi loro conti.
+          sotto={corsiScaduti ? `${nScaduti === 1 ? 'Un iscritto ha' : `${nScaduti} iscritti hanno`} un corso scaduto o pagato in parte.` : `${attiveOra.length} persone attive${inScadenza ? ` · ${inScadenza === 1 ? 'un certificato' : `${inScadenza} certificati`} in scadenza` : ''}.${
             nFilePrima === 1 ? ' Un certificato non archiviato.' : nFilePrima ? ` ${nFilePrima} certificati non archiviati.` : ''
           }`}
         >
@@ -459,12 +523,13 @@ export function Iscritti({
         <>
         {sollecitare && perSollecito.guaio && <Guaio titolo="WHATSAPP" testo={`La colonna dei solleciti non si è letta: ${perSollecito.guaio}`} />}
         <div role="table" aria-label="Iscritti" className="sg-tabella">
-          <div role="row" className="sg-lista-testa sg-riga-iscritto" data-sollecito={sollecitare || undefined}>
+          <div role="row" className="sg-lista-testa sg-riga-iscritto sg-riga-iscritti" data-sollecito={sollecitare || undefined}>
             {colonna('nome', 'NOME')}
+            {colonna('certificato', <TestaStretta parola="CERTIFICATO" />, { numeri: true })}
+            {colonna('quota', <TestaStretta parola="QUOTA" />, { numeri: true })}
             {colonna('corsi', 'CORSI')}
             {colonna('contatto', 'CONTATTO')}
-            {colonna('regola', 'IN REGOLA?', { numeri: true })}
-            {colonna('frequenza', '30 GIORNI', { numeri: true, destra: true })}
+            {colonna('frequenza', <TestaStretta parola="30 GIORNI" corta="30 GG" />, { numeri: true, destra: true })}
             {sollecitare && <span role="columnheader" className="sg-etichetta sg-cella-sollecito-testa">WHATSAPP</span>}
           </div>
           <div className="sg-tabella-corpo">
@@ -473,13 +538,16 @@ export function Iscritti({
             {ordina(trovati).map((p) => {
               const f = freq.dato?.get(p.id)
               // Col filtro, al posto dei corsi quelli da pagare con la data: si legge chi sollecitare per cosa.
-              const suoi = corsiScaduti ? scopertiDi(p).map(testoCorsoBreve) : suoiCorsi(p)
+              const suoi = corsiScaduti ? scopertiDi(p).map(testoCorsoBreve) : suoiCorsi(p).filter((n): n is string => !!n)
+              const cella = cellaCorsi(suoi, corsiScaduti)
+              const stato = statoPerElenco(p, oggi, tesseraDi(p))
+              const barra = percentualeBarra(f)
               return (
                 // Una riga vera della tabella, che si clicca tutta; dalla tastiera e per chi legge lo schermo c'è il tasto sul nome.
                 <div
                   key={p.id}
                   role="row"
-                  className="sg-riga-iscritto sg-iscritto"
+                  className="sg-riga-iscritto sg-riga-iscritti sg-iscritto"
                   data-scelto={!nuovo && scelta === p.id}
                   data-spento={!p.attiva}
                   data-sollecito={sollecitare || undefined}
@@ -494,17 +562,34 @@ export function Iscritti({
                     </button>
                     {certificatoDaStampare(p.certificato) && <span className="num sg-tag" style={{ marginLeft: 8 }}>{TESTI_FILTRI['file-di-prima']}</span>}
                   </span>
-                  <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(corsiScaduti ? ' · ' : ', ') || '—'}</span>
-                  <span role="cell" style={{ fontSize: 13, color: p.email || p.emailContatto || p.telefono ? 'var(--sec)' : 'var(--rosso-testo)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {p.telefono ?? p.email ?? p.emailContatto ?? 'nessun contatto'}
+                  <span role="cell" className="sg-stato-elenco">
+                    <SegnoElenco s={stato.certificato} />
                   </span>
-                  <span role="cell" className="sg-in-regola">
-                    {paroleConTessera(paroleInRegola(p, oggi), tesseraDi(p)).map((b) => (
-                      <Bollino key={b.parola} tono={b.tono}>{b.parola}</Bollino>
+                  <span role="cell" className="sg-stato-elenco">
+                    {stato.quota.map((s) => (
+                      <SegnoElenco key={s.parola} s={s} />
                     ))}
                   </span>
-                  <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', color: vienePoco(f) ? 'var(--giallo-testo)' : 'var(--text)' }}>
+                  <span role="cell" className="sg-cella-corsi" data-a-capo={corsiScaduti || undefined} title={cella.altri ? cella.title : undefined}>
+                    {cella.visibili.join(corsiScaduti ? ' · ' : ', ') || '—'}
+                    {cella.altri > 0 && <span className="sg-cella-piu">+{cella.altri}</span>}
+                  </span>
+                  <span role="cell" className="sg-cella-contatto" data-manca={!(p.email || p.emailContatto || p.telefono) || undefined}>
+                    {p.telefono ? <IconaContatto tipo="telefono" /> : (p.email ?? p.emailContatto) ? <IconaContatto tipo="email" /> : null}
+                    {p.telefono ?? p.email ?? p.emailContatto ?? 'nessun contatto'}
+                  </span>
+                  <span
+                    role="cell"
+                    className="num sg-cella-frequenza"
+                    data-poco={vienePoco(f) || undefined}
+                    title={barra === null ? undefined : `Presenze negli ultimi 30 giorni su lezioni avute, senza i giustificati${vienePoco(f) ? '. In giallo: è venuto a meno della metà.' : '.'}`}
+                  >
                     {f ? `${f.presenti}/${f.dovute}` : '—'}
+                    {barra !== null && (
+                      <span className="sg-barra-frequenza" aria-hidden="true">
+                        <span style={{ width: `${barra}%` }} />
+                      </span>
+                    )}
                   </span>
                   {sollecitare && <CellaSollecito d={d} p={p} cella={cellaDi(p)} ultimo={sollecitati.dato?.get(p.id)} avvisa={avvisa} dopo={() => setGiroSolleciti((g) => g + 1)} />}
                 </div>
@@ -619,6 +704,7 @@ function Scheda({
   doppio,
   nonDoppioni,
   contabilita,
+  onMovimento,
   quotaNelVecchio,
   giroSolleciti,
   onSollecitato,
@@ -647,6 +733,7 @@ function Scheda({
   /** Le schede segnate «non sono doppioni» con questa: si tolgono da qui, se segnate per sbaglio. */
   nonDoppioni: PersonaSeg[]
   contabilita?: boolean
+  onMovimento?: (id: string) => void
   /** Ha la quota pagata nel vecchio programma: il sollecito non la chiede (come la riga dell'elenco). */
   quotaNelVecchio: boolean
   /** Cambia quando un sollecito si segna o si toglie dall'elenco. */
@@ -939,7 +1026,7 @@ function Scheda({
               setDaPagamento(x)
               setPagando(true)
             }} />
-            <StoricoPersona key={`s-${p.id}`} d={d} personaId={p.id} />
+            <StoricoPersona key={`s-${p.id}`} d={d} personaId={p.id} onMovimento={onMovimento} />
         </div>
       </div>
 

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il Banco, OGGI, come e' adesso (dati di prova del 22 ottobre): i bollini dei luoghi, poi la striscia COSA MANCA, poi quattro cifre.
+     Certificati, pagamenti e richieste compaiono due volte, e le richieste con due numeri diversi (3 nella striscia, 2 nel bollino di PERSONE). -->
+<div style="display: flex; flex-direction: column; width: 1440px; min-height: 760px; background: #eef5fa">
+  <dc-import name="BarraBanco" luogo="OGGI" voce="OGGI" numeri="OGGI:2, PERSONE:6, SOLDI:2, RICHIESTE ONLINE:2, ISTRUTTORI:4, PRESENZE:2, VESTIARIO:2" hint-size="100%,190px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 18px; padding: 24px 28px 32px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #b81d1d">OGGI · GLI STESSI NUMERI TRE VOLTE</span>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">OGGI</h1>
+      <span style="font-size: 14px; color: #46606f">giovedì 22 ottobre · 6 lezioni, 1 appello da fare.</span>
+    </div>
+    <dc-import name="CosaManca" tema="sito" colonne="{{ 5 }}" voci="25|Appelli non fatti||r; 42|Certificati scaduti||r; 33|Pagamenti||r; 33|Corsi scaduti||r; 3|Richieste online||g" hint-size="100%,100px"></dc-import>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+      <dc-import name="Numero" tema="sito" titolo="SENZA CERTIFICATO" valore="42" sotto="in sala non entrano" allarme="{{ true }}" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="DA PAGARE" valore="33" sotto="quota non in regola" allarme="{{ true }}" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="RICHIESTE" valore="3" sotto="dal modulo online" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="PRESENTI OGGI" valore="15" sotto="su 27 attesi" hint-size="100%,120px"></dc-import>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center; height: 150px; border: 2px dashed #14709f; border-radius: 6px; font-size: 14px; color: #46606f">La giornata: tabellone sale × ore e DA FARE AL BANCO (non cambia)</div>
+    <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 18px; background: #ffffff; border-left: 6px solid #b81d1d; border-radius: 6px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em">COSA NON VA</span>
+      <span style="font-size: 14px; line-height: 1.5; color: #46606f">42 certificati e 33 pagamenti stanno nella striscia e di nuovo nelle cifre. Le richieste sono 3 nella striscia e 2 nel bollino di PERSONE. Gli appelli sono 25 qui e «senza appello 22» in PRESENZE. Il bollino giallo di un luogo somma cose diverse (richieste, istruttori, presenze segnalate, vestiario) e non dice quali.</span>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

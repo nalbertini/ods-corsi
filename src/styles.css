@@ -393,6 +393,7 @@
 :root[data-look='sito'] .sg-dafare-riga[data-livello='blocca'] { box-shadow: inset 4px 0 0 var(--rosso); }
 :root[data-look='sito'] .sg-dafare-riga[data-livello='presto'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 :root[data-look='sito'] .sg-riquadro[data-fatto='true'] { box-shadow: inset 4px 0 0 var(--verde); }
+:root[data-look='sito'] .sg-riquadro[data-avviso='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 /* Il tasto principale è il giallo del marchio (uno per schermata); il tasto a linea e i filtri hanno il blu dei campi. */
 :root[data-look='sito'] .sg-btn-pieno { background: var(--giallo); color: var(--su-colore); }
 /* Un tasto spento resta un blocco grigio anche nel look del sito: se no sembra acceso e non risponde. */
@@ -509,6 +510,8 @@
 /* La tinta del corso è una barra in alto; quella a sinistra è dello stato. */
 :root[data-look='sito'] .lezione { background: var(--surface); border: 0; border-top: 4px solid var(--tinta); border-radius: 6px; }
 :root[data-look='sito'] .lezione[aria-current='true'] { box-shadow: inset 0 0 0 2px var(--blu); }
+/* L'area iscritti tiene la tinta del corso a sinistra, come prima del look. */
+:root[data-look='sito'] .mia-lezione { border-top: 0; border-left: 6px solid var(--tinta); }
 :root[data-look='sito'] .lezione-nome { font-weight: 800; letter-spacing: 0.02em; }
 :root[data-look='sito'] .lezione-destra { flex-shrink: 0; margin-left: 8px; max-width: 45%; }
 :root[data-look='sito'] .lezione .chi-kanji > span:last-child { overflow-wrap: anywhere; min-width: 0; }
@@ -1454,8 +1457,8 @@ a.btn { text-decoration: none; }
 .mie-presenze { list-style: none; }
 /* Segnalare una presenza mancante: il tasto piccolo sulla riga, e sotto la nota. */
 .mia-segnala {
-  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; padding: 6px 10px; min-height: 32px;
-  border: 2px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; padding: 6px 10px; min-height: 44px;
+  border: 2px solid var(--blu); background: var(--surface); color: var(--text); cursor: pointer;
 }
 .mia-segnala-modulo { gap: 8px; padding: 0 0 12px 34px; }
 .mia-presenza-segnalata { max-width: none; white-space: nowrap; }
@@ -2464,6 +2467,30 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-cella-sollecito-nota[data-tono='spento'] { color: var(--dim); }
 .sg-cella-sollecito-ultimo { font-size: 12px; color: var(--dim); }
 /* L'avviso col suo «Annulla» va a sinistra, sopra i nomi: a destra coprirebbe il tasto della riga dopo, il gesto che viene subito. */
+/* L'elenco ISCRITTI: certificato e quota in colonne loro, così il guaio si legge senza aprire la scheda; righe alte uguali. */
+.sg-riga-iscritti { grid-template-columns: minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px; }
+.sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 140px 110px minmax(0, 1fr) 130px 70px 150px; }
+.sg-stato-elenco { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 6px 0; min-width: 0; }
+.sg-segno-elenco { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; }
+.sg-segno-elenco::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+.sg-segno-elenco[data-tono='rosso']::before { background: var(--rosso-testo); }
+.sg-segno-elenco[data-tono='giallo']::before { background: var(--giallo-testo); }
+.sg-segno-elenco[data-tono='nota'] { color: var(--dim); font-weight: 400; }
+.sg-segno-elenco[data-tono='nota']::before { display: none; }
+.sg-segno-elenco[data-tono='spento'] { color: var(--dim); }
+.sg-segno-ok { font-size: 18px; line-height: 1; color: var(--verde-testo); }
+.sg-cella-corsi { font-size: 13px; color: var(--sec); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Col filtro Corsi scaduti si legge tutto quel che è da sollecitare: niente puntini. */
+.sg-cella-corsi[data-a-capo] { white-space: normal; }
+.sg-cella-piu { margin-left: 6px; color: var(--dim); }
+.sg-cella-contatto { font-size: 13px; color: var(--sec); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sg-cella-contatto[data-manca] { color: var(--rosso-testo); }
+.sg-icona-contatto { margin-right: 6px; vertical-align: -2px; color: var(--dim); }
+.sg-testa-stretta { display: none; }
+.sg-cella-frequenza { font-size: 16px; font-weight: 700; text-align: right; color: var(--text); }
+.sg-cella-frequenza[data-poco] { color: var(--giallo-testo); }
+.sg-barra-frequenza { display: block; max-width: 56px; height: 5px; margin: 5px 0 0 auto; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.sg-barra-frequenza > span { display: block; height: 100%; background: currentColor; }
 @media (min-width: 768px) { .sg-corpo:has(.sg-riga-iscritto[data-sollecito]) .sg-avviso { right: auto; left: 276px; } }
 @media (min-width: 768px) and (max-width: 1000px) { .sg-corpo:has(.sg-riga-iscritto[data-sollecito]) .sg-avviso { left: 236px; } }
 /* Il tab ISCRITTI di un corso: cognome, nome, da quando, certificato, quota. */
@@ -3004,6 +3031,10 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto[data-sollecito] { grid-template-columns: 1fr auto 70px; }
   .sg-riga-iscritto .sg-cella-sollecito { grid-column: 1 / -1; align-items: stretch; padding-top: 0; padding-bottom: 8px; }
   .sg-cella-sollecito-testa { display: none; }
+  /* ISCRITTI: restano nome, certificato, quota e 30 giorni; corsi e contatto si leggono nella scheda. */
+  .sg-riga-iscritti, .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 130px 110px 80px; gap: 10px; }
+  .sg-riga-iscritti > :nth-child(2), .sg-riga-iscritti > :nth-child(3) { display: flex; }
+  .sg-riga-iscritti > :nth-child(4), .sg-riga-iscritti > :nth-child(5) { display: none; }
   /* Sul telefono: chi con sotto il resto, e l'importo. */
   .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
   .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; }
@@ -3026,6 +3057,28 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-ricorrenza > :nth-child(4) { display: none; }
   .sg-avviso { left: 16px; right: 16px; bottom: 16px; }
 }
+/* Sul telefono i segni sono compatti, ✕ rosso, … giallo, – nota: la forma dice lo stato anche senza il colore;
+ * la parola resta per chi legge lo schermo, nel title e nella scheda. */
+@media (max-width: 767px) {
+  .sg-riga-iscritti .sg-stato-elenco { flex-direction: row; gap: 6px; }
+  .sg-riga-iscritti .sg-segno-parola { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .sg-riga-iscritti .sg-segno-elenco { gap: 0; position: relative; }
+  .sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before, .sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before {
+    width: auto; height: auto; border-radius: 0; background: none; font-size: 15px; font-weight: 700; line-height: 1;
+  }
+  .sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before { content: '✕' / ''; color: var(--rosso-testo); }
+  .sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before { content: '…' / ''; color: var(--giallo-testo); }
+  /* Le testate sono icone strette: l'area di tocco si allarga nella colonna da 56px fino a 44px. */
+  .sg-lista-testa.sg-riga-iscritti .sg-ordina::after { inset: -13px -8px; }
+  .sg-riga-iscritti, .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 56px 56px 48px; }
+  /* Pallino, ✓ e icona della testata uno sopra l'altro. */
+  .sg-riga-iscritti .sg-stato-elenco { justify-content: center; }
+  .sg-lista-testa.sg-riga-iscritti > :nth-child(2), .sg-lista-testa.sg-riga-iscritti > :nth-child(3) { justify-self: center; }
+  .sg-riga-iscritti .sg-testa-larga { display: none; }
+  .sg-riga-iscritti .sg-testa-stretta { display: inline; }
+  .sg-riga-iscritti .sg-segno-elenco[data-tono='nota']::after { content: '–' / ''; }
+}
+
 
 /* ---------------------------------------------------------------------------
  * La guida: i file di `guida/` letti dentro l'app (vedi `Guida.tsx`).
@@ -3252,15 +3305,20 @@ label.sg-btn { cursor: pointer; }
 .bn-tessera[data-stato='presto'] { border-left: 8px solid var(--giallo); }
 @media (max-width: 767px) { .bn-tessere { grid-template-columns: minmax(0, 1fr); } }
 
-.bn-cifre { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+/* Le caselle della striscia, cinque o sei con le tessere: in una riga finché ognuna ha 160px. */
+.bn-cifre { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
 .bn-cifra {
   display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-height: 110px; padding: 14px 16px; text-align: left;
   background: var(--surface); border: 2px solid var(--line);
 }
 button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
-.bn-cifra[data-guaio='true'] .bn-cifra-n { color: var(--rosso-testo); }
+.bn-cifra[data-stato='manca'] .bn-cifra-n { color: var(--rosso-testo); }
+.bn-cifra[data-stato='attesa'] .bn-cifra-n { color: var(--giallo-testo); }
 .bn-cifra-n { font-size: 44px; font-weight: 700; line-height: 1; }
 .bn-cifra-sotto { font-size: 13px; color: var(--dim); }
+.bn-cifre .bn-riconta { grid-column: 1 / -1; justify-self: start; }
+/* Sotto i 900px auto-fit lascia una casella sola sull'ultima riga: tre per riga, 3+2 o 3+3. */
+@media (max-width: 900px) { .bn-cifre { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .bn-oggi { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 28px; align-items: start; }
 .bn-sale { display: grid; gap: 0; padding-bottom: 6px; border-bottom: 2px solid var(--line); }
 .bn-sale .sg-etichetta { padding: 0 12px; letter-spacing: 0.24em; }
@@ -3319,7 +3377,6 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
   /* La coda è il lavoro del banco: sullo schermo stretto viene prima del tabellone, non dopo. */
   .bn-coda { order: -1; }
   .bn-chi { display: none; }
-  .bn-cifre { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 /* A 320px sette colonne da 44px entrano solo senza spazi fra le celle: il bordo di ognuna fa da separatore. */
 @media (max-width: 359px) {

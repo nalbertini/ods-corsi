@@ -18,6 +18,7 @@ import { Listino } from './Listino'
 import { Contabilita } from './Contabilita'
 import { LINK_ORDINI, Vestiario } from './Vestiario'
 import { datiVestiario } from '../../lib/vestiarioDati'
+import { tastoLinguette } from '../../lib/schedaSezioni'
 import { numeriRaccolta } from '../../lib/vestiario'
 import { Richieste } from './Richieste'
 import { PresenzeIstruttori } from './PresenzeIstruttori'
@@ -59,6 +60,8 @@ export interface Destinazione {
   daCorso?: string
   /** Una richiesta da aprire, scelta dalla ricerca. */
   richiesta?: string
+  /** Un movimento di CONTABILITÀ da aprire, dalla scheda di una persona. */
+  movimento?: string
   /** Cosa si è cercato e chi è uscito: la voce mostra solo quelli, finché non si dice MOSTRA TUTTI. */
   ricerca?: Ricercata
   lezione?: { id: string; inizio: string }
@@ -147,6 +150,7 @@ export function Segreteria({
   // Come il filtro: un punto di partenza dato dalla ricerca, non un posto dell'indirizzo.
   const [ricerca, setRicerca] = useState<Ricercata>()
   const [richiesta, setRichiesta] = useState<string>()
+  const [movimento, setMovimento] = useState<string>()
   // Il menu del telefono, aperto o chiuso; sul computer non conta.
   const [aperto, setAperto] = useState(false)
   // Sul telefono il menu aperto è un passo della cronologia, sullo stesso
@@ -178,6 +182,7 @@ export function Segreteria({
     setFiltro(filtroDopo(ora.current.voce, v, filtro, d.filtro))
     setRicerca(d.ricerca)
     setRichiesta(d.richiesta)
+    setMovimento(d.movimento)
     // Dal menu del telefono la voce scelta prende il posto del passo del
     // menu: Indietro poi torna alla voce di prima, non al menu aperto.
     segna(postoDelMenu(ora.current, v, d), nelMenu() ? 'replace' : 'push')
@@ -355,6 +360,29 @@ export function Segreteria({
     >
       <Cursori />
     </button>
+  )
+
+  // Le schede delle presenze: le pagine le mettono sotto il loro titolo, come IMPOSTAZIONI.
+  const schedePresenze = d && inPresenze && conSegnalate && (
+    <div
+      role="tablist"
+      aria-label="Presenze"
+      className="schede sg-schede"
+      onKeyDown={(e) => {
+        const dove = tastoLinguette(['presenze', 'segnalate'] as const, voce === 'segnalate' ? 'segnalate' : 'presenze', e.key)
+        if (!dove || dove === voce) return
+        e.preventDefault()
+        // L'altra pagina ridisegna le schede: il fuoco va sulla nuova scheda aperta, come in IMPOSTAZIONI.
+        void vai(dove).then(() => requestAnimationFrame(() => document.querySelector<HTMLElement>('[role="tablist"][aria-label="Presenze"] [aria-selected="true"]')?.focus()))
+      }}
+    >
+      <button type="button" role="tab" aria-selected={voce === 'presenze'} tabIndex={voce === 'presenze' ? 0 : -1} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>
+        Il mese
+      </button>
+      <button type="button" role="tab" aria-selected={voce === 'segnalate'} tabIndex={voce === 'segnalate' ? 0 : -1} className="scheda" data-on={voce === 'segnalate'} onClick={() => vai('segnalate')}>
+        Segnalate{segno(segnalateDaVedere, 'da vedere')}
+      </button>
+    </div>
   )
 
   return (
@@ -572,25 +600,16 @@ export function Segreteria({
             onConti={contiCambiati}
             filtroIniziale={filtro}
             contabilita={puo(chi, 'contabilita')}
+            onMovimento={puo(chi, 'contabilita') ? (id) => void vai('contabilita', { movimento: id }) : undefined}
           />
         )}
         {d && voce === 'richieste' && <Richieste key={`${filtro ?? ''}|${ricerca?.testo ?? ''}|${richiesta ?? posto.richiesta ?? ''}`} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} ricerca={ricerca} aperta={richiesta ?? posto.richiesta} onTogliRicerca={() => setRicerca(undefined)} onConti={contiCambiati} />}
-        {d && inPresenze && conSegnalate && (
-          <div role="tablist" aria-label="Presenze" className="schede sg-schede">
-            <button type="button" role="tab" aria-selected={voce === 'presenze'} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>
-              Il mese
-            </button>
-            <button type="button" role="tab" aria-selected={voce === 'segnalate'} className="scheda" data-on={voce === 'segnalate'} onClick={() => vai('segnalate')}>
-              Segnalate{segno(segnalateDaVedere, 'da vedere')}
-            </button>
-          </div>
-        )}
-        {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} />}
+        {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} schede={schedePresenze} />}
         {d && voce === 'tessere' && <PaginaTessere d={d} onVai={vai} />}
-        {d && voce === 'contabilita' && <Contabilita d={d} />}
+        {d && voce === 'contabilita' && <Contabilita key={movimento ?? ''} d={d} movimento={movimento} onPersona={conSegreteria ? (id) => void vai('iscritti', { persona: id }) : undefined} />}
         {d && voce === 'pagamenti' && <Pagamenti d={d} onVai={conSegreteria ? vai : undefined} soloNomi={pagamentiRidotti(chi)} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
-        {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} onCambiato={() => setGiroConte((g) => g + 1)} />}
+        {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} schede={schedePresenze} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'compensi' && <Compensi d={d} puoPagare={puo(chi, 'contabilita')} onVai={(v) => void vai(v)} />}
         {d && voce === 'personale' && <Personale d={d} onVai={(v) => void vai(v)} />}

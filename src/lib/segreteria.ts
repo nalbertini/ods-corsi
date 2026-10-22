@@ -34,7 +34,8 @@ import type { DaDove } from './provenienza'
 
 export type { ListaMusica } from './musica'
 import type { IndiziDoppioni } from './doppioni'
-import type { EsitoImportTessere, RigaRasd, TesseraSeg, TipoTessera } from './tessere'
+import type { EsitoImportTessere, RigaIncrocio, RigaRasd, TesseraSeg, TipoTessera } from './tessere'
+import { parolaTessera } from './tessere'
 
 /**
  * La segreteria: il calendario della settimana, i corsi con i loro orari, gli
@@ -309,6 +310,12 @@ export interface Frequenza {
   presenti: number
   dovute: number
 }
+
+/** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
+export const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
+
+/** Quanto è piena la barretta dei 30 GIORNI, da 0 a 100; senza lezioni avute niente barretta. */
+export const percentualeBarra = (f?: Frequenza): number | null => (f && f.dovute ? Math.min(100, Math.round((f.presenti / f.dovute) * 100)) : null)
 
 export interface StoricoSeg {
   sessioneId: string
@@ -799,7 +806,7 @@ export interface DatiSegreteria {
    * Cambia solo la voce di un lotto di movimenti scritti qui o importati (al massimo `LIMITE_CAMBIO_VOCE`): tutti o nessuno,
    * anche nei giorni chiusi (`67-cambia-voce.sql`). Rende quanti sono cambiati e quanti avevano già la voce.
    */
-  cambiaVoceMovimenti(ids: string[], voceId: string): Promise<{ cambiati: number; giaCosi: number }>
+  cambiaVoceMovimenti(ids: string[], voceId: string, personaId?: string): Promise<{ cambiati: number; giaCosi: number }>
   /** I cambi di voce di un movimento, dal più vecchio: chi, quando, la voce di prima e quella di dopo. */
   cambiVoceMovimento(id: string): Promise<CambioVoce[]>
   /** Quanti movimenti dello storico si collegherebbero a una persona e quanti no, prima di scrivere (`70-movimenti-persona.sql`). */
@@ -1441,6 +1448,45 @@ export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' |
       ? [{ tono: 'spento', parola: 'Senza data' }]
       : []
   return [...(guai.length ? guai : [inRegola]), ...segno, ...fuori]
+}
+
+/** Un segno di una colonna dell'elenco ISCRITTI; `nota` è il grigio di quel che non è un guaio. */
+export interface Segno {
+  tono: Tono | 'nota'
+  parola: string
+}
+
+const PAROLA_QUOTA: Record<ComePaga, string> = { pagato: 'In regola', da_pagare: 'Da pagare', scaduto: 'Scaduta', in_parte: 'In parte' }
+
+/**
+ * Le colonne CERTIFICATO e QUOTA dell'elenco ISCRITTI: parole corte, la
+ * testata dice già di cosa si parla. La quota mostra solo i guai, poi quelli
+ * della tessera; il verde resta se non c'è altro. «Fuori app» non si vede
+ * qui (la scheda lo dice): la quota è pagata. Chi è archiviato non ha guai.
+ */
+export function statoPerElenco(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string, righe: RigaIncrocio[]): { certificato: Segno; quota: Segno[] } {
+  if (!p.attiva) return { certificato: { tono: 'spento', parola: 'Archiviato' }, quota: [] }
+  const stato = statoCertificato(p, oggi)
+  const t = timbroCertificato(p.certificato, oggi, p.natoIl)
+  const certificato: Segno =
+    stato === 'manca' ? { tono: 'rosso', parola: 'Manca' }
+    : stato === 'scaduto' ? { tono: 'rosso', parola: 'Scaduto' }
+    : stato === 'non_serve' && t.tono !== 'verde' ? { tono: 'nota', parola: 'Non serve' }
+    : t.tono !== 'verde' ? { tono: t.tono, parola: t.inElenco ?? t.parola }
+    // Senza la data di nascita non si sa se fra poco servirà: da guardare, anche se è valido.
+    : !p.natoIl ? { tono: 'giallo', parola: 'Senza data' }
+    : { tono: 'verde', parola: 'In regola' }
+  const come = pagamentoDi(p, oggi)
+  const quota: Segno = { tono: timbroQuota(come).tono, parola: PAROLA_QUOTA[come.come] }
+  const tessere: Segno[] = []
+  for (const r of righe) {
+    if (r.esito === 'non_iscritto') continue
+    // In elenco la tessera che manca è da fare, non un rosso: chi entra in sala non lo blocca.
+    const s = r.esito === 'manca' ? { tono: 'giallo' as const, parola: 'Tessera da fare' } : parolaTessera(r.esito, r.tesseraAl)
+    if (s && !tessere.some((x) => x.parola === s.parola)) tessere.push(s)
+  }
+  const guai = [quota, ...tessere].filter((s) => s.tono !== 'verde')
+  return { certificato, quota: guai.length ? guai : [quota] }
 }
 
 /** Una riga del tab ISCRITTI di un corso: chi è, da quando, e le parole di certificato e quota. */
