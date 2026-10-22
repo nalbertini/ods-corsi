@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    /* .sg-riga-titolo di src/styles.css: etichetta, filo e l'azione a destra, uguale in ogni sezione (regola 5). */
+    .riga { display: flex; align-items: center; gap: 10px; }
+    .riga > .et { font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap; }
+    .riga > .filo { flex: 1; height: 2px; background: #cfe6f4; }
+    .sotto { font-size: 14px; color: #46606f; margin: 0; }
+    .guaio { font-size: 14px; color: #b81d1d; margin: 0; font-weight: 600; }
+    .ok { font-size: 14px; color: #0b7a33; margin: 0; font-weight: 600; }
+    .tasti { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    /* La conferma inline: chi toglie qualcosa vede cosa toglie e può tornare indietro (regola 6). */
+    .conferma { display: flex; flex-direction: column; gap: 10px; border: 2px solid #b81d1d; border-radius: 6px; padding: 14px 16px; background: #ffffff; }
+    .conferma.calma { border-color: #14709f; }
+    .riga-is { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 2px solid #cfe6f4; border-radius: 6px; }
+    .riga-is .nome { font-family: 'Saira Condensed', 'Arial Narrow', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.06em; }
+    .riga-is.finita { opacity: 0.7; border-style: dashed; }
+    .lezioni { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; }
+    .lezioni > span { height: 22px; border-radius: 3px; background: #12913f; color: #ffffff; font-size: 12px; display: grid; place-items: center; }
+    .lezioni > span.no { background: #ffffff; border: 2px solid #cfe6f4; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    .nota-tavola { font-size: 13px; color: #46606f; margin: 0; max-width: 720px; }
+  </style>
+</helmet>
+<!-- PROPOSTA · CORSI, CON UNA ISCRIZIONE TERMINATA. Accanto a ogni iscrizione lo stato del pagamento (regola 10). «Termina» chiede conferma con la data. «Iscrivi a un corso…» è un tasto linea, non pieno: il tasto pieno della scheda è la ricevuta. Le TERMINATE in fondo, con la data di fine (DOMANDA 3). Le ULTIME 12 LEZIONI come oggi. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
+  <span class="etichetta-tavola" style="color: #8f6a00">PROPOSTA · CORSI, CON UNA ISCRIZIONE TERMINATA</span>
+  <p class="nota-tavola">Accanto a ogni iscrizione lo stato del pagamento (regola 10). «Termina» chiede conferma con la data. «Iscrivi a un corso…» è un tasto linea, non pieno: il tasto pieno della scheda è la ricevuta. Le TERMINATE in fondo, con la data di fine (DOMANDA 3). Le ULTIME 12 LEZIONI come oggi.</p>
+
+  <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-top: -8px">
+      <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">BRUNO SOFIA</h2>
+        <span style="font-size: 13px; color: #46606f">11 anni · in elenco dal 14 settembre 2026</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-right: -12px">
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Sollecita su WhatsApp" hint-size="220px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Altro ▾" hint-size="110px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="icona" label="✕" hint-size="44px,44px"></dc-import>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: stretch">
+      <dc-import name="Timbro" tema="sito" titolo="CERTIFICATO MEDICO" parola="SCADUTO IL 09/09/2026" tono="rosso" righe="" hint-size="100%,96px"></dc-import>
+      <dc-import name="Timbro" tema="sito" titolo="QUOTA" parola="DA PAGARE" tono="rosso" righe="nessuna ricevuta" hint-size="100%,96px"></dc-import>
+      <dc-import name="Timbro" tema="sito" titolo="DOCUMENTO D’IDENTITÀ" parola="IN SEGRETERIA" tono="verde" righe="non serve per entrare" hint-size="100%,96px"></dc-import>
+    </div>
+    <dc-import name="SchedeIscritto" tema="sito" acceso="CORSI" segnoDocumenti="rosso" segnoQuota="rosso" chiare="{{ true }}" hint-size="100%,44px"></dc-import>
+
+    <div class="riga"><span class="et">ISCRIZIONI</span><span class="filo"></span><dc-import name="Chip" tema="sito" label="+ Iscrivi a un corso…" hint-size="200px,40px"></dc-import></div>
+    <div class="riga-is" style="margin-top: -8px">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span class="nome">LOTTA 3</span>
+        <span class="sotto" style="font-size: 13px">dal 14 settembre 2026</span>
+      </div>
+      <div class="tasti">
+        <dc-import name="Badge" tema="sito" tipo="bollino" tono="rosso" label="DA PAGARE" hint-size="110px,28px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pericolo" label="Termina" hint-size="100px,40px"></dc-import>
+      </div>
+    </div>
+    <div class="conferma">
+      <span style="font-size: 15px; font-weight: 700">Termina Lotta 3 per Sofia?</span>
+      <p class="sotto">Da oggi, 22 ottobre 2026, non è più nell’appello. L’iscrizione resta qui sotto, fra le terminate.</p>
+      <div class="tasti">
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="rosso" label="Sì, termina" hint-size="130px,40px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="110px,40px"></dc-import>
+      </div>
+    </div>
+    <div class="riga"><span class="et">ULTIME 12 LEZIONI</span><span class="filo"></span><span style="font-family: 'Saira Condensed', sans-serif; font-size: 18px; font-weight: 700">10 / 12</span></div>
+    <div class="lezioni" style="margin-top: -8px"><span>✓</span><span class="no"></span><span>✓</span><span>✓</span><span>✓</span><span>✓</span><span>✓</span><span>✓</span><span>✓</span><span>✓</span><span class="no"></span><span>✓</span></div>
+    <p class="sotto" style="font-size: 13px; margin-top: -10px">Negli ultimi 30 giorni: 15 su 18.</p>
+    <div class="riga"><span class="et">TERMINATE</span><span class="filo"></span></div>
+    <div class="riga-is finita" style="margin-top: -8px">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span class="nome">JUDO KIDS</span>
+        <span class="sotto" style="font-size: 13px">dal 15 settembre 2025 al 31 luglio 2026</span>
+      </div>
+      <dc-import name="Badge" tema="sito" tipo="bollino" tono="verde" label="PAGATA" hint-size="90px,28px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":860,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

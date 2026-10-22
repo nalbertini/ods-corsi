@@ -1,11 +1,12 @@
 import { cosaNonVaMetodo, cosaNonVaSatispay, cosaNonVaSatispayAMano, satispayDaUsare, soldi } from '../../lib/satispay'
 import { cartaSePuoi } from '../../lib/cartaPdf'
+import { pagatoNellaStagione, primeRighe, storicoPagamenti } from '../../lib/schedeIscritto'
 import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
-import { etichettaQuota, pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
+import { pagamentoDi } from '../../lib/segreteria'
 import { avvisoCassaChiusa, contantiInGiornoChiuso, oggiARoma } from '../../lib/contabilita'
-import { cosaNonVaDaPagamento, cosaNonVaDiretto, datiDaPagamento, statoDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, notaRicevutaDaPagamento, riepilogoPagamentoDiretto, tastoRicevutaDaPagamento, voceDaPagamento, vociSuggerite, type DatiPagamentoDiretto, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
+import { cosaNonVaDaPagamento, cosaNonVaDiretto, datiDaPagamento, statoDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, notaRicevutaDaPagamento, riepilogoPagamentoDiretto, tastoRicevutaDaPagamento, voceDaPagamento, vociSuggerite, type DatiPagamentoDiretto, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
 import {
   centesimi,
   conti,
@@ -33,7 +34,6 @@ import { chiaveGiorno } from '../../lib/sala'
 import { nuovoId } from '../../lib/prove'
 import { avvisoDopoRicevuta, avvisoManda, confermaEmail, daMandare, domandaManda, genitoreDellaMail, restaDopoManda, restaDopoRicevuta, siRiprova, statoPosta, ultimaMandata } from '../../lib/ricevuteEmail'
 import { chiedi, chiediSpunta, Campo, dataLunga, Guaio, Riga, suCarta, useAvviso, useBozza, useCarica } from './comune'
-import { Numero } from './Presenze'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 type Avvisa = ReturnType<typeof useAvviso>['avvisa']
@@ -73,7 +73,6 @@ export function StoricoIscritto({
   corsi,
   fai,
   avvisa,
-  onNuova,
   onCambiato,
   contabilita,
   riprendi,
@@ -84,7 +83,6 @@ export function StoricoIscritto({
   corsi: string[]
   fai: Fai
   avvisa: Avvisa
-  onNuova: () => void
   onCambiato: () => void
   /** Chi vede CONTABILITÀ: la conferma dice dove entra l'incasso. */
   contabilita?: boolean
@@ -100,6 +98,7 @@ export function StoricoIscritto({
   // Senza 54-pagamenti-diretti.sql le ricevute si vedono lo stesso: il guaio si dice, ma non ferma lo storico.
   const diretti = useCarica(() => d.pagamentiDiretti(p.id), [d, p.id])
   const [registrando, setRegistrando] = useState(!!riprendi)
+  const [tutte, setTutte] = useState(false)
   // Aperto il modulo, si porta in vista: sul telefono sta sotto lo schermo.
   const modulo = useRef<HTMLDivElement>(null)
   // Anche quando arriva lo storico: riaperto tornando dalla ricevuta, il modulo scende sotto le ricevute appena lette.
@@ -132,14 +131,19 @@ export function StoricoIscritto({
   const oggi = chiaveGiorno(new Date())
   const tutteRicevute = ricevute.dato ?? []
   const aMano = diretti.dato ?? []
-  const somma = riassunto(tutteRicevute, aMano)
-  const stato = pagamentoDi(p, oggi)
+  const elenco = primeRighe(storicoPagamenti(tutteRicevute, aMano), tutte)
   const vuoto = ricevute.dato !== null && tutteRicevute.length === 0 && aMano.length === 0
 
   return (
     <div className="stack" style={{ gap: 8 }}>
-      {/* Sotto la QUOTA, prima dello storico: con tante ricevute in fondo bisognava scorrere. */}
-      {registrando ? (
+      <Riga titolo="PAGAMENTI">
+        {!registrando && (
+          <button type="button" className="num sg-chip" onClick={() => setRegistrando(true)}>
+            + Aggiungi incasso
+          </button>
+        )}
+      </Riga>
+      {registrando && (
         <div ref={modulo}>
         <RegistraPagamento
           d={d}
@@ -157,34 +161,25 @@ export function StoricoIscritto({
           onChiudi={() => setRegistrando(false)}
         />
         </div>
-      ) : (
-        <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-          {/* Pieno se è la prima cosa da fare, o se è tutto a posto: la scheda si apre per incassare. */}
-          <button type="button" className={tastoPrincipale(p, oggi) === 'quota' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo onClick={onNuova}>
-            + Fai la ricevuta
-          </button>
-          <button type="button" className="num sg-chip" onClick={() => setRegistrando(true)}>
-            + Registra un pagamento
-          </button>
-        </div>
       )}
-      <Riga titolo="PAGAMENTI" />
       {ricevute.guaio && <Guaio testo={ricevute.guaio} />}
       {diretti.guaio && <Guaio testo={diretti.guaio} />}
-      {!vuoto && ricevute.dato && (
-        <div className="sg-numeri-tre">
-          <Numero titolo="PAGATO" valore={`${euro(somma.pagato)} €`} sotto="ricevute e pagamenti a mano" />
-          <Numero titolo="MANCA" valore={`${euro(somma.manca)} €`} sotto={somma.manca ? 'sulle ricevute non saldate: un pagamento a mano non la riduce' : 'niente da incassare'} allarme={somma.manca > 0} />
-          <Numero titolo="QUOTA" valore={etichettaQuota(stato.come)} sotto={stato.fino ? `fino al ${dataLunga(stato.fino)}` : 'ricevute e pagamenti a mano non cambiano la quota'} />
-        </div>
-      )}
+      {!vuoto && ricevute.dato && diretti.dato && <span className="sg-sotto">{euro(pagatoNellaStagione(tutteRicevute, aMano, oggi))} € pagati in questa stagione, tra ricevute e incassi.</span>}
       {vuoto &&
         (p.satispay ? (
           <span className="sg-sotto" data-tono="fatto">Ha pagato {soldi(p.satispay)} con Satispay dal modulo: fai la ricevuta, con PAGATO CON «Satispay».</span>
         ) : (
-          <span className="sg-sotto">Nessun pagamento registrato. Fai la ricevuta quando paga, o registra un pagamento già fatto: lo trovi qui.</span>
+          <span className="sg-sotto">Nessun pagamento registrato. Fai la ricevuta quando paga, o aggiungi un incasso già fatto: lo trovi qui.</span>
         ))}
-      {tutteRicevute.map((r) => {
+      {elenco.righe.map((riga) => {
+        if (riga.tipo === 'diretto') {
+          const suo = riga.x
+          const x = righeDirette([suo], () => `${p.cognome} ${p.nome}`)[0]
+          // Con un Satispay arrivato la ricevuta va fatta con quei soldi: dal pagamento a mano no, come con «Fai anche la ricevuta».
+          const fanne = !x.annullato && onRicevuta && !p.satispay ? () => onRicevuta(datiDaPagamento(suo, nuovoId())) : undefined
+          return <RigaDelloStorico key={x.id} riga={x} aMano stato={statoDiretto(suo, tutteRicevute)} diventato={!!suo.ricevutaId} onFanne={fanne} onAnnulla={x.annullato ? undefined : () => annullaPagamento(suo)} />
+        }
+        const r = riga.r
         const manca = r.annullataIl ? 0 : conti(r).netto
         const righe = righeDaRicevute([r])
         const suoi = invii.filter((i) => i.ricevutaId === r.id)
@@ -237,16 +232,11 @@ export function StoricoIscritto({
           </div>
         )
       })}
-      {dal && tutteRicevute.length > 0 && (
-        <span className="sg-sotto">MANDATA vuol dire partita dall’app, non letta: se la famiglia non la trova, guardi nello spam o usi MANDA DI NUOVO. Annullare una ricevuta già mandata non avvisa la famiglia.</span>
+      {elenco.altre > 0 && (
+        <button type="button" className="num sg-chip" style={{ alignSelf: 'flex-start' }} onClick={() => setTutte(true)}>
+          Mostra altre {elenco.altre}
+        </button>
       )}
-      {aMano.length > 0 && <Riga titolo="SENZA RICEVUTA" />}
-      {righeDirette(aMano, () => `${p.cognome} ${p.nome}`).map((x) => {
-        const suo = aMano.find((y) => y.id === x.direttoId)
-        // Con un Satispay arrivato la ricevuta va fatta con quei soldi: dal pagamento a mano no, come con «Fai anche la ricevuta».
-        const fanne = suo && !x.annullato && onRicevuta && !p.satispay ? () => onRicevuta(datiDaPagamento(suo, nuovoId())) : undefined
-        return <RigaDelloStorico key={x.id} riga={x} aMano stato={suo ? statoDiretto(suo, tutteRicevute) : undefined} diventato={!!suo?.ricevutaId} onFanne={fanne} onAnnulla={x.annullato || !suo ? undefined : () => annullaPagamento(suo)} />
-      })}
       {scoperta && (
         <div className="sg-prima">
           <span className="sg-etichetta" data-manca>LA QUOTA NON È PIÙ PAGATA</span>

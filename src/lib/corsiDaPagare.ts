@@ -135,6 +135,12 @@ export function corsiScaduti(persone: PersonaSeg[], corsi: CorsoRef[], listino: 
 
 /** La riga del corso nella scheda. */
 export function testoCorso(s: StatoCorso): { testo: string; tono: 'sec' | 'rosso' | 'giallo' } {
+  const d = dettaglioCorso(s)
+  return { testo: `${s.corso}: ${d.testo}`, tono: d.tono }
+}
+
+/** Come sta il pagamento del corso, senza il nome del corso davanti. */
+export function dettaglioCorso(s: StatoCorso): { testo: string; tono: 'sec' | 'rosso' | 'giallo' } {
   const al = s.al ? dataLunga(s.al) : ''
   const righe: Record<ComeCorso, [string, 'sec' | 'rosso' | 'giallo']> = {
     pagato: [al ? `pagato fino al ${al}` : 'pagato', 'sec'],
@@ -146,8 +152,8 @@ export function testoCorso(s: StatoCorso): { testo: string; tono: 'sec' | 'rosso
     in_parte: [`pagato in parte, mancano ${euroBreve(s.mancano ?? 0)}`, 'giallo'],
     da_controllare: ['da controllare, c’è una voce scritta a mano', 'giallo'],
   }
-  const [dopo, tono] = righe[s.come]
-  return { testo: `${s.corso}: ${dopo}`, tono }
+  const [testo, tono] = righe[s.come]
+  return { testo, tono }
 }
 
 /** La cella CORSI dell'elenco filtrato: corta, la data senza l'anno. */

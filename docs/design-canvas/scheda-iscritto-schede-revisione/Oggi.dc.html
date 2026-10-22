@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    /* .sg-riga-titolo di src/styles.css: etichetta, filo e l'azione a destra, uguale in ogni sezione (regola 5). */
+    .riga { display: flex; align-items: center; gap: 10px; }
+    .riga > .et { font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap; }
+    .riga > .filo { flex: 1; height: 2px; background: #cfe6f4; }
+    .sotto { font-size: 14px; color: #46606f; margin: 0; }
+    .guaio { font-size: 14px; color: #b81d1d; margin: 0; font-weight: 600; }
+    .ok { font-size: 14px; color: #0b7a33; margin: 0; font-weight: 600; }
+    .tasti { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    /* La conferma inline: chi toglie qualcosa vede cosa toglie e può tornare indietro (regola 6). */
+    .conferma { display: flex; flex-direction: column; gap: 10px; border: 2px solid #b81d1d; border-radius: 6px; padding: 14px 16px; background: #ffffff; }
+    .conferma.calma { border-color: #14709f; }
+    .riga-is { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 2px solid #cfe6f4; border-radius: 6px; }
+    .riga-is .nome { font-family: 'Saira Condensed', 'Arial Narrow', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.06em; }
+    .riga-is.finita { opacity: 0.7; border-style: dashed; }
+    .lezioni { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; }
+    .lezioni > span { height: 22px; border-radius: 3px; background: #12913f; color: #ffffff; font-size: 12px; display: grid; place-items: center; }
+    .lezioni > span.no { background: #ffffff; border: 2px solid #cfe6f4; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    .nota-tavola { font-size: 13px; color: #46606f; margin: 0; max-width: 720px; }
+  </style>
+</helmet>
+<!-- OGGI: DOCUMENTI, QUOTA E PAGAMENTI e CORSI come sono nell'app in prova (Sofia Bruno, 22 ottobre 2026). Foto, non disegno: il vecchio canvas scheda-iscritto-schede era in tema scuro e non dice più com'è. -->
+<div style="display: flex; gap: 24px; width: 1860px; padding: 28px 30px 40px; background: #eef5fa">
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <span class="etichetta-tavola" style="color: #46606f">OGGI · DOCUMENTI</span>
+    <img src="oggi-documenti.jpg" alt="La scheda documenti oggi" style="width: 575px; height: 625px; border-radius: 6px; display: block">
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <span class="etichetta-tavola" style="color: #46606f">OGGI · QUOTA E PAGAMENTI</span>
+    <img src="oggi-quota.jpg" alt="La scheda quota oggi" style="width: 575px; height: 625px; border-radius: 6px; display: block">
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <span class="etichetta-tavola" style="color: #46606f">OGGI · CORSI</span>
+    <img src="oggi-corsi.jpg" alt="La scheda corsi oggi" style="width: 575px; height: 625px; border-radius: 6px; display: block">
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1860,"height":720}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

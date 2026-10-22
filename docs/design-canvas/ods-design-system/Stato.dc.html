@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 2px {{stileBordo}} {{coloreBordo}}; font-family: {{famiglia}}">
+  <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+    <span style="font-family: 'Saira Condensed', 'Arial Narrow', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.06em; overflow-wrap: anywhere; color: {{coloreNome}}">{{nome}}</span>
+    <sc-if value="{{haSotto}}" hint-placeholder-val="{{ true }}">
+      <span style="font-size: 13px; line-height: 1.4; color: {{coloreSotto}}; overflow-wrap: anywhere">{{sotto}}</span>
+    </sc-if>
+  </span>
+  <span style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: flex-end">
+    <sc-if value="{{haTasto}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="Chip" tema="{{tema}}" label="{{tasto}}" hint-size="150px,40px"></dc-import>
+    </sc-if>
+    <sc-if value="{{haPericolo}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="pericolo" label="{{pericolo}}" hint-size="80px,40px"></dc-import>
+    </sc-if>
+  </span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"SCADUTO IL 9 SETTEMBRE 2026"},"sotto":{"editor":"text","default":"43 giorni fa · data scritta dalla segreteria, senza file"},"tono":{"editor":"enum","options":["","verde","giallo","rosso","spento"],"default":"rosso"},"finita":{"editor":"boolean","default":false},"tasto":{"editor":"text","default":""},"pericolo":{"editor":"text","default":"Togli"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":640,"height":80}}'>
+// Un riquadro delle schede DOCUMENTI, QUOTA E PAGAMENTI e CORSI della scheda iscritto: Stato di
+// src/components/segreteria/comune.tsx (.sg-stato in src/styles.css). Lo stato in grande (Saira 18px 700 0.06em,
+// colore del tono), il dettaglio sotto (.sg-sotto 13px), i tasti a destra; a 640px i tasti vanno a capo.
+// Il bordo e' `line`, rosso col tono rosso. `finita` = un'iscrizione TERMINATA: bordo tratteggiato, il testo resta pieno.
+// Le parole vengono da src/lib/schedeIscritto.ts (riquadroCertificato, riquadroDocumento, riquadroQuota, riquadroCorso).
+const T = {
+  scuro: { line: '#333333', text: '#f2f2f0', dim: '#8c8c88', verde: '#16a54a', giallo: '#f4c31b', rosso: '#ff5a52' },
+  chiaro: { line: '#d4d4ce', text: '#161616', dim: '#656561', verde: '#0b7a33', giallo: '#8f6a00', rosso: '#b81d1d' },
+  sito: { line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', verde: '#0b7a33', giallo: '#8f6a00', rosso: '#b81d1d' },
+};
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const BARLOW = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const tema = T[p.tema] ? p.tema : 'sito';
+    const c = T[tema];
+    const tono = p.tono ?? 'rosso';
+    const sotto = p.sotto ?? '';
+    const tasto = p.tasto ?? '';
+    const pericolo = p.pericolo ?? 'Togli';
+    return {
+      tema,
+      nome: p.nome ?? 'SCADUTO IL 9 SETTEMBRE 2026',
+      sotto,
+      haSotto: sotto !== '',
+      tasto,
+      haTasto: tasto !== '',
+      pericolo,
+      haPericolo: pericolo !== '',
+      famiglia: tema === 'sito' ? INTER : BARLOW,
+      coloreNome: tono === 'spento' ? c.dim : c[tono] || c.text,
+      coloreSotto: c.dim,
+      coloreBordo: tono === 'rosso' ? c.rosso : c.line,
+      stileBordo: truthy(p.finita) ? 'dashed' : 'solid',
+    };
+  }
+}
+</script>
+</body>
+</html>
