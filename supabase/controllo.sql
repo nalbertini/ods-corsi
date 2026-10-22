@@ -485,6 +485,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from pg_indexes where indexname = 'ricevute_compensi_valida' and indexdef like '%extra IS NULL%')
     -- Rilanciare 80 o 81 dopo 96 rimette le funzioni che non sanno delle extra: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'fai_ricevuta_compenso' and corpo like '%r.extra is null%')
-    and exists (select 1 from dentro where nome = 'paga_compensi' and corpo like '%x.extra%'))
+    and exists (select 1 from dentro where nome = 'paga_compensi' and corpo like '%x.extra%')),
+  ('97-satispay-scarico.sql', 'i pagamenti Satispay del negozio entrano da soli in contabilità',
+    to_regclass('public.satispay_negozio') is not null and to_regprocedure('public.satispay_negozio_applica(boolean)') is not null
+    and exists (select 1 from casse where nome = 'Satispay'))
 ) as x(file, cosa, c)
 order by file, cosa;

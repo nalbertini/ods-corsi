@@ -64,10 +64,13 @@ const voci = [
 
 console.log('\n2. la cassa e la voce di un incasso')
 {
-  ok('Contanti va in Cassa Contanti', prova(() => m.cassaDelMetodo('Contanti')), 'contanti')
-  ok('…senza badare a maiuscole e spazi', prova(() => [m.cassaDelMetodo('contanti '), m.cassaDelMetodo(' CONTANTI')]), ['contanti', 'contanti'])
-  ok('l\'Assegno va sul conto', prova(() => m.cassaDelMetodo('Assegno')), 'conto')
-  ok('tutto il resto sul conto', prova(() => ['Bonifico', 'POS', 'Satispay', 'Carta', ''].map((x) => m.cassaDelMetodo(x))), ['conto', 'conto', 'conto', 'conto', 'conto'])
+  ok('Contanti va in Cassa Contanti', prova(() => m.cassaDelMetodo('Contanti', '2026-09-30')), 'contanti')
+  ok('…senza badare a maiuscole e spazi', prova(() => [m.cassaDelMetodo('contanti ', '2026-09-30'), m.cassaDelMetodo(' CONTANTI', '2026-10-05')]), ['contanti', 'contanti'])
+  ok('l\'Assegno va sul conto', prova(() => m.cassaDelMetodo('Assegno', '2026-10-05')), 'conto')
+  ok('tutto il resto sul conto', prova(() => ['Bonifico', 'POS', 'Satispay', 'Carta', ''].map((x) => m.cassaDelMetodo(x, '2026-09-30'))), ['conto', 'conto', 'conto', 'conto', 'conto'])
+  // Dal 1° ottobre 2026 Satispay è una cassa a sé (97-satispay-scarico.sql): ci vanno anche i pagamenti di PAGAMENTI.
+  ok('Satispay dal 1° ottobre 2026: cassa Satispay', prova(() => [m.cassaDelMetodo('Satispay', '2026-10-01'), m.cassaDelMetodo(' SATISPAY ', '2026-11-15')]), ['satispay', 'satispay'])
+  ok('…gli altri metodi non cambiano', prova(() => ['Contanti', 'POS', 'Bonifico'].map((x) => m.cassaDelMetodo(x, '2026-10-05'))), ['contanti', 'conto', 'conto'])
   ok('la quota associativa, comunque sia scritta', prova(() => ['QUOTA ASSOCIATIVA', 'Quota associativa', 'quota associativa ', '  Quota Associativa'].map((x) => m.voceDiSistema(x))), Array(4).fill('Quota associativa'))
   ok('tutto il resto è «Corsi e altri pagamenti»', prova(() => ['ANNUALE JUDO', 'TRIMESTRE KARATE', 'ALTRO', '', 'Quota associativa junior'].map((x) => m.voceDiSistema(x))), Array(5).fill('Corsi e altri pagamenti'))
 }
@@ -109,6 +112,10 @@ console.log('\n3. gli incassi degli iscritti si ricavano, non si copiano')
       ['ricevuta', 'entrata', '2026-10-01', 2000, 'Rossi Giulia', 'QUOTA ASSOCIATIVA · POS', 'Quota associativa', 'c2', false],
       ['pagamento', 'entrata', '2026-09-12', 1500, "D'Amico Zoë", 'ANNUALE JUDO · Assegno', 'Corsi e altri pagamenti', 'c2', false],
     ])
+  const conSatispay = [...casse, { id: 'c3', nome: 'Satispay', saldoIniziale: 0, dal: '2026-10-01' }]
+  const sat = (data) => ({ ...diretto(`s-${data}`, 'p-Rossi', data, 2500), metodo: 'Satispay' })
+  ok('un pagamento Satispay del 30 settembre: Conto Corrente; dell\'1 ottobre: cassa Satispay',
+    prova(() => m.incassiDerivati(m.righeDirette([sat('2026-09-30'), sat('2026-10-01')], nomeDi), conSatispay).map((r) => r.cassaId)), ['c2', 'c3'])
   ok('gli incassi non hanno una seconda cassa', prova(() => derivati.map((r) => r.cassaAId ?? null)), [null, null, null])
   ok('l\'id è stabile: due volte lo stesso', prova(() => m.incassiDerivati(righe, casse).map((r) => r.id)), prova(() => derivati.map((r) => r.id)))
   ok('…e diverso per ogni pagamento', prova(() => new Set(derivati.map((r) => r.id)).size), 3)
@@ -803,13 +810,16 @@ console.log('\n30. il riepilogo prima di registrare un movimento o un giroconto'
 console.log('\n31. Contabilita.tsx scrive solo dopo il sì del riepilogo')
 {
   const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
-  for (const [chiamata, riepilogo] of [['registraMovimento', 'riepilogoMovimento'], ['registraGiroconto', 'riepilogoGiroconto']]) {
-    ok(`una sola chiamata a ${chiamata}`, tsx.split(`${chiamata}(`).length - 1, 1)
-    const i = tsx.indexOf(`${chiamata}(`)
-    const inizi = [...tsx.slice(0, i).matchAll(/onClick=\{|=\s*async\b/g)]
-    const gestore = tsx.slice(inizi.at(-1)?.index ?? 0, i)
-    ok(`${chiamata} sta dopo un \`await chiedi(\` col ${riepilogo}`, [/await chiedi\(/.test(gestore), gestore.includes(`${riepilogo}(`)], [true, true])
-    ok(`…e senza il sì si esce prima di scrivere`, /if \(!\(await chiedi\([\s\S]*?\)\)\) return/.test(gestore), true)
+  // registraMovimento due volte: il movimento a mano e la commissione Satispay, che parte col sì del giroconto.
+  for (const [chiamata, riepiloghi] of [['registraMovimento', ['riepilogoMovimento', 'riepilogoGiroconto']], ['registraGiroconto', ['riepilogoGiroconto']]]) {
+    const posti = [...tsx.matchAll(new RegExp(`${chiamata}\\(`, 'g'))].map((x) => x.index)
+    ok(`${riepiloghi.length === 1 ? 'una sola chiamata' : 'due chiamate'} a ${chiamata}`, posti.length, riepiloghi.length)
+    posti.forEach((i, n) => {
+      const inizi = [...tsx.slice(0, i).matchAll(/onClick=\{|=\s*async\b/g)]
+      const gestore = tsx.slice(inizi.at(-1)?.index ?? 0, i)
+      ok(`${chiamata} n. ${n + 1} sta dopo un \`await chiedi(\` col ${riepiloghi[n]}`, [/await chiedi\(/.test(gestore), gestore.includes(`${riepiloghi[n]}(`)], [true, true])
+      ok(`…e senza il sì si esce prima di scrivere`, /if \(!\(await chiedi\([\s\S]*?\)\)\) return/.test(gestore), true)
+    })
   }
 }
 

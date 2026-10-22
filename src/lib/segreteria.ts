@@ -16,6 +16,7 @@ import { euro } from './ricevute'
 import type { EsitoMandata, InvioRicevuta } from './ricevuteEmail'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
 import type { PagamentoSatispay } from './satispay'
+import type { ContiScarico, SceltaSatispay, StatoScarico } from './satispayScarico'
 import type { VoceCorso } from './corsiDaPagare'
 import { STAGIONE, stagioneDi } from './costi'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
@@ -785,6 +786,12 @@ export interface DatiSegreteria {
   registraGiroconto(d: DatiGiroconto): Promise<string>
   /** Un movimento non si modifica né si cancella: si annulla e si rifà. */
   annullaMovimento(id: string): Promise<void>
+  /** A che punto è lo scarico del negozio Satispay, coi pagamenti da decidere (`97-satispay-scarico.sql`); null senza il file. */
+  statoScaricoSatispay(): Promise<StatoScarico | null>
+  /** «Scarica ora»; con `anteprima` legge tutto e dà i conti del primo scarico senza scrivere. Un guaio arriva come errore da mostrare. */
+  scaricaSatispay(anteprima: boolean): Promise<ContiScarico>
+  /** Cosa fare di un pagamento da decidere: scriverlo oggi o il suo giorno, lasciarlo fuori, o riconoscerlo in un movimento a mano. */
+  decidiSatispay(satispayId: string, scelta: SceltaSatispay, movimentoId?: string): Promise<void>
   /** Solo la descrizione e la nota si correggono sul posto. */
   correggiTestoMovimento(id: string, descrizione: string, nota?: string): Promise<void>
   /**

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Giroconto Satispay con commissione</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Proposta: il Giroconto di oggi (NuovoGiroconto di Contabilita.tsx) quando DA e' Satispay. L'importo e' quello arrivato in banca;
+     sotto compare la commissione, differenza fra i pagamenti versati e l'importo, gia' spuntata. Senza Satispay il giroconto resta com'e'. -->
+<div style="display: flex; width: 1440px; min-height: 1000px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="CONTABILITÀ" numeri="" nome="Nicola Albertini" ruolo="Amministrazione" area="amministrazione" autorizzazioni="segreteria e amministrazione" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</h1>
+      <span style="font-size: 14px; color: #46606f">Satispay versa in banca gli incassi della settimana, meno le sue commissioni.</span>
+    </div>
+    <section aria-label="Giroconto" style="display: flex; flex-direction: column; gap: 16px; max-width: 880px; padding: 22px 24px; background: #ffffff; border: 2px solid #cfe6f4">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">PER IL VERSAMENTO IN BANCA</span>
+      <span style="font-size: 22px; font-weight: 700">GIROCONTO FRA LE CASSE</span>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px">
+        <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="DA" valore="Satispay" hint-size="100%,80px"></dc-import>
+        <dc-import name="Campo" tema="sito" contesto="segreteria" tipo="select" etichetta="A" valore="Conto Corrente" hint-size="100%,80px"></dc-import>
+        <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="DATA" valore="20/10/2026" hint-size="100%,80px"></dc-import>
+        <dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="ARRIVATI IN BANCA" valore="404,30" hint-size="100%,80px"></dc-import>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: #eef5fa">
+        <span style="font-size: 15px; line-height: 1.5">Dal 13 al 19 ottobre Satispay ha incassato <b>410,00 €</b> (31 pagamenti, meno 1 rimborso). In banca ne sono arrivati 404,30 €.</span>
+        <label style="display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 15px; cursor: pointer">
+          <input type="checkbox" checked="checked" style="width: 24px; height: 24px; margin: 0; accent-color: #0d2a3d">
+          <span>Registra <b>5,70 €</b> come uscita «Commissioni bancarie» dalla cassa Satispay</span>
+        </label>
+        <span style="font-size: 14px; color: #46606f">Se la differenza non è la commissione (un versamento a metà, un errore), togli la spunta e scrivila tu.</span>
+      </div>
+      <span style="font-size: 14px; color: #46606f">Sposta soldi fra le casse: non è un’entrata né un’uscita, e non entra nei totali per voce. Si annulla come un movimento; la commissione si annulla a parte.</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Registra giroconto e commissione" hint-size="300px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annulla" hint-size="110px,44px"></dc-import>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

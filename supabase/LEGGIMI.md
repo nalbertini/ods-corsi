@@ -123,6 +123,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 94. `94-disattiva-chiude-iscrizioni.sql` — disattivare una scheda chiude oggi le sue iscrizioni aperte (il trigger `persone_iscrizioni_disattivata`; una che comincia più avanti finisce il giorno in cui comincia), e riattivarla non le riapre: riattivata a mano o accogliendo una richiesta, torna solo nei corsi chiesti. Una volta sola chiude quelle ancora aperte di chi è già disattivato. Si lancia dopo `06`.
 95. `95-certificato-piu-lontano.sql` — accogliendo una richiesta col certificato vince quello che scade dopo: la data letta dalla segreteria viaggia con l'accoglimento (`accogli_iscrizione(richiesta, persona, scade)`), e se il certificato nuovo scade dopo quello valido della scheda, o la scheda non ne ha uno valido, file e data nuovi prendono il posto dei vecchi; se no la scheda resta com'era e il file resta nella richiesta. Toglie la firma vecchia `accogli_iscrizione(uuid, uuid)`. Si lancia dopo `90`; rilanciando `06`, `44`, `45`, `53` o `90` va rilanciato anche questo.
 96. `96-compensi-extra.sql` — la ricevuta di compenso extra (uno stage, un torneo), separata da quella del mese: colonna `ricevute_compensi.extra` (per che cosa, 3–200 caratteri; null per la ricevuta del mese), nessuna riga corso, l'importo scritto dalla segreteria. Più extra per tecnico e mese; la ricevuta del mese resta una sola (`ricevute_compensi_valida` guarda solo quelle). `fai_ricevuta_compenso_extra` prende tecnico e qualifica dal server, `modifica_ricevuta_compenso_extra` cambia descrizione e importo finché non è pagata; `paga_compensi` aggiunge il testo delle extra alla descrizione del movimento. Si lancia dopo `81`; rilanciando `80` o `81` va rilanciato anche questo.
+97. `97-satispay-scarico.sql` — i pagamenti Satispay del negozio entrano da soli in CONTABILITÀ: la cassa «Satispay» (dal 2026-10-01; prima i pagamenti vanno nel Conto Corrente), le voci «Da classificare» e «Commissioni bancarie», il segno `movimenti.satispay_id` (uno per pagamento, anche annullato), le tabelle `satispay_negozio` (i pagamenti letti) e `satispay_scarico` (lo stato, una riga), che legge solo l'amministrazione. La Edge Function `satispay-scarico` salva i pagamenti (`satispay_negozio_salva`) e `satispay_negozio_applica` li scrive: quelli del modulo restano fuori, uno uguale scritto a mano prende il segno, due uguali o un giorno chiuso diventano «da decidere» (`satispay_decidi`, dall'amministrazione). pg_cron la chiama ogni notte, dopo il primo scarico confermato. Si lancia dopo `59`, `60`, `63`, `73` e `92`.
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -183,6 +184,7 @@ Per fermare le ricevute nel futuro e il numero a mano in un anno che ha già ric
 Per chiudere le iscrizioni di chi si disattiva basta `94-disattiva-chiude-iscrizioni.sql` (dopo `06`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, l'app dice che le iscrizioni si chiudono ma il database le lascia aperte, e chi viene riattivato torna in tutti i corsi vecchi.
 Perché accogliendo vinca il certificato che scade dopo basta `95-certificato-piu-lontano.sql` (dopo `90`), che non chiede di rilanciare `06-iscrizioni.sql` ma va rilanciato dopo `06`, `44`, `45`, `53` o `90`, che rifanno `accogli_iscrizione` con la firma vecchia: finché non c'è, l'app che manda la data non riesce ad accogliere, quindi si lancia prima di pubblicare.
 Per la ricevuta di compenso extra basta `96-compensi-extra.sql` (dopo `81`), che non chiede di rilanciare `06-iscrizioni.sql` ma va rilanciato dopo `80` o `81`, che rifanno `fai_ricevuta_compenso` e `paga_compensi` senza le extra: finché non c'è, COMPENSI dice di lanciarlo quando si prova a fare una extra.
+Per lo scarico dei pagamenti Satispay del negozio basta `97-satispay-scarico.sql` (dopo `92`), più la funzione `satispay-scarico` (sezione 13): finché non c'è, la striscia Satispay in MOVIMENTI non compare e i pagamenti del negozio si scrivono a mano come prima.
 `15-presenze-istruttori.sql` (dopo `04-tablet.sql`), che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, il tablet apre l'area
 istruttore come prima senza segnare niente, e PRESENZE ISTRUTTORI in
@@ -1204,9 +1206,38 @@ bonifico e segreteria come prima.
    produzione. `satispay.pem` poi si cancella dal computer.
 
 Il prezzo vale solo per i corsi agganciati alla loro voce in LISTINO: con un
-corso senza voce (o col listino del foglio) Satispay non compare. Commissioni e
-rimborsi si registrano a mano in CONTABILITÀ; un rimborso si fa dalla
-dashboard di Satispay.
+corso senza voce (o col listino del foglio) Satispay non compare. Un rimborso
+si fa dalla dashboard di Satispay; in CONTABILITÀ lo porta lo scarico qui sotto.
+
+### Lo scarico del negozio
+
+`97-satispay-scarico.sql` e la funzione `satispay-scarico` portano in
+CONTABILITÀ tutti i pagamenti del negozio Satispay (anche quelli col QR alla
+cassa) e i loro rimborsi, una volta sola. La funzione usa gli stessi segreti
+di `satispay`, e scrive solo con `SATISPAY_HOST=authservices.satispay.com`: con
+la sandbox risponde «Lo scarico gira solo col negozio vero di Satispay».
+
+```sh
+supabase functions deploy satispay-scarico --no-verify-jwt --project-ref <id-del-progetto>
+```
+
+La funzione è aperta (`--no-verify-jwt`), quindi la notte si riconosce da un
+segreto, uguale in due posti: fra i secret della funzione e nel Vault del
+database, dove lo legge pg_cron. Si genera sul proprio computer e non passa
+mai da chat o file:
+
+```sh
+S=$(openssl rand -hex 32)
+supabase secrets set SATISPAY_SCARICO_SEGRETO="$S" --project-ref <id-del-progetto>
+psql "<stringa-di-connessione>" -c "select vault.create_secret('$S', 'satispay_scarico_segreto')"
+unset S
+```
+
+Senza il segreto giusto (né un accesso dell'amministrazione) risponde 403.
+Col segreto (pg_cron, ogni notte) lavora solo dopo che l'amministrazione ha
+visto l'anteprima del primo scarico e l'ha confermata da MOVIMENTI. Lo storico
+si legge dal pagamento più nuovo al più vecchio, e se si ferma a metà riparte
+da dove era arrivato.
 
 ## 14. La ricevuta per email
 
@@ -1324,6 +1355,7 @@ suoi giorni, cambia sala, quando cambiano istruttore o giorni, o si archivia, e 
 prova il modulo di iscrizione: cosa può fare chi non ha un accesso, le sei richieste al giorno per email (la settima no), i limiti
 sui file (il documento, che si trovi da stampare; il certificato, che passi alla scheda accogliendo), e chi accoglie le richieste;
 `disattiva-chiude-iscrizioni.sql` prova che disattivare una scheda chiude le sue iscrizioni e che riattivarla, o accogliere una sua richiesta, non riapre i corsi vecchi.
+`satispay-scarico.sql` prova lo scarico dei pagamenti Satispay del negozio: il modulo resta fuori, il doppione sicuro prende il segno, quelli dubbi e i giorni chiusi aspettano una decisione, l'anteprima non scrive niente, e lo scarico lo vedono e lo decidono solo l'amministrazione e il servizio.
 `tessere.sql` prova le tessere: che le veda e le scriva solo la segreteria, l'import dal RASD (codice fiscale e stesso nome, anteprima, senza doppioni né persone nuove), l'unione di due schede con la stessa tessera e la mappa dei corsi che si scrive una volta sola;
 `orari-sito.sql` prova `orari_sito()`: solo corso, giorno, ora, durata e data di modifica, solo corsi attivi e ricorrenze non finite, le tabelle chiuse, la data di modifica scritta sempre dal database e il permesso rimesso da `06`;
 `certificati.sql` prova che certificati, documento e pagamenti li veda e li

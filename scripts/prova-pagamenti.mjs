@@ -20,7 +20,7 @@ globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} 
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export * from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro } from './src/lib/ricevute'; export { dataLunga } from './src/lib/sala'; export { conti } from './src/lib/ricevute'; export { NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, VOCE_QUOTA, VOCE_CORSI, cassaDelMetodo, voceDiSistema, doveEntraInContabilita } from './src/lib/contabilita'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { STAGIONE } from './src/lib/costi'; export { pagamentoDi } from './src/lib/segreteria'; export { soldi } from './src/lib/satispay'",
+    contents: "export * from './src/lib/pagamenti'; export { ENTE_PREDEFINITO, euro } from './src/lib/ricevute'; export { dataLunga } from './src/lib/sala'; export { conti } from './src/lib/ricevute'; export { NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, NOME_CASSA_SATISPAY, VOCE_QUOTA, VOCE_CORSI, cassaDelMetodo, voceDiSistema, doveEntraInContabilita } from './src/lib/contabilita'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { STAGIONE } from './src/lib/costi'; export { pagamentoDi } from './src/lib/segreteria'; export { soldi } from './src/lib/satispay'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -406,22 +406,25 @@ console.log('\n14. il riepilogo prima di registrare un pagamento a mano (riepilo
   ok('contabilita: false è come senza', righe({}, { contabilita: false }), [...PRIME, SENZA, RESIDUO])
 }
 
-console.log('\n15. dove entra in contabilità (doveEntraInContabilita(metodo, voce))')
+console.log('\n15. dove entra in contabilità (doveEntraInContabilita(metodo, voce, data))')
 {
-  const dove = (metodo, voce) => prova(() => m.doveEntraInContabilita(metodo, voce))
+  const dove = (metodo, voce, data = '2026-09-30') => prova(() => m.doveEntraInContabilita(metodo, voce, data))
   ok('40,00 € contanti «Quota associativa»', dove('Contanti', 'Quota associativa'), 'Entra in CONTABILITÀ: Cassa Contanti · Quota associativa')
   ok('80,00 € POS «Annuale Judo adulti»', dove('POS', 'Annuale Judo adulti'), 'Entra in CONTABILITÀ: Conto Corrente · Corsi e altri pagamenti')
   ok('«  contanti » e «QUOTA ASSOCIATIVA »: maiuscole e spazi non contano', dove('  contanti ', 'QUOTA ASSOCIATIVA '), 'Entra in CONTABILITÀ: Cassa Contanti · Quota associativa')
   ok('Bonifico: Conto Corrente', dove('Bonifico', 'Quota associativa'), 'Entra in CONTABILITÀ: Conto Corrente · Quota associativa')
-  ok('Satispay: Conto Corrente', dove('Satispay', 'ALTRO'), 'Entra in CONTABILITÀ: Conto Corrente · Corsi e altri pagamenti')
+  ok('Satispay a settembre: Conto Corrente', dove('Satispay', 'ALTRO'), 'Entra in CONTABILITÀ: Conto Corrente · Corsi e altri pagamenti')
+  ok('Satispay dal 1° ottobre 2026: cassa Satispay', dove('Satispay', 'ALTRO', '2026-10-01'), 'Entra in CONTABILITÀ: Satispay · Corsi e altri pagamenti')
   ok('«Quota + ottobre» non è la quota associativa', dove('Contanti', 'Quota + ottobre'), 'Entra in CONTABILITÀ: Cassa Contanti · Corsi e altri pagamenti')
   // Dice le stesse cose dei movimenti di CONTABILITÀ (`incassiDerivati`): se una cambia, l'altra la segue.
-  const casse = { contanti: m.NOME_CASSA_CONTANTI, conto: m.NOME_CASSA_CONTO }
+  const casse = { contanti: m.NOME_CASSA_CONTANTI, conto: m.NOME_CASSA_CONTO, satispay: m.NOME_CASSA_SATISPAY }
   const diverse = []
   for (const metodo of [...m.METODI_A_MANO, 'contanti', ' CONTANTI ', 'pos'])
     for (const voce of ['Quota associativa', 'QUOTA ASSOCIATIVA', ' quota associativa ', 'Quota + ottobre', 'Annuale Judo adulti', 'ALTRO']) {
-      const voluto = `Entra in CONTABILITÀ: ${casse[m.cassaDelMetodo(metodo)]} · ${m.voceDiSistema(voce)}`
-      if (dove(metodo, voce) !== voluto) diverse.push(`${metodo}/${voce}`)
+      for (const data of ['2026-09-30', '2026-10-01']) {
+        const voluto = `Entra in CONTABILITÀ: ${casse[m.cassaDelMetodo(metodo, data)]} · ${m.voceDiSistema(voce)}`
+        if (dove(metodo, voce, data) !== voluto) diverse.push(`${metodo}/${voce}/${data}`)
+      }
     }
   ok('per ogni metodo e voce dice quel che fa cassaDelMetodo e voceDiSistema', diverse, [])
 }

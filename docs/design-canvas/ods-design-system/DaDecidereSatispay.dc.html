@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+<section aria-label="{{aria}}" style="display: flex; flex-direction: column; gap: 12px; width: 100%; min-width: 0; padding: 18px 20px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}; font-family: {{c.body}}">
+  <span style="font-family: {{c.cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.giallo}}">{{etichetta}}</span>
+  <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 12px">
+    <b>{{titolo}}</b>
+    <b style="font-family: {{c.cond}}; font-variant-numeric: tabular-nums">{{importo}}</b>
+  </div>
+  <span style="font-size: 14px">{{testo}}</span>
+  <sc-if value="{{chiuso}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px">
+      <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="pieno" label="{{tastoOggi}}" hint-size="220px,48px"></dc-import>
+      <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="linea" label="Lascialo fuori" hint-size="150px,48px"></dc-import>
+    </div>
+  </sc-if>
+  <sc-if value="{{doppio}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <sc-for list="{{candidati}}" as="m" hint-placeholder-count="2">
+        <div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: 14px">
+          <span><b>{{m.descrizione}}</b>{{m.voce}}</span>
+          <span>{{m.cassa}}</span>
+          <span style="font-family: {{c.cond}}; font-variant-numeric: tabular-nums">{{m.importo}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px">
+      <sc-for list="{{candidati}}" as="m" hint-placeholder-count="2">
+        <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="linea" label="{{m.tasto}}" hint-size="230px,48px"></dc-import>
+      </sc-for>
+      <dc-import name="Bottone" tema="{{tema}}" contesto="segreteria" variante="pieno" label="{{tastoNessuno}}" hint-size="250px,48px"></dc-import>
+    </div>
+    <span style="font-size: 14px; color: {{c.dim}}">Se è uno di questi, resta quello a mano con la sua voce, e prende il segno DA SATISPAY.</span>
+  </sc-if>
+</section>
+</x-dc>
+<script data-dc-script data-props='{"motivo":{"editor":"enum","options":["giorno_chiuso","doppione"],"default":"giorno_chiuso"},"rimborso":{"editor":"boolean","default":false},"chi":{"editor":"text","default":"Marco B."},"importo":{"editor":"text","default":"12,00"},"data":{"editor":"text","default":"sabato 18/10/2026"},"oggi":{"editor":"text","default":"22/10"},"candidati":{"editor":"text","default":"Lezione di prova · Rossi Anna|Lezioni di prova|Conto Corrente;Maglietta ODS taglia M|Vestiario|Conto Corrente"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":820,"height":260}}'>
+// COSTRUITA (`DaDecidereScheda` in src/components/segreteria/ScaricoSatispay.tsx; proposta e storia in ../satispay-scarico/): un caso della pagina
+// «Pagamenti Satispay da decidere» (`SchedaPiena`, si apre da «Guarda i N casi»), sopra la frase «N pagamenti Satispay da decidere. Finche' non
+// scegli, non entrano.» (15px). Il caso e' un `.sg-riquadro` normale (padding 18px 20px, gap 12px, bordo 2px `line`: il giallo sta solo
+// nell'etichetta, non nel bordo come nella proposta). `.sg-etichetta` in `giallo-testo`: «CADE IN UN GIORNO GIA' CHIUSO» o «FORSE GIA' SCRITTO A
+// MANO»; riga titolo in grassetto «Satispay · chi» (o «Rimborso Satispay · chi») e importo .num col segno (+ incasso, − rimborso).
+// Giorno chiuso: «Pagato <giorno> GG/MM/AAAA. La cassa di quel giorno e' chiusa: scriverlo li' cambierebbe una chiusura gia' fatta.» (14px) e i tasti
+// pieno «Scrivilo oggi, GG/MM» e a linea «Lascialo fuori». Doppione: «Pagato … Quel giorno ci sono N movimenti a mano da <importo>. E' uno di questi?»,
+// una riga per movimento a mano (descrizione in grassetto · voce, cassa, importo con +), un tasto a linea «E' «descrizione»» per ciascuno, pieno
+// «Nessuno dei due: scrivilo» (con due candidati; «Nessuno: scrivilo» con piu') e la nota `dim` «Se e' uno di questi, resta quello a mano…».
+// `candidati`: descrizione|voce|cassa separati da «;». Tasti da 48px (nella proposta 44px).
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', giallo: '#f4c31b', rosso: '#ff5a52', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', giallo: '#8f6a00', rosso: '#b81d1d', cond: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", body: "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+  sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', giallo: '#8f6a00', rosso: '#b81d1d', cond: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif", body: "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const chiuso = (p.motivo ?? 'giorno_chiuso') === 'giorno_chiuso';
+    const rimb = truthy(p.rimborso);
+    const imp = p.importo ?? '12,00';
+    const candidati = (p.candidati ?? '').split(';').filter(Boolean).map((r) => {
+      const [descrizione, voce, cassa] = r.split('|');
+      return { descrizione, voce: voce ? ' · ' + voce : '', cassa: cassa ?? '', importo: '+' + imp + ' €', tasto: 'È «' + descrizione + '»' };
+    });
+    return {
+      c: T[p.tema] || T.sito, tema: p.tema || 'sito',
+      chiuso, doppio: !chiuso,
+      aria: chiuso ? 'Giorno chiuso' : 'Forse già scritto a mano',
+      etichetta: chiuso ? 'CADE IN UN GIORNO GIÀ CHIUSO' : 'FORSE GIÀ SCRITTO A MANO',
+      titolo: (rimb ? 'Rimborso Satispay' : 'Satispay') + (p.chi ? ' · ' + p.chi : ''),
+      importo: (rimb ? '−' : '+') + imp + ' €',
+      testo: chiuso
+        ? 'Pagato ' + p.data + '. La cassa di quel giorno è chiusa: scriverlo lì cambierebbe una chiusura già fatta.'
+        : 'Pagato ' + p.data + '. Quel giorno ci sono ' + candidati.length + ' movimenti a mano da ' + imp + ' €. È uno di questi?',
+      tastoOggi: 'Scrivilo oggi, ' + (p.oggi ?? '22/10'),
+      tastoNessuno: candidati.length === 2 ? 'Nessuno dei due: scrivilo' : 'Nessuno: scrivilo',
+      candidati,
+    };
+  }
+}
+</script>
+</body>
+</html>

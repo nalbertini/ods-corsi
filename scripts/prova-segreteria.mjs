@@ -3396,9 +3396,10 @@ const cx = {}
 const SOLO_AMM = 'Le voci di sistema non si cambiano'
 const sembra = (v) => ({ nome: v?.nome, tipo: v?.tipo, diSistema: v?.diSistema, attiva: v?.attiva })
 
-await sezione('la contabilità di prova: le due casse e le due voci di sistema', async () => {
+await sezione('la contabilità di prova: le tre casse e le due voci di sistema', async () => {
   const casse = await s.casse()
-  ok('le due casse, a zero e senza data', casse.map((c) => [c.nome, c.saldoIniziale, c.dal ?? null]).sort(), [['Cassa Contanti', 0, null], ['Conto Corrente', 0, null]])
+  // La cassa Satispay parte il 1° ottobre 2026 (97-satispay-scarico.sql): prima i pagamenti Satispay stavano in Conto Corrente.
+  ok('le tre casse, a zero; solo Satispay con la data', casse.map((c) => [c.nome, c.saldoIniziale, c.dal ?? null]).sort(), [['Cassa Contanti', 0, null], ['Conto Corrente', 0, null], ['Satispay', 0, '2026-10-01']])
   cx.contanti = casse.find((c) => c.nome === 'Cassa Contanti').id
   cx.conto = casse.find((c) => c.nome === 'Conto Corrente').id
   // «Differenza di cassa» arriva con 60-chiusura-cassa.sql e ha le sue prove (la chiusura di cassa, più sotto); «Compensi istruttori» con 81-compensi-pagati.sql (prova-compensi-pagati).
@@ -3777,7 +3778,8 @@ await sezione('si annulla solo l\'ultima, e i giorni si riaprono', async () => {
 })
 
 await sezione('cambiare la voce di un movimento (67-cambia-voce.sql): stesse regole del database', async () => {
-  const dc = await s.salvaVoce({ nome: 'Da classificare', tipo: 'uscita' })
+  // «Da classificare» c'è già: la porta lo scarico Satispay (97-satispay-scarico.sql).
+  const dc = (await s.voci()).find((v) => v.nome === 'Da classificare' && v.tipo === 'uscita').id
   const en = await s.salvaVoce({ nome: 'Energia', tipo: 'uscita' })
   const spenta = await s.salvaVoce({ nome: 'Vecchia due', tipo: 'uscita' })
   await s.attivaVoce(spenta, false)
@@ -4368,6 +4370,13 @@ await sezione('la ricevuta una volta sola, sul database (client finto): la chiav
   await db.emettiRicevuta(dati, 'sp-1').catch(() => {})
   ok('emetti_ricevuta ed emetti_ricevuta_satispay ricevono la chiave del modulo', chiamate.map(([f, x]) => [f, x?.dati?.chiave]),
     [['emetti_ricevuta', dati.chiave], ['emetti_ricevuta_satispay', dati.chiave]])
+})
+
+await sezione('lo scarico Satispay in prova: c’è un caso da decidere, per vedere l’avviso giallo', async () => {
+  const s = m.creaSegreteriaProva()
+  await s.scaricaSatispay(true)
+  const stato = await s.statoScaricoSatispay()
+  ok('dopo l’anteprima, un pagamento da decidere per un giorno chiuso', stato.daDecidere.map((c) => c.motivo), ['giorno_chiuso'])
 })
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

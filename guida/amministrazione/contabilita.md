@@ -20,12 +20,15 @@ L'elenco unisce due cose:
   o un pagamento si annulla, cambia da sé anche qui. In **PERSONA** c'è il nome
   della scheda dell'iscritto (vuota se il pagamento non ha una scheda): la
   descrizione resta il nome scritto sulla ricevuta, che può essere diverso. Contanti vanno in Cassa
-  Contanti, tutto il resto (bonifico, POS, Satispay, assegno) in Conto Corrente.
+  Contanti; Satispay, dal 1° ottobre 2026, nella cassa **Satispay** (prima in Conto
+  Corrente); tutto il resto (bonifico, POS, assegno) in Conto Corrente.
   Prima di registrare un pagamento a mano, il riepilogo dice già dove entra
   («Entra in CONTABILITÀ: Cassa Contanti · Quota associativa»).
   Il «pagato fino al» non è un incasso e qui non compare. Satispay entra per
-  l'importo pagato dalla famiglia: le commissioni e i rimborsi fatti dall'app
-  Satispay Business si registrano a mano;
+  l'importo pagato dalla famiglia: la commissione si scrive col giroconto verso
+  la banca (vedi sotto);
+- i **pagamenti del negozio Satispay** (anche col QR alla cassa) e i loro
+  rimborsi: li porta lo scarico, vedi [Lo scarico da Satispay](#lo-scarico-da-satispay);
 - i **movimenti che scrivi tu**: altre entrate (contributi, gare, attività
   fatturate) e le uscite.
 
@@ -121,6 +124,44 @@ hanno la persona da sé e non ci sono.
 contanti in banca: da Cassa Contanti a Conto Corrente. Non è un'entrata né
 un'uscita: non entra nei totali, né nei totali per voce. Si annulla come un movimento.
 Anche qui, prima di scrivere c'è il riepilogo da confermare.
+
+Da **Satispay** a Conto Corrente il campo si chiama **ARRIVATI IN BANCA**: Satispay
+versa quello che ha incassato meno la sua commissione. Sotto, l'app dice quanto ha
+incassato Satispay dall'ultimo versamento e propone la differenza come uscita
+«Commissioni bancarie» dalla cassa Satispay, con una casella già spuntata. Se la
+differenza non è la commissione (un versamento a metà, un errore), togli la spunta
+e scrivila tu. Giroconto e commissione si annullano ognuno per conto suo. Se il
+giroconto va e la commissione no, l'app lo dice: la commissione si scrive da
+**Nuovo movimento**.
+
+### Lo scarico da Satispay
+
+I pagamenti del negozio Satispay entrano da soli, ogni notte, fino al giorno prima.
+In MOVIMENTI la striscia Satispay dice quando è stato l'ultimo scarico, e **Scarica
+ora** lo fa subito.
+
+**La prima volta** c'è l'anteprima: l'app legge tutto Satispay e dice cosa
+scriverebbe, senza scrivere niente finché non dici sì. Ogni pagamento entra una volta
+sola, col segno **DA SATISPAY**, nella voce **Da classificare**: la voce giusta la
+scegli dopo, con **Cambia voce**. Un rimborso entra come uscita. Non entrano:
+
+- i pagamenti del **modulo di iscrizione**: sono già in PAGAMENTI o in una ricevuta;
+- quelli **già in PAGAMENTI**: un pagamento col metodo Satispay registrato in
+  palestra, stesso giorno e stesso importo;
+- quelli **già scritti a mano**: stesso giorno, stesso importo, un solo movimento
+  possibile in Conto Corrente o Satispay. Resta il tuo, con la sua voce, e prende il
+  segno DA SATISPAY;
+- quelli di prima dell'inizio dei conti.
+
+**Da decidere**: se il giorno è già chiuso, o se quel giorno ci sono più movimenti
+a mano con lo stesso importo, il pagamento non entra e compare l'avviso giallo.
+Lì scegli: per un giorno chiuso **Scrivilo oggi** (con la data di oggi) o **Lascialo
+fuori**; per un possibile doppione, quale dei movimenti a mano è quel pagamento
+(prende il segno DA SATISPAY), oppure lo scrivi come pagamento nuovo.
+
+Dal 1° ottobre 2026 i pagamenti Satispay entrano nella cassa **Satispay**; quelli di
+prima nel Conto Corrente, come si faceva finora, così i saldi passati non cambiano.
+Uno scarico si annulla movimento per movimento, come ogni movimento.
 
 ### Dalla chat, con Claude
 
