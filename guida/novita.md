@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.172.0 — 22 ottobre 2026
+
+### Novità
+
+- Nella scheda dell'iscritto il sollecito su WhatsApp è un tasto in alto e le azioni meno usate stanno in «Altro»
+
 ## 0.171.0 — 22 ottobre 2026
 
 ### Novità
