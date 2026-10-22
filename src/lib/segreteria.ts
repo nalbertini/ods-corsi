@@ -161,7 +161,7 @@ export interface PersonaSeg {
   vociCorsi?: VoceCorso[]
   /** Centesimi pagati con Satispay dal modulo e non ancora in una ricevuta (`73-satispay.sql`). */
   satispay?: number
-  /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`). Solo in prova, per ora. */
+  /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`); col database lo dà `99-nucleo.sql`. */
   nucleo?: string
   /** `AAAA-MM-GG`, dall'anagrafica; senza, l'età non si sa e il certificato serve (vedi `serveCertificato`). */
   natoIl?: string
@@ -638,11 +638,6 @@ export interface DatiSegreteria {
   /** Si toglie, non si cambia: l'import dell'RASD si rifà. */
   togliTessera(id: string): Promise<void>
 
-  /**
-   * Il nucleo familiare (vedi `nucleo.ts`): mette una persona nel nucleo di
-   * un titolare, la toglie, o la fa titolare al posto di quello di prima.
-   * Solo in prova, per ora: col database rispondono che non c'è ancora.
-   */
   /** Le presenze segnalate dagli iscritti (vedi `segnalate.ts`); per ora solo in prova, col database non ci sono. */
   segnalate?(): Promise<SegnalataVista[]>
   gestisciSegnalata?(id: string, accogli: boolean): Promise<void>
@@ -689,6 +684,11 @@ export interface DatiSegreteria {
   /** Gli orari che la pagina «Orari» del sito mostra (`orari_sito()`, vedi `sitoOrari.ts`): in prova, quelli del calendario di prova. */
   orariSito(): Promise<OrarioSito[]>
 
+  /**
+   * Il nucleo familiare (vedi `nucleo.ts`): mette una persona nel nucleo di
+   * un titolare, la toglie, o la fa titolare al posto di quello di prima.
+   * Col database sono le funzioni di `99-nucleo.sql`.
+   */
   mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
   togliDalNucleo(personaId: string): Promise<void>
   rendiTitolare(personaId: string): Promise<void>

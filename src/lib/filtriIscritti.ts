@@ -1,4 +1,4 @@
-import { comePaga, fuoriRegola, senzaCertificatoValido, type PersonaSeg } from './segreteria'
+import { comePaga, fuoriRegola, inCorso, senzaCertificatoValido, type PersonaSeg } from './segreteria'
 import { senzaTessera, type RigaIncrocio } from './tessere'
 
 /**
@@ -72,7 +72,19 @@ export interface ContestoFiltri {
   oggi: string
   scopertiDi: (p: PersonaSeg) => unknown[]
   tesseraDi: (p: PersonaSeg) => RigaIncrocio[]
+  /** Gli id dei titolari di un nucleo con altri dentro (`titolariDi`): chi li dà all'elenco intero. */
+  titolari?: ReadonlySet<string>
 }
+
+/** Chi ha qualcuno nel suo nucleo familiare. */
+export const titolariDi = (persone: PersonaSeg[]): Set<string> => new Set(persone.flatMap((p) => (p.nucleo ? [p.nucleo] : [])))
+
+/**
+ * Un titolare che non frequenta lui, ma ha gente nel nucleo, c'è per gli
+ * altri: la quota e il certificato non sono cosa sua, e non conta come
+ * da incassare né da sistemare.
+ */
+const titolareSenzaCorsi = (p: PersonaSeg, c: ContestoFiltri) => !!c.titolari?.has(p.id) && !p.iscrizioni.some((i) => inCorso(i, c.oggi))
 
 // La quota si cerca fra chi è attivo: chi ha smesso non la deve portare. Gli stessi conti di DA FARE.
 export const daPagare = (p: PersonaSeg, oggi: string) => p.attiva && comePaga(p, oggi) !== 'pagato'
@@ -80,15 +92,17 @@ export const daPagare = (p: PersonaSeg, oggi: string) => p.attiva && comePaga(p,
 /** Se una persona passa un chip: la stessa regola per il filtro e per il suo conto. */
 export function passaChip(id: ChipConto, p: PersonaSeg, c: ContestoFiltri): boolean {
   if (id === 'certificato') return senzaCertificatoValido(p, c.oggi)
-  if (id === 'pagare') return daPagare(p, c.oggi)
+  if (id === 'pagare') return daPagare(p, c.oggi) && !titolareSenzaCorsi(p, c)
   if (id === 'corsi-scaduti') return c.scopertiDi(p).length > 0
+  if (titolareSenzaCorsi(p, c)) return false
   return fuoriRegola(p, c.oggi) || (p.attiva && senzaTessera(c.tesseraDi(p)))
 }
 
 /** Quanti si vedrebbero accendendo solo quel chip, con la ricerca e il corso già scelti (`base`). */
 export function contiChip(persone: PersonaSeg[], base: (p: PersonaSeg) => boolean, c: ContestoFiltri): Record<ChipConto, number> {
   const dentro = persone.filter(base)
-  const conta = (id: ChipConto) => dentro.filter((p) => passaChip(id, p, c)).length
+  const contesto = { ...c, titolari: titolariDi(persone) }
+  const conta = (id: ChipConto) => dentro.filter((p) => passaChip(id, p, contesto)).length
   return { certificato: conta('certificato'), pagare: conta('pagare'), 'corsi-scaduti': conta('corsi-scaduti'), fuori: conta('fuori') }
 }
 

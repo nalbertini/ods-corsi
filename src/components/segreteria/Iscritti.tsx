@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, FILTRI_VISIBILI, haConto, ID_FILTRI, passaChip, TESTI_FILTRI, type ChipConto, type ContestoFiltri, type IdFiltro } from '../../lib/filtriIscritti'
+import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, FILTRI_VISIBILI, haConto, ID_FILTRI, passaChip, TESTI_FILTRI, titolariDi, type ChipConto, type ContestoFiltri, type IdFiltro } from '../../lib/filtriIscritti'
 import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
@@ -270,7 +270,7 @@ export function Iscritti({
     setCorso('')
     accesi.forEach((id) => filtri[id][1](false))
   }
-  const contesto: ContestoFiltri = { oggi, scopertiDi, tesseraDi }
+  const contesto: ContestoFiltri = { oggi, scopertiDi, tesseraDi, titolari: titolariDi(tutti) }
   // Ricerca e corso: quel che resta scelto quando si accende un chip, e su cui si contano i chip.
   const inBase = (p: PersonaSeg) =>
     (!ricerca || ricerca.ids.includes(p.id)) && cercaNellElenco(p, cerca) && (!corso || p.iscrizioni.some((i) => i.corsoId === corso && inCorso(i, oggi)))
@@ -988,7 +988,7 @@ function Scheda({
           )}
 
           <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} an={an} natoIl={natoIl} minore={minore} fai={fai} onCambiato={() => { setGiroAnagrafica((g) => g + 1); onCambiato() }} />
-          {d.modo === 'prova' && <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />}
+          <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />
           {nonDoppioni.length > 0 && (
             <div className="stack" style={{ gap: 8 }}>
               <Riga titolo="NON SONO DOPPIONI" />
@@ -1474,8 +1474,9 @@ function UnisciDoppione({
  * Il nucleo familiare (vedi `nucleo.ts`): di chi è, chi c'è, e dove va lo
  * sconto famiglia, dalle ricevute del nucleo. Dalla scheda del titolare (o di
  * chi non è in un nucleo) si aggiunge una persona; da quella di un'altra la
- * si toglie, o la si fa titolare. Per ora solo in prova: il database non lo
- * tiene ancora, e la sezione non c'è.
+ * si toglie, o la si fa titolare. Se il database non ha ancora il nucleo
+ * (99-nucleo.sql), la sezione resta vuota e i tasti rispondono «aggiornamento
+ * in corso» (lo dice `guaio`, in `segreteriaSupabase.ts`).
  */
 function NucleoFamiliare({
   d,
@@ -1540,9 +1541,7 @@ function NucleoFamiliare({
 
   return (
     <div className="stack" style={{ gap: 8 }}>
-      <Riga titolo="NUCLEO FAMILIARE">
-        <span className="num sg-bollino">Prova</span>
-      </Riga>
+      <Riga titolo="NUCLEO FAMILIARE" />
       {!p.nucleo && membri.length === 0 ? (
         <span className="sg-sotto">Non è in un nucleo. Aggiungi qualcuno qui sotto, e ne diventa titolare: vedrà nella sua pagina anche le persone del nucleo.</span>
       ) : !titolare ? (

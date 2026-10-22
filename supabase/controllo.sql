@@ -499,6 +499,15 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'storico_persona' and corpo like '%prima-nota:%')
     and not exists (select 1 from dentro where nome = 'collegamento_perche' and corpo like '%non viene dal vecchio programma%')
     -- Rilanciare 67 dopo 98 rimette la versione a due argomenti accanto a questa: l'app non sa più quale chiamare.
-    and to_regprocedure('public.cambia_voce_movimenti(uuid[],uuid)') is null)
+    and to_regprocedure('public.cambia_voce_movimenti(uuid[],uuid)') is null),
+  ('99-nucleo.sql', 'il nucleo familiare sul database',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'persone' and column_name = 'nucleo')
+    and to_regprocedure('public.metti_nel_nucleo(uuid,uuid)') is not null
+    and to_regprocedure('public.togli_dal_nucleo(uuid)') is not null
+    and to_regprocedure('public.rendi_titolare(uuid)') is not null
+    -- Rilanciare 45, 84 o 95 dopo 99 rimette le funzioni senza il nucleo: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'unione_possibile' and corpo like '%nucleo%')
+    and exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%nucleo_di%')
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%nucleo_di%'))
 ) as x(file, cosa, c)
 order by file, cosa;
