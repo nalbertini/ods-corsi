@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.163.0 — 22 ottobre 2026
+
+### Novità
+
+- I pagamenti Satispay del negozio entrano da soli in CONTABILITÀ, senza doppioni con quelli del modulo di iscrizione
+
 ## 0.162.1 — 22 ottobre 2026
 
 ### Modificato
