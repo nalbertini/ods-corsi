@@ -8,21 +8,22 @@
 <x-dc>
 <helmet>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
 <div style="position: relative; width: 376px; height: {{altezza}}; padding: 0 4px">
-  <div style="display: flex; align-items: center; width: 216px; height: 44px; padding: 0 12px; background: {{c.surface}}; border: 2px solid {{bordoCampo}}; font-size: 15px; color: {{coloreTesto}}">{{mostrato}}</div>
+  <div style="display: flex; align-items: center; width: 216px; height: 44px; padding: 0 12px; font-family: {{c.font}}; background: {{c.surface}}; border: 2px solid {{bordoCampo}}; font-size: 15px; color: {{coloreTesto}}">{{mostrato}}</div>
   <sc-if value="{{mostra}}" hint-placeholder-val="{{ true }}">
-    <div style="position: absolute; left: 4px; width: 368px; top: 48px; z-index: 25; padding: 4px; background: {{c.surface}}; border: 2px solid {{c.text}}; box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25)">
+    <div style="position: absolute; left: 4px; width: 368px; top: 48px; z-index: 25; padding: 4px; font-family: {{c.font}}; background: {{c.surface}}; border: 2px solid {{c.text}}; box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25)">
       <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}">
         <div style="padding: 10px; font-size: 14px; color: {{c.dim}}">{{nota}}</div>
       </sc-if>
       <sc-for list="{{gruppi}}" as="g" hint-placeholder-count="2">
         <div style="display: flex; flex-direction: column">
-          <div style="display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: {{c.dim}}">
+          <div style="display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; font-family: {{c.cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: {{c.dim}}">
             <span>{{g.titolo}}</span>
             <span style="flex-grow: 1; height: 1px; background: {{c.lineSoft}}"></span>
             <span>{{g.totale}}</span>
@@ -33,8 +34,16 @@
                 <span style="font-size: 15px; color: {{v.colore}}">{{v.nome}}</span>
                 <sc-if value="{{v.sotto}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; color: {{c.dim}}">{{v.sotto}}</span></sc-if>
               </div>
-              <sc-if value="{{v.bollino}}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; padding: 2px 6px; background: {{c.giallo}}; color: {{c.suColore}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em">{{v.nota}}</span></sc-if>
+              <sc-if value="{{v.bollino}}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; padding: 2px 6px; background: {{c.giallo}}; border: {{c.bordoBollino}}; border-radius: {{c.raggio}}; color: {{c.suColore}}; font-family: {{c.cond}}; font-size: 11px; font-weight: 700; letter-spacing: {{c.spazio}}">{{c.segnoBollino}}{{v.nota}}</span></sc-if>
               <sc-if value="{{v.notaSemplice}}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; font-size: 12px; color: {{c.dim}}">{{v.nota}}</span></sc-if>
+              <sc-if value="{{v.ok}}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; font-size: 20px; font-weight: 700; color: {{c.verdeTesto}}">✓</span></sc-if>
+              <sc-if value="{{v.haStati}}" hint-placeholder-val="{{ false }}">
+                <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0">
+                  <sc-for list="{{v.stati}}" as="b" hint-placeholder-count="1">
+                    <span style="padding: 2px 6px; background: {{c.surface}}; border: 1.5px solid {{b.colore}}; border-radius: {{c.raggio}}; color: {{b.colore}}; font-family: {{c.cond}}; font-size: 12px; font-weight: 700; letter-spacing: {{c.spazio}}; white-space: nowrap">{{b.testo}}</span>
+                  </sc-for>
+                </span>
+              </sc-if>
             </div>
           </sc-for>
           <sc-if value="{{g.altri}}" hint-placeholder-val="{{ false }}">
@@ -46,7 +55,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"testo":{"editor":"text","default":"ros"},"gruppi":{"editor":"text","default":"ISCRITTI:5=Rossi Giulia~Yoga|Rossi Marco~9 anni · Judo kids~non attiva|Rossetti Anna~Pilates;RICHIESTE ONLINE:1=Rossi Elena~arrivata ieri~DA ACCOGLIERE"},"scelto":{"editor":"text","default":"0"},"leggo":{"editor":"boolean","default":false},"offline":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":376,"height":420}}'>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"ros"},"gruppi":{"editor":"text","default":"ISCRITTI:5=Rossi Giulia~Yoga|Rossi Marco~9 anni · Judo kids~non attiva|Rossetti Anna~Pilates;RICHIESTE ONLINE:1=Rossi Elena~arrivata ieri~DA ACCOGLIERE"},"scelto":{"editor":"text","default":"0"},"leggo":{"editor":"boolean","default":false},"offline":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":376,"height":420}}'>
 // La ricerca in cima al menu di segreteria com'e' costruita (src/components/segreteria/CercaIscritto.tsx, src/lib/ricerca.ts,
 // .sg-cerca* in src/styles.css righe 1488-1502): .sg-cerca, ma l'elenco e' un pannello piu' largo (368px), fisso, che esce dal
 // menu e galleggia sul corpo, a gruppi. La riga scelta con le frecce ha, oltre al fondo `surface-2`, la barra a sinistra (inset 4px `text`). Ogni gruppo: titolo spaziato (12px, `dim`, riga sottile, totale a destra), al piu' 3
@@ -54,16 +63,26 @@
 // da 44px che apre la pagina intera (ISCRITTI, RICHIESTE ONLINE). Valori copiati da CercaIscritto.dc.html e Titoletto.
 // gruppi: "TITOLO:totale=riga|riga;TITOLO:totale=riga". riga: "nome~sotto~nota". Una nota tutta maiuscole e' un
 // bollino giallo (DA ACCOGLIERE), altrimenti testo 12px a destra (non attiva, accolta, rifiutata).
+// Lo stato (src/lib/ricerca.ts, RigaTrovata.stato; storia in ../cerca-stato/): quarto campo della riga, "stato" = le parole di paroleInRegola che non vanno,
+// "parola:tono+parola:tono" (certificato, poi quota), oppure "ok" = in regola: solo il ✓ verde (.sg-cerca-ok, 20px), la parola sta nell'aria-label.
+// Sta a destra, una parola sotto l'altra; nel tema sito e' il .sg-segno-regola sito (bianco, bordo 1.5px, raggio 6px, ✕ / … / ✓ davanti).
+// tema sito: i token di `:root[data-look='sito'] .sg-cerca-elenco` (src/styles.css riga 287), Inter.
 // scelto: la riga evidenziata (da 0, contando tutte le righe). offline: la frase «non riesco ad aggiornare l'elenco» sotto i gruppi.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', suColore: '#121212' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', suColore: '#121212' },
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', suColore: '#121212', rossoTesto: '#ff5a52', gialloTesto: '#f4c31b', verdeTesto: '#16a54a' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', giallo: '#ffffff', suColore: '#8f6a00', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', suColore: '#121212', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33' },
 };
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const SEGNI = { rosso: '✕ ', giallo: '… ', verde: '✓ ' };
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const sito = p.tema === 'sito';
+    const c = { ...(T[p.tema] || T.scuro), font: sito ? INTER : 'Barlow, sans-serif', cond: sito ? INTER : COND, raggio: sito ? '6px' : '0', spazio: sito ? '0.02em' : '0.12em', bordoBollino: sito ? '1.5px solid #8f6a00' : '0', segnoBollino: sito ? '… ' : '' };
+    const tinta = (tono) => tono === 'rosso' ? c.rossoTesto : tono === 'giallo' ? c.gialloTesto : tono === 'verde' ? c.verdeTesto : c.dim;
     const testo = p.testo ?? 'ros';
     const mostra = testo.trim().length > 0;
     const scelto = Number(p.scelto) || 0;
@@ -74,10 +93,14 @@ class Component extends DCLogic {
       const [testa, resto = ''] = s.split('=');
       const [titolo, totale = ''] = testa.split(':');
       const righe = resto.split('|').map((r) => r.trim()).filter(Boolean).map((r) => {
-        const [nome, sotto = '', nota = ''] = r.split('~');
+        const [nome, sotto = '', nota = '', stato = ''] = r.split('~');
+        const stati = stato === 'ok' ? [] : stato.split('+').filter(Boolean).map((x) => {
+          const [parola, tono = 'rosso'] = x.split(':');
+          return { testo: (sito ? SEGNI[tono] || '' : '') + parola, colore: tinta(tono) };
+        });
         const bollino = nota !== '' && nota === nota.toUpperCase();
         const spento = nota === 'non attiva' || nota === 'rifiutata';
-        return { nome, sotto, nota, bollino, notaSemplice: nota !== '' && !bollino, sfondo: n === scelto ? c.surface2 : 'transparent', barra: n++ === scelto ? 'inset 4px 0 0 ' + c.text : 'none', colore: spento ? c.dim : c.text };
+        return { nome, sotto, nota, bollino, stati, ok: stato === 'ok', haStati: stati.length > 0, notaSemplice: nota !== '' && !bollino, sfondo: n === scelto ? c.surface2 : 'transparent', barra: n++ === scelto ? 'inset 4px 0 0 ' + c.text : 'none', colore: spento ? c.dim : c.text };
       });
       const visti = righe.length;
       const tot = Number(totale) || visti;
@@ -90,7 +113,7 @@ class Component extends DCLogic {
     return {
       c, mostra, gruppi, nota, haNota: nota !== '',
       mostrato: testo || 'Cerca  /', coloreTesto: testo ? c.text : c.dim, bordoCampo: testo ? c.text : c.line,
-      altezza: mostra ? (48 + 12 + (nota ? 38 : 0) + gruppi.length * 30 + righe * 52 + alti * 44) + 'px' : '44px',
+      altezza: mostra ? (48 + 12 + (nota ? 38 : 0) + gruppi.length * 30 + righe * 52 + gruppi.reduce((a, g) => a + g.righe.reduce((b, v) => b + (v.stati.length > 1 ? 14 : 0), 0), 0) + alti * 44) + 'px' : '44px',
     };
   }
 }

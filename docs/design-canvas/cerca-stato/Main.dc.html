@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Big+Shoulders+Display:wght@700;800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Lo stato nella ricerca del Banco, proposta. L'elenco resta quello di oggi (368px, a gruppi, tre righe e ALTRI N); cambia
+     solo la riga di un iscritto attivo: a destra le parole della colonna IN REGOLA che non vanno (certificato, poi quota, una
+     sotto l'altra), o il solo ✓ verde se è in regola. Chi non è attivo resta «non attiva», grigio, senza stato. Look sito. -->
+<div style="display: flex; flex-direction: column; gap: 40px; width: 1280px; padding: 40px; background: #eef5fa">
+  <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #46606f">PROPOSTA · LO STATO SU OGNI RIGA DELLA RICERCA</span>
+
+  <div style="display: flex; gap: 48px; align-items: flex-start">
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 15px; font-weight: 600">Oggi · «bia»: per sapere chi è in regola bisogna aprire la scheda.</span>
+      <dc-import name="CercaIscritto" tema="sito" testo="bia" gruppi="ISCRITTI:4=Bianchi Luca~12 anni · Judo kids|Bianchi Marta~9 anni · Giocomotricità|Bianchi Sara~34 anni · Pilates;RICHIESTE ONLINE:1=Bianchi Elena~arrivata ieri~DA ACCOGLIERE" scelto="0" hint-size="376px,440px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 15px; font-weight: 600">Proposta · «bia»: ogni iscritto dice cosa manca. Due guai, due parole.</span>
+      <dc-import name="CercaIscritto" tema="sito" testo="bia" gruppi="ISCRITTI:4=Bianchi Luca~12 anni · Judo kids~~Certificato scaduto:rosso|Bianchi Marta~9 anni · Giocomotricità~~ok|Bianchi Sara~34 anni · Pilates~~Manca il certificato:rosso+Da pagare:rosso;RICHIESTE ONLINE:1=Bianchi Elena~arrivata ieri~DA ACCOGLIERE" scelto="0" hint-size="376px,460px"></dc-import>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 48px; align-items: flex-start">
+    <div style="display: flex; flex-direction: column; gap: 12px; width: 376px">
+      <span style="font-size: 15px; font-weight: 600">«ros»: il certificato che scade si vede in giallo, la quota in parte pure. Chi non è attivo resta grigio, senza stato.</span>
+      <dc-import name="CercaIscritto" tema="sito" testo="ros" gruppi="ISCRITTI:3=Rossi Giulia~41 anni · Yoga~~Scade il 30/10:giallo|Rossi Marco~9 anni · Judo kids~non attiva|Rossetti Anna~Pilates~~Pagata in parte:giallo" scelto="0" hint-size="376px,280px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; width: 376px">
+      <span style="font-size: 15px; font-weight: 600">«338 12»: il bambino trovato col telefono del genitore porta il suo stato; del genitore si vede solo che il numero è suo.</span>
+      <dc-import name="CercaIscritto" tema="sito" testo="338 12" gruppi="ISCRITTI:2=Verdi Tommaso~10 anni · Judo kids · numero di un genitore~~Quota scaduta:rosso|Verdi Sara~tel. 338 123 4567~~ok" scelto="0" hint-size="376px,220px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; width: 376px">
+      <span style="font-size: 15px; font-weight: 600">«neri»: sotto i 6 anni il certificato non serve, conta solo la quota.</span>
+      <dc-import name="CercaIscritto" tema="sito" testo="neri" gruppi="ISCRITTI:2=Neri Ada~5 anni · Giocomotricità~~Da pagare:rosso|Neri Teo~4 anni · Giocomotricità~~ok" scelto="0" hint-size="376px,220px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

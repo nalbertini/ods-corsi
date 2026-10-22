@@ -1980,6 +1980,10 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-cerca-sotto { font-size: 12px; color: var(--dim); }
 .sg-cerca-altri { min-height: 44px; font-size: 14px; font-weight: 600; color: var(--sec); }
 .sg-cerca-nota { flex-shrink: 0; font-size: 12px; color: var(--dim); }
+/* Lo stato di un iscritto, con le parole della colonna IN REGOLA: certificato sopra, quota sotto. */
+.sg-cerca-stato { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+/* 20px grassetto conta come testo grande: sulla riga scelta (fondo azzurro) il verde resta sopra 3:1. */
+.sg-cerca-ok { flex-shrink: 0; font-size: 20px; font-weight: 700; color: var(--verde-testo); }
 .sg-cerca-vuoto { padding: 10px; font-size: 14px; color: var(--dim); }
 .sg-filtro-ricerca { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 14px; color: var(--sec); }
 .sg-gruppi { display: flex; flex-direction: column; gap: 18px; }

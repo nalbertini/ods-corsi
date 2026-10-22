@@ -220,6 +220,17 @@ export function CercaIscritto({ d, onVai }: { d: DatiSegreteria; onVai: (voce: V
                               ) : (
                                 <span className="sg-cerca-nota">{v.riga.nota}</span>
                               ))}
+                            {v.riga.stato &&
+                              (v.riga.stato.length === 0 ? (
+                                // In regola non serve dirlo a parole: il segno basta, e lascia spazio al nome.
+                                <span className="sg-cerca-ok" role="img" aria-label="In regola">✓</span>
+                              ) : (
+                                <span className="sg-cerca-stato">
+                                  {v.riga.stato.map((s) => (
+                                    <span key={s.parola} className="num sg-segno-regola" data-tono={s.tono}>{s.parola}</span>
+                                  ))}
+                                </span>
+                              ))}
                           </>
                         ) : (
                           <>

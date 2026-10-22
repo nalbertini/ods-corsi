@@ -1,0 +1,11 @@
+{
+ "pages": [
+  { "id": "page-1", "name": "Lo stato nella ricerca · proposta" }
+ ],
+ "artboards": [
+  { "file": "Main.dc.html", "title": "Oggi e proposta: lo stato su ogni riga", "x": 0, "y": 300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1280, "text": "Nella ricerca del Banco ogni iscritto dice se è in regola" }
+ ]
+}
