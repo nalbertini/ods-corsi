@@ -71,6 +71,10 @@ const comune = readFileSync('src/components/segreteria/comune.tsx', 'utf8')
 const menu = comune.slice(comune.indexOf('export function MenuAzioni'))
 const escMenu = menu.match(/const tasto = \(e: KeyboardEvent\) => \{[\s\S]*?\n/)?.[0] ?? ''
 ok('l\'Esc che chiude il menu si ferma lì (stopPropagation)', escMenu.includes('stopPropagation'), true)
+// Lo stop funziona perché il menu ascolta su document, che l'Esc incontra prima di window.
+ok('il menu ascolta l\'Esc su document', /document\.addEventListener\('keydown', tasto\)/.test(menu.slice(0, menu.indexOf('return ('))), true)
+const dialogo = comune.slice(comune.indexOf('export function useDialogo'), comune.indexOf('export function useDialogo') + 2000)
+ok('la scheda (useDialogo) ascolta l\'Esc su window', dialogo.includes("window.addEventListener('keydown', tasto)"), true)
 
 console.log(guai ? `\n${guai} da sistemare` : '\nTutto a posto')
 process.exit(guai ? 1 : 0)
