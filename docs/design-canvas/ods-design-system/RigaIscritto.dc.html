@@ -17,17 +17,28 @@
   </style>
 </helmet>
 <div role="row" style="display: grid; grid-template-columns: {{griglia}}; gap: 14px; align-items: center; width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid {{c.surface2}}; background: {{sfondo}}; outline: {{contorno}}; outline-offset: -2px; opacity: {{opacita}}; text-align: left">
-  <span style="font-size: 15px; font-weight: 600; color: {{c.text}}">{{nome}}<sc-if value="{{daStampare}}" hint-placeholder-val="{{ false }}"><span style="margin-left: 8px; display: inline-block; vertical-align: middle"><dc-import name="Badge" tipo="tag" tono="neutro" label="DA STAMPARE" tema="{{tema}}" hint-size="96px,20px"></dc-import></span></sc-if></span>
-  <span style="font-size: 13px; color: {{c.sec}}">{{corsi}}</span>
-  <span style="font-size: 13px; color: {{coloreContatto}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{contatto}}</span>
-  <span style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 0">
+  <span style="order: 1; font-size: 15px; font-weight: 600; color: {{c.text}}">{{nome}}<sc-if value="{{daStampare}}" hint-placeholder-val="{{ false }}"><span style="margin-left: 8px; display: inline-block; vertical-align: middle"><dc-import name="Badge" tipo="tag" tono="neutro" label="DA STAMPARE" tema="{{tema}}" hint-size="96px,20px"></dc-import></span></sc-if></span>
+  <span style="order: {{o.corsi}}; display: {{o.mostra}}; font-size: 13px; color: {{c.sec}}; overflow: hidden; text-overflow: ellipsis; white-space: {{o.capo}}">{{corsi}}<sc-if value="{{piu}}" hint-placeholder-val="{{ false }}"><span style="margin-left: 6px; color: {{c.dim}}">{{piu}}</span></sc-if></span>
+  <span style="order: {{o.contatto}}; display: {{o.mostra}}; font-size: 13px; color: {{coloreContatto}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap"><sc-if value="{{icona.tel}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right: 6px; vertical-align: -2px; color: {{c.dim}}"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></sc-if><sc-if value="{{icona.mail}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right: 6px; vertical-align: -2px; color: {{c.dim}}"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></sc-if>{{contatto}}</span>
+  <span style="order: {{o.stato}}; display: flex; flex-direction: {{o.verso}}; flex-wrap: wrap; align-items: {{o.allinea}}; gap: {{o.gap}}; padding: 6px 0">
     <sc-for list="{{bollini}}" as="x" hint-placeholder-count="2">
-      <dc-import name="Badge" tipo="segno" tono="{{x.tono}}" label="{{x.testo}}" tema="{{tema}}" hint-size="120px,24px"></dc-import>
+      <sc-if value="{{x.badge}}"><dc-import name="Badge" tipo="segno" tono="{{x.tono}}" label="{{x.testo}}" larghezza="{{o.largo}}" compatto="{{o.compatto}}" forma="{{o.forma}}" tema="{{tema}}" hint-size="120px,24px"></dc-import></sc-if>
+      <sc-if value="{{x.ok}}"><span aria-label="In regola" style="font-size: 18px; font-weight: 700; line-height: 1; color: {{c.verdeTesto}}">✓</span></sc-if>
+      <sc-if value="{{x.nota}}"><span title="{{x.titolo}}" style="font-size: 13px; color: {{c.dim}}">{{x.corto}}</span></sc-if>
     </sc-for>
   </span>
-  <span style="font-family: {{fam}}; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: {{coloreFreq}}">{{frequenza}}</span>
+  <sc-if value="{{conQuota}}" hint-placeholder-val="{{ false }}">
+    <span style="order: {{o.quota}}; display: flex; flex-direction: {{o.verso}}; flex-wrap: wrap; align-items: {{o.allinea}}; gap: {{o.gap}}; padding: 6px 0">
+      <sc-for list="{{quota}}" as="x" hint-placeholder-count="2">
+        <sc-if value="{{x.badge}}"><dc-import name="Badge" tipo="segno" tono="{{x.tono}}" label="{{x.testo}}" larghezza="{{o.largo}}" compatto="{{o.compatto}}" forma="{{o.forma}}" tema="{{tema}}" hint-size="120px,24px"></dc-import></sc-if>
+        <sc-if value="{{x.ok}}"><span aria-label="In regola" style="font-size: 18px; font-weight: 700; line-height: 1; color: {{c.verdeTesto}}">✓</span></sc-if>
+        <sc-if value="{{x.nota}}"><span title="{{x.titolo}}" style="font-size: 13px; color: {{c.dim}}">{{x.corto}}</span></sc-if>
+      </sc-for>
+    </span>
+  </sc-if>
+  <span title="{{titoloFreq}}" style="order: {{o.freq}}; font-family: {{fam}}; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: {{coloreFreq}}">{{frequenza}}<sc-if value="{{barra}}" hint-placeholder-val="{{ false }}"><span style="display: block; width: 100%; max-width: 56px; height: 5px; margin: 5px 0 0 auto; border-radius: 3px; background: {{c.surface2}}; overflow: hidden"><span style="display: block; height: 100%; width: {{barra}}; background: {{coloreFreq}}"></span></span></sc-if></span>
   <sc-if value="{{conSollecito}}" hint-placeholder-val="{{ false }}">
-    <span style="display: flex; flex-direction: column; align-items: {{s.allinea}}; gap: 4px; padding: 6px 0; grid-column: {{s.colonna}}">
+    <span style="order: 7; display: flex; flex-direction: column; align-items: {{s.allinea}}; gap: 4px; padding: 6px 0; grid-column: {{s.colonna}}">
       <sc-if value="{{s.tasto}}"><dc-import name="Bottone" label="WhatsApp" variante="linea" contesto="segreteria" tema="{{tema}}" hint-size="{{s.misura}}"></dc-import></sc-if>
       <sc-if value="{{s.nota}}"><span style="font-size: 13px; color: {{s.coloreNota}}">{{s.nota}}</span></sc-if>
       <sc-if value="{{sollecitato}}"><span style="font-size: 12px; color: {{c.dim}}">{{sollecitato}}</span></sc-if>
@@ -35,7 +46,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Rossi Giulia"},"corsi":{"editor":"text","default":"Judo kids, Pilates"},"contatto":{"editor":"text","default":"333 1234567"},"bollini":{"editor":"text","default":"CERTIFICATO:verde|QUOTA:giallo"},"frequenza":{"editor":"text","default":"5/8"},"poco":{"editor":"boolean","default":false},"daStampare":{"editor":"boolean","default":false},"stato":{"editor":"enum","options":["normale","scelta","spenta"],"default":"normale"},"griglia":{"editor":"text","default":"1.2fr 1.4fr 1.3fr 150px 80px"},"sollecito":{"editor":"enum","options":["","tasto","fisso","manca","sbagliato","tessera","vecchio"],"default":""},"sollecitato":{"editor":"text","default":""},"telefono":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":900,"height":70}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Rossi Giulia"},"corsi":{"editor":"text","default":"Judo kids, Pilates"},"contatto":{"editor":"text","default":"333 1234567"},"bollini":{"editor":"text","default":"CERTIFICATO:verde|QUOTA:giallo"},"frequenza":{"editor":"text","default":"5/8"},"poco":{"editor":"boolean","default":false},"daStampare":{"editor":"boolean","default":false},"stato":{"editor":"enum","options":["normale","scelta","spenta"],"default":"normale"},"griglia":{"editor":"text","default":"1.2fr 1.4fr 1.3fr 150px 80px"},"sollecito":{"editor":"enum","options":["","tasto","fisso","manca","sbagliato","tessera","vecchio"],"default":""},"sollecitato":{"editor":"text","default":""},"telefono":{"editor":"boolean","default":false},"proposta":{"editor":"boolean","default":false},"piu":{"editor":"text","default":""},"quota":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":900,"height":70}}'>
 // Riproduzione 1:1 della riga della tabella ISCRITTI: .sg-riga-iscritto + .sg-iscritto (src/styles.css righe 1544 e
 // 1586-1593, 1599) usata in src/components/segreteria/Iscritti.tsx (righe 286-317). Alta almeno 50px, padding 0 14px,
 // filetto sotto 1px `surface-2`. Nome 15px 600 (+ DA STAMPARE, .sg-tag, se il certificato e' un file da stampare e
@@ -51,6 +62,20 @@
 // rosso-testo; `tessera` (con «Non in regola», solo la tessera da sistemare) la frase in `dim`; `vecchio` (quota pagata nel vecchio programma, da segnare) in giallo-testo. Padding sotto 8px col `telefono`. `sollecitato` la riga 12px `dim` sotto («Sollecitato il 14/10»). Con `sollecito` la griglia ha una
 // colonna in piu' (passarla in `griglia`). `telefono`: la cella va sotto, su tutta la riga, col tasto largo.
 // bollini: "PAROLA:tono" separati da | (tono rosso / giallo / verde / spento). La testata sta in TestataTabella.
+// COSTRUITO (../iscritti-elenco/, .sg-riga-iscritti in src/styles.css): `proposta` mette lo stato subito dopo il nome
+// (NOME · CERTIFICATO · QUOTA · CORSI · CONTATTO · 30 GIORNI; la griglia la passa chi la usa: desktop
+// «minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px», col sollecito «minmax(0, 1fr) 140px 110px minmax(0, 1fr) 130px 70px 150px»;
+// fra 768 e 1000px «minmax(0, 1fr) 130px 110px 80px» senza CORSI e CONTATTO, con le parole; telefono «minmax(0, 1fr) 56px 56px 48px»), i segni in fila sulla stessa riga invece che impilati (col `telefono` senza CORSI e CONTATTO, griglia di tre colonne), e i corsi su una
+// riga sola con `piu` («+2») in `dim` dopo i primi due. Nei `bollini` il tono `ok` e' il solo ✓ verde-testo 18px, senza
+// parola (chi e' in regola); il tono `nota` e' una frase 13px `dim` senza bordo (Non serve il certificato, Senza data).
+// `quota` (stesso formato dei `bollini`) divide lo stato in due colonne: i `bollini` vanno sotto CERTIFICATO, `quota` sotto
+// QUOTA (quota e tessera); con le parole corte, perche' la testata dice gia' di cosa si parla.
+// Con `proposta` i segni sono a pallino (Badge forma pallino), larghi quanto la parola; col telefono compatti, ✕ rosso o
+// … giallo, la parola nel title.
+// Davanti al contatto un'icona 14px `dim` (telefono o busta, tratto 1.75 come ICONE_MENU in Icons.tsx).
+// Sotto il numero di 30 GIORNI una barretta (surface-2, piena del colore del numero) mostra presenze su lezioni; senza
+// barretta se non ci sono lezioni («—»).
+// Il numero di 30 GIORNI ha un `title` che lo spiega (presenze su lezioni avute; giallo se meno della meta').
 // tema sito (`:root[data-look='sito']`): la riga scelta non prende un fondo colorato ma bianco con il contorno blu #14709f (sotto un testo giallo scuro il
 // celeste non arriva a 4,5:1); l'ultima colonna e i segni sono in Inter, i segni con ✕ … ✓ davanti (Badge).
 const T = {
@@ -67,14 +92,32 @@ class Component extends DCLogic {
     const c = T[p.tema] || T.scuro;
 const stato = p.stato || 'normale';
     const contatto = p.contatto ?? '333 1234567';
-    const bollini = String(p.bollini ?? 'CERTIFICATO:verde|QUOTA:giallo').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
+    const segni = (testo) => String(testo).split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
       const i = s.lastIndexOf(':');
-      return i > 0 ? { testo: s.slice(0, i).trim(), tono: s.slice(i + 1).trim() } : { testo: s, tono: 'spento' };
+      const x = i > 0 ? { testo: s.slice(0, i).trim(), tono: s.slice(i + 1).trim() } : { testo: s, tono: 'spento' };
+      return { ...x, ok: x.tono === 'ok', nota: x.tono === 'nota', badge: x.tono !== 'ok' && x.tono !== 'nota' };
     });
+    const bollini = segni(p.bollini ?? 'CERTIFICATO:verde|QUOTA:giallo');
+    const quota = segni(p.quota || '');
+    // Col telefono la nota grigia si riduce a una lineetta (la frase nel title), come i segni compatti.
+    const corta = truthy(p.telefono) && truthy(p.proposta);
+    [...bollini, ...quota].forEach((x) => { x.corto = corta ? '–' : x.testo; x.titolo = corta ? x.testo : ''; });
     const sol = p.sollecito || '';
     const tel = truthy(p.telefono);
     const NOTE = { fisso: 'Sembra un fisso', manca: 'Manca il telefono', sbagliato: 'Telefono da correggere', tessera: 'Solo la tessera: non si sollecita qui', vecchio: 'Quota pagata nel vecchio programma: da segnare' };
+    const prop = truthy(p.proposta);
+    const giallo = truthy(p.poco);
     return {
+      // Col telefono la proposta toglie CORSI e CONTATTO dalla griglia: vuote resterebbero celle e manderebbero 30 GIORNI a capo.
+      // Con `quota` la colonna dello stato si divide in due (CERTIFICATO, QUOTA) e le altre scalano di uno.
+      o: prop ? { largo: 'auto', compatto: tel, forma: 'pallino', stato: 2, quota: 3, corsi: quota.length ? 4 : 3, contatto: quota.length ? 5 : 4, freq: 6, verso: 'row', allinea: 'center', gap: '6px 10px', capo: 'nowrap', mostra: tel ? 'none' : 'block' } : { stato: 4, quota: 4, corsi: 2, contatto: 3, freq: 5, verso: 'column', allinea: 'flex-start', gap: '4px', capo: 'normal', mostra: 'block', largo: 'auto', compatto: false, forma: 'tag' },
+      conQuota: quota.length > 0, quota,
+      piu: p.piu || '',
+      // L'icona dice se il contatto si chiama o si scrive; senza contatto niente icona, resta la frase in rosso.
+      icona: { tel: prop && /\d/.test(contatto) && !contatto.includes('@'), mail: prop && contatto.includes('@') },
+      // La barretta sotto il numero fa vedere la quota di presenze senza fare la divisione a mente; vuota se non e' mai venuto.
+      barra: prop ? (() => { const m = /^(\d+)\/(\d+)$/.exec(p.frequenza ?? ''); return m && +m[2] > 0 ? Math.round(100 * Math.min(1, +m[1] / +m[2])) + '%' : ''; })() : '',
+      titoloFreq: prop ? 'Presenze negli ultimi 30 giorni su lezioni avute, senza i giustificati' + (giallo ? '. In giallo: è venuto a meno della metà.' : '.') : '',
       conSollecito: !!sol, sollecitato: p.sollecitato || '',
       s: { tasto: sol === 'tasto' || sol === 'fisso', nota: NOTE[sol] || '', coloreNota: sol === 'fisso' || sol === 'vecchio' ? c.gialloTesto : sol === 'tessera' ? c.dim : c.rossoTesto,
         colonna: tel ? '1 / -1' : 'auto', allinea: tel ? 'stretch' : 'flex-start', misura: tel ? '100%,44px' : '130px,44px' },

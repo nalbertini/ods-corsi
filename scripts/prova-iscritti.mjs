@@ -475,5 +475,142 @@ console.log('\n7. la sessione sul dispositivo: la chiave e le tre sessioni di pr
   pulisci()
 }
 
+// ---------------------------------------------------------------------------
+// L'elenco ISCRITTI rivisto: due colonne di segni (CERTIFICATO e QUOTA), i conti
+// sui chip, la cella CORSI e la barretta dei 30 GIORNI. Le funzioni sono nuove:
+// finché non ci sono, ogni caso fallisce da sé con «manca …».
+// ---------------------------------------------------------------------------
+{
+  const { outputFiles: fuori } = await build({
+    stdin: {
+      contents: "export * from './src/lib/segreteria'; export * from './src/lib/filtriIscritti'",
+      resolveDir: '.',
+      loader: 'ts',
+    },
+    bundle: true, format: 'esm', write: false, logLevel: 'error', define: { 'import.meta.env': '{}' },
+  })
+  const E = await import('data:text/javascript;base64,' + Buffer.from(fuori[0].text).toString('base64'))
+  const vedi = (nome, f) => (typeof E[nome] === 'function' ? f(E[nome]) : `manca ${nome}`)
+
+  const oggi = '2026-09-26'
+  const fra = (n) => new Date(Date.UTC(2026, 8, 26 + n)).toISOString().slice(0, 10)
+  const corta = (g) => `${g.slice(8, 10)}/${g.slice(5, 7)}`
+  const pagata = { anno: 2026, numero: 12, dal: '2026-09-01', al: fra(200), mancano: 0 }
+  const adulto = '1990-01-01'
+  const persona = (altro = {}) => ({
+    id: 'p-e', nome: 'Anna', cognome: 'Elenco', attiva: true, creataIl: '2026-09-01', iscrizioni: [], documento: true,
+    natoIl: adulto, certificato: { scade: fra(100), conFile: false }, pagamento: { stato: 'da_pagare' }, quote: [pagata], ...altro,
+  })
+  const cert = (scade, altro = {}) => persona({ certificato: { scade, conFile: false }, ...altro })
+  const tessera = (esito, tesseraAl, ente = 'FIJLKAM') => ({ personaId: 'p-e', ente, esito, tesseraAl })
+  // Senza la funzione ogni caso fallisce con «manca statoPerElenco», senza rompere la prova.
+  const stato = (p, righe = []) => (typeof E.statoPerElenco === 'function' ? E.statoPerElenco(p, oggi, righe) : { certificato: 'manca statoPerElenco', quota: ['manca statoPerElenco'] })
+  const segno = (tono, parola) => ({ tono, parola })
+
+  console.log('\nELENCO: la colonna CERTIFICATO (un segno solo)')
+  ok('valido: verde «In regola»', stato(persona()).certificato, segno('verde', 'In regola'))
+  ok('manca: rosso «Manca»', stato(cert(undefined)).certificato, segno('rosso', 'Manca'))
+  ok('scaduto: rosso «Scaduto»', stato(cert(fra(-1))).certificato, segno('rosso', 'Scaduto'))
+  ok('scade oggi: giallo «Scade oggi»', stato(cert(oggi)).certificato, segno('giallo', 'Scade oggi'))
+  ok('in scadenza: giallo «Scade il gg/mm»', stato(cert(fra(10))).certificato, segno('giallo', `Scade il ${corta(fra(10))}`))
+  ok('compie 6 anni fra 14 giorni, senza certificato: giallo «Serve dal gg/mm»', stato(persona({ natoIl: '2020-10-10', certificato: { conFile: false } })).certificato, segno('giallo', 'Serve dal 10/10'))
+  ok('sotto i 6 anni senza certificato: nota «Non serve»', stato(persona({ natoIl: '2021-03-10', certificato: { conFile: false } })).certificato, segno('nota', 'Non serve'))
+  ok('sotto i 6 anni con certificato valido: verde', stato(persona({ natoIl: '2021-03-10' })).certificato.tono, 'verde')
+  ok('senza data di nascita e certificato valido: giallo «Senza data»', stato(persona({ natoIl: undefined })).certificato, segno('giallo', 'Senza data'))
+  ok('senza data di nascita e certificato in scadenza: resta «Scade il gg/mm», che dice di più', stato(persona({ natoIl: undefined, certificato: { scade: fra(10), conFile: true } })).certificato, segno('giallo', `Scade il ${corta(fra(10))}`))
+  ok('senza data di nascita e certificato che manca: vince il rosso «Manca»', stato(persona({ natoIl: undefined, certificato: { conFile: false } })).certificato, segno('rosso', 'Manca'))
+  ok('senza data di nascita e certificato scaduto: vince il rosso «Scaduto»', stato(persona({ natoIl: undefined, certificato: { scade: fra(-1), conFile: false } })).certificato, segno('rosso', 'Scaduto'))
+
+  console.log('\nELENCO: la colonna QUOTA (la quota, poi la tessera)')
+  ok('certificato valido, quota pagata, nessuna tessera: verde e verde', stato(persona()), { certificato: segno('verde', 'In regola'), quota: [segno('verde', 'In regola')] })
+  ok('certificato che manca e quota da pagare: «Manca» e «Da pagare», ognuno nella sua colonna', stato(persona({ certificato: { conFile: false }, quote: [] })), { certificato: segno('rosso', 'Manca'), quota: [segno('rosso', 'Da pagare')] })
+  ok('quota scaduta: rosso «Scaduta»', stato(persona({ quote: [{ ...pagata, dal: '2025-09-01', al: fra(-1) }] })).quota, [segno('rosso', 'Scaduta')])
+  ok('pagata in parte: giallo «In parte»', stato(persona({ quote: [{ ...pagata, mancano: 2000 }] })).quota, [segno('giallo', 'In parte')])
+  ok('pagata fuori dall’app: verde «In regola», niente «Fuori app»', stato(persona({ quote: [], pagamento: { stato: 'pagato', fino: fra(100) } })).quota, [segno('verde', 'In regola')])
+  ok('tessera che manca, il resto a posto: solo giallo «Tessera da fare», nessun verde', stato(persona(), [tessera('manca')]).quota, [segno('giallo', 'Tessera da fare')])
+  ok('tessera scaduta, il resto a posto: rosso «Tessera scaduta»', stato(persona(), [tessera('scaduta', fra(-5))]).quota, [segno('rosso', 'Tessera scaduta')])
+  ok('tessera in scadenza: giallo «Tessera scade a ottobre»', stato(persona(), [tessera('in_scadenza', '2026-10-05')]).quota, [segno('giallo', 'Tessera scade a ottobre')])
+  ok('quota da pagare e tessera scaduta: tutte e due, la quota prima', stato(persona({ quote: [] }), [tessera('scaduta', fra(-5))]).quota, [segno('rosso', 'Da pagare'), segno('rosso', 'Tessera scaduta')])
+  ok('quota in parte e tessera che manca: tutte e due', stato(persona({ quote: [{ ...pagata, mancano: 2000 }] }), [tessera('manca')]).quota, [segno('giallo', 'In parte'), segno('giallo', 'Tessera da fare')])
+  ok('due enti con la tessera scaduta: una parola sola', stato(persona(), [tessera('scaduta', fra(-5)), tessera('scaduta', fra(-9), 'CSEN')]).quota, [segno('rosso', 'Tessera scaduta')])
+  ok('due enti, una scaduta e una che manca: una parola per tipo', stato(persona(), [tessera('scaduta', fra(-5)), tessera('manca', undefined, 'CSEN')]).quota.map((s) => s.parola), ['Tessera scaduta', 'Tessera da fare'])
+  ok('un corso che non chiede la tessera (non_iscritto): niente da dire', stato(persona(), [tessera('non_iscritto')]).quota, [segno('verde', 'In regola')])
+
+  console.log('\nELENCO: chi è archiviato')
+  ok('archiviato con tutti i guai: «Archiviato» spento e quota vuota', stato(persona({ attiva: false, certificato: { conFile: false }, quote: [] }), [tessera('manca')]), { certificato: segno('spento', 'Archiviato'), quota: [] })
+  ok('archiviato con tutto a posto: niente verde', stato(persona({ attiva: false })), { certificato: segno('spento', 'Archiviato'), quota: [] })
+  ok('archiviato con la tessera che manca: quota vuota lo stesso', stato(persona({ attiva: false }), [tessera('manca')]).quota, [])
+
+  console.log('\nELENCO: «In regola?» com’era, per la ricerca')
+  ok('paroleInRegola: tutto a posto è ancora «In regola», e basta', E.paroleInRegola(persona(), oggi), [{ tono: 'verde', parola: 'In regola' }])
+  ok('paroleInRegola: certificato che manca e quota da pagare, come prima', E.paroleInRegola(persona({ certificato: { conFile: false }, quote: [] }), oggi).map((x) => x.parola), ['Manca il certificato', 'Da pagare'])
+  ok('paroleInRegola: la quota pagata fuori app dice ancora «Fuori app»', E.paroleInRegola(persona({ quote: [], pagamento: { stato: 'pagato', fino: fra(100) } }), oggi).map((x) => x.parola), ['In regola', 'Fuori app'])
+
+  console.log('\nELENCO: i conti sui chip sono le righe che si vedrebbero col chip acceso da solo')
+  {
+    const sana = (id, altro = {}) => persona({ id, ...altro })
+    const gente = [
+      sana('a'),
+      sana('b', { certificato: { conFile: false } }),
+      sana('c', { certificato: { scade: fra(-3), conFile: false }, quote: [] }),
+      sana('d', { quote: [] }),
+      sana('e', { quote: [], attiva: false, certificato: { conFile: false } }),
+      sana('f'),
+      sana('g', { cognome: 'Verdi', pagamento: { stato: 'pagato', fino: fra(100) }, quote: [] }),
+      sana('h', { cognome: 'Verdi', certificato: { conFile: false } }),
+    ]
+    const scoperti = new Set(['a', 'd'])
+    const senzaTess = new Set(['f'])
+    const c = { oggi, scopertiDi: (p) => (scoperti.has(p.id) ? ['Judo'] : []), tesseraDi: (p) => (senzaTess.has(p.id) ? [tessera('manca')] : []) }
+    const tutte = () => true
+    const chip = ['certificato', 'pagare', 'corsi-scaduti', 'fuori']
+    const conti = (base) => vedi('contiChip', (f) => f(gente, base, c))
+    const veri = (base) => Object.fromEntries(chip.map((id) => [id, vedi('passaChip', (f) => gente.filter((p) => base(p) && f(id, p, c)).length)]))
+
+    ok('senza ricerca né corso: i numeri a mano', conti(tutte), { certificato: 3, pagare: 2, 'corsi-scaduti': 2, fuori: 5 })
+    ok('… e sono quelli di passaChip, il filtro vero', conti(tutte), veri(tutte))
+    const soloVerdi = (p) => p.cognome === 'Verdi'
+    ok('con la ricerca «Verdi» il conto cambia', conti(soloVerdi), { certificato: 1, pagare: 0, 'corsi-scaduti': 0, fuori: 1 })
+    ok('… e torna con passaChip', conti(soloVerdi), veri(soloVerdi))
+    const delCorso = (p) => ['b', 'c', 'd'].includes(p.id)
+    ok('con un corso scelto il conto cambia', conti(delCorso), { certificato: 2, pagare: 2, 'corsi-scaduti': 1, fuori: 3 })
+    ok('… e torna con passaChip', conti(delCorso), veri(delCorso))
+    ok('«Senza certificato valido» conta come senzaCertificatoValido', vedi('passaChip', (f) => gente.map((p) => f('certificato', p, c))), gente.map((p) => E.senzaCertificatoValido(p, oggi)))
+    ok('chi è archiviato non sta in «Da pagare»', vedi('passaChip', (f) => f('pagare', gente[4], c)), false)
+    ok('«Non in regola» prende anche chi ha la tessera che manca', vedi('passaChip', (f) => f('fuori', gente[5], c)), true)
+    const { readFileSync } = await import('node:fs')
+    const tsx = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
+    ok('Iscritti.tsx filtra con passaChip e conta con contiChip, non con condizioni sue', [tsx.includes('passaChip('), tsx.includes('contiChip(')], [true, true])
+    ok('… e non rifà a mano le condizioni dei chip', ['senzaCertificatoValido(', 'daPagare(', 'fuoriRegola(', 'scopertiDi(p).length > 0) &&'].filter((x) => tsx.includes(x)), [])
+  }
+
+  console.log('\nELENCO: la cella CORSI')
+  {
+    const cella = (nomi, scaduti = false) => (typeof E.cellaCorsi === 'function' ? E.cellaCorsi(nomi, scaduti) : { altri: 'manca cellaCorsi' })
+    ok('un corso: quello, niente «+N»', cella(['Judo']), { visibili: ['Judo'], altri: 0, title: 'Judo' })
+    ok('due corsi: tutti e due', cella(['Judo', 'MGA']), { visibili: ['Judo', 'MGA'], altri: 0, title: 'Judo, MGA' })
+    ok('tre corsi: i primi due e «+1», il title ha l’elenco intero', cella(['Judo', 'MGA', 'Lotta']), { visibili: ['Judo', 'MGA'], altri: 1, title: 'Judo, MGA, Lotta' })
+    ok('cinque corsi: «+3»', cella(['A', 'B', 'C', 'D', 'E']).altri, 3)
+    ok('col filtro Corsi scaduti: si vede tutto, niente «+N»', cella(['Judo', 'MGA', 'Lotta'], true), { visibili: ['Judo', 'MGA', 'Lotta'], altri: 0, title: 'Judo, MGA, Lotta' })
+    ok('nessun corso: vuoto', cella([]), { visibili: [], altri: 0, title: '' })
+  }
+
+  console.log('\nELENCO: la barretta dei 30 GIORNI')
+  {
+    const perc = (f) => vedi('percentualeBarra', (g) => g(f))
+    ok('9 su 12: 75%', perc({ presenti: 9, dovute: 12 }), 75)
+    ok('1 su 3: 33%, intero', perc({ presenti: 1, dovute: 3 }), 33)
+    ok('0 su 4: 0%, la barretta c’è ma è vuota', perc({ presenti: 0, dovute: 4 }), 0)
+    ok('5 su 4: al massimo 100%', perc({ presenti: 5, dovute: 4 }), 100)
+    ok('0 lezioni dovute: niente barretta', perc({ presenti: 0, dovute: 0 }), null)
+    ok('senza dati: niente barretta', perc(undefined), null)
+    const poco = (f) => vedi('vienePoco', (g) => g(f))
+    ok('vienePoco: 1 su 3 sì', poco({ presenti: 1, dovute: 3 }), true)
+    ok('vienePoco: metà esatta no', poco({ presenti: 2, dovute: 4 }), false)
+    ok('vienePoco: meno di tre lezioni no', poco({ presenti: 0, dovute: 2 }), false)
+    ok('vienePoco: senza dati no', poco(undefined), false)
+  }
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
