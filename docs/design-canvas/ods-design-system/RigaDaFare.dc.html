@@ -21,22 +21,35 @@
   <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
     <span style="font-family: {{fam}}; font-size: {{titoloCorpo}}; font-weight: 700; letter-spacing: {{titoloSpazio}}; line-height: 1.1; color: {{c.text}}">{{titolo}}</span>
     <span style="font-size: 14px; line-height: 1.5; color: {{c.sec}}">{{sotto}}</span>
+    <sc-if value="{{conElenco}}" hint-placeholder-val="{{ false }}">
+      <ul style="list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: {{colonne}}; column-gap: 24px; border-top: 1px solid {{c.line}}">
+        <sc-for list="{{voci}}" as="v" hint-placeholder-count="3">
+          <li style="display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; min-width: 0; padding-bottom: 2px; border-bottom: 1px solid {{c.line}}">
+            <span style="display: inline-flex; align-items: center; min-height: 44px; min-width: 0; max-width: 100%; font-size: 15px; font-weight: 600; color: {{c.text}}; text-decoration: underline; text-decoration-color: {{c.line}}; text-underline-offset: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{v.nome}}</span>
+            <span style="padding-bottom: 8px; font-size: 14px; line-height: 1.4; color: {{v.colore}}">{{v.perche}}</span>
+          </li>
+        </sc-for>
+      </ul>
+    </sc-if>
   </div>
   <div style="flex-shrink: 0; align-self: center">
     <dc-import name="Bottone" label="{{tasto}}" variante="{{variante}}" contesto="segreteria" tema="{{tema}}" hint-size="150px,44px"></dc-import>
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"n":{"editor":"text","default":"3"},"titolo":{"editor":"text","default":"iscritti senza certificato valido"},"sotto":{"editor":"text","default":"Il certificato medico manca o è scaduto: senza, in sala non si entra."},"tasto":{"editor":"text","default":"VEDI CHI"},"principale":{"editor":"boolean","default":false},"livello":{"editor":"enum","options":["blocca","presto"],"default":"blocca"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":1000,"height":100}}'>
+<script data-dc-script data-props='{"n":{"editor":"text","default":"3"},"titolo":{"editor":"text","default":"iscritti senza certificato valido"},"sotto":{"editor":"text","default":"Il certificato medico manca o è scaduto: senza, in sala non si entra."},"tasto":{"editor":"text","default":"Vedi tutti"},"livello":{"editor":"enum","options":["blocca","presto"],"default":"blocca"},"elenco":{"editor":"text","default":""},"rosso":{"editor":"text","default":""},"colonne":{"editor":"enum","options":["1","2"],"default":"2"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":1000,"height":100}}'>
 // Riproduzione 1:1 di una riga di DA FARE: .sg-dafare-riga + .sg-dafare-n + .sg-dafare-titolo (src/styles.css righe
 // 1683-1693), disegnata da `DaFare` in src/components/segreteria/DaFare.tsx. Fondo `surface`, bordo 2px `line`,
 // padding 16px 18px, gap 20px. Il numero Saira 44px 700, min 64px, a destra: rosso-testo se `livello` e' blocca,
 // giallo-testo se e' presto (il rosso solo per quello che e' gia' un guaio). Titolo Saira 22px 700; sotto, 14px `sec`.
-// Il tasto e' un .sg-btn-linea (Bottone, segreteria). Non riprodotti: le lezioni da aprire sotto gli appelli e il
-// ritorno a capo sotto i 700px.
+// Il tasto e' un .sg-btn-linea (Bottone, segreteria), lo stesso su ogni riga: «Vedi tutti» (TASTO_DA_FARE in daFareChi.ts).
+// Non riprodotti: le lezioni da aprire sotto gli appelli e il ritorno a capo sotto i 700px.
 // tema sito (`:root[data-look='sito']`): tessera bianca senza bordo, raggio 6px, barra a sinistra di 4px (rosso se blocca, giallo scuro se e' presto);
-// numero e titolo in Inter (il titolo 21px 700 senza spaziatura); il tasto dice il gesto («Fai gli appelli», `daFareTesti.ts`) e solo quello della
-// prima riga e' giallo pieno (`principale`), gli altri sono a linea blu.
+// numero e titolo in Inter (il titolo 21px 700 senza spaziatura).
+// `elenco` = «Nome~perché|…»: i primi nomi sotto la frase (.sg-dafare-chi, al massimo PRIMI_DA_FARE = 5), ognuno apre dove si
+// sistema. Nome 15px 600 sottolineato in `line`, alto 44px; perché 14px `sec`, in rosso-testo se contiene una parola di `rosso`
+// (separate da «|»: nell'app, il certificato). Se nome e perché non stanno insieme il perché va a capo. `colonne` 1 o 2
+// (COLONNE_DA_FARE): le due colonne sono auto-fill da 300px, quindi su spazi stretti tornano una.
 const T = {
   scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', rossoTesto: '#ff5a52', gialloTesto: '#f4c31b' },
   chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00' },
@@ -53,9 +66,15 @@ class Component extends DCLogic {
       fam: sito ? INTER : COND, titoloCorpo: sito ? '21px' : '22px', titoloSpazio: sito ? '0' : '0.03em',
       bordo: sito ? '0' : '2px solid ' + c.line, raggio: sito ? '6px' : '0',
       barra: sito ? 'inset 4px 0 0 ' + (p.livello === 'presto' ? c.gialloTesto : '#e4292a') : 'none',
-      variante: sito && (p.principale === true || p.principale === 'true') ? 'pieno' : 'linea',
+      variante: 'linea',
       c, tema: p.tema || 'scuro', n: p.n ?? '3', titolo: p.titolo ?? 'iscritti senza certificato valido',
-      sotto: p.sotto ?? 'Il certificato medico manca o è scaduto: senza, in sala non si entra.', tasto: p.tasto ?? (sito ? 'Vedi chi' : 'VEDI CHI'),
+      sotto: p.sotto ?? 'Il certificato medico manca o è scaduto: senza, in sala non si entra.', tasto: p.tasto ?? 'Vedi tutti',
+      conElenco: !!p.elenco, colonne: p.colonne === '1' ? '1fr' : 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
+      voci: (p.elenco || '').split('|').filter(Boolean).slice(0, 5).map((x) => {
+        const [nome, perche = ''] = x.split('~');
+        const rossi = (p.rosso || '').split('|').filter(Boolean);
+        return { nome, perche, colore: rossi.some((r) => perche.includes(r)) ? c.rossoTesto : c.sec };
+      }),
       coloreN: p.livello === 'presto' ? c.gialloTesto : c.rossoTesto,
     };
   }
