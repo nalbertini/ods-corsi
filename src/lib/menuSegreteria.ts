@@ -12,8 +12,8 @@ import { spunteDi, type AreaDiAccount } from './ruoli'
  * qui si sceglie cosa mostrare, non cosa è permesso.
  */
 
-/** Le voci che stanno nel menu: «regole» e «segnalate» sono schede dentro altre sezioni. */
-export type VoceDelMenu = Exclude<Voce, 'segnalate' | 'regole'>
+/** Le voci che stanno nel menu: «regole» e «segnalate» sono schede dentro altre sezioni, «palestra» è la pagina d'ingresso di un luogo del Banco. */
+export type VoceDelMenu = Exclude<Voce, 'segnalate' | 'regole' | 'palestra'>
 
 type Chi = { ruolo: string; ancheIstruttore?: boolean; ancheAmministrazione?: boolean }
 
@@ -130,10 +130,10 @@ export const vociDelMenu = (chi: Chi): Voce[] => menuDi(chi).flatMap((g) => g.vo
 /** La prima voce del menu: dove si atterra. `undefined` per chi non ha il menu. */
 export const primaVoce = (chi: Chi): Voce | undefined => vociDelMenu(chi)[0]
 
-/** La segreteria ha in più le impostazioni (che non sono nel menu) e, in prova, le presenze segnalate. */
+/** La segreteria ha in più le impostazioni e la pagina PALESTRA del Banco (che non sono nel menu) e, in prova, le presenze segnalate. */
 export function vociConsentite(chi: Chi, { prova }: { prova: boolean }): Voce[] {
   const segreteria = leggeLaSegreteria(chi)
-  const impostazioni: Voce[] = segreteria ? ['regole'] : []
+  const impostazioni: Voce[] = segreteria ? ['regole', 'palestra'] : []
   const segnalate: Voce[] = segreteria && prova ? ['segnalate'] : []
   return [...vociDelMenu(chi), ...impostazioni, ...segnalate]
 }
@@ -198,4 +198,5 @@ const GUIDE: Record<Exclude<Voce, 'contabilita'>, string> = {
   regole: 'segreteria/regole',
   segnalazioni: 'segreteria/segnalazioni',
   sito: 'segreteria/sito',
+  palestra: 'segreteria/il-banco',
 }

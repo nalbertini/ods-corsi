@@ -143,15 +143,33 @@ titolo('luoghi del Banco')
   ok('i luoghi dati non cambiano', LUOGHI.length, 5)
 
   for (const v of VOCI) {
-    if (v === 'segnalate') continue
+    // segnalate è una scheda di PRESENZE; palestra è la pagina d'ingresso del luogo, non una voce della riga.
+    if (v === 'segnalate' || v === 'palestra') continue
     ok(`${v}: compare in uno e un solo luogo`, nelleListe.filter((x) => x === v).length, 1)
   }
   ok('nessuna voce in due luoghi', nelleListe.length, new Set(nelleListe).size)
   const ids = LUOGHI.map((l) => l.id)
   for (const v of VOCI) {
-    const voluto = v === 'segnalate' ? 'oggi' : LUOGHI.find((l) => l.voci.some((x) => x.voce === v))?.id
+    const voluto = v === 'segnalate' ? 'oggi' : v === 'palestra' ? 'palestra' : LUOGHI.find((l) => l.voci.some((x) => x.voce === v))?.id
     ok(`luogoDi(${v}) è un luogo e quello giusto`, [ids.includes(luogoDi(v)), luogoDi(v)], [true, voluto])
   }
+  // PALESTRA si apre di rado: il luogo porta a una pagina sua, con le quattro voci in grande, e nessuna voce accesa.
+  const { voceDelLuogo } = m.luoghi
+  ok('#palestra è una voce', m.indirizzo.leggiIndirizzo('#palestra', { prova: false })?.voce, 'palestra')
+  ok('#palestra si riscrive uguale', m.indirizzo.scriviIndirizzo({ voce: 'palestra' }), '#palestra')
+  ok('il luogo PALESTRA apre la pagina d\'ingresso', voceDelLuogo(LUOGHI.find((l) => l.id === 'palestra')), 'palestra')
+  ok('gli altri luoghi aprono la loro prima voce', ['oggi', 'persone', 'corsi', 'soldi'].map((id) => voceDelLuogo(LUOGHI.find((l) => l.id === id))), ['dafare', 'iscritti', 'corsi', 'pagamenti'])
+  ok('solo amministrazione: SOLDI apre PAGAMENTI', voceDelLuogo(m.luoghi.luoghiPer(['contabilita', 'pagamenti', 'listino'])[0]), 'pagamenti')
+  ok('la pagina d\'ingresso accende PALESTRA', luogoDi('palestra'), 'palestra')
+  ok('…e nessuna voce della riga', LUOGHI.find((l) => l.id === 'palestra').voci.some((v) => v.voce === voceInLista('palestra')), false)
+  ok('palestra non è una voce di nessun luogo', nelleListe.includes('palestra'), false)
+  // Le tessere di LA PALESTRA nascono dalle voci del luogo: se ne cambia una, cambiano insieme.
+  const tessere = (n) => m.luoghi.tesserePalestra?.(n) ?? []
+  ok('le tessere sono le voci di PALESTRA, in ordine', tessere(0).map((t) => [t.voce, t.titolo]), voci('palestra'))
+  ok('ogni tessera ha la sua frase', tessere(0).map((t) => t.frase.length > 0), [true, true, true, true])
+  ok('nessuna segnalazione da rispondere: nessuno stato', tessere(0).map((t) => t.stato ?? null), [null, null, null, null])
+  ok('1 da rispondere', tessere(1).map((t) => t.stato ?? null), [null, '1 da rispondere', null, null])
+  ok('3 da rispondere, solo su SEGNALAZIONI', tessere(3).map((t) => t.stato ?? null), [null, '3 da rispondere', null, null])
   ok('segnalate sta in OGGI (è una scheda di PRESENZE)', luogoDi('segnalate'), 'oggi')
   ok('voceInLista: segnalate evidenzia presenze', voceInLista('segnalate'), 'presenze')
   for (const v of VOCI) if (v !== 'segnalate') ok(`voceInLista(${v}) è se stessa`, voceInLista(v), v)

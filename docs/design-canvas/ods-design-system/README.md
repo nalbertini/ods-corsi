@@ -79,6 +79,8 @@ Google, e vale solo per i mockup.
 | `TabletTastiera` | I pallini e il tastierino del PIN |
 | `Cifra` | Un numero grande di OGGI nel Banco (`.bn-cifra`): titolo, numero (rosso se è un guaio), frase |
 | `RigaCoda` | Una riga della coda DA FARE AL BANCO (`.bn-riga`): titolo, frase, tasto; bordo rosso se blocca, giallo se aspetta |
+| `BarraBanco` | La testata del Banco nel look del sito (`BarraBanco.tsx`, `.bn-alto`, `.bn-luoghi`, `.bn-voci`): inchiostro con marchio, ricerca, Link ▾, guida e chi è dentro; i cinque luoghi su bianco col corrente sottolineato; le voci del luogo su `#cfe6f4` con la corrente piena. `voce` vuota: nessuna voce accesa |
+| `VoceGrande` | Una voce in grande della pagina LA PALESTRA del Banco (`banco/Palestra.tsx`, `.bn-tessera`): icona del menu, titolo Big Shoulders, la frase della pagina che apre; `stato` mette la barra gialla scura e il tag |
 | `BloccoLezione` | Un blocco del tabellone sale × ore di OGGI (`.bn-blocco`): corso, ora, stato in parole; `stato` fatto, in_corso, appello_non_fatto, prossima, annullata |
 | `TabletTessera` | Il nome da toccare nella lista della sala |
 | `TabletFascia` | La fascia dopo un tocco: fatto, attesa, già, errore |
