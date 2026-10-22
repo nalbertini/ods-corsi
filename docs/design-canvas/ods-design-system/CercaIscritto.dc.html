@@ -31,7 +31,7 @@
           <sc-for list="{{g.righe}}" as="v" hint-placeholder-count="3">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; padding: 6px 10px; background: {{v.sfondo}}; box-shadow: {{v.barra}}">
               <div style="display: flex; flex-direction: column; min-width: 0">
-                <span style="font-size: 15px; color: {{v.colore}}">{{v.nome}}</span>
+                <span style="overflow: hidden; font-size: 15px; color: {{v.colore}}; text-overflow: ellipsis; white-space: nowrap">{{v.nome}}</span>
                 <sc-if value="{{v.sotto}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; color: {{c.dim}}">{{v.sotto}}</span></sc-if>
               </div>
               <sc-if value="{{v.bollino}}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; padding: 2px 6px; background: {{c.giallo}}; border: {{c.bordoBollino}}; border-radius: {{c.raggio}}; color: {{c.suColore}}; font-family: {{c.cond}}; font-size: 11px; font-weight: 700; letter-spacing: {{c.spazio}}">{{c.segnoBollino}}{{v.nota}}</span></sc-if>

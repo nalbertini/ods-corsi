@@ -1977,6 +1977,8 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-cerca-voce[aria-selected='true'] { background: var(--surface-2); box-shadow: inset 4px 0 0 var(--text); }
 .sg-cerca-voce[data-spento] { color: var(--dim); }
 .sg-cerca-testo { display: flex; flex-direction: column; min-width: 0; }
+/* Su telefono un nome lungo andrebbe a capo accanto allo stato: resta su una riga, coi puntini. */
+.sg-cerca-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sg-cerca-sotto { font-size: 12px; color: var(--dim); }
 .sg-cerca-altri { min-height: 44px; font-size: 14px; font-weight: 600; color: var(--sec); }
 .sg-cerca-nota { flex-shrink: 0; font-size: 12px; color: var(--dim); }
