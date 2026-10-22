@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    /* .sg-riga-titolo di src/styles.css, con l'etichetta di sezione e il filo: Riga di Iscritti.tsx. */
+    .riga { display: flex; align-items: baseline; gap: 10px; }
+    .riga > .et { font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap; }
+    .riga > .filo { flex: 1; height: 2px; background: #cfe6f4; align-self: center; }
+    .riga > .nota { font-size: 13px; color: #46606f; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+    .sotto { font-size: 14px; color: #46606f; margin: 0; }
+    .manca { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; color: #46606f; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+  </style>
+</helmet>
+<!-- 1 · OGGI. La scheda PERSONA di un minorenne com'è nell'app: nessuna età, il codice fiscale del genitore vuoto senza avviso, due Modifica, «nessun accesso» fisso, Disattiva in mezzo. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
+  <span class="etichetta-tavola" style="color: #46606f">OGGI</span>
+  <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
+    <div style="display: flex; justify-content: flex-end; margin: -8px -12px 0 0">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="icona" label="✕" hint-size="44px,44px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ADAMO ANDREA</h2>
+      <span style="font-size: 13px; color: #46606f">In elenco dal 6 ottobre 2026 · nessun accesso</span>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 0.75fr; gap: 12px; align-items: start">
+      <dc-import name="Timbro" tema="sito" titolo="CERTIFICATO MEDICO" parola="VALIDO FINO AL 29/09/2027" tono="verde" righe="" hint-size="100%,96px"></dc-import>
+      <dc-import name="Timbro" tema="sito" titolo="QUOTA" parola="PAGATA" tono="verde" righe="FUORI APP|FINO AL 31/07/2027" hint-size="100%,96px"></dc-import>
+      <dc-import name="Timbro" tema="sito" titolo="DOCUMENTO D’IDENTITÀ" parola="IN SEGRETERIA" tono="verde" righe="non serve per entrare" piccolo="{{ true }}" hint-size="100%,70px"></dc-import>
+    </div>
+    <dc-import name="SchedeIscritto" tema="sito" acceso="PERSONA" hint-size="100%,44px"></dc-import>
+    <div class="due">
+      <dc-import name="Dato" tema="sito" etichetta="EMAIL" valore="antos.adams@gmail.com" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" etichetta="EMAIL DI CONTATTO" valore="" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" etichetta="TELEFONO" valore="" hint-size="100%,62px"></dc-import>
+    </div>
+    <div class="riga"><span class="et">DATI ANAGRAFICI</span><span class="filo"></span><span class="nota">dall’import o dalla segreteria</span><dc-import name="Chip" tema="sito" label="Modifica" hint-size="110px,40px"></dc-import></div>
+    <div class="due">
+      <dc-import name="Dato" tema="sito" etichetta="NATO IL" valore="10 giugno 2012" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" etichetta="A" valore="Torino" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" etichetta="CODICE FISCALE" valore="DMANDR12H10L219M" codice="{{ true }}" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" etichetta="RESIDENZA" valore="via Augusto Corti 6, Collegno" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" etichetta="GENITORE" valore="Adamo Antonio" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" etichetta="CODICE FISCALE DEL GENITORE" valore="" codice="{{ true }}" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" etichetta="IL GENITORE È NATO" valore="Roma 22/2/1971" hint-size="100%,62px"></dc-import>
+    </div>
+    <div class="riga"><span class="et">I SUOI DATI</span><span class="filo"></span></div>
+    <p class="sotto">Un file con anagrafica, iscrizioni e presenze: è quello che una persona ha diritto di chiedere.</p>
+    <div><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Esporta i dati" hint-size="200px,48px"></dc-import></div>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px; border-top: 2px solid #cfe6f4">
+      <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Modifica" hint-size="200px,48px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pericolo" label="Disattiva" hint-size="200px,48px"></dc-import><dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Unisci…" hint-size="200px,48px"></dc-import>
+    </div>
+  </div></div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":860,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

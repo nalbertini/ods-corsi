@@ -91,7 +91,7 @@ la nasconde da **IMPOSTAZIONI → QUESTO COMPUTER** ([guida](regole.md)): la sce
 | **Presenze istruttori** | Le presenze degli istruttori dal PIN e dall'appello, confermate e da confermare, le lezioni tenute in cui scegliere chi c'era, il CSV e il report PDF | [Apri](presenze-istruttori.md) |
 | **Compensi** | Le ricevute mensili dei compensi dei tecnici: ore confermate per tariffa, da stampare e firmare | [Apri](compensi.md) |
 | **Istruttori e accessi** | Chi entra nell'app, con che ruolo, i PIN del tablet, i dati, le tariffe e le lettere d'incarico dei tecnici | [Apri](istruttori-e-accessi.md) |
-| **Esercizi** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
+| **Esercizi** (in IMPOSTAZIONI) | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
 | **Listino** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
 | **Vestiario** | Gli ordini di vestiario, judogi e costumini: il catalogo, la chiusura, chi ha saldato, l'elenco per il fornitore | [Apri](vestiario.md) |
 | **IMPOSTAZIONI** | In sette schede: la stagione; le sale e i tablet (musica, voce); le ricevute; gli avvisi; dati e privacy (presenze, backup, informativa); **IMPORTA**: corsi e iscritti dai fogli o dalle risposte del modulo Google; questo computer (aspetto, striscia) | [Apri](regole.md) · [Importa](importa.md) |

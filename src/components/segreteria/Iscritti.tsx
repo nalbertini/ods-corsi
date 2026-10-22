@@ -4,8 +4,8 @@ import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, FILTRI_V
 import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
-import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, timbriScheda, vienePoco } from '../../lib/segreteria'
+import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
+import { avvisiGesto, campoDelGuaio, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, timbriScheda, vienePoco } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -54,8 +54,8 @@ function CampiEmail({
   const campo = campoDelGuaio(guaio)
   const nota = (di: typeof campo, avviso: string): Nota => (campo === di ? { testo: guaio, guaio: true } : { testo: avviso, guaio: false })
   const campi = [
-    { id: `${prefisso}-email`, etichetta: 'Email', valore: email, cambia: onEmail, di: 'email' as const, avviso: "Per entrare nell'app. Una sola persona per indirizzo." },
-    { id: `${prefisso}-contatto`, etichetta: 'Email di contatto', valore: contatto, cambia: onContatto, di: 'emailContatto' as const, avviso: 'Dove scriviamo o telefoniamo alla famiglia, e dove arrivano le ricevute per email.' },
+    { id: `${prefisso}-email`, etichetta: 'Email per entrare nell’app', valore: email, cambia: onEmail, di: 'email' as const, avviso: 'Una sola persona per indirizzo.' },
+    { id: `${prefisso}-contatto`, etichetta: 'Email per ricevute e avvisi', valore: contatto, cambia: onContatto, di: 'emailContatto' as const, avviso: 'Dove scriviamo o telefoniamo alla famiglia, e dove arrivano le ricevute per email.' },
   ]
   return (
     <>
@@ -661,7 +661,7 @@ function Nuovo({
         <Campo id="n-cognome" etichetta="COGNOME">
           <input id="n-cognome" className="sg-campo" value={b.cognome} onChange={(e) => setB({ ...b, cognome: e.target.value })} />
         </Campo>
-        <CampiEmail prefisso="n" email={b.email ?? ''} contatto={b.emailContatto ?? ''} guaio={guaio} onEmail={(v) => setB({ ...b, email: v })} onContatto={(v) => setB({ ...b, emailContatto: v })} />
+        <CampiEmail prefisso="n" email={b.email ?? ''} contatto={b.emailContatto ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setB({ ...b, email: v }) }} onContatto={(v) => { setGuaio(''); setB({ ...b, emailContatto: v }) }} />
         <Campo id="n-tel" etichetta="TELEFONO · FACOLTATIVO">
           <input id="n-tel" className="sg-campo" type="tel" value={b.telefono} onChange={(e) => setB({ ...b, telefono: e.target.value })} />
         </Campo>
@@ -778,6 +778,19 @@ function Scheda({
     return () => window.removeEventListener(APRI_SCHEDA, apri)
   }, [])
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
+  // Letti qui e non in DATI ANAGRAFICI: età e COSA MANCA in cima alla scheda li vogliono.
+  const an = useCarica(async () => ({ di: await d.anagraficaDi(p.id) }), [d, p.id])
+  const ora = new Date()
+  const datiAn = an.dato ? (an.dato.di?.dati ?? {}) : null
+  const natoIl = natoIlDi(p, datiAn, ora)
+  const minore = eMinorenne(p, datiAn, ora)
+  // Finché non si sono letti, niente COSA MANCA: comparirebbe e poi cambierebbe. Se non si leggono, almeno i contatti.
+  const manca = an.dato || an.guaio ? cosaManca(p, datiAn, ora) : []
+  const apriModifica = () => {
+    setGuaio('')
+    setAperta('persona')
+    setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, emailContatto: p.emailContatto, telefono: p.telefono })
+  }
   const correnti = p.iscrizioni.filter((i) => inCorso(i, oggi))
   const liberi = attivi.filter((c) => !correnti.some((i) => i.corsoId === c.id))
   const venuto = storico.dato?.filter((x) => x.stato === 'presente').length ?? 0
@@ -809,8 +822,19 @@ function Scheda({
         <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
           {`${p.cognome} ${p.nome}`.toUpperCase()}
         </h2>
-        <span style={{ fontSize: 13, color: 'var(--dim)' }}>{`In elenco dal ${dataLunga(p.creataIl)} · nessun accesso`}</span>
+        <span style={{ fontSize: 13, color: 'var(--dim)' }}>{sottoNome(natoIl, p.creataIl, ora)}</span>
       </div>
+      {!unendo && !pagando && manca.length > 0 && (
+        <div className="sg-scheda-manca" role="status">
+          <span className="sg-scheda-manca-titolo">✕ COSA MANCA</span>
+          {manca.map((r) => (
+            <span key={r.cosa} className="sg-scheda-manca-riga">
+              {r.cosa}
+              {r.perche && <span className="sg-scheda-manca-perche"> · {r.perche}</span>}
+            </span>
+          ))}
+        </div>
+      )}
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
       {!unendo && !pagando && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
       {!unendo && !pagando && <SollecitoWhatsApp d={d} p={p} oggi={oggi} giro={giroAnagrafica} giroSolleciti={giroSolleciti} quotaNelVecchio={quotaNelVecchio} corsi={statiCorsi} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
@@ -895,6 +919,14 @@ function Scheda({
 
       {/* Le schede lasciate si nascondono, non si smontano: quello che si sta scrivendo resta. */}
       <div role="tabpanel" id={idPannello('persona')} aria-labelledby={idLinguetta('persona')} hidden={aperta !== 'persona'} className="stack" style={{ gap: 20, minWidth: 0 }}>
+          <div className="stack" style={{ gap: 8 }}>
+          <Riga titolo="CONTATTI">
+            {!modifica && (
+              <button type="button" className="num sg-chip" onClick={apriModifica}>
+                Modifica i contatti
+              </button>
+            )}
+          </Riga>
           {modifica ? (
             <div className="sg-due">
               <Campo id="m-nome" etichetta="NOME">
@@ -903,24 +935,30 @@ function Scheda({
               <Campo id="m-cognome" etichetta="COGNOME">
                 <input id="m-cognome" className="sg-campo" value={modifica.cognome} onChange={(e) => setModifica({ ...modifica, cognome: e.target.value })} />
               </Campo>
-              <CampiEmail prefisso="m" email={modifica.email ?? ''} contatto={modifica.emailContatto ?? ''} guaio={guaio} onEmail={(v) => setModifica({ ...modifica, email: v })} onContatto={(v) => setModifica({ ...modifica, emailContatto: v })} />
+              <CampiEmail prefisso="m" email={modifica.email ?? ''} contatto={modifica.emailContatto ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setModifica({ ...modifica, email: v }) }} onContatto={(v) => { setGuaio(''); setModifica({ ...modifica, emailContatto: v }) }} />
               <Campo id="m-tel" etichetta="TELEFONO">
                 <input id="m-tel" className="sg-campo" type="tel" value={modifica.telefono ?? ''} onChange={(e) => setModifica({ ...modifica, telefono: e.target.value })} />
               </Campo>
             </div>
           ) : (
             <div className="sg-due">
-              <Campo etichetta="EMAIL">
-                <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.email ? 'var(--text)' : 'var(--dim)' }}>{p.email ?? '—'}</span>
-              </Campo>
-              <Campo etichetta="EMAIL DI CONTATTO">
+              <Campo etichetta="EMAIL PER RICEVUTE E AVVISI">
                 <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.emailContatto ? 'var(--text)' : 'var(--dim)' }}>{p.emailContatto ?? '—'}</span>
+                {!p.emailContatto && minore && <span className="sg-sotto" style={{ fontSize: 12 }}>Per un minorenne è quella del genitore.</span>}
               </Campo>
               <Campo etichetta="TELEFONO">
                 <span className="sg-valore" style={{ color: p.telefono ? 'var(--text)' : 'var(--dim)' }}>{p.telefono ?? '—'}</span>
+                {!p.telefono && minore && <span className="sg-sotto" style={{ fontSize: 12 }}>Per un minorenne è quello del genitore.</span>}
               </Campo>
+              {/* Vuota non è un problema: la sceglie chi entra nell'app. */}
+              {p.email && (
+                <Campo etichetta="EMAIL PER ENTRARE NELL’APP">
+                  <span className="sg-valore" style={{ wordBreak: 'break-all' }}>{p.email}</span>
+                </Campo>
+              )}
             </div>
           )}
+          </div>
 
           {parenti.length > 0 && (
             <div className="stack" style={{ gap: 8 }}>
@@ -934,7 +972,7 @@ function Scheda({
             </div>
           )}
 
-          <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} fai={fai} onCambiato={() => { setGiroAnagrafica((g) => g + 1); onCambiato() }} />
+          <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} an={an} natoIl={natoIl} minore={minore} fai={fai} onCambiato={() => { setGiroAnagrafica((g) => g + 1); onCambiato() }} />
           {d.modo === 'prova' && <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />}
           {nonDoppioni.length > 0 && (
             <div className="stack" style={{ gap: 8 }}>
@@ -968,28 +1006,6 @@ function Scheda({
             </div>
           )}
 
-          <div className="stack" style={{ gap: 8 }}>
-            <Riga titolo="I SUOI DATI" />
-            <span className="sg-sotto">Un file con anagrafica, iscrizioni e presenze: è quello che una persona ha diritto di chiedere.</span>
-            <button
-              type="button"
-              className="sg-btn sg-btn-linea"
-              style={{ alignSelf: 'flex-start' }}
-              onClick={() =>
-                void fai(async () => {
-                  const dati = await d.esporta(p.id)
-                  const url = URL.createObjectURL(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }))
-                  const a = document.createElement('a')
-                  a.href = url
-                  a.download = `dati-${p.cognome}-${p.nome}.json`.toLowerCase().replace(/\s+/g, '-')
-                  a.click()
-                  URL.revokeObjectURL(url)
-                }, 'File scaricato')
-              }
-            >
-              Esporta i dati
-            </button>
-          </div>
       </div>
 
       <div role="tabpanel" id={idPannello('documenti')} aria-labelledby={idLinguetta('documenti')} hidden={aperta !== 'documenti'} className="stack" style={{ gap: 20, minWidth: 0 }}>
@@ -1134,25 +1150,37 @@ function Scheda({
           </>
         ) : (
           <>
-            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => {
-                setGuaio('')
-                setAperta('persona')
-                setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, emailContatto: p.emailContatto, telefono: p.telefono })
-              }}>
-              Modifica
+            {/* Le azioni rare in fondo, Disattiva staccato a destra: lontano dagli altri non si preme per sbaglio. */}
+            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setUnendo(true)}>
+              Unisci con un altro iscritto…
+            </button>
+            {/* Un file con anagrafica, iscrizioni e presenze: è quello che una persona ha diritto di chiedere. */}
+            <button
+              type="button"
+              className="sg-btn sg-btn-linea grow"
+              onClick={() =>
+                void fai(async () => {
+                  const dati = await d.esporta(p.id)
+                  const url = URL.createObjectURL(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }))
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `dati-${p.cognome}-${p.nome}.json`.toLowerCase().replace(/\s+/g, '-')
+                  a.click()
+                  URL.revokeObjectURL(url)
+                }, 'File scaricato')
+              }
+            >
+              Esporta i dati
             </button>
             <button
               type="button"
-              className="sg-btn sg-btn-linea grow sg-pericolo"
+              className="sg-btn sg-btn-linea grow sg-pericolo sg-scheda-piede-destra"
               onClick={async () => {
                 if (p.attiva && !(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'Disattiva la scheda', { pericolo: true }))) return
                 void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Scheda disattivata' : 'Scheda riattivata', onCambiato)
               }}
             >
               {p.attiva ? 'Disattiva' : 'Riattiva'}
-            </button>
-            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setUnendo(true)}>
-              Unisci…
             </button>
           </>
         )}
@@ -1180,8 +1208,8 @@ function vaiA(id: string) {
  */
 function Timbri({ p, oggi, tessera, onVai }: { p: PersonaSeg; oggi: string; tessera: ReturnType<typeof timbroTessera>; onVai: (id: string) => void }) {
   const t = timbriScheda(p, oggi)
-  const uno = (titolo: string, x: Timbro, id: string, piccolo?: boolean) => (
-    <button type="button" className="sg-timbro" data-tono={x.tono} data-piccolo={piccolo} onClick={() => onVai(id)}>
+  const uno = (titolo: string, x: Timbro, id: string) => (
+    <button type="button" className="sg-timbro" data-tono={x.tono} onClick={() => onVai(id)}>
       <span className="sg-timbro-titolo">{titolo}</span>
       <span className="sg-timbro-parola">{x.parola}</span>
       {x.righe.map((r) => (
@@ -1198,11 +1226,11 @@ function Timbri({ p, oggi, tessera, onVai }: { p: PersonaSeg; oggi: string; tess
           <strong>DISATTIVATA</strong> Non è negli appelli né sul tablet. Per rimetterla: RIATTIVA, in fondo alla scheda.
         </p>
       )}
-      <div className="sg-timbri" data-con-tessera={tessera ? true : undefined}>
+      <div className="sg-timbri">
         {uno('CERTIFICATO MEDICO', t.certificato, 'sez-certificato')}
         {uno('QUOTA', t.quota, 'sez-quota')}
         {tessera && uno('TESSERA', { ...tessera, tono: p.attiva ? tessera.tono : 'spento' }, 'sez-tessere')}
-        {uno('DOCUMENTO D’IDENTITÀ', t.documento, 'sez-documento', true)}
+        {uno('DOCUMENTO D’IDENTITÀ', t.documento, 'sez-documento')}
       </div>
     </div>
   )
@@ -1541,49 +1569,77 @@ function NucleoFamiliare({
  * dall'import delle risposte del modulo Google. Sono quelli che vanno sulle
  * ricevute: MODIFICA li corregge, e da lì valgono i nuovi.
  */
-/** `onCambiato`: codice fiscale e nascita decidono i possibili doppioni dell'elenco. */
-function DatiAnagrafici({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void }) {
-  // In una scatola: `null` vuol dire «ancora da leggere», `{ di: null }` «non ce ne sono».
-  const an = useCarica(async () => ({ di: await d.anagraficaDi(p.id) }), [d, p.id])
+/**
+ * `onCambiato`: codice fiscale e nascita decidono i possibili doppioni dell'elenco.
+ * `an` lo legge la scheda, che ne ha bisogno per età e COSA MANCA. GENITORE solo
+ * per un minorenne: a un adulto non serve, e la ricevuta non lo chiede.
+ */
+type AnagraficaLetta = ReturnType<typeof useCarica<{ di: AnagraficaDi | null }>>
+
+/** `natoIl`: quella della testata (`natoIlDi`), così età e campo dicono la stessa data. */
+function DatiAnagrafici({ d, p, an, natoIl, minore, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; an: AnagraficaLetta; natoIl: string | null; minore: boolean; fai: Fai; onCambiato: () => void }) {
   const [modifica, setModifica] = useState<Anagrafica | null>(null)
   const x = an.dato?.di?.dati
   const valore = (testo?: string) => <span className="sg-valore" style={{ color: testo ? 'var(--text)' : 'var(--dim)', overflowWrap: 'anywhere' }}>{testo || '—'}</span>
   const codice = (testo?: string) => (
-    <span className="num sg-valore" style={{ color: testo ? 'var(--text)' : 'var(--dim)', letterSpacing: '0.04em' }}>{testo ?? '—'}</span>
+    <span className="num sg-valore" style={{ color: testo ? 'var(--text)' : 'var(--dim)', letterSpacing: '0.04em', overflowWrap: 'anywhere' }}>{testo || '—'}</span>
   )
   const residenza = x && [x.indirizzo, [x.cap, x.comune].filter(Boolean).join(' ')].filter(Boolean).join(', ')
   const genitore = x && [x.genitoreCognome, x.genitoreNome].filter(Boolean).join(' ')
+  // Come la ricevuta (`mancanoDatiSocio`): un codice sbagliato la blocca quanto uno vuoto.
+  const { codice: cfGenitore, giusto: cfGenitoreSi } = cfGenitoreDaMostrare(x ?? {})
+  const apri = () => setModifica({ ...(an.dato?.di?.dati ?? {}) })
 
   if (modifica) return <ModificaAnagrafica d={d} p={p} fai={fai} dati={modifica} onCambia={setModifica} onFatto={() => { setModifica(null); void an.ricarica(); onCambiato() }} />
 
   return (
+    <>
     <div className="stack" style={{ gap: 8 }}>
       <Riga titolo="DATI ANAGRAFICI">
-        {an.dato?.di && <span style={{ fontSize: 12, color: 'var(--dim)' }}>{an.dato.di.da === 'modulo' ? 'dal modulo di iscrizione' : 'dall’import o dalla segreteria'}</span>}
         {an.dato && (
-          <button type="button" className="num sg-chip" onClick={() => setModifica({ ...(an.dato?.di?.dati ?? {}) })}>
-            {an.dato.di ? 'Modifica' : 'Aggiungi'}
+          <button type="button" className="num sg-chip" onClick={apri}>
+            {an.dato.di ? 'Modifica i dati anagrafici' : 'Aggiungi i dati anagrafici'}
           </button>
         )}
       </Riga>
       {an.guaio && <Guaio testo={an.guaio} />}
       {an.dato && !an.dato.di && <span className="sg-sotto">Nessun dato: arrivano dal modulo di iscrizione o dall'import delle risposte del modulo Google.</span>}
       {x && (
-        <div className="sg-due">
-          <Campo etichetta="NATO IL">{valore(x.natoIl && dataLunga(x.natoIl))}</Campo>
-          <Campo etichetta="A">{valore(x.natoA)}</Campo>
+        <div className="sg-due sg-scheda-campi">
+          <Campo etichetta={etichettaNatoIl(x.codiceFiscale)}>{valore(natoIl ? dataLunga(natoIl) : undefined)}</Campo>
+          <Campo etichetta="LUOGO DI NASCITA">{valore(x.natoA)}</Campo>
           <Campo etichetta="CODICE FISCALE">{codice(x.codiceFiscale)}</Campo>
           <Campo etichetta="RESIDENZA">{valore(residenza)}</Campo>
-          {(genitore || x.genitoreCodiceFiscale || x.genitoreNato) && (
-            <>
-              <Campo etichetta="GENITORE">{valore(genitore)}</Campo>
-              <Campo etichetta="CODICE FISCALE DEL GENITORE">{codice(x.genitoreCodiceFiscale)}</Campo>
-              {x.genitoreNato && <Campo etichetta="IL GENITORE È NATO" largo>{valore(x.genitoreNato)}</Campo>}
-            </>
-          )}
         </div>
       )}
+      {/* Da dove vengono: serve a capire un dato sbagliato dopo un import. */}
+      {an.dato?.di && <span style={{ fontSize: 12, color: 'var(--dim)' }}>{an.dato.di.da === 'modulo' ? 'dal modulo di iscrizione' : 'dall’import o dalla segreteria'}</span>}
     </div>
+    {minore && an.dato && (
+      <div className="stack" style={{ gap: 8 }}>
+        <Riga titolo="GENITORE" />
+        <div className="sg-due sg-scheda-campi">
+          <Campo etichetta="NOME">{valore(genitore || undefined)}</Campo>
+          <Campo etichetta="NATO A E IL">{valore(x?.genitoreNato)}</Campo>
+          {!cfGenitoreSi ? (
+            <>
+              <Campo etichetta="✕ CODICE FISCALE DEL GENITORE" manca>
+                <span className="sg-valore" style={{ color: 'var(--rosso-testo)', fontWeight: 700 }}>{cfGenitore || 'Manca'}</span>
+                <span className="sg-sotto" style={{ fontSize: 12 }}>{cfGenitore ? 'Non è giusto: la ricevuta non si può fare.' : 'Serve per la ricevuta: senza, non si può fare.'}</span>
+              </Campo>
+              <div className="row" style={{ alignItems: 'center' }}>
+                <button type="button" className="num sg-chip" onClick={apri}>
+                  {cfGenitore ? 'Correggi il codice fiscale' : 'Aggiungi il codice fiscale'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <Campo etichetta="CODICE FISCALE">{codice(cfGenitore)}</Campo>
+          )}
+        </div>
+      </div>
+    )}
+    </>
   )
 }
 

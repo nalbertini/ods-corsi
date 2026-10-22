@@ -9,7 +9,7 @@ import { TELEFONO, useSchermo } from '../../lib/largo'
 import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
 import { idLinguettaImp, idPannelloImp, SCHEDA_IMPOSTAZIONI_INIZIALE, SCHEDE_IMPOSTAZIONI, tastoImpostazioni, type IdImpostazioni } from '../../lib/schedeImpostazioni'
 import { chiedi, Campo, MostraBozza, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
-import { VoceSale } from './TimerPalestra'
+import { EserciziPalestra, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
 import { Importa } from './Importa'
 import type { Destinazione, Voce } from './Segreteria'
@@ -181,7 +181,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
         </section>
       </Pannello>
 
-      <Pannello apri={setAperta} id="sale" aperta={aperta} sotto="Le sale della palestra e quello che fanno i tablet nelle sale. Lo storico dei timer è in ESERCIZI.">
+      <Pannello apri={setAperta} id="sale" aperta={aperta} sotto="Le sale della palestra e quello che fanno i tablet nelle sale. Lo storico dei timer è in GLI ESERCIZI.">
         <section aria-label="Le sale" className="sg-riquadro">
           <span className="ob sg-riquadro-titolo">LE SALE</span>
           {(sale.dato ?? []).map((s: Sala) =>
@@ -217,6 +217,10 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
         <MusicaSale d={d} sale={sale.dato ?? []} discipline={discipline.dato ?? []} liste={musica.dato} guaio={musica.guaio} ricarica={musica.ricarica} fai={fai} />
 
         <VoceSale d={d} fai={fai} />
+      </Pannello>
+
+      <Pannello apri={setAperta} id="esercizi" aperta={aperta} sotto="L'elenco della palestra: crea, rinomina, sposta di categoria.">
+        <EserciziPalestra d={d} />
       </Pannello>
 
       <Pannello apri={setAperta} id="ricevute" aperta={aperta}>

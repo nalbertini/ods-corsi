@@ -30,7 +30,6 @@ import { Palestra } from './banco/Palestra'
 // Il pannello del sito porta con sé l'editor del testo e la sua pulizia: si scaricano solo aprendolo.
 const Sito = lazy(() => import('./Sito').then((m) => ({ default: m.Sito })))
 import { tocca } from '../../lib/segnalazioni'
-import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
 import { CosaManca } from './CosaManca'
 import { strisciaVisibile } from '../../lib/cosaManca'
@@ -613,7 +612,6 @@ export function Segreteria({
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'compensi' && <Compensi d={d} puoPagare={puo(chi, 'contabilita')} onVai={(v) => void vai(v)} />}
         {d && voce === 'personale' && <Personale d={d} onVai={(v) => void vai(v)} />}
-        {d && voce === 'esercizi' && <EserciziPalestra d={d} />}
         {d && voce === 'listino' && <Listino d={d} />}
         {d && voce === 'vestiario' && <Vestiario onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'regole' && <Regole d={d} onVai={vai} />}

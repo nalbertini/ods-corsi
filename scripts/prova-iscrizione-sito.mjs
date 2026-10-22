@@ -219,13 +219,16 @@ const numeriCompensi = (r) => r.selettori.some((x) => x.startsWith('.sg-numeri[d
 const impostazioniAGruppi = (r) => r.selettori.some((x) => /^\.sg-indice$|^\.sg-regole-(gruppo|titolo)(:focus-visible)?$/.test(x))
 // CONTABILITÀ ha tre casse (Satispay): `.sg-numeri.sg-numeri-conti` va a capo da 220px invece che da 280px, così le tre stanno su una riga.
 const numeriConti = (r) => r.selettori.includes('.sg-numeri.sg-numeri-conti')
+// La scheda dell'iscritto rivista: i timbri tutti larghi uguale (niente più DOCUMENTO piccolo né colonna in più con la TESSERA) e la linguetta aperta scura; le loro regole sono cambiate di proposito.
+const SCHEDA_RIVISTA = ['.sg-timbri', '.sg-timbri[data-con-tessera]', ".sg-timbro[data-piccolo='true']", ".sg-timbro[data-piccolo='true'] .sg-timbro-parola", ".sg-timbro[data-piccolo='true'] .sg-timbro-riga", ".sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno[data-tono='giallo']"]
+const schedaRivista = (r) => r.selettori.every((x) => SCHEDA_RIVISTA.includes(x))
 // Le cifre di OGGI nel Banco sono le caselle della striscia (cinque o sei, colore dallo stato): `.bn-cifre` e il vecchio `data-guaio` sono cambiati di proposito.
 const cifreBanco = (r) => r.selettori.some((x) => /^\.bn-cifre$|^\.bn-cifra\[data-guaio/.test(x))
 // L'area iscritti ha il look del sito: SEGNALA è cresciuto a 44px col bordo blu (`prova:look`).
 const segnalaIscritti = (r) => r.selettori.includes('.mia-segnala')
 // PRESENZE non ha più le barre per corso né i numeri (rimanda a STATISTICHE): `.sg-presenze` e `.sg-barra*` sono tolte di proposito; `.sg-barra-binario` e `.sg-barra-pieno` restano, le usa STATISTICHE.
 const presenzeSenzaBarre = (r) => r.selettori.some((x) => /^\.sg-presenze$|^\.sg-barra(-nome|-suggerimento|-scala)?$|^\.sg-barra[:\[]/.test(x))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !segnalaIscritti(r) && !presenzeSenzaBarre(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !schedaRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

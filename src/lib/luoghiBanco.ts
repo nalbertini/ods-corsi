@@ -34,7 +34,6 @@ export const LUOGHI: Array<{ id: LuogoId; nome: string; voci: Array<{ voce: Voce
     nome: 'CORSI',
     voci: [
       { voce: 'corsi', nome: 'CORSI' },
-      { voce: 'esercizi', nome: 'ESERCIZI' },
     ],
   },
   {
