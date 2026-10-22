@@ -390,7 +390,6 @@ function DialogoExtra({
   d,
   tecnici,
   periodi,
-  mese,
   personaId,
   ricevuta,
   ricevute,
@@ -402,7 +401,6 @@ function DialogoExtra({
   d: DatiSegreteria
   tecnici: Persona[]
   periodi: ReturnType<typeof mesi>
-  mese: string
   personaId?: string
   /** Quella da cambiare; senza, se ne fa una nuova. */
   ricevuta?: RicevutaCompenso
@@ -414,7 +412,8 @@ function DialogoExtra({
 }) {
   const ref = useDialogo<HTMLFormElement>(onChiudi)
   const [chi, setChi] = useState(ricevuta?.personaId ?? personaId ?? '')
-  const [quando, setQuando] = useState(ricevuta?.mese ?? mese)
+  // Il mese in cui la si paga: di solito quello in corso, non quello guardato in pagina.
+  const [quando, setQuando] = useState(ricevuta?.mese ?? primoDelMese(periodi[0].da))
   const [perCosa, setPerCosa] = useState(ricevuta?.extra ?? '')
   const [testo, setTesto] = useState(ricevuta ? euroDaScrivere(ricevuta.importo) : '')
   const [occupato, setOccupato] = useState(false)
@@ -716,7 +715,6 @@ export function Compensi({ d, puoPagare, onVai }: { d: DatiSegreteria; puoPagare
               d={d}
               tecnici={dati.dato.tecnici}
               periodi={periodi}
-              mese={mese}
               personaId={extra.personaId}
               ricevuta={extra.ricevuta}
               ricevute={dati.dato.ricevute}
