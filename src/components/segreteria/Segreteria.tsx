@@ -357,6 +357,18 @@ export function Segreteria({
     </button>
   )
 
+  // Le schede delle presenze: le pagine le mettono sotto il loro titolo, come IMPOSTAZIONI.
+  const schedePresenze = d && inPresenze && conSegnalate && (
+    <div role="tablist" aria-label="Presenze" className="schede sg-schede">
+      <button type="button" role="tab" aria-selected={voce === 'presenze'} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>
+        Il mese
+      </button>
+      <button type="button" role="tab" aria-selected={voce === 'segnalate'} className="scheda" data-on={voce === 'segnalate'} onClick={() => vai('segnalate')}>
+        Segnalate{segno(segnalateDaVedere, 'da vedere')}
+      </button>
+    </div>
+  )
+
   return (
     <div className="sg" data-aspetto={aspetto}>
       {/* Un tasto e non un link «#…»: con <base href="../"> delle pagine delle aree, l'ancora porterebbe via dalla segreteria. */}
@@ -575,22 +587,12 @@ export function Segreteria({
           />
         )}
         {d && voce === 'richieste' && <Richieste key={`${filtro ?? ''}|${ricerca?.testo ?? ''}|${richiesta ?? posto.richiesta ?? ''}`} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} ricerca={ricerca} aperta={richiesta ?? posto.richiesta} onTogliRicerca={() => setRicerca(undefined)} onConti={contiCambiati} />}
-        {d && inPresenze && conSegnalate && (
-          <div role="tablist" aria-label="Presenze" className="schede sg-schede">
-            <button type="button" role="tab" aria-selected={voce === 'presenze'} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>
-              Il mese
-            </button>
-            <button type="button" role="tab" aria-selected={voce === 'segnalate'} className="scheda" data-on={voce === 'segnalate'} onClick={() => vai('segnalate')}>
-              Segnalate{segno(segnalateDaVedere, 'da vedere')}
-            </button>
-          </div>
-        )}
-        {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} />}
+        {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} schede={schedePresenze} />}
         {d && voce === 'tessere' && <PaginaTessere d={d} onVai={vai} />}
         {d && voce === 'contabilita' && <Contabilita d={d} />}
         {d && voce === 'pagamenti' && <Pagamenti d={d} onVai={conSegreteria ? vai : undefined} soloNomi={pagamentiRidotti(chi)} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
-        {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} onCambiato={() => setGiroConte((g) => g + 1)} />}
+        {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} schede={schedePresenze} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'compensi' && <Compensi d={d} puoPagare={puo(chi, 'contabilita')} onVai={(v) => void vai(v)} />}
         {d && voce === 'personale' && <Personale d={d} onVai={(v) => void vai(v)} />}

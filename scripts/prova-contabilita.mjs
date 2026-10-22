@@ -1219,5 +1219,15 @@ console.log('\n94. le icone di casse e voci: solo per i nomi che si riconoscono'
   ok('«Varie», «Da classificare» e una voce senza nome: nessuna icona', prova(() => ['Varie', 'Da classificare', null].map(m.iconaVoce)), [null, null, null])
 }
 
+console.log('\n95. le schede di CONTABILITÀ sono come quelle di IMPOSTAZIONI, sotto il titolo')
+{
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  ok('non più Segmenti per le quattro schede', /<Segmenti\s+etichetta="Contabilità"/.test(tsx), false)
+  const testa = tsx.indexOf('<Testa titolo="CONTABILITÀ"')
+  const schede = tsx.indexOf('role="tablist" aria-label="Contabilità"')
+  ok('un tablist «Contabilità» con le schede, dopo la Testa', testa >= 0 && schede > testa && /className="schede sg-schede"/.test(tsx.slice(schede - 200, schede + 200)), true)
+  ok('ogni scheda è un role="tab" con aria-selected', /role="tab"[^>]*aria-selected=\{scheda === s\}/.test(tsx), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

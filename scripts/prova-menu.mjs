@@ -97,5 +97,14 @@ ok('LUOGHI: i cinque luoghi con le loro voci', (luoghi.LUOGHI ?? []).map((l) => 
   ['palestra', ['statistiche', 'segnalazioni', 'sito', 'regole']],
 ])
 
+console.log('\nLe schede di PRESENZE sotto il titolo')
+// Come IMPOSTAZIONI: prima il titolo, poi le schede. Il titolo resta PRESENZE anche in SEGNALATE.
+for (const f of ['Presenze', 'PresenzeSegnalate']) {
+  const tsx = readFileSync(`src/components/segreteria/${f}.tsx`, 'utf8')
+  ok(`${f}.tsx: Testa con titolo PRESENZE`, /<Testa\s+titolo="PRESENZE"/.test(tsx), true)
+  ok(`${f}.tsx: le schede dopo la Testa`, tsx.indexOf('{schede}') > tsx.indexOf('</Testa>') && tsx.indexOf('</Testa>') > 0, true)
+}
+ok('Segreteria.tsx: il tablist delle presenze non sta più prima delle pagine', /\{d && inPresenze && conSegnalate && \(\s*<div role="tablist"/.test(sg), false)
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -122,17 +122,20 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
       <Testa titolo="CONTABILITÀ" sotto="Le entrate e le uscite della palestra, nelle sue casse. Gli incassi degli iscritti ci sono già: si correggono in PAGAMENTI.">
         <div className="row" style={{ gap: 10, flexWrap: 'wrap' }} ref={setAzioni} />
       </Testa>
-      <Segmenti
-        etichetta="Contabilità"
-        voci={[
-          ['movimenti', 'Movimenti'],
-          ['bilancio', 'Bilancio'],
-          ['voci', 'Voci'],
-          ['casse', 'Casse'],
-        ]}
-        scelta={scheda}
-        onScegli={setScheda}
-      />
+      <div role="tablist" aria-label="Contabilità" className="schede sg-schede">
+        {(
+          [
+            ['movimenti', 'Movimenti'],
+            ['bilancio', 'Bilancio'],
+            ['voci', 'Voci'],
+            ['casse', 'Casse'],
+          ] as const
+        ).map(([s, nome]) => (
+          <button key={s} type="button" role="tab" aria-selected={scheda === s} className="scheda" data-on={scheda === s} onClick={() => setScheda(s)}>
+            {nome}
+          </button>
+        ))}
+      </div>
       {guaio && <Guaio testo={guaio} />}
       {nonInRegola.map((k) => (
         <div key={k.id} role="alert" className="sg-riquadro" style={{ borderColor: 'var(--rosso-testo)' }}>
