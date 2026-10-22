@@ -98,6 +98,12 @@ export function cfDonna(codice: string): boolean | null {
   return cifre(cf.slice(9, 11)) > 40
 }
 
+/** Il sesso per «NATO IL» / «NATA IL»: non si salva, lo dice il codice. `null` se il codice non è giusto. */
+export const cfSesso = (codice: string): 'F' | 'M' | null => {
+  const c = codice.toUpperCase().replace(/\s/g, '')
+  return cfValido(c) ? (cfDonna(c) ? 'F' : 'M') : null
+}
+
 /**
  * Il luogo di nascita: nome, sigla della provincia (`EE` per l'estero) e,
  * se quel nome ha smesso di valere, fino a quando. Da `scripts/luoghi.py`.
