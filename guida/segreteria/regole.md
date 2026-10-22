@@ -158,7 +158,7 @@ le ricevute alle famiglie: quelli in più non partono, e
 Corsi e iscritti dai fogli CSV, o gli iscritti dalle risposte del modulo Google,
 in tre passi: i fogli, il controllo, il database. Si può rifare quante volte si
 vuole, non duplica niente. Tutto è spiegato in [Importa da Excel](importa.md). Le tessere
-del RASD non si caricano da qui ma da [TESSERE](tessere.md#caricare-il-foglio-del-rasd).
+del RASD non si caricano da qui ma da [ISCRITTI → Importa tessere](iscritti.md#caricare-il-foglio-del-rasd).
 
 ## Dati e privacy
 

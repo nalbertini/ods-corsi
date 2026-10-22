@@ -17,11 +17,11 @@
 import { eIndirizzoGuida, INDIRIZZO_AREE } from './cancelletti'
 import { chiaveGiorno, lunedi } from './sala'
 
-export const VOCI = ['dafare', 'settimana', 'corsi', 'iscritti', 'tessere', 'pagamenti', 'richieste', 'presenze', 'segnalate', 'statistiche', 'istruttori', 'compensi', 'personale', 'listino', 'vestiario', 'regole', 'segnalazioni', 'sito', 'contabilita', 'palestra'] as const
+export const VOCI = ['dafare', 'settimana', 'corsi', 'iscritti', 'richieste', 'presenze', 'segnalate', 'statistiche', 'istruttori', 'compensi', 'personale', 'listino', 'vestiario', 'regole', 'segnalazioni', 'sito', 'contabilita', 'palestra'] as const
 export type Voce = (typeof VOCI)[number]
 
 /** Un filtro già acceso quando si arriva a una voce: chi ha il certificato da sistemare, chi deve pagare, cosa c'è da stampare. */
-export type FiltroSegreteria = 'certificato' | 'scadenza' | 'arrivo' | 'pagare' | 'corsi-scaduti' | 'file-di-prima' | 'stampare' | 'fuori-regola' | 'senza-appello' | 'senza-tessera'
+export type FiltroSegreteria = 'certificato' | 'scadenza' | 'arrivo' | 'pagare' | 'corsi-scaduti' | 'file-di-prima' | 'stampare' | 'fuori-regola' | 'senza-appello' | 'senza-tessera' | 'senza-corso'
 
 export interface Posto {
   voce: Voce
@@ -57,6 +57,9 @@ export function leggiIndirizzo(hash: string, { prova }: { prova: boolean }): Pos
   // Una barra in fondo non cambia posto: `#iscritti/` è l'elenco.
   const [voce, ...resto] = strada.replace(/\/$/, '').split('/')
   if (!voce) return dafare
+  // I vecchi link restano vivi: le tessere stanno in ISCRITTI, i pagamenti in CONTABILITÀ (il resto dell'indirizzo cade).
+  if (voce === 'tessere') return { voce: 'iscritti' }
+  if (voce === 'pagamenti') return { voce: 'contabilita' }
   // Le segnalate ci sono solo in prova (vedi `Segreteria`).
   if (!eVoce(voce) || (voce === 'segnalate' && !prova)) return dafare
   if ((voce === 'iscritti' || voce === 'corsi') && resto.length === 1 && resto[0]) {

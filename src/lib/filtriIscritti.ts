@@ -9,12 +9,12 @@ import { senzaTessera, type RigaIncrocio } from './tessere'
  */
 export type IdFiltro =
   | 'senza-email' | 'poco' | 'certificato' | 'scadenza' | 'arrivo' | 'pagare'
-  | 'corsi-scaduti' | 'fuori' | 'senza-tessera' | 'senza-documento' | 'file-di-prima' | 'doppioni' | 'pagato-prima'
+  | 'corsi-scaduti' | 'fuori' | 'senza-tessera' | 'senza-corso' | 'senza-documento' | 'file-di-prima' | 'doppioni' | 'pagato-prima'
 
 /** Tutti i filtri, per sapere quali sono accesi anche se il loro chip adesso non c'è. */
 export const ID_FILTRI: IdFiltro[] = [
   'senza-email', 'poco', 'certificato', 'scadenza', 'arrivo', 'pagare',
-  'corsi-scaduti', 'fuori', 'senza-tessera', 'senza-documento', 'file-di-prima', 'doppioni', 'pagato-prima',
+  'corsi-scaduti', 'fuori', 'senza-tessera', 'senza-corso', 'senza-documento', 'file-di-prima', 'doppioni', 'pagato-prima',
 ]
 
 export const FILTRI_VISIBILI: IdFiltro[] = ['certificato', 'pagare', 'corsi-scaduti', 'fuori']
@@ -28,6 +28,7 @@ export const TESTI_FILTRI: Record<IdFiltro, string> = {
   pagare: 'Da pagare',
   fuori: 'Non in regola',
   'senza-tessera': 'Senza tessera',
+  'senza-corso': 'Tesserati senza corso',
   'senza-documento': 'Senza documento',
   'file-di-prima': 'Non archiviato',
   doppioni: 'Possibili doppioni',
@@ -36,13 +37,13 @@ export const TESTI_FILTRI: Record<IdFiltro, string> = {
 }
 
 /** I filtri nascosti che ci sono adesso: quattro compaiono solo se c'è qualcosa da filtrare. */
-export function altriFiltri(c: { conTessere: boolean; filePrima: number; doppioni: number; conStorico: boolean }): IdFiltro[] {
+export function altriFiltri(c: { conTessere: boolean; filePrima: number; doppioni: number; conStorico: boolean; segnalaTessere?: boolean }): IdFiltro[] {
   return [
     'senza-email',
     'poco',
     'scadenza',
     'arrivo',
-    ...(c.conTessere ? (['senza-tessera'] as const) : []),
+    ...(c.conTessere ? ([...(c.segnalaTessere === false ? [] : (['senza-tessera'] as const)), 'senza-corso'] as const) : []),
     'senza-documento',
     ...(c.conStorico ? (['pagato-prima'] as const) : []),
     ...(c.filePrima > 0 ? (['file-di-prima'] as const) : []),

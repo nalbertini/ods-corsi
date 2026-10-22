@@ -109,7 +109,6 @@ console.log('\n2. una ricevuta annullata')
   ok('con annullati: true sì', prova(() => m.filtra(righe, { annullati: true }).length), 3)
   ok('il totale di quel che si vede con annullati: true non le conta lo stesso', prova(() => m.totalePagato(m.filtra(righe, { annullati: true }))), 5000)
   ok('riassunto non le conta', prova(() => m.riassunto([r12, annullata], [])), { pagato: 5000, manca: 7000 })
-  ok('daIncassare non le conta', prova(() => m.daIncassare([annullata])), [])
 }
 
 console.log('\n3. il riassunto di una scheda')
@@ -223,47 +222,6 @@ console.log('\n7. i periodi')
   ok('l\'anno', prova(() => m.intervalloAnno('2026-10-17')), { dal: '2026-01-01', al: '2026-12-31' })
 }
 
-console.log('\n8. da incassare')
-{
-  const piccola = ricevuta(50, 'Anna', 'Verdi', [voce('Corso', 5000, [pag('2026-09-10', 4000)])])
-  const grande = ricevuta(51, 'Piero', 'Gialli', [voce('Corso', 9000, [pag('2026-09-10', 1000)])])
-  const saldata = ricevuta(52, 'Ugo', 'Neri', [voce('Corso', 100, [pag('2026-09-10', 100)])])
-  const saldataConAnticipo = ricevuta(53, 'Ugo', 'Neri', [voce('Corso', 100, [])], { anticipo: 100 })
-  const annullata = ricevuta(54, 'Ugo', 'Neri', [voce('Corso', 100, [])], { annullataIl: '2026-10-01T10:00:00Z' })
-  ok('dalla più grande, solo chi deve, «Cognome Nome»',
-    prova(() => m.daIncassare([piccola, saldata, grande, saldataConAnticipo, annullata]).map((x) => [x.ricevuta.numero, x.chi, x.manca])),
-    [[51, 'Gialli Piero', 8000], [50, 'Verdi Anna', 1000]])
-  ok('niente da incassare: elenco vuoto', prova(() => m.daIncassare([saldata])), [])
-}
-
-console.log('\n8b. chi deve ancora pagare, cercato')
-{
-  const a = ricevuta(12, 'Anna', 'Verdi', [voce('Corso', 5000, [pag('2026-09-10', 4000)])])
-  const b = ricevuta(112, 'Piero', "D'Amico", [voce('Corso', 9000, [])])
-  const residui = prova(() => m.daIncassare([a, b]))
-  const numeri = (testo) => prova(() => m.filtraResidui(residui, testo).map((x) => x.ricevuta.numero))
-  ok('senza testo: tutti', numeri(''), [112, 12])
-  ok('per nome, senza maiuscole né accenti', numeri('verdì'), [12])
-  ok('con apostrofo', numeri("d'amico"), [112])
-  ok('«12» è la ricevuta 12, non la 112', numeri('12'), [12])
-  ok('«12/2026» ', numeri('12/2026'), [12])
-  ok('«12/2025» è un\'altra annata', numeri('12/2025'), [])
-  ok('un nome che non c\'è: niente', numeri('zzz'), [])
-}
-
-console.log('\n8c. i numeri della pagina')
-{
-  const a = ricevuta(60, 'Anna', 'Verdi', [voce('Corso', 5000, [pag('2026-10-02', 4000, 'Contanti'), pag('2026-10-03', 500, 'Bonifico')])])
-  const b = ricevuta(61, 'Ugo', 'Neri', [voce('Corso', 3000, [pag('2026-10-04', 3000, 'CONTANTI')])])
-  const annullata = ricevuta(62, 'Zoe', 'Rossi', [voce('Corso', 9000, [pag('2026-10-05', 9000, 'Contanti')])], { annullataIl: '2026-10-06T10:00:00Z' })
-  const righe = prova(() => [...m.righeDaRicevute([a, b, annullata]), ...m.righeDirette([diretto('d1', 'p-Rossi', '2026-10-06', 1000, { metodo: 'Satispay' })], nomeDi)])
-  ok('totale, contanti (senza badare alle maiuscole), pagamenti, senza ricevuta, da incassare',
-    prova(() => m.riepilogo(m.filtra(righe, {}), [a, b, annullata])),
-    { totale: 8500, contanti: 7000, pagamenti: 4, senzaRicevuta: 1, daIncassare: 500, ricevuteDaIncassare: 1 })
-  ok('senza righe e senza ricevute: tutto zero', prova(() => m.riepilogo([], [])), { totale: 0, contanti: 0, pagamenti: 0, senzaRicevuta: 0, daIncassare: 0, ricevuteDaIncassare: 0 })
-  ok('una riga annullata mostrata non conta nei numeri', prova(() => m.riepilogo(m.filtra(righe, { annullati: true }), []).pagamenti), 4)
-}
-
 console.log('\n8d. suggerimenti e periodi scelti')
 {
   ok('le voci suggerite: la quota, annuale e trimestre di ogni corso, altro',
@@ -276,20 +234,6 @@ console.log('\n8d. suggerimenti e periodi scelti')
   ok('tutto: nessun limite', prova(() => m.intervalloDi('tutto', '2026-10-17', '', '')), {})
   ok('dal-al: le date scritte, una vuota è nessun limite', prova(() => m.intervalloDi('date', '2026-10-17', '2026-10-01', '')), { dal: '2026-10-01' })
   ok('dal-al con tutte e due', prova(() => m.intervalloDi('date', '2026-10-17', '2026-10-01', '2026-10-05')), { dal: '2026-10-01', al: '2026-10-05' })
-}
-
-console.log('\n9. il foglio per il commercialista')
-{
-  const rc = ricevuta(12, 'Giulia', 'Rossi', [voce('QUOTA ASSOCIATIVA', 5000, [pag('2026-09-10', 3000)])])
-  const righe = prova(() => [...m.righeDaRicevute([rc]), ...m.righeDirette([diretto('d1', 'p-Rossi', '2026-10-03', 123456, { voce: 'ALTRO', nota: 'a; "mano"' })], nomeDi)])
-  ok('intestazione, data GG/MM/AAAA, importo all\'italiana, ricevuta o vuoto, ; e \\r\\n',
-    prova(() => m.csvPagamenti(righe)),
-    'data;chi;a cosa serve;come;ricevuta;importo;nota\r\n10/09/2026;Rossi Giulia;QUOTA ASSOCIATIVA;Contanti;12/2026;30,00;\r\n03/10/2026;Rossi Giulia;ALTRO;Contanti;;1.234,56;"a; ""mano"""')
-  ok('senza righe, solo l\'intestazione', prova(() => m.csvPagamenti([])), 'data;chi;a cosa serve;come;ricevuta;importo;nota')
-  ok('una nota che comincia per = non è una formula', prova(() => m.csvPagamenti(m.righeDirette([diretto('d1', 'p-Rossi', '2026-10-03', 100, { nota: '=SOMMA(A1)' })], nomeDi)).split('\r\n')[1]), "03/10/2026;Rossi Giulia;ALTRO;Contanti;;1,00;'=SOMMA(A1)")
-  ok('le annullate non sono nel foglio', prova(() => m.csvPagamenti(m.righeDirette([diretto('d1', 'p-Rossi', '2026-10-03', 100, { annullatoIl: '2026-10-04T10:00:00Z' })], nomeDi))), 'data;chi;a cosa serve;come;ricevuta;importo;nota')
-  ok('quelle di una ricevuta annullata nemmeno', prova(() => m.csvPagamenti(m.righeDaRicevute([{ ...rc, annullataIl: '2026-10-04T10:00:00Z' }]))), 'data;chi;a cosa serve;come;ricevuta;importo;nota')
-  ok('un nome con accento e apostrofo resta intero', prova(() => m.csvPagamenti(m.righeDirette([diretto('d1', 'p-Bianchi', '2026-10-03', 100)], nomeDi)).split('\r\n')[1].split(';')[1]), "D'Amico Zoë")
 }
 
 console.log('\nchi ha pagato, cercato per nome (come cerca_pagatori)')

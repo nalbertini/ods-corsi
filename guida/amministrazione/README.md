@@ -5,7 +5,7 @@
 ← [Torna alla guida generale](../README.md)
 
 Amministrazione è un'**autorizzazione**, non una sezione a parte: chi la ha vede nel
-menu della segreteria il gruppo **I CONTI**, con la contabilità. La segreteria la dà
+menu della segreteria il gruppo **I CONTI**, con la contabilità e il listino. La segreteria la dà
 dalla scheda della persona, in [Istruttori e accessi](../segreteria/istruttori-e-accessi.md).
 
 Chi ha **solo** Amministrazione vede il menu dei conti e basta, e non le persone: niente
@@ -31,9 +31,8 @@ Il gruppo **I CONTI** (per chi ha solo Amministrazione è l'unico):
 | Voce | Cosa fa |
 |---|---|
 | **Contabilità** | Le entrate e le uscite in due casse: movimenti, voci, saldi iniziali. [Apri](contabilita.md) |
-| **Pagamenti** | Tutto quello che è stato pagato: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV. [Apri](pagamenti.md) |
 | **Listino** | I costi della stagione, gli stessi della [segreteria](../segreteria/listino.md): si cambiano da qui. |
 
-Da **PAGAMENTI** si registra un pagamento fatto a mano e si annulla un pagamento
-o una ricevuta, senza aprire la scheda della persona. Le ricevute nuove, per ora,
-le fa la segreteria.
+Gli incassi degli iscritti sono in **CONTABILITÀ → MOVIMENTI**, insieme agli altri
+movimenti. Un pagamento si registra e si annulla dalla scheda della persona (scheda
+**QUOTA E PAGAMENTI**), che è della segreteria: le ricevute nuove, per ora, le fa lei.

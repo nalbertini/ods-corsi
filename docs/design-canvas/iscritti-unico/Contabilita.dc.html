@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .riga { display: grid; grid-template-columns: 1.3fr 1.6fr 140px 110px 30px; gap: 12px; align-items: center; padding: 14px; border-bottom: 1px solid #cfe6f4; font-size: 15px; background: #fff; }
+    .riga b { font-weight: 600; }
+    .ec { display: grid; grid-template-columns: 90px minmax(0, 1.8fr) 120px 110px 110px 120px 30px; gap: 12px; align-items: center; padding: 14px; border-bottom: 1px solid #cfe6f4; font-size: 15px; background: #fff; }
+    .ec b { font-weight: 600; }
+    .ecT { display: grid; grid-template-columns: 90px minmax(0, 1.8fr) 120px 110px 110px 120px 30px; gap: 12px; padding: 10px 14px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.1em; font-size: 14px; color: #46606f; border-bottom: 2px solid #0d2a3d; }
+    .dim { color: #46606f; font-size: 13px; }
+    .imp { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .tag { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.08em; font-size: 14px; padding: 3px 8px; border: 2px solid #0d2a3d; justify-self: start; }
+    .vai { text-align: right; font-size: 18px; color: #46606f; }
+    .testa { display: grid; grid-template-columns: 1.3fr 1.6fr 140px 110px 30px; gap: 12px; padding: 10px 14px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.1em; font-size: 14px; color: #46606f; border-bottom: 2px solid #0d2a3d; }
+    .nota { font-size: 14px; color: #46606f; }
+    .az { display: flex; gap: 10px; align-items: center; }
+    .card { background: #fff; border: 2px solid #cfe6f4; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  </style>
+</helmet>
+<div style="position:relative;display:flex;width:1440px;min-height:1000px;background:#eef5fa">
+  <div style="width:240px;flex-shrink:0"><dc-import name="Menu" tema="sito" iscrittiUnico="true" autorizzazioni="segreteria e amministrazione" attiva="CONTABILITÀ" numeri="" nome="Marco Rossi" ruolo="Segreteria" altezza="1500px" hint-size="240px,1500px"></dc-import></div>
+  <main style="display:flex;flex-direction:column;gap:18px;flex:1;min-width:0;padding:28px 36px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-size:34px;font-weight:800;letter-spacing:.04em;line-height:1">CONTABILITÀ</h1><span style="font-size:14px;color:#46606f">Le entrate e le uscite della palestra, nelle sue casse.</span></div>
+    <div role="tablist" style="display:flex;gap:4px;align-self:flex-start"><span role="tab" aria-selected="true" style="display:inline-flex;align-items:center;min-height:44px;padding:0 18px;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-weight:800;font-size:14px;letter-spacing:.18em;border:2px solid #0d2a3d;background:#cfe6f4;color:#0d2a3d">MOVIMENTI</span><span role="tab" aria-selected="false" style="display:inline-flex;align-items:center;min-height:44px;padding:0 18px;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-weight:800;font-size:14px;letter-spacing:.18em;border:2px solid #cfe6f4;background:#fff;color:#46606f">BILANCIO</span><span role="tab" aria-selected="false" style="display:inline-flex;align-items:center;min-height:44px;padding:0 18px;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-weight:800;font-size:14px;letter-spacing:.18em;border:2px solid #cfe6f4;background:#fff;color:#46606f">VOCI</span><span role="tab" aria-selected="false" style="display:inline-flex;align-items:center;min-height:44px;padding:0 18px;font-family:'Big Shoulders Display','Arial Narrow',Arial,sans-serif;font-weight:800;font-size:14px;letter-spacing:.18em;border:2px solid #cfe6f4;background:#fff;color:#46606f">CASSE</span></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><span class="dim" style="font-weight:600">CASSE</span><div style="position:relative"><span class="dim" style="display:inline-flex;gap:10px;align-items:center;border:2px solid #0d2a3d;background:#cfe6f4;padding:8px 14px;color:#0d2a3d;font-weight:700">TUTTE E 3 ▾</span><div style="position:absolute;top:100%;left:0;margin-top:4px;z-index:2;min-width:230px;background:#fff;border:2px solid #0d2a3d;display:flex;flex-direction:column"><span style="display:flex;gap:10px;align-items:center;padding:12px 14px;font-size:15px;border-bottom:1px solid #cfe6f4"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:2px solid #0d2a3d;background:#0d2a3d;color:#fff;font-size:14px;line-height:1">✓</span>Conto corrente</span><span style="display:flex;gap:10px;align-items:center;padding:12px 14px;font-size:15px;border-bottom:1px solid #cfe6f4"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:2px solid #0d2a3d;background:#0d2a3d;color:#fff;font-size:14px;line-height:1">✓</span>Contanti</span><span style="display:flex;gap:10px;align-items:center;padding:12px 14px;font-size:15px;border-bottom:1px solid #cfe6f4"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:2px solid #0d2a3d;background:#0d2a3d;color:#fff;font-size:14px;line-height:1">✓</span>Satispay</span></div></div><span style="width:2px;height:28px;background:#cfe6f4"></span><span class="dim" style="border:2px solid #0d2a3d;background:#cfe6f4;padding:8px 14px;color:#0d2a3d;font-weight:700">OTTOBRE 2026</span><span class="dim" style="border:2px solid #cfe6f4;background:#fff;padding:8px 14px">SETTEMBRE</span><span class="dim" style="border:2px solid #cfe6f4;background:#fff;padding:8px 14px">TUTTO L’ANNO</span><span style="width:2px;height:28px;background:#cfe6f4"></span><span class="dim" style="font-weight:600">TIPO</span><span class="dim" style="border:2px solid #cfe6f4;background:#fff;padding:8px 14px">TUTTI ▾ <span style="color:#46606f">(entrate · uscite)</span></span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:120px">
+      <div style="background:#fff;border:2px solid #cfe6f4;padding:12px 14px"><div class="dim" style="font-weight:700;letter-spacing:.1em">SALDO INIZIALE</div><div style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">4.547,90 € · 1/10</div></div><div style="background:#fff;border:2px solid #cfe6f4;padding:12px 14px"><div class="dim" style="font-weight:700;letter-spacing:.1em">ENTRATE</div><div style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">+580,00 €</div></div><div style="background:#fff;border:2px solid #cfe6f4;padding:12px 14px"><div class="dim" style="font-weight:700;letter-spacing:.1em">USCITE</div><div style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">−182,40 €</div></div><div style="background:#fff;border:2px solid #cfe6f4;padding:12px 14px"><div class="dim" style="font-weight:700;letter-spacing:.1em">SALDO FINALE</div><div style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">4.820,50 €</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      <div class="ecT"><span>DATA</span><span>DESCRIZIONE</span><span>CASSA</span><span style="text-align:right">ENTRATE</span><span style="text-align:right">USCITE</span><span style="text-align:right">SALDO</span><span></span></div>
+      <div class="ec"><div class="dim">14/10</div><div><b>Rossi Giulia</b><div class="dim">Judo kids annuale · POS · ricevuta 214/2026</div></div><div class="dim">Conto corrente</div><div class="imp" style="color:#0b7a33">310,00 €</div><div class="imp" style="color:#b81d1d"></div><div class="imp">4.820,50 €</div><div class="vai">›</div></div>
+      <div class="ec"><div class="dim">13/10</div><div><b>Enel</b><div class="dim">Bolletta n. 123 · set 2026 · Utenze</div></div><div class="dim">Conto corrente</div><div class="imp" style="color:#0b7a33"></div><div class="imp" style="color:#b81d1d">182,40 €</div><div class="imp">4.510,50 €</div><div class="vai">›</div></div>
+      <div class="ec"><div class="dim">12/10</div><div><b>Bianchi Marco</b><div class="dim">Quota associativa · ricevuta 213/2026</div></div><div class="dim">Contanti</div><div class="imp" style="color:#0b7a33">50,00 €</div><div class="imp" style="color:#b81d1d"></div><div class="imp">4.692,90 €</div><div class="vai">›</div></div>
+      <div class="ec"><div class="dim">09/10</div><div><b>Esposito Marta</b><div class="dim">Pilates · 10 ingressi · bonifico · senza ricevuta</div></div><div class="dim">Conto corrente</div><div class="imp" style="color:#0b7a33">95,00 €</div><div class="imp" style="color:#b81d1d"></div><div class="imp">4.642,90 €</div><div class="vai">›</div></div>
+      <div class="ec"><div class="dim">03/10</div><div><b>Gallo Anna (per Gallo Elia)</b><div class="dim">Psicomotricità · Satispay · ricevuta 209/2026</div></div><div class="dim">Conto corrente</div><div class="imp" style="color:#0b7a33">125,00 €</div><div class="imp" style="color:#b81d1d"></div><div class="imp">4.547,90 €</div><div class="vai">›</div></div>
+    </div>
+    <div class="nota">PAGAMENTI sparisce: MOVIMENTI diventa un estratto conto, con entrate, uscite e saldo che scorre riga per riga, per cassa e per periodo. Chi deve ancora pagare si vede in ISCRITTI (filtro DA PAGARE). Gli incassi degli iscritti sono righe come le altre (con ricevuta, o «senza ricevuta»). Una riga di incasso apre la persona (scheda QUOTA E PAGAMENTI), dove si registra l'incasso e si fa la ricevuta. Il Banco (SOLDI) porta qui.</div>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

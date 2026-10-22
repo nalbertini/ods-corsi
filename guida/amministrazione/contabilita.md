@@ -8,8 +8,10 @@ semplice, gli istruttori e il tablet no. Ha quattro schede, sotto il titolo come
 
 ## Movimenti
 
-In cima, il **residuo** di ogni cassa e il **totale**: saldo iniziale, più le entrate,
-meno le uscite, ognuno con la sua icona e sotto le entrate e le uscite. I tasti **Collega i casi
+MOVIMENTI è un **estratto conto**. In cima, in una riga di stato, **Saldo iniziale**,
+**Entrate**, **Uscite** e **Saldo finale**, di quel che hai scelto con i filtri. La
+tabella ha le colonne **DATA**, **DESCRIZIONE**, **CASSA**, **ENTRATE**, **USCITE** e
+**SALDO**: il saldo progressivo, con le righe dalla più recente. I tasti **Collega i casi
 sicuri**, **Giroconto** e **Nuovo movimento** stanno accanto al titolo CONTABILITÀ, e solo in
 questa scheda.
 
@@ -17,8 +19,9 @@ L'elenco unisce due cose:
 
 - gli **incassi degli iscritti**: le ricevute, i pagamenti a mano e i
   pagamenti Satispay dal modulo di iscrizione (finché non sono in una
-  ricevuta, poi conta la ricevuta) di [PAGAMENTI](pagamenti.md) entrano da soli, uno per pagamento, col segno
-  **Incasso iscritto**. Non si ricopiano e non si cambiano da qui: se una ricevuta
+  ricevuta, poi conta la ricevuta) entrano da soli, uno per pagamento, col segno
+  **Incasso iscritto** (sotto la descrizione: voce · metodo · ricevuta N/AAAA, o senza ricevuta). Non si ricopiano e non si cambiano da qui: toccare la riga apre la scheda della
+  persona, nella scheda **QUOTA E PAGAMENTI**, dove si registra l'incasso e si fa la ricevuta. Se una ricevuta
   o un pagamento si annulla, cambia da sé anche qui. In **PERSONA** c'è il nome
   della scheda dell'iscritto (vuota se il pagamento non ha una scheda): la
   descrizione resta il nome scritto sulla ricevuta, che può essere diverso. Contanti vanno in Cassa
@@ -38,12 +41,31 @@ Si parte da **Tutto l'anno**: l'elenco, ENTRATE, USCITE e DIFFERENZA contano l'a
 corso, non più il mese. Filtri ed elenco stanno in un riquadro solo. Sopra la **ricerca** nella
 descrizione (non bada a maiuscole, accenti e spazi in più), il **periodo** (il mese, il mese
 scorso, tutto l'anno, tutto) ed **Esporta CSV**, un foglio per Excel e per il commercialista,
-senza gli annullati. Sotto quattro menu, **Tipo** (**Entrate**, **Uscite**, **Giroconti**),
-**Cassa**, **Voce** e **Persona**, poi **Mostra annullati** e la **vista**: **Elenco** o **Per
+senza gli annullati. Sotto i menu: **Casse** (**Conto corrente**, **Contanti**, **Satispay**: se ne spuntano quante
+si vuole, nessuna spuntata vale tutte), **Tipo** (**Tutti**, **Entrate**, **Uscite**), **Voce** e **Persona**, poi **Mostra annullati** e la **vista**: **Elenco** o **Per
 voce**, che dà i totali per voce. Un menu acceso ha il fondo pieno e una ✕ accanto che lo spegne.
 Sotto i filtri, una riga dice quanti movimenti ci sono, quanti ne hai scelti, ogni
 filtro acceso con la sua ✕ (toglie solo quello), **Togli i filtri** (li toglie tutti e riporta
 a Tutto l'anno) e a destra ENTRATE, USCITE e DIFFERENZA di quel che vedi.
+
+### Gli incassi degli iscritti
+
+Qui si guardano; si registrano dalla scheda della persona. Toccare una riga **Incasso iscritto**
+apre la scheda, nella scheda **QUOTA E PAGAMENTI**: lì **+ REGISTRA UN PAGAMENTO** (con il
+riepilogo prima di scrivere, e dove entra: Cassa Contanti per i contanti, Satispay, Conto
+Corrente per il resto) e **+ FAI LA RICEVUTA** ([Un pagamento e la sua
+ricevuta](../segreteria/iscritti.md#un-pagamento-e-la-sua-ricevuta)). Si annulla da lì: un
+pagamento senza ricevuta con **Annulla il pagamento**, uno di una ricevuta annullando la ricevuta
+intera. Sparisce dai conti, resta in elenco con **Mostra annullati**.
+
+- **Satispay senza richiesta**: chi ha pagato con Satispay in fondo al modulo e poi non ha mandato
+  la richiesta compare da solo, col segno **Satispay senza richiesta** e sotto il nome l'email e il
+  corso, per richiamare. Si fa mandare la richiesta (stesso nome, email e corso: il pagamento si
+  ritrova da solo), o si restituiscono i soldi dall'app Satispay Business.
+- **Chi deve ancora pagare** non è qui: è in [ISCRITTI](../segreteria/iscritti.md), con il filtro **Da pagare**.
+- **Non ci sono** i pagamenti dei corsi fuori dall'app che nessuno ha registrato, né gli ordini del
+  **vestiario**, che hanno la loro pagina. **STATISTICHE** conta gli incassi per mese della
+  ricevuta e non i pagamenti a mano: i due numeri possono non coincidere.
 
 ### Nuovo movimento
 
@@ -58,8 +80,8 @@ Un'entrata su **Quota associativa** o **Corsi e altri pagamenti** si registra se
 **persona**: compare il campo **PERSONA · DI CHI È**, si cerca da tre lettere e si tocca la scheda giusta.
 Per un minore è chi frequenta, anche se ha pagato il genitore. Senza persona non si registra. Se quella
 persona ha già una ricevuta o un pagamento con lo stesso importo negli ultimi 30 giorni, l'app avvisa
-(**Forse già in PAGAMENTI**): se è la stessa quota non scriverla qui, c'è già. La persona è un'etichetta:
-la quota **non conta come pagata** (per questo serve la ricevuta in PAGAMENTI).
+(**Forse già tra gli incassi**): se è la stessa quota non scriverla qui, c'è già. La persona è un'etichetta:
+la quota **non conta come pagata** (per questo serve la ricevuta, dalla scheda della persona).
 
 Prima di scrivere, l'app mostra un **riepilogo** (importo, voce, cassa, data e, se c'è, la persona): **Sì,
 registra il movimento** lo scrive, **No, torna al modulo** lascia tutto com'era. Se il movimento scritto è fuori dai filtri che hai
@@ -95,8 +117,8 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
 - Le righe vanno a **pacchetti da 500**, ognuno **tutto o niente**: se uno si ferma, l'app dice
   quanti ne ha cambiati e perché, e quelli dopo non cambiano. Quelli che avevano già la voce non
   vengono toccati e il riepilogo li conta a parte.
-- Non hanno la casella e non si cambiano da qui: gli **incassi degli iscritti** (si correggono in
-  PAGAMENTI), i **movimenti annullati**, i **giroconti** (non hanno voce) e la **Differenza di cassa**
+- Non hanno la casella e non si cambiano da qui: gli **incassi degli iscritti** (si correggono dalla scheda della
+  persona), i **movimenti annullati**, i **giroconti** (non hanno voce) e la **Differenza di cassa**
   scritta da una chiusura. La voce nuova deve essere in uso e dello stesso tipo: una voce di entrata
   per le entrate, di uscita per le uscite. Con entrate e uscite scelte insieme, **Cambia voce** resta
   spento: tocca **Solo le entrate** o **Solo le uscite**. I movimenti scritti qui non vanno **in blocco** su
@@ -165,8 +187,8 @@ scriverebbe, senza scrivere niente finché non dici sì. Ogni pagamento entra un
 sola, col segno **DA SATISPAY**, nella voce **Da classificare**: la voce giusta la
 scegli dopo, con **Cambia voce**. Un rimborso entra come uscita. Non entrano:
 
-- i pagamenti del **modulo di iscrizione**: sono già in PAGAMENTI o in una ricevuta;
-- quelli **già in PAGAMENTI**: un pagamento col metodo Satispay registrato in
+- i pagamenti del **modulo di iscrizione**: sono già negli incassi degli iscritti o in una ricevuta;
+- quelli **già negli incassi**: un pagamento col metodo Satispay registrato in
   palestra, stesso giorno e stesso importo;
 - quelli **già scritti a mano**: stesso giorno, stesso importo, un solo movimento
   possibile in Conto Corrente o Satispay. Resta il tuo, con la sua voce, e prende il
@@ -213,7 +235,7 @@ riepilogo: registra solo dopo il tuo «ok», e poi dice cosa ha scritto.
   da **Cambiare la voce**: Claude dice cosa cercare, la voce di partenza e il periodo **Tutto**.
 - **Solo fornitori**: le foto le vede Claude, non l'app. I compensi degli istruttori si pagano
   da [COMPENSI](../segreteria/compensi.md#il-pagamento), che scrive qui il movimento; gli
-  incassi degli iscritti in PAGAMENTI.
+  incassi degli iscritti dalla scheda della persona.
 - **La data** è il giorno in cui i soldi sono usciti o entrati, non quella della fattura: per
   una bolletta con l'addebito Claude chiede quando è stata addebitata. Una fattura non ancora
   pagata si registra quando si paga.

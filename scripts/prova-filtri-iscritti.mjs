@@ -34,21 +34,34 @@ console.log('\nI quattro in vista')
 ok('certificato, pagare, corsi-scaduti, fuori: in quest\'ordine', m.FILTRI_VISIBILI ?? mancante, ['certificato', 'pagare', 'corsi-scaduti', 'fuori'])
 
 console.log('\nI testi')
-ok('un testo per ognuno dei 13 filtri', m.TESTI_FILTRI ?? mancante, {
+ok('un testo per ognuno dei 14 filtri', m.TESTI_FILTRI ?? mancante, {
   'senza-email': 'Solo senza email', poco: 'Vengono poco', certificato: 'Senza certificato valido',
   scadenza: 'Certificato in scadenza', arrivo: 'Compiono 6 anni', pagare: 'Da pagare', fuori: 'Non in regola',
-  'senza-tessera': 'Senza tessera', 'senza-documento': 'Senza documento', 'file-di-prima': 'Non archiviato',
+  'senza-tessera': 'Senza tessera', 'senza-corso': 'Tesserati senza corso', 'senza-documento': 'Senza documento', 'file-di-prima': 'Non archiviato',
   doppioni: 'Possibili doppioni', 'pagato-prima': 'Pagato nel vecchio programma', 'corsi-scaduti': 'Corsi scaduti',
 })
+
+console.log('\nTesserati senza corso')
+{
+  const t = await impacchetta("export { tesseratoSenzaCorso } from './src/lib/tessere'")
+  const f = typeof t.tesseratoSenzaCorso === 'function' ? t.tesseratoSenzaCorso : () => 'manca tesseratoSenzaCorso in src/lib/tessere.ts'
+  const r = (esito) => ({ personaId: 'p1', ente: 'CSEN', esito })
+  ok('ID_FILTRI include senza-corso', (m.ID_FILTRI ?? []).includes('senza-corso'), true)
+  ok('una riga non_iscritto: tesserato senza corso', f([r('non_iscritto')]), true)
+  ok('non_iscritto fra altre righe: sì', f([r('manca'), r('non_iscritto')]), true)
+  ok('manca, scaduta, in_scadenza: no', f([r('manca'), r('scaduta'), r('in_scadenza')]), false)
+  ok('nessuna riga: no', f([]), false)
+}
 
 console.log('\nGli altri filtri, quelli presenti adesso')
 const base = ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-documento']
 ok('nessun opzionale: cinque, nell\'ordine', altri(nessuno), base)
-ok('con le tessere: senza-tessera prima di senza-documento', altri({ ...nessuno, conTessere: true }), ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-tessera', 'senza-documento'])
+ok('con le tessere: senza-tessera e senza-corso prima di senza-documento', altri({ ...nessuno, conTessere: true }), ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-tessera', 'senza-corso', 'senza-documento'])
+ok('con le segnalazioni delle tessere spente: resta solo senza-corso', altri({ ...nessuno, conTessere: true, segnalaTessere: false }), ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-corso', 'senza-documento'])
 ok('con i file di prima: file-di-prima in fondo', altri({ ...nessuno, filePrima: 3 }), [...base, 'file-di-prima'])
 ok('con i doppioni: doppioni in fondo', altri({ ...nessuno, doppioni: 2 }), [...base, 'doppioni'])
 const tutti = altri({ conTessere: true, filePrima: 3, doppioni: 2 })
-ok('tutti gli opzionali: otto, nell\'ordine', tutti, ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-tessera', 'senza-documento', 'file-di-prima', 'doppioni'])
+ok('tutti gli opzionali: nove, nell\'ordine', tutti, ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-tessera', 'senza-corso', 'senza-documento', 'file-di-prima', 'doppioni'])
 ok('i quattro in vista non sono mai fra gli altri', Array.isArray(tutti) ? tutti.filter((x) => ['certificato', 'pagare', 'corsi-scaduti', 'fuori'].includes(x)) : tutti, [])
 
 console.log('\nIl gruppo aperto')

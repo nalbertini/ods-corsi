@@ -44,9 +44,15 @@ ok('senza cancelletto si apre DA FARE', leggi('')?.voce, 'dafare')
 ok('il cancelletto da solo apre DA FARE', leggi('#')?.voce, 'dafare')
 ok('#dafare apre DA FARE', leggi('#dafare')?.voce, 'dafare')
 ok('ogni voce scritta si rilegge uguale',
-  ['dafare', 'settimana', 'corsi', 'iscritti', 'pagamenti', 'richieste', 'presenze', 'statistiche', 'istruttori', 'personale', 'listino', 'regole', 'segnalazioni']
+  ['dafare', 'settimana', 'corsi', 'iscritti', 'richieste', 'presenze', 'statistiche', 'istruttori', 'personale', 'listino', 'regole', 'segnalazioni']
     .filter((voce) => andataRitorno({ voce })?.voce !== voce),
   [])
+// I vecchi link restano vivi: TESSERE sta in ISCRITTI, PAGAMENTI in CONTABILITÀ.
+ok('VOCI non ha più tessere né pagamenti', m.VOCI.filter((v) => v === 'tessere' || v === 'pagamenti'), [])
+ok('#tessere porta a ISCRITTI', piatto(leggi('#tessere')), { voce: 'iscritti' })
+ok('#pagamenti porta a CONTABILITÀ', piatto(leggi('#pagamenti')), { voce: 'contabilita' })
+ok('#tessere/x e #pagamenti/x: il resto cade', [piatto(leggi('#tessere/x')), piatto(leggi('#pagamenti/x/y'))], [{ voce: 'iscritti' }, { voce: 'contabilita' }])
+ok('contabilita si riscrive #contabilita', m.scriviIndirizzo({ voce: 'contabilita' }), '#contabilita')
 // L'import da Excel sta dentro IMPOSTAZIONI: un vecchio link a #importa non porta a una voce che non c'è più.
 ok('#importa non è più una voce: apre DA FARE', leggi('#importa')?.voce, 'dafare')
 // Gli esercizi stanno dentro IMPOSTAZIONI, come l'import.
