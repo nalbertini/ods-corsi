@@ -1,29 +1,20 @@
 import { useState } from 'react'
-import { chiaveGiorno } from '../../lib/sala'
 import type { CorsoSeg, DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import {
-  conTessere,
-  contaTessere,
   contiImport,
   fraseDaMostrare,
-  incrocioDaMostrare,
   motivoNonAbbinata,
-  righeDellaLista,
   tessereRichieste,
-  parolaTessera,
   parolaTesseraBreve,
   righeDalFoglio,
   SEGNALA_TESSERE,
   statoDiUna,
   type EsitoImportTessere,
-  type ListaTessere,
-  type RigaIncrocio,
   type RigaSaltata,
   type TesseraSeg,
   type TipoTessera,
 } from '../../lib/tessere'
-import type { Destinazione, Voce } from './Segreteria'
-import { Campo, chiedi, Guaio, messaggio, Riga, Testa, useAvviso, useCarica } from './comune'
+import { Campo, chiedi, messaggio, Riga, useAvviso } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 type Avvisa = ReturnType<typeof useAvviso>['avvisa']
@@ -177,105 +168,8 @@ export function TessereDellaPersona({
   )
 }
 
-type Lista = ListaTessere
-
 /**
- * La pagina TESSERE: l'incrocio fra chi è iscritto e chi è tesserato. Due
- * elenchi: chi non ha la tessera che il corso chiede (manca, scaduta, in
- * scadenza) e chi è tesserato senza un corso. Si tocca una riga per aprire la
- * scheda. In fondo si carica il foglio del RASD.
- */
-export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void }) {
-  const [lista, setLista] = useState<Lista>(SEGNALA_TESSERE ? 'senza' : 'senza-corso')
-  const persone = useCarica(() => d.persone(), [d])
-  const corsi = useCarica(() => d.corsi(), [d])
-  const tessere = useCarica(() => d.tessere(), [d])
-  const oggi = chiaveGiorno(new Date())
-  const guaio = persone.guaio ?? corsi.guaio ?? tessere.guaio
-  const pronte = persone.dato && corsi.dato && tessere.dato
-  const manca = !!tessere.dato?.manca
-  const righe: RigaIncrocio[] = pronte && !manca ? incrocioDaMostrare(conTessere(persone.dato!, tessere.dato!.elenco), corsi.dato!, oggi) : []
-  const nome = new Map((persone.dato ?? []).map((p) => [p.id, `${p.cognome} ${p.nome}`]))
-  const ordinate = (l: Lista) => righeDellaLista(righe, l).sort((a, b) => (nome.get(a.personaId) ?? '').localeCompare(nome.get(b.personaId) ?? '', 'it'))
-  const senza = ordinate('senza')
-  const senzaCorso = ordinate('senza-corso')
-  const visibili = ordinate(lista)
-  const sotto = !pronte
-    ? 'Un attimo…'
-    : manca
-      ? 'Le tessere non sono ancora attive sul database: va lanciato 61-tessere.sql.'
-      : `${SEGNALA_TESSERE ? `${contaTessere(righe)} ${contaTessere(righe) === 1 ? 'iscritto senza tessera valida' : 'iscritti senza tessera valida'} · ` : ''}${senzaCorso.length} ${senzaCorso.length === 1 ? 'tesserato senza corso' : 'tesserati senza corso'}.`
-
-  return (
-    <div className="stack" style={{ gap: 18 }}>
-      <Testa titolo="TESSERE" sotto={sotto}>
-        {pronte && !manca && (
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => document.getElementById('tessere-rasd')?.scrollIntoView({ block: 'start' })}>
-            Importa dal RASD
-          </button>
-        )}
-      </Testa>
-      {guaio && <Guaio testo={guaio} />}
-      {pronte && !manca && (
-        <>
-          <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-            {/* A segnalazioni spente resta solo l'elenco dei tesserati senza corso. */}
-            {SEGNALA_TESSERE && (
-              <>
-                <button type="button" className="num sg-chip" aria-pressed={lista === 'senza'} onClick={() => setLista('senza')}>
-                  Senza tessera {senza.length}
-                </button>
-                <button type="button" className="num sg-chip" aria-pressed={lista === 'mai'} onClick={() => setLista('mai')}>
-                  Mai avute {ordinate('mai').length}
-                </button>
-                <button type="button" className="num sg-chip" aria-pressed={lista === 'scadute'} onClick={() => setLista('scadute')}>
-                  Scadute {ordinate('scadute').length}
-                </button>
-              </>
-            )}
-            <button type="button" className="num sg-chip" aria-pressed={lista === 'senza-corso'} onClick={() => setLista('senza-corso')}>
-              Tesserati senza corso {senzaCorso.length}
-            </button>
-          </div>
-          {visibili.length === 0 ? (
-            <p className="sg-sotto">{lista === 'senza-corso' ? 'Chi è tesserato ha un corso.' : lista === 'mai' ? 'Tutti hanno avuto almeno una tessera.' : lista === 'scadute' ? 'Nessuna tessera scaduta.' : 'Tutti gli iscritti hanno la tessera che il loro corso chiede.'}</p>
-          ) : (
-            <div className="stack" style={{ gap: 0 }}>
-              {visibili.map((r) => {
-                const t = r.esito === 'non_iscritto' ? null : parolaTessera(r.esito, r.tesseraAl)
-                return (
-                  <button
-                    key={`${r.personaId}|${r.ente}`}
-                    type="button"
-                    className="sg-iscrizione"
-                    style={{ textAlign: 'left', width: '100%', cursor: 'pointer' }}
-                    onClick={() => onVai('iscritti', { persona: r.personaId })}
-                  >
-                    <span className="stack grow" style={{ minWidth: 0, gap: 2 }}>
-                      <span style={{ fontSize: 15, fontWeight: 600 }}>{nome.get(r.personaId)}</span>
-                      <span style={{ fontSize: 13, color: 'var(--sec)' }}>
-                        {r.corsi ? `${r.corsi} · ` : ''}
-                        {r.ente}
-                        {r.tesseraAl ? ` · ${r.esito === 'scaduta' ? 'scaduta il' : 'fino al'} ${r.tesseraAl.split('-').reverse().join('/')}` : r.esito === 'manca' ? ' · mai avuta' : ''}
-                      </span>
-                    </span>
-                    {t ? <Segno tono={t.tono}>{t.parola}</Segno> : <Segno tono="spento">Nessun corso</Segno>}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-          <div id="tessere-rasd">
-            <ImportaTessere d={d} ricarica={tessere.ricarica} />
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
-/**
- * TESSERE → TESSERE DAL RASD. Si carica il foglio (CSV), si guarda cosa
+ * ISCRITTI → Importa tessere. Si carica il foglio (CSV), si guarda cosa
  * entra e cosa no (l'anteprima non scrive), poi si mette. Non crea nessuna
  * persona: le righe senza scheda restano fuori, col motivo, e si rifà il
  * foglio dopo averle sistemate.

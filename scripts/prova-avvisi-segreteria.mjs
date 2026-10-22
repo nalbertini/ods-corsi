@@ -165,7 +165,7 @@ console.log('\n3. i pagamenti Satispay')
   ok('senza richiesta: l\'oggetto con importo e nome', t?.oggetto, 'Pagamento Satispay senza richiesta · 120,00 € · Laura Bianchi')
   ok('la frase: quanto, quando, per cosa', testo(t).includes('Laura Bianchi ha pagato 120,00 € con Satispay oggi alle 17.05 per Pilates'), true)
   ok('l\'email lasciata, per richiamare', testo(t).includes('Email lasciata: laura.bianchi@esempio.it'), true)
-  ok('il link apre PAGAMENTI', [testo(t).includes(`${APP}#pagamenti`), html(t).includes('Apri PAGAMENTI')], [true, true])
+  ok('il link apre l\'estratto conto in CONTABILITÀ', [testo(t).includes(`${APP}#contabilita`), html(t).includes('Apri CONTABILITÀ')], [true, true])
 }
 {
   const t = testoAvviso({ tipo: 'pagamento', richiestaId: R1, nome: 'Marco', cognome: 'Rossi', corso: 'Judo kids', importo: 12000, pagatoIl: '2026-10-21T17:10:00Z', arrivataIl: ARRIVATA }, APP)

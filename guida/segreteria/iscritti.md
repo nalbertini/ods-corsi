@@ -33,7 +33,8 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   **CORSI** dice cosa manca per ogni corso (**Judo: scaduto il 31 dicembre**).
 - **Non in regola** — chi è attivo e ha il certificato, la quota o la tessera da sistemare. Ci arrivi
   anche dal bottone **Chi non è in regola** delle [Statistiche](statistiche.md).
-- **Senza tessera** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([TESSERE](tessere.md)).
+- **Senza tessera** — chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o è scaduta). C'è solo se il database ha le tessere ([Le tessere](#le-tessere)).
+- **Tesserati senza corso** — chi ha una tessera da atleta che vale oggi e nessun corso (può aver smesso e avere ancora la tessera dell'anno). C'è solo se il database ha le tessere.
 - **Senza documento** — chi non ha ancora la copia del documento d'identità in
   segreteria.
 - **Non archiviato** — solo finché ce ne sono: chi ha un file di certificato
@@ -279,7 +280,7 @@ scheda è disattivata, nessuno.
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
   PAGATA**. In elenco la quota è in regola, e nella scheda si legge **Fuori app**; alla sua data
   scade da sola, e **Togli «pagata fuori dall'app»** la toglie prima.
-- **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima **PAGATO**, **MANCA** e **QUOTA**; poi ogni ricevuta con i suoi pagamenti sotto, e dopo **SENZA RICEVUTA** quelli registrati a mano. Quelli di tutti sono in [PAGAMENTI](pagamenti.md).
+- **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima **PAGATO**, **MANCA** e **QUOTA**; poi ogni ricevuta con i suoi pagamenti sotto, e dopo **SENZA RICEVUTA** quelli registrati a mano. Quelli di tutti sono in [CONTABILITÀ → MOVIMENTI](../amministrazione/contabilita.md#movimenti).
 - **ISCRIZIONI** — i corsi che fa. **Termina** la toglie da un corso: da
   domani non è più nell'appello, il registro resta. «Iscrivi a un corso…» +
   **Iscrivi** la aggiunge a un altro.
@@ -319,7 +320,25 @@ anagrafica, iscrizioni e presenze, quello che una persona ha diritto di chiedere
 
 ## Le tessere
 
-Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a quando vale (**FIJLKAM · agonista · fino al 31 dicembre 2026**), il numero, se viene dal RASD o è scritta a mano, e se è **IN REGOLA**, **SCADE A DICEMBRE** o **SCADUTA**. Senza tessera la scheda dice se il corso la chiede. **+ AGGIUNGI UNA TESSERA** serve per chi non è nel foglio del RASD; **Togli** la toglie, dopo una conferma, e **Annulla** nell'avviso la rimette com'era. In cima alla scheda c'è anche il timbro **TESSERA** (solo per chi ha un corso che la chiede). Le tessere del RASD non si cambiano: si rifà l'import ([Tessere](tessere.md)).
+Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a quando vale (**FIJLKAM · agonista · fino al 31 dicembre 2026**), il numero, se viene dal RASD o è scritta a mano, e se è **IN REGOLA**, **SCADE A DICEMBRE** o **SCADUTA**. Senza tessera la scheda dice se il corso la chiede. **+ AGGIUNGI UNA TESSERA** serve per chi non è nel foglio del RASD; **Togli** la toglie, dopo una conferma, e **Annulla** nell'avviso la rimette com'era. Le tessere del RASD non si cambiano: si rifà l'import (sotto).
+
+> **Per ora le tessere non vengono segnalate.** Nessuna parte dell'app dice che una tessera manca, è scaduta o scade: niente casella TESSERE in COSA MANCA, niente parola nella colonna IN REGOLA, niente timbro TESSERA. Restano i filtri e le tessere nella scheda, che si vedono, si aggiungono e si tolgono come prima.
+
+**Quale tessera chiede un corso.** In [CORSI](corsi.md), nei dati del corso, **TESSERA RICHIESTA**: l'ente, in maiuscolo (**FIJLKAM**, **FIPE**), o vuoto se il corso non la chiede. Judo, Lotta, Aikido, MGA e Avviamento chiedono FIJLKAM; i corsi della sala Pesi FIPE; psicomotricità, giocomotricità e prepugilistica nessuna. Si cambia quando si vuole.
+
+### Caricare il foglio del RASD
+
+**Importa tessere**, in cima all'**Elenco**, apre il caricamento; **← Iscritti** torna all'elenco. Tre passi:
+
+1. **IL FOGLIO** — dal RASD, tab Tesseramenti, salva il foglio come **CSV** (da Excel: *File → Salva con nome → CSV UTF-8*). Le colonne sono **Organismo, Persona, Codice fiscale, Tipo, Codice tess., Valido dal**, con `;` o `,` come separatore. **Scegli il foglio**, poi **Controlla**.
+2. **IL CONTROLLO** — non scrive niente. Dice quante tessere sono nuove, quante ci sono già e non cambiano, e quante righe restano fuori, ognuna col motivo. **Metti N tessere** le scrive.
+3. **NELL'APP** — le trovi nella scheda di ogni persona, sotto **TESSERE**.
+
+La persona si riconosce dal **codice fiscale e dallo stesso nome** (anche con accenti, apostrofi o nome e cognome scambiati): se il codice fiscale c'è ma il nome è un altro, la riga non entra. L'import **non crea nessuna persona**: chi non ha la scheda, o ha la scheda senza il codice fiscale, resta fuori. Si scrive il codice fiscale nella scheda e si rifà il foglio. Si può rifare quante volte si vuole: non duplica niente. La tessera vale fino al **31 dicembre** dell'anno di «Valido dal».
+
+Le righe fuori sono di tre tipi: **nessuna scheda con questo codice fiscale**, **il codice fiscale è di un'altra persona** (controlla il nome) e **la riga ha dei dati che non vanno**.
+
+Se il database non ha ancora le tessere, il filtro e il tasto non ci sono.
 
 ## Un pagamento e la sua ricevuta
 

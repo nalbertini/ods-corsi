@@ -251,17 +251,6 @@ console.log('\nIl timbro TESSERA in cima alla scheda')
   ok('una tessera da dirigente non basta: manca', tim(P(['judo'], [T('FIJLKAM', '2026-09-01', '2026-12-31', 'dirigente')])).parola, 'NO TESSERA')
 }
 
-console.log('\nLe liste della pagina TESSERE')
-{
-  const R = (personaId, esito, ente = 'FIJLKAM') => ({ personaId, ente, esito })
-  const righe = [R('a', 'manca'), R('b', 'scaduta'), R('c', 'in_scadenza'), R('d', 'non_iscritto'), R('e', 'manca', 'FIPE')]
-  const chi = (lista) => m.righeDellaLista(righe, lista).map((r) => r.personaId)
-  ok('SENZA TESSERA: manca, scaduta e in scadenza', chi('senza'), ['a', 'b', 'c', 'e'])
-  ok('MAI AVUTE: solo chi non l\'ha mai avuta', chi('mai'), ['a', 'e'])
-  ok('SCADUTE: solo chi l\'aveva', chi('scadute'), ['b'])
-  ok('TESSERATI SENZA CORSO', chi('senza-corso'), ['d'])
-}
-
 console.log('\nTogliere una tessera e rimetterla com\'era (ANNULLA)')
 {
   const s = m.creaSegreteriaProva()
@@ -301,14 +290,15 @@ console.log('\nPer ora le tessere non si segnalano (l\'interruttore SEGNALA_TESS
   ok('…né «scade fra»', m.fraseDaMostrare(T('FIJLKAM', '2026-01-01', '2026-12-31'), OGGI), 'FIJLKAM · praticante · fino al 31 dicembre 2026')
 }
 
-// L'import sta nella stessa pagina della lista: dopo METTI la lista si rilegge,
+// L'import si apre da ISCRITTI: dopo METTI la lista si rilegge,
 // se no dice ancora «manca la tessera» a chi l'ha appena avuta.
 {
-  console.log('\nTESSERE DAL RASD, nella pagina TESSERE')
+  console.log('\nTESSERE DAL RASD, aperte da ISCRITTI')
   const { readFileSync } = await import('node:fs')
-  const pagina = readFileSync('src/components/segreteria/Tessere.tsx', 'utf8')
-  ok('la pagina passa all\'import come rileggere le tessere', pagina.includes('<ImportaTessere d={d} ricarica={tessere.ricarica} />'), true)
-  ok('dopo METTI la lista si rilegge', /importaTessere\(pronto\.righe, false\)[\s\S]{0,120}ricarica\(\)/.test(pagina), true)
+  const iscritti = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
+  const import_ = readFileSync('src/components/segreteria/Tessere.tsx', 'utf8')
+  ok('ISCRITTI passa all\'import come rileggere le tessere', iscritti.includes('<ImportaTessere d={d} ricarica={tessere.ricarica} />'), true)
+  ok('dopo METTI la lista si rilegge', /importaTessere\(pronto\.righe, false\)[\s\S]{0,120}ricarica\(\)/.test(import_), true)
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

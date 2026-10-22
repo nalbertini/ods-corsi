@@ -18,7 +18,7 @@ L'app ha sei indirizzi veri, ognuno con il suo accesso
 |---|---|
 | `istruttori/` | Il calendario e l'appello, per istruttori e segreteria, nell'aspetto del sito (blu e giallo, sempre chiaro; il cronometro resta scuro). |
 | `segreteria/` | L'area della reception, solo per chi ha il ruolo di segreteria (anche insieme a quello di istruttore o di amministrazione). |
-| `amministrazione/` | L'area dei conti: PAGAMENTI e LISTINO, per chi ha il ruolo di amministrazione. Non vede le persone (`supabase/55-amministrazione.sql`). |
+| `amministrazione/` | L'area dei conti: CONTABILITÀ e LISTINO, per chi ha il ruolo di amministrazione. Non vede le persone (`supabase/55-amministrazione.sql`). |
 | `iscrizioni/` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
 | `iscritti/` | La pagina di chi frequenta i corsi. Il pilota, per ora solo in prova. |
 | `sala/` | Il tablet di sala. |
@@ -44,7 +44,7 @@ dell'allenamento in corso sempre in vista; resta anche l'app a sé in `timer/`
 le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefono.
 
 - **Pagare l'iscrizione con Satispay**: nel modulo si sceglie Satispay o il bonifico (con la ricevuta). Con Satispay l'importo lo calcola il database dal listino (solo un corso a riga di prezzo unica), e il pagamento si segna da solo: la richiesta dice «Pagata», e la ricevuta lo prende dentro una volta sola.
-- **Lo scarico da Satispay**: ogni notte (o con SCARICA ORA) i pagamenti Satispay del negozio entrano da soli in CONTABILITÀ, in «Da classificare» col segno DA SATISPAY e, dal 1/10/2026, nella cassa Satispay; quelli del modulo e quelli già in PAGAMENTI restano fuori, i dubbi aspettano una decisione dell'amministrazione (`supabase/97-satispay-scarico.sql`, funzione `satispay-scarico`).
+- **Lo scarico da Satispay**: ogni notte (o con SCARICA ORA) i pagamenti Satispay del negozio entrano da soli in CONTABILITÀ, in «Da classificare» col segno DA SATISPAY e, dal 1/10/2026, nella cassa Satispay; quelli del modulo e quelli già tra gli incassi degli iscritti restano fuori, i dubbi aspettano una decisione dell'amministrazione (`supabase/97-satispay-scarico.sql`, funzione `satispay-scarico`).
 - **La ricevuta per email**: fatta la ricevuta, parte da sola all'email di contatto (per un minore, del genitore) da info@officinedellosport.it, col PDF allegato; lo storico dice se è partita, e **MANDA PER EMAIL** la manda o la rimanda.
 - **I corsi scaduti**: «In regola» guardava solo la quota; ora un trimestre o un annuale finito, pagato in parte o senza ricevuta finisce in DA FARE, nella casella CORSI SCADUTI di COSA MANCA, nel filtro **Corsi scaduti** di ISCRITTI, in rosso nella scheda (QUOTA → CORSI) e nel sollecito, col nome del corso. La regola sta in `src/lib/corsiDaPagare.ts` e legge le voci «Trimestre <corso>» / «Annuale <corso>» delle ricevute; in sala si entra lo stesso.
 - **Il sollecito su WhatsApp**: nella scheda di chi ha la quota o il certificato da sistemare, sotto i timbri, il messaggio già scritto (al genitore, per un minorenne) e **APRI WHATSAPP**, che lo apre al telefono della scheda: l'invio lo preme la segreteria, l'app non manda niente. Sotto, «Sollecitato l'ultima volta il … da …» (`supabase/85-solleciti.sql`). Coi filtri di chi ha qualcosa da sistemare, lo stesso tasto c'è su ogni riga dell'elenco ISCRITTI, con «Annulla» per un tasto premuto per sbaglio (`supabase/87-solleciti-elenco.sql`).
@@ -152,7 +152,7 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   in PDF con le due copie affiancate, col numero che va avanti da sé, la
   quota e i corsi dal listino, i dati del socio dal modulo di
   iscrizione; fatta non si cambia, si annulla (`supabase/16-ricevute.sql`,
-  `src/lib/ricevutaPdf.ts`). Lo **storico dei pagamenti** di ogni persona nella sua scheda (ogni ricevuta con i suoi pagamenti sotto, e i pagamenti fatti a mano senza ricevuta, `supabase/54-pagamenti-diretti.sql`); registrando un pagamento a mano l'app chiede se farne la ricevuta (già compilata, il pagamento conta una volta sola) e a chi vede CONTABILITÀ dice dove entra l'incasso e la pagina **PAGAMENTI** con quelli di tutti: cerca, periodo, modo di pagare, chi deve ancora pagare e il CSV per il commercialista (`src/lib/pagamenti.ts`). Le **presenze** del mese: medie per corso, chi si sta
+  `src/lib/ricevutaPdf.ts`). Lo **storico dei pagamenti** di ogni persona nella sua scheda (ogni ricevuta con i suoi pagamenti sotto, e i pagamenti fatti a mano senza ricevuta, `supabase/54-pagamenti-diretti.sql`); registrando un pagamento a mano l'app chiede se farne la ricevuta (già compilata, il pagamento conta una volta sola) e a chi vede CONTABILITÀ dice dove entra l'incasso e quelli di tutti in CONTABILITÀ → MOVIMENTI (estratto conto con gli incassi, periodo, casse, CSV per il commercialista; chi deve ancora pagare è il filtro «Da pagare» di ISCRITTI) (`src/lib/pagamenti.ts`). Le **presenze** del mese: medie per corso, chi si sta
   perdendo, gli appelli che mancano, e il CSV. Le **statistiche**, su più mesi: presenze e iscritti mese per mese, i giorni e le ore
   in cui si viene, i corsi che si riempiono (sugli iscritti e sui posti), le lezioni di ogni
   istruttore, le prove mese per mese, chi è in regola e gli incassi delle ricevute; i conti li fa il database
@@ -179,7 +179,7 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   dei dati di una persona sta nella sua scheda.
 - **L'amministrazione** (`amministrazione/`): per chi cura i conti. Ha il ruolo
   **Amministrazione**, da solo o insieme alla segreteria e all'insegnamento
-  (tre spunte in ISTRUTTORI E ACCESSI), e vede PAGAMENTI e LISTINO, non le persone:
+  (tre spunte in ISTRUTTORI E ACCESSI), e vede CONTABILITÀ e LISTINO, non le persone:
   dei pagatori il nome, senza contatti. Registra un pagamento a mano (cercando chi
   ha pagato per nome) e annulla un pagamento o una ricevuta senza aprire la scheda;
   le ricevute nuove, per ora, le fa la segreteria. Account, ruoli, PIN e backup

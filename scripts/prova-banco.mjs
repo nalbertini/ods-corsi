@@ -114,7 +114,8 @@ titolo('aspetto')
 titolo('indirizzi del Banco')
 {
   const leggi = (h) => m.indirizzo.leggiIndirizzo(h, { prova: false })
-  ok('#pagamenti, #tessere e #sito sono voci', ['#pagamenti', '#tessere', '#sito'].map((h) => leggi(h)?.voce), ['pagamenti', 'tessere', 'sito'])
+  ok('#pagamenti e #tessere rimandano a CONTABILITÀ e ISCRITTI, #sito è una voce', ['#pagamenti', '#tessere', '#sito'].map((h) => leggi(h)?.voce), ['contabilita', 'iscritti', 'sito'])
+  ok('VOCI non ha più tessere né pagamenti', m.indirizzo.VOCI.filter((v) => v === 'tessere' || v === 'pagamenti'), [])
 }
 
 // ---------------------------------------------------------------------------
@@ -128,17 +129,17 @@ titolo('luoghi del Banco')
   ok('i nomi dei luoghi', LUOGHI.map((l) => l.nome), ['OGGI', 'PERSONE', 'CORSI', 'SOLDI', 'PALESTRA'])
   const voci = (id) => (LUOGHI.find((l) => l.id === id)?.voci ?? []).map((v) => [v.voce, v.nome])
   ok('OGGI', voci('oggi'), [['dafare', 'OGGI'], ['settimana', 'SETTIMANA'], ['presenze', 'PRESENZE']])
-  ok('PERSONE', voci('persone'), [['iscritti', 'ISCRITTI'], ['tessere', 'TESSERE'], ['richieste', 'RICHIESTE ONLINE'], ['istruttori', 'ISTRUTTORI'], ['compensi', 'COMPENSI'], ['personale', 'ACCESSI']])
+  ok('PERSONE', voci('persone'), [['iscritti', 'ISCRITTI'], ['richieste', 'RICHIESTE ONLINE'], ['istruttori', 'ISTRUTTORI'], ['compensi', 'COMPENSI'], ['personale', 'ACCESSI']])
   ok('CORSI', voci('corsi'), [['corsi', 'CORSI'], ['esercizi', 'ESERCIZI']])
-  // PAGAMENTI resta il primo: è quel che si apre di più, e dal luogo si arriva lì.
-  ok('SOLDI', voci('soldi'), [['pagamenti', 'PAGAMENTI'], ['contabilita', 'CONTABILITÀ'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
+  // CONTABILITÀ è il primo: l'estratto conto è dove si apre di più.
+  ok('SOLDI', voci('soldi'), [['contabilita', 'CONTABILITÀ'], ['listino', 'LISTINO'], ['vestiario', 'VESTIARIO']])
   ok('PALESTRA', voci('palestra'), [['statistiche', 'STATISTICHE'], ['segnalazioni', 'SEGNALAZIONI'], ['sito', 'SITO'], ['regole', 'IMPOSTAZIONI']])
 
   // Chi ha solo l'amministrazione vede solo i luoghi con le sue voci, e dentro solo quelle.
   const nomi = (luoghi) => luoghi.map((l) => [l.id, l.voci.map((v) => v.voce)])
   ok('con tutte le voci i luoghi sono quelli di sempre', nomi(m.luoghi.luoghiPer(VOCI)).map(([id]) => id), ['oggi', 'persone', 'corsi', 'soldi', 'palestra'])
-  ok('solo amministrazione: un luogo, SOLDI, con le tre voci dei conti', nomi(m.luoghi.luoghiPer(['contabilita', 'pagamenti', 'listino'])), [['soldi', ['pagamenti', 'contabilita', 'listino']]])
-  ok('solo segreteria: SOLDI senza CONTABILITÀ', nomi(m.luoghi.luoghiPer(VOCI.filter((v) => v !== 'contabilita'))).find(([id]) => id === 'soldi'), ['soldi', ['pagamenti', 'listino', 'vestiario']])
+  ok('solo amministrazione: un luogo, SOLDI, con le due voci dei conti', nomi(m.luoghi.luoghiPer(['contabilita', 'listino'])), [['soldi', ['contabilita', 'listino']]])
+  ok('solo segreteria: SOLDI senza CONTABILITÀ', nomi(m.luoghi.luoghiPer(VOCI.filter((v) => v !== 'contabilita'))).find(([id]) => id === 'soldi'), ['soldi', ['listino', 'vestiario']])
   ok('nessuna voce, nessun luogo', m.luoghi.luoghiPer([]), [])
   ok('i luoghi dati non cambiano', LUOGHI.length, 5)
 
@@ -158,8 +159,8 @@ titolo('luoghi del Banco')
   ok('#palestra è una voce', m.indirizzo.leggiIndirizzo('#palestra', { prova: false })?.voce, 'palestra')
   ok('#palestra si riscrive uguale', m.indirizzo.scriviIndirizzo({ voce: 'palestra' }), '#palestra')
   ok('il luogo PALESTRA apre la pagina d\'ingresso', voceDelLuogo(LUOGHI.find((l) => l.id === 'palestra')), 'palestra')
-  ok('gli altri luoghi aprono la loro prima voce', ['oggi', 'persone', 'corsi', 'soldi'].map((id) => voceDelLuogo(LUOGHI.find((l) => l.id === id))), ['dafare', 'iscritti', 'corsi', 'pagamenti'])
-  ok('solo amministrazione: SOLDI apre PAGAMENTI', voceDelLuogo(m.luoghi.luoghiPer(['contabilita', 'pagamenti', 'listino'])[0]), 'pagamenti')
+  ok('gli altri luoghi aprono la loro prima voce', ['oggi', 'persone', 'corsi', 'soldi'].map((id) => voceDelLuogo(LUOGHI.find((l) => l.id === id))), ['dafare', 'iscritti', 'corsi', 'contabilita'])
+  ok('solo amministrazione: SOLDI apre CONTABILITÀ', voceDelLuogo(m.luoghi.luoghiPer(['contabilita', 'listino'])[0]), 'contabilita')
   ok('la pagina d\'ingresso accende PALESTRA', luogoDi('palestra'), 'palestra')
   ok('…e nessuna voce della riga', LUOGHI.find((l) => l.id === 'palestra').voci.some((v) => v.voce === voceInLista('palestra')), false)
   ok('palestra non è una voce di nessun luogo', nelleListe.includes('palestra'), false)

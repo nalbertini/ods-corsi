@@ -212,7 +212,8 @@ const settimanaVecchia = (r) => r.selettori.some((x) => /^\.sg-griglia$|^\.sg-or
 // La pagina iscrizioni/ corta: il riquadro IL VESTIARIO non sta più sotto (gli ordini si aprono solo a #vestiario, scelta dell'utente) e i
 // tasti social in fondo non ci sono più, quindi le loro regole sono tolte; il fondo col tasto per cominciare ha ora respiro (gap e 32px sotto).
 const vestiarioSottoLaPagina = (r) => r.selettori.some((x) => x === '.scroll > .iscrizioni-contatti' || x === '.iscrizioni-piede' || x === '.iscrizioni-richiesta')
-const rigaMovimentoConCasella = (r) => r.selettori.some((x) => /^\.sg-riga-movimento$|^\.sg-riga-movimento > :not\(:nth-child\(2\)\):not\(:last-child\)$/.test(x))
+// Le righe senza casella (`data-senza-casella`) non ci sono più: l'estratto conto le ha tutte con la casella.
+const rigaMovimentoConCasella = (r) => r.selettori.some((x) => /^\.sg-riga-movimento$|^\.sg-riga-movimento > :not\(:nth-child\(2\)\):not\(:last-child\)$|^\.sg-riga-movimento\[data-senza-casella='true'\]( > :first-child)?$/.test(x))
 // Sul telefono COMPENSI tiene anche DA PAGARE (tre numeri, si nasconde solo TECNICI): le due regole di `.sg-numeri[data-telefono-due]` sono cambiate di proposito.
 const numeriCompensi = (r) => r.selettori.some((x) => x.startsWith('.sg-numeri[data-telefono-due]'))
 // IMPOSTAZIONI va a schede (`prova:impostazioni`): l'indice in cima e i titoli dei gruppi (`.sg-indice`, `.sg-regole-gruppo`, `.sg-regole-titolo`) sono tolti di proposito.

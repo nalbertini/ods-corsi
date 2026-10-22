@@ -35,13 +35,13 @@ const GRUPPI = m.GRUPPI_MENU ?? mancante
 console.log('\nI cinque gruppi')
 ok('titoli e voci, nell\'ordine', Array.isArray(GRUPPI) ? GRUPPI.map((g) => [g.titolo, g.voci]) : GRUPPI, [
   ['Ogni giorno', [['dafare', 'Da fare'], ['richieste', 'Richieste online'], ['presenze', 'Presenze']]],
-  ['Iscritti e soldi', [['iscritti', 'Iscritti'], ['tessere', 'Tessere'], ['pagamenti', 'Pagamenti']]],
+  ['Iscritti e soldi', [['iscritti', 'Iscritti']]],
   ['Corsi e orari', [['settimana', 'Settimana'], ['corsi', 'Corsi'], ['listino', 'Listino']]],
   ['Istruttori', [['istruttori', 'Presenze istruttori'], ['compensi', 'Compensi'], ['personale', 'Istruttori e accessi']]],
   ['Il resto', [['statistiche', 'Statistiche'], ['vestiario', 'Vestiario'], ['esercizi', 'Esercizi'], ['segnalazioni', 'Segnalazioni'], ['sito', 'Sito']]],
 ])
-const ID16 = 'dafare settimana richieste presenze iscritti tessere pagamenti corsi istruttori compensi personale statistiche listino vestiario esercizi segnalazioni sito'.split(' ')
-ok('le 16 voci di prima e COMPENSI ci sono, una volta sola',
+const ID16 = 'dafare settimana richieste presenze iscritti corsi istruttori compensi personale statistiche listino vestiario esercizi segnalazioni sito'.split(' ')
+ok('le 14 voci (senza TESSERE e PAGAMENTI, unite in ISCRITTI e CONTABILITÀ) ci sono, una volta sola',
   Array.isArray(GRUPPI) ? GRUPPI.flatMap((g) => g.voci.map(([id]) => id)).sort() : GRUPPI, [...ID16].sort())
 ok('solo «Il resto» è secondario',
   Array.isArray(GRUPPI) ? GRUPPI.filter((g) => g.secondario === true).map((g) => g.titolo) : GRUPPI, ['Il resto'])
@@ -72,7 +72,7 @@ const chi = (ruolo, ancheAmministrazione = false) => ({ ruolo, ancheIstruttore: 
 const gruppi = (c) => (m.menuDi ? m.menuDi(c).map((g) => [g.titolo, g.voci]) : mancante)
 ok('solo segreteria: i cinque gruppi, e basta', gruppi(chi('staff')), Array.isArray(GRUPPI) ? GRUPPI.map((g) => [g.titolo, g.voci]) : GRUPPI)
 ok('segreteria e amministrazione: «I conti» con Contabilità dopo «Iscritti e soldi»', Array.isArray(gruppi(chi('staff', true))) ? gruppi(chi('staff', true)).map(([t]) => t) : gruppi(chi('staff', true)), ['Ogni giorno', 'Iscritti e soldi', 'I conti', 'Corsi e orari', 'Istruttori', 'Il resto'])
-ok('solo amministrazione: «I conti» e basta, con Contabilità, Pagamenti e Listino', gruppi(chi('amministrazione')), [['I conti', [['contabilita', 'Contabilità'], ['pagamenti', 'Pagamenti'], ['listino', 'Listino']]]])
+ok('solo amministrazione: «I conti» e basta, con Contabilità e Listino', gruppi(chi('amministrazione')), [['I conti', [['contabilita', 'Contabilità'], ['listino', 'Listino']]]])
 
 console.log('\nIl piè del menu')
 const sg = readFileSync('src/components/segreteria/Segreteria.tsx', 'utf8')
@@ -91,9 +91,9 @@ console.log('\nIl menu del Banco')
 const luoghi = await impacchetta("export { LUOGHI } from './src/lib/luoghiBanco'")
 ok('LUOGHI: i cinque luoghi con le loro voci', (luoghi.LUOGHI ?? []).map((l) => [l.id, l.voci.map((v) => v.voce)]), [
   ['oggi', ['dafare', 'settimana', 'presenze']],
-  ['persone', ['iscritti', 'tessere', 'richieste', 'istruttori', 'compensi', 'personale']],
+  ['persone', ['iscritti', 'richieste', 'istruttori', 'compensi', 'personale']],
   ['corsi', ['corsi', 'esercizi']],
-  ['soldi', ['pagamenti', 'contabilita', 'listino', 'vestiario']],
+  ['soldi', ['contabilita', 'listino', 'vestiario']],
   ['palestra', ['statistiche', 'segnalazioni', 'sito', 'regole']],
 ])
 

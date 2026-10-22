@@ -53,7 +53,7 @@ Dentro ISCRITTI c'è sempre il campo per cercare e filtrare l'elenco.
 
 A sinistra il menu, a destra la voce scelta. Le voci sono in cinque gruppi (sei con l'amministrazione):
 **Ogni giorno** (Da fare, Richieste online, Presenze),
-**Iscritti e soldi** (Iscritti, Tessere, Pagamenti), **I conti** (Contabilità, solo per chi ha anche
+**Iscritti e soldi** (Iscritti), **I conti** (Contabilità, solo per chi ha anche
 l'amministrazione), **Corsi e orari** (Settimana, Corsi, Listino), **Istruttori** (Presenze istruttori,
 Istruttori e accessi) e **Il resto** (Statistiche, Vestiario, Esercizi, Segnalazioni, Sito). Un filetto separa un gruppo dal successivo e ogni voce ha la sua icona, per ritrovarla a colpo d'occhio. Le
 **IMPOSTAZIONI** sono il tasto coi due cursori in cima al menu. Ogni voce ha la
@@ -82,8 +82,6 @@ la nasconde da **IMPOSTAZIONI → QUESTO COMPUTER** ([guida](regole.md)): la sce
 | **Settimana** | La griglia della settimana, gli appelli mancanti, annullare, sostituti, lezioni straordinarie | [Apri](settimana.md) |
 | **Corsi** | I corsi: sala, istruttori, posti, colore, giorni e orari | [Apri](corsi.md) |
 | **Iscritti** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |
-| **Tessere** | Chi è iscritto senza la tessera che il corso chiede (FIJLKAM, FIPE…) e chi è tesserato senza un corso | [Apri](tessere.md) |
-| **Pagamenti** | Tutti i pagamenti, delle ricevute e fatti a mano: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV | [Apri](pagamenti.md) |
 | **Richieste online** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
 | **Presenze** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, chi c'era a ogni lezione, il CSV | [Apri](presenze.md) |
 | **PRESENZE · SEGNALATE** | Una scheda di PRESENZE: gli iscritti che dicono di esserci stati e non risultano, da accogliere o rifiutare (solo in prova) | [Apri](presenze-segnalate.md) |

@@ -108,9 +108,9 @@ console.log('\n3. gli incassi degli iscritti si ricavano, non si copiano')
   ok('una ricevuta con due pagamenti e uno a mano: tre righe di entrata, ciascuna nella sua cassa e con la sua voce',
     prova(() => lette(derivati)),
     [
-      ['ricevuta', 'entrata', '2026-09-10', 3000, 'Rossi Giulia', 'QUOTA ASSOCIATIVA · Contanti', 'Quota associativa', 'c1', false],
-      ['ricevuta', 'entrata', '2026-10-01', 2000, 'Rossi Giulia', 'QUOTA ASSOCIATIVA · POS', 'Quota associativa', 'c2', false],
-      ['pagamento', 'entrata', '2026-09-12', 1500, "D'Amico Zoë", 'ANNUALE JUDO · Assegno', 'Corsi e altri pagamenti', 'c2', false],
+      ['ricevuta', 'entrata', '2026-09-10', 3000, 'Rossi Giulia', 'QUOTA ASSOCIATIVA · Contanti · ricevuta 12/2026', 'Quota associativa', 'c1', false],
+      ['ricevuta', 'entrata', '2026-10-01', 2000, 'Rossi Giulia', 'QUOTA ASSOCIATIVA · POS · ricevuta 12/2026', 'Quota associativa', 'c2', false],
+      ['pagamento', 'entrata', '2026-09-12', 1500, "D'Amico Zoë", 'ANNUALE JUDO · Assegno · senza ricevuta', 'Corsi e altri pagamenti', 'c2', false],
     ])
   const conSatispay = [...casse, { id: 'c3', nome: 'Satispay', saldoIniziale: 0, dal: '2026-10-01' }]
   const sat = (data) => ({ ...diretto(`s-${data}`, 'p-Rossi', data, 2500), metodo: 'Satispay' })
@@ -120,6 +120,13 @@ console.log('\n3. gli incassi degli iscritti si ricavano, non si copiano')
   ok('l\'id è stabile: due volte lo stesso', prova(() => m.incassiDerivati(righe, casse).map((r) => r.id)), prova(() => derivati.map((r) => r.id)))
   ok('…e diverso per ogni pagamento', prova(() => new Set(derivati.map((r) => r.id)).size), 3)
   ok('…e non dipende dall\'ordine in cui arrivano', prova(() => Object.fromEntries(m.incassiDerivati([...righe].reverse(), casse).map((r) => [r.importo, r.id]))), prova(() => Object.fromEntries(derivati.map((r) => [r.importo, r.id]))))
+  ok('la riga dice il numero della ricevuta, o che manca; Satispay senza richiesta non è «senza ricevuta»',
+    prova(() => m.incassiDerivati([
+      { id: 's1', data: '2026-10-02', importo: 100, metodo: 'POS', voce: 'ANNUALE', chi: 'Rossi Giulia', annullato: false, ricevuta: { id: 'r9', anno: 2026, numero: 7 } },
+      { id: 's2', data: '2026-10-02', importo: 100, metodo: 'Contanti', voce: 'ANNUALE', chi: 'Rossi Giulia', annullato: false },
+      { id: 's3', data: '2026-10-02', importo: 100, metodo: 'Satispay', voce: 'ANNUALE', chi: 'Rossi Giulia', annullato: false, senzaRichiesta: true },
+    ], casse).map((r) => r.sotto)),
+    ['ANNUALE · POS · ricevuta 7/2026', 'ANNUALE · Contanti · senza ricevuta', 'ANNUALE · Satispay'])
   ok('l\'anticipo non è un incasso', prova(() => m.incassiDerivati(m.righeDaRicevute([ricevuta(30, 'Giulia', 'Rossi', [voce('Corso', 8000, [pag('2026-10-02', 3000)])], { anticipo: 1000 })]), casse).map((r) => r.importo)), [3000])
   ok('«pagato fino al» non è un incasso: una voce con le date e nessun pagamento non dà righe',
     prova(() => m.incassiDerivati(m.righeDaRicevute([ricevuta(31, 'Giulia', 'Rossi', [voce('Corso', 8000, [], 1, { dal: '2026-09-01', al: '2027-07-31' })], { anticipo: 8000 })]), casse)), [])
@@ -1040,7 +1047,7 @@ console.log('\n39. Contabilita.tsx: Nuovo movimento e Giroconto sono una pagina 
   ok('Giroconto e Nuovo movimento chiedono prima di lasciare il dettaglio', /const apri = async[^]*?if \(!\(await lasciare\(\)\)\) return[^]*?setScrivo\(cosa\)/.test(corpo), true)
   // Le regole dell'elenco stanno nel componente: queste fermano chi le cambia per sbaglio.
   ok('la ✕ di una pillola toglie solo quel filtro (`togliFiltro(f, a.chiave)`)', /togliFiltro\(f, a\.chiave\)/.test(corpo), true)
-  ok('le somme della riga di stato sono di quel che si vede (`totali(trovate)`)', /totali\(trovate\)/.test(corpo), true)
+  ok('le somme della riga di stato sono dell\'estratto conto (`estrattoConto`)', /estrattoConto\(righe, casse,/.test(corpo) && /estratto\.saldoFinale/.test(corpo), true)
   ok('la casella in testa sceglie solo quelli che si possono cambiare', /const scegliibili = trovate\.filter\(cambiabile\)/.test(corpo), true)
   ok('«Togli i filtri» riporta tutti i filtri alla partenza', /const azzera = \(\) => \{\s*setF\(FILTRI_INIZIALI\)/.test(corpo), true)
   ok('…anche «Collega i casi sicuri»', /const collegaSicuri = async[^]*?if \(!\(await lasciare\(\)\)\) return[^]*?setCollegando\('sicuri'\)/.test(corpo), true)
@@ -1048,7 +1055,7 @@ console.log('\n39. Contabilita.tsx: Nuovo movimento e Giroconto sono una pagina 
   ok('i filtri attivi si contano con `filtriAttivi`', /filtriAttivi\(/.test(corpo), true)
   ok('dopo la registrazione fuori dai filtri lo dice (`nonSiVedra`)', /nonSiVedra\(/.test(tsx), true)
   ok('PERSONA è un menu, non quattro chip', /id="filtro-persona"/.test(corpo), true)
-  ok('anche CASSA e TIPO sono menu', /id="filtro-cassa"/.test(corpo) && /id="filtro-tipo"/.test(corpo), true)
+  ok('TIPO è un menu e le CASSE sono a scelta multipla', /<FiltroCasse /.test(corpo) && /id="filtro-tipo"/.test(corpo), true)
 }
 
 console.log('\n40. la colonna PERSONA mostra l\'iscritto anche per gli incassi; «Collegati» resta lo storico collegato a mano')
@@ -1310,6 +1317,84 @@ console.log('\n96. le schede di CONTABILITÀ sono come quelle di IMPOSTAZIONI, s
   ok('ogni scheda è un role="tab" con aria-selected', /role="tab"[^>]*aria-selected=\{scheda === s\}/.test(tsx), true)
   // Come IMPOSTAZIONI: frecce, Home e Fine; nel giro del Tab solo la scheda aperta.
   ok('la tastiera delle schede viene da `tastoLinguette`, e solo la scheda aperta ha tabIndex 0', /tastoLinguette\(/.test(tsx) && /tabIndex=\{scheda === s \? 0 : -1\}/.test(tsx), true)
+}
+
+console.log('\n96b. CONTABILITÀ non manda a una pagina PAGAMENTI che non c\'è più')
+{
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  // Solo i testi che si leggono: i commenti possono ricordare com'era.
+  const testi = tsx.split('\n').filter((r) => !/^\s*(\/\/|\*|\/\*)/.test(r)).join('\n')
+  ok('nessun testo dice «PAGAMENTI» in maiuscolo', testi.match(/\bPAGAMENTI\b/g) ?? [], [])
+}
+
+console.log('\n97. l\'estratto conto: le righe di MOVIMENTI con il saldo dopo ognuna, sulle casse scelte')
+{
+  const K = [
+    { id: 'c1', nome: 'Cassa Contanti', saldoIniziale: 10000, dal: '2026-09-01' },
+    { id: 'c2', nome: 'Conto Corrente', saldoIniziale: 0 },
+    { id: 'c3', nome: 'Satispay', saldoIniziale: 500 },
+  ]
+  const R = [
+    riga('v0', 'entrata', '2026-08-31', 9999, 'c1'), // prima del «dal» di c1: non conta mai
+    riga('e1', 'entrata', '2026-09-10', 4000, 'c1'),
+    riga('a1', 'entrata', '2026-09-11', 777, 'c1', { annullato: true }),
+    riga('u1', 'uscita', '2026-09-12', 2500, 'c1'),
+    riga('g1', 'giroconto', '2026-09-15', 1000, 'c1', { cassaAId: 'c2' }),
+    riga('g2', 'giroconto', '2026-09-18', 200, 'c2', { cassaAId: 'c3' }),
+    riga('e2', 'entrata', '2026-09-20', 1000, 'c2'),
+    riga('e3', 'entrata', '2026-09-25', 300, 'c3'),
+    riga('u2', 'uscita', '2026-10-02', 100, 'c3'),
+  ]
+  const ec = (f = {}, righe = R) => prova(() => m.estrattoConto(righe, K, f))
+  const somme = (x) => (x.righe ? [x.saldoIniziale, x.entrate, x.uscite, x.saldoFinale] : x)
+  // Se la funzione non c'è, `ec` dà il testo dell'errore: lo si mostra come unica riga.
+  const per = (x) => (x.righe ? x.righe.map((r) => [r.riga.id, r.entrata, r.uscita, r.saldo]) : [[x]])
+
+  const tutte = ec()
+  ok('tutte le casse, senza periodo: saldo iniziale, entrate, uscite, saldo finale', somme(tutte), [10500, 5300, 2600, 13200])
+  ok('dal più recente, con il saldo dopo ogni movimento; i giroconti fra casse considerate non lo spostano', per(tutte), [
+    ['u2', 0, 100, 13200], ['e3', 300, 0, 13300], ['e2', 1000, 0, 13000], ['g2', 0, 0, 12000], ['g1', 0, 0, 12000], ['u1', 0, 2500, 12000], ['e1', 4000, 0, 14500],
+  ])
+  ok('la riga in cima ha il saldo finale', tutte.righe ? tutte.righe[0].saldo === tutte.saldoFinale : tutte, true)
+  ok('con tutte le casse e senza periodo il saldo finale è la somma dei residui del BILANCIO',
+    tutte.righe ? tutte.saldoFinale : tutte, prova(() => m.totaleResidui(m.residui(K, R))))
+  ok('cassaIds vuoto = tutte le casse', somme(ec({ cassaIds: [] })), [10500, 5300, 2600, 13200])
+
+  const due = ec({ cassaIds: ['c1', 'c3'] })
+  ok('tre casse, filtro su due: iniziale 10500, entrate 4500, uscite 3600, finale 11400', somme(due), [10500, 4500, 3600, 11400])
+  ok('…il giroconto verso una cassa fuori è un\'uscita, quello da una fuori un\'entrata, e i movimenti dell\'altra cassa non ci sono', per(due), [
+    ['u2', 0, 100, 11400], ['e3', 300, 0, 11500], ['g2', 200, 0, 11200], ['g1', 0, 1000, 11000], ['u1', 0, 2500, 12000], ['e1', 4000, 0, 14500],
+  ])
+  ok('il saldo finale è la somma dei residui delle due casse', due.righe ? due.saldoFinale : due,
+    prova(() => m.residui(K, R).filter((x) => x.cassaId !== 'c2').reduce((t, x) => t + x.residuo, 0)))
+  const trattoDue = ec({ cassaIds: ['c1', 'c2'] })
+  ok('c1 e c2: il giroconto fra le due c\'è, a zero; quello verso c3 è un\'uscita; c3 non c\'è', per(trattoDue), [
+    ['e2', 1000, 0, 12300], ['g2', 0, 200, 11300], ['g1', 0, 0, 11500], ['u1', 0, 2500, 11500], ['e1', 4000, 0, 14000],
+  ])
+  ok('…e i conti tornano', somme(trattoDue), [10000, 5000, 2700, 12300])
+  ok('un giroconto fra casse che non sono considerate non compare', per(ec({ cassaIds: ['c3'] })).filter(([id]) => id === 'g1'), [])
+
+  const dal = ec({ dal: '2026-09-15' })
+  ok('un periodo sposta il saldo iniziale: conta quel che è successo prima (e gli annullati no)', somme(dal), [12000, 1300, 100, 13200])
+  ok('…e dal periodo restano solo le righe dentro', per(dal).map(([id]) => id), ['u2', 'e3', 'e2', 'g2', 'g1'])
+  ok('dal e al sono inclusivi', per(ec({ dal: '2026-09-12', al: '2026-09-12' })), [['u1', 0, 2500, 12000]])
+  ok('…e il saldo iniziale è quello della sera prima', somme(ec({ dal: '2026-09-12', al: '2026-09-12' })), [14500, 0, 2500, 12000])
+  ok('un movimento prima del «dal» della cassa non conta mai, nemmeno senza periodo', somme(ec({ cassaIds: ['c1'] })), [10000, 4000, 3500, 10500])
+
+  const conAnnullati = ec({ annullati: true })
+  ok('un annullato compare solo se lo si chiede, a zero e col saldo di prima', per(conAnnullati).filter(([id]) => id === 'a1'), [['a1', 0, 0, 14500]])
+  ok('…e non cambia nessun totale', somme(conAnnullati), [10500, 5300, 2600, 13200])
+  ok('…senza la richiesta non c\'è', per(tutte).filter(([id]) => id === 'a1'), [])
+
+  ok('tipo uscita su c1 e c3: le uscite vere e il giroconto che esce', per(ec({ cassaIds: ['c1', 'c3'], tipo: 'uscita' })).map(([id]) => id), ['u2', 'g1', 'u1'])
+  ok('tipo entrata su c1 e c3: le entrate vere e il giroconto che entra', per(ec({ cassaIds: ['c1', 'c3'], tipo: 'entrata' })).map(([id]) => id), ['e3', 'g2', 'e1'])
+  ok('tipo vuoto: tutti', per(ec({ tipo: '' })).length, 7)
+  ok('il testo cerca come nell\'elenco', per(ec({ testo: 'e2' })).map(([id]) => id), ['e2'])
+  ok('…e il saldo resta quello vero: cercare non lo cambia', [per(ec({ testo: 'e2' }))[0][3], ec({ testo: 'e2' }).saldoFinale], [per(tutte).find(([id]) => id === 'e2')[3], tutte.saldoFinale])
+  ok('una voce che non c\'è: nessuna riga', per(ec({ voce: 'Inesistente' })), [])
+
+  const pari = [riga('p1', 'entrata', '2026-09-20', 100, 'c1'), riga('p2', 'entrata', '2026-09-20', 50, 'c1')]
+  ok('a pari data il più in basso dell\'elenco è il primo nel tempo', per(ec({ cassaIds: ['c1'] }, pari)), [['p1', 100, 0, 10150], ['p2', 50, 0, 10050]])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

@@ -130,14 +130,14 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
   const gruppi = (c) => m.menuDi(chi[c]).map((g) => [g.titolo, g.voci.map(([id]) => id)])
   const DELLA_SEGRETERIA_NEL_MENU = [
     ['Ogni giorno', ['dafare', 'richieste', 'presenze']],
-    ['Iscritti e soldi', ['iscritti', 'tessere', 'pagamenti']],
+    ['Iscritti e soldi', ['iscritti']],
     ['Corsi e orari', ['settimana', 'corsi', 'listino']],
     ['Istruttori', ['istruttori', 'compensi', 'personale']],
     ['Il resto', ['statistiche', 'vestiario', 'esercizi', 'segnalazioni', 'sito']],
   ]
   ok('solo segreteria: i cinque gruppi, senza CONTABILITÀ', gruppi('segreteria'), DELLA_SEGRETERIA_NEL_MENU)
   ok('segreteria e amministrazione: gli stessi, e «I conti» con CONTABILITÀ dopo «Iscritti e soldi»', gruppi('segreteria + amministrazione'), DELLA_SEGRETERIA_NEL_MENU.flatMap(([t, v]) => (t === 'Iscritti e soldi' ? [[t, v], ['I conti', ['contabilita']]] : [[t, v]])))
-  ok('solo amministrazione: solo «I conti», tre voci', gruppi('amministrazione'), [['I conti', ['contabilita', 'pagamenti', 'listino']]])
+  ok('solo amministrazione: solo «I conti», due voci', gruppi('amministrazione'), [['I conti', ['contabilita', 'listino']]])
   ok('insegnare non aggiunge voci a chi ha l\'amministrazione', gruppi('amministrazione + istruttore'), gruppi('amministrazione'))
   ok('insegnare non aggiunge voci a chi ha la segreteria', gruppi('segreteria + istruttore'), gruppi('segreteria'))
   ok('un istruttore non ha il menu', gruppi('istruttore'), [])
@@ -149,8 +149,7 @@ console.log('\nil menu: un solo menu, le voci delle autorizzazioni di chi lo usa
   ok('ogni voce del menu è una voce che l\'indirizzo conosce', Object.keys(chi).every((c) => m.vociDelMenu(chi[c]).every((v) => m.VOCI.includes(v))), true)
   ok('la guida di ogni voce è una pagina che esiste', ['segreteria', 'amministrazione', 'segreteria + amministrazione'].every((c) => [...m.vociConsentite(chi[c], { prova: true })].every((v) => existsSync(`guida/${m.guidaDellaVoce(v, chi[c])}.md`))), true)
   ok('CONTABILITÀ ha la guida dell\'amministrazione', m.guidaDellaVoce('contabilita', chi.amministrazione), 'amministrazione/contabilita')
-  ok('PAGAMENTI: la guida ridotta per chi ha solo l\'amministrazione, quella completa per la segreteria', [m.guidaDellaVoce('pagamenti', chi.amministrazione), m.guidaDellaVoce('pagamenti', chi['segreteria + amministrazione'])], ['amministrazione/pagamenti', 'segreteria/pagamenti'])
-  ok('PAGAMENTI ridotto (solo nomi) solo senza la segreteria', Object.keys(chi).filter((c) => m.pagamentiRidotti(chi[c])), ['amministrazione', 'amministrazione + istruttore', 'istruttore', 'strano'])
+  ok('pagamentiRidotti non esiste più: PAGAMENTI è dentro CONTABILITÀ', typeof m.pagamentiRidotti, 'undefined')
   ok('dove si atterra: la prima voce del menu', Object.keys(chi).map((c) => m.primaVoce(chi[c])), ['dafare', 'dafare', 'contabilita', 'contabilita', 'dafare', undefined, undefined])
   const consenti = (voce, c, prova = false) => m.postoConsentito({ voce }, chi[c], { prova })
   ok('una voce che spetta resta com\'è', consenti('iscritti', 'segreteria'), { voce: 'iscritti' })
@@ -176,7 +175,7 @@ console.log('\nil menu e i permessi dicono la stessa cosa')
     const nome = `${x.ruolo}${x.ancheAmministrazione ? ' + amministrazione' : ''}${x.ancheIstruttore ? ' + istruttore' : ''}`
     const nelMenu = m.vociDelMenu(x)
     ok(`${nome}: ogni voce del menu la può usare`, nelMenu.filter((v) => !m.puo(x, permessoDi(v))), [])
-    ok(`${nome}: le voci dei conti che può usare ci sono tutte`, ['contabilita', 'pagamenti', 'listino'].filter((v) => m.puo(x, permessoDi(v)) && !nelMenu.includes(v)), [])
+    ok(`${nome}: le voci dei conti che può usare ci sono tutte`, ['contabilita', 'listino'].filter((v) => m.puo(x, permessoDi(v)) && !nelMenu.includes(v)), [])
   }
   ok('chi legge la segreteria: la segreteria sì, i soli conti no', [m.leggeLaSegreteria(p('staff')), m.leggeLaSegreteria(p('staff', false, true)), m.leggeLaSegreteria(p('amministrazione')), m.leggeLaSegreteria(p('istruttore'))], [true, true, false, false])
 }
@@ -189,7 +188,8 @@ console.log('\nl\'indirizzo scritto a mano e il vecchio indirizzo dell\'amminist
   const corretto = (hash, c, prova = false) => m.indirizzoConsentito(hash, c, { prova })
   ok('chi cura solo i conti: una voce che non c\'è porta a CONTABILITÀ, e l\'indirizzo lo dice', [corretto('#foo', amm), corretto('#iscritti/', amm), corretto('#iscritti/p1', amm)], ['#contabilita', '#contabilita', '#contabilita'])
   ok('…anche le impostazioni e le segnalate', [corretto('#regole', amm), corretto('#segnalate', amm, true)], ['#contabilita', '#contabilita'])
-  ok('…e una sua voce va bene com\'è', [corretto('#contabilita', amm), corretto('#pagamenti', amm), corretto('#listino', amm)], [null, null, null])
+  ok('…e una sua voce va bene com\'è', [corretto('#contabilita', amm), corretto('#listino', amm)], [null, null])
+  ok('…e il vecchio #pagamenti, rimandato a CONTABILITÀ, è «corretto» solo riscritto', [corretto('#pagamenti', amm), corretto('#pagamenti/x', amm), corretto('#tessere', amm)], ['#contabilita', '#contabilita', '#contabilita'])
   ok('la segreteria senza amministrazione: CONTABILITÀ porta alla prima voce', corretto('#contabilita', seg), '#dafare')
   ok('la segreteria con tutte e due apre la contabilità', corretto('#contabilita', segAmm), null)
   ok('una voce e una scheda della segreteria vanno bene', [corretto('#iscritti', seg), corretto('#iscritti/p1', seg), corretto('#regole', seg)], [null, null, null])

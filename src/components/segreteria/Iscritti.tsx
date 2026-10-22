@@ -10,9 +10,9 @@ import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { conTessere, incrocioDaMostrare, SEGNALA_TESSERE, senzaTessera, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
+import { conTessere, incrocioDaMostrare, SEGNALA_TESSERE, senzaTessera, tesseratoSenzaCorso, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
 import { APRI_SCHEDA, idLinguetta, idPannello, schedaDellaSezione, schedaIniziale, SCHEDE, segniSchede, serveCambiare, tastoScheda, type IdScheda } from '../../lib/schedaSezioni'
-import { TessereDellaPersona } from './Tessere'
+import { ImportaTessere, TessereDellaPersona } from './Tessere'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
@@ -207,6 +207,8 @@ export function Iscritti({
   const [corsiScaduti, setCorsiScaduti] = useState(filtroIniziale === 'corsi-scaduti')
   const [fuori, setFuori] = useState(filtroIniziale === 'fuori-regola')
   const [noTessera, setNoTessera] = useState(filtroIniziale === 'senza-tessera')
+  const [senzaCorso, setSenzaCorso] = useState(filtroIniziale === 'senza-corso')
+  const [importa, setImporta] = useState(false)
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [filePrima, setFilePrima] = useState(filtroIniziale === 'file-di-prima')
   const [doppi, setDoppi] = useState(false)
@@ -251,12 +253,14 @@ export function Iscritti({
     'corsi-scaduti': [corsiScaduti, setCorsiScaduti],
     fuori: [fuori, setFuori],
     'senza-tessera': [noTessera, setNoTessera],
+    'senza-corso': [senzaCorso, setSenzaCorso],
     'senza-documento': [senzaDocumento, setSenzaDocumento],
     'file-di-prima': [soloFilePrima, setFilePrima],
     doppioni: [soloDoppi, setDoppi],
     'pagato-prima': [soloPagatoPrima, setPagatoPrima],
   }
-  const altri = altriFiltri({ conTessere: conTessereLette && SEGNALA_TESSERE, filePrima: nFilePrima, doppioni: coppie.length, conStorico: nelVecchio > 0 })
+  // A segnalazioni spente resta solo «Tesserati senza corso»: «Senza tessera» non si mostra.
+  const altri = altriFiltri({ conTessere: conTessereLette, filePrima: nFilePrima, doppioni: coppie.length, conStorico: nelVecchio > 0, segnalaTessere: SEGNALA_TESSERE })
   const accesi = ID_FILTRI.filter((id) => filtri[id][0])
   const altriVisibili = altriAperti(accesi, altriScelto)
   // Il gruppo è aperto solo perché un filtro nascosto è acceso: finché lo è, non si chiude.
@@ -290,6 +294,7 @@ export function Iscritti({
       chip('corsi-scaduti', corsiScaduti, p) &&
       chip('fuori', fuori, p) &&
       (!noTessera || senzaTessera(tesseraDi(p))) &&
+      (!senzaCorso || tesseratoSenzaCorso(tesseraDi(p))) &&
       (!senzaDocumento || !p.documento) &&
       (!soloFilePrima || certificatoDaStampare(p.certificato)),
   )
@@ -366,7 +371,11 @@ export function Iscritti({
 
   return (
     <>
-      {nuovo ? (
+      {importa ? (
+        <SchedaPiena etichetta="Importa tessere" torna="Iscritti" onTorna={() => setImporta(false)}>
+          <ImportaTessere d={d} ricarica={tessere.ricarica} />
+        </SchedaPiena>
+      ) : nuovo ? (
         <SchedaPiena etichetta="Nuovo iscritto" torna="Iscritti" onTorna={torna}>
           <Bozza>
           <Nuovo
@@ -425,6 +434,11 @@ export function Iscritti({
             nFilePrima === 1 ? ' Un certificato non archiviato.' : nFilePrima ? ` ${nFilePrima} certificati non archiviati.` : ''
           }`}
         >
+          {conTessereLette && (
+            <button type="button" className="sg-btn sg-btn-linea" onClick={() => setImporta(true)}>
+              Importa tessere
+            </button>
+          )}
           <button type="button" className="sg-btn sg-btn-pieno" onClick={onNuovo}>
             + Nuovo iscritto
           </button>

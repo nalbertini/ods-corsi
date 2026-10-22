@@ -75,7 +75,7 @@ function testoStriscia(s: StatoScarico, ultimi: ContiScarico | null) {
   if (!s.primoFatto) return 'I pagamenti del negozio possono entrare da soli, ogni notte. La prima volta guardi cosa scriverebbe l’app, poi dici sì.'
   const fatti = ultimi ? ` Appena scaricati: ${ultimi.incassi === 1 ? '1 incasso' : `${ultimi.incassi} incassi`} e ${ultimi.rimborsi === 1 ? '1 rimborso' : `${ultimi.rimborsi} rimborsi`}.` : ''
   const ultimo = s.ultimo ? `Ultimo scarico il ${quando(s.ultimo)}.` : 'Si scarica ogni notte.'
-  return `${ultimo}${fatti} I pagamenti del modulo sono già in PAGAMENTI.`
+  return `${ultimo}${fatti} I pagamenti del modulo sono già fra gli incassi degli iscritti.`
 }
 
 function testoDaDecidere(casi: DaDecidere[]) {
@@ -100,8 +100,8 @@ function PrimoScarico({ d, fai, onFatto, onChiudi }: { d: DatiSegreteria; fai: F
   const righe: Array<[number, string, string]> = [
     [c.incassi, 'incassi del negozio entrano', ' in «Da classificare», col segno DA SATISPAY. La voce la scegli dopo, con Cambia voce.'],
     [c.rimborsi, 'rimborsi entrano come uscite', ', anche loro in «Da classificare».'],
-    [c.modulo, 'sono pagamenti del modulo di iscrizione', ': sono già in PAGAMENTI o in una ricevuta. Non si scrivono una seconda volta.'],
-    [c.pagamenti, 'sono già in PAGAMENTI', ': pagati in palestra con Satispay e registrati lì, stesso giorno e stesso importo. Non si scrivono una seconda volta.'],
+    [c.modulo, 'sono pagamenti del modulo di iscrizione', ': sono già fra gli incassi degli iscritti o in una ricevuta. Non si scrivono una seconda volta.'],
+    [c.pagamenti, 'sono già fra gli incassi degli iscritti', ': pagati in palestra con Satispay e registrati lì, stesso giorno e stesso importo. Non si scrivono una seconda volta.'],
     [c.a_mano, 'erano già scritti a mano', ': stesso giorno, stesso importo, un solo movimento possibile. Resta quello a mano, con la sua voce; prende il segno DA SATISPAY.'],
     [c.da_decidere, 'sono da decidere', ': un giorno già chiuso, o più movimenti a mano con lo stesso importo quel giorno. Non entrano: li trovi in MOVIMENTI, nell’avviso giallo.'],
     [c.prima, 'sono di prima dell’inizio dei conti', ': non entrano.'],

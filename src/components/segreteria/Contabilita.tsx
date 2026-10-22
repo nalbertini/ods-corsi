@@ -22,7 +22,6 @@ import {
   elencoMovimenti,
   esitoCambioVoce,
   FILTRI_INIZIALI,
-  filtraMovimenti,
   filtriAccesi,
   filtriAttivi,
   giornoChiuso,
@@ -48,14 +47,12 @@ import {
   righeDelPeriodo,
   serveConfermaDifferenza,
   SOGLIA_DIFFERENZA,
-  totali,
   totaleResidui,
   type Cassa,
   type ChiusuraCassa,
   type FiltriElenco,
   type IconaConti,
   iconaCassa,
-  iconaVoce,
   togliFiltro,
   type RigaMovimento,
   type VoceContabile,
@@ -67,6 +64,7 @@ import {
   SCEGLI_LA_PERSONA,
   UNA_RIGA_ALLA_VOLTA,
   vociPerLaScelta,
+  estrattoConto,
 } from '../../lib/contabilita'
 import { filtraPerPersona, cosaNonVaCollegato, collegatoAMano, senzaPersona, type CandidatoPersona, type FiltroPersona } from '../../lib/movimentiPersona'
 import { fraseDallaChat } from '../../lib/collega'
@@ -131,7 +129,7 @@ export function Contabilita({ d, movimento, onPersona }: { d: DatiSegreteria; mo
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <Testa titolo="CONTABILITÀ" sotto="Le entrate e le uscite della palestra, nelle sue casse. Gli incassi degli iscritti ci sono già: si correggono in PAGAMENTI.">
+      <Testa titolo="CONTABILITÀ" sotto="Le entrate e le uscite della palestra, nelle sue casse. Gli incassi degli iscritti ci sono già: si correggono nella scheda della persona.">
         <div className="row" style={{ gap: 10, flexWrap: 'wrap' }} ref={setAzioni} />
       </Testa>
       <div
@@ -217,12 +215,41 @@ function Saldo({ nome, icona, valore, sotto }: { nome: string; icona: IconaConti
   )
 }
 
+/** Le casse dell'estratto conto, a scelta multipla: nessuna spuntata = tutte. */
+function FiltroCasse({ casse, scelte, onChange }: { casse: Cassa[]; scelte: string[]; onChange: (v: string[]) => void }) {
+  const testo = scelte.length === 0 ? 'Tutte' : casse.filter((c) => scelte.includes(c.id)).map((c) => c.nome).join(', ')
+  return (
+    <span className="sg-filtro-menu sg-casse" data-acceso={scelte.length > 0}>
+      <details className="sg-filtro-casse">
+        <summary className="sg-filtro-menu-tasto">
+          <span className="sg-filtro-menu-etichetta">Casse</span>
+          <span className="sg-filtro-menu-valore">{testo}</span>
+          <span aria-hidden="true">▾</span>
+        </summary>
+        <div className="sg-filtro-casse-lista" role="group" aria-label="Casse">
+          {casse.map((c) => (
+            <label key={c.id} className="sg-elenco-casella">
+              <input type="checkbox" checked={scelte.includes(c.id)} onChange={(e) => onChange(e.target.checked ? [...scelte, c.id] : scelte.filter((x) => x !== c.id))} />
+              {c.nome}
+            </label>
+          ))}
+        </div>
+      </details>
+      {scelte.length > 0 && (
+        <button type="button" className="sg-filtro-menu-togli" aria-label="Togli il filtro Casse" onClick={() => onChange([])}>✕</button>
+      )}
+    </span>
+  )
+}
+
 function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, movimento, onPersona }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void; movimento?: string; onPersona?: (personaId: string) => void }) {
   const oggi = oggiARoma()
   const [f, setF] = useState<FiltriElenco>(FILTRI_INIZIALI)
-  const { testo, periodo, tipo, cassaId, voce, persona, annullati } = f
+  const { testo, periodo, tipo, voce, persona, annullati } = f
   const metti = (x: Partial<FiltriElenco>) => setF((y) => ({ ...y, ...x }))
   const [perVoci, setPerVoci] = useState(false)
+  // Le casse dell'estratto conto: vuote = tutte. Stanno qui e non in FiltriElenco perché sono più d'una.
+  const [cassaIds, setCassaIds] = useState<string[]>([])
   const [scrivo, setScrivo] = useState<'movimento' | 'giroconto' | null>(null)
   // Dopo aver scritto un movimento che i filtri nascondono: se no sembra perso.
   const [appena, setAppena] = useState<RigaMovimento | null>(null)
@@ -244,9 +271,11 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
   const collegatiTutti = filtraPerPersona(righe, 'collegati', {}).length
 
   const { dal, al } = intervalloDi(periodo, oggi, '', '')
-  const trovate = filtraPerPersona(filtraMovimenti(righe, { testo, dal, al, tipo, cassaId, voce, annullati }), persona, esiti)
+  const estratto = estrattoConto(righe, casse, { testo, dal, al, tipo, voce, annullati, cassaIds })
+  const trovate = filtraPerPersona(estratto.righe.map((x) => x.riga), persona, esiti)
+  const dellEstratto = new Map(estratto.righe.map((x) => [x.riga.id, x] as const))
   // Cambiando i filtri la scelta si svuota e l'elenco riparte dalle prime righe: quel che si è scelto non si perde di vista.
-  const chiave = [testo, periodo, tipo, cassaId, voce, annullati, persona].join('|')
+  const chiave = [testo, periodo, tipo, cassaIds.join(','), voce, annullati, persona].join('|')
   useEffect(() => {
     setScelti(new Set())
     setViste(RIGHE_ELENCO)
@@ -285,7 +314,6 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
   const nonSiCollega = sceltiRighe.map((r) => cosaNonVaCollegato(r)).find(Boolean) ?? null
   const alterna = (id: string) => setScelti((x) => { const y = new Set(x); if (y.has(id)) y.delete(id); else y.add(id); return y })
   const nomiVoci = [...new Set(voci.map((v) => v.nome))].sort((x, y) => Number(y === 'Da classificare') - Number(x === 'Da classificare') || x.localeCompare(y, 'it'))
-  const somme = totali(trovate)
   const conti = residui(casse, righe)
   const mese = new Date(`${oggi}T12:00:00`).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }).replace(/^./, (c) => c.toUpperCase())
   const nomeCassa = (id?: string) => casse.find((c) => c.id === id)?.nome ?? ''
@@ -301,10 +329,11 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
   }
   const azzera = () => {
     setF(FILTRI_INIZIALI)
+    setCassaIds([])
     setAppena(null)
     window.setTimeout(() => statoElenco.current?.focus(), 0)
   }
-  const attivi = filtriAttivi(f)
+  const attivi = filtriAttivi(f) + (cassaIds.length ? 1 : 0)
   const accesi = filtriAccesi(f, { nomeCassa: (id) => nomeCassa(id), mese })
   // Con il modulo aperto è lui la pagina: l'elenco e i filtri restano com'erano (lo stato sta qui) e si ritrovano tornando.
   const tornaDalModulo = async () => {
@@ -312,7 +341,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
     chiudi()
     window.setTimeout(() => statoElenco.current?.focus(), 0)
   }
-  const fuori = !!appena && nonSiVedra(appena, { testo, dal, al, tipo, cassaId, voce, persona })
+  const fuori = !!appena && (nonSiVedra(appena, { testo, dal, al, tipo, voce, persona }) || (cassaIds.length > 0 && ![appena.cassaId, appena.cassaAId].some((c) => c && cassaIds.includes(c))))
   // Le azioni stanno nella testata, in vista anche col dettaglio aperto: prima si chiede se lasciare la correzione.
   const apri = async (cosa: 'movimento' | 'giroconto') => {
     if (!(await lasciare())) return
@@ -424,8 +453,8 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
           </button>
         </div>
         <div className="sg-elenco-barra" style={{ paddingTop: 0 }}>
-          <FiltroMenu id="filtro-tipo" nome="Tipo" value={tipo} opzioni={[['', 'Tutti'], ['entrata', 'Entrate'], ['uscita', 'Uscite'], ['giroconto', 'Giroconti']]} onChange={(v) => metti({ tipo: v })} />
-          <FiltroMenu id="filtro-cassa" nome="Cassa" value={cassaId} opzioni={[['', 'Tutte'], ...casse.map((c) => [c.id, c.nome] as const)]} onChange={(v) => metti({ cassaId: v })} />
+          <FiltroMenu id="filtro-tipo" nome="Tipo" value={tipo} opzioni={[['', 'Tutti'], ['entrata', 'Entrate'], ['uscita', 'Uscite']]} onChange={(v) => metti({ tipo: v })} />
+          <FiltroCasse casse={casse} scelte={cassaIds} onChange={setCassaIds} />
           <FiltroMenu id="filtro-voce" nome="Voce" value={voce} opzioni={[['', 'Tutte'], ...nomiVoci.map((n) => [n, n] as const)]} onChange={(v) => metti({ voce: v })} />
           {esitiLetti.dato && (
             // I numeri contano tutto lo storico: scegliendo un filtro il periodo diventa Tutto, se no «0 trovati» confonde.
@@ -471,9 +500,10 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
           )}
           <span style={{ flex: 1 }} />
           <span className="sg-elenco-somme">
-            <span>Entrate <b className="num" style={{ color: somme.entrate > 0 ? 'var(--verde-testo)' : undefined }}>+ {soldi(somme.entrate)}</b></span>
-            <span>Uscite <b className="num">− {soldi(somme.uscite)}</b></span>
-            <span>Differenza <b className="num">{soldiConSegno(somme.differenza)}</b></span>
+            <span>Saldo iniziale <b className="num">{soldiConSegno(estratto.saldoIniziale)}</b></span>
+            <span>Entrate <b className="num" style={{ color: estratto.entrate > 0 ? 'var(--verde-testo)' : undefined }}>+ {soldi(estratto.entrate)}</b></span>
+            <span>Uscite <b className="num">− {soldi(estratto.uscite)}</b></span>
+            <span>Saldo finale <b className="num">{soldiConSegno(estratto.saldoFinale)}</b></span>
           </span>
         </div>
 
@@ -502,10 +532,10 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
             </span>
             <span role="columnheader" className="sg-etichetta">DATA</span>
             <span role="columnheader" className="sg-etichetta">DESCRIZIONE</span>
-            <span role="columnheader" className="sg-etichetta">PERSONA</span>
-            <span role="columnheader" className="sg-etichetta">VOCE</span>
             <span role="columnheader" className="sg-etichetta">CASSA</span>
-            <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>IMPORTO</span>
+            <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>ENTRATE</span>
+            <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>USCITE</span>
+            <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>SALDO</span>
           </div>
           <div className="sg-tabella-corpo">
             {trovate.length === 0 && (
@@ -513,8 +543,10 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
                 {righe.length === 0 ? 'Nessun movimento: compaiono qui gli incassi degli iscritti e quelli che scrivi tu.' : 'Nessun movimento corrisponde ai filtri.'}
               </p>
             )}
-            {trovate.slice(0, viste).map((r) => (
-              <div key={r.id} role="row" className="sg-riga-movimento sg-iscritto" data-spento={r.annullato} data-scelto={aperto?.id === r.id} data-scelta={scelti.has(r.id)} data-senza-casella={!cambiabile(r)} onClick={() => { setScrivo(null); setAperto(r) }}>
+            {trovate.slice(0, viste).map((r) => {
+              const e = dellEstratto.get(r.id)
+              return (
+              <div key={r.id} role="row" className="sg-riga-movimento sg-iscritto" data-spento={r.annullato} data-scelto={aperto?.id === r.id} data-scelta={scelti.has(r.id)} data-senza-casella={!cambiabile(r)} onClick={() => { if (r.origine !== 'movimento' && r.personaId && onPersona) onPersona(r.personaId); else { setScrivo(null); setAperto(r) } }}>
                 <span role="cell" className="sg-scelta-riga" onClick={(e) => e.stopPropagation()}>
                   {cambiabile(r) && <input type="checkbox" checked={scelti.has(r.id)} onChange={() => alterna(r.id)} aria-label={`Scegli ${r.descrizione} del ${dataRicevuta(r.data)}`} />}
                 </span>
@@ -525,39 +557,34 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
                   {r.tipo === 'giroconto' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Giroconto</span>}
                   {r.satispayId && <span className="num sg-tag" style={{ marginLeft: 8 }}>Da Satispay</span>}
                   {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
-                  {/* Sul tablet e sul telefono la colonna PERSONA non c'è: lo stato resta accanto alla descrizione. */}
-                  {!r.personaId && esiti[r.id] === 'omonimi' && <span className="num sg-tag sg-solo-telefono" data-tipo="aspetta" style={{ marginLeft: 8 }}>Omonimi</span>}
-                  {!r.personaId && esiti[r.id] === 'nessuna' && <span className="num sg-tag sg-solo-telefono" style={{ marginLeft: 8 }}>Senza scheda</span>}
+                  {/* Lo stato del collegamento alla persona sta accanto alla descrizione: la colonna PERSONA non c'è più. */}
+                  {r.personaId && collegatoAMano(r) && <span className="num sg-tag" data-tipo="fatto" style={{ marginLeft: 8 }}>Collegato</span>}
+                  {!r.personaId && esiti[r.id] === 'omonimi' && <span className="num sg-tag" data-tipo="aspetta" style={{ marginLeft: 8 }}>Omonimi</span>}
+                  {!r.personaId && esiti[r.id] === 'nessuna' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Senza scheda</span>}
+                  {!r.personaId && esiti[r.id] === 'sicuro' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Da collegare</span>}
                   <span className="sg-sotto-movimento">
-                    <span className="sg-solo-telefono">{[dataRicevuta(r.data), r.voce, r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId), collegatoAMano(r) ? nomiPersone.get(r.personaId ?? '') : ''].filter(Boolean).join(' · ')}</span>
+                    <span className="sg-solo-telefono">{[r.tipo === 'giroconto' ? '' : `${r.tipo === 'entrata' ? '+ ' : '− '}${soldi(r.importo)}`, dataRicevuta(r.data), r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)].filter(Boolean).join(' · ')}</span>
+                    <span>{[r.voce, r.personaId ? nomiPersone.get(r.personaId) ?? (collegatoAMano(r) ? 'Persona collegata' : '') : ''].filter(Boolean).join(' · ')}</span>
                     {r.sotto && <span>{r.sotto}</span>}
                   </span>
                 </span>
-                <span role="cell" className="sg-persona-riga">
-                  {r.personaId ? (
-                    <>
-                      <span style={{ fontWeight: 600 }}>{nomiPersone.get(r.personaId) ?? (collegatoAMano(r) ? 'Persona collegata' : '')}</span>
-                      {/* Un incasso iscritto è della persona da sé: «Collegato» farebbe cercare uno Scollega che qui non c'è. */}
-                      {collegatoAMano(r) && <span className="num sg-tag" data-tipo="fatto">Collegato</span>}
-                    </>
-                  ) : esiti[r.id] === 'omonimi' ? (
-                    <span className="num sg-tag" data-tipo="aspetta">Omonimi</span>
-                  ) : esiti[r.id] === 'nessuna' ? (
-                    <span className="num sg-tag">Senza scheda</span>
-                  ) : esiti[r.id] === 'sicuro' ? (
-                    <span className="num sg-tag">Da collegare</span>
-                  ) : null}
-                </span>
-                <span role="cell" className="sg-cella-icona" data-tono="voce"><IconaConto nome={iconaVoce(r.voce)} />{r.voce ?? '—'}</span>
                 <span role="cell" className="sg-cella-icona">
                   <IconaConto nome={r.tipo === 'giroconto' ? 'frecce' : iconaCassa(nomeCassa(r.cassaId))} />
                   {r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)}
                 </span>
-                <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', textDecoration: r.annullato ? 'line-through' : undefined, color: r.tipo === 'entrata' && !r.annullato ? 'var(--verde-testo)' : undefined }}>
-                  {r.tipo === 'entrata' ? '+ ' : r.tipo === 'uscita' ? '− ' : ''}{soldi(r.importo)}
+                <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', textDecoration: r.annullato ? 'line-through' : undefined, color: 'var(--verde-testo)' }}>
+                  {e?.entrata ? `+ ${soldi(e.entrata)}` : r.annullato && r.tipo === 'entrata' ? soldi(r.importo) : ''}
+                </span>
+                <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', textDecoration: r.annullato ? 'line-through' : undefined }}>
+                  {e?.uscita ? `− ${soldi(e.uscita)}` : r.annullato && r.tipo === 'uscita' ? soldi(r.importo) : ''}
+                </span>
+                <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right' }}>
+                  <span className="sg-solo-telefono" style={{ fontSize: 12, fontWeight: 400, color: 'var(--dim)' }}>Saldo </span>
+                  {soldiConSegno(e?.saldo ?? 0)}
                 </span>
               </div>
-            ))}
+              )
+            })}
           </div>
           {trovate.length > viste && (
             <div className="row" style={{ gap: 10, padding: 14, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -609,7 +636,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
       )}
 
       <span className="sg-sotto">
-        I giroconti e gli annullati non contano in entrate e uscite. Un incasso degli iscritti si apre in PAGAMENTI, dove nasce; qui non si cambia. Contanti vanno in Cassa Contanti, i pagamenti Satispay del negozio nella cassa Satispay, tutto il resto in Conto Corrente.
+        I giroconti e gli annullati non contano in entrate e uscite. Un incasso degli iscritti apre la scheda della persona, dove nasce; qui non si cambia. Contanti vanno in Cassa Contanti, i pagamenti Satispay del negozio nella cassa Satispay, tutto il resto in Conto Corrente.
       </span>
     </div>
   )
@@ -782,9 +809,9 @@ function NuovoMovimento({ d, voci, casse, righe, chiusure, fai, onFatto, onChiud
       {giornoChiuso(chiusure, [cassaId], data) && <span role="status" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura.</span>}
       {doppione && persona && (
         <div role="status" className="sg-riquadro" data-avviso="true" style={{ borderColor: 'var(--giallo-testo)', gap: 4 }}>
-          <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>FORSE GIÀ IN PAGAMENTI</span>
+          <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>FORSE GIÀ NEGLI INCASSI</span>
           <span style={{ fontSize: 15 }}>
-            {persona.cognome} {persona.nome} ha già {doppione.origine === 'ricevuta' ? 'una ricevuta' : 'un pagamento'} di {soldi(doppione.importo)} del {dataRicevuta(doppione.data)} in PAGAMENTI. Se è la stessa quota, non scriverla qui: c’è già.
+            {persona.cognome} {persona.nome} ha già {doppione.origine === 'ricevuta' ? 'una ricevuta' : 'un pagamento'} di {soldi(doppione.importo)} del {dataRicevuta(doppione.data)} fra gli incassi. Se è la stessa quota, non scriverla qui: c’è già.
           </span>
         </div>
       )}
@@ -984,7 +1011,7 @@ function MovimentoAperto({ d, voci, riga, chiusure, cassa, cassaA, nomePersona, 
         </div>
       )}
       {collegando && <CollegaAPersona d={d} righe={[riga]} fai={fai} onFatto={onFatto} onChiudi={() => setCollegando(false)} />}
-      {!manuale && <span className="sg-sotto">Si cambia in PAGAMENTI, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
+      {!manuale && <span className="sg-sotto">Si cambia nella scheda della persona, dove nasce: se la ricevuta o il pagamento cambia o si annulla, cambia da sé anche qui.</span>}
       {manuale && riga.annullato && <span className="sg-sotto"><span className="num sg-tag" data-tipo="manca">Annullato</span> Resta in elenco e non si conta più.</span>}
       {manuale && !riga.annullato && (
         <>
