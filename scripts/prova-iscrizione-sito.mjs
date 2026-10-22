@@ -213,8 +213,8 @@ const settimanaVecchia = (r) => r.selettori.some((x) => /^\.sg-griglia$|^\.sg-or
 // tasti social in fondo non ci sono più, quindi le loro regole sono tolte; il fondo col tasto per cominciare ha ora respiro (gap e 32px sotto).
 const vestiarioSottoLaPagina = (r) => r.selettori.some((x) => x === '.scroll > .iscrizioni-contatti' || x === '.iscrizioni-piede' || x === '.iscrizioni-richiesta')
 // Le righe senza casella (`data-senza-casella`) non ci sono più: l'estratto conto le ha tutte con la casella.
-// MOVIMENTI più compatti: i saldi in alto hanno la cifra a 22px (`.sg-saldo`, `.sg-saldo-cifra`) e la riga non ha più la colonna SALDO, quindi sul telefono restano solo la casella e la descrizione.
-const movimentiCompatti = (r) => r.selettori.some((x) => /^\.sg-saldo$|^\.sg-saldo-cifra$|^\.sg-riga-movimento > :not\(:first-child\):not\(:nth-child\(3\)\):not\(:last-child\)$/.test(x))
+// MOVIMENTI più compatti: i saldi in alto hanno la cifra a 22px (`.sg-saldo`, `.sg-saldo-cifra`), la ricerca dei filtri è più stretta (`.sg-elenco-cerca`, per stare in una riga sola) e la riga non ha più la colonna SALDO, quindi sul telefono restano solo la casella e la descrizione.
+const movimentiCompatti = (r) => r.selettori.some((x) => /^\.sg-saldo$|^\.sg-elenco-cerca$|^\.sg-saldo-cifra$|^\.sg-riga-movimento > :not\(:first-child\):not\(:nth-child\(3\)\):not\(:last-child\)$/.test(x))
 const rigaMovimentoConCasella = (r) => r.selettori.some((x) => /^\.sg-riga-movimento$|^\.sg-riga-movimento > :not\(:nth-child\(2\)\):not\(:last-child\)$|^\.sg-riga-movimento\[data-senza-casella='true'\]( > :first-child)?$/.test(x))
 // Sul telefono COMPENSI tiene anche DA PAGARE (tre numeri, si nasconde solo TECNICI): le due regole di `.sg-numeri[data-telefono-due]` sono cambiate di proposito.
 const numeriCompensi = (r) => r.selettori.some((x) => x.startsWith('.sg-numeri[data-telefono-due]'))
