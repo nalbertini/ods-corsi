@@ -2759,20 +2759,18 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-registro > summary::-webkit-details-marker { display: none; }
 .sg-registro[open] > summary { border-color: var(--text); }
 .sg-registro-nomi { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px 12px; border: 2px solid var(--line); border-top: 0; }
-.sg-presenze { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: start; }
-
-/* Un solo valore per corso, una tinta sola: la barra dice quanto, il numero accanto lo dice esatto. */
-.sg-barra { display: grid; grid-template-columns: 170px 1fr 48px; gap: 12px; align-items: center; min-height: 34px; text-align: left; }
-.sg-barra[data-spenta='true'] { opacity: 0.35; }
-.sg-barra-nome { font-size: 15px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Barra di un valore solo, una tinta sola: la barra dice quanto, il numero accanto lo dice esatto. */
 .sg-barra-binario { position: relative; height: 14px; background: var(--surface-2); }
 .sg-barra-pieno { position: absolute; left: 0; top: 0; bottom: 0; background: var(--blu); border-radius: 0 4px 4px 0; }
-.sg-barra:hover .sg-barra-pieno, .sg-barra:focus-visible .sg-barra-pieno, .sg-barra[aria-pressed='true'] .sg-barra-pieno { background: #3aa0d6; }
-.sg-barra-suggerimento {
-  position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 2; white-space: nowrap;
-  padding: 4px 8px; background: var(--text); color: var(--bg); font-size: 12px; font-weight: 600;
-}
-.sg-barra-scala { display: flex; justify-content: space-between; padding: 0 60px 0 182px; font-size: 11px; color: var(--dim); }
+
+/* Le sezioni lunghe di PRESENZE: chiuse, col titolo e il conto in vista; il segno a destra dice se si apre o si chiude. */
+.sg-chiudibile > summary { display: flex; align-items: center; gap: 14px; min-height: 44px; cursor: pointer; list-style: none; }
+.sg-chiudibile > summary::-webkit-details-marker { display: none; }
+.sg-chiudibile > summary > .sg-riga-titolo { flex: 1; }
+.sg-chiudibile > summary::after { content: '⌄'; font-size: 18px; color: var(--dim); }
+.sg-chiudibile[open] > summary::after { content: '⌃'; }
+.sg-chiudibile[open] > summary { margin-bottom: 10px; }
+.sg-chiudibile[data-allarme='true'] { box-shadow: inset 4px 0 0 var(--rosso); }
 
 /* Le statistiche: colonne mese per mese, giorni e ore, tabelle dei corsi. */
 .sg-stat-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
@@ -2964,9 +2962,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 
 @media (max-width: 1000px) {
   .sg-numeri, .sg-cosa-entra { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sg-presenze, .sg-importa, .sg-regole { grid-template-columns: minmax(0, 1fr); }
-  .sg-barra { grid-template-columns: 110px 1fr 44px; }
-  .sg-barra-scala { padding-left: 122px; padding-right: 56px; }
+  .sg-importa, .sg-regole { grid-template-columns: minmax(0, 1fr); }
   .sg-riga-personale { grid-template-columns: 1fr 1fr; }
   .sg-lista-testa.sg-riga-personale { display: none; }
 }
