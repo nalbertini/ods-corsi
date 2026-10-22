@@ -15,26 +15,25 @@ questo sta in un riquadro a parte e non abbassa le medie.
 - **Tutti i corsi**, o un corso solo;
 - **Scarica CSV** — il registro del periodo in un file che si apre con Excel.
 
-## I quattro numeri
+## Com'è andato il mese
 
-| | |
-|---|---|
-| **LEZIONI SVOLTE** | quante lezioni ci sono state, e quante annullate |
-| **PRESENZE** | quante presenze in tutto, e la media a lezione dove c'è l'appello |
-| **SUGLI ISCRITTI** | la percentuale di presenti sugli iscritti (i giustificati non contano) |
-| **SENZA APPELLO** | le lezioni passate in cui nessuno ha segnato; in rosso se ce n'è qualcuna |
+I numeri del mese e le barre per corso non stanno più qui: sono in
+[Statistiche](statistiche.md). In alto c'è un tasto che ci porta.
 
-## I riquadri
+## Le sezioni
 
-- **PRESENZA MEDIA PER CORSO** — una barra per corso, presenti su iscritti,
-  dal più frequentato.
+Le liste lunghe sono accorciate e le sezioni si aprono con un tocco sul titolo,
+che dice già quante cose contiene.
+
 - **CHI SI STA PERDENDO** — chi ha **tre o più assenze di fila** negli ultimi
-  due mesi, con i corsi e l'ultima volta che è venuto. **Apri la scheda** apre la sua
+  due mesi, con i corsi e l'ultima volta che è venuto. Se sono più di cinque
+  si vedono le prime e **Mostra tutti** apre il resto. **Apri la scheda** apre la sua
   scheda in [Iscritti](iscritti.md). È la lista di chi chiamare.
-- **APPELLI MANCANTI** — le lezioni passate senza appello. **Fai l'appello ora** apre la
+- **APPELLI MANCANTI** — le lezioni passate senza appello. Si apre da sola quando
+  ce n'è qualcuna (in rosso) e quando si arriva da DA FARE. **Fai l'appello ora** apre la
   lezione nella [Settimana](settimana.md), per segnarlo da lì o per metterla
   ANNULLATA se non si è fatta.
-- **PROVE** — chi è venuto a provare nel mese, dalla lezione più recente: il
+- **PROVE** (chiusa) — chi è venuto a provare nel mese, dalla lezione più recente: il
   corso, il giorno, chi l'ha aggiunto all'appello (di solito l'istruttore,
   col tasto Prove) e il **telefono**, che si tocca per chiamare. **Iscritto**
   vuol dire che nel frattempo si è iscritto; **Apri la scheda** apre la sua scheda in
@@ -43,7 +42,7 @@ questo sta in un riquadro a parte e non abbassa le medie.
 
 ## Il registro del mese
 
-In fondo, **REGISTRO DEL MESE**: le lezioni del mese con l'appello fatto,
+In fondo, **REGISTRO DEL MESE** (chiuso, col conto delle lezioni): le lezioni del mese con l'appello fatto,
 giorno per giorno dal più recente (con un corso scelto, solo quel corso).
 Ogni lezione dice ora, sala, istruttore e quanti presenti su iscritti; un
 tocco la apre e mostra **chi c'era**, in ordine di cognome, e sotto, più
