@@ -2,7 +2,8 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import type { DatiSegreteria, LezioneSeg } from '../../../lib/segreteria'
 import { chiaveGiorno, oraDi } from '../../../lib/sala'
 import { codaBanco } from '../../../lib/codaBanco'
-import { fasciaDelleLezioni, ORA_PX, riepilogoGiornata, tabellone, type Blocco, type StatoBlocco } from '../../../lib/giornata'
+import { fasciaDelleLezioni, ORA_PX, riepilogoGiornata, sottotitoloOggi, tabellone, type Blocco, type StatoBlocco } from '../../../lib/giornata'
+import { caselleDaMostrare, type Casella } from '../../../lib/cosaManca'
 import { Guaio, Testa, useCarica } from '../comune'
 import { DaFare, type ContiDaFare } from '../DaFare'
 import type { Destinazione, Voce } from '../Segreteria'
@@ -21,24 +22,14 @@ const PAROLE_BLOCCO: Record<StatoBlocco, string> = {
 
 const ora = (n: number) => `${String(n).padStart(2, '0')}:00`
 
-/** Un numero grande che apre l'elenco che lo ha prodotto. */
-function Cifra({ titolo, valore, sotto, guaio, onClick }: { titolo: string; valore: number | null; sotto: string; guaio?: boolean; onClick?: () => void }) {
-  const dentro = (
-    <>
-      <span className="sg-etichetta">{titolo}</span>
-      <span className="num bn-cifra-n">{valore ?? '—'}</span>
-      <span className="bn-cifra-sotto">{sotto}</span>
-    </>
-  )
-  // Senza un posto dove andare non è un tasto: un lettore di schermo lo direbbe «non disponibile».
-  return onClick ? (
-    <button type="button" className="bn-cifra" data-guaio={guaio && !!valore} onClick={onClick}>
-      {dentro}
+/** Un numero grande che apre l'elenco che lo ha prodotto: una casella della striscia COSA MANCA, con le sue parole e il suo conto. */
+function Cifra({ c, onClick }: { c: Casella; onClick: () => void }) {
+  return (
+    <button type="button" className="bn-cifra" data-stato={c.stato} aria-label={c.nome} onClick={onClick}>
+      <span className="sg-etichetta" aria-hidden="true">{c.titolo.toUpperCase()}</span>
+      <span className="num bn-cifra-n" aria-hidden="true">{c.numero}</span>
+      <span className="bn-cifra-sotto" aria-hidden="true">{c.nota}</span>
     </button>
-  ) : (
-    <div className="bn-cifra" data-guaio={guaio && !!valore}>
-      {dentro}
-    </div>
   )
 }
 
@@ -64,20 +55,20 @@ export function Oggi({ d, conti, onVai, onRiprova }: { d: DatiSegreteria; conti:
   const tab = tabellone(l, sale.dato ?? [], adesso, { dalleOre: dalle, alleOre: alle, oraPx: ORA_PX })
   const ore = Array.from({ length: alle - dalle }, (_, i) => dalle + i)
   const coda = codaBanco({ appelli: conti.appelli ?? [], persone: persone.dato ?? [], richieste: conti.richieste ?? 0, istruttori: conti.istruttori ?? 0, segnalate: conti.segnalate ?? undefined }, giorno)
-  const { presenti, attesi, appelliDaFare: appelli } = riepilogoGiornata(l, adesso)
+  const riepilogo = lezioni.dato ? riepilogoGiornata(l, adesso) : null
 
   const apri = (x: LezioneSeg) => onVai('settimana', { lezione: { id: x.id, inizio: x.inizio } })
   const guaio = lezioni.guaio ?? sale.guaio ?? persone.guaio
 
   return (
     <>
-      <Testa titolo="OGGI" sotto={`${new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }).format(adesso)} · ${l.length} lezioni${appelli ? `, ${appelli} appello da fare` : ''}.`} />
+      <Testa titolo="OGGI" sotto={sottotitoloOggi(new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }).format(adesso), l.length, riepilogo)} />
       {guaio && <Guaio testo={`La giornata non si legge: ${guaio}`} />}
+      {/* Le stesse caselle, con lo stesso conto, della striscia COSA MANCA che OGGI non mostra. */}
       <div className="bn-cifre">
-        <Cifra titolo="SENZA CERTIFICATO" valore={conti.certificati} sotto="in sala non entrano" guaio onClick={() => onVai('iscritti', { filtro: 'certificato' })} />
-        <Cifra titolo="DA PAGARE" valore={conti.pagare} sotto="quota non in regola" guaio onClick={() => onVai('iscritti', { filtro: 'pagare' })} />
-        <Cifra titolo="RICHIESTE" valore={conti.richieste} sotto="dal modulo online" onClick={() => onVai('richieste')} />
-        <Cifra titolo="PRESENTI OGGI" valore={lezioni.dato ? presenti : null} sotto={`su ${attesi} attesi`} />
+        {caselleDaMostrare(conti.striscia).map((c) => (
+          <Cifra key={c.id} c={c} onClick={() => onVai(c.voce, c.filtro ? { filtro: c.filtro } : undefined)} />
+        ))}
       </div>
       <div className="bn-oggi">
         {lezioni.dato && l.length === 0 ? (

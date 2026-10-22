@@ -358,6 +358,17 @@ titolo('giornata: il riepilogo')
   ok('coincide con i blocchi del tabellone', r([l1, l2, l3, l4])?.appelliDaFare, m.giornata.tabellone([l1, l2, l3, l4], [{ id: 's1', nome: 'Sala 1' }], adesso(18, 30)).colonne.flatMap((c) => c.blocchi).filter((b) => b.stato === 'appello_non_fatto').length)
 }
 
+titolo('giornata: il sottotitolo di OGGI')
+{
+  // I presenti stanno qui e non fra le cifre: le cifre sono solo cose da sistemare, le stesse della striscia.
+  const s = (n, r) => m.giornata.sottotitoloOggi?.('giovedì 22 ottobre', n, r)
+  ok('lezioni, appelli e presenti', s(6, { presenti: 15, attesi: 27, appelliDaFare: 8 }), 'giovedì 22 ottobre · 6 lezioni, 8 appelli da fare · 15 presenti su 27 attesi.')
+  ok('un appello solo è al singolare', s(6, { presenti: 15, attesi: 27, appelliDaFare: 1 }), 'giovedì 22 ottobre · 6 lezioni, 1 appello da fare · 15 presenti su 27 attesi.')
+  ok('una lezione sola è al singolare', s(1, { presenti: 3, attesi: 9, appelliDaFare: 0 }), 'giovedì 22 ottobre · 1 lezione · 3 presenti su 9 attesi.')
+  ok('senza lezioni: niente presenti', s(0, { presenti: 0, attesi: 0, appelliDaFare: 0 }), 'giovedì 22 ottobre · nessuna lezione.')
+  ok('lezioni non ancora lette: solo la data', s(0, null), 'giovedì 22 ottobre.')
+}
+
 titolo('coda del banco')
 {
   const cod = (i, oggi = OGGI) => m.coda.codaBanco({ appelli: [], persone: [], richieste: 0, istruttori: 0, ...i }, oggi)

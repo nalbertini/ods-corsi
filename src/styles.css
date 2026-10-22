@@ -3202,13 +3202,15 @@ label.sg-btn { cursor: pointer; }
 .bn-tessera[data-stato='presto'] { border-left: 8px solid var(--giallo); }
 @media (max-width: 767px) { .bn-tessere { grid-template-columns: minmax(0, 1fr); } }
 
-.bn-cifre { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+/* Tante colonne quante caselle della striscia: cinque, sei con le tessere. */
+.bn-cifre { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 14px; }
 .bn-cifra {
   display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-height: 110px; padding: 14px 16px; text-align: left;
   background: var(--surface); border: 2px solid var(--line);
 }
 button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
-.bn-cifra[data-guaio='true'] .bn-cifra-n { color: var(--rosso-testo); }
+.bn-cifra[data-stato='manca'] .bn-cifra-n { color: var(--rosso-testo); }
+.bn-cifra[data-stato='attesa'] .bn-cifra-n { color: var(--giallo-testo); }
 .bn-cifra-n { font-size: 44px; font-weight: 700; line-height: 1; }
 .bn-cifra-sotto { font-size: 13px; color: var(--dim); }
 .bn-oggi { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 28px; align-items: start; }

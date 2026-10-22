@@ -79,6 +79,17 @@ export function fasciaDelleLezioni(lezioni: LezioneSeg[], base = FASCIA): { dall
 }
 
 /** Quanti ci sono, quanti ne aspettiamo e quanti appelli mancano, sulle lezioni non annullate: stessa regola dei blocchi. */
+/**
+ * La riga sotto OGGI: la data, le lezioni, gli appelli da fare e i presenti. I presenti stanno qui e non fra le cifre,
+ * che dicono solo cose da sistemare. `r` nullo: le lezioni non si sono ancora lette, e si dice solo la data.
+ */
+export function sottotitoloOggi(data: string, lezioni: number, r: ReturnType<typeof riepilogoGiornata> | null): string {
+  if (!r) return `${data}.`
+  if (lezioni === 0) return `${data} · nessuna lezione.`
+  const appelli = r.appelliDaFare === 0 ? '' : r.appelliDaFare === 1 ? ', 1 appello da fare' : `, ${r.appelliDaFare} appelli da fare`
+  return `${data} · ${lezioni === 1 ? '1 lezione' : `${lezioni} lezioni`}${appelli} · ${r.presenti} presenti su ${r.attesi} attesi.`
+}
+
 export function riepilogoGiornata(lezioni: LezioneSeg[], adesso: Date): { presenti: number; attesi: number; appelliDaFare: number } {
   const valide = lezioni.filter((l) => l.stato !== 'annullata')
   return {
