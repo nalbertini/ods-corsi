@@ -154,7 +154,7 @@ c'è e quando scade. Con la **TESSERA** i timbri sono quattro, tutti larghi
 uguale. Un clic su
 un timbro apre la scheda che lo contiene (sotto) e porta alla sua parte. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
-**Riattiva**.
+**Altro** → **Riattiva**.
 
 Se la quota è a posto ma un corso no, il timbro **QUOTA** dice **CORSO SCADUTO**,
 in rosso. Nella scheda **QUOTA E PAGAMENTI**, sotto la quota, **CORSI** dice
@@ -162,8 +162,9 @@ corso per corso fin quando è pagato, quando è scaduto, o quanto manca; sotto,
 quale voce mettere nella ricevuta nuova («Trimestre Judo» o «Annuale Judo»)
 per rimetterlo a posto.
 
-Sotto i timbri, se la quota, un corso o il certificato sono da sistemare, c'è
-**SOLLECITO SU WHATSAPP**: cosa manca (la quota da pagare, scaduta o pagata in
+Accanto al nome, se la quota, un corso o il certificato sono da sistemare, c'è
+il tasto **Sollecita su WhatsApp ▾**: apre sotto il nome, sopra i timbri, il
+riquadro **SOLLECITO SU WHATSAPP** (premuto di nuovo si chiude), con cosa manca (la quota da pagare, scaduta o pagata in
 parte; il corso scaduto o da pagare, col suo nome; il certificato mancante, scaduto, in scadenza nei prossimi 30 giorni, o
 che servirà al compimento dei 6 anni), il messaggio già scritto e **Apri
 WhatsApp**. Il tasto apre WhatsApp col messaggio pronto, al telefono della
@@ -172,11 +173,12 @@ sola. Quota e certificato vanno in un messaggio solo. A un minorenne si scrive
 al genitore dei **DATI ANAGRAFICI** («Ciao Laura, … per Marco»); senza genitore il
 messaggio non saluta per nome («Ciao, … per Marco»). Il messaggio
 dice solo nome, cosa manca, data e importo: mai codice fiscale, ricevute o note.
-Premuto il tasto, sotto compare **Sollecitato l'ultima volta il … da …**, così
-la collega vede che è già stato fatto. Se il telefono manca o è sbagliato, il
+Premuto **Apri WhatsApp**, sotto il tasto accanto al nome compare **Sollecitato
+l'ultima volta il … da …**, così la collega vede che è già stato fatto. Se il telefono manca o è sbagliato, il
 riquadro lo dice e **Vai a PERSONA** porta dove aggiungerlo; se sembra un fisso
 (comincia per 0), avvisa che su WhatsApp di solito non c'è. Una scheda
-disattivata, o in regola, non ha il riquadro.
+disattivata, o in regola, non ha il tasto. In modifica il riquadro usa il
+telefono salvato: prima **Salva**, poi si sollecita.
 
 Per sollecitarne tanti di fila non serve aprire ogni scheda: con acceso
 **Senza certificato valido**, **Certificato in scadenza**, **Compiono 6 anni**,
@@ -217,8 +219,15 @@ scheda lo dice a parole, con un puntino giallo o rosso: **DA SISTEMARE** o
 **DA PAGARE**. Con una modifica aperta, da un'altra scheda, **PERSONA** dice
 **IN MODIFICA**. Cambiando scheda non si perde quello che stai scrivendo. Si
 cambia anche con la tastiera: le frecce spostano, **Home** e **Fine** vanno
-alla prima e all'ultima. Il nome, i timbri e i tasti in fondo (**MODIFICA**,
-**DISATTIVA**, **UNISCI…**) restano sempre in vista.
+alla prima e all'ultima. Il nome, il sollecito, **Altro** e i timbri restano
+sempre in vista.
+
+Le azioni che servono di rado stanno nel menu **Altro ▾**, accanto al nome:
+**Unisci con un altro iscritto…**, **Esporta i dati** e **Disattiva** (in
+rosso, con una conferma), o **Riattiva** se la scheda è disattivata. Si chiude
+con un clic fuori o con **Esc**. In modifica **Altro** non c'è: in fondo
+restano **Lascia stare** e **Salva**. Mentre si unisce o si fa una ricevuta,
+accanto al nome non c'è niente.
 
 In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
 **CARICA IL CERTIFICATO**, **CARICA IL NUOVO**, **CARICA IL FILE** o
@@ -296,7 +305,7 @@ scheda è disattivata, nessuno.
   pagato. **Termina** la toglie da un corso: da domani non è più
   nell'appello, il registro resta. **+ Iscrivi a un corso…** → il corso →
   **Iscrivi** la aggiunge a un altro. Con la scheda disattivata non si
-  iscrive: prima **RIATTIVA**.
+  iscrive: prima **Altro** → **Riattiva**.
 - **TERMINATE** — i corsi che faceva, tratteggiati, dal… al….
 - **ULTIME 12 LEZIONI** — presente o assente, lezione per lezione: ✓ presente, ✕ assente, G giustificato, vuoto non segnato.
 - **Disattiva** — sparisce dal tablet e le sue iscrizioni si chiudono oggi,
@@ -328,7 +337,7 @@ scheda è disattivata, nessuno.
 
 ### I suoi dati
 
-In fondo alla scheda, accanto a **Unisci con un altro iscritto…**, **Esporta i dati** scarica un file con
+Nel menu **Altro**, **Esporta i dati** scarica un file con
 anagrafica, iscrizioni e presenze, quello che una persona ha diritto di chiedere.
 
 ## Le tessere
