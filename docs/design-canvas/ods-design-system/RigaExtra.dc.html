@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="row" style="display: flex; flex-direction: column; width: 100%; border-bottom: 1px solid #cfe6f4; background: #f7fbfd; color: #0d2a3d">
+<sc-if value="{{largo}}" hint-placeholder-val="{{ true }}">
+  <div style="display: grid; grid-template-columns: 28px minmax(0, 1.3fr) 70px 70px 110px minmax(0, 1.6fr) 250px; gap: 12px; align-items: center; min-height: 60px; padding: 8px 14px">
+    <span aria-hidden="true"></span>
+    <div role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0; padding-left: 14px; border-left: 3px solid #cfe6f4">
+      <dc-import name="Badge" tipo="tag" tono="neutro" label="EXTRA" tema="sito" hint-size="60px,22px"></dc-import>
+      <span style="font-size: 14px; line-height: 1.35; overflow-wrap: anywhere">{{descrizione}}</span>
+    </div>
+    <span role="cell" style="font-size: 15px; color: #46606f; text-align: right">—</span>
+    <span role="cell" style="font-size: 15px; color: #46606f; text-align: right">—</span>
+    <span role="cell" style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right">{{importo}}</span>
+    <div role="cell" style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+      <div style="display: flex; flex-wrap: wrap; gap: 6px">
+        <dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="160px,26px"></dc-import>
+        <sc-if value="{{daRiportare}}" hint-placeholder-val="{{ false }}"><dc-import name="Badge" tipo="segno" tono="giallo" label="DA RIPORTARE FIRMATA" tema="sito" hint-size="210px,26px"></dc-import></sc-if>
+      </div>
+      <span style="font-size: 13px; color: #46606f; line-height: 1.35">{{nota}}</span>
+    </div>
+    <div role="cell" style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap">
+      <span role="checkbox" aria-checked="{{firmata}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; font-weight: 600"><span style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 2px solid #0d2a3d; border-radius: 4px; background: {{fondoSpunta}}; color: #ffffff; font-size: 16px; font-weight: 700">{{segnoSpunta}}</span>Firmata</span>
+      <dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" tema="sito" hint-size="140px,44px"></dc-import>
+      <span style="display: flex; gap: 14px; width: 100%; justify-content: flex-end">
+        <sc-if value="{{nonPagata}}" hint-placeholder-val="{{ true }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">Ristampa</span></sc-if>
+        <sc-if value="{{nonPagata}}" hint-placeholder-val="{{ true }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #14709f; text-decoration: underline; text-underline-offset: 4px">Modifica</span></sc-if>
+        <sc-if value="{{nonPagata}}" hint-placeholder-val="{{ true }}"><span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: #b81d1d; text-decoration: underline; text-underline-offset: 4px">Annulla</span></sc-if>
+      </span>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{telefono}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 12px 28px; border-left: 3px solid #cfe6f4">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <dc-import name="Badge" tipo="tag" tono="neutro" label="EXTRA" tema="sito" hint-size="60px,22px"></dc-import>
+      <span style="flex: 1"></span>
+      <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{importo}}</span>
+    </div>
+    <span style="font-size: 14px; line-height: 1.35">{{descrizione}}</span>
+    <div style="display: flex; flex-wrap: wrap; gap: 6px"><dc-import name="Badge" tipo="segno" tono="{{tono}}" label="{{segno}}" tema="sito" hint-size="160px,26px"></dc-import></div>
+    <span style="font-size: 13px; color: #46606f">{{nota}}</span>
+    <dc-import name="Bottone" label="{{azione}}" variante="linea" contesto="segreteria" tema="sito" larghezza="100%" hint-size="100%,48px"></dc-import>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"descrizione":{"editor":"text","default":"Stage di judo del 18 ottobre a Varese"},"importo":{"editor":"text","default":"150,00 €"},"stato":{"editor":"enum","options":["da-pagare","pagata"],"default":"da-pagare"},"firmata":{"editor":"boolean","default":true},"nota":{"editor":"text","default":""},"telefono":{"editor":"boolean","default":false},"$preview":{"width":1100,"height":110}}'>
+// PROPOSTA (docs/design-canvas/compenso-extra): una ricevuta di compenso EXTRA, sotto la riga del tecnico in COMPENSI. Non ha lezioni ne' ore («—»):
+// solo la descrizione scritta dalla segreteria e l'importo. Il fondo appena azzurro e il filetto a sinistra la legano al tecnico sopra; il tag EXTRA la dice a parole.
+// Non tocca lo stato del mese. stato: da-pagare (giallo, FATTA · DA PAGARE, SEGNA PAGATO, Ristampa, Modifica e Annulla finche' non e' pagata);
+// pagata (verde, PAGATA, Ristampa; per cambiarla prima si annulla il pagamento in CONTABILITÀ). firmata falso aggiunge DA RIPORTARE FIRMATA.
+const vero = (v, d) => (v === undefined ? d : v === true || v === 'true');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const pagata = p.stato === 'pagata';
+    const firmata = vero(p.firmata, true);
+    const telefono = vero(p.telefono, false);
+    const notaPredefinita = pagata ? 'Pagata il 5 novembre 2026' : 'Fatta il 22 ottobre 2026';
+    return {
+      largo: !telefono, telefono,
+      descrizione: p.descrizione ?? 'Stage di judo del 18 ottobre a Varese', importo: p.importo ?? '150,00 €',
+      tono: pagata ? 'verde' : 'giallo', segno: pagata ? 'PAGATA' : 'FATTA · DA PAGARE',
+      azione: pagata ? 'Ristampa' : 'Segna pagato', nonPagata: !pagata,
+      nota: (p.nota ?? '') !== '' ? p.nota : notaPredefinita,
+      firmata, daRiportare: !firmata, fondoSpunta: firmata ? '#0d2a3d' : '#ffffff', segnoSpunta: firmata ? '✓' : '',
+    };
+  }
+}
+</script>
+</body>
+</html>

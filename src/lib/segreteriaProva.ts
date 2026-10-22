@@ -2,7 +2,7 @@ import { indirizziDaSalvare } from './avvisoSegreteria'
 import type { Anagrafica, AnagraficaDi, UltimoSollecito, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
-import { cosaNonVaCompenso, cosaNonVaPagamento, descrizionePagamento, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
+import { cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagamento, extraDelPagamento, mancaPerRicevuta, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, cancellaFileIl, contattoNonValido, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
@@ -1098,7 +1098,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (!/^\d{4}-\d{2}-01$/.test(dati.mese) || dati.mese > primoDelMese(new Date())) throw new Error('Il mese della ricevuta non va: il primo del mese, non nel futuro')
       if (!dati.righe.length || dati.righe.length > 50 || dati.righe.some((r) => !r.corso.trim() || r.lezioni < 1 || r.minuti < 1 || !r.centesimiOra || r.centesimiOra > 100_000 || r.importo !== Math.round((r.minuti / 60) * r.centesimiOra)) || dati.calcolato !== dati.righe.reduce((s, r) => s + (r.importo ?? 0), 0))
         throw new Error('Le righe del compenso non sono giuste: rifai la ricevuta dalla pagina COMPENSI')
-      if ((a().ricevuteCompensi ?? []).some((x) => x.personaId === dati.personaId && x.mese === dati.mese && !x.annullataIl))
+      if ((a().ricevuteCompensi ?? []).some((x) => x.personaId === dati.personaId && x.mese === dati.mese && !x.annullataIl && !x.extra))
         throw new Error("C'è già la ricevuta di questo mese: annullala prima di rifarla")
       const nuova: RicevutaCompenso = {
         ...dati,
@@ -1111,6 +1111,58 @@ export function creaSegreteriaProva(): DatiSegreteria {
         pagataIl: null,
       }
       a().ricevuteCompensi = [...(a().ricevuteCompensi ?? []), nuova]
+      salva()
+      return nuova
+    },
+
+    async faiRicevutaCompensoExtra({ personaId, mese, descrizione, importo }) {
+      // Le stesse regole di `fai_ricevuta_compenso_extra`, nello stesso ordine.
+      const p = persona(personaId)
+      if (!(p.ruolo === 'istruttore' || p.ancheIstruttore)) throw new Error('La ricevuta del compenso si fa a chi insegna')
+      if (!/^\d{4}-\d{2}-01$/.test(mese) || mese > primoDelMese(new Date())) throw new Error('Il mese della ricevuta non va: il primo del mese, non nel futuro')
+      const no = cosaNonVaExtra({ descrizione, importo })
+      if (no) throw new Error(no)
+      const an = a().anagrafiche?.[personaId]
+      const manca = mancaPerRicevuta(an ?? null)
+      if (manca) throw new Error(manca)
+      const campi = ['indirizzo', 'cap', 'comune', 'provincia', 'codiceFiscale', 'natoIl', 'natoA', 'provinciaNascita', 'iban'] as const
+      const tecnico: RicevutaCompenso['tecnico'] = { nome: p.nome, cognome: p.cognome ?? '' }
+      for (const k of campi) if (an?.[k]) tecnico[k] = an[k]
+      const delMese = (a().ricevuteCompensi ?? []).find((x) => x.personaId === personaId && x.mese === mese && !x.annullataIl && !x.extra)
+      const nuova: RicevutaCompenso = {
+        personaId,
+        mese,
+        righe: [],
+        calcolato: 0,
+        importo,
+        motivo: null,
+        tecnico,
+        qualifica: delMese?.qualifica ?? null,
+        data: oggiARoma(),
+        extra: descrizione.trim(),
+        id: crypto.randomUUID(),
+        firmata: false,
+        annullataIl: null,
+        creataIl: new Date().toISOString(),
+        movimentoId: null,
+        pagataIl: null,
+      }
+      a().ricevuteCompensi = [...(a().ricevuteCompensi ?? []), nuova]
+      salva()
+      return nuova
+    },
+
+    async modificaRicevutaCompensoExtra(id, { descrizione, importo }) {
+      // Le stesse regole di `modifica_ricevuta_compenso_extra`.
+      const r = (a().ricevuteCompensi ?? []).find((x) => x.id === id)
+      if (!r || r.annullataIl) throw new Error("Questa ricevuta non c'è o è annullata")
+      if (!r.extra) throw new Error('Si cambiano solo le ricevute extra')
+      if (r.movimentoId) throw new Error('È pagata: prima annulla il pagamento in CONTABILITÀ → MOVIMENTI')
+      const no = cosaNonVaExtra({ descrizione, importo })
+      if (no) throw new Error(no)
+      // Cambiata, il foglio firmato non è più questa ricevuta: torna da firmare.
+      const nuova = { ...r, extra: descrizione.trim(), importo, firmata: false }
+      a().ricevuteCompensi = (a().ricevuteCompensi ?? []).map((x) => (x.id === id ? nuova : x))
       salva()
       return nuova
     },
@@ -1146,7 +1198,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
           importo: rs.reduce((s, r) => s + r.importo, 0),
           voceId: voci.find((v) => v.tipo === 'uscita' && v.diSistema && v.nome.trim().toLowerCase() === VOCE_COMPENSI.toLowerCase())?.id,
           cassaId: cassa.id,
-          descrizione: descrizionePagamento(p.nome, p.cognome ?? '', rs.map((r) => r.mese)),
+          descrizione: descrizionePagamento(
+            p.nome,
+            p.cognome ?? '',
+            rs.map((r) => r.mese),
+            extraDelPagamento(rs),
+          ),
           personaId: p.id,
           creatoIl: new Date().toISOString(),
         },

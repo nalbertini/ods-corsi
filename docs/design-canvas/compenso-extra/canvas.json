@@ -1,0 +1,13 @@
+{
+ "pages": [{ "id": "page-1", "name": "Compenso extra · proposta" }],
+ "artboards": [
+  { "file": "CompensiOggi.dc.html", "title": "OGGI · COMPENSI: una ricevuta per tecnico e mese, solo lezioni", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "CompensiProposta.dc.html", "title": "PROPOSTA · «+ Compenso extra» e gli extra sotto il loro tecnico", "x": 1560, "y": 300, "page": "page-1" },
+  { "file": "DialogoExtra.dc.html", "title": "PROPOSTA · il dialogo COMPENSO EXTRA", "x": 3120, "y": 300, "page": "page-1" },
+  { "file": "CompensiPropostaTelefono.dc.html", "title": "PROPOSTA · sul telefono", "x": 4680, "y": 300, "page": "page-1" },
+  { "file": "DialogoExtraTelefono.dc.html", "title": "PROPOSTA · il dialogo sul telefono", "x": 5190, "y": 300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1600, "text": "Compenso extra: una ricevuta a parte per uno stage o un evento, oltre a quella del mese" }
+ ]
+}

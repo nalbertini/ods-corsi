@@ -95,7 +95,7 @@
 </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Ballabio Diana"},"lezioni":{"editor":"text","default":"8"},"ore":{"editor":"text","default":"12"},"importo":{"editor":"text","default":"180,00 €"},"stato":{"editor":"enum","options":["da-confermare","senza-tariffa","senza-dati","da-fare","fatta","non-torna","da-pagare","pagata","solo-attese"],"default":"da-fare"},"firmata":{"editor":"boolean","default":true},"quante":{"editor":"text","default":"3"},"corso":{"editor":"text","default":"Judo adulti"},"quando":{"editor":"text","default":"05/11"},"nota":{"editor":"text","default":""},"aperta":{"editor":"boolean","default":false},"corsi":{"editor":"text","default":"Judo kids:6:15,00 € l’ora:90,00 €|Judo ragazzi:6:15,00 € l’ora:90,00 €"},"telefono":{"editor":"boolean","default":false},"attese":{"editor":"text","default":""},"$preview":{"width":1100,"height":76}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Ballabio Diana"},"lezioni":{"editor":"text","default":"8"},"ore":{"editor":"text","default":"12"},"importo":{"editor":"text","default":"180,00 €"},"stato":{"editor":"enum","options":["da-confermare","senza-tariffa","senza-dati","da-fare","fatta","non-torna","da-pagare","pagata","solo-attese","solo-extra"],"default":"da-fare"},"firmata":{"editor":"boolean","default":true},"quante":{"editor":"text","default":"3"},"corso":{"editor":"text","default":"Judo adulti"},"quando":{"editor":"text","default":"05/11"},"nota":{"editor":"text","default":""},"aperta":{"editor":"boolean","default":false},"corsi":{"editor":"text","default":"Judo kids:6:15,00 € l’ora:90,00 €|Judo ragazzi:6:15,00 € l’ora:90,00 €"},"telefono":{"editor":"boolean","default":false},"attese":{"editor":"text","default":""},"$preview":{"width":1100,"height":76}}'>
 // PROPOSTA (docs/design-canvas/compensi-tecnici): una riga di COMPENSI, un tecnico con lezioni confermate nel mese. Look del sito: righe bianche col filetto
 // 1px `line-soft` #cfe6f4 come la tabella di PERSONALE (`.sg-tabella`), padding 8px 14px, nome Inter 15px 600, cifre tabulari a destra.
 // La riga si apre per corso (`aperta`, `corsi` = «corso:ore:tariffa:importo|…», tariffa «—» = manca, in rosso): il mese e' la somma di ore × tariffa di quel corso,
@@ -110,6 +110,7 @@
 // attese (COSTRUITA, `SenzaFirmaElenco` in Compensi.tsx; storia in docs/design-canvas/coistruttore-atteso): «corso:giorno:chi ha firmato|…», le lezioni in due dove il tecnico era previsto e non ha firmato.
 //        Aggiunge il segno giallo «MANCA LA FIRMA · N LEZIONI» accanto allo stato, che non cambia; sotto, un dettaglio chiuso «MANCA LA FIRMA DI NOME · N LEZIONI», aperto per solo-attese o col filtro (qui: a riga aperta, e sempre al telefono), con C’ERA a linea
 //        (presenza confermata, entra nel compenso) e «Non c’era» (si chiude, non torna). solo-attese: nel mese ha solo lezioni senza firma, importo «—», niente tasto.
+// solo-extra (PROPOSTA, docs/design-canvas/compenso-extra): nel mese non ha lezioni, solo ricevute extra (`RigaExtra`, sotto): importo «—», niente tasto.
 // telefono: la riga impilata (nome e importo, lezioni e ore, segni, nota, tasto a tutta larghezza), chiusa.
 const STATI = {
   'da-confermare': { tono: 'rosso', segno: (p) => `${p.quante ?? '3'} PRESENZE DA CONFERMARE`, azione: 'Conferma in Presenze istruttori ›', link: true, nota: 'Prima si decidono, poi si fa la ricevuta.', vuoto: true },
@@ -120,6 +121,7 @@ const STATI = {
   'da-pagare': { tono: 'giallo', segno: () => 'FATTA · DA PAGARE', azione: 'Segna pagato', link: false, nota: '', fatta: true },
   'non-torna': { tono: 'rosso', segno: () => 'NON TORNA PIÙ', azione: 'Annulla e rifai', link: false, nota: 'Ricevuta di 180,00 €: dopo è stata rifiutata una presenza e il mese ora fa 165,00 €.', fatta: true },
   'solo-attese': { tono: 'neutro', segno: () => 'NIENTE DA PAGARE, PER ORA', azione: '', link: false, nota: 'Nel mese non ha lezioni firmate. Se c’era, si segna qui sotto e la ricevuta si fa.', vuoto: true, niente: true },
+  'solo-extra': { tono: 'neutro', segno: () => 'NESSUNA LEZIONE NEL MESE', azione: '', link: false, nota: 'Ha solo compensi extra, qui sotto.', vuoto: true, niente: true },
   'pagata': { tono: 'verde', segno: () => 'PAGATA', azione: 'Ristampa', link: false, nota: `Pagata il ${'5 novembre 2026'}. Per annullarla, prima si annulla il pagamento in CONTABILITÀ.`, fatta: true },
 };
 const vero = (v, d) => (v === undefined ? d : v === true || v === 'true');

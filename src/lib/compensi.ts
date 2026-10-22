@@ -57,6 +57,8 @@ export interface DatiRicevutaCompenso {
   qualifica: string | null
   /** Il giorno della stampa, `AAAA-MM-GG`. */
   data: string
+  /** Per che cosa è un compenso extra (uno stage), fuori dal conto delle lezioni (`96-compensi-extra.sql`); `null` per la ricevuta del mese. */
+  extra: string | null
 }
 
 export interface RicevutaCompenso extends DatiRicevutaCompenso {
@@ -70,7 +72,7 @@ export interface RicevutaCompenso extends DatiRicevutaCompenso {
   pagataIl: string | null
 }
 
-export type StatoCompenso = 'da-confermare' | 'senza-tariffa' | 'senza-dati' | 'da-fare' | 'fatta' | 'non-torna' | 'pagata' | 'solo-attese'
+export type StatoCompenso = 'da-confermare' | 'senza-tariffa' | 'senza-dati' | 'da-fare' | 'fatta' | 'non-torna' | 'pagata' | 'solo-attese' | 'solo-extra'
 
 /** Il primo del mese di una data, `AAAA-MM-01`, nel giorno di qui. */
 export const primoDelMese = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
@@ -168,15 +170,28 @@ export function righeCompensi<P extends MiaPresenza & PresenzaPerFirma>({
     .sort((a, b) => `${a.cognome} ${a.nome}`.localeCompare(`${b.cognome} ${b.nome}`, 'it'))
     .map((persona) => {
       const conto = compensoDelMese(presenze, senzaIstruttore, persona.id, mese, tariffe[persona.id] ?? [])
-      const ricevuta = ricevute.find((r) => r.personaId === persona.id && r.mese === chiave && !r.annullataIl)
+      const ricevuta = ricevute.find((r) => r.personaId === persona.id && r.mese === chiave && !r.annullataIl && !r.extra)
+      const extra = ricevute.filter((r) => r.personaId === persona.id && r.mese === chiave && !r.annullataIl && r.extra)
       const manca = mancano?.[persona.id] ?? null
       const firme = senzaFirma(presenze, persona.id, mese)
       // Chi ha solo lezioni senza la sua firma non ha niente da pagare finché la segreteria non dice C'ERA.
       const solo = !ricevuta && !conto.lezioni && !conto.daConfermare
-      const stato: StatoCompenso = solo ? 'solo-attese' : statoCompenso({ conto, ricevuta, manca })
-      return { persona, conto, ricevuta, manca, senzaFirma: firme, stato }
+      // Le extra non sono il conto del mese: chi ha solo quelle non ha una ricevuta del mese da fare.
+      const stato: StatoCompenso = solo ? (extra.length ? 'solo-extra' : 'solo-attese') : statoCompenso({ conto, ricevuta, manca })
+      return { persona, conto, ricevuta, extra, manca, senzaFirma: firme, stato }
     })
-    .filter((r) => r.ricevuta || r.conto.lezioni || r.conto.daConfermare || r.senzaFirma.length)
+    .filter((r) => r.ricevuta || r.extra.length || r.conto.lezioni || r.conto.daConfermare || r.senzaFirma.length)
+}
+
+/** Perché la extra non si può fare o cambiare; `null` se va. Le stesse regole di `controlla_compenso_extra`. */
+export function cosaNonVaExtra({ descrizione, importo }: { descrizione: string; importo: number }): string | null {
+  if (!Number.isInteger(importo) || importo <= 0) return 'Il compenso è un importo più grande di zero'
+  if (importo > 10_000_000) return 'Il compenso è al massimo 100.000 €'
+  // Caratteri, non unità UTF-16: un'emoji vale uno, come `length` nel database.
+  const d = [...descrizione.trim()]
+  if (d.length < 3) return 'Scrivi per che cosa è il compenso: almeno tre lettere'
+  if (d.length > 200) return 'La descrizione è troppo lunga: al massimo 200 caratteri'
+  return null
 }
 
 /** Perché la ricevuta non si può fare con questo importo; `null` se va. Le stesse regole di `fai_ricevuta_compenso`. */
@@ -241,7 +256,7 @@ export function testoRicevutaCompenso(r: DatiRicevutaCompenso): string[] {
     '☐ dichiara di aver ricevuto autorizzazione per lo svolgimento di lavoro sportivo di cui all’articolo 25 e ss., D.lgs. 36/2021;',
     '☐ dichiara di non aver ricevuto autorizzazione per lo svolgimento di lavoro sportivo di cui all’articolo 25 e ss., D.lgs. 36/2021.',
     'RICHIEDE',
-    `La liquidazione e il pagamento del compenso lordo pari ad € ${importo} maturato nel periodo 01/${mm}/${anno}-${ultimo}/${mm}/${anno}, a mezzo bonifico bancario su IBAN ${t.iban ?? '__________________________'}`,
+    `La liquidazione e il pagamento del compenso lordo pari ad € ${importo} maturato nel periodo 01/${mm}/${anno}-${ultimo}/${mm}/${anno}${r.extra ? ` per: ${r.extra}` : ''}, a mezzo bonifico bancario su IBAN ${t.iban ?? '__________________________'}`,
     'Luogo e data Firma del collaboratore',
     `Collegno, ${gma(r.data)}`,
     `LIQUIDAZIONE DEI COMPENSI A COLLABORATORI SPORTIVI – ANNO ${anno}`,
@@ -310,6 +325,7 @@ export function datiPerRicevuta(
     tecnico,
     qualifica: lettere.find((l) => l.stagione === stagione && !l.sostituitaIl)?.qualifica ?? null,
     data: oggi,
+    extra: null,
   }
 }
 
@@ -334,13 +350,30 @@ const MESI_BREVI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set
 /**
  * La descrizione del movimento del pagamento, come la scrive `paga_compensi`:
  * «Compenso · Anna Gialli · set, ott 2026»; anni diversi «dic 2026, gen 2027».
- * Mai codice fiscale né IBAN.
+ * Le extra aggiungono il loro testo, in fila; oltre 200 caratteri si accorcia. Mai codice fiscale né IBAN.
  */
-export function descrizionePagamento(nome: string, cognome: string, mesi: string[]): string {
+export function descrizionePagamento(nome: string, cognome: string, mesi: string[], extra: string[] = []): string {
   const anni = new Map<string, number[]>()
   for (const m of [...new Set(mesi)].sort()) anni.set(m.slice(0, 4), [...(anni.get(m.slice(0, 4)) ?? []), Number(m.slice(5, 7))])
   const quando = [...anni].map(([anno, ms]) => `${ms.map((x) => MESI_BREVI[x - 1]).join(', ')} ${anno}`).join(', ')
-  return `Compenso · ${`${nome} ${cognome}`.trim()} · ${quando}`
+  const tutta = [`Compenso · ${`${nome} ${cognome}`.trim()} · ${quando}`, ...extra].join(' · ')
+  const c = [...tutta]
+  return extra.length && c.length > 200 ? `${c.slice(0, 199).join('')}…` : tutta
+}
+
+/** I testi delle extra pagate insieme, nell'ordine di `paga_compensi`: per creazione, a pari ora per id. */
+export const extraDelPagamento = (ricevute: Array<Pick<RicevutaCompenso, 'id' | 'extra' | 'creataIl'>>): string[] =>
+  ricevute
+    .filter((r) => r.extra)
+    .sort((a, b) => a.creataIl.localeCompare(b.creataIl) || a.id.localeCompare(b.id))
+    .map((r) => r.extra ?? '')
+
+/** Le righe con qualcosa da pagare (la ricevuta del mese fatta o una extra non pagata) e quanto fanno insieme. */
+export function daPagareCompensi<R extends { stato: StatoCompenso; ricevuta?: Pick<RicevutaCompenso, 'importo'> | null; extra: Array<Pick<RicevutaCompenso, 'importo' | 'pagataIl'>> }>(righe: R[]) {
+  const extra = (r: R) => r.extra.filter((x) => !x.pagataIl)
+  const daPagare = righe.filter((r) => r.stato === 'fatta' || extra(r).length)
+  const totale = daPagare.reduce((s, r) => s + (r.stato === 'fatta' ? (r.ricevuta?.importo ?? 0) : 0) + extra(r).reduce((t, x) => t + x.importo, 0), 0)
+  return { righe: daPagare, totale }
 }
 
 /** Quanto ha preso da noi in un anno: le ricevute pagate quell'anno, per data di pagamento (per cassa, come il BILANCIO). */
@@ -350,10 +383,10 @@ export const presoNellAnno = (ricevute: Array<Pick<RicevutaCompenso, 'importo' |
 /**
  * Le ricevute di un tecnico che si possono pagare: fatte, non annullate, non
  * pagate, dalla più vecchia. Con `calcolatoDiAdesso` (il conto di oggi del mese
- * di una ricevuta) si tolgono quelle che non tornano più: si annullano e si
+ * di una ricevuta del mese) si tolgono quelle che non tornano più: si annullano e si
  * rifanno prima, come dice la loro riga.
  */
-export const pagabili = <R extends Pick<RicevutaCompenso, 'personaId' | 'mese' | 'annullataIl' | 'pagataIl' | 'calcolato'>>(
+export const pagabili = <R extends Pick<RicevutaCompenso, 'personaId' | 'mese' | 'annullataIl' | 'pagataIl' | 'calcolato' | 'extra'>>(
   ricevute: R[],
   personaId: string,
   calcolatoDiAdesso?: (r: R) => number | undefined,
@@ -361,7 +394,8 @@ export const pagabili = <R extends Pick<RicevutaCompenso, 'personaId' | 'mese' |
   ricevute
     .filter((r) => r.personaId === personaId && !r.annullataIl && !r.pagataIl)
     .filter((r) => {
-      const adesso = calcolatoDiAdesso?.(r)
+      // Una extra non ha un conto delle lezioni da far tornare.
+      const adesso = r.extra ? undefined : calcolatoDiAdesso?.(r)
       return adesso === undefined || adesso === r.calcolato
     })
     .sort((x, y) => x.mese.localeCompare(y.mese))
