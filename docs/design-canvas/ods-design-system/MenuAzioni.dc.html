@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; display: inline-block; color: #0d2a3d">
+  <div style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 16px; border: 2px solid #14709f; border-radius: 6px; font-size: 16px; font-weight: 600; color: #14709f">{{etichetta}} ▾</div>
+  <div style="display: flex; flex-direction: column; min-width: 260px; margin-top: 4px; padding: 6px; background: #fff; border: 2px solid #0d2a3d">
+    <div style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: 15px">{{voce1}}</div>
+    <div style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: 15px">{{voce2}}</div>
+    <div style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: 15px; color: #46606f">{{voceSpenta}}</div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"Altre azioni"},"voce1":{"editor":"text","default":"Collega i casi sicuri"},"voce2":{"editor":"text","default":"Giroconto"},"voceSpenta":{"editor":"text","default":"Esporta CSV"},"$preview":{"width":300,"height":260}}'>
+// Riproduzione 1:1 di MenuAzioni (comune.tsx; .sg-menu-azioni*, src/styles.css): tasto a linea .sg-btn-linea e lista ancorata a SINISTRA del tasto
+// (left: 0), bordo 2px `text`, voci alte 44px, 15px; la voce spenta e' `dim`. Si chiude con un clic fuori, su una voce o con Esc (stati non riprodotti). Tema sito.
+</script>
+</body>
+</html>

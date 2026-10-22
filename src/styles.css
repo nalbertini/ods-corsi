@@ -2131,15 +2131,15 @@ a.sg-btn { text-decoration: none; }
 .sg-filtro-menu-togli { width: 44px; border-left: 1px solid var(--line); font-size: 14px; }
 /* I saldi delle casse in una striscia sola: cifre da 28px perché un milione stia in un quarto di riga senza sbordare. */
 .sg-saldi { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); background: var(--surface); border: 2px solid var(--line); }
-.sg-saldo { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 14px 18px; border-right: 1px solid var(--line); }
+.sg-saldo { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 10px 16px; border-right: 1px solid var(--line); }
 .sg-saldo:last-child { border-right: 0; }
-.sg-saldo-cifra { font-size: 28px; font-weight: 700; line-height: 1.1; white-space: nowrap; }
+.sg-saldo-cifra { font-size: 22px; font-weight: 700; line-height: 1.1; white-space: nowrap; }
 .sg-saldo-sotto { display: flex; flex-direction: column; font-size: 13px; line-height: 1.4; color: var(--dim); font-variant-numeric: tabular-nums; }
 /* L'elenco in un riquadro solo: filtri, riga di stato, testata, righe. Dentro, la tabella non ha un bordo suo. */
 .sg-elenco { background: var(--surface); border: 2px solid var(--line); }
 .sg-elenco-barra { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px; }
 /* Mai più stretta di così: piuttosto i menu vanno a capo. */
-.sg-elenco-cerca { flex: 1 1 260px; min-width: 240px; max-width: 380px; }
+.sg-elenco-cerca { flex: 1 1 200px; min-width: 180px; max-width: 320px; }
 .sg-elenco-casella { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px; font-size: 15px; cursor: pointer; }
 .sg-elenco-casella input { width: 22px; height: 22px; margin: 0; accent-color: var(--text); cursor: pointer; }
 .sg-elenco-stato { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; min-height: 48px; padding: 8px 16px; background: var(--bg); border-block: 1px solid var(--line); font-size: 14px; }
@@ -2515,7 +2515,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto-corso > :nth-child(3) { order: 5; grid-column: 1 / -1; }
   .sg-riga-iscritto:not(.sg-lista-testa) > :nth-child(3)::before { content: 'Iscritto dal '; color: var(--dim); }
 }
-.sg-riga-movimento { display: grid; grid-template-columns: 44px 100px minmax(0, 2fr) minmax(0, 1fr) 120px 120px 130px; gap: 14px; align-items: center; }
+.sg-riga-movimento { display: grid; grid-template-columns: 44px 104px minmax(0, 1fr) 150px 170px 120px 120px; gap: 14px; align-items: center; }
 /* La persona a cui lo storico è collegato (70-movimenti-persona.sql): il nome o lo stato, con un tag sotto. */
 .sg-persona-riga { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
 /* Scegliere fra due omonimi: una scheda per persona, con quel che le distingue. */
@@ -2541,6 +2541,16 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 /* Sotto la descrizione: la causale dell'incasso; sul telefono, davanti, anche data, voce e cassa che lì non hanno la loro colonna. */
 .sg-sotto-movimento { display: flex; flex-direction: column; font-size: 13px; color: var(--sec); font-weight: 400; overflow-wrap: anywhere; }
 .sg-solo-telefono { display: none; }
+/* «Altre azioni»: le azioni secondarie di una schermata in un menu, aperto sotto il tasto. */
+.sg-menu-azioni { position: relative; }
+/* Sul telefono il tasto sta a sinistra: la lista si apre da lì, se no esce dallo schermo. */
+@media (max-width: 600px) { .sg-menu-azioni-lista { min-width: min(260px, calc(100vw - 32px)); } }
+.sg-menu-azioni summary { list-style: none; cursor: pointer; }
+.sg-menu-azioni summary::-webkit-details-marker { display: none; }
+.sg-menu-azioni-lista { position: absolute; z-index: 6; top: calc(100% + 4px); left: 0; display: flex; flex-direction: column; min-width: 260px; padding: 6px; background: var(--bg, var(--surface)); border: 2px solid var(--text); }
+.sg-menu-azioni-lista button { display: flex; align-items: center; min-height: 44px; padding: 0 12px; text-align: left; font-size: 15px; color: var(--text); white-space: nowrap; }
+.sg-menu-azioni-lista button:hover:not(:disabled), .sg-menu-azioni-lista button:focus-visible { background: var(--surface-2); }
+.sg-menu-azioni-lista button:disabled { color: var(--dim); cursor: default; }
 /* Le casse a scelta multipla: l'elenco si apre sotto il tasto. */
 .sg-filtro-casse { position: relative; }
 .sg-filtro-casse summary { display: flex; align-items: center; box-sizing: border-box; list-style: none; cursor: pointer; min-height: 44px; }
@@ -2549,8 +2559,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-filtro-casse-lista { position: absolute; z-index: 6; top: 100%; left: -2px; display: flex; flex-direction: column; min-width: 100%; padding: 6px 12px; background: var(--bg, var(--surface)); border: 2px solid var(--text); white-space: nowrap; }
 /* Sul tablet la tabella dei movimenti ha troppe colonne (con PERSONA sette): sotto i 1200px resta come sul telefono, con il resto sotto la descrizione. */
 @media (max-width: 1200px) {
-  .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; }
-  .sg-riga-movimento > :not(:first-child):not(:nth-child(3)):not(:last-child) { display: none; }
+  .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr); gap: 8px; }
+  .sg-riga-movimento > :not(:first-child):not(:nth-child(3)) { display: none; }
   .sg-solo-telefono { display: inline; }
   .sg-lista-testa.sg-riga-movimento { display: none; }
 }
@@ -3047,8 +3057,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritti > :nth-child(4), .sg-riga-iscritti > :nth-child(5) { display: none; }
   /* Sul telefono: chi con sotto il resto, e l'importo. */
   .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
-  .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; }
-  .sg-riga-movimento > :not(:first-child):not(:nth-child(3)):not(:last-child) { display: none; }
+  .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr); gap: 8px; }
+  .sg-riga-movimento > :not(:first-child):not(:nth-child(3)) { display: none; }
   /* Senza casella (un incasso, un annullato) niente fascia vuota a sinistra. */
   .sg-solo-telefono { display: inline; }
   .sg-lista-testa.sg-riga-movimento { display: none; }

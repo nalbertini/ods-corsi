@@ -152,7 +152,8 @@ export function incassiDerivati(righe: RigaPagamento[], casse: Cassa[]): RigaMov
     data: r.data,
     importo: r.importo,
     descrizione: r.chi,
-    sotto: `${r.voce} · ${r.metodo}${r.ricevuta ? ` · ricevuta ${r.ricevuta.numero}/${r.ricevuta.anno}` : r.senzaRichiesta ? '' : ' · senza ricevuta'}`,
+    // Il metodo lo dice la colonna CASSA e la quota la voce sotto il nome: qui resta quel che le colonne non dicono.
+    sotto: [voceDiSistema(r.voce) === VOCE_QUOTA ? '' : r.voce, r.ricevuta ? `ricevuta ${r.ricevuta.numero}/${r.ricevuta.anno}` : r.senzaRichiesta ? '' : 'senza ricevuta'].filter(Boolean).join(' · ') || undefined,
     personaId: r.personaId,
     voce: voceDiSistema(r.voce),
     cassaId: cassa(NOME_CASSA[cassaDelMetodo(r.metodo, r.data)]),
@@ -538,7 +539,7 @@ export function filtraMovimenti(righe: RigaMovimento[], f: FiltroMovimenti): Rig
     if (f.tipo && r.tipo !== f.tipo) return false
     if (f.cassaId && r.cassaId !== f.cassaId && r.cassaAId !== f.cassaId) return false
     if (f.voce && r.voce !== f.voce) return false
-    return !testo || cercabile(`${r.descrizione} ${r.sotto ?? ''}`).includes(testo)
+    return !testo || cercabile(`${r.descrizione} ${r.voce} ${r.sotto ?? ''}`).includes(testo)
   })
 }
 
@@ -586,6 +587,18 @@ export type IconaConti = 'banconota' | 'banca' | 'telefono' | 'tessera' | 'perso
 /** L'icona accanto al nome della cassa, per le tre casse della palestra; le altre restano senza. */
 const ICONE_CASSE: Record<string, IconaConti> = { [NOME_CASSA_CONTANTI]: 'banconota', [NOME_CASSA_CONTO]: 'banca', [NOME_CASSA_SATISPAY]: 'telefono' }
 export const iconaCassa = (nome: string): IconaConti | null => ICONE_CASSE[nome] ?? null
+
+/** Il tipo di un movimento, per la colonna TIPO dell'elenco: il nome e l'icona (quelle di `ICONE_CONTI`). */
+export const tipoMovimento = (r: Pick<RigaMovimento, 'origine' | 'tipo'>): { nome: string; icona: IconaConti | 'frecce' } =>
+  r.tipo === 'giroconto' ? { nome: 'Giroconto', icona: 'frecce' }
+  : r.origine !== 'movimento' ? { nome: 'Incasso iscritto', icona: 'tessera' }
+  : { nome: r.tipo === 'entrata' ? 'Entrata' : 'Uscita', icona: 'banconota' }
+
+/** La linea sotto il nome di una riga: la voce, e la persona solo se non è già il nome (negli incassi lo è). */
+export const lineaVoce = (r: Pick<RigaMovimento, 'descrizione' | 'voce'>, persona?: string): string => {
+  const uguale = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
+  return [r.voce, persona && !uguale(persona, r.descrizione) ? persona : ''].filter(Boolean).join(' · ')
+}
 
 // Le voci le scrive chi cura i conti: l'icona si trova solo per le parole che si riconoscono, il resto resta senza.
 const ICONE_VOCI: [RegExp, IconaConti][] = [

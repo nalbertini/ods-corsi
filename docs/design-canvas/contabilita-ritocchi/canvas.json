@@ -1,0 +1,12 @@
+{
+ "pages": [
+  { "id": "page-1", "name": "Contabilità · ritocchi grafici · proposta" }
+ ],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "MOVIMENTI · com'è oggi", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Proposta.dc.html", "title": "MOVIMENTI · proposta", "x": 1520, "y": 300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1280, "text": "Contabilità: ritocchi grafici a righe, saldo e riquadro Satispay" }
+ ]
+}
