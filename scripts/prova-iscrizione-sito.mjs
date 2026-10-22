@@ -215,7 +215,9 @@ const vestiarioSottoLaPagina = (r) => r.selettori.some((x) => x === '.scroll > .
 const rigaMovimentoConCasella = (r) => r.selettori.some((x) => /^\.sg-riga-movimento$|^\.sg-riga-movimento > :not\(:nth-child\(2\)\):not\(:last-child\)$/.test(x))
 // Sul telefono COMPENSI tiene anche DA PAGARE (tre numeri, si nasconde solo TECNICI): le due regole di `.sg-numeri[data-telefono-due]` sono cambiate di proposito.
 const numeriCompensi = (r) => r.selettori.some((x) => x.startsWith('.sg-numeri[data-telefono-due]'))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !numeriCompensi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// IMPOSTAZIONI va a schede (`prova:impostazioni`): l'indice in cima e i titoli dei gruppi (`.sg-indice`, `.sg-regole-gruppo`, `.sg-regole-titolo`) sono tolti di proposito.
+const impostazioniAGruppi = (r) => r.selettori.some((x) => /^\.sg-indice$|^\.sg-regole-(gruppo|titolo)(:focus-visible)?$/.test(x))
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

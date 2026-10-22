@@ -534,7 +534,7 @@ export function righeBuone(f: Fogli, c: { righe: RigaControllo[] }, scelte: Scel
  * o più vecchio di ieri (la copia da sé è settimanale).
  */
 export function promemoriaBackup(stato: StatoBackup | undefined, adesso = new Date()): { testo: string; avviso: boolean } {
-  const dove = 'IMPOSTAZIONI › IL BACKUP'
+  const dove = 'IMPOSTAZIONI › DATI E PRIVACY › IL BACKUP'
   if (!stato) return { testo: `Non riesco a leggere i backup: controlla da ${dove} prima di importare.`, avviso: true }
   const ultimo = stato.ultimo
   if (!ultimo) return { testo: `Non risulta nessun backup. Prima di importare, fanne uno da ${dove}.`, avviso: true }

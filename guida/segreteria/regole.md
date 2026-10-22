@@ -4,23 +4,11 @@
 
 Le scelte che spettano alla palestra, non al programma.
 
-La pagina ha sette gruppi: **QUESTO SCHERMO**, **LA STAGIONE**, **LE SALE E I TABLET**, **LE
-RICEVUTE**, **GLI AVVISI**, **IMPORTA DA EXCEL** (la [guida](importa.md)), **DATI E PRIVACY**. In cima, un tasto per ognuno porta dritto al
-gruppo. Le spiegazioni lunghe di un riquadro stanno dietro **COME
-FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista.
-
-## Questo schermo
-
-Le scelte che valgono solo per il computer (o il telefono) che si sta usando, non per la
-segreteria intera: restano su questo dispositivo, come il tema.
-
-- **L'ASPETTO** — **COME OGGI**, col menu a sinistra, o **IL BANCO**, con la ricerca in
-  cima e cinque luoghi ([la guida](il-banco.md)). Cambia subito, senza ricaricare. Sul
-  telefono resta sempre il menu di sempre.
-- **LA STRISCIA COSA MANCA** — **Mostrala** o **Nascondila** (sul computer all'inizio è mostrata, sul telefono nascosta): le sei
-  caselle in cima alle pagine ([guida](README.md#la-striscia-cosa-manca)) spariscono da
-  tutte le pagine. **DA FARE** ha sempre gli stessi conti, quindi non si perde niente: ci si
-  torna quando si vuole. Per rimetterla basta **Mostrala**.
+La pagina ha sette schede, una per gruppo, e se ne vede una alla volta: **LA STAGIONE**
+(quella che si apre), **LE SALE E I TABLET**, **LE RICEVUTE**, **GLI AVVISI**, **DATI E
+PRIVACY**, **IMPORTA** (la [guida](importa.md)) e, in fondo, **QUESTO COMPUTER**. Le spiegazioni
+lunghe di un riquadro stanno dietro **COME FUNZIONA?**: si tocca per aprirle; i numeri e gli
+avvisi restano sempre in vista.
 
 ## La stagione
 
@@ -28,10 +16,9 @@ segreteria intera: restano su questo dispositivo, come il tema.
 
 - **PRONTO FINO AL** — fino a che giorno le lezioni dell'orario sono già in
   calendario. Le lezioni straordinarie non contano: una fissata lontano resta
-  dov'è, e il calendario continua ad allungarsi.
-- **SI ALLUNGA** — **DA SÉ**: quando alla fine manca meno di metà del periodo
-  (o, con la fine dei corsi, quando non ci arriva), il primo che apre il
-  calendario lo allunga, istruttore, segreteria o tablet.
+  dov'è. Il calendario si allunga da sé: quando alla fine manca meno di metà del
+  periodo (o, con la fine dei corsi, quando non ci arriva), il primo che lo apre
+  lo allunga, istruttore, segreteria o tablet.
 - **INIZIO CORSI** e **FINE CORSI** — le date della stagione, facoltative. Con
   la fine, le lezioni si preparano tutte e subito fino a quel giorno (per
   esempio da settembre a fine giugno in un colpo solo), e dopo non ne nascono;
@@ -117,12 +104,7 @@ qualunque, e valgono per tutti (vedi [Il tablet di sala](../sala.md#il-timer)).
   registrare con lo stesso browser dei tablet: Safari e Chrome registrano in
   formati diversi.
 
-### Lo storico dei timer
-
-Gli ultimi timer arrivati in fondo, o fermati prima, sui tablet di sala e sui
-telefoni degli istruttori collegati: quando, quale, chi (l'istruttore o il
-tablet di quale sala), in quale corso, quanto è durato. **ALTRI 50** per
-andare indietro.
+Lo storico dei timer non è qui: sta in fondo a [ESERCIZI](esercizi.md#lo-storico-dei-timer).
 
 ## Le ricevute
 
@@ -167,15 +149,12 @@ nascita, documenti. Al più 50 avvisi al giorno, perché la casella manda anche
 le ricevute alle famiglie: quelli in più non partono, e
 [Richieste online](richieste.md) lo dice.
 
-## Importa da Excel
+## Importa
 
 Corsi e iscritti dai fogli CSV, o gli iscritti dalle risposte del modulo Google,
 in tre passi: i fogli, il controllo, il database. Si può rifare quante volte si
-vuole, non duplica niente. Tutto è spiegato in [Importa da Excel](importa.md).
-
-## Tessere dal RASD
-
-Il foglio dei tesseramenti del RASD, salvato come CSV, si carica da qui e si abbina a chi ha già la scheda. Tutto è spiegato in [Tessere](tessere.md#caricare-il-foglio-del-rasd).
+vuole, non duplica niente. Tutto è spiegato in [Importa da Excel](importa.md). Le tessere
+del RASD non si caricano da qui ma da [TESSERE](tessere.md#caricare-il-foglio-del-rasd).
 
 ## Dati e privacy
 
@@ -209,15 +188,29 @@ backup.
 - **L'informativa** — lo stato dell'informativa privacy che vede chi si
   iscrive. Finché è una **Bozza da approvare**, va letta e fatta propria dalla
   palestra, che è titolare del trattamento.
-- **DATI SANITARI: SOLO IL CERTIFICATO** — il file del certificato medico
+- **Dati sanitari: solo il certificato** — il file del certificato medico
   sta nell'app, nella scheda dell'iscritto (vedi [Iscritti](iscritti.md)),
   dove lo vede la segreteria e nessun altro, con un link che dura 10 minuti.
   Si cancella da solo 30 giorni dopo la scadenza, e subito se la persona è
   disattivata; la data resta. Sotto i 6 anni non si chiede. La copia del
   documento d'identità invece sta su carta, nella cartellina in un armadio
   chiuso: se arriva col modulo di iscrizione si stampa e si cancella dalla
-  richiesta; per email o WhatsApp, da lì. Patologie, allergie e simili non
+  richiesta; per email o WhatsApp, da lì. Nella pagina questi dettagli stanno
+  dietro **COME FUNZIONA?**. Patologie, allergie e simili non
   vanno scritte da nessuna parte nell'app, nemmeno nelle note.
-- **ESPORTA I DATI DI UNA PERSONA** — si sceglie chi li ha chiesti e si preme
-  **Esporta**: un file con anagrafica, iscrizioni, presenze, la scadenza del certificato (non il file), pagamento e ricevute. È quello che una
-  persona ha diritto di chiedere.
+
+I dati di una persona (quello che ha diritto di chiedere) si esportano dalla sua scheda:
+[Iscritti](iscritti.md#i-suoi-dati).
+
+## Questo computer
+
+Le scelte che valgono solo per il computer (o il telefono) che si sta usando, non per la
+segreteria intera: restano su questo dispositivo, come il tema.
+
+- **L'ASPETTO** — **COME OGGI**, col menu a sinistra, o **IL BANCO**, con la ricerca in
+  cima e cinque luoghi ([la guida](il-banco.md)). Cambia subito, senza ricaricare. Sul
+  telefono resta sempre il menu di sempre.
+- **LA STRISCIA COSA MANCA** — **Mostrala** o **Nascondila** (sul computer all'inizio è mostrata, sul telefono nascosta): le sei
+  caselle in cima alle pagine ([guida](README.md#la-striscia-cosa-manca)) spariscono da
+  tutte le pagine. **DA FARE** ha sempre gli stessi conti, quindi non si perde niente: ci
+  si torna quando si vuole. Per rimetterla basta **Mostrala**.

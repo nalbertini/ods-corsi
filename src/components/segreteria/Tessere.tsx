@@ -183,7 +183,7 @@ type Lista = ListaTessere
  * La pagina TESSERE: l'incrocio fra chi è iscritto e chi è tesserato. Due
  * elenchi: chi non ha la tessera che il corso chiede (manca, scaduta, in
  * scadenza) e chi è tesserato senza un corso. Si tocca una riga per aprire la
- * scheda; per caricare il foglio del RASD si va in IMPOSTAZIONI.
+ * scheda. In fondo si carica il foglio del RASD.
  */
 export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void }) {
   const [lista, setLista] = useState<Lista>(SEGNALA_TESSERE ? 'senza' : 'senza-corso')
@@ -209,9 +209,11 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
   return (
     <div className="stack" style={{ gap: 18 }}>
       <Testa titolo="TESSERE" sotto={sotto}>
-        <button type="button" className="sg-btn sg-btn-linea" onClick={() => onVai('regole')}>
-          Importa dal RASD
-        </button>
+        {pronte && !manca && (
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => document.getElementById('tessere-rasd')?.scrollIntoView({ block: 'start' })}>
+            Importa dal RASD
+          </button>
+        )}
       </Testa>
       {guaio && <Guaio testo={guaio} />}
       {pronte && !manca && (
@@ -263,6 +265,9 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
               })}
             </div>
           )}
+          <div id="tessere-rasd">
+            <ImportaTessere d={d} ricarica={tessere.ricarica} />
+          </div>
         </>
       )}
     </div>
@@ -270,12 +275,12 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
 }
 
 /**
- * IMPOSTAZIONI → TESSERE DAL RASD. Si carica il foglio (CSV), si guarda cosa
+ * TESSERE → TESSERE DAL RASD. Si carica il foglio (CSV), si guarda cosa
  * entra e cosa no (l'anteprima non scrive), poi si mette. Non crea nessuna
  * persona: le righe senza scheda restano fuori, col motivo, e si rifà il
  * foglio dopo averle sistemate.
  */
-export function ImportaTessere({ d }: { d: DatiSegreteria }) {
+export function ImportaTessere({ d, ricarica }: { d: DatiSegreteria; ricarica: () => void }) {
   const [foglio, setFoglio] = useState<{ nome: string; testo: string } | null>(null)
   const [pronto, setPronto] = useState<{ righe: ReturnType<typeof righeDalFoglio>['righe']; saltate: ReturnType<typeof righeDalFoglio>['saltate']; esito: EsitoImportTessere } | null>(null)
   // Le righe saltate restano a vista anche dopo METTI: sono quelle da sistemare nel foglio.
@@ -305,6 +310,7 @@ export function ImportaTessere({ d }: { d: DatiSegreteria }) {
     try {
       setFatto({ esito: await d.importaTessere(pronto.righe, false), saltate: pronto.saltate })
       setPronto(null)
+      ricarica()
     } catch (e) {
       setGuaio(messaggio(e))
     } finally {

@@ -182,7 +182,7 @@ export function contiDaRileggere(ultima: number | undefined, ora: number, motivo
 
 /**
  * DA FARE ha già gli stessi conti, più grandi; sul telefono una scheda o un modulo aperti hanno bisogno di tutto lo spazio;
- * e chi l'ha nascosta da IMPOSTAZIONI (`voluta` falso) non la vede da nessuna parte.
+ * e chi l'ha nascosta da IMPOSTAZIONI › QUESTO COMPUTER (`voluta` falso) non la vede da nessuna parte.
  */
 export function strisciaVisibile(voce: string, telefono: boolean, schedaAperta: boolean, voluta = true): boolean {
   return voluta && voce !== 'dafare' && !(telefono && schedaAperta)

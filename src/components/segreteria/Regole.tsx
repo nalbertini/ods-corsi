@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, motivoAttivitaUsata, testoDateSalvate, type AttivitaSeg, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
 import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
@@ -7,43 +7,25 @@ import { Spunta } from '../Icons'
 import { aspettoInUso, useAspetto, type Aspetto } from '../../lib/aspetto'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
-import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
-import { StoricoTimer, VoceSale } from './TimerPalestra'
+import { idLinguettaImp, idPannelloImp, SCHEDA_IMPOSTAZIONI_INIZIALE, SCHEDE_IMPOSTAZIONI, tastoImpostazioni, type IdImpostazioni } from '../../lib/schedeImpostazioni'
+import { chiedi, Campo, MostraBozza, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
+import { VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
 import { Importa } from './Importa'
-import { ImportaTessere } from './Tessere'
 import type { Destinazione, Voce } from './Segreteria'
 import { type Disciplina, nomeDisciplina } from '../../../timer/src/lib/discipline'
 import { SelectDisciplina } from './TimerPalestra'
 
-/** I gruppi della pagina, da quello che si tocca a inizio stagione a quello che si tocca quasi mai. */
-const GRUPPI = {
-  'imp-schermo': 'Questo schermo',
-  'imp-stagione': 'La stagione',
-  'imp-sale': 'Le sale e i tablet',
-  'imp-ricevute': 'Le ricevute',
-  'imp-avvisi': 'Gli avvisi',
-  'imp-importa': 'Importa da Excel',
-  'imp-dati': 'Dati e privacy',
-} as const
-
-type IdGruppo = keyof typeof GRUPPI
-
-/** Dall'indice al gruppo: la pagina scorre e il fuoco va sul titolo, così la tastiera riparte da lì. */
-function vaiAlGruppo(id: IdGruppo) {
-  const titolo = document.getElementById(id)
-  titolo?.scrollIntoView({ block: 'start' })
-  titolo?.focus({ preventScroll: true })
-}
-
-function Gruppo({ id, children }: { id: IdGruppo; children: ReactNode }) {
+/** Il pannello di una scheda: resta montato e nascosto, così una sala aperta a metà non si perde cambiando scheda. */
+function Pannello({ id, aperta, apri, sotto, children }: { id: IdImpostazioni; aperta: IdImpostazioni; apri: (id: IdImpostazioni) => void; sotto?: string; children: ReactNode }) {
+  const mostra = useCallback(() => apri(id), [apri, id])
   return (
-    <section aria-labelledby={id} className="sg-regole-gruppo">
-      <h2 id={id} tabIndex={-1} className="ob sg-regole-titolo">
-        {GRUPPI[id].toUpperCase()}
-      </h2>
-      <div className="sg-regole">{children}</div>
-    </section>
+    <MostraBozza.Provider value={mostra}>
+      <div role="tabpanel" id={idPannelloImp(id)} aria-labelledby={idLinguettaImp(id)} hidden={aperta !== id} className="stack" style={{ gap: 14 }}>
+        {sotto && <p className="sg-sotto" style={{ margin: 0 }}>{sotto}</p>}
+        <div className="sg-regole">{children}</div>
+      </div>
+    </MostraBozza.Provider>
   )
 }
 
@@ -76,9 +58,10 @@ function ScegliAspetto() {
 }
 
 /**
- * Le impostazioni: le scelte che spettano alla palestra, non al programma. La
- * stagione; le sale con la loro musica, la voce e lo storico dei timer; chi
- * fa le ricevute; per quanto si tengono le presenze, il backup, la privacy.
+ * Le impostazioni: le scelte che spettano alla palestra, non al programma, una
+ * scheda per gruppo. La stagione; le sale con la loro musica e la voce; chi fa
+ * le ricevute; gli avvisi; presenze, backup e privacy; l'import da Excel; in
+ * fondo, quel che vale solo per questo computer.
  */
 export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void }) {
   const [strisciaVoluta, scegliStriscia] = useStrisciaVoluta()
@@ -86,14 +69,15 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
   const scadute = useCarica(() => d.scadute(), [d, imp.dato?.mesiPresenze])
   const pronto = useCarica(() => d.prontoFino(), [d])
   const sale = useCarica(() => d.sale(), [d])
-  const persone = useCarica(() => d.persone(), [d])
   const musica = useCarica(() => d.listeMusica(), [d])
   const discipline = useCarica(() => d.discipline(), [d])
   const { avviso, avvisa, fai } = useAvviso()
   const [sala, setSala] = useState<{ id?: string; nome: string; capienza?: number } | null>(null)
   // Una sala aperta e cambiata (o una nuova con qualcosa scritto) non si perde uscendo.
   const salaPrima = sale.dato?.find((s) => s.id === sala?.id)
-  useBozza(!!sala && (sala.nome.trim() !== (salaPrima?.nome ?? '') || sala.capienza !== salaPrima?.capienza), salaPrima?.nome)
+  // La sala a metà sta qui, fuori dai pannelli: dice lei quale scheda riaprire.
+  const mostraSale = useCallback(() => setAperta('sale'), [])
+  useBozza(!!sala && (sala.nome.trim() !== (salaPrima?.nome ?? '') || sala.capienza !== salaPrima?.capienza), salaPrima?.nome, mostraSale)
   // I mesi scelti nella tendina mentre si aspetta il sì: lasciando stare, torna a quelli salvati.
   const [mesiScelti, setMesiScelti] = useState<number | null>(null)
   const cambiaMesi = async (dopo: number) => {
@@ -105,65 +89,46 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
     await fai(() => d.salvaImpostazioni({ mesiPresenze: dopo }), 'Periodo cambiato', imp.ricarica)
     setMesiScelti(null)
   }
-  const [chi, setChi] = useState('')
-
-  const esporta = async () => {
-    const p = persone.dato?.find((x) => x.id === chi)
-    if (!p) return
-    const dati = await d.esporta(chi)
-    const url = URL.createObjectURL(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `dati-${p.cognome}-${p.nome}.json`.toLowerCase().replace(/\s+/g, '-')
-    a.click()
-    URL.revokeObjectURL(url)
+  const [aperta, setAperta] = useState<IdImpostazioni>(SCHEDA_IMPOSTAZIONI_INIZIALE)
+  const tastiera = (e: KeyboardEvent) => {
+    const dove = tastoImpostazioni(aperta, e)
+    if (!dove) return
+    e.preventDefault()
+    setAperta(dove)
+    // Il fuoco segue la scheda: la prossima Tab entra nel suo pannello.
+    document.getElementById(idLinguettaImp(dove))?.focus()
   }
 
   return (
     <>
-      <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al programma." />
+      <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al programma. In fondo, quelle di questo computer." />
 
-      {/* Tasti e non link «#…»: con <base href="../"> delle pagine delle aree, l'ancora porterebbe via dalla segreteria. */}
-      <nav aria-label="In questa pagina" className="row sg-indice">
-        {/* Object.keys dà string[]: le chiavi sono proprio quelle di GRUPPI, scritte qui sopra. */}
-        {(Object.keys(GRUPPI) as IdGruppo[]).map((id) => (
-          <button key={id} type="button" className="num sg-chip" onClick={() => vaiAlGruppo(id)}>
-            {GRUPPI[id]}
+      <div className="schede sg-schede sg-schede-impostazioni" role="tablist" aria-label="Gruppi delle impostazioni" onKeyDown={tastiera}>
+        {SCHEDE_IMPOSTAZIONI.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            role="tab"
+            id={idLinguettaImp(s.id)}
+            aria-controls={idPannelloImp(s.id)}
+            aria-selected={aperta === s.id}
+            tabIndex={aperta === s.id ? 0 : -1}
+            className="scheda"
+            data-on={aperta === s.id}
+            onClick={() => setAperta(s.id)}
+          >
+            {s.nome}
           </button>
         ))}
-      </nav>
+      </div>
       {imp.guaio && <Guaio testo={`Le impostazioni non si leggono: ${imp.guaio}`} />}
 
-      <Gruppo id="imp-schermo">
-        <ScegliAspetto />
-        <section aria-label="La striscia COSA MANCA" className="sg-riquadro">
-          <span className="ob sg-riquadro-titolo">LA STRISCIA COSA MANCA</span>
-          <span className="sg-sotto">
-            Le cinque caselle in cima alle pagine (appelli non fatti, certificati, pagamenti, tessere, richieste). Vale solo per questo schermo: DA FARE ha sempre gli stessi conti.
-          </span>
-          <div role="radiogroup" aria-label="Mostra o nascondi la striscia" className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-            <button type="button" role="radio" aria-checked={strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(true)}>
-              Mostrala
-            </button>
-            <button type="button" role="radio" aria-checked={!strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(false)}>
-              Nascondila
-            </button>
-          </div>
-        </section>
-      </Gruppo>
-
-      <Gruppo id="imp-stagione">
+      <Pannello apri={setAperta} id="stagione" aperta={aperta} sotto="Quando cominciano e finiscono i corsi, e fin dove è pronto il calendario.">
         <section aria-label="Il calendario" className="sg-riquadro">
           <span className="ob sg-riquadro-titolo">IL CALENDARIO</span>
-          <div className="sg-due">
-            <div className="sg-numero">
-              <span className="sg-etichetta">PRONTO FINO AL</span>
-              <span className="num" style={{ fontSize: 26, fontWeight: 700 }}>{pronto.dato ? dataLunga(pronto.dato).toUpperCase() : '—'}</span>
-            </div>
-            <div className="sg-numero">
-              <span className="sg-etichetta">SI ALLUNGA</span>
-              <span className="num" style={{ fontSize: 26, fontWeight: 700 }}>DA SÉ</span>
-            </div>
+          <div className="sg-numero">
+            <span className="sg-etichetta">PRONTO FINO AL</span>
+            <span className="num sg-data-grande">{pronto.dato ? dataLunga(pronto.dato).toUpperCase() : '—'}</span>
           </div>
           <Stagione
             d={d}
@@ -214,9 +179,9 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
             tocca le lezioni che hanno già un appello, anche a cavallo del cambio d'ora.
           </ComeFunziona>
         </section>
-      </Gruppo>
+      </Pannello>
 
-      <Gruppo id="imp-sale">
+      <Pannello apri={setAperta} id="sale" aperta={aperta} sotto="Le sale della palestra e quello che fanno i tablet nelle sale. Lo storico dei timer è in ESERCIZI.">
         <section aria-label="Le sale" className="sg-riquadro">
           <span className="ob sg-riquadro-titolo">LE SALE</span>
           {(sale.dato ?? []).map((s: Sala) =>
@@ -252,24 +217,21 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
         <MusicaSale d={d} sale={sale.dato ?? []} discipline={discipline.dato ?? []} liste={musica.dato} guaio={musica.guaio} ricarica={musica.ricarica} fai={fai} />
 
         <VoceSale d={d} fai={fai} />
+      </Pannello>
 
-        <StoricoTimer d={d} />
-      </Gruppo>
-
-      <Gruppo id="imp-ricevute">
+      <Pannello apri={setAperta} id="ricevute" aperta={aperta}>
         <EnteRicevute d={d} />
-      </Gruppo>
+      </Pannello>
 
-      <Gruppo id="imp-avvisi">
+      <Pannello apri={setAperta} id="avvisi" aperta={aperta}>
         <AvvisiSegreteria d={d} />
-      </Gruppo>
+      </Pannello>
 
-      <Gruppo id="imp-importa">
+      <Pannello apri={setAperta} id="importa" aperta={aperta} sotto="Le tessere del RASD si caricano da TESSERE.">
         <Importa d={d} onVai={onVai} />
-        <ImportaTessere d={d} />
-      </Gruppo>
+      </Pannello>
 
-      <Gruppo id="imp-dati">
+      <Pannello apri={setAperta} id="dati" aperta={aperta} sotto="I dati di una persona si esportano dalla sua scheda, in ISCRITTI.">
         <section aria-label="Per quanto si tengono le presenze" className="sg-riquadro">
           <span className="ob sg-riquadro-titolo">PER QUANTO SI TENGONO LE PRESENZE</span>
           <div className="row" style={{ gap: 12 }}>
@@ -328,63 +290,43 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
               {!INFORMATIVA ? 'Da fare prima di partire' : INFORMATIVA_BOZZA ? 'Bozza da approvare' : 'Informativa collegata'}
             </span>
           </div>
-          <div className="stack" style={{ gap: 6 }}>
-            <span className="sg-etichetta">L'INFORMATIVA</span>
-            {INFORMATIVA ? (
-              <>
-                <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', minHeight: 44, fontSize: 14, color: 'var(--sec)', wordBreak: 'break-all' }}>
-                  {INFORMATIVA_BOZZA ? 'Leggi la bozza' : "Apri l'informativa"}
-                </a>
-                {INFORMATIVA_BOZZA && (
-                  <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
-                    Scritta insieme all'app, non ancora approvata: la palestra, che è titolare del trattamento, la deve leggere e fare sua, e
-                    decidere i punti in giallo (per quanto si tengono richieste, documenti e ricevute, dove si pubblica l'app). Poi chi cura l'app la
-                    segna come approvata. Fino ad allora, col database vero, il pubblico non la vede e il modulo di iscrizione resta spento.
-                  </span>
-                )}
-              </>
-            ) : (
-              <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
-                Non c'è ancora: va scritta e collegata all'app, e si vedrà in fondo alla scheda ISCRIZIONI, a tutti. Finché manca, col database vero il modulo di iscrizione dell'app resta spento e il passo porta ancora al modulo Google:
-                chiede codici fiscali e documenti, e prima va detto come si trattano.
-              </span>
-            )}
-          </div>
-          <div className="stack" style={{ gap: 6 }}>
-            <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>DATI SANITARI: SOLO IL CERTIFICATO</span>
-            <span style={{ fontSize: 14, color: 'var(--sec)' }}>Patologie e allergie: in nessun campo, nemmeno nelle note.</span>
-            <ComeFunziona>
-              Il certificato medico è un dato sulla salute, con altri obblighi: il file sta nell'app, nella scheda dell'iscritto, e lo vede solo la
-              segreteria (un link che dura 10 minuti). Si cancella da solo 30 giorni dopo la scadenza, e subito se la persona viene disattivata; la data
-              di scadenza resta. Sotto i 6 anni non si chiede. La copia del documento d'identità invece sta su carta, in un armadio chiuso: se arriva
-              col modulo si stampa e si cancella dalla richiesta; per email o WhatsApp, da lì. Patologie, allergie e simili non vanno scritte in nessun campo, nemmeno nelle note.
-            </ComeFunziona>
-          </div>
-          <div className="stack" style={{ gap: 6 }}>
-            <label htmlFor="esporta" className="sg-etichetta">
-              ESPORTA I DATI DI UNA PERSONA
-            </label>
-            <div className="row" style={{ gap: 8 }}>
-              <select id="esporta" className="sg-campo grow" value={chi} onChange={(e) => setChi(e.target.value)}>
-                <option value="">Chi li ha chiesti…</option>
-                {[...(persone.dato ?? [])]
-                  .sort((a, b) => a.cognome.localeCompare(b.cognome, 'it') || a.nome.localeCompare(b.nome, 'it'))
-                  .map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.cognome} {p.nome}
-                    </option>
-                  ))}
-              </select>
-              <button type="button" className="num sg-chip sg-chip-pieno" disabled={!chi} onClick={() => void fai(esporta, 'File scaricato')}>
-                Esporta
-              </button>
-            </div>
-            <span style={{ fontSize: 13, color: 'var(--dim)', lineHeight: 1.5 }}>
-              Un file con anagrafica, iscrizioni e presenze: è quello che una persona ha diritto di chiedere.
-            </span>
+          {INFORMATIVA && (
+            <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', minHeight: 44, fontSize: 14, color: 'var(--sec)' }}>
+              {INFORMATIVA_BOZZA ? 'Leggi la bozza' : "Apri l'informativa"}
+            </a>
+          )}
+          <span style={{ fontSize: 14, color: 'var(--sec)' }}>Dati sanitari: solo il certificato. Patologie e allergie in nessun campo, nemmeno nelle note.</span>
+          <ComeFunziona>
+            {!INFORMATIVA
+              ? "L'informativa non c'è ancora: va scritta e collegata all'app, e si vedrà in fondo alla scheda ISCRIZIONI, a tutti. Finché manca, col database vero il modulo di iscrizione dell'app resta spento e il passo porta ancora al modulo Google: chiede codici fiscali e documenti, e prima va detto come si trattano. "
+              : INFORMATIVA_BOZZA
+                ? "L'informativa è scritta insieme all'app, non ancora approvata: la palestra, che è titolare del trattamento, la deve leggere e fare sua, e decidere i punti in giallo (per quanto si tengono richieste, documenti e ricevute, dove si pubblica l'app). Poi chi cura l'app la segna come approvata. Fino ad allora, col database vero, il pubblico non la vede e il modulo di iscrizione resta spento. "
+                : ''}
+            Il certificato medico è un dato sulla salute, con altri obblighi: il file sta nell'app, nella scheda dell'iscritto, e lo vede solo la
+            segreteria (un link che dura 10 minuti). Si cancella da solo 30 giorni dopo la scadenza, e subito se la persona viene disattivata; la data
+            di scadenza resta. Sotto i 6 anni non si chiede. La copia del documento d'identità invece sta su carta, in un armadio chiuso: se arriva
+            col modulo si stampa e si cancella dalla richiesta; per email o WhatsApp, da lì.
+          </ComeFunziona>
+        </section>
+      </Pannello>
+
+      <Pannello apri={setAperta} id="computer" aperta={aperta} sotto="Valgono solo per il computer che hai davanti: gli altri restano come sono.">
+        <ScegliAspetto />
+        <section aria-label="La striscia COSA MANCA" className="sg-riquadro">
+          <span className="ob sg-riquadro-titolo">LA STRISCIA COSA MANCA</span>
+          <span className="sg-sotto">
+            Le cinque caselle in cima alle pagine (appelli non fatti, certificati, pagamenti, tessere, richieste). Vale solo per questo schermo: DA FARE ha sempre gli stessi conti.
+          </span>
+          <div role="radiogroup" aria-label="Mostra o nascondi la striscia" className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" role="radio" aria-checked={strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(true)}>
+              Mostrala
+            </button>
+            <button type="button" role="radio" aria-checked={!strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(false)}>
+              Nascondila
+            </button>
           </div>
         </section>
-      </Gruppo>
+      </Pannello>
       {avviso}
     </>
   )
