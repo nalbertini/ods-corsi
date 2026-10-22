@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Copiata da ods-design-system/PaginaSito.dc.html: ISCRITTI, oggi. Nomi inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="ISCRITTI" numeri="" nome="Giulia Ferri" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ISCRITTI</h1>
+        <span style="font-size: 14px; color: #46606f">203 persone attive · 70 senza certificato valido · 7 in scadenza · 22 da pagare.</span>
+      </div>
+      <dc-import name="Bottone" label="+ Nuovo iscritto" variante="pieno" contesto="segreteria" tema="sito" hint-size="170px,48px"></dc-import>
+    </div>
+    <dc-import name="FiltriIscritti" tema="sito" attivi="" corsiScaduti="{{ true }}" hint-size="100%,110px"></dc-import>
+    <div role="table" style="display: flex; flex-direction: column">
+      <dc-import name="TestataTabella" tema="sito" colonne="NOME|CORSI|CONTATTO|IN REGOLA?|30 GIORNI" griglia="1.2fr 1.4fr 1.3fr 150px 80px" ordinata="NOME" hint-size="100%,40px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Bianchi Marco" corsi="Judo 3" contatto="338 727 9888" bollini="In regola:verde|Fuori app:spento" frequenza="9/9" poco="{{ false }}" proposta="{{ false }}" piu="" griglia="1.2fr 1.4fr 1.3fr 150px 80px" hint-size="100%,68px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Bruno Elena" corsi="Judo adulti" contatto="antos.adams@example.com" bollini="In regola:verde|Fuori app:spento" frequenza="2/7" poco="{{ true }}" proposta="{{ false }}" piu="" griglia="1.2fr 1.4fr 1.3fr 150px 80px" hint-size="100%,68px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Colombo Luca" corsi="Judo agonisti, Preparazione atletica, pesi e Mobility, Judo adulti, Pesi agonisti" contatto="338 479 7222" bollini="In regola:verde|Fuori app:spento" frequenza="11/40" poco="{{ true }}" proposta="{{ false }}" piu="" griglia="1.2fr 1.4fr 1.3fr 150px 80px" hint-size="100%,68px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Conti Sara" corsi="Pesistica e Mobility" contatto="347 697 6222" bollini="Manca il certificato:rosso|Fuori app:spento" frequenza="5/8" poco="{{ false }}" proposta="{{ false }}" piu="" griglia="1.2fr 1.4fr 1.3fr 150px 80px" hint-size="100%,68px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="De Luca Matteo" corsi="Giocomotricità" contatto="333 304 6353" bollini="In regola:verde|Non serve il certificato:spento|Fuori app:spento" frequenza="4/5" poco="{{ false }}" proposta="{{ false }}" piu="" griglia="1.2fr 1.4fr 1.3fr 150px 80px" hint-size="100%,94px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Esposito Giulia" corsi="Lotta 2" contatto="+39 333 494 3979" bollini="Certificato scaduto:rosso|Da pagare:rosso" frequenza="0/1" poco="{{ false }}" proposta="{{ false }}" piu="" griglia="1.2fr 1.4fr 1.3fr 150px 80px" hint-size="100%,68px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Esposito Marta" corsi="Psicomotricità" contatto="+39 333 494 3979" bollini="Da pagare:rosso|Non serve il certificato:spento" frequenza="—" poco="{{ false }}" proposta="{{ false }}" piu="" griglia="1.2fr 1.4fr 1.3fr 150px 80px" hint-size="100%,68px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Ferrari Davide" corsi="—" contatto="nessun contatto" bollini="Manca il certificato:rosso|Da pagare:rosso|Fuori app:spento" frequenza="—" poco="{{ false }}" proposta="{{ false }}" piu="" griglia="1.2fr 1.4fr 1.3fr 150px 80px" hint-size="100%,94px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Galli Anna" corsi="Judo 3" contatto="350 972 8664" bollini="Scade il 4/11:giallo|Fuori app:spento" frequenza="8/9" poco="{{ false }}" proposta="{{ false }}" piu="" griglia="1.2fr 1.4fr 1.3fr 150px 80px" hint-size="100%,68px"></dc-import>
+    </div>
+    <span style="font-size: 14px; line-height: 1.45; color: #46606f">Com’è oggi: lo stato in quarta colonna, «In regola» e «Fuori app» quasi su ogni riga, i segni impilati che cambiano l’altezza delle righe, i numeri dei filtri solo nel sottotitolo.</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

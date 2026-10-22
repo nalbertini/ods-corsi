@@ -16,9 +16,9 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<span style="display: inline-block; padding: {{s.padding}}; border: {{s.border}}; background: {{s.bg}}; color: {{s.fg}}; border-radius: {{s.radius}}; font-family: {{s.family}}; font-size: {{s.fontSize}}; font-weight: 700; letter-spacing: {{s.spacing}}; line-height: {{s.lineHeight}}; white-space: nowrap">{{label}}</span>
+<span title="{{titolo}}" aria-label="{{titolo}}" style="display: inline-block; box-sizing: border-box; width: {{larghezza}}; text-align: {{allinea}}; padding: {{s.padding}}; border: {{s.border}}; background: {{s.bg}}; color: {{s.fg}}; border-radius: {{s.radius}}; font-family: {{s.family}}; font-size: {{s.fontSize}}; font-weight: {{s.peso}}; letter-spacing: {{s.spacing}}; line-height: {{s.lineHeight}}; white-space: nowrap"><sc-if value="{{pallino}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: {{s.punto}}; margin-right: {{s.dopoPunto}}; vertical-align: 1px"></span></sc-if>{{label}}</span>
 </x-dc>
-<script data-dc-script data-props='{"label":{"editor":"text","default":"PROVA"},"tipo":{"editor":"enum","options":["prova","bollino","tag","segno"],"default":"prova"},"tono":{"editor":"enum","options":["neutro","rosso","giallo","verde","spento"],"default":"neutro"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":140,"height":40}}'>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"PROVA"},"tipo":{"editor":"enum","options":["prova","bollino","tag","segno"],"default":"prova"},"tono":{"editor":"enum","options":["neutro","rosso","giallo","verde","spento"],"default":"neutro"},"larghezza":{"editor":"text","default":"auto"},"compatto":{"editor":"boolean","default":false},"forma":{"editor":"enum","options":["tag","pallino"],"default":"tag"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":140,"height":40}}'>
 // Riproduzione 1:1 dei piccoli segni di stato di src/styles.css:
 // - prova   = .prova-marchio (riga 457): 11px, 0.12em, testo giallo-testo, bordo 2px giallo, padding 1px 6px.
 // - bollino = .sg-bollino (riga 1250): 11px, 0.18em, fondo giallo, testo su-colore, padding 2px 6px (DATI DI PROVA).
@@ -28,6 +28,11 @@
 //             nell'elenco delle pagine del SITO). E' il numero giallo accanto alle voci del menu di segreteria.
 // - segno   = .sg-segno-regola (riga 1509): 12px, 0.12em, bordo 1.5px del colore del testo, padding 2px 6px;
 //             tono rosso / giallo / verde / spento. E' il segno IN REGOLA della lista iscritti.
+// `compatto` (tema sito, segno): solo il simbolo in un quadretto di 28px, la parola nel title.
+// `forma` pallino (tema sito, segno) = .sg-segno-elenco (src/styles.css): niente bordo ne' fondo, un pallino pieno di 8px
+// del colore dello stato e la parola in testo scuro 13px, peso 500. Compatto (telefono, sotto 768px) il pallino diventa
+// ✕ rosso o … giallo, 15px 700: la forma dice lo stato anche senza il colore; la parola nel title.
+// `larghezza` (default auto) fissa la larghezza: in una colonna i segni stanno tutti larghi uguali.
 // tema sito (look del sito della segreteria, `:root[data-look='sito']` in src/styles.css): ogni segno e' un tag bianco con bordo
 // e testo dello stesso colore, raggio 6px, Inter, e il segno prima della parola: ✕ manca, … aspetta, ✓ fatto. Il giallo pieno non c'e'
 // piu': 'aspetta' e' giallo scuro #8f6a00 su bianco. Il neutro e' #46606f. Il bollino diventa un tag giallo scuro.
@@ -66,9 +71,18 @@ class Component extends DCLogic {
     } else {
       s = { padding: '1px 6px', border: '2px solid ' + c.giallo, bg: 'transparent', fg: c.gialloTesto, fontSize: '11px', spacing: '0.12em', lineHeight: 'normal' };
     }
+    const pallino = sito && tipo === 'segno' && p.forma === 'pallino';
+    if (pallino) {
+      s = { ...s, padding: '2px 0', border: '0', bg: 'transparent', punto: s.fg, fg: '#0d2a3d', fontSize: '13px', spacing: '0', peso: '500', dopoPunto: '7px' };
+      segno = '';
+    }
+    s.peso = s.peso || '700';
     s.family = sito ? INTER : COND;
     s.radius = sito ? '6px' : '0';
-    return { label: segno + (p.label ?? 'PROVA'), s };
+    // Compatto: solo il segno (✕ … ✓), la parola resta nel title e per chi legge lo schermo.
+    const compatto = (p.compatto === true || p.compatto === 'true') && (!!segno || pallino);
+    if (pallino && compatto) Object.assign(s, { fg: s.punto, fontSize: '15px', peso: '700' });
+    return { pallino: pallino && !compatto, label: compatto ? (pallino ? { rosso: '✕', giallo: '…' }[tono] || '' : segno.trim()) : segno + (p.label ?? 'PROVA'), s, larghezza: compatto ? (pallino ? '16px' : '28px') : p.larghezza || 'auto', allinea: compatto ? 'center' : 'left', titolo: compatto ? p.label ?? '' : '' };
   }
 }
 </script>

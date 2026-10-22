@@ -1,0 +1,94 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Elenco ISCRITTI · proposta"
+  },
+  {
+   "id": "page-2",
+   "name": "Libreria"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Proposta.dc.html",
+   "title": "Proposta",
+   "x": 1520,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Telefono.dc.html",
+   "title": "Proposta sul telefono (390 px)",
+   "x": 3040,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Menu.dc.html",
+   "title": "Menu",
+   "x": 0,
+   "y": 0,
+   "page": "page-2"
+  },
+  {
+   "file": "Bottone.dc.html",
+   "title": "Bottone",
+   "x": 0,
+   "y": 200,
+   "page": "page-2"
+  },
+  {
+   "file": "FiltriIscritti.dc.html",
+   "title": "FiltriIscritti",
+   "x": 0,
+   "y": 400,
+   "page": "page-2"
+  },
+  {
+   "file": "TestataTabella.dc.html",
+   "title": "TestataTabella",
+   "x": 0,
+   "y": 600,
+   "page": "page-2"
+  },
+  {
+   "file": "RigaIscritto.dc.html",
+   "title": "RigaIscritto",
+   "x": 0,
+   "y": 800,
+   "page": "page-2"
+  },
+  {
+   "file": "Badge.dc.html",
+   "title": "Badge",
+   "x": 0,
+   "y": 1000,
+   "page": "page-2"
+  },
+  {
+   "file": "BarraTelefono.dc.html",
+   "title": "BarraTelefono",
+   "x": 0,
+   "y": 1200,
+   "page": "page-2"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 3430,
+   "text": "ISCRITTI: lo stato accanto al nome, solo i guai, righe uguali"
+  }
+ ]
+}

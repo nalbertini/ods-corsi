@@ -69,26 +69,44 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   nell'avviso, subito dopo; o, più tardi, nella scheda di una delle due,
   sezione **Non sono doppioni** → **Togli** accanto all'altra.
 
-La colonna **IN REGOLA?** dice in un colpo d'occhio cosa manca: in verde
-**In regola** se certificato, quota e tessera sono a posto (**Fuori app**, in grigio,
-se la quota è pagata senza una ricevuta dell'app); altrimenti in rosso
-**Manca il certificato**, **Certificato scaduto**, **Da pagare** o **Quota scaduta**, e in
-giallo **Scade il 14/10** (entro un mese; **Scade oggi** l'ultimo giorno) o
-**Pagata in parte**. Ogni stato ha un segno davanti: ✕ manca, … aspetta, ✓ a posto. Per chi è iscritto a un corso che chiede la tessera ci sono anche **Manca la tessera** e **Tessera scaduta** in rosso, e **Tessera scade a dicembre** in giallo (da 60 giorni prima della fine; non conta nei filtri). Sotto i 6 anni il certificato non serve: il bambino è
-**In regola** con la quota pagata, e accanto c'è **Non serve il certificato** in grigio;
-un mese prima del compleanno diventa **Serve dal 14/10** in giallo. Per
-sapere l'età serve la data di nascita: senza, il certificato serve come per
-tutti, e chi non ha nemmeno il certificato ha accanto **Senza data** in grigio:
-scrivila nei dati anagrafici della scheda. In
-cima alla pagina c'è quanti sono senza certificato valido e quanti da pagare.
+Accanto ai quattro filtri c'è quante persone mostrerebbero, con la ricerca e il
+corso che hai scelto: **Da pagare · 33**. In cima alla pagina c'è quante
+persone sono attive e quanti certificati sono in scadenza; con **Corsi scaduti**
+acceso, quanti iscritti hanno un corso da sollecitare.
+
+Due colonne dicono in un colpo d'occhio cosa manca, ciascuna per conto suo. Un
+pallino colorato davanti alla parola: rosso manca, giallo aspetta. Il ✓ verde è a posto.
+
+- **CERTIFICATO**: ✓ se è valido; in rosso **Manca** o **Scaduto**; in giallo
+  **Scade il 14/10** (entro un mese; **Scade oggi** l'ultimo giorno). Sotto i 6
+  anni il certificato non serve: c'è **Non serve** in grigio, e un mese prima
+  del compleanno **Serve dal 14/10** in giallo. Per sapere l'età serve la data
+  di nascita: senza, chi ha il certificato valido ha **Senza data** in giallo
+  (scrivila nei dati anagrafici della scheda).
+- **QUOTA**: ✓ se la quota è pagata, anche senza una ricevuta dell'app (lo dice
+  la scheda); in rosso **Da pagare** o **Scaduta**, in giallo **In parte**. Per
+  chi è iscritto a un corso che chiede la tessera ci sono anche **Tessera da
+  fare** in giallo, **Tessera scaduta** in rosso e **Tessera scade a dicembre**
+  in giallo (da 60 giorni prima della fine; non conta nei filtri). Con un guaio
+  della tessera il ✓ della quota non c'è.
+
+Chi è archiviato ha **Archiviato** in grigio e la quota vuota.
+
+Sul telefono le colonne sono NOME, CERTIFICATO, QUOTA e 30 GG, e i segni
+sono brevi: **✕** rosso, **…** giallo, **✓** in regola, **–** non serve; la
+parola si legge nella scheda. Sul tablet in verticale ci sono le parole, ma
+non CORSI e CONTATTO. Corsi e contatto si leggono nella scheda.
+
+La colonna **CORSI** ne mostra due e **+1**, **+2** per gli altri: tutti si
+leggono tenendoci sopra il mouse.
 
 La colonna **30 GIORNI** dice quanto è venuto ognuno nell'ultimo mese:
-`6/8` sono sei presenze su otto lezioni avute (i giustificati non contano). In
-giallo chi viene poco.
+`6/8` sono sei presenze su otto lezioni avute (i giustificati non contano),
+con sotto una barretta piena in proporzione. In giallo chi viene poco.
 
 La colonna **CONTATTO** mostra il telefono, così in caso di emergenza si trova
 subito; l'email (di accesso, se no di contatto) solo se il telefono manca. Se
-manca tutto c'è scritto «nessun contatto».
+manca tutto c'è scritto «nessun contatto». Davanti c'è il telefono o la busta.
 
 ## Nuovo iscritto
 
@@ -255,7 +273,7 @@ scheda è disattivata, nessuno.
   Per chi ha pagato la quota fuori dall'app (prima dell'app, con una ricevuta
   di carta) c'è **PAGATA SENZA RICEVUTA DELL'APP**: **VALE FINO AL** (di
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
-  PAGATA**. In elenco si vede **Fuori app** e nella scheda **Fuori app**; alla sua data
+  PAGATA**. In elenco la quota è in regola, e nella scheda si legge **Fuori app**; alla sua data
   scade da sola, e **Togli «pagata fuori dall'app»** la toglie prima.
 - **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima **PAGATO**, **MANCA** e **QUOTA**; poi ogni ricevuta con i suoi pagamenti sotto, e dopo **SENZA RICEVUTA** quelli registrati a mano. Quelli di tutti sono in [PAGAMENTI](pagamenti.md).
 - **ISCRIZIONI** — i corsi che fa. **Termina** la toglie da un corso: da
