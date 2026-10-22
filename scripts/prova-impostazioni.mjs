@@ -34,8 +34,8 @@ const f = (nome, ...args) => (typeof m[nome] === 'function' ? m[nome](...args) :
 const schede = m.SCHEDE_IMPOSTAZIONI ?? []
 
 console.log('Le schede, in ordine')
-ok('sette, in ordine', schede.map((s) => s.id), ['stagione', 'sale', 'ricevute', 'avvisi', 'dati', 'importa', 'computer'])
-ok('i nomi, in maiuscolo', schede.map((s) => s.nome), ['LA STAGIONE', 'LE SALE E I TABLET', 'LE RICEVUTE', 'GLI AVVISI', 'DATI E PRIVACY', 'IMPORTA', 'QUESTO COMPUTER'])
+ok('otto, in ordine', schede.map((s) => s.id), ['stagione', 'sale', 'esercizi', 'ricevute', 'avvisi', 'dati', 'importa', 'computer'])
+ok('i nomi, in maiuscolo', schede.map((s) => s.nome), ['LA STAGIONE', 'LE SALE E I TABLET', 'GLI ESERCIZI', 'LE RICEVUTE', 'GLI AVVISI', 'DATI E PRIVACY', 'IMPORTA', 'QUESTO COMPUTER'])
 ok('QUESTO COMPUTER è l’ultima', schede.at(-1)?.nome, 'QUESTO COMPUTER')
 ok('la prima si apre senza scelta', m.SCHEDA_IMPOSTAZIONI_INIZIALE, 'stagione')
 

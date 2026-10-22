@@ -21,7 +21,7 @@ import {
   nomeDisciplinaValido,
   nuovaDisciplina,
 } from '../../../timer/src/lib/discipline'
-import { chiedi, ComeFunziona, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
+import { chiedi, ComeFunziona, Guaio, useAvviso, useBozza, useCarica } from './comune'
 
 type Fai = (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => Promise<unknown>
 
@@ -297,8 +297,8 @@ function VoceIncisa({
 /**
  * Il catalogo degli esercizi dei tablet: i nomi che si scelgono scrivendo un
  * timer, e quelli che la voce incisa sa dire. Finché la segreteria non ne fa
- * uno, i tablet tengono il loro. Una voce del menu a sé: si cura ogni tanto,
- * e non è un'impostazione.
+ * uno, i tablet tengono il loro. Sta in una scheda di IMPOSTAZIONI: si cura
+ * ogni tanto, come le sale.
  */
 export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
   // Avvolto: un catalogo nullo vuol dire «mai fatto», non «non ancora letto».
@@ -333,9 +333,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
 
   return (
     <>
-    <Testa titolo="ESERCIZI" sotto="L'elenco della palestra: crea, rinomina, sposta di categoria.">
-      {catalogo && <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--dim)' }}>{lista.length} ESERCIZI</span>}
-    </Testa>
+    {catalogo && <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--dim)' }}>{lista.length} ESERCIZI</span>}
     {letto.dato && <DisciplinePalestra d={d} lista={discipline} ricarica={ricarica} />}
     <section aria-label="Gli esercizi della palestra" className="sg-riquadro">
       <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
