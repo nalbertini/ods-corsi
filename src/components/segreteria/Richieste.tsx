@@ -524,7 +524,7 @@ function Scheda({
                     </button>
                     <span style={{ color: 'var(--sec)' }}>
                       {' · '}
-                      {[p.email ?? p.emailContatto, p.telefono].filter(Boolean).join(' · ') || 'nessun contatto'}
+                      {[p.email, p.telefono].filter(Boolean).join(' · ') || 'nessun contatto'}
                       {' · '}
                       {corsi.length ? corsi.join(', ') : 'nessun corso'}
                       {!p.attiva && ' · non attiva'}

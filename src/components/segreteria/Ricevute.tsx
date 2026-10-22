@@ -43,8 +43,8 @@ type Avvisa = ReturnType<typeof useAvviso>['avvisa']
  * della scheda, lo stesso che sceglie il database (se è sbagliato si risponde no e si corregge in PERSONA); poi com'è
  * andata, il guaio in rosso perché qui la mail era tutto. `giaMandata`: l'ultima volta che è partita.
  */
-const chiediEManda = async (d: DatiSegreteria, r: Ricevuta, emailContatto: string | null | undefined, giaMandata: string | null, fai: Fai, avvisa: Avvisa, poi?: () => unknown) => {
-  const a = emailContatto?.trim()
+const chiediEManda = async (d: DatiSegreteria, r: Ricevuta, email: string | null | undefined, giaMandata: string | null, fai: Fai, avvisa: Avvisa, poi?: () => unknown) => {
+  const a = email?.trim()
   if (!a) return
   const q = domandaManda(r, a, genitoreDellaMail(r), giaMandata)
   if (!(await chiedi(`${q.domanda} ${q.resto}`, q.si))) return
@@ -183,7 +183,7 @@ export function StoricoIscritto({
         const manca = r.annullataIl ? 0 : conti(r).netto
         const righe = righeDaRicevute([r])
         const suoi = invii.filter((i) => i.ricevutaId === r.id)
-        const stato = statoPosta(r, suoi, p.emailContatto ?? null, dal)
+        const stato = statoPosta(r, suoi, p.email ?? null, dal)
         return (
           <div key={r.id} className="stack" style={{ gap: 6 }}>
             <div className="sg-voce-elenco" style={{ flexWrap: 'wrap' }}>
@@ -212,7 +212,7 @@ export function StoricoIscritto({
               {!r.annullataIl && stato?.tasto && (
                 <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
                   {stato.motivo && <span style={{ flex: '1 1 200px', fontSize: 13, color: 'var(--dim)', textAlign: 'right' }}>{stato.motivo}</span>}
-                  <button type="button" className="num sg-chip" disabled={stato.spento} onClick={() => void chiediEManda(d, r, p.emailContatto, ultimaMandata(suoi), fai, avvisa, () => posta.ricarica())}>
+                  <button type="button" className="num sg-chip" disabled={stato.spento} onClick={() => void chiediEManda(d, r, p.email, ultimaMandata(suoi), fai, avvisa, () => posta.ricarica())}>
                     {stato.tasto}
                   </button>
                 </div>
@@ -692,9 +692,9 @@ export function NuovaRicevuta({
     if (!dati || !c) return
     // La ricevuta ha un numero e non si cambia più: prima di farla, si rilegge.
     const quale = n ? `n. ${n}/${anno}` : prossimo.dato ? `n. ${prossimo.dato}/${anno}` : `col prossimo numero del ${anno}`
-    // La mail va all'email di contatto della scheda (per un minore, del genitore): la casella è già spuntata.
+    // La mail va all'email della scheda (per un minore, del genitore): la casella è già spuntata.
     const genitore = genitoreDellaMail({ intestatario: socio, data: data || oggi })
-    const email = confermaEmail(p.emailContatto ?? null, genitore, true)
+    const email = confermaEmail(p.email ?? null, genitore, true)
     const righe = [
       domandaRicevuta(quale, socio, minore, c),
       avvisa.length ? `\n${avvisaTesto}.` : '',
@@ -705,7 +705,7 @@ export function NuovaRicevuta({
       righe.join('\n'),
       'Fai la ricevuta',
       { no: 'Torna a correggere', pericolo: true },
-      email.spunta ? { testo: email.spunta, nota: (x) => confermaEmail(p.emailContatto ?? null, genitore, x).nota } : undefined,
+      email.spunta ? { testo: email.spunta, nota: (x) => confermaEmail(p.email ?? null, genitore, x).nota } : undefined,
     )
     if (!si) return
     void fai(
@@ -721,11 +721,11 @@ export function NuovaRicevuta({
             )
           : false
         // La ricevuta c'è comunque: se la mail non parte l'avviso non è rosso, e dalla posta che non risponde si riprova da qui.
-        const esito = daMandare(p.emailContatto ?? null, spuntata) ? await d.mandaRicevuta(r.id) : null
+        const esito = daMandare(p.email ?? null, spuntata) ? await d.mandaRicevuta(r.id) : null
         dillo(
           avvisoDopoRicevuta(r, esito, scaricato),
           restaDopoRicevuta(esito, scaricato),
-          siRiprova(esito) ? { etichetta: 'Manda per email', fa: () => void chiediEManda(d, r, p.emailContatto, null, fai, dillo, onFatta) } : undefined,
+          siRiprova(esito) ? { etichetta: 'Manda per email', fa: () => void chiediEManda(d, r, p.email, null, fai, dillo, onFatta) } : undefined,
         )
       },
       undefined,

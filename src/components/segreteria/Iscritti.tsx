@@ -4,7 +4,7 @@ import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, campoDelGuaio, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
+import { avvisiGesto, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -32,48 +32,26 @@ const GUAIO_CERTIFICATO: Record<StatoCertificato, number> = { manca: 2, scaduto:
 const GUAIO_PAGA: Record<ComePaga, number> = { da_pagare: 2, scaduto: 2, in_parte: 1, pagato: 0 }
 
 /**
- * Le due email di una scheda, ognuna con la sua riga che dice a cosa serve
- * (44-email-contatto.sql). Se il salvataggio è fallito per una delle due,
- * l'errore sta sotto quel campo (`campoDelGuaio`).
+ * L'email della scheda: una sola, per le ricevute e gli avvisi e per entrare
+ * nell'app (99-email-unica.sql). Se il salvataggio è fallito, l'errore sta sotto il campo.
  */
-function CampiEmail({
-  prefisso,
-  email,
-  contatto,
-  guaio,
-  onEmail,
-  onContatto,
-}: {
-  prefisso: string
-  email: string
-  contatto: string
-  guaio: string
-  onEmail: (v: string) => void
-  onContatto: (v: string) => void
-}) {
-  const campo = campoDelGuaio(guaio)
-  const nota = (di: typeof campo, avviso: string): Nota => (campo === di ? { testo: guaio, guaio: true } : { testo: avviso, guaio: false })
-  const campi = [
-    { id: `${prefisso}-email`, etichetta: 'Email per entrare nell’app', valore: email, cambia: onEmail, di: 'email' as const, avviso: 'Una sola persona per indirizzo.' },
-    { id: `${prefisso}-contatto`, etichetta: 'Email per ricevute e avvisi', valore: contatto, cambia: onContatto, di: 'emailContatto' as const, avviso: 'Dove scriviamo o telefoniamo alla famiglia, e dove arrivano le ricevute per email.' },
-  ]
+function CampoEmail({ prefisso, email, guaio: errore, onEmail }: { prefisso: string; email: string; guaio: string; onEmail: (v: string) => void }) {
+  const guaio = erroreDellEmail(errore)
+  const id = `${prefisso}-email`
+  const nota: Nota = guaio ? { testo: guaio, guaio: true } : { testo: 'Per le ricevute e gli avvisi, e per entrare nell’app.', guaio: false }
   return (
-    <>
-      {campi.map((c) => (
-        <Campo key={c.id} id={c.id} etichetta={c.etichetta} nota={nota(c.di, c.avviso)}>
-          <input
-            id={c.id}
-            className="sg-campo"
-            type="email"
-            placeholder="nome@esempio.it"
-            value={c.valore}
-            aria-invalid={campo === c.di || undefined}
-            aria-describedby={`${c.id}-nota`}
-            onChange={(e) => c.cambia(e.target.value)}
-          />
-        </Campo>
-      ))}
-    </>
+    <Campo id={id} etichetta="Email" nota={nota}>
+      <input
+        id={id}
+        className="sg-campo"
+        type="email"
+        placeholder="nome@esempio.it"
+        value={email}
+        aria-invalid={!!guaio || undefined}
+        aria-describedby={`${id}-nota`}
+        onChange={(e) => onEmail(e.target.value)}
+      />
+    </Campo>
   )
 }
 
@@ -328,7 +306,7 @@ export function Iscritti({
     // La tessera da sistemare sta nella colonna QUOTA: pesa come un guaio piccolo.
     quota: (p) => GUAIO_PAGA[comePaga(p, oggi)] + Number(senzaTessera(tesseraDi(p))),
     corsi: (p) => suoiCorsi(p).join(', '),
-    contatto: (p) => p.telefono ?? p.email ?? p.emailContatto,
+    contatto: (p) => p.telefono ?? p.email,
     frequenza: (p) => {
       const f = freq.dato?.get(p.id)
       return f && f.dovute ? f.presenti / f.dovute : null
@@ -588,9 +566,9 @@ export function Iscritti({
                     {cella.visibili.join(corsiScaduti ? ' · ' : ', ') || '—'}
                     {cella.altri > 0 && <span className="sg-cella-piu">+{cella.altri}</span>}
                   </span>
-                  <span role="cell" className="sg-cella-contatto" data-manca={!(p.email || p.emailContatto || p.telefono) || undefined}>
-                    {p.telefono ? <IconaContatto tipo="telefono" /> : (p.email ?? p.emailContatto) ? <IconaContatto tipo="email" /> : null}
-                    {p.telefono ?? p.email ?? p.emailContatto ?? 'nessun contatto'}
+                  <span role="cell" className="sg-cella-contatto" data-manca={!(p.email || p.telefono) || undefined}>
+                    {p.telefono ? <IconaContatto tipo="telefono" /> : p.email ? <IconaContatto tipo="email" /> : null}
+                    {p.telefono ?? p.email ?? 'nessun contatto'}
                   </span>
                   <span
                     role="cell"
@@ -640,8 +618,8 @@ function Nuovo({
   onLasciaStare: () => void
   onSalvato: (id: string) => void
 }) {
-  const [b, setB] = useState<DatiPersona & { corso: string }>({ nome: '', cognome: '', email: '', emailContatto: '', telefono: '', corso: '' })
-  // Cosa non va nei campi dell'email, sotto il campo giusto (`campoDelGuaio`); l'avviso in basso resta.
+  const [b, setB] = useState<DatiPersona & { corso: string }>({ nome: '', cognome: '', email: '', telefono: '', corso: '' })
+  // Cosa non va nell'email, sotto il campo; l'avviso in basso resta.
   const [guaio, setGuaio] = useState('')
   const salva = () => {
     let id = ''
@@ -675,7 +653,7 @@ function Nuovo({
         <Campo id="n-cognome" etichetta="COGNOME">
           <input id="n-cognome" className="sg-campo" value={b.cognome} onChange={(e) => setB({ ...b, cognome: e.target.value })} />
         </Campo>
-        <CampiEmail prefisso="n" email={b.email ?? ''} contatto={b.emailContatto ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setB({ ...b, email: v }) }} onContatto={(v) => { setGuaio(''); setB({ ...b, emailContatto: v }) }} />
+        <CampoEmail prefisso="n" email={b.email ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setB({ ...b, email: v }) }} />
         <Campo id="n-tel" etichetta="TELEFONO · FACOLTATIVO">
           <input id="n-tel" className="sg-campo" type="tel" value={b.telefono} onChange={(e) => setB({ ...b, telefono: e.target.value })} />
         </Campo>
@@ -809,7 +787,7 @@ function Scheda({
   const apriModifica = () => {
     setGuaio('')
     setAperta('persona')
-    setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, emailContatto: p.emailContatto, telefono: p.telefono })
+    setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, telefono: p.telefono })
   }
   const { correnti, terminate } = iscrizioniDellaScheda(p.iscrizioni, oggi)
   const liberi = attivi.filter((c) => !correnti.some((i) => i.corsoId === c.id))
@@ -1017,27 +995,21 @@ function Scheda({
               <Campo id="m-cognome" etichetta="COGNOME">
                 <input id="m-cognome" className="sg-campo" value={modifica.cognome} onChange={(e) => setModifica({ ...modifica, cognome: e.target.value })} />
               </Campo>
-              <CampiEmail prefisso="m" email={modifica.email ?? ''} contatto={modifica.emailContatto ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setModifica({ ...modifica, email: v }) }} onContatto={(v) => { setGuaio(''); setModifica({ ...modifica, emailContatto: v }) }} />
+              <CampoEmail prefisso="m" email={modifica.email ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setModifica({ ...modifica, email: v }) }} />
               <Campo id="m-tel" etichetta="TELEFONO">
                 <input id="m-tel" className="sg-campo" type="tel" value={modifica.telefono ?? ''} onChange={(e) => setModifica({ ...modifica, telefono: e.target.value })} />
               </Campo>
             </div>
           ) : (
             <div className="sg-due">
-              <Campo etichetta="EMAIL PER RICEVUTE E AVVISI">
-                <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.emailContatto ? 'var(--text)' : 'var(--dim)' }}>{p.emailContatto ?? '—'}</span>
-                {!p.emailContatto && minore && <span className="sg-sotto" style={{ fontSize: 12 }}>Per un minorenne è quella del genitore.</span>}
+              <Campo etichetta="EMAIL">
+                <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.email ? 'var(--text)' : 'var(--dim)' }}>{p.email ?? '—'}</span>
+                {!p.email && minore && <span className="sg-sotto" style={{ fontSize: 12 }}>Per un minorenne è quella del genitore.</span>}
               </Campo>
               <Campo etichetta="TELEFONO">
                 <span className="sg-valore" style={{ color: p.telefono ? 'var(--text)' : 'var(--dim)' }}>{p.telefono ?? '—'}</span>
                 {!p.telefono && minore && <span className="sg-sotto" style={{ fontSize: 12 }}>Per un minorenne è quello del genitore.</span>}
               </Campo>
-              {/* Vuota non è un problema: la sceglie chi entra nell'app. */}
-              {p.email && (
-                <Campo etichetta="EMAIL PER ENTRARE NELL’APP">
-                  <span className="sg-valore" style={{ wordBreak: 'break-all' }}>{p.email}</span>
-                </Campo>
-              )}
             </div>
           )}
           </div>
@@ -1412,7 +1384,7 @@ function UnisciDoppione({
       <span style={{ fontSize: 12, color: 'var(--dim)' }}>{x.attiva ? 'Attiva' : 'Disattivata'}</span>
     </div>
   )
-  const dove = (x: PersonaSeg) => [x.email ?? x.emailContatto, x.telefono, x.attiva ? '' : 'disattivata'].filter(Boolean).join(' · ')
+  const dove = (x: PersonaSeg) => [x.email, x.telefono, x.attiva ? '' : 'disattivata'].filter(Boolean).join(' · ')
 
   return (
     <div className="stack" style={{ gap: 16, maxWidth: 640 }}>
@@ -1491,7 +1463,7 @@ function UnisciDoppione({
             if (!resta || !via) return
             const persi = indirizziPersi(resta, via)
             // Niente sparisce in silenzio: l'indirizzo che non trova posto si dice prima.
-            const perso = persi.length ? `\nDell'altra scheda si perde ${persi.join(', ')}: non c'è posto fra l'email e il contatto di chi resta.\nCopialo prima, se ti serve.` : ''
+            const perso = persi.length ? `\nDell'altra scheda si perde ${persi.join(', ')}: ogni scheda ha una sola email.\nCopialo prima, se ti serve.` : ''
             if (!(await chiedi(confermaUnione(nome(via), nome(resta), via.certificato, resta.certificato, perso), 'Unisci', { pericolo: true }))) return
             void fai(() => d.unisciPersone(resta.id, via.id), 'Schede unite', () => onUnite(resta.id))
           }}

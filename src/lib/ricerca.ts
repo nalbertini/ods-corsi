@@ -101,7 +101,7 @@ function iscritti(persone: PersonaSeg[], corsi: CorsoSeg[] | null, scritto: stri
       // quei dati li vede comunque nella scheda, e qui esce il suo, non quello di un altro.
       const dettaglio = (cosa: 'tel.' | 'email', valore: string, di: string) => (eta ? `${eta} · ${di}` : `${cosa} ${valore}`)
       if (cifre.length >= CIFRE_MINIME && p.telefono && cifreDi(p.telefono).includes(cifre)) return [{ p, sotto: dettaglio('tel.', p.telefono, 'numero di un genitore') }]
-      const email = [p.email, p.emailContatto].find((e) => mail && e?.toLowerCase().includes(mail))
+      const email = mail && p.email?.toLowerCase().includes(mail) ? p.email : undefined
       if (email) return [{ p, sotto: dettaglio('email', email, 'email di un genitore') }]
       return []
     })

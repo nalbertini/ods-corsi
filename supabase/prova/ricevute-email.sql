@@ -57,14 +57,14 @@ insert into persone (id, nome, cognome, ruolo, email, utente_id) values
 insert into sale (id, nome) values ('bbbbbbbb-0000-0000-0000-000000000001', 'Tatami');
 insert into postazioni (id, nome, sala_id, utente_id) values
   ('dddddddd-0000-0000-0000-000000000001', 'Tablet sala grande', 'bbbbbbbb-0000-0000-0000-000000000001', '66666666-6666-6666-6666-666666666666');
--- Chi riceve: Sara, adulta, con l'email di accesso e una di contatto diversa;
--- Marco, minore, col contatto della mamma; Teo con l'email di accesso e
--- senza contatto; Pia senza niente.
-insert into persone (id, nome, cognome, ruolo, email, email_contatto) values
-  ('aaaaaaaa-0000-0000-0000-000000000010', 'Sara', 'Bianchi', 'iscritto', 'sara@accesso.it', 'sara.bianchi@esempio.it'),
-  ('aaaaaaaa-0000-0000-0000-000000000011', 'Marco', 'Rossi', 'iscritto', 'marco@accesso.it', 'mamma@esempio.it'),
-  ('aaaaaaaa-0000-0000-0000-000000000012', 'Teo', 'Verdi', 'iscritto', 'teo@accesso.it', null),
-  ('aaaaaaaa-0000-0000-0000-000000000013', 'Pia', 'Neri', 'iscritto', null, null);
+-- Chi riceve: Sara, adulta, con la sua email; Marco, minore, con quella della
+-- mamma (la stessa del genitore: gli iscritti possono dividerla); Teo con la
+-- sua; Pia senza niente.
+insert into persone (id, nome, cognome, ruolo, email) values
+  ('aaaaaaaa-0000-0000-0000-000000000010', 'Sara', 'Bianchi', 'iscritto', 'sara.bianchi@esempio.it'),
+  ('aaaaaaaa-0000-0000-0000-000000000011', 'Marco', 'Rossi', 'iscritto', 'mamma@esempio.it'),
+  ('aaaaaaaa-0000-0000-0000-000000000012', 'Teo', 'Verdi', 'iscritto', 'teo@esempio.it'),
+  ('aaaaaaaa-0000-0000-0000-000000000013', 'Pia', 'Neri', 'iscritto', null);
 
 create or replace function chi(u text) returns void language plpgsql as $$
 begin perform set_config('prova.utente', u, false); end $$;
@@ -124,19 +124,19 @@ select annulla_ricevuta(r(5));
 reset role;
 
 \echo ''
-\echo '--- 1. l''indirizzo lo sceglie il database: solo l''email di contatto ---'
+\echo '--- 1. l''indirizzo lo sceglie il database: l''email della scheda ---'
 set role service_role;
-select atteso('adulta: la sua email di contatto, non quella di accesso', indirizzo_ricevuta(r(1)), 'sara.bianchi@esempio.it');
-select atteso('minore: l''email di contatto, quella del genitore', indirizzo_ricevuta(r(2)), 'mamma@esempio.it');
-select atteso('senza contatto: niente, anche con l''email di accesso', coalesce(indirizzo_ricevuta(r(3)), 'NULL'), 'NULL');
+select atteso('adulta: la sua email', indirizzo_ricevuta(r(1)), 'sara.bianchi@esempio.it');
+select atteso('minore: l''email della scheda, quella del genitore', indirizzo_ricevuta(r(2)), 'mamma@esempio.it');
+select atteso('con la sua email', indirizzo_ricevuta(r(3)), 'teo@esempio.it');
 select atteso('senza niente: niente', coalesce(indirizzo_ricevuta(r(4)), 'NULL'), 'NULL');
 select atteso('una ricevuta che non c''è: niente', coalesce(indirizzo_ricevuta(gen_random_uuid()), 'NULL'), 'NULL');
 reset role;
-update persone set email_contatto = 'sara.nuova@esempio.it' where id = 'aaaaaaaa-0000-0000-0000-000000000010';
+update persone set email = 'sara.nuova@esempio.it' where id = 'aaaaaaaa-0000-0000-0000-000000000010';
 set role service_role;
-select atteso('il contatto cambiato in scheda vale da subito', indirizzo_ricevuta(r(1)), 'sara.nuova@esempio.it');
+select atteso('l''email cambiata in scheda vale da subito', indirizzo_ricevuta(r(1)), 'sara.nuova@esempio.it');
 reset role;
-update persone set email_contatto = 'sara.bianchi@esempio.it' where id = 'aaaaaaaa-0000-0000-0000-000000000010';
+update persone set email = 'sara.bianchi@esempio.it' where id = 'aaaaaaaa-0000-0000-0000-000000000010';
 select atteso('nessuna funzione che il browser chiama prende un indirizzo',
   (select count(*)::text from pg_proc
     where proname in ('indirizzo_ricevuta', 'controlla_invio_ricevuta', 'registra_invio_ricevuta', 'esiti_invio_ricevuta')
@@ -162,7 +162,7 @@ select atteso('i dati per la mail', (select c->>'numero' || '/' || (c->>'anno') 
   from controlla_invio_ricevuta(r(2)) c), '2/2026 Marco Rossi 3000 2026-10-21');
 select atteso('dice che l''indirizzo c''è', (controlla_invio_ricevuta(r(1))->>'ha_indirizzo'), 'true');
 select atteso('ma non lo dà', (controlla_invio_ricevuta(r(1)) ? 'indirizzo')::text || '/' || (controlla_invio_ricevuta(r(1))::text like '%@%')::text, 'false/false');
-select atteso('senza email di contatto: non c''è, anche con l''email di accesso', (controlla_invio_ricevuta(r(3))->>'ha_indirizzo'), 'false');
+select atteso('senza email: non c''è', (controlla_invio_ricevuta(r(4))->>'ha_indirizzo'), 'false');
 select atteso('annullata: non si manda', tenta($$select controlla_invio_ricevuta(r(5))::text$$), 'NEGATO: La ricevuta è annullata: non si manda');
 select atteso('una che non c''è', tenta($$select controlla_invio_ricevuta(gen_random_uuid())::text$$), 'NEGATO: ricevuta inesistente');
 select atteso('oggi nessuna mail', (controlla_invio_ricevuta(r(1))->>'mandate_oggi') || '/' || (controlla_invio_ricevuta(r(1))->>'oltre_soglia'), '0/false');
@@ -189,11 +189,11 @@ select atteso('il minore: va alla mamma', (select string_agg(distinct indirizzo:
 set role service_role;
 select atteso('un esito inventato no', tenta($$select registra_invio_ricevuta(r(1), 'letta', null, null, null, null)::text$$), 'NEGATO: …');
 select atteso('un motivo lunghissimo no', tenta($$select registra_invio_ricevuta(r(1), 'non partita', repeat('x', 201), null, null, null)::text$$), 'NEGATO: …');
-select atteso('senza indirizzo né email di contatto non si registra niente', tenta($$select registra_invio_ricevuta(r(3), 'non partita', 'posta', null, null, null)::text$$), 'NEGATO: Nessuna email di contatto in scheda…');
+select atteso('senza indirizzo né email in scheda non si registra niente', tenta($$select registra_invio_ricevuta(r(4), 'non partita', 'posta', null, null, null)::text$$), 'NEGATO: Nessuna email di contatto in scheda…');
 select atteso('annullata: una non partita no', tenta($$select registra_invio_ricevuta(r(5), 'non partita', 'posta', null, null, null)::text$$), 'NEGATO: La ricevuta è annullata: non si manda');
 reset role;
 -- La mail partita mentre qualcuno annullava la ricevuta o toglieva il contatto: la riga deve restare.
-update persone set email_contatto = null where id = 'aaaaaaaa-0000-0000-0000-000000000012';
+update persone set email = null where id = 'aaaaaaaa-0000-0000-0000-000000000012';
 set role service_role;
 select atteso('partita e poi annullata: la «mandata» resta', tenta($$select registra_invio_ricevuta(r(5), 'mandata', null, null, 'sara.bianchi@esempio.it', null)::text$$), '');
 select atteso('partita e poi il contatto tolto: resta, con l''indirizzo usato', tenta($$select registra_invio_ricevuta(r(3), 'mandata', null, null, 'teo.vecchio@esempio.it', null)::text$$), '');

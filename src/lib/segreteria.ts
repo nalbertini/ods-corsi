@@ -141,10 +141,8 @@ export interface PersonaSeg {
   id: string
   nome: string
   cognome: string
-  /** L'email di accesso: una sola persona per indirizzo. */
+  /** L'unica email: per entrare nell'app e per ricevute e avvisi. Gli iscritti possono condividerla, chi ha l'accesso no (`99-email-unica.sql`). */
   email?: string
-  /** Dove scrivere alla famiglia: facoltativa, può essere la stessa di altri (`44-email-contatto.sql`). */
-  emailContatto?: string
   telefono?: string
   attiva: boolean
   creataIl: string
@@ -545,7 +543,6 @@ export interface DatiPersona {
   nome: string
   cognome: string
   email?: string
-  emailContatto?: string
   telefono?: string
 }
 
@@ -753,7 +750,7 @@ export interface DatiSegreteria {
   /** La annulla: resta, col suo numero, e il PDF dice ANNULLATA. */
   annullaRicevuta(id: string): Promise<void>
   /**
-   * Manda la ricevuta in PDF all'email di contatto della persona, lo stesso PDF che si scarica: l'indirizzo lo sceglie
+   * Manda la ricevuta in PDF all'email della persona, lo stesso PDF che si scarica: l'indirizzo lo sceglie
    * il database (Edge Function `ricevuta-email`, `76-ricevute-email.sql`). Non lancia: com'è andata, anche quando manca
    * il file o la funzione, sta nell'esito, perché la ricevuta è già fatta e la mail è un di più.
    */
@@ -1939,33 +1936,30 @@ export function mancaAttivita(e: { code?: string; message?: string } | null | un
   return !!e && ['42703', 'PGRST200', 'PGRST205', '42P01', '42883'].includes(e.code ?? '') && /attivita/.test(e.message ?? '')
 }
 
-/** La forma di un indirizzo, la stessa del vincolo `persone_email_contatto_forma` (44-email-contatto.sql). */
+/** La forma di un indirizzo, la stessa delle richieste di iscrizione (06-iscrizioni.sql). */
 const FORMA_EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
-export const CONTATTO_SBAGLIATO = 'L’email di contatto non sembra un indirizzo: scrivila come nome@esempio.it, al massimo 160 lettere.'
+export const EMAIL_SBAGLIATA = 'L’email non sembra un indirizzo: scrivila come nome@esempio.it, al massimo 160 lettere.'
 
-/** Cosa si dice quando l'email di accesso è già di un'altra persona. */
-export const emailGiaDi = (nome: string) => `Questo indirizzo è già di ${nome}: mettilo come email di contatto.`
+/** Il database dove il 99 non è ancora passato rifiuta l'email già di un altro iscritto: cosa serve, non il testo grezzo. */
+export const SERVE_IL_99 = 'Questo indirizzo è già di un’altra persona. Per metterlo a più iscritti serve l’aggiornamento 99-email-unica.sql sul database.'
 
-/** A quale campo della scheda appartiene un errore di salvataggio, per dirlo sotto quel campo; `null` se non è di un campo. */
-export function campoDelGuaio(messaggio: string): 'email' | 'emailContatto' | null {
-  if (/^Questo indirizzo è già di .+: mettilo come email di contatto\.$/.test(messaggio)) return 'email'
-  return messaggio === CONTATTO_SBAGLIATO ? 'emailContatto' : null
+/** Perché un'email non va bene, per chi usa l'app; `null` se va (o se è vuota: è facoltativa). */
+export function emailNonValida(email?: string): string | null {
+  const e = email?.trim()
+  return e && (!FORMA_EMAIL.test(e) || e.length > 160) ? EMAIL_SBAGLIATA : null
 }
 
-/** Perché un'email di contatto non va bene, per chi usa l'app; `null` se va (o se è vuota: è facoltativa). */
-export function contattoNonValido(contatto?: string): string | null {
-  const c = contatto?.trim()
-  return c && (!FORMA_EMAIL.test(c) || c.length > 160) ? CONTATTO_SBAGLIATO : null
-}
+/** L'errore di un salvataggio che riguarda l'email (e sta sotto il suo campo), `''` se è di un altro campo. */
+export const erroreDellEmail = (guaio: string) => (/\b(email|indirizzo)\b/i.test(guaio) ? guaio : '')
 
-/** Una scheda dell'elenco ISCRITTI per quello che si è scritto in CERCA: nome in un verso o nell'altro, email di accesso o di contatto. */
+/** Una scheda dell'elenco ISCRITTI per quello che si è scritto in CERCA: nome in un verso o nell'altro, email. */
 export function cercaNellElenco(p: PersonaSeg, testo: string): boolean {
   const ago = testo.trim().toLowerCase()
-  return !ago || `${p.cognome} ${p.nome} ${p.nome} ${p.cognome} ${p.email ?? ''} ${p.emailContatto ?? ''}`.toLowerCase().includes(ago)
+  return !ago || `${p.cognome} ${p.nome} ${p.nome} ${p.cognome} ${p.email ?? ''}`.toLowerCase().includes(ago)
 }
 
-/** «Solo senza email» guarda l'email di accesso: il contatto non fa entrare nell'app. */
+/** «Solo senza email»: chi non ha un indirizzo a cui scrivere. */
 export const senzaEmail = (p: PersonaSeg) => !p.email
 
 /**
@@ -2010,9 +2004,9 @@ export function sottoNome(natoIl: string | null, creataIl: string, oggi: Date): 
  */
 export type RigaCheManca = { cosa: string; perche?: string }
 
-export function cosaManca(p: Pick<PersonaSeg, 'nome' | 'cognome' | 'natoIl' | 'emailContatto' | 'telefono'>, a: Anagrafica | null, oggi: Date): RigaCheManca[] {
+export function cosaManca(p: Pick<PersonaSeg, 'nome' | 'cognome' | 'natoIl' | 'email' | 'telefono'>, a: Anagrafica | null, oggi: Date): RigaCheManca[] {
   const maiuscola = (t: string) => t[0].toUpperCase() + t.slice(1)
-  const contatti = [!p.telefono?.trim() && 'telefono', !p.emailContatto?.trim() && 'email per ricevute e avvisi'].filter((x): x is string => !!x)
+  const contatti = [!p.telefono?.trim() && 'telefono', !p.email?.trim() && 'email per ricevute e avvisi'].filter((x): x is string => !!x)
   const righeContatti = contatti.length ? [{ cosa: maiuscola(contatti.join(', ')) }] : []
   if (!a) return righeContatti
   // Come `intestatarioDaRichiesta`: senza il nome del genitore il suo codice non conta.
