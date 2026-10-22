@@ -73,7 +73,7 @@ Google, e vale solo per i mockup.
 | `BarraNavigazione` | COSTRUITA (variante B): la barra in basso del telefono istruttori (CALENDARIO, TIMER, I MIEI, ORE; due voci per la segreteria che non insegna): icona a linea, etichetta, voce corrente con barra, fondo e testo; `tema="sito"`: inchiostro, Inter 12px che va a capo, voce corrente gialla. `MenuIstruttori` ha la prop `elenco` per le stesse voci a sinistra |
 | `SchedeTimer` | Variante A scartata: le schede DA FARE / I MIEI in cima alla pagina TIMER: tasti da 52px, quella attiva con bordo, quadratino e bordo sotto spesso |
 | `TimerRiga` | La riga di un timer nell'elenco (tipo, durata, nome, nota, ▶), per le sezioni CREATI DA TE e le copie; `TimerPagina` ha `conTitolo`, `conBarra`, `tutti` e `cronometro`: nella B la pagina TIMER è `conBarra` falso, `tutti="LIBRERIA"`, `cronometro` vero |
-| `RigaDaFare` | Una riga di DA FARE (`.sg-dafare-riga`): numero grande rosso (`blocca`) o giallo (`presto`), titolo, frase e tasto VEDI CHI |
+| `RigaDaFare` | Una riga di DA FARE (`.sg-dafare-riga`): numero grande rosso (`blocca`) o giallo (`presto`), titolo, frase, i primi 5 nomi col perché (`elenco`) e il tasto a linea «Vedi tutti» |
 | `SegnalazioneListino` | Una riga di `Segnalazioni` in LISTINO: in rosso cosa manca a un corso («senza prezzo nel listino», «manca il prezzo del trimestre»…), col link «Va bene senza prezzo» che non va a capo; `rosso` falso per «…, va bene così» col link «Rimetti il rosso» |
 | `TabletTasto` | `.tb-btn`: linea, verde, rosso, grande, quadro |
 | `TabletTastiera` | I pallini e il tastierino del PIN |

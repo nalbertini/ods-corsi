@@ -2604,6 +2604,19 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 }
 .sg-dafare-lezione:hover { border-color: var(--dim); border-top-color: var(--tinta); }
 .sg-dafare-lezione-nome { font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); }
+/* I primi nomi sotto la frase: uno per riga di lista, su due colonne quando il perché è corto
+   e c'è posto (lo spazio dipende dal menu e dal tasto, non dalla finestra: per questo auto-fill). */
+.sg-dafare-chi { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: 1fr; column-gap: 24px; border-top: 1px solid var(--line); }
+.sg-dafare-chi[data-colonne='2'] { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+/* Se nome e perché non stanno insieme, il perché va a capo intero: la data è quel che serve. */
+.sg-dafare-chi li { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; min-width: 0; padding-bottom: 2px; border-bottom: 1px solid var(--line); }
+.sg-dafare-chi-nome {
+  flex: 0 1 auto; min-width: 0; max-width: 100%; min-height: 44px; padding: 0; background: none; border: 0; font: inherit; font-size: 15px; font-weight: 600; color: var(--text); text-align: left;
+  text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+}
+.sg-dafare-chi-nome:hover { text-decoration-color: currentColor; }
+.sg-dafare-chi-perche { padding-bottom: 8px; font-size: 14px; line-height: 1.4; color: var(--sec); }
+.sg-dafare-chi-perche[data-rosso] { color: var(--rosso-testo); }
 .sg-dafare-aposto { margin: 0; font-size: 14px; line-height: 1.5; color: var(--sec); }
 .sg-dafare-fatto { display: flex; flex-direction: column; gap: 6px; padding: 28px; border: 2px solid var(--verde); }
 .sg-dafare-fatto .ob { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; color: var(--verde-testo); }
