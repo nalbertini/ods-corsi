@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Le schede come sono adesso, nel look del sito: quattro modi diversi per la stessa cosa (scegliere una parte della pagina). -->
+<div style="display: flex; flex-direction: column; gap: 20px; width: 1440px; min-height: 820px; padding: 28px 36px; background: #ffffff">
+  <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #b81d1d">OGGI · QUATTRO MODI PER LA STESSA COSA</span>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px">
+    <section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #eef5fa; border: 2px solid #cfe6f4; border-radius: 6px; min-height: 260px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #0d2a3d">IMPOSTAZIONI · SCHEDE SOTTO IL TITOLO</span>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">IMPOSTAZIONI</h1>
+          <span style="font-size: 14px; color: #46606f">Le scelte che spettano alla palestra.</span>
+        </div>
+      <dc-import name="SchedeImpostazioni" tema="sito" acceso="LA STAGIONE" hint-size="100%,96px"></dc-import>
+      <span style="margin-top: auto; font-size: 13px; line-height: 1.5; color: #46606f">La più nuova: schede alte 44px, a capo quando non stanno.</span>
+    </section>
+    <section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #eef5fa; border: 2px solid #cfe6f4; border-radius: 6px; min-height: 260px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #b81d1d">CONTABILITÀ · CHIP AL POSTO DELLE SCHEDE</span>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</h1>
+          <span style="font-size: 14px; color: #46606f">Le entrate e le uscite della palestra, nelle sue casse.</span>
+        </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap"><dc-import name="Chip" tema="sito" contesto="segreteria" label="Movimenti" acceso="{{ true }}" hint-size="139px,44px"></dc-import><dc-import name="Chip" tema="sito" contesto="segreteria" label="Bilancio" acceso="{{ false }}" hint-size="128px,44px"></dc-import><dc-import name="Chip" tema="sito" contesto="segreteria" label="Voci" acceso="{{ false }}" hint-size="84px,44px"></dc-import><dc-import name="Chip" tema="sito" contesto="segreteria" label="Casse" acceso="{{ false }}" hint-size="95px,44px"></dc-import></div>
+      <span style="margin-top: auto; font-size: 13px; line-height: 1.5; color: #46606f">Sono chip, come i filtri: sembrano filtri della lista, non parti della pagina.</span>
+    </section>
+    <section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #eef5fa; border: 2px solid #cfe6f4; border-radius: 6px; min-height: 260px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #b81d1d">PRESENZE · SCHEDE SOPRA IL TITOLO</span>
+      <div role="tablist" style="display: flex; flex-wrap: wrap; gap: 4px"><span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; white-space: nowrap; background: #cfe6f4; border: 2px solid #0d2a3d; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.18em; color: #0d2a3d">IL MESE</span><span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; white-space: nowrap; background: #ffffff; border: 2px solid #cfe6f4; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.18em; color: #46606f">SEGNALATE <span style="margin-left: 8px; padding: 1px 7px; border: 2px solid #8f6a00; background: #ffffff; color: #8f6a00; font-family: Inter, Arial, sans-serif; font-size: 12px; letter-spacing: 0">2</span></span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">PRESENZE</h1>
+          <span style="font-size: 14px; color: #46606f">Chi viene, chi si sta perdendo, quali appelli mancano.</span>
+        </div>
+      <span style="margin-top: auto; font-size: 13px; line-height: 1.5; color: #46606f">Le schede stanno sopra il titolo: in SEGNALATE il titolo cambia e le schede restano in cima, staccate dalla pagina.</span>
+    </section>
+    <section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #eef5fa; border: 2px solid #cfe6f4; border-radius: 6px; min-height: 260px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #0d2a3d">SCHEDA PERSONA · SCHEDE COL SEGNO</span>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">Bianchi Luca</h1>
+          <span style="font-size: 14px; color: #46606f">Judo kids · tessera 2026</span>
+        </div>
+      <dc-import name="SchedeIscritto" tema="sito" acceso="PERSONA" segno-quota="giallo" parola-quota="DA PAGARE" hint-size="100%,50px"></dc-import>
+      <span style="margin-top: auto; font-size: 13px; line-height: 1.5; color: #46606f">Stesse schede di IMPOSTAZIONI, con la parola che avvisa.</span>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":820}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

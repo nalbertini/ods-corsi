@@ -310,6 +310,8 @@ begin
 end $$;
 
 -- Lo storico di una persona, per la sua scheda: i movimenti collegati non annullati, dal più recente.
+-- Il drop: 98-quote-persona.sql le aggiunge una colonna, e chi rilancia questo file dopo 98 non si deve fermare qui.
+drop function if exists storico_persona(uuid);
 create or replace function storico_persona(persona uuid)
   returns table (id uuid, data date, descrizione text, importo integer, voce text, cassa text)
   language plpgsql security definer set search_path = public as $$

@@ -164,6 +164,7 @@ export function Iscritti({
   onTogliRicerca,
   onConti,
   contabilita,
+  onMovimento,
 }: {
   d: DatiSegreteria
   /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
@@ -184,6 +185,8 @@ export function Iscritti({
   onConti?: () => void
   /** Chi vede CONTABILITÀ: registrando un pagamento legge dove entra. */
   contabilita?: boolean
+  /** Apre in CONTABILITÀ un movimento scritto a mano per questa persona; senza, il tasto non c'è. */
+  onMovimento?: (id: string) => void
 }) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
@@ -394,6 +397,7 @@ export function Iscritti({
             fai={fai}
             avvisa={avvisa}
             contabilita={contabilita}
+            onMovimento={onMovimento}
             quotaNelVecchio={nelVecchioIds.has(persona.id)}
             giroSolleciti={giroSolleciti}
             onSollecitato={() => setGiroSolleciti((g) => g + 1)}
@@ -700,6 +704,7 @@ function Scheda({
   doppio,
   nonDoppioni,
   contabilita,
+  onMovimento,
   quotaNelVecchio,
   giroSolleciti,
   onSollecitato,
@@ -728,6 +733,7 @@ function Scheda({
   /** Le schede segnate «non sono doppioni» con questa: si tolgono da qui, se segnate per sbaglio. */
   nonDoppioni: PersonaSeg[]
   contabilita?: boolean
+  onMovimento?: (id: string) => void
   /** Ha la quota pagata nel vecchio programma: il sollecito non la chiede (come la riga dell'elenco). */
   quotaNelVecchio: boolean
   /** Cambia quando un sollecito si segna o si toglie dall'elenco. */
@@ -1004,7 +1010,7 @@ function Scheda({
               setDaPagamento(x)
               setPagando(true)
             }} />
-            <StoricoPersona key={`s-${p.id}`} d={d} personaId={p.id} />
+            <StoricoPersona key={`s-${p.id}`} d={d} personaId={p.id} onMovimento={onMovimento} />
         </div>
       </div>
 

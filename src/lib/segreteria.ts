@@ -805,7 +805,7 @@ export interface DatiSegreteria {
    * Cambia solo la voce di un lotto di movimenti scritti qui o importati (al massimo `LIMITE_CAMBIO_VOCE`): tutti o nessuno,
    * anche nei giorni chiusi (`67-cambia-voce.sql`). Rende quanti sono cambiati e quanti avevano già la voce.
    */
-  cambiaVoceMovimenti(ids: string[], voceId: string): Promise<{ cambiati: number; giaCosi: number }>
+  cambiaVoceMovimenti(ids: string[], voceId: string, personaId?: string): Promise<{ cambiati: number; giaCosi: number }>
   /** I cambi di voce di un movimento, dal più vecchio: chi, quando, la voce di prima e quella di dopo. */
   cambiVoceMovimento(id: string): Promise<CambioVoce[]>
   /** Quanti movimenti dello storico si collegherebbero a una persona e quanti no, prima di scrivere (`70-movimenti-persona.sql`). */

@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.166.0 — 22 ottobre 2026
+
+### Novità
+
+- In OGGI del Banco i numeri della striscia COSA MANCA, con i presenti sotto il titolo
+
 ## 0.165.0 — 22 ottobre 2026
 
 ### Novità

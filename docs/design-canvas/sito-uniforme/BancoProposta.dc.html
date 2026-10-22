@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Proposta: nel Banco la striscia COSA MANCA non c'e' (OGGI la sostituisce). Le cifre di OGGI diventano le cinque della striscia, con lo stesso
+     conto (`contaCosaManca`), cliccabili verso la lista filtrata; PRESENTI su ATTESI va nella riga sotto il titolo. I bollini dei luoghi restano,
+     ma contano solo le stesse cose delle cifre dove ci sono (RICHIESTE ONLINE = la cifra RICHIESTE). -->
+<div style="display: flex; flex-direction: column; width: 1440px; min-height: 760px; background: #eef5fa">
+  <dc-import name="BarraBanco" luogo="OGGI" voce="OGGI" numeri="OGGI:2, PERSONE:7, SOLDI:2, RICHIESTE ONLINE:3, ISTRUTTORI:4, PRESENZE:2, VESTIARIO:2" hint-size="100%,190px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 18px; padding: 24px 28px 32px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · OGNI NUMERO UNA VOLTA, CON LO STESSO CONTO</span>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">OGGI</h1>
+      <span style="font-size: 14px; color: #46606f">giovedì 22 ottobre · 6 lezioni, 1 appello da fare · <b style="color: #0d2a3d">15 presenti su 27 attesi</b>.</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px">
+      <dc-import name="Numero" tema="sito" titolo="APPELLI NON FATTI" valore="25" sotto="ultimi 30 giorni" allarme="{{ true }}" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="SENZA CERTIFICATO" valore="42" sotto="in sala non entrano" allarme="{{ true }}" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="DA PAGARE" valore="33" sotto="quota non in regola" allarme="{{ true }}" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="CORSI SCADUTI" valore="33" sotto="da rinnovare" allarme="{{ true }}" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="RICHIESTE" valore="3" sotto="dal modulo online" hint-size="100%,120px"></dc-import>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center; height: 150px; border: 2px dashed #14709f; border-radius: 6px; font-size: 14px; color: #46606f">La giornata: tabellone sale × ore e DA FARE AL BANCO (non cambia)</div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 18px; background: #ffffff; border-left: 6px solid #0b7a33; border-radius: 6px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em">1 · LA STRISCIA SE NE VA</span>
+        <span style="font-size: 14px; line-height: 1.5; color: #46606f">Nel Banco OGGI fa già il suo lavoro: le cinque cifre sono quelle della striscia, una volta sola. Nell'aspetto di sempre la striscia resta com'è.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 18px; background: #ffffff; border-left: 6px solid #0b7a33; border-radius: 6px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em">2 · UN CONTO SOLO</span>
+        <span style="font-size: 14px; line-height: 1.5; color: #46606f">Richieste: la cifra e il bollino di RICHIESTE ONLINE leggono lo stesso numero (oggi 3 e 2). Appelli: 25 e 22 contano su periodi diversi; la cifra dice «ultimi 30 giorni», come PRESENZE.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 18px; background: #ffffff; border-left: 6px solid #0b7a33; border-radius: 6px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em">3 · PRESENTI NEL SOTTOTITOLO</span>
+        <span style="font-size: 14px; line-height: 1.5; color: #46606f">«15 presenti su 27 attesi» non è una cosa che manca: sta con la data e le lezioni, e le cifre restano tutte cose da sistemare.</span>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

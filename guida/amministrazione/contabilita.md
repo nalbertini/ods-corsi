@@ -53,7 +53,15 @@ qualcosa chiede prima se lasciare. Si sceglie entrata o uscita, data, importo, c
 del tipo giusto, non quelle disattivate), descrizione e una nota se serve. Un solo
 importo, senza IVA. La data non è nel futuro e non è prima del giorno da cui parte
 la cassa. Niente dati personali che non servono, nella descrizione e nella nota.
-Prima di scrivere, l'app mostra un **riepilogo** (importo, voce, cassa, data): **Sì,
+
+Un'entrata su **Quota associativa** o **Corsi e altri pagamenti** si registra sempre con la
+**persona**: compare il campo **PERSONA · DI CHI È**, si cerca da tre lettere e si tocca la scheda giusta.
+Per un minore è chi frequenta, anche se ha pagato il genitore. Senza persona non si registra. Se quella
+persona ha già una ricevuta o un pagamento con lo stesso importo negli ultimi 30 giorni, l'app avvisa
+(**Forse già in PAGAMENTI**): se è la stessa quota non scriverla qui, c'è già. La persona è un'etichetta:
+la quota **non conta come pagata** (per questo serve la ricevuta in PAGAMENTI).
+
+Prima di scrivere, l'app mostra un **riepilogo** (importo, voce, cassa, data e, se c'è, la persona): **Sì,
 registra il movimento** lo scrive, **No, torna al modulo** lascia tutto com'era. Se il movimento scritto è fuori dai filtri che hai
 acceso, l'elenco lo dice («Non lo vedi nell'elenco: è fuori dai filtri») e **Togli i filtri** lo
 fa comparire.
@@ -64,13 +72,19 @@ Un movimento registrato **non si cambia** negli importi: toccandolo si apre in u
 la nota (di un giroconto, solo la nota) o **cambiare la voce** (vedi sotto). Per correggere
 importo, data o cassa si annulla e si rifà.
 
+Nella finestra, la riga **PERSONA** dice di chi è una quota o un corso. **Apri la scheda ›** porta alla
+scheda della persona (anche per un incasso di un iscritto). Su un movimento scritto qui: **Collega a una
+persona** se manca («Nessuna: di chi è?»), **Cambia persona** e **Scollega**. Il filtro **Persona** ha
+anche **Quote e corsi senza persona**, per trovare quelli scritti prima che la persona fosse obbligatoria.
+
 ### Cambiare la voce
 
 La voce di un movimento si cambia **senza annullare e rifare**: importo, data, cassa e testo
 restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi sono gli stessi).
 
 - **Uno solo**: apri il movimento, scegli la **voce** nuova e tocca **Cambia la voce**. In fondo, **Cosa è
-  cambiato** dice chi l'ha cambiata, quando e da quale voce veniva.
+  cambiato** dice chi l'ha cambiata, quando e da quale voce veniva. Un movimento scritto qui che va su
+  **Quota associativa** o **Corsi e altri pagamenti** chiede la **persona**, se non ce l'ha già.
 - **Tanti insieme**: nell'elenco scrivi nella ricerca una parte della causale (per esempio «enel»),
   scegli la **voce** da cui partire (per esempio «Da classificare») e, se serve, il periodo
   **Tutto**. L'elenco dice quanti ne ha trovati. Spunta le righe, oppure la casella in testa alla
@@ -85,7 +99,9 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
   PAGAMENTI), i **movimenti annullati**, i **giroconti** (non hanno voce) e la **Differenza di cassa**
   scritta da una chiusura. La voce nuova deve essere in uso e dello stesso tipo: una voce di entrata
   per le entrate, di uscita per le uscite. Con entrate e uscite scelte insieme, **Cambia voce** resta
-  spento: tocca **Solo le entrate** o **Solo le uscite**.
+  spento: tocca **Solo le entrate** o **Solo le uscite**. I movimenti scritti qui non vanno **in blocco** su
+  **Quota associativa** o **Corsi e altri pagamenti**: ognuno ha la sua persona, quindi si apre e si
+  cambia uno alla volta. Lo storico sì, anche in blocco.
 - Un cambio sbagliato si rimedia scegliendo di nuovo le righe e assegnando la voce giusta: la traccia
   non si cancella.
 
@@ -97,8 +113,9 @@ Importo, data, cassa e voce non cambiano, e i saldi, il bilancio e le chiusure r
 nei giorni già chiusi. Non è un incasso in più: lo storico collegato compare nella scheda della persona
 in un blocco a parte, **Dal vecchio programma**, e non si somma ai suoi pagamenti.
 
-Si collegano solo le **entrate dello storico** su «Quota associativa» e «Corsi e altri pagamenti».
-Non si collegano i movimenti scritti qui, i giroconti, la «Differenza di cassa» e gli annullati.
+Si collegano solo le **entrate** su «Quota associativa» e «Corsi e altri pagamenti»: quelle dello
+storico qui, quelle scritte a mano dalla loro finestra (vedi sopra). Non si collegano i giroconti, la
+«Differenza di cassa» e gli annullati.
 
 - **I casi sicuri, in blocco**: **Collega i casi sicuri** apre il riepilogo (quanti movimenti, a quante
   persone, quanto fanno, un campione di nomi). Sono sicuri i movimenti con nome e cognome della causale

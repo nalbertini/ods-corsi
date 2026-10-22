@@ -49,13 +49,15 @@
     <section style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
       <div style="display: flex; align-items: baseline; gap: 16px">
         <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; font-size: 34px; letter-spacing: 0.04em; line-height: 1">GIOVEDÌ 15 OTTOBRE</h1>
-        <span style="font-size: 15px; color: #656561">ore 18:40 · 6 lezioni, 1 appello da fare</span>
+        <span style="font-size: 15px; color: #656561">ore 18:40 · 6 lezioni, 1 appello da fare · 15 presenti su 27 attesi</span>
       </div>
-      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
-        <dc-import name="Numero" titolo="SENZA CERTIFICATO" valore="47" sotto="in sala non entrano" allarme="{{ true }}" tema="chiaro" hint-size="100%,120px"></dc-import>
-        <dc-import name="Numero" titolo="DA PAGARE" valore="37" sotto="quota non in regola" allarme="{{ true }}" tema="chiaro" hint-size="100%,120px"></dc-import>
-        <dc-import name="Numero" titolo="RICHIESTE" valore="4" sotto="dal modulo online" tema="chiaro" hint-size="100%,120px"></dc-import>
-        <dc-import name="Numero" titolo="PRESENTI OGGI" valore="15" sotto="su 27 attesi" tema="chiaro" hint-size="100%,120px"></dc-import>
+      <!-- Le caselle della striscia COSA MANCA, con lo stesso conto: in OGGI la striscia non c'è. -->
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px">
+        <dc-import name="Numero" titolo="APPELLI NON FATTI" valore="25" sotto="senza appello, ultimi 30 giorni" allarme="{{ true }}" tema="chiaro" hint-size="100%,120px"></dc-import>
+        <dc-import name="Numero" titolo="CERTIFICATI SCADUTI" valore="47" sotto="scaduti o mancanti" allarme="{{ true }}" tema="chiaro" hint-size="100%,120px"></dc-import>
+        <dc-import name="Numero" titolo="PAGAMENTI" valore="37" sotto="quote non in regola" allarme="{{ true }}" tema="chiaro" hint-size="100%,120px"></dc-import>
+        <dc-import name="Numero" titolo="CORSI SCADUTI" valore="33" sotto="trimestre o annuale finito" allarme="{{ true }}" tema="chiaro" hint-size="100%,120px"></dc-import>
+        <dc-import name="Numero" titolo="RICHIESTE ONLINE" valore="4" sotto="da accogliere" tema="chiaro" hint-size="100%,120px"></dc-import>
       </div>
       <div style="display: grid; grid-template-columns: 56px repeat(3, minmax(0, 1fr)); border-bottom: 2px solid #d4d4ce">
         <span></span>

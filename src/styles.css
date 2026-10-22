@@ -393,6 +393,7 @@
 :root[data-look='sito'] .sg-dafare-riga[data-livello='blocca'] { box-shadow: inset 4px 0 0 var(--rosso); }
 :root[data-look='sito'] .sg-dafare-riga[data-livello='presto'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 :root[data-look='sito'] .sg-riquadro[data-fatto='true'] { box-shadow: inset 4px 0 0 var(--verde); }
+:root[data-look='sito'] .sg-riquadro[data-avviso='true'] { box-shadow: inset 4px 0 0 var(--giallo-testo); }
 /* Il tasto principale è il giallo del marchio (uno per schermata); il tasto a linea e i filtri hanno il blu dei campi. */
 :root[data-look='sito'] .sg-btn-pieno { background: var(--giallo); color: var(--su-colore); }
 /* Un tasto spento resta un blocco grigio anche nel look del sito: se no sembra acceso e non risponde. */
@@ -3305,15 +3306,20 @@ label.sg-btn { cursor: pointer; }
 .bn-tessera[data-stato='presto'] { border-left: 8px solid var(--giallo); }
 @media (max-width: 767px) { .bn-tessere { grid-template-columns: minmax(0, 1fr); } }
 
-.bn-cifre { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+/* Le caselle della striscia, cinque o sei con le tessere: in una riga finché ognuna ha 160px. */
+.bn-cifre { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
 .bn-cifra {
   display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-height: 110px; padding: 14px 16px; text-align: left;
   background: var(--surface); border: 2px solid var(--line);
 }
 button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
-.bn-cifra[data-guaio='true'] .bn-cifra-n { color: var(--rosso-testo); }
+.bn-cifra[data-stato='manca'] .bn-cifra-n { color: var(--rosso-testo); }
+.bn-cifra[data-stato='attesa'] .bn-cifra-n { color: var(--giallo-testo); }
 .bn-cifra-n { font-size: 44px; font-weight: 700; line-height: 1; }
 .bn-cifra-sotto { font-size: 13px; color: var(--dim); }
+.bn-cifre .bn-riconta { grid-column: 1 / -1; justify-self: start; }
+/* Sotto i 900px auto-fit lascia una casella sola sull'ultima riga: tre per riga, 3+2 o 3+3. */
+@media (max-width: 900px) { .bn-cifre { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .bn-oggi { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 28px; align-items: start; }
 .bn-sale { display: grid; gap: 0; padding-bottom: 6px; border-bottom: 2px solid var(--line); }
 .bn-sale .sg-etichetta { padding: 0 12px; letter-spacing: 0.24em; }
@@ -3372,7 +3378,6 @@ button.bn-cifra:not(:disabled):hover { border-color: var(--dim); }
   /* La coda è il lavoro del banco: sullo schermo stretto viene prima del tabellone, non dopo. */
   .bn-coda { order: -1; }
   .bn-chi { display: none; }
-  .bn-cifre { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 /* A 320px sette colonne da 44px entrano solo senza spazi fra le celle: il bordo di ognuna fa da separatore. */
 @media (max-width: 359px) {
