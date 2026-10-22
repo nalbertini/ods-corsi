@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.173.0 — 23 ottobre 2026
+
+### Novità
+
+- Una sola email per persona, la stessa per entrare nell'app e per ricevute e avvisi
+
 ## 0.172.0 — 22 ottobre 2026
 
 ### Novità
