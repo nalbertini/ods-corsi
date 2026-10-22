@@ -28,6 +28,8 @@ export interface MovimentoDaCollegare {
   /** `prima-nota:N` per lo storico importato, vuoto per un movimento scritto a mano. */
   origineImport?: string
   personaId?: string
+  /** Dall'elenco di CONTABILITÀ: una ricevuta o un pagamento ha già la sua persona, e non è un movimento. */
+  origine?: 'ricevuta' | 'pagamento' | 'movimento'
 }
 
 export interface RiepilogoCollegamenti {
@@ -59,6 +61,8 @@ export interface VoceStorico {
   importo: number
   voce: string
   cassa: string
+  /** Scritto a mano in CONTABILITÀ (va fra i pagamenti della scheda), non importato dal vecchio programma. */
+  aMano: boolean
 }
 
 /**
@@ -97,20 +101,23 @@ const giornoMeseAnno = (data: string): string => data.split('-').reverse().join(
 /** Perché un movimento non si collega, in parole per chi usa l'app; null se si può. Le stesse frasi del database. */
 export function cosaNonVaCollegato(m: MovimentoDaCollegare): string | null {
   const q = `Il movimento del ${giornoMeseAnno(m.data)} (${m.descrizione})`
+  if (m.origine && m.origine !== 'movimento') return `${q} non viene dal vecchio programma: non si collega`
   if (m.annullato) return `${q} è annullato: non si collega`
   if (m.tipo === 'giroconto') return 'Un giroconto non ha una persona'
   if (m.voce === VOCE_DIFFERENZA) return `${q} è scritto dalla chiusura di cassa: non si collega`
   if (m.tipo === 'uscita') return `${q} è un’uscita: si collegano solo le entrate`
-  if (!m.origineImport?.startsWith('prima-nota:')) return `${q} non viene dal vecchio programma: non si collega`
   if (m.voce !== VOCE_QUOTA && m.voce !== VOCE_CORSI) {
     return `${q} è su «${m.voce}»: si collegano solo quelli su «${VOCE_QUOTA}» e «${VOCE_CORSI}»`
   }
   return null
 }
 
+// Il blocco automatico guarda solo lo storico: un'entrata a mano ha la persona da quando si scrive (98-quote-persona.sql).
+const delloStorico = (m: MovimentoDaCollegare): boolean => !!m.origineImport?.startsWith('prima-nota:') && !cosaNonVaCollegato(m)
+
 /** Quanti si collegherebbero e quanti no, per il riepilogo da confermare prima di scrivere. */
 export function riepilogoCollegamenti(movimenti: MovimentoDaCollegare[], persone: PersonaPerNome[]): RiepilogoCollegamenti {
-  const collegabili = movimenti.filter((m) => !cosaNonVaCollegato(m))
+  const collegabili = movimenti.filter(delloStorico)
   const liberi = collegabili
     .filter((m) => !m.personaId)
     .map((m) => ({ m, a: abbinaPersone(nomeDallaCausale(m.descrizione), persone) }))
@@ -138,25 +145,38 @@ export type EsitoCollegamento = 'sicuro' | 'omonimi' | 'nessuna'
 /** L'esito di ogni movimento che si può collegare e non lo è ancora: come `esiti_collegamenti_persona` del database. */
 export function esitiCollegamenti(movimenti: MovimentoDaCollegare[], persone: PersonaPerNome[]): Array<{ id: string; esito: EsitoCollegamento }> {
   return movimenti
-    .filter((m) => !m.personaId && !cosaNonVaCollegato(m))
+    .filter((m) => !m.personaId && delloStorico(m))
     .map((m) => ({ id: m.id, esito: abbinaPersone(nomeDallaCausale(m.descrizione), persone).esito }))
     .sort((a, b) => a.id.localeCompare(b.id))
 }
 
-export type FiltroPersona = '' | 'collegati' | 'da_decidere' | 'senza_scheda'
+export type FiltroPersona = '' | 'collegati' | 'da_decidere' | 'senza_scheda' | 'senza_persona'
 
 /** Lo storico collegato a mano: gli incassi iscritti hanno la persona da sé, non si collegano né si scollegano. */
 export const collegatoAMano = (r: { origine: string; personaId?: string }) => r.origine === 'movimento' && !!r.personaId
+
+/** Il minimo di una riga dell'elenco per il filtro PERSONA. */
+type RigaPerFiltro = { origine: string; personaId?: string; tipo?: string; voce?: string | null; annullato?: boolean; origineImport?: string }
+
+/** Una quota o un corso scritto a mano che non ha ancora la persona: quelli di prima che diventasse obbligatoria. */
+export const senzaPersona = (r: RigaPerFiltro): boolean =>
+  r.origine === 'movimento' && r.tipo === 'entrata' && !r.annullato && !r.personaId && !r.origineImport?.startsWith('prima-nota:') && (r.voce === VOCE_QUOTA || r.voce === VOCE_CORSI)
 
 /**
  * Il filtro PERSONA dell'elenco: i collegati, gli omonimi da decidere, quelli senza scheda. Vuoto: tutti.
  * «Collegati» è lo storico collegato a mano: gli incassi iscritti hanno la persona da sé e coprirebbero quel lavoro.
  */
-export function filtraPerPersona<T extends { id: string; origine: string; personaId?: string }>(righe: T[], filtro: FiltroPersona, esiti: Record<string, EsitoCollegamento | undefined>): T[] {
+export function filtraPerPersona<T extends RigaPerFiltro & { id: string }>(righe: T[], filtro: FiltroPersona, esiti: Record<string, EsitoCollegamento | undefined>): T[] {
   if (!filtro) return righe
   if (filtro === 'collegati') return righe.filter(collegatoAMano)
+  if (filtro === 'senza_persona') return righe.filter(senzaPersona)
   const voluto: EsitoCollegamento = filtro === 'da_decidere' ? 'omonimi' : 'nessuna'
   return righe.filter((r) => !r.personaId && esiti[r.id] === voluto)
+}
+
+/** Lo storico di una scheda in due: scritto in CONTABILITÀ (fra i pagamenti) e dal vecchio programma (a parte). */
+export function dividiStorico<T extends { aMano: boolean }>(righe: T[]): { inContabilita: T[]; vecchioProgramma: T[] } {
+  return { inContabilita: righe.filter((r) => r.aMano), vecchioProgramma: righe.filter((r) => !r.aMano) }
 }
 
 /**

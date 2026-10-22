@@ -3,7 +3,7 @@
 -- testo, saldi, bilancio, previsto né chiusure. Un movimento ha al massimo una persona. Solo l'amministrazione
 -- collega, scollega e legge la traccia (`collegamenti_persona`); lo storico di una scheda (`storico_persona`)
 -- lo vede chi vede già i pagamenti di quella scheda: segreteria e amministrazione.
--- Si collegano solo le ENTRATE importate dal vecchio programma (`origine_import like 'prima-nota:%'`) sulle voci
+-- (Da 98-quote-persona.sql si collegano anche le entrate scritte a mano: lo prova quote-persona.sql.) Il blocco e i candidati guardano le ENTRATE importate dal vecchio programma (`origine_import like 'prima-nota:%'`) sulle voci
 -- «Quota associativa» e «Corsi e altri pagamenti». Il blocco automatico collega solo chi ha nome e cognome della
 -- causale («Cliente … per …») uguali a quelli di UNA sola scheda; gli omonimi si scelgono a mano.
 -- Le stesse regole di src/lib/movimentiPersona.ts e della modalità prova, provate da
@@ -259,8 +259,10 @@ select importa_prima_nota(jsonb_build_array(
   riga('prima-nota:13', '2025-03-04', 'conto', 'entrata', 1000, 'Cliente Giulia Verdi per extra', 'Corsi e altri pagamenti'))) as importate \gset
 select annulla_movimento(id_n(13)) is not null as r1 \gset
 select registra_giroconto(jsonb_build_object('da', id_cassa('Cassa Contanti'), 'a', id_cassa('Conto Corrente'), 'data', '2026-09-06', 'importo', 1000)) is not null as r2 \gset
-select registra_movimento(jsonb_build_object('tipo', 'entrata', 'data', '2026-09-10', 'importo', 3000, 'voce_id', id_voce('Quota associativa', 'entrata'), 'cassa_id', id_cassa('Conto Corrente'), 'descrizione', 'Cliente Giulia Verdi per mano')) is not null as r3 \gset
 reset role;
+-- A mano, senza persona: da quando la quota la vuole (98-quote-persona.sql) `registra_movimento` non la scrive più così.
+insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione) values
+  ('entrata', '2026-09-10', 3000, id_voce('Quota associativa', 'entrata'), id_cassa('Conto Corrente'), 'Cliente Giulia Verdi per mano');
 -- Le causali vere hanno spazi doppi, a capo e accenti che l'import ripulisce: questa è scritta com'era, senza passare di là.
 insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, origine_import)
 values ('entrata', '2026-05-10', 2500, id_voce('Corsi e altri pagamenti', 'entrata'), id_cassa('Conto Corrente'), E'Cliente\nJOSÈ  FERRARI\nper mensile', 'prima-nota:14');
@@ -386,7 +388,7 @@ select atteso('un movimento di un giorno chiuso (3 settembre, la cassa è chiusa
 select atteso('…la chiusura è quella di prima: previsto e differenza', (select previsto::text || '/' || differenza::text from chiusure_cassa where annullata_il is null), :'chiusura_prima');
 select atteso('…e il previsto calcolato adesso è lo stesso', previsto_cassa(id_cassa('Cassa Contanti'), '2026-09-07')::text, :'calcolato_prima');
 select atteso('…il giorno è ancora chiuso: un movimento nuovo lì no', come_esito('22222222-2222-2222-2222-222222222222', format($q$select registra_movimento(%L::jsonb)::text$q$,
-  jsonb_build_object('tipo', 'entrata', 'data', '2026-09-06', 'importo', 100, 'voce_id', id_voce('Quota associativa', 'entrata'), 'cassa_id', id_cassa('Cassa Contanti'), 'descrizione', 'No'))),
+  jsonb_build_object('tipo', 'entrata', 'data', '2026-09-06', 'importo', 100, 'voce_id', id_voce('Quota associativa', 'entrata'), 'cassa_id', id_cassa('Cassa Contanti'), 'descrizione', 'No', 'persona_id', pid(1)))),
   '22023 Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura');
 select atteso('niente di questo ha toccato i conti', senza_persona() || ' ' || somme(), :'sp_prima' || ' ' || :'somme_prima');
 
@@ -403,7 +405,10 @@ select atteso('un annullato', come_esito('22222222-2222-2222-2222-222222222222',
 select atteso('un giroconto', come_esito('22222222-2222-2222-2222-222222222222', format($q$select collega_movimenti_persona(array[%L]::uuid[], %L)::text$q$, (select id from movimenti where tipo = 'giroconto'), pid(1))), '22023 Un giroconto non ha una persona');
 select atteso('un''uscita', come_esito('22222222-2222-2222-2222-222222222222', format($q$select collega_movimenti_persona(%s, %L)::text$q$, lista(12), pid(1))), '22023 Il movimento del 03/03/2025 (Cliente Giulia Verdi per rimborso) è un’uscita: si collegano solo le entrate');
 select atteso('la differenza di una chiusura', come_esito('22222222-2222-2222-2222-222222222222', format($q$select collega_movimenti_persona(array[%L]::uuid[], %L)::text$q$, id_mov('Differenza di cassa'), pid(1))), '22023 Il movimento del 07/09/2026 (Differenza di cassa) è scritto dalla chiusura di cassa: non si collega');
-select atteso('un movimento scritto a mano, anche su «Quota associativa» e con un nome nel testo', come_esito('22222222-2222-2222-2222-222222222222', format($q$select collega_movimenti_persona(array[%L]::uuid[], %L)::text$q$, id_mov('Cliente Giulia Verdi per mano'), pid(1))), '22023 Il movimento del 10/09/2026 (Cliente Giulia Verdi per mano) non viene dal vecchio programma: non si collega');
+-- Cambiata da 98-quote-persona.sql: un'entrata a mano su «Quota associativa» ora si collega (prima era rifiutata: «non viene dal vecchio programma»).
+begin;
+select atteso('un movimento scritto a mano su «Quota associativa» si collega, anche con un nome nel testo', come_json('22222222-2222-2222-2222-222222222222', format($q$select collega_movimenti_persona(array[%L]::uuid[], %L)::text$q$, id_mov('Cliente Giulia Verdi per mano'), pid(1))), '{"collegati": 1, "gia_cosi": 0}'::jsonb::text);
+rollback;
 select atteso('un''entrata su «Da classificare»', come_esito('22222222-2222-2222-2222-222222222222', format($q$select collega_movimenti_persona(%s, %L)::text$q$, lista(11), pid(1))), '22023 Il movimento del 02/03/2025 (Cliente Giulia Verdi per regalo) è su «Da classificare»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»');
 select atteso('uno cattivo in fondo ferma il lotto e dice quale', come_esito('22222222-2222-2222-2222-222222222222', format($q$select collega_movimenti_persona(%s, %L)::text$q$, lista(5, 6, 11), pid(4))), '22023 Il movimento del 02/03/2025 (Cliente Giulia Verdi per regalo) è su «Da classificare»: si collegano solo quelli su «Quota associativa» e «Corsi e altri pagamenti»');
 select atteso('scollegare: nessun movimento', come_esito('22222222-2222-2222-2222-222222222222', $q$select scollega_movimenti_persona(array[]::uuid[])::text$q$), '22023 Scegli almeno un movimento');
@@ -667,8 +672,10 @@ rollback;
 
 \echo ''
 \echo '--- 17. candidati: solo per un movimento che si può collegare; di una scheda sola si dice solo il nome ---'
-select atteso('un movimento scritto a mano col nome di una minorenne: rifiutato', come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, id_mov('Cliente Giulia Verdi per mano'))),
-  '22023 Il movimento del 10/09/2026 (Cliente Giulia Verdi per mano) non viene dal vecchio programma: non si collega');
+-- Cambiata da 98-quote-persona.sql: un'entrata a mano su «Quota associativa» ora ha i suoi candidati (prima era rifiutata:
+-- «non viene dal vecchio programma»); di una scheda sola si dice solo il nome.
+select atteso('un movimento scritto a mano col nome di una minorenne: la scheda sola, solo il nome', come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, id_mov('Cliente Giulia Verdi per mano'))),
+  '(cccccccc-0000-0000-0000-000000000001,Giulia,Verdi,,{},)');
 select atteso('…e nella risposta non c''è l''anno di nascita', (come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, id_mov('Cliente Giulia Verdi per mano'))) like '%2016%')::text, 'false');
 select atteso('un''uscita', come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, id_n(12))), '22023 Il movimento del 03/03/2025 (Cliente Giulia Verdi per rimborso) è un’uscita: si collegano solo le entrate');
 select atteso('un annullato', come_esito(:ada, format($q$select candidati_persona_movimento(%L)::text$q$, id_n(13))), '22023 Il movimento del 04/03/2025 (Cliente Giulia Verdi per extra) è annullato: non si collega');

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import type { DatiSegreteria, ProvaSeg, RigaRegistro } from '../../lib/segreteria'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
@@ -35,7 +35,7 @@ function scaricaCsv(righe: RigaRegistro[], nome: string) {
  * dice che non è venuto nessuno, dice che nessuno ha segnato, e sta nel suo
  * riquadro invece di abbassare le medie.
  */
-export function Presenze({ d, onVai, senzaAppello }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void; senzaAppello?: boolean }) {
+export function Presenze({ d, onVai, senzaAppello, schede }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void; senzaAppello?: boolean; schede?: ReactNode }) {
   // In cima, gli ultimi 30 giorni: quelli che conta DA FARE, a cavallo di due mesi.
   const periodi = useMemo(() => {
     const adesso = new Date()
@@ -112,6 +112,7 @@ export function Presenze({ d, onVai, senzaAppello }: { d: DatiSegreteria; onVai:
           Scarica CSV
         </button>
       </Testa>
+      {schede}
 
       {registro.guaio && <Guaio testo={registro.guaio} />}
 

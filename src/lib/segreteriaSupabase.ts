@@ -175,6 +175,7 @@ const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `
 const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
 const MANCA_CHIUSURA = 'Il database non è ancora aggiornato per la chiusura della cassa: va lanciato 60-chiusura-cassa.sql'
 const MANCA_CAMBIA_VOCE = 'Il database non è ancora aggiornato per cambiare la voce dei movimenti: va lanciato 67-cambia-voce.sql'
+const MANCA_QUOTE_PERSONA = 'Il database non è ancora aggiornato per scrivere la persona di una quota o di un corso: va lanciato 98-quote-persona.sql'
 const MANCA_MOVIMENTI_PERSONA = 'Il database non è ancora aggiornato per collegare i movimenti alle persone: va lanciato 70-movimenti-persona.sql'
 const MANCA_PAGATI = 'Pagare i compensi non è ancora attivo sul database: va lanciato 81-compensi-pagati.sql'
 const MANCA_FIRMA = 'Segnare chi non c’era e «a lezione basta uno» non sono ancora attivi sul database: va lanciato 82-manca-la-firma.sql'
@@ -418,6 +419,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /salva_voce|rinomina_voce|imposta_voce_attiva|imposta_saldo_cassa|registra_movimento|registra_giroconto|annulla_movimento|correggi_testo_movimento/.test(e.message ?? '')) return new Error(MANCA_CONTABILITA)
   // Le funzioni della chiusura di cassa arrivano con 60-chiusura-cassa.sql.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /chiudi_cassa|annulla_chiusura_cassa/.test(e.message ?? '')) return new Error(MANCA_CHIUSURA)
+  // La persona nel cambio di voce arriva con 98-quote-persona.sql: prima la funzione ha due argomenti e non la trova.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /cambia_voce_movimenti.*persona/.test(e.message ?? '')) return new Error(MANCA_QUOTE_PERSONA)
   // Cambiare la voce dei movimenti arriva con 67-cambia-voce.sql.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /cambia_voce_movimenti/.test(e.message ?? '')) return new Error(MANCA_CAMBIA_VOCE)
   // Collegare lo storico alle persone arriva con 70-movimenti-persona.sql.
@@ -1629,7 +1632,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async registraMovimento(d) {
       const riga = ok(
         await db.rpc('registra_movimento', {
-          dati: { tipo: d.tipo, data: d.data, importo: d.importo, voce_id: d.voceId, cassa_id: d.cassaId, descrizione: d.descrizione.trim(), nota: d.nota?.trim() || null },
+          dati: { tipo: d.tipo, data: d.data, importo: d.importo, voce_id: d.voceId, cassa_id: d.cassaId, descrizione: d.descrizione.trim(), nota: d.nota?.trim() || null, ...(d.personaId ? { persona_id: d.personaId } : {}) },
         }),
       ) as { id: string }
       return riga.id
@@ -1678,9 +1681,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.rpc('correggi_testo_movimento', { id, descrizione: descrizione.trim(), nota: nota?.trim() || null }))
     },
 
-    async cambiaVoceMovimenti(ids, voceId) {
+    async cambiaVoceMovimenti(ids, voceId, personaId) {
       // La risposta arriva senza tipo dall'API: la forma è quella di 67-cambia-voce.sql.
-      const r = ok(await db.rpc('cambia_voce_movimenti', { ids, voce: voceId })) as { cambiati: number; gia_cosi: number }
+      const r = ok(await db.rpc('cambia_voce_movimenti', { ids, voce: voceId, ...(personaId ? { persona: personaId } : {}) })) as { cambiati: number; gia_cosi: number }
       return { cambiati: r.cambiati, giaCosi: r.gia_cosi }
     },
 
@@ -1749,7 +1752,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async storicoPersona(persona) {
-      return (ok(await db.rpc('storico_persona', { persona })) ?? []) as Array<{ id: string; data: string; descrizione: string; importo: number; voce: string; cassa: string }>
+      const righe = (ok(await db.rpc('storico_persona', { persona })) ?? []) as Array<{ id: string; data: string; descrizione: string; importo: number; voce: string; cassa: string; a_mano?: boolean }>
+      // Senza 98-quote-persona.sql non c'è `a_mano`: allora sono tutte dello storico, l'unico che si collegava.
+      return righe.map(({ a_mano, ...r }) => ({ ...r, aMano: a_mano ?? false }))
     },
 
     async contantiChiusiFino() {

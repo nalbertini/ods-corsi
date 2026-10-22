@@ -221,7 +221,9 @@ const impostazioniAGruppi = (r) => r.selettori.some((x) => /^\.sg-indice$|^\.sg-
 const numeriConti = (r) => r.selettori.includes('.sg-numeri.sg-numeri-conti')
 // Le cifre di OGGI nel Banco sono le caselle della striscia (cinque o sei, colore dallo stato): `.bn-cifre` e il vecchio `data-guaio` sono cambiati di proposito.
 const cifreBanco = (r) => r.selettori.some((x) => /^\.bn-cifre$|^\.bn-cifra\[data-guaio/.test(x))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// L'area iscritti ha il look del sito: SEGNALA è cresciuto a 44px col bordo blu (`prova:look`).
+const segnalaIscritti = (r) => r.selettori.includes('.mia-segnala')
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !segnalaIscritti(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

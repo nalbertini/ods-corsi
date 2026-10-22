@@ -246,7 +246,7 @@ function Iscrizioni() {
 function Iscritti() {
   return (
     <div className="app">
-      <Testata luogo="ISCRITTI" guida={indirizzoPagina('iscritti')} />
+      <Testata luogo="ISCRITTI" guida={indirizzoPagina('iscritti')} senzaTema />
       <main className="scroll">{serveAccesso ? <IscrittiChiusa /> : <AreaIscritti />}</main>
     </div>
   )

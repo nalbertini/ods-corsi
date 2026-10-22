@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { SegnalataVista } from '../../lib/segnalate'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -15,7 +15,7 @@ const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}
  * segreteria le accoglie (l'iscritto diventa presente) o le rifiuta; le può
  * vedere anche l'istruttore della lezione, dall'appello. Per ora solo in prova.
  */
-export function PresenzeSegnalate({ d, onCambiato, onVai }: { d: DatiSegreteria; onCambiato?: () => void; onVai: (v: Voce, d?: Destinazione) => void }) {
+export function PresenzeSegnalate({ d, onCambiato, onVai, schede }: { d: DatiSegreteria; onCambiato?: () => void; onVai: (v: Voce, d?: Destinazione) => void; schede?: ReactNode }) {
   const elenco = useCarica(() => d.segnalate?.() ?? Promise.resolve([]), [d])
   const [tutte, setTutte] = useState(false)
   const { avviso, fai, lavora } = useAvviso()
@@ -43,13 +43,14 @@ export function PresenzeSegnalate({ d, onCambiato, onVai }: { d: DatiSegreteria;
   return (
     <>
       <Testa
-        titolo="PRESENZE SEGNALATE"
+        titolo="PRESENZE"
         sotto={daVedere.length === 1 ? 'Una da vedere.' : daVedere.length ? `${daVedere.length} da vedere.` : 'Nessuna da vedere.'}
       >
         <button type="button" className="num sg-chip" aria-pressed={tutte} onClick={() => setTutte(!tutte)}>
           Anche quelle già gestite
         </button>
       </Testa>
+      {schede}
 
       <p className="sg-sotto" style={{ maxWidth: 760, margin: 0 }}>
         Un iscritto che c’era e nell’appello non risulta lo segnala dalla sua pagina. Accolta, risulta presente; rifiutata, resta com’era. Le vede anche
