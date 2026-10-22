@@ -851,12 +851,12 @@ console.log('\n13. il promemoria del backup, prima di importare')
   const dice = (stato) => { try { return il.promemoriaBackup(stato, adesso) } catch (e) { return `ERRORE: ${e.message}` } }
   ok('backup riuscito oggi: lo dice, senza allarme', dice(copia('riuscito', 0)), { testo: 'Ultimo backup riuscito oggi.', avviso: false })
   ok('riuscito ieri: lo dice, senza allarme', dice(copia('riuscito', 1)), { testo: 'Ultimo backup riuscito ieri.', avviso: false })
-  ok('riuscito da giorni: avvisa e dice dove farne uno nuovo', dice(copia('riuscito', 5)), { testo: 'Ultimo backup riuscito 5 giorni fa. Se importi tanto, fanne uno nuovo da IMPOSTAZIONI › IL BACKUP.', avviso: true })
+  ok('riuscito da giorni: avvisa e dice dove farne uno nuovo', dice(copia('riuscito', 5)), { testo: 'Ultimo backup riuscito 5 giorni fa. Se importi tanto, fanne uno nuovo da IMPOSTAZIONI › DATI E PRIVACY › IL BACKUP.', avviso: true })
   ok('i giorni sono di calendario, non di 24 ore: ieri alle 23:30, con adesso a mezzanotte e dieci, è ieri', il.promemoriaBackup(copia('riuscito', 1, 23), new Date(2026, 9, 5, 0, 10)), { testo: 'Ultimo backup riuscito ieri.', avviso: false })
-  ok('mai fatto: avvisa', dice({ copie: [], ultimo: null }), { testo: 'Non risulta nessun backup. Prima di importare, fanne uno da IMPOSTAZIONI › IL BACKUP.', avviso: true })
-  ok('non riuscito: avvisa', dice(copia('fallito', 0)), { testo: 'L\'ultimo backup non è riuscito. Riprova da IMPOSTAZIONI › IL BACKUP prima di importare.', avviso: true })
+  ok('mai fatto: avvisa', dice({ copie: [], ultimo: null }), { testo: 'Non risulta nessun backup. Prima di importare, fanne uno da IMPOSTAZIONI › DATI E PRIVACY › IL BACKUP.', avviso: true })
+  ok('non riuscito: avvisa', dice(copia('fallito', 0)), { testo: 'L\'ultimo backup non è riuscito. Riprova da IMPOSTAZIONI › DATI E PRIVACY › IL BACKUP prima di importare.', avviso: true })
   ok('in corso: aspetta, senza allarme', dice(copia('in_corso', 0, 11)), { testo: 'Un backup è in corso: aspetta che finisca, poi importa.', avviso: false })
-  ok('se i backup non si leggono: lo dice, e manda a controllare', dice(undefined), { testo: 'Non riesco a leggere i backup: controlla da IMPOSTAZIONI › IL BACKUP prima di importare.', avviso: true })
+  ok('se i backup non si leggono: lo dice, e manda a controllare', dice(undefined), { testo: 'Non riesco a leggere i backup: controlla da IMPOSTAZIONI › DATI E PRIVACY › IL BACKUP prima di importare.', avviso: true })
 }
 
 console.log('\nil certificato medico, il documento e il pagamento')

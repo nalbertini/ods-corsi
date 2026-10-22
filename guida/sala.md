@@ -62,7 +62,7 @@ APERTE**, e la scheda resta finché state sul timer; tornando a **PRESENZE**, o
 dopo 2 minuti senza tocchi, sparisce di nuovo. La voce e gli esercizi invece li sceglie la segreteria
 per tutti i tablet (vedi [Impostazioni](segreteria/regole.md#la-voce-dei-tablet)
 ed [Esercizi](segreteria/esercizi.md)); dal tablet si sceglie solo se usare
-le clip incise. Lo storico dei timer si guarda dalla segreteria.
+le clip incise. Lo storico dei timer si guarda dalla segreteria, in fondo a ESERCIZI.
 
 **Il timer non si ferma cambiando scheda.** Con un allenamento in corso:
 

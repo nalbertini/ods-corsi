@@ -4,7 +4,7 @@
 
 **Il Banco** è un altro modo di vedere la segreteria: al posto del menu a
 sinistra c'è la **ricerca sempre in cima** e **cinque luoghi**. Si sceglie da
-**IMPOSTAZIONI**, nel gruppo **Questo schermo**: **Come oggi** o **Il banco**. Cambia subito, senza ricaricare, e vale **solo per questo computer**.
+**IMPOSTAZIONI**, nella scheda **QUESTO COMPUTER**: **Come oggi** o **Il banco**. Cambia subito, senza ricaricare, e vale **solo per questo computer**.
 Chi non sceglie niente vede la segreteria di sempre.
 
 Sul telefono resta il menu di sempre: Il Banco è fatto per lo schermo largo.

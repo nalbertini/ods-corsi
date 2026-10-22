@@ -339,7 +339,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
     {letto.dato && <DisciplinePalestra d={d} lista={discipline} ricarica={ricarica} />}
     <section aria-label="Gli esercizi della palestra" className="sg-riquadro">
       <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-        L'elenco che i tablet di sala propongono scrivendo un timer, e i nomi che la voce incisa sa dire (in IMPOSTAZIONI › LA VOCE DEI
+        L'elenco che i tablet di sala propongono scrivendo un timer, e i nomi che la voce incisa sa dire (in IMPOSTAZIONI › LE SALE E I TABLET › LA VOCE DEI
         TABLET). Rinominare qui non cambia i timer già salvati: il vecchio nome resta dov'è. Chi usa il timer dal suo telefono tiene il suo
         elenco.
       </span>
@@ -500,6 +500,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
         </>
       )}
     </section>
+    <StoricoTimer d={d} />
     {avviso}
     </>
   )
