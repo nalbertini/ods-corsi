@@ -107,7 +107,7 @@ export interface ControlloInvio {
  * niente, come quando la mail non si prova nemmeno.
  */
 export function decidiInvio(c: ControlloInvio, indirizzo: string | null, haPassword: boolean): { manda: true; a: string } | (Rifiuto & { manda: false; registra: string | null }) {
-  if (!c.ha_indirizzo || !indirizzo) return { manda: false, guaio: 'Nessuna email di contatto in scheda', stato: 409, tipo: 'senza-indirizzo', registra: null }
+  if (!c.ha_indirizzo || !indirizzo) return { manda: false, guaio: 'Nessuna email in scheda', stato: 409, tipo: 'senza-indirizzo', registra: null }
   if (c.oltre_soglia) return { manda: false, guaio: 'Oggi sono partite 400 mail, il massimo', stato: 429, tipo: 'soglia', registra: 'soglia' }
   if (!haPassword)
     return { manda: false, guaio: 'Manca la password della posta fra i segreti della funzione: vedi supabase/LEGGIMI.md, «La ricevuta per email»', stato: 501, tipo: 'manca-password', registra: 'manca SMTP_PASSWORD' }

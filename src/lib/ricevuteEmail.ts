@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // La ricevuta per email: le parole che vede la segreteria.
 //
-// Fatta la ricevuta, la famiglia la riceve in PDF all'email di contatto della
+// Fatta la ricevuta, la famiglia la riceve in PDF all’email della
 // persona della ricevuta (per un minore, quella del genitore). L'indirizzo lo
 // sceglie il database (`76-ricevute-email.sql`), la mail la manda la Edge
 // Function `ricevuta-email`; qui lo stato nello storico, le domande, gli
@@ -52,25 +52,25 @@ export interface StatoPosta {
   motivo: string | null
 }
 
-const SENZA_CONTATTO = 'Nessuna email di contatto in scheda: aggiungila in PERSONA.'
+const SENZA_CONTATTO = 'Nessuna email in scheda: aggiungila in PERSONA.'
 
 /** «21/10/2026», il giorno di Roma di un istante. */
 const giorno = (iso: string) => new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(iso))
 
-const contatto = (x: string | null) => x?.trim() || null
+const indirizzo = (x: string | null) => x?.trim() || null
 
-/** Il genitore a cui va la mail di un minore (il giorno della ricevuta), per dire di chi è l'email di contatto; `null` per un adulto. */
+/** Il genitore a cui va la mail di un minore (il giorno della ricevuta), per dire di chi è l'email; `null` per un adulto. */
 export function genitoreDellaMail(r: Pick<Ricevuta, 'intestatario' | 'data'>): string | null {
   return mancanoDatiSocio(r.intestatario, new Date(r.data)).minore ? r.intestatario.genitore?.trim() || null : null
 }
 
-/** Dopo FAI LA RICEVUTA la mail parte solo con l'email di contatto in scheda e la casella rimasta spuntata. */
-export const daMandare = (emailContatto: string | null, spuntata: boolean) => !!contatto(emailContatto) && spuntata
+/** Dopo FAI LA RICEVUTA la mail parte solo con l’email in scheda e la casella rimasta spuntata. */
+export const daMandare = (email: string | null, spuntata: boolean) => !!indirizzo(email) && spuntata
 
 /** Il tasto MANDA PER EMAIL nell'avviso: solo quando la posta non ha risposto, l'unico guaio che riprovando passa. */
 export const siRiprova = (esito: EsitoMandata | null) => esito?.esito === 'non partita' && esito.motivo === 'posta'
 
-const daDove = (genitore: string | null) => (genitore?.trim() ? `Email di contatto del genitore, ${genitore.trim()}` : 'Email di contatto')
+const daDove = (genitore: string | null) => (genitore?.trim() ? `Email del genitore, ${genitore.trim()}` : 'Email della scheda')
 
 const numero = (r: Pick<Ricevuta, 'numero' | 'anno'>) => `${r.numero}/${r.anno}`
 
@@ -98,7 +98,7 @@ export const ultimaMandata = (invii: InvioRicevuta[]) => mandate(invii).at(-1)?.
 export function statoPosta(
   r: Pick<Ricevuta, 'creataIl' | 'annullataIl'>,
   invii: InvioRicevuta[],
-  emailContatto: string | null,
+  email: string | null,
   dal: string | null,
 ): StatoPosta | null {
   if (!dal) return null
@@ -106,24 +106,24 @@ export function statoPosta(
   const ultima = partite.at(-1)
   // Annullata è storia: dice com'era andata, e non si manda più.
   if (r.annullataIl) return { testo: ultima ? mandataIl(ultima, partite.length) : 'Non mandata', tono: null, tasto: null, spento: false, motivo: null }
-  const senza = !contatto(emailContatto)
+  const senza = !indirizzo(email)
   const spento = { spento: senza, motivo: senza ? SENZA_CONTATTO : null }
   // L'ultima, e quante volte: dopo MANDA DI NUOVO la data del primo invio farebbe credere che non sia ripartita.
   if (ultima) return { testo: `✓ ${mandataIl(ultima, partite.length)}`, tono: 'fatto', tasto: 'Manda di nuovo', ...spento }
   const testo = invii.length
     ? '… Non mandata: la mail non è partita'
     : senza
-      ? 'Non mandata: nessuna email di contatto in scheda'
+      ? 'Non mandata: nessuna email in scheda'
       : r.creataIl < dal
         ? 'Fatta prima dell’invio per email'
         : 'Non mandata'
   return { testo, tono: invii.length ? 'aspetta' : null, tasto: 'Manda per email', ...spento }
 }
 
-/** La casella nella domanda di FAI LA RICEVUTA, e la frase sotto; senza email di contatto, niente casella. */
-export function confermaEmail(emailContatto: string | null, genitore: string | null, spuntata: boolean): { spunta: string | null; nota: string } {
-  const a = contatto(emailContatto)
-  if (!a) return { spunta: null, nota: 'Nessuna email di contatto in scheda: la ricevuta non si manda. Il PDF si scarica come sempre.' }
+/** La casella nella domanda di FAI LA RICEVUTA, e la frase sotto; senza email, niente casella. */
+export function confermaEmail(email: string | null, genitore: string | null, spuntata: boolean): { spunta: string | null; nota: string } {
+  const a = indirizzo(email)
+  if (!a) return { spunta: null, nota: 'Nessuna email in scheda: la ricevuta non si manda. Il PDF si scarica come sempre.' }
   return {
     spunta: `Manda per email a ${a}`,
     nota: spuntata

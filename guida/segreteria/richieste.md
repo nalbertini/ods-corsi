@@ -108,9 +108,8 @@ Accolta o rifiutata, la finestra si chiude da sola e si torna all'elenco, alla p
   ACCOGLI ne fa una nuova anche quando la scheda è senza email o ha la stessa
   email o lo stesso telefono. Se sapete che è la stessa persona, sceglietela
   dalla lista **IN ELENCO C'È GIÀ**. Se l'email della richiesta
-  è già di un'altra persona (un fratello, il genitore), la nuova scheda entra
-  senza email di accesso e con quell'indirizzo come **email di contatto**: lì
-  trovate l'indirizzo da richiamare. **Apri la scheda** porta
+  è già di un fratello o del genitore, la nuova scheda entra con la stessa
+  email. **Apri la scheda** porta
   alla sua scheda in [Iscritti](iscritti.md).
 - **Rifiuta** — chi l'ha mandata **non viene avvisato**: va chiamato o scritto
   a mano. Se aveva già pagato con Satispay, la conferma lo dice: i soldi

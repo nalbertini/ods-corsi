@@ -169,7 +169,6 @@ console.log('\n4. le lezioni straordinarie')
 console.log('\n5. iscritti')
 {
   const id = await s.salvaPersona({ nome: 'Marta', cognome: 'Nuova', email: 'marta@esempio.it' })
-  ok('un\'email già usata no', await errore(() => s.salvaPersona({ nome: 'Altra', cognome: 'Marta', email: 'MARTA@esempio.it' })), 'Questo indirizzo è già di Marta Nuova: mettilo come email di contatto.')
   await s.iscrivi(id, 'lotta-2')
   const [ven] = await lotta2([9, 2])
   ok('iscritta da oggi: è nell\'appello di venerdì', (await app.dettaglio(ven.id)).elenco.some((p) => p.id === id), true)
@@ -433,22 +432,22 @@ console.log('\n10. l\'import dai fogli')
   const f = m.leggiFogli(corsi, iscritti, (await s.corsi()).map((c) => c.nome))
   ok('le righe che non vanno', f.saltate.map((x) => `${x.foglio}:${x.riga}`), ['corsi.csv:4', 'iscritti.csv:3'])
   ok('Marta una volta sola, con due corsi', f.iscritti.map((x) => [x.nome, x.corsi]), [['Marta', ['Yoga', 'Lotta 2']], ['Paolo', ['Yoga']]])
-  ok('Paolo, con la stessa email di Marta: entra senza', [f.iscritti[1].email, f.note.map((x) => `${x.foglio}:${x.riga}`)], [undefined, ['iscritti.csv:5']])
+  ok('Paolo, con la stessa email di Marta: entra con quella, senza note', [f.iscritti[1].email, f.note.length], ['marta@esempio.it', 0])
   const a1 = await m.importa(s, f, () => {})
   ok('entrano la sala, il corso, i giorni', [a1.saleNuove, a1.corsiNuovi, a1.ricorrenzeNuove], [['Sala nuova'], ['Yoga'], 2])
   ok('Katia si lega col solo nome', (await s.corsi()).find((c) => c.nome === 'Yoga').istruttori.map((i) => i.nome), ['Katia'])
   const a2 = await m.importa(s, m.leggiFogli(corsi, iscritti, (await s.corsi()).map((c) => c.nome)), () => {})
   ok('rifatto: niente di nuovo', [a2.saleNuove.length, a2.corsiNuovi.length, a2.ricorrenzeNuove, a2.iscrittiNuovi, a2.iscrizioniNuove], [0, 0, 0, 0, 0])
-  ok('e nessun doppione', (await s.persone()).filter((p) => p.email === 'marta@esempio.it').length, 1)
-  ok('Paolo c\'è, una volta', (await s.persone()).filter((p) => p.nome === 'Paolo' && p.cognome === 'Verdi').map((p) => p.email ?? null), [null])
+  ok('e nessun doppione', (await s.persone()).filter((p) => p.nome === 'Marta' && p.cognome === 'Nuova').length, 1)
+  ok('Paolo c\'è, una volta', (await s.persone()).filter((p) => p.nome === 'Paolo' && p.cognome === 'Verdi').map((p) => p.email ?? null), ['marta@esempio.it'])
 
-  // Un altro foglio, dopo: il fratello con l'email di Marta non finisce sulla sua scheda.
+  // Un altro foglio, dopo: il fratello con l'email di Marta resta una scheda a sé.
   const altro = 'nome;cognome;email;telefono;corso\nLuca;Nuova;MARTA@esempio.it;333;Lotta 2\n'
   const f3 = m.leggiFogli(null, altro, (await s.corsi()).map((c) => c.nome))
   const a3 = await m.importa(s, f3, () => {})
-  ok('Luca entra nuovo, e si dice perché senza email', [a3.iscrittiNuovi, a3.emailDiAltri.length], [1, 1])
+  ok('Luca entra nuovo', a3.iscrittiNuovi, 1)
   const luca = (await s.persone()).filter((p) => p.nome === 'Luca' && p.cognome === 'Nuova')
-  ok('Luca a sé, senza email, con Lotta 2', luca.map((p) => [p.email ?? null, p.iscrizioni.length]), [[null, 1]])
+  ok('Luca a sé, con l’email di Marta, con Lotta 2', luca.map((p) => [p.email ?? null, p.iscrizioni.length]), [['marta@esempio.it', 1]])
   const a4 = await m.importa(s, m.leggiFogli(null, altro, (await s.corsi()).map((c) => c.nome)), () => {})
   ok('rifatto: Luca non si duplica', [a4.iscrittiNuovi, a4.iscrizioniNuove, (await s.persone()).filter((p) => p.nome === 'Luca' && p.cognome === 'Nuova').length], [0, 0, 1])
 }
@@ -495,10 +494,10 @@ console.log('\n11. le risposte del modulo Google')
   ok('tre iscritti da cinque righe', r.iscritti.map((x) => `${x.nome} ${x.cognome}`), ['Giulia Neri', 'Marco Neri', 'Andrea Blu'])
   ok('senza nome si salta', r.saltate.map((x) => [x.riga, x.motivo]), [[6, '«Senzanome»: servono nome e cognome']])
   ok('Giulia, due corsi', r.iscritti[0].corsi, ['Judo 2', 'Lotta 3'])
-  ok('Marco, la stessa email della sorella: entra senza', [r.iscritti[1].email, r.iscritti[1].telefono], [undefined, '347 000 1111'])
+  ok('Marco, la stessa email della sorella: la tiene', [r.iscritti[1].email, r.iscritti[1].telefono], ['mamma@esempio.it', '347 000 1111'])
   ok('Andrea due volte: una persona, l\'ultimo telefono', [r.iscritti[2].corsi, r.iscritti[2].telefono], [['Judo adulti'], '333 999 9999'])
-  // La riga 5 è la nota dei due telefoni diversi di Andrea (regola nuova: vale l'ultimo e lo dice).
-  ok('le note dicono cosa è entrato a metà', r.note.map((x) => x.riga), [3, 4, 5])
+  // La riga 5 è la nota dei due telefoni diversi di Andrea (vale l'ultimo e lo dice).
+  ok('le note dicono cosa è entrato a metà', r.note.map((x) => x.riga), [4, 5])
 
   const f = { corsi: [], iscritti: r.iscritti, righe: { corsi: 0, iscritti: 0, risposte: r.righe }, saltate: r.saltate, note: r.note }
   const prima = (await s.persone()).length
@@ -510,7 +509,7 @@ console.log('\n11. le risposte del modulo Google')
   ok('Andrea non ha i corsi di Marco', nuovi.find((x) => x.nome === 'Andrea' && x.email === 'andrea@esempio.it').iscrizioni.map((i) => i.corsoId), ['judo-adulti'])
   const p = await s.persone()
   const giulia = p.find((x) => x.nome === 'Giulia' && x.cognome === 'Neri')
-  ok('Giulia con l\'email, Marco senza', [giulia.email, p.find((x) => x.nome === 'Marco' && x.cognome === 'Neri').email], ['mamma@esempio.it', undefined])
+  ok('Giulia e Marco, la stessa email', [giulia.email, p.find((x) => x.nome === 'Marco' && x.cognome === 'Neri').email], ['mamma@esempio.it', 'mamma@esempio.it'])
   // Il foglio cresce e si reimporta tutto: niente doppioni.
   const a2 = await m.importa(s, f, () => {})
   ok('reimportato: niente di nuovo', [a2.iscrittiNuovi, a2.iscrizioniNuove, (await s.persone()).length - prima], [0, 0, 3])
@@ -631,10 +630,10 @@ console.log('\n12. l\'import: ricaricare il foglio, doppioni, resoconto, archivi
     [[2, 'Mario D\'Angelo', 'in_palestra'], [3, 'Giorgia', 'da_sistemare'], [4, 'Teresa Nuova', 'nuova'], [5, 'Paolo Nuova', 'nuova']])
   await prova('e i totali per tipo', async () => il.controllaRighe(f2, await situazione()).totali, { nuova: 2, in_palestra: 1, da_sistemare: 1 })
   await prova('la riga da sistemare dice perché', async () => il.controllaRighe(f2, await situazione()).righe[1].motivo, 'Manca il cognome: «Giorgia», Judo 2')
-  await prova('il fratello con l\'email del genitore resta una persona a sé, e il controllo lo scrive', async () => {
+  await prova('il fratello con l\'email del genitore resta una persona a sé, senza avvisi', async () => {
     const r = il.controllaRighe(f2, await situazione()).righe[3]
-    return [r.esito, r.avvisi.some((x) => /senza email/.test(x))]
-  }, ['nuova', true])
+    return [r.esito, r.avvisi.length]
+  }, ['nuova', 0])
 
   // 3. Possibili doppioni.
   await s.salvaPersona({ nome: 'Manuel', cognome: 'Prudente' })
@@ -679,16 +678,15 @@ console.log('\n12. l\'import: ricaricare il foglio, doppioni, resoconto, archivi
   await s.salvaPersonale({ nome: 'Ilaria', cognome: 'Istruttrice', email: 'istr.import@esempio.it', ruolo: 'istruttore' })
   await s.salvaPersonale({ nome: 'Sara', cognome: 'Segreteria', email: 'seg.import@esempio.it', ruolo: 'staff' })
   const f4 = await excel(['Zeno;Primo;zeno@esempio.it;;Judo 2', 'Ugo;Istr;ISTR.import@esempio.it;;Judo 2', 'Vera;Secondo;vera@esempio.it;;Judo 2', 'Sandro;Seg;seg.import@esempio.it;;Judo 2', 'Wanda;Terza;wanda@esempio.it;;Judo 2'])
-  // Dall'email di contatto (44-email-contatto.sql) l'email del personale non è più un blocco: l'iscritto entra con l'email vuota e quell'indirizzo come contatto.
+  // L'email del personale non è un blocco: l'iscritto entra con quell'indirizzo, la regola dell'unicità vale solo per chi ha l'accesso.
   await prova('l\'email di un istruttore o della segreteria: entra lo stesso, nessuna riga da sistemare', async () => il.controllaRighe(f4, await situazione()).righe.map((r) => [r.riga, r.esito, r.motivo]),
     [[2, 'nuova', undefined], [3, 'nuova', undefined], [4, 'nuova', undefined], [5, 'nuova', undefined], [6, 'nuova', undefined]])
-  await prova('e il controllo dice che l\'indirizzo va nel contatto', async () => il.controllaRighe(f4, await situazione()).righe.map((r) => r.avvisi.some((x) => /contatto/.test(x))), [false, true, false, true, false])
   n = await quante()
   const senzaFermarsi = async (f) => { try { return await f() } catch (e) { ok('l\'import non si ferma per una riga', `ERRORE: ${e.message}`, 'nessun errore'); return { daSistemare: [] } } }
   a = await senzaFermarsi(() => m.importa(s, f4, () => {}))
   ok('importando entrano tutte e cinque, anche chi ha l\'email del personale', [(await quante()) - n, !!(await persona('Zeno', 'Primo')), !!(await persona('Wanda', 'Terza')), !!(await persona('Ugo', 'Istr'))], [5, true, true, true])
-  await prova('Ugo e Sandro: email vuota, e l\'indirizzo del personale come contatto', async () => [await persona('Ugo', 'Istr'), await persona('Sandro', 'Seg')].map((p) => [p.email ?? null, p.emailContatto ?? null]),
-    [[null, 'istr.import@esempio.it'], [null, 'seg.import@esempio.it']])
+  await prova('Ugo e Sandro: entrano con l\'indirizzo del personale', async () => [await persona('Ugo', 'Istr'), await persona('Sandro', 'Seg')].map((p) => p.email ?? null),
+    ['istr.import@esempio.it', 'seg.import@esempio.it'])
   await prova('l\'istruttrice e la segreteria restano come sono', async () => (await s.personale()).filter((q) => ['Ilaria', 'Sara'].includes(q.nome) && ['Istruttrice', 'Segreteria'].includes(q.cognome)).map((q) => [q.nome, q.email]).sort(),
     [['Ilaria', 'istr.import@esempio.it'], ['Sara', 'seg.import@esempio.it']])
   await prova('e il resoconto non ha righe da sistemare', () => a.daSistemare, [])
@@ -943,6 +941,17 @@ console.log('\nla musica delle sale')
   await s.salvaSala({ id: 'Lotta libera', nome: 'Lotta' })
   await s.togliListaMusica(randori)
   ok('tolta, il tablet non la vede più', (await t.musica()).map((l) => l.nome), ['Riscaldamento'])
+}
+
+console.log('\nl\'email di un iscritto e il personale')
+{
+  const f = await s.salvaPersona({ nome: 'Fede', cognome: 'Figlio', email: 'famiglia.pers@esempio.it' })
+  const g = await s.salvaPersona({ nome: 'Gaia', cognome: 'Figlia', email: 'famiglia.pers@esempio.it' })
+  const nuova = await s.salvaPersonale({ nome: 'Tina', cognome: 'Nuova', email: 'tina.pers@esempio.it', ruolo: 'istruttore' })
+  const diventa = await s.salvaPersonale({ nome: 'Fede', cognome: 'Figlio', email: 'famiglia.pers@esempio.it', ruolo: 'istruttore' })
+  ok('chi ha l\'email dei figli diventa personale, non un doppione: il primo iscritto', diventa, f)
+  ok('e il fratello resta iscritto', (await s.personale()).some((p) => p.id === g), false)
+  ok('modificando un\'altra scheda del personale con quell\'email si dice di chi è', await errore(() => s.salvaPersonale({ id: nuova, nome: 'Tina', cognome: 'Nuova', email: 'famiglia.pers@esempio.it', ruolo: 'istruttore' })), 'Questa email è già di Fede Figlio')
 }
 
 console.log('\nl\'invito per email')

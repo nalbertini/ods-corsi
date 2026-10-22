@@ -85,11 +85,8 @@ corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
        con **Riattivala e iscrivila** torna fra gli iscritti;
      - un'iscrizione **terminata** a un corso: di base resta terminata; con
        **Riapri** riparte da oggi.
-   - **EMAIL DI CONTATTO**: se l'email di una riga è già di un'altra
-     persona (il fratello nel foglio, un iscritto, un istruttore o la
-     segreteria), la riga entra lo stesso, senza email di accesso, e quell'indirizzo
-     diventa la sua **email di contatto**. Il controllo e il resoconto dicono
-     chi è e quale indirizzo; rifacendo l'import non si duplica;
+   - **EMAIL**: due fratelli con la stessa email entrano tutti e due con
+     quella; rifacendo l'import non si duplica;
    - **DA SISTEMARE**: le righe che non si capiscono, col perché;
    - **I NOMI NUOVI**: sale, istruttori e corsi che non c'erano. Attenzione: un
      nome scritto in modo diverso («Lotta 2» e «Lotta2») vale come un corso

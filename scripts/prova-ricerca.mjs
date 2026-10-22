@@ -141,7 +141,7 @@ console.log('\n3. gli iscritti per telefono ed email')
 
 console.log('\n4. il minore trovato dal genitore')
 {
-  const minore = persona('m', 'Marco', 'Rossi', { natoIl: '2017-03-01', telefono: '+39 347 555 0199', email: 'genitore.rossi@example.it', emailContatto: 'famiglia@example.it' })
+  const minore = persona('m', 'Marco', 'Rossi', { natoIl: '2017-03-01', telefono: '+39 347 555 0199', email: 'genitore.rossi@example.it' })
   const genitore = persona('g', 'Anna', 'Verdi', { natoIl: '1985-05-05', telefono: '347-555-0199', email: 'genitore.rossi@example.it' })
   const persone = [minore, genitore]
   const tel = cerca('3475550199', { persone })
@@ -153,8 +153,6 @@ console.log('\n4. il minore trovato dal genitore')
   const em = cerca('genitore.rossi@', { persone })
   ok('dall\'email: il minore dice «email di un genitore»', gr(em, 'iscritti').righe[0]?.sotto, '9 anni · email di un genitore')
   ok('e non la mostra', (JSON.stringify(gr(em, 'iscritti').righe[0]) ?? '').includes('example'), false)
-  const co = cerca('famiglia@', { persone })
-  ok('l\'email di contatto vale lo stesso, e il genitore non c\'entra', [idIn(co, 'iscritti'), gr(co, 'iscritti').righe[0]?.sotto], [['m'], '9 anni · email di un genitore'])
   ok('senza il genitore in elenco, esce solo il minore', idIn(cerca('3475550199', { persone: [minore] }), 'iscritti'), ['m'])
 }
 

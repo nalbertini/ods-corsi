@@ -8,14 +8,13 @@ elenco, che compaiono negli appelli e sul tablet.
 
 ## Cercare
 
-- **Cerca per nome o email**, di accesso o di contatto.
+- **Cerca per nome o email**.
 - **Tutti i corsi** → uno solo, per vedere chi fa quel corso.
 Quattro filtri stanno sempre in vista: **Senza certificato valido**, **Da pagare**,
 **Corsi scaduti** e **Non in regola**. Gli altri sono dietro **Altri filtri (N)**, col numero di quelli
 che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
 
-- **Solo senza email** — chi non ha l'email di accesso in scheda (quella di
-  contatto non conta: non serve per entrare nell'app).
+- **Solo senza email** — chi non ha l'email in scheda.
 - **Vengono poco** — chi è venuto a meno di metà delle lezioni, su almeno tre.
 - **Senza certificato valido** — chi è attivo e non ha il certificato medico,
   o ce l'ha scaduto. Chi ha meno di 6 anni non c'è: per lui il certificato
@@ -106,7 +105,7 @@ La colonna **30 GIORNI** dice quanto è venuto ognuno nell'ultimo mese:
 con sotto una barretta piena in proporzione. In giallo chi viene poco.
 
 La colonna **CONTATTO** mostra il telefono, così in caso di emergenza si trova
-subito; l'email (di accesso, se no di contatto) solo se il telefono manca. Se
+subito; l'email solo se il telefono manca. Se
 manca tutto c'è scritto «nessun contatto». Davanti c'è il telefono o la busta.
 
 ## Nuovo iscritto
@@ -114,14 +113,12 @@ manca tutto c'è scritto «nessun contatto». Davanti c'è il telefono o la bust
 **+ Nuovo iscritto** → nome, cognome, le due email e il telefono
 (facoltativi), **ISCRIVI A** un corso → **Salva**.
 
-Le email sono due, e servono a cose diverse:
-
-- **EMAIL PER ENTRARE NELL'APP**: una sola persona per indirizzo. Se è già di
-  qualcuno, l'app dice di chi e di metterla come email per ricevute e avvisi.
-- **EMAIL PER RICEVUTE E AVVISI** (nelle altre pagine, **EMAIL DI CONTATTO**) è dove scrivete o telefonate alla famiglia: può essere
-  la stessa per più persone (un genitore e i figli, due fratelli). È anche
-  dove arrivano le ricevute per email (vedi [Un pagamento e la sua
-  ricevuta](#un-pagamento-e-la-sua-ricevuta)): mai all'email per entrare nell'app.
+L'**EMAIL** è una sola: serve per entrare nell'app e per scrivere alla
+famiglia (ricevute e avvisi, vedi [Un pagamento e la sua
+ricevuta](#un-pagamento-e-la-sua-ricevuta)). Gli iscritti possono avere la
+stessa email (un genitore e i figli, due fratelli); un istruttore, la
+segreteria e l'amministrazione ne hanno una tutta loro: se è già di
+qualcuno, l'app dice di chi. Per un minorenne è quella del genitore.
 
 Due omonimi si distinguono dal telefono, dal codice fiscale o dalla data di
 nascita: l'email non basta più, perché un figlio può non averla.
@@ -198,7 +195,7 @@ scheda.
 
 Poi la scheda è divisa in quattro schede, e se ne vede una alla volta:
 
-- **PERSONA** — i **CONTATTI** (l'**EMAIL PER ENTRARE NELL'APP** solo se c'è), **STESSO CONTATTO DI**, **DATI ANAGRAFICI** (con **NATA IL** o **NATO IL** dal codice fiscale; senza un codice fiscale giusto, **NATO IL**), il **GENITORE** solo per un minorenne, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. **Modifica i contatti** cambia anche nome e cognome. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
+- **PERSONA** — i **CONTATTI** (con l'**EMAIL**), **STESSO CONTATTO DI**, **DATI ANAGRAFICI** (con **NATA IL** o **NATO IL** dal codice fiscale; senza un codice fiscale giusto, **NATO IL**), il **GENITORE** solo per un minorenne, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. **Modifica i contatti** cambia anche nome e cognome. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
 - **QUOTA E PAGAMENTI** — la quota e i pagamenti. **+ FAI LA RICEVUTA** sta accanto a **QUOTA**, **+ AGGIUNGI INCASSO** accanto a **PAGAMENTI**: non serve scorrere tutte le ricevute. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
   corsi che l'amministrazione ha scritto in CONTABILITÀ con questa persona stanno in **SCRITTI IN
@@ -229,7 +226,7 @@ In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
 certificato in scadenza. Sotto i 6 anni il tasto del certificato non è quello in evidenza. Se è tutto a posto, **+ FAI LA RICEVUTA**. Se la
 scheda è disattivata, nessuno.
 
-- **Modifica** — nome, cognome, email, email di contatto, telefono. Chi ha lo
+- **Modifica** — nome, cognome, email, telefono. Chi ha lo
   stesso contatto di altri vede in lettura **STESSO CONTATTO DI** con i loro
   nomi: sono parenti, non doppioni.
 - **DATI ANAGRAFICI** — nascita, codice fiscale, residenza e, per un minore,
@@ -319,10 +316,9 @@ scheda è disattivata, nessuno.
   di certificato e quota la scadenza più lontana (e del certificato, il file
   di quella scheda: se ce n'è uno per parte resta uno solo, l'altro si
   cancella); resta attiva se una delle
-  due lo era. Le email: chi resta tiene la sua e il suo contatto; l'email
-  dell'altra scheda diventa la sua se non ne ha, se no il suo contatto se è
-  libero. Se non c'è posto, quell'indirizzo si perde: la conferma lo scrive
-  prima, e fino ad allora si può copiare. Le ricevute passano così come sono. Una conferma, e non si
+  due lo era. L'email: chi resta tiene la sua; se non ne ha, prende quella
+  dell'altra scheda. Se sono diverse, quella dell'altra si perde: la conferma
+  lo scrive prima, e fino ad allora si può copiare. Le ricevute passano così come sono. Una conferma, e non si
   torna indietro.
   Non si uniscono due schede con due codici fiscali diversi, anche solo
   quello del modulo di iscrizione (sono due persone). Il file del certificato
@@ -444,14 +440,13 @@ fatta: se è sbagliata si annulla e se ne fa un'altra.
 
 ### La ricevuta per email
 
-Se la persona ha l'**EMAIL DI CONTATTO**, la domanda di **FAI LA RICEVUTA** ha
+Se la persona ha l'**EMAIL**, la domanda di **FAI LA RICEVUTA** ha
 una casella già spuntata: «Manda per email a …», e sotto da dove viene
-l'indirizzo (per un minore, «Email di contatto del genitore»). Lasciata la
+l'indirizzo (per un minore, «Email del genitore»). Lasciata la
 spunta, fatta la ricevuta parte una mail da info@officinedellosport.it con il
 PDF allegato; nella mail ci sono solo nome, numero, data e totale, i dati
 restano nel PDF. Tolta la spunta, la ricevuta si fa senza mail. Senza email di
-contatto la casella non c'è e la domanda lo dice: la ricevuta si fa lo stesso,
-e la mail non parte mai all'email di accesso.
+email la casella non c'è e la domanda lo dice: la ricevuta si fa lo stesso.
 
 Nello storico, sotto ogni ricevuta:
 
@@ -461,7 +456,7 @@ Nello storico, sotto ogni ricevuta:
   la mail non è partita.
 - **Fatta prima dell'invio per email**: le ricevute di prima, che si possono
   mandare con **MANDA PER EMAIL**.
-- Senza email di contatto il tasto è spento e dice di aggiungerla in
+- Senza email il tasto è spento e dice di aggiungerla in
   **PERSONA**.
 
 **MANDA PER EMAIL** e **MANDA DI NUOVO** chiedono conferma e mostrano

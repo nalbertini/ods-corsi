@@ -4,14 +4,14 @@ import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
 import { cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagamento, extraDelPagamento, mancaPerRicevuta, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
-import { attivitaCambiata, cancellaFileIl, contattoNonValido, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import { attivitaCambiata, cancellaFileIl, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
 import { numeriDiProva } from './sitoStatistiche'
 import { insegna, segniDi, siElimina, type RuoloPersonale } from './ruoli'
-import { contattoDopoUnione, type IndiziDoppioni } from './doppioni'
+import type { IndiziDoppioni } from './doppioni'
 import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttoreAssenteProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria, nomeAttivita } from './datiProva'
@@ -710,7 +710,6 @@ export function creaSegreteriaProva(): DatiSegreteria {
             nome: p.nome,
             cognome: p.cognome,
             email: p.email,
-            emailContatto: p.emailContatto,
             telefono: p.telefono,
             attiva: p.attiva,
             creataIl: p.creataIl,
@@ -764,21 +763,18 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const cognome = nomeProprio(dati.cognome)
       if (!nome || !cognome) throw new Error('Servono nome e cognome')
       const email = dati.email?.trim() || undefined
-      const emailContatto = dati.emailContatto?.trim() || undefined
       const telefono = dati.telefono?.trim() || undefined
-      // Come l'indice unico del database: due persone, due email; il contatto invece può ripetersi.
-      const altro = email && a().persone.find((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase())
-      if (altro) throw new Error(emailGiaDi(nomeDi(altro)))
-      const guaio = contattoNonValido(emailContatto)
+      // Gli iscritti possono dividere l'email (un genitore e i figli): niente controllo di unicità (99-email-unica.sql).
+      const guaio = emailNonValida(email)
       if (guaio) throw new Error(guaio)
       if (!dati.id) {
         const id = `p-nuovo-${unico()}`
-        a().persone = [...a().persone, { id, nome, cognome, email, emailContatto, telefono, ruolo: 'iscritto', attiva: true, creataIl: oggi() }]
+        a().persone = [...a().persone, { id, nome, cognome, email, telefono, ruolo: 'iscritto', attiva: true, creataIl: oggi() }]
         salva()
         return id
       }
       persona(dati.id)
-      a().persone = a().persone.map((p) => (p.id === dati.id ? { ...p, nome, cognome, email, emailContatto, telefono } : p))
+      a().persone = a().persone.map((p) => (p.id === dati.id ? { ...p, nome, cognome, email, telefono } : p))
       salva()
       return dati.id
     },
@@ -1345,8 +1341,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       // Come il database: la stessa ricevuta al più tre volte in 24 ore, e la quarta non lascia righe.
       const dal = Date.now() - 24 * 3600_000
       if (invii.filter((i) => i.ricevutaId === id && i.esito === 'mandata' && Date.parse(i.creatoIl) > dal).length >= TETTO_PER_RICEVUTA) return { esito: 'non partita', motivo: 'troppe' }
-      // Solo l'email di contatto, mai quella di accesso.
-      const indirizzo = a().persone.find((p) => p.id === r.personaId)?.emailContatto?.trim()
+      const indirizzo = a().persone.find((p) => p.id === r.personaId)?.email?.trim()
       if (!indirizzo) return { esito: 'non partita', motivo: 'senza-indirizzo' }
       const creatoIl = new Date().toISOString()
       const troppe = mandateOggi(invii, new Date()) >= SOGLIA_MAIL_GIORNO
@@ -2031,10 +2026,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const cognome = nomeProprio(dati.cognome)
       const email = dati.email?.trim() || undefined
       if (!nome) throw new Error('Serve almeno il nome')
-      const altro = email && a().persone.find((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase())
+      // Gli iscritti dividono le email: il conflitto è con chi ha l'accesso, se no si prende il primo iscritto.
+      const stesse = email ? a().persone.filter((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase()) : []
+      const altro = stesse.find((p) => p.ruolo !== 'iscritto') ?? stesse[0]
       // Come nel database: un'iscritta con la stessa email diventa personale, non un doppione.
       if (altro && altro.ruolo !== 'iscritto') throw new Error(`Questa email è già di ${nomeDi(altro)}`)
-      if (altro) {
+      if (altro && !dati.id) {
         a().persone = a().persone.map((p) => (p.id === altro.id ? { ...p, ...ruoloDi(dati), attiva: true } : p))
         salva()
         return altro.id
@@ -2157,9 +2154,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       } else scordaCertificato(via)
       const unita: PersonaProva = {
         ...r,
+        // Come `unisci_persone`: se le email sono due, resta quella di chi resta; `indirizziPersi` lo dice prima.
         email: r.email ?? v.email,
-        // Come `unisci_persone`: gli indirizzi che non trovano posto si perdono, e `indirizziPersi` lo dice prima.
-        emailContatto: contattoDopoUnione(r, v),
         telefono: r.telefono ?? v.telefono,
         // Attiva se una delle due lo era: chi trova un doppione spesso l'ha già disattivato.
         attiva: r.attiva || v.attiva,
