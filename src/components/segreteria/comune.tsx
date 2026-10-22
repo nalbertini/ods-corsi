@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { NotaCampo, type Nota } from '../ds'
 import { GuaioConAzione } from '../../lib/cartaPdf'
 import { clicFuoriChiude } from '../../lib/schedaFinestra'
@@ -55,7 +55,7 @@ export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
 }
 
 // Quello che si sta scrivendo e non è ancora salvato (vedi `useBozza`), con cosa è.
-const bozze = new Map<object, string | undefined>()
+const bozze = new Map<object, { cosa?: string; mostra?: () => void }>()
 // Chiudendo o ricaricando la pagina con una bozza aperta chiede il browser.
 window.addEventListener('beforeunload', (e) => {
   if (bozze.size) e.preventDefault()
@@ -68,14 +68,21 @@ window.addEventListener('beforeunload', (e) => {
  * il telefono, e un clic altrove non deve buttare una ricevuta compilata.
  * `cosa` («Judo 2») entra nella domanda, per dire quale modifica si perde.
  */
-export function useBozza(aperta: boolean, cosa?: string) {
+export function useBozza(aperta: boolean, cosa?: string, mostraQui?: () => void) {
+  const mostra = useContext(MostraBozza) ?? mostraQui
   useEffect(() => {
     if (!aperta) return
     const io = {}
-    bozze.set(io, cosa)
+    bozze.set(io, { cosa, mostra })
     return () => void bozze.delete(io)
-  }, [aperta, cosa])
+  }, [aperta, cosa, mostra])
 }
+
+/**
+ * Chi tiene una bozza in una scheda nascosta (le schede di IMPOSTAZIONI restano
+ * montate) dice come riaprirla: «Torna a finire» deve far vedere cosa si finisce.
+ */
+export const MostraBozza = createContext<(() => void) | undefined>(undefined)
 
 export const bozzaAperta = () => bozze.size > 0
 
@@ -89,8 +96,14 @@ export const scordaBozze = () => bozze.clear()
  */
 export function lasciare(): Promise<boolean> {
   if (!bozzaAperta()) return Promise.resolve(true)
-  const cosa = [...bozze.values()].filter(Boolean).pop()
-  return chiedi(`${cosa ? `${cosa}: modifiche` : 'Ci sono modifiche'} non salvate. Se esci si perdono.`, 'Esci senza salvare', { no: 'Torna a finire', restare: true })
+  const tutte = [...bozze.values()]
+  const cosa = tutte.map((b) => b.cosa).filter(Boolean).pop()
+  return chiedi(`${cosa ? `${cosa}: modifiche` : 'Ci sono modifiche'} non salvate. Se esci si perdono.`, 'Esci senza salvare', { no: 'Torna a finire', restare: true }).then(
+    (esci) => {
+      if (!esci) [...tutte].reverse().find((b) => b.mostra)?.mostra?.()
+      return esci
+    },
+  )
 }
 
 /** Un modulo che diventa bozza al primo tasto battuto o alla prima scelta. */

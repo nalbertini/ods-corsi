@@ -172,7 +172,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
   const scegli = (chiave: string, scelta: Scelte[string]) => setScelte((x) => ({ ...x, [chiave]: { ...x[chiave], ...scelta } }))
 
   return (
-    // Occupa tutta la riga della griglia di IMPOSTAZIONI: i passi e i tre fogli vogliono la larghezza intera.
+    // Occupa tutta la riga della griglia della scheda IMPORTA: i passi e i tre fogli vogliono la larghezza intera.
     <div className="stack" style={{ gap: 16, gridColumn: '1 / -1' }}>
       <span className="sg-sotto">
         Corsi e iscritti da due fogli, o gli iscritti dalle risposte del modulo Google. Si può rifare quante volte si vuole: non duplica niente. Chi c'è già si riconosce dal nome e cognome (anche scritti con il cognome prima, o con accenti e maiuscole diverse) e gli si aggiungono solo i corsi che mancano; le persone nuove entrano e si iscrivono ai corsi della colonna «Corsi».
