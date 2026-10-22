@@ -112,7 +112,7 @@ export function HomeScreen({
               </span>
             )}
           </div>
-          <button className="play-btn" style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)' }} onClick={() => onStart(w)} aria-label={`Avvia ${w.name}`}>
+          <button className="play-btn" style={{ borderColor: 'var(--play)', color: 'var(--play)' }} onClick={() => onStart(w)} aria-label={`Avvia ${w.name}`}>
             <Play />
           </button>
         </div>
@@ -231,7 +231,7 @@ export function HomeScreen({
                     </button>
                     <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--dim)' }}>{s.riassunto}</span>
                   </div>
-                  <button className="play-btn" style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)' }} onClick={() => onStrumento(s.chiave)} aria-label={`Apri ${s.nome}`}>
+                  <button className="play-btn" style={{ borderColor: 'var(--play)', color: 'var(--play)' }} onClick={() => onStrumento(s.chiave)} aria-label={`Apri ${s.nome}`}>
                     <Play />
                   </button>
                 </div>

@@ -138,7 +138,7 @@ for (const base of ['main', 'origin/main']) {
 if (prima === null) console.log('  - confronto con main saltato: senza un ramo main con cui confrontare')
 const rOra = regole(ora)
 const rPrima = prima === null ? [] : regole(prima)
-// `.faccia-timer` sta ora tra i selettori del blocco :root (il cronometro in allenamento resta scuro nell'area chiara degli istruttori, `prova:istruttori-look`): non cambia i valori del blocco, e qui non lo si conta.
+// `.faccia-timer` è stato tra i selettori del blocco :root (la pagina TIMER scura, prima del tema `sito`): non cambia i valori del blocco, e qui non lo si conta.
 const chiaveR = (r) => r.selettori.filter((s) => s !== '.faccia-timer').join(',') + '{' + r.corpo.replace(/\s+/g, ' ') + '}'
 const vecchie = new Set(rPrima.map(chiaveR))
 const nuove = rOra.filter((r) => !vecchie.has(chiaveR(r)))

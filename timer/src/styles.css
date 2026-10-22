@@ -33,6 +33,15 @@
   --rest: var(--verde);
   --setRest: var(--blu);
   --cooldown: var(--blu);
+  /* Le scritte sopra le fasi (il tasto grande, il passo corrente): vedi SU_STATE. */
+  --su-giallo: var(--su-colore);
+  --su-prepare: var(--su-giallo);
+  --su-work: var(--su-rosso);
+  --su-rest: var(--su-colore);
+  --su-setRest: var(--su-colore);
+  --su-cooldown: var(--su-colore);
+  /* I ▶ della lista. */
+  --play: var(--rosso);
 
   --cond: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif;
   --body: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -104,6 +113,76 @@
 :root[data-tema='tatami'] .navitem[aria-current='page'] { background: #f6f3e4; color: #1d1d1b; }
 /* La scheda accesa in basso: il blu del marchio sul verde muschio si ferma a 3:1, un blu più chiaro arriva a 6:1. */
 :root[data-tema='tatami'] .tabbar .tab[data-on='true'] { color: #6cc0ec; }
+
+/* Il look del sito, nella pagina TIMER dell'app istruttori (`temaDelTimer`): i valori di
+   `:root[data-look='sito']` in `src/styles.css` dell'app, e le fasi della striscia dell'allenamento.
+   Il selettore del tema del timer non lo offre: lo sceglie solo l'app. Design: docs/design-canvas/timer-sito. */
+:root[data-tema='sito'] {
+  --bg: #eef5fa;
+  --surface: #ffffff;
+  --surface-2: #cfe6f4;
+  --line: #cfe6f4;
+  --line-soft: #cfe6f4;
+  --text: #0d2a3d;
+  --dim: #46606f;
+  --faint: #46606f;
+
+  --blu: #14709f;
+  --rosso: #b81d1d;
+  --giallo: #f4c31b;
+  /* I fondi pieni del sito sono blu, rosso e verde scuro: sopra il testo è bianco. Sopra il giallo, inchiostro. */
+  --verde: #0b7a33;
+  --giallo-testo: #8f6a00;
+  --su-colore: #ffffff;
+  --su-giallo: #0d2a3d;
+  --su-rosso: #ffffff;
+  --tasto: #14709f;
+  --tratteggio: #14709f;
+  --menu: #0d2a3d;
+  --spento: #cfe6f4;
+  --caldo: #fbf1cf;
+
+  /* Sul chiaro le fasi si scuriscono, e sopra il verde e il blu il testo è bianco: lo scuro si ferma sotto 4,5:1. */
+  --work: #b81d1d;
+  --rest: #0b7a33;
+  --setRest: var(--blu);
+  --cooldown: var(--blu);
+  --su-prepare: var(--su-giallo);
+  --su-work: #ffffff;
+  --su-rest: #ffffff;
+  --su-setRest: #ffffff;
+  --su-cooldown: #ffffff;
+  --play: var(--blu);
+
+  --cond: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;
+  --body: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  color-scheme: light;
+}
+/* Big Shoulders è dritto: niente obliquo finto. */
+:root[data-tema='sito'] * { font-style: normal; }
+:root[data-tema='sito'] .card,
+:root[data-tema='sito'] .play-btn,
+:root[data-tema='sito'] .tf-avvia,
+:root[data-tema='sito'] .tf-secondario,
+:root[data-tema='sito'] .musica-tasto,
+:root[data-tema='sito'] .chip,
+:root[data-tema='sito'] .btn-piu,
+:root[data-tema='sito'] .btn,
+:root[data-tema='sito'] .icon-btn,
+:root[data-tema='sito'] .livello,
+:root[data-tema='sito'] .segmento { border-radius: 6px; }
+/* La fase è una fascia piena del suo colore: si legge da lontano. */
+:root[data-tema='sito'] .tf-stato {
+  align-self: stretch; display: flex; align-items: center; justify-content: center; min-height: 52px;
+  background: var(--state); color: var(--su-state); border-radius: 6px; font-weight: 800;
+}
+:root[data-tema='sito'] .tf-cifre { font-weight: 800; }
+:root[data-tema='sito'] .tf-avvia { font-weight: 800; }
+/* I tasti secondari col bordo blu, come gli altri tasti del look. */
+:root[data-tema='sito'] .tf-secondario { border-color: var(--blu); color: var(--blu); }
+:root[data-tema='sito'] .tf-secondario:hover:not(:disabled) { border-color: var(--text); color: var(--text); }
+:root[data-tema='sito'] .tf-piu:not(:disabled) { border-color: var(--state); color: var(--text); }
 
 * { box-sizing: border-box; }
 
@@ -580,7 +659,7 @@ a.navitem { text-decoration: none; }
 }
 .livello:hover { border-color: var(--dim); color: var(--text); }
 .livello[data-on='true'] {
-  background: var(--giallo); border-color: var(--giallo); color: var(--su-colore);
+  background: var(--giallo); border-color: var(--giallo); color: var(--su-giallo);
 }
 
 @media (min-width: 560px) {
@@ -779,8 +858,7 @@ a.navitem { text-decoration: none; }
    (l'etichetta del passo) nella stessa riga non si leggono come due cose diverse. */
 .tf-riga-nome { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
 .tf-riga-durata { font-weight: 700; font-variant-numeric: tabular-nums; }
-.tf-riga[data-corrente='true'] { background: var(--c); border-bottom-color: var(--c); color: var(--su-colore); }
-.tf-riga[data-corrente='true'][data-kind='work'] { color: var(--su-rosso); }
+.tf-riga[data-corrente='true'] { background: var(--c); border-bottom-color: var(--c); color: var(--su); }
 .tf-riga[data-corrente='true'] .tf-segno { background: currentColor; }
 .tf-altri {
   display: block; padding: 10px 12px 0;

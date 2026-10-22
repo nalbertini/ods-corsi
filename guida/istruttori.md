@@ -290,8 +290,11 @@ Nell'elenco dei timer, se qualcuno ha una categoria, sopra ci sono i pulsanti
 La categoria di un timer si sceglie nel suo editor, sotto il nome. Anche gli
 esercizi hanno una sola categoria, la stessa lista, e si filtrano allo stesso modo.
 
-Quando il timer parte, in alto ci sono lo stato e le cifre; sotto, il tasto
-grande **PAUSA** (o **AVVIA**, **RIPRENDI**) e i tre con la parola scritta:
+Il timer ha lo stesso aspetto del resto dell'app: fondo chiaro, carte bianche,
+tasti blu. Quando parte, in alto c'è lo stato, scritto su una fascia piena del
+suo colore (giallo per prepararsi, rosso il lavoro, verde il recupero, blu il
+riposo) che si legge anche da lontano, e sotto le cifre; poi il tasto
+grande **PAUSA** (o **AVVIA**, **RIPRENDI**), dello stesso colore, e i tre con la parola scritta:
 **INDIETRO**, **+30″** (allunga di mezzo minuto il passo in corso) e **AVANTI**.
 Su un computer o un tablet in orizzontale, a destra compaiono il tempo che
 resta, l'ora a cui finisce e la **SCALETTA**: il passo in corso in evidenza e

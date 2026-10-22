@@ -83,6 +83,7 @@ const PRINCIPALE = [
   { id: 'tablet-sala', nome: 'Tablet di sala', cartella: 'tablet-sala' },
   { id: 'timer-desktop', nome: 'Timer · desktop', cartella: 'timer-desktop' },
   { id: 'timer-istruttori', nome: 'Timer · app istruttori', cartella: 'timer-istruttori' },
+  { id: 'timer-sito', nome: 'Timer · pagina TIMER istruttori nel look del sito', cartella: 'timer-sito' },
   { id: 'timer-musica', nome: 'Timer · musica', cartella: 'timer-musica' },
   { id: 'timer-youtube', nome: 'Timer · YouTube', cartella: 'timer-youtube' },
   { id: 'moduli-pdf', nome: 'Moduli PDF · carta (proposta)', cartella: 'moduli-pdf' },

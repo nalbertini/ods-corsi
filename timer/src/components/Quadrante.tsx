@@ -16,6 +16,15 @@ export const STATE_COLOR = {
   cooldown: 'var(--cooldown)',
 } as const
 
+/** Il colore delle scritte sopra ogni fase: bianco sul rosso; sugli altri colori lo decide il tema. */
+export const SU_STATE = {
+  prepare: 'var(--su-prepare)',
+  work: 'var(--su-work)',
+  rest: 'var(--su-rest)',
+  setRest: 'var(--su-setRest)',
+  cooldown: 'var(--su-cooldown)',
+} as const
+
 export function Ring({ progress, color }: { progress: number; color: string }) {
   const r = 43
   const circumference = 2 * Math.PI * r
