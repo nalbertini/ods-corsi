@@ -211,7 +211,7 @@ export function CercaIscritto({ d, onVai }: { d: DatiSegreteria; onVai: (voce: V
                         {v.riga ? (
                           <>
                             <span className="sg-cerca-testo">
-                              <span>{v.riga.nome}</span>
+                              <span className="sg-cerca-nome">{v.riga.nome}</span>
                               {v.riga.sotto && <span className="sg-cerca-sotto">{v.riga.sotto}</span>}
                             </span>
                             {v.riga.nota &&
