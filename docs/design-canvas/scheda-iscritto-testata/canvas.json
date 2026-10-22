@@ -1,0 +1,136 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Scheda dell’iscritto · testata"
+    },
+    {
+      "id": "page-2",
+      "name": "Libreria"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Oggi.dc.html",
+      "title": "Oggi",
+      "x": 0,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Chiuso.dc.html",
+      "title": "Proposta · da sollecitare, riquadro chiuso",
+      "x": 960,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Aperto.dc.html",
+      "title": "Proposta · premuto «Sollecita»",
+      "x": 1920,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Altro.dc.html",
+      "title": "Proposta · «Altro» aperto",
+      "x": 2880,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "SenzaTelefono.dc.html",
+      "title": "Proposta · senza telefono",
+      "x": 3840,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Disattivata.dc.html",
+      "title": "Proposta · scheda disattivata",
+      "x": 4800,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Modifica.dc.html",
+      "title": "Proposta · in modifica",
+      "x": 5760,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Telefono.dc.html",
+      "title": "Proposta · telefono 390",
+      "x": 6720,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Bottone.dc.html",
+      "title": "Bottone",
+      "x": 0,
+      "y": 0,
+      "page": "page-2"
+    },
+    {
+      "file": "MenuAzioni.dc.html",
+      "title": "MenuAzioni",
+      "x": 700,
+      "y": 0,
+      "page": "page-2"
+    },
+    {
+      "file": "Sollecito.dc.html",
+      "title": "Sollecito",
+      "x": 1400,
+      "y": 0,
+      "page": "page-2"
+    },
+    {
+      "file": "Timbro.dc.html",
+      "title": "Timbro",
+      "x": 2100,
+      "y": 0,
+      "page": "page-2"
+    },
+    {
+      "file": "SchedeIscritto.dc.html",
+      "title": "SchedeIscritto",
+      "x": 0,
+      "y": 500,
+      "page": "page-2"
+    },
+    {
+      "file": "Chip.dc.html",
+      "title": "Chip",
+      "x": 700,
+      "y": 500,
+      "page": "page-2"
+    },
+    {
+      "file": "Dato.dc.html",
+      "title": "Dato",
+      "x": 1400,
+      "y": 500,
+      "page": "page-2"
+    },
+    {
+      "file": "Campo.dc.html",
+      "title": "Campo",
+      "x": 2100,
+      "y": 500,
+      "page": "page-2"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "titolo",
+      "kind": "title1",
+      "x": 0,
+      "y": 0,
+      "maxW": 1280,
+      "text": "La scheda dell’iscritto: il sollecito è un tasto in alto, le azioni rare in «Altro»"
+    }
+  ]
+}
