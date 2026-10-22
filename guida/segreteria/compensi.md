@@ -82,7 +82,8 @@ annullata) e se ne fa una nuova. **Ristampa** riscarica la stessa.
 Per un lavoro che non sta nelle lezioni (uno stage, un arbitraggio, un
 evento) si fa una **ricevuta a parte**, oltre a quella del mese. **+ Compenso
 extra**, in alto, apre il dialogo: si sceglie il **tecnico** (anche chi nel
-mese non ha lezioni), il **mese** in cui lo si paga, si scrive **per cosa**
+mese non ha lezioni), il **mese** in cui lo si paga (propone quello in corso, anche per un lavoro
+di un mese prima), si scrive **per cosa**
 (da 3 a 200 caratteri, si legge così sulla ricevuta) e l'**importo**. Dalla
 riga di un tecnico, in **Per corso**, c'è **+ Compenso extra per …** col
 tecnico già scelto. **Fai e stampa la ricevuta** la salva e scarica il PDF:
