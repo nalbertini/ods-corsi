@@ -436,7 +436,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.avviso_preso(uuid)') is not null
     and to_regprocedure('public.avvisi_non_mandati_oggi()') is not null
     -- Rilanciare 06, 74 o 83 dopo 84 rimette la invia_iscrizione che ignora l'invio: la riga torna «da lanciare».
-    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%inv := %')),
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%inv := %')
+    and exists (select 1 from pg_constraint where conname = 'avvisi_segreteria_tipo_check' and pg_get_constraintdef(oid) like '%satispay_scarico%')),
   ('85-solleciti.sql', 'i solleciti su WhatsApp: chi ha sollecitato e quando',
     to_regclass('public.solleciti') is not null
     and to_regprocedure('public.segna_sollecito(uuid)') is not null
@@ -488,6 +489,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'paga_compensi' and corpo like '%x.extra%')),
   ('97-satispay-scarico.sql', 'i pagamenti Satispay del negozio entrano da soli in contabilità',
     to_regclass('public.satispay_negozio') is not null and to_regprocedure('public.satispay_negozio_applica(boolean)') is not null
-    and exists (select 1 from casse where nome = 'Satispay'))
+    and exists (select 1 from casse where nome = 'Satispay')
+    and to_regprocedure('public.satispay_scarico_avvisa(jsonb,text)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

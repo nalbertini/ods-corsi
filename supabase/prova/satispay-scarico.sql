@@ -519,3 +519,15 @@ select atteso('applica non scrive un movimento senza voce: lo dice',
   servizio('select satispay_negozio_applica(true)::text'), 'P0001 Manca la voce «Da classificare» di entrata: rimettila in CONTABILITÀ → VOCI');
 update voci_contabili set nome = 'Da classificare' where nome = 'Da classificare (vecchia)';
 
+
+\echo ''
+\echo '--- 18. i conti di applica arrivano tali e quali nell''avviso alla segreteria ---'
+-- Se applica cambia nome a una chiave, l'avviso uscirebbe con gli zeri: qui i conti sono quelli veri.
+select pulisci();
+delete from avvisi_segreteria;
+update avvisi_indirizzi set a = 'segreteria@officinedellosport.it';
+select sal(pag('A1', 'TO_BUSINESS', 'ACCEPTED', 1000, '2026-10-14T10:00:00Z'), pag('A2', 'REFUND_TO_BUSINESS', 'ACCEPTED', 400, '2026-10-14T11:00:00Z')) as _;
+select servizio(format('select satispay_scarico_avvisa(%L::jsonb, null)', app(true))) as _;
+select atteso('un incasso e un rimborso, niente da decidere',
+  (select concat_ws(',', a->>'incassi', a->>'rimborsi', a->>'daDecidere') from (select avviso_da_registro(v) a from avvisi_segreteria v) x), '1,1,0');
+delete from avvisi_segreteria;

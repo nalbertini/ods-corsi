@@ -393,6 +393,10 @@ console.log('\n7. il segno DA SATISPAY arriva nelle righe dell\'elenco')
   const fn = testo('supabase/functions/satispay-scarico/index.ts')
   ok('la funzione usa la copia', fn.includes("from './pagine.ts'"), true)
   ok('la funzione scrive solo col negozio vero', fn.includes("'authservices.satispay.com'"), true)
+  ok('finito lo scarico avvisa la segreteria, coi conti o con l\'errore', fn.includes("rpc('satispay_scarico_avvisa', { conti, errore })"), true)
+  ok('…anche quando Satispay non risponde o i movimenti non si scrivono', fn.includes('await fine(esito.errore)') && fn.includes('await fine(errore)') && fn.includes('await fine(null, conti.data)'), true)
+  const guardia = fn.indexOf('if (anteprima) return')
+  ok('…ma l\'anteprima no: la guardia viene prima dell\'avviso', guardia > -1 && guardia < fn.indexOf("rpc('satispay_scarico_avvisa'"), true)
 }
 
 if (guai) {

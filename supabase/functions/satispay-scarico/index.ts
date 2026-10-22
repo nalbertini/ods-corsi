@@ -115,9 +115,16 @@ Deno.serve(async (req) => {
     if (!storia) await admin.rpc('satispay_scarico_ripresa', { ripresa: pagamenti.at(-1)!.id, completa: false })
     return r.data as number
   }
+  // Lo scarico vero si segna e avvisa la segreteria (il database decide se c'è da dire qualcosa); l'anteprima no.
+  const fine = async (errore: string | null, conti: unknown = null) => {
+    if (anteprima) return
+    await admin.rpc('satispay_scarico_segna', { errore })
+    const avviso = await admin.rpc('satispay_scarico_avvisa', { conti, errore })
+    if (avviso.error) console.error('satispay_scarico_avvisa', avviso.error)
+  }
   const esito = await scorriPagine(leggi, salva, storia ? null : stato.ripresa, storia)
   if (!esito.ok) {
-    if (!anteprima) await admin.rpc('satispay_scarico_segna', { errore: esito.errore })
+    await fine(esito.errore)
     return risposta({ guaio: esito.errore })
   }
   if (!storia) await admin.rpc('satispay_scarico_ripresa', { ripresa: esito.ripresa, completa: esito.completa })
@@ -126,9 +133,9 @@ Deno.serve(async (req) => {
   if (conti.error) {
     console.error('satispay_negozio_applica', conti.error)
     const errore = 'Lo scarico non è riuscito a scrivere i movimenti: riprova fra qualche minuto'
-    if (!anteprima) await admin.rpc('satispay_scarico_segna', { errore })
+    await fine(errore)
     return risposta({ guaio: errore })
   }
-  if (!anteprima) await admin.rpc('satispay_scarico_segna', { errore: null })
+  await fine(null, conti.data)
   return risposta({ fatto: true, conti: conti.data })
 })

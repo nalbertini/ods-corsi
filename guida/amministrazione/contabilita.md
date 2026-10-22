@@ -163,6 +163,10 @@ Dal 1° ottobre 2026 i pagamenti Satispay entrano nella cassa **Satispay**; quel
 prima nel Conto Corrente, come si faceva finora, così i saldi passati non cambiano.
 Uno scarico si annulla movimento per movimento, come ogni movimento.
 
+Dopo ogni scarico che ha scritto qualcosa, lasciato pagamenti da decidere o non è
+riuscito, arriva un'email agli indirizzi degli avvisi (IMPOSTAZIONI → GLI AVVISI,
+vedi [Le regole](../segreteria/regole.md#gli-avvisi)). L'anteprima non manda niente.
+
 ### Dalla chat, con Claude
 
 Le fatture, le ricevute e gli scontrini dei **fornitori** si possono registrare fotografandoli

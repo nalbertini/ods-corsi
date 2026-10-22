@@ -22,10 +22,11 @@
 //         persone: Array<{ richiestaId: string; nome: string; cognome: string; corsi: string[]; fuoriEta: string[] }> }
 //     | { tipo: 'pagamento'; richiestaId: string; nome: string; cognome: string; corso: string; importo: number; pagatoIl: string; arrivataIl: string }
 //     | { tipo: 'pagamento_senza_richiesta'; nome: string; cognome: string; email: string; corso: string; importo: number; pagatoIl: string }
+//     | { tipo: 'satispay_scarico'; quando: string; incassi: number; rimborsi: number; daDecidere: number; errore: string | null }
 //   È la stessa forma di `avviso` in `avvisi_da_mandare()`.
 //   testoAvviso(avviso: Avviso, app: string) → { oggetto: string; testo: string; html: string }
 //     `app` è l'indirizzo della segreteria (finisce con `/`): i link sono `app + '#richieste/<id>'`,
-//     `app + '#richieste'`, `app + '#pagamenti'`.
+//     `app + '#richieste'`, `app + '#pagamenti'`, `app + '#contabilita'`.
 //   indirizziAvvisi(x: { a: string | null; cc: string | null } | null) → { a: string; cc: string | null } | null
 //   indirizzoValido(s: string) → string | null   (null se va, se no cosa fare)
 //   possoMandare(mandatiOggi: number, tetto = TETTO_AVVISI) → boolean
@@ -173,6 +174,26 @@ console.log('\n3. i pagamenti Satispay')
   const ieri = testoAvviso({ tipo: 'pagamento', richiestaId: R1, nome: 'Marco', cognome: 'Rossi', corso: 'Judo kids', importo: 12000, pagatoIl: '2026-10-21T17:10:00Z', arrivataIl: '2026-10-20T16:32:00Z' }, APP)
   ok('la richiesta di ieri dice il giorno', testo(ieri).includes('per la richiesta di Judo kids arrivata il 20 ottobre alle 18.32'), true)
   ok('il link apre quella richiesta', testo(t).includes(`${APP}#richieste/${R1}`), true)
+}
+
+
+console.log('\n3bis. lo scarico dei pagamenti Satispay in CONTABILITÀ')
+{
+  const scarico = (x) => testoAvviso({ tipo: 'satispay_scarico', quando: '2026-10-21T08:30:00Z', incassi: 0, rimborsi: 0, daDecidere: 0, errore: null, ...x }, APP)
+  const t = scarico({ incassi: 3, rimborsi: 1, daDecidere: 2 })
+  ok('l\'oggetto: quanti movimenti, quanti da decidere', t?.oggetto, 'Scarico Satispay · 4 movimenti in CONTABILITÀ · 2 da decidere')
+  ok('dice incassi e rimborsi, dove sono finiti', testo(t).includes('Lo scarico di oggi alle 10.30 ha scritto 3 incassi e 1 rimborso in CONTABILITÀ, sulla voce «Da classificare».'), true)
+  ok('dice cosa fare dei da decidere', testo(t).includes('2 pagamenti sono da decidere: li trovi in CONTABILITÀ → MOVIMENTI.'), true)
+  ok('il link apre CONTABILITÀ', [testo(t).includes(`${APP}#contabilita`), html(t).includes('Apri CONTABILITÀ')], [true, true])
+  const uno = scarico({ incassi: 1 })
+  ok('un movimento solo, niente da decidere', [uno?.oggetto, testo(uno).includes('da decidere')], ['Scarico Satispay · 1 movimento in CONTABILITÀ', false])
+  const solo = scarico({ daDecidere: 1 })
+  ok('solo da decidere', [solo?.oggetto, testo(solo).includes('1 pagamento è da decidere')], ['Scarico Satispay · 1 da decidere', true])
+  const no = scarico({ errore: 'Satispay non risponde: lo scarico riprova da solo stanotte' })
+  ok('non riuscito: l\'oggetto lo dice', no?.oggetto, 'Scarico Satispay non riuscito')
+  ok('e il motivo, già scritto per chi usa l\'app', testo(no).includes('Satispay non risponde: lo scarico riprova da solo stanotte'), true)
+  const scritto = testo(scarico({ errore: 'Lo scarico non è riuscito a scrivere i movimenti: riprova fra qualche minuto' }))
+  ok('il motivo non si ripete nella frase', scritto.split('non è riuscito').length - 1, 1)
 }
 
 console.log('\n4. nella mail mai note, codice fiscale, nascita, file')
