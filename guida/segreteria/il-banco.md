@@ -49,9 +49,14 @@ con parole e colore: **Fatto**, **Adesso**, **Sta per iniziare**, **Annullata**,
 e in rosso **Appello non fatto**. Toccare un blocco apre la lezione in
 PRESENZE.
 
-Sopra, quattro numeri che aprono l'elenco da cui nascono: **SENZA
-CERTIFICATO**, **DA PAGARE** (apre gli iscritti col filtro già acceso), **RICHIESTE**,
-**PRESENTI OGGI**.
+Sotto il titolo, la data, le lezioni, gli appelli da fare e quanti sono
+venuti su quanti attesi («15 presenti su 27 attesi»).
+
+Sopra il tabellone, i numeri della striscia **COSA MANCA**, con lo stesso
+conto: **APPELLI NON FATTI** (ultimi 30 giorni), **CERTIFICATI SCADUTI**,
+**PAGAMENTI**, **CORSI SCADUTI**, **RICHIESTE ONLINE**. Ognuno apre l'elenco da
+cui nasce, col filtro già acceso. In OGGI la striscia non c'è: sono già questi.
+Un numero che non si riesce a contare mostra «—», e sotto c'è **Riconta**.
 
 A destra la coda **DA FARE AL BANCO**, in ordine di urgenza: prima gli appelli
 non fatti, poi chi è senza certificato, poi chi deve la quota (in rosso), infine
