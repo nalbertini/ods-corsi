@@ -721,6 +721,10 @@ export interface DatiSegreteria {
   ricevuteCompensi(personaId?: string): Promise<RicevutaCompenso[]>
   /** Fa la ricevuta del mese (`fai_ricevuta_compenso`); se ce n'è già una non annullata, dice di annullarla prima. */
   faiRicevutaCompenso(dati: DatiRicevutaCompenso): Promise<RicevutaCompenso>
+  /** Fa una ricevuta di compenso extra, oltre a quella del mese (`fai_ricevuta_compenso_extra` in `96-compensi-extra.sql`): il tecnico dalla sua scheda. */
+  faiRicevutaCompensoExtra(dati: { personaId: string; mese: string; descrizione: string; importo: number }): Promise<RicevutaCompenso>
+  /** Cambia descrizione e importo di una extra finché non è pagata. */
+  modificaRicevutaCompensoExtra(id: string, dati: { descrizione: string; importo: number }): Promise<RicevutaCompenso>
   annullaRicevutaCompenso(id: string): Promise<void>
   /** Il foglio firmato è tornato, o no: l'unica cosa che si cambia di una ricevuta fatta. */
   segnaFirmataCompenso(id: string, firmata: boolean): Promise<void>

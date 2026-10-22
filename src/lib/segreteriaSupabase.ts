@@ -7,7 +7,7 @@ import { giorniConLezioni } from './calendarioSettimana'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiCorso, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
 import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
-import { cosaNonVaCompenso, type RicevutaCompenso } from './compensi'
+import { cosaNonVaCompenso, cosaNonVaExtra, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
 import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
@@ -177,6 +177,7 @@ const MANCA_CAMBIA_VOCE = 'Il database non è ancora aggiornato per cambiare la 
 const MANCA_MOVIMENTI_PERSONA = 'Il database non è ancora aggiornato per collegare i movimenti alle persone: va lanciato 70-movimenti-persona.sql'
 const MANCA_PAGATI = 'Pagare i compensi non è ancora attivo sul database: va lanciato 81-compensi-pagati.sql'
 const MANCA_FIRMA = 'Segnare chi non c’era e «a lezione basta uno» non sono ancora attivi sul database: va lanciato 82-manca-la-firma.sql'
+const MANCA_EXTRA = 'Le ricevute di compenso extra non sono ancora attive sul database: va lanciato 96-compensi-extra.sql'
 const MANCA_COMPENSI = 'Le ricevute dei compensi non sono ancora attive sul database: va lanciato 80-ricevute-compensi.sql'
 const MANCA_LETTERE = 'Le lettere d’incarico non sono ancora attive sul database: va lanciato 79-lettere-incarico.sql'
 const TABELLE_DOPO: Array<[RegExp, string]> = [
@@ -302,6 +303,8 @@ interface RigaRicevutaCompenso {
   /** Senza 81-compensi-pagati.sql le due colonne non ci sono: da pagare. */
   movimento_id?: string | null
   pagata_il?: string | null
+  /** Senza 96-compensi-extra.sql la colonna non c'è: è la ricevuta del mese. */
+  extra?: string | null
 }
 const daRigaRicevutaCompenso = (r: RigaRicevutaCompenso): RicevutaCompenso => ({
   id: r.id,
@@ -314,6 +317,7 @@ const daRigaRicevutaCompenso = (r: RigaRicevutaCompenso): RicevutaCompenso => ({
   tecnico: r.tecnico,
   qualifica: r.qualifica,
   data: r.data,
+  extra: r.extra ?? null,
   firmata: r.firmata,
   annullataIl: r.annullata_il,
   creataIl: r.creata_il,
@@ -377,6 +381,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /paga_compensi/.test(e.message ?? '')) return new Error(MANCA_PAGATI)
   if (((e?.code === 'PGRST202' || e?.code === '42883') && /segna_istruttore_assente/.test(e.message ?? '')) || ((e?.code === '42703' || e?.code === 'PGRST204') && /basta_uno/.test(e.message ?? '')))
     return new Error(MANCA_FIRMA)
+  // Prima di /ricevuta_compenso/, che la contiene.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /compenso_extra/.test(e.message ?? '')) return new Error(MANCA_EXTRA)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevuta_compenso/.test(e.message ?? '')) return new Error(MANCA_COMPENSI)
   // Prima di /ricevut/: la ricevuta dal pagamento a mano arriva dopo, con 89-pagamento-diventa-ricevuta.sql.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /emetti_ricevuta_da_pagamento/.test(e.message ?? ''))
@@ -1353,6 +1359,18 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         }),
       ) as RigaRicevutaCompenso
       return daRigaRicevutaCompenso(riga)
+    },
+
+    async faiRicevutaCompensoExtra({ personaId, mese, descrizione, importo }) {
+      const no = cosaNonVaExtra({ descrizione, importo })
+      if (no) throw new Error(no)
+      return daRigaRicevutaCompenso(ok(await db.rpc('fai_ricevuta_compenso_extra', { persona: personaId, mese, descrizione, importo })) as RigaRicevutaCompenso)
+    },
+
+    async modificaRicevutaCompensoExtra(id, { descrizione, importo }) {
+      const no = cosaNonVaExtra({ descrizione, importo })
+      if (no) throw new Error(no)
+      return daRigaRicevutaCompenso(ok(await db.rpc('modifica_ricevuta_compenso_extra', { id, descrizione, importo })) as RigaRicevutaCompenso)
     },
 
     async annullaRicevutaCompenso(id) {

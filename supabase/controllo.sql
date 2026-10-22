@@ -476,6 +476,15 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('94-disattiva-chiude-iscrizioni.sql', 'disattivare una scheda chiude le sue iscrizioni',
     exists (select 1 from pg_trigger where tgname = 'persone_iscrizioni_disattivata' and tgrelid = 'public.persone'::regclass)),
   ('95-certificato-piu-lontano.sql', 'accogliendo vince il certificato che scade dopo',
-    to_regprocedure('public.accogli_iscrizione(uuid, uuid, date)') is not null and to_regprocedure('public.accogli_iscrizione(uuid, uuid)') is null)
+    to_regprocedure('public.accogli_iscrizione(uuid, uuid, date)') is not null and to_regprocedure('public.accogli_iscrizione(uuid, uuid)') is null),
+  ('96-compensi-extra.sql', 'la ricevuta di compenso extra: più d''una per tecnico e mese, accanto a quella del mese',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'ricevute_compensi' and column_name = 'extra')
+    and to_regprocedure('public.fai_ricevuta_compenso_extra(uuid,date,text,integer)') is not null
+    and to_regprocedure('public.modifica_ricevuta_compenso_extra(uuid,text,integer)') is not null
+    and exists (select 1 from pg_indexes where indexname = 'ricevute_compensi_valida' and indexdef like '%extra IS NULL%')
+    -- Rilanciare 80 o 81 dopo 96 rimette le funzioni che non sanno delle extra: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'fai_ricevuta_compenso' and corpo like '%r.extra is null%')
+    and exists (select 1 from dentro where nome = 'paga_compensi' and corpo like '%x.extra%'))
 ) as x(file, cosa, c)
 order by file, cosa;
