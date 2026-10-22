@@ -2467,6 +2467,30 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-cella-sollecito-nota[data-tono='spento'] { color: var(--dim); }
 .sg-cella-sollecito-ultimo { font-size: 12px; color: var(--dim); }
 /* L'avviso col suo «Annulla» va a sinistra, sopra i nomi: a destra coprirebbe il tasto della riga dopo, il gesto che viene subito. */
+/* L'elenco ISCRITTI: certificato e quota in colonne loro, così il guaio si legge senza aprire la scheda; righe alte uguali. */
+.sg-riga-iscritti { grid-template-columns: minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px; }
+.sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 140px 110px minmax(0, 1fr) 130px 70px 150px; }
+.sg-stato-elenco { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 6px 0; min-width: 0; }
+.sg-segno-elenco { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; }
+.sg-segno-elenco::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+.sg-segno-elenco[data-tono='rosso']::before { background: var(--rosso-testo); }
+.sg-segno-elenco[data-tono='giallo']::before { background: var(--giallo-testo); }
+.sg-segno-elenco[data-tono='nota'] { color: var(--dim); font-weight: 400; }
+.sg-segno-elenco[data-tono='nota']::before { display: none; }
+.sg-segno-elenco[data-tono='spento'] { color: var(--dim); }
+.sg-segno-ok { font-size: 18px; line-height: 1; color: var(--verde-testo); }
+.sg-cella-corsi { font-size: 13px; color: var(--sec); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Col filtro Corsi scaduti si legge tutto quel che è da sollecitare: niente puntini. */
+.sg-cella-corsi[data-a-capo] { white-space: normal; }
+.sg-cella-piu { margin-left: 6px; color: var(--dim); }
+.sg-cella-contatto { font-size: 13px; color: var(--sec); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sg-cella-contatto[data-manca] { color: var(--rosso-testo); }
+.sg-icona-contatto { margin-right: 6px; vertical-align: -2px; color: var(--dim); }
+.sg-testa-stretta { display: none; }
+.sg-cella-frequenza { font-size: 16px; font-weight: 700; text-align: right; color: var(--text); }
+.sg-cella-frequenza[data-poco] { color: var(--giallo-testo); }
+.sg-barra-frequenza { display: block; max-width: 56px; height: 5px; margin: 5px 0 0 auto; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.sg-barra-frequenza > span { display: block; height: 100%; background: currentColor; }
 @media (min-width: 768px) { .sg-corpo:has(.sg-riga-iscritto[data-sollecito]) .sg-avviso { right: auto; left: 276px; } }
 @media (min-width: 768px) and (max-width: 1000px) { .sg-corpo:has(.sg-riga-iscritto[data-sollecito]) .sg-avviso { left: 236px; } }
 /* Il tab ISCRITTI di un corso: cognome, nome, da quando, certificato, quota. */
@@ -3010,6 +3034,10 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-iscritto[data-sollecito] { grid-template-columns: 1fr auto 70px; }
   .sg-riga-iscritto .sg-cella-sollecito { grid-column: 1 / -1; align-items: stretch; padding-top: 0; padding-bottom: 8px; }
   .sg-cella-sollecito-testa { display: none; }
+  /* ISCRITTI: restano nome, certificato, quota e 30 giorni; corsi e contatto si leggono nella scheda. */
+  .sg-riga-iscritti, .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 130px 110px 80px; gap: 10px; }
+  .sg-riga-iscritti > :nth-child(2), .sg-riga-iscritti > :nth-child(3) { display: flex; }
+  .sg-riga-iscritti > :nth-child(4), .sg-riga-iscritti > :nth-child(5) { display: none; }
   /* Sul telefono: chi con sotto il resto, e l'importo. */
   .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
   .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; }
@@ -3032,6 +3060,28 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-ricorrenza > :nth-child(4) { display: none; }
   .sg-avviso { left: 16px; right: 16px; bottom: 16px; }
 }
+/* Sul telefono i segni sono compatti, ✕ rosso, … giallo, – nota: la forma dice lo stato anche senza il colore;
+ * la parola resta per chi legge lo schermo, nel title e nella scheda. */
+@media (max-width: 767px) {
+  .sg-riga-iscritti .sg-stato-elenco { flex-direction: row; gap: 6px; }
+  .sg-riga-iscritti .sg-segno-parola { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .sg-riga-iscritti .sg-segno-elenco { gap: 0; position: relative; }
+  .sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before, .sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before {
+    width: auto; height: auto; border-radius: 0; background: none; font-size: 15px; font-weight: 700; line-height: 1;
+  }
+  .sg-riga-iscritti .sg-segno-elenco[data-tono='rosso']::before { content: '✕' / ''; color: var(--rosso-testo); }
+  .sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before { content: '…' / ''; color: var(--giallo-testo); }
+  /* Le testate sono icone strette: l'area di tocco si allarga nella colonna da 56px fino a 44px. */
+  .sg-lista-testa.sg-riga-iscritti .sg-ordina::after { inset: -13px -8px; }
+  .sg-riga-iscritti, .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 56px 56px 48px; }
+  /* Pallino, ✓ e icona della testata uno sopra l'altro. */
+  .sg-riga-iscritti .sg-stato-elenco { justify-content: center; }
+  .sg-lista-testa.sg-riga-iscritti > :nth-child(2), .sg-lista-testa.sg-riga-iscritti > :nth-child(3) { justify-self: center; }
+  .sg-riga-iscritti .sg-testa-larga { display: none; }
+  .sg-riga-iscritti .sg-testa-stretta { display: inline; }
+  .sg-riga-iscritti .sg-segno-elenco[data-tono='nota']::after { content: '–' / ''; }
+}
+
 
 /* ---------------------------------------------------------------------------
  * La guida: i file di `guida/` letti dentro l'app (vedi `Guida.tsx`).

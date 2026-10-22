@@ -1300,5 +1300,17 @@ console.log('\n95. quote e corsi scritti a mano hanno la persona (supabase/98-qu
   ok('se ce n\'è più d\'uno rende il primo dell\'elenco', doppio([r('a', { origine: 'movimento' }), r('b'), r('c')]), 'b')
 }
 
+console.log('\n96. le schede di CONTABILITÀ sono come quelle di IMPOSTAZIONI, sotto il titolo')
+{
+  const tsx = readFileSync('src/components/segreteria/Contabilita.tsx', 'utf8')
+  ok('non più Segmenti per le quattro schede', /<Segmenti\s+etichetta="Contabilità"/.test(tsx), false)
+  const testa = tsx.indexOf('<Testa titolo="CONTABILITÀ"')
+  const schede = tsx.search(/role="tablist"\s+aria-label="Contabilità"\s+className="schede sg-schede"/)
+  ok('un tablist «Contabilità» con le schede, dopo la Testa', testa >= 0 && schede > testa, true)
+  ok('ogni scheda è un role="tab" con aria-selected', /role="tab"[^>]*aria-selected=\{scheda === s\}/.test(tsx), true)
+  // Come IMPOSTAZIONI: frecce, Home e Fine; nel giro del Tab solo la scheda aperta.
+  ok('la tastiera delle schede viene da `tastoLinguette`, e solo la scheda aperta ha tabIndex 0', /tastoLinguette\(/.test(tsx) && /tabIndex=\{scheda === s \? 0 : -1\}/.test(tsx), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

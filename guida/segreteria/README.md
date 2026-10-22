@@ -40,8 +40,7 @@ due o tre di fila; **Esc** lo svuota.
   è uscito («tel. 338 123 4567»). Chi non è più iscritto si trova ancora, con
   «non attiva». Se il telefono o l'email sono di un genitore esce il bambino, con
   «numero di un genitore», senza i dati del genitore.
-  A destra si vede se è in regola, con le parole della colonna IN REGOLA di
-  ISCRITTI: prima il certificato, sotto la quota («Manca il certificato»,
+  A destra si vede se è in regola: prima il certificato, sotto la quota («Manca il certificato»,
   «Da pagare»). Chi è in regola ha solo **✓**. Sotto i 6 anni conta solo la quota.
 - **Richieste online**: per il nome di chi chiede, anche quelle già accolte o
   rifiutate; Invio la apre. Quelle ancora da accogliere vengono prima, col bollino.
@@ -152,8 +151,8 @@ corsi, gli istruttori e la griglia degli orari nelle statistiche, e anche quelle
 colonna. Il primo tocco mette i nomi dalla A alla Z e i numeri dal più
 grande, il secondo rovescia, il terzo torna all'ordine di sempre: la freccia
 accanto al nome dice il verso (▲ crescente, ▼ decrescente). Chi non ha
-il dato, il «—», resta in fondo. In **IN REGOLA** vengono prima i guai più
-grossi, in **STATO** prima quelle da guardare. L'ordine resta finché non si
+il dato, il «—», resta in fondo. In **CERTIFICATO** e **QUOTA** vengono prima i
+guai più grossi, in **STATO** prima quelle da guardare. L'ordine resta finché non si
 cambia voce del menu, anche aprendo una scheda e tornando.
 
 ## Il giro di una settimana normale
