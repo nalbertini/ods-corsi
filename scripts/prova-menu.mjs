@@ -56,7 +56,7 @@ ok('titoli dei gruppi e voci: iniziale maiuscola, non tutto maiuscolo',
   Array.isArray(GRUPPI) ? [] : ['mancano i gruppi'])
 
 console.log('\nUn\'icona per ogni voce')
-const ic = await impacchetta("export { ICONE_MENU } from './src/components/Icons'").catch(() => ({}))
+const ic = await impacchetta("export { ICONE_MENU, ICONE_RISULTATO } from './src/components/Icons'").catch(() => ({}))
 const ICONE = ic.ICONE_MENU ?? {}
 const chiavi = Object.keys(ICONE).sort()
 const attese = [...ID16, 'contabilita', 'areaIstruttori', 'link'].sort()
@@ -85,6 +85,29 @@ ok('«DATI DI PROVA» resta maiuscolo (è una sigla di stato)', />DATI DI PROVA<
 // banco/BarraBanco.tsx non esiste: i tasti del link stanno solo in Segreteria.tsx.
 if (existsSync('src/components/banco/BarraBanco.tsx'))
   ok('BarraBanco.tsx: niente COPIA LINK in maiuscolo', /COPIA LINK/.test(readFileSync('src/components/banco/BarraBanco.tsx', 'utf8')), false)
+
+console.log('\nAiuto e Impostazioni con il loro nome, nel riquadro di chi è dentro')
+const nav = sg.slice(sg.indexOf('<nav className="sg-menu"'), sg.indexOf('</nav>'))
+const chiBox = nav.slice(nav.indexOf('className="sg-chi"'))
+ok('in cima al menu non c\'è più la riga di icone con ? e impostazioni', /className="row sg-icone"/.test(nav), false)
+ok('nel riquadro di chi è dentro: «Aiuto» e «Impostazioni» scritti', [/sg-voce-testo">Aiuto</.test(sg) && /\{guidaNome\}/.test(chiBox), /sg-voce-testo">Impostazioni</.test(sg) && /\{impostazioniNome\}/.test(chiBox)], [true, true])
+ok('il riquadro tiene il tema e la ricerca resta nel menu', [/<TastoTema \/>/.test(chiBox), /<CercaIscritto/.test(nav)], [true, true])
+
+console.log('\nLa ricerca con ⌘K, in una finestra al centro')
+const sc = existsSync('src/lib/scorciatoiaRicerca.ts') ? await impacchetta("export * from './src/lib/scorciatoiaRicerca'") : {}
+const tasto = (key, o = {}) => (sc.eScorciatoiaDiRicerca ? sc.eScorciatoiaDiRicerca({ key, metaKey: false, ctrlKey: false, altKey: false, shiftKey: false, ...o }) : 'src/lib/scorciatoiaRicerca.ts non esiste')
+ok('Esc: nella finestra chiude subito, nel menu svuota ed esce dal campo', [sc.cosaFaEsc?.(true), sc.cosaFaEsc?.(false)], ['chiudi', 'svuota-e-esci'])
+ok('⌘K (Mac) apre', tasto('k', { metaKey: true }), true)
+ok('Ctrl+K (Windows) apre', tasto('k', { ctrlKey: true }), true)
+ok('con il maiuscolo bloccato apre lo stesso', tasto('K', { metaKey: true }), true)
+ok('k da sola no: è una lettera che si scrive', tasto('k'), false)
+ok('⌘⇧K e ⌘⌥K no: sono di altri', [tasto('k', { metaKey: true, shiftKey: true }), tasto('k', { metaKey: true, altKey: true })], [false, false])
+ok('⌘J no', tasto('j', { metaKey: true }), false)
+ok('Segreteria.tsx ascolta la scorciatoia e apre una finestra (dialog) con la ricerca', [/eScorciatoiaDiRicerca\(/.test(sg), /role="dialog"/.test(sg), /aria-modal/.test(sg)], [true, true, true])
+const ci = readFileSync('src/components/segreteria/CercaIscritto.tsx', 'utf8')
+const RIS = ic.ICONE_RISULTATO ?? {}
+ok('ICONE_RISULTATO: una icona per tipo di risultato', Object.keys(RIS).sort(), ['corsi', 'iscritti', 'istruttori', 'richieste'])
+ok('CercaIscritto disegna l\'icona del tipo davanti a ogni risultato', /ICONE_RISULTATO\[/.test(ci), true)
 
 console.log('\nIl menu del Banco')
 // I cinque luoghi e le voci che portano (gli id, non i nomi): la serie «segreteria nel look del sito» non li sposta.

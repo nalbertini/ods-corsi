@@ -144,6 +144,14 @@ export const ICONE_MENU = {
   link: voce(<><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" /><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" /></>),
 }
 
+/** Le icone dei risultati della ricerca: una per tipo, la chiave è il `TipoRisultato` di lib/ricerca. */
+export const ICONE_RISULTATO = {
+  iscritti: ICONE_MENU.areaIstruttori,
+  richieste: ICONE_MENU.richieste,
+  corsi: ICONE_MENU.corsi,
+  istruttori: ICONE_MENU.personale,
+}
+
 /** Le icone delle casse e delle voci in CONTABILITÀ: la chiave è quella di `iconaCassa`/`iconaVoce` (lib/contabilita). */
 export const ICONE_CONTI = {
   banca: voce(<><path d="M3 10 12 4l9 6" /><path d="M5 10v8M10 10v8M14 10v8M19 10v8M3 20h18" /></>),

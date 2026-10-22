@@ -2,7 +2,6 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
-import { Bollino } from '../ds'
 import { TastoTema } from '../TastoTema'
 import { Cursori, ICONE_MENU } from '../Icons'
 import { Settimana } from './Settimana'
@@ -48,6 +47,7 @@ import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { linkDellaSegreteria } from '../../lib/provenienza'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
+import { eScorciatoiaDiRicerca } from '../../lib/scorciatoiaRicerca'
 import { guidaDellaVoce, indirizzoConsentito, leggeLaSegreteria, menuDi, pagamentiRidotti, postoConsentito, primaVoce, titoloDelMenu, vociConsentite } from '../../lib/menuSegreteria'
 
 export type { Voce }
@@ -150,6 +150,8 @@ export function Segreteria({
   // Come il filtro: un punto di partenza dato dalla ricerca, non un posto dell'indirizzo.
   const [ricerca, setRicerca] = useState<Ricercata>()
   const [richiesta, setRichiesta] = useState<string>()
+  // La ricerca aperta con ⌘K / Ctrl+K, in una finestra al centro.
+  const [finestra, setFinestra] = useState(false)
   const [movimento, setMovimento] = useState<string>()
   // Il menu del telefono, aperto o chiuso; sul computer non conta.
   const [aperto, setAperto] = useState(false)
@@ -327,6 +329,29 @@ export function Segreteria({
   // come in DA FARE: sono cose che aspettano una risposta, non guai.
   const daFare = richiesteNuove + daConfermare + daRispondere + (conSegnalate ? segnalateDaVedere : 0)
 
+  const puoCercare = !!d && conSegreteria
+  // Alla chiusura il fuoco torna all'elemento che l'aveva prima di ⌘K.
+  const primaDellaFinestra = useRef<HTMLElement | null>(null)
+  useEffect(() => {
+    if (finestra) {
+      primaDellaFinestra.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+      return
+    }
+    primaDellaFinestra.current?.focus()
+    primaDellaFinestra.current = null
+  }, [finestra])
+  useEffect(() => {
+    if (!puoCercare) return
+    const tasto = (e: KeyboardEvent) => {
+      if (!eScorciatoiaDiRicerca(e)) return
+      // Prima del browser: Ctrl+K da solo sposterebbe il fuoco sulla barra degli indirizzi.
+      e.preventDefault()
+      setFinestra((f) => !f)
+    }
+    window.addEventListener('keydown', tasto)
+    return () => window.removeEventListener('keydown', tasto)
+  }, [puoCercare])
+
   const [guaio, setGuaio] = useState(false)
   const [tentativo, setTentativo] = useState(0)
   useEffect(() => {
@@ -359,6 +384,20 @@ export function Segreteria({
       aria-label="Impostazioni"
     >
       <Cursori />
+    </button>
+  )
+
+  // Nel riquadro di chi è dentro, col loro nome: due icone senza parola in cima non dicevano cosa fossero.
+  const guidaNome = (
+    <a className="num sg-voce" href={indirizzoPagina(guidaDellaVoce(voce, chi))} target="_blank" rel="noopener">
+      <span className="sg-voce-aiuto" aria-hidden="true">?</span>
+      <span className="sg-voce-testo">Aiuto</span>
+    </a>
+  )
+  const impostazioniNome = conSegreteria && (
+    <button type="button" className="num sg-voce" aria-current={voce === 'regole' ? 'page' : undefined} onClick={() => vai('regole')}>
+      <Cursori />
+      <span className="sg-voce-testo">Impostazioni</span>
     </button>
   )
 
@@ -454,14 +493,6 @@ export function Segreteria({
             <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>{etichetta}</span>
           </span>
         </div>
-        {/* In cima, sempre in vista senza scorrere: in fondo, su uno schermo basso, si perdevano. Sul telefono stanno nella barra in cima. */}
-        <div className="row sg-icone">
-          {guida}
-          <TastoTema />
-          {impostazioni}
-          {/* Fra DATI e DI uno spazio che non va a capo: in 56px si spezza solo prima di PROVA. */}
-          {prova && <Bollino>DATI{'\u00a0'}DI PROVA</Bollino>}
-        </div>
         {d && conSegreteria && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
         <div className="sg-gruppi">
           {gruppi.map((g) => (
@@ -510,6 +541,11 @@ export function Segreteria({
           )}
         </div>
         <div className="sg-chi">
+          <div className="sg-voci sg-chi-voci">
+            {guidaNome}
+            {impostazioniNome}
+            <TastoTema />
+          </div>
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
           <span style={{ fontSize: 12, color: 'var(--dim)' }}>{ruolo}{conSegreteria ? ' · accesso completo' : ''}</span>
           {prova && <span className="num sg-bollino">DATI DI PROVA</span>}
@@ -551,6 +587,21 @@ export function Segreteria({
         </>
       )}
 
+      {finestra && d && conSegreteria && (
+        <div className="sg-ricerca-finestra" onMouseDown={(e) => e.target === e.currentTarget && setFinestra(false)}>
+          <div role="dialog" aria-modal="true" aria-label="Cerca" className="sg-ricerca-corpo">
+            <CercaIscritto
+              d={d}
+              inFinestra
+              onChiudi={() => setFinestra(false)}
+              onVai={(v, dest) => {
+                setFinestra(false)
+                void vai(v, dest)
+              }}
+            />
+          </div>
+        </div>
+      )}
       <main className="sg-corpo" id="sg-contenuto" tabIndex={-1}>
         {!d && !guaio && <p className="sg-sotto">Un attimo…</p>}
         {!d && guaio && (

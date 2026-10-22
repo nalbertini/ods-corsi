@@ -40,26 +40,6 @@
     </span>
   </div>
 
-  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
-    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-size: 20px; font-weight: {{titoloPeso}}">?</span>
-    <sc-if value="{{conTema}}" hint-placeholder-val="{{ true }}">
-    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}">
-      <sc-if value="{{scuro}}" hint-placeholder-val="{{ true }}">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
-      </sc-if>
-      <sc-if value="{{chiaro}}" hint-placeholder-val="{{ false }}">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
-      </sc-if>
-    </span>
-    </sc-if>
-    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{impBordo}}; color: {{impColore}}">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9M14 17H4"></path><circle cx="7" cy="7" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg>
-    </span>
-    <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
-      <span style="flex: 0 0 56px; align-self: center; padding: 2px 6px; background: #f4c31b; color: #121212; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; letter-spacing: 0.18em">DATI DI PROVA</span>
-    </sc-if>
-  </div>
-
   <sc-if value="{{conRicerca}}" hint-placeholder-val="{{ true }}">
   <div style="padding: 0 4px">
     <div style="display: flex; align-items: center; width: 100%; height: 44px; padding: 0 12px; background: {{c.campo}}; border: 2px solid {{c.campoBordo}}; border-radius: {{raggio}}; font-size: 15px; color: {{c.campoTesto}}">Cerca iscritto</div>
@@ -93,9 +73,26 @@
   </div>
   </sc-if>
 
-  <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 12px; border: 2px solid {{c.lineSoft}}">
+  <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 2px solid {{c.lineSoft}}">
+    <div style="display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid {{c.lineSoft}}">
+    <span style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-size: 15px; font-weight: 500"><span style="display: flex; align-items: center; justify-content: center; width: 20px; font-weight: 700">?</span><span>Aiuto</span></span>
+    <span style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border: 2px solid {{impBordo}}; color: {{impColore}}; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9M14 17H4"></path><circle cx="7" cy="7" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg><span>Impostazioni</span></span>
+      <sc-if value="{{conTema}}" hint-placeholder-val="{{ true }}">
+      <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}">
+        <sc-if value="{{scuro}}" hint-placeholder-val="{{ true }}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+        </sc-if>
+        <sc-if value="{{chiaro}}" hint-placeholder-val="{{ false }}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+        </sc-if>
+      </span>
+      </sc-if>
+    </div>
     <span style="font-size: 14px; font-weight: 600">{{nome}}</span>
     <span style="font-size: 12px; color: {{c.dim}}">{{ruolo}} · accesso completo</span>
+    <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
+      <span style="align-self: flex-start; padding: 2px 6px; background: #f4c31b; color: #121212; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; letter-spacing: 0.18em">DATI DI PROVA</span>
+    </sc-if>
     <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
       <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 13px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Riparti dall'orario vero</span>
     </sc-if>
@@ -111,7 +108,7 @@
 // `text` su fondo `surface`, MAI rossa: il rosso e' per cio' che manca). I numeri accanto alle voci sono
 // bollini gialli (.sg-tag data-tipo="presto"). Sul telefono il menu sta dietro una barra: non riprodotto.
 // attiva: il testo della voce corrente, come nel codice ("PRESENZE"). numeri: "VOCE:n" separati da virgola.
-// prova: i tre tasti hanno accanto DATI DI PROVA e in fondo compare "Riparti dall'orario vero".
+// Aiuto e Impostazioni (col nome) stanno in cima al riquadro di chi e' dentro, non piu' come tre icone sotto il marchio. prova: nel riquadro compare DATI DI PROVA e in fondo "Riparti dall'orario vero".
 // Il logo e' Logo.tsx; nell'app l'ingranaggio bianco segue il colore del testo (nero nel tema chiaro).
 // I tasti (?, tema, impostazioni) mostrano l'icona che porta altrove: sole sul tema scuro, luna sul chiaro.
 // impostazioni: il tasto coi cursori e' la pagina corrente (.icon-btn[aria-current='page']: bordo e icona in `text`).

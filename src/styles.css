@@ -1991,6 +1991,16 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-cerca-voce { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; padding: 6px 10px; font-size: 15px; cursor: pointer; }
 .sg-cerca-voce[aria-selected='true'] { background: var(--surface-2); box-shadow: inset 4px 0 0 var(--text); }
 .sg-cerca-voce[data-spento] { color: var(--dim); }
+.sg-cerca-voce > svg { flex: none; color: var(--dim); }
+.sg-cerca-voce { gap: 12px; }
+.sg-cerca-voce > .sg-cerca-testo { flex-grow: 1; }
+.sg-ricerca-finestra .sg-cerca-elenco { width: 536px; border: 0; box-shadow: none; }
+.sg-chi-voci { padding-bottom: 6px; border-bottom: 1px solid var(--line-soft); }
+.sg-voce-aiuto { display: inline-flex; align-items: center; justify-content: center; width: 20px; flex: none; font-weight: 700; }
+/* La ricerca con ⌘K: una finestra al centro, sopra tutto, sul fondo scurito. */
+.sg-ricerca-finestra { position: fixed; inset: 0; z-index: 40; display: flex; align-items: flex-start; justify-content: center; padding-top: 18vh; background: rgba(0, 0, 0, 0.6); }
+.sg-ricerca-corpo { width: 560px; max-width: calc(100vw - 16px); padding: 12px; background: var(--surface); border: 2px solid var(--text); }
+.sg-ricerca-finestra .sg-cerca { padding: 0; }
 .sg-cerca-testo { display: flex; flex-direction: column; min-width: 0; }
 /* Su telefono un nome lungo andrebbe a capo accanto allo stato: resta su una riga, coi puntini. */
 .sg-cerca-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2027,21 +2037,17 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-voce-testo { flex: 1; min-width: 0; }
 a.sg-voce { text-decoration: none; }
 .sg-voce[aria-current='page'] { border-left-color: var(--text); background: var(--surface); color: var(--text); }
-.sg-chi { display: flex; flex-direction: column; gap: 6px; padding: 14px 12px; border: 2px solid var(--line-soft); }
+.sg-icone { gap: 8px; padding: 0 4px; }
+.sg-chi { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 2px solid var(--line-soft); }
 .sg-bollino {
   font-size: 11px; font-weight: 700; letter-spacing: 0.18em; color: var(--su-colore); background: var(--giallo);
   padding: 2px 6px; align-self: flex-start; margin-top: 4px;
 }
-.sg-icone { gap: 8px; padding: 0 4px; }
 .icon-btn[aria-current='page'] { border-color: var(--text); color: var(--text); }
 /* DATI DI PROVA sta accanto ai tre tasti, in cima e sempre in vista; in chi è
    entrato resta solo sul telefono, dove i tasti sono nella barra in cima. */
 /* Senza il margine ci sta, dal computer, su due righe accanto ai tasti: la
    riga resta alta 44. Sul tablet, più stretto, va sotto. */
-#sg-menu .sg-icone { padding: 0; flex-wrap: wrap; }
-/* 56 px: «DATI DI» su una riga e «PROVA» sotto. */
-#sg-menu .sg-icone > .sg-bollino { margin-top: 0; align-self: center; flex: 0 0 56px; }
-@media (min-width: 768px) { #sg-menu .sg-chi > .sg-bollino { display: none; } }
 .sg-link { font-size: 13px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 .sg-link:hover { color: var(--text); }
 /* In fondo al menu i link (Riparti dall'orario vero, Esci) sono bersagli veri
@@ -2966,8 +2972,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 @media (min-width: 768px) and (max-width: 1000px) {
   .sg-menu { width: 200px; padding-left: 12px; padding-right: 12px; }
   .sg-voce { font-size: 15px; letter-spacing: 0.1em; padding: 0 10px; }
-  /* Accanto ai tasti non ci sta: sotto, su una riga sola. */
-  #sg-menu .sg-icone > .sg-bollino { flex-basis: auto; }
   .sg-corpo { padding: calc(var(--safe-t) + 20px) 20px 20px; }
 }
 
@@ -2984,7 +2988,9 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   /* 8 + 44 + 8 + il bordo: alta 62, ed è lì che il menu aperto comincia. */
   .sg-barra-tel > svg { flex-shrink: 0; }
   .sg-barra-tel > .icon-btn { border: none; }
+  /* Sul telefono Aiuto, tema e Impostazioni stanno già nella barra in cima. */
   .sg-icone { display: none; }
+  .sg-chi-voci { display: none; }
   .sg-tasto-menu {
     display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px;
     border: 2px solid var(--line); color: var(--text);
