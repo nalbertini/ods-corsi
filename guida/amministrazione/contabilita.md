@@ -9,7 +9,9 @@ semplice, gli istruttori e il tablet no. Ha quattro schede: **MOVIMENTI**, **BIL
 ## Movimenti
 
 In cima, il **residuo** di ogni cassa e il **totale**: saldo iniziale, più le entrate,
-meno le uscite.
+meno le uscite, ognuno con la sua icona e sotto le entrate e le uscite. I tasti **Collega i casi
+sicuri**, **Giroconto** e **Nuovo movimento** stanno accanto al titolo CONTABILITÀ, e solo in
+questa scheda.
 
 L'elenco unisce due cose:
 
@@ -32,15 +34,16 @@ L'elenco unisce due cose:
 - i **movimenti che scrivi tu**: altre entrate (contributi, gare, attività
   fatturate) e le uscite.
 
-Si parte da **Tutto l'anno**: l'elenco, ENTRATE, USCITE e DIFFERENZA in fondo contano l'anno in
-corso, non più il mese. I filtri sono in due righe: sopra la **ricerca** nella descrizione (non bada a maiuscole, accenti
-e spazi in più), il
-**periodo** (il mese, il mese scorso, tutto l'anno, tutto) e il **tipo** (**Entrate**, **Uscite**,
-**Giroconti**); sotto la **cassa**, la **voce**, la **persona** (un menu) e **Mostra annullati**.
-Sotto i filtri la riga «N trovati · N filtri attivi» dice quanti ne hai acceso, e **Togli i
-filtri** (compare solo se ne hai acceso almeno uno) ti riporta a Tutto l'anno senza altro.
-**Vista**: **Elenco** o **Per voce**, che dà i totali per voce. **Esporta CSV** è un foglio per
-Excel e per il commercialista, senza gli annullati.
+Si parte da **Tutto l'anno**: l'elenco, ENTRATE, USCITE e DIFFERENZA contano l'anno in
+corso, non più il mese. Filtri ed elenco stanno in un riquadro solo. Sopra la **ricerca** nella
+descrizione (non bada a maiuscole, accenti e spazi in più), il **periodo** (il mese, il mese
+scorso, tutto l'anno, tutto) ed **Esporta CSV**, un foglio per Excel e per il commercialista,
+senza gli annullati. Sotto quattro menu, **Tipo** (**Entrate**, **Uscite**, **Giroconti**),
+**Cassa**, **Voce** e **Persona**, poi **Mostra annullati** e la **vista**: **Elenco** o **Per
+voce**, che dà i totali per voce. Un menu acceso ha il fondo pieno e una ✕ accanto che lo spegne.
+Sotto i filtri, una riga dice quanti movimenti ci sono, quanti ne hai scelti, ogni
+filtro acceso con la sua ✕ (toglie solo quello), **Togli i filtri** (li toglie tutti e riporta
+a Tutto l'anno) e a destra ENTRATE, USCITE e DIFFERENZA di quel che vedi.
 
 ### Nuovo movimento
 
@@ -70,8 +73,8 @@ restano come sono, e anche i giorni già chiusi (la chiusura non cambia: i soldi
   cambiato** dice chi l'ha cambiata, quando e da quale voce veniva.
 - **Tanti insieme**: nell'elenco scrivi nella ricerca una parte della causale (per esempio «enel»),
   scegli la **voce** da cui partire (per esempio «Da classificare») e, se serve, il periodo
-  **Tutto**. L'elenco dice quanti ne ha trovati. Spunta le righe, oppure tocca **Scegli tutte le N
-  trovate**. In fondo compare la barra **N scelti**: **Cambia voce** apre il riepilogo (quanti sono,
+  **Tutto**. L'elenco dice quanti ne ha trovati. Spunta le righe, oppure la casella in testa alla
+  colonna, che le sceglie tutte. In fondo compare la barra **N scelti**: **Cambia voce** apre il riepilogo (quanti sono,
   di che tipo, quanto fanno, da quali voci vengono). Scegli la **nuova voce** e tocca **Sì, cambia la
   voce**: finché non lo dici, non cambia niente. Se cambi la ricerca o i filtri, la scelta si svuota.
   Si fa anche dal telefono.

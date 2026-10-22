@@ -41,7 +41,7 @@ function fineAttributi(src, da) {
   return -1
 }
 
-const DICE = /^(Cancella|Elimina|Annulla\s+\S|Togli(?!.*(filtri|ricerca))|Disattiva|Azzera|Rimuovi|Svuota)/i
+const DICE = /^(Cancella|Elimina|Annulla\s+\S|Togli(?!.*(filtr[oi]|ricerca))|Disattiva|Azzera|Rimuovi|Svuota)/i
 
 function pulsanti(src) {
   const fuori = []
