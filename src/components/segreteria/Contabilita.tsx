@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import {
   cambiabile,
@@ -19,7 +20,9 @@ import {
   differenzaInParole,
   elencoMovimenti,
   esitoCambioVoce,
+  FILTRI_INIZIALI,
   filtraMovimenti,
+  filtriAccesi,
   filtriAttivi,
   giornoChiuso,
   giornoRoma,
@@ -27,7 +30,6 @@ import {
   NOME_CASSA_CONTANTI,
   nonSiVedra,
   oggiARoma,
-  PERIODO_INIZIALE,
   pacchetti,
   riepilogoCambioVoce,
   soloTipo,
@@ -48,7 +50,11 @@ import {
   totaleResidui,
   type Cassa,
   type ChiusuraCassa,
-  type Periodo,
+  type FiltriElenco,
+  type IconaConti,
+  iconaCassa,
+  iconaVoce,
+  togliFiltro,
   type RigaMovimento,
   type VoceContabile,
   ultimaChiusura,
@@ -60,8 +66,8 @@ import { filtraPerPersona, cosaNonVaCollegato, collegatoAMano, type FiltroPerson
 import { fraseDallaChat } from '../../lib/collega'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
-import { Campo, chiedi, Guaio, lasciare, messaggio, scaricaCsv, SchedaPiena, suCarta, Testa, useAvviso, useBozza, useCarica } from './comune'
-import { Numero } from './Presenze'
+import { Campo, chiedi, FiltroMenu, Guaio, lasciare, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica } from './comune'
+import { ICONE_CONTI } from '../Icons'
 import { CollegaAPersona, CollegaSicuri } from './CollegaPersona'
 import { Bilancio } from './Bilancio'
 import { ScaricoSatispay } from './ScaricoSatispay'
@@ -91,6 +97,8 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
     return { ricevute, diretti, satispay, nomi: chi.length ? await d.nomiPersone(chi) : [] }
   }, [d])
   const { avviso, fai } = useAvviso()
+  // Le azioni di MOVIMENTI stanno nella testata della pagina, accanto al titolo: il posto lo dà qui, i tasti li mette Movimenti.
+  const [azioni, setAzioni] = useState<HTMLElement | null>(null)
 
   const daiConti = [casse, voci, manuali]
   const guaio = daiConti.map((x) => x.guaio).find(Boolean)
@@ -111,21 +119,20 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <Testa titolo="CONTABILITÀ" sotto="Le entrate e le uscite della palestra, nelle sue casse. Gli incassi degli iscritti ci sono già: si correggono in PAGAMENTI." />
-      <div className="row" style={{ gap: 10 }} role="tablist" aria-label="Contabilità">
-        {(
-          [
-            ['movimenti', 'Movimenti'],
-            ['bilancio', 'Bilancio'],
-            ['voci', 'Voci'],
-            ['casse', 'Casse'],
-          ] as const
-        ).map(([id, testo]) => (
-          <button key={id} type="button" role="tab" aria-selected={scheda === id} className="num sg-chip" onClick={() => setScheda(id)}>
-            {testo}
-          </button>
-        ))}
-      </div>
+      <Testa titolo="CONTABILITÀ" sotto="Le entrate e le uscite della palestra, nelle sue casse. Gli incassi degli iscritti ci sono già: si correggono in PAGAMENTI.">
+        <div className="row" style={{ gap: 10, flexWrap: 'wrap' }} ref={setAzioni} />
+      </Testa>
+      <Segmenti
+        etichetta="Contabilità"
+        voci={[
+          ['movimenti', 'Movimenti'],
+          ['bilancio', 'Bilancio'],
+          ['voci', 'Voci'],
+          ['casse', 'Casse'],
+        ]}
+        scelta={scheda}
+        onScegli={setScheda}
+      />
       {guaio && <Guaio testo={guaio} />}
       {nonInRegola.map((k) => (
         <div key={k.id} role="alert" className="sg-riquadro" style={{ borderColor: 'var(--rosso-testo)' }}>
@@ -145,7 +152,7 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
       {/* Le schede si nascondono, non si smontano: filtri e bozze restano dove sono. */}
       {pronto && (
         <>
-          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
+          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} azioni={scheda === 'movimenti' ? azioni : null} casse={casse.dato ?? []} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
           <div hidden={scheda !== 'bilancio'}><Bilancio d={d} casse={casse.dato ?? []} righe={elenco} oggi={oggiARoma()} fai={fai} /></div>
           <div hidden={scheda !== 'voci'}><Voci d={d} voci={voci.dato ?? []} chiusure={dateChiusure} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
           <div hidden={scheda !== 'casse'}><Casse d={d} casse={casse.dato ?? []} chiusure={dateChiusure} guaioChiusure={chiusure.guaio ?? undefined} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
@@ -172,24 +179,38 @@ function InVista({ children }: { children: ReactNode }) {
   return <div ref={qui} style={{ scrollMarginTop: 12 }}>{children}</div>
 }
 
-function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: DatiSegreteria; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void }) {
+/** L'icona dei conti accanto a un nome (una cassa, una voce): senza icona, niente. */
+function IconaConto({ nome }: { nome: IconaConti | 'frecce' | null }) {
+  if (!nome) return null
+  const Icona = ICONE_CONTI[nome]
+  return <Icona size={18} />
+}
+
+/** Un saldo nella striscia sopra l'elenco: cifra da 28px perché un milione stia in un quarto di riga. */
+function Saldo({ nome, icona, valore, sotto }: { nome: string; icona: IconaConti | null; valore: string; sotto: string[] }) {
+  return (
+    <div className="sg-saldo">
+      <span className="sg-etichetta sg-cella-icona"><IconaConto nome={icona} />{nome.toUpperCase()}</span>
+      <span className="num sg-saldo-cifra">{valore}</span>
+      <span className="sg-saldo-sotto">{sotto.map((x) => <span key={x}>{x}</span>)}</span>
+    </div>
+  )
+}
+
+function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void }) {
   const oggi = oggiARoma()
-  const [testo, setTesto] = useState('')
-  const [periodo, setPeriodo] = useState<Periodo>(PERIODO_INIZIALE)
-  const [tipo, setTipo] = useState('')
-  const [cassaId, setCassaId] = useState('')
-  const [annullati, setAnnullati] = useState(false)
+  const [f, setF] = useState<FiltriElenco>(FILTRI_INIZIALI)
+  const { testo, periodo, tipo, cassaId, voce, persona, annullati } = f
+  const metti = (x: Partial<FiltriElenco>) => setF((y) => ({ ...y, ...x }))
   const [perVoci, setPerVoci] = useState(false)
   const [scrivo, setScrivo] = useState<'movimento' | 'giroconto' | null>(null)
   // Dopo aver scritto un movimento che i filtri nascondono: se no sembra perso.
   const [appena, setAppena] = useState<RigaMovimento | null>(null)
   const [aperto, setAperto] = useState<RigaMovimento | null>(null)
-  const [voce, setVoce] = useState('')
   const [viste, setViste] = useState(RIGHE_ELENCO)
   const [scelti, setScelti] = useState<Set<string>>(new Set())
   const [cambio, setCambio] = useState(false)
   // Lo storico collegato alla persona (70-movimenti-persona.sql): cosa si può dire di ogni movimento senza persona, e i nomi dei collegati.
-  const [persona, setPersona] = useState<FiltroPersona>('')
   const [collegando, setCollegando] = useState<'sicuri' | 'mano' | null>(null)
   const statoElenco = useRef<HTMLSpanElement>(null)
   const esitiLetti = useCarica(() => d.esitiCollegamentiPersona(), [d])
@@ -258,17 +279,12 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
     window.setTimeout(() => statoElenco.current?.focus(), 0)
   }
   const azzera = () => {
-    setTesto('')
-    setPeriodo(PERIODO_INIZIALE)
-    setTipo('')
-    setCassaId('')
-    setVoce('')
-    setPersona('')
-    setAnnullati(false)
+    setF(FILTRI_INIZIALI)
     setAppena(null)
     window.setTimeout(() => statoElenco.current?.focus(), 0)
   }
-  const attivi = filtriAttivi({ testo, periodo, tipo, cassaId, voce, persona, annullati })
+  const attivi = filtriAttivi(f)
+  const accesi = filtriAccesi(f, { nomeCassa: (id) => nomeCassa(id), mese })
   // Con il modulo aperto è lui la pagina: l'elenco e i filtri restano com'erano (lo stato sta qui) e si ritrovano tornando.
   const tornaDalModulo = async () => {
     if (!(await lasciare())) return
@@ -314,40 +330,39 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
 
   return (
     <div className="stack" style={{ gap: 18 }}>
-      <div className="sg-numeri sg-numeri-conti">
+      {azioni && createPortal(
+        <>
+          {!esitiLetti.guaio && (
+            <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setAperto(null); setScrivo(null); setCambio(false); setCollegando('sicuri') }}>
+              Collega i casi sicuri
+            </button>
+          )}
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => apri('giroconto')}>
+            Giroconto
+          </button>
+          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => apri('movimento')}>
+            Nuovo movimento
+          </button>
+        </>,
+        azioni,
+      )}
+      <div className="sg-saldi" role="group" aria-label="Saldi delle casse">
         {casse.map((c) => {
           const r = conti.find((x) => x.cassaId === c.id)
-          return <Numero key={c.id} titolo={c.nome.toUpperCase()} valore={soldiConSegno(r?.residuo ?? 0)} sotto={`entrate ${soldi(r?.entrate ?? 0)} · uscite ${soldi(r?.uscite ?? 0)}`} />
+          return <Saldo key={c.id} nome={c.nome} icona={iconaCassa(c.nome)} valore={soldiConSegno(r?.residuo ?? 0)} sotto={[`entrate ${soldi(r?.entrate ?? 0)}`, `uscite ${soldi(r?.uscite ?? 0)}`]} />
         })}
-        <Numero titolo="TOTALE" valore={soldiConSegno(totaleResidui(conti))} sotto="saldi iniziali compresi" />
+        <Saldo nome="Totale" icona={null} valore={soldiConSegno(totaleResidui(conti))} sotto={['saldi iniziali compresi']} />
       </div>
       <ScaricoSatispay d={d} fai={fai} onCambiato={onCambiato} />
 
       {cambio && idScelti.length > 0 && sceltaRiep.tipo !== 'misto' && <InVista><CambiaVoce d={d} ids={idScelti} righe={righe} voci={voci} onRileggi={onCambiato} onFatto={cambioFinito} onChiudi={() => setCambio(false)} /></InVista>}
-      {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); setPeriodo('tutto'); setPersona('da_decidere') }} onChiudi={chiudiCollega} /></InVista>}
+      {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); metti({ periodo: 'tutto', persona: 'da_decidere' }) }} onChiudi={chiudiCollega} /></InVista>}
       {collegando === 'mano' && sceltiRighe.length > 0 && <InVista><CollegaAPersona d={d} righe={sceltiRighe} fai={fai} onFatto={collegamentoFatto} onChiudi={chiudiCollega} /></InVista>}
       {aperto && (
         <SchedaPiena key={aperto.id} etichetta={`Movimento: ${aperto.descrizione}`} torna="I movimenti" onTorna={() => void torna()}>
           <MovimentoAperto d={d} voci={voci} riga={aperto} chiusure={chiusure} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} fai={fai} onChiudi={() => void torna()} onFatto={fatto} />
         </SchedaPiena>
       )}
-
-      <div className="row" style={{ gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-        <button type="button" className="sg-btn sg-btn-linea" disabled={!trovate.length} onClick={() => scaricaCsv(`movimenti-${oggi}.csv`, csvMovimenti(trovate, casse))}>
-          Esporta CSV
-        </button>
-        {!esitiLetti.guaio && (
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setAperto(null); setScrivo(null); setCambio(false); setCollegando('sicuri') }}>
-            Collega i casi sicuri
-          </button>
-        )}
-        <button type="button" className="sg-btn sg-btn-linea" onClick={() => apri('giroconto')}>
-          Giroconto
-        </button>
-        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => apri('movimento')}>
-          Nuovo movimento
-        </button>
-      </div>
 
       {fuori && (
         <div className="row sg-riquadro" style={{ flexDirection: 'row', alignItems: 'center', gap: 14, flexWrap: 'wrap' }} role="status">
@@ -356,102 +371,81 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
         </div>
       )}
 
-      <div className="sg-riquadro" role="group" aria-label="Filtri dei movimenti">
-        <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+      <section className="sg-elenco" aria-label="Movimenti">
+        <div className="sg-elenco-barra" role="group" aria-label="Filtri dei movimenti">
           <label htmlFor="cerca-movimenti" className="vh">
             Cerca nella descrizione
           </label>
-          <input id="cerca-movimenti" className="sg-campo" type="search" placeholder="Cerca nella descrizione" style={{ width: 300, maxWidth: '100%' }} value={testo} onChange={(e) => setTesto(e.target.value)} />
-          <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }} role="group" aria-label="Periodo">
-            <span className="sg-etichetta">PERIODO</span>
-            {(
-              [
-                ['mese', mese],
-                ['scorso', 'Mese scorso'],
-                ['anno', 'Tutto l’anno'],
-                ['tutto', 'Tutto'],
-              ] as const
-            ).map(([id, etichetta]) => (
-              <button key={id} type="button" className="num sg-chip" aria-pressed={periodo === id} onClick={() => setPeriodo(id)}>
-                {etichetta}
-              </button>
-            ))}
-          </div>
-          <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }} role="group" aria-label="Tipo">
-            <span className="sg-etichetta">TIPO</span>
-            {(
-              [
-                ['entrata', 'Entrate'],
-                ['uscita', 'Uscite'],
-                ['giroconto', 'Giroconti'],
-              ] as const
-            ).map(([id, etichetta]) => (
-              <button key={id} type="button" className="num sg-chip" aria-pressed={tipo === id} onClick={() => setTipo(tipo === id ? '' : id)}>
-                {etichetta}
-              </button>
-            ))}
-          </div>
+          <input id="cerca-movimenti" className="sg-campo sg-elenco-cerca" type="search" placeholder="Cerca nella descrizione" value={testo} onChange={(e) => metti({ testo: e.target.value })} />
+          <Segmenti
+            etichetta="Periodo"
+            voci={[
+              ['mese', mese],
+              ['scorso', 'Mese scorso'],
+              ['anno', 'Tutto l’anno'],
+              ['tutto', 'Tutto'],
+            ]}
+            scelta={periodo}
+            onScegli={(v) => metti({ periodo: v })}
+          />
+          <span style={{ flex: 1 }} />
+          <button type="button" className="sg-btn sg-btn-linea" disabled={!trovate.length} onClick={() => scaricaCsv(`movimenti-${oggi}.csv`, csvMovimenti(trovate, casse))}>
+            Esporta CSV
+          </button>
         </div>
-        <div className="row" style={{ gap: 12, flexWrap: 'wrap', alignItems: 'center', paddingTop: 12, borderTop: '1px solid var(--line-soft)' }}>
-          <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }} role="group" aria-label="Cassa">
-            <span className="sg-etichetta">CASSA</span>
-            {casse.map((c) => (
-              <button key={c.id} type="button" className="num sg-chip" aria-pressed={cassaId === c.id} onClick={() => setCassaId(cassaId === c.id ? '' : c.id)}>
-                {c.nome}
-              </button>
-            ))}
-          </div>
-          <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-            <label htmlFor="filtro-voce" className="sg-etichetta">VOCE</label>
-            <select id="filtro-voce" className="sg-campo" style={{ width: 'auto', maxWidth: '100%' }} value={voce} onChange={(e) => setVoce(e.target.value)}>
-              <option value="">Tutte le voci</option>
-              {nomiVoci.map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
-          </div>
+        <div className="sg-elenco-barra" style={{ paddingTop: 0 }}>
+          <FiltroMenu id="filtro-tipo" nome="Tipo" value={tipo} opzioni={[['', 'Tutti'], ['entrata', 'Entrate'], ['uscita', 'Uscite'], ['giroconto', 'Giroconti']]} onChange={(v) => metti({ tipo: v })} />
+          <FiltroMenu id="filtro-cassa" nome="Cassa" value={cassaId} opzioni={[['', 'Tutte'], ...casse.map((c) => [c.id, c.nome] as const)]} onChange={(v) => metti({ cassaId: v })} />
+          <FiltroMenu id="filtro-voce" nome="Voce" value={voce} opzioni={[['', 'Tutte'], ...nomiVoci.map((n) => [n, n] as const)]} onChange={(v) => metti({ voce: v })} />
           {esitiLetti.dato && (
-            <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-              <label htmlFor="filtro-persona" className="sg-etichetta">PERSONA</label>
-              {/* I numeri contano tutto lo storico: scegliendo un filtro il periodo diventa Tutto, se no «0 trovati» confonde. */}
-              <select id="filtro-persona" className="sg-campo" style={{ width: 'auto', maxWidth: '100%' }} value={persona} onChange={(e) => { const v = e.target.value as FiltroPersona; setPersona(v); if (v) setPeriodo('tutto') }}>
-                <option value="">Tutte</option>
-                <option value="collegati">{`Collegati · ${collegatiTutti}`}</option>
-                <option value="da_decidere">{`Da decidere · ${daDecidere}`}</option>
-                <option value="senza_scheda">{`Senza scheda · ${senzaScheda}`}</option>
-              </select>
-            </div>
+            // I numeri contano tutto lo storico: scegliendo un filtro il periodo diventa Tutto, se no «0 trovati» confonde.
+            <FiltroMenu
+              id="filtro-persona"
+              nome="Persona"
+              value={persona}
+              opzioni={[['', 'Tutte'], ['collegati', `Collegati · ${collegatiTutti}`], ['da_decidere', `Da decidere · ${daDecidere}`], ['senza_scheda', `Senza scheda · ${senzaScheda}`]]}
+              // Le opzioni sono quelle di FiltroPersona scritte qui sopra: il valore non può essere altro.
+              onChange={(v) => metti(v ? { persona: v as FiltroPersona, periodo: 'tutto' } : { persona: '' })}
+            />
           )}
-          <button type="button" className="num sg-chip" aria-pressed={annullati} onClick={() => setAnnullati(!annullati)}>
+          <label className="sg-elenco-casella">
+            <input type="checkbox" checked={annullati} onChange={(e) => metti({ annullati: e.target.checked })} />
             Mostra annullati
-          </button>
+          </label>
+          <span style={{ flex: 1 }} />
+          <Segmenti
+            etichetta="Vista"
+            voci={[
+              ['elenco', 'Elenco'],
+              ['voce', 'Per voce'],
+            ]}
+            scelta={perVoci ? 'voce' : 'elenco'}
+            onScegli={(v) => setPerVoci(v === 'voce')}
+          />
         </div>
-      </div>
-      {esitiLetti.guaio && <span className="sg-sotto" role="status">{esitiLetti.guaio}</span>}
+        {esitiLetti.guaio && <span className="sg-sotto" role="status" style={{ padding: '0 16px 12px' }}>{esitiLetti.guaio}</span>}
 
-      <div className="row" style={{ gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
-        <span className="sg-sotto" role="status" ref={statoElenco} tabIndex={-1}>
-          {trovate.length === 1 ? '1 trovato' : `${trovate.length} trovati`}
-          {` · ${attivi === 1 ? '1 filtro attivo' : `${attivi} filtri attivi`}`}
-          {idScelti.length > 0 && ` · ${idScelti.length} ${idScelti.length === 1 ? 'scelto' : 'scelti'}`}
-        </span>
-        {attivi > 0 && (
-          <button type="button" className="sg-btn sg-btn-linea" onClick={azzera}>Togli i filtri</button>
-        )}
-        <span style={{ flex: 1 }} />
-        <div className="row" style={{ gap: 8, alignItems: 'center' }} role="group" aria-label="Vista">
-          <span className="sg-etichetta">VISTA</span>
-          <button type="button" className="num sg-chip" aria-pressed={!perVoci} onClick={() => setPerVoci(false)}>Elenco</button>
-          <button type="button" className="num sg-chip" aria-pressed={perVoci} onClick={() => setPerVoci(true)}>Per voce</button>
+        <div className="sg-elenco-stato">
+          <span role="status" ref={statoElenco} tabIndex={-1}>
+            <b>{trovate.length === 1 ? '1 movimento' : `${trovate.length} movimenti`}</b>
+            {idScelti.length > 0 && ` · ${idScelti.length} ${idScelti.length === 1 ? 'scelto' : 'scelti'}`}
+          </span>
+          {accesi.map((a) => (
+            <span key={a.chiave} className="sg-pillola">
+              {a.testo}
+              <button type="button" aria-label={`Togli il filtro ${a.testo}`} onClick={() => setF(togliFiltro(f, a.chiave))}>✕</button>
+            </span>
+          ))}
+          {attivi > 0 && (
+            <button type="button" className="sg-link" onClick={azzera}>Togli i filtri</button>
+          )}
+          <span style={{ flex: 1 }} />
+          <span className="sg-elenco-somme">
+            <span>Entrate <b className="num" style={{ color: somme.entrate > 0 ? 'var(--verde-testo)' : undefined }}>+ {soldi(somme.entrate)}</b></span>
+            <span>Uscite <b className="num">− {soldi(somme.uscite)}</b></span>
+            <span>Differenza <b className="num">{soldiConSegno(somme.differenza)}</b></span>
+          </span>
         </div>
-      </div>
-      {!perVoci && scegliibili.length > 0 && scegliibili.length > idScelti.length && (
-        <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScelti(new Set(scegliibili.map((r) => r.id)))}>
-            {scegliibili.length === trovate.length ? (scegliibili.length === 1 ? 'Scegli la trovata' : `Scegli tutte le ${scegliibili.length} trovate`) : `Scegli le ${scegliibili.length} che si possono cambiare`}
-          </button>
-        </div>
-      )}
 
       {perVoci ? (
         <div role="table" aria-label="Totali per voce" className="sg-tabella">
@@ -469,7 +463,13 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
       ) : (
         <div role="table" aria-label="Movimenti" className="sg-tabella">
           <div role="row" className="sg-lista-testa sg-riga-movimento">
-            <span role="columnheader" aria-label="Scelta" />
+            <span role="columnheader" className="sg-scelta-riga">
+              <input type="checkbox" disabled={!scegliibili.length}
+                checked={idScelti.length > 0 && scegliibili.every((r) => scelti.has(r.id))}
+                onChange={(e) => setScelti(e.target.checked ? new Set(scegliibili.map((r) => r.id)) : new Set())}
+                aria-label={!scegliibili.length ? "Nessun movimento da scegliere" : scegliibili.length === trovate.length ? `Scegli i ${scegliibili.length} movimenti trovati` : `Scegli i ${scegliibili.length} movimenti che si possono cambiare`}
+              />
+            </span>
             <span role="columnheader" className="sg-etichetta">DATA</span>
             <span role="columnheader" className="sg-etichetta">DESCRIZIONE</span>
             <span role="columnheader" className="sg-etichetta">PERSONA</span>
@@ -518,8 +518,11 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
                     <span className="num sg-tag">Da collegare</span>
                   ) : null}
                 </span>
-                <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{r.voce ?? '—'}</span>
-                <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)}</span>
+                <span role="cell" className="sg-cella-icona" data-tono="voce"><IconaConto nome={iconaVoce(r.voce)} />{r.voce ?? '—'}</span>
+                <span role="cell" className="sg-cella-icona">
+                  <IconaConto nome={r.tipo === 'giroconto' ? 'frecce' : iconaCassa(nomeCassa(r.cassaId))} />
+                  {r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)}
+                </span>
                 <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', textDecoration: r.annullato ? 'line-through' : undefined, color: r.tipo === 'entrata' && !r.annullato ? 'var(--verde-testo)' : undefined }}>
                   {r.tipo === 'entrata' ? '+ ' : r.tipo === 'uscita' ? '− ' : ''}{soldi(r.importo)}
                 </span>
@@ -536,6 +539,7 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
           )}
         </div>
       )}
+      </section>
 
       {idScelti.length > 0 && !aperto && !cambio && !collegando && (
         <div className="sg-barra-scelta" role="region" aria-label="Movimenti scelti">
@@ -574,20 +578,6 @@ function Movimenti({ d, casse, voci, chiusure, righe, fai, onCambiato }: { d: Da
         </div>
       )}
 
-      <div className="row" style={{ padding: '6px 14px 0', gap: 24, alignItems: 'baseline', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-        <span className="row" style={{ gap: 10, alignItems: 'baseline', whiteSpace: 'nowrap' }}>
-          <span className="sg-etichetta">ENTRATE</span>
-          <span className="num" style={{ fontSize: 24, fontWeight: 700, color: somme.entrate > 0 ? 'var(--verde-testo)' : undefined }}>+ {soldi(somme.entrate)}</span>
-        </span>
-        <span className="row" style={{ gap: 10, alignItems: 'baseline', whiteSpace: 'nowrap' }}>
-          <span className="sg-etichetta">USCITE</span>
-          <span className="num" style={{ fontSize: 24, fontWeight: 700 }}>− {soldi(somme.uscite)}</span>
-        </span>
-        <span className="row" style={{ gap: 10, alignItems: 'baseline', whiteSpace: 'nowrap' }}>
-          <span className="sg-etichetta">DIFFERENZA</span>
-          <span className="num" style={{ fontSize: 28, fontWeight: 700 }}>{soldiConSegno(somme.differenza)}</span>
-        </span>
-      </div>
       <span className="sg-sotto">
         I giroconti e gli annullati non contano in entrate e uscite. Un incasso degli iscritti si apre in PAGAMENTI, dove nasce; qui non si cambia. Contanti vanno in Cassa Contanti, i pagamenti Satispay del negozio nella cassa Satispay, tutto il resto in Conto Corrente.
       </span>

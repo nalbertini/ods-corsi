@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .nota { font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8f6a00; }
+    .col { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #46606f; }
+    .elenco { background: #ffffff; border: 2px solid #cfe6f4; }
+    .barra { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; padding: 14px 16px; }
+    .cerca { display: flex; align-items: center; gap: 8px; width: 320px; height: 44px; padding: 0 12px; border: 2px solid #14709f; border-radius: 6px; font-size: 15px; }
+    .stato { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 48px; padding: 8px 16px; background: #eef5fa; border-top: 1px solid #cfe6f4; border-bottom: 1px solid #cfe6f4; font-size: 14px; }
+    .scelta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 56px; padding: 6px 16px; background: #0d2a3d; color: #ffffff; font-size: 15px; }
+    .riga { display: grid; grid-template-columns: 44px 84px minmax(0, 2fr) minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 0.9fr) 130px; gap: 14px; align-items: center; min-height: 56px; padding: 6px 16px; border-bottom: 1px solid #cfe6f4; }
+    .box { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: 2px solid #14709f; border-radius: 4px; background: #ffffff; font-size: 13px; font-weight: 700; color: #ffffff; }
+    .si { background: #14709f; }
+    .data { font-size: 14px; font-variant-numeric: tabular-nums; color: #46606f; }
+    .desc { font-size: 15px; font-weight: 600; }
+    .cella { font-size: 14px; }
+    .imp { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 4px 0 10px; background: #ffffff; border: 1.5px solid #14709f; border-radius: 6px; font-weight: 600; }
+    .pill b { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; font-size: 13px; }
+    .link { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+    .cassa { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .cassa svg { flex-shrink: 0; color: #14709f; }
+    .voce { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .voce svg { flex-shrink: 0; color: #46606f; }
+  </style>
+</helmet>
+<!-- PROPOSTA · gli stati dell'elenco: 1) filtri accesi e il menu VOCE aperto; 2) tre movimenti scelti: la barra della scelta prende il posto
+     della testata, in inchiostro, con le stesse azioni di oggi (.sg-barra-scelta); 3) nessun risultato. -->
+<div style="width: 1200px; padding: 28px 36px; display: flex; flex-direction: column; gap: 16px; background: #eef5fa">
+
+  <span class="nota">1 · FILTRI ACCESI, MENU «VOCE» APERTO</span>
+  <section class="elenco" style="position: relative">
+    <div class="barra">
+      <div class="cerca">⌕ affitto</div>
+      <dc-import name="Segmenti" voci="Ottobre 2026|Mese scorso|Tutto l’anno|Tutto" scelta="Tutto l’anno" hint-size="450px,44px"></dc-import>
+    </div>
+    <div class="barra" style="padding-top: 0">
+      <dc-import name="FiltroMenu" nome="Tipo" valore="Uscite" attivo="{{ true }}" hint-size="170px,44px"></dc-import>
+      <dc-import name="FiltroMenu" nome="Cassa" valore="Conto Corrente" attivo="{{ true }}" hint-size="250px,44px"></dc-import>
+      <dc-import name="FiltroMenu" nome="Voce" valore="Tutte" aperto="{{ true }}" opzioni="Tutte|Affitto sala:12|Attrezzatura:31|Compensi istruttori:96|Utenze:24|Da classificare:3" hint-size="280px,330px"></dc-import>
+      <dc-import name="FiltroMenu" nome="Persona" valore="Tutte" hint-size="160px,44px"></dc-import>
+    </div>
+    <div class="stato" role="status">
+      <b>12 movimenti</b><span style="color: #46606f">·</span>
+      <span class="pill">«affitto»<b aria-label="Togli">✕</b></span>
+      <span class="pill">Tutto l’anno<b aria-label="Togli">✕</b></span>
+      <span class="pill">Uscite<b aria-label="Togli">✕</b></span>
+      <span class="pill">Conto Corrente<b aria-label="Togli">✕</b></span>
+      <span class="link" style="margin-left: 6px">Togli i filtri</span>
+      <span style="flex: 1"></span>
+      <span style="color: #46606f">Uscite</span> <b style="font-variant-numeric: tabular-nums">− 23.713,20 €</b>
+    </div>
+    <div style="height: 40px"></div>
+  </section>
+
+  <span class="nota">2 · TRE SCELTI: LA BARRA DELLA SCELTA AL POSTO DELLA TESTATA</span>
+  <section class="elenco">
+    <div class="stato" role="status"><b>279 movimenti</b><span style="color: #46606f">·</span><span class="pill">Mese scorso<b>✕</b></span><span class="link" style="margin-left: 6px">Togli i filtri</span></div>
+    <div class="scelta" role="region" aria-label="Movimenti scelti">
+      <span class="box si" style="border-color: #ffffff">–</span>
+      <b>3 scelti</b><span style="color: #cfe6f4">uscite · − 1.478,30 €</span>
+      <span style="flex: 1"></span>
+      <dc-import name="Bottone" tema="sito" label="Cambia voce" variante="pieno" contesto="segreteria" hint-size="150px,48px"></dc-import>
+      <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 2px solid #ffffff; border-radius: 6px; font-weight: 600">Deseleziona</span>
+    </div>
+    <div class="riga"><span class="box si">✓</span><span class="data">29 set</span><span class="desc">Enel · bolletta n. 4471 · set 2026</span><span class="cella" style="color: #46606f">—</span><span class="cella voce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>Utenze</span><span class="cella cassa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4l9 6"/><line x1="5" y1="10" x2="5" y2="18"/><line x1="10" y1="10" x2="10" y2="18"/><line x1="14" y1="10" x2="14" y2="18"/><line x1="19" y1="10" x2="19" y2="18"/><line x1="3" y1="20" x2="21" y2="20"/></svg>Conto Corrente</span><span class="imp">− 412,30 €</span></div>
+    <div class="riga"><span class="box si">✓</span><span class="data">25 set</span><span class="desc">Decathlon · scontrino n. 88 · set 2026</span><span class="cella" style="color: #46606f">—</span><span class="cella voce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/><rect x="3" y="8" width="3" height="8" rx="1"/><rect x="18" y="8" width="3" height="8" rx="1"/></svg>Attrezzatura</span><span class="cella cassa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><line x1="6" y1="12" x2="6.01" y2="12"/><line x1="18" y1="12" x2="18.01" y2="12"/></svg>Cassa Contanti</span><span class="imp">− 89,90 €</span></div>
+    <div class="riga"><span class="box si">✓</span><span class="data">21 set</span><span class="desc">Hera · bolletta acqua n. 902 · set 2026</span><span class="cella" style="color: #46606f">—</span><span class="cella voce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>Utenze</span><span class="cella cassa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4l9 6"/><line x1="5" y1="10" x2="5" y2="18"/><line x1="10" y1="10" x2="10" y2="18"/><line x1="14" y1="10" x2="14" y2="18"/><line x1="19" y1="10" x2="19" y2="18"/><line x1="3" y1="20" x2="21" y2="20"/></svg>Conto Corrente</span><span class="imp">− 976,10 €</span></div>
+    <div class="riga" style="border-bottom: 0"><span class="box"></span><span class="data">20 set</span><span class="desc">Rossi Giulia</span><span class="cella">Rossi Giulia</span><span class="cella voce"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 0 1 10 0v2"/><circle cx="17" cy="9" r="2.5"/><path d="M15 21v-1.5a4 4 0 0 1 6-3.4"/></svg>Corsi</span><span class="cella cassa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 4l9 6"/><line x1="5" y1="10" x2="5" y2="18"/><line x1="10" y1="10" x2="10" y2="18"/><line x1="14" y1="10" x2="14" y2="18"/><line x1="19" y1="10" x2="19" y2="18"/><line x1="3" y1="20" x2="21" y2="20"/></svg>Conto Corrente</span><span class="imp" style="color: #0b7a33">+ 320,00 €</span></div>
+  </section>
+
+  <span class="nota">3 · NESSUN RISULTATO</span>
+  <section class="elenco">
+    <div class="stato" role="status"><b>0 movimenti</b><span style="color: #46606f">·</span><span class="pill">«afitto»<b>✕</b></span><span class="link" style="margin-left: 6px">Togli i filtri</span></div>
+    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 28px 16px">
+      <span style="font-size: 16px; font-weight: 600">Nessun movimento corrisponde ai filtri.</span>
+      <dc-import name="Bottone" tema="sito" label="Togli i filtri" variante="linea" contesto="segreteria" hint-size="170px,48px"></dc-import>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1200,"height":1300}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

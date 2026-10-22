@@ -439,6 +439,15 @@
 :root[data-look='sito'] .sg-link:focus-visible,
 :root[data-look='sito'] .sg-scelta:focus-visible { outline: 3px solid var(--blu); outline-offset: 3px; }
 :root[data-look='sito'] .sg-menu :focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+/* Segmenti, menu dei filtri e pillole: il blu dei campi, il raggio del sito; lo scelto è blu pieno. */
+:root[data-look='sito'] .sg-segmenti,
+:root[data-look='sito'] .sg-filtro-menu { border-color: var(--riga-campo); border-radius: 6px; overflow: hidden; }
+:root[data-look='sito'] .sg-segmenti > button[aria-pressed='true'] { background: var(--blu); color: #ffffff; }
+:root[data-look='sito'] .sg-segmenti > button:focus-visible { outline-color: var(--blu); }
+:root[data-look='sito'] .sg-filtro-menu:focus-within { outline-color: var(--blu); }
+:root[data-look='sito'] .sg-filtro-menu[data-acceso='true'] { background: var(--line); }
+:root[data-look='sito'] .sg-pillola { border-color: var(--blu); border-radius: 6px; }
+:root[data-look='sito'] .sg-elenco-casella input { accent-color: var(--blu); }
 /* Gli stati sono un tag bianco con bordo e testo del colore dello stato e un segno prima della parola: ✕ manca, … aspetta, ✓ fatto. */
 /* Il bordo e il testo hanno lo stesso colore (scritto per esteso: `prova:look` lo legge così). */
 :root[data-look='sito'] .sg-tag { background: var(--surface); color: var(--dim); border: 1.5px solid var(--dim); padding: 1px 8px; letter-spacing: 0.02em; }
@@ -2090,6 +2099,48 @@ a.sg-btn { text-decoration: none; }
 }
 .sg-chip[aria-pressed='true'], .sg-chip[aria-selected='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 .sg-chip-pieno { background: var(--text); border-color: var(--text); color: var(--bg); }
+/* Segmenti (comune.tsx): una scelta fra poche che si escludono, tasti attaccati in un pezzo solo; lo scelto è pieno col ✓. */
+.sg-segmenti { display: inline-flex; align-self: flex-start; min-height: 44px; border: 2px solid var(--text); overflow: hidden; max-width: 100%; flex-wrap: wrap; }
+.sg-segmenti > button { min-height: 40px; padding: 0 14px; border-left: 1px solid var(--line); font-size: 15px; font-weight: 600; white-space: nowrap; color: var(--text); }
+.sg-segmenti > button:first-child { border-left: 0; }
+.sg-segmenti > button[aria-pressed='true'] { background: var(--text); color: var(--bg); }
+.sg-segmenti > button[aria-pressed='true']::before { content: '✓ '; }
+.sg-segmenti > button:focus-visible { outline: 3px solid var(--text); outline-offset: -5px; }
+/* FiltroMenu (comune.tsx): «Nome Valore ▾» sopra un <select> vero e trasparente; acceso, fondo pieno e la ✕ accanto. */
+.sg-filtro-menu { display: inline-flex; align-items: stretch; min-height: 44px; border: 2px solid var(--text); font-size: 15px; }
+.sg-filtro-menu-tasto { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; white-space: nowrap; }
+.sg-filtro-menu-tasto label { color: var(--dim); }
+.sg-filtro-menu-valore { font-weight: 600; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.sg-filtro-menu select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+.sg-filtro-menu:focus-within { outline: 3px solid var(--text); outline-offset: 3px; }
+.sg-filtro-menu[data-acceso='true'] { background: var(--surface-2); }
+.sg-filtro-menu[data-acceso='true'] .sg-filtro-menu-valore { font-weight: 700; }
+.sg-filtro-menu-togli { width: 40px; border-left: 1px solid var(--line); font-size: 14px; }
+/* I saldi delle casse in una striscia sola: cifre da 28px perché un milione stia in un quarto di riga senza sbordare. */
+.sg-saldi { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); background: var(--surface); border: 2px solid var(--line); }
+.sg-saldo { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 14px 18px; border-right: 1px solid var(--line); }
+.sg-saldo:last-child { border-right: 0; }
+.sg-saldo-cifra { font-size: 28px; font-weight: 700; line-height: 1.1; white-space: nowrap; }
+.sg-saldo-sotto { display: flex; flex-direction: column; font-size: 13px; line-height: 1.4; color: var(--dim); font-variant-numeric: tabular-nums; }
+/* L'elenco in un riquadro solo: filtri, riga di stato, testata, righe. Dentro, la tabella non ha un bordo suo. */
+.sg-elenco { background: var(--surface); border: 2px solid var(--line); }
+.sg-elenco-barra { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px; }
+.sg-elenco-cerca { flex: 1; min-width: 220px; max-width: 380px; }
+.sg-elenco-casella { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px; font-size: 15px; cursor: pointer; }
+.sg-elenco-casella input { width: 22px; height: 22px; margin: 0; accent-color: var(--text); cursor: pointer; }
+.sg-elenco-stato { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; min-height: 48px; padding: 8px 16px; background: var(--bg); border-block: 1px solid var(--line); font-size: 14px; }
+.sg-elenco-stato .sg-link { font-size: 14px; font-weight: 600; color: var(--text); min-height: 32px; }
+.sg-elenco-somme { display: flex; gap: 6px 16px; flex-wrap: wrap; color: var(--dim); }
+.sg-elenco-somme b { color: var(--text); white-space: nowrap; }
+.sg-elenco .sg-tabella { border: 0; }
+.sg-elenco .sg-lista-testa { padding-top: 10px; }
+/* Una pillola della riga di stato: il filtro acceso, con la ✕ che toglie solo lui. */
+.sg-pillola { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 2px 0 10px; background: var(--surface); border: 1.5px solid var(--text); font-weight: 600; }
+.sg-pillola button { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; font-size: 13px; }
+/* VOCE e CASSA con la loro icona davanti: si riconoscono a colpo d'occhio scorrendo. */
+.sg-cella-icona { display: inline-flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; }
+.sg-riga-movimento .sg-cella-icona svg { color: var(--blu, var(--text)); }
+.sg-riga-movimento .sg-cella-icona[data-tono='voce'] svg { color: var(--dim); }
 .sg-spunte { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
 .sg-spunte .sg-scelta > span { flex-shrink: 0; }
 .sg-scelta { border: 2px solid var(--line); color: var(--sec); min-height: 44px; font-size: 14px; }
