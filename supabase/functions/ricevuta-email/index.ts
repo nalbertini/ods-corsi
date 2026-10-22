@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // La ricevuta per email: fatta la ricevuta (o premuto MANDA PER EMAIL), la
-// famiglia la riceve in PDF all'email di contatto della persona della
+// famiglia la riceve in PDF all’email in scheda della persona della
 // ricevuta, mai a quella di accesso (`76-ricevute-email.sql`).
 //
 //   corpo `{ ricevuta: uuid, pdf: base64 }`, col token di chi preme
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
 
   const { data: trovato, error: senza } = await admin.rpc('indirizzo_ricevuta', { ricevuta })
   if (senza) {
-    console.error('ricevuta-email: email di contatto non letta', ricevuta, senza.code)
+    console.error('ricevuta-email: email in scheda non letta', ricevuta, senza.code)
     await registra('non partita', `indirizzo ${senza.code ?? 'sconosciuto'}`.slice(0, 60), null)
     return no({ guaio: 'La mail non è partita', stato: 502, tipo: 'posta' })
   }

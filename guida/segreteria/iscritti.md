@@ -8,14 +8,13 @@ elenco, che compaiono negli appelli e sul tablet.
 
 ## Cercare
 
-- **Cerca per nome o email**, di accesso o di contatto.
+- **Cerca per nome o email**.
 - **Tutti i corsi** → uno solo, per vedere chi fa quel corso.
 Quattro filtri stanno sempre in vista: **Senza certificato valido**, **Da pagare**,
 **Corsi scaduti** e **Non in regola**. Gli altri sono dietro **Altri filtri (N)**, col numero di quelli
 che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
 
-- **Solo senza email** — chi non ha l'email di accesso in scheda (quella di
-  contatto non conta: non serve per entrare nell'app).
+- **Solo senza email** — chi non ha l'email in scheda.
 - **Vengono poco** — chi è venuto a meno di metà delle lezioni, su almeno tre.
 - **Senza certificato valido** — chi è attivo e non ha il certificato medico,
   o ce l'ha scaduto. Chi ha meno di 6 anni non c'è: per lui il certificato
@@ -106,7 +105,7 @@ La colonna **30 GIORNI** dice quanto è venuto ognuno nell'ultimo mese:
 con sotto una barretta piena in proporzione. In giallo chi viene poco.
 
 La colonna **CONTATTO** mostra il telefono, così in caso di emergenza si trova
-subito; l'email (di accesso, se no di contatto) solo se il telefono manca. Se
+subito; l'email solo se il telefono manca. Se
 manca tutto c'è scritto «nessun contatto». Davanti c'è il telefono o la busta.
 
 ## Nuovo iscritto
@@ -114,14 +113,12 @@ manca tutto c'è scritto «nessun contatto». Davanti c'è il telefono o la bust
 **+ Nuovo iscritto** → nome, cognome, le due email e il telefono
 (facoltativi), **ISCRIVI A** un corso → **Salva**.
 
-Le email sono due, e servono a cose diverse:
-
-- **EMAIL PER ENTRARE NELL'APP**: una sola persona per indirizzo. Se è già di
-  qualcuno, l'app dice di chi e di metterla come email per ricevute e avvisi.
-- **EMAIL PER RICEVUTE E AVVISI** (nelle altre pagine, **EMAIL DI CONTATTO**) è dove scrivete o telefonate alla famiglia: può essere
-  la stessa per più persone (un genitore e i figli, due fratelli). È anche
-  dove arrivano le ricevute per email (vedi [Un pagamento e la sua
-  ricevuta](#un-pagamento-e-la-sua-ricevuta)): mai all'email per entrare nell'app.
+L'**EMAIL** è una sola: serve per entrare nell'app e per scrivere alla
+famiglia (ricevute e avvisi, vedi [Un pagamento e la sua
+ricevuta](#un-pagamento-e-la-sua-ricevuta)). Gli iscritti possono avere la
+stessa email (un genitore e i figli, due fratelli); un istruttore, la
+segreteria e l'amministrazione ne hanno una tutta loro: se è già di
+qualcuno, l'app dice di chi. Per un minorenne è quella del genitore.
 
 Due omonimi si distinguono dal telefono, dal codice fiscale o dalla data di
 nascita: l'email non basta più, perché un figlio può non averla.
@@ -157,7 +154,7 @@ c'è e quando scade. Con la **TESSERA** i timbri sono quattro, tutti larghi
 uguale. Un clic su
 un timbro apre la scheda che lo contiene (sotto) e porta alla sua parte. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
-**Riattiva**.
+**Altro** → **Riattiva**.
 
 Se la quota è a posto ma un corso no, il timbro **QUOTA** dice **CORSO SCADUTO**,
 in rosso. Nella scheda **QUOTA E PAGAMENTI**, sotto la quota, **CORSI** dice
@@ -165,8 +162,9 @@ corso per corso fin quando è pagato, quando è scaduto, o quanto manca; sotto,
 quale voce mettere nella ricevuta nuova («Trimestre Judo» o «Annuale Judo»)
 per rimetterlo a posto.
 
-Sotto i timbri, se la quota, un corso o il certificato sono da sistemare, c'è
-**SOLLECITO SU WHATSAPP**: cosa manca (la quota da pagare, scaduta o pagata in
+Accanto al nome, se la quota, un corso o il certificato sono da sistemare, c'è
+il tasto **Sollecita su WhatsApp ▾**: apre sotto il nome, sopra i timbri, il
+riquadro **SOLLECITO SU WHATSAPP** (premuto di nuovo si chiude), con cosa manca (la quota da pagare, scaduta o pagata in
 parte; il corso scaduto o da pagare, col suo nome; il certificato mancante, scaduto, in scadenza nei prossimi 30 giorni, o
 che servirà al compimento dei 6 anni), il messaggio già scritto e **Apri
 WhatsApp**. Il tasto apre WhatsApp col messaggio pronto, al telefono della
@@ -175,11 +173,12 @@ sola. Quota e certificato vanno in un messaggio solo. A un minorenne si scrive
 al genitore dei **DATI ANAGRAFICI** («Ciao Laura, … per Marco»); senza genitore il
 messaggio non saluta per nome («Ciao, … per Marco»). Il messaggio
 dice solo nome, cosa manca, data e importo: mai codice fiscale, ricevute o note.
-Premuto il tasto, sotto compare **Sollecitato l'ultima volta il … da …**, così
-la collega vede che è già stato fatto. Se il telefono manca o è sbagliato, il
+Premuto **Apri WhatsApp**, sotto il tasto accanto al nome compare **Sollecitato
+l'ultima volta il … da …**, così la collega vede che è già stato fatto. Se il telefono manca o è sbagliato, il
 riquadro lo dice e **Vai a PERSONA** porta dove aggiungerlo; se sembra un fisso
 (comincia per 0), avvisa che su WhatsApp di solito non c'è. Una scheda
-disattivata, o in regola, non ha il riquadro.
+disattivata, o in regola, non ha il tasto. In modifica il riquadro usa il
+telefono salvato: prima **Salva**, poi si sollecita.
 
 Per sollecitarne tanti di fila non serve aprire ogni scheda: con acceso
 **Senza certificato valido**, **Certificato in scadenza**, **Compiono 6 anni**,
@@ -198,7 +197,7 @@ scheda.
 
 Poi la scheda è divisa in quattro schede, e se ne vede una alla volta:
 
-- **PERSONA** — i **CONTATTI** (l'**EMAIL PER ENTRARE NELL'APP** solo se c'è), **STESSO CONTATTO DI**, **DATI ANAGRAFICI** (con **NATA IL** o **NATO IL** dal codice fiscale; senza un codice fiscale giusto, **NATO IL**), il **GENITORE** solo per un minorenne, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. **Modifica i contatti** cambia anche nome e cognome. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
+- **PERSONA** — i **CONTATTI** (con l'**EMAIL**), **STESSO CONTATTO DI**, **DATI ANAGRAFICI** (con **NATA IL** o **NATO IL** dal codice fiscale; senza un codice fiscale giusto, **NATO IL**), il **GENITORE** solo per un minorenne, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. **Modifica i contatti** cambia anche nome e cognome. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
 - **QUOTA E PAGAMENTI** — la quota e i pagamenti. **+ FAI LA RICEVUTA** sta accanto a **QUOTA**, **+ AGGIUNGI INCASSO** accanto a **PAGAMENTI**: non serve scorrere tutte le ricevute. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
   corsi che l'amministrazione ha scritto in CONTABILITÀ con questa persona stanno in **SCRITTI IN
@@ -220,8 +219,15 @@ scheda lo dice a parole, con un puntino giallo o rosso: **DA SISTEMARE** o
 **DA PAGARE**. Con una modifica aperta, da un'altra scheda, **PERSONA** dice
 **IN MODIFICA**. Cambiando scheda non si perde quello che stai scrivendo. Si
 cambia anche con la tastiera: le frecce spostano, **Home** e **Fine** vanno
-alla prima e all'ultima. Il nome, i timbri e i tasti in fondo (**MODIFICA**,
-**DISATTIVA**, **UNISCI…**) restano sempre in vista.
+alla prima e all'ultima. Il nome, il sollecito, **Altro** e i timbri restano
+sempre in vista.
+
+Le azioni che servono di rado stanno nel menu **Altro ▾**, accanto al nome:
+**Unisci con un altro iscritto…**, **Esporta i dati** e **Disattiva** (in
+rosso, con una conferma), o **Riattiva** se la scheda è disattivata. Si chiude
+con un clic fuori o con **Esc**. In modifica **Altro** non c'è: in fondo
+restano **Lascia stare** e **Salva**. Mentre si unisce o si fa una ricevuta,
+accanto al nome non c'è niente.
 
 In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
 **CARICA IL CERTIFICATO**, **CARICA IL NUOVO**, **CARICA IL FILE** o
@@ -229,7 +235,7 @@ In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
 certificato in scadenza. Sotto i 6 anni il tasto del certificato non è quello in evidenza. Se è tutto a posto, **+ FAI LA RICEVUTA**. Se la
 scheda è disattivata, nessuno.
 
-- **Modifica** — nome, cognome, email, email di contatto, telefono. Chi ha lo
+- **Modifica** — nome, cognome, email, telefono. Chi ha lo
   stesso contatto di altri vede in lettura **STESSO CONTATTO DI** con i loro
   nomi: sono parenti, non doppioni.
 - **DATI ANAGRAFICI** — nascita, codice fiscale, residenza e, per un minore,
@@ -299,7 +305,7 @@ scheda è disattivata, nessuno.
   pagato. **Termina** la toglie da un corso: da domani non è più
   nell'appello, il registro resta. **+ Iscrivi a un corso…** → il corso →
   **Iscrivi** la aggiunge a un altro. Con la scheda disattivata non si
-  iscrive: prima **RIATTIVA**.
+  iscrive: prima **Altro** → **Riattiva**.
 - **TERMINATE** — i corsi che faceva, tratteggiati, dal… al….
 - **ULTIME 12 LEZIONI** — presente o assente, lezione per lezione: ✓ presente, ✕ assente, G giustificato, vuoto non segnato.
 - **Disattiva** — sparisce dal tablet e le sue iscrizioni si chiudono oggi,
@@ -319,10 +325,9 @@ scheda è disattivata, nessuno.
   di certificato e quota la scadenza più lontana (e del certificato, il file
   di quella scheda: se ce n'è uno per parte resta uno solo, l'altro si
   cancella); resta attiva se una delle
-  due lo era. Le email: chi resta tiene la sua e il suo contatto; l'email
-  dell'altra scheda diventa la sua se non ne ha, se no il suo contatto se è
-  libero. Se non c'è posto, quell'indirizzo si perde: la conferma lo scrive
-  prima, e fino ad allora si può copiare. Le ricevute passano così come sono. Una conferma, e non si
+  due lo era. L'email: chi resta tiene la sua; se non ne ha, prende quella
+  dell'altra scheda. Se sono diverse, quella dell'altra si perde: la conferma
+  lo scrive prima, e fino ad allora si può copiare. Le ricevute passano così come sono. Una conferma, e non si
   torna indietro.
   Non si uniscono due schede con due codici fiscali diversi, anche solo
   quello del modulo di iscrizione (sono due persone). Il file del certificato
@@ -332,7 +337,7 @@ scheda è disattivata, nessuno.
 
 ### I suoi dati
 
-In fondo alla scheda, accanto a **Unisci con un altro iscritto…**, **Esporta i dati** scarica un file con
+Nel menu **Altro**, **Esporta i dati** scarica un file con
 anagrafica, iscrizioni e presenze, quello che una persona ha diritto di chiedere.
 
 ## Le tessere
@@ -444,14 +449,13 @@ fatta: se è sbagliata si annulla e se ne fa un'altra.
 
 ### La ricevuta per email
 
-Se la persona ha l'**EMAIL DI CONTATTO**, la domanda di **FAI LA RICEVUTA** ha
+Se la persona ha l'**EMAIL**, la domanda di **FAI LA RICEVUTA** ha
 una casella già spuntata: «Manda per email a …», e sotto da dove viene
-l'indirizzo (per un minore, «Email di contatto del genitore»). Lasciata la
+l'indirizzo (per un minore, «Email del genitore»). Lasciata la
 spunta, fatta la ricevuta parte una mail da info@officinedellosport.it con il
 PDF allegato; nella mail ci sono solo nome, numero, data e totale, i dati
 restano nel PDF. Tolta la spunta, la ricevuta si fa senza mail. Senza email di
-contatto la casella non c'è e la domanda lo dice: la ricevuta si fa lo stesso,
-e la mail non parte mai all'email di accesso.
+email la casella non c'è e la domanda lo dice: la ricevuta si fa lo stesso.
 
 Nello storico, sotto ogni ricevuta:
 
@@ -461,7 +465,7 @@ Nello storico, sotto ogni ricevuta:
   la mail non è partita.
 - **Fatta prima dell'invio per email**: le ricevute di prima, che si possono
   mandare con **MANDA PER EMAIL**.
-- Senza email di contatto il tasto è spento e dice di aggiungerla in
+- Senza email il tasto è spento e dice di aggiungerla in
   **PERSONA**.
 
 **MANDA PER EMAIL** e **MANDA DI NUOVO** chiedono conferma e mostrano

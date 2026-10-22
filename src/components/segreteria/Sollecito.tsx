@@ -1,15 +1,15 @@
 import type { DatiSegreteria, PersonaSeg, UltimoSollecito } from '../../lib/segreteria'
-import { fraseCorta, fraseSollecitato, sollecitoDi, type StatoCella, type Sollecito } from '../../lib/sollecito'
+import { fraseCorta, sollecitoDi, type StatoCella, type Sollecito } from '../../lib/sollecito'
 import { voceQuota } from '../../lib/ricevute'
 import type { StatoCorso } from '../../lib/corsiDaPagare'
-import { Guaio, useCarica, type useAvviso } from './comune'
+import { useCarica, type useAvviso } from './comune'
 
 /**
- * Il sollecito su WhatsApp, sotto i timbri della scheda: cosa manca, il
- * messaggio già scritto e il tasto che apre WhatsApp. L'app non manda
- * niente; premere il tasto segna «Sollecitato il … da …» (85-solleciti.sql).
+ * Il sollecito di una scheda: cosa manca, il messaggio già scritto e l'ultimo
+ * segnato. null finché si legge, e quando non c'è niente da sollecitare: il
+ * tasto in testata allora non c'è.
  */
-export function SollecitoWhatsApp({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio, corsi, onSollecitato, avvisa, onPersona }: {
+export function useSollecito({ d, p, oggi, giro, giroSolleciti, quotaNelVecchio, corsi }: {
   d: DatiSegreteria
   p: PersonaSeg
   oggi: string
@@ -20,11 +20,6 @@ export function SollecitoWhatsApp({ d, p, oggi, giro, giroSolleciti, quotaNelVec
   quotaNelVecchio: boolean
   /** I corsi della persona (`statoCorsi`): il sollecito nomina quelli scaduti. */
   corsi?: StatoCorso[]
-  /** Dopo il tasto o «Annulla»: l'elenco rilegge i suoi. */
-  onSollecitato: () => void
-  avvisa: ReturnType<typeof useAvviso>['avvisa']
-  /** Porta a PERSONA, dove si aggiunge il telefono. */
-  onPersona: () => void
 }) {
   const dati = useCarica(
     async () => {
@@ -35,17 +30,30 @@ export function SollecitoWhatsApp({ d, p, oggi, giro, giroSolleciti, quotaNelVec
     [d, p.id, oggi, giro],
   )
   const ultimo = useCarica(() => d.ultimoSollecito(p.id), [d, p.id, giroSolleciti])
-  if (dati.guaio) return <Guaio titolo="SOLLECITO SU WHATSAPP" testo={dati.guaio} />
-  if (!dati.dato) return null
-  const s = sollecitoDi(p, dati.dato.anagrafica, dati.dato.quota, oggi, { quotaNelVecchio, corsi })
-  if (!s) return null
+  const s = dati.dato ? sollecitoDi(p, dati.dato.anagrafica, dati.dato.quota, oggi, { quotaNelVecchio, corsi }) : null
+  return { s, guaio: dati.guaio, ultimo: ultimo.dato }
+}
 
+/**
+ * Il riquadro del sollecito, sotto la testata: cosa manca, il messaggio e il
+ * tasto che apre WhatsApp. L'app non manda niente; premere il tasto segna
+ * «Sollecitato il … da …» (85-solleciti.sql).
+ */
+export function SollecitoWhatsApp({ d, p, s, onSollecitato, avvisa, onPersona }: {
+  d: DatiSegreteria
+  p: PersonaSeg
+  s: Sollecito
+  /** Dopo il tasto o «Annulla»: l'elenco rilegge i suoi. */
+  onSollecitato: () => void
+  avvisa: ReturnType<typeof useAvviso>['avvisa']
+  /** Porta a PERSONA, dove si aggiunge il telefono. */
+  onPersona: () => void
+}) {
   // Il giro dell'elenco fa rileggere anche qui.
   const segna = () => segnaSollecito(d, p, avvisa, onSollecitato)
-  const u = ultimo.dato
 
   return (
-    <section className="sg-riquadro sg-sollecito" aria-label="Sollecito su WhatsApp">
+    <section id="sg-sollecito" className="sg-riquadro sg-sollecito" aria-label="Sollecito su WhatsApp">
       <span className="sg-etichetta">SOLLECITO SU WHATSAPP</span>
       <ul className="sg-sollecito-motivi">
         {s.motivi.map((m) => (
@@ -79,7 +87,6 @@ export function SollecitoWhatsApp({ d, p, oggi, giro, giroSolleciti, quotaNelVec
           </div>
         </>
       )}
-      {u && <p className="sg-sollecito-ultimo">{fraseSollecitato(u)}</p>}
     </section>
   )
 }

@@ -1,4 +1,4 @@
--- Il nucleo familiare sul database (99-nucleo.sql): `persone.nucleo` è il
+-- Il nucleo familiare sul database (100-nucleo.sql): `persone.nucleo` è il
 -- titolare di una persona. Due livelli (il titolare non ha titolare), il
 -- titolare è maggiorenne (senza data di nascita passa), e scrive solo la
 -- segreteria: con le funzioni `metti_nel_nucleo`, `togli_dal_nucleo` e

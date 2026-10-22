@@ -211,19 +211,19 @@ begin
   end if;
 end $$;
 
--- accogli_iscrizione: quella di 95, col nucleo.
+-- accogli_iscrizione: quella di 99-email-unica, col nucleo.
 create or replace function accogli_iscrizione(richiesta uuid, persona uuid default null, scade date default null)
   returns uuid language plpgsql security definer set search_path = public, extensions as $$
 declare
   r richieste_iscrizione;
   chi uuid;
-  nuova_scheda boolean := false;
   oggi date := (now() at time zone 'Europe/Rome')::date;
   -- Le ultime dieci cifre: «+39 347 791 7462» e «3477917462» sono lo stesso numero.
   tel text;
   -- Il certificato arrivato con la richiesta.
   cert text;
   nuovo text;
+  nuova_scheda boolean := false;
 begin
   if not e_staff() then raise exception 'solo la segreteria' using errcode = '42501'; end if;
   select * into r from richieste_iscrizione where id = richiesta for update;
@@ -273,20 +273,14 @@ begin
   end if;
   if chi is null then
     nuova_scheda := true;
-    -- L'email già di un'altra persona (un fratello, la mamma, un istruttore)
-    -- non è la sua email di accesso: va nel contatto, dove può ripetersi.
-    insert into persone (nome, cognome, email, email_contatto, telefono, ruolo)
-    values (r.nome, r.cognome,
-            case when not exists (select 1 from persone where email = r.email) then r.email end,
-            case when exists (select 1 from persone where email = r.email) then r.email end,
-            r.telefono, 'iscritto')
+    -- Gli iscritti possono dividere l'email (un genitore e i figli): è sempre la sua.
+    insert into persone (nome, cognome, email, telefono, ruolo)
+    values (r.nome, r.cognome, r.email, r.telefono, 'iscritto')
     returning id into chi;
   else
     update persone set attiva = true,
       telefono = coalesce(telefono, r.telefono),
-      email = coalesce(email, case when not exists (select 1 from persone where email = r.email) then r.email end),
-      -- L'email è di un'altra persona: la scheda che c'era la tiene come contatto, se non ne ha già uno.
-      email_contatto = coalesce(email_contatto, case when exists (select 1 from persone where email = r.email and id <> chi) then r.email end)
+      email = coalesce(email, r.email)
     where id = chi;
   end if;
 

@@ -54,7 +54,7 @@ const CF_ADULTO = cf('RSSMRA90E10H501') // nato il 10/05/1990
 const CF_MINORE = cf('RSSMRA12R01H501') // nato il 01/10/2012
 const CF_GENITORE = cf('VRDLRA80A41H501') // donna
 
-const persona = { id: 'p1', nome: 'Mario', cognome: 'Rossi', email: 'a@x.it', emailContatto: 'b@x.it', telefono: '3331234567', attiva: true, creataIl: '2026-10-06' }
+const persona = { id: 'p1', nome: 'Mario', cognome: 'Rossi', email: 'a@x.it', telefono: '3331234567', attiva: true, creataIl: '2026-10-06' }
 const adulta = { natoIl: '1990-05-10', codiceFiscale: CF_ADULTO, indirizzo: 'Via Roma 1', comune: 'Roma' }
 const minore = { natoIl: '2012-10-01', codiceFiscale: CF_MINORE, indirizzo: 'Via Roma 1', comune: 'Roma', genitoreNome: 'Laura', genitoreCognome: 'Verdi', genitoreCodiceFiscale: CF_GENITORE }
 const cosaManca = (p, a) => seg('cosaManca', p, a, OGGI)
@@ -92,12 +92,12 @@ ok('le righe separano cosa e perché', Array.isArray(primaRiga) ? primaRiga[0] :
 
 console.log('\nA4. Contatti')
 ok('tutto compilato: niente', cosaManca(persona, adulta), [])
-const senzaTutti = cosaManca({ ...persona, telefono: '', emailContatto: '' }, adulta)
+const senzaTutti = cosaManca({ ...persona, telefono: '', email: '' }, adulta)
 ok('telefono ed email vuoti: una riga sola', righe(senzaTutti).length, 1)
 ok('…che nomina il telefono e l’email per ricevute e avvisi', /telefono/i.test(righe(senzaTutti)[0] ?? '') && /email per ricevute e avvisi/i.test(righe(senzaTutti)[0] ?? ''), true)
 const soloTel = cosaManca({ ...persona, telefono: '' }, adulta)
 ok('solo il telefono vuoto: una riga, solo il telefono', righe(soloTel).length === 1 && /telefono/i.test(righe(soloTel)[0]) && !/email/i.test(righe(soloTel)[0]), true)
-ok('l’email di accesso vuota: niente', cosaManca({ ...persona, email: '' }, adulta), [])
+ok('solo l’email vuota: una riga, solo l’email', righe(cosaManca({ ...persona, email: '' }, adulta)).length === 1 && !/telefono/i.test(righe(cosaManca({ ...persona, email: '' }, adulta))[0]), true)
 
 console.log('\nA5. Cosa non si chiede')
 ok('maggiorenne senza genitore: nessuna riga del genitore', conta(cosaManca(persona, adulta), /genitore/i), 0)

@@ -77,8 +77,6 @@ export interface PersonaProva {
   /** Il suo segno, per riconoscerlo (vedi `kanji.ts`). */
   kanji?: string
   email?: string
-  /** Dove scrivere alla famiglia: può ripetersi, l'email di accesso no (`44-email-contatto.sql`). */
-  emailContatto?: string
   telefono?: string
   attiva: boolean
   creataIl: string
@@ -488,6 +486,12 @@ function leggi(): Archivio {
         a.corsi = a.corsi.map((c) => ({ ...c, enteTessera: c.enteTessera ?? enteDelCorso(c.nome) }))
         a.tessere = tessereDiProva(a.iscrizioni ?? [], a.corsi)
       }
+      // Un archivio di prima dell'email unica: il contatto era dove arrivava la posta, e diventa l'email.
+      // `as` perché il campo non esiste più nel tipo: lo si legge solo dall'archivio salvato.
+      a.persone = a.persone.map((p) => {
+        const { emailContatto, ...resto } = p as typeof p & { emailContatto?: string }
+        return emailContatto ? { ...resto, email: emailContatto } : resto
+      })
       return a
     }
   } catch {

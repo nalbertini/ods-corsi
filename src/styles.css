@@ -2757,7 +2757,20 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-sollecito-tasto { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 14px; color: var(--sec); }
 .sg-sollecito-avviso { margin: 0; font-size: 14px; line-height: 1.45; color: var(--giallo-testo); }
 .sg-sollecito-avviso[data-tono='rosso'] { color: var(--rosso-testo); }
-.sg-sollecito-ultimo { margin: 0; font-size: 14px; color: var(--dim); }
+/* La testata della scheda: il nome a sinistra, il sollecito e «Altro» a destra; la riga dell'ultimo sollecito sotto i tasti. */
+.sg-scheda-testa { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.sg-scheda-testa-azioni { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.sg-scheda-testa-tasti { display: flex; align-items: flex-start; gap: 8px; }
+.sg-scheda-testa-ultimo { font-size: 13px; color: var(--dim); text-align: right; }
+/* «Altro» sta sul bordo destro: la lista si apre verso sinistra, se no esce dalla finestra. */
+.sg-scheda-testa .sg-menu-azioni-lista { left: auto; right: 0; }
+/* Sul telefono il nome intero sopra, poi una riga col tasto a tutta larghezza e «Altro». */
+@media (max-width: 600px) {
+  .sg-scheda-testa { flex-direction: column; align-items: stretch; }
+  .sg-scheda-testa-azioni { align-items: stretch; }
+  .sg-scheda-testa-sollecito { flex: 1 1 auto; }
+  .sg-scheda-testa-ultimo { text-align: left; }
+}
 :root[data-look='sito'] .sg-sollecito-testo { border-radius: 6px; }
 @media (max-width: 600px) { .sg-sollecito-tasto { flex-direction: column; align-items: stretch; } }
 .sg-voce-elenco { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 12px; background: var(--bg); border: 2px solid var(--line); }
@@ -3575,8 +3588,6 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* Sulla linguetta piena il giallo e il rosso non si leggerebbero: il segno prende il colore della scritta, il puntino e la parola dicono comunque il segno. */
 .sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno { color: var(--surface); }
 .sg-scheda-corta { display: none; }
-/* Disattiva staccato dalle altre azioni del piede: lontano non si preme per sbaglio. */
-.sg-scheda-piede > .sg-scheda-piede-destra { margin-left: auto; }
 /* COSA MANCA sopra i timbri: quel che c'è da completare prima ancora dello stato. */
 .sg-scheda-manca { display: flex; flex-direction: column; gap: 6px; border: 2px solid var(--rosso-testo); padding: 12px 16px; }
 :root[data-look='sito'] .sg-scheda-manca { border-radius: 6px; }

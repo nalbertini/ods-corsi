@@ -414,7 +414,7 @@ function seminaNuclei() {
       cambiataIl: STAGIONE.dal,
     }
   }
-  a.persone = a.persone.map((p) => (nel.has(p.id) ? { ...p, nucleo: nel.get(p.id), emailContatto: p.emailContatto ?? contatti.get(p.id) } : p))
+  a.persone = a.persone.map((p) => (nel.has(p.id) ? { ...p, nucleo: nel.get(p.id), email: p.email ?? contatti.get(p.id) } : p))
   a.anagrafiche = anagrafiche
   archivio.salva()
   try {

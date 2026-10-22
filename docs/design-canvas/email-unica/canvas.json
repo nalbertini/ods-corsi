@@ -1,0 +1,45 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Una sola email"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Oggi.dc.html",
+      "title": "1 · Oggi",
+      "x": 0,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Lettura.dc.html",
+      "title": "2 · Proposta · lettura",
+      "x": 960,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Vuota.dc.html",
+      "title": "3 · Proposta · email mancante",
+      "x": 1920,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Modifica.dc.html",
+      "title": "4 · Proposta · in modifica",
+      "x": 2880,
+      "y": 300,
+      "page": "page-1"
+    },
+    {
+      "file": "Errore.dc.html",
+      "title": "5 · Proposta · email di chi ha l’accesso",
+      "x": 3840,
+      "y": 300,
+      "page": "page-1"
+    }
+  ]
+}

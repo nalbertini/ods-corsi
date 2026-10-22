@@ -4,7 +4,7 @@ import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, campoDelGuaio, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, tastoPrincipale, timbriScheda, vienePoco } from '../../lib/segreteria'
+import { avvisiGesto, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -12,7 +12,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { conTessere, incrocioDaMostrare, SEGNALA_TESSERE, senzaTessera, tesseratoSenzaCorso, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
 import { APRI_SCHEDA, idLinguetta, idPannello, schedaDellaSezione, schedaIniziale, SCHEDE, segniSchede, serveCambiare, tastoScheda, type IdScheda } from '../../lib/schedaSezioni'
 import { ImportaTessere, TessereDellaPersona } from './Tessere'
-import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Stato, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni, messaggio, Riga, SchedaPiena, Stato, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
 import type { Ricercata } from '../../lib/ricerca'
@@ -21,8 +21,8 @@ import { euro, voceQuota } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
 import { StoricoPersona } from './CollegaPersona'
 import { PagatoPrima } from './PagatoPrima'
-import { CellaSollecito, SollecitoWhatsApp } from './Sollecito'
-import { cellaSollecito, quotaNelVecchioDi } from '../../lib/sollecito'
+import { CellaSollecito, SollecitoWhatsApp, useSollecito } from './Sollecito'
+import { cellaSollecito, fraseSollecitato, quotaNelVecchioDi } from '../../lib/sollecito'
 import { consiglioCorso, corsiDaPagare, nonPagati, statoCorsi, testoCorsoBreve, type StatoCorso } from '../../lib/corsiDaPagare'
 import { bollinoCorso, iscrizioniDellaScheda, riquadroCertificato, riquadroCorso, riquadroDocumento, riquadroQuota } from '../../lib/schedeIscritto'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
@@ -32,48 +32,26 @@ const GUAIO_CERTIFICATO: Record<StatoCertificato, number> = { manca: 2, scaduto:
 const GUAIO_PAGA: Record<ComePaga, number> = { da_pagare: 2, scaduto: 2, in_parte: 1, pagato: 0 }
 
 /**
- * Le due email di una scheda, ognuna con la sua riga che dice a cosa serve
- * (44-email-contatto.sql). Se il salvataggio è fallito per una delle due,
- * l'errore sta sotto quel campo (`campoDelGuaio`).
+ * L'email della scheda: una sola, per le ricevute e gli avvisi e per entrare
+ * nell'app (99-email-unica.sql). Se il salvataggio è fallito, l'errore sta sotto il campo.
  */
-function CampiEmail({
-  prefisso,
-  email,
-  contatto,
-  guaio,
-  onEmail,
-  onContatto,
-}: {
-  prefisso: string
-  email: string
-  contatto: string
-  guaio: string
-  onEmail: (v: string) => void
-  onContatto: (v: string) => void
-}) {
-  const campo = campoDelGuaio(guaio)
-  const nota = (di: typeof campo, avviso: string): Nota => (campo === di ? { testo: guaio, guaio: true } : { testo: avviso, guaio: false })
-  const campi = [
-    { id: `${prefisso}-email`, etichetta: 'Email per entrare nell’app', valore: email, cambia: onEmail, di: 'email' as const, avviso: 'Una sola persona per indirizzo.' },
-    { id: `${prefisso}-contatto`, etichetta: 'Email per ricevute e avvisi', valore: contatto, cambia: onContatto, di: 'emailContatto' as const, avviso: 'Dove scriviamo o telefoniamo alla famiglia, e dove arrivano le ricevute per email.' },
-  ]
+function CampoEmail({ prefisso, email, guaio: errore, onEmail }: { prefisso: string; email: string; guaio: string; onEmail: (v: string) => void }) {
+  const guaio = erroreDellEmail(errore)
+  const id = `${prefisso}-email`
+  const nota: Nota = guaio ? { testo: guaio, guaio: true } : { testo: 'Per le ricevute e gli avvisi, e per entrare nell’app.', guaio: false }
   return (
-    <>
-      {campi.map((c) => (
-        <Campo key={c.id} id={c.id} etichetta={c.etichetta} nota={nota(c.di, c.avviso)}>
-          <input
-            id={c.id}
-            className="sg-campo"
-            type="email"
-            placeholder="nome@esempio.it"
-            value={c.valore}
-            aria-invalid={campo === c.di || undefined}
-            aria-describedby={`${c.id}-nota`}
-            onChange={(e) => c.cambia(e.target.value)}
-          />
-        </Campo>
-      ))}
-    </>
+    <Campo id={id} etichetta="Email" nota={nota}>
+      <input
+        id={id}
+        className="sg-campo"
+        type="email"
+        placeholder="nome@esempio.it"
+        value={email}
+        aria-invalid={!!guaio || undefined}
+        aria-describedby={`${id}-nota`}
+        onChange={(e) => onEmail(e.target.value)}
+      />
+    </Campo>
   )
 }
 
@@ -328,7 +306,7 @@ export function Iscritti({
     // La tessera da sistemare sta nella colonna QUOTA: pesa come un guaio piccolo.
     quota: (p) => GUAIO_PAGA[comePaga(p, oggi)] + Number(senzaTessera(tesseraDi(p))),
     corsi: (p) => suoiCorsi(p).join(', '),
-    contatto: (p) => p.telefono ?? p.email ?? p.emailContatto,
+    contatto: (p) => p.telefono ?? p.email,
     frequenza: (p) => {
       const f = freq.dato?.get(p.id)
       return f && f.dovute ? f.presenti / f.dovute : null
@@ -588,9 +566,9 @@ export function Iscritti({
                     {cella.visibili.join(corsiScaduti ? ' · ' : ', ') || '—'}
                     {cella.altri > 0 && <span className="sg-cella-piu">+{cella.altri}</span>}
                   </span>
-                  <span role="cell" className="sg-cella-contatto" data-manca={!(p.email || p.emailContatto || p.telefono) || undefined}>
-                    {p.telefono ? <IconaContatto tipo="telefono" /> : (p.email ?? p.emailContatto) ? <IconaContatto tipo="email" /> : null}
-                    {p.telefono ?? p.email ?? p.emailContatto ?? 'nessun contatto'}
+                  <span role="cell" className="sg-cella-contatto" data-manca={!(p.email || p.telefono) || undefined}>
+                    {p.telefono ? <IconaContatto tipo="telefono" /> : p.email ? <IconaContatto tipo="email" /> : null}
+                    {p.telefono ?? p.email ?? 'nessun contatto'}
                   </span>
                   <span
                     role="cell"
@@ -640,8 +618,8 @@ function Nuovo({
   onLasciaStare: () => void
   onSalvato: (id: string) => void
 }) {
-  const [b, setB] = useState<DatiPersona & { corso: string }>({ nome: '', cognome: '', email: '', emailContatto: '', telefono: '', corso: '' })
-  // Cosa non va nei campi dell'email, sotto il campo giusto (`campoDelGuaio`); l'avviso in basso resta.
+  const [b, setB] = useState<DatiPersona & { corso: string }>({ nome: '', cognome: '', email: '', telefono: '', corso: '' })
+  // Cosa non va nell'email, sotto il campo; l'avviso in basso resta.
   const [guaio, setGuaio] = useState('')
   const salva = () => {
     let id = ''
@@ -675,7 +653,7 @@ function Nuovo({
         <Campo id="n-cognome" etichetta="COGNOME">
           <input id="n-cognome" className="sg-campo" value={b.cognome} onChange={(e) => setB({ ...b, cognome: e.target.value })} />
         </Campo>
-        <CampiEmail prefisso="n" email={b.email ?? ''} contatto={b.emailContatto ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setB({ ...b, email: v }) }} onContatto={(v) => { setGuaio(''); setB({ ...b, emailContatto: v }) }} />
+        <CampoEmail prefisso="n" email={b.email ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setB({ ...b, email: v }) }} />
         <Campo id="n-tel" etichetta="TELEFONO · FACOLTATIVO">
           <input id="n-tel" className="sg-campo" type="tel" value={b.telefono} onChange={(e) => setB({ ...b, telefono: e.target.value })} />
         </Campo>
@@ -774,6 +752,8 @@ function Scheda({
   }, [riprendi, pagando])
   const [unendo, setUnendo] = useState(!!unisciCon)
   const [togliendo, setTogliendo] = useState(false)
+  // Il riquadro del sollecito si apre dal tasto in testata: chiuso, la scheda parte da quel che c'è.
+  const [sollecitoAperto, setSollecitoAperto] = useState(false)
   // Dopo una ricevuta nuova l'elenco delle ricevute si rilegge da capo.
   const [giroRicevute, setGiroRicevute] = useState(0)
   // Dopo i DATI ANAGRAFICI salvati il sollecito rilegge il genitore: a un minorenne si scrive a lui.
@@ -792,6 +772,9 @@ function Scheda({
     window.addEventListener(APRI_SCHEDA, apri)
     return () => window.removeEventListener(APRI_SCHEDA, apri)
   }, [])
+  const sollecito = useSollecito({ d, p, oggi, giro: giroAnagrafica, giroSolleciti, quotaNelVecchio, corsi: statiCorsi })
+  const azioni = azioniTestata(p, !!sollecito.s, { modifica: !!modifica, unendo, pagando })
+  const voci = azioni.altro
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
   // Letti qui e non in DATI ANAGRAFICI: età e COSA MANCA in cima alla scheda li vogliono.
   const an = useCarica(async () => ({ di: await d.anagraficaDi(p.id) }), [d, p.id])
@@ -804,7 +787,7 @@ function Scheda({
   const apriModifica = () => {
     setGuaio('')
     setAperta('persona')
-    setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, emailContatto: p.emailContatto, telefono: p.telefono })
+    setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, telefono: p.telefono })
   }
   const { correnti, terminate } = iscrizioniDellaScheda(p.iscrizioni, oggi)
   const liberi = attivi.filter((c) => !correnti.some((i) => i.corsoId === c.id))
@@ -833,12 +816,75 @@ function Scheda({
 
   return (
     <>
-      <div className="stack" style={{ gap: 4 }}>
-        <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
-          {`${p.cognome} ${p.nome}`.toUpperCase()}
-        </h2>
-        <span style={{ fontSize: 13, color: 'var(--dim)' }}>{sottoNome(natoIl, p.creataIl, ora)}</span>
+      <div className="sg-scheda-testa">
+        <div className="stack" style={{ gap: 4 }}>
+          <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
+            {`${p.cognome} ${p.nome}`.toUpperCase()}
+          </h2>
+          <span style={{ fontSize: 13, color: 'var(--dim)' }}>{sottoNome(natoIl, p.creataIl, ora)}</span>
+        </div>
+        {(azioni.sollecito || voci.length > 0) && (
+          <div className="sg-scheda-testa-azioni">
+            <div className="sg-scheda-testa-tasti">
+              {azioni.sollecito && (
+                <button type="button" className="sg-btn sg-btn-pieno sg-scheda-testa-sollecito" aria-expanded={sollecitoAperto} aria-controls="sg-sollecito" onClick={() => setSollecitoAperto((a) => !a)}>
+                  Sollecita su WhatsApp <span aria-hidden="true">{sollecitoAperto ? '▴' : '▾'}</span>
+                </button>
+              )}
+              {voci.length > 0 && (
+                <MenuAzioni etichetta="Altro">
+                  {voci.includes('unisci') && (
+                    <button type="button" role="menuitem" onClick={() => setUnendo(true)}>
+                      Unisci con un altro iscritto…
+                    </button>
+                  )}
+                  {/* Un file con anagrafica, iscrizioni e presenze: è quello che una persona ha diritto di chiedere. */}
+                  {voci.includes('esporta') && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() =>
+                        void fai(async () => {
+                          const dati = await d.esporta(p.id)
+                          const url = URL.createObjectURL(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }))
+                          const a = document.createElement('a')
+                          a.href = url
+                          a.download = `dati-${p.cognome}-${p.nome}.json`.toLowerCase().replace(/\s+/g, '-')
+                          a.click()
+                          URL.revokeObjectURL(url)
+                        }, 'File scaricato')
+                      }
+                    >
+                      Esporta i dati
+                    </button>
+                  )}
+                  {voci.includes('disattiva') && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="sg-pericolo"
+                      onClick={async () => {
+                        if (!(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'Disattiva la scheda', { pericolo: true }))) return
+                        void fai(() => d.attivaPersona(p.id, false), 'Scheda disattivata', onCambiato)
+                      }}
+                    >
+                      Disattiva
+                    </button>
+                  )}
+                  {voci.includes('riattiva') && (
+                    <button type="button" role="menuitem" onClick={() => void fai(() => d.attivaPersona(p.id, true), 'Scheda riattivata', onCambiato)}>
+                      Riattiva
+                    </button>
+                  )}
+                </MenuAzioni>
+              )}
+            </div>
+            {azioni.sollecito && sollecito.ultimo && <span className="sg-scheda-testa-ultimo">{fraseSollecitato(sollecito.ultimo)}</span>}
+          </div>
+        )}
       </div>
+      {!unendo && !pagando && sollecito.guaio && <Guaio titolo="SOLLECITO SU WHATSAPP" testo={sollecito.guaio} />}
+      {azioni.sollecito && sollecito.s && sollecitoAperto && <SollecitoWhatsApp d={d} p={p} s={sollecito.s} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
       {!unendo && !pagando && manca.length > 0 && (
         <div className="sg-scheda-manca" role="status">
           <span className="sg-scheda-manca-titolo">✕ COSA MANCA</span>
@@ -852,7 +898,6 @@ function Scheda({
       )}
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
       {!unendo && !pagando && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
-      {!unendo && !pagando && <SollecitoWhatsApp d={d} p={p} oggi={oggi} giro={giroAnagrafica} giroSolleciti={giroSolleciti} quotaNelVecchio={quotaNelVecchio} corsi={statiCorsi} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -950,27 +995,21 @@ function Scheda({
               <Campo id="m-cognome" etichetta="COGNOME">
                 <input id="m-cognome" className="sg-campo" value={modifica.cognome} onChange={(e) => setModifica({ ...modifica, cognome: e.target.value })} />
               </Campo>
-              <CampiEmail prefisso="m" email={modifica.email ?? ''} contatto={modifica.emailContatto ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setModifica({ ...modifica, email: v }) }} onContatto={(v) => { setGuaio(''); setModifica({ ...modifica, emailContatto: v }) }} />
+              <CampoEmail prefisso="m" email={modifica.email ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setModifica({ ...modifica, email: v }) }} />
               <Campo id="m-tel" etichetta="TELEFONO">
                 <input id="m-tel" className="sg-campo" type="tel" value={modifica.telefono ?? ''} onChange={(e) => setModifica({ ...modifica, telefono: e.target.value })} />
               </Campo>
             </div>
           ) : (
             <div className="sg-due">
-              <Campo etichetta="EMAIL PER RICEVUTE E AVVISI">
-                <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.emailContatto ? 'var(--text)' : 'var(--dim)' }}>{p.emailContatto ?? '—'}</span>
-                {!p.emailContatto && minore && <span className="sg-sotto" style={{ fontSize: 12 }}>Per un minorenne è quella del genitore.</span>}
+              <Campo etichetta="EMAIL">
+                <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.email ? 'var(--text)' : 'var(--dim)' }}>{p.email ?? '—'}</span>
+                {!p.email && minore && <span className="sg-sotto" style={{ fontSize: 12 }}>Per un minorenne è quella del genitore.</span>}
               </Campo>
               <Campo etichetta="TELEFONO">
                 <span className="sg-valore" style={{ color: p.telefono ? 'var(--text)' : 'var(--dim)' }}>{p.telefono ?? '—'}</span>
                 {!p.telefono && minore && <span className="sg-sotto" style={{ fontSize: 12 }}>Per un minorenne è quello del genitore.</span>}
               </Campo>
-              {/* Vuota non è un problema: la sceglie chi entra nell'app. */}
-              {p.email && (
-                <Campo etichetta="EMAIL PER ENTRARE NELL’APP">
-                  <span className="sg-valore" style={{ wordBreak: 'break-all' }}>{p.email}</span>
-                </Campo>
-              )}
             </div>
           )}
           </div>
@@ -1055,7 +1094,7 @@ function Scheda({
               )}
             </Riga>
             {/* Una scheda disattivata non si iscrive: lo si dice, invece di un tasto spento senza motivo. */}
-            {!p.attiva && <span className="sg-sotto">La scheda è disattivata: per iscriverla a un corso, prima RIATTIVA in fondo alla scheda.</span>}
+            {!p.attiva && <span className="sg-sotto">La scheda è disattivata: per iscriverla a un corso, prima Altro → Riattiva.</span>}
             {p.attiva && iscrivendo && (
               <div className="row" style={{ gap: 8 }}>
                 <label htmlFor="p-agg" className="vh">
@@ -1150,8 +1189,9 @@ function Scheda({
           )}
       </div>
 
+      {/* Fuori modifica il piede non c'è: le azioni rare stanno in «Altro», in testata. */}
+      {modifica && (
       <div className="sg-scheda-piede sg-scheda-piede-fisso">
-        {modifica ? (
           <>
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setModifica(null)}>
               Lascia stare
@@ -1181,43 +1221,8 @@ function Scheda({
               Salva
             </button>
           </>
-        ) : (
-          <>
-            {/* Le azioni rare in fondo, Disattiva staccato a destra: lontano dagli altri non si preme per sbaglio. */}
-            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setUnendo(true)}>
-              Unisci con un altro iscritto…
-            </button>
-            {/* Un file con anagrafica, iscrizioni e presenze: è quello che una persona ha diritto di chiedere. */}
-            <button
-              type="button"
-              className="sg-btn sg-btn-linea grow"
-              onClick={() =>
-                void fai(async () => {
-                  const dati = await d.esporta(p.id)
-                  const url = URL.createObjectURL(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }))
-                  const a = document.createElement('a')
-                  a.href = url
-                  a.download = `dati-${p.cognome}-${p.nome}.json`.toLowerCase().replace(/\s+/g, '-')
-                  a.click()
-                  URL.revokeObjectURL(url)
-                }, 'File scaricato')
-              }
-            >
-              Esporta i dati
-            </button>
-            <button
-              type="button"
-              className="sg-btn sg-btn-linea grow sg-pericolo sg-scheda-piede-destra"
-              onClick={async () => {
-                if (p.attiva && !(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'Disattiva la scheda', { pericolo: true }))) return
-                void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Scheda disattivata' : 'Scheda riattivata', onCambiato)
-              }}
-            >
-              {p.attiva ? 'Disattiva' : 'Riattiva'}
-            </button>
-          </>
-        )}
       </div>
+      )}
       </>
       )}
     </>
@@ -1256,7 +1261,7 @@ function Timbri({ p, oggi, tessera, onVai }: { p: PersonaSeg; oggi: string; tess
     <div className="stack" style={{ gap: 12 }}>
       {t.disattivata && (
         <p className="sg-timbri-spenta">
-          <strong>DISATTIVATA</strong> Non è negli appelli né sul tablet. Per rimetterla: RIATTIVA, in fondo alla scheda.
+          <strong>DISATTIVATA</strong> Non è negli appelli né sul tablet. Per rimetterla: Altro → Riattiva.
         </p>
       )}
       <div className="sg-timbri">
@@ -1379,7 +1384,7 @@ function UnisciDoppione({
       <span style={{ fontSize: 12, color: 'var(--dim)' }}>{x.attiva ? 'Attiva' : 'Disattivata'}</span>
     </div>
   )
-  const dove = (x: PersonaSeg) => [x.email ?? x.emailContatto, x.telefono, x.attiva ? '' : 'disattivata'].filter(Boolean).join(' · ')
+  const dove = (x: PersonaSeg) => [x.email, x.telefono, x.attiva ? '' : 'disattivata'].filter(Boolean).join(' · ')
 
   return (
     <div className="stack" style={{ gap: 16, maxWidth: 640 }}>
@@ -1458,7 +1463,7 @@ function UnisciDoppione({
             if (!resta || !via) return
             const persi = indirizziPersi(resta, via)
             // Niente sparisce in silenzio: l'indirizzo che non trova posto si dice prima.
-            const perso = persi.length ? `\nDell'altra scheda si perde ${persi.join(', ')}: non c'è posto fra l'email e il contatto di chi resta.\nCopialo prima, se ti serve.` : ''
+            const perso = persi.length ? `\nDell'altra scheda si perde ${persi.join(', ')}: ogni scheda ha una sola email.\nCopialo prima, se ti serve.` : ''
             if (!(await chiedi(confermaUnione(nome(via), nome(resta), via.certificato, resta.certificato, perso), 'Unisci', { pericolo: true }))) return
             void fai(() => d.unisciPersone(resta.id, via.id), 'Schede unite', () => onUnite(resta.id))
           }}
@@ -1475,7 +1480,7 @@ function UnisciDoppione({
  * sconto famiglia, dalle ricevute del nucleo. Dalla scheda del titolare (o di
  * chi non è in un nucleo) si aggiunge una persona; da quella di un'altra la
  * si toglie, o la si fa titolare. Se il database non ha ancora il nucleo
- * (99-nucleo.sql), la sezione resta vuota e i tasti rispondono «aggiornamento
+ * (100-nucleo.sql), la sezione resta vuota e i tasti rispondono «aggiornamento
  * in corso» (lo dice `guaio`, in `segreteriaSupabase.ts`).
  */
 function NucleoFamiliare({

@@ -4,7 +4,7 @@
 //   node scripts/prova-nucleo.mjs
 //
 // Il nucleo (`persone.nucleo`: il titolare di una persona) passa dalla
-// modalità prova al database vero (`99-nucleo.sql`, provato da
+// modalità prova al database vero (`100-nucleo.sql`, provato da
 // `supabase/prova/nucleo.sql`). Qui i casi sono gli stessi, con gli stessi
 // messaggi: le regole di `nucleo.ts` e la segreteria di prova da una parte, il
 // client del database (con un database finto) dall'altra. Le sezioni vanno
@@ -373,7 +373,7 @@ const senzaTabelle = (risposta, chiamate) =>
     rpc: async (nome, args) => (chiamate.push([nome, args]), typeof risposta === 'function' ? risposta(nome) : risposta),
   })
 
-console.log('\n11. col database: le tre funzioni (99-nucleo.sql)')
+console.log('\n11. col database: le tre funzioni (100-nucleo.sql)')
 {
   const chiamate = []
   const db = senzaTabelle(rispostaOk, chiamate)
@@ -397,11 +397,11 @@ console.log('\n11. col database: le tre funzioni (99-nucleo.sql)')
   const chiave = { PGRST202: 'Could not find the function public.metti_nel_nucleo(persona, titolare) in the schema cache', 42883: 'function public.metti_nel_nucleo(uuid, uuid) does not exist' }
   for (const [code, message] of Object.entries(chiave)) {
     const detto = await errore(() => no(message, code).mettiNelNucleo('p1', 't1'))
-    ok(`senza il file SQL (${code}): «va lanciato 99-nucleo.sql», non il testo dell'API`, [/va lanciato 99-nucleo\.sql/i.test(detto), /schema cache|does not exist|function public/i.test(detto)], [true, false])
+    ok(`senza il file SQL (${code}): «va lanciato 100-nucleo.sql», non il testo dell'API`, [/va lanciato 100-nucleo\.sql/i.test(detto), /schema cache|does not exist|function public/i.test(detto)], [true, false])
   }
   ok('lo stesso per togliere e per cambiare titolare', [
-    /va lanciato 99-nucleo\.sql/i.test(await errore(() => no(chiave.PGRST202.replace('metti_nel_nucleo', 'togli_dal_nucleo'), 'PGRST202').togliDalNucleo('p1'))),
-    /va lanciato 99-nucleo\.sql/i.test(await errore(() => no(chiave.PGRST202.replace('metti_nel_nucleo', 'rendi_titolare'), 'PGRST202').rendiTitolare('p1'))),
+    /va lanciato 100-nucleo\.sql/i.test(await errore(() => no(chiave.PGRST202.replace('metti_nel_nucleo', 'togli_dal_nucleo'), 'PGRST202').togliDalNucleo('p1'))),
+    /va lanciato 100-nucleo\.sql/i.test(await errore(() => no(chiave.PGRST202.replace('metti_nel_nucleo', 'rendi_titolare'), 'PGRST202').rendiTitolare('p1'))),
   ], [true, true])
 }
 
@@ -441,7 +441,7 @@ console.log('\n12. col database: l\'elenco legge il nucleo, e senza la colonna n
     if (x.some((p) => p.nucleo)) throw new Error('un nucleo che non c\'è')
   })
   ok('senza la colonna l\'elenco si legge lo stesso, senza nuclei', dopo, 'nessun errore')
-  ok('e i tasti dicono «va lanciato 99-nucleo.sql»', /va lanciato 99-nucleo\.sql/i.test(await errore(() => senzaTabelle({ data: null, error: { code: 'PGRST202', message: 'Could not find the function public.rendi_titolare(persona) in the schema cache' } }, []).rendiTitolare('t'))), true)
+  ok('e i tasti dicono «va lanciato 100-nucleo.sql»', /va lanciato 100-nucleo\.sql/i.test(await errore(() => senzaTabelle({ data: null, error: { code: 'PGRST202', message: 'Could not find the function public.rendi_titolare(persona) in the schema cache' } }, []).rendiTitolare('t'))), true)
 }
 
 console.log('\n13. col database: la richiesta per il nucleo parte col nucleo (sezione 9)')

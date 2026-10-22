@@ -9,7 +9,7 @@ import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
 import { cosaNonVaCompenso, cosaNonVaExtra, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
-import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import { attivitaCambiata, cosaNonVaAnagrafica, emailNonValida, SERVE_IL_99, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { genitoriDa, type RigaGenitore } from './sollecito'
 import { tutteLeRighe } from './tutteLeRighe'
@@ -158,7 +158,7 @@ type Scheda = {
  */
 const CERTIFICATI = 'certificati'
 const MANCA_CERTIFICATI = 'I certificati nell’app non sono ancora attivi sul database: va lanciato 45-certificati-online.sql'
-const NUCLEO_IN_AGGIORNAMENTO = 'Il nucleo familiare non è ancora attivo sul database: va lanciato 99-nucleo.sql'
+const NUCLEO_IN_AGGIORNAMENTO = 'Il nucleo familiare non è ancora attivo sul database: va lanciato 100-nucleo.sql'
 const DURATA_LINK = 600
 const ALLEGATI = 'segnalazioni'
 const MANCANO_PAGAMENTI_A_MANO = 'I pagamenti a mano non sono ancora attivi sul database: va lanciato 54-pagamenti-diretti.sql'
@@ -431,7 +431,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // Il file del certificato e la data insieme arrivano con 45-certificati-online.sql.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /salva_certificato/.test(e.message ?? '')) return new Error(MANCA_CERTIFICATI)
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /certificato_caricato_il/.test(e.message ?? '')) return new Error(MANCA_CERTIFICATI)
-  // Il nucleo familiare arriva con 99-nucleo.sql: finché non c'è, le funzioni non si trovano e la segreteria legge «va lanciato 99-nucleo.sql».
+  // Il nucleo familiare arriva con 100-nucleo.sql: finché non c'è, le funzioni non si trovano e la segreteria legge «va lanciato 100-nucleo.sql».
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /metti_nel_nucleo|togli_dal_nucleo|rendi_titolare/.test(e.message ?? '')) return new Error(NUCLEO_IN_AGGIORNAMENTO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /unisci_persone|anteprima_unione/.test(e.message ?? ''))
     return new Error('Unire due schede non è ancora attivo sul database: va lanciato 29-unisci-doppioni.sql')
@@ -462,13 +462,10 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // La categoria delle segnalazioni arriva con 38-segnalazioni-categoria.sql.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /categoria/.test(e.message ?? ''))
     return new Error('Le categorie delle segnalazioni non sono ancora attive sul database: va lanciato 38-segnalazioni-categoria.sql')
-  // L'email di contatto arriva con 44-email-contatto.sql, e ha la stessa forma dell'email.
-  if ((e?.code === '42703' || e?.code === 'PGRST204') && /email_contatto/.test(e.message ?? ''))
-    return new Error('L’email di contatto non è ancora attiva sul database: va lanciato 44-email-contatto.sql')
-  if (e?.code === '23514' && /email_contatto/.test(e.message ?? '')) return new Error(CONTATTO_SBAGLIATO)
   // `pagamenti_diretti` non lascia cancellare chi ne ha (54-pagamenti-diretti.sql).
   if (e?.code === '23503' && /pagamenti_diretti/.test(e.message ?? '')) return new Error('Ha dei pagamenti registrati: non si elimina, gli si toglie l’accesso')
   if (e?.code === '23505' && /kanji/.test(e.message ?? '')) return new Error('Questo kanji è già di un’altra persona: scegline un altro')
+  if (e?.code === '23505' && /persone_email_unica/.test(e.message ?? '')) return new Error('Questa email è già di una persona con l’accesso: scegline un’altra')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501' && /troppe ricerche/.test(e.message ?? '')) return new Error('Hai fatto troppe ricerche: riprova fra qualche minuto')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
@@ -1054,43 +1051,34 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         )
         return nascitaDelleFonti([...dalleAnagrafiche, ...dalleRichieste])
       })()
-      const campi = (contatto: boolean, nucleo: boolean) => `id, nome, cognome, email, ${contatto ? 'email_contatto, ' : ''}${nucleo ? 'nucleo, ' : ''}telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )`
+      const campi = (nucleo: boolean) => `id, nome, cognome, email, ${nucleo ? 'nucleo, ' : ''}telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )`
       const scheda = 'certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota'
-      const leggi = (schede: string | null, contatto: boolean, nucleo: boolean) =>
+      const leggi = (schede: string | null, nucleo: boolean) =>
         tutteLeRighe((prima, ultima) =>
           db
             .from('persone')
-            .select(schede ? `${campi(contatto, nucleo)}, schede_iscritti!persona_id ( ${schede} )` : campi(contatto, nucleo))
+            .select(schede ? `${campi(nucleo)}, schede_iscritti!persona_id ( ${schede} )` : campi(nucleo))
             .eq('ruolo', 'iscritto')
             .order('cognome')
             .order('id')
             .range(prima, ultima),
         )
-      const colonnaMancante = (x: { error: { code?: string; message?: string } | null }) => x.error?.code === '42703' && !/email_contatto|nucleo/.test(x.error.message ?? '')
-      const leggiTutto = async (contatto: boolean, nucleo: boolean) => {
+      const colonnaMancante = (x: { error: { code?: string; message?: string } | null }) => x.error?.code === '42703' && !/nucleo/.test(x.error.message ?? '')
+      const leggiTutto = async (nucleo: boolean) => {
         // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
-        let r = await leggi(`${scheda}, certificato_caricato_il, documento_in_segreteria`, contatto, nucleo)
+        let r = await leggi(`${scheda}, certificato_caricato_il, documento_in_segreteria`, nucleo)
         // Senza 45-certificati-online.sql ogni file è di prima; e 07-certificati-pagamenti.sql di prima del documento su carta: senza la colonna nuova.
-        if (colonnaMancante(r)) r = await leggi(`${scheda}, documento_in_segreteria`, contatto, nucleo)
-        if (colonnaMancante(r)) r = await leggi(scheda, contatto, nucleo)
+        if (colonnaMancante(r)) r = await leggi(`${scheda}, documento_in_segreteria`, nucleo)
+        if (colonnaMancante(r)) r = await leggi(scheda, nucleo)
         // Un database dove 07-certificati-pagamenti.sql non è ancora passato: l'elenco si vede lo stesso.
-        if (r.error?.code === 'PGRST200') r = await leggi(null, contatto, nucleo)
+        if (r.error?.code === 'PGRST200') r = await leggi(null, nucleo)
         return r
       }
-      let conContatto = true
-      let conNucleo = true
-      let r0 = await leggiTutto(conContatto, conNucleo)
-      // Un database dove 44-email-contatto.sql o 99-nucleo.sql non sono ancora passati: l'elenco si vede lo stesso,
-      // senza contatti o senza nuclei (uno e poi l'altro, se mancano tutti e due).
-      for (let giro = 0; giro < 2 && r0.error?.code === '42703'; giro++) {
-        const mancante = r0.error.message ?? ''
-        if (conContatto && /email_contatto/.test(mancante)) conContatto = false
-        else if (conNucleo && /nucleo/.test(mancante)) conNucleo = false
-        else break
-        r0 = await leggiTutto(conContatto, conNucleo)
-      }
+      let r0 = await leggiTutto(true)
+      // Un database dove 100-nucleo.sql non è ancora passato: l'elenco si vede lo stesso, senza nuclei.
+      if (r0.error?.code === '42703' && /nucleo/.test(r0.error.message ?? '')) r0 = await leggiTutto(false)
       const righe = ok(r0) as unknown as Array<{
-        id: string; nome: string; cognome: string; email: string | null; email_contatto?: string | null; nucleo?: string | null; telefono: string | null; attiva: boolean; creata_il: string
+        id: string; nome: string; cognome: string; email: string | null; nucleo?: string | null; telefono: string | null; attiva: boolean; creata_il: string
         iscrizioni: Array<{ corso_id: string; dal: string; al: string | null }>
         schede_iscritti?: Scheda | Scheda[] | null
       }>
@@ -1108,7 +1096,6 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           nome: r.nome,
           cognome: r.cognome,
           email: r.email ?? undefined,
-          emailContatto: r.email_contatto ?? undefined,
           nucleo: r.nucleo ?? undefined,
           telefono: r.telefono ?? undefined,
           attiva: r.attiva,
@@ -1162,18 +1149,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async salvaPersona(p) {
       if (!p.nome.trim() || !p.cognome.trim()) throw new Error('Servono nome e cognome')
       const riga = { nome: nomeProprio(p.nome), cognome: nomeProprio(p.cognome), email: p.email?.trim() || null, telefono: p.telefono?.trim() || null }
-      const contatto = p.emailContatto?.trim() || null
+      const sbagliata = emailNonValida(riga.email ?? undefined)
+      if (sbagliata) throw new Error(sbagliata)
       const scrivi = (campi: Record<string, string | null>) =>
         p.id ? db.from('persone').update(campi).eq('id', p.id) : db.from('persone').insert({ ...campi, ruolo: 'iscritto' }).select('id').single()
-      let r = await scrivi({ ...riga, email_contatto: contatto })
-      // Un database dove 44-email-contatto.sql non è ancora passato: senza un contatto da salvare si salva come prima.
-      if (!contatto && r.error?.code === 'PGRST204' && /email_contatto/.test(r.error.message ?? '')) r = await scrivi(riga)
-      // L'email di accesso è di una persona sola: si dice di chi, e che per la famiglia c'è il contatto.
-      if (r.error?.code === '23505' && riga.email) {
-        // `as`: il client non conosce le colonne scelte con `select`.
-        const di = (await db.from('persone').select('nome, cognome').eq('email', riga.email).maybeSingle()).data as { nome: string; cognome: string } | null
-        if (di) throw new Error(emailGiaDi(`${di.nome} ${di.cognome}`))
-      }
+      const r = await scrivi(riga)
+      // Un'email già di un altro iscritto si rifiuta solo su un database senza 99-email-unica.sql (prima era unica per tutti).
+      if (r.error?.code === '23505' && riga.email) throw new Error(SERVE_IL_99)
       if (p.id) {
         ok(r)
         return p.id
@@ -2096,8 +2078,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       }
       // Un'iscritta con la stessa email diventa personale, invece di un doppione.
       if (email) {
-        const c = ok(await db.from('persone').select('id, ruolo').eq('email', email).maybeSingle()) as { id: string; ruolo: string } | null
-        if (c && c.ruolo !== 'iscritto') throw new Error('Questa email è già di una persona del personale')
+        // Gli iscritti dividono l'email: più righe sono normali, e conta chi ha un accesso.
+        const stesse = ok(await db.from('persone').select('id, ruolo').eq('email', email).order('creata_il')) as Array<{ id: string; ruolo: string }>
+        if (stesse.some((x) => x.ruolo !== 'iscritto')) throw new Error('Questa email è già di una persona del personale')
+        const c = stesse[0]
         if (c) {
           ok(await db.from('persone').update({ ...ruolo, attiva: true }).eq('id', c.id))
           return c.id

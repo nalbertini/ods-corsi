@@ -210,13 +210,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('43-cerca-persone.sql', 'Aggiungi chi prova cerca fra tutte le persone, senza telefono',
     exists (select 1 from pg_proc where proname = 'cerca_persone'
             and pg_get_function_result(oid) = 'TABLE(persona_id uuid, nome text, cognome text, corsi text[])')),
-  ('44-email-contatto.sql', 'l''email di contatto delle persone, che può ripetersi',
+  ('44-email-contatto.sql', 'l''email di contatto delle persone (poi passata nel campo unico, vedi 99)',
     exists (select 1 from information_schema.columns
-            where table_schema = 'public' and table_name = 'persone' and column_name = 'email_contatto')
-    and exists (select 1 from pg_constraint where conname = 'persone_email_contatto_forma')),
-  ('44-email-contatto.sql', 'accogliere una richiesta e unire due schede tengono conto del contatto',
-    exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%email_contatto%')
-    and exists (select 1 from dentro where nome = 'unisci_persone' and corpo like '%email_contatto%')),
+            where table_schema = 'public' and table_name = 'persone' and column_name = 'email_contatto')),
   ('45-certificati-online.sql', 'il certificato resta nell''app: contenitore privato, file e data insieme, via 30 giorni dopo la scadenza',
     exists (select 1 from storage.buckets where id = 'certificati' and not public and file_size_limit = 10485760)
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'certificato_caricato_il')
@@ -500,12 +496,17 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and not exists (select 1 from dentro where nome = 'collegamento_perche' and corpo like '%non viene dal vecchio programma%')
     -- Rilanciare 67 dopo 98 rimette la versione a due argomenti accanto a questa: l'app non sa più quale chiamare.
     and to_regprocedure('public.cambia_voce_movimenti(uuid[],uuid)') is null),
-  ('99-nucleo.sql', 'il nucleo familiare sul database',
+  ('99-email-unica.sql', 'una sola email per persona: unica solo per chi ha un accesso, la stessa per ricevute e avvisi',
+    exists (select 1 from pg_indexes where indexname = 'persone_email_unica' and indexdef like '%ruolo%')
+    -- Rilanciare 45, 53, 90 o 95 dopo 99 rimette le funzioni che scrivono il contatto: la riga torna «da lanciare».
+    and not exists (select 1 from dentro where nome in ('accogli_iscrizione', 'unisci_persone') and corpo like '%email_contatto%')
+    and exists (select 1 from dentro where nome = 'indirizzo_ricevuta' and corpo not like '%email_contatto%')),
+  ('100-nucleo.sql', 'il nucleo familiare sul database',
     exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'persone' and column_name = 'nucleo')
     and to_regprocedure('public.metti_nel_nucleo(uuid,uuid)') is not null
     and to_regprocedure('public.togli_dal_nucleo(uuid)') is not null
     and to_regprocedure('public.rendi_titolare(uuid)') is not null
-    -- Rilanciare 45, 84 o 95 dopo 99 rimette le funzioni senza il nucleo: la riga torna «da lanciare».
+    -- Rilanciare 45, 84, 95 o 99 dopo 100 rimette le funzioni senza il nucleo: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'unione_possibile' and corpo like '%nucleo%')
     and exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%nucleo_di%')
     and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%nucleo_di%'))

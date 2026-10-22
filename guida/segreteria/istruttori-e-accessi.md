@@ -15,9 +15,9 @@ TABLET**.
   - **NON ANCORA ENTRATO** — c'è in elenco ma non è mai entrata;
   - **SENZA ACCESSO** — l'accesso è stato tolto.
 - Senza email (in rosso «nessuna email») una persona non può entrare. È l'email
-  di accesso: una sola persona per indirizzo. Se un iscritto ha come contatto
-  l'indirizzo di un istruttore, non diventa lui: l'accesso si lega solo
-  all'email, mai al contatto.
+  di accesso, ed è la stessa per ricevute e avvisi: una sola persona di
+  personale per indirizzo. Un iscritto con lo stesso indirizzo di un istruttore
+  non diventa lui: l'accesso si lega al ruolo di chi lo ha.
 
 ## La scheda di una persona
 

@@ -53,7 +53,7 @@ Un problema grave si dimostra, non si ipotizza. Con Docker:
 docker run -d --rm --name ods-rls -e POSTGRES_PASSWORD=prova -p 55433:5432 postgres:17
 export PATH=/opt/homebrew/opt/postgresql@17/bin:$PATH PGHOST=localhost PGPORT=55433 PGUSER=postgres PGPASSWORD=prova
 psql -q -c 'create database r'
-for f in supabase/prova/finto-supabase.sql supabase/[0-9][0-9]-*.sql <file da rivedere>; do psql -q -d r -v ON_ERROR_STOP=1 -f "$f" >/dev/null; done
+for f in supabase/prova/finto-supabase.sql supabase/[0-9][0-9]-*.sql supabase/[0-9][0-9][0-9]-*.sql <file da rivedere>; do psql -q -d r -v ON_ERROR_STOP=1 -f "$f" >/dev/null; done
 ```
 
 Poi semina una persona per ruolo (come in `supabase/prova/anagrafiche.sql`) e
