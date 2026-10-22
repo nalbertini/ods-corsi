@@ -104,6 +104,7 @@ for (const f of ['Presenze', 'PresenzeSegnalate']) {
   ok(`${f}.tsx: Testa con titolo PRESENZE`, /<Testa\s+titolo="PRESENZE"/.test(tsx), true)
   ok(`${f}.tsx: le schede dopo la Testa`, tsx.indexOf('{schede}') > tsx.indexOf('</Testa>') && tsx.indexOf('</Testa>') > 0, true)
 }
+ok('Segreteria.tsx: le schede delle presenze con la tastiera (`tastoLinguette`) e solo l\'aperta nel giro del Tab', /tastoLinguette\(/.test(sg) && /tabIndex=\{voce === 'presenze' \? 0 : -1\}/.test(sg), true)
 ok('Segreteria.tsx: il tablist delle presenze non sta più prima delle pagine', /\{d && inPresenze && conSegnalate && \(\s*<div role="tablist"/.test(sg), false)
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

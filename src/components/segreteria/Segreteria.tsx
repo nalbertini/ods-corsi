@@ -18,6 +18,7 @@ import { Listino } from './Listino'
 import { Contabilita } from './Contabilita'
 import { LINK_ORDINI, Vestiario } from './Vestiario'
 import { datiVestiario } from '../../lib/vestiarioDati'
+import { tastoLinguette } from '../../lib/schedaSezioni'
 import { numeriRaccolta } from '../../lib/vestiario'
 import { Richieste } from './Richieste'
 import { PresenzeIstruttori } from './PresenzeIstruttori'
@@ -359,11 +360,22 @@ export function Segreteria({
 
   // Le schede delle presenze: le pagine le mettono sotto il loro titolo, come IMPOSTAZIONI.
   const schedePresenze = d && inPresenze && conSegnalate && (
-    <div role="tablist" aria-label="Presenze" className="schede sg-schede">
-      <button type="button" role="tab" aria-selected={voce === 'presenze'} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>
+    <div
+      role="tablist"
+      aria-label="Presenze"
+      className="schede sg-schede"
+      onKeyDown={(e) => {
+        const dove = tastoLinguette(['presenze', 'segnalate'] as const, voce === 'segnalate' ? 'segnalate' : 'presenze', e.key)
+        if (!dove || dove === voce) return
+        e.preventDefault()
+        // L'altra pagina ridisegna le schede: il fuoco va sulla nuova scheda aperta, come in IMPOSTAZIONI.
+        void vai(dove).then(() => requestAnimationFrame(() => document.querySelector<HTMLElement>('[role="tablist"][aria-label="Presenze"] [aria-selected="true"]')?.focus()))
+      }}
+    >
+      <button type="button" role="tab" aria-selected={voce === 'presenze'} tabIndex={voce === 'presenze' ? 0 : -1} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>
         Il mese
       </button>
-      <button type="button" role="tab" aria-selected={voce === 'segnalate'} className="scheda" data-on={voce === 'segnalate'} onClick={() => vai('segnalate')}>
+      <button type="button" role="tab" aria-selected={voce === 'segnalate'} tabIndex={voce === 'segnalate' ? 0 : -1} className="scheda" data-on={voce === 'segnalate'} onClick={() => vai('segnalate')}>
         Segnalate{segno(segnalateDaVedere, 'da vedere')}
       </button>
     </div>
