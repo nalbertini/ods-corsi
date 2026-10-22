@@ -115,3 +115,9 @@ export function chiSiStaPerdendo(righe: readonly LezioneRegistro[], corso?: stri
     .filter((x) => x.fila >= DI_FILA)
     .sort((a, b) => b.fila - a.fila || a.nome.localeCompare(b.nome, 'it'))
 }
+
+/** Gli elenchi lunghi di PRESENZE mostrano le prime voci; `tutti` le mostra tutte e `nascoste` dice quante ne restano fuori. */
+export function accorcia<T>(elenco: readonly T[], quante: number, tutti: boolean) {
+  const visibili = tutti ? [...elenco] : elenco.slice(0, quante)
+  return { visibili, nascoste: elenco.length - visibili.length }
+}

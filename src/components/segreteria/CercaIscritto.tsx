@@ -1,10 +1,12 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { ICONE_RISULTATO } from '../Icons'
 import { datiRichieste } from '../../lib/richieste'
 import { cercaTutto, doveVa, RIGHE_PER_GRUPPO, unisciLetture, type Fonti, type GruppoTrovato, type RigaTrovata, type TipoRisultato } from '../../lib/ricerca'
 import { useSchermo } from '../../lib/largo'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { Voce } from '../../lib/indirizzoSegreteria'
 import type { Destinazione } from './Segreteria'
+import { cosaFaEsc } from '../../lib/scorciatoiaRicerca'
 
 const NOMI_FONTI = { iscritti: 'iscritti', richieste: 'richieste online', corsi: 'corsi', istruttori: 'istruttori' } as const
 
@@ -33,7 +35,18 @@ const vociDi = (gruppi: GruppoTrovato[]): RigaScelta[] =>
  * che il campo prende il fuoco, non all'apertura della segreteria. Aperto un
  * risultato il testo resta nel campo: di solito se ne guardano due o tre di fila.
  */
-export function CercaIscritto({ d, onVai }: { d: DatiSegreteria; onVai: (voce: Voce, dest?: Destinazione) => void }) {
+export function CercaIscritto({
+  d,
+  onVai,
+  inFinestra,
+  onChiudi,
+}: {
+  d: DatiSegreteria
+  onVai: (voce: Voce, dest?: Destinazione) => void
+  /** Aperto dalla scorciatoia, in una finestra: il fuoco è subito nel campo e Esc, a campo vuoto, la chiude. */
+  inFinestra?: boolean
+  onChiudi?: () => void
+}) {
   const [testo, setTesto] = useState('')
   const [fonti, setFonti] = useState<Fonti | null>(null)
   // Una lettura riuscita sostituisce l'elenco; una fallita tiene quello di prima, e lo dice.
@@ -60,6 +73,10 @@ export function CercaIscritto({ d, onVai }: { d: DatiSegreteria; onVai: (voce: V
     window.addEventListener('keydown', tasto)
     return () => window.removeEventListener('keydown', tasto)
   }, [])
+
+  useEffect(() => {
+    if (inFinestra) campo.current?.focus()
+  }, [inFinestra])
 
   // A ogni fuoco si rilegge: un iscritto aggiunto poco fa si trova subito.
   const leggi = () => {
@@ -170,6 +187,7 @@ export function CercaIscritto({ d, onVai }: { d: DatiSegreteria; onVai: (voce: V
             e.preventDefault()
             apri(voci[scelto])
           } else if (e.key === 'Escape') {
+            if (cosaFaEsc(!!inFinestra && !!onChiudi) === 'chiudi') return onChiudi?.()
             setTesto('')
             campo.current?.blur()
           }
@@ -210,6 +228,10 @@ export function CercaIscritto({ d, onVai }: { d: DatiSegreteria; onVai: (voce: V
                       >
                         {v.riga ? (
                           <>
+                            {(() => {
+                              const Icona = ICONE_RISULTATO[g.tipo]
+                              return <Icona />
+                            })()}
                             <span className="sg-cerca-testo">
                               <span className="sg-cerca-nome">{v.riga.nome}</span>
                               {v.riga.sotto && <span className="sg-cerca-sotto">{v.riga.sotto}</span>}

@@ -151,6 +151,13 @@ console.log('\n2. chi si sta perdendo')
   console.log('   il caso della chat: 3 assenze di fila, o 2 con un giustificato in mezzo')
   const tre = [lezione('c-judo', '2026-09-22', { mario: P, gino: P }), lezione('c-judo', '2026-09-29', { mario: A, gino: A }), lezione('c-judo', '2026-10-06', { mario: A, gino: G }), lezione('c-judo', '2026-10-13', { mario: A, gino: A })]
   ok('Mario con 3 assenze di fila c\'è, con l\'ultima presenza; Gino (2 e un giustificato) no', prova(() => f.chiSiStaPerdendo(tre).map((x) => [x.id, x.fila, x.ultima])), [['p-mario', 3, '2026-09-22T16:00:00Z']])
+  console.log('   gli elenchi lunghi di PRESENZE: le prime voci e «Mostra tutti»')
+  const venti = Array.from({ length: 20 }, (_, i) => i)
+  ok('accorciato: le prime 5 e quante restano', prova(() => { const a = f.accorcia(venti, 5, false); return [a.visibili, a.nascoste] }), [[0, 1, 2, 3, 4], 15])
+  ok('«Mostra tutti»: c\'è tutto, niente nascosto', prova(() => { const a = f.accorcia(venti, 5, true); return [a.visibili.length, a.nascoste] }), [20, 0])
+  ok('un elenco già corto non nasconde niente', prova(() => { const a = f.accorcia([1, 2, 3], 5, false); return [a.visibili, a.nascoste] }), [[1, 2, 3], 0])
+  ok('esattamente al limite: niente nascosto', prova(() => f.accorcia([1, 2, 3, 4, 5], 5, false).nascoste), 0)
+  ok('elenco vuoto', prova(() => { const a = f.accorcia([], 5, false); return [a.visibili, a.nascoste] }), [[], 0])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

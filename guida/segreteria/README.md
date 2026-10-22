@@ -56,7 +56,7 @@ A sinistra il menu, a destra la voce scelta. Le voci sono in cinque gruppi (sei 
 **Iscritti e soldi** (Iscritti), **I conti** (Contabilità, solo per chi ha anche
 l'amministrazione), **Corsi e orari** (Settimana, Corsi, Listino), **Istruttori** (Presenze istruttori,
 Istruttori e accessi) e **Il resto** (Statistiche, Vestiario, Esercizi, Segnalazioni, Sito). Un filetto separa un gruppo dal successivo e ogni voce ha la sua icona, per ritrovarla a colpo d'occhio. Le
-**IMPOSTAZIONI** sono il tasto coi due cursori in cima al menu. Ogni voce ha la
+**AIUTO** e **IMPOSTAZIONI** stanno in fondo al menu, nel riquadro col tuo nome. Ogni voce ha la
 sua guida:
 
 ## La striscia COSA MANCA
@@ -96,9 +96,13 @@ la nasconde da **IMPOSTAZIONI → QUESTO COMPUTER** ([guida](regole.md)): la sce
 | **Segnalazioni** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
 | **Sito** | Le pagine del sito della palestra, il menu in alto e il footer: si scrive la bozza e si pubblica | [Apri](sito.md) |
 
-In cima al menu, sotto il nome, si vedono subito senza scorrere due tasti:
-**?**, la guida della voce aperta, in un'altra scheda; i **cursori**, le
-IMPOSTAZIONI. In prova, accanto, il bollino **DATI DI PROVA**. La segreteria ha
+In fondo al menu, nel riquadro col tuo nome, ci sono due voci: **AIUTO**, la
+guida della voce aperta, in un'altra scheda, e **IMPOSTAZIONI**. In prova, nel
+riquadro, il bollino **DATI DI PROVA**.
+
+Per cercare un iscritto da qualunque pagina premi **⌘K** (su Windows **Ctrl+K**):
+la ricerca si apre in una finestra al centro; ogni risultato ha l'icona del suo
+tipo (iscritto, richiesta, corso, istruttore). **Esc** la chiude. La segreteria ha
 sempre l'aspetto chiaro del sito della palestra, blu e giallo: il tasto del tema
 qui non c'è più (nero, bianco e Tatami restano per istruttori, tablet e timer).
 
