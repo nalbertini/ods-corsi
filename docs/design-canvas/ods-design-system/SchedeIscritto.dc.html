@@ -14,13 +14,13 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div role="tablist" aria-label="Scheda dell'iscritto" style="display: flex; gap: {{gap}}; align-self: flex-start; width: {{larghezza}}; max-width: 100%">
+<div role="tablist" aria-label="Scheda dell'iscritto" style="display: flex; gap: {{gap}}; align-self: flex-start; width: {{larghezza}}; max-width: 100%; border-bottom: {{filo}}">
   <sc-for list="{{schede}}" as="x" hint-placeholder-count="4">
     <span role="tab" aria-label="{{x.nomeIntero}}" aria-selected="{{x.selezionata}}" style="display: inline-flex; flex-direction: {{direzione}}; align-items: center; justify-content: center; flex: {{x.flex}}; min-width: 0; gap: {{gapDentro}}; min-height: 44px; padding: {{padding}}; white-space: {{aCapo}}; text-align: center; background: {{x.sfondo}}; border: 2px solid {{x.bordo}}; font-family: {{carattere}}; font-size: {{corpoNome}}; font-weight: 700; letter-spacing: {{spazioNome}}; color: {{x.colore}}">{{x.testo}}<span style="font-size: {{corpoSegno}}; letter-spacing: {{spazioSegno}}; color: {{x.coloreSegno}}">{{x.segno}}</span></span>
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"acceso":{"editor":"enum","options":["PERSONA","DOCUMENTI","QUOTA E PAGAMENTI","CORSI"],"default":"PERSONA"},"segnoDocumenti":{"editor":"enum","options":["","giallo","rosso"],"default":""},"segnoQuota":{"editor":"enum","options":["","giallo","rosso"],"default":""},"parolaDocumenti":{"editor":"text","default":"DA SISTEMARE"},"parolaQuota":{"editor":"text","default":"DA PAGARE"},"inModifica":{"editor":"boolean","default":false},"telefono":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":760,"height":50}}'>
+<script data-dc-script data-props='{"acceso":{"editor":"enum","options":["PERSONA","DOCUMENTI","QUOTA E PAGAMENTI","CORSI"],"default":"PERSONA"},"segnoDocumenti":{"editor":"enum","options":["","giallo","rosso"],"default":""},"segnoQuota":{"editor":"enum","options":["","giallo","rosso"],"default":""},"parolaDocumenti":{"editor":"text","default":"DA SISTEMARE"},"parolaQuota":{"editor":"text","default":"DA PAGARE"},"inModifica":{"editor":"boolean","default":false},"telefono":{"editor":"boolean","default":false},"chiare":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":760,"height":50}}'>
 // PROPOSTA «scheda iscritto a schede»: le quattro schede PERSONA | DOCUMENTI | QUOTA E PAGAMENTI | CORSI sotto i timbri di `Scheda`
 // (src/components/segreteria/Iscritti.tsx). Stesso pattern di SchedeCorso e di .schede / .scheda / .sg-schede di Segreteria.tsx
 // (src/styles.css righe 964-969 e 1622-1623): alte 44px, raggio 0, bordo 2px, Saira 14px 700 0.18em, quella accesa con fondo
@@ -30,6 +30,8 @@
 // e `parolaQuota` sono le parole: sulla QUOTA «DA PAGARE», o «CORSO SCADUTO» (rosso) quando la quota e' a posto ma un corso no. `inModifica` mette ● IN MODIFICA (giallo) su PERSONA, ma solo se non e' la scheda accesa:
 // una modifica aperta non si perde di vista guardando un'altra scheda.
 // `telefono`: l'etichetta di QUOTA E PAGAMENTI diventa QUOTA (il nome intero resta nell'aria-label, per il lettore schermo),
+// PROPOSTA (../scheda-iscritto-persona/): `chiare` fa leggere la fila come linguette sopra il contenuto: un filo 2px `text`
+// lungo tutta la riga, la scheda accesa piena di `text` col testo `surface` (anche il segno, per il contrasto).
 // il segno va sotto il nome in 11px, e le quattro schede stanno tutte nella larghezza, in colonne uguali (`@media (max-width: 1000px)` di styles.css), senza scorrere. Sulla scheda accesa il segno giallo e' del colore `text`, per il contrasto.
 const T = {
   scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
@@ -44,6 +46,7 @@ class Component extends DCLogic {
     const c = T[p.tema] || T.scuro;
     const acceso = p.acceso || 'PERSONA';
     const tel = truthy(p.telefono);
+    const chiare = truthy(p.chiare);
     const tono = { giallo: c.gialloTesto, rosso: c.rossoTesto };
     const segno = (t, parola) => (t === 'giallo' || t === 'rosso' ? { segno: '● ' + parola, coloreSegno: tono[t] } : { segno: '', coloreSegno: c.dim });
     const nomi = ['PERSONA', 'DOCUMENTI', 'QUOTA E PAGAMENTI', 'CORSI'];
@@ -55,16 +58,17 @@ class Component extends DCLogic {
       const on = nome === acceso;
       // Sulla scheda accesa (fondo surface-2) il giallo scuro non arriva a 4,5:1: li' vale il testo, come in styles.css.
       if (on && s.coloreSegno === c.gialloTesto) s = { ...s, coloreSegno: c.text };
+      if (on && chiare && s.segno) s = { ...s, coloreSegno: c.surface };
       return {
         nomeIntero: nome + (s.segno ? ', ' + s.segno.slice(2).toLowerCase() : ''),
         testo: tel && nome === 'QUOTA E PAGAMENTI' ? 'QUOTA' : nome,
         ...s, selezionata: on ? 'true' : 'false', flex: tel ? '1 1 0' : '0 0 auto',
-        sfondo: on ? c.surface2 : c.surface, bordo: on ? c.text : c.line, colore: on ? c.text : c.dim,
+        sfondo: on ? (chiare ? c.text : c.surface2) : c.surface, bordo: on ? c.text : c.line, colore: on ? (chiare ? c.surface : c.text) : c.dim,
       };
     });
     return {
-      schede, c, gap: '4px',
-      carattere: p.tema === 'sito' ? "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif" : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", larghezza: tel ? '100%' : 'fit-content',
+      schede, c, gap: '4px', filo: chiare ? '2px solid ' + c.text : '0',
+      carattere: p.tema === 'sito' ? "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif" : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", larghezza: tel || chiare ? '100%' : 'fit-content',
       direzione: tel ? 'column' : 'row', gapDentro: tel ? '2px' : '8px', padding: tel ? '4px' : '0 18px',
       corpoSegno: '11px', corpoNome: tel ? '13px' : '14px', aCapo: tel ? 'normal' : 'nowrap',
       spazioNome: tel ? '0.08em' : '0.18em', spazioSegno: tel ? '0.04em' : '0.1em',

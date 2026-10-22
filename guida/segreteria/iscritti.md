@@ -111,17 +111,17 @@ manca tutto c'è scritto «nessun contatto». Davanti c'è il telefono o la bust
 
 ## Nuovo iscritto
 
-**+ Nuovo iscritto** → nome, cognome, email, email di contatto e telefono
+**+ Nuovo iscritto** → nome, cognome, le due email e il telefono
 (facoltativi), **ISCRIVI A** un corso → **Salva**.
 
 Le email sono due, e servono a cose diverse:
 
-- **EMAIL** è per entrare nell'app: una sola persona per indirizzo. Se è già di
-  qualcuno, l'app dice di chi e di metterla come email di contatto.
-- **EMAIL DI CONTATTO** è dove scrivete o telefonate alla famiglia: può essere
+- **EMAIL PER ENTRARE NELL'APP**: una sola persona per indirizzo. Se è già di
+  qualcuno, l'app dice di chi e di metterla come email per ricevute e avvisi.
+- **EMAIL PER RICEVUTE E AVVISI** (nelle altre pagine, **EMAIL DI CONTATTO**) è dove scrivete o telefonate alla famiglia: può essere
   la stessa per più persone (un genitore e i figli, due fratelli). È anche
   dove arrivano le ricevute per email (vedi [Un pagamento e la sua
-  ricevuta](#un-pagamento-e-la-sua-ricevuta)): mai all'**EMAIL** di accesso.
+  ricevuta](#un-pagamento-e-la-sua-ricevuta)): mai all'email per entrare nell'app.
 
 Due omonimi si distinguono dal telefono, dal codice fiscale o dalla data di
 nascita: l'email non basta più, perché un figlio può non averla.
@@ -137,7 +137,14 @@ Anche il tasto Indietro del browser torna all'elenco, dalla scheda come dal
 modulo di un iscritto nuovo, e una scheda aperta
 resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 
-In cima, i timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
+Sotto il nome, l'età e da quando è in elenco. Se manca qualcosa, prima di tutto
+c'è il riquadro rosso **✕ COSA MANCA**, una riga per cosa: il telefono e
+l'email per ricevute e avvisi, il codice fiscale (**serve per la ricevuta**), la
+data di nascita, e per un minorenne il nome e il codice fiscale del genitore.
+Una scheda in regola per quota e certificato può avere lo stesso il riquadro:
+dice cosa completare nei dati. Quando non manca niente il riquadro non c'è.
+
+Poi i timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
 grandi (verde a posto, giallo da guardare, rosso manca), con le parole
 dell'elenco ma la data intera: **SCADUTO IL 25/09/2026**, **VALIDO FINO
 AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
@@ -145,7 +152,9 @@ AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
 il timbro è grigio, **NON SERVE**, con **SOTTO I 6 ANNI**; un certificato già
 segnato si vede com'è, senza rosso. Nell'ultimo mese prima del compleanno è
 giallo, **SERVE DAL 14/10/2026**, sotto **FRA 14 GIORNI**. Senza certificato e senza data di nascita il timbro è rosso e dice anche **MANCA LA DATA DI NASCITA**. E
-**DOCUMENTO D'IDENTITÀ** più piccolo, perché non serve per entrare. Un clic su
+**DOCUMENTO D'IDENTITÀ**, grande come gli altri: per un minorenne dice solo se
+c'è e quando scade. Con la **TESSERA** i timbri sono quattro, tutti larghi
+uguale. Un clic su
 un timbro apre la scheda che lo contiene (sotto) e porta alla sua parte. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
 **Riattiva**.
@@ -189,9 +198,9 @@ scheda.
 
 Poi la scheda è divisa in quattro schede, e se ne vede una alla volta:
 
-- **PERSONA** — i contatti, **STESSO CONTATTO DI**, **DATI ANAGRAFICI**, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
+- **PERSONA** — i **CONTATTI** (l'**EMAIL PER ENTRARE NELL'APP** solo se c'è), **STESSO CONTATTO DI**, **DATI ANAGRAFICI** (con **NATA IL** o **NATO IL** dal codice fiscale; senza un codice fiscale giusto, **NATO IL**), il **GENITORE** solo per un minorenne, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. **Modifica i contatti** cambia anche nome e cognome. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
-- **QUOTA E PAGAMENTI** — la quota e i pagamenti, con **+ FAI LA RICEVUTA** e **+ REGISTRA UN PAGAMENTO**. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
+- **QUOTA E PAGAMENTI** — la quota e i pagamenti. **+ FAI LA RICEVUTA** e **+ REGISTRA UN PAGAMENTO** stanno subito sotto la **QUOTA**, prima dello storico: non serve scorrere tutte le ricevute. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
   corsi che l'amministrazione ha scritto in CONTABILITÀ con questa persona stanno in **SCRITTI IN
   CONTABILITÀ**, col tag **Scritto in contabilità**: non sono ricevute (niente numero né PDF), non si
   sommano e non toccano quello che resta da pagare. Se la quota la vuoi contata, la ricevuta si fa qui.
@@ -315,7 +324,7 @@ scheda è disattivata, nessuno.
 
 ### I suoi dati
 
-In fondo alla scheda **PERSONA**, **I SUOI DATI**: **Esporta i dati** scarica un file con
+In fondo alla scheda, accanto a **Unisci con un altro iscritto…**, **Esporta i dati** scarica un file con
 anagrafica, iscrizioni e presenze, quello che una persona ha diritto di chiedere.
 
 ## Le tessere
