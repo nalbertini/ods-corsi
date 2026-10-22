@@ -2536,8 +2536,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-segno-regola[data-tono='verde'] { color: var(--verde-testo); }
 .sg-segno-regola[data-tono='spento'] { color: var(--dim); }
 /* I timbri in cima alla scheda: bordo e parola del colore dello stato, il resto si legge sul fondo. */
-.sg-timbri { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.75fr); gap: 12px; align-items: stretch; }
-.sg-timbri[data-con-tessera] { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 0.75fr); }
+/* Colonne uguali e alte uguali: un timbro più stretto o più basso sembrava meno importante, e il documento non lo è. */
+.sg-timbri { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; align-items: stretch; }
 .sg-timbro {
   display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 44px; min-width: 0;
   padding: 12px 14px; text-align: left; background: var(--bg); border: 2px solid var(--tono, var(--line)); border-left-width: 4px;
@@ -2556,15 +2556,12 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-timbro-parola { font-size: 22px; line-height: 1.05; letter-spacing: 0.04em; color: var(--tono-testo, var(--text)); overflow-wrap: anywhere; }
 .sg-timbro-riga { font-size: 14px; letter-spacing: 0.12em; }
 .sg-timbro-riga[data-tono='giallo'] { color: var(--giallo-testo); border: 2px solid var(--giallo); padding: 0 6px; }
-.sg-timbro[data-piccolo='true'] { padding: 10px 12px; align-self: start; }
-.sg-timbro[data-piccolo='true'] .sg-timbro-parola { font-size: 19px; }
-.sg-timbro[data-piccolo='true'] .sg-timbro-riga { font-size: 12px; color: var(--dim); }
 /* Disattivata non è un guaio (si annulla con RIATTIVA): bordo `testo`, niente rosso. */
 .sg-timbri-spenta { margin: 0; padding: 10px 14px; border: 2px dashed var(--text); font-size: 15px; line-height: 1.4; color: var(--sec); }
 .sg-timbri-spenta strong { margin-right: 8px; font-family: var(--cond); font-size: 19px; font-weight: 700; letter-spacing: 0.12em; color: var(--text); }
 /* Sotto i 1000px la scheda è una colonna stretta: tre timbri in fila andrebbero a capo parola per parola. */
 @media (max-width: 1000px) {
-  .sg-timbri, .sg-timbri[data-con-tessera] { grid-template-columns: minmax(0, 1fr); }
+  .sg-timbri { grid-auto-flow: row; grid-template-columns: minmax(0, 1fr); }
 }
 .sg-iscritto {
   width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid var(--surface-2); text-align: left;
@@ -3485,12 +3482,24 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 .sg-scheda-segno[data-tono='giallo'] { color: var(--giallo-testo); }
 .sg-scheda-segno[data-tono='rosso'] { color: var(--rosso-testo); }
 /* Sulla linguetta accesa (fondo surface-2) il giallo scuro non arriva a 4,5:1: lì vale il testo; il puntino e la parola dicono comunque il segno. */
-.sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno[data-tono='giallo'] { color: var(--text); }
+/* Le linguette stanno sopra il contenuto: un filo scuro sotto la fila e quella aperta piena, se no la fila sembrava quattro tasti. */
+.sg-schede-scheda { border-bottom: 2px solid var(--text); }
+.sg-schede-scheda .scheda[data-on='true'] { background: var(--text); color: var(--surface); }
+/* Sulla linguetta piena il giallo e il rosso non si leggerebbero: il segno prende il colore della scritta, il puntino e la parola dicono comunque il segno. */
+.sg-schede-scheda .scheda[data-on='true'] .sg-scheda-segno { color: var(--surface); }
 .sg-scheda-corta { display: none; }
+/* Disattiva staccato dalle altre azioni del piede: lontano non si preme per sbaglio. */
+.sg-scheda-piede > .sg-scheda-piede-destra { margin-left: auto; }
+/* COSA MANCA sopra i timbri: quel che c'è da completare prima ancora dello stato. */
+.sg-scheda-manca { display: flex; flex-direction: column; gap: 6px; border: 2px solid var(--rosso-testo); padding: 12px 16px; }
+:root[data-look='sito'] .sg-scheda-manca { border-radius: 6px; }
+.sg-scheda-manca-titolo { font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--rosso-testo); }
+.sg-scheda-manca-riga { font-size: 15px; font-weight: 600; color: var(--text); }
+.sg-scheda-manca-perche { font-weight: 500; color: var(--dim); }
 .sg-scheda-piede-fisso { position: sticky; bottom: 0; z-index: 2; padding-bottom: 12px; background: var(--surface); }
 /* Stretto: i timbri due per due (una colonna sola spingerebbe le schede sotto lo scorrimento; questa regola sta dopo quella a una colonna e vince) e le quattro linguette stanno tutte nella larghezza, il segno va sotto il nome (niente scorrimento nascosto). */
 @media (max-width: 1000px) {
-  .sg-timbri, .sg-timbri[data-con-tessera] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-timbri { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sg-schede-scheda { grid-auto-columns: minmax(0, 1fr); align-self: stretch; width: 100%; }
   .sg-schede-scheda .scheda { flex-direction: column; gap: 2px; padding: 4px; white-space: normal; text-align: center; letter-spacing: 0.08em; font-size: 13px; }
   .sg-schede-scheda .sg-scheda-segno { letter-spacing: 0.04em; }
@@ -3499,6 +3508,8 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 }
 @media (max-width: 480px) {
   .sg-scheda-piede-fisso > .sg-btn { padding: 0 6px; letter-spacing: 0.08em; font-size: 14px; }
+  /* Due timbri per riga: a 22px «ALL'11/07/2027» si spezza a metà data. */
+  .sg-timbro-parola { font-size: 18px; letter-spacing: 0.02em; }
 }
 
 /* CONTABILITÀ: i totali delle casse vanno a capo sotto una certa larghezza, invece di tagliare gli importi a 40px. */

@@ -219,7 +219,9 @@ const numeriCompensi = (r) => r.selettori.some((x) => x.startsWith('.sg-numeri[d
 const impostazioniAGruppi = (r) => r.selettori.some((x) => /^\.sg-indice$|^\.sg-regole-(gruppo|titolo)(:focus-visible)?$/.test(x))
 // CONTABILITÀ ha tre casse (Satispay): `.sg-numeri.sg-numeri-conti` va a capo da 220px invece che da 280px, così le tre stanno su una riga.
 const numeriConti = (r) => r.selettori.includes('.sg-numeri.sg-numeri-conti')
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// La scheda dell'iscritto rivista: i timbri tutti larghi uguale (niente più DOCUMENTO piccolo né colonna in più con la TESSERA) e la linguetta aperta scura; le loro regole sono cambiate di proposito.
+const schedaRivista = (r) => r.selettori.some((x) => x.startsWith('.sg-timbri') || x.startsWith('.sg-timbro[data-piccolo') || x.startsWith('.sg-schede-scheda'))
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !schedaRivista(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

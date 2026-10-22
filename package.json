@@ -115,6 +115,7 @@
     "prova:testi": "node scripts/prova-testi.mjs",
     "prova:etichette-lezione": "node scripts/prova-etichette-lezione.mjs",
     "prova:scheda": "node scripts/prova-scheda.mjs",
+    "prova:scheda-persona": "node scripts/prova-scheda-persona.mjs",
     "prova:sito-orario": "node scripts/prova-sito-orario.mjs",
     "prova:mcp": "node scripts/prova-mcp.mjs",
     "prova:frequenza": "node scripts/prova-frequenza.mjs",

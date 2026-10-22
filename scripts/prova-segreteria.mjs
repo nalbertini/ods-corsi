@@ -1721,8 +1721,9 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
   ok('… DA PAGARE, come in elenco', q4?.parola, 'DA PAGARE')
   const q5 = quota({ pagamento: { stato: 'pagato', fino: fra(100) } })
   ok('pagata fuori dall’app, che vale oggi: verde', q5?.tono, 'verde')
-  ok('… con la riga FUORI APP', !!riga(q5, 'FUORI APP'), true)
-  ok('con la ricevuta, niente FUORI APP', q1 ? riga(q1, 'FUORI APP') : 'nessun timbro', null)
+  // Una riga sola con la data: su due il timbro QUOTA era più alto degli altri.
+  ok('… con una riga sola, FUORI APP · FINO AL…', testi(q5).length === 2 && testi(q5)[1].startsWith('FUORI APP · FINO AL'), true)
+  ok('con la ricevuta, niente FUORI APP', q1 ? testi(q1).some((t) => t.startsWith('FUORI APP')) : 'nessun timbro', false)
 
   // 4. Il documento: si vede, ma non conta per «in regola».
   const doc = (documento) => timbri(persona({ documento }))?.documento

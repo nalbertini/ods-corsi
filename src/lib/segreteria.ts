@@ -12,14 +12,15 @@ import type { Esercizio } from '../../timer/src/lib/esercizi'
 import type { Disciplina } from '../../timer/src/lib/discipline'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
-import { euro } from './ricevute'
+import { euro, mancanoDatiSocio } from './ricevute'
 import type { EsitoMandata, InvioRicevuta } from './ricevuteEmail'
 import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
 import type { PagamentoSatispay } from './satispay'
 import type { ContiScarico, SceltaSatispay, StatoScarico } from './satispayScarico'
 import type { VoceCorso } from './corsiDaPagare'
 import { STAGIONE, stagioneDi } from './costi'
-import { ESTENSIONI, MASSIMO_FILE } from './richieste'
+import { ESTENSIONI, MASSIMO_FILE, anniScritti, minorenne } from './richieste'
+import { cfNatoIl, cfSesso, cfValido } from './codiceFiscale'
 import type { Listino, ListinoLetto } from './listino'
 import { nomeProprio, paroleCercate, somiglia } from './nomi'
 import type { SegnalataVista } from './segnalate'
@@ -1367,12 +1368,19 @@ function timbroCertificato(c: CertificatoSeg, oggi: string, natoIl?: string): Ti
   return { tono: 'verde', parola: `VALIDO FINO ${alGiorno(c.scade)}`, righe }
 }
 
+/** «fuori app · fino al 31/07/2027», in una riga: su due il timbro QUOTA era più alto degli altri. */
+export function rigaFuoriApp(s: Pick<StatoPaga, 'fonte' | 'fino'>): string | null {
+  if (s.fonte !== 'fuori_app') return null
+  return s.fino ? `fuori app · fino ${alGiorno(s.fino).toLowerCase()}` : 'fuori app'
+}
+
 function timbroQuota(s: StatoPaga): Timbro {
+  const fuori = rigaFuoriApp(s)
   const fino = s.fino ? [{ testo: `FINO ${alGiorno(s.fino)}` }] : []
-  const da = s.fonte === 'fuori_app' ? [{ testo: 'FUORI APP' }] : s.ricevuta ? [{ testo: `RICEVUTA ${s.ricevuta}` }] : []
-  if (s.come === 'pagato') return { tono: 'verde', parola: 'PAGATA', righe: [...da, ...fino] }
+  const daFino = fuori ? [{ testo: fuori.toUpperCase() }] : [...(s.ricevuta ? [{ testo: `RICEVUTA ${s.ricevuta}` }] : []), ...fino]
+  if (s.come === 'pagato') return { tono: 'verde', parola: 'PAGATA', righe: daFino }
   if (s.come === 'in_parte')
-    return { tono: 'giallo', parola: 'IN PARTE', inElenco: 'Pagata in parte', righe: s.fonte === 'ricevuta' ? [{ testo: `MANCANO ${euro(s.mancano ?? 0)} €` }, ...da] : [...da, ...fino] }
+    return { tono: 'giallo', parola: 'IN PARTE', inElenco: 'Pagata in parte', righe: s.fonte === 'ricevuta' ? [{ testo: `MANCANO ${euro(s.mancano ?? 0)} €` }, ...(s.ricevuta ? [{ testo: `RICEVUTA ${s.ricevuta}` }] : [])] : daFino }
   if (s.come === 'scaduto') return { tono: 'rosso', parola: 'QUOTA SCADUTA', inElenco: 'Quota scaduta', righe: s.fino ? [{ testo: `VALEVA FINO ${alGiorno(s.fino)}` }] : [] }
   return { tono: 'rosso', parola: 'DA PAGARE', inElenco: 'Da pagare', righe: [{ testo: 'NESSUNA RICEVUTA' }] }
 }
@@ -1885,3 +1893,65 @@ export function cercaNellElenco(p: PersonaSeg, testo: string): boolean {
 
 /** «Solo senza email» guarda l'email di accesso: il contatto non fa entrare nell'app. */
 export const senzaEmail = (p: PersonaSeg) => !p.email
+
+/**
+ * La data di nascita che vale per la scheda, come per la ricevuta: letti i
+ * dati anagrafici, la loro data, se no quella del codice fiscale (come
+ * `mancanoDatiSocio`). Finché non sono letti (`a` null), quella dell'elenco,
+ * che può venire da una fonte più vecchia. `null`: non si sa.
+ */
+export function natoIlDi(p: Pick<PersonaSeg, 'natoIl'>, a: Pick<Anagrafica, 'natoIl' | 'codiceFiscale'> | null, oggi: Date): string | null {
+  if (!a) return p.natoIl || null
+  return a.natoIl || cfNatoIl(String(a.codiceFiscale ?? '').toUpperCase().replace(/\s/g, ''), oggi)
+}
+
+/** L'etichetta della data di nascita: NATA IL se il codice fiscale è di una donna. */
+export const etichettaNatoIl = (codiceFiscale: string | undefined): string => (cfSesso(codiceFiscale ?? '') === 'F' ? 'NATA IL' : 'NATO IL')
+
+/** Il codice fiscale del genitore come lo legge la ricevuta: maiuscolo, senza spazi, e se è giusto. */
+export function cfGenitoreDaMostrare(a: Pick<Anagrafica, 'genitoreCodiceFiscale'>): { codice: string; giusto: boolean } {
+  const codice = String(a.genitoreCodiceFiscale ?? '').toUpperCase().replace(/\s/g, '')
+  return { codice, giusto: cfValido(codice) }
+}
+
+/** Senza una data da nessuna parte vale da adulto, come per la ricevuta. */
+export function eMinorenne(p: Pick<PersonaSeg, 'natoIl'>, a: Pick<Anagrafica, 'natoIl' | 'codiceFiscale'> | null, oggi: Date): boolean {
+  const natoIl = natoIlDi(p, a, oggi)
+  return !!natoIl && minorenne(natoIl, oggi)
+}
+
+/** Sotto il nome: «14 anni · in elenco dal 6 ottobre 2026». */
+export function sottoNome(natoIl: string | null, creataIl: string, oggi: Date): string {
+  const dal = `in elenco dal ${dataLunga(creataIl)}`
+  return natoIl ? `${anniScritti(natoIl, oggi)} · ${dal}` : dal[0].toUpperCase() + dal.slice(1)
+}
+
+/**
+ * Le righe di COSA MANCA in cima alla scheda. Prima quello che blocca la
+ * ricevuta, con le stesse regole di `mancanoDatiSocio` (un codice sbagliato
+ * vale come vuoto); poi la data di nascita, che decide se è minorenne; poi i
+ * contatti in una riga sola. L'email di accesso e l'indirizzo non mancano: la
+ * prima la sceglie chi entra, il secondo la ricevuta lo lascia vuoto.
+ * Con `a` null (i dati anagrafici non si leggono) restano solo i contatti.
+ */
+export type RigaCheManca = { cosa: string; perche?: string }
+
+export function cosaManca(p: Pick<PersonaSeg, 'nome' | 'cognome' | 'natoIl' | 'emailContatto' | 'telefono'>, a: Anagrafica | null, oggi: Date): RigaCheManca[] {
+  const maiuscola = (t: string) => t[0].toUpperCase() + t.slice(1)
+  const contatti = [!p.telefono?.trim() && 'telefono', !p.emailContatto?.trim() && 'email per ricevute e avvisi'].filter((x): x is string => !!x)
+  const righeContatti = contatti.length ? [{ cosa: maiuscola(contatti.join(', ')) }] : []
+  if (!a) return righeContatti
+  // Come `intestatarioDaRichiesta`: senza il nome del genitore il suo codice non conta.
+  const genitore = [a.genitoreNome, a.genitoreCognome].filter(Boolean).join(' ')
+  const { blocca } = mancanoDatiSocio(
+    { nome: p.nome, cognome: p.cognome, natoIl: a.natoIl, codiceFiscale: a.codiceFiscale, genitore, genitoreCodiceFiscale: genitore ? a.genitoreCodiceFiscale : undefined },
+    oggi,
+  )
+  const ricevuta = blocca.map((x) => ({
+    // «il codice fiscale del socio»: nella scheda è dell'iscritto.
+    cosa: x.campo === 'genitore' ? 'Nome del genitore' : maiuscola(x.testo.replace(/^il /, '').replace(' del socio', '')),
+    perche: 'serve per la ricevuta',
+  }))
+  const data = natoIlDi(p, a, oggi) ? [] : [{ cosa: 'Data di nascita' }]
+  return [...ricevuta, ...data, ...righeContatti]
+}
