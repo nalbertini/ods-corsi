@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 100%; min-height: {{altezza}}; background: {{c.bg}}; color: {{c.text}}; font-family: {{corpo}}">
+  <div style="display: flex; align-items: center; gap: 10px; padding: 16px 20px 0">
+    <span style="flex-grow: 1; font-family: {{cond}}; font-style: {{ob}}; font-size: {{corpoTitolo}}; font-weight: {{pesoTitolo}}; letter-spacing: 0.06em; line-height: 1.05">TIMER</span>
+    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.lineaTasto}}; color: {{c.tasto}}; border-radius: {{raggio}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg></span>
+  </div>
+
+  <sc-for list="{{sezioni}}" as="s" hint-placeholder-count="2">
+    <div style="display: flex; align-items: baseline; gap: 10px; padding: 22px 20px 10px">
+      <span style="font-family: {{cond}}; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: {{c.dim}}">{{s.titolo}}</span>
+      <div style="flex-grow: 1; height: 2px; background: {{c.lineSoft}}"></div>
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600; color: {{c.dim}}">{{s.conto}}</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 6px">
+      <sc-for list="{{s.righe}}" as="r" hint-placeholder-count="2">
+        <div style="display: flex; align-items: center; gap: 14px; min-height: 86px; padding: 13px 15px; background: {{c.surface}}; border: 2px solid {{c.line}}; border-radius: {{raggio}}">
+          <span style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0">
+            <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 1px 7px; border: 2px solid {{c.line}}; color: {{c.dim}}; font-size: 10px; font-weight: 700; letter-spacing: 0.16em">{{r.tipo}}</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">{{r.durata}}</span></span>
+            <span style="font-family: {{cond}}; font-style: {{ob}}; font-size: 21px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05">{{r.nome}}</span>
+            <span style="font-size: 13px; font-weight: 500; color: {{c.dim}}">{{r.nota}}</span>
+          </span>
+          <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 52px; height: 52px; border: 2px solid {{c.play}}; color: {{c.play}}; border-radius: {{raggio}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-for>
+
+  <div style="flex-grow: 1; min-height: 16px"></div>
+  <div style="padding: 10px 20px; background: {{c.bg}}">
+    <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; border: 2px solid {{c.musica}}; color: {{c.musica}}; border-radius: {{raggio}}; font-family: {{cond}}; font-style: {{ob}}; font-size: 17px; font-weight: 700; letter-spacing: 0.14em"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>ACCENDI LA MUSICA</span>
+  </div>
+  <dc-import name="BarraNavigazione" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="TIMER" tema="{{temaBarra}}" hint-size="100%,66px"></dc-import>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"altezza":{"editor":"text","default":"780px"},"tema":{"editor":"enum","options":["scuro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":780}}'>
+// La pagina TIMER dell'area istruttori com'e' costruita: il timer di timer/src incorporato (HomeScreen.tsx) con STRUMENTI
+// (cronometro e conto alla rovescia) e I TUOI TIMER, la barra ACCENDI LA MUSICA e la BarraNavigazione dell'app.
+// Valori da timer/src/styles.css: .rule, .card, .wcard (86px), .wcard-name, .badge-tipo, .play-btn (52px, bordo --rosso).
+// tema scuro = com'era prima del look (fondo #121212, Saira Condensed e Barlow, ▶ rossi); il tablet di sala ha ancora questo timer, nel tema dell'app.
+// tema sito = COSTRUITO (TimerSala con `sito`, blocco :root[data-tema='sito'] di timer/src/styles.css): i token del look sito di src/styles.css (fondo #eef5fa, carte bianche, filo #cfe6f4,
+// inchiostro #0d2a3d, Big Shoulders e Inter, angoli 6px su carte e tasti); i ▶ (--play) e ACCENDI LA MUSICA blu #14709f invece che rossi.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', dim: '#8c8c88', tasto: '#b8b8b2', lineaTasto: '#333333', play: '#e4292a', musica: '#1b8ac4' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', tasto: '#14709f', lineaTasto: '#14709f', play: '#14709f', musica: '#14709f' },
+};
+const SAIRA = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const BARLOW = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
+const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const sito = p.tema === 'sito';
+    const c = sito ? T.sito : T.scuro;
+    return {
+      c, altezza: p.altezza || '780px',
+      cond: sito ? BIG : SAIRA, corpo: sito ? INTER : BARLOW, ob: sito ? 'normal' : 'oblique 9deg',
+      corpoTitolo: sito ? '26px' : '22px', pesoTitolo: sito ? 800 : 700, raggio: sito ? '6px' : '0',
+      temaBarra: sito ? 'sito' : 'scuro',
+      sezioni: [
+        { titolo: 'STRUMENTI', conto: '2', righe: [
+          { tipo: 'CRONOMETRO', durata: '', nome: 'CRONOMETRO', nota: 'conta in salita · segna i giri' },
+          { tipo: 'CONTO', durata: '', nome: 'CONTO ALLA ROVESCIA', nota: '30" – 3\' · scegli la durata' },
+        ] },
+        { titolo: 'I TUOI TIMER', conto: '6', righe: [
+          { tipo: 'INTERVALLI', durata: '14:10', nome: 'BRUCIA GRASSI', nota: '8 × 20"/10" · 3 serie' },
+          { tipo: 'EMOM', durata: '12:20', nome: 'EMOM 12 · GAMBE', nota: '12 × 1\'' },
+        ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

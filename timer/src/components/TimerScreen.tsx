@@ -11,7 +11,7 @@ import { apriSessione, chiudiSessione } from '../lib/mediaSession'
 import { coloreFondo } from '../lib/tema'
 import { giroCorrente, lineaDelTempo, oraDiFine, righeDaMostrare, righeScaletta } from '../lib/scaletta'
 import { useMedia } from '../lib/useMedia'
-import { Digits, STATE_COLOR } from './Quadrante'
+import { Digits, STATE_COLOR, SU_STATE } from './Quadrante'
 import { LineaDelTempo } from './LineaDelTempo'
 import { PostoMaurizio } from './PostoMaurizio'
 import { Scaletta } from './Scaletta'
@@ -280,8 +280,8 @@ export function TimerScreen({
   // A fine allenamento comanda il verde: bordo, barra e pulsante devono dire
   // la stessa cosa, non restare sul colore dell'ultimo intervallo.
   const tinta = done ? 'var(--verde)' : color
-  // Sul rosso del lavoro il testo è bianco, sugli altri colori scuro.
-  const suTinta = tinta === STATE_COLOR.work ? 'var(--su-rosso)' : 'var(--su-colore)'
+  // Sul rosso del lavoro il testo è bianco; sugli altri colori lo dice il tema.
+  const suTinta = !done && seg ? SU_STATE[seg.kind] : 'var(--su-colore)'
 
   const rounds = seg?.rounds ?? workout.rounds
   const sticker = statoFermo.src && !done && view.status !== 'idle' ? statoFermo.src : null
@@ -298,7 +298,7 @@ export function TimerScreen({
   const linea = lineaDelTempo(segments, done ? segments.length : view.index, view.progress)
 
   return (
-    <div className="timer" data-grande={settings.bigScreen} style={{ ['--state' as string]: tinta, ['--state-testo' as string]: tinta === STATE_COLOR.prepare ? 'var(--giallo-testo)' : tinta }}>
+    <div className="timer" data-grande={settings.bigScreen} style={{ ['--state' as string]: tinta, ['--su-state' as string]: suTinta, ['--state-testo' as string]: tinta === STATE_COLOR.prepare ? 'var(--giallo-testo)' : tinta }}>
       <div className="row timer-top">
         <button className="icon-btn" onClick={exit} aria-label="Chiudi il timer">
           <Close />
@@ -322,7 +322,7 @@ export function TimerScreen({
         {settings.coach !== 'off' && (
           <span
             className="badge"
-            style={{ background: 'var(--giallo)', alignSelf: 'center', fontSize: 11, letterSpacing: '0.12em', padding: '5px 9px' }}
+            style={{ background: 'var(--giallo)', color: 'var(--su-giallo)', alignSelf: 'center', fontSize: 11, letterSpacing: '0.12em', padding: '5px 9px' }}
             title="Maurizio ogni tanto perde il conto"
           >
             MAURIZIO

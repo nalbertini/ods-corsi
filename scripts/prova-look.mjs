@@ -193,7 +193,7 @@ let prima = null
 if (base) prima = pulisci(execSync(`git show ${base}:src/styles.css`, { encoding: 'utf8', maxBuffer: 1 << 26 }))
 if (prima === null) console.log('  - confronto con main saltato: senza un ramo main con cui confrontare')
 const rPrima = prima === null ? [] : regole(prima)
-// `.faccia-timer` sta ora tra i selettori del blocco :root (il cronometro in allenamento resta scuro nell'area chiara degli istruttori, `prova:istruttori-look`): i valori del blocco sono gli stessi, e qui non lo si conta.
+// `.faccia-timer` è stato tra i selettori del blocco :root (la pagina TIMER scura, prima del tema `sito`): non cambia i valori del blocco, e qui non lo si conta.
 const esatta = (r) => r.selettori.filter((s) => s !== '.faccia-timer').join(',') + '{' + r.corpo + '}' // byte per byte, spazi compresi
 
 const bloccoLook = rOra.find((r) => r.selettori.length === 1 && r.selettori[0] === LOOK)

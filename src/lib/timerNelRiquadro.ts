@@ -22,7 +22,7 @@
 export function perLaSala(css: string): string {
   return (
     css
-      .replace(/:root\[data-tema=(['"]?)(chiaro|tatami)\1\]/g, ':host([data-tema=$2])')
+      .replace(/:root\[data-tema=(['"]?)(chiaro|tatami|sito)\1\]/g, ':host([data-tema=$2])')
       .replace(/:root/g, ':host')
       // L'altezza della pagina: qui la dà il tablet, qualche riga più sotto.
       .replace(/html\s*,\s*body\s*,\s*#root\s*\{[^}]*\}/g, '')
@@ -43,10 +43,10 @@ export function perLaSala(css: string): string {
 }
 
 /**
- * Il `data-tema` dell'host del timer incorporato: quello di `<html>`, tranne dove il cronometro resta scuro
- * (la pagina TIMER dell'app istruttori, dove `<html>` è sempre chiaro): lì è `scuro`, che non ha regole e dà il
- * tema scuro di base. Il tablet di sala e il timer fuori dall'app seguono il tema.
+ * Il `data-tema` dell'host del timer incorporato: quello di `<html>`, tranne nella pagina TIMER dell'app
+ * istruttori, che ha il look del sito come il resto dell'area: lì è `sito`, un tema che solo l'app sceglie
+ * (il selettore del timer non lo offre). Il tablet di sala e il timer fuori dall'app seguono il tema.
  */
-export function temaDelTimer(temaHtml: string | undefined, scuro: boolean): string | undefined {
-  return scuro ? 'scuro' : temaHtml
+export function temaDelTimer(temaHtml: string | undefined, sito: boolean): string | undefined {
+  return sito ? 'sito' : temaHtml
 }

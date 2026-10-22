@@ -121,7 +121,6 @@
 }
 
 /* I colori del marchio Officine Dello Sport. */
-.faccia-timer,
 :root {
   --bg: #121212;
   --surface: #1c1c1c;
@@ -571,8 +570,7 @@
 :root[data-look='sito'] .striscia-tempo { font-family: var(--cond); font-size: 36px; font-weight: 800; }
 :root[data-look='sito'] .striscia-stop { font-family: var(--body); font-style: normal; border-radius: 6px; letter-spacing: 0.04em; margin-top: 8px; margin-bottom: 8px; }
 
-/* Il cronometro in allenamento resta scuro dentro l'area chiara: `.faccia-timer` ha i token del tema scuro
-   (primo blocco `:root`), e dipinge il suo fondo. Il look non lo nomina. */
+/* La pagina TIMER dipinge il suo fondo: nell'area istruttori quello del look, e il timer dentro ha il tema `sito`. */
 .faccia-timer { background: var(--bg); color: var(--text); }
 
 * { box-sizing: border-box; }

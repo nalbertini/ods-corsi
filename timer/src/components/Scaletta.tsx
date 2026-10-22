@@ -1,6 +1,6 @@
 import type { RigaScaletta } from '../lib/scaletta'
 import { clock } from '../lib/format'
-import { STATE_COLOR } from './Quadrante'
+import { STATE_COLOR, SU_STATE } from './Quadrante'
 
 /** 30" fino a un minuto e mezzo, poi 12:30: i passi lunghi (AMRAP) restano leggibili. */
 const durataDi = (secondi: number) => (secondi < 100 ? `${secondi}"` : clock(secondi))
@@ -26,7 +26,7 @@ export function Scaletta({
       <span className="tf-etichetta">SCALETTA</span>
       <ol className="tf-righe">
         {righe.map((r, i) => (
-          <li key={i} className="tf-riga" data-corrente={r.corrente} data-kind={r.kind} style={{ ['--c' as string]: STATE_COLOR[r.kind] }}>
+          <li key={i} className="tf-riga" data-corrente={r.corrente} data-kind={r.kind} style={{ ['--c' as string]: STATE_COLOR[r.kind], ['--su' as string]: SU_STATE[r.kind] }}>
             <span className="tf-segno" aria-hidden="true" />
             <span className="tf-riga-nome">{r.nome}</span>
             <span className="tf-riga-durata">{durataDi(r.durata)}</span>
