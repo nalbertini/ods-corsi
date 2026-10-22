@@ -173,9 +173,9 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   filo e il menu che dice quante aspettano una risposta (`supabase/25-segnalazioni.sql`). Si può allegare fino a 3 foto o PDF per messaggio (`supabase/32-segnalazioni-allegati.sql`). Ognuna è un'idea o una correzione, scelta da chi la apre e cambiabile dalla segreteria (`supabase/38-segnalazioni-categoria.sql`). Le **impostazioni**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale con la loro
   musica e la **voce** del timer (la voce di sistema e le clip incise, uguali
-  su tutti i tablet), lo storico dei timer, il **backup** e l'esportazione
-  dei dati di una persona. Gli **esercizi** della palestra, che i tablet
-  propongono scrivendo un timer.
+  su tutti i tablet) e il **backup**, in sette schede (`src/lib/schedeImpostazioni.ts`). Gli **esercizi** della palestra, che i tablet
+  propongono scrivendo un timer, con lo storico dei timer in fondo. L'esportazione
+  dei dati di una persona sta nella sua scheda.
 - **L'amministrazione** (`amministrazione/`): per chi cura i conti. Ha il ruolo
   **Amministrazione**, da solo o insieme alla segreteria e all'insegnamento
   (tre spunte in ISTRUTTORI E ACCESSI), e vede PAGAMENTI e LISTINO, non le persone:
@@ -509,7 +509,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 
 Una copia cifrata del database si fa da sé ogni lunedì
 (`.github/workflows/backup.yml`), e dalla segreteria quando serve: in
-IMPOSTAZIONI → IL BACKUP si fa partire e si scarica per metterla su Drive
+IMPOSTAZIONI → DATI E PRIVACY → IL BACKUP si fa partire e si scarica per metterla su Drive
 (`supabase/functions/backup`). I segreti che vuole e come rimetterla a posto
 sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 

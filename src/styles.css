@@ -121,7 +121,6 @@
 }
 
 /* I colori del marchio Officine Dello Sport. */
-.faccia-timer,
 :root {
   --bg: #121212;
   --surface: #1c1c1c;
@@ -571,8 +570,7 @@
 :root[data-look='sito'] .striscia-tempo { font-family: var(--cond); font-size: 36px; font-weight: 800; }
 :root[data-look='sito'] .striscia-stop { font-family: var(--body); font-style: normal; border-radius: 6px; letter-spacing: 0.04em; margin-top: 8px; margin-bottom: 8px; }
 
-/* Il cronometro in allenamento resta scuro dentro l'area chiara: `.faccia-timer` ha i token del tema scuro
-   (primo blocco `:root`), e dipinge il suo fondo. Il look non lo nomina. */
+/* La pagina TIMER dipinge il suo fondo: nell'area istruttori quello del look, e il timer dentro ha il tema `sito`. */
 .faccia-timer { background: var(--bg); color: var(--text); }
 
 * { box-sizing: border-box; }
@@ -2609,6 +2607,19 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 }
 .sg-dafare-lezione:hover { border-color: var(--dim); border-top-color: var(--tinta); }
 .sg-dafare-lezione-nome { font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); }
+/* I primi nomi sotto la frase: uno per riga di lista, su due colonne quando il perché è corto
+   e c'è posto (lo spazio dipende dal menu e dal tasto, non dalla finestra: per questo auto-fill). */
+.sg-dafare-chi { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: 1fr; column-gap: 24px; border-top: 1px solid var(--line); }
+.sg-dafare-chi[data-colonne='2'] { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+/* Se nome e perché non stanno insieme, il perché va a capo intero: la data è quel che serve. */
+.sg-dafare-chi li { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; min-width: 0; padding-bottom: 2px; border-bottom: 1px solid var(--line); }
+.sg-dafare-chi-nome {
+  flex: 0 1 auto; min-width: 0; max-width: 100%; min-height: 44px; padding: 0; background: none; border: 0; font: inherit; font-size: 15px; font-weight: 600; color: var(--text); text-align: left;
+  text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+}
+.sg-dafare-chi-nome:hover { text-decoration-color: currentColor; }
+.sg-dafare-chi-perche { padding-bottom: 8px; font-size: 14px; line-height: 1.4; color: var(--sec); }
+.sg-dafare-chi-perche[data-rosso] { color: var(--rosso-testo); }
 .sg-dafare-aposto { margin: 0; font-size: 14px; line-height: 1.5; color: var(--sec); }
 .sg-dafare-fatto { display: flex; flex-direction: column; gap: 6px; padding: 28px; border: 2px solid var(--verde); }
 .sg-dafare-fatto .ob { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; color: var(--verde-testo); }
@@ -2646,6 +2657,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-sotto-nome { overflow-wrap: anywhere; display: none; font-size: 13px; color: var(--sec); font-weight: 400; }
 /* Le tre cifre in cima allo storico della scheda; sul telefono una sotto l'altra, se no si tagliano. */
 .sg-numeri-tre { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+/* Una data in grande («30 SETTEMBRE 2027»): sul telefono rimpicciolisce invece di uscire dal riquadro. */
+.sg-data-grande { font-size: clamp(18px, 6vw, 26px); font-weight: 700; }
 /* Le cifre grandi non vanno a capo: l'euro resterebbe da solo. */
 .sg-numero > .num { white-space: nowrap; }
 .sg-numeri { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
@@ -2846,12 +2859,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-listino-prezzi, .sg-listino-prezzi[data-etichette='true'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .sg-regole { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
-/* L'ultimo riquadro dispari di un gruppo prende tutta la riga, invece di lasciarne mezza vuota. */
+/* L'ultimo riquadro dispari di una scheda prende tutta la riga, invece di lasciarne mezza vuota. */
 .sg-regole > :last-child:nth-child(odd) { grid-column: 1 / -1; }
-.sg-regole-gruppo { display: flex; flex-direction: column; gap: 14px; margin-top: 36px; }
-.sg-regole-titolo { margin: 0; padding-top: 14px; border-top: 2px solid var(--line); font-size: 26px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; scroll-margin-top: 16px; }
-.sg-regole-titolo:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; }
-.sg-indice { gap: 8px; flex-wrap: wrap; margin-top: 4px; }
 /* La spiegazione chiusa: un'etichetta che si tocca, alta quanto un tasto; + e − dicono se è aperta senza contare sul colore. */
 .sg-spiega > summary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); cursor: pointer; list-style: none; }
 .sg-spiega > summary::-webkit-details-marker { display: none; }
@@ -2887,7 +2896,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
    computer; «Il resto», roba da computer, più piccolo. */
 .sg-barra-tel { display: none; }
 @media (max-width: 767px) {
-  .sg-regole-gruppo { margin-top: 28px; }
   .sg { flex-direction: column; }
   .sg-barra-tel {
     display: flex; align-items: center; gap: 12px; flex-shrink: 0;
@@ -3493,3 +3501,6 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
   .sg-numeri[data-telefono-due] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .sg-numeri[data-telefono-due] > :nth-child(1) { display: none; }
 }
+
+/* IMPOSTAZIONI: sette schede non stanno in una riga sul telefono, vanno a capo. */
+.sg-schede-impostazioni { display: flex; flex-wrap: wrap; }

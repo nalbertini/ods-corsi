@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Variante della proposta: i gruppi diventano schede (lo stesso pattern di SchedeIscritto, tema sito). Aperta LE SALE E I TABLET. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="IMPOSTAZIONI" numeri="RICHIESTE ONLINE:3" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA B · UNA SCHEDA PER GRUPPO, SE NE VEDE UNO ALLA VOLTA</span>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 34px; line-height: 1">IMPOSTAZIONI</h1>
+      <span style="font-size: 14px; color: #46606f">Le scelte che spettano alla palestra, non al programma. In fondo, quelle di questo computer.</span>
+    </div>
+    <div role="tablist" aria-label="Impostazioni" style="display: flex; gap: 4px; flex-wrap: wrap">
+      <span role="tab" aria-selected="false" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; white-space: nowrap; background: #ffffff; border: 2px solid #cfe6f4; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.14em; font-size: 14px; color: #46606f">LA STAGIONE</span>
+      <span role="tab" aria-selected="true" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; white-space: nowrap; background: #cfe6f4; border: 2px solid #0d2a3d; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.14em; font-size: 14px; color: #0d2a3d">LE SALE E I TABLET</span>
+      <span role="tab" aria-selected="false" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; white-space: nowrap; background: #ffffff; border: 2px solid #cfe6f4; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.14em; font-size: 14px; color: #46606f">LE RICEVUTE</span>
+      <span role="tab" aria-selected="false" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; white-space: nowrap; background: #ffffff; border: 2px solid #cfe6f4; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.14em; font-size: 14px; color: #46606f">GLI AVVISI</span>
+      <span role="tab" aria-selected="false" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; white-space: nowrap; background: #ffffff; border: 2px solid #cfe6f4; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.14em; font-size: 14px; color: #46606f">DATI E PRIVACY</span>
+      <span role="tab" aria-selected="false" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; white-space: nowrap; background: #ffffff; border: 2px solid #cfe6f4; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.14em; font-size: 14px; color: #46606f">IMPORTA</span>
+      <span role="tab" aria-selected="false" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; white-space: nowrap; background: #ffffff; border: 2px solid #cfe6f4; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.14em; font-size: 14px; color: #46606f">QUESTO COMPUTER</span>
+    </div>
+    <div style="display: flex; gap: 28px; align-items: flex-start">
+      <div style="display: flex; flex-direction: column; gap: 22px; flex: 1; min-width: 0">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 22px">Le sale e i tablet</h2>
+        <span style="font-size: 13px; line-height: 1.4; color: #46606f">Le sale della palestra e quello che fanno i tablet nelle sale.</span>
+        <section style="display: flex; flex-direction: column; padding: 6px 20px 10px; background: #ffffff; border-radius: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">LE SALE</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">Le sale della palestra, con Cambia e + Aggiungi una sala</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">LE ATTIVITÀ</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">Le discipline che si possono dare ai corsi</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">LA MUSICA DELLE SALE</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">Cosa suona sul tablet di ogni sala</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">LA VOCE DEI TABLET</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">La voce che conta i tempi del timer</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 22px; flex: 1; min-width: 0">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 22px">Cosa cambia con le schede</h2>
+        <section style="display: flex; flex-direction: column; padding: 6px 20px 10px; background: #ffffff; border-radius: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">UN GRUPPO ALLA VOLTA</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">Niente pagina lunga da scorrere: si apre la scheda e si vede solo quella</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">LA SCHEDA SI RICORDA</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">Il link apre una scheda precisa: chi arriva da MANCA QUALCOSA o dalla guida trova subito il gruppo giusto</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">QUESTO COMPUTER A PARTE</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">L’ultima scheda: chi la apre sa che cambia solo il suo computer</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

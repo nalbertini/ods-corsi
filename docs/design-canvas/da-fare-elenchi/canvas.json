@@ -1,0 +1,10 @@
+{
+ "pages": [{ "id": "page-1", "name": "DA FARE con gli elenchi · proposta" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "Oggi · DA FARE dice quanti, non chi", "x": 0, "y": 200, "page": "page-1" },
+  { "file": "Proposta.dc.html", "title": "Proposta · sotto ogni riga i primi nomi, col perché", "x": 1540, "y": 200, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1280, "text": "DA FARE: chi manca, non solo quanti" }
+ ]
+}

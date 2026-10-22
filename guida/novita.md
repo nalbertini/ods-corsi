@@ -10,6 +10,24 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.161.0 — 22 ottobre 2026
+
+### Novità
+
+- In DA FARE ogni riga mostra anche chi manca, con il perché, e un solo tasto «Vedi tutti»
+
+## 0.160.1 — 22 ottobre 2026
+
+### Modificato
+
+- La pagina TIMER dei telefoni degli istruttori ha lo stesso aspetto del resto dell'app
+
+## 0.160.0 — 22 ottobre 2026
+
+### Novità
+
+- Le IMPOSTAZIONI a schede, e lo storico dei timer, le tessere del RASD e l'esporta dati nei posti dove si usano
+
 ## 0.159.0 — 22 ottobre 2026
 
 ### Novità

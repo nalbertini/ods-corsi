@@ -32,3 +32,10 @@ uno nuovo con la sua categoria, oppure **INCOLLA UN ELENCO**: uno per riga, o
 separati da virgola, tutti nella categoria scelta; quelli che ci sono già si
 saltano. Rinominare qui non cambia i timer già salvati. Chi usa il timer dal
 suo telefono tiene il suo elenco.
+
+## Lo storico dei timer
+
+In fondo alla pagina: gli ultimi timer arrivati in fondo, o fermati prima, sui
+tablet di sala e sui telefoni degli istruttori collegati: quando, quale, chi
+(l'istruttore o il tablet di quale sala), in quale corso, quanto è durato.
+**ALTRI 50** per andare indietro.

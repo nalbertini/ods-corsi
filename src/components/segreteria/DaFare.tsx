@@ -7,7 +7,8 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { contaTessere, conTessere, incrocioDaMostrare } from '../../lib/tessere'
 import { appelliSenzaSegni, certificatiDaSistemare, contiDaRileggere, contiDellaStriscia, GIORNI_APPELLI, mantieniIPrecedenti, pagamentiNonInRegola, type ContiCosaManca } from '../../lib/cosaManca'
 import { corsiScaduti } from '../../lib/corsiDaPagare'
-import { classeTastoDaFare, TESTI_DA_FARE } from '../../lib/daFareTesti'
+import { TESTI_DA_FARE, type ChiaveDaFare } from '../../lib/daFareTesti'
+import { chiArrivo, chiCertificati, chiCorsi, chiListino, chiPagare, chiRichieste, chiScadenza, COLONNE_DA_FARE, primiDaFare, TASTO_DA_FARE, type VoceChi } from '../../lib/daFareChi'
 import { dataLunga, Testa } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
@@ -34,7 +35,9 @@ export interface ContiDaFare {
   certificatiDaStampare: number | null
   documentiDaStampare: number | null
   /** I corsi attivi a cui manca un prezzo nel listino, con cosa manca: nel modulo escono «prezzo da confermare». */
-  listino: Array<{ nome: string; frase: string }> | null
+  listino: Array<{ id: string; nome: string; frase: string }> | null
+  /** Chi c'è dietro i numeri, letto insieme a loro: l'elenco intero e in ordine, DA FARE ne mostra i primi. */
+  chi: Partial<Record<ChiaveDaFare, VoceChi[] | null>>
   /** Contato tutto almeno una volta: da qui un `null` vuol dire che non si è riusciti, non che si aspetta. */
   contato: boolean
   /** I cinque conti della striscia COSA MANCA, con l'ultimo numero buono se una lettura fallisce. */
@@ -54,6 +57,7 @@ const VUOTI: ContiDaFare = {
   certificatiDaStampare: null,
   documentiDaStampare: null,
   listino: null,
+  chi: {},
   striscia: { appelli: null, certificati: null, pagamenti: null, tessere: null, richieste: null, contato: false },
 }
 
@@ -75,6 +79,8 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
   // Una lettura forzata (un appello segnato, RICONTA) resta da fare finché non ne finisce una pesante: se prima arriva un
   // cambio di voce e la lettura viene annullata, la prossima la rifà.
   const daRileggere = useRef(false)
+  // I nomi dei corsi delle richieste: si leggono coi conti pesanti, le richieste anche senza.
+  const nomiCorsi = useRef<ReadonlyMap<string, string>>(new Map())
   useEffect(() => {
     if (!d) return
     let vivo = true
@@ -106,6 +112,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
         const richiesteNuove = ric ? ric.tutte.filter((x) => x.stato === 'nuova').length : null
         const contoTessere = pers && tess && !tess[0].manca ? contaTessere(incrocioDaMostrare(conTessere(pers, tess[0].elenco), tess[1], oggi)) : null
         const contoCorsi = pers && cl ? corsiScaduti(pers, cl[0], cl[1].listino, oggi) : null
+        if (cl) nomiCorsi.current = new Map(cl[0].map((c) => [c.id, c.nome]))
         const nuova = Date.now()
         // Pesante finita bene (tutte e due le letture): da qui i conti sono freschi.
         if (pesante && pers && lez) {
@@ -137,6 +144,19 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
           certificatiDaStampare: pesante ? (pers ? pers.filter((p) => certificatoDaStampare(p.certificato)).length : null) : prima.certificatiDaStampare,
           documentiDaStampare: tutto ? (ric?.conDocumento ? ric.conDocumento.size : null) : prima.documentiDaStampare,
           listino: tutto ? list : prima.listino,
+          chi: {
+            ...(pesante
+              ? {
+                  certificati: pers && chiCertificati(pers, oggi),
+                  scadenza: pers && chiScadenza(pers, oggi),
+                  arrivo: pers && chiArrivo(pers, oggi),
+                  pagare: pers && chiPagare(pers, oggi),
+                  corsi: pers && cl ? chiCorsi(pers, cl[0], cl[1].listino, oggi) : null,
+                }
+              : prima.chi),
+            richieste: ric && chiRichieste(ric.tutte, oggi, nomiCorsi.current),
+            listino: tutto ? list && chiListino(list) : prima.chi.listino,
+          },
         }))
       },
     )
@@ -148,15 +168,16 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
 }
 
 interface Cosa {
-  chiave: string
+  chiave: ChiaveDaFare
   n: number | null
   titolo: (n: number) => string
   sotto: string
   /** Detto quando non c'è niente, nell'elenco di quello che è a posto. */
   aPosto: string
-  tasto: string
   voce: Voce
   dove?: Destinazione
+  /** Dove porta toccare un nome dell'elenco: la scheda, la richiesta, il listino. */
+  apri?: (id: string) => [Voce, Destinazione?]
 }
 
 /**
@@ -181,6 +202,8 @@ const LIVELLO: Record<string, Livello> = {
   'file-di-prima': 'faccenda',
   'documenti-stampa': 'faccenda',
 }
+// Un nome di un iscritto apre la sua scheda.
+const apriScheda = (id: string): [Voce, Destinazione?] => ['iscritti', { persona: id }]
 const ORDINE: Record<Livello, number> = { blocca: 0, presto: 1, faccenda: 2 }
 
 // Il numero è già grande accanto: il titolo dice solo di cosa.
@@ -200,7 +223,6 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       titolo: (n) => uno(n, TESTI_DA_FARE.appelli.singolare, TESTI_DA_FARE.appelli.plurale),
       sotto: `Negli ultimi ${GIORNI_APPELLI} giorni: passate, e nessuno ha segnato. Si apre la lezione e si fa l’appello, o si annulla se non c’è stata.`,
       aPosto: 'appelli',
-      tasto: TESTI_DA_FARE.appelli.tasto,
       voce: 'presenze',
       dove: { filtro: 'senza-appello' },
     },
@@ -210,8 +232,8 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       titolo: (n) => uno(n, TESTI_DA_FARE.richieste.singolare, TESTI_DA_FARE.richieste.plurale),
       sotto: 'Iscrizioni arrivate dal modulo, da accogliere o rifiutare.',
       aPosto: 'richieste online',
-      tasto: TESTI_DA_FARE.richieste.tasto,
       voce: 'richieste',
+      apri: (id) => ['richieste', { richiesta: id }],
     },
     {
       chiave: 'istruttori',
@@ -219,7 +241,6 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       titolo: (n) => uno(n, TESTI_DA_FARE.istruttori.singolare, TESTI_DA_FARE.istruttori.plurale),
       sotto: 'Istruttori segnati dove non erano previsti, e lezioni tenute in cui scegliere chi c’era.',
       aPosto: 'presenze istruttori',
-      tasto: TESTI_DA_FARE.istruttori.tasto,
       voce: 'istruttori',
     },
     ...(conti.segnalate !== undefined
@@ -230,9 +251,8 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
             titolo: (n: number) => uno(n, TESTI_DA_FARE.segnalate.singolare, TESTI_DA_FARE.segnalate.plurale),
             sotto: 'Iscritti che dicono di esserci stati e nell’appello non risultano.',
             aPosto: 'presenze segnalate',
-            tasto: TESTI_DA_FARE.segnalate.tasto,
-            voce: 'segnalate' as Voce,
-          },
+            voce: 'segnalate',
+          } satisfies Cosa,
         ]
       : []),
     {
@@ -241,9 +261,9 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       titolo: (n) => uno(n, TESTI_DA_FARE.certificati.singolare, TESTI_DA_FARE.certificati.plurale),
       sotto: 'Il certificato medico manca o è scaduto: senza, in sala non si entra. Sotto i 6 anni non serve.',
       aPosto: 'certificati',
-      tasto: TESTI_DA_FARE.certificati.tasto,
       voce: 'iscritti',
       dove: { filtro: 'certificato' },
+      apri: apriScheda,
     },
     {
       chiave: 'scadenza',
@@ -251,9 +271,9 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       titolo: (n) => uno(n, TESTI_DA_FARE.scadenza.singolare, TESTI_DA_FARE.scadenza.plurale),
       sotto: 'Scadono entro un mese: da ricordare prima che scadano.',
       aPosto: 'certificati in scadenza',
-      tasto: TESTI_DA_FARE.scadenza.tasto,
       voce: 'iscritti',
       dove: { filtro: 'scadenza' },
+      apri: apriScheda,
     },
     {
       chiave: 'arrivo',
@@ -261,9 +281,9 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       titolo: (n) => uno(n, TESTI_DA_FARE.arrivo.singolare, TESTI_DA_FARE.arrivo.plurale),
       sotto: 'Dal compleanno il certificato serve: nel prossimo mese, da avvisare alla famiglia.',
       aPosto: 'compleanni dei 6 anni',
-      tasto: TESTI_DA_FARE.arrivo.tasto,
       voce: 'iscritti',
       dove: { filtro: 'arrivo' },
+      apri: apriScheda,
     },
     {
       chiave: 'pagare',
@@ -271,9 +291,9 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       titolo: (n) => uno(n, TESTI_DA_FARE.pagare.singolare, TESTI_DA_FARE.pagare.plurale),
       sotto: 'Da pagare, pagato in parte, o pagato fino a una data passata.',
       aPosto: 'pagamenti',
-      tasto: TESTI_DA_FARE.pagare.tasto,
       voce: 'iscritti',
       dove: { filtro: 'pagare' },
+      apri: apriScheda,
     },
     ...(conti.corsi !== undefined
       ? [
@@ -283,9 +303,9 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
             titolo: (n: number) => uno(n, TESTI_DA_FARE.corsi.singolare, TESTI_DA_FARE.corsi.plurale),
             sotto: 'Il trimestre o l’annuale di un corso è finito, o non è pagato del tutto. In sala si entra lo stesso.',
             aPosto: 'corsi',
-            tasto: TESTI_DA_FARE.corsi.tasto,
             voce: 'iscritti',
             dove: { filtro: 'corsi-scaduti' },
+            apri: apriScheda,
           } satisfies Cosa,
         ]
       : []),
@@ -295,8 +315,8 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       titolo: (n) => uno(n, TESTI_DA_FARE.listino.singolare, TESTI_DA_FARE.listino.plurale),
       sotto: `${prezziMancantiInBreve(conti.listino ?? [])} Nel conto del modulo il prezzo resta da confermare.`,
       aPosto: 'listino',
-      tasto: TESTI_DA_FARE.listino.tasto,
       voce: 'listino',
+      apri: () => ['listino'],
     },
     {
       chiave: 'file-di-prima',
@@ -304,7 +324,6 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       titolo: (n) => uno(n, TESTI_DA_FARE['file-di-prima'].singolare, TESTI_DA_FARE['file-di-prima'].plurale),
       sotto: 'Caricati nell’app prima della nuova gestione: si aprono dalla scheda come gli altri, e si cancellano da soli 30 giorni dopo la scadenza.',
       aPosto: 'certificati non archiviati',
-      tasto: TESTI_DA_FARE['file-di-prima'].tasto,
       voce: 'iscritti',
       dove: { filtro: 'file-di-prima' },
     },
@@ -314,7 +333,6 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       titolo: (n) => uno(n, TESTI_DA_FARE['documenti-stampa'].singolare, TESTI_DA_FARE['documenti-stampa'].plurale),
       sotto: 'Documento d’identità arrivato col modulo: accolta la richiesta, si stampa e si cancella.',
       aPosto: 'richieste da stampare',
-      tasto: TESTI_DA_FARE['documenti-stampa'].tasto,
       voce: 'richieste',
       dove: { filtro: 'stampare' },
     },
@@ -348,7 +366,7 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
 
       {daFare.length > 0 && (
         <ul className="sg-dafare" aria-label="Da fare">
-          {daFare.map((c, i) => (
+          {daFare.map(({ apri, ...c }) => (
             <li key={c.chiave} className="sg-dafare-riga" data-livello={LIVELLO[c.chiave]}>
               <span className="num sg-dafare-n">{c.n}</span>
               <div className="stack grow" style={{ gap: 4, minWidth: 0 }}>
@@ -373,9 +391,10 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
                     {appelli.length > 6 && <span className="sg-sotto" style={{ alignSelf: 'center' }}>e altre {appelli.length - 6}</span>}
                   </div>
                 )}
+                {apri && <ChiDaFare voci={conti.chi[c.chiave]} colonne={COLONNE_DA_FARE[c.chiave] ?? 1} apri={(id) => onVai(...apri(id))} />}
               </div>
-              <button type="button" className={`sg-btn ${classeTastoDaFare(i)} sg-dafare-tasto`} onClick={() => onVai(c.voce, c.dove)}>
-                {c.tasto}
+              <button type="button" className="sg-btn sg-btn-linea sg-dafare-tasto" aria-label={`${TASTO_DA_FARE}: ${c.titolo(c.n ?? 0)}`} onClick={() => onVai(c.voce, c.dove)}>
+                {TASTO_DA_FARE}
               </button>
             </li>
           ))}
@@ -412,5 +431,24 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
         </div>
       )}
     </div>
+  )
+}
+
+/** I primi nomi sotto una riga, col perché: ognuno apre dove si sistema. Gli altri li mostra «Vedi tutti». */
+function ChiDaFare({ voci, colonne, apri }: { voci: VoceChi[] | null | undefined; colonne: 1 | 2; apri: (id: string) => void }) {
+  if (!voci?.length) return null
+  return (
+    <ul className="sg-dafare-chi" data-colonne={colonne}>
+      {primiDaFare(voci).map((v) => (
+        <li key={v.id}>
+          <button type="button" className="sg-dafare-chi-nome" onClick={() => apri(v.id)}>
+            {v.nome}
+          </button>
+          <span className="sg-dafare-chi-perche" data-rosso={v.rosso || undefined}>
+            {v.perche}
+          </span>
+        </li>
+      ))}
+    </ul>
   )
 }

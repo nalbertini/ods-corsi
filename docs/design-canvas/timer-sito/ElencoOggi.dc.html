@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- TIMER oggi: scuro, ▶ rossi. -->
+<div style="width: 390px; min-height: 780px; background: #121212">
+  <dc-import name="TimerElenco" tema="scuro" altezza="780px" hint-size="100%,780px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":780}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

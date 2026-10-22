@@ -75,7 +75,7 @@ con scritto a che ora era. Toccando una casella si va alla pagina giusta, già f
 I conti si rileggono quando si segna un appello, si accoglie una richiesta o si cambia
 una scheda, e cambiando voce solo se l'ultima lettura ha più di due minuti. Sul computer le caselle stanno in righe da cinque; sul telefono due per riga, e la
 striscia si nasconde quando c'è una scheda aperta. Chi non la vuole
-la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scelta resta su quel dispositivo.
+la nasconde da **IMPOSTAZIONI → QUESTO COMPUTER** ([guida](regole.md)): la scelta resta su quel dispositivo.
 
 | Voce | A cosa serve | Guida |
 |---|---|---|
@@ -95,7 +95,7 @@ la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scel
 | **Esercizi** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
 | **Listino** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
 | **Vestiario** | Gli ordini di vestiario, judogi e costumini: il catalogo, la chiusura, chi ha saldato, l'elenco per il fornitore | [Apri](vestiario.md) |
-| **IMPOSTAZIONI** | In sei gruppi: questo schermo; la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa); in mezzo, **IMPORTA DA EXCEL**: corsi e iscritti dai fogli o dalle risposte del modulo Google | [Apri](regole.md) · [Importa](importa.md) |
+| **IMPOSTAZIONI** | In sette schede: la stagione; le sale e i tablet (musica, voce); le ricevute; gli avvisi; dati e privacy (presenze, backup, informativa); **IMPORTA**: corsi e iscritti dai fogli o dalle risposte del modulo Google; questo computer (aspetto, striscia) | [Apri](regole.md) · [Importa](importa.md) |
 | **Segnalazioni** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
 | **Sito** | Le pagine del sito della palestra, il menu in alto e il footer: si scrive la bozza e si pubblica | [Apri](sito.md) |
 

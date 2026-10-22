@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- IMPOSTAZIONI riordinata: prima le scelte della palestra, in fondo quelle di questo computer. Quattro riquadri vanno dove servono (in fondo, dove). -->
+<div style="display: flex; width: 1440px; min-height: 1480px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="IMPOSTAZIONI" numeri="RICHIESTE ONLINE:3" nome="Marco Rossi" ruolo="Segreteria" altezza="1480px" hint-size="240px,1480px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · SOLO LE SCELTE DELLA PALESTRA, QUESTO COMPUTER IN FONDO</span>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 34px; line-height: 1">IMPOSTAZIONI</h1>
+      <span style="font-size: 14px; color: #46606f">Le scelte che spettano alla palestra, non al programma. In fondo, quelle di questo computer.</span>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap">
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="La stagione" hint-size="120px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Le sale e i tablet" hint-size="160px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Le ricevute" hint-size="120px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Gli avvisi" hint-size="110px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Dati e privacy" hint-size="130px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Importa da Excel" hint-size="150px,40px"></dc-import>
+      <dc-import name="Chip" tema="sito" contesto="segreteria" label="Questo computer" hint-size="150px,40px"></dc-import>
+    </div>
+    <div style="display: flex; gap: 28px; align-items: flex-start">
+      <div style="display: flex; flex-direction: column; gap: 22px; flex: 1; min-width: 0">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 22px">La stagione</h2>
+        <section style="display: flex; flex-direction: column; padding: 6px 20px 10px; background: #ffffff; border-radius: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">IL CALENDARIO</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">PRONTO FINO AL · data della stagione · quanti giorni avanti · Rigenera adesso</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 22px">Le sale e i tablet</h2>
+        <section style="display: flex; flex-direction: column; padding: 6px 20px 10px; background: #ffffff; border-radius: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">LE SALE</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">Le sale della palestra, con Cambia e + Aggiungi una sala</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">LE ATTIVITÀ</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">Le discipline che si possono dare ai corsi</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">LA MUSICA DELLE SALE</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">Cosa suona sul tablet di ogni sala</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">LA VOCE DEI TABLET</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">La voce che conta i tempi del timer</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 22px">Le ricevute</h2>
+        <section style="display: flex; flex-direction: column; padding: 6px 20px 10px; background: #ffffff; border-radius: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">CHI FA LE RICEVUTE</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">L’ente, il codice fiscale e l’indirizzo stampati sulla ricevuta</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 22px">Gli avvisi</h2>
+        <section style="display: flex; flex-direction: column; padding: 6px 20px 10px; background: #ffffff; border-radius: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">GLI AVVISI ALLA SEGRETERIA</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">L’email per le richieste online e i pagamenti Satispay</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 22px; flex: 1; min-width: 0">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 22px">Dati e privacy</h2>
+        <section style="display: flex; flex-direction: column; padding: 6px 20px 10px; background: #ffffff; border-radius: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">PER QUANTO SI TENGONO LE PRESENZE</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">12 / 24 / 36 / 60 mesi · le scadute, con Cancella ora</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">IL BACKUP</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">L’ultimo backup e come scaricarlo</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">PRIVACY</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">L’informativa: c’è o manca · i dati sanitari in una riga, il resto in «Come funziona»</span>
+            </div><span style="flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: #0b7a33">PIÙ CORTO</span>
+          </div>
+        </section>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 22px">Importa da Excel</h2>
+        <section style="display: flex; flex-direction: column; padding: 6px 20px 10px; background: #ffffff; border-radius: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">IMPORTA</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">Iscritti e corsi da un foglio Excel</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; font-size: 22px">Questo computer</h2>
+        <span style="font-size: 13px; line-height: 1.4; color: #46606f">Valgono solo qui: gli altri computer della segreteria restano come sono.</span>
+        <section style="display: flex; flex-direction: column; padding: 6px 20px 10px; background: #ffffff; border-radius: 6px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">L’ASPETTO</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">Come oggi / Il banco</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-top: 1px solid #cfe6f4">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: #0d2a3d">LA STRISCIA COSA MANCA</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #46606f">Mostrala / Nascondila</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">DOVE VANNO I QUATTRO RIQUADRI</span>
+      <div style="display: flex; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 14px 16px; background: #ffffff; border-radius: 6px; border-left: 3px solid #14709f">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #14709f">ESERCIZI</span>
+          <span style="font-size: 13px; line-height: 1.4; color: #46606f">LO STORICO DEI TIMER, sotto gli esercizi: è lì che si guarda cosa è partito</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 14px 16px; background: #ffffff; border-radius: 6px; border-left: 3px solid #14709f">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #14709f">TESSERE</span>
+          <span style="font-size: 13px; line-height: 1.4; color: #46606f">TESSERE DAL RASD, accanto all’elenco delle tessere che aggiorna</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 14px 16px; background: #ffffff; border-radius: 6px; border-left: 3px solid #14709f">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #14709f">SCHEDA ISCRITTO › PERSONA</span>
+          <span style="font-size: 13px; line-height: 1.4; color: #46606f">Esporta i dati: dalla persona aperta, senza sceglierla da un elenco</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 14px 16px; background: #ffffff; border-radius: 6px; border-left: 3px solid #14709f">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #14709f">VIA</span>
+          <span style="font-size: 13px; line-height: 1.4; color: #46606f">La cifra SI ALLUNGA «DA SÉ»: lo dice già PRONTO FINO AL</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1480}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
