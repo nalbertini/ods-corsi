@@ -55,6 +55,7 @@ export function Oggi({ d, conti, onVai, onRiprova }: { d: DatiSegreteria; conti:
   const tab = tabellone(l, sale.dato ?? [], adesso, { dalleOre: dalle, alleOre: alle, oraPx: ORA_PX })
   const ore = Array.from({ length: alle - dalle }, (_, i) => dalle + i)
   const coda = codaBanco({ appelli: conti.appelli ?? [], persone: persone.dato ?? [], richieste: conti.richieste ?? 0, istruttori: conti.istruttori ?? 0, segnalate: conti.segnalate ?? undefined }, giorno)
+  const caselle = caselleDaMostrare(conti.striscia)
   const riepilogo = lezioni.dato ? riepilogoGiornata(l, adesso) : null
 
   const apri = (x: LezioneSeg) => onVai('settimana', { lezione: { id: x.id, inizio: x.inizio } })
@@ -66,9 +67,15 @@ export function Oggi({ d, conti, onVai, onRiprova }: { d: DatiSegreteria; conti:
       {guaio && <Guaio testo={`La giornata non si legge: ${guaio}`} />}
       {/* Le stesse caselle, con lo stesso conto, della striscia COSA MANCA che OGGI non mostra. */}
       <div className="bn-cifre">
-        {caselleDaMostrare(conti.striscia).map((c) => (
+        {caselle.map((c) => (
           <Cifra key={c.id} c={c} onClick={() => onVai(c.voce, c.filtro ? { filtro: c.filtro } : undefined)} />
         ))}
+        {/* Come nella striscia: un conto che non si sa si rilegge da qui. */}
+        {conti.striscia.contato && caselle.some((c) => c.stato === 'nonso') && (
+          <button type="button" className="sg-btn sg-btn-linea bn-riconta" onClick={onRiprova}>
+            Riconta
+          </button>
+        )}
       </div>
       <div className="bn-oggi">
         {lezioni.dato && l.length === 0 ? (

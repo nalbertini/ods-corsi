@@ -56,6 +56,7 @@ Sopra il tabellone, i numeri della striscia **COSA MANCA**, con lo stesso
 conto: **APPELLI NON FATTI** (ultimi 30 giorni), **CERTIFICATI SCADUTI**,
 **PAGAMENTI**, **CORSI SCADUTI**, **RICHIESTE ONLINE**. Ognuno apre l'elenco da
 cui nasce, col filtro già acceso. In OGGI la striscia non c'è: sono già questi.
+Un numero che non si riesce a contare mostra «—», e sotto c'è **Riconta**.
 
 A destra la coda **DA FARE AL BANCO**, in ordine di urgenza: prima gli appelli
 non fatti, poi chi è senza certificato, poi chi deve la quota (in rosso), infine
