@@ -301,5 +301,15 @@ console.log('\nPer ora le tessere non si segnalano (l\'interruttore SEGNALA_TESS
   ok('…né «scade fra»', m.fraseDaMostrare(T('FIJLKAM', '2026-01-01', '2026-12-31'), OGGI), 'FIJLKAM · praticante · fino al 31 dicembre 2026')
 }
 
+// L'import sta nella stessa pagina della lista: dopo METTI la lista si rilegge,
+// se no dice ancora «manca la tessera» a chi l'ha appena avuta.
+{
+  console.log('\nTESSERE DAL RASD, nella pagina TESSERE')
+  const { readFileSync } = await import('node:fs')
+  const pagina = readFileSync('src/components/segreteria/Tessere.tsx', 'utf8')
+  ok('la pagina passa all\'import come rileggere le tessere', pagina.includes('<ImportaTessere d={d} ricarica={tessere.ricarica} />'), true)
+  ok('dopo METTI la lista si rilegge', /importaTessere\(pronto\.righe, false\)[\s\S]{0,120}ricarica\(\)/.test(pagina), true)
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -290,6 +290,11 @@ scheda è disattivata, nessuno.
   arrivati: un appello fatto senza rete che arriva dopo sulla scheda che se
   ne va si perde.
 
+### I suoi dati
+
+In fondo alla scheda **PERSONA**, **I SUOI DATI**: **Esporta i dati** scarica un file con
+anagrafica, iscrizioni e presenze, quello che una persona ha diritto di chiedere.
+
 ## Le tessere
 
 Sotto **TESSERE** nella scheda c'è una riga per tessera: ente, tipo e fino a quando vale (**FIJLKAM · agonista · fino al 31 dicembre 2026**), il numero, se viene dal RASD o è scritta a mano, e se è **IN REGOLA**, **SCADE A DICEMBRE** o **SCADUTA**. Senza tessera la scheda dice se il corso la chiede. **+ AGGIUNGI UNA TESSERA** serve per chi non è nel foglio del RASD; **Togli** la toglie, dopo una conferma, e **Annulla** nell'avviso la rimette com'era. In cima alla scheda c'è anche il timbro **TESSERA** (solo per chi ha un corso che la chiede). Le tessere del RASD non si cambiano: si rifà l'import ([Tessere](tessere.md)).

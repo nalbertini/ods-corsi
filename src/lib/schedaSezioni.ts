@@ -39,16 +39,18 @@ export const schedaDellaSezione = (id: string): IdScheda | null => DELLA_SEZIONE
 /** Cambiare scheda serve solo se la destinazione c'è ed è un'altra. */
 export const serveCambiare = (aperta: IdScheda, destinazione: IdScheda | null): boolean => destinazione !== null && destinazione !== aperta
 
-/** La scheda dopo un tasto: frecce con il giro, Home e Fine ai capi, altro niente. */
-export function tastoScheda(aperta: IdScheda, tasto: string): IdScheda | null {
-  const i = SCHEDE.findIndex((s) => s.id === aperta)
-  const n = SCHEDE.length
-  if (tasto === 'ArrowRight') return SCHEDE[(i + 1) % n].id
-  if (tasto === 'ArrowLeft') return SCHEDE[(i + n - 1) % n].id
-  if (tasto === 'Home') return SCHEDE[0].id
-  if (tasto === 'End') return SCHEDE[n - 1].id
+/** La linguetta dopo un tasto, fra quelle date in ordine: frecce con il giro, Home e Fine ai capi, altro niente. */
+export function tastoLinguette<T>(ordine: readonly T[], aperta: T, tasto: string): T | null {
+  const i = ordine.indexOf(aperta)
+  const n = ordine.length
+  if (tasto === 'ArrowRight') return ordine[(i + 1) % n]
+  if (tasto === 'ArrowLeft') return ordine[(i + n - 1) % n]
+  if (tasto === 'Home') return ordine[0]
+  if (tasto === 'End') return ordine[n - 1]
   return null
 }
+
+export const tastoScheda = (aperta: IdScheda, tasto: string): IdScheda | null => tastoLinguette(SCHEDE.map((s) => s.id), aperta, tasto)
 
 export interface SegnoScheda {
   parola: string

@@ -21,7 +21,7 @@ e prepugilistica nessuna. Si cambia quando si vuole.
 
 ## Caricare il foglio del RASD
 
-In IMPOSTAZIONI, **TESSERE DAL RASD**, in tre passi:
+In fondo a questa pagina, **TESSERE DAL RASD** (il tasto **Importa dal RASD** in cima porta lì), in tre passi:
 
 1. **IL FOGLIO** — dal RASD, tab Tesseramenti, salva il foglio come **CSV** (da Excel: *File → Salva con
    nome → CSV UTF-8*). Le colonne sono **Organismo, Persona, Codice fiscale, Tipo, Codice tess., Valido dal**,

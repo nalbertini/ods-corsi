@@ -2,7 +2,7 @@
 
 ← [Torna alla segreteria](README.md)
 
-Sta in IMPOSTAZIONI, nel gruppo **IMPORTA DA EXCEL**. Per caricare in un colpo solo corsi e iscritti da fogli Excel, o gli iscritti
+Sta in IMPOSTAZIONI, nella scheda **IMPORTA**. Per caricare in un colpo solo corsi e iscritti da fogli Excel, o gli iscritti
 dalle risposte del vecchio modulo Google. Si può rifare quante volte si vuole:
 **non duplica niente**.
 
@@ -97,7 +97,7 @@ corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
    Sopra i tasti c'è il promemoria del **backup**: dice quando è stato fatto
    l'ultimo, e in giallo se non c'è, non è riuscito o è di più di ieri. L'import
    scrive e non si disfa: in quel caso conviene fare **Fai un backup ora** in
-   IMPOSTAZIONI › IL BACKUP prima di importare.
+   IMPOSTAZIONI › DATI E PRIVACY › IL BACKUP prima di importare.
 3. **NELL'APP** — **IMPORTA LE N RIGHE BUONE** (senza quelle da sistemare e
    quelle che aspettano una scelta). Una riga che non va non ferma le altre.
    A fine import il titolo dice **FATTO, N righe da sistemare**, e sotto c'è

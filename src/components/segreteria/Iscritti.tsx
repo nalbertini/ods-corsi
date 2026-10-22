@@ -880,6 +880,29 @@ function Scheda({
               ))}
             </div>
           )}
+
+          <div className="stack" style={{ gap: 8 }}>
+            <Riga titolo="I SUOI DATI" />
+            <span className="sg-sotto">Un file con anagrafica, iscrizioni e presenze: è quello che una persona ha diritto di chiedere.</span>
+            <button
+              type="button"
+              className="sg-btn sg-btn-linea"
+              style={{ alignSelf: 'flex-start' }}
+              onClick={() =>
+                void fai(async () => {
+                  const dati = await d.esporta(p.id)
+                  const url = URL.createObjectURL(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }))
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `dati-${p.cognome}-${p.nome}.json`.toLowerCase().replace(/\s+/g, '-')
+                  a.click()
+                  URL.revokeObjectURL(url)
+                }, 'File scaricato')
+              }
+            >
+              Esporta i dati
+            </button>
+          </div>
       </div>
 
       <div role="tabpanel" id={idPannello('documenti')} aria-labelledby={idLinguetta('documenti')} hidden={aperta !== 'documenti'} className="stack" style={{ gap: 20, minWidth: 0 }}>

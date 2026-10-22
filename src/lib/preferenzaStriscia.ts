@@ -3,7 +3,7 @@ import { TELEFONO } from './largo'
 import { preferenzaStriscia, valorePreferenzaStriscia } from './cosaManca'
 
 /**
- * Se la striscia COSA MANCA si vede, su questo dispositivo. Si sceglie da IMPOSTAZIONI e si ricorda qui, come il tema:
+ * Se la striscia COSA MANCA si vede, su questo dispositivo. Si sceglie da IMPOSTAZIONI › QUESTO COMPUTER e si ricorda qui, come il tema:
  * niente nel database, ognuno decide per il suo schermo. Senza `localStorage` (navigazione privata) vale finché la pagina resta aperta.
  */
 const DOVE = 'ods-striscia'
