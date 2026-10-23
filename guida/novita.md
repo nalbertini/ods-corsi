@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.182.0 — 23 ottobre 2026
+
+### Novità
+
+- Area iscritti con la barra in basso, i contatti e il cambio persona dal nome
+
 ## 0.181.0 — 23 ottobre 2026
 
 ### Novità
