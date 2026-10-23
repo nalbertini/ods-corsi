@@ -1,0 +1,23 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-23T12:00:00Z" },
+  "title": "Entra con Google: porta d'accesso",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 390, "h": 640, "title": "Oggi · codice via email" },
+    "Proposta.dc.html": { "x": 470, "y": 0, "w": 390, "h": 760, "title": "Proposta · ENTRA CON GOOGLE" },
+    "Messaggi.dc.html": { "x": 940, "y": 0, "w": 390, "h": 900, "title": "Proposta · i messaggi" },
+    "Testata.dc.html": { "x": 0, "y": 1020, "w": 390, "h": 72 },
+    "Titoletto.dc.html": { "x": 470, "y": 1020, "w": 360, "h": 50 },
+    "Campo.dc.html": { "x": 910, "y": 1020, "w": 360, "h": 90 },
+    "Bottone.dc.html": { "x": 1350, "y": 1020, "w": 260, "h": 80 }
+  },
+  "order": ["Main.dc.html", "Proposta.dc.html", "Messaggi.dc.html", "Testata.dc.html", "Titoletto.dc.html", "Campo.dc.html", "Bottone.dc.html"],
+  "notes": {
+    "t1": { "x": 0, "y": -260, "text": "La porta degli iscritti", "kind": "title1", "maxW": 1330 },
+    "n1": { "x": 1370, "y": 0, "w": 300, "text": "Dalla Home dell'iPhone il pulsante Google non compare: Google si apre nel browser e può non rientrare nell'app. Chi la usa così entra col codice.", "fill": "yellow" },
+    "n2": { "x": 1370, "y": 260, "w": 300, "text": "Il personale non ha il pulsante: entra con email o nome utente e password, come oggi.", "fill": "blue" }
+  },
+  "designSystems": []
+}
