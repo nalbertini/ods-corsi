@@ -7,6 +7,7 @@ import { indirizzo, INDIRIZZI } from './aree'
 import { areaDelPercorso } from './percorso'
 import { emailDellaSala, smettiTablet } from './tablet'
 import { areeDi, segniDi, type AreaDiAccount } from './ruoli'
+import { entraConGoogle, esitoRitornoGoogle, GOOGLE_ANNULLATO, GOOGLE_NON_RIUSCITO, urlPulito } from './accessoIscritto'
 import { sessione, svuotaBozze } from './segnalazioni'
 import { svuotaTutte } from './coda'
 import { uscita } from './uscita'
@@ -237,6 +238,45 @@ export async function accedi(utente: string, password: string, restaQui = false)
   if (a.area === areaDelPercorso()) return { persona: a.persona }
   passaA(a.area)
   return new Promise<never>(() => {})
+}
+
+// Coi testi degli iscritti (accessoIscritto.ts) il personale cercherebbe un codice via email che per lui non c'è.
+export const GOOGLE_ANNULLATO_PERSONALE = 'Accesso con Google annullato: riprova, o entra con email e password'
+export const GOOGLE_NON_RIUSCITO_PERSONALE = 'Google non ha risposto: riprova, o entra con email e password'
+export const NON_DEL_PERSONALE =
+  'Questo account Google non è di un istruttore né della segreteria: chiedi alla segreteria di aggiungere la tua email, o entra con email e password'
+
+/** Parte per Google: la pagina cambia, e al ritorno `account()` trova la sessione e porta nell'area. */
+export async function accediConGoogle(indirizzo: string, cliente?: () => Promise<SupabaseClient>): Promise<void> {
+  try {
+    await entraConGoogle(indirizzo, cliente)
+  } catch (e) {
+    throw new Error(e instanceof Error && e.message !== GOOGLE_NON_RIUSCITO ? e.message : GOOGLE_NON_RIUSCITO_PERSONALE)
+  }
+}
+
+/**
+ * Quando la porta si vede dopo un ritorno da Google, nessun account del
+ * personale ha preso la sessione: o Google ha detto di no, o l'email non è di
+ * nessuno. Chi entra con un Google qualunque non resta collegato in silenzio:
+ * la sessione si chiude e si dice perché. `null` se non si tornava da Google.
+ */
+export async function dopoGoogleSenzaAccount(
+  indirizzo: string,
+  cliente: () => Promise<SupabaseClient> = db,
+): Promise<string | null> {
+  const r = esitoRitornoGoogle(indirizzo)
+  if (r.tipo === 'errore') return r.messaggio === GOOGLE_ANNULLATO ? GOOGLE_ANNULLATO_PERSONALE : GOOGLE_NON_RIUSCITO_PERSONALE
+  if (urlPulito(indirizzo) === indirizzo) return null
+  const c = await cliente().catch(() => null)
+  const { data } = c ? await c.auth.getSession() : { data: null }
+  if (!c || !data?.session) return GOOGLE_NON_RIUSCITO_PERSONALE
+  // La porta si vede anche se `account()` non ha potuto rispondere (rete, server): solo un «no» vero chiude la sessione.
+  const a = await accountDi(c, data.session.user.id)
+  if (a === undefined) return GOOGLE_NON_RIUSCITO_PERSONALE
+  if (a) return null
+  await c.auth.signOut()
+  return NON_DEL_PERSONALE
 }
 
 /**

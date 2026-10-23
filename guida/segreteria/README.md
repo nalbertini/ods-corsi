@@ -14,6 +14,7 @@ che entra da questo indirizzo finisce nel calendario degli istruttori.
    `…/segreteria/`).
 2. Email e password, **ENTRA**: con l'account della segreteria si arriva
    qui. Si resta collegati finché non si preme **Esci**, in fondo al menu.
+   In alternativa **ENTRA CON GOOGLE**, se la palestra ha la tua email.
 
 Chi è della segreteria e insegna anche, dopo **ENTRA**, sceglie dove andare:
 **SEGRETERIA** o **ISTRUTTORI**. Dalla segreteria si va al proprio calendario
