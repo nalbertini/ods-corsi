@@ -116,6 +116,7 @@
     "prova:fogli-moduli": "node scripts/prova-fogli-moduli.mjs",
     "prova:testi": "node scripts/prova-testi.mjs",
     "prova:etichette-lezione": "node scripts/prova-etichette-lezione.mjs",
+    "prova:area-tab": "node scripts/prova-area-tab.mjs",
     "prova:scheda": "node scripts/prova-scheda.mjs",
     "prova:scheda-persona": "node scripts/prova-scheda-persona.mjs",
     "prova:schede-iscritto": "node scripts/prova-schede-iscritto.mjs",

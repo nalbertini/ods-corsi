@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react'
 import {
   avvisi,
   contoPresenze,
@@ -23,6 +23,7 @@ import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } 
 import { AccessoIscritto } from './AccessoIscritto'
 import { esci } from '../lib/accesso'
 import { INDIRIZZI } from '../lib/aree'
+import { TAB_INIZIALE, etichettaTab, tabAperto, idPannelloTab, idTab, segnoInRegola, tabArea, tastoTabArea, type IdTabArea } from '../lib/areaTab'
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
 
 /**
@@ -129,6 +130,8 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
   const [di, setDi] = useState(personaId)
   const [modulo, setModulo] = useState<PerIlNucleo | null>(null)
   const [giro, setGiro] = useState(0)
+  // Qui e non in `Pagina`: cambiando persona o tornando dal modulo si resta sul tab in cui si era.
+  const [tab, setTab] = useState<IdTabArea>(TAB_INIZIALE)
 
   useEffect(() => {
     let vivo = true
@@ -187,8 +190,15 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
           ))}
         </div>
       )}
-      <Pagina key={di} dati={dati} personaId={di} tua={di === personaId} />
-      {titolare && <Nucleo io={personaId} membri={nucleo} aggiunte={aggiunte} ricevute={ricevute} onApri={apri} onAggiungi={() => void aggiungi()} />}
+      <Pagina
+        key={di}
+        dati={dati}
+        personaId={di}
+        tua={di === personaId}
+        tab={tab}
+        onTab={setTab}
+        nucleo={titolare ? <Nucleo io={personaId} membri={nucleo} aggiunte={aggiunte} ricevute={ricevute} onApri={apri} onAggiungi={() => void aggiungi()} /> : null}
+      />
       <div style={{ paddingBottom: 20 }}>
         <Segreteria />
       </div>
@@ -197,7 +207,22 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
 }
 
 /** La pagina di un iscritto: la propria, o (`tua` falso) di una persona del nucleo. */
-function Pagina({ dati, personaId, tua }: { dati: DatiIscritto; personaId: string; tua: boolean }) {
+function Pagina({
+  dati,
+  personaId,
+  tua,
+  tab: scelto,
+  onTab,
+  nucleo,
+}: {
+  dati: DatiIscritto
+  personaId: string
+  tua: boolean
+  tab: IdTabArea
+  onTab: (t: IdTabArea) => void
+  /** Il nucleo, solo per il titolare: c'è il tab NUCLEO se c'è questo. */
+  nucleo: ReactNode
+}) {
   const [scheda, setScheda] = useState<SchedaIscritto | null | undefined>(undefined)
   const [lezioni, setLezioni] = useState<MiaLezione[]>([])
   const [presenze, setPresenze] = useState<MiaPresenza[]>([])
@@ -226,13 +251,73 @@ function Pagina({ dati, personaId, tua }: { dati: DatiIscritto; personaId: strin
   if (scheda === undefined) return <p className="pad" style={{ color: 'var(--dim)' }}>Un attimo…</p>
   if (!scheda) return <p className="pad">Questa persona non è più fra gli iscritti.</p>
 
+  const ordine = tabArea(nucleo !== null)
+  const tab = tabAperto(ordine, scelto)
+  const oggi = chiaveGiorno(new Date())
+  const segno = segnoInRegola(statoCertificato(scheda, oggi), pagamentoDi(scheda, oggi).come)
+  const tastiera = (e: KeyboardEvent) => {
+    const dove = tastoTabArea(ordine, tab, e)
+    if (!dove) return
+    e.preventDefault()
+    onTab(dove)
+    // Il fuoco segue il tab: la prossima Tab entra nel suo pannello.
+    document.getElementById(idTab(dove))?.focus()
+  }
+  // I tab lasciati si nascondono, non si smontano: le presenze aperte restano come stavano.
+  const pannello = (id: IdTabArea, corpo: ReactNode) => (
+    <div role="tabpanel" id={idPannelloTab(id)} aria-labelledby={idTab(id)} hidden={tab !== id} className="stack">
+      {corpo}
+    </div>
+  )
+
   return (
     <div className="stack">
       <Saluto scheda={scheda} tua={tua} />
-      <Prossime lezioni={lezioni} />
-      <Presenze dati={dati} personaId={personaId} presenze={presenze} tua={tua} />
-      <InRegola scheda={scheda} />
-      <Ricevute ricevute={ricevute} />
+      <div className="pad">
+        <div className="schede sg-schede sg-schede-scheda" role="tablist" aria-label="Parti della pagina" onKeyDown={tastiera}>
+          {ordine.map((id) => {
+            const s = id === 'regola' ? segno : null
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                id={idTab(id)}
+                aria-controls={idPannelloTab(id)}
+                aria-selected={tab === id}
+                // Il segno a voce: lo span dentro è aria-hidden.
+                aria-label={s ? `${etichettaTab(id)}, ${s.parola.toLowerCase()}` : etichettaTab(id)}
+                tabIndex={tab === id ? 0 : -1}
+                className="scheda"
+                data-on={tab === id}
+                onClick={() => onTab(id)}
+              >
+                <span aria-hidden="true">{etichettaTab(id)}</span>
+                {s && (
+                  <span aria-hidden="true" className="sg-scheda-segno" data-tono={s.tono}>
+                    ● {s.parola}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+      {pannello(
+        'lezioni',
+        <>
+          <Prossime lezioni={lezioni} />
+          <Presenze dati={dati} personaId={personaId} presenze={presenze} tua={tua} />
+        </>,
+      )}
+      {pannello(
+        'regola',
+        <>
+          <InRegola scheda={scheda} />
+          <Ricevute ricevute={ricevute} />
+        </>,
+      )}
+      {nucleo !== null && pannello('nucleo', nucleo)}
     </div>
   )
 }

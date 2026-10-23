@@ -1446,7 +1446,7 @@ a.btn { text-decoration: none; }
 .mia-lezione-cosa[data-tono='fatto'] { color: var(--verde-testo); }
 /* Il nucleo familiare: di chi si guarda la pagina, e le persone del nucleo. */
 .mio-nucleo-scelta { padding-top: 4px; padding-bottom: 6px; }
-.mia-chip-tasto { cursor: pointer; color: var(--dim); min-height: 36px; padding: 6px 12px; border-left-width: 2px; }
+.mia-chip-tasto { cursor: pointer; color: var(--dim); min-height: 44px; padding: 6px 12px; border-left-width: 2px; }
 .mia-chip-tasto[aria-pressed='true'] { color: var(--text); border-color: var(--text); background: var(--surface-2); }
 .mio-membro { gap: 12px; padding: 10px 14px; width: 100%; align-items: center; cursor: pointer; }
 .mio-membro[data-attesa] { cursor: default; border-style: dashed; }
