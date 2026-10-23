@@ -6,6 +6,9 @@ import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
 import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato, siElimina } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
+import { attesoRicevuta } from '../../lib/passiIscrizione'
+import { PAGAMENTO } from '../../lib/iscrizione'
+import { euroBreve } from '../../lib/ricevute'
 import { nomeConosciuto, nomeProvenienza } from '../../lib/provenienza'
 import { daRestituire, segnoRichiesta, type PagamentoSatispay } from '../../lib/satispay'
 import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
@@ -128,6 +131,7 @@ export function Richieste({
       d={d}
       r={r}
       x={richiesta}
+      insieme={richiesta.invio ? (elenco.dato ?? []).filter((y) => y.invio === richiesta.invio) : [richiesta]}
       satispay={pagamentoDi(richiesta.id)}
       nomi={nomi}
       titoli={titoli.dato ?? {}}
@@ -258,6 +262,7 @@ function Scheda({
   d,
   r,
   x,
+  insieme,
   satispay,
   nomi,
   titoli,
@@ -273,6 +278,8 @@ function Scheda({
   d: DatiSegreteria
   r: DatiRichieste
   x: Richiesta
+  /** Le richieste mandate insieme dal modulo (anche questa): la ricevuta è una per tutte. */
+  insieme: Richiesta[]
   /** Il pagamento Satispay dal modulo, se c'è. */
   satispay?: PagamentoSatispay
   nomi: Map<string, string>
@@ -294,13 +301,15 @@ function Scheda({
   const file = useCarica(() => r.file(x.id), [r, x.id])
   const segno = segnoRichiesta(satispay, x.stato)
   const restituire = daRestituire(satispay)
-  const voci = useListino()?.listino.corsi
+  const letto = useListino()
+  const voci = letto?.listino.corsi
   const minore = minorenne(x.natoIl)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
   // Il documento, stampato, si cancella: non manca, è su carta.
   const mancanti = FILE.filter((f) => f.obbligatorio && !DA_STAMPARE.includes(f.tipo) && !arrivati.has(f.tipo))
   const documenti = DA_STAMPARE.filter((t) => arrivati.has(t))
   // Il certificato si guarda prima di accogliere, con la data da scrivere: poi passa alla scheda.
+  const atteso = arrivati.has('ricevuta') ? attesoRicevuta(insieme, [...nomi].map(([id, nome]) => ({ id, nome })), letto?.listino, chiaveGiorno(new Date(x.creataIl))) : undefined
   const certificato = x.stato === 'nuova' ? arrivati.get('certificato') : undefined
   const [scadeCert, setScadeCert] = useState('')
   useBozza(scadeCert !== '', `${x.nome} ${x.cognome}`)
@@ -438,6 +447,14 @@ function Scheda({
           {FILE.filter((f) => arrivati.has(f.tipo) && !DA_STAMPARE.includes(f.tipo) && !(certificato && f.tipo === 'certificato')).map((f) => (
             <Anteprima key={f.tipo} f={arrivati.get(f.tipo)!} />
           ))}
+          {atteso && (
+            <span className="sg-sotto">
+              Confronta con la ricevuta: {euroBreve(atteso.totale)}
+              {insieme.length > 1 && ` per le ${insieme.length} richieste mandate insieme`}, a {PAGAMENTO.intestatario}, IBAN {PAGAMENTO.iban}
+              {atteso.causale && `, causale «${atteso.causale}»`}.
+              {atteso.senzaPrezzo.length > 0 && ` Senza prezzo nel listino: ${atteso.senzaPrezzo.join(', ')}: la cifra non è completa.`}
+            </span>
+          )}
           {certificato && (
             <div className="stack" style={{ gap: 12, padding: '18px 20px', background: 'var(--surface)', border: '2px solid var(--line)', borderLeft: '4px solid var(--giallo)' }}>
               <span className="sg-etichetta">IL CERTIFICATO ARRIVATO DAL MODULO</span>
