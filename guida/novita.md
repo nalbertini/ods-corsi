@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.182.1 — 23 ottobre 2026
+
+### Modificato
+
+- Area iscritti: i tab DOCUMENTI e FAMIGLIA, la barra sempre in fondo, GUIDA ed ESCI solo in CONTATTI
+
 ## 0.182.0 — 23 ottobre 2026
 
 ### Novità
