@@ -744,7 +744,7 @@ function Flusso({
           </span>
           {frase && <span className="esito-testo">{frase}</span>}
           {riassunto.pagamento === 'ricevuta' ? (
-            <Dettaglio>La segreteria controlla il pagamento.</Dettaglio>
+            <Dettaglio>{P.RICEVUTA_DA_CONFERMARE}</Dettaglio>
           ) : (
             <>
               <Titoletto dentro>DA PAGARE</Titoletto>

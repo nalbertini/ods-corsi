@@ -39,7 +39,7 @@
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"corso":{"editor":"text","default":"Lotta 2"},"quando":{"editor":"text","default":"oggi, 17:00–18:00"},"attivita":{"editor":"text","default":""},"sotto":{"editor":"text","default":"3 segnati da sé sul tablet · tocca un nome per cambiarlo"},"presenti":{"editor":"text","default":"8"},"iscritti":{"editor":"text","default":"14"},"prove":{"editor":"text","default":"0"},"tuttiPresenti":{"editor":"boolean","default":true},"altriAssenti":{"editor":"boolean","default":true},"proveAperte":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":808,"height":170}}'>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Lotta 2"},"quando":{"editor":"text","default":"oggi, 17:00–18:00"},"attivita":{"editor":"text","default":""},"sotto":{"editor":"text","default":"3 segnati da sé sul tablet · tocca un nome per cambiarlo"},"presenti":{"editor":"text","default":"8"},"iscritti":{"editor":"text","default":"14"},"prove":{"editor":"text","default":"0"},"tuttiPresenti":{"editor":"boolean","default":true},"altriAssenti":{"editor":"boolean","default":true},"proveAperte":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":808,"height":170}}'>
 // Riproduzione 1:1 della testa dell'appello dell'area istruttore del tablet: .tb-testa-appello e .tb-azioni-appello
 // (TabletIstruttore.tsx, righe 335-376; src/styles.css, righe 1119-1126). Riquadro `surface` con bordo `line`: a sinistra il
 // corso (26px obliquo) e sotto quando, l'etichetta dell'attivita' e «N segnati da se' sul tablet · tocca un nome per cambiarlo»;
@@ -50,13 +50,14 @@
 const T = {
   scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', gialloTesto: '#f4c31b' },
   chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', gialloTesto: '#8f6a00' },
+  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', gialloTesto: '#8f6a00' },
 };
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     return {
-      c: T[p.tema] || T.scuro, tema: p.tema === 'chiaro' ? 'chiaro' : 'scuro',
+      c: T[p.tema] || T.sito, tema: p.tema === 'chiaro' || p.tema === 'scuro' ? p.tema : 'sito',
       corso: p.corso ?? 'Lotta 2', quando: p.quando ?? 'oggi, 17:00–18:00',
       attivita: p.attivita ?? '', haAttivita: !!p.attivita,
       sotto: p.sotto ?? '3 segnati da sé sul tablet · tocca un nome per cambiarlo',

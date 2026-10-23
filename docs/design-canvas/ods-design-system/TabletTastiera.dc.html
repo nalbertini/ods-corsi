@@ -30,7 +30,7 @@
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"cifre":{"editor":"text","default":"2"},"guaio":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":354,"height":490}}'>
+<script data-dc-script data-props='{"cifre":{"editor":"text","default":"2"},"guaio":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":354,"height":490}}'>
 // Riproduzione 1:1 del PIN del tablet: i quattro pallini (.tb-pallino) e la tastiera (.tb-tastiera, .tb-tasto) di
 // src/components/tablet/TabletPin.tsx (righe 78-125) con src/styles.css (righe 1078-1087). Tasti 110x96 su tre colonne,
 // cifre da 38px; CANCELLA da 17px (data-piccolo); la cella sotto l'8 a sinistra dello 0 e' vuota.
@@ -41,12 +41,13 @@
 const T = {
   scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0' },
   chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d' },
 };
 const TASTI = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'CANCELLA', '0', ''];
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T[p.tema] || T.sito;
     const n = Math.max(0, Math.min(4, parseInt(p.cifre ?? '2', 10) || 0));
     const guaio = p.guaio ?? '';
     return {

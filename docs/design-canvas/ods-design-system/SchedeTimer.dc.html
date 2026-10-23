@@ -22,7 +22,7 @@
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"schede":{"editor":"text","default":"DA FARE|I MIEI"},"conti":{"editor":"text","default":""},"attiva":{"editor":"text","default":"DA FARE"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":56}}'>
+<script data-dc-script data-props='{"schede":{"editor":"text","default":"DA FARE|I MIEI"},"conti":{"editor":"text","default":""},"attiva":{"editor":"text","default":"DA FARE"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":350,"height":56}}'>
 // PROPOSTA «Navigazione A» (non ancora nell'app): le due schede in cima alla pagina TIMER, DA FARE e I MIEI. Stessa forma delle
 // schede OGGI / PER CORSO del tablet (TabletSchede: .tb-scheda, src/styles.css righe 1089-1094): griglia a colonne uguali, gap 6px,
 // bordo 2px `line` e scritta `sec` in Saira Condensed 18px 700 0.14em. Alte 52px (tocco minimo 44px, un po' meno delle 60 del tablet
@@ -34,12 +34,13 @@
 const T = {
   scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88' },
   chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561' },
+  sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f' },
 };
 const lista = (v) => String(v ?? '').split('|').map((s) => s.trim());
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T[p.tema] || T.sito;
     const nomi = lista(p.schede ?? 'DA FARE|I MIEI').filter(Boolean);
     const conti = lista(p.conti);
     const schede = nomi.map((nome, i) => {

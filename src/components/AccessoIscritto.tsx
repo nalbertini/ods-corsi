@@ -1,6 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { accessoDalLink, codicePulito, emailPulita, entraConCodice, indirizzoSenzaAccesso, mandaCodice } from '../lib/accessoIscritto'
+import { accessoDalLink, codicePulito, emailPulita, entraConCodice, entraConGoogle, GOOGLE_NON_RIUSCITO, googleDisponibile, indirizzoSenzaAccesso, mandaCodice, NON_ISCRITTO } from '../lib/accessoIscritto'
 import type { IscrittoDiProva } from '../lib/iscritto'
+import { chiama } from '../lib/sito'
+
+// Aperta dalla Home dell'iPhone (non dal browser): lì Google non rientra nell'app, si entra col codice.
+const daHome = window.matchMedia('(display-mode: standalone)').matches
 
 /**
  * Come entra un iscritto: scrive l'email, riceve una mail con un link e un
@@ -8,12 +12,13 @@ import type { IscrittoDiProva } from '../lib/iscritto'
  * dispositivo, link scaduto) scrive il codice. Niente password da ricordare.
  * La logica sta in `accessoIscritto.ts`.
  */
-export function AccessoIscritto({ onEntrato }: { onEntrato: (io: IscrittoDiProva) => void }) {
+export function AccessoIscritto({ onEntrato, avviso }: { onEntrato: (io: IscrittoDiProva) => void; avviso?: string | null }) {
   const [email, setEmail] = useState('')
   const [codice, setCodice] = useState('')
   // Finché non è partito il codice si chiede l'email; dopo, il codice.
   const [inviata, setInviata] = useState<string | null>(null)
-  const [errore, setErrore] = useState<string | null>(null)
+  // `avviso`: com'è finito il ritorno da Google, se non è andato bene.
+  const [errore, setErrore] = useState<string | null>(avviso ?? null)
   const [aspetta, setAspetta] = useState(false)
 
   // Il codice vale una volta: togliendolo subito dalla barra, il secondo giro dell'effetto (doppio mount, onEntrato nuovo) non lo trova.
@@ -44,6 +49,17 @@ export function AccessoIscritto({ onEntrato }: { onEntrato: (io: IscrittoDiProva
     } catch (x) {
       setErrore(x instanceof Error ? x.message : 'Il codice non è partito: riprova fra poco')
     } finally {
+      setAspetta(false)
+    }
+  }
+
+  const conGoogle = async () => {
+    setAspetta(true)
+    setErrore(null)
+    try {
+      await entraConGoogle(window.location.href)
+    } catch (x) {
+      setErrore(x instanceof Error ? x.message : GOOGLE_NON_RIUSCITO)
       setAspetta(false)
     }
   }
@@ -100,6 +116,14 @@ export function AccessoIscritto({ onEntrato }: { onEntrato: (io: IscrittoDiProva
         </form>
       ) : (
         <form className="pad stack" style={{ gap: 12, paddingBottom: 16 }} onSubmit={(e) => void manda(e)}>
+          {googleDisponibile(daHome) && (
+            <>
+              <button type="button" className="btn btn-go" disabled={aspetta} onClick={() => void conGoogle()}>
+                {aspetta ? 'UN ATTIMO…' : 'ENTRA CON GOOGLE'}
+              </button>
+              <span className="modulo-etichetta" style={{ paddingTop: 8 }}>Oppure ricevi un link via email</span>
+            </>
+          )}
           <span className="passo-dettaglio" style={{ fontSize: 15 }}>
             Scrivi l’email che hai dato in segreteria: ti mandiamo una mail con un link per entrare, senza password.
           </span>
@@ -119,10 +143,16 @@ export function AccessoIscritto({ onEntrato }: { onEntrato: (io: IscrittoDiProva
               required
             />
           </label>
-          <button type="submit" className="btn btn-go" disabled={aspetta}>
+          <button type="submit" className={googleDisponibile(daHome) ? 'btn btn-ghost' : 'btn btn-go'} disabled={aspetta}>
             {aspetta ? 'UN ATTIMO…' : 'MANDAMI IL LINK'}
           </button>
           <Errore testo={errore} />
+          {errore === NON_ISCRITTO && <a className="btn btn-ghost" href={chiama}>CHIAMA LA SEGRETERIA</a>}
+          {googleDisponibile(daHome) && (
+            <span className="passo-dettaglio" style={{ fontSize: 13, paddingTop: 8 }}>
+              Con Google leggiamo solo la tua email. Google sa soltanto che hai aperto l’app.
+            </span>
+          )}
         </form>
       )}
     </div>

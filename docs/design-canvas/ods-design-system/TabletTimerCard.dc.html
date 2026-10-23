@@ -31,7 +31,7 @@
   </span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tipo":{"editor":"text","default":"INTERVALLI"},"durata":{"editor":"text","default":"18:30"},"nome":{"editor":"text","default":"Tecnica a coppie"},"riassunto":{"editor":"text","default":"8 round · 30″ lavoro · 15″ recupero"},"etichetta":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":380,"height":110}}'>
+<script data-dc-script data-props='{"tipo":{"editor":"text","default":"INTERVALLI"},"durata":{"editor":"text","default":"18:30"},"nome":{"editor":"text","default":"Tecnica a coppie"},"riassunto":{"editor":"text","default":"8 round · 30″ lavoro · 15″ recupero"},"etichetta":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":380,"height":110}}'>
 // Riproduzione 1:1 della scheda di un timer nella lista del timer: .card, .wcard, .badge-tipo, .wcard-name, .play-btn di
 // timer/src/styles.css (righe 189-197, 252-270) e la `card` di HomeScreen.tsx (timer/src/components). Nella scheda TIMER del tablet
 // il timer vero e' dentro la sala: la scheda e' la stessa del telefono, con l'unica azione AVVIA (▶ rosso da 52px): dal tablet i timer
@@ -42,15 +42,16 @@
 const T = {
   scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#b8b8b2', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
   chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#4a4a46', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+  sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#14709f', suColore: '#0d2a3d', suRosso: '#ffffff', tasto: '#0d2a3d', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
 };
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
-    const FAINT = { scuro: '#5a5a56', chiaro: '#a8a8a3' };
+    const c = T[p.tema] || T.sito;
+    const FAINT = { scuro: '#5a5a56', chiaro: '#a8a8a3', sito: '#46606f' };
     return {
-      c: { ...c, faint: FAINT[p.tema] || FAINT.scuro },
+      c: { ...c, faint: FAINT[p.tema] || FAINT.sito },
       tipo: p.tipo ?? 'INTERVALLI',
       durata: p.durata ?? '18:30',
       nome: String(p.nome ?? 'Tecnica a coppie').toUpperCase(),

@@ -97,8 +97,8 @@ const ambiente = ({ salvato = null, luce: chiaro = false, look = false } = {}) =
 }
 
 // --- 1. lookDellArea ---------------------------------------------------------
-// Le aree col look del sito: segreteria, amministrazione, istruttori, iscritti, la porta (`scelta`), la guida e il consenso a Claude (`collega`).
-const LOOK_AREE = ['segreteria', 'amministrazione', 'istruttori', 'iscritti', 'scelta', 'guida', 'collega']
+// Le aree col look del sito: il tablet di sala (col timer dentro), segreteria, amministrazione, istruttori, iscritti, la porta (`scelta`), la guida e il consenso a Claude (`collega`).
+const LOOK_AREE = ['segreteria', 'amministrazione', 'istruttori', 'iscritti', 'sala', 'scelta', 'guida', 'collega']
 const AREE = ['segreteria', 'amministrazione', 'iscrizioni', 'iscritti', 'istruttori', 'sala', 'guida', 'collega', 'scelta']
 console.log('\nL\'aspetto per area (src/lib/aspettoSegreteria.ts)')
 let asp
@@ -119,10 +119,10 @@ for (const a of AREE) {
 {
   const e = ambiente()
   vedi(() => asp.applicaLook('segreteria', e.doc))
-  vedi(() => asp.applicaLook('sala', e.doc))
-  ok('da segreteria a sala (hashchange): si spegne', e.look(), null)
+  vedi(() => asp.applicaLook('iscrizioni', e.doc))
+  ok('da segreteria a iscrizioni (hashchange): si spegne', e.look(), null)
   vedi(() => asp.applicaLook('amministrazione', e.doc))
-  ok('da sala ad amministrazione: si riaccende', e.look(), 'sito')
+  ok('da iscrizioni ad amministrazione: si riaccende', e.look(), 'sito')
   vedi(() => asp.applicaLook('amministrazione', e.doc))
   ok('due volte la stessa area: resta acceso', e.look(), 'sito')
 }
@@ -132,6 +132,7 @@ for (const a of AREE) {
   ok('la Testata di ISCRITTI è senzaTema', /<Testata luogo="ISCRITTI"[^>]*\bsenzaTema\b/.test(app), true)
   // Lo stesso per la porta, con e senza accesso: il look forza il chiaro anche lì.
   ok('la Testata della porta (ACCESSO) è senzaTema', /<Testata luogo="ACCESSO"[^>]*\bsenzaTema\b/.test(app), true)
+  // Il timer del tablet di sala ha il tema sito come il resto della sala: senza la prop resterebbe col tema scelto.
   ok('la Testata della GUIDA è senzaTema', /<Testata luogo="GUIDA"[^>]*\bsenzaTema\b/.test(app), true)
   ok('la Testata di COLLEGA (CONTABILITÀ) è senzaTema', /<Testata luogo="CONTABILITÀ"[^>]*\bsenzaTema\b/.test(app), true)
   ok('la Testata di tutte le aree (CORSI) è senzaTema', /<Testata luogo="CORSI"[^>]*\bsenzaTema\b/.test(app), true)

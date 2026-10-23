@@ -91,9 +91,136 @@ ok('codice sbagliato o scaduto', m.perchéNonVale({ message: 'Token has expired 
 ok('troppi tentativi', m.perchéNonVale({ status: 429 }), 'Troppi tentativi: aspetta un minuto e riprova')
 ok('entra un iscritto', m.esitoAccesso({ id: 'a', nome: 'L', cognome: 'R', ruolo: 'iscritto', attiva: true }), { io: { id: 'a', nome: 'L', cognome: 'R' } })
 ok('email di nessuna scheda: messaggio chiaro e sessione chiusa', m.esitoAccesso(null), { errore: m.NON_ISCRITTO, chiudi: true })
-ok('il messaggio dice di usare l\'email data in segreteria', m.NON_ISCRITTO.startsWith('Questa email non risulta tra gli iscritti: usa quella data in segreteria'), true)
+ok('il messaggio dice di usare l\'email data alla palestra', m.NON_ISCRITTO, 'Non troviamo questa email tra gli iscritti. Prova con quella che hai dato alla palestra, oppure chiama la segreteria.')
+ok('il personale è mandato all\'accesso dello staff', m.E_PERSONALE, 'Questa email è del personale della palestra. Usa l’accesso dello staff.')
 ok('email del personale: lo dice e non lo disconnette', m.esitoAccesso({ id: 'a', nome: 'L', cognome: 'R', ruolo: 'segreteria', attiva: true }), { errore: m.E_PERSONALE, chiudi: false })
 ok('scheda disattivata: come nessuna scheda', m.esitoAccesso({ id: 'a', nome: 'L', cognome: 'R', ruolo: 'iscritto', attiva: false }), { errore: m.NON_ISCRITTO, chiudi: true })
+
+console.log('\nEntra con Google')
+ok('i testi di Google', [m.GOOGLE_ANNULLATO, m.GOOGLE_NON_RIUSCITO, m.NO_RETE], [
+  'Accesso annullato. Puoi riprovare o usare il codice via email.',
+  'Qualcosa non ha funzionato. Riprova o usa il codice via email.',
+  'Il server non risponde: c’è rete?',
+])
+const base = 'https://app.officinedellosport.it/iscritti/'
+const ritorno = (u) => m.esitoRitornoGoogle(u)
+ok('ritorno annullato (query)', ritorno(base + '?error=access_denied'), { tipo: 'errore', messaggio: m.GOOGLE_ANNULLATO })
+ok('ritorno annullato (hash)', ritorno(base + '#error=access_denied&error_code=access_denied'), { tipo: 'errore', messaggio: m.GOOGLE_ANNULLATO })
+ok('ritorno annullato (solo error_code)', ritorno(base + '?error_code=access_denied'), { tipo: 'errore', messaggio: m.GOOGLE_ANNULLATO })
+ok('ritorno con altro errore', ritorno(base + '?error=server_error&error_description=boom+0xdead'), { tipo: 'errore', messaggio: m.GOOGLE_NON_RIUSCITO })
+ok('ritorno con la sola error_description', ritorno(base + '#error_description=boom'), { tipo: 'errore', messaggio: m.GOOGLE_NON_RIUSCITO })
+ok('ritorno con ?code: nessun errore', ritorno(base + '?code=abc'), { tipo: 'nessuno' })
+ok('ritorno con #access_token: nessun errore', ritorno(base + '#access_token=a&refresh_token=b'), { tipo: 'nessuno' })
+ok('nessun ritorno', ritorno(base), { tipo: 'nessuno' })
+ok('url pulito: via code, state, error e hash di auth', m.urlPulito(base + '?code=1&state=2&error=e&error_code=c&error_description=d&x=1#access_token=a'), base + '?x=1')
+ok('url pulito: via hash di auth', m.urlPulito(base + '?x=1#access_token=a'), base + '?x=1')
+ok('url pulito: via hash d\'errore', m.urlPulito(base + '#error=access_denied'), base)
+ok('url pulito: un hash che non è di auth resta', m.urlPulito(base + '#aree'), base + '#aree')
+ok('url pulito: altri parametri e percorso intatti', m.urlPulito(base + '?a=1&b=2'), base + '?a=1&b=2')
+ok('Google non c\'è dalla Home dell\'iPhone', m.googleDisponibile(true), false)
+ok('Google c\'è nel browser', m.googleDisponibile(false), true)
+ok('opzioni di Google: si torna alla stessa pagina, pulita', m.opzioniGoogle(base + '?code=1&x=1'), { provider: 'google', options: { redirectTo: base + '?x=1' } })
+ok('Google non parte: rete', m.perchéNonParteGoogle({ message: 'TypeError: Failed to fetch' }), m.NO_RETE)
+ok('Google non parte: troppe richieste', m.perchéNonParteGoogle({ status: 429 }), 'Troppe richieste: aspetta un minuto e riprova')
+ok('Google non parte: provider spento (code)', m.perchéNonParteGoogle({ code: 'provider_disabled' }), m.GOOGLE_NON_RIUSCITO)
+ok('Google non parte: validation_failed', m.perchéNonParteGoogle({ code: 'validation_failed' }), m.GOOGLE_NON_RIUSCITO)
+ok('Google non parte: provider is not enabled', m.perchéNonParteGoogle({ message: 'provider is not enabled' }), m.GOOGLE_NON_RIUSCITO)
+ok('Google non parte: altro, niente testo grezzo', m.perchéNonParteGoogle({ message: 'boom 0xdead' }), m.GOOGLE_NON_RIUSCITO)
+
+const iscritto = { id: 'a', nome: 'L', cognome: 'R', ruolo: 'iscritto', attiva: true }
+ok('Google torna con una riga di iscritto: entra', m.esitoAccesso(iscritto), { io: { id: 'a', nome: 'L', cognome: 'R' } })
+ok('Google torna senza riga in persone: non iscritto, sessione chiusa', m.esitoAccesso(null), { errore: m.NON_ISCRITTO, chiudi: true })
+ok('Google torna con l\'email del personale: non si chiude', m.esitoAccesso({ ...iscritto, ruolo: 'admin' }), { errore: m.E_PERSONALE, chiudi: false })
+
+// Un finto client: conta rpc e signOut, e risponde a from('persone').select().eq().maybeSingle().
+const finto = (riga, errore = null, { rpcErrore = null, sessione = { user: { id: 'u1' } }, oauthErrore = null } = {}) => {
+  const chiamate = { rpc: [], signOut: 0 }
+  const oauth = []
+  const c = {
+    rpc: async (nome) => { chiamate.rpc.push(nome); return { data: null, error: rpcErrore } },
+    auth: {
+      signOut: async () => { chiamate.signOut++; return { error: null } },
+      getSession: async () => ({ data: { session: sessione }, error: null }),
+      signInWithOAuth: async (o) => { oauth.push(o); return { data: {}, error: oauthErrore } },
+    },
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: errore ? null : riga, error: errore }) }) }) }),
+  }
+  return { c, chiamate, oauth }
+}
+const entra = async (riga, errore) => {
+  const { c, chiamate } = finto(riga, errore)
+  let esito
+  try { esito = { io: await m.entraDopoGoogle(c, 'u1') } } catch (e) { esito = { errore: e instanceof Error ? e.message : String(e) } }
+  return [esito, chiamate]
+}
+{
+  const [e, ch] = await entra(iscritto)
+  ok('entraDopoGoogle: iscritto entra, collega e non chiude', [e, ch], [{ io: { id: 'a', nome: 'L', cognome: 'R' } }, { rpc: ['collega_utente'], signOut: 0 }])
+}
+{
+  const [e, ch] = await entra(null)
+  ok('entraDopoGoogle: non iscritto, errore e signOut', [e, ch], [{ errore: m.NON_ISCRITTO }, { rpc: ['collega_utente'], signOut: 1 }])
+}
+{
+  const [e, ch] = await entra({ ...iscritto, ruolo: 'segreteria' })
+  ok('entraDopoGoogle: personale, errore e NIENTE signOut', [e, ch], [{ errore: m.E_PERSONALE }, { rpc: ['collega_utente'], signOut: 0 }])
+}
+{
+  const [e, ch] = await entra(null, { code: 'XX000', message: 'boom' })
+  ok('entraDopoGoogle: lettura che fallisce, signOut e errore in italiano', [e, ch], [{ errore: 'Non riesco a leggere i tuoi dati: riprova fra poco' }, { rpc: ['collega_utente'], signOut: 1 }])
+}
+
+{
+  // La chiamata che lega l'account cade (rete): non è «non iscritto», e la sessione resta.
+  const { c, chiamate } = finto(null, null, { rpcErrore: { message: 'Failed to fetch' } })
+  let errore
+  try { await m.entraDopoGoogle(c, 'u1') } catch (e) { errore = e instanceof Error ? e.message : String(e) }
+  ok('entraDopoGoogle: collega_utente che cade, errore di rete e niente signOut', [errore, chiamate.signOut], [m.NO_RETE, 0])
+}
+
+// Il ritorno da Google, con un client finto passato da chi chiama.
+const riprendi = async (indirizzo, riga, errore, opzioni) => {
+  const { c, chiamate } = finto(riga, errore, opzioni)
+  let esito
+  try { esito = await m.riprendiDaGoogle(indirizzo, async () => c) } catch (e) { esito = { lancia: e instanceof Error ? e.message : String(e) } }
+  return [esito, chiamate]
+}
+{
+  const [e, ch] = await riprendi(base, iscritto)
+  ok('riprendiDaGoogle: indirizzo senza ritorno, niente da fare', [e, ch.rpc], [null, []])
+}
+{
+  const [e] = await riprendi(base + '?error=access_denied', iscritto)
+  ok('riprendiDaGoogle: annullato, il messaggio', e, { errore: m.GOOGLE_ANNULLATO })
+}
+{
+  const [e] = await riprendi(base + '#access_token=a', iscritto, null, { sessione: null })
+  ok('riprendiDaGoogle: ritorno ma nessuna sessione, errore', e, { errore: m.GOOGLE_NON_RIUSCITO })
+}
+{
+  const [e, ch] = await riprendi(base + '#access_token=a', iscritto)
+  ok('riprendiDaGoogle: sessione e iscritto, entra e collega', [e, ch.rpc], [{ io: { id: 'a', nome: 'L', cognome: 'R' } }, ['collega_utente']])
+}
+{
+  const [e, ch] = await riprendi(base + '#access_token=a', null)
+  ok('riprendiDaGoogle: sessione ma non iscritto, errore e signOut', [e, ch.signOut], [{ errore: m.NON_ISCRITTO }, 1])
+}
+{
+  const [e] = await riprendi(base + '#access_token=a', null, { code: 'XX000', message: 'boom' })
+  ok('riprendiDaGoogle: lettura che fallisce, errore in italiano', e, { errore: 'Non riesco a leggere i tuoi dati: riprova fra poco' })
+}
+{
+  const { c, oauth } = finto(iscritto, null, { oauthErrore: { message: 'boom 0xdead' } })
+  let errore
+  try { await m.entraConGoogle(base + '?x=1#access_token=a', async () => c) } catch (e) { errore = e instanceof Error ? e.message : String(e) }
+  ok('entraConGoogle: errore, niente testo grezzo', errore, m.GOOGLE_NON_RIUSCITO)
+  ok('entraConGoogle: parte con le opzioni di Google', oauth, [{ provider: 'google', options: { redirectTo: base + '?x=1' } }])
+}
+{
+  let errore
+  try { await m.entraConGoogle(base, async () => { throw new TypeError('anon key undefined') }) } catch (e) { errore = e instanceof Error ? e.message : String(e) }
+  ok('entraConGoogle: il client che non nasce, niente testo grezzo', errore, m.GOOGLE_NON_RIUSCITO)
+}
 
 console.log('\nIl link nella mail')
 ok('email e codice nell\'indirizzo: puliti', m.accessoDalLink('?email=Mario@Esempio.it&codice=123456'), { email: 'mario@esempio.it', codice: '123456' })
