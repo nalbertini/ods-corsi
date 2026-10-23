@@ -135,6 +135,8 @@ for (const a of AREE) {
   ok('la Testata della GUIDA è senzaTema', /<Testata luogo="GUIDA"[^>]*\bsenzaTema\b/.test(app), true)
   ok('la Testata di COLLEGA (CONTABILITÀ) è senzaTema', /<Testata luogo="CONTABILITÀ"[^>]*\bsenzaTema\b/.test(app), true)
   ok('la Testata di tutte le aree (CORSI) è senzaTema', /<Testata luogo="CORSI"[^>]*\bsenzaTema\b/.test(app), true)
+  ok('la Testata delle iscrizioni (ISCRIZIONI/VESTIARIO) è senzaTema', /<Testata luogo=\{vista === 'vestiario' \? 'VESTIARIO' : 'ISCRIZIONI'\}[^>]*\bsenzaTema\b/.test(app), true)
+  ok('tutta l\'area iscrizioni accende l\'aspetto del sito', /function Iscrizioni\(\)[\s\S]*?apriAspettoModulo\(\)/.test(app), true)
   // Il calendario dell'istruttore ha la tinta in alto; l'iscritto la tiene a sinistra, come prima.
   ok('le lezioni dell\'iscritto: la tinta del corso resta il filo a sinistra',
     /:root\[data-look='sito'\] \.mia-lezione \{[^}]*border-top: 0;[^}]*border-left: 6px solid var\(--tinta\)/.test(readFileSync('src/styles.css', 'utf8')), true)
