@@ -29,6 +29,11 @@ sua sala. La porta è la stessa anche se aprite direttamente uno degli
 indirizzi qui sotto: se non è il vostro, dopo l'accesso finite nel vostro.
 Chi è già entrato su quel dispositivo, riaprendo la pagina, ci torna dritto.
 
+Se la palestra ha la vostra email di Google (anche `@gmail.com`), potete
+anche premere **ENTRA CON GOOGLE**, senza password. Se l'email non è tra quelle
+del personale, l'app lo dice e non vi lascia collegati. Dall'app aggiunta alla
+Home dell'iPhone il tasto non c'è: lì si entra con la password.
+
 L'accesso è uno solo per dispositivo: chi è entrato in una parte non entra
 nelle altre, e aprendone l'indirizzo torna nella sua. Per cambiare parte si
 esce (**Esci**), e si torna alla pagina di accesso, dove si entra con l'altro

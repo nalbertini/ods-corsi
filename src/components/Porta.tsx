@@ -2,10 +2,12 @@ import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
 import { descrizioneDelMenu, nomeDellArea } from '../lib/menuSegreteria'
 import {
   accedi,
+  accediConGoogle,
   account,
   accountDalLink,
   altreAree,
   areeDi,
+  dopoGoogleSenzaAccount,
   eUnaSua,
   esci,
   mandaLinkPassword,
@@ -21,6 +23,13 @@ import {
 import type { Arrivo } from '../lib/invito'
 import { indirizzo } from '../lib/aree'
 import { areaDelPercorso } from '../lib/percorso'
+import { googleDisponibile, urlPulito } from '../lib/accessoIscritto'
+
+// Aperta dalla Home dell'iPhone (non dal browser): lì Google non rientra nell'app, si entra con la password.
+const daHome = window.matchMedia('(display-mode: standalone)').matches
+
+// L'indirizzo con cui si è arrivati, letto prima che nasca il client; la porta lo legge una volta sola (da Google si torna con l'esito nell'indirizzo).
+let arrivoGoogle: string | null = window.location.href
 
 /**
  * Chi ha fatto l'accesso: `undefined` finché non si sa, `null` se nessuno.
@@ -173,6 +182,32 @@ export function Accesso({ onEntrato, collega }: { onEntrato?: (p: Personale) => 
   const [detto, setDetto] = useState<string | null>(null)
   const [aspetta, setAspetta] = useState(false)
 
+  useEffect(() => {
+    const da = arrivoGoogle
+    arrivoGoogle = null
+    if (!da || collega) return
+    void dopoGoogleSenzaAccount(da).then(
+      (m) => {
+        if (!m) return
+        history.replaceState(null, '', urlPulito(window.location.href))
+        setErrore(m)
+      },
+      () => {},
+    )
+  }, [collega])
+
+  const conGoogle = async () => {
+    setAspetta(true)
+    setErrore(null)
+    setDetto(null)
+    try {
+      await accediConGoogle(window.location.href)
+    } catch (x) {
+      setErrore(x instanceof Error ? x.message : 'Accesso non riuscito')
+      setAspetta(false)
+    }
+  }
+
   const dimenticata = async () => {
     setErrore(null)
     setDetto(null)
@@ -247,6 +282,14 @@ export function Accesso({ onEntrato, collega }: { onEntrato?: (p: Personale) => 
         <button type="submit" className="btn btn-go" disabled={aspetta}>
           {aspetta ? 'UN ATTIMO…' : 'ENTRA'}
         </button>
+        {!collega && googleDisponibile(daHome) && (
+          <>
+            <span className="modulo-etichetta">OPPURE, CON L’EMAIL DELLA PALESTRA</span>
+            <button type="button" className="btn" disabled={aspetta} onClick={() => void conGoogle()}>
+              ENTRA CON GOOGLE
+            </button>
+          </>
+        )}
         <button type="button" className="chi-esci" style={{ alignSelf: 'flex-start' }} disabled={aspetta} onClick={() => void dimenticata()}>
           PASSWORD DIMENTICATA?
         </button>
