@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.179.1 — 23 ottobre 2026
+
+### Modificato
+
+- Le iscrizioni hanno l'aspetto del sito anche nel vestiario e nel modulo a passi
+
 ## 0.179.0 — 23 ottobre 2026
 
 ### Novità
