@@ -229,8 +229,8 @@ const schedaRivista = (r) => r.selettori.every((x) => SCHEDA_RIVISTA.includes(x)
 const cifreBanco = (r) => r.selettori.some((x) => /^\.bn-cifre$|^\.bn-cifra\[data-guaio/.test(x))
 // L'area iscritti ha il look del sito: SEGNALA è cresciuto a 44px col bordo blu (`prova:look`).
 const segnalaIscritti = (r) => r.selettori.includes('.mia-segnala')
-// I chip TU / nome del familiare nell'area iscritti sono saliti a 44px, come i tab sotto (`prova:area-tab`, DESIGN.md «Nessun bersaglio sotto 44px»).
-const chipIscritti = (r) => r.selettori.includes('.mia-chip-tasto')
+// I chip del nucleo (`.mia-chip-tasto`, `.mio-nucleo-scelta`) sono tolti di proposito: si cambia persona toccando il nome (`.mio-nome-scelta`, 44px, in `prova:look`).
+const chipIscritti = (r) => r.selettori.some((x) => /^\.(mia-chip-tasto|mio-nucleo-scelta)\b/.test(x))
 // La scheda DOCUMENTI ha i tasti del certificato nel riquadro (`.sg-stato`): `.sg-tasti-cert` non c'è più, e la sua regola dei telefoni con lei.
 const tastiCert = (r) => r.selettori.some((x) => x.startsWith('.sg-tasti-cert'))
 // Aiuto e Impostazioni con il loro nome stanno nel riquadro di chi è dentro (`prova:menu`): la riga di icone in cima al menu non c'è più, il riquadro è più basso e DATI DI PROVA sta sempre lì; i risultati della ricerca hanno la loro icona.

@@ -6,7 +6,6 @@ import {
   iscrittoScelto,
   scegliIscritto,
   type AggiuntaNucleo,
-  type Avviso,
   type DatiIscritto,
   type IscrittoDiProva,
   type MiaLezione,
@@ -18,14 +17,14 @@ import { boxCertificato } from '../lib/certificatoIscritto'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
 import { comePaga, dalCertificato, pagamentoDi, statoCertificato } from '../lib/segreteria'
 import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
-import { CONTATTI, chiama } from '../lib/sito'
+import { indirizzoPagina } from '../lib/guida'
 import { cartaSePuoi } from '../lib/cartaPdf'
 import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
-import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto } from './ds'
+import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } from './ds'
 import { AccessoIscritto } from './AccessoIscritto'
 import { esci } from '../lib/accesso'
 import { INDIRIZZI } from '../lib/aree'
-import { TAB_INIZIALE, etichettaTab, rigaAvviso, statoChip, tabAperto, idPannelloTab, idTab, segnoInRegola, tabArea, tastoTabArea, type IdTabArea } from '../lib/areaTab'
+import { TAB_INIZIALE, contoElenco, etichettaTab, gruppiContatti, tabAperto, idPannelloTab, idTab, segnoInRegola, tabArea, tastoTabArea, type IdTabArea, type VoceContatti } from '../lib/areaTab'
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
 import { PagaSaldo, RitornoSaldo } from './PagaSaldo'
 import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
@@ -87,12 +86,7 @@ export function AreaIscritti() {
     if (!chi) return <AccessoIscritto onEntrato={(io) => { setIscritti([io]); setChi(io.id) }} />
     return (
       <div className="mia-area">
-        <Account key={chi} dati={d} personaId={chi} />
-        <div className="pad" style={{ paddingBottom: 16 }}>
-          <button type="button" className="chi-esci" onClick={() => void esci(INDIRIZZI.iscritti)}>
-            ESCI
-          </button>
-        </div>
+        <Account key={chi} dati={d} personaId={chi} conEsci />
       </div>
     )
   }
@@ -126,7 +120,7 @@ const suSubito = () => document.querySelector('.scroll')?.scrollTo(0, 0)
  * sotto il nucleo coi pagamenti di tutti. Aggiungendo una persona la pagina
  * lascia il posto al modulo.
  */
-function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string }) {
+function Account({ dati, personaId, conEsci }: { dati: DatiIscritto; personaId: string; conEsci?: boolean }) {
   const [nucleo, setNucleo] = useState<SchedaIscritto[] | null>(null)
   const [titolare, setTitolare] = useState(false)
   const [aggiunte, setAggiunte] = useState<AggiuntaNucleo[]>([])
@@ -209,37 +203,29 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
 
   return (
     <>
-      {nucleo.length > 1 && (
-        <div className="pad row mie-chips mio-nucleo-scelta" role="group" aria-label="Di chi vedi la pagina">
-          {nucleo.map((p) => {
-            const stato = statoChip(avvisi(p, chiaveGiorno(new Date())))
-            return (
-              <button key={p.id} type="button" className="num mia-chip mia-chip-tasto" aria-pressed={p.id === di} aria-label={`${p.id === personaId ? 'Tu' : p.nome}, ${stato.parola.toLowerCase()}`} onClick={() => apri(p.id)}>
-                <span aria-hidden="true">{p.id === personaId ? 'TU' : p.nome.toUpperCase()}</span>
-                <span aria-hidden="true" className="mia-chip-stato" data-tono={stato.tono}>
-                  {stato.tono === 'fatto' ? '' : '● '}
-                  {stato.parola}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      )}
       <Pagina
         key={di}
         dati={dati}
         personaId={di}
         io={personaId}
         tua={di === personaId}
+        membri={nucleo}
+        onCambia={apri}
+        conEsci={conEsci === true}
         tab={tab}
         onTab={setTab}
-        nucleo={titolare ? <Nucleo dati={dati} io={personaId} membri={nucleo} aggiunte={aggiunte} ricevute={ricevute} onAggiungi={() => void aggiungi()} /> : null}
+        nucleo={titolare ? <Nucleo dati={dati} io={personaId} membri={nucleo} aggiunte={aggiunte} ricevute={ricevute} onApri={apri} onAggiungi={() => void aggiungi()} /> : null}
       />
-      <div style={{ paddingBottom: 20 }}>
-        <Segreteria />
-      </div>
     </>
   )
+}
+
+/** Le icone a linea delle voci della barra (stesse del design, BarraNavigazione). */
+const ICONE_TAB: Record<IdTabArea, string[]> = {
+  lezioni: ['M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'M4 10h16', 'M8 3v4M16 3v4'],
+  regola: ['M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z', 'M8.5 12l2.5 2.5L15.5 9.5'],
+  nucleo: ['M9 11a3 3 0 1 0 0-6a3 3 0 0 0 0 6z', 'M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6', 'M16 5.5a3 3 0 0 1 0 5.5M18 14.5c1.8.8 3 2.6 3 5.5'],
+  contatti: ['M5 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-7l-4 4v-4H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z', 'M8 9h8M8 12h5'],
 }
 
 /** La pagina di un iscritto: la propria, o (`tua` falso) di una persona del nucleo. */
@@ -251,6 +237,9 @@ function Pagina({
   tab: scelto,
   onTab,
   nucleo,
+  membri,
+  onCambia,
+  conEsci,
 }: {
   dati: DatiIscritto
   personaId: string
@@ -261,6 +250,11 @@ function Pagina({
   onTab: (t: IdTabArea) => void
   /** Il nucleo, solo per il titolare: c'è il tab NUCLEO se c'è questo. */
   nucleo: ReactNode
+  /** Chi c'è nel nucleo (anche chi è entrato): con più di uno, il nome nel saluto si cambia. */
+  membri: SchedaIscritto[]
+  onCambia: (id: string) => void
+  /** ESCI c'è solo con l'accesso vero. */
+  conEsci: boolean
 }) {
   const [scheda, setScheda] = useState<SchedaIscritto | null | undefined>(undefined)
   const [lezioni, setLezioni] = useState<MiaLezione[]>([])
@@ -311,51 +305,13 @@ function Pagina({
 
   return (
     <div className="stack">
-      <Saluto scheda={scheda} />
-      <RigaAvviso
-        guai={avvisi(scheda, oggi)}
-        tab={tab}
-        onVai={(t) => {
-          onTab(t)
-          // La riga sparisce con il clic: senza questo il fuoco cade sul body e chi usa la tastiera riparte dall'inizio.
-          document.getElementById(idTab(t))?.focus()
-        }}
-      />
-      <div className="pad">
-        <div className="schede sg-schede sg-schede-scheda" role="tablist" aria-label="Parti della pagina" onKeyDown={tastiera}>
-          {ordine.map((id) => {
-            const s = id === 'regola' ? segno : null
-            return (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                id={idTab(id)}
-                aria-controls={idPannelloTab(id)}
-                aria-selected={tab === id}
-                // Il segno a voce: lo span dentro è aria-hidden.
-                aria-label={s ? `${etichettaTab(id)}, ${s.parola.toLowerCase()}` : etichettaTab(id)}
-                tabIndex={tab === id ? 0 : -1}
-                className="scheda"
-                data-on={tab === id}
-                onClick={() => onTab(id)}
-              >
-                <span aria-hidden="true">{etichettaTab(id)}</span>
-                {s && (
-                  <span aria-hidden="true" className="sg-scheda-segno" data-tono={s.tono}>
-                    ● {s.parola}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      <Saluto scheda={scheda} tua={tua} io={io} membri={membri} onCambia={onCambia} />
       {pannello(
         'lezioni',
         <>
-          <Prossime lezioni={lezioni} />
-          <Presenze dati={dati} personaId={personaId} presenze={presenze} tua={tua} />
+          <Prossime lezioni={lezioni} presenze={presenze.length} />
+          <Presenze dati={dati} personaId={personaId} presenze={presenze} />
+          <GuidaEsci conEsci={conEsci} />
         </>,
       )}
       {pannello(
@@ -366,14 +322,65 @@ function Pagina({
         </>,
       )}
       {nucleo !== null && pannello('nucleo', nucleo)}
+      {pannello('contatti', <Contatti conEsci={conEsci} />)}
+      <nav className="barra-nav mia-barra" role="tablist" aria-label="Parti della pagina" onKeyDown={tastiera}>
+        {ordine.map((id) => {
+          const s = id === 'regola' ? segno : null
+          return (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              id={idTab(id)}
+              aria-controls={idPannelloTab(id)}
+              aria-selected={tab === id}
+              aria-current={tab === id ? 'page' : undefined}
+              // Il segno a voce: lo span dentro è aria-hidden.
+              aria-label={s ? `${etichettaTab(id)}, ${s.parola.toLowerCase()}` : etichettaTab(id)}
+              tabIndex={tab === id ? 0 : -1}
+              className="barra-voce"
+              onClick={() => onTab(id)}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {ICONE_TAB[id].map((d) => (
+                  <path key={d} d={d} />
+                ))}
+              </svg>
+              <span className="num" aria-hidden="true">
+                {etichettaTab(id)}
+                {s && <span className="mia-barra-segno" data-tono={s.tono}> ●</span>}
+              </span>
+            </button>
+          )
+        })}
+      </nav>
     </div>
   )
 }
 
-function Saluto({ scheda }: { scheda: SchedaIscritto }) {
+function Saluto({ scheda, tua, io, membri, onCambia }: { scheda: SchedaIscritto; tua: boolean; io: string; membri: SchedaIscritto[]; onCambia: (id: string) => void }) {
+  const oggi = chiaveGiorno(new Date())
+  const x = avvisi(scheda, oggi)
   return (
-    <section className="pad stack" style={{ gap: 8, paddingTop: 6 }}>
-      <span className="ob mio-nome">{scheda.nome} {scheda.cognome}</span>
+    <section className="pad stack" style={{ gap: 10, paddingTop: 6 }}>
+      {membri.length > 1 ? (
+        // Il nome è il campo: il select vero ci sta sopra, trasparente, e il telefono apre il suo elenco.
+        <label className="mio-nome-scelta">
+          <span className="ob mio-nome">{tua ? `Ciao ${scheda.nome}` : `${scheda.nome} ${scheda.cognome}`}</span>
+          <span aria-hidden="true" className="mio-nome-freccia">▾</span>
+          <select aria-label="Di chi vedi la pagina" value={scheda.id} onChange={(e) => onCambia(e.target.value)}>
+            {membri.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.id === io ? `${p.nome} (tu)` : p.nome}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : (
+        <span className="ob mio-nome">{tua ? `Ciao ${scheda.nome}` : `${scheda.nome} ${scheda.cognome}`}</span>
+      )}
+      {membri.length > 1 && <Dettaglio>Tocca il nome per vedere un altro membro del nucleo.</Dettaglio>}
+      {!tua && <Dettaglio>Nel tuo nucleo familiare: vedi la sua pagina come la vede la segreteria.</Dettaglio>}
       {scheda.corsi.length > 0 ? (
         <span className="row mie-chips">
           {scheda.corsi.map((c) => (
@@ -385,35 +392,24 @@ function Saluto({ scheda }: { scheda: SchedaIscritto }) {
       ) : (
         <Dettaglio>Oggi non risulta un’iscrizione a un corso.</Dettaglio>
       )}
+      {x.length === 0 ? (
+        <Riquadro stretto>
+          <TitoloEsito tono="fatto">SEI IN REGOLA</TitoloEsito>
+          <Dettaglio>{statoCertificato(scheda, oggi) === 'non_serve' && !scheda.certificato.scade ? 'Quota pagata. Sotto i 6 anni il certificato non serve.' : 'Certificato medico valido e quota pagata.'}</Dettaglio>
+        </Riquadro>
+      ) : (
+        x.map((a) => (
+          <Riquadro key={a.testo} tono={a.tono === 'guaio' ? 'guaio' : 'prova'} stretto>
+            <Dettaglio tono={a.tono === 'guaio' ? 'guaio' : 'testo'}>{a.testo}</Dettaglio>
+          </Riquadro>
+        ))
+      )}
     </section>
   )
 }
 
-/** L'avviso in una riga che porta al tab che lo sistema: sul tab stesso non c'è (vedi `rigaAvviso`). */
-function RigaAvviso({ guai, tab, onVai }: { guai: Avviso[]; tab: IdTabArea; onVai: (t: IdTabArea) => void }) {
-  const r = rigaAvviso(guai, tab)
-  if (!r) return null
-  return (
-    <div className="pad">
-      <button
-        type="button"
-        className="row riga-avviso"
-        data-tono={r.tono}
-        aria-label={`${r.testo}${r.altri > 0 ? `, e ${r.altri === 1 ? 'un altro avviso' : `altri ${r.altri} avvisi`}` : ''}. Apre ${etichettaTab(r.vai)}`}
-        onClick={() => onVai(r.vai)}
-      >
-        <span className="grow" style={{ textAlign: 'left' }} aria-hidden="true">
-          {r.testo}
-          {r.altri > 0 ? ` (+${r.altri})` : ''}
-        </span>
-        <span className="num riga-avviso-vai">{etichettaTab(r.vai)} ›</span>
-      </button>
-    </div>
-  )
-}
-
 /** Le prossime due settimane, un gruppo per giorno; quello che è cambiato si legge sulla lezione. */
-function Prossime({ lezioni }: { lezioni: MiaLezione[] }) {
+function Prossime({ lezioni, presenze }: { lezioni: MiaLezione[]; presenze: number }) {
   const oggi = chiaveGiorno(new Date())
   const perGiorno = useMemo(() => {
     const m = new Map<string, MiaLezione[]>()
@@ -427,7 +423,7 @@ function Prossime({ lezioni }: { lezioni: MiaLezione[] }) {
 
   return (
     <section>
-      <Titoletto conto={annullate ? `${annullate} ANNULLATE` : lezioni.length}>PROSSIME LEZIONI</Titoletto>
+      <Titoletto conto={annullate ? `${annullate} ANNULLATE` : contoElenco(lezioni.length, presenze)}>LE TUE LEZIONI</Titoletto>
       {lezioni.length === 0 && (
         <p className="pad" style={{ color: 'var(--dim)', margin: 0 }}>
           Nessuna lezione nelle prossime due settimane.
@@ -481,7 +477,7 @@ const SEGNI: Record<string, [string, string]> = {
  * segnato, o assente) c'è SEGNALA: chi c'era lo dice, con una nota se vuole,
  * e la presenza la conferma l'istruttore o la segreteria (vedi `segnalate.ts`).
  */
-function Presenze({ dati, personaId, presenze, tua }: { dati: DatiIscritto; personaId: string; presenze: MiaPresenza[]; tua: boolean }) {
+function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId: string; presenze: MiaPresenza[] }) {
   const [tutte, setTutte] = useState(false)
   const [segnalate, setSegnalate] = useState<Segnalata[]>([])
   const [aperta, setAperta] = useState<string | null>(null)
@@ -512,7 +508,6 @@ function Presenze({ dati, personaId, presenze, tua }: { dati: DatiIscritto; pers
   }
   return (
     <section>
-      <Titoletto conto={c.dovute ? `${c.presenti}/${c.dovute}` : undefined}>{tua ? 'LE TUE PRESENZE' : 'PRESENZE'}</Titoletto>
       <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
         {presenze.length === 0 ? (
           <Dettaglio>Nessuna lezione negli ultimi {INDIETRO} giorni.</Dettaglio>
@@ -545,7 +540,7 @@ function Presenze({ dati, personaId, presenze, tua }: { dati: DatiIscritto; pers
                         </span>
                       </span>
                       <span className="stack" style={{ gap: 4, alignItems: 'flex-end' }}>
-                        <span className="num mia-presenza-detto">{detto}</span>
+                        {!(puo && aperta !== p.sessioneId) && <span className="num mia-presenza-detto">{detto}</span>}
                         {s && s.stato !== 'accolta' && (
                           <span className="num mia-lezione-cosa mia-presenza-segnalata" data-tono={s.stato === 'rifiutata' ? 'guaio' : 'avviso'} title={s.stato === 'rifiutata' ? 'La segnalazione è stata rifiutata' : 'Segnalata: la conferma l’istruttore o la segreteria'}>
                             {s.stato === 'rifiutata' ? 'RIFIUTATA' : 'DA CONFERMARE'}
@@ -718,6 +713,7 @@ function Nucleo({
   membri,
   aggiunte,
   ricevute,
+  onApri,
   onAggiungi,
 }: {
   dati: DatiIscritto
@@ -725,6 +721,7 @@ function Nucleo({
   membri: SchedaIscritto[]
   aggiunte: AggiuntaNucleo[]
   ricevute: Ricevuta[]
+  onApri: (id: string) => void
   onAggiungi: () => void
 }) {
   const oggi = chiaveGiorno(new Date())
@@ -737,8 +734,25 @@ function Nucleo({
   return (
     <>
       <section>
-        <Titoletto conto={membri.length + aggiunte.length}>IL NUCLEO</Titoletto>
+        <Titoletto conto={membri.length}>IL TUO NUCLEO</Titoletto>
         <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
+          {membri.map((p) => {
+            const guai = avvisi(p, oggi)
+            return (
+              <button key={p.id} type="button" className="card row mio-membro" onClick={() => onApri(p.id)}>
+                <span className="stack grow" style={{ gap: 2, minWidth: 0, textAlign: 'left' }}>
+                  <span style={{ fontWeight: 600 }}>
+                    {p.nome} {p.cognome}
+                    {p.id === io ? ' · tu' : ''}
+                  </span>
+                  <span style={{ fontSize: 13, color: 'var(--dim)' }}>{p.corsi.map((c) => c.nome).join(', ') || 'Nessun corso oggi'}</span>
+                </span>
+                <span className="num mia-lezione-cosa" data-tono={guai.some((g) => g.tono === 'guaio') ? 'guaio' : guai.length ? 'avviso' : 'fatto'}>
+                  {guai.length ? 'DA SISTEMARE' : 'IN REGOLA'}
+                </span>
+              </button>
+            )
+          })}
           {aggiunte.map((x) => (
             <div key={x.id} className="card row mio-membro" data-attesa>
               <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
@@ -752,11 +766,7 @@ function Nucleo({
               </span>
             </div>
           ))}
-          <Dettaglio>
-            {membri.length > 1
-              ? 'Per aprire la pagina di una persona toccala in alto. Per aggiungerne una, il modulo parte coi tuoi dati.'
-              : 'Figli, coniuge, fratelli: il modulo parte coi tuoi dati, e la richiesta arriva in segreteria come le altre.'}
-          </Dettaglio>
+          <Dettaglio>Figli, coniuge, fratelli: il modulo parte coi tuoi dati, e la richiesta arriva in segreteria come le altre.</Dettaglio>
           <Tasti>
             <Tasto variante="principale" onClick={onAggiungi}>
               AGGIUNGI UNA PERSONA
@@ -805,22 +815,74 @@ function Nucleo({
   )
 }
 
-/** Quello che non si fa da qui: per cambiare qualcosa, la segreteria. */
-function Segreteria() {
+/** GUIDA e ESCI in coda a LEZIONI, come in CONTATTI. */
+function GuidaEsci({ conEsci }: { conEsci: boolean }) {
   return (
-    <section className="pad" style={{ paddingTop: 4 }}>
-      <Riquadro>
-        <span className="passo-titolo">Qualcosa non torna?</span>
-        <Dettaglio>
-          Questa pagina mostra quello che sa la segreteria. Per un cambio di corso, o per pagare in palestra, passa da noi o chiama il{' '}
-          <span className="num testo-pieno">{CONTATTI.telefono}</span>.
-        </Dettaglio>
-        <Tasti>
-          <Tasto href={chiama} qui>
-            CHIAMA
-          </Tasto>
-        </Tasti>
-      </Riquadro>
-    </section>
+    <div className="pad row mia-guida-esci">
+      <a className="chi-esci" href={indirizzoPagina('iscritti')} target="_blank" rel="noopener noreferrer">
+        GUIDA
+      </a>
+      {conEsci && (
+        <>
+          <span aria-hidden="true">|</span>
+          <button type="button" className="chi-esci" onClick={() => void esci(INDIRIZZI.iscritti)}>
+            ESCI
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
+/** Le icone a linea delle righe di CONTATTI. */
+const ICONE_RIGA: Record<string, string[]> = {
+  CHIAMA: ['M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z'],
+  WHATSAPP: ['M5 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-7l-4 4v-4H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z'],
+  'COME ARRIVARE': ['M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z', 'M10 10a2 2 0 1 0 4 0a2 2 0 1 0-4 0'],
+  INSTAGRAM: ['M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z', 'M8.5 12a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0-7 0', 'M16.5 7.5h.01'],
+  FACEBOOK: ['M14 4h3v3.5h-3a1 1 0 0 0-1 1V11h4l-.5 3.5H13V21h-3.5v-6.5H7V11h2.5V8.5A4.5 4.5 0 0 1 14 4z'],
+  GUIDA: ['M5 4h9a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z', 'M9 9h5'],
+  ESCI: ['M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5', 'M15 8l4 4-4 4', 'M19 12H9'],
+}
+
+/** Il tab CONTATTI: per parlare con la palestra, in righe da toccare. */
+function Contatti({ conEsci }: { conEsci: boolean }) {
+  const riga = (v: VoceContatti) => {
+    const dentro = (
+      <>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          {(ICONE_RIGA[v.nome] ?? []).map((d) => (
+            <path key={d} d={d} />
+          ))}
+        </svg>
+        <span className="ob mia-riga-nome">{v.nome}</span>
+        {v.nota && <span className="num mia-riga-nota">{v.nota}</span>}
+        <span aria-hidden="true" className="mia-riga-vai">›</span>
+      </>
+    )
+    if (v.esci)
+      return (
+        <button key={v.nome} type="button" className="mia-riga" onClick={() => void esci(INDIRIZZI.iscritti)}>
+          {dentro}
+        </button>
+      )
+    const tel = v.href?.startsWith('tel:')
+    return (
+      <a key={v.nome} className="mia-riga" href={v.href} {...(tel ? {} : { target: '_blank', rel: 'noopener noreferrer' })}>
+        {dentro}
+      </a>
+    )
+  }
+  return (
+    <div className="stack" style={{ gap: 0 }}>
+      {gruppiContatti({ guida: indirizzoPagina('iscritti'), conEsci }).map((g) => (
+        <section key={g.titolo}>
+          <Titoletto>{g.titolo}</Titoletto>
+          <div className="pad">
+            <div className="mia-scheda-righe">{g.voci.map(riga)}</div>
+          </div>
+        </section>
+      ))}
+    </div>
   )
 }

@@ -76,7 +76,7 @@ Google, e vale solo per i mockup.
 | `SchedaCertificato` | PROPOSTA «certificati online»: il blocco CERTIFICATO MEDICO della scheda iscritto (`Certificato` di `Iscritti.tsx`) col file online: titolo + bollino, frase di stato, riga del file con APRI, CARICA / SOSTITUISCI e TOGLI; `stato` nessuno, valido, in_scadenza, scaduto_con_file, scaduto_senza_file, valido_senza_file, file_vecchio; `gesto` apre file + VALIDO FINO AL + un solo SALVA; `telefono` mette i tasti in colonna |
 | `MenuIstruttori` | Il menu degli istruttori sullo schermo largo (`App.tsx`); `tema="sito"` (costruito): inchiostro, senza icone, voce corrente gialla, niente tasto del tema |
 | `BarraTelefono` | La barra in cima al telefono con il tasto MENU (`.sg-barra-tel`); il menu aperto è `Menu`. L'area istruttore sul telefono non la usa: ha la `Testata` (`istruttori`) e la barra delle pagine in basso |
-| `BarraNavigazione` | COSTRUITA (variante B): la barra in basso del telefono istruttori (CALENDARIO, TIMER, I MIEI, ORE; due voci per la segreteria che non insegna): icona a linea, etichetta, voce corrente con barra, fondo e testo; `tema="sito"`: inchiostro, Inter 12px che va a capo, voce corrente gialla. `MenuIstruttori` ha la prop `elenco` per le stesse voci a sinistra |
+| `BarraNavigazione` | COSTRUITA (variante B): la barra in basso del telefono istruttori (CALENDARIO, TIMER, I MIEI, ORE; due voci per la segreteria che non insegna): icona a linea, etichetta, voce corrente con barra, fondo e testo; `tema="sito"`: inchiostro, Inter 12px che va a capo, voce corrente gialla. `MenuIstruttori` ha la prop `elenco` per le stesse voci a sinistra. COSTRUITA anche nell'area iscritti (LEZIONI, IN REGOLA, NUCLEO, CONTATTI, con le icone relative; `.mia-barra`, sticky in fondo). Canvas: `../lezioni-iscritto/` |
 | `SchedeTimer` | Variante A scartata: le schede DA FARE / I MIEI in cima alla pagina TIMER: tasti da 52px, quella attiva con bordo, quadratino e bordo sotto spesso |
 | `TimerRiga` | La riga di un timer nell'elenco (tipo, durata, nome, nota, ▶), per le sezioni CREATI DA TE e le copie; `TimerPagina` ha `conTitolo`, `conBarra`, `tutti` e `cronometro`: nella B la pagina TIMER è `conBarra` falso, `tutti="LIBRERIA"`, `cronometro` vero |
 | `RigaDaFare` | Una riga di DA FARE (`.sg-dafare-riga`): numero grande rosso (`blocca`) o giallo (`presto`), titolo, frase, i primi 5 nomi col perché (`elenco`) e il tasto a linea «Vedi tutti» |
@@ -92,7 +92,7 @@ Google, e vale solo per i mockup.
 | `TabletFascia` | La fascia dopo un tocco: fatto, attesa, già, errore |
 | `TabletTestata`, `TabletLezione`, `TabletPiede`, `TabletRigaGiornata` | La testata, la lezione aperta, il piede e la riga della giornata del tablet di sala |
 | `MieOreNumero`, `MieOreRiga` | I numeri e le righe di LE MIE ORE |
-| `MiaLezione`, `MiaPresenza` | La lezione e la riga delle presenze nell'area iscritti; `tema="sito"` com'è l'area adesso (look del sito, sempre chiara), la tinta del corso a sinistra; SEGNALA da 44px col bordo blu |
+| `MiaLezione`, `MiaPresenza` | La lezione e la riga delle presenze nell'area iscritti; `tema="sito"` com'è l'area adesso (look del sito, sempre chiara), la tinta del corso a sinistra; SEGNALA da 44px col bordo blu; `MiaPresenza` con `soloTasto`: dove si può segnalare c'è solo il tasto, senza «NON SEGNATO» |
 | `MieiTimerRiga` | La riga di I MIEI TIMER, per un corso o una lezione |
 | `TimerComandi`, `TimerTestata`, `TimerCella` | I comandi, la testata e la cella dell'editor del timer (`timer/src/`) |
 | `GuidaTesto` | La colonna di testo della guida dentro l'app |
@@ -129,8 +129,6 @@ Google, e vale solo per i mockup.
 | `MembroNucleo` | Una persona del nucleo (`.mio-membro`): IN REGOLA, DA SISTEMARE, in attesa o rifiutata |
 | `RigaNucleoPagamento` | Una riga di PAGAMENTI DEL NUCLEO, con la variante «Tutto il nucleo» |
 | `NastroProva` | Il nastro giallo di prova (`.nastro-prova`, `NastroProva` di `ds.tsx`): area iscritti, sala e pagina Iscrizioni; `esci` aggiunge ESCI DALLA PROVA |
-| `ChipPersona` | COSTRUITO (`razionalizza-iscritti`): `.mia-chip-tasto` con sotto lo stato (IN REGOLA, DA SISTEMARE, RIFIUTATA), acceso o no |
-| `RigaAvviso` | COSTRUITO (`razionalizza-iscritti`): `.riga-avviso`, l'avviso della pagina in una riga-tasto con la barra gialla o rossa e «IN REGOLA ›» |
 | `MiaChip` | `.mia-chip` (corso col colore) e `.mia-chip-tasto` (TU, nome di chi è nel nucleo) |
 | `TabletTestataSala` | La testata completa del tablet (`Tablet.tsx`): come `TabletTestata`, più il chip del timer in corso, SI SEGNA ORA, IN ATTESA DI RETE e i bollini IMPOSTAZIONI APERTE e AREA ISTRUTTORE |
 | `TabletPiedeMusica` | La barra in basso: PRESENZE / TIMER e la musica (`MusicaSala.tsx`): suona, pausa, errore, spenta; Spotify, radio, YouTube |

@@ -360,6 +360,7 @@ ok('colori nelle regole del look: solo i 12 del sito, #ffffff e #121212',
 ok('.sg-gruppo-titolo: maiuscolo per CSS', ha('.sg-gruppo-titolo', /text-transform:\s*uppercase/), true)
 ok('.sg-gruppo-titolo: Inter (var(--body))', ha('.sg-gruppo-titolo', /font-family:\s*var\(--body\)/), true)
 ok('.sg-gruppo-titolo: 12px, peso 600', ha('.sg-gruppo-titolo', /font-size:\s*12px/) && ha('.sg-gruppo-titolo', /font-weight:\s*600/), true)
+ok('.mio-nome-scelta (cambio persona): alto almeno 44px', /\n\.mio-nome-scelta \{[^}]*min-height: 44px/.test(readFileSync('src/styles.css', 'utf8')), true)
 ok('.sg-voce: altezza minima 44px', ha('.sg-voce', /min-height:\s*44px/), true)
 ok('.sg-voce: raggio 6px, peso 500', ha('.sg-voce', /border-radius:\s*6px/) && ha('.sg-voce', /font-weight:\s*500/), true)
 

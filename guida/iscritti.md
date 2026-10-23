@@ -39,27 +39,29 @@ lega l'email alla scheda; le volte dopo è subito la propria pagina.
 In prova (`?prova`), in cima, si sceglie **quale iscritto essere**: la pagina cambia per
 ognuno, e il dispositivo si ricorda la scelta.
 
-La pagina è divisa in **tab**, sotto il saluto: **LEZIONI** (si apre su questo),
-**IN REGOLA** e, per il titolare di un nucleo, **NUCLEO**. Se il certificato o
-la quota non vanno, sul tab IN REGOLA c'è **● DA SISTEMARE**. Il tab scelto resta
-quando si cambia persona. Con le frecce della tastiera si passa da un tab
-all'altro.
+La pagina è divisa in **tab**, nella barra in fondo allo schermo: **LEZIONI** (si
+apre su questo), **IN REGOLA**, per il titolare di un nucleo **NUCLEO**, e
+**CONTATTI**. Se il certificato o la quota non vanno, sul tab IN REGOLA c'è un
+**●** rosso o giallo. Il tab scelto resta quando si cambia persona. Con le
+frecce della tastiera si passa da un tab all'altro.
 
-- **Il nome e i corsi**: i corsi a cui è iscritto oggi, col loro colore.
-- **La riga dell'avviso**: se qualcosa non va (il certificato medico che
-  manca, è scaduto o scade entro un mese, sotto i 6 anni non serve; la quota
-  da pagare, pagata in parte o da rinnovare) sotto il nome c'è una riga con
-  la cosa più urgente. Toccandola si apre **IN REGOLA**, dove si sistema. Se
-  è tutto a posto la riga non c'è, e non compare nemmeno su IN REGOLA.
-- **Prossime lezioni** (tab LEZIONI): le lezioni dei suoi corsi nelle prossime due
-  settimane, un gruppo per giorno. Quello che cambia rispetto al solito si
+Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
+(«Ciao Alessandro ▾»): si apre l'elenco dei membri.
+
+- **Ciao, e i corsi**: i corsi a cui è iscritto oggi, col loro colore. Sotto,
+  **SEI IN REGOLA** in verde, o le cose da sistemare: il certificato medico
+  che manca, è scaduto o scade entro un mese (sotto i 6 anni non serve); la
+  quota da pagare, pagata in parte o da rinnovare.
+- **Le tue lezioni** (tab LEZIONI): un elenco solo, con le lezioni dei suoi corsi
+  nelle prossime due settimane, un gruppo per giorno, e sotto le presenze.
+  A destra del titolo il conto: le prossime lezioni + le presenze. Quello che cambia rispetto al solito si
   legge sulla lezione: **ANNULLATA** in rosso, **SOSTITUTO** quando la fa un
   altro istruttore, **IN** e il nome della sala quando la lezione è stata
   spostata, **IN PIÙ** per una lezione fuori dall'orario (uno stage).
-- **Le tue presenze**: negli ultimi trenta giorni, quante lezioni su quante
+- **Le presenze**: negli ultimi trenta giorni, quante lezioni su quante
   (le giustificate non contano), e le ultime cinque, con **TUTTE** per
   vederle tutte. Dove non risulta presente (non segnato, o assente) c'è
-  **SEGNALA**: chi c'era lo dice, con una nota se vuole, e **ERO PRESENTE**.
+  solo il tasto **SEGNALA**: chi c'era lo dice, con una nota se vuole, e **ERO PRESENTE**.
   La presenza la conferma l'istruttore della lezione o la segreteria; fino
   ad allora la riga dice **DA CONFERMARE**, e poi diventa presente, o dice
   **RIFIUTATA**. Una volta sola per lezione.
@@ -83,8 +85,10 @@ all'altro.
   o tramite il titolare.
 - **Ricevute**: quelle fatte dalla segreteria, dalla più recente, ognuna col
   suo **PDF** da scaricare: lo stesso che stampa la segreteria.
-- **Qualcosa non torna?**: il telefono della palestra, per chi vede
-  qualcosa di sbagliato.
+- **CONTATTI** (ultimo tab): la segreteria (**CHIAMA**, **WHATSAPP**, **COME
+  ARRIVARE**), **SEGUICI** su Instagram e Facebook, e **LA TUA PAGINA**: la
+  **GUIDA** e **ESCI**. GUIDA ed ESCI stanno anche in fondo a LEZIONI. In prova
+  ESCI non c'è.
 
 Tutto viene da quello che la segreteria e gli istruttori fanno già: una
 lezione annullata o un sostituto dalla **SETTIMANA**, le presenze
@@ -101,10 +105,11 @@ altre vede solo sé stessa. In prova gli iscritti inventati con lo stesso
 cognome fanno famiglia, a gruppi di due o tre.
 
 - **Di chi è la pagina**: in cima, **TU** e il nome di ogni persona del
-  nucleo, ognuno con sotto **IN REGOLA** o **● DA SISTEMARE**. Toccandone uno
-  si vede la sua pagina: lezioni, presenze, certificato, quota e ricevute.
-- **Il nucleo** (tab NUCLEO): le persone aggiunte che la segreteria non ha
-  ancora accolto (**LA GUARDA LA SEGRETERIA**), o che ha rifiutato.
+  nucleo. Toccandone uno si vede la sua pagina: lezioni, presenze,
+  certificato, quota e ricevute.
+- **Il tuo nucleo**: le persone, ognuna con **IN REGOLA** o **DA SISTEMARE**,
+  e quelle aggiunte che la segreteria non ha ancora accolto (**LA GUARDA LA
+  SEGRETERIA**), o che ha rifiutato.
 - **Aggiungi una persona**: apre il modulo di iscrizione già compilato coi
   dati che la segreteria ha del titolare: cognome, residenza, email e
   telefono, e il titolare come genitore per un minore, col suo codice fiscale. Si
