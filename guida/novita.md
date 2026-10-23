@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.176.0 — 23 ottobre 2026
+
+### Novità
+
+- La pagina dell'iscritto è divisa in tab, così non è più lunghissima
+- Le email degli avvisi e delle ricevute hanno un aspetto unico, con il tasto al posto del link
+
 ## 0.175.0 — 23 ottobre 2026
 
 ### Novità
