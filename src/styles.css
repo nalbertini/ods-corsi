@@ -1428,7 +1428,8 @@ a.btn { text-decoration: none; }
    Una colonna sola, letta dal telefono: anche sullo schermo largo non si
    allarga oltre quanto serve. */
 
-.mia-area { width: 100%; max-width: 720px; margin-inline: auto; }
+.mia-area { width: 100%; max-width: 720px; margin-inline: auto; display: flex; flex-direction: column; min-height: 100%; }
+.mia-area > .stack { flex: 1; }
 .mia-chi { gap: 6px; padding-top: 14px; padding-bottom: 6px; }
 .mia-chi .campo { width: 100%; }
 .mio-nome { font-size: 30px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; }
@@ -1449,8 +1450,8 @@ a.btn { text-decoration: none; }
 .mio-nome-scelta { position: relative; display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; padding: 4px 12px; min-height: 44px; border: 2px solid var(--blu); border-radius: 6px; }
 .mio-nome-scelta select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 .mio-nome-freccia { color: var(--blu); font-size: 18px; }
-/* La barra in basso della pagina: ferma in fondo, così i tab si raggiungono col pollice. */
-.mia-barra { position: sticky; bottom: 0; z-index: 4; }
+/* La barra in basso della pagina: ferma in fondo anche a pagina corta (margin-top: auto), così i tab si raggiungono col pollice. */
+.mia-barra { position: sticky; bottom: 0; z-index: 4; margin-top: auto; }
 .mia-barra-segno[data-tono='rosso'] { color: var(--rosso-testo); }
 .mia-barra-segno[data-tono='giallo'] { color: var(--giallo-testo); }
 .mia-guida-esci { gap: 12px; align-items: center; padding-bottom: 16px; color: var(--dim); }
