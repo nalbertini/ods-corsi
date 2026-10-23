@@ -21,7 +21,6 @@ import {
 import type { Arrivo } from '../lib/invito'
 import { indirizzo } from '../lib/aree'
 import { areaDelPercorso } from '../lib/percorso'
-import { scegliProva } from '../lib/dati'
 
 /**
  * Chi ha fatto l'accesso: `undefined` finché non si sa, `null` se nessuno.
@@ -262,15 +261,6 @@ export function Accesso({ onEntrato, collega }: { onEntrato?: (p: Personale) => 
           </span>
         )}
       </form>
-      {!collega && <div className="pad stack" style={{ gap: 8, paddingBottom: 16 }}>
-        <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-          Senza account si può guardare l’app in prova: l’orario vero, iscritti inventati, e niente di quel che si
-          tocca arriva al database.
-        </span>
-        <button type="button" className="btn btn-ghost" onClick={() => scegliProva(true)}>
-          PROVA CON DATI INVENTATI
-        </button>
-      </div>}
     </div>
   )
 }

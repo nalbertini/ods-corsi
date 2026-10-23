@@ -79,7 +79,7 @@ function Aree() {
   if (area === 'collega')
     return (
       <div className="app">
-        <Testata luogo="CONTABILITÀ" />
+        <Testata luogo="CONTABILITÀ" senzaTema />
         <main className="scroll">
           <Collega />
         </main>
@@ -147,7 +147,7 @@ function PortaUnica() {
   }, [])
   return (
     <div className="app">
-      <Testata luogo="ACCESSO" guida={INDIRIZZO_GUIDA} />
+      <Testata luogo="ACCESSO" guida={INDIRIZZO_GUIDA} senzaTema />
       <main className="scroll">
         {doppio?.persona ? (
           <SceltaArea persona={doppio.persona} aree={doppio.aree} onScelta={passaA} />
@@ -196,7 +196,7 @@ function TutteLeAree() {
   ]
   return (
     <div className="app">
-      <Testata luogo="CORSI" guida={INDIRIZZO_GUIDA} />
+      <Testata luogo="CORSI" guida={INDIRIZZO_GUIDA} senzaTema />
       <main className="scroll">
         <div className="pad stack scelta" style={{ gap: 10, paddingTop: 16, paddingBottom: 16 }}>
           {voci.map(([a, titolo, testo]) => (
@@ -522,7 +522,7 @@ function MenuIstruttori({
 function AreaGuida() {
   return (
     <div className="app">
-      <Testata luogo="GUIDA" />
+      <Testata luogo="GUIDA" senzaTema />
       <Guida />
     </div>
   )
