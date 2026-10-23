@@ -2,18 +2,18 @@
 // IN REGOLA. Il .tsx mostra e chiama.
 import type { ComePaga, StatoCertificato } from './segreteria'
 import { tastoLinguette, type SegnoScheda } from './schedaSezioni'
-import type { Avviso } from './iscritto'
+import { CONTATTI, chiama, whatsapp } from './sito'
 
-export type IdTabArea = 'lezioni' | 'regola' | 'nucleo'
+export type IdTabArea = 'lezioni' | 'regola' | 'nucleo' | 'contatti'
 
-const ETICHETTE: Record<IdTabArea, string> = { lezioni: 'LEZIONI', regola: 'IN REGOLA', nucleo: 'NUCLEO' }
+const ETICHETTE: Record<IdTabArea, string> = { lezioni: 'LEZIONI', regola: 'IN REGOLA', nucleo: 'NUCLEO', contatti: 'CONTATTI' }
 
 export const TAB_INIZIALE: IdTabArea = 'lezioni'
 
 export const etichettaTab = (id: IdTabArea) => ETICHETTE[id]
 
-/** NUCLEO c'è solo per il titolare di un nucleo: gli altri non hanno niente da mettergli. */
-export const tabArea = (titolare: boolean): IdTabArea[] => (titolare ? ['lezioni', 'regola', 'nucleo'] : ['lezioni', 'regola'])
+/** NUCLEO c'è solo per il titolare di un nucleo: gli altri non hanno niente da mettergli. CONTATTI è sempre l'ultimo. */
+export const tabArea = (titolare: boolean): IdTabArea[] => (titolare ? ['lezioni', 'regola', 'nucleo', 'contatti'] : ['lezioni', 'regola', 'contatti'])
 
 /** Con Alt, Ctrl o Cmd il tasto è del browser (Alt+← torna indietro): i tab non lo prendono. */
 export const tastoTabArea = (
@@ -36,18 +36,27 @@ export function segnoInRegola(cert: StatoCertificato, quota: ComePaga): SegnoSch
   return rosso ? { parola: 'DA SISTEMARE', tono: 'rosso' } : giallo ? { parola: 'DA SISTEMARE', tono: 'giallo' } : null
 }
 
-/** Lo stato sotto il nome nella chip di una persona: dice quello che diceva la riga rossa, in due parole. */
-export function statoChip(guai: readonly Avviso[]): { parola: 'IN REGOLA' | 'DA SISTEMARE'; tono: 'fatto' | 'avviso' | 'guaio' } {
-  if (guai.length === 0) return { parola: 'IN REGOLA', tono: 'fatto' }
-  return { parola: 'DA SISTEMARE', tono: guai.some((g) => g.tono === 'guaio') ? 'guaio' : 'avviso' }
+/** Una riga di CONTATTI: un link (`href`) o, per ESCI, un'azione. `nota` è il dettaglio a destra del nome. */
+export interface VoceContatti {
+  nome: string
+  nota?: string
+  href?: string
+  esci?: true
 }
 
-/**
- * L'avviso in una riga sotto la testata: il peggiore, e quanti altri ce ne
- * sono. Sul tab che lo sistema non compare, perché lo dice già il tab.
- */
-export function rigaAvviso(guai: readonly Avviso[], tab: IdTabArea): { testo: string; tono: Avviso['tono']; altri: number; vai: IdTabArea } | null {
-  if (guai.length === 0 || tab === 'regola') return null
-  const primo = guai.find((g) => g.tono === 'guaio') ?? guai[0]
-  return { testo: primo.testo, tono: primo.tono, altri: guai.length - 1, vai: 'regola' }
-}
+/** Il tab CONTATTI: tutto quel che serve per parlare con la palestra, in righe. ESCI c'è solo con l'accesso vero: in prova non c'è chi uscire. */
+export const gruppiContatti = ({ guida, conEsci }: { guida: string; conEsci: boolean }): { titolo: string; voci: VoceContatti[] }[] => [
+  {
+    titolo: 'SEGRETERIA',
+    voci: [
+      { nome: 'CHIAMA', nota: CONTATTI.telefono, href: chiama },
+      { nome: 'WHATSAPP', href: whatsapp },
+      { nome: 'COME ARRIVARE', nota: 'Via V. Sassi 26', href: CONTATTI.mappa },
+    ],
+  },
+  { titolo: 'SEGUICI', voci: [{ nome: 'INSTAGRAM', href: CONTATTI.instagram }, { nome: 'FACEBOOK', href: CONTATTI.facebook }] },
+  { titolo: 'LA TUA PAGINA', voci: [{ nome: 'GUIDA', href: guida }, ...(conEsci ? [{ nome: 'ESCI', esci: true as const }] : [])] },
+]
+
+/** Il conto dell'elenco unico di LEZIONI: le prossime e le presenze passate. */
+export const contoElenco = (prossime: number, presenze: number) => `${prossime} + ${presenze}`

@@ -3,7 +3,7 @@
 //
 //   node scripts/prova-area-tab.mjs
 //
-// Tre tab (LEZIONI, IN REGOLA, NUCLEO), NUCLEO solo per il titolare; si apre
+// Quattro tab (LEZIONI, IN REGOLA, NUCLEO, CONTATTI), NUCLEO solo per il titolare; si apre
 // su LEZIONI; la tastiera col giro; il segno su IN REGOLA dice DA SISTEMARE
 // quando certificato o quota non vanno (il peggiore vince).
 // Canvas: docs/design-canvas/area-iscritti-tab.
@@ -39,13 +39,14 @@ const ok = (cosa, avuto, voluto) => {
 const f = (nome, ...args) => (typeof m[nome] === 'function' ? m[nome](...args) : `manca ${nome}()`)
 
 console.log('Quali tab')
-ok('chi non è titolare: LEZIONI e IN REGOLA', f('tabArea', false), ['lezioni', 'regola'])
-ok('il titolare: anche NUCLEO', f('tabArea', true), ['lezioni', 'regola', 'nucleo'])
-ok('le etichette', [f('etichettaTab', 'lezioni'), f('etichettaTab', 'regola'), f('etichettaTab', 'nucleo')], ['LEZIONI', 'IN REGOLA', 'NUCLEO'])
+ok('chi non è titolare: LEZIONI, IN REGOLA e CONTATTI', f('tabArea', false), ['lezioni', 'regola', 'contatti'])
+ok('il titolare: anche NUCLEO, prima di CONTATTI', f('tabArea', true), ['lezioni', 'regola', 'nucleo', 'contatti'])
+ok('le etichette', ['lezioni', 'regola', 'nucleo', 'contatti'].map((t) => f('etichettaTab', t)), ['LEZIONI', 'IN REGOLA', 'NUCLEO', 'CONTATTI'])
 ok('si apre su LEZIONI', m.TAB_INIZIALE, 'lezioni')
 
 console.log('La tastiera')
 const tre = ['lezioni', 'regola', 'nucleo']
+const quattro = [...tre, 'contatti']
 ok('destra: avanti', f('tastoTabArea', tre, 'lezioni', { key: 'ArrowRight' }), 'regola')
 ok('destra dall’ultimo: giro', f('tastoTabArea', tre, 'nucleo', { key: 'ArrowRight' }), 'lezioni')
 ok('sinistra dal primo: giro', f('tastoTabArea', tre, 'lezioni', { key: 'ArrowLeft' }), 'nucleo')
@@ -53,7 +54,9 @@ ok('Home e Fine', [f('tastoTabArea', tre, 'regola', { key: 'Home' }), f('tastoTa
 ok('un altro tasto: niente', f('tastoTabArea', tre, 'regola', { key: 'a' }), null)
 ok('con Alt, Ctrl o Cmd il tasto è del browser', [{ altKey: true }, { ctrlKey: true }, { metaKey: true }].map((m) => f('tastoTabArea', tre, 'regola', { key: 'ArrowLeft', ...m })), [null, null, null])
 ok('senza modificatori la freccia vale', f('tastoTabArea', tre, 'regola', { key: 'ArrowLeft' }), 'lezioni')
-ok('NUCLEO aperto ma non più titolare: si riparte da LEZIONI', f('tabAperto', ['lezioni', 'regola'], 'nucleo'), 'lezioni')
+ok('destra da NUCLEO: CONTATTI; da CONTATTI: giro', [f('tastoTabArea', quattro, 'nucleo', { key: 'ArrowRight' }), f('tastoTabArea', quattro, 'contatti', { key: 'ArrowRight' })], ['contatti', 'lezioni'])
+ok('NUCLEO aperto ma non più titolare: si riparte da LEZIONI', f('tabAperto', ['lezioni', 'regola', 'contatti'], 'nucleo'), 'lezioni')
+ok('CONTATTI resta aperto', f('tabAperto', quattro, 'contatti'), 'contatti')
 ok('un tab che c\'è resta aperto', f('tabAperto', tre, 'nucleo'), 'nucleo')
 
 console.log('Il segno su IN REGOLA')
@@ -69,20 +72,27 @@ ok('quota scaduta: rosso', s('valido', 'scaduto'), { parola: 'DA SISTEMARE', ton
 ok('quota pagata in parte: giallo', s('valido', 'in_parte'), { parola: 'DA SISTEMARE', tono: 'giallo' })
 ok('il peggiore vince', s('in_scadenza', 'da_pagare'), { parola: 'DA SISTEMARE', tono: 'rosso' })
 
-console.log('Lo stato sotto il nome (le chip delle persone)')
-const guaio = { tono: 'guaio', testo: 'Manca il certificato medico.' }
-const avviso = { tono: 'avviso', testo: 'La quota è pagata in parte: mancano 30 €.' }
-ok('nessun avviso: IN REGOLA', f('statoChip', []), { parola: 'IN REGOLA', tono: 'fatto' })
-ok('un avviso giallo: DA SISTEMARE, giallo', f('statoChip', [avviso]), { parola: 'DA SISTEMARE', tono: 'avviso' })
-ok('un guaio: DA SISTEMARE, rosso', f('statoChip', [guaio]), { parola: 'DA SISTEMARE', tono: 'guaio' })
-ok('il peggiore vince', f('statoChip', [avviso, guaio]), { parola: 'DA SISTEMARE', tono: 'guaio' })
+console.log('Il tab CONTATTI')
+const g = f('gruppiContatti', { guida: '/guida/iscritti/', conEsci: true })
+const C = { telefono: '346 329 2786', indirizzo: 'Via Vittorio Sassi 26, Collegno' }
+ok('i gruppi, in ordine', Array.isArray(g) ? g.map((x) => x.titolo) : g, ['SEGRETERIA', 'SEGUICI', 'LA TUA PAGINA'])
+const voci = (i) => (Array.isArray(g) ? g[i].voci.map((v) => v.nome) : g)
+ok('SEGRETERIA: chiama, WhatsApp, come arrivare', voci(0), ['CHIAMA', 'WHATSAPP', 'COME ARRIVARE'])
+ok('SEGUICI: Instagram e Facebook', voci(1), ['INSTAGRAM', 'FACEBOOK'])
+ok('LA TUA PAGINA: guida ed esci', voci(2), ['GUIDA', 'ESCI'])
+const href = (i, n) => (Array.isArray(g) ? g[i].voci[n].href : g)
+ok('CHIAMA va al telefono della palestra', href(0, 0), 'tel:+393463292786')
+ok('WHATSAPP allo stesso numero', href(0, 1), 'https://wa.me/393463292786')
+ok('COME ARRIVARE alla mappa', href(0, 2), 'https://www.google.com/maps/dir/?api=1&destination=Via+Vittorio+Sassi+26,+10093+Collegno+TO')
+ok('il numero e la via si leggono sulla riga', Array.isArray(g) ? [g[0].voci[0].nota, g[0].voci[2].nota] : g, [C.telefono, 'Via V. Sassi 26'])
+ok('GUIDA va alla guida', href(2, 0), '/guida/iscritti/')
+ok('ESCI non è un link: è un’azione', Array.isArray(g) ? [g[2].voci[1].href, g[2].voci[1].esci] : g, [undefined, true])
+const senza = f('gruppiContatti', { guida: '/guida/iscritti/', conEsci: false })
+ok('senza accesso vero (in prova) ESCI non c’è', Array.isArray(senza) ? senza[2].voci.map((v) => v.nome) : senza, ['GUIDA'])
 
-console.log('L\'avviso in una riga, sotto la testata')
-ok('niente da dire: niente riga', f('rigaAvviso', [], 'lezioni'), null)
-ok('su LEZIONI: la riga, col tab che lo sistema', f('rigaAvviso', [guaio], 'lezioni'), { testo: guaio.testo, tono: 'guaio', altri: 0, vai: 'regola' })
-ok('su NUCLEO: la stessa riga', f('rigaAvviso', [guaio], 'nucleo')?.vai, 'regola')
-ok('su IN REGOLA: niente, lo dice già il tab', f('rigaAvviso', [guaio], 'regola'), null)
-ok('più avvisi: il peggiore, e quanti altri', f('rigaAvviso', [avviso, guaio], 'lezioni'), { testo: guaio.testo, tono: 'guaio', altri: 1, vai: 'regola' })
+console.log('Le lezioni e le presenze in un elenco solo')
+ok('il conto è prossime + presenze', f('contoElenco', 3, 9), '3 + 9')
+ok('senza prossime', f('contoElenco', 0, 9), '0 + 9')
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
