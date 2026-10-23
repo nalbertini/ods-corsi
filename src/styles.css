@@ -1432,7 +1432,7 @@ a.btn { text-decoration: none; }
 .mia-area > .stack { flex: 1; }
 .mia-chi { gap: 6px; padding-top: 14px; padding-bottom: 6px; }
 .mia-chi .campo { width: 100%; }
-.mio-nome { font-size: 30px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; }
+.mio-nome { font-size: 30px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; border-bottom: 4px solid var(--giallo-testo); padding-bottom: 2px; align-self: flex-start; }
 .mie-chips { flex-wrap: wrap; gap: 6px; }
 .mia-chip {
   font-size: 12px; font-weight: 700; letter-spacing: 0.08em; padding: 4px 8px;
@@ -1441,10 +1441,25 @@ a.btn { text-decoration: none; }
 .mia-lezione { cursor: default; }
 .mia-lezione[data-annullata] .lezione-nome,
 .mia-lezione[data-annullata] .lezione-ora { text-decoration: line-through; color: var(--dim); }
-.mia-lezione-cosa { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-align: right; max-width: 40%; }
+.mia-lezione-cosa { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-align: right; flex-shrink: 1; max-width: 40%; align-self: flex-start; }
+.mia-icona { flex-shrink: 0; display: block; }
+/* Le righe di LEZIONI hanno tutte la stessa altezza; l'icona prende il colore del testo accanto, tranne quella davanti a giorno e istruttore, che è blu (la tinta del corso, il giallo, sul bianco non si legge). */
+.mia-lezione { min-height: 72px; }
+.mia-sotto { display: flex; align-items: flex-start; gap: 6px; min-width: 0; font-size: 13px; color: var(--dim); }
+.mia-sotto .mia-icona { color: var(--blu); flex-shrink: 0; margin-top: 1px; }
+.mia-vedi-tutte { font: inherit; font-weight: 700; letter-spacing: 0.1em; color: var(--blu); background: none; border: 0; padding: 14px 0 14px 12px; margin: -14px 0; min-height: 44px; cursor: pointer; }
+/* Le ultime tre presenze: tre box in fila, l'icona sopra, il giorno e lo stato sotto. */
+.mie-presenze-piccole { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; }
+.mia-presenza-piccola { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; text-align: center; }
+.mia-presenza-piccola-quando { font-size: 13px; font-weight: 600; line-height: 1.1; color: var(--text); }
+.mia-presenza-piccola .mia-presenza-detto { overflow-wrap: anywhere; letter-spacing: 0.06em; line-height: 1.1; }
+.mia-presenza-piccola[data-tono='fatto'] { color: var(--verde-testo); }
+.mia-presenza-piccola[data-tono='guaio'] { color: var(--rosso-testo); }
+.mia-presenza-piccola[data-tono='avviso'] { color: var(--giallo-testo); }
+.mia-presenza-piccola[data-tono='spento'] { color: var(--faint); }
+.mia-prossima { border-top: 5px solid var(--blu); }
 .mia-lezione-cosa[data-tono='guaio'] { color: var(--rosso-testo); }
 .mia-lezione-cosa[data-tono='avviso'] { color: var(--giallo-testo); }
-.mia-lezione-cosa[data-tono='fatto'] { color: var(--verde-testo); }
 /* Il nucleo familiare: di chi si guarda la pagina, e le persone del nucleo. */
 /* Il nome nel saluto è il campo che cambia persona: il select vero ci sta sopra, trasparente. */
 .mio-nome-scelta { position: relative; display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; padding: 4px 12px; min-height: 44px; border: 2px solid var(--blu); border-radius: 6px; }
@@ -1480,7 +1495,7 @@ a.btn { text-decoration: none; }
 .mia-segnala-modulo { gap: 8px; padding: 0 0 12px 34px; }
 .mia-presenza-segnalata { max-width: none; white-space: nowrap; }
 .mia-segnala-modulo .campo { width: 100%; }
-.mia-presenza-segno { font-size: 20px; font-weight: 700; width: 22px; text-align: center; color: var(--faint); }
+.mia-presenza-segno { display: flex; width: 22px; color: var(--faint); }
 .mia-presenza-detto { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint); }
 .mia-presenza[data-stato='presente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--verde-testo); }
 .mia-presenza[data-stato='assente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--rosso-testo); }
