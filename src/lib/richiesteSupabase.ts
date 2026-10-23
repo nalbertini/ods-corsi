@@ -174,6 +174,8 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             pagamento_satispay: d.pagamentoSatispay,
             // Le richieste della stessa famiglia: senza 84-avvisi-segreteria.sql la chiave si ignora.
             invio: d.invio,
+            // Il titolare del nucleo: senza 100-nucleo.sql la chiave si ignora; senza nucleo non parte.
+            nucleo_di: d.nucleoDi,
           },
         }),
       ) as string

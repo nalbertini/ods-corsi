@@ -1,4 +1,5 @@
 import type { Formula } from './richieste'
+import { minorenne } from './richieste'
 import type { Ricevuta } from './ricevute'
 import { centesimi, euro, voceQuota, vociDelCorso } from './ricevute'
 import { PIU_CORSI, stagioneDi } from './costi'
@@ -163,8 +164,13 @@ export function stimaIscrizione(
   return { righe, totale: righe.reduce((s, r) => s + r.importo, 0), sconto, senzaPrezzo }
 }
 
-/** Una persona per le regole del nucleo: chi è, se è attiva, e di quale nucleo fa parte. */
-type InNucleo = { id: string; attiva: boolean; nucleo?: string }
+/** Una persona per le regole del nucleo: chi è, se è attiva, di quale nucleo fa parte e quando è nata. */
+type InNucleo = { id: string; attiva: boolean; nucleo?: string; natoIl?: string }
+
+export const TITOLARE_MINORENNE = 'Il titolare deve essere maggiorenne: scegli un adulto'
+
+/** Senza data di nascita il titolare passa: la segreteria non sa, e non si blocca per questo. */
+const nonAdulto = (p: InNucleo) => !!p.natoIl && minorenne(p.natoIl)
 
 /**
  * Perché `personaId` non può entrare nel nucleo di `titolareId`, o `null` se
@@ -178,6 +184,7 @@ export function cosaNonVaNucleo(persone: InNucleo[], personaId: string, titolare
   if (p.id === t.id) return 'Una persona non entra nel suo stesso nucleo'
   if (!p.attiva || !t.attiva) return 'Le schede disattivate non entrano in un nucleo'
   if (t.nucleo) return 'È già nel nucleo di un altro: scegli il titolare'
+  if (nonAdulto(t)) return TITOLARE_MINORENNE
   if (p.nucleo === t.id) return 'È già in questo nucleo'
   if (p.nucleo) return 'È già nel nucleo di un altro: prima toglilo da lì'
   if (persone.some((x) => x.nucleo === p.id)) return 'Ha un nucleo suo, con altri dentro: prima toglili, o fai titolare un altro'
@@ -192,6 +199,7 @@ export function cosaNonVaNucleo(persone: InNucleo[], personaId: string, titolare
 export function nuovoTitolare(persone: InNucleo[], personaId: string): Map<string, string | null> | string {
   const p = persone.find((x) => x.id === personaId)
   if (!p?.nucleo) return 'Non è nel nucleo di nessuno'
+  if (nonAdulto(p)) return TITOLARE_MINORENNE
   const vecchio = p.nucleo
   const m = new Map<string, string | null>([[personaId, null], [vecchio, personaId]])
   for (const x of persone) if (x.nucleo === vecchio && x.id !== personaId) m.set(x.id, personaId)

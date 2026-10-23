@@ -59,8 +59,8 @@ export interface DatiRichiesta {
   regolamento?: boolean
   /**
    * Mandata dall'area degli iscritti per il nucleo di questa persona (il
-   * titolare, per id): accolta, chi si iscrive entra nel suo nucleo. Solo in
-   * prova, per ora (vedi `nucleo.ts`).
+   * titolare, per id): accolta, chi si iscrive entra nel suo nucleo
+   * (vedi `nucleo.ts`).
    */
   nucleoDi?: string
   /**

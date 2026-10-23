@@ -132,7 +132,8 @@
     "prova:compensi-extra": "node scripts/prova-compensi-extra.mjs",
     "prova:avvisi-segreteria": "node scripts/prova-avvisi-segreteria.mjs",
     "prova:sollecito": "node scripts/prova-sollecito.mjs",
-    "prova:impostazioni": "node scripts/prova-impostazioni.mjs"
+    "prova:impostazioni": "node scripts/prova-impostazioni.mjs",
+    "prova:nucleo": "node scripts/prova-nucleo.mjs"
   },
   "dependencies": {
     "@puckeditor/core": "^0.23.0",

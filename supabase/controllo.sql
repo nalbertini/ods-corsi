@@ -500,6 +500,15 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from pg_indexes where indexname = 'persone_email_unica' and indexdef like '%ruolo%')
     -- Rilanciare 45, 53, 90 o 95 dopo 99 rimette le funzioni che scrivono il contatto: la riga torna «da lanciare».
     and not exists (select 1 from dentro where nome in ('accogli_iscrizione', 'unisci_persone') and corpo like '%email_contatto%')
-    and exists (select 1 from dentro where nome = 'indirizzo_ricevuta' and corpo not like '%email_contatto%'))
+    and exists (select 1 from dentro where nome = 'indirizzo_ricevuta' and corpo not like '%email_contatto%')),
+  ('100-nucleo.sql', 'il nucleo familiare sul database',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'persone' and column_name = 'nucleo')
+    and to_regprocedure('public.metti_nel_nucleo(uuid,uuid)') is not null
+    and to_regprocedure('public.togli_dal_nucleo(uuid)') is not null
+    and to_regprocedure('public.rendi_titolare(uuid)') is not null
+    -- Rilanciare 45, 84, 95 o 99 dopo 100 rimette le funzioni senza il nucleo: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'unione_possibile' and corpo like '%nucleo%')
+    and exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%nucleo_di%')
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%nucleo_di%'))
 ) as x(file, cosa, c)
 order by file, cosa;

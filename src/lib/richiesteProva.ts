@@ -8,7 +8,7 @@ import { cosaNonVaScadenza } from './segreteria'
 import { MASSIMO_PERSONE } from './passiIscrizione'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { caricaListino } from './listino'
-import { stimaIscrizione } from './nucleo'
+import { cosaNonVaNucleo, stimaIscrizione } from './nucleo'
 import { NOME_TROPPO_LUNGO, nonSemplice, PAGAMENTO_ALTRA_PERSONA, PAGAMENTO_ALTRA_SCELTA, PAGAMENTO_NON_ARRIVATO, PAGAMENTO_NON_VALE, senzaVoceDelCorso, type PagamentoSatispay } from './satispay'
 
 /**
@@ -405,11 +405,12 @@ export function creaRichiesteProva(): DatiRichieste {
           { id, nome: r.nome, cognome: r.cognome, ruolo: 'iscritto', email, telefono: r.telefono, attiva: true, creataIl: oggi },
         ]
       }
-      // Dal nucleo di un iscritto: ci entra, a meno che non sia il titolare
-      // stesso o non abbia già un nucleo suo, con altri dentro.
-      const titolare = r.nucleoDi && a.persone.find((p) => p.id === r.nucleoDi && p.attiva && !p.nucleo)
-      const haIlSuo = a.persone.some((p) => p.nucleo === id)
-      if (titolare && titolare.id !== id && !haIlSuo) a.persone = a.persone.map((p) => (p.id === id ? { ...p, nucleo: titolare.id } : p))
+      // Dal nucleo di un iscritto: ci entra se le regole del nucleo lo permettono; se no, l'accoglimento riesce lo stesso.
+      if (r.nucleoDi) {
+        const natoIl = (pid: string) => a.anagrafiche?.[pid]?.natoIl ?? richiesteDi(pid).find((x) => x.stato === 'accolta')?.natoIl
+        const iscritti = a.persone.filter((p) => p.ruolo === 'iscritto').map((p) => ({ ...p, natoIl: natoIl(p.id) }))
+        if (!cosaNonVaNucleo(iscritti, id, r.nucleoDi)) a.persone = a.persone.map((p) => (p.id === id ? { ...p, nucleo: r.nucleoDi } : p))
+      }
       for (const corsoId of r.corsi) {
         if (!a.corsi.some((c) => c.id === corsoId && c.attivo)) continue
         const c = a.iscrizioni.find((i) => i.personaId === id && i.corsoId === corsoId)

@@ -562,8 +562,6 @@ aprono più, e si possono togliere lo stesso.
 
 ## Il nucleo familiare
 
-*Per ora solo in prova: col database vero la sezione non c'è.*
-
 Nella scheda **PERSONA**, **NUCLEO FAMILIARE**: le persone che stanno insieme in
 un nucleo, come un genitore coi figli. Il **titolare** vede tutto il nucleo
 nella sua pagina dell'[area iscritti](../iscritti.md#il-nucleo-familiare);
@@ -577,7 +575,9 @@ gli altri vedono solo sé stessi. Toccando un nome si apre la sua scheda.
 - **Togli**: la persona esce dal nucleo e resta iscritta.
 
 Il nucleo è uno solo: chi è già nel nucleo di un altro, o ne ha uno suo con
-altri dentro, va prima tolto. Le richieste aggiunte da un titolare dalla sua
+altri dentro, va prima tolto. Il titolare è sempre maggiorenne, e un titolare
+con altri nel nucleo non si archivia: prima si cambia il titolare. Le schede
+archiviate non entrano in un nucleo. Le richieste aggiunte da un titolare dalla sua
 area entrano nel suo nucleo da sole, quando si accolgono.
 
 Sotto, lo **sconto famiglia**: dalle ricevute del nucleo della stagione in corso, il 20% sull'annuale

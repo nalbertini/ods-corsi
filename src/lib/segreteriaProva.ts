@@ -223,7 +223,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     if (!p) throw new Error('Persona inesistente')
     return p
   }
-  /** I controlli di `unione_possibile` (29-unisci-doppioni.sql); in prova anche il nucleo, che col database non c'è. */
+  /** I controlli di `unione_possibile` (29-unisci-doppioni.sql), il nucleo compreso (100-nucleo.sql). */
   const unionePossibile = (resta: string, via: string) => {
     if (resta === via) throw new Error('Scegli due schede diverse')
     const r = persona(resta)
@@ -780,7 +780,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async attivaPersona(personaId, attiva) {
-      persona(personaId)
+      const quale = persona(personaId)
+      // Come il trigger del database: un titolare con gente nel nucleo non sparisce da sotto i suoi.
+      if (!attiva && quale.attiva && a().persone.some((x) => x.nucleo === personaId)) throw new Error('Prima cambia il titolare del nucleo')
       // Disattivata, si lascia dietro il file del certificato; la data resta, e riattivarla non lo riporta.
       if (!attiva) scordaCertificato(personaId)
       // Come il trigger del database: disattivata, le iscrizioni aperte si chiudono oggi (come `termina`); riattivarla non le riapre.
@@ -1017,7 +1019,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
 
     async mettiNelNucleo(personaId, titolareId) {
-      const iscritti = a().persone.filter((p) => p.ruolo === 'iscritto')
+      const iscritti = a().persone.filter((p) => p.ruolo === 'iscritto').map((p) => ({ ...p, natoIl: anagraficaDi(p.id)?.dati.natoIl }))
       const no = cosaNonVaNucleo(iscritti, personaId, titolareId)
       if (no) throw new Error(no)
       a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, nucleo: titolareId } : p))
@@ -1031,7 +1033,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async rendiTitolare(personaId) {
-      const m = nuovoTitolare(a().persone.filter((p) => p.ruolo === 'iscritto'), personaId)
+      const m = nuovoTitolare(a().persone.filter((p) => p.ruolo === 'iscritto').map((p) => ({ ...p, natoIl: anagraficaDi(p.id)?.dati.natoIl })), personaId)
       if (typeof m === 'string') throw new Error(m)
       a().persone = a().persone.map((p) => (m.has(p.id) ? { ...p, nucleo: m.get(p.id) ?? undefined } : p))
       salva()
@@ -2112,7 +2114,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if ((a().lettere ?? []).some((x) => x.personaId === personaId) || (a().ricevuteCompensi ?? []).some((x) => x.personaId === personaId)) throw new Error(`${nome} ha già lavorato nei registri: non si elimina, gli si toglie l'accesso`)
       if ((a().pagamentiDiretti ?? []).some((x) => x.personaId === personaId))
         throw new Error(`${nome} ha dei pagamenti registrati: non si elimina, gli si toglie l'accesso`)
-      a().persone = a().persone.filter((x) => x.id !== personaId)
+      // Come `on delete set null` del database: chi era nel suo nucleo resta senza.
+      a().persone = a().persone.filter((x) => x.id !== personaId).map((x) => (x.nucleo === personaId ? { ...x, nucleo: undefined } : x))
       // Come `on delete set null` del database: lo storico collegato resta, senza persona, e la traccia non nomina più nessuno.
       a().movimenti = (a().movimenti ?? []).map((x) => (x.personaId === personaId ? { ...x, personaId: undefined } : x))
       a().collegamentiPersona = (a().collegamentiPersona ?? []).map((x) => ({ ...x, prima: x.prima === personaId ? undefined : x.prima, dopo: x.dopo === personaId ? undefined : x.dopo }))

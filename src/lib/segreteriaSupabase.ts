@@ -158,7 +158,7 @@ type Scheda = {
  */
 const CERTIFICATI = 'certificati'
 const MANCA_CERTIFICATI = 'I certificati nell’app non sono ancora attivi sul database: va lanciato 45-certificati-online.sql'
-const NUCLEO_SOLO_PROVA = 'Il nucleo familiare c’è solo in prova, per ora: il database non lo tiene ancora'
+const NUCLEO_IN_AGGIORNAMENTO = 'Il nucleo familiare non è ancora attivo sul database: va lanciato 100-nucleo.sql'
 const DURATA_LINK = 600
 const ALLEGATI = 'segnalazioni'
 const MANCANO_PAGAMENTI_A_MANO = 'I pagamenti a mano non sono ancora attivi sul database: va lanciato 54-pagamenti-diretti.sql'
@@ -431,6 +431,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // Il file del certificato e la data insieme arrivano con 45-certificati-online.sql.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /salva_certificato/.test(e.message ?? '')) return new Error(MANCA_CERTIFICATI)
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /certificato_caricato_il/.test(e.message ?? '')) return new Error(MANCA_CERTIFICATI)
+  // Il nucleo familiare arriva con 100-nucleo.sql: finché non c'è, le funzioni non si trovano e la segreteria legge «va lanciato 100-nucleo.sql».
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /metti_nel_nucleo|togli_dal_nucleo|rendi_titolare/.test(e.message ?? '')) return new Error(NUCLEO_IN_AGGIORNAMENTO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /unisci_persone|anteprima_unione/.test(e.message ?? ''))
     return new Error('Unire due schede non è ancora attivo sul database: va lanciato 29-unisci-doppioni.sql')
   // Togliere un allegato: `togli_allegato` dice di no a chi non l'ha mandato.
@@ -1049,31 +1051,34 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         )
         return nascitaDelleFonti([...dalleAnagrafiche, ...dalleRichieste])
       })()
-      const campi = `id, nome, cognome, email, telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )`
+      const campi = (nucleo: boolean) => `id, nome, cognome, email, ${nucleo ? 'nucleo, ' : ''}telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )`
       const scheda = 'certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota'
-      const leggi = (schede: string | null) =>
+      const leggi = (schede: string | null, nucleo: boolean) =>
         tutteLeRighe((prima, ultima) =>
           db
             .from('persone')
-            .select(schede ? `${campi}, schede_iscritti!persona_id ( ${schede} )` : campi)
+            .select(schede ? `${campi(nucleo)}, schede_iscritti!persona_id ( ${schede} )` : campi(nucleo))
             .eq('ruolo', 'iscritto')
             .order('cognome')
             .order('id')
             .range(prima, ultima),
         )
-      const colonnaMancante = (x: { error: { code?: string; message?: string } | null }) => x.error?.code === '42703'
-      const leggiTutto = async () => {
+      const colonnaMancante = (x: { error: { code?: string; message?: string } | null }) => x.error?.code === '42703' && !/nucleo/.test(x.error.message ?? '')
+      const leggiTutto = async (nucleo: boolean) => {
         // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
-        let r = await leggi(`${scheda}, certificato_caricato_il, documento_in_segreteria`)
+        let r = await leggi(`${scheda}, certificato_caricato_il, documento_in_segreteria`, nucleo)
         // Senza 45-certificati-online.sql ogni file è di prima; e 07-certificati-pagamenti.sql di prima del documento su carta: senza la colonna nuova.
-        if (colonnaMancante(r)) r = await leggi(`${scheda}, documento_in_segreteria`)
-        if (colonnaMancante(r)) r = await leggi(scheda)
+        if (colonnaMancante(r)) r = await leggi(`${scheda}, documento_in_segreteria`, nucleo)
+        if (colonnaMancante(r)) r = await leggi(scheda, nucleo)
         // Un database dove 07-certificati-pagamenti.sql non è ancora passato: l'elenco si vede lo stesso.
-        if (r.error?.code === 'PGRST200') r = await leggi(null)
+        if (r.error?.code === 'PGRST200') r = await leggi(null, nucleo)
         return r
       }
-      const righe = ok(await leggiTutto()) as unknown as Array<{
-        id: string; nome: string; cognome: string; email: string | null; telefono: string | null; attiva: boolean; creata_il: string
+      let r0 = await leggiTutto(true)
+      // Un database dove 100-nucleo.sql non è ancora passato: l'elenco si vede lo stesso, senza nuclei.
+      if (r0.error?.code === '42703' && /nucleo/.test(r0.error.message ?? '')) r0 = await leggiTutto(false)
+      const righe = ok(r0) as unknown as Array<{
+        id: string; nome: string; cognome: string; email: string | null; nucleo?: string | null; telefono: string | null; attiva: boolean; creata_il: string
         iscrizioni: Array<{ corso_id: string; dal: string; al: string | null }>
         schede_iscritti?: Scheda | Scheda[] | null
       }>
@@ -1091,6 +1096,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           nome: r.nome,
           cognome: r.cognome,
           email: r.email ?? undefined,
+          nucleo: r.nucleo ?? undefined,
           telefono: r.telefono ?? undefined,
           attiva: r.attiva,
           creataIl: r.creata_il.slice(0, 10),
@@ -1158,15 +1164,15 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return (ok(r) as { id: string }).id
     },
 
-    // Il nucleo familiare c'è solo in prova, per ora (vedi `nucleo.ts`).
-    async mettiNelNucleo() {
-      throw new Error(NUCLEO_SOLO_PROVA)
+    // Il nucleo familiare (vedi `nucleo.ts`): le regole le dice il database, con gli stessi messaggi.
+    async mettiNelNucleo(personaId, titolareId) {
+      ok(await db.rpc('metti_nel_nucleo', { persona: personaId, titolare: titolareId }))
     },
-    async togliDalNucleo() {
-      throw new Error(NUCLEO_SOLO_PROVA)
+    async togliDalNucleo(personaId) {
+      ok(await db.rpc('togli_dal_nucleo', { persona: personaId }))
     },
-    async rendiTitolare() {
-      throw new Error(NUCLEO_SOLO_PROVA)
+    async rendiTitolare(personaId) {
+      ok(await db.rpc('rendi_titolare', { persona: personaId }))
     },
 
     async attivaPersona(personaId, attiva) {

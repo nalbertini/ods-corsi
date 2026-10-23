@@ -31,7 +31,7 @@ prima() {
 
 dropdb --if-exists prova_base 2>/dev/null
 createdb prova_base
-for f in supabase/prova/finto-supabase.sql supabase/[0-9][0-9]-*.sql; do
+for f in supabase/prova/finto-supabase.sql supabase/[0-9][0-9]-*.sql supabase/[0-9][0-9][0-9]-*.sql; do
   psql -d prova_base -f "$f" >/dev/null 2>&1 || { echo "✗ lo schema non si carica: $f"; psql -d prova_base -f "$f" >/dev/null; exit 1; }
 done
 
