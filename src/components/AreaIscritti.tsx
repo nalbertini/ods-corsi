@@ -6,6 +6,7 @@ import {
   iscrittoScelto,
   scegliIscritto,
   type AggiuntaNucleo,
+  type Avviso,
   type DatiIscritto,
   type IscrittoDiProva,
   type MiaLezione,
@@ -20,11 +21,11 @@ import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
 import { CONTATTI, chiama } from '../lib/sito'
 import { cartaSePuoi } from '../lib/cartaPdf'
 import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
-import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } from './ds'
+import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto } from './ds'
 import { AccessoIscritto } from './AccessoIscritto'
 import { esci } from '../lib/accesso'
 import { INDIRIZZI } from '../lib/aree'
-import { TAB_INIZIALE, etichettaTab, tabAperto, idPannelloTab, idTab, segnoInRegola, tabArea, tastoTabArea, type IdTabArea } from '../lib/areaTab'
+import { TAB_INIZIALE, etichettaTab, rigaAvviso, statoChip, tabAperto, idPannelloTab, idTab, segnoInRegola, tabArea, tastoTabArea, type IdTabArea } from '../lib/areaTab'
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
 import { PagaSaldo, RitornoSaldo } from './PagaSaldo'
 import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
@@ -210,11 +211,18 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
     <>
       {nucleo.length > 1 && (
         <div className="pad row mie-chips mio-nucleo-scelta" role="group" aria-label="Di chi vedi la pagina">
-          {nucleo.map((p) => (
-            <button key={p.id} type="button" className="num mia-chip mia-chip-tasto" aria-pressed={p.id === di} onClick={() => apri(p.id)}>
-              {p.id === personaId ? 'TU' : p.nome.toUpperCase()}
-            </button>
-          ))}
+          {nucleo.map((p) => {
+            const stato = statoChip(avvisi(p, chiaveGiorno(new Date())))
+            return (
+              <button key={p.id} type="button" className="num mia-chip mia-chip-tasto" aria-pressed={p.id === di} aria-label={`${p.id === personaId ? 'Tu' : p.nome}, ${stato.parola.toLowerCase()}`} onClick={() => apri(p.id)}>
+                <span aria-hidden="true">{p.id === personaId ? 'TU' : p.nome.toUpperCase()}</span>
+                <span aria-hidden="true" className="mia-chip-stato" data-tono={stato.tono}>
+                  {stato.tono === 'fatto' ? '' : '● '}
+                  {stato.parola}
+                </span>
+              </button>
+            )
+          })}
         </div>
       )}
       <Pagina
@@ -225,7 +233,7 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
         tua={di === personaId}
         tab={tab}
         onTab={setTab}
-        nucleo={titolare ? <Nucleo dati={dati} io={personaId} membri={nucleo} aggiunte={aggiunte} ricevute={ricevute} onApri={apri} onAggiungi={() => void aggiungi()} /> : null}
+        nucleo={titolare ? <Nucleo dati={dati} io={personaId} membri={nucleo} aggiunte={aggiunte} ricevute={ricevute} onAggiungi={() => void aggiungi()} /> : null}
       />
       <div style={{ paddingBottom: 20 }}>
         <Segreteria />
@@ -303,7 +311,16 @@ function Pagina({
 
   return (
     <div className="stack">
-      <Saluto scheda={scheda} tua={tua} />
+      <Saluto scheda={scheda} />
+      <RigaAvviso
+        guai={avvisi(scheda, oggi)}
+        tab={tab}
+        onVai={(t) => {
+          onTab(t)
+          // La riga sparisce con il clic: senza questo il fuoco cade sul body e chi usa la tastiera riparte dall'inizio.
+          document.getElementById(idTab(t))?.focus()
+        }}
+      />
       <div className="pad">
         <div className="schede sg-schede sg-schede-scheda" role="tablist" aria-label="Parti della pagina" onKeyDown={tastiera}>
           {ordine.map((id) => {
@@ -353,13 +370,10 @@ function Pagina({
   )
 }
 
-function Saluto({ scheda, tua }: { scheda: SchedaIscritto; tua: boolean }) {
-  const oggi = chiaveGiorno(new Date())
-  const x = avvisi(scheda, oggi)
+function Saluto({ scheda }: { scheda: SchedaIscritto }) {
   return (
-    <section className="pad stack" style={{ gap: 10, paddingTop: 6 }}>
-      <span className="ob mio-nome">{tua ? `Ciao ${scheda.nome}` : `${scheda.nome} ${scheda.cognome}`}</span>
-      {!tua && <Dettaglio>Nel tuo nucleo familiare: vedi la sua pagina come la vede la segreteria.</Dettaglio>}
+    <section className="pad stack" style={{ gap: 8, paddingTop: 6 }}>
+      <span className="ob mio-nome">{scheda.nome} {scheda.cognome}</span>
       {scheda.corsi.length > 0 ? (
         <span className="row mie-chips">
           {scheda.corsi.map((c) => (
@@ -371,19 +385,30 @@ function Saluto({ scheda, tua }: { scheda: SchedaIscritto; tua: boolean }) {
       ) : (
         <Dettaglio>Oggi non risulta un’iscrizione a un corso.</Dettaglio>
       )}
-      {x.length === 0 ? (
-        <Riquadro stretto>
-          <TitoloEsito tono="fatto">SEI IN REGOLA</TitoloEsito>
-          <Dettaglio>{statoCertificato(scheda, oggi) === 'non_serve' && !scheda.certificato.scade ? 'Quota pagata. Sotto i 6 anni il certificato non serve.' : 'Certificato medico valido e quota pagata.'}</Dettaglio>
-        </Riquadro>
-      ) : (
-        x.map((a) => (
-          <Riquadro key={a.testo} tono={a.tono === 'guaio' ? 'guaio' : 'prova'} stretto>
-            <Dettaglio tono={a.tono === 'guaio' ? 'guaio' : 'testo'}>{a.testo}</Dettaglio>
-          </Riquadro>
-        ))
-      )}
     </section>
+  )
+}
+
+/** L'avviso in una riga che porta al tab che lo sistema: sul tab stesso non c'è (vedi `rigaAvviso`). */
+function RigaAvviso({ guai, tab, onVai }: { guai: Avviso[]; tab: IdTabArea; onVai: (t: IdTabArea) => void }) {
+  const r = rigaAvviso(guai, tab)
+  if (!r) return null
+  return (
+    <div className="pad">
+      <button
+        type="button"
+        className="row riga-avviso"
+        data-tono={r.tono}
+        aria-label={`${r.testo}${r.altri > 0 ? `, e ${r.altri === 1 ? 'un altro avviso' : `altri ${r.altri} avvisi`}` : ''}. Apre ${etichettaTab(r.vai)}`}
+        onClick={() => onVai(r.vai)}
+      >
+        <span className="grow" style={{ textAlign: 'left' }} aria-hidden="true">
+          {r.testo}
+          {r.altri > 0 ? ` (+${r.altri})` : ''}
+        </span>
+        <span className="num riga-avviso-vai">{etichettaTab(r.vai)} ›</span>
+      </button>
+    </div>
   )
 }
 
@@ -693,7 +718,6 @@ function Nucleo({
   membri,
   aggiunte,
   ricevute,
-  onApri,
   onAggiungi,
 }: {
   dati: DatiIscritto
@@ -701,7 +725,6 @@ function Nucleo({
   membri: SchedaIscritto[]
   aggiunte: AggiuntaNucleo[]
   ricevute: Ricevuta[]
-  onApri: (id: string) => void
   onAggiungi: () => void
 }) {
   const oggi = chiaveGiorno(new Date())
@@ -714,25 +737,8 @@ function Nucleo({
   return (
     <>
       <section>
-        <Titoletto conto={membri.length}>IL TUO NUCLEO</Titoletto>
+        <Titoletto conto={membri.length + aggiunte.length}>IL NUCLEO</Titoletto>
         <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
-          {membri.map((p) => {
-            const guai = avvisi(p, oggi)
-            return (
-              <button key={p.id} type="button" className="card row mio-membro" onClick={() => onApri(p.id)}>
-                <span className="stack grow" style={{ gap: 2, minWidth: 0, textAlign: 'left' }}>
-                  <span style={{ fontWeight: 600 }}>
-                    {p.nome} {p.cognome}
-                    {p.id === io ? ' · tu' : ''}
-                  </span>
-                  <span style={{ fontSize: 13, color: 'var(--dim)' }}>{p.corsi.map((c) => c.nome).join(', ') || 'Nessun corso oggi'}</span>
-                </span>
-                <span className="num mia-lezione-cosa" data-tono={guai.some((g) => g.tono === 'guaio') ? 'guaio' : guai.length ? 'avviso' : 'fatto'}>
-                  {guai.length ? 'DA SISTEMARE' : 'IN REGOLA'}
-                </span>
-              </button>
-            )
-          })}
           {aggiunte.map((x) => (
             <div key={x.id} className="card row mio-membro" data-attesa>
               <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
@@ -746,7 +752,11 @@ function Nucleo({
               </span>
             </div>
           ))}
-          <Dettaglio>Figli, coniuge, fratelli: il modulo parte coi tuoi dati, e la richiesta arriva in segreteria come le altre.</Dettaglio>
+          <Dettaglio>
+            {membri.length > 1
+              ? 'Per aprire la pagina di una persona toccala in alto. Per aggiungerne una, il modulo parte coi tuoi dati.'
+              : 'Figli, coniuge, fratelli: il modulo parte coi tuoi dati, e la richiesta arriva in segreteria come le altre.'}
+          </Dettaglio>
           <Tasti>
             <Tasto variante="principale" onClick={onAggiungi}>
               AGGIUNGI UNA PERSONA
@@ -802,7 +812,7 @@ function Segreteria() {
       <Riquadro>
         <span className="passo-titolo">Qualcosa non torna?</span>
         <Dettaglio>
-          Questa pagina mostra quello che sa la segreteria. Per un certificato nuovo, un pagamento o un cambio di corso passa in palestra o chiama il{' '}
+          Questa pagina mostra quello che sa la segreteria. Per un cambio di corso, o per pagare in palestra, passa da noi o chiama il{' '}
           <span className="num testo-pieno">{CONTATTI.telefono}</span>.
         </Dettaglio>
         <Tasti>
