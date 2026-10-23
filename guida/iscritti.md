@@ -39,11 +39,17 @@ lega l'email alla scheda; le volte dopo è subito la propria pagina.
 In prova (`?prova`), in cima, si sceglie **quale iscritto essere**: la pagina cambia per
 ognuno, e il dispositivo si ricorda la scelta.
 
+La pagina è divisa in **tab**, sotto il saluto: **LEZIONI** (si apre su questo),
+**IN REGOLA** e, per il titolare di un nucleo, **NUCLEO**. Se il certificato o
+la quota non vanno, sul tab IN REGOLA c'è **● DA SISTEMARE**. Il tab scelto resta
+quando si cambia persona. Con le frecce della tastiera si passa da un tab
+all'altro.
+
 - **Ciao, e i corsi**: i corsi a cui è iscritto oggi, col loro colore. Sotto,
   **SEI IN REGOLA** in verde, o le cose da sistemare: il certificato medico
   che manca, è scaduto o scade entro un mese (sotto i 6 anni non serve); la
   quota da pagare, pagata in parte o da rinnovare.
-- **Prossime lezioni**: le lezioni dei suoi corsi nelle prossime due
+- **Prossime lezioni** (tab LEZIONI): le lezioni dei suoi corsi nelle prossime due
   settimane, un gruppo per giorno. Quello che cambia rispetto al solito si
   legge sulla lezione: **ANNULLATA** in rosso, **SOSTITUTO** quando la fa un
   altro istruttore, **IN** e il nome della sala quando la lezione è stata
@@ -55,7 +61,7 @@ ognuno, e il dispositivo si ricorda la scelta.
   La presenza la conferma l'istruttore della lezione o la segreteria; fino
   ad allora la riga dice **DA CONFERMARE**, e poi diventa presente, o dice
   **RIFIUTATA**. Una volta sola per lezione.
-- **Certificato e quota**: fino a quando vale il certificato medico (sotto i
+- **Certificato e quota** (tab IN REGOLA): fino a quando vale il certificato medico (sotto i
   6 anni non è obbligatorio), e fino a quando è pagata la quota. Il file del
   certificato lo vede solo la segreteria: qui c'è solo la data.
 - **Ricevute**: quelle fatte dalla segreteria, dalla più recente, ognuna col

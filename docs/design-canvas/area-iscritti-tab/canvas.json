@@ -1,0 +1,69 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Area iscritti a tab"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi · una colonna lunga",
+   "x": 0,
+   "y": 140,
+   "w": 390,
+   "h": 2300,
+   "page": "page-1"
+  },
+  {
+   "file": "Lezioni.dc.html",
+   "title": "Proposta · LEZIONI",
+   "x": 450,
+   "y": 140,
+   "w": 390,
+   "h": 1100,
+   "page": "page-1"
+  },
+  {
+   "file": "InRegola.dc.html",
+   "title": "Proposta · IN REGOLA",
+   "x": 900,
+   "y": 140,
+   "w": 390,
+   "h": 900,
+   "page": "page-1"
+  },
+  {
+   "file": "Nucleo.dc.html",
+   "title": "Proposta · NUCLEO (titolare)",
+   "x": 1350,
+   "y": 140,
+   "w": 390,
+   "h": 1100,
+   "page": "page-1"
+  },
+  {
+   "file": "SenzaNucleo.dc.html",
+   "title": "Proposta · senza nucleo: due tab",
+   "x": 1800,
+   "y": 140,
+   "w": 390,
+   "h": 1100,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 2200,
+   "text": "Area iscritti a tab · LEZIONI, IN REGOLA, NUCLEO"
+  }
+ ],
+ "launch": {
+  "view": "canvas",
+  "page": "page-1"
+ }
+}
