@@ -20,7 +20,7 @@ L'app ha sei indirizzi veri, ognuno con il suo accesso
 | `segreteria/` | L'area della reception, solo per chi ha il ruolo di segreteria (anche insieme a quello di istruttore o di amministrazione). |
 | `amministrazione/` | L'area dei conti: CONTABILITÀ e LISTINO, per chi ha il ruolo di amministrazione. Non vede le persone (`supabase/55-amministrazione.sql`). |
 | `iscrizioni/` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
-| `iscritti/` | La pagina di chi frequenta i corsi: si entra con l'email e un codice, senza password. |
+| `iscritti/` | La pagina di chi frequenta i corsi: si entra con Google o con l'email e un codice, senza password. |
 | `sala/` | Il tablet di sala. |
 | `collega/` | Dove chi cura i conti dice CONSENTI quando collega Claude al suo account (vedi «Le fatture dalla chat»). Ci si arriva solo da Claude. |
 

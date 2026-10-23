@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Messaggi del ritorno da Google</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;600;800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA · cosa si legge sulla porta quando si torna da Google senza entrare. Testi dal parere del cliente (un genitore): «email», mai «account» o «collegamento»; il numero della segreteria si tocca. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 900px; background: #eef5fa">
+  <dc-import name="Testata" luogo="LA TUA PAGINA" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+
+  <dc-import name="Titoletto" tema="sito" label="EMAIL NON TROVATA" hint-size="100%,50px"></dc-import>
+  <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 20px">
+    <span role="alert" style="font-size: 15px; font-weight: 600; line-height: 1.4; color: #b81d1d">Non troviamo questa email tra gli iscritti. Prova con quella che hai dato alla palestra, oppure chiama la segreteria.</span>
+    <dc-import name="Bottone" tema="sito" label="CHIAMA LA SEGRETERIA" variante="linea" hint-size="100%,56px"></dc-import>
+  </div>
+
+  <dc-import name="Titoletto" tema="sito" label="ACCESSO ANNULLATO" hint-size="100%,50px"></dc-import>
+  <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 20px">
+    <span role="status" style="font-size: 15px; line-height: 1.4; color: #0d2a3d">Accesso annullato. Puoi riprovare o usare il codice via email.</span>
+  </div>
+
+  <dc-import name="Titoletto" tema="sito" label="QUALCOSA NON HA FUNZIONATO" hint-size="100%,50px"></dc-import>
+  <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 20px">
+    <span role="alert" style="font-size: 15px; font-weight: 600; line-height: 1.4; color: #b81d1d">Qualcosa non ha funzionato. Riprova o usa il codice via email.</span>
+  </div>
+
+  <dc-import name="Titoletto" tema="sito" label="EMAIL DEL PERSONALE" hint-size="100%,50px"></dc-import>
+  <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 20px">
+    <span role="alert" style="font-size: 15px; font-weight: 600; line-height: 1.4; color: #b81d1d">Questa email è del personale della palestra. Usa l’accesso dello staff.</span>
+  </div>
+
+  <dc-import name="Titoletto" tema="sito" label="SENZA RETE" hint-size="100%,50px"></dc-import>
+  <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 20px">
+    <span role="alert" style="font-size: 15px; font-weight: 600; line-height: 1.4; color: #b81d1d">Il server non risponde: c’è rete?</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

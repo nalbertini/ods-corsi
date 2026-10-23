@@ -20,10 +20,15 @@ Senza password. Si scrive l'**email data in segreteria**, l'app ne manda un
 poco: se non arriva o è scaduto, **MANDA UN ALTRO CODICE**. Il primo accesso
 lega l'email alla scheda; le volte dopo è subito la propria pagina.
 
-- Se l'email non è fra quelle delle schede, l'app dice «Questa email non
-  risulta tra gli iscritti: usa quella data in segreteria». Per un
+- Se l'email non è fra quelle delle schede, l'app dice «Non troviamo questa
+  email tra gli iscritti» e propone di chiamare la segreteria. Per un
   familiare che condivide l'email con altri la segreteria deve collegare
   l'accesso a mano.
+- **ENTRA CON GOOGLE** è il primo tasto: un tocco, e vale l'email del conto
+  Google, che deve essere quella data in segreteria (Google lascia a noi
+  solo l'email). Se si annulla o non riesce, l'app lo dice e resta il codice
+  via email. Aperta dalla Home dell'iPhone l'app non mostra il tasto: lì si
+  entra col codice. Il personale non usa questa porta.
 - Si vede **solo quel che è proprio**: la scheda, le lezioni dei propri
   corsi, le presenze, la scadenza del certificato, la quota, le ricevute e,
   per il titolare, il nucleo. Il file del certificato che ha mandato l'iscritto

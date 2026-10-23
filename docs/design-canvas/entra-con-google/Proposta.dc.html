@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Porta degli iscritti con Google</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;600;800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA · ENTRA CON GOOGLE in cima (un tocco), poi il codice via email com'è. Nessuna icona di Google: il tasto è quello della palestra. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 760px; background: #eef5fa">
+  <dc-import name="Testata" luogo="LA TUA PAGINA" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+  <dc-import name="Titoletto" tema="sito" label="ACCESSO" hint-size="100%,50px"></dc-import>
+  <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 16px">
+    <dc-import name="Bottone" tema="sito" label="ENTRA CON GOOGLE" variante="principale" hint-size="100%,56px"></dc-import>
+    <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 0.05em; color: #46606f; padding: 8px 0 0">Oppure ricevi un codice via email</span>
+    <span style="font-size: 15px; line-height: 1.4; color: #46606f">Scrivi l’email che hai dato in segreteria: ti mandiamo un codice per entrare, senza password.</span>
+    <dc-import name="Campo" tema="sito" etichetta="EMAIL" hint-size="100%,90px"></dc-import>
+    <dc-import name="Bottone" tema="sito" label="MANDAMI IL CODICE" variante="linea" hint-size="100%,56px"></dc-import>
+    <span style="font-size: 13px; line-height: 1.4; color: #46606f; padding-top: 8px">Con Google leggiamo solo la tua email. Google sa soltanto che hai aperto l’app.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":760}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

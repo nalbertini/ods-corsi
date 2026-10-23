@@ -21,6 +21,7 @@ import { cartaSePuoi } from '../lib/cartaPdf'
 import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
 import { Cifra, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto } from './ds'
 import { AccessoIscritto } from './AccessoIscritto'
+import { riprendiDaGoogle, urlPulito } from '../lib/accessoIscritto'
 import { esci } from '../lib/accesso'
 import { INDIRIZZI } from '../lib/aree'
 import {
@@ -70,6 +71,9 @@ import { VERSIONE, VERSIONE_ESTESA } from '../lib/versione'
  */
 
 /** Quanti giorni avanti si guardano le lezioni, e quanti indietro le presenze. */
+// L'indirizzo con cui si è arrivati, letto prima che nasca il client: da Google si torna con l'esito nell'indirizzo.
+const ARRIVO = window.location.href
+
 const AVANTI = 7
 const INDIETRO = 7
 
@@ -78,11 +82,18 @@ export function AreaIscritti() {
   const [guaio, setGuaio] = useState<string | null>(null)
   const [iscritti, setIscritti] = useState<IscrittoDiProva[] | null>(null)
   const [chi, setChi] = useState<string | null>(iscrittoScelto)
+  // Com'è finito il ritorno da Google, se è da dire a chi non è entrato.
+  const [avviso, setAvviso] = useState<string | null>(null)
 
   useEffect(() => {
     let vivo = true
     datiIscritto()
       .then(async (x) => {
+        if (x.modo === 'supabase') {
+          const ritorno = await riprendiDaGoogle(ARRIVO)
+          if (ritorno) history.replaceState(null, '', urlPulito(window.location.href))
+          if (ritorno && 'errore' in ritorno && vivo) setAvviso(ritorno.errore)
+        }
         const elenco = await x.iscritti()
         if (!vivo) return
         setD(x)
@@ -107,7 +118,7 @@ export function AreaIscritti() {
 
   if (d.modo === 'supabase') {
     // Nessuno è entrato: l'accesso con il codice. Entrato, la sua pagina.
-    if (!chi) return <AccessoIscritto onEntrato={(io) => { setIscritti([io]); setChi(io.id) }} />
+    if (!chi) return <AccessoIscritto avviso={avviso} onEntrato={(io) => { setIscritti([io]); setChi(io.id) }} />
     return (
       <div className="mia-area">
         <Account key={chi} dati={d} personaId={chi} conEsci />
