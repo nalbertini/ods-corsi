@@ -517,6 +517,12 @@ const datiPrevisto = (cambi = {}) => {
 }
 
 console.log('\n17. le due costanti della chiusura')
+// «Annulla tutta l'importazione» riconosce il lotto dall'istante di scrittura: solo le righe della banca (e della chat) lo portano.
+{
+  const base = { tipo: 'entrata', data: '2026-09-05', importo: 100, voceId: 'v-don', cassaId: 'c2', descrizione: 'x', creatoIl: '2026-09-05T10:00:00.123Z' }
+  const r = m.righeMovimenti([], [{ ...base, id: 'b1', origineImport: 'banca:1' }, { ...base, id: 'b2' }], voci)
+  ok('solo la riga della banca porta creatoIl', r.sort((a, b) => a.id.localeCompare(b.id)).map((x) => x.creatoIl ?? null), ['2026-09-05T10:00:00.123Z', null])
+}
 ok('la voce della differenza', prova(() => m.VOCE_DIFFERENZA), 'Differenza di cassa')
 ok('sopra venti euro la schermata chiede conferma', prova(() => m.SOGLIA_DIFFERENZA), 2000)
 

@@ -103,6 +103,7 @@
     "prova:email-unica": "node scripts/prova-email-unica.mjs",
     "prova:importa": "node scripts/prova-importa.mjs",
     "prova:importa-prima-nota": "node scripts/prova-importa-prima-nota.mjs",
+    "prova:importa-banca": "node scripts/prova-importa-banca.mjs",
     "prova:colleghi": "node scripts/prova-colleghi.mjs",
     "prova:finestra": "node scripts/prova-finestra.mjs",
     "prova:aggiornamento": "node scripts/prova-aggiornamento.mjs",

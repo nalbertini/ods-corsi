@@ -1691,6 +1691,17 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.rpc('annulla_movimento', { id }))
     },
 
+    async importaMovimentiBanca(dati) {
+      return Number(ok(await db.rpc('importa_prima_nota', { dati })))
+    },
+
+    async annullaImportazioneBanca(creatoIl) {
+      const r = await db.rpc('annulla_importazione_banca', { creato: creatoIl })
+      // Senza 104-importa-banca.sql la funzione non c'è.
+      if (r.error && (r.error.code === 'PGRST202' || r.error.code === '42883')) throw new Error('Per annullare l’importazione serve prima aggiornare il database: chiedi a chi lo cura di lanciare il file 104-importa-banca.sql.')
+      return Number(ok(r))
+    },
+
     async statoScaricoSatispay() {
       const r = await db.rpc('satispay_scarico_stato')
       // Senza 97-satispay-scarico.sql la funzione non c'è: niente striscia, il resto della contabilità va.

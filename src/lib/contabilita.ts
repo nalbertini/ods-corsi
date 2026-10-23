@@ -93,8 +93,9 @@ export interface RigaMovimento {
   origineImport?: string
   /** La persona: collegata a mano allo storico, o quella della ricevuta o del pagamento di un incasso iscritto. */
   personaId?: string
-  /** Solo dei movimenti a mano: registrato dalla chat con Claude, e quando. */
+  /** Solo dei movimenti a mano: registrato dalla chat con Claude. */
   dallaChat?: boolean
+  /** Quando è stato scritto: dei movimenti dalla chat e di quelli importati dalla banca (`banca:`), che così si riconoscono a lotti. */
   creatoIl?: string
   /** Solo dei movimenti a mano: l'id del pagamento Satispay, il segno DA SATISPAY. */
   satispayId?: string
@@ -178,7 +179,7 @@ export function righeMovimenti(derivati: RigaMovimento[], manuali: MovimentoManu
       annullato: !!x.annullatoIl,
       origineImport: x.origineImport,
       personaId: x.personaId,
-      ...(x.dallaChat ? { dallaChat: true, creatoIl: x.creatoIl } : {}),
+      ...(x.dallaChat ? { dallaChat: true, creatoIl: x.creatoIl } : x.origineImport?.startsWith('banca:') ? { creatoIl: x.creatoIl } : {}),
       ...(x.satispayId ? { satispayId: x.satispayId } : {}),
     }),
   )

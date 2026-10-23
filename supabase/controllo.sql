@@ -536,6 +536,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('103-saldo-satispay.sql', 'il saldo della quota con Satispay',
     exists (select 1 from information_schema.columns where table_name = 'pagamenti_satispay' and column_name = 'saldo_di')
     and to_regprocedure('public.satispay_prepara_saldo(uuid,uuid)') is not null
-    and to_regprocedure('public.satispay_saldo_stato(uuid,uuid)') is not null)
+    and to_regprocedure('public.satispay_saldo_stato(uuid,uuid)') is not null),
+  ('104-importa-banca.sql', 'si può annullare in un colpo un''intera importazione dal file della banca',
+    to_regprocedure('public.annulla_importazione_banca(timestamptz)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;
