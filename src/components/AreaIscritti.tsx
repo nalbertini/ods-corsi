@@ -20,11 +20,11 @@ import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
 import { indirizzoPagina } from '../lib/guida'
 import { cartaSePuoi } from '../lib/cartaPdf'
 import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
-import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } from './ds'
+import { Cifra, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } from './ds'
 import { AccessoIscritto } from './AccessoIscritto'
 import { esci } from '../lib/accesso'
 import { INDIRIZZI } from '../lib/aree'
-import { TAB_INIZIALE, contoElenco, etichettaTab, gruppiContatti, tabAperto, idPannelloTab, idTab, segnoInRegola, tabArea, tastoTabArea, type IdTabArea, type VoceContatti } from '../lib/areaTab'
+import { TAB_INIZIALE, contoElenco, elencoLezioni, etichettaTab, fraQuanto, gruppiContatti, tabAperto, idPannelloTab, idTab, segnoInRegola, tabArea, tastoTabArea, type IdTabArea, type VoceContatti } from '../lib/areaTab'
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
 import { PagaSaldo, RitornoSaldo } from './PagaSaldo'
 import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
@@ -407,40 +407,41 @@ function Saluto({ scheda, tua, io, membri, onCambia }: { scheda: SchedaIscritto;
   )
 }
 
-/** Le prossime due settimane, un gruppo per giorno; quello che è cambiato si legge sulla lezione. */
+/** La prossima lezione in evidenza, poi le altre delle prossime due settimane in ordine di data (le presenze seguono, vedi `Presenze`). */
 function Prossime({ lezioni, presenze }: { lezioni: MiaLezione[]; presenze: number }) {
-  const oggi = chiaveGiorno(new Date())
-  const perGiorno = useMemo(() => {
-    const m = new Map<string, MiaLezione[]>()
-    for (const l of lezioni) {
-      const g = chiaveGiorno(new Date(l.inizio))
-      m.set(g, [...(m.get(g) ?? []), l])
-    }
-    return [...m]
-  }, [lezioni])
-  const annullate = lezioni.filter((l) => l.stato === 'annullata').length
+  const el = useMemo(() => elencoLezioni(lezioni, []), [lezioni])
+  const annullate = el.seguenti.filter((l) => l.stato === 'annullata').length
+  const p = el.prossima
 
   return (
-    <section>
-      <Titoletto conto={annullate ? `${annullate} ANNULLATE` : contoElenco(lezioni.length, presenze)}>LE TUE LEZIONI</Titoletto>
-      {lezioni.length === 0 && (
-        <p className="pad" style={{ color: 'var(--dim)', margin: 0 }}>
-          Nessuna lezione nelle prossime due settimane.
-        </p>
-      )}
-      {perGiorno.map(([g, del]) => (
-        <div key={g} className="stack" style={{ gap: 8, paddingBottom: 12 }}>
-          <span className="pad rule-label" style={g === oggi ? { color: 'var(--giallo-testo)' } : undefined}>
-            {(g === oggi ? `OGGI · ${giornoPerEsteso(g)}` : giornoPerEsteso(g)).toUpperCase()}
-          </span>
-          <div className="pad stack" style={{ gap: 8 }}>
-            {del.map((l) => (
-              <Lezione key={l.id} l={l} />
-            ))}
+    <>
+      {p && (
+        <section>
+          <Titoletto>LA PROSSIMA LEZIONE</Titoletto>
+          <div className="pad">
+            <Riquadro>
+              <Etichetta>{`${giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))} · ${oraDi(p.inizio)}`.toUpperCase()}</Etichetta>
+              <span className="ob lezione-nome">{p.corso.toUpperCase()}</span>
+              <Cifra>{fraQuanto(p.inizio, new Date())}</Cifra>
+              <Dettaglio>{[p.sala, p.sostituto && 'Con un sostituto', p.altraSala && 'In un’altra sala', p.straordinaria && 'In più'].filter(Boolean).join(' · ')}</Dettaglio>
+            </Riquadro>
           </div>
+        </section>
+      )}
+      <section>
+        <Titoletto conto={annullate ? `${annullate} ANNULLATE` : contoElenco(el.seguenti.length, presenze)}>LE TUE LEZIONI</Titoletto>
+        {lezioni.length === 0 && (
+          <p className="pad" style={{ color: 'var(--dim)', margin: 0 }}>
+            Nessuna lezione nelle prossime due settimane.
+          </p>
+        )}
+        <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
+          {el.seguenti.map((l) => (
+            <Lezione key={l.id} l={l} />
+          ))}
         </div>
-      ))}
-    </section>
+      </section>
+    </>
   )
 }
 
@@ -454,7 +455,7 @@ function Lezione({ l }: { l: MiaLezione }) {
       <span className="lezione-ora num">{oraDi(l.inizio)}</span>
       <span className="stack grow" style={{ gap: 3, minWidth: 0 }}>
         <span className="ob lezione-nome">{l.corso.toUpperCase()}</span>
-        <span style={{ fontSize: 13, color: 'var(--dim)' }}>{[l.sala, l.istruttore].filter(Boolean).join(' · ')}</span>
+        <span style={{ fontSize: 13, color: 'var(--dim)' }}>{[l.sala, giornoPerEsteso(chiaveGiorno(new Date(l.inizio)))].filter(Boolean).join(' · ')}</span>
       </span>
       {cosa && (
         <span className="num mia-lezione-cosa" data-tono={annullata ? 'guaio' : 'avviso'}>
