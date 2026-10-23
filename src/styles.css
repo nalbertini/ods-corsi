@@ -493,6 +493,8 @@
 :root[data-look='sito'] .spia-coda { border: 2px solid var(--giallo-testo); }
 :root[data-look='sito'] .nastro-prova { background: var(--surface); color: var(--giallo-testo); }
 :root[data-look='sito'] .riquadro[data-tono='prova'] { border-left: 4px solid var(--giallo-testo); }
+:root[data-look='sito'] .riga-avviso { border-left-color: var(--giallo-testo); }
+:root[data-look='sito'] .riga-avviso[data-tono='guaio'] { border-left-color: var(--rosso-testo); }
 :root[data-look='sito'] .bn-adesso { border-top: 3px solid var(--giallo-testo); }
 :root[data-look='sito'] .bn-adesso .num { background: var(--giallo-testo); color: #ffffff; }
 :root[data-look='sito'] .bn-riga { border-left: 8px solid var(--giallo-testo); }
@@ -1446,10 +1448,20 @@ a.btn { text-decoration: none; }
 .mia-lezione-cosa[data-tono='fatto'] { color: var(--verde-testo); }
 /* Il nucleo familiare: di chi si guarda la pagina, e le persone del nucleo. */
 .mio-nucleo-scelta { padding-top: 4px; padding-bottom: 6px; }
-.mia-chip-tasto { cursor: pointer; color: var(--dim); min-height: 44px; padding: 6px 12px; border-left-width: 2px; }
+/* La chip di una persona: il nome e sotto lo stato in parole (il colore da solo non basta). */
+.mia-chip-tasto { cursor: pointer; color: var(--dim); min-height: 44px; padding: 4px 12px; border-left-width: 2px; display: inline-flex; flex-direction: column; justify-content: center; gap: 2px; }
 .mia-chip-tasto[aria-pressed='true'] { color: var(--text); border-color: var(--text); background: var(--surface-2); }
+.mia-chip-stato { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; color: var(--dim); }
+.mia-chip-stato[data-tono='avviso'] { color: var(--giallo-testo); }
+.mia-chip-stato[data-tono='guaio'] { color: var(--rosso-testo); }
+/* Sulla chip accesa il giallo-testo perde contrasto sul fondo: lì il testo pieno. */
+.mia-chip-tasto[aria-pressed='true'] .mia-chip-stato[data-tono='avviso'] { color: var(--text); }
 .mio-membro { gap: 12px; padding: 10px 14px; width: 100%; align-items: center; cursor: pointer; }
 .mio-membro[data-attesa] { cursor: default; border-style: dashed; }
+/* L'avviso in una riga: un tasto che porta al tab che lo sistema. */
+.riga-avviso { width: 100%; min-height: 44px; padding: 6px 12px; gap: 10px; align-items: center; background: var(--surface); border: 2px solid var(--line); border-left: 5px solid var(--giallo); color: var(--text); font-size: 14px; line-height: 1.3; cursor: pointer; }
+.riga-avviso[data-tono='guaio'] { border-left-color: var(--rosso); }
+.riga-avviso-vai { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; white-space: nowrap; color: var(--dim); }
 /* Quanto costa una persona in più: le righe della stima, e il totale. */
 .stima { list-style: none; margin: 0; padding: 0; gap: 4px; }
 .stima-riga { gap: 12px; font-size: 15px; }

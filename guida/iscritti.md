@@ -45,10 +45,12 @@ la quota non vanno, sul tab IN REGOLA c'è **● DA SISTEMARE**. Il tab scelto r
 quando si cambia persona. Con le frecce della tastiera si passa da un tab
 all'altro.
 
-- **Ciao, e i corsi**: i corsi a cui è iscritto oggi, col loro colore. Sotto,
-  **SEI IN REGOLA** in verde, o le cose da sistemare: il certificato medico
-  che manca, è scaduto o scade entro un mese (sotto i 6 anni non serve); la
-  quota da pagare, pagata in parte o da rinnovare.
+- **Il nome e i corsi**: i corsi a cui è iscritto oggi, col loro colore.
+- **La riga dell'avviso**: se qualcosa non va (il certificato medico che
+  manca, è scaduto o scade entro un mese, sotto i 6 anni non serve; la quota
+  da pagare, pagata in parte o da rinnovare) sotto il nome c'è una riga con
+  la cosa più urgente. Toccandola si apre **IN REGOLA**, dove si sistema. Se
+  è tutto a posto la riga non c'è, e non compare nemmeno su IN REGOLA.
 - **Prossime lezioni** (tab LEZIONI): le lezioni dei suoi corsi nelle prossime due
   settimane, un gruppo per giorno. Quello che cambia rispetto al solito si
   legge sulla lezione: **ANNULLATA** in rosso, **SOSTITUTO** quando la fa un
@@ -99,11 +101,10 @@ altre vede solo sé stessa. In prova gli iscritti inventati con lo stesso
 cognome fanno famiglia, a gruppi di due o tre.
 
 - **Di chi è la pagina**: in cima, **TU** e il nome di ogni persona del
-  nucleo. Toccandone uno si vede la sua pagina: lezioni, presenze,
-  certificato, quota e ricevute.
-- **Il tuo nucleo**: le persone, ognuna con **IN REGOLA** o **DA SISTEMARE**,
-  e quelle aggiunte che la segreteria non ha ancora accolto (**LA GUARDA LA
-  SEGRETERIA**), o che ha rifiutato.
+  nucleo, ognuno con sotto **IN REGOLA** o **● DA SISTEMARE**. Toccandone uno
+  si vede la sua pagina: lezioni, presenze, certificato, quota e ricevute.
+- **Il nucleo** (tab NUCLEO): le persone aggiunte che la segreteria non ha
+  ancora accolto (**LA GUARDA LA SEGRETERIA**), o che ha rifiutato.
 - **Aggiungi una persona**: apre il modulo di iscrizione già compilato coi
   dati che la segreteria ha del titolare: cognome, residenza, email e
   telefono, e il titolare come genitore per un minore, col suo codice fiscale. Si

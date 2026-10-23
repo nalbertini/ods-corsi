@@ -129,6 +129,8 @@ Google, e vale solo per i mockup.
 | `MembroNucleo` | Una persona del nucleo (`.mio-membro`): IN REGOLA, DA SISTEMARE, in attesa o rifiutata |
 | `RigaNucleoPagamento` | Una riga di PAGAMENTI DEL NUCLEO, con la variante «Tutto il nucleo» |
 | `NastroProva` | Il nastro giallo di prova (`.nastro-prova`, `NastroProva` di `ds.tsx`): area iscritti, sala e pagina Iscrizioni; `esci` aggiunge ESCI DALLA PROVA |
+| `ChipPersona` | COSTRUITO (`razionalizza-iscritti`): `.mia-chip-tasto` con sotto lo stato (IN REGOLA, DA SISTEMARE, RIFIUTATA), acceso o no |
+| `RigaAvviso` | COSTRUITO (`razionalizza-iscritti`): `.riga-avviso`, l'avviso della pagina in una riga-tasto con la barra gialla o rossa e «IN REGOLA ›» |
 | `MiaChip` | `.mia-chip` (corso col colore) e `.mia-chip-tasto` (TU, nome di chi è nel nucleo) |
 | `TabletTestataSala` | La testata completa del tablet (`Tablet.tsx`): come `TabletTestata`, più il chip del timer in corso, SI SEGNA ORA, IN ATTESA DI RETE e i bollini IMPOSTAZIONI APERTE e AREA ISTRUTTORE |
 | `TabletPiedeMusica` | La barra in basso: PRESENZE / TIMER e la musica (`MusicaSala.tsx`): suona, pausa, errore, spenta; Spotify, radio, YouTube |

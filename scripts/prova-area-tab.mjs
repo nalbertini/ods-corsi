@@ -69,5 +69,20 @@ ok('quota scaduta: rosso', s('valido', 'scaduto'), { parola: 'DA SISTEMARE', ton
 ok('quota pagata in parte: giallo', s('valido', 'in_parte'), { parola: 'DA SISTEMARE', tono: 'giallo' })
 ok('il peggiore vince', s('in_scadenza', 'da_pagare'), { parola: 'DA SISTEMARE', tono: 'rosso' })
 
+console.log('Lo stato sotto il nome (le chip delle persone)')
+const guaio = { tono: 'guaio', testo: 'Manca il certificato medico.' }
+const avviso = { tono: 'avviso', testo: 'La quota è pagata in parte: mancano 30 €.' }
+ok('nessun avviso: IN REGOLA', f('statoChip', []), { parola: 'IN REGOLA', tono: 'fatto' })
+ok('un avviso giallo: DA SISTEMARE, giallo', f('statoChip', [avviso]), { parola: 'DA SISTEMARE', tono: 'avviso' })
+ok('un guaio: DA SISTEMARE, rosso', f('statoChip', [guaio]), { parola: 'DA SISTEMARE', tono: 'guaio' })
+ok('il peggiore vince', f('statoChip', [avviso, guaio]), { parola: 'DA SISTEMARE', tono: 'guaio' })
+
+console.log('L\'avviso in una riga, sotto la testata')
+ok('niente da dire: niente riga', f('rigaAvviso', [], 'lezioni'), null)
+ok('su LEZIONI: la riga, col tab che lo sistema', f('rigaAvviso', [guaio], 'lezioni'), { testo: guaio.testo, tono: 'guaio', altri: 0, vai: 'regola' })
+ok('su NUCLEO: la stessa riga', f('rigaAvviso', [guaio], 'nucleo')?.vai, 'regola')
+ok('su IN REGOLA: niente, lo dice già il tab', f('rigaAvviso', [guaio], 'regola'), null)
+ok('più avvisi: il peggiore, e quanti altri', f('rigaAvviso', [avviso, guaio], 'lezioni'), { testo: guaio.testo, tono: 'guaio', altri: 1, vai: 'regola' })
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
