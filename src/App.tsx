@@ -6,6 +6,7 @@ import { NastroProva } from './components/ds'
 import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { Collega } from './components/Collega'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
+import { apriAspettoModulo } from './lib/aspettoModulo'
 import { vistaIscrizioni } from './lib/paginaIscrizioni'
 import { IscrizioneAPassi } from './components/IscrizioneAPassi'
 import { OrdinaVestiario } from './components/OrdinaVestiario'
@@ -231,11 +232,13 @@ function Iscrizioni() {
     window.addEventListener('hashchange', segui)
     return () => window.removeEventListener('hashchange', segui)
   }, [])
+  // Aspetto del sito per tutta l'area, non solo per pagina, prezzi e modulo: vestiario e passi non lo accendevano.
+  useEffect(() => apriAspettoModulo(), [])
   const { vista, testata } = vistaIscrizioni(haUnServer, hash)
   return (
     <div className="app">
       {/* La pagina ha il marchio sopra il titolo: una sola intestazione. */}
-      {testata && <Testata luogo={vista === 'vestiario' ? 'VESTIARIO' : 'ISCRIZIONI'} />}
+      {testata && <Testata luogo={vista === 'vestiario' ? 'VESTIARIO' : 'ISCRIZIONI'} senzaTema />}
       {inProvaScelta && <NastroProva testo="PROVA · LE RICHIESTE NON ARRIVANO IN SEGRETERIA" onEsci={() => scegliProva(false)} />}
       <main className="scroll">
         {/* Il flusso a passi è solo in prova e solo con #nuova: il vecchio resta com'è. */}
