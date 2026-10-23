@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.181.0 — 23 ottobre 2026
+
+### Novità
+
+- La pagina iscritti più corta, con lo stato di ognuno nelle chip e l'avviso in una riga
+
 ## 0.180.0 — 23 ottobre 2026
 
 ### Novità
