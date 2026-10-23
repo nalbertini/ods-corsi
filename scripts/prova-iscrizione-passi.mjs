@@ -1994,6 +1994,18 @@ console.log('\n38. QUANTO PAGHI')
   ok('senza listino: niente conto', [conto([luca], undefined), conto(tre, undefined)], [undefined, undefined])
   ok('senza nessun corso scelto: niente conto', [conto([adulto({ corsi: [] })]), conto([adulto({ corsi: [] }), adulto({ nome: 'Paola', corsi: [] })])], [undefined, undefined])
 
+  // --- quanto ci si aspetta dalla ricevuta del bonifico (la vede la segreteria, accanto al file) ---
+  const atteso = (gruppo, ...l) => chiama(() => m.attesoRicevuta(gruppo, corsi, l.length ? l[0] : listino, giorno))
+  const rLuca = { nome: 'Luca', cognome: 'Rossi', corsi: ['judo-adulti'], formula: 'annuale' }
+  const rAnna = { nome: 'Anna', cognome: 'Rossi', corsi: ['judo-3'], formula: 'annuale' }
+  ok('ricevuta attesa, una persona: il totale e la causale del modulo', [atteso([rLuca])?.totale, atteso([rLuca])?.causale], [stima.totale, 'Iscrizione Luca Rossi · Judo adulti'])
+  const famiglia = m.contoFamiglia([{ chi: 'Luca', corsi: [corsi.find((c) => c.id === 'judo-adulti')], formula: 'annuale' }, { chi: 'Anna', corsi: [corsi.find((c) => c.id === 'judo-3')], formula: 'annuale' }], giorno, listino)
+  ok('ricevuta attesa, richieste mandate insieme: il totale è quello della famiglia, con lo sconto', [atteso([rLuca, rAnna])?.totale, famiglia.sconto > 0], [famiglia.totale, true])
+  ok('ricevuta attesa, più persone: niente causale, ognuno scrive la sua', atteso([rLuca, rAnna])?.causale, undefined)
+  ok('ricevuta attesa, un corso senza prezzo: lo dice', atteso([{ ...rLuca, corsi: ['psico'] }])?.senzaPrezzo, ['Psicomotricità'])
+  ok('ricevuta attesa, un corso che non c’è più: si salta', atteso([{ ...rLuca, corsi: ['non-c-e'] }]), undefined)
+  ok('ricevuta attesa, senza listino: niente', atteso([rLuca], undefined), undefined)
+
   // B5: una cifra sola, al centesimo: il conto del modulo, il totale sopra la barra a QUANTO PAGHI, l'importo dell'esito.
   for (const [nome, persone, paga] of [['adulto solo', [luca], 2], ['bambino e io', conIo, 3], ['famiglia di 3', tre, 2]]) {
     const c = conto(persone)
