@@ -52,15 +52,19 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   medico che manca, è scaduto o scade entro un mese, sotto i 6 anni non serve;
   la quota da pagare, pagata in parte o da rinnovare); se è tutto a posto non
   dice niente.
-- **Le tue lezioni** (tab LEZIONI): in cima **LA PROSSIMA
-  LEZIONE** in evidenza, con quanti giorni mancano; sotto, un elenco solo con
-  le altre lezioni dei suoi corsi nelle prossime due settimane, in ordine di
-  data, e poi le presenze. A destra del titolo il conto: le altre lezioni + le presenze. Quello che cambia rispetto al solito si
-  legge sulla lezione: **ANNULLATA** in rosso, **SOSTITUTO** quando la fa un
-  altro istruttore, **IN** e il nome della sala quando la lezione è stata
-  spostata, **IN PIÙ** per una lezione fuori dall'orario (uno stage).
-- **Le presenze**: le ultime cinque, una per riga, con **TUTTE** per
-  vederle tutte. Dove non risulta presente (non segnato, o assente) c'è
+- **Le ultime presenze** (tab LEZIONI, in cima): le ultime tre in tre box
+  piccoli, ognuno con la data («mer 21 ott»), un segno a cerchio (✓ presente,
+  ✗ assente) e la parola. **VEDI TUTTE** apre l'elenco completo, una per riga;
+  **MENO** lo richiude.
+- **Le tue lezioni**: sotto, **LA PROSSIMA LEZIONE** in evidenza, con quanti
+  giorni mancano e l'istruttore; poi le altre lezioni dei suoi corsi nella
+  prossima settimana, in ordine di data, ognuna con l'istruttore e il giorno.
+  Se sono più di cinque, **VEDI TUTTE** mostra le altre. Quello che cambia
+  rispetto al solito si legge a destra sulla lezione: **ANNULLATA** in rosso,
+  **SOSTITUTO** quando la fa un altro istruttore, **IN** e il nome della sala
+  quando la lezione è stata spostata, **IN PIÙ** per una lezione fuori
+  dall'orario (uno stage).
+- **Segnalare una presenza**: nell'elenco completo, dove non risulta presente (non segnato, o assente) c'è
   solo il tasto **SEGNALA**: chi c'era lo dice, con una nota se vuole, e **ERO PRESENTE**.
   La presenza la conferma l'istruttore della lezione o la segreteria; fino
   ad allora la riga dice **DA CONFERMARE**, e poi diventa presente, o dice
@@ -87,7 +91,8 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   suo **PDF** da scaricare: lo stesso che stampa la segreteria.
 - **CONTATTI** (ultimo tab): la segreteria (**CHIAMA**, **WHATSAPP**, **COME
   ARRIVARE**), **SEGUICI** su Instagram e Facebook, e **LA TUA PAGINA**: la
-  **GUIDA** e **ESCI**. In prova ESCI non c'è.
+  **GUIDA** e **ESCI**. In prova ESCI non c'è. In fondo c'è la **versione**
+  dell'app.
 
 Tutto viene da quello che la segreteria e gli istruttori fanno già: una
 lezione annullata o un sostituto dalla **SETTIMANA**, le presenze

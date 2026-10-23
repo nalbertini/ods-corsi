@@ -23,10 +23,35 @@ import { Cifra, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto } from '
 import { AccessoIscritto } from './AccessoIscritto'
 import { esci } from '../lib/accesso'
 import { INDIRIZZI } from '../lib/aree'
-import { TAB_INIZIALE, contoElenco, elencoLezioni, etichettaTab, fraQuanto, gruppiContatti, tabAperto, idPannelloTab, idTab, segnoInRegola, tabArea, tastoTabArea, type IdTabArea, type VoceContatti } from '../lib/areaTab'
+import {
+  TAB_INIZIALE,
+  cosaCambia,
+  elencoLezioni,
+  lezioniViste,
+  contoAnnullate,
+  puoSegnalare,
+  etichettaTab,
+  fraQuanto,
+  gruppiContatti,
+  tabAperto,
+  idPannelloTab,
+  idTab,
+  segnoInRegola,
+  quandoBreve,
+  segnoPresenza,
+  sottoLezione,
+  tabArea,
+  tastoTabArea,
+  ultimePresenze,
+  type IconaCosa,
+  type IconaPresenza,
+  type IdTabArea,
+  type VoceContatti,
+} from '../lib/areaTab'
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
 import { PagaSaldo, RitornoSaldo } from './PagaSaldo'
 import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
+import { VERSIONE, VERSIONE_ESTESA } from '../lib/versione'
 
 /**
  * L'area degli iscritti, dal telefono: le prossime lezioni dei suoi corsi,
@@ -45,8 +70,8 @@ import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
  */
 
 /** Quanti giorni avanti si guardano le lezioni, e quanti indietro le presenze. */
-const AVANTI = 14
-const INDIETRO = 30
+const AVANTI = 7
+const INDIETRO = 7
 
 export function AreaIscritti() {
   const [d, setD] = useState<DatiIscritto | null>(null)
@@ -192,7 +217,11 @@ function Account({ dati, personaId, conEsci }: { dati: DatiIscritto; personaId: 
 
   const aggiungi = async () => {
     const d = await dati.datiDelNucleo(personaId)
-    setModulo({ titolare: io.nome, dati: d, abbonamenti: abbonamentiDalleRicevute(ricevute, nomeDi, chiaveGiorno(new Date())) })
+    setModulo({
+      titolare: io.nome,
+      dati: d,
+      abbonamenti: abbonamentiDalleRicevute(ricevute, nomeDi, chiaveGiorno(new Date())),
+    })
     suSubito()
   }
   const apri = (id: string) => {
@@ -225,6 +254,31 @@ const ICONE_TAB: Record<IdTabArea, string[]> = {
   regola: ['M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z', 'M8.5 12l2.5 2.5L15.5 9.5'],
   nucleo: ['M9 11a3 3 0 1 0 0-6a3 3 0 0 0 0 6z', 'M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6', 'M16 5.5a3 3 0 0 1 0 5.5M18 14.5c1.8.8 3 2.6 3 5.5'],
   contatti: ['M5 4h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-7l-4 4v-4H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z', 'M8 9h8M8 12h5'],
+}
+
+/** Le icone a linea di LEZIONI (stesse del design, MiaLezione e MiaPresenzaPiccola): accompagnano le parole, non le sostituiscono. */
+const CERCHIO = 'M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z'
+const ICONE_LEZIONE: Record<IconaCosa | IconaPresenza | 'istruttore' | 'giorno', string[]> = {
+  istruttore: ['M12 4a4 4 0 1 0 0 8a4 4 0 0 0 0-8z', 'M4 21a8 8 0 0 1 16 0'],
+  giorno: ['M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'M4 10h16M8 3v4M16 3v4'],
+  sala: ['M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z', 'M12 7.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5z'],
+  annullata: [CERCHIO, 'M5.6 5.6l12.8 12.8'],
+  sostituto: ['M7 7h13l-3-3', 'M17 17H4l3 3'],
+  piu: [CERCHIO, 'M12 8v8M8 12h8'],
+  presente: [CERCHIO, 'M8 12.5l3 3l5-6'],
+  assente: [CERCHIO, 'M9 9l6 6M15 9l-6 6'],
+  giustificato: [CERCHIO, 'M8.5 12h7'],
+  niente: [CERCHIO],
+}
+
+function Icona({ nome, misura = 16 }: { nome: keyof typeof ICONE_LEZIONE; misura?: number }) {
+  return (
+    <svg width={misura} height={misura} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mia-icona">
+      {ICONE_LEZIONE[nome].map((d) => (
+        <path key={d} d={d} />
+      ))}
+    </svg>
+  )
 }
 
 /** La pagina di un iscritto: la propria, o (`tua` falso) di una persona del nucleo. */
@@ -308,8 +362,8 @@ function Pagina({
       {pannello(
         'lezioni',
         <>
-          <Prossime lezioni={lezioni} presenze={presenze.length} />
           <Presenze dati={dati} personaId={personaId} presenze={presenze} />
+          <Prossime lezioni={lezioni} />
         </>,
       )}
       {pannello(
@@ -390,11 +444,14 @@ function Saluto({ scheda, tua, io, membri, onCambia }: { scheda: SchedaIscritto;
   )
 }
 
-/** La prossima lezione in evidenza, poi le altre delle prossime due settimane in ordine di data (le presenze seguono, vedi `Presenze`). */
-function Prossime({ lezioni, presenze }: { lezioni: MiaLezione[]; presenze: number }) {
-  const el = useMemo(() => elencoLezioni(lezioni, []), [lezioni])
+/** La prossima lezione in evidenza, poi le altre della prossima settimana in ordine di data. */
+function Prossime({ lezioni }: { lezioni: MiaLezione[] }) {
+  const [tutte, setTutte] = useState(false)
+  const el = useMemo(() => elencoLezioni(lezioni), [lezioni])
   const annullate = el.seguenti.filter((l) => l.stato === 'annullata').length
   const p = el.prossima
+  const cambia = p && cosaCambia(p)
+  const { viste, piu } = lezioniViste(el.seguenti, tutte)
 
   return (
     <>
@@ -402,24 +459,53 @@ function Prossime({ lezioni, presenze }: { lezioni: MiaLezione[]; presenze: numb
         <section>
           <Titoletto>LA PROSSIMA LEZIONE</Titoletto>
           <div className="pad">
-            <Riquadro>
-              <Etichetta>{`${giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))} · ${oraDi(p.inizio)}`.toUpperCase()}</Etichetta>
-              <span className="ob lezione-nome">{p.corso.toUpperCase()}</span>
-              <Cifra>{fraQuanto(p.inizio, new Date())}</Cifra>
-              <Dettaglio>{[p.sala, p.sostituto && 'Con un sostituto', p.altraSala && 'In un’altra sala', p.straordinaria && 'In più'].filter(Boolean).join(' · ')}</Dettaglio>
-            </Riquadro>
+            <div className="mia-prossima">
+              <Riquadro>
+                <Etichetta>{`${giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))} · ${oraDi(p.inizio)}`.toUpperCase()}</Etichetta>
+                <span className="ob lezione-nome">{p.corso.toUpperCase()}</span>
+                <Cifra>{fraQuanto(p.inizio, new Date())}</Cifra>
+                <Dettaglio>
+                  <span className="mia-sotto">
+                    {p.istruttore && (
+                      <>
+                        <Icona nome="istruttore" />
+                        {p.istruttore}
+                      </>
+                    )}
+                    {cambia && (
+                      <>
+                        <Icona nome={cambia.icona} />
+                        {cambia.frase}
+                      </>
+                    )}
+                  </span>
+                </Dettaglio>
+              </Riquadro>
+            </div>
           </div>
         </section>
       )}
       <section>
-        <Titoletto conto={annullate ? `${annullate} ANNULLATE` : contoElenco(el.seguenti.length, presenze)}>LE TUE LEZIONI</Titoletto>
-        {lezioni.length === 0 && (
+        <Titoletto
+          conto={
+            piu ? (
+              <button type="button" className="mia-vedi-tutte" aria-expanded={tutte} onClick={() => setTutte(!tutte)}>
+                {tutte ? 'MENO' : 'VEDI TUTTE'}
+              </button>
+            ) : annullate ? (
+              contoAnnullate(annullate)
+            ) : undefined
+          }
+        >
+          LE TUE LEZIONI
+        </Titoletto>
+        {viste.length === 0 && (
           <p className="pad" style={{ color: 'var(--dim)', margin: 0 }}>
-            Nessuna lezione nelle prossime due settimane.
+            {p ? 'Nessun’altra lezione nella prossima settimana.' : 'Nessuna lezione nella prossima settimana.'}
           </p>
         )}
         <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
-          {el.seguenti.map((l) => (
+          {viste.map((l) => (
             <Lezione key={l.id} l={l} />
           ))}
         </div>
@@ -430,34 +516,38 @@ function Prossime({ lezioni, presenze }: { lezioni: MiaLezione[]; presenze: numb
 
 function Lezione({ l }: { l: MiaLezione }) {
   const annullata = l.stato === 'annullata'
-  const cosa = annullata
-    ? 'ANNULLATA'
-    : [l.straordinaria && 'IN PIÙ', l.sostituto && 'SOSTITUTO', l.altraSala && `IN ${l.sala?.toUpperCase()}`].filter(Boolean).join(' · ')
+  const cosa = cosaCambia(l)
+  const sotto = sottoLezione(l)
   return (
-    <div className="card lezione mia-lezione" data-annullata={annullata || undefined} style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)', cursor: 'default' }}>
+    <div
+      className="card lezione mia-lezione"
+      data-annullata={annullata || undefined}
+      style={{
+        ['--tinta' as string]: l.colore ?? 'var(--blu)',
+        cursor: 'default',
+      }}
+    >
       <span className="lezione-ora num">{oraDi(l.inizio)}</span>
       <span className="stack grow" style={{ gap: 3, minWidth: 0 }}>
         <span className="ob lezione-nome">{l.corso.toUpperCase()}</span>
-        <span style={{ fontSize: 13, color: 'var(--dim)' }}>{[l.sala, giornoPerEsteso(chiaveGiorno(new Date(l.inizio)))].filter(Boolean).join(' · ')}</span>
+        <span className="mia-sotto">
+          <Icona nome={sotto.icona} />
+          <span style={{ minWidth: 0 }}>{sotto.pezzi.join(' · ')}</span>
+        </span>
       </span>
       {cosa && (
-        <span className="num mia-lezione-cosa" data-tono={annullata ? 'guaio' : 'avviso'}>
-          {cosa}
+        <span className="num mia-lezione-cosa" data-tono={cosa.tono}>
+          <Icona nome={cosa.icona} misura={18} />
+          {cosa.testo}
         </span>
       )}
     </div>
   )
 }
 
-const SEGNI: Record<string, [string, string]> = {
-  presente: ['✓', 'PRESENTE'],
-  assente: ['✗', 'ASSENTE'],
-  giustificato: ['–', 'GIUSTIFICATO'],
-}
-
 /**
- * Le presenze degli ultimi trenta giorni. Dove non risulta presente (non
- * segnato, o assente) c'è SEGNALA: chi c'era lo dice, con una nota se vuole,
+ * Le ultime tre presenze in piccolo; VEDI TUTTE apre l'elenco dell’ultima
+ * settimana. Dove non risulta presente (non segnato, o assente) nell'elenco c'è SEGNALA: chi c'era lo dice, con una nota se vuole,
  * e la presenza la conferma l'istruttore o la segreteria (vedi `segnalate.ts`).
  */
 function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId: string; presenze: MiaPresenza[] }) {
@@ -475,7 +565,6 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
     }
   }, [dati, personaId, giro])
 
-  const viste = tutte ? presenze : presenze.slice(0, 5)
   const daVedere = segnalate.filter((x) => x.stato === 'da_vedere').length
   const manda = async (sessioneId: string) => {
     setGuaio(null)
@@ -490,78 +579,101 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
   }
   return (
     <section>
+      <Titoletto
+        conto={
+          presenze.length > 0 && (
+            <button type="button" className="mia-vedi-tutte" aria-expanded={tutte} onClick={() => setTutte(!tutte)}>
+              {tutte ? 'MENO' : 'VEDI TUTTE'}
+            </button>
+          )
+        }
+      >
+        LE ULTIME PRESENZE
+      </Titoletto>
       <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
         {presenze.length === 0 ? (
           <Dettaglio>Nessuna lezione negli ultimi {INDIETRO} giorni.</Dettaglio>
         ) : (
           <>
-            {daVedere > 0 && (
-              <Dettaglio tono="avviso">
-                {daVedere === 1 ? 'Una presenza segnalata aspetta' : `${daVedere} presenze segnalate aspettano`} l’istruttore o la segreteria.
-              </Dettaglio>
+            {daVedere > 0 && <Dettaglio tono="avviso">{daVedere === 1 ? 'Una presenza segnalata aspetta' : `${daVedere} presenze segnalate aspettano`} l’istruttore o la segreteria.</Dettaglio>}
+            {!tutte && (
+              <ul className="mie-presenze-piccole">
+                {ultimePresenze(presenze).map((p) => {
+                  const s = segnalate.find((x) => x.sessioneId === p.sessioneId)
+                  const segno = segnoPresenza(p.stato, s?.stato)
+                  return (
+                    <li key={p.sessioneId} className="card mia-presenza-piccola" data-tono={segno.tono}>
+                      <Icona nome={segno.icona} misura={22} />
+                      <span className="mia-presenza-piccola-quando">{quandoBreve(p.inizio)}</span>
+                      <span className="num mia-presenza-detto">{segno.parola}</span>
+                    </li>
+                  )
+                })}
+              </ul>
             )}
-            <ul className="stack mie-presenze">
-              {viste.map((p) => {
-                const s = segnalate.find((x) => x.sessioneId === p.sessioneId)
-                const [segno, detto] = p.stato ? SEGNI[p.stato] : ['·', 'NON SEGNATO']
-                const puo = !s && p.stato !== 'presente' && p.stato !== 'giustificato'
-                return (
-                  <li key={p.sessioneId} className="card stack mia-presenza-voce">
-                    <span className="row mia-presenza" data-stato={p.stato ?? 'nessuno'}>
-                      <span className="num mia-presenza-segno" aria-hidden="true">
-                        {segno}
-                      </span>
-                      <span className="stack grow" style={{ gap: 1, minWidth: 0 }}>
-                        <span style={{ fontWeight: 600 }}>{p.corso}</span>
-                        <span style={{ fontSize: 13, color: 'var(--dim)' }}>
-                          {giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))} · {oraDi(p.inizio)}
+            {tutte && (
+              <ul className="stack mie-presenze">
+                {presenze.map((p) => {
+                  const s = segnalate.find((x) => x.sessioneId === p.sessioneId)
+                  const { icona, parola: detto } = segnoPresenza(p.stato)
+                  const puo = puoSegnalare(p.stato, s?.stato)
+                  return (
+                    <li key={p.sessioneId} className="card stack mia-presenza-voce">
+                      <span className="row mia-presenza" data-stato={p.stato ?? 'nessuno'}>
+                        <span className="mia-presenza-segno">
+                          <Icona nome={icona} misura={22} />
+                        </span>
+                        <span className="stack grow" style={{ gap: 1, minWidth: 0 }}>
+                          <span style={{ fontWeight: 600 }}>{p.corso}</span>
+                          <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+                            {giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))} · {oraDi(p.inizio)}
+                          </span>
+                        </span>
+                        <span className="stack" style={{ gap: 4, alignItems: 'flex-end' }}>
+                          {!(puo && aperta !== p.sessioneId) && <span className="num mia-presenza-detto">{detto}</span>}
+                          {s && s.stato !== 'accolta' && (
+                            <span
+                              className="num mia-lezione-cosa mia-presenza-segnalata"
+                              data-tono={s.stato === 'rifiutata' ? 'guaio' : 'avviso'}
+                              title={s.stato === 'rifiutata' ? 'La segnalazione è stata rifiutata' : 'Segnalata: la conferma l’istruttore o la segreteria'}
+                            >
+                              {s.stato === 'rifiutata' ? 'RIFIUTATA' : 'DA CONFERMARE'}
+                            </span>
+                          )}
+                          {puo && aperta !== p.sessioneId && (
+                            <button type="button" className="num mia-segnala" onClick={() => (setAperta(p.sessioneId), setNota(''), setGuaio(null))}>
+                              SEGNALA
+                            </button>
+                          )}
                         </span>
                       </span>
-                      <span className="stack" style={{ gap: 4, alignItems: 'flex-end' }}>
-                        {!(puo && aperta !== p.sessioneId) && <span className="num mia-presenza-detto">{detto}</span>}
-                        {s && s.stato !== 'accolta' && (
-                          <span className="num mia-lezione-cosa mia-presenza-segnalata" data-tono={s.stato === 'rifiutata' ? 'guaio' : 'avviso'} title={s.stato === 'rifiutata' ? 'La segnalazione è stata rifiutata' : 'Segnalata: la conferma l’istruttore o la segreteria'}>
-                            {s.stato === 'rifiutata' ? 'RIFIUTATA' : 'DA CONFERMARE'}
-                          </span>
-                        )}
-                        {puo && aperta !== p.sessioneId && (
-                          <button type="button" className="num mia-segnala" onClick={() => (setAperta(p.sessioneId), setNota(''), setGuaio(null))}>
-                            SEGNALA
-                          </button>
-                        )}
-                      </span>
-                    </span>
-                    {aperta === p.sessioneId && (
-                      <span className="stack mia-segnala-modulo">
-                        <label htmlFor={`nota-${p.sessioneId}`} className="modulo-etichetta">
-                          C’ERI? UNA NOTA PER L’ISTRUTTORE · FACOLTATIVA
-                        </label>
-                        <textarea
-                          id={`nota-${p.sessioneId}`}
-                          className="campo campo-note"
-                          rows={2}
-                          maxLength={200}
-                          placeholder="In ritardo, il tablet non mi trovava…"
-                          value={nota}
-                          onChange={(e) => setNota(e.target.value)}
-                        />
-                        {guaio && <Dettaglio tono="guaio">{guaio}</Dettaglio>}
-                        <Tasti>
-                          <Tasto variante="principale" onClick={() => void manda(p.sessioneId)}>
-                            ERO PRESENTE
-                          </Tasto>
-                          <Tasto onClick={() => setAperta(null)}>LASCIA STARE</Tasto>
-                        </Tasti>
-                      </span>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-            {presenze.length > viste.length && (
-              <Tasti>
-                <Tasto onClick={() => setTutte(true)}>TUTTE E {presenze.length}</Tasto>
-              </Tasti>
+                      {aperta === p.sessioneId && (
+                        <span className="stack mia-segnala-modulo">
+                          <label htmlFor={`nota-${p.sessioneId}`} className="modulo-etichetta">
+                            C’ERI? UNA NOTA PER L’ISTRUTTORE · FACOLTATIVA
+                          </label>
+                          <textarea
+                            id={`nota-${p.sessioneId}`}
+                            className="campo campo-note"
+                            rows={2}
+                            maxLength={200}
+                            placeholder="In ritardo, il tablet non mi trovava…"
+                            value={nota}
+                            onChange={(e) => setNota(e.target.value)}
+                          />
+                          {guaio && <Dettaglio tono="guaio">{guaio}</Dettaglio>}
+                          <Tasti>
+                            <Tasto variante="principale" onClick={() => void manda(p.sessioneId)}>
+                              ERO PRESENTE
+                            </Tasto>
+                            <Tasto onClick={() => setAperta(null)}>LASCIA STARE</Tasto>
+                          </Tasti>
+                        </span>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
             )}
           </>
         )}
@@ -708,7 +820,12 @@ function Nucleo({
   const nomeDi = (id: string) => membri.find((p) => p.id === id)?.nome ?? ''
   const annuali = abbonamentiDalleRicevute(ricevute, nomeDi, oggi)
   const minimo = doveVaLoSconto([], annuali)
-  const PAGA: Record<string, string> = { pagato: 'PAGATO', in_parte: 'IN PARTE', da_pagare: 'DA PAGARE', scaduto: 'DA RINNOVARE' }
+  const PAGA: Record<string, string> = {
+    pagato: 'PAGATO',
+    in_parte: 'IN PARTE',
+    da_pagare: 'DA PAGARE',
+    scaduto: 'DA RINNOVARE',
+  }
   return (
     <>
       <section>
@@ -842,6 +959,8 @@ function Contatti({ conEsci }: { conEsci: boolean }) {
           </div>
         </section>
       ))}
+      {/* In piccolo e in fondo: serve a chi segnala un problema, per dire che versione ha. */}
+      <p className="num mia-versione" title={VERSIONE_ESTESA}>{VERSIONE}</p>
     </div>
   )
 }

@@ -92,7 +92,7 @@ Google, e vale solo per i mockup.
 | `TabletFascia` | La fascia dopo un tocco: fatto, attesa, già, errore |
 | `TabletTestata`, `TabletLezione`, `TabletPiede`, `TabletRigaGiornata` | La testata, la lezione aperta, il piede e la riga della giornata del tablet di sala |
 | `MieOreNumero`, `MieOreRiga` | I numeri e le righe di LE MIE ORE |
-| `MiaLezione`, `MiaPresenza` | La lezione e la riga delle presenze nell'area iscritti; `tema="sito"` com'è l'area adesso (look del sito, sempre chiara), la tinta del corso a sinistra; SEGNALA da 44px col bordo blu; `MiaPresenza` con `soloTasto`: dove si può segnalare c'è solo il tasto, senza «NON SEGNATO» |
+| `MiaLezione`, `MiaPresenza`, `MiaPresenzaPiccola` | La lezione e la riga delle presenze nell'area iscritti; `tema="sito"` com'è l'area adesso (look del sito, sempre chiara), la tinta del corso a sinistra; SEGNALA da 44px col bordo blu; `MiaPresenza` con `soloTasto`: dove si può segnalare c'è solo il tasto, senza «NON SEGNATO» |
 | `MieiTimerRiga` | La riga di I MIEI TIMER, per un corso o una lezione |
 | `TimerComandi`, `TimerTestata`, `TimerCella` | I comandi, la testata e la cella dell'editor del timer (`timer/src/`) |
 | `GuidaTesto` | La colonna di testo della guida dentro l'app |

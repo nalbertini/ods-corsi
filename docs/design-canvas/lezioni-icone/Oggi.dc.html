@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI · senza icone: la tab LEZIONI com'e' costruita (la prossima in evidenza, una settimana avanti e una indietro), con o senza icone a linea davanti a sala, giorno, cosa cambia e stato della presenza. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1300px; background: #eef5fa">
+<dc-import name="Testata" luogo="ISCRITTI" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+<div style="padding: 6px 20px 14px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05">Ciao Andrea ▾</span></div>
+<dc-import name="Titoletto" label="LA PROSSIMA LEZIONE" conto="" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+<dc-import name="Riquadro" tema="sito" etichetta="VENERDÌ 23 OTTOBRE · 17:00" titolo="Judo 2" cifra="OGGI" testo="Tatami · Con un sostituto" tonoTesto="dim" hint-size="100%,110px"></dc-import>
+</div><dc-import name="Titoletto" label="LE TUE LEZIONI" conto="3 + 3" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+<dc-import name="MiaLezione" ora="17:00" corso="Judo 2" sotto="Tatami · lunedì 26 ottobre" cosa="" annullata="{{ false }}" icone="{{ false }}" tinta="#1b8ac4" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="MiaLezione" ora="17:00" corso="Judo 2" sotto="Tatami · mercoledì 28 ottobre" cosa="SOSTITUTO" annullata="{{ false }}" icone="{{ false }}" tinta="#1b8ac4" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="MiaLezione" ora="17:00" corso="Judo 2" sotto="Sala 2 · venerdì 30 ottobre" cosa="IN SALA 2" annullata="{{ false }}" icone="{{ false }}" tinta="#1b8ac4" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="MiaLezione" ora="17:00" corso="Judo 2" sotto="Tatami · lunedì 2 novembre" cosa="IN PIÙ" annullata="{{ false }}" icone="{{ false }}" tinta="#1b8ac4" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="MiaLezione" ora="17:00" corso="Judo 2" sotto="Tatami · mercoledì 4 novembre" cosa="ANNULLATA" annullata="{{ true }}" icone="{{ false }}" tinta="#1b8ac4" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="MiaPresenza" corso="Judo 2" quando="mercoledì 21 ottobre · 17:00" stato="niente" soloTasto="{{ true }}" segnalata="no" icone="{{ false }}" tema="sito" hint-size="100%,80px"></dc-import>
+<dc-import name="MiaPresenza" corso="Judo 2" quando="lunedì 19 ottobre · 17:00" stato="presente" soloTasto="{{ false }}" segnalata="no" icone="{{ false }}" tema="sito" hint-size="100%,80px"></dc-import>
+<dc-import name="MiaPresenza" corso="Judo 2" quando="venerdì 16 ottobre · 17:00" stato="assente" soloTasto="{{ false }}" segnalata="da-confermare" icone="{{ false }}" tema="sito" hint-size="100%,80px"></dc-import>
+</div><div style="position: sticky; bottom: 0; margin-top: auto"><dc-import name="BarraNavigazione" voci="LEZIONI|DOCUMENTI|FAMIGLIA|CONTATTI" attiva="LEZIONI" tema="sito" hint-size="100%,66px"></dc-import></div></div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
