@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA · quando non va: non è andato (dice se i soldi sono partiti) e senza rete (tasto spento con la ragione). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1000px; background: #eef5fa"><dc-import name="Testata" luogo="LA TUA PAGINA" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,60px"></dc-import><dc-import name="Titoletto" label="NON È ANDATO" conto="" tema="sito" hint-size="100%,60px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="TitoloEsito" titolo="NON È ANDATO" tono="avviso" testi="Giulia Bianchi · 55 € · quota associativa.|Satispay non ha confermato il pagamento: non ti abbiamo preso soldi.|Se Satispay ti ha addebitato lo stesso, chiama la segreteria." tema="chiaro" hint-size="100%,60px"></dc-import><dc-import name="Bottone" label="RIPROVA CON SATISPAY" variante="principale" tema="sito" hint-size="100%,60px"></dc-import></div><dc-import name="Titoletto" label="SENZA RETE" conto="" tema="sito" hint-size="100%,60px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="Riquadro" tema="sito" etichetta="QUOTA ASSOCIATIVA · GIULIA BIANCHI" cifra="MANCANO 55 €" testo="Hai pagato 25 € su 80 €." tonoTesto="avviso" hint-size="100%,60px"></dc-import><dc-import name="Bottone" label="PAGA 55 € CON SATISPAY" variante="principale" tema="sito" disabled="{{ true }}" hint-size="100%,60px"></dc-import><dc-import name="Riquadro" tema="sito" etichetta="" stretto="{{ true }}" testo="Serve la rete per pagare. Riprova quando torni online." tonoTesto="dim" hint-size="100%,60px"></dc-import></div><dc-import name="Titoletto" label="SATISPAY NON ATTIVO" conto="" tema="sito" hint-size="100%,60px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="Bottone" label="PAGA 55 € CON SATISPAY" variante="principale" tema="sito" disabled="{{ true }}" hint-size="100%,60px"></dc-import><dc-import name="Riquadro" tema="sito" etichetta="" stretto="{{ true }}" testo="Pagare online non è ancora attivo: il resto si paga in palestra." tonoTesto="dim" hint-size="100%,60px"></dc-import></div></div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -68,6 +68,17 @@ all'altro.
   segreteria lo controlla e scrive la scadenza, o lo rifiuta: se lo rifiuta
   va rimandato. Il file lo vede solo la segreteria: qui c'è solo la data
   d'invio. Per un minore senza accesso lo manda il titolare.
+  Se hai pagato la quota in parte con una ricevuta, sotto c'è **PAGA … €
+  CON SATISPAY**: paghi solo quel che manca, la cifra la calcola l'app (non
+  la scegli tu). Tornato da Satispay vedi **PAGATO**, e la segreteria prepara la
+  ricevuta del resto. Se Satispay non conferma non ti prende niente: puoi
+  riprovare. Senza rete il tasto dice «Serve la rete per pagare». Rinnovi,
+  quote intere e corsi si pagano in palestra. In prova (`?prova`) Satispay non
+  si apre: chiede conferma e il pagamento è finto.
+  Il titolare del nucleo (tab NUCLEO, o la pagina del familiare) vede **PAGA …
+  € PER** *nome* per i familiari senza un accesso loro: una persona alla volta.
+  Chi ha un accesso suo, e ogni minorenne con account, paga dal suo telefono
+  o tramite il titolare.
 - **Ricevute**: quelle fatte dalla segreteria, dalla più recente, ognuna col
   suo **PDF** da scaricare: lo stesso che stampa la segreteria.
 - **Qualcosa non torna?**: il telefono della palestra, per chi vede
