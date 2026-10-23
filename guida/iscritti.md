@@ -54,12 +54,12 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   dice niente.
 - **Le tue lezioni** (tab LEZIONI): in cima **LA PROSSIMA
   LEZIONE** in evidenza, con quanti giorni mancano; sotto, un elenco solo con
-  le altre lezioni dei suoi corsi nelle prossime due settimane, in ordine di
+  le altre lezioni dei suoi corsi nella prossima settimana, in ordine di
   data, e poi le presenze. A destra del titolo il conto: le altre lezioni + le presenze. Quello che cambia rispetto al solito si
   legge sulla lezione: **ANNULLATA** in rosso, **SOSTITUTO** quando la fa un
   altro istruttore, **IN** e il nome della sala quando la lezione è stata
   spostata, **IN PIÙ** per una lezione fuori dall'orario (uno stage).
-- **Le presenze**: le ultime cinque, una per riga, con **TUTTE** per
+- **Le presenze**: dell’ultima settimana, le ultime cinque, una per riga, con **TUTTE** per
   vederle tutte. Dove non risulta presente (non segnato, o assente) c'è
   solo il tasto **SEGNALA**: chi c'era lo dice, con una nota se vuole, e **ERO PRESENTE**.
   La presenza la conferma l'istruttore della lezione o la segreteria; fino

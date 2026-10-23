@@ -27,6 +27,7 @@ import { TAB_INIZIALE, contoElenco, elencoLezioni, etichettaTab, fraQuanto, grup
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
 import { PagaSaldo, RitornoSaldo } from './PagaSaldo'
 import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
+import { VERSIONE, VERSIONE_ESTESA } from '../lib/versione'
 
 /**
  * L'area degli iscritti, dal telefono: le prossime lezioni dei suoi corsi,
@@ -45,8 +46,8 @@ import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
  */
 
 /** Quanti giorni avanti si guardano le lezioni, e quanti indietro le presenze. */
-const AVANTI = 14
-const INDIETRO = 30
+const AVANTI = 7
+const INDIETRO = 7
 
 export function AreaIscritti() {
   const [d, setD] = useState<DatiIscritto | null>(null)
@@ -390,7 +391,7 @@ function Saluto({ scheda, tua, io, membri, onCambia }: { scheda: SchedaIscritto;
   )
 }
 
-/** La prossima lezione in evidenza, poi le altre delle prossime due settimane in ordine di data (le presenze seguono, vedi `Presenze`). */
+/** La prossima lezione in evidenza, poi le altre della prossima settimana in ordine di data (le presenze seguono, vedi `Presenze`). */
 function Prossime({ lezioni, presenze }: { lezioni: MiaLezione[]; presenze: number }) {
   const el = useMemo(() => elencoLezioni(lezioni, []), [lezioni])
   const annullate = el.seguenti.filter((l) => l.stato === 'annullata').length
@@ -415,7 +416,7 @@ function Prossime({ lezioni, presenze }: { lezioni: MiaLezione[]; presenze: numb
         <Titoletto conto={annullate ? `${annullate} ANNULLATE` : contoElenco(el.seguenti.length, presenze)}>LE TUE LEZIONI</Titoletto>
         {lezioni.length === 0 && (
           <p className="pad" style={{ color: 'var(--dim)', margin: 0 }}>
-            Nessuna lezione nelle prossime due settimane.
+            Nessuna lezione nella prossima settimana.
           </p>
         )}
         <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
@@ -456,7 +457,7 @@ const SEGNI: Record<string, [string, string]> = {
 }
 
 /**
- * Le presenze degli ultimi trenta giorni. Dove non risulta presente (non
+ * Le presenze dell’ultima settimana. Dove non risulta presente (non
  * segnato, o assente) c'è SEGNALA: chi c'era lo dice, con una nota se vuole,
  * e la presenza la conferma l'istruttore o la segreteria (vedi `segnalate.ts`).
  */
@@ -842,6 +843,8 @@ function Contatti({ conEsci }: { conEsci: boolean }) {
           </div>
         </section>
       ))}
+      {/* In piccolo e in fondo: serve a chi segnala un problema, per dire che versione ha. */}
+      <p className="num mia-versione" title={VERSIONE_ESTESA}>{VERSIONE}</p>
     </div>
   )
 }

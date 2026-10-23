@@ -3679,3 +3679,4 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 
 /* IMPOSTAZIONI: sette schede non stanno in una riga sul telefono, vanno a capo. */
 .sg-schede-impostazioni { display: flex; flex-wrap: wrap; }
+.mia-versione { margin: 0; padding: 16px; font-size: 11px; color: var(--dim); text-align: center; }
