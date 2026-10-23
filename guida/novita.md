@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.178.0 — 23 ottobre 2026
+
+### Novità
+
+- Accanto alla ricevuta del bonifico la segreteria vede quanto ci si aspetta
+
 ## 0.177.0 — 23 ottobre 2026
 
 ### Novità
