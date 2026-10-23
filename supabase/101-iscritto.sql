@@ -120,6 +120,12 @@ as $$
 $$;
 
 -- --- la scheda --------------------------------------------------------------
+-- Il 102 aggiunge una colonna a queste tre: rilanciando il 101 dopo il 102 il
+-- tipo cambia, e `create or replace` da sola non può. Dopo, si rilancia il 102.
+drop function if exists iscritto_nucleo(uuid);
+drop function if exists iscritto_scheda(uuid);
+drop function if exists iscritto_scheda_di(uuid);
+
 -- Senza controlli: la chiamano solo le funzioni di sotto, dopo `iscritto_puo_vedere`.
 create or replace function iscritto_scheda_di(persona uuid)
   returns table (

@@ -6,7 +6,7 @@
  */
 export type ChiaveDaFare =
   | 'appelli' | 'richieste' | 'istruttori' | 'segnalate' | 'certificati' | 'scadenza'
-  | 'arrivo' | 'pagare' | 'corsi' | 'listino' | 'file-di-prima' | 'documenti-stampa'
+  | 'certificati-ricevuti' | 'arrivo' | 'pagare' | 'corsi' | 'listino' | 'file-di-prima' | 'documenti-stampa'
 
 export const TESTI_DA_FARE: Record<ChiaveDaFare, { singolare: string; plurale: string }> = {
   appelli: { singolare: 'Lezione senza appello', plurale: 'Lezioni senza appello' },
@@ -15,6 +15,7 @@ export const TESTI_DA_FARE: Record<ChiaveDaFare, { singolare: string; plurale: s
   segnalate: { singolare: 'Presenza segnalata da vedere', plurale: 'Presenze segnalate da vedere' },
   certificati: { singolare: 'Iscritto senza certificato valido', plurale: 'Iscritti senza certificato valido' },
   scadenza: { singolare: 'Certificato in scadenza', plurale: 'Certificati in scadenza' },
+  'certificati-ricevuti': { singolare: 'Certificato mandato da controllare', plurale: 'Certificati mandati da controllare' },
   arrivo: { singolare: 'Iscritto compie 6 anni senza certificato', plurale: 'Iscritti compiono 6 anni senza certificato' },
   pagare: { singolare: 'Iscritto da pagare', plurale: 'Iscritti da pagare' },
   corsi: { singolare: 'Iscritto con un corso scaduto', plurale: 'Iscritti con un corso scaduto' },
