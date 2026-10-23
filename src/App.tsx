@@ -256,7 +256,7 @@ function Iscrizioni() {
 function Iscritti() {
   return (
     <div className="app">
-      <Testata luogo="ISCRITTI" guida={indirizzoPagina('iscritti')} senzaTema />
+      <Testata luogo="ISCRITTI" senzaTema />
       <main className="scroll"><AreaIscritti /></main>
     </div>
   )

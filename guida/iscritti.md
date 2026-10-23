@@ -48,10 +48,10 @@ frecce della tastiera si passa da un tab all'altro.
 Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
 («Ciao Alessandro ▾»): si apre l'elenco dei membri.
 
-- **Ciao, e i corsi**: i corsi a cui è iscritto oggi, col loro colore. Sotto,
-  **SEI IN REGOLA** in verde, o le cose da sistemare: il certificato medico
-  che manca, è scaduto o scade entro un mese (sotto i 6 anni non serve); la
-  quota da pagare, pagata in parte o da rinnovare.
+- **Il saluto**: se c'è qualcosa da sistemare lo dice qui (il certificato
+  medico che manca, è scaduto o scade entro un mese, sotto i 6 anni non serve;
+  la quota da pagare, pagata in parte o da rinnovare); se è tutto a posto non
+  dice niente.
 - **Le tue lezioni** (tab LEZIONI): in cima **LA PROSSIMA
   LEZIONE** in evidenza, con quanti giorni mancano; sotto, un elenco solo con
   le altre lezioni dei suoi corsi nelle prossime due settimane, in ordine di
@@ -59,8 +59,7 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   legge sulla lezione: **ANNULLATA** in rosso, **SOSTITUTO** quando la fa un
   altro istruttore, **IN** e il nome della sala quando la lezione è stata
   spostata, **IN PIÙ** per una lezione fuori dall'orario (uno stage).
-- **Le presenze**: negli ultimi trenta giorni, quante lezioni su quante
-  (le giustificate non contano), e le ultime cinque, con **TUTTE** per
+- **Le presenze**: le ultime cinque, una per riga, con **TUTTE** per
   vederle tutte. Dove non risulta presente (non segnato, o assente) c'è
   solo il tasto **SEGNALA**: chi c'era lo dice, con una nota se vuole, e **ERO PRESENTE**.
   La presenza la conferma l'istruttore della lezione o la segreteria; fino
