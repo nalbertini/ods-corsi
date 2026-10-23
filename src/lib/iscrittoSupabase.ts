@@ -4,10 +4,11 @@ import type { DatiRichiesta, StatoRichiesta } from './richieste'
 import type { Segnalata, StatoSegnalata } from './segnalate'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno } from './sala'
-import type { StatoPagamento } from './segreteria'
+import { pagamentoDi, type StatoPagamento } from './segreteria'
 import { chiamaSatispay } from './richiesteSupabase'
 import { ERRORE_SATISPAY, type StatoSatispay } from './satispay'
 import { SALDO_SPENTO } from './saldoSatispay'
+import { QUOTA_SPENTA } from './quotaSatispay'
 import { enteDa, type QuotaRicevuta, type Ricevuta } from './ricevute'
 import { cosaNonVaFileMandato, ESTENSIONI_MANDATO, guaioMandaCertificato } from './certificatoIscritto'
 
@@ -232,7 +233,16 @@ export function creaIscrittoSupabase(c: SupabaseClient): DatiIscritto {
     if (error) throw guaioIscritto(error, segnalando)
     return data as T
   }
-  const nucleo = async (persona: string) => (await chiama<RigaScheda[] | null>('iscritto_nucleo', { persona }) ?? []).map(schedaDa)
+  // La quota pagata con Satispay e non ancora in una ricevuta: l'iscritto non legge `pagamenti_satispay`, la dice `satispay_quota_stato`
+  // (105). Senza 105, o se non risponde, la scheda resta com'è: al peggio dice «da pagare» finché la segreteria non fa la ricevuta.
+  const conQuota = async (s: SchedaIscritto): Promise<SchedaIscritto> => {
+    if (!['da_pagare', 'scaduto'].includes(pagamentoDi(s, chiaveGiorno(new Date())).come)) return s
+    const { data, error } = await c.rpc('satispay_quota_stato', { persona: s.id })
+    // `as`: la forma è quella di `satispay_quota_stato` (105-paga-quota-satispay.sql).
+    const p = data as { stato: StatoSatispay; importo: number } | null
+    return !error && p?.stato === 'pagato' ? { ...s, satispay: p.importo } : s
+  }
+  const nucleo = async (persona: string) => Promise.all((await chiama<RigaScheda[] | null>('iscritto_nucleo', { persona }) ?? []).map((r) => conQuota(schedaDa(r))))
 
   return {
     modo: 'supabase',
@@ -247,7 +257,7 @@ export function creaIscrittoSupabase(c: SupabaseClient): DatiIscritto {
 
     async scheda(persona) {
       const [riga] = (await chiama<RigaScheda[] | null>('iscritto_scheda', { persona })) ?? []
-      return riga ? schedaDa(riga) : null
+      return riga ? conQuota(schedaDa(riga)) : null
     },
 
     async lezioni(persona, da, a) {
@@ -312,7 +322,12 @@ export function creaIscrittoSupabase(c: SupabaseClient): DatiIscritto {
       if (error) return null
       // `as`: la forma è quella di `satispay_saldo_chi` (103-saldo-satispay.sql).
       const r = data as { adulto: boolean; accesso_proprio: boolean; come_titolare: boolean } | null
-      return r ? { adulto: r.adulto, haAccessoProprio: r.accesso_proprio, comeTitolare: r.come_titolare } : null
+      if (!r) return null
+      // La quota intera: 105-paga-quota-satispay.sql. Senza il file (o senza listino) niente importo, e niente tasto.
+      const q = await c.rpc('satispay_quota_chi', { persona })
+      // `as`: la forma è quella di `satispay_quota_chi` (105-paga-quota-satispay.sql).
+      const importo = q.error ? null : ((q.data as { importo: number | null } | null)?.importo ?? null)
+      return { adulto: r.adulto, haAccessoProprio: r.accesso_proprio, comeTitolare: r.come_titolare, importo }
     },
 
     async pagaSaldo(persona, ricevuta) {
@@ -326,6 +341,21 @@ export function creaIscrittoSupabase(c: SupabaseClient): DatiIscritto {
       const r = await chiamaSatispay(c, { azione: 'saldo_stato', persona, ricevuta })
       if (r.attivo === false) throw new Error(SALDO_SPENTO)
       // `as`: la forma è quella di `satispay_saldo_stato` (103-saldo-satispay.sql), riletta dalla funzione.
+      const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null; chi: string } | null | undefined
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined, chi: p.chi } : null
+    },
+
+    async pagaQuota(persona) {
+      const r = await chiamaSatispay(c, { azione: 'quota', persona })
+      if (r.attivo === false) throw new Error(QUOTA_SPENTA)
+      if (typeof r.link !== 'string') throw new Error(ERRORE_SATISPAY)
+      return { link: r.link }
+    },
+
+    async statoQuota(persona) {
+      const r = await chiamaSatispay(c, { azione: 'quota_stato', persona })
+      if (r.attivo === false) throw new Error(QUOTA_SPENTA)
+      // `as`: la forma è quella di `satispay_quota_stato` (105-paga-quota-satispay.sql), riletta dalla funzione.
       const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null; chi: string } | null | undefined
       return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined, chi: p.chi } : null
     },

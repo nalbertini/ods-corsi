@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA · tab IN REGOLA con la quota scaduta e un corso da pagare: per ognuno SATISPAY o BONIFICO. L'importo lo calcola il database dal listino. Un corso con più prezzi o sconti non ha tasti: «chiedi alla segreteria». -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1250px; background: #eef5fa"><dc-import name="Testata" luogo="LA TUA PAGINA" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 6px 20px 14px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05">Ciao Manuela</span></div><div style="padding: 0 20px 14px"><dc-import name="SchedeArea" acceso="IN REGOLA" voci="LEZIONI|IN REGOLA|NUCLEO" segnoSu="IN REGOLA" tonoSegno="giallo" parolaSegno="DA SISTEMARE" tema="sito" hint-size="100%,50px"></dc-import></div><dc-import name="Titoletto" label="CERTIFICATO E QUOTA" conto="" tema="sito" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="Riquadro" tema="sito" etichetta="CERTIFICATO MEDICO" testo="Valido fino al 4 novembre 2027." tonoTesto="testo" hint-size="100%,110px"></dc-import><dc-import name="Riquadro" tema="sito" etichetta="QUOTA ASSOCIATIVA · MANUELA BIANCHI" cifra="80 €" testo="La quota è scaduta il 31 luglio 2026. Rinnovala per la stagione 2026/27." tonoTesto="avviso" tono="prova" hint-size="100%,110px"></dc-import><dc-import name="Bottone" label="PAGA 80 € CON SATISPAY" variante="principale" tema="sito" hint-size="100%,56px"></dc-import><dc-import name="Bottone" label="PAGA CON BONIFICO" variante="linea" tema="sito" hint-size="100%,56px"></dc-import></div><dc-import name="Titoletto" label="CORSI" conto="2" tema="sito" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="Riquadro" tema="sito" etichetta="JUDO KIDS · ANNUALE" cifra="310 €" testo="Non hai ancora pagato il corso per quest'anno." tonoTesto="avviso" tono="prova" hint-size="100%,110px"></dc-import><dc-import name="Bottone" label="PAGA 310 € CON SATISPAY" variante="principale" tema="sito" hint-size="100%,56px"></dc-import><dc-import name="Bottone" label="PAGA CON BONIFICO" variante="linea" tema="sito" hint-size="100%,56px"></dc-import><dc-import name="Riquadro" tema="sito" etichetta="KARATE ADULTI · PIÙ CORSI" testo="Qui c'è uno sconto o più corsi insieme: il prezzo lo fa la segreteria." tonoTesto="testo" hint-size="100%,110px"></dc-import><dc-import name="Riquadro" tema="sito" etichetta="" testo="Chiedi alla segreteria o pagala in palestra." tonoTesto="dim" stretto="{{ true }}" hint-size="100%,110px"></dc-import></div></div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1250}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

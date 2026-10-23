@@ -1,0 +1,78 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Paga dall'area iscritti"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Quota.dc.html",
+   "title": "Proposta · quota scaduta e corso",
+   "x": 0,
+   "y": 140,
+   "w": 390,
+   "h": 1250,
+   "page": "page-1"
+  },
+  {
+   "file": "Bonifico.dc.html",
+   "title": "Proposta · bonifico: dati e contabile",
+   "x": 450,
+   "y": 140,
+   "w": 390,
+   "h": 1150,
+   "page": "page-1"
+  },
+  {
+   "file": "Dopo.dc.html",
+   "title": "Proposta · in attesa, rifiutato, pagato",
+   "x": 900,
+   "y": 140,
+   "w": 390,
+   "h": 1500,
+   "page": "page-1"
+  },
+  {
+   "file": "Nucleo.dc.html",
+   "title": "Proposta · NUCLEO",
+   "x": 1350,
+   "y": 140,
+   "w": 390,
+   "h": 1200,
+   "page": "page-1"
+  },
+  {
+   "file": "Non.dc.html",
+   "title": "Proposta · quando non si può",
+   "x": 1800,
+   "y": 140,
+   "w": 390,
+   "h": 1050,
+   "page": "page-1"
+  },
+  {
+   "file": "Segreteria.dc.html",
+   "title": "Proposta · segreteria: conferma",
+   "x": 2250,
+   "y": 140,
+   "w": 390,
+   "h": 1250,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 2700,
+   "text": "Paga con Satispay o bonifico la quota e i corsi · iscritto e titolare del nucleo"
+  }
+ ],
+ "launch": {
+  "view": "canvas",
+  "page": "page-1"
+ }
+}

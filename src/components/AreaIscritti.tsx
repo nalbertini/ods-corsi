@@ -50,6 +50,8 @@ import {
 } from '../lib/areaTab'
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
 import { PagaSaldo, RitornoSaldo } from './PagaSaldo'
+import { PagaQuota, RitornoQuota } from './PagaQuota'
+import { ritornoDellaQuota } from '../lib/quotaSatispay'
 import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
 import { VERSIONE, VERSIONE_ESTESA } from '../lib/versione'
 
@@ -156,6 +158,8 @@ function Account({ dati, personaId, conEsci }: { dati: DatiIscritto; personaId: 
   const [tab, setTab] = useState<IdTabArea>(TAB_INIZIALE)
   // Il ritorno da Satispay dopo il saldo della quota (`iscritti/?saldo=…&persona=…`).
   const [ritorno, setRitorno] = useState(() => ritornoDelSaldo(window.location.search))
+  // …e dopo la quota intera (`iscritti/?quota=1&persona=…`).
+  const [ritornoQuota, setRitornoQuota] = useState(() => ritornoDellaQuota(window.location.search))
 
   useEffect(() => {
     let vivo = true
@@ -176,6 +180,26 @@ function Account({ dati, personaId, conEsci }: { dati: DatiIscritto; personaId: 
   const io = nucleo[0]
   if (!io) return <p className="pad">Questa persona non è più fra gli iscritti.</p>
   const nomeDi = (id: string) => nucleo.find((p) => p.id === id)?.nome ?? ''
+
+  if (ritornoQuota)
+    return (
+      <div className="iscrizioni-modulo">
+        <Titoletto>QUOTA ASSOCIATIVA</Titoletto>
+        <RitornoQuota
+          dati={dati}
+          persona={ritornoQuota.persona}
+          onChiudi={() => {
+            const u = new URLSearchParams(window.location.search)
+            u.delete('quota')
+            u.delete('persona')
+            history.replaceState(null, '', window.location.pathname + (u.size ? `?${u}` : ''))
+            setRitornoQuota(null)
+            setGiro((g) => g + 1)
+            suSubito()
+          }}
+        />
+      </div>
+    )
 
   if (ritorno) {
     const oggi = chiaveGiorno(new Date())
@@ -718,6 +742,7 @@ function InRegola({ scheda, dati, personaId, io, ricevute, onMandato }: { scheda
           <Etichetta>QUOTA</Etichetta>
           <Dettaglio tono={tono(paga === 'pagato', paga === 'in_parte')}>{pagaTesto}</Dettaglio>
           <PagaSaldo dati={dati} scheda={scheda} io={io} ricevute={ricevute} />
+          <PagaQuota dati={dati} scheda={scheda} io={io} />
         </Riquadro>
       </div>
     </section>
@@ -882,6 +907,7 @@ function Nucleo({
                       <span style={{ fontWeight: 600 }}>{p.nome}</span>
                       <span style={{ fontSize: 13, color: 'var(--dim)' }}>Pagati {euro(pagatoDa(p.id))} € nelle ricevute</span>
                       <PagaSaldo dati={dati} scheda={p} io={io} ricevute={ricevute} />
+                      <PagaQuota dati={dati} scheda={p} io={io} />
                     </span>
                     <span className="num mia-presenza-detto">{PAGA[come]}</span>
                   </li>

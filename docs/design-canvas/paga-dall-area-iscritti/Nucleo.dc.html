@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA · tab NUCLEO: per ogni familiare senza accesso suo il titolare vede cosa manca e sceglie SATISPAY o BONIFICO, una voce e una persona alla volta. Chi ha un accesso suo paga dal suo telefono. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1200px; background: #eef5fa"><dc-import name="Testata" luogo="LA TUA PAGINA" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 6px 20px 14px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05">Ciao Manuela</span></div><div style="padding: 0 20px 14px"><dc-import name="SchedeArea" acceso="NUCLEO" voci="LEZIONI|IN REGOLA|NUCLEO" segnoSu="IN REGOLA" tonoSegno="giallo" parolaSegno="DA SISTEMARE" tema="sito" hint-size="100%,50px"></dc-import></div><dc-import name="Titoletto" label="PAGAMENTI DEL NUCLEO" conto="2" tema="sito" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="Riquadro" tema="sito" etichetta="GIULIA BIANCHI · QUOTA" cifra="80 €" testo="La quota è scaduta." tonoTesto="avviso" tono="prova" hint-size="100%,110px"></dc-import><dc-import name="Bottone" label="PAGA 80 € PER GIULIA CON SATISPAY" variante="principale" tema="sito" hint-size="100%,56px"></dc-import><dc-import name="Bottone" label="PAGA CON BONIFICO" variante="linea" tema="sito" hint-size="100%,56px"></dc-import><dc-import name="Riquadro" tema="sito" etichetta="LUCA BIANCHI · QUOTA" cifra="80 €" testo="Bonifico in attesa: la segreteria lo sta guardando." tonoTesto="avviso" tono="prova" hint-size="100%,110px"></dc-import><dc-import name="Riquadro" tema="sito" etichetta="MARTA BIANCHI · HA UN ACCESSO SUO" testo="Marta paga dal suo telefono." tonoTesto="dim" hint-size="100%,110px"></dc-import></div></div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1200}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

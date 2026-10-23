@@ -20,6 +20,8 @@ export interface ChiPaga {
   comeTitolare: boolean
   /** Il saldo di questa ricevuta è già arrivato e non è ancora in una ricevuta: non se ne fa un secondo. (In attesa invece si può riaprire.) */
   giaPagato?: boolean
+  /** Centesimi della quota intera, dal database (`105-paga-quota-satispay.sql`): `null` se non si paga adesso. */
+  importo?: number | null
 }
 
 export const SERVE_RETE = 'Serve la rete per pagare'

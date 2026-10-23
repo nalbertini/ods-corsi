@@ -130,6 +130,7 @@ console.log('\n5. gli avvisi in cima')
   ok('su carta, senza file: basta la scadenza', t({ scade: '2027-06-01', conFile: false }, { stato: 'pagato' }), [])
   ok('che scade entro un mese: avviso', t({ scade: '2026-10-20', conFile: true }, { stato: 'pagato' }), ['avviso'])
   ok('scaduto e da pagare: due guai', t({ scade: '2026-09-01', conFile: true }, { stato: 'da_pagare' }), ['guaio', 'guaio'])
+  ok('quota da pagare: dice che si paga qui sotto (c\'è il tasto PAGA LA QUOTA)', m.avvisi({ certificato: { scade: '2027-06-01', conFile: true }, pagamento: { stato: 'da_pagare' } }, '2026-10-02').map((a) => a.testo), ['La quota non risulta pagata: pagala qui sotto o passa in segreteria.'])
   ok('pagato in parte: avviso', t({ scade: '2027-06-01', conFile: true }, { stato: 'in_parte' }), ['avviso'])
   ok('pagato fino a ieri: guaio', t({ scade: '2027-06-01', conFile: true }, { stato: 'pagato', fino: '2026-10-01' }), ['guaio'])
 }

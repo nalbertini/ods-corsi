@@ -45,6 +45,8 @@ export interface PagamentoSatispay {
   presoIl?: string
   /** La ricevuta di cui è il saldo della quota (`103-saldo-satispay.sql`): non è l'iscrizione. */
   saldoDi?: string
+  /** La quota associativa intera pagata dall'area iscritti (`105-paga-quota-satispay.sql`): non è l'iscrizione. */
+  voce?: 'quota'
 }
 
 /** Lo stato come lo dice Satispay. Quello che non si conosce è ancora in attesa: mai pagato per sbaglio. */
@@ -138,7 +140,7 @@ export const righeSatispay = (pagamenti: PagamentoSatispay[], nomeDi: (personaId
             data: giornoARoma(p.pagatoIl),
             importo: p.importo,
             metodo: 'Satispay',
-            voce: p.saldoDi ? 'QUOTA ASSOCIATIVA (saldo)' : 'ISCRIZIONE',
+            voce: p.saldoDi ? 'QUOTA ASSOCIATIVA (saldo)' : p.voce === 'quota' ? 'QUOTA ASSOCIATIVA' : 'ISCRIZIONE',
             personaId: p.personaId,
             chi: p.personaId ? nomeDi(p.personaId) : p.chi,
             // Pagato in fondo al modulo e la richiesta non è partita: la segreteria richiama o restituisce.

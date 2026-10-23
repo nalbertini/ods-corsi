@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA · SEGRETERIA (telefono; sul computer sono le stesse righe): in DA FARE «bonifici da controllare» e Satispay arrivati; nella scheda, la contabile (APRI), l'importo arrivato (precompilato, modificabile), CONFERMA (nasce la ricevuta Bonifico) o RIFIUTA con un motivo. Per Satispay arrivato la ricevuta si precompila e la segreteria preme EMETTI. Solo la segreteria conferma, non l'amministrazione. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1250px; background: #eef5fa"><dc-import name="Testata" luogo="SEGRETERIA" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="RigaDaFare" tema="sito" n="2" titolo="bonifici da controllare" sotto="L'iscritto ha mandato la contabile: finché non la confermi la quota resta da pagare." tasto="Vedi tutti" livello="presto" elenco="Bianchi Manuela · quota 80 €|Neri Luca · Judo kids 310 €" colonne="1" hint-size="100%,200px"></dc-import><dc-import name="RigaDaFare" tema="sito" n="1" titolo="Satispay arrivato, ricevuta da emettere" sotto="Pagato dall'area iscritti: la ricevuta è già compilata, premi EMETTI." tasto="Vedi tutti" livello="presto" elenco="Rossi Anna · Judo kids 310 €" colonne="1" hint-size="100%,160px"></dc-import></div><dc-import name="Titoletto" label="BONIFICO · BIANCHI MANUELA" conto="" tema="sito" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="Riquadro" tema="sito" etichetta="QUOTA ASSOCIATIVA 2026/27" cifra="80 €" testo="Pagato da Bianchi Roberto (titolare) per Bianchi Manuela. Mandato il 23 ottobre alle 18:40. Causale: «Bianchi Manuela, quota associativa 2026/27»." tonoTesto="avviso" tono="prova" hint-size="100%,110px"></dc-import><dc-import name="Bottone" label="APRI LA CONTABILE" variante="linea" tema="sito" hint-size="100%,56px"></dc-import><dc-import name="Campo" tema="sito" contesto="segreteria" etichetta="IMPORTO ARRIVATO" valore="80,00" nota="Se è meno, la ricevuta resta «in parte»." hint-size="100%,90px"></dc-import><dc-import name="Bottone" label="CONFERMA E FAI LA RICEVUTA" variante="principale" tema="sito" hint-size="100%,56px"></dc-import><dc-import name="Campo" tema="sito" contesto="segreteria" tipo="area" etichetta="SE LA RIFIUTI, PERCHÉ (OBBLIGATORIO)" valore="" segnaposto="Scrivi o tocca: contabile illeggibile · importo diverso · non risulta sul conto" hint-size="100%,110px"></dc-import><dc-import name="Bottone" label="RIFIUTA" variante="pericolo" tema="sito" hint-size="100%,56px"></dc-import><dc-import name="Riquadro" tema="sito" etichetta="" testo="Il file si cancella a esito (conferma o rifiuto) e resta visibile fino ad allora. La data della ricevuta è quella del bonifico." tonoTesto="dim" stretto="{{ true }}" hint-size="100%,110px"></dc-import></div></div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1250}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

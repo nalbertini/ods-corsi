@@ -5,6 +5,8 @@ import { creaSegreteriaProva } from './segreteriaProva'
 import { creaRichiesteProva, pagamentiSatispayProva, salvaSatispay } from './richiesteProva'
 import { minorenne } from './richieste'
 import { quoteDi } from './ricevute'
+import { satispayPerPersona, saldoPerPersona } from './satispay'
+import { LISTINO_PREDEFINITO, listinoDa, listinoProva } from './listino'
 import { segnalaProva, segnalateDi } from './segnalateProva'
 import { comeE, iscrittiIl, lezioniFra, memoria, nomeIstruttore, salaDelGiorno } from './datiProva'
 import { chiaveGiorno, perCognome } from './sala'
@@ -46,6 +48,9 @@ export function creaIscrittoProva(): DatiIscritto {
       // Senza `nota`, come col database: le note della segreteria non si vedono.
       pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino },
       quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
+      // Come la segreteria (`segreteriaProva`): quel che Satispay ha già incassato e non è ancora in una ricevuta.
+      satispay: satispayPerPersona(pagamentiSatispayProva()).get(p.id),
+      saldo: saldoPerPersona(pagamentiSatispayProva()).get(p.id),
       // Come la segreteria: l'età decide se il certificato serve.
       natoIl: (await creaSegreteriaProva().anagraficaDi(p.id))?.dati.natoIl,
       certificatoDaQui: true,
@@ -194,7 +199,7 @@ export function creaIscrittoProva(): DatiIscritto {
       if (!persona(personaId)) return null
       const nato = (await creaSegreteriaProva().anagraficaDi(personaId))?.dati.natoIl
       // In prova ha l'accesso solo chi si è scelto di essere: gli altri del nucleo no.
-      return { adulto: !nato || !minorenne(nato), haAccessoProprio: personaId === io, comeTitolare: personaId !== io }
+      return { adulto: !nato || !minorenne(nato), haAccessoProprio: personaId === io, comeTitolare: personaId !== io, importo: importoQuotaProva(personaId) }
     },
 
     async pagaSaldo(personaId, ricevutaId) {
@@ -208,7 +213,61 @@ export function creaIscrittoProva(): DatiIscritto {
         .sort((x, y) => y.creatoIl.localeCompare(x.creatoIl))[0]
       return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagatoIl, chi: p.chi } : null
     },
+
+    async pagaQuota(personaId) {
+      await pagaQuotaProva(personaId)
+      return null
+    },
+
+    async statoQuota(personaId) {
+      const p = pagamentiSatispayProva()
+        .filter((x) => x.personaId === personaId && x.voce === 'quota' && !x.ricevutaId)
+        .sort((x, y) => y.creatoIl.localeCompare(x.creatoIl))[0]
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagatoIl, chi: p.chi } : null
+    },
   }
+}
+
+/**
+ * Quanto costa la quota adesso, in centesimi, come `quota_importo`
+ * (`105-paga-quota-satispay.sql`): la quota del listino, o il perché non si
+ * paga online, con gli stessi testi del database.
+ */
+function quotaDaPagareProva(personaId: string): number {
+  const oggi = chiaveGiorno(new Date())
+  const p = archivio.dati.persone.find((x) => x.id === personaId)
+  if (!p) throw new Error('Questa persona non è fra le tue')
+  // `listinoDa` ripiega sul listino predefinito, che ha sempre la quota: il «non è nel listino» del database qui non può darsi.
+  const q = (listinoDa(listinoProva()) ?? LISTINO_PREDEFINITO).quota
+  const sue = (archivio.dati.ricevute ?? []).filter((r) => r.personaId === personaId && !r.annullataIl)
+  if (quoteDi(sue).some((x) => (!x.dal || x.dal <= oggi) && (!x.al || x.al >= oggi))) throw new Error('La quota associativa ha già una ricevuta: per quel che manca c’è il saldo')
+  if (p.pagamento && p.pagamento.stato !== 'da_pagare' && (p.pagamento.fino ?? '9999-01-01') >= oggi) throw new Error('La quota risulta già pagata fuori dall’app: chiedi alla segreteria')
+  if (pagamentiSatispayProva().some((x) => x.personaId === personaId && x.stato === 'pagato' && !x.ricevutaId)) throw new Error('Hai già pagato con Satispay: la segreteria prepara la ricevuta')
+  return Math.round(q * 100)
+}
+
+/** Come `quota_importo_o_null`: `null` se la quota non si paga adesso. */
+function importoQuotaProva(personaId: string): number | null {
+  try {
+    return quotaDaPagareProva(personaId)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * La quota intera con Satispay, in prova (`satispay_prepara_quota`): Satispay
+ * non c'è, quindi il pagamento nasce già pagato, per la quota del listino.
+ * Gli stessi rifiuti del database, con gli stessi testi.
+ */
+export async function pagaQuotaProva(personaId: string): Promise<void> {
+  const importo = quotaDaPagareProva(personaId)
+  const p = archivio.dati.persone.find((x) => x.id === personaId)
+  const ora = new Date().toISOString()
+  salvaSatispay([
+    ...pagamentiSatispayProva(),
+    { id: crypto.randomUUID(), chi: p ? `${p.cognome} ${p.nome}` : '', importo, stato: 'pagato', creatoIl: ora, pagatoIl: ora, personaId, voce: 'quota' },
+  ])
 }
 
 /**
