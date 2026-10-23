@@ -274,5 +274,12 @@ const radicePrezzi = /return \(\s*<div className="([^"]*)"/.exec(prezzi)?.[1] ??
 ok('anche la pagina dei prezzi sta nei 720px da 640px', /(^|\s)iscrizioni(\s|$)/.test(radicePrezzi) || stretto('iscrizioni-prezzi'), true)
 ok('la griglia a due colonne (\'passi costi\') non c’è più', /grid-template-areas:\s*'passi costi'/.test(css), false)
 
+// Aprendo il modulo il fuoco passa al modulo (WCAG 2.4.3): da tastiera o con lo screen reader, se resta sul tasto
+// che non c'è più, si riparte dall'inizio della pagina.
+console.log('Il fuoco aprendo il modulo')
+ok('aprendo il modulo il fuoco va al suo contenitore', /vai = \(aperto: boolean\) => \{[\s\S]*?aperto[\s\S]*?\.iscrizioni-modulo[\s\S]*?\.focus\(/.test(tsx), true)
+ok('il contenitore del modulo prende il fuoco solo da codice (tabIndex -1)', /<div className="iscrizioni-modulo" tabIndex=\{-1\}>\s*<Titoletto>RICHIESTA DI ISCRIZIONE<\/Titoletto>\s*<ModuloIscrizione/.test(tsx), true)
+ok('…senza contorno: non è un campo', /\.iscrizioni-modulo:focus\s*\{[^}]*outline:\s*none/.test(css), true)
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

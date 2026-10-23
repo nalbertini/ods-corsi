@@ -1899,6 +1899,8 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 }
 .campo:focus { outline: none; border-color: var(--text); }
 .campo:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+/* Il modulo di iscrizione prende il fuoco solo da codice, all'apertura: non è un campo. */
+.iscrizioni-modulo:focus { outline: none; }
 /* Chi è entrato, in piccolo: sul telefono durante l'appello ogni riga conta. */
 .chi-sei {
   gap: 10px; padding-top: 10px;

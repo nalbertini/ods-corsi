@@ -33,6 +33,8 @@ export function IscrizioniScreen() {
   const vai = (aperto: boolean) => {
     setModulo(aperto)
     document.querySelector('.scroll')?.scrollTo(0, 0)
+    // Il tasto che ha aperto il modulo sparisce: senza questo il fuoco resta sul corpo della pagina.
+    if (aperto) setTimeout(() => document.querySelector<HTMLElement>('.iscrizioni-modulo')?.focus(), 0)
   }
 
   // Il ritorno dall'app di pagamento dopo aver pagato in fondo al modulo: la richiesta si manda dal modulo.
@@ -68,7 +70,7 @@ export function IscrizioniScreen() {
 
   if (modulo) {
     return (
-      <div className="iscrizioni-modulo">
+      <div className="iscrizioni-modulo" tabIndex={-1}>
         <Titoletto>RICHIESTA DI ISCRIZIONE</Titoletto>
         <ModuloIscrizione onChiudi={() => vai(false)} />
       </div>
