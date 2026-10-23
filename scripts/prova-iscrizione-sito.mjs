@@ -231,6 +231,8 @@ const cifreBanco = (r) => r.selettori.some((x) => /^\.bn-cifre$|^\.bn-cifra\[dat
 const segnalaIscritti = (r) => r.selettori.includes('.mia-segnala')
 // I chip del nucleo (`.mia-chip-tasto`, `.mio-nucleo-scelta`) sono tolti di proposito: si cambia persona toccando il nome (`.mio-nome-scelta`, 44px, in `prova:look`).
 const chipIscritti = (r) => r.selettori.some((x) => /^\.(mia-chip-tasto|mio-nucleo-scelta)\b/.test(x))
+// Le presenze dell'area iscritti sono righe a sé, ognuna col suo riquadro (come le lezioni): `.mie-presenze` senza riquadro e il filo fra le righe sono cambiati di proposito.
+const presenzeARighe = (r) => r.selettori.some((x) => /^\.mie-presenze$|^\.mia-presenza(-voce)? \+ \.mia-presenza(-voce)?$/.test(x))
 // La scheda DOCUMENTI ha i tasti del certificato nel riquadro (`.sg-stato`): `.sg-tasti-cert` non c'è più, e la sua regola dei telefoni con lei.
 const tastiCert = (r) => r.selettori.some((x) => x.startsWith('.sg-tasti-cert'))
 // Aiuto e Impostazioni con il loro nome stanno nel riquadro di chi è dentro (`prova:menu`): la riga di icone in cima al menu non c'è più, il riquadro è più basso e DATI DI PROVA sta sempre lì; i risultati della ricerca hanno la loro icona.
@@ -239,7 +241,7 @@ const menuConNomi = (r) => r.selettori.some((x) => /^#sg-menu \.sg-icone( > \.sg
 const presenzeSenzaBarre = (r) => r.selettori.some((x) => /^\.sg-presenze$|^\.sg-barra(-nome|-suggerimento|-scala)?$|^\.sg-barra[:\[]/.test(x))
 // Il sollecito è un tasto in testata e le azioni rare stanno in «Altro» (`prova:scheda-iscritto`): il gruppo a destra del piede e la riga «Sollecitato…» nel riquadro sono tolti di proposito.
 const testataScheda = (r) => r.selettori.some((x) => /^\.sg-scheda-piede > \.sg-scheda-piede-destra$|^\.sg-sollecito-ultimo$/.test(x))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
