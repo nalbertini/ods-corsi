@@ -26,8 +26,8 @@ lega l'email alla scheda; le volte dopo è subito la propria pagina.
   l'accesso a mano.
 - Si vede **solo quel che è proprio**: la scheda, le lezioni dei propri
   corsi, le presenze, la scadenza del certificato, la quota, le ricevute e,
-  per il titolare, il nucleo. Il file del certificato e le note della
-  segreteria non si vedono mai. Una persona del nucleo con l'accesso suo
+  per il titolare, il nucleo. Il file del certificato che ha mandato l'iscritto
+  e le note della segreteria non si vedono mai: resta la data. Una persona del nucleo con l'accesso suo
   vede le sue cose, e il titolare non le vede più.
 - **ESCI** in fondo alla pagina chiude l'accesso su quel dispositivo. Questo
   accesso non apre niente della gestione, dell'appello o del tablet.
@@ -62,8 +62,12 @@ all'altro.
   ad allora la riga dice **DA CONFERMARE**, e poi diventa presente, o dice
   **RIFIUTATA**. Una volta sola per lezione.
 - **Certificato e quota** (tab IN REGOLA): fino a quando vale il certificato medico (sotto i
-  6 anni non è obbligatorio), e fino a quando è pagata la quota. Il file del
-  certificato lo vede solo la segreteria: qui c'è solo la data.
+  6 anni non è obbligatorio), e fino a quando è pagata la quota. Se manca, è
+  scaduto o scade entro un mese c'è il tasto **MANDA IL CERTIFICATO**: una
+  foto o un PDF, al massimo 5 MB. Resta **in attesa di conferma** finché la
+  segreteria lo controlla e scrive la scadenza, o lo rifiuta: se lo rifiuta
+  va rimandato. Il file lo vede solo la segreteria: qui c'è solo la data
+  d'invio. Per un minore senza accesso lo manda il titolare.
 - **Ricevute**: quelle fatte dalla segreteria, dalla più recente, ognuna col
   suo **PDF** da scaricare: lo stesso che stampa la segreteria.
 - **Qualcosa non torna?**: il telefono della palestra, per chi vede

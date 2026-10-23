@@ -39,6 +39,7 @@ const VOLUTI = {
   istruttori: ['Presenza istruttore da confermare', 'Presenze istruttori da confermare'],
   segnalate: ['Presenza segnalata da vedere', 'Presenze segnalate da vedere'],
   certificati: ['Iscritto senza certificato valido', 'Iscritti senza certificato valido'],
+  'certificati-ricevuti': ['Certificato mandato da controllare', 'Certificati mandati da controllare'],
   scadenza: ['Certificato in scadenza', 'Certificati in scadenza'],
   arrivo: ['Iscritto compie 6 anni senza certificato', 'Iscritti compiono 6 anni senza certificato'],
   pagare: ['Iscritto da pagare', 'Iscritti da pagare'],
@@ -49,7 +50,7 @@ const VOLUTI = {
 }
 
 console.log('\nI testi')
-ok('le dodici cose, e nessun\'altra', typeof T === 'object' ? Object.keys(T).sort() : T, Object.keys(VOLUTI).sort())
+ok('le tredici cose, e nessun\'altra', typeof T === 'object' ? Object.keys(T).sort() : T, Object.keys(VOLUTI).sort())
 for (const [k, [singolare, plurale]] of Object.entries(VOLUTI))
   ok(`${k}: singolare, plurale`, [T[k]?.singolare, T[k]?.plurale], [singolare, plurale])
 ok('nessun testo è tutto maiuscolo', typeof T === 'object'
@@ -96,8 +97,8 @@ ok('PRIMI_DA_FARE = 5', C.PRIMI_DA_FARE, 5)
 ok('primiDaFare: di 7 voci restano le prime 5, nello stesso ordine', typeof C.primiDaFare === 'function' ? C.primiDaFare([1, 2, 3, 4, 5, 6, 7]) : 'manca primiDaFare', [1, 2, 3, 4, 5])
 ok('primiDaFare: senza elenco, niente', typeof C.primiDaFare === 'function' ? C.primiDaFare(null) : 'manca primiDaFare', [])
 ok('TASTO_DA_FARE = «Vedi tutti»', C.TASTO_DA_FARE, 'Vedi tutti')
-ok('COLONNE_DA_FARE: due colonne per certificati, scadenza, arrivo, pagare; una per corsi, richieste, listino',
-  C.COLONNE_DA_FARE, { certificati: 2, scadenza: 2, arrivo: 2, pagare: 2, corsi: 1, richieste: 1, listino: 1 })
+ok('COLONNE_DA_FARE: due colonne per certificati, certificati ricevuti, scadenza, arrivo, pagare; una per corsi, richieste, listino',
+  C.COLONNE_DA_FARE, { certificati: 2, 'certificati-ricevuti': 2, scadenza: 2, arrivo: 2, pagare: 2, corsi: 1, richieste: 1, listino: 1 })
 
 console.log(' nomeInElenco')
 const N = f('nomeInElenco')
@@ -133,6 +134,21 @@ console.log(' certificati')
     ])
   ok('l\'id è quello della persona', primoId(v), persone[4].id)
   ok('nessuno: elenco vuoto', f('chiCertificati')([persona('Rossi', 'Anna')], OGGI), [])
+}
+
+console.log(' certificati ricevuti')
+{
+  const persone = [
+    persona('Neri', 'Carla', { certificato: { conFile: false, inAttesaIl: '2026-10-20' } }),
+    persona('Verdi', 'Lia', { certificato: { conFile: false, inAttesaIl: '2026-10-10' } }),
+    persona('Bruni', 'Elia', { attiva: false, certificato: { conFile: false, inAttesaIl: '2026-10-01' } }), // non attiva: fuori
+    persona('Rossi', 'Anna'), // niente in attesa: fuori
+  ]
+  ok('dal più vecchio; non attivi e senza invio fuori; «mandato il …»',
+    tre(f('chiCertificatiRicevuti')(persone)), [
+      ['Verdi Lia', 'mandato il 10 ottobre', false],
+      ['Neri Carla', 'mandato il 20 ottobre', false],
+    ])
 }
 
 console.log(' in scadenza')

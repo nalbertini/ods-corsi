@@ -1,5 +1,6 @@
 import type { AggiuntaNucleo, DatiIscritto, MiaLezione, MiaPresenza, SchedaIscritto } from './iscritto'
-import { archivio } from './archivioProva'
+import { archivio, certificatiInAttesaProva, scordaInAttesa } from './archivioProva'
+import { cosaNonVaFileMandato, ESTENSIONI_MANDATO } from './certificatoIscritto'
 import { creaSegreteriaProva } from './segreteriaProva'
 import { creaRichiesteProva } from './richiesteProva'
 import { minorenne } from './richieste'
@@ -41,12 +42,13 @@ export function creaIscrittoProva(): DatiIscritto {
       nome: p.nome,
       cognome: p.cognome,
       corsi,
-      certificato: { scade: p.certificato?.scade },
+      certificato: { scade: p.certificato?.scade, inAttesaIl: p.certificato?.inAttesa?.il },
       // Senza `nota`, come col database: le note della segreteria non si vedono.
       pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino },
       quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
       // Come la segreteria: l'età decide se il certificato serve.
       natoIl: (await creaSegreteriaProva().anagraficaDi(p.id))?.dati.natoIl,
+      certificatoDaQui: true,
     }
   }
   const eTitolare = (personaId: string) => !!persona(personaId) && !persona(personaId)!.nucleo
@@ -169,6 +171,19 @@ export function creaIscrittoProva(): DatiIscritto {
 
     async segnalate(personaId) {
       return persona(personaId) ? segnalateDi(personaId) : []
+    },
+
+    async mandaCertificato(personaId, file) {
+      const guasto = cosaNonVaFileMandato(file)
+      if (guasto) throw new Error(guasto)
+      if (!persona(personaId)) throw new Error('Questa persona non è più fra gli iscritti')
+      // Un invio solo in attesa: il nuovo prende il posto del vecchio.
+      scordaInAttesa(personaId)
+      certificatiInAttesaProva.set(personaId, { url: typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : '', pdf: file.type === 'application/pdf' })
+      a().persone = a().persone.map((p) =>
+        p.id === personaId ? { ...p, certificato: { ...p.certificato, inAttesa: { file: `${personaId}/attesa-${Date.now()}.${ESTENSIONI_MANDATO[file.type]}`, il: chiaveGiorno(new Date()) } } } : p,
+      )
+      archivio.salva()
     },
   }
 }

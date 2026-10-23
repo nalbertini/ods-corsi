@@ -1,0 +1,73 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Certificato dall'iscritto"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Prima.dc.html",
+   "title": "1 · Scaduto: CARICA",
+   "x": 0,
+   "y": 140,
+   "w": 390,
+   "h": 900,
+   "page": "page-1"
+  },
+  {
+   "file": "Scelto.dc.html",
+   "title": "2 · File scelto",
+   "x": 450,
+   "y": 140,
+   "w": 390,
+   "h": 900,
+   "page": "page-1"
+  },
+  {
+   "file": "InAttesa.dc.html",
+   "title": "3 · Mandato: in attesa",
+   "x": 900,
+   "y": 140,
+   "w": 390,
+   "h": 900,
+   "page": "page-1"
+  },
+  {
+   "file": "PerIlFiglio.dc.html",
+   "title": "4 · Per il figlio: file troppo grande",
+   "x": 1350,
+   "y": 140,
+   "w": 390,
+   "h": 900,
+   "page": "page-1"
+  },
+  {
+   "file": "Segreteria.dc.html",
+   "title": "5 · Segreteria: da controllare",
+   "x": 1800,
+   "y": 140,
+   "w": 600,
+   "h": 420,
+   "page": "page-1"
+  },
+  {
+   "file": "Valido.dc.html",
+   "title": "6 · Valido: nessun tasto, e perché",
+   "x": 2500,
+   "y": 140,
+   "w": 390,
+   "h": 900,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "text": "Certificato medico mandato dall'iscritto (IN REGOLA)"
+  }
+ ]
+}

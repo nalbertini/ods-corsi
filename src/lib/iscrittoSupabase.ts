@@ -6,6 +6,7 @@ import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno } from './sala'
 import type { StatoPagamento } from './segreteria'
 import { enteDa, type QuotaRicevuta, type Ricevuta } from './ricevute'
+import { cosaNonVaFileMandato, ESTENSIONI_MANDATO, guaioMandaCertificato } from './certificatoIscritto'
 
 /**
  * L'area degli iscritti col database vero: le funzioni `iscritto_*` di
@@ -24,6 +25,8 @@ export interface RigaScheda {
   cognome: string
   corsi: Array<{ id: string; nome: string; colore: string | null }> | null
   certificato_scade: string | null
+  /** Arriva con 102-certificato-iscritto.sql. */
+  certificato_in_attesa_il?: string | null
   pagamento: StatoPagamento
   pagato_fino: string | null
   quote: Array<{ anno: number; numero: number; dal: string | null; al: string | null; mancano: number }> | null
@@ -36,10 +39,12 @@ export function schedaDa(r: RigaScheda): SchedaIscritto {
     nome: r.nome,
     cognome: r.cognome,
     corsi: (r.corsi ?? []).map((c) => ({ id: c.id, nome: c.nome, colore: c.colore ?? undefined })),
-    certificato: { scade: r.certificato_scade ?? undefined },
+    certificato: { scade: r.certificato_scade ?? undefined, inAttesaIl: r.certificato_in_attesa_il?.slice(0, 10) },
     pagamento: { stato: r.pagamento, fino: r.pagato_fino ?? undefined },
     quote: (r.quote ?? []).map((q): QuotaRicevuta => ({ anno: q.anno, numero: q.numero, dal: q.dal ?? undefined, al: q.al ?? undefined, mancano: q.mancano })),
     natoIl: r.nato_il ?? undefined,
+    // Senza 102 la colonna non arriva (con 102 arriva anche vuota): così si sa se il tasto può esserci.
+    ...('certificato_in_attesa_il' in r ? { certificatoDaQui: true } : {}),
   }
 }
 
@@ -276,6 +281,18 @@ export function creaIscrittoSupabase(c: SupabaseClient): DatiIscritto {
 
     async segnalate(persona) {
       return ((await chiama<RigaSegnalata[] | null>('iscritto_segnalate', { persona })) ?? []).map(segnalataDa)
+    },
+
+    async mandaCertificato(persona, file) {
+      const guasto = cosaNonVaFileMandato(file)
+      if (guasto) throw new Error(guasto)
+      // Prima il file nella cartella della persona, poi la funzione che lo mette «in attesa»: se questa dice di no il file resta
+      // orfano, e `pulisci_certificati` lo toglie con gli altri.
+      const nome = `${persona}/attesa-${Date.now()}.${ESTENSIONI_MANDATO[file.type]}`
+      const su = await c.storage.from('certificati').upload(nome, file, { contentType: file.type, upsert: false })
+      if (su.error) throw guaioMandaCertificato(su.error)
+      const r = await c.rpc('iscritto_manda_certificato', { persona, file: nome })
+      if (r.error) throw guaioMandaCertificato(r.error)
     },
   }
 }

@@ -12,7 +12,7 @@ import { nomeProprio } from './nomi'
 import { numeriDiProva } from './sitoStatistiche'
 import { insegna, segniDi, siElimina, type RuoloPersonale } from './ruoli'
 import type { IndiziDoppioni } from './doppioni'
-import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
+import { archivio, certificatiInAttesaProva, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, scordaInAttesa, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttoreAssenteProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
@@ -716,7 +716,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             iscrizioni: a()
               .iscrizioni.filter((i) => i.personaId === p.id)
               .map((i) => ({ corsoId: i.corsoId, dal: i.dal, al: i.al })),
-            certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file, vecchio: !!p.certificato?.file && !p.certificato.caricatoIl, caricatoIl: p.certificato?.caricatoIl },
+            certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file, vecchio: !!p.certificato?.file && !p.certificato.caricatoIl, caricatoIl: p.certificato?.caricatoIl, inAttesaIl: p.certificato?.inAttesa?.il },
             documento: !!p.documento,
             pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
@@ -784,7 +784,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
       // Come il trigger del database: un titolare con gente nel nucleo non sparisce da sotto i suoi.
       if (!attiva && quale.attiva && a().persone.some((x) => x.nucleo === personaId)) throw new Error('Prima cambia il titolare del nucleo')
       // Disattivata, si lascia dietro il file del certificato; la data resta, e riattivarla non lo riporta.
-      if (!attiva) scordaCertificato(personaId)
+      if (!attiva) {
+        scordaCertificato(personaId)
+        scordaInAttesa(personaId)
+      }
       // Come il trigger del database: disattivata, le iscrizioni aperte si chiudono oggi (come `termina`); riattivarla non le riapre.
       const g = oggi()
       if (!attiva)
@@ -811,7 +814,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (guaio) throw new Error(guaio)
       persona(personaId)
       // Un file per persona: il nuovo prende il posto del vecchio, insieme alla data.
+      // Come `salva_certificato`: il file mandato dall'iscritto se ne va con gli altri, la scadenza scritta qui lo sostituisce.
       scordaCertificato(personaId)
+      scordaInAttesa(personaId)
       certificatiProva.set(personaId, { url: typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : '', pdf: file.type === 'application/pdf' })
       a().persone = a().persone.map((p) =>
         p.id === personaId ? { ...p, certificato: { scade, file: `${personaId}/certificato-${Date.now()}.${ESTENSIONI[file.type]}`, caricatoIl: oggi() } } : p,
@@ -822,13 +827,50 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async togliCertificato(personaId) {
       persona(personaId)
       scordaCertificato(personaId)
-      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: undefined } : p))
+      // Il file mandato dall'iscritto e non ancora controllato resta: toglie solo quello confermato.
+      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: p.certificato?.inAttesa ? { inAttesa: p.certificato.inAttesa } : undefined } : p))
       salva()
     },
 
     async salvaDocumento(personaId, inSegreteria) {
       persona(personaId)
       a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, documento: inSegreteria || undefined } : p))
+      salva()
+    },
+
+    async certificatiDaControllare() {
+      return a()
+        .persone.filter((p) => p.certificato?.inAttesa)
+        .map((p) => ({ personaId: p.id, inviatoIl: p.certificato!.inAttesa!.il }))
+        .sort((x, y) => x.inviatoIl.localeCompare(y.inviatoIl))
+    },
+
+    async apriCertificatoInAttesa(personaId) {
+      persona(personaId)
+      return certificatiInAttesaProva.get(personaId) ?? null
+    },
+
+    async confermaCertificatoIscritto(personaId, scade) {
+      const guaio = cosaNonVaScadenza(scade)
+      if (guaio) throw new Error(guaio)
+      const attesa = persona(personaId).certificato?.inAttesa
+      if (!attesa) throw new Error('Non c’è un certificato da confermare')
+      // Un file solo: quello mandato prende il posto del confermato di prima.
+      const mandato = certificatiInAttesaProva.get(personaId)
+      scordaCertificato(personaId)
+      certificatiInAttesaProva.delete(personaId)
+      if (mandato) certificatiProva.set(personaId, mandato)
+      a().persone = a().persone.map((p) =>
+        p.id === personaId ? { ...p, certificato: { scade, file: `${personaId}/certificato-${Date.now()}.${attesa.file.split('.').pop()}`, caricatoIl: oggi() } } : p,
+      )
+      salva()
+    },
+
+    async rifiutaCertificatoIscritto(personaId) {
+      const p = persona(personaId)
+      if (!p.certificato?.inAttesa) throw new Error('Non c’è un certificato da rifiutare')
+      scordaInAttesa(personaId)
+      a().persone = a().persone.map((x) => (x.id === personaId ? { ...x, certificato: { ...x.certificato, inAttesa: undefined } } : x))
       salva()
     },
 
@@ -2155,6 +2197,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
         certificatiProva.delete(via)
         if (suo) certificatiProva.set(resta, suo)
       } else scordaCertificato(via)
+      const attesaDelDoppione = !!v.certificato?.inAttesa && (!r.certificato?.inAttesa || v.certificato.inAttesa.il > r.certificato.inAttesa.il)
+      const inAttesa = attesaDelDoppione ? v.certificato?.inAttesa : r.certificato?.inAttesa
+      if (attesaDelDoppione) {
+        const suo = certificatiInAttesaProva.get(via)
+        scordaInAttesa(resta)
+        certificatiInAttesaProva.delete(via)
+        if (suo) certificatiInAttesaProva.set(resta, suo)
+      } else scordaInAttesa(via)
       const unita: PersonaProva = {
         ...r,
         // Come `unisci_persone`: se le email sono due, resta quella di chi resta; `indirizziPersi` lo dice prima.
@@ -2166,6 +2216,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         certificato:
           r.certificato || v.certificato
             ? {
+                inAttesa,
                 ...(fileDelDoppione ? { file: v.certificato?.file, caricatoIl: v.certificato?.caricatoIl } : { file: r.certificato?.file, caricatoIl: r.certificato?.caricatoIl }),
                 // La data è quella del certificato il cui file resta; se nessuno ha un file, la più lontana.
                 scade: fileDelDoppione ? v.certificato?.scade : r.certificato?.file ? r.certificato.scade : fino(r.certificato?.scade, v.certificato?.scade),
