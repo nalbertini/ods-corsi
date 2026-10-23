@@ -140,19 +140,37 @@ console.log('\n5. quando si può pagare il saldo')
   const puoi = (p, o = {}) => prova(() => sx.puoiPagareIlSaldo(p, OGGI_ISO, { ...tutto, ...o }))
   const veto = (r) => !!r && typeof r === 'object' && 'perche' in r && typeof r.perche === 'string'
   ok('adulto, in parte da ricevuta: sì, quale ricevuta e quanto', puoi(base), { ricevuta: '12/2026', mancano: 3000 })
-  ok('senza rete: serve la rete', puoi(base, { online: false }), { perche: 'Serve la rete per pagare' })
+  ok('senza rete: serve la rete', puoi(base, { online: false }), { perche: 'Serve la rete per pagare', motivo: 'rete' })
   ok('Satispay spento: si paga in palestra', puoi(base, { attivo: false }), { perche: 'Pagare online non è ancora attivo: il resto si paga in palestra.' })
   ok('minorenne, da sé: no', veto(puoi(base, { adulto: false })), true)
   ok('minorenne senza accesso, dal titolare: sì', puoi(base, { adulto: false, haAccessoProprio: false, comeTitolare: true }), { ricevuta: '12/2026', mancano: 3000 })
   ok('adulto senza accesso suo, dal titolare: sì', puoi(base, { haAccessoProprio: false, comeTitolare: true }), { ricevuta: '12/2026', mancano: 3000 })
   ok('familiare con accesso proprio, dal titolare: niente tasto', veto(puoi(base, { haAccessoProprio: true, comeTitolare: true })), true)
   ok('minorenne con accesso proprio, dal titolare: niente tasto', veto(puoi(base, { adulto: false, haAccessoProprio: true, comeTitolare: true })), true)
-  ok('saldo già arrivato, ricevuta non ancora fatta: niente tasto', puoi(base, { giaPagato: true }), { perche: 'Questo resto è già stato pagato: la segreteria prepara la ricevuta.' })
+  ok('saldo già arrivato, ricevuta non ancora fatta: niente tasto', puoi(base, { giaPagato: true }), { perche: 'Questo resto è già stato pagato: la segreteria prepara la ricevuta.', motivo: 'pagato' })
   ok('quota pagata dalla ricevuta: niente tasto', veto(puoi({ ...base, quote: [{ ...quota, mancano: 0 }] })), true)
   ok('da pagare (nessuna ricevuta): niente tasto, è un\'iscrizione', veto(puoi({ pagamento: { stato: 'da_pagare' }, quote: [] })), true)
   ok('scaduta: niente tasto, è un rinnovo', veto(puoi({ pagamento: { stato: 'da_pagare' }, quote: [{ ...quota, dal: '2025-09-01', al: '2026-08-31' }] })), true)
   ok('in parte fuori app: niente tasto', veto(puoi({ pagamento: { stato: 'in_parte', fino: '2027-01-01' }, quote: [] })), true)
   ok('già pagata con Satispay dal modulo: niente tasto', veto(puoi({ ...base, quote: [], satispay: 4500 })), true)
+  ok('il perché ha un codice: pagato, rete, nessuno per gli altri', [puoi(base, { giaPagato: true }).motivo, puoi(base, { online: false }).motivo, puoi(base, { attivo: false }).motivo], ['pagato', 'rete', undefined])
+}
+
+console.log('\n5b. il ritorno da Satispay e gli altri del nucleo')
+{
+  ok('l\'indirizzo del ritorno: ricevuta e persona', sx.ritornoDelSaldo?.('?saldo=r1&persona=p1&x=2'), { ricevuta: 'r1', persona: 'p1' })
+  ok('…senza la persona non è un ritorno', sx.ritornoDelSaldo?.('?saldo=r1'), null)
+  ok('…né senza niente', sx.ritornoDelSaldo?.(''), null)
+  const mem = (id, nome) => ({ ...base, id, nome, cognome: 'Rossi' })
+  const rs = (id, personaId, numero) => ({ id, personaId, numero, anno: 2026 })
+  const nucleo = [mem('a', 'Anna'), mem('b', 'Luca'), { ...mem('c', 'Gaia'), quote: [], pagamento: { stato: 'pagato', fino: '2027-01-01' } }]
+  const altri = prova(() => sx.altriConResto(nucleo, [rs('ra', 'a', 12), rs('rb', 'b', 12)], OGGI_ISO, 'a'))
+  ok('gli altri con un resto: nome e cognome, la ricevuta e quanto, non chi ha appena pagato né chi è a posto', altri, [{ persona: 'b', ricevuta: 'rb', chi: 'Luca Rossi', mancano: 3000 }])
+  ok('senza la loro ricevuta non si può pagare: nessuno', prova(() => sx.altriConResto(nucleo, [], OGGI_ISO, 'a')), [])
+  const due = [{ persona: 'b', ricevuta: 'rb', chi: 'Luca Rossi', mancano: 3000 }, { persona: 'd', ricevuta: 'rd', chi: 'Dino Rossi', mancano: 1000 }]
+  ok('il primo resto è quello non ancora pagato', sx.primoResto?.(due, ['pagato', null])?.chi, 'Dino Rossi')
+  ok('…se non si sa, resta da pagare', sx.primoResto?.(due, [null, 'pagato'])?.chi, 'Luca Rossi')
+  ok('…se sono tutti pagati, nessuno', sx.primoResto?.(due, ['pagato', 'pagato']), null)
 }
 
 console.log('\n6. i testi dopo il pagamento')
@@ -209,6 +227,11 @@ console.log('\n7. la modalità prova: pagaSaldoProva')
   d && (d.ricevute = d.ricevute.map((r) => (r.id === 'r-saldo-3' ? { ...r, annullataIl: '2026-10-20T09:00:00Z' } : r)))
   ok('una ricevuta annullata non si paga', rifiutata(await aspetta(() => i.pagaSaldoProva(luca?.id, 'r-saldo-3'))), true)
   ok('…e i rifiuti non scrivono niente', (pr.pagamentiSatispayProva?.() ?? []).length, prima)
+  ok('un saldo già pagato e non in ricevuta: un altro tocco è rifiutato (non resta niente)', rifiutata(await aspetta(() => i.pagaSaldoProva(anna?.id, 'r-saldo-1'))), true)
+  // La quota cresce dopo il primo pagamento: si paga solo la differenza, come `saldo_mancano`.
+  d && (d.ricevute = d.ricevute.map((r) => (r.id === 'r-saldo-1' ? { ...r, pagato: 1000, voci: [voce(1000)] } : r)))
+  await aspetta(() => i.pagaSaldoProva(anna?.id, 'r-saldo-1'))
+  ok('…e se la quota cresce, si paga la differenza (40 − 30 €)', dei().map((p) => p.importo).sort(), [1000, 3000])
 }
 
 console.log(guai ? `\n${guai} da sistemare` : '\nTutto a posto')

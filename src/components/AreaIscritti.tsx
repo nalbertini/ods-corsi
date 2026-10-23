@@ -26,7 +26,8 @@ import { esci } from '../lib/accesso'
 import { INDIRIZZI } from '../lib/aree'
 import { TAB_INIZIALE, etichettaTab, tabAperto, idPannelloTab, idTab, segnoInRegola, tabArea, tastoTabArea, type IdTabArea } from '../lib/areaTab'
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
-import { PagaSaldo, RitornoSaldo, ritornoDelSaldo } from './PagaSaldo'
+import { PagaSaldo, RitornoSaldo } from './PagaSaldo'
+import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
 
 /**
  * L'area degli iscritti, dal telefono: le prossime lezioni dei suoi corsi,
@@ -159,14 +160,7 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
 
   if (ritorno) {
     const oggi = chiaveGiorno(new Date())
-    // Gli altri del nucleo con ancora un resto da pagare: il titolare li paga subito dopo.
-    const altri = nucleo.flatMap((p) => {
-      const q = pagamentoDi(p, oggi)
-      const r = ricevute.find((x) => !x.annullataIl && x.personaId === p.id && `${x.numero}/${x.anno}` === q.ricevuta)
-      return p.id !== ritorno.persona && q.come === 'in_parte' && q.fonte === 'ricevuta' && q.mancano && r
-        ? [{ persona: p.id, ricevuta: r.id, chi: `${p.cognome} ${p.nome}`, mancano: q.mancano }]
-        : []
-    })
+    const altri = altriConResto(nucleo, ricevute, oggi, ritorno.persona)
     return (
       <div className="iscrizioni-modulo">
         <Titoletto>QUOTA ASSOCIATIVA</Titoletto>

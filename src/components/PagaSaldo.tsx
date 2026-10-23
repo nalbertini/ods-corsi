@@ -3,21 +3,14 @@ import type { DatiIscritto, SchedaIscritto } from '../lib/iscritto'
 import type { Ricevuta } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import { ERRORE_SATISPAY, soldi } from '../lib/satispay'
-import { SALDO_PAGATO, SERVE_RETE, esitoSaldo, puoiPagareIlSaldo, type ChiPaga } from '../lib/saldoSatispay'
+import { esitoSaldo, primoResto, puoiPagareIlSaldo, type AltroConResto, type ChiPaga } from '../lib/saldoSatispay'
 import { pagamentoDi } from '../lib/segreteria'
 import { Dettaglio, Tasti, Tasto, TitoloEsito } from './ds'
 
-/** Ogni quanto si richiede lo stato mentre il pagamento aspetta, e per quanto: poi lo si chiede col tasto. */
+/** Ogni quanto si richiede lo stato mentre il pagamento aspetta, e per quanto: poi lo si chiede col tasto CONTROLLA ORA. */
 const OGNI = 4000
 const VOLTE = 30
-
-/** Dove Satispay riporta chi ha pagato il saldo: la ricevuta e la persona, nell'indirizzo (`iscritti/?saldo=…&persona=…`). */
-export function ritornoDelSaldo(ricerca: string): { ricevuta: string; persona: string } | null {
-  const u = new URLSearchParams(ricerca)
-  const ricevuta = u.get('saldo')
-  const persona = u.get('persona')
-  return ricevuta && persona ? { ricevuta, persona } : null
-}
+const NON_CONTROLLO = 'Non riesco a controllare il pagamento. Se hai già pagato, non pagare di nuovo.'
 
 /**
  * Il tasto PAGA del resto della quota associativa (`103-saldo-satispay.sql`),
@@ -33,7 +26,8 @@ export function PagaSaldo({ dati, scheda, io, ricevute }: { dati: DatiIscritto; 
   const [conferma, setConferma] = useState(false)
   const [vado, setVado] = useState(false)
   const [guaio, setGuaio] = useState<string | null>(null)
-  const [giaPagato, setGiaPagato] = useState(false)
+  // `undefined`: non lo so ancora (o non son riuscito a leggerlo): senza saperlo non si offre di pagare.
+  const [giaPagato, setGiaPagato] = useState<boolean | undefined>(undefined)
   const oggi = chiaveGiorno(new Date())
   // La ricevuta è «numero/anno»: l'id serve al database per ricalcolare quel che manca.
   const numero = pagamentoDi(scheda, oggi).ricevuta
@@ -66,11 +60,11 @@ export function PagaSaldo({ dati, scheda, io, ricevute }: { dati: DatiIscritto; 
     }
   }, [dati, scheda.id, io])
 
-  if (!chi) return null
+  if (!chi || (ricevuta && giaPagato === undefined)) return null
   const puoi = puoiPagareIlSaldo(scheda, oggi, { ...chi, attivo, online, giaPagato })
   if ('perche' in puoi) {
-    if (puoi.perche === SALDO_PAGATO) return <Dettaglio tono="fatto">{puoi.perche}</Dettaglio>
-    return puoi.perche === SERVE_RETE ? <Dettaglio tono="avviso">{puoi.perche}. Riprova quando torni online.</Dettaglio> : null
+    if (puoi.motivo === 'pagato') return <Dettaglio tono="fatto">{puoi.perche}</Dettaglio>
+    return puoi.motivo === 'rete' ? <Dettaglio tono="avviso">{puoi.perche}. Riprova quando torni online.</Dettaglio> : null
   }
   if (!ricevuta) return null
 
@@ -100,7 +94,7 @@ export function PagaSaldo({ dati, scheda, io, ricevute }: { dati: DatiIscritto; 
           <Dettaglio>In prova Satispay non si apre: il pagamento è finto e vale solo qui, nei dati inventati.</Dettaglio>
           <Tasti>
             <Tasto variante="principale" disabled={vado} onClick={() => void paga()}>
-              {vado ? 'PAGO…' : 'CONFERMA'}
+              {vado ? 'PAGO…' : `CONFERMA ${soldi(puoi.mancano)}`}
             </Tasto>
             <Tasto onClick={() => setConferma(false)}>LASCIA STARE</Tasto>
           </Tasti>
@@ -133,18 +127,21 @@ export function RitornoSaldo({
   persona: string
   ricevuta: string
   /** Gli altri del nucleo che sembrano avere ancora un resto: quelli già pagati con Satispay si tolgono qui. */
-  altri: Array<{ persona: string; ricevuta: string; chi: string; mancano: number }>
+  altri: AltroConResto[]
   onChiudi: () => void
 }) {
   const [p, setP] = useState<Awaited<ReturnType<DatiIscritto['statoSaldo']>> | undefined>(undefined)
   const [guaio, setGuaio] = useState<string | null>(null)
   const [vado, setVado] = useState(false)
   const [restano, setRestano] = useState<{ chi: string; mancano: number } | null>(null)
+  // Dopo i giri automatici, o dopo un errore, si ricontrolla col tasto: il giro riparte da capo.
+  const [giro, setGiro] = useState(0)
+  const [finito, setFinito] = useState(false)
 
   useEffect(() => {
     let vivo = true
     void Promise.all(altri.map((x) => dati.statoSaldo(x.persona, x.ricevuta).catch(() => null))).then((st) => {
-      if (vivo) setRestano(altri.find((_, i) => st[i]?.stato !== 'pagato') ?? null)
+      if (vivo) setRestano(primoResto(altri, st.map((s) => s?.stato ?? null)))
     })
     return () => {
       vivo = false
@@ -157,22 +154,26 @@ export function RitornoSaldo({
     let vivo = true
     let volte = 0
     let timer: ReturnType<typeof setTimeout>
+    setFinito(false)
     const leggi = () =>
       dati.statoSaldo(persona, ricevuta).then(
         (s) => {
           if (!vivo) return
+          setGuaio(null)
           setP(s)
           // Satispay avvisa il server, ma la callback può tardare: intanto si richiede, per un paio di minuti.
-          if (s?.stato === 'attesa' && ++volte < VOLTE) timer = setTimeout(() => void leggi(), OGNI)
+          if (s?.stato !== 'attesa') return
+          if (++volte < VOLTE) timer = setTimeout(() => void leggi(), OGNI)
+          else setFinito(true)
         },
-        (e) => vivo && setGuaio(e instanceof Error ? e.message : ERRORE_SATISPAY),
+        () => vivo && setGuaio(NON_CONTROLLO),
       )
     void leggi()
     return () => {
       vivo = false
       clearTimeout(timer)
     }
-  }, [dati, persona, ricevuta])
+  }, [dati, persona, ricevuta, giro])
 
   const riprova = async () => {
     setGuaio(null)
@@ -191,10 +192,15 @@ export function RitornoSaldo({
   return (
     <div className="pad stack esito">
       <TitoloEsito tono={esito?.tono ?? 'avviso'}>{esito?.titolo ?? 'PAGAMENTO'}</TitoloEsito>
-      {(esito?.testi ?? ['Non trovo questo pagamento: chiedi alla segreteria.']).map((t) => (
+      {(esito?.testi ?? (p === null ? ['Non trovo questo pagamento: chiedi alla segreteria.'] : [])).map((t) => (
         <span key={t} className="esito-testo">{t}</span>
       ))}
       {guaio && <Dettaglio tono="guaio">{guaio}</Dettaglio>}
+      {(guaio || finito) && (
+        <Tasto variante="principale" onClick={() => setGiro((g) => g + 1)}>
+          {guaio ? 'RIPROVA A CONTROLLARE' : 'CONTROLLA ORA'}
+        </Tasto>
+      )}
       {p?.stato === 'non-andato' && (
         <Tasto variante="principale" disabled={vado} onClick={() => void riprova()}>
           {vado ? 'APRO SATISPAY…' : 'RIPROVA CON SATISPAY'}

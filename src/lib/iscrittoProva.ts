@@ -215,7 +215,8 @@ export function creaIscrittoProva(): DatiIscritto {
  * Il saldo della quota con Satispay, in prova (`satispay_prepara_saldo`,
  * `103-saldo-satispay.sql`): Satispay non c'è, quindi il pagamento nasce già
  * pagato, per quanto manca adesso. Un secondo tocco ritrova lo stesso. Gli
- * stessi rifiuti del database, con gli stessi testi.
+ * stessi rifiuti del database sulla ricevuta e sull'importo, con gli stessi
+ * testi; chi può pagare per chi lo decide `chiPaga`, non qui.
  */
 export async function pagaSaldoProva(personaId: string, ricevutaId: string): Promise<void> {
   const r = (archivio.dati.ricevute ?? []).find((x) => x.id === ricevutaId && x.personaId === personaId && !x.annullataIl)
@@ -225,8 +226,10 @@ export async function pagaSaldoProva(personaId: string, ricevutaId: string): Pro
   if (!quota) throw new Error('Qui non c’è una quota da pagare: chiedi alla segreteria')
   const pagamenti = pagamentiSatispayProva()
   const dei = pagamenti.filter((p) => p.personaId === personaId && p.saldoDi === ricevutaId)
-  if (dei.some((p) => p.stato === 'attesa' || (p.stato === 'pagato' && !p.ricevutaId))) return
-  if (quota.mancano <= 0) throw new Error('Non resta niente da pagare su questa quota')
+  if (dei.some((p) => p.stato === 'attesa')) return
+  // Come `saldo_mancano`: quel che è già arrivato e non è ancora in una ricevuta si toglie.
+  const resto = quota.mancano - dei.filter((p) => p.stato === 'pagato' && !p.ricevutaId).reduce((t, p) => t + p.importo, 0)
+  if (resto <= 0) throw new Error('Non resta niente da pagare su questa quota')
   const p = archivio.dati.persone.find((x) => x.id === personaId)
   const ora = new Date().toISOString()
   salvaSatispay([
@@ -234,7 +237,7 @@ export async function pagaSaldoProva(personaId: string, ricevutaId: string): Pro
     {
       id: crypto.randomUUID(),
       chi: p ? `${p.cognome} ${p.nome}` : '',
-      importo: quota.mancano,
+      importo: resto,
       stato: 'pagato',
       creatoIl: ora,
       pagatoIl: ora,

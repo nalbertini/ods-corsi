@@ -34,13 +34,15 @@
 -- ---------------------------------------------------------------------------
 
 alter table pagamenti_satispay add column if not exists saldo_di uuid references ricevute on delete set null;
-create unique index if not exists pagamenti_satispay_saldo on pagamenti_satispay (persona_id, saldo_di)
-  where saldo_di is not null and stato in ('attesa', 'pagato');
+-- Uno solo in attesa: uno già pagato non blocca il resto (`saldo_mancano` lo toglie dal conto).
+drop index if exists pagamenti_satispay_saldo;
+create unique index pagamenti_satispay_saldo on pagamenti_satispay (persona_id, saldo_di)
+  where saldo_di is not null and stato = 'attesa';
 
 -- Quanto manca alla quota di quella ricevuta, oggi, tolto quel che è già arrivato con Satispay e non è ancora in una
 -- ricevuta. Stessa regola di `quoteDi` (src/lib/ricevute.ts).
 create or replace function saldo_mancano(persona uuid, ric uuid) returns int
-  language plpgsql security definer set search_path = public as $$
+  language plpgsql security definer set search_path = public, pg_temp as $$
 declare
   r ricevute;
   v jsonb;
@@ -62,7 +64,7 @@ begin
 end $$;
 
 create or replace function satispay_prepara_saldo(persona uuid, ricevuta uuid) returns jsonb
-  language plpgsql security definer set search_path = public as $$
+  language plpgsql security definer set search_path = public, pg_temp as $$
 declare
   m int;
   p pagamenti_satispay;
@@ -88,12 +90,18 @@ begin
     return jsonb_build_object('stato', 'attesa', 'id', p.id, 'importo', p.importo, 'satispay_id', p.satispay_id, 'link', p.link);
   end if;
   select btrim(cognome) || ' ' || btrim(nome) into n from persone where id = persona;
-  insert into pagamenti_satispay (chi, importo, stato, persona_id, saldo_di) values (n, m, 'attesa', persona, ricevuta) returning * into p;
+  begin
+    insert into pagamenti_satispay (chi, importo, stato, persona_id, saldo_di) values (n, m, 'attesa', persona, ricevuta) returning * into p;
+  exception when unique_violation then
+    -- Due tocchi insieme: vince il primo, il secondo ritrova lo stesso.
+    select * into p from pagamenti_satispay where persona_id = persona and saldo_di = ricevuta and stato = 'attesa';
+    return jsonb_build_object('stato', 'attesa', 'id', p.id, 'importo', p.importo, 'satispay_id', p.satispay_id, 'link', p.link);
+  end;
   return jsonb_build_object('stato', 'attesa', 'id', p.id, 'importo', p.importo, 'satispay_id', null, 'link', null);
 end $$;
 
 create or replace function satispay_saldo_stato(persona uuid, ricevuta uuid) returns jsonb
-  language plpgsql stable security definer set search_path = public as $$
+  language plpgsql stable security definer set search_path = public, pg_temp as $$
 declare
   p pagamenti_satispay;
   n text;
@@ -104,12 +112,13 @@ begin
   -- Un minorenne con account suo, da sé, vede solo il nome.
   select case when persona = persona_corrente() and not nucleo_maggiorenne(persona) then btrim(nome) else btrim(cognome) || ' ' || btrim(nome) end
     into n from persone where id = persona;
-  return jsonb_build_object('stato', p.stato, 'importo', p.importo, 'pagato_il', p.pagato_il, 'chi', n);
+  -- `satispay_id`: la Edge Function rilegge da Satispay quello in attesa, senza passare dalla funzione che scrive.
+  return jsonb_build_object('stato', p.stato, 'importo', p.importo, 'pagato_il', p.pagato_il, 'chi', n, 'satispay_id', p.satispay_id);
 end $$;
 
 -- Per sapere se mostrare PAGA: la stessa regola di `satispay_prepara_saldo`, senza dire altro di una persona che non è sua.
 create or replace function satispay_saldo_chi(persona uuid) returns jsonb
-  language sql stable security definer set search_path = public as $$
+  language sql stable security definer set search_path = public, pg_temp as $$
   select case when persona is null or not iscritto_puo_vedere(persona) then null
     else jsonb_build_object(
       'adulto', nucleo_maggiorenne(persona),

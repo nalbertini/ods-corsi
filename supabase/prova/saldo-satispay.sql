@@ -156,6 +156,25 @@ set role authenticated;
 select atteso('pagato e non ancora in ricevuta: non resta niente da pagare', codice($$select satispay_prepara_saldo(pid(6), rid(1))$$), '22023');
 reset role;
 
+-- Un saldo già pagato non blocca il resto: la quota cresce di 10 € dopo il primo pagamento.
+select rv(1, pid(6), 1000);
+select chi('55555555-5555-5555-5555-555555555555');
+set role authenticated;
+select atteso('pagato 30 € e la quota cresce: resta da pagare la differenza', riga($$select satispay_prepara_saldo(pid(6), rid(1))->>'importo'$$), '1000');
+reset role;
+select atteso('…e ora ci sono un pagato e un in attesa', (select string_agg(stato, ',' order by stato) from pagamenti_satispay where saldo_di = rid(1) and stato <> 'non-andato'), 'attesa,pagato');
+delete from pagamenti_satispay where saldo_di = rid(1) and stato = 'attesa';
+select rv(1, pid(6), 2000);
+
+-- Una tabella temporanea con lo stesso nome non prende il posto di quella vera (`set search_path = public, pg_temp`).
+create temp table ricevute as select * from public.ricevute;
+update pg_temp.ricevute set voci = jsonb_set(voci, '{0,prezzo}', '99999'), totale = 99999 where id = rid(1);
+select chi('55555555-5555-5555-5555-555555555555');
+set role authenticated;
+select atteso('una ricevuta finta in una tabella temporanea non conta: per il database non resta niente', riga($$select satispay_prepara_saldo(pid(6), rid(1))->>'importo'$$), 'NEGATO: Non resta niente…');
+reset role;
+drop table pg_temp.ricevute;
+
 \echo ''
 \echo '--- 5. cosa non si può pagare ---'
 select chi('55555555-5555-5555-5555-555555555555');
@@ -198,6 +217,19 @@ select atteso('Gaia, minorenne, da sé non paga: serve il titolare', codice($$se
 reset role;
 select atteso('i rifiuti non hanno scritto niente: solo Bruno, Maria, Teo e Nilde',
   (select string_agg(distinct p.nome, ',' order by p.nome) from pagamenti_satispay s join persone p on p.id = s.persona_id), 'Bruno,Maria,Nilde,Teo');
+
+-- L'importo è il più basso fra quel che manca alla quota e quel che manca alla ricevuta, in tutti e due i versi.
+select rv(10, pid(8), 3000), rv(11, pid(8), 4000), rv(12, pid(8), 0, dal => current_date + 5, al => current_date + 300);
+update ricevute set totale = 4000 where id = rid(10);
+update ricevute set pagato = 1000 where id = rid(11);
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select atteso('la ricevuta chiede meno della quota (1000 contro 2000): vale la ricevuta', riga($$select satispay_prepara_saldo(pid(8), rid(10))->>'importo'$$), '1000');
+select atteso('la quota chiede meno della ricevuta (1000 contro 4000): vale la quota', riga($$select satispay_prepara_saldo(pid(8), rid(11))->>'importo'$$), '1000');
+select atteso('una quota che non è ancora cominciata: no', codice($$select satispay_prepara_saldo(pid(8), rid(12))$$), '22023');
+reset role;
+delete from pagamenti_satispay where saldo_di in (rid(10), rid(11));
+delete from ricevute where id in (rid(10), rid(11), rid(12));
 
 \echo ''
 \echo '--- 6. nessuno legge i pagamenti, e lo stato si legge con la funzione ---'

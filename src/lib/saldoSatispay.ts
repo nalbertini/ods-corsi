@@ -1,5 +1,6 @@
 import { pagamentoDi, type PersonaSeg } from './segreteria'
 import { soldi, type StatoSatispay } from './satispay'
+import type { Ricevuta } from './ricevute'
 
 /**
  * Il saldo della quota associativa pagato con Satispay dall'area degli
@@ -25,8 +26,44 @@ export const SERVE_RETE = 'Serve la rete per pagare'
 export const SALDO_PAGATO = 'Questo resto è già stato pagato: la segreteria prepara la ricevuta.'
 export const SALDO_SPENTO = 'Pagare online non è ancora attivo: il resto si paga in palestra.'
 
-/** La ricevuta («12/2026») e i centesimi che mancano, o il perché non si può pagare. */
-export type PuoiPagare = { ricevuta: string; mancano: number } | { perche: string }
+/** La ricevuta («12/2026») e i centesimi che mancano, o il perché non si può pagare (`motivo`: quel che l'app deve far vedere). */
+export type PuoiPagare = { ricevuta: string; mancano: number } | { perche: string; motivo?: 'pagato' | 'rete' }
+
+/** Dove Satispay riporta chi ha pagato il saldo: la ricevuta e la persona, nell'indirizzo (`iscritti/?saldo=…&persona=…`). */
+export function ritornoDelSaldo(ricerca: string): { ricevuta: string; persona: string } | null {
+  const u = new URLSearchParams(ricerca)
+  const ricevuta = u.get('saldo')
+  const persona = u.get('persona')
+  return ricevuta && persona ? { ricevuta, persona } : null
+}
+
+export interface AltroConResto {
+  persona: string
+  ricevuta: string
+  chi: string
+  mancano: number
+}
+
+/** Gli altri del nucleo che sembrano avere ancora un resto da pagare: il titolare li paga subito dopo. */
+export function altriConResto(
+  nucleo: Array<Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay' | 'saldo'> & { id: string; nome: string; cognome: string }>,
+  ricevute: Ricevuta[],
+  oggi: string,
+  esclusa: string,
+): AltroConResto[] {
+  return nucleo.flatMap((p) => {
+    const q = pagamentoDi(p, oggi)
+    const r = ricevute.find((x) => !x.annullataIl && x.personaId === p.id && `${x.numero}/${x.anno}` === q.ricevuta)
+    return p.id !== esclusa && q.come === 'in_parte' && q.fonte === 'ricevuta' && q.mancano && r
+      ? [{ persona: p.id, ricevuta: r.id, chi: `${p.nome} ${p.cognome}`, mancano: q.mancano }]
+      : []
+  })
+}
+
+/** Il primo di `altri` il cui saldo non è già arrivato (`pagati[i]`: lo stato letto per `altri[i]`, `null` se non si sa). */
+export function primoResto(altri: AltroConResto[], pagati: Array<StatoSatispay | null>): AltroConResto | null {
+  return altri.find((_, i) => pagati[i] !== 'pagato') ?? null
+}
 
 export function puoiPagareIlSaldo(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay' | 'saldo'>, oggi: string, chi: ChiPaga): PuoiPagare {
   const q = pagamentoDi(p, oggi)
@@ -34,9 +71,9 @@ export function puoiPagareIlSaldo(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 's
   if (q.come !== 'in_parte' || q.fonte !== 'ricevuta' || !q.mancano || !q.ricevuta) return { perche: 'Non c’è un saldo da pagare qui' }
   // Il titolare paga per chi non ha un accesso suo; chi ce l'ha paga dal suo telefono, e un minorenne solo tramite il titolare.
   if (chi.comeTitolare ? chi.haAccessoProprio : !chi.adulto) return { perche: chi.comeTitolare ? 'Questa persona paga dal suo telefono' : 'Per un minorenne paga chi ha l’accesso del nucleo' }
-  if (chi.giaPagato) return { perche: SALDO_PAGATO }
+  if (chi.giaPagato) return { perche: SALDO_PAGATO, motivo: 'pagato' }
   if (!chi.attivo) return { perche: SALDO_SPENTO }
-  if (!chi.online) return { perche: SERVE_RETE }
+  if (!chi.online) return { perche: SERVE_RETE, motivo: 'rete' }
   return { ricevuta: q.ricevuta, mancano: q.mancano }
 }
 

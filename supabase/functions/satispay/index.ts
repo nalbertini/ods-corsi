@@ -218,12 +218,12 @@ Deno.serve(async (req) => {
     if (corpo.azione === 'saldo_stato') {
       const { data, error } = await lui.rpc('satispay_saldo_stato', { persona, ricevuta })
       if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: NON_RISPONDE }, 502)
-      const s = data as { stato: string; importo: number; pagato_il?: string; chi: string } | null
-      if (s?.stato !== 'attesa') return risposta({ pagamento: s })
+      if (!data) return risposta({ pagamento: null })
+      // `as`: la forma è quella di `satispay_saldo_stato` (103-saldo-satispay.sql).
+      const { satispay_id: satispayId, ...s } = data as { stato: string; importo: number; pagato_il?: string; chi: string; satispay_id?: string | null }
+      if (s.stato !== 'attesa' || !satispayId) return risposta({ pagamento: s })
       // In attesa: si rilegge da Satispay, che può aver già confermato (la callback si può perdere).
-      const { data: p } = await lui.rpc('satispay_prepara_saldo', { persona, ricevuta })
-      const satispayId = (p as { satispay_id?: string | null } | null)?.satispay_id
-      const nuovo = satispayId ? await aggiorna(satispayId) : null
+      const nuovo = await aggiorna(satispayId)
       return risposta({ pagamento: nuovo ? { ...s, stato: nuovo.stato, pagato_il: nuovo.pagato_il } : s })
     }
 
