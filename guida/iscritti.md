@@ -29,7 +29,7 @@ lega l'email alla scheda; le volte dopo è subito la propria pagina.
   per il titolare, il nucleo. Il file del certificato che ha mandato l'iscritto
   e le note della segreteria non si vedono mai: resta la data. Una persona del nucleo con l'accesso suo
   vede le sue cose, e il titolare non le vede più.
-- **ESCI** in fondo alla pagina chiude l'accesso su quel dispositivo. Questo
+- **ESCI** (tab CONTATTI) chiude l'accesso su quel dispositivo. Questo
   accesso non apre niente della gestione, dell'appello o del tablet.
 - Con `?prova` nell'indirizzo la pagina si apre con dati inventati, per
   vedere com'è.
@@ -40,8 +40,8 @@ In prova (`?prova`), in cima, si sceglie **quale iscritto essere**: la pagina ca
 ognuno, e il dispositivo si ricorda la scelta.
 
 La pagina è divisa in **tab**, nella barra in fondo allo schermo: **LEZIONI** (si
-apre su questo), **IN REGOLA**, per il titolare di un nucleo **NUCLEO**, e
-**CONTATTI**. Se il certificato o la quota non vanno, sul tab IN REGOLA c'è un
+apre su questo), **DOCUMENTI**, per il titolare di un nucleo **FAMIGLIA**, e
+**CONTATTI**. Se il certificato o la quota non vanno, sul tab DOCUMENTI c'è un
 **●** rosso o giallo. Il tab scelto resta quando si cambia persona. Con le
 frecce della tastiera si passa da un tab all'altro.
 
@@ -65,7 +65,7 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   La presenza la conferma l'istruttore della lezione o la segreteria; fino
   ad allora la riga dice **DA CONFERMARE**, e poi diventa presente, o dice
   **RIFIUTATA**. Una volta sola per lezione.
-- **Certificato e quota** (tab IN REGOLA): fino a quando vale il certificato medico (sotto i
+- **Certificato e quota** (tab DOCUMENTI): fino a quando vale il certificato medico (sotto i
   6 anni non è obbligatorio), e fino a quando è pagata la quota. Se manca, è
   scaduto o scade entro un mese c'è il tasto **MANDA IL CERTIFICATO**: una
   foto o un PDF, al massimo 5 MB. Resta **in attesa di conferma** finché la
@@ -79,7 +79,7 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   riprovare. Senza rete il tasto dice «Serve la rete per pagare». Rinnovi,
   quote intere e corsi si pagano in palestra. In prova (`?prova`) Satispay non
   si apre: chiede conferma e il pagamento è finto.
-  Il titolare del nucleo (tab NUCLEO, o la pagina del familiare) vede **PAGA …
+  Il titolare del nucleo (tab FAMIGLIA, o la pagina del familiare) vede **PAGA …
   € PER** *nome* per i familiari senza un accesso loro: una persona alla volta.
   Chi ha un accesso suo, e ogni minorenne con account, paga dal suo telefono
   o tramite il titolare.
@@ -87,8 +87,7 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   suo **PDF** da scaricare: lo stesso che stampa la segreteria.
 - **CONTATTI** (ultimo tab): la segreteria (**CHIAMA**, **WHATSAPP**, **COME
   ARRIVARE**), **SEGUICI** su Instagram e Facebook, e **LA TUA PAGINA**: la
-  **GUIDA** e **ESCI**. GUIDA ed ESCI stanno anche in fondo a LEZIONI. In prova
-  ESCI non c'è.
+  **GUIDA** e **ESCI**. In prova ESCI non c'è.
 
 Tutto viene da quello che la segreteria e gli istruttori fanno già: una
 lezione annullata o un sostituto dalla **SETTIMANA**, le presenze

@@ -3,7 +3,7 @@
 //
 //   node scripts/prova-certificato-iscritto.mjs
 //
-// L'iscritto manda il file dalla tab IN REGOLA; resta «in attesa» finché la
+// L'iscritto manda il file dalla tab DOCUMENTI; resta «in attesa» finché la
 // segreteria scrive la scadenza (o lo rifiuta). Qui le regole che stanno in
 // `src/lib` e quelle della modalità prova, che devono dire gli stessi sì e gli
 // stessi no del database (le prove vere sono in
