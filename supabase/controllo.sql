@@ -524,5 +524,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.iscritto_segnalate(uuid)') is not null
     -- Rilanciare 55 dopo 101 rimette il primo accesso senza gli iscritti: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'collega_utente' and corpo like '%iscritto%'))
+  ,('103-saldo-satispay.sql', 'il saldo della quota con Satispay',
+    exists (select 1 from information_schema.columns where table_name = 'pagamenti_satispay' and column_name = 'saldo_di')
+    and to_regprocedure('public.satispay_prepara_saldo(uuid,uuid)') is not null
+    and to_regprocedure('public.satispay_saldo_stato(uuid,uuid)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

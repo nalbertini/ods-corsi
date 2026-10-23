@@ -43,6 +43,8 @@ export interface PagamentoSatispay {
   corso?: string
   /** Quando una richiesta l'ha preso: resta anche se la richiesta si cancella, e allora non si riusa. */
   presoIl?: string
+  /** La ricevuta di cui è il saldo della quota (`103-saldo-satispay.sql`): non è l'iscrizione. */
+  saldoDi?: string
 }
 
 /** Lo stato come lo dice Satispay. Quello che non si conosce è ancora in attesa: mai pagato per sbaglio. */
@@ -136,12 +138,13 @@ export const righeSatispay = (pagamenti: PagamentoSatispay[], nomeDi: (personaId
             data: giornoARoma(p.pagatoIl),
             importo: p.importo,
             metodo: 'Satispay',
-            voce: 'ISCRIZIONE',
+            voce: p.saldoDi ? 'QUOTA ASSOCIATIVA (saldo)' : 'ISCRIZIONE',
             personaId: p.personaId,
             chi: p.personaId ? nomeDi(p.personaId) : p.chi,
             // Pagato in fondo al modulo e la richiesta non è partita: la segreteria richiama o restituisce.
             ...(!p.richiestaId &&
-              !p.personaId && {
+              !p.personaId &&
+              !p.saldoDi && {
                 nota: ['Satispay senza richiesta', p.email, p.corso && `${p.formula ?? ''} ${p.corso}`.trim()].filter(Boolean).join(' · '),
                 senzaRichiesta: true,
               }),
@@ -188,7 +191,7 @@ export function segnoRichiesta(
 
 /** Il pagamento Satispay da mettere nella ricevuta di una persona: arrivato e non ancora in una ricevuta. */
 export const satispayDaUsare = (pagamenti: PagamentoSatispay[], personaId: string) =>
-  pagamenti.find((p) => p.stato === 'pagato' && !p.ricevutaId && p.personaId === personaId)
+  pagamenti.find((p) => p.stato === 'pagato' && !p.ricevutaId && !p.saldoDi && p.personaId === personaId)
 
 /** Come `emetti_ricevuta_satispay`: nella ricevuta il pagato con Satispay è esattamente quello arrivato. */
 export function cosaNonVaSatispay(voci: Array<{ pagamenti: Array<{ importo: number; metodo: string }> }>, p: PagamentoSatispay): string | null {
@@ -262,7 +265,14 @@ export function nonSemplice(corsi: CorsoRef[], listino: Listino, fuoriEta: strin
 /** Per ogni scheda, i centesimi arrivati con Satispay e non ancora in una ricevuta: la quota non è da pagare. */
 export function satispayPerPersona(pagamenti: PagamentoSatispay[]): Map<string, number> {
   const m = new Map<string, number>()
-  for (const p of pagamenti) if (p.stato === 'pagato' && !p.ricevutaId && p.personaId) m.set(p.personaId, (m.get(p.personaId) ?? 0) + p.importo)
+  for (const p of pagamenti) if (p.stato === 'pagato' && !p.ricevutaId && !p.saldoDi && p.personaId) m.set(p.personaId, (m.get(p.personaId) ?? 0) + p.importo)
+  return m
+}
+
+/** Per ogni scheda, i centesimi del saldo della quota arrivati con Satispay e non ancora in una ricevuta. */
+export function saldoPerPersona(pagamenti: PagamentoSatispay[]): Map<string, number> {
+  const m = new Map<string, number>()
+  for (const p of pagamenti) if (p.stato === 'pagato' && !p.ricevutaId && p.saldoDi && p.personaId) m.set(p.personaId, (m.get(p.personaId) ?? 0) + p.importo)
   return m
 }
 

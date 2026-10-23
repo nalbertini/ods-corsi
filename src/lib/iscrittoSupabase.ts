@@ -5,6 +5,9 @@ import type { Segnalata, StatoSegnalata } from './segnalate'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno } from './sala'
 import type { StatoPagamento } from './segreteria'
+import { chiamaSatispay } from './richiesteSupabase'
+import { ERRORE_SATISPAY, type StatoSatispay } from './satispay'
+import { SALDO_SPENTO } from './saldoSatispay'
 import { enteDa, type QuotaRicevuta, type Ricevuta } from './ricevute'
 
 /**
@@ -276,6 +279,38 @@ export function creaIscrittoSupabase(c: SupabaseClient): DatiIscritto {
 
     async segnalate(persona) {
       return ((await chiama<RigaSegnalata[] | null>('iscritto_segnalate', { persona })) ?? []).map(segnalataDa)
+    },
+
+    async saldoAttivo() {
+      try {
+        return (await chiamaSatispay(c, { azione: 'saldo_attivo' })).attivo === true
+      } catch {
+        return false
+      }
+    },
+
+    async chiPaga(persona) {
+      // Senza `103-saldo-satispay.sql` (o senza rete) non si sa chi è: niente PAGA.
+      const { data, error } = await c.rpc('satispay_saldo_chi', { persona })
+      if (error) return null
+      // `as`: la forma è quella di `satispay_saldo_chi` (103-saldo-satispay.sql).
+      const r = data as { adulto: boolean; accesso_proprio: boolean; come_titolare: boolean } | null
+      return r ? { adulto: r.adulto, haAccessoProprio: r.accesso_proprio, comeTitolare: r.come_titolare } : null
+    },
+
+    async pagaSaldo(persona, ricevuta) {
+      const r = await chiamaSatispay(c, { azione: 'saldo', persona, ricevuta })
+      if (r.attivo === false) throw new Error(SALDO_SPENTO)
+      if (typeof r.link !== 'string') throw new Error(ERRORE_SATISPAY)
+      return { link: r.link }
+    },
+
+    async statoSaldo(persona, ricevuta) {
+      const r = await chiamaSatispay(c, { azione: 'saldo_stato', persona, ricevuta })
+      if (r.attivo === false) throw new Error(SALDO_SPENTO)
+      // `as`: la forma è quella di `satispay_saldo_stato` (103-saldo-satispay.sql), riletta dalla funzione.
+      const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null; chi: string } | null | undefined
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined, chi: p.chi } : null
     },
   }
 }

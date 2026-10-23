@@ -159,6 +159,8 @@ export interface PersonaSeg {
   vociCorsi?: VoceCorso[]
   /** Centesimi pagati con Satispay dal modulo e non ancora in una ricevuta (`73-satispay.sql`). */
   satispay?: number
+  /** Centesimi del saldo della quota arrivati con Satispay e non ancora in una ricevuta (`102-saldo-satispay.sql`). */
+  saldo?: number
   /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`); col database lo dà `100-nucleo.sql`. */
   nucleo?: string
   /** `AAAA-MM-GG`, dall'anagrafica; senza, l'età non si sa e il certificato serve (vedi `serveCertificato`). */
@@ -1262,7 +1264,7 @@ export interface StatoPaga {
  * guardano a parte. Senza ricevuta conta l'eccezione scritta a mano, fino
  * alla sua data. Una quota scaduta, o un'eccezione scaduta, è `scaduto`.
  */
-export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay'>, oggi: string): StatoPaga {
+export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay' | 'saldo'>, oggi: string): StatoPaga {
   const quote = p.quote ?? []
   const valgono = quote.filter((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
   const numero = (q: QuotaRicevuta) => `${q.numero}/${q.anno}`
@@ -1276,7 +1278,12 @@ export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispa
   // Pagata dal modulo con Satispay, quota compresa: manca solo la ricevuta, e non è da chiamare.
   if (p.satispay) return { come: 'pagato', fonte: 'satispay', fino: stagioneDi(oggi).quota.al, importo: p.satispay }
   const parte = [...valgono].sort((a, b) => a.mancano - b.mancano)[0]
-  if (parte) return { come: 'in_parte', fonte: 'ricevuta', fino: parte.al, mancano: parte.mancano, ricevuta: numero(parte) }
+  if (parte) {
+    // Il saldo arrivato con Satispay toglie da quel che manca; finché la segreteria non fa la ricevuta nuova la ricevuta dice ancora «Manca».
+    const resta = parte.mancano - (p.saldo ?? 0)
+    if (p.saldo && resta <= 0) return { come: 'pagato', fonte: 'satispay', fino: parte.al, importo: p.saldo }
+    return { come: 'in_parte', fonte: 'ricevuta', fino: parte.al, mancano: Math.max(0, resta), ricevuta: numero(parte) }
+  }
   if (eccezione) return { come: 'in_parte', fonte: 'fuori_app', fino, nota: m.nota }
 
   const finite = [...quote.map((q) => q.al).filter((x): x is string => !!x && x < oggi), ...(m.stato !== 'da_pagare' && m.fino && m.fino < oggi ? [m.fino] : [])].sort()
@@ -1286,10 +1293,10 @@ export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispa
 /** La quota in una parola, per il riquadro QUOTA della scheda. */
 export const etichettaQuota = (come: ComePaga) => (come === 'pagato' ? 'PAGATA' : come === 'in_parte' ? 'IN PARTE' : come === 'scaduto' ? 'SCADUTA' : 'DA PAGARE')
 
-export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay'>, oggi: string): ComePaga => pagamentoDi(p, oggi).come
+export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay' | 'saldo'>, oggi: string): ComePaga => pagamentoDi(p, oggi).come
 
 /** In regola: certificato valido (anche se in scadenza) e quota pagata. */
-export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string) =>
+export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'saldo' | 'natoIl'>, oggi: string) =>
   !['manca', 'scaduto'].includes(statoCertificato(p, oggi)) && comePaga(p, oggi) === 'pagato'
 
 /** Chi è attivo e ha il certificato o la quota da sistemare: il bottone CHI NON È IN REGOLA delle statistiche. */
@@ -1458,7 +1465,7 @@ export function tastoPrincipale(p: Pick<PersonaSeg, 'attiva' | 'certificato' | '
  * IN REGOLA; poi FUORI APP, perché prima o poi va una ricevuta. Il
  * certificato in scadenza si vede, anche se è ancora in regola.
  */
-export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string): ParolaStato[] {
+export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'saldo' | 'natoIl'>, oggi: string): ParolaStato[] {
   const s = pagamentoDi(p, oggi)
   const cert = timbroCertificato(p.certificato, oggi, p.natoIl)
   // Sotto i 6 anni, senza un certificato valido: non è un guaio, ma si dice perché non c'è.

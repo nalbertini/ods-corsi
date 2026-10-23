@@ -25,6 +25,7 @@ import { esci } from '../lib/accesso'
 import { INDIRIZZI } from '../lib/aree'
 import { TAB_INIZIALE, etichettaTab, tabAperto, idPannelloTab, idTab, segnoInRegola, tabArea, tastoTabArea, type IdTabArea } from '../lib/areaTab'
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
+import { PagaSaldo, RitornoSaldo, ritornoDelSaldo } from './PagaSaldo'
 
 /**
  * L'area degli iscritti, dal telefono: le prossime lezioni dei suoi corsi,
@@ -132,6 +133,8 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
   const [giro, setGiro] = useState(0)
   // Qui e non in `Pagina`: cambiando persona o tornando dal modulo si resta sul tab in cui si era.
   const [tab, setTab] = useState<IdTabArea>(TAB_INIZIALE)
+  // Il ritorno da Satispay dopo il saldo della quota (`iscritti/?saldo=…&persona=…`).
+  const [ritorno, setRitorno] = useState(() => ritornoDelSaldo(window.location.search))
 
   useEffect(() => {
     let vivo = true
@@ -152,6 +155,35 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
   const io = nucleo[0]
   if (!io) return <p className="pad">Questa persona non è più fra gli iscritti.</p>
   const nomeDi = (id: string) => nucleo.find((p) => p.id === id)?.nome ?? ''
+
+  if (ritorno) {
+    const oggi = chiaveGiorno(new Date())
+    // Gli altri del nucleo con ancora un resto da pagare: il titolare li paga subito dopo.
+    const altri = nucleo.flatMap((p) => {
+      const q = pagamentoDi(p, oggi)
+      const r = ricevute.find((x) => !x.annullataIl && x.personaId === p.id && `${x.numero}/${x.anno}` === q.ricevuta)
+      return p.id !== ritorno.persona && q.come === 'in_parte' && q.fonte === 'ricevuta' && q.mancano && r
+        ? [{ persona: p.id, ricevuta: r.id, chi: `${p.cognome} ${p.nome}`, mancano: q.mancano }]
+        : []
+    })
+    return (
+      <div className="iscrizioni-modulo">
+        <Titoletto>QUOTA ASSOCIATIVA</Titoletto>
+        <RitornoSaldo dati={dati} persona={ritorno.persona} ricevuta={ritorno.ricevuta} altri={altri}
+          onChiudi={() => {
+            // Via dall'indirizzo il ritorno: la pagina si rilegge e il resto pagato non c'è più.
+            const u = new URLSearchParams(window.location.search)
+            u.delete('saldo')
+            u.delete('persona')
+            history.replaceState(null, '', window.location.pathname + (u.size ? `?${u}` : ''))
+            setRitorno(null)
+            setGiro((g) => g + 1)
+            suSubito()
+          }}
+        />
+      </div>
+    )
+  }
 
   if (modulo)
     return (
@@ -194,10 +226,11 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
         key={di}
         dati={dati}
         personaId={di}
+        io={personaId}
         tua={di === personaId}
         tab={tab}
         onTab={setTab}
-        nucleo={titolare ? <Nucleo io={personaId} membri={nucleo} aggiunte={aggiunte} ricevute={ricevute} onApri={apri} onAggiungi={() => void aggiungi()} /> : null}
+        nucleo={titolare ? <Nucleo dati={dati} io={personaId} membri={nucleo} aggiunte={aggiunte} ricevute={ricevute} onApri={apri} onAggiungi={() => void aggiungi()} /> : null}
       />
       <div style={{ paddingBottom: 20 }}>
         <Segreteria />
@@ -210,6 +243,7 @@ function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string })
 function Pagina({
   dati,
   personaId,
+  io,
   tua,
   tab: scelto,
   onTab,
@@ -217,6 +251,8 @@ function Pagina({
 }: {
   dati: DatiIscritto
   personaId: string
+  /** Chi è entrato: il titolare, se `personaId` è un familiare. */
+  io: string
   tua: boolean
   tab: IdTabArea
   onTab: (t: IdTabArea) => void
@@ -313,7 +349,7 @@ function Pagina({
       {pannello(
         'regola',
         <>
-          <InRegola scheda={scheda} />
+          <InRegola dati={dati} scheda={scheda} io={io} ricevute={ricevute} />
           <Ricevute ricevute={ricevute} />
         </>,
       )}
@@ -543,7 +579,7 @@ function Presenze({ dati, personaId, presenze, tua }: { dati: DatiIscritto; pers
 
 const data = (g: string) => g.split('-').reverse().join('/')
 
-function InRegola({ scheda }: { scheda: SchedaIscritto }) {
+function InRegola({ dati, scheda, io, ricevute }: { dati: DatiIscritto; scheda: SchedaIscritto; io: string; ricevute: Ricevuta[] }) {
   const oggi = chiaveGiorno(new Date())
   const cert = statoCertificato(scheda, oggi)
   const stato = pagamentoDi(scheda, oggi)
@@ -574,6 +610,7 @@ function InRegola({ scheda }: { scheda: SchedaIscritto }) {
         <Riquadro stretto>
           <Etichetta>QUOTA</Etichetta>
           <Dettaglio tono={tono(paga === 'pagato', paga === 'in_parte')}>{pagaTesto}</Dettaglio>
+          <PagaSaldo dati={dati} scheda={scheda} io={io} ricevute={ricevute} />
         </Riquadro>
       </div>
     </section>
@@ -620,6 +657,7 @@ function Ricevute({ ricevute }: { ricevute: Ricevuta[] }) {
  * aspetta la segreteria, e i pagamenti di tutti con lo sconto famiglia.
  */
 function Nucleo({
+  dati,
   io,
   membri,
   aggiunte,
@@ -627,6 +665,7 @@ function Nucleo({
   onApri,
   onAggiungi,
 }: {
+  dati: DatiIscritto
   io: string
   membri: SchedaIscritto[]
   aggiunte: AggiuntaNucleo[]
@@ -696,6 +735,7 @@ function Nucleo({
                     <span className="stack grow" style={{ gap: 1, minWidth: 0 }}>
                       <span style={{ fontWeight: 600 }}>{p.nome}</span>
                       <span style={{ fontSize: 13, color: 'var(--dim)' }}>Pagati {euro(pagatoDa(p.id))} € nelle ricevute</span>
+                      <PagaSaldo dati={dati} scheda={p} io={io} ricevute={ricevute} />
                     </span>
                     <span className="num mia-presenza-detto">{PAGA[come]}</span>
                   </li>

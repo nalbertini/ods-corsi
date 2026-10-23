@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA · tab IN REGOLA: sulla quota pagata in parte compare PAGA, con la cifra che manca. Nessun tasto su da pagare, scaduta, rinnovi, quote intere. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1000px; background: #eef5fa"><dc-import name="Testata" luogo="LA TUA PAGINA" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,60px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 6px 20px 14px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05">Ciao Manuela</span></div><div style="padding: 0 20px 14px"><dc-import name="SchedeArea" acceso="IN REGOLA" voci="LEZIONI|IN REGOLA|NUCLEO" segnoSu="IN REGOLA" tonoSegno="giallo" parolaSegno="DA SISTEMARE" tema="sito" hint-size="100%,60px"></dc-import></div><dc-import name="Titoletto" label="CERTIFICATO E QUOTA" conto="" tema="sito" hint-size="100%,60px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="Riquadro" tema="sito" etichetta="CERTIFICATO MEDICO" testo="Scade il 4 novembre 2026." tonoTesto="avviso" tono="prova" hint-size="100%,60px"></dc-import><dc-import name="Riquadro" tema="sito" etichetta="QUOTA ASSOCIATIVA · MANUELA BIANCHI" cifra="MANCANO 30 €" testo="Hai pagato 50 € su 80 €. Il resto lo paghi qui con Satispay." tonoTesto="avviso" hint-size="100%,60px"></dc-import><dc-import name="Bottone" label="PAGA 30 € CON SATISPAY" variante="principale" tema="sito" hint-size="100%,60px"></dc-import><dc-import name="Riquadro" tema="sito" etichetta="" stretto="{{ true }}" testo="Non hai Satispay? Il resto si paga in palestra. Rinnovi e quote intere, per ora, si pagano in palestra." tonoTesto="dim" hint-size="100%,60px"></dc-import></div><dc-import name="Titoletto" label="RICEVUTE" conto="1" tema="sito" hint-size="100%,60px"></dc-import><div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="RigaPagamento" tipo="ricevuta" tema="sito" hint-size="100%,60px"></dc-import></div></div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

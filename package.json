@@ -53,6 +53,7 @@
     "prova:listino": "node scripts/prova-listino.mjs",
     "prova:satispay": "node scripts/prova-satispay.mjs",
     "prova:satispay-scarico": "node scripts/prova-satispay-scarico.mjs",
+    "prova:saldo-satispay": "node scripts/prova-saldo-satispay.mjs",
     "prova:dafare": "node scripts/prova-dafare.mjs",
     "prova:menu": "node scripts/prova-menu.mjs",
     "prova:scheda-finestra": "node scripts/prova-scheda-finestra.mjs",

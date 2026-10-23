@@ -1,7 +1,7 @@
 import type { AggiuntaNucleo, DatiIscritto, MiaLezione, MiaPresenza, SchedaIscritto } from './iscritto'
 import { archivio } from './archivioProva'
 import { creaSegreteriaProva } from './segreteriaProva'
-import { creaRichiesteProva } from './richiesteProva'
+import { creaRichiesteProva, pagamentiSatispayProva, salvaSatispay } from './richiesteProva'
 import { minorenne } from './richieste'
 import { quoteDi } from './ricevute'
 import { segnalaProva, segnalateDi } from './segnalateProva'
@@ -170,5 +170,61 @@ export function creaIscrittoProva(): DatiIscritto {
     async segnalate(personaId) {
       return persona(personaId) ? segnalateDi(personaId) : []
     },
+
+    async saldoAttivo() {
+      return true
+    },
+
+    async chiPaga(personaId, io) {
+      if (!persona(personaId)) return null
+      const nato = (await creaSegreteriaProva().anagraficaDi(personaId))?.dati.natoIl
+      // In prova ha l'accesso solo chi si è scelto di essere: gli altri del nucleo no.
+      return { adulto: !nato || !minorenne(nato), haAccessoProprio: personaId === io, comeTitolare: personaId !== io }
+    },
+
+    async pagaSaldo(personaId, ricevutaId) {
+      await pagaSaldoProva(personaId, ricevutaId)
+      return null
+    },
+
+    async statoSaldo(personaId, ricevutaId) {
+      const p = pagamentiSatispayProva()
+        .filter((x) => x.personaId === personaId && x.saldoDi === ricevutaId)
+        .sort((x, y) => y.creatoIl.localeCompare(x.creatoIl))[0]
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagatoIl, chi: p.chi } : null
+    },
   }
+}
+
+/**
+ * Il saldo della quota con Satispay, in prova (`satispay_prepara_saldo`,
+ * `103-saldo-satispay.sql`): Satispay non c'è, quindi il pagamento nasce già
+ * pagato, per quanto manca adesso. Un secondo tocco ritrova lo stesso. Gli
+ * stessi rifiuti del database, con gli stessi testi.
+ */
+export async function pagaSaldoProva(personaId: string, ricevutaId: string): Promise<void> {
+  const r = (archivio.dati.ricevute ?? []).find((x) => x.id === ricevutaId && x.personaId === personaId && !x.annullataIl)
+  if (!r) throw new Error('Questa ricevuta non si può pagare: chiedi alla segreteria')
+  const oggi = chiaveGiorno(new Date())
+  const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
+  if (!quota) throw new Error('Qui non c’è una quota da pagare: chiedi alla segreteria')
+  const pagamenti = pagamentiSatispayProva()
+  const dei = pagamenti.filter((p) => p.personaId === personaId && p.saldoDi === ricevutaId)
+  if (dei.some((p) => p.stato === 'attesa' || (p.stato === 'pagato' && !p.ricevutaId))) return
+  if (quota.mancano <= 0) throw new Error('Non resta niente da pagare su questa quota')
+  const p = archivio.dati.persone.find((x) => x.id === personaId)
+  const ora = new Date().toISOString()
+  salvaSatispay([
+    ...pagamenti,
+    {
+      id: crypto.randomUUID(),
+      chi: p ? `${p.cognome} ${p.nome}` : '',
+      importo: quota.mancano,
+      stato: 'pagato',
+      creatoIl: ora,
+      pagatoIl: ora,
+      personaId,
+      saldoDi: ricevutaId,
+    },
+  ])
 }

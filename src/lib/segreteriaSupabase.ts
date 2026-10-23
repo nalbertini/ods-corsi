@@ -24,7 +24,7 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
-import { satispayPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
+import { satispayPerPersona, saldoPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
 import type { ContiScarico, DaDecidere } from './satispayScarico'
 import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
@@ -679,19 +679,24 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
   /** I pagamenti Satispay (`73-satispay.sql`), anche per le schede in `persone`; senza il file, nessuno. */
   const leggiSatispay = async (): Promise<PagamentoSatispay[]> => {
-    const r = await tutteLeRighe((prima, ultima) =>
-      db
-        .from('pagamenti_satispay')
-        // `email`, `corso_id`, `formula`: 83-satispay-prima.sql, per il pagato senza richiesta da richiamare.
-        .select('id, richiesta_id, chi, importo, stato, creato_il, pagato_il, ricevuta_id, persona_id, email, corso_id, formula, ricevuta:ricevute ( annullata_il ), corso:corsi ( nome )')
-        .order('creato_il', { ascending: false })
-        .order('id')
-        .range(prima, ultima),
-    )
+    const colonne = 'id, richiesta_id, chi, importo, stato, creato_il, pagato_il, ricevuta_id, persona_id, email, corso_id, formula, ricevuta:ricevute ( annullata_il ), corso:corsi ( nome )'
+    // `saldo_di`: 103-saldo-satispay.sql; senza il file si legge come prima.
+    const leggi = (con: string) =>
+      tutteLeRighe((prima, ultima) =>
+        db
+          .from('pagamenti_satispay')
+          // `email`, `corso_id`, `formula`: 83-satispay-prima.sql, per il pagato senza richiesta da richiamare.
+          .select(con)
+          .order('creato_il', { ascending: false })
+          .order('id')
+          .range(prima, ultima),
+      )
+    let r = await leggi(`${colonne}, saldo_di`)
+    if (r.error?.code === '42703' && /saldo_di/.test(r.error.message ?? '')) r = await leggi(colonne)
     // Prima di 73-satispay.sql non c'è niente da mostrare.
     if (r.error && (r.error.code === '42P01' || r.error.code === 'PGRST205' || r.error.code === 'PGRST200')) return []
     // `as`: Supabase tipa la riga a modo suo, la forma è quella della select.
-    return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null; email: string | null; corso_id: string | null; formula: 'annuale' | 'trimestre' | null; ricevuta: { annullata_il: string | null } | null; corso: { nome: string } | null }>).map(
+    return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null; email: string | null; corso_id: string | null; formula: 'annuale' | 'trimestre' | null; ricevuta: { annullata_il: string | null } | null; corso: { nome: string } | null; saldo_di?: string | null }>).map(
       (x): PagamentoSatispay => ({
         id: x.id,
         richiestaId: x.richiesta_id ?? undefined,
@@ -707,6 +712,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         corsoId: x.corso_id ?? undefined,
         corso: x.corso?.nome,
         formula: x.formula ?? undefined,
+        saldoDi: x.saldo_di ?? undefined,
       }),
     )
   }
@@ -1087,7 +1093,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const perPersona = new Map<string, Ricevuta[]>()
       for (const x of ricevute ?? []) perPersona.set(x.persona_id, [...(perPersona.get(x.persona_id) ?? []), x])
       const natiIl = await nati
-      const conSatispay = satispayPerPersona(await leggiSatispay().catch(() => []))
+      const arrivati = await leggiSatispay().catch(() => [])
+      const conSatispay = satispayPerPersona(arrivati)
+      const conSaldo = saldoPerPersona(arrivati)
       return righe.map((r): PersonaSeg => {
         // Una a una con la persona: PostgREST la dà come oggetto, ma meglio non contarci.
         const s = Array.isArray(r.schede_iscritti) ? r.schede_iscritti[0] : r.schede_iscritti
@@ -1114,6 +1122,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           // Senza le ricevute lette i corsi non si giudicano: nessuno «da pagare» per sbaglio.
           vociCorsi: ricevute ? vociCorsiDi(perPersona.get(r.id) ?? []) : undefined,
           satispay: conSatispay.get(r.id),
+          saldo: conSaldo.get(r.id),
           natoIl: natiIl.get(r.id),
         }
       })

@@ -5,6 +5,8 @@ import { euro, type QuotaRicevuta, type Ricevuta } from './ricevute'
 import type { DatiRichiesta, StatoRichiesta } from './richieste'
 import type { Segnalata } from './segnalate'
 import { haUnServer } from './dati'
+import type { StatoSatispay } from './satispay'
+import type { ChiPaga } from './saldoSatispay'
 
 /**
  * L'area degli iscritti: quello che di sé vede chi frequenta i corsi, dal
@@ -110,6 +112,30 @@ export interface DatiIscritto {
   segnala(personaId: string, sessioneId: string, nota?: string): Promise<void>
   /** Le sue presenze segnalate, per sapere a che punto sono. */
   segnalate(personaId: string): Promise<Segnalata[]>
+  /** Il saldo della quota con Satispay c'è: il servizio è acceso e `102-saldo-satispay.sql` è sul database (in prova sempre). */
+  saldoAttivo(): Promise<boolean>
+  /**
+   * Chi è `personaId` per chi paga il suo saldo (adulta, con un accesso suo, del
+   * nucleo): `null` se non è una persona sua. In prova `io` è chi si è scelto di essere.
+   */
+  chiPaga(personaId: string, io: string): Promise<Pick<ChiPaga, 'adulto' | 'haAccessoProprio' | 'comeTitolare'> | null>
+  /**
+   * Il saldo della quota di quella ricevuta, per quanto manca adesso: l'indirizzo
+   * di Satispay dove pagare, o `null` se è già pagato (in prova, dove Satispay non c'è).
+   * Gli errori sono già scritti per chi paga.
+   */
+  pagaSaldo(personaId: string, ricevutaId: string): Promise<{ link: string } | null>
+  /** Com'è andato l'ultimo saldo di quella ricevuta, o `null` se non è mai partito. */
+  statoSaldo(personaId: string, ricevutaId: string): Promise<SaldoPagato | null>
+}
+
+export interface SaldoPagato {
+  stato: StatoSatispay
+  /** Centesimi. */
+  importo: number
+  pagatoIl?: string
+  /** Di chi: nome e cognome, o solo il nome per un minorenne che guarda da sé. */
+  chi: string
 }
 
 /** Quanto viene: le presenze sulle lezioni che contano (le giustificate no). */

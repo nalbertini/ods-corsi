@@ -376,6 +376,13 @@ altro modo di pagare l'app non la fa (si conterebbero due volte), e il pagato
 con Satispay deve essere esattamente quello arrivato. Annullata la ricevuta, il
 pagamento torna libero per quella giusta.
 
+Chi ha pagato la quota in parte può pagare il resto con Satispay dall'area degli
+iscritti (da sé, o il titolare del nucleo per un familiare). Quel pagamento arriva
+come **QUOTA ASSOCIATIVA (saldo)** fra i pagamenti Satispay, con la persona e la
+ricevuta da cui nasce: non è un'iscrizione e non conta come quota pagata finché non
+fai la ricevuta del saldo (come per il modulo, i soldi entrano una volta sola). Per
+vedere che ha pagato basta la scheda della persona: la quota dice quanto manca.
+
 - **DATA**, **NUMERO** e **PAGATO CON** (bonifico, contanti, POS, assegno; e
   **Satispay** se ha pagato col modulo). Il
   numero si lascia vuoto: prende da solo il primo libero dell'anno, e a
