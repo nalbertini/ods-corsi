@@ -1469,9 +1469,8 @@ a.btn { text-decoration: none; }
 .stima-riga { gap: 12px; font-size: 15px; }
 .stima-riga[data-sconto] { color: var(--verde-testo); }
 .stima-totale { border-top: 2px solid var(--line); padding-top: 6px; font-weight: 700; font-size: 17px; }
-.mie-presenze { list-style: none; margin: 0; padding: 4px 14px; gap: 0; }
+.mie-presenze { list-style: none; margin: 0; padding: 0; gap: 8px; }
 .mia-presenza { gap: 12px; padding: 8px 0; align-items: center; }
-.mia-presenza + .mia-presenza, .mia-presenza-voce + .mia-presenza-voce { border-top: 1px solid var(--line-soft); }
 .mie-presenze { list-style: none; }
 /* Segnalare una presenza mancante: il tasto piccolo sulla riga, e sotto la nota. */
 .mia-segnala {

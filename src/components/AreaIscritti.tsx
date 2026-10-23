@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import {
   avvisi,
-  contoPresenze,
   datiIscritto,
   iscrittoScelto,
   scegliIscritto,
@@ -20,7 +19,7 @@ import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
 import { indirizzoPagina } from '../lib/guida'
 import { cartaSePuoi } from '../lib/cartaPdf'
 import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
-import { Cifra, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } from './ds'
+import { Cifra, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto } from './ds'
 import { AccessoIscritto } from './AccessoIscritto'
 import { esci } from '../lib/accesso'
 import { INDIRIZZI } from '../lib/aree'
@@ -380,29 +379,13 @@ function Saluto({ scheda, tua, io, membri, onCambia }: { scheda: SchedaIscritto;
       )}
       {membri.length > 1 && <Dettaglio>Tocca il nome per vedere un altro membro del nucleo.</Dettaglio>}
       {!tua && <Dettaglio>Nel tuo nucleo familiare: vedi la sua pagina come la vede la segreteria.</Dettaglio>}
-      {scheda.corsi.length > 0 ? (
-        <span className="row mie-chips">
-          {scheda.corsi.map((c) => (
-            <span key={c.id} className="num mia-chip" style={{ ['--tinta' as string]: c.colore ?? 'var(--blu)' }}>
-              {c.nome.toUpperCase()}
-            </span>
-          ))}
-        </span>
-      ) : (
-        <Dettaglio>Oggi non risulta un’iscrizione a un corso.</Dettaglio>
-      )}
-      {x.length === 0 ? (
-        <Riquadro stretto>
-          <TitoloEsito tono="fatto">SEI IN REGOLA</TitoloEsito>
-          <Dettaglio>{statoCertificato(scheda, oggi) === 'non_serve' && !scheda.certificato.scade ? 'Quota pagata. Sotto i 6 anni il certificato non serve.' : 'Certificato medico valido e quota pagata.'}</Dettaglio>
+      {scheda.corsi.length === 0 && <Dettaglio>Oggi non risulta un’iscrizione a un corso.</Dettaglio>}
+      {/* Se è tutto a posto non c'è niente da dire: il segno sul tab DOCUMENTI avvisa quando serve. */}
+      {x.map((a) => (
+        <Riquadro key={a.testo} tono={a.tono === 'guaio' ? 'guaio' : 'prova'} stretto>
+          <Dettaglio tono={a.tono === 'guaio' ? 'guaio' : 'testo'}>{a.testo}</Dettaglio>
         </Riquadro>
-      ) : (
-        x.map((a) => (
-          <Riquadro key={a.testo} tono={a.tono === 'guaio' ? 'guaio' : 'prova'} stretto>
-            <Dettaglio tono={a.tono === 'guaio' ? 'guaio' : 'testo'}>{a.testo}</Dettaglio>
-          </Riquadro>
-        ))
-      )}
+      ))}
     </section>
   )
 }
@@ -492,7 +475,6 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
     }
   }, [dati, personaId, giro])
 
-  const c = contoPresenze(presenze)
   const viste = tutte ? presenze : presenze.slice(0, 5)
   const daVedere = segnalate.filter((x) => x.stato === 'da_vedere').length
   const manda = async (sessioneId: string) => {
@@ -513,22 +495,18 @@ function Presenze({ dati, personaId, presenze }: { dati: DatiIscritto; personaId
           <Dettaglio>Nessuna lezione negli ultimi {INDIETRO} giorni.</Dettaglio>
         ) : (
           <>
-            <Dettaglio>
-              Negli ultimi {INDIETRO} giorni: presente a {c.presenti} {c.presenti === 1 ? 'lezione' : 'lezioni'} su {c.dovute}. Se c’eri e non risulta,
-              tocca SEGNALA: la conferma l’istruttore o la segreteria.
-            </Dettaglio>
             {daVedere > 0 && (
               <Dettaglio tono="avviso">
                 {daVedere === 1 ? 'Una presenza segnalata aspetta' : `${daVedere} presenze segnalate aspettano`} l’istruttore o la segreteria.
               </Dettaglio>
             )}
-            <ul className="card stack mie-presenze">
+            <ul className="stack mie-presenze">
               {viste.map((p) => {
                 const s = segnalate.find((x) => x.sessioneId === p.sessioneId)
                 const [segno, detto] = p.stato ? SEGNI[p.stato] : ['·', 'NON SEGNATO']
                 const puo = !s && p.stato !== 'presente' && p.stato !== 'giustificato'
                 return (
-                  <li key={p.sessioneId} className="stack mia-presenza-voce">
+                  <li key={p.sessioneId} className="card stack mia-presenza-voce">
                     <span className="row mia-presenza" data-stato={p.stato ?? 'nessuno'}>
                       <span className="num mia-presenza-segno" aria-hidden="true">
                         {segno}
