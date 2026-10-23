@@ -121,5 +121,11 @@ ok('…alto 56px come prima', dichiarato('.modulo-piede .passo-btn', 'min-height
 ok('gli altri tasti restano a inizio riga', dichiarato('.passo-btn', 'align-self'), 'flex-start')
 ok('…anche quelli di aiuto', dichiarato('.passo-aiuto .passo-btn', 'align-self'), null)
 
+// Il fuoco da tastiera (WCAG 2.4.7): il solo cambio di colore del bordo, da
+// --riga-campo a --text, non basta a chi vede poco. Serve anche il contorno.
+console.log('Il fuoco dei campi')
+ok('.campo:focus-visible ha un contorno', dichiarato('.campo:focus-visible', 'outline'), '2px solid var(--text)')
+ok('…staccato dal bordo', dichiarato('.campo:focus-visible', 'outline-offset'), '2px')
+
 console.log(guai ? `\n${guai} DA SISTEMARE` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
