@@ -133,6 +133,7 @@ Deno.serve(async (req) => {
       to: d.a,
       subject: t.oggetto,
       text: t.testo,
+      html: t.html,
       attachments: [{ filename: t.allegato, content: pdf, encoding: 'base64', contentType: 'application/pdf' }],
     })
   } catch (e) {

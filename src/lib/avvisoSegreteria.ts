@@ -6,12 +6,15 @@
 //
 // Questo file ha una copia identica in supabase/functions/avvisi-segreteria/
 // mail.ts: la funzione gira su Deno, che src/lib non lo legge. Per questo qui
-// non si importa niente; `npm run prova:avvisi-segreteria` controlla che le
-// due copie siano uguali. Si cambia qui e si ricopia là.
+// si importa solo la cornice (cornicaMail.ts, con la sua copia accanto);
+// `npm run prova:avvisi-segreteria` controlla che le copie siano uguali. Si
+// cambia qui e si ricopia là.
 //
 // Nella mail mai note, codice fiscale, data di nascita, documenti o file:
 // l'avviso porta solo nomi, corsi e importi, e il resto si guarda nell'app.
 // ---------------------------------------------------------------------------
+
+import { incorniciaMail, tastoMail } from './cornicaMail.ts'
 
 export const MITTENTE = 'ODS Corsi <info@officinedellosport.it>'
 
@@ -125,8 +128,14 @@ export function testoAvviso(a: Avviso, app: string): { oggetto: string; testo: s
   return {
     oggetto,
     testo: [...frasi, '', `${tasto}: ${link}`].join('\n'),
-    html: `${frasi.map((f) => `<p>${html(f)}</p>`).join('\n')}\n<p><a href="${html(link)}">${tasto}</a></p>`,
+    html: cornice(frasi, tasto, link),
   }
+}
+
+/** L'HTML con la cornice: il corpo lo converte `html`, la cornice no. */
+function cornice(frasi: string[], tasto: string, link: string): string {
+  const corpo = frasi.map((f) => `<p style="margin:0 0 10px">${html(f)}</p>`).join('\n') + tastoMail(tasto, link)
+  return incorniciaMail(corpo, { testata: 'ODS CORSI · AVVISO', piede: 'Avviso automatico dell’app ODS Corsi.' })
 }
 
 /** Cosa non va in un indirizzo email, detto per chi lo scrive; `null` se va. */
