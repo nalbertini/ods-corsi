@@ -499,6 +499,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'storico_persona' and corpo like '%prima-nota:%')
     and not exists (select 1 from dentro where nome = 'collegamento_perche' and corpo like '%non viene dal vecchio programma%')
     -- Rilanciare 67 dopo 98 rimette la versione a due argomenti accanto a questa: l'app non sa più quale chiamare.
-    and to_regprocedure('public.cambia_voce_movimenti(uuid[],uuid)') is null)
+    and to_regprocedure('public.cambia_voce_movimenti(uuid[],uuid)') is null),
+  ('99-importa-banca.sql', 'si può annullare in un colpo un''intera importazione dal file della banca',
+    to_regprocedure('public.annulla_importazione_banca(timestamptz)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

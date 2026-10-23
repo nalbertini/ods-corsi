@@ -1,6 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
+import type { DatoImportBanca } from './importaBanca'
 import type { Cassa, CambioVoce, ChiusuraCassa, DatiGiroconto, DatiMovimento, MovimentoManuale, VoceContabile } from './contabilita'
 import type { CandidatoPersona, EsitoCollegamento, RiepilogoCollegamenti, VoceStorico } from './movimentiPersona'
 import type { IncassoPrima } from './pagatoPrima'
@@ -794,6 +795,10 @@ export interface DatiSegreteria {
   registraGiroconto(d: DatiGiroconto): Promise<string>
   /** Un movimento non si modifica né si cancella: si annulla e si rifà. */
   annullaMovimento(id: string): Promise<void>
+  /** Scrive i movimenti letti dal file della banca (`99-importa-banca.sql`); quelli con chiave già scritta restano fuori. Dice quanti ne ha scritti. */
+  importaMovimentiBanca(dati: DatoImportBanca[]): Promise<number>
+  /** Annulla in un colpo i movimenti della banca scritti insieme, riconosciuti dal momento in cui sono stati scritti. Dice quanti ne ha annullati. */
+  annullaImportazioneBanca(creatoIl: string): Promise<number>
   /** A che punto è lo scarico del negozio Satispay, coi pagamenti da decidere (`97-satispay-scarico.sql`); null senza il file. */
   statoScaricoSatispay(): Promise<StatoScarico | null>
   /** «Scarica ora»; con `anteprima` legge tutto e dà i conti del primo scarico senza scrivere. Un guaio arriva come errore da mostrare. */

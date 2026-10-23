@@ -70,6 +70,7 @@ import { filtraPerPersona, cosaNonVaCollegato, collegatoAMano, senzaPersona, typ
 import { fraseDallaChat } from '../../lib/collega'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
+import { ImportaBanca } from './ImportaBanca'
 import { Campo, chiedi, FiltroMenu, Guaio, lasciare, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { ICONE_CONTI } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri } from './CollegaPersona'
@@ -250,7 +251,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
   const [perVoci, setPerVoci] = useState(false)
   // Le casse dell'estratto conto: vuote = tutte. Stanno qui e non in FiltriElenco perché sono più d'una.
   const [cassaIds, setCassaIds] = useState<string[]>([])
-  const [scrivo, setScrivo] = useState<'movimento' | 'giroconto' | null>(null)
+  const [scrivo, setScrivo] = useState<'movimento' | 'giroconto' | 'banca' | null>(null)
   // Dopo aver scritto un movimento che i filtri nascondono: se no sembra perso.
   const [appena, setAppena] = useState<RigaMovimento | null>(null)
   // Arrivando dalla scheda di una persona («Apri in contabilità») il movimento è già aperto.
@@ -343,7 +344,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
   }
   const fuori = !!appena && (nonSiVedra(appena, { testo, dal, al, tipo, voce, persona }) || (cassaIds.length > 0 && ![appena.cassaId, appena.cassaAId].some((c) => c && cassaIds.includes(c))))
   // Le azioni stanno nella testata, in vista anche col dettaglio aperto: prima si chiede se lasciare la correzione.
-  const apri = async (cosa: 'movimento' | 'giroconto') => {
+  const apri = async (cosa: 'movimento' | 'giroconto' | 'banca') => {
     if (!(await lasciare())) return
     setAperto(null)
     setCambio(false)
@@ -377,7 +378,9 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
             ← I movimenti
           </button>
         </div>
-        {scrivo === 'movimento' ? (
+        {scrivo === 'banca' ? (
+          <ImportaBanca d={d} casse={casse} righe={righe} fai={fai} onRileggi={onCambiato} onVedi={() => { chiudi(); setF({ ...FILTRI_INIZIALI, periodo: 'tutto', voce: 'Da classificare' }) }} />
+        ) : scrivo === 'movimento' ? (
           <NuovoMovimento d={d} voci={voci} casse={casse} righe={righe} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
         ) : (
           <NuovoGiroconto d={d} casse={casse} voci={voci} righe={righe} chiusure={chiusure} fai={fai} onFatto={fatto} onChiudi={() => void tornaDalModulo()} />
@@ -396,6 +399,9 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
               Collega i casi sicuri
             </button>
           )}
+          <button type="button" className="sg-btn sg-btn-linea" onClick={() => void apri('banca')}>
+            Importa dalla banca
+          </button>
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => void apri('giroconto')}>
             Giroconto
           </button>
@@ -556,6 +562,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
                   {r.origine !== 'movimento' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Incasso iscritto</span>}
                   {r.tipo === 'giroconto' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Giroconto</span>}
                   {r.satispayId && <span className="num sg-tag" style={{ marginLeft: 8 }}>Da Satispay</span>}
+                  {r.origineImport?.startsWith('banca:') && <span className="num sg-tag" style={{ marginLeft: 8 }}>Dalla banca</span>}
                   {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
                   {/* Lo stato del collegamento alla persona sta accanto alla descrizione: la colonna PERSONA non c'è più. */}
                   {r.personaId && collegatoAMano(r) && <span className="num sg-tag" data-tipo="fatto" style={{ marginLeft: 8 }}>Collegato</span>}

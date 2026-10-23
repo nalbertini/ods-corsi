@@ -209,6 +209,28 @@ Dopo ogni scarico che ha scritto qualcosa, lasciato pagamenti da decidere o non 
 riuscito, arriva un'email agli indirizzi degli avvisi (IMPOSTAZIONI → GLI AVVISI,
 vedi [Le regole](../segreteria/regole.md#gli-avvisi)). L'anteprima non manda niente.
 
+### Importare dalla banca
+
+**Importa dalla banca**, in MOVIMENTI, legge il file della banca e scrive nel **Conto
+Corrente** i movimenti che mancano. Dall'home banking di BancoPosta scarica la
+**Lista movimenti** in formato CSV, poi scegli il file. Il file resta sul tuo computer:
+l'app ne legge solo i movimenti, e toglie dalla descrizione IBAN e codici fiscali.
+
+Prima c'è l'anteprima, e niente si scrive finché non dici **Sì, importa**. Dice
+quanti movimenti ci sono, quanti entrano e per quanto, e poi:
+
+- **Da decidere**: un movimento uguale a uno già scritto a mano (stesso importo, stesso giorno o due giorni prima o dopo) e più di un possibile pagamento. Scegli quello giusto, oppure **Nessuno: scrivilo**. Finché non scegli, non entra.
+- **Avvisi**: i **versamenti da Satispay** entrano, ma i soldi sono già negli incassi Satispay: dopo, in MOVIMENTI, controllali uno per uno: se sono già negli incassi Satispay, annullali, o spostali con **Cambia voce** su un giroconto da Satispay, per non contarli due volte. Controlla anche i versamenti di contanti.
+- **Scartati**: righe con la data o l'importo illeggibili, o con la data nel futuro. Correggili nel file e riprova.
+- **Già coperti**: movimenti già scritti a mano, o già importati. Non si scrivono di nuovo; se l'abbinamento è sbagliato, **Non è questo**.
+
+I movimenti entrano nella voce **Da classificare**, col segno **DALLA BANCA**: la voce
+giusta la scegli dopo, con **Cambia voce**. Rileggere lo stesso file non duplica niente,
+nemmeno un movimento annullato. Se qualcosa non torna, **Annulla tutta l'importazione**
+toglie in un colpo i movimenti dell'ultima importazione; uno annullato per sbaglio si
+recupera da **Annullati**. Solo l'amministrazione importa; la segreteria può poi
+classificare. Una volta sola al massimo 1000 movimenti.
+
 ### Dalla chat, con Claude
 
 Le fatture, le ricevute e gli scontrini dei **fornitori** si possono registrare fotografandoli

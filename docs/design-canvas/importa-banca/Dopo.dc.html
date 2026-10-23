@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Dopo l'importazione dalla banca</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Proposta: dopo «Sì, importa» il riepilogo, poi MOVIMENTI col filtro «Importati dalla banca» e «Da classificare»,
+     e il tasto per annullare l'intera importazione in un colpo. Cifre e nomi d'esempio. -->
+<div style="display: flex; width: 1440px; min-height: 1500px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="CONTABILITÀ" numeri="" nome="Nicola Albertini" ruolo="Amministrazione" area="amministrazione" autorizzazioni="segreteria e amministrazione" altezza="1500px" hint-size="240px,1500px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">CONTABILITÀ</h1>
+      <span style="font-size: 14px; color: #46606f">MOVIMENTI · dopo l’importazione dalla banca</span>
+    </div>
+
+    <section aria-label="Riepilogo" style="display: flex; flex-direction: column; gap: 14px; max-width: 980px; padding: 22px 24px; background: #ffffff; border: 2px solid #cfe6f4">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">IMPORTAZIONE FATTA</span>
+      <span style="font-size: 22px; font-weight: 700">268 MOVIMENTI SCRITTI</span>
+      <span style="font-size: 15px; line-height: 1.5">Sono nel <b>Conto Corrente</b>, in «Da classificare». <b>6 restano da decidere</b> e non sono entrati. <b>27 versamenti da Satispay</b> sono da controllare: contali una volta sola.</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Guarda i 268 importati" hint-size="220px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Decidi i 6 rimasti" hint-size="190px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="rosso" label="Annulla tutta l’importazione" hint-size="250px,44px"></dc-import>
+      </div>
+      <span style="font-size: 14px; color: #46606f; line-height: 1.5">«Annulla tutta l’importazione» toglie in un colpo i 268 movimenti. Se ne annulli uno per sbaglio, lo trovi in «Annullati» e lo recuperi. La voce la scelgono la segreteria o l’amministrazione, un movimento alla volta o più insieme.</span>
+    </section>
+
+    <section aria-label="Movimenti" style="display: flex; flex-direction: column; gap: 14px; max-width: 1100px; padding: 22px 24px; background: #ffffff; border: 2px solid #cfe6f4">
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Tutti" hint-size="80px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Da classificare · 268" hint-size="200px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Importati dalla banca · 268" hint-size="240px,44px"></dc-import>
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="linea" label="Annullati · 0" hint-size="150px,44px"></dc-import>
+      </div>
+      <div style="display: flex; flex-direction: column; border-top: 1px solid #cfe6f4; font-size: 14px">
+        <div style="display: grid; grid-template-columns: 90px minmax(0, 1.4fr) 160px 110px 140px; gap: 12px; padding: 8px 0; border-bottom: 1px solid #cfe6f4; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #46606f">
+          <span>DATA</span><span>DESCRIZIONE</span><span>VOCE</span><span style="text-align: right">IMPORTO</span><span>SEGNO</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 90px minmax(0, 1.4fr) 160px 110px 140px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid #cfe6f4">
+          <span>21/10</span><span>Bonifico · «Quota corso»</span><span style="color: #8f6a00; font-weight: 600">Da classificare</span><b style="text-align: right; font-variant-numeric: tabular-nums">+50,00 €</b>
+          <dc-import name="Badge" tema="sito" tipo="tag" tono="neutro" label="DALLA BANCA" hint-size="120px,22px"></dc-import>
+        </div>
+        <div style="display: grid; grid-template-columns: 90px minmax(0, 1.4fr) 160px 110px 140px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid #cfe6f4">
+          <span>20/10</span><span>Accredito Satispay</span><span style="color: #8f6a00; font-weight: 600">Da classificare</span><b style="text-align: right; font-variant-numeric: tabular-nums">+86,00 €</b>
+          <dc-import name="Badge" tema="sito" tipo="tag" tono="giallo" label="CONTROLLA" hint-size="120px,22px"></dc-import>
+        </div>
+        <div style="display: grid; grid-template-columns: 90px minmax(0, 1.4fr) 160px 110px 140px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid #cfe6f4">
+          <span>19/10</span><span>Addebito diretto · utenza</span><span style="color: #8f6a00; font-weight: 600">Da classificare</span><b style="text-align: right; font-variant-numeric: tabular-nums">−62,30 €</b>
+          <dc-import name="Badge" tema="sito" tipo="tag" tono="neutro" label="DALLA BANCA" hint-size="120px,22px"></dc-import>
+        </div>
+      </div>
+      <span style="font-size: 14px; color: #46606f; line-height: 1.5">Un movimento importato non ha ricevuta né iscritto. «Cambia voce» lo sposta dove serve; il segno «Dalla banca» resta.</span>
+    </section>
+
+    <section aria-label="File sbagliato" style="display: flex; flex-direction: column; gap: 12px; max-width: 980px; padding: 22px 24px; background: #ffffff; border: 2px solid #cfe6f4">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: #b81d1d">QUESTO FILE NON È QUELLO GIUSTO</span>
+      <span style="font-size: 15px; line-height: 1.5">Nel file non trovo l’elenco dei movimenti del conto. Scarica dall’home banking «Lista movimenti» in formato CSV e riprova. Non è stato scritto niente.</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Scegli un altro file" hint-size="200px,44px"></dc-import>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

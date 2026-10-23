@@ -21,6 +21,7 @@ import { QUOTA_ASSOCIATIVA, stagioneDi } from './costi'
 import { NOTA_DI_DEFAULT, type IncassoPrima } from './pagatoPrima'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
+import { MASSIMO_PER_IMPORTAZIONE, PREFISSO_CHIAVE_BANCA } from './importaBanca'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
 const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
@@ -1520,6 +1521,36 @@ export function creaSegreteriaProva(): DatiSegreteria {
       // Come il trigger `compensi_tornano`: il pagamento annullato rimette le sue ricevute da pagare.
       a().ricevuteCompensi = (a().ricevuteCompensi ?? []).map((r) => (r.movimentoId === id ? { ...r, movimentoId: null, pagataIl: null } : r))
       salva()
+    },
+
+    async importaMovimentiBanca(dati) {
+      const { voci, casse, movimenti } = contabilita()
+      const conto = casse.find((c) => c.nome === NOME_CASSA_CONTO)
+      if (!conto) throw new Error('Manca la cassa Conto Corrente')
+      // Come `importa_prima_nota`: tutto o niente, e con le stesse regole di un movimento a mano.
+      if (dati.length > MASSIMO_PER_IMPORTAZIONE) throw new Error(`Troppi movimenti in una volta: al massimo ${MASSIMO_PER_IMPORTAZIONE}`)
+      if (new Set(dati.map((d) => d.chiave)).size !== dati.length) throw new Error('Nel file ci sono movimenti ripetuti')
+      const scritte = new Set(movimenti.map((m) => m.origineImport).filter((k): k is string => !!k))
+      const nuovi = dati.filter((d) => !scritte.has(d.chiave))
+      const quando = new Date().toISOString()
+      const righe = nuovi.map((d) => {
+        const voce = voci.find((v) => v.nome.trim().toLowerCase() === d.voce.trim().toLowerCase() && v.tipo === d.tipo)
+        const no = cosaNonVaMovimento({ ...d, cassaId: conto.id, voceId: voce?.id }, voci.map((v) => (v.id === voce?.id ? { ...v, attiva: true } : v)), casse, oggiARoma(), contabilita().chiusure)
+        if (no) throw new Error(no)
+        return { id: `m-${unico()}`, tipo: d.tipo, data: d.data, importo: d.importo, voceId: voce?.id ?? '', cassaId: conto.id, descrizione: d.descrizione.trim(), origineImport: d.chiave, creatoIl: quando }
+      })
+      a().movimenti = [...movimenti, ...righe]
+      salva()
+      return nuovi.length
+    },
+
+    async annullaImportazioneBanca(creatoIl) {
+      const lotto = (m: { origineImport?: string; annullatoIl?: string; creatoIl: string }) => !!m.origineImport?.startsWith(PREFISSO_CHIAVE_BANCA) && !m.annullatoIl && m.creatoIl === creatoIl
+      const n = contabilita().movimenti.filter(lotto).length
+      const quando = new Date().toISOString()
+      a().movimenti = contabilita().movimenti.map((m) => (lotto(m) ? { ...m, annullatoIl: quando } : m))
+      salva()
+      return n
     },
 
     async cambiaVoceMovimenti(ids, voceId, personaId) {
