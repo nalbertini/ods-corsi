@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA · con icone: la tab LEZIONI com'e' costruita (la prossima in evidenza, una settimana avanti e una indietro), con o senza icone a linea davanti a sala, giorno, cosa cambia e stato della presenza. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1300px; background: #eef5fa">
+<dc-import name="Testata" luogo="ISCRITTI" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+<div style="padding: 6px 20px 14px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05; border-bottom: 4px solid #f4c31b; padding-bottom: 2px">Ciao Andrea ▾</span></div>
+<dc-import name="Titoletto" label="LE ULTIME PRESENZE" conto="VEDI TUTTE" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; gap: 8px; padding: 0 20px 16px">
+<div style="flex: 1; min-width: 0"><dc-import name="MiaPresenzaPiccola" quando="mer 21 ott" stato="niente" tema="sito" hint-size="100%,100px"></dc-import></div>
+<div style="flex: 1; min-width: 0"><dc-import name="MiaPresenzaPiccola" quando="lun 19 ott" stato="presente" tema="sito" hint-size="100%,100px"></dc-import></div>
+<div style="flex: 1; min-width: 0"><dc-import name="MiaPresenzaPiccola" quando="ven 16 ott" stato="assente" segnalata="da-confermare" tema="sito" hint-size="100%,100px"></dc-import></div>
+</div>
+<dc-import name="Titoletto" label="LA PROSSIMA LEZIONE" conto="" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+<div style="border-top: 5px solid #1b8ac4"><dc-import name="Riquadro" icone="{{ true }}" tema="sito" etichetta="VENERDÌ 23 OTTOBRE · 17:00" titolo="Judo 2" cifra="OGGI" testo="Elena · Con un sostituto" tonoTesto="dim" hint-size="100%,110px"></dc-import></div>
+</div><dc-import name="Titoletto" label="LE TUE LEZIONI" conto="VEDI TUTTE" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+<dc-import name="MiaLezione" ora="17:00" corso="Judo 2" sotto="Maurizio · lunedì 26 ottobre" cosa="" annullata="{{ false }}" icone="{{ true }}" tinta="#1b8ac4" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="MiaLezione" ora="17:00" corso="Judo 2" sotto="Elena · mercoledì 28 ottobre" cosa="SOSTITUTO" annullata="{{ false }}" icone="{{ true }}" tinta="#1b8ac4" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="MiaLezione" ora="17:00" corso="Judo 2" sotto="Maurizio · venerdì 30 ottobre" cosa="IN SALA 2" annullata="{{ false }}" icone="{{ true }}" tinta="#1b8ac4" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="MiaLezione" ora="17:00" corso="Judo 2" sotto="Maurizio · lunedì 2 novembre" cosa="IN PIÙ" annullata="{{ false }}" icone="{{ true }}" tinta="#1b8ac4" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="MiaLezione" ora="17:00" corso="Judo 2" sotto="Maurizio · mercoledì 4 novembre" cosa="ANNULLATA" annullata="{{ true }}" icone="{{ true }}" tinta="#1b8ac4" tema="sito" hint-size="100%,72px"></dc-import>
+</div><div style="position: sticky; bottom: 0; margin-top: auto"><dc-import name="BarraNavigazione" voci="LEZIONI|DOCUMENTI|FAMIGLIA|CONTATTI" attiva="LEZIONI" tema="sito" hint-size="100%,66px"></dc-import></div></div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

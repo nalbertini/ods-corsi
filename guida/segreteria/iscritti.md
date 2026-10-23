@@ -8,14 +8,13 @@ elenco, che compaiono negli appelli e sul tablet.
 
 ## Cercare
 
-- **Cerca per nome o email**, di accesso o di contatto.
+- **Cerca per nome o email**.
 - **Tutti i corsi** → uno solo, per vedere chi fa quel corso.
 Quattro filtri stanno sempre in vista: **Senza certificato valido**, **Da pagare**,
 **Corsi scaduti** e **Non in regola**. Gli altri sono dietro **Altri filtri (N)**, col numero di quelli
 che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
 
-- **Solo senza email** — chi non ha l'email di accesso in scheda (quella di
-  contatto non conta: non serve per entrare nell'app).
+- **Solo senza email** — chi non ha l'email in scheda.
 - **Vengono poco** — chi è venuto a meno di metà delle lezioni, su almeno tre.
 - **Senza certificato valido** — chi è attivo e non ha il certificato medico,
   o ce l'ha scaduto. Chi ha meno di 6 anni non c'è: per lui il certificato
@@ -106,7 +105,7 @@ La colonna **30 GIORNI** dice quanto è venuto ognuno nell'ultimo mese:
 con sotto una barretta piena in proporzione. In giallo chi viene poco.
 
 La colonna **CONTATTO** mostra il telefono, così in caso di emergenza si trova
-subito; l'email (di accesso, se no di contatto) solo se il telefono manca. Se
+subito; l'email solo se il telefono manca. Se
 manca tutto c'è scritto «nessun contatto». Davanti c'è il telefono o la busta.
 
 ## Nuovo iscritto
@@ -114,14 +113,12 @@ manca tutto c'è scritto «nessun contatto». Davanti c'è il telefono o la bust
 **+ Nuovo iscritto** → nome, cognome, le due email e il telefono
 (facoltativi), **ISCRIVI A** un corso → **Salva**.
 
-Le email sono due, e servono a cose diverse:
-
-- **EMAIL PER ENTRARE NELL'APP**: una sola persona per indirizzo. Se è già di
-  qualcuno, l'app dice di chi e di metterla come email per ricevute e avvisi.
-- **EMAIL PER RICEVUTE E AVVISI** (nelle altre pagine, **EMAIL DI CONTATTO**) è dove scrivete o telefonate alla famiglia: può essere
-  la stessa per più persone (un genitore e i figli, due fratelli). È anche
-  dove arrivano le ricevute per email (vedi [Un pagamento e la sua
-  ricevuta](#un-pagamento-e-la-sua-ricevuta)): mai all'email per entrare nell'app.
+L'**EMAIL** è una sola: serve per entrare nell'app e per scrivere alla
+famiglia (ricevute e avvisi, vedi [Un pagamento e la sua
+ricevuta](#un-pagamento-e-la-sua-ricevuta)). Gli iscritti possono avere la
+stessa email (un genitore e i figli, due fratelli); un istruttore, la
+segreteria e l'amministrazione ne hanno una tutta loro: se è già di
+qualcuno, l'app dice di chi. Per un minorenne è quella del genitore.
 
 Due omonimi si distinguono dal telefono, dal codice fiscale o dalla data di
 nascita: l'email non basta più, perché un figlio può non averla.
@@ -157,7 +154,7 @@ c'è e quando scade. Con la **TESSERA** i timbri sono quattro, tutti larghi
 uguale. Un clic su
 un timbro apre la scheda che lo contiene (sotto) e porta alla sua parte. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
-**Riattiva**.
+**Altro** → **Riattiva**.
 
 Se la quota è a posto ma un corso no, il timbro **QUOTA** dice **CORSO SCADUTO**,
 in rosso. Nella scheda **QUOTA E PAGAMENTI**, sotto la quota, **CORSI** dice
@@ -165,8 +162,9 @@ corso per corso fin quando è pagato, quando è scaduto, o quanto manca; sotto,
 quale voce mettere nella ricevuta nuova («Trimestre Judo» o «Annuale Judo»)
 per rimetterlo a posto.
 
-Sotto i timbri, se la quota, un corso o il certificato sono da sistemare, c'è
-**SOLLECITO SU WHATSAPP**: cosa manca (la quota da pagare, scaduta o pagata in
+Accanto al nome, se la quota, un corso o il certificato sono da sistemare, c'è
+il tasto **Sollecita su WhatsApp ▾**: apre sotto il nome, sopra i timbri, il
+riquadro **SOLLECITO SU WHATSAPP** (premuto di nuovo si chiude), con cosa manca (la quota da pagare, scaduta o pagata in
 parte; il corso scaduto o da pagare, col suo nome; il certificato mancante, scaduto, in scadenza nei prossimi 30 giorni, o
 che servirà al compimento dei 6 anni), il messaggio già scritto e **Apri
 WhatsApp**. Il tasto apre WhatsApp col messaggio pronto, al telefono della
@@ -175,11 +173,12 @@ sola. Quota e certificato vanno in un messaggio solo. A un minorenne si scrive
 al genitore dei **DATI ANAGRAFICI** («Ciao Laura, … per Marco»); senza genitore il
 messaggio non saluta per nome («Ciao, … per Marco»). Il messaggio
 dice solo nome, cosa manca, data e importo: mai codice fiscale, ricevute o note.
-Premuto il tasto, sotto compare **Sollecitato l'ultima volta il … da …**, così
-la collega vede che è già stato fatto. Se il telefono manca o è sbagliato, il
+Premuto **Apri WhatsApp**, sotto il tasto accanto al nome compare **Sollecitato
+l'ultima volta il … da …**, così la collega vede che è già stato fatto. Se il telefono manca o è sbagliato, il
 riquadro lo dice e **Vai a PERSONA** porta dove aggiungerlo; se sembra un fisso
 (comincia per 0), avvisa che su WhatsApp di solito non c'è. Una scheda
-disattivata, o in regola, non ha il riquadro.
+disattivata, o in regola, non ha il tasto. In modifica il riquadro usa il
+telefono salvato: prima **Salva**, poi si sollecita.
 
 Per sollecitarne tanti di fila non serve aprire ogni scheda: con acceso
 **Senza certificato valido**, **Certificato in scadenza**, **Compiono 6 anni**,
@@ -198,9 +197,9 @@ scheda.
 
 Poi la scheda è divisa in quattro schede, e se ne vede una alla volta:
 
-- **PERSONA** — i **CONTATTI** (l'**EMAIL PER ENTRARE NELL'APP** solo se c'è), **STESSO CONTATTO DI**, **DATI ANAGRAFICI** (con **NATA IL** o **NATO IL** dal codice fiscale; senza un codice fiscale giusto, **NATO IL**), il **GENITORE** solo per un minorenne, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. **Modifica i contatti** cambia anche nome e cognome. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
+- **PERSONA** — i **CONTATTI** (con l'**EMAIL**), **STESSO CONTATTO DI**, **DATI ANAGRAFICI** (con **NATA IL** o **NATO IL** dal codice fiscale; senza un codice fiscale giusto, **NATO IL**), il **GENITORE** solo per un minorenne, il **NUCLEO FAMILIARE** e **NON SONO DOPPIONI**. **Modifica i contatti** cambia anche nome e cognome. Si apre sempre da qui, anche passando alla scheda di un'altra persona.
 - **DOCUMENTI** — **CERTIFICATO MEDICO**, **TESSERE** e **DOCUMENTO D'IDENTITÀ**.
-- **QUOTA E PAGAMENTI** — la quota e i pagamenti. **+ FAI LA RICEVUTA** e **+ REGISTRA UN PAGAMENTO** stanno subito sotto la **QUOTA**, prima dello storico: non serve scorrere tutte le ricevute. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
+- **QUOTA E PAGAMENTI** — la quota e i pagamenti. **+ FAI LA RICEVUTA** sta accanto a **QUOTA**, **+ AGGIUNGI INCASSO** accanto a **PAGAMENTI**: non serve scorrere tutte le ricevute. Sul telefono la scheda si chiama **QUOTA**. Dopo una ricevuta si torna qui. Le quote e i
   corsi che l'amministrazione ha scritto in CONTABILITÀ con questa persona stanno in **SCRITTI IN
   CONTABILITÀ**, col tag **Scritto in contabilità**: non sono ricevute (niente numero né PDF), non si
   sommano e non toccano quello che resta da pagare. Se la quota la vuoi contata, la ricevuta si fa qui.
@@ -208,23 +207,35 @@ Poi la scheda è divisa in quattro schede, e se ne vede una alla volta:
   l'amministrazione ha collegato alla persona dei pagamenti del vecchio programma, c'è il blocco **DAL VECCHIO
   PROGRAMMA**: è lo storico, a parte. Non è nei pagamenti qui sopra e non conta per «quota pagata»: se la persona
   ha pagato anche nell'app negli stessi giorni, lo stesso incasso può comparire in tutti e due.
-- **CORSI** — le iscrizioni e le ultime 12 lezioni.
+- **CORSI** — le iscrizioni, le ultime 12 lezioni e i corsi terminati.
+
+In queste tre schede ogni cosa è un riquadro: com'è, in grande (**VALIDO FINO
+AL 30 GIUGNO 2027**, **DA PORTARE**, **LOTTA 3 · DA PAGARE**), sotto il
+dettaglio, a destra i tasti. Il tasto che serve a tutta la sezione sta accanto
+al suo titolo.
 
 Se in **DOCUMENTI** o in **QUOTA E PAGAMENTI** c'è qualcosa da sistemare, la
 scheda lo dice a parole, con un puntino giallo o rosso: **DA SISTEMARE** o
 **DA PAGARE**. Con una modifica aperta, da un'altra scheda, **PERSONA** dice
 **IN MODIFICA**. Cambiando scheda non si perde quello che stai scrivendo. Si
 cambia anche con la tastiera: le frecce spostano, **Home** e **Fine** vanno
-alla prima e all'ultima. Il nome, i timbri e i tasti in fondo (**MODIFICA**,
-**DISATTIVA**, **UNISCI…**) restano sempre in vista.
+alla prima e all'ultima. Il nome, il sollecito, **Altro** e i timbri restano
+sempre in vista.
+
+Le azioni che servono di rado stanno nel menu **Altro ▾**, accanto al nome:
+**Unisci con un altro iscritto…**, **Esporta i dati** e **Disattiva** (in
+rosso, con una conferma), o **Riattiva** se la scheda è disattivata. Si chiude
+con un clic fuori o con **Esc**. In modifica **Altro** non c'è: in fondo
+restano **Lascia stare** e **Salva**. Mentre si unisce o si fa una ricevuta,
+accanto al nome non c'è niente.
 
 In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
 **CARICA IL CERTIFICATO**, **CARICA IL NUOVO**, **CARICA IL FILE** o
-**SOSTITUISCI** se il certificato manca o è scaduto, poi **+ REGISTRA UN PAGAMENTO** se la quota non è pagata tutta, poi il
-certificato in scadenza. Sotto i 6 anni il tasto del certificato non è quello in evidenza. Se è tutto a posto, **+ REGISTRA UN PAGAMENTO**. Se la
+**SOSTITUISCI** se il certificato manca o è scaduto, poi **+ FAI LA RICEVUTA** se la quota non è pagata tutta, poi il
+certificato in scadenza. Sotto i 6 anni il tasto del certificato non è quello in evidenza. Se è tutto a posto, **+ FAI LA RICEVUTA**. Se la
 scheda è disattivata, nessuno.
 
-- **Modifica** — nome, cognome, email, email di contatto, telefono. Chi ha lo
+- **Modifica** — nome, cognome, email, telefono. Chi ha lo
   stesso contatto di altri vede in lettura **STESSO CONTATTO DI** con i loro
   nomi: sono parenti, non doppioni.
 - **DATI ANAGRAFICI** — nascita, codice fiscale, residenza e, per un minore,
@@ -246,9 +257,11 @@ scheda è disattivata, nessuno.
 - **CERTIFICATO MEDICO** — il file e fino a quando vale. Il file sta
   nell'app e lo vede **solo la segreteria**: **Apri** lo apre con un link che
   dura 10 minuti (se scade, si riapre con APRI), e nessun altro, né un
-  istruttore né l'iscritto, sa nemmeno se c'è. In cima il bollino dice com'è:
-  **MANCA**, **VALIDO**, **IN SCADENZA**, **SCADUTO**, e sotto una frase con
-  la data. La data la scrive la segreteria leggendo il foglio.
+  istruttore né l'iscritto, sa nemmeno se c'è. Il riquadro dice com'è:
+  **VALIDO FINO AL …**, **SCADE IL …** (sotto: fra quanti giorni),
+  **SCADUTO IL …** (sotto: da quanti giorni) o **MANCA**, e sotto anche da
+  dove viene la data: dal file caricato quel giorno, o scritta dalla
+  segreteria senza file. La data la scrive la segreteria leggendo il foglio.
   Per caricarlo, un gesto solo: **CARICA IL CERTIFICATO** (o **SOSTITUISCI**
   se c'è già) → **Scegli** il file, una foto o un PDF fino a 10 MB → la data
   in **VALIDO FINO AL** → **Salva**, che resta spento finché non c'è la data e
@@ -256,43 +269,44 @@ scheda è disattivata, nessuno.
   lo avvisa prima): per ogni persona c'è un file solo. **Lascia stare** non
   cambia niente. Se il file è arrivato col modulo di iscrizione, c'è già ma
   senza data: **SCRIVI LA DATA** → **Salva**, senza scegliere un altro file.
-  **Togli il certificato** (il link rosso) toglie file e data. Una data più di tre anni avanti
+  **Togli**, nel riquadro, toglie file e data, dopo una conferma. Una data più di tre anni avanti
   non si salva («La data è troppo lontana: controlla l'anno»), e con una
   scadenza di più di 30 giorni fa l'app avvisa che il file verrà cancellato
-  subito. Una scheda disattivata non offre né SOSTITUISCI né TOGLI IL
-  CERTIFICATO: dice «File cancellato alla disattivazione», e disattivando, la
+  subito. Una scheda disattivata non offre né SOSTITUISCI né TOGLI: dice «File cancellato alla disattivazione», e disattivando, la
   conferma lo ricorda.
   Il file si cancella da solo **30 giorni dopo la scadenza** (la scheda dice
   quando), o subito se la persona viene disattivata; la data resta, e la
   scheda dice «file cancellato». Riattivare la persona non lo riporta: se
   serve, si carica di nuovo. **Sotto i 6 anni** il certificato non si chiede:
-  il bollino dice **NON SERVE**, e chi ha meno di 6 anni non conta fra chi è
+  il riquadro dice **NON SERVE**, e chi ha meno di 6 anni non conta fra chi è
   senza certificato valido.
 - **Un certificato non archiviato** (file caricato quando il certificato
   stava su carta) si apre con **Apri** come gli altri, e la scheda lo dice in
   giallo; in elenco c'è **Non archiviato** accanto al nome (il filtro
   **Non archiviato** li mostra tutti, finché ce ne sono). Si cancella
-  da solo come gli altri, o con **Togli il certificato**.
+  da solo come gli altri, o con **Togli**.
 - **DOCUMENTO D'IDENTITÀ** — se la copia è in segreteria, su carta (per un
-  minore, quella del genitore). **La copia è in segreteria** lo segna; quando c'è resta solo il link **La copia non c'è più**, che la toglie senza
+  minore, quella del genitore): **IN SEGRETERIA** o **DA PORTARE**. **La copia è in segreteria** lo segna; **Non c'è più** la toglie senza
   chiedere (si rimette col tasto). **Senza documento**, sotto «Altri filtri», mostra chi non ce
   l'ha ancora.
-- **QUOTA** — se ha pagato lo dicono le ricevute: **PAGATA** se c'è una
+- **QUOTA** — il riquadro **QUOTA ASSOCIATIVA · …**: se ha pagato lo dicono le ricevute: **PAGATA** se c'è una
   ricevuta non annullata con la **QUOTA ASSOCIATIVA** che vale oggi, con fin
   quando e il numero della ricevuta; **IN PARTE** se della quota manca
   qualcosa (e quanto); **QUOTA SCADUTA** quando è passata la sua data. Non si
-  segna a mano: si fa la ricevuta. I corsi (l'annuale, il trimestre) si
-  leggono sotto, con fin quando sono pagati, ma non contano per essere in
-  regola.
+  segna a mano: si fa la ricevuta. Sotto, un riquadro per corso (**PAGATO**, **DA PAGARE**, **PAGATO IN
+  PARTE**…), con fin quando è pagato: non conta per essere in regola.
   Per chi ha pagato la quota fuori dall'app (prima dell'app, con una ricevuta
-  di carta) c'è **PAGATA SENZA RICEVUTA DELL'APP**: **VALE FINO AL** (di
+  di carta) c'è **Segna come pagata**: **VALE FINO AL** (di
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
   PAGATA**. In elenco la quota è in regola, e nella scheda si legge **Fuori app**; alla sua data
-  scade da sola, e **Togli «pagata fuori dall'app»** la toglie prima.
-- **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima **PAGATO**, **MANCA** e **QUOTA**; poi ogni ricevuta con i suoi pagamenti sotto, e dopo **SENZA RICEVUTA** quelli registrati a mano. Quelli di tutti sono in [CONTABILITÀ → MOVIMENTI](../amministrazione/contabilita.md#movimenti).
-- **ISCRIZIONI** — i corsi che fa. **Termina** la toglie da un corso: da
-  domani non è più nell'appello, il registro resta. «Iscrivi a un corso…» +
-  **Iscrivi** la aggiunge a un altro.
+  scade da sola, e **Togli**, nel riquadro della quota, la toglie prima.
+- **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima quanto ha pagato in questa stagione, tra ricevute e incassi; poi un elenco solo, dal più recente, con le ricevute (e i loro pagamenti sotto) e gli incassi senza ricevuta, col tag **Senza ricevuta**. Si vedono gli ultimi 5: **Mostra altre N** apre gli altri. Quelli di tutti sono in [CONTABILITÀ → MOVIMENTI](../amministrazione/contabilita.md#movimenti).
+- **ISCRIZIONI** — i corsi che fa, uno per riquadro, con da quando e se è
+  pagato. **Termina** la toglie da un corso: da domani non è più
+  nell'appello, il registro resta. **+ Iscrivi a un corso…** → il corso →
+  **Iscrivi** la aggiunge a un altro. Con la scheda disattivata non si
+  iscrive: prima **Altro** → **Riattiva**.
+- **TERMINATE** — i corsi che faceva, tratteggiati, dal… al….
 - **ULTIME 12 LEZIONI** — presente o assente, lezione per lezione: ✓ presente, ✕ assente, G giustificato, vuoto non segnato.
 - **Disattiva** — sparisce dal tablet e le sue iscrizioni si chiudono oggi,
   come con **Termina**: da domani non è in nessun appello (un corso che
@@ -311,10 +325,9 @@ scheda è disattivata, nessuno.
   di certificato e quota la scadenza più lontana (e del certificato, il file
   di quella scheda: se ce n'è uno per parte resta uno solo, l'altro si
   cancella); resta attiva se una delle
-  due lo era. Le email: chi resta tiene la sua e il suo contatto; l'email
-  dell'altra scheda diventa la sua se non ne ha, se no il suo contatto se è
-  libero. Se non c'è posto, quell'indirizzo si perde: la conferma lo scrive
-  prima, e fino ad allora si può copiare. Le ricevute passano così come sono. Una conferma, e non si
+  due lo era. L'email: chi resta tiene la sua; se non ne ha, prende quella
+  dell'altra scheda. Se sono diverse, quella dell'altra si perde: la conferma
+  lo scrive prima, e fino ad allora si può copiare. Le ricevute passano così come sono. Una conferma, e non si
   torna indietro.
   Non si uniscono due schede con due codici fiscali diversi, anche solo
   quello del modulo di iscrizione (sono due persone). Il file del certificato
@@ -324,7 +337,7 @@ scheda è disattivata, nessuno.
 
 ### I suoi dati
 
-In fondo alla scheda, accanto a **Unisci con un altro iscritto…**, **Esporta i dati** scarica un file con
+Nel menu **Altro**, **Esporta i dati** scarica un file con
 anagrafica, iscrizioni e presenze, quello che una persona ha diritto di chiedere.
 
 ## Le tessere
@@ -362,6 +375,13 @@ ricevuta», e non conta fra chi deve pagare. La ricevuta parte già con
 altro modo di pagare l'app non la fa (si conterebbero due volte), e il pagato
 con Satispay deve essere esattamente quello arrivato. Annullata la ricevuta, il
 pagamento torna libero per quella giusta.
+
+Chi ha pagato la quota in parte può pagare il resto con Satispay dall'area degli
+iscritti (da sé, o il titolare del nucleo per un familiare). Quel pagamento arriva
+come **QUOTA ASSOCIATIVA (saldo)** fra i pagamenti Satispay, con la persona e la
+ricevuta da cui nasce: non è un'iscrizione e non conta come quota pagata finché non
+fai la ricevuta del saldo (come per il modulo, i soldi entrano una volta sola). Per
+vedere che ha pagato basta la scheda della persona: la quota dice quanto manca.
 
 - **DATA**, **NUMERO** e **PAGATO CON** (bonifico, contanti, POS, assegno; e
   **Satispay** se ha pagato col modulo). Il
@@ -436,14 +456,13 @@ fatta: se è sbagliata si annulla e se ne fa un'altra.
 
 ### La ricevuta per email
 
-Se la persona ha l'**EMAIL DI CONTATTO**, la domanda di **FAI LA RICEVUTA** ha
+Se la persona ha l'**EMAIL**, la domanda di **FAI LA RICEVUTA** ha
 una casella già spuntata: «Manda per email a …», e sotto da dove viene
-l'indirizzo (per un minore, «Email di contatto del genitore»). Lasciata la
+l'indirizzo (per un minore, «Email del genitore»). Lasciata la
 spunta, fatta la ricevuta parte una mail da info@officinedellosport.it con il
 PDF allegato; nella mail ci sono solo nome, numero, data e totale, i dati
 restano nel PDF. Tolta la spunta, la ricevuta si fa senza mail. Senza email di
-contatto la casella non c'è e la domanda lo dice: la ricevuta si fa lo stesso,
-e la mail non parte mai all'email di accesso.
+email la casella non c'è e la domanda lo dice: la ricevuta si fa lo stesso.
 
 Nello storico, sotto ogni ricevuta:
 
@@ -453,7 +472,7 @@ Nello storico, sotto ogni ricevuta:
   la mail non è partita.
 - **Fatta prima dell'invio per email**: le ricevute di prima, che si possono
   mandare con **MANDA PER EMAIL**.
-- Senza email di contatto il tasto è spento e dice di aggiungerla in
+- Senza email il tasto è spento e dice di aggiungerla in
   **PERSONA**.
 
 **MANDA PER EMAIL** e **MANDA DI NUOVO** chiedono conferma e mostrano
@@ -481,7 +500,7 @@ sono buchi. I dati dell'associazione in testa alle ricevute si cambiano da
 ### Un pagamento fatto a mano
 
 Non tutto passa da una ricevuta: si paga in palestra, in contanti, o si è
-pagato prima dell'app. **+ REGISTRA UN PAGAMENTO** (sotto lo storico) apre un
+pagato prima dell'app. **+ AGGIUNGI INCASSO** (accanto a **PAGAMENTI**) apre un
 modulo: **DATA**, **IMPORTO**, **COME HA PAGATO**, **A COSA SERVE** (la quota
 associativa, un corso, altro: si sceglie dai suggerimenti o si scrive) e una
 **NOTA** facoltativa («pagato direttamente in palestra»). La data non può
@@ -505,8 +524,8 @@ Nel riepilogo c'è la casella **Fai anche la ricevuta**, già spuntata:
   ricevuta n. …: non va registrato di nuovo»). Chiudi il modulo e ricarica la
   scheda: la ricevuta è nello storico. Una quota associativa fatta così vale
   fino alla fine della stagione, come quella del listino;
-- **tolta**, «Sì, registra senza ricevuta» lo mette nello storico, sotto
-  **SENZA RICEVUTA**, e lo conta in **PAGATO**. Per farne la ricevuta dopo,
+- **tolta**, «Sì, registra senza ricevuta» lo mette nello storico, col tag
+  **Senza ricevuta**, e lo conta fra i pagati della stagione. Per farne la ricevuta dopo,
   **FANNE LA RICEVUTA** sul pagamento (sotto).
 
 Se la persona ha già pagato con Satispay dal modulo di iscrizione, la casella
@@ -540,9 +559,8 @@ Come una ricevuta, non si cambia e non si cancella: se è sbagliato,
 **ANNULLA PAGAMENTO** (chiede conferma) e se ne registra un altro; l'annullato
 resta in elenco, barrato, e non si conta.
 
-**MANCA** si calcola sulle ricevute: un pagamento a mano **non lo riduce**, perché non si sa su quale ricevuta va (se paga il saldo di una ricevuta, il saldo si registra come pagamento di quella ricevuta, facendo una ricevuta nuova). Un pagamento a mano **non cambia se la persona è in regola**: la quota pagata
-fuori dall'app si segna dalla scheda **QUOTA E PAGAMENTI** (**PAGATA SENZA RICEVUTA
-DELL'APP**), o con una ricevuta.
+Il **Manca** di una ricevuta si calcola sulla ricevuta: un pagamento a mano **non lo riduce**, perché non si sa su quale ricevuta va (se paga il saldo di una ricevuta, il saldo si registra come pagamento di quella ricevuta, facendo una ricevuta nuova). Un pagamento a mano **non cambia se la persona è in regola**: la quota pagata
+fuori dall'app si segna dalla scheda **QUOTA E PAGAMENTI** (**Segna come pagata**, nel riquadro della quota), o con una ricevuta.
 
 Il certificato è un dato sulla salute: lo vede solo la segreteria, non gli
 istruttori, e non va scritto da nessun'altra parte (nemmeno nelle note). In
@@ -550,8 +568,6 @@ prova i file restano solo finché la pagina è aperta: ricaricandola non si
 aprono più, e si possono togliere lo stesso.
 
 ## Il nucleo familiare
-
-*Per ora solo in prova: col database vero la sezione non c'è.*
 
 Nella scheda **PERSONA**, **NUCLEO FAMILIARE**: le persone che stanno insieme in
 un nucleo, come un genitore coi figli. Il **titolare** vede tutto il nucleo
@@ -566,7 +582,9 @@ gli altri vedono solo sé stessi. Toccando un nome si apre la sua scheda.
 - **Togli**: la persona esce dal nucleo e resta iscritta.
 
 Il nucleo è uno solo: chi è già nel nucleo di un altro, o ne ha uno suo con
-altri dentro, va prima tolto. Le richieste aggiunte da un titolare dalla sua
+altri dentro, va prima tolto. Il titolare è sempre maggiorenne, e un titolare
+con altri nel nucleo non si archivia: prima si cambia il titolare. Le schede
+archiviate non entrano in un nucleo. Le richieste aggiunte da un titolare dalla sua
 area entrano nel suo nucleo da sole, quando si accolgono.
 
 Sotto, lo **sconto famiglia**: dalle ricevute del nucleo della stagione in corso, il 20% sull'annuale

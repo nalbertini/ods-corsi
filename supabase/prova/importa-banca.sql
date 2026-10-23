@@ -1,4 +1,4 @@
--- «Importa dalla banca» (99-importa-banca.sql): i movimenti del conto si scrivono con
+-- «Importa dalla banca» (104-importa-banca.sql): i movimenti del conto si scrivono con
 -- `importa_prima_nota` (chiave `banca:aaaammgg:hash:n`, voce «Da classificare»), e
 -- `annulla_importazione_banca(creato)` annulla in un colpo solo un lotto: tutti i movimenti
 -- della banca scritti in quel momento e non ancora annullati, e nient'altro. Solo
@@ -16,7 +16,7 @@ begin
   end if;
   return 'ok  ' || cosa || ' → ' || avuto;
 end $$;
-select atteso('99-importa-banca.sql è stato lanciato: c''è annulla_importazione_banca(timestamptz)', :'c99', 'true');
+select atteso('104-importa-banca.sql è stato lanciato: c''è annulla_importazione_banca(timestamptz)', :'c99', 'true');
 select (to_regprocedure('public.importa_prima_nota(jsonb)') is not null)::text as c63 \gset
 select atteso('63-importa-prima-nota.sql è stato lanciato: c''è l''import', :'c63', 'true');
 
@@ -159,7 +159,7 @@ set role authenticated;
 select atteso('il lotto con un movimento in una cassa chiusa non si annulla', (select annulla_importazione_banca(:'lotto_contanti')::text), '0');
 reset role;
 select atteso('…e il movimento resta', vivi('banca:20261010:%'), '1');
-\i supabase/99-importa-banca.sql
+\i supabase/104-importa-banca.sql
 select atteso('rilanciato il file, la funzione è ancora di sola amministrazione', da_chiamata('11111111-1111-1111-1111-111111111111', 'authenticated', '2026-10-20 10:00:00.123+02'), '42501 la contabilità la cura l’amministrazione');
 select atteso('…con gli stessi permessi', (select string_agg(r || ':' || has_function_privilege(r, p.oid, 'execute')::text, ', ' order by r) from pg_proc p, unnest(array['anon', 'authenticated']) r
   where p.pronamespace = 'public'::regnamespace and p.proname = 'annulla_importazione_banca'), 'anon:false, authenticated:true');

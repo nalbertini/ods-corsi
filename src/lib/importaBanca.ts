@@ -5,7 +5,7 @@ import { VOCE_DA_CLASSIFICARE } from './importaPrimaNota'
  * La «Lista movimenti» di BancoPosta (CSV scaricato dall'home banking), letta nel browser e pronta per
  * `importa_prima_nota` (`supabase/63-importa-prima-nota.sql`). L'anteprima non scrive niente: dice cosa
  * entra, cosa c'è già (chiave uguale: già importato; pagamento uguale entro due giorni: coperto) e cosa
- * deve decidere la segreteria. `annulla_importazione_banca` (`99-importa-banca.sql`) disfa un lotto.
+ * deve decidere la segreteria. `annulla_importazione_banca` (`104-importa-banca.sql`) disfa un lotto.
  *
  * Il file non ha un identificativo per riga: la chiave nasce dal contenuto (giorno, importo, testo) più
  * l'ordine fra righe identiche dello stesso giorno, così rileggere lo stesso file non duplica niente.

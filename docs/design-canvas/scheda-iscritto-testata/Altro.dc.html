@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .riga { display: flex; align-items: baseline; gap: 10px; }
+    .riga > .et { font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #46606f; white-space: nowrap; }
+    .riga > .filo { flex: 1; height: 2px; background: #cfe6f4; align-self: center; }
+    .due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+    .etichetta-tavola { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; }
+    .nome { margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .sotto { font-size: 13px; color: #46606f; }
+    .piede { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 16px; border-top: 2px solid #cfe6f4; }
+    .spenta { margin: 0; padding: 10px 12px; background: #cfe6f4; border-radius: 6px; font-size: 14px; line-height: 1.45; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; padding: 28px 50px 40px; background: #eef5fa">
+  <span class="etichetta-tavola" style="color: #8f6a00">PROPOSTA · «ALTRO» APERTO</span>
+  <div style="display: flex; flex-direction: column; gap: 22px; background: #ffffff; border-radius: 6px; padding: 24px 28px 28px">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-top: -8px">
+      <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
+        <h2 class="nome">ROSSI MARCO</h2>
+        <span class="sotto">13 anni · in elenco dal 4 settembre 2024</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px">
+        <div style="display: flex; align-items: flex-start; gap: 8px; margin-right: -12px">
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="pieno" label="Sollecita su WhatsApp ▾" hint-size="250px,48px"></dc-import>
+          <div style="position: relative; width: 110px; height: 48px">
+            <div style="position: absolute; top: 0; right: 0; z-index: 2"><dc-import name="MenuAzioni" etichetta="Altro" voce1="Unisci con un altro iscritto…" voce2="Esporta i dati" voceSpenta="" voceRossa="Disattiva" hint-size="270px,208px"></dc-import></div>
+          </div>
+          <dc-import name="Bottone" tema="sito" contesto="segreteria" variante="icona" label="✕" hint-size="44px,44px"></dc-import>
+        </div>
+        <span class="sotto" style="text-align: right">Sollecitato il 14 ottobre da Nicola</span>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: stretch">
+      <dc-import name="Timbro" tema="sito" titolo="CERTIFICATO MEDICO" parola="VALIDO FINO AL 29/09/2027" tono="verde" righe="" hint-size="100%,96px"></dc-import>
+      <dc-import name="Timbro" tema="sito" titolo="QUOTA" parola="DA PAGARE" tono="rosso" righe="30,00 € · stagione 2026/27" hint-size="100%,96px"></dc-import>
+      <dc-import name="Timbro" tema="sito" titolo="DOCUMENTO D’IDENTITÀ" parola="IN SEGRETERIA" tono="verde" righe="non serve per entrare" hint-size="100%,96px"></dc-import>
+    </div>
+    <dc-import name="SchedeIscritto" tema="sito" acceso="PERSONA" chiare="{{ true }}" hint-size="100%,44px"></dc-import>
+    <div class="riga"><span class="et">CONTATTI</span><span class="filo"></span><dc-import name="Chip" tema="sito" label="Modifica i contatti" hint-size="190px,40px"></dc-import></div>
+    <div class="due">
+      <dc-import name="Dato" tema="sito" icona="email" etichetta="EMAIL PER RICEVUTE E AVVISI" valore="laura.rossi@esempio.it" hint-size="100%,62px"></dc-import>
+      <dc-import name="Dato" tema="sito" icona="telefono" etichetta="TELEFONO DEL GENITORE" valore="333 123 4567" hint-size="100%,62px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":860,"height":760}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

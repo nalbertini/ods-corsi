@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { CAMBIO_CASSA_SATISPAY, type ContiScarico, type DaDecidere, type StatoScarico } from '../../lib/satispayScarico'
+import { CAMBIO_CASSA_SATISPAY, type DaDecidere } from '../../lib/satispayScarico'
 import { oggiARoma } from '../../lib/contabilita'
 import { dataRicevuta, euro } from '../../lib/ricevute'
 import { SchedaPiena, useCarica, type useAvviso } from './comune'
@@ -8,17 +9,16 @@ import { SchedaPiena, useCarica, type useAvviso } from './comune'
 type Fai = ReturnType<typeof useAvviso>['fai']
 
 const soldi = (c: number) => `${euro(c)} €`
-const quando = (iso: string) => new Date(iso).toLocaleString('it-IT', { timeZone: 'Europe/Rome', day: '2-digit', month: '2-digit', year: 'numeric', hour: 'numeric', minute: '2-digit' }).replace(', ', ' alle ')
 const giornoLungo = (data: string) => `${new Date(`${data}T12:00:00`).toLocaleDateString('it-IT', { weekday: 'long' })} ${dataRicevuta(data)}`
 
 /**
  * Lo scarico dei pagamenti Satispay del negozio in MOVIMENTI (97-satispay-scarico.sql): la striscia con
- * «Scarica ora», l'avviso dei casi da decidere e, la prima volta, l'anteprima. Senza il 96 non si vede niente.
+ * «Scarica ora» o «Guarda il primo scarico» fra le voci del menu delle azioni (`menu`), l'avviso dei casi da decidere
+ * e, la prima volta, l'anteprima. Senza il 96 non si vede niente.
  */
-export function ScaricoSatispay({ d, fai, onCambiato }: { d: DatiSegreteria; fai: Fai; onCambiato: () => void }) {
+export function ScaricoSatispay({ d, fai, onCambiato, menu }: { d: DatiSegreteria; fai: Fai; onCambiato: () => void; menu: HTMLElement | null }) {
   const stato = useCarica(() => d.statoScaricoSatispay(), [d])
   const [pagina, setPagina] = useState<'primo' | 'decidere' | null>(null)
-  const [ultimi, setUltimi] = useState<ContiScarico | null>(null)
   const s = stato.dato
   // Senza il 96 lo stato non c'è e non si mostra niente; un altro guaio invece si dice.
   if (stato.guaio && !s) return <p role="alert" className="sg-sotto" style={{ color: 'var(--rosso-testo)' }}>{stato.guaio}</p>
@@ -28,22 +28,18 @@ export function ScaricoSatispay({ d, fai, onCambiato }: { d: DatiSegreteria; fai
     onCambiato()
   }
   const scarica = () =>
-    void fai(async () => setUltimi(await d.scaricaSatispay(false)), undefined, rileggi)
+    void fai(() => d.scaricaSatispay(false), 'Scarico Satispay fatto', rileggi)
 
   return (
     <>
-      <section aria-label="Scarico da Satispay" className="sg-riquadro" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: '12px 18px', padding: '14px 18px' }}>
-        <div className="stack" style={{ gap: 2, flex: '999 1 420px', minWidth: 0 }}>
-          <span className="sg-etichetta">SATISPAY</span>
-          <span style={{ fontSize: 15 }}>{testoStriscia(s, ultimi)}</span>
-          {s.errore && <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>L’ultimo scarico non è riuscito: {s.errore}</span>}
-        </div>
-        {s.primoFatto ? (
-          <button type="button" className="sg-btn sg-btn-linea" onClick={scarica}>Scarica ora</button>
-        ) : (
-          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setPagina('primo')}>Guarda il primo scarico</button>
-        )}
-      </section>
+      {menu && createPortal(
+        s.primoFatto
+          ? <button type="button" role="menuitem" onClick={scarica}>Scarica ora i pagamenti Satispay</button>
+          : <button type="button" role="menuitem" onClick={() => setPagina('primo')}>Guarda il primo scarico Satispay</button>,
+        menu,
+      )}
+      {/* La striscia di stato non c'è più: restano gli avvisi, che chiedono qualcosa. */}
+      {s.errore && <p role="alert" className="sg-sotto" style={{ color: 'var(--rosso-testo)' }}>L’ultimo scarico Satispay non è riuscito: {s.errore}</p>}
       {s.daDecidere.length > 0 && (
         <section aria-label="Da decidere" className="sg-riquadro" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: '12px 18px', padding: '14px 18px', borderColor: 'var(--giallo-testo)' }}>
           <div className="stack" style={{ gap: 2, flex: '999 1 420px', minWidth: 0 }}>
@@ -69,13 +65,6 @@ export function ScaricoSatispay({ d, fai, onCambiato }: { d: DatiSegreteria; fai
       )}
     </>
   )
-}
-
-function testoStriscia(s: StatoScarico, ultimi: ContiScarico | null) {
-  if (!s.primoFatto) return 'I pagamenti del negozio possono entrare da soli, ogni notte. La prima volta guardi cosa scriverebbe l’app, poi dici sì.'
-  const fatti = ultimi ? ` Appena scaricati: ${ultimi.incassi === 1 ? '1 incasso' : `${ultimi.incassi} incassi`} e ${ultimi.rimborsi === 1 ? '1 rimborso' : `${ultimi.rimborsi} rimborsi`}.` : ''
-  const ultimo = s.ultimo ? `Ultimo scarico il ${quando(s.ultimo)}.` : 'Si scarica ogni notte.'
-  return `${ultimo}${fatti} I pagamenti del modulo sono già fra gli incassi degli iscritti.`
 }
 
 function testoDaDecidere(casi: DaDecidere[]) {

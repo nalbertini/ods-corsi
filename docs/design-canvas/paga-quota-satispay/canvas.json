@@ -1,0 +1,69 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Paga la quota che manca"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "InRegola.dc.html",
+   "title": "Proposta · IN REGOLA con PAGA",
+   "x": 0,
+   "y": 140,
+   "w": 390,
+   "h": 1000,
+   "page": "page-1"
+  },
+  {
+   "file": "Nucleo.dc.html",
+   "title": "Proposta · NUCLEO: PAGA per ognuno",
+   "x": 450,
+   "y": 140,
+   "w": 390,
+   "h": 1250,
+   "page": "page-1"
+  },
+  {
+   "file": "Dopo.dc.html",
+   "title": "Proposta · in attesa e pagato",
+   "x": 900,
+   "y": 140,
+   "w": 390,
+   "h": 1100,
+   "page": "page-1"
+  },
+  {
+   "file": "Non.dc.html",
+   "title": "Proposta · non va e senza rete",
+   "x": 1350,
+   "y": 140,
+   "w": 390,
+   "h": 1000,
+   "page": "page-1"
+  },
+  {
+   "file": "Prova.dc.html",
+   "title": "Proposta · in prova",
+   "x": 1800,
+   "y": 140,
+   "w": 390,
+   "h": 1000,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 2200,
+   "text": "Paga con Satispay la quota che manca · iscritto e titolare del nucleo"
+  }
+ ],
+ "launch": {
+  "view": "canvas",
+  "page": "page-1"
+ }
+}

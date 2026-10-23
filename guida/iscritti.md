@@ -1,6 +1,6 @@
 # Iscritti
 
-*Indirizzo: `iscritti/` · Per: chi frequenta i corsi · Per ora solo in prova*
+*Indirizzo: `iscritti/` · Per: chi frequenta i corsi*
 
 ← [Torna alla guida generale](README.md)
 
@@ -11,40 +11,88 @@ qualcosa si passa in segreteria.
 Ha i colori e i caratteri del sito della palestra, blu e giallo, ed è sempre
 chiara, qualunque tema sia scelto altrove: il tasto del tema qui non c'è.
 
-È un **pilota**: per ora si vede solo con i dati inventati, per far vedere
-alla palestra com'è prima di aprirla agli iscritti veri. L'indirizzo è
-<https://app.officinedellosport.it/iscritti/>: col database vero dice
-che l'area è in arrivo, e il tasto **GUARDALA IN PROVA** la apre con i dati
-inventati.
+L'indirizzo è <https://app.officinedellosport.it/iscritti/>.
+
+## Come si entra
+
+Senza password. Si scrive l'**email data in segreteria**, l'app ne manda un
+**codice di sei cifre**, si scrive il codice e si è dentro. Il codice dura
+poco: se non arriva o è scaduto, **MANDA UN ALTRO CODICE**. Il primo accesso
+lega l'email alla scheda; le volte dopo è subito la propria pagina.
+
+- Se l'email non è fra quelle delle schede, l'app dice «Questa email non
+  risulta tra gli iscritti: usa quella data in segreteria». Per un
+  familiare che condivide l'email con altri la segreteria deve collegare
+  l'accesso a mano.
+- Si vede **solo quel che è proprio**: la scheda, le lezioni dei propri
+  corsi, le presenze, la scadenza del certificato, la quota, le ricevute e,
+  per il titolare, il nucleo. Il file del certificato che ha mandato l'iscritto
+  e le note della segreteria non si vedono mai: resta la data. Una persona del nucleo con l'accesso suo
+  vede le sue cose, e il titolare non le vede più.
+- **ESCI** (tab CONTATTI) chiude l'accesso su quel dispositivo. Questo
+  accesso non apre niente della gestione, dell'appello o del tablet.
+- Con `?prova` nell'indirizzo la pagina si apre con dati inventati, per
+  vedere com'è.
 
 ## Cosa c'è nella pagina
 
-In prova, in cima, si sceglie **quale iscritto essere**: la pagina cambia per
+In prova (`?prova`), in cima, si sceglie **quale iscritto essere**: la pagina cambia per
 ognuno, e il dispositivo si ricorda la scelta.
 
-- **Ciao, e i corsi**: i corsi a cui è iscritto oggi, col loro colore. Sotto,
-  **SEI IN REGOLA** in verde, o le cose da sistemare: il certificato medico
-  che manca, è scaduto o scade entro un mese (sotto i 6 anni non serve); la
-  quota da pagare, pagata in parte o da rinnovare.
-- **Prossime lezioni**: le lezioni dei suoi corsi nelle prossime due
-  settimane, un gruppo per giorno. Quello che cambia rispetto al solito si
-  legge sulla lezione: **ANNULLATA** in rosso, **SOSTITUTO** quando la fa un
-  altro istruttore, **IN** e il nome della sala quando la lezione è stata
-  spostata, **IN PIÙ** per una lezione fuori dall'orario (uno stage).
-- **Le tue presenze**: negli ultimi trenta giorni, quante lezioni su quante
-  (le giustificate non contano), e le ultime cinque, con **TUTTE** per
-  vederle tutte. Dove non risulta presente (non segnato, o assente) c'è
-  **SEGNALA**: chi c'era lo dice, con una nota se vuole, e **ERO PRESENTE**.
+La pagina è divisa in **tab**, nella barra in fondo allo schermo: **LEZIONI** (si
+apre su questo), **DOCUMENTI**, per il titolare di un nucleo **FAMIGLIA**, e
+**CONTATTI**. Se il certificato o la quota non vanno, sul tab DOCUMENTI c'è un
+**●** rosso o giallo. Il tab scelto resta quando si cambia persona. Con le
+frecce della tastiera si passa da un tab all'altro.
+
+Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
+(«Ciao Alessandro ▾»): si apre l'elenco dei membri.
+
+- **Il saluto**: se c'è qualcosa da sistemare lo dice qui (il certificato
+  medico che manca, è scaduto o scade entro un mese, sotto i 6 anni non serve;
+  la quota da pagare, pagata in parte o da rinnovare); se è tutto a posto non
+  dice niente.
+- **Le ultime presenze** (tab LEZIONI, in cima): le ultime tre in tre box
+  piccoli, ognuno con la data («mer 21 ott»), un segno a cerchio (✓ presente,
+  ✗ assente) e la parola. **VEDI TUTTE** apre l'elenco completo, una per riga;
+  **MENO** lo richiude.
+- **Le tue lezioni**: sotto, **LA PROSSIMA LEZIONE** in evidenza, con quanti
+  giorni mancano e l'istruttore; poi le altre lezioni dei suoi corsi nella
+  prossima settimana, in ordine di data, ognuna con l'istruttore e il giorno.
+  Se sono più di cinque, **VEDI TUTTE** mostra le altre. Quello che cambia
+  rispetto al solito si legge a destra sulla lezione: **ANNULLATA** in rosso,
+  **SOSTITUTO** quando la fa un altro istruttore, **IN** e il nome della sala
+  quando la lezione è stata spostata, **IN PIÙ** per una lezione fuori
+  dall'orario (uno stage).
+- **Segnalare una presenza**: nell'elenco completo, dove non risulta presente (non segnato, o assente) c'è
+  solo il tasto **SEGNALA**: chi c'era lo dice, con una nota se vuole, e **ERO PRESENTE**.
   La presenza la conferma l'istruttore della lezione o la segreteria; fino
   ad allora la riga dice **DA CONFERMARE**, e poi diventa presente, o dice
   **RIFIUTATA**. Una volta sola per lezione.
-- **Certificato e quota**: fino a quando vale il certificato medico (sotto i
-  6 anni non è obbligatorio), e fino a quando è pagata la quota. Il file del
-  certificato lo vede solo la segreteria: qui c'è solo la data.
+- **Certificato e quota** (tab DOCUMENTI): fino a quando vale il certificato medico (sotto i
+  6 anni non è obbligatorio), e fino a quando è pagata la quota. Se manca, è
+  scaduto o scade entro un mese c'è il tasto **MANDA IL CERTIFICATO**: una
+  foto o un PDF, al massimo 5 MB. Resta **in attesa di conferma** finché la
+  segreteria lo controlla e scrive la scadenza, o lo rifiuta: se lo rifiuta
+  va rimandato. Il file lo vede solo la segreteria: qui c'è solo la data
+  d'invio. Per un minore senza accesso lo manda il titolare.
+  Se hai pagato la quota in parte con una ricevuta, sotto c'è **PAGA … €
+  CON SATISPAY**: paghi solo quel che manca, la cifra la calcola l'app (non
+  la scegli tu). Tornato da Satispay vedi **PAGATO**, e la segreteria prepara la
+  ricevuta del resto. Se Satispay non conferma non ti prende niente: puoi
+  riprovare. Senza rete il tasto dice «Serve la rete per pagare». Rinnovi,
+  quote intere e corsi si pagano in palestra. In prova (`?prova`) Satispay non
+  si apre: chiede conferma e il pagamento è finto.
+  Il titolare del nucleo (tab FAMIGLIA, o la pagina del familiare) vede **PAGA …
+  € PER** *nome* per i familiari senza un accesso loro: una persona alla volta.
+  Chi ha un accesso suo, e ogni minorenne con account, paga dal suo telefono
+  o tramite il titolare.
 - **Ricevute**: quelle fatte dalla segreteria, dalla più recente, ognuna col
   suo **PDF** da scaricare: lo stesso che stampa la segreteria.
-- **Qualcosa non torna?**: il telefono della palestra, per chi vede
-  qualcosa di sbagliato.
+- **CONTATTI** (ultimo tab): la segreteria (**CHIAMA**, **WHATSAPP**, **COME
+  ARRIVARE**), **SEGUICI** su Instagram e Facebook, e **LA TUA PAGINA**: la
+  **GUIDA** e **ESCI**. In prova ESCI non c'è. In fondo c'è la **versione**
+  dell'app.
 
 Tutto viene da quello che la segreteria e gli istruttori fanno già: una
 lezione annullata o un sostituto dalla **SETTIMANA**, le presenze
@@ -92,14 +140,9 @@ segno **NUCLEO** e il nome di chi l'ha aggiunta (vedi [Richieste
 online](segreteria/richieste.md)). Accolta, la persona entra nel nucleo, e
 il titolare la trova nella sua pagina.
 
-## Cosa manca per aprirla davvero
+## Cosa non c'è ancora
 
-- **L'accesso degli iscritti**: un codice o un link per email, senza
-  password da ricordare. La segreteria non dovrebbe gestire niente di più.
-- **Il nucleo sul database**: chi è titolare di chi, e un genitore che non
-  frequenta ma tiene il nucleo dei figli (in prova il titolare è sempre un
-  iscritto). In prova la segreteria lo cambia dalla scheda di un iscritto
-  ([NUCLEO FAMILIARE](segreteria/iscritti.md#il-nucleo-familiare)).
-- **Cosa può leggere un iscritto**: solo le sue righe, dal database, con
-  funzioni fatte apposta e senza toccare quello che vede la segreteria.
-- **L'informativa privacy**, che va aggiornata per l'area personale.
+- Un genitore che non frequenta ma tiene il nucleo dei figli: il titolare è
+  sempre un iscritto. La segreteria cambia il nucleo dalla scheda di un
+  iscritto ([NUCLEO FAMILIARE](segreteria/iscritti.md#il-nucleo-familiare)).
+- Cambiare la propria email: si chiede alla segreteria.

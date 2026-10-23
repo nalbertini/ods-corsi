@@ -8,7 +8,7 @@
 // doppioni, email di un altro, corsi sconosciuti), le risposte del modulo
 // Google (date, codici fiscali, nomi), e cosa resta da sistemare e perché.
 // Quanto l'importazione scrive davvero sul database sta in
-// `prova-email-contatto.mjs` e `prova-segreteria.mjs`.
+// `prova-email-unica.mjs` e `prova-segreteria.mjs`.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 
@@ -107,10 +107,9 @@ ok('righe vuote: ignorate, ma il numero di riga resta quello del foglio', f.iscr
 ok('righe vuote non finiscono fra le saltate', f.saltate.length, 0)
 f = dif(base + 'Mario;Rossi;m@e.it;;Judo 2\nPaolo;Rossi;M@E.it;;Judo 2\n')
 ok('due fratelli con la stessa email: entrano tutti e due', f.iscritti.length, 2)
-ok('il secondo senza email di accesso, con quella come contatto', [f.iscritti[1].email, f.iscritti[1].emailContatto, f.iscritti[1].contattoDi], [undefined, 'm@e.it', 'Mario Rossi'])
-ok('e una nota che dice di chi era e a che riga', f.note.map((n) => n.motivo.includes('già di Mario Rossi (riga 2)') && n.riga === 3), [true])
+ok('tutti e due con la stessa email, nessuna nota', [f.iscritti.map((x) => x.email), f.note.length], [['m@e.it', 'm@e.it'], 0])
 f = dif(base + 'Mario;Rossi;m@e.it;;Judo 2\nPaolo;Rossi;m@e.it;;Judo 2\nPaolo;Rossi;m@e.it;;Lotta 3\n')
-ok('il secondo fratello su due righe: una nota sola', f.note.length, 1)
+ok('il secondo fratello su due righe: nessuna nota', f.note.length, 0)
 f = dif(base + 'Anna;Bianchi;a@e.it;;Judo 2\nAnna;Bianchi;a@e.it;333;Lotta 3\n')
 ok('telefono vuoto nella prima riga: vale il primo scritto più sotto, senza note', [f.iscritti[0].telefono, f.note.length], ['333', 0])
 f = dif(base + 'Anna;Bianchi;a@e.it;333 1;Judo 2\nAnna;Bianchi;a@e.it;444 2;Lotta 3\n')
@@ -149,7 +148,7 @@ f = L.leggiFogli(null, '﻿nome,cognome,email,telefono,corso\r\n"Anna","Bianchi"
 ok('BOM + virgole + virgolette + \\r\\n: la riga si legge', [f.iscritti.length, f.iscritti[0].telefono, f.iscritti[0].nome], [1, '333,44', 'Anna'])
 
 console.log('\nLe righe del foglio: nuove, già in palestra, da sistemare')
-const persona = (o) => ({ id: o.id ?? 'p' + o.nome, nome: o.nome, cognome: o.cognome, email: o.email, emailContatto: o.emailContatto, attiva: o.attiva ?? true, iscrizioni: o.iscrizioni ?? [] })
+const persona = (o) => ({ id: o.id ?? 'p' + o.nome, nome: o.nome, cognome: o.cognome, email: o.email, attiva: o.attiva ?? true, iscrizioni: o.iscrizioni ?? [] })
 const sit = (persone, personale = []) => ({ sale: [], personale, corsi: [], persone })
 const controllo = (foglio, persone, personale) => L.controllaRighe(dif(foglio), sit(persone, personale))
 let c = controllo(base + 'Anna;Bianchi;;;Judo 2\n', [])
@@ -170,7 +169,7 @@ ok('stesso nome ma email diversa da quella in palestra: non è data per nuova in
 c = controllo(base + 'Anna;Bianchi;;;Judo 2\n', [persona({ nome: 'Anna', cognome: 'Bianchi', attiva: false })])
 ok('archiviata: già in palestra, con avviso e scelta da fare', [c.righe[0].esito, c.righe[0].archiviato, c.righe[0].chiedeScelta, c.righe[0].avvisi.length], ['in_palestra', true, true, 1])
 c = controllo(base + 'Anna;Bianchi;x@e.it;;Judo 2\n', [], [{ id: 'i1', nome: 'Luca', cognome: 'Neri', email: 'x@e.it' }])
-ok('nuova ma con l’email di un istruttore: avviso, entra come contatto', [c.righe[0].esito, c.righe[0].avvisi.length], ['nuova', 1])
+ok('nuova con l’email di un istruttore: entra, senza avvisi', [c.righe[0].esito, c.righe[0].avvisi.length], ['nuova', 0])
 c = controllo(base + 'Anna;;;;Judo 2\nLuca;Neri;;;Karate\nAnna;Bianchi;;;Judo 2\n', [])
 ok('righe saltate e buone in ordine di riga, con i totali', [c.righe.map((r) => r.riga), c.totali], [[2, 3, 4], { nuova: 1, in_palestra: 0, da_sistemare: 2 }])
 ok('una riga saltata è «da sistemare» col suo motivo e il nome', [c.righe[0].esito, c.righe[0].nome, c.righe[0].motivo, c.righe[1].nome], ['da_sistemare', 'Anna', 'Manca il cognome: «Anna», Judo 2', 'Luca Neri'])
@@ -227,14 +226,11 @@ ok('nessuna da sistemare: nessuna riga', L.righeDaSistemare({ daSistemare: [] })
 ok('resoconto senza niente da dire: FATTO', L.testoResoconto({ daSistemare: [] }), 'FATTO')
 ok('resoconto con una riga: singolare, «sistemare»', L.testoResoconto({ daSistemare: [sistemare[0]] }), 'FATTO, 1 riga da sistemare\niscritti.csv, riga 4: Anna — Manca il cognome')
 ok('resoconto con due: plurale', L.testoResoconto({ daSistemare: sistemare }).split('\n')[0], 'FATTO, 2 righe da sistemare')
-ok('con solo contatti da controllare: «controllare», e i contatti in coda', L.testoResoconto({ daSistemare: [], emailDiAltri: ['riga 3: x'] }), 'FATTO, 1 riga da controllare\nriga 3: x')
 ok('messaggioRiga: email già usata', L.messaggioRiga(new Error('duplicate key value violates unique constraint')).startsWith('questa email è già'), true)
 ok('messaggioRiga: permesso', L.messaggioRiga(new Error('new row violates row-level security policy')).startsWith('non hai il permesso'), true)
 ok('messaggioRiga: rete', L.messaggioRiga(new Error('Failed to fetch')).startsWith('la rete è caduta'), true)
 ok('messaggioRiga: un testo inglese non riconosciuto non si mostra', L.messaggioRiga(new Error('kaboom')), 'la riga non è entrata: rilancia, e se si ripete scrivilo in SEGNALAZIONI')
 ok('messaggioRiga: un messaggio nostro resta com’è', L.messaggioRiga(new Error('Serve un cognome')), 'Serve un cognome')
-ok('fraseResoconto: uno', L.fraseResoconto({ iscrittiNuovi: 1, emailDiAltri: ['x'] }), 'È entrato 1 iscritto. Per 1 l’email era già di un’altra persona: ora è la sua email di contatto.'.replace(/’/g, "'"))
-ok('fraseResoconto: più', L.fraseResoconto({ iscrittiNuovi: 3, emailDiAltri: ['x', 'y'] }), 'Sono entrati 3 iscritti. Per 2 l\'email era già di un\'altra persona: ora è la loro email di contatto.')
 
 console.log('\nI ruoli e le colonne del modulo Google')
 const ruoli = L.RUOLI.map(([r]) => r)
@@ -323,7 +319,7 @@ ok('…e se i telefoni sono diversi, una nota con le righe e i numeri', leggi(T 
 ok('…stesso telefono scritto in altro modo: nessuna nota', leggi(T + '1/1/2020,Mario Rossi,mario@e.it,333 1234,,,,\n2/2/2021,Mario Rossi,mario@e.it,3331234,,,,\n').note.length, 0)
 ok('…primo telefono vuoto, secondo scritto: vale il secondo, senza note', (({ iscritti, note }) => [iscritti[0].telefono, note.length])(leggi(T + '1/1/2020,Mario Rossi,mario@e.it,,,,,\n2/2/2021,Mario Rossi,mario@e.it,222,,,,\n')), ['222', 0])
 r = leggi(T + '1/1/2020,Mario Rossi,famiglia@e.it,,,,,\n1/1/2020,Paolo Rossi,famiglia@e.it,,,,,\n')
-ok('due fratelli con la stessa email: il secondo come contatto, con una nota', [r.iscritti[1].email, r.iscritti[1].emailContatto, r.note.length], [undefined, 'famiglia@e.it', 1])
+ok('due fratelli con la stessa email: tutti e due la tengono, senza note', [r.iscritti.map((x) => x.email), r.note.length], [['famiglia@e.it', 'famiglia@e.it'], 0])
 r = leggi(T + '1/1/2020,Mario Rossi,non-una-email,,,,,\n')
 ok('email che non sembra tale: entra senza, con nota', [r.iscritti[0].email, r.note[0].motivo.includes('non sembra giusta')], [undefined, true])
 r = leggi(T + '1/1/2020,Mario Rossi,,,,31/02/2014,,\n')
@@ -401,7 +397,7 @@ const AnnaMod = '13/06/2020 10:00:00,Anna Bianchi,anna@x.it,222,,,Judo 2\n'
 {
   const f = duePosti('Anna;Bianchi;csv@x.it;;Judo 2\n', AnnaMod)
   const { creati } = await provaImporta(f)
-  ok('email diverse: vince il modulo, e quella di iscritti.csv non diventa email di contatto', creati.map((p) => [p.email, p.emailContatto]), [['anna@x.it', undefined]])
+  ok('email diverse: vince il modulo', creati.map((p) => p.email), ['anna@x.it'])
   ok('…ma è scritta in una nota, con foglio e riga', f.note.filter((x) => x.motivo.includes('csv@x.it')).map((x) => [x.foglio, x.riga]), [['iscritti.csv', 2]])
 }
 {
@@ -448,7 +444,7 @@ const AnnaMod = '13/06/2020 10:00:00,Anna Bianchi,anna@x.it,222,,,Judo 2\n'
   const f = duePosti('Mario;Rossi;fam@x.it;;Judo 2\n', '13/06/2020 10:00:00,Paolo Rossi,fam@x.it,,,,Judo 2\n')
   ok('fratelli con la stessa email del genitore, uno per foglio: due persone', f.iscritti.map((x) => x.nome), ['Mario', 'Paolo'])
   const { creati } = await provaImporta(f)
-  ok('…il secondo senza email di accesso, con quella come contatto', creati.map((p) => [p.nome, p.email, p.emailContatto]), [['Mario', 'fam@x.it', undefined], ['Paolo', undefined, 'fam@x.it']])
+  ok('…tutti e due con l’email del genitore', creati.map((p) => [p.nome, p.email]), [['Mario', 'fam@x.it'], ['Paolo', 'fam@x.it']])
 }
 {
   // Due omonimi in iscritti.csv, corsi diversi: il modulo va su quello con la sua email.

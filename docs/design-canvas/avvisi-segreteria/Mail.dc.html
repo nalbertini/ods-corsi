@@ -15,7 +15,7 @@
   </style>
 </helmet>
 <!-- La mail che arriva alla segreteria, nel suo programma di posta: non e' una schermata dell'app, disegnata a parte come ricevuta-email/Mail.dc.html.
-     Mai: note, codice fiscale, data di nascita, documenti, certificato, nomi di file. Il link apre quella richiesta in RICHIESTE ONLINE (serve l'accesso). -->
+     Con la cornice unica (src/lib/cornicaMail.ts): fascia azzurra, riquadro bianco, testata, tasto con l'indirizzo sotto, piè. Mai: note, codice fiscale, data di nascita, documenti, certificato, nomi di file. Il link apre quella richiesta in RICHIESTE ONLINE (serve l'accesso). -->
 <div style="display: flex; gap: 36px; align-items: flex-start; flex-wrap: wrap; width: 1260px; padding: 28px 36px; background: #eef5fa">
 
   <div style="display: flex; flex-direction: column; gap: 8px; width: 560px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · UNA RICHIESTA</span><div style="display: flex; flex-direction: column; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
@@ -24,10 +24,17 @@
       <span style="color: #46606f">a segreteria@officinedellosport.it · cc asdilcentrojudo@gmail.com</span>
       <span style="font-size: 17px; font-weight: 700; margin-top: 6px">Richiesta di iscrizione · Marco Rossi · Judo kids · da pagare</span>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; font-size: 15px; line-height: 1.5">
+    <div style="display: flex; flex-direction: column; background: #eef5fa; padding: 20px 12px">
+      <div style="display: flex; flex-direction: column; width: 100%; max-width: 560px; align-self: center; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
+        <div style="padding: 12px 20px; border-bottom: 2px solid #cfe6f4; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">ODS CORSI · AVVISO</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; font-size: 15px; line-height: 1.5">
       <p style="margin: 0">È arrivata la richiesta di <b>Marco Rossi</b> per <b>Judo kids</b>, oggi alle 18.32.</p>
       <p style="margin: 0">Pagamento: <b>bonifico, ricevuta caricata</b>. Da controllare sull’estratto conto.</p>
-      <span style="align-self: flex-start; padding: 10px 16px; background: #0d2a3d; color: #ffffff; font-weight: 600; border-radius: 6px">Apri la richiesta</span>
+      <span style="align-self: flex-start; margin-top: 6px; padding: 12px 18px; background: #0d2a3d; color: #ffffff; font-weight: 600; border-radius: 6px">Apri la richiesta</span>
+      <span style="font-size: 12px; line-height: 1.4; color: #46606f; word-break: break-all">https://…/#richieste/3f2a…</span>
+    </div>
+        <div style="padding: 12px 20px; border-top: 2px solid #cfe6f4; font-size: 12px; color: #46606f">Avviso automatico dell’app ODS Corsi.</div>
+      </div>
     </div>
   </div><span style="font-size: 14px; line-height: 1.45; color: #46606f">Le righe possibili sul pagamento: «Satispay, pagata 120,00 € alle 18.30», «bonifico, ricevuta caricata», «bonifico, nessuna ricevuta», «in palestra».</span></div>
 
@@ -37,11 +44,18 @@
       <span style="color: #46606f">a segreteria@officinedellosport.it · cc asdilcentrojudo@gmail.com</span>
       <span style="font-size: 17px; font-weight: 700; margin-top: 6px">Richiesta di iscrizione · famiglia Rossi (3) · pagata</span>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; font-size: 15px; line-height: 1.5">
+    <div style="display: flex; flex-direction: column; background: #eef5fa; padding: 20px 12px">
+      <div style="display: flex; flex-direction: column; width: 100%; max-width: 560px; align-self: center; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
+        <div style="padding: 12px 20px; border-bottom: 2px solid #cfe6f4; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">ODS CORSI · AVVISO</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; font-size: 15px; line-height: 1.5">
       <p style="margin: 0">Sono arrivate 3 richieste insieme, oggi alle 18.32:</p>
       <p style="margin: 0">· <b>Marco Rossi</b>, Judo kids<br>· <b>Anna Rossi</b>, Karate · fuori età, da richiamare<br>· <b>Paolo Rossi</b>, Pilates</p>
       <p style="margin: 0">Pagamento: <b>Satispay, pagata 310,00 € alle 18.30</b>.</p>
-      <span style="align-self: flex-start; padding: 10px 16px; background: #0d2a3d; color: #ffffff; font-weight: 600; border-radius: 6px">Apri le richieste</span>
+      <span style="align-self: flex-start; margin-top: 6px; padding: 12px 18px; background: #0d2a3d; color: #ffffff; font-weight: 600; border-radius: 6px">Apri le richieste</span>
+      <span style="font-size: 12px; line-height: 1.4; color: #46606f; word-break: break-all">https://…/#richieste</span>
+    </div>
+        <div style="padding: 12px 20px; border-top: 2px solid #cfe6f4; font-size: 12px; color: #46606f">Avviso automatico dell’app ODS Corsi.</div>
+      </div>
     </div>
   </div><span style="font-size: 14px; line-height: 1.45; color: #46606f">Pagato prima e richiesta dopo: una mail sola, questa. Nessuna mail a parte per il pagamento.</span></div>
 
@@ -51,11 +65,18 @@
       <span style="color: #46606f">a segreteria@officinedellosport.it · cc asdilcentrojudo@gmail.com</span>
       <span style="font-size: 17px; font-weight: 700; margin-top: 6px">Pagamento Satispay senza richiesta · 120,00 € · Laura Bianchi</span>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; font-size: 15px; line-height: 1.5">
+    <div style="display: flex; flex-direction: column; background: #eef5fa; padding: 20px 12px">
+      <div style="display: flex; flex-direction: column; width: 100%; max-width: 560px; align-self: center; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
+        <div style="padding: 12px 20px; border-bottom: 2px solid #cfe6f4; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">ODS CORSI · AVVISO</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; font-size: 15px; line-height: 1.5">
       <p style="margin: 0"><b>Laura Bianchi</b> ha pagato <b>120,00 €</b> con Satispay oggi alle 17.05 per <b>Pilates</b>, ma dopo un’ora la richiesta non è ancora arrivata.</p>
       <p style="margin: 0">Email lasciata: laura.bianchi@esempio.it</p>
       <p style="margin: 0">Da chiamare: forse si è fermata a metà del modulo, o i soldi vanno restituiti.</p>
-      <span style="align-self: flex-start; padding: 10px 16px; background: #0d2a3d; color: #ffffff; font-weight: 600; border-radius: 6px">Apri PAGAMENTI</span>
+      <span style="align-self: flex-start; margin-top: 6px; padding: 12px 18px; background: #0d2a3d; color: #ffffff; font-weight: 600; border-radius: 6px">Apri PAGAMENTI</span>
+      <span style="font-size: 12px; line-height: 1.4; color: #46606f; word-break: break-all">https://…/#pagamenti</span>
+    </div>
+        <div style="padding: 12px 20px; border-top: 2px solid #cfe6f4; font-size: 12px; color: #46606f">Avviso automatico dell’app ODS Corsi.</div>
+      </div>
     </div>
   </div><span style="font-size: 14px; line-height: 1.45; color: #46606f">Solo qui c’è un recapito: è l’unico modo di sapere chi chiamare. Se la richiesta arriva più tardi, parte la sua mail normale con «pagata».</span></div>
 
@@ -65,9 +86,16 @@
       <span style="color: #46606f">a segreteria@officinedellosport.it · cc asdilcentrojudo@gmail.com</span>
       <span style="font-size: 17px; font-weight: 700; margin-top: 6px">Pagamento Satispay · 120,00 € · Marco Rossi · Judo kids</span>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; font-size: 15px; line-height: 1.5">
+    <div style="display: flex; flex-direction: column; background: #eef5fa; padding: 20px 12px">
+      <div style="display: flex; flex-direction: column; width: 100%; max-width: 560px; align-self: center; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
+        <div style="padding: 12px 20px; border-bottom: 2px solid #cfe6f4; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #46606f">ODS CORSI · AVVISO</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; font-size: 15px; line-height: 1.5">
       <p style="margin: 0"><b>Marco Rossi</b> ha pagato <b>120,00 €</b> con Satispay oggi alle 19.10 per la richiesta di Judo kids arrivata alle 18.32.</p>
-      <span style="align-self: flex-start; padding: 10px 16px; background: #0d2a3d; color: #ffffff; font-weight: 600; border-radius: 6px">Apri la richiesta</span>
+      <span style="align-self: flex-start; margin-top: 6px; padding: 12px 18px; background: #0d2a3d; color: #ffffff; font-weight: 600; border-radius: 6px">Apri la richiesta</span>
+      <span style="font-size: 12px; line-height: 1.4; color: #46606f; word-break: break-all">https://…/#richieste/3f2a…</span>
+    </div>
+        <div style="padding: 12px 20px; border-top: 2px solid #cfe6f4; font-size: 12px; color: #46606f">Avviso automatico dell’app ODS Corsi.</div>
+      </div>
     </div>
   </div><span style="font-size: 14px; line-height: 1.45; color: #46606f">Quando si paga dalla pagina RICHIESTA ARRIVATA, dopo aver mandato: la richiesta ha già avuto la sua mail «da pagare».</span></div>
 

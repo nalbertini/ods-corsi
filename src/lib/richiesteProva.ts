@@ -8,7 +8,7 @@ import { cosaNonVaScadenza } from './segreteria'
 import { MASSIMO_PERSONE } from './passiIscrizione'
 import { pulisciConosciuto, pulisciProvenienza } from './provenienza'
 import { caricaListino } from './listino'
-import { stimaIscrizione } from './nucleo'
+import { cosaNonVaNucleo, stimaIscrizione } from './nucleo'
 import { NOME_TROPPO_LUNGO, nonSemplice, PAGAMENTO_ALTRA_PERSONA, PAGAMENTO_ALTRA_SCELTA, PAGAMENTO_NON_ARRIVATO, PAGAMENTO_NON_VALE, senzaVoceDelCorso, type PagamentoSatispay } from './satispay'
 
 /**
@@ -54,7 +54,7 @@ export function pagamentiSatispayProva(): PagamentoSatispay[] {
     const valide = new Set((archivio.dati.ricevute ?? []).filter((r) => !r.annullataIl).map((r) => r.id))
     return p.map((x) => ({
       ...x,
-      personaId: richieste.find((r) => r.id === x.richiestaId && r.stato === 'accolta')?.personaId,
+      personaId: x.saldoDi ? x.personaId : richieste.find((r) => r.id === x.richiestaId && r.stato === 'accolta')?.personaId,
       ricevutaId: x.ricevutaId && valide.has(x.ricevutaId) ? x.ricevutaId : undefined,
     }))
   } catch {
@@ -361,7 +361,6 @@ export function creaRichiesteProva(): DatiRichieste {
       const oggi = chiaveGiorno(new Date())
       const stesso = (x: string, y: string) => x.toLowerCase() === y.toLowerCase()
       const email = r.email.toLowerCase()
-      const emailLibera = !a.persone.some((p) => p.email?.toLowerCase() === email)
       const cifre = (t?: string) => (t ?? '').replace(/\D/g, '').slice(-10)
       const scelta = personaId ? a.persone.find((p) => p.id === personaId) : undefined
       if (personaId && !scelta) throw new Error('Questa scheda non c’è più')
@@ -395,9 +394,7 @@ export function creaRichiesteProva(): DatiRichieste {
                 ...p,
                 attiva: true,
                 telefono: p.telefono ?? r.telefono,
-                email: p.email ?? (emailLibera ? email : undefined),
-                // L'email è di un'altra persona: la scheda che c'era la tiene come contatto, se non ne ha già uno.
-                emailContatto: p.emailContatto ?? (!emailLibera && p.email?.toLowerCase() !== email ? email : undefined),
+                email: p.email ?? email,
               }
             : p,
         )
@@ -405,15 +402,15 @@ export function creaRichiesteProva(): DatiRichieste {
         id = `p-web-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
         a.persone = [
           ...a.persone,
-          // L'email già di un'altra persona non è la sua di accesso: va nel contatto (44-email-contatto.sql).
-          { id, nome: r.nome, cognome: r.cognome, ruolo: 'iscritto', email: emailLibera ? email : undefined, emailContatto: emailLibera ? undefined : email, telefono: r.telefono, attiva: true, creataIl: oggi },
+          { id, nome: r.nome, cognome: r.cognome, ruolo: 'iscritto', email, telefono: r.telefono, attiva: true, creataIl: oggi },
         ]
       }
-      // Dal nucleo di un iscritto: ci entra, a meno che non sia il titolare
-      // stesso o non abbia già un nucleo suo, con altri dentro.
-      const titolare = r.nucleoDi && a.persone.find((p) => p.id === r.nucleoDi && p.attiva && !p.nucleo)
-      const haIlSuo = a.persone.some((p) => p.nucleo === id)
-      if (titolare && titolare.id !== id && !haIlSuo) a.persone = a.persone.map((p) => (p.id === id ? { ...p, nucleo: titolare.id } : p))
+      // Dal nucleo di un iscritto: ci entra se le regole del nucleo lo permettono; se no, l'accoglimento riesce lo stesso.
+      if (r.nucleoDi) {
+        const natoIl = (pid: string) => a.anagrafiche?.[pid]?.natoIl ?? richiesteDi(pid).find((x) => x.stato === 'accolta')?.natoIl
+        const iscritti = a.persone.filter((p) => p.ruolo === 'iscritto').map((p) => ({ ...p, natoIl: natoIl(p.id) }))
+        if (!cosaNonVaNucleo(iscritti, id, r.nucleoDi)) a.persone = a.persone.map((p) => (p.id === id ? { ...p, nucleo: r.nucleoDi } : p))
+      }
       for (const corsoId of r.corsi) {
         if (!a.corsi.some((c) => c.id === corsoId && c.attivo)) continue
         const c = a.iscrizioni.find((i) => i.personaId === id && i.corsoId === corsoId)

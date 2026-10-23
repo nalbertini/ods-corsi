@@ -72,19 +72,21 @@ function guaioFile(e: { message?: string; statusCode?: string } | null): Error {
   return new Error(m || 'Il file non è partito: riprova')
 }
 
+/** La Edge Function `satispay`: i suoi errori sono già scritti per chi paga; senza rete, quello di sempre. */
+export async function chiamaSatispay(db: SupabaseClient, corpo: Record<string, string>): Promise<Record<string, unknown>> {
+  const { data, error } = await db.functions.invoke('satispay', { body: corpo })
+  // `as`: la risposta è il JSON della funzione (supabase/functions/satispay), letto campo per campo da chi chiama.
+  if (!error) return (data ?? {}) as Record<string, unknown>
+  if (!(error instanceof FunctionsHttpError)) throw new Error(ERRORE_SATISPAY)
+  // La funzione non c'è ancora sul progetto: si paga come prima.
+  if (error.context.status === 404) return { attivo: false }
+  const detto: unknown = await error.context.json().catch(() => null)
+  const guaio = typeof detto === 'object' && detto !== null && 'guaio' in detto ? detto.guaio : null
+  throw new Error(typeof guaio === 'string' ? guaio : ERRORE_SATISPAY)
+}
+
 export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
-  /** La Edge Function `satispay`: i suoi errori sono già scritti per chi paga; senza rete, quello di sempre. */
-  const satispay = async (corpo: Record<string, string>): Promise<Record<string, unknown>> => {
-    const { data, error } = await db.functions.invoke('satispay', { body: corpo })
-    // `as`: la risposta è il JSON della funzione (supabase/functions/satispay), letto campo per campo da chi chiama.
-    if (!error) return (data ?? {}) as Record<string, unknown>
-    if (!(error instanceof FunctionsHttpError)) throw new Error(ERRORE_SATISPAY)
-    // La funzione non c'è ancora sul progetto: si paga come prima.
-    if (error.context.status === 404) return { attivo: false }
-    const detto: unknown = await error.context.json().catch(() => null)
-    const guaio = typeof detto === 'object' && detto !== null && 'guaio' in detto ? detto.guaio : null
-    throw new Error(typeof guaio === 'string' ? guaio : ERRORE_SATISPAY)
-  }
+  const satispay = (corpo: Record<string, string>) => chiamaSatispay(db, corpo)
 
   const vista = (r: Riga): Richiesta => ({
     id: r.id,
@@ -174,6 +176,8 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             pagamento_satispay: d.pagamentoSatispay,
             // Le richieste della stessa famiglia: senza 84-avvisi-segreteria.sql la chiave si ignora.
             invio: d.invio,
+            // Il titolare del nucleo: senza 100-nucleo.sql la chiave si ignora; senza nucleo non parte.
+            nucleo_di: d.nucleoDi,
           },
         }),
       ) as string

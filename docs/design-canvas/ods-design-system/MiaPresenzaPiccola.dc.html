@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px; width: 100%; padding: 10px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}">
+  <span style="color: {{coloreSegno}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display: block"><path d="{{ic.d}}"></path><path d="{{ic.d2}}"></path></svg></span>
+  <span style="font-size: 13px; font-weight: 600; line-height: 1.1">{{quando}}</span>
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; white-space: nowrap; color: {{coloreSegno}}">{{detto}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"quando":{"editor":"text","default":"mer 21 ott"},"stato":{"editor":"enum","options":["presente","assente","giustificato","niente"],"default":"presente"},"segnalata":{"editor":"enum","options":["no","da-confermare","rifiutata"],"default":"no"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":110,"height":100}}'>
+// COSTRUITA (`../lezioni-icone/`): una presenza in piccolo, tre in fila in cima a LEZIONI. Stessi segni e colori di MiaPresenza con `icone`,
+// ma senza il corso e senza il tasto SEGNALA: una segnalazione gia' fatta (DA CONFERMARE, RIFIUTATA) prende il posto della parola dello stato.
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', faint: '#5a5a56', verde: '#16a54a', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', faint: '#a8a8a3', verde: '#12913f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', faint: '#46606f', verde: '#12913f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+};
+const CERCHIO = 'M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z';
+const ICONE = { presente: [CERCHIO, 'M8 12.5l3 3l5-6'], assente: [CERCHIO, 'M9 9l6 6M15 9l-6 6'], giustificato: [CERCHIO, 'M8.5 12h7'], niente: [CERCHIO, ''] };
+const DETTO = { presente: 'PRESENTE', assente: 'ASSENTE', giustificato: 'GIUSTIFICATO', niente: 'NON SEGNATO' };
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.sito;
+    const stato = DETTO[p.stato] ? p.stato : 'presente';
+    const segn = p.segnalata === 'da-confermare' || p.segnalata === 'rifiutata' ? p.segnalata : 'no';
+    const [d, d2] = ICONE[stato];
+    return {
+      c,
+      ic: { d, d2 },
+      quando: p.quando ?? 'mer 21 ott',
+      detto: segn === 'rifiutata' ? 'RIFIUTATA' : segn === 'da-confermare' ? 'DA CONFERMARE' : DETTO[stato],
+      coloreSegno: segn === 'rifiutata' ? c.rossoTesto : segn === 'da-confermare' ? c.gialloTesto : stato === 'presente' ? c.verde : stato === 'assente' ? c.rossoTesto : c.faint,
+    };
+  }
+}
+</script>
+</body>
+</html>

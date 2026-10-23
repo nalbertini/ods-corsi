@@ -210,13 +210,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('43-cerca-persone.sql', 'Aggiungi chi prova cerca fra tutte le persone, senza telefono',
     exists (select 1 from pg_proc where proname = 'cerca_persone'
             and pg_get_function_result(oid) = 'TABLE(persona_id uuid, nome text, cognome text, corsi text[])')),
-  ('44-email-contatto.sql', 'l''email di contatto delle persone, che può ripetersi',
+  ('44-email-contatto.sql', 'l''email di contatto delle persone (poi passata nel campo unico, vedi 99)',
     exists (select 1 from information_schema.columns
-            where table_schema = 'public' and table_name = 'persone' and column_name = 'email_contatto')
-    and exists (select 1 from pg_constraint where conname = 'persone_email_contatto_forma')),
-  ('44-email-contatto.sql', 'accogliere una richiesta e unire due schede tengono conto del contatto',
-    exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%email_contatto%')
-    and exists (select 1 from dentro where nome = 'unisci_persone' and corpo like '%email_contatto%')),
+            where table_schema = 'public' and table_name = 'persone' and column_name = 'email_contatto')),
   ('45-certificati-online.sql', 'il certificato resta nell''app: contenitore privato, file e data insieme, via 30 giorni dopo la scadenza',
     exists (select 1 from storage.buckets where id = 'certificati' and not public and file_size_limit = 10485760)
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'certificato_caricato_il')
@@ -500,7 +496,48 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and not exists (select 1 from dentro where nome = 'collegamento_perche' and corpo like '%non viene dal vecchio programma%')
     -- Rilanciare 67 dopo 98 rimette la versione a due argomenti accanto a questa: l'app non sa più quale chiamare.
     and to_regprocedure('public.cambia_voce_movimenti(uuid[],uuid)') is null),
-  ('99-importa-banca.sql', 'si può annullare in un colpo un''intera importazione dal file della banca',
+  ('99-email-unica.sql', 'una sola email per persona: unica solo per chi ha un accesso, la stessa per ricevute e avvisi',
+    exists (select 1 from pg_indexes where indexname = 'persone_email_unica' and indexdef like '%ruolo%')
+    -- Rilanciare 45, 53, 90 o 95 dopo 99 rimette le funzioni che scrivono il contatto: la riga torna «da lanciare».
+    and not exists (select 1 from dentro where nome in ('accogli_iscrizione', 'unisci_persone') and corpo like '%email_contatto%')
+    and exists (select 1 from dentro where nome = 'indirizzo_ricevuta' and corpo not like '%email_contatto%')),
+  ('100-nucleo.sql', 'il nucleo familiare sul database',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'persone' and column_name = 'nucleo')
+    and to_regprocedure('public.metti_nel_nucleo(uuid,uuid)') is not null
+    and to_regprocedure('public.togli_dal_nucleo(uuid)') is not null
+    and to_regprocedure('public.rendi_titolare(uuid)') is not null
+    -- Rilanciare 45, 84, 95 o 99 dopo 100 rimette le funzioni senza il nucleo: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'unione_possibile' and corpo like '%nucleo%')
+    and exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%nucleo_di%')
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%nucleo_di%')),
+  ('101-iscritto.sql', 'l''area degli iscritti sul database',
+    to_regclass('public.presenze_segnalate') is not null
+    and to_regprocedure('public.iscritto_scheda(uuid)') is not null
+    and to_regprocedure('public.iscritto_lezioni(uuid,date,date)') is not null
+    and to_regprocedure('public.iscritto_presenze(uuid,integer)') is not null
+    and to_regprocedure('public.iscritto_ricevute(uuid)') is not null
+    and to_regprocedure('public.iscritto_nucleo(uuid)') is not null
+    and to_regprocedure('public.iscritto_titolare(uuid)') is not null
+    and to_regprocedure('public.iscritto_aggiunte(uuid)') is not null
+    and to_regprocedure('public.iscritto_dati_del_nucleo(uuid)') is not null
+    and to_regprocedure('public.iscritto_segnala(uuid,uuid,text)') is not null
+    and to_regprocedure('public.iscritto_segnalate(uuid)') is not null
+    -- Rilanciare 55 dopo 101 rimette il primo accesso senza gli iscritti: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'collega_utente' and corpo like '%iscritto%')),
+  ('102-certificato-iscritto.sql', 'l''iscritto manda il suo certificato',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'certificato_in_attesa')
+    and to_regprocedure('public.iscritto_manda_certificato(uuid,text)') is not null
+    and to_regprocedure('public.conferma_certificato_iscritto(uuid,date)') is not null
+    and to_regprocedure('public.rifiuta_certificato_iscritto(uuid)') is not null
+    -- Rilanciare 45, 99 o 101 dopo 102 rimette le funzioni senza il file in attesa: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'pulisci_certificati' and corpo like '%certificato_in_attesa%')
+    and exists (select 1 from dentro where nome = 'unisci_persone' and corpo like '%unisci_persone_0%')
+    and exists (select 1 from dentro where nome = 'iscritto_scheda_di' and corpo like '%certificato_in_attesa_il%')),
+  ('103-saldo-satispay.sql', 'il saldo della quota con Satispay',
+    exists (select 1 from information_schema.columns where table_name = 'pagamenti_satispay' and column_name = 'saldo_di')
+    and to_regprocedure('public.satispay_prepara_saldo(uuid,uuid)') is not null
+    and to_regprocedure('public.satispay_saldo_stato(uuid,uuid)') is not null),
+  ('104-importa-banca.sql', 'si può annullare in un colpo un''intera importazione dal file della banca',
     to_regprocedure('public.annulla_importazione_banca(timestamptz)') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

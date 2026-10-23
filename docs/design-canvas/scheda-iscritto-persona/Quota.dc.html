@@ -52,10 +52,10 @@
       <dc-import name="Chip" tema="sito" label="+ Registra un pagamento" hint-size="220px,40px"></dc-import>
     </div>
     <div class="riga"><span class="et">PAGAMENTI</span><span class="filo"></span></div>
-    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: -10px">
+    <!-- Due numeri, non tre: la QUOTA è già nel timbro e sopra, e «DA PAGARE» in una cella da importi sbordava (commento fc0ad571). -->
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: -10px">
       <dc-import name="Numero" tema="sito" titolo="PAGATO" valore="230,00 €" sotto="ricevute e pagamenti a mano" hint-size="100%,120px"></dc-import>
-      <dc-import name="Numero" tema="sito" titolo="MANCA" valore="0,00 €" sotto="niente da incassare" hint-size="100%,120px"></dc-import>
-      <dc-import name="Numero" tema="sito" titolo="QUOTA" valore="DA PAGARE" sotto="ricevute e pagamenti a mano non cambiano la quota" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" tema="sito" titolo="DA INCASSARE" valore="0,00 €" sotto="niente da incassare" hint-size="100%,120px"></dc-import>
     </div>
     <dc-import name="RigaPagamento" tema="sito" tipo="ricevuta" titolo="N. 41/2025 · 12 settembre 2025" sotto="QUOTA ASSOCIATIVA, ANNUALE KARATE ADULTI" importo="230,00 €" posta="Mandata il 12 settembre 2025" hint-size="100%,120px"></dc-import>
     <dc-import name="RigaPagamento" tema="sito" tipo="pagamento" titolo="12 settembre 2025 · POS" sotto="QUOTA ASSOCIATIVA, ANNUALE KARATE ADULTI" importo="230,00 €" tasti="" hint-size="100%,64px"></dc-import>

@@ -1,11 +1,10 @@
-import { soldi } from '../../lib/satispay'
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, FILTRI_VISIBILI, haConto, ID_FILTRI, passaChip, TESTI_FILTRI, type ChipConto, type ContestoFiltri, type IdFiltro } from '../../lib/filtriIscritti'
+import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, FILTRI_VISIBILI, haConto, ID_FILTRI, passaChip, TESTI_FILTRI, titolariDi, type ChipConto, type ContestoFiltri, type IdFiltro } from '../../lib/filtriIscritti'
 import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, AnagraficaDi, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Segno, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, campoDelGuaio, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, timbriScheda, vienePoco } from '../../lib/segreteria'
+import { avvisiGesto, cercaNellElenco, cfGenitoreDaMostrare, cosaManca, eMinorenne, etichettaNatoIl, natoIlDi, sottoNome, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, corsoDiProvenienza, cosaNonVaAnagrafica, erroreDellEmail, gestoIniziale, inCorso, pagamentoDi, percentualeBarra, presentaCertificato, pulisciAnagrafica, senzaEmail, statoCertificato, statoPerElenco, tastoPrincipale, timbriScheda, vienePoco, azioniTestata } from '../../lib/segreteria'
 import { stagioneDi } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
@@ -13,18 +12,19 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { conTessere, incrocioDaMostrare, SEGNALA_TESSERE, senzaTessera, tesseratoSenzaCorso, timbroTessera, type RigaIncrocio, type TesseraSeg } from '../../lib/tessere'
 import { APRI_SCHEDA, idLinguetta, idPannello, schedaDellaSezione, schedaIniziale, SCHEDE, segniSchede, serveCambiare, tastoScheda, type IdScheda } from '../../lib/schedaSezioni'
 import { ImportaTessere, TessereDellaPersona } from './Tessere'
-import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, MenuAzioni, messaggio, Riga, SchedaPiena, Stato, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
 import type { Ricercata } from '../../lib/ricerca'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
-import { euro, QUOTA, voceQuota } from '../../lib/ricevute'
+import { euro, voceQuota } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
 import { StoricoPersona } from './CollegaPersona'
 import { PagatoPrima } from './PagatoPrima'
-import { CellaSollecito, SollecitoWhatsApp } from './Sollecito'
-import { cellaSollecito, quotaNelVecchioDi } from '../../lib/sollecito'
-import { consiglioCorso, corsiDaPagare, nonPagati, statoCorsi, testoCorso, testoCorsoBreve, type StatoCorso } from '../../lib/corsiDaPagare'
+import { CellaSollecito, SollecitoWhatsApp, useSollecito } from './Sollecito'
+import { cellaSollecito, fraseSollecitato, quotaNelVecchioDi } from '../../lib/sollecito'
+import { consiglioCorso, corsiDaPagare, nonPagati, statoCorsi, testoCorsoBreve, type StatoCorso } from '../../lib/corsiDaPagare'
+import { bollinoCorso, iscrizioniDellaScheda, riquadroCertificato, riquadroCorso, riquadroDocumento, riquadroQuota } from '../../lib/schedeIscritto'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
 
 /** Quanto non è in regola, per ordinare: i guai più grossi prima. */
@@ -32,48 +32,26 @@ const GUAIO_CERTIFICATO: Record<StatoCertificato, number> = { manca: 2, scaduto:
 const GUAIO_PAGA: Record<ComePaga, number> = { da_pagare: 2, scaduto: 2, in_parte: 1, pagato: 0 }
 
 /**
- * Le due email di una scheda, ognuna con la sua riga che dice a cosa serve
- * (44-email-contatto.sql). Se il salvataggio è fallito per una delle due,
- * l'errore sta sotto quel campo (`campoDelGuaio`).
+ * L'email della scheda: una sola, per le ricevute e gli avvisi e per entrare
+ * nell'app (99-email-unica.sql). Se il salvataggio è fallito, l'errore sta sotto il campo.
  */
-function CampiEmail({
-  prefisso,
-  email,
-  contatto,
-  guaio,
-  onEmail,
-  onContatto,
-}: {
-  prefisso: string
-  email: string
-  contatto: string
-  guaio: string
-  onEmail: (v: string) => void
-  onContatto: (v: string) => void
-}) {
-  const campo = campoDelGuaio(guaio)
-  const nota = (di: typeof campo, avviso: string): Nota => (campo === di ? { testo: guaio, guaio: true } : { testo: avviso, guaio: false })
-  const campi = [
-    { id: `${prefisso}-email`, etichetta: 'Email per entrare nell’app', valore: email, cambia: onEmail, di: 'email' as const, avviso: 'Una sola persona per indirizzo.' },
-    { id: `${prefisso}-contatto`, etichetta: 'Email per ricevute e avvisi', valore: contatto, cambia: onContatto, di: 'emailContatto' as const, avviso: 'Dove scriviamo o telefoniamo alla famiglia, e dove arrivano le ricevute per email.' },
-  ]
+function CampoEmail({ prefisso, email, guaio: errore, onEmail }: { prefisso: string; email: string; guaio: string; onEmail: (v: string) => void }) {
+  const guaio = erroreDellEmail(errore)
+  const id = `${prefisso}-email`
+  const nota: Nota = guaio ? { testo: guaio, guaio: true } : { testo: 'Per le ricevute e gli avvisi, e per entrare nell’app.', guaio: false }
   return (
-    <>
-      {campi.map((c) => (
-        <Campo key={c.id} id={c.id} etichetta={c.etichetta} nota={nota(c.di, c.avviso)}>
-          <input
-            id={c.id}
-            className="sg-campo"
-            type="email"
-            placeholder="nome@esempio.it"
-            value={c.valore}
-            aria-invalid={campo === c.di || undefined}
-            aria-describedby={`${c.id}-nota`}
-            onChange={(e) => c.cambia(e.target.value)}
-          />
-        </Campo>
-      ))}
-    </>
+    <Campo id={id} etichetta="Email" nota={nota}>
+      <input
+        id={id}
+        className="sg-campo"
+        type="email"
+        placeholder="nome@esempio.it"
+        value={email}
+        aria-invalid={!!guaio || undefined}
+        aria-describedby={`${id}-nota`}
+        onChange={(e) => onEmail(e.target.value)}
+      />
+    </Campo>
   )
 }
 
@@ -270,7 +248,7 @@ export function Iscritti({
     setCorso('')
     accesi.forEach((id) => filtri[id][1](false))
   }
-  const contesto: ContestoFiltri = { oggi, scopertiDi, tesseraDi }
+  const contesto: ContestoFiltri = { oggi, scopertiDi, tesseraDi, titolari: titolariDi(tutti) }
   // Ricerca e corso: quel che resta scelto quando si accende un chip, e su cui si contano i chip.
   const inBase = (p: PersonaSeg) =>
     (!ricerca || ricerca.ids.includes(p.id)) && cercaNellElenco(p, cerca) && (!corso || p.iscrizioni.some((i) => i.corsoId === corso && inCorso(i, oggi)))
@@ -328,7 +306,7 @@ export function Iscritti({
     // La tessera da sistemare sta nella colonna QUOTA: pesa come un guaio piccolo.
     quota: (p) => GUAIO_PAGA[comePaga(p, oggi)] + Number(senzaTessera(tesseraDi(p))),
     corsi: (p) => suoiCorsi(p).join(', '),
-    contatto: (p) => p.telefono ?? p.email ?? p.emailContatto,
+    contatto: (p) => p.telefono ?? p.email,
     frequenza: (p) => {
       const f = freq.dato?.get(p.id)
       return f && f.dovute ? f.presenti / f.dovute : null
@@ -588,9 +566,9 @@ export function Iscritti({
                     {cella.visibili.join(corsiScaduti ? ' · ' : ', ') || '—'}
                     {cella.altri > 0 && <span className="sg-cella-piu">+{cella.altri}</span>}
                   </span>
-                  <span role="cell" className="sg-cella-contatto" data-manca={!(p.email || p.emailContatto || p.telefono) || undefined}>
-                    {p.telefono ? <IconaContatto tipo="telefono" /> : (p.email ?? p.emailContatto) ? <IconaContatto tipo="email" /> : null}
-                    {p.telefono ?? p.email ?? p.emailContatto ?? 'nessun contatto'}
+                  <span role="cell" className="sg-cella-contatto" data-manca={!(p.email || p.telefono) || undefined}>
+                    {p.telefono ? <IconaContatto tipo="telefono" /> : p.email ? <IconaContatto tipo="email" /> : null}
+                    {p.telefono ?? p.email ?? 'nessun contatto'}
                   </span>
                   <span
                     role="cell"
@@ -640,8 +618,8 @@ function Nuovo({
   onLasciaStare: () => void
   onSalvato: (id: string) => void
 }) {
-  const [b, setB] = useState<DatiPersona & { corso: string }>({ nome: '', cognome: '', email: '', emailContatto: '', telefono: '', corso: '' })
-  // Cosa non va nei campi dell'email, sotto il campo giusto (`campoDelGuaio`); l'avviso in basso resta.
+  const [b, setB] = useState<DatiPersona & { corso: string }>({ nome: '', cognome: '', email: '', telefono: '', corso: '' })
+  // Cosa non va nell'email, sotto il campo; l'avviso in basso resta.
   const [guaio, setGuaio] = useState('')
   const salva = () => {
     let id = ''
@@ -675,7 +653,7 @@ function Nuovo({
         <Campo id="n-cognome" etichetta="COGNOME">
           <input id="n-cognome" className="sg-campo" value={b.cognome} onChange={(e) => setB({ ...b, cognome: e.target.value })} />
         </Campo>
-        <CampiEmail prefisso="n" email={b.email ?? ''} contatto={b.emailContatto ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setB({ ...b, email: v }) }} onContatto={(v) => { setGuaio(''); setB({ ...b, emailContatto: v }) }} />
+        <CampoEmail prefisso="n" email={b.email ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setB({ ...b, email: v }) }} />
         <Campo id="n-tel" etichetta="TELEFONO · FACOLTATIVO">
           <input id="n-tel" className="sg-campo" type="tel" value={b.telefono} onChange={(e) => setB({ ...b, telefono: e.target.value })} />
         </Campo>
@@ -760,6 +738,7 @@ function Scheda({
   // Aperta la modifica, uscire dal menu chiede prima di perderla.
   useBozza(!!modifica)
   const [daAggiungere, setDaAggiungere] = useState('')
+  const [iscrivendo, setIscrivendo] = useState(false)
   const [pagando, setPagando] = useState(false)
   // Il pagamento a mano da cui parte la ricevuta: se non la si fa, il modulo si riapre con quei dati.
   const [daPagamento, setDaPagamento] = useState<DatiPagamentoDiretto | null>(null)
@@ -773,6 +752,8 @@ function Scheda({
   }, [riprendi, pagando])
   const [unendo, setUnendo] = useState(!!unisciCon)
   const [togliendo, setTogliendo] = useState(false)
+  // Il riquadro del sollecito si apre dal tasto in testata: chiuso, la scheda parte da quel che c'è.
+  const [sollecitoAperto, setSollecitoAperto] = useState(false)
   // Dopo una ricevuta nuova l'elenco delle ricevute si rilegge da capo.
   const [giroRicevute, setGiroRicevute] = useState(0)
   // Dopo i DATI ANAGRAFICI salvati il sollecito rilegge il genitore: a un minorenne si scrive a lui.
@@ -791,6 +772,9 @@ function Scheda({
     window.addEventListener(APRI_SCHEDA, apri)
     return () => window.removeEventListener(APRI_SCHEDA, apri)
   }, [])
+  const sollecito = useSollecito({ d, p, oggi, giro: giroAnagrafica, giroSolleciti, quotaNelVecchio, corsi: statiCorsi })
+  const azioni = azioniTestata(p, !!sollecito.s, { modifica: !!modifica, unendo, pagando })
+  const voci = azioni.altro
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
   // Letti qui e non in DATI ANAGRAFICI: età e COSA MANCA in cima alla scheda li vogliono.
   const an = useCarica(async () => ({ di: await d.anagraficaDi(p.id) }), [d, p.id])
@@ -803,9 +787,9 @@ function Scheda({
   const apriModifica = () => {
     setGuaio('')
     setAperta('persona')
-    setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, emailContatto: p.emailContatto, telefono: p.telefono })
+    setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, telefono: p.telefono })
   }
-  const correnti = p.iscrizioni.filter((i) => inCorso(i, oggi))
+  const { correnti, terminate } = iscrizioniDellaScheda(p.iscrizioni, oggi)
   const liberi = attivi.filter((c) => !correnti.some((i) => i.corsoId === c.id))
   const venuto = storico.dato?.filter((x) => x.stato === 'presente').length ?? 0
   // Gli altri del nucleo familiare, per lo sconto famiglia della ricevuta.
@@ -832,12 +816,75 @@ function Scheda({
 
   return (
     <>
-      <div className="stack" style={{ gap: 4 }}>
-        <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
-          {`${p.cognome} ${p.nome}`.toUpperCase()}
-        </h2>
-        <span style={{ fontSize: 13, color: 'var(--dim)' }}>{sottoNome(natoIl, p.creataIl, ora)}</span>
+      <div className="sg-scheda-testa">
+        <div className="stack" style={{ gap: 4 }}>
+          <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
+            {`${p.cognome} ${p.nome}`.toUpperCase()}
+          </h2>
+          <span style={{ fontSize: 13, color: 'var(--dim)' }}>{sottoNome(natoIl, p.creataIl, ora)}</span>
+        </div>
+        {(azioni.sollecito || voci.length > 0) && (
+          <div className="sg-scheda-testa-azioni">
+            <div className="sg-scheda-testa-tasti">
+              {azioni.sollecito && (
+                <button type="button" className="sg-btn sg-btn-pieno sg-scheda-testa-sollecito" aria-expanded={sollecitoAperto} aria-controls="sg-sollecito" onClick={() => setSollecitoAperto((a) => !a)}>
+                  Sollecita su WhatsApp <span aria-hidden="true">{sollecitoAperto ? '▴' : '▾'}</span>
+                </button>
+              )}
+              {voci.length > 0 && (
+                <MenuAzioni etichetta="Altro">
+                  {voci.includes('unisci') && (
+                    <button type="button" role="menuitem" onClick={() => setUnendo(true)}>
+                      Unisci con un altro iscritto…
+                    </button>
+                  )}
+                  {/* Un file con anagrafica, iscrizioni e presenze: è quello che una persona ha diritto di chiedere. */}
+                  {voci.includes('esporta') && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() =>
+                        void fai(async () => {
+                          const dati = await d.esporta(p.id)
+                          const url = URL.createObjectURL(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }))
+                          const a = document.createElement('a')
+                          a.href = url
+                          a.download = `dati-${p.cognome}-${p.nome}.json`.toLowerCase().replace(/\s+/g, '-')
+                          a.click()
+                          URL.revokeObjectURL(url)
+                        }, 'File scaricato')
+                      }
+                    >
+                      Esporta i dati
+                    </button>
+                  )}
+                  {voci.includes('disattiva') && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="sg-pericolo"
+                      onClick={async () => {
+                        if (!(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'Disattiva la scheda', { pericolo: true }))) return
+                        void fai(() => d.attivaPersona(p.id, false), 'Scheda disattivata', onCambiato)
+                      }}
+                    >
+                      Disattiva
+                    </button>
+                  )}
+                  {voci.includes('riattiva') && (
+                    <button type="button" role="menuitem" onClick={() => void fai(() => d.attivaPersona(p.id, true), 'Scheda riattivata', onCambiato)}>
+                      Riattiva
+                    </button>
+                  )}
+                </MenuAzioni>
+              )}
+            </div>
+            {azioni.sollecito && sollecito.ultimo && <span className="sg-scheda-testa-ultimo">{fraseSollecitato(sollecito.ultimo)}</span>}
+          </div>
+        )}
       </div>
+      {!unendo && !pagando && sollecito.guaio && <Guaio titolo="SOLLECITO SU WHATSAPP" testo={sollecito.guaio} />}
+      {azioni.sollecito && sollecito.s && sollecitoAperto && <SollecitoWhatsApp d={d} p={p} s={sollecito.s} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
       {!unendo && !pagando && manca.length > 0 && (
         <div className="sg-scheda-manca" role="status">
           <span className="sg-scheda-manca-titolo">✕ COSA MANCA</span>
@@ -851,7 +898,6 @@ function Scheda({
       )}
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
       {!unendo && !pagando && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
-      {!unendo && !pagando && <SollecitoWhatsApp d={d} p={p} oggi={oggi} giro={giroAnagrafica} giroSolleciti={giroSolleciti} quotaNelVecchio={quotaNelVecchio} corsi={statiCorsi} onSollecitato={onSollecitato} avvisa={avvisa} onPersona={() => setAperta('persona')} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -949,27 +995,21 @@ function Scheda({
               <Campo id="m-cognome" etichetta="COGNOME">
                 <input id="m-cognome" className="sg-campo" value={modifica.cognome} onChange={(e) => setModifica({ ...modifica, cognome: e.target.value })} />
               </Campo>
-              <CampiEmail prefisso="m" email={modifica.email ?? ''} contatto={modifica.emailContatto ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setModifica({ ...modifica, email: v }) }} onContatto={(v) => { setGuaio(''); setModifica({ ...modifica, emailContatto: v }) }} />
+              <CampoEmail prefisso="m" email={modifica.email ?? ''} guaio={guaio} onEmail={(v) => { setGuaio(''); setModifica({ ...modifica, email: v }) }} />
               <Campo id="m-tel" etichetta="TELEFONO">
                 <input id="m-tel" className="sg-campo" type="tel" value={modifica.telefono ?? ''} onChange={(e) => setModifica({ ...modifica, telefono: e.target.value })} />
               </Campo>
             </div>
           ) : (
             <div className="sg-due">
-              <Campo etichetta="EMAIL PER RICEVUTE E AVVISI">
-                <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.emailContatto ? 'var(--text)' : 'var(--dim)' }}>{p.emailContatto ?? '—'}</span>
-                {!p.emailContatto && minore && <span className="sg-sotto" style={{ fontSize: 12 }}>Per un minorenne è quella del genitore.</span>}
+              <Campo etichetta="EMAIL">
+                <span className="sg-valore" style={{ wordBreak: 'break-all', color: p.email ? 'var(--text)' : 'var(--dim)' }}>{p.email ?? '—'}</span>
+                {!p.email && minore && <span className="sg-sotto" style={{ fontSize: 12 }}>Per un minorenne è quella del genitore.</span>}
               </Campo>
               <Campo etichetta="TELEFONO">
                 <span className="sg-valore" style={{ color: p.telefono ? 'var(--text)' : 'var(--dim)' }}>{p.telefono ?? '—'}</span>
                 {!p.telefono && minore && <span className="sg-sotto" style={{ fontSize: 12 }}>Per un minorenne è quello del genitore.</span>}
               </Campo>
-              {/* Vuota non è un problema: la sceglie chi entra nell'app. */}
-              {p.email && (
-                <Campo etichetta="EMAIL PER ENTRARE NELL’APP">
-                  <span className="sg-valore" style={{ wordBreak: 'break-all' }}>{p.email}</span>
-                </Campo>
-              )}
             </div>
           )}
           </div>
@@ -987,7 +1027,7 @@ function Scheda({
           )}
 
           <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} an={an} natoIl={natoIl} minore={minore} fai={fai} onCambiato={() => { setGiroAnagrafica((g) => g + 1); onCambiato() }} />
-          {d.modo === 'prova' && <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />}
+          <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />
           {nonDoppioni.length > 0 && (
             <div className="stack" style={{ gap: 8 }}>
               <Riga titolo="NON SONO DOPPIONI" />
@@ -1028,14 +1068,14 @@ function Scheda({
           </div>
           <TessereDellaPersona key={`t-${p.id}-${(tessere ?? []).length}`} d={d} p={p} tessere={tessere} corsi={corsi} oggi={chiaveGiorno(new Date())} fai={fai} avvisa={avvisa} onCambiato={onCambiato} />
           <div id="sez-documento">
-            <Documento d={d} p={p} fai={fai} onCambiato={onCambiato} />
+            <Documento d={d} p={p} minore={minore} fai={fai} onCambiato={onCambiato} />
           </div>
       </div>
 
       <div role="tabpanel" id={idPannello('quota')} aria-labelledby={idLinguetta('quota')} hidden={aperta !== 'quota'}>
         <div id="sez-quota" className="stack" style={{ gap: 24, minWidth: 0 }}>
-            <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} statiCorsi={statiCorsi} fai={fai} onCambiato={onCambiato} />
-            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} avvisa={avvisa} onNuova={() => setPagando(true)} onCambiato={onCambiato} contabilita={contabilita} riprendi={riprendi ?? undefined} onRicevuta={(x) => {
+            <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} statiCorsi={statiCorsi} fai={fai} onCambiato={onCambiato} onNuova={() => setPagando(true)} />
+            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} avvisa={avvisa} onCambiato={onCambiato} contabilita={contabilita} riprendi={riprendi ?? undefined} onRicevuta={(x) => {
               setRiprendi(null)
               setDaPagamento(x)
               setPagando(true)
@@ -1046,20 +1086,55 @@ function Scheda({
 
       <div role="tabpanel" id={idPannello('corsi')} aria-labelledby={idLinguetta('corsi')} hidden={aperta !== 'corsi'} className="stack" style={{ gap: 20, minWidth: 0 }}>
           <div className="stack" style={{ gap: 8 }}>
-            <span className="sg-etichetta" style={{ fontSize: 13, letterSpacing: '0.2em' }}>ISCRIZIONI</span>
+            <Riga titolo="ISCRIZIONI">
+              {p.attiva && !iscrivendo && liberi.length > 0 && (
+                <button type="button" className="num sg-chip" onClick={() => setIscrivendo(true)}>
+                  + Iscrivi a un corso…
+                </button>
+              )}
+            </Riga>
+            {/* Una scheda disattivata non si iscrive: lo si dice, invece di un tasto spento senza motivo. */}
+            {!p.attiva && <span className="sg-sotto">La scheda è disattivata: per iscriverla a un corso, prima Altro → Riattiva.</span>}
+            {p.attiva && iscrivendo && (
+              <div className="row" style={{ gap: 8 }}>
+                <label htmlFor="p-agg" className="vh">
+                  Corso da aggiungere
+                </label>
+                <select id="p-agg" className="sg-campo grow" style={{ minWidth: 0 }} value={daAggiungere} onChange={(e) => setDaAggiungere(e.target.value)}>
+                  <option value="">Scegli il corso…</option>
+                  {liberi.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nome}
+                    </option>
+                  ))}
+                </select>
+                <button type="button" className="num sg-chip" onClick={() => { setIscrivendo(false); setDaAggiungere('') }}>
+                  Lascia stare
+                </button>
+                <button
+                  type="button"
+                  className="num sg-chip sg-chip-pieno"
+                  disabled={!daAggiungere}
+                  onClick={() =>
+                    void fai(() => d.iscrivi(p.id, daAggiungere), 'Iscrizione fatta', () => {
+                      setDaAggiungere('')
+                      setIscrivendo(false)
+                      onCambiato()
+                    })
+                  }
+                >
+                  Iscrivi
+                </button>
+              </div>
+            )}
             {correnti.length === 0 && <span className="sg-sotto">Nessuna iscrizione in corso.</span>}
             {correnti.map((i) => {
               const c = corsi.get(i.corsoId)
+              const sc = statiCorsi?.find((x) => x.corsoId === i.corsoId)
+              const b = sc && bollinoCorso(sc)
               return (
-                <div key={i.corsoId} className="sg-iscrizione">
-                  <span style={{ width: 10, height: 10, flexShrink: 0, background: c?.colore ?? 'var(--line)' }} />
-                  <span className="stack grow" style={{ minWidth: 0 }}>
-                    <span className="ob" style={{ fontSize: 15, fontWeight: 700 }}>{(c?.nome ?? 'Corso').toUpperCase()}</span>
-                    <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-                      dal {dataLunga(i.dal)}
-                      {i.al ? ` · fino al ${dataLunga(i.al)}` : ''}
-                    </span>
-                  </span>
+                <Stato key={i.corsoId} nome={(c?.nome ?? 'Corso').toUpperCase()} sotto={`dal ${dataLunga(i.dal)}${i.al ? ` · fino al ${dataLunga(i.al)}` : ''}`}>
+                  {b && <Bollino tono={b.tono}>{b.parola}</Bollino>}
                   {!i.al && (
                     <button
                       type="button"
@@ -1073,35 +1148,9 @@ function Scheda({
                       Termina
                     </button>
                   )}
-                </div>
+                </Stato>
               )
             })}
-            <div className="row" style={{ gap: 8 }}>
-              <label htmlFor="p-agg" className="vh">
-                Corso da aggiungere
-              </label>
-              <select id="p-agg" className="sg-campo grow" style={{ borderStyle: 'dashed', minWidth: 0 }} value={daAggiungere} onChange={(e) => setDaAggiungere(e.target.value)}>
-                <option value="">Iscrivi a un corso…</option>
-                {liberi.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nome}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="num sg-chip sg-chip-pieno"
-                disabled={!daAggiungere || !p.attiva}
-                onClick={() =>
-                  void fai(() => d.iscrivi(p.id, daAggiungere), 'Iscrizione fatta', () => {
-                    setDaAggiungere('')
-                    onCambiato()
-                  })
-                }
-              >
-                Iscrivi
-              </button>
-            </div>
           </div>
 
           <div className="stack" style={{ gap: 8 }}>
@@ -1129,10 +1178,20 @@ function Scheda({
               </span>
             )}
           </div>
+
+          {terminate.length > 0 && (
+            <div className="stack" style={{ gap: 8 }}>
+              <Riga titolo="TERMINATE" />
+              {terminate.map((i) => (
+                <Stato key={`${i.corsoId}-${i.dal}`} finita nome={(corsi.get(i.corsoId)?.nome ?? 'Corso').toUpperCase()} sotto={`dal ${dataLunga(i.dal)} al ${dataLunga(i.al ?? '')}`} />
+              ))}
+            </div>
+          )}
       </div>
 
+      {/* Fuori modifica il piede non c'è: le azioni rare stanno in «Altro», in testata. */}
+      {modifica && (
       <div className="sg-scheda-piede sg-scheda-piede-fisso">
-        {modifica ? (
           <>
             <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setModifica(null)}>
               Lascia stare
@@ -1162,43 +1221,8 @@ function Scheda({
               Salva
             </button>
           </>
-        ) : (
-          <>
-            {/* Le azioni rare in fondo, Disattiva staccato a destra: lontano dagli altri non si preme per sbaglio. */}
-            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setUnendo(true)}>
-              Unisci con un altro iscritto…
-            </button>
-            {/* Un file con anagrafica, iscrizioni e presenze: è quello che una persona ha diritto di chiedere. */}
-            <button
-              type="button"
-              className="sg-btn sg-btn-linea grow"
-              onClick={() =>
-                void fai(async () => {
-                  const dati = await d.esporta(p.id)
-                  const url = URL.createObjectURL(new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' }))
-                  const a = document.createElement('a')
-                  a.href = url
-                  a.download = `dati-${p.cognome}-${p.nome}.json`.toLowerCase().replace(/\s+/g, '-')
-                  a.click()
-                  URL.revokeObjectURL(url)
-                }, 'File scaricato')
-              }
-            >
-              Esporta i dati
-            </button>
-            <button
-              type="button"
-              className="sg-btn sg-btn-linea grow sg-pericolo sg-scheda-piede-destra"
-              onClick={async () => {
-                if (p.attiva && !(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'Disattiva la scheda', { pericolo: true }))) return
-                void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Scheda disattivata' : 'Scheda riattivata', onCambiato)
-              }}
-            >
-              {p.attiva ? 'Disattiva' : 'Riattiva'}
-            </button>
-          </>
-        )}
       </div>
+      )}
       </>
       )}
     </>
@@ -1237,7 +1261,7 @@ function Timbri({ p, oggi, tessera, onVai }: { p: PersonaSeg; oggi: string; tess
     <div className="stack" style={{ gap: 12 }}>
       {t.disattivata && (
         <p className="sg-timbri-spenta">
-          <strong>DISATTIVATA</strong> Non è negli appelli né sul tablet. Per rimetterla: RIATTIVA, in fondo alla scheda.
+          <strong>DISATTIVATA</strong> Non è negli appelli né sul tablet. Per rimetterla: Altro → Riattiva.
         </p>
       )}
       <div className="sg-timbri">
@@ -1360,7 +1384,7 @@ function UnisciDoppione({
       <span style={{ fontSize: 12, color: 'var(--dim)' }}>{x.attiva ? 'Attiva' : 'Disattivata'}</span>
     </div>
   )
-  const dove = (x: PersonaSeg) => [x.email ?? x.emailContatto, x.telefono, x.attiva ? '' : 'disattivata'].filter(Boolean).join(' · ')
+  const dove = (x: PersonaSeg) => [x.email, x.telefono, x.attiva ? '' : 'disattivata'].filter(Boolean).join(' · ')
 
   return (
     <div className="stack" style={{ gap: 16, maxWidth: 640 }}>
@@ -1439,7 +1463,7 @@ function UnisciDoppione({
             if (!resta || !via) return
             const persi = indirizziPersi(resta, via)
             // Niente sparisce in silenzio: l'indirizzo che non trova posto si dice prima.
-            const perso = persi.length ? `\nDell'altra scheda si perde ${persi.join(', ')}: non c'è posto fra l'email e il contatto di chi resta.\nCopialo prima, se ti serve.` : ''
+            const perso = persi.length ? `\nDell'altra scheda si perde ${persi.join(', ')}: ogni scheda ha una sola email.\nCopialo prima, se ti serve.` : ''
             if (!(await chiedi(confermaUnione(nome(via), nome(resta), via.certificato, resta.certificato, perso), 'Unisci', { pericolo: true }))) return
             void fai(() => d.unisciPersone(resta.id, via.id), 'Schede unite', () => onUnite(resta.id))
           }}
@@ -1455,8 +1479,9 @@ function UnisciDoppione({
  * Il nucleo familiare (vedi `nucleo.ts`): di chi è, chi c'è, e dove va lo
  * sconto famiglia, dalle ricevute del nucleo. Dalla scheda del titolare (o di
  * chi non è in un nucleo) si aggiunge una persona; da quella di un'altra la
- * si toglie, o la si fa titolare. Per ora solo in prova: il database non lo
- * tiene ancora, e la sezione non c'è.
+ * si toglie, o la si fa titolare. Se il database non ha ancora il nucleo
+ * (100-nucleo.sql), la sezione resta vuota e i tasti rispondono «aggiornamento
+ * in corso» (lo dice `guaio`, in `segreteriaSupabase.ts`).
  */
 function NucleoFamiliare({
   d,
@@ -1521,9 +1546,7 @@ function NucleoFamiliare({
 
   return (
     <div className="stack" style={{ gap: 8 }}>
-      <Riga titolo="NUCLEO FAMILIARE">
-        <span className="num sg-bollino">Prova</span>
-      </Riga>
+      <Riga titolo="NUCLEO FAMILIARE" />
       {!p.nucleo && membri.length === 0 ? (
         <span className="sg-sotto">Non è in un nucleo. Aggiungi qualcuno qui sotto, e ne diventa titolare: vedrà nella sua pagina anche le persone del nucleo.</span>
       ) : !titolare ? (
@@ -1784,10 +1807,11 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
   const oggi = chiaveGiorno(new Date())
   const [gesto, setGesto] = useState<{ file?: File; scade: string } | null>(null)
   const sel = useRef<HTMLInputElement>(null)
+  // La scadenza che la segreteria legge sul file mandato dall'iscritto.
+  const [scadeMandato, setScadeMandato] = useState('')
   const c = p.certificato
   // Cosa dire e quale tasto offrire sta in `src/lib/segreteria.ts`: qui si mostra.
   const x = presentaCertificato(c, p.natoIl, oggi, p.attiva)
-  const nonServe = x.parola === 'NON SERVE'
   const pronto = !!gesto && certificatoPronto(gesto, c)
 
   const apri = () => {
@@ -1810,32 +1834,87 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
   return (
     <div className="stack" style={{ gap: 8 }}>
       <Riga titolo="CERTIFICATO MEDICO">
-        <Bollino tono={x.tono}>{x.parola}</Bollino>
+        {/* Pieno solo se è la prima cosa da fare: in scheda un tasto pieno alla volta. */}
+        {!gesto && x.puoCambiare && (
+          <button type="button" className={x.primo ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo={x.primo || undefined} onClick={() => setGesto(gestoIniziale(c))}>
+            {x.tasto}
+          </button>
+        )}
       </Riga>
-      <span style={{ fontSize: 14, color: x.tono === 'verde' || x.tono === 'spento' ? 'var(--sec)' : x.tono === 'giallo' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{x.senzaNascita ? `${x.frase} ${x.senzaNascita}` : x.frase}</span>
+      <Stato {...riquadroCertificato(c, p.natoIl, oggi, p.attiva)}>
+        {c.conFile && (
+          <button type="button" className="num sg-chip" onClick={apri}>
+            Apri
+          </button>
+        )}
+        {x.puoCambiare && !gesto && (c.conFile || c.scade) && (
+          <button
+            type="button"
+            className="num sg-chip sg-pericolo"
+            onClick={async () => {
+              if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file si cancella per sempre.' : ''} Senza certificato non entra in sala finché non se ne carica uno nuovo.`, 'Togli il certificato', { pericolo: true })))
+                void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
+            }}
+          >
+            Togli
+          </button>
+        )}
+      </Stato>
+      {x.senzaNascita && <span className="sg-sotto">{x.senzaNascita}</span>}
+      {x.cancellaIl && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Il file si cancella da solo il {dataLunga(x.cancellaIl)}, 30 giorni dopo la scadenza.</span>}
+      {c.vecchio && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Certificato non archiviato (caricato prima della nuova gestione): si apre con APRI come gli altri.</span>}
 
-      {c.conFile ? (
-        <div className="stack" style={{ gap: 6 }}>
-          <div className="row" style={{ gap: 12, alignItems: 'center', padding: '10px 12px', background: 'var(--surface)', border: '2px solid var(--line)' }}>
-            <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-              <span style={{ fontSize: 15, fontWeight: 600 }}>Il file del certificato</span>
-              <span style={{ fontSize: 13, color: 'var(--dim)' }}>{c.caricatoIl ? `caricato il ${dataLunga(c.caricatoIl)}` : 'caricato prima della nuova gestione'}</span>
-            </span>
-            <button type="button" className="num sg-chip sg-chip-pieno" onClick={apri}>
-              Apri
+      {c.inAttesaIl && !gesto && (
+        <div className="stack" style={{ gap: 10, padding: 14, background: 'var(--surface)', border: '2px solid var(--line)', borderLeft: '4px solid var(--giallo)' }}>
+          <span className="num">Inviato dall’iscritto, da controllare</span>
+          <span className="sg-sotto">{p.nome} {p.cognome} ha mandato un file il {dataLunga(c.inAttesaIl)}. Aprilo, leggi la data e scrivila qui sotto.</span>
+          <div>
+            <button
+              type="button"
+              className="num sg-chip"
+              onClick={() => {
+                const w = window.open('', '_blank')
+                void fai(async () => {
+                  const f = await d.apriCertificatoInAttesa(p.id).catch((e: unknown) => {
+                    w?.close()
+                    throw e
+                  })
+                  if (!f) {
+                    w?.close()
+                    throw new Error(d.modo === 'prova' ? 'In prova il file resta solo finché la pagina è aperta: questo non c’è più, si può confermare o rifiutare lo stesso' : 'Il file non si trova: l’iscritto può rimandarlo')
+                  }
+                  if (w) w.location.href = f.url
+                  else window.location.href = f.url
+                })
+              }}
+            >
+              Apri il file
             </button>
           </div>
-          <span style={{ fontSize: 13, color: 'var(--dim)' }}>Lo vede solo la segreteria. Il link dura 10 minuti: se scade, basta riaprire con APRI.</span>
-          {x.cancellaIl && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Il file si cancella da solo il {dataLunga(x.cancellaIl)}, 30 giorni dopo la scadenza.</span>}
-          {c.vecchio && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Certificato non archiviato (caricato prima della nuova gestione): si apre con APRI come gli altri.</span>}
-        </div>
-      ) : (
-        !nonServe &&
-        x.nota && (
-          <div className="row" style={{ padding: '10px 12px', border: '2px dashed var(--tratteggio)' }}>
-            <span style={{ fontSize: 14, color: 'var(--dim)' }}>{x.nota}</span>
+          <Campo id="c-scade-mandato" etichetta="VALIDO FINO AL">
+            <input id="c-scade-mandato" className="sg-campo" type="date" value={scadeMandato} onChange={(e) => setScadeMandato(e.target.value)} />
+          </Campo>
+          <div className="row" style={{ gap: 8 }}>
+            <button
+              type="button"
+              className="sg-btn sg-btn-pieno grow"
+              disabled={!scadeMandato}
+              onClick={() => void fai(() => d.confermaCertificatoIscritto(p.id, scadeMandato), 'Certificato confermato', onCambiato)}
+            >
+              Conferma
+            </button>
+            <button
+              type="button"
+              className="sg-btn sg-btn-linea sg-pericolo grow"
+              onClick={async () => {
+                if (await chiedi(`Rifiutare il certificato mandato da ${p.nome} ${p.cognome}? Il file si cancella e dovrà rimandarlo.`, 'Rifiuta', { pericolo: true }))
+                  void fai(() => d.rifiutaCertificatoIscritto(p.id), 'Certificato rifiutato', onCambiato)
+              }}
+            >
+              Rifiuta
+            </button>
           </div>
-        )
+        </div>
       )}
 
       {gesto ? (
@@ -1893,26 +1972,6 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             </button>
           </div>
         </div>
-      ) : x.puoCambiare ? (
-        <div className="row sg-tasti-cert" style={{ gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-          {/* Pieno solo se è la prima cosa da fare: in scheda un tasto pieno alla volta. */}
-          <button type="button" className={x.primo ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo={x.primo || undefined} onClick={() => setGesto(gestoIniziale(c))}>
-            {x.tasto}
-          </button>
-          {(c.conFile || c.scade) && (
-            <button
-              type="button"
-              className="sg-link sg-pericolo"
-              style={{ fontSize: 15, fontWeight: 600, minHeight: 44, padding: 0, display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start' }}
-              onClick={async () => {
-                if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file si cancella per sempre.' : ''} Senza certificato non entra in sala finché non se ne carica uno nuovo.`, 'Togli il certificato', { pericolo: true })))
-                  void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
-              }}
-            >
-              Togli il certificato
-            </button>
-          )}
-        </div>
       ) : null}
     </div>
   )
@@ -1922,28 +1981,23 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
  * Il documento d'identità: la copia sta su carta, in segreteria, e qui si
  * segna solo che c'è. Per un minore è quello del genitore.
  */
-function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void }) {
-  const t = timbriScheda(p, chiaveGiorno(new Date())).documento
+function Documento({ d, p, minore, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; minore: boolean; fai: Fai; onCambiato: () => void }) {
+  const r = riquadroDocumento(p.documento, minore)
   return (
     <div className="stack" style={{ gap: 8 }}>
-      <Riga titolo="DOCUMENTO D’IDENTITÀ">
-        <Bollino tono={t.tono}>{t.parola}</Bollino>
-      </Riga>
-      {/* Con la copia in segreteria il bollino dice già tutto: resta solo il modo di toglierla. */}
-      {!p.documento && <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>Manca la copia: va mostrato in segreteria (per un minore, quello del genitore).</span>}
-      <div className="row">
+      <Riga titolo="DOCUMENTO D’IDENTITÀ" />
+      <Stato nome={r.nome} sotto={r.sotto} tono={r.tono}>
         <button
           type="button"
-          className={p.documento ? 'sg-link' : 'num sg-chip'}
-          style={p.documento ? { fontSize: 15, fontWeight: 600, minHeight: 44, padding: 0, display: 'inline-flex', alignItems: 'center' } : undefined}
+          className="num sg-chip"
           data-primo={p.documento ? undefined : true}
           onClick={() =>
             void fai(() => d.salvaDocumento(p.id, !p.documento), p.documento ? 'Documento tolto: ora è «Da portare». Se era uno sbaglio, «La copia è in segreteria» lo rimette' : 'Documento segnato in segreteria', onCambiato)
           }
         >
-          {p.documento ? 'La copia non c’è più' : 'La copia è in segreteria'}
+          {r.tasto}
         </button>
-      </div>
+      </Stato>
     </div>
   )
 }
@@ -1954,78 +2008,43 @@ function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
  * o con una ricevuta di carta, c'è l'eccezione scritta a mano, fino a una
  * data. Sotto, fin quando sono pagati i corsi: si guardano, non contano.
  */
-function Pagamento({ d, p, fai, onCambiato, statiCorsi }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void; statiCorsi?: StatoCorso[] }) {
+function Pagamento({ d, p, fai, onCambiato, onNuova, statiCorsi }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void; onNuova: () => void; statiCorsi?: StatoCorso[] }) {
   const oggi = chiaveGiorno(new Date())
   const s = pagamentoDi(p, oggi)
-  const t = timbriScheda(p, oggi).quota
   const eccezione = p.pagamento.stato !== 'da_pagare'
   const [scrivi, setScrivi] = useState(false)
   const [b, setB] = useState({ fino: stagioneDi(oggi).quota.al, nota: '' })
-  const ricevute = useCarica(() => d.ricevute(p.id), [d, p.id])
-  // Per ogni corso pagato, l'ultima data fin cui vale.
-  const corsi = new Map<string, string>()
-  for (const r of ricevute.dato ?? []) {
-    if (r.annullataIl) continue
-    for (const v of r.voci) {
-      if (!v.al || v.descrizione.trim().toUpperCase() === QUOTA) continue
-      if ((corsi.get(v.descrizione) ?? '') < v.al) corsi.set(v.descrizione, v.al)
-    }
-  }
   // Il primo corso scaduto dice quale voce scrivere sulla ricevuta nuova.
   const scaduto = statiCorsi?.find((c) => c.come === 'scaduto')
-  const fino = s.fino ? dataLunga(s.fino) : ''
-  // Una frase sola, per il caso che è: le date ci sono solo dove servono.
-  const detto =
-    s.come === 'pagato'
-      ? s.fonte === 'ricevuta'
-        ? `Pagata${fino ? ` fino al ${fino}` : ''} · ricevuta ${s.ricevuta}.`
-        : s.fonte === 'satispay'
-          ? `Pagata con Satispay dal modulo (${soldi(s.importo ?? 0)}): manca la ricevuta, con PAGATO CON «Satispay».`
-          : `Pagata fuori dall’app${fino ? `, fino al ${fino}` : ''}.`
-      : s.come === 'in_parte'
-        ? s.fonte === 'ricevuta'
-          ? `Mancano ${euro(s.mancano ?? 0)} € della quota · ricevuta ${s.ricevuta}.`
-          : `Pagata in parte fuori dall’app${fino ? `, fino al ${fino}` : ''}.`
-        : s.come === 'scaduto'
-          ? `Valeva fino al ${fino}: è da pagare di nuovo.`
-          : 'Nessuna ricevuta con la quota di questa stagione.'
 
   return (
     <div className="stack" style={{ gap: 8 }}>
       <Riga titolo="QUOTA">
-        <Bollino tono={t.tono}>{t.parola}</Bollino>
-        {s.fonte === 'fuori_app' && <Bollino tono="spento">Fuori app</Bollino>}
-        {s.fonte === 'satispay' && <Bollino tono="spento">Senza ricevuta</Bollino>}
+        <button type="button" className={tastoPrincipale(p, oggi) === 'quota' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo onClick={onNuova}>
+          + Fai la ricevuta
+        </button>
       </Riga>
-      <span style={{ fontSize: 14, color: s.come === 'pagato' ? 'var(--sec)' : s.come === 'in_parte' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{detto}</span>
-      {s.fonte === 'fuori_app' && s.nota && <span style={{ fontSize: 14, color: 'var(--sec)' }}>{s.nota}</span>}
-      {statiCorsi && statiCorsi.length > 0 ? (
-        <>
-          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', color: 'var(--dim)', paddingTop: 8 }}>CORSI</span>
-          <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 2, fontSize: 13 }}>
-            {statiCorsi.map((c) => {
-              const { testo, tono } = testoCorso(c)
-              return (
-                <li key={c.corsoId} style={tono === 'sec' ? { color: 'var(--sec)' } : { color: `var(--${tono}-testo)`, fontWeight: 600 }}>
-                  {testo}
-                </li>
-              )
-            })}
-          </ul>
-          {scaduto && (
-            <span style={{ fontSize: 14, color: 'var(--dim)' }}>{consiglioCorso(scaduto)}</span>
-          )}
-        </>
-      ) : !statiCorsi && corsi.size > 0 && (
-        <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 2, fontSize: 13, color: 'var(--sec)' }}>
-          {[...corsi].map(([corso, al]) => (
-            <li key={corso}>
-              {corso}: {al >= oggi ? `pagato fino al ${dataLunga(al)}` : <span style={{ color: 'var(--dim)' }}>valeva fino al {dataLunga(al)}</span>}
-            </li>
-          ))}
-        </ul>
-      )}
-
+      <Stato {...riquadroQuota(p, oggi)}>
+        {!scrivi && eccezione ? (
+          <button
+            type="button"
+            className="num sg-chip sg-pericolo"
+            onClick={async () => {
+              if ((await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'Togli l’eccezione', { pericolo: true })))
+                void fai(() => d.salvaPagamento(p.id, { stato: 'da_pagare' }), 'Tolta: ora contano solo le ricevute', onCambiato)
+            }}
+          >
+            {s.fonte === 'ricevuta' ? 'Togli «fuori app»: non serve più' : 'Togli'}
+          </button>
+        ) : (
+          !scrivi &&
+          s.come !== 'pagato' && (
+            <button type="button" className="num sg-chip" onClick={() => setScrivi(true)}>
+              Segna come pagata
+            </button>
+          )
+        )}
+      </Stato>
       {scrivi ? (
         <div className="stack" style={{ gap: 8, padding: '12px 14px', border: '2px dashed var(--tratteggio)' }}>
           <span style={{ fontSize: 14, color: 'var(--sec)' }}>Per chi ha pagato la quota senza una ricevuta dell’app: prima dell’app, o con una ricevuta di carta.</span>
@@ -2056,25 +2075,9 @@ function Pagamento({ d, p, fai, onCambiato, statiCorsi }: { d: DatiSegreteria; p
             </button>
           </div>
         </div>
-      ) : eccezione ? (
-        <button
-          type="button"
-          className="sg-link sg-pericolo"
-          style={{ alignSelf: 'flex-start' }}
-          onClick={async () => {
-            if ((await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'Togli l’eccezione', { pericolo: true })))
-              void fai(() => d.salvaPagamento(p.id, { stato: 'da_pagare' }), 'Tolta: ora contano solo le ricevute', onCambiato)
-          }}
-        >
-          {s.fonte === 'ricevuta' ? 'C’è anche «pagata fuori dall’app»: non serve più, toglila' : 'Togli «pagata fuori dall’app»'}
-        </button>
-      ) : (
-        s.come !== 'pagato' && (
-          <button type="button" className="num sg-chip" style={{ alignSelf: 'flex-start' }} onClick={() => setScrivi(true)}>
-            Pagata senza ricevuta dell’app
-          </button>
-        )
-      )}
+      ) : null}
+      {statiCorsi?.map((c) => <Stato key={c.corsoId} {...riquadroCorso(c)} />)}
+      {scaduto && <span style={{ fontSize: 14, color: 'var(--dim)' }}>{consiglioCorso(scaduto)}</span>}
     </div>
   )
 }

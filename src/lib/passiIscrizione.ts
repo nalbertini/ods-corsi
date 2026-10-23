@@ -1335,6 +1335,25 @@ export function contoDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], lis
 }
 
 /**
+ * Quanto ci si aspetta dalla ricevuta del bonifico: il conto delle richieste mandate insieme dal modulo
+ * (la ricevuta è una per tutte), la causale solo se è una persona sola, come la scrive `causaleDelModulo`.
+ * `undefined` senza listino o senza un corso che si conosca: la segreteria allora non ha una cifra da confrontare.
+ */
+export function attesoRicevuta(
+  gruppo: Array<{ nome: string; cognome: string; corsi: string[]; formula: Formula }>,
+  corsi: CorsoRef[],
+  listino: Listino | undefined,
+  giorno: string,
+): { totale: number; senzaPrezzo: string[]; causale?: string } | undefined {
+  if (!listino) return undefined
+  const dentro = gruppo.map((x) => ({ chi: x.nome, corsi: corsi.filter((c) => x.corsi.includes(c.id)), formula: x.formula })).filter((x) => x.corsi.length)
+  if (!dentro.length) return undefined
+  const { totale, senzaPrezzo } = contoFamiglia(dentro, giorno, listino)
+  const lei = gruppo.length === 1 ? gruppo[0] : undefined
+  return { totale, senzaPrezzo, causale: lei && causale(lei.nome.trim(), lei.cognome.trim(), dentro[0].corsi.map((c) => c.nome)).slice(0, MASSIMO_CAUSALE) }
+}
+
+/**
  * Il totale sopra la barra quando le persone sono più d'una: quello di tutta la famiglia, ognuno con la sua
  * cifra e lo sconto a parte. Nello stesso passo di `totaleDelPasso` (il corso, di chi è aperto);
  * con una persona sola è `totaleDelPasso`.

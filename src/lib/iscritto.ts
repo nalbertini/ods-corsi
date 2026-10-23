@@ -4,18 +4,21 @@ import { dalCertificato, pagamentoDi, statoCertificato } from './segreteria'
 import { euro, type QuotaRicevuta, type Ricevuta } from './ricevute'
 import type { DatiRichiesta, StatoRichiesta } from './richieste'
 import type { Segnalata } from './segnalate'
+import { haUnServer } from './dati'
+import type { StatoSatispay } from './satispay'
+import type { ChiPaga } from './saldoSatispay'
 
 /**
  * L'area degli iscritti: quello che di sé vede chi frequenta i corsi, dal
- * telefono. Per ora solo da leggere: i suoi corsi e le prossime lezioni, con
- * quello che cambia (annullate, sostituti, un'altra sala), le sue presenze,
- * il certificato medico, il pagamento e le ricevute.
+ * telefono: i suoi corsi e le prossime lezioni, con quello che cambia
+ * (annullate, sostituti, un'altra sala), le sue presenze, il certificato
+ * medico, il pagamento, le ricevute e il nucleo familiare.
  *
- * È il pilota, e c'è solo in prova: col database vero un iscritto non entra
- * ancora (vedi `personaDi` in `accesso.ts`), e quello che può leggere di sé
- * va deciso prima, con funzioni che restituiscano solo le sue righe invece di
- * allargare le policy della segreteria. Quando ci sarà, `datiIscritto()`
- * sceglierà fra le due implementazioni come fanno gli altri strati dati.
+ * Col database vero (`iscrittoSupabase.ts`) l'iscritto entra con l'email e un
+ * codice (vedi `accessoIscritto.ts`) e legge solo le sue righe, con le
+ * funzioni di `supabase/101-iscritto.sql`: le policy della segreteria non si
+ * allargano. In prova (`iscrittoProva.ts`) si sceglie quale iscritto inventato
+ * essere. `datiIscritto()` sceglie fra le due come gli altri strati dati.
  */
 
 /** Chi si può essere, in prova. */
@@ -31,13 +34,18 @@ export interface SchedaIscritto {
   cognome: string
   /** I corsi a cui è iscritto oggi, per nome. */
   corsi: Array<{ id: string; nome: string; colore?: string }>
-  /** Solo fino a quando vale: se c'è un file, e di che tipo, lo sa solo la segreteria. */
-  certificato: Pick<CertificatoSeg, 'scade'>
+  /**
+   * Fino a quando vale, e il giorno in cui ha mandato un file che la segreteria
+   * non ha ancora controllato. Il file e il suo nome non si vedono mai da qui.
+   */
+  certificato: Pick<CertificatoSeg, 'scade'> & { inAttesaIl?: string }
   /** L'eccezione «pagato fuori dall'app»; se ha pagato lo dicono le `quote`. */
   pagamento: PagamentoSeg
   quote?: QuotaRicevuta[]
   /** `AAAA-MM-GG`; senza, il certificato serve (vedi `serveCertificato`). */
   natoIl?: string
+  /** Il database sa ricevere il certificato da qui (102-certificato-iscritto.sql); senza, niente tasto. */
+  certificatoDaQui?: boolean
 }
 
 /** Una lezione di uno dei suoi corsi, con quello che è cambiato rispetto al solito. */
@@ -76,8 +84,11 @@ export interface AggiuntaNucleo {
 }
 
 export interface DatiIscritto {
-  readonly modo: 'prova'
-  /** Gli iscritti fra cui scegliere chi essere, in ordine di cognome. */
+  readonly modo: 'prova' | 'supabase'
+  /**
+   * In prova gli iscritti fra cui scegliere chi essere, in ordine di cognome.
+   * Col database vero solo chi ha l'accesso, o nessuno se non è entrato.
+   */
   iscritti(): Promise<IscrittoDiProva[]>
   scheda(personaId: string): Promise<SchedaIscritto | null>
   /** Le lezioni dei suoi corsi fra due giorni, estremi inclusi, anche annullate. */
@@ -106,6 +117,36 @@ export interface DatiIscritto {
   segnala(personaId: string, sessioneId: string, nota?: string): Promise<void>
   /** Le sue presenze segnalate, per sapere a che punto sono. */
   segnalate(personaId: string): Promise<Segnalata[]>
+  /**
+   * Manda il certificato medico di questa persona (la sua, o quella di un
+   * minore del nucleo): resta in attesa finché la segreteria non scrive la
+   * scadenza. Un altro file prende il posto di quello in attesa.
+   */
+  mandaCertificato(personaId: string, file: File): Promise<void>
+  /** Il saldo della quota con Satispay c'è: il servizio è acceso e `102-saldo-satispay.sql` è sul database (in prova sempre). */
+  saldoAttivo(): Promise<boolean>
+  /**
+   * Chi è `personaId` per chi paga il suo saldo (adulta, con un accesso suo, del
+   * nucleo): `null` se non è una persona sua. In prova `io` è chi si è scelto di essere.
+   */
+  chiPaga(personaId: string, io: string): Promise<Pick<ChiPaga, 'adulto' | 'haAccessoProprio' | 'comeTitolare'> | null>
+  /**
+   * Il saldo della quota di quella ricevuta, per quanto manca adesso: l'indirizzo
+   * di Satispay dove pagare, o `null` se è già pagato (in prova, dove Satispay non c'è).
+   * Gli errori sono già scritti per chi paga.
+   */
+  pagaSaldo(personaId: string, ricevutaId: string): Promise<{ link: string } | null>
+  /** Com'è andato l'ultimo saldo di quella ricevuta, o `null` se non è mai partito. */
+  statoSaldo(personaId: string, ricevutaId: string): Promise<SaldoPagato | null>
+}
+
+export interface SaldoPagato {
+  stato: StatoSatispay
+  /** Centesimi. */
+  importo: number
+  pagatoIl?: string
+  /** Di chi: nome e cognome, o solo il nome per un minorenne che guarda da sé. */
+  chi: string
 }
 
 /** Quanto viene: le presenze sulle lezioni che contano (le giustificate no). */
@@ -162,11 +203,13 @@ export function scegliIscritto(id: string) {
 
 let unico: Promise<DatiIscritto> | null = null
 
-/** Solo la prova, per ora: vedi in cima. */
+/** Il database vero, o la prova: come gli altri strati dati (vedi `haUnServer`). */
 export function datiIscritto(): Promise<DatiIscritto> {
   if (!unico) {
-    unico = Promise.all([import('./iscrittoProva'), import('./esempiProva')])
-      .then(([m, e]) => (e.seminaEsempi(), m.creaIscrittoProva()))
+    unico = (haUnServer
+      ? Promise.all([import('./iscrittoSupabase'), import('./supabase')]).then(([m, s]) => m.creaIscrittoSupabase(s.clientSupabase()))
+      : Promise.all([import('./iscrittoProva'), import('./esempiProva')]).then(([m, e]) => (e.seminaEsempi(), m.creaIscrittoProva()))
+    )
       .catch((e) => {
         unico = null
         throw e

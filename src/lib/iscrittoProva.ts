@@ -1,7 +1,8 @@
 import type { AggiuntaNucleo, DatiIscritto, MiaLezione, MiaPresenza, SchedaIscritto } from './iscritto'
-import { archivio } from './archivioProva'
+import { archivio, certificatiInAttesaProva, scordaInAttesa } from './archivioProva'
+import { cosaNonVaFileMandato, ESTENSIONI_MANDATO } from './certificatoIscritto'
 import { creaSegreteriaProva } from './segreteriaProva'
-import { creaRichiesteProva } from './richiesteProva'
+import { creaRichiesteProva, pagamentiSatispayProva, salvaSatispay } from './richiesteProva'
 import { minorenne } from './richieste'
 import { quoteDi } from './ricevute'
 import { segnalaProva, segnalateDi } from './segnalateProva'
@@ -41,11 +42,13 @@ export function creaIscrittoProva(): DatiIscritto {
       nome: p.nome,
       cognome: p.cognome,
       corsi,
-      certificato: { scade: p.certificato?.scade },
-      pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
+      certificato: { scade: p.certificato?.scade, inAttesaIl: p.certificato?.inAttesa?.il },
+      // Senza `nota`, come col database: le note della segreteria non si vedono.
+      pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino },
       quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
       // Come la segreteria: l'età decide se il certificato serve.
       natoIl: (await creaSegreteriaProva().anagraficaDi(p.id))?.dati.natoIl,
+      certificatoDaQui: true,
     }
   }
   const eTitolare = (personaId: string) => !!persona(personaId) && !persona(personaId)!.nucleo
@@ -169,5 +172,77 @@ export function creaIscrittoProva(): DatiIscritto {
     async segnalate(personaId) {
       return persona(personaId) ? segnalateDi(personaId) : []
     },
+
+    async mandaCertificato(personaId, file) {
+      const guasto = cosaNonVaFileMandato(file)
+      if (guasto) throw new Error(guasto)
+      if (!persona(personaId)) throw new Error('Questa persona non è più fra gli iscritti')
+      // Un invio solo in attesa: il nuovo prende il posto del vecchio.
+      scordaInAttesa(personaId)
+      certificatiInAttesaProva.set(personaId, { url: typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : '', pdf: file.type === 'application/pdf' })
+      a().persone = a().persone.map((p) =>
+        p.id === personaId ? { ...p, certificato: { ...p.certificato, inAttesa: { file: `${personaId}/attesa-${Date.now()}.${ESTENSIONI_MANDATO[file.type]}`, il: chiaveGiorno(new Date()) } } } : p,
+      )
+      archivio.salva()
+    },
+
+    async saldoAttivo() {
+      return true
+    },
+
+    async chiPaga(personaId, io) {
+      if (!persona(personaId)) return null
+      const nato = (await creaSegreteriaProva().anagraficaDi(personaId))?.dati.natoIl
+      // In prova ha l'accesso solo chi si è scelto di essere: gli altri del nucleo no.
+      return { adulto: !nato || !minorenne(nato), haAccessoProprio: personaId === io, comeTitolare: personaId !== io }
+    },
+
+    async pagaSaldo(personaId, ricevutaId) {
+      await pagaSaldoProva(personaId, ricevutaId)
+      return null
+    },
+
+    async statoSaldo(personaId, ricevutaId) {
+      const p = pagamentiSatispayProva()
+        .filter((x) => x.personaId === personaId && x.saldoDi === ricevutaId)
+        .sort((x, y) => y.creatoIl.localeCompare(x.creatoIl))[0]
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagatoIl, chi: p.chi } : null
+    },
   }
+}
+
+/**
+ * Il saldo della quota con Satispay, in prova (`satispay_prepara_saldo`,
+ * `103-saldo-satispay.sql`): Satispay non c'è, quindi il pagamento nasce già
+ * pagato, per quanto manca adesso. Un secondo tocco ritrova lo stesso. Gli
+ * stessi rifiuti del database sulla ricevuta e sull'importo, con gli stessi
+ * testi; chi può pagare per chi lo decide `chiPaga`, non qui.
+ */
+export async function pagaSaldoProva(personaId: string, ricevutaId: string): Promise<void> {
+  const r = (archivio.dati.ricevute ?? []).find((x) => x.id === ricevutaId && x.personaId === personaId && !x.annullataIl)
+  if (!r) throw new Error('Questa ricevuta non si può pagare: chiedi alla segreteria')
+  const oggi = chiaveGiorno(new Date())
+  const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
+  if (!quota) throw new Error('Qui non c’è una quota da pagare: chiedi alla segreteria')
+  const pagamenti = pagamentiSatispayProva()
+  const dei = pagamenti.filter((p) => p.personaId === personaId && p.saldoDi === ricevutaId)
+  if (dei.some((p) => p.stato === 'attesa')) return
+  // Come `saldo_mancano`: quel che è già arrivato e non è ancora in una ricevuta si toglie.
+  const resto = quota.mancano - dei.filter((p) => p.stato === 'pagato' && !p.ricevutaId).reduce((t, p) => t + p.importo, 0)
+  if (resto <= 0) throw new Error('Non resta niente da pagare su questa quota')
+  const p = archivio.dati.persone.find((x) => x.id === personaId)
+  const ora = new Date().toISOString()
+  salvaSatispay([
+    ...pagamenti,
+    {
+      id: crypto.randomUUID(),
+      chi: p ? `${p.cognome} ${p.nome}` : '',
+      importo: resto,
+      stato: 'pagato',
+      creatoIl: ora,
+      pagatoIl: ora,
+      personaId,
+      saldoDi: ricevutaId,
+    },
+  ])
 }

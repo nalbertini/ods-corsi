@@ -6,9 +6,12 @@
 //
 // Questo file ha una copia identica in supabase/functions/ricevuta-email/
 // mail.ts: la funzione gira su Deno, che src/lib non lo legge. Per questo qui
-// non si importa niente; `npm run prova:ricevute-email` controlla che le due
-// copie siano uguali. Si cambia qui e si ricopia là.
+// si importa solo la cornice (cornicaMail.ts, con la sua copia accanto);
+// `npm run prova:ricevute-email` controlla che le copie siano uguali. Si
+// cambia qui e si ricopia là.
 // ---------------------------------------------------------------------------
+
+import { incorniciaMail, tabellaMail } from './cornicaMail.ts'
 
 /** Il telefono della palestra: lo stesso di `CONTATTI` in sito.ts, e la prova lo controlla. */
 const TELEFONO = '346 329 2786'
@@ -40,7 +43,7 @@ const giorno = (d: string) => `${Number(d.slice(8, 10))} ${MESI[Number(d.slice(5
  * Oggetto, testo e nome dell'allegato della mail. Solo nome, numero, data e
  * totale: niente codice fiscale, indirizzo o nascita, che stanno nel PDF.
  */
-export function testoMail(r: RicevutaMail): { oggetto: string; testo: string; allegato: string } {
+export function testoMail(r: RicevutaMail): { oggetto: string; testo: string; html: string; allegato: string } {
   const chi = `${r.intestatario.nome} ${r.intestatario.cognome}`.trim()
   const n = `${r.numero}/${r.anno}`
   return {
@@ -48,8 +51,18 @@ export function testoMail(r: RicevutaMail): { oggetto: string; testo: string; al
     testo:
       `Buongiorno, in allegato la ricevuta n. ${n} del ${giorno(r.data)} per ${chi}: ${euro(r.totale)} €.\n\n` +
       `Per qualsiasi domanda chiamaci al ${TELEFONO}. A presto in palestra, Officine Dello Sport.`,
+    html: cornice(r, chi, n),
     allegato: nomeFileRicevuta(r),
   }
+}
+
+/** L'HTML con la cornice: i valori li converte la tabella. */
+function cornice(r: RicevutaMail, chi: string, n: string): string {
+  const corpo =
+    `<p style="margin:0 0 14px">Buongiorno, ecco la ricevuta del pagamento: la trovi in allegato, in PDF.</p>` +
+    tabellaMail([['Ricevuta n.', n], ['Data', giorno(r.data)], ['Intestata a', chi], ['Totale', `${euro(r.totale)} €`]]) +
+    `<p style="margin:14px 0 0">Per qualsiasi domanda chiamaci al <a href="tel:+39${TELEFONO.replace(/ /g, '')}">${TELEFONO}</a>. A presto in palestra.</p>`
+  return incorniciaMail(corpo, { testata: 'Officine Dello Sport', piede: 'Officine Dello Sport' })
 }
 
 /** Una risposta di no della Edge Function: `tipo` è un MotivoNonPartita di ricevuteEmail.ts. Mai 404: per l'app vuol dire «la funzione non è pubblicata». */
@@ -107,7 +120,7 @@ export interface ControlloInvio {
  * niente, come quando la mail non si prova nemmeno.
  */
 export function decidiInvio(c: ControlloInvio, indirizzo: string | null, haPassword: boolean): { manda: true; a: string } | (Rifiuto & { manda: false; registra: string | null }) {
-  if (!c.ha_indirizzo || !indirizzo) return { manda: false, guaio: 'Nessuna email di contatto in scheda', stato: 409, tipo: 'senza-indirizzo', registra: null }
+  if (!c.ha_indirizzo || !indirizzo) return { manda: false, guaio: 'Nessuna email in scheda', stato: 409, tipo: 'senza-indirizzo', registra: null }
   if (c.oltre_soglia) return { manda: false, guaio: 'Oggi sono partite 400 mail, il massimo', stato: 429, tipo: 'soglia', registra: 'soglia' }
   if (!haPassword)
     return { manda: false, guaio: 'Manca la password della posta fra i segreti della funzione: vedi supabase/LEGGIMI.md, «La ricevuta per email»', stato: 501, tipo: 'manca-password', registra: 'manca SMTP_PASSWORD' }

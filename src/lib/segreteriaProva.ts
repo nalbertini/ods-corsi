@@ -4,15 +4,15 @@ import { cosaNonVaTariffa } from './tariffe'
 import { cosaNonVaLettera, type Lettera } from './lettere'
 import { cosaNonVaCompenso, cosaNonVaExtra, cosaNonVaPagamento, descrizionePagamento, extraDelPagamento, mancaPerRicevuta, primoDelMese, VOCE_COMPENSI, type RicevutaCompenso } from './compensi'
 import { conDatiDellaSegreteria } from './segreteria'
-import { attivitaCambiata, cancellaFileIl, contattoNonValido, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import { attivitaCambiata, cancellaFileIl, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailNonValida, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { giorniConLezioni } from './calendarioSettimana'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
 import { numeriDiProva } from './sitoStatistiche'
 import { insegna, segniDi, siElimina, type RuoloPersonale } from './ruoli'
-import { contattoDopoUnione, type IndiziDoppioni } from './doppioni'
-import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
+import type { IndiziDoppioni } from './doppioni'
+import { archivio, certificatiInAttesaProva, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, scordaInAttesa, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttoreAssenteProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
@@ -27,7 +27,7 @@ const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
-import { cosaNonVaSatispay, cosaNonVaSatispayAMano, satispayPerPersona } from './satispay'
+import { cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayPerPersona } from './satispay'
 import { applicaScarico, CAMBIO_CASSA_SATISPAY, daDecidere, decidiScarico, NOME_CASSA_SATISPAY, type PagamentoNegozio } from './satispayScarico'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
@@ -224,7 +224,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     if (!p) throw new Error('Persona inesistente')
     return p
   }
-  /** I controlli di `unione_possibile` (29-unisci-doppioni.sql); in prova anche il nucleo, che col database non c'è. */
+  /** I controlli di `unione_possibile` (29-unisci-doppioni.sql), il nucleo compreso (100-nucleo.sql). */
   const unionePossibile = (resta: string, via: string) => {
     if (resta === via) throw new Error('Scegli due schede diverse')
     const r = persona(resta)
@@ -703,6 +703,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async persone() {
       potaCertificati()
       const conSatispay = satispayPerPersona(pagamentiSatispayProva())
+      const conSaldo = saldoPerPersona(pagamentiSatispayProva())
       return a()
         .persone.filter((p) => p.ruolo === 'iscritto')
         .map(
@@ -711,19 +712,19 @@ export function creaSegreteriaProva(): DatiSegreteria {
             nome: p.nome,
             cognome: p.cognome,
             email: p.email,
-            emailContatto: p.emailContatto,
             telefono: p.telefono,
             attiva: p.attiva,
             creataIl: p.creataIl,
             iscrizioni: a()
               .iscrizioni.filter((i) => i.personaId === p.id)
               .map((i) => ({ corsoId: i.corsoId, dal: i.dal, al: i.al })),
-            certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file, vecchio: !!p.certificato?.file && !p.certificato.caricatoIl, caricatoIl: p.certificato?.caricatoIl },
+            certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file, vecchio: !!p.certificato?.file && !p.certificato.caricatoIl, caricatoIl: p.certificato?.caricatoIl, inAttesaIl: p.certificato?.inAttesa?.il },
             documento: !!p.documento,
             pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
             vociCorsi: vociCorsiDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
             satispay: conSatispay.get(p.id),
+            saldo: conSaldo.get(p.id),
             nucleo: p.nucleo,
             natoIl: anagraficaDi(p.id)?.dati.natoIl,
           }),
@@ -765,29 +766,31 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const cognome = nomeProprio(dati.cognome)
       if (!nome || !cognome) throw new Error('Servono nome e cognome')
       const email = dati.email?.trim() || undefined
-      const emailContatto = dati.emailContatto?.trim() || undefined
       const telefono = dati.telefono?.trim() || undefined
-      // Come l'indice unico del database: due persone, due email; il contatto invece può ripetersi.
-      const altro = email && a().persone.find((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase())
-      if (altro) throw new Error(emailGiaDi(nomeDi(altro)))
-      const guaio = contattoNonValido(emailContatto)
+      // Gli iscritti possono dividere l'email (un genitore e i figli): niente controllo di unicità (99-email-unica.sql).
+      const guaio = emailNonValida(email)
       if (guaio) throw new Error(guaio)
       if (!dati.id) {
         const id = `p-nuovo-${unico()}`
-        a().persone = [...a().persone, { id, nome, cognome, email, emailContatto, telefono, ruolo: 'iscritto', attiva: true, creataIl: oggi() }]
+        a().persone = [...a().persone, { id, nome, cognome, email, telefono, ruolo: 'iscritto', attiva: true, creataIl: oggi() }]
         salva()
         return id
       }
       persona(dati.id)
-      a().persone = a().persone.map((p) => (p.id === dati.id ? { ...p, nome, cognome, email, emailContatto, telefono } : p))
+      a().persone = a().persone.map((p) => (p.id === dati.id ? { ...p, nome, cognome, email, telefono } : p))
       salva()
       return dati.id
     },
 
     async attivaPersona(personaId, attiva) {
-      persona(personaId)
+      const quale = persona(personaId)
+      // Come il trigger del database: un titolare con gente nel nucleo non sparisce da sotto i suoi.
+      if (!attiva && quale.attiva && a().persone.some((x) => x.nucleo === personaId)) throw new Error('Prima cambia il titolare del nucleo')
       // Disattivata, si lascia dietro il file del certificato; la data resta, e riattivarla non lo riporta.
-      if (!attiva) scordaCertificato(personaId)
+      if (!attiva) {
+        scordaCertificato(personaId)
+        scordaInAttesa(personaId)
+      }
       // Come il trigger del database: disattivata, le iscrizioni aperte si chiudono oggi (come `termina`); riattivarla non le riapre.
       const g = oggi()
       if (!attiva)
@@ -814,7 +817,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (guaio) throw new Error(guaio)
       persona(personaId)
       // Un file per persona: il nuovo prende il posto del vecchio, insieme alla data.
+      // Come `salva_certificato`: il file mandato dall'iscritto se ne va con gli altri, la scadenza scritta qui lo sostituisce.
       scordaCertificato(personaId)
+      scordaInAttesa(personaId)
       certificatiProva.set(personaId, { url: typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : '', pdf: file.type === 'application/pdf' })
       a().persone = a().persone.map((p) =>
         p.id === personaId ? { ...p, certificato: { scade, file: `${personaId}/certificato-${Date.now()}.${ESTENSIONI[file.type]}`, caricatoIl: oggi() } } : p,
@@ -825,13 +830,50 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async togliCertificato(personaId) {
       persona(personaId)
       scordaCertificato(personaId)
-      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: undefined } : p))
+      // Il file mandato dall'iscritto e non ancora controllato resta: toglie solo quello confermato.
+      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: p.certificato?.inAttesa ? { inAttesa: p.certificato.inAttesa } : undefined } : p))
       salva()
     },
 
     async salvaDocumento(personaId, inSegreteria) {
       persona(personaId)
       a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, documento: inSegreteria || undefined } : p))
+      salva()
+    },
+
+    async certificatiDaControllare() {
+      return a()
+        .persone.filter((p) => p.certificato?.inAttesa)
+        .map((p) => ({ personaId: p.id, inviatoIl: p.certificato!.inAttesa!.il }))
+        .sort((x, y) => x.inviatoIl.localeCompare(y.inviatoIl))
+    },
+
+    async apriCertificatoInAttesa(personaId) {
+      persona(personaId)
+      return certificatiInAttesaProva.get(personaId) ?? null
+    },
+
+    async confermaCertificatoIscritto(personaId, scade) {
+      const guaio = cosaNonVaScadenza(scade)
+      if (guaio) throw new Error(guaio)
+      const attesa = persona(personaId).certificato?.inAttesa
+      if (!attesa) throw new Error('Non c’è un certificato da confermare')
+      // Un file solo: quello mandato prende il posto del confermato di prima.
+      const mandato = certificatiInAttesaProva.get(personaId)
+      scordaCertificato(personaId)
+      certificatiInAttesaProva.delete(personaId)
+      if (mandato) certificatiProva.set(personaId, mandato)
+      a().persone = a().persone.map((p) =>
+        p.id === personaId ? { ...p, certificato: { scade, file: `${personaId}/certificato-${Date.now()}.${attesa.file.split('.').pop()}`, caricatoIl: oggi() } } : p,
+      )
+      salva()
+    },
+
+    async rifiutaCertificatoIscritto(personaId) {
+      const p = persona(personaId)
+      if (!p.certificato?.inAttesa) throw new Error('Non c’è un certificato da rifiutare')
+      scordaInAttesa(personaId)
+      a().persone = a().persone.map((x) => (x.id === personaId ? { ...x, certificato: { ...x.certificato, inAttesa: undefined } } : x))
       salva()
     },
 
@@ -1022,7 +1064,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
 
     async mettiNelNucleo(personaId, titolareId) {
-      const iscritti = a().persone.filter((p) => p.ruolo === 'iscritto')
+      const iscritti = a().persone.filter((p) => p.ruolo === 'iscritto').map((p) => ({ ...p, natoIl: anagraficaDi(p.id)?.dati.natoIl }))
       const no = cosaNonVaNucleo(iscritti, personaId, titolareId)
       if (no) throw new Error(no)
       a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, nucleo: titolareId } : p))
@@ -1036,7 +1078,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async rendiTitolare(personaId) {
-      const m = nuovoTitolare(a().persone.filter((p) => p.ruolo === 'iscritto'), personaId)
+      const m = nuovoTitolare(a().persone.filter((p) => p.ruolo === 'iscritto').map((p) => ({ ...p, natoIl: anagraficaDi(p.id)?.dati.natoIl })), personaId)
       if (typeof m === 'string') throw new Error(m)
       a().persone = a().persone.map((p) => (m.has(p.id) ? { ...p, nucleo: m.get(p.id) ?? undefined } : p))
       salva()
@@ -1346,8 +1388,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       // Come il database: la stessa ricevuta al più tre volte in 24 ore, e la quarta non lascia righe.
       const dal = Date.now() - 24 * 3600_000
       if (invii.filter((i) => i.ricevutaId === id && i.esito === 'mandata' && Date.parse(i.creatoIl) > dal).length >= TETTO_PER_RICEVUTA) return { esito: 'non partita', motivo: 'troppe' }
-      // Solo l'email di contatto, mai quella di accesso.
-      const indirizzo = a().persone.find((p) => p.id === r.personaId)?.emailContatto?.trim()
+      const indirizzo = a().persone.find((p) => p.id === r.personaId)?.email?.trim()
       if (!indirizzo) return { esito: 'non partita', motivo: 'senza-indirizzo' }
       const creatoIl = new Date().toISOString()
       const troppe = mandateOggi(invii, new Date()) >= SOGLIA_MAIL_GIORNO
@@ -2062,10 +2103,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const cognome = nomeProprio(dati.cognome)
       const email = dati.email?.trim() || undefined
       if (!nome) throw new Error('Serve almeno il nome')
-      const altro = email && a().persone.find((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase())
+      // Gli iscritti dividono le email: il conflitto è con chi ha l'accesso, se no si prende il primo iscritto.
+      const stesse = email ? a().persone.filter((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase()) : []
+      const altro = stesse.find((p) => p.ruolo !== 'iscritto') ?? stesse[0]
       // Come nel database: un'iscritta con la stessa email diventa personale, non un doppione.
       if (altro && altro.ruolo !== 'iscritto') throw new Error(`Questa email è già di ${nomeDi(altro)}`)
-      if (altro) {
+      if (altro && !dati.id) {
         a().persone = a().persone.map((p) => (p.id === altro.id ? { ...p, ...ruoloDi(dati), attiva: true } : p))
         salva()
         return altro.id
@@ -2146,7 +2189,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if ((a().lettere ?? []).some((x) => x.personaId === personaId) || (a().ricevuteCompensi ?? []).some((x) => x.personaId === personaId)) throw new Error(`${nome} ha già lavorato nei registri: non si elimina, gli si toglie l'accesso`)
       if ((a().pagamentiDiretti ?? []).some((x) => x.personaId === personaId))
         throw new Error(`${nome} ha dei pagamenti registrati: non si elimina, gli si toglie l'accesso`)
-      a().persone = a().persone.filter((x) => x.id !== personaId)
+      // Come `on delete set null` del database: chi era nel suo nucleo resta senza.
+      a().persone = a().persone.filter((x) => x.id !== personaId).map((x) => (x.nucleo === personaId ? { ...x, nucleo: undefined } : x))
       // Come `on delete set null` del database: lo storico collegato resta, senza persona, e la traccia non nomina più nessuno.
       a().movimenti = (a().movimenti ?? []).map((x) => (x.personaId === personaId ? { ...x, personaId: undefined } : x))
       a().collegamentiPersona = (a().collegamentiPersona ?? []).map((x) => ({ ...x, prima: x.prima === personaId ? undefined : x.prima, dopo: x.dopo === personaId ? undefined : x.dopo }))
@@ -2186,11 +2230,18 @@ export function creaSegreteriaProva(): DatiSegreteria {
         certificatiProva.delete(via)
         if (suo) certificatiProva.set(resta, suo)
       } else scordaCertificato(via)
+      const attesaDelDoppione = !!v.certificato?.inAttesa && (!r.certificato?.inAttesa || v.certificato.inAttesa.il > r.certificato.inAttesa.il)
+      const inAttesa = attesaDelDoppione ? v.certificato?.inAttesa : r.certificato?.inAttesa
+      if (attesaDelDoppione) {
+        const suo = certificatiInAttesaProva.get(via)
+        scordaInAttesa(resta)
+        certificatiInAttesaProva.delete(via)
+        if (suo) certificatiInAttesaProva.set(resta, suo)
+      } else scordaInAttesa(via)
       const unita: PersonaProva = {
         ...r,
+        // Come `unisci_persone`: se le email sono due, resta quella di chi resta; `indirizziPersi` lo dice prima.
         email: r.email ?? v.email,
-        // Come `unisci_persone`: gli indirizzi che non trovano posto si perdono, e `indirizziPersi` lo dice prima.
-        emailContatto: contattoDopoUnione(r, v),
         telefono: r.telefono ?? v.telefono,
         // Attiva se una delle due lo era: chi trova un doppione spesso l'ha già disattivato.
         attiva: r.attiva || v.attiva,
@@ -2198,6 +2249,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         certificato:
           r.certificato || v.certificato
             ? {
+                inAttesa,
                 ...(fileDelDoppione ? { file: v.certificato?.file, caricatoIl: v.certificato?.caricatoIl } : { file: r.certificato?.file, caricatoIl: r.certificato?.caricatoIl }),
                 // La data è quella del certificato il cui file resta; se nessuno ha un file, la più lontana.
                 scade: fileDelDoppione ? v.certificato?.scade : r.certificato?.file ? r.certificato.scade : fino(r.certificato?.scade, v.certificato?.scade),

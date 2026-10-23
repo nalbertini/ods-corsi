@@ -142,10 +142,8 @@ export interface PersonaSeg {
   id: string
   nome: string
   cognome: string
-  /** L'email di accesso: una sola persona per indirizzo. */
+  /** L'unica email: per entrare nell'app e per ricevute e avvisi. Gli iscritti possono condividerla, chi ha l'accesso no (`99-email-unica.sql`). */
   email?: string
-  /** Dove scrivere alla famiglia: facoltativa, può essere la stessa di altri (`44-email-contatto.sql`). */
-  emailContatto?: string
   telefono?: string
   attiva: boolean
   creataIl: string
@@ -162,7 +160,9 @@ export interface PersonaSeg {
   vociCorsi?: VoceCorso[]
   /** Centesimi pagati con Satispay dal modulo e non ancora in una ricevuta (`73-satispay.sql`). */
   satispay?: number
-  /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`). Solo in prova, per ora. */
+  /** Centesimi del saldo della quota arrivati con Satispay e non ancora in una ricevuta (`102-saldo-satispay.sql`). */
+  saldo?: number
+  /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`); col database lo dà `100-nucleo.sql`. */
   nucleo?: string
   /** `AAAA-MM-GG`, dall'anagrafica; senza, l'età non si sa e il certificato serve (vedi `serveCertificato`). */
   natoIl?: string
@@ -181,6 +181,14 @@ export interface CertificatoSeg {
   vecchio?: boolean
   /** Il giorno in cui il file è stato caricato. Resta anche dopo che il file è stato cancellato (a scadenza + 30 giorni, o con la disattivazione): dice che un file c'è stato. */
   caricatoIl?: string
+  /** Il giorno in cui l'iscritto ha mandato un file che nessuno ha ancora controllato (`102-certificato-iscritto.sql`). */
+  inAttesaIl?: string
+}
+
+/** Un certificato mandato dall'iscritto, da confermare con la scadenza o da rifiutare. */
+export interface CertificatoDaControllare {
+  personaId: string
+  inviatoIl: string
 }
 
 export type StatoPagamento = 'da_pagare' | 'in_parte' | 'pagato'
@@ -546,7 +554,6 @@ export interface DatiPersona {
   nome: string
   cognome: string
   email?: string
-  emailContatto?: string
   telefono?: string
 }
 
@@ -621,6 +628,14 @@ export interface DatiSegreteria {
   togliCertificato(personaId: string): Promise<void>
   /** Il file del certificato, o `null` se non c'è: il link vale dieci minuti. */
   apriCertificato(personaId: string): Promise<FileSeg | null>
+  /** I certificati mandati dagli iscritti e non ancora controllati, dal più vecchio. */
+  certificatiDaControllare(): Promise<CertificatoDaControllare[]>
+  /** Il file mandato dall'iscritto e non ancora confermato, o `null`: il link vale dieci minuti. */
+  apriCertificatoInAttesa(personaId: string): Promise<FileSeg | null>
+  /** Il file mandato diventa il certificato, con la scadenza scritta qui; quello di prima va via. */
+  confermaCertificatoIscritto(personaId: string, scade: string): Promise<void>
+  /** Il file mandato non va: si cancella, e l'iscritto può rimandarlo. */
+  rifiutaCertificatoIscritto(personaId: string): Promise<void>
   /** Se la copia del documento d'identità è in segreteria. */
   salvaDocumento(personaId: string, inSegreteria: boolean): Promise<void>
   salvaPagamento(personaId: string, p: PagamentoSeg): Promise<void>
@@ -639,11 +654,6 @@ export interface DatiSegreteria {
   /** Si toglie, non si cambia: l'import dell'RASD si rifà. */
   togliTessera(id: string): Promise<void>
 
-  /**
-   * Il nucleo familiare (vedi `nucleo.ts`): mette una persona nel nucleo di
-   * un titolare, la toglie, o la fa titolare al posto di quello di prima.
-   * Solo in prova, per ora: col database rispondono che non c'è ancora.
-   */
   /** Le presenze segnalate dagli iscritti (vedi `segnalate.ts`); per ora solo in prova, col database non ci sono. */
   segnalate?(): Promise<SegnalataVista[]>
   gestisciSegnalata?(id: string, accogli: boolean): Promise<void>
@@ -690,6 +700,11 @@ export interface DatiSegreteria {
   /** Gli orari che la pagina «Orari» del sito mostra (`orari_sito()`, vedi `sitoOrari.ts`): in prova, quelli del calendario di prova. */
   orariSito(): Promise<OrarioSito[]>
 
+  /**
+   * Il nucleo familiare (vedi `nucleo.ts`): mette una persona nel nucleo di
+   * un titolare, la toglie, o la fa titolare al posto di quello di prima.
+   * Col database sono le funzioni di `100-nucleo.sql`.
+   */
   mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
   togliDalNucleo(personaId: string): Promise<void>
   rendiTitolare(personaId: string): Promise<void>
@@ -754,7 +769,7 @@ export interface DatiSegreteria {
   /** La annulla: resta, col suo numero, e il PDF dice ANNULLATA. */
   annullaRicevuta(id: string): Promise<void>
   /**
-   * Manda la ricevuta in PDF all'email di contatto della persona, lo stesso PDF che si scarica: l'indirizzo lo sceglie
+   * Manda la ricevuta in PDF all'email della persona, lo stesso PDF che si scarica: l'indirizzo lo sceglie
    * il database (Edge Function `ricevuta-email`, `76-ricevute-email.sql`). Non lancia: com'è andata, anche quando manca
    * il file o la funzione, sta nell'esito, perché la ricevuta è già fatta e la mail è un di più.
    */
@@ -795,7 +810,7 @@ export interface DatiSegreteria {
   registraGiroconto(d: DatiGiroconto): Promise<string>
   /** Un movimento non si modifica né si cancella: si annulla e si rifà. */
   annullaMovimento(id: string): Promise<void>
-  /** Scrive i movimenti letti dal file della banca (`99-importa-banca.sql`); quelli con chiave già scritta restano fuori. Dice quanti ne ha scritti. */
+  /** Scrive i movimenti letti dal file della banca (`104-importa-banca.sql`); quelli con chiave già scritta restano fuori. Dice quanti ne ha scritti. */
   importaMovimentiBanca(dati: DatoImportBanca[]): Promise<number>
   /** Annulla in un colpo i movimenti della banca scritti insieme, riconosciuti dal momento in cui sono stati scritti. Dice quanti ne ha annullati. */
   annullaImportazioneBanca(creatoIl: string): Promise<number>
@@ -1270,7 +1285,7 @@ export interface StatoPaga {
  * guardano a parte. Senza ricevuta conta l'eccezione scritta a mano, fino
  * alla sua data. Una quota scaduta, o un'eccezione scaduta, è `scaduto`.
  */
-export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay'>, oggi: string): StatoPaga {
+export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay' | 'saldo'>, oggi: string): StatoPaga {
   const quote = p.quote ?? []
   const valgono = quote.filter((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
   const numero = (q: QuotaRicevuta) => `${q.numero}/${q.anno}`
@@ -1284,7 +1299,12 @@ export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispa
   // Pagata dal modulo con Satispay, quota compresa: manca solo la ricevuta, e non è da chiamare.
   if (p.satispay) return { come: 'pagato', fonte: 'satispay', fino: stagioneDi(oggi).quota.al, importo: p.satispay }
   const parte = [...valgono].sort((a, b) => a.mancano - b.mancano)[0]
-  if (parte) return { come: 'in_parte', fonte: 'ricevuta', fino: parte.al, mancano: parte.mancano, ricevuta: numero(parte) }
+  if (parte) {
+    // Il saldo arrivato con Satispay toglie da quel che manca; finché la segreteria non fa la ricevuta nuova la ricevuta dice ancora «Manca».
+    const resta = parte.mancano - (p.saldo ?? 0)
+    if (p.saldo && resta <= 0) return { come: 'pagato', fonte: 'satispay', fino: parte.al, importo: p.saldo }
+    return { come: 'in_parte', fonte: 'ricevuta', fino: parte.al, mancano: Math.max(0, resta), ricevuta: numero(parte) }
+  }
   if (eccezione) return { come: 'in_parte', fonte: 'fuori_app', fino, nota: m.nota }
 
   const finite = [...quote.map((q) => q.al).filter((x): x is string => !!x && x < oggi), ...(m.stato !== 'da_pagare' && m.fino && m.fino < oggi ? [m.fino] : [])].sort()
@@ -1294,10 +1314,10 @@ export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispa
 /** La quota in una parola, per il riquadro QUOTA della scheda. */
 export const etichettaQuota = (come: ComePaga) => (come === 'pagato' ? 'PAGATA' : come === 'in_parte' ? 'IN PARTE' : come === 'scaduto' ? 'SCADUTA' : 'DA PAGARE')
 
-export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay'>, oggi: string): ComePaga => pagamentoDi(p, oggi).come
+export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote' | 'satispay' | 'saldo'>, oggi: string): ComePaga => pagamentoDi(p, oggi).come
 
 /** In regola: certificato valido (anche se in scadenza) e quota pagata. */
-export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string) =>
+export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'saldo' | 'natoIl'>, oggi: string) =>
   !['manca', 'scaduto'].includes(statoCertificato(p, oggi)) && comePaga(p, oggi) === 'pagato'
 
 /** Chi è attivo e ha il certificato o la quota da sistemare: il bottone CHI NON È IN REGOLA delle statistiche. */
@@ -1397,6 +1417,15 @@ function timbroQuota(s: StatoPaga): Timbro {
   return { tono: 'rosso', parola: 'DA PAGARE', inElenco: 'Da pagare', righe: [{ testo: 'NESSUNA RICEVUTA' }] }
 }
 
+export function timbroDocumento(documento: boolean): Timbro {
+  return {
+    tono: documento ? 'verde' : 'giallo',
+    parola: documento ? 'IN SEGRETERIA' : 'DA PORTARE',
+    // Del genitore, per un minore: la scheda non sa l'età, lo dice la sezione DOCUMENTO.
+    righe: [{ testo: 'NON SERVE PER ENTRARE' }],
+  }
+}
+
 /**
  * I tre timbri in cima alla scheda: certificato, quota, documento. Il
  * documento si vede ma non conta per «in regola» (vedi `inRegola`). Chi è
@@ -1406,16 +1435,35 @@ export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'doc
   const t = {
     certificato: timbroCertificato(p.certificato, oggi, p.natoIl),
     quota: timbroQuota(pagamentoDi(p, oggi)),
-    documento: {
-      tono: p.documento ? 'verde' : 'giallo',
-      parola: p.documento ? 'IN SEGRETERIA' : 'DA PORTARE',
-      // Del genitore, per un minore: la scheda non sa l'età, lo dice la sezione DOCUMENTO.
-      righe: [{ testo: 'NON SERVE PER ENTRARE' }],
-    } satisfies Timbro,
+    documento: timbroDocumento(p.documento),
   }
   if (p.attiva) return t
   const spegni = (x: Timbro): Timbro => ({ ...x, tono: 'spento', righe: x.righe.map(({ testo }) => ({ testo })) })
   return { certificato: spegni(t.certificato), quota: spegni(t.quota), documento: spegni(t.documento), disattivata: true }
+}
+
+export type VoceAltro = 'unisci' | 'esporta' | 'disattiva' | 'riattiva'
+
+/**
+ * Le voci del menu «Altro» in testata alla scheda: le azioni rare. In
+ * modifica non c'è, come il piede di prima: si salva o si lascia stare.
+ */
+export function vociAltro(p: Pick<PersonaSeg, 'attiva'>, inModifica: boolean): VoceAltro[] {
+  if (inModifica) return []
+  return ['unisci', 'esporta', p.attiva ? 'disattiva' : 'riattiva']
+}
+
+/**
+ * Cosa sta in testata accanto al nome. Mentre si unisce o si fa una ricevuta
+ * niente: le azioni porterebbero fuori da quel che si sta facendo.
+ */
+export function azioniTestata(
+  p: Pick<PersonaSeg, 'attiva'>,
+  daSollecitare: boolean,
+  { modifica = false, unendo = false, pagando = false }: { modifica?: boolean; unendo?: boolean; pagando?: boolean },
+): { sollecito: boolean; altro: VoceAltro[] } {
+  if (unendo || pagando) return { sollecito: false, altro: [] }
+  return { sollecito: daSollecitare, altro: vociAltro(p, modifica) }
 }
 
 /**
@@ -1438,7 +1486,7 @@ export function tastoPrincipale(p: Pick<PersonaSeg, 'attiva' | 'certificato' | '
  * IN REGOLA; poi FUORI APP, perché prima o poi va una ricevuta. Il
  * certificato in scadenza si vede, anche se è ancora in regola.
  */
-export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'natoIl'>, oggi: string): ParolaStato[] {
+export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'satispay' | 'saldo' | 'natoIl'>, oggi: string): ParolaStato[] {
   const s = pagamentoDi(p, oggi)
   const cert = timbroCertificato(p.certificato, oggi, p.natoIl)
   // Sotto i 6 anni, senza un certificato valido: non è un guaio, ma si dice perché non c'è.
@@ -1916,33 +1964,30 @@ export function mancaAttivita(e: { code?: string; message?: string } | null | un
   return !!e && ['42703', 'PGRST200', 'PGRST205', '42P01', '42883'].includes(e.code ?? '') && /attivita/.test(e.message ?? '')
 }
 
-/** La forma di un indirizzo, la stessa del vincolo `persone_email_contatto_forma` (44-email-contatto.sql). */
+/** La forma di un indirizzo, la stessa delle richieste di iscrizione (06-iscrizioni.sql). */
 const FORMA_EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
-export const CONTATTO_SBAGLIATO = 'L’email di contatto non sembra un indirizzo: scrivila come nome@esempio.it, al massimo 160 lettere.'
+export const EMAIL_SBAGLIATA = 'L’email non sembra un indirizzo: scrivila come nome@esempio.it, al massimo 160 lettere.'
 
-/** Cosa si dice quando l'email di accesso è già di un'altra persona. */
-export const emailGiaDi = (nome: string) => `Questo indirizzo è già di ${nome}: mettilo come email di contatto.`
+/** Il database dove il 99 non è ancora passato rifiuta l'email già di un altro iscritto: cosa serve, non il testo grezzo. */
+export const SERVE_IL_99 = 'Questo indirizzo è già di un’altra persona. Per metterlo a più iscritti serve l’aggiornamento 99-email-unica.sql sul database.'
 
-/** A quale campo della scheda appartiene un errore di salvataggio, per dirlo sotto quel campo; `null` se non è di un campo. */
-export function campoDelGuaio(messaggio: string): 'email' | 'emailContatto' | null {
-  if (/^Questo indirizzo è già di .+: mettilo come email di contatto\.$/.test(messaggio)) return 'email'
-  return messaggio === CONTATTO_SBAGLIATO ? 'emailContatto' : null
+/** Perché un'email non va bene, per chi usa l'app; `null` se va (o se è vuota: è facoltativa). */
+export function emailNonValida(email?: string): string | null {
+  const e = email?.trim()
+  return e && (!FORMA_EMAIL.test(e) || e.length > 160) ? EMAIL_SBAGLIATA : null
 }
 
-/** Perché un'email di contatto non va bene, per chi usa l'app; `null` se va (o se è vuota: è facoltativa). */
-export function contattoNonValido(contatto?: string): string | null {
-  const c = contatto?.trim()
-  return c && (!FORMA_EMAIL.test(c) || c.length > 160) ? CONTATTO_SBAGLIATO : null
-}
+/** L'errore di un salvataggio che riguarda l'email (e sta sotto il suo campo), `''` se è di un altro campo. */
+export const erroreDellEmail = (guaio: string) => (/\b(email|indirizzo)\b/i.test(guaio) ? guaio : '')
 
-/** Una scheda dell'elenco ISCRITTI per quello che si è scritto in CERCA: nome in un verso o nell'altro, email di accesso o di contatto. */
+/** Una scheda dell'elenco ISCRITTI per quello che si è scritto in CERCA: nome in un verso o nell'altro, email. */
 export function cercaNellElenco(p: PersonaSeg, testo: string): boolean {
   const ago = testo.trim().toLowerCase()
-  return !ago || `${p.cognome} ${p.nome} ${p.nome} ${p.cognome} ${p.email ?? ''} ${p.emailContatto ?? ''}`.toLowerCase().includes(ago)
+  return !ago || `${p.cognome} ${p.nome} ${p.nome} ${p.cognome} ${p.email ?? ''}`.toLowerCase().includes(ago)
 }
 
-/** «Solo senza email» guarda l'email di accesso: il contatto non fa entrare nell'app. */
+/** «Solo senza email»: chi non ha un indirizzo a cui scrivere. */
 export const senzaEmail = (p: PersonaSeg) => !p.email
 
 /**
@@ -1987,9 +2032,9 @@ export function sottoNome(natoIl: string | null, creataIl: string, oggi: Date): 
  */
 export type RigaCheManca = { cosa: string; perche?: string }
 
-export function cosaManca(p: Pick<PersonaSeg, 'nome' | 'cognome' | 'natoIl' | 'emailContatto' | 'telefono'>, a: Anagrafica | null, oggi: Date): RigaCheManca[] {
+export function cosaManca(p: Pick<PersonaSeg, 'nome' | 'cognome' | 'natoIl' | 'email' | 'telefono'>, a: Anagrafica | null, oggi: Date): RigaCheManca[] {
   const maiuscola = (t: string) => t[0].toUpperCase() + t.slice(1)
-  const contatti = [!p.telefono?.trim() && 'telefono', !p.emailContatto?.trim() && 'email per ricevute e avvisi'].filter((x): x is string => !!x)
+  const contatti = [!p.telefono?.trim() && 'telefono', !p.email?.trim() && 'email per ricevute e avvisi'].filter((x): x is string => !!x)
   const righeContatti = contatti.length ? [{ cosa: maiuscola(contatti.join(', ')) }] : []
   if (!a) return righeContatti
   // Come `intestatarioDaRichiesta`: senza il nome del genitore il suo codice non conta.

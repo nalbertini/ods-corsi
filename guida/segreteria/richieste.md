@@ -67,7 +67,11 @@ Sotto, **I FILE**: modulo firmato e ricevuta. La ricevuta non è obbligatoria:
 se non c'è, una riga dice «Nessuna ricevuta: il pagamento si fa in
 segreteria», e la richiesta si accoglie lo stesso. Se più persone della
 famiglia hanno pagato con un bonifico solo, mettetelo intero su una ricevuta;
-sulle altre niente «Bonifico», se no il conto prende i soldi due volte. La carta d'identità è quella di chi si iscrive (anche un minore, dai 6
+sulle altre niente «Bonifico», se no il conto prende i soldi due volte.
+Sotto la ricevuta, «Confronta con la ricevuta» dice quanto ci si aspetta (per le
+richieste mandate insieme, il totale con lo sconto famiglia), a chi e con quale
+causale: lo confrontate voi aprendo il file, l'app non legge la ricevuta. Se un
+corso non ha prezzo nel listino, la cifra è incompleta e lo dice. La carta d'identità è quella di chi si iscrive (anche un minore, dai 6
 anni: non più quella del genitore) e sta in un riquadro giallo,
 perché nell'app non resta: accolta la richiesta, la si apre, si stampa, si
 mette nella cartellina e **Stampato, cancella** la cancella per sempre. La
@@ -108,9 +112,8 @@ Accolta o rifiutata, la finestra si chiude da sola e si torna all'elenco, alla p
   ACCOGLI ne fa una nuova anche quando la scheda è senza email o ha la stessa
   email o lo stesso telefono. Se sapete che è la stessa persona, sceglietela
   dalla lista **IN ELENCO C'È GIÀ**. Se l'email della richiesta
-  è già di un'altra persona (un fratello, il genitore), la nuova scheda entra
-  senza email di accesso e con quell'indirizzo come **email di contatto**: lì
-  trovate l'indirizzo da richiamare. **Apri la scheda** porta
+  è già di un fratello o del genitore, la nuova scheda entra con la stessa
+  email. **Apri la scheda** porta
   alla sua scheda in [Iscritti](iscritti.md).
 - **Rifiuta** — chi l'ha mandata **non viene avvisato**: va chiamato o scritto
   a mano. Se aveva già pagato con Satispay, la conferma lo dice: i soldi

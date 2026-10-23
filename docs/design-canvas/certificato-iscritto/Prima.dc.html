@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 900px; background: #eef5fa">
+<dc-import name="Testata" luogo="LA TUA PAGINA" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 6px 20px 14px">
+  <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05">Ciao Manuela</span>
+  <dc-import name="Riquadro" tono="prova" stretto="{{ true }}" etichetta="" testo="Il certificato medico è scaduto: caricalo qui o portalo in segreteria." tonoTesto="avviso" tema="sito" hint-size="100%,76px"></dc-import>
+</div>
+<div style="padding: 0 20px 14px"><dc-import name="SchedeArea" acceso="IN REGOLA" voci="LEZIONI|IN REGOLA|NUCLEO" segnoSu="IN REGOLA" tonoSegno="giallo" parolaSegno="DA SISTEMARE" tema="sito" hint-size="100%,50px"></dc-import></div>
+<dc-import name="Titoletto" label="CERTIFICATO E QUOTA" conto="" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="CaricaFile" etichetta="CERTIFICATO MEDICO" dettaglio="Scaduto il 4 ottobre 2026. Una foto o il PDF, fino a 10 MB." tema="sito" hint-size="100%,100px"></dc-import><span style="font-size: 14px; line-height: 1.4; color: #46606f; padding: 0 4px">Lo vede solo la segreteria (è un dato di salute): lo controlla e scrive la scadenza. Tu non lo rivedi.</span><dc-import name="Riquadro" etichetta="QUOTA" testo="Pagata fino al 30 giugno 2027." tonoTesto="testo" tema="sito" hint-size="100%,110px"></dc-import></div></div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

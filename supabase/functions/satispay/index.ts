@@ -18,6 +18,13 @@
 //     la stessa scelta, o uno nuovo. Torna l'id, il link e l'importo;
 //   · POST { azione: 'stato_pagamento', pagamento }: com'è andato quel
 //     pagamento, per id, chiedendolo a Satispay se è ancora in attesa;
+//   · POST { azione: 'saldo', persona, ricevuta }: il saldo della quota associativa
+//     dall'area degli iscritti (`satispay_prepara_saldo`, 103-saldo-satispay.sql).
+//     Chiede il login: il database controlla la persona con la sessione di chi
+//     chiama, mai con `service_role`. Torna il link, o { pagato: true };
+//   · POST { azione: 'saldo_stato', persona, ricevuta }: com'è andato il saldo
+//     (`satispay_saldo_stato`), chiedendolo a Satispay se è ancora in attesa;
+//   · POST { azione: 'saldo_attivo' }: se c’è il saldo (103), con il login;
 //   · GET ?payment_id=…: la callback di Satispay. Non dice lo stato e chiunque
 //     la può chiamare: lo stato si rilegge da Satispay con una chiamata firmata.
 //
@@ -77,7 +84,7 @@ async function satispay(metodo: 'GET' | 'POST', percorso: string, corpo = '', ex
 }
 
 /** Crea il pagamento in Satispay per il nostro `nostro`, e ne scrive l'id e il link; `null` se non va. */
-async function creaInSatispay(nostro: string, importo: number, ritorno: URL) {
+async function creaInSatispay(nostro: string, importo: number, ritorno: URL, riferimento = 'ISCRIZIONE') {
   const nuovo = await satispay(
     'POST',
     '/g_business/v1/payments',
@@ -86,7 +93,7 @@ async function creaInSatispay(nostro: string, importo: number, ritorno: URL) {
       amount_unit: importo,
       currency: 'EUR',
       // Si legge nell'app Satispay di chi paga: niente nomi, solo un riferimento per la segreteria.
-      external_code: `ISCRIZIONE ${nostro.slice(0, 8).toUpperCase()}`,
+      external_code: `${riferimento} ${nostro.slice(0, 8).toUpperCase()}`,
       callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/satispay?payment_id={uuid}`,
       redirect_url: ritorno.toString(),
     }),
@@ -116,6 +123,22 @@ async function aggiorna(satispayId: string) {
   return data as { stato: string; importo: number; pagato_il?: string }
 }
 
+/**
+ * Il database con la sessione di chi chiama (`Authorization`), per le funzioni che chiedono il login: sono loro a
+ * controllare che la persona sia sua o del suo nucleo. `null` senza una sessione vera.
+ */
+async function comeChiChiama(req: Request) {
+  const autorizzazione = req.headers.get('Authorization') ?? ''
+  const token = autorizzazione.replace(/^Bearer\s+/i, '')
+  if (!token) return null
+  const { data } = await admin.auth.getUser(token)
+  if (!data.user) return null
+  return createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    global: { headers: { Authorization: autorizzazione } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+}
+
 const detto = (e: { message?: string; code?: string }) =>
   // I messaggi del database con errcode 22023 sono già scritti per chi paga (73-satispay.sql).
   e.code === '22023' && e.message ? e.message : NON_RISPONDE
@@ -133,7 +156,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return risposta({ guaio: 'Solo GET e POST' }, 405)
   if (!attivo) return risposta({ attivo: false })
 
-  let corpo: { azione?: unknown; richiesta?: unknown; pagamento?: unknown; corso?: unknown; formula?: unknown; nome?: unknown; cognome?: unknown; email?: unknown }
+  let corpo: { azione?: unknown; richiesta?: unknown; persona?: unknown; ricevuta?: unknown; pagamento?: unknown; corso?: unknown; formula?: unknown; nome?: unknown; cognome?: unknown; email?: unknown }
   try {
     corpo = await req.json()
   } catch {
@@ -176,6 +199,48 @@ Deno.serve(async (req) => {
     const s = data as { stato: string; importo: number; pagato_il?: string; satispay_id?: string } | null
     if (s?.stato === 'attesa' && s.satispay_id) return risposta({ pagamento: (await aggiorna(s.satispay_id)) ?? s })
     return risposta({ pagamento: s })
+  }
+
+  if (corpo.azione === 'saldo_attivo') {
+    // Il saldo c'è se c'è 103-saldo-satispay.sql: PGRST202 vuol dire che non è stato lanciato.
+    const lui = await comeChiChiama(req)
+    if (!lui) return risposta({ guaio: 'Entra con il tuo accesso per pagare' }, 401)
+    const { error } = await lui.rpc('satispay_saldo_stato', { persona: '00000000-0000-0000-0000-000000000000', ricevuta: '00000000-0000-0000-0000-000000000000' })
+    return risposta({ attivo: error?.code !== 'PGRST202' })
+  }
+  if (corpo.azione === 'saldo' || corpo.azione === 'saldo_stato') {
+    const persona = typeof corpo.persona === 'string' && UUID.test(corpo.persona) ? corpo.persona : null
+    const ricevuta = typeof corpo.ricevuta === 'string' && UUID.test(corpo.ricevuta) ? corpo.ricevuta : null
+    if (!persona || !ricevuta) return risposta({ guaio: 'Manca la persona o la ricevuta' }, 400)
+    const lui = await comeChiChiama(req)
+    if (!lui) return risposta({ guaio: 'Entra con il tuo accesso per pagare' }, 401)
+
+    if (corpo.azione === 'saldo_stato') {
+      const { data, error } = await lui.rpc('satispay_saldo_stato', { persona, ricevuta })
+      if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: NON_RISPONDE }, 502)
+      if (!data) return risposta({ pagamento: null })
+      // `as`: la forma è quella di `satispay_saldo_stato` (103-saldo-satispay.sql).
+      const { satispay_id: satispayId, ...s } = data as { stato: string; importo: number; pagato_il?: string; chi: string; satispay_id?: string | null }
+      if (s.stato !== 'attesa' || !satispayId) return risposta({ pagamento: s })
+      // In attesa: si rilegge da Satispay, che può aver già confermato (la callback si può perdere).
+      const nuovo = await aggiorna(satispayId)
+      return risposta({ pagamento: nuovo ? { ...s, stato: nuovo.stato, pagato_il: nuovo.pagato_il } : s })
+    }
+
+    // 42501: non è una persona sua; 22023: i testi per chi paga. Il resto è il servizio che non c'è o non risponde.
+    const { data, error } = await lui.rpc('satispay_prepara_saldo', { persona, ricevuta })
+    if (error) {
+      if (error.code === 'PGRST202') return risposta({ attivo: false })
+      return risposta({ guaio: error.code === '42501' && error.message ? error.message : detto(error) }, error.code === '42501' ? 403 : 409)
+    }
+    const p = data as { stato: string; id: string; importo: number; satispay_id?: string | null; link?: string | null }
+    if (p.satispay_id && p.link) return risposta({ link: p.link })
+    // Torna all'area degli iscritti, accanto alla pagina di iscrizione di `APP_URL`: la persona e la ricevuta per rileggere com'è andata.
+    const ritorno = new URL('../iscritti/', app)
+    ritorno.searchParams.set('saldo', ricevuta)
+    ritorno.searchParams.set('persona', persona)
+    const link = await creaInSatispay(p.id, p.importo, ritorno, 'SALDO')
+    return link ? risposta({ link }) : risposta({ guaio: NON_RISPONDE }, 502)
   }
 
   const richiesta = typeof corpo.richiesta === 'string' && UUID.test(corpo.richiesta) ? corpo.richiesta : null

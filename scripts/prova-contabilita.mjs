@@ -108,9 +108,9 @@ console.log('\n3. gli incassi degli iscritti si ricavano, non si copiano')
   ok('una ricevuta con due pagamenti e uno a mano: tre righe di entrata, ciascuna nella sua cassa e con la sua voce',
     prova(() => lette(derivati)),
     [
-      ['ricevuta', 'entrata', '2026-09-10', 3000, 'Rossi Giulia', 'QUOTA ASSOCIATIVA · Contanti · ricevuta 12/2026', 'Quota associativa', 'c1', false],
-      ['ricevuta', 'entrata', '2026-10-01', 2000, 'Rossi Giulia', 'QUOTA ASSOCIATIVA · POS · ricevuta 12/2026', 'Quota associativa', 'c2', false],
-      ['pagamento', 'entrata', '2026-09-12', 1500, "D'Amico Zoë", 'ANNUALE JUDO · Assegno · senza ricevuta', 'Corsi e altri pagamenti', 'c2', false],
+      ['ricevuta', 'entrata', '2026-09-10', 3000, 'Rossi Giulia', 'ricevuta 12/2026', 'Quota associativa', 'c1', false],
+      ['ricevuta', 'entrata', '2026-10-01', 2000, 'Rossi Giulia', 'ricevuta 12/2026', 'Quota associativa', 'c2', false],
+      ['pagamento', 'entrata', '2026-09-12', 1500, "D'Amico Zoë", 'ANNUALE JUDO · senza ricevuta', 'Corsi e altri pagamenti', 'c2', false],
     ])
   const conSatispay = [...casse, { id: 'c3', nome: 'Satispay', saldoIniziale: 0, dal: '2026-10-01' }]
   const sat = (data) => ({ ...diretto(`s-${data}`, 'p-Rossi', data, 2500), metodo: 'Satispay' })
@@ -126,7 +126,14 @@ console.log('\n3. gli incassi degli iscritti si ricavano, non si copiano')
       { id: 's2', data: '2026-10-02', importo: 100, metodo: 'Contanti', voce: 'ANNUALE', chi: 'Rossi Giulia', annullato: false },
       { id: 's3', data: '2026-10-02', importo: 100, metodo: 'Satispay', voce: 'ANNUALE', chi: 'Rossi Giulia', annullato: false, senzaRichiesta: true },
     ], casse).map((r) => r.sotto)),
-    ['ANNUALE · POS · ricevuta 7/2026', 'ANNUALE · Contanti · senza ricevuta', 'ANNUALE · Satispay'])
+    ['ANNUALE · ricevuta 7/2026', 'ANNUALE · senza ricevuta', 'ANNUALE'])
+  ok('la riga non ripete quel che dicono le colonne: né il metodo (c\'è la cassa) né la voce di sistema (c\'è sotto il nome)',
+    prova(() => m.incassiDerivati([
+      { id: 'q1', data: '2026-10-02', importo: 5000, metodo: 'Bonifico', voce: 'QUOTA ASSOCIATIVA', chi: 'Rossi Giulia', annullato: false, ricevuta: { id: 'r1', anno: 2026, numero: 308 } },
+      { id: 'q2', data: '2026-10-02', importo: 5000, metodo: 'Contanti', voce: 'Quota associativa', chi: 'Rossi Giulia', annullato: false },
+      { id: 'q3', data: '2026-10-02', importo: 5000, metodo: 'Satispay', voce: 'Quota associativa', chi: 'Rossi Giulia', annullato: false, senzaRichiesta: true },
+    ], casse).map((r) => r.sotto ?? null)),
+    ['ricevuta 308/2026', 'senza ricevuta', null])
   ok('l\'anticipo non è un incasso', prova(() => m.incassiDerivati(m.righeDaRicevute([ricevuta(30, 'Giulia', 'Rossi', [voce('Corso', 8000, [pag('2026-10-02', 3000)])], { anticipo: 1000 })]), casse).map((r) => r.importo)), [3000])
   ok('«pagato fino al» non è un incasso: una voce con le date e nessun pagamento non dà righe',
     prova(() => m.incassiDerivati(m.righeDaRicevute([ricevuta(31, 'Giulia', 'Rossi', [voce('Corso', 8000, [], 1, { dal: '2026-09-01', al: '2027-07-31' })], { anticipo: 8000 })]), casse)), [])
@@ -1110,6 +1117,7 @@ console.log('\n40. la colonna PERSONA mostra l\'iscritto anche per gli incassi; 
   // 4.
   ok('la descrizione resta il nome della ricevuta', [ric?.descrizione, dir?.descrizione, sat?.descrizione], ['Rossi Giulia', "D'Amico Zoë", 'Neri Luca'])
   ok('cercando «rossi giulia» la si trova', prova(() => m.filtraMovimenti(elenco, { testo: 'rossi giulia' }).map((r) => r.id)), [`incasso:${conP1.id}:0:0`])
+  ok('cercando la voce («quota») si trova l\'incasso, che la voce non la ripete più sotto', prova(() => m.filtraMovimenti(elenco, { testo: 'quota' }).some((r) => r.id === `incasso:${conP1.id}:0:0`)), true)
   // 5.
   ok('«Collegati» è solo lo storico collegato a mano, non gli incassi con la persona', prova(() => persona.filtraPerPersona(elenco, 'collegati', {}).map((r) => r.id)), ['st1'])
   ok('…anche con una riga d\'incasso che porta la persona', prova(() => persona.filtraPerPersona([{ ...riga('st9', 'entrata', '2025-01-01', 100, 'c2'), personaId: 'p1' }, { id: 'incasso:x', origine: 'ricevuta', tipo: 'entrata', data: '2026-09-01', importo: 100, descrizione: 'Rossi Giulia', voce: 'Quota associativa', cassaId: 'c2', annullato: false, personaId: 'p1' }], 'collegati', {}).map((r) => r.id)), ['st9'])
@@ -1401,6 +1409,19 @@ console.log('\n97. l\'estratto conto: le righe di MOVIMENTI con il saldo dopo og
 
   const pari = [riga('p1', 'entrata', '2026-09-20', 100, 'c1'), riga('p2', 'entrata', '2026-09-20', 50, 'c1')]
   ok('a pari data il più in basso dell\'elenco è il primo nel tempo', per(ec({ cassaIds: ['c1'] }, pari)), [['p1', 100, 0, 10150], ['p2', 50, 0, 10050]])
+}
+
+console.log('\n98. il tipo di un movimento ha una colonna sua, e la riga non ripete i dati delle colonne')
+{
+  const tipo = (origine, t) => prova(() => m.tipoMovimento({ origine, tipo: t }))
+  ok('un incasso di un iscritto (da ricevuta o diretto)', [tipo('ricevuta', 'entrata'), tipo('pagamento', 'entrata')], [{ nome: 'Incasso iscritto', icona: 'tessera' }, { nome: 'Incasso iscritto', icona: 'tessera' }])
+  ok('un giroconto', tipo('movimento', 'giroconto'), { nome: 'Giroconto', icona: 'frecce' })
+  ok('un\'entrata e un\'uscita a mano', [tipo('movimento', 'entrata'), tipo('movimento', 'uscita')], [{ nome: 'Entrata', icona: 'banconota' }, { nome: 'Uscita', icona: 'banconota' }])
+  const voce = (r, persona) => prova(() => m.lineaVoce(r, persona))
+  ok('la linea della voce dice la voce', voce({ descrizione: 'Rossi Giulia', voce: 'Quota associativa' }, undefined), 'Quota associativa')
+  ok('…e la persona solo se non è già il nome della riga', [voce({ descrizione: 'Affitto sala', voce: 'Affitto sala' }, 'Rossi Giulia'), voce({ descrizione: 'Rossi Giulia', voce: 'Quota associativa' }, 'Rossi Giulia')], ['Affitto sala · Rossi Giulia', 'Quota associativa'])
+  ok('…senza badare a maiuscole e spazi', voce({ descrizione: ' ROSSI giulia ', voce: 'Quota associativa' }, 'Rossi Giulia'), 'Quota associativa')
+  ok('un giroconto non ha voce', voce({ descrizione: 'Giroconto da A a B', voce: null }, undefined), '')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

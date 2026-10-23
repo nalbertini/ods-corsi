@@ -14,7 +14,7 @@
     body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<!-- Non e' una schermata dell'app: e' la mail come la vede il genitore nel suo programma di posta, disegnata a parte (nessun componente della libreria la descrive) coi colori del sito. Telefono da CONTATTI di src/lib/sito.ts (riga 74), nome del file da nomeFileRicevuta di lib/ricevute.ts (riga 374). -->
+<!-- Non e' una schermata dell'app: e' la mail come la vede il genitore nel suo programma di posta, disegnata a parte (nessun componente della libreria la descrive) coi colori del sito. Con la cornice unica (src/lib/cornicaMail.ts): il corpo è la frase, la tabella e il telefono; il PDF è l'allegato. Telefono da CONTATTI di src/lib/sito.ts (riga 74), nome del file da nomeFileRicevuta di lib/ricevute.ts (riga 374). -->
 <div style="display: flex; gap: 36px; align-items: flex-start; width: 1300px; padding: 28px 36px; background: #eef5fa">
   <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8f6a00">PROPOSTA · LA MAIL CHE ARRIVA AL GENITORE</span><div style="display: flex; flex-direction: column; width: 560px; background: #ffffff; border: 2px solid #cfe6f4; border-radius: 6px">
     <div style="display: flex; flex-direction: column; gap: 4px; padding: 16px 20px; border-bottom: 2px solid #cfe6f4; font-size: 14px">
@@ -23,9 +23,9 @@
       <span style="font-size: 17px; font-weight: 700; margin-top: 6px">Ricevuta n. 12/2026 per Marco Rossi · Officine Dello Sport</span>
     </div>
     <div style="display: flex; flex-direction: column; gap: 12px; padding: 20px">
-      <p style="margin: 0; font-size: 15px; line-height: 1.5">Buongiorno, in allegato la ricevuta n. 12/2026 del 21 ottobre 2026 per Marco Rossi: 80,00 €.</p>
+      <p style="margin: 0; font-size: 15px; line-height: 1.5">Buongiorno, ecco la ricevuta del pagamento: la trovi in allegato, in PDF.</p><div style="display: flex; flex-direction: column; border: 2px solid #cfe6f4; border-radius: 6px"><div style="display: flex; justify-content: space-between; gap: 16px; padding: 10px 14px; border-bottom: 2px solid #cfe6f4"><span style="color: #46606f">Ricevuta n.</span><b>12/2026</b></div><div style="display: flex; justify-content: space-between; gap: 16px; padding: 10px 14px; border-bottom: 2px solid #cfe6f4"><span style="color: #46606f">Data</span><b>21 ottobre 2026</b></div><div style="display: flex; justify-content: space-between; gap: 16px; padding: 10px 14px; border-bottom: 2px solid #cfe6f4"><span style="color: #46606f">Intestata a</span><b>Marco Rossi</b></div><div style="display: flex; justify-content: space-between; gap: 16px; padding: 10px 14px;"><span style="color: #46606f">Totale</span><b>80,00 €</b></div></div>
       
-      <p style="margin: 0; font-size: 15px; line-height: 1.5">Per qualsiasi domanda chiamaci al 346 329 2786. A presto in palestra, Officine Dello Sport.</p>
+      <p style="margin: 0; font-size: 15px; line-height: 1.5">Per qualsiasi domanda chiamaci al <a href="tel:+393463292786" style="color: #0d2a3d">346 329 2786</a>. A presto in palestra.</p>
       <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 2px solid #cfe6f4; border-radius: 6px; align-self: flex-start">
         <span style="padding: 4px 6px; background: #b81d1d; color: #ffffff; font-size: 12px; font-weight: 700; border-radius: 4px">PDF</span>
         <span style="font-size: 14px; font-weight: 600">ricevuta-12-2026-Rossi-Marco.pdf</span>
@@ -39,9 +39,9 @@
       <span style="font-size: 17px; font-weight: 700; margin-top: 6px">Ricevuta n. 12/2026 per Marco Rossi · Officine Dello Sport</span>
     </div>
     <div style="display: flex; flex-direction: column; gap: 12px; padding: 20px">
-      <p style="margin: 0; font-size: 15px; line-height: 1.5">Buongiorno, in allegato la ricevuta n. 12/2026 del 21 ottobre 2026 per Marco Rossi: 80,00 €.</p>
+      <p style="margin: 0; font-size: 15px; line-height: 1.5">Buongiorno, ecco la ricevuta del pagamento: la trovi in allegato, in PDF.</p><div style="display: flex; flex-direction: column; border: 2px solid #cfe6f4; border-radius: 6px"><div style="display: flex; justify-content: space-between; gap: 16px; padding: 10px 14px; border-bottom: 2px solid #cfe6f4"><span style="color: #46606f">Ricevuta n.</span><b>12/2026</b></div><div style="display: flex; justify-content: space-between; gap: 16px; padding: 10px 14px; border-bottom: 2px solid #cfe6f4"><span style="color: #46606f">Data</span><b>21 ottobre 2026</b></div><div style="display: flex; justify-content: space-between; gap: 16px; padding: 10px 14px; border-bottom: 2px solid #cfe6f4"><span style="color: #46606f">Intestata a</span><b>Marco Rossi</b></div><div style="display: flex; justify-content: space-between; gap: 16px; padding: 10px 14px;"><span style="color: #46606f">Totale</span><b>80,00 €</b></div></div>
       <p style="margin: 0; font-size: 15px; line-height: 1.5; font-weight: 600">Sostituisce la ricevuta n. 11/2026, annullata.</p>
-      <p style="margin: 0; font-size: 15px; line-height: 1.5">Per qualsiasi domanda chiamaci al 346 329 2786. A presto in palestra, Officine Dello Sport.</p>
+      <p style="margin: 0; font-size: 15px; line-height: 1.5">Per qualsiasi domanda chiamaci al <a href="tel:+393463292786" style="color: #0d2a3d">346 329 2786</a>. A presto in palestra.</p>
       <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 2px solid #cfe6f4; border-radius: 6px; align-self: flex-start">
         <span style="padding: 4px 6px; background: #b81d1d; color: #ffffff; font-size: 12px; font-weight: 700; border-radius: 4px">PDF</span>
         <span style="font-size: 14px; font-weight: 600">ricevuta-12-2026-Rossi-Marco.pdf</span>

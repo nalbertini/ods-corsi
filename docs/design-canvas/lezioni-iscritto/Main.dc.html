@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA · LEZIONI: la prossima lezione in evidenza con un solo gesto (SEGNA LA PRESENZA), le altre in elenco corto, prossime lezioni e presenze nello stesso elenco, in ordine di data. Variante col saldo Satispay in cima, solo se manca qualcosa. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1250px; background: #eef5fa">
+<dc-import name="Testata" luogo="LA TUA PAGINA" guida="{{ false }}" senzaTema="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 6px 20px 14px"><div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px"><span style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start"><span style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; background: #ffffff; border: 2px solid #1b8ac4; border-radius: 6px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.05; color: #0d2a3d">Ciao Alessandro <span style="font-size: 20px; color: #1b8ac4">▾</span></span><span style="font-family: Barlow, Arial, sans-serif; font-size: 13px; color: #46606f">Tocca il nome per vedere un altro membro del nucleo</span></span></div></div>
+
+<dc-import name="Titoletto" label="LA PROSSIMA LEZIONE" conto="" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+<dc-import name="Riquadro" tema="sito" etichetta="MARTEDÌ 27 OTTOBRE · 17:00" titolo="Lotta" cifra="FRA 4 GIORNI" testo="Sala 1 · GIOCOMOTRICITÀ" tonoTesto="dim" hint-size="100%,110px"></dc-import>
+</div><dc-import name="Titoletto" label="LE TUE LEZIONI" conto="3 + 9" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+<dc-import name="MiaLezione" ora="17:00" corso="Lotta" sotto="Sala 1 · Martedì 3 novembre" cosa="" tinta="#b81d1d" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="MiaLezione" ora="17:00" corso="Lotta" sotto="Sala 1 · Martedì 10 novembre" cosa="" tinta="#b81d1d" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="MiaLezione" ora="17:00" corso="Lotta" sotto="Sala 1 · Martedì 17 novembre" cosa="" tinta="#b81d1d" tema="sito" hint-size="100%,72px"></dc-import><dc-import name="MiaPresenza" corso="GIOCOMOTRICITÀ" quando="Martedì 20 ottobre · 17:00" stato="presente" tema="sito" hint-size="100%,80px"></dc-import><dc-import name="MiaPresenza" corso="GIOCOMOTRICITÀ" quando="Martedì 13 ottobre · 17:00" stato="presente" tema="sito" hint-size="100%,80px"></dc-import><dc-import name="MiaPresenza" corso="GIOCOMOTRICITÀ" quando="Martedì 6 ottobre · 17:00" stato="niente" soloTasto="{{ true }}" tema="sito" hint-size="100%,80px"></dc-import>
+</div><div style="position: sticky; bottom: 0; margin-top: auto"><dc-import name="BarraNavigazione" voci="LEZIONI|DOCUMENTI|FAMIGLIA|CONTATTI" attiva="LEZIONI" tema="sito" hint-size="100%,66px"></dc-import></div></div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":1100}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

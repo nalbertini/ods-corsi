@@ -15,9 +15,9 @@
 //   type MotivoNonPartita = 'posta' | 'soglia' | 'senza-indirizzo' | 'annullata' | 'manca-sql' | 'manca-funzione' | 'manca-password'
 //   type EsitoMandata = { esito: 'mandata'; indirizzo: string } | { esito: 'non partita'; motivo: MotivoNonPartita }
 //   interface InvioRicevuta { ricevutaId: string; creatoIl: string; esito: EsitoInvio; indirizzo?: string; motivo?: string }
-//   statoPosta(r: Pick<Ricevuta, 'creataIl' | 'annullataIl'>, invii: InvioRicevuta[], emailContatto: string | null, dal: string | null)
+//   statoPosta(r: Pick<Ricevuta, 'creataIl' | 'annullataIl'>, invii: InvioRicevuta[], email: string | null, dal: string | null)
 //     → { testo: string; tono: 'fatto' | 'aspetta' | null; tasto: 'Manda per email' | 'Manda di nuovo' | null; spento: boolean; motivo: string | null } | null
-//   confermaEmail(emailContatto: string | null, genitore: string | null, spuntata: boolean) → { spunta: string | null; nota: string }
+//   confermaEmail(email: string | null, genitore: string | null, spuntata: boolean) → { spunta: string | null; nota: string }
 //   domandaManda(r: Pick<Ricevuta, 'numero' | 'anno'>, indirizzo: string, genitore: string | null, giaMandata: string | null) → { domanda: string; resto: string; si: string }
 //   avvisoDopoRicevuta(r: Pick<Ricevuta, 'numero' | 'anno'>, esito: EsitoMandata | null) → string
 //   avvisoManda(r: Pick<Ricevuta, 'numero' | 'anno'>, esito: EsitoMandata) → string
@@ -139,12 +139,12 @@ ok('fatta prima della funzione: lo dice, e si manda solo a mano',
   { testo: 'Fatta prima dell’invio per email', tono: null, tasto: 'Manda per email', spento: false, motivo: null })
 ok('senza email di contatto: tasto spento, e dice dove aggiungerla',
   statoPosta(fatta, [], null, DAL),
-  { testo: 'Non mandata: nessuna email di contatto in scheda', tono: null, tasto: 'Manda per email', spento: true, motivo: 'Nessuna email di contatto in scheda: aggiungila in PERSONA.' })
+  { testo: 'Non mandata: nessuna email in scheda', tono: null, tasto: 'Manda per email', spento: true, motivo: 'Nessuna email in scheda: aggiungila in PERSONA.' })
 ok('anche se è vecchia',
   statoPosta(vecchia, [], null, DAL)?.spento, true)
 ok('mandata, ma il contatto poi tolto: MANDA DI NUOVO spento',
   statoPosta(fatta, [invio('2026-10-21T09:01:00.000Z', 'mandata')], null, DAL),
-  { testo: '✓ Mandata il 21/10/2026 a mamma@esempio.it', tono: 'fatto', tasto: 'Manda di nuovo', spento: true, motivo: 'Nessuna email di contatto in scheda: aggiungila in PERSONA.' })
+  { testo: '✓ Mandata il 21/10/2026 a mamma@esempio.it', tono: 'fatto', tasto: 'Manda di nuovo', spento: true, motivo: 'Nessuna email in scheda: aggiungila in PERSONA.' })
 ok('annullata e mandata prima: lo dice, grigio, senza tasto',
   statoPosta({ ...fatta, annullataIl: '2026-10-21T10:00:00.000Z' }, [invio('2026-10-20T09:01:00.000Z', 'mandata')], 'mamma@esempio.it', DAL),
   { testo: 'Mandata il 20/10/2026 a mamma@esempio.it', tono: null, tasto: null, spento: false, motivo: null })
@@ -161,16 +161,16 @@ ok('o «Non mandata»', rigaEmail([{ ricevutaId: 'r1', creatoIl: '2026-10-21T09:
 console.log('\n2. la domanda di FAI LA RICEVUTA')
 ok('adulto con email di contatto: spunta e nota',
   confermaEmail('sara.bianchi@esempio.it', null, true),
-  { spunta: 'Manda per email a sara.bianchi@esempio.it', nota: 'Email di contatto. Se è sbagliata togli la spunta: la ricevuta si fa senza mail.' })
+  { spunta: 'Manda per email a sara.bianchi@esempio.it', nota: 'Email della scheda. Se è sbagliata togli la spunta: la ricevuta si fa senza mail.' })
 ok('minore: è l\'email del genitore, e lo dice',
   confermaEmail('mamma@esempio.it', 'Rossi Laura', true),
-  { spunta: 'Manda per email a mamma@esempio.it', nota: 'Email di contatto del genitore, Rossi Laura. Se è sbagliata togli la spunta: la ricevuta si fa senza mail.' })
+  { spunta: 'Manda per email a mamma@esempio.it', nota: 'Email del genitore, Rossi Laura. Se è sbagliata togli la spunta: la ricevuta si fa senza mail.' })
 ok('spunta tolta: si manda dopo dallo storico',
   confermaEmail('mamma@esempio.it', 'Rossi Laura', false),
   { spunta: 'Manda per email a mamma@esempio.it', nota: 'Senza spunta la ricevuta si fa senza mail: si può mandare dopo con MANDA PER EMAIL, dallo storico.' })
 ok('senza email di contatto: niente spunta, e la frase',
   confermaEmail(null, null, true),
-  { spunta: null, nota: 'Nessuna email di contatto in scheda: la ricevuta non si manda. Il PDF si scarica come sempre.' })
+  { spunta: null, nota: 'Nessuna email in scheda: la ricevuta non si manda. Il PDF si scarica come sempre.' })
 ok('anche per un minore', confermaEmail(null, 'Rossi Laura', true)?.spunta, null)
 ok('un contatto di soli spazi è come non averlo', confermaEmail('   ', null, true)?.spunta, null)
 const daMandare = lib('daMandare')
@@ -187,13 +187,13 @@ ok('minore il giorno della ricevuta, anche se ora è maggiorenne', genitoreDella
 console.log('\n3. la domanda di MANDA PER EMAIL e MANDA DI NUOVO')
 ok('la prima volta',
   domandaManda({ numero: 10, anno: 2026 }, 'mamma@esempio.it', 'Rossi Laura', null),
-  { domanda: 'Mandare la ricevuta n. 10/2026 a mamma@esempio.it?', resto: 'Email di contatto del genitore, Rossi Laura. Il PDF va allegato alla mail; la ricevuta non cambia.', si: 'Manda' })
+  { domanda: 'Mandare la ricevuta n. 10/2026 a mamma@esempio.it?', resto: 'Email del genitore, Rossi Laura. Il PDF va allegato alla mail; la ricevuta non cambia.', si: 'Manda' })
 ok('di nuovo: con la data del primo invio',
   domandaManda({ numero: 12, anno: 2026 }, 'mamma@esempio.it', 'Rossi Laura', '2026-10-21T09:01:00.000Z'),
-  { domanda: 'Mandare di nuovo la ricevuta n. 12/2026 a mamma@esempio.it?', resto: 'Email di contatto del genitore, Rossi Laura. È già partita il 21/10/2026: la famiglia la riceve un’altra volta, uguale.', si: 'Manda di nuovo' })
+  { domanda: 'Mandare di nuovo la ricevuta n. 12/2026 a mamma@esempio.it?', resto: 'Email del genitore, Rossi Laura. È già partita il 21/10/2026: la famiglia la riceve un’altra volta, uguale.', si: 'Manda di nuovo' })
 ok('un adulto',
   domandaManda({ numero: 13, anno: 2026 }, 'sara.bianchi@esempio.it', null, null)?.resto,
-  'Email di contatto. Il PDF va allegato alla mail; la ricevuta non cambia.')
+  'Email della scheda. Il PDF va allegato alla mail; la ricevuta non cambia.')
 
 console.log('\n4. l\'avviso dopo FAI LA RICEVUTA: la ricevuta c\'è sempre')
 const r12 = { numero: 12, anno: 2026 }
@@ -232,7 +232,7 @@ ok('mandata', avvisoManda({ numero: 10, anno: 2026 }, { esito: 'mandata', indiri
 ok('la posta non risponde', avvisoManda(r12, { esito: 'non partita', motivo: 'posta' }), 'La mail non è partita: controlla la connessione e riprova.')
 ok('la soglia', avvisoManda(r12, { esito: 'non partita', motivo: 'soglia' }), 'Oggi sono partite 400 mail, il massimo: riprova domani.')
 ok('annullata', avvisoManda(r12, { esito: 'non partita', motivo: 'annullata' }), 'La ricevuta è annullata: non si manda.')
-ok('senza email di contatto', avvisoManda(r12, { esito: 'non partita', motivo: 'senza-indirizzo' }), 'Nessuna email di contatto in scheda: aggiungila in PERSONA.')
+ok('senza email di contatto', avvisoManda(r12, { esito: 'non partita', motivo: 'senza-indirizzo' }), 'Nessuna email in scheda: aggiungila in PERSONA.')
 ok('il file SQL non lanciato', avvisoManda(r12, { esito: 'non partita', motivo: 'manca-sql' }), 'La mail non parte: va lanciato 76-ricevute-email.sql.')
 ok('la stessa ricevuta già tre volte in un giorno', avvisoManda(r12, { esito: 'non partita', motivo: 'troppe' }), 'Questa ricevuta è già partita 3 volte nelle ultime 24 ore: riprova domani.')
 ok('partita ma non segnata', avvisoManda(r12, { esito: 'mandata', indirizzo: 'mamma@esempio.it', registrata: false }),
@@ -285,6 +285,33 @@ ok('accenti e apostrofi: come nomeCorso di listino.ts', [m.nomeFileRicevuta(stra
 ok('niente codici fiscali, indirizzo, nascita',
   ['RSSMRC17A01L219X', 'RSSLRA85C41L219Y', 'Via Roma', '10093', 'Collegno', '2017'].filter((x) => typeof t !== 'object' || `${t.oggetto} ${t.testo}`.includes(x)), [])
 
+console.log('\n8bis. la mail HTML della ricevuta, nella cornice')
+{
+  const PROIBITI = ['<script', '<link', '@import', 'url(http', '<img']
+  const TAG = ['html', 'head', 'meta', 'title', 'body', 'table', 'tbody', 'tr', 'td', 'th', 'p', 'div', 'a', 'span', 'strong', 'b', 'br', 'h1', 'h2', 'small']
+  const tagStrani = (h) => [...new Set([...String(h).matchAll(/<\/?([a-z][a-z0-9]*)/gi)].map((x) => x[1].toLowerCase()))].filter((x) => !TAG.includes(x))
+  const grande = testoMail({ ...mail, totale: 12000 })
+  const h = grande?.html ?? ''
+  ok('l\'html c\'è', typeof grande?.html, 'string')
+  ok('la cornice: colonna 560, testata, piede, colori chiari e scuri',
+    [/max-width:\s*560px/.test(h), h.includes('Officine Dello Sport'), /<meta name="color-scheme"/.test(h), /supported-color-schemes/.test(h)], [true, true, true, true])
+  ok('la frase', h.includes('ecco la ricevuta del pagamento: la trovi in allegato, in PDF'), true)
+  ok('numero, data, intestatario, totale',
+    ['Ricevuta n.', '12/2026', '21 ottobre 2026', 'Intestata a', 'Marco Rossi', 'Totale', '120,00 €'].filter((x) => !h.includes(x)), [])
+  ok('il telefono è un link che chiama', h.includes('href="tel:+393463292786"'), true)
+  ok('niente codice fiscale, indirizzo, nascita, né tasto «Scarica»',
+    ['RSSMRC17A01L219X', 'RSSLRA85C41L219Y', 'Via Roma', '10093', 'Collegno', '2017', 'Rossi Laura', 'Scarica'].filter((x) => h.includes(x)), [])
+  ok('niente script, link, @import, immagini, né tag fuori dalla cornice', [PROIBITI.filter((x) => h.includes(x)), tagStrani(h)], [[], []])
+  ok('oggetto, testo e allegato non cambiano', [grande?.oggetto, grande?.testo, grande?.allegato],
+    ['Ricevuta n. 12/2026 per Marco Rossi · Officine Dello Sport',
+     `Buongiorno, in allegato la ricevuta n. 12/2026 del 21 ottobre 2026 per Marco Rossi: 120,00 €.\n\nPer qualsiasi domanda chiamaci al ${m.CONTATTI.telefono}. A presto in palestra, Officine Dello Sport.`,
+     'ricevuta-12-2026-rossi-marco.pdf'])
+  const cattivo = testoMail({ ...mail, intestatario: { nome: '<script>alert(1)</script>', cognome: '"><img src=x>' } })?.html ?? ''
+  ok('un nome con <script> e "><img>: convertito, nessun tag in più',
+    [cattivo.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), cattivo.includes('&quot;&gt;&lt;img src=x&gt;'), PROIBITI.filter((x) => cattivo.includes(x)), tagStrani(cattivo)], [true, true, [], []])
+  ok('e negli href nessun " non convertito', [...cattivo.matchAll(/href="([^"]*)"/g)].map((x) => x[1]).filter((x) => /["<>]/.test(x)), [])
+}
+
 console.log('\n9. la modalità prova simula, senza rete, con le stesse regole')
 m.creaDatiProva()
 const s = m.creaSegreteriaProva()
@@ -292,24 +319,24 @@ const manda = (id) => (typeof s.mandaRicevuta === 'function' ? s.mandaRicevuta(i
 const invii = (p) => (typeof s.inviiRicevute === 'function' ? s.inviiRicevute(p) : Promise.resolve('manca inviiRicevute'))
 const voce = { descrizione: 'QUOTA ASSOCIATIVA', quantita: 1, prezzo: 3000, pagamenti: [{ data: '2026-10-21', importo: 3000, metodo: 'Bonifico' }] }
 const fai = (personaId, nome, cognome) => s.emettiRicevuta({ data: '2026-10-21', personaId, ente: m.ENTE_PREDEFINITO, intestatario: { nome, cognome }, voci: [voce], anticipo: 0 })
-const sara = await s.salvaPersona({ nome: 'Sara', cognome: 'Bianchi', email: 'sara@accesso.it', emailContatto: 'sara.bianchi@esempio.it' })
-const teo = await s.salvaPersona({ nome: 'Teo', cognome: 'Verdi', email: 'teo@accesso.it' })
+const sara = await s.salvaPersona({ nome: 'Sara', cognome: 'Bianchi', email: 'sara.bianchi@esempio.it' })
+const teo = await s.salvaPersona({ nome: 'Teo', cognome: 'Verdi' })
 const rs = await fai(sara, 'Sara', 'Bianchi')
 const rt = await fai(teo, 'Teo', 'Verdi')
 ok('fare la ricevuta non manda niente da sé', await invii(sara), [])
-ok('mandata all\'email di contatto, non a quella di accesso', await manda(rs.id), { esito: 'mandata', indirizzo: 'sara.bianchi@esempio.it' })
+ok('mandata all\'email della scheda', await manda(rs.id), { esito: 'mandata', indirizzo: 'sara.bianchi@esempio.it' })
 ok('e resta registrata', (await invii(sara)).map?.((i) => [i.ricevutaId === rs.id, i.esito, i.indirizzo]), [[true, 'mandata', 'sara.bianchi@esempio.it']])
 await manda(rs.id)
 ok('MANDA DI NUOVO: una riga per tentativo', (await invii(sara)).length, 2)
-ok('senza email di contatto: non parte, anche con l\'email di accesso', await manda(rt.id), { esito: 'non partita', motivo: 'senza-indirizzo' })
+ok('senza email: non parte', await manda(rt.id), { esito: 'non partita', motivo: 'senza-indirizzo' })
 ok('e non lascia righe', await invii(teo), [])
 await s.annullaRicevuta(rs.id)
 ok('annullata: non si manda', await manda(rs.id), { esito: 'non partita', motivo: 'annullata' })
 ok('annullare non ha mandato niente', (await invii(sara)).length, 2)
 
-const marco = await s.salvaPersona({ nome: 'Marco', cognome: 'Rossi', email: 'marco@accesso.it', emailContatto: 'mamma@esempio.it' })
+const marco = await s.salvaPersona({ nome: 'Marco', cognome: 'Rossi', email: 'mamma@esempio.it' })
 const rm = await s.emettiRicevuta({ data: '2026-10-21', personaId: marco, ente: m.ENTE_PREDEFINITO, intestatario: { nome: 'Marco', cognome: 'Rossi', natoIl: '2017-01-01', genitore: 'Rossi Laura' }, voci: [voce], anticipo: 0 })
-ok('minore: va all\'email di contatto, quella del genitore', await manda(rm.id), { esito: 'mandata', indirizzo: 'mamma@esempio.it' })
+ok('minore: va all\'email in scheda, quella del genitore', await manda(rm.id), { esito: 'mandata', indirizzo: 'mamma@esempio.it' })
 
 const rv = await fai(sara, 'Sara', 'Bianchi')
 await manda(rv.id)
@@ -340,6 +367,11 @@ const leggi = (f) => readFileSync(f, 'utf8')
 ok('mail.ts è la copia di src/lib/ricevutaMail.ts', leggi('supabase/functions/ricevuta-email/mail.ts') === leggi('src/lib/ricevutaMail.ts'), true)
 const fn = leggi('supabase/functions/ricevuta-email/index.ts')
 ok('usa la copia', fn.includes("from './mail.ts'"), true)
+{
+  const { existsSync } = await import('node:fs')
+  const orig = existsSync('src/lib/cornicaMail.ts') ? leggi('src/lib/cornicaMail.ts') : 'manca src/lib/cornicaMail.ts'
+  ok('cornicaMail.ts è la copia di src/lib/cornicaMail.ts', existsSync('supabase/functions/ricevuta-email/cornicaMail.ts') && leggi('supabase/functions/ricevuta-email/cornicaMail.ts') === orig && !orig.startsWith('manca'), true)
+}
 ok('l\'indirizzo da indirizzo_ricevuta, mai dal corpo', [fn.includes("rpc('indirizzo_ricevuta'"), /corpo\??\.(indirizzo|email|to)\b/.test(fn)], [true, false])
 ok('controlla col token di chi preme, registra solo il server', [fn.includes("suo.rpc('controlla_invio_ricevuta'"), fn.includes("admin.rpc('registra_invio_ricevuta'"), fn.includes("suo.rpc('registra_invio_ricevuta'")], [true, true, false])
 ok('decide con le regole provate qui sotto', ['leggiCorpo', 'noDalControllo', 'decidiInvio', 'rispostaMandata'].filter((f) => !fn.includes(`${f}(`)), [])
@@ -365,7 +397,7 @@ ok('controllo: chi non è della segreteria', noDalControllo('42501'), { guaio: '
 ok('controllo: altro', noDalControllo('XX000'), { guaio: 'La ricevuta non si legge', stato: 400, tipo: 'posta' })
 const c = { ha_indirizzo: true, oltre_soglia: false, segreteria: true }
 ok('si manda all\'indirizzo del database', decidiInvio(c, 'mamma@esempio.it', true), { manda: true, a: 'mamma@esempio.it' })
-ok('senza indirizzo in scheda: non parte, e niente riga', decidiInvio({ ...c, ha_indirizzo: false }, null, true), { manda: false, guaio: 'Nessuna email di contatto in scheda', stato: 409, tipo: 'senza-indirizzo', registra: null })
+ok('senza indirizzo in scheda: non parte, e niente riga', decidiInvio({ ...c, ha_indirizzo: false }, null, true), { manda: false, guaio: 'Nessuna email in scheda', stato: 409, tipo: 'senza-indirizzo', registra: null })
 ok('l\'indirizzo sparito fra il controllo e l\'invio: uguale', decidiInvio(c, '', true)?.tipo, 'senza-indirizzo')
 ok('oltre la soglia: non parte, e resta la riga «soglia»', decidiInvio({ ...c, oltre_soglia: true }, 'mamma@esempio.it', true), { manda: false, guaio: 'Oggi sono partite 400 mail, il massimo', stato: 429, tipo: 'soglia', registra: 'soglia' })
 ok('senza la password della posta: lo dice, e resta la riga', decidiInvio(c, 'mamma@esempio.it', false), { manda: false, guaio: 'Manca la password della posta fra i segreti della funzione: vedi supabase/LEGGIMI.md, «La ricevuta per email»', stato: 501, tipo: 'manca-password', registra: 'manca SMTP_PASSWORD' })

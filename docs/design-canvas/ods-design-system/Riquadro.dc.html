@@ -18,7 +18,7 @@
 </helmet>
 <div style="display: flex; flex-direction: column; width: 100%; min-width: 0; gap: {{gap}}; padding: {{padding}}; background: {{c.surface}}; border: {{bordoTutto}}; border-left: {{bordoSinistro}}; border-radius: {{raggio}}; box-shadow: {{barra}}; color: {{c.text}}">
   <sc-if value="{{haEtichetta}}" hint-placeholder-val="{{ true }}">
-    <span style="font-family: {{testoFam}}; font-size: 12px; font-weight: {{etichettaPeso}}; letter-spacing: {{etichettaSpazio}}; color: {{coloreEtichetta}}">{{etichetta}}</span>
+    <span style="display: inline-flex; align-items: center; gap: 6px; font-family: {{testoFam}}; font-size: 12px; font-weight: {{etichettaPeso}}; letter-spacing: {{etichettaSpazio}}; color: {{coloreEtichetta}}"><sc-if value="{{icone}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{iconaEtichetta.d}}"></path><path d="{{iconaEtichetta.d2}}"></path></svg></sc-if>{{etichetta}}</span>
   </sc-if>
   <sc-if value="{{haTitolo}}" hint-placeholder-val="{{ false }}">
     <span style="font-family: {{cond}}; font-style: {{inclina}}; font-size: 20px; font-weight: {{titoloPeso}}; letter-spacing: 0.04em">{{titolo}}</span>
@@ -27,11 +27,15 @@
     <span style="font-family: {{testoFam}}; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700">{{cifra}}</span>
   </sc-if>
   <sc-if value="{{haTesto}}" hint-placeholder-val="{{ true }}">
-    <span style="font-family: {{testoFam}}; font-size: {{corpo}}; line-height: 1.4; color: {{coloreTesto}}">{{testo}}</span>
+    <span style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; font-family: {{testoFam}}; font-size: {{corpo}}; line-height: 1.4; color: {{coloreTesto}}">
+      <sc-for list="{{pezzi}}" as="z" hint-placeholder-count="2">
+        <span style="display: inline-flex; align-items: center; gap: 5px"><sc-if value="{{icone}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{z.d}}"></path><path d="{{z.d2}}"></path></svg></sc-if>{{z.testo}}</span>
+      </sc-for>
+    </span>
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tono":{"editor":"enum","options":["normale","prova","guaio"],"default":"normale"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"stretto":{"editor":"boolean","default":false},"fatto":{"editor":"boolean","default":false},"avviso":{"editor":"boolean","default":false},"etichetta":{"editor":"text","default":"QUOTA ASSOCIATIVA"},"titolo":{"editor":"text","default":""},"cifra":{"editor":"text","default":""},"testo":{"editor":"text","default":"Si paga una volta l anno, all iscrizione."},"tonoTesto":{"editor":"enum","options":["dim","testo","guaio","avviso"],"default":"dim"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":120}}'>
+<script data-dc-script data-props='{"tono":{"editor":"enum","options":["normale","prova","guaio"],"default":"normale"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"stretto":{"editor":"boolean","default":false},"fatto":{"editor":"boolean","default":false},"avviso":{"editor":"boolean","default":false},"icone":{"editor":"boolean","default":false},"etichetta":{"editor":"text","default":"QUOTA ASSOCIATIVA"},"titolo":{"editor":"text","default":""},"cifra":{"editor":"text","default":""},"testo":{"editor":"text","default":"Si paga una volta l anno, all iscrizione."},"tonoTesto":{"editor":"enum","options":["dim","testo","guaio","avviso"],"default":"dim"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":120}}'>
 // Riproduzione 1:1 di Riquadro, Etichetta cifra e Dettaglio di src/components/ds.tsx (righe 66-122).
 // contesto "app": `.card.stack.riquadro` (src/styles.css righe 252 e 550-555): surface, bordo 2px `line`, padding 14px, gap 8px;
 //   stretto = gap 4px; tono prova = gap 6px e bordo sinistro 4px `giallo` (sta prima dei passi, non e' uno di loro);
@@ -53,6 +57,16 @@ const T = {
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+// COSTRUITA (`../lezioni-icone/`) `icone`: stessi segni a linea di MiaLezione davanti al giorno (etichetta) e a ogni parte del testo diviso su « · ».
+const ICONE = {
+  istruttore: ['M12 4a4 4 0 1 0 0 8a4 4 0 0 0 0-8z', 'M4 21a8 8 0 0 1 16 0'],
+  sala: ['M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z', 'M12 7.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5z'],
+  giorno: ['M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'M4 10h16M8 3v4M16 3v4'],
+  annullata: ['M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z', 'M5.6 5.6l12.8 12.8'],
+  sostituto: ['M7 7h13l-3-3', 'M17 17H4l3 3'],
+  piu: ['M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z', 'M12 8v8M8 12h8'],
+};
+const segno = (t, i, tutti) => { const m = t.toLowerCase(); const k = m.includes('sostitut') ? 'sostituto' : m.includes('annullat') ? 'annullata' : m.includes('in più') ? 'piu' : i === 0 && tutti.length > 1 ? 'istruttore' : 'giorno'; return { testo: t, d: ICONE[k][0], d2: ICONE[k][1] }; };
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
@@ -69,7 +83,9 @@ class Component extends DCLogic {
     const testo = p.testo ?? 'Si paga una volta l anno, all iscrizione.';
     const tt = p.tonoTesto || 'dim';
     const avviso = sg && truthy(p.avviso);
+    const pezzi = testo.split(' · ').map(segno);
     return {
+      icone: truthy(p.icone), pezzi, iconaEtichetta: { d: ICONE.giorno[0], d2: ICONE.giorno[1] },
       c, cond: sito ? BIG : COND, testoFam: sito ? INTER : 'inherit', inclina: sito ? 'normal' : 'oblique 9deg', titoloPeso: sito ? 800 : 700,
       etichettaPeso: sito ? 600 : 700, etichettaSpazio: sito ? '0.12em' : '0.2em', raggio: sito ? '6px' : '0',
       bordoTutto: sito ? '0' : '2px solid ' + (sg ? (avviso ? c.gialloTesto : truthy(p.fatto) ? c.verde : c.line) : guaio ? c.rosso : c.line),

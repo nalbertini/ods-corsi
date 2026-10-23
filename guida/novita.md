@@ -10,6 +10,121 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.184.0 — 23 ottobre 2026
+
+### Novità
+
+- Nella pagina iscritti le ultime presenze in piccolo, le lezioni di una settimana con le icone
+
+## 0.183.1 — 23 ottobre 2026
+
+### Risolto
+
+- La pagina iscritti ora è come nel disegno approvato
+
+## 0.183.0 — 23 ottobre 2026
+
+### Novità
+
+- Nella pagina iscritti, LEZIONI mostra la prossima lezione in evidenza e un elenco solo in ordine di data
+
+## 0.182.1 — 23 ottobre 2026
+
+### Modificato
+
+- Area iscritti: i tab DOCUMENTI e FAMIGLIA, la barra sempre in fondo, GUIDA ed ESCI solo in CONTATTI
+
+## 0.182.0 — 23 ottobre 2026
+
+### Novità
+
+- Area iscritti con la barra in basso, i contatti e il cambio persona dal nome
+
+## 0.181.0 — 23 ottobre 2026
+
+### Novità
+
+- La pagina iscritti più corta, con lo stato di ognuno nelle chip e l'avviso in una riga
+
+## 0.180.0 — 23 ottobre 2026
+
+### Novità
+
+- Puoi pagare con Satispay la quota che ti manca, anche per i tuoi familiari
+
+## 0.179.1 — 23 ottobre 2026
+
+### Modificato
+
+- Le iscrizioni hanno l'aspetto del sito anche nel vestiario e nel modulo a passi
+
+## 0.179.0 — 23 ottobre 2026
+
+### Novità
+
+- Dall'area iscritti puoi mandare il tuo certificato medico, la segreteria lo controlla e scrive la scadenza
+
+## 0.178.0 — 23 ottobre 2026
+
+### Novità
+
+- Accanto alla ricevuta del bonifico la segreteria vede quanto ci si aspetta
+
+## 0.177.0 — 23 ottobre 2026
+
+### Novità
+
+- La porta d'accesso, la guida e il consenso a Claude hanno lo stesso aspetto del resto dell'app
+
+## 0.176.0 — 23 ottobre 2026
+
+### Novità
+
+- La pagina dell'iscritto è divisa in tab, così non è più lunghissima
+- Le email degli avvisi e delle ricevute hanno un aspetto unico, con il tasto al posto del link
+
+## 0.175.0 — 23 ottobre 2026
+
+### Novità
+
+- L'area iscritti si apre, con accesso col codice ricevuto per email
+
+## 0.174.0 — 23 ottobre 2026
+
+### Novità
+
+- Il nucleo familiare ora è sul database vero, per la segreteria
+
+## 0.173.1 — 23 ottobre 2026
+
+### Modificato
+
+- Le ricevute vanno all'unica email della persona: PRODUCT.md e informativa aggiornati
+
+## 0.173.0 — 23 ottobre 2026
+
+### Novità
+
+- Una sola email per persona, la stessa per entrare nell'app e per ricevute e avvisi
+
+## 0.172.0 — 22 ottobre 2026
+
+### Novità
+
+- Nella scheda dell'iscritto il sollecito su WhatsApp è un tasto in alto e le azioni meno usate stanno in «Altro»
+
+## 0.171.0 — 22 ottobre 2026
+
+### Novità
+
+- Nella scheda dell'iscritto, DOCUMENTI, QUOTA E PAGAMENTI e CORSI a riquadri, con i tasti accanto
+
+## 0.170.3 — 22 ottobre 2026
+
+### Modificato
+
+- Contabilità, Movimenti più pulita: menu «Altre azioni», saldi compatti e colonna Tipo
+
 ## 0.170.2 — 22 ottobre 2026
 
 ### Modificato

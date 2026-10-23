@@ -14,18 +14,24 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: {{c.surface}}; border: 2px solid {{c.line}}; border-left: 6px solid {{tinta}}; color: {{c.text}}; text-align: left">
+<div style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 72px; padding: 12px 14px; background: {{c.surface}}; border: 2px solid {{c.line}}; border-left: 6px solid {{tinta}}; color: {{c.text}}; text-align: left">
   <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; letter-spacing: 0.02em; min-width: 62px; color: {{coloreTesto}}; text-decoration: {{decorazione}}">{{ora}}</span>
   <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 3px; min-width: 0">
     <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; text-transform: uppercase; color: {{coloreTesto}}; text-decoration: {{decorazione}}">{{corso}}</span>
-    <span style="font-size: 13px; color: {{c.dim}}">{{sotto}}</span>
+    <span style="display: flex; align-items: center; flex-wrap: nowrap; white-space: nowrap; gap: 4px 12px; font-size: 13px; line-height: 16px; color: {{c.dim}}">
+      <sc-for list="{{pezzi}}" as="z" hint-placeholder-count="2">
+        <span style="display: inline-flex; align-items: center; gap: 5px">
+          <sc-if value="{{icone}}" hint-placeholder-val="{{ false }}"><svg style="flex-shrink: 0; display: block; color: {{tinta}}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{z.d}}"></path><path d="{{z.d2}}"></path></svg></sc-if>{{z.testo}}</span>
+      </sc-for>
+    </span>
   </span>
   <sc-if value="{{haCosa}}" hint-placeholder-val="{{ true }}">
-    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-align: right; max-width: 40%; color: {{coloreCosa}}">{{cosa}}</span>
+    <span style="display: inline-flex; align-items: center; gap: 5px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-align: right; flex-shrink: 0; align-self: flex-start; white-space: nowrap; line-height: 1; padding-top: 3px; color: {{coloreCosa}}">
+      <sc-if value="{{icone}}" hint-placeholder-val="{{ false }}"><svg style="flex-shrink: 0; display: block" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{iconaCosa.d}}"></path><path d="{{iconaCosa.d2}}"></path></svg></sc-if>{{cosa}}</span>
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"ora":{"editor":"text","default":"18:30"},"corso":{"editor":"text","default":"Judo kids"},"sotto":{"editor":"text","default":"Sala 1 · Marco R."},"cosa":{"editor":"text","default":"SOSTITUTO"},"tinta":{"editor":"text","default":"#1b8ac4"},"annullata":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":72}}'>
+<script data-dc-script data-props='{"ora":{"editor":"text","default":"18:30"},"corso":{"editor":"text","default":"Judo kids"},"sotto":{"editor":"text","default":"Sala 1 · Marco R."},"cosa":{"editor":"text","default":"SOSTITUTO"},"tinta":{"editor":"text","default":"#1b8ac4"},"annullata":{"editor":"boolean","default":false},"icone":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":72}}'>
 // Riproduzione 1:1 della lezione nell'area iscritti: la funzione Lezione di src/components/AreaIscritti.tsx (righe 291-309)
 // con .card, .lezione, .lezione-ora, .lezione-nome e .mia-lezione in src/styles.css (righe 300-310 e 774-780). Non e' un
 // tasto (cursor default): ora, corso, sala e istruttore, a destra cosa ha di diverso dal solito.
@@ -38,6 +44,16 @@ const T = {
   // Col look del sito la tinta resta a sinistra (.mia-lezione), non in alto come la .lezione degli istruttori.
   sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
 };
+// COSTRUITA (`../lezioni-icone/`) `icone`: un segno a linea (16px, tratto 2, colore del testo accanto) davanti alla sala e al giorno,
+// e (18px) davanti a cosa cambia; le parole restano: l'icona accompagna, non sostituisce.
+const ICONE = {
+  istruttore: ['M12 4a4 4 0 1 0 0 8a4 4 0 0 0 0-8z', 'M4 21a8 8 0 0 1 16 0'],
+  sala: ['M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z', 'M12 7.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5z'],
+  giorno: ['M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'M4 10h16M8 3v4M16 3v4'],
+  annullata: ['M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z', 'M5.6 5.6l12.8 12.8'],
+  sostituto: ['M7 7h13l-3-3', 'M17 17H4l3 3'],
+  piu: ['M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z', 'M12 8v8M8 12h8'],
+};
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
@@ -45,7 +61,17 @@ class Component extends DCLogic {
     const c = T[p.tema] || T.scuro;
     const annullata = truthy(p.annullata);
     const cosa = annullata ? 'ANNULLATA' : (p.cosa ?? 'SOSTITUTO');
+    const icone = truthy(p.icone);
+    const pezzi = String(p.sotto ?? 'Sala 1 · Marco R.').split(' · ').map((testo, i, tutti) => {
+      const [d, d2] = ICONE[i === 0 && tutti.length > 1 ? 'istruttore' : 'giorno'];
+      return { testo, d, d2 };
+    });
+    const k = annullata ? 'annullata' : cosa.startsWith('SOSTITUTO') ? 'sostituto' : cosa.startsWith('IN PI') ? 'piu' : 'sala';
+    const [dc, dc2] = ICONE[k];
     return {
+      icone,
+      pezzi,
+      iconaCosa: { d: dc, d2: dc2 },
       c,
       ora: p.ora ?? '18:30',
       corso: p.corso ?? 'Judo kids',

@@ -53,6 +53,8 @@ import {
   type FiltriElenco,
   type IconaConti,
   iconaCassa,
+  lineaVoce,
+  tipoMovimento,
   togliFiltro,
   type RigaMovimento,
   type VoceContabile,
@@ -71,7 +73,7 @@ import { fraseDallaChat } from '../../lib/collega'
 import { intervalloDi } from '../../lib/pagamenti'
 import { centesimi, dataRicevuta, euro } from '../../lib/ricevute'
 import { ImportaBanca } from './ImportaBanca'
-import { Campo, chiedi, FiltroMenu, Guaio, lasciare, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica } from './comune'
+import { Campo, chiedi, FiltroMenu, Guaio, lasciare, MenuAzioni, messaggio, scaricaCsv, SchedaPiena, Segmenti, suCarta, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { ICONE_CONTI } from '../Icons'
 import { CampoPersona, CollegaAPersona, CollegaSicuri } from './CollegaPersona'
 import { Bilancio } from './Bilancio'
@@ -244,6 +246,8 @@ function FiltroCasse({ casse, scelte, onChange }: { casse: Cassa[]; scelte: stri
 }
 
 function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, movimento, onPersona }: { d: DatiSegreteria; azioni: HTMLElement | null; casse: Cassa[]; voci: VoceContabile[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void; movimento?: string; onPersona?: (personaId: string) => void }) {
+  // Dove ScaricoSatispay porta la sua voce nel menu delle azioni.
+  const [listaMenu, setListaMenu] = useState<HTMLElement | null>(null)
   const oggi = oggiARoma()
   const [f, setF] = useState<FiltriElenco>(FILTRI_INIZIALI)
   const { testo, periodo, tipo, voce, persona, annullati } = f
@@ -394,17 +398,12 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
     <div className="stack" style={{ gap: 18 }}>
       {azioni && createPortal(
         <>
-          {!esitiLetti.guaio && (
-            <button type="button" className="sg-btn sg-btn-linea" onClick={() => void collegaSicuri()}>
-              Collega i casi sicuri
-            </button>
-          )}
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => void apri('banca')}>
-            Importa dalla banca
-          </button>
-          <button type="button" className="sg-btn sg-btn-linea" onClick={() => void apri('giroconto')}>
-            Giroconto
-          </button>
+          <MenuAzioni etichetta="Altre azioni" onLista={setListaMenu}>
+            {!esitiLetti.guaio && <button type="button" role="menuitem" onClick={() => void collegaSicuri()}>Collega i casi sicuri</button>}
+            <button type="button" role="menuitem" onClick={() => void apri('banca')}>Importa dalla banca</button>
+            <button type="button" role="menuitem" onClick={() => void apri('giroconto')}>Giroconto</button>
+            <button type="button" role="menuitem" disabled={!trovate.length} onClick={() => scaricaCsv(`movimenti-${oggi}.csv`, csvMovimenti(trovate, casse))}>Esporta CSV</button>
+          </MenuAzioni>
           <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void apri('movimento')}>
             Nuovo movimento
           </button>
@@ -418,7 +417,7 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
         })}
         <Saldo nome="Totale" icona={null} valore={soldiConSegno(totaleResidui(conti))} sotto={['saldi iniziali compresi']} />
       </div>
-      <ScaricoSatispay d={d} fai={fai} onCambiato={onCambiato} />
+      <ScaricoSatispay d={d} fai={fai} onCambiato={onCambiato} menu={listaMenu} />
 
       {cambio && idScelti.length > 0 && sceltaRiep.tipo !== 'misto' && <InVista><CambiaVoce d={d} ids={idScelti} righe={righe} voci={voci} onRileggi={onCambiato} onFatto={cambioFinito} onChiudi={() => setCambio(false)} /></InVista>}
       {collegando === 'sicuri' && <InVista><CollegaSicuri d={d} onRileggi={() => { onCambiato(); void esitiLetti.ricarica() }} onVediDaDecidere={() => { setCollegando(null); setF({ ...FILTRI_INIZIALI, periodo: 'tutto', persona: 'da_decidere' }) }} onChiudi={chiudiCollega} /></InVista>}
@@ -453,12 +452,6 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
             scelta={periodo}
             onScegli={(v) => metti({ periodo: v })}
           />
-          <span style={{ flex: 1 }} />
-          <button type="button" className="sg-btn sg-btn-linea" disabled={!trovate.length} onClick={() => scaricaCsv(`movimenti-${oggi}.csv`, csvMovimenti(trovate, casse))}>
-            Esporta CSV
-          </button>
-        </div>
-        <div className="sg-elenco-barra" style={{ paddingTop: 0 }}>
           <FiltroMenu id="filtro-tipo" nome="Tipo" value={tipo} opzioni={[['', 'Tutti'], ['entrata', 'Entrate'], ['uscita', 'Uscite']]} onChange={(v) => metti({ tipo: v })} />
           <FiltroCasse casse={casse} scelte={cassaIds} onChange={setCassaIds} />
           <FiltroMenu id="filtro-voce" nome="Voce" value={voce} opzioni={[['', 'Tutte'], ...nomiVoci.map((n) => [n, n] as const)]} onChange={(v) => metti({ voce: v })} />
@@ -538,10 +531,10 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
             </span>
             <span role="columnheader" className="sg-etichetta">DATA</span>
             <span role="columnheader" className="sg-etichetta">DESCRIZIONE</span>
+            <span role="columnheader" className="sg-etichetta">TIPO</span>
             <span role="columnheader" className="sg-etichetta">CASSA</span>
             <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>ENTRATE</span>
             <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>USCITE</span>
-            <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>SALDO</span>
           </div>
           <div className="sg-tabella-corpo">
             {trovate.length === 0 && (
@@ -559,8 +552,6 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{dataRicevuta(r.data)}</span>
                 <span role="cell" style={{ fontSize: 15, fontWeight: 600, textDecoration: r.annullato ? 'line-through' : undefined }}>
                   <button type="button" className="sg-riga-apri">{r.descrizione}</button>
-                  {r.origine !== 'movimento' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Incasso iscritto</span>}
-                  {r.tipo === 'giroconto' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Giroconto</span>}
                   {r.satispayId && <span className="num sg-tag" style={{ marginLeft: 8 }}>Da Satispay</span>}
                   {r.origineImport?.startsWith('banca:') && <span className="num sg-tag" style={{ marginLeft: 8 }}>Dalla banca</span>}
                   {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>Annullato</span>}
@@ -570,10 +561,14 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
                   {!r.personaId && esiti[r.id] === 'nessuna' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Senza scheda</span>}
                   {!r.personaId && esiti[r.id] === 'sicuro' && <span className="num sg-tag" style={{ marginLeft: 8 }}>Da collegare</span>}
                   <span className="sg-sotto-movimento">
-                    <span className="sg-solo-telefono">{[r.tipo === 'giroconto' ? '' : `${r.tipo === 'entrata' ? '+ ' : '− '}${soldi(r.importo)}`, dataRicevuta(r.data), r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)].filter(Boolean).join(' · ')}</span>
-                    <span>{[r.voce, r.personaId ? nomiPersone.get(r.personaId) ?? (collegatoAMano(r) ? 'Persona collegata' : '') : ''].filter(Boolean).join(' · ')}</span>
+                    <span className="sg-solo-telefono">{[tipoMovimento(r).nome, r.tipo === 'giroconto' ? '' : `${r.tipo === 'entrata' ? '+ ' : '− '}${soldi(r.importo)}`, dataRicevuta(r.data), r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)].filter(Boolean).join(' · ')}</span>
+                    <span>{lineaVoce(r, r.personaId ? nomiPersone.get(r.personaId) ?? (collegatoAMano(r) ? 'Persona collegata' : '') : '')}</span>
                     {r.sotto && <span>{r.sotto}</span>}
                   </span>
+                </span>
+                <span role="cell" className="sg-cella-icona">
+                  <IconaConto nome={tipoMovimento(r).icona} />
+                  {tipoMovimento(r).nome}
                 </span>
                 <span role="cell" className="sg-cella-icona">
                   <IconaConto nome={r.tipo === 'giroconto' ? 'frecce' : iconaCassa(nomeCassa(r.cassaId))} />
@@ -584,10 +579,6 @@ function Movimenti({ d, azioni, casse, voci, chiusure, righe, fai, onCambiato, m
                 </span>
                 <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', textDecoration: r.annullato ? 'line-through' : undefined }}>
                   {e?.uscita ? `− ${soldi(e.uscita)}` : r.annullato && r.tipo === 'uscita' ? soldi(r.importo) : ''}
-                </span>
-                <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right' }}>
-                  <span className="sg-solo-telefono" style={{ fontSize: 12, fontWeight: 400, color: 'var(--dim)' }}>Saldo </span>
-                  {soldiConSegno(e?.saldo ?? 0)}
                 </span>
               </div>
               )

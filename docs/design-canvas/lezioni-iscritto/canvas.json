@@ -1,0 +1,154 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-23T12:00:00Z"
+ },
+ "title": "Area iscritti, tab Lezioni",
+ "launch": {
+  "view": "canvas",
+  "page": "page-1"
+ },
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "LEZIONI"
+  },
+  {
+   "id": "page-2",
+   "name": "COMPONENTI"
+  }
+ ],
+ "boards": {
+  "Oggi.dc.html": {
+   "x": 0,
+   "y": 140,
+   "w": 390,
+   "h": 1250,
+   "title": "Oggi · online",
+   "page": "page-1"
+  },
+  "Main.dc.html": {
+   "x": 470,
+   "y": 140,
+   "w": 390,
+   "h": 1250,
+   "title": "Proposta · LEZIONI",
+   "page": "page-1"
+  },
+  "PropostaSatispay.dc.html": {
+   "x": 940,
+   "y": 140,
+   "w": 390,
+   "h": 1250,
+   "title": "Proposta · con saldo Satispay",
+   "page": "page-1"
+  },
+  "PropostaContatti.dc.html": {
+   "x": 1410,
+   "y": 140,
+   "w": 390,
+   "h": 1250,
+   "title": "Proposta · tab CONTATTI",
+   "page": "page-1"
+  },
+  "BarraNavigazione.dc.html": {
+   "x": 0,
+   "y": 140,
+   "w": 390,
+   "h": 66,
+   "title": "BarraNavigazione",
+   "page": "page-2"
+  },
+  "Bottone.dc.html": {
+   "x": 0,
+   "y": 326,
+   "w": 260,
+   "h": 80,
+   "title": "Bottone",
+   "page": "page-2"
+  },
+  "Chip.dc.html": {
+   "x": 0,
+   "y": 526,
+   "w": 180,
+   "h": 50,
+   "title": "Chip",
+   "page": "page-2"
+  },
+  "MiaLezione.dc.html": {
+   "x": 0,
+   "y": 696,
+   "w": 360,
+   "h": 72,
+   "title": "MiaLezione",
+   "page": "page-2"
+  },
+  "MiaPresenza.dc.html": {
+   "x": 0,
+   "y": 888,
+   "w": 360,
+   "h": 80,
+   "title": "MiaPresenza",
+   "page": "page-2"
+  },
+  "Riquadro.dc.html": {
+   "x": 0,
+   "y": 1088,
+   "w": 360,
+   "h": 120,
+   "title": "Riquadro",
+   "page": "page-2"
+  },
+  "SchedeArea.dc.html": {
+   "x": 0,
+   "y": 1328,
+   "w": 390,
+   "h": 50,
+   "title": "SchedeArea",
+   "page": "page-2"
+  },
+  "Testata.dc.html": {
+   "x": 0,
+   "y": 1498,
+   "w": 390,
+   "h": 72,
+   "title": "Testata",
+   "page": "page-2"
+  },
+  "Titoletto.dc.html": {
+   "x": 0,
+   "y": 1690,
+   "w": 360,
+   "h": 50,
+   "title": "Titoletto",
+   "page": "page-2"
+  }
+ },
+ "order": [
+  "Oggi.dc.html",
+  "Main.dc.html",
+  "PropostaSatispay.dc.html",
+  "PropostaContatti.dc.html",
+  "BarraNavigazione.dc.html",
+  "Bottone.dc.html",
+  "Chip.dc.html",
+  "MiaLezione.dc.html",
+  "MiaPresenza.dc.html",
+  "Riquadro.dc.html",
+  "SchedeArea.dc.html",
+  "Testata.dc.html",
+  "Titoletto.dc.html"
+ ],
+ "notes": {
+  "titolo": {
+   "x": 0,
+   "y": 0,
+   "maxW": 1800,
+   "kind": "title1",
+   "text": "Area iscritti · tab LEZIONI: com è online e proposta",
+   "page": "page-1"
+  }
+ },
+ "designSystems": []
+}

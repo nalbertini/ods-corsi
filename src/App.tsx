@@ -6,11 +6,12 @@ import { NastroProva } from './components/ds'
 import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { Collega } from './components/Collega'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
+import { apriAspettoModulo } from './lib/aspettoModulo'
 import { vistaIscrizioni } from './lib/paginaIscrizioni'
 import { IscrizioneAPassi } from './components/IscrizioneAPassi'
 import { OrdinaVestiario } from './components/OrdinaVestiario'
 import { PrezziIscrizione } from './components/PrezziIscrizione'
-import { AreaIscritti, IscrittiChiusa } from './components/AreaIscritti'
+import { AreaIscritti } from './components/AreaIscritti'
 import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
 import { MieOre } from './components/MieOre'
@@ -79,7 +80,7 @@ function Aree() {
   if (area === 'collega')
     return (
       <div className="app">
-        <Testata luogo="CONTABILITÀ" />
+        <Testata luogo="CONTABILITÀ" senzaTema />
         <main className="scroll">
           <Collega />
         </main>
@@ -147,7 +148,7 @@ function PortaUnica() {
   }, [])
   return (
     <div className="app">
-      <Testata luogo="ACCESSO" guida={INDIRIZZO_GUIDA} />
+      <Testata luogo="ACCESSO" guida={INDIRIZZO_GUIDA} senzaTema />
       <main className="scroll">
         {doppio?.persona ? (
           <SceltaArea persona={doppio.persona} aree={doppio.aree} onScelta={passaA} />
@@ -157,6 +158,12 @@ function PortaUnica() {
           <>
             <Accesso />
             <div className="pad stack porta-altro" style={{ gap: 10, paddingBottom: 16 }}>
+              <a className="card stack scelta-area" href={INDIRIZZI.iscritti}>
+                <span className="scelta-titolo">ISCRITTI</span>
+                <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+                  Le tue lezioni, le presenze, il certificato e le ricevute. Entri con l’email, senza password.
+                </span>
+              </a>
               <a className="card stack scelta-area" href={INDIRIZZI.iscrizioni}>
                 <span className="scelta-titolo">ISCRIZIONI</span>
                 <span className="passo-dettaglio" style={{ fontSize: 15 }}>
@@ -185,12 +192,12 @@ function TutteLeAree() {
     ['istruttori', 'ISTRUTTORI', 'Il calendario e l’appello.'],
     ['segreteria', 'GESTIONE', 'Corsi, iscritti, presenze, richieste e conti. Dal computer della reception.'],
     ['iscrizioni', 'ISCRIZIONI', 'Come ci si iscrive, i costi e il modulo: la pagina da mandare a chi vuole iscriversi.'],
-    ['iscritti', 'ISCRITTI', 'La pagina di chi frequenta i corsi: le sue lezioni, le presenze, il certificato e le ricevute. Il pilota.'],
+    ['iscritti', 'ISCRITTI', 'La pagina di chi frequenta i corsi: le sue lezioni, le presenze, il certificato e le ricevute.'],
     ['sala', 'SALA', 'Il tablet appeso al muro della sala. Da qui il dispositivo resta un tablet.'],
   ]
   return (
     <div className="app">
-      <Testata luogo="CORSI" guida={INDIRIZZO_GUIDA} />
+      <Testata luogo="CORSI" guida={INDIRIZZO_GUIDA} senzaTema />
       <main className="scroll">
         <div className="pad stack scelta" style={{ gap: 10, paddingTop: 16, paddingBottom: 16 }}>
           {voci.map(([a, titolo, testo]) => (
@@ -225,11 +232,13 @@ function Iscrizioni() {
     window.addEventListener('hashchange', segui)
     return () => window.removeEventListener('hashchange', segui)
   }, [])
+  // Aspetto del sito per tutta l'area, non solo per pagina, prezzi e modulo: vestiario e passi non lo accendevano.
+  useEffect(() => apriAspettoModulo(), [])
   const { vista, testata } = vistaIscrizioni(haUnServer, hash)
   return (
     <div className="app">
       {/* La pagina ha il marchio sopra il titolo: una sola intestazione. */}
-      {testata && <Testata luogo={vista === 'vestiario' ? 'VESTIARIO' : 'ISCRIZIONI'} />}
+      {testata && <Testata luogo={vista === 'vestiario' ? 'VESTIARIO' : 'ISCRIZIONI'} senzaTema />}
       {inProvaScelta && <NastroProva testo="PROVA · LE RICHIESTE NON ARRIVANO IN SEGRETERIA" onEsci={() => scegliProva(false)} />}
       <main className="scroll">
         {/* Il flusso a passi è solo in prova e solo con #nuova: il vecchio resta com'è. */}
@@ -240,14 +249,15 @@ function Iscrizioni() {
 }
 
 /**
- * La pagina degli iscritti. Il pilota c'è solo in prova: col database vero
- * un iscritto non ha ancora un accesso, e la pagina dice che arriva.
+ * La pagina degli iscritti. Col database vero chi frequenta i corsi entra con
+ * l'email e un codice, senza passare dalla porta del personale; in prova si
+ * sceglie chi essere.
  */
 function Iscritti() {
   return (
     <div className="app">
-      <Testata luogo="ISCRITTI" guida={indirizzoPagina('iscritti')} senzaTema />
-      <main className="scroll">{serveAccesso ? <IscrittiChiusa /> : <AreaIscritti />}</main>
+      <Testata luogo="ISCRITTI" senzaTema />
+      <main className="scroll"><AreaIscritti /></main>
     </div>
   )
 }
@@ -515,7 +525,7 @@ function MenuIstruttori({
 function AreaGuida() {
   return (
     <div className="app">
-      <Testata luogo="GUIDA" />
+      <Testata luogo="GUIDA" senzaTema />
       <Guida />
     </div>
   )

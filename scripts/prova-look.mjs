@@ -97,9 +97,9 @@ const ambiente = ({ salvato = null, luce: chiaro = false, look = false } = {}) =
 }
 
 // --- 1. lookDellArea ---------------------------------------------------------
-// Le aree col look del sito: segreteria, amministrazione, istruttori e iscritti.
-const LOOK_AREE = ['segreteria', 'amministrazione', 'istruttori', 'iscritti']
-const AREE = ['segreteria', 'amministrazione', 'iscrizioni', 'iscritti', 'istruttori', 'sala', 'guida', 'scelta']
+// Le aree col look del sito: segreteria, amministrazione, istruttori, iscritti, la porta (`scelta`), la guida e il consenso a Claude (`collega`).
+const LOOK_AREE = ['segreteria', 'amministrazione', 'istruttori', 'iscritti', 'scelta', 'guida', 'collega']
+const AREE = ['segreteria', 'amministrazione', 'iscrizioni', 'iscritti', 'istruttori', 'sala', 'guida', 'collega', 'scelta']
 console.log('\nL\'aspetto per area (src/lib/aspettoSegreteria.ts)')
 let asp
 try {
@@ -130,6 +130,13 @@ for (const a of AREE) {
   // Il look forza il chiaro: nell'area iscritti il tasto del tema non servirebbe a niente.
   const app = readFileSync('src/App.tsx', 'utf8')
   ok('la Testata di ISCRITTI è senzaTema', /<Testata luogo="ISCRITTI"[^>]*\bsenzaTema\b/.test(app), true)
+  // Lo stesso per la porta, con e senza accesso: il look forza il chiaro anche lì.
+  ok('la Testata della porta (ACCESSO) è senzaTema', /<Testata luogo="ACCESSO"[^>]*\bsenzaTema\b/.test(app), true)
+  ok('la Testata della GUIDA è senzaTema', /<Testata luogo="GUIDA"[^>]*\bsenzaTema\b/.test(app), true)
+  ok('la Testata di COLLEGA (CONTABILITÀ) è senzaTema', /<Testata luogo="CONTABILITÀ"[^>]*\bsenzaTema\b/.test(app), true)
+  ok('la Testata di tutte le aree (CORSI) è senzaTema', /<Testata luogo="CORSI"[^>]*\bsenzaTema\b/.test(app), true)
+  ok('la Testata delle iscrizioni (ISCRIZIONI/VESTIARIO) è senzaTema', /<Testata luogo=\{vista === 'vestiario' \? 'VESTIARIO' : 'ISCRIZIONI'\}[^>]*\bsenzaTema\b/.test(app), true)
+  ok('tutta l\'area iscrizioni accende l\'aspetto del sito', /function Iscrizioni\(\)[\s\S]*?apriAspettoModulo\(\)/.test(app), true)
   // Il calendario dell'istruttore ha la tinta in alto; l'iscritto la tiene a sinistra, come prima.
   ok('le lezioni dell\'iscritto: la tinta del corso resta il filo a sinistra',
     /:root\[data-look='sito'\] \.mia-lezione \{[^}]*border-top: 0;[^}]*border-left: 6px solid var\(--tinta\)/.test(readFileSync('src/styles.css', 'utf8')), true)
@@ -353,6 +360,8 @@ ok('colori nelle regole del look: solo i 12 del sito, #ffffff e #121212',
 ok('.sg-gruppo-titolo: maiuscolo per CSS', ha('.sg-gruppo-titolo', /text-transform:\s*uppercase/), true)
 ok('.sg-gruppo-titolo: Inter (var(--body))', ha('.sg-gruppo-titolo', /font-family:\s*var\(--body\)/), true)
 ok('.sg-gruppo-titolo: 12px, peso 600', ha('.sg-gruppo-titolo', /font-size:\s*12px/) && ha('.sg-gruppo-titolo', /font-weight:\s*600/), true)
+ok('.mia-barra: in fondo anche a pagina corta (margin-top: auto)', /\n\.mia-barra \{[^}]*margin-top: auto/.test(readFileSync('src/styles.css', 'utf8')), true)
+ok('.mio-nome-scelta (cambio persona): alto almeno 44px', /\n\.mio-nome-scelta \{[^}]*min-height: 44px/.test(readFileSync('src/styles.css', 'utf8')), true)
 ok('.sg-voce: altezza minima 44px', ha('.sg-voce', /min-height:\s*44px/), true)
 ok('.sg-voce: raggio 6px, peso 500', ha('.sg-voce', /border-radius:\s*6px/) && ha('.sg-voce', /font-weight:\s*500/), true)
 

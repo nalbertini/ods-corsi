@@ -213,6 +213,8 @@ const settimanaVecchia = (r) => r.selettori.some((x) => /^\.sg-griglia$|^\.sg-or
 // tasti social in fondo non ci sono più, quindi le loro regole sono tolte; il fondo col tasto per cominciare ha ora respiro (gap e 32px sotto).
 const vestiarioSottoLaPagina = (r) => r.selettori.some((x) => x === '.scroll > .iscrizioni-contatti' || x === '.iscrizioni-piede' || x === '.iscrizioni-richiesta')
 // Le righe senza casella (`data-senza-casella`) non ci sono più: l'estratto conto le ha tutte con la casella.
+// MOVIMENTI più compatti: i saldi in alto hanno la cifra a 22px (`.sg-saldo`, `.sg-saldo-cifra`), la ricerca dei filtri è più stretta (`.sg-elenco-cerca`, per stare in una riga sola) e la riga non ha più la colonna SALDO, quindi sul telefono restano solo la casella e la descrizione.
+const movimentiCompatti = (r) => r.selettori.some((x) => /^\.sg-saldo$|^\.sg-elenco-cerca$|^\.sg-saldo-cifra$|^\.sg-riga-movimento > :not\(:first-child\):not\(:nth-child\(3\)\):not\(:last-child\)$/.test(x))
 const rigaMovimentoConCasella = (r) => r.selettori.some((x) => /^\.sg-riga-movimento$|^\.sg-riga-movimento > :not\(:nth-child\(2\)\):not\(:last-child\)$|^\.sg-riga-movimento\[data-senza-casella='true'\]( > :first-child)?$/.test(x))
 // Sul telefono COMPENSI tiene anche DA PAGARE (tre numeri, si nasconde solo TECNICI): le due regole di `.sg-numeri[data-telefono-due]` sono cambiate di proposito.
 const numeriCompensi = (r) => r.selettori.some((x) => x.startsWith('.sg-numeri[data-telefono-due]'))
@@ -227,11 +229,21 @@ const schedaRivista = (r) => r.selettori.every((x) => SCHEDA_RIVISTA.includes(x)
 const cifreBanco = (r) => r.selettori.some((x) => /^\.bn-cifre$|^\.bn-cifra\[data-guaio/.test(x))
 // L'area iscritti ha il look del sito: SEGNALA è cresciuto a 44px col bordo blu (`prova:look`).
 const segnalaIscritti = (r) => r.selettori.includes('.mia-segnala')
+// I chip del nucleo (`.mia-chip-tasto`, `.mio-nucleo-scelta`) sono tolti di proposito: si cambia persona toccando il nome (`.mio-nome-scelta`, 44px, in `prova:look`).
+const chipIscritti = (r) => r.selettori.some((x) => /^\.(mia-chip-tasto|mio-nucleo-scelta)\b/.test(x))
+// Le presenze dell'area iscritti sono righe a sé, ognuna col suo riquadro (come le lezioni): `.mie-presenze` senza riquadro e il filo fra le righe sono cambiati di proposito.
+const presenzeARighe = (r) => r.selettori.some((x) => /^\.mie-presenze$|^\.mia-presenza(-voce)? \+ \.mia-presenza(-voce)?$/.test(x))
+// La scheda DOCUMENTI ha i tasti del certificato nel riquadro (`.sg-stato`): `.sg-tasti-cert` non c'è più, e la sua regola dei telefoni con lei.
+const tastiCert = (r) => r.selettori.some((x) => x.startsWith('.sg-tasti-cert'))
 // Aiuto e Impostazioni con il loro nome stanno nel riquadro di chi è dentro (`prova:menu`): la riga di icone in cima al menu non c'è più, il riquadro è più basso e DATI DI PROVA sta sempre lì; i risultati della ricerca hanno la loro icona.
 const menuConNomi = (r) => r.selettori.some((x) => /^#sg-menu \.sg-icone( > \.sg-bollino)?$|^#sg-menu \.sg-chi > \.sg-bollino$|^\.sg-chi$/.test(x))
 // PRESENZE non ha più le barre per corso né i numeri (rimanda a STATISTICHE): `.sg-presenze` e `.sg-barra*` sono tolte di proposito; `.sg-barra-binario` e `.sg-barra-pieno` restano, le usa STATISTICHE.
 const presenzeSenzaBarre = (r) => r.selettori.some((x) => /^\.sg-presenze$|^\.sg-barra(-nome|-suggerimento|-scala)?$|^\.sg-barra[:\[]/.test(x))
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !menuConNomi(r) && !schedaRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// Il sollecito è un tasto in testata e le azioni rare stanno in «Altro» (`prova:scheda-iscritto`): il gruppo a destra del piede e la riga «Sollecitato…» nel riquadro sono tolti di proposito.
+const testataScheda = (r) => r.selettori.some((x) => /^\.sg-scheda-piede > \.sg-scheda-piede-destra$|^\.sg-sollecito-ultimo$/.test(x))
+// L'area iscritti ha il nome nel saluto sottolineato, l'etichetta a destra della lezione che può andare a capo (e niente più verde: non c'è un «fatto» nelle lezioni) e il segno della presenza come icona: le loro regole sono cambiate di proposito.
+const areaIscrittiRivista = (r) => r.selettori.some((x) => /^\.mio-nome$|^\.mia-lezione-cosa(\[data-tono='fatto'\])?$|^\.mia-presenza-segno$/.test(x))
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

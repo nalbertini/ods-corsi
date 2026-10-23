@@ -3,6 +3,7 @@ import { NotaCampo, type Nota } from '../ds'
 import { GuaioConAzione } from '../../lib/cartaPdf'
 import { clicFuoriChiude } from '../../lib/schedaFinestra'
 import { dataLunga } from '../../lib/sala'
+import type { Tono } from '../../lib/segreteria'
 
 type Valore = string | number | null | undefined
 
@@ -381,6 +382,19 @@ export function Campo({ id, etichetta, children, largo, manca, nota }: { id?: st
   )
 }
 
+/** Un riquadro di scheda: lo stato in grande (colorato dal tono), il dettaglio sotto, i tasti a destra. */
+export function Stato({ nome, sotto, tono, finita, children }: { nome: string; sotto?: ReactNode; tono?: Tono; finita?: boolean; children?: ReactNode }) {
+  return (
+    <div className="sg-stato" data-tono={tono} data-finita={finita || undefined}>
+      <span className="stack" style={{ gap: 2, minWidth: 0 }}>
+        <span className="sg-stato-nome">{nome}</span>
+        {sotto && <span className="sg-sotto" style={{ fontSize: 13 }}>{sotto}</span>}
+      </span>
+      {children && <span className="sg-stato-tasti">{children}</span>}
+    </div>
+  )
+}
+
 export function Riga({ titolo, children }: { titolo: string; children?: ReactNode }) {
   return (
     <div className="sg-riga-titolo">
@@ -718,5 +732,33 @@ export function FiltroMenu({ id, nome, value, opzioni, onChange }: { id: string;
         </button>
       )}
     </span>
+  )
+}
+
+/**
+ * Le azioni secondarie di una schermata in un menu solo («Altre azioni ▾»). Si chiude con un clic su una voce,
+ * fuori dal menu o con Esc. `lista` dà l'elemento dove altri componenti possono portare le loro voci (createPortal).
+ */
+export function MenuAzioni({ etichetta, children, onLista }: { etichetta: string; children: ReactNode; onLista?: (el: HTMLElement | null) => void }) {
+  const dettagli = useRef<HTMLDetailsElement>(null)
+  useEffect(() => {
+    const chiudi = () => { if (dettagli.current) dettagli.current.open = false }
+    const clic = (e: MouseEvent) => {
+      const d = dettagli.current
+      if (!d?.open || !(e.target instanceof Element)) return
+      // Fuori dal menu, o su una voce (anche una portata da un altro componente): si chiude.
+      if (!d.contains(e.target) || e.target.closest('[role="menuitem"]')) chiudi()
+    }
+    // L'Esc si ferma qui: dentro una scheda (useDialogo, su window) chiuderebbe anche la scheda.
+    const tasto = (e: KeyboardEvent) => { if (e.key === 'Escape' && dettagli.current?.open) { e.stopPropagation(); chiudi(); dettagli.current.querySelector('summary')?.focus() } }
+    document.addEventListener('click', clic)
+    document.addEventListener('keydown', tasto)
+    return () => { document.removeEventListener('click', clic); document.removeEventListener('keydown', tasto) }
+  }, [])
+  return (
+    <details ref={dettagli} className="sg-menu-azioni" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.open = false }}>
+      <summary className="sg-btn sg-btn-linea">{etichetta} <span aria-hidden="true">▾</span></summary>
+      <div className="sg-menu-azioni-lista" role="menu" ref={onLista}>{children}</div>
+    </details>
   )
 }
