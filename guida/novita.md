@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.190.0 — 23 ottobre 2026
+
+### Novità
+
+- Dall'area iscritti paghi la quota intera o il rinnovo con Satispay
+
 ## 0.189.0 — 23 ottobre 2026
 
 ### Novità
