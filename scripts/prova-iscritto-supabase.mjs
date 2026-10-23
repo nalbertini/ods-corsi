@@ -38,6 +38,13 @@ ok(
   m.schedaDa({ id: 'a', nome: 'Luca', cognome: 'Rossi', corsi: [{ id: 'c', nome: 'Karate', colore: null }], certificato_scade: null, pagamento: 'in_parte', pagato_fino: null, quote: [{ anno: 2026, numero: 1, dal: '2026-09-01', al: null, mancano: 5 }], nato_il: '2010-05-01' }),
   { id: 'a', nome: 'Luca', cognome: 'Rossi', corsi: [{ id: 'c', nome: 'Karate' }], certificato: {}, pagamento: { stato: 'in_parte' }, quote: [{ anno: 2026, numero: 1, dal: '2026-09-01', mancano: 5 }], natoIl: '2010-05-01' },
 )
+{
+  const r = { id: 'a', nome: 'L', cognome: 'R', corsi: null, certificato_scade: null, pagamento: 'pagato', pagato_fino: null, quote: null, nato_il: null }
+  const con = m.schedaDa({ ...r, certificato_in_attesa_il: '2026-10-20T14:05:00+00:00' })
+  ok('mandato: dal timestamp resta il giorno, e il tasto può esserci', [con.certificato.inAttesaIl, con.certificatoDaQui], ['2026-10-20', true])
+  ok('colonna vuota (102 c\'è): niente in attesa, ma il tasto può esserci', [m.schedaDa({ ...r, certificato_in_attesa_il: null }).certificato.inAttesaIl, m.schedaDa({ ...r, certificato_in_attesa_il: null }).certificatoDaQui], [undefined, true])
+  ok('senza la colonna (102 non c\'è): niente tasto', m.schedaDa(r).certificatoDaQui, undefined)
+}
 ok('la scheda senza corsi né quote: elenchi vuoti', m.schedaDa({ id: 'a', nome: 'L', cognome: 'R', corsi: null, certificato_scade: '2027-01-01', pagamento: 'pagato', pagato_fino: '2027-06-30', quote: null, nato_il: null }).corsi, [])
 ok('la lezione: snake_case in camelCase', m.lezioneDa({ id: 'l', corso: 'Karate', colore: null, inizio: 'i', fine: 'f', stato: 'confermata', sala: null, istruttore: 'Anna', sostituto: true, altra_sala: true, straordinaria: false }), {
   id: 'l', corso: 'Karate', inizio: 'i', fine: 'f', stato: 'confermata', istruttore: 'Anna', sostituto: true, altraSala: true, straordinaria: false,

@@ -180,6 +180,14 @@ export interface CertificatoSeg {
   vecchio?: boolean
   /** Il giorno in cui il file è stato caricato. Resta anche dopo che il file è stato cancellato (a scadenza + 30 giorni, o con la disattivazione): dice che un file c'è stato. */
   caricatoIl?: string
+  /** Il giorno in cui l'iscritto ha mandato un file che nessuno ha ancora controllato (`102-certificato-iscritto.sql`). */
+  inAttesaIl?: string
+}
+
+/** Un certificato mandato dall'iscritto, da confermare con la scadenza o da rifiutare. */
+export interface CertificatoDaControllare {
+  personaId: string
+  inviatoIl: string
 }
 
 export type StatoPagamento = 'da_pagare' | 'in_parte' | 'pagato'
@@ -619,6 +627,14 @@ export interface DatiSegreteria {
   togliCertificato(personaId: string): Promise<void>
   /** Il file del certificato, o `null` se non c'è: il link vale dieci minuti. */
   apriCertificato(personaId: string): Promise<FileSeg | null>
+  /** I certificati mandati dagli iscritti e non ancora controllati, dal più vecchio. */
+  certificatiDaControllare(): Promise<CertificatoDaControllare[]>
+  /** Il file mandato dall'iscritto e non ancora confermato, o `null`: il link vale dieci minuti. */
+  apriCertificatoInAttesa(personaId: string): Promise<FileSeg | null>
+  /** Il file mandato diventa il certificato, con la scadenza scritta qui; quello di prima va via. */
+  confermaCertificatoIscritto(personaId: string, scade: string): Promise<void>
+  /** Il file mandato non va: si cancella, e l'iscritto può rimandarlo. */
+  rifiutaCertificatoIscritto(personaId: string): Promise<void>
   /** Se la copia del documento d'identità è in segreteria. */
   salvaDocumento(personaId: string, inSegreteria: boolean): Promise<void>
   salvaPagamento(personaId: string, p: PagamentoSeg): Promise<void>

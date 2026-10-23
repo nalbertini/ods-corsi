@@ -34,13 +34,18 @@ export interface SchedaIscritto {
   cognome: string
   /** I corsi a cui è iscritto oggi, per nome. */
   corsi: Array<{ id: string; nome: string; colore?: string }>
-  /** Solo fino a quando vale: se c'è un file, e di che tipo, lo sa solo la segreteria. */
-  certificato: Pick<CertificatoSeg, 'scade'>
+  /**
+   * Fino a quando vale, e il giorno in cui ha mandato un file che la segreteria
+   * non ha ancora controllato. Il file e il suo nome non si vedono mai da qui.
+   */
+  certificato: Pick<CertificatoSeg, 'scade'> & { inAttesaIl?: string }
   /** L'eccezione «pagato fuori dall'app»; se ha pagato lo dicono le `quote`. */
   pagamento: PagamentoSeg
   quote?: QuotaRicevuta[]
   /** `AAAA-MM-GG`; senza, il certificato serve (vedi `serveCertificato`). */
   natoIl?: string
+  /** Il database sa ricevere il certificato da qui (102-certificato-iscritto.sql); senza, niente tasto. */
+  certificatoDaQui?: boolean
 }
 
 /** Una lezione di uno dei suoi corsi, con quello che è cambiato rispetto al solito. */
@@ -112,6 +117,12 @@ export interface DatiIscritto {
   segnala(personaId: string, sessioneId: string, nota?: string): Promise<void>
   /** Le sue presenze segnalate, per sapere a che punto sono. */
   segnalate(personaId: string): Promise<Segnalata[]>
+  /**
+   * Manda il certificato medico di questa persona (la sua, o quella di un
+   * minore del nucleo): resta in attesa finché la segreteria non scrive la
+   * scadenza. Un altro file prende il posto di quello in attesa.
+   */
+  mandaCertificato(personaId: string, file: File): Promise<void>
   /** Il saldo della quota con Satispay c'è: il servizio è acceso e `102-saldo-satispay.sql` è sul database (in prova sempre). */
   saldoAttivo(): Promise<boolean>
   /**

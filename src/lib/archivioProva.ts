@@ -82,7 +82,7 @@ export interface PersonaProva {
   creataIl: string
   /** Solo degli iscritti, e anche questi possono mancare in un archivio già salvato. */
   /** `file`: il nome di quello caricato nell'app; senza `caricatoIl` è di prima della nuova gestione. */
-  certificato?: { scade?: string; file?: string; caricatoIl?: string }
+  certificato?: { scade?: string; file?: string; caricatoIl?: string; inAttesa?: { file: string; il: string } }
   /** La copia del documento d'identità è in segreteria. */
   documento?: boolean
   pagamento?: { stato: 'da_pagare' | 'in_parte' | 'pagato'; fino?: string; nota?: string }
@@ -530,6 +530,15 @@ export const nomeDi = (p: Pick<PersonaProva, 'nome' | 'cognome'>) => (p.cognome 
  * archivio resta che il file c'era.
  */
 export const certificatiProva = new Map<string, FileSeg>()
+
+/** Quelli mandati dall'iscritto e non ancora confermati: stesso destino, e uno solo per persona. */
+export const certificatiInAttesaProva = new Map<string, FileSeg>()
+
+export function scordaInAttesa(personaId: string) {
+  const vecchio = certificatiInAttesaProva.get(personaId)
+  if (vecchio?.url && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(vecchio.url)
+  certificatiInAttesaProva.delete(personaId)
+}
 
 export function scordaCertificato(personaId: string) {
   const vecchio = certificatiProva.get(personaId)

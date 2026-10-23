@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import {
   avvisi,
   contoPresenze,
@@ -13,6 +13,7 @@ import {
   type SchedaIscritto,
 } from '../lib/iscritto'
 import type { Segnalata } from '../lib/segnalate'
+import { boxCertificato } from '../lib/certificatoIscritto'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
 import { comePaga, dalCertificato, pagamentoDi, statoCertificato } from '../lib/segreteria'
 import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
@@ -349,7 +350,7 @@ function Pagina({
       {pannello(
         'regola',
         <>
-          <InRegola dati={dati} scheda={scheda} io={io} ricevute={ricevute} />
+          <InRegola scheda={scheda} dati={dati} personaId={personaId} io={io} ricevute={ricevute} onMandato={() => dati.scheda(personaId).then(setScheda)} />
           <Ricevute ricevute={ricevute} />
         </>,
       )}
@@ -579,7 +580,7 @@ function Presenze({ dati, personaId, presenze, tua }: { dati: DatiIscritto; pers
 
 const data = (g: string) => g.split('-').reverse().join('/')
 
-function InRegola({ dati, scheda, io, ricevute }: { dati: DatiIscritto; scheda: SchedaIscritto; io: string; ricevute: Ricevuta[] }) {
+function InRegola({ scheda, dati, personaId, io, ricevute, onMandato }: { scheda: SchedaIscritto; dati: DatiIscritto; personaId: string; io: string; ricevute: Ricevuta[]; onMandato: () => Promise<void> }) {
   const oggi = chiaveGiorno(new Date())
   const cert = statoCertificato(scheda, oggi)
   const stato = pagamentoDi(scheda, oggi)
@@ -592,6 +593,7 @@ function InRegola({ dati, scheda, io, ricevute }: { dati: DatiIscritto; scheda: 
     non_serve: 'Sotto i 6 anni non serve.',
     in_arrivo: `Dal ${data(dalCertificato(scheda.natoIl ?? ''))}, a 6 anni, serve: portalo in segreteria.`,
   }[cert]
+  const mandare = boxCertificato(scheda, oggi, scheda.certificatoDaQui ?? false)
   const pagaTesto = {
     da_pagare: 'Non risulta pagata.',
     in_parte: `Pagata in parte${stato.mancano ? `: mancano ${euro(stato.mancano)} €` : stato.nota ? `: ${stato.nota.toLowerCase()}` : ''}.`,
@@ -606,6 +608,7 @@ function InRegola({ dati, scheda, io, ricevute }: { dati: DatiIscritto; scheda: 
         <Riquadro stretto>
           <Etichetta>CERTIFICATO MEDICO</Etichetta>
           <Dettaglio tono={tono(cert === 'valido' || cert === 'non_serve', cert === 'in_scadenza' || cert === 'in_arrivo')}>{certTesto}</Dettaglio>
+          {mandare.tasto && <MandaCertificato box={mandare} dati={dati} personaId={personaId} onMandato={onMandato} />}
         </Riquadro>
         <Riquadro stretto>
           <Etichetta>QUOTA</Etichetta>
@@ -614,6 +617,40 @@ function InRegola({ dati, scheda, io, ricevute }: { dati: DatiIscritto; scheda: 
         </Riquadro>
       </div>
     </section>
+  )
+}
+
+/** Il tasto che sceglie il file e lo manda subito: la segreteria lo vede in DA FARE. */
+function MandaCertificato({ box, dati, personaId, onMandato }: { box: ReturnType<typeof boxCertificato>; dati: DatiIscritto; personaId: string; onMandato: () => Promise<void> }) {
+  const campo = useRef<HTMLInputElement>(null)
+  const [guaio, setGuaio] = useState<string | null>(null)
+  const [invio, setInvio] = useState(false)
+  const manda = (file: File | undefined) => {
+    if (!file) return
+    setGuaio(null)
+    setInvio(true)
+    dati
+      .mandaCertificato(personaId, file)
+      // Il file è partito: se la scheda non si ricarica non è colpa dell'invio, e non si dice «non è partito».
+      .then(() => onMandato().catch(() => setGuaio('Il certificato è partito, ma la pagina non si è aggiornata: ricaricala')))
+      .catch((e: unknown) => setGuaio(e instanceof Error ? e.message : 'Il certificato non è partito: riprova fra poco'))
+      .finally(() => {
+        setInvio(false)
+        // Lo stesso file, scelto di nuovo, deve far scattare ancora il change.
+        if (campo.current) campo.current.value = ''
+      })
+  }
+  return (
+    <>
+      <Dettaglio>{box.testo}</Dettaglio>
+      <input ref={campo} type="file" accept="application/pdf,image/jpeg,image/png" hidden onChange={(e) => manda(e.target.files?.[0])} />
+      <Tasti>
+        <Tasto variante={box.tasto === 'manda-altro' ? 'linea' : 'principale'} disabled={invio} onClick={() => campo.current?.click()}>
+          {invio ? 'STO MANDANDO…' : box.tasto === 'manda-altro' ? 'MANDA UN ALTRO FILE' : 'MANDA IL CERTIFICATO'}
+        </Tasto>
+      </Tasti>
+      {guaio && <Dettaglio tono="guaio">{guaio}</Dettaglio>}
+    </>
   )
 }
 

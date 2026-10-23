@@ -8,7 +8,7 @@ import { contaTessere, conTessere, incrocioDaMostrare } from '../../lib/tessere'
 import { appelliSenzaSegni, certificatiDaSistemare, contiDaRileggere, contiDellaStriscia, GIORNI_APPELLI, mantieniIPrecedenti, pagamentiNonInRegola, type ContiCosaManca } from '../../lib/cosaManca'
 import { corsiScaduti } from '../../lib/corsiDaPagare'
 import { TESTI_DA_FARE, type ChiaveDaFare } from '../../lib/daFareTesti'
-import { chiArrivo, chiCertificati, chiCorsi, chiListino, chiPagare, chiRichieste, chiScadenza, COLONNE_DA_FARE, primiDaFare, TASTO_DA_FARE, type VoceChi } from '../../lib/daFareChi'
+import { chiArrivo, chiCertificati, chiCertificatiRicevuti, chiCorsi, chiListino, chiPagare, chiRichieste, chiScadenza, COLONNE_DA_FARE, primiDaFare, TASTO_DA_FARE, type VoceChi } from '../../lib/daFareChi'
 import { dataLunga, Testa } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
@@ -23,6 +23,8 @@ export interface ContiDaFare {
   segnalate?: number | null
   /** Fra chi è attivo, come la testata e i filtri di ISCRITTI: certificato mancante o scaduto. */
   certificati: number | null
+  /** Mandati dall'iscritto dall'area iscritti, in attesa che la segreteria scriva la scadenza. */
+  certificatiRicevuti: number | null
   /** …e in scadenza entro un mese. */
   scadenza: number | null
   /** …e compie 6 anni entro un mese, senza certificato: da avvisare la famiglia. */
@@ -50,6 +52,7 @@ const VUOTI: ContiDaFare = {
   richieste: null,
   istruttori: null,
   certificati: null,
+  certificatiRicevuti: null,
   scadenza: null,
   arrivo: null,
   pagare: null,
@@ -136,6 +139,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
           appelli: pesante ? appelliMancanti : prima.appelli,
           // Contati come i filtri di ISCRITTI che apre «Vedi chi»: il numero è quello delle righe che si vedono.
           certificati: pesante ? (pers ? certificatiDaSistemare(pers, oggi) : null) : prima.certificati,
+          certificatiRicevuti: pesante ? (pers ? chiCertificatiRicevuti(pers).length : null) : prima.certificatiRicevuti,
           scadenza: pesante ? (attive ? attive.filter((p) => certificatoInScadenza(p, oggi)).length : null) : prima.scadenza,
           arrivo: pesante ? (attive ? attive.filter((p) => certificatoInArrivo(p, oggi)).length : null) : prima.arrivo,
           pagare: pesante ? (pers ? pagamentiNonInRegola(pers, oggi) : null) : prima.pagare,
@@ -148,6 +152,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
             ...(pesante
               ? {
                   certificati: pers && chiCertificati(pers, oggi),
+                  'certificati-ricevuti': pers && chiCertificatiRicevuti(pers),
                   scadenza: pers && chiScadenza(pers, oggi),
                   arrivo: pers && chiArrivo(pers, oggi),
                   pagare: pers && chiPagare(pers, oggi),
@@ -196,6 +201,7 @@ const LIVELLO: Record<string, Livello> = {
   richieste: 'presto',
   istruttori: 'presto',
   segnalate: 'presto',
+  'certificati-ricevuti': 'presto',
   scadenza: 'presto',
   arrivo: 'presto',
   listino: 'presto',
@@ -263,6 +269,15 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       aPosto: 'certificati',
       voce: 'iscritti',
       dove: { filtro: 'certificato' },
+      apri: apriScheda,
+    },
+    {
+      chiave: 'certificati-ricevuti',
+      n: conti.certificatiRicevuti,
+      titolo: (n) => uno(n, TESTI_DA_FARE['certificati-ricevuti'].singolare, TESTI_DA_FARE['certificati-ricevuti'].plurale),
+      sotto: 'L’iscritto l’ha mandato dall’area iscritti: si apre il file, si scrive la scadenza o si rifiuta.',
+      aPosto: 'certificati mandati',
+      voce: 'iscritti',
       apri: apriScheda,
     },
     {

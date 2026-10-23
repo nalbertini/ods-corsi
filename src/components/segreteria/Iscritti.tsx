@@ -1807,6 +1807,8 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
   const oggi = chiaveGiorno(new Date())
   const [gesto, setGesto] = useState<{ file?: File; scade: string } | null>(null)
   const sel = useRef<HTMLInputElement>(null)
+  // La scadenza che la segreteria legge sul file mandato dall'iscritto.
+  const [scadeMandato, setScadeMandato] = useState('')
   const c = p.certificato
   // Cosa dire e quale tasto offrire sta in `src/lib/segreteria.ts`: qui si mostra.
   const x = presentaCertificato(c, p.natoIl, oggi, p.attiva)
@@ -1861,6 +1863,59 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
       {x.senzaNascita && <span className="sg-sotto">{x.senzaNascita}</span>}
       {x.cancellaIl && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Il file si cancella da solo il {dataLunga(x.cancellaIl)}, 30 giorni dopo la scadenza.</span>}
       {c.vecchio && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Certificato non archiviato (caricato prima della nuova gestione): si apre con APRI come gli altri.</span>}
+
+      {c.inAttesaIl && !gesto && (
+        <div className="stack" style={{ gap: 10, padding: 14, background: 'var(--surface)', border: '2px solid var(--line)', borderLeft: '4px solid var(--giallo)' }}>
+          <span className="num">Inviato dall’iscritto, da controllare</span>
+          <span className="sg-sotto">{p.nome} {p.cognome} ha mandato un file il {dataLunga(c.inAttesaIl)}. Aprilo, leggi la data e scrivila qui sotto.</span>
+          <div>
+            <button
+              type="button"
+              className="num sg-chip"
+              onClick={() => {
+                const w = window.open('', '_blank')
+                void fai(async () => {
+                  const f = await d.apriCertificatoInAttesa(p.id).catch((e: unknown) => {
+                    w?.close()
+                    throw e
+                  })
+                  if (!f) {
+                    w?.close()
+                    throw new Error(d.modo === 'prova' ? 'In prova il file resta solo finché la pagina è aperta: questo non c’è più, si può confermare o rifiutare lo stesso' : 'Il file non si trova: l’iscritto può rimandarlo')
+                  }
+                  if (w) w.location.href = f.url
+                  else window.location.href = f.url
+                })
+              }}
+            >
+              Apri il file
+            </button>
+          </div>
+          <Campo id="c-scade-mandato" etichetta="VALIDO FINO AL">
+            <input id="c-scade-mandato" className="sg-campo" type="date" value={scadeMandato} onChange={(e) => setScadeMandato(e.target.value)} />
+          </Campo>
+          <div className="row" style={{ gap: 8 }}>
+            <button
+              type="button"
+              className="sg-btn sg-btn-pieno grow"
+              disabled={!scadeMandato}
+              onClick={() => void fai(() => d.confermaCertificatoIscritto(p.id, scadeMandato), 'Certificato confermato', onCambiato)}
+            >
+              Conferma
+            </button>
+            <button
+              type="button"
+              className="sg-btn sg-btn-linea sg-pericolo grow"
+              onClick={async () => {
+                if (await chiedi(`Rifiutare il certificato mandato da ${p.nome} ${p.cognome}? Il file si cancella e dovrà rimandarlo.`, 'Rifiuta', { pericolo: true }))
+                  void fai(() => d.rifiutaCertificatoIscritto(p.id), 'Certificato rifiutato', onCambiato)
+              }}
+            >
+              Rifiuta
+            </button>
+          </div>
+        </div>
+      )}
 
       {gesto ? (
         <div className="stack" style={{ gap: 10, padding: 14, background: 'var(--surface)', border: '2px solid var(--line)', borderLeft: '4px solid var(--giallo)' }}>

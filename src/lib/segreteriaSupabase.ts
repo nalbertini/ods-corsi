@@ -146,6 +146,8 @@ type Scheda = {
   certificato_file: string | null
   /** Arriva con 45-certificati-online.sql: senza, ogni file è di prima. */
   certificato_caricato_il?: string | null
+  /** Arriva con 102-certificato-iscritto.sql. */
+  certificato_in_attesa_il?: string | null
   documento_in_segreteria?: boolean
   pagamento: StatoPagamento
   pagato_fino: string | null
@@ -157,6 +159,7 @@ type Scheda = {
  * (`45-certificati-online.sql`), con un link che dura dieci minuti.
  */
 const CERTIFICATI = 'certificati'
+const MANCA_CERTIFICATI_ISCRITTO = 'Il certificato mandato dagli iscritti non è ancora attivo sul database: va lanciato 102-certificato-iscritto.sql'
 const MANCA_CERTIFICATI = 'I certificati nell’app non sono ancora attivi sul database: va lanciato 45-certificati-online.sql'
 const NUCLEO_IN_AGGIORNAMENTO = 'Il nucleo familiare non è ancora attivo sul database: va lanciato 100-nucleo.sql'
 const DURATA_LINK = 600
@@ -362,6 +365,13 @@ export function bastaUnoDai(r: { data: unknown; error: { code?: string; message?
   if (r.error) throw guaio(r.error)
   // La forma è quella della select `id, basta_uno`.
   return new Map((r.data as Array<{ id: string; basta_uno: boolean }>).map((x) => [x.id, x.basta_uno]))
+}
+
+/** Le regole di `conferma_` e `rifiuta_certificato_iscritto` hanno già le parole giuste (codici P0002 e 22023). */
+function guaioCertificatoIscritto(e: { message?: string; code?: string }): Error {
+  if (e.code === 'PGRST202' || e.code === '42883') return new Error(MANCA_CERTIFICATI_ISCRITTO)
+  if ((e.code === 'P0002' || e.code === '22023') && e.message) return new Error(e.message.replace("c'è", 'c’è'))
+  return guaio(e)
 }
 
 function guaio(e: { message?: string; code?: string } | null): Error {
@@ -1072,7 +1082,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const colonnaMancante = (x: { error: { code?: string; message?: string } | null }) => x.error?.code === '42703' && !/nucleo/.test(x.error.message ?? '')
       const leggiTutto = async (nucleo: boolean) => {
         // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
-        let r = await leggi(`${scheda}, certificato_caricato_il, documento_in_segreteria`, nucleo)
+        let r = await leggi(`${scheda}, certificato_caricato_il, certificato_in_attesa_il, documento_in_segreteria`, nucleo)
+        // Senza 102-certificato-iscritto.sql manca la colonna dei file mandati dagli iscritti.
+        if (colonnaMancante(r)) r = await leggi(`${scheda}, certificato_caricato_il, documento_in_segreteria`, nucleo)
         // Senza 45-certificati-online.sql ogni file è di prima; e 07-certificati-pagamenti.sql di prima del documento su carta: senza la colonna nuova.
         if (colonnaMancante(r)) r = await leggi(`${scheda}, documento_in_segreteria`, nucleo)
         if (colonnaMancante(r)) r = await leggi(scheda, nucleo)
@@ -1115,6 +1127,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             // Un file senza data di caricamento è di prima della nuova gestione.
             vecchio: !!s?.certificato_file && !s.certificato_caricato_il,
             caricatoIl: s?.certificato_caricato_il?.slice(0, 10),
+            inAttesaIl: s?.certificato_in_attesa_il?.slice(0, 10),
           },
           documento: !!s?.documento_in_segreteria,
           pagamento: { stato: s?.pagamento ?? 'da_pagare', fino: s?.pagato_fino ?? undefined, nota: s?.pagamento_nota ?? undefined },
@@ -1245,6 +1258,34 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       if (r.error?.code === 'PGRST204' || r.error?.code === '42703')
         throw new Error('Il documento su carta non è ancora attivo sul database: va rilanciato 07-certificati-pagamenti.sql')
       ok(r)
+    },
+
+    async certificatiDaControllare() {
+      const r = await db.from('schede_iscritti').select('persona_id, certificato_in_attesa_il').not('certificato_in_attesa', 'is', null).order('certificato_in_attesa_il')
+      // Senza 102-certificato-iscritto.sql la colonna non c'è: nessuno ha mandato niente.
+      if (r.error?.code === '42703' || r.error?.code === 'PGRST204') return []
+      return (ok(r) as Array<{ persona_id: string; certificato_in_attesa_il: string }>).map((x) => ({ personaId: x.persona_id, inviatoIl: x.certificato_in_attesa_il.slice(0, 10) }))
+    },
+
+    async apriCertificatoInAttesa(personaId) {
+      const r = await db.from('schede_iscritti').select('certificato_in_attesa').eq('persona_id', personaId).maybeSingle()
+      const nome = (ok(r) as { certificato_in_attesa: string | null } | null)?.certificato_in_attesa
+      if (!nome) return null
+      const { data, error } = await db.storage.from(CERTIFICATI).createSignedUrl(nome, DURATA_LINK)
+      if (error) throw guaioFile(error)
+      return { url: data.signedUrl, pdf: nome.endsWith('.pdf') }
+    },
+
+    async confermaCertificatoIscritto(personaId, scade) {
+      const guasto = cosaNonVaScadenza(scade)
+      if (guasto) throw new Error(guasto)
+      const r = await db.rpc('conferma_certificato_iscritto', { persona: personaId, scade })
+      if (r.error) throw guaioCertificatoIscritto(r.error)
+    },
+
+    async rifiutaCertificatoIscritto(personaId) {
+      const r = await db.rpc('rifiuta_certificato_iscritto', { persona: personaId })
+      if (r.error) throw guaioCertificatoIscritto(r.error)
     },
 
     async apriCertificato(personaId) {
