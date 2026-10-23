@@ -277,7 +277,8 @@ SATISPAY**. La causale ha i nomi di tutti, il cognome uguale una volta sola
 **ricevuta** del bonifico è facoltativa e una sola per tutti: chi la carica
 prima di aggiungere un familiare, o prima di cambiare corso, legge sotto di
 quanto è cambiato il totale e che la differenza si paga in segreteria o con un
-altro bonifico. Nel riepilogo, la riga **Ricevuta del pagamento** porta qui. Se la ricevuta non c'è, la
+altro bonifico. Il bonifico vale come pagato solo quando la segreteria
+conferma la ricevuta. Nel riepilogo, la riga **Ricevuta del pagamento** porta qui. Se la ricevuta non c'è, la
 schermata finale, sotto **DA PAGARE**, ripete IBAN e causale, con i tasti per
 copiarli.
 

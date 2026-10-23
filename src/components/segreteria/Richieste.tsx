@@ -6,7 +6,7 @@ import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
 import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato, siElimina } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
-import { attesoRicevuta } from '../../lib/passiIscrizione'
+import { attesoRicevuta, RICEVUTA_NON_PAGA } from '../../lib/passiIscrizione'
 import { PAGAMENTO } from '../../lib/iscrizione'
 import { euroBreve } from '../../lib/ricevute'
 import { nomeConosciuto, nomeProvenienza } from '../../lib/provenienza'
@@ -453,6 +453,7 @@ function Scheda({
               {insieme.length > 1 && ` per le ${insieme.length} richieste mandate insieme`}, a {PAGAMENTO.intestatario}, IBAN {PAGAMENTO.iban}
               {atteso.causale && `, causale «${atteso.causale}»`}.
               {atteso.senzaPrezzo.length > 0 && ` Senza prezzo nel listino: ${atteso.senzaPrezzo.join(', ')}: la cifra non è completa.`}
+              {' '}{RICEVUTA_NON_PAGA}
             </span>
           )}
           {certificato && (
