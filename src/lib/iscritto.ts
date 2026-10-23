@@ -42,6 +42,9 @@ export interface SchedaIscritto {
   /** L'eccezione «pagato fuori dall'app»; se ha pagato lo dicono le `quote`. */
   pagamento: PagamentoSeg
   quote?: QuotaRicevuta[]
+  /** Centesimi arrivati con Satispay (quota o saldo) e non ancora in una ricevuta: senza, la scheda direbbe «da pagare» a chi ha già pagato. */
+  satispay?: number
+  saldo?: number
   /** `AAAA-MM-GG`; senza, il certificato serve (vedi `serveCertificato`). */
   natoIl?: string
   /** Il database sa ricevere il certificato da qui (102-certificato-iscritto.sql); senza, niente tasto. */
@@ -129,7 +132,7 @@ export interface DatiIscritto {
    * Chi è `personaId` per chi paga il suo saldo (adulta, con un accesso suo, del
    * nucleo): `null` se non è una persona sua. In prova `io` è chi si è scelto di essere.
    */
-  chiPaga(personaId: string, io: string): Promise<Pick<ChiPaga, 'adulto' | 'haAccessoProprio' | 'comeTitolare'> | null>
+  chiPaga(personaId: string, io: string): Promise<Pick<ChiPaga, 'adulto' | 'haAccessoProprio' | 'comeTitolare' | 'importo'> | null>
   /**
    * Il saldo della quota di quella ricevuta, per quanto manca adesso: l'indirizzo
    * di Satispay dove pagare, o `null` se è già pagato (in prova, dove Satispay non c'è).
@@ -138,6 +141,13 @@ export interface DatiIscritto {
   pagaSaldo(personaId: string, ricevutaId: string): Promise<{ link: string } | null>
   /** Com'è andato l'ultimo saldo di quella ricevuta, o `null` se non è mai partito. */
   statoSaldo(personaId: string, ricevutaId: string): Promise<SaldoPagato | null>
+  /**
+   * La quota intera con Satispay (`105-paga-quota-satispay.sql`): come `pagaSaldo`, senza ricevuta.
+   * L'importo lo dà il database dal listino.
+   */
+  pagaQuota(personaId: string): Promise<{ link: string } | null>
+  /** Com'è andata l'ultima quota con Satispay, o `null` se non è mai partita. */
+  statoQuota(personaId: string): Promise<SaldoPagato | null>
 }
 
 export interface SaldoPagato {
@@ -175,7 +185,7 @@ export function avvisi(s: Pick<SchedaIscritto, 'certificato' | 'pagamento' | 'qu
   if (c === 'in_arrivo') x.push({ tono: 'avviso', testo: `Dal ${data(dalCertificato(s.natoIl!))} serve il certificato medico: portalo in segreteria.` }) // `in_arrivo` c'è solo con la data di nascita
   if (c === 'in_scadenza') x.push({ tono: 'avviso', testo: `Il certificato medico scade il ${data(s.certificato.scade!)}: prenota la visita.` })
   const p = pagamentoDi(s, oggi)
-  if (p.come === 'da_pagare') x.push({ tono: 'guaio', testo: 'La quota non risulta pagata: passa in segreteria.' })
+  if (p.come === 'da_pagare') x.push({ tono: 'guaio', testo: 'La quota non risulta pagata: pagala qui sotto o passa in segreteria.' })
   if (p.come === 'in_parte')
     x.push({ tono: 'avviso', testo: `La quota è pagata in parte${p.mancano ? `: mancano ${euro(p.mancano)} €` : p.nota ? `: ${p.nota.toLowerCase()}` : ''}.` })
   if (p.come === 'scaduto') x.push({ tono: 'guaio', testo: `La quota valeva fino al ${data(p.fino!)}: passa in segreteria per rinnovarla.` })

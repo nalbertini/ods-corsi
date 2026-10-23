@@ -87,11 +87,16 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   CON SATISPAY**: paghi solo quel che manca, la cifra la calcola l'app (non
   la scegli tu). Tornato da Satispay vedi **PAGATO**, e la segreteria prepara la
   ricevuta del resto. Se Satispay non conferma non ti prende niente: puoi
-  riprovare. Senza rete il tasto dice «Serve la rete per pagare». Rinnovi,
-  quote intere e corsi si pagano in palestra. In prova (`?prova`) Satispay non
-  si apre: chiede conferma e il pagamento è finto.
+  riprovare. Senza rete il tasto dice «Serve la rete per pagare».
+  Se la quota non risulta pagata, o è scaduta (un rinnovo), nel riquadro QUOTA
+  c'è **PAGA LA QUOTA … CON SATISPAY**: la cifra è quella del listino, la
+  calcola l'app. Anche qui vedi **PAGATO** al ritorno, e la segreteria prepara
+  la ricevuta, che trovi in DOCUMENTI, sotto RICEVUTE. Corsi e bonifico per ora
+  si pagano in palestra. In prova (`?prova`) Satispay non si apre: chiede
+  conferma e il pagamento è finto.
   Il titolare del nucleo (tab FAMIGLIA, o la pagina del familiare) vede **PAGA …
-  € PER** *nome* per i familiari senza un accesso loro: una persona alla volta.
+  € PER** *nome* (il resto) e **PAGA LA QUOTA … PER** *nome* per i familiari
+  senza un accesso loro: una persona alla volta.
   Chi ha un accesso suo, e ogni minorenne con account, paga dal suo telefono
   o tramite il titolare.
 - **Ricevute**: quelle fatte dalla segreteria, dalla più recente, ognuna col

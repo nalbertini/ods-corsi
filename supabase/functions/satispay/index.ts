@@ -25,6 +25,10 @@
 //   · POST { azione: 'saldo_stato', persona, ricevuta }: com'è andato il saldo
 //     (`satispay_saldo_stato`), chiedendolo a Satispay se è ancora in attesa;
 //   · POST { azione: 'saldo_attivo' }: se c’è il saldo (103), con il login;
+//   · POST { azione: 'quota', persona }: la quota associativa intera dall'area
+//     degli iscritti (`satispay_prepara_quota`, 105-paga-quota-satispay.sql),
+//     come il saldo ma senza ricevuta; 'quota_stato' come 'saldo_stato'
+//     (se c'è lo dice `saldo_attivo`);
 //   · GET ?payment_id=…: la callback di Satispay. Non dice lo stato e chiunque
 //     la può chiamare: lo stato si rilegge da Satispay con una chiamata firmata.
 //
@@ -240,6 +244,38 @@ Deno.serve(async (req) => {
     ritorno.searchParams.set('saldo', ricevuta)
     ritorno.searchParams.set('persona', persona)
     const link = await creaInSatispay(p.id, p.importo, ritorno, 'SALDO')
+    return link ? risposta({ link }) : risposta({ guaio: NON_RISPONDE }, 502)
+  }
+
+  if (corpo.azione === 'quota' || corpo.azione === 'quota_stato') {
+    const persona = typeof corpo.persona === 'string' && UUID.test(corpo.persona) ? corpo.persona : null
+    if (!persona) return risposta({ guaio: 'Manca la persona' }, 400)
+    const lui = await comeChiChiama(req)
+    if (!lui) return risposta({ guaio: 'Entra con il tuo accesso per pagare' }, 401)
+
+    if (corpo.azione === 'quota_stato') {
+      const { data, error } = await lui.rpc('satispay_quota_stato', { persona })
+      if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: NON_RISPONDE }, 502)
+      if (!data) return risposta({ pagamento: null })
+      // `as`: la forma è quella di `satispay_quota_stato` (105-paga-quota-satispay.sql).
+      const { satispay_id: satispayId, ...s } = data as { stato: string; importo: number; pagato_il?: string; chi: string; satispay_id?: string | null }
+      if (s.stato !== 'attesa' || !satispayId) return risposta({ pagamento: s })
+      const nuovo = await aggiorna(satispayId)
+      return risposta({ pagamento: nuovo ? { ...s, stato: nuovo.stato, pagato_il: nuovo.pagato_il } : s })
+    }
+
+    // 42501: non è una persona sua; 22023: i testi per chi paga. Il resto è il servizio che non c'è o non risponde.
+    const { data, error } = await lui.rpc('satispay_prepara_quota', { persona })
+    if (error) {
+      if (error.code === 'PGRST202') return risposta({ attivo: false })
+      return risposta({ guaio: error.code === '42501' && error.message ? error.message : detto(error) }, error.code === '42501' ? 403 : 409)
+    }
+    const p = data as { stato: string; id: string; importo: number; satispay_id?: string | null; link?: string | null }
+    if (p.satispay_id && p.link) return risposta({ link: p.link })
+    const ritorno = new URL('../iscritti/', app)
+    ritorno.searchParams.set('quota', '1')
+    ritorno.searchParams.set('persona', persona)
+    const link = await creaInSatispay(p.id, p.importo, ritorno, 'QUOTA')
     return link ? risposta({ link }) : risposta({ guaio: NON_RISPONDE }, 502)
   }
 
