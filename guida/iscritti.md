@@ -15,9 +15,11 @@ L'indirizzo è <https://app.officinedellosport.it/iscritti/>.
 
 ## Come si entra
 
-Senza password. Si scrive l'**email data in segreteria**, l'app ne manda un
-**codice di sei cifre**, si scrive il codice e si è dentro. Il codice dura
-poco: se non arriva o è scaduto, **MANDA UN ALTRO CODICE**. Il primo accesso
+Senza password. Si scrive l'**email data in segreteria**, l'app manda una
+mail con un **link**: si tocca e si è dentro. Nella mail c'è anche un **codice
+di sei cifre**, da scrivere nella pagina se il link non si apre qui (altro
+dispositivo, mail aperta in un'anteprima). Link e codice durano poco: se non
+arriva o è scaduto, **MANDA UN’ALTRA MAIL**. Il primo accesso
 lega l'email alla scheda; le volte dopo è subito la propria pagina.
 
 - Se l'email non è fra quelle delle schede, l'app dice «Questa email non
