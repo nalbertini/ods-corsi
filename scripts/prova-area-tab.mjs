@@ -3,8 +3,8 @@
 //
 //   node scripts/prova-area-tab.mjs
 //
-// Quattro tab (LEZIONI, IN REGOLA, NUCLEO, CONTATTI), NUCLEO solo per il titolare; si apre
-// su LEZIONI; la tastiera col giro; il segno su IN REGOLA dice DA SISTEMARE
+// Quattro tab (LEZIONI, DOCUMENTI, NUCLEO, CONTATTI), NUCLEO solo per il titolare; si apre
+// su LEZIONI; la tastiera col giro; il segno su DOCUMENTI dice DA SISTEMARE
 // quando certificato o quota non vanno (il peggiore vince).
 // Canvas: docs/design-canvas/area-iscritti-tab.
 // ---------------------------------------------------------------------------
@@ -39,9 +39,9 @@ const ok = (cosa, avuto, voluto) => {
 const f = (nome, ...args) => (typeof m[nome] === 'function' ? m[nome](...args) : `manca ${nome}()`)
 
 console.log('Quali tab')
-ok('chi non è titolare: LEZIONI, IN REGOLA e CONTATTI', f('tabArea', false), ['lezioni', 'regola', 'contatti'])
+ok('chi non è titolare: LEZIONI, DOCUMENTI e CONTATTI', f('tabArea', false), ['lezioni', 'regola', 'contatti'])
 ok('il titolare: anche NUCLEO, prima di CONTATTI', f('tabArea', true), ['lezioni', 'regola', 'nucleo', 'contatti'])
-ok('le etichette', ['lezioni', 'regola', 'nucleo', 'contatti'].map((t) => f('etichettaTab', t)), ['LEZIONI', 'IN REGOLA', 'NUCLEO', 'CONTATTI'])
+ok('le etichette', ['lezioni', 'regola', 'nucleo', 'contatti'].map((t) => f('etichettaTab', t)), ['LEZIONI', 'DOCUMENTI', 'NUCLEO', 'CONTATTI'])
 ok('si apre su LEZIONI', m.TAB_INIZIALE, 'lezioni')
 
 console.log('La tastiera')
@@ -59,7 +59,7 @@ ok('NUCLEO aperto ma non più titolare: si riparte da LEZIONI', f('tabAperto', [
 ok('CONTATTI resta aperto', f('tabAperto', quattro, 'contatti'), 'contatti')
 ok('un tab che c\'è resta aperto', f('tabAperto', tre, 'nucleo'), 'nucleo')
 
-console.log('Il segno su IN REGOLA')
+console.log('Il segno su DOCUMENTI')
 const s = (cert, paga) => f('segnoInRegola', cert, paga)
 ok('tutto a posto: niente', s('valido', 'pagato'), null)
 ok('sotto i 6 anni e pagato: niente', s('non_serve', 'pagato'), null)

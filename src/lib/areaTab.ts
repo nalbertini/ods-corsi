@@ -1,12 +1,12 @@
 // La pagina dell'iscritto divisa in tab: quali sono, la tastiera e il segno su
-// IN REGOLA. Il .tsx mostra e chiama.
+// DOCUMENTI. Il .tsx mostra e chiama.
 import type { ComePaga, StatoCertificato } from './segreteria'
 import { tastoLinguette, type SegnoScheda } from './schedaSezioni'
 import { CONTATTI, chiama, whatsapp } from './sito'
 
 export type IdTabArea = 'lezioni' | 'regola' | 'nucleo' | 'contatti'
 
-const ETICHETTE: Record<IdTabArea, string> = { lezioni: 'LEZIONI', regola: 'IN REGOLA', nucleo: 'NUCLEO', contatti: 'CONTATTI' }
+const ETICHETTE: Record<IdTabArea, string> = { lezioni: 'LEZIONI', regola: 'DOCUMENTI', nucleo: 'NUCLEO', contatti: 'CONTATTI' }
 
 export const TAB_INIZIALE: IdTabArea = 'lezioni'
 
@@ -29,7 +29,7 @@ export const tabAperto = (ordine: readonly IdTabArea[], scelto: IdTabArea): IdTa
 export const idTab = (id: IdTabArea) => `area-tab-${id}`
 export const idPannelloTab = (id: IdTabArea) => `area-pan-${id}`
 
-/** Il segno su IN REGOLA: DA SISTEMARE se certificato o quota non vanno, del tono del peggiore. */
+/** Il segno su DOCUMENTI: DA SISTEMARE se certificato o quota non vanno, del tono del peggiore. */
 export function segnoInRegola(cert: StatoCertificato, quota: ComePaga): SegnoScheda | null {
   const rosso = cert === 'manca' || cert === 'scaduto' || quota === 'da_pagare' || quota === 'scaduto'
   const giallo = cert === 'in_scadenza' || cert === 'in_arrivo' || quota === 'in_parte'

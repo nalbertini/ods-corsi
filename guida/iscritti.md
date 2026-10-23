@@ -40,8 +40,8 @@ In prova (`?prova`), in cima, si sceglie **quale iscritto essere**: la pagina ca
 ognuno, e il dispositivo si ricorda la scelta.
 
 La pagina è divisa in **tab**, nella barra in fondo allo schermo: **LEZIONI** (si
-apre su questo), **IN REGOLA**, per il titolare di un nucleo **NUCLEO**, e
-**CONTATTI**. Se il certificato o la quota non vanno, sul tab IN REGOLA c'è un
+apre su questo), **DOCUMENTI**, per il titolare di un nucleo **NUCLEO**, e
+**CONTATTI**. Se il certificato o la quota non vanno, sul tab DOCUMENTI c'è un
 **●** rosso o giallo. Il tab scelto resta quando si cambia persona. Con le
 frecce della tastiera si passa da un tab all'altro.
 
@@ -65,7 +65,7 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   La presenza la conferma l'istruttore della lezione o la segreteria; fino
   ad allora la riga dice **DA CONFERMARE**, e poi diventa presente, o dice
   **RIFIUTATA**. Una volta sola per lezione.
-- **Certificato e quota** (tab IN REGOLA): fino a quando vale il certificato medico (sotto i
+- **Certificato e quota** (tab DOCUMENTI): fino a quando vale il certificato medico (sotto i
   6 anni non è obbligatorio), e fino a quando è pagata la quota. Se manca, è
   scaduto o scade entro un mese c'è il tasto **MANDA IL CERTIFICATO**: una
   foto o un PDF, al massimo 5 MB. Resta **in attesa di conferma** finché la
