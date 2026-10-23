@@ -311,7 +311,6 @@ function Pagina({
         <>
           <Prossime lezioni={lezioni} presenze={presenze.length} />
           <Presenze dati={dati} personaId={personaId} presenze={presenze} />
-          <GuidaEsci conEsci={conEsci} />
         </>,
       )}
       {pannello(
@@ -812,25 +811,6 @@ function Nucleo({
         </section>
       )}
     </>
-  )
-}
-
-/** GUIDA e ESCI in coda a LEZIONI, come in CONTATTI. */
-function GuidaEsci({ conEsci }: { conEsci: boolean }) {
-  return (
-    <div className="pad row mia-guida-esci">
-      <a className="chi-esci" href={indirizzoPagina('iscritti')} target="_blank" rel="noopener noreferrer">
-        GUIDA
-      </a>
-      {conEsci && (
-        <>
-          <span aria-hidden="true">|</span>
-          <button type="button" className="chi-esci" onClick={() => void esci(INDIRIZZI.iscritti)}>
-            ESCI
-          </button>
-        </>
-      )}
-    </div>
   )
 }
 

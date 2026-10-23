@@ -1454,7 +1454,6 @@ a.btn { text-decoration: none; }
 .mia-barra { position: sticky; bottom: 0; z-index: 4; margin-top: auto; }
 .mia-barra-segno[data-tono='rosso'] { color: var(--rosso-testo); }
 .mia-barra-segno[data-tono='giallo'] { color: var(--giallo-testo); }
-.mia-guida-esci { gap: 12px; align-items: center; padding-bottom: 16px; color: var(--dim); }
 /* CONTATTI: righe da toccare in una scheda per gruppo. */
 .mia-scheda-righe { background: var(--surface); border: 2px solid var(--line-soft); border-radius: 6px; }
 .mia-riga { text-decoration: none; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 0 16px; color: var(--text); text-align: left; cursor: pointer; }

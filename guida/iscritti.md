@@ -29,7 +29,7 @@ lega l'email alla scheda; le volte dopo è subito la propria pagina.
   per il titolare, il nucleo. Il file del certificato che ha mandato l'iscritto
   e le note della segreteria non si vedono mai: resta la data. Una persona del nucleo con l'accesso suo
   vede le sue cose, e il titolare non le vede più.
-- **ESCI** in fondo alla pagina chiude l'accesso su quel dispositivo. Questo
+- **ESCI** (tab CONTATTI) chiude l'accesso su quel dispositivo. Questo
   accesso non apre niente della gestione, dell'appello o del tablet.
 - Con `?prova` nell'indirizzo la pagina si apre con dati inventati, per
   vedere com'è.
@@ -87,8 +87,7 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   suo **PDF** da scaricare: lo stesso che stampa la segreteria.
 - **CONTATTI** (ultimo tab): la segreteria (**CHIAMA**, **WHATSAPP**, **COME
   ARRIVARE**), **SEGUICI** su Instagram e Facebook, e **LA TUA PAGINA**: la
-  **GUIDA** e **ESCI**. GUIDA ed ESCI stanno anche in fondo a LEZIONI. In prova
-  ESCI non c'è.
+  **GUIDA** e **ESCI**. In prova ESCI non c'è.
 
 Tutto viene da quello che la segreteria e gli istruttori fanno già: una
 lezione annullata o un sostituto dalla **SETTIMANA**, le presenze
