@@ -285,6 +285,33 @@ ok('accenti e apostrofi: come nomeCorso di listino.ts', [m.nomeFileRicevuta(stra
 ok('niente codici fiscali, indirizzo, nascita',
   ['RSSMRC17A01L219X', 'RSSLRA85C41L219Y', 'Via Roma', '10093', 'Collegno', '2017'].filter((x) => typeof t !== 'object' || `${t.oggetto} ${t.testo}`.includes(x)), [])
 
+console.log('\n8bis. la mail HTML della ricevuta, nella cornice')
+{
+  const PROIBITI = ['<script', '<link', '@import', 'url(http', '<img']
+  const TAG = ['html', 'head', 'meta', 'title', 'body', 'table', 'tbody', 'tr', 'td', 'th', 'p', 'div', 'a', 'span', 'strong', 'b', 'br', 'h1', 'h2', 'small']
+  const tagStrani = (h) => [...new Set([...String(h).matchAll(/<\/?([a-z][a-z0-9]*)/gi)].map((x) => x[1].toLowerCase()))].filter((x) => !TAG.includes(x))
+  const grande = testoMail({ ...mail, totale: 12000 })
+  const h = grande?.html ?? ''
+  ok('l\'html c\'è', typeof grande?.html, 'string')
+  ok('la cornice: colonna 560, testata, piede, colori chiari e scuri',
+    [/max-width:\s*560px/.test(h), h.includes('Officine Dello Sport'), /<meta name="color-scheme"/.test(h), /supported-color-schemes/.test(h)], [true, true, true, true])
+  ok('la frase', h.includes('ecco la ricevuta del pagamento: la trovi in allegato, in PDF'), true)
+  ok('numero, data, intestatario, totale',
+    ['Ricevuta n.', '12/2026', '21 ottobre 2026', 'Intestata a', 'Marco Rossi', 'Totale', '120,00 €'].filter((x) => !h.includes(x)), [])
+  ok('il telefono è un link che chiama', h.includes('href="tel:+393463292786"'), true)
+  ok('niente codice fiscale, indirizzo, nascita, né tasto «Scarica»',
+    ['RSSMRC17A01L219X', 'RSSLRA85C41L219Y', 'Via Roma', '10093', 'Collegno', '2017', 'Rossi Laura', 'Scarica'].filter((x) => h.includes(x)), [])
+  ok('niente script, link, @import, immagini, né tag fuori dalla cornice', [PROIBITI.filter((x) => h.includes(x)), tagStrani(h)], [[], []])
+  ok('oggetto, testo e allegato non cambiano', [grande?.oggetto, grande?.testo, grande?.allegato],
+    ['Ricevuta n. 12/2026 per Marco Rossi · Officine Dello Sport',
+     `Buongiorno, in allegato la ricevuta n. 12/2026 del 21 ottobre 2026 per Marco Rossi: 120,00 €.\n\nPer qualsiasi domanda chiamaci al ${m.CONTATTI.telefono}. A presto in palestra, Officine Dello Sport.`,
+     'ricevuta-12-2026-rossi-marco.pdf'])
+  const cattivo = testoMail({ ...mail, intestatario: { nome: '<script>alert(1)</script>', cognome: '"><img src=x>' } })?.html ?? ''
+  ok('un nome con <script> e "><img>: convertito, nessun tag in più',
+    [cattivo.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), cattivo.includes('&quot;&gt;&lt;img src=x&gt;'), PROIBITI.filter((x) => cattivo.includes(x)), tagStrani(cattivo)], [true, true, [], []])
+  ok('e negli href nessun " non convertito', [...cattivo.matchAll(/href="([^"]*)"/g)].map((x) => x[1]).filter((x) => /["<>]/.test(x)), [])
+}
+
 console.log('\n9. la modalità prova simula, senza rete, con le stesse regole')
 m.creaDatiProva()
 const s = m.creaSegreteriaProva()
@@ -340,6 +367,11 @@ const leggi = (f) => readFileSync(f, 'utf8')
 ok('mail.ts è la copia di src/lib/ricevutaMail.ts', leggi('supabase/functions/ricevuta-email/mail.ts') === leggi('src/lib/ricevutaMail.ts'), true)
 const fn = leggi('supabase/functions/ricevuta-email/index.ts')
 ok('usa la copia', fn.includes("from './mail.ts'"), true)
+{
+  const { existsSync } = await import('node:fs')
+  const orig = existsSync('src/lib/cornicaMail.ts') ? leggi('src/lib/cornicaMail.ts') : 'manca src/lib/cornicaMail.ts'
+  ok('cornicaMail.ts è la copia di src/lib/cornicaMail.ts', existsSync('supabase/functions/ricevuta-email/cornicaMail.ts') && leggi('supabase/functions/ricevuta-email/cornicaMail.ts') === orig && !orig.startsWith('manca'), true)
+}
 ok('l\'indirizzo da indirizzo_ricevuta, mai dal corpo', [fn.includes("rpc('indirizzo_ricevuta'"), /corpo\??\.(indirizzo|email|to)\b/.test(fn)], [true, false])
 ok('controlla col token di chi preme, registra solo il server', [fn.includes("suo.rpc('controlla_invio_ricevuta'"), fn.includes("admin.rpc('registra_invio_ricevuta'"), fn.includes("suo.rpc('registra_invio_ricevuta'")], [true, true, false])
 ok('decide con le regole provate qui sotto', ['leggiCorpo', 'noDalControllo', 'decidiInvio', 'rispostaMandata'].filter((f) => !fn.includes(`${f}(`)), [])

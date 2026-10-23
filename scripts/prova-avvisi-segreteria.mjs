@@ -334,5 +334,59 @@ console.log('\n11. col database: senza il file SQL nessun guaio, e i rifiuti det
     'Non hai il permesso: serve un accesso da segreteria')
 }
 
+console.log('\n12. la cornice HTML: ogni avviso, a mano i valori di oggi, e quel che chi si iscrive scrive')
+{
+  const PROIBITI = ['<script', '<link', '@import', 'url(http', '<img']
+  const TAG = ['html', 'head', 'meta', 'title', 'body', 'table', 'tbody', 'tr', 'td', 'th', 'p', 'div', 'a', 'span', 'strong', 'b', 'br', 'h1', 'h2', 'small']
+  const tagStrani = (h) => [...new Set([...String(h).matchAll(/<\/?([a-z][a-z0-9]*)/gi)].map((x) => x[1].toLowerCase()))].filter((x) => !TAG.includes(x))
+  const conta = (h, x) => String(h).split(x).length - 1
+  const casi = [
+    ['richiesta', richiesta({ come: 'bonifico', ricevuta: true }), 'Richiesta di iscrizione · Marco Rossi · Judo kids · da pagare',
+      `È arrivata la richiesta di Marco Rossi per Judo kids, oggi alle 18.32.\nPagamento: bonifico, ricevuta caricata.\n\nApri la richiesta: ${APP}#richieste/${R1}`,
+      'È arrivata la richiesta di Marco Rossi per Judo kids', `${APP}#richieste/${R1}`, 'Apri la richiesta'],
+    ['pagamento', { tipo: 'pagamento', richiestaId: R1, nome: 'Marco', cognome: 'Rossi', corso: 'Judo kids', importo: 12000, pagatoIl: '2026-10-21T17:10:00Z', arrivataIl: ARRIVATA }, 'Pagamento Satispay · 120,00 € · Marco Rossi · Judo kids',
+      `Marco Rossi ha pagato 120,00 € con Satispay oggi alle 19.10 per la richiesta di Judo kids arrivata alle 18.32.\n\nApri la richiesta: ${APP}#richieste/${R1}`,
+      'Marco Rossi ha pagato 120,00 € con Satispay', `${APP}#richieste/${R1}`, 'Apri la richiesta'],
+    ['pagamento_senza_richiesta', { tipo: 'pagamento_senza_richiesta', nome: 'Laura', cognome: 'Bianchi', email: 'laura.bianchi@esempio.it', corso: 'Pilates', importo: 12000, pagatoIl: '2026-10-21T15:05:00Z' }, 'Pagamento Satispay senza richiesta · 120,00 € · Laura Bianchi',
+      `Laura Bianchi ha pagato 120,00 € con Satispay oggi alle 17.05 per Pilates, ma dopo un’ora la richiesta non è ancora arrivata.\nEmail lasciata: laura.bianchi@esempio.it\nDa chiamare: forse si è fermata a metà del modulo, o i soldi vanno restituiti.\n\nApri CONTABILITÀ: ${APP}#contabilita`,
+      'Email lasciata: laura.bianchi@esempio.it', `${APP}#contabilita`, 'Apri CONTABILITÀ'],
+    ['satispay_scarico', { tipo: 'satispay_scarico', quando: '2026-10-21T08:30:00Z', incassi: 3, rimborsi: 1, daDecidere: 2, errore: null }, 'Scarico Satispay · 4 movimenti in CONTABILITÀ · 2 da decidere',
+      `Lo scarico di oggi alle 10.30 ha scritto 3 incassi e 1 rimborso in CONTABILITÀ, sulla voce «Da classificare».\n2 pagamenti sono da decidere: li trovi in CONTABILITÀ → MOVIMENTI.\n\nApri CONTABILITÀ: ${APP}#contabilita`,
+      '2 pagamenti sono da decidere', `${APP}#contabilita`, 'Apri CONTABILITÀ'],
+  ]
+  for (const [tipo, avviso, oggetto, testoVoluto, pezzoCorpo, link, etichetta] of casi) {
+    const t = testoAvviso(avviso, APP)
+    const h = html(t)
+    ok(`${tipo}: oggetto e testo uguali a prima`, [t?.oggetto, t?.testo], [oggetto, testoVoluto])
+    ok(`${tipo}: la cornice, con testata, piede e il corpo`,
+      [/max-width:\s*560px/.test(h), h.includes('ODS CORSI · AVVISO'), h.includes('Avviso automatico dell’app ODS Corsi.'), /<meta name="color-scheme"/.test(h), /supported-color-schemes/.test(h), h.includes(pezzoCorpo)],
+      [true, true, true, true, true, true])
+    ok(`${tipo}: il tasto ha lo stesso indirizzo del testo e l'indirizzo scritto sotto`,
+      [h.includes(`<a href="${link}"`), conta(h, link), h.includes(etichetta), testo(t).includes(`${etichetta}: ${link}`)], [true, 2, true, true])
+    ok(`${tipo}: niente script, link, @import, immagini, né tag fuori dalla cornice`, [PROIBITI.filter((x) => h.includes(x)), tagStrani(h)], [[], []])
+  }
+
+  // Chi si iscrive scrive il nome: nell'HTML non diventa mai un tag.
+  const cattivo = richiesta({ come: 'palestra' }, [{ ...marco, nome: '<script>alert(1)</script>', cognome: '"><img src=x>' }])
+  const t = testoAvviso(cattivo, APP)
+  const h = html(t)
+  ok('un nome con <script> e "><img>: convertito, nessun tag in più', [h.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), h.includes('&quot;&gt;&lt;img src=x&gt;'), PROIBITI.filter((x) => h.includes(x)), tagStrani(h)], [true, true, [], []])
+  ok('e nell\'href del tasto nessun " non convertito', [...h.matchAll(/href="([^"]*)"/g)].map((x) => x[1]), [`${APP}#richieste/${R1}`])
+  const amp = testoAvviso(richiesta({ come: 'palestra' }, [{ ...marco, nome: 'A&B', cognome: 'Rossi' }]), APP)
+  ok('una & si converte una volta sola', [html(amp).includes('A&amp;B Rossi'), html(amp).includes('&amp;amp;')], [true, false])
+  const r = testoAvviso(richiesta({ come: 'palestra' }, [{ ...marco, cognome: 'Rossi\r\nBcc: ladro@esempio.it' }]), APP)
+  ok('un nome con \\r\\n: l\'oggetto sta su una riga', r?.oggetto, 'Richiesta di iscrizione · Marco Rossi Bcc: ladro@esempio.it · Judo kids · da pagare')
+}
+
+console.log('\n13. le copie della cornice per Deno')
+{
+  const leggi = (f) => (existsSync(f) ? readFileSync(f, 'utf8') : `manca ${f}`)
+  const originale = leggi('src/lib/cornicaMail.ts')
+  ok('src/lib/cornicaMail.ts c\'è', originale.startsWith('manca'), false)
+  for (const dir of ['avvisi-segreteria', 'ricevuta-email'])
+    ok(`${dir}/cornicaMail.ts è la copia di src/lib/cornicaMail.ts`, leggi(`supabase/functions/${dir}/cornicaMail.ts`) === originale, true)
+  ok('il mittente non cambia', a.MITTENTE, 'ODS Corsi <info@officinedellosport.it>')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 if (guai) process.exit(1)
