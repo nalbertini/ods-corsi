@@ -7,6 +7,7 @@ import type { Segnalata } from './segnalate'
 import { haUnServer } from './dati'
 import type { StatoSatispay } from './satispay'
 import type { ChiPaga } from './saldoSatispay'
+import type { ChiPagaCorsi, Formula } from './corsoSatispay'
 
 /**
  * L'area degli iscritti: quello che di sé vede chi frequenta i corsi, dal
@@ -44,7 +45,11 @@ export interface SchedaIscritto {
   quote?: QuotaRicevuta[]
   /** Centesimi arrivati con Satispay (quota o saldo) e non ancora in una ricevuta: senza, la scheda direbbe «da pagare» a chi ha già pagato. */
   satispay?: number
+  /** Di quei centesimi, la quota intera pagata dall'area iscritti: non copre i corsi. */
+  satispayQuota?: number
   saldo?: number
+  /** I corsi pagati con Satispay (`106-paga-corso-satispay.sql`) e non ancora in una ricevuta, per id: ognuno copre solo sé stesso. */
+  satispayCorsi?: string[]
   /** `AAAA-MM-GG`; senza, il certificato serve (vedi `serveCertificato`). */
   natoIl?: string
   /** Il database sa ricevere il certificato da qui (102-certificato-iscritto.sql); senza, niente tasto. */
@@ -148,6 +153,15 @@ export interface DatiIscritto {
   pagaQuota(personaId: string): Promise<{ link: string } | null>
   /** Com'è andata l'ultima quota con Satispay, o `null` se non è mai partita. */
   statoQuota(personaId: string): Promise<SaldoPagato | null>
+  /**
+   * Un corso semplice con Satispay (`106-paga-corso-satispay.sql`): come `pagaQuota`,
+   * per un corso e una formula. L'importo lo dà il database dal listino.
+   */
+  pagaCorso(personaId: string, corsoId: string, formula: Formula): Promise<{ link: string } | null>
+  /** Com'è andato l'ultimo pagamento di quel corso, o `null` se non è mai partito. */
+  statoCorso(personaId: string, corsoId: string): Promise<SaldoPagato | null>
+  /** Chi è `personaId` per chi paga i suoi corsi, e quanto costa ognuno adesso: `null` se non è una persona sua. */
+  chiPagaCorsi(personaId: string, io: string): Promise<ChiPagaCorsi | null>
 }
 
 export interface SaldoPagato {

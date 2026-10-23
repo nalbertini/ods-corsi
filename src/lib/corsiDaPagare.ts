@@ -79,7 +79,7 @@ const piuLontana = <T extends { al?: string }>(voci: T[]) => [...voci].sort((a, 
  * Uno stato per iscrizione in corso a un corso a pagamento, per nome del
  * corso. undefined se le ricevute non si sono lette (`vociCorsi` assente).
  */
-export function statoCorsi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, oggi: string): StatoCorso[] | undefined {
+export function statoCorsi(p: Pick<PersonaSeg, 'attiva' | 'pagamento' | 'iscrizioni' | 'vociCorsi' | 'satispay' | 'satispayQuota' | 'satispayCorsi'>, corsi: CorsoRef[], listino: Listino, oggi: string): StatoCorso[] | undefined {
   const voci = p.vociCorsi
   if (!voci) return undefined
   if (!p.attiva) return []
@@ -108,7 +108,8 @@ export function statoCorsi(p: PersonaSeg, corsi: CorsoRef[], listino: Listino, o
       const parte = sue.filter((v) => v.mancano > 0 && (!v.dal || v.dal <= oggi) && (!v.al || v.al >= oggi)).sort((a, b) => a.mancano - b.mancano)[0]
       if (parte) return { ...base, come: 'in_parte', formula: parte.formula, al: parte.al, mancano: parte.mancano }
       if (ecc.stato === 'pagato' && fino >= oggi) return { ...base, come: 'fuori_app', al: fino }
-      if (p.satispay) return { ...base, come: 'satispay' }
+      // La quota pagata dall'area iscritti è dentro `satispay` ma non è l'iscrizione di prima: i corsi no.
+      if ((p.satispay ?? 0) - (p.satispayQuota ?? 0) > 0 || p.satispayCorsi?.includes(c.id)) return { ...base, come: 'satispay' }
       const finita = piuLontana(sue.filter((v) => v.al && v.al < oggi))
       if (finita) return { ...base, come: 'scaduto', formula: finita.formula, al: finita.al }
       if (ecc.stato === 'pagato' && ecc.fino) return { ...base, come: 'fuori_scaduto', al: ecc.fino }

@@ -162,6 +162,10 @@ export interface PersonaSeg {
   satispay?: number
   /** Centesimi del saldo della quota arrivati con Satispay e non ancora in una ricevuta (`102-saldo-satispay.sql`). */
   saldo?: number
+  /** Quanto di `satispay` è la quota intera pagata dall'area iscritti (`105-paga-quota-satispay.sql`): non copre i corsi. */
+  satispayQuota?: number
+  /** I corsi pagati con Satispay e non ancora in una ricevuta (`106-paga-corso-satispay.sql`), per id: ognuno copre solo sé stesso. */
+  satispayCorsi?: string[]
   /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`); col database lo dà `100-nucleo.sql`. */
   nucleo?: string
   /** `AAAA-MM-GG`, dall'anagrafica; senza, l'età non si sa e il certificato serve (vedi `serveCertificato`). */

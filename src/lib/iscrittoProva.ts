@@ -5,8 +5,9 @@ import { creaSegreteriaProva } from './segreteriaProva'
 import { creaRichiesteProva, pagamentiSatispayProva, salvaSatispay } from './richiesteProva'
 import { minorenne } from './richieste'
 import { quoteDi } from './ricevute'
-import { satispayPerPersona, saldoPerPersona } from './satispay'
-import { LISTINO_PREDEFINITO, listinoDa, listinoProva } from './listino'
+import { satispayCorsiPerPersona, satispayQuotaPerPersona, satispayPerPersona, saldoPerPersona } from './satispay'
+import { LISTINO_PREDEFINITO, listinoDa, listinoProva, nomeCorso, voceDelCorso } from './listino'
+import { prezzoDelCorso, type ChiPagaCorsi, type Formula } from './corsoSatispay'
 import { segnalaProva, segnalateDi } from './segnalateProva'
 import { comeE, iscrittiIl, lezioniFra, memoria, nomeIstruttore, salaDelGiorno } from './datiProva'
 import { chiaveGiorno, perCognome } from './sala'
@@ -51,6 +52,8 @@ export function creaIscrittoProva(): DatiIscritto {
       // Come la segreteria (`segreteriaProva`): quel che Satispay ha già incassato e non è ancora in una ricevuta.
       satispay: satispayPerPersona(pagamentiSatispayProva()).get(p.id),
       saldo: saldoPerPersona(pagamentiSatispayProva()).get(p.id),
+      satispayQuota: satispayQuotaPerPersona(pagamentiSatispayProva()).get(p.id),
+      satispayCorsi: satispayCorsiPerPersona(pagamentiSatispayProva()).get(p.id),
       // Come la segreteria: l'età decide se il certificato serve.
       natoIl: (await creaSegreteriaProva().anagraficaDi(p.id))?.dati.natoIl,
       certificatoDaQui: true,
@@ -219,6 +222,45 @@ export function creaIscrittoProva(): DatiIscritto {
       return null
     },
 
+    async pagaCorso(personaId, corsoId, formula) {
+      await pagaCorsoProva(personaId, corsoId, formula)
+      return null
+    },
+
+    async statoCorso(personaId, corsoId) {
+      const p = pagamentiSatispayProva()
+        .filter((x) => x.personaId === personaId && x.voce === 'corso' && x.corsoId === corsoId && !x.ricevutaId)
+        .sort((x, y) => y.creatoIl.localeCompare(x.creatoIl))[0]
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagatoIl, chi: p.chi } : null
+    },
+
+    async chiPagaCorsi(personaId, io): Promise<ChiPagaCorsi | null> {
+      if (!persona(personaId)) return null
+      const nato = (await creaSegreteriaProva().anagraficaDi(personaId))?.dati.natoIl
+      const l = listinoDa(listinoProva()) ?? LISTINO_PREDEFINITO
+      const oggi = chiaveGiorno(new Date())
+      const sue = archivio.dati.iscrizioni.filter((i) => i.personaId === personaId && i.dal <= oggi && (!i.al || i.al >= oggi))
+      const pagati = satispayCorsiPerPersona(pagamentiSatispayProva()).get(personaId) ?? []
+      return {
+        adulto: !nato || !minorenne(nato),
+        haAccessoProprio: personaId === io,
+        comeTitolare: personaId !== io,
+        corsi: sue.flatMap((i) => {
+          const corso = archivio.dati.corsi.find((c) => c.id === i.corsoId)
+          if (!corso) return []
+          const v = voceDelCorso(l.corsi, corso)
+          return [{
+            corsoId: corso.id,
+            annuale: importoCorsoProva(personaId, corso.id, 'annuale'),
+            trimestre: importoCorsoProva(personaId, corso.id, 'trimestre'),
+            segreteria: (v?.prezzi.length ?? 0) > 1,
+            aPagamento: !!v?.prezzi.some((x) => [x.annuale, x.trimestre, x.saldo].some((y) => (y ?? 0) > 0)),
+            pagato: pagati.includes(corso.id),
+          }]
+        }),
+      }
+    },
+
     async statoQuota(personaId) {
       const p = pagamentiSatispayProva()
         .filter((x) => x.personaId === personaId && x.voce === 'quota' && !x.ricevutaId)
@@ -267,6 +309,80 @@ export async function pagaQuotaProva(personaId: string): Promise<void> {
   salvaSatispay([
     ...pagamentiSatispayProva(),
     { id: crypto.randomUUID(), chi: p ? `${p.cognome} ${p.nome}` : '', importo, stato: 'pagato', creatoIl: ora, pagatoIl: ora, personaId, voce: 'quota' },
+  ])
+}
+
+/**
+ * Quanto costa il corso adesso, in centesimi, come `corso_importo`
+ * (`106-paga-corso-satispay.sql`): il prezzo del listino, o il perché non si
+ * paga online, con gli stessi testi e nello stesso ordine del database.
+ */
+function corsoDaPagareProva(personaId: string, corsoId: string, formula: string | undefined): number {
+  const oggi = chiaveGiorno(new Date())
+  const a = archivio.dati
+  if (!a.iscrizioni.some((i) => i.personaId === personaId && i.corsoId === corsoId && i.dal <= oggi && (!i.al || i.al >= oggi))) throw new Error('Questa persona non è iscritta a questo corso')
+  if (formula !== 'annuale' && formula !== 'trimestre') throw new Error('Scegli se pagare l’annuale o il trimestre')
+  const l = listinoDa(listinoProva()) ?? LISTINO_PREDEFINITO
+  const corso = a.corsi.find((c) => c.id === corsoId)
+  const v = voceDelCorso(l.corsi, { id: corsoId, nome: corso?.nome ?? '' })
+  if (v && v.prezzi.length > 1) throw new Error('Per questo corso il prezzo lo fa la segreteria: chiedi lì o paga in palestra')
+  const importo = v ? prezzoDelCorso(v.prezzi[0], formula, oggi, l.saldoEntro) : null
+  if (importo === null) throw new Error('Il corso non è nel listino: chiedi alla segreteria')
+  // Una ricevuta del corso che vale oggi, pagata o in parte: per il resto lo fa la segreteria.
+  const nomi = [corso?.nome ?? '', v?.corso ?? ''].map(nomeCorso)
+  const FORMULE = /^(annuale|trimestre|saldo)\s+(.+)$/i
+  const conRicevuta = (a.ricevute ?? []).some(
+    (r) =>
+      r.personaId === personaId &&
+      !r.annullataIl &&
+      r.voci.some((x) => {
+        const m = x.descrizione.trim().match(FORMULE)
+        return !!m && nomi.includes(nomeCorso(m[2])) && !!x.dal && !!x.al && x.dal <= oggi && x.al >= oggi
+      }),
+  )
+  if (conRicevuta) throw new Error('Il corso ha già una ricevuta: per quel che manca chiedi alla segreteria')
+  const p = a.persone.find((x) => x.id === personaId)
+  if (p?.pagamento && p.pagamento.stato !== 'da_pagare' && (p.pagamento.fino ?? '9999-01-01') >= oggi) throw new Error('Il corso risulta già pagato fuori dall’app: chiedi alla segreteria')
+  // Una quota o un saldo pagati non coprono il corso; l'iscrizione di prima (senza voce) sì.
+  if (pagamentiSatispayProva().some((x) => x.personaId === personaId && x.stato === 'pagato' && !x.ricevutaId && ((x.voce === 'corso' && x.corsoId === corsoId) || (!x.voce && !x.saldoDi))))
+    throw new Error('Hai già pagato con Satispay: la segreteria prepara la ricevuta')
+  return importo
+}
+
+/** Come `corso_importo_o_null`: `null` se il corso non si paga adesso. */
+function importoCorsoProva(personaId: string, corsoId: string, formula: Formula): number | null {
+  try {
+    return corsoDaPagareProva(personaId, corsoId, formula)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Un corso con Satispay, in prova (`satispay_prepara_corso`): Satispay non c'è,
+ * quindi il pagamento nasce già pagato, per il prezzo del listino. Gli stessi
+ * rifiuti del database, con gli stessi testi.
+ */
+export async function pagaCorsoProva(personaId: string, corsoId: string, formula: string | undefined): Promise<void> {
+  const importo = corsoDaPagareProva(personaId, corsoId, formula)
+  const p = archivio.dati.persone.find((x) => x.id === personaId)
+  const ora = new Date().toISOString()
+  salvaSatispay([
+    ...pagamentiSatispayProva(),
+    {
+      id: crypto.randomUUID(),
+      chi: p ? `${p.cognome} ${p.nome}` : '',
+      importo,
+      stato: 'pagato',
+      creatoIl: ora,
+      pagatoIl: ora,
+      personaId,
+      voce: 'corso',
+      corsoId,
+      // `as`: `corsoDaPagareProva` ha già rifiutato ogni altra formula.
+      formula: formula as Formula,
+      corso: archivio.dati.corsi.find((c) => c.id === corsoId)?.nome,
+    },
   ])
 }
 

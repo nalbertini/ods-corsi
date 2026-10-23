@@ -54,7 +54,7 @@ export function pagamentiSatispayProva(): PagamentoSatispay[] {
     const valide = new Set((archivio.dati.ricevute ?? []).filter((r) => !r.annullataIl).map((r) => r.id))
     return p.map((x) => ({
       ...x,
-      personaId: x.saldoDi || x.voce === 'quota' ? x.personaId : richieste.find((r) => r.id === x.richiestaId && r.stato === 'accolta')?.personaId,
+      personaId: x.saldoDi || x.voce ? x.personaId : richieste.find((r) => r.id === x.richiestaId && r.stato === 'accolta')?.personaId,
       ricevutaId: x.ricevutaId && valide.has(x.ricevutaId) ? x.ricevutaId : undefined,
     }))
   } catch {
