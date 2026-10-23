@@ -71,7 +71,8 @@ sulle altre niente «Bonifico», se no il conto prende i soldi due volte.
 Sotto la ricevuta, «Confronta con la ricevuta» dice quanto ci si aspetta (per le
 richieste mandate insieme, il totale con lo sconto famiglia), a chi e con quale
 causale: lo confrontate voi aprendo il file, l'app non legge la ricevuta. Se un
-corso non ha prezzo nel listino, la cifra è incompleta e lo dice. La carta d'identità è quella di chi si iscrive (anche un minore, dai 6
+corso non ha prezzo nel listino, la cifra è incompleta e lo dice. La ricevuta non
+segna la quota come pagata: vale quando registrate voi l'incasso. La carta d'identità è quella di chi si iscrive (anche un minore, dai 6
 anni: non più quella del genitore) e sta in un riquadro giallo,
 perché nell'app non resta: accolta la richiesta, la si apre, si stampa, si
 mette nella cartellina e **Stampato, cancella** la cancella per sempre. La
