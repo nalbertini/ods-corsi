@@ -17,6 +17,8 @@ export const NON_ISCRITTO =
 export const E_PERSONALE = 'Questa email è del personale: entra dalla porta della palestra, non da qui'
 export const CODICE_SBAGLIATO = 'Il codice non è giusto o è scaduto: guarda l’ultima mail arrivata, o chiedine un altro'
 
+export const LINK_NON_VALE = 'Il link nella mail non è completo: scrivi qui l’email e chiedine un’altra'
+
 const NO_RETE = 'Il server non risponde: c’è rete?'
 
 /** L'email scritta, senza spazi e in minuscolo; `null` se non sembra un indirizzo. */
@@ -29,6 +31,28 @@ export function emailPulita(testo: string): string | null {
 export function codicePulito(testo: string): string | null {
   const c = testo.replace(/\s+/g, '')
   return /^\d{6}$/.test(c) ? c : null
+}
+
+/**
+ * Il link nella mail porta alla pagina con `?email=…&codice=…` (il modello
+ * email di Supabase li mette con `{{ .Email }}` e `{{ .Token }}`). `null` se
+ * nell'indirizzo non c'è niente dell'accesso; l'errore se c'è ma non regge.
+ */
+export function accessoDalLink(search: string): { email: string; codice: string } | { errore: string } | null {
+  // `{{ .Email }}` non è codificato nel modello: un «+» (mario+x@…) è un «+», non uno spazio.
+  const q = new URLSearchParams(search.replace(/\+/g, '%2B'))
+  if (!q.has('email') && !q.has('codice')) return null
+  const email = emailPulita(q.get('email') ?? '')
+  const codice = codicePulito(q.get('codice') ?? '')
+  return email && codice ? { email, codice } : { errore: LINK_NON_VALE }
+}
+
+/** L'indirizzo senza email e codice, che non devono restare nella barra né nella cronologia. */
+export function indirizzoSenzaAccesso(pathname: string, search: string): string {
+  const q = new URLSearchParams(search)
+  q.delete('email')
+  q.delete('codice')
+  return pathname + (q.size ? `?${q}` : '')
 }
 
 interface ErroreAuth {
