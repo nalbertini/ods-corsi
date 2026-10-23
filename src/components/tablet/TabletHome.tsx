@@ -57,7 +57,7 @@ export function TabletHome({
         )}
         {finite && (
           <Riquadro titolo="PER OGGI QUI È FINITO">
-            Le lezioni di questa sala sono tutte passate. Chi si è dimenticato di segnarsi usa TI SEI DIMENTICATO DI SEGNARTI?.
+            Le lezioni di questa sala sono tutte passate. Chi si è dimenticato di segnarsi usa il tasto «Ti sei dimenticato di segnarti?».
           </Riquadro>
         )}
 
