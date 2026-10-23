@@ -114,7 +114,7 @@ ok('Istruttori non mostra <TastoTema', /<TastoTema\b/.test(istr), false)
 const testate = [...istr.matchAll(/<Testata\b[^>]*>/g)].map((x) => x[0])
 ok('ogni <Testata> di Istruttori ha senzaTema', testate.length > 0 && testate.every((t) => /\bsenzaTema\b/.test(t)), true)
 ok('Testata mostra <TastoTema /> solo se non è senzaTema', /!senzaTema[^\n]*<TastoTema\b|senzaTema\s*\?\s*null\s*:\s*<TastoTema\b|!senzaTema\s*&&\s*<TastoTema\b/.test(corpoDi('Testata')), true)
-ok('il tasto c'è ancora in Testata e Segreteria, non nel tablet', [
+ok('il tasto resta in Testata e Segreteria, non nel tablet', [
   /<TastoTema\b/.test(corpoDi('Testata')),
   /<TastoTema\b/.test(readFileSync('src/components/tablet/Tablet.tsx', 'utf8')),
   /<TastoTema\b/.test(readFileSync('src/components/segreteria/Segreteria.tsx', 'utf8')),
