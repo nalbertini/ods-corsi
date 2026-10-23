@@ -24,7 +24,7 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
-import { satispayPerPersona, saldoPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
+import { satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona, saldoPerPersona, type PagamentoSatispay, type StatoSatispay } from './satispay'
 import { oggiARoma } from './contabilita'
 import type { ContiScarico, DaDecidere } from './satispayScarico'
 import { cosaNonVa, ENTE_PREDEFINITO, enteDa, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
@@ -708,7 +708,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     // Prima di 73-satispay.sql non c'è niente da mostrare.
     if (r.error && (r.error.code === '42P01' || r.error.code === 'PGRST205' || r.error.code === 'PGRST200')) return []
     // `as`: Supabase tipa la riga a modo suo, la forma è quella della select.
-    return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null; email: string | null; corso_id: string | null; formula: 'annuale' | 'trimestre' | null; ricevuta: { annullata_il: string | null } | null; corso: { nome: string } | null; saldo_di?: string | null; voce?: 'quota' | null }>).map(
+    return (ok(r) as unknown as Array<{ id: string; richiesta_id: string | null; chi: string; importo: number; stato: StatoSatispay; creato_il: string; pagato_il: string | null; ricevuta_id: string | null; persona_id: string | null; email: string | null; corso_id: string | null; formula: 'annuale' | 'trimestre' | null; ricevuta: { annullata_il: string | null } | null; corso: { nome: string } | null; saldo_di?: string | null; voce?: 'quota' | 'corso' | null }>).map(
       (x): PagamentoSatispay => ({
         id: x.id,
         richiestaId: x.richiesta_id ?? undefined,
@@ -1111,6 +1111,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const arrivati = await leggiSatispay().catch(() => [])
       const conSatispay = satispayPerPersona(arrivati)
       const conSaldo = saldoPerPersona(arrivati)
+      const corsiSatispay = satispayCorsiPerPersona(arrivati)
+      const quotaSatispay = satispayQuotaPerPersona(arrivati)
       return righe.map((r): PersonaSeg => {
         // Una a una con la persona: PostgREST la dà come oggetto, ma meglio non contarci.
         const s = Array.isArray(r.schede_iscritti) ? r.schede_iscritti[0] : r.schede_iscritti
@@ -1139,6 +1141,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           vociCorsi: ricevute ? vociCorsiDi(perPersona.get(r.id) ?? []) : undefined,
           satispay: conSatispay.get(r.id),
           saldo: conSaldo.get(r.id),
+          satispayQuota: quotaSatispay.get(r.id),
+          satispayCorsi: corsiSatispay.get(r.id),
           natoIl: natiIl.get(r.id),
         }
       })

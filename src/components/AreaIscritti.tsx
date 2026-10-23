@@ -53,6 +53,8 @@ import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
 import { PagaSaldo, RitornoSaldo } from './PagaSaldo'
 import { PagaQuota, RitornoQuota } from './PagaQuota'
 import { ritornoDellaQuota } from '../lib/quotaSatispay'
+import { CorsiDaPagare, RitornoCorso } from './PagaCorso'
+import { ritornoDelCorso } from '../lib/corsoSatispay'
 import { altriConResto, ritornoDelSaldo } from '../lib/saldoSatispay'
 import { VERSIONE, VERSIONE_ESTESA } from '../lib/versione'
 
@@ -171,6 +173,8 @@ function Account({ dati, personaId, conEsci }: { dati: DatiIscritto; personaId: 
   const [ritorno, setRitorno] = useState(() => ritornoDelSaldo(window.location.search))
   // …e dopo la quota intera (`iscritti/?quota=1&persona=…`).
   const [ritornoQuota, setRitornoQuota] = useState(() => ritornoDellaQuota(window.location.search))
+  // …e dopo un corso (`iscritti/?corso=…&persona=…`).
+  const [ritornoCorso, setRitornoCorso] = useState(() => ritornoDelCorso(window.location.search))
 
   useEffect(() => {
     let vivo = true
@@ -191,6 +195,27 @@ function Account({ dati, personaId, conEsci }: { dati: DatiIscritto; personaId: 
   const io = nucleo[0]
   if (!io) return <p className="pad">Questa persona non è più fra gli iscritti.</p>
   const nomeDi = (id: string) => nucleo.find((p) => p.id === id)?.nome ?? ''
+
+  if (ritornoCorso)
+    return (
+      <div className="iscrizioni-modulo">
+        <Titoletto>CORSO</Titoletto>
+        <RitornoCorso
+          dati={dati}
+          persona={ritornoCorso.persona}
+          corso={ritornoCorso.corso}
+          onChiudi={() => {
+            const u = new URLSearchParams(window.location.search)
+            u.delete('corso')
+            u.delete('persona')
+            history.replaceState(null, '', window.location.pathname + (u.size ? `?${u}` : ''))
+            setRitornoCorso(null)
+            setGiro((g) => g + 1)
+            suSubito()
+          }}
+        />
+      </div>
+    )
 
   if (ritornoQuota)
     return (
@@ -756,6 +781,7 @@ function InRegola({ scheda, dati, personaId, io, ricevute, onMandato }: { scheda
           <PagaQuota dati={dati} scheda={scheda} io={io} />
         </Riquadro>
       </div>
+      <CorsiDaPagare dati={dati} scheda={scheda} io={io} ricevute={ricevute} />
     </section>
   )
 }

@@ -27,7 +27,7 @@ const sitoProva = () => import('./sitoProva')
 import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { abbinaPersone, cosaNonVaCollegato, esitiCollegamenti, nomeDallaCausale, riepilogoCollegamenti, type PersonaPerNome } from './movimentiPersona'
-import { cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayPerPersona } from './satispay'
+import { cosaNonVaSatispay, cosaNonVaSatispayAMano, saldoPerPersona, satispayCorsiPerPersona, satispayPerPersona, satispayQuotaPerPersona } from './satispay'
 import { applicaScarico, CAMBIO_CASSA_SATISPAY, daDecidere, decidiScarico, NOME_CASSA_SATISPAY, type PagamentoNegozio } from './satispayScarico'
 import { pagamentiSatispayProva, richiesteContateProva, richiesteDi, salvaSatispay, spostaRichieste } from './richiesteProva'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
@@ -704,6 +704,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       potaCertificati()
       const conSatispay = satispayPerPersona(pagamentiSatispayProva())
       const conSaldo = saldoPerPersona(pagamentiSatispayProva())
+      const corsiSatispay = satispayCorsiPerPersona(pagamentiSatispayProva())
+      const quotaSatispay = satispayQuotaPerPersona(pagamentiSatispayProva())
       return a()
         .persone.filter((p) => p.ruolo === 'iscritto')
         .map(
@@ -725,6 +727,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
             vociCorsi: vociCorsiDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
             satispay: conSatispay.get(p.id),
             saldo: conSaldo.get(p.id),
+            satispayQuota: quotaSatispay.get(p.id),
+            satispayCorsi: corsiSatispay.get(p.id),
             nucleo: p.nucleo,
             natoIl: anagraficaDi(p.id)?.dati.natoIl,
           }),

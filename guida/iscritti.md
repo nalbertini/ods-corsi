@@ -91,11 +91,19 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   Se la quota non risulta pagata, o è scaduta (un rinnovo), nel riquadro QUOTA
   c'è **PAGA LA QUOTA … CON SATISPAY**: la cifra è quella del listino, la
   calcola l'app. Anche qui vedi **PAGATO** al ritorno, e la segreteria prepara
-  la ricevuta, che trovi in DOCUMENTI, sotto RICEVUTE. Corsi e bonifico per ora
-  si pagano in palestra. In prova (`?prova`) Satispay non si apre: chiede
+  la ricevuta, che trovi in DOCUMENTI, sotto RICEVUTE. Il bonifico per ora
+  si fa in palestra.
+  Se sei iscritto a un corso a pagamento e non l'hai ancora pagato (o è finito il
+  trimestre), sotto c'è la sezione **CORSI**: un riquadro per corso, col nome, la
+  formula (**ANNUALE** o **TRIMESTRE**), la cifra e **PAGA … € CON SATISPAY**. La
+  cifra è quella del listino, la calcola l'app; per chi ha finito il trimestre è
+  lo stesso trimestre di prima. Se per quel corso c'è uno sconto o più corsi
+  insieme, il riquadro dice **PIÙ CORSI**: il prezzo lo fa la segreteria, chiedi
+  lì o paga in palestra. Tornato da Satispay vedi **PAGATO**, e la segreteria
+  prepara la ricevuta. Un corso pagato non si offre più. In prova (`?prova`) Satispay non si apre: chiede
   conferma e il pagamento è finto.
   Il titolare del nucleo (tab FAMIGLIA, o la pagina del familiare) vede **PAGA …
-  € PER** *nome* (il resto) e **PAGA LA QUOTA … PER** *nome* per i familiari
+  € PER** *nome* (il resto) e **PAGA LA QUOTA … PER** *nome* (e **PAGA … € PER** *nome* in CORSI) per i familiari
   senza un accesso loro: una persona alla volta.
   Chi ha un accesso suo, e ogni minorenne con account, paga dal suo telefono
   o tramite il titolare.

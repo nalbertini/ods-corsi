@@ -45,8 +45,8 @@ export interface PagamentoSatispay {
   presoIl?: string
   /** La ricevuta di cui è il saldo della quota (`103-saldo-satispay.sql`): non è l'iscrizione. */
   saldoDi?: string
-  /** La quota associativa intera pagata dall'area iscritti (`105-paga-quota-satispay.sql`): non è l'iscrizione. */
-  voce?: 'quota'
+  /** La quota intera (`105-paga-quota-satispay.sql`) o un corso (`106-paga-corso-satispay.sql`) pagati dall'area iscritti: non sono l'iscrizione. */
+  voce?: 'quota' | 'corso'
 }
 
 /** Lo stato come lo dice Satispay. Quello che non si conosce è ancora in attesa: mai pagato per sbaglio. */
@@ -140,7 +140,7 @@ export const righeSatispay = (pagamenti: PagamentoSatispay[], nomeDi: (personaId
             data: giornoARoma(p.pagatoIl),
             importo: p.importo,
             metodo: 'Satispay',
-            voce: p.saldoDi ? 'QUOTA ASSOCIATIVA (saldo)' : p.voce === 'quota' ? 'QUOTA ASSOCIATIVA' : 'ISCRIZIONE',
+            voce: p.saldoDi ? 'QUOTA ASSOCIATIVA (saldo)' : p.voce === 'quota' ? 'QUOTA ASSOCIATIVA' : p.voce === 'corso' ? `${p.formula ?? ''} ${p.corso ?? ''}`.trim().toUpperCase() : 'ISCRIZIONE',
             personaId: p.personaId,
             chi: p.personaId ? nomeDi(p.personaId) : p.chi,
             // Pagato in fondo al modulo e la richiesta non è partita: la segreteria richiama o restituisce.
@@ -267,7 +267,22 @@ export function nonSemplice(corsi: CorsoRef[], listino: Listino, fuoriEta: strin
 /** Per ogni scheda, i centesimi arrivati con Satispay e non ancora in una ricevuta: la quota non è da pagare. */
 export function satispayPerPersona(pagamenti: PagamentoSatispay[]): Map<string, number> {
   const m = new Map<string, number>()
-  for (const p of pagamenti) if (p.stato === 'pagato' && !p.ricevutaId && !p.saldoDi && p.personaId) m.set(p.personaId, (m.get(p.personaId) ?? 0) + p.importo)
+  for (const p of pagamenti) if (p.stato === 'pagato' && !p.ricevutaId && !p.saldoDi && p.voce !== 'corso' && p.personaId) m.set(p.personaId, (m.get(p.personaId) ?? 0) + p.importo)
+  return m
+}
+
+/** Per ogni scheda, i centesimi della quota intera pagati con Satispay (105) e non ancora in una ricevuta: sono dentro `satispayPerPersona`, ma non coprono i corsi. */
+export function satispayQuotaPerPersona(pagamenti: PagamentoSatispay[]): Map<string, number> {
+  const m = new Map<string, number>()
+  for (const p of pagamenti) if (p.stato === 'pagato' && !p.ricevutaId && p.voce === 'quota' && p.personaId) m.set(p.personaId, (m.get(p.personaId) ?? 0) + p.importo)
+  return m
+}
+
+/** Per ogni scheda, i corsi pagati con Satispay (106) e non ancora in una ricevuta: ognuno copre solo sé stesso. */
+export function satispayCorsiPerPersona(pagamenti: PagamentoSatispay[]): Map<string, string[]> {
+  const m = new Map<string, string[]>()
+  for (const p of pagamenti)
+    if (p.stato === 'pagato' && !p.ricevutaId && p.voce === 'corso' && p.personaId && p.corsoId) m.set(p.personaId, [...(m.get(p.personaId) ?? []), p.corsoId])
   return m
 }
 

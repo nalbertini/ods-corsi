@@ -29,6 +29,9 @@
 //     degli iscritti (`satispay_prepara_quota`, 105-paga-quota-satispay.sql),
 //     come il saldo ma senza ricevuta; 'quota_stato' come 'saldo_stato'
 //     (se c'è lo dice `saldo_attivo`);
+//   · POST { azione: 'corso', persona, corso, formula }: un corso, annuale o
+//     trimestre, dall'area degli iscritti (`satispay_prepara_corso`,
+//     106-paga-corso-satispay.sql); 'corso_stato' come 'quota_stato';
 //   · GET ?payment_id=…: la callback di Satispay. Non dice lo stato e chiunque
 //     la può chiamare: lo stato si rilegge da Satispay con una chiamata firmata.
 //
@@ -276,6 +279,40 @@ Deno.serve(async (req) => {
     ritorno.searchParams.set('quota', '1')
     ritorno.searchParams.set('persona', persona)
     const link = await creaInSatispay(p.id, p.importo, ritorno, 'QUOTA')
+    return link ? risposta({ link }) : risposta({ guaio: NON_RISPONDE }, 502)
+  }
+
+  if (corpo.azione === 'corso' || corpo.azione === 'corso_stato') {
+    const persona = typeof corpo.persona === 'string' && UUID.test(corpo.persona) ? corpo.persona : null
+    const corso = typeof corpo.corso === 'string' && UUID.test(corpo.corso) ? corpo.corso : null
+    if (!persona || !corso) return risposta({ guaio: 'Manca la persona o il corso' }, 400)
+    const lui = await comeChiChiama(req)
+    if (!lui) return risposta({ guaio: 'Entra con il tuo accesso per pagare' }, 401)
+
+    if (corpo.azione === 'corso_stato') {
+      const { data, error } = await lui.rpc('satispay_corso_stato', { persona, corso })
+      if (error) return error.code === 'PGRST202' ? risposta({ attivo: false }) : risposta({ guaio: NON_RISPONDE }, 502)
+      if (!data) return risposta({ pagamento: null })
+      // `as`: la forma è quella di `satispay_corso_stato` (106-paga-corso-satispay.sql).
+      const { satispay_id: satispayId, ...s } = data as { stato: string; importo: number; pagato_il?: string; chi: string; satispay_id?: string | null }
+      if (s.stato !== 'attesa' || !satispayId) return risposta({ pagamento: s })
+      const nuovo = await aggiorna(satispayId)
+      return risposta({ pagamento: nuovo ? { ...s, stato: nuovo.stato, pagato_il: nuovo.pagato_il } : s })
+    }
+
+    // La formula la controlla il database (22023, col testo per chi paga): qui passa com'è.
+    const formula = typeof corpo.formula === 'string' ? corpo.formula : ''
+    const { data, error } = await lui.rpc('satispay_prepara_corso', { persona, corso, formula })
+    if (error) {
+      if (error.code === 'PGRST202') return risposta({ attivo: false })
+      return risposta({ guaio: error.code === '42501' && error.message ? error.message : detto(error) }, error.code === '42501' ? 403 : 409)
+    }
+    const p = data as { stato: string; id: string; importo: number; satispay_id?: string | null; link?: string | null }
+    if (p.satispay_id && p.link) return risposta({ link: p.link })
+    const ritorno = new URL('../iscritti/', app)
+    ritorno.searchParams.set('corso', corso)
+    ritorno.searchParams.set('persona', persona)
+    const link = await creaInSatispay(p.id, p.importo, ritorno, 'CORSO')
     return link ? risposta({ link }) : risposta({ guaio: NON_RISPONDE }, 502)
   }
 

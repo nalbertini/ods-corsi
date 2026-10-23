@@ -9,6 +9,7 @@ import { chiamaSatispay } from './richiesteSupabase'
 import { ERRORE_SATISPAY, type StatoSatispay } from './satispay'
 import { SALDO_SPENTO } from './saldoSatispay'
 import { QUOTA_SPENTA } from './quotaSatispay'
+import { CORSO_SPENTO } from './corsoSatispay'
 import { enteDa, type QuotaRicevuta, type Ricevuta } from './ricevute'
 import { cosaNonVaFileMandato, ESTENSIONI_MANDATO, guaioMandaCertificato } from './certificatoIscritto'
 
@@ -240,9 +241,17 @@ export function creaIscrittoSupabase(c: SupabaseClient): DatiIscritto {
     const { data, error } = await c.rpc('satispay_quota_stato', { persona: s.id })
     // `as`: la forma è quella di `satispay_quota_stato` (105-paga-quota-satispay.sql).
     const p = data as { stato: StatoSatispay; importo: number } | null
-    return !error && p?.stato === 'pagato' ? { ...s, satispay: p.importo } : s
+    return !error && p?.stato === 'pagato' ? { ...s, satispay: p.importo, satispayQuota: p.importo } : s
   }
-  const nucleo = async (persona: string) => Promise.all((await chiama<RigaScheda[] | null>('iscritto_nucleo', { persona }) ?? []).map((r) => conQuota(schedaDa(r))))
+  // I corsi pagati con Satispay e non ancora in una ricevuta: li dice `satispay_corsi_chi` (106), come la quota. Senza 106 la scheda resta com'è.
+  const conCorsi = async (s: SchedaIscritto): Promise<SchedaIscritto> => {
+    const { data, error } = await c.rpc('satispay_corsi_chi', { persona: s.id })
+    // `as`: la forma è quella di `satispay_corsi_chi` (106-paga-corso-satispay.sql).
+    const r = data as { corsi: { corso_id: string; pagato: boolean }[] } | null
+    return error || !r ? s : { ...s, satispayCorsi: r.corsi.filter((x) => x.pagato).map((x) => x.corso_id) }
+  }
+  const completa = async (s: SchedaIscritto) => conCorsi(await conQuota(s))
+  const nucleo = async (persona: string) => Promise.all((await chiama<RigaScheda[] | null>('iscritto_nucleo', { persona }) ?? []).map((r) => completa(schedaDa(r))))
 
   return {
     modo: 'supabase',
@@ -257,7 +266,7 @@ export function creaIscrittoSupabase(c: SupabaseClient): DatiIscritto {
 
     async scheda(persona) {
       const [riga] = (await chiama<RigaScheda[] | null>('iscritto_scheda', { persona })) ?? []
-      return riga ? conQuota(schedaDa(riga)) : null
+      return riga ? completa(schedaDa(riga)) : null
     },
 
     async lezioni(persona, da, a) {
@@ -358,6 +367,35 @@ export function creaIscrittoSupabase(c: SupabaseClient): DatiIscritto {
       // `as`: la forma è quella di `satispay_quota_stato` (105-paga-quota-satispay.sql), riletta dalla funzione.
       const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null; chi: string } | null | undefined
       return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined, chi: p.chi } : null
+    },
+
+    async pagaCorso(persona, corso, formula) {
+      const r = await chiamaSatispay(c, { azione: 'corso', persona, corso, formula })
+      if (r.attivo === false) throw new Error(CORSO_SPENTO)
+      if (typeof r.link !== 'string') throw new Error(ERRORE_SATISPAY)
+      return { link: r.link }
+    },
+
+    async statoCorso(persona, corso) {
+      const r = await chiamaSatispay(c, { azione: 'corso_stato', persona, corso })
+      if (r.attivo === false) throw new Error(CORSO_SPENTO)
+      // `as`: la forma è quella di `satispay_corso_stato` (106-paga-corso-satispay.sql), riletta dalla funzione.
+      const p = r.pagamento as { stato: StatoSatispay; importo: number; pagato_il?: string | null; chi: string } | null | undefined
+      return p ? { stato: p.stato, importo: p.importo, pagatoIl: p.pagato_il ?? undefined, chi: p.chi } : null
+    },
+
+    async chiPagaCorsi(persona) {
+      // Senza 106 (o senza rete) non si sa quali corsi si pagano: niente PAGA.
+      const { data, error } = await c.rpc('satispay_corsi_chi', { persona })
+      if (error || !data) return null
+      // `as`: la forma è quella di `satispay_corsi_chi` (106-paga-corso-satispay.sql).
+      const r = data as { adulto: boolean; accesso_proprio: boolean; come_titolare: boolean; corsi: { corso_id: string; annuale: number | null; trimestre: number | null; segreteria: boolean; a_pagamento: boolean; pagato: boolean }[] }
+      return {
+        adulto: r.adulto,
+        haAccessoProprio: r.accesso_proprio,
+        comeTitolare: r.come_titolare,
+        corsi: r.corsi.map((x) => ({ corsoId: x.corso_id, annuale: x.annuale ?? undefined, trimestre: x.trimestre ?? undefined, segreteria: x.segreteria, aPagamento: x.a_pagamento, pagato: x.pagato })),
+      }
     },
   }
 }
