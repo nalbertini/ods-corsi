@@ -4,18 +4,19 @@ import { dalCertificato, pagamentoDi, statoCertificato } from './segreteria'
 import { euro, type QuotaRicevuta, type Ricevuta } from './ricevute'
 import type { DatiRichiesta, StatoRichiesta } from './richieste'
 import type { Segnalata } from './segnalate'
+import { haUnServer } from './dati'
 
 /**
  * L'area degli iscritti: quello che di sé vede chi frequenta i corsi, dal
- * telefono. Per ora solo da leggere: i suoi corsi e le prossime lezioni, con
- * quello che cambia (annullate, sostituti, un'altra sala), le sue presenze,
- * il certificato medico, il pagamento e le ricevute.
+ * telefono: i suoi corsi e le prossime lezioni, con quello che cambia
+ * (annullate, sostituti, un'altra sala), le sue presenze, il certificato
+ * medico, il pagamento, le ricevute e il nucleo familiare.
  *
- * È il pilota, e c'è solo in prova: col database vero un iscritto non entra
- * ancora (vedi `personaDi` in `accesso.ts`), e quello che può leggere di sé
- * va deciso prima, con funzioni che restituiscano solo le sue righe invece di
- * allargare le policy della segreteria. Quando ci sarà, `datiIscritto()`
- * sceglierà fra le due implementazioni come fanno gli altri strati dati.
+ * Col database vero (`iscrittoSupabase.ts`) l'iscritto entra con l'email e un
+ * codice (vedi `accessoIscritto.ts`) e legge solo le sue righe, con le
+ * funzioni di `supabase/101-iscritto.sql`: le policy della segreteria non si
+ * allargano. In prova (`iscrittoProva.ts`) si sceglie quale iscritto inventato
+ * essere. `datiIscritto()` sceglie fra le due come gli altri strati dati.
  */
 
 /** Chi si può essere, in prova. */
@@ -76,8 +77,11 @@ export interface AggiuntaNucleo {
 }
 
 export interface DatiIscritto {
-  readonly modo: 'prova'
-  /** Gli iscritti fra cui scegliere chi essere, in ordine di cognome. */
+  readonly modo: 'prova' | 'supabase'
+  /**
+   * In prova gli iscritti fra cui scegliere chi essere, in ordine di cognome.
+   * Col database vero solo chi ha l'accesso, o nessuno se non è entrato.
+   */
   iscritti(): Promise<IscrittoDiProva[]>
   scheda(personaId: string): Promise<SchedaIscritto | null>
   /** Le lezioni dei suoi corsi fra due giorni, estremi inclusi, anche annullate. */
@@ -162,11 +166,13 @@ export function scegliIscritto(id: string) {
 
 let unico: Promise<DatiIscritto> | null = null
 
-/** Solo la prova, per ora: vedi in cima. */
+/** Il database vero, o la prova: come gli altri strati dati (vedi `haUnServer`). */
 export function datiIscritto(): Promise<DatiIscritto> {
   if (!unico) {
-    unico = Promise.all([import('./iscrittoProva'), import('./esempiProva')])
-      .then(([m, e]) => (e.seminaEsempi(), m.creaIscrittoProva()))
+    unico = (haUnServer
+      ? Promise.all([import('./iscrittoSupabase'), import('./supabase')]).then(([m, s]) => m.creaIscrittoSupabase(s.clientSupabase()))
+      : Promise.all([import('./iscrittoProva'), import('./esempiProva')]).then(([m, e]) => (e.seminaEsempi(), m.creaIscrittoProva()))
+    )
       .catch((e) => {
         unico = null
         throw e

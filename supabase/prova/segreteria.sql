@@ -189,7 +189,9 @@ select atteso('e ora il suo ruolo si sa', (select ruolo_corrente()::text), 'istr
 reset role;
 select chi('44444444-4444-4444-4444-444444444444');
 set role authenticated;
-select atteso('un iscritto non si lega da solo', coalesce((select collega_utente()::text), 'niente'), 'niente');
+-- Dal 101 un iscritto con l'email confermata si lega (area degli iscritti), ma non diventa personale.
+select atteso('un iscritto si lega, con la sua email confermata', coalesce((select collega_utente()::text), 'niente'), 'aaaaaaaa-0000-0000-0000-000000000004');
+select atteso('…e non è personale', (select e_staff()::text || '|' || e_personale()::text), 'false|false');
 reset role;
 select chi('33333333-3333-3333-3333-333333333333');
 set role authenticated;

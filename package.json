@@ -48,6 +48,7 @@
     "prova:calendario": "node scripts/prova-calendario.mjs",
     "prova:iscritti": "node scripts/prova-iscritti.mjs",
     "prova:iscritti-corso": "node scripts/prova-iscritti-corso.mjs",
+    "prova:iscritto-supabase": "node scripts/prova-iscritto-supabase.mjs",
     "prova:listino": "node scripts/prova-listino.mjs",
     "prova:satispay": "node scripts/prova-satispay.mjs",
     "prova:satispay-scarico": "node scripts/prova-satispay-scarico.mjs",

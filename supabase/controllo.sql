@@ -509,6 +509,20 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     -- Rilanciare 45, 84, 95 o 99 dopo 100 rimette le funzioni senza il nucleo: la riga torna «da lanciare».
     and exists (select 1 from dentro where nome = 'unione_possibile' and corpo like '%nucleo%')
     and exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%nucleo_di%')
-    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%nucleo_di%'))
+    and exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%nucleo_di%')),
+  ('101-iscritto.sql', 'l''area degli iscritti sul database',
+    to_regclass('public.presenze_segnalate') is not null
+    and to_regprocedure('public.iscritto_scheda(uuid)') is not null
+    and to_regprocedure('public.iscritto_lezioni(uuid,date,date)') is not null
+    and to_regprocedure('public.iscritto_presenze(uuid,integer)') is not null
+    and to_regprocedure('public.iscritto_ricevute(uuid)') is not null
+    and to_regprocedure('public.iscritto_nucleo(uuid)') is not null
+    and to_regprocedure('public.iscritto_titolare(uuid)') is not null
+    and to_regprocedure('public.iscritto_aggiunte(uuid)') is not null
+    and to_regprocedure('public.iscritto_dati_del_nucleo(uuid)') is not null
+    and to_regprocedure('public.iscritto_segnala(uuid,uuid,text)') is not null
+    and to_regprocedure('public.iscritto_segnalate(uuid)') is not null
+    -- Rilanciare 55 dopo 101 rimette il primo accesso senza gli iscritti: la riga torna «da lanciare».
+    and exists (select 1 from dentro where nome = 'collega_utente' and corpo like '%iscritto%'))
 ) as x(file, cosa, c)
 order by file, cosa;
