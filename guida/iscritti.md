@@ -52,9 +52,10 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   **SEI IN REGOLA** in verde, o le cose da sistemare: il certificato medico
   che manca, è scaduto o scade entro un mese (sotto i 6 anni non serve); la
   quota da pagare, pagata in parte o da rinnovare.
-- **Le tue lezioni** (tab LEZIONI): un elenco solo, con le lezioni dei suoi corsi
-  nelle prossime due settimane, un gruppo per giorno, e sotto le presenze.
-  A destra del titolo il conto: le prossime lezioni + le presenze. Quello che cambia rispetto al solito si
+- **Le tue lezioni** (tab LEZIONI): in cima **LA PROSSIMA
+  LEZIONE** in evidenza, con quanti giorni mancano; sotto, un elenco solo con
+  le altre lezioni dei suoi corsi nelle prossime due settimane, in ordine di
+  data, e poi le presenze. A destra del titolo il conto: le altre lezioni + le presenze. Quello che cambia rispetto al solito si
   legge sulla lezione: **ANNULLATA** in rosso, **SOSTITUTO** quando la fa un
   altro istruttore, **IN** e il nome della sala quando la lezione è stata
   spostata, **IN PIÙ** per una lezione fuori dall'orario (uno stage).

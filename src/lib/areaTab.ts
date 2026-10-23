@@ -3,6 +3,8 @@
 import type { ComePaga, StatoCertificato } from './segreteria'
 import { tastoLinguette, type SegnoScheda } from './schedaSezioni'
 import { CONTATTI, chiama, whatsapp } from './sito'
+import type { MiaLezione, MiaPresenza } from './iscritto'
+import { chiaveGiorno } from './sala'
 
 export type IdTabArea = 'lezioni' | 'regola' | 'nucleo' | 'contatti'
 
@@ -60,3 +62,21 @@ export const gruppiContatti = ({ guida, conEsci }: { guida: string; conEsci: boo
 
 /** Il conto dell'elenco unico di LEZIONI: le prossime e le presenze passate. */
 export const contoElenco = (prossime: number, presenze: number) => `${prossime} + ${presenze}`
+
+/**
+ * LEZIONI: la prossima in evidenza, poi le altre in ordine di data e le presenze.
+ * Una lezione annullata non è «la prossima»: resta nell'elenco, con ANNULLATA.
+ */
+export function elencoLezioni(lezioni: MiaLezione[], presenze: MiaPresenza[]) {
+  const ordinate = [...lezioni].sort((a, b) => a.inizio.localeCompare(b.inizio))
+  const prossima = ordinate.find((l) => l.stato !== 'annullata') ?? null
+  const seguenti = ordinate.filter((l) => l !== prossima)
+  return { prossima, seguenti, presenze, conto: contoElenco(seguenti.length, presenze.length) }
+}
+
+/** Quanto manca a una lezione, in giorni di calendario: OGGI, DOMANI, FRA 4 GIORNI. */
+export function fraQuanto(inizio: string, ora: Date): string {
+  const giorni = (g: string) => Date.UTC(...(g.split('-').map(Number) as [number, number, number])) / 86_400_000
+  const n = Math.round(giorni(chiaveGiorno(new Date(inizio))) - giorni(chiaveGiorno(ora)))
+  return n <= 0 ? 'OGGI' : n === 1 ? 'DOMANI' : `FRA ${n} GIORNI`
+}
