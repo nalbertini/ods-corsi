@@ -41,7 +41,7 @@
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"TABATA BRUCIA GRASSI"},"serie":{"editor":"text","default":"SERIE 2 / 3"},"indietro":{"editor":"text","default":"APPELLO"},"fase":{"editor":"enum","options":["LAVORO","RECUPERO"],"default":"LAVORO"},"tempo":{"editor":"text","default":"14"},"esercizio":{"editor":"text","default":"BURPEE + SALTO"},"largo":{"editor":"boolean","default":false},"altezza":{"editor":"text","default":"780px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":780}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"TABATA BRUCIA GRASSI"},"serie":{"editor":"text","default":"SERIE 2 / 3"},"indietro":{"editor":"text","default":"APPELLO"},"fase":{"editor":"enum","options":["LAVORO","RECUPERO"],"default":"LAVORO"},"tempo":{"editor":"text","default":"14"},"esercizio":{"editor":"text","default":"BURPEE + SALTO"},"largo":{"editor":"boolean","default":false},"altezza":{"editor":"text","default":"780px"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":390,"height":780}}'>
 // PROPOSTA (non ancora nell'app): l'allenamento in corso dentro l'app istruttori. E' la schermata di timer/design/TimerPhone.dc.html
 // (cornice di 10px del colore della fase, titolo + SERIE, fase, tempo grande, esercizio, ROUND, PROSSIMO, comandi 68px indietro/PAUSA/avanti)
 // con due cambi: in alto non c'e' la X ma il tasto ‹ col nome di dove riporta (APPELLO, o TIMER se si e' partiti dall'elenco);
@@ -51,13 +51,14 @@
 const T = {
   scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', tasto: '#b8b8b2', rosso: '#e4292a', verde: '#16a54a', rossoTesto: '#ff5a52', verdeTesto: '#16a54a', suColore: '#121212' },
   chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', tasto: '#4a4a46', rosso: '#e4292a', verde: '#12913f', rossoTesto: '#b81d1d', verdeTesto: '#0b7a33', suColore: '#121212' },
+  sito: { bg: '#eef5fa', surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', tasto: '#0d2a3d', rosso: '#e4292a', verde: '#12913f', rossoTesto: '#b81d1d', verdeTesto: '#0b7a33', suColore: '#0d2a3d' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const base = T[p.tema] || T.scuro;
+    const base = T[p.tema] || T.sito;
     const lavoro = (p.fase || 'LAVORO') === 'LAVORO';
     const c = { ...base, fase: lavoro ? base.rosso : base.verde, faseTesto: lavoro ? base.rossoTesto : base.verdeTesto };
     return {

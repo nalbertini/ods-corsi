@@ -83,7 +83,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"stato":{"editor":"enum","options":["aperta","dopo"],"default":"aperta"},"ora":{"editor":"text","default":"17:00–18:00"},"corso":{"editor":"text","default":"Lotta 2"},"kanji":{"editor":"text","default":"闘"},"sotto":{"editor":"text","default":"Coach, Federico, Maura, Nicola · 8 segnati su 14"},"tinta":{"editor":"text","default":"#16a54a"},"dalle":{"editor":"text","default":"18:30"},"timer":{"editor":"text","default":""},"timerDa":{"editor":"text","default":"IL TIMER DI QUESTA LEZIONE"},"senzaTasto":{"editor":"boolean","default":false},"areaIstruttore":{"editor":"boolean","default":false},"istruttori":{"editor":"text","default":""},"recupero":{"editor":"boolean","default":false},"attivita":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":808,"height":260}}'>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["aperta","dopo"],"default":"aperta"},"ora":{"editor":"text","default":"17:00–18:00"},"corso":{"editor":"text","default":"Lotta 2"},"kanji":{"editor":"text","default":"闘"},"sotto":{"editor":"text","default":"Coach, Federico, Maura, Nicola · 8 segnati su 14"},"tinta":{"editor":"text","default":"#16a54a"},"dalle":{"editor":"text","default":"18:30"},"timer":{"editor":"text","default":""},"timerDa":{"editor":"text","default":"IL TIMER DI QUESTA LEZIONE"},"senzaTasto":{"editor":"boolean","default":false},"areaIstruttore":{"editor":"boolean","default":false},"istruttori":{"editor":"text","default":""},"recupero":{"editor":"boolean","default":false},"attivita":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":808,"height":260}}'>
 // Riproduzione 1:1 della lezione grande della home del tablet: <div className="tb-aperta"> in
 // src/components/tablet/TabletHome.tsx con .tb-aperta*, .tb-dalle in src/styles.css. Nell'app la card aperta e' tutta un
 // tasto che apre l'appello (senzaTasto + areaIstruttore, i nomi stanno sotto): il tasto SEGNA LA PRESENZA e la riga del
@@ -103,6 +103,7 @@
 const T = {
   scuro: { surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', giallo: '#f4c31b', rossoTesto: '#ff5a52' },
   chiaro: { surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', giallo: '#f4c31b', rossoTesto: '#b81d1d' },
+  sito: { surface: '#ffffff', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', verde: '#12913f', giallo: '#f4c31b', rossoTesto: '#b81d1d' },
 };
 class Component extends DCLogic {
   renderVals() {
@@ -110,7 +111,7 @@ class Component extends DCLogic {
     const dopo = p.stato === 'dopo';
     const timer = p.timer ?? '';
     return {
-      c: T[p.tema] || T.scuro,
+      c: T[p.tema] || T.sito,
       areaIstruttore: p.areaIstruttore === true || p.areaIstruttore === 'true',
       attivita: p.attivita ?? '',
       haAttivita: !!p.attivita,

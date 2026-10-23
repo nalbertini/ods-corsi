@@ -35,7 +35,7 @@
   </div>
 </sc-if>
 </x-dc>
-<script data-dc-script data-props='{"variante":{"editor":"enum","options":["corso","lezione"],"default":"corso"},"titolo":{"editor":"text","default":"JUDO KIDS"},"sotto":{"editor":"text","default":"lun mar gio"},"tinta":{"editor":"text","default":"#1b8ac4"},"ora":{"editor":"text","default":"18:30–19:30"},"attivita":{"editor":"text","default":""},"conto":{"editor":"text","default":"7 su 12"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":295,"height":96}}'>
+<script data-dc-script data-props='{"variante":{"editor":"enum","options":["corso","lezione"],"default":"corso"},"titolo":{"editor":"text","default":"JUDO KIDS"},"sotto":{"editor":"text","default":"lun mar gio"},"tinta":{"editor":"text","default":"#1b8ac4"},"ora":{"editor":"text","default":"18:30–19:30"},"attivita":{"editor":"text","default":""},"conto":{"editor":"text","default":"7 su 12"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":295,"height":96}}'>
 // Riproduzione 1:1 delle scelte di TI SEI DIMENTICATO DI SEGNARTI? (TabletRecupero.tsx, righe 66-111): .tb-scelta e
 // .tb-scelta-riga (src/styles.css, righe 1071-1076), dentro .tb-griglia (colonne da minimo 260px, gap 12px).
 // - variante corso: scheda a colonna, padding 18px 20px, bordo `line` da 2px e barra a sinistra da 8px nella tinta del
@@ -46,13 +46,14 @@
 const T = {
   scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88' },
   chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561' },
+  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const lezione = p.variante === 'lezione';
     return {
-      c: T[p.tema] || T.scuro,
+      c: T[p.tema] || T.sito,
       corsoVar: !lezione, lezioneVar: lezione,
       titolo: p.titolo ?? 'JUDO KIDS', sotto: p.sotto ?? 'lun mar gio', tinta: p.tinta || '#1b8ac4',
       ora: p.ora ?? '18:30–19:30', attivita: p.attivita ?? '', haAttivita: !!p.attivita,
