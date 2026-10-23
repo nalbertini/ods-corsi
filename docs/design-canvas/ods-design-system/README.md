@@ -90,7 +90,7 @@ Google, e vale solo per i mockup.
 | `BloccoLezione` | Un blocco del tabellone sale × ore di OGGI (`.bn-blocco`): corso, ora, stato in parole; `stato` fatto, in_corso, appello_non_fatto, prossima, annullata |
 | `TabletTessera` | Il nome da toccare nella lista della sala |
 | `TabletFascia` | La fascia dopo un tocco: fatto, attesa, già, errore |
-| `TabletTestata`, `TabletLezione`, `TabletPiede`, `TabletRigaGiornata` | La testata, la lezione aperta, il piede e la riga della giornata del tablet di sala |
+| `TabletTestata`, `TabletLezione`, `TabletPiede`, `TabletRigaGiornata` | La testata, la lezione aperta, il piede e la riga della giornata del tablet di sala; i componenti `Tablet*`, `Timer*`, `MieiTimerRiga` e `SchedeTimer` hanno `tema` `scuro`, `chiaro` o `sito` (predefinito: il look del sito, sempre chiaro, blu e giallo; con `sito` la testata non ha il tasto del tema) |
 | `MieOreNumero`, `MieOreRiga` | I numeri e le righe di LE MIE ORE |
 | `MiaLezione`, `MiaPresenza`, `MiaPresenzaPiccola` | La lezione e la riga delle presenze nell'area iscritti; `tema="sito"` com'è l'area adesso (look del sito, sempre chiara), la tinta del corso a sinistra; SEGNALA da 44px col bordo blu; `MiaPresenza` con `soloTasto`: dove si può segnalare c'è solo il tasto, senza «NON SEGNATO» |
 | `MieiTimerRiga` | La riga di I MIEI TIMER, per un corso o una lezione |

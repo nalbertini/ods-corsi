@@ -7,7 +7,7 @@
 // salvata (scuro, Tatami) non si tocca e vale ancora fuori dall'area. Le parole di stato
 // dell'appello e del calendario (segno davanti, mai solo il colore) stanno in
 // `src/lib/etichetteAppello.ts`. Il CSS sta sotto `:root[data-look='sito']`; la pagina TIMER ha il
-// tema `sito` del timer; il tablet di sala e i timer fuori dall'app non cambiano.
+// tema `sito` del timer, come il tablet di sala; solo i timer fuori dall'app seguono il tema.
 // ---------------------------------------------------------------------------
 import { readFileSync } from 'node:fs'
 import { build } from 'esbuild'
@@ -73,8 +73,8 @@ console.log('\nIstruttori: sempre chiaro')
   ok('prima: il tema salvato è scuro', e.tema(), 'scuro')
   vedi(() => t.applicaLook('istruttori', e.doc))
   ok('istruttori con scuro salvato: look sito, tema chiaro, barra #eef5fa', [e.look(), e.tema(), e.meta.content], ['sito', 'chiaro', '#eef5fa'])
-  vedi(() => t.applicaLook('sala', e.doc))
-  ok('poi la sala: il look sparisce e torna scuro', [e.look(), e.tema(), e.meta.content], [null, 'scuro', '#121212'])
+  vedi(() => t.applicaLook('iscrizioni', e.doc))
+  ok('poi fuori dal look: il look sparisce e torna scuro', [e.look(), e.tema(), e.meta.content], [null, 'scuro', '#121212'])
   ok('ods-tema non è stato né riscritto né cancellato', [e.scritture, e.dati.get('ods-tema')], [[], 'scuro'])
 }
 {
@@ -114,11 +114,11 @@ ok('Istruttori non mostra <TastoTema', /<TastoTema\b/.test(istr), false)
 const testate = [...istr.matchAll(/<Testata\b[^>]*>/g)].map((x) => x[0])
 ok('ogni <Testata> di Istruttori ha senzaTema', testate.length > 0 && testate.every((t) => /\bsenzaTema\b/.test(t)), true)
 ok('Testata mostra <TastoTema /> solo se non è senzaTema', /!senzaTema[^\n]*<TastoTema\b|senzaTema\s*\?\s*null\s*:\s*<TastoTema\b|!senzaTema\s*&&\s*<TastoTema\b/.test(corpoDi('Testata')), true)
-ok('le altre aree hanno ancora il tasto (Testata, Tablet, Segreteria)', [
+ok('il tasto c'è ancora in Testata e Segreteria, non nel tablet', [
   /<TastoTema\b/.test(corpoDi('Testata')),
   /<TastoTema\b/.test(readFileSync('src/components/tablet/Tablet.tsx', 'utf8')),
   /<TastoTema\b/.test(readFileSync('src/components/segreteria/Segreteria.tsx', 'utf8')),
-], [true, true, true])
+], [true, false, true])
 
 // --- 4. le parole di stato: src/lib/etichetteAppello.ts ----------------------
 console.log('\nLe parole di stato (src/lib/etichetteAppello.ts)')
@@ -194,13 +194,16 @@ console.log('\nLa pagina TIMER col look del sito (src/lib/timerNelRiquadro.ts, t
   const tema = t.temaDelTimer ?? (() => 'src/lib/timerNelRiquadro.ts non esporta temaDelTimer')
   // Nell'area istruttore il timer ha il tema `sito`, qualunque sia il tema salvato.
   for (const h of ['chiaro', 'tatami', 'scuro', undefined]) ok(`area istruttore, <html> ${h ?? 'senza tema'}: il timer è sito`, vedi(() => tema(h, true)), 'sito')
-  // Il tablet di sala e il timer fuori dall'app seguono ancora il tema.
-  for (const h of ['chiaro', 'tatami', 'scuro', undefined]) ok(`tablet, <html> ${h ?? 'senza tema'}: il timer segue il tema`, vedi(() => tema(h, false)), h)
+  // Il timer fuori dall'app (senza `sito`) segue ancora il tema.
+  for (const h of ['chiaro', 'tatami', 'scuro', undefined]) ok(`fuori dall'app, <html> ${h ?? 'senza tema'}: il timer segue il tema`, vedi(() => tema(h, false)), h)
   ok('perLaSala: :root[data-tema=\'sito\'] diventa :host([data-tema=sito])', vedi(() => t.perLaSala(":root[data-tema='sito'] .a { x: 1 }")), ':host([data-tema=sito]) .a { x: 1 }')
   const pagina = readFileSync('src/components/TimerIstruttori.tsx', 'utf8')
   ok('la pagina TIMER dell\'app chiede il timer sito', /<TimerSala\b[^>]*\bsito\b/.test(pagina), true)
   ok('la pagina TIMER non lo chiede più scuro', /<TimerSala\b[^>]*\bscuro\b/.test(pagina), false)
-  ok('il tablet non lo chiede', /<TimerSala\b[^>]*\b(sito|scuro)\b/.test(readFileSync('src/components/tablet/Tablet.tsx', 'utf8')), false)
+  const tablet = readFileSync('src/components/tablet/Tablet.tsx', 'utf8')
+  ok('il tablet chiede il timer sito', /<TimerSala\b[^>]*\bsito\b/.test(tablet), true)
+  ok('il tablet non ha il tasto del tema (col look non cambierebbe nulla)', /<TastoTema\b/.test(tablet), false)
+  ok('il tablet non lo chiede scuro', /<TimerSala\b[^>]*\bscuro\b/.test(tablet), false)
   // Intorno al timer (testata TIMER, SENZA RETE, la musica) vale il look dell'area, non più i token scuri.
   ok('.faccia-timer non sta più nel blocco dei token scuri', /\.faccia-timer\s*,\s*:root\s*\{/.test(css), false)
 

@@ -22,7 +22,6 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Logo } from '../Logo'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { accedi, account, passaA } from '../../lib/accesso'
-import { TastoTema } from '../TastoTema'
 import { giornoDopo, messaggio, useAdesso, useInattivo, useSchermoAcceso } from './comune'
 import { TabletHome } from './TabletHome'
 import { TabletPresenza } from './TabletPresenza'
@@ -447,7 +446,6 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
           </span>
         )}
         <span className="num tb-ora">{oraDi(adesso.toISOString())}</span>
-        <TastoTema />
         {/* Esce dal tablet: col PIN di un istruttore e una conferma. Dalla scheda TIMER si torna alle presenze, dove il PIN si digita. */}
         <button type="button" className="icon-btn" title="Esci dal tablet" aria-label="Esci dal tablet" onClick={esciDalTablet}>
           <Accensione />
@@ -519,7 +517,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
             />
           )}
           <Suspense fallback={scheda === 'timer' ? <p className="tb-nota" style={{ padding: 32 }}>Un attimo…</p> : null}>
-            <TimerSala incorporato={incorporato} visibile={scheda === 'timer'} />
+            <TimerSala incorporato={incorporato} visibile={scheda === 'timer'} sito />
           </Suspense>
         </div>
         {conYoutube && <VideoSala />}

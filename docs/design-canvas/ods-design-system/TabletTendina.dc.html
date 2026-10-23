@@ -20,7 +20,7 @@
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"opzioni":{"editor":"text","default":"Judo adulti|Judo baby|Judo kids"},"scelta":{"editor":"text","default":"Judo baby"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":300,"height":170}}'>
+<script data-dc-script data-props='{"opzioni":{"editor":"text","default":"Judo adulti|Judo baby|Judo kids"},"scelta":{"editor":"text","default":"Judo baby"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":300,"height":170}}'>
 // La tendina CORSO aperta, sotto le schede PER CORSO dell'area istruttore (<select className="tb-select">, TabletIstruttore.tsx riga 247;
 // src/styles.css righe 1120-1131). Il <select> e' del sistema: nell'app l'elenco aperto lo disegna il tablet (iPad: una ruota o un menu),
 // quindi questo e' un disegno di intenti e non una copia 1:1: righe da 52px per il dito, 18px come il campo, quella scelta in grassetto
@@ -29,11 +29,12 @@
 const T = {
   scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#b8b8b2', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
   chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#4a4a46', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+  sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', lineSoft: '#cfe6f4', text: '#0d2a3d', sec: '#0d2a3d', dim: '#46606f', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#14709f', suColore: '#0d2a3d', suRosso: '#ffffff', tasto: '#0d2a3d', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    const c = T[p.tema] || T.scuro;
+    const c = T[p.tema] || T.sito;
     const scelta = p.scelta ?? 'Judo baby';
     const voci = String(p.opzioni ?? 'Judo adulti|Judo baby|Judo kids').split('|').map((s) => s.trim()).filter(Boolean).map((nome) => ({
       nome,

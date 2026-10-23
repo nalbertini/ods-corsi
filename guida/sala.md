@@ -10,7 +10,7 @@ aprite l'appello completo e lo correggete.
 
 ## Cosa si vede quando nessuno lo tocca
 
-- In alto: **SALA …**, la data, l'ora, il tasto del tema e, ultimo, il
+- In alto: **SALA …**, la data, l'ora e, ultimo, il
   tasto di accensione: **ESCI DAL TABLET** (vedi [Uscire dal
   tablet](#uscire-dal-tablet)).
 - **A sinistra**, la lezione in cui ci si segna adesso, senza titolo. Tutta la
@@ -50,8 +50,7 @@ timer collegati al corso, poi quelli della palestra. Li scelgono gli
 istruttori, in [I MIEI TIMER](istruttori.md#i-miei-timer).
 
 Dal tablet i timer si fanno partire, non si cambiano: si creano e si
-modificano dal proprio telefono, entrando come istruttore. Il tema
-scelto qui vale anche nel timer, e viceversa.
+modificano dal proprio telefono, entrando come istruttore.
 
 Maurizio, i segnali, il volume, lo schermo e la musica durante il timer si
 scelgono nel timer, dalle sue **IMPOSTAZIONI**, e sono uguali su tutti i
@@ -234,8 +233,7 @@ Per chiudere l'area istruttore non serve: per quello c'è **ESCI**.
 
 Si esce in due modi, e tutti e due chiedono conferma prima di scollegare:
 
-- dalla schermata di sempre, con il tasto di accensione in alto a destra, dopo
-  il tema: il
+- dalla schermata di sempre, con il tasto di accensione in alto a destra: il
   tablet chiede il PIN di un istruttore, uno qualsiasi, e poi **USCIRE DAL
   TABLET?** con **SÌ, ESCI** o **ANNULLA**, e il numero di versione dell'app
   (serve a capire se questo tablet è aggiornato). Questo PIN non segna la presenza

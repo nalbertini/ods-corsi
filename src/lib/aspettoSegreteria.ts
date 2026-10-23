@@ -2,12 +2,11 @@ import type { Area } from './aree'
 import { riapplicaTema } from './tema'
 
 /**
- * La porta (accesso e scelta dell'area), la guida, il consenso a Claude, la segreteria, l'amministrazione, gli istruttori e gli iscritti hanno
+ * La porta (accesso e scelta dell'area), la guida, il consenso a Claude, la segreteria, l'amministrazione, gli istruttori, gli iscritti e il tablet di sala (col timer dentro) hanno
  * l'aspetto del sito della palestra (blu e giallo, sempre chiaro), qualunque
  * sia il tema scelto: chi è in due ruoli passa dall'una all'altra area senza
- * cambiare faccia, e l'iscritto ritrova il sito da cui arriva. Le altre aree
- * (tablet di sala, timer) restano come sono. Il tema
- * salvato non si tocca: vale ancora fuori da queste aree. I colori e
+ * cambiare faccia, e l'iscritto ritrova il sito da cui arriva. Il tema
+ * salvato non si tocca: vale ancora fuori da queste aree (il timer a sé). I colori e
  * i caratteri stanno in `styles.css` sotto `:root[data-look='sito']`; qui si
  * decide quando l'attributo c'è.
  *
@@ -16,7 +15,7 @@ import { riapplicaTema } from './tema'
 export type Look = 'sito'
 
 export function lookDellArea(area: Area): Look | null {
-  return area === 'segreteria' || area === 'amministrazione' || area === 'istruttori' || area === 'iscritti' || area === 'scelta' || area === 'guida' || area === 'collega' ? 'sito' : null
+  return area === 'sala' || area === 'segreteria' || area === 'amministrazione' || area === 'istruttori' || area === 'iscritti' || area === 'scelta' || area === 'guida' || area === 'collega' ? 'sito' : null
 }
 
 /**

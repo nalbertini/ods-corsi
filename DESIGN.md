@@ -372,7 +372,7 @@ La lezione è una riga con barra sinistra 6px nella tinta del corso, ora e nome 
 - **Appello veloce** (`.tb-veloce`): sotto la lezione aperta i nomi stanno a tre colonne, righe alte 60px, bordo 2px, Barlow 22px (sono nomi di persona: niente Saira maiuscola; «Giacomo Maria R.» con la spunta sta in una riga a 1280px e in verticale a 800px); segnato = bordo e testo verdi su `superficie-alta`, con la spunta. Le tessere delle altre schermate (`.tb-tessera` da sola) restano da 84px con bordo 3px.
 - **Lezione aperta** (`.tb-aperta-lezione`): la card è un tasto che apre l'appello intero (aria-label «Apri l'appello: corso»), con AREA ISTRUTTORE (`.tb-btn-linea`) a destra, in ogni card se le aperte sono due. Senza lezione aperta AREA ISTRUTTORE sta in basso a sinistra. Il vecchio tasto verde da 88px non c'è più.
 - **Gruppi della giornata** (`.tb-gruppo`): a destra PRECEDENTI, IN CORSO, PIÙ TARDI, titolo da 15px; in IN CORSO le lezioni seguono l'ordine delle card a sinistra, la più recente in cima.
-- **Testata:** i tasti tema e Accensione (esci dal tablet) sono da 60px con icone da 28px, solo dentro `.tb-testata`; la testata sta su una riga a 1280px e in verticale.
+- **Testata:** il tasto Accensione (esci dal tablet) è da 60px con icona da 28px, solo dentro `.tb-testata`; la testata sta su una riga a 1280px e in verticale. Il tablet di sala, col timer incorporato (`TimerSala`, tema `sito`), ha il look del sito come le altre aree: sempre chiaro, blu e giallo, e il tasto del tema non c'è.
 - **Piede:** `.tb-btn-quadro` è un tasto da 60px quadrato con la sola icona (la nota della musica).
 
 ### Musica del telefono

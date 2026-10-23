@@ -23,18 +23,19 @@
   <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 52px; height: 52px; border: 2px solid {{tinta}}; color: {{tinta}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tipo":{"editor":"text","default":"TABATA"},"durata":{"editor":"text","default":"4 MIN"},"nome":{"editor":"text","default":"Tabata brucia grassi"},"nota":{"editor":"text","default":""},"tinta":{"editor":"text","default":"#e4292a"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":86}}'>
+<script data-dc-script data-props='{"tipo":{"editor":"text","default":"TABATA"},"durata":{"editor":"text","default":"4 MIN"},"nome":{"editor":"text","default":"Tabata brucia grassi"},"nota":{"editor":"text","default":""},"tinta":{"editor":"text","default":"#e4292a"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":350,"height":86}}'>
 // La riga di un timer nell'elenco della pagina TIMER: la stessa di TimerPagina (timer/design/Home.dc.html), da sola, per le sezioni
 // che TimerPagina non ha (I TUOI TIMER, LE COPIE). tipo: 10px 0.16em su fondo `tinta`; durata Saira 14px; nome in maiuscolo (.ob 21px);
 // nota: riga dim opzionale (es. «Copia di Tabata della palestra»); tasto ▶ 52px col bordo e il segno della tinta.
 const T = {
   scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88' },
   chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561' },
+  sito: { surface: '#ffffff', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    return { c: T[p.tema] || T.scuro, tipo: p.tipo ?? 'TABATA', durata: p.durata ?? '4 MIN', nomeMaiuscolo: String(p.nome ?? 'Tabata brucia grassi').toUpperCase(), nota: p.nota ?? '', tinta: p.tinta || '#e4292a' };
+    return { c: T[p.tema] || T.sito, tipo: p.tipo ?? 'TABATA', durata: p.durata ?? '4 MIN', nomeMaiuscolo: String(p.nome ?? 'Tabata brucia grassi').toUpperCase(), nota: p.nota ?? '', tinta: p.tinta || '#e4292a' };
   }
 }
 </script>
