@@ -3,7 +3,7 @@
 //
 //   node scripts/prova-area-tab.mjs
 //
-// Quattro tab (LEZIONI, DOCUMENTI, NUCLEO, CONTATTI), NUCLEO solo per il titolare; si apre
+// Quattro tab (LEZIONI, DOCUMENTI, FAMIGLIA, CONTATTI), FAMIGLIA solo per il titolare; si apre
 // su LEZIONI; la tastiera col giro; il segno su DOCUMENTI dice DA SISTEMARE
 // quando certificato o quota non vanno (il peggiore vince).
 // Canvas: docs/design-canvas/area-iscritti-tab.
@@ -40,8 +40,8 @@ const f = (nome, ...args) => (typeof m[nome] === 'function' ? m[nome](...args) :
 
 console.log('Quali tab')
 ok('chi non è titolare: LEZIONI, DOCUMENTI e CONTATTI', f('tabArea', false), ['lezioni', 'regola', 'contatti'])
-ok('il titolare: anche NUCLEO, prima di CONTATTI', f('tabArea', true), ['lezioni', 'regola', 'nucleo', 'contatti'])
-ok('le etichette', ['lezioni', 'regola', 'nucleo', 'contatti'].map((t) => f('etichettaTab', t)), ['LEZIONI', 'DOCUMENTI', 'NUCLEO', 'CONTATTI'])
+ok('il titolare: anche FAMIGLIA, prima di CONTATTI', f('tabArea', true), ['lezioni', 'regola', 'nucleo', 'contatti'])
+ok('le etichette', ['lezioni', 'regola', 'nucleo', 'contatti'].map((t) => f('etichettaTab', t)), ['LEZIONI', 'DOCUMENTI', 'FAMIGLIA', 'CONTATTI'])
 ok('si apre su LEZIONI', m.TAB_INIZIALE, 'lezioni')
 
 console.log('La tastiera')
@@ -54,8 +54,8 @@ ok('Home e Fine', [f('tastoTabArea', tre, 'regola', { key: 'Home' }), f('tastoTa
 ok('un altro tasto: niente', f('tastoTabArea', tre, 'regola', { key: 'a' }), null)
 ok('con Alt, Ctrl o Cmd il tasto è del browser', [{ altKey: true }, { ctrlKey: true }, { metaKey: true }].map((m) => f('tastoTabArea', tre, 'regola', { key: 'ArrowLeft', ...m })), [null, null, null])
 ok('senza modificatori la freccia vale', f('tastoTabArea', tre, 'regola', { key: 'ArrowLeft' }), 'lezioni')
-ok('destra da NUCLEO: CONTATTI; da CONTATTI: giro', [f('tastoTabArea', quattro, 'nucleo', { key: 'ArrowRight' }), f('tastoTabArea', quattro, 'contatti', { key: 'ArrowRight' })], ['contatti', 'lezioni'])
-ok('NUCLEO aperto ma non più titolare: si riparte da LEZIONI', f('tabAperto', ['lezioni', 'regola', 'contatti'], 'nucleo'), 'lezioni')
+ok('destra da FAMIGLIA: CONTATTI; da CONTATTI: giro', [f('tastoTabArea', quattro, 'nucleo', { key: 'ArrowRight' }), f('tastoTabArea', quattro, 'contatti', { key: 'ArrowRight' })], ['contatti', 'lezioni'])
+ok('FAMIGLIA aperta ma non più titolare: si riparte da LEZIONI', f('tabAperto', ['lezioni', 'regola', 'contatti'], 'nucleo'), 'lezioni')
 ok('CONTATTI resta aperto', f('tabAperto', quattro, 'contatti'), 'contatti')
 ok('un tab che c\'è resta aperto', f('tabAperto', tre, 'nucleo'), 'nucleo')
 

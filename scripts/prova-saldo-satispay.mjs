@@ -3,7 +3,7 @@
 //
 //   node scripts/prova-saldo-satispay.mjs
 //
-// Dall'area iscritti (DOCUMENTI e NUCLEO) l'iscritto, o il titolare per chi
+// Dall'area iscritti (DOCUMENTI e FAMIGLIA) l'iscritto, o il titolare per chi
 // non ha un accesso suo, paga solo la quota associativa che manca: una
 // ricevuta con QUOTA ASSOCIATIVA e `mancano` > 0 (`in_parte`, fonte ricevuta).
 // Niente rinnovi, quote intere, corsi, da pagare/scaduto, pagato fuori app.

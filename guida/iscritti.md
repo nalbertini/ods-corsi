@@ -40,7 +40,7 @@ In prova (`?prova`), in cima, si sceglie **quale iscritto essere**: la pagina ca
 ognuno, e il dispositivo si ricorda la scelta.
 
 La pagina è divisa in **tab**, nella barra in fondo allo schermo: **LEZIONI** (si
-apre su questo), **DOCUMENTI**, per il titolare di un nucleo **NUCLEO**, e
+apre su questo), **DOCUMENTI**, per il titolare di un nucleo **FAMIGLIA**, e
 **CONTATTI**. Se il certificato o la quota non vanno, sul tab DOCUMENTI c'è un
 **●** rosso o giallo. Il tab scelto resta quando si cambia persona. Con le
 frecce della tastiera si passa da un tab all'altro.
@@ -79,7 +79,7 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   riprovare. Senza rete il tasto dice «Serve la rete per pagare». Rinnovi,
   quote intere e corsi si pagano in palestra. In prova (`?prova`) Satispay non
   si apre: chiede conferma e il pagamento è finto.
-  Il titolare del nucleo (tab NUCLEO, o la pagina del familiare) vede **PAGA …
+  Il titolare del nucleo (tab FAMIGLIA, o la pagina del familiare) vede **PAGA …
   € PER** *nome* per i familiari senza un accesso loro: una persona alla volta.
   Chi ha un accesso suo, e ogni minorenne con account, paga dal suo telefono
   o tramite il titolare.

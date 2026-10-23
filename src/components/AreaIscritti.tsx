@@ -248,7 +248,7 @@ function Pagina({
   tua: boolean
   tab: IdTabArea
   onTab: (t: IdTabArea) => void
-  /** Il nucleo, solo per il titolare: c'è il tab NUCLEO se c'è questo. */
+  /** Il nucleo, solo per il titolare: c'è il tab FAMIGLIA se c'è questo. */
   nucleo: ReactNode
   /** Chi c'è nel nucleo (anche chi è entrato): con più di uno, il nome nel saluto si cambia. */
   membri: SchedaIscritto[]
