@@ -1329,6 +1329,11 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('la schermata finale usa riassuntoEsito', /P\.riassuntoEsito\(|\briassuntoEsito\(/.test(codice), true)
   ok('la schermata finale usa fraseContatti', /P\.fraseContatti\(|\bfraseContatti\(/.test(codice), true)
   ok('il testo vecchio «se manca qualcosa» non è più scritto nel componente', /ti scrive a \{/.test(codice), false)
+  // Un bonifico mandato da chi si iscrive non vale finché la segreteria non lo conferma: lo dice a chi lo manda e a chi lo controlla.
+  ok('la ricevuta caricata: il bonifico vale solo dopo la conferma della segreteria', m.RICEVUTA_DA_CONFERMARE, 'La segreteria controlla la ricevuta: il bonifico vale come pagato solo quando la conferma.')
+  ok('la schermata finale mostra quella frase', /P\.RICEVUTA_DA_CONFERMARE/.test(codice), true)
+  ok('alla segreteria: la ricevuta non segna la quota pagata', m.RICEVUTA_NON_PAGA, 'La ricevuta non segna la quota come pagata: vale quando registri tu l’incasso.')
+  ok('la richiesta mostra quella frase', /\{RICEVUTA_NON_PAGA\}/.test(readFileSync('src/components/segreteria/Richieste.tsx', 'utf8')), true)
 }
 
 // 30. La frase dei contatti: chi scrive, chi chiama.

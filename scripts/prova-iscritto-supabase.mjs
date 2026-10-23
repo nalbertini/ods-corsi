@@ -10,6 +10,7 @@
 // supabase/prova/iscritto.sql.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
+import { readFileSync } from 'node:fs'
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -79,6 +80,7 @@ ok('non segnalando, la stessa regola non passa', dice({ code: '22023', message: 
 console.log('\nL\'accesso con email e codice')
 ok('l\'email si pulisce', m.emailPulita('  Luca.Rossi@Esempio.IT '), 'luca.rossi@esempio.it')
 ok('un\'email che non lo è', m.emailPulita('luca'), null)
+ok('il «+» nell\'email è un «+», non uno spazio', m.accessoDalLink('?email=mario+x@esempio.it&codice=123456'), { email: 'mario+x@esempio.it', codice: '123456' })
 ok('il codice con gli spazi di quando si copia', m.codicePulito(' 123 456 '), '123456')
 ok('un codice corto', m.codicePulito('12345'), null)
 ok('un codice con lettere', m.codicePulito('12345a'), null)
@@ -218,6 +220,23 @@ const riprendi = async (indirizzo, riga, errore, opzioni) => {
   let errore
   try { await m.entraConGoogle(base, async () => { throw new TypeError('anon key undefined') }) } catch (e) { errore = e instanceof Error ? e.message : String(e) }
   ok('entraConGoogle: il client che non nasce, niente testo grezzo', errore, m.GOOGLE_NON_RIUSCITO)
+}
+
+console.log('\nIl link nella mail')
+ok('email e codice nell\'indirizzo: puliti', m.accessoDalLink('?email=Mario@Esempio.it&codice=123456'), { email: 'mario@esempio.it', codice: '123456' })
+ok('il codice con gli spazi, come lo si copia', m.accessoDalLink('?codice=12%2034%2056&email=a@b.it'), { email: 'a@b.it', codice: '123456' })
+ok('senza parametri dell\'accesso: niente da fare', [m.accessoDalLink(''), m.accessoDalLink('?da=volantino')], [null, null])
+ok('email che non è un indirizzo: errore detto per chi usa l\'app', m.accessoDalLink('?email=x&codice=123456'), { errore: m.LINK_NON_VALE })
+ok('manca il codice o è corto: stesso errore', [m.accessoDalLink('?email=a@b.it'), m.accessoDalLink('?email=a@b.it&codice=12345')], [{ errore: m.LINK_NON_VALE }, { errore: m.LINK_NON_VALE }])
+ok('manca l\'email: stesso errore', m.accessoDalLink('?codice=123456'), { errore: m.LINK_NON_VALE })
+ok('via email e codice, restano gli altri parametri', m.indirizzoSenzaAccesso('/iscritti', '?da=volantino&email=a@b.it&codice=123456'), '/iscritti?da=volantino')
+ok('via tutto: resta il solo percorso, senza «?»', m.indirizzoSenzaAccesso('/iscritti', '?email=a@b.it&codice=123456'), '/iscritti')
+{
+  const tsx = readFileSync('src/components/AccessoIscritto.tsx', 'utf8')
+  const toglie = tsx.search(/indirizzoSenzaAccesso\(/)
+  ok('legge il link con accessoDalLink', /accessoDalLink\(window\.location\.search\)/.test(tsx), true)
+  ok('toglie email e codice dalla barra (replaceState) prima di entrare', toglie > -1 && /history\.replaceState/.test(tsx) && toglie < tsx.indexOf('entraConCodice(', tsx.indexOf('accessoDalLink')), true)
+  ok('il campo del codice a mano resta', tsx.includes('autoComplete="one-time-code"'), true)
 }
 
 console.log('\nQuale strato dati')

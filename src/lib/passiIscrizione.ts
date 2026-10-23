@@ -754,6 +754,10 @@ function contoCorto(lui: { corsi: CorsoRef[]; formula: Formula }, listino: Listi
 /** Se chi esce perde qualcosa che ha scritto: la stessa regola della domanda di INDIETRO, per l'avviso del browser. */
 export const rispostePerdibili = (s: StatoPassi): boolean => domandaUscita(perDomandaUscita(s)) !== undefined
 
+/** Il bonifico mandato da chi si iscrive non vale finché la segreteria non lo conferma: la ricevuta è un file, non un pagamento. */
+export const RICEVUTA_DA_CONFERMARE = 'La segreteria controlla la ricevuta: il bonifico vale come pagato solo quando la conferma.'
+export const RICEVUTA_NON_PAGA = 'La ricevuta non segna la quota come pagata: vale quando registri tu l’incasso.'
+
 /**
  * Cosa dice la schermata «RICHIESTA ARRIVATA». `pagamento` decide il blocco del conto: `ricevuta` (già caricata, la segreteria
  * controlla), `importo` (da pagare, con la cifra) o `senzaImporto` (da pagare ma la cifra non si sa: listino non letto, corso non in elenco).

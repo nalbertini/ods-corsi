@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { codicePulito, emailPulita, entraConCodice, entraConGoogle, GOOGLE_NON_RIUSCITO, googleDisponibile, mandaCodice, NON_ISCRITTO } from '../lib/accessoIscritto'
+import { useEffect, useState, type FormEvent } from 'react'
+import { accessoDalLink, codicePulito, emailPulita, entraConCodice, entraConGoogle, GOOGLE_NON_RIUSCITO, googleDisponibile, indirizzoSenzaAccesso, mandaCodice, NON_ISCRITTO } from '../lib/accessoIscritto'
 import type { IscrittoDiProva } from '../lib/iscritto'
 import { chiama } from '../lib/sito'
 
@@ -7,8 +7,10 @@ import { chiama } from '../lib/sito'
 const daHome = window.matchMedia('(display-mode: standalone)').matches
 
 /**
- * Come entra un iscritto: scrive l'email, riceve un codice di sei cifre, lo
- * scrive. Niente password da ricordare. La logica sta in `accessoIscritto.ts`.
+ * Come entra un iscritto: scrive l'email, riceve una mail con un link e un
+ * codice di sei cifre. Tocca il link e entra da solo; se non può (altro
+ * dispositivo, link scaduto) scrive il codice. Niente password da ricordare.
+ * La logica sta in `accessoIscritto.ts`.
  */
 export function AccessoIscritto({ onEntrato, avviso }: { onEntrato: (io: IscrittoDiProva) => void; avviso?: string | null }) {
   const [email, setEmail] = useState('')
@@ -18,6 +20,21 @@ export function AccessoIscritto({ onEntrato, avviso }: { onEntrato: (io: Iscritt
   // `avviso`: com'è finito il ritorno da Google, se non è andato bene.
   const [errore, setErrore] = useState<string | null>(avviso ?? null)
   const [aspetta, setAspetta] = useState(false)
+
+  // Il codice vale una volta: togliendolo subito dalla barra, il secondo giro dell'effetto (doppio mount, onEntrato nuovo) non lo trova.
+  useEffect(() => {
+    const link = accessoDalLink(window.location.search)
+    if (!link) return
+    // Prima via dalla barra, poi si prova: email e codice non restano nella cronologia.
+    history.replaceState(null, '', indirizzoSenzaAccesso(window.location.pathname, window.location.search))
+    if ('errore' in link) return setErrore(link.errore)
+    setAspetta(true)
+    void entraConCodice(link.email, link.codice).then(onEntrato, (x: unknown) => {
+      setEmail(link.email)
+      setErrore(x instanceof Error ? x.message : 'Non sono riuscito a farti entrare: riprova')
+      setAspetta(false)
+    })
+  }, [onEntrato])
 
   const manda = async (e?: FormEvent) => {
     e?.preventDefault()
@@ -70,7 +87,7 @@ export function AccessoIscritto({ onEntrato, avviso }: { onEntrato: (io: Iscritt
       {inviata ? (
         <form className="pad stack" style={{ gap: 12, paddingBottom: 16 }} onSubmit={(e) => void entra(e)}>
           <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-            Ti abbiamo scritto a {inviata}: dentro c’è un codice di sei cifre. Scrivilo qui.
+            Ti abbiamo scritto a {inviata}: tocca il link nella mail e sei dentro. Se non ti porta qui, scrivi il codice di sei cifre.
           </span>
           <label className="stack" style={{ gap: 4 }}>
             <span className="modulo-etichetta">CODICE</span>
@@ -90,7 +107,7 @@ export function AccessoIscritto({ onEntrato, avviso }: { onEntrato: (io: Iscritt
             {aspetta ? 'UN ATTIMO…' : 'ENTRA'}
           </button>
           <button type="button" className="chi-esci" style={{ alignSelf: 'flex-start' }} disabled={aspetta} onClick={() => void manda()}>
-            MANDA UN ALTRO CODICE
+            MANDA UN’ALTRA MAIL
           </button>
           <button type="button" className="chi-esci" style={{ alignSelf: 'flex-start' }} disabled={aspetta} onClick={() => { setInviata(null); setErrore(null) }}>
             CAMBIA EMAIL
@@ -104,11 +121,11 @@ export function AccessoIscritto({ onEntrato, avviso }: { onEntrato: (io: Iscritt
               <button type="button" className="btn btn-go" disabled={aspetta} onClick={() => void conGoogle()}>
                 {aspetta ? 'UN ATTIMO…' : 'ENTRA CON GOOGLE'}
               </button>
-              <span className="modulo-etichetta" style={{ paddingTop: 8 }}>Oppure ricevi un codice via email</span>
+              <span className="modulo-etichetta" style={{ paddingTop: 8 }}>Oppure ricevi un link via email</span>
             </>
           )}
           <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-            Scrivi l’email che hai dato in segreteria: ti mandiamo un codice per entrare, senza password.
+            Scrivi l’email che hai dato in segreteria: ti mandiamo una mail con un link per entrare, senza password.
           </span>
           <label className="stack" style={{ gap: 4 }}>
             <span className="modulo-etichetta">EMAIL</span>
@@ -127,7 +144,7 @@ export function AccessoIscritto({ onEntrato, avviso }: { onEntrato: (io: Iscritt
             />
           </label>
           <button type="submit" className={googleDisponibile(daHome) ? 'btn btn-ghost' : 'btn btn-go'} disabled={aspetta}>
-            {aspetta ? 'UN ATTIMO…' : 'MANDAMI IL CODICE'}
+            {aspetta ? 'UN ATTIMO…' : 'MANDAMI IL LINK'}
           </button>
           <Errore testo={errore} />
           {errore === NON_ISCRITTO && <a className="btn btn-ghost" href={chiama}>CHIAMA LA SEGRETERIA</a>}
