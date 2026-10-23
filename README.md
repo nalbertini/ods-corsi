@@ -20,7 +20,7 @@ L'app ha sei indirizzi veri, ognuno con il suo accesso
 | `segreteria/` | L'area della reception, solo per chi ha il ruolo di segreteria (anche insieme a quello di istruttore o di amministrazione). |
 | `amministrazione/` | L'area dei conti: CONTABILITÀ e LISTINO, per chi ha il ruolo di amministrazione. Non vede le persone (`supabase/55-amministrazione.sql`). |
 | `iscrizioni/` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
-| `iscritti/` | La pagina di chi frequenta i corsi. Il pilota, per ora solo in prova. |
+| `iscritti/` | La pagina di chi frequenta i corsi: si entra con l'email e un codice, senza password. |
 | `sala/` | Il tablet di sala. |
 | `collega/` | Dove chi cura i conti dice CONSENTI quando collega Claude al suo account (vedi «Le fatture dalla chat»). Ci si arriva solo da Claude. |
 
@@ -277,14 +277,13 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
 - **L'aspetto del modulo di iscrizione** è quello del sito (tatami blu e giallo, Big Shoulders Display e
   Inter), sempre chiaro anche col tema scuro; lo accende `src/lib/aspettoModulo.ts` finché il modulo è aperto
   (`data-modulo` su `<html>`, colori in `styles.css`; `npm run prova:iscrizione-sito`).
-- **L'area degli iscritti**, il pilota: dal telefono, chi frequenta vede
+- **L'area degli iscritti**: dal telefono, chi frequenta vede
   le prossime lezioni dei suoi corsi (con le annullate, i sostituti e i
   cambi di sala), le sue presenze degli ultimi trenta giorni, il certificato
-  medico, la quota e le ricevute in PDF. Solo da leggere. Per ora c'è solo in
-  prova, dove in cima si sceglie quale iscritto inventato essere
-  (`src/lib/iscritto.ts`, `src/components/AreaIscritti.tsx`): col database
-  vero la pagina dice che arriva, perché un iscritto non ha ancora un accesso
-  e quello che può leggere di sé va deciso prima. Il **nucleo familiare**:
+  medico, la quota e le ricevute in PDF. Solo da leggere. Si entra con
+  l'email data in segreteria e un codice di sei cifre, senza password
+  (`src/lib/accessoIscritto.ts`, `iscrittoSupabase.ts`, `AreaIscritti.tsx`);
+  con `?prova` si sceglie quale iscritto inventato essere. Il **nucleo familiare**:
   il titolare passa alla pagina di ogni persona del suo nucleo, vede i
   pagamenti di tutti con lo sconto famiglia, e aggiunge una persona col
   modulo di iscrizione già compilato coi suoi dati, che dice quanto costa e
@@ -564,6 +563,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:pagamenti` | Lo storico dei pagamenti: le righe dalle ricevute (l'anticipo non è una riga) e dai pagamenti a mano, le annullate fuori dai totali, i filtri per nome (anche in ordine inverso) e per numero di ricevuta, i periodi, chi deve ancora pagare, i numeri della pagina, il CSV. Il pagamento a mano non è nel futuro e, in contanti, non va in un giorno già chiuso (carta e bonifico sì); il riepilogo che si legge prima di registrare (con dove entra in CONTABILITÀ, la stessa cassa e voce di `incassiDerivati`), e che Ricevute.tsx scrive solo dopo il sì e non se si fa la ricevuta. La ricevuta fatta da un pagamento a mano: una voce sola già pagata, la quota con le date della stagione (non pagata per sempre), una riga sola in PAGAMENTI; ricevuta non fatta, il pagamento torna nel modulo. FANNE LA RICEVUTA da un pagamento a mano: dentro la ricevuta il pagamento così com'è (stesso metodo, data e importo), lo stato nello storico («Diventato ricevuta n. …»), la domanda prima di annullare quella ricevuta, e in prova gli stessi casi del database. |
 | `npm run prova:listino` | Il legame fra corsi e voci del listino per id: rinomina, voci doppie, corsi senza prezzo o voci senza corso, aggancio dei listini vecchi per nome. |
 | `npm run prova:satispay` | Satispay nel modulo di iscrizione, senza rete: lo stato di Satispay, quando il modulo lo offre (non attivo, corsi senza prezzo), i testi dopo l'invio (in attesa, pagato, non andato), un pagato in PAGAMENTI e CONTABILITÀ una volta sola anche dopo la ricevuta, la firma delle chiamate, `paga` in prova con l'importo della stima, e prima paghi poi mandi: il riquadro PAGA (`statoRiquadroPaga`), il pagato senza richiesta in PAGAMENTI, il ritorno da Satispay, `prepara` e `invia` col pagamento in prova, e il tasto PAGA che è un link già pronto. |
+| `npm run prova:iscritto-supabase` | L'area degli iscritti col database vero, senza rete: dalle colonne ai tipi, i messaggi senza testo grezzo, l'email e il codice puliti, chi può entrare (l'email di nessuna scheda e quella del personale no) e la scelta fra prova e database. |
 | `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. Il nucleo familiare: chi lo vede, la persona in più coi dati del titolare, lo sconto famiglia, e i cambi dalla scheda della segreteria. Le presenze segnalate: chi le manda, chi le vede e chi le accoglie. |
 | `npm run prova:nucleo` | Il nucleo familiare dal lato della segreteria: mettere, togliere e cambiare titolare con gli stessi rifiuti e messaggi del database (titolare maggiorenne, disattivare un titolare, unire due schede, eliminare un titolare, richiesta «per il nucleo di»), il titolare che non frequenta fuori dalle quote da incassare, l'importazione che non tocca i nuclei, la scheda che non si rompe prima del file SQL. |
 | `npm run prova:indirizzi` | Gli indirizzi della segreteria: voce, scheda iscritto, lezione, settimana e sala che si rileggono uguali; gli indirizzi sbagliati che portano a DA FARE; quelli di Supabase, della guida e delle aree che non sono della segreteria. |
@@ -593,6 +593,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:testi` | I testi di tasti, tag e conferme delle schermate della segreteria elencate nello script: nessuna parola tutta maiuscola (salvo sigle come CSV e PDF); etichette di colonna e titoli restano maiuscoli. |
 | `npm run prova:etichette-lezione` | I tag di una lezione nella settimana, senza browser: Annullata, Senza appello, Appello fatto, Manca l'istruttore, Sostituto, Cambiata a mano, Straordinaria, e il loro ordine. |
 | `supabase/prova/nucleo.sql` | Il nucleo familiare nel database: al massimo un titolare, che non ha titolare (anche con scrittura diretta), maggiorenne se ha la data di nascita; mettere, togliere e cambiare titolare con gli stessi messaggi della modalità prova; disattivare un titolare con gente nel nucleo; unire due schede; eliminare un titolare; la richiesta online «per il nucleo di»; scrive solo la segreteria e istruttore, tablet e chi non ha accesso non leggono il nucleo. |
+| `supabase/prova/iscritto.sql` | L'area degli iscritti nel database: le funzioni `iscritto_*` danno solo le righe di chi chiama e, al titolare, quelle del suo nucleo (un membro vede solo sé, nessuno vede un estraneo, `anon` non chiama niente); mai il file del certificato né le note della segreteria; un iscritto con l'account non legge né scrive le tabelle del personale; il primo accesso lega l'iscritto con l'email confermata, e una famiglia sul titolare, ma non due estranei con lo stesso indirizzo; le presenze segnalate con le regole e i messaggi di `segnalate.ts`; il rilancio del file. |
 | `supabase/prova/email-unica.sql` | Una sola email per persona: resta di una persona sola per chi ha l'accesso, non per gli iscritti, stessa forma dell'email e al massimo 160 lettere, e il primo accesso lega per email e mai per contatto (anche se è quello di un istruttore o di un iscritto). Chi lo legge sta in `rls.sql`, il modulo in `iscrizioni.sql`, l'unione in `unisci-doppioni.sql`. |
 | `supabase/prova/ricevute-email.sql` | La ricevuta per email: l'indirizzo è l'email della persona della ricevuta e lo legge solo la funzione del server; una riga per tentativo, mandata o non partita; la segreteria legge tutto, l'amministrazione solo data ed esito, istruttore, tablet, iscritto e chi non ha accesso niente; le 400 mandate al giorno di Roma; le annullate non si mandano. |
 | `supabase/prova/accessi-piu-stretti.sql` | Gli accessi più stretti: calendario e impostazioni le legge solo il personale, l'amministrazione e il tablet (iscritto, account senza persona e `anon` no); `allunga_calendario` non è per l'iscritto; le funzioni da segreteria o da job non si aprono a chi ha l'uid nullo se non è il sistema. |

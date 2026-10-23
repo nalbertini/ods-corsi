@@ -20,6 +20,9 @@ import { CONTATTI, chiama } from '../lib/sito'
 import { cartaSePuoi } from '../lib/cartaPdf'
 import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
 import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } from './ds'
+import { AccessoIscritto } from './AccessoIscritto'
+import { esci } from '../lib/accesso'
+import { INDIRIZZI } from '../lib/aree'
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
 
 /**
@@ -27,9 +30,10 @@ import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
  * le sue presenze, il certificato, la quota e le ricevute. Solo da leggere:
  * per cambiare qualcosa si passa in segreteria.
  *
- * È il pilota, e c'è solo in prova (vedi `iscritto.ts`): in cima si sceglie
- * quale iscritto inventato essere, per far vedere la pagina com'è per
- * ognuno. Col database vero, per ora, la pagina dice che non è ancora aperta.
+ * Col database vero si entra con l'email e un codice (`AccessoIscritto`) e si
+ * vede solo quel che è proprio. In prova (`?prova`, vedi `iscritto.ts`) in
+ * cima si sceglie quale iscritto inventato essere, per far vedere la pagina
+ * com'è per ognuno.
  *
  * Il titolare di un nucleo familiare (vedi `nucleo.ts`) passa dalla sua
  * pagina a quella di ogni persona del nucleo, vede i pagamenti di tutti e
@@ -56,6 +60,7 @@ export function AreaIscritti() {
         setD(x)
         setIscritti(elenco)
         // Il primo dell'elenco se non se n'è scelto nessuno, o quello scelto non c'è più.
+        // In prova la scelta si ricorda; col database vero c'è solo chi è entrato.
         setChi((c) => (c && elenco.some((p) => p.id === c) ? c : (elenco[0]?.id ?? null)))
       })
       .catch((e: unknown) => vivo && setGuaio(e instanceof Error ? e.message : 'L’app non si è caricata'))
@@ -71,6 +76,21 @@ export function AreaIscritti() {
 
   if (guaio) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>{guaio}: controlla la connessione.</p>
   if (!d || !iscritti) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
+
+  if (d.modo === 'supabase') {
+    // Nessuno è entrato: l'accesso con il codice. Entrato, la sua pagina.
+    if (!chi) return <AccessoIscritto onEntrato={(io) => { setIscritti([io]); setChi(io.id) }} />
+    return (
+      <div className="mia-area">
+        <Account key={chi} dati={d} personaId={chi} />
+        <div className="pad" style={{ paddingBottom: 16 }}>
+          <button type="button" className="chi-esci" onClick={() => void esci(INDIRIZZI.iscritti)}>
+            ESCI
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -632,30 +652,6 @@ function Segreteria() {
         <Tasti>
           <Tasto href={chiama} qui>
             CHIAMA
-          </Tasto>
-        </Tasti>
-      </Riquadro>
-    </section>
-  )
-}
-
-/**
- * Col database vero: l'area non è ancora aperta. La si vede in prova, dalla
- * porta o con `?prova` nell'indirizzo.
- */
-export function IscrittiChiusa() {
-  return (
-    <section className="pad stack mia-area" style={{ gap: 12, paddingTop: 20 }}>
-      <Riquadro tono="prova">
-        <Etichetta>IN ARRIVO</Etichetta>
-        <span className="passo-titolo">L’area per gli iscritti non è ancora aperta.</span>
-        <Dettaglio>
-          Ci troverai le prossime lezioni dei tuoi corsi, le presenze, il certificato medico, la quota e le ricevute. Intanto si può vedere com’è,
-          con dati inventati.
-        </Dettaglio>
-        <Tasti>
-          <Tasto variante="principale" href="?prova" qui>
-            GUARDALA IN PROVA
           </Tasto>
         </Tasti>
       </Riquadro>

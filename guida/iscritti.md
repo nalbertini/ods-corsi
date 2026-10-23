@@ -1,6 +1,6 @@
 # Iscritti
 
-*Indirizzo: `iscritti/` · Per: chi frequenta i corsi · Per ora solo in prova*
+*Indirizzo: `iscritti/` · Per: chi frequenta i corsi*
 
 ← [Torna alla guida generale](README.md)
 
@@ -11,15 +11,32 @@ qualcosa si passa in segreteria.
 Ha i colori e i caratteri del sito della palestra, blu e giallo, ed è sempre
 chiara, qualunque tema sia scelto altrove: il tasto del tema qui non c'è.
 
-È un **pilota**: per ora si vede solo con i dati inventati, per far vedere
-alla palestra com'è prima di aprirla agli iscritti veri. L'indirizzo è
-<https://app.officinedellosport.it/iscritti/>: col database vero dice
-che l'area è in arrivo, e il tasto **GUARDALA IN PROVA** la apre con i dati
-inventati.
+L'indirizzo è <https://app.officinedellosport.it/iscritti/>.
+
+## Come si entra
+
+Senza password. Si scrive l'**email data in segreteria**, l'app ne manda un
+**codice di sei cifre**, si scrive il codice e si è dentro. Il codice dura
+poco: se non arriva o è scaduto, **MANDA UN ALTRO CODICE**. Il primo accesso
+lega l'email alla scheda; le volte dopo è subito la propria pagina.
+
+- Se l'email non è fra quelle delle schede, l'app dice «Questa email non
+  risulta tra gli iscritti: usa quella data in segreteria». Per un
+  familiare che condivide l'email con altri la segreteria deve collegare
+  l'accesso a mano.
+- Si vede **solo quel che è proprio**: la scheda, le lezioni dei propri
+  corsi, le presenze, la scadenza del certificato, la quota, le ricevute e,
+  per il titolare, il nucleo. Il file del certificato e le note della
+  segreteria non si vedono mai. Una persona del nucleo con l'accesso suo
+  vede le sue cose, e il titolare non le vede più.
+- **ESCI** in fondo alla pagina chiude l'accesso su quel dispositivo. Questo
+  accesso non apre niente della gestione, dell'appello o del tablet.
+- Con `?prova` nell'indirizzo la pagina si apre con dati inventati, per
+  vedere com'è.
 
 ## Cosa c'è nella pagina
 
-In prova, in cima, si sceglie **quale iscritto essere**: la pagina cambia per
+In prova (`?prova`), in cima, si sceglie **quale iscritto essere**: la pagina cambia per
 ognuno, e il dispositivo si ricorda la scelta.
 
 - **Ciao, e i corsi**: i corsi a cui è iscritto oggi, col loro colore. Sotto,
@@ -92,14 +109,9 @@ segno **NUCLEO** e il nome di chi l'ha aggiunta (vedi [Richieste
 online](segreteria/richieste.md)). Accolta, la persona entra nel nucleo, e
 il titolare la trova nella sua pagina.
 
-## Cosa manca per aprirla davvero
+## Cosa non c'è ancora
 
-- **L'accesso degli iscritti**: un codice o un link per email, senza
-  password da ricordare. La segreteria non dovrebbe gestire niente di più.
-- **Il nucleo sul database**: chi è titolare di chi, e un genitore che non
-  frequenta ma tiene il nucleo dei figli (in prova il titolare è sempre un
-  iscritto). In prova la segreteria lo cambia dalla scheda di un iscritto
-  ([NUCLEO FAMILIARE](segreteria/iscritti.md#il-nucleo-familiare)).
-- **Cosa può leggere un iscritto**: solo le sue righe, dal database, con
-  funzioni fatte apposta e senza toccare quello che vede la segreteria.
-- **L'informativa privacy**, che va aggiornata per l'area personale.
+- Un genitore che non frequenta ma tiene il nucleo dei figli: il titolare è
+  sempre un iscritto. La segreteria cambia il nucleo dalla scheda di un
+  iscritto ([NUCLEO FAMILIARE](segreteria/iscritti.md#il-nucleo-familiare)).
+- Cambiare la propria email: si chiede alla segreteria.

@@ -42,7 +42,8 @@ export function creaIscrittoProva(): DatiIscritto {
       cognome: p.cognome,
       corsi,
       certificato: { scade: p.certificato?.scade },
-      pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
+      // Senza `nota`, come col database: le note della segreteria non si vedono.
+      pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino },
       quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
       // Come la segreteria: l'età decide se il certificato serve.
       natoIl: (await creaSegreteriaProva().anagraficaDi(p.id))?.dati.natoIl,
