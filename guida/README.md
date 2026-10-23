@@ -106,8 +106,8 @@ cognome («Giulia F.»). Il cognome intero lo vedete voi, nell'appello.
 
 ## La prova
 
-Se volete vedere l'app senza toccare niente di vero, dalla pagina di accesso
-premete **PROVA CON DATI INVENTATI**. C'è l'orario vero della stagione, con
+Se volete vedere l'app senza toccare niente di vero, aggiungete `?prova`
+all'indirizzo dell'app. C'è l'orario vero della stagione, con
 iscritti inventati, e un nastro giallo in alto che lo ricorda. Niente di quel
 che toccate in prova arriva al registro. Per uscire: **ESCI DALLA PROVA**, nel
 nastro giallo.
