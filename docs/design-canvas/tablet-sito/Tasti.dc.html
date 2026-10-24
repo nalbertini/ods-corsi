@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .col { display: flex; flex-direction: column; gap: 14px; padding: 24px; flex: 1; }
+    .testa { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: 0.04em; }
+    .nota { font-size: 13px; color: #46606f; line-height: 1.45; margin: 0; }
+    .riga { display: flex; flex-direction: column; gap: 4px; }
+    .et { font-size: 12px; font-weight: 600; color: #46606f; }
+    /* La proposta: .tb-btn nel look del sito. Disegnata a mano finche' la libreria non ha il tasto nuovo (passo 10). */
+    .p { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border-radius: 6px; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 0.06em; white-space: nowrap; }
+    .grande { min-height: 64px; padding: 0 26px; font-size: 20px; }
+    .giallo { background: #f4c31b; color: #0d2a3d; }
+    .linea { border: 2px solid #14709f; color: #0d2a3d; }
+    .rossolinea { border: 2px solid #b81d1d; color: #b81d1d; }
+    .rossopieno { background: #e4292a; color: #ffffff; }
+    .spento { background: #cfe6f4; color: #46606f; }
+  </style>
+</helmet>
+<!-- I tasti del tablet di sala (.tb-btn e varianti): oggi e proposta. -->
+<div style="display:flex;width:900px;background:#eef5fa">
+  <div class="col" style="border-right:2px solid #cfe6f4">
+    <span class="testa">OGGI</span>
+    <p class="nota">Saira storta (9°), 0.12em, angoli vivi, verde per l'azione, rosso pieno per uscire, bordo azzurro chiaro che a un metro quasi sparisce, spento a metà opacità.</p>
+    <div class="riga"><span class="et">verde (TUTTI PRESENTI, COLLEGA IL TABLET, sì delle prove)</span>
+      <dc-import name="TabletTasto" tema="sito" label="TUTTI PRESENTI" variante="verde" hint-size="100%,60px"></dc-import>
+    </div>
+    <div class="riga"><span class="et">a linea (ANNULLA, GLI ALTRI ASSENTI, AREA ISTRUTTORE)</span>
+      <dc-import name="TabletTasto" tema="sito" label="GLI ALTRI ASSENTI" variante="linea" hint-size="100%,60px"></dc-import>
+    </div>
+    <div class="riga"><span class="et">a linea aperto (PROVE)</span>
+      <dc-import name="TabletTasto" tema="sito" label="PROVE" variante="linea" acceso="{{ true }}" hint-size="100%,60px"></dc-import>
+    </div>
+    <div class="riga"><span class="et">rosso grande (SÌ, ESCI)</span>
+      <dc-import name="TabletTasto" tema="sito" label="SÌ, ESCI" variante="rosso" grande="{{ true }}" hint-size="100%,64px"></dc-import>
+    </div>
+    <div class="riga"><span class="et">spento (appello già fatto, UN ATTIMO…)</span>
+      <dc-import name="TabletTasto" tema="sito" label="TUTTI PRESENTI" variante="verde" spento="{{ true }}" hint-size="100%,60px"></dc-import>
+    </div>
+  </div>
+  <div class="col">
+    <span class="testa">PROPOSTA</span>
+    <p class="nota">Come i tasti dell'app: dritti, Big Shoulders 800, 0.06em, raggio 6px. Misure e corpi come oggi (60/64px, 18/20px): si toccano da un metro.</p>
+    <div class="riga"><span class="et">giallo, testo inchiostro: uno per schermata</span>
+      <div class="p giallo">TUTTI PRESENTI</div>
+    </div>
+    <div class="riga"><span class="et">a linea: bordo blu 2px, si vede da lontano</span>
+      <div class="p linea">GLI ALTRI ASSENTI</div>
+    </div>
+    <div class="riga"><span class="et">a linea aperto: resta com'è (bordo inchiostro, fondo azzurro)</span>
+      <div class="p" style="border:2px solid #0d2a3d;background:#cfe6f4;color:#0d2a3d">PROVE</div>
+    </div>
+    <div class="riga"><span class="et">SÌ, ESCI · A: rosso a linea</span>
+      <div class="p grande rossolinea">SÌ, ESCI</div>
+    </div>
+    <div class="riga"><span class="et">SÌ, ESCI · B: rosso pieno, come oggi</span>
+      <div class="p grande rossopieno">SÌ, ESCI</div>
+    </div>
+    <div class="riga"><span class="et">spento: blocco grigio senza bordo (mai uguale a un tasto a linea)</span>
+      <div class="p spento">TUTTI PRESENTI</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":900,"height":760}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -291,8 +291,8 @@
   --line-soft: #cfe6f4;
   color: #0d2a3d;
 }
-/* I caratteri: Big Shoulders solo per il titolo di pagina e le cifre grandi; tasti, etichette, voci e
-   numeri di telefono in Inter, dove 1 e I non si confondono. Big Shoulders è dritto: niente obliquo finto. */
+/* I caratteri: Big Shoulders solo per il titolo di pagina, le cifre grandi e i tasti del tablet (.tb-btn);
+   gli altri tasti, etichette, voci e numeri di telefono in Inter, dove 1 e I non si confondono. Big Shoulders è dritto: niente obliquo finto. */
 :root[data-look='sito'] .num { font-family: var(--body); font-variant-numeric: tabular-nums; }
 :root[data-look='sito'] .sg-btn,
 :root[data-look='sito'] .sg-chip,
@@ -413,6 +413,16 @@
 :root[data-look='sito'] .btn:disabled { background: var(--surface-2); color: var(--dim); opacity: 1; }
 :root[data-look='sito'] .btn-ghost:disabled,
 :root[data-look='sito'] .btn-dashed:disabled { border-color: transparent; }
+/* I tasti del tablet di sala come quelli dell'app, con le loro misure (si toccano da un metro): il verde diventa il giallo
+   (uno per schermata), il rosso (SÌ, ESCI) va a linea perché uscire non è grave, a linea il bordo blu. */
+:root[data-look='sito'] .tb-btn { font-style: normal; border-radius: 6px; font-weight: 800; letter-spacing: 0.06em; }
+:root[data-look='sito'] .tb-btn-verde { background: var(--giallo); color: var(--su-colore); }
+:root[data-look='sito'] .tb-btn-linea { border-color: var(--blu); }
+:root[data-look='sito'] .tb-btn-linea[aria-expanded='true'] { border-color: var(--text); }
+:root[data-look='sito'] .tb-btn-rosso { background: transparent; border: 2px solid var(--rosso-testo); color: var(--rosso-testo); }
+:root[data-look='sito'] .tb-btn:disabled { background: var(--surface-2); color: var(--dim); opacity: 1; }
+:root[data-look='sito'] .tb-btn-linea:disabled,
+:root[data-look='sito'] .tb-btn-rosso:disabled { border-color: transparent; }
 /* Etichette meno spaziate: Big Shoulders è già stretto, a 0.2em le parole si sfaldano. */
 :root[data-look='sito'] .rule-label { font-size: 15px; letter-spacing: 0.12em; }
 :root[data-look='sito'] .modulo-etichetta,

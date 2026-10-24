@@ -346,7 +346,8 @@ export function TabletIstruttore({
             </span>
             {/* I tre tasti insieme, sempre sulla stessa riga e nello stesso ordine. */}
             <div className="tb-azioni-appello">
-              <button type="button" className="tb-btn tb-btn-verde" disabled={!daSegnarePresenti.length} onClick={() => tutti('tutti')}>
+              {/* Col pannello delle prove aperto il giallo è il suo: uno per schermata. */}
+              <button type="button" className={`tb-btn ${conProve ? 'tb-btn-linea' : 'tb-btn-verde'}`} disabled={!daSegnarePresenti.length} onClick={() => tutti('tutti')}>
                 {daConfermare === 'tutti' ? `CONFERMA: ${daSegnarePresenti.length} PRESENTI` : 'TUTTI PRESENTI'}
               </button>
               <button type="button" className="tb-btn tb-btn-linea" disabled={!daSegnareAssenti.length} onClick={() => tutti('altri')}>
