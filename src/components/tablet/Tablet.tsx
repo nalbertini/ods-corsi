@@ -97,7 +97,7 @@ export function Tablet() {
 
   if (bloccato) {
     return (
-      <div className="tb">
+      <main className="tb">
         <div className="tb-corpo stack" style={{ gap: 18, padding: 32 }}>
           <span className="ob tb-titolo" style={{ fontSize: 40 }}>TABLET DI SALA</span>
           <span className="tb-sotto" style={{ fontSize: 18, lineHeight: 1.5 }}>
@@ -108,23 +108,23 @@ export function Tablet() {
             RIPROVA ADESSO
           </button>
         </div>
-      </div>
+      </main>
     )
   }
 
-  if (!d || postazione === undefined) return <div className="tb"><p className="tb-nota" style={{ padding: 32 }}>Un attimo…</p></div>
+  if (!d || postazione === undefined) return <main className="tb"><p className="tb-nota" style={{ padding: 32 }}>Un attimo…</p></main>
 
   if (!postazione) {
     return (
-      <div className="tb">
+      <main className="tb">
         {d.modo === 'prova' && <div className="nastro-prova">DATI DI PROVA · ORARIO VERO, ISCRITTI INVENTATI</div>}
         <Preparazione d={d} guaio={guaio} onPronto={() => void leggi(d)} />
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="tb">
+    <main className="tb">
       {d.modo === 'prova' && <div className="nastro-prova">DATI DI PROVA · ORARIO VERO, ISCRITTI INVENTATI</div>}
       <TabletSala
         d={d}
@@ -139,7 +139,7 @@ export function Tablet() {
           })
         }}
       />
-    </div>
+    </main>
   )
 }
 
