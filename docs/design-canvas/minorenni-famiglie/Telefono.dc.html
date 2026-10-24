@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Copiata da ods-design-system/PaginaSitoTelefono.dc.html: ISCRITTI a 390px, proposta minorenni e famiglie. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 900px; background: #eef5fa">
+  <dc-import name="BarraTelefono" tema="sito" hint-size="390px,56px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 14px; padding: 18px 16px">
+    <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ISCRITTI</h1>
+    <span style="font-size: 14px; color: #46606f">203 persone attive · 7 certificati in scadenza.</span>
+    <div role="table" style="display: flex; flex-direction: column">
+      <dc-import name="TestataTabella" tema="sito" colonne="NOME|CERTIFICATO@certificato|QUOTA@quota|30 GG" griglia="minmax(0, 1fr) 56px 56px 40px" ordinata="NOME" hint-size="100%,40px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Bianchi Marco" corsi="" contatto="" bollini="ok:ok" quota="ok:ok" frequenza="9/9" poco="{{ false }}" proposta="{{ true }}" piu="" telefono="{{ true }}" minorenne="{{ false }}" famiglia="titolare" griglia="minmax(0, 1fr) 56px 56px 40px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Bianchi Sofia" corsi="" contatto="" bollini="Non serve:nota" quota="ok:ok" frequenza="6/8" poco="{{ false }}" proposta="{{ true }}" piu="" telefono="{{ true }}" minorenne="{{ true }}" famiglia="Bianchi Marco" griglia="minmax(0, 1fr) 56px 56px 40px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Bianchi Tommaso" corsi="" contatto="" bollini="Non serve:nota" quota="Da pagare:rosso" frequenza="3/5" poco="{{ false }}" proposta="{{ true }}" piu="" telefono="{{ true }}" minorenne="{{ true }}" famiglia="Bianchi Marco" griglia="minmax(0, 1fr) 56px 56px 40px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Bruno Elena" corsi="" contatto="" bollini="ok:ok" quota="ok:ok" frequenza="2/7" poco="{{ true }}" proposta="{{ true }}" piu="" telefono="{{ true }}" minorenne="{{ false }}" famiglia="" griglia="minmax(0, 1fr) 56px 56px 40px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Colombo Luca" corsi="" contatto="" bollini="Scaduto:rosso" quota="ok:ok" frequenza="11/12" poco="{{ false }}" proposta="{{ true }}" piu="" telefono="{{ true }}" minorenne="{{ true }}" famiglia="" griglia="minmax(0, 1fr) 56px 56px 40px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Conti Sara" corsi="" contatto="" bollini="Manca:rosso" quota="ok:ok" frequenza="5/8" poco="{{ false }}" proposta="{{ true }}" piu="" telefono="{{ true }}" minorenne="{{ false }}" famiglia="" griglia="minmax(0, 1fr) 56px 56px 40px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Esposito Giulia" corsi="" contatto="" bollini="Scaduto:rosso" quota="Da pagare:rosso" frequenza="0/1" poco="{{ false }}" proposta="{{ true }}" piu="" telefono="{{ true }}" minorenne="{{ false }}" famiglia="titolare" griglia="minmax(0, 1fr) 56px 56px 40px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Ferri Marta" corsi="" contatto="" bollini="Non serve:nota" quota="Da pagare:rosso" frequenza="—" poco="{{ false }}" proposta="{{ true }}" piu="" telefono="{{ true }}" minorenne="{{ true }}" famiglia="Esposito Giulia" griglia="minmax(0, 1fr) 56px 56px 40px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Moretti Paolo" corsi="" contatto="" bollini="Senza data:giallo" quota="ok:ok" frequenza="6/8" poco="{{ false }}" proposta="{{ true }}" piu="" telefono="{{ true }}" minorenne="{{ false }}" famiglia="" griglia="minmax(0, 1fr) 56px 56px 40px" hint-size="100%,50px"></dc-import>
+    </div>
+    <span style="font-size: 14px; line-height: 1.45; color: #46606f">Sul telefono il bambino e la casa restano dopo il nome; la casa col nome del titolare va sotto, su una riga sua, e si tocca per aprire il titolare.</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

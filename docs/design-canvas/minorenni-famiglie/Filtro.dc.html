@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Copiata da ods-design-system/PaginaSito.dc.html: ISCRITTI col filtro Minorenni, proposta. Nomi inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #eef5fa">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" tema="sito" attiva="ISCRITTI" numeri="" nome="Giulia Ferri" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; line-height: 1">ISCRITTI</h1>
+        <span style="font-size: 14px; color: #46606f">64 minorenni · 5 persone senza data di nascita non sono contate.</span>
+      </div>
+      <dc-import name="Bottone" label="+ Nuovo iscritto" variante="pieno" contesto="segreteria" tema="sito" hint-size="170px,48px"></dc-import>
+    </div>
+    <dc-import name="FiltriIscritti" tema="sito" attivi="MINORENNI" corsiScaduti="{{ true }}" minorenni="{{ true }}" famiglie="{{ true }}" conti="SENZA CERTIFICATO VALIDO:70|DA PAGARE:22|CORSI SCADUTI:9|NON IN REGOLA:81|MINORENNI:64" hint-size="100%,110px"></dc-import>
+    <div role="table" style="display: flex; flex-direction: column">
+      <dc-import name="TestataTabella" tema="sito" colonne="NOME|FAMIGLIA|CERTIFICATO|QUOTA|CORSI|CONTATTO|30 GIORNI" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 150px 80px" ordinata="NOME" hint-size="100%,40px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Bianchi Sofia" corsi="Judo kids" contatto="338 727 9888" bollini="Non serve:nota" quota="ok:ok" frequenza="6/8" poco="{{ false }}" proposta="{{ true }}" colonnaFamiglia="{{ true }}" piu="" minorenne="{{ true }}" famiglia="Bianchi Marco" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Bianchi Tommaso" corsi="Giocomotricità" contatto="338 727 9888" bollini="Non serve:nota" quota="Da pagare:rosso" frequenza="3/5" poco="{{ false }}" proposta="{{ true }}" colonnaFamiglia="{{ true }}" piu="" minorenne="{{ true }}" famiglia="Bianchi Marco" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Colombo Luca" corsi="Lotta ragazzi" contatto="338 479 7222" bollini="Scaduto:rosso" quota="ok:ok" frequenza="11/12" poco="{{ false }}" proposta="{{ true }}" colonnaFamiglia="{{ true }}" piu="" minorenne="{{ true }}" famiglia="" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+      <dc-import name="RigaIscritto" tema="sito" nome="Ferri Marta" corsi="Psicomotricità" contatto="+39 333 494 3979" bollini="Non serve:nota" quota="Da pagare:rosso" frequenza="—" poco="{{ false }}" proposta="{{ true }}" colonnaFamiglia="{{ true }}" piu="" minorenne="{{ true }}" famiglia="Esposito Giulia" griglia="minmax(0, 1fr) 150px 150px 120px minmax(0, 1.2fr) 150px 80px" hint-size="100%,50px"></dc-import>
+    </div>
+    <span style="font-size: 14px; line-height: 1.45; color: #46606f">Col filtro Minorenni acceso il sottotitolo dice quante persone sono rimaste fuori perché manca la data di nascita, così la segreteria sa che il conto non è completo e dove guardare (filtro «Senza documento» o la scheda).</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

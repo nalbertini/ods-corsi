@@ -564,17 +564,17 @@ console.log('\n7. la sessione sul dispositivo: la chiave e le tre sessioni di pr
     const senzaTess = new Set(['f'])
     const c = { oggi, scopertiDi: (p) => (scoperti.has(p.id) ? ['Judo'] : []), tesseraDi: (p) => (senzaTess.has(p.id) ? [tessera('manca')] : []) }
     const tutte = () => true
-    const chip = ['certificato', 'pagare', 'corsi-scaduti', 'fuori']
+    const chip = ['certificato', 'pagare', 'corsi-scaduti', 'fuori', 'minorenni']
     const conti = (base) => vedi('contiChip', (f) => f(gente, base, c))
     const veri = (base) => Object.fromEntries(chip.map((id) => [id, vedi('passaChip', (f) => gente.filter((p) => base(p) && f(id, p, c)).length)]))
 
-    ok('senza ricerca né corso: i numeri a mano', conti(tutte), { certificato: 3, pagare: 2, 'corsi-scaduti': 2, fuori: 5 })
+    ok('senza ricerca né corso: i numeri a mano', conti(tutte), { certificato: 3, pagare: 2, 'corsi-scaduti': 2, fuori: 5, minorenni: 0 })
     ok('… e sono quelli di passaChip, il filtro vero', conti(tutte), veri(tutte))
     const soloVerdi = (p) => p.cognome === 'Verdi'
-    ok('con la ricerca «Verdi» il conto cambia', conti(soloVerdi), { certificato: 1, pagare: 0, 'corsi-scaduti': 0, fuori: 1 })
+    ok('con la ricerca «Verdi» il conto cambia', conti(soloVerdi), { certificato: 1, pagare: 0, 'corsi-scaduti': 0, fuori: 1, minorenni: 0 })
     ok('… e torna con passaChip', conti(soloVerdi), veri(soloVerdi))
     const delCorso = (p) => ['b', 'c', 'd'].includes(p.id)
-    ok('con un corso scelto il conto cambia', conti(delCorso), { certificato: 2, pagare: 2, 'corsi-scaduti': 1, fuori: 3 })
+    ok('con un corso scelto il conto cambia', conti(delCorso), { certificato: 2, pagare: 2, 'corsi-scaduti': 1, fuori: 3, minorenni: 0 })
     ok('… e torna con passaChip', conti(delCorso), veri(delCorso))
     ok('«Senza certificato valido» conta come senzaCertificatoValido', vedi('passaChip', (f) => gente.map((p) => f('certificato', p, c))), gente.map((p) => E.senzaCertificatoValido(p, oggi)))
     ok('chi è archiviato non sta in «Da pagare»', vedi('passaChip', (f) => f('pagare', gente[4], c)), false)

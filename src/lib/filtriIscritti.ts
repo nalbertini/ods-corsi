@@ -1,23 +1,25 @@
-import { comePaga, fuoriRegola, inCorso, senzaCertificatoValido, type PersonaSeg } from './segreteria'
+import { comePaga, eMinorenne, fuoriRegola, inCorso, senzaCertificatoValido, type PersonaSeg } from './segreteria'
 import { senzaTessera, type RigaIncrocio } from './tessere'
 
 /**
- * I filtri sopra l'elenco ISCRITTI. Al banco servono quattro ricerche (senza
- * certificato, da pagare, corsi scaduti, non in regola): quelle stanno sempre in vista; le
+ * I filtri sopra l'elenco ISCRITTI. Al banco servono cinque ricerche (senza
+ * certificato, da pagare, corsi scaduti, non in regola, minorenni): quelle stanno sempre in vista; le
  * altre stanno dietro «Altri filtri» e si aprono da sole se una è accesa, così
  * un filtro acceso non resta mai nascosto.
  */
 export type IdFiltro =
   | 'senza-email' | 'poco' | 'certificato' | 'scadenza' | 'arrivo' | 'pagare'
   | 'corsi-scaduti' | 'fuori' | 'senza-tessera' | 'senza-corso' | 'senza-documento' | 'file-di-prima' | 'doppioni' | 'pagato-prima'
+  | 'minorenni' | 'famiglie'
 
 /** Tutti i filtri, per sapere quali sono accesi anche se il loro chip adesso non c'è. */
 export const ID_FILTRI: IdFiltro[] = [
   'senza-email', 'poco', 'certificato', 'scadenza', 'arrivo', 'pagare',
   'corsi-scaduti', 'fuori', 'senza-tessera', 'senza-corso', 'senza-documento', 'file-di-prima', 'doppioni', 'pagato-prima',
+  'minorenni', 'famiglie',
 ]
 
-export const FILTRI_VISIBILI: IdFiltro[] = ['certificato', 'pagare', 'corsi-scaduti', 'fuori']
+export const FILTRI_VISIBILI: IdFiltro[] = ['certificato', 'pagare', 'corsi-scaduti', 'fuori', 'minorenni']
 
 export const TESTI_FILTRI: Record<IdFiltro, string> = {
   'senza-email': 'Solo senza email',
@@ -34,6 +36,8 @@ export const TESTI_FILTRI: Record<IdFiltro, string> = {
   doppioni: 'Possibili doppioni',
   'pagato-prima': 'Pagato nel vecchio programma',
   'corsi-scaduti': 'Corsi scaduti',
+  minorenni: 'Minorenni',
+  famiglie: 'Famiglie',
 }
 
 /** I filtri nascosti che ci sono adesso: quattro compaiono solo se c'è qualcosa da filtrare. */
@@ -45,6 +49,7 @@ export function altriFiltri(c: { conTessere: boolean; filePrima: number; doppion
     'arrivo',
     ...(c.conTessere ? ([...(c.segnalaTessere === false ? [] : (['senza-tessera'] as const)), 'senza-corso'] as const) : []),
     'senza-documento',
+    'famiglie',
     ...(c.conStorico ? (['pagato-prima'] as const) : []),
     ...(c.filePrima > 0 ? (['file-di-prima'] as const) : []),
     ...(c.doppioni > 0 ? (['doppioni'] as const) : []),
@@ -64,7 +69,7 @@ export const conSollecito = (accesi: IdFiltro[]) =>
   accesi.some((id) => FILTRI_SOLLECITO.includes(id)) && !accesi.includes('pagato-prima') && !accesi.includes('doppioni')
 
 /** I chip sempre in vista, che dicono anche quanti sono. */
-export type ChipConto = 'certificato' | 'pagare' | 'corsi-scaduti' | 'fuori'
+export type ChipConto = 'certificato' | 'pagare' | 'corsi-scaduti' | 'fuori' | 'minorenni'
 export const haConto = (id: IdFiltro): id is ChipConto => FILTRI_VISIBILI.includes(id)
 
 /** Quel che i filtri leggono fuori dalla persona: i corsi da pagare e le tessere vengono da altre letture. */
@@ -94,6 +99,9 @@ export function passaChip(id: ChipConto, p: PersonaSeg, c: ContestoFiltri): bool
   if (id === 'certificato') return senzaCertificatoValido(p, c.oggi)
   if (id === 'pagare') return daPagare(p, c.oggi) && !titolareSenzaCorsi(p, c)
   if (id === 'corsi-scaduti') return c.scopertiDi(p).length > 0
+  // Nell'elenco c'è solo la data di nascita, non il codice fiscale: chi non ce l'ha vale da adulto (`senzaNascita` lo conta).
+  // `T00:00` senza fuso è la mezzanotte locale, come il compleanno in `minorenne`: se no a ovest di Greenwich il giorno slitta.
+  if (id === 'minorenni') return eMinorenne(p, null, new Date(`${c.oggi}T00:00`))
   if (titolareSenzaCorsi(p, c)) return false
   return fuoriRegola(p, c.oggi) || (p.attiva && senzaTessera(c.tesseraDi(p)))
 }
@@ -103,7 +111,27 @@ export function contiChip(persone: PersonaSeg[], base: (p: PersonaSeg) => boolea
   const dentro = persone.filter(base)
   const contesto = { ...c, titolari: titolariDi(persone) }
   const conta = (id: ChipConto) => dentro.filter((p) => passaChip(id, p, contesto)).length
-  return { certificato: conta('certificato'), pagare: conta('pagare'), 'corsi-scaduti': conta('corsi-scaduti'), fuori: conta('fuori') }
+  return { certificato: conta('certificato'), pagare: conta('pagare'), 'corsi-scaduti': conta('corsi-scaduti'), fuori: conta('fuori'), minorenni: conta('minorenni') }
+}
+
+/** Quanti non hanno la data di nascita: col filtro MINORENNI non si sa se lo sono. */
+export const senzaNascita = (persone: PersonaSeg[]): number => persone.filter((p) => !p.natoIl).length
+
+/** Il sottotitolo col filtro MINORENNI acceso: il conto, e chi resta fuori perché non ha la data. */
+export function fraseMinorenni(minorenni: number, senzaData: number): string {
+  const quanti = minorenni === 1 ? 'Un minorenne' : `${minorenni} minorenni`
+  const fuori = senzaData === 1 ? ' · una persona senza data di nascita non è contata' : senzaData ? ` · ${senzaData} persone senza data di nascita non sono contate` : ''
+  return `${quanti}${fuori}.`
+}
+
+/** Il filtro FAMIGLIE: titolari di un nucleo e chi è nel nucleo di qualcuno. */
+export const inFamiglia = (p: PersonaSeg, titolari: ReadonlySet<string>): boolean => titolari.has(p.id) || !!p.nucleo
+
+/** La FAMIGLIA di una persona nell'elenco: titolare del nucleo, nel nucleo di qualcuno (anche adulto), o nessuna. */
+export type Famiglia = { tipo: 'titolare' } | { tipo: 'membro'; titolare: PersonaSeg | undefined }
+export function famigliaDi(p: PersonaSeg, perId: ReadonlyMap<string, PersonaSeg>, titolari: ReadonlySet<string>): Famiglia | null {
+  if (titolari.has(p.id)) return { tipo: 'titolare' }
+  return p.nucleo ? { tipo: 'membro', titolare: perId.get(p.nucleo) } : null
 }
 
 /** La cella CORSI: i primi due e «+N», così la riga resta di un rigo; col filtro Corsi scaduti si vede tutto da sollecitare. */
