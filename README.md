@@ -679,6 +679,10 @@ Su ogni PR le prove girano da sole (`.github/workflows/controlla.yml`): la
 compilazione dell'app e del timer, tutti gli `npm run prova:*` e tutti i file
 di `supabase/prova`. Una prova nuova entra da sé.
 
+Sempre su ogni PR, `.github/workflows/sicurezza.yml`: Semgrep (regole della
+comunità; esclusioni in `.semgrepignore`), gitleaks sui commit della PR e
+`npm audit` sulle dipendenze di produzione. Bloccano solo le gravità alte.
+
 ## Da dove viene
 
 Il lavoro è partito dentro il timer, come «fase 1 della sala corsi»

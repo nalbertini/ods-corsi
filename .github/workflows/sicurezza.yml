@@ -1,0 +1,66 @@
+name: Sicurezza
+
+# Scansioni statiche su ogni PR. Falliscono solo per gravità alta (Semgrep
+# ERROR, segreti, dipendenze di produzione high); il resto si legge nel log.
+# Gli strumenti girano solo qui, senza account né token: nessuna dipendenza
+# in package.json.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sicurezza-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  semgrep:
+    name: Semgrep
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep@sha256:81474464c1f07483ba0682a44787fd93c91397419762a04abe2bafaae396304b # 1.181.0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Regole della comunità: TypeScript, React e segreti. Esclusioni in .semgrepignore.
+      - name: Tutto il rilevato (solo informativo)
+        run: semgrep scan --config p/typescript --config p/react --config p/secrets --metrics=off
+
+      - name: Gravità alta (blocca)
+        run: semgrep scan --config p/typescript --config p/react --config p/secrets --metrics=off --severity ERROR --error --quiet
+
+  segreti:
+    name: Segreti (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      # Solo i commit della PR. Immagine ufficiale fissata per impronta.
+      - name: gitleaks sul diff
+        run: |
+          git config --global --add safe.directory "$PWD"
+          docker run --rm -v "$PWD":/repo zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            git /repo --no-banner --redact \
+            --log-opts="${{ github.event.pull_request.base.sha || 'HEAD~1' }}..HEAD"
+
+  dipendenze:
+    name: npm audit
+    runs-on: ubuntu-latest
+    # Il 24-10-2026 la prima scansione trova 3 «high» già su main (@puckeditor/core
+    # → @tiptap/html → happy-dom): bloccherebbero ogni PR. Finché non si
+    # correggono resta solo un avviso; poi si toglie questa riga.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      # Solo ciò che finisce in produzione: vite, esbuild e simili sono di sviluppo.
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm audit --omit=dev --audit-level=high --prefix timer

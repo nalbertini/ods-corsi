@@ -1,0 +1,7 @@
+# Solo il rumore dimostrato dalla prima scansione (vedi .github/workflows/sicurezza.yml).
+# Le cartelle generate (dist, node_modules, graphify-out) sono già escluse da
+# .gitignore, che Semgrep legge da sé.
+
+# Strumenti di sviluppo che parlano col Chrome locale (http://127.0.0.1:933x):
+# `react-insecure-request` li segnala come ERROR, ma non girano nell'app.
+docs/figcraft/strumenti/
