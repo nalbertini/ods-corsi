@@ -246,7 +246,11 @@ indirizzi che non esistono, col titolo «404»), da quale sito si arriva, in
 totale browser, tipo di dispositivo e paese, e quanti tocchi hanno avuto i
 pulsanti per iscriversi («iscriviti»), per telefonare («chiama») e per scrivere
 su WhatsApp («scrivici»), un totale per tipo. Non si sa chi è la
-persona, e il modulo di iscrizione, che sta nell'app, non è contato. Nel pannello
+persona. Anche il modulo di iscrizione, che sta nell'app, conta due cose: quante
+volte si apre («iscrizione-modulo») e quante richieste arrivano («iscrizione-fatta»),
+due totali, mai un dato di chi compila; non si contano la prova né l'area degli
+iscritti. La differenza fra i due dice quanti si fermano nel modulo: si legge
+sull'account GoatCounter della palestra, alla voce degli eventi. Nel pannello
 non si vedono: le visite, i tocchi su Iscriviti, Chiama e Scrivici, le pagine più
 lette e da dove si arriva si leggono in [Statistiche](statistiche.md#il-sito), in
 fondo; il resto (browser, dispositivi, paesi, la 404) lo legge chi ha l'account

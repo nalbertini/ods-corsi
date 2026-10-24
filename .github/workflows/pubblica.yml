@@ -71,6 +71,8 @@ jobs:
       # musica collegata dal timer, e per rinnovarne l'accesso vuole lo stesso ID.
       - run: npm run build
         env:
+          # Il contatore dei passi dell'iscrizione: lo stesso codice del sito, vuoto = non conta.
+          VITE_SITO_STATISTICHE: ${{ vars.SITO_STATISTICHE }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SPOTIFY_CLIENT_ID: ${{ secrets.VITE_SPOTIFY_CLIENT_ID }}
