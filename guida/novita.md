@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.203.0 — 24 ottobre 2026
+
+### Novità
+
+- Nel fondo del sito ci sono i loghi della FIJLKAM e della FIPE, con il link ai loro siti
+
 ## 0.202.1 — 24 ottobre 2026
 
 ### Modificato
