@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; max-width: 100%; width: {{larghezza}}">
+<sc-if value="{{eEtichetta}}" hint-placeholder-val="{{ true }}">
+  <span style="display: inline-flex; align-items: center; gap: {{gap}}; padding: {{padding}}; background: {{sfondo}}; color: {{colore}}; box-shadow: {{filo}}; border-radius: 3px; font-family: {{famiglia}}; font-variant-numeric: tabular-nums; font-size: {{corpo}}; font-weight: 700; letter-spacing: 0.12em; line-height: 1; white-space: nowrap">
+    <svg aria-hidden="true" width="{{icona}}" height="{{icona}}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16"></path><path d="M5 21v-7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v7"></path><path d="M5 17c2.3 1.6 3.7 1.6 5.5 0s3.7-1.6 5.5 0c1 .9 2 1.2 3 .8"></path><path d="M12 13V9.5"></path><path d="M12 3.2c1 1.1 1.1 2.3 0 3.1-1.1-.8-1-2 0-3.1z"></path></svg>
+    <sc-if value="{{conParola}}" hint-placeholder-val="{{ true }}"><span>COMPLEANNO</span></sc-if>
+  </span>
+</sc-if>
+<sc-if value="{{eIcona}}" hint-placeholder-val="{{ false }}">
+  <span role="img" aria-label="Compleanno oggi" title="Compleanno oggi" style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #f4c31b; color: #121212; border-radius: 3px">
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16"></path><path d="M5 21v-7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v7"></path><path d="M5 17c2.3 1.6 3.7 1.6 5.5 0s3.7-1.6 5.5 0c1 .9 2 1.2 3 .8"></path><path d="M12 13V9.5"></path><path d="M12 3.2c1 1.1 1.1 2.3 0 3.1-1.1-.8-1-2 0-3.1z"></path></svg>
+  </span>
+</sc-if>
+<sc-if value="{{eRiga}}" hint-placeholder-val="{{ false }}">
+  <span style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 8px 14px; background: #ffffff; border-radius: 6px; box-shadow: inset 4px 0 0 #f4c31b; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 600; line-height: 1.3; text-align: left">
+    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M4 21h16"></path><path d="M5 21v-7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v7"></path><path d="M5 17c2.3 1.6 3.7 1.6 5.5 0s3.7-1.6 5.5 0c1 .9 2 1.2 3 .8"></path><path d="M12 13V9.5"></path><path d="M12 3.2c1 1.1 1.1 2.3 0 3.1-1.1-.8-1-2 0-3.1z"></path></svg>
+    <span>{{testo}}</span>
+  </span>
+</sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"forma":{"editor":"enum","options":["etichetta","icona","riga"],"default":"etichetta"},"misura":{"editor":"enum","options":["tablet","tessera","torta","telefono"],"default":"tablet"},"tema":{"editor":"enum","options":["sito","giallo"],"default":"sito"},"testo":{"editor":"text","default":"1 COMPLEANNO OGGI: Giulia R."},"$preview":{"width":260,"height":60}}'>
+// COSTRUITO (`SegnoCompleanno.tsx`, `.segno-compleanno` in src/styles.css; DESIGN.md «Segno compleanno»). Sala e istruttori hanno sempre il look sito: tema `sito` (default) = fondo bianco, testo `giallo-testo` #8f6a00 e filo inset 1.5px (come .sg-bollino nel look); tema `giallo` = fondo #f4c31b e testo #121212 (gli altri temi). misura `tessera` = 15px nelle tessere del tablet (appello intero), `torta` = la sola torta nell'appello veloce (la tessera e' larga ~100px). Vince il costruito su quanto segue (PROPOSTA, `../compleanni/`):
+// : il segno «e' il compleanno di questo iscritto oggi». Un avviso e basta: non cambia presenze,
+// ordine ne' passi. Si legge senza il colore: torta a linea (stesso tratto delle icone dell'app: 24x24, 2.2, tondo) + la parola.
+// Valori copiati dal codice: fondo `giallo` #f4c31b e testo `su-colore` #121212 come .sg-bollino (src/styles.css, riga 1250; vedi
+// Badge.dc.html), che non dipende dal tema: sul bianco, sul celeste #cfe6f4 della tessera segnata e sul nero resta leggibile (circa 10:1).
+// Niente giallo-testo per la parola: sul celeste della tessera IN ATTESA farebbe sotto 4,5:1.
+// - etichetta: torta + COMPLEANNO. misura tablet = Saira Condensed 17px 0.12em (due pixel sopra IN ATTESA DI RETE: guardato da due metri),
+//   telefono = Inter 11px 0.12em (come .sg-bollino nel look del sito).
+// - icona: la sola torta in un quadratino da 24px, per l'elenco delle lezioni (ha role=img e aria-label «Compleanno oggi»).
+// - riga: la frase sotto la testa dell'appello, tessera bianca con barra gialla a sinistra (come Riquadro avviso), 44px minimi.
+// Mai l'eta', mai il cognome intero dove la schermata e' in vista (sala).
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const f = p.forma === 'icona' || p.forma === 'riga' ? p.forma : 'etichetta';
+    const tel = p.misura === 'telefono';
+    const sito = p.tema !== 'giallo';
+    return {
+      larghezza: f === 'riga' ? '100%' : 'auto',
+      eEtichetta: f === 'etichetta', eIcona: f === 'icona', eRiga: f === 'riga',
+      testo: p.testo ?? '1 COMPLEANNO OGGI: Giulia R.',
+      famiglia: tel ? "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif",
+      sfondo: sito ? '#ffffff' : '#f4c31b', colore: sito ? '#8f6a00' : '#121212', filo: sito ? 'inset 0 0 0 1.5px #8f6a00' : 'none',
+      conParola: p.misura !== 'torta',
+      corpo: tel ? '11px' : p.misura === 'tessera' ? '15px' : '17px', icona: tel ? '14' : '22', gap: tel || p.misura === 'tessera' ? '4px' : '5px',
+      padding: tel ? '3px 6px' : p.misura === 'torta' ? '2px 4px' : p.misura === 'tessera' ? '2px 5px 2px 4px' : '2px 7px 2px 5px',
+    };
+  }
+}
+</script>
+</body>
+</html>

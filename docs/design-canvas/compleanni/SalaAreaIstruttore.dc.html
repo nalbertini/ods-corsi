@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #46606f; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+  </style>
+</helmet>
+<!-- SALA, area istruttore dopo il PIN (TabletRigaAppello, 60px): la riga dell'appello col segno COMPLEANNO dopo il nome, prima di DAL TABLET. Qui il cognome e' intero come oggi (l'istruttore ha il PIN), ma niente eta'. Anche il nome lungo (Esposito Alessandra Maria) va a capo senza coprire il segno. -->
+<div style="display:flex;gap:40px;padding:28px 32px;width:940px;min-height:420px;background:#eef5fa"><div style="display:flex;flex-direction:column;gap:8px;width:420px"><span class="et">OGGI</span>
+  <dc-import name="TabletRigaAppello" tema="sito" nome="Bianchi Luca" stato="presente" marchio="dal-tablet" hint-size="100%,60px"></dc-import>
+  <dc-import name="TabletRigaAppello" tema="sito" nome="Rossi Giulia" stato="niente" hint-size="100%,60px"></dc-import>
+  <dc-import name="TabletRigaAppello" tema="sito" nome="Marino Anna" stato="presente" marchio="dal-tablet" hint-size="100%,60px"></dc-import>
+  <dc-import name="TabletRigaAppello" tema="sito" nome="Esposito Alessandra Maria" stato="assente" hint-size="100%,60px"></dc-import>
+  <dc-import name="TabletRigaAppello" tema="sito" nome="Greco Tommaso" stato="niente" hint-size="100%,60px"></dc-import></div><div style="display:flex;flex-direction:column;gap:8px;width:420px"><span class="et">PROPOSTA</span>
+  <dc-import name="TabletRigaAppello" tema="sito" nome="Bianchi Luca" stato="presente" marchio="dal-tablet" hint-size="100%,60px"></dc-import>
+  <dc-import name="TabletRigaAppello" tema="sito" nome="Rossi Giulia" stato="niente" compleanno="{{ true }}" hint-size="100%,60px"></dc-import>
+  <dc-import name="TabletRigaAppello" tema="sito" nome="Marino Anna" stato="presente" marchio="dal-tablet" compleanno="{{ true }}" hint-size="100%,60px"></dc-import>
+  <dc-import name="TabletRigaAppello" tema="sito" nome="Esposito Alessandra Maria" stato="assente" compleanno="{{ true }}" hint-size="100%,60px"></dc-import>
+  <dc-import name="TabletRigaAppello" tema="sito" nome="Greco Tommaso" stato="niente" hint-size="100%,60px"></dc-import></div></div></x-dc>
+<script data-dc-script data-props='{"$preview":{"width":940,"height":420}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

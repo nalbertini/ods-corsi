@@ -210,7 +210,8 @@ export function creaTabletProva(): DatiTablet {
       }
       // Le prove no: le aggiunge chi fa l'appello, già presenti.
       const ordinati = d.elenco.filter((p) => !p.prova).sort((a, b) => a.nome.localeCompare(b.nome, 'it') || a.cognome.localeCompare(b.cognome, 'it'))
-      return sigle(ordinati).map((p) => ({ personaId: p.id, nome: p.nome, sigla: p.sigla, segnato: p.stato === 'presente' }))
+      const festeggiati = new Set(d.compleanni ?? [])
+      return sigle(ordinati).map((p) => ({ personaId: p.id, nome: p.nome, sigla: p.sigla, segnato: p.stato === 'presente', compleanno: festeggiati.has(p.id) }))
     },
 
     async segna(sessioneId, personaId): Promise<EsitoTocco> {

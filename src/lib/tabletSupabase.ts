@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
+import { festeggiatiDa } from './compleanni'
 import type { DatiTablet, EsitoTocco, LezioneSala, NomeSala, Origine, PresenzaIstruttore, RigaAppelloTablet, StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno } from './sala'
@@ -101,10 +102,14 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     },
 
     async elenco(sessioneId) {
-      const righe = await rpc<Array<{ persona_id: string; nome: string; sigla: string; segnato: boolean }>>('elenco_sala', {
-        sessione: sessioneId,
-      })
-      return (righe ?? []).map((r): NomeSala => ({ personaId: r.persona_id, nome: r.nome, sigla: r.sigla, segnato: r.segnato }))
+      const [righe, festeggiati] = await Promise.all([
+        rpc<Array<{ persona_id: string; nome: string; sigla: string; segnato: boolean }>>('elenco_sala', { sessione: sessioneId }),
+        // I compleanni arrivano con 108-compleanni.sql: senza, o se non rispondono, i nomi sono come prima.
+        festeggiatiDa(db.rpc('compleanni_sala', { sessione: sessioneId })),
+      ])
+      return (righe ?? []).map((r): NomeSala => ({
+        personaId: r.persona_id, nome: r.nome, sigla: r.sigla, segnato: r.segnato, compleanno: festeggiati.includes(r.persona_id),
+      }))
     },
 
     segna: (sessioneId, personaId) => rpc<EsitoTocco>('segna_dal_tablet', { sessione: sessioneId, persona: personaId }),

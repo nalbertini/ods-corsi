@@ -155,6 +155,12 @@ lezione risulta **SEGNATO DOPO**.
 
 Chi non trova il suo nome non è iscritto a quel corso: va detto alla segreteria.
 
+**COMPLEANNO.** Se la segreteria ha acceso l'avviso per quella sala, il nome di
+chi compie gli anni oggi porta un segno giallo con la torta e la scritta
+**COMPLEANNO**. Dice solo che è il suo giorno: mai età né data. Per
+impostazione è spento. La segreteria lo accende dal database (colonna
+`compleanni` della postazione: non c'è ancora una schermata).
+
 ## Per gli allievi: «Ti sei dimenticato di segnarti?»
 
 Per chi si è scordato, fino a **14 giorni** indietro:

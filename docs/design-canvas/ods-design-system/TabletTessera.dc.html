@@ -17,6 +17,9 @@
 <div style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: {{alto}}; padding: 0 16px; background: {{fondo}}; border: {{spessore}} {{stile}} {{bordo}}; color: {{colore}}; font-size: 22px; font-weight: 700; text-align: left">
   <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px">
     <span>{{nome}}</span>
+    <sc-if value="{{compleanno}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="SegnoCompleanno" forma="etichetta" misura="tablet" hint-size="110px,22px"></dc-import>
+    </sc-if>
     <sc-if value="{{inAttesa}}" hint-placeholder-val="{{ false }}">
       <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.14em; color: {{c.gialloTesto}}">IN ATTESA DI RETE</span>
     </sc-if>
@@ -28,7 +31,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Giulia R."},"stato":{"editor":"enum","options":["niente","fatto","attesa"],"default":"niente"},"veloce":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":240,"height":90}}'>
+<script data-dc-script data-props='{"compleanno":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Giulia R."},"stato":{"editor":"enum","options":["niente","fatto","attesa"],"default":"niente"},"veloce":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":240,"height":90}}'>
 // Riproduzione 1:1 del nome da toccare sul tablet: .tb-tessera, .tb-tessera-attesa e .tb-veloce in src/styles.css (righe
 // 1033-1047), usati in src/components/tablet/TabletPresenza.tsx (righe 70-95) e AppelloVeloce.tsx (righe 24-42). Tessera alta 84px
 // con bordo da 3px: un dito e mezzo. Nell'elenco stanno in griglia da 220px minimo (.tb-tessere), qui ne basta una.
@@ -42,6 +45,7 @@ const T = {
   sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00' },
 };
 const truthy = (v) => v === true || v === 'true';
+// compleanno (PROPOSTA, ../compleanni/): il segno SegnoCompleanno sotto il nome, prima di IN ATTESA DI RETE; la tessera resta alta 84px (le tre righe stanno: 22 + 18 + 18) e tutta e' il tasto.
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
@@ -52,6 +56,7 @@ class Component extends DCLogic {
     const verde = stato === 'fatto';
     return {
       c,
+      compleanno: truthy(p.compleanno),
       nome: p.nome ?? 'Giulia R.',
       alto: veloce ? '60px' : '84px',
       spessore: veloce ? '2px' : '3px',

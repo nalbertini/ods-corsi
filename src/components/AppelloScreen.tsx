@@ -11,6 +11,7 @@ import { MarchioProva, TogliProva } from './Prove'
 import { CercaPersona } from './CercaPersona'
 import { codaAppello, NON_ANCORA_COMINCIATA, proveInPiu, statoAppello, tastoAppello } from '../lib/etichetteAppello'
 import { DueTocchi, EtichettaAttivita } from './ds'
+import { SegnoCompleanno } from './SegnoCompleanno'
 import { vociAttivita } from '../lib/segreteria'
 import type { SegnalataVista } from '../lib/segnalate'
 
@@ -282,6 +283,7 @@ export function AppelloScreen({
 
   const segnati = d.elenco.filter((p) => p.stato !== null).length
   const iscritti = d.elenco.filter((p) => !p.prova)
+  const festeggiati = new Set(d.compleanni ?? [])
   const inProva = d.elenco.filter((p) => p.prova)
   if (!primi.current) primi.current = primiDaSegnare(iscritti, new Date(d.sessione.fine).getTime() < Date.now())
   const inOrdine = inOrdineDiApertura(iscritti, primi.current)
@@ -557,12 +559,13 @@ export function AppelloScreen({
             data-stato={p.stato ?? 'niente'}
             disabled={soloLettura}
             onClick={() => toccaRiga(p.id, p.stato)}
-            aria-label={`${perEsteso(p)}: ${p.stato ?? 'non segnato'}${soloLettura ? ', sola lettura' : ''}`}
+            aria-label={`${perEsteso(p)}${festeggiati.has(p.id) ? ', compleanno oggi' : ''}: ${p.stato ?? 'non segnato'}${soloLettura ? ', sola lettura' : ''}`}
           >
             <span className="segno" aria-hidden="true">
               {p.stato === 'presente' ? '✓' : p.stato === 'assente' ? '✕' : ''}
             </span>
             <span className="nome-appello grow">{perEsteso(p)}</span>
+            {festeggiati.has(p.id) && <SegnoCompleanno misura="telefono" />}
           </button>
         ))}
       </div>

@@ -73,6 +73,16 @@ export const Spunta = ({ size = 24 }: P) => (
   </svg>
 )
 
+export const Torta = ({ size = 20 }: P) => (
+  <svg {...base(size)} strokeWidth={2.2} aria-hidden="true">
+    <path d="M4 21h16" />
+    <path d="M5 21v-7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v7" />
+    <path d="M5 17c2.3 1.6 3.7 1.6 5.5 0s3.7-1.6 5.5 0c1 .9 2 1.2 3 .8" />
+    <path d="M12 13V9.5" />
+    <path d="M12 3.2c1 1.1 1.1 2.3 0 3.1-1.1-.8-1-2 0-3.1z" />
+  </svg>
+)
+
 export const Croce = ({ size = 20 }: P) => (
   <svg {...base(size)} strokeWidth={3} aria-hidden="true">
     <line x1="5" y1="5" x2="19" y2="19" />

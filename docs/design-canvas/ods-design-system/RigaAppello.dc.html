@@ -29,6 +29,9 @@
       </sc-if>
     </span>
     <span style="flex-grow: 1; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 17px; font-weight: 500; color: {{coloreNomeSito}}; text-decoration: {{decorazione}}">{{nome}}</span>
+    <sc-if value="{{compleanno}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="SegnoCompleanno" forma="etichetta" misura="telefono" hint-size="100px,20px"></dc-import>
+    </sc-if>
     <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
       <dc-import name="Badge" tipo="prova" label="PROVA" tema="sito" hint-size="70px,24px"></dc-import>
     </sc-if>
@@ -54,7 +57,7 @@
 </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Rossi Giulia"},"stato":{"editor":"enum","options":["niente","presente","assente"],"default":"niente"},"prova":{"editor":"boolean","default":false},"lettura":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":320,"height":70}}'>
+<script data-dc-script data-props='{"compleanno":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Rossi Giulia"},"stato":{"editor":"enum","options":["niente","presente","assente"],"default":"niente"},"prova":{"editor":"boolean","default":false},"lettura":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":320,"height":70}}'>
 // Riproduzione 1:1 della riga dell'appello: .riga-appello e .nome-appello (src/styles.css righe 413-429) usate in
 // src/components/AppelloScreen.tsx (righe 365-382). Tre stati, tre colori, e il segno grande a sinistra:
 // presente = bordo e segno verdi (--verde, non -testo: il segno e' grande); assente = bordo rosso, segno in
@@ -80,6 +83,7 @@ class Component extends DCLogic {
     const stato = p.stato || 'niente';
     const sito = p.tema === 'sito';
     return {
+      compleanno: truthy(p.compleanno),
       sito, nonSito: !sito, conTogli: truthy(p.prova) && !truthy(p.lettura),
       barra: stato === 'presente' ? 'inset 4px 0 0 #12913f' : stato === 'assente' ? 'inset 4px 0 0 #e4292a' : 'none',
       coloreSegnoSito: stato === 'presente' ? '#0b7a33' : '#b81d1d',
