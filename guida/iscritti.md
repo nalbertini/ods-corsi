@@ -59,10 +59,13 @@ Chi ha un nucleo cambia persona toccando il proprio **nome** nel saluto
   medico che manca, è scaduto o scade entro un mese, sotto i 6 anni non serve;
   la quota da pagare, pagata in parte o da rinnovare); se è tutto a posto non
   dice niente.
+- **Con un lettore di schermo** il saluto e i titoli di sezione sono veri
+  titoli (si saltano da uno all'altro) e un errore, come un invio che non è
+  andato, viene letto da solo appena compare.
 - **Le ultime presenze** (tab LEZIONI, in cima): le ultime tre in tre box
   piccoli, ognuno con la data («mer 21 ott»), un segno a cerchio (✓ presente,
-  ✗ assente) e la parola. **VEDI TUTTE** apre l'elenco completo, una per riga;
-  **MENO** lo richiude.
+  ✗ assente) e la parola. **VEDI TUTTE** (scuro e sottolineato, per leggerlo bene) apre l'elenco
+  completo, una per riga; **MENO** lo richiude.
 - **Le tue lezioni**: sotto, **LA PROSSIMA LEZIONE** in evidenza, con quanti
   giorni mancano e l'istruttore; poi le altre lezioni dei suoi corsi nella
   prossima settimana, in ordine di data, ognuna con l'istruttore e il giorno.

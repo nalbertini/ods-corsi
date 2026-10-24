@@ -1481,16 +1481,16 @@ a.btn { text-decoration: none; }
 .mia-lezione { min-height: 72px; }
 .mia-sotto { display: flex; align-items: flex-start; gap: 6px; min-width: 0; font-size: 13px; color: var(--dim); }
 .mia-sotto .mia-icona { color: var(--blu); flex-shrink: 0; margin-top: 1px; }
-.mia-vedi-tutte { font: inherit; font-weight: 700; letter-spacing: 0.1em; color: var(--blu); background: none; border: 0; padding: 14px 0 14px 12px; margin: -14px 0; min-height: 44px; cursor: pointer; }
+.mia-vedi-tutte { font: inherit; font-weight: 700; letter-spacing: 0.1em; color: var(--text); text-decoration: underline; background: none; border: 0; padding: 14px 0 14px 12px; margin: -14px 0; min-height: 44px; cursor: pointer; }
 /* Le ultime tre presenze: tre box in fila, l'icona sopra, il giorno e lo stato sotto. */
 .mie-presenze-piccole { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; }
 .mia-presenza-piccola { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; text-align: center; }
 .mia-presenza-piccola-quando { font-size: 13px; font-weight: 600; line-height: 1.1; color: var(--text); }
-.mia-presenza-piccola .mia-presenza-detto { overflow-wrap: anywhere; letter-spacing: 0.06em; line-height: 1.1; }
+.mia-presenza-piccola .mia-presenza-detto { color: inherit; overflow-wrap: anywhere; letter-spacing: 0.06em; line-height: 1.1; }
 .mia-presenza-piccola[data-tono='fatto'] { color: var(--verde-testo); }
 .mia-presenza-piccola[data-tono='guaio'] { color: var(--rosso-testo); }
 .mia-presenza-piccola[data-tono='avviso'] { color: var(--giallo-testo); }
-.mia-presenza-piccola[data-tono='spento'] { color: var(--faint); }
+.mia-presenza-piccola[data-tono='spento'] { color: var(--dim); }
 .mia-prossima { border-top: 5px solid var(--blu); }
 .mia-lezione-cosa[data-tono='guaio'] { color: var(--rosso-testo); }
 .mia-lezione-cosa[data-tono='avviso'] { color: var(--giallo-testo); }
@@ -1530,7 +1530,7 @@ a.btn { text-decoration: none; }
 .mia-presenza-segnalata { max-width: none; white-space: nowrap; }
 .mia-segnala-modulo .campo { width: 100%; }
 .mia-presenza-segno { display: flex; width: 22px; color: var(--faint); }
-.mia-presenza-detto { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint); }
+.mia-presenza-detto { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
 .mia-presenza[data-stato='presente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--verde-testo); }
 .mia-presenza[data-stato='assente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--rosso-testo); }
 .mie-schede { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; padding-bottom: 12px; }
