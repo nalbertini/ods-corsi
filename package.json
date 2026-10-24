@@ -16,6 +16,7 @@
     "moduli:genera": "node scripts/genera-moduli.mjs",
     "prova:musica": "node scripts/prova-musica.mjs",
     "prova:a11y-dietro-login": "node scripts/prova-a11y-dietro-login.mjs",
+    "prova:a11y-segreteria": "node scripts/prova-a11y-segreteria.mjs",
     "prova:robots": "node scripts/prova-robots.mjs",
     "prova:timer-font": "node scripts/prova-timer-font.mjs",
     "prova:timer-accessibilita": "node scripts/prova-timer-accessibilita.mjs",

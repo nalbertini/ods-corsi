@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
@@ -32,7 +32,7 @@ import { DaFare, useDaFare } from './DaFare'
 import { CosaManca } from './CosaManca'
 import { strisciaVisibile } from '../../lib/cosaManca'
 import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
-import { bozzaAperta, chiedi, Conferme, dialogoAperto, Guaio, lasciare, scordaBozze } from './comune'
+import { bozzaAperta, chiedi, Conferme, dialogoAperto, Guaio, lasciare, scordaBozze, useDialogo } from './comune'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { aspettoInUso, useAspetto } from '../../lib/aspetto'
 import { BarraBanco } from './banco/BarraBanco'
@@ -332,10 +332,7 @@ export function Segreteria({
   // Alla chiusura il fuoco torna all'elemento che l'aveva prima di ⌘K.
   const primaDellaFinestra = useRef<HTMLElement | null>(null)
   useEffect(() => {
-    if (finestra) {
-      primaDellaFinestra.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
-      return
-    }
+    if (finestra) return
     primaDellaFinestra.current?.focus()
     primaDellaFinestra.current = null
   }, [finestra])
@@ -345,6 +342,8 @@ export function Segreteria({
       if (!eScorciatoiaDiRicerca(e)) return
       // Prima del browser: Ctrl+K da solo sposterebbe il fuoco sulla barra degli indirizzi.
       e.preventDefault()
+      // Prima di aprire: dopo, il fuoco è già sul campo della finestra.
+      if (!document.querySelector('.sg-ricerca-corpo')) primaDellaFinestra.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
       setFinestra((f) => !f)
     }
     window.addEventListener('keydown', tasto)
@@ -588,7 +587,7 @@ export function Segreteria({
 
       {finestra && d && conSegreteria && (
         <div className="sg-ricerca-finestra" onMouseDown={(e) => e.target === e.currentTarget && setFinestra(false)}>
-          <div role="dialog" aria-modal="true" aria-label="Cerca" className="sg-ricerca-corpo">
+          <FinestraCerca onChiudi={() => setFinestra(false)}>
             <CercaIscritto
               d={d}
               inFinestra
@@ -598,7 +597,7 @@ export function Segreteria({
                 void vai(v, dest)
               }}
             />
-          </div>
+          </FinestraCerca>
         </div>
       )}
       <main className="sg-corpo" id="sg-contenuto" tabIndex={-1}>
@@ -676,6 +675,16 @@ export function Segreteria({
         </Suspense>
       </main>
       <Conferme />
+    </div>
+  )
+}
+
+// Il Tab resta dentro la finestra, come in ogni altro dialogo (`useDialogo`).
+function FinestraCerca({ onChiudi, children }: { onChiudi: () => void; children: ReactNode }) {
+  const ref = useDialogo<HTMLDivElement>(onChiudi)
+  return (
+    <div ref={ref} role="dialog" aria-modal="true" aria-label="Cerca" className="sg-ricerca-corpo" tabIndex={-1}>
+      {children}
     </div>
   )
 }
