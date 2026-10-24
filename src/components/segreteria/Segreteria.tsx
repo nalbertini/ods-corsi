@@ -342,7 +342,7 @@ export function Segreteria({
       if (!eScorciatoiaDiRicerca(e)) return
       // Prima del browser: Ctrl+K da solo sposterebbe il fuoco sulla barra degli indirizzi.
       e.preventDefault()
-      // Prima di aprire: dopo, il fuoco è già sul campo della finestra.
+      // Prima di aprire (dopo, il fuoco è già sul campo). Si guarda il DOM e non `finestra`: qui la closure la vedrebbe vecchia.
       if (!document.querySelector('.sg-ricerca-corpo')) primaDellaFinestra.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
       setFinestra((f) => !f)
     }

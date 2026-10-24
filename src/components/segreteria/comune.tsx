@@ -26,7 +26,7 @@ export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
     const io = {}
     pila.push(io)
     const prima = document.activeElement as HTMLElement | null
-    // Se la finestra ha già messo il fuoco su un suo campo (es. «Cerca»), lo si lascia lì.
+    // Se la finestra ha già messo il fuoco su un suo campo (es. «Cerca»), lo si lascia lì: per «Cerca» il fuoco di partenza lo ripristina Segreteria.
     if (!ref.current?.contains(document.activeElement)) ref.current?.focus()
     const tasto = (e: KeyboardEvent) => {
       if (pila[pila.length - 1] !== io) return
