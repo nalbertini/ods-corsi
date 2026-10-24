@@ -466,7 +466,7 @@
 .sg-iscritto[data-scelto='true'] { background: var(--surface-2); outline: 2px solid var(--text); outline-offset: -2px; }
 /* La riga si clicca tutta; il tasto è il nome, per la tastiera e per chi legge lo schermo. */
 .sg-iscritto, .sg-personale { cursor: pointer; }
-.sg-riga-apri { padding: 0; font: inherit; color: inherit; text-align: left; min-height: 0; }
+.sg-riga-apri { padding: 0; font: inherit; color: inherit; text-align: left; min-height: 24px; }
 .sg-riga-apri:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
 .sg-iscritto[data-spento='true'] { opacity: 0.45; }
 /* Le presenze degli istruttori: chi, la lezione, chi era previsto, quando, e i tasti. */
