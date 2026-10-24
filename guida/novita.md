@@ -10,6 +10,19 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.200.2 — 24 ottobre 2026
+
+### Risolto
+
+- Un iscritto non può più riempire lo Storage di file del certificato, e i ruoli del database non possono svuotare le tabelle
+- Il nome nelle righe delle tabelle della segreteria è più facile da toccare
+
+## 0.200.1 — 24 ottobre 2026
+
+### Risolto
+
+- I numeri accanto alle voci del menu della segreteria ora si leggono con lo screen reader
+
 ## 0.200.0 — 24 ottobre 2026
 
 ### Novità
