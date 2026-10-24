@@ -26,6 +26,7 @@ prima() {
     cerca-persone | istruttore-collega | presenze-finestra | manca-la-firma) echo tablet ;;
     accessi-piu-stretti) echo tablet ;;
     timer-lezioni) echo timer ;;
+    108-compleanni) echo tablet ;;
   esac
 }
 

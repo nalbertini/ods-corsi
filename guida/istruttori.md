@@ -145,6 +145,12 @@ tocca il nome come sempre. I conti in cima e i tasti **TUTTI PRESENTI** e
 **AZZERA** valgono per tutta la lezione, non solo per chi si vede: cancellate
 la ricerca per vedere di nuovo tutti.
 
+**COMPLEANNO.** Se oggi è il compleanno di un iscritto, accanto al suo nome
+c'è il segno giallo con la torta e la scritta **COMPLEANNO**: per fargli gli
+auguri. Non dice mai l'età né la data. Lo vedete solo sulle lezioni che fate o
+insegnate; la segreteria le vede tutte. Conta chi è iscritto al corso quel
+giorno (anche con la quota da pagare); il segno non cambia l'ordine né il tocco.
+
 Non c'è niente da salvare: ogni tocco parte subito.
 
 ### Chiudere l'appello

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #46606f; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+  </style>
+</helmet>
+<!-- TELEFONO, variante B: il segno sulla riga (come A) e sotto la testa dell'appello la riga «1 COMPLEANNO OGGI: Giulia R.» (facoltativa, solo se c'e' almeno un compleanno; con piu' di uno: «2 COMPLEANNI OGGI: Giulia R., Anna M.»). Costa 52px di altezza prima dell'elenco. -->
+<div style="display:flex;flex-direction:column;width:390px;min-height:760px;background:#eef5fa;color:#0d2a3d">
+  <dc-import name="BarraTelefono" tema="sito" luogo="ISTRUTTORI" da-fare="0" hint-size="100%,62px"></dc-import>
+  <main style="display:flex;flex-direction:column;flex:1">
+    <dc-import name="TestaAppello" tema="sito" corso="Judo kids" kanji="柔" quando="Martedì 17:30 · Sala 1" presenti="2" iscritti="5" mancano="2" tasto="GLI ALTRI PRESENTI" hint-size="100%,224px"></dc-import>
+    <div style="padding:0 16px 10px"><dc-import name="SegnoCompleanno" forma="riga" testo="1 COMPLEANNO OGGI: Giulia R." hint-size="100%,44px"></dc-import></div>
+    <dc-import name="Titoletto" tema="sito" label="ISCRITTI" conto="5" lato="16px" hint-size="100%,50px"></dc-import>
+    <div style="display:flex;flex-direction:column;gap:8px;padding:0 16px 20px">
+      <dc-import name="RigaAppello" tema="sito" nome="Bianchi Sofia" stato="presente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" tema="sito" nome="Ferrari Matteo" stato="presente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" tema="sito" nome="Greco Luca" stato="assente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" tema="sito" nome="Marino Alessandra" stato="niente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" tema="sito" nome="Rossi Giulia" stato="niente" compleanno="{{ true }}" hint-size="100%,56px"></dc-import>
+    </div>
+  </main>
+</div></x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":830}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

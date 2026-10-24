@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso, rifiutato, codaDelTablet, chiaveTocco, inAttesa, ricordaTocco, siAnnulla, sorvegliaScritture } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'; export * as tablet from './src/lib/tablet'; export { creaTabletSupabase } from './src/lib/tabletSupabase'",
+      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso, rifiutato, codaDelTablet, chiaveTocco, inAttesa, ricordaTocco, siAnnulla, sorvegliaScritture } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { compleannoOggi } from './src/lib/compleanni'; export { archivio } from './src/lib/archivioProva'; export * as tablet from './src/lib/tablet'; export { creaTabletSupabase } from './src/lib/tabletSupabase'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -81,7 +81,19 @@ console.log('\n2. le finestre di tempo')
   const t = await alle('2026-09-23T16:40')
   const nomi = await t.elenco(LEZIONE)
   ok('20 minuti prima: l\'elenco c\'è', nomi.length, 12)
-  ok('solo nome e sigla', Object.keys(nomi[0]).sort(), ['nome', 'personaId', 'segnato', 'sigla'])
+  // `compleanno` è solo un sì/no di oggi (108-compleanni.sql): mai la data né l'età.
+  ok('solo nome, sigla e se oggi è il compleanno', Object.keys(nomi[0]).sort(), ['compleanno', 'nome', 'personaId', 'segnato', 'sigla'])
+  ok('il compleanno è un sì/no', typeof nomi[0].compleanno, 'boolean')
+  // Il seme di prova ha un adulto che compie gli anni oggi: nell'elenco del tablet è l'unico `true`.
+  const fest = Object.entries(m.archivio.dati.anagrafiche ?? {}).filter(([, an]) => m.compleannoOggi(an.natoIl, new Date())).map(([id]) => id)
+  ok('il seme ha un solo festeggiato', fest.length, 1)
+  const tutti = []
+  // Le lezioni fuori dalla finestra del tablet non aprono l'elenco: si saltano.
+  for (const sala of ['Lotta', 'Tatami']) {
+    const ts = await alle('2026-09-23T16:40', sala)
+    for (const l of await ts.lezioni(new Date(2026, 8, 23), new Date(2026, 8, 23))) tutti.push(...(await ts.elenco(l.id).catch(() => [])))
+  }
+  ok('compleanno: true solo per il festeggiato', tutti.filter((x) => x.compleanno).map((x) => x.personaId), fest)
   ok('20 minuti prima si segna dal tablet', await t.segna(LEZIONE, nomi[0].personaId), 'segnata')
   ok('due volte: è già fra i presenti', await t.segna(LEZIONE, nomi[0].personaId), 'gia')
   // Le presenze le segnano anche gli allievi: a lezione in corso il tablet non si chiude.

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
+import { festeggiatiDa } from './compleanni'
 import type { Dati, IstruttoreLezione } from './dati'
 import { daSenzaIstruttore, type MiaPresenza } from './ore'
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
@@ -345,7 +346,9 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
           .map((p) => ({ ...p, stato: stati.get(p.id) ?? null, prova: true })),
       ], conti)
 
-      return { sessione: viste, note: riga.note ?? undefined, elenco } as DettaglioSessione
+      // Facoltativo come i kanji della sala: senza 108-compleanni.sql, o se non risponde, l'appello è quello di prima.
+      const compleanni = await festeggiatiDa(db.rpc('compleanni_lezione', { sessione: sessioneId }))
+      return { sessione: viste, note: riga.note ?? undefined, elenco, compleanni } as DettaglioSessione
     },
 
     async segna(sessioneId, personaId, stato) {

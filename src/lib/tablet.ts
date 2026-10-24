@@ -89,6 +89,8 @@ export interface NomeSala {
   /** «F.», o «Fon.» quando due iscritti sarebbero tutti e due «Giulia F.». */
   sigla: string
   segnato: boolean
+  /** Compie gli anni oggi (e la postazione ha l'avviso acceso): solo l'avviso, mai la data. */
+  compleanno?: boolean
 }
 
 /**

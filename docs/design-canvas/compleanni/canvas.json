@@ -1,0 +1,92 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Compleanno · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "SalaTessereStati.dc.html",
+   "title": "1 · SALA · la tessera del nome, nei tre stati: oggi e proposta",
+   "x": 0,
+   "y": 300,
+   "w": 1100,
+   "h": 520,
+   "page": "page-1"
+  },
+  {
+   "file": "SalaNomiOggi.dc.html",
+   "title": "2 · SALA · schermata dei nomi · oggi",
+   "x": 1220,
+   "y": 300,
+   "w": 1280,
+   "h": 640,
+   "page": "page-1"
+  },
+  {
+   "file": "SalaNomiProposta.dc.html",
+   "title": "3 · SALA · schermata dei nomi · PROPOSTA, COMPLEANNO su due tessere",
+   "x": 2620,
+   "y": 300,
+   "w": 1280,
+   "h": 640,
+   "page": "page-1"
+  },
+  {
+   "file": "SalaAreaIstruttore.dc.html",
+   "title": "4 · SALA · area istruttore col PIN · oggi e proposta",
+   "x": 0,
+   "y": 1100,
+   "w": 940,
+   "h": 420,
+   "page": "page-1"
+  },
+  {
+   "file": "CalendarioCompleanno.dc.html",
+   "title": "5 · OPZIONALE · elenco lezioni di oggi · oggi e proposta",
+   "x": 1060,
+   "y": 1100,
+   "w": 860,
+   "h": 330,
+   "page": "page-1"
+  },
+  {
+   "file": "TelefonoAppelloOggi.dc.html",
+   "title": "6 · TELEFONO · appello · oggi",
+   "x": 0,
+   "y": 1700,
+   "w": 390,
+   "h": 760,
+   "page": "page-1"
+  },
+  {
+   "file": "TelefonoAppelloA.dc.html",
+   "title": "7 · TELEFONO · appello · PROPOSTA A: solo il segno sulla riga",
+   "x": 520,
+   "y": 1700,
+   "w": 390,
+   "h": 760,
+   "page": "page-1"
+  },
+  {
+   "file": "TelefonoAppelloB.dc.html",
+   "title": "8 · TELEFONO · appello · PROPOSTA B: segno + riga «1 COMPLEANNO OGGI»",
+   "x": 1040,
+   "y": 1700,
+   "w": 390,
+   "h": 830,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1600,
+   "text": "Il compleanno di un iscritto si vede nell'app istruttori e sul tablet di sala: torta + parola COMPLEANNO, mai l'età"
+  }
+ ]
+}

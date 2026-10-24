@@ -21,6 +21,9 @@
 <div style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: #ffffff; border-top: 4px solid {{tinta}}; border-radius: 6px; box-shadow: {{ombra}}; color: #0d2a3d; text-align: left">
   <div style="display: flex; flex-direction: column; gap: 2px">
     <span style="min-width: 62px; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; letter-spacing: 0.02em">{{ora}}</span>
+    <sc-if value="{{compleanno}}" hint-placeholder-val="{{ false }}">
+      <dc-import name="SegnoCompleanno" forma="icona" hint-size="24px,24px"></dc-import>
+    </sc-if>
     <sc-if value="{{haQuando}}" hint-placeholder-val="{{ false }}">
       <span style="font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #8f6a00; white-space: nowrap">{{quando}}</span>
     </sc-if>
@@ -75,7 +78,7 @@
 </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"ora":{"editor":"text","default":"19:00"},"quando":{"editor":"text","default":""},"corso":{"editor":"text","default":"Judo kids"},"sala":{"editor":"text","default":"Sala 1"},"istruttore":{"editor":"text","default":"Marco R."},"kanji":{"editor":"text","default":""},"tinta":{"editor":"text","default":"#1b8ac4"},"iscritti":{"editor":"text","default":"12"},"presenti":{"editor":"text","default":"0"},"stato":{"editor":"enum","options":["iscritti","in-corso","fatto","nessun-presente","da-chiudere"],"default":"iscritti"},"prove":{"editor":"text","default":"0"},"aperta":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":380,"height":90}}'>
+<script data-dc-script data-props='{"compleanno":{"editor":"boolean","default":false},"ora":{"editor":"text","default":"19:00"},"quando":{"editor":"text","default":""},"corso":{"editor":"text","default":"Judo kids"},"sala":{"editor":"text","default":"Sala 1"},"istruttore":{"editor":"text","default":"Marco R."},"kanji":{"editor":"text","default":""},"tinta":{"editor":"text","default":"#1b8ac4"},"iscritti":{"editor":"text","default":"12"},"presenti":{"editor":"text","default":"0"},"stato":{"editor":"enum","options":["iscritti","in-corso","fatto","nessun-presente","da-chiudere"],"default":"iscritti"},"prove":{"editor":"text","default":"0"},"aperta":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":380,"height":90}}'>
 // Riproduzione 1:1 della lezione nel calendario: `carta()` in src/components/CalendarioScreen.tsx (righe 232-270)
 // con .card, .lezione e figli in src/styles.css (righe 249, 297-337).
 // - barra sinistra 6px nella tinta del corso (--tinta; il codice usa var(--blu) se il corso non ha colore);
@@ -120,6 +123,7 @@ class Component extends DCLogic {
     const COLORE_SITO = { 'fatto': t.verdeTesto, 'nessun-presente': t.gialloTesto, 'da-chiudere': t.rossoTesto };
     const ombre = aperta ? 'inset 0 0 0 2px #14709f' : 'none';
     return {
+      compleanno: truthy(p.compleanno),
       sito, nonSito: !sito,
       ombra: ombre,
       statoSito: SEGNATO[stato] || SEGNATO.iscritti, coloreStatoSito: COLORE_SITO[stato] || t.dim,

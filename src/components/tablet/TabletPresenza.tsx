@@ -2,6 +2,7 @@ import { contoSala, fase } from '../../lib/tablet'
 import type { DatiTablet, LezioneSala } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Spunta } from '../Icons'
+import { SegnoCompleanno } from '../SegnoCompleanno'
 import { EtichettaAttivita } from '../ds'
 import { Guaio, Indietro, orario } from './comune'
 import { FasciaTocco, useTocchi } from './tocchi'
@@ -74,13 +75,14 @@ export function TabletPresenza({
               data-fatto={fatto}
               data-attesa={inCoda || undefined}
               onClick={() => tocca(p)}
-              aria-label={`${p.nome} ${p.sigla}${inCoda ? ': segnato, in attesa di rete' : fatto ? ': già segnato' : ''}`}
+              aria-label={`${p.nome} ${p.sigla}${p.compleanno ? ', compleanno oggi' : ''}${inCoda ? ': segnato, in attesa di rete' : fatto ? ': già segnato' : ''}`}
             >
               <span className="stack grow" style={{ gap: 2 }}>
                 <span>
                   {p.nome} {p.sigla}
                 </span>
                 {inCoda && <span className="num tb-tessera-attesa">IN ATTESA DI RETE</span>}
+                {p.compleanno && <SegnoCompleanno />}
               </span>
               {fatto && <Spunta size={26} />}
             </button>

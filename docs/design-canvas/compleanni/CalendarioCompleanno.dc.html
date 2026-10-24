@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    .et { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: #46606f; }
+    .big { font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; letter-spacing: 0.04em; line-height: 1; }
+    .frase { font-size: 14px; color: #46606f; line-height: 1.45; }
+  </style>
+</helmet>
+<!-- OPZIONALE, elenco lezioni di oggi (RigaCalendario, tema sito): una torta da 24px sotto l'ora della lezione che ha un compleanno (role=img, «Compleanno oggi»). Solo l'icona: la parola e' nell'appello. -->
+<div style="display:flex;gap:40px;padding:28px 32px;width:860px;min-height:330px;background:#eef5fa">
+  <div style="display:flex;flex-direction:column;gap:10px;width:380px"><span class="et">OGGI</span><dc-import name="RigaCalendario" tema="sito" ora="17:30" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="iscritti" presenti="0" hint-size="100%,88px"></dc-import><dc-import name="RigaCalendario" tema="sito" ora="18:30" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="iscritti" presenti="0" hint-size="100%,88px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:10px;width:380px"><span class="et">PROPOSTA</span><dc-import name="RigaCalendario" tema="sito" ora="17:30" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="iscritti" compleanno="{{ true }}" presenti="0" hint-size="100%,88px"></dc-import><dc-import name="RigaCalendario" tema="sito" ora="18:30" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="iscritti" presenti="0" hint-size="100%,88px"></dc-import></div>
+</div></x-dc>
+<script data-dc-script data-props='{"$preview":{"width":860,"height":330}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

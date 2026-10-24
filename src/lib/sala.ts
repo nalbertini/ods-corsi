@@ -76,6 +76,8 @@ export interface DettaglioSessione {
    * venuto a provare (`prova`, vedi `prove.ts`).
    */
   elenco: Array<Persona & { stato: StatoPresenza | null; prova?: boolean }>
+  /** Chi compie gli anni oggi tra gli iscritti (solo gli id: la data non esce dal database). */
+  compleanni?: string[]
 }
 
 /**

@@ -1,3 +1,4 @@
+import { nascitaOggi } from './compleanni'
 import type { Lettera } from './lettere'
 import type { RicevutaCompenso } from './compensi'
 import type { Segnalata } from './segnalate'
@@ -437,6 +438,9 @@ function iniziale(): Archivio {
   const anagrafiche: NonNullable<Archivio['anagrafiche']> = {}
   const piccoli = iscrizioni.filter((i) => ['psicomotricita', 'giocomotricita'].includes(i.corsoId)).map((i) => i.personaId)
   piccoli.slice(0, 2).forEach((id) => (anagrafiche[id] = { natoIl: natoIlDa(5, -120) }))
+  // Un adulto del primo corso compie gli anni oggi, così nella prova il segno COMPLEANNO si vede.
+  const festeggiato = iscrizioni.find((i) => !piccoli.includes(i.personaId))
+  if (festeggiato) anagrafiche[festeggiato.personaId] = { natoIl: nascitaOggi(28, new Date()) }
   // Il primo senza certificato (NON SERVE), il secondo con quello valido già segnato.
   if (piccoli[0]) persone.get(piccoli[0])!.certificato = undefined
   if (piccoli[2]) {

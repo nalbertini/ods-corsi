@@ -1,6 +1,7 @@
 import type { DatiTablet, LezioneSala } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Spunta } from '../Icons'
+import { SegnoCompleanno } from '../SegnoCompleanno'
 import { Guaio } from './comune'
 import { FasciaTocco, useTocchi } from './tocchi'
 
@@ -28,13 +29,14 @@ export function AppelloVeloce({ d, lezione, onCambiato }: { d: DatiTablet; lezio
               data-fatto={fatto}
               data-attesa={inCoda || undefined}
               onClick={() => tocca(p)}
-              aria-label={`${p.nome} ${p.sigla}${inCoda ? ': segnato, in attesa di rete' : fatto ? ': già segnato' : ''}`}
+              aria-label={`${p.nome} ${p.sigla}${p.compleanno ? ', compleanno oggi' : ''}${inCoda ? ': segnato, in attesa di rete' : fatto ? ': già segnato' : ''}`}
             >
               <span className="stack grow" style={{ gap: 2 }}>
                 <span>
                   {p.nome} {p.sigla}
                 </span>
                 {inCoda && <span className="num tb-tessera-attesa">IN ATTESA DI RETE</span>}
+                {p.compleanno && <SegnoCompleanno misura="torta" />}
               </span>
               {fatto && <Spunta size={24} />}
             </button>

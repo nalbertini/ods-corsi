@@ -6,6 +6,7 @@ import { archivio, nomeDi, type CorsoProva, type PresenzaIstruttoreProva, type R
 import { ISTRUTTORE_PROVA } from './dati'
 import { MESSAGGIO_FUORI_FINESTRA, accreditaOraIstruttore, appelloAperto } from './finestra'
 import { areaDelPercorso } from './percorso'
+import { compleannoOggi } from './compleanni'
 import type { LezioneSenzaIstruttore } from './segreteria'
 import { attivitaPerMenu } from './segreteria'
 import type { MiaPresenza } from './ore'
@@ -606,9 +607,14 @@ export function creaDatiProva(): Dati {
       if (!t) return null
       const mie = memoria.segnate[sessioneId] ?? {}
       const elenco = appelloDi(t).map((p) => ({ ...p, stato: mie[p.id] ?? null }))
+      const oggi = new Date()
+      const compleanni = elenco
+        .filter((p) => !p.prova && compleannoOggi(archivio.dati.anagrafiche?.[p.id]?.natoIl, oggi))
+        .map((p) => p.id)
       return {
         sessione: vista(t),
         elenco,
+        compleanni,
       }
     },
 
