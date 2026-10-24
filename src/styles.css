@@ -2038,6 +2038,12 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-campo::placeholder { color: var(--dim); opacity: 1; }
 .sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
 .sg-schede .scheda { min-height: 44px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; }
+/* L'icona della linguetta sta accanto alla parola. */
+.sg-schede .scheda { gap: 8px; white-space: nowrap; }
+/* Su telefono l'icona sta sopra la parola: con quattro linguette (Contabilità) fianco a fianco non c'è posto. */
+@media (max-width: 560px) {
+  .sg-schede .scheda { flex-direction: column; gap: 2px; padding: 4px; min-width: 0; letter-spacing: 0.06em; font-size: 13px; }
+}
 .sg-voce {
   display: flex; align-items: center; min-height: 44px; padding: 0 12px;
   border-left: 4px solid transparent; color: var(--sec);

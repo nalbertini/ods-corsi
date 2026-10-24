@@ -178,6 +178,18 @@ export const ICONE_TABLET = {
   corso: ICONE_MENU.corsi,
 }
 
+/** Le icone delle linguette delle barre a schede della segreteria (Contabilità, il corso, Presenze): le stesse del menu e dei conti. */
+export const ICONE_SCHEDE = {
+  movimenti: ICONE_CONTI.frecce,
+  bilancio: ICONE_MENU.statistiche,
+  voci: ICONE_MENU.listino,
+  casse: ICONE_CONTI.banconota,
+  dati: ICONE_MENU.compensi,
+  iscritti: ICONE_MENU.iscritti,
+  mese: ICONE_MENU.settimana,
+  segnalate: ICONE_MENU.segnalazioni,
+}
+
 /** I segni dell'elenco ISCRITTI: il minorenne e la famiglia (il nucleo). */
 export const ICONE_ISCRITTI = {
   bambino: voce(<><circle cx="12" cy="7" r="3" /><path d="M8 21v-3a4 4 0 0 1 8 0v3" /><path d="M6 13l2.5 1.5M18 13l-2.5 1.5" /></>),

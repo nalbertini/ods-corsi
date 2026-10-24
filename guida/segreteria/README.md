@@ -61,6 +61,8 @@ Istruttori e accessi) e **Il resto** (Statistiche, Vestiario, Esercizi, Segnalaz
 **AIUTO** e **IMPOSTAZIONI** stanno in fondo al menu, nel riquadro col tuo nome. Ogni voce ha la
 sua guida:
 
+Anche le linguette di CONTABILITÀ, del corso (Dati, Iscritti) e di PRESENZE (Il mese, Segnalate) hanno la loro icona, la stessa del menu.
+
 ## La striscia COSA MANCA
 
 In cima a ogni pagina, tranne **Da fare**, ci sono sei caselle con un numero grande:
