@@ -7,6 +7,7 @@ import { Colonne, Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
 import { StatisticheSito } from './StatisticheSito'
 import { richiesteFila } from '../../lib/filaSito'
+import { lette } from '../../lib/letture'
 import { conNonSiSaInFondo, contaDaDove, fraseDaDove, MANCA_PROVENIENZA, notaDaDove, type VoceDaDove } from '../../lib/provenienza'
 
 const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
@@ -163,7 +164,8 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
         <label htmlFor="corso-s" className="vh">
           Corso
         </label>
-        <select id="corso-s" className="sg-campo" value={corso} onChange={(e) => setCorso(e.target.value)}>
+        {/* Larghezza fissa: con i corsi che arrivano dopo, il menu si allargherebbe e farebbe andare a capo i tasti, spostando tutto. */}
+        <select id="corso-s" className="sg-campo" style={{ width: 300, maxWidth: '100%' }} value={corso} onChange={(e) => setCorso(e.target.value)}>
           <option value="">Tutti i corsi</option>
           {/* Un corso scelto resta nel menu anche in un periodo in cui non c'è: si vede che è vuoto. */}
           {corso && !corsi.some((c) => c[0] === corso) && <option value={corso}>{nomeCorso ?? 'Il corso scelto'}</option>}
@@ -313,14 +315,17 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
         </>
       )}
 
-      {/* In fondo e fuori dal blocco delle lezioni: i numeri del sito non dipendono da quelli della palestra. */}
-      <StatisticheSito
-        d={d}
-        da={chiaveGiorno(da)}
-        a={g}
-        corso={!!corso}
-        richieste={richiesteFila(daDove, titoli)}
-      />
+      {/* In fondo e fuori dal blocco delle lezioni: i numeri del sito non dipendono da quelli della palestra.
+          Compare dopo le lezioni: se no i riquadri che arrivano sopra lo spingono fuori dallo schermo. */}
+      {lette(stat) && (
+        <StatisticheSito
+          d={d}
+          da={chiaveGiorno(da)}
+          a={g}
+          corso={!!corso}
+          richieste={richiesteFila(daDove, titoli)}
+        />
+      )}
     </>
   )
 }

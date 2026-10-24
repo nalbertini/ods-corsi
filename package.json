@@ -24,6 +24,7 @@
     "prova:tablet": "node scripts/prova-tablet.mjs",
     "prova:accesso-google": "node scripts/prova-accesso-google.mjs",
     "prova:segreteria": "node scripts/prova-segreteria.mjs",
+    "prova:attesa": "node scripts/prova-attesa.mjs",
     "prova:pericolo": "node scripts/prova-pericolo.mjs",
     "prova:ruoli": "node scripts/prova-ruoli.mjs",
     "prova:contabilita": "node scripts/prova-contabilita.mjs",
