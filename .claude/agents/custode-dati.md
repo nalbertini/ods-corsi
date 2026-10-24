@@ -35,7 +35,9 @@ prova una cosa e il giorno dopo ne trova un'altra.
 2. **Interfaccia completa**: ogni metodo nuovo implementato in tutte e due.
    Un metodo facoltativo (`?`) dice in un commento perché manca da una parte.
 3. **Le prove dalle due parti**: il caso nuovo in `scripts/prova-*.mjs`
-   (prova) e in `supabase/prova/*.sql` (database), con gli stessi esiti.
+   (prova) e in `supabase/prova/*.sql` (database), con gli stessi esiti. Un
+   metodo di `DatiSegreteria` si prova una volta sola, sui due motori, in
+   `scripts/prova-segreteria-comune.mjs` (vedi la sua testa per lanciarla).
 4. **Senza rete** (`coda.ts`): ogni scrittura che parte da appello o tablet
    passa dalla coda. La sua `chiave` fa sostituire le operazioni superate
    senza fonderne due diverse. Rifarla due volte lascia lo stesso risultato,
