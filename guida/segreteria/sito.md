@@ -213,6 +213,10 @@ pulsante scuro **CONTATTACI**, accanto a **PROVA**. Nel piede resta tra le
 pagine. Sul telefono il menu sta su una riga se i nomi sono corti: «I corsi»
 entra, «I nostri corsi» rischia di andare a capo.
 
+In fondo al piede di ogni pagina ci sono i loghi della FIJLKAM e della FIPE,
+con il link ai loro siti (si aprono in una scheda nuova). Da qui non si
+cambiano: non sono voci del footer.
+
 L'app non ti lascia salvare se una voce non va, e dice quale:
 
 - una voce senza nome;
