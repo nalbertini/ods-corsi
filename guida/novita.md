@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.194.1 — 24 ottobre 2026
+
+### Risolto
+
+- Sul sito, chi legge con lo screen reader trova i titoli di corsi, contatti e privacy nell'ordine giusto
+
 ## 0.194.0 — 24 ottobre 2026
 
 ### Novità
