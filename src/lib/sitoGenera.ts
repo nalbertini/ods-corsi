@@ -425,6 +425,8 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 /* Più forti di .testo a.pulsante: la fila della parte PULSANTI sta dentro il testo. */
 .pulsanti .pulsante.primario{background:var(--giallo);color:var(--inchiostro)}
 .pulsanti .pulsante.secondario{background:transparent;color:var(--inchiostro);border:2px solid var(--inchiostro)}
+/* Su un fondo giallo il primario è inchiostro: giallo su giallo non si vede. Più forte di «.pulsanti .pulsante.primario». */
+.cta-testo .pulsanti .pulsante.primario,.tessera.giallo .pulsanti .pulsante.primario{background:var(--inchiostro);color:#fff}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
 h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height:.82;overflow-wrap:anywhere}
 .pagina-hero{padding:40px var(--margine) 96px;display:flex;flex-wrap:wrap;align-items:stretch;gap:28px 56px}
