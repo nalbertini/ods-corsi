@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.203.7 — 25 ottobre 2026
+
+### Risolto
+
+- La prova dei compleanni sbagliava dopo la mezzanotte italiana
+
 ## 0.203.6 — 25 ottobre 2026
 
 ### Modificato
