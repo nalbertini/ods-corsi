@@ -789,7 +789,8 @@ function Scheda({
   const natoIl = natoIlDi(p, datiAn, ora)
   const minore = eMinorenne(p, datiAn, ora)
   // Finché non si sono letti, niente COSA MANCA: comparirebbe e poi cambierebbe. Se non si leggono, almeno i contatti.
-  const manca = an.dato || an.guaio ? cosaManca(p, datiAn, ora) : []
+  const letta = !!(an.dato || an.guaio)
+  const manca = letta ? cosaManca(p, datiAn, ora) : []
   const apriModifica = () => {
     setGuaio('')
     setAperta('persona')
@@ -903,7 +904,7 @@ function Scheda({
         </div>
       )}
       {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
-      {!unendo && !pagando && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
+      {!unendo && !pagando && letta && <Timbri p={p} oggi={oggi} onVai={vaiAlTimbro} tessera={tessereDi ? timbroTessera({ ...p, tessere: tessereDi }, [...corsi.values()], oggi) : null} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -951,6 +952,9 @@ function Scheda({
           }}
         />
         </Bozza>
+      ) : !letta ? (
+        // Timbri e sezioni aspettano COSA MANCA: se comparisse dopo, li spingerebbe giù.
+        <p className="sg-sotto" role="status">Carico la scheda…</p>
       ) : (
       <>
       <div className="schede sg-schede sg-schede-scheda" role="tablist" aria-label="Parti della scheda" onKeyDown={tastiera}>

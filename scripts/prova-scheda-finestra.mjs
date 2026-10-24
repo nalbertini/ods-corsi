@@ -85,5 +85,9 @@ ok('un tasto disabilitato della testa si vede spento (non come premuto)', /\.sg-
 ok('a una colonna i campi che occupano due colonne tornano a una (se no si sovrappongono)', /@media \(max-width: 1000px\)\s*\{\s*\.sg-tre > \* \{[^}]*grid-column:\s*auto/.test(css), true)
 ok('sul telefono la finestra prende tutto lo schermo', /@media \(max-width: 767px\)\s*\{[^}]*\.sg-finestra\s*\{/.test(css.replace(/\n/g, ' ')), true)
 
+console.log('\nLa scheda dell\'iscritto non salta mentre arrivano i dati')
+const iscritti = leggi('src/components/segreteria/Iscritti.tsx')
+ok('timbri e sezioni aspettano i dati anagrafici: COSA MANCA, arrivando dopo, li spingerebbe giù (CLS)', [/&& letta && <Timbri/.test(iscritti), /\) : !letta \? \(/.test(iscritti)], [true, true])
+
 console.log(guai ? `\n${guai} cosa non torna` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
