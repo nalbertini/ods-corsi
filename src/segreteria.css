@@ -1139,5 +1139,5 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 /* IMPOSTAZIONI: sette schede non stanno in una riga sul telefono, vanno a capo. */
 .sg-schede-impostazioni { display: flex; flex-wrap: wrap; }
 /* L'icona sta davanti al nome e non si schiaccia quando la scheda va a capo. */
-.sg-schede-impostazioni .scheda { gap: 8px; }
-.sg-schede-impostazioni .scheda svg { flex: none; }
+.sg-schede-impostazioni > button { gap: 8px; }
+.sg-schede-impostazioni svg { flex: none; }
