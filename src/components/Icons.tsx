@@ -171,3 +171,11 @@ export const ICONE_CONTI = {
   casa: voce(<><path d="M3 11 12 4l9 7" /><path d="M5 10v10h14V10" /><rect x="10" y="14" width="4" height="6" /></>),
   frecce: voce(<><polyline points="15 4 19 8 15 12" /><path d="M5 8h14" /><polyline points="9 20 5 16 9 12" /><path d="M19 16H5" /></>),
 }
+
+/** Le icone delle linguette della scheda iscritto: la chiave è l'`IdScheda` di lib/schedaSezioni. */
+export const ICONE_SCHEDA_ISCRITTO = {
+  persona: ICONE_MENU.areaIstruttori,
+  documenti: voce(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M8 13h8M8 17h8" /></>),
+  quota: ICONE_CONTI.banconota,
+  corsi: ICONE_MENU.corsi,
+}
