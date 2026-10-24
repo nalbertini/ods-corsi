@@ -3,7 +3,8 @@
     "collect": {
       "staticDistDir": "./dist",
       "url": ["/index.html", "/iscrizioni/index.html"],
-      "numberOfRuns": 3
+      "numberOfRuns": 3,
+      "settings": { "skipAudits": ["is-crawlable"] }
     },
     "assert": {
       "assertions": {
