@@ -484,3 +484,28 @@ export function sorvegliaScritture() {
     },
   }
 }
+
+/**
+ * Cosa dice un lettore di schermo dopo un tocco, a voce, senza la fascia.
+ * La fascia sparisce da sola: l'annuncio sta in una regione fissa (`AnnuncioTocco`).
+ */
+export function annuncioFascia(
+  f:
+    | { tipo: 'fatto'; p: Pick<NomeSala, 'nome' | 'sigla'>; attesa?: boolean }
+    | { tipo: 'gia'; p: Pick<NomeSala, 'nome' | 'sigla'>; annulla: boolean }
+    | { tipo: 'istruttore'; p: Pick<NomeSala, 'nome' | 'sigla'> }
+    | { tipo: 'annullato'; p: Pick<NomeSala, 'nome' | 'sigla'> }
+    | { tipo: 'errore'; testo: string }
+    | null,
+  passata: boolean,
+  giorno: string,
+): string {
+  if (!f) return ''
+  if (f.tipo === 'errore') return `Non è andata. ${f.testo}`
+  const chi = `${f.p.nome} ${f.p.sigla}`
+  if (f.tipo === 'annullato') return `Annullato: presenza di ${chi} tolta.`
+  if (f.tipo === 'istruttore') return `L’istruttore ha già segnato ${chi}. Se c’eri, diglielo.`
+  if (f.tipo === 'gia') return `${chi} è già tra i presenti. ${f.annulla ? 'Toccato per sbaglio? C’è il tasto Annulla.' : 'Se non eri tu, dillo all’istruttore.'}`
+  const dove = f.attesa ? 'segnata su questo tablet, parte appena torna la rete' : passata ? `segnata per ${giorno}` : 'segnata'
+  return `${chi}: presenza ${dove}. Toccato il nome sbagliato? C’è il tasto Annulla.`
+}
