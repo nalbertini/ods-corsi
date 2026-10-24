@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.200.11 — 24 ottobre 2026
+
+### Risolto
+
+- La contabilità torna a vedere i pagamenti Satispay
+
 ## 0.200.10 — 24 ottobre 2026
 
 ### Risolto
