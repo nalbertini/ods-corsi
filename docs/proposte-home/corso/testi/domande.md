@@ -13,6 +13,6 @@ Sulle tavole sono i cartellini rossi **DA CONFERMARE Qn** (solo per le aperte). 
 9. **Q9.** Le età sull'anno 2026 («7-9 anni · nati 2019-2017») invecchiano ogni settembre: mostrare solo gli anni di nascita?
 10. **Q10.** Judo agonisti: «judo 3 / adulti» vuol dire che si entra da Judo 3 in su? Va scritto per esteso.
 11. **Q11.** Descrizioni di Judo, Lotta, Aikido, Avviamento e Pre pugilistica: «fino alle gare», «dalla prima prova alla gara», «adatta anche a chi ha più anni» sono dedotte dai tag della home (testi/REPORT §3), non dai sorgenti della pagina; Pre pugilistica passa da «per muovere i primi colpi» a «per imparare i colpi»: vanno bene?
-12. **Q12.** Le frasi nuove sotto «Cosa aspettarsi» (già segnalate in `docs/sito/judo.md`, e nelle altre pagine) e «La storia del judo» restano da far rileggere a chi insegna.
+12. **Q12.** Le frasi nuove sotto «Cosa aspettarsi» (già segnalate in `docs/sito/judo.md`, e nelle altre pagine) e le storie di Judo, Aikido e Lotta restano da far rileggere a chi insegna.
 13. **Q13. CHIUSA**: Pre pugilistica e Autodifesa restano senza foto per ora, con la fascia blu; nessuna foto presa da altri corsi.
 14. **Q14.** Giocomotricità: le foto trovate (Cup 23/03/2025) sono bambini con la medaglia di 5-7 anni circa, il corso è 3-5: c'è una foto di una lezione vera?

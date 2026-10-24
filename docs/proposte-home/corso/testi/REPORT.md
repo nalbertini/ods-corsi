@@ -17,7 +17,7 @@ Oggi la pagina ha: foto, 4 dati, 3 tessere («Cos’è», «Cosa si fa», «Per 
 | 6 | **Cosa aspettarsi** | 3-4 tessere, titolo ≤ 5 parole, testo invariato | | titoli da 9 parole in 2-3 righe a 46 px oggi |
 | 7 | **Come provare** | «Una settimana per scegliere.» + frase del corso + 2 pulsanti: «Prova una settimana a 5 €» (modulo online) e «Scrivici» (pagina Contatti) | C · chiusura | la chiamata finale della home, con la frase «Perché sceglierlo» del corso sotto il titolo |
 
-Blocchi **solo di un corso**: «La storia del judo» (Judo, dopo «Cosa si fa»). Il sorgente `judo.md` lo segnala già come testo da far rileggere.
+Blocchi **solo di un corso**: «La storia» (Judo, Aikido e Lotta, dopo «A chi è rivolto»). I sorgenti la segnalano già come testo da far rileggere.
 
 Cosa **non** c'è e si può solo chiedere (vedi domande): quota mensile o annuale, certificato medico, cosa portare la prima volta, il nome di chi insegna.
 
@@ -186,7 +186,7 @@ Sulle tavole sono i cartellini rossi **DA CONFERMARE Qn** (solo per le aperte). 
 9. **Q9.** Le età sull'anno 2026 («7-9 anni · nati 2019-2017») invecchiano ogni settembre: mostrare solo gli anni di nascita?
 10. **Q10.** Judo agonisti: «judo 3 / adulti» vuol dire che si entra da Judo 3 in su? Va scritto per esteso.
 11. **Q11.** Descrizioni di Judo, Lotta, Aikido, Avviamento e Pre pugilistica: «fino alle gare», «dalla prima prova alla gara», «adatta anche a chi ha più anni» sono dedotte dai tag della home (testi/REPORT §3), non dai sorgenti della pagina; Pre pugilistica passa da «per muovere i primi colpi» a «per imparare i colpi»: vanno bene?
-12. **Q12.** Le frasi nuove sotto «Cosa aspettarsi» (già segnalate in `docs/sito/judo.md`, e nelle altre pagine) e «La storia del judo» restano da far rileggere a chi insegna.
+12. **Q12.** Le frasi nuove sotto «Cosa aspettarsi» (già segnalate in `docs/sito/judo.md`, e nelle altre pagine) e le storie di Judo, Aikido e Lotta restano da far rileggere a chi insegna.
 13. **Q13. CHIUSA**: Pre pugilistica e Autodifesa restano senza foto per ora, con la fascia blu; nessuna foto presa da altri corsi.
 14. **Q14.** Giocomotricità: le foto trovate (Cup 23/03/2025) sono bambini con la medaglia di 5-7 anni circa, il corso è 3-5: c'è una foto di una lezione vera?
 
