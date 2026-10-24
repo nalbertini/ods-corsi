@@ -17,7 +17,15 @@
 <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; background: {{c.bg}}; color: {{c.text}}">
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px">
     <sc-for list="{{schede}}" as="s" hint-placeholder-count="2">
-      <span style="display: flex; align-items: center; justify-content: center; min-height: 60px; border: 2px solid {{s.bordo}}; background: {{s.fondo}}; color: {{s.colore}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 700; letter-spacing: 0.14em">{{s.nome}}</span>
+      <span style="display: flex; flex-direction: {{s.dir}}; align-items: center; justify-content: center; gap: 4px; min-height: {{s.alto}}px; border: 2px solid {{s.bordo}}; background: {{s.fondo}}; color: {{s.colore}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 700; letter-spacing: 0.14em; text-align: center">
+        <sc-if value="{{s.calendario}}" hint-placeholder-val="{{ false }}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path><circle cx="12" cy="16" r="1.5"></circle></svg></sc-if>
+        <sc-if value="{{s.sole}}" hint-placeholder-val="{{ false }}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg></sc-if>
+        <sc-if value="{{s.orologio}}" hint-placeholder-val="{{ false }}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg></sc-if>
+        <sc-if value="{{s.medaglia}}" hint-placeholder-val="{{ false }}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="6"></circle><path d="M15.5 12.9 17 22l-5-3-5 3 1.5-9.1"></path></svg></sc-if>
+        <sc-if value="{{s.cartella}}" hint-placeholder-val="{{ false }}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg></sc-if>
+        <sc-if value="{{s.elenco}}" hint-placeholder-val="{{ false }}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg></sc-if>
+        <span>{{s.nome}}</span>
+      </span>
     </sc-for>
   </div>
   <sc-if value="{{haCorso}}" hint-placeholder-val="{{ false }}">
@@ -29,10 +37,13 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"scelta":{"editor":"enum","options":["oggi","corso"],"default":"oggi"},"corso":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":300,"height":140}}'>
+<script data-dc-script data-props='{"scelta":{"editor":"enum","options":["oggi","corso"],"default":"oggi"},"corso":{"editor":"text","default":""},"iconaOggi":{"editor":"enum","options":["","calendario","sole","orologio"],"default":"","section":"Icone"},"iconaCorso":{"editor":"enum","options":["","medaglia","cartella","elenco"],"default":"","section":"Icone"},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":300,"height":140}}'>
 // Riproduzione 1:1 delle schede OGGI / PER CORSO dell'area istruttore del tablet (TabletIstruttore.tsx, righe 237-285) con
 // .tb-schede, .tb-scheda, .tb-etichetta e .tb-select (src/styles.css, righe 1089-1107). Due tasti da 60px; quello scelto
 // (aria-selected) ha bordo `text`, fondo `surface-2` e scritta `text`, l'altro bordo `line` e scritta `sec`.
+// - iconaOggi / iconaCorso: l'icona sopra la scritta (ICONE_TABLET in Icons.tsx: oggi = calendario, corso = medaglia di
+//   ICONE_MENU.corsi). Vuoto = nessuna icona, scheda da 60px; con l'icona la scheda e' da 84px, icona 28px sopra la scritta.
+//   Sole, orologio, cartella ed elenco sono le alternative della scelta, non nell'app.
 // - scelta: la scheda accesa. corso: se non vuoto compaiono la scritta CORSO e la tendina (56px, freccia a destra), che
 //   nell'app si vede solo con PER CORSO; il valore e' il corso scelto.
 const T = {
@@ -47,7 +58,9 @@ class Component extends DCLogic {
     const scelta = p.scelta === 'corso' ? 'corso' : 'oggi';
     const schede = [['oggi', 'OGGI'], ['corso', 'PER CORSO']].map(([id, nome]) => {
       const on = id === scelta;
-      return { nome, bordo: on ? c.text : c.line, fondo: on ? c.surface2 : 'transparent', colore: on ? c.text : c.sec };
+      const ic = (id === 'oggi' ? p.iconaOggi : p.iconaCorso) || '';
+      return { nome, bordo: on ? c.text : c.line, fondo: on ? c.surface2 : 'transparent', colore: on ? c.text : c.sec, dir: ic ? 'column' : 'row', alto: ic ? 84 : 60,
+        calendario: ic === 'calendario', sole: ic === 'sole', orologio: ic === 'orologio', medaglia: ic === 'medaglia', cartella: ic === 'cartella', elenco: ic === 'elenco' };
     });
     return { c, schede, corso: p.corso ?? '', haCorso: !!p.corso };
   }

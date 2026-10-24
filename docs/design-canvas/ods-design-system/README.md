@@ -99,7 +99,7 @@ Google, e vale solo per i mockup.
 | `GuidaTesto` | La colonna di testo della guida dentro l'app |
 | `ChiSei` | La riga «NOME COGNOME · RUOLO» con ESCI (e SEGRETERIA per chi ha due aree) sopra il calendario del telefono (`ChiSei` di `Porta.tsx`); `tema="sito"` (costruito): stessa riga, Big Shoulders e #46606f dai token |
 | `TabletTestataIstruttore` | `TabletTestata` col bollino blu AREA ISTRUTTORE · nome (`Tablet.tsx`) |
-| `TabletSchede`, `TabletLezioneIstr` | Le schede OGGI / PER CORSO (con la tendina) e una lezione nell'elenco dell'area istruttore (`.tb-schede`, `.tb-lezione-istr`) |
+| `TabletSchede`, `TabletLezioneIstr` | Le schede OGGI / PER CORSO (con la tendina, e le icone `iconaOggi` / `iconaCorso`) e una lezione nell'elenco dell'area istruttore (`.tb-schede`, `.tb-lezione-istr`) |
 | `TabletRigaAppello`, `TabletTestaAppello`, `TabletRiquadro` | La riga dell'appello del tablet (DAL TABLET, SEGNATO DOPO, PROVA), la sua testa con i tre tasti, e il riquadro LA TUA PRESENZA |
 | `Arretrato` | `Arretrato` di `CalendarioScreen.tsx` (`.arretrato*`): la riga delle cose rimaste indietro sotto la lezione di adesso, in giallo (presenze segnalate) o rosso (appelli da chiudere), chiusa o aperta con le righe `primo:secondo|...`; `tema="sito"` (costruito): tessera bianca senza bordo, il tono nel colore del titolo, senza barra né segno |
 | `TabletScelta` | Le scelte di TI SEI DIMENTICATO DI SEGNARTI? (`.tb-scelta`): `variante="corso"` (barra nella tinta, nome, giorni) o `"lezione"` (giorno, ora, «N su M») |

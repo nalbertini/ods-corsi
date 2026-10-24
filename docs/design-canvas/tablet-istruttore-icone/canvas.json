@@ -1,0 +1,60 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-25T09:00:00Z"
+ },
+ "title": "Tablet istruttore, schede Quali lezioni con icone",
+ "launch": {
+  "view": "canvas",
+  "page": "page-1"
+ },
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "SCHEDE"
+  }
+ ],
+ "boards": {
+  "Oggi.dc.html": {
+   "x": 0,
+   "y": 140,
+   "w": 1280,
+   "h": 900,
+   "title": "Oggi · senza icone",
+   "page": "page-1"
+  },
+  "Main.dc.html": {
+   "x": 1400,
+   "y": 140,
+   "w": 1280,
+   "h": 900,
+   "title": "Proposta · con icone",
+   "page": "page-1"
+  },
+  "Scelta.dc.html": {
+   "x": 0,
+   "y": 1160,
+   "w": 1280,
+   "h": 560,
+   "title": "La scelta delle icone",
+   "page": "page-1"
+  }
+ },
+ "order": [
+  "Oggi.dc.html",
+  "Main.dc.html",
+  "Scelta.dc.html"
+ ],
+ "notes": {
+  "titolo": {
+   "x": 0,
+   "y": 0,
+   "maxW": 1200,
+   "kind": "title1",
+   "text": "Quali lezioni: le schede OGGI e PER CORSO con le icone",
+   "page": "page-1"
+  }
+ },
+ "designSystems": []
+}
