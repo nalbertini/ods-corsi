@@ -18,11 +18,13 @@
     "prova:a11y-iscritti": "node scripts/prova-a11y-iscritti.mjs",
     "prova:a11y-dietro-login": "node scripts/prova-a11y-dietro-login.mjs",
     "prova:a11y-segreteria-bersagli": "node scripts/prova-a11y-segreteria-bersagli.mjs",
+    "prova:a11y-segreteria": "node scripts/prova-a11y-segreteria.mjs",
     "prova:robots": "node scripts/prova-robots.mjs",
     "prova:timer-font": "node scripts/prova-timer-font.mjs",
     "prova:timer-accessibilita": "node scripts/prova-timer-accessibilita.mjs",
     "prova:tablet-accessibilita": "node scripts/prova-tablet-accessibilita.mjs",
     "prova:accessibilita-iscrizione": "node scripts/prova-accessibilita-iscrizione.mjs",
+    "prova:testo-alternativo": "node scripts/prova-testo-alternativo.mjs",
     "prova:cornice-mail": "node scripts/prova-cornice-mail.mjs",
     "prova:guida": "node scripts/prova-guida.mjs",
     "prova:musica-file": "node scripts/prova-musica-file.mjs",
@@ -160,7 +162,8 @@
     "prova:sollecito": "node scripts/prova-sollecito.mjs",
     "prova:impostazioni": "node scripts/prova-impostazioni.mjs",
     "prova:nucleo": "node scripts/prova-nucleo.mjs",
-    "prova:compleanni": "node scripts/prova-compleanni.mjs"
+    "prova:compleanni": "node scripts/prova-compleanni.mjs",
+    "prova:a11y-axe": "node scripts/prova-a11y-axe.mjs"
   },
   "dependencies": {
     "@puckeditor/core": "^0.23.0",
@@ -180,7 +183,9 @@
     "@types/react-dom": "^18.3.1",
     "@types/sanitize-html": "^2.16.2",
     "@vitejs/plugin-react": "^4.3.4",
+    "axe-core": "^4.14.0",
     "esbuild": "^0.21.5",
+    "playwright": "^1.64.1",
     "typescript": "^5.6.3",
     "vite": "^5.4.11",
     "vite-plugin-pwa": "^0.21.1"

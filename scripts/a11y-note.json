@@ -1,0 +1,27 @@
+[
+  {
+    "regola": "label-content-name-mismatch",
+    "schermata": "segreteria · iscritti",
+    "motivo": "Le caselle «mancano» in cima alla segreteria hanno un aria-label che non contiene il testo visibile (WCAG 2.5.3): da correggere con le sessioni sull'accessibilità della segreteria."
+  },
+  {
+    "regola": "label-content-name-mismatch",
+    "schermata": "segreteria · contabilità",
+    "motivo": "Le caselle «mancano» in cima alla segreteria hanno un aria-label che non contiene il testo visibile (WCAG 2.5.3): da correggere con le sessioni sull'accessibilità della segreteria."
+  },
+  {
+    "regola": "label-content-name-mismatch",
+    "schermata": "segreteria · settimana",
+    "motivo": "Le caselle «mancano» in cima alla segreteria hanno un aria-label che non contiene il testo visibile (WCAG 2.5.3): da correggere con le sessioni sull'accessibilità della segreteria."
+  },
+  {
+    "regola": "label-content-name-mismatch",
+    "schermata": "segreteria · corsi",
+    "motivo": "Le caselle «mancano» in cima alla segreteria hanno un aria-label che non contiene il testo visibile (WCAG 2.5.3): da correggere con le sessioni sull'accessibilità della segreteria."
+  },
+  {
+    "regola": "color-contrast",
+    "schermata": "timer · home",
+    "motivo": "La versione in fondo alla barra del timer (.sidebar-versione, --faint #5a5a56) è sotto 4.5:1: da correggere con la sessione sul timer."
+  }
+]
