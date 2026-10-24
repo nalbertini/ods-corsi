@@ -45,9 +45,8 @@ nei due temi, stati non affidati al solo colore, fuoco da tastiera visibile.
 
 ## Cosa non è coperto
 
-- Il sito pubblico (`officinedellosport.it`): gli audit in
-  `docs/proposte-home/*/REPORT.md` sono di design (contrasti e bersagli a
-  mano), non una scansione.
+- Il sito pubblico (`officinedellosport.it`): ha il suo report,
+  `docs/qa/accessibilita-sito.md`.
 - Schermate che axe non apre: le altre sezioni della segreteria (banco,
   presenze, richieste, listino…), i passi dopo il primo dell'iscrizione, area
   iscritti oltre la prima vista, tablet oltre la scelta della sala.
