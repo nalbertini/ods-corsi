@@ -155,7 +155,7 @@ function PortaUnica() {
   }, [])
   return (
     <div className="app">
-      <Testata luogo="ACCESSO" guida={INDIRIZZO_GUIDA} senzaTema />
+      <Testata luogo="ACCESSO" senzaTema />
       <main className="scroll">
         {doppio?.persona ? (
           <SceltaArea persona={doppio.persona} aree={doppio.aree} onScelta={passaA} />
@@ -165,24 +165,6 @@ function PortaUnica() {
           <>
             <Accesso />
             <div className="pad stack porta-altro" style={{ gap: 10, paddingBottom: 16 }}>
-              <a className="card stack scelta-area" href={INDIRIZZI.iscritti}>
-                <span className="scelta-titolo">ISCRITTI</span>
-                <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-                  Le tue lezioni, le presenze, il certificato e le ricevute. Entri con l’email, senza password.
-                </span>
-              </a>
-              <a className="card stack scelta-area" href={INDIRIZZI.iscrizioni}>
-                <span className="scelta-titolo">ISCRIZIONI</span>
-                <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-                  Per chi vuole iscriversi, senza account: come ci si iscrive, i costi e il modulo.
-                </span>
-              </a>
-              <a className="card stack scelta-area" href={INDIRIZZO_GUIDA}>
-                <span className="scelta-titolo">GUIDA</span>
-                <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-                  Come funziona l’app: la guida generale, e una per ogni parte.
-                </span>
-              </a>
               <span className="num versione" title={VERSIONE_ESTESA}>
                 {VERSIONE}
               </span>
