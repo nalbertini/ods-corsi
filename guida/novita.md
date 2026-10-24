@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.200.12 — 24 ottobre 2026
+
+### Risolto
+
+- L'editor delle pagine del sito si apre anche per chi ha ancora in cache la versione di prima
+
 ## 0.200.11 — 24 ottobre 2026
 
 ### Risolto
