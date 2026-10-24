@@ -28,7 +28,7 @@ Gioco, movimento e rispetto per crescere insieme, dalla prima prova alla gara.
 
 ## Da controllare prima di pubblicare
 
-- Domande aperte che toccano questa pagina (`docs/proposte-home/corso/testi/REPORT.md`): Q12.
+- Domande aperte che toccano questa pagina (`docs/proposte-home/corso/testi/REPORT.md`): Q12 (frasi nuove e storia della lotta da far rileggere).
 - Le frasi nuove o accorciate (descrizione, «Cosa si fa», titoli di «Cosa aspettarsi») le rilegga chi insegna: nei sorgenti prima/dopo, riga «Tolto», sta in `docs/proposte-home/corso/testi/REPORT.md`.
 - Non c'è la quota dopo la prova né il certificato medico: nessun testo di oggi li dice (Q3, Q4).
 - Le età sull'anno 2026 invecchiano ogni settembre (Q9).

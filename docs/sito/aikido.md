@@ -28,7 +28,7 @@ Armonia, equilibrio e difesa, in una disciplina adatta anche a chi ha più anni.
 
 ## Da controllare prima di pubblicare
 
-- Domande aperte che toccano questa pagina (`docs/proposte-home/corso/testi/REPORT.md`): Q8 (la tessera diceva «dai 7 anni», il testo «ragazzi e adulti»).
+- Domande aperte che toccano questa pagina (`docs/proposte-home/corso/testi/REPORT.md`): Q8 (la tessera diceva «dai 7 anni», il testo «ragazzi e adulti»), Q12 (storia dell’aikido da far rileggere).
 - Le frasi nuove o accorciate (descrizione, «Cosa si fa», titoli di «Cosa aspettarsi») le rilegga chi insegna: nei sorgenti prima/dopo, riga «Tolto», sta in `docs/proposte-home/corso/testi/REPORT.md`.
 - Non c'è la quota dopo la prova né il certificato medico: nessun testo di oggi li dice (Q3, Q4).
 - Le età sull'anno 2026 invecchiano ogni settembre (Q9).
