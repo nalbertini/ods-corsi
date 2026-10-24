@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.199.3 — 24 ottobre 2026
+
+### Risolto
+
+- Tasti di ordinamento, sala, movimenti e titoli più accessibili con lo screen reader e al tocco
+
 ## 0.199.2 — 24 ottobre 2026
 
 ### Risolto
