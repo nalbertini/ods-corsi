@@ -180,7 +180,7 @@ console.log('\n5. il filtro: «Pagato nel vecchio programma», dietro «Altri fi
   ok('il testo', m.TESTI_FILTRI?.['pagato-prima'], 'Pagato nel vecchio programma')
   ok('è fra tutti i filtri (si sa se è acceso anche senza chip)', m.ID_FILTRI?.includes('pagato-prima'), true)
   ok('non è fra quelli in vista', m.FILTRI_VISIBILI?.includes('pagato-prima'), false)
-  ok('con almeno una persona: compare fra gli altri, dopo «senza-documento»', altri({ ...nessuno, conStorico: true }), ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-documento', 'pagato-prima'])
+  ok('con almeno una persona: compare fra gli altri, dopo «senza-documento» e «famiglie»', altri({ ...nessuno, conStorico: true }), ['senza-email', 'poco', 'scadenza', 'arrivo', 'senza-documento', 'famiglie', 'pagato-prima'])
   ok('senza persone: non compare', altri({ ...nessuno, conStorico: false }).includes('pagato-prima'), false)
   ok('se la lettura non c\'è (manca) o il conto non si dà: non compare, mai «nessuno»', altri(nessuno).includes('pagato-prima'), false)
   ok('acceso, il gruppo «Altri filtri» si apre da sé', m.altriAperti(['pagato-prima'], false), true)

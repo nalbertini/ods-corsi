@@ -171,3 +171,9 @@ export const ICONE_CONTI = {
   casa: voce(<><path d="M3 11 12 4l9 7" /><path d="M5 10v10h14V10" /><rect x="10" y="14" width="4" height="6" /></>),
   frecce: voce(<><polyline points="15 4 19 8 15 12" /><path d="M5 8h14" /><polyline points="9 20 5 16 9 12" /><path d="M19 16H5" /></>),
 }
+
+/** I segni dell'elenco ISCRITTI: il minorenne e la famiglia (il nucleo). */
+export const ICONE_ISCRITTI = {
+  bambino: voce(<><circle cx="12" cy="7" r="3" /><path d="M8 21v-3a4 4 0 0 1 8 0v3" /><path d="M6 13l2.5 1.5M18 13l-2.5 1.5" /></>),
+  casa: ICONE_CONTI.casa,
+}

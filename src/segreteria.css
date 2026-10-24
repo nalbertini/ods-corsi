@@ -340,8 +340,14 @@
 .sg-cella-sollecito-ultimo { font-size: 12px; color: var(--dim); }
 /* L'avviso col suo «Annulla» va a sinistra, sopra i nomi: a destra coprirebbe il tasto della riga dopo, il gesto che viene subito. */
 /* L'elenco ISCRITTI: certificato e quota in colonne loro, così il guaio si legge senza aprire la scheda; righe alte uguali. */
-.sg-riga-iscritti { grid-template-columns: minmax(0, 1fr) 150px 120px minmax(0, 1.2fr) 150px 80px; }
-.sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 140px 110px minmax(0, 1fr) 130px 70px 150px; }
+.sg-riga-iscritti { grid-template-columns: minmax(0, 1fr) 130px 130px 110px minmax(0, 1.2fr) 150px 80px; }
+.sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 120px 120px 100px minmax(0, 1fr) 140px 70px 130px; }
+/* Minorenni e famiglie: icone col nome a parole nel title e per chi legge lo schermo; il titolare si apre dal suo nome. */
+.sg-segno-iscritto { display: inline-flex; vertical-align: -3px; margin-left: 8px; color: var(--sec); }
+.sg-cella-famiglia { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; color: var(--sec); }
+.sg-cella-famiglia .sg-segno-iscritto { margin-left: 0; }
+.sg-famiglia-titolare { padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; text-align: left; overflow-wrap: anywhere; min-height: 24px; }
+.sg-famiglia-titolare:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .sg-stato-elenco { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 6px 0; min-width: 0; }
 .sg-segno-elenco { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; }
 .sg-segno-elenco::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
@@ -800,16 +806,12 @@
   .sg-riga-iscritto[data-sollecito] { grid-template-columns: 1fr auto 70px; }
   .sg-riga-iscritto .sg-cella-sollecito { grid-column: 1 / -1; align-items: stretch; padding-top: 0; padding-bottom: 8px; }
   .sg-cella-sollecito-testa { display: none; }
-  .sg-riga-iscritti, .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 130px 110px 80px; gap: 10px; }
-  .sg-riga-iscritti > :nth-child(2), .sg-riga-iscritti > :nth-child(3) { display: flex; }
-  .sg-riga-iscritti > :nth-child(4), .sg-riga-iscritti > :nth-child(5) { display: none; }
   .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
   .sg-riga-movimento { grid-template-columns: 44px minmax(0, 1fr); gap: 8px; }
   .sg-riga-movimento > :not(:first-child):not(:nth-child(3)) { display: none; }
   .sg-solo-telefono { display: inline; }
   .sg-lista-testa.sg-riga-movimento { display: none; }
   .sg-riga-pagamento-tab > :not(:nth-child(2)):not(:last-child), .sg-riga-residuo > :not(:first-child):not(:nth-child(5)) { display: none; }
-  .sg-sotto-nome { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
   .sg-pagamento { margin-left: 12px; }
   .sg-lista-testa.sg-riga-pagamento-tab, .sg-lista-testa.sg-riga-residuo { display: none; }
   .sg-riga-presenza-istr { grid-template-columns: 1fr 1fr; }
@@ -819,6 +821,22 @@
   .sg-presenza-istr-fine { grid-column: 1 / -1; justify-content: flex-start; text-align: left; }
   .sg-ricorrenza { grid-template-columns: 1fr auto auto 40px; }
   .sg-ricorrenza > :nth-child(4) { display: none; }
+}
+/* Col menu di lato, sotto i 1440 px non c'è posto per tutte e sette: CONTATTO si legge dalla scheda. */
+@media (min-width: 1201px) and (max-width: 1439px) {
+  .sg-riga-iscritti { grid-template-columns: minmax(0, 1fr) 130px 130px 110px minmax(0, 1.2fr) 80px; }
+  .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 120px 120px 100px minmax(0, 1fr) 70px 130px; }
+  .sg-riga-iscritti > :nth-child(6) { display: none; }
+}
+/* ISCRITTI passa alla vista stretta già a 1200 px: con FAMIGLIA le colonne fisse lascerebbero a NOME pochi pixel. */
+@media (max-width: 1200px) {
+  .sg-riga-iscritti, .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 130px 110px 80px; gap: 10px; }
+  /* FAMIGLIA va sotto il nome (`sg-sotto-nome`): la colonna sparisce, e con lei CORSI e CONTATTO. */
+  .sg-riga-iscritti > :nth-child(3), .sg-riga-iscritti > :nth-child(4) { display: flex; }
+  .sg-riga-iscritti > :nth-child(2), .sg-riga-iscritti > :nth-child(5), .sg-riga-iscritti > :nth-child(6) { display: none; }
+  .sg-riga-iscritti .sg-cella-sollecito { grid-column: 1 / -1; align-items: stretch; padding-top: 0; padding-bottom: 8px; }
+  .sg-riga-iscritti .sg-cella-sollecito-testa { display: none; }
+  .sg-sotto-nome { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
 }
 /* Sul telefono i segni sono compatti, ✕ rosso, … giallo, – nota: la forma dice lo stato anche senza il colore;
  * la parola resta per chi legge lo schermo, nel title e nella scheda. */
@@ -833,7 +851,7 @@
   .sg-riga-iscritti .sg-segno-elenco[data-tono='giallo']::before { content: '…' / ''; color: var(--giallo-testo); }
   .sg-riga-iscritti, .sg-riga-iscritti[data-sollecito] { grid-template-columns: minmax(0, 1fr) 56px 56px 48px; }
   .sg-riga-iscritti .sg-stato-elenco { justify-content: center; }
-  .sg-lista-testa.sg-riga-iscritti > :nth-child(2), .sg-lista-testa.sg-riga-iscritti > :nth-child(3) { justify-self: center; }
+  .sg-lista-testa.sg-riga-iscritti > :nth-child(3), .sg-lista-testa.sg-riga-iscritti > :nth-child(4) { justify-self: center; }
   .sg-riga-iscritti .sg-testa-larga { display: none; }
   .sg-riga-iscritti .sg-testa-stretta { display: inline; }
   .sg-riga-iscritti .sg-segno-elenco[data-tono='nota']::after { content: '–' / ''; }

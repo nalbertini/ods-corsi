@@ -10,8 +10,8 @@ elenco, che compaiono negli appelli e sul tablet.
 
 - **Cerca per nome o email**.
 - **Tutti i corsi** → uno solo, per vedere chi fa quel corso.
-Quattro filtri stanno sempre in vista: **Senza certificato valido**, **Da pagare**,
-**Corsi scaduti** e **Non in regola**. Gli altri sono dietro **Altri filtri (N)**, col numero di quelli
+Cinque filtri stanno sempre in vista: **Senza certificato valido**, **Da pagare**,
+**Corsi scaduti**, **Non in regola** e **Minorenni**. Gli altri sono dietro **Altri filtri (N)**, col numero di quelli
 che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
 
 - **Solo senza email** — chi non ha l'email in scheda.
@@ -36,6 +36,12 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
 - **Tesserati senza corso** — chi ha una tessera da atleta che vale oggi e nessun corso (può aver smesso e avere ancora la tessera dell'anno). C'è solo se il database ha le tessere.
 - **Senza documento** — chi non ha ancora la copia del documento d'identità in
   segreteria.
+- **Minorenni** — chi non ha ancora 18 anni (il giorno del compleanno è già
+  maggiorenne). Conta la data di nascita della scheda: chi non ce l'ha non c'è,
+  e in cima alla pagina c'è quanti sono (**5 persone senza data di nascita non
+  sono contate**).
+- **Famiglie** — chi ha registrato un [nucleo familiare](#il-nucleo-familiare)
+  e chi ci è dentro.
 - **Non archiviato** — solo finché ce ne sono: chi ha un file di certificato
   caricato prima della nuova gestione (senza data di caricamento). Quelli
   nuovi non ci sono mai.
@@ -69,10 +75,17 @@ che ci sono adesso; se uno di quelli è acceso, il gruppo si apre da solo.
   nell'avviso, subito dopo; o, più tardi, nella scheda di una delle due,
   sezione **Non sono doppioni** → **Togli** accanto all'altra.
 
-Accanto ai quattro filtri c'è quante persone mostrerebbero, con la ricerca e il
+Accanto ai cinque filtri in vista c'è quante persone mostrerebbero, con la ricerca e il
 corso che hai scelto: **Da pagare · 33**. In cima alla pagina c'è quante
 persone sono attive e quanti certificati sono in scadenza; con **Corsi scaduti**
-acceso, quanti iscritti hanno un corso da sollecitare.
+acceso, quanti iscritti hanno un corso da sollecitare; con **Minorenni**, quanti
+minorenni ci sono.
+
+Dopo il nome, il bambino dice che è minorenne. La colonna **FAMIGLIA** ha la
+casa per chi ha registrato un nucleo familiare; per chi ci è dentro, la casa e
+il nome del titolare: toccalo e si apre la sua scheda. Tenendoci sopra il mouse
+si legge cosa vuol dire l'icona. Chi non ha segni è adulto e senza famiglia
+registrata (o non ha la data di nascita).
 
 Due colonne dicono in un colpo d'occhio cosa manca, ciascuna per conto suo. Un
 pallino colorato davanti alla parola: rosso manca, giallo aspetta. Il ✓ verde è a posto.
@@ -92,10 +105,12 @@ pallino colorato davanti alla parola: rosso manca, giallo aspetta. Il ✓ verde 
 
 Chi è archiviato ha **Archiviato** in grigio e la quota vuota.
 
-Sul telefono le colonne sono NOME, CERTIFICATO, QUOTA e 30 GG, e i segni
+Sul telefono le colonne sono NOME, CERTIFICATO, QUOTA e 30 GG (la famiglia
+va sotto il nome, anche sul tablet in verticale), e i segni
 sono brevi: **✕** rosso, **…** giallo, **✓** in regola, **–** non serve; la
 parola si legge nella scheda. Sul tablet in verticale ci sono le parole, ma
-non CORSI e CONTATTO. Corsi e contatto si leggono nella scheda.
+non CORSI e CONTATTO. Corsi e contatto si leggono nella scheda. Su un computer
+con lo schermo piccolo, col menu di lato, non c'è CONTATTO.
 
 La colonna **CORSI** ne mostra due e **+1**, **+2** per gli altri: tutti si
 leggono tenendoci sopra il mouse.
