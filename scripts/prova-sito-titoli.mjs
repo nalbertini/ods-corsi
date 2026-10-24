@@ -56,6 +56,13 @@ const legge = F.dati(testo, 'privacy')
 legge.pagine = legge.pagine.map((p) => (p.slug === 'privacy' ? { ...p, diLegge: true } : p))
 ok('nessun titolo salta un livello', salti(livelli(generata(legge, 'privacy/index.html'))), [])
 
+console.log('4. Pagine di un corso e degli istruttori (docs/sito)')
+const dellaCartella = (slug) =>
+  readFileSync(`docs/sito/${slug}.html`, 'utf8').replace(/<!doctype[^>]*>\s*|<meta[^>]*>\s*|<title>.*?<\/title>\s*/gis, '')
+for (const slug of ['pre-pugilistica', 'mga-metodo-globale-di-autodifesa', 'istruttori']) {
+  ok(`${slug}: nessun titolo salta un livello`, salti(livelli(generata(F.dati(dellaCartella(slug), slug), `${slug}/index.html`))), [])
+}
+
 if (guai) {
   console.log(`\n${guai} da correggere`)
   process.exit(1)

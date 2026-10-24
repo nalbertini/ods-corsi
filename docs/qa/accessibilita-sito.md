@@ -43,16 +43,45 @@ Le altre pagine, Judo compresa, stanno in 320 px.
 - **Pagine nascoste o in bozza**: non sono in sitemap, quindi non scansionate
   (la Dichiarazione stessa è una bozza finché non si pubblica).
 
+## Lettura con VoiceOver (2026-10-24)
+
+`scripts/leggi-voiceover.mjs` apre in Safari le 20 pagine della sitemap e
+fa leggere a VoiceOver, con Guidepup, ogni elemento dall'inizio alla fine
+(macOS 27, Safari). Tutte le pagine si leggono per intero, con menu, titoli,
+elenchi e piè di pagina; le immagini di contenuto hanno una descrizione sensata.
+
+Trovato:
+
+- salto di livello nei titoli (h1 → h3) su `/istruttori/`,
+  `/mga-metodo-globale-di-autodifesa/` e `/pre-pugilistica/`;
+- in `/privacy/` due link che VoiceOver legge solo «informativa».
+
+I salti di titolo sono corretti nel generatore (`titoliInOrdine`, prova in
+`prova-sito-titoli.mjs`); il link «informativa» sta nel testo della privacy, che
+si cambia dall'editor del sito: «informativa di GitHub» e «informativa di
+GoatCounter». Nessun altro difetto. Il reflow di giocomotricità, trovato dalla scansione, è
+già corretto. Se una pagina resta ferma su «Salta al contenuto» è la prova
+che parte troppo presto: `PAUSA=9000` e, per rileggere solo alcune pagine,
+`PAGINE=url1,url2`.
+
 ## Per la Dichiarazione
 
-Con questo esito la sezione «Contenuti non accessibili» può dire: la pagina di
-giocomotricità non si legge bene a 320 px per via delle tessere degli orari,
-con la data in cui sarà sistemata. Lo stato di conformità («conforme»,
-«parzialmente conforme») lo decide chi pubblica, dopo la prova col lettore di
-schermo: con un difetto di reflow aperto, «parzialmente conforme» è l'unica
-dicitura onesta.
+Stato onesto: «parzialmente conforme», finché i salti di titolo e il link
+«informativa» non sono sistemati. Dichiarazione compilata:
+
+- **Gestore**: ASD Il Centro Judo, Corso Francia 224, Rivoli (TO).
+- **Contenuti non accessibili**: i titoli di tre pagine saltano un livello
+  e in una pagina un link si legge solo «informativa»; chi usa un lettore di
+  schermo li trova comunque, ma l'ordine dei titoli è meno chiaro.
+- **Verifica**: 24 ottobre 2026; controllo automatico (axe, larghezza a 320 px,
+  tastiera) e lettura di tutte le pagine con VoiceOver su Safari.
+- **Contatto**: asdilcentrojudo@gmail.com, 346 329 2786.
+
+Il testo si scrive e si pubblica dall'editor del sito (la pagina nasce come
+bozza): non si cambia il SQL, che non riscrive una pagina già presente.
 
 ## Come si rifà
 
-Lo script non è nel repo: axe sulle pagine della sitemap con Playwright, come
-`scripts/prova-a11y-axe.mjs` ma contro il sito vero.
+Axe sulle pagine della sitemap con Playwright, come `scripts/prova-a11y-axe.mjs`
+ma contro il sito vero (lo script non è nel repo); la lettura con
+`node scripts/leggi-voiceover.mjs` (serve `npx @guidepup/setup`, una volta).
