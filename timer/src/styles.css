@@ -76,6 +76,9 @@
   color-scheme: light;
 }
 
+/* La scheda accesa in basso: il blu del marchio sul grigio della barra si ferma a 3,2:1, questo arriva a 4,9:1. */
+:root[data-tema='chiaro'] .tab[data-on='true'] { color: #146b9c; }
+
 /* Il tema Tatami, lo stesso di ODS Corsi (paglia e verde muschio): vedi `src/styles.css` dell'app,
    i valori comuni sono gli stessi e `prova:tema` lo controlla. */
 :root[data-tema='tatami'] {
