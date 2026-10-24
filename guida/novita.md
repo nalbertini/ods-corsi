@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.193.0 — 24 ottobre 2026
+
+### Novità
+
+- La Dichiarazione di accessibilità del sito, da compilare prima di pubblicarla
+
 ## 0.192.2 — 24 ottobre 2026
 
 ### Risolto
