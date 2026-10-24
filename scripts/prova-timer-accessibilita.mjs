@@ -37,4 +37,19 @@ const scheda = css.match(/:root\[data-tema='chiaro'\] \.tab\[data-on='true'\] \{
 ok('la scheda accesa del tema chiaro ha un colore suo', Boolean(scheda), true)
 ok('e si legge sul fondo della barra (4,5:1)', scheda && menu ? contrasto(scheda, menu) >= 4.5 : false, true)
 
+// La versione in fondo alla barra: --faint è per i decori (sotto 4,5:1 sullo scuro), il testo usa --dim.
+ok('la versione in fondo alla barra non è --faint', /\.sidebar-versione\s*\{[^}]*var\(--faint\)/.test(css), false)
+const variabile = (selettore, nome) => css.match(new RegExp(`${selettore.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`))?.[1].match(new RegExp(`${nome}:\\s*(#[0-9a-f]{6})`, 'i'))?.[1]
+for (const [tema, radice, dim, menu] of [
+  ['scuro', ':root', ':root', ':root'],
+  ['chiaro', ":root[data-tema='chiaro']", ":root[data-tema='chiaro']", ":root[data-tema='chiaro']"],
+  // Nel tema tatami la barra ha i suoi colori (--dim chiaro su --menu scuro).
+  ['tatami', ":root[data-tema='tatami']", ":root[data-tema='tatami'] .sidebar,\n:root[data-tema='tatami'] .tabbar", ":root[data-tema='tatami']"],
+  ['sito', ":root[data-tema='sito']", ":root[data-tema='sito']", ":root[data-tema='sito']"],
+]) {
+  const d = variabile(dim, '--dim')
+  const m = variabile(menu, '--menu')
+  ok(`la versione si legge sulla barra · ${tema} (4,5:1)`, d && m ? contrasto(d, m) >= 4.5 : false, true)
+}
+
 process.exit(fallite ? 1 : 0)

@@ -86,7 +86,7 @@ function Aree() {
   if (area === 'collega')
     return (
       <div className="app">
-        <Testata luogo="CONTABILITÀ" senzaTema />
+        <Testata luogo="CONTABILITÀ" senzaTema h1 />
         <main className="scroll">
           <Collega />
         </main>
@@ -99,13 +99,14 @@ function Aree() {
  * `guida` è la pagina della guida da aprire col tasto «?», se c'è. `senzaTema`
  * per le aree sempre chiare (istruttori): il tasto non avrebbe cosa cambiare.
  */
-function Testata({ luogo, guida, senzaTema, children }: { luogo: string; guida?: string; senzaTema?: boolean; children?: ReactNode }) {
+/** `h1`: il luogo è il titolo della pagina, quando la pagina non ne ha uno suo. */
+function Testata({ luogo, guida, senzaTema, h1, children }: { luogo: string; guida?: string; senzaTema?: boolean; h1?: boolean; children?: ReactNode }) {
   return (
     <header className="testata">
       <Logo />
       <div className="stack grow" style={{ gap: 1 }}>
         <span className="testata-nome">OFFICINE DELLO SPORT</span>
-        <span className="testata-luogo">{luogo} · COLLEGNO</span>
+        {h1 ? <h1 className="testata-luogo">{luogo} · COLLEGNO</h1> : <span className="testata-luogo">{luogo} · COLLEGNO</span>}
       </div>
       {guida && (
         <a className="icon-btn tasto-guida" href={guida} title="La guida" aria-label="Apri la guida">
@@ -203,7 +204,7 @@ function TutteLeAree() {
   ]
   return (
     <div className="app">
-      <Testata luogo="CORSI" guida={INDIRIZZO_GUIDA} senzaTema />
+      <Testata luogo="CORSI" guida={INDIRIZZO_GUIDA} senzaTema h1 />
       <main className="scroll">
         <div className="pad stack scelta" style={{ gap: 10, paddingTop: 16, paddingBottom: 16 }}>
           {voci.map(([a, titolo, testo]) => (
@@ -385,7 +386,7 @@ function Istruttori() {
     <Porta
       cornice={(x) => (
         <div className="app">
-          <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} senzaTema />
+          <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} senzaTema h1 />
           <main className="scroll">{x}</main>
         </div>
       )}
@@ -420,7 +421,7 @@ function Istruttori() {
           {largo ? (
             <MenuIstruttori chi={chi} onEsci={onEsci} voci={voci} pagina={pagina} onPagina={dalMenu} />
           ) : (
-            <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} senzaTema />
+            <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} senzaTema h1 />
           )}
           {!largo && striscia}
           <main ref={corpo} className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}>
@@ -484,7 +485,7 @@ function MenuIstruttori({
         <Logo width={46} />
         <span className="stack" style={{ gap: 2 }}>
           <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
-          <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.2em', color: 'var(--dim)' }}>ISTRUTTORI</span>
+          <h1 style={{ margin: 0, fontSize: 12, fontWeight: 600, letterSpacing: '0.2em', color: 'var(--dim)' }}>ISTRUTTORI</h1>
         </span>
       </div>
       <div className="sg-voci">
