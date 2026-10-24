@@ -1,0 +1,8 @@
+{
+  "pages": [{ "id": "page-1", "name": "Piede · federazioni" }],
+  "artboards": [
+    { "file": "Oggi.dc.html", "title": "1 · Piede com'è oggi (1344)", "x": 0, "y": 0, "w": 1344, "h": 260, "page": "page-1" },
+    { "file": "Proposta.dc.html", "title": "2 · Piede proposta (1344)", "x": 1464, "y": 0, "w": 1344, "h": 390, "page": "page-1" },
+    { "file": "PropostaTelefono.dc.html", "title": "3 · Piede proposta (375)", "x": 2928, "y": 0, "w": 375, "h": 700, "page": "page-1" }
+  ]
+}

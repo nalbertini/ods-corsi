@@ -326,5 +326,34 @@ console.log('\nDeterminismo')
   ok('stesso input due volte: file identici', JSON.stringify(genera(d)) === JSON.stringify(genera(JSON.parse(JSON.stringify(d)))) && Object.keys(genera(d)).length > 0, true)
 }
 
+console.log('\nPiede: i loghi delle federazioni')
+{
+  const riga = (t) => (piedeDi(t).match(/<div class="federazioni">[\s\S]*?<\/div>/) || [''])[0]
+  const link = (t) => [...riga(t).matchAll(/<a\b([^>]*)>\s*<img\b([^>]*)>\s*<\/a>/g)].map((m) => ({ a: m[1], img: m[2] }))
+  const attr = (s, n) => (new RegExp(`\\b${n}="([^"]*)"`).exec(s) || [])[1]
+  const pagine = [['home', home], ['pagina interna', c(con, 'judo/index.html')], ['contatti', c(con, 'contatti/index.html')]]
+  for (const [nome, t] of pagine) {
+    const l = link(t)
+    ok(`${nome}: due link con logo, FIJLKAM poi FIPE, ognuno al suo sito`, [l.map((x) => attr(x.img, 'alt')), l.map((x) => attr(x.a, 'href'))], [['FIJLKAM', 'FIPE'], ['https://www.fijlkam.it', 'https://www.fipe.it']])
+    ok(`${nome}: si aprono in scheda nuova, con rel noopener noreferrer`, l.map((x) => [attr(x.a, 'target'), /\bnoopener\b/.test(attr(x.a, 'rel') ?? ''), /\bnoreferrer\b/.test(attr(x.a, 'rel') ?? '')]), [['_blank', true, true], ['_blank', true, true]])
+    ok(`${nome}: i loghi sono file del sito, con misure dichiarate`, l.map((x) => [attr(x.img, 'src'), Boolean(attr(x.img, 'width') && attr(x.img, 'height'))]), [['/risorse/fijlkam.png', true], ['/risorse/fipe.png', true]])
+    ok(`${nome}: la riga sta nel piede e dice «Siamo affiliati a»`, [riga(t) !== '', /Siamo affiliati a/.test(riga(t))], [true, true])
+  }
+  ok('i file dei loghi esistono in sito/risorse', [existsSync('sito/risorse/fijlkam.png'), existsSync('sito/risorse/fipe.png')], [true, true])
+  // width e height del markup seguono le proporzioni vere del PNG (larghezza e altezza stanno nei byte 16-24 dell'intestazione).
+  const png = (f) => { const b = readFileSync(`sito/risorse/${f}`); return [b.readUInt32BE(16), b.readUInt32BE(20)] }
+  ok('width e height dei loghi tengono le proporzioni del file', link(home).map((x, i) => { const [w, h] = png(['fijlkam.png', 'fipe.png'][i]); return Math.abs(Number(attr(x.img, 'width')) / Number(attr(x.img, 'height')) - w / h) < 0.02 }), [true, true])
+  const sen = piedeDi(c(senza, 'index.html'))
+  ok('anche senza voci di menu né di legge la riga c’è', /class="federazioni"/.test(sen), true)
+  const riq = dich(R, V, (x) => x === '.piede .federazioni a')
+  const im = dich(R, V, (x) => x === '.piede .federazioni img')
+  const rg = dich(R, V, (x) => x === '.piede .federazioni')
+  ok('ogni logo sta su un riquadro bianco da almeno 44px', [riq.background ?? riq['background-color'], parseFloat(riq['min-height'] ?? '0') >= 44, parseFloat(riq['min-width'] ?? '0') >= 44], ['#ffffff', true, true])
+  ok('il logo è alto 72px, largo in proporzione, a colori', [im.height, im.width, 'filter' in im], ['72px', 'auto', false])
+  ok('la riga va a capo sul telefono e occupa tutta la larghezza del piede', [rg['flex-wrap'], rg['flex-basis']], ['wrap', '100%'])
+  ok('niente <li> in più nel piede, niente <svg né <script', [conta(piedeDi(home), /<li>/g), /<svg|<script/.test(piedeDi(home))], [4, false])
+}
+
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)

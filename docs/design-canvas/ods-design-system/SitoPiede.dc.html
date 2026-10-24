@@ -14,7 +14,7 @@
     body { margin: 0; background: transparent; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<footer style="background: #0d2a3d; color: #ffffff; border-radius: 6px; padding: {{pad}}; display: flex; flex-direction: {{dir}}; justify-content: space-between; gap: 28px; font-family: {{inter}}; font-size: 16px; line-height: 1.5">
+<footer style="background: #0d2a3d; color: #ffffff; border-radius: 6px; padding: {{pad}}; display: flex; flex-direction: {{dir}}; flex-wrap: wrap; justify-content: space-between; gap: 28px; font-family: {{inter}}; font-size: 16px; line-height: 1.5">
   <div style="font-family: {{big}}; text-transform: uppercase; font-weight: 800; font-size: {{corpo}}; line-height: .9">Officine<br>dello Sport</div>
   <div>Via Sassi 26, Collegno<br>vicino alla metro Fermi</div>
   <div style="display: flex; flex-direction: column">
@@ -23,10 +23,17 @@
   <div style="display: flex; flex-direction: column">
     <sc-for list="{{legali}}" as="l" hint-placeholder-count="3"><span style="display: inline-flex; align-items: center; min-height: 48px">{{l}}</span></sc-for>
   </div>
+  <sc-if value="{{federazioni}}">
+    <div style="flex: 0 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px">
+      <span style="font-size: 16px">Siamo affiliati a</span>
+      <a href="https://www.fijlkam.it" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; min-height: 48px; min-width: 48px; background: #ffffff; border-radius: 6px; padding: 8px"><img src="fijlkam.png" alt="FIJLKAM" width="42" height="72" style="display: block; height: 72px; width: auto"></a>
+      <a href="https://www.fipe.it" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; min-height: 48px; min-width: 48px; background: #ffffff; border-radius: 6px; padding: 8px"><img src="fipe.png" alt="FIPE" width="55" height="72" style="display: block; height: 72px; width: auto"></a>
+    </div>
+  </sc-if>
 </footer>
 </x-dc>
-<script data-dc-script data-props='{"piccolo":{"editor":"boolean","default":false},"conOrari":{"editor":"boolean","default":false},"$preview":{"width":1344,"height":260}}'>
-// PROPOSTA home del sito: il piede. Link da 48px di altezza (oggi 20-30px) e 24px di stacco dalla chiamata finale (oggi 6px).
+<script data-dc-script data-props='{"piccolo":{"editor":"boolean","default":false},"conOrari":{"editor":"boolean","default":false},"federazioni":{"editor":"boolean","default":false},"$preview":{"width":1344,"height":260}}'>
+// PROPOSTA home del sito: il piede. `federazioni` aggiunge in fondo la riga «Siamo affiliati a» con FIJLKAM e FIPE (PNG accanto alla pagina che importa, link in scheda nuova). Link da 48px di altezza (oggi 20-30px) e 24px di stacco dalla chiamata finale (oggi 6px).
 const BIG = "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif";
 const INTER = "Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif";
 // Colori del sito (sito-approvato/token-proposta.md, A2). Il testo sul blu e sull'inchiostro e' bianco (5,4:1 e 14,8:1); sul giallo e sul chiaro e' inchiostro.
@@ -38,7 +45,7 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const pic = truthy(p.piccolo);
-    return { big: BIG, inter: INTER, dir: pic ? 'column' : 'row', pad: pic ? '28px 24px' : '40px', corpo: pic ? '44px' : '56px', link: truthy(p.conOrari) ? ['Home', 'I nostri corsi', 'Orari', 'Chi siamo', 'Contattaci'] : ['Home', 'I nostri corsi', 'Chi siamo', 'Contattaci'], legali: ['Privacy', 'Cookie', 'Contributi pubblici'] };
+    return { big: BIG, inter: INTER, dir: pic ? 'column' : 'row', pad: pic ? '28px 24px' : '40px', corpo: pic ? '44px' : '56px', link: truthy(p.conOrari) ? ['Home', 'I nostri corsi', 'Orari', 'Chi siamo', 'Contattaci'] : ['Home', 'I nostri corsi', 'Chi siamo', 'Contattaci'], federazioni: truthy(p.federazioni), legali: ['Privacy', 'Cookie', 'Contributi pubblici'] };
   }
 }
 </script>

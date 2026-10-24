@@ -130,6 +130,12 @@ export const fileDi = (slug: string) => (slug === 'home' ? 'index.html' : `${slu
  */
 const MARCHIO = '<img src="/risorse/logo.webp" srcset="/risorse/logo-224.webp 224w, /risorse/logo.webp 1060w" sizes="112px" alt="Officine dello Sport" width="1060" height="1040" decoding="async">'
 
+/** Le federazioni a cui siamo affiliati, nel piede di ogni pagina: loghi in `sito/risorse`, misure vere dei file (la prova le guarda). */
+const FEDERAZIONI = [
+  { nome: 'FIJLKAM', href: 'https://www.fijlkam.it', logo: '/risorse/fijlkam.png', width: 42, height: 72 },
+  { nome: 'FIPE', href: 'https://www.fipe.it', logo: '/risorse/fipe.png', width: 55, height: 72 },
+]
+
 /** L'ultima riga di una griglia da 8 a 16 tessere si allarga: con una in più l'ultima è a tutta riga, con due in più sono due larghe. */
 const GRIGLIE_LUNGHE = Array.from({ length: GRIGLIA_MASSIMA - 7 }, (_, i) => i + 8)
   .flatMap((n) => (n % 3 === 1 ? [`.tessere.n-${n} .tessera:last-child{grid-column:span 6}`] : n % 3 === 2 ? [`.tessere.n-${n} .tessera:nth-last-child(1),.tessere.n-${n} .tessera:nth-last-child(2){grid-column:span 3}`] : []))
@@ -469,6 +475,9 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .piede ul{margin:0;padding:0;list-style:none}
 .piede a{text-decoration:none}
 .piede a:hover{text-decoration:underline}
+.piede .federazioni{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;font-size:16px}
+.piede .federazioni a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;min-width:48px;padding:8px;background:#ffffff;border-radius:6px}
+.piede .federazioni img{display:block;height:72px;width:auto}
 .piede .fine{flex-basis:100%;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;margin-top:0;font-size:14px;color:var(--chiara)}
 .testata{padding:22px var(--margine)}
 .logo img{height:110px}
@@ -1097,8 +1106,10 @@ function piede(c: Contesto): string {
   const f = lista(voci('footer', c))
   const m = voci('menu', c)
   const recapiti = `<li>${esc(CONTATTI.indirizzo)}<span class="metro"> ${TESTI.metro}</span></li><li><a href="${esc(chiama)}">${esc(CONTATTI.telefono)}</a></li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
+  // Un <div> e non una lista: la prova conta quattro <li> nel piede.
+  const federazioni = `<div class="federazioni"><span>Siamo affiliati a</span>${FEDERAZIONI.map((x) => `<a href="${x.href}" target="_blank" rel="noopener noreferrer"><img src="${x.logo}" alt="${x.nome}" width="${x.width}" height="${x.height}" loading="lazy" decoding="async"></a>`).join('')}</div>`
   // Come nel design: il nome, poi tre colonne senza titolo (recapiti, pagine, legge).
-  return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><ul class="recapiti-piede">${recapiti}</ul>${m.length ? `<nav class="piede-menu" aria-label="Pagine">${m.map((x) => `<a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a>`).join('')}</nav>` : ''}${f ? `<ul class="piede-legale">${f}</ul>` : ''}</footer>`
+  return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><ul class="recapiti-piede">${recapiti}</ul>${m.length ? `<nav class="piede-menu" aria-label="Pagine">${m.map((x) => `<a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a>`).join('')}</nav>` : ''}${f ? `<ul class="piede-legale">${f}</ul>` : ''}${federazioni}</footer>`
 }
 
 /** La barra del telefono in fondo alla Home: «Iscriviti» verso il modulo e «Chiama». Il nome accessibile dice anche «una settimana a 10 euro»: è la prova che costa così. */
