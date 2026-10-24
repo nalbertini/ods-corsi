@@ -33,7 +33,7 @@ const conta = (t, re) => (t.match(re) || []).length
 const RADICE = 'https://app.officinedellosport.it/'
 
 console.log('\nAccedi in testata')
-for (const f of Object.keys(r).filter((x) => x.endsWith('.html'))) {
+for (const f of Object.keys(r).filter((x) => x.endsWith('.html') && !x.startsWith('google'))) {
   const testata = (r[f].match(/<header class="testata">.*?<\/header>/s) || [''])[0]
   const accedi = testata.match(/<a [^>]*>Accedi<\/a>/g) || []
   ok(`${f}: due «Accedi» (testata e menu) verso la radice dell'app`, accedi.length === 2 && accedi.every((a) => a.includes(`href="${RADICE}"`)), true)
