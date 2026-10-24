@@ -13,6 +13,11 @@ interface ImportMetaEnv {
    * rinnovare il collegamento fatto dal timer. Facoltativo.
    */
   readonly VITE_SPOTIFY_CLIENT_ID?: string
+  /**
+   * Il codice del sito su GoatCounter (quello di `SITO_STATISTICHE`): con questo il
+   * modulo d'iscrizione conta due eventi, senza cookie. Assente = non conta niente.
+   */
+  readonly VITE_SITO_STATISTICHE?: string
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv

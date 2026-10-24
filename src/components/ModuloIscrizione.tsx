@@ -13,6 +13,8 @@ import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import { useListino } from './Costi'
 import type { SceltaModulo } from '../lib/firma'
+import { haUnServer } from '../lib/dati'
+import { contaIscrizione, EVENTI_ISCRIZIONE } from '../lib/contaIscrizione'
 import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
 import { chiavePreparo, chiedeRicevuta, comePuoiPagare, cosaNonVaModo, ERRORE_SATISPAY, esitoPagamento, modoPagamento, nonSemplice, pagamentoDaMandare, senzaVoceDelCorso, soldi, statoRiquadroPaga, type PagamentoPrima, type Pago } from '../lib/satispay'
@@ -142,6 +144,12 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
 
   // Finché il modulo è aperto ha l'aspetto del sito, non quello del tema dell'app.
   useEffect(() => apriAspettoModulo(), [])
+
+  // Si contano solo le richieste vere dalla pagina pubblica: né la prova né l'area degli iscritti (`nucleo`).
+  const contare = haUnServer && !nucleo
+  useEffect(() => {
+    if (contare) void contaIscrizione(EVENTI_ISCRIZIONE.aperto)
+  }, [contare])
 
   useEffect(() => {
     let vivo = true
@@ -436,6 +444,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       setFase({ tipo: 'compila' })
       return setGuaio(e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco')
     }
+    if (contare) void contaIscrizione(EVENTI_ISCRIZIONE.fatta)
     await carica(id, daChiedere.map((f) => f.tipo), tutti)
   }
 
