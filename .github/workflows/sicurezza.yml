@@ -53,7 +53,6 @@ jobs:
     # Il 24-10-2026 la prima scansione trova 3 «high» già su main (@puckeditor/core
     # → @tiptap/html → happy-dom): bloccherebbero ogni PR. Finché non si
     # correggono resta solo un avviso; poi si toglie questa riga.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -62,5 +61,7 @@ jobs:
           node-version: 22
 
       # Solo ciò che finisce in produzione: vite, esbuild e simili sono di sviluppo.
-      - run: npm audit --omit=dev --audit-level=high
-      - run: npm audit --omit=dev --audit-level=high --prefix timer
+      # `continue-on-error` farebbe comparire la PR come instabile: l'avviso basta.
+      - run: |
+          npm audit --omit=dev --audit-level=high || echo "::warning::npm audit: dipendenze di produzione con gravità alta"
+          npm audit --omit=dev --audit-level=high --prefix timer || echo "::warning::npm audit (timer): dipendenze di produzione con gravità alta"
