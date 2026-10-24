@@ -659,5 +659,29 @@ console.log('\nLa parte ISCRIVITI nella pagina generata')
   ok('titolo e frase della parte arrivano escapati: nessun tag entra', [/<script>alert/.test(senzaDati(a)), /<img src=x/.test(a), invitoDi(a).includes('&lt;script&gt;alert(1)&lt;/script&gt;'), invitoDi(a).includes('&lt;img src=x onerror=alert(1)&gt;')], [false, false, true, true])
 }
 
+// ---------------------------------------------------------------------------
+console.log('\nLa Dichiarazione di accessibilità: quarta pagina di legge')
+{
+  const SLUG = 'dichiarazione-accessibilita'
+  const risposta = (slug) => ({ slug, titolo: 'Dichiarazione di accessibilità', descrizione: 'd', testo: '<p>Testo</p>', pubblicata_il: null })
+  const dalDatabase = (pubblicata) =>
+    prova(() => g.datiDaRisposte(DOMINIO, [risposta('home'), risposta('privacy'), ...(pubblicata ? [risposta(SLUG)] : [])], [{ dove: 'footer', ordine: 1, etichetta: 'Privacy policy', slug: 'privacy', indirizzo: null }, ...(pubblicata ? [{ dove: 'footer', ordine: 2, etichetta: 'Accessibilità', slug: SLUG, indirizzo: null }] : [])], []))
+  ok('è tra le pagine di legge', g.PAGINE_DI_LEGGE?.includes(SLUG), true)
+  ok('dalle risposte del database la pagina arriva come pagina di legge', dalDatabase(true).pagine?.find((p) => p.slug === SLUG)?.diLegge, true)
+  const con = genera(dati({ pagine: [pag('home'), pag('judo'), pag('contatti'), pag('privacy', { diLegge: true }), pag(SLUG, { diLegge: true, titolo: 'Dichiarazione di accessibilità' })], menu: [voce('footer', 1, 'Privacy policy', 'privacy'), voce('footer', 2, 'Accessibilità', SLUG)] }))
+  const senza = genera(dati({ pagine: [pag('home'), pag('judo'), pag('contatti'), pag('privacy', { diLegge: true })], menu: [voce('footer', 1, 'Privacy policy', 'privacy'), voce('footer', 2, 'Accessibilità', SLUG)] }))
+  const piede = (r, f) => c(r, f).match(/<footer[\s\S]*<\/footer>/)?.[0] ?? ''
+  const opzionale = (r) => c(r, 'llms.txt').split('## Opzionale')[1]?.split('\n## ')[0] ?? ''
+  ok('pubblicata: il file dichiarazione-accessibilita/index.html c’è', esiste(con, `${SLUG}/index.html`), true)
+  ok('pubblicata: pagina informativa, senza l’invito «Iscriviti»', [/class="[^"]*\bpagina-testo\b/.test(c(con, `${SLUG}/index.html`)), conta(c(con, `${SLUG}/index.html`), /class="invito"/g)], [true, 0])
+  ok('pubblicata: la voce «Accessibilità» è nel footer di tutte le pagine', html(con).map((f) => piede(con, f).includes('>Accessibilità</a>')), html(con).map(() => true))
+  ok('pubblicata: la voce porta alla pagina', /<a [^>]*href="\/dichiarazione-accessibilita\/"[^>]*>Accessibilità<\/a>/.test(piede(con, 'judo/index.html')), true)
+  ok('pubblicata: riga in sitemap.xml', c(con, 'sitemap.xml').includes(`<loc>${DOMINIO}/${SLUG}/</loc>`), true)
+  ok('pubblicata: riga in llms.txt sotto «Opzionale»', opzionale(con).includes(`(${DOMINIO}/${SLUG}/)`), true)
+  ok('non pubblicata: nessun file', [esiste(senza, `${SLUG}/index.html`), Object.keys(senza).some((f) => f.includes(SLUG))], [false, false])
+  ok('non pubblicata: nessuna riga in sitemap e llms.txt', [c(senza, 'sitemap.xml').includes(SLUG), c(senza, 'llms.txt').includes(SLUG)], [false, false])
+  ok('non pubblicata: nessuna voce nel footer generato', html(senza).map((f) => /Accessibilità|dichiarazione-accessibilita/.test(piede(senza, f))), html(senza).map(() => false))
+}
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)

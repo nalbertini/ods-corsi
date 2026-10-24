@@ -222,7 +222,7 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   scrivono nell'app, senza WordPress. Ogni pagina ha una **bozza**, che non cambia il sito, e un testo
   **pubblicato**, che cambia solo con PUBBLICA; il testo ricco passa da un editor che ammette solo titoli,
   grassetto, corsivo, elenchi, citazione, link e pulsante, e viene ripulito prima di salvarlo
-  (`src/lib/sitoTesto.ts`, `src/lib/sitoPagine.ts`). Le pagine di legge (privacy, cookie, contributi pubblici)
+  (`src/lib/sitoTesto.ts`, `src/lib/sitoPagine.ts`). Le pagine di legge (privacy, cookie, contributi pubblici, dichiarazione di accessibilità: questa parte come bozza a segnaposto, con un avviso prima di PUBBLICA)
   restano sempre sul sito. Le scrive solo la segreteria; chi non ha l'accesso legge solo il pubblicato
   (`supabase/56-sito.sql`). Le pagine pubblicate diventano il sito vero con `npm run sito:genera`
   (`src/lib/sitoGenera.ts`, `scripts/genera-sito.mjs`): file statici senza codice né servizi esterni, a parte il contatore delle visite qui sotto (c'è solo un blocco di dati strutturati JSON-LD per Google e gli assistenti AI:

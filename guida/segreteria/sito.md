@@ -109,8 +109,29 @@ parti, ma restano come prima finché non salvi: la prima volta che premi **Salva
 bozza** o **Pubblica** l'app chiede, perché da lì in poi la pagina si scrive a parti.
 Sul sito non cambia niente finché non pubblichi.
 
-Le pagine di legge (**privacy, cookie, contributi pubblici**) hanno solo la parte
-**Testo**, l'indirizzo fisso e niente orario: non si nascondono né si cancellano.
+Le pagine di legge (**privacy, cookie, contributi pubblici, dichiarazione di
+accessibilità**) hanno solo la parte **Testo**, l'indirizzo fisso e niente
+orario: non si nascondono né si cancellano.
+
+### La dichiarazione di accessibilità
+
+Parte come **bozza mai pubblicata**, con una traccia di testo piena di
+`[DA COMPILARE: …]`: nome di chi gestisce il sito, stato di conformità,
+contenuti non accessibili, data e metodo dell'ultima verifica, contatto per le
+segnalazioni. Compilala solo dopo aver verificato davvero il sito (prova da
+tastiera, lettore di schermo, controllo automatico): scrivere «conforme» senza
+averlo controllato è falso.
+
+- Sul sito non compare, e la voce **Accessibilità** nel footer neppure, finché
+  non premi **PUBBLICA**.
+- Se nel testo restano dei `[DA COMPILARE]`, prima di pubblicare l'app chiede
+  «Pubblicare lo stesso?»: **Torna a scrivere** per finire il testo.
+- La pagina non si cancella e non si nasconde: si corregge il testo e si
+  ripubblica.
+- Riguarda solo il sito pubblico: l'app per iscritti, segreteria e istruttori
+  ne è fuori, e la traccia lo dice.
+- Se la pagina non compare nell'editor, va lanciato `107-sito-accessibilita.sql`:
+  chiedi a chi cura l'app.
 
 Se compare «Le pagine non si possono scrivere: il database non è ancora
 aggiornato», va lanciato `62-sito-pezzi.sql`: chiedi a chi cura l'app.
@@ -191,7 +212,7 @@ L'app non ti lascia salvare se una voce non va, e dice quale:
 - una voce che non porta da nessuna parte, o a una pagina nascosta o mai
   pubblicata;
 - un indirizzo che non comincia con `https://`, `mailto:`, `tel:` o `/`;
-- nel footer, una pagina di legge mancante o non pubblicata.
+- nel footer, una pagina di legge mancante (anche se ancora in bozza va bene).
 
 ## Il sito vero
 
@@ -204,7 +225,7 @@ secondo momento: finché non è fatto, **Pubblica** prepara il testo ma il sito
 che si vede è ancora quello vecchio.
 
 Il sito nuovo ha sempre una **Home**: senza una Home pubblicata non si genera.
-Le pagine di legge (privacy, cookie, contributi pubblici) hanno l'impaginazione
+Le pagine di legge (privacy, cookie, contributi pubblici, dichiarazione di accessibilità) hanno l'impaginazione
 solo testo; le altre hanno in cima il titolo grande (in maiuscolo) e, sotto, la frase della
 **descrizione**. In alto a destra c'è il solo pulsante «Iscriviti»; l'invito giallo in fondo
 («Vieni a provare.», le prove da 3 € e 10 €, **Guarda gli orari** e, sotto, quattro riquadri

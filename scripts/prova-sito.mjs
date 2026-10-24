@@ -10,6 +10,7 @@
 // una lista di attacchi noti.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
+import { readFileSync } from 'node:fs'
 
 // Se un modulo non c'è ancora, i suoi casi falliscono uno a uno (non si ferma tutto).
 const carica = async (file) => {
@@ -34,6 +35,9 @@ const carica = async (file) => {
 const t = await carica('src/lib/sitoTesto.ts')
 const p = await carica('src/lib/sitoPagine.ts')
 const sp = await carica('src/lib/sitoProva.ts')
+const ac = await carica('src/lib/sitoAccessibilita.ts')
+const pz = await carica('src/lib/sitoPezzi.ts')
+const sg = await carica('src/lib/sitoGenera.ts')
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -236,7 +240,8 @@ ok('footer senza Privacy → nomina «Privacy»', nomina(menu('footer', [voce('C
 ok('footer senza Cookie → nomina «Cookie»', nomina(menu('footer', [voce('Privacy', '3')]), 'Cookie'), true)
 ok('footer vuoto → nomina tutte e due', nomina(menu('footer', []), 'Privacy') && nomina(menu('footer', []), 'Cookie'), true)
 ok('footer: legge nascosta → nomina il titolo', nomina(menu('footer', leggi, pagine.map((x) => (x.id === '3' ? { ...x, nascosta: true } : x))), 'Privacy'), true)
-ok('footer: legge mai pubblicata → nomina il titolo', nomina(menu('footer', leggi, pagine.map((x) => (x.id === '4' ? { ...x, pubblicato: null } : x))), 'Cookie'), true)
+// Cambiato con la Dichiarazione di accessibilità: nel footer una pagina di legge può esserci anche prima di essere pubblicata.
+ok('footer: legge mai pubblicata ma nel footer → nessun problema', menu('footer', leggi, pagine.map((x) => (x.id === '4' ? { ...x, pubblicato: null } : x))), [])
 ok('footer: la legge richiede anche pagine non di legge? no', menu('footer', [...leggi, voce('Chi siamo', '1')]), [])
 
 console.log('\nRiordinare le voci')
@@ -340,6 +345,77 @@ ok('footer: stessa frase del database', menu('footer', [voce('Cookie', '4')])[0]
 }
 
 // ---------------------------------------------------------------------------
+console.log('\nLa Dichiarazione di accessibilità: la pagina di legge nel footer')
+{
+  const SLUG = 'dichiarazione-accessibilita'
+  ok('lo slug è tra le pagine di legge del sito', sg.PAGINE_DI_LEGGE?.includes(SLUG), true)
+  ok('lo slug è riservato: una pagina nuova non lo prende', p.controllaSlug?.(SLUG, []), 'Questo indirizzo serve al sito: scegline un altro')
+  const acc = (o = {}) => pag('7', 'Dichiarazione di accessibilità', { diLegge: true, pubblicato: null, ...o })
+  const tutte = (o) => [...pagine, acc(o)]
+  const footer = [...leggi, voce('Accessibilità', '7')]
+  ok('legge non pubblicata ma nel footer → nessun problema', menu('footer', footer, tutte()), [])
+  ok('legge assente dal footer → «Nel footer deve esserci…»', nomina(menu('footer', leggi, tutte()), 'Nel footer deve esserci «Dichiarazione di accessibilità»'), true)
+  ok('legge presente ma nascosta → errore', nomina(menu('footer', footer, tutte({ nascosta: true })), 'Dichiarazione di accessibilità'), true)
+  ok('legge pubblicata e nel footer → nessun problema', menu('footer', footer, tutte({ pubblicato: '<p>x</p>' })), [])
+  ok('una pagina normale mai pubblicata nel footer resta un errore', nomina(menu('footer', [...footer, voce('Bozza', '5')], tutte()), 'Bozza'), true)
+  ok('nel menu in alto la legge non pubblicata resta un errore', nomina(menu('menu', [voce('Accessibilità', '7')], tutte()), 'Accessibilità'), true)
+}
+
+console.log('\nI segnaposto [DA COMPILARE]')
+{
+  const n = (x) => prova(() => ac.segnapostoRimasti(x))
+  const pezzi = (...html) => ({ content: html.map((h, i) => ({ type: 'testo', props: { id: `p${i}`, html: h } })) })
+  ok('testo vuoto → 0', n(''), 0)
+  ok('testo pulito → 0', n('<p>Il sito è stato verificato il 3 novembre.</p>'), 0)
+  ok('un segnaposto → 1', n('<p>Stato: [DA COMPILARE: conforme o parzialmente conforme]</p>'), 1)
+  ok('tre segnaposto → 3', n('<p>[DA COMPILARE: a]</p><p>[DA COMPILARE: b] e [DA COMPILARE: c]</p>'), 3)
+  ok('maiuscole e minuscole miste → contati', n('<p>[da compilare: a] [Da Compilare: b]</p>'), 2)
+  ok('un segnaposto spezzato da un grassetto → contato', n('<p>[DA <strong>COMPILARE</strong>: a]</p>'), 1)
+  ok('una parola vicina non è un segnaposto', n('<p>Da compilare a mano? No: è tutto fatto.</p>'), 0)
+  ok('a pezzi: si sommano i blocchi', n(pezzi('<p>[DA COMPILARE: a]</p>', '<p>niente</p>', '<p>[DA COMPILARE: b] [DA COMPILARE: c]</p>')), 3)
+  ok('a pezzi puliti → 0', n(pezzi('<p>fatto</p>', '<p>fatto</p>')), 0)
+  ok('a pezzi vuoti → 0', n({ content: [] }), 0)
+  // L'editor conta sui pezzi che escono dalla bozza, non sull'HTML: la conversione non deve perderne.
+  ok('la traccia aperta a pezzi ha gli stessi segnaposto', n(pz.htmlInPezzi(ac.TRACCIA_ACCESSIBILITA)), n(ac.TRACCIA_ACCESSIBILITA))
+}
+
+console.log('\nIl testo-traccia della Dichiarazione')
+{
+  const T = ac.TRACCIA_ACCESSIBILITA
+  ok('la traccia è un testo', typeof T === 'string' && T.length > 0, true)
+  const t = typeof T === 'string' ? T : ''
+  const testo = t.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ')
+  ok('ha almeno quattro segnaposto', ac.segnapostoRimasti?.(t) >= 4, true)
+  for (const [cosa, re] of [['lo stato di conformità', /conformit/i], ['i contenuti non accessibili', /non accessibil/i], ['la data della verifica', /data/i], ['il metodo della verifica', /metodo/i], ['il contatto per le segnalazioni', /segnalazion/i]]) {
+    ok(`un segnaposto per ${cosa}`, [...testo.matchAll(/\[DA COMPILARE[^\]]*\]/gi)].some((m) => re.test(m[0])), true)
+  }
+  // Mai un'affermazione senza il segnaposto accanto: la frase («è conforme», «accessibile a tutti») deve stare nella stessa frase di un [DA COMPILARE].
+  const frasi = testo.split(/(?<=[.!?])\s+/)
+  const nudi = frasi.filter((f) => /\b(è|sono|risulta|risultano)\s+(pienamente\s+|totalmente\s+)?(conform|accessibil)/i.test(f) && !/\[DA COMPILARE/i.test(f))
+  ok('nessuna frase «è conforme» senza segnaposto accanto', t !== '' ? nudi : ['(traccia mancante)'], [])
+  ok('dice che copre solo il sito pubblico', /sito pubblico/i.test(testo), true)
+  ok('dice che non copre l’app per iscritti, segreteria e istruttori', [/iscritti/i.test(testo), /segreteria/i.test(testo), /istruttori/i.test(testo)], [true, true, true])
+}
+
+console.log('\nLa Dichiarazione in modalità prova')
+{
+  const s = ini()
+  const d = s.pagine.find((x) => x.slug === 'dichiarazione-accessibilita')
+  ok('la quarta pagina di legge c’è, bozza non pubblicata', [d?.titolo, d?.diLegge, d?.pubblicato, d?.nascosta], ['Dichiarazione di accessibilità', true, null, false])
+  ok('la bozza è la traccia, con i segnaposto', [d?.bozza !== undefined && d.bozza === ac.TRACCIA_ACCESSIBILITA, ac.segnapostoRimasti?.(d?.bozza ?? '') > 0], [true, true])
+  // La traccia vive due volte (app e migrazione): qui si tiene che non si allontanino.
+  ok('la migrazione 107 scrive la stessa traccia', prova(() => readFileSync('supabase/107-sito-accessibilita.sql', 'utf8').includes(String(ac.TRACCIA_ACCESSIBILITA).replaceAll("'", "''"))), true)
+  ok('la voce «Accessibilità» è in coda al footer', s.footer.map((v) => v.etichetta), ['Privacy policy', 'Cookie policy', 'Contributi pubblici', 'Accessibilità'])
+  ok('la voce porta alla pagina', s.footer.at(-1)?.paginaId, d?.id)
+  ok('il footer di partenza passa il controllo', prova(() => p.controllaMenu('footer', s.footer, s.pagine)), [])
+  ok('si può risalvare il footer com’è, con la pagina ancora in bozza', prova(() => sp.salvaMenu(s, 'footer', s.footer)).footer?.length, 4)
+  ok('togliere la voce dal footer è rifiutato', /Nel footer deve esserci «Dichiarazione di accessibilità»/.test(nega(() => sp.salvaMenu(s, 'footer', s.footer.slice(0, 3)))), true)
+  ok('non si nasconde', /devono restare/.test(nega(() => sp.nascondi(s, d.id, true))), true)
+  ok('non si cancella', /devono restare/.test(nega(() => sp.cancella(s, d.id))), true)
+  ok('l’indirizzo non si cambia', /tengono il loro indirizzo/.test(nega(() => sp.cambiaIndirizzo(s, d.id, 'accessibilita'))), true)
+  ok('una pagina nuova non può prendere lo slug', /serve al sito/.test(nega(() => sp.nuovaPagina(s, 'Altra', 'dichiarazione-accessibilita'))), true)
+}
+
 console.log('\nDopo il collaudo')
 for (const ind of ['https://', 'mailto:', 'https://a b', '/<script>', 'https://x.it/"onmouseover="a', '/' + 'a'.repeat(300)]) {
   ok(`indirizzo «${ind.slice(0, 30)}» → nomina la voce`, nomina(menu('menu', [voce('Fuori', null, ind)]), 'Fuori'), true)

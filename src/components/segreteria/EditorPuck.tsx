@@ -6,6 +6,7 @@ import type { DatiSegreteria } from '../../lib/segreteria'
 import { conteggio, controllaSlug, LIMITE_DESCRIZIONE, LIMITE_TITOLO, PAROLE_STATO, pagineDiLeggeProtette, statoPagina, type PaginaSito } from '../../lib/sitoPagine'
 import { CSS_SITO, invito, parteSulSito } from '../../lib/sitoGenera'
 import { CONTATTI } from '../../lib/sito'
+import { segnapostoRimasti } from '../../lib/sitoAccessibilita'
 import { avvisoIstruttori, conIndirizziGiusti, cosaNonVaPezzi, cosaNonVaPubblicare, cosaNonVaSalvare, daSalvare, dividiInParti, divisibileInParti, MASSIMO_DOMANDE, MASSIMO_PULSANTI, notaPaginaIstruttore, pagineIstruttore, parteAmmessa, pezziDaAprire, pezziInHtml, salvaAParti, senzaPunto, TESTO_DEL_SITO, type BozzaPezzi, type Domanda, type DovePorta, type Pezzo, type Pulsante } from '../../lib/sitoPezzi'
 import { pulisciTesto } from '../../lib/sitoTesto'
 import { ESTENSIONI_TESTO, indirizzoDelLink } from '../../lib/sitoTiptap'
@@ -587,6 +588,9 @@ export default function EditorPuck({ d, pagina, pagine, verso, onChiudi, ricaric
   }
   const pubblica = async () => {
     if (!(await chiedi(`Pubblicare «${ora.titolo.trim() || pagina.titolo}»? Il sito mostrerà la pagina nuova al prossimo aggiornamento.`, 'Pubblica'))) return
+    // Un segnaposto pubblicato è una frase sbagliata davanti a tutti (e, nella dichiarazione, una conformità non verificata): si chiede, non si blocca.
+    const segnaposto = segnapostoRimasti(ora.pezzi)
+    if (segnaposto > 0 && !(await chiedi(`Nel testo ${segnaposto === 1 ? 'c’è ancora 1 [DA COMPILARE]' : `ci sono ancora ${segnaposto} [DA COMPILARE]`}. Pubblicare lo stesso?`, 'Pubblica lo stesso', { no: 'Torna a scrivere', restare: true }))) return
     if (sporca && !(await aParti('Salva a parti e pubblica', 'Il sito mostrerà il testo com’è adesso.'))) return
     await fai(
       async () => {
