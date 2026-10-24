@@ -1,0 +1,14 @@
+{
+ "v": 3,
+ "createdOnFiles": {"v": 1, "at": "2026-10-25T12:00:00Z"},
+ "title": "Icone sulle linguette della segreteria",
+ "launch": {"view": "canvas"},
+ "boards": {
+  "Main.dc.html": {"x": 0, "y": 140, "w": 920, "h": 1080, "title": "Desktop · oggi e proposta"},
+  "Telefono.dc.html": {"x": 1000, "y": 140, "w": 390, "h": 1080, "title": "Telefono · oggi e proposta"},
+  "SchedeIcone.dc.html": {"x": 1470, "y": 140, "w": 520, "h": 48, "title": "Componente SchedeIcone"}
+ },
+ "order": ["Main.dc.html", "Telefono.dc.html", "SchedeIcone.dc.html"],
+ "notes": {"titolo": {"x": 0, "y": 0, "maxW": 1990, "kind": "title1", "text": "Icone sulle linguette: Contabilità, corso, Presenze"}},
+ "designSystems": []
+}

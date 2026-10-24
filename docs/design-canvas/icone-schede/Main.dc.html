@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Linguette con icone, desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+<style>* { box-sizing: border-box; } body { margin: 0; }</style>
+</helmet>
+<div style="width: 920px; height: 1080px; padding: 32px 40px; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Arial, sans-serif; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.18em; color: #f4c31b">PROPOSTA · ICONE SULLE LINGUETTE</div>
+<div style="font-size: 15px; line-height: 1.45; color: #c9c9c4; max-width: 760px">Le tre barre a schede della segreteria oggi hanno solo il nome. Qui ognuna ha la sua icona, presa dal menu (18px, tratto sottile, decorativa), accanto alla parola. Nomi, conteggi e altezza (44px) restano com'erano.</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8c8c88">CONTABILITÀ · OGGI</div>
+<dc-import name="SchedeIcone" barra="contabilita" acceso="{{ 0 }}" conIcone="{{ false }}" hint-size="100%,48px"></dc-import>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #f4c31b; margin-top: 6px">CONTABILITÀ · CON LE ICONE</div>
+<dc-import name="SchedeIcone" barra="contabilita" acceso="{{ 0 }}" hint-size="100%,48px"></dc-import>
+<dc-import name="SchedeIcone" barra="contabilita" acceso="{{ 2 }}" hint-size="100%,48px"></dc-import>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8c8c88">CORSO · OGGI</div>
+<dc-import name="SchedeIcone" barra="corso" acceso="{{ 0 }}" conIcone="{{ false }}" hint-size="100%,48px"></dc-import>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #f4c31b; margin-top: 6px">CORSO · CON LE ICONE</div>
+<dc-import name="SchedeIcone" barra="corso" acceso="{{ 0 }}" hint-size="100%,48px"></dc-import>
+<dc-import name="SchedeIcone" barra="corso" acceso="{{ 1 }}" hint-size="100%,48px"></dc-import>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #8c8c88">PRESENZE · OGGI</div>
+<dc-import name="SchedeIcone" barra="presenze" acceso="{{ 0 }}" conIcone="{{ false }}" hint-size="100%,48px"></dc-import>
+<div style="font-family: 'Saira Condensed', Arial, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; color: #f4c31b; margin-top: 6px">PRESENZE · CON LE ICONE</div>
+<dc-import name="SchedeIcone" barra="presenze" acceso="{{ 0 }}" hint-size="100%,48px"></dc-import>
+<dc-import name="SchedeIcone" barra="presenze" acceso="{{ 1 }}" hint-size="100%,48px"></dc-import>
+</div>
+
+<div style="border-top: 1px solid #333333; padding-top: 14px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 32px; font-size: 14px; line-height: 1.5; color: #c9c9c4">
+<div><b style="color: #f2f2f0">Movimenti</b> · frecce che vanno e vengono (quella delle casse)</div>
+<div><b style="color: #f2f2f0">Dati</b> · il foglio (quello di «Compensi» nel menu)</div>
+<div><b style="color: #f2f2f0">Bilancio</b> · le barre (come «Statistiche»)</div>
+<div><b style="color: #f2f2f0">Iscritti</b> · le persone (come «Iscritti» nel menu)</div>
+<div><b style="color: #f2f2f0">Voci</b> · il cartellino (come «Listino»)</div>
+<div><b style="color: #f2f2f0">Il mese</b> · il calendario (come «Settimana»)</div>
+<div><b style="color: #f2f2f0">Casse</b> · la banconota (quella delle casse)</div>
+<div><b style="color: #f2f2f0">Segnalate</b> · la bandierina (come «Segnalazioni»)</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
