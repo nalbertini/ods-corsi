@@ -129,4 +129,4 @@ export function useArea(): Area {
 }
 
 /** Il link degli ordini da mandare ai genitori: lo copia anche il menu (COPIA LINK ORDINI). */
-export const LINK_ORDINI = indirizzo(INDIRIZZI.iscrizioni) + INDIRIZZO_VESTIARIO
+export const linkOrdini = () => indirizzo(INDIRIZZI.iscrizioni) + INDIRIZZO_VESTIARIO

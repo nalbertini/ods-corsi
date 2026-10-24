@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
-import { LINK_ORDINI } from '../../lib/aree'
+import { linkOrdini } from '../../lib/aree'
 import {
   causaleVestiario,
   cosaNonVaOrdine,
@@ -144,7 +144,7 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
   const guaio = dv.guaio ?? raccolte.guaio ?? catalogo.guaio
 
   const vedi = (
-    <a className="sg-btn sg-btn-linea" href={LINK_ORDINI} target="_blank" rel="noopener">
+    <a className="sg-btn sg-btn-linea" href={linkOrdini()} target="_blank" rel="noopener">
       Vedi la pagina ↗
     </a>
   )

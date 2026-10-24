@@ -41,7 +41,7 @@ import { PersonaBanco } from './banco/PersonaBanco'
 import { CercaIscritto } from './CercaIscritto'
 import type { Ricercata } from '../../lib/ricerca'
 import { indirizzoPagina } from '../../lib/guida'
-import { indirizzo, INDIRIZZI, LINK_ORDINI } from '../../lib/aree'
+import { indirizzo, INDIRIZZI, linkOrdini } from '../../lib/aree'
 import { linkDellaSegreteria } from '../../lib/provenienza'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
@@ -447,7 +447,7 @@ export function Segreteria({
           link={
             <>
               <CopiaLink link={LINK_PUBBLICO} testo="Copia link iscrizioni" perche="Il link per iscriversi:" />
-              <CopiaLink link={LINK_ORDINI} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" />
+              <CopiaLink link={linkOrdini()} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" />
             </>
           }
           guida={guida}
@@ -534,7 +534,7 @@ export function Segreteria({
           {conSegreteria && (
             <>
               <CopiaLink link={LINK_PUBBLICO} testo="Copia link iscrizioni" perche="Il link per iscriversi:" />
-              <CopiaLink link={LINK_ORDINI} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" />
+              <CopiaLink link={linkOrdini()} testo="Copia link ordini" perche="Il link per ordinare il vestiario:" />
             </>
           )}
         </div>
