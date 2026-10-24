@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { eUnTablet } from './tablet'
 import { areaDelPercorso } from './percorso'
-import { eIndirizzoGuida, INDIRIZZO_AREE } from './cancelletti'
+import { eIndirizzoGuida, INDIRIZZO_AREE, INDIRIZZO_VESTIARIO } from './cancelletti'
 
 /**
  * Le facce dell'app, ognuna col suo indirizzo vero e la sua porta:
@@ -127,3 +127,6 @@ export function useArea(): Area {
   }, [])
   return area
 }
+
+/** Il link degli ordini da mandare ai genitori: lo copia anche il menu (COPIA LINK ORDINI). */
+export const linkOrdini = () => indirizzo(INDIRIZZI.iscrizioni) + INDIRIZZO_VESTIARIO

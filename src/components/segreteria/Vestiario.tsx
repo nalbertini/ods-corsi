@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
-import { indirizzo, INDIRIZZI } from '../../lib/aree'
-import { INDIRIZZO_VESTIARIO } from '../../lib/cancelletti'
+import { linkOrdini } from '../../lib/aree'
 import {
   causaleVestiario,
   cosaNonVaOrdine,
@@ -51,8 +50,6 @@ import { chiedi, Campo, lasciare, Guaio, Riga as Titolo, SchedaPiena, Testa, use
  * segno a mano. Le regole stanno in `vestiario.ts` e `vestiarioPagina.ts`.
  */
 
-/** Il link degli ordini da mandare ai genitori: lo copia anche il menu (COPIA LINK ORDINI). */
-export const LINK_ORDINI = indirizzo(INDIRIZZI.iscrizioni) + INDIRIZZO_VESTIARIO
 
 type Filtro = 'tutti' | StatoOrdine
 type Pagina = { a: 'elenco' } | { a: 'ordine'; id: string } | { a: 'nuovo' } | { a: 'catalogo' }
@@ -147,7 +144,7 @@ export function Vestiario({ onCambiato }: { onCambiato: () => void }) {
   const guaio = dv.guaio ?? raccolte.guaio ?? catalogo.guaio
 
   const vedi = (
-    <a className="sg-btn sg-btn-linea" href={LINK_ORDINI} target="_blank" rel="noopener">
+    <a className="sg-btn sg-btn-linea" href={linkOrdini()} target="_blank" rel="noopener">
       Vedi la pagina ↗
     </a>
   )
