@@ -2,6 +2,7 @@ import { controllaMenu, controllaSlug, MASSIMO_DESCRIZIONE, MASSIMO_TITOLO, pagi
 import { testoSicuro } from './sitoTesto'
 import { pezziInHtml, pezziValidi, type PezziPagina } from './sitoPezzi'
 import type { OrarioSito } from './sitoOrari'
+import { TRACCIA_ACCESSIBILITA } from './sitoAccessibilita'
 
 /**
  * Le regole di `supabase/56-sito.sql` rifatte in memoria, per la modalità
@@ -59,6 +60,8 @@ export function sitoIniziale(): StatoSito {
     pagina('privacy', 'Privacy policy', { diLegge: true, bozza: '<p>Informativa.</p>', pubblicato: '<p>Informativa.</p>', pubblicataIl: '2026-10-02T09:00:00.000Z' }),
     pagina('cookie', 'Cookie policy', { diLegge: true, bozza: '<p>Il sito non usa cookie.</p>', pubblicato: '<p>Il sito non usa cookie.</p>', pubblicataIl: '2026-10-02T09:00:00.000Z' }),
     pagina('contributi-pubblici', 'Contributi pubblici', { diLegge: true, bozza: '<p>Elenco dei contributi pubblici ricevuti.</p>', pubblicato: '<p>Elenco dei contributi pubblici ricevuti.</p>', pubblicataIl: '2026-10-02T09:00:00.000Z' }),
+    // Come dopo `107-sito-accessibilita.sql`: bozza con segnaposto, mai pubblicata.
+    pagina('dichiarazione-accessibilita', 'Dichiarazione di accessibilità', { diLegge: true, bozza: TRACCIA_ACCESSIBILITA }),
   ]
   const id = (slug: string) => `sp-${slug}`
   return {
@@ -71,6 +74,7 @@ export function sitoIniziale(): StatoSito {
       { etichetta: 'Privacy policy', paginaId: id('privacy'), indirizzo: null },
       { etichetta: 'Cookie policy', paginaId: id('cookie'), indirizzo: null },
       { etichetta: 'Contributi pubblici', paginaId: id('contributi-pubblici'), indirizzo: null },
+      { etichetta: 'Accessibilità', paginaId: id('dichiarazione-accessibilita'), indirizzo: null },
     ],
   }
 }

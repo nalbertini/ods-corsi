@@ -538,6 +538,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regprocedure('public.satispay_prepara_saldo(uuid,uuid)') is not null
     and to_regprocedure('public.satispay_saldo_stato(uuid,uuid)') is not null),
   ('104-importa-banca.sql', 'si può annullare in un colpo un''intera importazione dal file della banca',
-    to_regprocedure('public.annulla_importazione_banca(timestamptz)') is not null)
+    to_regprocedure('public.annulla_importazione_banca(timestamptz)') is not null),
+  ('107-sito-accessibilita.sql', 'la Dichiarazione di accessibilità del sito, con la voce nel footer',
+    exists (select 1 from sito_pagine where slug = 'dichiarazione-accessibilita' and di_legge)
+    and exists (select 1 from sito_menu m join sito_pagine p on p.id = m.pagina_id where p.slug = 'dichiarazione-accessibilita' and m.dove = 'footer')
+    and exists (select 1 from dentro where nome = 'salva_menu_sito' and corpo like '%pag.di_legge%'))
 ) as x(file, cosa, c)
 order by file, cosa;

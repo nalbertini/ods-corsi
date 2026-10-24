@@ -17,8 +17,8 @@ export const MASSIMO_DESCRIZIONE = 300
 const LIMITE_INDIRIZZO = 80
 
 /** Indirizzi che il sito usa per sé: una pagina nuova non li può prendere. */
-// Gli stessi di `supabase/56-sito.sql` (vincolo `slug` di `sito_pagine`).
-const RISERVATI = ['contact', 'contattaci', 'privacy', 'cookie', 'admin', 'api', 'app', 'sitemap', 'robots']
+// Gli stessi del vincolo `slug` di `sito_pagine` (`56-sito.sql`, più la dichiarazione da `107-sito-accessibilita.sql`).
+const RISERVATI = ['contact', 'contattaci', 'privacy', 'cookie', 'admin', 'api', 'app', 'sitemap', 'robots', 'dichiarazione-accessibilita']
 
 export interface PaginaSito {
   id: string
@@ -122,7 +122,8 @@ export const testoTroppoLungo = (html: string): string | null =>
 /**
  * Cosa non va in un menu o in un footer, una frase per problema; vuoto se va
  * bene. Dice sempre il nome della voce, così si sa quale toccare. Nel footer
- * devono esserci le pagine di legge, pubblicate.
+ * devono esserci le pagine di legge, anche prima di essere pubblicate (la voce
+ * sul sito compare solo dopo: `sito_menu_pubblico`).
  */
 export function controllaMenu(dove: 'menu' | 'footer', voci: VoceMenu[], pagine: Array<Pick<PaginaSito, 'id' | 'titolo' | 'nascosta' | 'pubblicato' | 'diLegge'>>): string[] {
   const problemi: string[] = []
@@ -142,7 +143,7 @@ export function controllaMenu(dove: 'menu' | 'footer', voci: VoceMenu[], pagine:
     }
     if (v.paginaId !== null) {
       const pagina = pagine.find((p) => p.id === v.paginaId)
-      if (!pagina || pagina.nascosta || pagina.pubblicato === null) problemi.push(`La voce «${nome}» porta a una pagina nascosta o non ancora pubblicata: pubblicala o togli la voce`)
+      if (!pagina || pagina.nascosta || (pagina.pubblicato === null && !(dove === 'footer' && pagina.diLegge))) problemi.push(`La voce «${nome}» porta a una pagina nascosta o non ancora pubblicata: pubblicala o togli la voce`)
     } else if (v.indirizzo !== null && !indirizzoValido(v.indirizzo)) {
       problemi.push(`La voce «${nome}» ha un indirizzo che il sito non ammette: deve cominciare con https://, mailto:, tel: oppure /, senza spazi né virgolette`)
     }
@@ -150,7 +151,7 @@ export function controllaMenu(dove: 'menu' | 'footer', voci: VoceMenu[], pagine:
   if (dove === 'footer') {
     for (const legge of pagine.filter((p) => p.diLegge)) {
       const dentro = voci.some((v) => v.paginaId === legge.id)
-      if (!dentro || legge.nascosta || legge.pubblicato === null) problemi.push(`Nel footer deve esserci «${legge.titolo}»: è una pagina di legge`)
+      if (!dentro || legge.nascosta) problemi.push(`Nel footer deve esserci «${legge.titolo}»: è una pagina di legge`)
     }
   }
   return problemi
