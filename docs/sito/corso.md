@@ -52,7 +52,7 @@ La pagina è nuova se prima del primo `h2` c'è un paragrafo di soli pulsanti co
 | senza foto A: un elenco di 4-6 voci | fascia blu con le prime 3 voci; le altre sono tessere. Nessuna sezione orario |
 | `h2` i cui `h3` hanno come primo paragrafo solo l'ora in grassetto (con foto A) | orario a tessere, l'ultima gialla, righe da 6 colonne senza buchi. **Se la pagina è collegata a uno o più corsi** (SITO → ORARIO DAI CORSI) queste tessere non si mostrano: al loro posto ci sono le righe di CORSI («Lunedì e mercoledì · 17:00–18:00», `riga-orario`), o «Orario in arrivo»; con la fascia blu spariscono le voci giorno e ora e resta l'età |
 | un `h2` (anche vuoto) con esattamente 2 `h3` di soli paragrafi | «Cosa si fa» (giallo) e «A chi è rivolto» (inchiostro); una foto nel primo gruppo (B) sta accanto, a destra |
-| ogni altra sezione con `h3` | come sempre (la storia del judo: quattro tessere) |
+| ogni altra sezione con `h3` | come sempre (le storie di judo, aikido e lotta: quattro tessere) |
 | la sezione subito prima della chiusura, con 3 o 4 `h3` e un solo paragrafo ciascuno | «Cosa aspettarsi», tessere numerate |
 | l'ultima sezione con un pulsante verso il modulo | chiusura gialla: titolo, frasi, pulsanti, foto C a destra (senza, a una colonna); l'invito «PROVA» del piede non si ripete |
 

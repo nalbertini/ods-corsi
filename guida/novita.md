@@ -10,6 +10,26 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.202.0 — 24 ottobre 2026
+
+### Novità
+
+- Nella dichiarazione di accessibilità del sito, data di redazione, tempo di risposta e come segnalare ad AgID
+
+### Risolto
+
+- Il pulsante Iscriviti si vede anche sui riquadri gialli del sito
+
+## 0.201.0 — 24 ottobre 2026
+
+### Novità
+
+- Nelle pagine Aikido e Lotta del sito c'è anche la storia, come nel Judo
+
+### Modificato
+
+- Accessibilità del sito: verificati zoom al 200 % e contrasto sulle foto
+
 ## 0.200.17 — 24 ottobre 2026
 
 ### Risolto

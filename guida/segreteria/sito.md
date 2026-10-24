@@ -120,8 +120,10 @@ orario: non si nascondono né si cancellano.
 
 Parte come **bozza mai pubblicata**, con una traccia di testo piena di
 `[DA COMPILARE: …]`: nome di chi gestisce il sito, stato di conformità,
-contenuti non accessibili, data e metodo dell'ultima verifica, contatto per le
-segnalazioni. Compilala solo dopo aver verificato davvero il sito (prova da
+contenuti non accessibili, data di redazione, data e metodo dell'ultima
+verifica, contatto per le segnalazioni e in quanti giorni rispondete. In fondo
+c'è già il rimando all'AgID per chi non riceve risposta: controlla che
+l'indirizzo sia ancora giusto prima di pubblicare. Compilala solo dopo aver verificato davvero il sito (prova da
 tastiera, lettore di schermo, controllo automatico): scrivere «conforme» senza
 averlo controllato è falso.
 
@@ -133,8 +135,10 @@ averlo controllato è falso.
   ripubblica.
 - Riguarda solo il sito pubblico: l'app per iscritti, segreteria e istruttori
   ne è fuori, e la traccia lo dice.
-- Se la pagina non compare nell'editor, va lanciato `107-sito-accessibilita.sql`:
-  chiedi a chi cura l'app.
+- Se la pagina non compare nell'editor, va lanciato `107-sito-accessibilita.sql`
+  e poi `112-sito-accessibilita-agid.sql`: chiedi a chi cura l'app. Il 112
+  aggiorna la traccia solo se la pagina non è mai stata pubblicata e non l'hai
+  ancora toccata: un testo che hai cominciato a scrivere resta com'è.
 
 Se compare «Le pagine non si possono scrivere: il database non è ancora
 aggiornato», va lanciato `62-sito-pezzi.sql`: chiedi a chi cura l'app.

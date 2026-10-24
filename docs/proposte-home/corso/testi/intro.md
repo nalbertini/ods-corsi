@@ -15,7 +15,7 @@ Oggi la pagina ha: foto, 4 dati, 3 tessere («Cos’è», «Cosa si fa», «Per 
 | 6 | **Cosa aspettarsi** | 3-4 tessere, titolo ≤ 5 parole, testo invariato | | titoli da 9 parole in 2-3 righe a 46 px oggi |
 | 7 | **Come provare** | «Una settimana per scegliere.» + frase del corso + 2 pulsanti: «Prova una settimana a 5 €» (modulo online) e «Scrivici» (pagina Contatti) | C · chiusura | la chiamata finale della home, con la frase «Perché sceglierlo» del corso sotto il titolo |
 
-Blocchi **solo di un corso**: «La storia del judo» (Judo, dopo «Cosa si fa»). Il sorgente `judo.md` lo segnala già come testo da far rileggere.
+Blocchi **solo di un corso**: «La storia» (Judo, Aikido e Lotta, dopo «A chi è rivolto»). I sorgenti la segnalano già come testo da far rileggere.
 
 Cosa **non** c'è e si può solo chiedere (vedi domande): quota mensile o annuale, certificato medico, cosa portare la prima volta, il nome di chi insegna.
 

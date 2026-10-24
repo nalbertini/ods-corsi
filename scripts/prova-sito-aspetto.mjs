@@ -85,7 +85,7 @@ const blocco = (t, inizio) => {
 }
 /** Le regole semplici, anche quelle dentro i @media: {sel: [selettori], dich: {proprietà: valore}}. */
 const regole = (t) =>
-  [...t.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
+  [...t.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
     sel: m[1].trim().split(/\s*,\s*/),
     dich: Object.fromEntries(m[2].split(';').filter((x) => x.includes(':')).map((x) => { const i = x.indexOf(':'); return [x.slice(0, i).trim(), x.slice(i + 1).trim()] })),
   }))
@@ -302,6 +302,43 @@ console.log('\nAngoli: 6px')
   // Le pillole (999px) sono capsule come nel design: quelle d'età della Home (`.pillola`) e le fasce della pagina Corsi (`ul.fasce li`). Tutto il resto è 6px, 0 o un cerchio.
   ok('ogni border-radius è 6px (o 0, o un cerchio al 50%; le pillole sono capsule, i puntini delle citazioni sono tondi)', raggi.filter((x) => !['6px', '0', '50%'].includes(x.v) && !(['.pillola', 'ul.fasce li'].includes(x.sel) && x.v === '999px') && !/::scroll-marker$/.test(x.sel)).map((x) => `${x.sel}: ${x.v}`), [])
   ok('pulsante, invito e immagini del testo hanno 6px', ['.pulsante', '.invito', '.testo img'].map((n) => dich(R, V, (x) => x === n)['border-radius']), ['6px', '6px', '6px'])
+}
+
+console.log('\nPulsanti su fondo giallo')
+{
+  // Il vincitore della cascata per un elemento in fondo a una catena di antenati: selettori solo con
+  // tag, classi e spazio (discendente); vince la specificità, a parità l'ultima regola.
+  const parti = (s) => s.trim().split(/\s+/).map((c) => ({ tag: /^[a-z]\w*/.exec(c)?.[0] ?? null, cl: [...c.matchAll(/\.([\w-]+)/g)].map((m) => m[1]) }))
+  const combacia = (sel, catena) => {
+    const p = parti(sel)
+    let k = catena.length - 1
+    const el = (x, e) => (!x.tag || x.tag === e.tag) && x.cl.every((c) => e.cl.includes(c))
+    if (!el(p[p.length - 1], catena[k])) return false
+    for (let i = p.length - 2, j = k - 1; i >= 0; i--) {
+      while (j >= 0 && !el(p[i], catena[j])) j--
+      if (j < 0) return false
+      j--
+    }
+    return true
+  }
+  const pesa = (sel) => { const p = parti(sel); return [0, p.reduce((n, x) => n + x.cl.length, 0), p.filter((x) => x.tag).length] }
+  const vince = (catena, prop) => {
+    let best = null
+    R.forEach((r, ordine) => r.sel.forEach((sel) => {
+      if (/[:>+~\[]/.test(sel) || !(prop in r.dich) && !(prop === 'background' && 'background-color' in r.dich) || !combacia(sel, catena)) return
+      const w = [...pesa(sel), ordine]
+      if (!best || cmp(w, best.w) > 0) best = { w, v: r.dich[prop] ?? r.dich['background-color'] }
+    }))
+    return best && risolvi(best.v, V)
+  }
+  const cmp = (a, b) => { for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] - b[i]; return 0 }
+  const el = (tag, ...cl) => ({ tag, cl })
+  const chi = [['cta-testo'], ['tessera', 'giallo']]
+  for (const classi of chi) {
+    const catena = [el('section', 'sezione'), el('div', ...classi), el('div', 'pulsanti'), el('a', 'pulsante', 'primario')]
+    const sf = hex(vince(catena, 'background') ?? '')
+    ok(`su .${classi.join('.')} il pulsante primario non è giallo come lo sfondo`, sf !== GIALLO && contrasto(sf ?? GIALLO, GIALLO) >= 3, true)
+  }
 }
 
 console.log('\nLarghezza')
