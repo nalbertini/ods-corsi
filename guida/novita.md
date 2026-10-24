@@ -10,6 +10,22 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.199.1 — 24 ottobre 2026
+
+### Modificato
+
+- Aggiornate le librerie con una falla nota
+- Il timer si apre più veloce
+- Più protezione contro codice estraneo nelle pagine
+- Le pagine si aprono più leggere: la segreteria carica il suo aspetto solo quando serve
+- Il timer si apre più in fretta e non manda più l'indirizzo di chi lo usa a Google
+
+## 0.199.0 — 24 ottobre 2026
+
+### Novità
+
+- Si contano quante persone aprono il modulo d'iscrizione e quante lo inviano
+
 ## 0.198.0 — 24 ottobre 2026
 
 ### Novità

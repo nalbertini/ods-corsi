@@ -64,7 +64,7 @@ ok('ICONE_MENU ha una chiave per ogni voce, per la contabilità, il passaggio ag
 ok('ognuna è un componente che disegna', Object.values(ICONE).filter((f) => typeof f !== 'function').length, 0)
 ok('Segreteria.tsx disegna l\'icona di ogni voce', /ICONE_MENU\[id\]/.test(sg0()), true)
 ok('«Istruttori →» e i link hanno la loro icona', [/ICONE_MENU\.areaIstruttori/.test(sg0()), /ICONE_MENU\.link/.test(sg0())], [true, true])
-ok('un filetto separa un gruppo dal successivo', /\.sg-gruppo \+ \.sg-gruppo\s*\{[^}]*border-top/.test(readFileSync('src/styles.css', 'utf8')), true)
+ok('un filetto separa un gruppo dal successivo', /\.sg-gruppo \+ \.sg-gruppo\s*\{[^}]*border-top/.test(readFileSync('src/styles.css', 'utf8') + readFileSync('src/segreteria.css', 'utf8')), true)
 
 
 console.log('\nIl gruppo dei conti (con l\'amministrazione)')

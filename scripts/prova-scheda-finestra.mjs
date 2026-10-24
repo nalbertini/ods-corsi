@@ -74,7 +74,7 @@ ok('Richieste: ✕, Esc, PRECEDENTE e SUCCESSIVA chiedono prima (lasciare)', /if
 ok('Corsi non apre più da solo il primo corso', /visti\[0\]/.test(leggi('src/components/segreteria/Corsi.tsx')), false)
 
 console.log('\nIl CSS')
-const css = leggi('src/styles.css')
+const css = leggi('src/styles.css') + leggi('src/segreteria.css')
 ok('nessuna regola tiene la scheda affiancata a 420px (PR 478)', /\.sg-due-colonne > \.sg-scheda/.test(css), false)
 ok('c\'è la finestra, con la sua barra in alto', /\.sg-finestra\s*\{[^}]*border-top/.test(css), true)
 ok('il corpo scorre e il piede resta (la finestra è una colonna)', /\.sg-finestra\s*\{[^}]*flex-direction:\s*column/.test(css) && /\.sg-finestra-corpo\s*\{[^}]*overflow-y:\s*auto/.test(css), true)

@@ -54,7 +54,7 @@ for (const [nome, t] of Object.entries(dentroMenu)) {
   console.log(`menu · ${nome}`)
   for (const tk of ['--sec', '--dim']) ok(`${tk} sul fondo del menu ≥ 4,5`, contrasto(t[tk], t['--menu']) >= 4.5, true)
 }
-const percentualeSito = Number(css.match(/data-look='sito'\] \.sg-orario\[data-gradino='3'\] \{[^}]*color-mix\(in srgb, var\(--blu\) (\d+)%/)?.[1] ?? 78)
+const percentualeSito = Number(readFileSync('src/segreteria.css', 'utf8').match(/data-look='sito'\] \.sg-orario\[data-gradino='3'\] \{[^}]*color-mix\(in srgb, var\(--blu\) (\d+)%/)?.[1] ?? 78)
 for (const [nome, t] of Object.entries(temi)) {
   console.log(`mappa orari · ${nome}`)
   const sup = rgb(t['--surface'])
