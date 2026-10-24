@@ -85,7 +85,7 @@ prova tiene stanno in «Scoperti», in fondo.
 | Chi siamo del sito | visitatore del sito, segreteria | paragrafo perso, regole su un'altra pagina | `prova:sito-chi-siamo-nuova`, `prova:sito-chi-siamo`, `prova:sito-genera`, `prova:sito-home-nuova` | sì |
 | Orario delle pagine corso del sito | visitatore del sito, genitore che sta per iscriversi, segreteria | orario sbagliato o vecchio sul sito | `prova:sito-orario`, `sito-orario.sql` | sì |
 | Invito «Iscriviti» in fondo alle pagine | visitatore del sito, segreteria che scrive le pagine | pulsante che non porta al modulo | `prova:sito-genera`, `prova:sito-pezzi`, `prova:sito-aspetto`, `prova:sito-contatti` | sì |
-| Parti PULSANTI e DOMANDE dell'editor | visitatore del sito, genitore che sta per iscriversi, segreteria che scrive le pagine | pulsante che porta altrove, HTML nel sito | `prova:sito-pezzi`, `prova:sito-orario` | sì |
+| Parti PULSANTI e DOMANDE dell'editor | visitatore del sito, genitore, segreteria che scrive le pagine | pulsante che porta altrove, HTML nel sito | `prova:sito-pezzi`, `prova:sito-orario` | sì |
 | Pagina Istruttori del sito | visitatore del sito, segreteria che scrive la pagina Istruttori | ordine delle tessere diverso dall'editor | `prova:sito-istruttori`, `prova:sito-pezzi` | sì |
 | Un editor solo per le pagine del sito | segreteria che scrive e pubblica le pagine, visitatore del sito | pagina che non si pubblica, parte persa | `prova:sito-pezzi`, `prova:iscrizione-sito`, `prova:testi` | sì |
 | Barra «Prova a 5 € / Chiama» sul telefono | visitatore del sito dal telefono | tasto che non si trova o copre il menu | `prova:sito-home-nuova` | sì |
@@ -104,6 +104,8 @@ quando arriva la prova.
 
 - **GRAVE** — `99-email-unica.sql` perde l'email di accesso, ed
   `email-unica.sql` §4 tiene la perdita come attesa.
+- **GRAVE** — Ricevuta da un pagamento a mano: un `pagamentoId` perso per
+  strada non fa cadere niente, e lo stesso incasso conta due volte.
 - Edge Function `satispay` (quota, corso, saldo) e quella delle ricevute per
   email: nessuna prova.
 - Saldo Satispay: `least`/`greatest`, `ricevuta_id is null`, `utente_id`, le
@@ -141,4 +143,5 @@ quando arriva la prova.
   il buco esce da «Scoperti».
 - Prova rimossa o rinominata: la riga si corregge.
 - Una riga resta una riga: percorso, chi, cosa si rompe, i nomi delle prove.
-  Niente date, rami, PR o storia: quelli stanno in `git log`.
+  Niente date, rami, PR o storia: quelli stanno in `git log`. `npm run -s
+  prova:registro` controlla righe corte e prove che esistono.

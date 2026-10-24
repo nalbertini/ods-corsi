@@ -20,6 +20,7 @@
     "prova:a11y-segreteria-bersagli": "node scripts/prova-a11y-segreteria-bersagli.mjs",
     "prova:a11y-segreteria-menu": "node scripts/prova-a11y-segreteria-menu.mjs",
     "prova:a11y-segreteria": "node scripts/prova-a11y-segreteria.mjs",
+    "prova:registro": "node scripts/prova-registro.mjs",
     "prova:robots": "node scripts/prova-robots.mjs",
     "prova:timer-font": "node scripts/prova-timer-font.mjs",
     "prova:timer-accessibilita": "node scripts/prova-timer-accessibilita.mjs",

@@ -17,7 +17,8 @@ l'operatività della palestra, chi lo usa, cosa si rompe se cade, e le prove che
 lo coprono (`prova:*` e `supabase/prova/*.sql`). Se non esiste una riga per il
 percorso che stai guardando, la aggiungi. Una regola senza prova va in
 «Scoperti», un punto per buco. Righe corte, senza date, rami o PR: lo leggono
-tutti gli agenti, e la storia sta in `git log`.
+tutti gli agenti, e la storia sta in `git log`. Dopo ogni modifica,
+`npm run -s prova:registro`.
 
 Un percorso è critico se, cadendo, **si perde o si sbaglia un dato** (quota,
 presenza, certificato, ricevuta, firma, iscrizione) o **la segreteria non
