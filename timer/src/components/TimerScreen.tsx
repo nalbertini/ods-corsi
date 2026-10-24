@@ -246,6 +246,13 @@ export function TimerScreen({
   // senza per questo riagganciare il listener a ogni render.
   const exitRef = useRef(exit)
   exitRef.current = exit
+  // Aperto il timer il focus non resta sul tasto che l'ha aperto (sparito): va su AVVIA.
+  const avviaRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (tastiera) avviaRef.current?.focus()
+    // solo all'apertura: `tastiera` che cambia dopo non deve rubare il focus
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const startOrToggleRef = useRef(startOrToggle)
   startOrToggleRef.current = startOrToggle
   // Fermato dal di fuori: come EXIT. Il valore col quale si monta non conta,
@@ -368,6 +375,7 @@ export function TimerScreen({
               sala: ha il bordo del colore dello stato quando si può usare. */}
           <div className="tf-comandi">
             <button
+              ref={avviaRef}
               className="tf-avvia"
               style={{ background: tinta, color: suTinta }}
               onClick={done ? exit : startOrToggle}

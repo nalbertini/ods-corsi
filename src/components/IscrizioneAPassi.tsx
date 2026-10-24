@@ -478,6 +478,7 @@ function Flusso({
     const n = nota(k)
     return {
       onBlur: () => !visti.has(k) && setVisti(new Set(visti).add(k)),
+      'aria-required': P.campoObbligatorio(k) || undefined,
       'aria-invalid': n?.guaio || undefined,
       'aria-describedby': n ? `n-${k}-nota` : undefined,
     }
@@ -1216,7 +1217,7 @@ function Flusso({
               <NotaCampo id="n-regolamento-nota" nota={nota('regolamento')} />
             </div>
             <label className="modulo-largo modulo-privacy">
-              <input id="n-privacy" type="checkbox" checked={v.privacy} onChange={(e) => setGrezzo((p) => ({ ...p, privacy: e.target.checked }))} />
+              <input id="n-privacy" type="checkbox" aria-required checked={v.privacy} onChange={(e) => setGrezzo((p) => ({ ...p, privacy: e.target.checked }))} />
               <span>
                 Ho letto{' '}
                 {INFORMATIVA_PUBBLICA ? (

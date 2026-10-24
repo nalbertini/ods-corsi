@@ -424,7 +424,7 @@ export function Iscritti({
 
         {ricerca && <FiltroRicerca ricerca={ricerca} onTogli={onTogliRicerca} />}
         <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-          <div className="row" style={{ gap: 10, flexWrap: 'wrap', flexBasis: '100%' }}>
+          <div className="row" style={{ gap: 10, flexWrap: 'wrap', flexBasis: '100%', minWidth: 0 }}>
           <label htmlFor="cerca" className="vh">
             Cerca un iscritto
           </label>
