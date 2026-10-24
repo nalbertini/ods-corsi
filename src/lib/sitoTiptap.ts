@@ -37,5 +37,7 @@ export const ESTENSIONI_TESTO = [LinkDelSito, Immagine]
 /** L'indirizzo scritto per un link o un pulsante: quello pulito, o cosa scrivere se il sito non lo ammette. */
 export function indirizzoDelLink(scritto: string): { indirizzo: string } | { guaio: string } {
   const indirizzo = scritto.trim()
+  // Il campo si apre col link di prima: chi scrive senza cancellarlo lo accoda, e l'indirizzo risultante sarebbe valido ma sbagliato.
+  if (/^https?:\/\/.*https?:\/\//i.test(indirizzo)) return { guaio: 'Sembra due indirizzi uno dopo l’altro: cancella quello vecchio e scrivi solo il nuovo' }
   return indirizzoValido(indirizzo) ? { indirizzo } : { guaio: 'Scrivi un indirizzo che cominci con https://, mailto:, tel: oppure /, senza spazi' }
 }

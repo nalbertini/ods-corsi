@@ -222,6 +222,8 @@ function MenuTesto({ children, editor }: { children: ReactNode; editor: Editor |
   const apri = (pulsante: boolean) => setLink({ indirizzo: attuale.href ?? '', pulsante })
   const metti = () => {
     if (!editor || !link) return
+    // Senza parole selezionate il link non avrebbe dove stare, e premere METTI sembrerebbe non fare nulla.
+    if (editor.state.selection.empty && !editor.isActive('link')) return setLink({ ...link, guaio: 'Prima seleziona le parole che devono diventare un link' })
     const r = indirizzoDelLink(link.indirizzo)
     if ('guaio' in r) return setLink({ ...link, guaio: r.guaio })
     editor.chain().focus().extendMarkRange('link').setMark('link', { href: r.indirizzo, class: link.pulsante ? 'pulsante' : null }).run()
@@ -242,6 +244,7 @@ function MenuTesto({ children, editor }: { children: ReactNode; editor: Editor |
             aria-label={link.pulsante ? 'Dove porta il pulsante' : 'Dove porta il link'}
             placeholder="https://… oppure /chi-siamo"
             autoFocus
+            onFocus={(e) => e.target.select()}
             value={link.indirizzo}
             data-avviso={!!link.guaio}
             onChange={(e) => setLink({ ...link, indirizzo: e.target.value, guaio: undefined })}
