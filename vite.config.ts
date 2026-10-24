@@ -96,7 +96,14 @@ export default defineConfig({
       // L'informativa privacy è una pagina sua, non l'app: chiede al database
       // per quanto si tengono le presenze (`src/lib/informativa.ts`).
       input: { index: 'index.html', informativa: 'informativa.html' },
-      output: { manualChunks: (id) => (/node_modules\/(@pdf-lib|pdf-lib|pako|tslib)\//.test(id) ? 'pdf-lib' : undefined) },
+      output: {
+        manualChunks: (id) => {
+          // L'aiuto di Rollup per i moduli CommonJS lo usa anche l'app: se finisse
+          // nel pezzo di pdf-lib, l'app lo scaricherebbe a ogni apertura.
+          if (id.includes('commonjsHelpers')) return 'commonjs'
+          return /node_modules\/(@pdf-lib|pdf-lib|pako|tslib)\//.test(id) ? 'pdf-lib' : undefined
+        },
+      },
     },
   },
   plugins: [

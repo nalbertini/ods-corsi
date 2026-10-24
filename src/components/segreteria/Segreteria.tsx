@@ -8,23 +8,24 @@ import { Settimana } from './Settimana'
 import { Corsi, riapriSuIscritti } from './Corsi'
 import { Iscritti } from './Iscritti'
 import { Presenze } from './Presenze'
-import { Statistiche } from './Statistiche'
-import { Personale } from './Personale'
-import { Regole } from './Regole'
-import { Listino } from './Listino'
-import { Contabilita } from './Contabilita'
 import { LINK_ORDINI, Vestiario } from './Vestiario'
 import { datiVestiario } from '../../lib/vestiarioDati'
 import { tastoLinguette } from '../../lib/schedaSezioni'
 import { numeriRaccolta } from '../../lib/vestiario'
-import { Richieste } from './Richieste'
-import { PresenzeIstruttori } from './PresenzeIstruttori'
 import { Compensi } from './Compensi'
 import { puo } from '../../lib/ruoli'
 import { PresenzeSegnalate } from './PresenzeSegnalate'
-import { Segnalazioni } from './Segnalazioni'
 import { Palestra } from './banco/Palestra'
 // Il pannello del sito porta con sé l'editor del testo e la sua pulizia: si scaricano solo aprendolo.
+// Le voci che non sono la prima schermata si scaricano quando si aprono.
+const Statistiche = lazy(() => import('./Statistiche').then((m) => ({ default: m.Statistiche })))
+const Listino = lazy(() => import('./Listino').then((m) => ({ default: m.Listino })))
+const Contabilita = lazy(() => import('./Contabilita').then((m) => ({ default: m.Contabilita })))
+const Regole = lazy(() => import('./Regole').then((m) => ({ default: m.Regole })))
+const Richieste = lazy(() => import('./Richieste').then((m) => ({ default: m.Richieste })))
+const PresenzeIstruttori = lazy(() => import('./PresenzeIstruttori').then((m) => ({ default: m.PresenzeIstruttori })))
+const Segnalazioni = lazy(() => import('./Segnalazioni').then((m) => ({ default: m.Segnalazioni })))
+const Personale = lazy(() => import('./Personale').then((m) => ({ default: m.Personale })))
 const Sito = lazy(() => import('./Sito').then((m) => ({ default: m.Sito })))
 import { tocca } from '../../lib/segnalazioni'
 import { DaFare, useDaFare } from './DaFare'
@@ -612,6 +613,7 @@ export function Segreteria({
         {d && conSegreteria && strisciaVisibile(voce, telefono, !!(posto.persona || posto.corso || posto.nuovo || richiesta || posto.lezione), strisciaVoluta) && (
           <CosaManca conti={conti.striscia} onVai={vai} onRiprova={contiCambiati} />
         )}
+        <Suspense fallback={<span className="sg-sotto">Un attimo…</span>}>
         {d && voce === 'dafare' && !banco && <DaFare conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'dafare' && banco && <Oggi d={d} conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} onConti={contiCambiati} />}
@@ -669,6 +671,7 @@ export function Segreteria({
             <Sito d={d} />
           </Suspense>
         )}
+        </Suspense>
       </main>
       <Conferme />
     </div>

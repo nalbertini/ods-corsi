@@ -1,24 +1,15 @@
-import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { lazy, type ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
 import { NastroProva } from './components/ds'
 import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
-import { Collega } from './components/Collega'
-import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { apriAspettoModulo } from './lib/aspettoModulo'
 import { vistaIscrizioni } from './lib/paginaIscrizioni'
-import { IscrizioneAPassi } from './components/IscrizioneAPassi'
-import { OrdinaVestiario } from './components/OrdinaVestiario'
-import { PrezziIscrizione } from './components/PrezziIscrizione'
-import { AreaIscritti } from './components/AreaIscritti'
-import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
 import { MieOre } from './components/MieOre'
 import { BarraMusicaTelefono, BarraNavigazione, MusicaMini, PaginaTimer, StrisciaTimer, useMusicaTelefono } from './components/TimerIstruttori'
 import { Conferme, chiedi } from './components/segreteria/comune'
-import { Tablet } from './components/tablet/Tablet'
-import { Segreteria } from './components/segreteria/Segreteria'
 import { indirizzo, INDIRIZZI, useArea } from './lib/aree'
 import { nomeDellArea, rimandaAmministrazione } from './lib/menuSegreteria'
 import { account, altreAree, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type Personale } from './lib/accesso'
@@ -30,6 +21,17 @@ import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
 import { chiediPrimaDiSostituire, esciConMusica, incorporatoIstruttori, lezioneDelTimer, mostraMusicaMini, mostraStriscia, statoCambiato, tastoImpostazioni, timerAperto, videoNellaBarraPiccola, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
 import type { Incorporato, StatoTimer } from '../timer/src/lib/incorporato'
 import { oraDi, type SessioneVista } from './lib/sala'
+
+// Ogni area è un pezzo suo: chi apre `iscrizioni/` non scarica la segreteria né il tablet.
+const Tablet = lazy(() => import('./components/tablet/Tablet').then((m) => ({ default: m.Tablet })))
+const Collega = lazy(() => import('./components/Collega').then((m) => ({ default: m.Collega })))
+const IscrizioniScreen = lazy(() => import('./components/IscrizioniScreen').then((m) => ({ default: m.IscrizioniScreen })))
+const IscrizioneAPassi = lazy(() => import('./components/IscrizioneAPassi').then((m) => ({ default: m.IscrizioneAPassi })))
+const OrdinaVestiario = lazy(() => import('./components/OrdinaVestiario').then((m) => ({ default: m.OrdinaVestiario })))
+const PrezziIscrizione = lazy(() => import('./components/PrezziIscrizione').then((m) => ({ default: m.PrezziIscrizione })))
+const AreaIscritti = lazy(() => import('./components/AreaIscritti').then((m) => ({ default: m.AreaIscritti })))
+const Guida = lazy(() => import('./components/Guida').then((m) => ({ default: m.Guida })))
+const Segreteria = lazy(() => import('./components/segreteria/Segreteria').then((m) => ({ default: m.Segreteria })))
 
 /**
  * ODS Corsi: il calendario delle sale e il registro delle presenze.
@@ -65,7 +67,11 @@ export default function App() {
       </div>
     )
   }
-  return <Aree />
+  return (
+    <Suspense fallback={<UnAttimo />}>
+      <Aree />
+    </Suspense>
+  )
 }
 
 function Aree() {
