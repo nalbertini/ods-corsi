@@ -1,0 +1,7 @@
+{
+ "pages": [{"id": "page-1", "name": "Icone sulle linguette della scheda iscritto"}],
+ "artboards": [
+  {"file": "Main.dc.html", "title": "Oggi e proposta, desktop e telefono, con la scelta delle icone", "x": 0, "y": 300, "w": 1000, "h": 640, "page": "page-1"}
+ ],
+ "annotations": []
+}

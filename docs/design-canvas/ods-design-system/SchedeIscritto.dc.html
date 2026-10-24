@@ -16,11 +16,11 @@
 </helmet>
 <div role="tablist" aria-label="Scheda dell'iscritto" style="display: flex; gap: {{gap}}; align-self: flex-start; width: {{larghezza}}; max-width: 100%; border-bottom: {{filo}}">
   <sc-for list="{{schede}}" as="x" hint-placeholder-count="4">
-    <span role="tab" aria-label="{{x.nomeIntero}}" aria-selected="{{x.selezionata}}" style="display: inline-flex; flex-direction: {{direzione}}; align-items: center; justify-content: center; flex: {{x.flex}}; min-width: 0; gap: {{gapDentro}}; min-height: 44px; padding: {{padding}}; white-space: {{aCapo}}; text-align: center; background: {{x.sfondo}}; border: 2px solid {{x.bordo}}; font-family: {{carattere}}; font-size: {{corpoNome}}; font-weight: 700; letter-spacing: {{spazioNome}}; color: {{x.colore}}">{{x.testo}}<span style="font-size: {{corpoSegno}}; letter-spacing: {{spazioSegno}}; color: {{x.coloreSegno}}">{{x.segno}}</span></span>
+    <span role="tab" aria-label="{{x.nomeIntero}}" aria-selected="{{x.selezionata}}" style="display: inline-flex; flex-direction: {{direzione}}; align-items: center; justify-content: center; flex: {{x.flex}}; min-width: 0; gap: {{gapDentro}}; min-height: 44px; padding: {{padding}}; white-space: {{aCapo}}; text-align: center; background: {{x.sfondo}}; border: 2px solid {{x.bordo}}; font-family: {{carattere}}; font-size: {{corpoNome}}; font-weight: 700; letter-spacing: {{spazioNome}}; color: {{x.colore}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; display: {{mostraIcona}}"><path d="{{x.icona}}"></path></svg>{{x.testo}}<span style="font-size: {{corpoSegno}}; letter-spacing: {{spazioSegno}}; color: {{x.coloreSegno}}">{{x.segno}}</span></span>
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"acceso":{"editor":"enum","options":["PERSONA","DOCUMENTI","QUOTA E PAGAMENTI","CORSI"],"default":"PERSONA"},"segnoDocumenti":{"editor":"enum","options":["","giallo","rosso"],"default":""},"segnoQuota":{"editor":"enum","options":["","giallo","rosso"],"default":""},"parolaDocumenti":{"editor":"text","default":"DA SISTEMARE"},"parolaQuota":{"editor":"text","default":"DA PAGARE"},"inModifica":{"editor":"boolean","default":false},"telefono":{"editor":"boolean","default":false},"chiare":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":760,"height":50}}'>
+<script data-dc-script data-props='{"acceso":{"editor":"enum","options":["PERSONA","DOCUMENTI","QUOTA E PAGAMENTI","CORSI"],"default":"PERSONA"},"segnoDocumenti":{"editor":"enum","options":["","giallo","rosso"],"default":""},"segnoQuota":{"editor":"enum","options":["","giallo","rosso"],"default":""},"parolaDocumenti":{"editor":"text","default":"DA SISTEMARE"},"parolaQuota":{"editor":"text","default":"DA PAGARE"},"inModifica":{"editor":"boolean","default":false},"telefono":{"editor":"boolean","default":false},"chiare":{"editor":"boolean","default":false},"icone":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"scuro","section":"Tema"},"$preview":{"width":760,"height":50}}'>
 // PROPOSTA «scheda iscritto a schede»: le quattro schede PERSONA | DOCUMENTI | QUOTA E PAGAMENTI | CORSI sotto i timbri di `Scheda`
 // (src/components/segreteria/Iscritti.tsx). Stesso pattern di SchedeCorso e di .schede / .scheda / .sg-schede di Segreteria.tsx
 // (src/styles.css righe 964-969 e 1622-1623): alte 44px, raggio 0, bordo 2px, Saira 14px 700 0.18em, quella accesa con fondo
@@ -38,6 +38,14 @@ const T = {
   chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', dim: '#656561', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
   // Il look del sito (src/styles.css righe 240-268, `:root[data-look='sito']`): .scheda prende --cond = Big Shoulders Display.
   sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+};
+// PROPOSTA (../icone-scheda-iscritto/): `icone` mette davanti al nome un'icona decorativa (16px, tratto 1,75, `currentColor`, aria-hidden),
+// ICONE_SCHEDA_ISCRITTO di src/components/Icons.tsx riscritta come un tracciato solo. Sul telefono (colonna) sta sopra il testo.
+const ICONE = {
+  PERSONA: 'M8 8a4 4 0 1 0 8 0a4 4 0 1 0-8 0M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1',
+  DOCUMENTI: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h8',
+  'QUOTA E PAGAMENTI': 'M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zM9 12a3 3 0 1 0 6 0a3 3 0 1 0-6 0M6 12h.01M18 12h.01',
+  CORSI: 'M6 8a6 6 0 1 0 12 0a6 6 0 1 0-12 0M15.5 12.9 17 22l-5-3-5 3 1.5-9.1',
 };
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
@@ -62,12 +70,12 @@ class Component extends DCLogic {
       return {
         nomeIntero: nome + (s.segno ? ', ' + s.segno.slice(2).toLowerCase() : ''),
         testo: tel && nome === 'QUOTA E PAGAMENTI' ? 'QUOTA' : nome,
-        ...s, selezionata: on ? 'true' : 'false', flex: tel ? '1 1 0' : '0 0 auto',
+        icona: ICONE[nome], ...s, selezionata: on ? 'true' : 'false', flex: tel ? '1 1 0' : '0 0 auto',
         sfondo: on ? (chiare ? c.text : c.surface2) : c.surface, bordo: on ? c.text : c.line, colore: on ? (chiare ? c.surface : c.text) : c.dim,
       };
     });
     return {
-      schede, c, gap: '4px', filo: chiare ? '2px solid ' + c.text : '0',
+      schede, c, gap: '4px', mostraIcona: truthy(p.icone) ? 'block' : 'none', filo: chiare ? '2px solid ' + c.text : '0',
       carattere: p.tema === 'sito' ? "'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif" : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", larghezza: tel || chiare ? '100%' : 'fit-content',
       direzione: tel ? 'column' : 'row', gapDentro: tel ? '2px' : '8px', padding: tel ? '4px' : '0 18px',
       corpoSegno: '11px', corpoNome: tel ? '13px' : '14px', aCapo: tel ? 'normal' : 'nowrap',

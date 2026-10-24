@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <title>Scelta delle icone</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>* { box-sizing: border-box; } body { margin: 0; -webkit-font-smoothing: antialiased; }</style>
+</helmet>
+<!-- SCELTA DELLE ICONE (1440px): le sei icone, a tratto 24px (stile di src/components/Icons.tsx), colore del testo. Si scelgono dal link d'azione, mai dal titolo. Email e orari oggi non sono nella pagina: qui solo per scegliere. -->
+<div style="width:1440px;min-height:760px;position:relative;overflow:hidden;background:#eef5fa;color:#0d2a3d;padding:64px 48px">
+  <h2 style="font-family:'Big Shoulders Display','Arial Narrow',sans-serif;text-transform:uppercase;font-weight:800;margin:0;line-height:.86;letter-spacing:-.01em;font-size:80px">Le icone dei recapiti</h2>
+  <p style="font-family:Inter,'Helvetica Neue',Arial,sans-serif;font-size:20px;line-height:1.5;margin:20px 0 40px;max-width:900px">Una per recapito, sopra il titolo, a tratto, decorativa: chi usa un lettore di schermo sente solo titolo, valore e azione, come oggi. Il colore è quello del testo della tessera, quindi lo stesso contrasto.</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+    <dc-import name="SitoRecapito" icona="telefono" titolo="Telefono" valore="346 329 2786" azione="Link tel: →" tono="giallo" alto="300px" hint-size="100%,300px"></dc-import>
+    <dc-import name="SitoRecapito" icona="instagram" titolo="Instagram" valore="@officine.dellosport" azione="Link instagram.com →" tono="blu" alto="300px" hint-size="100%,300px"></dc-import>
+    <dc-import name="SitoRecapito" icona="facebook" titolo="Facebook" valore="Officine dello Sport" azione="Link facebook.com →" tono="inchiostro" alto="300px" hint-size="100%,300px"></dc-import>
+    <dc-import name="SitoRecapito" icona="indirizzo" titolo="Indirizzo" valore="Via Sassi 26, Collegno" azione="Link Google Maps →" tono="chiara" alto="300px" hint-size="100%,300px"></dc-import>
+    <dc-import name="SitoRecapito" icona="email" titolo="Email" valore="indirizzo da confermare" azione="Link mailto: →" tono="bianco" nota="NON IN PAGINA OGGI · solo se si aggiunge" alto="300px" hint-size="100%,300px"></dc-import>
+    <dc-import name="SitoRecapito" icona="orologio" titolo="Orari" valore="orari da confermare" azione="Vedi gli orari →" tono="chiara" nota="NON IN PAGINA OGGI · C1 deciso: nessuna riga" alto="300px" hint-size="100%,300px"></dc-import>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
