@@ -133,7 +133,7 @@ function InBreve() {
   const letto = useListino()
   if (!letto) {
     return (
-      <section className="pad iscrizioni-costi-breve">
+      <section className="pad iscrizioni-costi-breve iscrizioni-costi-attesa">
         <Riquadro>
           <Dettaglio>Un attimo…</Dettaglio>
         </Riquadro>
