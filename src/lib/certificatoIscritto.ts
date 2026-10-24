@@ -36,6 +36,8 @@ export function guaioMandaCertificato(e: ErroreDb | null): Error {
   if (/fetch|network|load failed/i.test(testo)) return new Error('Il server non risponde: c’è rete? Riprova fra poco')
   // PostgREST non trova la funzione: 102-certificato-iscritto.sql non è sul database.
   if (e?.code === 'PGRST202') return new Error('Mandare il certificato da qui non è ancora attivo: portalo in segreteria')
+  // Il tetto di 110-tetto-certificato-messaggio.sql: Storage non passa il codice, solo il testo.
+  if (e?.code === '54000' || /troppi file/.test(testo)) return new Error('Hai già mandato tre file: aspetta che la segreteria li guardi, poi potrai mandarne altri')
   if (e?.code === '42501') return new Error('Non puoi mandare il certificato di questa persona')
   return new Error('Il certificato non è partito: riprova fra poco')
 }
