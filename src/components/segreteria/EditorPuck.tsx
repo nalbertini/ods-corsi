@@ -1,4 +1,4 @@
-import { createContext, useContext, useId, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useId, useMemo, useState, type ReactNode } from 'react'
 import { AutoField, Button, createUsePuck, FieldLabel, Puck, RichTextMenu, type Config, type Data, type RichtextField } from '@puckeditor/core'
 import type { Editor } from '@tiptap/react'
 import '@puckeditor/core/puck.css'
@@ -219,6 +219,20 @@ function MenuTesto({ children, editor }: { children: ReactNode; editor: Editor |
   // `getAttributes` dà un oggetto senza tipo: qui si legge solo quello che il link porta.
   const attuale = (editor?.getAttributes('link') ?? {}) as { href?: string; class?: string | null }
   const ePulsante = attuale.class === 'pulsante'
+  // Col fuoco sul campo dell'indirizzo il browser nasconde la selezione: la si tiene colorata a mano, così si vede su cosa va il link.
+  const aperto = !!link
+  useEffect(() => {
+    if (!aperto || !editor || !('highlights' in CSS)) return
+    const { from, to } = editor.state.selection
+    if (from === to) return
+    const a = editor.view.domAtPos(from)
+    const b = editor.view.domAtPos(to)
+    const r = new Range()
+    r.setStart(a.node, a.offset)
+    r.setEnd(b.node, b.offset)
+    CSS.highlights.set('ods-link', new Highlight(r))
+    return () => { CSS.highlights.delete('ods-link') }
+  }, [aperto, editor])
   const apri = (pulsante: boolean) => setLink({ indirizzo: attuale.href ?? '', pulsante })
   // Puck passa la modifica ai dati solo se il campo ha il fuoco, e col fuoco sul campo dell'indirizzo non ce l'ha:
   // si riporta il fuoco nel testo e si cambia solo dopo, se no il link si vede ma non risulta «da salvare».
