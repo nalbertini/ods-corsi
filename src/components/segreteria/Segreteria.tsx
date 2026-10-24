@@ -5,16 +5,10 @@ import { Logo } from '../Logo'
 import { TastoTema } from '../TastoTema'
 import { Cursori, ICONE_MENU } from '../Icons'
 import { Settimana } from './Settimana'
-import { Corsi, riapriSuIscritti } from './Corsi'
-import { Iscritti } from './Iscritti'
-import { Presenze } from './Presenze'
-import { LINK_ORDINI, Vestiario } from './Vestiario'
 import { datiVestiario } from '../../lib/vestiarioDati'
 import { tastoLinguette } from '../../lib/schedaSezioni'
 import { numeriRaccolta } from '../../lib/vestiario'
-import { Compensi } from './Compensi'
 import { puo } from '../../lib/ruoli'
-import { PresenzeSegnalate } from './PresenzeSegnalate'
 import { Palestra } from './banco/Palestra'
 // Il pannello del sito porta con sé l'editor del testo e la sua pulizia: si scaricano solo aprendolo.
 // Le voci che non sono la prima schermata si scaricano quando si aprono.
@@ -26,6 +20,12 @@ const Richieste = lazy(() => import('./Richieste').then((m) => ({ default: m.Ric
 const PresenzeIstruttori = lazy(() => import('./PresenzeIstruttori').then((m) => ({ default: m.PresenzeIstruttori })))
 const Segnalazioni = lazy(() => import('./Segnalazioni').then((m) => ({ default: m.Segnalazioni })))
 const Personale = lazy(() => import('./Personale').then((m) => ({ default: m.Personale })))
+const Corsi = lazy(() => import('./Corsi').then((m) => ({ default: m.Corsi })))
+const Iscritti = lazy(() => import('./Iscritti').then((m) => ({ default: m.Iscritti })))
+const Presenze = lazy(() => import('./Presenze').then((m) => ({ default: m.Presenze })))
+const Compensi = lazy(() => import('./Compensi').then((m) => ({ default: m.Compensi })))
+const Vestiario = lazy(() => import('./Vestiario').then((m) => ({ default: m.Vestiario })))
+const PresenzeSegnalate = lazy(() => import('./PresenzeSegnalate').then((m) => ({ default: m.PresenzeSegnalate })))
 const Sito = lazy(() => import('./Sito').then((m) => ({ default: m.Sito })))
 import { tocca } from '../../lib/segnalazioni'
 import { DaFare, useDaFare } from './DaFare'
@@ -41,7 +41,7 @@ import { PersonaBanco } from './banco/PersonaBanco'
 import { CercaIscritto } from './CercaIscritto'
 import type { Ricercata } from '../../lib/ricerca'
 import { indirizzoPagina } from '../../lib/guida'
-import { indirizzo, INDIRIZZI } from '../../lib/aree'
+import { indirizzo, INDIRIZZI, LINK_ORDINI } from '../../lib/aree'
 import { linkDellaSegreteria } from '../../lib/provenienza'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
@@ -640,8 +640,9 @@ export function Segreteria({
             onTogliRicerca={() => setRicerca(undefined)}
             scelta={posto.persona}
             daCorso={posto.daCorso}
-            onCorso={(id) => {
-              riapriSuIscritti(id)
+            onCorso={async (id) => {
+              // Corsi è un pezzo a parte: prima di aprirlo si imposta la sua scheda.
+              ;(await import('./Corsi')).riapriSuIscritti(id)
               segna({ voce: 'corsi', corso: id }, 'push')
             }}
             nuovo={posto.nuovo}
