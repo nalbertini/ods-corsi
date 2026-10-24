@@ -54,8 +54,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            timer/package-lock.json
 
+      # Il timer sta dentro la build dell'app (tsc -b lo controlla).
       - run: npm ci
+      - run: npm ci --prefix timer
       - run: npm run build
       - run: npx --yes @lhci/cli@0.15.1 autorun
 
