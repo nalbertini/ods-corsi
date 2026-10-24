@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.202.1 — 24 ottobre 2026
+
+### Modificato
+
+- Certificati e bonifici caricati valgono solo dopo la conferma della segreteria
+
 ## 0.202.0 — 24 ottobre 2026
 
 ### Novità
