@@ -47,6 +47,9 @@ perché: manca il titolo, una foto non ha l'immagine, il testo è troppo lungo
 - **Testo**: lo scrivi direttamente nella pagina o a destra, con **Titolo**,
   **Sottotitolo**, grassetto, corsivo, elenchi, citazione e link. Se incolli un
   testo da Word o da un altro sito, quello che il sito non ammette sparisce da solo.
+  Per fare un link seleziona le parole, premi **LINK** e scrivi l'indirizzo: se
+  le parole sono già un link, il campo si apre con l'indirizzo di prima già
+  selezionato, e quello che scrivi lo sostituisce.
 - **Foto**: una foto, col suo testo alternativo («Cosa si vede»; vuoto = solo decorativa).
 - **Colonne**: da due a tre colonne di testo, una accanto all'altra. Sul telefono
   si mettono una sotto l'altra. Una colonna lasciata vuota non compare sul sito.

@@ -955,6 +955,7 @@ console.log('\nUn editor solo: il testo scritto in Puck tiene foto e pulsanti')
   ok('un pulsante scritto nel testo resta pulsante', giro(pulsante), pulisci(pulsante))
   ok('un link normale resta un link senza classe', giro('<p><a href="https://x.it">qui</a></p>'), pulisci('<p><a href="https://x.it">qui</a></p>'))
   ok('il link si scrive solo con un indirizzo che il sito ammette', [prova(() => tt.indirizzoDelLink(' /orari ')), prova(() => tt.indirizzoDelLink('javascript:alert(1)'))], [{ indirizzo: '/orari' }, { guaio: 'Scrivi un indirizzo che cominci con https://, mailto:, tel: oppure /, senza spazi' }])
+  ok('un indirizzo scritto sopra il vecchio, con due https://, non passa', prova(() => tt.indirizzoDelLink('https://a.it/xhttps://a.it/x')), { guaio: 'Sembra due indirizzi uno dopo l’altro: cancella quello vecchio e scrivi solo il nuovo' })
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
