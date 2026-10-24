@@ -70,6 +70,8 @@ Le stesse girano su ogni PR (`.github/workflows/controlla.yml`).
   (`src/styles.css`, `DESIGN.md`) o un componente, si aggiorna il file
   corrispondente nello stesso commit. Prima di pubblicare:
   `node docs/design-canvas/ods-design-system/verifica.mjs`.
+- Un certificato o un bonifico caricato da chi si iscrive non vale finché la
+  segreteria non lo conferma: nell'app e nel database si tratta come non valido.
 - PR unite con «Create a merge commit»: `versione.mjs` legge il titolo dal
   commit di merge.
 - Ogni PR ha l'Auto-fix acceso, e si unisce da sé appena le prove su GitHub
