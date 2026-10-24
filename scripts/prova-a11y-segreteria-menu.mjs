@@ -39,4 +39,11 @@ for (const [file, chiavi] of Object.entries(schede)) {
   }
 }
 
+// Le schede di IMPOSTAZIONI hanno ciascuna la sua icona, decorativa: il nome della scheda resta il testo.
+const ids = [...readFileSync('src/lib/schedeImpostazioni.ts', 'utf8').matchAll(/\{ id: '(\w+)', nome:/g)].map((m) => m[1])
+const blocco = icone.slice(icone.indexOf('ICONE_IMPOSTAZIONI = {'))
+ok('ogni scheda di IMPOSTAZIONI ha la sua icona', ids.filter((id) => !new RegExp(`\\b${id}: (voce\\(|ICONE_)`).test(blocco)), [])
+const regole = readFileSync('src/components/segreteria/Regole.tsx', 'utf8')
+ok('la barra di IMPOSTAZIONI mostra l\'icona', /ICONE_IMPOSTAZIONI\[s\.id\]/.test(regole), true)
+
 process.exit(fallite ? 1 : 0)

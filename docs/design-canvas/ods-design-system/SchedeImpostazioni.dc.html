@@ -14,18 +14,19 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
+<svg width="0" height="0" style="position: absolute" aria-hidden="true"><symbol id="i-stagione" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol><symbol id="i-sale" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M11 18h2"/></symbol><symbol id="i-esercizi" viewBox="0 0 24 24"><path d="M6 12h12"/><rect x="3" y="8" width="3" height="8" rx="1"/><rect x="18" y="8" width="3" height="8" rx="1"/></symbol><symbol id="i-ricevute" viewBox="0 0 24 24"><path d="M5 2v20l2.5-1.5L10 22l2-1.5 2 1.5 2.5-1.5L19 22V2l-2.5 1.5L14 2l-2 1.5L10 2 7.5 3.5z"/><path d="M9 8h6M9 12h6"/></symbol><symbol id="i-avvisi" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol><symbol id="i-dati" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></symbol><symbol id="i-importa" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><path d="M12 15V3"/></symbol><symbol id="i-computer" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol></svg>
 <div role="tablist" aria-label="Gruppi delle impostazioni" style="display: flex; flex-wrap: wrap; gap: 4px; width: {{larghezza}}; max-width: 100%">
-  <sc-for list="{{schede}}" as="x" hint-placeholder-count="7">
-    <span role="tab" aria-selected="{{x.selezionata}}" style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; white-space: nowrap; background: {{x.sfondo}}; border: 2px solid {{x.bordo}}; font-family: {{carattere}}; font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: {{x.colore}}">{{x.nome}}</span>
+  <sc-for list="{{schede}}" as="x" hint-placeholder-count="8">
+    <span role="tab" aria-selected="{{x.selezionata}}" style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; gap: 8px; white-space: nowrap; background: {{x.sfondo}}; border: 2px solid {{x.bordo}}; font-family: {{carattere}}; font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: {{x.colore}}"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><use href="#i-{{x.id}}"></use></svg>{{x.nome}}</span>
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"acceso":{"editor":"enum","options":["LA STAGIONE","LE SALE E I TABLET","LE RICEVUTE","GLI AVVISI","DATI E PRIVACY","IMPORTA","QUESTO COMPUTER"],"default":"LA STAGIONE"},"telefono":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":1100,"height":50}}'>
-// COSTRUITA (`../impostazioni-riordino/`, proposta B): le sette schede in cima a IMPOSTAZIONI (`Regole` in
+<script data-dc-script data-props='{"acceso":{"editor":"enum","options":["LA STAGIONE","LE SALE E I TABLET","GLI ESERCIZI","LE RICEVUTE","GLI AVVISI","DATI E PRIVACY","IMPORTA","QUESTO COMPUTER"],"default":"LA STAGIONE"},"telefono":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro","sito"],"default":"sito","section":"Tema"},"$preview":{"width":1100,"height":50}}'>
+// COSTRUITA (`../impostazioni-riordino/`, proposta B): le otto schede in cima a IMPOSTAZIONI (`Regole` in
 // src/components/segreteria/Regole.tsx, nomi e ordine da `SCHEDE_IMPOSTAZIONI` di src/lib/schedeImpostazioni.ts).
 // Stesso pattern di SchedeIscritto (.schede / .scheda / .sg-schede di styles.css): alte 44px, raggio 0, bordo 2px,
 // 14px 700 0.18em, quella accesa con fondo `surface-2`, bordo e testo `text`. In piu' `.sg-schede-impostazioni`
-// le manda a capo (flex-wrap): sette non stanno in una riga del telefono. Si apre LA STAGIONE; QUESTO COMPUTER e' l'ultima.
+// le manda a capo (flex-wrap): otto non stanno in una riga del telefono. Si apre LA STAGIONE; QUESTO COMPUTER e' l'ultima.
 // `telefono` stringe la larghezza a 358px per far vedere l'andata a capo.
 const T = {
   scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', dim: '#8c8c88' },
@@ -33,15 +34,16 @@ const T = {
   // Il look del sito (src/styles.css, `:root[data-look='sito']`): .scheda prende --cond = Big Shoulders Display.
   sito: { surface: '#ffffff', surface2: '#cfe6f4', line: '#cfe6f4', text: '#0d2a3d', dim: '#46606f' },
 };
-const NOMI = ['LA STAGIONE', 'LE SALE E I TABLET', 'LE RICEVUTE', 'GLI AVVISI', 'DATI E PRIVACY', 'IMPORTA', 'QUESTO COMPUTER'];
+const NOMI = ['LA STAGIONE', 'LE SALE E I TABLET', 'GLI ESERCIZI', 'LE RICEVUTE', 'GLI AVVISI', 'DATI E PRIVACY', 'IMPORTA', 'QUESTO COMPUTER'];
+const IDS = ['stagione', 'sale', 'esercizi', 'ricevute', 'avvisi', 'dati', 'importa', 'computer'];
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.sito;
     const acceso = p.acceso || 'LA STAGIONE';
-    const schede = NOMI.map((nome) => {
+    const schede = NOMI.map((nome, i) => {
       const on = nome === acceso;
-      return { nome, selezionata: on ? 'true' : 'false', sfondo: on ? c.surface2 : c.surface, bordo: on ? c.text : c.line, colore: on ? c.text : c.dim };
+      return { nome, id: IDS[i], selezionata: on ? 'true' : 'false', sfondo: on ? c.surface2 : c.surface, bordo: on ? c.text : c.line, colore: on ? c.text : c.dim };
     });
     return {
       schede,

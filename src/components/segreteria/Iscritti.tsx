@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, FILTRI_VISIBILI, haConto, ID_FILTRI, passaChip, TESTI_FILTRI, titolariDi, type ChipConto, type ContestoFiltri, type IdFiltro } from '../../lib/filtriIscritti'
+import { altriAperti, altriFiltri, cellaCorsi, conSollecito, contiChip, famigliaDi, FILTRI_VISIBILI, fraseMinorenni, inFamiglia, haConto, ID_FILTRI, passaChip, senzaNascita, TESTI_FILTRI, titolariDi, type ChipConto, type ContestoFiltri, type Famiglia, type IdFiltro } from '../../lib/filtriIscritti'
 import { siPerdeUscendo, type DatiPagamentoDiretto } from '../../lib/pagamenti'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
@@ -28,6 +28,7 @@ import { cellaSollecito, fraseSollecitato, quotaNelVecchioDi } from '../../lib/s
 import { consiglioCorso, corsiDaPagare, nonPagati, statoCorsi, testoCorsoBreve, type StatoCorso } from '../../lib/corsiDaPagare'
 import { bollinoCorso, iscrizioniDellaScheda, riquadroCertificato, riquadroCorso, riquadroDocumento, riquadroQuota } from '../../lib/schedeIscritto'
 import { pagatoNelVecchio, soloQueste } from '../../lib/pagatoPrima'
+import { ICONE_ISCRITTI } from '../Icons'
 
 /** Quanto non è in regola, per ordinare: i guai più grossi prima. */
 const GUAIO_CERTIFICATO: Record<StatoCertificato, number> = { manca: 2, scaduto: 2, in_scadenza: 1, in_arrivo: 1, valido: 0, non_serve: 0 }
@@ -117,6 +118,43 @@ function IconaContatto({ tipo }: { tipo: 'telefono' | 'email' }) {
   )
 }
 
+/** Un segno dell'elenco: l'icona, e la parola nel title e per chi legge lo schermo. */
+function SegnoIscritto({ icona, parola }: { icona: keyof typeof ICONE_ISCRITTI; parola: string }) {
+  const Icona = ICONE_ISCRITTI[icona]
+  return (
+    <span className="sg-segno-iscritto" role="img" aria-label={parola} title={parola}>
+      <Icona size={16} />
+    </span>
+  )
+}
+
+/** La famiglia nella riga: la casa, e per un familiare il nome del titolare, che apre la sua scheda. */
+function CellaFamiglia({ f, onApri }: { f: Famiglia | null; onApri: (id: string) => void }) {
+  if (!f) return null
+  if (f.tipo === 'titolare') return <SegnoIscritto icona="casa" parola="Titolare di una famiglia" />
+  const t = f.titolare
+  return (
+    <>
+      <SegnoIscritto icona="casa" parola="In famiglia con" />
+      {t ? (
+        <button
+          type="button"
+          className="sg-famiglia-titolare"
+          onClick={(e) => {
+            // Il click è per il titolare, non per la riga.
+            e.stopPropagation()
+            onApri(t.id)
+          }}
+        >
+          {t.cognome} {t.nome}
+        </button>
+      ) : (
+        'Famiglia'
+      )}
+    </>
+  )
+}
+
 function Bollino({ tono, children }: { tono: Tono; children: string }) {
   return (
     <span className="num sg-segno-regola" data-tono={tono}>
@@ -191,6 +229,8 @@ export function Iscritti({
   const [senzaCorso, setSenzaCorso] = useState(filtroIniziale === 'senza-corso')
   const [importa, setImporta] = useState(false)
   const [senzaDocumento, setSenzaDocumento] = useState(false)
+  const [minorenni, setMinorenni] = useState(false)
+  const [famiglie, setFamiglie] = useState(false)
   const [filePrima, setFilePrima] = useState(filtroIniziale === 'file-di-prima')
   const [doppi, setDoppi] = useState(false)
   const [pagatoPrima, setPagatoPrima] = useState(false)
@@ -239,6 +279,8 @@ export function Iscritti({
     'file-di-prima': [soloFilePrima, setFilePrima],
     doppioni: [soloDoppi, setDoppi],
     'pagato-prima': [soloPagatoPrima, setPagatoPrima],
+    minorenni: [minorenni, setMinorenni],
+    famiglie: [famiglie, setFamiglie],
   }
   // A segnalazioni spente resta solo «Tesserati senza corso»: «Senza tessera» non si mostra.
   const altri = altriFiltri({ conTessere: conTessereLette, filePrima: nFilePrima, doppioni: coppie.length, conStorico: nelVecchio > 0, segnalaTessere: SEGNALA_TESSERE })
@@ -251,11 +293,21 @@ export function Iscritti({
     setCorso('')
     accesi.forEach((id) => filtri[id][1](false))
   }
-  const contesto: ContestoFiltri = { oggi, scopertiDi, tesseraDi, titolari: titolariDi(tutti) }
+  const titolari = titolariDi(tutti)
+  const contesto: ContestoFiltri = { oggi, scopertiDi, tesseraDi, titolari }
+  const personaPerId = new Map(tutti.map((p) => [p.id, p]))
+  const famigliaDiP = (p: PersonaSeg) => famigliaDi(p, personaPerId, titolari)
   // Ricerca e corso: quel che resta scelto quando si accende un chip, e su cui si contano i chip.
   const inBase = (p: PersonaSeg) =>
     (!ricerca || ricerca.ids.includes(p.id)) && cercaNellElenco(p, cerca) && (!corso || p.iscrizioni.some((i) => i.corsoId === corso && inCorso(i, oggi)))
   const conti = contiChip(tutti, inBase, contesto)
+  const minorenneP = (p: PersonaSeg) => passaChip('minorenni', p, contesto)
+  // Chi non ha la data di nascita non è contato: la segreteria deve sapere che il conto non è completo.
+  const sottoMinorenni = minorenni ? fraseMinorenni(conti.minorenni, senzaNascita(tutti.filter(inBase))) : ''
+  const apriTitolare = (id: string) => {
+    setUnisciCon(null)
+    onScelta(id, 'push')
+  }
   const chipFiltro = (id: IdFiltro) => (
     <button key={id} type="button" className="num sg-chip" aria-pressed={filtri[id][0]} onClick={() => filtri[id][1](!filtri[id][0])}>
       {TESTI_FILTRI[id]}
@@ -274,6 +326,8 @@ export function Iscritti({
       chip('pagare', pagare, p) &&
       chip('corsi-scaduti', corsiScaduti, p) &&
       chip('fuori', fuori, p) &&
+      chip('minorenni', minorenni, p) &&
+      (!famiglie || inFamiglia(p, titolari)) &&
       (!noTessera || senzaTessera(tesseraDi(p))) &&
       (!senzaCorso || tesseratoSenzaCorso(tesseraDi(p))) &&
       (!senzaDocumento || !p.documento) &&
@@ -411,7 +465,7 @@ export function Iscritti({
         <Testa
           titolo="ISCRITTI"
           // Senza certificato e da pagare li dicono i chip, coi loro conti.
-          sotto={corsiScaduti ? `${nScaduti === 1 ? 'Un iscritto ha' : `${nScaduti} iscritti hanno`} un corso scaduto o pagato in parte.` : `${attiveOra.length} persone attive${inScadenza ? ` · ${inScadenza === 1 ? 'un certificato' : `${inScadenza} certificati`} in scadenza` : ''}.${
+          sotto={corsiScaduti ? `${nScaduti === 1 ? 'Un iscritto ha' : `${nScaduti} iscritti hanno`} un corso scaduto o pagato in parte.` : minorenni ? sottoMinorenni : `${attiveOra.length} persone attive${inScadenza ? ` · ${inScadenza === 1 ? 'un certificato' : `${inScadenza} certificati`} in scadenza` : ''}.${
             nFilePrima === 1 ? ' Un certificato non archiviato.' : nFilePrima ? ` ${nFilePrima} certificati non archiviati.` : ''
           }`}
         >
@@ -524,6 +578,7 @@ export function Iscritti({
         <div role="table" aria-label="Iscritti" className="sg-tabella">
           <div role="row" className="sg-lista-testa sg-riga-iscritto sg-riga-iscritti" data-sollecito={sollecitare || undefined}>
             {colonna('nome', 'NOME')}
+            <span role="columnheader" className="sg-etichetta">FAMIGLIA</span>
             {colonna('certificato', <TestaStretta parola="CERTIFICATO" />, { numeri: true })}
             {colonna('quota', <TestaStretta parola="QUOTA" />, { numeri: true })}
             {colonna('corsi', 'CORSI')}
@@ -540,6 +595,7 @@ export function Iscritti({
               const cella = cellaCorsi(suoi, corsiScaduti)
               const stato = statoPerElenco(p, oggi, tesseraDi(p))
               const barra = percentualeBarra(f)
+              const fam = famigliaDiP(p)
               return (
                 // Una riga vera della tabella, che si clicca tutta; dalla tastiera e per chi legge lo schermo c'è il tasto sul nome.
                 <div
@@ -558,7 +614,17 @@ export function Iscritti({
                     <button type="button" className="sg-riga-apri" aria-current={!nuovo && scelta === p.id ? 'true' : undefined}>
                       {p.cognome} {p.nome}
                     </button>
+                    {minorenneP(p) && <SegnoIscritto icona="bambino" parola="Minorenne" />}
                     {certificatoDaStampare(p.certificato) && <span className="num sg-tag" style={{ marginLeft: 8 }}>{TESTI_FILTRI['file-di-prima']}</span>}
+                    {/* Sotto i 1000 px la colonna FAMIGLIA non c'è: la famiglia va sotto il nome. */}
+                    {fam && (
+                      <span className="sg-sotto-nome">
+                        <span className="sg-cella-famiglia"><CellaFamiglia f={fam} onApri={apriTitolare} /></span>
+                      </span>
+                    )}
+                  </span>
+                  <span role="cell" className="sg-cella-famiglia">
+                    <CellaFamiglia f={fam} onApri={apriTitolare} />
                   </span>
                   <span role="cell" className="sg-stato-elenco">
                     <SegnoElenco s={stato.certificato} />

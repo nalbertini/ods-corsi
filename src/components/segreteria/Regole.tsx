@@ -3,7 +3,7 @@ import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, motivoAttiv
 import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { indirizzoValido } from '../../lib/avvisoSegreteria'
-import { Spunta } from '../Icons'
+import { ICONE_IMPOSTAZIONI, Spunta } from '../Icons'
 import { aspettoInUso, useAspetto, type Aspetto } from '../../lib/aspetto'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
@@ -104,7 +104,9 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
       <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al programma. In fondo, quelle di questo computer." />
 
       <div className="schede sg-schede sg-schede-impostazioni" role="tablist" aria-label="Gruppi delle impostazioni" onKeyDown={tastiera}>
-        {SCHEDE_IMPOSTAZIONI.map((s) => (
+        {SCHEDE_IMPOSTAZIONI.map((s) => {
+          const Icona = ICONE_IMPOSTAZIONI[s.id]
+          return (
           <button
             key={s.id}
             type="button"
@@ -117,9 +119,11 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
             data-on={aperta === s.id}
             onClick={() => setAperta(s.id)}
           >
+            <Icona />
             {s.nome}
           </button>
-        ))}
+          )
+        })}
       </div>
       {imp.guaio && <Guaio testo={`Le impostazioni non si leggono: ${imp.guaio}`} />}
 
