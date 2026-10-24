@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.200.16 — 24 ottobre 2026
+
+### Modificato
+
+- La pagina di accesso mostra solo l'accesso
+
 ## 0.200.15 — 24 ottobre 2026
 
 ### Risolto
