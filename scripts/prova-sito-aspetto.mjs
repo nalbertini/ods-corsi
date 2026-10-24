@@ -149,6 +149,8 @@ console.log('\nCarattere: Big Shoulders Display e Inter, file del sito')
   const file = facce.flatMap((f) => [...f.matchAll(/url\(\/risorse\/([^)]+\.woff2)\)/g)].map((m) => m[1]))
   ok('ognuno con un url(/risorse/….woff2) e format("woff2")', facce.length > 0 && facce.every((f) => /url\(\/risorse\/[^)]+\.woff2\)\s*format\("woff2"\)/.test(f)), true)
   ok('i file esistono in sito/risorse', file.length > 0 && file.every((n) => existsSync(`sito/risorse/${n}`)), true)
+  // Senza preload i font arrivano dopo il primo disegno e il testo cambia altezza: sposta la foto sotto (CLS 0,14 misurato).
+  ok('ogni font ha il suo <link rel="preload" as="font" crossorigin> nella <head>', file.length > 0 && file.every((n) => new RegExp(`<link rel="preload" href="/risorse/${n.replace('.', '\\.')}" as="font" type="font/woff2" crossorigin>`).test(home.split('<style>')[0])), true)
   const risorse = existsSync('sito/risorse') ? readdirSync('sito/risorse') : []
   const ofl = risorse.filter((n) => /^OFL/i.test(n)).map((n) => readFileSync(`sito/risorse/${n}`, 'utf8')).join('\n')
   ok('la licenza OFL di Big Shoulders e quella di Inter sono accanto ai file', [/Big Shoulders/i.test(ofl), /\bInter\b/.test(ofl), /SIL OPEN FONT LICENSE/i.test(ofl)], [true, true, true])
