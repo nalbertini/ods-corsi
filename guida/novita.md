@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.198.0 — 24 ottobre 2026
+
+### Novità
+
+- Il risultato di Lighthouse come controllo sulla PR
+
+### Modificato
+
+- L'app si apre più in fretta sul telefono
+
 ## 0.197.3 — 24 ottobre 2026
 
 ### Modificato
