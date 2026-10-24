@@ -34,6 +34,21 @@ export function eContattiNuova(testoPulito: string, iscrizione: string): boolean
 /** Un paragrafo fatto solo di un link: l'azione di una tessera. */
 const soloLink = (b: Blocco) => b.tag === 'p' && /^<p[^>]*>\s*<a\b[^>]*>[\s\S]*?<\/a>\s*<\/p>$/i.test(b.html)
 
+/** Le icone dei recapiti (tratto 24px come `Icons.tsx`), scelte dal link dell'azione e non dal titolo: un link che non si riconosce resta senza. */
+const ICONE: Array<[RegExp, string]> = [
+  [/^tel:/i, '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>'],
+  [/^mailto:/i, '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>'],
+  [/^https?:\/\/([^/]*\.)?instagram\.com\//i, '<rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>'],
+  [/^https?:\/\/([^/]*\.)?facebook\.com\//i, '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>'],
+  [/^https?:\/\/([^/]*\.)?(google\.[a-z.]+\/maps|maps\.)/i, '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'],
+]
+
+function icona(azione: Blocco | null): string {
+  const href = azione?.html.match(/href="([^"]*)"/i)?.[1]?.replace(/&amp;/g, '&') ?? ''
+  const d = ICONE.find(([re]) => re.test(href))?.[1]
+  return d ? `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>` : ''
+}
+
 function recapito(g: { titolo: string; corpo: Blocco[] }, k: number): string {
   const paragrafi = g.corpo.filter((x) => x.tag === 'p')
   const valore = paragrafi[0]
@@ -41,7 +56,7 @@ function recapito(g: { titolo: string; corpo: Blocco[] }, k: number): string {
   const azione = paragrafi.length > 1 && soloLink(ultimo) ? ultimo : null
   const altri = g.corpo.filter((x) => x !== valore && x !== azione)
   const breve = valore && testoSolo(valore.html).length <= VALORE_BREVE ? ' breve' : ''
-  return `<article class="tessera ${RECAPITI[k % RECAPITI.length]}${breve}"><h3>${g.titolo}</h3>${valore?.html ?? ''}${altri.map((x) => x.html).join('')}${azione ? `<div class="azione">${contenuto(azione)}</div>` : ''}</article>`
+  return `<article class="tessera ${RECAPITI[k % RECAPITI.length]}${breve}">${icona(azione)}<h3>${g.titolo}</h3>${valore?.html ?? ''}${altri.map((x) => x.html).join('')}${azione ? `<div class="azione">${contenuto(azione)}</div>` : ''}</article>`
 }
 
 /** Il tag della mappa con le misure dell'immagine del sito. */
