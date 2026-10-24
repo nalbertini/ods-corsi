@@ -98,12 +98,35 @@ jobs:
       - name: npm run prova:*
         run: |
           guai=0
-          for s in $(node -p "Object.keys(require('./package.json').scripts).filter((s) => s.startsWith('prova:') && s !== 'prova:sql').join(' ')"); do
+          for s in $(node -p "Object.keys(require('./package.json').scripts).filter((s) => s.startsWith('prova:') && s !== 'prova:sql' && s !== 'prova:a11y-axe').join(' ')"); do
             echo "::group::$s"
             npm run -s "$s" || { echo "::error::$s non torna"; guai=1; }
             echo '::endgroup::'
           done
           exit $guai
+
+  # axe-core sulle schermate principali in modalità prova: serve la build e un
+  # Chromium vero, quindi un lavoro suo e non il giro di `prova:*`. Le
+  # violazioni note stanno in scripts/a11y-note.json, con il motivo.
+  accessibilita:
+    name: Accessibilità (axe)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            timer/package-lock.json
+
+      - run: npm ci
+      - run: npm ci --prefix timer
+      - run: npm run build:tutto
+      - run: npx playwright install --with-deps chromium
+      - run: npm run prova:a11y-axe
 
   database:
     name: Prove del database
