@@ -402,6 +402,26 @@
 :root[data-look='sito'] .sg-btn-linea:disabled { border-color: transparent; }
 /* Anche un chip spento: con l'opacità il testo bianco sull'azzurro non si legge (DESIGN.md › Buttons). */
 :root[data-look='sito'] .sg-chip:disabled { background: var(--surface-2); color: var(--dim); border-color: transparent; opacity: 1; }
+/* I tasti condivisi (appello, scelta, firma, condividi) come quelli del modulo: dritti, angoli da 6, il principale giallo. */
+:root[data-look='sito'] .btn { font-style: normal; border-radius: 6px; font-size: 22px; letter-spacing: 0.06em; }
+:root[data-look='sito'] .btn-primary { background: var(--giallo); color: var(--su-colore); }
+/* «Tocca di nuovo per eliminare» resta rosso: il giallo direbbe «avanti» proprio dove si cancella. */
+:root[data-look='sito'] .btn-primary[data-sicuro='true'] { background: transparent; border: 2px solid var(--rosso-testo); color: var(--rosso-testo); }
+:root[data-look='sito'] .btn-ghost { color: var(--text); }
+:root[data-look='sito'] .btn-dashed { border: 2px dashed var(--riga-campo); color: var(--text); }
+/* Spento è un blocco grigio, come in segreteria: sbiadito sul fondo chiaro sembra acceso. */
+:root[data-look='sito'] .btn:disabled { background: var(--surface-2); color: var(--dim); opacity: 1; }
+:root[data-look='sito'] .btn-ghost:disabled,
+:root[data-look='sito'] .btn-dashed:disabled { border-color: transparent; }
+/* Etichette meno spaziate: Big Shoulders è già stretto, a 0.2em le parole si sfaldano. */
+:root[data-look='sito'] .rule-label { font-size: 15px; letter-spacing: 0.12em; }
+:root[data-look='sito'] .modulo-etichetta,
+:root[data-look='sito'] .etichetta-riquadro,
+:root[data-look='sito'] .testata-luogo { letter-spacing: 0.12em; }
+:root[data-look='sito'] .scelta-titolo { font-style: normal; letter-spacing: 0.06em; }
+:root[data-look='sito'] .campo { border-radius: 6px; }
+/* DATI DI PROVA si legge dal tablet a un metro. */
+:root[data-look='sito'] .nastro-prova { font-size: 13px; font-weight: 800; letter-spacing: 0.08em; }
 :root[data-look='sito'] .sg-btn-linea,
 :root[data-look='sito'] .sg-btn-tratteggio,
 :root[data-look='sito'] .sg-chip,
@@ -539,7 +559,9 @@
 :root[data-look='sito'] .appello-coda { letter-spacing: 0.04em; }
 /* Il tasto principale della schermata: sempre in vista, perché la testa resta ferma. */
 :root[data-look='sito'] .appello-testa .btn-go { background: var(--giallo); color: var(--su-colore); border-radius: 6px; letter-spacing: 0.04em; }
-:root[data-look='sito'] .appello-testa .btn-go:disabled { background: var(--line); color: var(--dim); opacity: 1; }
+:root[data-look='sito'] .appello-testa .btn-go:disabled { background: var(--surface-2); color: var(--dim); opacity: 1; }
+/* CHIUDI L'APPELLO ✓ resta giallo come CHIUDI · N ASSENTI: è lo stesso tasto, cambia solo cosa dice. */
+:root[data-look='sito'] .appello-fine .btn-go { background: var(--giallo); color: var(--su-colore); }
 
 :root[data-look='sito'] .riga-appello { background: var(--surface); border: 0; border-radius: 6px; box-shadow: inset 4px 0 0 transparent; }
 :root[data-look='sito'] .riga-appello[data-stato='presente'] { box-shadow: inset 4px 0 0 var(--verde); }

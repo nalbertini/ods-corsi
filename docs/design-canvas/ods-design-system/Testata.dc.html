@@ -60,7 +60,7 @@
 // largo non la usa quasi mai, perche' li' c'e' il menu (Segreteria o istruttori), vedi Menu.dc.html.
 // senzaCitta: toglie « · COLLEGNO» dopo il luogo (per le proposte in cui la riga dice solo il nome della pagina, es. MODULO DI ISCRIZIONE; nell'app la testata lo scrive sempre).
 // istruttori (COSTRUITO, con `tema="sito"`): la testata dell'area istruttore sul telefono nel look del sito (`senzaTema` in src/App.tsx): niente tasto del tema (l'area e' sempre chiara), nome in Big Shoulders 800 dritto a 18px con 0.04em,
-// luogo Inter 11px con 0.16em in #46606f, «?» in Big Shoulders 700 con bordo blu #14709f da 2px, senza raggio (`.testata .icon-btn` del look). Sullo schermo largo non c'e': li' c'e' MenuIstruttori. Non e' BarraTelefono: l'area istruttore non ha il tasto MENU, ha la barra delle pagine in basso.
+// luogo Inter 11px con 0.12em in #46606f, «?» in Big Shoulders 700 con bordo blu #14709f da 2px, senza raggio (`.testata .icon-btn` del look). Sullo schermo largo non c'e': li' c'e' MenuIstruttori. Non e' BarraTelefono: l'area istruttore non ha il tasto MENU, ha la barra delle pagine in basso.
 // luogo: la parola sopra COLLEGNO (ACCESSO, CORSI, ISCRIZIONI, ISCRITTI, ISTRUTTORI, GUIDA, SEGRETERIA).
 // guida: il tasto "?" (la guida di quella pagina); il tasto del tema mostra dove porta: sole sul tema scuro,
 // luna sul chiaro.
@@ -93,7 +93,7 @@ class Component extends DCLogic {
       nomeCorpo: ist ? '18px' : sito ? '26px' : '18px', nomeFam: sito ? BIG : "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif", nomeInclina: sito ? 'normal' : 'oblique 9deg',
       nomePeso: sito ? 800 : 700, nomeSpazio: ist ? '0.04em' : sito ? '0.02em' : '0.04em',
       luogoFam: sito ? INTER : 'inherit', luogoCorpo: ist ? '11px' : sito ? '12px' : '11px',
-      luogoSpazio: ist ? '0.16em' : sito ? '0.12em' : '0.16em',
+      luogoSpazio: sito ? '0.12em' : '0.16em',
       citta: truthy(p.senzaCitta) ? '' : ' · COLLEGNO',
     };
   }
