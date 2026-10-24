@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.203.5 — 24 ottobre 2026
+
+### Risolto
+
+- Le foto del sito non fanno più saltare la pagina e restano in cache
+
 ## 0.203.4 — 24 ottobre 2026
 
 ### Modificato
