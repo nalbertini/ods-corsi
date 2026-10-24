@@ -62,6 +62,54 @@ ok('senza scelta la freccia sposta solo il focus', L.frecciaRadio('ArrowDown', 0
 ok('con una voce sola non si sceglie di nuovo', L.frecciaRadio('ArrowDown', 0, 1, true), { focus: 0, scegli: false })
 ok('un altro tasto non fa niente', L.frecciaRadio('a', 0, 3, true), null)
 
+// Il legame con SceltaCorsi, davvero: la funzione dà l'albero dei bottoni, e `onKeyDown` si prova con eventi finti.
+const { outputFiles: dsOut } = await build({
+  stdin: {
+    contents: "export { SceltaCorsi } from './src/components/ds'",
+    resolveDir: '.',
+    loader: 'tsx',
+  },
+  bundle: true,
+  format: 'esm',
+  platform: 'node',
+  jsx: 'automatic',
+  write: false,
+  logLevel: 'error',
+  banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(process.cwd() + '/x.js');" },
+  define: { 'import.meta.env': '{}', 'process.env.NODE_ENV': '"production"' },
+})
+const DS = await import('data:text/javascript;base64,' + Buffer.from(dsOut[0].text).toString('base64'))
+const voci = ['a', 'b', 'c'].map((id) => ({ id, testo: id }))
+const bottoni = (scelti, onScegli = () => {}) => {
+  const trovati = []
+  const visita = (n) => {
+    if (!n || typeof n !== 'object') return
+    if (Array.isArray(n)) return n.forEach(visita)
+    if (n.type === 'button') trovati.push(n.props)
+    visita(n.props?.children)
+  }
+  visita(DS.SceltaCorsi({ id: 'x', etichetta: 'Corsi', una: true, voci, scelti, onScegli }))
+  return trovati
+}
+ok('i radio hanno il tab stop sulla voce scelta', bottoni(['b']).map((b) => b.tabIndex), [-1, 0, -1])
+ok('senza scelta il tab stop è sul primo radio', bottoni([]).map((b) => b.tabIndex), [0, -1, -1])
+const premi = (scelti, i, key) => {
+  const chiamate = { scelto: [], focus: [], fermato: 0 }
+  const fratelli = voci.map((_, k) => ({ focus: () => chiamate.focus.push(k) }))
+  const e = { key, preventDefault: () => chiamate.fermato++, currentTarget: { parentElement: { querySelectorAll: () => fratelli } } }
+  bottoni(scelti, (id) => chiamate.scelto.push(id))[i].onKeyDown(e)
+  return chiamate
+}
+ok('freccia giù con una scelta: focus sul successivo e lo sceglie', premi(['a'], 0, 'ArrowDown'), { scelto: ['b'], focus: [1], fermato: 1 })
+ok('freccia giù senza scelta: solo il focus', premi([], 0, 'ArrowDown'), { scelto: [], focus: [1], fermato: 1 })
+ok('un altro tasto lascia fare al browser', premi(['a'], 0, 'Tab'), { scelto: [], focus: [], fermato: 0 })
+ok('i gruppi a scelta multipla non hanno ruolo radio né frecce', (() => {
+  const t = []
+  const visita = (n) => { if (!n || typeof n !== 'object') return; if (Array.isArray(n)) return n.forEach(visita); if (n.type === 'button') t.push(n.props); visita(n.props?.children) }
+  visita(DS.SceltaCorsi({ id: 'x', etichetta: 'Corsi', voci, scelti: [], onScegli() {} }))
+  return t.map((b) => [b.role, !!b.onKeyDown])
+})(), [[undefined, false], [undefined, false], [undefined, false]])
+
 // Reflow a 320px: la barra e la riga di ricerca vanno a capo.
 const css = readFileSync('src/segreteria.css', 'utf8')
 const cssApp = readFileSync('src/styles.css', 'utf8')
@@ -77,11 +125,9 @@ ok('il timer porta il focus su AVVIA', /avviaRef\.current\?\.focus\(\)/.test(tim
 const app = readFileSync('timer/src/App.tsx', 'utf8')
 ok('tornando dal timer il focus va sulla scheda attiva', /\.navitem\[aria-current="page"\], \.tab\[data-on="true"\]/.test(app), true)
 
-// Il legame con i componenti: senza questi, le funzioni sopra sarebbero provate ma non usate.
+// Il legame di IscrizioneAPassi (troppo grande per renderlo senza browser): il testo dei sorgenti, e il DOM vero a mano.
 const passi = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
 ok('i campi obbligatori hanno aria-required', /'aria-required': P\.campoObbligatorio\(k\)/.test(passi), true)
 ok('la privacy ha aria-required', /id="n-privacy"[^>]*aria-required|aria-required[^>]*id="n-privacy"/s.test(passi), true)
-const ds = readFileSync('src/components/ds.tsx', 'utf8')
-ok('i radio usano le frecce e il tab stop unico', /frecciaRadio\(/.test(ds) && /tabIndexRadio\(/.test(ds), true)
 
 process.exit(fallite ? 1 : 0)

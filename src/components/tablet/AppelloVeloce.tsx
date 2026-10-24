@@ -3,7 +3,7 @@ import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Spunta } from '../Icons'
 import { SegnoCompleanno } from '../SegnoCompleanno'
 import { Guaio } from './comune'
-import { FasciaTocco, useTocchi } from './tocchi'
+import { AnnuncioTocco, FasciaTocco, useTocchi } from './tocchi'
 
 /**
  * I nomi degli iscritti sotto la lezione aperta, a tre per riga: chi arriva
@@ -43,6 +43,7 @@ export function AppelloVeloce({ d, lezione, onCambiato }: { d: DatiTablet; lezio
           )
         })}
       </div>
+      <AnnuncioTocco fascia={fascia} passata={false} giorno={giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))} />
       {fascia && (
         <FasciaTocco fascia={fascia} passata={false} giorno={giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))} onAnnulla={annulla} onChiudi={chiudi} />
       )}

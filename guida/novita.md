@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.199.9 — 24 ottobre 2026
+
+### Risolto
+
+- Nell'area iscritti gli errori si sentono col lettore di schermo e le scritte grigie si leggono
+
+## 0.199.8 — 24 ottobre 2026
+
+### Risolto
+
+- Il tablet di sala e il timer dicono a voce l'esito di un tocco e il cambio di fase
+
 ## 0.199.7 — 24 ottobre 2026
 
 ### Modificato
