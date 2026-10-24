@@ -9,7 +9,7 @@
 import { build } from 'esbuild'
 
 const { outputFiles } = await build({ entryPoints: ['src/lib/csp.ts'], bundle: true, format: 'esm', platform: 'node', write: false, logLevel: 'silent' })
-const { politicaCsp } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+const { politicaCsp, senzaImportEsterni } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
@@ -29,6 +29,10 @@ ok('un database con dominio suo si legge dall’indirizzo', direttiva(politicaCs
 ok('senza database (modalità prova) non resta un indirizzo mezzo scritto', direttiva(politicaCsp(undefined), 'connect-src')?.some((s) => s.includes('undefined')), false)
 ok('un indirizzo che non è un indirizzo non apre niente', direttiva(politicaCsp('boh'), 'connect-src')?.filter((s) => s !== "'self'" && !s.includes('spotify')), [])
 ok('nessuna direttiva che una <meta> ignora', /frame-ancestors|report-uri|sandbox/.test(p), false)
+
+ok('un @import di un altro sito si toglie', senzaImportEsterni('@import "https://rsms.me/inter/inter.css";:root{--a:1}'), ':root{--a:1}')
+ok('anche scritto con url() e senza spazi', senzaImportEsterni('@import url("https://x.it/a.css");a{b:c}'), 'a{b:c}')
+ok('un @import dei nostri file resta', senzaImportEsterni('@import "./a.css";a{b:c}'), '@import "./a.css";a{b:c}')
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
