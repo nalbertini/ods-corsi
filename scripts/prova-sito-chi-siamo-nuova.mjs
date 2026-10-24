@@ -67,7 +67,7 @@ console.log('\n1. Si riconosce dal link all’iscrizione; senza, la pagina è qu
   // Se cambia con ragione (un'altra pagina tocca impagina/testata), si ricalcola: stampa `createHash('sha256').update(main(hh)).digest('hex').slice(0, 16)`.
   const veroV = readFileSync('scripts/fixture-chi-siamo-vecchia.html', 'utf8')
   const hh = generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'chi-siamo', titolo: 'Chi siamo', descrizione: 'd', testo: veroV }], menu: [], rinvii: [], ospitiImmagini: ['https://qfejpnkryrvjubcxvuco.supabase.co/storage/v1/object/public/sito/'] })['chi-siamo/index.html']
-  ok('<main> del testo di oggi identico a prima', createHash('sha256').update(main(hh)).digest('hex').slice(0, 16), '7b2dca792c69fa0a')
+  ok('<main> del testo di oggi identico a prima', createHash('sha256').update(main(hh)).digest('hex').slice(0, 16), 'c2b7beea12ebc275')
   const h = pagina(NUOVO)
   ok('il testo nuovo: <main class="passo-unico chi-siamo-nuova">', main(h).startsWith('<main class="passo-unico chi-siamo-nuova">'), true)
   ok('niente collage e niente invito globale (c’è la chiamata finale)', [conta(h, /class="collage/g), conta(h, /class="invito/g), conta(h, /<section class="sezione cta">/g)], [0, 0, 1])

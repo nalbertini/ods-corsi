@@ -2,7 +2,7 @@ import { urlImmagine } from './sitoImmagini'
 import { indirizzoValido, percorsoPagina, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
 import { parteIscriviti, pezziInHtml, type ParteIscriviti, type Pezzo } from './sitoPezzi'
-import { GRIGLIA_MASSIMA, collage, conFila, impagina, persona, testataCorso } from './sitoLayout'
+import { GRIGLIA_MASSIMA, collage, conFila, conMisure, impagina, persona, testataCorso } from './sitoLayout'
 import { elencoIstruttori, schedaScarna, type Cornice } from './sitoIstruttori'
 import { CSS_CORSI, CSS_CORSI_NUOVA, corsiNuova, eCorsiNuova } from './sitoCorsi'
 import { CSS_INTERNE } from './sitoInterne'
@@ -57,6 +57,11 @@ export interface VoceGenerata {
   indirizzo: string | null
 }
 
+export interface MisureImmagine {
+  larghezza: number
+  altezza: number
+}
+
 export interface DatiSito {
   /** Con lo schema e senza «/» in fondo: https://www.officinedellosport.it */
   dominio: string
@@ -67,6 +72,8 @@ export interface DatiSito {
   orariSito?: OrarioSito[]
   /** Prefissi di indirizzo da cui le immagini del testo sono ammesse: il contenitore delle immagini (`…/storage/v1/object/public/sito/`). Vuoto: solo quelle del sito. */
   ospitiImmagini?: string[]
+  /** Le misure delle foto del contenitore, per indirizzo dell'originale (le legge `scripts/genera-sito.mjs`). Senza, niente width/height. */
+  immagini?: Record<string, MisureImmagine>
   /** Le ricorrenze dei corsi (`orari_aperti()`): servono alle pagine collegate. Senza, una pagina collegata dice «Orario in arrivo». */
   orari?: OrarioAperto[]
   /**
@@ -1064,7 +1071,16 @@ const lista = (v: Array<{ etichetta: string; href: string }>, corrente = '') => 
 /** Dove stanno le immagini delle pagine (il contenitore «sito» del progetto): l'unico prefisso che lo script dichiara. */
 export const prefissoImmagini = (urlProgetto: string): string => urlImmagine(urlProgetto, '')
 
-function testoDellaPagina(testo: string, ospiti: string[]): string {
+/**
+ * Le foto del contenitore, messe dal generatore dopo la pulizia (che ammette solo `src` e `alt`): le misure ridotte
+ * di /render/image (`conMisure`), e width/height dell'originale, che tengono il posto alla foto mentre arriva.
+ */
+function conDimensioni(tag: string, m: MisureImmagine | undefined): string {
+  const ridotta = conMisure(tag)
+  return m ? ridotta.replace(/\s*\/?>$/, ` width="${m.larghezza}" height="${m.altezza}">`) : ridotta
+}
+
+function testoDellaPagina(testo: string, ospiti: string[], immagini: Record<string, MisureImmagine> = {}): string {
   return pulisciTesto(testo).replace(/<img\b[^>]*>/gi, (tag) => {
     const src = tag.match(/\bsrc="([^"]*)"/i)?.[1] ?? ''
     if (/^\/(?![/\\])/.test(src)) return tag
@@ -1073,7 +1089,7 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
       const [, host, percorso] = o.match(/^(https:\/\/[^/]+)(\/.*)$/i) ?? []
       return !!host && src.length > o.length && src.slice(0, host.length).toLowerCase() === host.toLowerCase() && src.slice(host.length).startsWith(percorso) && /^[A-Za-z0-9._-]+$/.test(src.slice(o.length)) && !src.slice(o.length).includes('..')
     })
-    return dentro ? tag : ''
+    return dentro ? conDimensioni(tag, immagini[src]) : ''
   })
 }
 
@@ -1211,7 +1227,7 @@ const PAGINE_NON_CORSO = new Set(['home', 'corsi', 'contatti', 'chi-siamo'])
 // Le pagine di legge sono informative: niente invito «Iscriviti» in fondo.
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   // La parte ISCRIVITI in fondo al testo diventa l'invito, una volta sola: non resta anche nel corpo.
-  const { resto, parte } = parteIscriviti(senzaPulsantiContatti(testoDellaPagina(p.testo, c.d.ospitiImmagini ?? []), c.d.dominio))
+  const { resto, parte } = parteIscriviti(senzaPulsantiContatti(testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [], c.d.immagini), c.d.dominio))
   const pulito = conPartiPulsanti(resto)
   // Dove la pagina ha già la sua chiamata finale l'invito automatico non esce; quello della parte sì, l'ha messo la segreteria.
   const fondo = (giaChiamata: boolean) => ((giaChiamata && !parte) || !conContatti ? '' : invito(parte, c.slugs.has('orari') && p.slug !== 'orari'))
@@ -1419,7 +1435,7 @@ export function generaSito(d: DatiSito): Record<string, string> {
   if (!DOMINIO.test(d.dominio)) throw new Error('Il dominio del sito non va bene: deve essere come https://www.officinedellosport.it, senza «/» in fondo')
   const pagine = d.pagine.filter((p, i) => slugDiPagina(p.slug) && d.pagine.findIndex((x) => x.slug === p.slug) === i)
   const slugs = new Set(pagine.map((p) => p.slug))
-  const corsi = corsiDa(testoDellaPagina(pagine.find((p) => p.slug === 'corsi')?.testo ?? '', d.ospitiImmagini ?? []), slugs, new Set(pagine.filter((p) => p.diLegge).map((p) => p.slug)))
+  const corsi = corsiDa(testoDellaPagina(pagine.find((p) => p.slug === 'corsi')?.testo ?? '', d.ospitiImmagini ?? [], d.immagini), slugs, new Set(pagine.filter((p) => p.diLegge).map((p) => p.slug)))
   const c: Contesto = { d, slugs, corsi }
   const conContatti = c.slugs.has('contatti')
   const file: Record<string, string> = {}

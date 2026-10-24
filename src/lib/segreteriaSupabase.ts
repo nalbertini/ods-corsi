@@ -39,7 +39,7 @@ import type { OrarioSito } from './sitoOrari'
 import { titoliDelSito, type RigaDaDove } from './provenienza'
 import { pezziInHtml, pezziValidi } from './sitoPezzi'
 import { ORARIO_NON_ATTIVO } from './sitoOrario'
-import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
+import { CACHE_IMMAGINI, CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
 import { riduciFoto } from './foto'
 import type { NumeriSito } from './sitoNumeri'
 import { tipoDaRisposta } from './sitoStatistiche'
@@ -2643,7 +2643,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const no = controllaImmagine(pronta)
       const nome = nomeNelContenitore(crypto.randomUUID(), pronta.type)
       if (no || !nome) throw new Error(no ?? cosaNonVaImmagini(''))
-      const { error } = await db.storage.from(CONTENITORE_SITO).upload(nome, pronta, { contentType: pronta.type, upsert: false })
+      // Il nome è nuovo a ogni caricamento e non si sovrascrive mai: la cache (anche delle misure di /render/image) può durare un anno.
+      const { error } = await db.storage.from(CONTENITORE_SITO).upload(nome, pronta, { contentType: pronta.type, upsert: false, cacheControl: CACHE_IMMAGINI })
       if (error) throw immaginiNonAttive(error)
       return { nome, url: urlImmagine(URL_SUPABASE ?? '', nome) }
     },

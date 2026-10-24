@@ -547,7 +547,7 @@ export function conCaricamento(tag: string, prima: boolean): string {
  * 200–300 KB, arriva senza cache (`private, no-cache`) ed è molto più grande di quanto lo schermo mostri.
  * Il resto (file del sito, altri host) resta com'è.
  */
-function conMisure(tag: string): string {
+export function conMisure(tag: string): string {
   const m = /\bsrc="([^"]*\/storage\/v1)\/object\/public\/(sito\/[A-Za-z0-9._-]+)"/i.exec(tag)
   if (!m) return tag
   const url = (w: number) => `${m[1]}/render/image/public/${m[2]}?width=${w}&quality=75`

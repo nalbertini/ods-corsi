@@ -82,6 +82,7 @@
     "prova:sito": "node scripts/prova-sito.mjs",
     "prova:sito-aspetto": "node scripts/prova-sito-aspetto.mjs",
     "prova:sito-fasce": "node scripts/prova-sito-fasce.mjs",
+    "prova:sito-immagini": "node scripts/prova-sito-immagini.mjs",
     "prova:sito-immagini-misure": "node scripts/prova-sito-immagini-misure.mjs",
     "prova:sito-tessere": "node scripts/prova-sito-tessere.mjs",
     "prova:sito-titoli": "node scripts/prova-sito-titoli.mjs",
