@@ -118,6 +118,7 @@
     "prova:backup": "node scripts/prova-backup.mjs",
     "prova:banco": "node scripts/prova-banco.mjs",
     "prova:tema": "node scripts/prova-tema.mjs",
+    "prova:contrasti-segreteria": "node scripts/prova-contrasti-segreteria.mjs",
     "prova:iscrizione-sito": "node scripts/prova-iscrizione-sito.mjs",
     "prova:look": "node scripts/prova-look.mjs",
     "prova:istruttori-look": "node scripts/prova-istruttori-look.mjs",

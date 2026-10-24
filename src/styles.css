@@ -2927,6 +2927,9 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-orario[data-gradino='2'] { background: color-mix(in srgb, var(--blu) 55%, var(--surface)); }
 .sg-orario[data-gradino='3'] { background: color-mix(in srgb, var(--blu) 78%, var(--surface)); color: var(--text); }
 .sg-orario[data-gradino='4'] { background: var(--blu); color: var(--su-colore); }
+/* Nel look sito il blu è più scuro: il testo del gradino 4 diventa bianco (5,5:1) e il 3 si schiarisce un poco (il testo scuro era a 4,1:1). */
+:root[data-look='sito'] .sg-orario[data-gradino='3'] { background: color-mix(in srgb, var(--blu) 72%, var(--surface)); }
+:root[data-look='sito'] .sg-orario[data-gradino='4'] { color: var(--su-rosso); }
 .sg-orario:hover, .sg-orario:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
 .sg-stat-tabella { width: 100%; border-collapse: collapse; font-size: 14px; }
 .sg-stat-tabella th, .sg-stat-tabella td { padding: 8px 10px; border-bottom: 1px solid var(--surface-2); text-align: left; white-space: nowrap; }
