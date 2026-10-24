@@ -171,3 +171,15 @@ export const ICONE_CONTI = {
   casa: voce(<><path d="M3 11 12 4l9 7" /><path d="M5 10v10h14V10" /><rect x="10" y="14" width="4" height="6" /></>),
   frecce: voce(<><polyline points="15 4 19 8 15 12" /><path d="M5 8h14" /><polyline points="9 20 5 16 9 12" /><path d="M19 16H5" /></>),
 }
+
+/** Le icone delle linguette delle barre a schede della segreteria (Contabilità, il corso, Presenze): le stesse del menu e dei conti. */
+export const ICONE_SCHEDE = {
+  movimenti: ICONE_CONTI.frecce,
+  bilancio: ICONE_MENU.statistiche,
+  voci: ICONE_MENU.listino,
+  casse: ICONE_CONTI.banconota,
+  dati: ICONE_MENU.compensi,
+  iscritti: ICONE_MENU.iscritti,
+  mese: ICONE_MENU.settimana,
+  segnalate: ICONE_MENU.segnalazioni,
+}

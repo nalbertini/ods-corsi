@@ -5,7 +5,7 @@ import type { Destinazione, Voce } from './Segreteria'
 import type { CorsoSeg, DatiCorso, DatiSegreteria, PersonaSeg, RigaIscrittoCorso } from '../../lib/segreteria'
 import { avvisoPosti, cercaFraGliIscritti, COLORI, contoCorso, corsoCambiato, GIORNI_LUNGHI, iscrittiDelCorso, riepilogoCorso, ricorrenzaCambiata, ricorrenzaIniziale, soloNonInRegola, valoriIscrittoCorso, vociAttivita, type RicorrenzaNuova } from '../../lib/segreteria'
 import { chiaveGiorno } from '../../lib/sala'
-import { Croce } from '../Icons'
+import { Croce, ICONE_SCHEDE } from '../Icons'
 import { posizione, vicina } from '../../lib/schedaFinestra'
 import { chiedi, Campo, dataLunga, Guaio, lasciare, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina, type MemoriaOrdine } from './comune'
 
@@ -430,11 +430,13 @@ function Scheda({
       {corso && (
         <div role="tablist" aria-label="Il corso" className="schede sg-schede">
           <button type="button" role="tab" aria-selected={scheda === 'dati'} className="scheda" data-on={scheda === 'dati'} onClick={() => setScheda('dati')}>
+            <ICONE_SCHEDE.dati size={18} />
             Dati
             {datiDaSalvare && <span aria-hidden="true" style={{ color: 'var(--giallo-testo)', marginLeft: 8 }}>●</span>}
             {datiDaSalvare && <span className="vh"> (modifiche non salvate)</span>}
           </button>
           <button type="button" role="tab" aria-selected={scheda === 'iscritti'} className="scheda" data-on={scheda === 'iscritti'} onClick={() => setScheda('iscritti')}>
+            <ICONE_SCHEDE.iscritti size={18} />
             Iscritti
             {!nonLetti && (
               <span className="num" style={{ marginLeft: 8, letterSpacing: '0.06em', color: colorePosti(conto.tono) }}>
