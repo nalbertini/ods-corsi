@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { INFORMATIVA_PUBBLICA, MODULO_IN_APP, PAGAMENTO, PROVA } from '../lib/iscrizione'
 import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { INDIRIZZO_PREZZI } from '../lib/cancelletti'
+import { LISTINO_PREDEFINITO } from '../lib/listino'
 import { APERTURA, COSA_SERVE, costiBreve, DUBBIO, fondoDellaPagina, INFORMATIVA_FRASE, moduloDalCancelletto, PROVA_CHIAMA, provaEDubbi, sezioniPagina, type Sezione } from '../lib/paginaIscrizioni'
 import { CONTATTI, SITO, chiama } from '../lib/sito'
 import { useListino } from './Costi'
@@ -131,18 +132,10 @@ function CosaServe() {
 /** Quanto costa, in breve: la quota del listino che vale e le offerte; il resto con PREZZI E PAGAMENTO. */
 function InBreve() {
   const letto = useListino()
-  if (!letto) {
-    return (
-      <section className="pad iscrizioni-costi-breve iscrizioni-costi-attesa">
-        <Riquadro>
-          <Dettaglio>Un attimo…</Dettaglio>
-        </Riquadro>
-      </section>
-    )
-  }
-  const c = costiBreve(letto.listino.quota, !!PAGAMENTO.satispay)
+  // Aspettando il listino il riquadro c'è già, nascosto, con la quota del foglio: tiene la sua altezza vera a ogni larghezza, e la pagina non salta (CLS).
+  const c = costiBreve((letto?.listino ?? LISTINO_PREDEFINITO).quota, !!PAGAMENTO.satispay)
   return (
-    <section className="pad iscrizioni-costi-breve">
+    <section className={letto ? 'pad iscrizioni-costi-breve' : 'pad iscrizioni-costi-breve iscrizioni-costi-attesa'}>
       <Riquadro>
         <Etichetta>{c.etichetta}</Etichetta>
         <span className="passo-titolo">{c.titolo}</span>
