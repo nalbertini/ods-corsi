@@ -10,6 +10,21 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.197.0 — 24 ottobre 2026
+
+### Novità
+
+- I tasti del tablet di sala hanno l'aspetto del sito
+
+### Risolto
+
+- Nel timer si può ingrandire la pagina e la scheda accesa si legge meglio
+
+### Modificato
+
+- Bump actions/setup-node from 5.0.0 to 7.1.0
+- Bump actions/checkout from 5.1.0 to 7.0.1
+
 ## 0.196.0 — 24 ottobre 2026
 
 ### Novità
