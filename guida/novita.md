@@ -10,6 +10,17 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.204.0 — 25 ottobre 2026
+
+### Novità
+
+- Sul sito, un'icona accanto a telefono, Instagram, Facebook e indirizzo nella pagina Contatti
+
+### Modificato
+
+- Le prove del giorno contano il giorno italiano anche dopo mezzanotte
+- Ogni linguetta della scheda iscritto ha la sua icona
+
 ## 0.203.7 — 25 ottobre 2026
 
 ### Risolto
