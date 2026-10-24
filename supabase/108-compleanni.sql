@@ -100,7 +100,9 @@ create or replace function compleanni_istruttori_sala(da_giorno date, a_giorno d
   returns table (sessione_id uuid)
   language plpgsql stable security definer set search_path = public, extensions as $$
 begin
-  -- `lezioni_sala` controlla che a chiedere sia un tablet e l'intervallo; l'interruttore è della postazione.
+  -- Il controllo è esplicito: con l'interruttore spento il planner può non chiamare `lezioni_sala`, e la segreteria passerebbe.
+  if postazione_corrente() is null then raise exception 'solo per un tablet di sala' using errcode = '42501'; end if;
+  -- `lezioni_sala` controlla l'intervallo; l'interruttore è della postazione.
   return query select l.id from lezioni_sala(da_giorno, a_giorno) l
     where (select p.compleanni from postazioni p where p.id = postazione_corrente())
       and exists (select 1 from istruttori_in_festa(l.id));
