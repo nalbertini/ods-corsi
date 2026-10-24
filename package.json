@@ -88,6 +88,7 @@
     "prova:sito-foto": "node scripts/prova-sito-foto.mjs",
     "prova:sito-orari": "node scripts/prova-sito-orari.mjs",
     "prova:sito-genera": "node scripts/prova-sito-genera.mjs",
+    "prova:sito-accedi": "node scripts/prova-sito-accedi.mjs",
     "prova:sito-dati": "node scripts/prova-sito-dati.mjs",
     "prova:sito-social": "node scripts/prova-sito-social.mjs",
     "prova:sito-elenchi-tiptap": "node scripts/prova-sito-elenchi-tiptap.mjs",

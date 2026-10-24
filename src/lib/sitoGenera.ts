@@ -14,7 +14,7 @@ import { conProvenienza, etichettaPagina, haProvenienza } from './provenienza'
 import { CSS_ORARIO_AUTOMATICO, corsoNuovo, cssFuochiCorso, eCorsoNuovo } from './sitoCorso'
 import { testiOrario, type OrarioAperto } from './sitoOrario'
 import { CSS_CHI_SIAMO, chiSiamoNuova, eChiSiamoNuova } from './sitoChiSiamo'
-import { CONTATTI, ISCRIZIONE, chiama, scrivi } from './sito'
+import { ACCESSO, CONTATTI, ISCRIZIONE, chiama, scrivi } from './sito'
 import { corsiDa, datiStrutturati } from './sitoDati'
 
 /**
@@ -1079,14 +1079,15 @@ export function parteSulSito(p: Pezzo): string {
   return p.type === 'domande' ? impagina(html) : conPartiPulsanti(html)
 }
 
-/** In testata c'è un solo pulsante, «Iscriviti»; Contatti è una voce del menu come le altre (sul telefono il menu entra in una riga). */
+/** In testata «Iscriviti» è l'unico pulsante pieno, «Accedi» gli sta accanto a linea; Contatti è una voce del menu come le altre (sul telefono il menu entra in una riga). */
 function testata(c: Contesto, corrente = ''): string {
   const menu = lista(voci('menu', c), corrente)
   const logo = `<a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>`
   // La testata nuova: il pulsante intero a destra; sul telefono un tasto MENU che apre il menu con `:target`, senza script.
   const prova = `<a class="pulsante primario" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.provaIntera}</a>`
-  const dentro = `<a class="chiudi" href="#">Chiudi</a>${menu ? `<ul>${menu}</ul>` : ''}${prova.replace('class="pulsante primario"', 'class="pulsante primario nel-menu"')}`
-  return `<header class="testata">${logo}<a class="tasto-menu" href="#menu">MENU</a><nav id="menu" aria-label="Principale">${dentro}</nav><div class="azioni">${prova}</div></header>`
+  const accedi = `<a class="pulsante secondario" href="${ACCESSO}">Accedi</a>`
+  const dentro = `<a class="chiudi" href="#">Chiudi</a>${menu ? `<ul>${menu}</ul>` : ''}${prova.replace('class="pulsante primario"', 'class="pulsante primario nel-menu"')}${accedi.replace('class="pulsante secondario"', 'class="pulsante secondario nel-menu"')}`
+  return `<header class="testata">${logo}<a class="tasto-menu" href="#menu">MENU</a><nav id="menu" aria-label="Principale">${dentro}</nav><div class="azioni">${prova}${accedi}</div></header>`
 }
 
 function piede(c: Contesto): string {

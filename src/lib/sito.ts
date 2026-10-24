@@ -88,5 +88,8 @@ export const whatsapp = `https://wa.me/${numero}`
 /** Il modulo di iscrizione online: sul sito il pulsante che ci porta si legge sempre «Iscriviti». */
 export const ISCRIZIONE = 'https://app.officinedellosport.it/iscrizioni/'
 
+/** La porta unica dell'app: sul sito il pulsante «Accedi» ci porta, e da lì ognuno va nella sua area. */
+export const ACCESSO = 'https://app.officinedellosport.it/'
+
 /** Il tasto SCRIVI: WhatsApp allo stesso numero, col messaggio già scritto. */
 export const scrivi = (testo: string) => `https://wa.me/${numero}?text=${encodeURIComponent(testo)}`

@@ -147,7 +147,7 @@ const ORARI = orariDel(r(A, 1, '17:00'), r(A, 3, '17:00'), r(B, 2, '16:30'), r(B
 console.log('\n3. Pagina non collegata: l’HTML è quello di oggi')
 // Le impronte sono dell’HTML di una pagina non collegata (senza campi nuovi): cambiano se cambia la testata, il logo o il CSS, e allora si rifanno.
 // Rifatte quando ogni pagina ha avuto «Salta al contenuto» in cima e il telefono del piede è diventato un link tel:, , per le correzioni di Scrivici, logo e numeri 1-4, e per le recensioni a carte uguali (via il CSS di «In breve»), e quando i corsi della Home sono tornati un elenco unico (via il CSS dei gruppi per età), e quando il piede degli Istruttori si è staccato dalla griglia, e per la settimana di prova a 10 euro, e per l’invito «Iscriviti» ridisegnato (design invito-iscriviti), e per «€» che non va a capo e il riquadro «dove siamo» con la freccia, e per i quattro riquadri Iscriviti, Chiama, Scrivici e Vieni a trovarci, e per la fila della parte PULSANTI in ogni pagina.
-const OGGI = { dati: "87acd56df9c2f24dcb85c62c2e7b38d1a76450e076cd2c45e9fb90f288dea65c", foto: 'b87749ea22ab8e0517f7859b07a5c129f77322dbf33261d05d1bf5f01047ebd0', fascia: '0c99f1d4829fb6c799807ef586f06506235c53854c2ebe20c942f4bd1f10bb3c' }
+const OGGI = { dati: "c9a1ad6b2876e2b4b63638e9c6144c580e6bc599133d17f7742ebb1ea0443513", foto: 'cf71956e3123f3bfd14d9435611eaee2c468074d464e1bb0e3f782c60116dddb', fascia: '837a7ff84c911ec0456f5aad7bc7ae11d9f0e4f211182bca4d051d2ab85ddd7a' }
 ok('con foto di apertura: HTML di oggi', sha(pagina(CON_FOTO)), OGGI.foto)
 ok('fascia blu: HTML di oggi', sha(pagina(FASCIA)), OGGI.fascia)
 ok('l’orario a mano si vede ancora', /09:15 – 10:15/.test(testo(main(pagina(CON_FOTO)))), true)
