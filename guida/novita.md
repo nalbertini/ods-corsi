@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.200.13 — 24 ottobre 2026
+
+### Risolto
+
+- Nell'editor delle pagine il link si cambia scrivendo sopra il vecchio, e avvisa se non hai selezionato niente
+
 ## 0.200.12 — 24 ottobre 2026
 
 ### Risolto
