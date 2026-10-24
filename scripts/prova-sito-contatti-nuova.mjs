@@ -180,7 +180,7 @@ console.log('\n6. Le foto in fondo: fuori dalla tessera')
     const fc = m.match(/<div class="foto-contatti n-(\d)">([\s\S]*?)<\/div>\s*(?=<section|<\/main|$)/)
     const sc = sezioni(m).find((s) => /Una settimana per scegliere/.test(s.html))
     ok(`${k} foto: ${k ? `div.foto-contatti n-${k} con ${k} figure` : 'nessun div.foto-contatti'}, nessuna foto dentro le tessere`, [k ? [fc?.[1], conta(fc?.[2] ?? '', /<figure\b/g), conta(fc?.[2] ?? '', /<img\b/g)] : /foto-contatti/.test(m), conta(sc?.html ?? '', /<img\b/g)], [k ? [String(k), k, k] : false, 0])
-    if (k) ok(`${k} foto: stanno dopo la sezione dei passi e prima delle domande, senza figure vuote`, [m.indexOf('foto-contatti') > m.indexOf('Passa in sede'), m.indexOf('foto-contatti') < m.indexOf('Hai qualche domanda'), /<figure[^>]*>\s*<\/figure>/.test(fc?.[2] ?? ''), fc?.[2].includes(`${P}contatti-f${k}.jpg`)], [true, true, false, true])
+    if (k) ok(`${k} foto: stanno dopo la sezione dei passi e prima delle domande, senza figure vuote`, [m.indexOf('foto-contatti') > m.indexOf('Passa in sede'), m.indexOf('foto-contatti') < m.indexOf('Hai qualche domanda'), /<figure[^>]*>\s*<\/figure>/.test(fc?.[2] ?? ''), fc?.[2].includes(`render/image/public/sito/contatti-f${k}.jpg`)], [true, true, false, true])
   }
   const h = pag(NUOVO)
   ok('il testo vero: le due foto (lezione, sala) escono in un div.foto-contatti n-2 con il loro alt', [conta(main(h), /<div class="foto-contatti n-2">/g), main(h).includes('Una lezione di judo'), main(h).includes('La sala attrezzata')], [1, true, true])

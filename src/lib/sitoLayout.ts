@@ -539,7 +539,20 @@ const SCRITTA_LUNGA = 40
  */
 export function conCaricamento(tag: string, prima: boolean): string {
   const attributi = prima ? ' fetchpriority="high" decoding="async"' : ' loading="lazy" decoding="async"'
-  return tag.replace(/\s*\/?>$/, `${attributi}>`)
+  return conMisure(tag).replace(/\s*\/?>$/, `${attributi}>`)
+}
+
+/**
+ * Le foto del contenitore «sito» escono in tre misure da `/render/image` di Supabase: l'originale pesa
+ * 200–300 KB, arriva senza cache (`private, no-cache`) ed è molto più grande di quanto lo schermo mostri.
+ * Il resto (file del sito, altri host) resta com'è.
+ */
+function conMisure(tag: string): string {
+  const m = /\bsrc="([^"]*\/storage\/v1)\/object\/public\/(sito\/[A-Za-z0-9._-]+)"/i.exec(tag)
+  if (!m) return tag
+  const url = (w: number) => `${m[1]}/render/image/public/${m[2]}?width=${w}&quality=75`
+  const srcset = [480, 800, 1200].map((w) => `${url(w)} ${w}w`).join(', ')
+  return tag.replace(m[0], `src="${url(800)}" srcset="${srcset}" sizes="(max-width: 800px) 100vw, 800px"`)
 }
 
 /** Un `ul` di 2–6 voci che cominciano tutte con un grassetto: il grassetto è il numero, il resto la scritta. */
