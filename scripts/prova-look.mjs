@@ -213,7 +213,8 @@ if (base) prima = pulisci(execSync(`git show ${base}:src/styles.css`, { encoding
 if (prima === null) console.log('  - confronto con main saltato: senza un ramo main con cui confrontare')
 const rPrima = prima === null ? [] : regole(prima)
 // `.faccia-timer` è stato tra i selettori del blocco :root (la pagina TIMER scura, prima del tema `sito`): non cambia i valori del blocco, e qui non lo si conta.
-const esatta = (r) => r.selettori.filter((s) => s !== '.faccia-timer').join(',') + '{' + r.corpo + '}' // byte per byte, spazi compresi
+// Le riserve misurate dei caratteri (perché la pagina non salti, `prova:iscrizione-sito`) non cambiano l'aspetto: qui non le si conta.
+const esatta = (r) => r.selettori.filter((s) => s !== '.faccia-timer').join(',') + '{' + r.corpo.replace(/, '(Big Shoulders Display|Inter) riserva'/g, '') + '}' // byte per byte, spazi compresi
 
 const bloccoLook = rOra.find((r) => r.selettori.length === 1 && r.selettori[0] === LOOK)
 const bloccoModulo = rOra.find((r) => r.selettori.length === 1 && r.selettori[0] === MODULO)

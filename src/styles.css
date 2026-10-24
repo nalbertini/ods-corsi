@@ -119,6 +119,39 @@
   src: url('/fonts/inter-variable.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+/* Le riserve: Arial portata alle misure di Big Shoulders e di Inter (larghezza
+   media del testo e altezze, dai file; Big Shoulders sul maiuscolo, perché
+   titoli e tasti lo sono). Finché il carattere vero non arriva il testo occupa
+   già il suo posto, e quando arriva la pagina non salta (CLS). Liberation Sans
+   ha le misure di Arial. Dove nessuna delle due c'è (Android) si va alla
+   riserva di prima. */
+@font-face {
+  font-family: 'Big Shoulders Display riserva';
+  font-weight: 100 900;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold');
+  size-adjust: 66.39%;
+  ascent-override: 148.21%;
+  descent-override: 32.08%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Inter riserva';
+  font-weight: 100 549;
+  src: local('Arial'), local('ArialMT'), local('Liberation Sans');
+  size-adjust: 106.94%;
+  ascent-override: 90.59%;
+  descent-override: 22.56%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Inter riserva';
+  font-weight: 550 900;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold');
+  size-adjust: 102.6%;
+  ascent-override: 94.42%;
+  descent-override: 23.51%;
+  line-gap-override: 0%;
+}
 
 /* I colori del marchio Officine Dello Sport. */
 :root {
@@ -261,8 +294,8 @@
   --tratteggio: #14709f;
   --menu: #0d2a3d;
 
-  --cond: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;
-  --body: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --cond: 'Big Shoulders Display', 'Big Shoulders Display riserva', 'Arial Narrow', Arial, sans-serif;
+  --body: Inter, 'Inter riserva', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
   color-scheme: light;
 }
@@ -1124,8 +1157,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .iscrizioni-riga > :first-child { min-width: 0; }
 .iscrizioni-riga .cifra { flex: none; white-space: nowrap; }
 .iscrizioni-costi-breve, .iscrizioni-torna { padding-top: 14px; padding-bottom: 6px; }
-/* Aspettando il listino il riquadro tiene il posto che avrà: se no, arrivato il listino, spinge giù tutto e la pagina salta (CLS). */
-.iscrizioni-costi-attesa > * { min-height: 290px; }
+/* Aspettando il listino il riquadro c’è già ma non si vede: la quota del foglio potrebbe non essere quella giusta. */
+.iscrizioni-costi-attesa { visibility: hidden; }
 .iscrizioni-torna { display: flex; }
 .iscrizioni-torna .passo-btn { flex: 1; }
 .iscrizioni-nota { font-size: 13px; color: var(--dim); padding-bottom: 20px; }
@@ -2591,8 +2624,8 @@ label.sg-btn { cursor: pointer; }
   --tratteggio: #14709f;
   --menu: #cfe6f4;
 
-  --cond: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;
-  --body: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --cond: 'Big Shoulders Display', 'Big Shoulders Display riserva', 'Arial Narrow', Arial, sans-serif;
+  --body: Inter, 'Inter riserva', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
   color-scheme: light;
 }

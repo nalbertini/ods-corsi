@@ -189,6 +189,13 @@ ok('nessun @import url(http', /@import\s+url\(\s*['"]?http/.test(ora), false)
 ok('nessun https:// nelle regole del modulo e nei @font-face nuovi', [...delModulo, ...nuove.filter((r) => r.selettori[0].startsWith('@font-face'))].filter((r) => /https?:\/\//.test(r.corpo)).length, 0)
 ok('--cond del modulo: Big Shoulders Display con riserva', /^['"]?Big Shoulders Display['"]?\s*,\s*\S+/.test(T['--cond'] ?? ''), true)
 ok('--body del modulo: Inter con riserva', /^['"]?Inter['"]?\s*,\s*\S+/.test(T['--body'] ?? ''), true)
+// Senza una riserva con le stesse misure, quando il carattere arriva il testo cambia larghezza e altezza e la pagina salta (CLS).
+for (const [nome, token] of [['Big Shoulders Display', '--cond'], ['Inter', '--body']]) {
+  const riserva = `${nome} riserva`
+  const f = faccia(`'${riserva}'`) ?? ''
+  ok(`@font-face '${riserva}': Arial locale con size-adjust e ascent-override`, [/local\(['"]?Arial/.test(f), /size-adjust:/.test(f), /ascent-override:/.test(f), /descent-override:/.test(f)], [true, true, true, true])
+  ok(`${token} del modulo: subito dopo ${nome} viene '${riserva}'`, new RegExp(`^['"]?${nome}['"]?\\s*,\\s*'${riserva}'`).test(T[token] ?? ''), true)
+}
 const radice = dichiarazioni(rOra.find((r) => r.selettori.includes(':root'))?.corpo ?? '')
 ok(':root --cond resta Saira Condensed', /Saira Condensed/.test(radice['--cond'] ?? ''), true)
 ok(':root --body resta Barlow', /Barlow/.test(radice['--body'] ?? ''), true)
@@ -260,7 +267,9 @@ const ordinaAlto = (r) => r.selettori.includes('.sg-ordina') && /display:\s*inli
 const testataH1 = (r) => r.selettori.includes('.testata-luogo') && /font-size:\s*11px/.test(r.corpo)
 // Il nome nelle righe delle tabelle è alto almeno 24px (WCAG 2.5.8, `prova:a11y-segreteria-bersagli`): la sua regola base è cambiata di proposito.
 const nomeInRigaAlto = (r) => r.selettori.includes('.sg-riga-apri') && /min-height:\s*0;/.test(r.corpo)
-if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !testataH1(r) && !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
+// La pagina non salta (CLS): le pile dei caratteri del sito hanno la riserva misurata, e l'attesa del listino non ha più un'altezza fissa (`prova:iscrizione-pagina`).
+const senzaSalti = (r) => (/--cond:\s*'Big Shoulders Display', 'Arial Narrow'/.test(r.corpo) && /--body:\s*Inter, 'Helvetica Neue'/.test(r.corpo)) || r.selettori.includes('.iscrizioni-costi-attesa > *')
+if (prima !== null) ok('le regole di prima ci sono ancora tutte', rPrima.filter((r) => !senzaSalti(r) && !testataH1(r) && !barraTelefono(r) && !testataScheda(r) && !tastiCert(r) && !menuConNomi(r) && !schedaRivista(r) && !areaIscrittiRivista(r) && !presenzeSenzaBarre(r) && !segnalaIscritti(r) && !chipIscritti(r) && !presenzeARighe(r) && !cifreBanco(r) && !numeriConti(r) && !numeriCompensi(r) && !impostazioniAGruppi(r) && !delLook(r) && !vestiarioSottoLaPagina(r) && !rigaMovimentoConCasella(r) && !movimentiCompatti(r) && !tatamiSegreteria(r) && !impaginazioneVecchia(r) && !pezziVecchio(r) && !puckNativo(r) && !schedaAffiancata(r) && !grigliaScheda(r) && !settimanaVecchia(r) && !ordinaAlto(r) && !nomeInRigaAlto(r) && !rOra.some((o) => chiaveR(o) === chiaveR(r))).length, 0)
 const sorgente = (f) => readFileSync(f, 'utf8')
 ok('ModuloIscrizione.tsx usa aspettoModulo', /aspettoModulo/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)
 ok('ModuloIscrizione.tsx chiama apriAspettoModulo', /apriAspettoModulo\(/.test(sorgente('src/components/ModuloIscrizione.tsx')), true)

@@ -226,6 +226,10 @@ ok('<Costi e ComeSiPaga non stanno nella pagina', [tsx.includes('<Costi'), tsx.i
 ok('il fondo viene da fondoDellaPagina(MODULO_IN_APP), senza condizionali a mano', /fondoDellaPagina\(MODULO_IN_APP\)/.test(pagina) && !/\{MODULO_IN_APP\s*(\?|&&)/.test(pagina), true)
 ok('il riquadro breve: costiBreve(quota del listino, PAGAMENTO.satispay)', /costiBreve\(\s*[^,]*\.quota\b[^,]*,\s*(?:!!PAGAMENTO\.satispay|Boolean\(PAGAMENTO\.satispay\))\s*\)/.test(pagina), true)
 ok('la quota la legge useListino(', /useListino\(/.test(pagina), true)
+// Un segnaposto diverso dal riquadro non ha mai la sua altezza a tutte le larghezze: arrivato il listino, la pagina salta (CLS).
+const inBreve = funzione(pagina, 'InBreve')
+ok('aspettando il listino il riquadro breve è già lì, nascosto, e non un segnaposto', [inBreve.includes('Un attimo'), /LISTINO_PREDEFINITO/.test(inBreve), /iscrizioni-costi-attesa/.test(inBreve)], [false, true, true])
+ok('nessuna altezza fissa per l’attesa nel CSS', /iscrizioni-costi-attesa[^{]*\{[^}]*min-height/.test(sorgente('src/styles.css')), false)
 for (const x of ['50 €', '660', '20%', 'Satispay', '3 €', '10 €'])
   ok(`«${x}» non è scritto nella pagina`, pagina.includes(x), false)
 ok('il riquadro prova e dubbi: provaEDubbi(CONTATTI), PROVA.costi, PROVA.testo, CONTATTI.mappa', ['provaEDubbi(CONTATTI)', 'PROVA.costi', 'PROVA.testo', 'CONTATTI.mappa'].map((x) => pagina.includes(x)), [true, true, true, true])
