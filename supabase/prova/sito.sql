@@ -73,10 +73,34 @@ $$;
 grant execute on function prova_estranei(text, boolean) to anon, authenticated;
 
 \echo ''
+\echo '--- 0. la Dichiarazione di accessibilità, appena dopo 107-sito-accessibilita.sql ---'
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la pagina c''è, di legge, mai pubblicata, non nascosta',
+  (select di_legge::text || ' ' || (pubblicato is null)::text || ' ' || nascosta::text || ' ' || titolo from sito_pagine where slug = 'dichiarazione-accessibilita'),
+  'true true false Dichiarazione di accessibilità');
+select atteso('è una sola', (select count(*)::text from sito_pagine where slug = 'dichiarazione-accessibilita'), '1');
+select atteso('la bozza è la traccia, coi segnaposto e il confine del sito pubblico',
+  (select (bozza like '%[DA COMPILARE%' and bozza ilike '%sito pubblico%')::text from sito_pagine where slug = 'dichiarazione-accessibilita'), 'true');
+select atteso('la voce «Accessibilità» è nel footer, verso la pagina',
+  (select string_agg(m.etichetta, ', ' order by m.ordine) from sito_menu m join sito_pagine p on p.id = m.pagina_id where m.dove = 'footer' and p.slug = 'dichiarazione-accessibilita'), 'Accessibilità');
+select atteso('non si nasconde', tenta($$update sito_pagine set nascosta = true where slug = 'dichiarazione-accessibilita'$$),
+  'NEGATO: new row for relation "sito_pagine" violates check constraint "sito_pagine_legge_visibile"');
+select atteso('non si cancella', tenta($$delete from sito_pagine where slug = 'dichiarazione-accessibilita'$$), 'a vuoto (0 righe)');
+select atteso('una pagina normale non può prendere lo slug',
+  tenta($$insert into sito_pagine (slug, titolo) values ('dichiarazione-accessibilita', 'Doppione')$$), 'NEGATO: …');
+reset role;
+select chi('');
+set role anon;
+select atteso('finché è in bozza non esce dalle pagine pubbliche', (select count(*)::text from sito_pagine_pubbliche() where slug = 'dichiarazione-accessibilita'), '0');
+select atteso('né la voce dal menu pubblico', (select count(*)::text from sito_menu_pubblico() where etichetta = 'Accessibilità' or slug = 'dichiarazione-accessibilita'), '0');
+reset role;
+
+\echo ''
 \echo '--- 1. la segreteria scrive le pagine, salva la bozza e pubblica ---'
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
-select atteso('vede le quattro pagine che il sito ha sempre', (select count(*)::text from sito_pagine), '4');
+select atteso('vede le cinque pagine che il sito ha sempre', (select count(*)::text from sito_pagine), '5');
 select atteso('scrive una pagina e la rilegge',
   tenta($$insert into sito_pagine (slug, titolo, descrizione, bozza)
     values ('chi-siamo', 'Chi siamo', 'La palestra', '<p>Prima</p>') returning id$$), 'FATTO (1 righe)');
@@ -261,8 +285,8 @@ select atteso('né la bozza, saltando la versione',
   tenta($$update sito_pagine set bozza = '<p>x</p>' where slug = 'chi-siamo'$$), 'NEGATO: …');
 select atteso('né una pagina nuova già pubblicata',
   tenta($$insert into sito_pagine (slug, titolo, pubblicato) values ('gia-fuori', 'Già fuori', '<p>x</p>')$$), 'NEGATO: …');
-select atteso('le tre di legge sono ancora lì e visibili',
-  (select count(*)::text from sito_pagine where di_legge and not nascosta), '3');
+select atteso('le quattro di legge sono ancora lì e visibili',
+  (select count(*)::text from sito_pagine where di_legge and not nascosta), '4');
 -- Un''altra pagina sì.
 select atteso('scrive una pagina da togliere',
   tenta($$insert into sito_pagine (slug, titolo) values ('da-togliere', 'Da togliere')$$), 'FATTO (1 righe)');
@@ -282,7 +306,7 @@ select atteso('«' || s || '» va', tenta(format('insert into slug_prova (slug, 
 select atteso('«' || left(s, 24) || '» no', tenta(format('insert into slug_prova (slug, titolo) values (%L, ''T'')', s)),
   'NEGATO: new row for relation "slug_prova" violates check constraint "sito_pagine_slug_check"')
   from unnest(array['Chi-Siamo', 'chi siamo', 'perché', 'chi--siamo', '-chi', 'chi-', '', 'chi_siamo', 'chi/siamo',
-    'admin', 'api', 'app', 'contact', 'contattaci', 'sitemap', 'robots', repeat('a', 81)]) s;
+    'admin', 'api', 'app', 'contact', 'contattaci', 'sitemap', 'robots', 'dichiarazione-accessibilita', repeat('a', 81)]) s;
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('sulla tabella vera: «Admin» no', tenta($$insert into sito_pagine (slug, titolo) values ('Admin', 'Admin')$$), 'NEGATO: …');
@@ -333,24 +357,45 @@ select atteso('un posto che non è menu né footer no',
   tenta($$select salva_menu_sito('lato', '[]'::jsonb)::text$$), 'NEGATO: Il menu può essere solo quello in alto o il footer');
 select atteso('i rifiuti non hanno toccato il menu',
   (select string_agg(etichetta, ', ' order by ordine) from sito_menu where dove = 'menu'), 'Blog, Scrivici, Chi siamo');
--- Il footer deve avere le tre pagine di legge.
+-- Il footer deve avere le quattro pagine di legge.
 select atteso('un footer senza i contributi pubblici no, e dice quale pagina',
   tenta($$select salva_menu_sito('footer', format('[
     {"etichetta": "Privacy", "pagina_id": "%s"},
-    {"etichetta": "Cookie", "pagina_id": "%s"}]',
-    (select id from sito_pagine where slug = 'privacy'), (select id from sito_pagine where slug = 'cookie'))::jsonb)::text$$),
+    {"etichetta": "Cookie", "pagina_id": "%s"},
+    {"etichetta": "Accessibilità", "pagina_id": "%s"}]',
+    (select id from sito_pagine where slug = 'privacy'), (select id from sito_pagine where slug = 'cookie'),
+    (select id from sito_pagine where slug = 'dichiarazione-accessibilita'))::jsonb)::text$$),
   'NEGATO: Nel footer deve esserci «Contributi pubblici»…');
+select atteso('un footer senza la dichiarazione di accessibilità no, e dice quale pagina',
+  tenta($$select salva_menu_sito('footer', format('[
+    {"etichetta": "Privacy", "pagina_id": "%s"},
+    {"etichetta": "Cookie", "pagina_id": "%s"},
+    {"etichetta": "Contributi pubblici", "pagina_id": "%s"}]',
+    (select id from sito_pagine where slug = 'privacy'), (select id from sito_pagine where slug = 'cookie'),
+    (select id from sito_pagine where slug = 'contributi-pubblici'))::jsonb)::text$$),
+  'NEGATO: Nel footer deve esserci «Dichiarazione di accessibilità»…');
+select atteso('una pagina normale mai pubblicata nel footer resta rifiutata',
+  tenta($$select salva_menu_sito('footer', format('[
+    {"etichetta": "Bozza", "pagina_id": "ffffffff-0000-0000-0000-000000000003"},
+    {"etichetta": "Privacy", "pagina_id": "%s"},
+    {"etichetta": "Cookie", "pagina_id": "%s"},
+    {"etichetta": "Contributi pubblici", "pagina_id": "%s"},
+    {"etichetta": "Accessibilità", "pagina_id": "%s"}]',
+    (select id from sito_pagine where slug = 'privacy'), (select id from sito_pagine where slug = 'cookie'),
+    (select id from sito_pagine where slug = 'contributi-pubblici'), (select id from sito_pagine where slug = 'dichiarazione-accessibilita'))::jsonb)::text$$),
+  'NEGATO: La voce «Bozza» porta a una pagina nascosta o non ancora pubblicata…');
 select atteso('un footer vuoto no', tenta($$select salva_menu_sito('footer', '[]'::jsonb)::text$$), 'NEGATO: Nel footer deve esserci «…');
-select atteso('un footer con le tre pagine di legge e un indirizzo si salva',
+select atteso('un footer con le quattro pagine di legge e un indirizzo si salva, anche con la dichiarazione ancora in bozza',
   tenta($$select salva_menu_sito('footer', format('[
     {"etichetta": "Cookie", "pagina_id": "%s"},
     {"etichetta": "Privacy", "pagina_id": "%s"},
     {"etichetta": "Contributi pubblici", "pagina_id": "%s"},
+    {"etichetta": "Accessibilità", "pagina_id": "%s"},
     {"etichetta": "Instagram", "indirizzo": "https://instagram.com/ods"}]',
     (select id from sito_pagine where slug = 'cookie'), (select id from sito_pagine where slug = 'privacy'),
-    (select id from sito_pagine where slug = 'contributi-pubblici'))::jsonb)::text$$), '');
+    (select id from sito_pagine where slug = 'contributi-pubblici'), (select id from sito_pagine where slug = 'dichiarazione-accessibilita'))::jsonb)::text$$), '');
 select atteso('il footer è nell''ordine dato',
-  (select string_agg(etichetta, ', ' order by ordine) from sito_menu where dove = 'footer'), 'Cookie, Privacy, Contributi pubblici, Instagram');
+  (select string_agg(etichetta, ', ' order by ordine) from sito_menu where dove = 'footer'), 'Cookie, Privacy, Contributi pubblici, Accessibilità, Instagram');
 reset role;
 
 \echo ''
@@ -599,7 +644,8 @@ reset role;
 -- 06 toglie ad `anon` anche gli aiuti della prova, che stanno in `public`: glieli si ridà, e solo quelli.
 grant execute on function tenta(text), atteso(text, text, text), chi(text) to anon, authenticated;
 select count(*)::text as n_pubbliche from sito_pagine where pubblicato is not null and not nascosta \gset
-select count(*)::text as n_voci from sito_menu \gset
+-- Le voci verso una pagina non pubblicata (la dichiarazione di accessibilità, in bozza) il sito non le vede.
+select count(*)::text as n_voci from sito_menu m where m.pagina_id is null or exists (select 1 from sito_pagine p where p.id = m.pagina_id and p.pubblicato is not null and not p.nascosta) \gset
 select count(*)::text as n_rinvii from sito_redirect r where exists (select 1 from sito_pagine p where p.slug = r.a and p.pubblicato is not null and not p.nascosta) \gset
 select chi('');
 set role anon;
@@ -608,4 +654,61 @@ select atteso('anon legge ancora le pagine pubblicate',
 select atteso('anon legge ancora il menu', tenta($$select count(*)::text from sito_menu_pubblico()$$), :'n_voci');
 select atteso('anon legge ancora i rinvii', tenta($$select count(*)::text from sito_redirect_pubblici()$$), :'n_rinvii');
 select atteso('e continua a non scrivere', tenta($$select salva_menu_sito('menu', '[]'::jsonb)::text$$), 'NEGATO: permission denied for function salva_menu_sito');
+reset role;
+
+\echo ''
+\echo '--- 18. rilanciato 107-sito-accessibilita.sql ---'
+reset role;
+-- Il footer l'ha spostato dalla segreteria (ordini con buchi) e la voce nuova non c'è:
+-- il rilancio non la raddoppia e non sposta le altre.
+select id as id_acc from sito_pagine where slug = 'dichiarazione-accessibilita' \gset
+delete from sito_menu where dove = 'footer' and pagina_id = :'id_acc';
+update sito_menu set ordine = ordine + 1 where dove = 'footer';
+\ir ../107-sito-accessibilita.sql
+select atteso('rilancio: la voce torna, una sola',
+  (select count(*)::text from sito_menu where dove = 'footer' and pagina_id = :'id_acc'), '1');
+select atteso('rilancio: la voce nuova è in coda e le altre restano dove sono',
+  (select string_agg(etichetta, ', ' order by ordine) from sito_menu where dove = 'footer'), 'Cookie, Privacy, Contributi pubblici, Instagram, Accessibilità');
+\ir ../107-sito-accessibilita.sql
+select atteso('rilancio senza novità: niente voci in più',
+  (select count(*)::text from sito_menu where dove = 'footer'), '5');
+select atteso('rilancio: nessun doppione di pagina', (select count(*)::text from sito_pagine where slug = 'dichiarazione-accessibilita'), '1');
+-- Un vecchio rinvio da quell'indirizzo sparisce, gli altri restano.
+insert into sito_redirect (da, a) values ('dichiarazione-accessibilita', 'home'), ('vecchia-altra', 'home');
+\ir ../107-sito-accessibilita.sql
+select atteso('rilancio: il rinvio dall''indirizzo riservato sparisce, gli altri restano',
+  (select coalesce(string_agg(da, ', ' order by da), '') from sito_redirect where da in ('dichiarazione-accessibilita', 'vecchia-altra')), 'vecchia-altra');
+delete from sito_redirect where da = 'vecchia-altra';
+-- Una pagina normale con quello slug (scritta quando il vincolo non c'era): diventa di legge senza perdere testo né stato.
+delete from sito_menu where pagina_id = :'id_acc';
+delete from sito_pagine where id = :'id_acc';
+alter table sito_pagine drop constraint sito_pagine_slug_check;
+insert into sito_pagine (slug, titolo, bozza, pubblicato, versione, pubblicata_il) values
+  ('dichiarazione-accessibilita', 'Accessibilità del sito', '<p>Bozza mia</p>', '<p>Testo già online</p>', 7, now());
+\ir ../107-sito-accessibilita.sql
+select atteso('pagina già esistente: diventa di legge, una sola',
+  (select count(*)::text || ' ' || di_legge::text from sito_pagine where slug = 'dichiarazione-accessibilita' group by di_legge), '1 true');
+select atteso('pagina già esistente: testo, stato e versione restano',
+  (select bozza || ' | ' || pubblicato || ' | ' || versione from sito_pagine where slug = 'dichiarazione-accessibilita'), '<p>Bozza mia</p> | <p>Testo già online</p> | 7');
+select atteso('pagina già esistente: ha la sua voce nel footer, una sola',
+  (select count(*)::text from sito_menu m join sito_pagine p on p.id = m.pagina_id where m.dove = 'footer' and p.slug = 'dichiarazione-accessibilita'), '1');
+-- Sulla copia senza indici: la riga di legge ci sta, la pagina normale no.
+select atteso('dopo la migrazione il vincolo riserva di nuovo lo slug a una pagina normale',
+  tenta($$insert into slug_prova (slug, titolo) values ('dichiarazione-accessibilita', 'T')$$),
+  'NEGATO: new row for relation "slug_prova" violates check constraint "sito_pagine_slug_check"');
+select atteso('e lo lascia alla pagina di legge',
+  tenta($$insert into slug_prova (slug, titolo, di_legge) values ('dichiarazione-accessibilita', 'T', true)$$), 'FATTO (1 righe)');
+
+\echo ''
+\echo '--- 19. pubblicata, la dichiarazione esce dal sito ---'
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria la pubblica',
+  tenta($$select pubblica_pagina_sito(id, versione)::text from sito_pagine where slug = 'dichiarazione-accessibilita'$$), '8');
+reset role;
+select chi('');
+set role anon;
+select atteso('adesso è tra le pagine pubbliche', (select count(*)::text from sito_pagine_pubbliche() where slug = 'dichiarazione-accessibilita'), '1');
+select atteso('e la voce «Accessibilità» è nel menu pubblico',
+  (select count(*)::text from sito_menu_pubblico() where dove = 'footer' and slug = 'dichiarazione-accessibilita'), '1');
 reset role;

@@ -26,7 +26,7 @@ insert into corsi_istruttori (corso_id, persona_id) values
   ('cccccccc-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000001')
   on conflict do nothing;
 insert into sessioni (id, corso_id, inizio, fine) values
-  ('eeeeeeee-0000-0000-0000-00000000f001', 'cccccccc-0000-0000-0000-000000000002', now() - interval '1 day',     now() - interval '23 hours'),
+  ('eeeeeeee-0000-0000-0000-00000000f001', 'cccccccc-0000-0000-0000-000000000002', now() - interval '1 day',     now() - interval '1 day' + interval '1 hour'),
   ('eeeeeeee-0000-0000-0000-00000000f002', 'cccccccc-0000-0000-0000-000000000002', now() + interval '20 minutes', now() + interval '80 minutes'),
   ('eeeeeeee-0000-0000-0000-00000000f003', 'cccccccc-0000-0000-0000-000000000002', now() + interval '40 minutes', now() + interval '100 minutes'),
   ('eeeeeeee-0000-0000-0000-00000000f004', 'cccccccc-0000-0000-0000-000000000002', now() - interval '13 days',    now() - interval '13 days' + interval '1 hour'),

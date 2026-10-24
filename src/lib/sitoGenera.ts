@@ -1413,8 +1413,8 @@ export function generaSito(d: DatiSito): Record<string, string> {
   return file
 }
 
-/** Le pagine di legge del sito: le tre che `56-sito.sql` crea e che non si nascondono (la funzione pubblica non dice quali sono). */
-export const PAGINE_DI_LEGGE = ['privacy', 'cookie', 'contributi-pubblici']
+/** Le pagine di legge del sito: le tre che `56-sito.sql` crea più la dichiarazione di `107-sito-accessibilita.sql`, che non si nascondono (la funzione pubblica non dice quali sono). */
+export const PAGINE_DI_LEGGE = ['privacy', 'cookie', 'contributi-pubblici', 'dichiarazione-accessibilita']
 
 /** Le risposte delle funzioni pubbliche del database (`sito_pagine_pubbliche`, `sito_menu_pubblico`, `sito_redirect_pubblici`, `orari_sito`) come servono al generatore. */
 export function datiDaRisposte(
