@@ -220,13 +220,14 @@ console.log('\nLo script scripts/genera-sito.mjs e la variabile SITO_STATISTICHE
 }
 
 // ---------------------------------------------------------------------------
-console.log('\nChi legge la variabile: solo il generatore, mai l\'app')
+console.log('\nChi legge la variabile: il generatore e, per i due eventi del modulo, contaIscrizione.ts; mai il resto dell\'app')
 {
   const tutti = (d) => readdirSync(d).flatMap((n) => (statSync(join(d, n)).isDirectory() ? tutti(join(d, n)) : [join(d, n)]))
   const src = tutti('src').filter((f) => /\.(ts|tsx|js|css)$/.test(f))
-  ok('in src/ solo sitoGenera.ts nomina gc.zgo.at', src.filter((f) => readFileSync(f, 'utf8').includes('gc.zgo.at')), ['src/lib/sitoGenera.ts'])
+  // contaIscrizione.ts è l'eccezione voluta: il modulo d'iscrizione conta due eventi (prova-conta-iscrizione.mjs); l'anteprima del pannello no.
+  ok('in src/ solo sitoGenera.ts e contaIscrizione.ts nominano gc.zgo.at', src.filter((f) => readFileSync(f, 'utf8').includes('gc.zgo.at')), ['src/lib/contaIscrizione.ts', 'src/lib/sitoGenera.ts'])
   // I commenti la possono nominare: conta chi la legge dall'ambiente (process.env, import.meta.env).
-  ok('in src/ nessuno legge SITO_STATISTICHE dall\'ambiente', src.filter((f) => /env\s*(\.\s*|\[\s*['"`])\w*SITO_STATISTICHE/.test(readFileSync(f, 'utf8'))), [])
+  ok('in src/ solo contaIscrizione.ts legge SITO_STATISTICHE dall\'ambiente', src.filter((f) => /env\s*(\.\s*|\[\s*['"`])\w*SITO_STATISTICHE/.test(readFileSync(f, 'utf8'))), ['src/lib/contaIscrizione.ts'])
   ok('fra gli script solo genera-sito.mjs la legge', readdirSync('scripts').filter((f) => /\.(mjs|js|sh)$/.test(f) && f !== 'prova-sito-statistiche.mjs' && /env\s*(\.\s*|\[\s*['"`])SITO_STATISTICHE/.test(readFileSync(join('scripts', f), 'utf8'))), ['genera-sito.mjs'])
   ok('l\'anteprima del pannello non passa un codice a generaSito', /statistiche/i.test(readFileSync('src/components/segreteria/AnteprimaPagina.tsx', 'utf8')), false)
   const yml = readFileSync('.github/workflows/sito.yml', 'utf8')
