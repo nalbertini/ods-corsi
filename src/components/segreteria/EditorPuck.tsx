@@ -220,13 +220,21 @@ function MenuTesto({ children, editor }: { children: ReactNode; editor: Editor |
   const attuale = (editor?.getAttributes('link') ?? {}) as { href?: string; class?: string | null }
   const ePulsante = attuale.class === 'pulsante'
   const apri = (pulsante: boolean) => setLink({ indirizzo: attuale.href ?? '', pulsante })
+  // Puck passa la modifica ai dati solo se il campo ha il fuoco, e col fuoco sul campo dell'indirizzo non ce l'ha:
+  // si riporta il fuoco nel testo e si cambia solo dopo, se no il link si vede ma non risulta «da salvare».
+  const conFuoco = (cambia: () => void) => {
+    if (!editor) return
+    if (editor.isFocused) return cambia()
+    editor.once('focus', cambia)
+    editor.commands.focus()
+  }
   const metti = () => {
     if (!editor || !link) return
     // Senza parole selezionate il link non avrebbe dove stare, e premere METTI sembrerebbe non fare nulla.
     if (editor.state.selection.empty && !editor.isActive('link')) return setLink({ ...link, guaio: 'Prima seleziona le parole che devono diventare un link' })
     const r = indirizzoDelLink(link.indirizzo)
     if ('guaio' in r) return setLink({ ...link, guaio: r.guaio })
-    editor.chain().focus().extendMarkRange('link').setMark('link', { href: r.indirizzo, class: link.pulsante ? 'pulsante' : null }).run()
+    conFuoco(() => editor.chain().extendMarkRange('link').setMark('link', { href: r.indirizzo, class: link.pulsante ? 'pulsante' : null }).run())
     setLink(null)
   }
   const inLink = !!editor?.isActive('link')
@@ -255,7 +263,7 @@ function MenuTesto({ children, editor }: { children: ReactNode; editor: Editor |
           />
           {link.guaio && <p className="sito-puck-nota sito-puck-troppo" style={{ width: '100%' }}>{link.guaio}</p>}
           <Button variant="primary" onClick={metti}>Metti</Button>
-          {inLink && <Button variant="secondary" onClick={() => { editor?.chain().focus().extendMarkRange('link').unsetLink().run(); setLink(null) }}>Togli</Button>}
+          {inLink && <Button variant="secondary" onClick={() => { conFuoco(() => editor?.chain().extendMarkRange('link').unsetLink().run()); setLink(null) }}>Togli</Button>}
           <Button variant="secondary" onClick={() => setLink(null)}>Lascia stare</Button>
         </div>
       )}
