@@ -1,13 +1,10 @@
 import { lazy, type ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
-import { Sala } from './components/Sala'
 import { NastroProva } from './components/ds'
 import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { apriAspettoModulo } from './lib/aspettoModulo'
 import { vistaIscrizioni } from './lib/paginaIscrizioni'
-import { MieiTimer } from './components/MieiTimer'
-import { MieOre } from './components/MieOre'
 import { BarraMusicaTelefono, BarraNavigazione, MusicaMini, PaginaTimer, StrisciaTimer, useMusicaTelefono } from './components/TimerIstruttori'
 import { Conferme, chiedi } from './components/segreteria/comune'
 import { indirizzo, INDIRIZZI, useArea } from './lib/aree'
@@ -31,6 +28,9 @@ const OrdinaVestiario = lazy(() => import('./components/OrdinaVestiario').then((
 const PrezziIscrizione = lazy(() => import('./components/PrezziIscrizione').then((m) => ({ default: m.PrezziIscrizione })))
 const AreaIscritti = lazy(() => import('./components/AreaIscritti').then((m) => ({ default: m.AreaIscritti })))
 const Guida = lazy(() => import('./components/Guida').then((m) => ({ default: m.Guida })))
+const Sala = lazy(() => import('./components/Sala').then((m) => ({ default: m.Sala })))
+const MieiTimer = lazy(() => import('./components/MieiTimer').then((m) => ({ default: m.MieiTimer })))
+const MieOre = lazy(() => import('./components/MieOre').then((m) => ({ default: m.MieOre })))
 const Segreteria = lazy(() => import('./components/segreteria/Segreteria').then((m) => ({ default: m.Segreteria })))
 
 /**
@@ -427,7 +427,9 @@ function Istruttori() {
             {largo && striscia}
             {!largo && chi && pagina !== 'timer' && <ChiSei chi={chi} onEsci={onEsci} />}
             <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
-              <Sala soloDi={mio} senzaLimiti={chi?.ruolo === 'staff'} onTimer={(l) => void apriTimer(l)} />
+              <Suspense fallback={<UnAttimo />}>
+                <Sala soloDi={mio} senzaLimiti={chi?.ruolo === 'staff'} onTimer={(l) => void apriTimer(l)} />
+              </Suspense>
             </div>
             {timerMontato && (
               <PaginaTimer
@@ -441,8 +443,10 @@ function Istruttori() {
                 onImpostazioni={conTastoImpostazioni ? setImpostazioni : null}
               />
             )}
-            {pagina === 'mieiTimer' && <MieiTimer soloDi={mio} onTimer={() => dalMenu('timer')} />}
-            {pagina === 'ore' && mio && <MieOre personaId={mio} />}
+            <Suspense fallback={<UnAttimo />}>
+              {pagina === 'mieiTimer' && <MieiTimer soloDi={mio} onTimer={() => dalMenu('timer')} />}
+              {pagina === 'ore' && mio && <MieOre personaId={mio} />}
+            </Suspense>
             {largo && mini}
           </main>
           {!largo && mini}
