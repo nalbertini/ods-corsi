@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { conPrecarica, daPrecaricare } from './scripts/precarica-aree.mjs'
-import { politicaCsp } from './src/lib/csp'
+import { politicaCsp, senzaImportEsterni } from './src/lib/csp'
 
 // La versione dell'app: il numero di package.json e il commit da cui è
 // compilata, così chi segnala un problema dal tablet dice anche quale app ha.
@@ -87,6 +87,19 @@ function cspNellePagine(urlSupabase: string | undefined): Plugin {
   }
 }
 
+// Il CSS di Puck importa un font da un altro sito, che la CSP blocca (vedi `senzaImportEsterni`).
+function senzaFontEsterni(): Plugin {
+  return {
+    name: 'ods-senza-font-esterni',
+    apply: 'build',
+    generateBundle(_, bundle) {
+      for (const file of Object.values(bundle)) {
+        if (file.type === 'asset' && file.fileName.endsWith('.css') && typeof file.source === 'string') file.source = senzaImportEsterni(file.source)
+      }
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => ({
   // Percorsi relativi: l'app funziona anche servita da una sottocartella,
   // non solo dalla radice del dominio.
@@ -126,6 +139,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     pagineDelleAree(),
+    senzaFontEsterni(),
     cspNellePagine(loadEnv(mode, process.cwd(), 'VITE_').VITE_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL),
     VitePWA({
       registerType: 'autoUpdate',

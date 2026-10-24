@@ -32,3 +32,12 @@ export function politicaCsp(urlSupabase: string | undefined): string {
     "form-action 'self'",
   ].join('; ')
 }
+
+/**
+ * Toglie da un CSS gli `@import` di altri siti. Il CSS di Puck importa il font Inter da
+ * rsms.me, che la nostra CSP blocca: il font non arriva comunque, e l'errore in console
+ * confonde chi cerca perché l'editor non si apre.
+ */
+export function senzaImportEsterni(css: string): string {
+  return css.replace(/@import\s*(?:url\(\s*)?["']?https?:\/\/[^;]*;/g, '')
+}
